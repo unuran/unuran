@@ -383,6 +383,16 @@ int unur_stdgen_sample_logarithmic_lsk( struct unur_gen *gen );
 /* Acceptance Rejection                                                      */
 
 /*---------------------------------------------------------------------------*/
+/* Negative Binomial distribution  [1; ch.5.1, p.200]                        */
+struct unur_distr *unur_distr_negativebinomial(double *params, int n_params);
+
+/* special generators */
+int _unur_stdgen_negativebinomial_init( struct unur_par *par, struct unur_gen *gen );
+/* initialize new generator                                                  */
+int unur_stdgen_sample_negativebinomial_nbp( struct unur_gen *gen );
+/* Compound method                                                           */
+
+/*---------------------------------------------------------------------------*/
 /* Poisson distribution  [1; ch.4, p.151]                                    */
 struct unur_distr *unur_distr_poisson(double *params, int n_params);
 

@@ -228,7 +228,7 @@ unur_dstd_chg_param( struct unur_gen *gen, double *params, int n_params )
 
   /* check arguments */
   CHECK_NULL(gen,0);
-  COOKIE_CHECK(gen,CK_DISTR_CONT,0);
+  COOKIE_CHECK(gen,CK_DSTD_GEN,0);
   if (n_params>0) CHECK_NULL(params,0);
   
   /* check new parameter for generator */

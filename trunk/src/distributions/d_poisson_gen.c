@@ -274,10 +274,12 @@ poisson_pdac_init( struct unur_gen *gen )
   /* -X- setup code -X- */
 
   /* make a normal variate generator (use default special generator) */
-  NORMAL = unur_cstd_init( unur_cstd_new( unur_distr_normal(NULL,0) ));
-  _unur_check_NULL( NULL,NORMAL,0 );
-  /* need same uniform random number generator as slash generator */
-  NORMAL->urng = gen->urng;
+  if (NORMAL==NULL) {
+    NORMAL = unur_cstd_init( unur_cstd_new( unur_distr_normal(NULL,0) ));
+    _unur_check_NULL( NULL,NORMAL,0 );
+    /* need same uniform random number generator as slash generator */
+    NORMAL->urng = gen->urng;
+  }
 
   s = sqrt(theta);
   d = 6. * theta * theta;

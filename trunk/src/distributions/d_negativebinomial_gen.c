@@ -57,7 +57,7 @@
 /*---------------------------------------------------------------------------*/
 /* init routines for special generators                                      */
 
-inline static void negativebinomial_nbp_init( struct unur_gen *gen );
+inline static int negativebinomial_nbp_init( struct unur_gen *gen );
 
 /*---------------------------------------------------------------------------*/
 
@@ -90,8 +90,7 @@ _unur_stdgen_negativebinomial_init( struct unur_par *par, struct unur_gen *gen )
   case 0:  /* DEFAULT */
   case 1:  /* Compound method */
     _unur_dstd_set_sampling_routine( par,gen,unur_stdgen_sample_negativebinomial_nbp );
-    negativebinomial_nbp_init( gen );
-    return 1;
+    return negativebinomial_nbp_init( gen );
 
   case UNUR_STDGEN_INVERSION:   /* inversion method */
   default: /* no such generator */
@@ -138,14 +137,14 @@ _unur_stdgen_negativebinomial_init( struct unur_par *par, struct unur_gen *gen )
 #define POISSON  gen->gen_aux_2  /* pointer to poisson variate generator     */
 /*---------------------------------------------------------------------------*/
 
-inline static void
-negativebinomial_nbp_init( struct unur_gen *gen );
+inline static int
+negativebinomial_nbp_init( struct unur_gen *gen )
 {
   double gamma_param;   
   double poisson_param;   
 
   /* check arguments */
-  CHECK_NULL(gen,/*void*/); COOKIE_CHECK(gen,CK_DSTD_GEN,/*void*/);
+  CHECK_NULL(gen,0);  COOKIE_CHECK(gen,CK_DSTD_GEN,0);
 
   if (GEN.gen_param == NULL) {
     GEN.n_gen_param = MAX_gen_params;
@@ -157,19 +156,21 @@ negativebinomial_nbp_init( struct unur_gen *gen );
 
   /* make a gamma variate generator (use default special generator) */
   gamma_param = r;   /* shape parameter for gamma distribution */
-  GAMMA = unur_cstd_init( unur_cstd_new( unur_distr_gamma(gamma_param,1) ) );
+  GAMMA = unur_cstd_init( unur_cstd_new( unur_distr_gamma(&gamma_param,1) ) );
   _unur_check_NULL( NULL,GAMMA,0 );
   /* need same uniform random number generator as negative binomial generator */
   GAMMA->urng = gen->urng;
 
   /* make a poisson variate generator (use default special generator) */
   poisson_param = 1.;   /* shape parameter for poisson distribution (use a dummy value yet) */
-  POISSON = unur_cstd_init( unur_cstd_new( unur_distr_poisson(poisson_param,1) ) );
+  POISSON = unur_dstd_init( unur_dstd_new( unur_distr_poisson(&poisson_param,1) ) );
   _unur_check_NULL( NULL,POISSON,0 );
   /* need same uniform random number generator as negative binomial generator */
   POISSON->urng = gen->urng;
 
   /* -X- end of setup code -X- */
+
+  return 1;
 
 } /* end of poisson_pdac_init() */
 
@@ -188,8 +189,8 @@ unur_stdgen_sample_negativebinomial_nbp( struct unur_gen *gen )
   y = x * unur_sample_cont(GAMMA);
 
   /* sample from poisson distribution */
-  unur_dstd_chg_params(gen,&y,1);
-  return unur_sample_discr(gen);
+  unur_dstd_chg_param(POISSON,&y,1);
+  return unur_sample_discr(POISSON);
 
   /* -X- end of generator code -X- */
 
@@ -201,3 +202,5 @@ unur_stdgen_sample_negativebinomial_nbp( struct unur_gen *gen )
 #undef GAMMA
 #undef POISSON
 /*---------------------------------------------------------------------------*/
+
+

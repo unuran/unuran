@@ -96,7 +96,8 @@ enum {
   UNUR_DISTR_ZIPF,                /*    X     .     X     .     X     .      */
 
   /**                                  pdf                           doc     */
-  UNUR_DISTR_MNORMAL,             /*    .                             .      */
+  UNUR_DISTR_MNORMAL,             /*    X                             .      */
+  UNUR_DISTR_COPULA,              /*    .                             .      */
 
   /**                                                                        */
   UNUR_DISTR_MCORRELATION         /*                                         */

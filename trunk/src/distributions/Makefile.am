@@ -37,6 +37,7 @@ libdistributions_la_SOURCES = \
  d_poisson.c     d_poisson_gen.c \
  d_zipf.c        d_zipf_gen.c \
  m_correlation.c \
+ vc_copula.c \
  vc_multinormal.c
 
 noinst_HEADERS = \

@@ -31,7 +31,7 @@ EXTRA_DIST = \
 
 parser_srcdir = $(top_srcdir)/src/parser
 
-stringparser.c: make_stringparser.pl stringparser.c.in
+stringparser.c: make_stringparser.pl stringparser.c.in $(top_srcdir)/src/unuran.h
 	$(parser_srcdir)/make_stringparser.pl < $(parser_srcdir)/stringparser.c.in > $(parser_srcdir)/stringparser.c
 
 

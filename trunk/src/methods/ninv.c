@@ -1029,11 +1029,14 @@ _unur_ninv_regula( struct unur_gen *gen, double u )
   /* initialize starting interval */
   if (GEN.table_on){
 
-    /* 0 <= i < table_size-1  */
+    /* 0 <= i <= table_size-2  */
     i = (int) ( u * 
       ( (GEN.Umax-GEN.Umin)/(GEN.CDFmax-GEN.CDFmin) +
 	GEN.Umin - GEN.CDFmin ) *
       (GEN.table_size-1) );
+    /* neccessary if domain is changes -> extrem tbl pts as start pts */
+    i = (i<0) ? 0 : i;
+    i = (i > GEN.table_size-1) ? GEN.table_size-1 : i;
 
     if ( ! _FP_is_minus_infinity(GEN.table[i]) ){
       x1 = GEN.table[i];
@@ -1228,6 +1231,9 @@ _unur_ninv_newton( struct unur_gen *gen, double U )
       ( (GEN.Umax-GEN.Umin)/(GEN.CDFmax-GEN.CDFmin) +
          GEN.Umin - GEN.CDFmin ) *
       ( GEN.table_size - 2 );
+    /* neccessary if domain is expanded -> start with extreme tblpts */
+    i = (i < 0) ? 0 : i;
+    i = (i > GEN.table_size - 1) ? GEN.table_size -1 : i;
     x  = GEN.table[i+1];
     fx = GEN.CDFmin + (i+1)*((GEN.CDFmax-GEN.CDFmin)/(GEN.table_size-1.0));
   }

@@ -588,7 +588,7 @@ _unur_matrix_cholesky_decomposition (int dim, const double *S, double *L )
 /*--------------------------------------------------------------------------*/
 
 void 
-_unur_matrix_debug( int dim, double *M, const char *info, const char *genid )
+_unur_matrix_debug ( int dim, const double *M, const char *info, const char *genid )
      /*----------------------------------------------------------------------*/
      /* The elemets of the rectangular dim x dim matrix M                    */
      /* are written row-wise into the logfile.                               */

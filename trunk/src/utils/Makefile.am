@@ -9,7 +9,7 @@ libutils_la_SOURCES = \
  debug.c  debug.h debug_source.h \
  eigensystem.c \
  error.c  \
- fminmax.c 	  fminmax_source.h \
+ fmax.c 	  fmax_source.h \
  matrix.c 	  matrix_source.h \
  slist.c  slist.h slist_struct.h \
  stream.c         stream_source.h \

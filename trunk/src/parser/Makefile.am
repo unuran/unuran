@@ -25,7 +25,7 @@ libparser_la_SOURCES = \
 
 EXTRA_DIST = \
  make_stringparser.pl \
- functparser_doc.h \
+ functparser_doc.dh \
  stringparser_doc.h \
  stringparser.c.in
 

@@ -32,15 +32,15 @@ scripts = \
  make_texi.pl
 
 EXTRA_DIST = \
- examples.h \
- glossary.h \
- index.h \
- intro.h \
- methods.h \
- misc.h \
- references.h \
- stddist.h \
- top.h \
+ examples.dh \
+ glossary.dh \
+ index.dh \
+ intro.dh \
+ methods.dh \
+ misc.dh \
+ references.dh \
+ stddist.dh \
+ top.dh \
  unuran.html \
  unuran.txt \
  unuran.dvi \

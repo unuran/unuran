@@ -139,7 +139,7 @@ sub scan_dir {
 
     while (<FILES>) {
 	chomp;
-	next unless /^.*\/+(.*\.h)$/;
+	next unless /^.*\/+(.*\.d?h)$/;
 	next if /source/;        # we are not interested in these files
 	next if /struct/;        # we are not interested in these files
 	$header_files{$1} = $_;  # store file and path of file

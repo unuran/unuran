@@ -27,6 +27,9 @@ usage: $progname < template > Cfile
     cases. The output is written on STDOUT.
     Additionally the list of all key words produced for the manual
     texi format.
+
+    Notice: The keyword _orderstatistics_ is not treated automatically
+    but entered manually into the template file and in this script!
       
 EOM
 
@@ -81,7 +84,7 @@ require "$top_srcdir/scripts/read_PDF.pl";
 
 my $doc_dir = $ENV{'srcdir'} ? $ENV{'srcdir'} : '.';
 
-my $doc_file = "$doc_dir/parser_doc.h";
+my $doc_file = "$doc_dir/stringparser_doc.h";
 
 my $distr_doc_string;
 my $method_doc_string;
@@ -233,7 +236,6 @@ sub make_list_of_distributions {
     # print docu
     $distr_doc_string .= "\@end itemize\n\n\@sp 1\n";
 
-
     print STDERR "\n\n";
 
     # Make list of generic distribution objects
@@ -280,6 +282,9 @@ sub make_list_of_distributions {
 
     # print docu
     $distr_doc_string .= "\@end itemize\n\n\@sp 1\n";
+
+    # add comment for order statistics ...
+    $distr_doc_string .= comment_for_corder();
 
     # end
     print STDERR "\n\n";
@@ -587,7 +592,13 @@ sub make_distr_set_calls {
     # end of switch for first letter
     $code .= "\t\t }\n";
 
-    # print docu
+    
+    # add comment about order statistics
+    if ($dt eq "cont") {
+	$distr_doc_string .= comment_for_orderstatistics();
+    }
+
+    # end of table
     $distr_doc_string .= "\@end table\n\n\@sp 1\n";
 
     # Return result
@@ -935,5 +946,38 @@ sub unmatched_parenthesis {
 
     return $open;
 } # end of unmachted_parenthesis()
+
+##############################################################################
+#
+# Some auxiliary comments.
+#
+
+sub comment_for_corder {
+
+    return <<EOS;
+\@emph{Notice}:
+Order statistics for continuous distributions (\@pxref{CORDER}) are
+supported by using the key \@code{orderstatistics} for distributions
+of type \@code{CONT}.
+
+\@sp 1
+
+EOS
+
+} # end if comment_for_corder()
+
+##############################################################################
+
+sub comment_for_orderstatistics {
+
+    return <<EOS;
+\@item orderstatistics = \@i{<int>}, \@i{<int>} | (\@i{<list>})
+    Make order statistics for given distribution. The first parameter
+    gives the sample size, the second parameter its rank.
+    It must be the last keyword for a distribution string.
+    (see \@pxref{funct:unur_distr_corder_new,,\@command{unur_distr_corder_new}})
+EOS
+
+} # end if comment_for_orderstatistics()
 
 ##############################################################################

@@ -20,7 +20,6 @@ unuran_examples = \
 
 
 unuran_TEXINFOS = \
- FuncString.texi \
  unuran.texi \
  unuran_src.texi \
  unuran_method_requirements.texi \

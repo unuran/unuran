@@ -1,3 +1,9 @@
+We thank the following people for their permissions to use
+some of their codes:
 
-We thank Ernst Stadlober (Stadlober@stat.tu-graz.ac.at) for his
-permission to use his WinRand library. 
+Ernst Stadlober (Stadlober@stat.tu-graz.ac.at)
+   ... WinRand library. 
+
+Renee Touzin ()
+   ... mrg31k3p.c  (Combined multiple recursive generator)
+

@@ -31,7 +31,8 @@ libparser_a_SOURCES = \
 
 EXTRA_DIST = \
  make_stringparser.pl \
- parser_doc.h \
+ functparser_doc.h \
+ stringparser_doc.h \
  stringparser.c.in
 
 parser_srcdir = $(top_srcdir)/src/parser

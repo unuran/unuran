@@ -375,30 +375,3 @@ UNUR_PAR *_unur_str2par( const UNUR_DISTR *distribution, const char *string, str
 =EON
 */
 /*---------------------------------------------------------------------------*/
-
-/*---------------------------------------------------------------------------*/
-/*
-
-=NODE  StringFunct    Function String
-=UP StringAPI [25]
-
-=DESCRIPTION
-
-@include FuncString.texi
-
-=EON
-*/
-/*---------------------------------------------------------------------------*/
-
-/*
-Example:
-
-unur_str2gen("distr=normal(0,1) : method=arou; max_sqhratio=0.9 : prng=MT19937(133)")
-*/
-
-/*---------------------------------------------------------------------------*/
-
-
-
-
-

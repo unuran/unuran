@@ -1,10 +1,6 @@
  
 \input texinfo   @c -*-texinfo-*-
 
-@c Dies ist das neue UNURAN -Einfuehrung  
-@c Juli 2000 Janka & Tirler                
-@c $Id$
-
 
 @c %**start of header
 @setfilename qstart.info
@@ -12,18 +8,31 @@
 @iftex
 @afourpaper
 @end iftex
-@paragraphindent 0
 @c %**end of header
 
+@c Dies ist das neue UNURAN -Einfuehrung  
+@c August 2000 Janka & Tirler                
+@c $Id$
 
+@set VERSION 0.0
+@set DATE August 2000
 
 @dircategory Scientific software
 @direntry
 * unuran-ref: (unuran-ref).  UNURAN -- Universal Non-Uniform Random number generator
 @end direntry
 
+@ifinfo
+This is version @value{VERSION} of the UNURAN-manual,@*
+last updated @value{DATE}
+@end ifinfo
+
 
 @titlepage
+@title UNURAN
+@subtitle Generating random numbers
+@subtitle Version: @value{VERSION}
+@subtitle Date: @value{DATE}
 @end titlepage
 
 
@@ -37,8 +46,9 @@
 @node Top,     Intro,  ,          (dir)     
 @top
 @c    node-name, next,          previous,  up
-@end ifnottex     
-Hier steht also Text in tex und auch sonst -- the top node summary
+This is the online-documentation of UNURAN.@*
+Version: @value{VERSION}@*
+Date: @value{DATE}
 @menu
 * Intro::         Introduction
 * Methods::       How should the random numbers be created
@@ -47,6 +57,9 @@ Hier steht also Text in tex und auch sonst -- the top node summary
 * Distributions:: Distributions
 * Internal::     Internal remarks
 @end menu
+@end ifnottex     
+
+
 @ifhtml
 Table of @ref{Contents}
 @end ifhtml
@@ -368,8 +381,8 @@ standard configuration: Log outout to file
 @ifhtml
 @anchor{Contents}
 @end ifhtml
-@contents
 
+@contents
 
 @bye
 

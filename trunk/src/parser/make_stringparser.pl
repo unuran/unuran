@@ -104,7 +104,7 @@ my $method_doc_string;
 #
 my $methods_dir = "$top_srcdir/src/methods";
 opendir (METHDIR, "$methods_dir") or die "can't open directory $methods_dir";
-my @methods_h_files = grep {/[.]h$/ } readdir METHDIR;
+my @methods_h_files = grep {/[^\#].*[.]h$/ } readdir METHDIR;
 closedir METHDIR;
 
 ##############################################################################
@@ -112,7 +112,7 @@ closedir METHDIR;
 #
 my $distr_dir = "$top_srcdir/src/distr";
 opendir (DISTRDIR, "$distr_dir") or die "can't open directory $distr_dir";
-my @distr_h_files = grep {/[.]h$/ } readdir DISTRDIR;
+my @distr_h_files = grep {/[^\#].*[.]h$/ } readdir DISTRDIR;
 closedir DISTRDIR;
 
 foreach my $h (@distr_h_files) {

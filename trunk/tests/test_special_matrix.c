@@ -84,10 +84,11 @@ void _unur_test_matrix() {
  
   int error_counter;
   char error_char;
- 
-  M=malloc(dim*dim*sizeof(double));
-  values=malloc(dim*sizeof(double));
-  vectors=malloc(dim*dim*sizeof(double));
+
+  /* allocate memory */
+  M = malloc(dim*dim*sizeof(double));
+  values = malloc(dim*sizeof(double));
+  vectors = malloc(dim*dim*sizeof(double));
 
   _unur_test_set_matrix_1(dim, M);
   
@@ -126,6 +127,11 @@ void _unur_test_matrix() {
   }
 
   n_failed = error_counter;
+
+  /* free memory */
+  free(M); 
+  free(values);
+  free(vectors);
 
 #undef idx1
 } /* end of _unur_test_matrix() */

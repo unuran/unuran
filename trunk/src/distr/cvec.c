@@ -1610,12 +1610,31 @@ _unur_distr_cvec_debug( const struct unur_distr *distr, const char *genid )
   mat = ((distr->set & UNUR_DISTR_SET_CHOLESKY) && DISTR.cholesky) ? DISTR.cholesky : NULL;
   _unur_matrix_print_matrix( distr->dim, mat, "\tcholesky factor (of covariance matrix) =", log, genid, "\t   ");
 
-  /* standardized marginal distributions */
-  fprintf(log,"%s:\tstandardized marginal distributions: ",genid);
-  if (distr->set & UNUR_DISTR_SET_STDMARGINAL) {
-    fprintf(log,"\n");
-    if (DISTR.stdmarginals[0] == DISTR.stdmarginals[1]) {
+  /* marginal distributions */
+  fprintf(log,"%s:\tmarginal distributions:   [see also standardized marginal distributions]\n",genid);
+  if (distr->set & UNUR_DISTR_SET_MARGINAL) {
+    if (DISTR.marginals[0] == DISTR.marginals[1]) {
       fprintf(log,"%s: all mariginals [1-%d]:\n",genid,distr->dim);
+      _unur_distr_cont_debug( DISTR.marginals[0], genid );
+    }
+    else {
+      int i;
+      for (i=0; i<distr->dim; i++) {
+	fprintf(log,"%s: mariginal [%d]:\n",genid,i+1);
+	_unur_distr_cont_debug( DISTR.marginals[i], genid );
+      }
+    }
+  }
+  else {
+    fprintf(log,"%s:\t   [unknown]\n",genid);
+  }
+  fprintf(log,"%s:\n",genid);
+
+  /* standardized marginal distributions */
+  fprintf(log,"%s:\tstandardized marginal distributions:   [see also marginal distributions]\n",genid);
+  if (distr->set & UNUR_DISTR_SET_STDMARGINAL) {
+    if (DISTR.stdmarginals[0] == DISTR.stdmarginals[1]) {
+      fprintf(log,"%s: all standardized mariginals [1-%d]:\n",genid,distr->dim);
       _unur_distr_cont_debug( DISTR.stdmarginals[0], genid );
     }
     else {
@@ -1627,7 +1646,7 @@ _unur_distr_cvec_debug( const struct unur_distr *distr, const char *genid )
     }
   }
   else {
-    fprintf(log," [unknown]\n");
+    fprintf(log,"%s:\t   [unknown]\n",genid);
   }
   fprintf(log,"%s:\n",genid);
 

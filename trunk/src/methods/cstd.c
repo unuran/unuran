@@ -113,7 +113,11 @@ unur_cstd_new( struct unur_distr *distr )
   CHECK_NULL(distr,NULL);
   COOKIE_CHECK(distr,CK_DISTR_CONT,NULL);
 
-  /* check input */
+  /* check distribution */
+  if (distr->type != UNUR_DISTR_CONT) {
+    _unur_error(GENTYPE,UNUR_ERR_GENERIC,"wrong distribution type");
+    return NULL;
+  }
   if (distr->id == UNUR_DISTR_GENERIC) {
     _unur_error(GENTYPE,UNUR_ERR_GENERIC,"standard distribution required");
     return NULL;
@@ -124,7 +128,9 @@ unur_cstd_new( struct unur_distr *distr )
 
   /* set default values */
   PAR.variant   = 0x0u;             /* use default generator                 */
+
   par->method   = UNUR_METH_CSTD;   /* method and default variant            */
+  par->variant  = 0UL;              /* default variant                       */
   par->set      = 0UL;              /* inidicate default parameters          */    
   par->urng     = unur_get_default_urng(); /* use default urng               */
 
@@ -198,6 +204,7 @@ unur_cstd_sample( struct unur_gen *gen )
   CHECK_NULL(gen,0.);
   COOKIE_CHECK(gen,CK_CSTD_GEN,0.);
 
+  /** TODO gen->distr ist nicht zuverlaessig !! **/
   switch (gen->distr->id) {
   case UNUR_DISTR_EXPONENTIAL:
     return ( -GEN.pdf_param[0] * log(1. - _unur_call_urng(gen)) );
@@ -235,7 +242,6 @@ unur_cstd_free( struct unur_gen *gen )
 
   /* free memory */
   _unur_free_genid(gen);
-  free(gen->distr);
   free(gen);
 
 } /* end of unur_cstd_free() */
@@ -274,9 +280,9 @@ _unur_cstd_create( struct unur_par *par )
   /* set generator identifier */
   _unur_set_genid(gen,GENTYPE);
 
-  /* copy distribution object */
-  gen->distr = _unur_malloc( sizeof(struct unur_distr) );
-  unur_distr_copy( gen->distr, par->distr );
+  /* copy pointer to distribution object */
+  /* (we do not copy the entire object)  */
+  gen->distr = par->distr;
 
   /* routines for sampling and destroying generator */
   SAMPLE = unur_cstd_sample;
@@ -287,7 +293,9 @@ _unur_cstd_create( struct unur_par *par )
   GEN.n_pdf_param = gen->DISTR.n_params;
 
   GEN.variant = PAR.variant;         /* generator to be used */
-  gen->method = par->method;
+
+  gen->method = par->method;        /* indicates used method */
+  gen->variant = par->variant;      /* indicates variant     */
 
   _unur_copy_urng_pointer(par,gen);  /* pointer to urng into generator object*/
   _unur_copy_debugflag(par,gen);     /* copy debugging flags into generator object */

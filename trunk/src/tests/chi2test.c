@@ -144,8 +144,8 @@ _unur_test_chi2_discr( struct unur_gen *gen,
      /*   return -1.                                                         */
      /*----------------------------------------------------------------------*/
 {
-  double *prob = NULL;  /* pointer to probability vectors */
-  int len = 0;          /* length of probability vector   */
+  double *prob;         /* pointer to probability vectors */
+  int n_prob;           /* length of probability vector   */
 
   int *observed;        /* vector for observed occurrences */
   double pval;          /* p-value */
@@ -154,19 +154,16 @@ _unur_test_chi2_discr( struct unur_gen *gen,
   /* check arguments */
   CHECK_NULL(gen,-1.);
 
-  switch (gen->method & UNUR_MASK_METHOD) {
-  case UNUR_METH_DAU:
-    COOKIE_CHECK(gen,CK_DAU_GEN,0.);
-    prob = gen->data.dau.prob;
-    len = gen->data.dau.len;
-    break;
-  case UNUR_METH_DIS:
-    COOKIE_CHECK(gen,CK_DIS_GEN,0.);
-    prob = gen->data.dis.prob;
-    len = gen->data.dis.len;
-    break;
-  default: /* unknown ! */
+  /* check distribution: discrete univariate */
+  if ( (gen->method & UNUR_MASK_TYPE) != UNUR_METH_DISCR ) {
+    _unur_warning("Chi^2-test",UNUR_ERR_GENERIC,"wrong distribution type");
+    return -1.;
   }
+
+  /* pointer to distribution object */
+  prob = (gen->distr)->data.discr.prob;
+  n_prob = (gen->distr)->data.discr.n_prob;
+
   /* check argument: need probability vector */
   if (prob == NULL) {
     _unur_warning("Chi^2-test",UNUR_ERR_GENERIC,"probability vector required");
@@ -174,20 +171,20 @@ _unur_test_chi2_discr( struct unur_gen *gen,
   }
 
   /* allocate memory for observations */
-  observed = _unur_malloc( len * sizeof(int));
+  observed = _unur_malloc( n_prob * sizeof(int));
 
   /* clear array */
-  for( i=0; i<len; i++ )
+  for( i=0; i<n_prob; i++ )
     observed[i] = 0;
 
   /* samplesize */
   if( samplesize <= 0 )
-    samplesize = (INT_MAX/len > len) ? len*len : INT_MAX;
+    samplesize = (INT_MAX/n_prob > n_prob) ? n_prob*n_prob : INT_MAX;
 
   /* now run generator */
   for( i=0; i<samplesize; i++ ) {
     j = unur_sample_discr(gen);
-    if (j >= len)   /* check range of random variates !! */
+    if (j >= n_prob)   /* check range of random variates !! */
       _unur_error("Chi^2-test",UNUR_ERR_GENERIC,"length of probability vector too short!");
     else
       ++observed[j];
@@ -195,11 +192,11 @@ _unur_test_chi2_discr( struct unur_gen *gen,
 
   if (verbose >= 1) {
     printf("\nChi^2-Test for discrete distribution with given probability vector:");
-    printf("\n  length     = %d\n",len);
+    printf("\n  length     = %d\n",n_prob);
   }
 
   /* and now make chi^2 test */
-  pval = _unur_test_chi2test(prob, observed, len, classmin, verbose);
+  pval = _unur_test_chi2test(prob, observed, n_prob, classmin, verbose);
 
   /* free memory */
   free(observed);

@@ -71,6 +71,8 @@ int main()
   struct unur_distr *distr_cauchy;
   struct unur_distr *distr_uniform;
 
+  struct unur_distr *distr_geom;
+
   struct unur_distr *distr_xxx;
 
   /* ------------------------- */
@@ -89,6 +91,13 @@ int main()
   distr_cauchy = unur_distr_cauchy(fpar,2);
 
   distr_uniform = unur_distr_uniform(NULL,0);
+
+  /* ------------------------- */
+
+  prob = set_prob(PSIZE);
+
+  distr_geom = unur_distr_discr_new();
+  unur_distr_discr_set_prob(distr_geom,prob,PSIZE);
 
   /* ------------------------- */
 
@@ -120,19 +129,15 @@ int main()
   printf("Discrete Distributions:\n");
   printf("*******************************************************\n\n");
 
-  /* ------------------------- */
-  prob = set_prob(PSIZE);
-  /* ------------------------- */
-
-
 #if RUN_DAU == 1
 
   printf("DISTRIBUTION:\ttruncated geometric distribution. q = %g, len = %d\n",Q,PSIZE);
 
   /* get default parameters for new generator */
-  par = unur_dau_new(prob,PSIZE);
+  par = unur_dau_new(distr_geom);
+
   /* change defaults */
-  unur_set_factor(par,2.);
+  unur_dau_set_urnfactor(par,2.);
 
   /* run tests */
   unur_run_tests(par,RUN_TESTS,NULL);
@@ -148,9 +153,10 @@ int main()
   printf("DISTRIBUTION:\ttruncated geometric distribution. q = %g, len = %d\n",Q,PSIZE);
 
   /* get default parameters for new generator */
-  par = unur_dis_new(prob,PSIZE);
+  par = unur_dis_new(distr_geom);
+
   /* change defaults */
-  /*    unur_set_variant(par,2); */
+  unur_dis_set_variant(par,1);
   /*    unur_set_factor(par,1.); */
 
   /* run tests */

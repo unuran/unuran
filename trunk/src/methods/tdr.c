@@ -454,7 +454,11 @@ unur_tdr_new( struct unur_distr* distr )
   CHECK_NULL(distr,NULL);
   COOKIE_CHECK(distr,CK_DISTR_CONT,NULL);
 
-  /* check input */
+  /* check distribution */
+  if (distr->type != UNUR_DISTR_CONT) {
+    _unur_error(GENTYPE,UNUR_ERR_GENERIC,"wrong distribution type");
+    return NULL;
+  }
   if (DISTR.pdf == NULL) {
     _unur_error(GENTYPE,UNUR_ERR_GENERIC,"p.d.f. required");
     return NULL;
@@ -487,6 +491,7 @@ unur_tdr_new( struct unur_distr* distr )
 				       area / ((A_hat - A_squeeze)/number of segments) < bound_for_adding */
  
   par->method             = UNUR_METH_TDR;  /* method and default variant    */
+  par->variant            = 0UL;            /* default variant               */
   par->set                = 0UL;    /* inidicate default parameters          */    
   par->urng               = unur_get_default_urng(); /* use default urng     */
 
@@ -982,7 +987,6 @@ unur_tdr_free( struct unur_gen *gen )
   /* free other memory not stored in list */
   _unur_free_genid(gen);
   free(GEN.guide);
-  free(gen->distr);
   free(gen);
 
 } /* end of unur_tdr_free() */
@@ -1021,9 +1025,9 @@ _unur_tdr_create( struct unur_par *par )
   /* set generator identifier */
   _unur_set_genid(gen,GENTYPE);
 
-  /* copy distribution object */
-  gen->distr = _unur_malloc( sizeof(struct unur_distr) );
-  unur_distr_copy( gen->distr, par->distr );
+  /* copy pointer to distribution object */
+  /* (we do not copy the entire object)  */
+  gen->distr = par->distr;
 
   /* which transformation */
   if      (PAR.c_T == 0.)    variant = TDR_METH_LOG;
@@ -1088,7 +1092,9 @@ _unur_tdr_create( struct unur_par *par )
   GEN.max_ratio = PAR.max_ratio;    /* bound for ratio  Atotal / Asqueeze    */
   GEN.bound_for_adding = PAR.bound_for_adding;
 
-  gen->method = par->method;        /* indicates method and variant          */
+  gen->method = par->method;        /* indicates method                      */
+  gen->variant = par->variant;      /* indicates variant                     */
+
   _unur_copy_urng_pointer(par,gen); /* pointer to urng into generator object */
   _unur_copy_debugflag(par,gen);    /* copy debugging flags into generator object */
 

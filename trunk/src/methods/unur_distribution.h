@@ -63,11 +63,20 @@ struct unur_distr_cont {
 };
 
 /*---------------------------------------------------------------------------*/
+/* define object for univariate discrete distribution                        */
+struct unur_distr_discr {
+
+  double *prob;                 /* pointer to probability vector             */
+  int     n_prob;               /* length of probability vector              */
+};
+
+/*---------------------------------------------------------------------------*/
 /* define distribution object                                                */
 
 struct unur_distr {
   union {             
-    struct unur_distr_cont cont;    /* univariate continuous distribution    */
+    struct unur_distr_cont  cont;   /* univariate continuous distribution    */
+    struct unur_distr_discr discr;  /* univariate discrete distribution      */
   } data;                           /* data for distribution                 */
 
   unsigned int type;                /* type of distribution                  */
@@ -85,7 +94,8 @@ struct unur_distr {
 /* types of distribtuions                                                    */
 
 enum {
-  UNUR_DISTR_CONT = 0x0001u,        /* univariate continuous distribution    */ 
+  UNUR_DISTR_CONT  = 0x0001u,       /* univariate continuous distribution    */ 
+  UNUR_DISTR_DISCR = 0x0002u,       /* univariate discrete distribution      */ 
 };
 
 /*---------------------------------------------------------------------------*/
@@ -129,12 +139,8 @@ enum {
 void unur_distr_free( struct unur_distr *distr );
 /* destroy distribution object                                               */
 
-void unur_distr_copy( struct unur_distr *distr1, struct unur_distr *distr2 );
-/* copy distribution object distr2 into distr1                               */
-
-
 /*---------------------------------------------------------------------------*/
-/* continuous, univariate distributions                                      */
+/* univariate continuous distributions                                       */
 
 struct unur_distr *unur_distr_cont_new( void );
 /* create a new distribution object                                          */
@@ -161,6 +167,18 @@ int unur_distr_cont_set_domain( struct unur_distr *distr, double left, double ri
 /* set the left and right borders of the domain of the distribution          */
 
 void _unur_distr_cont_debug( struct unur_distr *distr, char *genid );
+/* write info about distribution into logfile                                */
+
+/*---------------------------------------------------------------------------*/
+/* discrete univariate distributions                                         */
+
+struct unur_distr *unur_distr_discr_new( void );
+/* create a new distribution object                                          */
+
+int unur_distr_discr_set_prob( struct unur_distr *distr, double *prob, int n_prob );
+/* set probability vector for distribution                                   */
+
+void _unur_distr_discr_debug( struct unur_distr *distr, char *genid, int printvector );
 /* write info about distribution into logfile                                */
 
 /*---------------------------------------------------------------------------*/

@@ -53,32 +53,15 @@ static char unknown_distr_name[] = "unknown";
 
 /*---------------------------------------------------------------------------*/
 
+inline int unur_distr_discr_set_prob( struct unur_distr *distr, double *prob, int n_prob );
+
+/*---------------------------------------------------------------------------*/
+
 /*****************************************************************************/
 /**                                                                         **/
 /** routines for all distribution objects                                   **/
 /**                                                                         **/
 /*****************************************************************************/
-
-/*---------------------------------------------------------------------------*/
-
-void
-unur_distr_copy( struct unur_distr *distr1, struct unur_distr *distr2 )
-     /*----------------------------------------------------------------------*/
-     /* copy distribution object distr2 into distr1                          */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   distr1 ... pointer to target object                                */
-     /*   distr2 ... pointer to source object                                */
-     /*----------------------------------------------------------------------*/
-{
-  /* check arguments */
-  CHECK_NULL(distr1,/*void*/);
-  CHECK_NULL(distr2,/*void*/);
-
-  /* copy main structure */
-  memcpy( distr1, distr2, sizeof( struct unur_distr ) );
-
-} /* end of unur_distr_copy() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -98,6 +81,10 @@ unur_distr_free( struct unur_distr *distr )
   case UNUR_DISTR_CONT:
     COOKIE_CHECK(distr,CK_DISTR_CONT,/*void*/);
     break;
+  case UNUR_DISTR_DISCR:
+    COOKIE_CHECK(distr,CK_DISTR_DISCR,/*void*/);
+    if (distr->data.discr.prob) free( distr->data.discr.prob );
+    break;
   default:
     _unur_warning(NULL,UNUR_ERR_UNKNOWNDISTR,"");
   }
@@ -110,7 +97,7 @@ unur_distr_free( struct unur_distr *distr )
 
 /*****************************************************************************/
 /**                                                                         **/
-/** continuous, univariate distributions                                    **/
+/** univariate continuous distributions                                     **/
 /**                                                                         **/
 /*****************************************************************************/
 
@@ -196,7 +183,7 @@ unur_distr_cont_set_pdf( struct unur_distr *distr, void *pdf )
   CHECK_NULL(pdf,0);
   COOKIE_CHECK(distr,CK_DISTR_CONT,0);
 
-  distr->data.cont.pdf = pdf;
+  DISTR.pdf = pdf;
   return 1;
 } /* end of unur_distr_cont_set_pdf() */
 
@@ -221,7 +208,7 @@ unur_distr_cont_set_dpdf( struct unur_distr *distr, void *dpdf )
   CHECK_NULL(dpdf,0);
   COOKIE_CHECK(distr,CK_DISTR_CONT,0);
   
-  distr->data.cont.dpdf = dpdf;
+  DISTR.dpdf = dpdf;
   return 1;
 } /* end of unur_distr_cont_set_dpdf() */
 
@@ -247,7 +234,7 @@ unur_distr_cont_set_cdf( struct unur_distr *distr, void *cdf )
   CHECK_NULL(cdf,0);
   COOKIE_CHECK(distr,CK_DISTR_CONT,0);
   
-  distr->data.cont.cdf = cdf;
+  DISTR.cdf = cdf;
   return 1;
 } /* end of unur_distr_cont_set_cdf() */
 
@@ -273,7 +260,8 @@ unur_distr_cont_set_params( struct unur_distr *distr, double *params, int n_para
   /* check arguments */
   CHECK_NULL(distr,0);
   COOKIE_CHECK(distr,CK_DISTR_CONT,0);
-
+  if (n_params>0) CHECK_NULL(params,0);
+  
   /* check new parameter for generator */
   if (n_params < 0 || n_params > UNUR_DISTR_MAXPARAMS ) {
     _unur_warning(NULL,UNUR_ERR_GENERIC,"invalid number parameter");
@@ -281,9 +269,9 @@ unur_distr_cont_set_params( struct unur_distr *distr, double *params, int n_para
   }
 
   /* copy parameters */
-  distr->data.cont.n_params = n_params;
+  DISTR.n_params = n_params;
   for (i=0; i < n_params; i++)
-    distr->data.cont.params[i] = params[i];
+    DISTR.params[i] = params[i];
 
   /* changelog */
   distr->set |= UNUR_DISTR_SET_PARAMS;
@@ -312,7 +300,7 @@ unur_distr_cont_set_mode( struct unur_distr *distr, double mode )
   CHECK_NULL(distr,0);
   COOKIE_CHECK(distr,CK_DISTR_CONT,0);
   
-  distr->data.cont.mode = mode;
+  DISTR.mode = mode;
 
   /* changelog */
   distr->set |= UNUR_DISTR_SET_MODE;
@@ -341,7 +329,7 @@ unur_distr_cont_set_pdfarea( struct unur_distr *distr, double area )
   CHECK_NULL(distr,0);
   COOKIE_CHECK(distr,CK_DISTR_CONT,0);
 
-  distr->data.cont.area = area;
+  DISTR.area = area;
 
   /* changelog */
   distr->set |= UNUR_DISTR_SET_PDFAREA;
@@ -377,8 +365,8 @@ unur_distr_cont_set_domain( struct unur_distr *distr, double left, double right 
     return 0;
   }
 
-  distr->data.cont.domain[0] = left;
-  distr->data.cont.domain[1] = right;
+  DISTR.domain[0] = left;
+  DISTR.domain[1] = right;
 
   /* changelog */
   distr->set |= UNUR_DISTR_SET_DOMAIN;
@@ -435,4 +423,140 @@ _unur_distr_cont_debug( struct unur_distr *distr, char *genid )
 #undef DISTR
 /*---------------------------------------------------------------------------*/
 
+/*****************************************************************************/
+/**                                                                         **/
+/** univariate discrete distributions                                       **/
+/**                                                                         **/
+/*****************************************************************************/
 
+/*---------------------------------------------------------------------------*/
+#define DISTR distr->data.discr
+/*---------------------------------------------------------------------------*/
+
+struct unur_distr *
+unur_distr_discr_new( void )
+     /*----------------------------------------------------------------------*/
+     /* create a new (empty) distribution object                             */
+     /* type: univariate discete                                             */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   none                                                               */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to distribution object                                     */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return NULL                                                        */
+     /*----------------------------------------------------------------------*/
+{
+  register struct unur_distr *distr;
+
+  /* allocate structure */
+  distr = _unur_malloc( sizeof(struct unur_distr) );
+  if (!distr) return NULL;
+
+  /* set magic cookie */
+  COOKIE_SET(distr,CK_DISTR_DISCR);
+
+  /* set type of distribution */
+  distr->type = UNUR_DISTR_DISCR;
+
+  /* set id to generic distribution */
+  distr->id = UNUR_DISTR_GENERIC;
+
+  /* name of distribution */
+  distr->name = unknown_distr_name;
+
+  /* set defaults                                                            */
+  DISTR.prob      = NULL;          /* probability vector                     */
+  DISTR.n_prob    = 0;             /* length of probability vector           */
+
+  distr->set = 0u;                 /* no parameters set                      */
+  
+  /* return pointer to object */
+  return distr;
+
+} /* end of unur_distr_discr_new() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+unur_distr_discr_set_prob( struct unur_distr *distr, double *prob, int n_prob )
+     /*----------------------------------------------------------------------*/
+     /* set probability vector for distribution                              */
+     /* set array of parameters for distribution                             */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   distr   ... pointer to distribution object                         */
+     /*   prob    ... pointer to probability vector                          */
+     /*   n_prob  ... length of probability vector                           */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... on success                                                   */
+     /*   0 ... on error                                                     */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  CHECK_NULL(distr,0);
+  CHECK_NULL(prob,0);
+  COOKIE_CHECK(distr,CK_DISTR_DISCR,0);
+
+  /* check new parameter for generator */
+  if (n_prob < 0) {
+    _unur_error(NULL,UNUR_ERR_GENERIC,"invalid length of probability vector");
+    return 0;
+  }
+
+  /* allocate memory for probability vector */
+  DISTR.prob = _unur_malloc( n_prob * sizeof(double) );
+  if (!DISTR.prob) return 0;
+
+  /* copy probability vector */
+  memcpy( DISTR.prob, prob, n_prob * sizeof(double) );
+  DISTR.n_prob = n_prob;
+
+  /* o.k. */
+  return 1;
+} /* end of unur_distr_discr_set_param() */
+
+/*****************************************************************************/
+
+void
+_unur_distr_discr_debug( struct unur_distr *distr, char *genid, int printvector )
+     /*----------------------------------------------------------------------*/
+     /* write info about distribution into logfile                           */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   distr ... pointer to distribution object                           */
+     /*   genid ... pointer to generator id                                  */
+     /*   printvector ... print probability vector if not 0                  */
+     /*----------------------------------------------------------------------*/
+{
+  FILE *log;
+  int i;
+
+  /* check arguments */
+  CHECK_NULL(distr,/*void*/);
+  COOKIE_CHECK(distr,CK_DISTR_DISCR,/*void*/);
+
+  log = unur_get_stream();
+
+  fprintf(log,"%s: distribution:\n",genid);
+  fprintf(log,"%s:\ttype = discrete univariate distribution\n",genid);
+  fprintf(log,"%s:\tname = (empiric)\n",genid);
+
+  fprintf(log,"%s:\tprobability vector of length %d",genid,DISTR.n_prob);
+  if (printvector) {
+    for (i=0; i<DISTR.n_prob; i++) {
+      if (i%10 == 0)
+	fprintf(log,"\n%s:\t",genid);
+      fprintf(log,"  %.5f",DISTR.prob[i]);
+    }
+  }
+  fprintf(log,"\n%s:\n",genid);
+
+} /* end of _unur_distr_discr_debug() */
+
+/*---------------------------------------------------------------------------*/
+#undef DISTR
+/*---------------------------------------------------------------------------*/

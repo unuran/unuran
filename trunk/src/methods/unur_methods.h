@@ -147,6 +147,7 @@ struct unur_par {
   struct unur_gen* (*init)(struct unur_par *par);
 
   unsigned long   method;     /* indicates method and generator to be used   */
+  unsigned long   variant;    /* indicates variant of method                 */
   unsigned long   set;        /* stores which parameters have been changed   */
 
   UNUR_URNG_TYPE  urng;       /* pointer to uniform random number generator  */
@@ -184,6 +185,7 @@ struct unur_gen {
   void            (*destroy)(struct unur_gen *gen); /* pointer to destructor */ 
   
   unsigned long   method;     /* indicates method and generator to be used   */
+  unsigned long   variant;    /* indicates variant of method                 */
   
   UNUR_URNG_TYPE  urng;       /* pointer to uniform random number generator  */
 

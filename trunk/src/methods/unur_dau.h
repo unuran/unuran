@@ -41,8 +41,6 @@
 /* Information for constructing the generator                                */
 
 struct unur_dau_par { 
-  double *prob;        /* pointer to probability vector    (DEFAULT = NULL)  */
-  int     len;         /* length of probability vector     (DEFAULT = 0)     */
   double  urn_factor;  /* relative length of table for alias-urn method      */
                        /*    (DEFAULT = 1 --> alias method)                  */
                        /*   length of table = urn_factor * len               */
@@ -56,14 +54,12 @@ struct unur_dau_gen {
   int     urn_size;    /* size of table for alias-urn method                 */
   double *qx;          /* pointer to cut points for strips                   */
   int    *jx;          /* pointer to donor                                   */
-
-  double *prob;        /* pointer to probability vector    (DEFAULT = NULL)  */
 };
 
 /*---------------------------------------------------------------------------*/
 /* Routines for user interface                                               */
 
-struct unur_par *unur_dau_new( double *probabilities, int plength );
+struct unur_par *unur_dau_new(  struct unur_distr *distr );
 /* get default parameters for generator                                      */
 
 struct unur_gen *unur_dau_init( struct unur_par *parameters );
@@ -74,6 +70,11 @@ int unur_dau_sample( struct unur_gen *generator );
 
 void unur_dau_free( struct unur_gen *generator );
 /* destroy generator object                                                  */
+
+int unur_dau_set_urnfactor( struct unur_par *par, double factor );
+/* set factor for relative size of urn                                       */
+
+#define unur_dau_set_debug(par,debugflags)  unur_set_debug((par),(debugflags))
 
 /*---------------------------------------------------------------------------*/
 

@@ -4,7 +4,7 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   FILE:      dau.h                                                        *
+ *   FILE:      dau.c                                                        *
  *                                                                           *
  *   TYPE:      discrete univariate random variate                           *
  *   METHOD:    alias and alias-urn method                                   *
@@ -146,15 +146,16 @@ static void _unur_dau_debug_table( struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 /* abbreviations */
 
+#define DISTR   distr->data.discr
 #define PAR     par->data.dau
 #define GEN     gen->data.dau
 #define SAMPLE  gen->sample.discr
 
 /*---------------------------------------------------------------------------*/
-/* Special debugging flags (do not use the first 3 bits) */
-#define DAU_DEBUG_TABLE   0x010UL
+/* Debugging flags (do not use first 4 bits)                                 */
 
-#define HIST_WIDTH   40  /* width of histogram for printing alias table      */
+#define DAU_DEBUG_PRINTVECTOR   0x10UL
+#define DAU_DEBUG_TABLE         0x20UL
 
 /*---------------------------------------------------------------------------*/
 
@@ -163,13 +164,12 @@ static void _unur_dau_debug_table( struct unur_gen *gen );
 /*****************************************************************************/
 
 struct unur_par *
-unur_dau_new( double *prob, int len )
+unur_dau_new( struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
      /* get default parameters                                               */
      /*                                                                      */
      /* parameters:                                                          */
-     /*   prob ... pointer to probability vector                             */
-     /*   len  ... length of probability vector                              */
+     /*   distr ... pointer to distribution object                                */
      /*                                                                      */
      /* return:                                                              */
      /*   default parameters (pointer to structure)                          */
@@ -180,22 +180,36 @@ unur_dau_new( double *prob, int len )
 { 
   struct unur_par *par;
 
+  /* check arguments */
+  CHECK_NULL(distr,NULL);
+  COOKIE_CHECK(distr,CK_DISTR_DISCR,NULL);
+
+  /* check distribution */
+  if (distr->type != UNUR_DISTR_DISCR) {
+    _unur_error(GENTYPE,UNUR_ERR_GENERIC,"wrong distribution type");
+    return NULL;
+  }
+  if (DISTR.prob == NULL) {
+    _unur_error(GENTYPE,UNUR_ERR_GENERIC,"probability vector required");
+    return NULL;
+  }
+
   /* allocate structure */
   par = _unur_malloc( sizeof(struct unur_par) );
   COOKIE_SET(par,CK_DAU_PAR);
 
   /* copy input */
-  PAR.prob       = prob;
-  PAR.len        = len;
+  par->distr     = distr;            /* pointer to distribution object       */
 
   /* set default values */
-  PAR.urn_factor = 1.;              /* use same size for table               */
+  PAR.urn_factor = 1.;               /* use same size for table              */
 
-  par->method    = UNUR_METH_DAU;   /* method and default variant            */
-  par->set       = 0UL;             /* inidicate default parameters          */    
+  par->method    = UNUR_METH_DAU;    /* method and default variant           */
+  par->variant   = 0UL;              /* default variant                      */
+  par->set       = 0UL;              /* inidicate default parameters         */    
   par->urng      = unur_get_default_urng(); /* use default urng              */
 
-  _unur_set_debugflag_default(par); /* set default debugging flags           */
+  _unur_set_debugflag_default(par);  /* set default debugging flags          */
 
   /* routine for starting generator */
   par->init = unur_dau_init;
@@ -203,6 +217,42 @@ unur_dau_new( double *prob, int len )
   return par;
 
 } /* end of unur_dau_new() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+unur_dau_set_urnfactor( struct unur_par *par, double factor )
+     /*----------------------------------------------------------------------*/
+     /* set factor for relative size of urn                                  */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par    ... pointer to parameter for building generator object      */
+     /*   factor ... relative size of urn                                    */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... on success                                                   */
+     /*   0 ... on error                                                     */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  CHECK_NULL(par,0);
+  COOKIE_CHECK(par,CK_DAU_PAR,0);
+
+  /* check new parameter for generator */
+  if (factor < 1.) {
+    _unur_warning(GENTYPE,UNUR_ERR_INIT,"relative urn size < 1.");
+    return 0;
+  }
+
+  /* store date */
+  PAR.urn_factor = factor;
+
+  /* changelog */
+  par->set |= UNUR_SET_FACTOR;
+
+  return 1;
+
+} /* end of unur_dau_set_urnfactor() */
 
 /*****************************************************************************/
 
@@ -222,10 +272,12 @@ unur_dau_init( struct unur_par *par )
      /*----------------------------------------------------------------------*/
 { 
   struct unur_gen *gen;
-  int *begin, *poor, *rich;   /* list of (rich and poor) strips */
+  int *begin, *poor, *rich;     /* list of (rich and poor) strips */
   int *npoor;                   /* next poor on stack */
+  double *prob;                 /* pointer to probability vector */
+  int n_prob;                   /* length of probability vector */
   double sum, ratio;
-  int i;                      /* aux variable */
+  int i;                        /* aux variable */
 
   /* check arguments */
   CHECK_NULL(par,NULL);
@@ -235,17 +287,19 @@ unur_dau_init( struct unur_par *par )
   gen = _unur_dau_create(par);
   if (!gen) { free(par); return NULL; }
 
+  /* probability vector */
+  prob = par->DISTR.prob;
+  n_prob = par->DISTR.n_prob;
+
   /* compute sum of all probabilities */
-  for( sum=0, i=0; i<GEN.len; i++ ) {
-    sum += PAR.prob[i];
-#if CHECKARGS
+  for( sum=0, i=0; i<n_prob; i++ ) {
+    sum += prob[i];
     /* ... and check probability vector */
-    if (PAR.prob[i] < 0.) {
+    if (prob[i] < 0.) {
       _unur_error(gen->genid,UNUR_ERR_INIT,"probability < 0 not possible!");
       free(par); unur_dau_free(gen);
       return NULL;
     }
-#endif
   }
 
   /* make list of poor and rich strips */
@@ -256,8 +310,8 @@ unur_dau_init( struct unur_par *par )
   /* copy probability vector; scale so that it sums to GEN.urn_size and */
   /* find rich and poor strips at start                                 */
   ratio = GEN.urn_size / sum;
-  for( i=0; i<GEN.len; i++ ) {
-    GEN.qx[i] = PAR.prob[i] * ratio;
+  for( i=0; i<n_prob; i++ ) {
+    GEN.qx[i] = prob[i] * ratio;
     if (GEN.qx[i] >= 1.) {  /* rich strip                  */
       *rich = i;            /* add to list ...             */
       --rich;               /* and update pointer          */
@@ -405,7 +459,6 @@ unur_dau_free( struct unur_gen *gen )
   _unur_free_genid(gen);
   free(GEN.jx);
   free(GEN.qx);
-  if (GEN.prob) free(GEN.prob);
   free(gen);
 
 } /* end of unur_dau_free() */
@@ -430,7 +483,6 @@ _unur_dau_create( struct unur_par *par)
      /*----------------------------------------------------------------------*/
 {
   struct unur_gen *gen;
-  int i;
 
   /* check arguments */
   CHECK_NULL(par,NULL);
@@ -445,36 +497,31 @@ _unur_dau_create( struct unur_par *par)
   /* set generator identifier */
   _unur_set_genid(gen,GENTYPE);
 
-  /* copy some parameters into generator object */
-  GEN.len = PAR.len;                /* length of probability vector               */
-  GEN.prob = NULL;                  /* copy probability vector on demand          */
-  gen->method = par->method;        /* indicates used method                      */
-  _unur_copy_urng_pointer(par,gen); /* copy pointer to urng into generator object */
-  _unur_copy_debugflag(par,gen);    /* copy debugging flags into generator object */
+  /* copy pointer to distribution object */
+  /* (we do not copy the entire object)  */
+  gen->distr = par->distr;
 
   /* routines for sampling and destroying generator */
   SAMPLE = unur_dau_sample;
   gen->destroy = unur_dau_free;
 
+  /* copy some parameters into generator object */
+  GEN.len = par->DISTR.n_prob;      /* length of probability vector               */
+  gen->method = par->method;        /* indicates used method                      */
+  gen->variant = par->variant;      /* indicates variant                          */
+  _unur_copy_urng_pointer(par,gen); /* copy pointer to urng into generator object */
+  _unur_copy_debugflag(par,gen);    /* copy debugging flags into generator object */
+
   /* size of table */
-  GEN.urn_size = (int)(PAR.len * PAR.urn_factor);
-  if (GEN.urn_size < PAR.len)
+  GEN.urn_size = (int)(GEN.len * PAR.urn_factor);
+  if (GEN.urn_size < GEN.len)
     /* do not use a table that is smaller then length of probability vector */
-    GEN.urn_size = PAR.len;
+    GEN.urn_size = GEN.len;
 
   /* allocate memory for the tables */
   GEN.jx = _unur_malloc( GEN.urn_size * sizeof(int) );
   GEN.qx = _unur_malloc( GEN.urn_size * sizeof(double) );
 
-  /* copy probability vector on demand */
-  if (par->method & UNUR_MASK_COPYALL) {
-    /* need an arry for the probabilty vector */
-    GEN.prob = _unur_malloc( GEN.len * sizeof(double) );
-    /* copy */
-    for (i=0; i<GEN.len; i++)
-      GEN.prob[i] = PAR.prob[i];
-  }
-  
   /* return pointer to (almost empty) generator object */
   return gen;
 
@@ -505,10 +552,12 @@ _unur_dau_debug_init( struct unur_par *par, struct unur_gen *gen )
   fprintf(log,"%s: method  = alias and alias-urn method\n",gen->genid);
   fprintf(log,"%s:\n",gen->genid);
 
+  _unur_distr_discr_debug(gen->distr,gen->genid,(gen->debug & DAU_DEBUG_PRINTVECTOR));
+
   fprintf(log,"%s: sampling routine = unur_dau_sample()\n",gen->genid);
   fprintf(log,"%s:\n",gen->genid);
 
-  fprintf(log,"%s: length of probability vector = %d\n",gen->genid,PAR.len);
+  fprintf(log,"%s: length of probability vector = %d\n",gen->genid,GEN.len);
   fprintf(log,"%s: size of urn table = %d   (rel. = %g%%",
 	  gen->genid,GEN.urn_size,100.*PAR.urn_factor);
   _unur_print_if_default(par,UNUR_SET_FACTOR);
@@ -526,6 +575,8 @@ _unur_dau_debug_init( struct unur_par *par, struct unur_gen *gen )
 } /* end of _unur_dau_debug_init() */
 
 /*---------------------------------------------------------------------------*/
+
+#define HIST_WIDTH   40  /* width of histogram for printing alias table      */
 
 static void
 _unur_dau_debug_table( struct unur_gen *gen )

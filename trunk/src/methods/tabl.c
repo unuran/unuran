@@ -215,7 +215,11 @@ unur_tabl_new( struct unur_distr *distr )
   CHECK_NULL(distr,NULL);
   COOKIE_CHECK(distr,CK_DISTR_CONT,NULL);
 
-  /* check input */
+  /* check distribution */
+  if (distr->type != UNUR_DISTR_CONT) {
+    _unur_error(GENTYPE,UNUR_ERR_GENERIC,"wrong distribution type");
+    return NULL;
+  }
   if (DISTR.pdf == NULL) {
     _unur_error(GENTYPE,UNUR_ERR_GENERIC,"p.d.f. required");
     return NULL;
@@ -226,7 +230,7 @@ unur_tabl_new( struct unur_distr *distr )
   COOKIE_SET(par,CK_TABL_PAR);
 
   /* copy input */
-  par->distr              = distr;  /* pointer to distribution object        */
+  par->distr        = distr;     /* pointer to distribution object           */
 
   /* set default values */
   PAR.slopes        = NULL;      /* pointer to slopes of p.d.f.              */
@@ -244,9 +248,12 @@ unur_tabl_new( struct unur_distr *distr )
   PAR.guide_factor  = 1.; /* guide table has same size as array of intervals */
 
   par->method       = UNUR_METH_TABL;         /* indicate method             */
+  par->variant      = 0UL;       /* default variant                          */
+
   PAR.variant       = (TABL_SPLIT_ARC   |     /* variant: split at arc_mean  */
 		       TABL_STP_SPLIT_A |     /* run SPLIT A on slopes       */
 		       TABL_STP_SPLIT_B  );   /* run SPLIT B on slopes       */
+
 
   par->set          = 0UL;       /* inidicate default parameters             */    
   par->urng         = unur_get_default_urng(); /* use default urng           */
@@ -631,7 +638,6 @@ unur_tabl_free( struct unur_gen *gen )
 
   /* free other memory */
   _unur_free_genid(gen);
-  free(gen->distr);
   free(GEN.guide);
   free(gen);
 
@@ -671,9 +677,9 @@ _unur_tabl_create( struct unur_par *par )
   /* set generator identifier */
   _unur_set_genid(gen,GENTYPE);
 
-  /* copy distribution object */
-  gen->distr = _unur_malloc( sizeof(struct unur_distr) );
-  unur_distr_copy( gen->distr, par->distr );
+  /* copy pointer to distribution object */
+  /* (we do not copy the entire object)  */
+  gen->distr = par->distr;
 
   /* routines for sampling and destroying generator */
   SAMPLE = (par->method & UNUR_MASK_SCHECK) ? unur_tabl_sample_check : unur_tabl_sample;
@@ -708,6 +714,8 @@ _unur_tabl_create( struct unur_par *par )
   GEN.max_ratio = PAR.max_ratio;       /* bound for ratio  Atotal / Asqueeze    */
 
   gen->method = par->method;           /* indicates method                      */
+  gen->variant = par->variant;         /* indicates variant                     */
+
   GEN.variant = PAR.variant;           /* indicates variant                     */
 
   _unur_copy_urng_pointer(par,gen);    /* pointer to urng into generator object */
@@ -751,7 +759,6 @@ _unur_tabl_get_starting_intervals( struct unur_par *par, struct unur_gen *gen )
     /* slopes are given */
     return _unur_tabl_get_starting_intervals_from_slopes(par,gen);
 
-  //  if ( (par->set & UNUR_SET_DOMAIN) && (par->set & UNUR_SET_MODE) )
   if ( (par->set & UNUR_SET_DOMAIN) && (par->distr->set & UNUR_DISTR_SET_MODE) )
     /* no slopes given. need domain and mode */
     /* compute slopes */

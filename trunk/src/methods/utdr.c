@@ -140,7 +140,11 @@ unur_utdr_new( struct unur_distr *distr )
   CHECK_NULL(distr,NULL);
   COOKIE_CHECK(distr,CK_DISTR_CONT,NULL);
 
-  /* check input */
+  /* check distribution */
+  if (distr->type != UNUR_DISTR_CONT) {
+    _unur_error(GENTYPE,UNUR_ERR_GENERIC,"wrong distribution type");
+    return NULL;
+  }
   if (DISTR.pdf == NULL) {
     _unur_error(GENTYPE,UNUR_ERR_GENERIC,"p.d.f. required");
     return NULL;
@@ -158,7 +162,6 @@ unur_utdr_new( struct unur_distr *distr )
   par->distr              = distr;  /* pointer to distribution object        */
 
   /* set default values */
-  //  PAR.pdf_area     = 1.;         /* area below p.d.f.                        */
   PAR.c_factor     = 0.664; 
           /* optimal value for the normal distribution, which is good for 
 	     all bell-shaped densities. The minimax approach for that 
@@ -169,7 +172,8 @@ unur_utdr_new( struct unur_distr *distr )
 	     10 decimal digits precision. */
 
   par->method      = UNUR_METH_UTDR;  /* method and default variant          */
-  par->set         = 0UL;          /* inidicate default parameters           */    
+  par->variant     = 0UL;             /* default variant                     */
+  par->set         = 0UL;             /* inidicate default parameters        */    
   par->urng        = unur_get_default_urng(); /* use default urng            */
 
   _unur_set_debugflag_default(par);  /* set default debugging flags          */
@@ -459,7 +463,6 @@ unur_utdr_free( struct unur_gen *gen )
 
   /* free memory */
   _unur_free_genid(gen);
-  free(gen->distr);
   free(gen);
 
 } /* end of unur_utdr_free() */
@@ -495,9 +498,9 @@ _unur_utdr_create( struct unur_par *par )
   /* magic cookies */
   COOKIE_SET(gen,CK_UTDR_GEN);
 
-  /* copy distribution object */
-  gen->distr = _unur_malloc( sizeof(struct unur_distr) );
-  unur_distr_copy( gen->distr, par->distr );
+  /* copy pointer to distribution object */
+  /* (we do not copy the entire object)  */
+  gen->distr = par->distr;
 
   /* set generator identifier */
   _unur_set_genid(gen,GENTYPE);
@@ -514,7 +517,8 @@ _unur_utdr_create( struct unur_par *par )
   GEN.il = gen->DISTR.domain[0];          /* left boundary of domain         */
   GEN.ir = gen->DISTR.domain[1];          /* right boundary of domain        */
 
-  gen->method = par->method;         /* indicates method and variant */
+  gen->method = par->method;         /* indicates method                     */
+  gen->variant = par->variant;       /* indicates variant                    */
   _unur_copy_urng_pointer(par,gen);  /* pointer to urng into generator object*/
   _unur_copy_debugflag(par,gen);     /* copy debugging flags into generator object */
 

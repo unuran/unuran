@@ -274,20 +274,6 @@ unur_set_factor( struct unur_par *par, double factor )
 
   switch (par->method & UNUR_MASK_METHOD) {
 
-  case UNUR_METH_DAU:
-    COOKIE_CHECK(par,CK_DAU_PAR,0);
-    if (factor < 1.) {
-      _unur_warning_invalid(par,"relative urn size < 1");
-      return 0;
-    }
-    par->data.dau.urn_factor = factor;
-    break;
-
-  case UNUR_METH_DIS:
-    COOKIE_CHECK(par,CK_DIS_PAR,0);
-    par->data.dis.guide_factor = factor;
-    break;
-
   case UNUR_METH_AROU:
     COOKIE_CHECK(par,CK_AROU_PAR,0);
     par->data.arou.guide_factor = factor;
@@ -694,15 +680,6 @@ unur_set_variant( struct unur_par *par, unsigned long variant )
   }
 
   switch (par->method & UNUR_MASK_METHOD) {
-
-  case UNUR_METH_DIS:
-    COOKIE_CHECK(par,CK_DIS_PAR,0);
-    /* check new parameter for generator */
-    if (variant < 0 || variant > 2) {
-      _unur_warning_invalid(par,"variant");
-      return 0;
-    }
-    break;
 
   case UNUR_METH_TABL:
     COOKIE_CHECK(par,CK_TABL_PAR,0);

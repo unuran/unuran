@@ -41,8 +41,6 @@
 /* Information for constructing the generator                                */
 
 struct unur_dis_par { 
-  double *prob;         /* pointer to probability vector    (DEFAULT = NULL) */
-  int     len;          /* length of probability vector     (DEFAULT = 0)    */
   double  guide_factor; /* relative length of guide table.  (DEFAULT = 1)    */
                         /*   length of guide table = guide_factor * len      */
 };
@@ -55,15 +53,12 @@ struct unur_dis_gen {
   double *cumprob;      /* pointer to the vector of cumulated probabilities  */
   int    *guide_table;  /* pointer to guide table                            */
   int     guide_size;   /* length of guide table                             */
-
-  double *prob;         /* pointer to probability vector    (DEFAULT = NULL) */
-  int     len;          /* length of probability vector     (DEFAULT = 0)    */
 };
 
 /*---------------------------------------------------------------------------*/
 /* Routines for user interface                                               */
 
-struct unur_par *unur_dis_new( double *probabilities, int plength );
+struct unur_par *unur_dis_new( struct unur_distr *distr );
 /* get default parameters for generator                                      */
 
 struct unur_gen *unur_dis_init( struct unur_par *parameter );
@@ -74,6 +69,14 @@ int unur_dis_sample( struct unur_gen *generator );
 
 void unur_dis_free( struct unur_gen *generator );
 /* destroy generator object                                                  */
+
+int unur_dis_set_variant( struct unur_par *par, unsigned long variant );
+/* set variant of method                                                     */
+
+int unur_dis_set_guidefactor( struct unur_par *par, double factor );
+/* set factor for relative size of guide table                               */
+
+#define unur_dis_set_debug(par,debugflags)  unur_set_debug((par),(debugflags))
 
 /*---------------------------------------------------------------------------*/
 

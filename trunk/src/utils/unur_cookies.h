@@ -79,6 +79,7 @@
 /* distribution objects                                                      */
 #define CK_DISTR         0xe0000000UL    
 #define CK_DISTR_CONT    0xe0000001UL    
+#define CK_DISTR_DISCR   0xe0000002UL    
 
 /*---------------------------------------------------------------------------*/
 /* macros for dealing with magic cookies                                     */

@@ -56,7 +56,7 @@
 
  alpha(K) = Var(K)^(-2/5){ \int K(t)^2 dt}^(1/5)
 
- bwidth = alpha * beta * (mixture of stdev and interquartilsrange of sample)
+ bwidth = alpha * beta * (mixture of stdev and interquartile srange of sample)
  * smoothing_factor
 
  dann ist der default 1, und man kann, wenn man zB annimmt, dass die
@@ -141,6 +141,17 @@ static void _unur_empk_free( struct unur_gen *gen);
 /* destroy generator object.                                                 */
 /*---------------------------------------------------------------------------*/
 
+inline static int _unur_empk_comp_stddev( double *data, int n_data,
+					  double *mean, double *stddev);
+/*---------------------------------------------------------------------------*/
+/* compute mean and standard deviation of data.                              */
+/*---------------------------------------------------------------------------*/
+
+inline static double _unur_empk_comp_iqrtrange( double *data, int n_data );
+/*---------------------------------------------------------------------------*/
+/* compute interquartile range.                                              */
+/*---------------------------------------------------------------------------*/
+
 #ifdef UNUR_ENABLE_LOGGING
 /*---------------------------------------------------------------------------*/
 /* the following functions print debugging information on output stream,     */
@@ -212,6 +223,8 @@ unur_empk_new( struct unur_distr *distr )
 
   if (DISTR_IN.sample == NULL) {
     _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"observed sample"); return NULL; }
+  if (DISTR_IN.n_sample < 2) {
+    _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"number of observed sample"); return NULL; }
 
   /* allocate structure */
   par = _unur_malloc(sizeof(struct unur_par));
@@ -562,6 +575,9 @@ _unur_empk_init( struct unur_par *par )
      /*----------------------------------------------------------------------*/
 { 
   struct unur_gen *gen;
+  double iqrtrange;       /* interquartile range of data */
+  double sigma;           /* estimation (guess) for "real" standard deviation
+			     of observed data. */
 
   /* check arguments */
   CHECK_NULL(par,NULL);
@@ -582,15 +598,25 @@ _unur_empk_init( struct unur_par *par )
   /* sort entries */
   qsort( GEN.observ, GEN.n_observ, sizeof(double), compare_doubles);
 
-#if 0
+  /* compute mean and standard deviation of observed sample */
+  _unur_empk_comp_stddev( GEN.observ, GEN.n_observ, &(GEN.mean_observ), &(GEN.stddev_observ) );
+
+  /* compute interquartile range of the sample */
+  iqrtrange = _unur_empk_comp_iqrtrange( GEN.observ, GEN.n_observ );
+
+  /* get an estimation (guess) of the "real" standard deviation of 
+     the observed data.
+     For normal distributed data it is 1.34 times the interquartile range.
+     If this is greater than the observed standard deviation we use that 
+     instead of.  */
+  sigma = iqrtrange / 1.34;
+  if (GEN.stddev_observ < sigma) sigma = GEN.stddev_observ;
 
   /* compute band width (also called window width) */
-  GEN.bwidth =  PAR.smoothing * PAR.alpha * PAR.beta *
-    iqrtilestdev(GEN.observ,GEN.n,&(GEN.xbar),&(GEN.stdev))/exp(0.2*log(GEN.n_observ));
+  GEN.bwidth =  PAR.smoothing * PAR.alpha * PAR.beta * sigma / exp(0.2 * log(GEN.n_observ));
 
   /* compute constant for variance corrected version */
-  GEN.sconst = 1./sqrt(1. + PAR.kernvar * SQU( GEN.bwidth/GEN.stdev ) );
-#endif
+  GEN.sconst = 1./sqrt(1. + PAR.kernvar * SQU( GEN.bwidth/GEN.stddev_observ ) );
 
 #ifdef UNUR_ENABLE_LOGGING
     /* write info into log file */
@@ -666,47 +692,6 @@ _unur_empk_create( struct unur_par *par )
   return gen;
 
 } /* end of _unur_empk_create() */
-
-/*---------------------------------------------------------------------------*/
-
-inline static double
-comp_stddev( double data[], int n, double *xbarres)
-     /* compute mean and standard deviation of data */
-{
-  int i;
-  double sigm=0., xbar=0.;
-
-  if (n<2) {
-    *xbarres=-999.;
-    return(-1.);
-  }
-
-  for (i=0; i<n; i++)
-    xbar += data[i];
-  xbar/=n;
-  for (i=0; i<n; i++)
-    sigm += (data[i]-xbar)*(data[i]-xbar);
-  *xbarres=xbar;
-  return sqrt(sigm/(n-1));
-} /* end of comp_stddev() */
-
-void _unur_empk_compute_data_parameters ( struct unur_gen *gen )
-     /*----------------------------------------------------------------------*/
-     /* start generator for kernel                                           */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   par ... pointer to parameter for building generator object         */
-     /*   gen ... pointer to generator object                                */
-     /*                                                                      */
-     /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
-     /*----------------------------------------------------------------------*/
-{
-  /* check arguments */
-  CHECK_NULL(gen,/*void*/);  COOKIE_CHECK(gen,CK_EMPK_GEN,/*void*/);
-
-} /* end of _unur_empk_compute_data_parameters() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -794,6 +779,8 @@ _unur_empk_read_kernel_data( struct unur_par *par, struct unur_gen *gen )
   /* check arguments */
   CHECK_NULL(par,0);  COOKIE_CHECK(par,CK_EMPK_PAR,0);
   CHECK_NULL(gen,0);  COOKIE_CHECK(gen,CK_EMPK_GEN,0);
+
+  /** TODO **/
   
   /* o.k. */
   return 1;
@@ -835,7 +822,7 @@ _unur_empk_sample( struct unur_gen *gen )
   
   if (gen->variant & EMPK_VARFLAG_VARCOR)
     /* use variance correction */
-    X = GEN.xbar + (GEN.observ[j] - GEN.xbar + GEN.bwidth * K) * GEN.sconst;
+    X = GEN.mean_observ + (GEN.observ[j] - GEN.mean_observ + GEN.bwidth * K) * GEN.sconst;
   else
     /* no variance correction */
     X = GEN.observ[j] + GEN.bwidth * K;
@@ -885,6 +872,92 @@ _unur_empk_free( struct unur_gen *gen )
   free(gen);
 
 } /* end of _unur_empk_free() */
+
+/*****************************************************************************/
+/**  Auxilliary Routines                                                    **/
+/*****************************************************************************/
+
+int
+_unur_empk_comp_stddev( double *data, int n_data, double *mean, double *stddev)
+     /*----------------------------------------------------------------------*/
+     /* compute mean and standard deviation of data                          */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   data   ... pointer to array of data                                */
+     /*   n_data ... number of data points                                   */
+     /*   mean   ... pointer to store mean                                   */
+     /*   stddev ... pointer to store stddev                                 */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... on success                                                   */
+     /*   0 ... on error                                                     */
+     /*                                                                      */
+     /* REFERENCES:                                                          */
+     /*   [1] Spicer C.C. (1972): Algorithm AS 52: Calculation of Power Sums */
+     /*       of Deviations about the mean,                                  */
+     /*       Applied Statistics 21(2), pp. 226-227.                         */
+     /*----------------------------------------------------------------------*/
+{
+  double xsqu_sum;   /* sum of x[i]^2 */
+  double dx;
+  int n;
+
+  if (n_data < 2)
+    /* cannot compute standard deviation */
+    return 0;
+
+  /* initialize counters */
+  *mean = 0.;
+  xsqu_sum = 0.;
+
+  /* compute sums */
+  for (n=1; n <= n_data; n++) {
+    dx = (data[n] - *mean) / n;
+
+    xsqu_sum += n * (n - 1.) * dx * dx;
+    *mean += dx;
+  }
+
+  /* compute standard deviation */
+  *stddev = sqrt( xsqu_sum / (n_data - 1.));
+
+  return 1;
+} /* end of _unur_empk_comp_stddev() */
+
+/*---------------------------------------------------------------------------*/
+
+double
+_unur_empk_comp_iqrtrange( double *data, int n )
+     /*----------------------------------------------------------------------*/
+     /* compute interquartile range of sorted data (in ascending order)      */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   data   ... pointer to array of data                                */
+     /*   n      ... number of data points                                   */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   interquartile range                                                */
+     /*----------------------------------------------------------------------*/
+{
+  double lowerqrt,upperqrt;  /* lower and upper quartile */
+  int j;
+
+  /* data must be sorted in ascending order */
+
+  j = n/2;
+
+  if (j % 2) {
+    lowerqrt = data[(j+1)/2-1];
+    upperqrt = data[n-(j+1)/2];
+  }
+  else {
+    lowerqrt = (data[j/2-1] + data[j/2+1-1])/2.;
+    upperqrt = (data[n-j/2] + data[n-j/2-1])/2.;
+  }
+  
+  return (upperqrt - lowerqrt);
+
+} /* end of _unur_empk_comp_iqrange() */
 
 /*****************************************************************************/
 /**  Debugging utilities                                                    **/
@@ -956,8 +1029,8 @@ _unur_empk_debug_init( struct unur_par *par, struct unur_gen *gen )
   fprintf(log,"%s: Data:\n",gen->genid);
   fprintf(log,"%s:    beta  = %g",gen->genid, PAR.beta);
   _unur_print_if_default(par,EMPK_SET_BETA); fprintf(log,"\n");
-  fprintf(log,"%s:    mean (data) = %g\n",gen->genid, GEN.xbar);
-  fprintf(log,"%s:    stddev (data) = %g\n",gen->genid, GEN.stdev);
+  fprintf(log,"%s:    mean (data) = %g\n",gen->genid, GEN.mean_observ);
+  fprintf(log,"%s:    stddev (data) = %g\n",gen->genid, GEN.stddev_observ);
 
   fprintf(log,"%s:\n",gen->genid);
 

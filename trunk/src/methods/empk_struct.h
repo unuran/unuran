@@ -74,8 +74,8 @@ struct unur_empk_gen {
   UNUR_GEN *kerngen;   /* random variate generator for kernel                */
 
   double  bwidth;      /* bandwidth for kernel density estimation            */
-  double  xbar;        /* sample mean                                        */
-  double  stdev;       /* sample standard deviation; not used in sample!     */
+  double  mean_observ; /* mean of observed data                              */
+  double  stddev_observ; /* standard deviation of oberved data               */
   double  sconst;      /* constant used for variance corrected version 
 			  of kernel method                                   */
 };

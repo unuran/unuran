@@ -39,7 +39,8 @@ int main()
   par = unur_empk_new( distr );
   gen = unur_init( par );
 
-  fprintf(stderr,"end\n");
+  unur_test_printsample(gen,10,8);
+  
 
   exit (0);
 }

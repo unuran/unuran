@@ -749,6 +749,8 @@ _unur_srou_debug_init( struct unur_par *par, struct unur_gen *gen )
   fprintf(log,"%s: sampling routine = unur_srou_sample",gen->genid);
   if (par->variant & SROU_VARFLAG_VERIFY)
     fprintf(log,"_check");
+  else if (par->variant & SROU_VARFLAG_MIRROR)
+    fprintf(log,"_mirror");
   fprintf(log,"()\n%s:\n",gen->genid);
 
   if (par->set & SROU_SET_FMODE)

@@ -340,7 +340,7 @@ int compare_double_sequence_gen( FILE *LOG, int line, UNUR_URNG *urng, UNUR_GEN 
 static int cannot_compare_sequence ( FILE *LOG )
 {
   fprintf (LOG,"\nURNG cannot be reset. Cannot compare sequences.\n");
-  printf (LOG,"URNG cannot be reset. Cannot compare sequences.\n");
+  printf ("URNG cannot be reset. Cannot compare sequences.\n");
 
   return 0; /* indicate as "not failed" for practical reasons */
 }

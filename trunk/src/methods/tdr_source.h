@@ -69,6 +69,7 @@
 
 #define TDR_DEBUG_IV           0x00000010u
 #define TDR_DEBUG_SPLIT        0x00010000u
+#define TDR_DEBUG_DARS         0x00020000u
 #define TDR_DEBUG_SAMPLE       0x01000000u
 
 /*---------------------------------------------------------------------------*/

@@ -375,6 +375,8 @@ static int _unur_tdr_ps_starting_intervals( struct unur_par *par, struct unur_ge
 /*---------------------------------------------------------------------------*/
 
 static int _unur_tdr_run_dars( struct unur_par *par, struct unur_gen *gen );
+static int _unur_tdr_gw_dars( struct unur_par *par, struct unur_gen *gen );
+static int _unur_tdr_ps_dars( struct unur_par *par, struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 /* run derandomized adaptive rejection sampling.                             */
 /*---------------------------------------------------------------------------*/
@@ -442,6 +444,16 @@ static int _unur_tdr_make_guide_table( struct unur_gen *gen );
 static void _unur_tdr_debug_init( struct unur_par *par, struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 /* print after generator has been initialized has completed.                 */
+/*---------------------------------------------------------------------------*/
+
+static void _unur_tdr_debug_dars_start( struct unur_par *par, struct unur_gen *gen );
+/*---------------------------------------------------------------------------*/
+/* print header before runniung derandomized adaptive rejection sampling.    */
+/*---------------------------------------------------------------------------*/
+
+static void _unur_tdr_debug_dars( struct unur_par *par, struct unur_gen *gen );
+/*---------------------------------------------------------------------------*/
+/* print after generator has run derandomized adaptive rejection sampling.   */
 /*---------------------------------------------------------------------------*/
 
 static void _unur_tdr_debug_free( struct unur_gen *gen );

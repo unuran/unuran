@@ -161,6 +161,66 @@ _unur_tdr_debug_init( struct unur_par *par, struct unur_gen *gen )
 
 /*****************************************************************************/
 
+static void 
+_unur_tdr_debug_dars_start( struct unur_par *par, struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* print header before runniung DARS into logfile                       */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par ... pointer to parameter for building generator object         */
+     /*   gen ... pointer to generator object                                */
+     /*----------------------------------------------------------------------*/
+{
+  FILE *log;
+
+  /* check arguments */
+  CHECK_NULL(gen,/*void*/);  COOKIE_CHECK(gen,CK_TDR_GEN,/*void*/);
+  CHECK_NULL(par,/*void*/);  COOKIE_CHECK(par,CK_TDR_PAR,/*void*/);
+
+  log = unur_get_stream();
+
+  fprintf(log,"%s: DARS started **********************\n",gen->genid);
+  fprintf(log,"%s:\n",gen->genid);
+  fprintf(log,"%s: DARS factor = %g",gen->genid,PAR.darsfactor);
+  _unur_print_if_default(par,TDR_SET_DARS_FACTOR);
+  fprintf(log,"\n%s:\n",gen->genid);
+
+  fflush(log);
+} /* end of _unur_tdr_debug_dars_start() */
+
+/*---------------------------------------------------------------------------*/
+
+static void
+_unur_tdr_debug_dars( struct unur_par *par, struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* print infor after generator has run DARS into logfile                */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par ... pointer to parameter for building generator object         */
+     /*   gen ... pointer to generator object                                */
+     /*----------------------------------------------------------------------*/
+{
+  FILE *log;
+
+  /* check arguments */
+  CHECK_NULL(gen,/*void*/);  COOKIE_CHECK(gen,CK_TDR_GEN,/*void*/);
+  CHECK_NULL(par,/*void*/);  COOKIE_CHECK(par,CK_TDR_PAR,/*void*/);
+
+  log = unur_get_stream();
+
+  fprintf(log,"%s:\n",gen->genid);
+  fprintf(log,"%s: DARS finished **********************\n",gen->genid);
+  fprintf(log,"%s:\n",gen->genid);
+  _unur_tdr_debug_intervals(gen);
+  fprintf(log,"%s:\n",gen->genid);
+  fprintf(log,"%s: DARS completed **********************\n",gen->genid);
+  fprintf(log,"%s:\n",gen->genid);
+
+  fflush(log);
+} /* end of _unur_tdr_debug_dars() */
+
+/*****************************************************************************/
+
 static void
 _unur_tdr_debug_free( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/

@@ -1038,7 +1038,7 @@ _unur_utdr_create( struct unur_par *par )
   COOKIE_SET(gen,CK_UTDR_GEN);
 
   /* copy distribution object into generator object */
-  memcpy( &(gen->distr), par->distr, sizeof( struct unur_distr ) );
+  _unur_distr_cont_copy( &(gen->distr), par->distr );
 
   /* set generator identifier */
   gen->genid = _unur_set_genid(GENTYPE);
@@ -1290,6 +1290,12 @@ _unur_utdr_free( struct unur_gen *gen )
 
   /* free memory */
   _unur_free_genid(gen);
+
+  /* free function trees (if there is any) */
+  if (DISTR.pdftree)  _unur_fstr_free(DISTR.pdftree);
+  if (DISTR.dpdftree) _unur_fstr_free(DISTR.dpdftree);
+  if (DISTR.cdftree)  _unur_fstr_free(DISTR.cdftree);
+
   free(gen);
 
 } /* end of _unur_utdr_free() */

@@ -18,7 +18,7 @@
 
 #define _unur_FP_equal(a,b) \
  ((a)==(b) || \
- fabs((a)-(b)) <= ((fabs(a)<fabs(b))?fabs(a):fabs(b)) * 100. * DBL_EPSILON)
+ fabs((a)-(b)) <= ((fabs(a)<fabs(b))?fabs(a):fabs(b)) * 100. * FLT_EPSILON)
 
 /*---------------------------------------------------------------------------*/
 /* check for invalid NULL pointer, that should not happen in this program */
@@ -224,7 +224,7 @@ int compare_double_sequence_par( FILE *LOG, int line, struct prng *urng, UNUR_PA
   UNUR_GEN *gen;
   int i;
   int ok = TRUE;
-  double x;
+  double x = 0.;
   int failed = 0;
 
   /* init generator */
@@ -248,6 +248,7 @@ int compare_double_sequence_par( FILE *LOG, int line, struct prng *urng, UNUR_PA
   if (!ok) {
     failed = 1;
     fprintf(LOG," Failed\n");
+    fprintf(LOG,"\tx[1] = %g, x[2] = %g, diff = %g\n",double_sequence_A[i],x,double_sequence_A[i]-x);
   }
   else
     fprintf(LOG," ok\n");
@@ -295,7 +296,7 @@ int compare_double_sequence_gen( FILE *LOG, int line, struct prng *urng, UNUR_GE
 {
   int i;
   int ok = TRUE;
-  double x;
+  double x = 0.;
   int failed = 0;
 
   /* check generator object and stored sequence */
@@ -321,6 +322,7 @@ int compare_double_sequence_gen( FILE *LOG, int line, struct prng *urng, UNUR_GE
   if (!ok) {
     failed = 1;
     fprintf(LOG," Failed\n");
+    fprintf(LOG,"\tx[1] = %g, x[2] = %g, diff = %g\n",double_sequence_A[i],x,double_sequence_A[i]-x);
   }
   else
     fprintf(LOG," ok\n");

@@ -80,6 +80,13 @@
 #define _unur_distr_free(distr)    do {if (distr) (distr)->destroy(distr);} while(0)
 
 /*---------------------------------------------------------------------------*/
+/* copy distribution objects                                                 */
+
+int _unur_distr_cont_copy( struct unur_distr *to, struct unur_distr *from );
+/* copy distribution object 'from' into distribution object 'to'.            */
+
+
+/*---------------------------------------------------------------------------*/
 /* debuging routines for distributions                                       */
 
 void _unur_distr_cont_debug( UNUR_DISTR *distribution, char *genid );

@@ -837,7 +837,7 @@ _unur_ninv_init( struct unur_par *par )
   COOKIE_CHECK(par,CK_NINV_PAR,NULL);
 
   /* check variant */
-  if (! par->DISTR_IN.pdf) {
+  if (par->variant == NINV_VARFLAG_NEWTON && ! par->DISTR_IN.pdf) {
     _unur_warning(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"PDF");
     par->variant = NINV_VARFLAG_REGULA;   /* use regula falsi instead  */
   }
@@ -914,7 +914,7 @@ _unur_ninv_create( struct unur_par *par )
   COOKIE_SET(gen,CK_NINV_GEN);
 
   /* copy distribution object into generator object */
-  memcpy( &(gen->distr), par->distr, sizeof( struct unur_distr ) );
+  _unur_distr_cont_copy( &(gen->distr), par->distr );
 
   /* set generator identifier */
   gen->genid = _unur_set_genid(GENTYPE);
@@ -1609,6 +1609,12 @@ _unur_ninv_free( struct unur_gen *gen )
   _unur_free_genid(gen);
   if (GEN.table)   free(GEN.table);
   if (GEN.f_table) free(GEN.f_table);
+
+  /* free function trees (if there is any) */
+  if (DISTR.pdftree)  _unur_fstr_free(DISTR.pdftree);
+  if (DISTR.dpdftree) _unur_fstr_free(DISTR.dpdftree);
+  if (DISTR.cdftree)  _unur_fstr_free(DISTR.cdftree);
+
   free(gen);
 
 } /* end of _unur_ninv_free() */

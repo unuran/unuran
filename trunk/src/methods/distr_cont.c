@@ -175,6 +175,43 @@ unur_distr_cont_new( void )
 
 /*---------------------------------------------------------------------------*/
 
+int
+_unur_distr_cont_copy( struct unur_distr *to, struct unur_distr *from )
+     /*----------------------------------------------------------------------*/
+     /* copy distribution object 'from' into distribution object 'to'.       */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   to   ... pointer to target distribution object                     */
+     /*   from ... pointer to source distribution object                     */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... on success                                                   */
+     /*   0 ... on error                                                     */
+     /*----------------------------------------------------------------------*/
+{
+#define FROM from->data.cont
+#define TO   to->data.cont
+
+  /* check arguments */
+  _unur_check_NULL( NULL,from,0 );
+  _unur_check_distr_object( from, CONT, 0 );
+
+  /* copy distribution object into generator object */
+  memcpy( to, from, sizeof( struct unur_distr ) );
+
+  /* copy function trees into generator object (when there is one) */
+  TO.pdftree  = (FROM.pdftree)  ? _unur_fstr_dup_tree(FROM.pdftree)  : NULL;
+  TO.dpdftree = (FROM.dpdftree) ? _unur_fstr_dup_tree(FROM.dpdftree) : NULL;
+  TO.cdftree  = (FROM.cdftree)  ? _unur_fstr_dup_tree(FROM.cdftree)  : NULL;
+
+  return 1;
+
+#undef FROM
+#undef TO
+} /* end of _unur_distr_cont_copy() */
+
+/*---------------------------------------------------------------------------*/
+
 void
 _unur_distr_cont_free( struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
@@ -184,12 +221,16 @@ _unur_distr_cont_free( struct unur_distr *distr )
      /*   distr ... pointer to distribution object                           */
      /*----------------------------------------------------------------------*/
 {
+  /* check arguments */
+  _unur_check_NULL( NULL,distr,/*void*/ );
+  _unur_check_distr_object( distr, CONT, /*void*/ );
+
   if (DISTR.pdftree)  _unur_fstr_free(DISTR.pdftree);
   if (DISTR.dpdftree) _unur_fstr_free(DISTR.dpdftree);
   if (DISTR.cdftree)  _unur_fstr_free(DISTR.cdftree);
 
-  if (distr) free( distr );
-} /* end of unur_distr_cont_free() */
+  free( distr );
+} /* end of _unur_distr_cont_free() */
 
 /*---------------------------------------------------------------------------*/
 

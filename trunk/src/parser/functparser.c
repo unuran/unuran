@@ -566,12 +566,7 @@ static double _unur_fstr_eval_node (const struct ftreenode *node, const double x
 /** (see also functparser_symbols.h)                                        **/
 /**-------------------------------------------------------------------------**/
 
-static struct ftreenode *_unur_fstr_dup_tree (const struct ftreenode *root);
-/*---------------------------------------------------------------------------*/
-/* Duplicate function tree rooted at root.                                   */
-/*---------------------------------------------------------------------------*/
-
-void _unur_fstr_error_deriv (const struct ftreenode *node);
+static void _unur_fstr_error_deriv (const struct ftreenode *node);
 /*---------------------------------------------------------------------------*/
 /* Print error message for unknown derivative.                               */
 /*---------------------------------------------------------------------------*/

@@ -60,6 +60,11 @@ double _unur_fstr_eval_tree ( const struct ftreenode *functtree_root, const doub
 /* Evalutes function given by a function tree at x.                          */
 /*---------------------------------------------------------------------------*/
 
+struct ftreenode *_unur_fstr_dup_tree (const struct ftreenode *functtree_root);
+/*---------------------------------------------------------------------------*/
+/* Duplicate function tree rooted at root.                                   */
+/*---------------------------------------------------------------------------*/
+
 void _unur_fstr_free ( struct ftreenode *functtree_root );
 /*---------------------------------------------------------------------------*/
 /* Destroys function tree and frees memory.                                  */

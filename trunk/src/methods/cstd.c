@@ -546,7 +546,7 @@ _unur_cstd_create( struct unur_par *par )
   COOKIE_SET(gen,CK_CSTD_GEN);
 
   /* copy distribution object into generator object */
-  memcpy( &(gen->distr), par->distr, sizeof( struct unur_distr ) );
+  _unur_distr_cont_copy( &(gen->distr), par->distr );
 
   /* set generator identifier */
   gen->genid = _unur_set_genid(GENTYPE);
@@ -619,6 +619,12 @@ _unur_cstd_free( struct unur_gen *gen )
   _unur_free_genid(gen);
   if (GEN.gen_param)  free(GEN.gen_param);
   if (gen->gen_aux)   _unur_free(gen->gen_aux);
+
+  /* free function trees (if there is any) */
+  if (DISTR.pdftree)  _unur_fstr_free(DISTR.pdftree);
+  if (DISTR.dpdftree) _unur_fstr_free(DISTR.dpdftree);
+  if (DISTR.cdftree)  _unur_fstr_free(DISTR.cdftree);
+
   free(gen);
 
 } /* end of _unur_cstd_free() */

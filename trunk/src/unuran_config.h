@@ -153,7 +153,7 @@
 
 /* Write warnings and error messages to stderr.                              */
 /* #undef this macro to suppress output on stderr.                           */
-#define UNUR_ENABLE_STDERR  1
+/*  #define UNUR_ENABLE_STDERR  1 */
 
 /* Notice that if neither UNUR_ENABLE_LOGFILE nor UNUR_ENABLE_STDERR is      */
 /* defined, then there are no warnings and error messages at all.            */
@@ -169,7 +169,7 @@
 /* However checking against an invalid NULL pointer can be switched on for   */
 /* each pointer that occurs by defining  UNUR_ENABLE_CHECKNULL.              */
 
-#define UNUR_ENABLE_CHECKNULL 1
+/*  #define UNUR_ENABLE_CHECKNULL 1 */
 
 
 /*---------------------------------------------------------------------------*/

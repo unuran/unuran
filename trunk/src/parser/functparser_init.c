@@ -81,6 +81,36 @@ _unur_fstr2tree_DefFunct (const char *functstr)
 
 /*---------------------------------------------------------------------------*/
 
+struct ftreenode *
+_unur_fstr_dup_tree (const struct ftreenode *root)
+     /*----------------------------------------------------------------------*/
+     /* Duplicate function tree rooted at root                               */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   root ... pointer to root of function tree                          */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to duplicated tree                                         */
+     /*----------------------------------------------------------------------*/
+{
+  struct ftreenode *dup;
+
+  if (root==NULL) return NULL;
+
+  /* check arguments */
+  COOKIE_CHECK(root,CK_FSTR_TNODE,NULL);
+
+  dup = _unur_malloc(sizeof(struct ftreenode));
+  memcpy(dup,root,sizeof(struct ftreenode));
+  if (root->left)  dup->left  = _unur_fstr_dup_tree(root->left);
+  if (root->right) dup->right = _unur_fstr_dup_tree(root->right);
+
+  return dup;
+
+} /* end of _unur_fstr_dup_tree() */
+
+/*---------------------------------------------------------------------------*/
+
 void
 _unur_fstr_free (struct ftreenode *root)  
      /*----------------------------------------------------------------------*/

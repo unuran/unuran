@@ -13,10 +13,10 @@
 
 
 @c Dies ist das neue UNURAN -Einfuehrung  
-@c September 2000 Janka & Tirler                
+@c Janka & Tirler                
 @c $Id$
 
-@set VERSION 0.04
+@set VERSION 0.05
 @set DATE November 2000
 
 @dircategory Scientific software
@@ -664,7 +664,8 @@ All parameters have default settings documented in @ref{Defaults}.
 @menu
 @c * AROU:: Adaptive Ratio Of Uniforms
 * CSTD:: Interface for extern generators
-@c * DAU::  (Discrete) Alias-Urn
+* DAU::  (Discrete) Alias-Urn
+* DGT:: ???
 @c * DIS::  (Discrete) Alias-Urn
 * DSTD:: ???
 * NINV:: Numerical INVersion
@@ -673,7 +674,7 @@ All parameters have default settings documented in @ref{Defaults}.
 * STDR:: Transformed Density Rejection (with universal bounds)
 @c * TABL:: Ahren
 @c * TDR::  Trandformed Density Rejection
-@c * UNIF:: ???
+* UNIF:: ???
 * UTDR:: Universal Transformed Density Rejection (3-point method)
 @end menu
 
@@ -716,7 +717,8 @@ For information about the following distributions see
 @menu
 @c * AROUref:: Adaptive Ratio Of Uniforms
 * CSTDref:: Interface for extern generators
-@c * DAUref::  (Discrete) Alias-Urn
+* DAUref::  (Discrete) Alias-Urn
+* DGTref::  ???
 @c * DISref::  (Discrete) Alias-Urn
 * DSTDref:: ???
 * NINVref:: Numerical INVersion
@@ -725,7 +727,7 @@ For information about the following distributions see
 * STDRref:: Transformed Density Rejection (with universal bounds)
 @c * TABLref:: Ahren
 @c * TDRref::  Trandformed Density Rejection
-@c * UNIFref:: ???
+* UNIFref:: ???
 * UTDRref:: Universal Transformed Density Rejection (3-point method)
 @end menu
 

@@ -54,6 +54,9 @@ struct unur_cstd_par {
 struct unur_cstd_gen { 
   double  *pdf_param;     /* parameters for standard distribution            */
   int      n_pdf_param;   /* number of parameters for distribution           */
+
+  double  umin;           /* cdf at left boundary of domain                  */
+  double  umax;           /* cdf at right boundary of domain                 */
 };
 
 /*---------------------------------------------------------------------------*/

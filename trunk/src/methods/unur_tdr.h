@@ -42,7 +42,6 @@
 
 struct unur_tdr_par { 
 
-  double  mode;                 /* exact location of mode                    */
   double  center;               /* approximate location of mode              */
 
   double  guide_factor;         /* relative size of guide table              */

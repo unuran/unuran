@@ -90,6 +90,8 @@ static void _unur_cstd_debug_init( struct unur_par *par, struct unur_gen *gen );
 #define GEN     gen->data.cstd
 #define SAMPLE  gen->sample.cont
 
+#define CDF(x) ((*(gen->DISTR.cdf))((x),GEN.pdf_param,GEN.n_pdf_param))
+
 /*---------------------------------------------------------------------------*/
 
 /*****************************************************************************/
@@ -214,6 +216,7 @@ unur_cstd_init( struct unur_par *par )
   /* check arguments */
   CHECK_NULL(par,NULL);
   COOKIE_CHECK(par,CK_CSTD_PAR,NULL);
+  CHECK_NULL(par->DISTR.get_sampling_routine,NULL);
 
   /* check input */
   if ( par->method != UNUR_METH_CSTD ) {
@@ -230,8 +233,25 @@ unur_cstd_init( struct unur_par *par )
     SAMPLE = (par->DISTR.get_sampling_routine)(par->variant);
   }
   if (SAMPLE == NULL) {
-    _unur_warning(GENTYPE,UNUR_ERR_SET,"unknown variant for special generator");
+    _unur_error(GENTYPE,UNUR_ERR_INIT,"unknown variant for special generator");
     free(par); unur_cstd_free(gen); return NULL; 
+  }
+
+  /* domain valid for special generator */
+  if (!(par->distr->set & UNUR_DISTR_SET_STDDOMAIN)) {
+    /* domain has been modified */
+    if ( SAMPLE != (par->DISTR.get_sampling_routine)(UNUR_STDGEN_INVERSION) ) {
+      /* this is not the inversion method */
+      _unur_error(GENTYPE,UNUR_ERR_INIT,"domain changed for non inversion method");
+      free(par); unur_cstd_free(gen); return NULL; 
+    }
+    else if (par->DISTR.cdf == NULL) {
+      _unur_error(GENTYPE,UNUR_ERR_INIT,"domain changed, c.d.f. required");
+      free(par); unur_cstd_free(gen); return NULL; 
+    }
+    /* compute umin and umax */
+    GEN.umin = (par->DISTR.domain[0] > -INFINITY) ? CDF(par->DISTR.domain[0]) : 0.;
+    GEN.umax = (par->DISTR.domain[1] < INFINITY)  ? CDF(par->DISTR.domain[1]) : 1.;
   }
 
 #if UNUR_DEBUG & UNUR_DB_INFO
@@ -334,6 +354,8 @@ _unur_cstd_create( struct unur_par *par )
   /* copy some parameters into generator object */
   GEN.pdf_param   = gen->DISTR.params;
   GEN.n_pdf_param = gen->DISTR.n_params;
+  GEN.umin        = 0;    /* cdf at left boundary of domain  */
+  GEN.umax        = 1;    /* cdf at right boundary of domain */
 
   gen->method = par->method;        /* indicates used method */
   gen->variant = par->variant;      /* indicates variant     */
@@ -390,6 +412,11 @@ _unur_cstd_debug_init( struct unur_par *par, struct unur_gen *gen )
   else
     fprintf(log,"(Unknown)\n");
   fprintf(log,"%s:\n",gen->genid);
+
+  if (!(par->distr->set & UNUR_DISTR_SET_STDDOMAIN)) {
+    fprintf(log,"%s: domain has been changed. U in (%g,%g)\n",gen->genid,GEN.umin,GEN.umax);
+    fprintf(log,"%s:\n",gen->genid);
+  }
 
 } /* end of _unur_cstd_info_init() */
 

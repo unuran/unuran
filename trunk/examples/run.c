@@ -34,7 +34,7 @@
 #define RUN_DAU           1
 #define RUN_DIS           1
 
-#define RUN_UTDR          1
+#define RUN_UTDR          0
 #define RUN_AROU          1
 #define RUN_TDRSQRT       1
 #define RUN_TDRLOG        1
@@ -78,6 +78,7 @@ int main()
   /* ------------------------- */
 
   distr_normal = unur_distr_normal(NULL,0);
+  unur_distr_cont_set_domain(distr_normal,3,UNUR_INFINITY);
 
   fpar[0] = 3.;
   distr_gamma = unur_distr_gamma(fpar,1);
@@ -108,21 +109,23 @@ int main()
 #if RUN_CSTD == 1
 
   distr_xxx = unur_distr_normal(NULL,0);
+  // unur_distr_cont_set_domain(distr_xxx,3,UNUR_INFINITY);
   par = unur_cstd_new(distr_xxx);
   unur_cstd_set_variant(par,0);
-  unur_run_tests(par,RUN_TESTS,unur_cdf_normal);
+  unur_run_tests(par,RUN_TESTS);
   unur_distr_free(distr_xxx);
 
   fpar[0] = 5.;
   distr_xxx = unur_distr_gamma(fpar,1);
   par = unur_cstd_new(distr_xxx);
-  unur_run_tests(par,RUN_TESTS,unur_cdf_gamma);
+  unur_run_tests(par,RUN_TESTS);
   unur_distr_free(distr_xxx);
 
   fpar[0] = 5.;
   distr_xxx = unur_distr_exponential(fpar,1);
+  unur_distr_cont_set_domain(distr_xxx,3,UNUR_INFINITY);
   par = unur_cstd_new(distr_xxx);
-  unur_run_tests(par,RUN_TESTS,unur_cdf_exponential);
+  unur_run_tests(par,RUN_TESTS);
   unur_distr_free(distr_xxx);
 
 #endif
@@ -144,7 +147,7 @@ int main()
   unur_dau_set_urnfactor(par,2.);
 
   /* run tests */
-  unur_run_tests(par,RUN_TESTS,NULL);
+  unur_run_tests(par,RUN_TESTS);
 
   printf("\n*******************************************************\n\n");
 
@@ -164,7 +167,7 @@ int main()
   /*    unur_set_factor(par,1.); */
 
   /* run tests */
-  unur_run_tests(par,RUN_TESTS,NULL);
+  unur_run_tests(par,RUN_TESTS);
 
   printf("\n*******************************************************\n\n");
 
@@ -188,7 +191,7 @@ int main()
   par = unur_utdr_new(distr_normal);
 
   /* run tests */
-  unur_run_tests(par,RUN_TESTS,unur_cdf_normal);
+  unur_run_tests(par,RUN_TESTS);
 
   printf("\n------------------------------------------------------------\n\n");
 
@@ -203,7 +206,7 @@ int main()
 /*    unur_set_debug(par,1); */
 
   /* run tests */
-  unur_run_tests(par,RUN_TESTS,unur_cdf_normal);
+  unur_run_tests(par,RUN_TESTS);
 
   printf("\n------------------------------------------------------------\n\n");
 
@@ -218,7 +221,7 @@ int main()
 /*    unur_set_debug(par,1); */
 
   /* run tests */
-  unur_run_tests(par,RUN_TESTS,unur_cdf_normal);
+  unur_run_tests(par,RUN_TESTS);
 
   printf("\n------------------------------------------------------------\n\n");
 
@@ -232,7 +235,7 @@ int main()
   unur_tdr_set_max_sqhratio(par,0.);
 
   /* run tests */
-  unur_run_tests(par,RUN_TESTS,unur_cdf_normal);
+  unur_run_tests(par,RUN_TESTS);
 
   printf("\n------------------------------------------------------------\n\n");
 
@@ -251,7 +254,7 @@ int main()
   unur_tabl_set_areafraction(par,0.1);
 
   /* run tests */
-  unur_run_tests(par,RUN_TESTS,unur_cdf_normal);
+  unur_run_tests(par,RUN_TESTS);
 
 #endif
 
@@ -273,7 +276,7 @@ int main()
   par = unur_utdr_new(distr_gamma);
 
   /* run tests */
-  unur_run_tests(par,RUN_TESTS,unur_cdf_gamma);
+  unur_run_tests(par,RUN_TESTS);
 
   printf("\n------------------------------------------------------------\n\n");
 
@@ -288,7 +291,7 @@ int main()
   unur_arou_set_usecenter(par,0);
 
   /* run tests */
-  unur_run_tests(par,RUN_TESTS,unur_cdf_gamma);
+  unur_run_tests(par,RUN_TESTS);
 
   printf("\n------------------------------------------------------------\n\n");
 
@@ -303,7 +306,7 @@ int main()
   unur_tdr_set_max_sqhratio(par,0.);
 
   /* run tests */
-  unur_run_tests(par,RUN_TESTS,unur_cdf_gamma);
+  unur_run_tests(par,RUN_TESTS);
 
   printf("\n------------------------------------------------------------\n\n");
 
@@ -318,7 +321,7 @@ int main()
   unur_tdr_set_max_sqhratio(par,0.);
 
   /* run tests */
-  unur_run_tests(par,RUN_TESTS,unur_cdf_gamma);
+  unur_run_tests(par,RUN_TESTS);
 
   printf("\n------------------------------------------------------------\n\n");
 
@@ -336,7 +339,7 @@ int main()
   unur_tabl_set_areafraction(par,0.1);
 
   /* run tests */
-  unur_run_tests(par,RUN_TESTS,unur_cdf_gamma);
+  unur_run_tests(par,RUN_TESTS);
 
 #endif
 #undef ALPHA
@@ -360,7 +363,7 @@ int main()
   par = unur_utdr_new(distr_beta);
 
   /* run tests */
-  unur_run_tests(par,RUN_TESTS,unur_cdf_beta);
+  unur_run_tests(par,RUN_TESTS);
 
   printf("\n------------------------------------------------------------\n\n");
 
@@ -375,7 +378,7 @@ int main()
   unur_arou_set_usecenter(par,0);
 
   /* run tests */
-  unur_run_tests(par,RUN_TESTS,unur_cdf_beta);
+  unur_run_tests(par,RUN_TESTS);
 
   printf("\n------------------------------------------------------------\n\n");
 
@@ -390,7 +393,7 @@ int main()
   unur_tdr_set_max_sqhratio(par,0.);
 
   /* run tests */
-  unur_run_tests(par,RUN_TESTS,unur_cdf_beta);
+  unur_run_tests(par,RUN_TESTS);
 
   printf("\n------------------------------------------------------------\n\n");
 
@@ -405,7 +408,7 @@ int main()
   unur_tdr_set_max_sqhratio(par,0.);
 
   /* run tests */
-  unur_run_tests(par,RUN_TESTS,unur_cdf_beta);
+  unur_run_tests(par,RUN_TESTS);
 
   printf("\n------------------------------------------------------------\n\n");
 
@@ -419,7 +422,7 @@ int main()
   unur_tabl_set_areafraction(par,0.1);
 
   /* run tests */
-  unur_run_tests(par,RUN_TESTS,unur_cdf_beta);
+  unur_run_tests(par,RUN_TESTS);
 
 #endif
 #undef A
@@ -444,7 +447,7 @@ int main()
   par = unur_utdr_new(distr_cauchy);
 
   /* run tests */
-  unur_run_tests(par,RUN_TESTS,unur_cdf_cauchy);
+  unur_run_tests(par,RUN_TESTS);
 
   printf("\n------------------------------------------------------------\n\n");
 
@@ -459,7 +462,7 @@ int main()
   unur_arou_set_usecenter(par,0);
 
   /* run tests */
-  unur_run_tests(par,RUN_TESTS,unur_cdf_cauchy);
+  unur_run_tests(par,RUN_TESTS);
 
   printf("\n------------------------------------------------------------\n\n");
 
@@ -474,7 +477,7 @@ int main()
   unur_tdr_set_max_sqhratio(par,0.);
 
   /* run tests */
-  unur_run_tests(par,RUN_TESTS,unur_cdf_cauchy);
+  unur_run_tests(par,RUN_TESTS);
 
   printf("\n------------------------------------------------------------\n\n");
 
@@ -489,7 +492,7 @@ int main()
   unur_tdr_set_max_sqhratio(par,0.);
 
   /* run tests */
-  unur_run_tests(par,RUN_TESTS,unur_cdf_cauchy);
+  unur_run_tests(par,RUN_TESTS);
 
   printf("\n------------------------------------------------------------\n\n");
 
@@ -498,13 +501,13 @@ int main()
 #if RUN_TABL == 1
 
   par = unur_tabl_new(distr_cauchy);
-  unur_tabl_set_boundary(par,-50.,50.);
+  unur_tabl_set_boundary(par,-1000.,1000.);
     
 /*    unur_set_variant(par,1UL); */
   unur_tabl_set_areafraction(par,0.1);
 
   /* run tests */
-  unur_run_tests(par,RUN_TESTS,unur_cdf_cauchy);
+  unur_run_tests(par,RUN_TESTS);
 
   printf("\n*******************************************************\n\n");
 
@@ -525,7 +528,7 @@ int main()
   par = unur_utdr_new(distr_uniform);
 
   /* run tests */
-  unur_run_tests(par,RUN_TESTS,unur_cdf_uniform);
+  unur_run_tests(par,RUN_TESTS);
 
   printf("\n------------------------------------------------------------\n\n");
 
@@ -539,7 +542,7 @@ int main()
   unur_arou_set_usecenter(par,0);
 
   /* run tests */
-  unur_run_tests(par,RUN_TESTS,unur_cdf_uniform);
+  unur_run_tests(par,RUN_TESTS);
 
   printf("\n------------------------------------------------------------\n\n");
 
@@ -556,7 +559,7 @@ int main()
 /*    unur_set_debug(par,1); */
 
   /* run tests */
-  unur_run_tests(par,RUN_TESTS,unur_cdf_uniform);
+  unur_run_tests(par,RUN_TESTS);
 
   printf("\n------------------------------------------------------------\n\n");
 
@@ -570,7 +573,7 @@ int main()
   unur_tdr_set_max_sqhratio(par,0.);
 
   /* run tests */
-  unur_run_tests(par,RUN_TESTS,unur_cdf_uniform);
+  unur_run_tests(par,RUN_TESTS);
 
   printf("\n------------------------------------------------------------\n\n");
 
@@ -584,7 +587,7 @@ int main()
   unur_tabl_set_max_sqhratio(par,1.);
 
   /* run tests */
-  unur_run_tests(par,RUN_TESTS,unur_cdf_uniform);
+  unur_run_tests(par,RUN_TESTS);
 
 #endif
 
@@ -608,7 +611,7 @@ int main()
   par = unur_rect_new(DIM);
 
   /* run tests */
-  unur_run_tests(par,RUN_TESTS,NULL);
+  unur_run_tests(par,RUN_TESTS);
 
 #undef DIM
 

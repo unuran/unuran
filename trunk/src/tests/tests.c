@@ -68,14 +68,12 @@ static int _unur_print_method( struct unur_par *par );
 /*---------------------------------------------------------------------------*/
 
 void 
-unur_run_tests( struct unur_par *par, unsigned tests,
-		 double (*cdf)(double x, double *fparam, int n_fparam))
+unur_run_tests( struct unur_par *par, unsigned tests)
      /*----------------------------------------------------------------------*/
      /* test generator                                                       */
      /*                                                                      */
      /* parameters:                                                          */
      /*   par   ... pointer to paramters for building generator object       */
-     /*   cdf   ... cumulated distribution function                          */
      /*   tests ... list of tests (stored as bit array)                      */
      /*----------------------------------------------------------------------*/
 {

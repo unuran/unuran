@@ -285,6 +285,7 @@ _unur_test_chi2_cont(struct unur_gen *gen,
   /* now run generator */
   for( i=0; i<samplesize; i++ ) {
     F = cdf( unur_sample_cont(gen), DISTR.params, DISTR.n_params );
+    F = (F-Fl)/Fdelta;
     j = (int)(intervals * F);
     if (j > intervals) {   
       _unur_warning("Chi^2-Test",UNUR_ERR_GENERIC,"F(x) > Fmax (out of domain).");

@@ -131,7 +131,9 @@ double unur_stdgen_sample_exponential_inv( struct unur_gen *gen )
   CHECK_NULL(gen,0.);
   COOKIE_CHECK(gen,CK_CSTD_GEN,0.);
 
-  return ( -GEN.pdf_param[0] * log(1. - uniform()) );
+  /** TODO: da stimmt was nicht!! warum nur ein parameter ?? **/
+
+  return ( -GEN.pdf_param[0] * log(1. - (GEN.umin + uniform() * (GEN.umax-GEN.umin))) );
 
 } /* end of unur_stdgen_sample_exponential_inv() */
 

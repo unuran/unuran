@@ -980,6 +980,11 @@ _unur_arou_create( struct unur_par *par )
   if (!(par->set & AROU_SET_CENTER))
     /* we cannot use the center as construction point */
     par->variant = par->variant & (~AROU_VARFLAG_USECENTER);
+  else {
+    /* center must be in domain */
+    PAR.center = max(PAR.center,GEN.bleft);
+    PAR.center = min(PAR.center,GEN.bright);
+  }
 
   /* return pointer to (almost empty) generator object */
   return(gen);
@@ -1018,13 +1023,6 @@ _unur_arou_get_starting_cpoints( struct unur_par *par, struct unur_gen *gen )
 
   /* use center as construction point ? */
   use_center = (par->variant & AROU_VARFLAG_USECENTER) ? TRUE : FALSE;
-
-  /* check center */
-  if (use_center &&
-      ( PAR.center < GEN.bleft || PAR.center > GEN.bright ) ) {
-    _unur_warning(gen->genid,UNUR_ERR_INIT,"center out of domain.");
-    use_center = 0;
-  }
 
   /* reset counter of segments */
   GEN.n_segs = 0;

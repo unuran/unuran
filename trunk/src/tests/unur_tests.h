@@ -47,8 +47,7 @@
 
 /*---------------------------------------------------------------------------*/
 /* run battery of tests                                                      */
-void unur_run_tests( struct unur_par *par, unsigned tests,
-		     double (*cdf)(double x, double *fparam, int n_fparam));
+void unur_run_tests( struct unur_par *par, unsigned tests);
 
 /*---------------------------------------------------------------------------*/
 /* particular tests                                                          */

@@ -11,8 +11,8 @@
  *              (Ahren's table method)                                       *
  *                                                                           *
  *   DESCRIPTION:                                                            *
- *      Given p.d.f and .... of a T-concave distribution                     *
- *      produce a value x consistent with its density                        *
+ *      Given p.d.f of a unimodal distribution                               *
+ *      produce random variate X with its density                            *
  *                                                                           *
  *****************************************************************************
      $Id$
@@ -71,6 +71,11 @@
 #include <unur_errno.h>
 #include <unur_math.h>
 #include <unur_utils.h>
+
+/*---------------------------------------------------------------------------*/
+/* Constants                                                                 */
+
+#define TABL_DEFAULT_COMPUTATION_LIMIT  1.e50
 
 /*---------------------------------------------------------------------------*/
 /* Variants                                                                  */
@@ -175,7 +180,12 @@ static struct unur_tabl_interval *_unur_tabl_iv_stack_pop( struct unur_gen *gen 
 
 static void _unur_tabl_debug_init( struct unur_par *par, struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
-/* print after generator has been initialized has completed.                 */
+/* print after generator has been initialized has completed I.               */
+/*---------------------------------------------------------------------------*/
+
+static void _unur_tabl_debug_init_finished( struct unur_par *par, struct unur_gen *gen );
+/*---------------------------------------------------------------------------*/
+/* print after generator has been initialized has completed II.              */
 /*---------------------------------------------------------------------------*/
 
 static void _unur_tabl_debug_free( struct unur_gen *gen );
@@ -198,11 +208,6 @@ static void _unur_tabl_debug_intervals( struct unur_gen *gen, int print_areas );
 #define SAMPLE  gen->sample.cont
 
 #define PDF(x) ((*(GEN.pdf))((x),GEN.pdf_param,GEN.n_pdf_param))
-
-/*---------------------------------------------------------------------------*/
-
-#define min(x,y)   (((x)<(y)) ? (x) : (y))
-#define max(x,y)   (((x)>(y)) ? (x) : (y))
 
 /*---------------------------------------------------------------------------*/
 
@@ -260,6 +265,10 @@ unur_tabl_new( struct unur_distr *distr )
 
   PAR.guide_factor  = 1.; /* guide table has same size as array of intervals */
 
+  /* default boundary of compution area */
+  PAR.bleft  = -TABL_DEFAULT_COMPUTATION_LIMIT;
+  PAR.bright = TABL_DEFAULT_COMPUTATION_LIMIT;
+
   par->method       = UNUR_METH_TABL;         /* indicate method             */
   par->variant      = (TABL_VARFLAG_SPLIT_ARC   |     /* variant: split at arc_mean  */
 		       TABL_VARFLAG_STP_A |     /* run SPLIT A on slopes       */
@@ -270,20 +279,6 @@ unur_tabl_new( struct unur_distr *distr )
   par->urng         = unur_get_default_urng(); /* use default urng           */
 
   _unur_set_debugflag_default(par); /* set default debugging flags           */
-
-  /* we use the domain to get the boundaries for our computation limits      */
-  /* (but only if the domain is bounded!)                                    */
-  if ( (distr->set & UNUR_DISTR_SET_DOMAIN)
-       && DISTR.domain[0] > -INFINITY
-       && DISTR.domain[1] <  INFINITY ) {
-    PAR.bleft = DISTR.domain[0];
-    PAR.bright = DISTR.domain[1];
-    par->set |= TABL_SET_BOUNDARY;
-  }
-  else {               /* the default */
-    PAR.bleft  = 0.;  /* left boundary of domain (no useful default) */
-    PAR.bright = 0.;  /* right boundary of domain (left = right --> cannot make hat) */
-  }
 
   /* routine for starting generator */
   par->init = unur_tabl_init;
@@ -724,7 +719,7 @@ unur_tabl_init( struct unur_par *par )
 #if UNUR_DEBUG & UNUR_DB_INFO
   /* write info into log file */
   if (gen->debug)
-    _unur_tabl_debug_intervals(gen,TRUE);
+    _unur_tabl_debug_init_finished(par,gen);
 #endif
 
   /* free parameters */
@@ -1076,6 +1071,12 @@ _unur_tabl_create( struct unur_par *par )
   GEN.pdf_param   = gen->DISTR.params;
   GEN.n_pdf_param = gen->DISTR.n_params;
 
+  /* the boundaries for our computation limits are intersection of the       */
+  /* domain of the distribution and the given computation boundaries.        */
+  if (par->distr->set & UNUR_DISTR_SET_DOMAIN) {
+    PAR.bleft = max(PAR.bleft,par->DISTR.domain[0]);
+    PAR.bright = min(PAR.bright,par->DISTR.domain[1]);
+  }
   GEN.bleft       = PAR.bleft;         /* left boundary of domain            */
   GEN.bright      = PAR.bright;        /* right boundary of domain           */
 
@@ -1129,7 +1130,7 @@ _unur_tabl_get_starting_intervals( struct unur_par *par, struct unur_gen *gen )
     /* slopes are given */
     return _unur_tabl_get_starting_intervals_from_slopes(par,gen);
 
-  if ( (par->set & TABL_SET_BOUNDARY) && (par->distr->set & UNUR_DISTR_SET_MODE) )
+  if (par->distr->set & UNUR_DISTR_SET_MODE)
     /* no slopes given. need domain and mode */
     /* compute slopes */
     return _unur_tabl_get_starting_intervals_from_mode(par,gen);
@@ -1205,15 +1206,13 @@ _unur_tabl_get_starting_intervals_from_slopes( struct unur_par *par, struct unur
     iv->Acum = 0.;
 
     /* estimate domain */
-    if (!(par->set & TABL_SET_BOUNDARY)) {
-      if (iv->slope > 0) {
-	GEN.bleft = min(GEN.bleft,iv->xmin);
-	GEN.bright = max(GEN.bright,iv->xmax);
-      }
-      else {
-	GEN.bleft = min(GEN.bleft,iv->xmax);
-	GEN.bright = max(GEN.bright,iv->xmin);
-      }
+    if (iv->slope > 0) {
+      GEN.bleft = min(GEN.bleft,iv->xmin);
+      GEN.bright = max(GEN.bright,iv->xmax);
+    }
+    else {
+      GEN.bleft = min(GEN.bleft,iv->xmax);
+      GEN.bright = max(GEN.bright,iv->xmin);
     }
 
     /* split interval following [1], split A */
@@ -1250,12 +1249,14 @@ _unur_tabl_get_starting_intervals_from_mode( struct unur_par *par, struct unur_g
   /** TODO: check for slopes out of support !! **/
 
   struct unur_tabl_interval *iv;
-  
-  double mode = par->DISTR.mode;   /* (exact!) location of mode of p.d.f. */
+  double mode;   /* (exact!) location of mode of p.d.f. */
 
   /* check arguments */
   COOKIE_CHECK(par,CK_TABL_PAR,0);
   COOKIE_CHECK(gen,CK_TABL_GEN,0);
+
+  /* compute mode */
+  mode = par->DISTR.mode;   /* (exact!) location of mode of p.d.f. */
 
   /* init linked list of intervals */
   GEN.n_ivs = 0;
@@ -1268,14 +1269,14 @@ _unur_tabl_get_starting_intervals_from_mode( struct unur_par *par, struct unur_g
 
     if (mode <= GEN.bleft) {
       /* only one ascending interval <a,b> = [a,b] */
-      iv->xmax = mode;
+      iv->xmax = GEN.bleft;
       iv->xmin = GEN.bright;
       break;
     }
 
     if (mode >= GEN.bright) {
       /* only one descending interval <a,b> = [b,a] */
-      iv->xmax = mode;
+      iv->xmax = GEN.bright;
       iv->xmin = GEN.bleft;
       break;
     }
@@ -1766,10 +1767,7 @@ _unur_tabl_debug_init( struct unur_par *par, struct unur_gen *gen )
     fprintf(log,"()\n");
   empty_line();
 
-  fprintf(log,"%s: computation interval = (%g, %g)",gen->genid,GEN.bleft,GEN.bright);
-  if (!(par->set & TABL_SET_BOUNDARY))
-      fprintf(log,"   (computed from given slopes)");
-  fprintf(log,"\n");
+  fprintf(log,"%s: computation interval = (%g, %g)\n",gen->genid,GEN.bleft,GEN.bright);
   empty_line();
 
   fprintf(log,"%s: area fraction for equal area rule = %g ",gen->genid,PAR.area_fract);
@@ -1825,12 +1823,36 @@ _unur_tabl_debug_init( struct unur_par *par, struct unur_gen *gen )
     fprintf(log,"%s: split slopes by main subdivision rule (SPLIT B).\n",gen->genid);
   empty_line();
 
-  fprintf(log,"%s: number of starting intervals (at least) = %d",gen->genid,PAR.n_starting_cpoints);
+  fprintf(log,"%s: number of starting intervals (approx.) = %d",gen->genid,PAR.n_starting_cpoints);
   _unur_print_if_default(par,TABL_SET_N_STP);
   fprintf(log,"\n");
   empty_line();
 
 } /* end of _unur_tabl_debug_init() */
+
+/*****************************************************************************/
+
+static void
+_unur_tabl_debug_init_finished( struct unur_par *par, struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* write info about generator after setup into logfile                  */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par ... pointer to parameter for building generator object         */
+     /*   gen ... pointer to generator object                                */
+     /*----------------------------------------------------------------------*/
+{
+  FILE *log;
+
+  log = unur_get_stream();
+
+  _unur_tabl_debug_intervals(gen,TRUE);
+
+  empty_line();
+  fprintf(log,"%s:  INIT completed **********************\n",gen->genid);
+  empty_line();
+
+} /* end of _unur_tabl_debug_init_finished() */
 
 /*****************************************************************************/
 
@@ -1903,7 +1925,13 @@ _unur_tabl_debug_intervals( struct unur_gen *gen, int print_areas )
     empty_line();
   }
 
-  if (!print_areas) return;
+  if (!print_areas) {
+    /* this just happens, when we call _unur_tabl_debug_intervals(), after
+       we have finished split A. */
+    fprintf(log,"%s: Split A finished.\n",gen->genid);
+    empty_line();
+    return;
+  }
 
   if (GEN.Atotal <= 0.) {
     fprintf(log,"%s: Construction of hat function not successful\n",gen->genid);

@@ -487,9 +487,6 @@ nkr(UNUR_URNG_TYPE urng)
 #define XI 2.216035867166471
 #define PIhochK 0.3989422804
 
-#define min(v,w) ( ((v)<(w)) ? (v) : (w) )
-#define max(v,w) ( ((v)>(w)) ? (v) : (w) )
-
    double t, u, v, w, x, z;
 
    u = uniform();

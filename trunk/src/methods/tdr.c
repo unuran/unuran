@@ -319,7 +319,6 @@
 /*---------------------------------------------------------------------------*/
 /* Flags for logging set calls                                               */
 
-#define TDR_SET_MODE           0x001u
 #define TDR_SET_CENTER         0x002u
 #define TDR_SET_STP            0x004u
 #define TDR_SET_N_STP          0x008u
@@ -517,14 +516,10 @@ unur_tdr_new( struct unur_distr* distr )
   /* we use the mode (if known) as center of the distribution */
   if (distr->set & UNUR_DISTR_SET_MODE) {
     PAR.center = DISTR.mode;
-    PAR.mode = DISTR.mode;
     par->set |= TDR_SET_CENTER;
-    par->set |= TDR_SET_MODE;
   }
-  else {
+  else
     PAR.center = 0.;        /* the default */
-    PAR.mode = 0.;          /* initialize variable */
-  }
 
   /* routine for starting generator */
   par->init = unur_tdr_init;
@@ -1484,8 +1479,10 @@ _unur_tdr_create( struct unur_par *par )
   _unur_copy_urng_pointer(par,gen); /* pointer to urng into generator object */
   _unur_copy_debugflag(par,gen);    /* copy debugging flags into generator object */
 
-  /* mode known ?? */
-  if (!(par->set & TDR_SET_MODE))
+  /* mode known and in given domain ?? */
+  if ( !(par->distr->set & UNUR_DISTR_SET_MODE)
+       || (par->DISTR.mode < GEN.bleft)
+       || (par->DISTR.mode > GEN.bright))
     /* we cannot use the mode as construction point */
     par->variant = par->variant & (~TDR_VARFLAG_USEMODE);
 
@@ -1493,6 +1490,11 @@ _unur_tdr_create( struct unur_par *par )
   if (!(par->set & TDR_SET_CENTER))
     /* we cannot use the center as construction point */
     par->variant = par->variant & (~TDR_VARFLAG_USECENTER);
+  else {
+    /* center must be in domain */
+    PAR.center = max(PAR.center,GEN.bleft);
+    PAR.center = min(PAR.center,GEN.bright);
+  }
 
   /* return pointer to (almost empty) generator object */
   return(gen);
@@ -1534,28 +1536,12 @@ _unur_tdr_get_starting_cpoints( struct unur_par *par, struct unur_gen *gen )
   /* use mode as construction point ? */
   use_mode = (par->variant & TDR_VARFLAG_USEMODE) ? TRUE : FALSE;
 
-  /* check mode */
-  if (use_mode &&
-      ( PAR.mode < GEN.bleft || PAR.mode > GEN.bright ) ) {
-    _unur_warning(gen->genid,UNUR_ERR_INIT,"mode out of domain.");
-    use_mode = 0;
-  }
-
   /* use center as construction point ? */
-  use_center = FALSE;
-  if (!use_mode) {
-    use_center = (par->variant & TDR_VARFLAG_USECENTER) ? TRUE : FALSE;
-    /* check center */
-    if (use_center &&
-	( PAR.center < GEN.bleft || PAR.center > GEN.bright ) ) {
-      _unur_warning(gen->genid,UNUR_ERR_INIT,"center out of domain.");
-      use_center = 0;
-    }
-  }
+  use_center = (!use_mode && (par->variant & TDR_VARFLAG_USECENTER)) ? TRUE : FALSE;
 
   /* add extra construction point        */
   /* (use either mode or center or none) */
-  extra_cpoint = use_mode ? PAR.mode : (use_center ? PAR.center : 0. );
+  extra_cpoint = use_mode ? par->DISTR.mode : (use_center ? PAR.center : 0. );
 
   /* reset counter of intervals */
   GEN.n_ivs = 0;

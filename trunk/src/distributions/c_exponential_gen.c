@@ -117,7 +117,7 @@ double unur_stdgen_sample_exponential_inv( struct unur_gen *gen )
   U = GEN.umin + uniform() * (GEN.umax-GEN.umin);
 
   /* transform to random variate */
-  X = log( 1. - U );
+  X = - log( 1. - U );
 
   /* -X- end of generator code -X- */
 

@@ -356,9 +356,12 @@ UnurTestDistrResultFile["student", isCONT, datafile, fparams, RunSampleSize, Stu
 fparams = {{0,1}};
 UnurTestDistrResultFile["triangular", isCONT, datafile, fparams, RunSampleSize];
 
+(*
 (* Uniform *)
+(* Disabled! since Mathematica 3.0 computes wrong values for the derivative *)
 fparams = {{-100,1}, {1001/1000,100}};
 UnurTestDistrResultFile["uniform", isCONT, datafile, fparams, RunSampleSize];
+*)
 
 (* Weibull *)
 fparams = {{1/2,10},{1/100,100}};

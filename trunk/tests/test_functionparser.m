@@ -17,7 +17,10 @@
       {"function_string",{minimal_function_value,maximal_function_value,\
 number_of_function_value}       *)
 Testsample = {
-        {"3.45+x", {-2, 2, 5}},                (* arithmetic operator *)
+
+	(* --- arithmetic operator --- *)
+
+        {"3.45+x", {-2, 2, 5}},
         {"x-4.673", {-200, 200000, 5}},
         {"3*x", {-2, 2, 5}},
         {"x/5.8", {-2, 2, 5}},
@@ -28,7 +31,11 @@ Testsample = {
         {"2.784*e",{-2,2,5}},
         {"-4.7285e-7*x",{-2,2,5}},
          
-	{"3*(x^5-x^4/(1.5-x))", {-2, 2, 5}},    (*  brackets  *)
+	(* --- brackets --- *)
+
+	{"3*(x^5-x^4/(1.5-x))", {-2, 2, 5}},
+
+	(* --- relational operators --- *)
 
         {"3*(x>1)" ,{-2,2,5}},
         {"3*(x<1)" ,{-2,2,5}},
@@ -45,7 +52,9 @@ Testsample = {
         {"(3*(2<>x)and(x>2))+x",{-2,2,5}},
         {"3*(2<x)or(x<-1)",{-2,2,5}},
     
-	{"exp[-4*X]", {-2, 2, 5}},               (*   system functions  *)
+	(* --- system functions --- *)
+
+	{"exp[-4*X]", {-2, 2, 5}},
         
         {"ln[x]",{1,6,6}},
         {"log[3,x]",{1,6,6}},  
@@ -59,9 +68,10 @@ Testsample = {
       	{"exp[x^2]*(cos[x]<1)", {-3, 8, 5}},
 	{"abs[x]-3*x", {-2, 2, 5}},
 	
-	
+	(*
+	(* does not work with Mathematica 3.0 *)	
 	{"(sin[ ln[3*x*(cos[ 3*x^3-4.6789/(x+4)])]])-1", {-38.828,454.4*10^3,7}},
-	 
+	*)
 
         {"exp[x^2]*(sin[x*cos[x^2-1]]+1)*((x-3*pi*x)<1)", {-3,7,5}}
 };

@@ -309,14 +309,12 @@ _unur_tdr_free( struct unur_gen *gen )
     }
   }
 
-  /* free other memory not stored in list */
-  _unur_free_genid(gen);
+  /* free table */
   if (GEN.guide)  free(GEN.guide);
 
-  /* free function trees (if there is any) */
-  if (DISTR.pdftree)  _unur_fstr_free(DISTR.pdftree);
-  if (DISTR.dpdftree) _unur_fstr_free(DISTR.dpdftree);
-  if (DISTR.cdftree)  _unur_fstr_free(DISTR.cdftree);
+  /* free other memory not stored in list */
+  _unur_distr_cont_clear(gen);
+  _unur_free_genid(gen);
 
   free(gen);
 
@@ -846,6 +844,7 @@ _unur_tdr_ps_starting_intervals( struct unur_par *par, struct unur_gen *gen )
       iv_new = _unur_tdr_interval_new( gen, x, fx, FALSE );
       if (iv_new == NULL) return 0;  /* PDF(x) < 0 or overflow !! */
 
+
       /* if fx is 0, then we can cut off the tail of the distribution
 	 (since it must be T-concave)  */
       if (fx <= 0.) {
@@ -856,13 +855,13 @@ _unur_tdr_ps_starting_intervals( struct unur_par *par, struct unur_gen *gen )
 
 	/* cut off left tail */
 	iv_new->next = iv->next;
-	free(iv);
-	--(GEN.n_ivs);
-	GEN.iv = iv_new;
-	iv_new->prev = NULL;
+	iv_new->prev = iv->prev;
 	iv_new->ip = iv->ip;
 	iv_new->fip = iv->fip;
+	--(GEN.n_ivs);
+	GEN.iv = iv_new;
 	/* continue with this new interval */
+	free(iv);
 	iv = iv_new;
       }
 
@@ -870,9 +869,10 @@ _unur_tdr_ps_starting_intervals( struct unur_par *par, struct unur_gen *gen )
 
 	if (iv->prev) {
 	  /* insert new interval in just before the old unbounded one */
-	  iv->prev->next = iv_new;
+	  iv_tmp = iv->prev;
 	  iv_new->prev = iv->prev;
 	  iv_new->next = iv;
+	  iv->prev->next = iv_new;
 	  iv->prev = iv_new;
 	  
 	  /* make sure that _unur_arcmean(iv->ip,iv->x) is never out of range */
@@ -880,7 +880,7 @@ _unur_tdr_ps_starting_intervals( struct unur_par *par, struct unur_gen *gen )
 	  
 	  /* continue with the interval before the old one
 	     (neccessary since it will change too). */
-	  iv = iv->prev;
+	  iv = iv_tmp;
 	}
 	else { /* iv->prev == NULL */
 	  /* insert new interval as first entry in list */

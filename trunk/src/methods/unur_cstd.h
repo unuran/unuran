@@ -87,8 +87,7 @@ void unur_cstd_free( struct unur_gen *generator);
 int unur_cstd_set_variant( struct unur_par *par, unsigned variant );
 /* set variant of method                                                     */
 
-#define unur_rect_set_debug(par,debugflags)  unur_set_debug((par),(debugflags))
+#define unur_cstd_set_debug(par,debugflags)  unur_set_debug((par),(debugflags))
 /* set debuging flags                                                        */
 
 /*---------------------------------------------------------------------------*/
-

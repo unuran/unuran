@@ -172,11 +172,12 @@ sub anuran_start
     # HTTP header
     if ($help) {
 	$title  = '/ Help';
-	print $q->header(-target=>'Help');
+##	print $q->header(-target=>'Help');
     }
-    else {
-	print $q->header(-target=>'Code');
-    }
+##    else {
+##    print $q->header(-target=>'Code');
+##    }
+    print $q->header();
 
     # HTML header and title
     print
@@ -484,7 +485,7 @@ sub anuran_select_cpdf
 				      -size     => 50,
 				      -maxlength=> 100),
 			p(),
-			"(Multiple of) Density = $sp",
+			"Density = $sp",
 			$q->textfield(-name     => 'PDF',
 				      -size     => 50,
 				      -maxlength=> 200),
@@ -925,8 +926,9 @@ sub anuran_code
 	# insert name
 	if ($q->param('Name')) {
 	    my $name = $q->param('Name');
-	    $name =~ s/distribution//i;
-	    $name =~ s/\s//g;
+	    $name =~ s/distribution//i;     # remove string "distribution"
+	    $name =~ s/\s//g;               # remove white space
+	    $name =~ s/\(.*$//;             # cut after first parenthesis
 	    $gen_opts .= " -N $name";
 	}
 
@@ -998,7 +1000,12 @@ sub anuran_code
         $log .= "client = ".remote_host()."  (".remote_addr().")\n";
 
 	# name of distribution
-	$log .= "distribution = $distr\n";
+	$log .= "distribution = $distr";
+
+	if ($PDF) {
+	    $log .= ": pdf = \"$PDF\"";
+	}
+	$log .= "\n";
 
 	# list of parameters (defaults settings start with '[ '
 	for (my $i=0; $i < $n_tot; $i++) {

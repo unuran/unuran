@@ -195,22 +195,16 @@ unur_srou_new( struct unur_distr *distr )
 
   /* check distribution */
   if (distr->type != UNUR_DISTR_CONT) {
-    _unur_error(GENTYPE,UNUR_ERR_DISTR_INVALID,"");
-    return NULL; }
+    _unur_error(GENTYPE,UNUR_ERR_DISTR_INVALID,""); return NULL; }
   COOKIE_CHECK(distr,CK_DISTR_CONT,NULL);
 
   if (DISTR_IN.pdf == NULL) {
-    _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"p.d.f.");
-    return NULL;
-  }
+    _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"p.d.f."); return NULL; }
   if (!(distr->set & UNUR_DISTR_SET_MODE)) {
-    _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"mode of p.d.f.");
-    return NULL;
-  }
+    _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"mode"); return NULL; }
   if (!(distr->set & UNUR_DISTR_SET_PDFAREA)) {
-    _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"area of p.d.f.");
-    return NULL;
-  }
+    _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"area below p.d.f.");
+    return NULL; }
 
   /* allocate structure */
   par = _unur_malloc(sizeof(struct unur_par));
@@ -227,6 +221,7 @@ unur_srou_new( struct unur_distr *distr )
   par->set         = 0u;              /* inidicate default parameters        */    
   par->urng        = unur_get_default_urng(); /* use default urng            */
 
+  par->genid       = _unur_set_genid(GENTYPE);/* set generator id            */
   par->debug       = UNUR_DEBUGFLAG_DEFAULT;  /* set default debugging flags */
 
   /* routine for starting generator */
@@ -260,7 +255,7 @@ unur_srou_set_Fmode( struct unur_par *par, double Fmode )
 
   /* check new parameter for generator */
   if (Fmode < 0. || Fmode > 1.) {
-    _unur_warning(GENTYPE,UNUR_ERR_SET,"cdf(mode) out of range");
+    _unur_warning(par->genid,UNUR_ERR_PAR_SET,"cdf(mode)");
     return 0;
   }
 
@@ -398,7 +393,7 @@ unur_srou_init( struct unur_par *par )
 
   /* check input */
   if ( par->method != UNUR_METH_SROU ) {
-    _unur_error(GENTYPE,UNUR_ERR_PAR_INVALID,"");
+    _unur_error(par->genid,UNUR_ERR_PAR_INVALID,"");
     return NULL; }
   COOKIE_CHECK(par,CK_SROU_PAR,NULL);
 
@@ -411,7 +406,7 @@ unur_srou_init( struct unur_par *par )
 
   /* fm must be positive */
   if (fm <= 0.) {
-    _unur_error(GENTYPE,UNUR_ERR_INIT,"pdf(mode) <= 0.");
+    _unur_error(par->genid,UNUR_ERR_GEN_DATA,"pdf(mode) <= 0.");
     free(par); unur_srou_free(gen);
     return NULL;
   }
@@ -598,7 +593,7 @@ unur_srou_sample_check( struct unur_gen *gen )
       if ( (2 * GEN.um*GEN.um < fx + fnx) 
 	   || (xfx < GEN.vl) || (xfx > GEN.vr)
 	   || (xfnx < GEN.vl) || (xfnx > GEN.vr) )
-	_unur_error(GENTYPE,UNUR_ERR_SAMPLE,"pdf(x) > hat(x)");
+	_unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"pdf(x) > hat(x)");
 
       /* accept or reject */
       if (uu <= fx)
@@ -627,7 +622,7 @@ unur_srou_sample_check( struct unur_gen *gen )
       /* check hat */
       xfx = x * sqrt(fx);
       if ( (GEN.um*GEN.um < fx) || (xfx < GEN.vl) || (xfx > GEN.vr) )
-	_unur_error(GENTYPE,UNUR_ERR_SAMPLE,"pdf(x) > hat(x)");
+	_unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"pdf(x) > hat(x)");
       
       /* evaluate squeeze */
       if ( (gen->variant & SROU_VARFLAG_SQUEEZE) &&
@@ -668,7 +663,7 @@ unur_srou_free( struct unur_gen *gen )
 
   /* check input */
   if ( gen->method != UNUR_METH_SROU ) {
-    _unur_warning(GENTYPE,UNUR_ERR_GEN_INVALID,"");
+    _unur_warning(gen->genid,UNUR_ERR_GEN_INVALID,"");
     return; }
   COOKIE_CHECK(gen,CK_SROU_GEN,/*void*/);
 
@@ -676,7 +671,7 @@ unur_srou_free( struct unur_gen *gen )
   SAMPLE = NULL;   /* make sure to show up a programming error */
 
   /* free memory */
-  free(gen->genid);
+  _unur_free_genid(gen);
   free(gen);
 
 } /* end of unur_srou_free() */
@@ -715,8 +710,8 @@ _unur_srou_create( struct unur_par *par )
   /* copy distribution object into generator object */
   memcpy( &(gen->distr), par->distr, sizeof( struct unur_distr ) );
 
-  /* set generator identifier */
-  gen->genid = _unur_make_genid(GENTYPE);
+  /* copy generator identifier */
+  gen->genid = par->genid;
 
   /* routines for sampling and destroying generator */
   if (par->variant & SROU_VARFLAG_VERIFY)
@@ -732,7 +727,7 @@ _unur_srou_create( struct unur_par *par )
     /* there is something wrong.
        assume: user has change domain without changing mode.
        but then, she probably has not updated area and is to large */
-    _unur_warning(GENTYPE,UNUR_ERR_INIT,"area and cdf at mode might be wrong");
+    _unur_warning(par->genid,UNUR_ERR_GEN_DATA,"area and/or cdf at mode");
     DISTR.mode = max(DISTR.mode,DISTR.BD_LEFT);
     DISTR.mode = min(DISTR.mode,DISTR.BD_RIGHT);
   }

@@ -99,12 +99,13 @@ unur_unif_new( int start, int skip )
   PAR.skip = skip;                 /* skip for subsequence                   */
 
   /* set default values */
-  par->method      = UNUR_METH_UNIF; /* method and default variant           */
-  par->variant     = 0u;             /* default variant                      */
-  par->set         = 0u;             /* inidicate default parameters         */    
-  par->urng        = unur_get_default_urng(); /* use default urng            */
+  par->method   = UNUR_METH_UNIF;  /* method and default variant             */
+  par->variant  = 0u;              /* default variant                        */
+  par->set      = 0u;              /* inidicate default parameters           */    
+  par->urng     = unur_get_default_urng(); /* use default urng               */
 
-  par->debug       = UNUR_DEBUGFLAG_DEFAULT;  /* set default debugging flags */
+  par->genid    = _unur_set_genid(GENTYPE);/* set generator id               */
+  par->debug    = UNUR_DEBUGFLAG_DEFAULT;  /* set default debugging flags    */
 
   /* routine for starting generator */
   par->init = unur_unif_init;
@@ -138,7 +139,7 @@ unur_unif_init( struct unur_par *par )
 
   /* check input */
   if ( par->method != UNUR_METH_UNIF ) {
-    _unur_error(GENTYPE,UNUR_ERR_PAR_INVALID,"");
+    _unur_error(par->genid,UNUR_ERR_PAR_INVALID,"");
     return NULL; }
   COOKIE_CHECK(par,CK_UNIF_PAR,NULL);
 
@@ -210,7 +211,7 @@ unur_unif_free( struct unur_gen *gen )
 
   /* check input */
   if ( gen->method != UNUR_METH_UNIF ) {
-    _unur_warning(GENTYPE,UNUR_ERR_GEN_INVALID,"");
+    _unur_warning(gen->genid,UNUR_ERR_GEN_INVALID,"");
     return; }
   COOKIE_CHECK(gen,CK_UNIF_GEN,/*void*/);
 
@@ -218,7 +219,7 @@ unur_unif_free( struct unur_gen *gen )
   SAMPLE = NULL;   /* make sure to show up a programming error */
 
   /* free memory */
-  free(gen->genid);
+  _unur_free_genid(gen);
   free(gen);
 
 } /* end of unur_unif_free() */
@@ -254,8 +255,8 @@ _unur_unif_create( struct unur_par *par )
   /* magic cookies */
   COOKIE_SET(gen,CK_UNIF_GEN);
 
-  /* set generator identifier */
-  gen->genid = _unur_make_genid(GENTYPE);
+  /* copy generator identifier */
+  gen->genid = par->genid;
 
   /* routines for sampling and destroying generator */
   SAMPLE = unur_unif_sample;

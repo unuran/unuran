@@ -284,18 +284,14 @@ unur_arou_new( struct unur_distr *distr )
 
   /* check distribution */
   if (distr->type != UNUR_DISTR_CONT) {
-    _unur_error(GENTYPE,UNUR_ERR_DISTR_INVALID,"");
-    return NULL; }
+    _unur_error(GENTYPE,UNUR_ERR_DISTR_INVALID,""); return NULL; }
   COOKIE_CHECK(distr,CK_DISTR_CONT,NULL);
 
   if (DISTR_IN.pdf == NULL) {
-    _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"p.d.f.");
-    return NULL;
+    _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"p.d.f."); return NULL;
   }
   if (DISTR_IN.dpdf == NULL) {
-    _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"derivative of p.d.f.");
-    return NULL;
-  }
+    _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"derivative of p.d.f."); return NULL; }
 
   /* allocate structure */
   par = _unur_malloc( sizeof(struct unur_par) );
@@ -321,6 +317,7 @@ unur_arou_new( struct unur_distr *distr )
   par->set      = 0u;                      /* inidicate default parameters   */    
   par->urng     = unur_get_default_urng(); /* use default urng               */
 
+  par->genid    = _unur_set_genid(GENTYPE);/* set generator id               */
   par->debug    = UNUR_DEBUGFLAG_DEFAULT;  /* set default debugging flags    */
 
   /* we use the mode (if known) as center of the distribution */
@@ -369,7 +366,7 @@ unur_arou_set_cpoints( struct unur_par *par, int n_stp, double *stp )
   /* we always use the boundary points as additional starting points,
      so we do not count these here! */
   if (n_stp < 0 ) {
-    _unur_warning(GENTYPE,UNUR_ERR_SET,"number of starting points < 0");
+    _unur_warning(par->genid,UNUR_ERR_PAR_SET,"number of starting points < 0");
     return 0;
   }
 
@@ -377,7 +374,8 @@ unur_arou_set_cpoints( struct unur_par *par, int n_stp, double *stp )
     /* starting points must be strictly monontonically increasing */
     for( i=1; i<n_stp; i++ )
       if (stp[i] <= stp[i-1]) {
-	_unur_warning(GENTYPE,UNUR_ERR_SET,"starting points not strictly monotonically increasing");
+	_unur_warning(par->genid,UNUR_ERR_PAR_SET,
+		      "starting points not strictly monotonically increasing");
 	return 0;
       }
 
@@ -416,7 +414,7 @@ unur_arou_set_guidefactor( struct unur_par *par, double factor )
 
   /* check new parameter for generator */
   if (factor < 0) {
-    _unur_warning(GENTYPE,UNUR_ERR_SET,"relative table size < 0");
+    _unur_warning(par->genid,UNUR_ERR_PAR_SET,"guide table size < 0");
     return 0;
   }
 
@@ -454,7 +452,7 @@ unur_arou_set_max_sqhratio( struct unur_par *par, double max_ratio )
 
   /* check new parameter for generator */
   if (max_ratio < 0. || max_ratio > 1. ) {
-    _unur_warning(GENTYPE,UNUR_ERR_SET,"ratio Atotal / Asqueeze not in [0,1]");
+    _unur_warning(par->genid,UNUR_ERR_PAR_SET,"ratio A(squeeze)/A(hat) not in [0,1]");
     return 0;
   }
 
@@ -492,7 +490,7 @@ unur_arou_set_max_segments( struct unur_par *par, int max_segs )
 
   /* check new parameter for generator */
   if (max_segs < 1 ) {
-    _unur_warning(GENTYPE,UNUR_ERR_SET,"maximum number of segments < 1");
+    _unur_warning(par->genid,UNUR_ERR_PAR_SET,"maximum number of segments < 1");
     return 0;
   }
 
@@ -629,7 +627,7 @@ unur_arou_init( struct unur_par *par )
 
   /* check input */
   if ( par->method != UNUR_METH_AROU ) {
-    _unur_error(GENTYPE,UNUR_ERR_PAR_INVALID,"");
+    _unur_error(par->genid,UNUR_ERR_PAR_INVALID,"");
     return NULL; }
   COOKIE_CHECK(par,CK_AROU_PAR,NULL);
 
@@ -652,7 +650,7 @@ unur_arou_init( struct unur_par *par )
   /* we have to update the maximal number of segments,
      if the user wants more starting points. */
   if (GEN.n_segs > GEN.max_segs) {
-    _unur_warning(gen->genid,UNUR_ERR_INIT,"maximal number of segments too small. increase.");
+    _unur_warning(gen->genid,UNUR_ERR_GEN_DATA,"maximal number of segments too small. increase.");
     GEN.max_segs = GEN.n_segs;
   }
 
@@ -669,7 +667,7 @@ unur_arou_init( struct unur_par *par )
 
   /* is there any envelope at all ? */
   if (GEN.Atotal <= 0.) {
-    _unur_error(gen->genid,UNUR_ERR_INIT_FAILED,"cannot construct envelope. bad construction points.");
+    _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"bad construction points");
     unur_arou_free(gen);
     return NULL;
   }
@@ -819,7 +817,7 @@ unur_arou_sample_check( struct unur_gen *gen )
 
       /* test for T-concavity */
       if (sqx*sqx > fx)
-	_unur_error(gen->genid,UNUR_ERR_SAMPLE,"p.d.f. not T-concave.");
+	_unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"p.d.f. not T-concave.");
 
       return x;
     }
@@ -849,7 +847,7 @@ unur_arou_sample_check( struct unur_gen *gen )
 
       /* test for T-concavity */
       if (sqx*sqx > fx)
-	_unur_error(gen->genid,UNUR_ERR_SAMPLE,"p.d.f. not T-concave.");
+	_unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"p.d.f. not T-concave.");
 
       /* being outside the squeeze is bad. improve the situation! */
       if (GEN.n_segs < GEN.max_segs && GEN.max_ratio * GEN.Atotal > GEN.Asqueeze)
@@ -880,7 +878,7 @@ unur_arou_free( struct unur_gen *gen )
 
   /* check input */
   if ( gen->method != UNUR_METH_AROU ) {
-    _unur_warning(GENTYPE,UNUR_ERR_GEN_INVALID,"");
+    _unur_warning(gen->genid,UNUR_ERR_GEN_INVALID,"");
     return; }
   COOKIE_CHECK(gen,CK_AROU_GEN,/*void*/);
 
@@ -896,7 +894,7 @@ unur_arou_free( struct unur_gen *gen )
   _unur_free_mblocks(GEN.mblocks);
 
   /* free other memory not stored in list */
-  free(gen->genid);
+  _unur_free_genid(gen);
   free(GEN.guide);
   free(gen);
 
@@ -933,8 +931,8 @@ _unur_arou_create( struct unur_par *par )
   /* magic cookies */
   COOKIE_SET(gen,CK_AROU_GEN);
 
-  /* set generator identifier */
-  gen->genid = _unur_make_genid(GENTYPE);
+  /* copy generator identifier */
+  gen->genid = par->genid;
 
   /* copy distribution object into generator object */
   memcpy( &(gen->distr), par->distr, sizeof( struct unur_distr ) );
@@ -1050,11 +1048,11 @@ _unur_arou_get_starting_cpoints( struct unur_par *par, struct unur_gen *gen )
 	x = PAR.starting_cpoints[i];
 	/* check starting point */
 	if (x <= DISTR.BD_LEFT || x >= DISTR.BD_RIGHT) {
-	  _unur_warning(gen->genid,UNUR_ERR_INIT,"starting point out of domain!");
+	  _unur_warning(gen->genid,UNUR_ERR_GEN_DATA,"starting point out of domain");
 	  continue;
 	}
 	if (x<=x_last) {
-	  _unur_warning(gen->genid,UNUR_ERR_INIT,"starting points are not strictly monotonically increasing! skip!");
+	  _unur_warning(gen->genid,UNUR_ERR_GEN_DATA,"starting points are not strictly monotonically increasing -> skip");
 	  continue;
 	}
       }
@@ -1093,7 +1091,7 @@ _unur_arou_get_starting_cpoints( struct unur_par *par, struct unur_gen *gen )
 
     /* check value of p.d.f. at starting point */
     if (!is_increasing && fx > fx_last) {
-      _unur_error(gen->genid,UNUR_ERR_INIT_FAILED,"p.d.f. not unimodal!");
+      _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"p.d.f. not unimodal");
       return 0;
     }
 
@@ -1203,7 +1201,7 @@ _unur_arou_get_starting_segments( struct unur_par *par, struct unur_gen *gen )
     /* add a new segment, but check if we had to used too many segments */
     if (GEN.n_segs >= GEN.max_segs) {
       /* we do not want to create too many segments */
-      _unur_error(gen->genid,UNUR_ERR_INIT_FAILED,"cannot create bounded envelope!");
+      _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"cannot create bounded envelope!");
       return 0;
     }
     seg_new = _unur_arou_segment_new( gen, x, fx );
@@ -1251,7 +1249,7 @@ _unur_arou_segment_new( struct unur_gen *gen, double x, double fx )
 
   /* first check fx */
   if (fx<0.) {
-    _unur_warning(gen->genid,UNUR_ERR_INIT,"pdf(x) < 0.");
+    _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"pdf(x) < 0.");
     return NULL;
   }
 
@@ -1347,8 +1345,9 @@ _unur_arou_segment_parameter( struct unur_gen *gen, struct unur_arou_segment *se
   seg->Ain = (seg->ltp[1] * seg->rtp[0] - seg->ltp[0] * seg->rtp[1]) / 2.;
   /* due to our ordering of construction points, seg->Ain must be >= 0 ! */
   if( seg->Ain < 0. ) {
-    /* This should not happen ! */
-    _unur_error(gen->genid,UNUR_ERR_INIT_FAILED,"non-ascending ordering of construction points");
+    /* This should not happen:
+       non-ascending ordering of construction points */
+    _unur_error(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
     return 0;
   }
 
@@ -1388,7 +1387,7 @@ _unur_arou_segment_parameter( struct unur_gen *gen, struct unur_arou_segment *se
 
   if ( fabs(cramer_det[0]) > det_bound || fabs(cramer_det[1]) > det_bound ) {
     /* case: triangle is assumed to be unbounded */	     
-/*      _unur_warning(gen->genid,UNUR_ERR_INIT,"outer triangle assumed unbounded"); */
+/*      _unur_warning(gen->genid,UNUR_ERR_....,"outer triangle assumed unbounded"); */
     seg->Aout = INFINITY;
     return -1;
   }
@@ -1416,7 +1415,7 @@ _unur_arou_segment_parameter( struct unur_gen *gen, struct unur_arou_segment *se
        then seg->mid[1] < 0.
     */
     if( seg->mid[1] < 0. ) {
-/*        _unur_warning(gen->genid,UNUR_ERR_INIT,"outer triangle unbounded"); */
+/*        _unur_warning(gen->genid,UNUR_ERR_....,"outer triangle unbounded"); */
       seg->Aout = INFINITY;
       return -1;
     }
@@ -1439,7 +1438,7 @@ _unur_arou_segment_parameter( struct unur_gen *gen, struct unur_arou_segment *se
        (2) small roundoff errors.
     */
     /** TODO: check for roundoff-errors !!! **/
-    _unur_error(gen->genid,UNUR_ERR_INIT_FAILED,"p.d.f. not T-concave");
+    _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"p.d.f. not T-concave");
     return 0;
   }
 
@@ -1451,7 +1450,7 @@ _unur_arou_segment_parameter( struct unur_gen *gen, struct unur_arou_segment *se
      use middle point as intersection point and 
      set area outside the squeeze to 0.
   */
-/*    _unur_warning(gen->genid,UNUR_ERR_INIT,"outer triangle is line"); */
+/*    _unur_warning(gen->genid,UNUR_ERR_...,"outer triangle is line"); */
   seg->mid[0] =  0.5 * (seg->ltp[0] + seg->rtp[0]);
   seg->mid[1] =  0.5 * (seg->ltp[1] + seg->rtp[1]);
   seg->Aout = 0.;
@@ -1519,7 +1518,7 @@ _unur_arou_segment_split( struct unur_gen *gen, struct unur_arou_segment *seg_ol
       seg_oldl->dltp[1] = x;    /* du */
     }
     else {
-      _unur_warning(gen->genid,UNUR_ERR_ADAPT,"This should not happen!!");
+      _unur_error(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
       return 0;
     }
     
@@ -1528,11 +1527,13 @@ _unur_arou_segment_split( struct unur_gen *gen, struct unur_arou_segment *seg_ol
       /* p.d.f. not T-concave or area in segment not bounded */
 
       /* error, restore */
-      _unur_warning(gen->genid,UNUR_ERR_ADAPT,"Cannot chop segment at given point");
+      _unur_warning(gen->genid,UNUR_ERR_GEN_DATA,"Cannot chop segment at given point");
       seg_oldl->drtp[1] = backup;
       if ( !_unur_arou_segment_parameter(gen,seg_oldl) ) {
-	_unur_error(gen->genid,UNUR_ERR_ADAPT,"Cannot restore segment. PANIK.");
-	exit (-1);
+	/* this should not happen:
+	   Cannot restore segment. */
+	_unur_error(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
+	exit (EXIT_FAILURE);
       }
       return 0;
     }
@@ -1562,7 +1563,7 @@ _unur_arou_segment_split( struct unur_gen *gen, struct unur_arou_segment *seg_ol
 	_unur_arou_segment_parameter(gen,seg_newr) <= 0  ) {     /* area in segment not bounded */
     
       /* new construction point not suitable --> do not add */
-      _unur_warning(gen->genid,UNUR_ERR_ADAPT,"Cannot split segment at given point.");
+      _unur_warning(gen->genid,UNUR_ERR_GEN_DATA,"Cannot split segment at given point.");
 #ifdef UNUR_ENABLE_LOGGING
       /* write info into log file */
       if (gen->debug & AROU_DEBUG_SPLIT) 
@@ -1579,8 +1580,10 @@ _unur_arou_segment_split( struct unur_gen *gen, struct unur_arou_segment *seg_ol
 	 (this case should not happen, so it is easier not to make a 
 	 backup of the old segment) */
       if ( !_unur_arou_segment_parameter(gen,seg_oldl) ) {
-	_unur_error(gen->genid,UNUR_ERR_ADAPT,"Cannot restore segment. PANIK.");
-	exit (-1);
+	/* this should not happen:
+	   Cannot restore segment. */
+	_unur_error(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
+	exit (EXIT_FAILURE);
       }
       return 0;
     }
@@ -1657,7 +1660,7 @@ _unur_arou_make_guide_table( struct unur_gen *gen )
       if( seg->next != NULL )    /* skip to next segment if it exists */
         seg = seg->next;
       else {
-	_unur_warning(gen->genid,UNUR_ERR_INIT,"roundoff error while making guide table!");
+	_unur_warning(gen->genid,UNUR_ERR_ROUNDOFF,"guide table");
 	break;
       }
     GEN.guide[j] = seg;

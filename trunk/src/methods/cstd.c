@@ -122,12 +122,11 @@ unur_cstd_new( struct unur_distr *distr )
 
   /* check distribution */
   if (distr->type != UNUR_DISTR_CONT) {
-    _unur_error(GENTYPE,UNUR_ERR_DISTR_INVALID,"");
-    return NULL; }
+    _unur_error(GENTYPE,UNUR_ERR_DISTR_INVALID,""); return NULL; }
   COOKIE_CHECK(distr,CK_DISTR_CONT,NULL);
 
   if (distr->id == UNUR_DISTR_GENERIC) {
-    _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"standard distribution");
+    _unur_error(GENTYPE,UNUR_ERR_DISTR_INVALID,"standard distribution");
     return NULL;
   }
   if (DISTR_IN.init == NULL) {
@@ -151,6 +150,7 @@ unur_cstd_new( struct unur_distr *distr )
   par->set      = 0u;               /* inidicate default parameters          */    
   par->urng     = unur_get_default_urng(); /* use default urng               */
 
+  par->genid    = _unur_set_genid(GENTYPE);/* set generator id               */
   par->debug    = UNUR_DEBUGFLAG_DEFAULT;  /* set default debugging flags    */
 
   /* routine for initializing generator */
@@ -196,7 +196,7 @@ unur_cstd_set_variant( struct unur_par *par, unsigned variant )
   }
 
   /* variant not valid */
-  _unur_warning(GENTYPE,UNUR_ERR_SET,"unknown variant for special generator");
+  _unur_warning(par->genid,UNUR_ERR_PAR_VARIANT,"");
   par->variant = old_variant;
   return 0;
 
@@ -228,7 +228,7 @@ unur_cstd_init( struct unur_par *par )
 
   /* check input */
   if ( par->method != UNUR_METH_CSTD ) {
-    _unur_error(GENTYPE,UNUR_ERR_PAR_INVALID,"");
+    _unur_error(par->genid,UNUR_ERR_PAR_INVALID,"");
     return NULL;
   }
 
@@ -243,7 +243,7 @@ unur_cstd_init( struct unur_par *par )
   /* init successful ?? */
   if (SAMPLE == NULL) {
     /* could not find a sampling routine */
-    _unur_error(GENTYPE,UNUR_ERR_INIT,"unknown variant for special generator");
+    _unur_error(par->genid,UNUR_ERR_GEN_DATA,"variant for special generator");
     free(par); unur_cstd_free(gen); return NULL; 
   }
   
@@ -252,11 +252,11 @@ unur_cstd_init( struct unur_par *par )
     /* domain has been modified */
     if ( ! PAR.is_inversion ) { 
       /* this is not the inversion method */
-      _unur_error(GENTYPE,UNUR_ERR_INIT,"domain changed for non inversion method");
+      _unur_error(par->genid,UNUR_ERR_GEN_DATA,"domain changed for non inversion method");
       free(par); unur_cstd_free(gen); return NULL; 
     }
     else if (DISTR.cdf == NULL) {
-      _unur_error(GENTYPE,UNUR_ERR_INIT,"domain changed, c.d.f. required");
+      _unur_error(par->genid,UNUR_ERR_GEN_DATA,"domain changed, c.d.f. required");
       free(par); unur_cstd_free(gen); return NULL; 
     }
     /* compute umin and umax */
@@ -306,7 +306,7 @@ unur_cstd_free( struct unur_gen *gen )
 
   /* check input */
   if ( gen->method != UNUR_METH_CSTD ) {
-    _unur_warning(GENTYPE,UNUR_ERR_GEN_INVALID,"");
+    _unur_warning(gen->genid,UNUR_ERR_GEN_INVALID,"");
     return;
   }
 
@@ -314,7 +314,7 @@ unur_cstd_free( struct unur_gen *gen )
   SAMPLE = NULL;   /* make sure to show up a programming error */
 
   /* free memory */
-  free(gen->genid);
+  _unur_free_genid(gen);
   free(GEN.gen_param);
   free(gen);
 
@@ -351,8 +351,8 @@ _unur_cstd_create( struct unur_par *par )
   /* magic cookies */
   COOKIE_SET(gen,CK_CSTD_GEN);
 
-  /* set generator identifier */
-  gen->genid = _unur_make_genid(GENTYPE);
+  /* copy generator identifier */
+  gen->genid = par->genid;
 
   /* copy distribution object into generator object */
   memcpy( &(gen->distr), par->distr, sizeof( struct unur_distr ) );

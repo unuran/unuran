@@ -191,13 +191,11 @@ unur_dau_new( struct unur_distr *distr )
 
   /* check distribution */
   if (distr->type != UNUR_DISTR_DISCR) {
-    _unur_error(GENTYPE,UNUR_ERR_DISTR_INVALID,"");
-    return NULL; }
+    _unur_error(GENTYPE,UNUR_ERR_DISTR_INVALID,""); return NULL; }
   COOKIE_CHECK(distr,CK_DISTR_DISCR,NULL);
 
   if (DISTR_IN.prob == NULL) {
-    _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"probability vector");
-    return NULL;
+    _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"p.v."); return NULL;
   }
 
   /* allocate structure */
@@ -215,6 +213,7 @@ unur_dau_new( struct unur_distr *distr )
   par->set       = 0u;               /* inidicate default parameters         */    
   par->urng      = unur_get_default_urng(); /* use default urng              */
 
+  par->genid     = _unur_set_genid(GENTYPE);/* set generator id              */
   par->debug     = UNUR_DEBUGFLAG_DEFAULT;  /* set default debugging flags   */
 
   /* routine for starting generator */
@@ -248,7 +247,7 @@ unur_dau_set_urnfactor( struct unur_par *par, double factor )
   
   /* check new parameter for generator */
   if (factor < 1.) {
-    _unur_warning(GENTYPE,UNUR_ERR_SET,"relative urn size < 1.");
+    _unur_warning(par->genid,UNUR_ERR_PAR_SET,"relative urn size < 1.");
     return 0;
   }
 
@@ -292,7 +291,7 @@ unur_dau_init( struct unur_par *par )
 
   /* check input */
   if ( par->method != UNUR_METH_DAU ) {
-    _unur_error(GENTYPE,UNUR_ERR_PAR_INVALID,"");
+    _unur_error(par->genid,UNUR_ERR_PAR_INVALID,"");
     return NULL; }
   COOKIE_CHECK(par,CK_DAU_PAR,NULL);
   
@@ -309,7 +308,7 @@ unur_dau_init( struct unur_par *par )
     sum += prob[i];
     /* ... and check probability vector */
     if (prob[i] < 0.) {
-      _unur_error(gen->genid,UNUR_ERR_INIT,"probability < 0 not possible!");
+      _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"probability < 0");
       free(par); unur_dau_free(gen);
       return NULL;
     }
@@ -346,8 +345,9 @@ unur_dau_init( struct unur_par *par )
 
   /* there must be at least one rich strip */
   if (rich == begin + GEN.urn_size + 1 ) {
-    /* this must not happen */
-    _unur_error(gen->genid,UNUR_ERR_INIT,"no rich strips found for Robin Hood algorithm.");
+    /* this must not happen:
+       no rich strips found for Robin Hood algorithm. */
+    _unur_error(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
     unur_dau_free(gen); free(par); free(begin);
     return NULL;
   }
@@ -387,7 +387,7 @@ unur_dau_init( struct unur_par *par )
     }
     if (fabs(sum) > TOLERANCE) {
       /* sum of deviations too large --> serious error */
-      _unur_error(gen->genid,UNUR_ERR_INIT,"serious roundoff error when making squared histogram!");
+      _unur_error(gen->genid,UNUR_ERR_ROUNDOFF,"squared histogram");
       unur_dau_free(gen); free(par); free(begin);
       return NULL; 
     }
@@ -465,7 +465,7 @@ unur_dau_free( struct unur_gen *gen )
 
   /* check input */
   if ( gen->method != UNUR_METH_DAU ) {
-    _unur_warning(GENTYPE,UNUR_ERR_GEN_INVALID,"");
+    _unur_warning(gen->genid,UNUR_ERR_GEN_INVALID,"");
     return; }
   COOKIE_CHECK(gen,CK_DAU_GEN,/*void*/);
 
@@ -473,7 +473,7 @@ unur_dau_free( struct unur_gen *gen )
   SAMPLE = NULL;   /* make sure to show up a programming error */
 
   /* free memory */
-  free(gen->genid);
+  _unur_free_genid(gen);
   free(GEN.jx);
   free(GEN.qx);
   free(gen);
@@ -511,8 +511,8 @@ _unur_dau_create( struct unur_par *par)
   /* magic cookies */
   COOKIE_SET(gen,CK_DAU_GEN);
 
-  /* set generator identifier */
-  gen->genid = _unur_make_genid(GENTYPE);
+  /* copy generator identifier */
+  gen->genid = par->genid;
 
   /* copy distribution object into generator object */
   memcpy( &(gen->distr), par->distr, sizeof( struct unur_distr ) );

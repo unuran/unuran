@@ -24,6 +24,8 @@ uniform/            ... source for simple uniform RNG
 ./methods/:
 
 unuran.h            ... main header file for UNURAN
+unuran_errno.h      ... defines error codes
+
 source_unuran.h     ... main header file for compling library
 source_methods.h    ... id's for methods
 
@@ -66,8 +68,7 @@ x_urng.c            ... handle uniform RNG
 unur_urng.h
 
 x_stream.c          ... output streams
-x_error.c           ... errors
-source_errno.h
+x_error.c           ... handle errors
 x_umalloc.c         ... blocked memory allocation
 unur_umalloc.h
 source_cookies.h    ... magic cookies

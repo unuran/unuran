@@ -108,7 +108,7 @@ unur_run_tests( struct unur_par *par, unsigned tests)
   /* make scatterplot */
   if (tests & UNUR_TEST_SCATTER)
      unur_make_scatterplot(gen);
-    
+
   /* free generator */
   unur_free(gen);
 

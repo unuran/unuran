@@ -238,14 +238,11 @@ unur_tabl_new( struct unur_distr *distr )
 
   /* check distribution */
   if (distr->type != UNUR_DISTR_CONT) {
-    _unur_error(GENTYPE,UNUR_ERR_DISTR_INVALID,"");
-    return NULL; }
+    _unur_error(GENTYPE,UNUR_ERR_DISTR_INVALID,""); return NULL; }
   COOKIE_CHECK(distr,CK_DISTR_CONT,NULL);
 
   if (DISTR_IN.pdf == NULL) {
-    _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"p.d.f.");
-    return NULL;
-  }
+    _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"p.d.f."); return NULL; }
 
   /* allocate structure */
   par = _unur_malloc( sizeof(struct unur_par) );
@@ -279,6 +276,7 @@ unur_tabl_new( struct unur_distr *distr )
   par->set          = 0u;        /* inidicate default parameters             */    
   par->urng         = unur_get_default_urng(); /* use default urng           */
 
+  par->genid        = _unur_set_genid(GENTYPE);/* set generator id           */
   par->debug        = UNUR_DEBUGFLAG_DEFAULT; /* set default debugging flags */
 
   /* routine for starting generator */
@@ -314,7 +312,7 @@ unur_tabl_set_nstp( struct unur_par *par, int n_stp )
   /* we always use the boundary points as additional starting points,
      so we do not count these here! */
   if (n_stp < 0 ) {
-    _unur_warning(GENTYPE,UNUR_ERR_SET,"number of starting points < 0");
+    _unur_warning(par->genid,UNUR_ERR_PAR_SET,"number of starting points < 0");
     return 0;
   }
 
@@ -352,7 +350,7 @@ unur_tabl_set_max_sqhratio( struct unur_par *par, double max_ratio )
 
   /* check new parameter for generator */
   if (max_ratio < 0. || max_ratio > 1. ) {
-    _unur_warning(GENTYPE,UNUR_ERR_SET,"ratio Atotal / Asqueeze not in [0,1]");
+    _unur_warning(par->genid,UNUR_ERR_PAR_SET,"ratio A(squeeze)/A(hat) not in [0,1]");
     return 0;
   }
 
@@ -390,7 +388,7 @@ unur_tabl_set_max_intervals( struct unur_par *par, int max_ivs )
 
   /* check new parameter for generator */
   if (max_ivs < 1 ) {
-    _unur_warning(GENTYPE,UNUR_ERR_SET,"maximum number of intervals < 1");
+    _unur_warning(par->genid,UNUR_ERR_PAR_SET,"maximum number of intervals < 1");
     return 0;
   }
 
@@ -429,7 +427,7 @@ unur_tabl_set_areafraction( struct unur_par *par, double fraction )
 
   /* check new parameter for generator */
   if (fraction < 0.) {
-    _unur_warning(GENTYPE,UNUR_ERR_SET,"area factor < 0");
+    _unur_warning(par->genid,UNUR_ERR_PAR_SET,"area factor < 0");
     return 0;
   }
 
@@ -476,7 +474,7 @@ unur_tabl_set_slopes( struct unur_par *par, double *slopes, int n_slopes )
 
   /* check new parameter for generator */
   if( n_slopes <= 0 ) {
-    _unur_warning(GENTYPE,UNUR_ERR_SET,"number of slopes <= 0");
+    _unur_error(par->genid,UNUR_ERR_PAR_SET,"number of slopes <= 0");
     return 0;
   }
 
@@ -486,7 +484,7 @@ unur_tabl_set_slopes( struct unur_par *par, double *slopes, int n_slopes )
   for( i=1; i<n_slopes; i++ ) {
     /* we do not check here if f(a) >= f(b), since we make no calculations heres */
     if( al > slopes[2*i] || bl > slopes[2*i+1] ) {
-      _unur_warning(GENTYPE,UNUR_ERR_SET,"slopes overlapping or not in ascending order");
+      _unur_error(par->genid,UNUR_ERR_PAR_SET,"slopes (overlapping or not in ascending order)");
       return 0;
     }
     al = slopes[2*i];
@@ -532,12 +530,12 @@ unur_tabl_set_boundary( struct unur_par *par, double left, double right )
 
   /* check new parameter for generator */
   if (left >= right) {
-    _unur_warning(GENTYPE,UNUR_ERR_SET,"domain, left >= right");
+    _unur_warning(par->genid,UNUR_ERR_PAR_SET,"domain");
      /*                                                                      */
     return 0;
   }
   if (left <= -INFINITY || right >= INFINITY) {
-    _unur_warning(GENTYPE,UNUR_ERR_SET,"domain, +/- INFINITY not allowed");
+    _unur_warning(par->genid,UNUR_ERR_PAR_SET,"domain (+/- INFINITY not allowed)");
     return 0;
   }
 
@@ -571,6 +569,7 @@ unur_tabl_set_variant( struct unur_par *par, unsigned variant )
   _unur_check_par_object( TABL );
 
   /* store date */
+  /** TODO: check variant ?? **/
   par->variant = variant;
 
   /* changelog */
@@ -604,7 +603,7 @@ unur_tabl_set_guidefactor( struct unur_par *par, double factor )
 
   /* check new parameter for generator */
   if (factor < 0) {
-    _unur_warning(GENTYPE,UNUR_ERR_SET,"relative table size < 0");
+    _unur_warning(par->genid,UNUR_ERR_PAR_SET,"guide table size < 0");
     return 0;
   }
 
@@ -675,7 +674,7 @@ unur_tabl_init( struct unur_par *par )
 
   /* check input */
   if ( par->method != UNUR_METH_TABL ) {
-    _unur_error(GENTYPE,UNUR_ERR_PAR_INVALID,"");
+    _unur_error(par->genid,UNUR_ERR_PAR_INVALID,"");
     return NULL; }
   COOKIE_CHECK(par,CK_TABL_PAR,NULL);
 
@@ -685,7 +684,7 @@ unur_tabl_init( struct unur_par *par )
 
   /* get slopes for starting generator */
   if (!_unur_tabl_get_starting_intervals(par,gen)) {
-    _unur_error(gen->genid,UNUR_ERR_INIT,"Cannot make hat function.");
+    _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"Cannot make hat function.");
     free(par); unur_tabl_free(gen);
     return NULL;
   }
@@ -710,7 +709,7 @@ unur_tabl_init( struct unur_par *par )
      if the user wants more starting points. */
   if (GEN.n_ivs > GEN.max_ivs) {
     /** TODO: do not allow too many intervals ?? **/
-    _unur_warning(gen->genid,UNUR_ERR_INIT,"maximal number of intervals too small. increase.");
+    _unur_warning(gen->genid,UNUR_ERR_GEN_DATA,"maximal number of intervals too small. increase.");
     GEN.max_ivs = GEN.n_ivs;
   }
 
@@ -937,9 +936,9 @@ unur_tabl_sample_check( struct unur_gen *gen )
       /* test whether p.d.f. is monotone */
       fx = PDF(x);
       if (fx > iv->fmax)
-	_unur_warning(gen->genid,UNUR_ERR_SAMPLE,"pdf > hat. pdf not monotone in interval");
+	_unur_warning(gen->genid,UNUR_ERR_GEN_CONDITION,"pdf > hat. pdf not monotone in interval");
       if (fx < iv->fmin)
-	_unur_warning(gen->genid,UNUR_ERR_SAMPLE,"pdf < squeeze. pdf not monotone in interval");
+	_unur_warning(gen->genid,UNUR_ERR_GEN_CONDITION,"pdf < squeeze. pdf not monotone in interval");
       /* at last return number */
       return x;
     }
@@ -950,9 +949,9 @@ unur_tabl_sample_check( struct unur_gen *gen )
       fx = PDF(x);
       /* test whether p.d.f. is monotone */
       if (fx > iv->fmax)
-	_unur_warning(gen->genid,UNUR_ERR_SAMPLE,"pdf > hat. pdf not monotone in interval");
+	_unur_warning(gen->genid,UNUR_ERR_GEN_CONDITION,"pdf > hat. pdf not monotone in interval");
       if (fx < iv->fmin)
-	_unur_warning(gen->genid,UNUR_ERR_SAMPLE,"pdf < squeeze. pdf not monotone in interval");
+	_unur_warning(gen->genid,UNUR_ERR_GEN_CONDITION,"pdf < squeeze. pdf not monotone in interval");
       /* split interval */
       if (GEN.n_ivs < GEN.max_ivs && GEN.max_ratio * GEN.Atotal > GEN.Asqueeze) {
       	_unur_tabl_split_interval( gen, iv, x, fx, (gen->variant & TABL_VARMASK_SPLIT) );
@@ -989,7 +988,7 @@ unur_tabl_free( struct unur_gen *gen )
 
   /* check input */
   if ( gen->method != UNUR_METH_TABL ) {
-    _unur_warning(GENTYPE,UNUR_ERR_GEN_INVALID,"");
+    _unur_warning(gen->genid,UNUR_ERR_GEN_INVALID,"");
     return; }
   COOKIE_CHECK(gen,CK_TABL_GEN,/*void*/);
 
@@ -1005,7 +1004,7 @@ unur_tabl_free( struct unur_gen *gen )
   _unur_free_mblocks(GEN.mblocks);
 
   /* free other memory */
-  free(gen->genid);
+  _unur_free_genid(gen);
   free(GEN.guide);
   free(gen);
 
@@ -1042,8 +1041,8 @@ _unur_tabl_create( struct unur_par *par )
   /* magic cookies */
   COOKIE_SET(gen,CK_TABL_GEN);
 
-  /* set generator identifier */
-  gen->genid = _unur_make_genid(GENTYPE);
+  /* copy generator identifier */
+  gen->genid = par->genid;
 
   /* copy distribution object into generator object */
   memcpy( &(gen->distr), par->distr, sizeof( struct unur_distr ) );
@@ -1127,7 +1126,7 @@ _unur_tabl_get_starting_intervals( struct unur_par *par, struct unur_gen *gen )
     return _unur_tabl_get_starting_intervals_from_mode(par,gen);
 
   /* else */
-  _unur_error(gen->genid,UNUR_ERR_INIT,"number of slopes <= 0, domain or mode not given.");
+  _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"number of slopes <= 0, domain or mode not given.");
   return 0;
 
 } /* end of _unur_tabl_get_starting_intervals() */
@@ -1183,7 +1182,7 @@ _unur_tabl_get_starting_intervals_from_slopes( struct unur_par *par, struct unur
 
     /* check slopes */
     if (iv->fmax < iv->fmin) {
-      _unur_error(gen->genid,UNUR_ERR_INIT,"slopes non-decreasing");
+      _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"slopes non-decreasing");
       GEN.iv = NULL; /* no intervals */
       return 0;
     }
@@ -1342,7 +1341,9 @@ _unur_tabl_split_a_starting_intervals( struct unur_par *par,
   COOKIE_CHECK(gen,CK_TABL_GEN,NULL);
   COOKIE_CHECK(iv_slope,CK_TABL_IV,NULL);
   if (iv_slope->slope != 1 && iv_slope->slope != -1 ) {
-    _unur_warning( gen->genid, UNUR_ERR_INIT, "invalid slope.");
+    /* this should not happen:
+       invalid slope.          */
+    _unur_warning( gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
     return iv_slope;
   }
 
@@ -1494,8 +1495,9 @@ _unur_tabl_split_interval( struct unur_gen *gen,
     fx = PDF(x);
     break;
   default: 
-    /* this should not happen */
-    _unur_warning(gen->genid,UNUR_ERR_SAMPLE,"Invalid variant, use default");
+    /* this should not happen:
+       Invalid variant, use default n*/
+    _unur_warning(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
     break;
   }
 
@@ -1503,7 +1505,7 @@ _unur_tabl_split_interval( struct unur_gen *gen,
   if (fx <= 0.) {
     /* check montonicity */
     if (iv_old->fmin > 0.) {
-      _unur_error(gen->genid,UNUR_ERR_INIT,"p.d.f. not monotone in slope");
+      _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"p.d.f. not monotone in slope");
       return 0;
     }
 
@@ -1554,8 +1556,9 @@ _unur_tabl_split_interval( struct unur_gen *gen,
     iv_old->fmax = iv_new->fmin = fx; 
     break;
   default: 
-    /* this should not happen */
-    _unur_error(gen->genid,UNUR_ERR_SAMPLE,"Invalid slope. Cannot split interval.");
+    /* this should not happen:
+       Invalid slope. Cannot split interval. */
+    _unur_warning(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
     return 0;
   }
 
@@ -1633,7 +1636,7 @@ _unur_tabl_make_guide_table( struct unur_gen *gen )
       if( iv->next != NULL )    /* skip to next segment if it exists */
         iv = iv->next;
       else {
-	_unur_warning(gen->genid,UNUR_ERR_INIT,"roundoff error while making guide table!");
+	_unur_warning(gen->genid,UNUR_ERR_ROUNDOFF,"guide table");
 	break;
       }
     GEN.guide[j] = iv;
@@ -1905,7 +1908,9 @@ _unur_tabl_debug_intervals( struct unur_gen *gen, int print_areas )
       case 0:  fprintf(log,"0"); break;
       case -1: fprintf(log,"-"); break;
       default:
-	_unur_warning(gen->genid,UNUR_ERR_GENERIC,"invalid value for iv->slope.");
+	/* this should not happen:
+	   invalid value for iv->slope. */
+	_unur_warning(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
       }
       fprintf(log,")   < %#-12.6g, %#-12.6g>   |  %#-12.6g    %#-12.6g  \n",
 	      iv->xmax, iv->xmin, iv->fmax, iv->fmin);

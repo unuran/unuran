@@ -156,18 +156,13 @@ unur_utdr_new( struct unur_distr *distr )
 
   /* check distribution */
   if (distr->type != UNUR_DISTR_CONT) {
-    _unur_error(GENTYPE,UNUR_ERR_DISTR_INVALID,"");
-    return NULL; }
+    _unur_error(GENTYPE,UNUR_ERR_DISTR_INVALID,""); return NULL; }
   COOKIE_CHECK(distr,CK_DISTR_CONT,NULL);
 
   if (DISTR_IN.pdf == NULL) {
-    _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"p.d.f.");
-    return NULL;
-  }
+    _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"p.d.f."); return NULL; }
   if (!(distr->set & UNUR_DISTR_SET_MODE)) {
-    _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"mode of p.d.f.");
-    return NULL;
-  }
+    _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"mode"); return NULL; }
 
   /* allocate structure */
   par = _unur_malloc(sizeof(struct unur_par));
@@ -186,12 +181,13 @@ unur_utdr_new( struct unur_distr *distr )
 	     default should not be changed if used doubles have at least
 	     10 decimal digits precision. */
 
-  par->method      = UNUR_METH_UTDR;  /* method and default variant          */
-  par->variant     = 0u;              /* default variant                     */
-  par->set         = 0u;              /* inidicate default parameters        */    
-  par->urng        = unur_get_default_urng(); /* use default urng            */
+  par->method   = UNUR_METH_UTDR;     /* method and default variant          */
+  par->variant  = 0u;                 /* default variant                     */
+  par->set      = 0u;                 /* inidicate default parameters        */    
+  par->urng     = unur_get_default_urng();   /* use default urng             */
 
-  par->debug       = UNUR_DEBUGFLAG_DEFAULT;  /* set default debugging flags */
+  par->genid    = _unur_set_genid(GENTYPE);  /* set generator id             */
+  par->debug    = UNUR_DEBUGFLAG_DEFAULT;    /* set default debugging flags  */
 
   /* routine for starting generator */
   par->init = unur_utdr_init;
@@ -225,7 +221,7 @@ unur_utdr_set_cfactor( struct unur_par *par, double cfactor )
   /* check new parameter for generator */
   /** TODO: welche werte fuer c sind zulaessig / sinnvoll ? **/
   if (cfactor < 0) {
-    _unur_warning(GENTYPE,UNUR_ERR_SET,"c-factor < 0");
+    _unur_warning(par->genid,UNUR_ERR_PAR_SET,"c-factor < 0");
     return 0;
   }
 
@@ -265,7 +261,7 @@ unur_utdr_set_delta( struct unur_par *par, double delta )
   /* check new parameter for generator */
   /** TODO: welche werte fuer delta sind zulaessig / sinnvoll ? **/
   if (delta < 0) {
-    _unur_warning(GENTYPE,UNUR_ERR_SET,"delta < 0");
+    _unur_warning(par->genid,UNUR_ERR_PAR_SET,"delta < 0");
     return 0;
   }
 
@@ -339,7 +335,7 @@ unur_utdr_init( struct unur_par *par )
 
   /* check input */
   if ( par->method != UNUR_METH_UTDR ) {
-    _unur_error(GENTYPE,UNUR_ERR_PAR_INVALID,"");
+    _unur_error(par->genid,UNUR_ERR_PAR_INVALID,"");
     return NULL; }
   COOKIE_CHECK(par,CK_UTDR_PAR,NULL);
 
@@ -388,7 +384,7 @@ unur_utdr_init( struct unur_par *par )
       if (tlys > 0.) 
 	tlys = -1./sqrt(tlys);
       else {
-	_unur_warning(gen->genid,UNUR_ERR_INIT,"f(tlx)=0!!, Perhaps pdf or mode or domain wrong\n");
+	_unur_warning(gen->genid,UNUR_ERR_GEN_DATA,"f(tlx)=0!!, Perhaps pdf or mode or domain wrong\n");
 	goto error;
       }
 
@@ -440,7 +436,7 @@ unur_utdr_init( struct unur_par *par )
         if (trys>0.)
           trys= -1./trys;
         else {
-          _unur_warning(gen->genid,UNUR_ERR_INIT,"f(trx)=0!!, Perhaps pdf or mode or domain wrong\n");
+          _unur_warning(gen->genid,UNUR_ERR_GEN_DATA,"f(trx)=0!!, Perhaps pdf or mode or domain wrong\n");
 	  goto error;
         }
   
@@ -493,7 +489,7 @@ unur_utdr_init( struct unur_par *par )
     }
     else { 
       if (setupok==0 || GEN.volcompl > 8. * DISTR.area || GEN.volcompl < 0.5 * DISTR.area) {
-        _unur_warning(gen->genid,UNUR_ERR_INIT,"Area below hat too large! Perhaps pdf or mode wrong\n");
+        _unur_warning(gen->genid,UNUR_ERR_GEN_DATA,"Area below hat too large! Perhaps pdf or mode wrong\n");
 	goto error;
       }
     }
@@ -598,7 +594,7 @@ unur_utdr_free( struct unur_gen *gen )
 
   /* check input */
   if ( gen->method != UNUR_METH_UTDR ) {
-    _unur_warning(GENTYPE,UNUR_ERR_GEN_INVALID,"");
+    _unur_warning(gen->genid,UNUR_ERR_GEN_INVALID,"");
     return; }
   COOKIE_CHECK(gen,CK_UTDR_GEN,/*void*/);
 
@@ -606,7 +602,7 @@ unur_utdr_free( struct unur_gen *gen )
   SAMPLE = NULL;   /* make sure to show up a programming error */
 
   /* free memory */
-  free(gen->genid);
+  _unur_free_genid(gen);
   free(gen);
 
 } /* end of unur_utdr_free() */
@@ -642,8 +638,8 @@ _unur_utdr_create( struct unur_par *par )
   /* magic cookies */
   COOKIE_SET(gen,CK_UTDR_GEN);
 
-  /* set generator identifier */
-  gen->genid = _unur_make_genid(GENTYPE);
+  /* copy generator identifier */
+  gen->genid = par->genid;
 
   /* copy distribution object into generator object */
   memcpy( &(gen->distr), par->distr, sizeof( struct unur_distr ) );

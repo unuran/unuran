@@ -102,14 +102,6 @@ _unur_cdf_cauchy(double x, double *params, int n_params)
 
 /*---------------------------------------------------------------------------*/
 
-double 
-_unur_normconstant_cauchy(double *params, int n_params)
-{
-  return (M_PI*lambda);
-} /* end of _unur_normconstant_cauchy() */
-
-/*---------------------------------------------------------------------------*/
-
 struct unur_distr *
 unur_distr_cauchy( double *params, int n_params )
 {
@@ -119,7 +111,7 @@ unur_distr_cauchy( double *params, int n_params )
   /* check new parameter for generator */
   CHECK_NULL(params,RETURN_NULL);
   if (n_params != 2) {
-    _unur_warning(distr_name,UNUR_ERR_GENERIC,"invalid number parameter");
+    _unur_error(distr_name,UNUR_ERR_DISTR_NPARAMS,"");
     return NULL;
   }
 
@@ -146,7 +138,7 @@ unur_distr_cauchy( double *params, int n_params )
 
   /* check parameter lambda */
   if (DISTR.lambda <= 0.) {
-    _unur_error(distr_name,UNUR_ERR_DISTR,"lambda <= 0.");
+    _unur_error(distr_name,UNUR_ERR_DISTR_DOMAIN,"lambda <= 0");
     free( distr ); return NULL;
   }
 
@@ -181,4 +173,3 @@ unur_distr_cauchy( double *params, int n_params )
 #undef theta 
 #undef lambda
 /*---------------------------------------------------------------------------*/
-

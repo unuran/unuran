@@ -41,6 +41,10 @@
 
 /*---------------------------------------------------------------------------*/
 
+unsigned unur_errno = 0u;    /* global variable used to record errors        */
+
+/*---------------------------------------------------------------------------*/
+
 char * 
 _unur_make_genid( const char *gentype )
      /*----------------------------------------------------------------------*/
@@ -83,78 +87,62 @@ unur_get_strerror ( const int unur_errno )
      /*----------------------------------------------------------------------*/
 {
   switch (unur_errno) {
-  case UNUR_SUCCESS:
-    return "success";
-    case UNUR_ERR_NULL:
-      return "invalid NULL pointer";
+
+    /** distribution object **/
+  case UNUR_ERR_DISTR_NPARAMS:
+    return "(distribution) invalid number of parameters";
+  case UNUR_ERR_DISTR_DOMAIN:
+    return "(distribution) parameter out of domain";
+  case UNUR_ERR_DISTR_GEN:
+    return "(distribution) invalid variant for special generator";
+  case UNUR_ERR_DISTR_INVALID:
+    return "(distribution) invalid distribution object";
+  case UNUR_ERR_DISTR_REQUIRED:
+    return "(distribution) incomplete distribution object, entry missing";
+  case UNUR_ERR_DISTR_UNKNOWN:
+    return "(distribution) unknown distribution, cannot handle";
+  case UNUR_ERR_DISTR_SET:
+    return "(distribution) set failed (invalid parameter)";
+  case UNUR_ERR_DISTR_GET:
+    return "(distribution) get failed (parameter not set)";
+
+    /** parameter object **/
+  case UNUR_ERR_PAR_SET:
+    return "(parameter) set failed, invalid parameter -> using default";
+  case UNUR_ERR_PAR_VARIANT:
+    return "(parameter) invalid variant -> using default";
+  case UNUR_ERR_PAR_INVALID:
+    return "(parameter) invalid parameter object";
+
+    /** generator object **/
+  case UNUR_ERR_GEN_DATA:
+    return "(generator) (possible) invalid data";
+  case UNUR_ERR_GEN_CONDITION:
+    return "(generator) condition for method violated";
+  case UNUR_ERR_GEN_INVALID:
+    return "(parameter) invalid generator object";
+    
+    /** misc **/
+  case UNUR_ERR_ROUNDOFF:
+    return "(serious) round-off error";
+   case UNUR_ERR_MALLOC:
+    return "virtual memory exhausted";
+  case UNUR_ERR_NULL:
+    return "invalid NULL pointer";
   case UNUR_ERR_COOKIE:
     return "invalid cookie";
-  case UNUR_ERR_ALLOC:
-    return "virtual memory exhausted";
-
-  case UNUR_ERR_NPARAM:
-    return "invalid number of parameters";
-  case UNUR_ERR_PARAM:
-    return "invalid parameter";
-    
-  case UNUR_ERR_SET:
-    return "SET failed";
-  case UNUR_ERR_SET_INVALID:
-    return "SET failed (invalid parameter)";
-  case UNUR_ERR_SET_NOTREQU:
-    return "SET failed (parameter not required)";
-  case UNUR_ERR_CHG:
-    return "CHG failed";
-  case UNUR_ERR_CHG_INVALID:
-    return "CHG failed (invalid parameter)";
-  case UNUR_ERR_CHG_NOTREQU:
-    return "CHG failed (parameter not required)";
-  case UNUR_ERR_GET:
-    return "GET failed";
-  case UNUR_ERR_GET_INVALID:
-    return "GET failed (invalid parameter)";
-  case UNUR_ERR_GET_NOTREQU:
-    return "GET failed (parameter not required)";
-
-  case UNUR_ERR_INIT:
-    return "INIT.";
-  case UNUR_ERR_INIT_FAILED:
-    return "INIT failed";
-  case UNUR_ERR_INIT_INVALID:
-    return "INIT failed (invalid parameter)";
-  case UNUR_ERR_INIT_VIOLATE:
-    return "INIT failed (condition for method violated)";
-    
-  case UNUR_ERR_SAMPLE:
-    return "SAMPLing error (condition for method violated)";
-    
-  case UNUR_ERR_ADAPT:
-    return "ADAPTive step failed";
-  case UNUR_ERR_ADAPT_VIOLATE:
-    return "ADAPTive step failed (condition for method violated)";
-
   case UNUR_ERR_GENERIC:
     return "";
-  case UNUR_ERR_UNIMPLEMENTED:
-    return "unimplemented feature";
 
-    /************************************/
-    /** TODO **/
+    /** compilation switches **/
+  case UNUR_ERR_COMPILE:
+    return "not available, recompile library";
 
-  case UNUR_ERR_DISTR_INVALID:
-    return "invalid distribution type";
-  case UNUR_ERR_PAR_INVALID:
-    return "invalid parameter object";
-  case UNUR_ERR_GEN_INVALID:
-    return "invalid generator object";
-  case UNUR_ERR_DISTR_REQUIRED:
-    return "entry in distribution object required";
-
-    /************************************/
-
-  case UNUR_ERR_UNKNOWN:
+    /** this should not happen **/
+  case UNUR_ERR_SHOULD_NOT_HAPPEN:
   default:
-    return "unknown error (report this!)";
+    return "error should not happen, report this!";
+
   }
 
 } /* end of unur_get_strerror() */

@@ -73,9 +73,12 @@ unur_get_default_urng( void )
     urng_default = UNUR_URNG_DEFAULT;
 #elif UNUR_URNG_INVOKE == UNUR_URNG_PRNG
     urng_default = prng_new(UNUR_URNG_DEFAULT);
-    if( urng_default == NULL )
+    if( urng_default == NULL ) {
       /* some parameters invalid! */
-      _unur_error("prng",UNUR_ERR_NULL,"Cannot set default URNG");
+      _unur_error("prng",UNUR_ERR_NULL,"Cannot set default URNG. EXIT !!!");
+      /* we cannot recover from this error */
+      exit(EXIT_FAILURE);
+    }
 #else
 #error UNUR_URNG_INVOKE not valid !!
 #endif
@@ -102,7 +105,7 @@ unur_set_default_urng( UNUR_URNG_TYPE urng_new )
 
   /* NULL pointer not allowed */
   if (urng_new == NULL) {
-    _unur_warning(NULL,UNUR_ERR_NULL,"invalid URNG.");
+    _unur_warning("URNG",UNUR_ERR_NULL,"");
     return urng_default;
   }
 

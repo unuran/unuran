@@ -101,7 +101,7 @@ unur_distr_lomax( double *params, int n_params )
 
   /* check new parameter for generator */
   if (n_params < 1 || n_params > 2) {
-    _unur_warning(distr_name,UNUR_ERR_GENERIC,"invalid number parameter");
+    _unur_error(distr_name,UNUR_ERR_DISTR_NPARAMS,"");
     return NULL;
   }
   CHECK_NULL(params,RETURN_NULL);
@@ -137,7 +137,7 @@ unur_distr_lomax( double *params, int n_params )
 
   /* check parameters */
   if (DISTR.a <= 0. || DISTR.C <= 0. ) {
-    _unur_error(distr_name ,UNUR_ERR_DISTR,"a <= 0 or C <= 0.");
+    _unur_error(distr_name,UNUR_ERR_DISTR_DOMAIN,"a <= 0 or C <= 0");
     free( distr ); return NULL;
   }
 

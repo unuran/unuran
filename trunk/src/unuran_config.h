@@ -57,6 +57,10 @@
 #define UNUR_ENABLE_LOGGING
 
 /*---------------------------------------------------------------------------*/
+/* make a generator id (string stored in generator object)                   */
+#define UNUR_ENABLE_GENID
+
+/*---------------------------------------------------------------------------*/
 /* Set default flag for debugging of generators:                             */
 /*    0  ... do not write any infos about generator.                         */
 /*    1  ... write only pameters and resulting structure of generator.       */

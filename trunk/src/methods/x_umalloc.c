@@ -60,7 +60,7 @@ _unur_malloc(size_t size)
 
   /* successful ? */
   if (ptr == NULL) {
-    _unur_error(NULL,UNUR_ERR_ALLOC,"");
+    _unur_error(NULL,UNUR_ERR_MALLOC,"");
     exit (-1);
   }
 

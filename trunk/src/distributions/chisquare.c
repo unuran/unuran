@@ -65,7 +65,6 @@ static const char distr_name[] = "chisquare";
 static double _unur_pdf_chisquare(double x, double *params, int n_params);
 static double _unur_dpdf_chisquare(double x, double *params, int n_params);
 static double _unur_mode_chisquare(double *params, int n_params);
-static double _unur_lognormconstant_chisquare(double *params, int n_params);
 
 /*---------------------------------------------------------------------------*/
 
@@ -73,6 +72,7 @@ double
 _unur_pdf_chisquare(double x, double *params, int n_params)
 { 
   if (x <= 0.)
+    /* out of support */
     return 0.;
 
   if (nu == 2.)
@@ -88,6 +88,7 @@ double
 _unur_dpdf_chisquare(double x, double *params, int n_params)
 { 
   if (x <= 0.)
+    /* out of support */
     return 0.;
 
   if (nu == 2.)
@@ -102,6 +103,7 @@ double
 _unur_cdf_chisquare(double x, double *params, int n_params)
 { 
   if (x <= 0.)
+    /* out of support of p.d.f. */
     return 0.;
 
   return _unur_cdf_chisquare_ext(x,nu);
@@ -117,14 +119,6 @@ _unur_mode_chisquare( double *params, int n_params )
 
 /*---------------------------------------------------------------------------*/
 
-double
-_unur_lognormconstant_chisquare( double *params, int n_params )
-{
-  return ( _unur_gammaln(nu/2.) - M_LN2 * (nu/2.));
-} /* end of _unur_lognormconstant_chisquare() */
-
-/*---------------------------------------------------------------------------*/
-
 struct unur_distr *
 unur_distr_chisquare( double *params, int n_params )
 {
@@ -134,7 +128,7 @@ unur_distr_chisquare( double *params, int n_params )
   /* check new parameter for generator */
   CHECK_NULL(params,RETURN_NULL);
   if (n_params != 1) {
-    _unur_warning(distr_name,UNUR_ERR_GENERIC,"invalid number parameter");
+    _unur_error(distr_name,UNUR_ERR_DISTR_NPARAMS,"");
     return NULL;
   }
 
@@ -160,7 +154,7 @@ unur_distr_chisquare( double *params, int n_params )
 
   /* check parameter lambda */
   if (DISTR.nu <= 0.) {
-    _unur_error(distr_name,UNUR_ERR_DISTR,"shape parameter nu <= 0.");
+    _unur_error(distr_name,UNUR_ERR_DISTR_DOMAIN,"nu <= 0");
     free( distr ); return NULL;
   }
 
@@ -168,14 +162,14 @@ unur_distr_chisquare( double *params, int n_params )
   DISTR.n_params = n_params;
 
   /* log of normalization constant */
-  DISTR.LOGNORMCONSTANT = _unur_lognormconstant_chisquare(DISTR.params,DISTR.n_params);
+  DISTR.LOGNORMCONSTANT = _unur_gammaln(nu/2.) - M_LN2 * (nu/2.);
 
   /* mode and area below p.d.f. */
   DISTR.mode = _unur_mode_chisquare(DISTR.params,DISTR.n_params);
   DISTR.area = 1.;
 
   /* domain */
-  DISTR.domain[0] = 0        ;   /* left boundary  */
+  DISTR.domain[0] = 0.;          /* left boundary  */
   DISTR.domain[1] = INFINITY;    /* right boundary */
 
   /* indicate which parameters are set */

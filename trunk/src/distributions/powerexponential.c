@@ -115,7 +115,7 @@ unur_distr_powerexponential( double *params, int n_params )
 
   /* check new parameter for generator */
   if (n_params < 1 || n_params > 3) {
-    _unur_warning(distr_name,UNUR_ERR_GENERIC,"invalid number parameter");
+    _unur_error(distr_name,UNUR_ERR_DISTR_NPARAMS,"");
     return NULL;
   }
   CHECK_NULL(params,RETURN_NULL);
@@ -154,7 +154,7 @@ unur_distr_powerexponential( double *params, int n_params )
 
   /* check parameter sigma */
   if (DISTR.delta <= 0. || DISTR.phi <= 0.) {
-    _unur_error(distr_name ,UNUR_ERR_DISTR,"delta <= 0 or phi <= 0.");
+    _unur_error(distr_name,UNUR_ERR_DISTR_DOMAIN,"delta <= 0 or phi <= 0");
     free( distr ); return NULL;
   }
 

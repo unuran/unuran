@@ -175,13 +175,11 @@ unur_dis_new( struct unur_distr *distr )
 
   /* check distribution */
   if (distr->type != UNUR_DISTR_DISCR) {
-    _unur_error(GENTYPE,UNUR_ERR_DISTR_INVALID,"");
-    return NULL; }
+    _unur_error(GENTYPE,UNUR_ERR_DISTR_INVALID,""); return NULL; }
   COOKIE_CHECK(distr,CK_DISTR_DISCR,NULL);
 
   if (DISTR_IN.prob == NULL) {
-    _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"probability vector");
-    return NULL;
+    _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"p.v."); return NULL;
   }
 
   /* allocate structure */
@@ -199,6 +197,7 @@ unur_dis_new( struct unur_distr *distr )
   par->set         = 0u;             /* inidicate default parameters         */    
   par->urng        = unur_get_default_urng(); /* use default urng            */
 
+  par->genid    = _unur_set_genid(GENTYPE);/* set generator id               */
   par->debug    = UNUR_DEBUGFLAG_DEFAULT;  /* set default debugging flags    */
 
   /* routine for starting generator */
@@ -232,7 +231,7 @@ unur_dis_set_variant( struct unur_par *par, unsigned variant )
 
   /* check new parameter for generator */
   if (variant != DIS_VAR_ADD && variant != DIS_VAR_DIV) {
-    _unur_warning(GENTYPE,UNUR_ERR_SET,"invalid variant! use default");
+    _unur_warning(par->genid,UNUR_ERR_PAR_VARIANT,"");
     return 0;
   }
 
@@ -268,7 +267,7 @@ unur_dis_set_guidefactor( struct unur_par *par, double factor )
 
   /* check new parameter for generator */
   if (factor < 0) {
-    _unur_warning(GENTYPE,UNUR_ERR_SET,"relative table size < 0");
+    _unur_warning(par->genid,UNUR_ERR_PAR_SET,"relative table size < 0");
     return 0;
   }
 
@@ -311,7 +310,7 @@ unur_dis_init( struct unur_par *par )
 
   /* check input */
   if ( par->method != UNUR_METH_DIS ) {
-    _unur_error(GENTYPE,UNUR_ERR_PAR_INVALID,"");
+    _unur_error(par->genid,UNUR_ERR_PAR_INVALID,"");
     return NULL; }
   COOKIE_CHECK(par,CK_DIS_PAR,NULL);
 
@@ -328,7 +327,7 @@ unur_dis_init( struct unur_par *par )
     GEN.cumprob[i] = ( probh += prob[i] );
     /* ... and check probability vector */
     if (prob[i] < 0.) {
-      _unur_error(gen->genid,UNUR_ERR_INIT,"probability < 0 not possible!");
+      _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"probability < 0");
       unur_dis_free(gen); free(par); 
       return NULL;
     }
@@ -343,7 +342,7 @@ unur_dis_init( struct unur_par *par )
       while( GEN.cumprob[i]/GEN.sum < ((double)j)/GEN.guide_size ) 
 	i++;
       if (i >= n_prob) {
-	_unur_warning(gen->genid,UNUR_ERR_INIT,"roundoff error while making guide table!");
+	_unur_warning(gen->genid,UNUR_ERR_ROUNDOFF,"guide table");
 	break;
       }
       GEN.guide_table[j]=i;
@@ -357,7 +356,7 @@ unur_dis_init( struct unur_par *par )
       while (GEN.cumprob[i] < probh) 
 	i++;
       if (i >= n_prob) {
-	_unur_warning(gen->genid,UNUR_ERR_INIT,"roundoff error while making guide table!");
+	_unur_warning(gen->genid,UNUR_ERR_ROUNDOFF,"guide table");
 	break;
       }
       GEN.guide_table[j] = i;
@@ -436,7 +435,7 @@ unur_dis_free( struct unur_gen *gen )
 
   /* check input */
   if ( gen->method != UNUR_METH_DIS ) {
-    _unur_warning(GENTYPE,UNUR_ERR_GEN_INVALID,"");
+    _unur_warning(gen->genid,UNUR_ERR_GEN_INVALID,"");
     return; }
   COOKIE_CHECK(gen,CK_DIS_GEN,/*void*/);
 
@@ -444,7 +443,7 @@ unur_dis_free( struct unur_gen *gen )
   SAMPLE = NULL;   /* make sure to show up a programming error */
 
   /* free memory */
-  free(gen->genid);
+  _unur_free_genid(gen);
   free(GEN.guide_table);
   free(GEN.cumprob);
   free(gen);
@@ -483,8 +482,8 @@ _unur_dis_create( struct unur_par *par )
   /* magic cookies */
   COOKIE_SET(gen,CK_DIS_GEN);
 
-  /* set generator identifier */
-  gen->genid = _unur_make_genid(GENTYPE);
+  /* copy generator identifier */
+  gen->genid = par->genid;
 
   /* copy distribution object into generator object */
   memcpy( &(gen->distr), par->distr, sizeof( struct unur_distr ) );

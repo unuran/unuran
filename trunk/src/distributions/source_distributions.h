@@ -56,26 +56,19 @@
 #define RETURN_NULL   0
 /*---------------------------------------------------------------------------*/
 
+/*---------------------------------------------------------------------------*/
 /* (log of) normalization constant for p.d.f */
 #define LOGNORMCONSTANT  params[UNUR_DISTR_MAXPARAMS]
 #define NORMCONSTANT     params[UNUR_DISTR_MAXPARAMS]
 
-
+/*---------------------------------------------------------------------------*/
 /* set routine for sampling                                                  */
-#ifdef UNUR_ENABLE_LOGGING
 #define _unur_cstd_set_sampling_routine(par,gen,routine) \
    do { \
-     if ((gen)==NULL) return 1;                       /* test existence only */ \
-     (gen)->sample.cont = (routine);                  /* set pointer */ \
-     (par)->data.cstd.sample_routine_name = #routine; /* set routine name */ \
+     if ((gen)==NULL) return 1;                    /* test existence only  */ \
+     (gen)->sample.cont = (routine);                 /* set pointer        */ \
+     (par)->data.cstd.sample_routine_name = #routine;  /* set routine name */ \
    } while (0)
-#else
-#define _unur_cstd_set_sampling_routine(par,gen,routine) \
-   do { \
-     if ((gen)==NULL) return 1;                       /* test existence only */ \
-     (gen)->sample.cont = (routine);                  /* set pointer */ \
-   } while (0)
-#endif
 
 /*---------------------------------------------------------------------------*/
 

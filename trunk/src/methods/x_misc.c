@@ -62,7 +62,7 @@ unur_set_debug( struct unur_par *par, unsigned debug )
   par->debug = debug;
   return 1;
 #else
-  _unur_warning("DEBUG",UNUR_ERR_SET,"Debugging not available. Recompile library.");
+  _unur_warning("DEBUG",_UNUR_ERR_COMPILE,"debugging, #define UNUR_ENABLE_LOGGING");
   return 0;
 #endif
 

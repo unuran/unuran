@@ -48,16 +48,25 @@
 /* include main header file                                                  */
 #include <unuran.h>
 
-
+#include <unuran_errno.h>
 #include <source_cookies.h>
 #include <source_distr.h>
-#include <source_errno.h>
 #include <source_math.h>
 #include <source_methods.h>
 
 /*---------------------------------------------------------------------------*/
-/* Function prototypes for allocating memory blocks                          */
+/* set generator id                                                          */
+#ifdef UNUR_ENABLE_GENID
+char *_unur_make_genid( const char *gentype );
+#define _unur_set_genid(gentype) _unur_make_genid(gentype)
+#define _unur_free_genid(gen)    free((gen)->genid)
+#else
+#define _unur_set_genid(gentype) (gentype)
+#define _unur_free_genid(gen)    do { } while(0)
+#endif
 
+/*---------------------------------------------------------------------------*/
+/* Function prototypes for allocating memory blocks                          */
 void *_unur_malloc(size_t size);
 void  _unur_add_mblocks( struct unur_mblock **mblocks, void *ptr );
 void  _unur_free_mblocks( struct unur_mblock *mblocks );
@@ -76,6 +85,43 @@ void  _unur_free_mblocks( struct unur_mblock *mblocks );
 #ifndef FALSE
 #define FALSE  (0)
 #endif
+
+/*---------------------------------------------------------------------------*/
+/* warnings and error messages                                               */
+
+/* Function prototypes                                                       */
+void _unur_stream_printf( const char *genid, char *filename, int line, const char *format, ... );
+
+extern unsigned unur_errno;  /* global variable used to record errors        */
+
+/*---------------------------------------------------------------------------*/
+#ifdef UNUR_WARNINGS_ON    /* warnings enabled */
+/*---------------------------------------------------------------------------*/
+
+#define _unur_error(genid,errortype,str) \
+   do { \
+      unur_errno = (errortype); \
+      _unur_stream_printf((genid),__FILE__,__LINE__,"error: %s %s", \
+                          unur_get_strerror(errortype), (str) ); \
+   } while (0)
+
+#define _unur_warning(genid,errortype,str) \
+   do { \
+      unur_errno = (errortype); \
+      _unur_stream_printf((genid),__FILE__,__LINE__,"warning: %s %s", \
+                          unur_get_strerror(errortype), (str) ); \
+   } while (0)
+
+/*---------------------------------------------------------------------------*/
+#else   /* warnings disabled */
+/*---------------------------------------------------------------------------*/
+
+#define _unur_error(genid,errortype,str)      do { unur_errno = (errortype); } while(0)
+#define _unur_warning(genid,errortype,str)    do { unur_errno = (errortype); } while(0)
+
+/*---------------------------------------------------------------------------*/
+#endif   /* end UNUR_WARNINGS_ON */
+/*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*/
 /* Check for NULL pointer                                                    */
@@ -104,7 +150,6 @@ void  _unur_free_mblocks( struct unur_mblock *mblocks );
 /*---------------------------------------------------------------------------*/
 
 double _unur_arcmean( double x0, double x1 );
-char *_unur_make_genid( const char *gentype );
 
 /*---------------------------------------------------------------------------*/
 /* Macros                                                                    */

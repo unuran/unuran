@@ -93,21 +93,15 @@ _unur_pdf_gamma( double x, double *params, int n_params )
 { 
   switch (n_params) {
   case 3:  /* non standard */
-    /* standardize */
-    x = (x-gamma) / beta;
-  case 1:  /* standard */
+    x = (x-gamma) / beta;     /* standardize */
+  case 1: default: /* standard */
     if (alpha == 1. && x >= 0.)
       return exp( -x );
     if (x <= 0.)
       return 0.;
     return exp( (alpha-1.)*log(x) - x - LOGNORMCONSTANT);
     /*    return ( pow(x,alpha-1.) * exp(-x) ); */
-
-  default:
-    _unur_error(distr_name,UNUR_ERR_NPARAM,"");
-    return 0.;
   }
-
 } /* end of _unur_pdf_gamma() */
 
 /*---------------------------------------------------------------------------*/
@@ -119,21 +113,15 @@ _unur_dpdf_gamma( double x, double *params, int n_params )
 
   switch (n_params) {
   case 3:  /* non standard */
-    /* standardize */
     factor = 1./beta;
-    x = (x-gamma) / beta;
-  case 1:  /* standard */
+    x = (x-gamma) / beta;     /* standardize */
+  case 1: default: /* standard */
     if (x <= 0.)
       return 0.;
     if (alpha == 1.)
       return( -exp(-x) * factor );
     return ( pow(x,alpha-2.) * exp(-x - LOGNORMCONSTANT) *  ((alpha-1.) -x) * factor ); 
-
-  default:
-    _unur_error(distr_name,UNUR_ERR_NPARAM,"");
-    return 0.;
   }
-
 } /* end of _unur_dpdf_gamma() */
 
 /*---------------------------------------------------------------------------*/
@@ -143,18 +131,12 @@ _unur_cdf_gamma( double x, double *params, int n_params )
 { 
   switch (n_params) {
   case 3:  /* non standard */
-    /* standardize */
-    x = (x-gamma) / beta;
-  case 1:  /* standard */
+    x = (x-gamma) / beta;     /* standardize */
+  case 1: default: /* standard */
     if (x <= 0.)
       return 0.;
     return _unur_cdf_gamma_ext(x,alpha,1.);
-
-  default:
-    _unur_error(distr_name,UNUR_ERR_NPARAM,"");
-    return 0.;
   }
-
 } /* end of _unur_cdf_gamma() */
 
 /*---------------------------------------------------------------------------*/
@@ -169,14 +151,9 @@ _unur_mode_gamma( double *params, int n_params )
   switch (n_params) {
   case 3:  /* non standard */
     return (mode * beta) + gamma;
-  case 1:  /* standard */
+  case 1: default: /* standard */
     return mode;
-
-  default:
-    _unur_error(distr_name,UNUR_ERR_NPARAM,"");
-    return 0.;
   }
-
 } /* end of _unur_mode_gamma() */
 
 /*---------------------------------------------------------------------------*/
@@ -187,14 +164,9 @@ _unur_lognormconstant_gamma( double *params, int n_params )
   switch (n_params) {
   case 3:  /* non standard */
     return ( _unur_gammaln(alpha) + log(beta)*alpha );
-  case 1:  /* standard */
+  case 1: default: /* standard */
     return (_unur_gammaln(alpha));
-
-  default:
-    _unur_error(distr_name,UNUR_ERR_NPARAM,"");
-    return 0.;
   }
-
 } /* end of _unur_lognormconstant_gamma() */
 
 /*---------------------------------------------------------------------------*/
@@ -216,7 +188,7 @@ unur_distr_gamma( double *params, int n_params )
   /* check new parameter for generator */
   CHECK_NULL(params,RETURN_NULL);
   if (n_params < 1 || n_params > 3) {
-    _unur_warning(distr_name,UNUR_ERR_GENERIC,"invalid number parameter");
+    _unur_error(distr_name,UNUR_ERR_DISTR_NPARAMS,"");
     return NULL;
   }
 
@@ -254,11 +226,11 @@ unur_distr_gamma( double *params, int n_params )
 
   /* check parameters alpha and beta */
   if (DISTR.alpha <= 0.) {
-    _unur_error(distr_name,UNUR_ERR_DISTR,"shape parameter alpha <= 0.");
+    _unur_error(distr_name,UNUR_ERR_DISTR_DOMAIN,"alpha <= 0.");
     free( distr ); return NULL;
   }
   if (DISTR.beta <= 0.) {
-    _unur_error(distr_name,UNUR_ERR_DISTR,"scale parameter beta <= 0.");
+    _unur_error(distr_name,UNUR_ERR_DISTR_DOMAIN,"beta <= 0.");
     free( distr ); return NULL;
   }
 
@@ -294,4 +266,3 @@ unur_distr_gamma( double *params, int n_params )
 #undef beta 
 #undef gamma
 /*---------------------------------------------------------------------------*/
-

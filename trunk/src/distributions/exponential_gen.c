@@ -87,6 +87,8 @@ _unur_stdgen_exponential_init( struct unur_par *par, struct unur_gen *gen )
     _unur_cstd_set_sampling_routine(par,gen,unur_stdgen_sample_exponential_inv); 
     return 1;
   default:
+    /* no such generator */
+    _unur_warning(par->genid,UNUR_ERR_DISTR_GEN,"");
     return 0;
   }
   

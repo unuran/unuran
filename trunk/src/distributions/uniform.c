@@ -75,15 +75,9 @@ _unur_pdf_uniform( double x, double *params, int n_params )
   case 2:  /* non standard */
     /* standardize */
     x = (x-a) / (b-a);
-
-  case 0:  /* standard */
+  case 0: default: /* standard */
     return ((x < 0. || x > 1.) ? 0. : 1.);
-    
-  default:
-    _unur_error(distr_name,UNUR_ERR_NPARAM,"");
-    return 0.;
   }
-
 } /* end of _unur_pdf_uniform() */
 
 /*---------------------------------------------------------------------------*/
@@ -103,17 +97,11 @@ _unur_cdf_uniform( double x, double *params, int n_params )
   case 2:  /* non standard */
     /* standardize */
     x = (x-a) / (b-a);
-
-  case 0:  /* standard */
+  case 0: default: /* standard */
     if (x<=0.) return 0.;
     if (x>=1.) return 1.;
     return x;
-    
-  default:
-    _unur_error(distr_name,UNUR_ERR_NPARAM,"");
-    return 0.;
   }
-
 } /* end of _unur_cdf_uniform() */
 
 /*---------------------------------------------------------------------------*/
@@ -126,7 +114,7 @@ unur_distr_uniform( double *params, int n_params )
 
   /* check new parameter for generator */
   if (n_params != 0 && n_params != 2) {
-    _unur_warning(distr_name,UNUR_ERR_GENERIC,"invalid number parameter");
+    _unur_error(distr_name,UNUR_ERR_DISTR_NPARAMS,"");
     return NULL;
   }
   if (n_params>0)
@@ -163,7 +151,7 @@ unur_distr_uniform( double *params, int n_params )
 
   /* check parameters a and b */
   if (DISTR.a >= DISTR.b) {
-    _unur_error(distr_name,UNUR_ERR_DISTR,"invalid domain: a >= b!");
+    _unur_error(distr_name,UNUR_ERR_DISTR_DOMAIN,"a >= b");
     free( distr ); return NULL;
   }
 

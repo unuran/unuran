@@ -86,18 +86,11 @@ double
 _unur_pdf_exponential( double x, double *params, int n_params )
 {
   switch (n_params) {
-
-  case 2:  /* non standard */
-    /* standardize */
-    x = (x-theta) / sigma;
-  case 0:  /* standard */
+  case 2:                  /* non standard */
+    x = (x-theta) / sigma; /* -> standardize */
+  case 0: default:         /* standard */
     return ( (x<0.) ? 0. : exp(-x) / sigma );
-
-  default:
-    _unur_error(distr_name,UNUR_ERR_NPARAM,"");
-    return 0.;
   }
-
 } /* end of _unur_pdf_exponential() */
 
 /*---------------------------------------------------------------------------*/
@@ -106,17 +99,11 @@ double
 _unur_dpdf_exponential( double x, double *params, int n_params )
 {
   switch (n_params) {
-
-  case 2:  /* non standard */
+  case 2:                  /* non standard */
     return ( (x<theta) ? 0. : -exp( -(x-theta)/sigma ) / (sigma*sigma));
-  case 0:  /* standard */
+  case 0: default:         /* standard */
     return ( (x<0.) ? 0. : -exp(-x) );
-
-  default:
-    _unur_error(distr_name,UNUR_ERR_NPARAM,"");
-    return 0.;
   }
-
 } /* end of _unur_dpdf_exponential() */
 
 /*---------------------------------------------------------------------------*/
@@ -125,18 +112,11 @@ double
 _unur_cdf_exponential( double x, double *params, int n_params )
 {
   switch (n_params) {
-
-  case 2:  /* non standard */
-    /* standardize */
-    x = (x-theta) / sigma;
-  case 0:  /* standard */
+  case 2:                  /* non standard */
+    x = (x-theta) / sigma; /* -> standardize */
+  case 0: default:         /* standard */
     return ( (x<0.) ? 0. : 1.-exp(-x) );
-    
-  default:
-    _unur_error(distr_name,UNUR_ERR_NPARAM,"");
-    return 0.;
   }
-
 } /* end of _unur_cdf_exponential() */
 
 /*---------------------------------------------------------------------------*/
@@ -157,7 +137,7 @@ unur_distr_exponential( double *params, int n_params )
 
   /* check new parameter for generator */
   if (n_params < 0 || n_params > 2) {
-    _unur_warning(distr_name,UNUR_ERR_GENERIC,"invalid number parameter");
+    _unur_error(distr_name,UNUR_ERR_DISTR_NPARAMS,"");
     return NULL;
   }
   if (n_params > 0)
@@ -196,7 +176,7 @@ unur_distr_exponential( double *params, int n_params )
 
   /* check parameter sigma */
   if (DISTR.sigma <= 0.) {
-    _unur_error(distr_name,UNUR_ERR_DISTR,"scale parameter sigma <= 0.");
+    _unur_error(distr_name,UNUR_ERR_DISTR_DOMAIN,"sigma <= 0");
     free( distr ); return NULL;
   }
 

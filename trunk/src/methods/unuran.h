@@ -143,6 +143,7 @@ struct unur_par {
   UNUR_URNG_TYPE  urng;       /* pointer to uniform random number generator  */
 
   struct unur_distr *distr;   /* pointer to distribution object              */
+  char *genid;                /* identifier for generator                    */
 
   unsigned debug;             /* debugging flags                             */
 #ifdef UNUR_COOKIES

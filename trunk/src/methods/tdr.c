@@ -471,18 +471,13 @@ unur_tdr_new( struct unur_distr* distr )
 
   /* check distribution */
   if (distr->type != UNUR_DISTR_CONT) {
-    _unur_error(GENTYPE,UNUR_ERR_DISTR_INVALID,"");
-    return NULL; }
+    _unur_error(GENTYPE,UNUR_ERR_DISTR_INVALID,""); return NULL; }
   COOKIE_CHECK(distr,CK_DISTR_CONT,NULL);
 
   if (DISTR_IN.pdf == NULL) {
-    _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"p.d.f.");
-    return NULL;
-  }
+    _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"p.d.f."); return NULL; }
   if (DISTR_IN.dpdf == NULL) {
-    _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"derivative of p.d.f.");
-    return NULL;
-  }
+    _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"derivative of p.d.f."); return NULL; }
 
   /* allocate structure */
   par = _unur_malloc( sizeof(struct unur_par) );
@@ -511,6 +506,7 @@ unur_tdr_new( struct unur_distr* distr )
   par->set      = 0u;               /* inidicate default parameters          */    
   par->urng     = unur_get_default_urng(); /* use default urng               */
 
+  par->genid    = _unur_set_genid(GENTYPE);/* set generator id               */
   par->debug    = UNUR_DEBUGFLAG_DEFAULT;  /* set default debugging flags    */
 
   /* we use the mode (if known) as center of the distribution */
@@ -559,7 +555,7 @@ unur_tdr_set_cpoints( struct unur_par *par, int n_stp, double *stp )
   /* we always use the boundary points as additional starting points,
      so we do not count these here! */
   if (n_stp < 0 ) {
-    _unur_warning(GENTYPE,UNUR_ERR_SET,"number of starting points < 0");
+    _unur_warning(par->genid,UNUR_ERR_PAR_SET,"number of starting points < 0");
     return 0;
   }
 
@@ -567,7 +563,7 @@ unur_tdr_set_cpoints( struct unur_par *par, int n_stp, double *stp )
     /* starting points must be strictly monontonically increasing */
     for( i=1; i<n_stp; i++ )
       if (stp[i] <= stp[i-1]) {
-	_unur_warning(GENTYPE,UNUR_ERR_SET,"starting points not strictly monotonically increasing");
+	_unur_warning(par->genid,UNUR_ERR_PAR_SET,"starting points not strictly monotonically increasing");
 	return 0;
       }
 
@@ -606,7 +602,7 @@ unur_tdr_set_guidefactor( struct unur_par *par, double factor )
 
   /* check new parameter for generator */
   if (factor < 0) {
-    _unur_warning(GENTYPE,UNUR_ERR_SET,"relative table size < 0");
+    _unur_warning(par->genid,UNUR_ERR_PAR_SET,"guide table size < 0");
     return 0;
   }
 
@@ -644,7 +640,7 @@ unur_tdr_set_max_sqhratio( struct unur_par *par, double max_ratio )
 
   /* check new parameter for generator */
   if (max_ratio < 0. || max_ratio > 1. ) {
-    _unur_warning(GENTYPE,UNUR_ERR_SET,"ratio Atotal / Asqueeze not in [0,1]");
+    _unur_warning(par->genid,UNUR_ERR_PAR_SET,"ratio A(squeeze)/A(hat) not in [0,1]");
     return 0;
   }
 
@@ -682,7 +678,7 @@ unur_tdr_set_max_intervals( struct unur_par *par, int max_ivs )
 
   /* check new parameter for generator */
   if (max_ivs < 1 ) {
-    _unur_warning(GENTYPE,UNUR_ERR_SET,"maximum number of intervals < 1");
+    _unur_warning(par->genid,UNUR_ERR_PAR_SET,"maximum number of intervals < 1");
     return 0;
   }
 
@@ -821,15 +817,16 @@ unur_tdr_set_c( struct unur_par *par, double c )
 
   /* check new parameter for generator */
   if (c > 0.) {
-    _unur_warning(GENTYPE,UNUR_ERR_SET,"c > 0");
+    _unur_warning(par->genid,UNUR_ERR_PAR_SET,"c > 0");
     return 0;
   }
-  if (c <= -1.) {
-    _unur_warning(GENTYPE,UNUR_ERR_SET,"c <= -1 only if domain is bounded. Use `TABL' method then.");
-    return 0;
-  }
+  /** TODO: ... **/
+/*    if (c <= -1.) { */
+/*      _unur_warning(par->genid,UNUR_ERR_PAR_SET,"c <= -1 only if domain is bounded. Use `TABL' method then."); */
+/*      return 0; */
+/*    } */
   if (c != 0 && c > -0.5) {
-    _unur_warning(GENTYPE,UNUR_ERR_SET,"-0.5 < c < 0 not recommended. using c = -0.5 instead.");
+    _unur_warning(par->genid,UNUR_ERR_PAR_SET,"-0.5 < c < 0 not recommended. using c = -0.5 instead.");
     c = -0.5;
   }
     
@@ -900,7 +897,7 @@ unur_tdr_init( struct unur_par *par )
 
   /* check input */
   if ( par->method != UNUR_METH_TDR ) {
-    _unur_error(GENTYPE,UNUR_ERR_PAR_INVALID,"");
+    _unur_error(par->genid,UNUR_ERR_PAR_INVALID,"");
     return NULL; }
   COOKIE_CHECK(par,CK_TDR_PAR,NULL);
 
@@ -923,7 +920,7 @@ unur_tdr_init( struct unur_par *par )
   /* we have to update the maximal number of intervals,
      if the user wants more starting points. */
   if (GEN.n_ivs > GEN.max_ivs) {
-    _unur_warning(gen->genid,UNUR_ERR_INIT,"maximal number of intervals too small. increase.");
+    _unur_warning(gen->genid,UNUR_ERR_GEN_DATA,"maximal number of intervals too small. increase.");
     GEN.max_ivs = GEN.n_ivs;
   }
 
@@ -940,7 +937,7 @@ unur_tdr_init( struct unur_par *par )
 
   /* is there any hat at all ? */
   if (GEN.Atotal <= 0.) {
-    _unur_error(gen->genid,UNUR_ERR_INIT,"cannot construct hat function. bad construction points.");
+    _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"bad construction points.");
     unur_tdr_free(gen);
     return NULL;
   }
@@ -1288,18 +1285,18 @@ unur_tdr_sample_check( struct unur_gen *gen )
 
     /* check result */
     if (x < DISTR.BD_LEFT || x > DISTR.BD_RIGHT) {
-      _unur_warning(gen->genid,UNUR_ERR_SAMPLE,"generated point out of domain");
+      _unur_warning(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"generated point out of domain");
       error = 1;
     }
     if (Tfx > Thx && 
 	fabs((Tfx-Thx)/Tfx) > 2. * DBL_EPSILON ) {   /* this construct should skip over simple roundoff errors */
       /** TODO: is factor 2 a good choice ?? **/
-      _unur_warning(gen->genid,UNUR_ERR_SAMPLE,"pdf > hat. Not T-concave!");
+      _unur_warning(gen->genid,UNUR_ERR_GEN_CONDITION,"pdf > hat. Not T-concave!");
       error = 1;
     }
     if (Tsqx > Tfx &&
 	fabs((Tsqx-Tfx)/Tsqx) > 2. * DBL_EPSILON ) {   /* this construct should skip over simple roundoff errors */
-      _unur_warning(gen->genid,UNUR_ERR_SAMPLE,"pdf < squeeze. Not T-concave!");
+      _unur_warning(gen->genid,UNUR_ERR_GEN_CONDITION,"pdf < squeeze. Not T-concave!");
       error = 1;
     }
 
@@ -1350,7 +1347,7 @@ unur_tdr_free( struct unur_gen *gen )
 
   /* check input */
   if ( gen->method != UNUR_METH_TDR ) {
-    _unur_warning(GENTYPE,UNUR_ERR_GEN_INVALID,"");
+    _unur_warning(gen->genid,UNUR_ERR_GEN_INVALID,"");
     return; }
   COOKIE_CHECK(gen,CK_TDR_GEN,/*void*/);
 
@@ -1367,7 +1364,7 @@ unur_tdr_free( struct unur_gen *gen )
   _unur_free_mblocks(GEN.mblocks);
 
   /* free other memory not stored in list */
-  free(gen->genid);
+  _unur_free_genid(gen);
   free(GEN.guide);
   free(gen);
 
@@ -1404,8 +1401,8 @@ _unur_tdr_create( struct unur_par *par )
   /* magic cookies */
   COOKIE_SET(gen,CK_TDR_GEN);
 
-  /* set generator identifier */
-  gen->genid = _unur_make_genid(GENTYPE);
+  /* copy generator identifier */
+  gen->genid = par->genid;
 
   /* copy distribution object into generator object */
   memcpy( &(gen->distr), par->distr, sizeof( struct unur_distr ) );
@@ -1418,7 +1415,7 @@ _unur_tdr_create( struct unur_par *par )
 
   /** TODO: remove this **/
   if ((par->variant & TDR_VARMASK_T) == TDR_VAR_T_POW) {
-    _unur_warning(gen->genid,UNUR_ERR_INIT,"c != 0. and c != -0.5 not implemented!");
+    _unur_error(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"c != 0. and c != -0.5 not implemented!");
     return NULL;
   }
 
@@ -1439,7 +1436,7 @@ _unur_tdr_create( struct unur_par *par )
       SAMPLE = NULL;
       break;
     default:
-      _unur_warning(gen->genid,UNUR_ERR_INIT,"internal error.");
+      _unur_error(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
       return NULL;
     }
 
@@ -1567,11 +1564,11 @@ _unur_tdr_get_starting_cpoints( struct unur_par *par, struct unur_gen *gen )
 	x = PAR.starting_cpoints[i];
 	/* check starting point */
 	if (x <= DISTR.BD_LEFT || x >= DISTR.BD_RIGHT) {
-	  _unur_warning(gen->genid,UNUR_ERR_INIT,"starting point out of domain!");
+	  _unur_warning(gen->genid,UNUR_ERR_GEN_DATA,"starting point out of domain");
 	  continue;
 	}
 	if (x<=x_last) {
-	  _unur_warning(gen->genid,UNUR_ERR_INIT,"starting points are not strictly monotonically increasing! skip!");
+	  _unur_warning(gen->genid,UNUR_ERR_GEN_DATA,"starting points are not strictly monotonically increasing -> skip");
 	  continue;
 	}
       }
@@ -1610,15 +1607,15 @@ _unur_tdr_get_starting_cpoints( struct unur_par *par, struct unur_gen *gen )
 
     /* check value of p.d.f. at starting point */
     if (!is_increasing && fx > fx_last) {
-      _unur_error(gen->genid,UNUR_ERR_INIT,"p.d.f. not unimodal!");
+      _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"p.d.f. not unimodal!");
       return 0;
     }
     if (is_mode && (fx < fx_last)) {
-      _unur_warning(gen->genid,UNUR_ERR_INIT,"wrong mode. ignore mode.");
+      _unur_warning(gen->genid,UNUR_ERR_GEN_DATA,"mode -> ignore");
       continue;
     }
     if (was_mode && (fx > fx_last)) {
-      _unur_error(gen->genid,UNUR_ERR_INIT,"wrong mode.");
+      _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"mode");
       return 0;
     }
 
@@ -1731,7 +1728,7 @@ _unur_tdr_get_starting_intervals( struct unur_par *par, struct unur_gen *gen )
     /* add a new interval, but check if we had to used too many intervals */
     if (GEN.n_ivs >= GEN.max_ivs) {
       /* we do not want to create too many intervals */
-      _unur_error(gen->genid,UNUR_ERR_INIT,"cannot create bounded hat!");
+      _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"cannot create bounded hat!");
       return 0;
     }
     iv_new = _unur_tdr_interval_new( gen, x, fx, FALSE );
@@ -1773,7 +1770,7 @@ _unur_tdr_interval_new( struct unur_gen *gen, double x, double fx, int is_mode )
 
   /* first check fx */
   if (fx<0.) {
-    _unur_warning(gen->genid,UNUR_ERR_INIT,"pdf(x) < 0.!");
+    _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"pdf(x) < 0.!");
     return NULL;
   }
 
@@ -1859,7 +1856,7 @@ _unur_tdr_interval_parameter( struct unur_gen *gen, struct unur_tdr_interval *iv
     /* check squeeze */
     if ( (iv->sq > iv->dTfx      && iv->dTfx       > -INFINITY) ||
 	 (iv->sq < iv->next->dTfx && iv->next->dTfx  < INFINITY) ) {
-      _unur_warning(gen->genid,UNUR_ERR_INIT,"Squeeze too steep/flat. p.d.f. not T-concave!");
+      _unur_warning(gen->genid,UNUR_ERR_GEN_CONDITION,"Squeeze too steep/flat. p.d.f. not T-concave!");
       return 0;
     }
     /* volume below squeeze */
@@ -1888,7 +1885,7 @@ _unur_tdr_interval_parameter( struct unur_gen *gen, struct unur_tdr_interval *iv
   if ( (iv->Asqueeze - iv->Ahatl - iv->Ahatr)/(iv->Ahatl + iv->Ahatr) > DBL_EPSILON) {
     /** TODO: is this o.k. to distiguish between roundoff errors and violated condition ?? **/
     /** TODO: possible over/underflow ( ?? ) **/
-    _unur_warning(gen->genid,UNUR_ERR_INIT,"A(squeeze) > A(hat). p.d.f. not T-concave!");
+    _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"A(squeeze) > A(hat). p.d.f. not T-concave!");
     return 0; 
   }
 
@@ -1937,7 +1934,7 @@ _unur_tdr_interval_division_point( struct unur_gen *gen, struct unur_tdr_interva
 
   /* test for T-concavity */
   if (iv->dTfx < iv->next->dTfx) {
-    _unur_warning(gen->genid,UNUR_ERR_INIT,"dTfx0 < dTfx1 (x0>x1). p.d.f. not T-concave!");
+    _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"dTfx0 < dTfx1 (x0>x1). p.d.f. not T-concave!");
     return 0;
   }
   /** TODO: the following test is too sensitve to roundoff errors **/
@@ -1963,7 +1960,7 @@ _unur_tdr_interval_division_point( struct unur_gen *gen, struct unur_tdr_interva
   /* check position of intersection point */
   if (*ipt < iv->x || *ipt > iv->next->x) {
     /** TODO: skip over simple round off error. use mean in this case */
-    _unur_warning(gen->genid,UNUR_ERR_INIT,"intersection point of tangents not in interval. p.d.f. not T-concave!");
+    _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"intersection point of tangents not in interval. p.d.f. not T-concave!");
     return 0;
   }
 
@@ -2117,7 +2114,7 @@ _unur_tdr_interval_split( struct unur_gen *gen, struct unur_tdr_interval *iv_old
       iv_oldl->next->x = x;
     }
     else {
-      _unur_error(gen->genid,UNUR_ERR_INIT,"p.d.f. not T-concave");
+      _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"p.d.f. not T-concave");
       return 0;
     }
 
@@ -2147,7 +2144,7 @@ _unur_tdr_interval_split( struct unur_gen *gen, struct unur_tdr_interval *iv_old
 	 or area below hat not bounded */
 
       /* new construction point not suitable --> do not add */
-      _unur_warning(gen->genid,UNUR_ERR_SAMPLE,"Cannot split interval at given point.");
+      _unur_warning(gen->genid,UNUR_ERR_GEN_DATA,"Cannot split interval at given point.");
 #ifdef UNUR_ENABLE_LOGGING
       /* write info into log file */
       if (gen->debug & TDR_DEBUG_SPLIT) 
@@ -2161,8 +2158,10 @@ _unur_tdr_interval_split( struct unur_gen *gen, struct unur_tdr_interval *iv_old
 	 (this case should not happen, so it is faster not to make a 
 	 backup of the old interval) */
       if ( !_unur_tdr_interval_parameter(gen, iv_oldl) ) {
-	_unur_error(gen->genid,UNUR_ERR_SAMPLE,"Cannot restore interval. PANIK.");
-	exit (-1);
+	/* this should not happen:
+	   Cannot restore interval. */
+	_unur_error(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
+	exit (EXIT_FAILURE);
       }
       return 0;
     }
@@ -2240,7 +2239,7 @@ _unur_tdr_make_guide_table( struct unur_gen *gen )
     while( iv->Acum < Acum )
       iv = iv->next;
     if( iv->next == NULL ) {   /* this is the last virtual intervall --> do not use */
-	_unur_warning(gen->genid,UNUR_ERR_INIT,"roundoff error while making guide table!");
+	_unur_warning(gen->genid,UNUR_ERR_ROUNDOFF,"guide table");
 	break;
       }
     GEN.guide[j] = iv;

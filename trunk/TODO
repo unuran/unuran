@@ -1,15 +1,14 @@
 
 -----------------------------------------------------------------------------
 
-(*) set:
-	ersetze unur_set_... befehle durch unur_<methode>_set... befehle (?)
-	soll dabei immer der unur_par structure ueberprueft werden??
+(*) Standard distributions, mode: was soll passieren, wenn dichte nicht
+	nicht unimodal ist??
 
 -----------------------------------------------------------------------------
 
 (*) set:
-	unur_set_mode() und unur_set_usemode().
-	ersters sollte den usemode setzen/nicht setzen ??
+	ersetze unur_set_... befehle durch unur_<methode>_set... befehle (?)
+	soll dabei immer der unur_par structure ueberprueft werden??
 
 -----------------------------------------------------------------------------
 
@@ -85,13 +84,6 @@
 
 -----------------------------------------------------------------------------
 
-(*) CSTD:
-	(.) ist eine baustelle!!
-	(.) sollen wir fuer eine verteilung mehr als einen generator
-	    inkludieren?
-
------------------------------------------------------------------------------
-
 (*) jede methode enthaelt am beginn der datei eine aufzaehlung
     aller moeglichen parameter. die ist momentan sehr unvollstaendig
     oder ueberhaupt falsch.
@@ -120,11 +112,6 @@
 	    programm nach eventuellen fehlern abfragen kann
 	    (z.b. falls in unur_tdr_check ein fehler entdeckt wurde.)
 	(.) oder besser: errno aus ANSI C verwenden???
-
------------------------------------------------------------------------------
-
-(*) sollen alle internen funktionen mit _unur_... beginnen ??
-    (z.B. _unur_call_urng() statt unur_call_urng())
 
 -----------------------------------------------------------------------------
 

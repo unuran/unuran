@@ -93,13 +93,9 @@ _unur_pdf_normal( double x, double *params, int n_params )
   case 2:  /* non standard */
     /* standardize */
     x = (x - mu) / sigma;
-  case 0:  /* standard */
+  case 0: default: /* standard */
     return exp(-x*x/2. - LOGNORMCONSTANT); 
-  default:
-    _unur_error(distr_name,UNUR_ERR_NPARAM,"");
-    return 0.;
   }
-
 } /* end of _unur_pdf_normal() */
 
 /*---------------------------------------------------------------------------*/
@@ -114,13 +110,9 @@ _unur_dpdf_normal( double x, double *params, int n_params )
     /* standardize */
     factor = 1./sigma;
     x = (x - mu) / sigma;
-  case 0:  /* standard */
+  case 0: default: /* standard */
     return ( -x * exp(-x*x/2. - LOGNORMCONSTANT) * factor );
-  default:
-    _unur_error(distr_name,UNUR_ERR_NPARAM,"");
-    return 0.;
   }
-
 } /* end of _unur_dpdf_normal() */
 
 /*---------------------------------------------------------------------------*/
@@ -132,13 +124,9 @@ _unur_cdf_normal( double x, double *params, int n_params )
   case 2:  /* non standard */
     /* standardize */
     x = (x - mu) / sigma;
-  case 0:  /* standard */
+  case 0: default: /* standard */
     return _unur_cdf_normal_ext(x);
-  default:
-    _unur_error(distr_name,UNUR_ERR_NPARAM,"");
-    return 0.;
   }
-
 } /* end of _unur_cdf_normal() */
 
 /*---------------------------------------------------------------------------*/
@@ -159,7 +147,7 @@ unur_distr_normal( double *params, int n_params )
 
   /* check new parameter for generator */
   if (n_params < 0 || n_params > 2) {
-    _unur_warning(distr_name,UNUR_ERR_GENERIC,"invalid number parameter");
+    _unur_error(distr_name,UNUR_ERR_DISTR_NPARAMS,"");
     return NULL;
   }
   if (n_params > 0)
@@ -198,7 +186,7 @@ unur_distr_normal( double *params, int n_params )
 
   /* check parameter sigma */
   if (DISTR.sigma <= 0.) {
-    _unur_error(distr_name ,UNUR_ERR_DISTR,"scale parameter sigma <= 0.");
+    _unur_error(distr_name ,UNUR_ERR_DISTR_DOMAIN,"sigma <= 0");
     free( distr ); return NULL;
   }
 

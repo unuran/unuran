@@ -4,7 +4,7 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   FILE:      distribution.c                                               *
+ *   FILE:      distr.c                                                      *
  *                                                                           *
  *   manipulate distribution obejct                                          *
  *                                                                           *
@@ -97,7 +97,7 @@ unur_distr_dup( struct unur_distr *distr )
     unur_distr_discr_set_prob(distr_new, distr->data.discr.prob, distr->data.discr.n_prob);
     break;
   default:
-    _unur_warning(NULL,UNUR_ERR_UNKNOWNDISTR,"");
+    _unur_warning(NULL,UNUR_ERR_DISTR_UNKNOWN,"");
   }
 
   return distr_new;
@@ -127,7 +127,7 @@ unur_distr_free( struct unur_distr *distr )
     if (distr->data.discr.prob) free( distr->data.discr.prob );
     break;
   default:
-    _unur_warning(NULL,UNUR_ERR_UNKNOWNDISTR,"");
+    _unur_warning(NULL,UNUR_ERR_DISTR_UNKNOWN,"");
   }
 
   free( distr );
@@ -396,7 +396,7 @@ unur_distr_cont_set_params( struct unur_distr *distr, double *params, int n_para
   
   /* check new parameter for generator */
   if (n_params < 0 || n_params > UNUR_DISTR_MAXPARAMS ) {
-    _unur_warning(NULL,UNUR_ERR_GENERIC,"invalid number parameter");
+    _unur_error(NULL,UNUR_ERR_DISTR_NPARAMS,"");
     return 0;
   }
 
@@ -461,7 +461,7 @@ unur_distr_cont_get_mode( struct unur_distr *distr )
 
   /* mode known ? */
   if ( !(distr->set & UNUR_DISTR_SET_MODE) )
-    _unur_warning(distr->name,UNUR_ERR_UNKNOWN,"mode not known");
+    _unur_error(distr->name,UNUR_ERR_DISTR_GET,"mode");
 
   return DISTR.mode;
 
@@ -489,7 +489,7 @@ unur_distr_cont_set_pdfarea( struct unur_distr *distr, double area )
 
   /* check new parameter for generator */
   if (area <= 0.) {
-    _unur_warning(NULL,UNUR_ERR_SET_INVALID,"pdf area <= 0");
+    _unur_error(NULL,UNUR_ERR_DISTR_SET,"pdf area <= 0");
     return 0;
   }
 
@@ -525,7 +525,7 @@ unur_distr_cont_set_domain( struct unur_distr *distr, double left, double right 
 
   /* check new parameter for generator */
   if (left >= right) {
-    _unur_warning(NULL,UNUR_ERR_SET_INVALID,"domain, left >= right");
+    _unur_error(NULL,UNUR_ERR_DISTR_SET,"domain, left >= right");
     return 0;
   }
 
@@ -682,7 +682,7 @@ unur_distr_discr_set_prob( struct unur_distr *distr, double *prob, int n_prob )
 
   /* check new parameter for generator */
   if (n_prob < 0) {
-    _unur_error(NULL,UNUR_ERR_GENERIC,"invalid length of probability vector");
+    _unur_error(NULL,UNUR_ERR_DISTR_SET,"length of p.v.");
     return 0;
   }
 

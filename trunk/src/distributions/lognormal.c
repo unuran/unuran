@@ -109,7 +109,7 @@ unur_distr_lognormal( double *params, int n_params )
 
   /* check new parameter for generator */
   if (n_params < 2 || n_params > 3) {
-    _unur_warning(distr_name,UNUR_ERR_GENERIC,"invalid number parameter");
+    _unur_error(distr_name,UNUR_ERR_DISTR_NPARAMS,"");
     return NULL;
   }
   CHECK_NULL(params,RETURN_NULL);
@@ -146,7 +146,7 @@ unur_distr_lognormal( double *params, int n_params )
 
   /* check parameter sigma */
   if (DISTR.sigma <= 0.) {
-    _unur_error(distr_name,UNUR_ERR_DISTR,"scale parameter sigma <= 0.");
+    _unur_error(distr_name,UNUR_ERR_DISTR_DOMAIN,"sigma <= 0");
     free( distr ); return NULL;
   }
 

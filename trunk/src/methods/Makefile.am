@@ -30,6 +30,7 @@ libunuran_a_SOURCES = \
 
 pkginclude_HEADERS = \
  unuran.h \
+ unuran_errno.h \
  unur_umalloc.h \
  unur_urng.h \
  unur_distr.h \
@@ -50,7 +51,6 @@ noinst_HEADERS = \
  source_unuran.h \
  source_cookies.h \
  source_distr.h \
- source_errno.h \
  source_math.h \
  source_methods.h
 

@@ -326,7 +326,7 @@ int unur_distr_cont_set_pdfparams_vec( UNUR_DISTR *distribution, int par, const 
    appropriate nonnegative number.)
 
    The entries of a this parameter are given by the array @var{param_vec}
-   of size @var{n_params}. Notice that using this interface an
+   of size @var{n_param_vec}. Notice that using this interface an
    An (@i{n} x @i{m})-matrix has to be stored in an array of length
    @var{n_params} = @i{n} times @i{m}; where the rows of the matrix
    are stored consecutively in this array.

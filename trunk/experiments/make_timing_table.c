@@ -215,7 +215,7 @@ get_timing_unit(void)
     /* compute timing unit */
     distr = unur_distr_exponential(NULL,0);
     par = unur_cstd_new(distr);
-    timing_unit = unur_test_timing_exponential(par, 5);
+    timing_unit = unur_test_timing_exponential(par, 6);
     free(par);
   }
 

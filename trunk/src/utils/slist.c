@@ -111,9 +111,11 @@ _unur_slist_get( const struct unur_slist *slist, int n )
   CHECK_NULL(slist,NULL);
   COOKIE_CHECK(slist,CK_SLIST,NULL);
 
-  if (slist->ptr==NULL || n >= slist->n_ptr || n < 0)
+  if (slist->ptr==NULL || n >= slist->n_ptr || n < 0) {
+    _unur_warning("list",UNUR_ERR_GENERIC,"element does not exist");
     return NULL;
-
+  }
+  
   return (slist->ptr[n]);
 
 } /* end of _unur_slist_get() */
@@ -127,7 +129,7 @@ _unur_slist_append( struct unur_slist *slist, void *element )
      /*                                                                      */
      /* parameters:                                                          */
      /*   slist   ... pointer to simple list                                 */
-     /*   element ... pointer to allocated memory block to be appended       */
+     /*   element ... pointer to element to be appended                      */
      /*                                                                      */
      /* return:                                                              */
      /*   success ... UNUR_SUCCESS                                           */
@@ -150,6 +152,44 @@ _unur_slist_append( struct unur_slist *slist, void *element )
   return UNUR_SUCCESS;
 
 } /* end of _unur_slist_append() */
+
+/*---------------------------------------------------------------------------*/
+
+void *
+_unur_slist_replace( struct unur_slist *slist, int n, void *element )
+     /*----------------------------------------------------------------------*/
+     /* Replace (existing) pointer to n-th element by 'element'.             */
+     /*                                                                      */
+     /* If n-th element does not exist, no new element is inserted!          */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   slist   ... pointer to simple list                                 */
+     /*   n       ... index element                                          */
+     /*   element ... pointer to new element to be inserted                  */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to old element                                             */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return NULL                                                        */
+     /*----------------------------------------------------------------------*/
+{
+  void *old_element; 
+
+  /* check arguments */
+  CHECK_NULL(slist,NULL);
+  COOKIE_CHECK(slist,CK_SLIST,NULL);
+
+  if (slist->ptr==NULL || n >= slist->n_ptr || n < 0) {
+    _unur_warning("list",UNUR_ERR_GENERIC,"element does not exist");
+    return NULL;
+  }
+
+  old_element = slist->ptr[n];
+  slist->ptr[n] = element;
+  return old_element;
+
+} /* end of _unur_slist_replace() */
 
 /*---------------------------------------------------------------------------*/
 

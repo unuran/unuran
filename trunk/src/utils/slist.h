@@ -67,6 +67,11 @@ void *_unur_slist_get( const struct unur_slist *slist, int n );
 /* Get pointer to n-th element.                                              */
 /*---------------------------------------------------------------------------*/
 
+void *_unur_slist_replace( struct unur_slist *slist, int n, void *element );
+/*---------------------------------------------------------------------------*/
+/* Replace (existing) pointer to n-th element by 'element'.                  */
+/*---------------------------------------------------------------------------*/
+
 void _unur_slist_free( struct unur_slist *slist );
 /*---------------------------------------------------------------------------*/
 /* Free all elements and list in simple list.                                */

@@ -340,6 +340,7 @@ _unur_set_params_burr( UNUR_DISTR *distr, double *params, int n_params )
   case 2:
     DISTR.k = k;
   default:
+    break;
   }
 
   /* number of arguments */

@@ -669,18 +669,19 @@ _unur_test_chi2_vec ( struct unur_gen *gen,
     for (j=0; j<dim; j++) {
       int iv;
       iv = (int)( n_intervals * U[j] );
-      if (iv==n_intervals) iv--; /* cdf can return 1 ? */
+      if (iv>=n_intervals) iv = n_intervals-1;
+      if (iv < 0) iv = 0;
       bm[j*n_intervals + iv] += 1;
     }
     
     /* increase bins for total chi^2 test */
-    /** TODO: this is bullshit!! */
     offset=0;
     prodintervals=1; /* cumulative products of n_intervals_marginal[] */
     for (j=0; j<dim; j++) {
       int iv;
       iv = (int)( n_intervals_marginal[j] * U[j] );
-      if (iv==n_intervals_marginal[j]) iv--; /* cdf can return 1 ? */
+      if (iv==n_intervals_marginal[j]) iv = n_intervals_marginal[j]-1;
+      if (iv < 0) iv = 0;
       
       offset += prodintervals * iv;
       prodintervals *= n_intervals_marginal[j];

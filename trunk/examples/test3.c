@@ -1,4 +1,4 @@
-/* my first UNURAN program: test1.c*/
+/* my third UNURAN program test3.c */
 
 #include <unuran.h>
 
@@ -6,16 +6,20 @@ int main()
 {
   int    i;
   double x;
+  double params[2] = {10.0, 0.5};
 
   UNUR_DISTR *distr;    /* distribution */
   UNUR_PAR   *par;      /* parameter */
   UNUR_GEN   *gen;      /* generator */
 
-  /* choose a implemented distribution: Gaussian */
-  distr = unur_distr_normal(NULL, 0);
+  /* choose Gaussian distribution with parameters 10.0 and 0.5 */
+  distr = unur_distr_normal(params, 2);
 
   /* choose method */
-  par = unur_arou_new(distr);
+  par = unur_ninv_new(distr);
+
+  /* change a parameter of the used method */
+  unur_ninv_use_newton(par);
 
   /* make generator object */
   gen = unur_init(par);

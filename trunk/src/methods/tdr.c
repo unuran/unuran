@@ -703,16 +703,16 @@ unur_tdr_sample_sqrt( struct unur_gen *gen )
     }
 
     /* reuse of uniform random number */
-    u = iv->Acum - u;
+    u -= iv->Acum;    /* result: u in (-A_hat, 0) */
 
     /* left or right side of hat */
-    if (u < iv->Ahatl) {   /* left */
-      pt = iv;
+    if (-u < iv->Ahatr) { /* right */
+      pt = iv->next;
       /* u unchanged */
     }
-    else {                 /* right */
-      pt = iv->next;
-      u = u - iv->Ahatl - iv->Ahatr;
+    else {                /* left */
+      pt = iv;
+      u += iv->Ahatl + iv->Ahatr;
     }
 
     /* random variate */
@@ -805,16 +805,19 @@ unur_tdr_sample_check( struct unur_gen *gen )
      /*   X = x1 + 1/(Tf)'(x1) * \log( (Tf)'(x1)/f(x1) * U + 1 )             */
      /*   U ~ U(- area below right hat,0)                                    */
      /*----------------------------------------------------------------------*/
-     /*   -1/sqrt(x):                                                        */
+     /*   T(x) = -1/sqrt(x):                                                 */
      /*                                                                      */
      /*   squeeze(x) = 1 / (Tf(x0) + sq * (x-x0))^2                          */
-     /*   left hat:                                                          */
-     /*   X = x0 + (Tf(x0)^2 * U) / (1 - Tf(x0) * (Tf)'(x0) * U)             */
-     /*   U ~ U(0,area below left hat)                                       */
      /*                                                                      */
-     /*   right hat:                                                         */
-     /*   X = x1 + (Tf(x1)^2 * U) / (1 - Tf(x1) * (Tf)'(x1) * U)             */
-     /*   U ~ U(- area below right hat,0)                                    */
+     /*   left hat(x) = 1 / (Tf(x0) + (Tf)'(x0) * (x-x0))^2                  */
+     /*   generation:                                                        */
+     /*      X = x0 + (Tf(x0)^2 * U) / (1 - Tf(x0) * (Tf)'(x0) * U)          */
+     /*      U ~ U(0,area below left hat)                                    */
+     /*                                                                      */
+     /*   right hat(x) = 1 / (Tf(x0) + (Tf)'(x1) * (x-x1))^2                 */
+     /*   generation:                                                        */
+     /*      X = x1 + (Tf(x1)^2 * U) / (1 - Tf(x1) * (Tf)'(x1) * U)          */
+     /*      U ~ U(- area below right hat,0)                                 */
      /*----------------------------------------------------------------------*/
 { 
   struct unur_tdr_interval *iv, *pt;
@@ -834,25 +837,22 @@ unur_tdr_sample_check( struct unur_gen *gen )
 
     /* look up in guide table and search for segment */
     iv =  GEN.guide[(int) (u * GEN.guide_size)];
-    COOKIE_CHECK(iv,CK_TDR_IV,0.);
-
     u *= GEN.Atotal;
     while (iv->Acum < u) {
       iv = iv->next;
-      COOKIE_CHECK(iv,CK_TDR_IV,0.);
     }
 
     /* reuse of uniform random number */
-    u = iv->Acum - u;
+    u -= iv->Acum;    /* result: u in (-A_hat, 0) */
 
     /* left or right side of hat */
-    if (u < iv->Ahatl) {   /* left */
-      pt = iv;
+    if (-u < iv->Ahatr) { /* right */
+      pt = iv->next;
       /* u unchanged */
     }
-    else {                 /* right */
-      pt = iv->next;
-      u = u - iv->Ahatl - iv->Ahatr;
+    else {                /* left */
+      pt = iv;
+      u += iv->Ahatl + iv->Ahatr;
     }
 
     /* random variate */
@@ -864,11 +864,8 @@ unur_tdr_sample_check( struct unur_gen *gen )
 	x = pt->x + log(pt->dTfx / pt->fx * u + 1.) / pt->dTfx;     /** TODO: possible over/underflow **/
 	break;
       case TDR_METH_SQRT:
-	/* it would be less expensive to use:
-	   x = pt->x + pt->Tfx/pt->dTfx * (1. - 1./(1. + pt->dTfx * pt->Tfx * u) )
-	   however, this is unstable for small pt->dTfx */
 	x = pt->x + (pt->Tfx*pt->Tfx*u) / (1.-pt->Tfx*pt->dTfx*u);  
-	/* It cannot happen, that the denominator becomes 0 ! */
+	/* It cannot happen, that the denominator becomes 0 (in theory!) */
 	/** TODO: underflow possible ?? **/
 	break;
       case TDR_METH_POW:
@@ -1490,7 +1487,7 @@ _unur_tdr_interval_parameter( struct unur_gen *gen, struct unur_tdr_interval *iv
   iv->Ahatr = area( gen, iv->next, iv->next->dTfx, ipt);
 
   /* check area */
-  if (iv->Asqueeze > iv->Ahatl+iv->Ahatr ) {      /** TODO: possible over/underflow ( ?? ) **/
+  if (iv->Asqueeze > iv->Ahatl+iv->Ahatr + 2 * DBL_MIN) {      /** TODO: possible over/underflow ( ?? ) **/
       _unur_warning(gen->genid,UNUR_ERR_INIT,"A(squeeze) > A(hat). p.d.f. not T-concave!");
       return 0; /** TODO: skip over roundoff errors **/
     }
@@ -1688,7 +1685,6 @@ _unur_tdr_interval_split( struct unur_gen *gen, struct unur_tdr_interval *iv_old
      /* return:                                                              */
      /*   1  ... if successful                                               */
      /*   0  ... error                                                       */
-     /*   1 (--> successful)                                                 */
      /*----------------------------------------------------------------------*/
 {
   struct unur_tdr_interval *iv_newr;
@@ -1702,6 +1698,35 @@ _unur_tdr_interval_split( struct unur_gen *gen, struct unur_tdr_interval *iv_old
     if (gen->debug & TDR_DB_SPLIT) 
       _unur_tdr_debug_split_start( gen,iv_oldl,x,fx );
 #endif
+
+#if 1
+  /* check if the new interval is completely outside the support of p.d.f. */
+  if (fx <= 0.) {
+
+    /* one of the two boundary points must be 0, too! */
+    if (iv_oldl->fx <= 0.) {
+      /* chop off left part (it's out of support) */
+      iv_oldl->x = x;
+    }
+    else if (iv_oldl->next->fx <= 0.) {
+      /* chop off right part (it's out of support) */
+      iv_oldl->next->x = x;
+    }
+    else {
+      _unur_error(gen->genid,UNUR_ERR_INIT,"p.d.f. not T-concave");
+      return 0;
+    }
+
+    /* compute parameters for chopped interval */
+    _unur_tdr_interval_parameter(gen,iv_oldl);
+
+    /* for _unur_tdr_debug_split_stop only */
+    iv_newr = iv_oldl;
+
+  }
+  else {
+#endif
+
 
   /* we need a new interval */
   iv_newr = _unur_tdr_interval_new( gen, x, fx, FALSE );
@@ -1738,6 +1763,7 @@ _unur_tdr_interval_split( struct unur_gen *gen, struct unur_tdr_interval *iv_old
       exit (-1);
     }
     return 0;
+  }
   }
 
   /* update guide table */ 
@@ -2218,7 +2244,8 @@ _unur_tdr_debug_split_stop( struct unur_gen *gen,
 	  gen->genid, iv_right->x, iv_right->fx, iv_right->Tfx, iv_right->dTfx, iv_right->sq);
   fprintf(log,"%s: new intervals:\n",gen->genid);
   fprintf(log,"%s:   left   construction point = %g\n",gen->genid, iv_left->x);
-  fprintf(log,"%s:   middle construction point = %g\n",gen->genid, iv_right->x);
+  if (iv_left != iv_right)
+    fprintf(log,"%s:   middle construction point = %g\n",gen->genid, iv_right->x);
   fprintf(log,"%s:   right  construction point = %g\n",gen->genid, iv_right->next->x);
 
   fprintf(log,"%s: left interval:\n",gen->genid);
@@ -2233,17 +2260,21 @@ _unur_tdr_debug_split_stop( struct unur_gen *gen,
 	  iv_left->Ahatr,
 	  (iv_left->Ahatl + iv_left->Ahatr) * 100./GEN.Atotal);
 
-  fprintf(log,"%s: right interval:\n",gen->genid);
-  fprintf(log,"%s:   A(squeeze)     = %-12.6g\t\t(%6.3f%%)\n",gen->genid,
-	  iv_right->Asqueeze,
-	  iv_right->Asqueeze*100./GEN.Atotal);
-  fprintf(log,"%s:   A(hat\\squeeze) = %-12.6g\t\t(%6.3f%%)\n",gen->genid,
-	  (iv_right->Ahatl + iv_right->Ahatr - iv_right->Asqueeze),
-	  (iv_right->Ahatl + iv_right->Ahatr - iv_right->Asqueeze) * 100./GEN.Atotal);
-  fprintf(log,"%s:   A(hat)         = %-12.6g +  %-12.6g(%6.3f%%)\n",gen->genid,
-	  iv_right->Ahatl,
-	  iv_right->Ahatr,
-	  (iv_right->Ahatl + iv_right->Ahatr) * 100./GEN.Atotal);
+  if (iv_left == iv_right)
+    fprintf(log,"%s: interval chopped.\n",gen->genid);
+  else {
+    fprintf(log,"%s: right interval:\n",gen->genid);
+    fprintf(log,"%s:   A(squeeze)     = %-12.6g\t\t(%6.3f%%)\n",gen->genid,
+	    iv_right->Asqueeze,
+	    iv_right->Asqueeze*100./GEN.Atotal);
+    fprintf(log,"%s:   A(hat\\squeeze) = %-12.6g\t\t(%6.3f%%)\n",gen->genid,
+	    (iv_right->Ahatl + iv_right->Ahatr - iv_right->Asqueeze),
+	    (iv_right->Ahatl + iv_right->Ahatr - iv_right->Asqueeze) * 100./GEN.Atotal);
+    fprintf(log,"%s:   A(hat)         = %-12.6g +  %-12.6g(%6.3f%%)\n",gen->genid,
+	    iv_right->Ahatl,
+	    iv_right->Ahatr,
+	    (iv_right->Ahatl + iv_right->Ahatr) * 100./GEN.Atotal);
+  }
 
   fprintf(log,"%s: total areas:\n",gen->genid);
   fprintf(log,"%s:   A(squeeze)     = %-12.6g\t\t(%6.3f%%)\n",gen->genid,

@@ -508,10 +508,19 @@ _unur_nrou_rectangle( struct unur_gen *gen )
   CHECK_NULL( gen, UNUR_ERR_NULL );
   COOKIE_CHECK( gen,CK_NROU_GEN, UNUR_ERR_COOKIE );
 
+  /* Boundary rectangle is already set */
+  if ((gen->set & NROU_SET_U) && (gen->set & NROU_SET_V)) {
+    return UNUR_SUCCESS;
+  }
+
+  /* failure when v-interval is set but not the u-interval ??? */
+  /*
   if (!(gen->set & NROU_SET_U) && (gen->set & NROU_SET_V)) {
     return UNUR_FAILURE;
   }
-
+  */
+  
+  /* copy of generator to be used in auxiliary functions */
   _gen = gen;
 
   p[0]=GEN.center;

@@ -52,8 +52,8 @@ inline static void normal_pol_init( struct unur_gen *gen );
 
 #define uniform()  _unur_call_urng(gen) /* call for uniform prng             */
 
-#define mu    (DISTR.params[0])
-#define sigma (DISTR.params[1])
+#define mu    (DISTR.params[0])   /* location */
+#define sigma (DISTR.params[1])   /* scale    */
 
 /*---------------------------------------------------------------------------*/
 
@@ -69,6 +69,7 @@ int
 _unur_stdgen_normal_init( struct unur_par *par, struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* initialize special generator for normal distribution                 */
+     /* if gen == NULL then only check existance of variant.                 */
      /*                                                                      */
      /* parameters:                                                          */
      /*   par ... pointer to parameter for building generator object         */
@@ -193,7 +194,7 @@ unur_stdgen_sample_normal_bm( struct unur_gen *gen )
   } while(0);
   /* -X- end of generator code -X- */
 
-  return (mu + sigma * X );
+  return ((DISTR.n_params==0) ? X : mu + sigma * X );
 
 } /* end of unur_stdgen_sample_normal_bm() */
 
@@ -267,7 +268,7 @@ unur_stdgen_sample_normal_pol( struct unur_gen *gen )
   } while(0);
   /* -X- end of generator code -X- */
 
-  return (mu + sigma * X );
+  return ((DISTR.n_params==0) ? X : mu + sigma * X );
 
 } /* end of unur_stdgen_sample_normal_pol() */
 
@@ -314,7 +315,7 @@ unur_stdgen_sample_normal_nquo( struct unur_gen *gen )
   }
   /* -X- end of generator code -X- */
 
-  return (mu + sigma * X );
+  return ((DISTR.n_params==0) ? X : mu + sigma * X );
 
 } /* end of unur_stdgen_sample_normal_nquo() */
 
@@ -361,7 +362,7 @@ unur_stdgen_sample_normal_quo( struct unur_gen *gen )
   }
   /* -X- end of generator code -X- */
 
-  return (mu + sigma * X );
+  return ((DISTR.n_params==0) ? X : mu + sigma * X );
 
 } /* end of unur_stdgen_sample_normal_quo() */
 
@@ -423,7 +424,7 @@ unur_stdgen_sample_normal_leva( struct unur_gen *gen )
 #undef RB 
   /* -X- end of generator code -X- */
 
-  return (mu + sigma * X );
+  return ((DISTR.n_params==0) ? X : mu + sigma * X );
 
 } /* end of unur_stdgen_sample_normal_leva() */
 
@@ -517,7 +518,7 @@ unur_stdgen_sample_normal_kr( struct unur_gen *gen )
 #undef max
   /* -X- end of generator code -X- */
 
-  return (mu + sigma * X );
+  return ((DISTR.n_params==0) ? X : mu + sigma * X );
 
 } /* end of unur_stdgen_sample_normal_kr() */
 
@@ -628,7 +629,7 @@ unur_stdgen_sample_normal_acr( struct unur_gen *gen )
 
   /* -X- end of generator code -X- */
 
-  return (mu + sigma * X );
+  return ((DISTR.n_params==0) ? X : mu + sigma * X );
 
 } /* end of unur_stdgen_sample_normal_acr() */
 
@@ -668,7 +669,7 @@ unur_stdgen_sample_normal_sum( struct unur_gen *gen )
 	- 6 );
   /* -X- end of generator code -X- */
 
-  return (mu + sigma * X );
+  return ((DISTR.n_params==0) ? X : mu + sigma * X );
 
 } /* end of unur_stdgen_sample_normal_sum() */
 

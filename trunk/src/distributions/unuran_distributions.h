@@ -112,6 +112,10 @@ int _unur_stdgen_beta_init( struct unur_par *par, struct unur_gen *gen );
 double unur_stdgen_sample_beta_bb( struct unur_gen *gen );
 double unur_stdgen_sample_beta_bc( struct unur_gen *gen );
   /* Acceptance/Rejection from log-logistic hats */
+double unur_stdgen_sample_beta_b00( struct unur_gen *gen );
+double unur_stdgen_sample_beta_b01( struct unur_gen *gen );
+double unur_stdgen_sample_beta_b1prs( struct unur_gen *gen );
+  /* Stratified Rejection/Patchwork Rejection */
 
 /*---------------------------------------------------------------------------*/
 /* Burr ?? distribution                                                      */

@@ -33,14 +33,14 @@
 #define RUN_DAU           0
 #define RUN_DIS           0
 
-#define RUN_NINV          1
-#define RUN_UTDR          1
-#define RUN_AROU          1
-#define RUN_SROU          1
-#define RUN_STDR          1
-#define RUN_TDRSQRT       1
-#define RUN_TDRLOG        1
-#define RUN_TABL          1
+#define RUN_NINV          0
+#define RUN_UTDR          0
+#define RUN_AROU          0
+#define RUN_SROU          0
+#define RUN_STDR          0
+#define RUN_TDRSQRT       0
+#define RUN_TDRLOG        0
+#define RUN_TABL          0
 
 #define RUN_NORMAL        1
 #define RUN_GAMMA         1
@@ -48,9 +48,9 @@
 #define RUN_CAUCHY        1
 #define RUN_UNIFORM       1
 
-#define RUN_RECT          1
+#define RUN_RECT          0
 
-#define RUN_CSTD          0
+#define RUN_CSTD          1
 
 /*---------------------------------------------------------------------------*/
 
@@ -115,7 +115,7 @@ int main()
 
 #if RUN_CSTD == 1
 
-#if 1
+#if 0
   distr_xxx = unur_distr_normal(NULL,0);
   // unur_distr_cont_set_domain(distr_xxx,3,UNUR_INFINITY);
   par = unur_cstd_new(distr_xxx);
@@ -178,8 +178,6 @@ int main()
   par = unur_cstd_new(distr_xxx);
   unur_run_tests(par,RUN_TESTS);
   unur_distr_free(distr_xxx);
-#endif
-
 /*    fpar[0] = 7.; */
 /*    fpar[1] = 5.; */
 /*    distr_xxx = unur_distr_beta(fpar,2); */
@@ -187,18 +185,61 @@ int main()
 /*    unur_run_tests(par,RUN_TESTS); */
 /*    unur_distr_free(distr_xxx); */
 
+#endif
+
+  fpar[2] = -1.;
+  fpar[3] = 2.;
+
+#if 0
   fpar[0] = 0.5;
   fpar[1] = 0.2;
   distr_xxx = unur_distr_beta(fpar,2);
   par = unur_cstd_new(distr_xxx);
+  unur_cstd_set_variant(par,1);
   unur_run_tests(par,RUN_TESTS);
-/*    gen = unur_init(par); */
-/*    { */
-/*      int i; */
-/*      for (i=0;i<10;i++) */
-/*        printf("\n\nx = %g\n\n",unur_sample_cont(gen)); */
-/*    } */
 
+  fpar[0] = 5;
+  fpar[1] = 0.2;
+  distr_xxx = unur_distr_beta(fpar,2);
+  par = unur_cstd_new(distr_xxx);
+  unur_cstd_set_variant(par,1);
+  unur_run_tests(par,RUN_TESTS);
+
+  fpar[0] = 0.2;
+  fpar[1] = 5.;
+  distr_xxx = unur_distr_beta(fpar,2);
+  par = unur_cstd_new(distr_xxx);
+  unur_cstd_set_variant(par,1);
+  unur_run_tests(par,RUN_TESTS);
+#endif
+
+  fpar[0] = 5;
+  fpar[1] = 2;
+  distr_xxx = unur_distr_beta(fpar,4);
+  par = unur_cstd_new(distr_xxx);
+  unur_cstd_set_variant(par,1);
+  unur_run_tests(par,RUN_TESTS);
+
+  fpar[0] = 1.5;
+  fpar[1] = 2.5;
+  distr_xxx = unur_distr_beta(fpar,4);
+  par = unur_cstd_new(distr_xxx);
+  unur_cstd_set_variant(par,1);
+  unur_run_tests(par,RUN_TESTS);
+
+  fpar[0] = 2.5;
+  fpar[1] = 1.5;
+  distr_xxx = unur_distr_beta(fpar,4);
+  par = unur_cstd_new(distr_xxx);
+  unur_cstd_set_variant(par,1);
+  unur_run_tests(par,RUN_TESTS);
+
+  fpar[0] = 1.5;
+  fpar[1] = 1.8;
+  distr_xxx = unur_distr_beta(fpar,4);
+  par = unur_cstd_new(distr_xxx);
+  unur_cstd_set_variant(par,1);
+  unur_run_tests(par,RUN_TESTS);
 
 #endif
 
@@ -620,6 +661,20 @@ int main()
 
   printf("\n*******************************************************\n\n");
   printf("DISTRIBUTION:\tcauchy. theta = %g, lambda = %g\n",theta,lambda);
+
+#if RUN_NINV == 1
+
+  /* get default parameters for new generator */
+  par = unur_ninv_new(distr_cauchy);
+  unur_set_debug(par,0x1u);
+  //   unur_ninv_set_x_resolution(par,1.e-5);
+
+  /* run tests */
+  unur_run_tests(par,RUN_TESTS);
+
+  printf("\n------------------------------------------------------------\n\n");
+
+#endif
 
 #if RUN_UTDR == 1
 

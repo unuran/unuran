@@ -66,6 +66,7 @@ int
 _unur_stdgen_exponential_init( struct unur_par *par, struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* initialize special generator for exponential distribution            */
+     /* if gen == NULL then only check existance of variant.                 */
      /*                                                                      */
      /* parameters:                                                          */
      /*   par ... pointer to parameter for building generator object         */

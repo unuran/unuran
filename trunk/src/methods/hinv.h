@@ -55,7 +55,11 @@
       distributions with bounded domain; for distributions with
       unbounded domain the tails are chopped off such that the
       probability for the tail regions is small compared to the given
-      u-resulution.
+      u-resulution. For finding these cut points the algorithm starts 
+      with the region @code{[-1.e20,1.e20]}. For the exceptional case
+      where this might be too small (or one knows this region and
+      wants to avoid this search heuristics) it can be chanced using
+      the unur_hinv_set_cpoints() call.
       
       It is possible to use this method for generating from truncated
       distributions. It even can be changed for an existing generator
@@ -114,6 +118,25 @@ int unur_hinv_set_u_resolution( UNUR_PAR *parameters, double u_resolution);
    Default is @code{10^-8}.
 */
 
+int unur_hinv_set_cpoints( UNUR_PAR *parameters, const double *stp, int n_stp );
+/* 
+   Set starting construction points (nodes) for Hermite interpolation. 
+
+   @emph{Important}: Notice that the given points must be in
+   increasing order and they must be disjoint. There also must be at
+   least two such points. Otherwise the points cannot be used and
+   @code{unur_errno} is set to @code{UNUR_ERR_PAR_SET}.
+
+   Notice that the leftmost and the rightmost point are used as
+   boundary point of the region where the Hermite approximation is
+   computated. Thus this call can also be used to define the region
+   where computational important, i.e., to define the cut points for
+   the tails.
+
+   @emph{Important}: The boundary point of the computational region
+   must be given in this list!
+*/
+
 int unur_hinv_set_guidefactor( UNUR_PAR *parameters, double factor );
 /* 
    Set factor for relative size of the guide table for indexed search
@@ -122,6 +145,23 @@ int unur_hinv_set_guidefactor( UNUR_PAR *parameters, double factor );
    When set to @code{0}, then sequential search is used.
 
    Default is @code{1}.
+*/
+
+int unur_hinv_set_max_intervals( UNUR_PAR *parameters, int max_ivs );
+/* 
+   Set maximum number of intervals. No generator object is created if
+   the necessary number of intervals for the Hermite interpolation 
+   exceed @var{max_ivs}. It is used to prevent the algorithm to eat up
+   all memory in badly shaped CDFs.
+
+   Default is @code{1.e6}.
+*/
+
+int unur_hinv_get_n_intervals( const UNUR_GEN *generator );
+/* 
+   Get number of intervals used for Hermite interpolation in 
+   generator object.
+   It return @code{0} in case of an error.
 */
 
 int unur_hinv_chg_truncated(UNUR_GEN *gen, double left, double right);

@@ -46,6 +46,9 @@ struct unur_hinv_par {
   double  guide_factor;    /* relative size of guide table                   */
   double  bleft;           /* left border of the computational domain        */
   double  bright;          /* right border of the computational domain       */
+  const double *stp;       /* pointer to array of starting points            */
+  int     n_stp;           /* number of construction points at start         */
+  int     max_ivs;         /* maximum number of intervals                    */
 };
 
 /*---------------------------------------------------------------------------*/

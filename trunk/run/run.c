@@ -28,6 +28,7 @@ int main()
   UNUR_PAR *par;
   UNUR_GEN *gen;
   int i;
+  double stp[]={-2,-1,0,1,2,3};
 
   unur_set_default_debug(~0u);
 
@@ -37,6 +38,8 @@ int main()
   par = unur_hinv_new(distr);
   unur_hinv_set_u_resolution(par,1.e-8);
   unur_hinv_set_order(par,1);
+  unur_hinv_set_cpoints(par,stp,6);
+  unur_hinv_set_max_intervals(par,1000);
 
   gen = unur_init(par);
 
@@ -48,6 +51,7 @@ int main()
 /*    for (i=0;i<10;i++) */
 /*      printf("%g\n",unur_sample_cont(gen)); */
 
+  printf("N = %d\n",unur_hinv_get_n_intervals(gen));
 
   unur_distr_free(distr);
   unur_free(gen);

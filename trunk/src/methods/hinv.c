@@ -105,7 +105,9 @@ Approximative in u-richtung besser zu sein*/
 
 #define HINV_SET_ORDER          0x001u  /* order of polynomial               */
 #define HINV_SET_U_RESOLUTION   0x002u  /* maximal error in u                */
-#define HINV_SET_GUIDEFACTOR    0x004u  /* relative size of guide table      */
+#define HINV_SET_STP            0x004u  /* starting design points            */
+#define HINV_SET_GUIDEFACTOR    0x008u  /* relative size of guide table      */
+#define HINV_SET_MAX_IVS        0x010u  /* maximal number of intervals       */
 
 /*---------------------------------------------------------------------------*/
 
@@ -133,7 +135,7 @@ static void _unur_hinv_free( struct unur_gen *gen );
 /* destroy generator object.                                                 */
 /*---------------------------------------------------------------------------*/
 
-static int _unur_hinv_create_table( struct unur_gen *gen );
+static int _unur_hinv_create_table( struct unur_par *par, struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 /* create the table with splines                                             */
 /*---------------------------------------------------------------------------*/
@@ -180,7 +182,7 @@ static int _unur_hinv_make_guide_table( struct unur_gen *gen );
 /* i.e., into the log file if not specified otherwise.                       */
 /*---------------------------------------------------------------------------*/
 
-static void _unur_hinv_debug_init( const struct unur_gen *gen );
+static void _unur_hinv_debug_init( const struct unur_par *par, const struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 /* print after generator has been initialized has completed.                 */
 /*---------------------------------------------------------------------------*/
@@ -258,6 +260,9 @@ unur_hinv_new( const struct unur_distr *distr )
   PAR.guide_factor = 1.;        /* size of guide table / number of intervals */
   PAR.bleft = -1.e20;           /* left border of the computational domain   */
   PAR.bright = 1.e20;           /* right border of the computational domain  */
+  PAR.max_ivs = 1.e6;           /* maximal number of intervals               */
+  PAR.stp = NULL;               /* starting nodes                            */
+  PAR.n_stp = 0;                /* number of starting nodes                  */
 
   par->method   = UNUR_METH_HINV; /* method                                  */
   par->variant  = 0u;             /* default variant                         */
@@ -364,6 +369,65 @@ unur_hinv_set_u_resolution( struct unur_par *par, double u_resolution )
 /*---------------------------------------------------------------------------*/
 
 int
+unur_hinv_set_cpoints( struct unur_par *par, const double *stp, int n_stp )
+     /*----------------------------------------------------------------------*/
+     /* set starting construction points (nodes) for Hermite interpolation.  */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par    ... pointer to parameter for building generator object      */
+     /*   stp    ... pointer to array of starting points                     */
+     /*   n_stp  ... number of starting points                               */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... on success                                                   */
+     /*   0 ... on error                                                     */
+     /*----------------------------------------------------------------------*/
+{
+  int i;
+
+  /* check arguments */
+  _unur_check_NULL( GENTYPE,par,0 );
+
+  /* check input */
+  _unur_check_par_object( par,HINV );
+
+  /* check starting construction points */
+  if (n_stp < 2 || stp==NULL) {
+    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"number of starting points < 2");
+    return 0;
+  }
+
+  /* starting points must be strictly monontonically increasing */
+  for( i=1; i<n_stp; i++ )
+    if (stp[i] <= stp[i-1]) {
+      _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"starting points not strictly monotonically increasing");
+      return 0;
+    }
+
+  /* infinity is not allowed */
+  if (stp[0] <= -INFINITY || stp[n_stp-1] >= INFINITY) {
+    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"starting points infinit");
+    return 0;
+  }
+
+  /* store date */
+  PAR.stp = stp;
+  PAR.n_stp = n_stp;
+
+  /* we use first and last point as boundary for computational interval */
+  PAR.bleft = stp[0];
+  PAR.bright = stp[n_stp-1];
+
+  /* changelog */
+  par->set |= HINV_SET_STP;
+
+  return 1;
+
+} /* end of unur_hinv_set_cpoints() */
+
+/*---------------------------------------------------------------------------*/
+
+int
 unur_hinv_set_guidefactor( struct unur_par *par, double factor )
      /*----------------------------------------------------------------------*/
      /* set factor for relative size of guide table                          */
@@ -398,6 +462,69 @@ unur_hinv_set_guidefactor( struct unur_par *par, double factor )
   return 1;
 
 } /* end of unur_hinv_set_guidefactor() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+unur_hinv_set_max_intervals( struct unur_par *par, int max_ivs )
+     /*----------------------------------------------------------------------*/
+     /* set maximum number of intervals                                      */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par       ... pointer to parameter for building generator object   */
+     /*   max_ivs   ... maximum number of intervals                          */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... on success                                                   */
+     /*   0 ... on error                                                     */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( GENTYPE,par,0 );
+
+  /* check input */
+  _unur_check_par_object( par,HINV );
+
+  /* check new parameter for generator */
+  if (max_ivs < 1000 ) {
+    /* it does not make sense to set this parameter too small */
+    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"maximum number of intervals < 1000");
+    return 0;
+  }
+
+  /* store date */
+  PAR.max_ivs = max_ivs;
+
+  /* changelog */
+  par->set |= HINV_SET_MAX_IVS;
+
+  return 1;
+
+} /* end of unur_hinv_set_max_intervals() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+unur_hinv_get_n_intervals( const struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* get number of intervals (or more precisely the number of nodes)      */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen  ... pointer to generator object                               */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   number of intervals ... on success                                 */
+     /*   0     ... on error                                                 */
+     /*----------------------------------------------------------------------*/
+{
+  /* check input */
+/*    _unur_check_gen_object( gen,HINV ); */
+
+/*    return GEN.N; */
+
+  return 0.;
+
+} /* end of unur_hinv_get_n_intervals() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -514,9 +641,6 @@ _unur_hinv_init( struct unur_par *par )
   gen = _unur_hinv_create(par);
   if (!gen) { free(par); return NULL; }
 
-  /* free parameters */
-  free(par);
-  
   /* domain not truncated at init */
   DISTR.trunc[0] = DISTR.domain[0];
   DISTR.trunc[1] = DISTR.domain[1];
@@ -527,13 +651,12 @@ _unur_hinv_init( struct unur_par *par )
 
   if (GEN.CDFmin > GEN.CDFmax) {
     _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"CDF not increasing");
-    _unur_hinv_free(gen); return NULL;
+    _unur_hinv_free(gen); free(par); return NULL;
   }
 
   /* compute splines */
-  if (!_unur_hinv_create_table(gen)) {
-    _unur_hinv_free(gen);
-    return NULL;
+  if (!_unur_hinv_create_table(par,gen)) {
+    _unur_hinv_free(gen); free(par); return NULL;
   }
 
   /* copy linked list into array */
@@ -544,9 +667,12 @@ _unur_hinv_init( struct unur_par *par )
 
 #ifdef UNUR_ENABLE_LOGGING
   /* write info into log file */
-  if (gen->debug) _unur_hinv_debug_init(gen);
+  if (gen->debug) _unur_hinv_debug_init(par,gen);
 #endif
 
+  /* free parameters */
+  free(par);
+  
   return gen;
 
 } /* end of _unur_hinv_init() */
@@ -622,12 +748,13 @@ _unur_hinv_create( struct unur_par *par )
 /*---------------------------------------------------------------------------*/
 
 int
-_unur_hinv_create_table( struct unur_gen *gen )
+_unur_hinv_create_table( struct unur_par *par, struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* create a table of splines                                            */
      /*                                                                      */
      /* parameters:                                                          */
      /*   gen ... pointer generator object                                   */
+     /*   par ... pointer to parameter for building generator object         */
      /*                                                                      */
      /* return:                                                              */
      /*   1 ... on success                                                   */
@@ -647,6 +774,11 @@ _unur_hinv_create_table( struct unur_gen *gen )
 
   for (iv=GEN.iv; iv->next!=NULL; ) {
     COOKIE_CHECK(iv,CK_HINV_IV,0);
+    if (GEN.N >= PAR.max_ivs) {
+      /* emergency break */
+      _unur_error(GENTYPE,UNUR_ERR_GEN_CONDITION,"too many intervals");
+      return 0; 
+    }
     iv = _unur_hinv_interval_adapt(gen,iv);
   }
 
@@ -1083,7 +1215,6 @@ _unur_hinv_free( struct unur_gen *gen )
      /*   gen ... pointer to generator object                                */
      /*----------------------------------------------------------------------*/
 { 
-
   /* check arguments */
   if( !gen ) /* nothing to do */
     return;
@@ -1172,15 +1303,17 @@ _unur_hinv_sample( struct unur_gen *gen )
 /*---------------------------------------------------------------------------*/
 
 void
-_unur_hinv_debug_init( const struct unur_gen *gen )
+_unur_hinv_debug_init( const struct unur_par *par, const struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* write info about generator into logfile                              */
      /*                                                                      */
      /* parameters:                                                          */
+     /*   par ... pointer to parameter for building generator object         */
      /*   gen ... pointer to generator object                                */
      /*----------------------------------------------------------------------*/
 {
   FILE *log;
+  int i;
 
   /* check arguments */
   CHECK_NULL(gen,/*void*/);  COOKIE_CHECK(gen,CK_HINV_GEN,/*void*/);
@@ -1205,6 +1338,16 @@ _unur_hinv_debug_init( const struct unur_gen *gen )
   fprintf(log,"%s:\tU in (%g,%g)\n",gen->genid,GEN.Umin,GEN.Umax);
   fprintf(log,"%s:\n",gen->genid);
 
+  if (gen->set & HINV_SET_STP) {
+    fprintf(log,"%s: starting points: (%d)",gen->genid,PAR.n_stp);
+    if (par->set & HINV_SET_STP)
+      for (i=0; i<PAR.n_stp; i++) {
+      if (i%5==0) fprintf(log,"\n%s:\t",gen->genid);
+      fprintf(log,"   %#g,",PAR.stp[i]);
+    }
+  }
+  fprintf(log,"\n%s:\n",gen->genid);
+ 
   fprintf(log,"%s: sampling from list of intervals: indexed search (guide table method)\n",gen->genid);
   fprintf(log,"%s:    relative guide table size = %g%%",gen->genid,100.*GEN.guide_factor);
   _unur_print_if_default(gen,HINV_SET_GUIDEFACTOR);

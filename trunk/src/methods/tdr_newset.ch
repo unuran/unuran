@@ -1,4 +1,3 @@
-
 /*****************************************************************************
  *                                                                           *
  *          UNURAN -- Universal Non-Uniform Random number generator          *

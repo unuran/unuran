@@ -44,6 +44,71 @@
 
    =UP Distribution_objects [10]
 
+
+      The library can handle truncated distributions, that is,
+      distribution that are derived from (standard) distribution by
+      simply restricting its domain to a subset. However, there is a
+      subtle difference between changing the domain of a distribution
+      object by a unur_distr_cont_set_domain() call and changing the
+      (truncated) domain for an existing generator object. The domain
+      of the distribution object is used to create the generator
+      object with hats, squeezes, tables, etc.  Whereas truncating the
+      domain of an existing generator object need not necessarily
+      require a recomputation of these data.  Thus by a
+      @command{unur_<method>_chg_truncated} call (if available) the
+      sampling region is restricted to the subset of the domain of the
+      given distribution object. However, generation methods that
+      require a recreation of the generator object when the domain is
+      changed have a @command{unur_<method>_chg_domain} call instead.
+      For these calls there are of course no restrictions on the given
+      domain (i.e., it is possible to increase the domain of the
+      distribution) (@pxref{Methods}, for details).
+
+   =DESCRIPTION
+      The calls in this section can be applied to continuous
+      univariate distributions.
+
+      @itemize @minus 
+      @item Create a @command{new} instance of a continuous univariate
+      distribution; 
+
+      @item Handle and evaluate 
+      distribution function (CDF, @command{cdf}), 
+      density (PDF, @command{pdf}) and the 
+      derivative of the density (@command{dpdf}).
+      The following is important:
+      @itemize .
+      @item @command{pdf} need not be normalized, i.e.,
+      any integrable nonnegative function can be used. 
+      @item @command{dpdf} must the derivate of the function provided
+      as @command{pdf}.
+      @item @command{cdf} must be distribution function, i.e. must be
+      monotonically increasing with range [0,1].
+      @item If @command{cdf} and @command{pdf} are used together for a
+      pariticular generation method, the @command{pdf} must be the
+      derivate of the @command{cdf}, i.e., it must be normalized.
+      @end itemize
+
+      @item Set (and change) parameters (@command{pdfparams}) and the
+      area below the graph (@command{pdfarea}) of the given
+      (standard) density.
+
+      @item Set the @command{mode} of the distribution. 
+
+      @item Set the @command{center} of the distribution. 
+      It is used by some generation methods to adjust the parameters
+      of the generation algorithms to gain better performance. It can
+      be seens as the location of the ``central part'' of the
+      distribution. 
+
+      @item Some generation methods require the hazard rate
+      (@command{hr}) of the distribution instead of its @command{pdf}.
+
+      @item Alternative, @command{cdf}, @command{pdf}, @command{dpdf},
+      and @command{hr} can be provided as @command{str}ings instead of
+      function pointers.
+      @end itemize
+
    =END
 */
 
@@ -74,7 +139,7 @@ int unur_distr_cont_set_cdf( UNUR_DISTR *distribution, UNUR_FUNCT_CONT *cdf );
    Set respective pointer to the probability density function (PDF),
    the derivative of the probability density function (dPDF) and the
    cumulative distribution function (CDF) of the @var{distribution}.
-   The type of each of these functions must be of type
+   Each of these function pointers must be of type
    @code{double funct(double x, const UNUR_DISTR *distr)}.
 
    Due to the fact that some of the methods do not require a

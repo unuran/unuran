@@ -44,61 +44,108 @@
    =DESCRIPTION
       Objects of type @code{UNUR_DISTR} are used for handling
       distributions. All data about a distribution are stored in this
-      object. UNURAN provides functions that return such objects for
-      standard distributions 
+      object. UNURAN provides functions that return instances of such
+      objects for standard distributions 
       (@pxref{Stddist,,Standard distributions}).
-      It is then possible to change this distribution object by
-      various set calls. Moreover it is possible to build a
+      It is then possible to change these distribution objects by
+      various set calls. Moreover, it is possible to build a
       distribution object entirely from scratch. For this purpose
-      there exists an @command{unur_distr_<type>_new} call 
-      that returns an empty object of this type for each object type 
+      there exists @command{unur_distr_<type>_new} calls that
+      return an empty object of this type for each object type
       (eg. univariate contiuous) which can be filled with the
       appropriate set calls.
+
+      UNURAN distinguishes between several types of distributions,
+      each of which has its own sets of possible parameters (for
+      details see the corresponding sections):
+      @itemize @minus
+      @item continuous univariate distributions
+      @item continuous univariate order statistics
+      @item continuous empirical univariate distributions
+      @item continuous multivariate distributions
+      @item continuous empirical multivariate distributions
+      @item matrix distributions
+      @item discrete univariate distributions
+      @end itemize
       
       Notice that there are essential data about a distribution,
       eg. the PDF, a list of (shape, scale, location) parameters for
       the distribution, and the domain of (the possibly truncated)
-      distribution. 
-      And there exist parameters that are/can be derived from these,
-      eg. the mode of the distribution or the area below the given PDF 
-      (which need not be normalized for many methods).
-      UNURAN keeps track of parameters which are known. Thus if one of
-      the essential parameters is changed all derived parameters are
-      marked as unknown and must be set again if these are required
-      for the chosen generation method.
+      distribution. And there exist parameters that are/can be
+      derived from these, eg. the mode of the distribution or the area
+      below the given PDF (which need not be normalized for many
+      methods). UNURAN keeps track of parameters which are
+      known. Thus if one of the essential parameters is changed all
+      derived parameters are marked as unknown and must be set again
+      if these are required for the chosen generation method.
+      Additionally to set calls there are calls for updating derived
+      parameters for objects provided by the UNURAN library of standard
+      distributions (one for each parameter to avoid computational
+      overhead since not all parameters are required for all generator
+      methods). 
+
+      All parameters of distribution objects can be read by
+      corresponding get calls.
+
+      Every generator object has its own copy of a distribution object
+      which is accessible by a unur_get_distr() call. Thus the
+      parameter for this distribution can be read. However,
+      @strong{never} extract the distribution object out of a
+      generator object and run one of the set calls on it to modify
+      the distribution.  (How should the poor generator object know
+      what has happend?) Instead there exist calls for each of the
+      generator methods that change particular parameters of the
+      internal copy of the distribution object.
+
+   =HOWTOUSE
+      UNURAN collects all data required for a particular generation
+      method in a @emph{distribution object}. There are two ways to
+      get an instance of a distributions object: 
+      @enumerate
+      @item 
+      Build a distribtion from scratch, by means of 
+      the corresponding @command{unur_distr_<type>_new} call, 
+      where @command{<type>} is the type of the distribution as
+      listed in the below subsections.
+
+      @item
+      Use the corresponding @command{unur_distr_<name>_new} call
+      to get prebuild distribution from the UNURAN library of standard
+      distributions.
+      Here @command{<name>} is the name of the
+      standard distribution in @ref{Stddist,,Standard distributions}.
+      @end enumerate
+
+      In either cases the corresponding 
+      @command{unur_distr_<type>_set_<param>} calls to set the
+      necessary parameters @command{<param>} (case 1), or 
+      change the values of the standard distribution in case 2 (if
+      this makes sense for you). In the latter case @command{<type>}
+      is the type to which the standard distribution belongs to.
       
-      The library can handle truncated distributions, that is,
-      distribution that are derived from (standard) distribution by
-      simply restricting its domain to a subset. 
-      However there is a subtle difference between changing the domain
-      of a distribution object by a unur_distr_cont_set_domain() call
-      and changing the (truncated) domain for an existing generator
-      object. The domain of the distribution object is used to
-      create the generator object with hats, squeezes, tables, etc.
-      Whereas truncating the domain of an existing generator object
-      need not necessarily require a recomputation of these data.
-      Thus by a @command{unur_<method>_chg_truncated} call (if
-      available) the sampling region is restricted to the subset of
-      the domain of the given distribution object. However
-      generation methods that require a recreation of the generator
-      object when the domain is changed have a
-      @command{unur_<method>_chg_domain} call instead. 
-      For this call there are of course no restrictions on the
-      given domain (i.e., it is possible to increase the domain of the
-      distribution)
-      (@pxref{Methods}, for details).
+      The parameters of a distribution are divided into
+      @emph{essential} and @emph{derived} parameters.
 
-      For the objects provided by the UNURAN library of standard
-      distributions, calls for updating these parameters exist (one for
-      each parameter to avoid computational overhead since not all
-      parameters are required for all generator methods).
+      Notice, that there are some restrictions in setting parameters
+      to avoid possible confusions.
+      Changing essential parameters marks derived parameters as
+      @code{unknown}. Some of the parameters cannot be changed any
+      more when already set; some parameters block each others.
+      In such a case a new instance of a distribution object has to be
+      build. 
 
-      The calls listed below only handle distribution object. Since every
-      generator object has its own copy of a distribution object, there are 
-      calls for a chosen method that change this copy of distribution object.
-      NEVER extract the distribution object out of the generator object and 
-      run one of the below set calls on it.
-      (How should the poor generator object know what has happend?)
+      Additionally @command{unur_distr_<type>_upd_<param>} calls can
+      be used for updating derived parameters for objects provided by
+      the UNURAN library of standard distributions.
+
+      All parameters of a distribution object get be read by means of
+      @command{unur_distr_<type>_get_<param>} calls.
+
+      Every distribution object be identified by its @code{name} which
+      is a string of arbitrary characters provided by the user. For
+      standard distribution it is automatically set to
+      @command{<name>} in the corresponding @command{new} call. It can
+      be changed to any other string.
 
    =EON
 */
@@ -109,6 +156,20 @@
    =NODEX   AllDistr   Functions for all kinds of distribution objects
 
    =UP Distribution_objects [05]
+
+   =DESCRIPTION
+     The calls in this section can be applied to all distribution
+     objects. 
+
+     @itemize @minus
+     @item Destroy @command{free} an instance of a generator object.
+
+     @item Ask for the @command{type} of a generator object.
+
+     @item Ask for the @command{dimension} of a generator object.
+
+     @item Deal with the @command{name} (identifier string) of a generator object. 
+     @end itemize
 
    =END
 */
@@ -135,25 +196,31 @@ enum {
 
 void unur_distr_free( UNUR_DISTR *distribution );
 /* 
-   Destroy a distribution object.
+   Destroy the @var{distribution} object.
 */
+
 
 int unur_distr_set_name( UNUR_DISTR *distribution, const char *name );
 /* */
 
 const char *unur_distr_get_name( const UNUR_DISTR *distribution );
 /* 
-   Set and get name of distribution.
+   Set and get @var{name} of @var{distribution}. The @var{name} can be
+   an arbitrary character string. It can be used to identify generator
+   objects for the user. It is used by UNURAN when printing
+   information of the distribution object into a log files.
 */
 
 
 int unur_distr_get_dim( const UNUR_DISTR *distribution );
 /* 
-   Get number of components of random vector (its dimension).
+   Get number of components of a random vector (its dimension) the
+   @var{distribution}. 
 
    For univariate distributions it returns dimension @code{1}.
 
-   For matrix distributions it returns the number of components.
+   For matrix distributions it returns the number of components
+   (i.e., number of rows times number of columns).
    When the respective numbers of rows and columns are needed use
    unur_distr_matr_get_dim() instead.
 */
@@ -165,17 +232,17 @@ unsigned int unur_distr_get_type( const UNUR_DISTR *distribution );
    Possible types are
    @table @code
    @item UNUR_DISTR_CONT
-   univariate continuous distributions
+   univariate continuous distribution
    @item UNUR_DISTR_CEMP
-   empirical continuous univariate distributions (i.e. samples)
+   empirical continuous univariate distribution (i.e. a sample)
    @item UNUR_DISTR_CVEC
-   continuous mulitvariate distributions
+   continuous mulitvariate distribution
    @item UNUR_DISTR_CVEMP
-   empirical continuous multivariate distributions (i.e. samples)
+   empirical continuous multivariate distribution (i.e. a vector sample)
    @item UNUR_DISTR_DISCR
-   discrete univariate distributions
+   discrete univariate distribution
    @item UNUR_DISTR_MATR
-   matrix distributions
+   matrix distribution
    @end table
 
    Alternatively the @command{unur_distr_is_<TYPE>}

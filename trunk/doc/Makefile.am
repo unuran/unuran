@@ -7,14 +7,15 @@ info_TEXINFOS = unuran.texi
 # these example files are generated from the corresponding
 # files $(top_srcdir)/examples/example?.c
 unuran_examples = \
- ref_example1.texi \
- ref_example2.texi \
- ref_example3.texi \
- ref_example4.texi \
- ref_example_anti.texi \
- ref_example_cont.texi \
- ref_example_discr.texi \
- ref_example_emp.texi \
+ ref_example0.texi ref_example0_str.texi \
+ ref_example1.texi ref_example1_str.texi \
+ ref_example2.texi ref_example2_str.texi \
+ ref_example3.texi ref_example3_str.texi \
+ ref_example4.texi ref_example4_str.texi \
+ ref_example_anti.texi  ref_example_anti_str.texi \
+ ref_example_cont.texi  ref_example_cont_str.texi \
+ ref_example_discr.texi ref_example_discr_str.texi \
+ ref_example_emp.texi   ref_example_emp_str.texi \
  ref_example_vemp.texi
 
 unuran_TEXINFOS = \

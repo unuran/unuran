@@ -24,8 +24,8 @@ sample with @command{unur_sample_cont}
 @item AROU   @tab  x  @tab  x   @tab  [x] @tab      @tab T-concave
 @item CSTD   @tab     @tab      @tab      @tab      @tab build-in standard distribution
 @item NINV   @tab [x] @tab      @tab      @tab      @tab CDF 
-@item SROU   @tab     @tab      @tab   x  @tab   x  @tab T-concave
-@item SSR    @tab     @tab      @tab   x  @tab   x  @tab T-concave
+@item SROU   @tab  x  @tab      @tab   x  @tab   x  @tab T-concave
+@item SSR    @tab  x  @tab      @tab   x  @tab   x  @tab T-concave
 @item TABLE  @tab  x  @tab      @tab   x  @tab  [~] @tab all local extrema
 @item TDR    @tab  x  @tab  x   @tab      @tab      @tab T-concave
 @item UTDR   @tab  x  @tab      @tab   x  @tab   ~  @tab T-concave
@@ -36,6 +36,12 @@ sample with @command{unur_sample_cont}
 
 @smallexample
 @include ref_example_cont.texi
+@end smallexample
+
+@subheading Example (String API)
+
+@smallexample
+@include ref_example_cont_str.texi
 @end smallexample
 
 =EON
@@ -61,6 +67,12 @@ EMPK:  Requires an observed sample.
 
 @smallexample
 @include ref_example_emp.texi
+@end smallexample
+
+@subheading Example (String API)
+
+@smallexample
+@include ref_example_emp_str.texi
 @end smallexample
 
 =EON
@@ -107,6 +119,10 @@ VEMPK: Requires an observed sample.
 @include ref_example_vemp.texi
 @end smallexample
 
+@subheading Example (String API)
+
+(not implemented)
+
 =EON
 
 /*---------------------------------------------------------------------------*/
@@ -135,6 +151,12 @@ sample with @command{unur_sample_discr}
 
 @smallexample
 @include ref_example_discr.texi
+@end smallexample
+
+@subheading Example (String API)
+
+@smallexample
+@include ref_example_discr_str.texi
 @end smallexample
 
 =EON

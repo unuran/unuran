@@ -26,17 +26,68 @@
    of the unur_init() call. If it has failed the NULL pointer is
    returned and causes a segmentation fault when used for sampling.
 
+   We give all examples with the UNURAN standard API and the more
+   convenient string API.
+
 =EON
 
 /*---------------------------------------------------------------------------*/
 
-=NODE  Example_1  As short as possible
+=NODE  Example_0  As short as possible
+=UP Examples [05]
+
+=DESCRIPTION
+
+Select a distribution and let UNURAN do all necessary steps.
+
+@smallexample
+@include ref_example0.texi
+@end smallexample
+
+=EON
+
+/*---------------------------------------------------------------------------*/
+
+=NODE  Example_0_str  As short as possible (String API)
+=UP Examples [06]
+
+=DESCRIPTION
+
+Select a distribution and let UNURAN do all necessary steps.
+
+@smallexample
+@include ref_example0_str.texi
+@end smallexample
+
+=EON
+
+/*---------------------------------------------------------------------------*/
+
+=NODE  Example_1  Select a method
 =UP Examples [10]
 
 =DESCRIPTION
 
+Select method AROU and use it with default parameters.
+
 @smallexample
 @include ref_example1.texi
+@end smallexample
+
+=EON
+
+/*---------------------------------------------------------------------------*/
+
+
+=NODE  Example_1_str  Select a method (String API)
+=UP Examples [11]
+
+=DESCRIPTION
+
+Select method AROU and use it with default parameters.
+
+@smallexample
+@include ref_example1_str.texi
 @end smallexample
 
 =EON
@@ -63,6 +114,26 @@ see @ref{Concepts} for an overview and
 
 /*---------------------------------------------------------------------------*/
 
+=NODE  Example_2_str  Arbitrary distributions (String API)
+=UP Examples [21]
+
+=DESCRIPTION
+
+If you want to sample from a non-standard distribution,
+UNURAN might be exactly what you need. 
+Depending on the information is available, a method
+must be choosen for sampling, 
+see @ref{Concepts} for an overview and 
+@ref{Methods} for details.
+
+@smallexample
+@include ref_example2_str.texi
+@end smallexample
+
+=EON
+
+/*---------------------------------------------------------------------------*/
+
 =NODE  Example_3  Change parameters of the method
 =UP Examples [30]
 
@@ -76,6 +147,26 @@ For details see @ref{Methods}.
 
 @smallexample
 @include ref_example3.texi
+@end smallexample
+
+=EON
+
+/*---------------------------------------------------------------------------*/
+
+
+=NODE  Example_3_str  Change parameters of the method (String API)
+=UP Examples [31]
+
+=DESCRIPTION
+
+Each method for generating random numbers allows several
+parameters to be modified. If you do not want to use default values,
+it is possible to change them.
+The following example illustrates how to change parameters.
+For details see @ref{Methods}.
+
+@smallexample
+@include ref_example3_str.texi
 @end smallexample
 
 =EON
@@ -108,6 +199,32 @@ modified accordingly.
 
 /*---------------------------------------------------------------------------*/
 
+=NODE  Example_4_str  Change uniform random generator (String API)
+=UP Examples [41]
+
+=DESCRIPTION
+
+All generator object use the same default uniform random number
+generator by default. This can be changed to any generator of your
+choice such that each generator object has its own random number
+generator or can share it with some other objects.
+It is also possible to change the default generator at any time.
+See @ref{URNG,,Using uniform random number generators},
+for details.
+
+The following example shows how the uniform random number generator
+can be set or changed for a generator object. It requires the PRNG
+library to be installed and used. Otherwise the example must be
+modified accordingly.
+
+@smallexample
+@include ref_example4_str.texi
+@end smallexample
+
+=EON
+
+/*---------------------------------------------------------------------------*/
+
 =NODE  Example_anti  Sample pairs of antithetic random variates
 =UP Examples [50]
 
@@ -122,17 +239,31 @@ Using Method TDR it is easy to sample pairs of antithetic random variates.
 
 /*---------------------------------------------------------------------------*/
 
+=NODE  Example_anti_str  Sample pairs of antithetic random variates (String API)
+=UP Examples [51]
+
+=DESCRIPTION
+Using Method TDR it is easy to sample pairs of antithetic random variates.
+
+@smallexample
+@include ref_example_anti_str.texi
+@end smallexample
+
+=EON
+
+/*---------------------------------------------------------------------------*/
+
 =NODE  Example_More  More examples
 =UP Examples [60]
 =DESCRIPTION
 
-@xref{Methods_for_CONT,Methods for continuous univariate distributions,Methods for continuous univariate distributions}.
+@xref{Methods_for_CONT,,Methods for continuous univariate distributions}.
 
-@xref{Methods_for_CEMP,Methods for continuous empirical univariate distributions,Methods for continuous empirical univariate distributions}.
+@xref{Methods_for_CEMP,,Methods for continuous empirical univariate distributions}.
 
-@xref{Methods_for_CVEMP,Methods for continuous empirical multivariate distributions,Methods for continuous empirical multivariate distributions}.
+@xref{Methods_for_CVEMP,,Methods for continuous empirical multivariate distributions}.
 
-@xref{Methods_for_DISCR,Methods for discrete univariate distributions,Methods for discrete univariate distributions}.
+@xref{Methods_for_DISCR,,Methods for discrete univariate distributions}.
 
 =EON
 

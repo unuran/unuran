@@ -500,7 +500,9 @@ _unur_aux_bound_vmax(double x, void *p) {
      /*----------------------------------------------------------------------*/
   struct unur_gen *gen;
   gen=p; /* typecast from void* to unur_gen* */
-   
+ 
+  if (GEN.r == 1.) return sqrt( _unur_cont_PDF((x),(gen->distr)) );
+
   return pow( _unur_cont_PDF((x),(gen->distr)), 1./(1.+GEN.r) ); 
 }
 
@@ -514,6 +516,8 @@ _unur_aux_bound_umax(double x, void *p) {
   struct unur_gen *gen;
   gen=p; /* typecast from void* to unur_gen* */
   
+  if (GEN.r == 1.) return (x-GEN.center)*sqrt( _unur_cont_PDF((x),(gen->distr)) );
+
   return (x-GEN.center) * pow( _unur_cont_PDF((x),(gen->distr)),
                                GEN.r / (1.+ GEN.r) );
 }
@@ -775,15 +779,24 @@ _unur_nrou_sample( struct unur_gen *gen )
     U = GEN.umin + _unur_call_urng(gen->urng) * (GEN.umax - GEN.umin);
 
     /* compute X */
-    X = U/pow(V,GEN.r) + GEN.center;
+    if (GEN.r == 1.) X = U/V + GEN.center;
+    else             X = U/pow(V,GEN.r) + GEN.center;
 
     /* inside domain ? */
     if ( (X < DISTR.BD_LEFT) || (X > DISTR.BD_RIGHT) )
       continue;
 
     /* accept or reject */
-    if (V <= pow(PDF(X), 1./(1.+GEN.r)) )
-      return X;
+    if (GEN.r ==1) {
+      /* normal rou-method with square-root */
+      if (V*V <= PDF(X)) 
+        return X;
+    }
+    else {
+      /* generalized rou-method with pow-function */
+      if (V <= pow(PDF(X), 1./(1.+GEN.r)) )
+        return X;
+    }
   }
 
 } /* end of _unur_nrou_sample() */
@@ -817,7 +830,8 @@ _unur_nrou_sample_check( struct unur_gen *gen )
     U = GEN.umin + _unur_call_urng(gen->urng) * (GEN.umax - GEN.umin);
     
     /* compute x */
-    X = U/pow(V,GEN.r) + GEN.center;
+    if (GEN.r == 1.) X = U/V + GEN.center;
+    else             X = U/pow(V,GEN.r) + GEN.center;
     
     /* inside domain ? */
     if ( (X < DISTR.BD_LEFT) || (X > DISTR.BD_RIGHT) )
@@ -828,8 +842,16 @@ _unur_nrou_sample_check( struct unur_gen *gen )
     
     /* a point on the boundary of the region of acceptance
        has the coordinates ( (X-center) * (fx)^(r/(1+r)), (fx)^(1/(1+r)) ). */
-    sfx = pow(fx, 1./(1.+GEN.r));
-    xfx = (X-GEN.center) * pow(fx, GEN.r/(1.+GEN.r));
+    if (GEN.r == 1.) {
+      /* normal rou-method with square-root */
+      sfx = sqrt(fx);
+      xfx = (X-GEN.center) * sfx;
+    }
+    else {
+      /* generalized rou-method with pow-function */
+      sfx = pow(fx, 1./(1.+GEN.r));
+      xfx = (X-GEN.center) * pow(fx, GEN.r/(1.+GEN.r));
+    }
     
     /* check hat */
     if ( ( sfx > (1.+DBL_EPSILON) * GEN.vmax )   /* avoid roundoff error with FP registers */
@@ -838,8 +860,16 @@ _unur_nrou_sample_check( struct unur_gen *gen )
       _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"PDF(x) > hat(x)");
     
     /* accept or reject */
-    if (V <= pow(PDF(X), 1./(1.+GEN.r)) )
-      return X;
+    if (GEN.r ==1) {
+      /* normal rou-method with square-root */
+      if (V*V <= PDF(X))
+        return X;
+    }
+    else {
+      /* generalized rou-method with pow-function */
+      if (V <= pow(PDF(X), 1./(1.+GEN.r)) )
+        return X;
+    }
   }
 
 } /* end of _unur_nrou_sample_check() */

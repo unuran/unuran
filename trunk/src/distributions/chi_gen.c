@@ -4,7 +4,7 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   FILE:      chis_gen.c                                                   *
+ *   FILE:      chi_gen.c                                                    *
  *                                                                           *
  *   Special generators for Chi distribution                                 *
  *   (Do not confuse with Chi^2 distribution!)                               *

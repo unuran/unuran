@@ -24,7 +24,8 @@ libunuran_distributions_a_SOURCES = \
  powerexponential.c \
  rayleigh.c \
  student.c     student_gen.c \
- uniform.c
+ uniform.c \
+ weibull.c     weibull_gen.c
 
 pkginclude_HEADERS = \
  unuran_distributions.h

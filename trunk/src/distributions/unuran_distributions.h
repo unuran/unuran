@@ -103,7 +103,7 @@
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*/
-/*  Beta distribution [3; ch.25, p.210]                                      */
+/*  Beta distribution  [3; ch.25, p.210]                                     */
 struct unur_distr *unur_distr_beta(double *params, int n_params);
 
 /* special generators */
@@ -122,7 +122,7 @@ double unur_stdgen_sample_beta_b1prs( struct unur_gen *gen );
 /** TODO **/
 
 /*---------------------------------------------------------------------------*/
-/*  Cauchy distribution [2; ch.16, p.299]                                    */
+/*  Cauchy distribution  [2; ch.16, p.299]                                   */
 struct unur_distr *unur_distr_cauchy(double *params, int n_params);
 
 /* special generators */
@@ -132,7 +132,7 @@ double unur_stdgen_sample_cauchy_inv( struct unur_gen *gen );
 /* Inversion method                                                          */
 
 /*---------------------------------------------------------------------------*/
-/*  Chi distribution [2; ch.18, p.417]                                 */
+/*  Chi distribution  [2; ch.18, p.417]                                      */
 struct unur_distr *unur_distr_chi(double *params, int n_params);
 
 /* special generators */
@@ -142,7 +142,7 @@ double unur_stdgen_sample_chi_chru( struct unur_gen *gen );
 /* Ratio of Uniforms with shift                                              */
 
 /*---------------------------------------------------------------------------*/
-/*  Chisquare distribution [2; ch.18, p.416]                                 */
+/*  Chisquare distribution  [2; ch.18, p.416]                                */
 struct unur_distr *unur_distr_chisquare(double *params, int n_params);
 
 double _unur_cdf_chisquare(double x, double *params, int n_params);
@@ -153,7 +153,7 @@ double _unur_cdf_chisquare(double x, double *params, int n_params);
 /** TODO **/
 
 /*---------------------------------------------------------------------------*/
-/*  Exponential distribution [2; ch.19, p.494]                               */
+/*  Exponential distribution  [2; ch.19, p.494]                              */
 struct unur_distr *unur_distr_exponential(double *params, int n_params);
 
 /* special generators */
@@ -163,7 +163,7 @@ double unur_stdgen_sample_exponential_inv( struct unur_gen *gen );
 /* Inversion method                                                          */
 
 /*---------------------------------------------------------------------------*/
-/*  Gamma distribution [2; ch.17, p.337]                                     */
+/*  Gamma distribution  [2; ch.17, p.337]                                    */
 struct unur_distr *unur_distr_gamma(double *params, int n_params);
 
 /* special generators */
@@ -177,7 +177,7 @@ double unur_stdgen_sample_gamma_gll( struct unur_gen *gen );
 /** TODO **/
 
 /*---------------------------------------------------------------------------*/
-/*  Laplace distribution [3; ch.24, p.164]                                   */
+/*  Laplace distribution  [3; ch.24, p.164]                                  */
 struct unur_distr *unur_distr_laplace(double *params, int n_params);
 
 /* special generators */
@@ -191,15 +191,15 @@ double unur_stdgen_sample_laplace_inv( struct unur_gen *gen );
 /** TODO **/
 
 /*---------------------------------------------------------------------------*/
-/*  Lognormal distribution [2; ch.14, p.208]                                 */
+/*  Lognormal distribution  [2; ch.14, p.208]                                */
 struct unur_distr *unur_distr_lognormal(double *params, int n_params);
 
 /*---------------------------------------------------------------------------*/
-/*  Lomax distribution (Pareto distr. of second kind) [2; ch.20, p.575]      */
+/*  Lomax distribution (Pareto distr. of second kind)  [2; ch.20, p.575]     */
 struct unur_distr *unur_distr_lomax(double *params, int n_params);
 
 /*---------------------------------------------------------------------------*/
-/*  Normal distribution [2; ch.13, p.80]                                     */
+/*  Normal distribution  [2; ch.13, p.80]                                    */
 struct unur_distr *unur_distr_normal( double *params, int n_params );
 
 /* special generators */
@@ -223,7 +223,7 @@ double unur_stdgen_sample_normal_sum( struct unur_gen *gen );
 /* infamous sum-of-12-uniforms method. NEVER use it!!                        */
 
 /*---------------------------------------------------------------------------*/
-/*  Pareto distribution (of first kind) [2; ch.20, p.574]                    */
+/*  Pareto distribution (of first kind)  [2; ch.20, p.574]                   */
 struct unur_distr *unur_distr_pareto( double *params, int n_params );
 
 /*---------------------------------------------------------------------------*/
@@ -239,11 +239,11 @@ struct unur_distr *unur_distr_pareto( double *params, int n_params );
 /** TODO **/
 
 /*---------------------------------------------------------------------------*/
-/*  Power-exponential (Subbotin) distribution [3; ch.24, p.195]              */
+/*  Power-exponential (Subbotin) distribution  [3; ch.24, p.195]             */
 struct unur_distr *unur_distr_powerexponential(double *params, int n_params);
 
 /*---------------------------------------------------------------------------*/
-/*  Rayleigh distribution [2; ch.18, p.456]                                  */
+/*  Rayleigh distribution  [2; ch.18, p.456]                                 */
 struct unur_distr *unur_distr_rayleigh(double *params, int n_params);
 
 /*---------------------------------------------------------------------------*/
@@ -251,7 +251,7 @@ struct unur_distr *unur_distr_rayleigh(double *params, int n_params);
 /** TODO **/
 
 /*---------------------------------------------------------------------------*/
-/* Student's t distribution                                                  */
+/* Student's t distribution  [3; ch. 28; p. 362]                             */
 struct unur_distr *unur_distr_student(double *params, int n_params);
 
 /* special generators */
@@ -268,8 +268,14 @@ double unur_stdgen_sample_student_trouo( struct unur_gen *gen );
 struct unur_distr *unur_distr_uniform(double *params, int n_params);
 
 /*---------------------------------------------------------------------------*/
-/* Weibull distribution                                                      */
-/** TODO **/
+/* Weibull distribution  [2; ch.21, p.628]                                   */
+struct unur_distr *unur_distr_weibull(double *params, int n_params);
+
+/* special generators */
+int _unur_stdgen_weibull_init( struct unur_par *par, struct unur_gen *gen );
+/* initialize new generator                                                  */
+double unur_stdgen_sample_weibull_inv( struct unur_gen *gen );
+/* Inversion method                                                          */
 
 /*---------------------------------------------------------------------------*/
 

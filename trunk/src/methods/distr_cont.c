@@ -59,7 +59,7 @@ static void _unur_distr_cont_free( struct unur_distr *distr );
 /* destroy distribution object.                                              */
 /*---------------------------------------------------------------------------*/
 
-static double fmaxbr( UNUR_FUNCT_CONT *f, UNUR_DISTR *distr, double a, double b, double tol );
+static double fmaxbr( UNUR_FUNCT_CONT *f, UNUR_DISTR *distr, double a, double b, double c, double tol );
 /*---------------------------------------------------------------------------*/
 /* find maximum of function with Brent's algorithm.                          */
 /*---------------------------------------------------------------------------*/
@@ -946,6 +946,7 @@ _unur_distr_cont_find_mode(struct unur_distr *distr )
   double mode_l; /* lower bound for mode search */
   double mode_u; /* upper bound for mode search */
   double step;
+  double tol;    /* tolerance for fmaxbr() */
 
   int unbound_left; 
   int unbound_right; 
@@ -1104,10 +1105,6 @@ _unur_distr_cont_find_mode(struct unur_distr *distr )
 
   /* find interval containing the mode of the distribution */
 
-/*    printf("-- x0: %f, fx0: %e\n", x[0], fx[0]); */
-/*    printf("-- x1: %f, fx1: %e\n", x[1], fx[1]); */
-/*    printf("-- x2: %f, fx2: %e\n", x[2], fx[2]); */
-
 
   step = 1.0;
   if ( unbound_right ){
@@ -1141,8 +1138,9 @@ _unur_distr_cont_find_mode(struct unur_distr *distr )
 /*    printf("x2: %f, fx2: %e\n", x[2], fx[2]); */
 
 
-  // TODO: invoke optimization
-
+  tol = 1.0e-09;  /* TODO: find better (?) value                 */
+  unur_distr_cont_set_mode(distr, 
+     fmaxbr( unur_distr_cont_get_pdf(distr), distr, x[0], x[2], x[1], tol) );
 
   /* o.k. */
   return 1;
@@ -1161,9 +1159,10 @@ _unur_distr_cont_find_mode(struct unur_distr *distr )
  * modified by Josef Leydold (documentation unchanged)                       *
  *                                                                           *
  * Input                                                                     *
- *	double fminbr(a,b,f,tol)                                             *
+ *	double fminbr(f, distr, a,b,c,tol)                                   *
  *	double a; 			Minimum will be seeked for over      *
  *	double b;  			a range [a,b], a being < b.          *
+ *      double c;                       c within (a,b) is first guess        *
  *	double (*f)(double x);		Name of the function whose minimum   *
  *					will be seeked for                   *
  *	double tol;			Acceptable tolerance for the minimum *
@@ -1204,17 +1203,21 @@ _unur_distr_cont_find_mode(struct unur_distr *distr )
  *                                                                           *
  *****************************************************************************/
 
-#define SQRT_EPSILON FLT_MAX
+#define SQRT_EPSILON FLT_EPSILON
 
 double
-fmaxbr(f_invest,distr,a,b,tol)          /* An estimate to the min location   */
+fmaxbr(f_invest, distr, a, b, c, tol)   /* An estimate to the min location   */
      UNUR_FUNCT_CONT *f_invest;         /* Function under investigation      */
      UNUR_DISTR *distr;                 /* distribution object with params   */
      double a;                          /* Left border | of the range	     */
      double b;                          /* Right border| the min is seeked   */
+     double c;                          /* first guess for the min           */
      double tol;                        /* Acceptable tolerance              */
 {
 #define f(x) (-(*f_invest)((x),distr))  /* minimize negative function        */
+#define MAXIT (100)                     /* maximum number of iterations      */
+  
+  int i;
 
   double x,v,w;                         /* Abscissae, descr. see above       */
   double fx;                            /* f(x)                              */
@@ -1226,19 +1229,17 @@ fmaxbr(f_invest,distr,a,b,tol)          /* An estimate to the min location   */
   CHECK_NULL(distr,0.);
   CHECK_NULL(f_invest,0.);
   COOKIE_CHECK(distr,CK_DISTR_CONT,0.);
-  if (tol <= 0. || b <= a) {
+  if ( tol <= 0. || b <= a || c <= a || b <= c) {
     _unur_error(distr->name,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
     return 0.;
   }
 
-  /** TODO: abbruch nach zu vielen schritten!! **/
-
-
-  v = a + r*(b-a);  fv = f(v);          /* First step - always gold section  */
+  //v = a + r*(b-a);  fv = f(v);        /* First step - always gold section  */
+  v = c;  fv = f(v);                  /* First step */
   x = v;  w = v;
   fx=fv;  fw=fv;
 
-  for(;;) {             /* Main iteration loop	*/
+  for(i=0; i < MAXIT; i++) {            /* Main iteration loop	*/
     double range = b-a;                 /* Range over which the minimum is   */
                                         /* seeked for		             */
     double middle_range = (a+b)/2;
@@ -1246,7 +1247,6 @@ fmaxbr(f_invest,distr,a,b,tol)          /* An estimate to the min location   */
 		SQRT_EPSILON*fabs(x) + tol/3;
     double new_step;                    /* Step at this iteration            */
        
-
     if( fabs(x-middle_range) + range/2 <= 2*tol_act )
       return x;                         /* Acceptable approx. is found       */
 

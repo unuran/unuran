@@ -528,7 +528,7 @@ _unur_test_chi2_vec ( struct unur_gen *gen,
   double *z;       /* sampling vector */
   int *bg[CHI2_MAX_DIMENSIONS]; /* vectors for observed occurrences */
   double pval;     /* p-value */
-  int i,j, offset, sumintervals;
+  int i,j, sumintervals;
   int *idx;	   /* index array */
   int dimintervals[CHI2_MAX_DIMENSIONS]; /* for marginal chi2 tests */ 
   int totalintervals; /* sum of the dimintervals[] */
@@ -602,8 +602,13 @@ _unur_test_chi2_vec ( struct unur_gen *gen,
     sumintervals=0;
     for (j=0; j<dim; j++) {
       idx[j] = (int)( dimintervals[j] * _unur_sf_cdfnormal(z[j]) );
+
+/* debugging */
+printf("sample=%d idx[%d]=%d\n",i, j, idx[j]);
+
+
       if (idx[j]==dimintervals[j]) idx[j]--; /* cdf can return 1 ? */
-      bg[j][idx[j]] +=1 ;
+      bg[j][idx[j]] += 1 ;
       sumintervals += dimintervals[j];
     }
   }
@@ -623,7 +628,7 @@ _unur_test_chi2_vec ( struct unur_gen *gen,
 
     }
 
-    pval = _unur_test_chi2test(NULL, &bg[j] , dimintervals[j], classmin, verbose, out );
+    pval = _unur_test_chi2test(NULL, bg[j] , dimintervals[j], classmin, verbose, out );
     sumintervals += dimintervals[j];
     
   }

@@ -114,7 +114,9 @@ int unur_hinv_set_order( UNUR_PAR *parameters, int order);
 
 int unur_hinv_set_u_resolution( UNUR_PAR *parameters, double u_resolution);
 /* 
-   Set maximal error in u-direction.
+   Set maximal error in u-direction. However, the given u-error must not
+   be smaller than machine epsilon (@code{DBL_EPSILON}).
+
    Default is @code{10^-8}.
 */
 
@@ -171,20 +173,36 @@ int unur_hinv_get_n_intervals( const UNUR_GEN *generator );
 /* 
    Get number of intervals used for Hermite interpolation in 
    generator object.
-   It return @code{0} in case of an error.
+   It returns @code{0} in case of an error.
 */
 
-int unur_hinv_chg_truncated(UNUR_GEN *gen, double left, double right);
+int unur_hinv_chg_truncated( UNUR_GEN *generator, double left, double right );
 /*
    Changes the borders of the domain of the (truncated) distribution. 
 
    Notice that the given truncated domain must be a subset of the
    domain of the given distribution. The generator always uses the
    intersection of the domain of the distribution and the truncated
-   domain given by this call. The tables splines are not recomputed. Thus
-   it might happen that the relative error for the generated variates
-   from the truncated distribution is greater than the bound given by a
-   unur_hinv_chg_truncated() call.
+   domain given by this call. The tables of splines are not recomputed.
+   Thus it might happen that the relative error for the generated variates
+   from the truncated distribution is greater than the bound for the
+   non-truncated distribution. This call also fails when the CDF values
+   of the boundary points are too close, i.e. when only a few different
+   floating point numbers would be computed due to round-off errors
+   with floating point arithmetic.
+
+   It returns @code{0} in case of an error.
+
+   @emph{Important}: Always check the return code since the domain is
+   not changed in case of an error.
+*/
+
+int unur_hinv_estimate_error(  const UNUR_GEN *generator, double *max_error, double *MAE );
+/*
+   Estimate maximal u-error and mean absolute error (MAE) for @var{generator}
+   by means of Monte-Carlo simulation with sample size 10^6.
+   The results are stored in @var{max_error} and @var{MAE}, respectively.
+   It return @code{1} if successful. 
 */
 
 /* =END */

@@ -1163,13 +1163,15 @@ _unur_ninv_clone( const struct unur_gen *gen )
   clone->distr = _unur_distr_cont_clone( gen->distr );
 
   /* auxiliary generator */
-  if (gen->gen_aux) clone->gen_aux = unur_gen_clone( gen->gen_aux );
+  clone->gen_aux = (gen->gen_aux) ? unur_gen_clone( gen->gen_aux ) : NULL;
 
   /* copy additional data for generator object */
-  CLONE.table = _unur_malloc( GEN.table_size * sizeof(double) );
-  memcpy( CLONE.table, GEN.table, GEN.table_size * sizeof(double) );
-  CLONE.f_table = _unur_malloc( GEN.table_size * sizeof(double) );
-  memcpy( CLONE.f_table, GEN.f_table, GEN.table_size * sizeof(double) );
+  if (GEN.table) {
+    CLONE.table = _unur_malloc( GEN.table_size * sizeof(double) );
+    memcpy( CLONE.table, GEN.table, GEN.table_size * sizeof(double) );
+    CLONE.f_table = _unur_malloc( GEN.table_size * sizeof(double) );
+    memcpy( CLONE.f_table, GEN.f_table, GEN.table_size * sizeof(double) );
+  }
 
   return clone;
 

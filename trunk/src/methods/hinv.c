@@ -69,22 +69,33 @@
 /*---------------------------------------------------------------------------*/
 /* Constants                                                                 */
 
-#define HINV_MAX_U_LENGTH  (0.05)   /* maximal value for |u_i - u_{i-1}|     */
-#define HINV_TAILCUTOFF    (1.e-10) /* Tail is cut off as max(TAILCUTOFF,e_u/0.1)*/
-/** TODO: maschinenabhaengige konstante !!!! **/
+#define HINV_MAX_U_LENGTH  (0.05)
+/* Maximal value for |u_i - u_{i-1}|. If for an interval this value is       */
+/* larger then it is splitted (independently of its u-error).                */
+
+#define HINV_TAILCUTOFF    (1.e-10) 
+/* For unbounded domains the tails has to be cut of. We use the given        */
+/* u-resulution for finding the cut points. (The probability of the chop     */
+/* regions should be less than the 1 fifth of the u-resolution.)             */
+/* However, it should not be greater than some threshold value, given by     */
+/* HINV_TAILCUTOFF which reflects the precision of the used stream of        */
+/* uniform pseudo-random numbers (typically about 2^32).                     */
+/* However, for computational reasons we use a value that is at least twice  */
+/* the machine epsilon for the right hand boundary.                          */
 
 #define HINV_XDEVIATION    (0.05)
-/** TODO: beschreibung: how many percent may the approximation be away from the center of the 
-interval that it is still accepted as splitting point (for the sake
-of saves of CDF-evaluations.
-
-konstante 0.005 optimiert fuer normalverteilung eu 1.e-10. Jedenfalls ist die
-  Wahl von x1=arithmetic mean of the intervalborders "robuster".
-Groesser XDEVIATION liefert eher mehr intervalle bei eu>1.e-10 aber weniger
-CDF-Auswertungen im setup. 
-bei eu=1.e-12 ist 0.3  am besten
-insgesamt scheint am Anfang die Halbierung in x-Richtung, spaeter dann die 
-Approximative in u-richtung besser zu sein*/
+/* Used for splitting intervals. When the u-error is estimated for an        */
+/* interval then the CDF is evaluate in the center of the x-interval. This   */
+/* could be used as splitting point of the interval. However, this might     */
+/* result in slow convergence. A much more stable point is the center of     */
+/* the u-interval. However, this requires an additional evalution of the     */
+/* CDF. Thus we use the following rule: if CDF(center of x-interval) is      */
+/* close to the center of the u-interval use the first, otherwise use the    */
+/* latter. HINV_XDEVIATION is the threshold value for relative distance      */
+/* between these two points.                                                 */
+/* As a rule-of-thumb larger values of HINV_XDEVIATION result in more        */
+/* intervals but less evaluations of the CDF (until there are too many       */
+/* intervals).                                                               */
 
 /*---------------------------------------------------------------------------*/
 /* Variants: none                                                            */
@@ -183,7 +194,9 @@ static int _unur_hinv_make_guide_table( struct unur_gen *gen );
 /* i.e., into the log file if not specified otherwise.                       */
 /*---------------------------------------------------------------------------*/
 
-static void _unur_hinv_debug_init( const struct unur_par *par, const struct unur_gen *gen );
+static void _unur_hinv_debug_init( const struct unur_par *par, 
+				   const struct unur_gen *gen,
+				   int ok);
 /*---------------------------------------------------------------------------*/
 /* print after generator has been initialized has completed.                 */
 /*---------------------------------------------------------------------------*/
@@ -687,8 +700,24 @@ _unur_hinv_init( struct unur_par *par )
     _unur_hinv_free(gen); free(par); return NULL;
   }
 
+  /* cut points for tails */
+  if (DISTR.domain[0] <= -INFINITY || PDF(DISTR.domain[0])<=0.) {
+    GEN.tailcutoff_left = min(HINV_TAILCUTOFF, 0.1*GEN.u_resolution);
+    GEN.tailcutoff_left = max(GEN.tailcutoff_left,2*DBL_EPSILON);
+  }
+  if (DISTR.domain[1] >= INFINITY || PDF(DISTR.domain[1])<=0.) {
+    GEN.tailcutoff_right = min(HINV_TAILCUTOFF, 0.1*GEN.u_resolution);
+    GEN.tailcutoff_right = max(GEN.tailcutoff_right,2*DBL_EPSILON);
+    GEN.tailcutoff_right = 1.- GEN.tailcutoff_right;
+  }
+
   /* compute splines */
   if (!_unur_hinv_create_table(par,gen)) {
+    /* make entry in log file */
+#ifdef UNUR_ENABLE_LOGGING
+    _unur_hinv_list_to_array( gen );
+    if (gen->debug) _unur_hinv_debug_init(par,gen,FALSE);
+#endif
     _unur_hinv_free(gen); free(par); return NULL;
   }
 
@@ -700,7 +729,7 @@ _unur_hinv_init( struct unur_par *par )
 
 #ifdef UNUR_ENABLE_LOGGING
   /* write info into log file */
-  if (gen->debug) _unur_hinv_debug_init(par,gen);
+  if (gen->debug) _unur_hinv_debug_init(par,gen,TRUE);
 #endif
 
   /* free parameters */
@@ -765,6 +794,10 @@ _unur_hinv_create( struct unur_par *par )
 
   gen->urng_aux = NULL;             /* no auxilliary URNG required           */
   gen->gen_aux = NULL;              /* no auxilliary generator objects       */
+
+  /* default values */
+  GEN.tailcutoff_left  = -1.;       /* no cut-off by default                 */
+  GEN.tailcutoff_right = 10.;
 
   /* initialize variables */
   GEN.N = 0;
@@ -862,10 +895,10 @@ _unur_hinv_interval_adapt( struct unur_gen *gen, struct unur_hinv_interval *iv )
   double x, Fx;
 
   /* 1st check: right most interval (of at least 2)
-     with CDF greater than 1.- TAILCUTOFF */
+     with CDF greater than GEN.tailcutoff_right */
 
   iv_tmp = iv->next->next;
-  if(iv_tmp && iv->next->u > 1. - min(HINV_TAILCUTOFF, 0.1*GEN.u_resolution)) {
+  if(iv_tmp && iv->next->u > GEN.tailcutoff_right) {
     /* chop off right hand tail */
     free (iv_tmp);
     iv->next->next = NULL;
@@ -876,9 +909,9 @@ _unur_hinv_interval_adapt( struct unur_gen *gen, struct unur_hinv_interval *iv )
   }
 
   /* 2nd check: is the left most interval (of at least 2) 
-     with CDF less than TAILCUTOFF */
+     with CDF less than GEN.tailcutoff_left */
 
-  if (iv==GEN.iv && iv->next->next && iv->next->u < min(HINV_TAILCUTOFF, 0.1*GEN.u_resolution)) {
+  if (iv==GEN.iv && iv->next->next && iv->next->u < GEN.tailcutoff_left) {
     /* chop off left hand tail */
     iv_tmp = GEN.iv;
     GEN.iv = iv->next;
@@ -1047,31 +1080,45 @@ _unur_hinv_interval_parameter( struct unur_gen *gen, struct unur_hinv_interval *
 
   switch (GEN.order) {
 
+  case 5:    /* quintic Hermite interpolation */
+    if (iv->f > 0. && iv->next->f > 0.) {
+      f1   = delta_p;
+      fs0  = delta_u / iv->f;      
+      fs1  = delta_u / iv->next->f;
+      fss0 = -delta_u * delta_u * iv->df / (iv->f * iv->f * iv->f);
+      fss1 = -delta_u * delta_u * iv->next->df / (iv->next->f * iv->next->f * iv->next->f);
+      
+      iv->spline[0] = iv->p;
+      iv->spline[1] = fs0;
+      iv->spline[2] = 0.5*fss0;
+      iv->spline[3] = 10.*f1 - 6.*fs0 - 4.*fs1 - 1.5*fss0 + 0.5*fss1;
+      iv->spline[4] = -15.*f1 + 8.*fs0 + 7.*fs1 + 1.5*fss0 - fss1;
+      iv->spline[5] = 6.*f1 - 3.*fs0 - 3.*fs1 - 0.5*fss0 + 0.5*fss1;
+      return 1;
+    }
+    else {
+      /* cannot use quintic interpolation in interval; use cubic instead */
+      iv->spline[4] = 0.;
+      iv->spline[5] = 0.;
+    }
+
+  case 3:    /* cubic Hermite interpolation */
+    if (iv->f > 0. && iv->next->f > 0.) {
+      iv->spline[0] = iv->p;
+      iv->spline[1] = delta_u / iv->f;
+      iv->spline[2] = 3.* delta_p - delta_u * (2./iv->f + 1./iv->next->f);
+      iv->spline[3] = -2.* delta_p + delta_u * (1./iv->f + 1./iv->next->f);
+      return 1;
+    }
+    else {
+      /* cannot use cubic interpolation in interval; use linear instead */
+      iv->spline[2] = 0.;
+      iv->spline[3] = 0.;
+    }
+
   case 1:    /* linear interpolation */
     iv->spline[0] = iv->p;
     iv->spline[1] = delta_p;
-    return 1;
-
-  case 3:    /* cubic Hermite interpolation */
-    iv->spline[0] = iv->p;
-    iv->spline[1] = delta_u / iv->f;
-    iv->spline[2] = 3.* delta_p - delta_u * (2./iv->f + 1./iv->next->f);
-    iv->spline[3] = -2.* delta_p + delta_u * (1./iv->f + 1./iv->next->f);
-    return 1;
-
-  case 5:    /* quintic Hermite interpolation */
-    f1   = delta_p;
-    fs0  = delta_u / iv->f;      
-    fs1  = delta_u / iv->next->f;
-    fss0 = -delta_u * delta_u * iv->df / (iv->f * iv->f * iv->f);
-    fss1 = -delta_u * delta_u * iv->next->df / (iv->next->f * iv->next->f * iv->next->f);
-
-    iv->spline[0] = iv->p;
-    iv->spline[1] = fs0;
-    iv->spline[2] = 0.5*fss0;
-    iv->spline[3] = 10.*f1 - 6.*fs0 - 4.*fs1 - 1.5*fss0 + 0.5*fss1;
-    iv->spline[4] = -15.*f1 + 8.*fs0 + 7.*fs1 + 1.5*fss0 - fss1;
-    iv->spline[5] = 6.*f1 - 3.*fs0 - 3.*fs1 - 0.5*fss0 + 0.5*fss1;
     return 1;
 
   default:
@@ -1359,13 +1406,14 @@ _unur_hinv_sample( struct unur_gen *gen )
 /*---------------------------------------------------------------------------*/
 
 void
-_unur_hinv_debug_init( const struct unur_par *par, const struct unur_gen *gen )
+_unur_hinv_debug_init( const struct unur_par *par, const struct unur_gen *gen, int ok )
      /*----------------------------------------------------------------------*/
      /* write info about generator into logfile                              */
      /*                                                                      */
      /* parameters:                                                          */
      /*   par ... pointer to parameter for building generator object         */
      /*   gen ... pointer to generator object                                */
+     /*   ok  ... exitcode of init call                                      */
      /*----------------------------------------------------------------------*/
 {
   FILE *log;
@@ -1388,9 +1436,16 @@ _unur_hinv_debug_init( const struct unur_par *par, const struct unur_gen *gen )
 
   fprintf(log,"%s: order of polynomial = %d",gen->genid,GEN.order);
   _unur_print_if_default(gen,HINV_SET_ORDER);
+
   fprintf(log,"\n%s: u-resolution = %g",gen->genid,GEN.u_resolution);
   _unur_print_if_default(gen,HINV_SET_U_RESOLUTION);
-  fprintf(log,"\n%s: domain of computation = [%g,%g]\n",gen->genid,GEN.bleft,GEN.bright);
+  fprintf(log,"\n%s: tail cut-off points = ",gen->genid);
+  if (GEN.tailcutoff_left < 0.)  fprintf(log,"none, ");
+  else                           fprintf(log,"%g, ",GEN.tailcutoff_left);
+  if (GEN.tailcutoff_right > 1.) fprintf(log,"none\n");
+  else                           fprintf(log,"1.-%g\n",1.-GEN.tailcutoff_right);
+  
+  fprintf(log,"%s: domain of computation = [%g,%g]\n",gen->genid,GEN.bleft,GEN.bright);
   fprintf(log,"%s:\tU in (%g,%g)\n",gen->genid,GEN.Umin,GEN.Umax);
   fprintf(log,"%s:\n",gen->genid);
 
@@ -1410,6 +1465,9 @@ _unur_hinv_debug_init( const struct unur_par *par, const struct unur_gen *gen )
   fprintf(log,"\n%s:\n",gen->genid);
 
   _unur_hinv_debug_intervals(gen);
+
+  fprintf(log,"%s: initialization %s\n",gen->genid,((ok)?"successful":"failed")); 
+  fprintf(log,"%s:\n",gen->genid);
 
   fflush(stdout);
 

@@ -96,6 +96,8 @@ struct unur_hinv_gen {
   double  bright;          /* right border of the computational domain       */
 
   struct unur_hinv_interval *iv; /* linked list of splines (only used in setup) */
+  double  tailcutoff_left;  /* cut point for left hand tail (u-value)        */ 
+  double  tailcutoff_right; /* cut point for right hand tail (u-value)       */ 
 };
 
 /*---------------------------------------------------------------------------*/

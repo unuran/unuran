@@ -29,17 +29,17 @@ int main()
   UNUR_GEN *gen;
   int i;
   double stp[]={-2,-1,0,1,2,3};
+  double fpm[]={5.,0.3};
 
   unur_set_default_debug(~0u);
 
-  distr = unur_distr_normal(NULL,0);
-/*    unur_distr_cont_set_domain(distr,0,1000); */
+  distr = unur_distr_beta(fpm,2);
 
   par = unur_hinv_new(distr);
-  unur_hinv_set_u_resolution(par,1.e-6);
-  unur_hinv_set_order(par,1);
+  unur_hinv_set_u_resolution(par,1.e-5);
+  unur_hinv_set_order(par,3);
 /*    unur_hinv_set_boundary(par,1,2); */
-  unur_hinv_set_cpoints(par,stp,6);
+/*    unur_hinv_set_cpoints(par,stp,6); */
 /*    unur_hinv_set_max_intervals(par,1000); */
 
   gen = unur_init(par);

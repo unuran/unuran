@@ -53,9 +53,11 @@
 #include <distr/cvec.h>
 #include <distr/cont.h>
 #include <distr/condi.h>
+#include <distributions/unur_distributions.h>
 #include <utils/matrix_source.h>
 #include <uniform/urng.h>
 #include <methods/tdr.h>
+#include <methods/arou.h>
 #include <methods/x_gen_source.h>
 #include <methods/x_gen.h>
 #include "unur_methods_source.h"
@@ -110,6 +112,11 @@ static void _unur_gibbs_debug_init ( const struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 #endif
 
+static void _unur_gibbs_random_unit_vector( struct unur_gen *gen,
+                                          int dim, double *direction);
+/*---------------------------------------------------------------------------*/
+/* generte a random direction vector                                         */
+/*---------------------------------------------------------------------------*/
 
 
 /*---------------------------------------------------------------------------*/
@@ -123,7 +130,12 @@ static void _unur_gibbs_debug_init ( const struct unur_gen *gen );
 #define SAMPLE    gen->sample.cvec       /* pointer to sampling routine      */
 #define PDF(x)    _unur_cvec_PDF((x),(gen->distr))    /* call to PDF         */
 
+#define NORMAL    gen->gen_aux        /* pointer to normal variate generator */
+
 /*---------------------------------------------------------------------------*/
+/* Variants                                                                  */
+#define GIBBS_VARIANT_COORDINATE       0x0001u /* coordinate sampler(default)*/
+#define GIBBS_VARIANT_RANDOM_DIRECTION 0x0002u /* random direction sampler   */
 
 /*****************************************************************************/
 /**  Public: User Interface (API)                                           **/
@@ -171,8 +183,8 @@ unur_gibbs_new( const struct unur_distr *distr )
 
   /* set default values */
   PAR->skip      = 0;         /* number of skipped points in chain           */
-  par->method   = UNUR_METH_GIBBS;   /* method and default variant          */
-  par->variant  = 0u;                 /* default variant                     */
+  par->method   = UNUR_METH_GIBBS;    /* method and default variant          */
+  par->variant  = GIBBS_VARIANT_COORDINATE;  /* default variant              */
   par->set      = 0u;                 /* inidicate default parameters        */
   par->urng     = unur_get_default_urng(); /* use default urng               */
   par->urng_aux = NULL;                    /* no auxilliary URNG required    */
@@ -221,6 +233,42 @@ unur_gibbs_set_skip( struct unur_par *par, long skip )
 
 } /* end of unur_gibbs_set_skip() */
 
+/*****************************************************************************/
+
+int unur_gibbs_set_variant_coordinate( UNUR_PAR *par ) {
+     /*----------------------------------------------------------------------*/
+     /* Coordinate Sampler :                                                 */
+     /* Sampling along the coordinate directions (cyclic).                   */
+     /* This is the default.                                                 */
+     /*----------------------------------------------------------------------*/
+
+  /* check arguments */
+  _unur_check_NULL( GENTYPE, par, UNUR_ERR_NULL );
+  _unur_check_par_object( par, GIBBS );
+            
+  par->variant  = GIBBS_VARIANT_COORDINATE;
+  
+  /* ok */
+  return UNUR_SUCCESS;
+} /* end of unur_gibbs_set_variant_coordinate() */
+
+/*****************************************************************************/
+
+int unur_gibbs_set_variant_random_direction( UNUR_PAR *par ) {
+     /*----------------------------------------------------------------------*/
+     /* Random Direction Sampler :                                           */
+     /* Sampling along the random directions.                                */
+     /*----------------------------------------------------------------------*/
+  
+  /* check arguments */
+  _unur_check_NULL( GENTYPE, par, UNUR_ERR_NULL );
+  _unur_check_par_object( par, GIBBS );
+  
+  par->variant  = GIBBS_VARIANT_RANDOM_DIRECTION;
+  
+  /* ok */
+  return UNUR_SUCCESS;
+} /* end of unur_gibbs_set_variant_random_direction() */
 
 
 /*****************************************************************************/
@@ -260,6 +308,24 @@ _unur_gibbs_init( struct unur_par *par )
     return NULL;
   }
 
+  /* we need a generator for standard normal distributons */
+  if (NORMAL==NULL) {
+    struct unur_distr *normaldistr = unur_distr_normal(NULL,0);
+    struct unur_par   *normalpar = unur_arou_new( normaldistr );
+    unur_arou_set_usedars( normalpar, TRUE );
+    NORMAL = unur_init( normalpar );
+    _unur_distr_free( normaldistr );
+    if (NORMAL == NULL) {
+       _unur_error(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,
+        "Cannot create aux Gaussian generator");
+       _unur_free(gen); free (par);
+       return NULL;
+    }
+    /* uniform random number generator and debugging flags */
+    NORMAL->urng = gen->urng;
+    NORMAL->debug = gen->debug;
+  }  
+  
   /* set initial point */
   /* all coordinates are already set to 0 by _unur_gibbs_create() */
   /* any coordinate differing from 0 can be set here ... */
@@ -314,8 +380,12 @@ _unur_gibbs_create( struct unur_par *par )
   gen->destroy = _unur_gibbs_free;
   gen->clone = _unur_gibbs_clone;
 
-  /* allocate memory for current and random candidate point */
+  /* variant of sampling method */
+  gen->variant = par->variant;        
+  
+  /* allocate memory for current point and random direction */
   GEN->point_current = _unur_xmalloc( (PAR->dim) * sizeof(double));
+  GEN->direction = _unur_xmalloc( (PAR->dim) * sizeof(double));
 
   /* copy parameters into generator object */
   GEN->dim   = PAR->dim;              /* dimension */
@@ -361,12 +431,14 @@ _unur_gibbs_clone( const struct unur_gen *gen )
   clone = _unur_generic_clone( gen, GENTYPE );
 
   CLONE->point_current = _unur_xmalloc( (GEN->dim) * sizeof(double));
+  CLONE->direction = _unur_xmalloc( (GEN->dim) * sizeof(double));
 
   /* copy parameters into clone object */
   CLONE->skip = GEN->skip;
 
   memcpy(CLONE->point_current, GEN->point_current, (GEN->dim) * sizeof(double));
-
+  memcpy(CLONE->direction, GEN->direction, (GEN->dim) * sizeof(double));
+  
   return clone;
 
 #undef CLONE
@@ -400,14 +472,21 @@ _unur_gibbs_sample_cvec( struct unur_gen *gen, double *vec )
  
   for (skip=0; skip<=GEN->skip; skip++) {
 
-      /* stepping along current coordinate */
-
-      distr_conditional = unur_distr_condi_new(gen->distr, GEN->point_current, NULL, GEN->coordinate);
+      if ( gen->variant == GIBBS_VARIANT_COORDINATE ) {
+          distr_conditional = unur_distr_condi_new(gen->distr, GEN->point_current, NULL, GEN->coordinate);
+      }
+      
+      if ( gen->variant == GIBBS_VARIANT_RANDOM_DIRECTION ) {
+          _unur_gibbs_random_unit_vector(gen, dim, GEN->direction);
+          distr_conditional = unur_distr_condi_new(gen->distr, GEN->point_current, GEN->direction, GEN->coordinate);
+      }
+      
       par_conditional = unur_tdr_new(distr_conditional);
       gen_conditional = unur_init(par_conditional);
       
       if (gen_conditional==NULL) {
-        /* TODO : stopping ? */
+         _unur_error(gen->genid,UNUR_ERR_GEN_INVALID,
+          "Cannot create aux conditional generator");
       }
       else {
         GEN->point_current[GEN->coordinate] = unur_sample_cont(gen_conditional);
@@ -426,7 +505,6 @@ _unur_gibbs_sample_cvec( struct unur_gen *gen, double *vec )
   /* copy current point coordinates */
   memcpy(vec, GEN->point_current, GEN->dim*sizeof(double)); 
 
-  
   return;
 } /* end of _unur_gibbs_sample() */
 
@@ -457,6 +535,7 @@ _unur_gibbs_free( struct unur_gen *gen )
 
   /* free memory */
   if (GEN->point_current) free(GEN->point_current);
+  if (GEN->direction) free(GEN->direction);
   _unur_generic_free(gen);
 
 } /* end of _unur_gibbs_free() */
@@ -466,10 +545,30 @@ _unur_gibbs_free( struct unur_gen *gen )
 /*****************************************************************************/
 
 
+
+
 /*****************************************************************************/
 /**  Additional routines used for testing                                   **/
 /*****************************************************************************/
 
+void
+_unur_gibbs_random_unit_vector( struct unur_gen *gen,
+                               int dim, double *direction)
+     /*--------------------------------------------*/
+     /* generte a random unit direction vector     */
+     /*--------------------------------------------*/
+{
+  int d;
+
+  for (d=0; d<dim; d++) {
+    do {
+      direction[d] = unur_sample_cont(NORMAL);
+    } while (direction[d]==0.); /* extremely seldom case */
+  }
+
+  /* normalize direction vector */
+  
+}
 
 /*---------------------------------------------------------------------------*/
 
@@ -503,7 +602,11 @@ _unur_gibbs_debug_init( const struct unur_gen *gen )
 
   fprintf(log,"%s:\n",gen->genid);
   fprintf(log,"%s: type    = continuous multivariate random variates\n",gen->genid);
-  fprintf(log,"%s: method  = gibbs\n",gen->genid);
+  fprintf(log,"%s: method  = gibbs ",gen->genid);
+  if (gen->variant==GIBBS_VARIANT_COORDINATE) 
+    fprintf(log," (coordinate sampler)\n");
+  if (gen->variant==GIBBS_VARIANT_RANDOM_DIRECTION) 
+    fprintf(log," (random direction sampler)\n");
   fprintf(log,"%s:\n",gen->genid);
 
   _unur_distr_cvec_debug( gen->distr, gen->genid );

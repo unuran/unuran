@@ -82,3 +82,21 @@ int unur_gibbs_set_skip( UNUR_PAR *parameters, long skip );
    Default: @code{0}.
 */
 
+/*...........................................................................*/
+
+int unur_gibbs_set_variant_coordinate( UNUR_PAR *par );
+/* 
+   Coordinate Sampler :
+   Sampling along the coordinate directions (cyclic).
+   This is the default.
+*/
+
+/*...........................................................................*/
+
+int unur_gibbs_set_variant_random_direction( UNUR_PAR *par );
+/* 
+   Random Direction Sampler :
+   Sampling along the random directions.
+*/
+
+/*...........................................................................*/

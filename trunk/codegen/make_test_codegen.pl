@@ -349,7 +349,7 @@ EOX
     # End of main()
     $test_main_body .= "\tprintf(\"\\n\");\n\n";
     $test_main_body .= "\tfclose(LOG);\n\n";
-    $test_main_body .= "\texit ((n_failed) ? 1 : 0);\n";
+    $test_main_body .= "\texit ((n_failed) ? EXIT_FAILURE : EXIT_SUCCESS);\n";
     $test_main_body .= "}\n\n";
 
     # test main()

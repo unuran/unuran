@@ -111,6 +111,9 @@ sub make_PDFgen_tests
 
 \#define FP_equal(a,b)  ((a)==(b) ||  fabs((a)-(b)) <= ((fabs(a)<fabs(b))?fabs(a):fabs(b))*100*DBL_EPSILON)
 
+/* We use a global variable for an auxilliary generators */
+static UNUR_GEN *gen_aux = NULL;
+
 $hrule
 
 EOX
@@ -168,7 +171,9 @@ EOX
 	$test_test_body .= "\tfflush(stdout);\n\n";
 
 	# We need a generator for importance sampling
-	$test_test_body .= "\tgen = unur_init( unur_tdr_new(distr) );\n\n";
+	$test_test_body .= 
+	    "\tgen = unur_init( unur_tdr_new(distr) );\n".
+	    "\tif (gen == NULL )  gen = gen_aux;\n\n";
 
 	# Compare PDFs
 	$test_test_body .= <<EOX;
@@ -187,7 +192,7 @@ EOX
         # End of test routine
         $test_test_body .= 
 	    "\tunur_distr_free(distr);\n".
-	    "\tunur_free(gen);\n".
+	    "\tif(gen != gen_aux) unur_free(gen);\n".
 	    "\t(n_failed > 0) ? printf(\"!\") : printf(\"+\");\n".
             "\tfflush(stdout);\n\n".
 	    "\treturn n_failed;\n".
@@ -273,6 +278,18 @@ EOX
 	"\tunur_set_stream( LOG );\n".
         "\tunur_set_default_debug(UNUR_DEBUG_ALL);\n\n";
 
+    # Initialize auxilliary generator
+    # (we use a cauchy distribution)
+    $test_main_body .= <<EOX;
+\t\{
+\t\tUNUR_DISTR *distr_aux;
+\t\tdistr_aux = unur_distr_cauchy(NULL,0);
+\t\tgen_aux = unur_init (unur_cstd_new( distr_aux) );
+\t\tunur_distr_free( distr_aux );
+\t\}
+
+EOX
+
     # Execute the tests
     foreach my $t (split /\n/, $test_list) {
 	$test_main_body .= "\tn_failed += $t();\n";
@@ -282,7 +299,7 @@ EOX
     # End of main()
     $test_main_body .= "\tprintf(\"\\n\");\n\n";
     $test_main_body .= "\tfclose(LOG);\n\n";
-    $test_main_body .= "\texit ((n_failed) ? 1 : 0);\n";
+    $test_main_body .= "\texit ((n_failed) ? EXIT_FAILURE : EXIT_SUCCESS);\n";
     $test_main_body .= "}\n\n";
 
     # test main()

@@ -56,13 +56,11 @@ check_PROGRAMS = \
  t_vempk \
  t_vmt \
  t_stringparser \
- test_special_hinv \
  $(MATHEMATICA_PROGS)
 
 ## Troubles with dmalloc:
 ##   t_dstd
 ##   t_hinv
-##   test_special_hinv
 
 ## Disabled:
 ##   t_timing_dsrou

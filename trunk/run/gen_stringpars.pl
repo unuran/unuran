@@ -15,27 +15,29 @@ use strict;
 #
 
 # Methods not supporting by string input
+#
 our @No_String_Methods = ("UNIF");
 
-
 # where relevant information is stored:
+#
 our $Methinfopath = "../src/methods/";
 our $Distinfofile = "../src/distributions/unuran_distributions.h";
 
 # determine all h-files in $Methinfopath
+#
 opendir (METHDIR, $Methinfopath) or die "can't open directory $!";
 our @all_h_files = grep {/[.]h/ } readdir METHDIR;
 closedir METHDIR;
 
 
-
 # from the Basefile and the info found in the source of UNURAN
 # the file Outfile is generated
+#
 open Basefile, "< ./stringpars.c.base" or die "can't open file: $!";
 open Outfile,  "> ./stringpars.c"      or die "can't open file: $!";
 
 
-# go through the basefile
+# go through the basefile and insert C code
 while ( <Basefile> ){
 
     if ( $_ !~/^s*=INPUT/){
@@ -64,6 +66,7 @@ close Outfile;
 
 
 
+
 # ##################################################################
 #
 # macro assignments: known methods -- integers
@@ -89,12 +92,12 @@ sub known_methods{
 } # end of known_methods()
 
 
-# #######################################################################################
+# ###########################################################################
 # 
-# for input as string: 
+# input as string interface:
 # generates code for generating distribution object
 #
-# #######################################################################################
+# ###########################################################################
 sub distr_info{
 
     print Outfile "\t/* ------------------------------------------- */\n";
@@ -152,12 +155,11 @@ sub distr_info{
 
 # #######################################################################################
 # 
-# for input as string: 
+# UNURAN's input as string interface: 
 # generates code for generating parameter object
 #
 # #######################################################################################
 sub method_info{
-
 
 
     print Outfile "\t/* ************************ */\n";

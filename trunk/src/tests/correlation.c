@@ -116,8 +116,8 @@ unur_test_correlation( UNUR_GEN *genx, UNUR_GEN *geny, int samplesize )
 
     dx = (x - mx) / n;
     dy = (y - my) / n;
-    mx = ((n-1)*mx + x) / n;
-    my = ((n-1)*my + y) / n;
+    mx += dx;
+    my += dy;
 
     sx  += factor * dx*dx;
     sy  += factor * dy*dy;

@@ -48,6 +48,8 @@ noinst_HEADERS = \
  source_distributions.h \
  source_specfunct.h
 
+EXTRA_DIST = \
+ README
 
 # clean backup files
 CLEANFILES = *~

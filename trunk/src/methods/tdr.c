@@ -467,7 +467,7 @@ unur_tdr_new( struct unur_distr* distr )
   struct unur_par *par;
 
   /* check arguments */
-  CHECK_NULL(distr,NULL);
+  _unur_check_NULL( GENTYPE,distr,NULL );
 
   /* check distribution */
   if (distr->type != UNUR_DISTR_CONT) {
@@ -546,7 +546,7 @@ unur_tdr_set_cpoints( struct unur_par *par, int n_stp, double *stp )
   int i;
 
   /* check arguments */
-  CHECK_NULL(par,0);
+  _unur_check_NULL( GENTYPE,par,0 );
 
   /* check input */
   _unur_check_par_object( TDR );
@@ -595,7 +595,7 @@ unur_tdr_set_guidefactor( struct unur_par *par, double factor )
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  CHECK_NULL(par,0);
+  _unur_check_NULL( GENTYPE,par,0 );
 
   /* check input */
   _unur_check_par_object( TDR );
@@ -633,7 +633,7 @@ unur_tdr_set_max_sqhratio( struct unur_par *par, double max_ratio )
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  CHECK_NULL(par,0);
+  _unur_check_NULL( GENTYPE,par,0 );
 
   /* check input */
   _unur_check_par_object( TDR );
@@ -671,7 +671,7 @@ unur_tdr_set_max_intervals( struct unur_par *par, int max_ivs )
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  CHECK_NULL(par,0);
+  _unur_check_NULL( GENTYPE,par,0 );
 
   /* check input */
   _unur_check_par_object( TDR );
@@ -710,7 +710,7 @@ unur_tabl_set_center( struct unur_par *par, double center )
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  CHECK_NULL(par,0);
+  _unur_check_NULL( GENTYPE,par,0 );
 
   /* check input */
   _unur_check_par_object( TDR );
@@ -746,7 +746,7 @@ unur_tdr_set_usecenter( struct unur_par *par, int usecenter )
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  CHECK_NULL(par,0);
+  _unur_check_NULL( GENTYPE,par,0 );
 
   /* check input */
   _unur_check_par_object( TDR );
@@ -780,7 +780,7 @@ unur_tdr_set_usemode( struct unur_par *par, int usemode )
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  CHECK_NULL(par,0);
+  _unur_check_NULL( GENTYPE,par,0 );
 
   /* check input */
   _unur_check_par_object( TDR );
@@ -810,7 +810,7 @@ unur_tdr_set_c( struct unur_par *par, double c )
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  CHECK_NULL(par,0);
+  _unur_check_NULL( GENTYPE,par,0 );
 
   /* check input */
   _unur_check_par_object( TDR );
@@ -860,7 +860,7 @@ unur_tdr_set_verify( struct unur_par *par, int verify )
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  CHECK_NULL(par,0);
+  _unur_check_NULL( GENTYPE,par,0 );
 
   /* check input */
   _unur_check_par_object( TDR );
@@ -893,7 +893,7 @@ unur_tdr_init( struct unur_par *par )
   struct unur_gen *gen;
 
   /* check arguments */
-  CHECK_NULL(par,NULL);
+  _unur_check_NULL( GENTYPE,par,0 );
 
   /* check input */
   if ( par->method != UNUR_METH_TDR ) {
@@ -969,8 +969,7 @@ unur_tdr_sample_log( struct unur_gen *gen )
   double sqx, hx, fx;
 
   /* check arguments */
-  CHECK_NULL(gen,0.);
-  COOKIE_CHECK(gen,CK_TDR_GEN,0.);
+  CHECK_NULL(gen,0.);  COOKIE_CHECK(gen,CK_TDR_GEN,0.);
 
   while (1) {
 
@@ -1062,8 +1061,7 @@ unur_tdr_sample_sqrt( struct unur_gen *gen )
   double Tsqx, Thx;
 
   /* check arguments */
-  CHECK_NULL(gen,0.);
-  COOKIE_CHECK(gen,CK_TDR_GEN,0.);
+  CHECK_NULL(gen,0.);  COOKIE_CHECK(gen,CK_TDR_GEN,0.);
 
   while (1) {
 
@@ -1207,8 +1205,7 @@ unur_tdr_sample_check( struct unur_gen *gen )
   int error = 0;
 
   /* check arguments */
-  CHECK_NULL(gen,0.);
-  COOKIE_CHECK(gen,CK_TDR_GEN,0.);
+  CHECK_NULL(gen,0.);  COOKIE_CHECK(gen,CK_TDR_GEN,0.);
 
   while (1) {
 
@@ -1393,7 +1390,7 @@ _unur_tdr_create( struct unur_par *par )
   unsigned variant;
 
   /* check arguments */
-  COOKIE_CHECK(par,CK_TDR_PAR,NULL);
+  CHECK_NULL(par,NULL);  COOKIE_CHECK(par,CK_TDR_PAR,NULL);
 
   /* allocate memory for generator object */
   gen = _unur_malloc( sizeof(struct unur_gen) );
@@ -1434,6 +1431,7 @@ _unur_tdr_create( struct unur_par *par )
     case TDR_VAR_T_POW:
       /** TODO **/
       SAMPLE = NULL;
+      return NULL;
       break;
     default:
       _unur_error(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
@@ -1513,8 +1511,8 @@ _unur_tdr_get_starting_cpoints( struct unur_par *par, struct unur_gen *gen )
   double extra_cpoint;
 
   /* check arguments */
-  COOKIE_CHECK(par,CK_TDR_PAR,0);
-  COOKIE_CHECK(gen,CK_TDR_GEN,0);
+  CHECK_NULL(par,0);  COOKIE_CHECK(par,CK_TDR_PAR,0);
+  CHECK_NULL(gen,0);  COOKIE_CHECK(gen,CK_TDR_GEN,0);
 
   /* initialize boolean */
   is_mode = was_mode = FALSE;
@@ -1550,7 +1548,7 @@ _unur_tdr_get_starting_cpoints( struct unur_par *par, struct unur_gen *gen )
   x = x_last = DISTR.BD_LEFT;
   fx = fx_last = (x <= -INFINITY) ? 0. : PDF(x);
   iv = GEN.iv = _unur_tdr_interval_new( gen, x, fx, FALSE );
-  CHECK_NULL(iv,0);        /* case of error */
+  CHECK_NULL(iv,0);        /* case of internal error */
   is_increasing = 1;       /* assume pdf(x) is increasing for the first construction points */
 
   /* now all the other points */
@@ -1639,7 +1637,7 @@ _unur_tdr_get_starting_cpoints( struct unur_par *par, struct unur_gen *gen )
     
     /* need a new interval */
     iv = iv->next = _unur_tdr_interval_new( gen, x, fx, is_mode );
-    CHECK_NULL(iv,0);     /* case of error */
+    CHECK_NULL(iv,0);     /* case of internal error */
 
     /* p.d.f. still increasing ? */
     if (is_increasing && fx < fx_last)
@@ -1683,8 +1681,8 @@ _unur_tdr_get_starting_intervals( struct unur_par *par, struct unur_gen *gen )
   double x,fx;              /* construction point, value of p.d.f. at x */
 
   /* check arguments */
-  COOKIE_CHECK(par,CK_TDR_PAR,0);
-  COOKIE_CHECK(gen,CK_TDR_GEN,0);
+  CHECK_NULL(par,0);  COOKIE_CHECK(par,CK_TDR_PAR,0);
+  CHECK_NULL(gen,0);  COOKIE_CHECK(gen,CK_TDR_GEN,0);
 
   /* compute paramters for all intervals */
   for( iv=GEN.iv; iv->next != NULL; ) {
@@ -1766,7 +1764,7 @@ _unur_tdr_interval_new( struct unur_gen *gen, double x, double fx, int is_mode )
   struct unur_tdr_interval *iv;
 
   /* check arguments */
-  COOKIE_CHECK(gen,CK_TDR_GEN,NULL);
+  CHECK_NULL(gen,NULL);  COOKIE_CHECK(gen,CK_TDR_GEN,NULL);
 
   /* first check fx */
   if (fx<0.) {
@@ -1776,7 +1774,7 @@ _unur_tdr_interval_new( struct unur_gen *gen, double x, double fx, int is_mode )
 
   /* we need a new segment */
   iv = _unur_tdr_iv_stack_pop(gen);
-  COOKIE_CHECK(iv,CK_TDR_IV,NULL); 
+  CHECK_NULL(iv,NULL);  COOKIE_CHECK(iv,CK_TDR_IV,NULL); 
 
   /* make left construction point in interval */
   iv->x = x;              /* point x */
@@ -1835,12 +1833,11 @@ _unur_tdr_interval_parameter( struct unur_gen *gen, struct unur_tdr_interval *iv
   double ipt;   /* point at which the interval iv is divided into two parts */
 
   /* check arguments */
-  COOKIE_CHECK(gen,CK_TDR_GEN,0);
-  COOKIE_CHECK(iv,CK_TDR_IV,0); 
+  CHECK_NULL(gen,0);  COOKIE_CHECK(gen,CK_TDR_GEN,0);
+  CHECK_NULL(iv,0);   COOKIE_CHECK(iv,CK_TDR_IV,0); 
 
   /* check interval on the right side of iv */
-  CHECK_NULL(iv->next,0);
-  COOKIE_CHECK(iv->next,CK_TDR_IV,0); 
+  CHECK_NULL(iv->next,0);  COOKIE_CHECK(iv->next,CK_TDR_IV,0); 
 
   /* get division point of interval 
      (= intersection point of tangents in almost all cases) */
@@ -1919,8 +1916,8 @@ _unur_tdr_interval_division_point( struct unur_gen *gen, struct unur_tdr_interva
   double delta;
 
   /* check arguments */
-  COOKIE_CHECK(gen,CK_TDR_GEN,0);
-  COOKIE_CHECK(iv,CK_TDR_IV,0); 
+  CHECK_NULL(gen,0);  COOKIE_CHECK(gen,CK_TDR_GEN,0);
+  CHECK_NULL(iv,0);   COOKIE_CHECK(iv,CK_TDR_IV,0); 
 
   /* case: there is no tangent at one of the boundary points of the interval */
   if (iv->dTfx >= INFINITY) {
@@ -2005,8 +2002,8 @@ _unur_tdr_interval_area( struct unur_gen *gen, struct unur_tdr_interval *iv, dou
   double area = 0.;
 
   /* check arguments */
-  COOKIE_CHECK(gen,CK_TDR_GEN,0);
-  COOKIE_CHECK(iv,CK_TDR_IV,0); 
+  CHECK_NULL(gen,0);  COOKIE_CHECK(gen,CK_TDR_GEN,0);
+  CHECK_NULL(iv,0);   COOKIE_CHECK(iv,CK_TDR_IV,0); 
 
   /* length of interval > 0 ? */
   if (x == iv->x)
@@ -2087,8 +2084,8 @@ _unur_tdr_interval_split( struct unur_gen *gen, struct unur_tdr_interval *iv_old
   struct unur_tdr_interval *iv_newr;
 
   /* check arguments */
-  COOKIE_CHECK(gen,CK_TDR_GEN,0);
-  COOKIE_CHECK(iv_oldl,CK_TDR_IV,0);
+  CHECK_NULL(gen,0);      COOKIE_CHECK(gen,CK_TDR_GEN,0);
+  CHECK_NULL(iv_oldl,0);  COOKIE_CHECK(iv_oldl,CK_TDR_IV,0);
 
 #ifdef UNUR_ENABLE_LOGGING
   /* write info into log file */
@@ -2130,7 +2127,7 @@ _unur_tdr_interval_split( struct unur_gen *gen, struct unur_tdr_interval *iv_old
 
     /* we need a new interval */
     iv_newr = _unur_tdr_interval_new( gen, x, fx, FALSE );
-    CHECK_NULL(iv_newr,0);     /* case of error */
+    CHECK_NULL(iv_newr,0);     /* case of internal error */
     
     /* link into list */
     iv_newr->next = iv_oldl->next;
@@ -2203,7 +2200,7 @@ _unur_tdr_make_guide_table( struct unur_gen *gen )
   int j;
 
   /* check arguments */
-  COOKIE_CHECK(gen,CK_TDR_GEN,0);
+  CHECK_NULL(gen,0);  COOKIE_CHECK(gen,CK_TDR_GEN,0);
 
   /* allocate blocks for guide table (if necessary).
      (we allocate blocks for maximal guide table.) */
@@ -2271,7 +2268,7 @@ _unur_tdr_iv_stack_pop( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  COOKIE_CHECK(gen,CK_TDR_GEN,NULL);
+  CHECK_NULL(gen,NULL);  COOKIE_CHECK(gen,CK_TDR_GEN,NULL);
 
   /* look for an unused segment */
   if( ! GEN.iv_free ) {
@@ -2310,7 +2307,7 @@ _unur_tdr_iv_stack_push( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  COOKIE_CHECK(gen,CK_TDR_GEN,/*void*/);
+  CHECK_NULL(gen,/*void*/);  COOKIE_CHECK(gen,CK_TDR_GEN,/*void*/);
 
   /* update counters and pointers */
   --(GEN.n_ivs);
@@ -2341,10 +2338,8 @@ _unur_tdr_debug_init( struct unur_par *par, struct unur_gen *gen )
   int i;
 
   /* check arguments */
-  CHECK_NULL(gen,/*void*/);
-  COOKIE_CHECK(gen,CK_TDR_GEN,/*void*/);
-  CHECK_NULL(par,/*void*/);
-  COOKIE_CHECK(par,CK_TDR_PAR,/*void*/);
+  CHECK_NULL(gen,/*void*/);  COOKIE_CHECK(gen,CK_TDR_GEN,/*void*/);
+  CHECK_NULL(par,/*void*/);  COOKIE_CHECK(par,CK_TDR_PAR,/*void*/);
 
   log = unur_get_stream();
 
@@ -2433,8 +2428,7 @@ _unur_tdr_debug_free( struct unur_gen *gen )
   FILE *log;
 
   /* check arguments */
-  CHECK_NULL(gen,/*void*/);
-  COOKIE_CHECK(gen,CK_TDR_GEN,/*void*/);
+  CHECK_NULL(gen,/*void*/);  COOKIE_CHECK(gen,CK_TDR_GEN,/*void*/);
 
   log = unur_get_stream();
 
@@ -2465,8 +2459,7 @@ _unur_tdr_debug_intervals( struct unur_gen *gen )
   int i;
 
   /* check arguments */
-  CHECK_NULL(gen,/*void*/);
-  COOKIE_CHECK(gen,CK_TDR_GEN,/*void*/);
+  CHECK_NULL(gen,/*void*/);  COOKIE_CHECK(gen,CK_TDR_GEN,/*void*/);
 
   log = unur_get_stream();
 
@@ -2548,10 +2541,9 @@ _unur_tdr_debug_sample( struct unur_gen *gen,
   FILE *log;
 
   /* check arguments */
-  CHECK_NULL(gen,/*void*/);
-  COOKIE_CHECK(gen,CK_TDR_GEN,/*void*/);
-  COOKIE_CHECK(iv,CK_TDR_IV,/*void*/);
-  COOKIE_CHECK(pt,CK_TDR_IV,/*void*/);
+  CHECK_NULL(gen,/*void*/);  COOKIE_CHECK(gen,CK_TDR_GEN,/*void*/);
+  CHECK_NULL(iv,/*void*/);   COOKIE_CHECK(iv,CK_TDR_IV,/*void*/);
+  CHECK_NULL(pt,/*void*/);   COOKIE_CHECK(pt,CK_TDR_IV,/*void*/);
 
   log = unur_get_stream();
 
@@ -2602,6 +2594,10 @@ _unur_tdr_debug_split_start( struct unur_gen *gen, struct unur_tdr_interval *iv,
 {
   FILE *log;
 
+  /* check arguments */
+  CHECK_NULL(gen,/*void*/);  COOKIE_CHECK(gen,CK_TDR_GEN,/*void*/);
+  CHECK_NULL(iv,/*void*/);   COOKIE_CHECK(iv,CK_TDR_IV,/*void*/);
+
   log = unur_get_stream();
 
   fprintf(log,"%s: split interval at x = %g \t\tf(x) = %g\n",gen->genid,x,fx);
@@ -2635,6 +2631,11 @@ _unur_tdr_debug_split_stop( struct unur_gen *gen,
      /*----------------------------------------------------------------------*/
 {
   FILE *log;
+
+  /* check arguments */
+  CHECK_NULL(gen,/*void*/);       COOKIE_CHECK(gen,CK_TDR_GEN,/*void*/);
+  CHECK_NULL(iv_left,/*void*/);   COOKIE_CHECK(iv_left,CK_TDR_IV,/*void*/);
+  CHECK_NULL(iv_right,/*void*/);  COOKIE_CHECK(iv_right,CK_TDR_IV,/*void*/);
 
   log = unur_get_stream();
 

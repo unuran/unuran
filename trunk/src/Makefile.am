@@ -31,8 +31,7 @@ noinst_HEADERS = \
  unur_struct.h \
  unur_typedefs.h
 
-##unuran.h: $(top_srcdir)/*.h $(top_srcdir)/src/*/*.h 
-unuran.h:
+unuran.h: unuran.h.in $(top_srcdir)/src/*.h $(top_srcdir)/src/*/*.h 
 	$(top_srcdir)/scripts/merge_h.pl $(top_srcdir)/src/unuran.h.in > unuran.h
 
 # clean backup files

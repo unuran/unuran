@@ -7,7 +7,6 @@
  *   FILE: x_umalloc.c                                                       *
  *                                                                           *
  *   allocate memory                                                         *
- *   store allocated blocks in linked list                                   *
  *                                                                           *
  *****************************************************************************
      $Id$

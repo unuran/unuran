@@ -322,7 +322,7 @@ unur_empk_new( struct unur_distr *distr )
   PAR.kerngen   = NULL;          /* random variate generator for kernel      */
 
   par->method   = UNUR_METH_EMPK; /* method and default variant              */
-  par->variant  = 0u;           /* default variant                           */
+  par->variant  = EMPK_VARFLAG_VARCOR; /* default variant                    */
 
   par->set      = 0u;                 /* inidicate default parameters        */    
   par->urng     = unur_get_default_urng(); /* use default urng               */
@@ -606,14 +606,14 @@ unur_empk_chg_smoothing( struct unur_gen *gen, double smoothing )
     return 0;
   }
 
+  /* store smoothing factor */
+  GEN.smoothing = smoothing;
+
   /* recompute band width */
   GEN.bwidth *= smoothing / GEN.smoothing;
 
   /* recompute constant for variance corrected version */
   GEN.sconst = 1./sqrt(1. + GEN.kernvar * SQU( GEN.bwidth/GEN.stddev_observ ) );
-
-  /* store smoothing factor */
-  GEN.smoothing = smoothing;
 
   /* no changelog required */
 

@@ -26,10 +26,14 @@ $accuracy = 1.0e-7;
       '-d beta -p "10 .. 1000, 10 .. 1000"',
       '-d beta -p "0.1 .. 1, 0.1 .. 1"',
       '-d beta -p "1 .. 10, 1 .. 10, -100 .. -10, -9 .. 100"',
+      '-d beta -p "1 .. 10, 1 .. 10" -D "0 0.5"',
+      '-d beta -p "1 .. 10, 1 .. 10" -D "0.5 1.5"',
 
       '-d cauchy',
       '-d cauchy -p "-10 .. 10"',
       '-d cauchy -p "1, 0.1 .. 10"',
+      '-d cauchy -D "0 inf"',
+      '-d cauchy -D "-inf 0"',
 
       '-d chi -p "0.1 .. 1"',
       '-d chi -p "1 .. 100"',
@@ -68,6 +72,9 @@ $accuracy = 1.0e-7;
       '-d normal',
       '-d normal -p "2."',
       '-d normal -p "-5 .. 5, 1 .. 10"',
+      '-d normal -D "-3 0.23"',
+      '-d normal -D "-inf inf"',
+      '-d normal -D "0 inf"',
 
       '-d pareto -p "0.001 .. 1000, 0.1 .. 3"',
       '-d pareto -p "0.001 .. 1000, 0.1 .. 3"',
@@ -81,11 +88,12 @@ $accuracy = 1.0e-7;
       
       '-d uniform',
       '-d uniform -p "-100 .. -10, -9 .. 10"',
+
+      '-d weibull -p "0.1 .. 10"',
+      '-d weibull -p "0.1 .. 10, 0.1 .. 10"',
+      '-d weibull -p "0.1 .. 10, 0.1 .. 10, -10 .. 10"',
+
       );
 
 # End
 1;
-
-#'-d weibull -p "0.1 .. 10"',
-#'-d weibull -p "0.1 .. 10, 0.1 .. 10"',
-#'-d weibull -p "0.1 .. 10, 0.1 .. 10, -10 .. 10"',

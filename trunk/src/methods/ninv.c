@@ -265,7 +265,10 @@ int unur_ninv_use_newton( struct unur_par *par )
 
   /* check new parameter for generator */
   if (! par->DISTR_IN.pdf) {
-    _unur_error(par->genid,UNUR_ERR_DISTR_REQUIRED,"p.d.f."); return 0; }
+    _unur_error(par->genid,UNUR_ERR_DISTR_REQUIRED,"p.d.f.");
+    par->variant = NINV_VARFLAG_REGULA;   /* use regula falsi instead  */
+    return 0;
+ }
 
   /* store date */
   par->variant = NINV_VARFLAG_NEWTON;

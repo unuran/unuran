@@ -523,16 +523,19 @@ void print_timing_results( FILE *LOG, int line, UNUR_DISTR *distr, double *timin
   if (strcmp(distr_name,last_distr_name) ) {
     /* different distributions */
     last_distr_name = distr_name;
-    printf(" %s",distr_name); fflush(stdout);
+    printf(" %s=",distr_name); fflush(stdout);
+  }
+  else {
+    printf("="); fflush(stdout);
   }
   
   /* print timings into log file */
   for (i=0; i<n_results; i++)
     if (timing_result[i] < 0.)
       /* no test */
-      fprintf(LOG, "   .  ");
+      fprintf(LOG, "    .  ");
     else
-      fprintf(LOG, "%6.2f", timing_result[i]);
+      fprintf(LOG, "%7.2f", timing_result[i]);
 
   /* print name of distribution into log file */
   fprintf(LOG,"\t");

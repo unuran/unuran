@@ -632,7 +632,7 @@ sub scan_validate {
 	print OUT "\tprintf(\"\\n(chi^2) \"); fflush(stdout);\n";
 	print OUT "\n/* chi^2 tests: ".($#generators+1)*$n_distributions." */\n\n";
 	print OUT "\tunur_set_default_debug(~UNUR_DEBUG_SAMPLE);\n";
-	print OUT "\tfprintf( TESTLOG,\"\\nChi^2 Test:\\n\");";
+	print OUT "\tfprintf( TESTLOG,\"\\nChi^2 Test:\\n\");\n\n";
 	
 	foreach $test (@chi2tests) {
 	    die "invalide test line" unless ($test =~ /<(\d+)>/);
@@ -699,16 +699,18 @@ sub scan_validate {
 
     ## timing ##
 
+    $timing_log_samplessize_default = 5;
+
     if ($timing) {
 
-	# analyse chi^2 tests
+	# analyse timing tests
 	my @timingtests = split /\n/, $timing; 
 	die "wrong number of timing tests" unless ($#timingtests <= $#distributions);
 
 
 	print OUT "\tprintf(\"\\n(timing) \"); fflush(stdout);\n";
 	print OUT "\n/* timing tests: ".($#generators+1)*$n_distributions." */\n\n";
-	print OUT "\tunur_set_default_debug(~1u);\n";
+	print OUT "\tunur_set_default_debug(1u);\n";
 
 	print OUT "{\n\tdouble time_setup, time_sample;\n";
 	print OUT "\tdouble timing_result[$n_generators];\n";
@@ -716,7 +718,7 @@ sub scan_validate {
 
 	print OUT "\tfprintf( TESTLOG,\"\\nTimings (marginal generation times in micro seconds):\\n\");\n";
 	print OUT "\tfor (i=0; i<$n_generators; i++)\n";
-	print OUT "\t\tfprintf( TESTLOG, \"  [%2d]\", i);";
+	print OUT "\t\tfprintf( TESTLOG, \"   [%2d]\", i);\n";
 	print OUT "\tfprintf( TESTLOG,\"\\n\");\n";
 	
 	foreach $test (@timingtests) {
@@ -746,7 +748,21 @@ sub scan_validate {
 		
 		# read what we have to test
 		$todo = shift @gentest;
-		
+
+		# get sample size
+		if ($todo eq '+') {
+		    $log_samplesize = $timing_log_samplessize_default;
+		}
+		elsif ($todo =~ /^[1-9]$/) {
+		    $log_samplesize = $todo;
+		}
+		elsif ($todo eq '.') {
+		    $log_samplesize = 0;
+		}
+		else {
+		    die "wrong indicator for timing\n";
+		}
+
 		# split into lines again
 		my @lines = split /\n/, $genline;
 		
@@ -763,7 +779,7 @@ sub scan_validate {
 			    last;
 			}
 			else {
-			    print OUT "\tgen = unur_test_timing(par,5,&time_setup,&time_sample,0);\n"; 
+			    print OUT "\tgen = unur_test_timing(par,$log_samplesize,&time_setup,&time_sample,0);\n"; 
 			    print OUT "\tif (gen) {\n";
 			}
 		    }
@@ -779,7 +795,7 @@ sub scan_validate {
 			# nothing to do
 			print OUT "\tgen = NULL;\n"; }
 		    else {
-			print OUT "\tgen = unur_test_timing(par,5,&time_setup,&time_sample,0);\n"; 
+			print OUT "\tgen = unur_test_timing(par,$log_samplesize,&time_setup,&time_sample,0);\n"; 
 			print OUT "\ttiming_result[$n_gen] = time_sample;\n";
 		    }
 		}

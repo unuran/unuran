@@ -34,14 +34,15 @@ int main()
 
   unur_set_default_urng(urng);
 
-  fpar[0] = 100.;
-  distr = unur_distr_gamma(fpar,1);
-  os = unur_distr_corder_new(distr,10,8);
+  fpar[0] = 1.;
+  fpar[1] = 1.e-5;
+  distr = unur_distr_normal(fpar,2);
 
-  par = unur_arou_new(os);
-  unur_arou_set_cpoints( par, 50, NULL );
-  //  unur_arou_set_max_sqhratio(par,0.5);
-  unur_run_tests( par, RUN_TESTS);
+  par = unur_ninv_new(distr);
+  //  unur_ninv_set_usenewton(par);
+  unur_ninv_set_table(par, 100);
+  gen = unur_test_timing(par,5,fpar+8,fpar+9,1);
+  unur_free(gen);
 
   exit (0);
 }

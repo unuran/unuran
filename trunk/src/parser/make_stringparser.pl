@@ -113,9 +113,12 @@ exit (0);
 #
 sub make_list_of_methods {
 
-    my $code .= "\t ";
+    my $code;
 
-    # Read all header files 
+    # Get list of all methods
+    my @method_list;
+
+    # Read all header files
     foreach my $hfile (@methods_h_files) {
 
 	# Read content of header file
@@ -128,18 +131,40 @@ sub make_list_of_methods {
 	# to a method.
 	next unless $content =~ /[^\n]\s*=METHOD\s+(\w+)/;
 
-	# ID for method
-	my $method = "\L$1";
-
-	# print code
-	$code .= "if ( !strcmp( method, \"$method\") ) {\n";
-	$code .= "\t\t par = unur_$method\_new(distr);\n";
-	$code .= "\t }\n\t else ";
+	# save ID for method
+	push @method_list, "\L$1";
     }
 
-    # Otherwise ...
-    $code .= "{\n\t\t par = NULL;\n";
-    $code .= "\t\t fprintf(stderr, \"ERROR: Unknown method: %s\\n\",method);\n\t }\n";
+    # sort list of methods
+    @method_list = sort @method_list;
+
+    # make code 
+    $code .= "\t par = NULL;\n\n";
+
+    # make switch for first letter of method name
+    $code .= "\t switch (*method) {\n";
+
+    my $last_char;
+
+    foreach my $method (@method_list) {
+
+	my $char = substr $method,0,1;
+
+	if ($char ne $last_char) {
+	    $code .= "\t\t break;\n" if $last_char;
+	    $code .= "\t case '$char':\n";
+	    $last_char = $char;
+	}
+
+	# print code
+	$code .= "\t\t if ( !strcmp( method, \"$method\") ) {\n";
+	$code .= "\t\t\t par = unur_$method\_new(distr);\n";
+	$code .= "\t\t\t break;\n";
+	$code .= "\t\t }\n";
+    }
+
+    # end of switch for first letter
+    $code .= "\t }\n";
 
     # Return result
     return $code;
@@ -152,8 +177,9 @@ sub make_list_of_methods {
 #
 sub make_list_of_par_sets {
 
+    my $set_commands;
     my $code_unsupported;
-    my $code = "\t ";
+    my $code;
 
     # print info on screen
     print STDERR "Set commands for Methods:\n" if $VERBOSE;
@@ -213,7 +239,7 @@ sub make_list_of_par_sets {
 	    $args =~ s/\)\s*$//;             # remove closing parenthesis
 	    my @args_list = split /\,/, $args;
 
-	    # first argement must be of type UNUR_PAR
+	    # first argument must be of type UNUR_PAR
 	    my $a = shift @args_list;
 	    unless ($a =~ /UNUR_PAR/) {
 		die "Unknown syntax (first argument not of type UNUR_PAR) in $hfile:\n$l\n";
@@ -246,9 +272,8 @@ sub make_list_of_par_sets {
 	    my $args_comment;
 
 	    # beginning of case
-	    $set = "if ( !strcmp(key, \"$command\") ) {\n";
 	    $args_comment = "\t /* n = $n_args; type = $type_args: $args*/\n";
-	    $set .= "\t$args_comment";
+	    $set .= "\t\t\t $args_comment";
 
 	    # use keyword "void" when no argument is required
 	    $type_args = "void" if $type_args eq "";
@@ -264,9 +289,9 @@ sub make_list_of_par_sets {
 	    #   "Di"   ... a list of doubles and one argument of type int required
 	    if ($type_args =~ /^(void|i|u|d|dd|iD|Di)$/) {
 		my $type = $1;
-		$set .= "\t\t result = _unur_str_par_set_$type(par,type_args,args,unur_$method\_set_$command);\n";
-		$code .= $set;
-		$code .= "\t }\n\t else ";
+		$set .= "\t\t\t\t result = _unur_str_par_set_$type(par,key,type_args,args,unur_$method\_set_$command);\n";
+		$set_commands->{$method}->{$command} = $set;
+
 	    }
 
 	    else {
@@ -280,16 +305,60 @@ sub make_list_of_par_sets {
 	print STDERR "\n" if $VERBOSE;
     }
 
-    # Otherwise ...
-    $code .= "{\n\t\t result = 0;\n";
-    $code .= "\t\t fprintf(stderr, \"ERROR: Unknown ....: %s\\n\",key);\n\t }\n";
-
     # print info on screen
     print STDERR "\n" if $VERBOSE;
 
+
+    # get list of all methods 
+    my @method_list = sort (keys %{$set_commands});
+
+    # set result indicator
+    $code .= "\t result = FALSE;\n\n";
+
+    # make switch for methods
+    $code .= "\t switch (par->method) {\n";
+
+    foreach my $m (@method_list) {
+
+	# make list of set commands for method 
+	my @command_list = sort (keys %{$set_commands->{$m}});
+
+	# make label for method
+	$code .= "\t case UNUR_METH_\U$m:\n";
+	
+	# make switch for first letter of key name
+	$code .= "\t\t switch (*key) {\n";
+
+	my $last_char;
+
+	foreach my $c (@command_list) {
+
+	    my $char = substr $c,0,1;
+
+	    if ($char ne $last_char) {
+		$code .= "\t\t\t break;\n" if $last_char;
+		$code .= "\t\t case '$char':\n";
+		$last_char = $char;
+	    }
+
+	    $code .= "\t\t\t if ( !strcmp(key, \"$c\") ) {\n";
+	    $code .= $set_commands->{$m}->{$c};
+	    $code .= "\t\t\t\t break;\n";
+	    $code .= "\t\t\t }\n";
+	}
+
+	# end of switch for first letter
+	$code .= "\t\t }\n";
+
+    }
+
+    # end of switch for methods
+    $code .= "\t }\n";
+
+
     # add comment on unsupported code into C file
     $code .= "\n\t /* Unsupported set commands: */\n $code_unsupported\n";
-
+	
     # Return result
     return $code;
 

@@ -70,6 +70,12 @@
 #include <unuran_config.h>
 
 /*---------------------------------------------------------------------------*/
+/* structures                                                                */
+struct unur_distr;    /* distribution object      */
+struct unur_par;      /* parameters for generator */
+struct unur_gen;      /* generator object         */
+
+/*---------------------------------------------------------------------------*/
 #endif  /* __UNUR_DEFS_H_SEEN */
 /*---------------------------------------------------------------------------*/
 

@@ -45,6 +45,9 @@
 /*---------------------------------------------------------------------------*/
 /* Macros                                                                    */
 
+#define min(x,y)   (((x)<(y)) ? (x) : (y))
+#define max(x,y)   (((x)>(y)) ? (x) : (y))
+
 /* (log of) normalization constant for p.d.f */
 #define LOGNORMCONSTANT  params[UNUR_DISTR_MAXPARAMS]
 #define NORMCONSTANT     params[UNUR_DISTR_MAXPARAMS]

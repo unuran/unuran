@@ -43,21 +43,17 @@
 #define __UNUR_METHODS_H_SEEN
 /*---------------------------------------------------------------------------*/
 
+/* compiler switches and defaults */
 #include <unur_defs.h>
 
-
-/** TODO **/
-#include <unur_methods_lib.h>
-
-
+/* tools for allocating memory */
 #include <unur_umalloc.h>
+
+/* uniform random number generators */
 #include <unur_urng.h>
 
 /*---------------------------------------------------------------------------*/
 /* Typedefs                                                                  */
-
-struct unur_gen;
-struct unur_par;
 
 typedef double _UNUR_FUNCTION_CONT(double x, double *params, int n_params);
 /* a function for continuous univariate c.d.f., p.d.f. and its derivative    */
@@ -97,13 +93,6 @@ typedef void _UNUR_SAMPLING_ROUTINE_VEC(struct unur_gen *gen, double *vec);
 
 /* generators for standard distributions                                     */
 #include <unur_cstd.h>
-
-/*---------------------------------------------------------------------------*/
-/* get type of transformation method                                         */
-
-#define unur_is_discr(gen) ( (((gen)->method & UNUR_MASK_TYPE) == UNUR_METH_DISCR) ? 1 : 0 )
-#define unur_is_cont(gen)  ( (((gen)->method & UNUR_MASK_TYPE) == UNUR_METH_CONT)  ? 1 : 0 )
-#define unur_is_vec(gen)   ( (((gen)->method & UNUR_MASK_TYPE) == UNUR_METH_VEC)   ? 1 : 0 )
 
 /*---------------------------------------------------------------------------*/
 /* Main structure for all UNURAN generators                                  */

@@ -41,6 +41,8 @@
 #include <limits.h>
 
 #include <unur_tests.h>
+#include <unur_methods.h>
+#include <unur_methods_lib.h>
 
 #include <unur_cookies.h>
 #include <unur_distribution.h>

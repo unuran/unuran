@@ -51,6 +51,13 @@
 #define max(x,y)   (((x)>(y)) ? (x) : (y))
 
 /*---------------------------------------------------------------------------*/
+/* get type of transformation method                                         */
+
+#define unur_is_discr(gen) ( (((gen)->method & UNUR_MASK_TYPE) == UNUR_METH_DISCR) ? 1 : 0 )
+#define unur_is_cont(gen)  ( (((gen)->method & UNUR_MASK_TYPE) == UNUR_METH_CONT)  ? 1 : 0 )
+#define unur_is_vec(gen)   ( (((gen)->method & UNUR_MASK_TYPE) == UNUR_METH_VEC)   ? 1 : 0 )
+
+/*---------------------------------------------------------------------------*/
 /* List of methods                                                           */
 
 #define UNUR_MASK_VARIANT  0x00000fffu   /* indicate variant (see the corresponding .c files) */

@@ -74,7 +74,7 @@ unur_test_moments( UNUR_GEN *gen, double *moments, int n_moments, int samplesize
      /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
-#define idx(d,n) ((d)*n_moments+(n))
+#define idx(d,n) ((d)*(n_moments+1)+(n))
 
   double an, an1, dx, dx2;
   int n, mom, d, dim;

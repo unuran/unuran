@@ -1100,7 +1100,7 @@ int run_validate_verifyhat( FILE *LOG, int line, UNUR_GEN *gen, const UNUR_DISTR
   dim = unur_get_dimension (gen);
   
   /* allocate working space */
-  if (dim > 1) {
+  if (dim > 0) {
     x = malloc( dim * sizeof(double) );
     abort_if_NULL(LOG, line, x);
   }

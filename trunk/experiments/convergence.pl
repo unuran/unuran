@@ -13,24 +13,30 @@ $|=1;
 
 # limits for number of construction points
 my $Nmin = 3;   
-my $Nmax = 30;   
+my $Nmax = 50;   
 
 # sample size for ARS 
-my $samplesize = 100;
+my $samplesize = 100000;
 
 # distributions
 my @distributions = 
     ( 
-#      "normal()",
-#      "normal(0,10)",
-#      "normal(0,100)",
-#      "normal(0,1000)",
+#      "beta(5,15)",
+      "normal(0,1)",
+      "cauchy()", 
+#      "normal(0,2)",
+#      "normal(0,4)",
+#      "normal(0,8)",
+#      "normal(0,16)",
+#      "normal(0,32)",
+#      "normal(0,64)",
+#      "normal(0,128)",
 #      "normal(0,10000)",
 #      "normal(0,0.1)",
 #      "normal(0,0.01)",
 #      "normal(0,0.001)",
-      "normal(0,0.0001)",
-#      "cauchy()" 
+#      "normal(0,0.0001)",
+#      "cauchy()", 
       );
 
 #    ( "normal(); domain=(-1e10,1e10)",
@@ -62,7 +68,7 @@ foreach my $d (@distributions) {
 
     # -----------------------------------------------------------------------
     # ARS
-    ARS($d);
+#    ARS($d);
 
     # -----------------------------------------------------------------------
     # equiangular rule
@@ -295,15 +301,17 @@ sub ARS {
 sub make_plot_normal {
 
     my $xmin = 0;
-    my $xmax = 31;
+    my $xmax = $Nmax+1;
     my $ymin = 0;
     my $ymax = 4;
+    my $xunit = 150/$xmax."mm";
+    my $yunit = "10mm";
 
     print "{\n";
     print "\\newgray{darkgray}{0.70}\n";
     print "\\newgray{gray}{0.80}\n";
     print "\\newgray{lightgray}{0.90}\n";
-    print "\\psset{xunit=3mm,yunit=10mm}\n";
+    print "\\psset{xunit=$xunit,yunit=$yunit}\n";
     print "\\begin{pspicture}($xmin,$ymin)($xmax,$ymax)\n";
 
     print $plot_normal;
@@ -322,15 +330,17 @@ sub make_plot_normal {
 sub make_plot_log {
 
     my $xmin = 0;
-    my $xmax = 31;
+    my $xmax = $Nmax+1;
     my $ymin = -3;
     my $ymax = 1;
+    my $xunit = 150/$xmax."mm";
+    my $yunit = "10mm";
 
     print "{\n";
     print "\\newgray{darkgray}{0.70}\n";
     print "\\newgray{gray}{0.80}\n";
     print "\\newgray{lightgray}{0.90}\n";
-    print "\\psset{xunit=3mm,yunit=10mm}\n";
+    print "\\psset{xunit=$xunit,yunit=$yunit}\n";
     print "\\begin{pspicture}($xmin,$ymin)($xmax,$ymax)\n";
 
     print $plot_log;

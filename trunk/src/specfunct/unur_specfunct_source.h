@@ -92,8 +92,9 @@ double ndtri(double x);
 #define HAVE_UNUR_SF_INV_CDFNORMAL
 
 /** functions related to Student's t distribution **/
-/* there is no CDF for non-integer degrees of freedom */
-#undef HAVE_UNUR_SF_CDFSTUDENT
+
+double _unur_sf_cdfstudent(double x, double nu);
+#define HAVE_UNUR_SF_CDFSTUDENT
 
 /*---------------------------------------------------------------------------*/
 /* end: CEPHES library                                                       */

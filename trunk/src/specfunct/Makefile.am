@@ -13,7 +13,8 @@ libspecfunct_la_SOURCES = \
  incbet.c \
  ndtr.c \
  ndtri.c \
- polevl.c
+ polevl.c \
+ cdfstudent.c 
 
 noinst_HEADERS = \
  unur_specfunct_source.h

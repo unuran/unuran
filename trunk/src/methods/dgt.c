@@ -4,10 +4,10 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   FILE:      dis.c                                                        *
+ *   FILE:      dgt.c                                                        *
  *                                                                           *
  *   TYPE:      discrete univariate random variate                           *
- *   METHOD:    indexed search (guide table)                                 *
+ *   METHOD:    guide table (indexed search)                                 *
  *                                                                           *
  *   DESCRIPTION:                                                            *
  *      Given N discrete events with different probabilities P[k]            *
@@ -91,10 +91,10 @@
 /*---------------------------------------------------------------------------*/
 /* Variants                                                                  */
 
-#define DIS_VAR_DIV         0x01u     /* compute guide table by division n/k */
-#define DIS_VAR_ADD         0x02u     /* compute guide table by adding       */
+#define DGT_VAR_DIV         0x01u     /* compute guide table by division n/k */
+#define DGT_VAR_ADD         0x02u     /* compute guide table by adding       */
 
-#define DIS_VAR_THRESHOLD   1000      /* above this value: use variant 1, else 2 */
+#define DGT_VAR_THRESHOLD   1000      /* above this value: use variant 1, else 2 */
 
 /*---------------------------------------------------------------------------*/
 /* Debugging flags                                                           */
@@ -103,22 +103,22 @@
 /*    bits 13-24 ... adaptive steps                                          */
 /*    bits 25-32 ... trace sampling                                          */
 
-#define DIS_DEBUG_PRINTVECTOR   0x00000100u
-#define DIS_DEBUG_TABLE         0x00000200u
+#define DGT_DEBUG_PRINTVECTOR   0x00000100u
+#define DGT_DEBUG_TABLE         0x00000200u
 
 /*---------------------------------------------------------------------------*/
 /* Flags for logging set calls                                               */
 
-#define DIS_SET_GUIDEFACTOR    0x010u
-#define DIS_SET_VARIANT        0x020u
+#define DGT_SET_GUIDEFACTOR    0x010u
+#define DGT_SET_VARIANT        0x020u
 
 /*---------------------------------------------------------------------------*/
 
-#define GENTYPE "DIS"         /* type of generator                           */
+#define GENTYPE "DGT"         /* type of generator                           */
 
 /*---------------------------------------------------------------------------*/
 
-static struct unur_gen *_unur_dis_create( struct unur_par *par );
+static struct unur_gen *_unur_dgt_create( struct unur_par *par );
 /*---------------------------------------------------------------------------*/
 /* create new (almost empty) generator object.                               */
 /*---------------------------------------------------------------------------*/
@@ -129,12 +129,12 @@ static struct unur_gen *_unur_dis_create( struct unur_par *par );
 /* i.e., into the log file if not specified otherwise.                       */
 /*---------------------------------------------------------------------------*/
 
-static void _unur_dis_debug_init( struct unur_par *par, struct unur_gen *gen );
+static void _unur_dgt_debug_init( struct unur_par *par, struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 /* print after generator has been initialized has completed.                 */
 /*---------------------------------------------------------------------------*/
 
-static void _unur_dis_debug_table( struct unur_gen *gen );
+static void _unur_dgt_debug_table( struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 /* print data for guide table.                                               */
 /*---------------------------------------------------------------------------*/
@@ -145,8 +145,8 @@ static void _unur_dis_debug_table( struct unur_gen *gen );
 
 #define DISTR_IN  distr->data.discr     /* data for distribution object      */
 
-#define PAR       par->data.dis         /* data for parameter object         */
-#define GEN       gen->data.dis         /* data for generator object         */
+#define PAR       par->data.dgt         /* data for parameter object         */
+#define GEN       gen->data.dgt         /* data for generator object         */
 #define DISTR     gen->distr.data.discr /* data for distribution in generator object */
 
 #define SAMPLE    gen->sample.discr     /* pointer to sampling routine       */
@@ -158,7 +158,7 @@ static void _unur_dis_debug_table( struct unur_gen *gen );
 /*****************************************************************************/
 
 struct unur_par *
-unur_dis_new( struct unur_distr *distr )
+unur_dgt_new( struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
      /* get default parameters                                               */
      /*                                                                      */
@@ -188,7 +188,7 @@ unur_dis_new( struct unur_distr *distr )
 
   /* allocate structure */
   par = _unur_malloc( sizeof(struct unur_par) );
-  COOKIE_SET(par,CK_DIS_PAR);
+  COOKIE_SET(par,CK_DGT_PAR);
 
   /* copy input */
   par->distr       = distr;          /* pointer to distribution object       */
@@ -196,7 +196,7 @@ unur_dis_new( struct unur_distr *distr )
   /* set default values */
   PAR.guide_factor = 1.;             /* use same size for guide table        */
 
-  par->method      = UNUR_METH_DIS;  /* method                               */
+  par->method      = UNUR_METH_DGT;  /* method                               */
   par->variant     = 0u;             /* default variant                      */
   par->set         = 0u;             /* inidicate default parameters         */    
   par->urng        = unur_get_default_urng(); /* use default urng            */
@@ -206,16 +206,16 @@ unur_dis_new( struct unur_distr *distr )
   par->debug    = _unur_default_debugflag; /* set default debugging flags    */
 
   /* routine for starting generator */
-  par->init = _unur_dis_init;
+  par->init = _unur_dgt_init;
 
   return par;
 
-} /* end of unur_dis_new() */
+} /* end of unur_dgt_new() */
 
 /*---------------------------------------------------------------------------*/
 
 int
-unur_dis_set_variant( struct unur_par *par, unsigned variant )
+unur_dgt_set_variant( struct unur_par *par, unsigned variant )
      /*----------------------------------------------------------------------*/
      /* set variant of method                                                */
      /*                                                                      */
@@ -232,26 +232,26 @@ unur_dis_set_variant( struct unur_par *par, unsigned variant )
   _unur_check_NULL( GENTYPE,par,0 );
 
   /* check input */
-  _unur_check_par_object( par,DIS );
+  _unur_check_par_object( par,DGT );
 
   /* check new parameter for generator */
-  if (variant != DIS_VAR_ADD && variant != DIS_VAR_DIV) {
+  if (variant != DGT_VAR_ADD && variant != DGT_VAR_DIV) {
     _unur_warning(par->genid,UNUR_ERR_PAR_VARIANT,"");
     return 0;
   }
 
   /* changelog */
-  par->set |= DIS_SET_VARIANT;
+  par->set |= DGT_SET_VARIANT;
 
   par->variant = variant;
 
   return 1;
-} /* end of unur_dis_set_variant() */
+} /* end of unur_dgt_set_variant() */
 
 /*---------------------------------------------------------------------------*/
 
 int
-unur_dis_set_guidefactor( struct unur_par *par, double factor )
+unur_dgt_set_guidefactor( struct unur_par *par, double factor )
      /*----------------------------------------------------------------------*/
      /* set factor for relative size of guide table                          */
      /*                                                                      */
@@ -268,7 +268,7 @@ unur_dis_set_guidefactor( struct unur_par *par, double factor )
   _unur_check_NULL( GENTYPE,par,0 );
 
   /* check input */
-  _unur_check_par_object( par,DIS );
+  _unur_check_par_object( par,DGT );
 
   /* check new parameter for generator */
   if (factor < 0) {
@@ -280,16 +280,16 @@ unur_dis_set_guidefactor( struct unur_par *par, double factor )
   PAR.guide_factor = factor;
 
   /* changelog */
-  par->set |= DIS_SET_GUIDEFACTOR;
+  par->set |= DGT_SET_GUIDEFACTOR;
 
   return 1;
 
-} /* end of unur_dis_set_guidefactor() */
+} /* end of unur_dgt_set_guidefactor() */
 
 /*****************************************************************************/
 
 struct unur_gen *
-_unur_dis_init( struct unur_par *par )
+_unur_dgt_init( struct unur_par *par )
      /*----------------------------------------------------------------------*/
      /* initialize new generator                                             */
      /*                                                                      */
@@ -314,13 +314,13 @@ _unur_dis_init( struct unur_par *par )
   _unur_check_NULL( GENTYPE,par,NULL );
 
   /* check input */
-  if ( par->method != UNUR_METH_DIS ) {
+  if ( par->method != UNUR_METH_DGT ) {
     _unur_error(par->genid,UNUR_ERR_PAR_INVALID,"");
     return NULL; }
-  COOKIE_CHECK(par,CK_DIS_PAR,NULL);
+  COOKIE_CHECK(par,CK_DGT_PAR,NULL);
 
   /* create a new empty generator object */
-  gen = _unur_dis_create(par);
+  gen = _unur_dgt_create(par);
   if (!gen) { free(par); return NULL; }
 
   /* probability vector */
@@ -333,7 +333,7 @@ _unur_dis_init( struct unur_par *par )
     /* ... and check probability vector */
     if (prob[i] < 0.) {
       _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"probability < 0");
-      _unur_dis_free(gen); free(par); 
+      _unur_dgt_free(gen); free(par); 
       return NULL;
     }
   }
@@ -341,7 +341,7 @@ _unur_dis_init( struct unur_par *par )
 
   /* computation of guide-table */
   
-  if (gen->variant == DIS_VAR_DIV) {
+  if (gen->variant == DGT_VAR_DIV) {
     GEN.guide_table[0] = 0;
     for( j=1, i=0; j<GEN.guide_size ;j++ ) {
       while( GEN.cumprob[i]/GEN.sum < ((double)j)/GEN.guide_size ) 
@@ -354,7 +354,7 @@ _unur_dis_init( struct unur_par *par )
     }
   }
 
-  else { /* gen->variant == DIS_VAR_ADD */
+  else { /* gen->variant == DGT_VAR_ADD */
     gstep = GEN.sum / GEN.guide_size;
     probh = 0.;
     for( j=0, i=0; j<GEN.guide_size ;j++ ) {
@@ -376,19 +376,19 @@ _unur_dis_init( struct unur_par *par )
   /* write info into log file */
 #ifdef UNUR_ENABLE_LOGGING
   /* write info into log file */
-  if (gen->debug) _unur_dis_debug_init(par,gen);
+  if (gen->debug) _unur_dgt_debug_init(par,gen);
 #endif
 
   /* free parameters */
   free(par);
 
   return gen;
-} /* end of _unur_dis_init() */
+} /* end of _unur_dgt_init() */
 
 /*****************************************************************************/
 
 int
-_unur_dis_sample( struct unur_gen *gen )
+_unur_dgt_sample( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* sample from generator                                                */
      /*                                                                      */
@@ -406,7 +406,7 @@ _unur_dis_sample( struct unur_gen *gen )
   double u;
 
   /* check arguments */
-  CHECK_NULL(gen,0);  COOKIE_CHECK(gen,CK_DIS_GEN,0);
+  CHECK_NULL(gen,0);  COOKIE_CHECK(gen,CK_DGT_GEN,0);
 
   /* sample from U(0,1) */
   u = _unur_call_urng(gen);
@@ -419,12 +419,12 @@ _unur_dis_sample( struct unur_gen *gen )
 
   return j;
 
-} /* end of _unur_dis_sample() */
+} /* end of _unur_dgt_sample() */
 
 /*****************************************************************************/
 
 void
-_unur_dis_free( struct unur_gen *gen )
+_unur_dgt_free( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* deallocate generator object                                          */
      /*                                                                      */
@@ -438,10 +438,10 @@ _unur_dis_free( struct unur_gen *gen )
     return;
 
   /* check input */
-  if ( gen->method != UNUR_METH_DIS ) {
+  if ( gen->method != UNUR_METH_DGT ) {
     _unur_warning(gen->genid,UNUR_ERR_GEN_INVALID,"");
     return; }
-  COOKIE_CHECK(gen,CK_DIS_GEN,/*void*/);
+  COOKIE_CHECK(gen,CK_DGT_GEN,/*void*/);
 
   /* we cannot use this generator object any more */
   SAMPLE = NULL;   /* make sure to show up a programming error */
@@ -452,14 +452,14 @@ _unur_dis_free( struct unur_gen *gen )
   free(GEN.cumprob);
   free(gen);
 
-} /* end of _unur_dis_free() */
+} /* end of _unur_dgt_free() */
 
 /*****************************************************************************/
 /**  Auxilliary Routines                                                    **/
 /*****************************************************************************/
 
 static struct unur_gen *
-_unur_dis_create( struct unur_par *par )
+_unur_dgt_create( struct unur_par *par )
      /*----------------------------------------------------------------------*/
      /* allocate memory for generator                                        */
      /*                                                                      */
@@ -477,13 +477,13 @@ _unur_dis_create( struct unur_par *par )
   int n_prob;                 /* length of probability vector */
 
   /* check arguments */
-  CHECK_NULL(par,NULL);  COOKIE_CHECK(par,CK_DIS_PAR,NULL);
+  CHECK_NULL(par,NULL);  COOKIE_CHECK(par,CK_DGT_PAR,NULL);
 
   /* allocate memory for generator object */
   gen = _unur_malloc( sizeof(struct unur_gen) );
 
   /* magic cookies */
-  COOKIE_SET(gen,CK_DIS_GEN);
+  COOKIE_SET(gen,CK_DGT_GEN);
 
   /* copy generator identifier */
   gen->genid = par->genid;
@@ -492,8 +492,8 @@ _unur_dis_create( struct unur_par *par )
   memcpy( &(gen->distr), par->distr, sizeof( struct unur_distr ) );
 
   /* routines for sampling and destroying generator */
-  SAMPLE = _unur_dis_sample;
-  gen->destroy = _unur_dis_free;
+  SAMPLE = _unur_dgt_sample;
+  gen->destroy = _unur_dgt_free;
 
   /* set all pointers to NULL */
   GEN.cumprob = NULL;
@@ -515,7 +515,7 @@ _unur_dis_create( struct unur_par *par )
 
   /* which variant? */
   if (par->variant == 0)   /* default variant */
-    par->variant = (n_prob > DIS_VAR_THRESHOLD) ? DIS_VAR_DIV : DIS_VAR_ADD;
+    par->variant = (n_prob > DGT_VAR_THRESHOLD) ? DGT_VAR_DIV : DGT_VAR_ADD;
   /* store variant in generator structure */
   gen->variant = par->variant;
 
@@ -534,7 +534,7 @@ _unur_dis_create( struct unur_par *par )
   /* return pointer to (almost empty) generator object */
   return gen;
 
-} /* end of _unur_dis_create() */
+} /* end of _unur_dgt_create() */
 
 /*****************************************************************************/
 /**  Debugging utilities                                                    **/
@@ -545,7 +545,7 @@ _unur_dis_create( struct unur_par *par )
 /*---------------------------------------------------------------------------*/
 
 static void
-_unur_dis_debug_init( struct unur_par *par, struct unur_gen *gen )
+_unur_dgt_debug_init( struct unur_par *par, struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* write info about generator into logfile                              */
      /*                                                                      */
@@ -557,8 +557,8 @@ _unur_dis_debug_init( struct unur_par *par, struct unur_gen *gen )
   FILE *log;
 
   /* check arguments */
-  CHECK_NULL(par,/*void*/);  COOKIE_CHECK(par,CK_DIS_PAR,/*void*/);
-  CHECK_NULL(gen,/*void*/);  COOKIE_CHECK(gen,CK_DIS_GEN,/*void*/);
+  CHECK_NULL(par,/*void*/);  COOKIE_CHECK(par,CK_DGT_PAR,/*void*/);
+  CHECK_NULL(gen,/*void*/);  COOKIE_CHECK(gen,CK_DGT_GEN,/*void*/);
 
   log = unur_get_stream();
 
@@ -567,31 +567,31 @@ _unur_dis_debug_init( struct unur_par *par, struct unur_gen *gen )
   fprintf(log,"%s: method  = indexed search (guide table)\n",gen->genid);
 
   fprintf(log,"%s: variant = %d ",gen->genid,gen->variant);
-  _unur_print_if_default(par,DIS_SET_VARIANT);
+  _unur_print_if_default(par,DGT_SET_VARIANT);
   fprintf(log,"\n%s:\n",gen->genid);
 
-  _unur_distr_discr_debug( &(gen->distr),gen->genid,(gen->debug & DIS_DEBUG_PRINTVECTOR));
+  _unur_distr_discr_debug( &(gen->distr),gen->genid,(gen->debug & DGT_DEBUG_PRINTVECTOR));
 
-  fprintf(log,"%s: sampling routine = _unur_dis_sample()\n",gen->genid);
+  fprintf(log,"%s: sampling routine = _unur_dgt_sample()\n",gen->genid);
   fprintf(log,"%s:\n",gen->genid);
 
   fprintf(log,"%s: length of probability vector = %d\n",gen->genid,DISTR.n_prob);
   fprintf(log,"%s: length of guide table = %d   (rel. = %g%%",
 	  gen->genid,GEN.guide_size,100.*PAR.guide_factor);
-  _unur_print_if_default(par,DIS_SET_GUIDEFACTOR);
+  _unur_print_if_default(par,DGT_SET_GUIDEFACTOR);
   if (GEN.guide_size == 1) 
     fprintf(log,") \t (-->sequential search");
   fprintf(log,")\n%s:\n",gen->genid);
 
-  if (gen->debug & DIS_DEBUG_TABLE)
-    _unur_dis_debug_table(gen);
+  if (gen->debug & DGT_DEBUG_TABLE)
+    _unur_dgt_debug_table(gen);
 
-} /* end of _unur_dis_debug_init() */
+} /* end of _unur_dgt_debug_init() */
 
 /*---------------------------------------------------------------------------*/
 
 static void
-_unur_dis_debug_table( struct unur_gen *gen )
+_unur_dgt_debug_table( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* write guide table into logfile                                       */
      /*                                                                      */
@@ -604,7 +604,7 @@ _unur_dis_debug_table( struct unur_gen *gen )
   int n_asts;
 
   /* check arguments */
-  CHECK_NULL(gen,/*void*/);  COOKIE_CHECK(gen,CK_DIS_GEN,/*void*/);
+  CHECK_NULL(gen,/*void*/);  COOKIE_CHECK(gen,CK_DGT_GEN,/*void*/);
 
   log = unur_get_stream();
   
@@ -638,7 +638,7 @@ _unur_dis_debug_table( struct unur_gen *gen )
 
   fprintf(log,"%s:\n",gen->genid);
 
-} /*  end of _unur_dis_debug_table() */
+} /*  end of _unur_dgt_debug_table() */
 
 /*---------------------------------------------------------------------------*/
 #endif   /* end UNUR_ENABLE_LOGGING */

@@ -4,11 +4,11 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   FILE: dis_struct.h                                                      *
+ *   FILE: dgt_struct.h                                                      *
  *                                                                           *
  *   PURPOSE:                                                                *
- *         declares structures for method DIS                                *
- *         ((Discrete) Indexed Search (guide table))                         *
+ *         declares structures for method DGT                                *
+ *         (Discrete Guide Table (indexed search))                           *
  *                                                                           *
  *   USAGE:                                                                  *
  *         only included in source_struct.h                                  *
@@ -40,7 +40,7 @@
 /*---------------------------------------------------------------------------*/
 /* Information for constructing the generator                                */
 
-struct unur_dis_par { 
+struct unur_dgt_par { 
   double  guide_factor; /* relative length of guide table.  (DEFAULT = 1)    */
                         /*   length of guide table = guide_factor * len      */
 };
@@ -48,7 +48,7 @@ struct unur_dis_par {
 /*---------------------------------------------------------------------------*/
 /* The generator object                                                      */
 
-struct unur_dis_gen { 
+struct unur_dgt_gen { 
   double  sum;          /* sum of all probabilities = cumprob[len-1]         */
   double *cumprob;      /* pointer to the vector of cumulated probabilities  */
   int    *guide_table;  /* pointer to guide table                            */

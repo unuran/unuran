@@ -19,7 +19,7 @@ libunuran_a_SOURCES = \
  arou.c \
  cstd.c \
  dau.c  \
- dis.c  \
+ dgt.c  \
  dstd.c \
  ninv.c \
  rect.c \
@@ -39,7 +39,7 @@ pkginclude_HEADERS = \
  unur_arou.h \
  unur_cstd.h \
  unur_dau.h  \
- unur_dis.h  \
+ unur_dgt.h  \
  unur_dstd.h \
  unur_ninv.h  \
  unur_rect.h \
@@ -62,7 +62,7 @@ noinst_HEADERS = \
  arou_struct.h \
  cstd_struct.h \
  dau_struct.h  \
- dis_struct.h  \
+ dgt_struct.h  \
  dstd_struct.h \
  ninv_struct.h  \
  rect_struct.h \

@@ -161,8 +161,8 @@ _unur_print_method( struct unur_par *par )
     COOKIE_CHECK(par,CK_DAU_PAR,0);
     printf("METHOD:\t\talias and alias-urn method (DAU)\n");
     break;
-  case UNUR_METH_DIS:
-    COOKIE_CHECK(par,CK_DIS_PAR,0);
+  case UNUR_METH_DGT:
+    COOKIE_CHECK(par,CK_DGT_PAR,0);
     printf("METHOD:\t\tindexed search (DIS)\n");
     break;
   case UNUR_METH_DSTD:

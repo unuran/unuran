@@ -32,7 +32,7 @@
 
 /* define which tests should run (1) or not (0) */
 #define RUN_DAU           1
-#define RUN_DIS           1
+#define RUN_DGT           1
 
 #define RUN_NINV          1
 #define RUN_UTDR          1
@@ -466,15 +466,15 @@ int main()
 
   /* ------------------------- */
 
-#if RUN_DIS == 1
+#if RUN_DGT == 1
 
   printf("DISTRIBUTION:\ttruncated geometric distribution. q = %g, len = %d\n",Q,PSIZE);
 
   /* get default parameters for new generator */
-  par = unur_dis_new(distr_geom);
+  par = unur_dgt_new(distr_geom);
 
   /* change defaults */
-  unur_dis_set_variant(par,1);
+  unur_dgt_set_variant(par,1);
   /*    unur_set_factor(par,1.); */
 
   /* run tests */

@@ -79,7 +79,7 @@ typedef struct unur_gen   UNUR_GEN;      /* generator object                 */
 
 /* methods for discrete distributions */
 #include <unur_dau.h>
-#include <unur_dis.h>
+#include <unur_dgt.h>
 
 /* methods for continuous distributions */
 #include <unur_arou.h>

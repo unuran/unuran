@@ -101,8 +101,7 @@ double _unur_sample_cont_error( UNUR_GEN *gen )
 
 void unur_free( UNUR_GEN *gen )
 {                
-  CHECK_NULL(gen,/*void*/);
-  gen->destroy(gen);
+  if (gen) gen->destroy(gen);
 } /* end of unur_free() */
 
 /*---------------------------------------------------------------------------*/

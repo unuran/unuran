@@ -128,7 +128,7 @@ int unur_ninv_chg_table(UNUR_GEN *gen);
    and uses it for further random number generations. 
 */
 
-int unur_ninv_table_on(UNUR_GEN *gen, int onoff)
+int unur_ninv_table_onoff(UNUR_GEN *gen, int onoff);
 /*
   If onoff=1, table will be used (a table must already exist!!!) and
   if onoff=0, the table won't be used.

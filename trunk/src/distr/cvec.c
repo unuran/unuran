@@ -44,6 +44,7 @@
 #include "distr.h"
 #include "cvec.h"
 #include <utils/matrix_source.h>
+#include <stdarg.h>
 
 /*---------------------------------------------------------------------------*/
 
@@ -880,7 +881,7 @@ unur_distr_cvec_set_marginals ( struct unur_distr *distr, struct unur_distr *mar
   if (DISTR.marginals)
     _unur_distr_cvec_marginals_free(DISTR.marginals, distr->dim);
 
-  /* make copy of standardized marginal distribution object */
+  /* make copy of marginal distribution object */
   clone = _unur_distr_clone( marginal );
 
   /* allocate memory for array */
@@ -981,7 +982,7 @@ unur_distr_cvec_set_marginal_array ( struct unur_distr *distr, struct unur_distr
   /* allocate memory for array */
   DISTR.marginals = _unur_malloc (distr->dim * sizeof(struct unur_distr *));
 
-  /* make copy of standardized marginal distribution objects */
+  /* make copy of marginal distribution objects */
   for (i=0; i<distr->dim; i++) 
     DISTR.marginals[i] = _unur_distr_clone( *(marginals+i) );
 
@@ -1038,6 +1039,146 @@ unur_distr_cvec_set_stdmarginal_array ( struct unur_distr *distr, struct unur_di
 
   return UNUR_SUCCESS;
 } /* end of unur_distr_cvec_set_stdmarginal_array() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+unur_distr_cvec_set_marginal_list ( struct unur_distr *distr, ... )
+     /*----------------------------------------------------------------------*/
+     /* Copy marginal distributions into distribution object.                */
+     /* For each dimenision there must be a pointer to a discribution object.*/
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   distr  ... pointer to distribution object                          */
+     /*   ...    ... pointer to array of marginal distribution objects       */
+     /*                                                                      */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*                                                                      */
+     /* IMPORTANT:                                                           */
+     /*   All marginal distribution objects are destroyed after they have    */
+     /*   been copied into the distribution object.                          */
+     /*----------------------------------------------------------------------*/
+{
+  int i;
+  int failed = FALSE;
+  struct unur_distr *marginal;
+  struct unur_distr **marginal_list;
+  va_list vargs;
+
+  /* check arguments */
+  _unur_check_NULL( NULL, distr, UNUR_ERR_NULL );
+  _unur_check_distr_object( distr, CVEC, UNUR_ERR_DISTR_INVALID );
+
+  /* allocate memory for array */
+  marginal_list = _unur_malloc (distr->dim * sizeof(struct unur_distr *));
+  for (i=0; i<distr->dim; i++) marginal_list[i] = NULL;
+
+  /* make copy of marginal distribution objects */
+  va_start(vargs, distr);
+  for (i=0; i<distr->dim; i++) {
+    marginal = (struct unur_distr *) va_arg(vargs, struct unur_distr *);
+    if (marginal) {
+      marginal_list[i] = _unur_distr_clone( marginal );
+      _unur_distr_free(marginal);
+    }
+    else {
+      failed = TRUE;
+    }
+  }
+  va_end(vargs);
+
+  if (failed) {
+    /* some of the pointers are NULL pointers */
+    _unur_distr_cvec_marginals_free(marginal_list, distr->dim);
+    _unur_error(distr->name ,UNUR_ERR_DISTR_SET,"marginals == NULL");
+    return UNUR_ERR_DISTR_SET;
+  }
+
+  /* copy list of marginal distributions. However, first we have to check  */
+  /* whether there is already a list of marginal distributions.            */
+  if (DISTR.marginals)
+    _unur_distr_cvec_marginals_free(DISTR.marginals, distr->dim);
+
+  DISTR.marginals = marginal_list;
+
+  /* changelog */
+  distr->set |= UNUR_DISTR_SET_MARGINAL;
+
+  return UNUR_SUCCESS;
+} /* end of unur_distr_cvec_set_marginal_list() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+unur_distr_cvec_set_stdmarginal_list ( struct unur_distr *distr, ... )
+     /*----------------------------------------------------------------------*/
+     /* Copy standardized marginal distributions into distribution object.   */
+     /* For each dimenision there must be a pointer to a discribution object.*/
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   distr  ... pointer to distribution object                          */
+     /*   ...    ... pointer to array of std. marginal distibution objects   */
+     /*                                                                      */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*                                                                      */
+     /* IMPORTANT:                                                           */
+     /*   All marginal distribution objects are destroyed after they have    */
+     /*   been copied into the distribution object.                          */
+     /*----------------------------------------------------------------------*/
+{
+  int i;
+  int failed = FALSE;
+  struct unur_distr *stdmarginal;
+  struct unur_distr **stdmarginal_list;
+  va_list vargs;
+
+  /* check arguments */
+  _unur_check_NULL( NULL, distr, UNUR_ERR_NULL );
+  _unur_check_distr_object( distr, CVEC, UNUR_ERR_DISTR_INVALID );
+
+  /* allocate memory for array */
+  stdmarginal_list = _unur_malloc (distr->dim * sizeof(struct unur_distr *));
+  for (i=0; i<distr->dim; i++) stdmarginal_list[i] = NULL;
+
+  /* make copy of standardized marginal distribution objects */
+  va_start(vargs, distr);
+  for (i=0; i<distr->dim; i++) {
+    stdmarginal = (struct unur_distr *) va_arg(vargs, struct unur_distr *);
+    if (stdmarginal) {
+      stdmarginal_list[i] = _unur_distr_clone( stdmarginal );
+      _unur_distr_free(stdmarginal);
+    }
+    else {
+      failed = TRUE;
+    }
+  }
+  va_end(vargs);
+
+  if (failed) {
+    /* some of the pointers are NULL pointers */
+    _unur_distr_cvec_marginals_free(stdmarginal_list, distr->dim);
+    _unur_error(distr->name ,UNUR_ERR_DISTR_SET,"stdmarginals == NULL");
+    return UNUR_ERR_DISTR_SET;
+  }
+
+  /* copy list of marginal distributions. However, first we have to check  */
+  /* whether there is already a list of marginal distributions.            */
+  if (DISTR.stdmarginals)
+    _unur_distr_cvec_marginals_free(DISTR.stdmarginals, distr->dim);
+
+  DISTR.stdmarginals = stdmarginal_list;
+
+  /* changelog */
+  distr->set |= UNUR_DISTR_SET_STDMARGINAL;
+
+  return UNUR_SUCCESS;
+} /* end of unur_distr_cvec_set_stdmarginal_list() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -1179,7 +1320,7 @@ _unur_distr_cvec_marginals_free ( struct unur_distr **marginals, int dim )
 
   else {
     for (i=0; i<dim; i++) 
-      _unur_distr_free(marginals[i]);
+      if (marginals[i]) _unur_distr_free(marginals[i]);
   }
 
   free (marginals);

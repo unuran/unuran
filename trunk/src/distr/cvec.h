@@ -301,6 +301,31 @@ int unur_distr_cvec_set_stdmarginal_array( UNUR_DISTR *distribution, UNUR_DISTR 
    new copy is made.
 */
 
+int unur_distr_cvec_set_marginal_list( UNUR_DISTR *distribution, ... );
+/* */
+
+int unur_distr_cvec_set_stdmarginal_list( UNUR_DISTR *distribution, ... );
+/* 
+   Similar to the above unur_distr_cvec_set_marginal_array() and
+   unur_distr_cvec_set_stdmarginal_array() calls.
+   However, now the pointers to the particular marginal distributions
+   can be given as parameter and does not require an array of
+   pointers. Additionally the given distribution objects are
+   immediately destroyed. Thus calls like unur_distr_normal() can be 
+   used as arguments. 
+   (With unur_distr_cvec_set_marginal_array() the result of such call
+   has to be stored in a pointer since it has to be freed afterwarts
+   to avoid memory leaks!)
+
+   If one of the given pointer to marginal distributions is the NULL
+   pointer then the marginal distributions of @var{distribution} are
+   not set (or previous settings are not changed) and an error code is
+   returned.
+
+   @strong{Important:} All distribution objects given in the argument
+   list are destroyed!
+*/
+
 const UNUR_DISTR *unur_distr_cvec_get_marginal( const UNUR_DISTR *distribution, int n );
 /* */
 

@@ -682,10 +682,8 @@ _unur_tdr_ia_sample( struct unur_gen *gen )
       if (iv->dTfx == 0.)
 	X = iv->x + U /iv->fx;
       else {
-	/* it would be less expensive to use:
-	   X = iv->x + iv->Tfx/iv->dTfx * (1. - 1./(1. + iv->dTfx * iv->Tfx * U) )
-	   however, this is unstable for small iv->dTfx */
-	X = iv->x + (iv->Tfx*iv->Tfx*U) / (1.-iv->Tfx*iv->dTfx*U);  
+	U *= iv->Tfx; /* avoid one multiplication */
+	X = iv->x + (iv->Tfx * U) / (1. - iv->dTfx * U);  
 	/* It cannot happen, that the denominator becomes 0 ! */
       }
       break;

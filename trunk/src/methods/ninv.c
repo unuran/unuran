@@ -87,9 +87,18 @@
 /*---------------------------------------------------------------------------*/
 /* Constants                                                                 */
 
-/* Starting interval includes this percentage of all univariate rand numbers */
-/* must be > 0. and < 1.                                                     */
-#define INTERVAL_COVERS  (0.9)
+/* Starting interval for Regula Falsi includes this percentage of all        */
+/* univariate random numbers (must be > 0. and < 1.)                         */
+#define INTERVAL_COVERS  (0.5)
+
+/* maximum number of steps to find sign change in Regula Falsi               */
+#define MAX_STEPS (100)
+
+/* STEPFAC* (s[1]-s[0]) is used as first step length for finding sign change */
+#define STEPFAC  (0.4)
+
+/* for i > I_CHANGE_TO_BISEC Regula Falsi is always replaced by bisection    */
+#define I_CHANGE_TO_BISEC (50)
 
 /*---------------------------------------------------------------------------*/
 /* Variants: none                                                            */
@@ -1163,12 +1172,13 @@ _unur_ninv_regula( struct unur_gen *gen, double u )
   int count = 0;         /* counter for  "no sign change"                   */
   int i;                 /* loop variable, index                            */
   int step_count;        /* counts number of steps finding sign change      */
+  double rel_u_resolution;  /* relative u precesion                         */
 
-  /* max number of steps to find sgn chg */
-  const int MAX_STEPS = 40;
-  
   /* check arguments */
   CHECK_NULL(gen, 0.);  COOKIE_CHECK(gen, CK_NINV_GEN, 0.);
+
+  /* compute relative u resolution */
+  rel_u_resolution = (GEN.Umax - GEN.Umin) * GEN.rel_x_resolution;
   
   /* initialize starting interval */
   if (GEN.table_on) {
@@ -1236,7 +1246,8 @@ _unur_ninv_regula( struct unur_gen *gen, double u )
 
 
   /* search for interval with changing signs */
-  step = 1.;     /* interval too small -> make it bigger ( + 2^n * gap ) */ 
+  /* step = 1.;  interval too small -> make it bigger ( + 2^n * gap ) */
+  step = (GEN.s[1]-GEN.s[0]) * STEPFAC;
   step_count = 0;
   while ( f1*f2 > 0. ) {
     if ( f1 > 0. ) { /* lower boundary too big */    
@@ -1256,6 +1267,8 @@ _unur_ninv_regula( struct unur_gen *gen, double u )
     if (step_count < MAX_STEPS) {
       ++step_count;
       step *= 2.;
+      /* safe guard for the case where (GEN.s[1]-GEN.s[0]) is very small*/
+      if( step_count > 20 && step < 1.) step = 1.; 
     }
     else {
       _unur_error(gen->genid,UNUR_ERR_GEN_SAMPLING,
@@ -1272,35 +1285,47 @@ _unur_ninv_regula( struct unur_gen *gen, double u )
   fa = f1;
 
   /* secant step, preserve sign change */
-  for (i=0; i < GEN.max_iter; i++) {
+  for (i=0; TRUE ; i++) {
     count++;
      
     /* f2 always less (better), otherwise change */
-    if ( fabs(f1) < fabs(f2) ) {   /* change */
+    if ( f1*f2<0. && fabs(f1) < fabs(f2) ) {   /* change only when f1 and f2 have different signs*/
       xtmp = x1; ftmp = f1;
       x1 = x2;   f1 = f2;
       x2 = xtmp; f2 = ftmp;
     }
 
-    x2abs = fabs(x2);   /* absolute value of x2 */
+    x2abs = fabs(x2);   /* absolute value of x2  */
 
-    if ( f1*f2 < 0.) {  /* sign change found             */
-      count = 0;   /* reset bisection counter  */
-      a  = x1;     /* sign change within [a, x2]               */
+    if ( f1*f2 < 0.) {  /* sign change found     */
+      count = 0;   /* reset bisection counter    */
+      a  = x1;     /* sign change within [a, x2] */
       fa = f1;
     }
-    /* exact hit   || flat region  */    
-    if ( f2 == 0. || _unur_FP_same(fa, f2) )
-      break; /* -> finished */
-
     
     length = x2 - a;  /* oriented length  */
     lengthabs = fabs(length);
     lengthsgn = (length < 0.) ? -1. : 1.;
-    
-    if ( lengthabs <= GEN.rel_x_resolution * x2abs  )
-      /* relative x-genauigkeit erreicht -> finished */
-      break; /* -> finished */
+
+    /* breaking condition */
+    if ( f2 == 0.                                     /* exact hit */ 
+	 || _unur_FP_same(fa, f2)                     /* flat region  */
+         || lengthabs <= GEN.rel_x_resolution * x2abs /* relative x precision reached */
+	 || lengthabs <= GEN.rel_x_resolution * GEN.rel_x_resolution
+	                                              /* absolute x precision eps^2 close to 0 */
+       	 || fabs(f2) <= rel_u_resolution ) {          /* relative u precision*/ 
+#ifdef UNUR_ENABLE_LOGGING
+      /* write info into log file (in case error) */
+      if (gen->debug & NINV_DEBUG_SAMPLE)
+	_unur_ninv_debug_sample_regula( gen,u,x2,f2,i );
+#endif
+      /*finished*/
+      return x2;
+    }
+
+    if (i >= GEN.max_iter)
+      /* abort iteration */
+      break;
   
     /* secant or bisection step   */
     dx = ( _unur_FP_same(f1,f2) ) ? length/2. : f2*(x2-x1)/(f2-f1) ;  
@@ -1316,10 +1341,9 @@ _unur_ninv_regula( struct unur_gen *gen, double u )
       }
     }
 
-       
     /* bisection step if:                             */  
-    /* no sign change   || step leads out of interval             */
-    if ( count > 1 || 
+    /* no sign change   || step leads out of interval */
+    if ( count > 1 || i > I_CHANGE_TO_BISEC ||
         (lengthabs-GEN.rel_x_resolution*x2abs)/(dx*lengthsgn) <= 1. )
       dx = length/2.; /* bisection step        */
   
@@ -1336,16 +1360,18 @@ _unur_ninv_regula( struct unur_gen *gen, double u )
     x2 = max( x2, DISTR.trunc[0]);
     x2 = min( x2, DISTR.trunc[1]);
   }
-  
+
 #ifdef UNUR_ENABLE_LOGGING
   /* write info into log file (in case error) */
   if (gen->debug & NINV_DEBUG_SAMPLE)
     _unur_ninv_debug_sample_regula( gen,u,x2,f2,i );
 #endif
-  
+
+  /* finished (case of error!) */
   return x2;
 
 } /* end of _unur_ninv_sample_regula()  */
+
 
 /*****************************************************************************/
 
@@ -1512,6 +1538,8 @@ _unur_ninv_newton( struct unur_gen *gen, double U )
     do {    /* newton-step  (damped if nececcary) */
       damp /= 2.;
       xtmp = x - damp * fx/dfx;
+      xtmp = min( xtmp, DISTR.domain[1] );/*added WH */
+      xtmp = max( xtmp, DISTR.domain[0] );/*added WH */
       fxtmp = CDF(xtmp) - U;
     } while (fabs(fxtmp) > fxabs * (1.+GEN.rel_x_resolution));   /* no improvement */
     

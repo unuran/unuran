@@ -51,8 +51,9 @@
    =DESCRIPTION
       NINV is the implementation of numerical inversion.
       For finding the root it is possible to choose between
-      Newton's method and the regula falsi. The regula falsi requires
-      only the CDF while Newton's method also requires the PDF.
+      Newton's method and the regula falsi (combined with interval
+      bisectioning). The regula falsi requires only the CDF while
+      Newton's method also requires the PDF.
       
       It is possible to use this method for generating from truncated
       distributions. It even can be changed for an existing generator
@@ -118,7 +119,8 @@ UNUR_PAR *unur_ninv_new( UNUR_DISTR *distribution );
 
 int unur_ninv_set_useregula( UNUR_PAR *parameters );
 /* 
-   Switch to regula falsi. (This the default.)
+   Switch to regula falsi combined with interval bisectioning.
+   (This the default.)
 */
 
 int unur_ninv_set_usenewton( UNUR_PAR *parameters );
@@ -139,7 +141,7 @@ int unur_ninv_set_max_iter( UNUR_PAR *parameters, int max_iter );
 
 int unur_ninv_set_x_resolution( UNUR_PAR *parameters, double x_resolution);
 /* 
-   Set maximal relative error in x.
+   Set maximal relative error.
    Default is @code{10^-8}.
 */
 

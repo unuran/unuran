@@ -261,24 +261,21 @@ unur_distr_discr_make_prob( struct unur_distr *distr )
   _unur_check_NULL( NULL, distr, 0 );
   _unur_check_distr_object( distr, DISCR, 0 );
 
-  /* it is not possible to reset a PV */
-  if (DISTR.prob != NULL) {
-    _unur_error(distr->name,UNUR_ERR_DISTR_GET,"cannot override PV");
-    return 0;
-  }
-
   /* PMF required */
   if ( DISTR.pmf == NULL ) {
     _unur_error(distr->name,UNUR_ERR_DISTR_GET,"PMF");
     return 0;
   }
 
-  /* domain bounded or sum over PMF */
-  if ( !( ( (DISTR.domain[1] - DISTR.domain[0]) < UNUR_MAX_AUTO_PV )
-	  || ( (distr->set & UNUR_DISTR_SET_PMFSUM) && DISTR.domain[0] > INT_MIN ) ) ) {
-    _unur_error(distr->name,UNUR_ERR_DISTR_GET,"domain too large and no sum over PMF given");
+  /* domain must not start at -infinity (= INT_MIN) */
+  if (DISTR.domain[0] <= INT_MIN) {
+    _unur_error(distr->name,UNUR_ERR_DISTR_GET,"domain not bounded from left");
     return 0;
   }
+
+  /* it there exists a PV, it has to be removed */
+  if (DISTR.prob != NULL)
+    free(DISTR.prob);
 
   /* compute PV */
 
@@ -312,17 +309,16 @@ unur_distr_discr_make_prob( struct unur_distr *distr )
 	sum += prob[n_prob] = _unur_discr_PMF(DISTR.domain[0]+n_prob,distr);
 	n_prob++;
       }
-      if (_unur_FP_approx(DISTR.sum, sum) )
+      if ((distr->set & UNUR_DISTR_SET_PMFSUM) && sum > (1.-1.e-8) * DISTR.sum)
 	break;
     } while (n_alloc <= max_alloc );
 
-    /* store remaining part in last entry (but take care about round off errors) */
-    prob[n_prob-1] += (DISTR.sum > sum) ? (DISTR.sum - sum) : 0.;
+    /* we chop off the trailing part of the distribution */
 
     /* make a warning if computed PV might not be valid */
-    if (!_unur_FP_approx(DISTR.sum, sum) ) {
+    if ( !((distr->set & UNUR_DISTR_SET_PMFSUM) && sum > (1.-1.e-8) * DISTR.sum)) {
       /* not successful */
-      _unur_warning(distr->name,UNUR_ERR_DISTR_GET,"cannot compute PV");
+      _unur_warning(distr->name,UNUR_ERR_DISTR_GET,"PV truncated");
       valid = FALSE;
     }
     else
@@ -366,6 +362,34 @@ unur_distr_discr_get_prob( struct unur_distr *distr, double **prob )
   return DISTR.n_prob;
 
 } /* end of unur_distr_discr_get_prob() */
+
+/*---------------------------------------------------------------------------*/
+
+double
+unur_distr_discr_eval_prob( int k, struct unur_distr *distr )
+     /*----------------------------------------------------------------------*/
+     /* returns the value of the probability vector at k or, if there is no  */
+     /* probability vector defined, evaluates  the pmf                       */
+     /*                                                                      */
+     /* parampeters:                                                         */
+     /*  k     ... argument for probability vector of pmf                    */
+     /*  distr ... pointer to distribution object                            */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   prob[k] or pmf(k)                                                  */
+     /*----------------------------------------------------------------------*/
+{
+
+  double retval = INFINITY;
+
+  if( DISTR.prob != NULL )    /* use probability vector                      */
+    retval = DISTR.prob[k];
+  else                        /* use pmf                                     */
+    retval = unur_distr_discr_eval_pmf(k, distr);
+
+  return retval;
+
+} /* end of unur_distr_discr_eval_prob() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -485,34 +509,6 @@ unur_distr_discr_get_cdf( struct unur_distr *distr )
 
   return DISTR.cdf;
 } /* end of unur_distr_discr_get_cdf() */
-
-/*---------------------------------------------------------------------------*/
-double
-unur_distr_discr_eval_prob( int k, struct unur_distr *distr )
-     /*----------------------------------------------------------------------*/
-     /* returns the value of the probability vector at k or, if there is no  */
-     /* probability vector defined, evaluates  the pmf                       */
-     /*                                                                      */
-     /* parampeters:                                                         */
-     /*  k     ... argument for probability vector of pmf                    */
-     /*  distr ... pointer to distribution object                            */
-     /*                                                                      */
-     /* return:                                                              */
-     /*   prob[k] or pmf(k)                                                  */
-     /*----------------------------------------------------------------------*/
-{
-
-  double retval = INFINITY;
-
-  if( DISTR.prob != NULL )    /* use probability vector                      */
-    retval = DISTR.prob[k];
-  else                        /* use pmf                                     */
-    retval = unur_distr_discr_eval_pmf(k, distr);
-
-  return retval;
-
-}
-
 
 /*---------------------------------------------------------------------------*/
 
@@ -823,10 +819,191 @@ unur_distr_discr_get_mode( struct unur_distr *distr )
 
 } /* end of unur_distr_discr_get_mode() */
 
+/*---------------------------------------------------------------------------*/
 
+int
+unur_distr_discr_set_pmfsum( struct unur_distr *distr, double sum )
+     /*----------------------------------------------------------------------*/
+     /* set sum over PMF                                                     */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   distr ... pointer to distribution object                           */
+     /*   sum   ... sum over PMF                                             */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... on success                                                   */
+     /*   0 ... on error                                                     */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( NULL, distr, 0 );
+  _unur_check_distr_object( distr, DISCR, 0 );
+
+  /* check new parameter for distribution */
+  if (sum <= 0.) {
+    _unur_error(distr->name,UNUR_ERR_DISTR_SET,"pmf sum <= 0");
+    return 0;
+  }
+
+  DISTR.sum = sum;
+
+  /* changelog */
+  distr->set |= UNUR_DISTR_SET_PMFSUM;
+
+  /* o.k. */
+  return 1;
+
+} /* end of unur_distr_discr_set_pmfsum() */
 
 /*---------------------------------------------------------------------------*/
 
+int 
+unur_distr_discr_upd_pmfsum( struct unur_distr *distr )
+     /*----------------------------------------------------------------------*/
+     /* (re-) compute sum over PMF of distribution (if possible)             */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   distr ... pointer to distribution object                           */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... on success                                                   */
+     /*   0 ... on error                                                     */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( NULL, distr, 0 );
+  _unur_check_distr_object( distr, DISCR, 0 );
+
+  if (DISTR.upd_sum == NULL) {
+    /* no function to compute sum available */
+    _unur_error(distr->name,UNUR_ERR_DISTR_DATA,"");
+    return 0;
+  }
+
+  /* compute sum */
+  if ((DISTR.upd_sum)(distr)) {
+    /* changelog */
+    distr->set |= UNUR_DISTR_SET_PMFSUM;
+    return 1;
+  }
+  else
+    return 0;
+
+} /* end of unur_distr_discr_upd_pmfsum() */
+  
+/*---------------------------------------------------------------------------*/
+
+double
+unur_distr_discr_get_pmfsum( struct unur_distr *distr )
+     /*----------------------------------------------------------------------*/
+     /* get sum over PMF of distribution                                     */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   distr ... pointer to distribution object                           */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   sum over PMF of distribution                                       */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( NULL, distr, INFINITY );
+  _unur_check_distr_object( distr, DISCR, INFINITY );
+
+  /* mode known ? */
+  if ( !(distr->set & UNUR_DISTR_SET_PMFSUM) ) {
+    /* try to compute sum */
+    if (DISTR.upd_sum == NULL) {
+      /* no function to compute sum available */
+      _unur_error(distr->name,UNUR_ERR_DISTR_GET,"sum");
+      return INFINITY;
+    }
+    else {
+      /* compute sum */
+      DISTR.sum = (DISTR.upd_sum)(distr);
+      /* changelog */
+      distr->set |= UNUR_DISTR_SET_PMFSUM;
+    }
+  }
+
+  return DISTR.sum;
+
+} /* end of unur_distr_discr_get_pmfsum() */
+
+/*---------------------------------------------------------------------------*/
+
+/*****************************************************************************/
+
+void
+_unur_distr_discr_debug( struct unur_distr *distr, char *genid, int printvector )
+     /*----------------------------------------------------------------------*/
+     /* write info about distribution into logfile                           */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   distr ... pointer to distribution object                           */
+     /*   genid ... pointer to generator id                                  */
+     /*----------------------------------------------------------------------*/
+{
+  FILE *log;
+  int i;
+
+  /* check arguments */
+  CHECK_NULL(distr,/*void*/);
+  COOKIE_CHECK(distr,CK_DISTR_DISCR,/*void*/);
+
+  log = unur_get_stream();
+
+  fprintf(log,"%s: distribution:\n",genid);
+  fprintf(log,"%s:\ttype = discrete univariate distribution\n",genid);
+  fprintf(log,"%s:\tname = %s\n",genid,distr->name);
+
+  if ( DISTR.pmf ) {
+    /* have probability mass function */
+    fprintf(log,"%s:\tPMF with %d argument(s)\n",genid,DISTR.n_params);
+    for( i=0; i<DISTR.n_params; i++ )
+      fprintf(log,"%s:\t\tparam[%d] = %g\n",genid,i,DISTR.params[i]);
+  }
+
+  if (DISTR.n_prob>0) {
+    /* have probability vector */
+    fprintf(log,"%s:\tprobability vector of length %d",genid,DISTR.n_prob);
+    if (printvector) {
+      for (i=0; i<DISTR.n_prob; i++) {
+	if (i%10 == 0)
+	  fprintf(log,"\n%s:\t",genid);
+	fprintf(log,"  %.5f",DISTR.prob[i]);
+      }
+    }
+    fprintf(log,"\n%s:\n",genid);
+  }
+
+  /* domain */
+  if ( DISTR.pmf ) {
+    /* have probability mass function */
+    fprintf(log,"%s:\tdomain for pmf = (%d, %d)",genid,DISTR.domain[0],DISTR.domain[1]);
+    _unur_print_if_default(distr,UNUR_DISTR_SET_DOMAIN);
+    fprintf(log,"\n%s:\n",genid);
+  }
+
+  if (DISTR.n_prob>0) {
+    /* have probability vector */
+    fprintf(log,"%s:\tdomain for pv = (%d, %d)",genid,DISTR.domain[0],DISTR.domain[0]-1+DISTR.n_prob);
+    _unur_print_if_default(distr,UNUR_DISTR_SET_DOMAIN);
+    fprintf(log,"\n%s:\n",genid);
+  }
+
+  if (distr->set & UNUR_DISTR_SET_MODE)
+    fprintf(log,"%s:\tmode = %d\n",genid,DISTR.mode);
+  else
+    fprintf(log,"%s:\tmode unknown\n",genid);
+  
+  fprintf(log,"%s:\tsum over PMF = %g",genid,DISTR.sum);
+  _unur_print_if_default(distr,UNUR_DISTR_SET_PMFSUM);
+  fprintf(log,"\n%s:\n",genid);
+  
+} /* end of _unur_distr_discr_debug() */
+
+
+/*---------------------------------------------------------------------------*/
 
 int 
 _unur_distr_discr_find_mode(struct unur_distr *distr )
@@ -838,18 +1015,16 @@ _unur_distr_discr_find_mode(struct unur_distr *distr )
      /*                                                                      */
      /*----------------------------------------------------------------------*/
 {
-
-  #define sgn(a)  ( (a) >= (0) ? ( (a==0)?(0):(1) ) : (-1) )
-  #define max_pos3(a,b,c) ( (a) >= (b) ? ( ((a) >= (c)) ? (0) : (2) ) :\
+#define sgn(a)  ( (a) >= (0) ? ( (a==0)?(0):(1) ) : (-1) )
+#define max_pos3(a,b,c) ( (a) >= (b) ? ( ((a) >= (c)) ? (0) : (2) ) :\
                                      ( ((b) >= (c)) ? (1) : (2) ) )
 
-  #define INT1         (1) 
-  #define INT2         (2) 
-  #define INT3         (3)
-  #define UNDEFINED    (0)               
-  #define X2_BORDER    (1)              
-  #define XNEW_BORDER  (2)             
-
+#define INT1         (1) 
+#define INT2         (2) 
+#define INT3         (3)
+#define UNDEFINED    (0)               
+#define X2_BORDER    (1)              
+#define XNEW_BORDER  (2)             
 
   int bisect;                     /* for choosing an interval               */
   int interval;                   /* interval containing xnew               */
@@ -867,7 +1042,6 @@ _unur_distr_discr_find_mode(struct unur_distr *distr )
   _unur_check_distr_object( distr, DISCR, 0 );
  
   mode = INT_MAX;
-
 
   /* derive three distinct points */
 
@@ -925,7 +1099,7 @@ _unur_distr_discr_find_mode(struct unur_distr *distr )
        and no two of the x[i] are identical                  */ 
 
 
-    while (1){
+    while (1) {
 
       /* terminating the program legally */
       if ( (x[2]-x[0]) == sgn(x[2]-x[0]) &&
@@ -1042,11 +1216,11 @@ _unur_distr_discr_find_mode(struct unur_distr *distr )
       else if ( _unur_FP_same(fx[2], fx[1]) && fxnew < fx[2] ){
 	bisect = X2_BORDER;
       }
-      else{
+      else {
        _unur_error(distr->name, UNUR_ERR_SHOULD_NOT_HAPPEN,"");
       }
       
-      switch ( bisect ){
+      switch ( bisect ) {
       case XNEW_BORDER:
 	x[0] = x[1];  fx[0] = fx[1];
 	x[1] = xnew;  fx[1] = fxnew;
@@ -1065,202 +1239,13 @@ _unur_distr_discr_find_mode(struct unur_distr *distr )
     } /* while (1) end */
 
   }  /* else (at least 3 points) end */
-     
-    unur_distr_discr_set_mode(distr, mode);
-    /* o.k. */
-    return 1;
-
-} /* end of _unur_distr_discr_find_mode() */
-
-
-/*---------------------------------------------------------------------------*/
-
-
-int
-unur_distr_discr_set_pmfsum( struct unur_distr *distr, double sum )
-     /*----------------------------------------------------------------------*/
-     /* set sum over PMF                                                     */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   distr ... pointer to distribution object                           */
-     /*   sum   ... sum over PMF                                             */
-     /*                                                                      */
-     /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
-     /*----------------------------------------------------------------------*/
-{
-  /* check arguments */
-  _unur_check_NULL( NULL, distr, 0 );
-  _unur_check_distr_object( distr, DISCR, 0 );
-
-  /* check new parameter for distribution */
-  if (sum <= 0.) {
-    _unur_error(distr->name,UNUR_ERR_DISTR_SET,"pmf sum <= 0");
-    return 0;
-  }
-
-  DISTR.sum = sum;
-
-  /* changelog */
-  distr->set |= UNUR_DISTR_SET_PMFSUM;
-
+  
+  unur_distr_discr_set_mode(distr, mode);
+  
   /* o.k. */
   return 1;
-
-} /* end of unur_distr_discr_set_pmfsum() */
-
-/*---------------------------------------------------------------------------*/
-
-int 
-unur_distr_discr_upd_pmfsum( struct unur_distr *distr )
-     /*----------------------------------------------------------------------*/
-     /* (re-) compute sum over PMF of distribution (if possible)             */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   distr ... pointer to distribution object                           */
-     /*                                                                      */
-     /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
-     /*----------------------------------------------------------------------*/
-{
-  /* check arguments */
-  _unur_check_NULL( NULL, distr, 0 );
-  _unur_check_distr_object( distr, DISCR, 0 );
-
-  if (DISTR.upd_sum == NULL) {
-    /* no function to compute sum available */
-    _unur_error(distr->name,UNUR_ERR_DISTR_DATA,"");
-    return 0;
-  }
-
-  /* compute sum */
-  if ((DISTR.upd_sum)(distr)) {
-    /* changelog */
-    distr->set |= UNUR_DISTR_SET_PMFSUM;
-    return 1;
-  }
-  else
-    return 0;
-
-} /* end of unur_distr_discr_upd_pmfsum() */
   
-/*---------------------------------------------------------------------------*/
-
-double
-unur_distr_discr_get_pmfsum( struct unur_distr *distr )
-     /*----------------------------------------------------------------------*/
-     /* get sum over PMF of distribution                                     */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   distr ... pointer to distribution object                           */
-     /*                                                                      */
-     /* return:                                                              */
-     /*   sum over PMF of distribution                                       */
-     /*----------------------------------------------------------------------*/
-{
-  /* check arguments */
-  _unur_check_NULL( NULL, distr, INFINITY );
-  _unur_check_distr_object( distr, DISCR, INFINITY );
-
-  /* mode known ? */
-  if ( !(distr->set & UNUR_DISTR_SET_PMFSUM) ) {
-    /* try to compute sum */
-    if (DISTR.upd_sum == NULL) {
-      /* no function to compute sum available */
-      _unur_error(distr->name,UNUR_ERR_DISTR_GET,"sum");
-      return INFINITY;
-    }
-    else {
-      /* compute sum */
-      DISTR.sum = (DISTR.upd_sum)(distr);
-      /* changelog */
-      distr->set |= UNUR_DISTR_SET_PMFSUM;
-    }
-  }
-
-  return DISTR.sum;
-
-} /* end of unur_distr_discr_get_pmfsum() */
-
-/*---------------------------------------------------------------------------*/
-
-
-
-
-/*---------------------------------------------------------------------------*/
-
-/*****************************************************************************/
-
-void
-_unur_distr_discr_debug( struct unur_distr *distr, char *genid, int printvector )
-     /*----------------------------------------------------------------------*/
-     /* write info about distribution into logfile                           */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   distr ... pointer to distribution object                           */
-     /*   genid ... pointer to generator id                                  */
-     /*----------------------------------------------------------------------*/
-{
-  FILE *log;
-  int i;
-
-  /* check arguments */
-  CHECK_NULL(distr,/*void*/);
-  COOKIE_CHECK(distr,CK_DISTR_DISCR,/*void*/);
-
-  log = unur_get_stream();
-
-  fprintf(log,"%s: distribution:\n",genid);
-  fprintf(log,"%s:\ttype = discrete univariate distribution\n",genid);
-  fprintf(log,"%s:\tname = %s\n",genid,distr->name);
-
-  if ( DISTR.pmf ) {
-    /* have probability mass function */
-    fprintf(log,"%s:\tPMF with %d argument(s)\n",genid,DISTR.n_params);
-    for( i=0; i<DISTR.n_params; i++ )
-      fprintf(log,"%s:\t\tparam[%d] = %g\n",genid,i,DISTR.params[i]);
-  }
-
-  if (DISTR.n_prob>0) {
-    /* have probability vector */
-    fprintf(log,"%s:\tprobability vector of length %d",genid,DISTR.n_prob);
-    if (printvector) {
-      for (i=0; i<DISTR.n_prob; i++) {
-	if (i%10 == 0)
-	  fprintf(log,"\n%s:\t",genid);
-	fprintf(log,"  %.5f",DISTR.prob[i]);
-      }
-    }
-    fprintf(log,"\n%s:\n",genid);
-  }
-
-  /* domain */
-  if ( DISTR.pmf ) {
-    /* have probability mass function */
-    fprintf(log,"%s:\tdomain for pmf = (%d, %d)",genid,DISTR.domain[0],DISTR.domain[1]);
-    _unur_print_if_default(distr,UNUR_DISTR_SET_DOMAIN);
-    fprintf(log,"\n%s:\n",genid);
-  }
-
-  if (DISTR.n_prob>0) {
-    /* have probability vector */
-    fprintf(log,"%s:\tdomain for pv = (%d, %d)",genid,DISTR.domain[0],DISTR.domain[0]-1+DISTR.n_prob);
-    _unur_print_if_default(distr,UNUR_DISTR_SET_DOMAIN);
-    fprintf(log,"\n%s:\n",genid);
-  }
-
-  if (distr->set & UNUR_DISTR_SET_MODE)
-    fprintf(log,"%s:\tmode = %d\n",genid,DISTR.mode);
-  else
-    fprintf(log,"%s:\tmode unknown\n",genid);
-  
-  fprintf(log,"%s:\tsum over PMF = %g",genid,DISTR.sum);
-  _unur_print_if_default(distr,UNUR_DISTR_SET_PMFSUM);
-  fprintf(log,"\n%s:\n",genid);
-  
-} /* end of _unur_distr_discr_debug() */
+} /* end of _unur_distr_discr_find_mode() */
 
 /*---------------------------------------------------------------------------*/
 #undef DISTR

@@ -96,16 +96,22 @@ int unur_distr_discr_set_prob( UNUR_DISTR *distribution, double *prob, int n_pro
 
 int unur_distr_discr_make_prob( UNUR_DISTR *distribution );
 /* 
-   Compute a probability vector when a PMF is given. However it only
-   works when the domain of the distribution is bounded and not too
-   large or the sum over the PMF is given. The maximal size of the
-   created PV is bounded by the macro @code{UNUR_MAX_AUTO_PV} that is
-   defined in @file{unuran_config.h}.
+   Compute a probability vector when a PMF is given. However when the
+   domain is not given or too large and the sum over the PMF is given
+   then the (right) tail of the distribution is chopped off such that
+   the probability for the tail region is less than 10^-8.
+   If the sum over the PMF is not given a PV of maximal length is
+   computed.
+
+   The maximal size of the created PV is bounded by the macro
+   @code{UNUR_MAX_AUTO_PV} that is defined in @file{unuran_config.h}.
+
    If successful the length of the generated probablity vector is
    returned.
-   If the sum over the PMF on the chopped tail is not neglible small,
-   then the last entry of the computed PV contains this sum and the
-   negative of the length of the PV is returned.
+   If the sum over the PMF on the chopped tail is not neglible small
+   (i.e. greater than 10^-8 or unknown) than the 
+   negative of the length of the PV is returned and
+   @code{unur_errno} is set to @code{UNUR_ERR_DISTR_SET}.
 
    Notice that when a discrete distribution object is created from
    scratch, then the left boundary is set to @code{INT_MIN}. Therefore
@@ -115,9 +121,6 @@ int unur_distr_discr_make_prob( UNUR_DISTR *distribution );
 
    If computing a PV fails for some reasons, @code{0} is returned and
    @code{unur_errno} is set to @code{UNUR_ERR_DISTR_SET}.
-
-   Notice that it is not possible to execute this call when the
-   distribution object already contains a PV.
 */
 
 int unur_distr_discr_get_prob( UNUR_DISTR *distribution, double **prob );

@@ -179,8 +179,10 @@ _unur_test_chi2_discr( struct unur_gen *gen,
     observed[i] = 0;
 
   /* samplesize */
-  if( samplesize <= 0 )
-    samplesize = (INT_MAX/n_prob > n_prob) ? n_prob*n_prob : INT_MAX;
+  if( samplesize <= 0 ) {
+    samplesize = (INT_MAX/n_prob > n_prob) ? n_prob*n_prob : 1000000;
+    samplesize = max(samplesize,1000000);
+  }
 
   samplesize = min( samplesize, CHI2_MAX_SAMPLESIZE );
 
@@ -191,9 +193,9 @@ _unur_test_chi2_discr( struct unur_gen *gen,
     /* shift vector */
     j -= DISTR.domain[0];
     /* check range of random variates !! */
-    if (j >= n_prob)
-      j = n_prob - 1;  /* put into the last bin */
-    ++observed[j];
+    if (j < n_prob)
+      ++observed[j];
+    /* else: ignore number --> chop off tail */
   }
 
   if (verbose >= 1) {

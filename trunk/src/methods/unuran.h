@@ -63,6 +63,7 @@ struct unur_gen;      /* generator object         */
 /*---------------------------------------------------------------------------*/
 /* a function for continuous univariate c.d.f., p.d.f. and its derivative    */
 typedef double _UNUR_FUNCTION_CONT(double x, double *params, int n_params);
+typedef double _UNUR_FUNCTION_DISCR(int x, double *params, int n_params);
 
 /*---------------------------------------------------------------------------*/
 /* sampling routines                                                         */
@@ -111,7 +112,8 @@ typedef void _UNUR_SAMPLING_ROUTINE_VEC(struct unur_gen *gen, double *vec);
 #include <unur_rect.h>
 
 /* generators for standard distributions */
-#include <unur_cstd.h>
+#include <unur_cstd.h>     /* continuous */
+#include <unur_dstd.h>     /* discrete   */
 
 /*****************************************************************************/
 /**  Main structure for all UNURAN generators                               **/  
@@ -134,6 +136,7 @@ struct unur_par {
     struct unur_utdr_par  utdr;
     struct unur_rect_par  rect;
     struct unur_cstd_par  cstd;
+    struct unur_dstd_par  dstd;
   }               data;       /* data for method                             */
 
   struct unur_gen* (*init)(struct unur_par *par);
@@ -170,6 +173,7 @@ struct unur_gen {
     struct unur_utdr_gen  utdr;
     struct unur_rect_gen  rect;
     struct unur_cstd_gen  cstd;
+    struct unur_dstd_gen  dstd;
   }               data;       /* data for method                             */
   
   union {

@@ -82,6 +82,8 @@
 
 #define CK_CSTD_PAR      0x10000010u
 #define CK_CSTD_GEN      0x10000011u
+#define CK_DSTD_PAR      0x10000020u
+#define CK_DSTD_GEN      0x10000021u
 
 #define CK_MBLOCK        0xf0000001u
 

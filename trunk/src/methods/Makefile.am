@@ -20,6 +20,7 @@ libunuran_a_SOURCES = \
  cstd.c \
  dau.c  \
  dis.c  \
+ dstd.c \
  ninv.c \
  rect.c \
  srou.c \

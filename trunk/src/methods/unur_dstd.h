@@ -4,15 +4,14 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   FILE: source_methods.h                                                  *
+ *   FILE: unur_dstd.h                                                       *
  *                                                                           *
  *   PURPOSE:                                                                *
- *         defines bitmasks to identify used method in generator objects     *
+ *         declares structures and function prototypes for method DSTD       *
+ *         (generators for Continuous STanDard distributions)                *
  *                                                                           *
  *   USAGE:                                                                  *
- *         only included in source_masks.h                                   *
- *                                                                           *
- *                                                                           *
+ *         only included in unuran.h                                         *
  *                                                                           *
  *****************************************************************************
      $Id$
@@ -39,62 +38,57 @@
  *****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
-#ifndef __SOURCE_METHODS_H_SEEN
-#define __SOURCE_METHODS_H_SEEN
-/*---------------------------------------------------------------------------*/
 
-/*****************************************************************************/
-/**  Bitmask to indicate methods                                            **/
-/*****************************************************************************/
+#define UNUR_MAX_DIST_PARAMS  5    /* maximal numbers of parameters for distributions */
 
 /*---------------------------------------------------------------------------*/
-/* bitmasks                                                                  */
+/* Information for constructing the generator                                */
 
-#define UNUR_MASK_TYPE     0xff000000u   /* indicate type of method           */
-
-/* discrete distributions */
-#define UNUR_METH_DISCR    0x10000000u
-
-#define UNUR_METH_DAU      0x10000001u
-#define UNUR_METH_DIS      0x10000002u
-
-/* continuous distributions */
-#define UNUR_METH_CONT     0x20000000u
-
-#define UNUR_METH_AROU     0x20000100u
-#define UNUR_METH_NINV     0x20000200u
-#define UNUR_METH_SROU     0x20000300u
-#define UNUR_METH_STDR     0x20000400u
-#define UNUR_METH_TABL     0x20000500u
-#define UNUR_METH_TDR      0x20000600u
-#define UNUR_METH_UNIF     0x20000700u
-#define UNUR_METH_UTDR     0x20000800u
-
-/* multivariate continuous distributions */
-#define UNUR_METH_VEC      0x40000000u
-
-#define UNUR_METH_RECT     0x40010000u
-
-/* generators for standard distributions */
-#define UNUR_METH_CSTD     0x2000f100u   /* is of type UNUR_METH_CONT !!  */
-#define UNUR_METH_DSTD     0x1000f200u   /* is of type UNUR_METH_DISCR !! */
-
-/* to indicate unkown type */
-#define UNUR_METH_UNKNOWN  0xff000000u
-
-/*****************************************************************************/
-/**  Macros                                                                 **/
-/*****************************************************************************/
+struct unur_dstd_par { 
+  const char *sample_routine_name; /* name of sampling routine               */
+  int  is_inversion;      /* indicate whether method is inversion method     */     
+};
 
 /*---------------------------------------------------------------------------*/
-/* check if parameter object is of correct type, return 0 otherwise       */
+/* The generator object                                                      */
 
-#define _unur_check_par_object( type ) \
-  if ( par->method != UNUR_METH_##type ) { \
-    _unur_warning(#type,UNUR_ERR_PAR_INVALID,""); \
-    return 0; } \
-  COOKIE_CHECK(par,CK_##type##_PAR,0)
+struct unur_dstd_gen { 
+  double *gen_param;      /* parameters for the generator                    */
+  int     n_gen_param;    /* number of parameters for the generator          */
+
+  int    flag;            /* sometimes it is convenient to have a flag       */
+
+  double  umin;           /* cdf at left boundary of domain                  */
+  double  umax;           /* cdf at right boundary of domain                 */
+
+  struct unur_gen *gen_aux; /* pointer to auxilliary generator               */
+};
 
 /*---------------------------------------------------------------------------*/
-#endif  /* end __SOURCE_METHODS_H_SEEN */
+/* Routines for user interface                                               */
+
+struct unur_par *unur_dstd_new( struct unur_distr *distr );
+/* get default parameters for generator                                      */
+
+struct unur_gen *unur_dstd_init( struct unur_par *parameters );
+/* initialize new generator                                                  */
+
+/** 
+    double unur_dstd_sample( struct unur_gen *gen );
+    Does not exists !!!
+    Sampling routines are defined in ../distributions/ for each distributions.
+**/
+
+void unur_dstd_free( struct unur_gen *generator);
+/* destroy generator object                                                  */
+
+/*...........................................................................*/
+
+int unur_dstd_set_variant( struct unur_par *par, unsigned variant );
+/* set variant of method                                                     */
+
+#define unur_dstd_set_debug(par,debugflags)  unur_set_debug((par),(debugflags))
+/* set debuging flags                                                        */
+
 /*---------------------------------------------------------------------------*/
+

@@ -477,7 +477,7 @@ All parameters have default settings documented in @ref{Defaults}.
 
 @node Requirements
 @section Requirements of the methods
-@include qstart_required.texi
+
 
 @node Defaults
 @section Default settings of the parameters

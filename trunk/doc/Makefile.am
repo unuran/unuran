@@ -7,7 +7,7 @@ info_TEXINFOS = unuran.texi
 
 # Location of same source files 
 TEXINFO_TEX = ./src/texinfo.tex
-AM_MAKEINFOFLAGS = -I $(top_srcdir)/doc/src
+AM_MAKEINFOFLAGS = -I $(top_srcdir)/doc -I $(top_srcdir)/doc/src
 
 # Automatically created part of manual
 unuran_src = ./src/unuran_src.texi

@@ -16,6 +16,10 @@ EXTRA_DIST = \
  stddist.dh \
  top.dh
 
+# do not distribute dependencies for unuran_src.texi
+dist-hook:
+	rm -f .dep-unuran_src_texi
+
 # clean backup files
 CLEANFILES = *~
 

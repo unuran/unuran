@@ -1,7 +1,7 @@
 Parentheses indicate optional information while a tilde indicates
 that only an approximation must be provided. See the glossary for
 unfamiliar terms (Appendix A).
-@sp1
+@sp 1
 
 @noindent Methods for continuous distributions:
 @multitable {method} {PDF} {dPDF} {mode} {area} {implemented distribution}
@@ -15,7 +15,7 @@ unfamiliar terms (Appendix A).
 @item TDR    @tab  x  @tab  x   @tab      @tab      @tab T-concave
 @item UTDR   @tab  x  @tab      @tab   x  @tab   ~  @tab T-concave
 @end multitable
-@sp1
+@sp 1
 
 @noindent Methods for continuous empirical univariate distributions:@*
 EMPK:  Requires an observed sample
@@ -38,7 +38,7 @@ VEMPK: Requires an observed sample
 @item DGT   @tab     @tab  x @tab      @tab      @tab 
 @item DSTD  @tab     @tab    @tab      @tab      @tab implemented distribution
 @end multitable
-@sp1
+@sp 1
 
 
 

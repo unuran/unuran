@@ -78,7 +78,7 @@
       @end enumerate
 
       Notice that due to round-off errors the generated matrices might
-      not be positive definit in extremely rare cases
+      not be positive definite in extremely rare cases
       (especially when the given eigenvalues are amost 0).
 
       There are many other possibilites (distributions) of sampling
@@ -128,8 +128,8 @@ int unur_mcorr_set_eigenvalues( UNUR_PAR *par, double *eigenvalues );
    Important: all eigenvalues must be positive, i.e. greater than
    0. Otherwise no eigenvalues are set and an error code is returned.
 
-   Notice, that eigenvalues of a correlation matrix sum to positive
-   (to be precise: non-negative) and sum to the dimension of the
+   Notice, that the eigenvalues of a correlation matrix are positive
+   (to be precise: non-negative) and must sum to the dimension of the
    matrix. Otherwise, the given eigenvalues are normalized
    implicitly. 
 */

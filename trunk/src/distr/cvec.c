@@ -1647,15 +1647,14 @@ _unur_distr_cvec_marginals_are_equal( struct unur_distr **marginals, int dim )
 /*---------------------------------------------------------------------------*/
 
 int
-unur_distr_cvec_set_pdfparams( struct unur_distr *distr, int par, const double *params, int n_params )
+unur_distr_cvec_set_pdfparams( struct unur_distr *distr, const double *params, int n_params )
      /*----------------------------------------------------------------------*/
-     /* set parameters for distribution                                      */
+     /* set array of parameters for distribution                             */
      /*                                                                      */
      /* parameters:                                                          */
      /*   distr    ... pointer to distribution object                        */
-     /*   par      ... which parameter is set                                */
-     /*   params   ... parameter array with number `par'                     */
-     /*   n_params ... length of parameter array                             */
+     /*   params   ... list of arguments                                     */
+     /*   n_params ... number of arguments                                   */
      /*                                                                      */
      /* return:                                                              */
      /*   UNUR_SUCCESS ... on success                                        */
@@ -1664,7 +1663,76 @@ unur_distr_cvec_set_pdfparams( struct unur_distr *distr, int par, const double *
 {
   /* check arguments */
   _unur_check_NULL( NULL, distr, UNUR_ERR_NULL );
-  _unur_check_NULL( NULL, params, UNUR_ERR_NULL );
+  _unur_check_distr_object( distr, CVEC, UNUR_ERR_DISTR_INVALID );
+  if (n_params>0) _unur_check_NULL(distr->name,params,UNUR_ERR_NULL);
+
+  /* check number of new parameter for the distribution */
+  if (n_params < 0 || n_params > UNUR_DISTR_MAXPARAMS ) {
+    _unur_error(NULL,UNUR_ERR_DISTR_NPARAMS,"");
+    return UNUR_ERR_DISTR_NPARAMS;
+  }
+
+  /* changelog */
+  distr->set &= ~UNUR_DISTR_SET_MASK_DERIVED;
+  /* derived parameters like mode, area, etc. might be wrong now! */
+  
+  DISTR.n_params = n_params;
+  if (n_params) memcpy( DISTR.params, params, n_params*sizeof(double) );
+
+  /* o.k. */
+  return UNUR_SUCCESS;
+} /* end of unur_distr_cvec_set_pdfparams() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+unur_distr_cvec_get_pdfparams( const struct unur_distr *distr, const double **params )
+     /*----------------------------------------------------------------------*/
+     /* get number of pdf parameters and sets pointer to array params[] of   */
+     /* parameters                                                           */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   distr    ... pointer to distribution object                        */
+     /*   params   ... pointer to list of arguments                          */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   number of pdf parameters                                           */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return 0                                                           */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( NULL, distr, 0 );
+  _unur_check_distr_object( distr, CVEC, 0 );
+
+  *params = (DISTR.n_params) ? DISTR.params : NULL;
+  return DISTR.n_params;
+
+} /* end of unur_distr_cvec_get_pdfparams() */
+
+
+/*---------------------------------------------------------------------------*/
+
+int
+unur_distr_cvec_set_pdfparams_vec( struct unur_distr *distr, int par, const double *param_vec, int n_param_vec )
+     /*----------------------------------------------------------------------*/
+     /* set vector array parameters for distribution                         */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   distr    ... pointer to distribution object                        */
+     /*   par      ... which parameter is set                                */
+     /*   param_vec   ... parameter array with number `par'                  */
+     /*   n_param_vec ... length of parameter array                          */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( NULL, distr, UNUR_ERR_NULL );
+  _unur_check_NULL( NULL, param_vec, UNUR_ERR_NULL );
   _unur_check_distr_object( distr, CVEC, UNUR_ERR_DISTR_INVALID );
 
   /* check new parameter for distribution */
@@ -1674,13 +1742,13 @@ unur_distr_cvec_set_pdfparams( struct unur_distr *distr, int par, const double *
   }
 
   /* allocate memory */
-  _unur_xrealloc( DISTR.param_vecs[par], n_params * sizeof(double) );
+  _unur_xrealloc( DISTR.param_vecs[par], n_param_vec * sizeof(double) );
 
   /* copy parameters */
-  memcpy( DISTR.param_vecs[par], params, n_params*sizeof(double) );
+  memcpy( DISTR.param_vecs[par], param_vec, n_param_vec*sizeof(double) );
 
   /* set length of array */
-  DISTR.n_param_vec[par] = n_params;
+  DISTR.n_param_vec[par] = n_param_vec;
 
   /* changelog */
   distr->set &= ~UNUR_DISTR_SET_MASK_DERIVED;
@@ -1688,12 +1756,12 @@ unur_distr_cvec_set_pdfparams( struct unur_distr *distr, int par, const double *
 
   /* o.k. */
   return UNUR_SUCCESS;
-} /* end of unur_distr_cvec_set_pdfparams() */
+} /* end of unur_distr_cvec_set_pdfparams_vec() */
 
 /*---------------------------------------------------------------------------*/
 
 int
-unur_distr_cvec_get_pdfparams( const struct unur_distr *distr, int par, const double **params )
+unur_distr_cvec_get_pdfparams_vec( const struct unur_distr *distr, int par, const double **param_vecs )
      /*----------------------------------------------------------------------*/
      /* get number of PDF parameters and sets pointer to array params[] of   */
      /* parameters                                                           */
@@ -1717,14 +1785,14 @@ unur_distr_cvec_get_pdfparams( const struct unur_distr *distr, int par, const do
   /* check new parameter for distribution */
   if (par < 0 || par >= UNUR_DISTR_MAXPARAMS ) {
     _unur_error(NULL,UNUR_ERR_DISTR_NPARAMS,"");
-    *params = NULL;
+    *param_vecs = NULL;
     return 0;
   }
   
-  *params = DISTR.param_vecs[par];
+  *param_vecs = DISTR.param_vecs[par];
 
-  return (*params) ? DISTR.n_param_vec[par] : 0;
-} /* end of unur_distr_cvec_get_pdfparams() */
+  return (*param_vecs) ? DISTR.n_param_vec[par] : 0;
+} /* end of unur_distr_cvec_get_pdfparams_vec() */
 
 /*---------------------------------------------------------------------------*/
 

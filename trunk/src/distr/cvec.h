@@ -439,9 +439,41 @@ const UNUR_DISTR *unur_distr_cvec_get_stdmarginal( const UNUR_DISTR *distributio
    returned by unur_distr_get_dim(). 
 */
 
-int unur_distr_cvec_set_pdfparams( UNUR_DISTR *distribution, int par, const double *params, int n_params );
+int unur_distr_cvec_set_pdfparams( UNUR_DISTR *distribution, const double *params, int n_params );
 /* 
-   This function provides an interface for additional parameters for a
+   Sets array of parameters for @var{distribution}. There is an upper limit
+   for the number of parameters @code{n_params}. It is given by the
+   macro @code{UNUR_DISTR_MAXPARAMS} in @file{unuran_config.h}. (It is set to
+   5 by default but can be changed to any appropriate nonnegative number.)
+   If @var{n_params} is negative or exceeds this limit no parameters
+   are copied into the distribution object and @code{unur_errno} is set to
+   @code{UNUR_ERR_DISTR_NPARAMS}.
+
+   For standard distributions from the UNURAN library the parameters 
+   are checked. Moreover, the domain is updated automatically unless it
+   has been changed before by a unur_distr_cont_set_domain() call.
+   If the given parameters are invalid for the standard distribution,
+   then no parameters are set and an error code is returned.
+   Notice that the given parameter list for such a distribution is
+   handled in the same way as in the corresponding @command{new}
+   calls, i.e. optional parameters for the PDF that are not present in
+   the given list are (re-)set to their default values.
+*/
+
+int unur_distr_cvec_get_pdfparams( const UNUR_DISTR *distribution, const double **params );
+/* 
+   Get number of parameters of the PDF and set pointer @var{params} to
+   array of parameters. If no parameters are stored in the object, an
+   error code is returned and @code{params} is set to NULL.
+   
+   @emph{Important:} Do @strong{not} change the entries in @var{params}!
+*/
+
+
+
+int unur_distr_cvec_set_pdfparams_vec( UNUR_DISTR *distribution, int par, const double *param_vec, int n_param_vec );
+/* 
+   This function provides an interface for additional vector parameters for a
    multivariate @var{distribution} besides mean vector and covariance
    matrix which have their own calls.
 
@@ -452,7 +484,7 @@ int unur_distr_cvec_set_pdfparams( UNUR_DISTR *distribution, int par, const doub
    @file{unuran_config.h}; it is set to 5 but can be changed to any 
    appropriate nonnegative number.)
 
-   The entries of a this parameter are given by the array @var{params}
+   The entries of a this parameter are given by the array @var{param_vec}
    of size @var{n_params}. Notice that using this interface an
    An (@i{n} x @i{m})-matrix has to be stored in an array of length
    @var{n_params} = @i{n} times @i{m}; where the rows of the matrix
@@ -465,15 +497,15 @@ int unur_distr_cvec_set_pdfparams( UNUR_DISTR *distribution, int par, const doub
    object @code{unur_errno} is set to @code{UNUR_ERR_DISTR_DATA}.
 */
 
-int unur_distr_cvec_get_pdfparams( const UNUR_DISTR *distribution, int par, const double **params );
+int unur_distr_cvec_get_pdfparams_vec( const UNUR_DISTR *distribution, int par, const double **param_vecs );
 /* 
    Get parameter of the PDF with number @var{par}.
-   The pointer to the parameter array is stored in @var{params}, its
+   The pointer to the parameter array is stored in @var{param_vecs}, its
    size is returned by the function.
    If the requested parameter is not set, then an error code is returned
    and @code{params} is set to NULL.
 
-   @emph{Important:} Do @strong{not} change the entries in @var{params}!
+   @emph{Important:} Do @strong{not} change the entries in @var{param_vecs}!
 */
 
 /* ==DOC

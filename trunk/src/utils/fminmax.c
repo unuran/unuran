@@ -36,45 +36,10 @@
 #include <unur_source.h>
 #include "fminmax_source.h"
 
-static double _unur_util_find_minmax(struct unur_funct_generic fs, int minmax, 
+static double _unur_util_brent(struct unur_funct_generic fs,
                              double a, double b, double c, double tol);  
-/* calculation routine for minimum or maximum of a continous function */
+/* brent algorithm for maximum-calculation of a continous function */
 
-static double _unur_util_fmin( struct unur_funct_generic fs, double a, double b, double c, double tol );
-/* wrapper function to calculate minimum of a continuous function in an interval */
-											     static double _unur_util_fmax( struct unur_funct_generic fs, double a, double b, double c, double tol );
-/* wrapper function to calculate maximum of a continuous function in an interval */
-
-
-
-/*---------------------------------------------------------------------------*/
-
-
-/* Wrapper function for the max calculation routine */
-double
-_unur_util_fmax(
-     struct unur_funct_generic fs,      /* Function struct                   */
-     double a,                          /* Left border | of the range	     */
-     double b,                          /* Right border| the min is seeked   */
-     double c,                          /* first guess for the max           */
-     double tol)                        /* Acceptable tolerance              */
-{
-   return _unur_util_find_minmax(fs, -1, a, b, c, tol);
-} /* end of _unur_util_fmax() */
-
-/*---------------------------------------------------------------------------*/
-
-/* Wrapper function for the min calculation routine */
-double
-_unur_util_fmin(
-     struct unur_funct_generic fs,      /* Function struct                   */
-     double a,                          /* Left border | of the range	     */
-     double b,                          /* Right border| the min is seeked   */
-     double c,                          /* first guess for the min           */
-     double tol)                        /* Acceptable tolerance              */
-{
-   return _unur_util_find_minmax(fs, +1,  a, b, c, tol);
-} /* end of _unur_util_fmin() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -302,7 +267,7 @@ _unur_util_find_max( struct unur_funct_generic fs, /* function structure */
 
   /** TODO: FLT_MIN must be much larger than DBL_MIN **/
 
-  max = _unur_util_fmax( fs, x[0], x[2], x[1], FLT_MIN );
+  max = _unur_util_brent( fs, x[0], x[2], x[1], FLT_MIN );
   if (!(_unur_FP_is_infinity( max )) ){
     /* mode successfully computed */
 
@@ -382,15 +347,14 @@ _unur_util_find_max( struct unur_funct_generic fs, /* function structure */
 /* in case of any error INFINITY is returned */
 
 double
-_unur_util_find_minmax(            /* An estimate to the min or max location */
+_unur_util_brent(            /* An estimate to the min or max location */
      struct unur_funct_generic fs, /* Function struct                        */
-     int minmax,  	           /* -1 for maximum, +1 for minimum         */
      double a,                     /* Left border | of the range	     */
      double b,                     /* Right border| the min is seeked        */
      double c,                     /* first guess for the min/max            */
      double tol)                   /* Acceptable tolerance                   */
 {
-#define f(x) ( (minmax) * ((fs.f)(x, fs.params)) )          
+#define f(x) ( (-1) * ((fs.f)(x, fs.params)) )          
 #define SQRT_EPSILON  (1.e-7)           /* tolerance for relative error      */
 #define MAXIT         (1000)            /* maximum number of iterations      */
 

@@ -105,6 +105,8 @@ unur_get_strerror ( const int unur_errno )
     return "(distribution) set failed (invalid parameter)";
   case UNUR_ERR_DISTR_GET:
     return "(distribution) get failed (parameter not set)";
+  case UNUR_ERR_DISTR_DATA:
+    return "(distribution) data are missing (cannot execute)";
 
     /** parameter object **/
   case UNUR_ERR_PAR_SET:

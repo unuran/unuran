@@ -103,8 +103,6 @@ sub scan_file {
     my $file = $_[0];
     my $handle = new FileHandle;
     
-    print STDERR "scanning $file ...\n";
-
     # open file ...
     open  $handle, $file or die "cannot find file $file\n";
     

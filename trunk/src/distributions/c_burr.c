@@ -312,7 +312,7 @@ unur_distr_burr( double *params, int n_params )
   CHECK_NULL(params,NULL);
 
   /* get new (empty) distribution object */
-  distr = unur_distr_cont_new();
+  distr = _unur_distr_cont_new();
 
   /* get type of distribution and 
      set distribution id           */
@@ -420,8 +420,7 @@ unur_distr_burr( double *params, int n_params )
   }
 
   /* indicate which parameters are set */
-  distr->set = ( UNUR_DISTR_SET_PARAMS | 
-		 UNUR_DISTR_SET_DOMAIN |
+  distr->set = ( UNUR_DISTR_SET_DOMAIN |
 		 UNUR_DISTR_SET_STDDOMAIN );
 		 /* UNUR_DISTR_SET_MODE   | */
 		 /* UNUR_DISTR_SET_PDFAREA ); */

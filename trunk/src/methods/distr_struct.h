@@ -52,6 +52,9 @@ struct unur_distr_cont {
   double area;                  /* area below p.d.f.                         */
   double domain[2];             /* boundary of domain                        */
 
+  double (*upd_mode)(struct unur_distr *distr); /* funct for computing mode  */
+  double (*upd_area)(struct unur_distr *distr); /* funct for computing area  */
+
   int  (*init)(struct unur_par *par,struct unur_gen *gen);
                                 /* pointer to special init routine           */
 };
@@ -95,37 +98,5 @@ struct unur_distr {
   unsigned cookie;                  /* magic cookie                          */
 #endif
 };
-
-/*---------------------------------------------------------------------------*/
-/* call pdf's and cdf's                                                      */
-/* (no checking for NULL pointer !)                                          */
-
-#define _unur_cont_PDF(x,distr)   ((*((distr)->data.cont.pdf)) ((x),(distr)))
-#define _unur_cont_dPDF(x,distr)  ((*((distr)->data.cont.dpdf))((x),(distr)))
-#define _unur_cont_CDF(x,distr)   ((*((distr)->data.cont.cdf)) ((x),(distr)))
-
-#define _unur_discr_PMF(x,distr)  ((*((distr)->data.discr.pmf))((x),(distr)))
-#define _unur_discr_CDF(x,distr)  ((*((distr)->data.discr.cdf))((x),(distr)))
-
-/*---------------------------------------------------------------------------*/
-
-/*---------------------------------------------------------------------------*/
-/* types of distribtuions                                                    */
-
-enum {
-  UNUR_DISTR_CONT  = 0x001u,        /* univariate continuous distribution    */ 
-  UNUR_DISTR_DISCR = 0x002u,        /* univariate discrete distribution      */ 
-};
-
-/*---------------------------------------------------------------------------*/
-/* indicate changed parameters                                               */
-
-enum {
-  UNUR_DISTR_SET_PARAMS     = 0x001u,
-  UNUR_DISTR_SET_DOMAIN     = 0x002u,
-  UNUR_DISTR_SET_STDDOMAIN  = 0x004u,   /* domain not truncated (for standard distributions) */
-  UNUR_DISTR_SET_MODE       = 0x008u,
-  UNUR_DISTR_SET_PDFAREA    = 0x010u,
-}; 
 
 /*---------------------------------------------------------------------------*/

@@ -98,7 +98,7 @@ unur_distr_negativebinomial( double *params, int n_params )
   CHECK_NULL(params,NULL);
 
   /* get new (empty) distribution object */
-  distr = unur_distr_discr_new();
+  distr = _unur_distr_discr_new();
 
   /* set distribution id */
   distr->id = UNUR_DISTR_NEGATIVEBINOMIAL;
@@ -137,8 +137,7 @@ unur_distr_negativebinomial( double *params, int n_params )
   DISTR.domain[1] = INFINITY;    /* right boundary */
 
   /* indicate which parameters are set */
-  distr->set = ( UNUR_DISTR_SET_PARAMS | 
-		 UNUR_DISTR_SET_DOMAIN |
+  distr->set = ( UNUR_DISTR_SET_DOMAIN |
 		 UNUR_DISTR_SET_STDDOMAIN |
                  /* UNUR_DISTR_SET_MODE   |  */
 		 UNUR_DISTR_SET_PDFAREA );

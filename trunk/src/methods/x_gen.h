@@ -103,7 +103,10 @@ const char *unur_get_genid( UNUR_GEN *generator );
 
 UNUR_DISTR *unur_get_distr( UNUR_GEN *generator );
 /* 
-   Get pointer to distribution object from generator object.
+   Get pointer to distribution object from generator object. This
+   function should be used with extreme care. Never manipulate the
+   distribution object returned by this call.
+   (How should the poor generator object know what you have done?)
 */
 
 /*---------------------------------------------------------------------------*/

@@ -49,6 +49,10 @@ static const char unknown_distr_name[] = "unknown";
 
 /*---------------------------------------------------------------------------*/
 
+/* create empty distribution object for ...                                  */
+inline struct unur_distr *_unur_distr_cont_new( void );  /* univ. continuous */
+inline struct unur_distr *_unur_distr_discr_new( void ); /* univ. discrete   */
+
 inline int unur_distr_discr_set_prob( struct unur_distr *distr, double *prob, int n_prob );
 
 /*---------------------------------------------------------------------------*/
@@ -62,47 +66,31 @@ inline int unur_distr_discr_set_prob( struct unur_distr *distr, double *prob, in
 /*---------------------------------------------------------------------------*/
 
 struct unur_distr *
-unur_distr_dup( struct unur_distr *distr )
+unur_distr_new( unsigned int type )
      /*----------------------------------------------------------------------*/
-     /* duplicate distribution object                                        */
+     /* create a new (empty) distribution object                             */
      /*                                                                      */
      /* parameters:                                                          */
-     /*   distr ... pointer to source object                                 */
+     /*   type ... type of distribution                                      */
      /*                                                                      */
      /* return:                                                              */
-     /*   pointer to duplicated distribution object                          */
+     /*   pointer to distribution object                                     */
      /*                                                                      */
      /* error:                                                               */
      /*   return NULL                                                        */
      /*----------------------------------------------------------------------*/
 {
-  struct unur_distr *distr_new;
-
-  /* check arguments */
-  _unur_check_NULL( NULL,distr,NULL );
-  
-  /* allocate memory */
-  distr_new = _unur_malloc( sizeof (struct unur_distr) );
-  if (distr_new == NULL) return NULL;
-
-  /* copy main structure */
-  memcpy( distr_new, distr, sizeof( struct unur_distr ) );
-
-  switch (distr->type) {
+  switch (type) {
   case UNUR_DISTR_CONT:
-    COOKIE_CHECK(distr,CK_DISTR_CONT,NULL);
-    break;
+    return _unur_distr_cont_new();
   case UNUR_DISTR_DISCR:
-    COOKIE_CHECK(distr,CK_DISTR_DISCR,NULL);
-    unur_distr_discr_set_prob(distr_new, distr->data.discr.prob, distr->data.discr.n_prob);
-    break;
+    return _unur_distr_discr_new();
   default:
-    _unur_warning(NULL,UNUR_ERR_DISTR_UNKNOWN,"");
+    _unur_error(NULL,UNUR_ERR_DISTR_UNKNOWN,"");
+    return NULL;
   }
 
-  return distr_new;
-
-} /* end of unur_distr_dup() */
+} /* end of unur_distr_new() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -116,7 +104,8 @@ unur_distr_free( struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( NULL,distr,/*void*/ );
+  if( distr == NULL ) /* nothing to do */
+    return;
 
   switch (distr->type) {
   case UNUR_DISTR_CONT:
@@ -179,6 +168,25 @@ unur_distr_get_name( struct unur_distr *distr )
 
 /*---------------------------------------------------------------------------*/
 
+unsigned int unur_distr_get_type( struct unur_distr *distr )
+     /*----------------------------------------------------------------------*/
+     /* get type of distribution                                             */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   distr ... pointer to distribution object                           */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   type of distribution                                               */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( NULL,distr,0 );
+
+  return (distr->type);
+} /* end of unur_distr_get_type() */
+
+/*---------------------------------------------------------------------------*/
+
 int 
 unur_distr_is_cont( struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
@@ -232,7 +240,7 @@ unur_distr_is_discr( struct unur_distr *distr )
 /*---------------------------------------------------------------------------*/
 
 struct unur_distr *
-unur_distr_cont_new( void )
+_unur_distr_cont_new( void )
      /*----------------------------------------------------------------------*/
      /* create a new (empty) distribution object                             */
      /* type: univariate continuous with given p.d.f.                        */
@@ -278,17 +286,20 @@ unur_distr_cont_new( void )
   for (i=0; i<UNUR_DISTR_MAXPARAMS+1; i++)
     DISTR.params[i] = 0.;
 
-  DISTR.mode      = 0.;            /* location of mode                       */
-  DISTR.area      = 1.;            /* area below p.d.f.                      */
+  DISTR.mode      = INFINITY;      /* location of mode (default: not known)  */
+  DISTR.area      = INFINITY;      /* area below p.d.f. (default: not known) */
   DISTR.domain[0] = -INFINITY;     /* left boundary of domain                */
   DISTR.domain[1] = INFINITY;      /* right boundary of domain               */
+
+  DISTR.upd_mode  = NULL;          /* funct for computing mode               */
+  DISTR.upd_area  = NULL;          /* funct for computing area               */
 
   distr->set = 0u;                 /* no parameters set                      */
   
   /* return pointer to object */
   return distr;
 
-} /* end of unur_distr_cont_new() */
+} /* end of _unur_distr_cont_new() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -308,35 +319,17 @@ unur_distr_cont_set_pdf( struct unur_distr *distr, void *pdf )
 {
   /* check arguments */
   _unur_check_NULL( NULL,distr,0 );
-  COOKIE_CHECK(distr,CK_DISTR_CONT,0);
   _unur_check_NULL( distr->name,pdf,0 );
+  _unur_check_distr_object( distr, CONT, 0 );
+
+  /* changelog */
+  distr->set &= ~UNUR_DISTR_SET_MASK_DERIVED;
+  /* derived parameters like mode, area, etc. might be wrong now! */
 
   DISTR.pdf = pdf;
   return 1;
+
 } /* end of unur_distr_cont_set_pdf() */
-
-/*---------------------------------------------------------------------------*/
-
-double
-unur_distr_cont_pdf( double x, struct unur_distr *distr )
-     /*----------------------------------------------------------------------*/
-     /* evaluate p.d.f. of distribution at x                                 */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   distr ... pointer to distribution object                           */
-     /*   x     ... argument for pdf                                         */
-     /*                                                                      */
-     /* return:                                                              */
-     /*   pdf(x)                                                             */
-     /*----------------------------------------------------------------------*/
-{
-  /* check arguments */
-  CHECK_NULL(distr,-1.);
-  COOKIE_CHECK(distr,CK_DISTR_CONT,-1.);
-  _unur_check_NULL( distr->name,DISTR.pdf,-1.);
-
-  return _unur_cont_PDF(x,distr);
-} /* end of unur_distr_cont_pdf() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -356,36 +349,16 @@ unur_distr_cont_set_dpdf( struct unur_distr *distr, void *dpdf )
 {
   /* check arguments */
   _unur_check_NULL( NULL,distr,0 );
-  COOKIE_CHECK(distr,CK_DISTR_CONT,0);
   _unur_check_NULL( distr->name,dpdf,0 );
+  _unur_check_distr_object( distr, CONT, 0 );
   
+  /* changelog */
+  distr->set &= ~UNUR_DISTR_SET_MASK_DERIVED;
+  /* derived parameters like mode, area, etc. might be wrong now! */
+
   DISTR.dpdf = dpdf;
   return 1;
 } /* end of unur_distr_cont_set_dpdf() */
-
-
-/*---------------------------------------------------------------------------*/
-
-double
-unur_distr_cont_dpdf( double x, struct unur_distr *distr )
-     /*----------------------------------------------------------------------*/
-     /* evaluate derivative of p.d.f. of distribution at x                   */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   distr ... pointer to distribution object                           */
-     /*   x     ... argument for dpdf                                        */
-     /*                                                                      */
-     /* return:                                                              */
-     /*   (pdf(x))'                                                          */
-     /*----------------------------------------------------------------------*/
-{
-  /* check arguments */
-  CHECK_NULL(distr,-1.);
-  COOKIE_CHECK(distr,CK_DISTR_CONT,INFINITY);
-  _unur_check_NULL( distr->name,DISTR.dpdf,INFINITY);
-
-  return _unur_cont_dPDF(x,distr);
-} /* end of unur_distr_cont_dpdf() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -405,35 +378,157 @@ unur_distr_cont_set_cdf( struct unur_distr *distr, void *cdf )
 {
   /* check arguments */
   _unur_check_NULL( NULL,distr,0 );
-  COOKIE_CHECK(distr,CK_DISTR_CONT,0);
   _unur_check_NULL( distr->name,cdf,0 );
+  _unur_check_distr_object( distr, CONT, 0 );
   
+  /* changelog */
+  distr->set &= ~UNUR_DISTR_SET_MASK_DERIVED;
+  /* derived parameters like mode, area, etc. might be wrong now! */
+
   DISTR.cdf = cdf;
   return 1;
 } /* end of unur_distr_cont_set_cdf() */
 
 /*---------------------------------------------------------------------------*/
 
+void *unur_distr_cont_get_pdf( struct unur_distr *distr )
+     /*----------------------------------------------------------------------*/
+     /* get pointer to p.d.f. of distribution                                */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   distr ... pointer to distribution object                           */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to p.d.f.                                                  */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( NULL,distr,NULL );
+  _unur_check_distr_object( distr, CONT, NULL );
+
+  return DISTR.pdf;
+} /* end of unur_distr_cont_get_pdf() */
+
+/*---------------------------------------------------------------------------*/
+
+void *unur_distr_cont_get_dpdf( struct unur_distr *distr )
+     /*----------------------------------------------------------------------*/
+     /* get pointer to derivative of p.d.f. of distribution                  */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   distr ... pointer to distribution object                           */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to derivative of p.d.f.                                    */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( NULL,distr,NULL );
+  _unur_check_distr_object( distr, CONT, NULL );
+
+  return DISTR.dpdf;
+} /* end of unur_distr_cont_get_dpdf() */
+
+/*---------------------------------------------------------------------------*/
+
+void *unur_distr_cont_get_cdf( struct unur_distr *distr )
+     /*----------------------------------------------------------------------*/
+     /* get pointer to c.d.f. of distribution                                */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   distr ... pointer to distribution object                           */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to c.d.f.                                                  */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( NULL,distr,NULL );
+  _unur_check_distr_object( distr, CONT, NULL );
+
+  return DISTR.cdf;
+} /* end of unur_distr_cont_get_cdf() */
+
+/*---------------------------------------------------------------------------*/
+
 double
-unur_distr_cont_cdf( double x, struct unur_distr *distr )
+unur_distr_cont_eval_pdf( double x, struct unur_distr *distr )
+     /*----------------------------------------------------------------------*/
+     /* evaluate p.d.f. of distribution at x                                 */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   x     ... argument for pdf                                         */
+     /*   distr ... pointer to distribution object                           */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pdf(x)                                                             */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( NULL, distr, INFINITY );
+  _unur_check_distr_object( distr, CONT, INFINITY );
+
+  if (DISTR.pdf == NULL) {
+    _unur_warning(distr->name,UNUR_ERR_DISTR_DATA,"");
+    return INFINITY;
+  }
+
+  return _unur_cont_PDF(x,distr);
+} /* end of unur_distr_cont_eval_pdf() */
+
+/*---------------------------------------------------------------------------*/
+
+double
+unur_distr_cont_eval_dpdf( double x, struct unur_distr *distr )
+     /*----------------------------------------------------------------------*/
+     /* evaluate derivative of p.d.f. of distribution at x                   */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   x     ... argument for dpdf                                        */
+     /*   distr ... pointer to distribution object                           */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   (pdf(x))'                                                          */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( NULL, distr, INFINITY );
+  _unur_check_distr_object( distr, CONT, INFINITY );
+
+  if (DISTR.dpdf == NULL) {
+    _unur_warning(distr->name,UNUR_ERR_DISTR_DATA,"");
+    return INFINITY;
+  }
+
+  return _unur_cont_dPDF(x,distr);
+} /* end of unur_distr_cont_eval_dpdf() */
+
+/*---------------------------------------------------------------------------*/
+
+double
+unur_distr_cont_eval_cdf( double x, struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
      /* evaluate c.d.f. of distribution at x                                 */
      /*                                                                      */
      /* parameters:                                                          */
-     /*   distr ... pointer to distribution object                           */
      /*   x     ... argument for cdf                                         */
+     /*   distr ... pointer to distribution object                           */
      /*                                                                      */
      /* return:                                                              */
      /*   cdf(x)                                                             */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  CHECK_NULL(distr,-1.);
-  COOKIE_CHECK(distr,CK_DISTR_CONT,-1.);
-  _unur_check_NULL( distr->name,DISTR.cdf,-1.);
+  _unur_check_NULL( NULL, distr, INFINITY );
+  _unur_check_distr_object( distr, CONT, INFINITY );
+
+  if (DISTR.cdf == NULL) {
+    _unur_warning(distr->name,UNUR_ERR_DISTR_DATA,"");
+    return INFINITY;
+  }
 
   return _unur_cont_CDF(x,distr);
-} /* end of unur_distr_cont_cdf() */
+} /* end of unur_distr_cont_eval_cdf() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -452,26 +547,24 @@ unur_distr_cont_set_pdfparams( struct unur_distr *distr, double *params, int n_p
      /*   0 ... on error                                                     */
      /*----------------------------------------------------------------------*/
 {
-  register int i;
-
   /* check arguments */
-  _unur_check_NULL( NULL,distr,0);
-  COOKIE_CHECK(distr,CK_DISTR_CONT,0);
+  _unur_check_NULL( NULL, distr, 0 );
+  _unur_check_distr_object( distr, CONT, 0 );
   if (n_params>0) _unur_check_NULL(distr->name,params,0);
-  
+
   /* check new parameter for generator */
   if (n_params < 0 || n_params > UNUR_DISTR_MAXPARAMS ) {
     _unur_error(NULL,UNUR_ERR_DISTR_NPARAMS,"");
     return 0;
   }
 
+  /* changelog */
+  distr->set &= ~UNUR_DISTR_SET_MASK_DERIVED;
+  /* derived parameters like mode, area, etc. might be wrong now! */
+
   /* copy parameters */
   DISTR.n_params = n_params;
-  for (i=0; i < n_params; i++)
-    DISTR.params[i] = params[i];
-
-  /* changelog */
-  distr->set |= UNUR_DISTR_SET_PARAMS;
+  if (n_params) memcpy( DISTR.params, params, n_params*sizeof(double) );
 
   /* o.k. */
   return 1;
@@ -497,13 +590,88 @@ unur_distr_cont_get_pdfparams( struct unur_distr *distr, double **params )
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( NULL,distr,-1);
-  COOKIE_CHECK(distr,CK_DISTR_CONT,-1);
+  _unur_check_NULL( NULL, distr, -1 );
+  _unur_check_distr_object( distr, CONT, -1 );
 
-  *params = DISTR.params;
+  *params = (DISTR.n_params) ? DISTR.params : NULL;
   return DISTR.n_params;
 
 } /* end of unur_distr_cont_get_pdfparams() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+unur_distr_cont_set_domain( struct unur_distr *distr, double left, double right )
+     /*----------------------------------------------------------------------*/
+     /* set the left and right borders of the domain of the distribution     */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   distr ... pointer to distribution object                           */
+     /*   left  ... left boundary point                                      */
+     /*   right ... right boundary point                                     */
+     /*                                                                      */
+     /* comment:                                                             */
+     /*   the new boundary points may be +/- INFINITY                        */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( NULL, distr, 0 );
+  _unur_check_distr_object( distr, CONT, 0 );
+
+  /* check new parameter for generator */
+  if (left >= right) {
+    _unur_error(NULL,UNUR_ERR_DISTR_SET,"domain, left >= right");
+    return 0;
+  }
+
+  DISTR.domain[0] = left;
+  DISTR.domain[1] = right;
+
+  /* changelog */
+  distr->set |= UNUR_DISTR_SET_DOMAIN;
+
+  /* if distr is an object for a standard distribution, */
+  /* we might have truncated the distribution!          */
+  distr->set &= ~UNUR_DISTR_SET_STDDOMAIN;
+
+  /* derived parameters like mode, area, etc. might be wrong now! */
+  distr->set &= ~UNUR_DISTR_SET_MASK_DERIVED;
+
+  /* o.k. */
+  return 1;
+
+} /* end of unur_distr_cont_set_domain() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+unur_distr_cont_get_domain( struct unur_distr *distr, double *left, double *right )
+     /*----------------------------------------------------------------------*/
+     /* set the left and right borders of the domain of the distribution     */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   distr ... pointer to distribution object                           */
+     /*   left  ... left boundary point                                      */
+     /*   right ... right boundary point                                     */
+     /*                                                                      */
+     /* comment:                                                             */
+     /*   if no boundaries have been set +/- INFINITY is returned.           */
+     /*----------------------------------------------------------------------*/
+{
+  /* in case of error the boundaries are set to +/- INFINITY */
+  *left = -INFINITY;
+  *right = INFINITY;
+
+  /* check arguments */
+  _unur_check_NULL( NULL, distr, 0 );
+  _unur_check_distr_object( distr, CONT, 0 );
+
+  /* o.k. */
+  *left  = DISTR.domain[0];
+  *right = DISTR.domain[1];
+
+  return 1;
+} /* end of unur_distr_cont_get_domain() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -522,9 +690,9 @@ unur_distr_cont_set_mode( struct unur_distr *distr, double mode )
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( NULL,distr,0 );
-  COOKIE_CHECK(distr,CK_DISTR_CONT,0);
-  
+  _unur_check_NULL( NULL, distr, 0 );
+  _unur_check_distr_object( distr, CONT, 0 );
+
   DISTR.mode = mode;
 
   /* changelog */
@@ -534,6 +702,40 @@ unur_distr_cont_set_mode( struct unur_distr *distr, double mode )
   return 1;
 } /* end of unur_distr_cont_set_mode() */
 
+/*---------------------------------------------------------------------------*/
+
+int 
+unur_distr_cont_upd_mode( struct unur_distr *distr )
+     /*----------------------------------------------------------------------*/
+     /* (re-) compute mode of distribution (if possible)                     */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   distr ... pointer to distribution object                           */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... on success                                                   */
+     /*   0 ... on error                                                     */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( NULL, distr, 0 );
+  _unur_check_distr_object( distr, CONT, 0 );
+
+  if (DISTR.upd_mode == NULL) {
+    /* no function to compute mode available */
+    _unur_error(distr->name,UNUR_ERR_DISTR_DATA,"");
+    return 0;
+  }
+
+  /* compute mode */
+  DISTR.mode = (DISTR.upd_mode)(distr);
+
+  /* changelog */
+  distr->set |= UNUR_DISTR_SET_MODE;
+
+  return 1;
+} /* end of unur_distr_cont_upd_mode() */
+  
 /*---------------------------------------------------------------------------*/
 
 double
@@ -549,12 +751,24 @@ unur_distr_cont_get_mode( struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( NULL,distr,0. );
-  COOKIE_CHECK(distr,CK_DISTR_CONT,0);
+  _unur_check_NULL( NULL, distr, INFINITY );
+  _unur_check_distr_object( distr, CONT, INFINITY );
 
   /* mode known ? */
-  if ( !(distr->set & UNUR_DISTR_SET_MODE) )
-    _unur_error(distr->name,UNUR_ERR_DISTR_GET,"mode");
+  if ( !(distr->set & UNUR_DISTR_SET_MODE) ) {
+    /* try to compute mode */
+    if (DISTR.upd_mode == NULL) {
+      /* no function to compute mode available */
+      _unur_error(distr->name,UNUR_ERR_DISTR_GET,"mode");
+      return INFINITY;
+    }
+    else {
+      /* compute mode */
+      DISTR.mode = (DISTR.upd_mode)(distr);
+      /* changelog */
+      distr->set |= UNUR_DISTR_SET_MODE;
+    }
+  }
 
   return DISTR.mode;
 
@@ -577,8 +791,8 @@ unur_distr_cont_set_pdfarea( struct unur_distr *distr, double area )
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( NULL,distr,0 );
-  COOKIE_CHECK(distr,CK_DISTR_CONT,0);
+  _unur_check_NULL( NULL, distr, 0 );
+  _unur_check_distr_object( distr, CONT, 0 );
 
   /* check new parameter for generator */
   if (area <= 0.) {
@@ -598,55 +812,78 @@ unur_distr_cont_set_pdfarea( struct unur_distr *distr, double area )
 
 /*---------------------------------------------------------------------------*/
 
-int
-unur_distr_cont_set_domain( struct unur_distr *distr, double left, double right )
+int 
+unur_distr_cont_upd_pdfarea( struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
-     /* set the left and right borders of the domain of the distribution     */
+     /* (re-) compute area below p.d.f. of distribution (if possible)        */
      /*                                                                      */
      /* parameters:                                                          */
      /*   distr ... pointer to distribution object                           */
-     /*   left  ... left boundary point                                      */
-     /*   right ... right boundary point                                     */
      /*                                                                      */
-     /* comment:                                                             */
-     /*   the new boundary points may be +/- INFINITY                        */
+     /* return:                                                              */
+     /*   1 ... on success                                                   */
+     /*   0 ... on error                                                     */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( NULL,distr,0 );
-  COOKIE_CHECK(distr,CK_DISTR_CONT,0);
+  _unur_check_NULL( NULL, distr, 0 );
+  _unur_check_distr_object( distr, CONT, 0 );
 
-  /* check new parameter for generator */
-  if (left >= right) {
-    _unur_error(NULL,UNUR_ERR_DISTR_SET,"domain, left >= right");
+  if (DISTR.upd_area == NULL) {
+    /* no function to compute mode available */
+    _unur_error(distr->name,UNUR_ERR_DISTR_DATA,"");
     return 0;
   }
 
-  DISTR.domain[0] = left;
-  DISTR.domain[1] = right;
+  /* compute mode */
+  DISTR.area = (DISTR.upd_area)(distr);
 
   /* changelog */
-  distr->set |= UNUR_DISTR_SET_DOMAIN;
+  distr->set |= UNUR_DISTR_SET_PDFAREA;
 
-  /* if distr is an object for a standard distribution, */
-  /* we might have truncated the distribution!          */
-  distr->set &= ~UNUR_DISTR_SET_STDDOMAIN;
+  return 1;
+} /* end of unur_distr_cont_upd_pdfarea() */
+  
+/*---------------------------------------------------------------------------*/
 
-  /* the mode might have been changed.                  */
-  /* if the original mode is not in the new domain,     */
-  /* set the new mode as one of the boundary points.    */
-  if (distr->set & UNUR_DISTR_SET_MODE) {
-    DISTR.mode = max(DISTR.mode,left);
-    DISTR.mode = min(DISTR.mode,right);
+double
+unur_distr_cont_get_pdfarea( struct unur_distr *distr )
+     /*----------------------------------------------------------------------*/
+     /* get area below p.d.f. of distribution                                */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   distr ... pointer to distribution object                           */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   area below p.d.f. of distribution                                  */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( NULL, distr, INFINITY );
+  _unur_check_distr_object( distr, CONT, INFINITY );
+
+  /* mode known ? */
+  if ( !(distr->set & UNUR_DISTR_SET_PDFAREA) ) {
+    /* try to compute area */
+    if (DISTR.upd_area == NULL) {
+      /* no function to compute area available */
+      _unur_error(distr->name,UNUR_ERR_DISTR_GET,"area");
+      return INFINITY;
+    }
+    else {
+      /* compute mode */
+      DISTR.area = (DISTR.upd_area)(distr);
+      /* changelog */
+      distr->set |= UNUR_DISTR_SET_PDFAREA;
+    }
   }
 
-  /* the area below the p.d.f. is probably wrong now */
-  distr->set &= ~UNUR_DISTR_SET_PDFAREA;
+  return DISTR.area;
 
-  /* o.k. */
-  return 1;
+} /* end of unur_distr_cont_get_pdfarea() */
 
-} /* end of unur_distr_cont_set_domain() */
+/*---------------------------------------------------------------------------*/
+
 
 /*****************************************************************************/
 
@@ -706,7 +943,7 @@ _unur_distr_cont_debug( struct unur_distr *distr, char *genid )
 /*---------------------------------------------------------------------------*/
 
 struct unur_distr *
-unur_distr_discr_new( void )
+_unur_distr_discr_new( void )
      /*----------------------------------------------------------------------*/
      /* create a new (empty) distribution object                             */
      /* type: univariate discete                                             */
@@ -767,7 +1004,7 @@ unur_distr_discr_new( void )
   /* return pointer to object */
   return distr;
 
-} /* end of unur_distr_discr_new() */
+} /* end of _unur_distr_discr_new() */
 
 /*---------------------------------------------------------------------------*/
 

@@ -281,8 +281,8 @@ unur_dstd_chg_pdfparams( struct unur_gen *gen, double *params, int n_params )
     DISTR.params[i] = params[i];
 
   /* changelog */
-  gen->distr.set = UNUR_DISTR_SET_PARAMS;
-  /* mode, area, etc. might be wrong now! */
+  gen->distr.set &= ~UNUR_DISTR_SET_MASK_DERIVED;
+  /* derived parameters like mode, area, etc. might be wrong now! */
 
   /* run special init routine for generator */
   if ( !DISTR.init(NULL,gen) ) {

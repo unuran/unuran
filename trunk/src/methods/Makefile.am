@@ -37,6 +37,7 @@ noinst_HEADERS = \
  source_unuran.h \
  source_cookies.h \
  source_debug.h \
+ source_distr.h \
  source_gen.h \
  source_math.h \
  source_methods.h \

@@ -135,6 +135,7 @@ enum {
   UNUR_ERR_DISTR_REQUIRED = 0x16u,    /* incomplete distribution object, entry missing */
   UNUR_ERR_DISTR_UNKNOWN  = 0x17u,    /* unknown distribution, cannot handle */
   UNUR_ERR_DISTR_INVALID  = 0x18u,    /* invalid distribution object         */
+  UNUR_ERR_DISTR_DATA     = 0x19u,    /* data are missing                    */
 
   /** parameter object **/
   /*

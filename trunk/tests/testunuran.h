@@ -37,7 +37,7 @@
 #define T_DAU
 #define T_DGT
 #define T_SROU
-#define T_STDR
+#define T_SSR
 #define T_UNIF
 
 /* continuous univariate distributions                                       */

@@ -67,6 +67,13 @@
 */
 
 /*---------------------------------------------------------------------------*/
+/* Common variants for all special generators                                */
+
+#define UNUR_STDGEN_DEFAULT   0        /* default algorithm (don't change 0!)*/
+#define UNUR_STDGEN_INVERSION (~0u)    /* inversion method                   */
+#define UNUR_STDGEN_FASTEST   (~1u)    /* fastest algorithm                  */
+
+/*---------------------------------------------------------------------------*/
 /* Routines for user interface                                               */
 
 /* =ROUTINES */

@@ -4,14 +4,14 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   FILE: source_unuran.h                                                   *
+ *   FILE: source_distr.h                                                    *
  *                                                                           *
  *   PURPOSE:                                                                *
- *         defines macros and declares structures and function prototypes    *
- *         for all UNURAN source files                                       *
+ *         defines macros and function prototypes for handling               *
+ *         distribution objects.                                             *
  *                                                                           *
  *   USAGE:                                                                  *
- *         only included in source files.                                    *
+ *         only included in source_unuran.h                                  *
  *                                                                           *
  *****************************************************************************
      $Id$
@@ -38,32 +38,45 @@
  *****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
-#ifndef __UNURAN_SOURCE_H_SEEN
-#define __UNURAN_SOURCE_H_SEEN
-/*---------------------------------------------------------------------------*/
+/* indicate changed parameters                                               */
+
+/* essential parameters */
+#define UNUR_DISTR_SET_MASK_ESSENTIAL 0xffff0000
+
+#define UNUR_DISTR_SET_DOMAIN         0x00010000
+#define UNUR_DISTR_SET_STDDOMAIN      0x00020000 /* domain not truncated (for standard distributions) */
+
+/* derived parameters */
+#define UNUR_DISTR_SET_MASK_DERIVED   0x0000ffff
+
+#define UNUR_DISTR_SET_MODE           0x00000001
+#define UNUR_DISTR_SET_PDFAREA        0x00000002
 
 /*---------------------------------------------------------------------------*/
-/* include main header files                                                  */
+/* create empty distribution object for ...                                  */
 
-#include <float.h>
-#include <math.h>
-#include <stdio.h>
-#include <stdlib.h>
-
-#include <config.h>
-#include <in_unuran.h>
-
-#include <source_struct.h>
-#include <source_gen.h>
-#include <source_cookies.h>
-#include <source_debug.h>
-#include <source_math.h>
-#include <source_methods.h>
-#include <source_distr.h>
+struct unur_distr *_unur_distr_cont_new( void );  /* univ. continuous */
+struct unur_distr *_unur_distr_discr_new( void ); /* univ. discrete   */
 
 /*---------------------------------------------------------------------------*/
-#endif  /* end __UNURAN_SOURCE_H_SEEN */
+/* call pdf's and cdf's                                                      */
+/* (no checking for NULL pointer !)                                          */
+
+#define _unur_cont_PDF(x,distr)   ((*((distr)->data.cont.pdf)) ((x),(distr)))
+#define _unur_cont_dPDF(x,distr)  ((*((distr)->data.cont.dpdf))((x),(distr)))
+#define _unur_cont_CDF(x,distr)   ((*((distr)->data.cont.cdf)) ((x),(distr)))
+
+#define _unur_discr_PMF(x,distr)  ((*((distr)->data.discr.pmf))((x),(distr)))
+#define _unur_discr_CDF(x,distr)  ((*((distr)->data.discr.cdf))((x),(distr)))
+
 /*---------------------------------------------------------------------------*/
+/* check if parameter object is of correct type, return 0 otherwise       */
 
+#define _unur_check_distr_object( distr,distrtype, rcode ) \
+  do { \
+    if ((distr)->type != UNUR_DISTR_##distrtype) { \
+      _unur_warning((distr)->name,UNUR_ERR_DISTR_INVALID,""); \
+      return rcode; } \
+    COOKIE_CHECK(distr,CK_DISTR_##distrtype,rcode); } while (0)
 
-
+/*---------------------------------------------------------------------------*/

@@ -114,7 +114,7 @@ int main()
 
   prob = set_prob(PSIZE);
 
-  distr_geom = unur_distr_discr_new();
+  distr_geom = unur_distr_new(UNUR_DISTR_DISCR);
   unur_distr_discr_set_prob(distr_geom,prob,PSIZE);
 
   /* ------------------------- */

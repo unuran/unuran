@@ -645,6 +645,47 @@ unur_arou_set_verify( struct unur_par *par, int verify )
 /*---------------------------------------------------------------------------*/
 
 int
+unur_arou_chg_verify( struct unur_gen *gen, int verify )
+     /*----------------------------------------------------------------------*/
+     /* turn verifying of algorithm while sampling on/off                    */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen    ... pointer to generator object                             */
+     /*   verify ... 0 = no verifying,  !0 = verifying                       */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... on success                                                   */
+     /*   0 ... on error                                                     */
+     /*                                                                      */
+     /* comment:                                                             */
+     /*   no verifying is the default                                        */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  CHECK_NULL( gen,0 );
+
+  /* check input */
+  _unur_check_gen_object( gen,AROU );
+
+  if (verify) {
+    /* turn verify mode on */
+    gen->variant |= AROU_VARFLAG_VERIFY;
+    SAMPLE = _unur_arou_sample_check;
+  }
+  else {
+    /* turn verify mode off */
+    gen->variant &= ~AROU_VARFLAG_VERIFY;
+    SAMPLE = _unur_arou_sample;
+  }
+
+  /* o.k. */
+  return 1;
+
+} /* end of unur_arou_chg_verify() */
+
+/*---------------------------------------------------------------------------*/
+
+int
 unur_arou_set_pedantic( struct unur_par *par, int pedantic )
      /*----------------------------------------------------------------------*/
      /* turn pedantic mode on/off                                            */

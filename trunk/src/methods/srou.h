@@ -88,8 +88,8 @@
 
    There exists a test mode that verifies whether the conditions for
    the method are satisfied or not. It can be switched on by calling 
-   unur_srou_set_verify(). Notice however that sampling is a little
-   bit slower than.
+   unur_srou_set_verify() and unur_srou_chg_verify(), respectively.
+   Notice however that sampling is (a little bit) slower then.
 */
 
 /*---------------------------------------------------------------------------*/
@@ -131,7 +131,14 @@ int unur_srou_set_pdfatmode( UNUR_PAR *parameters, double fmode );
 */
 
 int unur_srou_set_verify( UNUR_PAR *parameters, int verify );
-/* Turn verifying of algorithm while sampling on/off                         */
+/* 
+   Turn verifying of algorithm while sampling on/off.
+*/
+
+int unur_srou_chg_verify( UNUR_GEN *generator, int verify );
+/* 
+   Turn verifying of algorithm while sampling on/off.
+*/
 
 int unur_srou_set_usesqueeze( UNUR_PAR *parameters, int usesqueeze );
 /* 

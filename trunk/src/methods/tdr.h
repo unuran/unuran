@@ -85,6 +85,10 @@
       PS ... 2
       IA ... 1
 
+   There exists a test mode that verifies whether the conditions for
+   the method are satisfied or not. It can be switched on by calling 
+   unur_tdr_set_verify() and unur_tdr_chg_verify(), respectively.
+   Notice however that sampling is (much) slower then.
 */
 
 /*---------------------------------------------------------------------------*/
@@ -194,6 +198,11 @@ int unur_tdr_set_guidefactor( UNUR_PAR *parameters, double factor );
 */
 
 int unur_tdr_set_verify( UNUR_PAR *parameters, int verify );
+/* 
+   Turn verifying of algorithm while sampling on/off.
+*/
+
+int unur_tdr_chg_verify( UNUR_GEN *generator, int verify );
 /* 
    Turn verifying of algorithm while sampling on/off.
 */

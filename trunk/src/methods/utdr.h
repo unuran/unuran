@@ -64,6 +64,11 @@
    computations. Since this value will not be updated any more when the 
    parameters of the distribution are changed,
    the unur_utdr_chg_pdfatmode() call is necessary to do this manually.
+
+   There exists a test mode that verifies whether the conditions for
+   the method are satisfied or not. It can be switched on by calling 
+   unur_utdr_set_verify() and unur_utdr_chg_verify(), respectively.
+   Notice however that sampling is slower then.
 */
 
 /*---------------------------------------------------------------------------*/
@@ -91,7 +96,14 @@ int unur_utdr_reinit( UNUR_GEN *generator );
 */
 
 int unur_utdr_set_verify( UNUR_PAR *parameters, int verify );
-/* turn verifying of algorithm while sampling on/off                         */
+/* 
+   Turn verifying of algorithm while sampling on/off.
+*/
+
+int unur_utdr_chg_verify( UNUR_GEN *generator, int verify );
+/* 
+   Turn verifying of algorithm while sampling on/off.
+*/
 
 int unur_utdr_set_pdfatmode( UNUR_PAR *parameters, double fmode );
 /* 

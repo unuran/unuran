@@ -74,6 +74,11 @@
    (1) use the generated point to split the interval;
    (2) use the mean point of the interval; or
    (3) use the arcmean point.
+
+   There exists a test mode that verifies whether the conditions for
+   the method are satisfied or not. It can be switched on by calling 
+   unur_tabl_set_verify() and unur_tabl_chg_verify(), respectively.
+   Notice however that sampling is (much) slower then.
 */
 
 /*---------------------------------------------------------------------------*/
@@ -193,6 +198,11 @@ int unur_tabl_set_boundary( UNUR_PAR *parameters, double left, double right );
 */
 
 int unur_tabl_set_verify( UNUR_PAR *parameters, int verify );
+/* 
+   Turn verifying of algorithm while sampling on/off.
+*/
+
+int unur_tabl_chg_verify( UNUR_GEN *generator, int verify );
 /* 
    Turn verifying of algorithm while sampling on/off.
 */

@@ -586,6 +586,55 @@ unur_tdr_set_verify( struct unur_par *par, int verify )
 /*---------------------------------------------------------------------------*/
 
 int
+unur_tdr_chg_verify( struct unur_gen *gen, int verify )
+     /*----------------------------------------------------------------------*/
+     /* turn verifying of algorithm while sampling on/off                    */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen    ... pointer to generator object                             */
+     /*   verify ... 0 = no verifying,  !0 = verifying                       */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... on success                                                   */
+     /*   0 ... on error                                                     */
+     /*                                                                      */
+     /* comment:                                                             */
+     /*   no verifying is the default                                        */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  CHECK_NULL( gen,0 );
+
+  /* check input */
+  _unur_check_gen_object( gen,TDR );
+
+  /* we use a bit in variant */
+  gen->variant = (verify) ? (gen->variant | TDR_VARFLAG_VERIFY) : (gen->variant & (~TDR_VARFLAG_VERIFY));
+
+  /* sampling routines */
+  switch (gen->variant & TDR_VARMASK_VARIANT) {
+  case TDR_VARIANT_GW:    /* original variant (Gilks&Wild) */
+    SAMPLE = (verify) ? _unur_tdr_gw_sample_check : _unur_tdr_gw_sample;
+    break;
+  case TDR_VARIANT_PS:    /* proportional squeeze */
+    SAMPLE = (verify) ? _unur_tdr_ps_sample_check : _unur_tdr_ps_sample;
+    break;
+  case TDR_VARIANT_IA:    /* immediate acceptance */
+    SAMPLE = (verify) ? _unur_tdr_ia_sample_check : _unur_tdr_ia_sample;
+    break;
+  default:
+    _unur_warning(GENTYPE,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
+    return 0;
+  }
+
+  /* o.k. */
+  return 1;
+
+} /* end of unur_tdr_chg_verify() */
+
+/*---------------------------------------------------------------------------*/
+
+int
 unur_tdr_set_pedantic( struct unur_par *par, int pedantic )
      /*----------------------------------------------------------------------*/
      /* turn pedantic mode on/off                                            */

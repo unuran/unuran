@@ -5,7 +5,7 @@
 /* --------------------------------------------------------------- */
 
 /* PDF -- piecewise linear                                         */
-double mypdf( double x, UNUR_DISTR *dummy)
+double mypdf( double x, UNUR_DISTR *dummy )
 {
   double fx;
 
@@ -40,7 +40,7 @@ double mydpdf ( double x, UNUR_DISTR *dummy)
     dfx = 0.0;
 
   return dfx;
-}
+} /* end of mydpdf                                                 */
 
 /* --------------------------------------------------------------- */
 
@@ -92,7 +92,5 @@ int main()
 
   return (0);
 }
-
-
 
 

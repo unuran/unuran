@@ -30,7 +30,7 @@ $ENDE = 0;  # ueberprueft, ob itemize-umgebung gesetzt wird
             # und garantiert, dass letztes itemize beendet wird
 
 # 
-@TYPES = ("struct", "void", "int", "double", "float", "long", "char", "short", "unsigned", "signed");
+@TYPES = ("UNUR_PAR", "UNUR_GEN", "struct", "void", "int", "double", "float", "long", "char", "short", "unsigned", "signed");
 
 
 
@@ -60,7 +60,7 @@ while($_ = <>)
        if ( $ON == 1 && $_ =~/^\s*($type.*)\s*\((.*\))\s*;/){
           # neues Texinfo-Kapitel, wenn sich methode ($MName) aendert
           /\*unur_(\w*)_/; 
-          if ($type eq struct && $MName ne $1){
+          if ($type eq UNUR_PAR && $MName ne $1){
              $MName = $1;
              if ($ERST == 0){
 		print OUTFILE "\@end itemize\n\n";
@@ -69,7 +69,8 @@ while($_ = <>)
 		 $ERST = 0;
                  $ENDE = 1;
 	     }
-	     print OUTFILE "\n\n\@subsection ", $MName, "\n\n";
+	     print OUTFILE "\n\n\@node ", $MName, "\n";
+	     print OUTFILE "\@subsection ", $MName, "\n\n";
              print OUTFILE "\@itemize \@minus{} \n";
           }
        }

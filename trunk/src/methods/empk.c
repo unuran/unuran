@@ -448,13 +448,16 @@ unur_empk_set_kernel( struct unur_par *par, unsigned kernel)
 /*---------------------------------------------------------------------------*/
 
 int
-unur_empk_set_kernelgen( struct unur_par *par, struct unur_gen *kernelgen)
+unur_empk_set_kernelgen( struct unur_par *par, struct unur_gen *kernelgen,
+			 double alpha, double kernelvar )
      /*----------------------------------------------------------------------*/
      /* set generator for kernel distribution                                */
      /*                                                                      */
      /* parameters:                                                          */
      /*   par       ... pointer to parameter for building generator object   */
      /*   kernelgen ... generator object that holds the kernel               */
+     /*   alpha     ... parameter depending on kernel                        */
+     /*   kernelvar ... variance of kernel                                   */
      /*                                                                      */
      /* return:                                                              */
      /*   1 ... on success                                                   */
@@ -477,54 +480,32 @@ unur_empk_set_kernelgen( struct unur_par *par, struct unur_gen *kernelgen)
   if ( (kernelgen->method & UNUR_MASK_TYPE) != UNUR_METH_CONT ) {
     _unur_error(GENTYPE,UNUR_ERR_DISTR_INVALID,""); return 0; }
 
-  /* set kernel distribution */
-  PAR.kerngen = kernelgen;
-
-  /* changelog */
-  par->set |= EMPK_SET_KERNGEN;
-
-  /* o.k. */
-  return 1;
-
-} /* end of unur_empk_set_kernelgen() */
-
-/*---------------------------------------------------------------------------*/
-
-int
-unur_empk_set_alpha( struct unur_par *par, double alpha )
-     /*----------------------------------------------------------------------*/
-     /* set alpha factor                                                     */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   par      ... pointer to parameter for building generator object    */
-     /*   alpha    ... parameter depending on kernel                         */
-     /*                                                                      */
-     /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
-     /*----------------------------------------------------------------------*/
-{
-  /* check arguments */
-  _unur_check_NULL( GENTYPE,par,0 );
-
-  /* check input */
-  _unur_check_par_object( par,EMPK );
-
   /* check new parameter for generator */
   if (alpha <= 0.) {
     _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"alpha <= 0");
     return 0;
   }
 
-  /* store date */
+  /* set kernel distribution */
+  PAR.kerngen = kernelgen;
+
+  /* store alpha factor */
   PAR.alpha = alpha;
 
   /* changelog */
-  par->set |= EMPK_SET_ALPHA;
+  par->set |= EMPK_SET_KERNGEN | EMPK_SET_ALPHA;
 
+  /* set kernel variance */
+  PAR.kernvar = kernelvar;
+  
+  if (kernelvar > 0.)
+    par->set |= EMPK_SET_KERNELVAR;
+  /* else variance correction disabled */
+
+  /* o.k. */
   return 1;
 
-} /* end of unur_empk_set_alpha() */
+} /* end of unur_empk_set_kernelgen() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -670,6 +651,12 @@ unur_empk_set_varcor( struct unur_par *par, int varcor )
   /* check input */
   _unur_check_par_object( par,EMPK );
 
+  /* kernel variance known ? */
+  if (! (par->set &= EMPK_SET_KERNELVAR) ) {
+    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"variance correction disabled");
+    return 0;
+  }
+
   /* we use a bit in variant */
   par->variant = (varcor) 
     ? (par->variant | EMPK_VARFLAG_VARCOR) 
@@ -700,6 +687,12 @@ unur_empk_chg_varcor( struct unur_gen *gen, int varcor )
   CHECK_NULL(gen,0);
   _unur_check_gen_object( gen,EMPK );
   
+  /* kernel variance known ? */
+  if (! (gen->set &= EMPK_SET_KERNELVAR) ) {
+    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"variance correction disabled");
+    return 0;
+  }
+
   /* no changelog required */
 
   /* we use a bit in variant */
@@ -711,44 +704,6 @@ unur_empk_chg_varcor( struct unur_gen *gen, int varcor )
   return 1;
 
 } /* end of unur_empk_chg_varcor() */
-
-/*---------------------------------------------------------------------------*/
-
-int
-unur_empk_set_kernelvar( struct unur_par *par, double kernelvar )
-     /*----------------------------------------------------------------------*/
-     /* set variance of kernel                                               */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   par      ... pointer to parameter for building generator object    */
-     /*   kernelvar... variance of kernel                                    */
-     /*                                                                      */
-     /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
-     /*----------------------------------------------------------------------*/
-{
-  /* check arguments */
-  _unur_check_NULL( GENTYPE,par,0 );
-
-  /* check input */
-  _unur_check_par_object( par,EMPK );
-
-  /* check new parameter for generator */
-  if (kernelvar <= 0.) {
-    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"variance <= 0");
-    return 0;
-  }
-
-  /* store date */
-  PAR.kernvar = kernelvar;
-
-  /* changelog */
-  par->set |= EMPK_SET_KERNELVAR;
-
-  return 1;
-
-} /* end of unur_empk_set_kernelvar() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -816,18 +771,13 @@ _unur_empk_init( struct unur_par *par )
     return NULL; }
   COOKIE_CHECK(par,CK_EMPK_PAR,NULL);
 
-  /* if a generator for the kernel is given, it is also necessary that
-     the alpha factor and (in case of variance correction) the variance
-     of the kernel is given. */
-  if (par->set & EMPK_SET_KERNGEN) {
-    if ( !(par->set & EMPK_SET_ALPHA ) )
-      _unur_warning(GENTYPE,UNUR_ERR_GEN_DATA,"alpha factor not set");
-    if ( (par->variant & EMPK_VARFLAG_VARCOR) &&
-	 !(par->set & EMPK_SET_KERNELVAR ) )
-      _unur_warning(GENTYPE,UNUR_ERR_GEN_DATA,"kernel variance not set");
+  /* if variance correction is used, the variance of the kernel
+     must be known and positive */
+  if( (par->variant & EMPK_VARFLAG_VARCOR) &&
+      !( (par->set & EMPK_SET_KERNELVAR) && PAR.kernvar > 0. )) {
+    _unur_warning(GENTYPE,UNUR_ERR_GEN_DATA,"variance correction disabled");
+    par->variant |= ~EMPK_SET_KERNELVAR;
   }
-
-  /* the kernel */
 
   /* Is there already a running kernel generator */
   if (PAR.kerngen == NULL)
@@ -872,7 +822,10 @@ _unur_empk_init( struct unur_par *par )
   GEN.bwidth =  PAR.smoothing * PAR.alpha * PAR.beta * sigma / exp(0.2 * log(GEN.n_observ));
 
   /* compute constant for variance corrected version */
-  GEN.sconst = 1./sqrt(1. + PAR.kernvar * SQU( GEN.bwidth/GEN.stddev_observ ) );
+  if( par->variant & EMPK_VARFLAG_VARCOR )
+    GEN.sconst = 1./sqrt(1. + PAR.kernvar * SQU( GEN.bwidth/GEN.stddev_observ ) );
+  else
+    GEN.sconst = 1.;
 
 #ifdef UNUR_ENABLE_LOGGING
     /* write info into log file */
@@ -980,7 +933,7 @@ _unur_empk_sample( struct unur_gen *gen )
 
   /** TODO: recycle uniform random variate??
       maybe for Boxcar (Uniform) Kernel. **/
-  /* U -= j;   u is now a "recycled" U(0,1) random variate, aber wie weiter verwenden*/
+  /* U -= j;   u is now a "recycled" U(0,1) random variate, aber wie weiter verwenden, ? */
 
   /* sample from kernel distribution */
   K = unur_sample_cont( GEN.kerngen );

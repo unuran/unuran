@@ -81,47 +81,45 @@ int unur_empk_set_kernel( UNUR_PAR *parameters, unsigned kernel);
    Select one of the supported kernel distributions. Currently the following 
    kernels are supported:
 
-     UNUR_DISTR_GAUSSIAN  ... Gaussian (normal) kernel
-     UNUR_DISTR_BOXCAR    ... Boxcar (uniform, rectangular) kernel
-     UNUR_DISTR_STUDENT   ... t3 kernel (Student's distribution with 3 degrees of freedom)
-     UNUR_DISTR_LOGISTIC  ... logistic kernel
+     UNUR_DISTR_GAUSSIAN     ... Gaussian (normal) kernel
+     UNUR_DISTR_EPANECHNIKOV ... Epanechnikov kernel
+     UNUR_DISTR_BOXCAR       ... Boxcar (uniform, rectangular) kernel
+     UNUR_DISTR_STUDENT      ... t3 kernel (Student's distribution with 3 degrees of freedom)
+     UNUR_DISTR_LOGISTIC     ... logistic kernel
 
    For other kernels (including kernels with Student's distribution other with
    3 degrees of freedom) use the unur_empk_set_kernelgen() call.
-   However then unur_empk_set_alpha() and (if variance correction is used)
-   unur_empk_set_kernelvar() has to be called.
 
    It is not possible to call unur_empk_set_kernel() twice.
 
    Default is a Gaussian kernel.
 */
 
-int unur_empk_set_kernelgen( UNUR_PAR *parameters, UNUR_GEN *kernelgen);
+int unur_empk_set_kernelgen( UNUR_PAR *parameters, UNUR_GEN *kernelgen, double alpha, double kernelvar );
 /* 
    Set generator for the kernel used for density estimation.
+
+   @var{alpha} is used to compute the optimal bandwidth from the point of
+   view of minimizing the mean integrated square error (MISE).
+   It depends on the kernel K and is given by 
+     alpha(K) = Var(K)^(-2/5)@{ \int K(t)^2 dt@}^(1/5)
+   For standard kernels (see above) alpha is computed by the algorithm.
+
+   @var{kernvar} is the variance of the used kernel. It is only required 
+   for the variance reduced version of the density estimation (which is 
+   used by default); otherwise it is ignored.
+   If @var{kernelvar} is nonpositive, variance correction is disabled.
+   For standard kernels (see above) kernvar is computed by the algorithm.
+
    It is not possible to call unur_empk_set_kernelgen() after a standard kernel
    has been selected by a unur_empk_set_kernel() call.
-   After calling this function unur_empk_set_alpha() and (if variance
-   correction is used) unur_empk_set_kernelvar() has to be called!
 
    Notice that the uniform random number generator of the kernel
-   generator is overwritten during the unur_init() and at each
+   generator is overwritten during the unur_init() call and at each
    unur_chg_urng() call with generator for the empirical
    distribution.
-   Default is a Gaussian kernel.
-*/
 
-int unur_empk_set_alpha( UNUR_PAR *parameters, double alpha );
-/*
-  alpha is used to compute the optimal bandwidth from the point of
-  view of minimizing the mean integrated square error (MISE).
-  alpha depends on the type of kernel K being used and is given by 
-     alpha(K) = Var(K)^(-2/5)@{ \int K(t)^2 dt@}^(1/5)
-  For standard kernels (see above) alpha is computed by the algorithm.
-  For all other kernels, it must be given. 
-*/
-/*
-  Otherwise the default (Gaussian) kernel is used.
+   Default is a Gaussian kernel.
 */
 
 int unur_empk_set_beta( UNUR_PAR *parameters, double beta );
@@ -164,14 +162,6 @@ int unur_empk_chg_varcor( UNUR_GEN *generator, int varcor );
 /* 
    Switch variance correction in generator on/off.
    Default is FALSE.
-*/
-
-int unur_empk_set_kernelvar( UNUR_PAR *parameters, double kernvar );
-/*
-  Variance of the used kernel. It is only required for the variance
-  reduced version of the density estimation (which is used by default).
-  For standard kernels (see above) kernvar is computed by the algorithm.
-  Default is 1.
 */
 
 int unur_empk_set_positive( UNUR_PAR *parameters, int positive );

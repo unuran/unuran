@@ -7,6 +7,16 @@
 
 -----------------------------------------------------------------------------
 
+(*) The String API has a bug when "decimal point" is set to comme `,'
+    instead to a point `.'.
+
+-----------------------------------------------------------------------------
+
+(*) The String API does not provide the full functionality as the API
+    using function calls. 
+
+-----------------------------------------------------------------------------
+
 (*) add unur_copy(gen) und unur_distr_copy(distr)
 
 -----------------------------------------------------------------------------

@@ -63,8 +63,9 @@ check_PROGRAMS = \
 ##   t_hinv
 ##   test_special_hinv
 
-## t_timing_dsrou \
-## t_timing_ninv \
+## Disabled:
+##   t_timing_dsrou
+##   t_timing_ninv
 
 TESTS = $(check_PROGRAMS)
 
@@ -144,7 +145,10 @@ t_*.c: make_test_files.pl
 CLEANFILES = *~ *.log
 
 # clean generated files
+DISTCLEANFILES = \
+ rm -f t_*.data
+
+# clean generated files
 MAINTAINERCLEANFILES = \
  rm -f t_*.c \
- rm -f t_*.data \
  Makefile.in

@@ -25,6 +25,9 @@ noinst_HEADERS = \
 CLEANFILES = *~
 
 # clean generated files
+DISTCLEANFILES = \
+ unur_fp_const_source.h
+
 MAINTAINERCLEANFILES = \
  Makefile.in
 

@@ -21,10 +21,11 @@ EOM
 ############################################################
 
 use English;
+use strict;
 
 ############################################################
 
-$unuran_h_file = "../src/unuran.h";
+my $unuran_h_file = "../src/unuran.h";
 
 #############################################################
 
@@ -37,30 +38,30 @@ $unuran_h_file = "../src/unuran.h";
 # get file names
 
 # program name ...
-$name_program = $0;
+my $name_program = $0;
 $name_program =~ s#^.*/##g;
 
 # read in input file name from argument list ...
-$file_in = shift;
+my $file_in = shift;
 (usage and die) unless $file_in;
 
 #check suffix
 (usage and die) unless ($file_in =~ /\.conf$/);
 
 # compose name of output file
-$file_out = $file_in;
+my $file_out = $file_in;
 $file_out =~ s#^.*/##g;
 $file_out =~ s/\.conf$/\.c/;
 $file_out = "t_$file_out";
 
 # name of log files
-$file_testlog = $file_out;
+my $file_testlog = $file_out;
 $file_testlog =~ s/\.c$/_test\.log/;
-$file_unuranlog = $file_out;
+my $file_unuranlog = $file_out;
 $file_unuranlog =~ s/\.c$/_unuran\.log/;
 
 #get name of file
-$file_name = $file_in;
+my $file_name = $file_in;
 $file_name =~ s#^.*/##g;
 $file_name =~ s/\.conf$//;
 
@@ -80,11 +81,11 @@ print OUT "\n*/\n\n";
 ############################################################
 
 # data we want ...
-undef $method;
-undef $gen_type;
-undef $distr_type;
-undef $urng;
-undef $C_header_aux;
+my $method;
+my $gen_type;
+my $distr_type;
+my $urng;
+my $C_header_aux;
 
 my $section = "main";
 undef my $next_section;
@@ -148,7 +149,7 @@ die "Data missing" unless (defined $method and
 
 # name of method 
 $method =~ tr/[A-Z]/[a-z]/;
-$METHOD = $method;
+my $METHOD = $method;
 $METHOD =~ tr/[a-z]/[A-Z]/;
 
 
@@ -351,8 +352,8 @@ EOM
 	print OUT "/* $1 */\n";
 
 	# clear variables ...
-	$line = "";
-	$subsection_closing = "";
+	my $line = "";
+	my $subsection_closing = "";
 
 	unless ( /\]\s*$/ ) {
 	    while (<IN>) { 
@@ -529,7 +530,7 @@ sub scan_validate {
 	
 	# get subsection name ...
 	die "wrong section" unless /^\[$section\s+\-\s+(.*):/;
-	$subsection = $1;
+	my $subsection = $1;
 	
 	# there should be a closing ] ...
 	die "closing ] missing" unless /\]\s*$/;
@@ -600,10 +601,10 @@ sub scan_validate {
     }
 
     # number of given distributions
-    $n_distributions = $#distributions + 1;
+    my $n_distributions = $#distributions + 1;
 
     # number of generators
-    $n_generators = $#generators + 1;
+    my $n_generators = $#generators + 1;
 
     # print out ...
 
@@ -645,7 +646,7 @@ sub scan_validate {
 	print OUT "\tunur_set_default_debug(~UNUR_DEBUG_SAMPLE);\n";
 	print OUT "\tfprintf( TESTLOG,\"\\nChi^2 Test:\\n\");\n\n";
 	
-	foreach $test (@chi2tests) {
+	foreach my $test (@chi2tests) {
 	    die "invalide test line" unless ($test =~ /<(\d+)>/);
 	    my $n_distr = $1;
 	    print OUT "/* distribution [$n_distr] */\n\n";
@@ -668,7 +669,7 @@ sub scan_validate {
 		$genline =~ s/\@distr\@/distr\[$n_distr\]/g;
 		
 		# read what we have to test
-		$todo = shift @gentest;
+		my $todo = shift @gentest;
 
 		# nothing to do
 		if ( $todo eq '.' ) {
@@ -684,7 +685,7 @@ sub scan_validate {
 		print OUT "\tunur_errno = 0;\n";
 		
 		my $have_gen_lines = 0;
-		foreach $l (@lines) {
+		foreach my $l (@lines) {
 		    if ($l =~ /gen/ and !$have_gen_lines) {
 			$have_gen_lines = 1;
 			print OUT "\tgen = unur_init(par);\n\tif (gen) {\n";
@@ -714,7 +715,7 @@ sub scan_validate {
 
     ## timing ##
 
-    $timing_log_samplessize_default = 5;
+    my $timing_log_samplessize_default = 5;
 
     if ($timing) {
 
@@ -736,7 +737,7 @@ sub scan_validate {
 	print OUT "\t\tfprintf( TESTLOG, \"   [%2d]\", i);\n";
 	print OUT "\tfprintf( TESTLOG,\"\\n\");\n";
 	
-	foreach $test (@timingtests) {
+	foreach my $test (@timingtests) {
 	    die "invalide test line" unless ($test =~ /<(\d+)>/);
 	    my $n_distr = $1;
 
@@ -762,7 +763,7 @@ sub scan_validate {
 		$genline =~ s/\@distr\@/distr\[$n_distr\]/g;
 		
 		# read what we have to test
-		$todo = shift @gentest;
+		my $todo = shift @gentest;
 
 		# nothing to do
 		if ( $todo eq '.' ) {
@@ -770,6 +771,7 @@ sub scan_validate {
 		}
 
 		# get sample size
+		my $log_samplesize;
 		if ($todo eq '+') {
 		    $log_samplesize = $timing_log_samplessize_default;
 		}
@@ -787,7 +789,7 @@ sub scan_validate {
 		print OUT "\tunur_errno = 0;\n";
 		
 		my $have_gen_lines = 0;
-		foreach $l (@lines) {
+		foreach my $l (@lines) {
 		    if ($l =~ /gen/ and !$have_gen_lines) {
 			$have_gen_lines = 1;
 			print OUT "\tgen = unur_test_timing(par,$log_samplesize,&time_setup,&time_sample,0,TESTLOG);\n"; 
@@ -831,7 +833,7 @@ sub scan_validate {
 	print OUT "\tunur_set_default_debug(~UNUR_DEBUG_SAMPLE);\n";
 	print OUT "\tfprintf( TESTLOG,\"\\nVerify Hat Test (squeeze <= PDF <= hat):\\n\");\n\n";
 	
-	foreach $test (@verifyhattests) {
+	foreach my $test (@verifyhattests) {
 	    die "invalid test line" unless ($test =~ /<(\d+)>/);
 	    my $n_distr = $1;
 	    print OUT "/* distribution [$n_distr] */\n\n";
@@ -854,7 +856,7 @@ sub scan_validate {
 		$genline =~ s/\@distr\@/distr\[$n_distr\]/g;
 		
 		# read what we have to test
-		$todo = shift @gentest;
+		my $todo = shift @gentest;
 
 		# replace '+' by '~'
 		$todo =~ s/\+/\~/;
@@ -873,7 +875,7 @@ sub scan_validate {
 		print OUT "\tunur_errno = 0;\n";
 		
 		my $have_gen_lines = 0;
-		foreach $l (@lines) {
+		foreach my $l (@lines) {
 		    if ($l =~ /gen/ and !$have_gen_lines) {
 			$have_gen_lines = 1;
 			print OUT "\tgen = unur_init(par);\n\tif (gen) {\n";

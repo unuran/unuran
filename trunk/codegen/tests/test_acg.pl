@@ -5,7 +5,11 @@
 # $Id$
 # ----------------------------------------------------------------
 
-$DEBUG = 0;
+my $DEBUG = 0;
+
+# ----------------------------------------------------------------
+
+# do not buffer STDOUT
 $| = 1;
 
 # ----------------------------------------------------------------
@@ -27,7 +31,7 @@ my $default_conf_file = "$top_srcdir/codegen/tests/test_acg_conf.pl";
 # ----------------------------------------------------------------
 # Prefix for file names
 
-$file_prefix = "./run_test_acg";
+my $file_prefix = "./run_test_acg";
 
 # ----------------------------------------------------------------
 # Global log file
@@ -37,13 +41,14 @@ open LOG, ">$file_prefix.log" or die "Cannot open log file $file_prefix.log";
 # ----------------------------------------------------------------
 # Compiler
 
-$GCC = "gcc -Wall -ansi -pedantic -I../../src -L../../src";
-$G77 = "g77 -Wall";
-$JAVAC = "javac";
+my $GCC = "gcc -Wall -ansi -pedantic -I../../src -L../../src";
+my $G77 = "g77 -Wall";
+my $JAVAC = "javac";
 
 # ----------------------------------------------------------------
 
 # Read configuration file name for tests from argument list ...
+my $test_conf_file;
 $test_conf_file = shift
     or $test_conf_file = $default_conf_file;
 
@@ -142,7 +147,7 @@ my $C_gen;
 my $C_main;
 
 my $test_nr = 0;
-$test_runs = 0;
+my $test_runs = 0;
 
 foreach my $distr (@distr_list) {
     foreach my $method (@method_list) {
@@ -846,7 +851,7 @@ sub make_FORTRAN_gen
     
     if ($failed) {
 	$testcode .= "      WRITE (*,'(''[$test_key] '',\n";
-	foreach $p (split (/\s+/, $distr)) {
+	foreach my $p (split (/\s+/, $distr)) {
 	    $testcode .= "     #   ''$p '',\n";
         }
 	$testcode .= "     #   '' .........  cannot create generator.'')')\n";
@@ -858,7 +863,7 @@ sub make_FORTRAN_gen
     else {
 	$testcode .= "      IMPLICIT DOUBLE PRECISION (a-h,o-z)\n\n";
 	$testcode .= "      WRITE (*,'(''[$test_key] '',\n";
-	foreach $p (split /\s+/, $distr) {
+	foreach my $p (split /\s+/, $distr) {
 	    $testcode .= "     #   ''$p '',\n";
 	}
 	$testcode .= "     #   '''')')\n";

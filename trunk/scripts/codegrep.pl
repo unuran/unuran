@@ -1,7 +1,11 @@
 #!/usr/bin/perl
 
+# ---------------------------------------------------------
+
 use File::Find;
 use Cwd;
+
+# ---------------------------------------------------------
 
 # Start the search for the files in these directories
 @Startdirs = ('..');

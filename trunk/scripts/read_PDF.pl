@@ -4,6 +4,7 @@
 # $Id$
 # ----------------------------------------------------------------
 
+use strict;
 use File::Find;
 
 # ----------------------------------------------------------------
@@ -123,7 +124,7 @@ sub scan_stddistr
     my @sections = split /=EON/, $file_content;
 
     # Scan sections
-    foreach $s (@sections) {
+    foreach my $s (@sections) {
 	# Remove trailing part of sections
 	(my $dummy, $s) = split /=DISTR/, $s, 2;
 	next unless $s;
@@ -230,7 +231,7 @@ sub read_distr_file
 	or die "$distr: distr_name inconsistent";
 
     # Type of distribution
-    $type = $DISTR->{$distr}->{"=TYPE"};
+    my $type = $DISTR->{$distr}->{"=TYPE"};
 
     # Get PDF source
     my $PDF_name = $distr_types{$type}{"PDF_prefix"}.$distr;

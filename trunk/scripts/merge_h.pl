@@ -1,6 +1,9 @@
 #!/usr/bin/perl
+############################################################
 
-$DEBUG = 0;
+use strict;
+
+my $DEBUG = 0;
 
 ############################################################
 # $Id$
@@ -70,15 +73,15 @@ use FileHandle;
 ############################################################
 
 # read master file name from argument list ...
-$master_file = shift;
+my $master_file = shift;
 (usage and die) unless $master_file;
 
 # header files in sub tree (except those containing "config") ...
 # (files are stored in an associate array with key=filename and
 # value=complete path of file.)
-%header_files;
+my %header_files;
 # included header files ...
-%header_included;
+my %header_included;
 
 # search subtree for header files ...
 open (FILES, "find . |");
@@ -122,7 +125,7 @@ sub scan_file {
     # split into lines ...
     my @lines = split /\n/, $content;
 
-    foreach $line (@lines) {
+    foreach my $line (@lines) {
 	unless ($line =~ /^\#include\s+<(.*)>/) {
 	    print "$line\n";
 	    next;

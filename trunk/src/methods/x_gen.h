@@ -89,8 +89,8 @@ void   unur_sample_matr(UNUR_GEN *generator, double *matrix);
   @emph{Notice:} UNURAN uses arrays of @code{double}s to handle
   matrices. There the rows of the matrix are stored consecutively.
 
-  @strong{Important:} These routines do @strong{not} check if
-  generator is an invalid NULL pointer.
+  @strong{Important:} These routines do @strong{not} check whether 
+  @var{generator} is an invalid NULL pointer.
 */
 
 /*---------------------------------------------------------------------------*/

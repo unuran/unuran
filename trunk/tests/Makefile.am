@@ -20,6 +20,11 @@ endif
 
 check_PROGRAMS = \
  t_distr \
+ t_distr_cont \
+ t_distr_corder \
+ t_distr_cvec \
+ t_distr_cvemp \
+ t_distr_discr \
  t_stringparser \
  t_corder \
  t_auto \
@@ -45,6 +50,11 @@ check_PROGRAMS = \
 
 TESTS = \
  t_distr \
+ t_distr_cont \
+ t_distr_corder \
+ t_distr_cvec \
+ t_distr_cvemp \
+ t_distr_discr \
  t_stringparser \
  t_corder \
  t_auto \
@@ -128,6 +138,21 @@ endif
 t_distr_SOURCES = t_distr.c testroutines.c
 t_distr_LDADD = $(top_builddir)/src/libunuran.a
 
+t_distr_cont_SOURCES = t_distr_cont.c testroutines.c
+t_distr_cont_LDADD = $(top_builddir)/src/libunuran.a
+
+t_distr_corder_SOURCES = t_distr_corder.c testroutines.c
+t_distr_corder_LDADD = $(top_builddir)/src/libunuran.a
+
+t_distr_cvec_SOURCES = t_distr_cvec.c testroutines.c
+t_distr_cvec_LDADD = $(top_builddir)/src/libunuran.a
+
+t_distr_cvemp_SOURCES = t_distr_cvemp.c testroutines.c
+t_distr_cvemp_LDADD = $(top_builddir)/src/libunuran.a
+
+t_distr_discr_SOURCES = t_distr_discr.c testroutines.c
+t_distr_discr_LDADD = $(top_builddir)/src/libunuran.a
+
 t_stringparser_SOURCES = t_stringparser.c testroutines.c
 t_stringparser_LDADD = $(top_builddir)/src/libunuran.a
 
@@ -194,6 +219,21 @@ t_timing_ninv_LDADD = $(top_builddir)/src/libunuran.a
 
 t_distr.c: distr.conf make_test_files.pl
 	./make_test_files.pl distr.conf          > t_distr.c
+
+t_distr_cont.c: distr_cont.conf make_test_files.pl
+	./make_test_files.pl distr_cont.conf     > t_distr_cont.c
+
+t_distr_corder.c: distr_corder.conf make_test_files.pl
+	./make_test_files.pl distr_corder.conf   > t_distr_corder.c
+
+t_distr_cvec.c: distr_cvec.conf make_test_files.pl
+	./make_test_files.pl distr_cvec.conf     > t_distr_cvec.c
+
+t_distr_cvemp.c: distr_cvemp.conf make_test_files.pl
+	./make_test_files.pl distr_cvemp.conf    > t_distr_cvemp.c
+
+t_distr_discr.c: distr_discr.conf make_test_files.pl
+	./make_test_files.pl distr_discr.conf    > t_distr_discr.c
 
 t_stringparser.c: stringparser.conf make_test_files.pl
 	./make_test_files.pl stringparser.conf   > t_stringparser.c

@@ -3,7 +3,7 @@ dnl $Id$
 
 dnl Initialize.
 AC_PREREQ(2.59)
-AC_INIT([UNURAN],[0.5.0],[unuran@statistik.wu-wien.ac.at])
+AC_INIT([UNURAN],[0.6.0],[unuran@statistik.wu-wien.ac.at])
 AM_INIT_AUTOMAKE
 AC_CONFIG_SRCDIR([src/unuran_config.h])
 AC_CONFIG_HEADER([config.h])
@@ -15,8 +15,9 @@ dnl unuran-0.4.0   0:0:0
 dnl unuran-0.4.2   1:0:1
 dnl unuran-0.4.4   1:0:2
 dnl unuran-0.5.0   2:0:0
+dnl unuran-0.6.0   3:0:0
 
-UNURAN_LT_VERSION="2:0:0"
+UNURAN_LT_VERSION="3:0:0"
 AC_SUBST([UNURAN_LT_VERSION])
 
 dnl Add dmalloc support.
@@ -35,7 +36,7 @@ AC_PROG_LN_S
 AC_CHECK_TOOL(AR, ar, :)
 # AC_CHECK_TOOL(RANLIB, ranlib, :)
 AC_PROG_RANLIB
-# AC_DISABLE_SHARED
+AC_DISABLE_SHARED
 AC_PROG_LIBTOOL
 
 dnl Checks for libraries.

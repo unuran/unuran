@@ -334,6 +334,8 @@
       Continuous empirical univariate distribution, ie. given by sample.
    @item cvemp
       Continuous empirical multivariate distribution, ie. given by sample.
+   @item matr
+      Matrix distributions.
 
    @end table
 

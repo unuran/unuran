@@ -6,9 +6,9 @@
 #include <unistd.h>
 #include <utils/vector_source.h>
 #include <utils/matrix_source.h>
-#include <utils/integral_source.h>
 #include <specfunct/unur_specfunct_source.h>
 #include "../tests/testunuran.h"
+#include <experimental/expect_source.h>
 #include <experimental/hitrou.h>
 
 double _unur_test_chi2test( double *prob, int *observed, int len, int classmin,
@@ -539,7 +539,7 @@ void hit_run() {
   _unur_hitrou_set_point(p.gen, uv);
   faux.f = f_norm;
   for (loop=1; loop<=p.nloops; loop++) {
-    _unur_integral_evaluate_single(p.dim, &faux, p.gen, p.nsamples, &integral);
+    _unur_expect_evaluate_single(p.dim, &faux, p.gen, p.nsamples, &integral);
 //    printf("Integral = %g\n", integral);
   }      
   
@@ -549,7 +549,7 @@ void hit_run() {
   exact_integral=sqrt(2./M_PI);
   for (d=1; d<p.dim; d++) exact_integral=d/exact_integral;
   
-  _unur_integral_evaluate(p.dim, &faux, p.gen, p.nsamples, p.nloops, &exact_integral, 
+  _unur_expect_evaluate(p.dim, &faux, p.gen, p.nsamples, p.nloops, &exact_integral, 
   &integral_mean, &integral_variance, &integral_rmse);
   printf("Mean     = %g\n", integral_mean);
   printf("Variance = %g\n", integral_variance);

@@ -1870,6 +1870,7 @@ _unur_tdr_interval_xxarea( struct unur_gen *gen, struct unur_tdr_interval *iv, d
      /*---------------------------------------------------------------------------*/
 {
   double ev = 0.;
+  double hx,u;
 
   /* check arguments */
   CHECK_NULL(gen,0);  COOKIE_CHECK(gen,CK_TDR_GEN,0);
@@ -1894,33 +1895,28 @@ _unur_tdr_interval_xxarea( struct unur_gen *gen, struct unur_tdr_interval *iv, d
   switch( gen->variant & TDR_VARMASK_T ) {
 
   case TDR_VAR_T_LOG:    /* T(x) = log(x) */
-    if (slope != 0.) {                         
-      if (_unur_FP_is_infinity(x) || _unur_FP_is_minus_infinity(x))
-     	ev = iv->fx / (slope*slope) * (1-slope*iv->x);
+    if (_unur_FP_is_infinity(x) || _unur_FP_is_minus_infinity(x)) {
+      ev = iv->fx / (slope*slope) * (1-slope*iv->x);
+    }
+    else {
+      u = (x-iv->x) * slope;
+
+      if (fabs(u) > 1.e-6) {
+	ev = iv->fx / (slope*slope) * (exp(u)*(slope*x-1.) - slope*iv->x + 1.);
+      }
       else {
-	double t = slope * (x - iv->x);
-	if (fabs(t) > 1.e-6)
-	  ev = iv->fx / (slope*slope) * (exp(t)*(slope*x-1.) - slope*iv->x + 1.);
-	else {
-	  /* use Taylor series */
-	  /* this is not correct when (x - iv->x) and x are (very) large.
-	     but an approximation is quite o.k. here.                     */
-	  ev = 0.5*(x-iv->x)*(x+iv->x) + (1./6.)*(x-iv->x)*(2*x+iv->x)*t;
-	  if (fabs(t) > 1.e-8)
-  	    /* 3rd order expansion */
-	    ev = iv->fx * (ev + (1./24.)*(x-iv->x)*(3*x+iv->x)*t*t);
-	  else
-  	    /* 2nd order expansion */
-	    ev = iv->fx * ev;
+	/* use Taylor series */
+	/* constant term */
+	ev = 0.5 * (x+iv->x);
+	if (fabs(u) > 0) {
+	  /* 1st order expansion */
+	  ev += 1./6. * (2.*x+iv->x) * u;
+	  /* 2nd order expansion */
+	  ev += 1./24. * (3.*x+iv->x) * u * u;
 	}
+	ev *= iv->fx * (x-iv->x);
       }
     }
-    else {  /* hat/squeeze almost constant */
-      if (_unur_FP_is_infinity(x) || _unur_FP_is_minus_infinity(x))
-	return INFINITY;
-      ev = 0.5 * iv->fx * (x*x - iv->x*iv->x);
-    }
-
     break;
 
   case TDR_VAR_T_SQRT:    /* T(x) = -1./sqrt(x) */
@@ -1928,20 +1924,31 @@ _unur_tdr_interval_xxarea( struct unur_gen *gen, struct unur_tdr_interval *iv, d
       /* the integral becomes INFINITY */
       return INFINITY;
 
-    if (slope != 0.) {
-      /* compute value of transformed hat at integration boundary */
-      double hx = iv->Tfx + slope * (x - iv->x);
-      /*        where u = Tf(x0) - slope*(x-x0)                          otherwise */
+    /* compute value of transformed hat at integration boundary */
+    hx = iv->Tfx + slope * (x - iv->x);
+
+    if (hx >= 0.)
       /* the transformed hat must always be below the x-axis.
 	 otherwise the area below the hat in unbounded. */
-      if (hx>=0.)
-	return INFINITY; 
-      else
-	ev = ( iv->x / (slope * iv->Tfx) - x / (slope * hx)
-	       + log( hx / iv->Tfx ) / (slope*slope) );
+      return INFINITY; 
+
+    u = (x-iv->x) * slope / iv->Tfx;
+
+    if (fabs(u) > 1.e-6) {
+      ev = ( iv->x / (slope * iv->Tfx) - x / (slope * hx)
+	     + log( hx / iv->Tfx ) / (slope*slope) );
     }
-    else {  /* hat/squeeze almost constant */
-      ev = 0.5 * iv->fx * (x*x - iv->x*iv->x);
+    else {
+      /* use Taylor series */
+      /* constant term */
+      ev = 0.5 * (x+iv->x);
+      if (fabs(u) > 0) {
+	/* 1st order expansion */
+	ev -= 1./3. * (2.*x+iv->x) * u;
+	/* 2nd order expansion */
+	ev += 1./4. * (3.*x+iv->x) * u * u;
+      }
+      ev *= iv->fx * (x-iv->x);
     }
     break;
 
@@ -2060,8 +2067,8 @@ _unur_tdr_gw_interval_split( struct unur_gen *gen, struct unur_tdr_interval *iv_
 
   /* the splitting point must be inside the interval */
   if (x < iv_oldl->x || x > iv_oldl->next->x) {
-    _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"splitting point not in interval!");
-    return -1;
+    _unur_warning(gen->genid,UNUR_ERR_GEN_DATA,"splitting point not in interval!");
+    return 0;
   }
 
   /* we only add a new construction point, if the relative area is large enough */
@@ -2208,8 +2215,8 @@ _unur_tdr_ps_interval_split( struct unur_gen *gen, struct unur_tdr_interval *iv,
 
   /* the splitting point must be inside the interval */
   if (x < iv->ip || x > iv->next->ip) {
-    _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"splitting point not in interval!");
-    return -1;
+    _unur_warning(gen->genid,UNUR_ERR_GEN_DATA,"splitting point not in interval!");
+    return 0;
   }
 
   /* check for data error */

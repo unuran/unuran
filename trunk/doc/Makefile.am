@@ -19,8 +19,10 @@ unuran_examples = \
  ref_example_vemp.texi
 
 unuran_TEXINFOS = \
+ FuncString.texi \
  unuran.texi \
  unuran_src.texi \
+ unuran_method_requirements.texi \
  $(unuran_examples) \
  version.texi
 

@@ -50,6 +50,9 @@ _unur_fstr_parser_init ( const char *fstr )
      /*                                                                      */
      /* return:                                                              */
      /*   pointer to created and initialized parser object                   */
+     /*                                                                      */
+     /* error:                                                               */
+     /*    return NULL                                                       */
      /*----------------------------------------------------------------------*/
 {
   static int symbols_initialized = FALSE;
@@ -69,6 +72,15 @@ _unur_fstr_parser_init ( const char *fstr )
   /* remove all white spaces and convert to lower case letters. */
   pdata->fstr = _unur_parser_prepare_string(fstr);
   pdata->len_fstr = strlen(pdata->fstr);
+
+  /* check whether string is empty */
+  if (pdata->len_fstr <= 0) {
+    /* empty, there is nothing to do */
+    _unur_error(GENTYPE,UNUR_ERR_STR,"empty string"); 
+    if (pdata->fstr) free (pdata->fstr);
+    free(pdata);
+    return NULL;
+  }
 
   /* make arrays to store tokens in string */
   pdata->token = _unur_malloc( (pdata->len_fstr+1) * sizeof(int) );

@@ -169,6 +169,10 @@ _unur_fstr_2_tree (const char *functstr, int withDefFunct)
   /* initialize parser */
   pdata = _unur_fstr_parser_init(functstr);
 
+  /* check for errors (eg. empty string) */
+  if (pdata == NULL)
+    return NULL;
+
   /* tokenize function string */
   _unur_fstr_tokenize(pdata);
 

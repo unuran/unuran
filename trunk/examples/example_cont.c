@@ -61,6 +61,7 @@ int main()
   unur_distr_cont_set_pdf(distr,  mypdf);    /* set pdf ...        */
   unur_distr_cont_set_dpdf(distr, mydpdf);   /* ... and derivative */
   unur_distr_cont_set_mode(distr, 1.5);      /* set mode           */
+  unur_distr_cont_set_domain(distr, 0., 3.); /* set domain         */
 
   /* Choose method "TDR" and create parameter object               */
   par = unur_tdr_new(distr);

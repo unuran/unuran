@@ -106,7 +106,7 @@
    UNURAN is a C library for generating nonuniformly distributed
    random numbers.
    It is designed to provide a simple tool to produce random numbers with
-   various properties. Because of the divergent requirements to the
+   various properties. Because of the divergent requirements of the
    random numbers various methods for sampling are needed.
    Nevertheless UNURAN solves this complex task in an easy and
    universal way.
@@ -122,15 +122,22 @@
      (name of the corresponding structure: @code{UNUR_PAR})
    @end itemize
 
+   The intention behind these structures is that the user
+   should not change the values within these structures staightly
+   but only via the provides functions. This enables anyone to use
+   UNURAN without knowing anything about internal structures.
+
    When these structures are created it is possible to sample the
-   disired random numbers with the following or a similar command:
+   desired random numbers with the following or a similar command:
    @example
     x = unur_sample_cont(generator);
    @end example
-   Where the variable @code{x} is a double, @code{generator}
+   The variable @code{x} is a double, @code{generator}
    is a structure of the type @code{UNUR_GEN} and 
    @code{unur_sample_cont()} is a double valued function.
-
+   
+   
+   
 
    Of course the user has to provide information about the
    internal properties the random numbers should meet. It is a C
@@ -144,10 +151,10 @@
       distr = unur_sample_<type>_new();
    @end example
    The variable @code{distr} is a structure of type @code{UNUR_DISTR}
-   and instead of <type> one of the type @code{cont}   
-   @code{cvec}   @code{discr}   @code{cemp}   @code{cvemp}
+   and instead of <type> one of the type @code{cont},   
+   @code{cvec},   @code{discr},   @code{cemp} or @code{cvemp}
    as shown below must be used. Depending on <type> you have to use
-   a function @code{unur_saple_<cont|discr|vec>()}
+   a function @code{unur_sample_<cont|discr|vec>()}
    to sample random numbers.
    @itemize @bullet
    @item @code{unur_distr_cont_new()}@*
@@ -160,7 +167,7 @@
 	distribution.@*
         Use for sampling: @code{unur_sample_vec()}
    @item @code{unur_distr_discr_new()}@*
-	If your distribution is descrete, use this function to
+	If your distribution is discrete, use this function to
 	create the distribution object.@*
         Use for sampling: @code{unur_sample_discr()}
    @item @code{unur_distr_cemp_new()}@*
@@ -187,7 +194,7 @@
    @example
      unur_distr_cont_set_pdf(distr, mypdf);
    @end example
-   This command stores a pdf named @code{mypdf} to the distribution
+   This command stores a pdf named @code{mypdf} in the distribution
    object @code{distr} which has the type @code{cont}.
    The function @code{mypdf} which returns a
    @code{double} must be provided by the user.
@@ -257,7 +264,7 @@
   @example
     unur_ninv_set_max_iteration(par, 50);
   @end example
-  The available methods are described in a section below (@pxref{Methods,Methods,Methods}).
+  The available methods are described later (@pxref{Methods,Methods,Methods}).
   
   Now it is possible to create a generator object:
   @example
@@ -285,8 +292,8 @@
   and the first argument must be of type @code{UNUR_GEN}.
   The main advantage of this concept is the possibility to change
   essential parameters during sampling.
-  All functions corresponding to a specific method are found in
-  section XXXXX.
+  All functions corresponding to a specific method are
+  explained later (@pxref{Methods,Methods,Methods}).
 
   Finally you can sample random number with:
   @example

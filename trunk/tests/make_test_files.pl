@@ -790,7 +790,7 @@ sub scan_validate {
 		foreach $l (@lines) {
 		    if ($l =~ /gen/ and !$have_gen_lines) {
 			$have_gen_lines = 1;
-			print OUT "\tgen = unur_test_timing(par,$log_samplesize,&time_setup,&time_sample,0);\n"; 
+			print OUT "\tgen = unur_test_timing(par,$log_samplesize,&time_setup,&time_sample,0,TESTLOG);\n"; 
 			print OUT "\tif (gen) {\n";
 		    }
 		    
@@ -801,7 +801,7 @@ sub scan_validate {
 		    print OUT "\t;}\n";
 		}
 		else {
-		    print OUT "\tgen = unur_test_timing(par,$log_samplesize,&time_setup,&time_sample,0);\n"; 
+		    print OUT "\tgen = unur_test_timing(par,$log_samplesize,&time_setup,&time_sample,0,TESTLOG);\n"; 
 		    print OUT "\ttiming_result[$n_gen] = time_sample;\n";
 		}
 		print OUT "\tif (gen) timing_result[$n_gen] = time_sample;\n";

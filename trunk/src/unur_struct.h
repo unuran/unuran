@@ -110,6 +110,7 @@ struct unur_funct_vgeneric {
 /**  Distribution objects                                                   **/
 /*****************************************************************************/
 
+#include <distr/cvec_struct.h>
 #include <distr/distr_struct.h>
 
 /*****************************************************************************/

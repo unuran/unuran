@@ -53,9 +53,9 @@ static const char unknown_distr_name[] = "unknown";
 
 #define DISTR distr->data.cvec
 
-/** TODO: absolute constant should be replaced by some relative one */
-/* threshold value for ill-conditioned matrix:                               */
-/* covariance matrix will not be inverted if its determinant is smaller      */
+/* inverse of covariance matrix could be wrong if determinant is smaller.    */
+/* in some cases however we compute the inverse for some ill-conditioned     */
+/* covariance matrices ignoring the absolute value of COVARIANCE_DETMIN.     */
 #define COVARIANCE_DETMIN  (1.e-10) 
 
 /*---------------------------------------------------------------------------*/

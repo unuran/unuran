@@ -583,8 +583,8 @@ _unur_test_chi2_vec ( struct unur_gen *gen,
 
   /* dimension of distribution */
   dim = gen->distr->dim;
-  if (dim < 2) {
-    _unur_error(test_name,UNUR_ERR_GENERIC,"distribution dimension < 2 ?");
+  if (dim < 1) {
+    _unur_error(test_name,UNUR_ERR_GENERIC,"distribution dimension < 1 ?");
     return -1.; 
   }
 

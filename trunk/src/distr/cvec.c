@@ -99,8 +99,8 @@ unur_distr_cvec_new( int dim )
   int i;
 
   /* check dimension for new parameter for distribution */
-  if (dim < 2) {
-    _unur_error(NULL,UNUR_ERR_DISTR_SET,"dimension < 2");
+  if (dim < 1) {
+    _unur_error(NULL,UNUR_ERR_DISTR_SET,"dimension < 1");
     return NULL;
   }
 
@@ -1282,15 +1282,15 @@ _unur_distr_cvec_marginals_clone ( struct unur_distr **marginals, int dim )
   _unur_check_NULL( NULL, marginals, NULL );
 
   /* check dimension */
-  if (dim < 2) {
-    _unur_error(NULL,UNUR_ERR_DISTR_SET,"dimension < 2");
+  if (dim < 1) {
+    _unur_error(NULL,UNUR_ERR_DISTR_SET,"dimension < 1");
     return NULL;
   }
 
   /* allocate memory for array */
   clone = _unur_xmalloc (dim * sizeof(struct unur_distr *));
 
-  if (_unur_distr_cvec_marginals_are_equal(marginals)) {
+  if (_unur_distr_cvec_marginals_are_equal(marginals, dim)) {
       clone[0] = _unur_distr_clone( marginals[0] );
       for (i=1; i<dim; i++)
 	clone[i] = clone[0];
@@ -1321,7 +1321,7 @@ _unur_distr_cvec_marginals_free ( struct unur_distr **marginals, int dim )
 {
   int i;
 
-  if (_unur_distr_cvec_marginals_are_equal(marginals)) {
+  if (_unur_distr_cvec_marginals_are_equal(marginals,dim)) {
     _unur_distr_free(marginals[0]);
   }
 
@@ -1336,7 +1336,7 @@ _unur_distr_cvec_marginals_free ( struct unur_distr **marginals, int dim )
 /*---------------------------------------------------------------------------*/
 
 int 
-_unur_distr_cvec_marginals_are_equal( struct unur_distr **marginals )
+_unur_distr_cvec_marginals_are_equal( struct unur_distr **marginals, int dim )
      /*----------------------------------------------------------------------*/
      /* test whether all marginals are equal or not.                         */
      /*                                                                      */
@@ -1344,7 +1344,7 @@ _unur_distr_cvec_marginals_are_equal( struct unur_distr **marginals )
      /*   marginals ... pointer to list of marginal distribution objects     */
      /*                                                                      */
      /* return:                                                              */
-     /*   TRUE  ... if equal                                                 */
+     /*   TRUE  ... if equal (or dim == 1)                                   */
      /*   FALSE ... if unequal                                               */
      /*                                                                      */
      /* WARNING:                                                             */
@@ -1356,8 +1356,9 @@ _unur_distr_cvec_marginals_are_equal( struct unur_distr **marginals )
           (set by unur_distr_cvec_set_marginals() call)
      or each entry has its own copy of some distribution object.
           (set by unur_distr_cvec_set_marginal_array() call)
+     For dimension 1, TRUE is returned.
   */
-  return (marginals[0] == marginals[1]) ? TRUE : FALSE;
+  return (dim <= 1 || marginals[0] == marginals[1]) ? TRUE : FALSE;
 } /* end of _unur_distr_cvec_marginals_are_equal() */
 
 /*---------------------------------------------------------------------------*/
@@ -1715,7 +1716,7 @@ _unur_distr_cvec_debug( const struct unur_distr *distr, const char *genid )
   /* marginal distributions */
   fprintf(log,"%s:\tmarginal distributions:   [see also standardized marginal distributions]\n",genid);
   if (distr->set & UNUR_DISTR_SET_MARGINAL) {
-    if (DISTR.marginals[0] == DISTR.marginals[1]) {
+    if (_unur_distr_cvec_marginals_are_equal(DISTR.marginals, distr->dim)) {
       fprintf(log,"%s: all mariginals [1-%d]:\n",genid,distr->dim);
       _unur_distr_cont_debug( DISTR.marginals[0], genid );
     }
@@ -1735,7 +1736,7 @@ _unur_distr_cvec_debug( const struct unur_distr *distr, const char *genid )
   /* standardized marginal distributions */
   fprintf(log,"%s:\tstandardized marginal distributions:   [see also marginal distributions]\n",genid);
   if (distr->set & UNUR_DISTR_SET_STDMARGINAL) {
-    if (DISTR.stdmarginals[0] == DISTR.stdmarginals[1]) {
+    if (_unur_distr_cvec_marginals_are_equal(DISTR.stdmarginals, distr->dim)) {
       fprintf(log,"%s: all standardized mariginals [1-%d]:\n",genid,distr->dim);
       _unur_distr_cont_debug( DISTR.stdmarginals[0], genid );
     }

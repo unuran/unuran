@@ -423,8 +423,8 @@ _unur_matrix_invert_matrix(int dim, const double *A, double detmin, double *Ainv
   CHECK_NULL(A,UNUR_ERR_NULL);
   CHECK_NULL(Ainv,UNUR_ERR_NULL);
   CHECK_NULL(det,UNUR_ERR_NULL);
-  if (dim<2) {
-    _unur_error("matrix",UNUR_ERR_GENERIC,"dimension < 2");
+  if (dim<1) {
+    _unur_error("matrix",UNUR_ERR_GENERIC,"dimension < 1");
     return UNUR_ERR_GENERIC;
   }
   
@@ -553,8 +553,8 @@ _unur_matrix_qf (int dim, double *x, double *A)
   /* check arguments */
   CHECK_NULL(x,INFINITY);
   CHECK_NULL(A,INFINITY);
-  if (dim<2) {
-    _unur_error("matrix",UNUR_ERR_GENERIC,"dimension < 2");
+  if (dim<1) {
+    _unur_error("matrix",UNUR_ERR_GENERIC,"dimension < 1");
     return INFINITY;
   }
   
@@ -597,8 +597,8 @@ _unur_matrix_cholesky_decomposition (int dim, const double *S, double *L )
   
   /* check arguments */
   CHECK_NULL(S,UNUR_ERR_NULL);
-  if (dim<2) {
-    _unur_error("matrix",UNUR_ERR_GENERIC,"dimension < 2");
+  if (dim<1) {
+    _unur_error("matrix",UNUR_ERR_GENERIC,"dimension < 1");
     return UNUR_ERR_GENERIC;
   }
   

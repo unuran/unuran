@@ -87,8 +87,8 @@ unur_distr_matr_new( int n_rows, int n_cols )
   register struct unur_distr *distr;
 
   /* check dimension for new parameter for distribution */
-  if (n_rows < 2 || n_cols < 2) {
-    _unur_error(NULL,UNUR_ERR_DISTR_SET,"n_rows or n_cols < 2");
+  if (n_rows < 1 || n_cols < 1) {
+    _unur_error(NULL,UNUR_ERR_DISTR_SET,"n_rows or n_cols < 1");
     return NULL;
   }
 

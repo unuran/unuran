@@ -64,8 +64,12 @@ UNUR_DISTR *unur_distr_matr_new( int n_rows, int n_cols );
 /* 
    Create a new (empty) object for a matrix distribution. @var{n_rows}
    and @var{n_cols} are the respective numbers of rows and columns of
-   the random matrix (i.e. its dimensions). Each must be at least 2;
-   otherwise unur_distr_cont_new() or unur_distr_cvec_new() should be
+   the random matrix (i.e. its dimensions). It is also possible to 
+   have only one number or rows and/or columns.
+   Notice, however, that this is treated as a distribution of random 
+   matrices with only one row or column or component and not as a
+   distribution of vectors or real numbers. For the latter 
+   unur_distr_cont_new() or unur_distr_cvec_new() should be
    used to create an object for a univariate distribution and a
    multivariate (vector) distribution, respectively.
 */

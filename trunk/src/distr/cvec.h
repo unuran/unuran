@@ -116,9 +116,11 @@ UNUR_DISTR *unur_distr_cvec_new( int dim );
 /* 
    Create a new (empty) object for multivariate continuous
    distribution. @var{dim} is the number of components of the random
-   vector (i.e. its dimension). It must be at least 2; otherwise
-   unur_distr_cont_new() should be used to create an object for a
-   univariate distribution.
+   vector (i.e. its dimension). It is also possible to use dimension 1.
+   Notice, however, that this is treated as a distribution of random 
+   vectors with only one component and not as a distribution of 
+   real numbers. For the latter unur_distr_cont_new() should be used
+   to create an object for a univariate distribution.
 */
 
 /* ==DOC

@@ -222,7 +222,7 @@ _unur_vmt_init( struct unur_par *par )
 
   /* initialize generators for marginal distribution */
 
-  if (_unur_distr_cvec_marginals_are_equal(DISTR.stdmarginals)) {
+  if (_unur_distr_cvec_marginals_are_equal(DISTR.stdmarginals, GEN.dim)) {
     /* we can use the same generator object for all marginal distribuitons */
     struct unur_gen *marginalgen = unur_init( unur_auto_new( DISTR.stdmarginals[0] ) );
     if (marginalgen)

@@ -335,7 +335,7 @@ unur_arou_new( struct unur_distr *distr )
 		    AROU_VARFLAG_PEDANTIC );
   par->set      = 0u;                      /* inidicate default parameters   */    
   par->urng     = unur_get_default_urng(); /* use default urng               */
-  par->urng_aux = NULL;                    /* no auxilliary URNG required    */
+  par->urng_aux = par->urng;               /* no special auxilliary URNG     */
 
   par->debug    = _unur_default_debugflag; /* set default debugging flags    */
 
@@ -812,8 +812,8 @@ _unur_arou_create( struct unur_par *par )
   gen->set = par->set;              /* indicates parameter settings          */
   gen->debug = par->debug;          /* debuging flags                        */
   gen->urng = par->urng;            /* pointer to urng                       */
+  gen->urng_aux = par->urng_aux;    /* pointer to auxilliary URNG            */
 
-  gen->urng_aux = NULL;             /* no auxilliary URNG required           */
   gen->gen_aux = NULL;              /* no auxilliary generator objects       */
   gen->gen_aux_2 = NULL;
 
@@ -851,16 +851,20 @@ _unur_arou_sample( struct unur_gen *gen )
 { 
   /** TODO: check uniform random number: u != 0 and u != 1 ??  **/
 
+  UNUR_URNG *urng;             /* pointer to uniform random number generator */
   struct unur_arou_segment *seg;
   double R,R1,R2,R3,tmp,x,fx,u;
 
   /* check arguments */
   CHECK_NULL(gen,0.);  COOKIE_CHECK(gen,CK_AROU_GEN,0.);
 
+  /* main URNG */
+  urng = gen->urng;
+
   while (1) {
 
     /* sample from U(0,1) */
-    R = _unur_call_urng(gen->urng);
+    R = _unur_call_urng(urng);
 
     /* look up in guide table and search for segment */
     seg =  GEN.guide[(int) (R * GEN.guide_size)];
@@ -885,9 +889,13 @@ _unur_arou_sample( struct unur_gen *gen )
     else {
       /* outside */
 
+      /* from now on we use the auxilliary generator
+	 (it can be the same as the main generator) */
+      urng = gen->urng_aux;
+
       /* three uniform random numbers with R1 + R2 + R3 = 1 */
       R1 = (R - seg->Ain) / seg->Aout;  /* reuse of random number (good ?? ) */
-      R2 = _unur_call_urng(gen->urng);
+      R2 = _unur_call_urng(urng);
       if (R1>R2) { tmp = R1; R1=R2; R2=tmp; }  /* swap */
       R3 = 1.-R2;
       R2 -= R1;
@@ -898,8 +906,6 @@ _unur_arou_sample( struct unur_gen *gen )
 
       /* density at x */
       fx = PDF(x);
-
-
 
       /* being outside the squeeze is bad. improve the situation! */
       if (GEN.n_segs < GEN.max_segs && GEN.max_ratio * GEN.Atotal > GEN.Asqueeze)
@@ -939,11 +945,15 @@ _unur_arou_sample_check( struct unur_gen *gen )
 { 
   /** TODO: check uniform random number: u != 0 and u != 1 ??  **/
 
+  UNUR_URNG *urng;             /* pointer to uniform random number generator */
   struct unur_arou_segment *seg;
   double R,R1,R2,R3,tmp,x,fx,u,sqx,a;
 
   /* check arguments */
   CHECK_NULL(gen,0.);  COOKIE_CHECK(gen,CK_AROU_GEN,0.);
+
+  /* main URNG */
+  urng = gen->urng;
 
   while (1) {
 
@@ -987,6 +997,10 @@ _unur_arou_sample_check( struct unur_gen *gen )
 
     else {
       /* outside */
+
+      /* from now on we use the auxilliary generator
+	 (it can be the same as the main generator) */
+      urng = gen->urng_aux;
 
       /* three uniform random numbers with R1 + R2 + R3 = 1 */
       R1 = (R - seg->Ain) / seg->Aout;  /* reuse of random number (good ?? ) */

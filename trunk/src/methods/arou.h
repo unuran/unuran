@@ -44,6 +44,16 @@
    fact that the transformed region is convex for many distributions.
    It works for all T-concave distributions with T(x) = -1/sqrt(x).
 
+   There are lots of parameters for this methods, see below.
+
+   It is possible to use this method for correlation induction by
+   setting an auxilliary uniform random number generator via the
+   unur_set_urng_aux() call. (Notice that this must be done after a
+   possible unur_set_urng() call.)
+   When an auxilliary generator is used then the number of used
+   uniform random numbers that is used up for one generated random
+   variate is constant and equal to 1.
+
 */
 
 /*---------------------------------------------------------------------------*/

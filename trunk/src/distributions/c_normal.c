@@ -132,7 +132,7 @@ _unur_cdf_normal( double x, UNUR_DISTR *distr )
     /* standardize */
     x = (x - mu) / sigma;
   case 0: default: /* standard */
-    return _unur_cdf_normal_ext(x);
+    return _unur_sf_cdfnormal(x);
   }
 } /* end of _unur_cdf_normal() */
 

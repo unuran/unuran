@@ -45,31 +45,31 @@ EXTRA_DIST = \
 
 
 t_distr_SOURCES = t_distr.c testroutines.c
-t_distr_LDADD = $(top_builddir)/src/libunuran.a -lprng -lml -lm
+t_distr_LDADD = $(top_builddir)/src/libunuran.a -lprng -lm -lmd
 
 t_arou_SOURCES = t_arou.c testroutines.c
-t_arou_LDADD = $(top_builddir)/src/libunuran.a -lprng -lml -lm
+t_arou_LDADD = $(top_builddir)/src/libunuran.a -lprng  -lm -lmd
 
 t_dau_SOURCES = t_dau.c testroutines.c
-t_dau_LDADD = $(top_builddir)/src/libunuran.a -lprng -lml -lm
+t_dau_LDADD = $(top_builddir)/src/libunuran.a -lprng  -lm -lmd
 
 t_dgt_SOURCES = t_dgt.c testroutines.c
-t_dgt_LDADD = $(top_builddir)/src/libunuran.a -lprng -lml -lm
+t_dgt_LDADD = $(top_builddir)/src/libunuran.a -lprng  -lm -lmd
 
 t_srou_SOURCES = t_srou.c testroutines.c
-t_srou_LDADD = $(top_builddir)/src/libunuran.a -lprng -lml -lm
+t_srou_LDADD = $(top_builddir)/src/libunuran.a -lprng -lm -lmd
 
 t_ssr_SOURCES = t_ssr.c testroutines.c
-t_ssr_LDADD = $(top_builddir)/src/libunuran.a -lprng -lml -lm
+t_ssr_LDADD = $(top_builddir)/src/libunuran.a -lprng  -lm -lmd
 
 t_tdr_SOURCES = t_tdr.c testroutines.c
-t_tdr_LDADD = $(top_builddir)/src/libunuran.a -lprng -lml -lm
+t_tdr_LDADD = $(top_builddir)/src/libunuran.a -lprng  -lm -lmd
 
 t_unif_SOURCES = t_unif.c  testroutines.c
-t_unif_LDADD = $(top_builddir)/src/libunuran.a -lprng -lml -lm
+t_unif_LDADD = $(top_builddir)/src/libunuran.a -lprng -lm -lmd
 
 t_utdr_SOURCES = t_utdr.c testroutines.c
-t_utdr_LDADD = $(top_builddir)/src/libunuran.a -lprng -lml -lm
+t_utdr_LDADD = $(top_builddir)/src/libunuran.a -lprng -lm -lmd
 
 
 t_distr.c: distr.conf make_test_files.pl

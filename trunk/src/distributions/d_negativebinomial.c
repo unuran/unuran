@@ -80,7 +80,7 @@ _unur_pmf_negativebinomial(int k, UNUR_DISTR *distr)
 
   else
     return (pow( p, (double)k ) * pow( 1.-p, r ) 
-	    * exp( _unur_gammaln(k+r) - _unur_gammaln(r) - _unur_gammaln(k+1.) ) );
+	    * exp( _unur_sf_ln_gamma(k+r) - _unur_sf_ln_gamma(r) - _unur_sf_ln_gamma(k+1.) ) );
 } /* end of _unur_pmf_negativebinomial() */
 
 /*---------------------------------------------------------------------------*/

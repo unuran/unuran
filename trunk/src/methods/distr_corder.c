@@ -417,7 +417,7 @@ _unur_cdf_corder( double x, struct unur_distr *os )
   q = OS.params[0] - OS.params[1] + 1.;   /* n-k+1 */
 
   /* cdf(x) = B(F(x)) */
-  return _unur_incbeta(Fx,p,q);
+  return _unur_sf_incomplete_beta(Fx,p,q);
 
 } /* end of _unur_cdf_corder() */
 
@@ -429,10 +429,10 @@ _unur_upd_area_corder( UNUR_DISTR *os )
   double Ftrunc;   /* cdf(right) - cdf(left) for Ftruncated distribution */
 
   /* log of normalization constant */
-  /* LOGNORMCONSTANT = _unur_gammaln(k) + _unur_gammaln(n-k+1) - _unur_gammaln(n+1); */
-  LOGNORMCONSTANT = ( _unur_gammaln(OS.params[1]) 
-		      + _unur_gammaln(OS.params[0] - OS.params[1] + 1.) 
-		      - _unur_gammaln(OS.params[0] + 1.) );
+  /* LOGNORMCONSTANT = _unur_sf_ln_gamma(k) + _unur_sf_ln_gamma(n-k+1) - _unur_sf_ln_gamma(n+1); */
+  LOGNORMCONSTANT = ( _unur_sf_ln_gamma(OS.params[1]) 
+		      + _unur_sf_ln_gamma(OS.params[0] - OS.params[1] + 1.) 
+		      - _unur_sf_ln_gamma(OS.params[0] + 1.) );
 
   /* truncated distributions */
   if (!os->base->set & UNUR_DISTR_SET_STDDOMAIN) {

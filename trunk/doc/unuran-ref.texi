@@ -186,7 +186,7 @@ Beginning with the basics of using unuran we evolve to examples
 using  more advanced features of UNURAN.
 After the example itself the relevant code will be explained.
 @*call the compiler with:
-@* @file{gcc -Wall -O2 example.c -lunuran -lprng -lml -lm -o test}
+@* @file{gcc -Wall -O2 example.c -lunuran -lprng -lm -lmd -o test}
 
 @node Ex1
 @section Ex1: As short as possible

@@ -56,24 +56,37 @@
 /*---------------------------------------------------------------------------*/
 /* CEPHES library                                                            */
 
+/** functions related to beta distribution **/
+
 /* incomplete beta integral */
-extern long double incbetl(long double a, long double b, long double x);
-#define _unur_incbeta(x,a,b) ((double)incbetl((long double)(a),(long double)(b),(long double)(x)))
+double incbet(double a, double b, double x);
+#define _unur_sf_incomplete_beta(x,a,b)   incbet((a),(b),(x))
+#define _HAVE_UNUR_SF_INCOMPLETE_BETA
+
+/** functions related to gamma distribution **/
 
 /* logarithm of gamma function */
-extern long double lgaml(long double x);
-#define _unur_gammaln(x)  ((double)(lgaml((long double)(x))))
+double lgam(double x);
+#define _unur_sf_ln_gamma(x)   lgam(x)
+#define _HAVE_UNUR_SF_LN_GAMMA
 
 /* logarithm of factorial */
-#define _unur_factorialln(x)   _unur_gammaln((x)+1.)
+#ifdef _HAVE_UNUR_SF_LN_GAMMA
+#define _unur_sf_ln_factorial(x)   _unur_sf_ln_gamma((x)+1.)
+#define _HAVE_UNUR_SF_LN_FACTORIAL
+#endif
 
 /* incomplete gamma function */
-extern long double igaml(long double a, long double x);
-#define _unur_incgamma(x,a)  ((double)(igaml((long double)(a),(long double)(x))))
+double igam(double a, double x);
+#define _unur_sf_incomplete_gamma(x,a)  igam((a),(x))
+#define _HAVE_UNUR_SF_INCOMPLETE_GAMMA
+
+/** functions related to normal distribution **/
 
 /* cdf of normal distribution */
-extern long double ndtrl(long double x);
-#define _unur_cdf_normal_ext(x) ((double)(ndtrl((long double)(x))))
+double ndtr(double x);
+#define _unur_sf_cdfnormal(x)   ndtr(x)
+#define _HAVE_SF_CDFNORMAL
 
 /*---------------------------------------------------------------------------*/
 #endif  /* __SOURCE_SPECFUNCT_H_SEEN */

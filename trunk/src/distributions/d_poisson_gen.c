@@ -494,7 +494,7 @@ _unur_stdgen_sample_poisson_pdac( struct unur_gen *gen )
 
 inline static double f(int k, double l_nu, double c_pm)
 {
-  return  exp(k * l_nu - _unur_factorialln(k) - c_pm);
+  return  exp(k * l_nu - _unur_sf_ln_factorial(k) - c_pm);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -571,7 +571,7 @@ poisson_pprsc_init( struct unur_gen *gen )
 
   /* Poisson constants, necessary for computing function values f(k)         */
   l_theta = log(theta);
-  c_pm = m * l_theta - _unur_factorialln(m);
+  c_pm = m * l_theta - _unur_sf_ln_factorial(m);
 
   /* function values f(k) = p(k)/p(m) at k = k2, k4, k1, k5                  */
   f2 = f(k2, l_theta, c_pm);
@@ -695,7 +695,7 @@ _unur_stdgen_sample_poisson_pprsc( struct unur_gen *gen )
     /* acceptance-rejection test of candidate X from the original area       */
     /* test, whether  W <= f(k),    with  W = U*h(x)  and  U -- U(0, 1)      */
     /* log f(X) = (X - m)*log(theta) - log X! + log m!                       */
-    if (log(W) <= X * l_theta - _unur_factorialln(X) - c_pm)
+    if (log(W) <= X * l_theta - _unur_sf_ln_factorial(X) - c_pm)
       return X;
 
   }

@@ -16,12 +16,12 @@ example3_SOURCE = example3.c
 example4_SOURCE = example4.c
 test_SOURCE = test.c
 
-run_LDADD = -lunuran -lprng -lml -lm
-example1_LDADD = -lunuran -lprng -lml -lm
-example2_LDADD = -lunuran -lprng -lml -lm
-example3_LDADD = -lunuran -lprng -lml -lm
-example4_LDADD = -lunuran -lprng -lml -lm
-test_LDADD = -lunuran -lprng -lml -lm
+run_LDADD = -lunuran -lprng -lm -lmd
+example1_LDADD = -lunuran -lprng -lm -lmd
+example2_LDADD = -lunuran -lprng -lm -lmd
+example3_LDADD = -lunuran -lprng -lm -lmd
+example4_LDADD = -lunuran -lprng -lm -lmd
+test_LDADD = -lunuran -lprng -lm -lmd
 
 # clean backup files
 CLEANFILES = \

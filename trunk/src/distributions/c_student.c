@@ -91,7 +91,7 @@ _unur_dpdf_student( double x, UNUR_DISTR *distr )
 double
 _unur_normconstant_student( double *params, int n_params )
 {
-  return( sqrt(M_PI * nu) * exp(_unur_gammaln(0.5*nu) - _unur_gammaln(0.5*(nu+1.))) );
+  return( sqrt(M_PI * nu) * exp(_unur_sf_ln_gamma(0.5*nu) - _unur_sf_ln_gamma(0.5*(nu+1.))) );
 } /* end of _unur_normconstant_student() */
 
 /*---------------------------------------------------------------------------*/

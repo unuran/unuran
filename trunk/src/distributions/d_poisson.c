@@ -73,7 +73,7 @@ double
 _unur_pmf_poisson(int k, UNUR_DISTR *distr)
 { 
   register double *params = DISTR.params;
-  return ((k<0) ? 0. : exp( -theta + k * log(theta) - _unur_factorialln(k) ));
+  return ((k<0) ? 0. : exp( -theta + k * log(theta) - _unur_sf_ln_factorial(k) ));
 } /* end of _unur_pmf_poisson() */
 
 /*---------------------------------------------------------------------------*/

@@ -157,7 +157,7 @@ _unur_cdf_beta(double x, UNUR_DISTR *distr)
     if (x <= 0.) return 0.;
     if (x >= 1.) return 1.;
 
-    return _unur_incbeta(x,p,q);
+    return _unur_sf_incomplete_beta(x,p,q);
   }
 } /* end of _unur_cdf_beta() */
 
@@ -190,10 +190,10 @@ _unur_lognormconstant_beta(double *params, int n_params)
   switch (n_params) {
   case 4:                /* non standard */
     /* log( Beta(p,q) * (b-a) ) */
-    return (_unur_gammaln(p) + _unur_gammaln(q) - _unur_gammaln(p+q) + log(b-a) );
+    return (_unur_sf_ln_gamma(p) + _unur_sf_ln_gamma(q) - _unur_sf_ln_gamma(p+q) + log(b-a) );
   case 2: default:       /* standard */
     /* log( Beta(p,q) ) */
-    return (_unur_gammaln(p) + _unur_gammaln(q) - _unur_gammaln(p+q));
+    return (_unur_sf_ln_gamma(p) + _unur_sf_ln_gamma(q) - _unur_sf_ln_gamma(p+q));
   }
 } /* end of _unur_lognormconstant_beta() */
 

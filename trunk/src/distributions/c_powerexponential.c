@@ -107,7 +107,7 @@ _unur_cdf_powerexponential( double x, UNUR_DISTR *distr )
   register double cdf;
 
   /* compute cdf(abs(x)) - cdf(0) */
-  cdf = _unur_incgamma(pow(fabs(x),tau),1./tau) / 2.;
+  cdf = _unur_sf_incomplete_gamma(pow(fabs(x),tau),1./tau) / 2.;
   return ((x<0.) ? 0.5 - cdf : 0.5 + cdf);
 
 } /* end of _unur_cdf_powerexponential() */
@@ -117,7 +117,7 @@ _unur_cdf_powerexponential( double x, UNUR_DISTR *distr )
 double
 _unur_lognormconstant_powerexponential(double *params, int n_params)
 { 
-  return  _unur_gammaln(1+1/tau) + M_LN2;
+  return  _unur_sf_ln_gamma(1+1/tau) + M_LN2;
 } /* end of _unur_lognormconstant_powerexponential() */
 
 /*---------------------------------------------------------------------------*/

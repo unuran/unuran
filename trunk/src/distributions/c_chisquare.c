@@ -114,7 +114,7 @@ _unur_cdf_chisquare(double x, UNUR_DISTR *distr)
     /* out of support of p.d.f. */
     return 0.;
 
-  return _unur_incgamma(x/2.,nu/2.);
+  return _unur_sf_incomplete_gamma(x/2.,nu/2.);
 } /* end of _unur_cdf_chisquare() */
 
 /*---------------------------------------------------------------------------*/
@@ -162,7 +162,7 @@ unur_distr_chisquare( double *params, int n_params )
   DISTR.n_params = n_params;
 
   /* log of normalization constant */
-  LOGNORMCONSTANT = _unur_gammaln(nu/2.) - M_LN2 * (nu/2.);
+  LOGNORMCONSTANT = _unur_sf_ln_gamma(nu/2.) - M_LN2 * (nu/2.);
 
   /* mode and area below p.d.f. */
   DISTR.mode = (nu >= 2.) ? (nu - 2.) : 0.;

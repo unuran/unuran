@@ -144,7 +144,7 @@ _unur_cdf_gamma( double x, UNUR_DISTR *distr )
     if (x <= 0.)
       return 0.;
 
-    return _unur_incgamma(x,alpha);
+    return _unur_sf_incomplete_gamma(x,alpha);
   }
 } /* end of _unur_cdf_gamma() */
 
@@ -172,9 +172,9 @@ _unur_lognormconstant_gamma( double *params, int n_params )
 {
   switch (n_params) {
   case 3:  /* non standard */
-    return ( _unur_gammaln(alpha) + log(beta) );
+    return ( _unur_sf_ln_gamma(alpha) + log(beta) );
   case 1: default: /* standard */
-    return (_unur_gammaln(alpha));
+    return (_unur_sf_ln_gamma(alpha));
   }
 } /* end of _unur_lognormconstant_gamma() */
 

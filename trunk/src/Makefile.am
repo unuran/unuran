@@ -22,7 +22,7 @@ include_HEADERS = \
 EXTRA_DIST = \
  unuran.h 
 
-unuran.h:
+unuran.h: $(top_srcdir)/src/methods/*.h $(top_srcdir)/src/distributions/*.h 
 	$(top_srcdir)/scripts/merge_h.pl $(top_srcdir)/src/methods/in_unuran.h > unuran.h
 
 # clean backup files

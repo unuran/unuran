@@ -527,9 +527,64 @@ int unur_distr_cvec_eval_dpdf( double *result, double *x, UNUR_DISTR *distributi
    @code{UNUR_ERR_DISTR_DATA} (@var{result} is left unmodified).
 */
 
+int unur_distr_cvec_set_mean( UNUR_DISTR *distribution, double *mean );
+/* 
+   Set mean vector for multivariate distribution.
+   @var{mean} must be a pointer to an array of size @code{dim}, where
+   @code{dim} is the dimension returned by unur_distr_get_dim().
+   A @code{NULL} pointer for @var{mean} is interpreted as the zero
+   vector (0,@dots{},0).
+*/
+
+double *unur_distr_cvec_get_mean( UNUR_DISTR *distribution );
+/* 
+   Get the mean vector of the distribution. The function returns a
+   pointer to an array of size @code{dim}.
+   If the mean vector is not marked as known the @code{NULL} pointer is
+   returned and @code{unur_errno} is set to
+   @code{UNUR_ERR_DISTR_GET}. 
+   (However note that the @code{NULL} pointer also indicates the zero
+   vector to avoid unnecessary computations. But then
+   @code{unur_errno} is not set.)
+   
+   Warning: Do not modify the array that holds the mean vector!
+*/
+
+int unur_distr_cvec_set_covar( UNUR_DISTR *distribution, double *covar );
+/* 
+   Set covariance matrix for multivariate distribution.
+   @var{covar} must be a pointer to an array of size
+   @code{dim}x@code{dim}, where @code{dim} is the dimension returned
+   by unur_distr_get_dim(). The rows of the matrix have to be stored
+   consecutively in this array.
+
+   A @code{NULL} pointer for @var{covar} is interpreted as the
+   identity matrix.
+*/
+
+double *unur_distr_cvec_get_covar( UNUR_DISTR *distribution );
+/* 
+   Get covariance matrix of distribution. The function returns a
+   pointer to an array of size @code{dim}x@code{dim}.
+   The rows of the matrix have to be stored consecutively in this
+   array.
+   If the covariance matrix is not marked as known the @code{NULL}
+   pointer is returned and @code{unur_errno} is set to
+   @code{UNUR_ERR_DISTR_GET}. 
+   (However note that the @code{NULL} pointer also indicates the
+   identity matrix to avoid unnecessary computations. But then
+   @code{unur_errno} is not set.)
+
+   Warning: Do not modify the array that holds the covariance matrix!
+*/
+
 int unur_distr_cvec_set_pdfparams( UNUR_DISTR *distribution, int par, double *params, int n_params );
 /* 
-   Set parameter with number @var{par}. 
+   This function provides an interface for additional parameters for a
+   multivariate distribution besides mean vector and covariance matrix
+   which have their own calls.
+
+   It sets the parameter with number @var{par}. 
    @var{par} indicates directly which of the parameters is set and
    must be a number between @code{0} and @code{UNUR_DISTR_MAXPARAMS}-1
    (the upper limit of possible parameters defined in
@@ -577,7 +632,8 @@ int unur_distr_cvec_get_pdfparams( UNUR_DISTR *distribution, int par, double **p
 
 int unur_distr_cvec_set_mode( UNUR_DISTR *distribution, double *mode );
 /* 
-   Set mode of distribution.
+   Set mode of distribution. @var{mode} must be a pointer to an array
+   of the size returned by unur_distr_get_dim().
 */
 
 int unur_distr_cvec_upd_mode( UNUR_DISTR *distribution );
@@ -590,7 +646,7 @@ int unur_distr_cvec_upd_mode( UNUR_DISTR *distribution );
 
 double *unur_distr_cvec_get_mode( UNUR_DISTR *distribution );
 /* 
-   Get mode of distribution. The function return a pointer to an array
+   Get mode of distribution. The function returns a pointer to an array
    of the size returned by unur_distr_get_dim().
    If the mode is not marked as known, 
    unur_distr_cvec_upd_mode() is called to compute the mode. If this

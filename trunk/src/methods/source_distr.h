@@ -50,6 +50,9 @@
 						    restricted AFTER initializing
 						    the generator object */
 
+#define UNUR_DISTR_SET_MEAN           0x00100000 /* mean (vector for multivariate distr.) */
+#define UNUR_DISTR_SET_COVAR          0x00200000 /* covariance matrix (for multivar. distr.) */
+
 /* derived parameters */
 #define UNUR_DISTR_SET_MASK_DERIVED   0x0000ffff
 

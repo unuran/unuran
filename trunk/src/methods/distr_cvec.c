@@ -119,6 +119,9 @@ unur_distr_cvec_new(  int dim )
   DISTR.init      = NULL;          /* pointer to special init routine        */
 
   /* initialize parameters of the p.d.f.                                     */
+  DISTR.mean  = NULL;              /* default is zero vector                 */
+  DISTR.covar = NULL;              /* default is identity matrix             */
+
   for (i=0; i<UNUR_DISTR_MAXPARAMS; i++) {
     DISTR.n_params[i] = 0;
     DISTR.params[i] = NULL;
@@ -163,7 +166,12 @@ _unur_distr_cvec_free( struct unur_distr *distr )
   for (i=0; i<UNUR_DISTR_MAXPARAMS; i++)
     if (DISTR.params[i]) free( DISTR.params[i] );
 
-  if (DISTR.mode) free(DISTR.mode);
+  if (DISTR.mean)  free(DISTR.mean); 
+  if (DISTR.covar) free(DISTR.covar);
+
+  if (DISTR.mode && DISTR.mode != DISTR.mean)
+    /* only free mode if it does not point to the mean vector */
+    free(DISTR.mode);
 
   free( distr );
 
@@ -337,6 +345,136 @@ unur_distr_cvec_eval_dpdf( double *result, double *x, struct unur_distr *distr )
 
   return _unur_cvec_dPDF(result,x,distr);
 } /* end of unur_distr_cvec_eval_dpdf() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+unur_distr_cvec_set_mean( struct unur_distr *distr, double *mean )
+     /*----------------------------------------------------------------------*/
+     /* set mean vector of distribution                                      */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   distr ... pointer to distribution object                           */
+     /*   mean  ... mean vector of distribution                              */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... on success                                                   */
+     /*   0 ... on error                                                     */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( NULL, distr, 0 );
+  _unur_check_distr_object( distr, CVEC, 0 );
+
+  if (mean) {
+    if (DISTR.mean == NULL)
+      /* we have to allocate memory first */
+      DISTR.mean = _unur_malloc( distr->dim );
+    /* copy data */
+    memcpy( DISTR.mean, mean, distr->dim * sizeof(double) );
+  }
+
+  else { /* mean == NULL */
+    /* we do not need the allocated memory any more */
+    if (DISTR.mean) free (DISTR.mean);
+  }
+
+  /* changelog */
+  distr->set |= UNUR_DISTR_SET_MEAN;
+
+  /* o.k. */
+  return 1;
+} /* end of unur_distr_cvec_set_mean() */
+
+/*---------------------------------------------------------------------------*/
+
+double *
+unur_distr_cvec_get_mean( struct unur_distr *distr )
+     /*----------------------------------------------------------------------*/
+     /* get mean vector of distribution                                      */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   distr ... pointer to distribution object                           */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to mean of distribution                                    */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( NULL, distr, NULL );
+  _unur_check_distr_object( distr, CVEC, NULL );
+
+  /* mean vector known ? */
+  if ( !(distr->set & UNUR_DISTR_SET_MEAN) )
+
+  return DISTR.mean;
+
+} /* end of unur_distr_cvec_get_mean() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+unur_distr_cvec_set_covar( struct unur_distr *distr, double *covar )
+     /*----------------------------------------------------------------------*/
+     /* set covariance matrix of distribution                                */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   distr ... pointer to distribution object                           */
+     /*   covar ... covariance matrix of distribution                        */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... on success                                                   */
+     /*   0 ... on error                                                     */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( NULL, distr, 0 );
+  _unur_check_distr_object( distr, CVEC, 0 );
+
+  if (covar) {
+    if (DISTR.covar == NULL)
+      /* we have to allocate memory first */
+      DISTR.covar = _unur_malloc( distr->dim * distr->dim );
+    /* copy data */
+    memcpy( DISTR.covar, covar, distr->dim * distr->dim * sizeof(double) );
+  }
+
+  else { /* covar == NULL */
+    /* we do not need the allocated memory any more */
+    if (DISTR.covar) free (DISTR.covar);
+  }
+
+  /* changelog */
+  distr->set |= UNUR_DISTR_SET_COVAR;
+
+  /* o.k. */
+  return 1;
+} /* end of unur_distr_cvec_set_covar() */
+
+/*---------------------------------------------------------------------------*/
+
+double *
+unur_distr_cvec_get_covar( struct unur_distr *distr )
+     /*----------------------------------------------------------------------*/
+     /* get covariance matrix of distribution                                */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   distr ... pointer to distribution object                           */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to covariance matrix of distribution                       */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( NULL, distr, NULL );
+  _unur_check_distr_object( distr, CVEC, NULL );
+
+  /* covariance matrix known ? */
+  if ( !(distr->set & UNUR_DISTR_SET_COVAR) )
+
+  return DISTR.covar;
+
+} /* end of unur_distr_cvec_get_covar() */
 
 /*---------------------------------------------------------------------------*/
 

@@ -68,6 +68,9 @@ struct unur_distr_cvec {
   UNUR_FUNCT_CVEC *pdf;         /* pointer to p.d.f.                         */
   UNUR_VFUNCT_CVEC *dpdf;       /* pointer to gradiant of p.d.f.             */
 
+  double *mean;                 /* mean vector of distribution               */
+  double *covar;                /* covariance matrix of distribution         */
+
   double *params[UNUR_DISTR_MAXPARAMS];  /* parameters of the p.d.f.         */
   int    n_params[UNUR_DISTR_MAXPARAMS]; /* length of parameter array        */
 

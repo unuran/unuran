@@ -1,4 +1,5 @@
-
+############################################################
+# $Id$
 ############################################################
 
 # valid TAGs for section TAG =METHOD
@@ -154,33 +155,35 @@ sub format_METHOD {
 	die "invalid distribution type for method $method" unless $type_ok;
     }
 
+    # get list of all methods
+    my @list_method = sort keys %$in_METHODs;
+
+    # get list of distributions with existing methods
+    my $list_distr_with_method;
+    foreach my $distr (sort distr_by_order_key keys %$in_DISTRs) {
+	foreach my $method (@list_method) {
+	    next unless $in_METHODs->{$method}->{"=TYPE"} eq $distr;
+	    $list_distr_with_method->{$distr} = 1;
+	}
+    }
+    my @list_distr = sort distr_by_order_key keys %$list_distr_with_method;
+
     # write texi output
     $texi_METHODs .= "\@node Methods\n";
     $texi_METHODs .= "\@chapter Methods\n\n";
 
-    # get list of distributions
-    my @list_distr = sort distr_by_order_key keys %$in_DISTRs;
-    
     # make menu for all distribution types
     $texi_METHODs .= "\@menu\n";
     foreach my $type (@list_distr) {
-	# distributions with non positive order keys are ignored
-	next if $in_DISTRs->{$type}->{"=ORDER"} <= 0;
 	$texi_METHODs .= "* Methods for $type\:: ".$in_DISTRs->{$type}->{"=NAME"}."\n";
     }
     $texi_METHODs .= "\@end menu\n\n";
     
     # print subsections for all distribution types
     foreach my $type (@list_distr) {
-	# distributions with non positive order keys are ignored
-	next if $in_DISTRs->{$type}->{"=ORDER"} <= 0;
-
 	# write texi subsection header for distribution type
 	$texi_METHODs .= "\@node Methods for $type\n";
 	$texi_METHODs .= "\@section Methods for ".$in_DISTRs->{$type}->{"=NAME"}." ($type)\n\n";
-
-	# find all methods for distribution type
-	my @list_method = sort keys %$in_METHODs;
 
 	# make menu for all methods for distribution type
 	$texi_METHODs .= "\@menu\n";

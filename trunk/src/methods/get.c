@@ -68,6 +68,44 @@
 /**                                                                         **/
 /*****************************************************************************/
 
+double
+unur_get_shratio( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* get ratio A(squeeze) / A(hat)                                        */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   ratio                                                              */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  CHECK_NULL(par,0);
+
+  switch (par->method & UNUR_MASK_METHOD) {
+  case UNUR_METH_AROU:
+    COOKIE_CHECK(par,CK_AROU_PAR,0);
+    return GEN.Asqueeze / GEN.Atotal;   /** TODO check for overflow ?? **/
+
+  case UNUR_METH_TABL:
+    COOKIE_CHECK(par,CK_TABL_PAR,0);
+    return GEN.Asqueeze / GEN.Atotal;   /** TODO check for overflow ?? **/
+
+  case UNUR_METH_TDR:
+    COOKIE_CHECK(par,CK_TDR_PAR,0);
+    return GEN.Asqueeze / GEN.Atotal;   /** TODO check for overflow ?? **/
+
+  default:
+    /** TODO: error message **/
+    return 0.;
+  }
+  
+} /* end of unur_get_shratio() */
+
+/*---------------------------------------------------------------------------*/
+
+
 int
 unur_get_dimension( struct unur_gen *gen )
 /*---------------------------------------------------------------------------*/

@@ -582,7 +582,7 @@ unur_set_max_shratio( struct unur_par *par, double max_ratio )
   /* o.k. */
   return 1;
 
-} /* end of unur_set_max_ratio() */
+} /* end of unur_set_max_shratio() */
 
 /*---------------------------------------------------------------------------*/
 

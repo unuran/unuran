@@ -61,32 +61,32 @@
 /* incomplete beta integral */
 double incbet(double a, double b, double x);
 #define _unur_sf_incomplete_beta(x,a,b)   incbet((a),(b),(x))
-#define _HAVE_UNUR_SF_INCOMPLETE_BETA
+#define HAVE_UNUR_SF_INCOMPLETE_BETA
 
 /** functions related to gamma distribution **/
 
 /* logarithm of gamma function */
 double lgam(double x);
 #define _unur_sf_ln_gamma(x)   lgam(x)
-#define _HAVE_UNUR_SF_LN_GAMMA
+#define HAVE_UNUR_SF_LN_GAMMA
 
 /* logarithm of factorial */
 #ifdef _HAVE_UNUR_SF_LN_GAMMA
-#define _unur_sf_ln_factorial(x)   _unur_sf_ln_gamma((x)+1.)
-#define _HAVE_UNUR_SF_LN_FACTORIAL
+#  define _unur_sf_ln_factorial(x)   _unur_sf_ln_gamma((x)+1.)
+#  define HAVE_UNUR_SF_LN_FACTORIAL
 #endif
 
 /* incomplete gamma function */
 double igam(double a, double x);
 #define _unur_sf_incomplete_gamma(x,a)  igam((a),(x))
-#define _HAVE_UNUR_SF_INCOMPLETE_GAMMA
+#define HAVE_UNUR_SF_INCOMPLETE_GAMMA
 
 /** functions related to normal distribution **/
 
 /* cdf of normal distribution */
 double ndtr(double x);
 #define _unur_sf_cdfnormal(x)   ndtr(x)
-#define _HAVE_SF_CDFNORMAL
+#define HAVE_UNUR_SF_CDFNORMAL
 
 /*---------------------------------------------------------------------------*/
 #endif  /* __SOURCE_SPECFUNCT_H_SEEN */

@@ -239,7 +239,7 @@ unur_vempk_new( const struct unur_distr *distr )
   if (DISTR_IN.sample == NULL) {
     _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"observed sample"); return NULL; }
   if (DISTR_IN.n_sample < 2) {
-    _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"number of observed sample"); return NULL; }
+    _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"size of observed sample"); return NULL; }
 
   /* allocate structure */
   par = _unur_malloc(sizeof(struct unur_par));
@@ -608,8 +608,10 @@ _unur_vempk_clone( const struct unur_gen *gen )
   /* copy additional data for generator object */
   CLONE.observ = clone->distr->data.cvemp.sample;   /* observations in distribution object */
 
-  CLONE.xbar = _unur_malloc( GEN.dim * sizeof(double) );
-  memcpy( CLONE.xbar, GEN.xbar, GEN.dim * sizeof(double) );
+  if (GEN.xbar) {
+    CLONE.xbar = _unur_malloc( GEN.dim * sizeof(double) );
+    memcpy( CLONE.xbar, GEN.xbar, GEN.dim * sizeof(double) );
+  }
 
   CLONE.kerngen = unur_gen_clone( GEN.kerngen );
   clone->gen_aux = CLONE.kerngen;
@@ -684,7 +686,6 @@ _unur_vempk_free( struct unur_gen *gen )
   SAMPLE = NULL;   /* make sure to show up a programming error */
 
   /* free memory */
-  if (GEN.observ) free( GEN.observ );
   if (GEN.xbar)   free( GEN.xbar );
   unur_free( GEN.kerngen );
 

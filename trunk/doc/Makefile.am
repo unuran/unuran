@@ -56,7 +56,7 @@ qstart.texi: scripts
 
 # run perl scripts
 scripts:
-	./examples_to_texi.perl $(example_PATH)test[0-9]*.c
+	./examples_to_texi.perl $(example_PATH)example[0-9]*.c
 	./change_distr.perl $(method_PATH)distr.h
 	./defaults.perl  $(method_PATH)*.c
 	./description.perl $(method_PATH)*.h

@@ -1,10 +1,10 @@
 #!/usr/bin/perl
 
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-# Perl spript writing the example testx.c to the texi-file   
-# qstart_testx.texi
+# Perl spript writing the example exampleXY.c to the texi-file   
+# qstart_exampleXY.texi
 # 
-# usage:  ./examples_to_texi.perl ../examples/testx.c
+# usage:  ./examples_to_texi.perl ../examples/exampleXY.c
 #      (examples_to_texi.perl is in the directory /unuran/doc/
 # Input:   c-files (examples)
 # Output:  $OUTFILE contains docomentation in texinfo format

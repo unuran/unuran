@@ -40,7 +40,9 @@ last updated @value{DATE}
 
 @author Josef Leydold
 @author Wolfgang H@"ormann
+@author G@"unter Tirler
 @author Erich Janka
+
 
 @page
 @vskip 0pt plus 1filll
@@ -231,14 +233,13 @@ Beginning with the basics of using unuran we evolve to examples
 using  more advanced features of UNURAN.
 After the example itself the relevant code will be explained.
 @*call the compiler with:
-@* @file{gcc -Wall -O2 test.c -lunuran -lprng -lml -lm -o test}
+@* @file{gcc -Wall -O2 example.c -lunuran -lprng -lml -lm -o test}
 
 @node Ex1
 @section Ex1: As short as possible
-Name: test1.c
 
 @smallexample
-@include qstart_test1.texi
+@include qstart_example1.texi
 @end smallexample
 @*
 First you have to include the libraries @code{unuran.h} 
@@ -302,7 +303,7 @@ What you have to provide depends on the method used for sampling
 
 @page
 @smallexample
-@include qstart_test2.texi
+@include qstart_example2.texi
 @end smallexample
 @*
 The following lines represent a subroutine providing the
@@ -357,7 +358,7 @@ it's possible to change a specific parameters (see @ref{Function Reference});
 The important lines are in bold face.
 
 @smallexample
-@include qstart_test3.texi
+@include qstart_example3.texi
 @end smallexample
 @*
 This example is similar to the first example.
@@ -388,9 +389,8 @@ uniformly distributed random numbers
 #define UNUR_URNG_TYPE UNUR_URNG_PRNG
 @end smallexample
 
-@noindent Name: test4.c
 @smallexample
-@include qstart_test4.texi
+@include qstart_example4.texi
 @end smallexample
 
 @c --------------------------------------------------------------------
@@ -549,11 +549,16 @@ looked up in @ref{Selfmade}.
 @node Function Reference
 @chapter Function reference
 @menu
+* HandlingObjects:: Generate and destroy generators 
 * Selfmade::  Include your own distributions
 * Readymade:: Ready-made distributions
 * MethodsRef::  Functions for Methods
 @end menu
 Notation:
+
+@node HandlingObjects
+@section Generate and destroy generators
+.... perl-script: unurfree, unurdistrfree unurinit
 
 @node Selfmade
 @section Self-made distributions

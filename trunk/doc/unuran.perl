@@ -3,7 +3,8 @@
 
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # Perl spript zur automatischen Erstellung der   
-# Funktions- Referenz von UNURAN im TEX-Info Format
+# (Methoden-)Funktions- Referenz von UNURAN im TEX-Info Format
+# 
 # 
 # Aufruf:  ./unuran.perl ../src/methods/*.h
 # Input:  
@@ -13,7 +14,7 @@
 # $Id$
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-
+# 
 # $ON = 1, wenn der "Dokumentations-Bereich" gefunden ist
 $ON = 0;
 
@@ -21,14 +22,14 @@ $ON = 0;
 $KOMMENT = 0;
 
 #Name der aktuellen Methode (von unuran)
-$MName = "a";
+$MName = "a";  # mit nicht vorkommendem Namen initialisiert
 
-# struct herausgenommen, wird extra abgehandelt
-@TYPES = ("void", "int", "double", "float", "long", "char", "short", "unsigned", "signed");
+# 
+@TYPES = ("struct", "void", "int", "double", "float", "long", "char", "short", "unsigned", "signed");
 
 
 
-# file fuer  output:
+#  output file:
 open(OUTFILE, ">qstart_function_reference.texi");
 
 while($_ = <>)
@@ -47,38 +48,44 @@ while($_ = <>)
     chomp;
 
 
-
-# Suche Funktion und Definitionszeilen
-   if ( $ON == 1 && $_ =~/^\s*(struct\s*unur_[a-zA-Z_]*)\s*(\*unur_[a-zA-z_]*)(.*)/ ){
-       #Kommentar zur funktion moeglich       
-       $KOMMENT = 1;
-
-       # neues Texinfo-Kapitel, wenn sich methode ($MName) aendert
-       /\*unur_(\w*)_/; 
-       if ($MName ne $1){
-           $MName = $1;
-	   print OUTFILE "\n\n\@subsection ", $MName, "\n\n";
-       }
-       /^\s*(struct\s*unur_[a-zA-Z_]*)\s*(\*unur_[a-zA-z_]*)(.*)/;
-
-       print   OUTFILE "\@unnumberedsubsubsec ", $2, "\n\n";
-       print OUTFILE "\@code\{", "\@i\{", $1,"\} ", "\@b\{",$2, "\}", $3, "\}\n\n";      
-   }
-
+   # Suche Funktion und Definitionszeilen
    foreach $type (@TYPES){
-     # suche Funktionszeile
-        if ( $ON == 1 && $_ =~/^\s*($type)\s*(unur_[a-zA-Z_]*)(.*)/){
-       #Kommentar zur funktion moeglich
-       $KOMMENT = 1;
-       print OUTFILE  "\n\@unnumberedsubsubsec ", $2 , "\n\n";
-       print OUTFILE "\@code\{", "\@i\{", $1,"\} ", "\@b\{",$2, "\}", $3, "\}\n\n";
-      }
+
+       # Wenn neuer MName vorkommt, dann neues Kapitel
+       if ( $ON == 1 && $_ =~/^\s*($type.*)\s*\((.*\))\s*;/){
+          # neues Texinfo-Kapitel, wenn sich methode ($MName) aendert
+          /\*unur_(\w*)_/; 
+          if ($type eq struct && $MName ne $1){
+             $MName = $1;
+	     print OUTFILE "\n\n\@subsection ", $MName, "\n\n";
+          }
+       }
+
+       # suche Funktionszeile
+       if ( $ON == 1 && $_ =~/^\s*($type.*)\s*\((.*\))\s*;/){
+           #Kommentar zur funktion moeglich wenn $KOMMENT = 1
+           $KOMMENT = 1;
+           $DECL = $1;   # vor der oeffnenden Funktionsklammer
+           $FUNC = $2;   # zwischen den Funktionsklammern 
+           $DECL  =~ /(.*(\s+?|\*))(\w+)/;
+           $DECL1 = $1;
+	   $DECL2 = $3;
+
+           print OUTFILE  "\n\@unnumberedsubsubsec ", $DECL2 , "\n\n";
+ 
+           print OUTFILE "\@code{", $DECL1 , "\@b{", $DECL2,"}("; 
+           while ($FUNC =~ /(.*?)(\w*?)\s*?(,|\))/g){
+	      print OUTFILE $1,"\@var{", $2,"}", $3;
+	   }
+           print OUTFILE "}\@\*\n"; 
+
+       }
   }
 
 
 # Suche zugehoerige Kommentare
       if($KOMMENT == 1 && $_ =~/^\/\*(.*)(\*\/)$/){
-	  print OUTFILE $1, "\n";
+	  print OUTFILE $1, "\@\*\n";
       }
 
 

@@ -206,7 +206,7 @@ unur_dgt_new( const struct unur_distr *distr )
   if (DISTR_IN.pv == NULL) {
     /* There is no PV try to compute it.                         */
     if ( DISTR_IN.pmf
-	 && ( ((DISTR_IN.domain[1] - DISTR_IN.domain[0]) < UNUR_MAX_AUTO_PV)
+	 && ( (((unsigned)DISTR_IN.domain[1] - (unsigned)DISTR_IN.domain[0]) < UNUR_MAX_AUTO_PV)
 	      || ( (distr->set & UNUR_DISTR_SET_PMFSUM) && DISTR_IN.domain[0] > INT_MIN ) ) ) {
       /* However this requires a PMF and either a bounded domain   */
       /* or the sum over the PMF.                                  */
@@ -453,7 +453,6 @@ _unur_dgt_create( struct unur_par *par )
     if (unur_distr_discr_make_pv( gen->distr ) <= 0) {
       /* not successful */
       _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"PV"); 
-      if (DISTR.pv) free(DISTR.pv);
       _unur_distr_free(gen->distr); free(gen);
       return NULL;
     }

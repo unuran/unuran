@@ -340,7 +340,8 @@ unur_distr_discr_make_pv( struct unur_distr *distr )
 {
   double *pv;          /* pointer to probability vector */
   int n_pv;            /* length of PV */
-  double sum = 0.;     /* accumulated sum of PV */
+  double cdf;          /* cumulated sum of PV */
+  double thresh_cdf;   /* threshold for truncating PV */
   int valid;           /* whether cumputed PV is valid */
   int i;
 
@@ -358,7 +359,7 @@ unur_distr_discr_make_pv( struct unur_distr *distr )
   if (!(distr->set & UNUR_DISTR_SET_DOMAIN))
     DISTR.domain[0] = 0;
 
-  /* it there exists a PV, it has to be removed */
+  /* if there exists a PV, it has to be removed */
   if (DISTR.pv != NULL)
     free(DISTR.pv);
 
@@ -377,6 +378,7 @@ unur_distr_discr_make_pv( struct unur_distr *distr )
 
   else {
     /* second case: domain too big but sum over PMF given       */
+    /* we chop off the trailing part of the distribution        */
 #define MALLOC_SIZE 1000 /* allocate 1000 doubles at once       */
 
     int n_alloc;         /* number of doubles allocated         */
@@ -396,32 +398,37 @@ unur_distr_discr_make_pv( struct unur_distr *distr )
     /* init counter */
     n_pv = 0;
     pv = NULL;
-    
+    valid = FALSE;  /* created PV is empty yet and not valid */
+    cdf = 0.;       /* cumulated sum of PV */
+    /* threshold for truncating PV */
+    thresh_cdf = (distr->set & UNUR_DISTR_SET_PMFSUM) ? (1.-1.e-8)*DISTR.sum : INFINITY;
+
     /* compute PV */
     for (n_alloc = size_alloc; n_alloc <= max_alloc; n_alloc += size_alloc) {
       pv = _unur_realloc( pv, n_alloc * sizeof(double) );
       for (i=0; i<size_alloc; i++) {
-	sum += pv[n_pv] = _unur_discr_PMF(DISTR.domain[0]+n_pv,distr);
+	cdf += pv[n_pv] = _unur_discr_PMF(DISTR.domain[0]+n_pv,distr);
 	n_pv++;
+	if (cdf > thresh_cdf) { valid = TRUE; break; }
       }
-      if ((distr->set & UNUR_DISTR_SET_PMFSUM) && sum > (1.-1.e-8) * DISTR.sum)
-	break;
     }
 
-    /* we chop off the trailing part of the distribution */
-
-    /* make a warning if computed PV might not be valid */
-    if ( !((distr->set & UNUR_DISTR_SET_PMFSUM) && sum > (1.-1.e-8) * DISTR.sum)) {
-      /* not successful */
-      _unur_warning(distr->name,UNUR_ERR_DISTR_GET,"PV truncated");
-      valid = FALSE;
+    if (distr->set & UNUR_DISTR_SET_PMFSUM) {
+      /* make a warning if computed PV might not be valid */
+      if (valid != TRUE)
+	/* not successful */
+	_unur_warning(distr->name,UNUR_ERR_DISTR_GET,"PV truncated");
     }
-    else
+    else { /* PMFSUM not known */
+      /* assume we have the important part of distribution */
       valid = TRUE;
+      DISTR.sum = cdf;
+      distr->set |= UNUR_DISTR_SET_PMFSUM;
+    }
     
 #undef MALLOC_SIZE
   }
-    
+
   /* store vector */
   DISTR.pv = pv;
   DISTR.n_pv = n_pv;

@@ -4,6 +4,8 @@
 
 info_TEXINFOS = unuran-ref.texi
 
+# these example files are generated from the corresponding
+# files $(top_srcdir)/examples/example?.c
 unuran_examples = \
  ref_example1.texi \
  ref_example2.texi \

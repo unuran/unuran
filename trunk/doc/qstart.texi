@@ -1,0 +1,87 @@
+ 
+\input texinfo   @c -*-texinfo-*-
+
+@c Dies ist das neue UNURAN -Einfuehrung  
+@c Juli 2000 Janka & Tirler                
+@c $Id$
+
+
+
+
+
+@c %**start of header
+@setfilename qstart.info
+@settitle    UNURAN User Manual
+@iftex
+@afourpaper
+@end iftex
+@c %**end of header
+
+@dircategory Scientific software
+@direntry
+* unuran-ref: (unuran-ref).  UNURAN -- Universal Non-Uniform Random number generator
+@end direntry
+
+
+@setchapternewpage odd
+
+
+
+@c ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+@c
+@c `Top' Node and Master Menu
+@c
+     
+
+
+
+
+@c ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+@c
+@c The Body of the Document
+@c
+
+
+@c @node    Introduction, Structure Overview , Top,      Top
+@c @comment node-name,    next,                previous, up
+     
+@c @menu
+@c @c  * Copying::             Your rights and freedoms.
+@c * Structure Overview::      Here we show a flow chart in order to elucidate the
+@c                             structure of the diffenrent objects.
+@c * Routines for User::       The function syntax used in the user
+@c                            interface is described here.
+@c * Example::                 This chaper provides a short demo program.
+@c @end menu
+
+@c ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+@c
+@c Introduction ...
+@c
+@chapter Introduction
+@section Overview
+@section Getting start
+Beginning example
+
+
+@c ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+@c
+@c The End of the Document
+@c
+
+
+
+
+@bye
+
+
+
+
+
+
+
+
+
+
+
+

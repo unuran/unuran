@@ -53,9 +53,10 @@ static const char unknown_distr_name[] = "unknown";
 
 #define DISTR distr->data.cvec
 
-/* calculate inverse of covariance matrix only when its determinant is 
-   greater than : */
-#define COVARIANCE_DETMIN 1e-10 
+/** TODO: absolute constant should be replaced by some relative one */
+/* threshold value for ill-conditioned matrix:                               */
+/* covariance matrix will not be inverted if its determinant is smaller      */
+#define COVARIANCE_DETMIN  (1.e-10) 
 
 /*---------------------------------------------------------------------------*/
 
@@ -125,27 +126,24 @@ unur_distr_cvec_new( int dim )
   /* clone */
   distr->clone = _unur_distr_cvec_clone;
 
-  distr->set = 0u;                 /* no parameters set                      */
-
   /* set defaults                                                            */
-  DISTR.pdf       = NULL;          /* pointer to PDF                         */
-  DISTR.dpdf      = NULL;          /* pointer to gradient of PDF             */
-
-  DISTR.init      = NULL;          /* pointer to special init routine        */
+  distr->set = 0u;          /* no parameters set                             */
+  DISTR.pdf       = NULL;   /* pointer to PDF                                */
+  DISTR.dpdf      = NULL;   /* pointer to gradient of PDF                    */
+  DISTR.init      = NULL;   /* pointer to special init routine (default: none) */
+  DISTR.cholesky  = NULL;   /* pointer to cholesky factor                    */
+  DISTR.covar_inv = NULL;   /* pointer to inverse covariance matrix 
+			       (default: not computed ) */
 
   /* initialize parameters of the PDF                                        */
-
-  DISTR.covar_inv = NULL;          /* pointer to inverse cholesky matrix     */
-
-
-  unur_distr_cvec_set_mean(distr, NULL);  /* mean = zero vector              */ 
-  unur_distr_cvec_set_covar(distr, NULL); /* covar = identity matrix         */
-                                          /* cholesky = identity matrix      */
-
   for (i=0; i<UNUR_DISTR_MAXPARAMS; i++) {
     DISTR.n_params[i] = 0;
     DISTR.params[i] = NULL;
   }
+
+  /* initialize mean vector and covariance matrix                            */
+  unur_distr_cvec_set_mean(distr, NULL);  /* mean = zero vector              */ 
+  unur_distr_cvec_set_covar(distr, NULL); /* covar = identity matrix         */
 
   DISTR.norm_constant = 1.;        /* (log of) normalization constant for PDF
 				      (initialized to avoid accidently floating
@@ -154,8 +152,6 @@ unur_distr_cvec_new( int dim )
   DISTR.mode       = NULL;         /* location of mode (default: not known)  */
   DISTR.volume     = INFINITY;     /* area below PDF (default: not known)    */
   
-  
-
   /* return pointer to object */
   return distr;
 
@@ -496,6 +492,9 @@ unur_distr_cvec_get_mean( const struct unur_distr *distr )
      /*                                                                      */
      /* return:                                                              */
      /*   pointer to mean of distribution                                    */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return NULL                                                        */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
@@ -516,18 +515,21 @@ unur_distr_cvec_get_mean( const struct unur_distr *distr )
 
 int
 unur_distr_cvec_set_covar( struct unur_distr *distr, const double *covar )
-     /*-------------------------------------------------------------------*/
-     /* set covariance matrix of distribution                             */
-     /*                                                                   */
-     /* parameters:                                                       */
-     /*   distr ... pointer to distribution object                        */
-     /*   covar ... covariance matrix of distribution                     */
-     /*                                                                   */
-     /* return:                                                           */
-     /*   UNUR_SUCCESS ... on success                                     */
-     /*   error code   ... on error                                       */
-     /*-------------------------------------------------------------------*/
+     /*----------------------------------------------------------------------*/
+     /* set covariance matrix of distribution.                               */
+     /* as a side effect it also computes its cholesky factor.               */ 
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   distr ... pointer to distribution object                           */
+     /*   covar ... covariance matrix of distribution                        */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
 {
+#define idx(a,b) (a*dim+b)
+
   int i,j;
   int dim;
 
@@ -547,12 +549,11 @@ unur_distr_cvec_set_covar( struct unur_distr *distr, const double *covar )
   if (covar==NULL) { 
     for (i=0; i<dim; i++) { 
       for (j=0; j<dim; j++) {
-         DISTR.covar[i*dim + j] = (i==j) ? 1. : 0.;
-         DISTR.cholesky[i*dim+j] = (i==j) ? 1. : 0.;
+         DISTR.covar[idx(i,j)] = (i==j) ? 1. : 0.;
+         DISTR.cholesky[idx(i,j)] = (i==j) ? 1. : 0.;
       } 
     } 
   } 
-
 
   /* covariance matrix given --> copy data */
   else {
@@ -574,23 +575,22 @@ unur_distr_cvec_set_covar( struct unur_distr *distr, const double *covar )
 	  return UNUR_ERR_DISTR_DOMAIN;
 	}
 
-    /* check for positive definitness */
-    /* during cholesky decomposition. */
-    DISTR.cholesky = _unur_matrix_cholesky_decomposition(dim, covar); 
-    
-    if (DISTR.cholesky==NULL) {
-       _unur_error(distr->name, UNUR_ERR_DISTR_DOMAIN, 
-                   "covariance matrix not positive definite ?");
-       return UNUR_ERR_DISTR_DOMAIN;      
+    /* compute Cholesky decomposition and 
+       check for positive definitness */
+    if (_unur_matrix_cholesky_decomposition(dim, covar, DISTR.cholesky) != UNUR_SUCCESS) {
+      _unur_error(distr->name, UNUR_ERR_DISTR_DOMAIN, 
+		  "covariance matrix not positive definite");
+      return UNUR_ERR_DISTR_DOMAIN;      
     }
 
   }
-  
   /* changelog */
   distr->set |= UNUR_DISTR_SET_COVAR;
 
   /* o.k. */
   return UNUR_SUCCESS;
+
+#undef idx
 } /* end of unur_distr_cvec_set_covar() */
 
 /*---------------------------------------------------------------------------*/
@@ -605,6 +605,9 @@ unur_distr_cvec_get_covar( const struct unur_distr *distr )
      /*                                                                      */
      /* return:                                                              */
      /*   pointer to covariance matrix of distribution                       */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return NULL                                                        */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
@@ -652,7 +655,7 @@ unur_distr_cvec_get_cholesky( const struct unur_distr *distr )
 /*---------------------------------------------------------------------------*/
 
 const double *
-unur_distr_cvec_get_covar_inv( const struct unur_distr *distr )
+unur_distr_cvec_get_covar_inv( struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
      /* get inverse covariance matrix of distribution                        */
      /*                                                                      */
@@ -682,6 +685,7 @@ unur_distr_cvec_get_covar_inv( const struct unur_distr *distr )
   if (DISTR.covar_inv == NULL)
     DISTR.covar_inv = _unur_malloc( dim * dim * sizeof(double) );   
   
+  /** TODO: check if matrix inversion was successfull ... */
   _unur_matrix_invert_matrix(dim, DISTR.covar, COVARIANCE_DETMIN, DISTR.covar_inv, &det);
 
   return DISTR.covar_inv;

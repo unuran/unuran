@@ -1,0 +1,175 @@
+/*****************************************************************************
+ *                                                                           *
+ *          UNURAN -- Universal Non-Uniform Random number generator          *
+ *                                                                           *
+ *****************************************************************************
+ *                                                                           *
+ *   FILE:      PDFgen.c.in / PDFgen.c                                       *
+ *                                                                           *
+ *   DESCRIPTION:                                                            *
+ *      Creates PDFs for automatically generated code.                       *
+ *                                                                           *
+ *****************************************************************************
+ *                                                                           *
+ *   REMARK:                                                                 *
+ *   This file contains the main part of the subroutines for generating      *
+ *   the PDFs of the generator code. The perl script make_PDFgen.pl          *
+ *   replaces the                                                            *
+ *        =INPUT keyword                                                     *
+ *   tags with the corresponding SWITCH lists for distribution.              *
+ *                                                                           *
+ *****************************************************************************
+     $Id$
+ *****************************************************************************
+ *                                                                           *
+ *   Copyright (c) 2000 Wolfgang Hoermann and Josef Leydold                  *
+ *   Dept. for Statistics, University of Economics, Vienna, Austria          *
+ *                                                                           *
+ *   This program is free software; you can redistribute it and/or modify    *
+ *   it under the terms of the GNU General Public License as published by    *
+ *   the Free Software Foundation; either version 2 of the License, or       *
+ *   (at your option) any later version.                                     *
+ *                                                                           *
+ *   This program is distributed in the hope that it will be useful,         *
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of          *
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the           *
+ *   GNU General Public License for more details.                            *
+ *                                                                           *
+ *   You should have received a copy of the GNU General Public License       *
+ *   along with this program; if not, write to the                           *
+ *   Free Software Foundation, Inc.,                                         *
+ *   59 Temple Place, Suite 330, Boston, MA 02111-1307, USA                  *
+ *                                                                           *
+ *****************************************************************************/
+
+/* ------------------------------------------------------------------------- */
+/* include header file                                                       */
+
+#include <codegen_source.h>
+
+/* ------------------------------------------------------------------------- */
+/* local prototypes                                                          */
+
+=INPUT prototypes
+
+static int _unur_acg_C_PDF_GENERIC       (FILE *out, UNUR_DISTR *distr, const char *pdf);
+static int _unur_acg_FORTRAN_PDF_GENERIC (FILE *out, UNUR_DISTR *distr, const char *pdf);
+static int _unur_acg_JAVA_PDF_GENERIC    (FILE *out, UNUR_DISTR *distr, const char *pdf);
+
+/*****************************************************************************/
+/**  API                                                                    **/
+/*****************************************************************************/
+
+/* ------------------------------------------------------------------------- */
+/* PDF main (C Version)                                                      */
+/* ------------------------------------------------------------------------- */
+
+int _unur_acg_C_PDF (FILE *out, UNUR_DISTR *distr, const char *pdf)
+{
+	_unur_check_NULL("ACG", distr, 0 );
+
+	switch (distr->id) {
+
+=INPUT distributions C
+
+  	case UNUR_DISTR_GENERIC: 
+  		return _unur_acg_C_PDF_GENERIC (out,distr,pdf);
+	default:
+		_unur_error(distr->name,UNUR_ERR_GEN_DATA,"Cannot make PDF");
+		return 0;
+	}
+}
+
+/* ------------------------------------------------------------------------- */
+/* PDF main (FORTRAN Version)                                                */
+/* ------------------------------------------------------------------------- */
+
+int _unur_acg_FORTRAN_PDF (FILE *out, UNUR_DISTR *distr, const char *pdf)
+{
+	_unur_check_NULL("ACG", distr, 0 );
+
+	switch (distr->id) {
+
+=INPUT distributions FORTRAN
+
+  	case UNUR_DISTR_GENERIC:
+  		return _unur_acg_FORTRAN_PDF_GENERIC (out,distr,pdf);
+	default:
+		_unur_error(distr->name,UNUR_ERR_GEN_DATA,"Cannot make PDF");
+		return 0;
+	}
+}
+
+/* ------------------------------------------------------------------------- */
+/* PDF main (JAVA Version)                                                   */
+/* ------------------------------------------------------------------------- */
+
+int _unur_acg_JAVA_PDF (FILE *out, UNUR_DISTR *distr, const char *pdf)
+{
+	_unur_check_NULL("ACG", distr, 0 );
+
+	switch (distr->id) {
+
+=INPUT distributions JAVA
+
+  	case UNUR_DISTR_GENERIC:
+  		return _unur_acg_JAVA_PDF_GENERIC (out,distr,pdf);
+	default:
+		_unur_error(distr->name,UNUR_ERR_GEN_DATA,"Cannot make PDF");
+		return 0;
+	}
+}
+
+/*****************************************************************************/
+/**  Subroutines for printing PDF code                                      **/
+/*****************************************************************************/
+
+/* ------------------------------------------------------------------------- */
+/* C version                                                                 */
+/* ------------------------------------------------------------------------- */
+
+=INPUT PDF C
+
+/* ---------------------------------------------------------------- */
+/* PDF for generic (user defined) distribution with given PDF       */
+/* ---------------------------------------------------------------- */
+
+int
+_unur_acg_C_PDF_GENERIC (FILE *out, UNUR_DISTR *distr, const char *pdf)
+{ 
+
+  return 0;
+}
+
+/* ---------------------------------------------------------------- */
+/* FORTRAN version                                                  */
+/* ---------------------------------------------------------------- */
+
+=INPUT PDF FORTRAN
+
+/* ---------------------------------------------------------------- */
+/* PDF for generic (user defined) distribution with given PDF       */
+/* ---------------------------------------------------------------- */
+
+int
+_unur_acg_FORTRAN_PDF_GENERIC (FILE *out, UNUR_DISTR *distr, const char *pdf)
+{
+  return 0;
+}
+
+/* ---------------------------------------------------------------- */
+/* JAVA version                                                     */
+/* ---------------------------------------------------------------- */
+
+=INPUT PDF JAVA
+
+/* ---------------------------------------------------------------- */
+/* PDF for generic (user defined) distribution with given PDF       */
+/* ---------------------------------------------------------------- */
+
+int _unur_acg_JAVA_PDF_GENERIC (FILE *out, UNUR_DISTR *distr, const char *pdf)
+{
+  return 0;
+}
+
+/* ---------------------------------------------------------------- */

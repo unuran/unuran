@@ -44,13 +44,13 @@ libunuracg_a_SOURCES = \
 noinst_HEADERS = 
 
 EXTRA_DIST = \
- make_PDFgen.pl \
+ make_PDFgen.pl    PDFgen.c.in \
  make_headergen.pl headergen.c.in \
  make_anuran.pl
 
 
-PDFgen.c: make_PDFgen.pl $(top_srcdir)/scripts/read_PDF.pl
-	./make_PDFgen.pl
+PDFgen.c: make_PDFgen.pl PDFgen.c.in $(top_srcdir)/scripts/read_PDF.pl
+	./make_PDFgen.pl < PDFgen.c.in > PDFgen.c
 
 headergen.c: make_headergen.pl headergen.c.in $(top_srcdir)/scripts/read_PDF.pl
 	./make_headergen.pl < headergen.c.in > headergen.c

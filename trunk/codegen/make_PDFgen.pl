@@ -9,6 +9,11 @@ use strict;
 my $DEBUG = 0;
 
 # ----------------------------------------------------------------
+# Languages
+
+my @languages = ('C', 'FORTRAN', 'JAVA');
+
+# ----------------------------------------------------------------
 # Directory with sources
 
 my $top_srcdir = $ENV{'srcdir'} ? $ENV{'srcdir'} : '.';
@@ -21,7 +26,7 @@ require "$top_srcdir/scripts/read_PDF.pl";
 # ----------------------------------------------------------------
 
 # C file for code generator  
-my $PDFgen_file = "PDFgen.c";
+#my $PDFgen_file = "PDFgen.c";
 
 # ----------------------------------------------------------------
 # List of distributions
@@ -37,37 +42,32 @@ my $DISTR = read_PDFdata( $top_srcdir );
     }
 
 # ----------------------------------------------------------------
+# Read template C file from STDIN and insert C code for string interpreter 
+#
+while ( <STDIN> ){
 
-# List of prototypes
-my $PDFgen_prototypes;
+    unless (/^s*=INPUT\s*(\w+)\s+(\w*)/){
+	print $_;
+    }
 
-# Generator codes
-my $PDFgen;
+    else {
+	my $key   = $1;    # INPUT key value
+	my $value = $2;
 
-# ................................................................
-
-# Make C version of code generator
-$PDFgen .= make_PDFgen_C($DISTR);
-
-# Make FORTRAN version of code generator
-$PDFgen .= make_PDFgen_FORTRAN($DISTR);
-
-# Make JAVA version of code generator
-$PDFgen .= make_PDFgen_JAVA($DISTR);
-
-# ................................................................
-
-# Print code into file
-open FILE, ">$PDFgen_file" or die "cannot open file $PDFgen_file\n";
-
-print FILE make_bar("include header file");
-print FILE "\#include <codegen_source.h>\n";
-
-print FILE make_bar("local prototypes");
-print FILE $PDFgen_prototypes;
-
-print FILE $PDFgen;
-close FILE;
+	if ( $key eq "prototypes" ){
+	    print make_PDFgen_prototypes($DISTR);
+	}
+	elsif ( $key eq "distributions" ) {
+	    print make_list_of_distributions($DISTR,$value);
+	}
+	elsif ( $key eq "PDF" ) {
+	    print make_PDFgen($DISTR,$value);
+	}
+	else {
+	    die "Error: unknown qualifier after =INPUT: $key\n";
+	}
+    }
+}
 
 # ----------------------------------------------------------------
 # End
@@ -83,152 +83,74 @@ exit 0;
 
 
 # ----------------------------------------------------------------
-# Make routines for PDF code generator (C version)
+# Make list of prototypes
 
-sub make_PDFgen_C
+sub make_PDFgen_prototypes
 {
     my $DISTR = $_[0];   # data for distributions
 
-    my $PDFgen;
-    
-    # C version
-    $PDFgen .= make_bar("C version");
-
-    # Main (C)
-    $PDFgen .= make_PDF_main_C( $DISTR );
+    my %prototypes;
 
     # Continuous distributions
     foreach my $d (sort keys %{$DISTR}) {
 	next unless $DISTR->{$d}->{"=TYPE"} eq "CONT";
 
 	# Function prototype
-	$PDFgen_prototypes .= "static ".get_PDFgen_funct_C($d).";\n";
-
-	# Function for distribution
-	$PDFgen .= make_PDF_distr_C($DISTR,$d);
+	foreach my $l (@languages) {
+	    $prototypes{$l} .= "static ".get_PDFgen_funct($d,$l).";\n";
+	}
     }
 
-    # Generic (user defined) distributions
-    $PDFgen_prototypes .= "static ".get_PDFgen_funct_C('GENERIC').";\n";
-    $PDFgen .= make_PDF_GENERIC_C();
+    my $gencode;
+    foreach my $l (@languages) {
+	$gencode .= $prototypes{$l}."\n";
+    }
 
     # End
-    return $PDFgen;
+    return $gencode;
 
-} # end of make_PDFgen_C()
+} # end of make_PDFgen_prototypes()
 
 
 # ----------------------------------------------------------------
-# Make routines for PDF code generator (FORTRAN version)
+# Make switch list for distributions
 
-sub make_PDFgen_FORTRAN
+sub make_list_of_distributions
 {
-    my $DISTR = $_[0];   # data for distributions
+    my $DISTR    = $_[0];   # data for distributions
+    my $language = $_[1];   # chosen programming language
 
-    my $PDFgen;
-    
-    # C version
-    $PDFgen .= make_bar("FORTRAN version");
-
-    # Main (C)
-    $PDFgen .= make_PDF_main_FORTRAN( $DISTR );
-
-    # Continuous distributions
-    foreach my $d (sort keys %{$DISTR}) {
-	next unless $DISTR->{$d}->{"=TYPE"} eq "CONT";
-
-	# Function prototype
-	$PDFgen_prototypes .= "static ".get_PDFgen_funct_FORTRAN($d).";\n";
-
-	# Function for distribution
-	$PDFgen .= make_PDF_distr_FORTRAN($DISTR,$d);
-    }
-
-    # Generic (user defined) distributions
-    $PDFgen_prototypes .= "static ".get_PDFgen_funct_FORTRAN('GENERIC').";\n";
-    $PDFgen .= make_PDF_GENERIC_FORTRAN();
-
-    # End
-    return $PDFgen;
-
-} # end of make_PDFgen_FORTRAN()
-
-
-# ----------------------------------------------------------------
-# Make routines for PDF code generator (JAVA version)
-
-sub make_PDFgen_JAVA
-{
-    my $DISTR = $_[0];   # data for distributions
-
-    my $PDFgen;
-    
-    # JAVA version
-    $PDFgen .= make_bar("JAVA version");
-
-    # Main (JAVA)
-    $PDFgen .= make_PDF_main_JAVA( $DISTR );
-
-    # Continuous distributions
-    foreach my $d (sort keys %{$DISTR}) {
-	next unless $DISTR->{$d}->{"=TYPE"} eq "CONT";
-
-	# Function prototype
-	$PDFgen_prototypes .= get_PDFgen_funct_JAVA($d).";\n";
-
-	# Function for distribution
-	$PDFgen .= make_PDF_distr_JAVA($DISTR,$d);
-    }
-
-    # Generic (user defined) distributions
-    $PDFgen_prototypes .= "static ".get_PDFgen_funct_JAVA('GENERIC').";\n";
-    $PDFgen .= make_PDF_GENERIC_JAVA();
-
-    # End
-    return $PDFgen;
-
-} # end of make_PDFgen_JAVA()
-
-
-
-# ----------------------------------------------------------------
-# Main (C version)
-
-sub make_PDF_main_C
-{
-    my $DISTR = $_[0];   # data for distributions
-    
-    my $gencode;         # code for creating PDFs
-
-    # Mark begin of Main
-    $gencode .= make_bar("PDF main");
-
-    # Function header
-    $gencode .= "int _unur_acg_C_PDF (UNUR_DISTR *distr, FILE *out, const char *pdf)\n{\n";
-
-    # Check for invalid NULL pointer
-    $gencode .= "\t_unur_check_NULL(\"ACG\", distr, 0 );\n\n";
+    my $gencode;            # code for switch list
 
     # Switch (distribution)
-    $gencode .= "\tswitch (distr->id) {\n";
     foreach my $d (sort keys %{$DISTR}) {
 	next unless $DISTR->{$d}->{"=TYPE"} eq "CONT";
+
 	$gencode .= "\tcase ".$DISTR->{$d}->{"=ID"}.":\n";
-	$gencode .= "\t\treturn _unur_acg_C_PDF_$d (distr,out,pdf);\n";
+	$gencode .= "\t\treturn _unur_acg_$language\_PDF_$d (distr,out,pdf);\n";
     }
 
-    # generic (user defined) distribution
-    $gencode .= "\tcase UNUR_DISTR_GENERIC:\n";
-    $gencode .= "\t\treturn _unur_acg_C_PDF_GENERIC (distr,out,pdf);\n";
+    return $gencode;
 
-    # error!!
-    $gencode .= "\tdefault:\n";
-    $gencode .= "\t\t_unur_error(distr->name,UNUR_ERR_GEN_DATA,\"Cannot make PDF\");\n";
-    $gencode .= "\t\treturn 0;\n";
-    $gencode .= "\t}\n";
-    
-    # End of function
-    $gencode .= "}\n";
+} # end of make_list_of_distributions()
+
+
+# ----------------------------------------------------------------
+# Make routines for PDF code generator (C version)
+
+sub make_PDFgen
+{
+    my $DISTR    = $_[0];   # data for distributions
+    my $language = $_[1];   # chosen programming language
+
+    my $gencode;            # code for switch list
+
+    foreach my $d (sort keys %{$DISTR}) {
+	next unless $DISTR->{$d}->{"=TYPE"} eq "CONT";
+
+        # Function for distribution
+        $gencode .= eval("make_PDF_distr_$language(\$DISTR,\$d)");
+    }
 
     return $gencode;
 
@@ -236,91 +158,15 @@ sub make_PDF_main_C
 
 
 # ----------------------------------------------------------------
-# Main (FORTRAN version)
+# Get name of generation routine
 
-sub make_PDF_main_FORTRAN
+sub get_PDFgen_funct
 {
-    my $DISTR = $_[0];   # data for distributions
-    
-    my $gencode;         # code for creating PDFs
+    my $d = $_[0];       # distribution
+    my $l = $_[1];       # chosen programming language
 
-    # Mark begin of Main
-    $gencode .= make_bar("PDF main");
-
-    # Function header
-    $gencode .= "int _unur_acg_FORTRAN_PDF (UNUR_DISTR *distr, FILE *out, const char *pdf)\n{\n";
-
-    # Check for invalid NULL pointer
-    $gencode .= "\t_unur_check_NULL(\"ACG\", distr, 0 );\n\n";
-
-    # Switch (distribution)
-    $gencode .= "\tswitch (distr->id) {\n";
-    foreach my $d (sort keys %{$DISTR}) {
-	next unless $DISTR->{$d}->{"=TYPE"} eq "CONT";
-	$gencode .= "\tcase ".$DISTR->{$d}->{"=ID"}.":\n";
-	$gencode .= "\t\treturn _unur_acg_FORTRAN_PDF_$d (distr,out,pdf);\n";
-    }
-
-    # generic (user defined) distribution
-    $gencode .= "\tcase UNUR_DISTR_GENERIC:\n";
-    $gencode .= "\t\treturn _unur_acg_FORTRAN_PDF_GENERIC (distr,out,pdf);\n";
-
-    # error!!
-    $gencode .= "\tdefault:\n";
-    $gencode .= "\t\t_unur_error(distr->name,UNUR_ERR_GEN_DATA,\"Cannot make PDF\");\n";
-    $gencode .= "\t\treturn 0;\n";
-    $gencode .= "\t}\n";
-    
-    # End of function
-    $gencode .= "}\n";
-
-    return $gencode;
-
-} # end of make_PDF_main_FORTRAN()
-
-
-# ----------------------------------------------------------------
-# Main (JAVA version)
-
-sub make_PDF_main_JAVA
-{
-    my $DISTR = $_[0];   # data for distributions
-    
-    my $gencode;         # code for creating PDFs
-
-    # Mark begin of Main
-    $gencode .= make_bar("PDF main");
-
-    # Function header
-    $gencode .= "int _unur_acg_JAVA_PDF (UNUR_DISTR *distr, FILE *out, const char *pdf)\n{\n";
-
-    # Check for invalid NULL pointer
-    $gencode .= "\t_unur_check_NULL(\"ACG\", distr, 0 );\n\n";
-
-    # Switch (distribution)
-    $gencode .= "\tswitch (distr->id) {\n";
-    foreach my $d (sort keys %{$DISTR}) {
-	next unless $DISTR->{$d}->{"=TYPE"} eq "CONT";
-	$gencode .= "\tcase ".$DISTR->{$d}->{"=ID"}.":\n";
-	$gencode .= "\t\treturn _unur_acg_JAVA_PDF_$d (distr,out,pdf);\n";
-    }
-
-    # generic (user defined) distribution
-    $gencode .= "\tcase UNUR_DISTR_GENERIC:\n";
-    $gencode .= "\t\treturn _unur_acg_JAVA_PDF_GENERIC (distr,out,pdf);\n";
-
-    # error!!
-    $gencode .= "\tdefault:\n";
-    $gencode .= "\t\t_unur_error(distr->name,UNUR_ERR_GEN_DATA,\"Cannot make PDF\");\n";
-    $gencode .= "\t\treturn 0;\n";
-    $gencode .= "\t}\n";
-    
-    # End of function
-    $gencode .= "}\n";
-
-    return $gencode;
-
-} # end of make_PDF_main_JAVA()
+    return "int _unur_acg_$l\_PDF_$d (UNUR_DISTR *distr, FILE *out, const char *pdf)";
+} # end of get_PDFgen_funct()
 
 
 # ----------------------------------------------------------------
@@ -337,7 +183,7 @@ sub make_PDF_distr_C
     $gencode .= make_bar("PDF $d: ".$DISTR->{$d}->{"=NAME"});
 
     # Function header
-    $gencode .= get_PDFgen_funct_C($d)."\n{\n";
+    $gencode .= get_PDFgen_funct($d,'C')."\n{\n";
 
     # Print a short description of PDF
     $gencode .= 
@@ -377,56 +223,6 @@ sub make_PDF_distr_C
 
 
 # ----------------------------------------------------------------
-# Print PDF code (C version)
-
-sub make_PDF_GENERIC_C
-{
-    my $gencode;         # code for creating PDFs
-
-    # Mark begin of distribution
-    $gencode .= make_bar("PDF for generic (user defined) distribution with given PDF");
-
-    # Function header
-    $gencode .= get_PDFgen_funct_C('GENERIC')."\n{\n";
-
-    # Print a short description of PDF
-#    $gencode .= 
-#	"\t_unur_acg_C_print_section_title(out,\"PDF for $d distribution.\");\n\n";
-
-    # include header files
-#    $gencode .=
-#	"\tfprintf (out,\"#include <math.h>\\n\\n\");\n";	
-
-    # compose PDF name
-#    $gencode .= 
-#	"\tfprintf (out,\"static double %s (double x)\\n{\\n\",".
-#        " ((pdf) ? pdf : \"pdf_$d\") );\n";
-
-    # Constants (parameters)
-#    $gencode .= 
-#	"\tfprintf (out,\"\\t/* parameters for PDF */\\n\");\n";
-
-    #   List of parameters
-#    $gencode .= make_PDF_params_C($DISTR,$d);
-
-    #   Normalization constant
-#    $gencode .= make_PDF_normconstant_C($DISTR,$d);
-
-    # Body of PDF
-#    $gencode .= make_PDF_body_C($DISTR,$d);
-
-    # End of function
-#    $gencode .= "\tfprintf (out,\"}\\n\");\n";
-
-    $gencode .= "\n\treturn 1;\n";
-    $gencode .= "}\n";
-
-    return $gencode;
-    
-} # make_PDF_GENERIC_C()
-
-
-# ----------------------------------------------------------------
 # Print PDF code (FORTRAN version)
 
 sub make_PDF_distr_FORTRAN
@@ -440,7 +236,7 @@ sub make_PDF_distr_FORTRAN
     $gencode .= make_bar("PDF $d: ".$DISTR->{$d}->{"=NAME"});
 
     # Function header
-    $gencode .= get_PDFgen_funct_FORTRAN($d)."\n{\n";
+    $gencode .= get_PDFgen_funct($d,'FORTRAN')."\n{\n";
 
     # compose PDF name
     $gencode .= "\tchar pdf_name[7];\n";
@@ -491,67 +287,6 @@ sub make_PDF_distr_FORTRAN
 
 
 # ----------------------------------------------------------------
-# Print PDF code (FORTRAN version)
-
-sub make_PDF_GENERIC_FORTRAN
-{
-    my $gencode;         # code for creating PDFs
-
-    # Mark begin of distribution
-    $gencode .= make_bar("PDF for generic (user defined) distribution with given PDF");
-
-    # Function header
-    $gencode .= get_PDFgen_funct_FORTRAN('GENERIC')."\n{\n";
-
-#    # compose PDF name
-#    $gencode .= "\tchar pdf_name[7];\n";
-#    $gencode .= "\tsprintf (pdf_name,\"%.6s\",((pdf) ? pdf : \"f$d\") );\n\n";
-
-    # Print a short description of PDF
-#    $gencode .= 
-#	"\t_unur_acg_FORTRAN_print_section_title(out, \"PDF for $d distribution.\");\n\n";
-
-    # print PDF function name
-#    $gencode .= 
-#	"\tfprintf (out,\"      DOUBLE PRECISION FUNCTION %.6s(xin)\\n\\n\", pdf_name);\n";
-	
-    # Declarations
-#    $gencode .= 
-#	"\tfprintf (out,\"      IMPLICIT DOUBLE PRECISION (A-Z)\\n\");\n";
-
-    # Define pow()
-#    $gencode .= 
-#	"\tfprintf (out,\"      pow(base,exponent) = base**exponent\\n\");\n";
-
-    # Constants (parameters)
-#    $gencode .= 
-#	"\tfprintf (out,\"C\\n\");\n".
-#	"\tfprintf (out,\"C     parameters for PDF\\n\");\n".
-#	"\tfprintf (out,\"C\\n\");\n";
-
-    #   List of parameters
-#    $gencode .= make_PDF_params_FORTRAN($DISTR,$d);
-
-    #   Normalization constant
-#    $gencode .= make_PDF_normconstant_FORTRAN($DISTR,$d);
-
-    # Body of PDF
-#    $gencode .= make_PDF_body_FORTRAN($DISTR,$d);
-
-    # End of function
-#    $gencode .= "\tfprintf (out,\"\\n\");\n";
-#    $gencode .= "\tfprintf (out,\"      END\\n\");\n";
-#    $gencode .= "\tfprintf (out,\"\\n\");\n";
-
-    $gencode .= "\n\treturn 1;\n";
-    $gencode .= "}\n";
-
-    return $gencode;
-    
-} # make_PDF_GENERIC_FORTRAN()
-
-
-# ----------------------------------------------------------------
 # Print PDF code (JAVA version)
 
 sub make_PDF_distr_JAVA
@@ -565,7 +300,7 @@ sub make_PDF_distr_JAVA
     $gencode .= make_bar("PDF $d: ".$DISTR->{$d}->{"=NAME"});
 
     # Function header
-    $gencode .= get_PDFgen_funct_JAVA($d)."\n{\n";
+    $gencode .= get_PDFgen_funct($d,'JAVA')."\n{\n";
 
     # Print a short description of PDF
     $gencode .= 
@@ -598,89 +333,6 @@ sub make_PDF_distr_JAVA
     return $gencode;
     
 } # make_PDF_distr_JAVA()
-
-
-# ----------------------------------------------------------------
-# Print PDF code (JAVA version)
-
-sub make_PDF_GENERIC_JAVA
-{
-    my $gencode;         # code for creating PDFs
-
-    # Mark begin of distribution
-    $gencode .= make_bar("PDF for generic (user defined) distribution with given PDF");
-
-    # Function header
-    $gencode .= get_PDFgen_funct_JAVA('GENERIC')."\n{\n";
-
-    # Print a short description of PDF
-#    $gencode .= 
-#	"\t_unur_acg_JAVA_print_section_title(out, \"PDF for $d distribution.\");\n\n";
-
-    # Constants (parameters)
-#    $gencode .= 
-#	"\tfprintf (out,\"\\t/* parameters for PDF */\\n\");\n";
-
-    #   List of parameters
-#    $gencode .= make_PDF_params_JAVA($DISTR,$d);
-
-    #   Normalization constant
-#    $gencode .= make_PDF_normconstant_JAVA($DISTR,$d);
-
-    # compose PDF name
-#    $gencode .= 
-#	"\tfprintf (out,\"\\tstatic double %s (double x)\\n\\t{\\n\",".
-#        " ((pdf) ? pdf : \"pdf_$d\") );\n";
-
-    # Body of PDF
-#    $gencode .= make_PDF_body_JAVA($DISTR,$d);
-
-    # End of function
-#    $gencode .= "\tfprintf (out,\"\\t}\\n\");\n";
-
-    $gencode .= "\n\treturn 1;\n";
-    $gencode .= "}\n";
-
-    return $gencode;
-    
-} # make_PDF_GENERIC_JAVA()
-
-
-# ----------------------------------------------------------------
-# Get name of generation routine (C version)
-
-sub get_PDFgen_funct_C
-{
-    my $d = $_[0];       # distribution
-
-    return "int _unur_acg_C_PDF_$d (UNUR_DISTR *distr, FILE *out, const char *pdf)";
-
-} # end of get_PDFgen_funct_C()
-
-
-# ----------------------------------------------------------------
-# Get name of generation routine (FORTRAN version)
-
-sub get_PDFgen_funct_FORTRAN
-{
-    my $d = $_[0];       # distribution
-
-    return "int _unur_acg_FORTRAN_PDF_$d (UNUR_DISTR *distr, FILE *out, const char *pdf)";
-
-} # end of get_PDFgen_funct_FORTRAN()
-
-
-# ----------------------------------------------------------------
-# Get name of generation routine (JAVA version)
-
-sub get_PDFgen_funct_JAVA
-{
-    my $d = $_[0];       # distribution
-
-    return "int _unur_acg_JAVA_PDF_$d (UNUR_DISTR *distr, FILE *out, const char *pdf)";
-
-} # end of get_PDFgen_funct_JAVA()
-
 
 
 # ----------------------------------------------------------------
@@ -858,7 +510,6 @@ sub make_PDF_normconstant_FORTRAN
 } # end of make_PDF_normconstant_FORTRAN()
 
 
-
 # ----------------------------------------------------------------
 # Process normalization constants (JAVA version)
 
@@ -879,8 +530,6 @@ sub make_PDF_normconstant_JAVA
     return "";
 
 } # end of make_PDF_normconstant_JAVA()
-
-
 
 
 # ----------------------------------------------------------------
@@ -1035,7 +684,6 @@ sub make_PDF_body_FORTRAN
 } # end of make_PDF_body_FORTRAN()
 
 
-
 # ----------------------------------------------------------------
 # Process PDF body (JAVA version)
 
@@ -1104,16 +752,3 @@ sub make_bar
 } # end of make_bar()
 
 # ----------------------------------------------------------------
-
-
-
-
-
-
-
-
-
-
-
-
-

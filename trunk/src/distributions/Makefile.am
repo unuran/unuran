@@ -25,6 +25,7 @@ libunuran_distributions_a_SOURCES = \
  pareto.c \
  powerexponential.c \
  rayleigh.c \
+ slash.c       slash_gen.c \
  student.c     student_gen.c \
  triangular.c  triangular_gen.c \
  uniform.c \

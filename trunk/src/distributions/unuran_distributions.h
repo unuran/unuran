@@ -279,6 +279,16 @@ double unur_stdgen_sample_student_trouo( struct unur_gen *gen );
 /* Ratio of Uniforms                                                         */
 
 /*---------------------------------------------------------------------------*/
+/* Slash distribution  [2; ch.12, p.63]                                      */
+struct unur_distr *unur_distr_slash(double *params, int n_params);
+
+/* special generators */
+int _unur_stdgen_slash_init( struct unur_par *par, struct unur_gen *gen );
+/* initialize new generator                                                  */
+double unur_stdgen_sample_slash_slash( struct unur_gen *gen );
+/* Ratio of normal and uniform random variates */
+
+/*---------------------------------------------------------------------------*/
 /*  Triangular distribution  [3; ch.26, p.297]                               */
 struct unur_distr *unur_distr_triangular(double *params, int n_params);
 

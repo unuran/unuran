@@ -56,10 +56,12 @@ struct unur_cstd_gen {
   double *gen_param;      /* parameters for the generator                    */
   int     n_gen_param;    /* number of parameters for the generator          */
 
-  char    flag;           /* sometimes it is convenient to have a flag       */
+  int    flag;            /* sometimes it is convenient to have a flag       */
 
   double  umin;           /* cdf at left boundary of domain                  */
   double  umax;           /* cdf at right boundary of domain                 */
+
+  struct unur_gen *gen_aux; /* pointer to auxilliary generator               */
 };
 
 /*---------------------------------------------------------------------------*/

@@ -200,9 +200,10 @@ _unur_tdr_create( struct unur_par *par )
   gen->variant = par->variant;      /* indicates variant                     */
   gen->set = par->set;              /* indicates parameter settings          */
   gen->debug = par->debug;          /* debuging flags                        */
-  gen->urng = par->urng;            /* pointer to urng                       */
 
-  gen->urng_aux = NULL;             /* no auxilliary URNG required           */
+  gen->urng = par->urng;            /* pointer to (main) URNG                */
+  gen->urng_aux = par->urng_aux;    /* pointer to auxilliary URNG            */
+
   gen->gen_aux = NULL;              /* no auxilliary generator objects       */
   gen->gen_aux_2 = NULL;
 

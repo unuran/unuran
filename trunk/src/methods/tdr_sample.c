@@ -676,7 +676,7 @@ _unur_tdr_ps_sample_check( struct unur_gen *gen )
     sqx = iv->sq*hx;
 
     /* check result */
-    if (X < DISTR.BD_LEFT || X > DISTR.BD_RIGHT) {
+    if (_FP_less(X, DISTR.BD_LEFT) || _FP_greater(X, DISTR.BD_RIGHT) ) {
       _unur_warning(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"generated point out of domain");
       error = 1;
     }
@@ -691,8 +691,8 @@ _unur_tdr_ps_sample_check( struct unur_gen *gen )
 
 #ifdef UNUR_ENABLE_LOGGING
     /* write info into log file (in case error) */
-/*      if (error && (gen->debug & TDR_DEBUG_SAMPLE))  */
-/*        _unur_tdr_gw_debug_sample( gen, iv, iv, X, fx, hx, sqx );  */
+    if (error && (gen->debug & TDR_DEBUG_SAMPLE)) 
+      _unur_tdr_ps_debug_sample( gen, iv, X, fx, hx, sqx ); 
 #endif
 
     /* squeeze rejection */
@@ -1013,7 +1013,7 @@ _unur_tdr_ia_sample_check( struct unur_gen *gen )
     sqx = iv->sq*hx;
 
     /* check result */
-    if (X < DISTR.BD_LEFT || X > DISTR.BD_RIGHT) {
+    if (_FP_less(X, DISTR.BD_LEFT) || _FP_greater(X, DISTR.BD_RIGHT) ) {
       _unur_warning(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"generated point out of domain");
       error = 1;
     }
@@ -1028,8 +1028,8 @@ _unur_tdr_ia_sample_check( struct unur_gen *gen )
 
 #ifdef UNUR_ENABLE_LOGGING
     /* write info into log file (in case error) */
-/*      if (error && (gen->debug & TDR_DEBUG_SAMPLE))  */
-/*        _unur_tdr_gw_debug_sample( gen, iv, iv, X, fx, hx, sqx );  */
+    if (error && (gen->debug & TDR_DEBUG_SAMPLE)) 
+      _unur_tdr_ps_debug_sample( gen, iv, X, fx, hx, sqx ); 
 #endif
 
     /* immedate acceptance */

@@ -61,9 +61,20 @@
 
   The library can handle truncated distributions, that is,
   distribution that are derived from (standard) distribution by simply
-  restrict its domain to a subset. However for some methods there are
-  some subtle differences between changing the domain of a
-  distribution and truncating the distribution.
+  restrict its domain to a subset. There is a subtle difference
+  between changing the domain by a unur_distr_cont_set_domain() call
+  and changing the (truncated) domain for an existing generator object
+  by a unur_<method>_chg_truncated() call (if available).
+  The domain of the given distribuiton is used to create the generator
+  object. This is always handled as the domain of a non-truncated
+  distribution (although it really was derived from one UNURAN
+  standard distributions by resetting the domain). This domain can
+  then be restricted to a subset for the generator object. 
+  Generator methods that require a recreation of the generator object
+  Notice: when the domain is changed have a unur_<method>_chg_domain()
+  instead. For this call there are of course no restrictions on the
+  given domain (i.e., it is possible to increase the domain of the
+  distribution).
 
   For the objects provided by the ((=>) UNURAN library of standard
   distributions calls for updating these parameters exist (one for
@@ -273,6 +284,16 @@ int unur_distr_cont_get_domain( UNUR_DISTR *distribution, double *left, double *
 /* 
    Get the left and right borders of the domain of the
    distribution. If the domain is not set explicitly 
+   +/- @code{UNUR_INFINITY} is assumed and returned.
+   There is no error reported in this case.
+*/
+
+int unur_distr_cont_get_truncated( UNUR_DISTR *distribution, double *left, double *right );
+/* 
+   Get the left and right borders of the (truncated) domain of the
+   distribution. For non-truncated distribution this call is
+   equivalent to the unur_distr_cont_get_domain() call.
+   If the (truncated) domain is not set explicitly 
    +/- @code{UNUR_INFINITY} is assumed and returned.
    There is no error reported in this case.
 */

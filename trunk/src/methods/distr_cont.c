@@ -526,8 +526,8 @@ unur_distr_cont_set_domain( struct unur_distr *distr, double left, double right 
     return 0;
   }
 
-  DISTR.domain[0] = left;
-  DISTR.domain[1] = right;
+  DISTR.trunc[0] = DISTR.domain[0] = left;
+  DISTR.trunc[1] = DISTR.domain[1] = right;
 
   /* changelog */
   distr->set |= UNUR_DISTR_SET_DOMAIN;
@@ -544,8 +544,8 @@ unur_distr_cont_set_domain( struct unur_distr *distr, double left, double right 
   if (distr->base) {
     /* for derived distributions (e.g. order statistics)
        we also set the domain for the underlying distribution */
-    BASE.domain[0] = left;
-    BASE.domain[1] = right;
+    BASE.trunc[0] = BASE.domain[0] = left;
+    BASE.trunc[1] = BASE.domain[1] = right;
   }
 
   /* o.k. */
@@ -583,6 +583,38 @@ unur_distr_cont_get_domain( struct unur_distr *distr, double *left, double *righ
 
   return 1;
 } /* end of unur_distr_cont_get_domain() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+unur_distr_cont_get_truncated( struct unur_distr *distr, double *left, double *right )
+     /*----------------------------------------------------------------------*/
+     /* set the left and right borders of the truncated domain of the        */
+     /* distribution                                                         */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   distr ... pointer to distribution object                           */
+     /*   left  ... left boundary point                                      */
+     /*   right ... right boundary point                                     */
+     /*                                                                      */
+     /* comment:                                                             */
+     /*   if no boundaries have been set +/- INFINITY is returned.           */
+     /*----------------------------------------------------------------------*/
+{
+  /* in case of error the boundaries are set to +/- INFINITY */
+  *left = -INFINITY;
+  *right = INFINITY;
+
+  /* check arguments */
+  _unur_check_NULL( NULL, distr, 0 );
+  _unur_check_distr_object( distr, CONT, 0 );
+
+  /* o.k. */
+  *left  = (distr->set & UNUR_DISTR_SET_TRUNCATED) ? DISTR.trunc[0] : DISTR.domain[0];
+  *right = (distr->set & UNUR_DISTR_SET_TRUNCATED) ? DISTR.trunc[1] : DISTR.domain[1];
+
+  return 1;
+} /* end of unur_distr_cont_get_truncated() */
 
 /*---------------------------------------------------------------------------*/
 

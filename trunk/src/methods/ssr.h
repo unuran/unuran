@@ -144,9 +144,9 @@ int unur_ssr_chg_pdfparams( UNUR_GEN *generator, double *params, int n_params );
 */
 
 int unur_ssr_chg_domain( UNUR_GEN *generator, double left, double right );
-/* Change left and right border of the domain of the 
-   (truncated) distribution.  
-   If the mode changes when the domain of the (truncated) distribution is 
+/* 
+   Change left and right border of the domain of the distribution.  
+   If the mode changes when the domain of the distribution is 
    changed, then a correspondig unur_ssr_chg_mode() is required.
    (There is no domain checking as in the unur_init() call.)
 */

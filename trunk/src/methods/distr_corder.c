@@ -163,9 +163,9 @@ unur_distr_corder_new( struct unur_distr *distr, int n, int k )
 
   /* copy data */
   OS.area = DISTR.area;            /* area below p.d.f. (same as for distr)  */
-  OS.domain[0] = DISTR.domain[0];  /* left boundary of domain                */
-  OS.domain[1] = DISTR.domain[1];  /* right boundary of domain               */
-
+  OS.trunc[0] = OS.domain[0] = DISTR.domain[0];  /* left boundary of domain  */
+  OS.trunc[0] = OS.domain[1] = DISTR.domain[1];  /* right boundary of domain */
+  
   /* pointer to p.d.f., its derivative and c.d.f. */
   OS.pdf  = NULL;
   OS.dpdf = NULL;
@@ -478,7 +478,7 @@ _unur_upd_area_corder( UNUR_DISTR *os )
 		      - _unur_sf_ln_gamma(OS.params[0] + 1.) );
 
   /* truncated distributions */
-  if (!os->base->set & UNUR_DISTR_SET_STDDOMAIN) {
+  if (!(os->base->set & UNUR_DISTR_SET_STDDOMAIN)) {
     /* not a standard domain */
     Ftrunc  = (OS.domain[1] < INFINITY)  ? _unur_cdf_corder(OS.domain[1],os) : 1.;
     Ftrunc -= (OS.domain[0] > -INFINITY) ? _unur_cdf_corder(OS.domain[0],os) : 0.;

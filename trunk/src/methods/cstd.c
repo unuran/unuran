@@ -147,9 +147,7 @@ unur_cstd_new( struct unur_distr *distr )
   par->distr    = distr;            /* pointer to distribution object        */
 
   /* set default values */
-  PAR.variant   = 0x0u;             /* use default generator                 */
-
-  par->method   = UNUR_METH_CSTD;   /* method and default variant            */
+  par->method   = UNUR_METH_CSTD;   /* method                                */
   par->variant  = 0u;               /* default variant                       */
   par->set      = 0u;               /* inidicate default parameters          */    
   par->urng     = unur_get_default_urng(); /* use default urng               */
@@ -331,8 +329,6 @@ _unur_cstd_create( struct unur_par *par )
   GEN.pdf_param   = gen->DISTR.params;
   GEN.n_pdf_param = gen->DISTR.n_params;
 
-  GEN.variant = PAR.variant;         /* generator to be used */
-
   gen->method = par->method;        /* indicates used method */
   gen->variant = par->variant;      /* indicates variant     */
 
@@ -370,14 +366,14 @@ _unur_cstd_get_routine_sample( struct unur_par *par, struct unur_gen *gen )
 
   switch (par->distr->id) {
   case UNUR_DISTR_EXPONENTIAL:
-    if (PAR.variant >= CSTD_EXPONENTIAL_N_VAR) goto unknown_variant;
-    return _cstd_exponential_var[PAR.variant];
+    if (par->variant >= CSTD_EXPONENTIAL_N_VAR) goto unknown_variant;
+    return _cstd_exponential_var[par->variant];
   case UNUR_DISTR_GAMMA:
-    if (PAR.variant >= CSTD_GAMMA_N_VAR) goto unknown_variant;
-    return _cstd_gamma_var[PAR.variant];
+    if (par->variant >= CSTD_GAMMA_N_VAR) goto unknown_variant;
+    return _cstd_gamma_var[par->variant];
   case UNUR_DISTR_NORMAL:
-    if (PAR.variant >= CSTD_NORMAL_N_VAR) goto unknown_variant;
-    return _cstd_normal_var[PAR.variant];
+    if (par->variant >= CSTD_NORMAL_N_VAR) goto unknown_variant;
+    return _cstd_normal_var[par->variant];
   default:
     _unur_warning(gen->genid,UNUR_ERR_INIT,"unknown distribution.");
     return NULL;
@@ -450,14 +446,14 @@ _unur_cstd_debug_name_sample( struct unur_par *par, struct unur_gen *gen )
 
   switch (par->distr->id) {
   case UNUR_DISTR_EXPONENTIAL:
-    if (PAR.variant >= CSTD_EXPONENTIAL_N_VAR) goto unknown_variant;
-    return _cstd_exponential_varname[PAR.variant];
+    if (par->variant >= CSTD_EXPONENTIAL_N_VAR) goto unknown_variant;
+    return _cstd_exponential_varname[par->variant];
   case UNUR_DISTR_GAMMA:
-    if (PAR.variant >= CSTD_GAMMA_N_VAR) goto unknown_variant;
-    return _cstd_gamma_varname[PAR.variant];
+    if (par->variant >= CSTD_GAMMA_N_VAR) goto unknown_variant;
+    return _cstd_gamma_varname[par->variant];
   case UNUR_DISTR_NORMAL:
-    if (PAR.variant >= CSTD_NORMAL_N_VAR) goto unknown_variant;
-    return _cstd_normal_varname[PAR.variant];
+    if (par->variant >= CSTD_NORMAL_N_VAR) goto unknown_variant;
+    return _cstd_normal_varname[par->variant];
   default:
     _unur_warning(gen->genid,UNUR_ERR_INIT,"unknown distribution.");
     return NULL;

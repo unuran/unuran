@@ -45,7 +45,6 @@
 /* Information for constructing the generator                                */
 
 struct unur_cstd_par { 
-  unsigned variant;       /* indicates generator to be used                  */
   ;                       /* no special parameters for method                */
 };
 
@@ -53,8 +52,6 @@ struct unur_cstd_par {
 /* The generator object                                                      */
 
 struct unur_cstd_gen { 
-  /** TODO **/
-  unsigned variant;       /* indicates generator to be used                  */
   double  *pdf_param;     /* parameters for standard distribution            */
   int      n_pdf_param;   /* number of parameters for distribution           */
 };

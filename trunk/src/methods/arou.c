@@ -161,7 +161,7 @@ static int _unur_arou_get_starting_cpoints( struct unur_par *par, struct unur_ge
 
 static int _unur_arou_get_starting_segments( struct unur_par *par, struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
-/* compute segments from given starting construnction points.                */
+/* compute segments from given starting construction points.                 */
 /*---------------------------------------------------------------------------*/
 
 static struct unur_arou_segment *_unur_arou_segment_new( struct unur_gen *gen, double x, double fx );
@@ -1470,7 +1470,7 @@ _unur_arou_segment_stack_pop( struct unur_gen *gen )
 static void
 _unur_arou_segment_stack_push( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
-     /* push useless segment back stack                                      */
+     /* push the last popped segment back onto the stack.                    */
      /*                                                                      */
      /* parameters:                                                          */
      /*   gen ... pointer to generator object                                */

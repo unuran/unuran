@@ -126,15 +126,15 @@ const char *unur_get_strerror ( const int unur_errno );
 #if UNUR_DEBUG & UNUR_DB_INFO
 
 /* debugging flags for generators */
-#define _unur_set_debug_default(par)       (par)->debug = UNUR_GENDEBUG_DEFAULT
-#define _unur_copy_debug(par,gen)          (gen)->debug = (par)->debug
+#define _unur_set_debugflag_default(par)       (par)->debug = UNUR_DEBUGFLAG_DEFAULT
+#define _unur_copy_debugflag(par,gen)          (gen)->debug = (par)->debug
 
 #define _unur_print_if_default(par,flag)   if(!((par)->set & (flag))) fprintf(log,"  [default]")
 
 #else
 
-#define _unur_set_debug_default(par)
-#define _unur_copy_debug(par,gen)
+#define _unur_set_debugflag_default(par)
+#define _unur_copy_debugflag(par,gen)
 
 #define _unur_print_if_default(par,flag)
 
@@ -151,8 +151,8 @@ const char *unur_get_strerror ( const int unur_errno );
 #define _unur_copy_genid(par,gen)
 #define _unur_free_genid(gen)
 
-#define _unur_set_debug_default(par)
-#define _unur_copy_debug(par,gen)
+#define _unur_set_debugflag_default(par)
+#define _unur_copy_debugflag(par,gen)
 
 #define _unur_print_if_default(par,flag)
 

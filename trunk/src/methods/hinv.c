@@ -794,14 +794,11 @@ _unur_hinv_create( struct unur_par *par )
   /* check arguments */
   CHECK_NULL(par,NULL);  COOKIE_CHECK(par,CK_HINV_PAR,NULL);
 
-  /* allocate memory for generator object */
-  gen = _unur_malloc( sizeof(struct unur_gen) );
+  /* allocate memory for new generator object */
+  gen = _unur_malloc_gen( par );
 
   /* magic cookies */
   COOKIE_SET(gen,CK_HINV_GEN);
-
-  /* copy distribution object into generator object */
-  gen->distr = _unur_distr_clone( par->distr );
 
   /* set generator identifier */
   gen->genid = _unur_set_genid(GENTYPE);
@@ -819,15 +816,6 @@ _unur_hinv_create( struct unur_par *par )
   GEN.bleft  = max(PAR.bleft,DISTR.domain[0]);
   GEN.bright = min(PAR.bright,DISTR.domain[1]);
 
-  gen->method = par->method;        /* indicates method                      */
-  gen->variant = par->variant;      /* indicates variant                     */
-  gen->set = par->set;              /* indicates parameter settings          */
-  gen->debug = par->debug;          /* debuging flags                        */
-  gen->urng = par->urng;            /* pointer to urng                       */
-
-  gen->urng_aux = NULL;             /* no auxilliary URNG required           */
-  gen->gen_aux = NULL;              /* no auxilliary generator objects       */
-
   /* default values */
   GEN.tailcutoff_left  = -1.;       /* no cut-off by default                 */
   GEN.tailcutoff_right = 10.;
@@ -840,7 +828,7 @@ _unur_hinv_create( struct unur_par *par )
   GEN.guide = NULL;
 
   /* return pointer to (almost empty) generator object */
-  return(gen);
+  return gen;
 
 } /* end of _unur_hinv_create() */
 

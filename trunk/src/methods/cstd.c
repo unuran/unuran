@@ -555,14 +555,11 @@ _unur_cstd_create( struct unur_par *par )
   /* check arguments */
   CHECK_NULL(par,NULL);  COOKIE_CHECK(par,CK_CSTD_PAR,NULL);
 
-  /* allocate memory for generator object */
-  gen = _unur_malloc( sizeof(struct unur_gen) );
+  /* allocate memory for new generator object */
+  gen = _unur_malloc_gen( par );
 
   /* magic cookies */
   COOKIE_SET(gen,CK_CSTD_GEN);
-
-  /* copy distribution object into generator object */
-  gen->distr = _unur_distr_clone( par->distr );
 
   /* set generator identifier */
   gen->genid = _unur_set_genid(GENTYPE);
@@ -582,18 +579,8 @@ _unur_cstd_create( struct unur_par *par )
 
   /* GEN.is_inversion is set in _unur_cstd_init() */
 
-  gen->method = par->method;        /* indicates used method                 */
-  gen->variant = par->variant;      /* indicates variant                     */
-  gen->set = par->set;              /* indicates parameter settings          */
-  gen->debug = par->debug;          /* debuging flags                        */
-  gen->urng = par->urng;            /* pointer to urng                       */
-
-  gen->urng_aux = NULL;             /* no auxilliary URNG required           */
-  gen->gen_aux = NULL;              /* no auxilliary generator objects, yet
-				       (however, this might change!)         */
-
   /* return pointer to (almost empty) generator object */
-  return(gen);
+  return gen;
   
 } /* end of _unur_cstd_create() */
 

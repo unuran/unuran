@@ -434,14 +434,11 @@ _unur_dgt_create( struct unur_par *par )
   /* check arguments */
   CHECK_NULL(par,NULL);  COOKIE_CHECK(par,CK_DGT_PAR,NULL);
 
-  /* allocate memory for generator object */
-  gen = _unur_malloc( sizeof(struct unur_gen) );
+  /* allocate memory for new generator object */
+  gen = _unur_malloc_gen( par );
 
   /* magic cookies */
   COOKIE_SET(gen,CK_DGT_GEN);
-
-  /* copy distribution object into generator object */
-  gen->distr = _unur_distr_clone( par->distr );
 
   /* we need a PV */
   if (DISTR.pv == NULL) {
@@ -467,24 +464,13 @@ _unur_dgt_create( struct unur_par *par )
   GEN.guide_table = NULL;
 
   /* copy some parameters into generator object */
-  gen->debug = par->debug;          /* debuging flags                        */
-  gen->urng = par->urng;            /* pointer to urng                       */
-
-  gen->urng_aux = NULL;             /* no auxilliary URNG required           */
-  gen->gen_aux = NULL;              /* no auxilliary generator objects       */
 
   /* length of probability vector */
   n_pv = DISTR.n_pv;
 
-  /* store method in generator structure */
-  gen->method = par->method;
-  gen->set = par->set;              /* indicates parameter settings          */
-
-  /* which variant? */
+  /* default variant? */
   if (par->variant == 0)   /* default variant */
-    par->variant = (n_pv > DGT_VAR_THRESHOLD) ? DGT_VARFLAG_DIV : DGT_VARFLAG_ADD;
-  /* store variant in generator structure */
-  gen->variant = par->variant;
+    gen->variant = (n_pv > DGT_VAR_THRESHOLD) ? DGT_VARFLAG_DIV : DGT_VARFLAG_ADD;
 
   /* allocation for cummulated probabilities */
   GEN.cumpv = _unur_malloc( n_pv * sizeof(double) );

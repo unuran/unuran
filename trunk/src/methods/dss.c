@@ -269,14 +269,11 @@ _unur_dss_create( struct unur_par *par )
   /* check arguments */
   CHECK_NULL(par,NULL);  COOKIE_CHECK(par,CK_DSS_PAR,NULL);
 
-  /* allocate memory for generator object */
-  gen = _unur_malloc( sizeof(struct unur_gen) );
+  /* allocate memory for new generator object */
+  gen = _unur_malloc_gen( par );
 
   /* magic cookies */
   COOKIE_SET(gen,CK_DSS_GEN);
-
-  /* copy distribution object into generator object */
-  gen->distr = _unur_distr_clone( par->distr );
 
   /* set generator identifier */
   gen->genid = _unur_set_genid(GENTYPE);
@@ -285,18 +282,6 @@ _unur_dss_create( struct unur_par *par )
   SAMPLE = _unur_dss_sample;
   gen->destroy = _unur_dss_free;
   gen->clone = _unur_dss_clone;
-
-  /* copy some parameters into generator object */
-  gen->debug = par->debug;          /* debuging flags                        */
-  gen->urng = par->urng;            /* pointer to urng                       */
-
-  gen->urng_aux = NULL;             /* no auxilliary URNG required           */
-  gen->gen_aux = NULL;              /* no auxilliary generator objects       */
-
-  /* store method in generator structure */
-  gen->method = par->method;
-  gen->variant = par->variant;
-  gen->set = par->set;              /* indicates parameter settings          */
 
   /* return pointer to (almost empty) generator object */
   return gen;

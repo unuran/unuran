@@ -399,14 +399,11 @@ _unur_hri_create( struct unur_par *par )
   /* check arguments */
   CHECK_NULL(par,NULL);  COOKIE_CHECK(par,CK_HRI_PAR,NULL);
 
-  /* allocate memory for generator object */
-  gen = _unur_malloc( sizeof(struct unur_gen) );
+  /* allocate memory for new generator object */
+  gen = _unur_malloc_gen( par );
 
   /* magic cookies */
   COOKIE_SET(gen,CK_HRI_GEN);
-
-  /* copy distribution object into generator object */
-  gen->distr = _unur_distr_clone( par->distr );
 
   /* set generator identifier */
   gen->genid = _unur_set_genid(GENTYPE);
@@ -420,15 +417,6 @@ _unur_hri_create( struct unur_par *par )
   /* copy parameters into generator object */
   GEN.p0 = PAR.p0;                  /* design (splitting) point              */
 
-  gen->method = par->method;        /* indicates method                      */
-  gen->variant = par->variant;      /* indicates variant                     */
-  gen->set = par->set;              /* indicates parameter settings          */
-  gen->debug = par->debug;          /* debuging flags                        */
-  gen->urng = par->urng;            /* pointer to urng                       */
-
-  gen->urng_aux = NULL;             /* no auxilliary URNG required           */
-  gen->gen_aux = NULL;              /* no auxilliary generator objects       */
-
   /* default values */
   GEN.left_border = 0.;             /* left border of domain                 */
   GEN.hrp0 = 0.;                    /* hazard rate at p0                     */
@@ -437,7 +425,7 @@ _unur_hri_create( struct unur_par *par )
   GEN.left_border = 0.;             /* left border of domain                 */
 
   /* return pointer to (almost empty) generator object */
-  return(gen);
+  return gen;
 
 } /* end of _unur_hri_create() */
 

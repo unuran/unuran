@@ -185,17 +185,14 @@ _unur_tdr_create( struct unur_par *par )
   /* check arguments */
   CHECK_NULL(par,NULL);  COOKIE_CHECK(par,CK_TDR_PAR,NULL);
 
-  /* allocate memory for generator object */
-  gen = _unur_malloc( sizeof(struct unur_gen) );
+  /* allocate memory for new generator object */
+  gen = _unur_malloc_gen( par );
 
   /* magic cookies */
   COOKIE_SET(gen,CK_TDR_GEN);
 
   /* set generator identifier */
   gen->genid = _unur_set_genid(GENTYPE);
-
-  /* copy distribution object into generator object */
-  gen->distr = _unur_distr_clone( par->distr );
 
   /* which transformation */
   if (PAR.c_T == 0.)
@@ -250,16 +247,6 @@ _unur_tdr_create( struct unur_par *par )
   GEN.max_ratio = PAR.max_ratio;    /* bound for ratio  Atotal / Asqueeze    */
   GEN.bound_for_adding = PAR.bound_for_adding;
 
-  gen->method = par->method;        /* indicates method                      */
-  gen->variant = par->variant;      /* indicates variant                     */
-  gen->set = par->set;              /* indicates parameter settings          */
-  gen->debug = par->debug;          /* debuging flags                        */
-
-  gen->urng = par->urng;            /* pointer to (main) URNG                */
-  gen->urng_aux = par->urng_aux;    /* pointer to auxilliary URNG            */
-
-  gen->gen_aux = NULL;              /* no auxilliary generator objects       */
-
   /* mode known and in given domain ?? */
   if ( !(par->distr->set & UNUR_DISTR_SET_MODE)
        || (DISTR.mode < DISTR.BD_LEFT)
@@ -283,8 +270,11 @@ _unur_tdr_create( struct unur_par *par )
        --> enable derandomized ARS      */
     par->variant |= TDR_VARFLAG_USEDARS;
 
+  /* copy variant */
+  gen->variant = par->variant;
+
   /* return pointer to (almost empty) generator object */
-  return(gen);
+  return gen;
 
 } /* end of _unur_tdr_create() */
 

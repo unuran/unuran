@@ -1026,14 +1026,11 @@ _unur_srou_create( struct unur_par *par )
   /* check arguments */
   CHECK_NULL(par,NULL);  COOKIE_CHECK(par,CK_SROU_PAR,NULL);
 
-  /* allocate memory for generator object */
-  gen = _unur_malloc( sizeof(struct unur_gen) );
+  /* allocate memory for new generator object */
+  gen = _unur_malloc_gen( par );
 
   /* magic cookies */
   COOKIE_SET(gen,CK_SROU_GEN);
-
-  /* copy distribution object into generator object */
-  gen->distr = _unur_distr_clone( par->distr );
 
   /* check for required data: mode */
   if (!(gen->distr->set & UNUR_DISTR_SET_MODE)) {
@@ -1092,19 +1089,10 @@ _unur_srou_create( struct unur_par *par )
   GEN.a = GEN.b = 0.;
   GEN.log_ab = 0.;
 
-  gen->method = par->method;        /* indicates method                      */
-  gen->variant = par->variant;      /* indicates variant                     */
-  gen->set = par->set;              /* indicates parameter settings          */
-  gen->debug = par->debug;          /* debuging flags                        */
-  gen->urng = par->urng;            /* pointer to urng                       */
-
-  gen->urng_aux = NULL;             /* no auxilliary URNG required           */
-  gen->gen_aux = NULL;              /* no auxilliary generator objects       */
-
   /* initialize parameters */
 
   /* return pointer to (almost empty) generator object */
-  return(gen);
+  return gen;
 
 } /* end of _unur_srou_create() */
 

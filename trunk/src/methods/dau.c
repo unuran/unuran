@@ -461,14 +461,11 @@ _unur_dau_create( struct unur_par *par)
   /* check arguments */
   CHECK_NULL(par,NULL);  COOKIE_CHECK(par,CK_DAU_PAR,NULL);
 
-  /* allocate memory for generator object */
-  gen = _unur_malloc(sizeof(struct unur_gen));
+  /* allocate memory for new generator object */
+  gen = _unur_malloc_gen( par );
 
   /* magic cookies */
   COOKIE_SET(gen,CK_DAU_GEN);
-
-  /* copy distribution object into generator object */
-  gen->distr = _unur_distr_clone( par->distr );
 
   /* we need a PV */
   if (DISTR.pv == NULL) {
@@ -491,14 +488,6 @@ _unur_dau_create( struct unur_par *par)
 
   /* copy some parameters into generator object */
   GEN.len = DISTR.n_pv;             /* length of probability vector          */
-  gen->method = par->method;        /* indicates used method                 */
-  gen->variant = 0u;                /* only the default variant is possible  */
-  gen->set = par->set;              /* indicates parameter settings          */
-  gen->debug = par->debug;          /* debuging flags                        */
-  gen->urng = par->urng;            /* pointer to urng                       */
-
-  gen->urng_aux = NULL;             /* no auxilliary URNG required           */
-  gen->gen_aux = NULL;              /* no auxilliary generator objects       */
 
   /* size of table */
   GEN.urn_size = (int)(GEN.len * PAR.urn_factor);

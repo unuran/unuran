@@ -1014,14 +1014,11 @@ _unur_tabl_create( struct unur_par *par )
   /* check arguments */
   CHECK_NULL(par,NULL);  COOKIE_CHECK(par,CK_TABL_PAR,NULL);
 
-  /* allocate memory for generator object */
-  gen = _unur_malloc( sizeof(struct unur_gen) );
+  /* allocate memory for new generator object */
+  gen = _unur_malloc_gen( par );
 
   /* magic cookies */
   COOKIE_SET(gen,CK_TABL_GEN);
-
-  /* copy distribution object into generator object */
-  gen->distr = _unur_distr_clone( par->distr );
 
   /* check for required data: area */
   if (!(gen->distr->set & UNUR_DISTR_SET_PDFAREA))
@@ -1060,17 +1057,8 @@ _unur_tabl_create( struct unur_par *par )
   GEN.max_ratio = PAR.max_ratio;       /* bound for ratio  Atotal / Asqueeze */
   GEN.darsfactor = PAR.darsfactor;
 
-  gen->method = par->method;           /* indicates method                   */
-  gen->variant = par->variant;         /* indicates variant                  */
-  gen->set = par->set;              /* indicates parameter settings          */
-  gen->debug = par->debug;             /* debuging flags                     */
-  gen->urng = par->urng;               /* pointer to urng                    */
-
-  gen->urng_aux = NULL;             /* no auxilliary URNG required           */
-  gen->gen_aux = NULL;              /* no auxilliary generator objects       */
-
   /* return pointer to (almost empty) generator object */
-  return(gen);
+  return gen;
 
 } /* end of _unur_tabl_create() */
 

@@ -1019,14 +1019,11 @@ _unur_arou_create( struct unur_par *par )
   /* check arguments */
   CHECK_NULL(par,NULL);  COOKIE_CHECK(par,CK_AROU_PAR,NULL);
 
-  /* allocate memory for generator object */
-  gen = _unur_malloc( sizeof(struct unur_gen) );
+  /* allocate memory for new generator object */
+  gen = _unur_malloc_gen( par );
 
   /* magic cookies */
   COOKIE_SET(gen,CK_AROU_GEN);
-
-  /* copy distribution object into generator object */
-  gen->distr = _unur_distr_clone( par->distr );
 
   /* set generator identifier */
   gen->genid = _unur_set_genid(GENTYPE);
@@ -1051,15 +1048,6 @@ _unur_arou_create( struct unur_par *par )
   GEN.max_segs = PAR.max_segs;      /* maximum number of segments            */
   GEN.max_ratio = PAR.max_ratio;    
   GEN.darsfactor = PAR.darsfactor;
-
-  gen->method = par->method;        /* indicates method and variant          */
-  gen->variant = par->variant;      /* indicates variant                     */
-  gen->set = par->set;              /* indicates parameter settings          */
-  gen->debug = par->debug;          /* debuging flags                        */
-  gen->urng = par->urng;            /* pointer to urng                       */
-  gen->urng_aux = par->urng_aux;    /* pointer to auxilliary URNG            */
-
-  gen->gen_aux = NULL;              /* no auxilliary generator objects       */
 
   /* center known ?? */
   if (!(par->set & AROU_SET_CENTER))

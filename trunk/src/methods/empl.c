@@ -278,14 +278,11 @@ _unur_empl_create( struct unur_par *par )
   /* check arguments */
   CHECK_NULL(par,NULL);  COOKIE_CHECK(par,CK_EMPL_PAR,NULL);
 
-  /* allocate memory for generator object */
-  gen = _unur_malloc( sizeof(struct unur_gen) );
+  /* allocate memory for new generator object */
+  gen = _unur_malloc_gen( par );
 
   /* magic cookies */
   COOKIE_SET(gen,CK_EMPL_GEN);
-
-  /* copy distribution object into generator object */
-  gen->distr = _unur_distr_clone( par->distr );
 
   /* set generator identifier */
   gen->genid = _unur_set_genid(GENTYPE);
@@ -298,16 +295,6 @@ _unur_empl_create( struct unur_par *par )
   /* copy observed data into generator object */
   GEN.observ   = DISTR.sample;          /* observations in distribution object */
   GEN.n_observ = DISTR.n_sample;        /* sample size */
-
-  /* copy some parameters into generator object */
-  gen->method = par->method;        /* indicates method                      */
-  gen->variant = par->variant;      /* indicates variant                     */
-  gen->set = par->set;              /* indicates parameter settings          */
-  gen->debug = par->debug;          /* debuging flags                        */
-  gen->urng = par->urng;            /* pointer to urng                       */
-
-  gen->urng_aux = NULL;             /* no auxilliary URNG required           */
-  gen->gen_aux  = NULL;             /* aux generator object set below        */
 
   /* return pointer to (almost empty) generator object */
   return gen;

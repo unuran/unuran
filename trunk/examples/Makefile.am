@@ -17,7 +17,8 @@ EXAMPLES = \
  example_cont  example_cont_str \
  example_emp   example_emp_str \
  example_vemp  \
- example_FuncStr
+ example_FuncStr \
+ example_vmt
 
 check_PROGRAMS = $(EXAMPLES)
 

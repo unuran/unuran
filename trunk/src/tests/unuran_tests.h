@@ -50,6 +50,7 @@
    =DESCRIPTION
      The following routines can be used to test the performance of the
      implemented generators and can be used to verify the implementions.
+     They are declared in @file{unuran_tests.h} which has to be included.
 
    =END
 
@@ -107,7 +108,7 @@ UNUR_GEN *unur_test_timing( UNUR_PAR *parameters, int log_samplesize,
    respectively. @var{log_samplesize} is the common logarithm of the
    sample size that is used for timing. 
 
-   If @var{verbosity} is not @code{0} then a small table is printed to
+   If @var{verbosity} is TRUE then a small table is printed to
    the @code{stdout} with setup time, marginal generation time and
    average generation 
    times for generating 10, 100, @dots{} random variates. All times
@@ -121,13 +122,13 @@ UNUR_GEN *unur_test_timing( UNUR_PAR *parameters, int log_samplesize,
 */
 
 
-int unur_test_count_urn( UNUR_GEN *generator, int samplesize );
+int unur_test_count_urn( UNUR_GEN *generator, int samplesize, int verbosity);
 /* 
    Count used uniform random numbers. It returns the total number of
    uniform random numbers required for a sample of non-uniform random
    variates of size @var{samplesize}.
 
-   If @var{verbosity} is not @code{0} the result is printed to the
+   If @var{verbosity} is TRUE the result is printed to the
    @code{stdout}.
 */
 
@@ -154,31 +155,33 @@ double unur_test_chi2( UNUR_GEN *generator, int intervals, int samplesize, int c
    data is printed. There is no output when it is set to @code{0}.
 */
 
-int unur_test_moments( UNUR_GEN *generator, double *moments, int n_moments, int samplesize );
+int unur_test_moments( UNUR_GEN *generator, double *moments, int n_moments, 
+		       int samplesize, int verbosity);
 /* 
    Computes the first @var{n_moments} central moments for a sample of
    size @var{samplesize}. The result is stored into the array
    @var{moments}.
    @var{n_moments} must be an integer between @code{1} and @code{4}.
 
-   If @var{verbosity} is not @code{0} the result is printed to the
+   If @var{verbosity} is TRUE the result is printed to the
    @code{stdout}.
 */
 
-double unur_test_correlation( UNUR_GEN *generator1, UNUR_GEN *generator2, int samplesize );
+double unur_test_correlation( UNUR_GEN *generator1, UNUR_GEN *generator2,
+			      int samplesize, int verbosity);
 /* 
    Compute the correlation coefficient between streams from
    @var{generator1} and @var{generator2} for two samples of size
    @var{samplesize}.
    The resultung correlation is returned.
 
-   If @var{verbosity} is not @code{0} the result is printed to the
+   If @var{verbosity} is TRUE the result is printed to the
    @code{stdout}.
 */
 
 int unur_test_quartiles( UNUR_GEN *generator,
 			 double *q0, double *q1, double *q2, double *q3, double *q4, 
-			 int samplesize );
+			 int samplesize, int verbosity );
 /* 
    Estimate quartiles of sample of size @var{samplesize}. 
    The resulting quantiles are stored in the variables @var{q}:
@@ -195,7 +198,7 @@ int unur_test_quartiles( UNUR_GEN *generator,
    maximum
    @end table
 
-   If @var{verbosity} is not @code{0} the result is printed to the
+   If @var{verbosity} is TRUE the result is printed to the
    @code{stdout}.
 */
 

@@ -52,7 +52,8 @@ static char test_name[] = "Quantiles";
 /*---------------------------------------------------------------------------*/
 
 int
-unur_test_quartiles( UNUR_GEN *gen, double *q0 ,double *q1, double *q2, double *q3, double *q4, int samplesize )
+unur_test_quartiles( UNUR_GEN *gen, double *q0 ,double *q1, double *q2, double *q3, double *q4,
+		     int samplesize, int verbosity )
      /*----------------------------------------------------------------------*/
      /*  compute estimate for quartiles and mean of samples.                 */
      /*                                                                      */
@@ -64,6 +65,7 @@ unur_test_quartiles( UNUR_GEN *gen, double *q0 ,double *q1, double *q2, double *
      /*   q3         ... 3rd quartile (75%)                                  */
      /*   q4         ... maximum                                             */
      /*   samplesize ... sample size                                         */
+     /*   verbosity  ... verbosity level, 0 = no output, 1 = output          */
      /*                                                                      */
      /* return:                                                              */
      /*   1 ... on success                                                   */
@@ -228,12 +230,14 @@ unur_test_quartiles( UNUR_GEN *gen, double *q0 ,double *q1, double *q2, double *
   *q4 = h[4];
 
   /* now print results */
-  printf("\nQuartiles:\n");
-  printf("\tmin = \t%6.5g\n",*q0);
-  printf("\t25%% =\t%6.5g\n",*q1);
-  printf("\t50%% =\t%6.5g\n",*q2);
-  printf("\t75%% =\t%6.5g\n",*q3);
-  printf("\tmax = \t%6.5g\n",*q4);
+  if (verbosity) {
+    printf("\nQuartiles:\n");
+    printf("\tmin = \t%6.5g\n",*q0);
+    printf("\t25%% =\t%6.5g\n",*q1);
+    printf("\t50%% =\t%6.5g\n",*q2);
+    printf("\t75%% =\t%6.5g\n",*q3);
+    printf("\tmax = \t%6.5g\n",*q4);
+  }
 
   return 1;
 

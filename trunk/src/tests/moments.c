@@ -51,7 +51,7 @@ static char test_name[] = "Moments";
 /*---------------------------------------------------------------------------*/
 
 int
-unur_test_moments( UNUR_GEN *gen, double *moments, int n_moments, int samplesize )
+unur_test_moments( UNUR_GEN *gen, double *moments, int n_moments, int samplesize, int verbosity )
      /*----------------------------------------------------------------------*/
      /*  compute central moments of samples.                                 */
      /*                                                                      */
@@ -60,6 +60,7 @@ unur_test_moments( UNUR_GEN *gen, double *moments, int n_moments, int samplesize
      /*   moments    ... array for storing moments                           */
      /*   n_moments  ... number of moments to be calculated (at most 4)      */
      /*   samplesize ... sample size                                         */
+     /*   verbosity  ... verbosity level, 0 = no output, 1 = output          */
      /*                                                                      */
      /* return:                                                              */
      /*   1 ... on success                                                   */
@@ -130,10 +131,12 @@ unur_test_moments( UNUR_GEN *gen, double *moments, int n_moments, int samplesize
     moments[mom] /= samplesize;
 
   /* now print results */
-  printf("\nCentral MOMENTS:\n");
-  for (mom = 1; mom <= n_moments; mom++ )
-    printf("\t[%d] =\t%g\n",mom,moments[mom]);
-  printf("\n");
+  if (verbosity) {
+    printf("\nCentral MOMENTS:\n");
+    for (mom = 1; mom <= n_moments; mom++ )
+      printf("\t[%d] =\t%g\n",mom,moments[mom]);
+    printf("\n");
+  }
 
   return 1;
 

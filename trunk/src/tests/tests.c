@@ -96,7 +96,7 @@ unur_run_tests( struct unur_par *par, unsigned tests)
 
   /* count number of uniform random numbers */
   if (tests & UNUR_TEST_N_URNG )
-    unur_test_count_urn(gen,TEST_COUNTER_SAMPLESIZE);
+    unur_test_count_urn(gen,TEST_COUNTER_SAMPLESIZE, TRUE);
 
   /* print a sample */
   if (tests & UNUR_TEST_SAMPLE )

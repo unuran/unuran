@@ -33,6 +33,7 @@ libunuran_distributions_a_SOURCES = \
  c_triangular.c  c_triangular_gen.c \
  c_uniform.c     c_uniform_gen.c \
  c_weibull.c     c_weibull_gen.c \
+ d_geometric.c   d_geometric_gen.c \
  d_zipf.c        d_zipf_gen.c
 
 pkginclude_HEADERS = \

@@ -105,7 +105,6 @@
  *                                                                           *
  *  distr: Burr distribution Type VII                                        *
  *  first parameter must be type of distribution (1 ... 12)!                 *
- *  first parameter must be type of distribution (1 ... 12)!                 *
  *                                                                           *
  *  cdf:       F(x) = 2^(-k) * (1 + tanh(x))^k                               *
  *  pdf:       f(x) =                                                        *

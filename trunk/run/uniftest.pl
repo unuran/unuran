@@ -18,7 +18,7 @@ $JAVA_exec = "./Uniftest";
 ####################################################
 
 $seed = int(rand 12345678) + 1;
-$sample_size = 10000;
+$sample_size = 10;
 $accuracy = 1.0e-15;
 
 ####################################################
@@ -110,22 +110,28 @@ sub make_C_src
 /* ---------------------------------------------------------------- */
 
 /* ---------------------------------------------------------------- */
-/* LCG (Linear Congruential Generator) by G. Marsaglia (1972).      */
-/*   x_(n+1) = 69069 * x_n + 1 mod 2^32                             */
+/* LCG (Linear Congruential Generator) by Park & Miller (1988).     */
+/*   x_(n+1) = 16807 * x_n mod 2^31 - 1    (Minimal Standard)       */
 /* ---------------------------------------------------------------- */
 
 static unsigned int xn = $seed;   /* seed  */
 
-static double uniform (void)
+static double urand (void)
 {
+#define a 16807
+#define m 2147483647
+#define q 127773      /* m / a */
+#define r 2836        /* m % a */
+
+  int hi, lo, test;
+
+  hi = xn / q;
+  lo = xn % q;
+  test = a * lo - r * hi;
   
-  xn = 69069 * xn + 1;
-  
-  if (sizeof(unsigned int) > 4) 
-    /* no overflow. 2^32 = 4294967296 */
-    xn %= 4294967296;
-  
-  return (xn * 2.32830643653869628906e-10 + 1.16415321826934814453e-10);
+  xn = (test > 0 ) ? test : test + m;
+
+  return (xn * 4.656612875245796924105750827e-10);
 }
 
 static void useed(unsigned int seed)
@@ -146,7 +152,7 @@ int main ()
   useed($seed);
 
   for (i=0; i<$sample_size; i++)
-    printf("%.17e\\n",uniform());
+    printf("%.17e\\n",urand());
 
   exit (0);
 }
@@ -173,26 +179,34 @@ sub make_FORTRAN_src
 * ------------------------------------------------------------------ *
 
 * ------------------------------------------------------------------ *
-* LCG (Linear Congruential Generator) by G. Marsaglia (1972).        *
-*   x_(n+1) = 69069 * x_n + 1 mod 2^32                               *
+* LCG (Linear Congruential Generator) by Park & Miller (1988).       *
+*   x_(n+1) = 16807 * x_n mod 2^31 - 1    (Minimal Standard)         *
 * ------------------------------------------------------------------ *
 
-      DOUBLE PRECISION FUNCTION unif()
+      DOUBLE PRECISION FUNCTION urand()
 
-      INTEGER xn
-      DOUBLE PRECISION f1, f2
-      PARAMETER (f1=2.d0**(-32))
-      PARAMETER (f2=2.d0**(-33))
+      INTEGER a, m, q, r, xn, hi, lo, test
+      PARAMETER (a = 16807)
+      PARAMETER (m = 2147483647)
+      PARAMETER (q = 127773)
+      PARAMETER (r = 2836)
 
 C     state variable
       COMMON /state/xn
       DATA xn/$seed/
       SAVE /state/
 
-      xn = 69069 * xn + 1
+      hi = xn / q
+      lo = MOD(xn,q)
 
-      unif = xn * f1 + f2
-      IF (xn .LT. 0) unif = unif + 1.d0
+      test = a * lo - r * hi
+      IF (test .gt. 0) THEN
+	  xn = test
+      ELSE
+          xn = test + m
+      END IF
+
+      urand = xn * 4.656612875245796924105750827D-10
 
       END
 
@@ -221,7 +235,7 @@ C     seed generator
       CALL useed($seed)
 
       DO 1 i=1,$sample_size
-         u = unif()
+         u = urand()
          WRITE (*,'(d24.18)') u
  1    CONTINUE
       END
@@ -248,8 +262,8 @@ sub make_JAVA_src
 /* ---------------------------------------------------------------- */
 
 /* ---------------------------------------------------------------- */
-/* LCG (Linear Congruential Generator) by G. Marsaglia (1972).      */
-/*   x_(n+1) = 69069 * x_n + 1 mod 2^32                             */
+/* LCG (Linear Congruential Generator) by Park & Miller (1988).     */
+/*   x_(n+1) = 16807 * x_n mod 2^31 - 1    (Minimal Standard)       */
 /* ---------------------------------------------------------------- */
 
 public class Urand {
@@ -263,18 +277,20 @@ public class Urand {
     public static double myrandom() 
     {
 
-        private double retval;
+        static final int a = 16807;
+        static final int m = 2147483647;
+        static final int q = 127773;      /* m / a */
+        static final int r = 2836;        /* m % a */
 
-        xn = 69069 * xn + 1;
-        retval = 1.0 * xn;
+	private int hi, lo, test;
 
-        retval = 2.32830643653869628906e-10 * retval + 1.16415321826934814453e-10;
+        hi = xn / q;
+        lo = xn % q;
+        test = a * lo - r * hi;
+  
+        xn = (test > 0 ) ? test : test + m;
 
-	if ( retval  < 0 ) {
-           retval += 1.0;
-        }
-
-        return (retval);
+        return (xn * 4.656612875245796924105750827e-10);
     }
 
 

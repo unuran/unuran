@@ -18,7 +18,7 @@
  *                                                                           *
  *  distr: Negative Binomial distribution  [1; ch.5.1, p.200]                *
  *                                                                           *
- *  pmf:       p(k) = (k+r-1 \choose r-1) * p^k * (1-p)^r                    *
+ *  pmf:       p(k) = (k+r-1 \choose r-1) * p^r * (1-p)^k                    *
  *  domain:    0 <= k < infinity                                             *
  *  constant:  1                                                             *
  *                                                                           *
@@ -108,8 +108,9 @@ _unur_pmf_negativebinomial(int k, UNUR_DISTR *distr)
   if (k<0) return 0.;
 
   else
-    return (pow( p, (double)k ) * pow( 1.-p, r ) 
-	    * exp( _unur_sf_ln_gamma(k+r) - _unur_sf_ln_gamma(k+1.) - LOGNORMCONSTANT ) );
+    return exp( r*log(p) + k*log(1-p) 
+		+ _unur_sf_ln_gamma(k+r) - _unur_sf_ln_gamma(k+1.) - LOGNORMCONSTANT ) ;
+
 } /* end of _unur_pmf_negativebinomial() */
 
 #endif

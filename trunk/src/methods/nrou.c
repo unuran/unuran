@@ -87,6 +87,22 @@
 #include "nrou.h"
 
 /*---------------------------------------------------------------------------*/
+/* Constants:                                                                */
+
+/* Scaling factor for the computed minimum bounding rectangle.               */
+/* The computed rectangle  (0, vmax)x(umin[d], umax[d]) is scaled by this    */
+/* factor, i.e. :                                                            */
+/* vmax = vmax * ( 1+ NROU_RECT_SCALING)                                     */
+/* umin = umin - (umax-umin)*NROU_RECT_SCALING/2.                            */
+/* umax = umax + (umax-umin)*NROU_RECT_SCALING/2.                            */
+#define NROU_RECT_SCALING (1.e-4)
+
+/* The minimum bounding rectangle is computed by an numerical search         */
+/* algorithm. In case of unbounded domain we need a very large bound         */
+/* number as starting point:                                                 */
+#define BD_MAX    (DBL_MAX/1000.)
+
+/*---------------------------------------------------------------------------*/
 /* Variants:                                                                 */
 
 #define NROU_VARFLAG_VERIFY   0x002u   /* run verify mode                    */
@@ -102,15 +118,6 @@
 /*---------------------------------------------------------------------------*/
 
 #define GENTYPE "NROU"         /* type of generator                          */
-
-/* scaling factor of computed minimum boundary rectangle                     */
-/* after we have computed the boundary rectangle (0, vmax)x(umin[d], umax[d])*/
-/* we scale the obtained boundaries with this factor, i.e. :                 */
-/* vmax = vmax * ( 1+ NROU_RECT_SCALING)                                     */
-/* umin = umin - (umax-umin)*NROU_RECT_SCALING/2.                            */
-/* umax = umax + (umax-umin)*NROU_RECT_SCALING/2.                            */
-#define NROU_RECT_SCALING 1e-4
-
 
 /*---------------------------------------------------------------------------*/
 
@@ -170,8 +177,6 @@ static void _unur_nrou_debug_init( const struct unur_gen *gen );
 
 #define BD_LEFT   domain[0]             /* left boundary of domain of distribution */
 #define BD_RIGHT  domain[1]             /* right boundary of domain of distribution */
-
-#define BD_MAX    (DBL_MAX/1000.)       /* constant used for bounding rectangles */
 
 #define SAMPLE    gen->sample.cont      /* pointer to sampling routine       */     
 
@@ -365,8 +370,8 @@ unur_nrou_set_r( struct unur_par *par, double r )
 
   /* check new parameter for generator */
   if (r <= 0.) {
-    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"r<=0 set to r=1");
-    r=1.;
+    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"r<=0");
+    return UNUR_ERR_PAR_SET;
   }
   
   /* store values */
@@ -502,27 +507,30 @@ _unur_nrou_init( struct unur_par *par )
 /*---------------------------------------------------------------------------*/
 
 double
-_unur_aux_bound_umax(double x, void *p) {
+_unur_aux_bound_umax(double x, void *p) 
      /*----------------------------------------------------------------------*/
      /* Auxiliary function used in the computation of the bounding rectangle */
      /*----------------------------------------------------------------------*/	
+{
   struct unur_gen *gen;
-  gen=p; /* typecast from void* to unur_gen* */
+  gen = p; /* typecast from void* to unur_gen* */
   
-  if (GEN.r == 1.) return (x-GEN.center)*sqrt( _unur_cont_PDF((x),(gen->distr)) );
+  if (GEN.r == 1.) 
+    return (x-GEN.center)*sqrt( _unur_cont_PDF((x),(gen->distr)) );
 
-  return (x-GEN.center) * pow( _unur_cont_PDF((x),(gen->distr)),
-                               GEN.r / (1.+ GEN.r) );
+  else
+    return (x-GEN.center) * pow( _unur_cont_PDF((x),(gen->distr)),
+				 GEN.r / (1.+ GEN.r) );
 }
 
 /*---------------------------------------------------------------------------*/
 
 double
-_unur_aux_bound_umin(double x, void *p) {
+_unur_aux_bound_umin(double x, void *p)
      /*----------------------------------------------------------------------*/
      /* Auxiliary function used in the computation of the bounding rectangle */
      /*----------------------------------------------------------------------*/	
-
+{
   return (- _unur_aux_bound_umax(x,p)) ;
 }
 
@@ -576,7 +584,7 @@ _unur_nrou_rectangle( struct unur_gen *gen )
     GEN.vmax = pow(PDF(mode), 1./(1.+GEN.r));
 
     /* additional scaling of boundary rectangle */
-    GEN.vmax = GEN.vmax * ( 1+ NROU_RECT_SCALING);
+    GEN.vmax = GEN.vmax * ( 1. + NROU_RECT_SCALING);
   }
 
   /* --------------------------------------------------------------------- */
@@ -584,27 +592,30 @@ _unur_nrou_rectangle( struct unur_gen *gen )
   /* calculation of umin and umax */
   if (!(gen->set & NROU_SET_U)) {
 
+    /* umin: */
     faux.f = (UNUR_FUNCT_GENERIC*) _unur_aux_bound_umin;
     faux.params = gen;
 
     /* calculating start point for extremum search routine */
-    sx = _unur_FP_is_plusminus_infinity(DISTR.BD_LEFT) ? cx-1.: (cx+DISTR.BD_LEFT)/2. ; 
-    bx = _unur_FP_is_plusminus_infinity(DISTR.BD_LEFT) ? -BD_MAX: DISTR.BD_LEFT;
+    sx = _unur_isfinite(DISTR.BD_LEFT) ? (cx+DISTR.BD_LEFT)/2. : (cx-1.); 
+    bx = _unur_isfinite(DISTR.BD_LEFT) ? DISTR.BD_LEFT : (-BD_MAX);
 
-    x = (DISTR.BD_LEFT == cx) ? cx: _unur_util_find_max(faux, bx, cx, sx);
+    x = (_unur_FP_same(DISTR.BD_LEFT,cx)) ? cx : _unur_util_find_max(faux, bx, cx, sx);
           
-    while (_unur_FP_is_plusminus_infinity(x) && (fabs(bx) >= UNUR_EPSILON) ) { 
+    while (!_unur_isfinite(x) && (fabs(bx) >= UNUR_EPSILON) ) { 
        /* _unur_util_find_max() could not yet find a suitable extremum */
        /* trying with a sequence of intervals with decreasing length   */
        bx = bx/10.; sx = bx/2.;  
        x = _unur_util_find_max(faux, bx, cx, sx);
     }
          
-    if (_unur_FP_is_plusminus_infinity(x)) {
+    if (!_unur_isfinite(x)) {
        /* not able to compute a boundary recangle ...  */ 
        _unur_error(gen->genid , UNUR_ERR_GENERIC, "Bounding rect (umin)");  
        return UNUR_ERR_GENERIC;
     }
+
+    /* umin found */
     GEN.umin = -faux.f(x,faux.params);
 
     /* and now, an analogue calculation for umax */
@@ -613,23 +624,25 @@ _unur_nrou_rectangle( struct unur_gen *gen )
     faux.params = gen;
 
     /* calculating start point for extremum search routine */
-    sx = _unur_FP_is_plusminus_infinity(DISTR.BD_RIGHT) ? cx+1.: (cx+DISTR.BD_RIGHT)/2. ; 
-    bx = _unur_FP_is_plusminus_infinity(DISTR.BD_RIGHT) ? BD_MAX: DISTR.BD_RIGHT;
+    sx = _unur_isfinite(DISTR.BD_RIGHT) ? (cx+DISTR.BD_RIGHT)/2. : (cx+1.); 
+    bx = _unur_isfinite(DISTR.BD_RIGHT) ? DISTR.BD_RIGHT : BD_MAX;
 
-    x = (DISTR.BD_RIGHT == cx) ? cx: _unur_util_find_max(faux, cx, bx, sx);
+    x = (_unur_FP_same(DISTR.BD_RIGHT,cx)) ? cx: _unur_util_find_max(faux, cx, bx, sx);
       
-    while (_unur_FP_is_plusminus_infinity(x) && (fabs(bx) >= UNUR_EPSILON) ) { 
+    while (!_unur_isfinite(x) && (fabs(bx) >= UNUR_EPSILON) ) { 
        /* _unur_util_find_max() could not yet find a suitable extremum */
        /* trying with a sequence of intervals with decreasing length   */
        bx = bx/10.; sx = bx/2.; 
        x = _unur_util_find_max(faux, cx, bx, sx);
     }
            
-    if (_unur_FP_is_plusminus_infinity(x)) {
+    if (!_unur_isfinite(x)) {
        /* not able to compute a boundary recangle ...  */ 
        _unur_error(gen->genid , UNUR_ERR_GENERIC, "Bounding rect (umax)");  
        return UNUR_ERR_GENERIC;
     }
+
+    /* umax found */
     GEN.umax = faux.f(x,faux.params);
     
     /* additional scaling of boundary rectangle */

@@ -1,7 +1,7 @@
 ## Process this file with automake to produce Makefile.in
 ## $Id$
 
-SUBDIRS = src . 
+SUBDIRS = src figures . 
 
 info_TEXINFOS = unuran.texi
 

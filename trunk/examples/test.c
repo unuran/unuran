@@ -20,7 +20,7 @@ int main()
   distr = unur_distr_normal(params, 2);
   //unur_distr_cont_set_domain(distr, -2, 2);
   unur_distr_cont_set_mode(distr, 1.0);
-  _unur_distr_cont_find_mode(distr);
+  //  _unur_distr_cont_find_mode(distr);
   printf("mode: %f\n",unur_distr_cont_get_mode(distr) );
 
 

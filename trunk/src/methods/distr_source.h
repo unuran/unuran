@@ -103,9 +103,6 @@ void _unur_distr_discr_debug( UNUR_DISTR *distribution, char *genid, int printve
 /*---------------------------------------------------------------------------*/
 /* auxilliary routines                                                       */
 
-int _unur_distr_cont_find_mode( UNUR_DISTR *distribution );
-/* find mode of univariate continuous distribution numerically */
-
 /*---------------------------------------------------------------------------*/
 /* check if parameter object is of correct type, return 0 otherwise       */
 

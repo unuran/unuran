@@ -59,16 +59,14 @@ static void _unur_distr_cont_free( struct unur_distr *distr );
 /* destroy distribution object.                                              */
 /*---------------------------------------------------------------------------*/
 
+static int _unur_distr_cont_find_mode(struct unur_distr *distr );
+/*---------------------------------------------------------------------------*/
+/* find mode of unimodal univariate PDF numerically                          */
+/*---------------------------------------------------------------------------*/
+
 static double fmaxbr( UNUR_FUNCT_CONT *f, UNUR_DISTR *distr, double a, double b, double c, double tol );
 /*---------------------------------------------------------------------------*/
 /* find maximum of function with Brent's algorithm.                          */
-/*---------------------------------------------------------------------------*/
-
-static int find_bracket( UNUR_FUNCT_CONT *f, UNUR_DISTR *distr, double *a, double *b );
-/*---------------------------------------------------------------------------*/
-/* find bracket for Brent's algorithm.                                       */
-/*---------------------------------------------------------------------------*/
-
 /*---------------------------------------------------------------------------*/
 
 /*****************************************************************************/
@@ -145,7 +143,8 @@ unur_distr_cont_new( void )
   DISTR.trunc[0] = DISTR.domain[0] = -INFINITY; /* left boundary of domain   */
   DISTR.trunc[1] = DISTR.domain[1] = INFINITY;  /* right boundary of domain  */
 
-  DISTR.upd_mode  = NULL;          /* funct for computing mode               */
+  //  DISTR.upd_mode  = _unur_distr_cont_find_mode;  /* funct for computing mode */
+  DISTR.upd_mode  = NULL;  /* funct for computing mode */
   DISTR.upd_area  = NULL;          /* funct for computing area               */
 
   distr->set = 0u;                 /* no parameters set                      */
@@ -935,8 +934,7 @@ _unur_distr_cont_find_mode(struct unur_distr *distr )
      /*   0 ... on error                                                     */
      /*----------------------------------------------------------------------*/
 {
-
-  #define MAX_SRCH (50)
+#define MAX_SRCH (100)
  
   int i;
 
@@ -946,7 +944,6 @@ _unur_distr_cont_find_mode(struct unur_distr *distr )
   double mode_l; /* lower bound for mode search */
   double mode_u; /* upper bound for mode search */
   double step;
-  double tol;    /* tolerance for fmaxbr() */
 
   int unbound_left; 
   int unbound_right; 
@@ -956,11 +953,8 @@ _unur_distr_cont_find_mode(struct unur_distr *distr )
   _unur_check_NULL( NULL, distr, 0 );
   _unur_check_distr_object( distr, CONT, 0 );
 
-  /* changelog */
-  distr->set |= UNUR_DISTR_SET_MODE;
-
-
-  mode = unur_distr_cont_get_mode(distr); /* yet best guess for mode */
+  /* first guess for mode */
+  mode = DISTR.mode; /* yet best guess for mode */
 
 
   /* determine where to look for the mode */
@@ -1131,19 +1125,27 @@ _unur_distr_cont_find_mode(struct unur_distr *distr )
 
   /* now: the mode is between x[0] and x[2]   */
 
-
-
 /*    printf("x0: %f, fx0: %e\n", x[0], fx[0]); */
 /*    printf("x1: %f, fx1: %e\n", x[1], fx[1]); */
 /*    printf("x2: %f, fx2: %e\n", x[2], fx[2]); */
 
-
-  tol = 1.0e-09;  /* TODO: find better (?) value                 */
-  unur_distr_cont_set_mode(distr, 
-     fmaxbr( unur_distr_cont_get_pdf(distr), distr, x[0], x[2], x[1], tol) );
+  mode = fmaxbr( DISTR.pdf, distr, x[0], x[2], x[1], 0. );
+  if (!(_unur_FP_is_infinity( mode )) ){
+    /* mode successfully computed */
+    DISTR.mode = mode;
+    /* changelog */
+    distr->set |= UNUR_DISTR_SET_MODE; 
+  }
+  else {
+    /* computing mode did not work */
+    /* (we do not change mode entry in distribution object) */
+    return 0;
+  }
 
   /* o.k. */
   return 1;
+
+#undef MAX_SRCH
 } /* end of _unur_distr_cont_find_mode() */
 
 /*---------------------------------------------------------------------------*/
@@ -1203,7 +1205,10 @@ _unur_distr_cont_find_mode(struct unur_distr *distr )
  *                                                                           *
  *****************************************************************************/
 
-#define SQRT_EPSILON FLT_EPSILON
+/* in case of any error INFINITY is returned */
+
+#define SQRT_EPSILON  (1.e-7)           /* tolerance for relative error      */
+#define MAXIT         (100)             /* maximum number of iterations      */
 
 double
 fmaxbr(f_invest, distr, a, b, c, tol)   /* An estimate to the min location   */
@@ -1215,7 +1220,6 @@ fmaxbr(f_invest, distr, a, b, c, tol)   /* An estimate to the min location   */
      double tol;                        /* Acceptable tolerance              */
 {
 #define f(x) (-(*f_invest)((x),distr))  /* minimize negative function        */
-#define MAXIT (100)                     /* maximum number of iterations      */
   
   int i;
 
@@ -1226,16 +1230,20 @@ fmaxbr(f_invest, distr, a, b, c, tol)   /* An estimate to the min location   */
   const double r = (3.-sqrt(5.0))/2;    /* Gold section ratio                */
 
   /* check arguments */
-  CHECK_NULL(distr,0.);
-  CHECK_NULL(f_invest,0.);
-  COOKIE_CHECK(distr,CK_DISTR_CONT,0.);
-  if ( tol <= 0. || b <= a || c <= a || b <= c) {
+  CHECK_NULL(distr,INFINITY);
+  CHECK_NULL(f_invest,INFINITY);
+  COOKIE_CHECK(distr,CK_DISTR_CONT,INFINITY);
+  if ( tol < 0. || b <= a || c <= a || b <= c) {
     _unur_error(distr->name,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
-    return 0.;
+    return INFINITY;
   }
 
-  //v = a + r*(b-a);  fv = f(v);        /* First step - always gold section  */
-  v = c;  fv = f(v);                  /* First step */
+
+  /* Origially the third point was computed by golden section. In the        */
+  /* modified version it is given as point `c' by the calling function.      */
+  /* v = a + r*(b-a);  fv = f(v);        First step - always gold section    */
+
+  v = c;  fv = f(v);                    /* First step */
   x = v;  w = v;
   fx=fv;  fw=fv;
 
@@ -1316,69 +1324,16 @@ fmaxbr(f_invest, distr, a, b, c, tol)   /* An estimate to the min location   */
         }
       }
     }                   /* ----- end-of-block ----- */
-  }                /* ===== End of loop ===== */
+  }                /* ===== End of for loop ===== */
+
+  /* maximal number of interations exceeded */
+  return INFINITY;
 
 #undef f
 } /* end of fmaxbr() */
 
+#undef MAXIT
 #undef SQRT_EPSILON
-
-/*---------------------------------------------------------------------------*/
-
-int
-find_bracket( UNUR_FUNCT_CONT *f_invest, UNUR_DISTR *distr, double *a, double *b )
-     /*----------------------------------------------------------------------*/
-     /* find mode of univariate continuous distribution numerically          */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   f_invest ... function under investigation                          */
-     /*   distr    ... pointer to distribution object  with parameters       */
-     /*   a        ... left border   | of the range the max                  */
-     /*   b        ... right border  | is seeked in fmaxbr                   */
-     /*   tol      ... acceptable tolerance                                  */
-     /*                                                                      */
-     /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
-     /*----------------------------------------------------------------------*/
-{
-#define f(x) (-(*f_invest)((x),distr))  /* minimize negative function        */
-
-  double l, m, r;            /* left, middle, and right point of bracket     */
-  double fl, fm, fr;         /* function value at l, m, and r, resp.         */
-  int bd_left, bd_right;     /* left|right boundary of bracket found         */
-
-  /* setup */
-  
-  /* we use the domain boundaries and the stored mode as starting points */
-  l = DISTR.domain[0];
-  r = DISTR.domain[1];
-
-  /* mark boundaries as (in)finite */
-  bd_left  = (_unur_FP_is_minus_infinity(DISTR.domain[0])) ? FALSE : TRUE;
-  bd_right = (_unur_FP_is_infinity(DISTR.domain[1]))       ? FALSE : TRUE;
-
-  /* for a bounded domain there is nothing to do */
-  if (bd_left && bd_right) {
-    *a = l;  *b = r;  return 1;
-  }
-
-  /* domain not bounded --> search */
- 
-  /* neither l nor r must be infinite */
-  if (!bd_left)  l = (r < -1.) ? r-1. : -1;  /* start with arbitrary point instead */
-  if (!bd_right) r = (l >  1.) ? l+1. :  1;
-
-  fl = f(l);  fr = f(r);
-
-  /** TODO: continue ... **/
-
-  /* o.k. */
-  return 1;
-
-#undef f
-} /* end of find_bracket() */
-
 
 /*---------------------------------------------------------------------------*/
 #undef DISTR

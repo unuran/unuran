@@ -279,6 +279,8 @@ poisson_pdac_init( struct unur_gen *gen )
     _unur_check_NULL( NULL,NORMAL,0 );
     /* need same uniform random number generator as slash generator */
     NORMAL->urng = gen->urng;
+    /* copy debugging flags */
+    NORMAL->debug = gen->debug;
   }
   /* else we are in the re-init mode 
      --> there is no necessity to make the generator object again */

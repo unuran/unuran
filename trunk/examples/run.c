@@ -409,11 +409,13 @@ int main()
   fpar[1] = 100.;
   distr_xxx = unur_distr_negativebinomial(fpar,2);
   par = unur_dstd_new(distr_xxx);
+  unur_dstd_set_debug(par,UNUR_DEBUG_INIT);
   unur_run_tests(par,RUN_TESTS);
 
   fpar[0] = 0.1;
   fpar[1] = 100.;
   par = unur_dstd_new(distr_xxx);
+  unur_dstd_set_debug(par,UNUR_DEBUG_INIT);
   gen = unur_init(par);
   unur_test_chi2( gen, 1000, 100000, 20, 1 );
   unur_dstd_chg_param(gen,fpar,2);

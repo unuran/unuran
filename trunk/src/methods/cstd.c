@@ -53,6 +53,8 @@
 /*    bits 13-24 ... adaptive steps                                          */
 /*    bits 25-32 ... trace sampling                                          */
 
+#define CSTD_DEBUG_CHG          0x00001000u   /* print changed parameters    */
+
 /*---------------------------------------------------------------------------*/
 /* Flags for logging set calls                                               */
 
@@ -78,6 +80,11 @@ static struct unur_gen *_unur_cstd_create( struct unur_par *par );
 static void _unur_cstd_debug_init( struct unur_par *par, struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 /* print after generator has been initialized has completed.                 */
+/*---------------------------------------------------------------------------*/
+
+static void _unur_cstd_debug_chg_param( struct unur_gen *gen );
+/*---------------------------------------------------------------------------*/
+/* print new (changed) parameters of distribution                            */
 /*---------------------------------------------------------------------------*/
 
 #endif
@@ -263,6 +270,12 @@ unur_cstd_chg_param( struct unur_gen *gen, double *params, int n_params )
       GEN.umin = (DISTR.BD_LEFT > -INFINITY) ? CDF(DISTR.BD_LEFT)  : 0.;
       GEN.umax = (DISTR.BD_RIGHT < INFINITY) ? CDF(DISTR.BD_RIGHT) : 1.;
     }
+
+#ifdef UNUR_ENABLE_LOGGING
+    /* write info into log file */
+    if (gen->debug & CSTD_DEBUG_CHG) 
+      _unur_cstd_debug_chg_param( gen );
+#endif
 
   /* o.k. */
   return 1;
@@ -505,6 +518,31 @@ _unur_cstd_debug_init( struct unur_par *par, struct unur_gen *gen )
   }
 
 } /* end of _unur_cstd_info_init() */
+
+/*---------------------------------------------------------------------------*/
+
+static void 
+_unur_cstd_debug_chg_param( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* print new (changed) parameters of distribution                       */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*----------------------------------------------------------------------*/
+{
+  FILE *log;
+  int i;
+
+  /* check arguments */
+  CHECK_NULL(gen,/*void*/);  COOKIE_CHECK(gen,CK_CSTD_GEN,/*void*/);
+
+  log = unur_get_stream();
+
+  fprintf(log,"%s:parameters of distribution changed:\n",gen->genid);
+  for( i=0; i<DISTR.n_params; i++ )
+      fprintf(log,"%s:\tparam[%d] = %g\n",gen->genid,i,DISTR.params[i]);
+
+} /* end of _unur_cstd_debug_chg_param() */
 
 /*---------------------------------------------------------------------------*/
 #endif   /* end UNUR_ENABLE_LOGGING */

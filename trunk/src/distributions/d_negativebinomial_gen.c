@@ -161,6 +161,8 @@ negativebinomial_nbp_init( struct unur_gen *gen )
     _unur_check_NULL( NULL,GAMMA,0 );
     /* need same uniform random number generator as negative binomial generator */
     GAMMA->urng = gen->urng;
+    /* copy debugging flags */
+    GAMMA->debug = gen->debug;
   }
   else  /* re-init mode --> change shape parameter */
     unur_cstd_chg_param(GAMMA,&gamma_param,1);
@@ -172,6 +174,8 @@ negativebinomial_nbp_init( struct unur_gen *gen )
     _unur_check_NULL( NULL,POISSON,0 );
     /* need same uniform random number generator as negative binomial generator */
     POISSON->urng = gen->urng;
+    /* copy debugging flags */
+    POISSON->debug = gen->debug;
   }
   /* else we are in the re-init mode 
      --> there is no necessity to make the generator object again */

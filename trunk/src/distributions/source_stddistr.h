@@ -53,7 +53,7 @@ enum {
   UNUR_DISTR_CHISQUARE,           /*    X     X     X     X     .     .      */
   UNUR_DISTR_EXPONENTIAL,         /*    X     X     X     X     ?     .      */
   UNUR_DISTR_GAMMA,               /*    X     X     X     X     X     .      */
-  UNUR_DISTR_LAPLACE,             /*    X     X     X     X     .     .      */
+  UNUR_DISTR_LAPLACE,             /*    X     X     X     X     X     .      */
   UNUR_DISTR_LOGNORMAL,           /*    X     .     .     X     .     .      */
   UNUR_DISTR_LOMAX,               /*    X     X     X     X     .     .      */
   UNUR_DISTR_NORMAL,              /*    X     X     X     X     X     .      */

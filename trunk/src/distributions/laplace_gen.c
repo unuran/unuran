@@ -117,11 +117,10 @@ double unur_stdgen_sample_laplace_inv( struct unur_gen *gen )
   CHECK_NULL(gen,0.);
   COOKIE_CHECK(gen,CK_CSTD_GEN,0.);
 
-  do {
-    U = 2. * uniform();
-    if (U==0.) continue;  /* ! */
-    X = (U>1.) ? -log(2.-U) : log(U);
-  } while (0);
+  /* sample a uniform random number != 0 */
+  while ((U = 2. * uniform()) == 0. ) ;
+
+  X = (U>1.) ? -log(2.-U) : log(U);
 
   /* -X- end of generator code -X- */
 

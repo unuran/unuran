@@ -34,11 +34,11 @@
 #define RUN_DIS           0
 
 #define RUN_NINV          0
-#define RUN_UTDR          1
-#define RUN_AROU          1
+#define RUN_UTDR          0
+#define RUN_AROU          0
 #define RUN_SROU          0
 #define RUN_STDR          0
-#define RUN_TDRSQRT       1
+#define RUN_TDRSQRT       0
 #define RUN_TDRLOG        0
 #define RUN_TABL          0
 
@@ -258,8 +258,19 @@ int main()
   unur_free(gen);
 #endif
 
+#if 0
   par = unur_cstd_new(distr_cauchy);
   unur_run_tests(par,RUN_TESTS);
+#endif
+
+#if 1
+  fpar[0] = 5.;
+  distr_xxx = unur_distr_laplace(fpar,1);
+  par = unur_cstd_new(distr_xxx);
+  unur_cstd_set_variant(par,0);
+  unur_run_tests(par,RUN_TESTS);
+
+#endif
 
 #endif
 

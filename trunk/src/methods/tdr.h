@@ -198,6 +198,11 @@ int unur_tdr_chg_truncated(UNUR_GEN *gen, double left, double right);
    has been used to construct the hat.
    For that reason adaptive adding of construction points is
    automatically disabled by this call.
+
+   @emph{Important:} If the CDF of the hat is (almost) the same 
+   for @var{left} and @var{right} and (almost) equal to @code{0} or
+   @code{1}, then the truncated domain is not chanced and the call
+   returns @code{0}.
 */
 
 

@@ -196,6 +196,15 @@ int unur_ninv_chg_truncated(UNUR_GEN *gen, double left, double right);
    intersection of the domain of the distribution and the truncated
    domain given by this call.
    Moreover the starting point(s) will not be changed.
+
+   @emph{Important:} If the CDF is (almost) the same for @var{left} and 
+   @var{right} and (almost) equal to @code{0} or @code{1}, then the truncated 
+   domain is not chanced and the call returns @code{0}.
+
+   @emph{Notice:} If the parameters of the distribution has been changed by a 
+   unur_ninv_chg_pdfparams() call it is recommended to set the truncated domain
+   again, since the former call might change the domain of the distribution 
+   but not update the values for the boundaries of the truncated distribution.
 */
 
 int unur_ninv_chg_pdfparams(UNUR_GEN *generator, double *params, int n_params);

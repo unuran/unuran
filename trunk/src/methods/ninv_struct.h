@@ -60,7 +60,7 @@ struct unur_ninv_gen {
   int     table_size;        /* size of table                                */
   double  Umin, Umax;        /* bounds for iid random variable in respect to
                                 the given (truncated) domain of the distr.   */
-  double  CDFmin, CDFmax;    /* CDF-bounds of the table                      */
+  double  CDFmin, CDFmax;    /* CDF-bounds of domain                         */
   double  s[2];              /* interval boundaries at start (left/right) ...*/
   double  CDFs[2];           /* ... and their CDF-values                     */
 };

@@ -329,8 +329,8 @@ _unur_stdgen_sample_hypergeometric_hruec( struct unur_gen *gen )
 #undef h   
 #undef p0  
 
-#undef delta(k)
-#undef flogfak(k)
+#undef delta
+#undef flogfak
 
 #undef N
 #undef M

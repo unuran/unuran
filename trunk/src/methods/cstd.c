@@ -349,6 +349,8 @@ unur_cstd_chg_truncated( struct unur_gen *gen, double left, double right )
      /*   the new boundary points may be +/- INFINITY                        */
      /*----------------------------------------------------------------------*/
 {
+  double Umin, Umax;
+
   /* check arguments */
   CHECK_NULL(gen,0);
   _unur_check_gen_object( gen,CSTD );
@@ -367,26 +369,48 @@ unur_cstd_chg_truncated( struct unur_gen *gen, double left, double right )
   }
 
   /* check new parameter for generator */
+  /* (the truncated domain must be a subset of the domain) */
+  if (left < DISTR.domain[0]) {
+    _unur_warning(NULL,UNUR_ERR_DISTR_SET,"truncated domain too large");
+    left = DISTR.domain[0];
+  }
+  if (right > DISTR.domain[1]) {
+    _unur_warning(NULL,UNUR_ERR_DISTR_SET,"truncated domain too large");
+    right = DISTR.domain[1];
+  }
+
   if (left >= right) {
     _unur_warning(NULL,UNUR_ERR_DISTR_SET,"domain, left >= right");
     return 0;
   }
 
-  /* copy new boundaries into generator object */
-  /* (the truncated domain must be a subset of the domain) */
-  if (left < DISTR.domain[0]) {
-    _unur_warning(NULL,UNUR_ERR_DISTR_SET,"truncated domain too large");
-    DISTR.trunc[0] = DISTR.domain[0];
-  }
-  else
-    DISTR.trunc[0] = left;
+  /* compute umin and umax */
+  Umin = (left > -INFINITY) ? CDF(left) : 0.;
+  Umax = (right < INFINITY) ? CDF(right) : 1.;
 
-  if (right > DISTR.domain[1]) {
-    _unur_warning(NULL,UNUR_ERR_DISTR_SET,"truncated domain too large");
-    DISTR.trunc[1] = DISTR.domain[1];
+  /* check result */
+  if (Umin > Umax) {
+    /* this is a serios error that should not happen */
+    _unur_error(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
+    return 0;
   }
-  else
-    DISTR.trunc[1] = right;
+
+  if (_unur_FP_equal(Umin,Umax)) {
+    /* CDF values very close */
+    _unur_warning(gen->genid,UNUR_ERR_DISTR_SET,"CDF values very close");
+    if (Umin == 0. || _unur_FP_same(Umax,1.)) {
+      /* this is very bad */
+      _unur_warning(gen->genid,UNUR_ERR_DISTR_SET,"CDF values at boundary points too close");
+      return 0;
+    }
+  }
+
+
+  /* copy new boundaries into generator object */
+  DISTR.trunc[0] = left;
+  DISTR.trunc[1] = right;
+  GEN.umin = Umin;
+  GEN.umax = Umax;
 
   /* changelog */
   gen->distr.set |= UNUR_DISTR_SET_TRUNCATED;
@@ -394,10 +418,6 @@ unur_cstd_chg_truncated( struct unur_gen *gen, double left, double right )
   /* indicate that we have a truncated distribution.
      (do not have the standard domain any more) */
   gen->distr.set &= ~UNUR_DISTR_SET_STDDOMAIN;
-
-  /* compute umin and umax */
-  GEN.umin = (DISTR.trunc[0] > -INFINITY) ? CDF(DISTR.trunc[0]) : 0.;
-  GEN.umax = (DISTR.trunc[1] < INFINITY)  ? CDF(DISTR.trunc[1]) : 1.;
 
 #ifdef UNUR_ENABLE_LOGGING
   /* write info into log file */

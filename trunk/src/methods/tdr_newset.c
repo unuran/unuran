@@ -706,22 +706,20 @@ unur_tdr_chg_truncated( struct unur_gen *gen, double left, double right )
     SAMPLE = (gen->variant & TDR_VARFLAG_VERIFY) ? _unur_tdr_ps_sample_check : _unur_tdr_ps_sample;
   }
 
-
   /* check new parameter for generator */
-  if (left >= right) {
-    _unur_warning(gen->genid,UNUR_ERR_DISTR_SET,"domain, left >= right");
-    return 0;
-  }
-
-  /* copy new boundaries into generator object */
   /* (the truncated domain must be a subset of the domain) */
   if (left < DISTR.domain[0]) {
-    _unur_warning(gen->genid,UNUR_ERR_DISTR_SET,"truncated domain exceeds domain");
+    _unur_warning(NULL,UNUR_ERR_DISTR_SET,"truncated domain too large");
     left = DISTR.domain[0];
   }
   if (right > DISTR.domain[1]) {
-    _unur_warning(gen->genid,UNUR_ERR_DISTR_SET,"truncated domain exceeds domain");
+    _unur_warning(NULL,UNUR_ERR_DISTR_SET,"truncated domain too large");
     right = DISTR.domain[1];
+  }
+
+  if (left >= right) {
+    _unur_warning(NULL,UNUR_ERR_DISTR_SET,"domain, left >= right");
+    return 0;
   }
 
   /* compute CDF at x (with respect to given domain of distribution) */
@@ -737,13 +735,14 @@ unur_tdr_chg_truncated( struct unur_gen *gen, double left, double right )
 
   if (_unur_FP_equal(Umin,Umax)) {
     /* CDF values very close */
-    _unur_warning(gen->genid,UNUR_ERR_DISTR_SET,"CDF values at boundary points very close");
-    if (Umin == 0. || Umax == 1.) {
+    _unur_warning(gen->genid,UNUR_ERR_DISTR_SET,"CDF values very close");
+    if (Umin == 0. || _unur_FP_same(Umax,1.)) {
       /* this is very bad */
       _unur_warning(gen->genid,UNUR_ERR_DISTR_SET,"CDF values at boundary points too close");
       return 0;
     }
   }
+
 
   /* set bounds for truncated domain and for U (CDF) */
   DISTR.trunc[0] = left;

@@ -151,6 +151,15 @@ int unur_cstd_chg_truncated( UNUR_GEN *generator, double left, double right );
    domain of the given distribution. The generator always uses the
    intersection of the domain of the distribution and the truncated
    domain given by this call.
+
+   @emph{Important:} If the CDF is (almost) the same for @var{left} and 
+   @var{right} and (almost) equal to @code{0} or @code{1}, then the truncated 
+   domain is not chanced and the call returns @code{0}.
+
+   @emph{Notice:} If the parameters of the distribution has been changed by a 
+   unur_cstd_chg_pdfparams() call it is recommended to set the truncated domain
+   again, since the former call might change the domain of the distribution 
+   but not update the values for the boundaries of the truncated distribution.
 */
 
 /* =END */

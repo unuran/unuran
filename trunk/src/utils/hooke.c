@@ -81,11 +81,8 @@
 /*		   iterations, halt.				   */
 
 
-/* The user-supplied objective function f(x,n) should return a C   */
-/* "double".  Its  arguments are  x -- an array of doubles, and    */
-/* n -- an integer.  x is the point at which f(x) should be	   */
-/* evaluated, and n is the number of coordinates of x.	That is,   */
-/* n is the number of coefficients being fitted.		   */
+/* The user-supplied objective function f(x) is provided as the    */
+/* member-function of the struct unur_funct_vgeneric               */
 
 /* rho, the algorithm convergence control			   */
 /*	The algorithm works by taking "steps" from one estimate of */
@@ -154,15 +151,18 @@
 /* prototypes */
 
 /* given a point, look for a better one nearby, one coord at a time */
-static double best_nearby(double (*f)(), double *delta, double *point, 
+static double best_nearby(struct unur_funct_vgeneric faux,
+                          double *delta, double *point, 
                           double prevbest, int dim);
 /* direct search minimization algorithm */
-long hooke(double (*f)(), int dim, double *startpt, double *endpt, 
+long hooke(struct unur_funct_vgeneric faux, 
+           int dim, double *startpt, double *endpt, 
            double rho, double epsilon, long itermax);
 
 /*-----------------------------------------------------------------*/
 
-static double best_nearby(double (*f)(), double *delta, double *point, 
+static double best_nearby(struct unur_funct_vgeneric faux, 
+                          double *delta, double *point, 
                           double prevbest, int dim)
 /*
    Given a point, look for a better one nearby, one coord at a time 
@@ -179,13 +179,13 @@ static double best_nearby(double (*f)(), double *delta, double *point,
 		   z[i] = point[i];
 	   for (i = 0; i < dim; i++) {
 		   z[i] = point[i] + delta[i];
-		   ftmp = f(z, dim);
+		   ftmp = faux.f(z, faux.params);
 		   if (ftmp < minf)
 			   minf = ftmp;
 		   else {
 			   delta[i] = 0.0 - delta[i];
 			   z[i] = point[i] + delta[i];
-			   ftmp = f(z, dim);
+			   ftmp = faux.f(z, faux.params);
 			   if (ftmp < minf)
 				   minf = ftmp;
 			   else
@@ -203,8 +203,9 @@ static double best_nearby(double (*f)(), double *delta, double *point,
 
 /*-----------------------------------------------------------------*/
 
-long hooke(double (*f)(), int dim, double *startpt, double *endpt, 
-          double rho, double epsilon, long itermax)
+long hooke(struct unur_funct_vgeneric faux, 
+           int dim, double *startpt, double *endpt, 
+           double rho, double epsilon, long itermax)
 /*
     Direct search minimization algorithm
 */
@@ -228,7 +229,7 @@ long hooke(double (*f)(), int dim, double *startpt, double *endpt,
 	   iadj = 0;
 	   steplength = rho;
 	   iters = 0;
-	   fbefore = f(newx, dim);
+	   fbefore = faux.f(newx, faux.params);
 	   newf = fbefore;
 
 	   while ((iters < itermax) && (steplength > epsilon)) {
@@ -239,7 +240,7 @@ long hooke(double (*f)(), int dim, double *startpt, double *endpt,
 		   for (i = 0; i < dim; i++) {
 			   newx[i] = xbefore[i];
 		   }
-		   newf = best_nearby(f,delta, newx, fbefore, dim);
+		   newf = best_nearby(faux, delta, newx, fbefore, dim);
 		   /* if we made some improvements, pursue that direction */
 		   keep = 1;
 		   while ((newf < fbefore) && (keep == 1)) {
@@ -256,7 +257,7 @@ long hooke(double (*f)(), int dim, double *startpt, double *endpt,
 				   newx[i] = newx[i] + newx[i] - tmp;
 			   }
 			   fbefore = newf;
-			   newf = best_nearby(f,delta, newx, fbefore, dim);
+			   newf = best_nearby(faux, delta, newx, fbefore, dim);
 			   /* if the further (optimistic) move was bad.... */
 			   if (newf >= fbefore)
 				   break;

@@ -6,6 +6,9 @@ $GCC = "gcc -Wall";
 $G77 = "g77 -Wall";
 
 # Files
+$PRNG_src = "./uniftest_prng.c";
+$PRNG_exec = "./uniftest_prng";
+
 $C_src = "./uniftest_c.c";
 $C_exec = "./uniftest_c";
 
@@ -18,7 +21,7 @@ $JAVA_exec = "./Uniftest";
 ####################################################
 
 $seed = int(rand 12345678) + 1;
-$sample_size = 10;
+$sample_size = 10000;
 $accuracy = 1.0e-15;
 
 ####################################################
@@ -27,11 +30,13 @@ $accuracy = 1.0e-15;
 $n_diffs = 0;
 
 # Make source files
+make_PRNG_src();
 make_C_src();
 make_FORTRAN_src();
 make_JAVA_src();
 
 # Compile sources
+system "$GCC -o $PRNG_exec $PRNG_src -lprng -lm";
 system "$GCC -o $C_exec $C_src";
 system "$G77 -o $FORTRAN_exec $FORTRAN_src";
 system "javac $JAVA_src";
@@ -43,34 +48,45 @@ print "accuracy = $accuracy\n";
 print "languages = C, FORTRAN, JAVA\n";
 
 # Start generators
+open PRNG, "$PRNG_exec |" or die "cannot run $PRNG_exec"; 
 open C, "$C_exec |" or die "cannot run $C_exec"; 
 open FORTRAN, "$FORTRAN_exec |" or die "cannot run $FORTRAN_exec"; 
 open JAVA, "java $JAVA_exec |" or die "cannot run $JAVA_exec"; 
 
 # Run generatores and compare output
+$C_n_diffs = 0;
 $FORTRAN_n_diffs = 0;
 $JAVA_n_diffs = 0;
-while ($C_out = <C>) {
+while ($PRNG_out = <PRNG>) {
+    $C_out = <C>;
     $FORTRAN_out = <FORTRAN>;
     $JAVA_out = <JAVA>;
+
+    chomp $PRNG_out;
     chomp $C_out;
     chomp $FORTRAN_out;
     chomp $JAVA_out;
 
-    $FORTRAN_diff = abs($C_out - $FORTRAN_out);
-    $JAVA_diff = abs($C_out - $JAVA_out);
+    $C_diff = abs($PRNG_out - $C_out);
+    $FORTRAN_diff = abs($PRNG_out - $FORTRAN_out);
+    $JAVA_diff = abs($PRNG_out - $JAVA_out);
 
+    if ($C_diff > $accuracy) {
+	++$C_n_diffs;
+	print "PRNG = $PRNG_out\tC = $C_out\tdifference = $C_diff\n";
+    }
     if ($FORTRAN_diff > $accuracy) {
 	++$FORTRAN_n_diffs;
-	print "C = $C_out\tFORTRAN = $FORTRAN_out\tdifference = $FORTRAN_diff\n";
+	print "PRNG = $PRNG_out\tFORTRAN = $FORTRAN_out\tdifference = $FORTRAN_diff\n";
     }
     if ($JAVA_diff > $accuracy) {
 	++$JAVA_n_diffs;
-	print "C = $C_out\tJAVA = $JAVA_out\tdifference = $JAVA_diff\n";
+	print "PRNG = $PRNG_out\tJAVA = $JAVA_out\tdifference = $JAVA_diff\n";
     }
 }
 
 # End
+close PRNG;
 close C;
 close FORTRAN;
 close JAVA;
@@ -79,6 +95,10 @@ close JAVA;
 
 $exitcode = 0;
 
+if ($C_n_diffs > 0) {
+    print "C Test FAILED\n";
+    ++$exitcode;
+}
 if ($FORTRAN_n_diffs > 0) {
     print "FORTRAN Test FAILED\n";
     ++$exitcode;
@@ -95,6 +115,51 @@ if ($exitcode == 0) {
 
 exit ($exitcode);
 
+
+####################################################
+# Make PRNG version of generator
+
+sub make_PRNG_src
+{
+    open PRNG_src, ">$PRNG_src" or die "cannot open $PRNG_src for writing";
+
+    print PRNG_src <<EOX;
+    
+/* ---------------------------------------------------------------- */
+/* PRNG version                                                     */
+/* ---------------------------------------------------------------- */
+
+/* ---------------------------------------------------------------- */
+/* LCG (Linear Congruential Generator) by Park & Miller (1988).     */
+/*   x_(n+1) = 16807 * x_n mod 2^31 - 1    (Minimal Standard)       */
+/* ---------------------------------------------------------------- */
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <prng.h>
+
+int main ()
+{
+  int i;
+  struct prng *urng;
+
+  urng = prng_new(\"LCG(2147483647,16807,0,$seed)\");
+  prng_get_next(urng);   /* synchronize with other generators */
+
+  for (i=0; i<$sample_size; i++)
+    printf("%.17e\\n",prng_get_next(urng));
+
+  prng_free(urng);
+  exit (0);
+}
+
+/* ---------------------------------------------------------------- */
+
+EOX
+
+    close PRNG_src;
+
+} # end of make_PRNG_src() 
 
 ####################################################
 # Make C version of generator

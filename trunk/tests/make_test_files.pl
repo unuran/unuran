@@ -358,7 +358,7 @@ sub scan_validate {
 
     print "\n/* distributions: $n_distributions */\n";
     foreach my $d (@distributions) {
-	print "$d\n\n";
+	print "{\n$d}\n\n";
     }
 
     if ($chi2) {

@@ -306,6 +306,11 @@ _unur_hrd_init( struct unur_par *par )
 
   /* compute upper bound for hazard rate (at left border) */
   GEN.upper_bound = HR(GEN.left_border);
+  if (GEN.upper_bound <= 0. || _unur_FP_is_infinity(GEN.upper_bound)) {
+    _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"no valid upper bound for HR at left boundary");
+    free(par); _unur_free(gen);
+    return NULL;
+  }
 
 #ifdef UNUR_ENABLE_LOGGING
   /* write info into log file */
@@ -473,7 +478,7 @@ _unur_hrd_sample( struct unur_gen *gen )
      /*   return 0.                                                          */
      /*----------------------------------------------------------------------*/
 { 
-  double U,V,E,X,hx;
+  double U,V,E,X,hrx;
   double lambda;
 
   /* parameter for majorizing hazard rate */
@@ -493,14 +498,23 @@ _unur_hrd_sample( struct unur_gen *gen )
     X += E;
 
     /* hazard rate at generated point */
-    hx = HR(X);
+    hrx = HR(X);
 
     /* reject or accept */
     V =  lambda * _unur_call_urng(gen->urng);
-    if( V <= hx ) 
+    if( V <= hrx ) 
       return X;      /* accept */
-    else             /* reject */
-      lambda = hx;   /* update majorizing hazard rate */
+
+    /* else: reject */
+
+    /* update majorizing hazard rate */
+    if (hrx > 0.)
+      lambda = hrx;   
+    else {
+      /* the given function is not a hazard rate */
+      _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"HR not valid");
+      return INFINITY;
+    } 
   }
 
 } /* end of _unur_hrd_sample() */
@@ -522,7 +536,7 @@ _unur_hrd_sample_check( struct unur_gen *gen )
      /*   return 0.                                                          */
      /*----------------------------------------------------------------------*/
 { 
-  double U,V,E,X,hx;
+  double U,V,E,X,hrx;
   double lambda;
   int i;
 
@@ -543,15 +557,15 @@ _unur_hrd_sample_check( struct unur_gen *gen )
     X += E;
 
     /* hazard rate at generated point */
-    hx = HR(X);
+    hrx = HR(X);
 
     /* verify upper bound */
-    if ( (1.+UNUR_EPSILON) * lambda < hx )
+    if ( (1.+UNUR_EPSILON) * lambda < hrx )
       _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"HR not decreasing");
 
     /* reject or accept */
     V =  lambda * _unur_call_urng(gen->urng);
-    if( V <= hx ) {
+    if( V <= hrx ) {
 #ifdef UNUR_ENABLE_LOGGING
       /* write info into log file */
       if (gen->debug & HRD_DEBUG_SAMPLE)
@@ -559,10 +573,17 @@ _unur_hrd_sample_check( struct unur_gen *gen )
 #endif
       return X;
     }
+
+    /* else: reject */
+
+    /* update majorizing hazard rate */
+    if (hrx > 0.)
+      lambda = hrx;   
     else {
-      /* reject */
-      lambda = hx;   /* update majorizing hazard rate */
-    }
+      /* the given function is not a hazard rate */
+      _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"HR not valid");
+      return INFINITY;
+    } 
   }
 
 } /* end of _unur_hrd_sample_check() */
@@ -626,6 +647,8 @@ _unur_hrd_debug_sample( const struct unur_gen *gen, double x, int i )
      /*                                                                      */
      /* parameters:                                                          */
      /*   gen ... pointer to generator object                                */
+     /*   x   ... generated point                                            */
+     /*   i   ... number of iterations                                       */
      /*----------------------------------------------------------------------*/
 {
   FILE *log;

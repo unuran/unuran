@@ -397,17 +397,6 @@ F_power ( struct concat *output, const struct ftreenode *node, const char *varia
 
 /*---------------------------------------------------------------------------*/
 
-unsigned
-F_mod ( struct concat *output, const struct ftreenode *node, const char *variable )
-     /*----------------------------------------------------------------------*/
-     /* string for mudolus function                                          */
-     /*----------------------------------------------------------------------*/
-{
-  return F_infix_generic(output,node,variable,"%");
-} /* end of F_mod() */
-
-/*---------------------------------------------------------------------------*/
-
 /*****************************************************************************/
 /** Special functions                                                       **/
 /*****************************************************************************/
@@ -420,6 +409,7 @@ _unur_fstr_F_specfunct ( FILE *out, unsigned flags )
      /* Print FORTRAN code for special functions                             */
      /*                                                                      */
      /* parameters:                                                          */
+     /*   out   ... output stream                                            */
      /*   flags ... bit array with flags for special functions               */
      /*                                                                      */
      /* return:                                                              */

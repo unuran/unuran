@@ -717,7 +717,7 @@ sub make_PDF_body_JAVA
 
 	# modify mathematical functions
 	$l =~ s/(\W)(exp|log|pow)(\W)/$1Math\.$2$3/g;
-	$l =~ s/(\W)fabs(\W)/$1Math\.abs$2$3/g;
+	$l =~ s/(\W)fabs(\W)/$1Math\.abs$2/g;
 
 	$body .= "\tfprintf (out,\"\\t$l\\n\");\n";
     }

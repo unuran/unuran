@@ -160,6 +160,42 @@ static unsigned F_minus  ( struct concat *output, const struct ftreenode *node, 
 static unsigned F_power  ( struct concat *output, const struct ftreenode *node, const char *variable );
 
 /*****************************************************************************/
+/** Routines for printing JAVA code                                         **/
+/*****************************************************************************/
+
+/* error */
+static unsigned J_error  ( struct concat *output, const struct ftreenode *node, const char *variable );
+
+/* constants and variables */
+static unsigned J_const  ( struct concat *output, const struct ftreenode *node, const char *variable );
+static unsigned J_var    ( struct concat *output, const struct ftreenode *node, const char *variable );
+
+/* prefix operators (functions) (eg. exp(x)) */
+static unsigned J_prefix_generic ( struct concat *output, const struct ftreenode *node, 
+				   const char *variable, const char *symbol );
+/* operators where C routine is the same as parser name */
+static unsigned J_prefix ( struct concat *output, const struct ftreenode *node, const char *variable );
+/* relation operators */
+static unsigned J_lt     ( struct concat *output, const struct ftreenode *node, const char *variable );
+static unsigned J_le     ( struct concat *output, const struct ftreenode *node, const char *variable );
+static unsigned J_gt     ( struct concat *output, const struct ftreenode *node, const char *variable );
+static unsigned J_ge     ( struct concat *output, const struct ftreenode *node, const char *variable );
+static unsigned J_eq     ( struct concat *output, const struct ftreenode *node, const char *variable );
+static unsigned J_ne     ( struct concat *output, const struct ftreenode *node, const char *variable );
+/* special operators */
+static unsigned J_power  ( struct concat *output, const struct ftreenode *node, const char *variable );
+static unsigned J_sgn    ( struct concat *output, const struct ftreenode *node, const char *variable );
+
+/* infix (binary) operators (eg. x + y) */
+static unsigned J_infix_generic  ( struct concat *output, const struct ftreenode *node,
+				   const char *variable, const char *symbol );
+/* operators where C routine is the same as parser name */
+static unsigned J_infix  ( struct concat *output, const struct ftreenode *node, const char *variable );
+/* special operators */
+static unsigned J_minus  ( struct concat *output, const struct ftreenode *node, const char *variable );
+static unsigned J_mod    ( struct concat *output, const struct ftreenode *node, const char *variable );
+
+/*****************************************************************************/
 /** List of known symbols                                                   **/
 /*****************************************************************************/
 
@@ -205,6 +241,8 @@ struct symbols {
                                  /* function for printing C code             */
   unsigned (*node2F)(struct concat *output,const struct ftreenode *node,const char *variable );
                                  /* function for printing FORTRAN code       */
+  unsigned (*node2J)(struct concat *output,const struct ftreenode *node,const char *variable );
+                                 /* function for printing JAVA code          */
 };
 
 /*---------------------------------------------------------------------------*/
@@ -237,67 +275,67 @@ static struct symbols symbol[] = {
   /*       type,          value,           derivative                        */
 
   /* void */
-  {""    , S_NOSYMBOL, 0, 0.0 , v_dummy  , d_error, C_error   },
+  {""    , S_NOSYMBOL, 0, 0.0 , v_dummy  , d_error, C_error  , F_error , J_error  },
 
   /* user defined symbols: */                        
   /*    constant           */                     
-  {"UCONST",S_UCONST , 9, 0.0 , v_const  , d_const, C_const  , F_const  },
+  {"UCONST",S_UCONST , 9, 0.0 , v_const  , d_const, C_const  , F_const , J_const  },
   /*    function           */
-  {"UFUNCT",S_UFUNCT , 0, 0.0 , v_dummy  , d_error, C_error  , F_error  },
+  {"UFUNCT",S_UFUNCT , 0, 0.0 , v_dummy  , d_error, C_error  , F_error , J_error  },
   /*    variable           */
-  {"VAR" , S_UIDENT  , 9, 0.0 , v_dummy  , d_var  , C_var    , F_var    },
+  {"VAR" , S_UIDENT  , 9, 0.0 , v_dummy  , d_var  , C_var    , F_var   , J_var    },
 
   /* marker for relation operators */
-  {"_ROS", S_NOSYMBOL, 0, 0.0 , v_dummy  , d_error, C_error  , F_error  },
+  {"_ROS", S_NOSYMBOL, 0, 0.0 , v_dummy  , d_error, C_error  , F_error , J_error  },
 
   /* relation operators  */
-  {"<"   , S_REL_OP  , 1, 0.0 , v_less   , d_const, C_infix  , F_lt     },
-  {"="   , S_REL_OP  , 1, 0.0 , v_equal  , d_const, C_equal  , F_eq     },
-  {"=="  , S_REL_OP  , 1, 0.0 , v_equal  , d_const, C_equal  , F_eq     },
-  {">"   , S_REL_OP  , 1, 0.0 , v_greater, d_const, C_infix  , F_gt     },
-  {"<="  , S_REL_OP  , 1, 0.0 , v_less_or, d_const, C_infix  , F_le     },
-  {"<>"  , S_REL_OP  , 1, 0.0 , v_unequal, d_const, C_unequal, F_ne     },
-  {"!="  , S_REL_OP  , 1, 0.0 , v_unequal, d_const, C_unequal, F_ne     },
-  {">="  , S_REL_OP  , 1, 0.0 , v_grtr_or, d_const, C_infix  , F_ge     },
+  {"<"   , S_REL_OP  , 1, 0.0 , v_less   , d_const, C_infix  , F_lt    , J_lt     },
+  {"="   , S_REL_OP  , 1, 0.0 , v_equal  , d_const, C_equal  , F_eq    , J_eq     },
+  {"=="  , S_REL_OP  , 1, 0.0 , v_equal  , d_const, C_equal  , F_eq    , J_eq     },
+  {">"   , S_REL_OP  , 1, 0.0 , v_greater, d_const, C_infix  , F_gt    , J_gt     },
+  {"<="  , S_REL_OP  , 1, 0.0 , v_less_or, d_const, C_infix  , F_le    , J_le     },
+  {"<>"  , S_REL_OP  , 1, 0.0 , v_unequal, d_const, C_unequal, F_ne    , J_ne     },
+  {"!="  , S_REL_OP  , 1, 0.0 , v_unequal, d_const, C_unequal, F_ne    , J_ne     },
+  {">="  , S_REL_OP  , 1, 0.0 , v_grtr_or, d_const, C_infix  , F_ge    , J_ge     },
 
   /* marker for non-alphanumeric symbols */
-  {"_NAS", S_NOSYMBOL, 0, 0.0 , v_dummy  , d_error, C_error  , F_error  },
+  {"_NAS", S_NOSYMBOL, 0, 0.0 , v_dummy  , d_error, C_error  , F_error , J_error  },
 
   /* special symbols */
-  {"("   , S_OTHERS  , 0, 0.0 , v_dummy  , d_error, C_error  , F_error  },
-  {")"   , S_OTHERS  , 0, 0.0 , v_dummy  , d_error, C_error  , F_error  },
-  {","   , S_OTHERS  , 0, 0.0 , v_dummy  , d_error, C_error  , F_error  },
+  {"("   , S_OTHERS  , 0, 0.0 , v_dummy  , d_error, C_error  , F_error , J_error  },
+  {")"   , S_OTHERS  , 0, 0.0 , v_dummy  , d_error, C_error  , F_error , J_error  },
+  {","   , S_OTHERS  , 0, 0.0 , v_dummy  , d_error, C_error  , F_error , J_error  },
 
   /* arithmetic operators */
-  {"+"   , S_ADD_OP  , 2, 0.0 , v_plus   , d_add  , C_infix  , F_infix  },
-  {"-"   , S_ADD_OP  , 2, 0.0 , v_minus  , d_add  , C_minus  , F_minus  },
-  {"*"   , S_MUL_OP  , 4, 0.0 , v_mul    , d_mul  , C_infix  , F_infix  },
-  {"/"   , S_MUL_OP  , 4, 0.0 , v_div    , d_div  , C_infix  , F_infix  },
-  {"^"   , S_HPR_OP  , 5, 0.0 , v_power  , d_power, C_power  , F_power  },
+  {"+"   , S_ADD_OP  , 2, 0.0 , v_plus   , d_add  , C_infix  , F_infix , J_infix  },
+  {"-"   , S_ADD_OP  , 2, 0.0 , v_minus  , d_add  , C_minus  , F_minus , J_minus  },
+  {"*"   , S_MUL_OP  , 4, 0.0 , v_mul    , d_mul  , C_infix  , F_infix , J_infix  },
+  {"/"   , S_MUL_OP  , 4, 0.0 , v_div    , d_div  , C_infix  , F_infix , J_infix  },
+  {"^"   , S_HPR_OP  , 5, 0.0 , v_power  , d_power, C_power  , F_power , J_power  },
 
   /* marker for alphanumeric symbols */
-  {"_ANS", S_NOSYMBOL, 0, 0.0 , v_dummy  , d_error, C_error  , F_error  },
+  {"_ANS", S_NOSYMBOL, 0, 0.0 , v_dummy  , d_error, C_error  , F_error , J_error  },
 
   /* logical operators: removed */
 
   /* system constants */
-  {"pi"  , S_SCONST  , 9, M_PI, v_const  , d_const, C_const  , F_const  },
-  {"e"   , S_SCONST  , 9, M_E , v_const  , d_const, C_const  , F_const  },
+  {"pi"  , S_SCONST  , 9, M_PI, v_const  , d_const, C_const  , F_const , J_const  },
+  {"e"   , S_SCONST  , 9, M_E , v_const  , d_const, C_const  , F_const , J_const  },
 
   /* system functions */
-  {"mod" , S_SFUNCT  , 2, 0.0 , v_mod    , d_const, C_mod    , F_prefix },
-  {"exp" , S_SFUNCT  , 1, 0.0 , v_exp    , d_exp  , C_prefix , F_prefix },
-  {"log" , S_SFUNCT  , 1, 0.0 , v_log    , d_log  , C_prefix , F_prefix },
-  {"sin" , S_SFUNCT  , 1, 0.0 , v_sin    , d_sin  , C_prefix , F_prefix },
-  {"cos" , S_SFUNCT  , 1, 0.0 , v_cos    , d_cos  , C_prefix , F_prefix },
-  {"tan" , S_SFUNCT  , 1, 0.0 , v_tan    , d_tan  , C_error  , F_error },   /** TODO **/
-  {"sec" , S_SFUNCT  , 1, 0.0 , v_sec    , d_sec  , C_error  , F_error },   /** TODO **/
-  {"sqrt", S_SFUNCT  , 1, 0.0 , v_sqrt   , d_sqrt , C_prefix , F_prefix },
-  {"abs" , S_SFUNCT  , 1, 0.0 , v_abs    , d_abs  , C_abs    , F_prefix },
-  {"sgn" , S_SFUNCT  , 1, 0.0 , v_sgn    , d_const, C_sgn    , F_sgn },
+  {"mod" , S_SFUNCT  , 2, 0.0 , v_mod    , d_const, C_mod    , F_prefix, J_mod    },
+  {"exp" , S_SFUNCT  , 1, 0.0 , v_exp    , d_exp  , C_prefix , F_prefix, J_prefix },
+  {"log" , S_SFUNCT  , 1, 0.0 , v_log    , d_log  , C_prefix , F_prefix, J_prefix },
+  {"sin" , S_SFUNCT  , 1, 0.0 , v_sin    , d_sin  , C_prefix , F_prefix, J_prefix },
+  {"cos" , S_SFUNCT  , 1, 0.0 , v_cos    , d_cos  , C_prefix , F_prefix, J_prefix },
+  {"tan" , S_SFUNCT  , 1, 0.0 , v_tan    , d_tan  , C_prefix , F_prefix, J_prefix },
+  {"sec" , S_SFUNCT  , 1, 0.0 , v_sec    , d_sec  , C_error  , F_error , J_error  },   /** TODO **/
+  {"sqrt", S_SFUNCT  , 1, 0.0 , v_sqrt   , d_sqrt , C_prefix , F_prefix, J_prefix },
+  {"abs" , S_SFUNCT  , 1, 0.0 , v_abs    , d_abs  , C_abs    , F_prefix, J_prefix },
+  {"sgn" , S_SFUNCT  , 1, 0.0 , v_sgn    , d_const, C_sgn    , F_sgn   , J_sgn    },
 
   /* marker for end-of-table */
-  {"_END", S_NOSYMBOL, 0, 0.0 , v_dummy  , d_error, C_error  , F_error  },
+  {"_END", S_NOSYMBOL, 0, 0.0 , v_dummy  , d_error, C_error  , F_error , J_error },
 };
 
 /*  location of special symbols in table                                     */

@@ -630,6 +630,22 @@ static int _unur_fstr_F_specfunct ( FILE *out, unsigned flags );
 
 
 /**-------------------------------------------------------------------------**/
+/** functparser_codegen_JAVA.c                                              **/
+/**   Make JAVA code for function given by its tree.                        **/
+/**-------------------------------------------------------------------------**/
+
+static int _unur_fstr_J_specfunct ( FILE *out, unsigned flags );
+/*---------------------------------------------------------------------------*/
+/* Print JAVA code for special functions                                     */ 
+/*---------------------------------------------------------------------------*/
+
+static int _unur_fstr_J_sgn ( FILE *out );
+/*---------------------------------------------------------------------------*/
+/* Print JAVA code for sign function                                         */ 
+/*---------------------------------------------------------------------------*/
+
+
+/**-------------------------------------------------------------------------**/
 /** functparser_debug.c                                                     **/
 /**   Debugging tools for function parser.                                  **/
 /**-------------------------------------------------------------------------**/
@@ -687,6 +703,7 @@ static void _unur_fstr_debug_deriv (const struct ftreenode *funct,
 #include "functparser_stringgen.c"
 #include "functparser_codegen_C.c"
 #include "functparser_codegen_FORTRAN.c"
+#include "functparser_codegen_JAVA.c"
 #include "functparser_debug.c"
 /*---------------------------------------------------------------------------*/
 

@@ -90,6 +90,12 @@ int _unur_fstr_tree2FORTRAN ( FILE *out, const struct ftreenode *root,
 /* Produce FORTRAN code from function tree.                                  */
 /*---------------------------------------------------------------------------*/
 
+int _unur_fstr_tree2JAVA ( FILE *out, const struct ftreenode *root,
+			   const char *variable, const char *function );
+/*---------------------------------------------------------------------------*/
+/* Produce JAVA code from function tree.                                     */
+/*---------------------------------------------------------------------------*/
+
 struct ftreenode *_unur_fstr_make_derivative ( const struct ftreenode *functtree_root );
 /*---------------------------------------------------------------------------*/
 /* Make function tree for derivate of given function (tree).                 */ 

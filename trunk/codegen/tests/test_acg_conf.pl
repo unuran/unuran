@@ -20,7 +20,7 @@ our $accuracy = 1.0e-7;
 
 our %language = ( 'C'       => 1,
 		  'FORTRAN' => 1,
-		  'JAVA'    => 0
+		  'JAVA'    => 1
 		   );
     
 # ----------------------------------------------------------------
@@ -38,6 +38,22 @@ our @distr_list =
       'cont; pdf=\"exp(-x^2)\"',
       'cont; pdf=\"exp(-x^2)\"; domain=(0,inf)',
       'cont; pdf=\"exp(-x^2)\"; domain=(-1,1)',
+
+      'cont; pdf=\"pi*exp(-x^2)\"; domain=(0,inf)',
+
+      'cont; pdf=\"4.23e2*log(x+1)\"; domain=(0,2)',
+      
+      'cont; pdf=\"sin(x*pi)\"; domain=(0,1)',
+      'cont; pdf=\"cos((x-1/2)*pi)\"; domain=(0,1)',
+      
+      'cont; pdf=\"1-tan(x*pi/2)\"; domain=(0,0.5)',
+
+      'cont; pdf=\"sqrt(1+2*x)\"; domain=(0,1)',
+
+      'cont; pdf=\"1-abs(x)\"; domain=(-1,1)',
+
+      'cont; pdf=\"sgn(x)*exp(-x^2)\"; domain=(0.1,inf)',
+      'cont; pdf=\"-sgn(x)*exp(-x^2)\"; domain=(-3,-1)',
 
       'cont; pdf=\"(x>-1)*(x<0)*(1+x) + (x>=0)*(x<1)*(1-x)\"',
       'cont; pdf=\"(x>-1)*(x<0)*(1+x) + (x>=0)*(x<1)*(1-x)\"; domain=(-1,1)',

@@ -1013,18 +1013,32 @@ _unur_tabl_sample( struct unur_gen *gen )
       /* below squeeze */
       return( iv->xmax + (iv->Asqueeze-u) * (iv->xmin - iv->xmax)/iv->Asqueeze ); 
     }
+
     else {
       /* between spueeze and hat --> have to valuate PDF */
       x = iv->xmax + (u-iv->Asqueeze) * (iv->xmin - iv->xmax)/(iv->Ahat - iv->Asqueeze);
       fx = PDF(x);
-      /* split interval */
-      if (GEN.n_ivs < GEN.max_ivs && GEN.max_ratio * GEN.Atotal > GEN.Asqueeze) {
-	_unur_tabl_split_interval( gen, iv, x, fx, (gen->variant & TABL_VARMASK_SPLIT) );
-	_unur_tabl_make_guide_table(gen);
-	/** TODO: it is not necessary to update the guide table every time. 
-	    But then (1) some additional bookkeeping is required and
-	    (2) the guide table method requires a acc./rej. step. **/
+
+      /* being above squeeze is bad. split interval. */
+      if (GEN.n_ivs < GEN.max_ivs) {
+	if (GEN.max_ratio * GEN.Atotal > GEN.Asqueeze) {
+	  if (_unur_tabl_split_interval( gen, iv, x, fx,(gen->variant & TABL_VARMASK_SPLIT)) ) {
+	    _unur_tabl_make_guide_table(gen);
+	    /** TODO: it is not necessary to update the guide table every time. 
+		But then (1) some additional bookkeeping is required and
+		(2) the guide table method requires a acc./rej. step. **/
+	  }
+	  else {
+	    /* condition for PDF is violated! */
+	    _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"");
+	  }
+	}
+	else {
+	  /* no more construction points (avoid to many second if statement above */
+	  GEN.max_ivs = GEN.n_ivs;
+	}
       }
+
       /* now accept or reject */
       u = _unur_call_urng(gen->urng);
       if (fx >= u * (iv->fmax - iv->fmin) + iv->fmin)
@@ -1086,21 +1100,38 @@ _unur_tabl_sample_check( struct unur_gen *gen )
       /* at last return number */
       return x;
     }
+
     else {
       /* between spueeze and hat --> have to valuate PDF */
       x = iv->xmax + (u-iv->Asqueeze) * (iv->xmin - iv->xmax)/(iv->Ahat - iv->Asqueeze);
       fx = PDF(x);
+
       /* test whether PDF is monotone */
       if (fx > iv->fmax)
 	_unur_warning(gen->genid,UNUR_ERR_GEN_CONDITION,"PDF > hat. PDF not monotone in interval");
       if (fx < iv->fmin)
 	_unur_warning(gen->genid,UNUR_ERR_GEN_CONDITION,"PDF < squeeze. PDF not monotone in interval");
-      /* split interval */
-      if (GEN.n_ivs < GEN.max_ivs && GEN.max_ratio * GEN.Atotal > GEN.Asqueeze) {
-      	_unur_tabl_split_interval( gen, iv, x, fx, (gen->variant & TABL_VARMASK_SPLIT) );
-	_unur_tabl_make_guide_table(gen);
+
+      /* being above squeeze is bad. split interval. */
+      if (GEN.n_ivs < GEN.max_ivs) {
+	if (GEN.max_ratio * GEN.Atotal > GEN.Asqueeze) {
+	  if (_unur_tabl_split_interval( gen, iv, x, fx,(gen->variant & TABL_VARMASK_SPLIT)) ) {
+	    _unur_tabl_make_guide_table(gen);
+	    /** TODO: it is not necessary to update the guide table every time. 
+		But then (1) some additional bookkeeping is required and
+		(2) the guide table method requires a acc./rej. step. **/
+	  }
+	  else {
+	    /* condition for PDF is violated! */
+	    _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"");
+	  }
+	}
+	else {
+	  /* no more construction points (avoid to many second if statement above */
+	  GEN.max_ivs = GEN.n_ivs;
+	}
       }
-  
+
       /* now accept or reject */
       u = _unur_call_urng(gen->urng);
       if (fx >= u * (iv->fmax - iv->fmin) + iv->fmin)
@@ -1138,6 +1169,15 @@ _unur_tabl_free( struct unur_gen *gen )
   /* write info into log file */
   if (gen->debug) _unur_tabl_debug_free(gen);
 #endif
+
+  /* free linked list of intervals */
+  {
+    struct unur_tabl_interval *iv,*next;
+    for (iv = GEN.iv; iv != NULL; iv = next) {
+      next = iv->next;
+      free(iv);
+    }
+  }
 
   /* free other memory */
   _unur_free_genid(gen);
@@ -1249,7 +1289,7 @@ _unur_tabl_get_starting_intervals_from_slopes( struct unur_par *par, struct unur
     /* check slopes */
     if (iv->fmax < iv->fmin) {
       _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"slopes non-decreasing");
-      GEN.iv = NULL; /* no intervals */
+      iv->next = NULL;  /* terminate list (freeing list) */
       return 0;
     }
 
@@ -1523,7 +1563,6 @@ _unur_tabl_split_b_starting_intervals( struct unur_par *par,
 
 /*****************************************************************************/
 
-/*  static struct unur_tabl_interval * */
 static int
 _unur_tabl_split_interval( struct unur_gen *gen,
 			   struct unur_tabl_interval *iv_old, 

@@ -107,7 +107,10 @@ unur_test_timing( struct unur_par *par,
   *time_setup = _unur_get_time();
 
   /* init successful ? */
-  if (!gen) return NULL;
+  if (!gen) {
+    free (time_gen);
+    return NULL;
+  }
 
   /* we need an array for the vector */
   if (_unur_gen_is_vec(par)) {

@@ -873,9 +873,9 @@ _unur_dari_hat( struct unur_gen *gen )
       if (GEN.n[1] > b[1]) {
 	GEN.n[1] = b[1];
 	GEN.n[0] = GEN.n[1]- GEN.size + 1;
-      } 
-      for (i=0; i< GEN.size; i++)
-	GEN.hb[i-N0] = 0;
+      }
+      /* initialize table */
+      memset( GEN.hb, 0, GEN.size * sizeof(char) );
     }
 
     /* setup == 1 first try, up to now ok,  ==2 second try, up to now ok */
@@ -1177,8 +1177,9 @@ _unur_dari_free( struct unur_gen *gen )
   SAMPLE = NULL;   /* make sure to show up a programming error */
 
   /* free two auxiliary tables */
-  if (GEN.hp) free(GEN.hp);
-  if (GEN.hb) free(GEN.hb);
+  if (DISTR.pv) free(DISTR.pv);
+  if (GEN.hp)   free(GEN.hp);
+  if (GEN.hb)   free(GEN.hb);
 
   /* free memory */
   _unur_free_genid(gen);

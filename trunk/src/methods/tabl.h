@@ -53,7 +53,8 @@
    =ABSTRACT Large tables necessary for heavy tailed distributions 
 
    =DESCRIPTION
-      TABL (called Ahrens method in [Book]) is an acceptance/rejection
+      TABL (called Ahrens method in @unurbibref{HLD04})
+      is an acceptance/rejection
       method (see [ARVRej]) that uses a decomposition of the domain of
       the distribution into many short subintervals. Inside of these
       subintervals constant hat and squeeze functions are
@@ -104,8 +105,7 @@
       requiring a slow setup and that it is not very well suited for
       heavy-tailed distributions. 
 
-   
-   HOWTOUSE
+   =HOWTOUSE
 
       For using the TABL method UNURAN needs a bounded interval to
       which the generated variates can be restricted and information

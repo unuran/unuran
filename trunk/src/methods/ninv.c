@@ -757,10 +757,8 @@ unur_ninv_chg_pdfparams( struct unur_gen *gen, double *params, int n_params )
   memcpy(DISTR.params, params, n_params * sizeof(double));
 
   /* changelog */
+  gen->distr.set &= ~UNUR_DISTR_SET_MASK_DERIVED;
   /* derived parameters like mode, area, etc. might be wrong now! */
-  /* however there is no need for these parameters;               */
-  /* thus we do not need:                                         */
-  /*    distr->distr.set &= ~UNUR_DISTR_SET_MASK_DERIVED;         */
 
   /* set bounds of U -- in respect to given bounds                */
   GEN.Umin = (DISTR.trunc[0] > -INFINITY) ? CDF(DISTR.trunc[0]) : 0.;

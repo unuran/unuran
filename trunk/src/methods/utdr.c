@@ -520,13 +520,10 @@ unur_utdr_chg_pdfparams( struct unur_gen *gen, double *params, int n_params )
   for (i=0; i < n_params; i++)
     DISTR.params[i] = params[i];
 
+
   /* changelog */
-  /* mode and area might be wrong now! 
-     but the user is responsible to change it.
-     so we dont say:
-     gen->distr.set &= ~(UNUR_DISTR_SET_MODE | UNUR_DISTR_SET_PDFAREA );
-     gen->set &= ~UTDR_SET_CDFMODE;
-  */
+  gen->distr.set &= ~UNUR_DISTR_SET_MASK_DERIVED;
+  /* derived parameters like mode, area, etc. might be wrong now! */
 
   /* o.k. */
   return 1;

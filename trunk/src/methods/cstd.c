@@ -311,10 +311,8 @@ unur_cstd_chg_pdfparams( struct unur_gen *gen, double *params, int n_params )
   memcpy( DISTR.params, params, n_params*sizeof(double) );
 
   /* changelog */
+  gen->distr.set &= ~UNUR_DISTR_SET_MASK_DERIVED;
   /* derived parameters like mode, area, etc. might be wrong now! */
-  /* however there is no need for these parameters;               */
-  /* thus we do not need:                                         */
-  /*    distr->distr.set &= ~UNUR_DISTR_SET_MASK_DERIVED;         */
 
   /* run special init routine for generator */
   if ( !(DISTR.init(NULL,gen)) ) {

@@ -71,7 +71,7 @@ sub known_methods{
 
 	while ( <INFILE> ){
 	    if ( $_ =~ /^\s*=METHOD\s+(\w+)/ ){
-		print Outfile "#define \U$1\t($counter)\n";
+		print Outfile "#define \UUNUR_METH_$1\t($counter)\n";
 		$counter++;
 		break;
 	    }
@@ -171,7 +171,7 @@ sub method_info{
 	    if ( $_ =~ /^\s*=METHOD\s+(\w+)/ ){
 
 		print Outfile "if ( !strcmp( value, \"\L$1\") ){\n";
-		print Outfile "\t\t\tmethod = $1;\n";
+		print Outfile "\t\t\tmethod = UNUR_METH_$1;\n";
 		if ( "\U$1" eq "UNIF"){
 		    # print Outfile "\t\t\tpar = unur_\L$1_new();\n";
 		    print Outfile "\t\t\tfprintf(stderr, \"Method UNIF not intended for usage within this string content.\\n\");\n";
@@ -219,7 +219,7 @@ sub method_info{
 		$METHOD = "\U$method";
 
 		# key is "method"
-		print Outfile "if ( method == $METHOD && strcmp(key, \"method\") ){\n\t\t";
+		print Outfile "if ( method == UNUR_METH_$METHOD && strcmp(key, \"method\") ){\n\t\t";
 	    }
 
 	    # only parameter object passed
@@ -278,7 +278,7 @@ sub method_info{
 	
 	# closing the method-block 
 	if ( $method !~ /UNKNOWN/){
-	    print Outfile "{\n\t\t\tfprintf(stderr, \"Unknown option for method $METHOD: %s\\n\", key);\n\t\t}\n";
+	    print Outfile "{\n\t\t\tfprintf(stderr, \"Unknown option for method $method: %s\\n\", key);\n\t\t}\n";
 	    print Outfile "\t}\n\telse ";
 	}
 

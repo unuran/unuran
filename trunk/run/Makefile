@@ -1,4 +1,4 @@
-
+ 
 
 all: run run_acg test parsetest
 
@@ -19,7 +19,7 @@ acg: acg.c ../src/unuran.h ../src/libunuran.a
 
 parsetest: parsetest.c stringpars.c
 	./gen_stringpars.pl
-	gcc -Wall -o parsetest parsetest.c stringpars.c -lunuran -lm -lprng
+	gcc -DHAVE_CONFIG_H -Wall -I. -I.. -I../src -I../src/methods -I../src/distributions -o parsetest parsetest.c stringpars.c -lunuran -lm -lprng
 
 clean:
 	rm -f *~ *.o run test run_acg getopttst unuran.log acg

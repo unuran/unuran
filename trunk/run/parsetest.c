@@ -18,7 +18,7 @@ int main(){
   int i;
 
   UNUR_GEN *gen;
-  char str[] = "distr=normal(1, .5); domain=(0.,1.5) : method=tdr; c=-0.5; variant_ia: mt19937(13237)";
+  char str[] = "distr=normal(1, .5):prng = MT19937(13237): method=tdr; c=-0.5; variant_ia";
   gen = make_gen_obj(str);
 
   for ( i=0; i<15; i++){

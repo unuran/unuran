@@ -66,6 +66,60 @@ _unur_slist_new( void )
 
 /*---------------------------------------------------------------------------*/
 
+int
+_unur_slist_length( struct unur_slist *slist )
+     /*----------------------------------------------------------------------*/
+     /* Get length if list (number of list entries).                         */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   slist   ... pointer to simple list                                 */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   number of elements                                                 */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  CHECK_NULL(slist,0);
+  COOKIE_CHECK(slist,CK_SLIST,0);
+
+  if (slist->ptr==NULL)
+    return 0;
+
+  return (slist->n_ptr);
+
+} /* end of _unur_slist_length() */
+
+/*---------------------------------------------------------------------------*/
+
+void *
+_unur_slist_get( struct unur_slist *slist, int n )
+     /*----------------------------------------------------------------------*/
+     /* Get pointer to n-th element.                                         */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   slist   ... pointer to simple list                                 */
+     /*   n       ... index element                                          */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to element                                                 */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return NULL                                                        */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  CHECK_NULL(slist,NULL);
+  COOKIE_CHECK(slist,CK_SLIST,NULL);
+
+  if (slist->ptr==NULL || n >= slist->n_ptr || n < 0)
+    return NULL;
+
+  return (slist->ptr[n]);
+
+} /* end of _unur_slist_get() */
+
+/*---------------------------------------------------------------------------*/
+
 void
 _unur_slist_append( struct unur_slist *slist, void *element )
      /*----------------------------------------------------------------------*/
@@ -77,6 +131,7 @@ _unur_slist_append( struct unur_slist *slist, void *element )
      /*                                                                      */
      /* return:                                                              */
      /*   void                                                               */
+     /*----------------------------------------------------------------------*/
 {
   /* check arguments */
   CHECK_NULL(slist,/*void*/);

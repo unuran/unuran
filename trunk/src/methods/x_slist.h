@@ -60,6 +60,16 @@ void _unur_slist_append( struct unur_slist *slist, void *element );
 /* Append pointer to element to simple list.                                 */
 /*---------------------------------------------------------------------------*/
 
+int _unur_slist_length( struct unur_slist *slist );
+/*---------------------------------------------------------------------------*/
+/* Get length if list (number of list entries).                              */
+/*---------------------------------------------------------------------------*/
+
+void *_unur_slist_get( struct unur_slist *slist, int n );
+/*---------------------------------------------------------------------------*/
+/* Get pointer to n-th element.                                              */
+/*---------------------------------------------------------------------------*/
+
 void _unur_slist_free( struct unur_slist *slist );
 /*---------------------------------------------------------------------------*/
 /* Free all elements and list in simple list.                                */

@@ -132,8 +132,8 @@ _unur_distr_cemp_copy( struct unur_distr *to, const struct unur_distr *from )
      /*   0 ... on error                                                     */
      /*----------------------------------------------------------------------*/
 {
-#define FROM from->data.cont
-#define TO   to->data.cont
+#define FROM from->data.cemp
+#define TO   to->data.cemp
 
   int len;
 
@@ -143,6 +143,12 @@ _unur_distr_cemp_copy( struct unur_distr *to, const struct unur_distr *from )
 
   /* copy distribution object into generator object */
   memcpy( to, from, sizeof( struct unur_distr ) );
+
+  /* copy data about sample into generator object (when there is one) */
+  if (FROM.sample) {
+    TO.sample = _unur_malloc( FROM.n_sample * sizeof(double) );
+    memcpy( TO.sample, FROM.sample, FROM.n_sample * sizeof(double) );
+  }
 
   /* copy user name for distribution */
   if (from->name_str) {

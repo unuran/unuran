@@ -76,6 +76,9 @@ double unur_distr_cont_pdf( UNUR_DISTR *distribution, double x );
 int unur_distr_cont_set_dpdf( UNUR_DISTR *distribution, void *dpdf );
 /* set derivative of p.d.f. of distribution                                  */
 
+double unur_distr_cont_dpdf( UNUR_DISTR *distribution, double x );
+/* evaluate derivative of p.d.f. of distribution at x                        */
+
 int unur_distr_cont_set_cdf( UNUR_DISTR *distribution, void *cdf );
 /* set c.d.f. of distribution                                                */
 

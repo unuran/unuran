@@ -18,17 +18,20 @@
 #define UFUNCS  9 
 #define SFUNCS 10 
 
+
 /* --- Prototypen: --- */
 void  show_symb_tab      (void);
 static void get_ds             (char *function, int  *scanpos, char *ds);
 static void get_sf             (char *function, int  *scanpos, char *sf);
 static int   get_uc_symbol      (char *function, int *scanpos, char *uc);
-static int   nxt_symbol         (char function[], int *scanpos, char symb[],
-				 int *tokenp, int *symbkindp, int *errposp);
+static int   nxt_symbol         (char *function, int *scanpos, char *symb,
+				 int *errcodep, int *errposp);
 static int   get_id_symbol      (char *function, int  *scanpos, char *id);
 static int   get_ro_symbol      (char *function, int  *scanpos, char *ro);
-static int   find_index         (char *symb, int start, int end, int nxt_c);
+// static int   find_index         (char *symb, int start, int end, int nxt_c);
 static int find_symbol_in_table(char *symb, int start, int end);
+
+int find_user_defined(char *symb, int nxt_c);
 
 /* --- Bereichs-Start- und -Endemarkierungen in der Symboltabelle: --- */
 static int ros, roe, aos, aoe, mos, moe, hos, hoe, oss, ose, scs, sce, sfs, sfe;
@@ -181,7 +184,7 @@ static struct symbols symbol[] = {
   {"UCONST",UCONST, 0, .0,v_const, d_const, NULL},
 
   /* UserdefinedIdentifiers */
-  {"",    UIDENT,0, .0,v_uident, d_const, NULL},
+/*    {"",    UIDENT,0, .0,v_uident, d_const, NULL}, */
   {"",    UIDENT,0, .0,v_uident, d_const, NULL},
   {"VAR", UIDENT,0, .0,v_uident, d_const, NULL},
 
@@ -216,15 +219,13 @@ static struct treenode *bas_exp          (char *fstr, int *scanpos, int *ecp, in
 static struct treenode *FuncDesignator   (char *fstr, int *scanpos, int *ecp, int *epp);
 static struct treenode *ActualParameterlist(char *fstr, int *scanpos, int *ecp, int *epp, int corr_panz);
 
-static struct treenode *create_node(char *symb, int token, int symbkind,
+static struct treenode *create_node(char *symb, int token,
                 struct treenode *left, struct treenode *right);
 
 static struct treenode *set_err (int err_nr, int *errcodep);
 char            *readln  (char *s);
 static int             simplification(char *symb, int t, struct treenode *l, 
                                                       struct treenode *r);
-static void            check_reorg (struct treenode *root);
-               
 static char *errorstrings[] = { 
      "OK",                                                /* 0*/ 
      "scan pointer too big",                              /* 1*/ 
@@ -324,59 +325,66 @@ void show_symb_tab(void)         /* Gibt die aktuelle Symboltabelle aus */
 }
 /************************************************************************/
 
-int nxt_symbol (char *fstr, int *scanpos, char *symb, int *tokenp,
-		int *symbkindp, int *errposp)
+int nxt_symbol (char *fstr, int *scanpos, char *symb, int *errcodep, int *errposp)
 
 /*  Liefert aus dem String 'fstr' das naechste Symbol ab der
  *  Position 'scanpos' und speichert es in 'symb'. 
  *  Nach der Bearbeitung zeigt *scanpos auf das Zeichen, 
  *  das dem ermittelten Symbol unmittelbar folgt. Leerzeichen
  *  werden ignoriert. In *tokenp wird der Index des Symbols in der
- *  Symboltabelle. geliefert. *symbkindp ist die Art des Symbols
- *  (UIDENT, SCONST etc.), *errposp zeigt auf das Zeichen, auf das
- *  *scanpos beim Aufruf zeigte.
- *  Der zurueckgelieferte Funktionswert ist der Fehlercode.
+ *  Symboltabelle. geliefert. 
+ *  *errposp zeigt auf das Zeichen, auf das *scanpos beim Aufruf zeigte.
+ *  Der zurueckgelieferte Funktionswert der index des symbols in der Tabelle.
  */
 
 {
+  int token;
+  int errcode = 0;
   char c;
-  int  nxt_c, errcode = 0;
-  
+
+  /* store position of pointer */
   *errposp = *scanpos;
   
-  if (*scanpos > strlen(fstr)) return 1;
+  printf("scan = %d, len = %d\n",*scanpos,strlen(fstr));
+  printf("%s<<\n",fstr+*scanpos);
+  printf("\n");
+
+  if (*scanpos > strlen(fstr))
+    /* end of string */
+    return 1;
   
   c = fstr[*scanpos];
   
   if ( (c >= '0' && c <= '9') || c == '.') {           /* UnsignedConstant */
     errcode = get_uc_symbol(fstr,scanpos,symb);
-    *tokenp = uconst;
-    *symbkindp = UCONST;         /* Art des Symbols ermitteln */
+    token = uconst;
   }
 
   else if (c >=  'a' && c <= 'z') {                       /* Identifier */
     errcode = get_id_symbol(fstr,scanpos,symb);
-    nxt_c = fstr[*scanpos];
-    if ((*tokenp = find_index(symb,aos,sfe,nxt_c)) <= 0) return 4;
-    *symbkindp = symbol[*tokenp].type; /* Art des Symbols ermitteln */
+
+    if ( ( (token = find_symbol_in_table(symb,aos,sfe)) <= 0 ) && 
+	 ( (token = find_user_defined(symb,fstr[*scanpos])) <= 0 ) )
+      errcode = 4;
   }
 
   else if ( c == '<' || c == '>' ) {              /* relation symbol */
     errcode = get_ro_symbol(fstr,scanpos,symb);
-    if ((*tokenp = find_symbol_in_table(symb,ros,roe)) <= 0 ) return 4;
-    *symbkindp = REL_OP;         /* Art des Symbols ermitteln */
+    if ((token = find_symbol_in_table(symb,ros,roe)) <= 0 )
+      errcode = 4;
   }
 
   else {
     symb[0] = c; symb[1] = '\0';           /* alle anderen Zeichen */
     (*scanpos)++;
-    if ((*tokenp = find_symbol_in_table(symb,ros,sfe)) <= 0 ) return 4;
-    *symbkindp = symbol[*tokenp].type; /* Art des Symbols ermitteln */
+    if ((token = find_symbol_in_table(symb,ros,sfe)) <= 0 )
+      errcode = 4;
   }
 
-  if (*symbkindp == 0) errcode = 4;        /*       unbekanntes Zeichen */
+  /* set errorcode */
+  *errcodep = errcode;
 
-  return errcode;
+  return ( (errcode) ? 0 : token );
 }
 
 /*********************************** ************************************/
@@ -443,7 +451,7 @@ static void get_sf(char *fstr, int *scanpos, char *sf)
 
 {
   /* copy sign */
-  if( (sf[0]=fstr[*scanpos]) == '+' || sf[0] == '-' ){
+  if ( (sf[0]=fstr[*scanpos]) == '+' || sf[0] == '-' ) {
      sf++;
      (*scanpos)++;
   }
@@ -510,51 +518,33 @@ int find_symbol_in_table(char *symb, int start, int end)
 
 /*********************************** ************************************/
 
-int find_index(char *symb, int start, int end, int nxt_c)
-
-/*  Ermittelt den Index von symb[] in der Symboltabelle *symbol[] und
- *  traegt unbekannte Symbole ggf. in die Tabelle ein.
- *  In nxt_c wird der Character nach symb uebergeben; wenn hier '(' steht,
- *  ist der Identifier eine Funktion.
- */
-
+int find_user_defined(char *symb, int nxt_c)
 {
-  int tablepos;
-
-  /* search for symbol in table */
-  if ( (tablepos = find_symbol_in_table(symb,start,end)) > 0 )
-    /* symbol found */
-    return tablepos;
-
   /* symbol not in table */
 
-  if ( start == aos ) {   /** TODO **/
-    /* --- Symbol ist Identifier: --- */
-    
-    if (nxt_c == '(') {
-      /* --- Symbol ist Userdefined Function --- */
-      /* we do not store symbol but use "UFUNCT" instead */
-      return ufunct;
-    }
-    
-    else {
-      /* --- Symbol is variable  (Userdefined Identifier) --- */
-
-      if (variable[0] == '\0')
-	/* new variable --> store name */
-	strcpy(variable,symb);   /** TODO: array-grenzen **/
-      else
-	/* the identifier name must match with variable name */
-	if (strcmp(variable,symb) != 0) return 0;
-
-      /* we use the marker for user defined identifier for variables */
-      return uident;
-    }
+  if (nxt_c == '(') {
+    /* --- Symbol ist Userdefined Function --- */
+    /* we do not store symbol but use "UFUNCT" instead */
+    return ufunct;
   }
-
-  return 0;
+    
+  else {
+    /* --- Symbol is variable  (Userdefined Identifier) --- */
+    
+    if (variable[0] == '\0')
+      /* new variable --> store name */
+      strcpy(variable,symb);   /** TODO: array-grenzen **/
+    else
+      /* the identifier name must match with variable name */
+      if (strcmp(variable,symb) != 0) return 0;
+    
+    /* we use the marker for user defined identifier for variables */
+    return uident;
+  }
 }
- 
+
+/*********************************** ************************************/
+
 /************************************************************************/ 
 
 struct treenode *
@@ -602,21 +592,26 @@ FuncDefinition (char *fstr,int *scanpos,int *ecp,int *epp)
 { 
   struct treenode *root, *l, *r; 
   char            symb[SYMBLENGTH]; 
-  int             sk, t, ft; 
+  int             t, ft; 
 
   /* left hand side: DefFuncDesignator */
   l = DefFuncDesignator(fstr,scanpos,ecp,epp,&ft);
+
   /* we do not use this information yet --> ignore any error message */
   if (*ecp) return NULL;
 
-  *ecp = nxt_symbol(fstr,scanpos,symb,&t,&sk,epp); 
+  t = nxt_symbol(fstr,scanpos,symb,ecp,epp); 
 
   if (strcmp(symb,"=") != 0) return set_err(12,ecp); 
 
   r = Expression(fstr,scanpos,ecp,epp);
+
   if (*ecp) return NULL; 
-  root = create_node(symb,t,sk,l,r); 
+
+  root = create_node(symb,t,l,r); 
+
   symbol[ft].tree = root; 
+
   return root; 
 } 
 
@@ -635,24 +630,22 @@ DefFuncDesignator (char *fstr, int *spp, int *ecp, int *epp, int *ftp)
 { 
   struct treenode *root, *r; 
   char            symb[SYMBLENGTH], fsymb[SYMBLENGTH]; 
-  int             t, sk, fsk, paranz; 
+  int             t, paranz; 
 
-  *ecp = nxt_symbol(fstr,spp,fsymb,ftp,&fsk,epp); 
-  if (fsk != UFUNCS) return set_err(13,ecp); 
-  if( symbol[*ftp].info != 0 ){ 
-     /* --- Funktion war schon vorhanden => alten Baum loeschen: --- */ 
-     _unur_fstr_free(symbol[*ftp].tree); 
-  } 
-  *ecp = nxt_symbol(fstr,spp,symb,&t,&sk,epp); 
+  *ftp = nxt_symbol(fstr,spp,fsymb,ecp,epp); 
+
+  if (symbol[*ftp].type != UFUNCS) return set_err(13,ecp); 
+
+  t = nxt_symbol(fstr,spp,symb,ecp,epp); 
   if (strcmp(symb,"(") != 0) return set_err(14,ecp); 
 
   r = DefParameterlist(fstr,spp,ecp,epp,&paranz); if (*ecp) return NULL; 
-  *ecp = nxt_symbol(fstr,spp,symb,&t,&sk,epp); 
+  t = nxt_symbol(fstr,spp,symb,ecp,epp); 
   if (strcmp(symb,")") != 0) return set_err(15,ecp); 
 
   /* brauch ma nimma */
   /*    symbol[*ftp].info = paranz;  */
-  root = create_node(fsymb,*ftp,fsk,NULL,r); 
+  root = create_node(fsymb,*ftp,NULL,r); 
   return root; 
 } 
 
@@ -673,23 +666,28 @@ DefParameterlist(char *fstr, int *spp, int *ecp, int *epp, int *paranzp)
 { 
   struct treenode *root, *l, *r; 
   char            symb[SYMBLENGTH]; 
-  int             t, ct, sk, scanpos; 
+  int             t, ct, scanpos; 
 
-  *ecp = nxt_symbol(fstr,spp,symb,&t,&sk,epp); 
-  if (sk != UIDENT) return set_err(16,ecp); 
+  t = nxt_symbol(fstr,spp,symb,ecp,epp);
+ 
+  if (symbol[t].type != UIDENT) return set_err(16,ecp); 
+
   *paranzp = 1; 
-  root = create_node(symb,t,sk,NULL,NULL); 
+  root = create_node(symb,t,NULL,NULL); 
   scanpos = *spp; 
-  *ecp = nxt_symbol(fstr,spp,symb,&ct,&sk,epp); 
+  ct = nxt_symbol(fstr,spp,symb,ecp,epp); 
+
   while (strcmp(symb,",") == 0) {
      l = root; 
-     *ecp = nxt_symbol(fstr,spp,symb,&t,&sk,epp); 
-     if (sk != UIDENT) return set_err(17,ecp); 
-     r = create_node(symb,t,sk,NULL,NULL); 
+
+     t = nxt_symbol(fstr,spp,symb,ecp,epp);
+
+     if (symbol[t].type != UIDENT) return set_err(17,ecp); 
+     r = create_node(symb,t,NULL,NULL); 
      (*paranzp)++; 
-     root = create_node(",",ct,sk,l,r); 
+     root = create_node(",",ct,l,r); 
      scanpos = *spp; 
-     *ecp = nxt_symbol(fstr,spp,symb,&ct,&sk,epp); 
+     ct = nxt_symbol(fstr,spp,symb,ecp,epp);
   }
   *spp = scanpos; 
   return root; 
@@ -723,14 +721,16 @@ Expression(char *fstr, int *spp, int *ecp, int *epp)
 { 
   struct treenode *root, *l, *r; 
   char            symb[SYMBLENGTH]; 
-  int             sk, t, scanpos; 
+  int             t, scanpos; 
 
   l = SimpleExpression(fstr,spp,ecp,epp); if (*ecp) return NULL; 
+
   scanpos = *spp; 
-  *ecp = nxt_symbol(fstr,spp,symb,&t,&sk,epp); 
-  if( sk == REL_OP ) {
+  t = nxt_symbol(fstr,spp,symb,ecp,epp);
+
+  if( symbol[t].type == REL_OP ) {
     r = SimpleExpression(fstr,spp,ecp,epp); if (*ecp) return NULL; 
-    root = create_node(symb,t,sk,l,r); 
+    root = create_node(symb,t,l,r); 
   }
   else {
     *spp = scanpos; 
@@ -754,17 +754,18 @@ SimpleExpression(char *fstr, int *spp, int *ecp, int *epp)
 { 
   struct treenode *root, *l, *r; 
   char            symb[SYMBLENGTH]; 
-  int             sk, t, scanpos; 
+  int             t, scanpos; 
 
   root = VTerm(fstr,spp,ecp,epp); if (*ecp) return NULL; 
   scanpos = *spp; 
-  *ecp = nxt_symbol(fstr,spp,symb,&t,&sk,epp); 
-  while (sk == ADD_OP) {
+  t = nxt_symbol(fstr,spp,symb,ecp,epp);
+
+  while (symbol[t].type == ADD_OP) {
      l = root; 
      r = Term(fstr,spp,ecp,epp); if (*ecp) return NULL; 
-     root = create_node(symb,t,sk,l,r); 
+     root = create_node(symb,t,l,r); 
      scanpos = *spp; 
-     *ecp = nxt_symbol(fstr,spp,symb,&t,&sk,epp); 
+     t = nxt_symbol(fstr,spp,symb,ecp,epp);
   }
   *spp = scanpos; 
   return root; 
@@ -787,15 +788,16 @@ VTerm(char *fstr, int *spp, int *ecp, int *epp)
 { 
   struct treenode *root, *l, *r; 
   char            symb[SYMBLENGTH]; 
-  int             sk, t, scanpos = *spp; 
+  int             t, scanpos = *spp; 
 
-  *ecp = nxt_symbol(fstr,spp,symb,&t,&sk,epp); 
+  t = nxt_symbol(fstr,spp,symb,ecp,epp);
+
   if( strcmp(symb,"-") == 0 ) {
     /* --- Term hat neg. Vorzeichen =>     --- */ 
     /* --- Vorzeichen in Operator wandeln: --- */ 
-    l = create_node("0.0",uconst,UCONST,NULL,NULL); 
+    l = create_node("0.0",uconst,NULL,NULL); 
     r = Term(fstr,spp,ecp,epp); if (*ecp) return NULL; 
-    root = create_node(symb,t,sk,l,r); 
+    root = create_node(symb,t,l,r); 
   }
   else {
     /* --- Term hat pos. oder kein Vorzeichen: --- */ 
@@ -820,17 +822,19 @@ Term(char *fstr, int *spp, int *ecp, int *epp)
 { 
   struct treenode *root, *l, *r; 
   char            symb[SYMBLENGTH]; 
-  int             sk, t, scanpos; 
+  int             t, scanpos; 
 
   root = Factor(fstr,spp,ecp,epp); if (*ecp) return NULL; 
   scanpos = *spp; 
-  *ecp = nxt_symbol(fstr,spp,symb,&t,&sk,epp); 
-  while (sk == MUL_OP) {
+
+  t = nxt_symbol(fstr,spp,symb,ecp,epp);
+
+  while (symbol[t].type == MUL_OP) {
      l = root; 
      r = Factor(fstr,spp,ecp,epp); if (*ecp) return NULL; 
-     root = create_node(symb,t,sk,l,r); 
+     root = create_node(symb,t,l,r); 
      scanpos = *spp; 
-     *ecp = nxt_symbol(fstr,spp,symb,&t,&sk,epp); 
+     t = nxt_symbol(fstr,spp,symb,ecp,epp);
   }
   *spp = scanpos; 
   return root; 
@@ -850,14 +854,16 @@ Factor(char *fstr, int *spp, int *ecp, int *epp)
 { 
   struct treenode *root, *l, *r; 
   char            symb[SYMBLENGTH]; 
-  int             sk, t, scanpos; 
+  int             t, scanpos; 
 
   l = bas_exp(fstr,spp,ecp,epp); if (*ecp) return NULL; 
   scanpos = *spp; 
-  *ecp = nxt_symbol(fstr,spp,symb,&t,&sk,epp); 
+
+  t = nxt_symbol(fstr,spp,symb,ecp,epp);
+
   if( strcmp(symb,"^") == 0 ) {
     r = bas_exp(fstr,spp,ecp,epp); if (*ecp) return NULL; 
-    root = create_node(symb,t,sk,l,r); 
+    root = create_node(symb,t,l,r); 
   }
   else {
     *spp = scanpos; 
@@ -885,12 +891,16 @@ bas_exp(char *fstr, int *spp, int *ecp, int *epp)
 
 { 
   struct treenode *root, *r; 
-  struct treenode *bas_exp(); 
   char            symb[SYMBLENGTH]; 
-  int             sk, t, scanpos = *spp; 
+  int             t, scanpos = *spp; 
+  int type;  /* type of symbol */
 
-  *ecp = nxt_symbol(fstr,spp,symb,&t,&sk,epp); 
-  if( sk==SCONST || sk==UCONST || sk==UIDENT || strcmp(symb,"not")==0 ) {
+
+  /* get next symbol from string */
+  t = nxt_symbol(fstr,spp,symb,ecp,epp);
+
+  type = symbol[t].type;
+  if( type==SCONST || type==UCONST || type==UIDENT || strcmp(symb,"not")==0 ) {
     /* --- neuen Knoten bilden: --- */ 
     if( strcmp(symb,"not") == 0 ) {
       r = bas_exp(fstr,spp,ecp,epp); if (*ecp) return NULL; 
@@ -898,11 +908,12 @@ bas_exp(char *fstr, int *spp, int *ecp, int *epp)
     else {
       r = NULL; 
     } 
-    root = create_node(symb,t,sk,NULL,r); 
+    root = create_node(symb,t,NULL,r); 
   }
+
   else {
     /* --- neuer Knoten nicht noetig: --- */ 
-    if( sk == UFUNCS || sk == SFUNCS ) {
+    if( symbol[t].type == SFUNCS ) {    /** ?????? **/
       *spp = scanpos; 
       root = FuncDesignator(fstr,spp,ecp,epp); 
       if (*ecp) return NULL; 
@@ -911,7 +922,7 @@ bas_exp(char *fstr, int *spp, int *ecp, int *epp)
       if( strcmp(symb,"(") == 0 ) {
 	root = Expression(fstr,spp,ecp,epp); 
 	if (*ecp) return NULL; 
-	*ecp = nxt_symbol(fstr,spp,symb,&t,&sk,epp); 
+	t = nxt_symbol(fstr,spp,symb,ecp,epp);
 	if (strcmp(symb,")")!=0) return set_err(18,ecp); 
       }
       else {
@@ -937,18 +948,22 @@ FuncDesignator(char *fstr, int *spp, int *ecp, int *epp)
 { 
   struct treenode *root, *r; 
   char            symb[SYMBLENGTH], fsymb[SYMBLENGTH]; 
-  int             sk, fsk, t, ft, corr_panz; 
+  int             t, ft, corr_panz; 
 
-  *ecp = nxt_symbol(fstr,spp,fsymb,&ft,&fsk,epp); 
-  /*if (fsk != SFUNCS && fsk != UFUNCS) return set_err(20,ecp);*/ 
-  if (fsk != SFUNCS) return set_err(20,ecp); 
+  ft = nxt_symbol(fstr,spp,fsymb,ecp,epp);
+
+  if (symbol[ft].type != SFUNCS) return set_err(20,ecp); 
   corr_panz = symbol[ft].info; 
-  *ecp = nxt_symbol(fstr,spp,symb,&t,&sk,epp); 
+
+  t = nxt_symbol(fstr,spp,symb,ecp,epp);
+
   if (strcmp(symb,"(") != 0) return set_err(21,ecp); 
   r = ActualParameterlist(fstr,spp,ecp,epp,corr_panz); if (*ecp) return NULL; 
-  *ecp = nxt_symbol(fstr,spp,symb,&t,&sk,epp); 
+
+  t = nxt_symbol(fstr,spp,symb,ecp,epp);
+
   if (strcmp(symb,")") != 0) return set_err(22,ecp); 
-  root = create_node(fsymb,ft,fsk,NULL,r); 
+  root = create_node(fsymb,ft,NULL,r); 
   return root; 
 } 
 
@@ -966,20 +981,22 @@ ActualParameterlist(char *fstr, int *spp, int *ecp, int *epp, int corr_panz)
 { 
   struct treenode *root, *l, *r; 
   char            symb[SYMBLENGTH]; 
-  int             sk, ct, scanpos, panz; 
+  int             ct, scanpos, panz; 
 
   root = Expression(fstr,spp,ecp,epp); if (*ecp) return NULL; 
   panz = 1; 
   scanpos = *spp; 
-  *ecp = nxt_symbol(fstr,spp,symb,&ct,&sk,epp); 
+
+  ct = nxt_symbol(fstr,spp,symb,ecp,epp);
+ 
   while (strcmp(symb,",") == 0) {
      panz++; 
      if (panz > corr_panz) return set_err(23,ecp); 
      l = root; 
      r = Expression(fstr,spp,ecp,epp); if (*ecp) return NULL; 
-     root = create_node(",",ct,sk,l,r); 
+     root = create_node(",",ct,l,r); 
      scanpos = *spp; 
-     *ecp = nxt_symbol(fstr,spp,symb,&ct,&sk,epp); 
+     ct = nxt_symbol(fstr,spp,symb,ecp,epp);
   }
   if (panz < corr_panz) return set_err(24,ecp); 
   *spp = scanpos; 
@@ -988,7 +1005,7 @@ ActualParameterlist(char *fstr, int *spp, int *ecp, int *epp, int corr_panz)
 /*********************** *********************** ************************/ 
 
 static struct treenode *
-create_node (char *symb, int token, int symbkind,
+create_node (char *symb, int token,
 	     struct treenode *left, struct treenode *right) 
 
 /*  Setzt im Knoten mit der Wurzel root den String, das Token und die Art 
@@ -1008,31 +1025,22 @@ create_node (char *symb, int token, int symbkind,
   else {
     /* make new node */
     root = _unur_malloc(sizeof(struct treenode)); 
-    //    root->symb = (symbkind != UCONST) ? symbol[token].name : NULL; 
     root->symb = symbol[token].name; 
     root->token    = token; 
-    root->symbkind = symbkind; 
+    root->symbkind = symbol[token].type; 
     root->left     = left; 
     root->right    = right; 
 
     /* compute and/or store constants in val field */
-    if (symbkind == UCONST)
+    if (root->symbkind == UCONST)
       /* user defined constant, i.e. a number */
       root->val    = atof(symb);
-    else if (symbkind == SCONST)
+    else if (root->symbkind == SCONST)
       /* system constant */
       root->val    = symbol[token].val;
     else
       root->val    = 0.;
   } 
-
-  /* try to reorganize tree */
-  if ( ( root->symb[0] == '+' ||
-	 root->symb[0] == '-' ||
-	 root->symb[0] == '*' ||
-	 root->symb[0] == '/' )
-       && root->symb[1] == '\0' )
-    check_reorg(root); 
 
   /* return node */
   return root; 
@@ -1132,115 +1140,6 @@ static int simplification(char *symb, int t, struct treenode *l,
 }
 
 /**************** ****************** ****************** *****************/ 
-
-void check_reorg(struct treenode *root) 
-
-/*  Ueberprueft, ob bei Addition, Subtraktion, Multiplikation oder 
- *  Division durch Umstellen der Knoten Vereinfachung moeglich ist und 
- *  fuehrt sie dann durch. 
- */ 
-
-{ 
-
-  /** TODO: root->left != 0 und root->right != NULL  !!!!! **/
-
-
-  struct treenode *temp; 
-  int             mul     = strcmp(root->       symb,"*") == 0; 
-  int             div     = strcmp(root->       symb,"/") == 0; 
-  int             minus   = strcmp(root->       symb,"-") == 0; 
-  int             plus    = strcmp(root->       symb,"+") == 0; 
-  int             l_minus = strcmp(root->left-> symb,"-") == 0; 
-  int             r_minus = strcmp(root->right->symb,"-") == 0; 
-  int             r_plus  = strcmp(root->right->symb,"+") == 0; 
-  
-  if ( (plus||minus) && r_minus && strcmp(root->right->left->symb,"0")==0 ) { 
-    /*  Baum1+(-Baum2) => Baum1-Baum2   | Baum1-(-Baum2) => Baum1+Baum2 
-     *                                  | 
-     *        +                 -       |       -                 + 
-     *       / \               / \      |      / \               / \ 
-     *  Baum1   -      => Baum1   Baum2 | Baum1   -      => Baum1   Baum2 
-     *         / \                      |        / \ 
-     *        0   Baum2                 |       0   Baum2 
-     */ 
-    if (plus)
-      root->symb = symbol[xxxminus].name;
-    else
-      root->symb = symbol[xxxplus].name;
-    free(root->right->left);/* Speicher f."0"-Blatt wieder frei */ 
-    temp        = root->right; 
-    root->right = root->right->right; 
-    free(temp);         /* Speicher fuer "-"-Knoten wieder frei */ 
-    goto cr_lbl; 
-  }
-
-  if ( plus && l_minus && strcmp(root->left->left->symb,"0") == 0 ) { 
-    /* ---   -Baum1+Baum2 => Baum2-Baum1: ---
-     * 
-     *      +                  -
-     *     / \                / \ 
-     *    -   Baum2  =>  Baum2   Baum1 
-     *   / \ 
-     *  0   Baum1 
-     */ 
-    root->symb = symbol[xxxminus].name;
-    free(root->left->left);/* Speicher f."0"-Blatt  wieder frei */ 
-    temp        = root->left->right; 
-    free(root->left); /* Speicher fuer f."-"-Knoten wieder frei */ 
-    root->left  = root->right; 
-    root->right = temp; 
-    goto cr_lbl; 
-  } 
-  
-  if ( minus && (r_minus || r_plus) ) { 
-    /*  B1-(B2-B3) => B1-B2+B3  |  B1-(B2+B3) => B1-B2-B3 
-     *                          | 
-     *     -              +     |     -               -
-     *    / \            / \    |    / \             / \ 
-     *  B1   -     =>   -   B3  |  B1   +     =>    -   B3 
-     *      / \        / \      |      / \         / \ 
-     *    B2   B3    B1   B2    |    B2   B3     B1   B2 
-     */ 
-    if (r_minus)
-      root->symb = symbol[xxxplus].name;
-    else {
-      root->right->symb = symbol[xxxminus].name;
-      root->right->token    = xxxminus;
-      root->right->symbkind = symbol[root->right->token].type;
-    } 
-    temp = root->right->right;              /* temp  = Baum3 */ 
-    root->right->right = root->right->left; /* Baum3 = Baum2 */ 
-    root->right->left  = root->left;        /* Baum2 = Baum1 */ 
-    root->left         = root->right;       /* Baum1 = mBaum */ 
-    root->right        = temp;              /* mBaum = Baum3 */ 
-    goto cr_lbl; 
-  } 
-  
-  if ( (mul || div) && r_minus ) { 
-    /*  B1*(-B2) => -B1*B2       |       B1/(-B2) => -B1/B2 
-     * 
-     *     *             -
-     *    / \           / \ 
-     *  B1   -     =>  0   * 
-     *      / \           / \ 
-     *     0   B2       B1   B2 
-     */ 
-    int index = (mul) ? xxxmul : xxxdiv;   /* `*' or `/' */
-    root->right->symb = symbol[index].name;
-    root->right->token    = index;
-    root->right->symbkind = symbol[root->right->token].type;
-    root->symb = symbol[xxxminus].name;
-    temp = root->left;                      /* temp  = Baum1 */ 
-    root->left        = root->right->left;  /* Baum1 = 0     */ 
-    root->right->left = temp;               /*     0 = Baum1 */ 
-    goto cr_lbl; 
-  }
-
- cr_lbl: 
-  root->token    = find_index(root->symb,aos,moe,'0'); 
-  root->symbkind = symbol[root->token].type;
-  return; 
-} 
 
 /************************************************************************/ 
 
@@ -2089,11 +1988,4 @@ _unur_prepare_string( const char *str )
 /*****************************************************************************/
 /**  End                                                                    **/
 /*****************************************************************************/
-
-
-
-
-
-
-
 

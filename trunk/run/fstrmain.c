@@ -28,9 +28,10 @@ do {
     
 
       if  (errcode>0)  {  
-              printf("Fehler\n");
-              break;
+              printf("Fehler: %d\n",errcode);
+/*                break; */
            };
+
   /*-----------------------------------------------------------------*/
   /* Funktionsauswertung */
 
@@ -67,7 +68,7 @@ printf("\n Wert: %f \n", _unur_fstr_eval_tree(parsetree,atof(input_string)));
 #endif
    
    _unur_fstr_debug_tree(parsetree);
-   show_symb_tab();
+/*     show_symb_tab(); */
 
 
    

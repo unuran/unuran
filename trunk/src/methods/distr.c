@@ -61,39 +61,6 @@ inline struct unur_distr *_unur_distr_cemp_new( void );  /* emp. univ. cont. */
 
 /*---------------------------------------------------------------------------*/
 
-struct unur_distr *
-unur_distr_new( unsigned int type )
-     /*----------------------------------------------------------------------*/
-     /* create a new (empty) distribution object                             */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   type ... type of distribution                                      */
-     /*                                                                      */
-     /* return:                                                              */
-     /*   pointer to distribution object                                     */
-     /*                                                                      */
-     /* error:                                                               */
-     /*   return NULL                                                        */
-     /*----------------------------------------------------------------------*/
-{
-  switch (type) {
-  case UNUR_DISTR_CONT:
-    return unur_distr_cont_new();
-  case UNUR_DISTR_DISCR:
-    return unur_distr_discr_new();
-  case UNUR_DISTR_DEMP:
-    return unur_distr_demp_new();
-  case UNUR_DISTR_CEMP:
-    return unur_distr_cemp_new();
-  default:
-    _unur_error(NULL,UNUR_ERR_DISTR_UNKNOWN,"");
-    return NULL;
-  }
-
-} /* end of unur_distr_new() */
-
-/*---------------------------------------------------------------------------*/
-
 void
 unur_distr_free( struct unur_distr *distr )
      /*----------------------------------------------------------------------*/

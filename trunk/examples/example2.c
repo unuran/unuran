@@ -25,7 +25,7 @@ int main()
   UNUR_GEN   *gen;    /* generator    */
 
   /* make distribution object and assign desired cdf (trig defined above) */
-  distr = unur_distr_new(UNUR_DISTR_CONT);
+  distr = unur_distr_cont_new();
   unur_distr_cont_set_cdf(distr, mycdf);
 
   /* choose method and set parameters (Numerical INVersion) */

@@ -15,6 +15,10 @@ my $anuran_log_file = "$log_dir/anuran.log";
 # Automatic code generator
 my $ACG = './acg';
 
+# Frogs
+my $frog_dir = "http://statistik.wu-wien.ac.at/anuran/frogs";
+my $n_frogs = 12;
+
 # ----------------------------------------------------------------
 
 require "read_PDF.pl";
@@ -149,6 +153,20 @@ Delete('step');
 \$n_tot = \$data_distr{\$distr}{'=N_TOT'};
 
 # ----------------------------------------------------------------
+# We need a frog
+
+if (param('frog')) {
+    \$frog = param('frog');
+}
+else {
+    \$frog = sprintf("%02d",int(rand $n_frogs) + 1);
+}
+
+\$img_frog = "<img SRC=\\"$frog_dir/frog\$frog.jpg\\"".
+    "ALT=\\"[Miran: 'A Frog']\\"".
+    "ALIGN = top>";
+
+# ----------------------------------------------------------------
 
 anuran_start();
 anuran_select_distribution();
@@ -240,9 +258,11 @@ sub anuran_select_distribution
 				   -labels=>\\\%labels_menue_distributions),
 			'&nbsp;&nbsp;&nbsp;',
 			hidden('step','2'),
+			hidden('frog',\$frog),
 			submit('Continue'),
+			\$img_frog,
 			endform() ),
-	    
+
 	    # ruler
 	    p().hr().p();
     }
@@ -506,8 +526,11 @@ sub anuran_params_distribution
 	print
 	    p(),
 	    hidden('step','3'),"\\n",
+	    hidden('frog'),
 	    hidden('distribution'),
-	    submit('Continue'),"\\n";
+	    submit('Continue'),
+	    \$img_frog,"\\n";
+
 
 	# end of form
 	print 
@@ -634,6 +657,7 @@ sub anuran_domain_distribution
 		      -maxlength=>10),
 	    p(),
 	    hidden('step','5'),"\\n",
+	    hidden('frog'),
 	    hidden('distribution'),
 	    hidden('truncated'),
 	    hidden('Stdform');
@@ -650,7 +674,8 @@ sub anuran_domain_distribution
 	}
 	
 	print
-	    submit('Continue'),"\\n",
+	    submit('Continue'),
+	    \$img_frog,"\\n",
 	    end_form(),
 	    end_blockquote();
     }
@@ -769,6 +794,7 @@ sub anuran_language
 	    popup_menu(-name=>'language',
 		       -values=>['C','FORTRAN','JAVA']),
 	    hidden('step','6'),"\\n",
+	    hidden('frog'),
 	    hidden('distribution'),
 	    hidden('left'),
 	    hidden('right'),
@@ -786,7 +812,10 @@ sub anuran_language
 	    }
 	}
 	
-	print submit('Continue'),br(),"\\n";
+	print 
+	    submit('Continue'),
+	    \$img_frog,
+	    br(),"\\n";
 
 	print start_blockquote();
 	print radio_group(-name => 'codetype',
@@ -843,7 +872,7 @@ sub anuran_code
 	b('Generator for '.\$data_distr{\$distr}{'=NAME'});
 
     print '(Complete demo version)' if param('codetype') eq 'demo';
-    print br();
+    print \$img_frog,br(),"\\n";
 
 # ................................................................
 # 

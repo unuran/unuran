@@ -1178,13 +1178,13 @@ _unur_utdr_sample_check( struct unur_gen *gen )
     pdfx=PDF(x);
     
     /* verify hat function */
-    if(_FP_less(linx,pdfx))
+    if(_unur_FP_less(linx,pdfx))
       { _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"pdf(x) > hat(x)");
       _unur_stream_printf(gen->genid,__FILE__,__LINE__,"x %e PDF(x) %e hat(x) %e squeeze(x) %e", \
                           x,pdfx,linx,squeezex ); 
       }
     /* verify squeeze function */
-    if(_FP_less(pdfx,squeezex))
+    if(_unur_FP_less(pdfx,squeezex))
       { _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"pdf(x) < squeeze(x)");
       _unur_stream_printf(gen->genid,__FILE__,__LINE__,"x %e PDF(x) %e hat(x) %e squeeze(x) %e", \
                           x,pdfx,linx,squeezex ); 

@@ -705,15 +705,15 @@ _unur_tdr_ps_sample_check( struct unur_gen *gen )
     sqx = iv->sq*hx;
 
     /* check result */
-    if (_FP_less(X, DISTR.BD_LEFT) || _FP_greater(X, DISTR.BD_RIGHT) ) {
+    if (_unur_FP_less(X, DISTR.BD_LEFT) || _unur_FP_greater(X, DISTR.BD_RIGHT) ) {
       _unur_warning(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"generated point out of domain");
       error = 1;
     }
-    if (_FP_greater(fx, hx)) {
+    if (_unur_FP_greater(fx, hx)) {
       _unur_warning(gen->genid,UNUR_ERR_GEN_CONDITION,"pdf > hat. Not T-concave!");
       error = 1;
     }
-    if (_FP_less(fx, sqx)) {
+    if (_unur_FP_less(fx, sqx)) {
       _unur_warning(gen->genid,UNUR_ERR_GEN_CONDITION,"pdf < squeeze. Not T-concave!");
       error = 1;
     }
@@ -1059,15 +1059,15 @@ _unur_tdr_ia_sample_check( struct unur_gen *gen )
     sqx = iv->sq*hx;
 
     /* check result */
-    if (_FP_less(X, DISTR.BD_LEFT) || _FP_greater(X, DISTR.BD_RIGHT) ) {
+    if (_unur_FP_less(X, DISTR.BD_LEFT) || _unur_FP_greater(X, DISTR.BD_RIGHT) ) {
       _unur_warning(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"generated point out of domain");
       error = 1;
     }
-    if (_FP_greater(fx, hx)) {
+    if (_unur_FP_greater(fx, hx)) {
       _unur_warning(gen->genid,UNUR_ERR_GEN_CONDITION,"pdf > hat. Not T-concave!");
       error = 1;
     }
-    if (_FP_less(fx, sqx)) {
+    if (_unur_FP_less(fx, sqx)) {
       _unur_warning(gen->genid,UNUR_ERR_GEN_CONDITION,"pdf < squeeze. Not T-concave!");
       error = 1;
     }

@@ -1569,8 +1569,8 @@ _unur_arou_segment_parameter( struct unur_gen *gen, struct unur_arou_segment *se
          (*) intersection point right of left construction point
          (*) intersection point left of right construction point */
     if ( seg->Aout > 0. &&
-	 ! _FP_less( seg->mid[0] * seg->ltp[1], seg->ltp[0] * seg->mid[1] ) &&
-	 ! _FP_greater( seg->mid[0] * seg->rtp[1], seg->rtp[0] * seg->mid[1] ) ) {
+	 ! _unur_FP_less( seg->mid[0] * seg->ltp[1], seg->ltp[0] * seg->mid[1] ) &&
+	 ! _unur_FP_greater( seg->mid[0] * seg->rtp[1], seg->rtp[0] * seg->mid[1] ) ) {
       /* everything o.k. */
       return 1;
     }

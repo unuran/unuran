@@ -563,7 +563,7 @@ unur_ninv_chg_start( struct unur_gen *gen, double s1, double s2 )
   }
 
  if ( !GEN.table_on ) {
-   if ( _FP_same(GEN.s[0], GEN.s[1]) ){
+   if ( _unur_FP_same(GEN.s[0], GEN.s[1]) ){
       switch (gen->variant) {
 
       case NINV_VARFLAG_REGULA:
@@ -815,7 +815,7 @@ _unur_ninv_init( struct unur_par *par )
 
   case NINV_VARFLAG_REGULA:
 
-    if ( _FP_same(GEN.s[0], GEN.s[1]) && !GEN.table_on) {
+    if ( _unur_FP_same(GEN.s[0], GEN.s[1]) && !GEN.table_on) {
       /* length of interval == 0 -> choose bounderies with                   */
       /*  INTERVAL_COVERS *100 % chance for sign change in interval          */
       GEN.s[0] = -10.;      /* arbitrary starting value                      */
@@ -831,7 +831,7 @@ _unur_ninv_init( struct unur_par *par )
 
   case NINV_VARFLAG_NEWTON:
 
-    if (_FP_same(GEN.s[0], GEN.s[1]) && !GEN.table_on) {
+    if (_unur_FP_same(GEN.s[0], GEN.s[1]) && !GEN.table_on) {
     /* s0 == s1  -> starting value set to value                              */
     /* such that CDF(value) = .5                                             */
       GEN.s[0] = -9.987655;                /* arbitrary starting values      */
@@ -1046,7 +1046,7 @@ _unur_ninv_regula( struct unur_gen *gen, double u )
   /* check arguments */
   CHECK_NULL(gen,0.);  COOKIE_CHECK(gen,CK_NINV_GEN,0.);
   
-  if ( _FP_same( GEN.Umin, GEN.Umax) ){
+  if ( _unur_FP_same( GEN.Umin, GEN.Umax) ){
     _unur_warning(gen->genid,UNUR_ERR_GEN_CONDITION,"CDF constant");
     return INFINITY;   
   }
@@ -1063,7 +1063,7 @@ _unur_ninv_regula( struct unur_gen *gen, double u )
     i = (i<0) ? 0 : i;
     i = (i > GEN.table_size-1) ? GEN.table_size-1 : i;
 
-    if ( ! _FP_is_minus_infinity(GEN.table[i]) ){
+    if ( ! _unur_FP_is_minus_infinity(GEN.table[i]) ){
       x1 = GEN.table[i];
       f1 = GEN.CDFmin + i*((GEN.CDFmax-GEN.CDFmin)/(GEN.table_size-1.0));
     }
@@ -1071,7 +1071,7 @@ _unur_ninv_regula( struct unur_gen *gen, double u )
       x1 = 2. * GEN.table[i+1] - GEN.table[i+2];
       f1 = CDF(x1);
     }
-    if( ! _FP_is_infinity(GEN.table[i+1]) ){
+    if( ! _unur_FP_is_infinity(GEN.table[i+1]) ){
       x2 = GEN.table[i+1];
       f2 = GEN.CDFmin + (i+1)*((GEN.CDFmax-GEN.CDFmin)/(GEN.table_size-1.0));
     }
@@ -1141,7 +1141,7 @@ _unur_ninv_regula( struct unur_gen *gen, double u )
     x2abs = fabs(x2);   /* absolute value of x2 */
 
     /* exact hit   || flat region  */    
-    if ( f2 == 0. || _FP_same(f1, f2) )
+    if ( f2 == 0. || _unur_FP_same(f1, f2) )
       break; /* -> finished */
 
     if ( f1*f2 <= 0) {  /* sign change found             */
@@ -1243,7 +1243,7 @@ _unur_ninv_newton( struct unur_gen *gen, double U )
   /* check arguments */
   CHECK_NULL(gen,0.);  COOKIE_CHECK(gen,CK_NINV_GEN,0.);
 
-  if ( _FP_same( GEN.Umin, GEN.Umax) ){
+  if ( _unur_FP_same( GEN.Umin, GEN.Umax) ){
     _unur_warning(gen->genid, UNUR_ERR_GEN_CONDITION,"CDF constant");
     return INFINITY;   
   }

@@ -46,27 +46,27 @@
 /* Comparisons                                                               */
 
 /* a == b (except precision bit) */
-#define _FP_same(a,b) \
+#define _unur_FP_same(a,b) \
  ((a)==(b) || \
  fabs((a)-(b)) <= ((fabs(a)<fabs(b))?fabs(a):fabs(b)) * DBL_EPSILON)
 
 /* a == b */
-#define _FP_equal(a,b) \
+#define _unur_FP_equal(a,b) \
  ((a)==(b) || \
  fabs((a)-(b)) <= ((fabs(a)<fabs(b))?fabs(a):fabs(b)) * UNUR_EPSILON)
 
 /* a is approximately equal to b */
-#define _FP_approx(a,b) \
+#define _unur_FP_approx(a,b) \
  ((a)==(b) || \
  fabs((a)-(b)) <= ((fabs(a)<fabs(b))?fabs(a):fabs(b)) * FLT_EPSILON)
 
 /* a < b */
-#define _FP_less(a,b) \
- (!_FP_equal((a),(b)) && ((a) < (b)))
+#define _unur_FP_less(a,b) \
+ (!_unur_FP_equal((a),(b)) && ((a) < (b)))
 
 /* a > b */
-#define _FP_greater(a,b) \
- (!_FP_equal((a),(b)) && ((a) > (b)))
+#define _unur_FP_greater(a,b) \
+ (!_unur_FP_equal((a),(b)) && ((a) > (b)))
 
 /*---------------------------------------------------------------------------*/
 /* Infinity                                                                  */
@@ -78,10 +78,10 @@
 /* check for infinity */
 
 /* +oo */
-#define _FP_is_infinity(a)  ((a) >= INFINITY)
+#define _unur_FP_is_infinity(a)  ((a) >= INFINITY)
 
 /* -oo */
-#define _FP_is_minus_infinity(a)  ((a) <= -INFINITY)
+#define _unur_FP_is_minus_infinity(a)  ((a) <= -INFINITY)
 
 
 /*---------------------------------------------------------------------------*/

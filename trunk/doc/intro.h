@@ -221,7 +221,7 @@
    Distribution objects can be
    created from scratch by the following call
    @example
-      distr = unur_sample_<type>_new();
+      distr = unur_distr_<type>_new();
    @end example
    @noindent
    where @code{<type>} is one of the five possible types from the

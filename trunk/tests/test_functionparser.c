@@ -37,6 +37,13 @@ FILE *TESTLOG;         /* test log file     */
 static int _unur_test_function (void);
 
 /*---------------------------------------------------------------------------*/
+
+/* a is approximately equal to b */
+#define _unur_FP_approx(a,b) \
+ ((a)==(b) || \
+ fabs((a)-(b)) <= ((fabs(a)<fabs(b))?fabs(a):fabs(b)) * 1.e-8)
+
+/*---------------------------------------------------------------------------*/
                                                                                
 int main()                                                                     
 {                                                                              
@@ -63,7 +70,7 @@ int main()
   if ( (DATA = fopen( datafile,"r" )) == NULL ) {
     printf("ERROR: could not open file %s \n", datafile);
     fprintf(TESTLOG,"ERROR: could not open file %s \n", datafile);
-    exit (-1);                                             
+    exit (77);  /* ignore this error */                                             
   }
 
   while (_unur_test_function());
@@ -86,15 +93,20 @@ _unur_test_function (void)
 
   char buffer[BUFSIZE];         /* buffer for reading line */
   char *ptr_buffer;             /* pointer into buffer */
-
+  
   char fstr[BUFSIZE];           /* function string */
-
+  
   double x;                     /* argument x */
   double fx_exp, dfx_exp;       /* expected values for f(x) and f'(x) */
   double fx_obs, dfx_obs;       /* observed values for f(x) and f'(x) */
-
-  UNUR_DISTR *distr;
-
+  double fx_rep, dfx_rep;       /* observed values for f(x) and f'(x) 
+				   for reparsed string                */
+  char *repstr = NULL;          /* string generated from parsed tree  */
+  
+  UNUR_DISTR *distr, *rep;
+  
+  int failed = 0;
+  
   /* find next function string */
   while (1) {
     /* read next line */
@@ -102,15 +114,15 @@ _unur_test_function (void)
     if (feof(DATA)) return 0;
     if (strncmp(buffer,"function=",8)==0) break;
   }
-
+  
   /* get function string */
   strcpy( fstr, buffer+9 );
   /* remove newline character */
   fstr[strlen(fstr)-1] = '\0';
-
+  
   /* print info into log file */
-  fprintf(TESTLOG,"\"%s\" ...\n", fstr);
-
+  fprintf(TESTLOG,"function = \"%s\"\n", fstr);
+  
   /* make distribution object with given function as PDF */
   distr = unur_distr_cont_new();
   if (unur_distr_cont_set_pdfstr(distr,fstr) == 0) {
@@ -118,7 +130,17 @@ _unur_test_function (void)
     fprintf(TESTLOG,"ERROR: syntax error in \"%s\"\n", fstr);
     exit (-1);                                             
   }
-
+  
+  /* reparse function string */
+  repstr = unur_distr_cont_get_pdfstr(distr);
+  fprintf(TESTLOG,"parsed   = \"%s\"\n", repstr);
+  rep = unur_distr_cont_new();
+  if (unur_distr_cont_set_pdfstr(rep,repstr) == 0) {
+    printf("ERROR: syntax error in \"%s\"\n", repstr);
+    fprintf(TESTLOG,"ERROR: syntax error in reparsed string \"%s\"\n", repstr);
+    exit (-1);                                             
+  }
+  
   /* read all the data */
   while (1) {
     /* read next line */
@@ -128,28 +150,56 @@ _unur_test_function (void)
     /* stop if blank line */
     if (isspace(buffer[0]))
       break;
-
+    
     /* read x and expected values for f(x) and f'(x) */
     ptr_buffer = buffer;
     x = strtod( ptr_buffer, &ptr_buffer );
     fx_exp = strtod( ptr_buffer, &ptr_buffer );
     dfx_exp = strtod( ptr_buffer, &ptr_buffer );
-
+    
     /* compute function values for function tree */
     fx_obs = unur_distr_cont_eval_pdf(x,distr);
     dfx_obs = unur_distr_cont_eval_dpdf(x,distr);
 
+    /* compute function values for reparsed function tree */
+    fx_rep = unur_distr_cont_eval_pdf(x,rep);
+    dfx_rep = unur_distr_cont_eval_dpdf(x,rep);
+
     /* compare */
-
-
-
-
-    fprintf(TESTLOG,"%g %g %g\n", x,fx_obs,dfx_obs);
-
+    if (!(_unur_FP_approx(fx_exp,fx_obs))) {
+      ++failed;
+      fprintf(TESTLOG,"[fx]\tx = %g:\t(exp) = %g\t(obs) = %g  --> error\n",
+	      x,fx_exp,fx_obs);
+    }
+    if (!(_unur_FP_approx(fx_obs,fx_rep))) {
+      ++failed;
+      fprintf(TESTLOG,"[fx]\tx = %g:\t(obs) = %g\t(rep) = %g  --> error\n",
+	      x,fx_obs,fx_rep);
+    }
+    if (!(_unur_FP_approx(dfx_exp,dfx_obs))) {
+      ++failed;
+      fprintf(TESTLOG,"[dfx]\tx = %g:\t(exp) = %g\t(obs) = %g  --> error\n",
+	      x,dfx_exp,dfx_obs);
+    }
+    if (!(_unur_FP_approx(dfx_obs,dfx_rep))) {
+      ++failed;
+      fprintf(TESTLOG,"[dfx]\tx = %g:\t(obs) = %g\t(rep) = %g  --> error\n",
+	      x,dfx_obs,dfx_rep);
+    }
   }
 
   /* free memory */
   unur_distr_free(distr);
+  if (repstr) free(repstr);
+
+  /* write result */
+  if (failed) {
+    fprintf(TESTLOG,"\t--> FAILED\n\n");
+    ++n_failed;
+  }
+  else {
+    fprintf(TESTLOG,"\t--> OK\n\n");
+  }
 
   return 1;
 #undef BUFSIZE

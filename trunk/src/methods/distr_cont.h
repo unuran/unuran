@@ -170,6 +170,17 @@ double unur_distr_cont_eval_cdf( double x, UNUR_DISTR *distribution );
    @code{UNUR_ERR_DISTR_DATA}.
 */
 
+char *unur_distr_cont_get_pdfstr( struct unur_distr *distribution );
+/* */
+
+char *unur_distr_cont_get_dpdfstr( struct unur_distr *distribution );
+/* */
+
+char *unur_distr_cont_get_cdfstr( struct unur_distr *distribution );
+/* 
+   Get respective string for PDF, derivate of PDF, and CDF of 
+   @var{distribution} that is given via the string interface.
+*/
 
 int unur_distr_cont_set_pdfparams(UNUR_DISTR *distribution, double *params, int n_params);
 /* 

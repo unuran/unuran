@@ -53,9 +53,9 @@ static const char unknown_distr_name[] = "unknown";
 
 #define DISTR distr->data.cvec
 
-/* inverse of covariance matrix could be wrong if determinant is smaller.    */
-/* in some cases however we compute the inverse for some ill-conditioned     */
-/* covariance matrices ignoring the absolute value of COVARIANCE_DETMIN.     */
+/* Inverse of covariance matrix cannot be computed it is ill-conditioned.    */
+/* We use the threshold |det(A)| / (dim * ||A||) < COVARIANCE_DETMIN.        */
+/* (see _unur_matrix_invert() in ./src/utils/matrix.c)                       */
 #define COVARIANCE_DETMIN  (1.e-10) 
 
 /*---------------------------------------------------------------------------*/

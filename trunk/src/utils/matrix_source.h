@@ -45,7 +45,11 @@ int _unur_matrix_cholesky_decomposition (int dim, const double *S, double *L );
 
 int _unur_matrix_invert_matrix (int dim, double *A, double detmin, double *Ainv, double *det);
 /* Calculates the inverse matrix (by means of LU decomposition).             */
-/* Calculates the inverse matrix when |det(A)| > detmin */
+/* If |det(A)| <= detmin a message is printed. 				     */
+/* The matrix is not inverted if it is ill-conditioned. We use the           */
+/*    |det(A)| / (dim * ||A||) < detmin                                      */
+/* where ||A|| denotes the L_1 norm of A.                                    */
+/* As a side effect det(A) is comuted.                                       */
 
 double _unur_matrix_qf(int dim, double *x, double *A);
 /* Compute quadratic form x'Ax.                                              */

@@ -328,6 +328,8 @@ int unur_distr_cont_set_pdfparams_vec( UNUR_DISTR *distribution, int par, const 
    The entries of a this parameter are given by the array @var{param_vec}
    of size @var{n_param_vec}. 
 
+   If @var{param_vec} is NULL then the corresponding entry is cleared.
+
    If an error occurs no parameters are copied into the parameter
    object @code{unur_errno} is set to @code{UNUR_ERR_DISTR_DATA}.
 */

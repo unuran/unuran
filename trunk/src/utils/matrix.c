@@ -637,7 +637,6 @@ _unur_matrix_cholesky_decomposition (int dim, const double *S, double *L )
 
 
 /*--------------------------------------------------------------------------*/
-
 int 
 _unur_matrix_debug ( int dim, const double *M, const char *info, const char *genid )
      /*----------------------------------------------------------------------*/
@@ -679,4 +678,5 @@ _unur_matrix_debug ( int dim, const double *M, const char *info, const char *gen
 } /* end of _unur_matrix_debug() */  
 
 /*---------------------------------------------------------------------------*/
+
 

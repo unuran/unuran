@@ -1,12 +1,18 @@
 #!/usr/bin/perl
 ############################################################
+# $Id$
+############################################################
 
 use strict;
 
 my $DEBUG = 0;
 
 ############################################################
-# $Id$
+# constants
+
+my $DEP_file = ".dep-unuran_h";
+
+############################################################
 
 sub usage {
     my $progname = $0;
@@ -24,8 +30,13 @@ The output is written on stdout.
 
 EOM
 
-    exit;
+    exit -1;
 }
+
+############################################################
+
+# dependencies
+my $DEP = "unuran.h: ";
 
 ############################################################
 
@@ -121,6 +132,11 @@ scan_file ($master_file,0);
 # insert bottom of file
 h_file_bottom;
 
+# write dependencies
+open DEP, ">$DEP_file" or die "Cannot open file for writing: $DEP_file";
+print DEP "$DEP\n";
+close DEP;
+
 exit 0;
 
 ############################################################
@@ -180,6 +196,9 @@ sub scan_file {
 	print STDERR "to be inserted\n" if $DEBUG;
 	print "/*-----*/\n";
 	print "/* <$level> `$include_file' */";
+
+	# add dependency
+        $DEP .= "$header_files{$include_file} ";
 
 	# scan header file ...
 	scan_file ($header_files{$include_file},$level);

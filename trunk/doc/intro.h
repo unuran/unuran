@@ -74,14 +74,10 @@
 	 @code{#define UNUR_URNG_TYPE}
 	 (@pxref{URNG} for details).
 
-	 @emph{Important:} If the prng library is not installed you
-	 must not use @code{UNUR_URNG_PRNG}.
+	 @emph{Important:} If neither @code{UNUR_URNG_FVOID} nor
+         @code{UNUR_URNG_GENERIC} is used, check if the corresponding
+         library is installed.
 
-	 @emph{Warning:} If @code{UNUR_URNG_SIMPLE} is used then the
-	 build-in default uniform random number generators should be
-	 used only for small sample sizes or for demonstration. They
-	 are not state of the art any more.
-	 
    @item Run a configuration script:
 	 @smallexample
 	    sh ./configure --prefix=<prefix>
@@ -112,8 +108,8 @@
 	 variables to add these directories to the search path. If you
 	 are using the bash type (or add to your profile):
 	 @smallexample
-	    export LIBRARY_PATH="HOMEDIRECTORY/lib"
-	    export C_INCLURE_PATH="HOMEDIRECTORY/include"
+	    export LIBRARY_PATH="<prefix>/lib"
+	    export C_INCLURE_PATH="<prefix>/include"
 	@end smallexample
 
    @item Documentation in various formats (PS, PDF, info, dvi, HTML,

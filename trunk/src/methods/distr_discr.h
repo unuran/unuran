@@ -134,8 +134,8 @@ int unur_distr_discr_set_pmf( UNUR_DISTR *distribution, UNUR_FUNCT_DISCR *pmf );
 int unur_distr_discr_set_cdf( UNUR_DISTR *distribution, UNUR_FUNCT_DISCR *cdf );
 /* 
    Set respective pointer to the PMF and the CDF of the @var{distribution}.
-   The type of each of these functions must be of type
-   @code{double funct(int k, UNUR_DISTR *distr)}.
+   These functions must be of type
+   @code{double funct(int k, const UNUR_DISTR *distr)}.
 
    It is important to note that all these functions must return a
    result for all integers @var{k}. Eg., if the domain of a given
@@ -158,7 +158,7 @@ UNUR_FUNCT_DISCR *unur_distr_discr_get_cdf( const UNUR_DISTR *distribution );
 /* 
    Get the respective pointer to the PMF and the CDF of the 
    @var{distribution}. The pointer is of type
-   @code{double funct(int k, UNUR_DISTR *distr)}.
+   @code{double funct(int k, const UNUR_DISTR *distr)}.
    If the corresponding function is not available for the @var{distribution},
    the NULL pointer is returned.
 */

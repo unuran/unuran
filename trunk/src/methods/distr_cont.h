@@ -75,7 +75,7 @@ int unur_distr_cont_set_cdf( UNUR_DISTR *distribution, UNUR_FUNCT_CONT *cdf );
    the derivative of the probability density function (dPDF) and the
    cumulative distribution function (CDF) of the @var{distribution}.
    The type of each of these functions must be of type
-   @code{double funct(double x, UNUR_DISTR *distr)}.
+   @code{double funct(double x, const UNUR_DISTR *distr)}.
 
    Due to the fact that some of the methods do not require a
    normalized PDF the following is important:
@@ -130,7 +130,7 @@ UNUR_FUNCT_CONT *unur_distr_cont_get_cdf( const UNUR_DISTR *distribution );
 /* 
    Get the respective pointer to the PDF, the derivative of the 
    PDF and the CDF of the @var{distribution}. The pointer is of type
-   @code{double funct(double x, UNUR_DISTR *distr)}.
+   @code{double funct(double x, const UNUR_DISTR *distr)}.
    If the corresponding function is not available for the distribution,
    the NULL pointer is returned.
 */

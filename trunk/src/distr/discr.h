@@ -124,7 +124,7 @@ int unur_distr_discr_get_pv( const UNUR_DISTR *distribution, const double **pv )
 /* 
    Get length of PV of the @var{distribution} and set pointer
    @var{pv} to array of probabilities. If no PV is given,
-   @code{0} is returned and @var{pv} is set to NULL.@*
+   an error code is returned and @var{pv} is set to NULL.@*
    (It does not call unur_distr_discr_make_pv()!)
 */
 
@@ -243,7 +243,7 @@ int unur_distr_discr_get_pmfparams( const UNUR_DISTR *distribution, const double
 /* 
    Get number of parameters of the PMF and set pointer
    @var{params} to array of parameters. If no parameters are stored
-   in the object, @code{0} is returned and @code{params} is set to
+   in the object, an error code is returned and @code{params} is set to
    NULL.
 */
 

@@ -73,11 +73,13 @@
       you should check the return values of all routines.
       
       All @command{..._set_...}, and @command{..._chg_...} calls
-      return @code{0} if it was 
-      not possible to set or change the desired parameters, e.g. because
-      the given values are out of range, or simply because you have
-      changed the method but not the corresponding set call and thus an
-      invalid parameter or generator object is used.
+      return @code{UNUR_SUCCESS} if they could be executed
+      successfully. Otherwise some error codes are returned if it was
+      not possible to set or change the desired parameters,
+      e.g. because the given values are out of range, or simply
+      because you have changed the method but not the corresponding
+      set call and thus an invalid parameter or generator object is
+      used.
       
       All routines that return a pointer to the requested object will
       return a NULL pointer in case of error.

@@ -277,10 +277,9 @@ int unur_distr_cont_set_pdfparams( UNUR_DISTR *distribution, const double *param
 
 int unur_distr_cont_get_pdfparams( const UNUR_DISTR *distribution, const double **params );
 /* 
-   Get number of parameters of the PDF and set pointer
-   @var{params} to array of parameters. If no parameters are stored
-   in the object, @code{0} is returned and @code{params} is set to
-   NULL.
+   Get number of parameters of the PDF and set pointer @var{params} to
+   array of parameters. If no parameters are stored in the object, an
+   error code is returned and @code{params} is set to NULL.
    
    @emph{Important:} Do @strong{not} change the entries in @var{params}!
 */

@@ -224,7 +224,11 @@ int unur_distr_cont_set_domain( UNUR_DISTR *distribution, double left, double ri
    @code{+/- UNUR_INFINITY}.
    If @var{right} is not strictly greater than @var{left} no domain
    is set and @code{unur_errno} is set to @code{UNUR_ERR_DISTR_SET}.
-   It is allowed to use this call to increase the domain.
+
+   @emph{Important:} For some technical reasons it is assumed that the density 
+   is unimodal and thus monotone on either side of the mode! This is used in
+   the case when the given moden is outside of the original domain. Then the
+   mode is set to the corresponding boundary of the new domain.
 */
 
 int unur_distr_cont_get_domain( UNUR_DISTR *distribution, double *left, double *right );

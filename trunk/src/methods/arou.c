@@ -157,9 +157,31 @@
 
 /*---------------------------------------------------------------------------*/
 
+static struct unur_gen *_unur_arou_init( struct unur_par *par );
+/*---------------------------------------------------------------------------*/
+/* Initialize new generator.                                                 */
+/*---------------------------------------------------------------------------*/
+
 static struct unur_gen *_unur_arou_create( struct unur_par *par );
 /*---------------------------------------------------------------------------*/
 /* create new (almost empty) generator object.                               */
+/*---------------------------------------------------------------------------*/
+
+/* No reinit() cal                                                           */
+/*  static int _unur_arou_reinit( struct unur_gen *gen );                    */
+/*---------------------------------------------------------------------------*/
+/* Re-initialize (existing) generator.                                       */
+/*---------------------------------------------------------------------------*/
+
+double _unur_arou_sample( struct unur_gen *gen );
+double _unur_arou_sample_check( struct unur_gen *gen );
+/*---------------------------------------------------------------------------*/
+/* sample from generator                                                     */
+/*---------------------------------------------------------------------------*/
+
+static void _unur_arou_free( struct unur_gen *gen);
+/*---------------------------------------------------------------------------*/
+/* destroy generator object.                                                 */
 /*---------------------------------------------------------------------------*/
 
 static int _unur_arou_get_starting_cpoints( struct unur_par *par, struct unur_gen *gen );
@@ -682,6 +704,89 @@ _unur_arou_init( struct unur_par *par )
 
 } /* end of _unur_arou_init() */
 
+/*---------------------------------------------------------------------------*/
+
+static struct unur_gen *
+_unur_arou_create( struct unur_par *par )
+     /*----------------------------------------------------------------------*/
+     /* allocate memory for generator                                        */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par ... pointer to parameter for building generator object         */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to (empty) generator object with default settings          */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return NULL                                                        */
+     /*----------------------------------------------------------------------*/
+{
+  struct unur_gen *gen;
+
+  /* check arguments */
+  CHECK_NULL(par,NULL);  COOKIE_CHECK(par,CK_AROU_PAR,NULL);
+
+  /* allocate memory for generator object */
+  gen = _unur_malloc( sizeof(struct unur_gen) );
+
+  /* magic cookies */
+  COOKIE_SET(gen,CK_AROU_GEN);
+
+  /* set generator identifier */
+  gen->genid = _unur_set_genid(GENTYPE);
+
+  /* copy distribution object into generator object */
+  memcpy( &(gen->distr), par->distr, sizeof( struct unur_distr ) );
+
+  /* routines for sampling and destroying generator */
+  SAMPLE = (par->variant & AROU_VARFLAG_VERIFY) ? _unur_arou_sample_check : _unur_arou_sample;
+  gen->destroy = _unur_arou_free;
+  gen->reinit = _unur_reinit_error;
+
+  /* set all pointers to NULL */
+  GEN.seg         = NULL;
+  GEN.n_segs      = 0;
+  GEN.guide       = NULL;
+  GEN.guide_size  = 0;
+  GEN.seg_stack   = NULL;
+  GEN.seg_free    = 0;
+  GEN.mblocks     = NULL;
+  GEN.Atotal      = 0.;
+  GEN.Asqueeze    = 0.;
+
+  /* copy some parameters into generator object */
+  GEN.guide_factor = PAR.guide_factor; /* relative size of guide tables      */
+
+  /* bounds for adding construction points  */
+  GEN.max_segs = PAR.max_segs;      /* maximum number of segments            */
+  GEN.max_ratio = PAR.max_ratio;    
+  GEN.bound_for_adding = PAR.bound_for_adding;
+
+  gen->method = par->method;        /* indicates method and variant          */
+  gen->variant = par->variant;      /* indicates variant                     */
+  gen->set = par->set;              /* indicates parameter settings          */
+  gen->debug = par->debug;          /* debuging flags                        */
+  gen->urng = par->urng;            /* pointer to urng                       */
+
+  gen->urng_aux = NULL;             /* no auxilliary URNG required           */
+  gen->gen_aux = NULL;              /* no auxilliary generator objects       */
+  gen->gen_aux_2 = NULL;
+
+  /* center known ?? */
+  if (!(par->set & AROU_SET_CENTER))
+    /* we cannot use the center as construction point */
+    par->variant = par->variant & (~AROU_VARFLAG_USECENTER);
+  else {
+    /* center must be in domain */
+    PAR.center = max(PAR.center,DISTR.BD_LEFT);
+    PAR.center = min(PAR.center,DISTR.BD_RIGHT);
+  }
+
+  /* return pointer to (almost empty) generator object */
+  return(gen);
+
+} /* end of _unur_arou_create() */
+
 /*****************************************************************************/
 
 double
@@ -905,89 +1010,6 @@ _unur_arou_free( struct unur_gen *gen )
 
 /*****************************************************************************/
 /**  Auxilliary Routines                                                    **/
-/*****************************************************************************/
-
-static struct unur_gen *
-_unur_arou_create( struct unur_par *par )
-     /*----------------------------------------------------------------------*/
-     /* allocate memory for generator                                        */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   par ... pointer to parameter for building generator object         */
-     /*                                                                      */
-     /* return:                                                              */
-     /*   pointer to (empty) generator object with default settings          */
-     /*                                                                      */
-     /* error:                                                               */
-     /*   return NULL                                                        */
-     /*----------------------------------------------------------------------*/
-{
-  struct unur_gen *gen;
-
-  /* check arguments */
-  CHECK_NULL(par,NULL);  COOKIE_CHECK(par,CK_AROU_PAR,NULL);
-
-  /* allocate memory for generator object */
-  gen = _unur_malloc( sizeof(struct unur_gen) );
-
-  /* magic cookies */
-  COOKIE_SET(gen,CK_AROU_GEN);
-
-  /* set generator identifier */
-  gen->genid = _unur_set_genid(GENTYPE);
-
-  /* copy distribution object into generator object */
-  memcpy( &(gen->distr), par->distr, sizeof( struct unur_distr ) );
-
-  /* routines for sampling and destroying generator */
-  SAMPLE = (par->variant & AROU_VARFLAG_VERIFY) ? _unur_arou_sample_check : _unur_arou_sample;
-  gen->destroy = _unur_arou_free;
-  gen->reinit = _unur_reinit_error;
-
-  /* set all pointers to NULL */
-  GEN.seg         = NULL;
-  GEN.n_segs      = 0;
-  GEN.guide       = NULL;
-  GEN.guide_size  = 0;
-  GEN.seg_stack   = NULL;
-  GEN.seg_free    = 0;
-  GEN.mblocks     = NULL;
-  GEN.Atotal      = 0.;
-  GEN.Asqueeze    = 0.;
-
-  /* copy some parameters into generator object */
-  GEN.guide_factor = PAR.guide_factor; /* relative size of guide tables      */
-
-  /* bounds for adding construction points  */
-  GEN.max_segs = PAR.max_segs;      /* maximum number of segments            */
-  GEN.max_ratio = PAR.max_ratio;    
-  GEN.bound_for_adding = PAR.bound_for_adding;
-
-  gen->method = par->method;        /* indicates method and variant          */
-  gen->variant = par->variant;      /* indicates variant                     */
-  gen->set = par->set;              /* indicates parameter settings          */
-  gen->debug = par->debug;          /* debuging flags                        */
-  gen->urng = par->urng;            /* pointer to urng                       */
-
-  gen->urng_aux = NULL;             /* no auxilliary URNG required           */
-  gen->gen_aux = NULL;              /* no auxilliary generator objects       */
-  gen->gen_aux_2 = NULL;
-
-  /* center known ?? */
-  if (!(par->set & AROU_SET_CENTER))
-    /* we cannot use the center as construction point */
-    par->variant = par->variant & (~AROU_VARFLAG_USECENTER);
-  else {
-    /* center must be in domain */
-    PAR.center = max(PAR.center,DISTR.BD_LEFT);
-    PAR.center = min(PAR.center,DISTR.BD_RIGHT);
-  }
-
-  /* return pointer to (almost empty) generator object */
-  return(gen);
-
-} /* end of _unur_arou_create() */
-
 /*****************************************************************************/
 
 static int

@@ -188,6 +188,10 @@ int unur_distr_cvec_set_covar( UNUR_DISTR *distribution, const double *covar );
    A NULL pointer for @var{covar} is interpreted as the
    identity matrix.
 
+   @emph{Important:} This entry is abused in some methods which do not
+   require the covariance matrix. It is then used to perform some
+   transformation to obtain better performance.
+
    @emph{Important:} In case of an error (e.g. because @var{covar} is
    not a valid covariance matrix) an error code is returned.
    Moreover, the covariance matrix is not set and is marked as

@@ -168,8 +168,63 @@ int unur_tdr_set_variant_ps( UNUR_PAR *parameters );
 
 int unur_tdr_set_variant_ia( UNUR_PAR *parameters );
 /* 
-   Use squeezes proportional to the hat function together with a 
+   Use squeezes proportional to the hat function together with a
    composition method that required less uniform random numbers.
+*/
+
+int unur_tdr_set_usedars( UNUR_PAR *parameters, int usedars );
+/* 
+   If @var{usedars} is set to TRUE, ``derandomized adaptive rejection
+   sampling'' (DARS) is used in setup.
+   Intervals, where the area between hat and squeeze is too
+   large compared to the average area between hat and squeeze
+   over all intervals, are splitted.
+   This procedure is repeated until the ratio between squeeze and hat
+   exceeds the bound given by unur_tdr_set_max_sqhratio() call or the
+   maximum number of intervals is reached. Moreover it also aborts
+   when no more intervals can be found for splitting.
+
+   The default depends on the given construction points.
+   If the user has provided such points via a unur_tdr_set_cpoints()
+   call, then @var{usedars} is set to FALSE by default, i.e.,
+   there is no further splitting.
+   If the user has only given the number of construction points (or
+   only uses the default number), then @var{usedars} is set to TRUE.
+*/
+
+int unur_tdr_set_darsfactor( UNUR_PAR *parameters, double factor );
+/* 
+   Set factor for ``derandomized adaptive rejection sampling''.
+
+   After computing the starting intervals for the given construction
+   points we use ``derandomized adaptive rejection sampling'' in the
+   setup step to split these intervals further. There all intervals
+   where the area between squeeze and hat is larger than 
+   @var{factor} times the average area between squeeze and hat over
+   all intervals are splitted. This is done by the following rules (in
+   this order, that is if one rule cannot be applied, the next one is
+   used):
+   @enumerate
+   @item
+     Use the expected value of adaptive rejection sampling.
+   @item
+     Use the arc-mean rule (a mixture of arithmetic mean and harmonic
+     mean).
+   @item
+     Use the arithmetic mean of the interval boundaries.
+   @end enumerate
+
+   If this is done for the initial interval, this procedure is
+   repeated until the ratio between squeeze and hat exceeds the bound
+   given by unur_tdr_set_max_sqhratio() call or the maximum number of
+   intervals is reached. Moreover it also aborts when no more
+   intervals can be found for splitting.
+
+   Notice that all intervals are splitted when @var{factor} is set to
+   @code{0.}, and that there is no splitting at all when @var{factor}
+   is set to UNUR_INFINITY.
+
+   Default is @code{0.99}. 
 */
 
 int unur_tdr_chg_truncated(UNUR_GEN *gen, double left, double right);
@@ -230,7 +285,8 @@ int unur_tdr_set_max_intervals( UNUR_PAR *parameters, int max_ivs );
 /* 
    Set maximum number of intervals.
    No construction points are added after the setup when the number of
-   intervals suceeds @var{max_ivs}.
+   intervals suceeds @var{max_ivs}. This is a soft limit which can be
+   exceeded by a factor of 2 (at most). 
 
    Default is @code{100}.
 */

@@ -121,6 +121,18 @@ _unur_tdr_debug_init( struct unur_par *par, struct unur_gen *gen )
   _unur_print_if_default(par,TDR_SET_MAX_SQHRATIO);
   fprintf(log,"\n%s:\n",gen->genid);
 
+  if (par->variant & TDR_VARFLAG_USEDARS) {
+    fprintf(log,"%s: Derandomized ARS enabled ",gen->genid);
+    _unur_print_if_default(par,TDR_SET_USE_DARS);
+    fprintf(log,"\n%s:\tDARS factor = %g",gen->genid,PAR.darsfactor);
+    _unur_print_if_default(par,TDR_SET_DARS_FACTOR);
+  }
+  else {
+    fprintf(log,"%s: Derandomized ARS disabled ",gen->genid);
+    _unur_print_if_default(par,TDR_SET_USE_DARS);
+  }
+  fprintf(log,"\n%s:\n",gen->genid);
+
   fprintf(log,"%s: sampling from list of intervals: indexed search (guide table method)\n",gen->genid);
   fprintf(log,"%s:    relative guide table size = %g%%",gen->genid,100.*PAR.guide_factor);
   _unur_print_if_default(par,TDR_SET_GUIDEFACTOR);

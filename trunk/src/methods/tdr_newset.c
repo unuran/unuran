@@ -92,6 +92,7 @@ unur_tdr_new( struct unur_distr* distr )
   PAR.bound_for_adding    = 0.5;    /* do not add a new construction point in an interval,
 				       where ambigous region is too small, i.e. if 
 				       area / ((A_hat - A_squeeze)/number of segments) < bound_for_adding */
+  PAR.darsfactor          = 0.99;   /* factor for derandomized ARS           */ 
  
   par->method   = UNUR_METH_TDR;                 /* method                   */
   par->variant  = ( TDR_VARFLAG_USECENTER |      /* default variant          */
@@ -496,6 +497,81 @@ unur_tdr_set_variant_ia( struct unur_par *par )
   return 1;
 
 } /* end of unur_tdr_set_variant_ia() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+unur_tdr_set_usedars( struct unur_par *par, int usedars )
+     /*----------------------------------------------------------------------*/
+     /* set flag for using (exact) mode as construction point                */
+     /* (this overwrites "use_center"!)                                      */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par       ... pointer to parameter for building generator object   */
+     /*   usemode   ... 0 = do not use,  !0 = use                            */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... on success                                                   */
+     /*   0 ... on error                                                     */
+     /*                                                                      */
+     /* comment:                                                             */
+     /*   using mode as construction point is the default                    */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( GENTYPE,par,0 );
+
+  /* check input */
+  _unur_check_par_object( par,TDR );
+
+  /* we use a bit in variant */
+  par->variant = (usedars) ? (par->variant | TDR_VARFLAG_USEDARS) : (par->variant & (~TDR_VARFLAG_USEDARS));
+
+  /* changelog */
+  par->set |= TDR_SET_USE_DARS;
+
+  /* o.k. */
+  return 1;
+
+} /* end of unur_tdr_set_usedars() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+unur_tdr_set_darsfactor( struct unur_par *par, double factor )
+     /*----------------------------------------------------------------------*/
+     /* set factor for derandomized adaptive rejection sampling              */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par    ... pointer to parameter for building generator object      */
+     /*   factor ... parameter for DARS                                      */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... on success                                                   */
+     /*   0 ... on error                                                     */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( GENTYPE,par,0 );
+
+  /* check input */
+  _unur_check_par_object( par,TDR );
+
+  /* check new parameter for generator */
+  if (factor < 0.) {
+    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"DARS factor < 0");
+    return 0;
+  }
+    
+  /* store date */
+  PAR.darsfactor = factor;
+
+  /* changelog */
+  par->set |= TDR_SET_DARS_FACTOR;
+
+  return 1;
+
+} /* end of unur_tdr_set_darsfactor() */
 
 /*---------------------------------------------------------------------------*/
 

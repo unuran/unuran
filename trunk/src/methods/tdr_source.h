@@ -58,6 +58,7 @@
 #define TDR_VARFLAG_USECENTER  0x0200u   /* whether center is used as cpoint or not */
 #define TDR_VARFLAG_USEMODE    0x0400u   /* whether mode is used as cpoint or not */
 #define TDR_VARFLAG_PEDANTIC   0x0800u   /* whether pedantic checking is used */
+#define TDR_VARFLAG_USEDARS    0x1000u   /* whether DARS is used in setup or not */
 
 /*---------------------------------------------------------------------------*/
 /* Debugging flags                                                           */
@@ -80,6 +81,8 @@
 #define TDR_SET_C              0x020u
 #define TDR_SET_MAX_SQHRATIO   0x040u
 #define TDR_SET_MAX_IVS        0x080u
+#define TDR_SET_USE_DARS       0x100u
+#define TDR_SET_DARS_FACTOR    0x200u
 
 /*---------------------------------------------------------------------------*/
 

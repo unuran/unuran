@@ -28,21 +28,27 @@ int main()
   UNUR_PAR *par;
   UNUR_GEN *gen;
 
-  double fpm[] = { 0.5 };
+  double fpm[] = { 2., 3. };
 
   unur_set_default_debug(~0u);
   unur_set_stream(stdout);
 
-/*    distr = unur_distr_gamma(fpm,1); */
+/*    distr = unur_distr_normal(NULL,0); */
 /*    par = unur_tdr_new( distr ); */
+/*    unur_tdr_set_cpoints(par,10,NULL); */
+/*    //  unur_tdr_set_usedars(par,FALSE); */
+/*    unur_tdr_set_darsfactor(par,0.); */
+/*    unur_tdr_set_variant_gw(par); */
+/*    unur_tdr_set_c(par,0.); */
 /*    gen = unur_init(par); */
 /*    unur_distr_free(distr); */
 
-  distr = unur_distr_normal(NULL,0);
+  distr = unur_distr_beta(fpm,2);
   par = unur_tdr_new( distr );
-  unur_tdr_set_cpoints(par,50,NULL);
-  //  unur_tdr_set_max_intervals(par,1000);
+  unur_tdr_set_cpoints(par,10,NULL);
+  unur_tdr_set_darsfactor(par,1.);
   unur_tdr_set_variant_gw(par);
+  unur_tdr_set_c(par,0.);
   gen = unur_init(par);
   unur_distr_free(distr);
 

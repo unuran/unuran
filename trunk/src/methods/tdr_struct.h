@@ -53,6 +53,7 @@ struct unur_tdr_par {
   double  bound_for_adding;     /* lower bound for relative area             */
 
   double  c_T;                  /* parameter c for transformation T_c        */           
+  double  darsfactor;           /* factor for derandomized ARS               */
 };
 
 /*---------------------------------------------------------------------------*/

@@ -81,24 +81,32 @@ _unur_tdr_init( struct unur_par *par )
     return NULL;
   }
 
+  if (par->variant & TDR_VARFLAG_USEDARS) {
+    /* run derandomized adaptive rejection sampling */
+    if ( !_unur_tdr_run_dars(par,gen) ) {
+      free(par); _unur_tdr_free(gen);
+      return NULL;
+    }
+  }
+
   /* we have to update the maximal number of intervals,
      if the user wants more starting points. */
   if (GEN.n_ivs > GEN.max_ivs) {
-    _unur_warning(gen->genid,UNUR_ERR_GEN_DATA,"maximal number of intervals too small. increase.");
+    _unur_warning(gen->genid,UNUR_ERR_GEN_DATA,"maximal number of intervals too small. increased.");
     GEN.max_ivs = GEN.n_ivs;
   }
 
   /* make initial guide table */
   _unur_tdr_make_guide_table(gen);
 
-  /* set boundaries for U */
-  GEN.Umin = 0.;
-  GEN.Umax = 1.;
-
 #ifdef UNUR_ENABLE_LOGGING
   /* write info into log file */
   if (gen->debug) _unur_tdr_debug_init(par,gen);
 #endif
+
+  /* set boundaries for U */
+  GEN.Umin = 0.;
+  GEN.Umax = 1.;
 
   /* free parameters */
   free(par);
@@ -225,6 +233,22 @@ _unur_tdr_create( struct unur_par *par )
     PAR.center = max(PAR.center,DISTR.BD_LEFT);
     PAR.center = min(PAR.center,DISTR.BD_RIGHT);
   }
+
+  /* set default for DARS */
+  if (!(par->set & TDR_SET_USE_DARS) && !PAR.starting_cpoints)
+    /* no starting points given by user
+       --> enable derandomized ARS      */
+    par->variant |= TDR_VARFLAG_USEDARS;
+
+
+
+
+
+
+
+
+  par->variant &= ~TDR_VARFLAG_USEDARS;
+
 
   /* return pointer to (almost empty) generator object */
   return(gen);
@@ -859,6 +883,197 @@ _unur_tdr_ps_starting_intervals( struct unur_par *par, struct unur_gen *gen )
 
 /*****************************************************************************/
 
+static int
+_unur_tdr_run_dars( struct unur_par *par, struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* run derandomized adaptive rejection sampling.                         */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par          ... pointer to parameter list                         */
+     /*   gen          ... pointer to generator object                       */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... success                                                      */
+     /*   0 ... error                                                        */
+     /*----------------------------------------------------------------------*/
+{
+  struct unur_tdr_interval *iv, *iv_next;
+  double Atot, Asqueezetot;    /* total area below hat and squeeze, resp. */
+  double Alimit;               /* threshhold value for splitting interval */
+  double x0, x1;               /* boundary of interval */
+  double xsp, fxsp;            /* splitting point in interval */
+  double xAhatl, xAhatr, xAsqueeze;
+  int rule;                    /* id for splitting rule that has been applied */
+  int n_splitted;              /* count splitted intervals */
+
+  /* check arguments */
+  CHECK_NULL(par,0);     COOKIE_CHECK(par,CK_TDR_PAR,0);
+  CHECK_NULL(gen,0);     COOKIE_CHECK(gen,CK_TDR_GEN,0);
+  
+  /* there is no need to run DARS when the DARS factor is INFINITY */
+  if (_unur_FP_is_infinity(PAR.darsfactor))
+    return 1;
+
+  /* first we need the total areas below hat and squeeze */
+  Atot = 0.;            /* area below hat */
+  Asqueezetot = 0.;     /* area below squeeze */
+  for (iv = GEN.iv; iv != NULL; iv = iv->next ) {
+    COOKIE_CHECK(iv,CK_TDR_IV,0);
+    Atot += iv->Ahat;
+    Asqueezetot += iv->Asqueeze;
+  }
+
+  GEN.Atotal = Atot;
+  GEN.Asqueeze = Asqueezetot;
+
+  /* now split intervals */
+  while ( (GEN.max_ratio * GEN.Atotal > GEN.Asqueeze) &&
+	  (GEN.n_ivs < GEN.max_ivs) ) {
+
+    /* compute threshhold value. every interval with area between
+       hat and squeeze greater than this value will be splitted.  */
+    Alimit = PAR.darsfactor * ( (GEN.Atotal - GEN.Asqueeze) / GEN.n_ivs );
+
+    /* reset counter for splitted intervals */
+    n_splitted = 0;
+
+    /* for all intervals do ... */
+    for (iv = GEN.iv; iv->next != NULL; iv = iv->next ) {
+      COOKIE_CHECK(iv,CK_TDR_IV,0);
+
+      /* we skip over all intervals where the area between hat and
+	 squeeze does not exceed the threshhold value.             */
+      if ((iv->Ahat - iv->Asqueeze) <= Alimit) 
+	continue;
+
+      /* store pointer to next interval */
+      iv_next = iv->next;
+
+      /* boundary of interval */
+      x0 = iv->x;
+      x1 = iv->next->x;
+
+      switch (gen->variant & TDR_VARMASK_VARIANT) {
+
+      case TDR_VARIANT_GW:    /* original variant (Gilks&Wild) */
+
+	/* get splitting point */
+	for (rule = 1; rule <= 3; rule++) {
+	  switch (rule) {
+	  case 1:   /* rule 1: expected value */
+
+	    if ( _unur_FP_is_minus_infinity(x0) ||
+		 _unur_FP_is_infinity(x1) ||
+		 _unur_FP_approx(x0,x1) )
+	      /* we do not use the expected value in case of unbounded intervals */
+	      continue;
+
+	    /* l.h.s. hat */
+	    xAhatl = _unur_tdr_interval_xxarea( gen, iv, iv->dTfx, iv->ip);
+	    /* r.h.s. hat */
+	    xAhatr = _unur_tdr_interval_xxarea( gen, iv->next, iv->next->dTfx, iv->ip);
+	    /* squeeze */
+	    if (iv->Asqueeze > 0.)
+	      /* always integrate from point with greater value of transformed density
+		 to the other point */
+	      xAsqueeze = (iv->Tfx > iv->next->Tfx)
+		? _unur_tdr_interval_xxarea( gen, iv, iv->sq, x1)
+		: _unur_tdr_interval_xxarea( gen, iv->next, iv->sq, x0);
+	    else  /* there is no squeeze */
+	      xAsqueeze = 0.;
+	    
+	    /* check results */
+	    if ( _unur_FP_is_infinity(xAhatl) || _unur_FP_is_minus_infinity(xAhatl) ||
+		 _unur_FP_is_infinity(xAhatr) || _unur_FP_is_minus_infinity(xAhatr) ||
+		 _unur_FP_is_infinity(xAsqueeze) || _unur_FP_is_minus_infinity(xAsqueeze) ||
+		 _unur_FP_equal(iv->Ahat,iv->Asqueeze) )
+	      continue;
+	      
+	    /* compute expected value */
+	    xsp = (xAhatl+xAhatr-xAsqueeze) / (iv->Ahat - iv->Asqueeze);
+	    break;
+
+	  case 2:   /* rule 2: arcmean */
+	    xsp = _unur_arcmean(x0,x1);
+	    break;
+
+	  case 3:  /* rule 3: mean */
+	    if (_unur_FP_is_minus_infinity(x0) || _unur_FP_is_infinity(x1))
+	      /* no arithmetic mean for unbounded intervals */
+	      continue;
+	    xsp = 0.5 * (x0 + x1);
+	    break;
+
+	  default:   /* this should not happen */
+	    continue;
+	  }
+	  /* value of PDF at splitting point */
+	  fxsp = PDF(xsp);
+
+	  /* now split interval at given point */
+	  if ( _unur_tdr_gw_interval_split(gen, iv, xsp, fxsp) ) {
+	    /* splitting successful */
+	    ++n_splitted;
+
+	    /* now depending on the location of xps in the interval iv,
+	       iv points to the left of the two new intervals,
+	       or to the right of the two new intervals.
+	       For the first case we have to move the pointer to the
+	       new right interval. Then iv will be moved to the next
+	       old interval in the list by the for loop.
+	       We can distinguish between these two cases by looking 
+	       at the iv->next pointer and compare it the pointer in the
+	       old unsplitted interval.                                  */
+	    if (iv->next != iv_next)
+	      iv = iv->next;
+	    /* no more splitting points in this interval */
+	    break;
+	  }
+	  else {
+	    /* some serious error occurred */
+	    /* condition for PDF is violated! */
+	    _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"");
+	    /** TODO: error !! **/
+	  }
+	}
+	break;
+
+
+      case TDR_VARIANT_PS:    /* proportional squeeze */
+      case TDR_VARIANT_IA:    /* immediate acceptance */
+	/* rule 1: expected value */
+	/* rule 2: arcmean */
+	xsp = 0.;
+	// xsp = _unur_arcmean(iv->ip,iv->next->ip);  /* JUNK!! */
+	// fprintf(stderr,"%g, %g\n",iv->ip,xsp);
+	/* rule 3: mean */
+	break;
+      default:
+	_unur_error(GENTYPE,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
+	return 0;
+      }
+
+    }
+
+    if (n_splitted == 0) {
+      /* we are not successful. abort to avoid endless loop */
+      _unur_warning(gen->genid,UNUR_ERR_GENERIC,"DARS aborted: no intervals could be splitted.");
+      break;
+    }
+  }
+
+  /* ratio between squeeze and hat o.k. ? */
+  if ( (GEN.max_ratio * GEN.Atotal > GEN.Asqueeze) &&
+       (GEN.n_ivs >= GEN.max_ivs) )
+    _unur_warning(gen->genid,UNUR_ERR_GENERIC,"DARS aborted: maximum number of intervals exceeded.");
+
+  /* o.k. */
+  return 1;
+
+} /* end of _unur_tdr_run_dars() */
+
+/*****************************************************************************/
+
 static struct unur_tdr_interval *
 _unur_tdr_interval_new( struct unur_gen *gen, double x, double fx, int is_mode )
      /*----------------------------------------------------------------------*/
@@ -1014,8 +1229,8 @@ _unur_tdr_gw_interval_parameter( struct unur_gen *gen, struct unur_tdr_interval 
     /* volume below squeeze */
     /* always integrate from point with greater value of transformed density
        to the other point */
-    iv->Asqueeze = (iv->Tfx > iv->next->Tfx) ?
-      _unur_tdr_interval_area( gen, iv, iv->sq, iv->next->x)
+    iv->Asqueeze = (iv->Tfx > iv->next->Tfx)
+      ? _unur_tdr_interval_area( gen, iv, iv->sq, iv->next->x)
       : _unur_tdr_interval_area( gen, iv->next, iv->sq, iv->x);
   }
   else {  /* no squeeze */
@@ -1239,13 +1454,13 @@ _unur_tdr_tangent_intersection_point( struct unur_gen *gen, struct unur_tdr_inte
 static double
 _unur_tdr_interval_area( struct unur_gen *gen, struct unur_tdr_interval *iv, double slope, double x )
      /*---------------------------------------------------------------------------*/
-     /* compute area below piece of hat or slope in                               */
+     /* compute area below piece of hat or squeeze in                             */
      /* interval [iv->x,x] or [x,iv->x]                                           */
      /*                                                                           */
      /* parameters:                                                               */
      /*   gen   ... pointer to generator object                                   */
      /*   iv    ... pointer to interval that stores construction point of tangent */
-     /*   slope ... slope of tangent of secant of transformed PDF                 */
+     /*   slope ... slope of tangent or secant of transformed PDF                 */
      /*   x     ... boundary of integration domain                                */
      /*                                                                           */
      /* return:                                                                   */
@@ -1255,12 +1470,12 @@ _unur_tdr_interval_area( struct unur_gen *gen, struct unur_tdr_interval *iv, dou
      /*   x0    ... construction point of tangent (= iv->x)                       */
      /*                                                                           */
      /* log(x)                                                                    */
-     /*   area = | \int_{x0}^x \exp(Tf(x0) + slope*(x-x0)) dx |                   */
+     /*   area = | \int_{x0}^x \exp(Tf(x0) + slope*(t-x0)) dt |                   */
      /*        = f(x0) * |x - x0|                              if slope = 0       */
      /*        = | f(x0)/slope * (\exp(slope*(x-x0))-1) |      if slope != 0      */
      /*                                                                           */
-     /* 1/sqrt(x)                                                                 */
-     /*   area = | \int_{x0}^x 1/(Tf(x0) + slope*(x-x0))^2 dx |                   */
+     /* -1/sqrt(x)                                                                 */
+     /*   area = | \int_{x0}^x 1/(Tf(x0) + slope*(t-x0))^2 dt |                   */
      /*        = f(x0) * |x - x0|                              if slope = 0       */
      /*        = infinity                                      if T(f(x)) >= 0    */
      /*        = | (x-x0) / (Tf(x0)*(Tf(x0)+slope*(x-x0))) |   otherwise          */
@@ -1345,6 +1560,130 @@ _unur_tdr_interval_area( struct unur_gen *gen, struct unur_tdr_interval *iv, dou
   return ( (area<0.) ? -area : area );
 
 } /* end of _unur_tdr_interval_area() */
+
+/*---------------------------------------------------------------------------*/
+
+static double
+_unur_tdr_interval_xxarea( struct unur_gen *gen, struct unur_tdr_interval *iv, double slope, double x )
+     /*---------------------------------------------------------------------------*/
+     /* compute the interal of x times hat or squeeze ("expected value") in       */
+     /* interval [iv->x,x] or [x,iv->x]                                           */
+     /*                                                                           */
+     /* parameters:                                                               */
+     /*   gen   ... pointer to generator object                                   */
+     /*   iv    ... pointer to interval that stores construction point of tangent */
+     /*   slope ... slope of tangent or secant of transformed PDF                 */
+     /*   x     ... boundary of integration domain                                */
+     /*                                                                           */
+     /* return:                                                                   */
+     /*   "expected value"                                                        */
+     /*   (to get the real expected value, it must be divided by the area below   */
+     /*   the function (hat or squeeze).)                                         */
+     /*                                                                           */
+     /* comment:                                                                  */
+     /*   x0    ... construction point of tangent (= iv->x)                       */
+     /*                                                                           */
+     /* log(x)                                                                    */
+     /*   ev = \int_{x0}^x t * \exp(Tf(x0) + slope*(t-x0)) dt                     */
+     /*      = 0.5 * f(x0) * (x^2 - x0^2)                            if slope = 0 */
+     /*      = f(x0)/slope^2 * (\exp(slope*(x-x0))*(slope*x-1) - (slope*x0-1))    */
+     /*                                                             if slope != 0 */
+     /*                                                                           */
+     /* -1/sqrt(x)                                                                */
+     /*   ev = \int_{x0}^x t / (Tf(x0) + slope*(t-x0))^2 dt                       */
+     /*      = 0.5 * f(x0) * (x^2 - x0^2)                            if slope = 0 */
+     /*      = infinity                         if T(f(x)) >= 0 or |x| = infinity */
+     /*      = x0 / (slope*Tf(x0)) - x / (slope*u) + log(u/Tf(x0)) / slope^2      */
+     /*        where u = Tf(x0) + slope*(x-x0)                          otherwise */
+     /*                                                                           */
+     /* To get the right sign we have to return sign(x-x0) * ev.                  */
+     /*                                                                           */
+     /*---------------------------------------------------------------------------*/
+{
+  double ev = 0.;
+
+  /* check arguments */
+  CHECK_NULL(gen,0);  COOKIE_CHECK(gen,CK_TDR_GEN,0);
+  CHECK_NULL(iv,0);   COOKIE_CHECK(iv,CK_TDR_IV,0); 
+
+  /* if the construction point is at infinity, we cannot compute the integral
+     (in this case we should have x == iv->x == INFINITY). */
+  if (_unur_FP_is_infinity(iv->x) || _unur_FP_is_minus_infinity(iv->x))
+    return 0.;
+
+  /* length of interval > 0 ? */
+  if (_unur_FP_same(x, iv->x))
+    return 0.;
+
+  /* unbounded? */
+  if ( _unur_FP_is_infinity(slope)    ||
+       (_unur_FP_is_minus_infinity(x) && slope<=0.) ||
+       (_unur_FP_is_infinity(x)       && slope>=0.)  )   /* we have set (Tf)'(x) = INFINITY, if f(x)=0 */
+    return INFINITY;
+
+
+  switch( gen->variant & TDR_VARMASK_T ) {
+
+  case TDR_VAR_T_LOG:    /* T(x) = log(x) */
+    if (slope != 0.) {                         
+      if (_unur_FP_is_infinity(x) || _unur_FP_is_minus_infinity(x))
+     	ev = iv->fx / (slope*slope) * (1-slope*iv->x);
+      else {
+	double t = slope * (x - iv->x);
+	if (fabs(t) > 1.e-6)
+	  ev = iv->fx / (slope*slope) * (exp(t)*(slope*x-1.) - slope*iv->x + 1.);
+	else {
+	  /* use Taylor series */
+	  /* this is not correct when (x - iv->x) and x are (very) large.
+	     but an approximation is quite o.k. here.                     */
+	  ev = 0.5*(x-iv->x)*(x+iv->x) + (1./6.)*(x-iv->x)*(2*x+iv->x)*t;
+	  if (fabs(t) > 1.e-8)
+  	    /* 3rd order expansion */
+	    ev = iv->fx * (ev + (1./24.)*(x-iv->x)*(3*x+iv->x)*t*t);
+	  else
+  	    /* 2nd order expansion */
+	    ev = iv->fx * ev;
+	}
+      }
+    }
+    else {  /* hat/squeeze almost constant */
+      if (_unur_FP_is_infinity(x) || _unur_FP_is_minus_infinity(x))
+	return INFINITY;
+      ev = 0.5 * iv->fx * (x*x - iv->x*iv->x);
+    }
+
+    break;
+
+  case TDR_VAR_T_SQRT:    /* T(x) = -1./sqrt(x) */
+    if (_unur_FP_is_infinity(x) || _unur_FP_is_minus_infinity(x))
+      /* the integral becomes INFINITY */
+      return INFINITY;
+
+    if (slope != 0.) {
+      /* compute value of transformed hat at integration boundary */
+      double hx = iv->Tfx + slope * (x - iv->x);
+      /*        where u = Tf(x0) - slope*(x-x0)                          otherwise */
+      /* the transformed hat must always be below the x-axis.
+	 otherwise the area below the hat in unbounded. */
+      if (hx>=0.)
+	return INFINITY; 
+      else
+	ev = ( iv->x / (slope * iv->Tfx) - x / (slope * hx)
+	       + log( hx / iv->Tfx ) / (slope*slope) );
+    }
+    else {  /* hat/squeeze almost constant */
+      ev = 0.5 * iv->fx * (x*x - iv->x*iv->x);
+    }
+    break;
+
+  case TDR_VAR_T_POW:    /* T(x) = -x^c */
+    /** TODO **/
+    break;
+  }
+
+  return ((x>iv->x) ? ev : -ev);
+
+} /* end of _unur_tdr_interval_xxarea() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -1448,6 +1787,12 @@ _unur_tdr_gw_interval_split( struct unur_gen *gen, struct unur_tdr_interval *iv_
   if (gen->debug & TDR_DEBUG_SPLIT) 
     _unur_tdr_gw_debug_split_start( gen,iv_oldl,x,fx );
 #endif
+
+  /* the splitting point must be inside the interval */
+  if (x < iv_oldl->x || x > iv_oldl->next->x) {
+    _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"splitting point not in interval!");
+    return 0;
+  }
 
   /* we only add a new construction point, if the relative area is large enough */
   if ( (GEN.n_ivs * (iv_oldl->Ahat - iv_oldl->Asqueeze) / (GEN.Atotal - GEN.Asqueeze))
@@ -1755,7 +2100,7 @@ _unur_tdr_make_guide_table( struct unur_gen *gen )
     GEN.guide = _unur_malloc( max_guide_size * sizeof(struct unur_tdr_interval*) );
   }
 
-  /* first we need cumulated areas in segments */
+  /* first we need cumulated areas in intervals */
   Acum = 0.;            /* area below hat */
   Asqueezecum = 0.;     /* area below squeeze */
   for (iv = GEN.iv; iv != NULL; iv = iv->next ) {

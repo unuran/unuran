@@ -374,6 +374,11 @@ static int _unur_tdr_ps_starting_intervals( struct unur_par *par, struct unur_ge
 /* compute intervals from given starting construction points.                */
 /*---------------------------------------------------------------------------*/
 
+static int _unur_tdr_run_dars( struct unur_par *par, struct unur_gen *gen );
+/*---------------------------------------------------------------------------*/
+/* run derandomized adaptive rejection sampling.                             */
+/*---------------------------------------------------------------------------*/
+
 inline static int _unur_tdr_gw_interval_parameter( struct unur_gen *gen, struct unur_tdr_interval *iv );
 inline static int _unur_tdr_ps_interval_parameter( struct unur_gen *gen, struct unur_tdr_interval *iv );
 /*---------------------------------------------------------------------------*/
@@ -395,7 +400,13 @@ static int _unur_tdr_tangent_intersection_point( struct unur_gen *gen,
 static double _unur_tdr_interval_area( struct unur_gen *gen, struct unur_tdr_interval *iv,
 				       double slope, double x );
 /*---------------------------------------------------------------------------*/
-/* compute area below piece of hat or slope in                               */
+/* compute area below piece of hat or squeeze in interval.                   */
+/*---------------------------------------------------------------------------*/
+
+static double _unur_tdr_interval_xxarea( struct unur_gen *gen, struct unur_tdr_interval *iv,
+					 double slope, double x );
+/*---------------------------------------------------------------------------*/
+/* compute the interal of x times hat or squeeze ("expected value").         */
 /*---------------------------------------------------------------------------*/
 
 static double _unur_tdr_eval_intervalhat( struct unur_gen *gen,

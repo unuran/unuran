@@ -50,29 +50,30 @@
 
    =REF  [WGS91]
 
-   =DESCRIPTION
-      VNROU is an implementation of the multivariate ratio-of-uniforms
-      method which uses a (minimal) bounding hyper-rectangle,
-      see also @ref{Ratio-of-Uniforms}.
-      It uses an additional parameter @code{r} that can be used to
-      adjust the algorithm to the given distribution to improve
-      performance and/or to make this method applicable.
-      Moreover, this implementation uses the center @i{c} of the
-      distribution (which is set to the mode or mean by default, see
-      unur_distr_cvec_set_center() for more details of its default
-      values). 
+   =DESCRIPTION VNROU is an implementation of the multivariate
+      ratio-of-uniforms method which uses a (minimal) bounding
+      hyper-rectangle, see also @ref{Ratio-of-Uniforms}.  It uses an
+      additional parameter @code{r} that can be used to adjust the
+      algorithm to the given distribution to improve performance
+      and/or to make this method applicable.  Larger values of
+      @code{r} increase the class of distributions for which the
+      method works at the expense of a higher rejection
+      constant. Moreover, this implementation uses the center
+      @unurmath{\mu} of the distribution (which is set to the mode or
+      mean by default, see unur_distr_cvec_set_center() for details of
+      its default values).
 
       The minimal bounding has then the coordinates
 
-      @display
-      @unurmath{v^+ = \sup\limits_{x} (f(x))^{1/rk+1},} @*
-      @unurmath{u^-_i = \inf\limits_{x_i} (x_i-c_i) (f(x))^{r/rk+1},} @*
-      @unurmath{u^+_i = \sup\limits_{x_i} (x_i-c_i)  (f(x))^{r/rk+1},}
-      @end display
+      @unurmathdisplay{
+      v^+   = \sup\limits_{x}               (f(x))^{1/r\,d+1}, \\
+      u^-_i = \inf\limits_{x_i} (x_i-\mu_i) (f(x))^{r/r\,d+1}, \\
+      u^+_i = \sup\limits_{x_i} (x_i-\mu_i) (f(x))^{r/r\,d+1}, }
 
-      where
-      @unurmath{x_i} is the @i{i}-th coordinate of point @i{x};
-      @unurmath{c_i} is the @i{i}-th coordinate of the center @i{c}.
+      where @unurmath{x_i} is the @i{i}-th coordinate of point @i{x};
+      @unurmath{\mu_i} is the @i{i}-th coordinate of the center
+      @unurmath{\mu.} 
+      @unurmath{d} denotes the dimension of the distribution.
       These bounds can either be given directly, or these are computed
       automatically by means of an numerical routine 
       by Hooke and Jeeves @unurbibref{HJa61} called direct search 
@@ -82,8 +83,8 @@
 
       It is important to note that the algorithm works with 
       @unurmath{PDF(x-center)} instead of 
-      @unurmath{PDF(x)}, i.e. the bounding rectangle that have to be
-      provided are for the @unurmath{PDF(x-center)}.
+      @unurmath{PDF(x),} i.e. the bounding rectangle has to be
+      provided for @unurmath{PDF(x-center).}
       This is important as otherwise the acceptance region can become
       a very long and skinny ellipsoid along a diagonal of the (huge)
       bounding rectangle.

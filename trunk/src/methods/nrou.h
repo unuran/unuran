@@ -54,27 +54,31 @@
       NROU is an implementation of the (generalized) ratio-of-uniforms
       method which uses (minimal) bounding rectangles, see
       @ref{Ratio-of-Uniforms}. It uses a positive control parameter
-      @i{r} to adjust the algorithms. Large values of @i{r} increase
-      the class of distributions for which the method works at the
-      expense of a higher rejection constant. For computations reasons
-      @unurmath{r=1} (this is the default) should be used if possible.
+      @code{r} to adjust the algorithmto the given distribution to
+      improve performance and/or to make this method applicable.
+      Larger values of @code{r} increase the class of distributions
+      for which the method works at the expense of a higher rejection
+      constant. For computations reasons @code{r=1} should be used if
+      possible (this is the default).
+      Moreover, this implementation uses the center @unurmath{\mu} of
+      the distribution (see unur_distr_cont_set_center() for 
+      details of its default values). 
 
-      For the special case with @i{r=1} the coordinates of the minimal
+      For the special case with @unurmath{r=1} the coordinates of the minimal
       bounding rectangles are given by 
 
-      @display
-      @unurmath{v^+ = \sup\limits_{x}       \sqrt{PDF(x)},} @*
-      @unurmath{u^- = \inf\limits_{x} (x-c) \sqrt{PDF(x)},} @*
-      @unurmath{u^+ = \sup\limits_{x} (x-c) \sqrt{PDF(x)}.}
-      @end display
+      @unurmathdisplay{
+      v^+ = \sup\limits_{x}         \sqrt{PDF(x)}, \\
+      u^- = \inf\limits_{x} (x-\mu) \sqrt{PDF(x)}, \\
+      u^+ = \sup\limits_{x} (x-\mu) \sqrt{PDF(x)}. }
 
-      where @i{c} is the center of the distribution.
+      where @unurmath{\mu} is the center of the distribution.
       For other values of @i{r} we have
-      @display
-      @unurmath{v^+ = \sup\limits_{x}       (PDF(x))^{1/(r+1)},} @*
-      @unurmath{u^- = \inf\limits_{x} (x-c) (PDF(x))^{r/(r+1)},} @*
-      @unurmath{u^+ = \sup\limits_{x} (x-c) (PDF(x))^{r/(r+1)}.}
-      @end display
+
+      @unurmathdisplay{
+      v^+ = \sup\limits_{x}         (PDF(x))^{1/(r+1)}, \\
+      u^- = \inf\limits_{x} (x-\mu) (PDF(x))^{r/(r+1)}, \\
+      u^+ = \sup\limits_{x} (x-\mu) (PDF(x))^{r/(r+1)}. }
 
       These bounds can be given directly. Otherwise these are computed
       automatically by means of a (slow) numerical routine.
@@ -82,7 +86,7 @@
       is not bounded. 
 
       It is important to note that the algorithm works with 
-      @unurmath{PDF(x-center)} instead of @unurmath{PDF(x)}.
+      @unurmath{PDF(x-\mu)} instead of @unurmath{PDF(x).}
       This is important as otherwise the acceptance region can become
       a very long and skinny ellipsoid along a diagonal of the (huge)
       bounding rectangle.
@@ -92,11 +96,11 @@
       distribution. A bounding rectangle can be given by the
       unur_vnrou_set_u() and unur_vnrou_set_v() calls. 
 
-      @emph{Important:} The bounding rectangle that has to be
-      provided is the function @unurmath{PDF(x-center)}!
+      @emph{Important:} The bounding rectangle has to be
+      provided for the function @unurmath{PDF(x-center)!} 
 
-      If the coordinates of the bounding rectangle are provided by the
-      user then the minimal bounding rectangle is computed
+      If the coordinates of the bounding rectangle are not provided by
+      the user then the minimal bounding rectangle is computed
       automatically. 
 
       By means of unur_vnrou_set_verify() and unur_vnrou_chg_verify()
@@ -135,7 +139,7 @@ int unur_nrou_set_u( UNUR_PAR *parameters, double umin, double umax );
    should work.
 
    @emph{Important:} The bounding rectangle that has to be
-   provided is the function @unurmath{PDF(x-center)}!
+   provided is the function @unurmath{PDF(x-center)!}
 
    Default: not set.
 */

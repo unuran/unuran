@@ -1,11 +1,16 @@
 Version 0.4.0: ????
 	
+	- added methods HRB, HRD, and HRI for distributions with given
+	  hazard rates (bounded, decreasing, and increasing, resp.)
+
 	- added method EMPL (empirical CDF with linear interpolation)
 	  (for sake of completeness; method not recommended)
 
 	- now build shared libraries
 
 	- reorganization of source tree
+
+	- bug fixes
 
 Version 0.3.0: October 2002
 
@@ -16,7 +21,7 @@ Version 0.3.0: October 2002
 
 	- added support for more uniform random number generator packages
 
-	- inlcuded better build-in uniform random number generator
+	- included better build-in uniform pseudo-random number generator
 
 	- added unur_gen_clone() call
 
@@ -36,6 +41,8 @@ Version 0.2.0: June 2002
 
 	- improved method for finding construction points in methods TDR and AROU
 	  (Derandomized adaptive rejection sampling)
+
+	- many bug fixes
 
 Version 0.1.0: March 2001
 

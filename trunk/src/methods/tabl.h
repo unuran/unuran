@@ -167,7 +167,7 @@ int unur_tabl_set_max_intervals( UNUR_PAR *parameters, int max_ivs );
    No construction points are added after the setup when the number of
    intervals suceeds @var{max_ivs}.
 
-   Default is @code{500}.
+   Default is @code{1000}.
 */
 
 int unur_tabl_set_areafraction( UNUR_PAR *parameters, double fraction );

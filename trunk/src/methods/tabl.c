@@ -268,7 +268,7 @@ unur_tabl_new( struct unur_distr *distr )
   PAR.n_starting_cpoints = 30;   /* number of starting points                */
   PAR.area_fract    = 0.1;       /* parameter for equal area rule (default from [1] ) */
 
-  PAR.max_ivs       = 500;       /* maximum number of intervals              */
+  PAR.max_ivs       = 1000;      /* maximum number of intervals              */
   PAR.max_ratio     = 0.90;      /* bound for ratio  Atotal / Asqueeze       */
 
   PAR.guide_factor  = 1.; /* guide table has same size as array of intervals */
@@ -831,13 +831,6 @@ _unur_tabl_init( struct unur_par *par )
 	free(par); _unur_tabl_free(gen);
 	return NULL;
       }
-  
-  /* we have to update the maximal number of intervals,
-     if the user wants more starting points. */
-  if (GEN.n_ivs > GEN.max_ivs) {
-    _unur_warning(gen->genid,UNUR_ERR_GEN_DATA,"maximal number of intervals too small. increase.");
-    GEN.max_ivs = GEN.n_ivs;
-  }
 
   /* make initial guide table */
   _unur_tabl_make_guide_table(gen);
@@ -1286,6 +1279,14 @@ _unur_tabl_get_starting_intervals_from_slopes( struct unur_par *par, struct unur
     iv->xmin = PAR.slopes[i+1];    
     iv->fmin = PDF(iv->xmin);
 
+    /* check for overflow */
+    if (_unur_FP_is_infinity(iv->fmax) || _unur_FP_is_infinity(iv->fmin)) {
+      /* overflow */
+      _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"PDF(x) overflow");
+      iv->next = NULL;  /* terminate list (freeing list) */
+      return 0;
+    }
+
     /* check slopes */
     if (iv->fmax < iv->fmin) {
       _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"slopes non-decreasing");
@@ -1404,6 +1405,13 @@ _unur_tabl_get_starting_intervals_from_mode( struct unur_par *par, struct unur_g
     iv->fmax = PDF(iv->xmax);
     iv->fmin = PDF(iv->xmin);
 
+    /* check for overflow */
+    if (_unur_FP_is_infinity(iv->fmax) || _unur_FP_is_infinity(iv->fmin)) {
+      /* overflow */
+      _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"PDF(x) overflow");
+      return 0;
+    }
+
     /* area of slope and sign of slope (increasing/decreasing) */
     iv->slope = (iv->xmax > iv->xmin) ? 1 : -1;
     iv->Ahat = iv->slope * (iv->xmax - iv->xmin) * iv->fmax;
@@ -1446,13 +1454,16 @@ _unur_tabl_split_a_starting_intervals( struct unur_par *par,
      /*----------------------------------------------------------------------*/
 {
   struct unur_tabl_interval *iv, *iv_last;
-  double bar_area, x;
+  double bar_area, x, fx;
   
   /* check arguments */
   CHECK_NULL(par,NULL);       COOKIE_CHECK(par,CK_TABL_PAR,NULL);
   CHECK_NULL(gen,NULL);       COOKIE_CHECK(gen,CK_TABL_GEN,NULL);
   CHECK_NULL(iv_slope,NULL);  COOKIE_CHECK(iv_slope,CK_TABL_IV,NULL);
 
+  if (GEN.n_ivs >= GEN.max_ivs) 
+    /* maximal number of intervals reached */
+    return NULL;
 
   if (iv_slope->slope != 1 && iv_slope->slope != -1 ) {
     /* this should not happen:
@@ -1466,38 +1477,45 @@ _unur_tabl_split_a_starting_intervals( struct unur_par *par,
   /* (maximal) area of bar (= hat in one interval) */
   bar_area = DISTR.area * PAR.area_fract;
 
-  switch (iv->slope) {
-  case +1:
-    /* move from right to left */
-    while (iv->Ahat > bar_area) {
-      x = iv->xmax - bar_area / iv->fmax;
-      switch (_unur_tabl_split_interval( gen, iv, x, PDF(x), TABL_VARFLAG_SPLIT_POINT )) {
-      case 1:  /* splitting succesful */
+  while (iv->Ahat > bar_area) {
+    /* compute splitting point:
+       slope == +1 --> move from right to left
+       slope == -1 --> move from left to right */
+    x = iv->xmax - iv->slope * bar_area / iv->fmax;
+
+    /* compute PDF */
+    fx = PDF(x);
+
+    /* check for overflow */
+    if (_unur_FP_is_infinity(fx)) {
+      /* overflow */
+      _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"PDF(x) overflow");
+      return NULL;
+    }
+
+    /* now split interval at x */
+    switch (_unur_tabl_split_interval( gen, iv, x, fx, TABL_VARFLAG_SPLIT_POINT )) {
+    case 1:  /* splitting succesful */
+      if (iv->slope > 0) {
 	if (iv_last == iv_slope)
 	  iv_last = iv->next;
-	break;
-      case -1: /* interval chopped */
-	break; /* nothing to do */
-      case 0:  /* error (slope not monotonically increasing) */
-	return NULL;
       }
-    }
-    break;
-
-  case -1:
-    /* move from left to right */
-    while (iv->Ahat > bar_area) {
-      x = iv->xmax + bar_area / iv->fmax;
-      switch (_unur_tabl_split_interval( gen, iv, x, PDF(x), TABL_VARFLAG_SPLIT_POINT )) {
-      case 1:  /* splitting succesful */
+      else { /* iv->slope < 0 */
 	iv = iv->next; break;
-      case -1: /* interval chopped */
-	break; /* nothing to do */
-      case 0:  /* error (slope not monotonically decreasing) */
-	return NULL;
       }
+      break;
+    case -1: /* interval chopped */
+      break; /* nothing to do */
+    case 0:  /* error (slope not monotonically increasing) */
+      return NULL;
     }
-    break;
+
+    /* check number of intervals */
+    if (GEN.n_ivs >= GEN.max_ivs) {
+      /* maximal number of intervals reached */
+      _unur_warning(gen->genid,UNUR_ERR_GEN_DATA,"split A stopped, maximal number of intervals reached.");
+      break;
+    }
   }
 
   /* pointer to last interval */
@@ -1616,6 +1634,13 @@ _unur_tabl_split_interval( struct unur_gen *gen,
        Invalid variant, use default n*/
     _unur_warning(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
     break;
+  }
+
+  /* check for overflow */
+  if (_unur_FP_is_infinity(fx)) {
+    /* overflow */
+    _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"PDF(x) overflow");
+    return 0;
   }
 
   /* check if the new interval is completely outside the support of PDF */
@@ -1969,7 +1994,7 @@ _unur_tabl_debug_intervals( struct unur_gen *gen, int print_areas )
       default:
 	/* this should not happen:
 	   invalid value for iv->slope. */
-	_unur_warning(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
+	fprintf(log,"?"); break;
       }
       fprintf(log,")   < %#-12.6g, %#-12.6g>   |  %#-12.6g    %#-12.6g  \n",
 	      iv->xmax, iv->xmin, iv->fmax, iv->fmin);

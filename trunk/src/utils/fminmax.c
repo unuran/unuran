@@ -79,10 +79,10 @@ _unur_util_fmin(
 /*---------------------------------------------------------------------------*/
 
 double
-_unur_util_find_max( struct unur_funct_generic fs,  
-                     double interval_min, 
-		     double interval_max,
-		     double guess_max
+_unur_util_find_max( struct unur_funct_generic fs, /* function structure */ 
+                     double interval_min,   /* lower bound of interval   */
+		     double interval_max,   /* upper bound of interval   */
+		     double guess_max       /* initial guess for maximum */
 		   )
      /*----------------------------------------------------------------------*/
      /* find max of univariate continuous distribution numerically           */

@@ -34,9 +34,11 @@
 
 /*---------------------------------------------------------------------------*/
 
+/* find maximum of a generic function in an interval providing initial guess */
 double
 _unur_util_find_max( struct unur_funct_generic fs,
-                     double interval_min, double interval_max,
+                     double interval_min, 
+		     double interval_max,
 		     double max_guess );
 			  
 /*---------------------------------------------------------------------------*/

@@ -90,6 +90,12 @@
 #define _unur_cvec_dlogPDF(r,x,distr) ((*((distr)->data.cvec.dlogpdf)) ((r),(x),(distr)))
 
 /*---------------------------------------------------------------------------*/
+/* wrapper functions for PDF when only logPDF is given                       */
+
+double _unur_distr_cvec_eval_pdf_from_logpdf( const double *x, const struct unur_distr *distr );
+int _unur_distr_cvec_eval_dpdf_from_dlogpdf( double *result, const double *x, const struct unur_distr *distr );
+
+/*---------------------------------------------------------------------------*/
 /* make clone of distribution objects                                        */
 
 struct unur_distr *_unur_distr_cemp_clone ( const struct unur_distr *distr );

@@ -57,14 +57,6 @@ static struct unur_distr **_unur_distr_cvec_marginals_clone ( struct unur_distr 
 static void _unur_distr_cvec_marginals_free ( struct unur_distr **marginals, int dim );
 
 /*---------------------------------------------------------------------------*/
-/* wrapper functions for PDF when only logPDF is given                       */
-
-static double
-_unur_distr_cvec_eval_pdf_from_logpdf( const double *x, const struct unur_distr *distr );
-static int 
-_unur_distr_cvec_eval_dpdf_from_dlogpdf( double *result, const double *x, const struct unur_distr *distr );
-
-/*---------------------------------------------------------------------------*/
 
 #define DISTR distr->data.cvec
 
@@ -543,7 +535,7 @@ _unur_distr_cvec_eval_pdf_from_logpdf( const double *x, const struct unur_distr 
   }
 
   return exp(_unur_cvec_logPDF(x,distr));
-} /* end of unur_distr_cvec_eval_pdf_from_logpdf() */
+} /* end of _unur_distr_cvec_eval_pdf_from_logpdf() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -580,7 +572,7 @@ unur_distr_cvec_set_dlogpdf( struct unur_distr *distr, UNUR_VFUNCT_CVEC *dlogpdf
   DISTR.dpdf = _unur_distr_cvec_eval_dpdf_from_dlogpdf;
 
   return UNUR_SUCCESS;
-} /* end of unur_distr_cvec_set_dlogpdf() */
+} /* end of _unur_distr_cvec_set_dlogpdf() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -601,25 +593,22 @@ _unur_distr_cvec_eval_dpdf_from_dlogpdf( double *result, const double *x, const 
      /*----------------------------------------------------------------------*/
 {
   int ret, i;
-  double f;
+  double fx;
 
   if (DISTR.logpdf == NULL || DISTR.dlogpdf == NULL) {
     _unur_warning(distr->name,UNUR_ERR_DISTR_DATA,"");
     return UNUR_ERR_DISTR_DATA;
   }
 
-  f = unur_distr_cvec_eval_pdf( x, distr );
-  if (!_unur_isfinite(f)) return UNUR_ERR_DISTR_DATA;
+  fx = exp(unur_distr_cvec_eval_logpdf( x, distr ));
+  if (!_unur_isfinite(fx)) return UNUR_ERR_DISTR_DATA;
 
   ret = _unur_cvec_dlogPDF(result,x,distr);
   for (i=0; i<distr->dim; i++)
-    result[i] *= f;
+    result[i] *= fx;
 
   return ret;
-} /* end of unur_distr_cvec_eval_dpdf() */
-
-/*---------------------------------------------------------------------------*/
-
+} /* end of _unur_distr_cvec_eval_dpdf_from_dlogpdf() */
 
 /*---------------------------------------------------------------------------*/
 

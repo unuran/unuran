@@ -15,11 +15,11 @@
  *   it is not possible to make a generator object either due to a syntax    *
  *   error in the given string, or due to invalid data.                      *
  *                                                                           *
- *   First the given string is copied into a working string. Moreover a      *
- *   letters transformed into their lower case counterparts and spaces are   *
- *   eliminated (i.e. the working string does not contain any white space    *
- *   characters any more.) Then the working string is splitted into several  *
- *   blocks, separated by ampersands '&'. Each block consists of             *
+ *   First the given string is copied into a working string. Moreover letter *
+ *   letters are transformed into their lower case counterparts and spaces   *
+ *   are eliminated (i.e. the working string does not contain any white      *
+ *   space characters any more.) Then the working string is splitted into    *
+ *   several blocks, separated by ampersands '&'. Each block consists of     *
  *   <key>=<value> pairs, separated by semicolons ';'. The first key in      *
  *   each block is used to indicate the corresponding block.                 *
  *                                                                           *
@@ -29,31 +29,33 @@
  *      urng   ... contains the definition of the uniform RNG                *
  *                                                                           *
  *   The 'distr' block must be the very first block and is obligatory.       *
- *   For that reason the keyword 'distr' is optional and can be omitted.     *
- *   Moreover it is almost ignored while parsing the string. To avoid some   *
- *   possible confussion it only has to start with the letter 'd' (if it is  *
- *   given at all.)                                                          *
- *   The value of the 'distr' key is used to get a distribution object       *
- *   either via a unur_distr_<value>() call for a standard distribution.     *
+ *   For that reason the keyword "distr" is optional and can be omitted      *
+ *   (together with the '=' character). Moreover it is almost ignored while  *
+ *   parsing the string. To avoid some possible confussion it only has to    *
+ *   start with the letter 'd' (if it is given at all). E.g. "dnormal" can   *
+ *   be used as keyword.                                                     *
+ *   The value of the "distr" key is used to get a distribution object       *
+ *   either via a unur_distr_<value>() call for a standard distribution      *
+ *   or the unur_distr_<value>_new() calls are used to get an object for a   *
+ *   generic distribution. However not all generic distributions are         *
+ *   supported yet (see the list %UNSUPPORTED_DISTR_TYPES in file            *
+ *   make_stringparser.pl).                                                  *
  *   The parameters for the standard distribution are given as a list of     *
- *   number enclosed in parenthesis. There must not be any character (other  *
+ *   numbers enclosed in parenthesis. There must not be any character (other *
  *   than white space) between the name of the standard distribution and     *
- *   this list. Or the unur_distr_<value>_new() calls are used to get an     *
- *   object for a generic distribution. However not all generic              *
- *   distributions are supported yet (see the list %UNSUPPORTED_DISTR_TYPES  *
- *   in make_stringparser.pl).                                               *
+ *   this list.                                                              *
  *                                                                           *
  *   All the other blocks are optional and can be arranged in arbitrary      *
  *   order.                                                                  *
- *   The value of the 'method' key is the name of the transformation method  *
+ *   The value of the "method" key is the name of the transformation method  *
  *   and is used to execute the unur_<value>_new() call.                     *
  *                                                                           *
- *   The value of the 'urng' key is passed to the PRNG interface.            *
+ *   The value of the "urng" key is passed to the PRNG interface.            *
  *   However it only works when using the PRNG library is enabled in         *
  *   unuran_config.h.                                                        *
  *                                                                           *
  *   In each block consecuting <key>=<value> pairs, separated by semicolons  *
- *   `;`, are used to set parameters. The name of the parameter is given as  *
+ *   ';', are used to set parameters. The name of the parameter is given as  *
  *   key, the argument list is given as value. The arguments of the          *
  *   corresponding set calls are given as tokens, separated by commata ','.  *
  *   There are two types of tokens:                                          *
@@ -191,6 +193,7 @@ typedef int distr_set_i( UNUR_DISTR *distr, int i );
 typedef int distr_set_d( UNUR_DISTR *distr, double d );
 typedef int distr_set_dd( UNUR_DISTR *distr, double d1, double d2 );
 typedef int distr_set_Di( UNUR_DISTR *distr, double *array, int size );
+typedef int distr_set_C( UNUR_DISTR *distr, const char *string );
 /*---------------------------------------------------------------------------*/
 /* types of set calls                                                        */
 /*---------------------------------------------------------------------------*/
@@ -215,6 +218,12 @@ static int _unur_str_distr_set_Di( UNUR_DISTR *distr, const char *key, char *typ
 				   distr_set_Di set );
 /*---------------------------------------------------------------------------*/
 /* array of doubles & integer.                                               */
+/*---------------------------------------------------------------------------*/
+
+static int _unur_str_distr_set_C( UNUR_DISTR *distr, const char *key, char *type_args, char **args,
+				  distr_set_C set );
+/*---------------------------------------------------------------------------*/
+/* constant string.                                                          */
 /*---------------------------------------------------------------------------*/
 
 
@@ -552,15 +561,7 @@ unur_str2distr (const char *string)
      /*----------------------------------------------------------------------*/
 {
   UNUR_DISTR *distr = NULL;       /* distribution object */
-
-  //  char *str_distr   = NULL;       /* string for distribution */
-
   char *str = NULL;               /* pointer to working string */
-
-  // char *token;
-
-  /* (empty) list of allocated memory blocks */ 
-  //  struct malloc_list mlist = { NULL, 0 };
 
   /* check arguments */
   _unur_check_NULL( GENTYPE,string,NULL );
@@ -831,7 +832,7 @@ _unur_str_distr_set_i (UNUR_DISTR *distr, const char *key, char *type_args, char
      /*    error if input != "t"                                             */
      /*                                                                      */
      /* parameters:                                                          */
-     /*   distr     ... pointer to distribution object                          */
+     /*   distr     ... pointer to distribution object                       */
      /*   key       ... name of parameter to be set                          */
      /*   type_args ... contains types of arguments. Possible values:        */
      /*                   't'   for single token                             */
@@ -1112,6 +1113,64 @@ _unur_str_distr_set_Di (UNUR_DISTR *distr, const char *key, char *type_args, cha
   return result;
 
 } /* end of _unur_str_distr_set_Di() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+_unur_str_distr_set_C (UNUR_DISTR *distr, const char *key, char *type_args, char **args, distr_set_C set)
+     /*----------------------------------------------------------------------*/
+     /* Set parameter in given distribution object.                          */
+     /* The list of arguments and their types are given as string.           */
+     /*                                                                      */
+     /* type: "C"   (string = array of char)                                 */
+     /*                                                                      */
+     /* input: "s"  (exactly one string)                                     */
+     /*                                                                      */
+     /* action:                                                              */
+     /*    execute set call.                                                 */
+     /*    error if input != "s"                                             */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   distr     ... pointer to distribution object                       */
+     /*   key       ... name of parameter to be set                          */
+     /*   type_args ... contains types of arguments. Possible values:        */
+     /*                   's'   for single string                            */
+     /*   args      ... array of pointers to argument strings                */
+     /*   set       ... pointer to UNURAN function for set call              */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   return code from set call, i.e.                                    */
+     /*      1 ... on success                                                */
+     /*      0 ... on error                                                  */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return 0                                                           */
+     /*----------------------------------------------------------------------*/
+{
+  char *string;
+
+  if ( strcmp(type_args, "s") ) {
+    _unur_error_args(key);
+#ifdef UNUR_ENABLE_LOGGING
+    /* write info into log file */
+    if (_unur_default_debugflag & UNUR_DEBUG_SETUP)
+      _unur_str_debug_set(2,key,"!");
+#endif
+    return 0;
+  }
+
+  /* get string */
+  string = args[0];
+  
+#ifdef UNUR_ENABLE_LOGGING
+  /* write info into log file */
+  if (_unur_default_debugflag & UNUR_DEBUG_SETUP)
+    _unur_str_debug_set(2,key,"C",string);
+#endif
+
+  return set(distr,string);
+
+} /* end of _unur_str_distr_set_C() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -2053,6 +2112,32 @@ _unur_str_set_args( char *value, char *type_args, char **args, int max_args )
 	}
       }
 
+      else if ( *token == '"' ) {
+	/* argument is a string */
+	type_args[n_args] = 's';
+	/* skip to next character */
+	token++;
+	/* store pointer to argument */
+	args[n_args] = token;
+
+	/* find end of string using '"' as terminating character */
+	next = strchr(token,'"');
+	if (next != NULL) {
+	  /* end of list found */
+	  *next = '\0';      /* terminate token string    */
+	  token = ++next;    /* set pointer to first character after ')' */
+	  /* first character after ')' must be ',' */
+	  if ( !(*token == ',' || *token == '\0') ) {
+	    _unur_error(GENTYPE,UNUR_ERR_STR_SYNTAX,"closing '\"' not followed by comma"); 
+	    return -1;
+	  }
+	}
+	else {
+	  /* no '"' found */
+	  token = NULL;
+	}
+      }
+
       else {
 	/* argument is a sigle item */
 	type_args[n_args] = 't';
@@ -2430,6 +2515,9 @@ _unur_str_debug_set( int level, const char *key, const char *type, ... )
       break;
     case 'u':
       fprintf(log," %x",va_arg(ap,unsigned int));
+      break;
+    case 'C':
+      fprintf(log," %s",va_arg(ap,char *));
       break;
     case 'D': {
       int i,size;

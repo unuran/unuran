@@ -139,7 +139,7 @@ _unur_test_function (void)
     exit (-1);                                             
   }
   
-  /* reparse function string */
+  /* reparse function string and make duplicate distribution object */
   repstr = unur_distr_cont_get_pdfstr(distr);
   fprintf(TESTLOG,"parsed   = \"%s\"\n", repstr);
   rep = unur_distr_cont_new();
@@ -202,6 +202,7 @@ _unur_test_function (void)
 
   /* free memory */
   unur_distr_free(distr);
+  unur_distr_free(rep);
   if (repstr) free(repstr);
 
   /* write result */

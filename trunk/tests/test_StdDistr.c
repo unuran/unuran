@@ -140,7 +140,7 @@ _unur_test_StdDistr (void)
   strcpy( dstr, buffer+6 );
   /* remove newline character */
   dstr[strlen(dstr)-1] = '\0';
-  
+
   /* make distribution object with given function as PDF */
   if ( (distr = unur_str2distr(dstr)) == NULL ) {
     printf("ERROR: syntax error in \"%s\"\n", dstr);
@@ -151,8 +151,10 @@ _unur_test_StdDistr (void)
   /* now run test */
   if (test_cdf_pdf( distr,dstr ) == 0)
     n_failed++;
+
+  /* free memory */
   unur_distr_free(distr);
-  
+
   return 1;
 
 #undef BUFSIZE

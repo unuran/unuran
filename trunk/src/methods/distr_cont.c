@@ -184,9 +184,9 @@ _unur_distr_cont_free( struct unur_distr *distr )
      /*   distr ... pointer to distribution object                           */
      /*----------------------------------------------------------------------*/
 {
-  if (DISTR.pdftree)  free(DISTR.pdftree);
-  if (DISTR.dpdftree) free(DISTR.dpdftree);
-  if (DISTR.cdftree)  free(DISTR.cdftree);
+  if (DISTR.pdftree)  _unur_fstr_free(DISTR.pdftree);
+  if (DISTR.dpdftree) _unur_fstr_free(DISTR.dpdftree);
+  if (DISTR.cdftree)  _unur_fstr_free(DISTR.cdftree);
 
   if (distr) free( distr );
 } /* end of unur_distr_cont_free() */

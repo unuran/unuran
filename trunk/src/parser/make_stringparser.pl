@@ -37,10 +37,26 @@ EOM
 my %SUPPORTED_DISTR_TYPES =
     ( 'cont'  => 1,
       'cemp'  => 1,
-      'discr' => 1 );
+      'discr' => 1
+    );
 
 # Unsupported types:
 #   corder, cvec, cvemp
+
+# Commands substituted by string parser
+my %SUBST_COMMANDS =
+    ( 'unur_distr_cont_set_pdfstr' => 'pdf',
+      'unur_distr_cont_set_cdfstr' => 'cdf'
+    );
+
+# Commands ignored by string parser
+my %IGNORED_COMMANDS =
+    ( 'unur_distr_cont_set_pdf'  => 1,
+      'unur_distr_cont_set_dpdf' => 1,
+      'unur_distr_cont_set_cdf'  => 1,
+      'unur_distr_discr_set_pmf' => 1,
+      'unur_distr_discr_set_cdf' => 1
+    );
 
 ##############################################################################
 
@@ -73,8 +89,10 @@ closedir METHDIR;
 ##############################################################################
 # Global variables
 
-# Store unsupported set calls
-my $unsupported;
+# Store unsupported, substituted and ignored set calls for output on screen
+my $msg_unsupported;
+my $msg_substituted;
+my $msg_ignored;
 
 ##############################################################################
 # Read template C file from STDIN and insert C code for string interpreter 
@@ -106,9 +124,19 @@ while ( <STDIN> ){
     }
 }
 
-if ($unsupported) {
-    print STDERR "\nUnsupported set commands:\n";
-    print STDERR "$unsupported\n";
+if ($msg_substituted) {
+    print STDERR "Substituted set commands:\n";
+    print STDERR "$msg_substituted\n";
+}
+
+if ($msg_ignored) {
+    print STDERR "Ignored set commands:\n";
+    print STDERR "$msg_ignored\n";
+}
+
+if ($msg_unsupported) {
+    print STDERR "Unsupported set commands:\n";
+    print STDERR "$msg_unsupported\n";
 }
 
 ##############################################################################
@@ -218,6 +246,8 @@ sub make_list_of_distr_sets {
 
     my $set_commands;
     my $code_unsupported;
+    my $code_substituted;
+    my $code_ignored;
     my $code;
 
     # print info on screen
@@ -256,8 +286,11 @@ sub make_list_of_distr_sets {
 	foreach my $l (@lines) {
 	    next unless $l =~ /^\s*(\w*\s+)unur\_distr\_$distr_type\_set_(\w+)\s*\((.+)([^\s])\s*$/; 
 
-	    # name of set command
+	    # short name of set command
 	    my $command = $2;
+
+	    # full name of command
+	    my $command_name = "unur\_distr\_$distr_type\_set_$command";
 
 	    # list of arguments
 	    my $args = $3;
@@ -311,6 +344,14 @@ sub make_list_of_distr_sets {
 		$type_args .= $t;
 	    }
 
+	    # check whether command should be ignored
+	    if ($IGNORED_COMMANDS{$command_name}) {
+		# ignore this set command
+		$code_ignored .= "\t /* $l\n\t\t n = $n_args; type = $type_args\t */\n";
+		$msg_ignored .= "  $command_name()\n";
+		next;
+	    }
+
 	    # make set calls
 	    my $set;
 
@@ -326,16 +367,31 @@ sub make_list_of_distr_sets {
 	    #   "dd"   ... two arguments of type double required 
 	    #   "Di"   ... a list of doubles and one argument of type int required
 	    #              (the second argument is considered as size of the double array)
-	    if ($type_args =~ /^(i|d|dd|Di)$/) {
+	    #   "C"    ... one string (array of char)
+	    if ($type_args =~ /^(i|d|dd|Di|C)$/) {
 		my $type = $1;
-		$set .= "\t\t\t\t result = _unur_str_distr_set_$type(distr,key,type_args,args,unur_distr_$distr_type\_set_$command);\n";
-		$set_commands->{$distr_type}->{$command} = $set;
+		$set .= "\t\t\t\t result = _unur_str_distr_set_$type(distr,key,type_args,args,$command_name);\n";
+		unless ($set_commands->{$distr_type}->{$command}) {
+		    $set_commands->{$distr_type}->{$command} = $set; }
+		else {
+		    die "\nset command redefined: $distr_type/$command"; }
+
+		# check whether command should also have substitute
+		if ($SUBST_COMMANDS{$command_name}) {
+		    my $command_subst = $SUBST_COMMANDS{$command_name};
+		    $msg_substituted .= "  $command_name()  --> $SUBST_COMMANDS{$command_name}\n";
+		    $code_substituted .= "\t /* $l\n\t\t n = $n_args; type = $type_args\t */\n";
+		    unless ($set_commands->{$distr_type}->{$command_subst}) {
+			$set_commands->{$distr_type}->{$command_subst} = $set; }
+		    else {
+			die "\nset command redefined: $distr_type/$command_subst"; }
+		}
 	    }
 
 	    else {
 		# cannot handle this set command
 		$code_unsupported .= "\t /* $l\n\t\t n = $n_args; type = $type_args\t */\n";
-		$unsupported .= "  unur_distr_$distr_type\_set_$command()\n"
+		$msg_unsupported .= "  $command_name()\n";
 	    }
 	}
 
@@ -345,6 +401,7 @@ sub make_list_of_distr_sets {
 
     # print info on screen
     print STDERR "\n" if $VERBOSE;
+
 
     # get list of all distribution types
     my @distr_type_list = sort (keys %{$set_commands});
@@ -386,14 +443,19 @@ sub make_list_of_distr_sets {
 
 	# end of switch for first letter
 	$code .= "\t\t }\n";
-
+	$code .= "\t\t break;\n";
     }
 
     # end of switch for distribution types
     $code .= "\t }\n";
 
-    # add comment on unsupported code into C file
-    $code .= "\n\t /* Unsupported set commands: */\n $code_unsupported\n";
+    # add comment on igored and unsupported code into C file
+    if ($code_ignored) {
+	$code .= "\n\t /* Ignored set commands: */\n $code_ignored\n"; }
+    if ($code_substituted) {
+	$code .= "\n\t /* Subsituted set commands: */\n $code_substituted\n"; }
+    if ($code_unsupported) {
+	$code .= "\n\t /* Unsupported set commands: */\n $code_unsupported\n"; }
 
     # Return result
     return $code;
@@ -471,6 +533,8 @@ sub make_list_of_par_sets {
 
     my $set_commands;
     my $code_unsupported;
+    my $code_substituted;
+    my $code_ignored;
     my $code;
 
     # print info on screen
@@ -504,8 +568,11 @@ sub make_list_of_par_sets {
 	foreach my $l (@lines) {
 	    next unless $l =~ /^\s*(\w*\s+)unur_$method\_set_(\w+)\s*\((.+)([^\s])\s*$/; 
 
-	    # name of set command
+	    # short name of set command
 	    my $command = $2;
+
+	    # full name of command
+	    my $command_name = "unur\_$method\_set_$command";
 
 	    # list of arguments
 	    my $args = $3;
@@ -559,11 +626,19 @@ sub make_list_of_par_sets {
 		$type_args .= $t;
 	    }
 
+	    # check whether command should be ignored
+	    if ($IGNORED_COMMANDS{$command_name}) {
+		# ignore this set command
+		$code_ignored .= "\t /* $l\n\t\t n = $n_args; type = $type_args\t */\n";
+		$msg_ignored .= "  $command_name()\n";
+		next;
+	    }
+
 	    # make set calls
 	    my $set;
 
 	    # beginning of case
-	    $set .= "\t\t\t\t /* n = $n_args; type = $type_args: $args*/\n";
+	    $set = "\t\t\t\t /* n = $n_args; type = $type_args: $args*/\n";
 
 	    # use keyword "void" when no argument is required
 	    $type_args = "void" if $type_args eq "";
@@ -577,21 +652,33 @@ sub make_list_of_par_sets {
 	    #   "iD"   ... one argument of type int and a list of doubles required
 	    #              (the first argument is considered as size of the double array)
 	    #   "Di"   ... a list of doubles and one argument of type int required
-	    if ($type_args =~ /^(void|i|u|d|dd)$/) {
+	    if ($type_args =~ /^(void|i|u|d|dd|iD|Di)$/) {
 		my $type = $1;
-		$set .= "\t\t\t\t result = _unur_str_par_set_$type(par,key,type_args,args,unur_$method\_set_$command);\n";
-		$set_commands->{$method}->{$command} = $set;
-	    }
-	    elsif ($type_args =~ /^(iD|Di)$/) {
-		my $type = $1;
-		$set .= "\t\t\t\t result = _unur_str_par_set_$type(par,key,type_args,args,unur_$method\_set_$command,mlist);\n";
-		$set_commands->{$method}->{$command} = $set;
+		if ($type_args =~ /^(iD|Di)$/) {
+		    $set .= "\t\t\t\t result = _unur_str_par_set_$type(par,key,type_args,args,$command_name,mlist);\n"; }
+		else {
+		    $set .= "\t\t\t\t result = _unur_str_par_set_$type(par,key,type_args,args,$command_name);\n"; }
+		unless ($set_commands->{$method}->{$command}) {
+		    $set_commands->{$method}->{$command} = $set; }
+		else {
+		    die "\nset command redefined: $method/$command"; }
+
+		# check whether command should also have substitute
+		if ($SUBST_COMMANDS{$command_name}) {
+		    my $command_subst = $SUBST_COMMANDS{$command_name};
+		    $msg_substituted .= "  $command_name()  --> $SUBST_COMMANDS{$command_name}\n";
+		    $code_substituted .= "\t /* $l\n\t\t n = $n_args; type = $type_args\t */\n";
+		    unless ($set_commands->{$method}->{$command_subst}) {
+			$set_commands->{$method}->{$command_subst} = $set; }
+		    else {
+			die "\nset command redefined: $method/$command_subst"; }
+		}
 	    }
 
 	    else {
 		# cannot handle this set command
 		$code_unsupported .= "\t /* $l\n\t\t n = $n_args; type = $type_args\t */\n";
-		$unsupported .= "  unur_$method\_set_$command()\n"
+		$msg_unsupported .= "  $command_name()\n";
 	    }
 	}
 
@@ -647,9 +734,14 @@ sub make_list_of_par_sets {
     $code .= "\t }\n";
 
 
-    # add comment on unsupported code into C file
-    $code .= "\n\t /* Unsupported set commands: */\n $code_unsupported\n";
-	
+    # add comment on igored and unsupported code into C file
+    if ($code_ignored) {
+	$code .= "\n\t /* Ignored set commands: */\n $code_ignored\n"; }
+    if ($code_substituted) {
+	$code .= "\n\t /* Subsituted set commands: */\n $code_substituted\n"; }
+    if ($code_unsupported) {
+	$code .= "\n\t /* Unsupported set commands: */\n $code_unsupported\n"; }
+
     # Return result
     return $code;
 

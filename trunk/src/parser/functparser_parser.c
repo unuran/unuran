@@ -680,7 +680,7 @@ _unur_fstr_simplification (char *symb, int token,
     right->type  = S_UCONST;
     right->left  = NULL; 
     right->right = NULL;
-    if (left) free (left);
+    if (left) free(left);
     return right; 
   } 
 
@@ -689,7 +689,7 @@ _unur_fstr_simplification (char *symb, int token,
    *        0     X           1     X
    */ 
   if ( (l_0 && s=='+' ) || (l_1 && s=='*') ) { 
-    free (left);
+    free(left);
     return right;
   } 
 
@@ -707,7 +707,7 @@ _unur_fstr_simplification (char *symb, int token,
    */ 
   if ( (r_0 && (s=='+' || s=='-')) ||
        (r_1 && (s=='*' || s=='/' || s=='^')) ) {
-    free (right);
+    free(right);
     return left;
   }
 
@@ -725,11 +725,11 @@ _unur_fstr_simplification (char *symb, int token,
    */
   and = (strcmp(symb,"and")==0);
   if ( l_0 && (s=='*' || s=='/' || s=='^' || and) ) {
-    free (right);
+    _unur_fstr_free(right);
     return left;
   }
   if (r_0 && (s=='*' || and ) ) {
-    free (left);
+    _unur_fstr_free(left);
     return right;
   }
 
@@ -738,12 +738,12 @@ _unur_fstr_simplification (char *symb, int token,
    *        X     0           1     X
    */ 
   if (r_0 && s=='^') {
-    free (left);
+    _unur_fstr_free(left);
     right->val = 1.;
     return right;
   }
   if (l_1 && s=='^') {
-    free (right);
+    _unur_fstr_free(right);
     return left;
   }
 
@@ -758,7 +758,7 @@ _unur_fstr_simplification (char *symb, int token,
 	 left  && left->left==NULL  && left->right==NULL  && 
 	 right && right->left==NULL && right->right==NULL &&
 	 strcmp(left->symbol,right->symbol)== 0 ) ) {
-    free (left);
+    free(left);
     right->token = s_uconst;
     right->symbol= symbol[s_uconst].name; 
     right->val   = 1.;
@@ -827,8 +827,8 @@ _unur_fstr_reorganize (struct ftreenode *node)
     node->token  = s_minus; 
     node->type   = symbol[s_minus].type; 
     node->right  = right->right; 
-    free (right->left);
-    free (right);
+    free(right->left);
+    free(right);
     return 1;
   }
 
@@ -843,8 +843,8 @@ _unur_fstr_reorganize (struct ftreenode *node)
     node->token  = s_plus; 
     node->type   = symbol[s_plus].type; 
     node->right  = right->right; 
-    free (right->left);
-    free (right);
+    free(right->left);
+    free(right);
     return 1;
   }
 
@@ -861,8 +861,8 @@ _unur_fstr_reorganize (struct ftreenode *node)
     tmp = node->right;
     node->right  = left->right; 
     node->left   = tmp;
-    free (left->left);
-    free (left);
+    free(left->left);
+    free(left);
     return 1;
   }
 

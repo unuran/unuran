@@ -156,6 +156,7 @@ t_*.c: make_test_files.pl
 if HAVE_VALGRIND
 
 VALGRINDOPTIONS = -v \
+ --tool=memcheck \
  --leak-check=yes \
  --leak-resolution=high \
  --num-callers=40 \

@@ -4,10 +4,9 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   FILE: unur_source.h                                                     *
+ *   FILE: urng.c                                                            *
  *                                                                           *
- *   PURPOSE:                                                                *
- *         To be included as first header file in all sources.               *
+ *   unified interface for uniform random number generators                  *
  *                                                                           *
  *****************************************************************************
      $Id$
@@ -34,88 +33,50 @@
  *****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
-#ifndef UNUR_SOURCE_H_SEEN
-#define UNUR_SOURCE_H_SEEN
-/*---------------------------------------------------------------------------*/
-
-/*---------------------------------------------------------------------------*/
-/* compiler switches and defaults                                            */
-#include <unuran_config.h>
-
-/*---------------------------------------------------------------------------*/
-/* config file generated be autoconf                                         */
-
-
-#ifdef HAVE_CONFIG_H
-#  include <config.h>
+#if UNUR_URNG_TYPE != UNUR_URNG_GENERIC
 #else
-#  error "config.h" required
+/*---------------------------------------------------------------------------*/
+
+#include <unur_source.h>
+#include "unur_uniform.h"
+
+/*---------------------------------------------------------------------------*/
+
+UNUR_URNG *
+unur_urng_new (double (*getrand)(void *params), double (*reset)(void *params), void *params)
+     /*----------------------------------------------------------------------*/
+     /* create a new object for uniform random number generator              */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par   ... pointer to parameter for building generator object       */
+     /*   debug ... debugging flag                                           */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( NULL,par,UNUR_ERR_NULL );
+
+
+
+double unur_urng_sample (UNUR_URNG *urng);
+     /*----------------------------------------------------------------------*/
+     /* set debugging flag for generator                                     */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par   ... pointer to parameter for building generator object       */
+     /*   debug ... debugging flag                                           */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( NULL,par,UNUR_ERR_NULL );
+
+
+
+int unur_urng_reset (UNUR_URNG *urng);
+int unur_urng_free (UNUR_URNG *urng);
+
+
+
+/*---------------------------------------------------------------------------*/
 #endif
-
-
 /*---------------------------------------------------------------------------*/
-/* include standard header files                                             */
 
-#include <float.h>
-#include <math.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
-#ifdef HAVE_LIMITS_H
-#  include <limits.h>
-#endif
-
-/*---------------------------------------------------------------------------*/
-/* globally used types                                                       */
-
-#include <unur_typedefs.h>
-#include <unur_struct.h>
-
-/*---------------------------------------------------------------------------*/
-/* Utilities used by almost all sources                                      */
-
-/* uniform random number generators */
-#include <uniform/urng_source.h>
-
-/* magic cookies */
-#include <unur_cookies.h>
-
-/* debuging, warnings and error messages */
-#include <utils/debug.h>
-#include <utils/debug_source.h>
-#include <utils/stream_source.h>
-#include <utils/unur_errno.h>
-#include <utils/unur_error_source.h>
-
-/* floating point arithmetic */
-#include <utils/unur_fp_source.h>
-#include <utils/unur_fp_const_source.h>
-
-/* mathematics */
-#include <utils/umath.h>
-#include <utils/umath_source.h>
-#include <utils/unur_math_source.h>
-
-/* vectors */
-#include <utils/vector_source.h>
-
-/* strings */
-#include <utils/string_source.h>
-
-/* allocate memory */
-#include <utils/umalloc_source.h>
-
-/* simple lists */
-#include <utils/slist.h>
-
-/*---------------------------------------------------------------------------*/
-/* support for dmalloc                                                       */
-
-#ifdef WITH_DMALLOC
-#  include <dmalloc.h>
-#endif
-
-/*---------------------------------------------------------------------------*/
-#endif  /* UNUR_SOURCE_H_SEEN */
-/*---------------------------------------------------------------------------*/

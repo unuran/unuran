@@ -195,6 +195,14 @@
       sampling error.
       @end ftable
 
+      @item Errors that occurred while handling URNG objects.
+      @ftable @code
+      @item UNUR_ERR_URNG
+      generic error with URNG object.
+      @item UNUR_ERR_URNG_MISS
+      missing functionality.
+      @end ftable
+
       @item Errors that occurred while parsing strings.
       @ftable @code
       @item UNUR_ERR_STR
@@ -291,32 +299,41 @@ enum {
   UNUR_ERR_GEN_INVALID    = 0x34,     /* invalid generator object            */
   UNUR_ERR_GEN_SAMPLING   = 0x35,     /* sampling error                      */
 
+  /** uniform random number generator (URNG) object **/
+  /*
+    @code{UNUR_ERR_URNG_...}
+    Errors that occurred while handling URNG objects.
+  */
+
+  UNUR_ERR_URNG           = 0x41,     /* generic error with URNG object      */
+  UNUR_ERR_URNG_MISS      = 0x42,     /* missing functionality               */
+
   /** string parser **/
   /*
     @code{UNUR_ERR_STR_...}
     Errors that occurred while parsing strings.
   */
-  UNUR_ERR_STR            = 0x41,     /* error in stringparser               */
-  UNUR_ERR_STR_UNKNOWN    = 0x42,     /* unknown key word in string          */
-  UNUR_ERR_STR_SYNTAX     = 0x43,     /* syntax error in string              */
-  UNUR_ERR_STR_INVALID    = 0x44,     /* invalid parameter in argument       */
-  UNUR_ERR_FSTR_SYNTAX    = 0x45,     /* syntax error in function parser     */
-  UNUR_ERR_FSTR_DERIV     = 0x46,     /* cannot derivate function            */
+  UNUR_ERR_STR            = 0x51,     /* error in stringparser               */
+  UNUR_ERR_STR_UNKNOWN    = 0x52,     /* unknown key word in string          */
+  UNUR_ERR_STR_SYNTAX     = 0x53,     /* syntax error in string              */
+  UNUR_ERR_STR_INVALID    = 0x54,     /* invalid parameter in argument       */
+  UNUR_ERR_FSTR_SYNTAX    = 0x55,     /* syntax error in function parser     */
+  UNUR_ERR_FSTR_DERIV     = 0x56,     /* cannot derivate function            */
 
   /** misc **/
   /*
     @code{UNUR_ERR_...}
     Other errors.
   */
-  UNUR_ERR_DOMAIN         = 0x51,     /* argument out of domain              */
-  UNUR_ERR_ROUNDOFF       = 0x52,     /* (serious) round-off error           */
-  UNUR_ERR_MALLOC         = 0x53,     /* virtual memory exhausted            */
-  UNUR_ERR_NULL           = 0x54,     /* invalid NULL pointer                */ 
-  UNUR_ERR_COOKIE         = 0x55,     /* invalid cookie                      */
-  UNUR_ERR_GENERIC        = 0x56,     /* generic error                       */
-  UNUR_ERR_SILENT         = 0x57,     /* silent error (no error message)     */
-  UNUR_ERR_INF            = 0x58,     /* infinity occured                    */
-  UNUR_ERR_NAN            = 0x59,     /* NaN occured                         */
+  UNUR_ERR_DOMAIN         = 0x61,     /* argument out of domain              */
+  UNUR_ERR_ROUNDOFF       = 0x62,     /* (serious) round-off error           */
+  UNUR_ERR_MALLOC         = 0x63,     /* virtual memory exhausted            */
+  UNUR_ERR_NULL           = 0x64,     /* invalid NULL pointer                */ 
+  UNUR_ERR_COOKIE         = 0x65,     /* invalid cookie                      */
+  UNUR_ERR_GENERIC        = 0x66,     /* generic error                       */
+  UNUR_ERR_SILENT         = 0x67,     /* silent error (no error message)     */
+  UNUR_ERR_INF            = 0x68,     /* infinity occured                    */
+  UNUR_ERR_NAN            = 0x69,     /* NaN occured                         */
 
   /** compilation switches **/
   /*

@@ -147,8 +147,8 @@ unur_test_count_urn( struct unur_gen *gen, int samplesize, int verbosity, FILE *
   gen->urng->get_next = _urng_with_counter;
   if (gen->urng_aux) gen->urng_aux = gen->urng;
 #elif UNUR_URNG_TYPE == UNUR_URNG_GENERIC
-  urng_to_use = gen->urng->getrand;
-  gen->urng->getrand = _urng_with_counter;
+  urng_to_use = gen->urng->sampleunif;
+  gen->urng->sampleunif = _urng_with_counter;
   if (gen->urng_aux) gen->urng_aux = gen->urng;
 #else
   /* no counter available */
@@ -193,7 +193,7 @@ unur_test_count_urn( struct unur_gen *gen, int samplesize, int verbosity, FILE *
 #elif UNUR_URNG_TYPE == UNUR_URNG_PRNG
   gen->urng->get_next = urng_to_use;
 #elif UNUR_URNG_TYPE == UNUR_URNG_GENERIC
-  gen->urng->getrand = urng_to_use;
+  gen->urng->sampleunif = urng_to_use;
 #endif  /* UNUR_URNG_TYPE */
 
   /* restore auxilliary generator */

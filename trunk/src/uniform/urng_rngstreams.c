@@ -4,10 +4,11 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   FILE: unur_source.h                                                     *
+ *   FILE: urng_prng.c                                                       *
  *                                                                           *
- *   PURPOSE:                                                                *
- *         To be included as first header file in all sources.               *
+ *   routines to get new URNG object with sampling routine of type PRNG.     *
+ *   (Lendl's prng package, see http://statistik.wu-wien.ac.at/prng/ or      *
+ *   http://random.mat.sbg.ac.at/.                                           *
  *                                                                           *
  *****************************************************************************
      $Id$
@@ -34,88 +35,48 @@
  *****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
-#ifndef UNUR_SOURCE_H_SEEN
-#define UNUR_SOURCE_H_SEEN
-/*---------------------------------------------------------------------------*/
+
+#include <unur_source.h>
+#include "unur_uniform.h"
+#include "urng.h"
 
 /*---------------------------------------------------------------------------*/
-/* compiler switches and defaults                                            */
-#include <unuran_config.h>
+#if UNUR_URNG_TYPE == UNUR_URNG_GENERIC
+/*---------------------------------------------------------------------------*/
+#ifdef UNURAN_HAS_RNGSTREAMS
+/*---------------------------------------------------------------------------*/
+
+UNUR_URNG *
+unur_urng_rngstreamptr_new( RngStream rngstream )
+     /*----------------------------------------------------------------------*/
+     /* get new URNG object of type RNGSTREAMS.                              */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   urngstr ... pointer to generator structure                         */
+     /*----------------------------------------------------------------------*/
+{
+  UNUR_URNG *urng = unur_urng_new( (_unur_urng_doublevoidptr) RngStream_RandU01, rngstream );
+  unur_urng_set_reset(urng, (_unur_urng_intvoidptr) RngStream_ResetStartStream);
+  unur_urng_set_delete(urng, (_unur_urng_voidvoidptr) RngStream_DeleteStream);
+  return urng;
+} /* end of unur_urng_rngstreamptr_new() */
 
 /*---------------------------------------------------------------------------*/
-/* config file generated be autoconf                                         */
 
-
-#ifdef HAVE_CONFIG_H
-#  include <config.h>
-#else
-#  error "config.h" required
-#endif
-
-
-/*---------------------------------------------------------------------------*/
-/* include standard header files                                             */
-
-#include <float.h>
-#include <math.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
-#ifdef HAVE_LIMITS_H
-#  include <limits.h>
-#endif
+UNUR_URNG *
+unur_urng_rngstream_new( const char *urngstr )
+     /*----------------------------------------------------------------------*/
+     /* get new URNG object of type RNGSTREAMS.                              */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   prngstr ... string that describes generator                        */
+     /*----------------------------------------------------------------------*/
+{
+  return unur_urng_rngstreamptr_new(RngStream_CreateStream(urngstr));
+} /* end of unur_urng_prng_new() */
 
 /*---------------------------------------------------------------------------*/
-/* globally used types                                                       */
-
-#include <unur_typedefs.h>
-#include <unur_struct.h>
-
+#endif   /* #ifdef UNURAN_HAS_RNGSTREAMS */
 /*---------------------------------------------------------------------------*/
-/* Utilities used by almost all sources                                      */
-
-/* uniform random number generators */
-#include <uniform/urng_source.h>
-
-/* magic cookies */
-#include <unur_cookies.h>
-
-/* debuging, warnings and error messages */
-#include <utils/debug.h>
-#include <utils/debug_source.h>
-#include <utils/stream_source.h>
-#include <utils/unur_errno.h>
-#include <utils/unur_error_source.h>
-
-/* floating point arithmetic */
-#include <utils/unur_fp_source.h>
-#include <utils/unur_fp_const_source.h>
-
-/* mathematics */
-#include <utils/umath.h>
-#include <utils/umath_source.h>
-#include <utils/unur_math_source.h>
-
-/* vectors */
-#include <utils/vector_source.h>
-
-/* strings */
-#include <utils/string_source.h>
-
-/* allocate memory */
-#include <utils/umalloc_source.h>
-
-/* simple lists */
-#include <utils/slist.h>
-
-/*---------------------------------------------------------------------------*/
-/* support for dmalloc                                                       */
-
-#ifdef WITH_DMALLOC
-#  include <dmalloc.h>
-#endif
-
-/*---------------------------------------------------------------------------*/
-#endif  /* UNUR_SOURCE_H_SEEN */
+#endif   /* #if UNUR_URNG_TYPE == UNUR_URNG_GENERIC */
 /*---------------------------------------------------------------------------*/

@@ -311,10 +311,273 @@ UNUR_URNG *unur_get_urng_aux( UNUR_GEN *generator );
   URNG.
 */
 
+/*---------------------------------------------------------------------------*/
+
+
 /* =END */
 
+
+
+
+
+
+
+
 /*---------------------------------------------------------------------------*/
+/* Unified interface for uniform random number generators.                   */
+/* EXPERIMENTAL!                                                             */
+
+
+double unur_urng_sample (UNUR_URNG *urng);
+/*
+   Get a uniform random number from @var{urng}.
+   If the NULL pointer is given, the default uniform generator is
+   used. 
+*/
+
+
+int unur_urng_reset (UNUR_URNG *urng);
+/*
+   Reset @var{urng} object.
+   It returns an error code if reseting is not possible. 
+
+   If the NULL pointer is given, the default uniform generator is
+   reset.
+*/
+
+
+
+/*---------------------------------------------------------------------------*/
+#if UNUR_URNG_TYPE == UNUR_URNG_GENERIC
+/*---------------------------------------------------------------------------*/
+
+/* generic API to create a new URNG (uniform random number generator) object */
+
+UNUR_URNG *unur_urng_new( double (*sampleunif)(void *p), void *params );
+/*
+   Get a new URNG object. 
+   @var{sampleunif} is a function to the uniform sampling routine,
+   @var{params} a pointer to its arguments.
+
+   Functions @var{sampleunif} with a different type for @var{p} or
+   without an argument at all also work. A typecast might be necessary
+   to avoid compiler warnings.
+
+   Functions @var{sampleunif} does not have any argument use NULL for
+   @var{params}.
+   
+   @emph{Important:} @var{sampleunif} must not be the NULL pointer.
+
+   There are appropriate calls that simplifies the task of creating
+   URNG objects for some libraries with uniform random number
+   generators.
+*/
+
+int unur_urng_set_anti( UNUR_URNG *urng, int (*anti)(void *p, int anti) );
+/*
+   Set function to switch to antithetic random numbers in @var{urng}
+   (if available).
+*/
+
+int unur_urng_set_reset( UNUR_URNG *urng, int (*reset)(void *p) );
+/* 
+   Set function for reseting the uniform random number generator
+   @var{urng} (if available).
+*/
+
+int unur_urng_set_nextsub( UNUR_URNG *urng, int (*nextsub)(void *p) );
+/*
+   Set function that allows jumping to start of the next substream of
+   @var{urng} (if available).
+*/
+
+int unur_urng_set_resetsub( UNUR_URNG *urng, int (*resetsub)(void *p) );
+/*
+   Set function that allows jumping to start of the current substream
+   of @var{urng} (if available).
+*/
+
+int unur_urng_set_delete( UNUR_URNG *urng, void (*delete)(void *p) );
+/*
+   Set function for destroying @var{urng} (if available).
+*/
+
+/*---------------------------------------------------------------------------*/
+
+/* generic API to handle URNG (uniform random number generator) object */
+
+int unur_urng_anti (UNUR_URNG *urng, int anti);
+/*
+   Switch to antithetic random numbers in @var{urng}.
+   (if available).
+   It returns an error code if this is not possible. 
+
+   If the NULL pointer is given, the default uniform generator is
+   reset.
+*/
+
+int unur_urng_nextsub (UNUR_URNG *urng);
+/*
+   Jump to start of next substream of @var{urng}.
+   It returns an error code if this is not possible. 
+
+   If the NULL pointer is given, the default uniform generator is set
+   to the start of the next substream.
+*/
+
+int unur_urng_resetsub (UNUR_URNG *urng);
+/*
+   Jump to start of the current substream of @var{urng}.
+   It returns an error code if this is not possible. 
+
+   If the NULL pointer is given, the default uniform generator is set
+   to the start of the current substream.
+*/
+
+int unur_urng_free (UNUR_URNG *urng);
+/* 
+   Destroy @var{urng} object.
+   It returns an error code if this is not possible. 
+
+   If the NULL is given, this function does nothing as it is not
+   a good idea to destroy the default uniform generator.
+
+   @emph{Warning:} This call must be used with care. The @var{urng}
+   object must not be used by any existing generator object!
+*/
+
+int unur_gen_anti (UNUR_GEN *gen, int anti);
+/* */
+
+int unur_gen_reset (UNUR_GEN *gen);
+/* */
+
+int unur_gen_nextsub (UNUR_GEN *gen);
+/* */
+
+int unur_gen_resetsub (UNUR_GEN *gen);
+/* 
+   Analogous to unur_urng_anti(), unur_urng_reset(), unur_nextsub(), and
+   unur_urng_resetsub(). However, these act on the URNG object used by
+   generator object @var{gen}.
+
+   @emph{Warning:} These three calls should be used with care as it
+   influences all generator objects that share the same URNG object!
+*/
+
+/*---------------------------------------------------------------------------*/
+
+/* Interface to particular uniform RNG libraries */
+
+
+/* ugly hack */
+/* types for function pointer */
+typedef double (*_unur_urng_doublevoidptr)(void*);
+typedef int (*_unur_urng_intvoidptr)(void*);
+typedef void (*_unur_urng_voidvoidptr)(void*);
+
+
+
+UNUR_URNG *unur_urng_fvoid_new( double (*random)(void), int (*reset)(void) );
+/*
+   Make a URNG object for a genertor that consists of a single
+   function call with a global state variable.
+
+   @emph{Notice:} If independent versions of the same URNG should be
+   used, copies of the subroutine with different names has to be
+   implement in the program code.
+
+   If there is no reset function use NULL for the second argument.
+   
+   UNURAN contains some build-in URNGs of this type in directory
+   @file{src/uniform/}.
+*/
+
+#ifdef UNURAN_HAS_PRNG
+#include <prng.h>
+
+UNUR_URNG *unur_urng_prng_new( const char *prngstr );
+/*
+   Make object for URNGs from Otmar Lendl's @file{prng} package. 
+   @var{prngstr} is a string that contains the necessary information
+   to create a uniform random number generator. For the format of this
+   string see the @file{prng} user manual.
+
+   The @file{prng} library provides a very flexible way to sample form
+   arbitrary URNGs by means of an object oriented programing
+   paradigma. Similarly to the UNURAN library independent generator
+   objects can be build and used. The library has been developed by
+   and implemented by Otmar Lendl as member of the pLab group at the
+   university of Salzburg (Austria, EU). 
+
+   It is available via anonymous ftp from
+   @uref{http://statistik.wu-wien.ac.at/prng/}
+   or from the pLab site at
+   @uref{http://random.mat.sbg.ac.at/}.
+*/
+
+UNUR_URNG *unur_urng_prngptr_new( struct prng *urng );
+/*
+   Similar to unur_urng_prng_new() except it uses a pointer to a
+   generator object as returned by @code{prng_new(prngstr)};
+   see @file{prng} manual for details.
+*/
+
+#endif
+
+
+
+#ifdef UNURAN_HAS_RNGSTREAMS
+#include <RngStreams.h>
+UNUR_URNG *unur_urng_rngstream_new( const char *urngstr );
+/*
+   Make object for URNGs from Pierre L'Ecuyer's @file{RngStream}
+   library. This library provides multiple independent streams of
+   pseudo-random numbers and is available from
+   @uref{http://www.iro.umontreal.ca/~lecuyer/myftp/streams00/c/}.
+   @var{urngstr} is an arbitrary string to label a stream. It need not
+   be unique.
+*/
+
+UNUR_URNG *unur_urng_rngstreamptr_new( RngStream rngstream );
+/*
+   Similar to unur_urng_rngstream_new() except it uses a pointer to a 
+   generator object as returned by @code{RngStream_CreateStream()}.
+*/
+
+#endif
+
+
+
+#ifdef UNURAN_HAS_GSL
+#include <gsl/gsl_rng.h>
+
+UNUR_URNG *unur_urng_gsl_new( const gsl_rng_type *urngtype );
+/*
+   Make object for URNGs from the @file{GSL} (GNU Scientific Library).
+   @var{urng} is the type of the chosen generator as described in the
+   GSL manual. This library is available from
+   @uref{http://www.gnu.org/software/gsl/}.
+*/
+
+UNUR_URNG *unur_urng_gslptr_new( gsl_rng *urng );
+/*
+   Similar to unur_urng_gsl_new() except it uses a pointer to a
+   generator object as returned by @code{gsl_rng_alloc(rng_type)};
+   see @file{GSL} manual for details.
+*/
+
+#endif
+
+/*---------------------------------------------------------------------------*/
+#endif   /* #if UNUR_URNG_TYPE == UNUR_URNG_GENERIC */
+/*---------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------*/
+
 
 /*---------------------------------------------------------------------------*/
 #endif  /* X_URNG_H_SEEN */
 /*---------------------------------------------------------------------------*/
+
+

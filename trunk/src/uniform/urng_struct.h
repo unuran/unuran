@@ -4,10 +4,9 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   FILE: unur_source.h                                                     *
+ *   FILE: unur_struct.h                                                     *
  *                                                                           *
- *   PURPOSE:                                                                *
- *         To be included as first header file in all sources.               *
+ *   structures used for included uniform random number generators           *
  *                                                                           *
  *****************************************************************************
      $Id$
@@ -34,88 +33,19 @@
  *****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
-#ifndef UNUR_SOURCE_H_SEEN
-#define UNUR_SOURCE_H_SEEN
+#if UNUR_URNG_TYPE == UNUR_URNG_GENERIC
 /*---------------------------------------------------------------------------*/
 
-/*---------------------------------------------------------------------------*/
-/* compiler switches and defaults                                            */
-#include <unuran_config.h>
+struct unur_urng_generic {
+  double (*sampleunif)(void *params); /* function for generating uniform RNG */
+  void *params;                       /* list of parameters                  */
+  int (*reset)(void *p);              /* reset object                        */
+  int (*nextsub)(void *p);            /* skip to next substream              */
+  int (*resetsub)(void *p);           /* reset current substream             */
+  int (*anti)(void *p, int a);        /* set antithetic flag                 */
+  void (*delete)(void *p);            /* function for destroying URNG        */
+};
 
 /*---------------------------------------------------------------------------*/
-/* config file generated be autoconf                                         */
-
-
-#ifdef HAVE_CONFIG_H
-#  include <config.h>
-#else
-#  error "config.h" required
-#endif
-
-
-/*---------------------------------------------------------------------------*/
-/* include standard header files                                             */
-
-#include <float.h>
-#include <math.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
-#ifdef HAVE_LIMITS_H
-#  include <limits.h>
-#endif
-
-/*---------------------------------------------------------------------------*/
-/* globally used types                                                       */
-
-#include <unur_typedefs.h>
-#include <unur_struct.h>
-
-/*---------------------------------------------------------------------------*/
-/* Utilities used by almost all sources                                      */
-
-/* uniform random number generators */
-#include <uniform/urng_source.h>
-
-/* magic cookies */
-#include <unur_cookies.h>
-
-/* debuging, warnings and error messages */
-#include <utils/debug.h>
-#include <utils/debug_source.h>
-#include <utils/stream_source.h>
-#include <utils/unur_errno.h>
-#include <utils/unur_error_source.h>
-
-/* floating point arithmetic */
-#include <utils/unur_fp_source.h>
-#include <utils/unur_fp_const_source.h>
-
-/* mathematics */
-#include <utils/umath.h>
-#include <utils/umath_source.h>
-#include <utils/unur_math_source.h>
-
-/* vectors */
-#include <utils/vector_source.h>
-
-/* strings */
-#include <utils/string_source.h>
-
-/* allocate memory */
-#include <utils/umalloc_source.h>
-
-/* simple lists */
-#include <utils/slist.h>
-
-/*---------------------------------------------------------------------------*/
-/* support for dmalloc                                                       */
-
-#ifdef WITH_DMALLOC
-#  include <dmalloc.h>
-#endif
-
-/*---------------------------------------------------------------------------*/
-#endif  /* UNUR_SOURCE_H_SEEN */
+#endif  /* #if UNUR_URNG_TYPE == UNUR_URNG_GENERIC */
 /*---------------------------------------------------------------------------*/

@@ -103,6 +103,13 @@ unur_get_strerror ( const int unur_errno )
     return "(parameter) invalid generator object";
   case UNUR_ERR_GEN_SAMPLING:
     return "(generator) sampling error";
+
+
+    /** uniform random number generator (URNG) object **/
+  case UNUR_ERR_URNG:
+    return "(URNG)";
+  case UNUR_ERR_URNG_MISS:
+    return "(URNG) missing functionality";
     
     /** string parser **/
   case UNUR_ERR_STR:

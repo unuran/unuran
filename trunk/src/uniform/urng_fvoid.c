@@ -4,10 +4,10 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   FILE: unur_source.h                                                     *
+ *   FILE: urng_fvoid.c                                                      *
  *                                                                           *
- *   PURPOSE:                                                                *
- *         To be included as first header file in all sources.               *
+ *   routines to get new URNG object with sampling routine of type FVOID:    *
+ *   double(*urng)(void), NULL) and global state variable.                   *
  *                                                                           *
  *****************************************************************************
      $Id$
@@ -34,88 +34,31 @@
  *****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
-#ifndef UNUR_SOURCE_H_SEEN
-#define UNUR_SOURCE_H_SEEN
-/*---------------------------------------------------------------------------*/
+
+#include <unur_source.h>
+#include "unur_uniform.h"
+#include "urng.h"
 
 /*---------------------------------------------------------------------------*/
-/* compiler switches and defaults                                            */
-#include <unuran_config.h>
+#if UNUR_URNG_TYPE == UNUR_URNG_GENERIC
+/*---------------------------------------------------------------------------*/
+
+UNUR_URNG *
+unur_urng_fvoid_new( double (*random)(void), int (*reset)(void) )
+     /*----------------------------------------------------------------------*/
+     /* get new URNG object of type FVOID                                    */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   random  ... pointer to uniform random number generator             */
+     /*   reset   ... pointer to reset function for URNG                     */
+     /*----------------------------------------------------------------------*/
+{
+  UNUR_URNG *urng = unur_urng_new( (_unur_urng_doublevoidptr) random, NULL );
+  unur_urng_set_reset( urng, (_unur_urng_intvoidptr) reset );
+  return urng;
+} /* end of unur_urng_fvoid_new() */
 
 /*---------------------------------------------------------------------------*/
-/* config file generated be autoconf                                         */
-
-
-#ifdef HAVE_CONFIG_H
-#  include <config.h>
-#else
-#  error "config.h" required
-#endif
-
-
+#endif   /* #if UNUR_URNG_TYPE == UNUR_URNG_GENERIC */
 /*---------------------------------------------------------------------------*/
-/* include standard header files                                             */
 
-#include <float.h>
-#include <math.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
-#ifdef HAVE_LIMITS_H
-#  include <limits.h>
-#endif
-
-/*---------------------------------------------------------------------------*/
-/* globally used types                                                       */
-
-#include <unur_typedefs.h>
-#include <unur_struct.h>
-
-/*---------------------------------------------------------------------------*/
-/* Utilities used by almost all sources                                      */
-
-/* uniform random number generators */
-#include <uniform/urng_source.h>
-
-/* magic cookies */
-#include <unur_cookies.h>
-
-/* debuging, warnings and error messages */
-#include <utils/debug.h>
-#include <utils/debug_source.h>
-#include <utils/stream_source.h>
-#include <utils/unur_errno.h>
-#include <utils/unur_error_source.h>
-
-/* floating point arithmetic */
-#include <utils/unur_fp_source.h>
-#include <utils/unur_fp_const_source.h>
-
-/* mathematics */
-#include <utils/umath.h>
-#include <utils/umath_source.h>
-#include <utils/unur_math_source.h>
-
-/* vectors */
-#include <utils/vector_source.h>
-
-/* strings */
-#include <utils/string_source.h>
-
-/* allocate memory */
-#include <utils/umalloc_source.h>
-
-/* simple lists */
-#include <utils/slist.h>
-
-/*---------------------------------------------------------------------------*/
-/* support for dmalloc                                                       */
-
-#ifdef WITH_DMALLOC
-#  include <dmalloc.h>
-#endif
-
-/*---------------------------------------------------------------------------*/
-#endif  /* UNUR_SOURCE_H_SEEN */
-/*---------------------------------------------------------------------------*/

@@ -1,3 +1,1255 @@
+2004-08-06  Josef Leydold  <leydold@zwirn.appstat.wu-wien.ac.at>
+
+	* src/methods/nrou.h:
+	renamed unur_nrou_set_rect_u() to unur_nrou_set_rect_v(); improved manual
+
+	* src/methods/nrou.c:
+	renamed unur_nrou_set_rect_u() to unur_nrou_set_rect_v()
+
+	* tests/t_nrou.conf:
+	renamed unur_nrou_set_rect_u() to unur_nrou_set_rect_v(); added tests for stringparser; added validate tests
+
+	* INSTALL, doc/src/intro.dh: added comment about IEEE FPA
+
+	* AUTHORS, NEWS, THANKS: updated
+
+2004-08-06  Roman Karawatzki  <kara@zwirn>
+
+	* src/methods/vnrou.c:
+	minor bugfix with starting point initialization for bounding rectangle calculation
+
+2004-08-06  Josef Leydold  <leydold@zwirn.appstat.wu-wien.ac.at>
+
+	* doc/src/unuran_method_requirements.texi: added VNROU
+
+	* doc/src/references.dh: added [HJa61] and [WGS91]; update [JLa02]
+
+	* src/methods/vnrou.h: improved version of manual
+
+	* src/distr/cvec.h: added introduction to CVEC distributions
+
+	* src/distr/discr.c:
+	bugfix: right boundary was wrong in unur_distr_discr_make_pv()
+
+	* src/distributions/d_binomial.c: minor change
+
+2004-08-05  Josef Leydold  <leydold@zwirn.appstat.wu-wien.ac.at>
+
+	* tests/t_vnrou.conf: added test with shifted center
+
+	* src/methods/vnrou.c: added volume of bounding rectangle in log file
+
+	* tests/t_vnrou.conf: fixed memory leak
+
+	* scripts/run_valgrind.sh:
+	added script for running valgrind (quick&dirty hack)
+
+2004-08-05  Roman Karawatzki  <kara@zwirn>
+
+	* src/methods/vnrou.c: removing memory allocations from par-object
+
+2004-08-05  Josef Leydold  <leydold@zwirn.appstat.wu-wien.ac.at>
+
+	* src/methods/vnrou.c, src/methods/vnrou.h, src/methods/vnrou_struct.h:
+	center is now stored and handled in distribution object
+
+	* tests/t_distr_cvec.conf: added center to CVEC distribution object
+
+	* src/distr/cvec.c, src/distr/cvec.h:
+	added center to CVEC distribution object; a NULL pointer is now interpreted as (0,...,0) in a unur_distr_cvec_set_mode() call
+
+	* src/distr/distr_struct.h, src/distr/distr_source.h:
+	added center to CVEC distribution object
+
+	* doc/src/make_texi.pl: added macro \ldots to TeX parser
+
+2004-08-04  Josef Leydold  <leydold@zwirn.appstat.wu-wien.ac.at>
+
+	* src/utils/Makefile.am, src/utils/hooke.c, src/utils/hooke_source.h:
+	rename hooke() to _unur_hooke(); hooke.c is compiled instead of included into another file; new header file for prototype
+
+	* src/methods/vnrou.c:
+	include hooke_source.h instead of C file hooke.c; rename hooke() to _unur_hooke()
+
+	* doc/src/make_texi.pl: added \mu
+
+	* doc/src/arvag.dh, src/methods/nrou.h, src/methods/vnrou.h:
+	minor change in docu
+
+	* doc/figures/inversion.txt, doc/figures/rejection_from_constant_hat.txt:
+	fixed first line of figure
+
+	* src/methods/vnrou.c: minor change
+
+	* doc/src/README: updated docu
+
+	* doc/src/glossary.dh:
+	fixed incompatibility with new support for @unurmath{} macro
+
+	* doc/src/arvag.dh, doc/src/make_texi.pl:
+	added support for @unurmath{} macro
+
+2004-08-04  Roman Karawatzki  <kara@zwirn>
+
+	* src/methods/vnrou.c:
+	improving min/max-calculations and introducing a scaling of boundary rectangle
+
+	* src/methods/vnrou.c:
+	setting NROU_HOOKE_EPSILON constant to a smaller value making boundary rectangle calculation more accurate
+
+2004-08-03  Josef Leydold  <leydold@zwirn.appstat.wu-wien.ac.at>
+
+	* tests/t_vnrou.conf: added more tests
+
+	* src/distributions/vc_multinormal.c: mark pdfvolume as known
+
+	* src/methods/vnrou.c:
+	check for NULL pointer in unur_vnrou_set_u; print warning when r=0 in unur_vnrou_set_r; print more debugging info for method VNROU
+
+	* src/methods/vnrou.h: added some remarks to docu
+
+	* src/distr/cvec.c: print mode in debugging routine
+
+	* src/distr/cvec.h: added remark to docu
+
+2004-08-02  Roman Karawatzki  <kara@zwirn>
+
+	* src/methods/vnrou.c: minor change in debug routine
+
+	* src/methods/vnrou.c: fixed bug in hut-check routine
+
+2004-08-02  Josef Leydold  <leydold@zwirn.appstat.wu-wien.ac.at>
+
+	* tests/t_vnrou.conf: added tests for verify hat
+
+	* tests/testroutines.c:
+	improved error reporting; run_validate_verifyhat also works for CVEC
+
+	* tests/t_vnrou.conf: added some tests
+
+	* src/methods/vnrou.h: minor change in docu
+
+2004-07-29  Roman Karawatzki  <kara@zwirn>
+
+	* tests/t_vnrou.conf: adding tests with different r-value
+
+2004-07-29  Josef Leydold  <leydold@zwirn.appstat.wu-wien.ac.at>
+
+	* tests/t_vnrou.conf: update
+
+2004-07-29  Roman Karawatzki  <kara@zwirn>
+
+	* src/methods/vnrou.c: fixed bug in samplig routine
+
+	* src/methods/vnrou.c: fixed bug in umin/umax calculation
+
+2004-07-29  Josef Leydold  <leydold@zwirn.appstat.wu-wien.ac.at>
+
+	* src/specfunct/mconf_source.h: removed definition of INFINITY
+
+	* src/utils/umath.c, src/utils/umath.h: improved definition of INFINITY
+
+	* src/utils/unur_fp_source.h:
+	added functions _unur_isnan, _unur_isinf, and _unur_isfinite; definition of INFINITY moved to umath.h
+
+	* src/utils/Makefile.am, src/utils/unur_fp.c:
+	added functions _unur_isnan, _unur_isinf, and _unur_isfinite
+
+	* configure.ac:
+	added checks for C99 function isnan, isinf, and isfinite; check for IEEE comparisons
+
+2004-07-29  Roman Karawatzki  <kara@zwirn>
+
+	* src/methods/vnrou.c, src/methods/vnrou.h, src/methods/vnrou_struct.h:
+	implementing r-parameter for the generalized nrou method
+
+	* src/methods/vnrou.c:
+	moving auxiliary parameter from global to generator data
+
+	* src/methods/vnrou_struct.h:
+	added aux_dim to be used in bunding rectangle computations
+
+	* src/methods/vnrou.c: removing global copy of generator object
+
+	* src/utils/hooke.c:
+	implementing unur_struct_vgeneric for function calls
+
+2004-07-28  Josef Leydold  <leydold@zwirn.appstat.wu-wien.ac.at>
+
+	* run/Makefile, run/run.c: run.c
+
+2004-07-28  Roman Karawatzki  <kara@zwirn>
+
+	* src/methods/vnrou.c:
+	fixed bug in sampling check and auxiliary functions, removed free's from par object
+
+2004-07-28  Josef Leydold  <leydold@zwirn.appstat.wu-wien.ac.at>
+
+	* src/tests/tests.c: added method VNROU to tests
+
+	* src/methods/vnrou.c: fixed bug in sampling routine
+
+	* tests/README.conf: added docu
+
+	* tests/make_test_files.pl, tests/t_hinv.conf:
+	fixed violation of ISO C standard
+
+2004-07-28  Roman Karawatzki  <kara@zwirn>
+
+	* tests/t_vnrou.conf: vmt -> vnrou in setup
+
+	* src/methods/vnrou.c: fixed bug with clone object
+
+2004-07-28  Josef Leydold  <leydold@zwirn.appstat.wu-wien.ac.at>
+
+	* examples/example_mcorr.c, examples/example_vmt_0.c, examples/example_vmt_1.c:
+	fixed violation of ISO C standard
+
+2004-07-28  Roman Karawatzki  <kara@zwirn>
+
+	* tests/t_vnrou.conf:
+	tests for the vnrou method (basically a copy of t_vmt.conf)
+
+	* tests/Makefile.am: adding test for the vnrou method
+
+	* src/unuran.h.in, src/unur_cookies.h, src/unur_struct.h:
+	adding method vnrou
+
+	* src/methods/Makefile.am, src/methods/nrou.c, src/methods/unur_methods_source.h, src/methods/vnrou.c, src/methods/vnrou.h, src/methods/vnrou_struct.h, src/methods/x_gen_source.h:
+	First implementation of the multivariate nrou method.
+
+2004-07-14  Josef Leydold  <leydold@zwirn.appstat.wu-wien.ac.at>
+
+	* src/tests/chi2test.c, src/tests/counturn.c, src/tests/printsample.c, src/tests/timing.c, src/parser/functparser_init.ch, src/parser/functparser_parser.ch, src/parser/functparser_scanner.ch, src/parser/parser.c, src/parser/stringparser.c.in, src/utils/debug.c, src/utils/eigensystem.c, src/utils/matrix.c, src/utils/slist.c, src/utils/stream.c, src/utils/string.c, src/utils/umalloc.c, src/utils/umalloc_source.h, src/methods/tdr_newset.ch, src/methods/unif.c, src/methods/utdr.c, src/methods/vempk.c, src/methods/vmt.c, src/methods/x_gen.c, src/methods/arou.c, src/methods/auto.c, src/methods/cstd.c, src/methods/dari.c, src/methods/dau.c, src/methods/dgt.c, src/methods/dsrou.c, src/methods/dss.c, src/methods/dstd.c, src/methods/empk.c, src/methods/empl.c, src/methods/hinv.c, src/methods/hrb.c, src/methods/hrd.c, src/methods/hri.c, src/methods/mcorr.c, src/methods/ninv.c, src/methods/nrou.c, src/methods/srou.c, src/methods/ssr.c, src/methods/tabl.c, src/methods/tdr_init.ch, src/distributions/c_beta_gen.c, src/distributions/c_chi_gen.c, src/distributions/c_gamma_gen.c, src/distributions/c_gig_gen.c, src/distributions/c_normal_gen.c, src/distributions/c_powerexponential_gen.c, src/distributions/c_student_gen.c, src/distributions/d_binomial_gen.c, src/distributions/d_hypergeometric_gen.c, src/distributions/d_logarithmic_gen.c, src/distributions/d_poisson_gen.c, src/distributions/d_zipf_gen.c, src/distributions/vc_multinormal.c, src/distr/cemp.c, src/distr/cont.c, src/distr/corder.c, src/distr/cvec.c, src/distr/cvemp.c, src/distr/discr.c, src/distr/distr.c, src/distr/matr.c:
+	renamed _unur_malloc() to _unur_xmalloc()
+
+2004-07-09  Josef Leydold  <leydold@zwirn.appstat.wu-wien.ac.at>
+
+	* scripts/read_PDF.pl:
+	fixed bug which occurs due to a change in Perls scoping of
+
+2004-07-02  Roman Karawatzki  <kara@zwirn>
+
+	* src/distributions/vc_multinormal.c:
+	removed unnecessary malloc in pdf calculation
+
+2004-06-30  Roman Karawatzki  <kara@zwirn>
+
+	* src/distr/cvec_struct.h: *** empty log message ***
+
+	* src/unur_struct.h: excluding distr/cvec_struct.h
+
+2004-06-29  Roman Karawatzki  <kara@zwirn>
+
+	* src/unur_struct.h: including distr/cvec_struct.h
+
+	* src/distr/cvec_struct.h:
+	rectangle stuct for multivariate domains etc.
+
+2004-06-18  Roman Karawatzki  <kara@zwirn>
+
+	* src/unur_struct.h:
+	added declarations for generic multivariate functions
+
+2004-06-17  Roman Karawatzki  <kara@zwirn>
+
+	* src/utils/hooke.c: minimum calculation for multivariate functions
+
+	* src/methods/nrou.c: minor change
+
+	* src/utils/fmax.c, src/utils/fmax_source.h:
+	renaming: fminmax.c -> fmax.c  and  fminmax_source.h -> fmax_source.h
+
+	* src/utils/Makefile.am, src/utils/fminmax.c, src/utils/fminmax_source.h:
+	renaming: fminmax.c -> fmax.c and fminmax_source.h -> fmax_source.h
+
+2004-06-14  Roman Karawatzki  <kara@zwirn>
+
+	* run/Makefile, run/try.c, run/try_source.h:
+	some testing with try/catch
+
+2004-06-02  Roman Karawatzki  <kara@zwirn>
+
+	* run/try_source.h, run/try.c:
+	trailing new-lines converted to unix format
+
+	* run/Makefile, run/fmain.c, run/try.c, run/try_source.h:
+	Experiments with TRY/CATCH constructs and implementation
+
+2004-06-01  Josef Leydold  <leydold@zwirn.appstat.wu-wien.ac.at>
+
+	* src/methods/tdr.h: fixed missprint
+
+2004-05-14  Roman Karawatzki  <kara@zwirn>
+
+	* src/distributions/vc_multinormal.c: minor changes
+
+2004-05-13  Roman Karawatzki  <kara@zwirn>
+
+	* run/Makefile, run/fmain.c:
+	test program for signaling floating-point exceptions
+
+2004-05-11  Josef Leydold  <leydold@zwirn.appstat.wu-wien.ac.at>
+
+	* src/tests/unuran_tests.h: added comment for  unur_test_chi2()
+
+2004-05-11  Roman Karawatzki  <kara@zwirn>
+
+	* run/Makefile: run/Makefile
+
+	* src/utils/unur_fp_source.h, src/methods/nrou.c, src/methods/nrou.h:
+	using _unur_FP_is_plusminus_infinity() instead of isinf()
+
+2004-05-10  Josef Leydold  <leydold@zwirn.appstat.wu-wien.ac.at>
+
+	* src/tests/chi2test.c: verify result of matrix inversion
+
+	* src/tests/chi2test.c: test array offsets
+
+	* tests/testroutines.c:
+	modified interpretion of (minimal) p-values for multivariate distributions
+
+	* src/methods/vmt.c: fixed output in _unur_vmt_debug_init()
+
+	* src/distr/cvec.c:
+	added marginal distributions to _unur_distr_cvec_debug()
+
+	* tests/t_vmt.conf: added chisquare test for non-normal distribution
+
+	* tests/t_vmt.conf: bug fix
+
+	* src/tests/chi2test.c:
+	removed maximal dimension restriction from _unur_test_chi2_vec()
+
+	* src/methods/mcorr.h, src/distributions/unur_distributions.h:
+	added remark to docu
+
+2004-05-09  Josef Leydold  <leydold@zwirn.appstat.wu-wien.ac.at>
+
+	* tests/t_vmt.conf: added more chisquare tests
+
+	* tests/make_test_files.pl:
+	blocked creation of distribution in validate section
+
+	* src/tests/chi2test.c: revision of code
+
+	* doc/src/make_texi.pl: added anchor for unur_distr_[name]() calls
+
+	* tests/t_vmt.conf: added first chi2 test
+
+	* src/utils/matrix.c, src/utils/matrix_source.h:
+	fixed prototype for _unur_matrix_invert_matrix()
+
+	* src/tests/chi2test.c:
+	made chi2test_cvec() more flexible: it now used marginal distribution from distribution object
+
+	* src/tests/tests.c: added tests for method VMT
+
+	* tests/testroutines.c:
+	added chisquare test for CVEC distributions; improved error message
+
+2004-05-08  Josef Leydold  <leydold@zwirn.appstat.wu-wien.ac.at>
+
+	* src/methods/vmt.c, src/methods/x_gen.c, src/methods/x_gen_source.h:
+	changed behavior of _unur_gen_list_set(): instead of cloning the pointer is just copied
+
+2004-05-07  Roman Karawatzki  <kara@zwirn>
+
+	* src/distributions/vc_multinormal.c: calculations of pdf and dpdf
+
+2004-05-07  Josef Leydold  <leydold@zwirn.appstat.wu-wien.ac.at>
+
+	* tests/t_vmt.conf: added [sample - compare clone] section
+
+	* examples/example_vmt_1.c:
+	used unur_distr_cvec_set_stdmarginal_list() instead of unur_distr_cvec_set_stdmarginal_array()
+
+	* src/distr/cvec.h, src/distr/cvec.c:
+	added unur_distr_cvec_set_marginal_list() and unur_distr_cvec_set_stdmarginal_list()
+
+2004-05-06  Josef Leydold  <leydold@zwirn.appstat.wu-wien.ac.at>
+
+	* tests/t_vmt.conf:
+	commented out tests such that programs compiles (requires adaptation to new version of VMT)
+
+	* src/methods/vmt.h: update docu
+
+	* examples/example_vmt_1.c: added new examples
+
+	* examples/example_vmt_0.c:
+	renamed example_vmt.c to example_vmt_0.c; minor changes
+
+	* examples/Makefile.am:
+	renamed example_vmt.c to example_vmt_0.c; added example_vmt_1.c
+
+	* examples/example_vmt.c: renamed example_vmt.c to example_vmt_0.c
+
+	* src/methods/vmt_struct.h, src/methods/vmt.c, src/methods/vmt.h:
+	finished new version of method VMT
+
+	* src/methods/x_gen.c: fixed wrong ordering of free calls
+
+	* src/distr/cvec.c, src/distr/distr_source.h:
+	added boolean function _unur_distr_cvec_marginals_are_equal()
+
+	* NEWS, TODO: updated
+
+2004-05-05  Josef Leydold  <leydold@zwirn.appstat.wu-wien.ac.at>
+
+	* src/methods/x_urng.h: fixed docu for unur_set_urng()
+
+	* src/methods/x_gen.c: clone and free gen_aux_list
+
+	* src/methods/x_urng.c: change URNG in all generators in gen_aux_list
+
+	* src/methods/x_gen_source.h:
+	fixed prototype for _unur_gen_list_clone()
+
+	* tests/Makefile.am, tests/t_mcorr.conf: added tests for method MCORR
+
+	* tests/testroutines.c, tests/testunuran.h, tests/make_test_files.pl, tests/README.conf:
+	added test for comparing output of two random matrix generators
+
+	* src/methods/mcorr.c:
+	use AROU + DARS for auxiliary normal generator (DARS added)
+
+	* examples/Makefile.am, examples/example_mcorr.c:
+	added example for method MCORR
+
+	* src/methods/x_gen.h: minor change in docu
+
+2004-05-04  Josef Leydold  <leydold@zwirn.appstat.wu-wien.ac.at>
+
+	* src/distributions/unur_distributions.h:
+	linked multinormal distribution and random correlation matrix into docu
+
+	* src/parser/make_stringparser.pl:
+	added list of ignored distribution: these cannot be handled correctly yet
+
+	* src/methods/mcorr.h: minor changes in docu
+
+	* scripts/read_PDF.pl:
+	made scanning of distributions more flexible: PDF not required any more
+
+	* doc/src/make_texi.pl:
+	made scanning of distributions more flexible: =PDF not required any more
+
+	* doc/src/methods.dh: added node for generators of random matrices
+
+	* doc/src/stddist.dh: added node for random matrices
+
+	* tests/t_distr_cvec.conf, src/distr/cvec.c, src/distr/cvec.h, src/distr/distr_source.h, src/distr/distr_struct.h:
+	added support for non-standardized marginal distributions
+
+	* tests/t_distr_cvec.conf, src/distributions/vc_multinormal.c, src/distr/cvec.c, src/distr/cvec.h, src/distr/distr_source.h, src/distr/distr_struct.h:
+	renamed ..._marginal_... to ..._stdmarginal...
+
+2004-05-04  Roman Karawatzki  <kara@zwirn>
+
+	* src/methods/nrou.c: minor update
+
+	* tests/t_nrou.conf: enabling verify hat tests
+
+2004-05-03  Roman Karawatzki  <kara@zwirn>
+
+	* src/utils/fminmax.c: minor change
+
+	* src/methods/nrou.c:
+	extending and correcting calculation of bounding rectangle
+
+	* tests/t_nrou.conf: enabling more distributions for testing
+
+2004-04-30  Roman Karawatzki  <kara@zwirn>
+
+	* src/utils/fminmax.c: removed min/max wrapper functions
+
+	* src/distr/cont.c: reverting changes since version/revision 1.4
+
+2004-04-29  Roman Karawatzki  <kara@zwirn>
+
+	* src/methods/nrou.c:
+	extending calculation of bounding rectangle (still much to do ...)
+
+	* src/methods/nrou.c: minor change
+
+	* src/methods/nrou.c: bugfix in sampling routine
+
+	* src/methods/nrou.c:
+	calculation of boundary rectangle for cauchy-like distributions
+
+2004-04-29  Josef Leydold  <leydold@zwirn.appstat.wu-wien.ac.at>
+
+	* src/methods/x_gen.c, src/methods/x_gen_source.h:
+	added functions for handling lists of generator objects
+
+	* src/distr/cvec.c: minor change
+
+2004-04-28  Josef Leydold  <leydold@zwirn.appstat.wu-wien.ac.at>
+
+	* src/distr/cvec.c, src/methods/vempk.c: fixed typo
+
+	* src/methods/unif.c: fixed generator id
+
+	* src/methods/hrb.c, src/methods/hrd.c, src/methods/hri.c, src/methods/mcorr.c, src/methods/ninv.c, src/methods/nrou.c, src/methods/srou.c, src/methods/ssr.c, src/methods/tabl.c, src/methods/tdr_init.ch, src/methods/unif.c, src/methods/utdr.c, src/methods/vempk.c, src/methods/vmt.c, src/methods/x_gen.c, src/methods/x_gen_source.h, src/methods/arou.c, src/methods/cstd.c, src/methods/dari.c, src/methods/dau.c, src/methods/dgt.c, src/methods/dsrou.c, src/methods/dss.c, src/methods/dstd.c, src/methods/empk.c, src/methods/empl.c, src/methods/hinv.c:
+	added function _unur_generic_free()
+
+	* src/methods/dstd.c, src/methods/empk.c, src/methods/empl.c, src/methods/hinv.c, src/methods/hrb.c, src/methods/hrd.c, src/methods/hri.c, src/methods/mcorr.c, src/methods/ninv.c, src/methods/nrou.c, src/methods/srou.c, src/methods/ssr.c, src/methods/tabl.c, src/methods/tdr_init.ch, src/methods/unif.c, src/methods/utdr.c, src/methods/vempk.c, src/methods/vmt.c, src/methods/x_gen.c, src/methods/x_gen_source.h, src/methods/arou.c, src/methods/cstd.c, src/methods/dari.c, src/methods/dau.c, src/methods/dgt.c, src/methods/dsrou.c, src/methods/dss.c:
+	added function _unur_generic_clone()
+
+	* tests/test_special_matrix.c: fixed memory leak
+
+2004-04-28  Roman Karawatzki  <kara@zwirn>
+
+	* src/methods/nrou.c: checks for set parameters and minor bug-fix
+
+2004-04-28  Josef Leydold  <leydold@zwirn.appstat.wu-wien.ac.at>
+
+	* src/distr/cont.c, src/methods/nrou.c:
+	fixed typecast (UNUR_FUNCT_GENERIC*) for function pointer
+
+	* src/utils/fminmax_struct.h, src/unur_struct.h:
+	typedef for UNUR_FUNCT_GENERIC instead of #define; moved declarations from src/utils/fminmax_struct.h to src/unur_struct.h
+
+	* examples/Makefile.am:
+	added tag valgrind that runs valgrind debugger on all examples
+
+	* tests/Makefile.am:
+	added tag valgrind that runs valgrind debugger on all check programs
+
+	* configure.ac: check for function valgrind
+
+2004-04-28  Roman Karawatzki  <kara@zwirn>
+
+	* run/Makefile: *** empty log message ***
+
+	* src/distr/cont.c, src/methods/nrou.c, src/utils/fminmax_struct.h:
+	typecast to generic function pointer
+
+2004-04-28  Josef Leydold  <leydold@zwirn.appstat.wu-wien.ac.at>
+
+	* src/methods/arou.c, src/methods/cstd.c, src/methods/dari.c, src/methods/dau.c, src/methods/dgt.c, src/methods/dsrou.c, src/methods/dss.c, src/methods/dstd.c, src/methods/empk.c, src/methods/empl.c, src/methods/hinv.c, src/methods/hrb.c, src/methods/hrd.c, src/methods/hri.c, src/methods/mcorr.c, src/methods/ninv.c, src/methods/nrou.c, src/methods/srou.c, src/methods/ssr.c, src/methods/tabl.c, src/methods/tdr_init.ch, src/methods/unif.c, src/methods/utdr.c, src/methods/vempk.c, src/methods/vmt.c:
+	changed name for function _unur_malloc_gen() to _unur_generic_create(); the original name was stupid
+
+	* src/methods/x_gen_source.h, src/methods/x_gen.c, src/utils/umalloc.c, src/utils/umalloc_source.h:
+	changed name for function _unur_malloc_gen() to _unur_generic_create() and moved it from src/utils/umalloc.c to src/methods/x_gen.c; the original name was stupid
+
+	* src/methods/unif.c, src/methods/utdr.c, src/methods/vempk.c, src/methods/vmt.c:
+	added new function _unur_malloc_gen() that makes new empty generator object, copies basic data from parameter object and makes copy of distribution object; introduced to make changes in generic generator object easier to handle
+
+	* src/utils/umalloc.c:
+	check for NULL pointer before cloning distribution in _unur_malloc_gen
+
+2004-04-27  Josef Leydold  <leydold@zwirn.appstat.wu-wien.ac.at>
+
+	* src/methods/arou.c, src/methods/cstd.c, src/methods/dari.c, src/methods/dau.c, src/methods/dgt.c, src/methods/dsrou.c, src/methods/dss.c, src/methods/dstd.c, src/methods/empk.c, src/methods/empl.c, src/methods/hinv.c, src/methods/hrb.c, src/methods/hrd.c, src/methods/hri.c, src/methods/mcorr.c, src/methods/ninv.c, src/methods/nrou.c, src/methods/srou.c, src/methods/ssr.c, src/methods/tabl.c, src/methods/tdr_init.ch, src/utils/umalloc.c, src/utils/umalloc_source.h:
+	added new function _unur_malloc_gen() that makes new empty generator object, copies basic data from parameter object and makes copy of distribution object; introduced to make changes in generic generator object easier to handle
+
+	* src/unur_struct.h: added list of auxiliary generator objects
+
+2004-04-26  Roman Karawatzki  <kara@zwirn>
+
+	* src/methods/nrou.c:
+	adjusting computational flow of the bounding rectangle
+
+	* src/methods/nrou.c: bugfix in comutation of bounding rectangle
+
+	* src/methods/nrou.c:
+	calling utility function _unur_util_find_max() to detemine bounding rectangle
+
+	* src/distr/cont.c:
+	calling utility function _unur_util_find_max() to detemine mode
+
+	* src/unur_struct.h: including generic function structure
+
+	* src/utils/fminmax_source.h, src/utils/fminmax.c:
+	moving generic function struct to fminmax_struct.h
+
+	* src/utils/fminmax.c, src/utils/fminmax_source.h, src/utils/fminmax_struct.h:
+	*** empty log message ***
+
+	* src/distr/cont.c: find maximum in _unur_distr_cont_find_mode()
+
+2004-04-23  Josef Leydold  <leydold@zwirn.appstat.wu-wien.ac.at>
+
+	* tests/test_special_matrix.c: fixed missing exit codes
+
+2004-04-23  Roman Karawatzki  <kara@zwirn>
+
+	* src/methods/nrou.c: calls to _unur_util_find_max()
+
+	* src/utils/fminmax.c, src/utils/fminmax_source.h:
+	redefinition of procedure names
+
+	* tests/test_special_matrix.c: absolute and relative error calculations
+
+2004-04-22  Roman Karawatzki  <kara@zwirn>
+
+	* tests/test_special_matrix.c:
+	output log contains differences between actual and expected eigenvalues
+
+2004-04-19  Roman Karawatzki  <kara@zwirn>
+
+	* tests/test_special_matrix.c: *** empty log message ***
+
+	* run/Makefile, src/unur_source.h, src/utils/fminmax.c, tests/Makefile.am:
+	src/utils/fminmax.c
+
+	* src/utils/Makefile.am: including fminmax routines
+
+	* src/methods/nrou.c: bounding rectangle calculations
+
+2004-04-13  Josef Leydold  <leydold@zwirn.appstat.wu-wien.ac.at>
+
+	* examples/Makefile.am, examples/example_vmt.c:
+	added example for method VMT
+
+	* src/methods/vmt.c: removed parts from _debug() routine
+
+	* src/distr/cvec.c:
+	rewrote function _unur_distr_cvec_debug(); added marginal distributions
+
+	* src/utils/matrix.c, src/utils/matrix_source.h:
+	added _unur_matrix_print_vector() and _unur_matrix_print_matrix(); removed _unur_matrix_debug()
+
+2004-04-03  Josef Leydold  <leydold@zwirn.appstat.wu-wien.ac.at>
+
+	* tests/t_distr_cvec.conf: added tests for ..._rankcorr
+
+2004-04-02  Josef Leydold  <leydold@zwirn.appstat.wu-wien.ac.at>
+
+	* TODO, examples/Makefile.am:
+	examples are now compiled only with make check
+
+	* src/methods/nrou.h: fixed wrong citatition
+
+	* src/parser/Makefile.am, src/Makefile.am:
+	added dependency for src/parster/stringparser.c
+
+	* examples/Makefile.am: minor change
+
+2004-04-02  Roman Karawatzki  <kara@zwirn>
+
+	* src/utils/fminmax.c, src/utils/fminmax_source.h:
+	adding boundary calculations
+
+2004-04-02  Josef Leydold  <leydold@zwirn.appstat.wu-wien.ac.at>
+
+	* src/distr/cvec.c: fixed bug with cloning rankcorr
+
+2004-04-02  Roman Karawatzki  <kara@zwirn>
+
+	* src/utils/fminmax_source.h:
+	argumentliste in UNUR_FUNCT_STRUCT geändert
+
+2004-04-02  Josef Leydold  <leydold@zwirn.appstat.wu-wien.ac.at>
+
+	* src/parser/Makefile.am: the last change introduces a bug; undo
+
+	* src/parser/Makefile.am:
+	added dependency for stringparser.c (does not work properly but at least it works when make is invoked twice)
+
+	* src/distr/cvec.c, src/distr/cvec.h, src/distr/distr_source.h, src/distr/distr_struct.h:
+	added rank-correlation for CVEC distribution object
+
+2004-04-02  Roman Karawatzki  <kara@zwirn>
+
+	* src/utils/fminmax.c, src/utils/fminmax_source.h:
+	function-struct as parameter
+
+2004-04-01  Roman Karawatzki  <kara@zwirn>
+
+	* src/utils/fminmax.c, src/utils/fminmax_source.h:
+	*** empty log message ***
+
+2004-03-31  Josef Leydold  <leydold@zwirn.appstat.wu-wien.ac.at>
+
+	* tests/Makefile.am, tests/t_nrou.conf: added new method NROU
+
+	* src/methods/nrou.c: fixed typo in function name
+
+	* src/unur_cookies.h, src/unur_struct.h, src/unuran.h.in:
+	added new method NROU
+
+	* src/methods/Makefile.am, src/methods/nrou.c, src/methods/nrou.h, src/methods/nrou_struct.h, src/methods/unur_methods_source.h, src/methods/x_gen_source.h:
+	added new method NROU; first draft
+
+	* tests/make_test_files.pl: fixed wrong placement of declarations
+
+2004-03-31  Roman Karawatzki  <kara@zwirn>
+
+	* src/utils/eigensystem.c: rearranging some comments
+
+2004-03-31  Josef Leydold  <leydold@zwirn.appstat.wu-wien.ac.at>
+
+	* src/utils/eigensystem.c, src/utils/matrix_source.h:
+	added some comments; added check for invalid NULL pointer
+
+	* src/utils/eigensystem.c: added authors
+
+2004-03-30  Josef Leydold  <leydold@zwirn.appstat.wu-wien.ac.at>
+
+	* src/utils/eigensystem.c: replaces malloc by _unur_malloc
+
+	* src/utils/matrix_source.h: added docu
+
+2004-03-30  Roman Karawatzki  <kara@zwirn>
+
+	* src/utils/eigensystem_source.h: *** empty log message ***
+
+	* src/utils/eigensystem.c: normalizing eigenvectors
+
+	* src/utils/matrix_source.h:
+	adding declaration of _unur_matrix_eigensystem()
+
+	* src/utils/Makefile.am:
+	eigensystem_source.h removed -> merged with matrix_source.h
+
+2004-03-30  Josef Leydold  <leydold@zwirn.appstat.wu-wien.ac.at>
+
+	* src/utils/eigensystem.c: minor changes
+
+	* src/utils/matrix.c: minor fix
+
+2004-03-29  Roman Karawatzki  <kara@zwirn>
+
+	* src/utils/eigensystem.c, src/utils/eigensystem_source.h, src/utils/matrix.c:
+	*** empty log message ***
+
+	* src/utils/Makefile.am: adding support for eigensystem
+
+2004-03-29  Josef Leydold  <leydold@zwirn.appstat.wu-wien.ac.at>
+
+	* tests/Makefile.am, tests/test_special_hinv.c:
+	special tests test_special_hinv.c are moved into t_hinv.conf
+
+	* tests/t_hinv.conf: added special tests
+
+	* tests/make_test_files.pl: minor change in output
+
+2004-03-26  Josef Leydold  <leydold@zwirn.appstat.wu-wien.ac.at>
+
+	* tests/make_test_files.pl: added section [special]
+
+2004-03-24  Josef Leydold  <leydold@zwirn.appstat.wu-wien.ac.at>
+
+	* tests/README.conf: updated docu
+
+	* tests/make_test_files.pl:
+	complete rewrite of script (except scan_validate)
+
+	* tests/README.conf: updated docu
+
+2004-03-23  Josef Leydold  <leydold@zwirn.appstat.wu-wien.ac.at>
+
+	* NEWS, tests/t_distr.conf, tests/t_distr_matr.conf, src/unur_cookies.h, src/unur_struct.h, src/distributions/m_correlation.c, src/methods/mcorr.c, src/methods/mcorr.h, src/methods/x_gen.c, src/methods/x_gen.h, src/distr/distr.c, src/distr/distr.h, src/distr/distr_source.h, src/distr/distr_struct.h, src/distr/matr.c, src/distr/matr.h:
+	renamed CMAT into MATR
+
+	* src/utils/matrix.c, src/utils/matrix_source.h:
+	changed prototype of function _unur_matrix_determinant
+
+	* src/distributions/m_correlation.c, src/unuran.h.in, src/methods/mcorr.c, src/distr/Makefile.am, src/distr/cmat.c, src/distr/cmat.h, src/distr/matr.c, src/distr/matr.h, tests/Makefile.am, tests/t_distr_cmat.conf, tests/t_distr_matr.conf:
+	renamed files src/distr/cmat.* to src/distr/matr.*
+
+2004-03-23  Roman Karawatzki  <kara@zwirn>
+
+	* src/utils/matrix_source.h, src/utils/matrix.c:
+	adding determinant calculation routine
+
+2004-03-23  Josef Leydold  <leydold@zwirn.appstat.wu-wien.ac.at>
+
+	* src/unuran.h.in: added new method MCORR
+
+	* src/methods/mcorr.c: finished first version of generator
+
+	* src/methods/mcorr_struct.h: added working array to structure
+
+	* src/methods/mcorr.h: added docu
+
+2004-03-23  Roman Karawatzki  <kara@zwirn>
+
+	* src/tests/chi2test.c:
+	chi2vec : calculating Linv by _unur_matrix_invert_matrix()
+
+2004-03-22  Josef Leydold  <leydold@zwirn.appstat.wu-wien.ac.at>
+
+	* src/methods/x_gen.h: added remark for unur_sample_mat
+
+	* src/unur_cookies.h, src/unur_struct.h: added new method MCORR
+
+	* src/methods/x_gen.c, src/methods/x_gen.h:
+	added new sampling method for random matrices
+
+	* src/methods/x_gen_source.h, src/methods/unur_methods_source.h:
+	added new method MCORR
+
+	* src/methods/Makefile.am, src/methods/mcorr.c, src/methods/mcorr.h, src/methods/mcorr_struct.h:
+	added files for new method MCORR
+
+	* src/distributions/unur_distributions.h: completed first draft of docu
+
+	* src/distr/cmat.h: added short description
+
+	* src/distributions/Makefile.am, src/distributions/m_correlation.c, src/distributions/unur_distributions.h, src/distributions/unur_distributions_source.h, src/distributions/unur_stddistr.h:
+	added distribution for random correlation matrix
+
+	* doc/Makefile.am, doc/src/Makefile.am:
+	removed dependencies for unuran_src.texi when shipped
+
+	* src/distr/cvec.h: fixed typo in docu
+
+	* NEWS: added new distribution object CMAT
+
+	* tests/Makefile.am, tests/t_distr.conf, tests/t_distr_cmat.conf:
+	added tests for new distribution object CMAT
+
+	* src/unur_cookies.h, src/unuran.h.in, src/distr/Makefile.am, src/distr/cmat.c, src/distr/cmat.h, src/distr/distr.c, src/distr/distr.h, src/distr/distr_source.h, src/distr/distr_struct.h:
+	added new distribution object CMAT
+
+2004-03-22  Roman Karawatzki  <kara@zwirn>
+
+	* src/tests/chi2test.c: chi2vec : chi^2 test for all hyper-rectangles
+
+2004-03-22  Josef Leydold  <leydold@zwirn.appstat.wu-wien.ac.at>
+
+	* tests/t_distr_cvec.conf, src/distributions/vc_multinormal.c, NEWS, src/distr/cvec.c, src/distr/cvec.h, src/distr/distr_source.h, src/distr/distr_struct.h:
+	added marginal distributions to CVEC distribution object
+
+2004-03-22  Roman Karawatzki  <kara@zwirn>
+
+	* src/tests/chi2test.c: minor change of log-output
+
+	* src/utils/matrix.c:
+	correcting description of _unur_matrix_invert_matrix()
+
+	* src/utils/matrix_source.h:
+	_unur_matrix_debug() returns int instead of void
+
+	* src/utils/matrix.c:
+	_unur_matrix_debug : using CHECK_NULL instead of if-construct
+
+	* src/utils/histogram.c, src/utils/histogram_source.h, src/utils/Makefile.am:
+	*** empty log message ***
+
+2004-03-19  Roman Karawatzki  <kara@zwirn>
+
+	* src/utils/histogram.c: declaration bug fixed
+
+	* src/utils/histogram_source.h:
+	changing return type of _unur_histogram() to int
+
+	* src/utils/histogram.c: using CHECK_NULL instead of if (v==NULL) {...}
+
+2004-03-18  Roman Karawatzki  <kara@zwirn>
+
+	* src/utils/histogram.c, src/utils/histogram_source.h:
+	*** empty log message ***
+
+	* src/utils/Makefile.am: added histogram.c and histogram_source.h
+
+2004-03-17  Josef Leydold  <leydold@zwirn.appstat.wu-wien.ac.at>
+
+	* doc/Makefile.am: fixed dependencies for info
+
+	* TODO: added description of bug with build of docu
+
+	* doc/figures/Makefile.am: added figures to distribution
+
+	* doc/figures/discrete_inversion.eps, doc/figures/discrete_inversion.jpg, doc/figures/discrete_inversion.pdf, doc/figures/discrete_inversion.png, doc/figures/discrete_inversion.tex, doc/figures/discrete_inversion.txt, doc/figures/inversion.eps, doc/figures/inversion.jpg, doc/figures/inversion.pdf, doc/figures/inversion.png, doc/figures/inversion.tex, doc/figures/inversion.txt, doc/figures/rejection_from_constant_hat.eps, doc/figures/rejection_from_constant_hat.jpg, doc/figures/rejection_from_constant_hat.pdf, doc/figures/rejection_from_constant_hat.png, doc/figures/rejection_from_constant_hat.tex, doc/figures/rejection_from_constant_hat.txt, doc/figures/rou-cauchy.eps, doc/figures/rou-cauchy.jpg, doc/figures/rou-cauchy.pdf, doc/figures/rou-cauchy.png, doc/figures/rou-cauchy.tex, doc/figures/rou-cauchy.txt:
+	added new figure
+
+	* doc/figures/rejection-constant-hat.tex: renamed file
+
+	* doc/figures/texpict2img.pl:
+	added new features for producing TXT format; bug fix; changed default size for TXT format
+
+	* doc/src/make_texi.pl: added blank lines above and below @unurimage
+
+	* doc/src/glossary.dh: added entry U(a,b)
+
+	* doc/src/Makefile.am, doc/src/arvag.dh:
+	added new file arvag.dh with some theory on random variate generation
+
+2004-03-16  Josef Leydold  <leydold@zwirn.appstat.wu-wien.ac.at>
+
+	* doc/src/README, doc/src/make_texi.pl: added new macro @unurmath
+
+	* doc/figures/texpict2img.pl: added/corrected PS commands
+
+	* doc/Makefile.am: added dependencies from figure files
+
+	* doc/src/texinfo.tex: new texinfo version
+
+	* experiments/make_timing_table.c: fixed typo in printf string
+
+	* doc/figures/texpict2img.pl: first version of script
+
+	* doc/figures/Makefile.am: clean tmp files
+
+	* doc/src/README: added new macro @unurimage
+
+	* doc/src/make_texi.pl:
+	added new macro @unurimage; skip emacs autosave files starting with .#
+
+2004-03-16  Roman Karawatzki  <kara@zwirn>
+
+	* src/tests/chi2test.c: minor bug-fix
+
+	* src/tests/chi2test.c: comparing different methods to compute Linv
+
+2004-03-15  Roman Karawatzki  <kara@zwirn>
+
+	* src/tests/chi2test.c: chi2vec : z = Linv * (x-mean)
+
+2004-03-15  Josef Leydold  <leydold@zwirn.appstat.wu-wien.ac.at>
+
+	* doc/Makefile.am: added new SUBDIR
+
+	* configure.ac: added new Makefile
+
+	* doc/figures/Makefile.am, doc/figures/rejection-constant-hat.tex:
+	new file
+
+	* doc/figures/texpict2img.pl: added first draft of file
+
+	* doc/mdate-sh: removed automatically created file from CVS
+
+	* doc/unuran_method_requirements.texi, doc/README, doc/make_texi.pl:
+	moved file into directory doc/src
+
+	* doc/src/unuran_method_requirements.texi: moved file
+
+	* doc/src/make_texi.pl:
+	moved and updated file; make dependency list for unuran_src.texi to be included in Makefile
+
+	* doc/src/README: moved and updated file
+
+	* doc/Makefile.am:
+	moved some files into directory doc/src; fixed dependencies
+
+	* doc/src/references.dh: fixed spelling of Hoermann in references
+
+	* doc/src/Makefile.am:
+	fixed dependencies for unuran_src.texi; moved make_tei.pl and README into this directory
+
+	* scripts/merge_h.pl:
+	create dependency list for unuran.h to be included in corresponding Makefile
+
+	* src/Makefile.am: fixed dependencies for unuran.h
+
+	* src/methods/tabl.h:
+	added =HOWTOUSE tag; added @unurbibref to arvag book
+
+2004-03-13  Josef Leydold  <leydold@zwirn.appstat.wu-wien.ac.at>
+
+	* doc/README: updated description
+
+	* doc/make_texi.pl: minor change
+
+	* doc/make_texi.pl, src/distributions/unur_distributions.h, src/methods/dss.h, src/methods/tabl.h:
+	fixed parsing of =REF tags in docu
+
+	* src/methods/dss.h: fixed =REF entry
+
+	* configure.ac: added new directory ./doc/src
+
+	* tests/Makefile.am:
+	marked test t_arou as XFAILed to avoid annoying message until bug is fixed
+
+	* doc/examples.dh, doc/glossary.dh, doc/index.dh, doc/intro.dh, doc/methods.dh, doc/misc.dh, doc/references.dh, doc/src/Makefile.am, doc/src/examples.dh, doc/src/glossary.dh, doc/src/index.dh, doc/src/intro.dh, doc/src/methods.dh, doc/src/misc.dh, doc/src/references.dh, doc/src/stddist.dh, doc/src/texinfo.tex, doc/src/top.dh, doc/stddist.dh, doc/texinfo.tex, doc/top.dh:
+	moved dh files into new directory ./src
+
+	* doc/Makefile.am:
+	corrected dependencies for html and txt file; moved dh file into new directory ./src
+
+	* src/utils/matrix.c:
+	removed superfluous condition for ill-conditioned matrix
+
+2004-03-12  Roman Karawatzki  <kara@zwirn>
+
+	* src/utils/matrix.c, src/utils/matrix_source.h: no significant changes
+
+2004-03-12  Josef Leydold  <leydold@zwirn.appstat.wu-wien.ac.at>
+
+	* src/tests/chi2test.c: minor changes
+
+	* src/utils/matrix.c: changed comments; bug fix with norm
+
+	* src/utils/matrix_source.h, src/distr/cvec.c: changed comment
+
+2004-03-12  Roman Karawatzki  <kara@zwirn>
+
+	* src/utils/matrix.c: idx(i,j) -> ((i)*dim+j)
+
+2004-03-11  Roman Karawatzki  <kara@zwirn>
+
+	* src/distr/cvec.c: changed description of COVAR_DETMIN
+
+2004-03-10  Roman Karawatzki  <kara@zwirn>
+
+	* src/utils/matrix.c: changes some error/warnings
+
+	* src/tests/chi2test.c: minor bug fixed in chi2vec
+
+	* src/tests/chi2test.c: chi2test.c
+
+	* src/tests/chi2test.c: minor bugs corrected in chi2vec
+
+	* src/tests/chi2test.c: still some minor bugs in chi2vec
+
+	* src/tests/chi2test.c: changing number of classes for each dimension
+
+2004-03-10  Josef Leydold  <leydold@zwirn.appstat.wu-wien.ac.at>
+
+	* NEWS: update
+
+2004-03-09  Josef Leydold  <leydold@zwirn.appstat.wu-wien.ac.at>
+
+	* src/utils/matrix.c, src/utils/matrix_source.h:
+	added const qualifier in _unur_matrix_debug()
+
+	* src/utils/matrix.c: minor changes
+
+	* src/distr/cvec.c: reversed last changes
+
+2004-03-09  Roman Karawatzki  <kara@zwirn>
+
+	* src/distr/cvec.c:
+	minor change to cholesky decomposition routine parameters
+
+	* src/utils/matrix.c: syntax errors corrected
+
+	* src/utils/matrix.c:
+	implementing test for relative ill-conditioning of matrix
+
+2004-03-09  Josef Leydold  <leydold@zwirn.appstat.wu-wien.ac.at>
+
+	* src/methods/vmt.h: added documentation
+
+	* src/distr/cvec.c:
+	fixed unnecessary recomputation in unur_cvec_get_covar_inv()
+
+	* tests/t_distr_cvec.conf:
+	added tests for new functions unur_distr_cvec_get_cholesky(), unur_distr_cvec_get_covar_inv(); adedded test for nonpositive definite covariance matrix for unur_distr_cvec_set_covar()
+
+	* src/distr/cvec.c: fixed bug with checking for NULL pointer
+
+	* src/distributions/vc_multinormal.c: minor change
+
+	* src/distr/cvec.c:
+	mean and covariance not set by default any more; used new flags SET_COVAR_INV and SET_CHOLESKY; error handling in unur_cvec_get_covar_inv()
+
+	* src/distr/cvec.h: updated docu
+
+	* src/distr/distr_source.h: added flags SET_COVAR_INV and SET_CHOLESKY
+
+	* src/distr/distr_struct.h: fixed comments
+
+	* src/utils/matrix.c: bugfix in memcpy
+
+	* src/utils/matrix.c, src/utils/matrix_source.h:
+	renamed _unur_matrix_quadratic_form() to _unur_matrix_qf(); moved prototype into header file
+
+2004-03-08  Josef Leydold  <leydold@zwirn.appstat.wu-wien.ac.at>
+
+	* src/utils/matrix.c, src/utils/matrix_source.h: added some comments
+
+	* src/distr/cvec.c:
+	changed prototype of _unur_matrix_cholesky_decomposition(), does not allocated memory any more; added some comments
+
+	* src/distr/cvec.h: updated docu
+
+	* src/methods/vmt.c: minor changes
+
+	* src/utils/matrix.c:
+	changed prototype of _unur_matrix_cholesky_decomposition(), does not allocated memory any more; added some error messages; added static prototypes; added some more comments
+
+	* src/utils/Makefile.am: minor change
+
+	* src/utils/matrix_source.h: not required functions deleted
+
+2004-03-08  Roman Karawatzki  <kara@zwirn>
+
+	* src/tests/chi2test.c:
+	chi2-testing or multivariate normal distributions
+
+	* src/utils/matrix.c, src/utils/matrix_source.h: added comments
+
+	* src/methods/vmt.c:
+	moving cholecky decomposition into distribution object
+
+	* src/distr/cvec.c:
+	initialization of mean and covariance matrix to default values
+
+2004-03-08  Josef Leydold  <leydold@zwirn.appstat.wu-wien.ac.at>
+
+	* src/parser/Makefile.am, src/parser/make_stringparser.pl, doc/Makefile.am, doc/examples.dh, doc/examples.h, doc/glossary.dh, doc/glossary.h, doc/index.dh, doc/index.h, doc/intro.dh, doc/intro.h, doc/make_texi.pl, doc/methods.dh, doc/methods.h, doc/misc.dh, doc/misc.h, doc/references.dh, doc/references.h, doc/stddist.dh, doc/stddist.h, doc/top.dh, doc/top.h, src/parser/functparser_doc.dh, src/parser/functparser_doc.h:
+	header files that contain only documentation are renamed with new suffix .dh instead of .h
+
+	* tests/t_tabl.conf:
+	bug fix; added tests for unur_tabl_get_n_intervals()
+
+	* src/methods/tabl.c, src/methods/tabl.h:
+	renamed function unur_tabl_get_intervals() to unur_tabl_get_n_intervals
+
+2004-03-05  Josef Leydold  <leydold@zwirn.appstat.wu-wien.ac.at>
+
+	* src/methods/tabl.h:
+	docu revised by whoer; added function unur_tabl_get_intervals()
+
+	* src/methods/tabl.c: added function unur_tabl_get_intervals()
+
+2004-02-20  Josef Leydold  <leydold@zwirn.appstat.wu-wien.ac.at>
+
+	* tests/test_functionparser.c:
+	fixed bug caused by changing return codes of set() calls
+
+	* tests/test_StdDistr.c:
+	fixed bug caused by changing return codes of upd() calls; replaced UNUR_ERR_GENERIC by UNUR_FAILURE
+
+2004-02-20  Roman Karawatzki  <kara@zwirn>
+
+	* src/methods/vmt.c, src/distr/cvec.c, src/distr/cvec.h, src/distr/distr_struct.h:
+	cholesky factor is computed when covariance matrix is set
+
+	* src/utils/Makefile.am, src/utils/matrix.c, src/utils/matrix_source.h:
+	added functions for matrix manipulation
+
+2004-02-19  Josef Leydold  <leydold@zwirn.appstat.wu-wien.ac.at>
+
+	* TODO: update
+
+2004-02-17  Josef Leydold  <leydold@zwirn.appstat.wu-wien.ac.at>
+
+	* TODO: update
+
+2004-02-12  Josef Leydold  <leydold@zwirn.appstat.wu-wien.ac.at>
+
+	* configure.ac: added AC_DISABLE_SHARED
+
+2004-02-10  Josef Leydold  <leydold@zwirn.appstat.wu-wien.ac.at>
+
+	* experiments/make_timing_table.c:
+	changed sample size for getting timing unit
+
+	* tests/make_test_files.pl, tests/testroutines.c, tests/testunuran.h:
+	list generators with failed setup for chi2 and verify_hat tests in ..._test.log files
+
+	* tests/t_dss.conf: added backslash for line continuation
+
+	* src/utils/unur_fp_source.h: fixed typo
+
+2004-02-05  Roman Karawatzki  <kara@zwirn>
+
+	* tests/README.conf, tests/make_test_files.pl: minor change
+
+	* tests/make_test_files.pl: fixed threshold for FAILED
+
+2004-02-05  Josef Leydold  <leydold@zwirn.appstat.wu-wien.ac.at>
+
+	* autogen.sh: added fix for Gentoos automake script
+
+	* TODO: update
+
+	* tests/make_test_files.pl, tests/t_corder.conf, tests/t_cstd.conf, tests/t_distr.conf, tests/t_distr_cemp.conf, tests/t_distr_cont.conf, tests/t_distr_cvec.conf, tests/t_distr_cvemp.conf, tests/t_distr_discr.conf, tests/t_dstd.conf, tests/t_hinv.conf, tests/t_tdr.conf, tests/test_StdDistr.c, tests/test_functionparser.c, tests/testroutines.c, tests/testunuran.h, src/unur_cookies.h, src/utils/debug.c, src/utils/debug.h, src/utils/slist.c, src/utils/slist.h, src/utils/string.c:
+	changed return codes: UNUR_SUCCESS in case of success, some error code in case of failure; for functions returning a double, INFINITY is now returned in case of an error
+
+	* src/utils/error.c, src/utils/unur_errno.h:
+	changed return codes: UNUR_SUCCESS in case of success, some error code in case of failure; new error codes added; for functions returning a double, INFINITY is now returned in case of an error
+
+	* src/uniform/mrg31k3p.c, src/uniform/mstd.c, src/uniform/fish.c, src/tests/correlation.c, src/tests/counturn.c, src/tests/moments.c, src/tests/quantiles.c, src/tests/tests.c, src/tests/timing.c, src/parser/functparser_codegen_C.ch, src/parser/functparser_codegen_FORTRAN.ch, src/parser/functparser_codegen_JAVA.ch, src/parser/functparser_eval.ch, src/parser/functparser_parser.ch, src/parser/functparser_scanner.ch, src/parser/functparser_stringgen.ch, src/parser/make_stringparser.pl, src/parser/stringparser.c.in, src/methods/hinv.h, src/methods/hrb.c, src/methods/hrd.c, src/methods/hrd.h, src/methods/hri.c, src/methods/hri.h, src/methods/ninv.c, src/methods/ninv.h, src/methods/srou.c, src/methods/srou.h, src/methods/ssr.c, src/methods/ssr.h, src/methods/tabl.c, src/methods/tabl.h, src/methods/tdr.h, src/methods/tdr_init.ch, src/methods/tdr_newset.ch, src/methods/tdr_sample.ch, src/methods/unif.c, src/methods/unur_methods_source.h, src/methods/utdr.c, src/methods/utdr.h, src/methods/vempk.c, src/methods/vmt.c, src/methods/x_gen.c, src/methods/x_urng.c, src/methods/x_urng.h, src/methods/arou.c, src/methods/arou.h, src/methods/auto.c, src/methods/auto.h, src/methods/cstd.c, src/methods/cstd.h, src/methods/dari.c, src/methods/dari.h, src/methods/dau.c, src/methods/dgt.c, src/methods/dsrou.c, src/methods/dsrou.h, src/methods/dss.c, src/methods/dstd.c, src/methods/empk.c, src/methods/empk.h, src/methods/empl.c, src/methods/hinv.c, src/distributions/c_laplace_gen.c, src/distributions/c_logistic.c, src/distributions/c_logistic_gen.c, src/distributions/c_lognormal.c, src/distributions/c_lomax.c, src/distributions/c_lomax_gen.c, src/distributions/c_normal.c, src/distributions/c_normal_gen.c, src/distributions/c_pareto.c, src/distributions/c_pareto_gen.c, src/distributions/c_powerexponential.c, src/distributions/c_powerexponential_gen.c, src/distributions/c_rayleigh.c, src/distributions/c_slash.c, src/distributions/c_slash_gen.c, src/distributions/c_student.c, src/distributions/c_student_gen.c, src/distributions/c_triangular.c, src/distributions/c_triangular_gen.c, src/distributions/c_uniform.c, src/distributions/c_uniform_gen.c, src/distributions/c_weibull.c, src/distributions/c_weibull_gen.c, src/distributions/d_binomial.c, src/distributions/d_binomial_gen.c, src/distributions/d_geometric.c, src/distributions/d_geometric_gen.c, src/distributions/d_hypergeometric.c, src/distributions/d_hypergeometric_gen.c, src/distributions/d_logarithmic.c, src/distributions/d_logarithmic_gen.c, src/distributions/d_negativebinomial.c, src/distributions/d_poisson.c, src/distributions/d_poisson_gen.c, src/distributions/d_zipf.c, src/distributions/d_zipf_gen.c, src/distributions/unur_distributions_source.h, src/distributions/vc_multinormal.c, src/distributions/c_beta.c, src/distributions/c_beta_gen.c, src/distributions/c_burr.c, src/distributions/c_burr_gen.c, src/distributions/c_cauchy.c, src/distributions/c_cauchy_gen.c, src/distributions/c_chi.c, src/distributions/c_chi_gen.c, src/distributions/c_chisquare.c, src/distributions/c_exponential.c, src/distributions/c_exponential_gen.c, src/distributions/c_extremeI.c, src/distributions/c_extremeII.c, src/distributions/c_extremeII_gen.c, src/distributions/c_extremeI_gen.c, src/distributions/c_gamma.c, src/distributions/c_gamma_gen.c, src/distributions/c_gig.c, src/distributions/c_gig_gen.c, src/distributions/c_laplace.c, src/distr/discr.h, src/distr/distr.c, src/distr/cemp.c, src/distr/cemp.h, src/distr/cont.c, src/distr/cont.h, src/distr/corder.c, src/distr/corder.h, src/distr/cvec.c, src/distr/cvec.h, src/distr/cvemp.c, src/distr/cvemp.h, src/distr/discr.c:
+	changed return codes: UNUR_SUCCESS in case of success, some error code in case of failure; for functions returning a double, INFINITY is now returned in case of an error
+
+2003-11-12  Josef Leydold  <leydold@zwirn.appstat.wu-wien.ac.at>
+
+	* TODO: updated
+
+2003-09-12  Josef Leydold  <leydold@zwirn.appstat.wu-wien.ac.at>
+
+	* run/mcrun.c, run/run.c: mcrun.c
+
+	* src/methods/tdr.h: fixed docu
+
+2003-07-25  Josef Leydold  <leydold@zwirn.appstat.wu-wien.ac.at>
+
+	* src/methods/tdr_sample.ch: added comment
+
+2003-07-23  Josef Leydold  <leydold@zwirn.appstat.wu-wien.ac.at>
+
+	* src/methods/hinv.h: added docu
+
+2003-07-17  Josef Leydold  <leydold@zwirn.appstat.wu-wien.ac.at>
+
+	* experiments/timings_chap_8.conf: new list
+
+2003-07-16  Josef Leydold  <leydold@zwirn.appstat.wu-wien.ac.at>
+
+	* src/methods/tabl.c: removed obsolete code
+
+	* tests/t_tabl.conf: added new tests with DARS
+
+	* src/methods/tabl.c, src/methods/tabl.h, src/methods/tabl_struct.h:
+	fixed bug with DARS
+
+	* src/methods/arou.c: fixed typos
+
+2003-07-15  Josef Leydold  <leydold@zwirn.appstat.wu-wien.ac.at>
+
+	* NEWS: added DARS for method AROU
+
+	* src/methods/arou.c: bug fix for DARS
+
+	* tests/t_arou.conf: added DARS for method AROU
+
+	* src/methods/arou.c, src/methods/arou.h, src/methods/arou_struct.h:
+	added DARS; bug fixes
+
+	* src/methods/tdr.h: fixed typos
+
+2003-07-14  Josef Leydold  <leydold@zwirn.appstat.wu-wien.ac.at>
+
+	* experiments/timings_chap_10.conf: added file
+
+	* src/methods/dgt.c: change in debugging routine
+
+	* tests/t_dss.conf: finished test suite for method DSS
+
+	* src/methods/dss.c: default domain is used when no one is given
+
+	* src/distr/discr.h, src/distr/discr.c:
+	make_pv now also works if only CDF is given; default domain is used when no one is given
+
+	* tests/t_dss.conf, NEWS, doc/methods.h, doc/unuran_method_requirements.texi, src/tests/tests.c, src/unur_cookies.h, src/unur_struct.h, src/unuran.h.in, tests/Makefile.am, src/methods/dss.c, src/methods/dss.h, src/methods/dss_struct.h, src/methods/Makefile.am, src/methods/unur_methods_source.h, src/methods/x_gen_source.h:
+	method DSS added
+
+	* src/methods/dgt.c, src/methods/dgt.h, src/distr/discr.c, src/distr/discr.h:
+	bug fixes
+
+2003-07-12  Josef Leydold  <leydold@zwirn.appstat.wu-wien.ac.at>
+
+	* experiments/make_timing_table.c: large lines in conf file
+
+2003-07-11  Josef Leydold  <leydold@zwirn.appstat.wu-wien.ac.at>
+
+	* src/methods/dsrou.c: fixed bug with cdfatmode
+
+2003-07-10  Josef Leydold  <leydold@zwirn.appstat.wu-wien.ac.at>
+
+	* src/methods/dau.c: fixed unnecessary warning
+
+	* src/distr/discr.c, src/methods/dau.c, src/methods/dgt.c:
+	fixed bug: computed PV not a multiple of malloc_size any more
+
+	* configure.ac: increment version number
+
+2003-07-08  Josef Leydold  <leydold@zwirn.appstat.wu-wien.ac.at>
+
+	* ChangeLog: updated ChangeLog
+
+	* configure.ac: new release
+
+	* NEWS, experiments/timings_chap_8.conf, src/parser/make_stringparser.pl, src/parser/stringparser.c.in, src/unuran_config.h, tests/t_stringparser.conf:
+	orderstatistics need not be the last keyword for distributions in the string API
+
 2003-07-08  Josef Leydold  <leydold@alekto.wu-wien.ac.at>
 
 	* configure.ac: new release

@@ -1,0 +1,130 @@
+
+(*) Simple Markups and TAGs
+    =======================+
+
+Great parts of the UNURAN User Manual are generated automatically from
+the library header files.
+
+Simple markups (TAGs) are used to indicate relevant parts.
+A TAG has the regular expression  /^\s+=[A-Z]+/, i.e. a `=' as the
+first character on a line followed by some capital letters.
+(C comment strings `/*' are ignored.)
+
+
+(*) Section TAGs
+    ============
+
+The very first TAG in a header file must be a section TAG. Valid
+section TAGs are
+
+   =METHOD           for generation methods
+   =DISTRIBUTION     for handling distribution objects
+
+A header file that has no such TAG or with a different first TAG is
+ignored and not included into the documentation.
+
+Section TAGs may have arguments.
+
+All other TAGs do not have arguments, i.e. anything from the TAG till
+the end of line is ignored.
+
+TAGs are used to scan the header file and partition it into
+subsections. A subsection starts with a TAG and ends with the
+line before the next TAG (or end of file). It depends on the TAG how
+the read text is processed further.
+
+The list of valid TAGs depends on the section TAG in the file.
+Some TAGs are required, others are optional.
+
+However the =END TAG is common to all sections. The corresponding
+subsection is simply ignored. Thus it can be used as end markup of a
+subsection (thus its name).
+
+
+(*) =METHOD
+    -------
+
+Describes a method for generating random numbers (generator object).
+
+The section TAG has two arguments:
+  [1] The first word is the abbreviation of the method.
+  [2] Anything followed by the first word is the (long) name of the method.
+
+The following TAGs are valid:
+
+   =TYPE        (required)	Type of distribution. 
+	The first word indicates the type of distribution for which
+	the method works. Only such distribution types that have a
+	corresponding entry in the a =DISTRIBUTION section are
+	allowed. All other entries are ignored.
+
+   =REQUIRED    (optional)	List of required parameters.
+	Contains a list of parameter that are required for the method.
+	(not implemented yet)
+
+   =OPTIONAL    (optional)	List of optional parameters.
+	Contains a list of parameters that are optional for the
+	method.
+	(not implemented yet)
+
+   =SEEALSO     (optional)	Similar methods.
+	List of methods that work similar as this method.	
+	(not implemented yet)
+
+   =ABSTRACT    (optional)	Abstract.
+	A very short description of method. Used in an overview.
+	(not implemented yet)
+
+   =DESCRIPTION (required)	Description.
+	Discription of method.
+
+   =ROUTINES    (required)	Function reference.
+	List of all subroutines.
+	The text is formated in the following way:
+
+	lines starting with `#' are ignored.
+
+	The text consists of blocks which are separated by one or more
+	blank lines outside of C comments (everything within a C
+	comment is treated as a single line).
+
+	All C comment markers `/*' and `*/' are removed.
+
+	A block that started with a C type declaration is treated as a
+	function prototype. Anything below the `;' till the end of the
+	block is interpreted as the function description.
+
+	If there is a function prototype with additional lines, it is
+	assumed that it has the same description as the following
+	function. (This is done recursively until a function prototype
+	with description is found.)
+
+	A block that starts with a `==DOC' is copied verbatim into the
+	texi file. (Notice that `==DOC' is not a TAG as described
+	above).
+
+
+(*) =DISTRIBUTION
+    -------------
+
+Describes how to handle distribution objects.
+
+The section TAG has two arguments:
+   [1]  The first word is the abbreviation of the distribution type.
+	Only these types are allowed as in the =TYPE subsection of
+	methods.
+
+   [2]  Anything followed by the first word is the (long) name of the
+	distribution type.
+
+The following TAGs are valid:
+
+   =ROUTINES    (required)	Function reference.
+	See section =METHOD.
+   
+
+
+
+
+
+

@@ -1,22 +1,28 @@
 #!/usr/bin/perl
+############################################################
 
 $VERBOSE = 0;
 
 ############################################################
 # $Id$
-
+# ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 sub usage {
     my $progname = $0;
     $progname =~ s#^.*/##g;
         
     print STDERR <<EOM;
-usage: $progname ?????
+usage: $progname <top_src_dir>
+
+Perl spript extracts documentation for unuran library from
+header files and transform it into texinfo format.
+
+The output is written on STDOUT.
+
+For a detailed description see README.doc.
 
 EOM
-
     exit;
 }
-
 ############################################################
 
 use FileHandle;

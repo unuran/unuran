@@ -42,6 +42,7 @@
 /*---------------------------------------------------------------------------*/
 
 int _unur_acg_C_PDF (UNUR_DISTR *distr, FILE *out, const char *pdf);
+int _unur_acg_FORTRAN_PDF (UNUR_DISTR *distr, FILE *out, const char *pdf);
 /*---------------------------------------------------------------------------*/
 /* Code generator for PDFs of UNURAN build-in standard distributions.        */
 /*---------------------------------------------------------------------------*/
@@ -64,6 +65,11 @@ void _unur_acg_C_print_sectionheader( FILE *out, int n_lines, ... );
 void _unur_acg_FORTRAN_print_sectionheader( FILE *out, int n_lines, ... );
 /*---------------------------------------------------------------------------*/
 /* Print a section header with n_lines lines to output stream.               */
+/*---------------------------------------------------------------------------*/
+
+void _unur_acg_FORTRAN_print_double( FILE *out, double x );
+/*---------------------------------------------------------------------------*/
+/* Print a double number in FORTRAN format.                                  */
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*/

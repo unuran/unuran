@@ -147,7 +147,7 @@ unur_acg_FORTRAN( struct unur_gen *gen, FILE *out, const char *distr_name )
   case UNUR_METH_TDR:
     return_code =
       _unur_acg_FORTRAN_demo_urng( out ) &&
-      _unur_acg_C_PDF( &(gen->distr), out, pdf_name ) &&
+      _unur_acg_FORTRAN_PDF( &(gen->distr), out, pdf_name ) &&
       _unur_acg_FORTRAN_tdr_ps( gen, out, rand_name, pdf_name );
     break;
   default:
@@ -372,5 +372,33 @@ _unur_acg_FORTRAN_print_sectionheader( FILE *out, int n_lines, ... )
   va_end(ap);
 
 } /* end of _unur_acg_FORTRAN_print_sectionheader() */
+
+/*---------------------------------------------------------------------------*/
+
+void
+_unur_acg_FORTRAN_print_double( FILE *out, double x )
+     /*----------------------------------------------------------------------*/
+     /* print a double number in FORTRAN format                              */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   out ... output stream                                              */
+     /*   x   ... double precision number                                    */
+     /*----------------------------------------------------------------------*/
+{
+  char buf[256];
+  char *here_is_e;
+
+  /* C format */
+  sprintf(buf,"%.20e",x);
+  
+  /* replace `e' by `D' */
+  here_is_e = strchr(buf, 'e');
+  if (here_is_e)
+    *here_is_e = 'D';
+  
+  /* print */
+  fprintf(out,"%s",buf);
+
+} /* end of _unur_acg_FORTRAN_print_double() */
 
 /*---------------------------------------------------------------------------*/

@@ -255,8 +255,6 @@ _unur_acg_C_tdr_ps( struct unur_gen *gen, FILE *out, const char *rand_name, cons
 
 /*****************************************************************************/
 
-#define print_data(i,x)  fprintf(out,((i)==0)?"     *   %.20e":(((i)%2)?", %.20e":",\n     *   %.20e"),(x))
-
 int
 _unur_acg_FORTRAN_tdr_ps( struct unur_gen *gen, FILE *out, const char *rand_name, const char *pdf_name )
      /*----------------------------------------------------------------------*/
@@ -276,6 +274,12 @@ _unur_acg_FORTRAN_tdr_ps( struct unur_gen *gen, FILE *out, const char *rand_name
      /*   return 0                                                           */
      /*----------------------------------------------------------------------*/
 {
+#define print_data(i,x)  \
+  do { \
+    fprintf(out,((i)==0)?"     *   ":(((i)%2)?", ":",\n     *   ")); \
+    _unur_acg_FORTRAN_print_double(out,(x)); \
+  } while (0)
+
 
   struct unur_tdr_interval *iv;
   int i,j;
@@ -324,7 +328,10 @@ _unur_acg_FORTRAN_tdr_ps( struct unur_gen *gen, FILE *out, const char *rand_name
 
   fprintf(out,"      IMPLICIT DOUBLE PRECISION (A-H,O-Z)\n");
   fprintf(out,"      INTEGER GSIZE, GUIDE\n");
-  fprintf(out,"      PARAMETER (gsize=%d, Atotal=%.20e)\n",GEN.guide_size,GEN.Atotal);
+  fprintf(out,"      PARAMETER (gsize=%d)\n",GEN.guide_size);
+  fprintf(out,"      PARAMETER (Atotal=");
+  _unur_acg_FORTRAN_print_double(out,GEN.Atotal);
+  fprintf(out,")\n");
   fprintf(out,"      DIMENSION GUIDE(0:gsize-1)\n");
   fprintf(out,"      DIMENSION x(0:%d)\n",GEN.n_ivs-1);
   switch (gen->variant & TDR_VARMASK_T) {
@@ -472,17 +479,20 @@ _unur_acg_FORTRAN_tdr_ps( struct unur_gen *gen, FILE *out, const char *rand_name
   /* o.k. */
   return 1;
 
+#undef print_data
+
+
 
 #if 0
-      double precision function pdfnor(x)
-      implicit double precision (a-z)
-      parameter (lncnst=9.18938533204672780563e-01)
+/*        double precision function pdfnor(x) */
+/*        implicit double precision (a-z) */
+/*        parameter (lncnst=9.18938533204672780563e-01) */
       pdfnor= exp(-x**2/2.d0-lncnst)
-      end
+/*        end */
 #endif
 
 } /* end of _unur_acg_FORTRAN_tdr_ps() */
 
-#undef print_data
-
 /*****************************************************************************/
+
+

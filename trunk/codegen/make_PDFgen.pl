@@ -71,6 +71,10 @@ exit 0;
 #
 # ----------------------------------------------------------------
 
+# print a blank line
+my $empty_line = "\tfprintf (out,\"\\n\");\n";
+
+
 # ----------------------------------------------------------------
 # Make routines for PDF code generator (C version)
 
@@ -80,8 +84,6 @@ sub make_PDFgen_C
 
     my $PDFgen;
     
-    my $empty_line = "\tfprintf (out,\"\\n\");\n";
-
     # C version
     $PDFgen .= make_bar("C version");
 
@@ -114,8 +116,6 @@ sub make_PDFgen_FORTRAN
 
     my $PDFgen;
     
-    my $empty_line = "\tfprintf (out,\"\\n\");\n";
-
     # C version
     $PDFgen .= make_bar("FORTRAN version");
 
@@ -281,24 +281,21 @@ sub make_PDF_distr_FORTRAN
     # Function header
     $gencode .= get_PDFgen_funct_FORTRAN($d)."\n{\n";
 
+    # compose PDF name
+    $gencode .= "\tchar pdf_name[7];\n";
+    $gencode .= "\tsprintf (pdf_name,\"%.6s\",((pdf) ? pdf : \"f$d\") );\n\n";
+
     # Print a short description of PDF
     $gencode .= 
 	"\t_unur_acg_FORTRAN_print_sectionheader(out, 1, \"PDF for $d distribution.\");\n\n";
 
-    # compose PDF name
+    # print PDF function name
     $gencode .= 
-	"\tfprintf (out,\"      DOUBLE PRECISION FUNCTION %.6s ()".
-        "\\n\", ((pdf) ? pdf : \"f$d\") );\n";
+	"\tfprintf (out,\"      DOUBLE PRECISION FUNCTION %.6s(x)\\n\\n\", pdf_name);\n";
 	
-
-#    $gencode .= 
-#	"\tfprintf (out,\"static ".
-#	$DISTR->{$d}->{"=PDF"}->{"=RTYPE"}.
-#	" %s (".
-#	$DISTR->{$d}->{"=PDF"}->{"=ARGS"}.
-#	")\\n{\\n\",".
-#        " ((pdf) ? pdf : \"pdf_$d\") ".
-#        ");\n";
+    # Declarations
+    $gencode .= 
+	"\tfprintf (out,\"      IMPLICIT DOUBLE PRECISION (A-Z)\\n\");\n";
 
     # Constants (parameters)
     $gencode .= 
@@ -307,17 +304,18 @@ sub make_PDF_distr_FORTRAN
 	"\tfprintf (out,\"C\\n\");\n";
 
     #   List of parameters
-#    $gencode .= make_PDF_params_C($DISTR,$d);
+    $gencode .= make_PDF_params_FORTRAN($DISTR,$d);
 
     #   Normalization constant
-#    $gencode .= make_PDF_normconstant_C($DISTR,$d);
+    $gencode .= make_PDF_normconstant_FORTRAN($DISTR,$d);
 
     # Body of PDF
-#    $gencode .= make_PDF_body_C($DISTR,$d);
+    $gencode .= make_PDF_body_FORTRAN($DISTR,$d);
 
     # End of function
-#    $gencode .= "\tfprintf (out,\"}\\n\");\n";
-#    $gencode .= $empty_line;
+    $gencode .= "\tfprintf (out,\"\\n\");\n";
+    $gencode .= "\tfprintf (out,\"      END\\n\");\n";
+    $gencode .= "\tfprintf (out,\"\\n\");\n";
 
     $gencode .= "\n\treturn 1;\n";
     $gencode .= "}\n";
@@ -394,6 +392,50 @@ sub make_PDF_params_C
 
 
 # ----------------------------------------------------------------
+# Process parameter list (FORTRAN version)
+
+sub make_PDF_params_FORTRAN
+{
+    my $DISTR = $_[0];    # data for distributions
+    my $d = $_[1];        # name of distribution
+
+    # whether we have variable number of parameters
+    my $have_n_params = ($DISTR->{$d}->{"=PDF"}->{"=BODY"} =~ /n_params/);
+
+    # parameter list
+    my $params;
+
+    my $n_in_params = $DISTR->{$d}->{"=PDF"}->{"=N_PARAMS"};
+    my $in_params = $DISTR->{$d}->{"=PDF"}->{"=PARAMS"};
+
+    foreach my $i (0 .. $n_in_params - 1) {
+
+	if ($have_n_params) {
+	    $params .=
+		"\tif (".$DISTR->{$d}->{"=PDF"}->{"=DISTR"}.".n_params > $i) {\n".
+		"\t\tfprintf (out,\"      PARAMETER (".
+	        $in_params->[$i]." = \");\n".
+		"\t\t_unur_acg_FORTRAN_print_double(out,".
+	        $DISTR->{$d}->{"=PDF"}->{"=DISTR"}.".params[$i]);\n".
+	        "\t\tfprintf (out,\")\\n\");\n\t}\n";
+	}
+
+	else {
+	    $params .= 
+		"\tfprintf (out,\"      PARAMETER (".
+	        $in_params->[$i]." = \");\n".
+		"\t_unur_acg_FORTRAN_print_double(out,".
+	        $DISTR->{$d}->{"=PDF"}->{"=DISTR"}.".params[$i]);\n";
+	        "\tfprintf (out,\")\\n\");\n";
+	}
+    }
+
+    return $params;
+
+} # end of make_PDF_params_FORTRAN()
+
+
+# ----------------------------------------------------------------
 # Process normalization constants (C version)
 
 sub make_PDF_normconstant_C
@@ -413,6 +455,30 @@ sub make_PDF_normconstant_C
     return "";
 
 } # end of make_PDF_normconstant_C()
+
+
+# ----------------------------------------------------------------
+# Process normalization constants (FORTRAN version)
+
+sub make_PDF_normconstant_FORTRAN
+{
+    my $DISTR = $_[0];    # data for distributions
+    my $distr = $_[1];    # name of distribution
+
+    if ($DISTR->{$distr}->{"=PDF"}->{"=CONST"}) {
+	if ($DISTR->{$distr}->{"=PDF"}->{"=BODY"} =~ /((LOG)?NORMCONSTANT)/) {
+	    my $norm = ($1 =~ /LOG/) ? "lncnst" : "const";
+	    return 
+		"\tfprintf (out,\"      PARAMETER ($norm = \");\n".
+		"\t_unur_acg_FORTRAN_print_double(out,".$DISTR->{$distr}->{"=PDF"}->{"=CONST"}.");\n".
+	        "\tfprintf (out,\")\\n\");\n";
+	}
+    }
+
+    # else
+    return "";
+
+} # end of make_PDF_normconstant_FORTRAN()
 
 
 # ----------------------------------------------------------------
@@ -448,6 +514,47 @@ sub make_PDF_body_C
     return $body;
 
 } # end of make_PDF_body_C()
+
+# ----------------------------------------------------------------
+# Process PDF body (FORTRAN version)
+
+sub make_PDF_body_FORTRAN
+{
+    my $DISTR = $_[0];    # data for distributions
+    my $d = $_[1];        # name of distribution
+
+    # code for PDF as extracted from UNURAN library
+    my $in_body = $DISTR->{$d}->{"=PDF"}->{"=BODY"};
+
+    # at the moment we do DO NOT handle strings the following regular expression
+    if ($in_body =~ /if\s*\(\s*n_params\s*[<>=!]+\s*\d+\s*\)\s*\{/) {
+	die "cannot handle PDF body";
+    } 
+
+    # string for make PDF function
+    my $body = 
+	"\tfprintf (out,\"C\\n\");\n".
+	"\tfprintf (out,\"C     compute PDF\\n\");\n".
+	"\tfprintf (out,\"C\\n\");\n";
+
+    foreach my $l (split /\n/, $in_body) {
+	if ($l =~ /if\s*\(\s*n_params\s*[<>=!]+\s*\d+\s*\)/) {
+	    $l =~ s/n_params/$DISTR->{$d}->{"=PDF"}->{"=DISTR"}.n_params/;
+	    $l =~ s/  /\t/g;
+	    $body .= "$l\n\t";
+	    next;
+	}
+
+	$l =~ s/LOGNORMCONSTANT/lncnst/g;
+	$l =~ s/NORMCONSTANT/const/g;
+	$l =~ s/  /\\t/g;
+
+	$body .= "\tfprintf (out,\"$l\\n\");\n";
+    }
+
+    return $body;
+
+} # end of make_PDF_body_FORTRAN()
 
 
 # ----------------------------------------------------------------

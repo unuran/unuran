@@ -23,10 +23,11 @@ int main()
   UNUR_DISTR *distr;
   UNUR_PAR *par;
   UNUR_GEN *gen;
+  double fpar[2] = {1., 2.};
 
   unur_set_default_debug(~0u);
 
-  distr = unur_distr_normal(NULL,0);
+  distr = unur_distr_normal(fpar,2);
   par = unur_tdr_new( distr );
 /*    unur_tdr_set_c(par,0.); */
   unur_tdr_set_cpoints(par,4,NULL),

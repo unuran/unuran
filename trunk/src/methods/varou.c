@@ -1134,7 +1134,7 @@ printf("%8ld; %8ld; %e; %e; %e\n",
     
         /* determining two distinct verteces of edge to be splitted    */
 	/* we exclude the top vertex as long as the volume is infinite */
-        iv1=0; iv2=0;
+	iv1=0; iv2=0;
         while (iv1==iv2 || 
 	      (_unur_isinf(GEN.cone_list[ic]->volume) && (iv1 == it || iv2 == it)) ) {
           iv1=(long) (dim+1)*_unur_call_urng(gen->urng);
@@ -1825,7 +1825,7 @@ _unur_varou_debug_init( const struct unur_gen *gen )
   fprintf(log,"%s:\n",gen->genid);
   fprintf(log,"%s:\tvolume = %g\t(hat = %g)\n",gen->genid, vol, vol*(GEN.dim+1));
   fprintf(log,"%s:\n",gen->genid);
-
+  fprintf(log,"%s:\tsum_of_cone_volumes = %g\n", gen->genid,GEN.cone_list[GEN.n_cone-1]->sum_volume);
   fprintf(log,"%s:\n",gen->genid);
 
   /* vertex list on upper unit-half-sphere */
@@ -1844,7 +1844,7 @@ _unur_varou_debug_init( const struct unur_gen *gen )
   /* cone list and parameters */
   fprintf(log,"%s: Number of cones = %ld\n",gen->genid, GEN.n_cone);
   fprintf(log,"%s: Cone list:\n",gen->genid);
-  
+
   /* vertex indices of the cones */
   for (ic=0; ic<GEN.n_cone; ic++) {
     fprintf(log,"%s:\t%6ld : verteces = {", gen->genid, ic);
@@ -1864,14 +1864,13 @@ _unur_varou_debug_init( const struct unur_gen *gen )
     fprintf(log,"%g}\n", GEN.cone_list[ic]->length[dim]);
   }
   fprintf(log,"%s:\n",gen->genid);
-
+  
   /* cone volumes */
   for (ic=0; ic<GEN.n_cone; ic++) {
     fprintf(log,"%s:\t%6ld : volume = %g  \tsum = %g\n", gen->genid, ic, 
             GEN.cone_list[ic]->volume, GEN.cone_list[ic]->sum_volume);
   }
   fprintf(log,"%s:\n",gen->genid);
-
   /* cone unit volumes */
   for (ic=0; ic<GEN.n_cone; ic++) {
     fprintf(log,"%s:\t%6ld : unit_volume = %g\n", gen->genid, ic, 

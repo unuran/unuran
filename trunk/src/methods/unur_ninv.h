@@ -41,7 +41,9 @@
 /* Information for constructing the generator                                */
 
 struct unur_ninv_par { 
-  double Fmode;              /* cdf at mode                                  */
+  int max_inter;             /* maximal number of iterations                 */
+  int rel_x_resolution;      /* maximal relative error in x                  */
+  double sl, sr;             /* interval boundaries at start (left/right)    */
 };
 
 /*---------------------------------------------------------------------------*/

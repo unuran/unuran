@@ -153,7 +153,10 @@ unur_ninv_new( struct unur_distr *distr )
   par->distr       = distr;   /* pointer to distribution object              */
 
   /* set default values */
-  PAR.Fmode        = -1.;     /* c.d.f. at mode (unknown yet)                */
+  max_inter        = 40;        /* maximal number of iterations              */
+  rel_x_resolution = 1.0e-16;   /* maximal relative error in x               */
+  sl               = -10.;      /* left boundary of interval                 */
+  sr               = 10.;       /* right boundary of interval                */
 
   par->method      = UNUR_METH_NINV;  /* method and default variant          */
   par->variant     = 0u;              /* default variant                     */

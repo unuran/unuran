@@ -1030,7 +1030,7 @@ _unur_empk_comp_stddev( double *data, int n_data, double *mean, double *stddev)
 
   /* compute sums */
   for (n=1; n <= n_data; n++) {
-    dx = (data[n] - *mean) / n;
+    dx = (data[n-1] - *mean) / n;
 
     xsqu_sum += n * (n - 1.) * dx * dx;
     *mean += dx;

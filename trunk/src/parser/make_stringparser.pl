@@ -78,8 +78,7 @@ require "$top_srcdir/scripts/read_PDF.pl";
 
 my $doc_dir = $ENV{'srcdir'} ? $ENV{'srcdir'} : '.';
 
-my $distr_doc_file = "$doc_dir/parser_doc_distr.h";
-my $method_doc_file = "$doc_dir/parser_doc_method.h";
+my $doc_file = "$doc_dir/parser_doc.h";
 
 my $distr_doc_string;
 my $method_doc_string;
@@ -145,9 +144,23 @@ if ($msg_unsupported) {
     print STDERR "$msg_unsupported\n";
 }
 
-# Print docu
-print_doc_distr($distr_doc_string);
-print_doc_method($method_doc_string);
+# Print documentation.
+open DOC, ">$doc_file" or die "Cannot open file $doc_file for writing";
+print DOC
+    "/*\n",
+    "=NODE  KeysDistr   Keys for Distribution String\n",
+    "=UP StringDistr [10]\n\n",
+    "=DESCRIPTION\n\n",
+    $distr_doc_string,
+    "\n=EON\n*/\n";
+print DOC
+    "/*\n",
+    "=NODE  KeysMethod   Keys for Method String\n",
+    "=UP StringMethod [10]\n\n",
+    "=DESCRIPTION\n\n",
+    $method_doc_string,
+    "\n=EON\n*/\n";
+close DOC;
 
 ##############################################################################
 #
@@ -207,8 +220,8 @@ sub make_list_of_distributions {
 	$code .= "\t\t }\n";
 
 	# print docu
-	$distr_doc_string .= "\@item \@code{$distr} \@ \@ \@ \@ " 
-	    ." \@result{} \@pxref{$distr}";
+	$distr_doc_string .= "\@item \@code{[distr =] $distr(\@dots{})} \@ \@ \@ \@ " 
+	    ." \@result{} \@pxref{$distr}\n";
     }
 
     # end of switch for first letter
@@ -255,8 +268,8 @@ sub make_list_of_distributions {
 	$code .= "\t\t\t }\n";
 
 	# print docu
-	$distr_doc_string .= "\@item \@code{$distr_type} \@ \@ \@ \@ " 
-	    ." \@result{} \@pxref{\U$distr_type}";
+	$distr_doc_string .= "\@item \@code{[distr =] $distr_type} \@ \@ \@ \@ " 
+	    ." \@result{} \@pxref{\U$distr_type}\n";
     }
 
     $code .= "\t\t } while (0);\n";
@@ -280,6 +293,7 @@ sub make_list_of_distributions {
 sub make_list_of_distr_sets {
 
     my $set_commands;
+    my $set_doc;
     my $code_unsupported;
     my $code_substituted;
     my $code_ignored;
@@ -389,6 +403,7 @@ sub make_list_of_distr_sets {
 
 	    # make set calls
 	    my $set;
+	    my $doc;
 
 	    # beginning of case
 	    $set = "\t\t\t\t /* n = $n_args; type = $type_args: $args*/\n";
@@ -403,6 +418,15 @@ sub make_list_of_distr_sets {
 	    #   "Di"   ... a list of doubles and one argument of type int required
 	    #              (the second argument is considered as size of the double array)
 	    #   "C"    ... one string (array of char)
+
+	    my %type_args_doc = 
+		( 'i'  => '[= @i{<int>}]',
+		  'd'  => '= @i{<double>}',
+		  'dd' => '= @i{<double>}, @i{<double>} | (@i{<list>})',
+		  'Di' => '= (@i{<list>}) [, @i{<int>}]',
+		  'C'  => '= "@i{<string>}"'
+		  );
+
 	    if ($type_args =~ /^(i|d|dd|Di|C)$/) {
 		my $type = $1;
 		$set .= "\t\t\t\t result = _unur_str_distr_set_$type(distr,key,type_args,args,$command_name);\n";
@@ -421,6 +445,13 @@ sub make_list_of_distr_sets {
 		    else {
 			die "\nset command redefined: $distr_type/$command_subst"; }
 		}
+
+		# make docu
+		if ($SUBST_COMMANDS{$command_name}) {
+		    $command = $SUBST_COMMANDS{$command_name}; }
+		$set_doc->{$distr_type}->{$command} = 
+		    "\@item $command $type_args_doc{$type_args}\n \@result{} "
+		    ."\@pxref{funct:$command_name,,\@command{$command_name}}\n";
 	    }
 
 	    else {
@@ -488,10 +519,7 @@ sub make_list_of_distr_sets {
 	    $code .= "\t\t\t }\n";
 
 	    # print docu
-	    my $command_name = "unur\_distr\_$dt\_set\_$c";
-	    $distr_doc_string .= "\@item $c\n \@result{} "
-		."\@pxref{funct:$command_name,,\@command{$command_name}}\n";
-##		if ($SUBST_COMMANDS{$command_name}) {
+	    $distr_doc_string .= $set_doc->{$dt}->{$c};
 	}
 
 	# end of switch for first letter
@@ -591,6 +619,7 @@ sub make_list_of_methods {
 sub make_list_of_par_sets {
 
     my $set_commands;
+    my $set_doc;
     my $code_unsupported;
     my $code_substituted;
     my $code_ignored;
@@ -711,6 +740,17 @@ sub make_list_of_par_sets {
 	    #   "iD"   ... one argument of type int and a list of doubles required
 	    #              (the first argument is considered as size of the double array)
 	    #   "Di"   ... a list of doubles and one argument of type int required
+
+	    my %type_args_doc = 
+		( 'void' => ' ',
+		  'i'  => '[= @i{<int>}]',
+		  'u'  => '= @i{<unsigned>}]',
+		  'd'  => '= @i{<double>}',
+		  'dd' => '= @i{<double>}, @i{<double>} | (@i{<list>})',
+		  'iD' => '= @i{<int>} [, (@i{<list>})] | (@i{<list>})',
+		  'Di' => '= (@i{<list>}), @i{<int>}'
+		  );
+
 	    if ($type_args =~ /^(void|i|u|d|dd|iD|Di)$/) {
 		my $type = $1;
 		if ($type_args =~ /^(iD|Di)$/) {
@@ -732,6 +772,13 @@ sub make_list_of_par_sets {
 		    else {
 			die "\nset command redefined: $method/$command_subst"; }
 		}
+
+		# make docu
+		if ($SUBST_COMMANDS{$command_name}) {
+		    $command = $SUBST_COMMANDS{$command_name}; }
+		$set_doc->{$method}->{$command} = 
+		    "\@item $command $type_args_doc{$type_args}\n \@result{} "
+		    ."\@pxref{funct:$command_name,,\@command{$command_name}}\n";
 	    }
 
 	    else {
@@ -763,7 +810,7 @@ sub make_list_of_par_sets {
     foreach my $m (@method_list) {
 
 	# print docu
-	$method_doc_string .= "\@item \@code{$m} \@ \@i{(Method)}\@ \@ \@ \@ "
+	$method_doc_string .= "\@item \@code{method = $m} \@ \@ \@ \@ "
 	    ." \@result{} \@command{unur\_$m\_new}\n"
 	    ."(\@pxref{\U$m})\n";
 
@@ -796,8 +843,9 @@ sub make_list_of_par_sets {
 	    $code .= "\t\t\t }\n";
 
 	    # print docu
-	    $method_doc_string .= "\@item $c\n \@result{} "
-		."\@pxref{funct:unur\_$m\_set\_$c,,\@command{unur\_$m\_set\_$c}}\n";
+	    $method_doc_string .= $set_doc->{$m}->{$c};
+#	    $method_doc_string .= "\@item $c\n \@result{} "
+#		."\@pxref{funct:unur\_$m\_set\_$c,,\@command{unur\_$m\_set\_$c}}\n";
 	}
 
 	# end of switch for first letter
@@ -841,51 +889,5 @@ sub unmatched_parenthesis {
 
     return $open;
 } # end of unmachted_parenthesis()
-
-##############################################################################
-#
-# Print documentation.
-#
-sub print_doc_distr {
-    my $doc_string = $_[0];
-
-    open DOC, ">$distr_doc_file" or die "Cannot open file $distr_doc_file for writing";
-
-    print DOC
-	"/*\n",
-	"=NODE  KeysDistr   Keys for Distribution String\n",
-	"=UP StringDistr [10]\n\n",
-	"=DESCRIPTION\n\n";
-
-    print DOC 
-	$doc_string;
-
-    print DOC 
-	"\n=EON\n*/\n";
-
-    close DOC;
-} # end of print_doc_distr() 
-
-#-----------------------------------------------------------------------------
-
-sub print_doc_method {
-    my $doc_string = $_[0];
-
-    open DOC, ">$method_doc_file" or die "Cannot open file $method_doc_file for writing";
-
-    print DOC
-	"/*\n",
-	"=NODE  KeysMethod   Keys for Method String\n",
-	"=UP StringMethod [10]\n\n",
-	"=DESCRIPTION\n\n";
-
-    print DOC 
-	$doc_string;
-
-    print DOC 
-	"\n=EON\n*/\n";
-
-    close DOC;
-} # end of print_doc_method() 
 
 ##############################################################################

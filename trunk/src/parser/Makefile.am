@@ -34,6 +34,7 @@ noinst_HEADERS = \
 
 EXTRA_DIST = \
  make_stringparser.pl \
+ parser_doc.h \
  stringparser.c.in
 
 parser_srcdir = $(top_srcdir)/src/parser
@@ -48,4 +49,5 @@ CLEANFILES = *~
 # clean generated files
 MAINTAINERCLEANFILES = \
  stringparser.c \
+ parser_doc.h \
  Makefile.in

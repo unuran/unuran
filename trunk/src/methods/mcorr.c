@@ -43,7 +43,7 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   Generate matrix H where all columns are independent and uniformly       *
+ *   Generate matrix H where all rows are independent and uniformly          *
  *   distributed on the sphere and return HH'.                               *
  *                                                                           *
  *****************************************************************************/
@@ -58,8 +58,11 @@
 #include "unur_methods_source.h"
 #include "x_gen.h"
 #include "x_gen_source.h"
+#include "arou.h"
 #include "mcorr.h"
-#include "cstd.h"
+
+#include <utils/matrix_source.h>
+
 
 /*---------------------------------------------------------------------------*/
 /* Variants                                                                  */
@@ -123,6 +126,8 @@ static void _unur_mcorr_debug_init( const struct unur_gen *gen );
 
 #define SAMPLE    gen->sample.cmat      /* pointer to sampling routine       */     
 
+/*---------------------------------------------------------------------------*/
+#define NORMAL  gen->gen_aux        /* pointer to normal variate generator   */
 /*---------------------------------------------------------------------------*/
 
 /*****************************************************************************/
@@ -210,6 +215,21 @@ _unur_mcorr_init( struct unur_par *par )
   gen = _unur_mcorr_create(par);
   if (!gen) { free(par); return NULL; }
 
+  /* we need a generator for standard normal distributons */
+  if (NORMAL==NULL) {
+    struct unur_distr *normaldistr = unur_distr_normal(NULL,0);
+    NORMAL = unur_init( unur_arou_new( normaldistr ) );
+    _unur_distr_free( normaldistr );
+    if (NORMAL == NULL) {
+      _unur_error(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"Cannot create aux Gaussian generator");
+      _unur_free(gen); free (par);
+      return NULL;
+    }
+    /* need same uniform random number generator and debugging flags */
+    NORMAL->urng = gen->urng;
+    NORMAL->debug = gen->debug;
+  }
+
 #ifdef UNUR_ENABLE_LOGGING
   /* write info into log file */
   if (gen->debug) _unur_mcorr_debug_init(gen);
@@ -254,8 +274,10 @@ _unur_mcorr_create( struct unur_par *par )
   /* copy distribution object into generator object */
   gen->distr = _unur_distr_clone( par->distr );
 
-  /* dimension of distribution */
-  GEN.dim = gen->distr->dim; 
+  /* number of rows and columns (dimension of distribution). */
+  /* do not confuse with distr->dim which is the size of     */
+  /* the array that stores the matrix.                       */
+  GEN.dim = DISTR.n_rows;
 
   /* set generator identifier */
   gen->genid = _unur_set_genid(GENTYPE);
@@ -274,6 +296,9 @@ _unur_mcorr_create( struct unur_par *par )
 
   gen->urng_aux = NULL;             /* no auxilliary URNG required           */
   gen->gen_aux = NULL;              /* no auxilliary generator objects       */
+
+  /* allocate working array */
+  GEN.H = _unur_malloc(GEN.dim * GEN.dim * sizeof(double));
 
   /* return pointer to (almost empty) generator object */
   return gen;
@@ -310,11 +335,17 @@ _unur_mcorr_clone( const struct unur_gen *gen )
   /* copy main part */
   memcpy( clone, gen, sizeof(struct unur_gen) );
 
+  /* allocate new working array */
+  CLONE.H = _unur_malloc(GEN.dim * GEN.dim * sizeof(double));
+
   /* set generator identifier */
   clone->genid = _unur_set_genid(GENTYPE);
 
   /* copy distribution object into generator object */
   clone->distr = _unur_distr_clone( gen->distr );
+
+  /* auxiliary generator */
+  if (gen->gen_aux) clone->gen_aux = _unur_gen_clone( gen->gen_aux );
 
   return clone;
 
@@ -333,14 +364,42 @@ _unur_mcorr_sample_cmat( struct unur_gen *gen, double *mat )
      /*   mat ... random matrix (result)                                     */
      /*----------------------------------------------------------------------*/
 {
-/* #define idx(a,b) (a*GEN.dim+b) */
-/*   int j,k; */
+#define idx(a,b) ((a)*(GEN.dim)+(b))
+  int i,j,k;
+  double sum, norm, x;
 
   /* check arguments */
   CHECK_NULL(gen,RETURN_VOID);
   COOKIE_CHECK(gen,CK_MCORR_GEN,RETURN_VOID);
 
-/* #undef idx */
+  /* generate rows vectors of matrix H uniformly distributed in the unit sphere */
+  for (i=0; i<GEN.dim; i++) {
+    sum=0.;
+    for (j=0; j<GEN.dim; j++) {  
+      x = _unur_sample_cont(NORMAL);
+      GEN.H[idx(i,j)] = x;
+      sum += x * x;
+    }
+    norm = sqrt(sum);
+    for (j=0; j<GEN.dim; j++) GEN.H[idx(i,j)] /= norm;
+  }
+
+  /* Compute HH' */
+  for (i=0; i<GEN.dim; i++)
+    for (j=0; j<GEN.dim; j++) {
+      if (j<i) 
+	mat[idx(i,j)] = mat[idx(j,i)];
+      else if(j==i)
+	mat[idx(i,j)] = 1.;
+      else { 
+	sum=0.; 
+	for (k=0; k<GEN.dim; k++) 
+	  sum += GEN.H[idx(i,k)]*GEN.H[idx(j,k)];
+	mat[idx(i,j)] = sum;
+      }
+    }
+
+#undef idx
 } /* end of _unur_mcorr_sample_cmat() */
 
 /*****************************************************************************/
@@ -368,6 +427,8 @@ _unur_mcorr_free( struct unur_gen *gen )
   SAMPLE = NULL;   /* make sure to show up a programming error */
 
   /* free memory */
+  if (GEN.H) free (GEN.H);
+  if (gen->gen_aux) _unur_free( gen->gen_aux );
   _unur_distr_free(gen->distr);
   _unur_free_genid(gen);
 

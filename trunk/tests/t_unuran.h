@@ -12,6 +12,7 @@
 
 #include <stdio.h>
 #include <malloc.h>
+#include <config.h>
 
 #include <prng.h>
 #include <unuran.h>
@@ -32,15 +33,20 @@
 /* (comment out the methods or distributions that are not tested)            */
 
 /* methods                                                                   */
-#define T_SROU
-#define T_STDR
+#define T_DGT
+/*  #define T_SROU */
+/*  #define T_STDR */
 
-/* distributions                                                             */
+/* continuous univariate distributions                                       */
 #define D_BETA
 #define D_CAUCHY
 #define D_GAMMA
 #define D_NORMAL
 #define D_UNIFORM
+
+/* discrete univariate distributions                                         */
+#define D_PV_RANDOM
+#define D_PV_GEOMETRIC
 
 /*---------------------------------------------------------------------------*/
 /* global variables                                                          */
@@ -60,7 +66,8 @@ struct list_distr {
   double      c_max;                /* maximal value for c to be T_c concave */
 };
 
-#define T_TYPE_TDR 0x00000001
+#define T_TYPE_TDR 0x00000001       /* univariate continuous T_c-concave     */
+#define T_TYPE_PV  0x00000100       /* univariate discrete finite prob. vector */
 
 extern struct list_distr *list_of_distr;  /* pointer to list of distributions */
 extern int n_distr;                 /* number of distributions               */
@@ -115,10 +122,15 @@ inline void do_check_expected_NULL( int line, void *ptr );
   do {unur_errno = 0; do_check_expected_setfailed(__LINE__,(ok)); } while(0)
 inline void do_check_expected_setfailed( int line, int ok );
 
-/* compare two sequences */
-#define compare_sequences(a,b,n) \
-  do {do_compare_sequences(__LINE__,(a),(b),(n)); } while(0)
-void do_compare_sequences( int line, double *a, double *b, int n );
+/* compare two sequences of type double */
+#define compare_double_sequences(a,b,n) \
+  do {do_compare_double_sequences(__LINE__,(a),(b),(n)); } while(0)
+void do_compare_double_sequences( int line, double *a, double *b, int n );
+
+/* compare two sequences of type int */
+#define compare_int_sequences(a,b,n) \
+  do {do_compare_int_sequences(__LINE__,(a),(b),(n)); } while(0)
+void do_compare_int_sequences( int line, int *a, int *b, int n );
 
 /* check p-value of statistical test */
 #define check_pval(gen,pval,trial) \

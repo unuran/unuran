@@ -388,7 +388,7 @@ void test_srou_sample( void )
     sb[i] = unur_sample_cont(gen);
   unur_free(gen); 
 
-  compare_sequences(sa,sb,N_SAMPLE);
+  compare_double_sequences(sa,sb,N_SAMPLE);
 
   /* the following generator should generate the same sequence */
 
@@ -413,7 +413,7 @@ void test_srou_sample( void )
     sb[i] = unur_sample_cont(gen);
   unur_free(gen); 
 
-  compare_sequences(sa,sb,N_SAMPLE);
+  compare_double_sequences(sa,sb,N_SAMPLE);
 
   /* use cdf at mode - verifying mode */
   prng_reset(urng);
@@ -426,7 +426,7 @@ void test_srou_sample( void )
     sb[i] = unur_sample_cont(gen);
   unur_free(gen); 
 
-  compare_sequences(sa,sb,N_SAMPLE);
+  compare_double_sequences(sa,sb,N_SAMPLE);
 
   /* use cdf at mode and squeeze - verifying mode */
   prng_reset(urng);
@@ -440,7 +440,7 @@ void test_srou_sample( void )
     sb[i] = unur_sample_cont(gen);
   unur_free(gen); 
 
-  compare_sequences(sa,sb,N_SAMPLE);
+  compare_double_sequences(sa,sb,N_SAMPLE);
 
   /* the following generator should generate the same sequence */
 
@@ -465,7 +465,7 @@ void test_srou_sample( void )
     sb[i] = unur_sample_cont(gen);
   unur_free(gen); 
 
-  compare_sequences(sa,sb,N_SAMPLE);
+  compare_double_sequences(sa,sb,N_SAMPLE);
 
 
   /* the following distribution violates the condition of the method:

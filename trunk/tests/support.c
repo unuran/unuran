@@ -132,20 +132,20 @@ void do_check_expected_setfailed( int line, int ok )
 
 /*---------------------------------------------------------------------------*/
 
-#define double_equal(a,b) \
+#define double_not_equal(a,b) \
  ( ((a) > 0. && ((a) > (1.+DBL_EPSILON) * (b) || \
                  (a) < (1.-DBL_EPSILON) * (b)) ) || \
    ((a) < 0. && ((a) < (1.+DBL_EPSILON) * (b) || \
                  (a) > (1.-DBL_EPSILON) * (b)) ) )
 
-/* compare two sequences */
-void do_compare_sequences( int line, double *a, double *b, int n )
+/* compare two sequences of type double */
+void do_compare_double_sequences( int line, double *a, double *b, int n )
 {
   int i;
   int ok = TRUE;
 
   for (i=0; i<n; i++)
-    if (double_equal(a[i],b[i])) {
+    if (double_not_equal(a[i],b[i])) {
       ok = FALSE;
       break;
     }
@@ -157,9 +157,32 @@ void do_compare_sequences( int line, double *a, double *b, int n )
   else
     fprintf(TESTLOG," ok\n");
   
-} /* end of do_compare_sequences() */
+} /* end of do_compare_double_sequences() */
 
-#undef double_equal(a,b)
+#undef double_not_equal(a,b)
+
+/*---------------------------------------------------------------------------*/
+
+/* compare two sequences of type int */
+void do_compare_int_sequences( int line, int *a, int *b, int n )
+{
+  int i;
+  int ok = TRUE;
+
+  for (i=0; i<n; i++)
+    if (a[i] != b[i]) {
+      ok = FALSE;
+      break;
+    }
+  fprintf(TESTLOG,"line %4d: random seqences ...\t\t",line);
+  if (!ok) {
+    ++test_failed;
+    fprintf(TESTLOG," Failed\n");
+  }
+  else
+    fprintf(TESTLOG," ok\n");
+  
+} /* end of do_compare_int_sequences() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -184,14 +207,19 @@ void print_distr_name( UNUR_DISTR *distr, const char *genid )
   int i,n_fpar;
   double *fpar;
 
-  n_fpar = unur_distr_cont_get_pdfparams( distr, &fpar );
-  fprintf(TESTLOG,"%s: %s (",genid,unur_distr_get_name(distr));
-  if (n_fpar) {
-    fprintf(TESTLOG,"%g",fpar[0]);
-    for (i=1; i<n_fpar; i++)
-      fprintf(TESTLOG,", %g",fpar[i]);
+  fprintf(TESTLOG,"%s: %s ",genid,unur_distr_get_name(distr));
+
+  if ( unur_distr_is_cont(distr) ) {
+    n_fpar = unur_distr_cont_get_pdfparams( distr, &fpar );
+    fprintf(TESTLOG,"(");
+    if (n_fpar) {
+      fprintf(TESTLOG,"(%g",fpar[0]);
+      for (i=1; i<n_fpar; i++)
+	fprintf(TESTLOG,", %g",fpar[i]);
+    }
+    fprintf(TESTLOG,")");
   }
-  fprintf(TESTLOG,")");
+
 } /* end of print_distr_name() */
 
 /*---------------------------------------------------------------------------*/
@@ -257,6 +285,10 @@ void run_level2( int line, double *pvals, int n_pvals )
   int *classes;
   int n_classes;
   double pval2;
+
+  if (pvals==NULL)
+    /* nothing to do */
+    return;
 
   /* number classes */
   n_classes = (int) (sqrt(n_pvals)+0.5);

@@ -7,12 +7,17 @@ INCLUDES = \
  -I$(top_srcdir)/src/tests
 
 check_PROGRAMS = \
+ t_dgt \
  t_srou \
  t_stdr
 
 TESTS = \
+ t_dgt \
  t_srou \
  t_stdr
+
+t_dgt_SOURCES = t_dgt.c support.c list_of_distributions.c
+t_dgt_LDADD = $(top_builddir)/src/libunuran.a -lprng -lml -lm
 
 t_srou_SOURCES = t_srou.c support.c list_of_distributions.c
 t_srou_LDADD = $(top_builddir)/src/libunuran.a -lprng -lml -lm

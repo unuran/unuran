@@ -14,10 +14,22 @@
 
 /*---------------------------------------------------------------------------*/
 
+static struct prng *urng = NULL;
+
+/*---------------------------------------------------------------------------*/
+
 struct list_distr *list_of_distr;  /* pointer to list of distributions      */
 int n_distr;                        /* number of distributions               */
 
-#define N_DISTRIBUTIONS 100         /* maximum number of distributions       */
+#define N_DISTRIBUTIONS 200         /* maximum number of distributions       */
+
+/*---------------------------------------------------------------------------*/
+
+static double *make_random_vector(int len);
+/* make a probability vector (use random entries) */
+
+static double *make_geometric_vector(double q, int len); 
+/* make a probability vector (use geometric distribution) */
 
 /*---------------------------------------------------------------------------*/
 
@@ -25,7 +37,12 @@ int n_distr;                        /* number of distributions               */
 void make_list_of_distributions( void )
 {
   double fpar[10];
+  double *prob;
   struct list_distr *list;
+  UNUR_DISTR *distr;
+
+  /* we use Mersenne Twister as uniform random number generator */
+  urng = prng_new("mt19937(8888)");
 
   /* allocate memory for list */
   list_of_distr = malloc( N_DISTRIBUTIONS * sizeof(struct list_distr *));
@@ -33,6 +50,12 @@ void make_list_of_distributions( void )
   /* reset counter for distributions */
   n_distr = 0;
   list = list_of_distr;
+  
+  /**************************************************************************/
+  /**                                                                      **/
+  /**                Continuous Univariate Distributions                   **/
+  /**                                                                      **/
+  /**************************************************************************/
 
 #ifdef D_BETA
   /** Beta distribution **/
@@ -188,6 +211,108 @@ void make_list_of_distributions( void )
   ++n_distr; ++list;
 #endif
 
+  /**************************************************************************/
+  /**                                                                      **/
+  /**                 Discrete Univariate Distributions                    **/
+  /**                                                                      **/
+  /**************************************************************************/
+
+#ifdef D_PV_RANDOM
+  /** random vector with random entries **/
+
+  distr = unur_distr_discr_new();   abort_if_NULL(distr);
+  prob = make_random_vector(10);
+  unur_distr_discr_set_prob(distr,prob,10);
+  free(prob);
+  unur_distr_set_name(distr,"pv(random)");
+  list->distr = distr;
+  list->type  = T_TYPE_PV;
+  ++n_distr; ++list;
+
+  distr = unur_distr_discr_new();   abort_if_NULL(distr);
+  prob = make_random_vector(100);
+  unur_distr_discr_set_prob(distr,prob,100);
+  free(prob);
+  unur_distr_set_name(distr,"pv(random)");
+  list->distr = distr;
+  list->type  = T_TYPE_PV;
+  ++n_distr; ++list;
+
+  distr = unur_distr_discr_new();   abort_if_NULL(distr);
+  prob = make_random_vector(1000);
+  unur_distr_discr_set_prob(distr,prob,1000);
+  free(prob);
+  unur_distr_set_name(distr,"pv(random)");
+  list->distr = distr;
+  list->type  = T_TYPE_PV;
+  ++n_distr; ++list;
+
+  distr = unur_distr_discr_new();   abort_if_NULL(distr);
+  prob = make_random_vector(10000);
+  unur_distr_discr_set_prob(distr,prob,10000);
+  free(prob);
+  unur_distr_set_name(distr,"pv(random)");
+  list->distr = distr;
+  list->type  = T_TYPE_PV;
+  ++n_distr; ++list;
+#endif
+
+#ifdef D_PV_GEOMETRIC
+  /** random vector with geometrically distributed entries **/
+
+  distr = unur_distr_discr_new();   abort_if_NULL(distr);
+  prob = make_geometric_vector(1.,1000);
+  unur_distr_discr_set_prob(distr,prob,1000);
+  free(prob);
+  unur_distr_set_name(distr,"pv(geometric)");
+  list->distr = distr;
+  list->type  = T_TYPE_PV;
+  ++n_distr; ++list;
+
+  distr = unur_distr_discr_new();   abort_if_NULL(distr);
+  prob = make_geometric_vector(0.99,1000);
+  unur_distr_discr_set_prob(distr,prob,1000);
+  free(prob);
+  unur_distr_set_name(distr,"pv(geometric)");
+  list->distr = distr;
+  list->type  = T_TYPE_PV;
+  ++n_distr; ++list;
+
+  distr = unur_distr_discr_new();   abort_if_NULL(distr);
+  prob = make_geometric_vector(0.9,1000);
+  unur_distr_discr_set_prob(distr,prob,1000);
+  free(prob);
+  unur_distr_set_name(distr,"pv(geometric)");
+  list->distr = distr;
+  list->type  = T_TYPE_PV;
+  ++n_distr; ++list;
+
+  distr = unur_distr_discr_new();   abort_if_NULL(distr);
+  prob = make_geometric_vector(0.5,1000);
+  unur_distr_discr_set_prob(distr,prob,1000);
+  free(prob);
+  unur_distr_set_name(distr,"pv(geometric)");
+  list->distr = distr;
+  list->type  = T_TYPE_PV;
+  ++n_distr; ++list;
+
+  distr = unur_distr_discr_new();   abort_if_NULL(distr);
+  prob = make_geometric_vector(0.1,1000);
+  unur_distr_discr_set_prob(distr,prob,1000);
+  free(prob);
+  unur_distr_set_name(distr,"pv(geometric)");
+  list->distr = distr;
+  list->type  = T_TYPE_PV;
+  ++n_distr; ++list;
+
+#endif
+
+  /**************************************************************************/
+  /**                                                                      **/
+  /**                                                                      **/
+  /**                                                                      **/
+  /**************************************************************************/
+
   /* check N_DISTRIBUTIONS (compile time constant !!) */
   if (n_distr > N_DISTRIBUTIONS) {
     /* this is very bad */
@@ -195,7 +320,53 @@ void make_list_of_distributions( void )
     abort();
   }
 
+  /* free uniform generator */
+  prng_free(urng);
+
 } /* end of make_list_of_distributions() */
+
+/*---------------------------------------------------------------------------*/
+
+/* make a probability vector (need not sum to one)
+   (use random entries)                                                      */
+static double *make_random_vector(int len)
+{
+  double *prob;
+  int i;
+
+  /* allocate memory */
+  prob = malloc(len*sizeof(double));
+  abort_if_NULL(prob);
+     
+  /* main part of geometric distribution */
+  for( i=0; i<len; i++ ) 
+    prob[i] = prng_get_next(urng);
+
+  return prob;
+
+} /* end of make_random_vector() */
+
+/*---------------------------------------------------------------------------*/
+
+/* make a probability vector (need not sum to one)
+   (use geometric distribution)                                              */
+static double *make_geometric_vector(double q, int len)
+{
+  double *prob;
+  int i;
+
+  /* allocate memory */
+  prob = malloc(len * sizeof(double));
+  abort_if_NULL(prob);
+
+  /* main part of geometric distribution */
+  prob[0] = 1.;
+  for( i=1; i<len; i++ ) 
+    prob[i] = prob[i-1] * q;
+
+  return prob;
+
+} /* end of make_geometric_vector() */
 
 /*---------------------------------------------------------------------------*/
 

@@ -437,7 +437,7 @@ int unur_distr_cvec_set_center( UNUR_DISTR *distribution, const double *center )
 
    Default: The mode, if given by a unur_distr_cvec_set_mode() call;
    else the mean, if given by a unur_distr_cvec_set_mean() call;
-   otherwise the null vector @unurmath{(0,\ldots,0)}.
+   otherwise the null vector (0,@dots{},0).
 */
 
 const double *unur_distr_cvec_get_center( UNUR_DISTR *distribution );

@@ -831,8 +831,9 @@ int print_pval( FILE *LOG, UNUR_GEN *gen, double pval, int trial, char todo )
 
 int run_validate_chi2( FILE *LOG, int line, UNUR_GEN *gen, char todo )
 {
+#define BUFSIZE 32
   const char *distr_name;
-  static const char *last_distr_name = "";
+  static char last_distr_name[BUFSIZE] = "";
   unsigned int type;
   int i;
   double pval;
@@ -882,9 +883,10 @@ int run_validate_chi2( FILE *LOG, int line, UNUR_GEN *gen, char todo )
   /* get type of distribution */
   type = unur_distr_get_type( unur_get_distr(gen) );
 
-  if (strcmp(distr_name,last_distr_name) ) {
+  if ( strcmp(distr_name,last_distr_name) ) {
     /* different distributions */
-    last_distr_name = distr_name;
+    strncpy(last_distr_name,distr_name,BUFSIZE);
+    last_distr_name[BUFSIZE-1] = '\0';
     printf(" %s",distr_name); fflush(stdout);
   }
 
@@ -915,6 +917,7 @@ int run_validate_chi2( FILE *LOG, int line, UNUR_GEN *gen, char todo )
 
   return failed;
 
+#undef BUFSIZE
 } /* end of run_validate_chi2() */
 
 /*---------------------------------------------------------------------------*/
@@ -924,8 +927,9 @@ int run_validate_chi2( FILE *LOG, int line, UNUR_GEN *gen, char todo )
 
 int run_validate_verifyhat( FILE *LOG, int line, UNUR_GEN *gen, char todo )
 {
+#define BUFSIZE 32
   const char *distr_name;
-  static const char *last_distr_name = "";
+  static char last_distr_name[BUFSIZE] = "";
   unsigned int type;
   int i;
   int failed = 0;
@@ -969,7 +973,8 @@ int run_validate_verifyhat( FILE *LOG, int line, UNUR_GEN *gen, char todo )
 
   if (strcmp(distr_name,last_distr_name) ) {
     /* different distributions */
-    last_distr_name = distr_name;
+    strncpy(last_distr_name,distr_name,BUFSIZE);
+    last_distr_name[BUFSIZE-1] = '\0';
     printf(" %s",distr_name); fflush(stdout);
   }
 

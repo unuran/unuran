@@ -68,7 +68,7 @@ my $DISTR = read_PDFdata('../..');
 # Print Test data
 print_log("sample size = $sample_size\n");
 print_log("accuracy = $accuracy\n");
-print_log("languages = C, FORTRAN\n\n");
+print_log("languages = C, FORTRAN, JAVA\n\n");
 
 # ----------------------------------------------------------------
 # Get list of distributions 
@@ -199,30 +199,37 @@ sub run_test
     open UNURAN, "$UNURAN_exec |" or die "cannot run $UNURAN_exec"; 
     open C, "$C_exec |" or die "cannot run $C_exec"; 
     open FORTRAN, "$FORTRAN_exec |" or die "cannot run $FORTRAN_exec"; 
+    open JAVA, "java $JAVA_exec |" or die "cannot run $JAVA_exec"; 
 
     # Run generatores and compare output
     my $C_n_diffs = 0;
     my $FORTRAN_n_diffs = 0;
+    my $JAVA_n_diffs = 0;
     my $n_sample = 0;
 
     while (my $UNURAN_out = <UNURAN>) {
 	my $C_out = <C>;
 	my $FORTRAN_out = <FORTRAN>;
+	my $JAVA_out = <JAVA>;
 	
 	chomp $UNURAN_out;
 	chomp $C_out;
 	chomp $FORTRAN_out;
-	
+	chomp $JAVA_out;
+
 	++$n_sample;
 	
 	(my $UNURAN_x,  my $UNURAN_pdfx)  = split /\s+/, $UNURAN_out, 2;
 	(my $C_x,       my $C_pdfx)       = split /\s+/, $C_out, 2;
 	(my $FORTRAN_x, my $FORTRAN_pdfx) = split /\s+/, $FORTRAN_out, 2;
+	(my $JAVA_x,    my $JAVA_pdfx)    = split /\s+/, $JAVA_out, 2;
 	
 	my $C_x_diff          = $UNURAN_x    - $C_x;
 	my $C_pdfx_diff       = $UNURAN_pdfx - $C_pdfx;
 	my $FORTRAN_x_diff    = $UNURAN_x    - $FORTRAN_x;
 	my $FORTRAN_pdfx_diff = $UNURAN_pdfx - $FORTRAN_pdfx;
+	my $JAVA_x_diff       = $UNURAN_x    - $JAVA_x;
+	my $JAVA_pdfx_diff    = $UNURAN_pdfx - $JAVA_pdfx;
 	
 	if ( !FP_equal($C_x,$UNURAN_x) or !FP_equal($C_pdfx,$UNURAN_pdfx) ) {
 	    ++$C_n_diffs;
@@ -234,13 +241,19 @@ sub run_test
 	    print LOG "  FORTRAN: x    = $FORTRAN_x\tdifference = $FORTRAN_x_diff\n";
 	    print LOG "  FORTRAN: pdfx = $FORTRAN_pdfx\tdifference = $FORTRAN_pdfx_diff\n";
 	}
-	
+	if ( !FP_equal($JAVA_x,$UNURAN_x) or !FP_equal($JAVA_pdfx,$UNURAN_pdfx) ) {
+	    ++$JAVA_n_diffs;
+	    print LOG "  JAVA: x    = $JAVA_x\tdifference = $JAVA_x_diff\n";
+	    print LOG "  JAVA: pdfx = $JAVA_pdfx\tdifference = $JAVA_pdfx_diff\n";
+	}
     }
 
     # End
     close UNURAN;
     close C;
-    
+    close FORTRAN;
+    close JAVA;
+
     my $errorcode = $n_sample ? 0 : 1;
     
     if ($C_n_diffs > 0) {
@@ -249,6 +262,10 @@ sub run_test
     }
     if ($FORTRAN_n_diffs > 0) {
 	print_log("\t...  FORTRAN Test FAILED\n");
+	++$errorcode;
+    }
+    if ($JAVA_n_diffs > 0) {
+	print_log("\t...  JAVA Test FAILED\n");
 	++$errorcode;
     }
     
@@ -807,7 +824,7 @@ public class $test {
       for (private int i = 0; i<$sample_size;i++) {
 	x = $gen.sample();
 	pdfx = $gen.pdf(x);
-        System.out.println( x + pdfx);
+        System.out.println( x +" "+ pdfx);
       }
    }
 

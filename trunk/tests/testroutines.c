@@ -362,7 +362,7 @@ int print_pval( FILE *LOG, UNUR_GEN *gen, double pval, int trial, char todo )
   int failed = 0;
   int l;
 
-  if (pval < 0.) {
+  if (pval < -1.5) {
     /* was not able to run test (CDF missing) */
 
     fprintf(LOG,"   not performed (missing data)\t");

@@ -694,9 +694,9 @@ sub scan_validate {
 		    
 		    # we cannot run the test if par == NULL.
 		    # then essential parameters are missing.
-		    if ($l =~ /^\s*par\s*=\s*/) {
-			print OUT "\tif (par==NULL) { printf(\"X\"); fflush(stdout); break; }\n";
-		    }
+		    # if ($l =~ /^\s*par\s*=\s*/) {
+		    # print OUT "\tif (par==NULL) { printf(\"X\"); fflush(stdout); break; }\n";
+		    #}
 		}
 		
 		if ($have_gen_lines) {
@@ -882,7 +882,7 @@ sub scan_validate {
 
 			# we cannot run the test if par == NULL.
 			# then essential parameters are missing.
-			print OUT "\tif (par==NULL) { printf(\"X\"); fflush(stdout); break; }\n";
+			# print OUT "\tif (par==NULL) { printf(\"X\"); fflush(stdout); break; }\n";
 		    }
 
 		}

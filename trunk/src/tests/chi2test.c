@@ -89,7 +89,8 @@ unur_test_chi2( struct unur_gen *gen,
      /*   p-value of test statistics under H_0                               */
      /*                                                                      */
      /* error:                                                               */
-     /*   return -1.                                                         */
+     /*   -2. ... missing data                                               */
+     /*   -1. ... other errors                                               */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
@@ -141,7 +142,8 @@ _unur_test_chi2_discr( struct unur_gen *gen,
      /*   p-value of test statistics under H_0                               */
      /*                                                                      */
      /* error:                                                               */
-     /*   return -1.                                                         */
+     /*   -2. ... missing data                                               */
+     /*   -1. ... other errors                                               */
      /*----------------------------------------------------------------------*/
 {
 #define DISTR   gen->distr.data.discr
@@ -166,7 +168,7 @@ _unur_test_chi2_discr( struct unur_gen *gen,
     /* no PV given --> try to compute PV */
     if (!unur_distr_discr_make_pv(&(gen->distr)) ) {
       /* not successful */
-      return -1.;
+      return -2.;
     }
   /* pointer to PV */
   pv = DISTR.pv;
@@ -243,9 +245,9 @@ _unur_test_chi2_cont(struct unur_gen *gen,
      /* return:                                                              */
      /*   p-value of test statistics under H_0                               */
      /*                                                                      */
-     /* comment:                                                             */
-     /*   uses routine chi2test().                                           */
-     /*                                                                      */
+     /* error:                                                               */
+     /*   -2. ... missing data                                               */
+     /*   -1. ... other errors                                               */
      /*----------------------------------------------------------------------*/
 {
 #define DISTR   gen->distr.data.cont
@@ -264,7 +266,7 @@ _unur_test_chi2_cont(struct unur_gen *gen,
   cdf = DISTR.cdf;
   if (DISTR.cdf == NULL) {
     _unur_error(test_name,UNUR_ERR_GENERIC,"CDF required for continuous random variates!");
-    return -1.;
+    return -2.;
   }
 
   /* check given number of intervals */
@@ -362,7 +364,8 @@ _unur_test_chi2test( double *prob,
      /*   p-value of test statistics under H_0                               */
      /*                                                                      */
      /* error:                                                               */
-     /*   return -1.                                                         */
+     /*   -2. ... missing data                                               */
+     /*   -1. ... other errors                                               */
      /*                                                                      */
      /* comment:                                                             */
      /*   joines classes if expected number of occurrences in some classes   */
@@ -394,7 +397,7 @@ _unur_test_chi2test( double *prob,
   /* do we have a CDF for the chi^2 distribution ? */
   if (chisquare_distr->data.cont.cdf == NULL) {
     _unur_error(test_name,UNUR_ERR_GENERIC,"CDF for CHI^2 distribution required");
-    return -1.;
+    return -2.;
   }
 
   /* minimum number of occurrences in a class */

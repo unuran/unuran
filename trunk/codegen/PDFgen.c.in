@@ -148,7 +148,8 @@ _unur_acg_C_PDF_GENERIC (FILE *out, UNUR_DISTR *distr, const char *pdf)
   fprintf (out,"static double %s (double x)\n{\n", ((pdf) ? pdf : "pdf_generic") );
 
   fprintf (out,"\treturn ( ");
-  _unur_fstr_tree2C ( out, distr->data.cont.pdftree, "x", "f" );
+  if ( ! (_unur_fstr_tree2C ( out, distr->data.cont.pdftree, "x", "f" )) )
+     return 0;
   fprintf (out," );\n");
 
   fprintf (out,"}\n");

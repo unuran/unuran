@@ -38,7 +38,7 @@
 /** API                                                                     **/
 /*****************************************************************************/
 
-/*---------------------------------------------------------------------------*/
+/*--------------------------------------------------------------------------*/
 
 int 
 _unur_fstr_tree2C ( FILE *out, const struct ftreenode *root,
@@ -59,9 +59,10 @@ _unur_fstr_tree2C ( FILE *out, const struct ftreenode *root,
 {
   /* check arguments */
   _unur_check_NULL( GENTYPE,root,0 );
+  _unur_check_NULL( GENTYPE,symbol[root->token].node2C,0 );
 
   /* make body of C routine */
-  _unur_fstr_node2C(out,root,variable,function);
+  symbol[root->token].node2C (out,root,variable);
 
   return 1;
 
@@ -73,9 +74,10 @@ _unur_fstr_tree2C ( FILE *out, const struct ftreenode *root,
 /** Create function string and source code.                                 **/
 /*****************************************************************************/
 
+/*---------------------------------------------------------------------------*/
+
 int
-_unur_fstr_node2C ( FILE *out, const struct ftreenode *node,
-		    const char *variable, const char *function )
+C_error ( FILE *out, const struct ftreenode *node, const char *variable )
      /*----------------------------------------------------------------------*/
      /* Produce string from function subtree rooted at node.                 */
      /* As a side effect a string is allocated.                              */
@@ -84,148 +86,307 @@ _unur_fstr_node2C ( FILE *out, const struct ftreenode *node,
      /*   out      ... output stream                                         */
      /*   root     ... pointer to root of function tree                      */
      /*   variable ... pointer to name of variable                           */
-     /*   function ... pointer to name of function                           */
      /*                                                                      */
      /* return:                                                              */
      /*   1 on success                                                       */
      /*----------------------------------------------------------------------*/
 {
-  /* operator types */
-# define NONE   0       /* no operator (constant, variable, ... )            */
-# define PREFIX 1       /* prefix operator (eg. exp(x) )                     */
-# define INFIX  2       /* infix operator (eg. (x + y) )                     */
-
-  struct ftreenode *left  = node->left;    /* left branch of node            */
-  struct ftreenode *right = node->right;   /* right branch of node           */
-
-  const char *symb;           /* symbol for node (or NULL for constant)      */
-  int type, op_type;               /* type of symbol and operator            */
-
-  /* type and name of symbol */
-  switch (node->type) {
-  case S_UIDENT:    /* variable */
-    symb = variable;
-    type = S_UIDENT;
-    op_type = NONE;
-    break;
-  case S_UFUNCT:    /* user defined function */
-    symb = function;
-    type = S_UFUNCT;
-    op_type = PREFIX;
-    break;
-  case S_UCONST:    /* node contains constant */
-  case S_SCONST:
-    /* use value in node instead of symbol */
-    symb = NULL;
-    type = S_UCONST;
-    op_type = NONE;
-    break;  
-  default:
-    symb = symbol[node->token].name_C;
-    type = node->type;
-    if (symb[0] == '@') {
-      symb++;
-      op_type = PREFIX;
-    }
-    else {
-      op_type = INFIX;
-    }
-  }
-
-  /* prefix operators (functions) */
-  if (op_type == PREFIX) {
-    /* node '(' left ',' right ')' */
-    _unur_fstr_print_C( out, symb, 0 );
-    _unur_fstr_print_C( out, "(", 0. );
-    if (left) {
-      _unur_fstr_node2C(out,left,variable,function);
-      _unur_fstr_print_C( out, ",", 0. );
-    }
-    if (right) {
-      _unur_fstr_node2C(out,right,variable,function);
-    }
-    _unur_fstr_print_C( out, ")", 0. );
-  }
-
-  /* comma operator (for argument lists) */
-  else if (symb && node->symbol[0] == ',') {
-    /* left ',' right */
-    _unur_fstr_print_C( out, ",", 0. );
-    if (left) {
-      _unur_fstr_node2C(out,left,variable,function);
-      _unur_fstr_print_C( out, ",", 0. );
-    }
-    if (right) {
-      _unur_fstr_node2C(out,right,variable,function);
-    }
-  }    
-
-  /* infix operator or variable or constant */
-  else {
-
-    /* enclosing parenthesis for infix operators */
-    if (op_type == INFIX) _unur_fstr_print_C( out, "(", 0. );
-
-    /* left branch */
-    if (left) {
-      if (left->type == S_UCONST && left->val == 0. && node->symbol[0] == '-')
-	/* there is no need to print "0 - ..." */ ;
-      else
-	_unur_fstr_node2C(out,left,variable,function);
-    }
-
-    /* symbol for node */
-    _unur_fstr_print_C( out, symb, node->val );
-
-    /* right branch */
-    if (right) {
-      _unur_fstr_node2C(out,right,variable,function);
-    }
-
-    /* enclosing parenthesis for infix operators */
-    if (op_type == INFIX) _unur_fstr_print_C( out, ")", 0. );
-
-  }
-
-  return 1;
-
-#undef NONE
-#undef PREFIX
-#undef INFIX
-
-} /* end of _unur_fstr_node2C() */
-
-/*---------------------------------------------------------------------------*/
-
-/*****************************************************************************/
-/** Auxilliary routines                                                     **/
-/*****************************************************************************/
+  return 0;
+} /* end of C_error() */
 
 /*---------------------------------------------------------------------------*/
 
 int
-_unur_fstr_print_C ( FILE *out, const char *symb, const double number )
+C_const ( FILE *out, const struct ftreenode *node, const char *variable )
      /*----------------------------------------------------------------------*/
-     /* Print string or number into output stream.                           */
-     /* The number is only printed if symb is the NULL pointer.              */
+     /* Produce string from function subtree rooted at node.                 */
+     /* As a side effect a string is allocated.                              */
      /*                                                                      */
      /* parameters:                                                          */
-     /*   out    ... output stream                                           */
-     /*   symb   ... string to be printed                                    */
-     /*   number ... constant to be printed                                  */
+     /*   out      ... output stream                                         */
+     /*   root     ... pointer to root of function tree                      */
+     /*   variable ... pointer to name of variable                           */
      /*                                                                      */
      /* return:                                                              */
      /*   1 on success                                                       */
      /*----------------------------------------------------------------------*/
 {
-  if (symb)
-    /* print symbol into output stream */
-    fprintf(out,"%s",symb);
-  else
-    /* print number into output stream */
-    fprintf(out,"%.16g",number);
-
+  fprintf(out,"%.16g",node->val );
   return 1;
-} /* end of _unur_fstr_print_C() */
+} /* end of C_const() */
 
 /*---------------------------------------------------------------------------*/
+
+int
+C_var ( FILE *out, const struct ftreenode *node, const char *variable )
+     /*----------------------------------------------------------------------*/
+     /* Produce string from function subtree rooted at node.                 */
+     /* As a side effect a string is allocated.                              */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   out      ... output stream                                         */
+     /*   root     ... pointer to root of function tree                      */
+     /*   variable ... pointer to name of variable                           */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 on success                                                       */
+     /*----------------------------------------------------------------------*/
+{
+  fprintf(out,"%s",variable);
+  return 1;
+} /* end of C_var() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+C_prefix ( FILE *out, const struct ftreenode *node, const char *variable )
+     /*----------------------------------------------------------------------*/
+  /* prefix operators (functions) */
+     /* Produce string from function subtree rooted at node.                 */
+     /* As a side effect a string is allocated.                              */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   out      ... output stream                                         */
+     /*   root     ... pointer to root of function tree                      */
+     /*   variable ... pointer to name of variable                           */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 on success                                                       */
+     /*----------------------------------------------------------------------*/
+{
+  struct ftreenode *left  = node->left;    /* left branch of node            */
+  struct ftreenode *right = node->right;   /* right branch of node           */
+
+  /* node '(' left ',' right ')' */
+  fprintf(out,"%s(",symbol[node->token].name);
+
+  if (left) {
+    symbol[left->token].node2C (out,left,variable);
+    fprintf(out,",");
+  }
+  if (right) {
+    symbol[right->token].node2C (out,right,variable);
+  }
+
+  fprintf(out,")");
+
+} /* end of C_prefix() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+C_power ( FILE *out, const struct ftreenode *node, const char *variable )
+     /*----------------------------------------------------------------------*/
+  /* prefix operators (functions) */
+     /* Produce string from function subtree rooted at node.                 */
+     /* As a side effect a string is allocated.                              */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   out      ... output stream                                         */
+     /*   root     ... pointer to root of function tree                      */
+     /*   variable ... pointer to name of variable                           */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 on success                                                       */
+     /*----------------------------------------------------------------------*/
+{
+  struct ftreenode *left  = node->left;    /* left branch of node            */
+  struct ftreenode *right = node->right;   /* right branch of node           */
+
+  if (left==NULL || right==NULL)
+    /* error */
+    return 0;
+
+  /* 'pow(' left ',' right ')' */
+  fprintf(out,"pow(");
+  symbol[left->token].node2C (out,left,variable);
+  fprintf(out,",");
+  symbol[right->token].node2C (out,right,variable);
+  fprintf(out,")");
+
+} /* end of C_power() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+C_infix ( FILE *out, const struct ftreenode *node, const char *variable )
+     /*----------------------------------------------------------------------*/
+  /* infix operators (functions) */
+     /* Produce string from function subtree rooted at node.                 */
+     /* As a side effect a string is allocated.                              */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   out      ... output stream                                         */
+     /*   root     ... pointer to root of function tree                      */
+     /*   variable ... pointer to name of variable                           */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 on success                                                       */
+     /*----------------------------------------------------------------------*/
+{
+  struct ftreenode *left  = node->left;    /* left branch of node            */
+  struct ftreenode *right = node->right;   /* right branch of node           */
+
+  if (left==NULL || right==NULL)
+    /* error */
+    return 0;
+
+  /* '(' left node right ')' */
+
+  /* enclosing parenthesis */
+  fprintf(out,"(");
+
+  /* left branch */
+  symbol[left->token].node2C (out,left,variable);
+
+  /* symbol for node */
+  fprintf(out,"%s",symbol[node->token].name);
+  
+  /* right branch */
+  symbol[right->token].node2C (out,right,variable);
+  
+  /* enclosing parenthesis */
+  fprintf(out,")");
+
+} /* end of C_infix() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+C_equal ( FILE *out, const struct ftreenode *node, const char *variable )
+     /*----------------------------------------------------------------------*/
+     /* Produce string from function subtree rooted at node.                 */
+     /* As a side effect a string is allocated.                              */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   out      ... output stream                                         */
+     /*   root     ... pointer to root of function tree                      */
+     /*   variable ... pointer to name of variable                           */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 on success                                                       */
+     /*----------------------------------------------------------------------*/
+{
+  struct ftreenode *left  = node->left;    /* left branch of node            */
+  struct ftreenode *right = node->right;   /* right branch of node           */
+
+  if (left==NULL || right==NULL)
+    /* error */
+    return 0;
+
+  /* '(' left '==' right ')' */
+  fprintf(out,"(");
+  symbol[left->token].node2C (out,left,variable);
+  fprintf(out,"==");
+  symbol[right->token].node2C (out,right,variable);
+  fprintf(out,")");
+
+} /* end of C_equal() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+C_unequal ( FILE *out, const struct ftreenode *node, const char *variable )
+     /*----------------------------------------------------------------------*/
+     /* Produce string from function subtree rooted at node.                 */
+     /* As a side effect a string is allocated.                              */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   out      ... output stream                                         */
+     /*   root     ... pointer to root of function tree                      */
+     /*   variable ... pointer to name of variable                           */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 on success                                                       */
+     /*----------------------------------------------------------------------*/
+{
+  struct ftreenode *left  = node->left;    /* left branch of node            */
+  struct ftreenode *right = node->right;   /* right branch of node           */
+
+  if (left==NULL || right==NULL)
+    /* error */
+    return 0;
+
+  /* '(' left '==' right ')' */
+  fprintf(out,"(");
+  symbol[left->token].node2C (out,left,variable);
+  fprintf(out,"!=");
+  symbol[right->token].node2C (out,right,variable);
+  fprintf(out,")");
+
+} /* end of C_unequal() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+C_minus ( FILE *out, const struct ftreenode *node, const char *variable )
+     /*----------------------------------------------------------------------*/
+  /* infix operators (functions) */
+     /* Produce string from function subtree rooted at node.                 */
+     /* As a side effect a string is allocated.                              */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   out      ... output stream                                         */
+     /*   root     ... pointer to root of function tree                      */
+     /*   variable ... pointer to name of variable                           */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 on success                                                       */
+     /*----------------------------------------------------------------------*/
+{
+  struct ftreenode *left  = node->left;    /* left branch of node            */
+  struct ftreenode *right = node->right;   /* right branch of node           */
+
+  if (left==NULL || right==NULL)
+    /* error */
+    return 0;
+
+  /* '(' [left] '-' right ')' */
+
+  fprintf(out,"(");
+  if (!(left->type == S_UCONST && left->val == 0.))
+    /* there is no need to print "0 - ..." */
+    symbol[left->token].node2C (out,left,variable);
+  fprintf(out,"-");
+  symbol[right->token].node2C (out,right,variable);
+  fprintf(out,")");
+
+} /* end of C_minus() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+C_mod ( FILE *out, const struct ftreenode *node, const char *variable )
+     /*----------------------------------------------------------------------*/
+  /* infix operators (functions) */
+     /* Produce string from function subtree rooted at node.                 */
+     /* As a side effect a string is allocated.                              */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   out      ... output stream                                         */
+     /*   root     ... pointer to root of function tree                      */
+     /*   variable ... pointer to name of variable                           */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 on success                                                       */
+     /*----------------------------------------------------------------------*/
+{
+  struct ftreenode *left  = node->left;    /* left branch of node            */
+  struct ftreenode *right = node->right;   /* right branch of node           */
+
+  if (left==NULL || right==NULL)
+    /* error */
+    return 0;
+
+  /* '(' [left] '%' right ')' */
+
+  fprintf(out,"(");
+  symbol[left->token].node2C (out,left,variable);
+  fprintf(out,"%%");
+  symbol[right->token].node2C (out,right,variable);
+  fprintf(out,")");
+
+} /* end of C_mod() */
+
+/*---------------------------------------------------------------------------*/
+

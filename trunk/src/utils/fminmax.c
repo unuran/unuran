@@ -79,31 +79,35 @@ _unur_util_fmin(
 /*---------------------------------------------------------------------------*/
 
 double
-_unur_util_find_max( struct unur_funct_generic fs, 
-                     double interval_min, double interval_max )
+_unur_util_find_max( struct unur_funct_generic fs,  
+                     double interval_min, 
+		     double interval_max,
+		     double guess_max
+		   )
      /*----------------------------------------------------------------------*/
-     /* find mode of univariate continuous distribution numerically          */
+     /* find max of univariate continuous distribution numerically           */
      /*                                                                      */
      /* This is achieved by the following steps:                             */
-     /* -- Determine a interval containing the mode and a third              */
+     /* -- Determine a interval containing the max and a third               */
      /*    point within ( x0< x1 < x2 )                                      */
-     /*    ++ Determine a region where to search the mode; this will be the  */
-     /*       interval [mode-100, mode+100] if this is no contrdiction to    */
-     /*       the given interval;`mode' is the best known approx to the mode */
+     /*    ++ Determine a region where to search the max; this will be the   */
+     /*       interval [max-100, max+100] if this is no contrdiction to      */
+     /*       the given interval;`max' is the best known approx to the max   */
      /*    ++ Find a point in the interval with a positve pdf                */
      /*       This is done by two geometric sequences of MAX_SRCH elements   */
      /*       and find two other points within the given domain              */
      /*    ++ Unbounded domains: refine x0, x1, x2 until:                    */
      /*       f(x0) < f(x1) > f(x2)                                          */
-     /* -- invoke a maximization-routine to determine the mode               */
+     /* -- invoke a maximization-routine to determine the max                */
      /*                                                                      */
      /* parameters:                                                          */
      /*   fs           ... function structure                                */
      /*   interval_min ... left boundary of function definition interval     */
      /*   interval_max ... right boundary of function definition interval    */
+     /*   guess_max    ... initial guess for max position                    */
      /*                                                                      */
      /* return:                                                              */
-     /*   x        ... approximate position of mode on success               */
+     /*   x        ... approximate position of max on success                */
      /*   INFINITY ... on error                                              */
      /*----------------------------------------------------------------------*/
 {
@@ -111,20 +115,20 @@ _unur_util_find_max( struct unur_funct_generic fs,
  
   int i;
 
-  double x[3];   /* mode (and x[2]) should be between x[0] and  x[2] ...*/   
+  double x[3];   /* max (and x[2]) should be between x[0] and  x[2] ...*/   
   double fx[3];  /* ... and the respective funtion values */
-  double mode;   /* (approximative) mode of the distribution  */
-  double mode_l; /* lower bound for mode search */
-  double mode_u; /* upper bound for mode search */
+  double max;   /* (approximative) max of the distribution  */
+  double max_l; /* lower bound for max search */
+  double max_u; /* upper bound for max search */
   double step;
 
   int unbound_left; 
   int unbound_right; 
 
-  /* first guess for mode */
-  mode =  0.;
+  /* first guess for max */
+  max = (_unur_FP_is_infinity(guess_max)) ? 0. : guess_max;
 
-  /* determine where to look for the mode */
+  /* determine where to look for the max */
   
   /* unbounded domain */
   if ( _unur_FP_is_minus_infinity(interval_min) &&
@@ -133,10 +137,10 @@ _unur_util_find_max( struct unur_funct_generic fs,
     unbound_left = 1;
     unbound_right = 1;
 
-    x[1]  = mode;
+    x[1]  = max;
     fx[1] = fs.f(x[1], fs.params);    
-    mode_l = mode - 100.0;
-    mode_u = mode + 100.0;
+    max_l = max - 100.0;
+    max_u = max + 100.0;
 
   }
   /* domain unbounded on the right */
@@ -146,17 +150,17 @@ _unur_util_find_max( struct unur_funct_generic fs,
     unbound_left = 0;
     unbound_right = 1;
 
-    if ( mode >= interval_min ){
-      x[1]  = mode;
+    if ( max >= interval_min ){
+      x[1]  = max;
       fx[1] = fs.f(x[1], fs.params);
-      mode_l = interval_min;
-      mode_u = 2 * mode - interval_min;
+      max_l = interval_min;
+      max_u = 2 * max - interval_min;
     }
     else{
       x[1] = interval_min + 100.0;
       fx[1] = fs.f(x[1], fs.params);
-      mode_l = interval_min;
-      mode_u = x[1] + 100.0;
+      max_l = interval_min;
+      max_u = x[1] + 100.0;
     }
 
   }
@@ -167,17 +171,17 @@ _unur_util_find_max( struct unur_funct_generic fs,
     unbound_left = 1;
     unbound_right = 0;
 
-    if ( mode <= interval_max ){
-      x[1]  = mode;
+    if ( max <= interval_max ){
+      x[1]  = max;
       fx[1] = fs.f(x[1], fs.params);
-      mode_l = interval_max - 2 * mode;
-      mode_u = interval_max;
+      max_l = interval_max - 2 * max;
+      max_u = interval_max;
     }
     else{
       x[1] = interval_max - 100.0;
       fx[1] = fs.f(x[1], fs.params);
-      mode_l = x[1] - 100.0;
-      mode_u = interval_max;      
+      max_l = x[1] - 100.0;
+      max_u = interval_max;      
     }
 
   }
@@ -187,39 +191,39 @@ _unur_util_find_max( struct unur_funct_generic fs,
     unbound_left = 0;
     unbound_right = 0;
 
-    if ( mode >= interval_min && mode <= interval_max ){
-      x[1]  = mode;
+    if ( max >= interval_min && max <= interval_max ){
+      x[1]  = max;
       fx[1] = fs.f(x[1], fs.params);
     }
     else{
       x[1] = interval_min/2.0 + interval_max/2.0;
       fx[1] = fs.f(x[1], fs.params);
     }
-    mode_l = interval_min;
-    mode_u = interval_max;
+    max_l = interval_min;
+    max_u = interval_max;
 
   }
 
-  mode = x[1];  /* not exact mode -- best guess */
+  max = x[1];  /* not exact mode -- best guess */
 
 
   /* find point with pdf > 0.0 -- max MAX_SRCH trials */
 
   /* search on the left side */
-  step = pow(x[1]-mode_l, 1.0/MAX_SRCH);
+  step = pow(x[1]-max_l, 1.0/MAX_SRCH);
   i = 0;  
   while (i <= MAX_SRCH && _unur_FP_same(0.0, fx[1]) ){
-    x[1]  = mode - pow(step, i);
+    x[1]  = max - pow(step, i);
     fx[1] = fs.f(x[1], fs.params);
     i++;
   }
 	 
   /* search on the right side */
   if( _unur_FP_same(0.0, fx[1]) ){
-    step = pow(mode_u-x[1], 1.0/MAX_SRCH);
+    step = pow(max_u-x[1], 1.0/MAX_SRCH);
     i = 0;
     while (i <= MAX_SRCH && _unur_FP_same(0.0, fx[1]) ){
-      x[1]  = mode + pow(step, i);
+      x[1]  = max + pow(step, i);
       fx[1] = fs.f(x[1], fs.params);
       i++;
     }
@@ -227,7 +231,7 @@ _unur_util_find_max( struct unur_funct_generic fs,
   
   /* no success -- exit routine  */   
   if( _unur_FP_same(fx[1], 0.0) )
-     return INFINITY; /* UNUR_ERR_DISTR_DATA; */ /* can't find mode in flat region  */
+     return INFINITY; /* can't find max in flat region  */
 
   /* x[1] has f > 0 or routines already terminated */ 
 
@@ -264,12 +268,12 @@ _unur_util_find_max( struct unur_funct_generic fs,
   /* points x[i] with their function values determined */
 
 
-  /* find interval containing the mode */
+  /* find interval containing the max */
 
 
   step = 1.0;
   if ( unbound_right ){
-    while(fx[0] <= fx[1] && fx[1] <= fx[2]){ /* on the left side of the mode */
+    while(fx[0] <= fx[1] && fx[1] <= fx[2]){ /* on the left side of the max */
 
       step *= 2.0;
       x[0]  = x[1]; fx[0] = fx[1];
@@ -280,7 +284,7 @@ _unur_util_find_max( struct unur_funct_generic fs,
 
   step = 1.0;  /* reset step size */
   if ( unbound_left ){
-    while(fx[0] >= fx[1] && fx[1] >= fx[2]){ /* on the right side of the mode */
+    while(fx[0] >= fx[1] && fx[1] >= fx[2]){ /* on the right side of the max */
 
       step *= 2.0;
       x[2]  = x[1]; fx[2] = fx[1];
@@ -290,27 +294,26 @@ _unur_util_find_max( struct unur_funct_generic fs,
     }
   }
 
-  /* now: the mode is between x[0] and x[2]   */
+  /* now: the max is between x[0] and x[2]   */
 
-/*    printf("x0: %f, fx0: %e\n", x[0], fx[0]); */
-/*    printf("x1: %f, fx1: %e\n", x[1], fx[1]); */
-/*    printf("x2: %f, fx2: %e\n", x[2], fx[2]); */
+  /*    printf("x0: %f, fx0: %e\n", x[0], fx[0]); */
+  /*    printf("x1: %f, fx1: %e\n", x[1], fx[1]); */
+  /*    printf("x2: %f, fx2: %e\n", x[2], fx[2]); */
 
   /** TODO: FLT_MIN must be much larger than DBL_MIN **/
 
-  mode = _unur_util_fmax( fs, x[0], x[2], x[1], FLT_MIN );
-  if (!(_unur_FP_is_infinity( mode )) ){
+  max = _unur_util_fmax( fs, x[0], x[2], x[1], FLT_MIN );
+  if (!(_unur_FP_is_infinity( max )) ){
     /* mode successfully computed */
 
   }
   else {
-    /* computing mode did not work */
-    /* (we do not change mode entry in distribution object) */
-    return INFINITY; /*UNUR_ERR_DISTR_DATA;*/
+    /* computing max did not work */
+    return INFINITY; 
   }
 
   /* o.k. */
-  return mode; /*UNUR_SUCCESS;*/
+  return max; 
 
 #undef MAX_SRCH
 } /* end of _unur_util_find_max() */

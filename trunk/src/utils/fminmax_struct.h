@@ -4,12 +4,13 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   FILE: fminmax_source.h                                                  *
+ *   FILE: fminmax_struct.h                                                  *
  *                                                                           *
  *   PURPOSE:                                                                *
- *         find minimum or maximum of continuous function                    *
+ *         declares structure for generic functions                          *
  *                                                                           *
  *****************************************************************************
+
  *****************************************************************************
  *                                                                           *
  *   Copyright (c) 2000 Wolfgang Hoermann and Josef Leydold                  *
@@ -32,12 +33,12 @@
  *                                                                           *
  *****************************************************************************/
 
-/*---------------------------------------------------------------------------*/
 
-double
-_unur_util_find_max( struct unur_funct_generic fs,
-                     double interval_min, double interval_max,
-		     double max_guess );
-			  
-/*---------------------------------------------------------------------------*/
 
+/* Structure for generic functions */
+
+struct unur_funct_generic {
+  double (*f)();
+  void *params;
+};
+    

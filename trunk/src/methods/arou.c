@@ -757,6 +757,7 @@ _unur_arou_init( struct unur_par *par )
 
   /* compute segments for given starting points */
   if ( !_unur_arou_get_starting_segments(par,gen) ) {
+    _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"PDF not T-concave");
     free(par); _unur_arou_free(gen);
     return NULL;
   }
@@ -1318,8 +1319,12 @@ _unur_arou_get_starting_segments( struct unur_par *par, struct unur_gen *gen )
      /*   0 ... error                                                        */
      /*----------------------------------------------------------------------*/
 {
+#define MAX_IT   (1000)      /* maximal number of interations to avoid 
+				infinite loop in case of numerical errors    */
+
   struct unur_arou_segment *seg, *seg_new, *seg_tmp; 
-  double x,fx;              /* construction point, value of PDF at x */
+  double x,fx;              /* construction point, value of PDF at x         */
+  int n_it = 0;             /* counter for number of interations             */
 
   /* check arguments */
   CHECK_NULL(par,0);  COOKIE_CHECK(par,CK_AROU_PAR,0);
@@ -1360,6 +1365,15 @@ _unur_arou_get_starting_segments( struct unur_par *par, struct unur_gen *gen )
 	seg->Acum = INFINITY;
       }
       continue;
+    }
+
+    /* next iteration step */
+    ++n_it;
+
+    if (n_it > MAX_IT) {
+      /* maximal number of iterations exceeded */
+      /* assume PDF not T-concave              */
+      return 0;
     }
 
     /* area in segment infinite. insert new construction point. */
@@ -1639,8 +1653,17 @@ _unur_arou_segment_parameter( struct unur_gen *gen, struct unur_arou_segment *se
        is not T-concave or due to round off errors.
        We assume round off errors. If the PDF is not T-concave we
        will exceed any bound for the number of segments.    */
-    seg->Aout = INFINITY;
-    return -1;
+
+    /* However due to round off errors, Aout might have become < 0
+       when the boundary of region is (almost) a straight line
+       and the area outside squeeze should be (almost) zero. */
+
+    if (!(fabs(seg->Aout) < fabs(seg->Ain) * UNUR_EPSILON)) {
+      seg->Aout = INFINITY;
+      return -1;
+    }
+    /* else we assume round-off errors and set Aout = 0.
+       i.e. go to the remaining case below */
   }
 
   /* remaining case: triangle degenerates to a line segment, i.e.

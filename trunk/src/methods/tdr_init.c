@@ -988,16 +988,20 @@ _unur_tdr_gw_interval_parameter( struct unur_gen *gen, struct unur_tdr_interval 
     iv->sq = (iv->next->Tfx - iv->Tfx) / (iv->next->x - iv->x);
 
     /* check squeeze */
-    if ( (_unur_FP_greater( iv->sq, iv->dTfx )) || 
-	 (_unur_FP_less( iv->sq, iv->next->dTfx ) && iv->next->dTfx < INFINITY) )
+    /* we have to take care about round off error.
+       the following accepts PDFs with might be a little bit not T_concave */
+    if ( ( (iv->sq > iv->dTfx       && !_unur_FP_approx(iv->sq,iv->dTfx)) || 
+	   (iv->sq < iv->next->dTfx && !_unur_FP_approx(iv->sq,iv->next->dTfx)) )
+	 && iv->next->dTfx < INFINITY ) {
       /* There are big troubles when the density is extremely small. 
 	 Then round-off errors may cancel out all significant figures and
 	 0 remains. Thus we simply ignore all violations when the 
 	 slope of the squeeze or tangent is 0.  */
       if ( iv->sq != 0. && iv->dTfx != 0. && iv->next->dTfx != 0. ) {
-	_unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"Squeeze too steep/flat. PDF not T-concave!");
-	return -2;
+      	_unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"Squeeze too steep/flat. PDF not T-concave!");
+      	return -2;
       }
+    }
 
     /* volume below squeeze */
     /* always integrate from point with greater value of transformed density
@@ -1023,7 +1027,8 @@ _unur_tdr_gw_interval_parameter( struct unur_gen *gen, struct unur_tdr_interval 
   iv->Ahat = iv->Ahatr + Ahatl;
 
   /* check area */
-  if (_unur_FP_greater(iv->Asqueeze, iv->Ahat)) {
+  /* we cannot be more accurate than in the `check squeeze' section */
+  if ( iv->Asqueeze > iv->Ahat && !_unur_FP_approx(iv->Asqueeze, iv->Ahat) ) {
     _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"A(squeeze) > A(hat). PDF not T-concave!");
     return -2; 
   }
@@ -1053,7 +1058,7 @@ _unur_tdr_ps_interval_parameter( struct unur_gen *gen, struct unur_tdr_interval 
      /*----------------------------------------------------------------------*/
 {
   double Ahatl;    /* area below hat at left side of intersection point */
-  double hx;       /* value of hat */
+  double hxl, hxr; /* value of hat at left and right point of interval */
   double sq;       /* ration PDF(x) / hat(x) */
 
   /* check arguments */
@@ -1082,20 +1087,38 @@ _unur_tdr_ps_interval_parameter( struct unur_gen *gen, struct unur_tdr_interval 
      squeeze ration = min_{boundary points} PDF(x) / hat(x) */
   
   /* left boundary point */
-  hx = _unur_tdr_eval_hat(gen,iv,iv->ip);
-  if (_unur_FP_greater(iv->fip, hx)) {
-    _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"hat(x) < PDF(x)");
-    return -2;
+  hxl = _unur_tdr_eval_hat(gen,iv,iv->ip);
+  if (_unur_FP_greater(iv->fip, hxl) ) {
+    /* PDF(x) > hat(x); this should not happen */
+    if (_unur_FP_approx(iv->fip, hxl)) {
+      /* hat(x) and PDF(x) are approximatly the same,
+	 assume round-off error */
+      _unur_warning(gen->genid,UNUR_ERR_GEN_CONDITION,"hat(x) might be < PDF(x)");
+    }
+    else {
+      /* we really have PDF(x) > hat(x); we do not assume a round-off error */
+      _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"hat(x) < PDF(x)");
+      return -2;
+    }
   }
-  iv->sq = (_unur_FP_is_infinity(hx) || hx <= 0.) ? 0. : iv->fip / hx;
+  iv->sq = (_unur_FP_is_infinity(hxl) || hxl <= 0.) ? 0. : iv->fip / hxl;
 
   /* right boundary point */
-  hx = _unur_tdr_eval_hat(gen,iv,iv->next->ip);
-  if (_unur_FP_greater(iv->next->fip, hx)) {
-    _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"hat(x) < PDF(x)");
-    return -2;
+  hxr = _unur_tdr_eval_hat(gen,iv,iv->next->ip);
+  if (_unur_FP_greater(iv->next->fip, hxr)) {
+    /* PDF(x) > hat(x); this should not happen */
+    if (_unur_FP_approx(iv->fip, hxr)) {
+      /* hat(x) and PDF(x) are approximatly the same,
+	 assume round-off error */
+      _unur_warning(gen->genid,UNUR_ERR_GEN_CONDITION,"hat(x) might be < PDF(x)");
+    }
+    else {
+      /* we really have PDF(x) > hat(x); we do not assume a round-off error */
+      _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"hat(x) < PDF(x)");
+      return -2;
+    }
   }
-  sq = (_unur_FP_is_infinity(hx) || hx <= 0.) ? 0. : iv->next->fip / hx;
+  sq = (_unur_FP_is_infinity(hxr) || hxr <= 0.) ? 0. : iv->next->fip / hxr;
 
   /* squeeze */
   if (iv->sq > sq) iv->sq = sq;

@@ -1163,6 +1163,9 @@ _unur_ninv_clone( const struct unur_gen *gen )
   /* copy distribution object into generator object */
   _unur_distr_cont_copy( &(clone->distr), &(gen->distr) );
 
+  /* auxiliary generator */
+  if (gen->gen_aux) clone->gen_aux = unur_gen_clone( gen->gen_aux );
+
   /* copy additional data for generator object */
   CLONE.table = _unur_malloc( GEN.table_size * sizeof(double) );
   memcpy( CLONE.table, GEN.table, GEN.table_size * sizeof(double) );

@@ -1161,6 +1161,9 @@ _unur_utdr_clone( const struct unur_gen *gen )
   /* copy distribution object into generator object */
   _unur_distr_cont_copy( &(clone->distr), &(gen->distr) );
 
+  /* auxiliary generator */
+  if (gen->gen_aux) clone->gen_aux = unur_gen_clone( gen->gen_aux );
+
   return clone;
 
 #undef CLONE

@@ -538,6 +538,9 @@ _unur_dgt_clone( const struct unur_gen *gen )
   /* copy distribution object into generator object */
   _unur_distr_discr_copy( &(clone->distr), &(gen->distr) );
 
+  /* auxiliary generator */
+  if (gen->gen_aux) clone->gen_aux = unur_gen_clone( gen->gen_aux );
+
   /* copy data for distribution */
   CLONE.cumpv = _unur_malloc( DISTR.n_pv * sizeof(double) );
   memcpy( CLONE.cumpv, GEN.cumpv, DISTR.n_pv * sizeof(double) );

@@ -35,7 +35,7 @@ and mathematical programs (see also the examples below). It is especially
 influenced by C. The usual preceedence rules are used (from highest
 to lowest preceedence: functions, power, multiplication,
 addition, relation operators). Use parentheses in case of doubt or 
-when these preceedence should be changed.
+when these preceedences should be changed.
 
 Relation operators can be used as indicator functions, i.e. the term
 @code{(x>1)} is evaluted as @code{1} if this relation is satisfied,

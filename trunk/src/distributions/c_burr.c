@@ -22,7 +22,8 @@
  *                                                                           *
  *...........................................................................*
  *                                                                           *
- *  Type I                                                                   *
+ *  distr: Burr distribution Type I                                          *
+ *  first parameter must be type of distribution (1 ... 12)!                 *
  *                                                                           *
  *  cdf:       F(x) = x                                                      *
  *  pdf:       f(x) = 1                                                      *
@@ -33,7 +34,8 @@
  *                                                                           *
  *...........................................................................*
  *                                                                           *
- *  Type II                                                                  *
+ *  distr: Burr distribution Type II                                         *
+ *  first parameter must be type of distribution (1 ... 12)!                 *
  *                                                                           *
  *  cdf:       F(x) = (exp(-x) + 1)^(-k)                                     *
  *  pdf:       f(x) = k * exp(-x) * (exp(-x)+1)^(-k-1)                       *
@@ -45,7 +47,8 @@
  *                                                                           *
  *...........................................................................*
  *                                                                           *
- *  Type III                                                                 *
+ *  distr: Burr distribution Type III                                        *
+ *  first parameter must be type of distribution (1 ... 12)!                 *
  *                                                                           *
  *  cdf:       F(x) = (x^(-c)+1)^(-k)                                        *
  *  pdf:       f(x) =  c * k * x^(-c-1) * (x^(-c) + 1)^(-k-1)                *
@@ -58,7 +61,8 @@
  *                                                                           *
  *...........................................................................*
  *                                                                           *
- *  Type IV                                                                  *
+ *  distr: Burr distribution Type IV                                         *
+ *  first parameter must be type of distribution (1 ... 12)!                 *
  *                                                                           *
  *  cdf:       F(x) = (((c-x)/x)^(1/c) + 1)^(-k)                             *
  *  pdf:       f(x) =                                                        *
@@ -71,7 +75,8 @@
  *                                                                           *
  *...........................................................................*
  *                                                                           *
- *  Type V                                                                   *
+ *  distr: Burr distribution Type V                                          *
+ *  first parameter must be type of distribution (1 ... 12)!                 *
  *                                                                           *
  *  cdf:       F(x) = (c * exp(-tan(x)) + 1)^(-k)                            *
  *  pdf:       f(x) =                                                        *
@@ -84,7 +89,8 @@
  *                                                                           *
  *...........................................................................*
  *                                                                           *
- *  Type VI                                                                  *
+ *  distr: Burr distribution Type VI                                         *
+ *  first parameter must be type of distribution (1 ... 12)!                 *
  *                                                                           *
  *  cdf:       F(x) = (c * exp(-k*sinh(x)) + 1)^(-k)                         *
  *  pdf:       f(x) =                                                        *
@@ -97,7 +103,9 @@
  *                                                                           *
  *...........................................................................*
  *                                                                           *
- *  Type VII                                                                 *
+ *  distr: Burr distribution Type VII                                        *
+ *  first parameter must be type of distribution (1 ... 12)!                 *
+ *  first parameter must be type of distribution (1 ... 12)!                 *
  *                                                                           *
  *  cdf:       F(x) = 2^(-k) * (1 + tanh(x))^k                               *
  *  pdf:       f(x) =                                                        *
@@ -110,7 +118,8 @@
  *                                                                           *
  *...........................................................................*
  *                                                                           *
- *  Type VIII                                                                *
+ *  distr: Burr distribution Type VIII                                       *
+ *  first parameter must be type of distribution (1 ... 12)!                 *
  *                                                                           *
  *  cdf:       F(x) = (2/pi * arctan(exp(x)))^k                              *
  *  pdf:       f(x) =                                                        *
@@ -122,7 +131,8 @@
  *                                                                           *
  *...........................................................................*
  *                                                                           *
- *  Type IX                                                                  *
+ *  distr: Burr distribution Type IX                                         *
+ *  first parameter must be type of distribution (1 ... 12)!                 *
  *                                                                           *
  *  cdf:       F(x) = 1 - 2 / (2 + c * ((1+exp(x))^k - 1))                   *
  *  pdf:       f(x) =                                                        *
@@ -135,7 +145,8 @@
  *                                                                           *
  *...........................................................................*
  *                                                                           *
- *  Type X                                                                   *
+ *  distr: Burr distribution Type X                                          *
+ *  first parameter must be type of distribution (1 ... 12)!                 *
  *                                                                           *
  *  cdf:       F(x) = (1 - exp(-x^2))^k                                      *
  *  pdf:       f(x) =                                                        *
@@ -147,7 +158,8 @@
  *                                                                           *
  *...........................................................................*
  *                                                                           *
- *  Type XI                                                                  *
+ *  distr: Burr distribution Type XI                                         *
+ *  first parameter must be type of distribution (1 ... 12)!                 *
  *                                                                           *
  *  cdf:       F(x) = (x - (pi/2) * sin( 2*pi*x))^k                          *
  *  pdf:       f(x) =                                                        *
@@ -159,7 +171,8 @@
  *                                                                           *
  *...........................................................................*
  *                                                                           *
- *  Type XII                                                                 *
+ *  distr: Burr distribution Type XII                                        *
+ *  first parameter must be type of distribution (1 ... 12)!                 *
  *                                                                           *
  *  cdf:       F(x) = 1 - (1 + x^c)^(-k)                                     *
  *  pdf:       f(x) =                                                        *

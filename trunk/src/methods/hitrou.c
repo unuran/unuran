@@ -205,8 +205,8 @@ unur_hitrou_new( const struct unur_distr *distr )
 
   /* set default values */
   PAR.r   = 1.;         /* r-parameter of the generalized method       */
-  PAR.skip      = 10;         /* number of skipped points in chain           */
-  PAR.vmax      = 0.;         /* v-boundary of bounding rectangle (unknown)  */
+  PAR.skip      = 0;         /* number of skipped points in chain           */
+  PAR.vmax      = 0.;        /* v-boundary of bounding rectangle (unknown)  */
   PAR.umin  = NULL;       /* u-boundary of bounding rectangle (unknown)  */
   PAR.umax  = NULL;       /* u-boundary of bounding rectangle (unknown)  */
   PAR.u_planes  = 0;      /* do not calculate the bounding u-planes      */
@@ -548,8 +548,9 @@ _unur_hitrou_rectangle( struct unur_gen *gen )
   rr->genid  = gen->genid;
 
   /* calculate bounding rectangle */
-  _unur_mrou_rectangle_compute(rr);
-
+  if (!(gen->set & HITROU_SET_U) && !(gen->set & HITROU_SET_V)) {
+    _unur_mrou_rectangle_compute(rr);
+  }
 
   if (!(gen->set & HITROU_SET_V)) {
      /* user has not provided any upper bound for v */
@@ -880,7 +881,7 @@ _unur_hitrou_inside_shape( UNUR_GEN *gen )
   double W=0;
   int d;
   int inside=0;
-  double sum=0;
+  double sum=0, r2=0;
 
   if (GEN.shape_flag==0) {
     /* normal RoU shape*/
@@ -1009,9 +1010,25 @@ _unur_hitrou_inside_shape( UNUR_GEN *gen )
       W=GEN.point_current[0]/(GEN.umax[0]/2.);
       if ((U<0.5 && W>=0.5) || (W<0.5 && U>=0.5)) GEN.simplex_jumps++;
     }
-    
   }
   
+
+  if (GEN.shape_flag==5) {
+    /* testshape : ellipsoid */
+    inside=1;
+
+    GEN.pdfcount++;
+    /* checking V coordinate */
+    V=GEN.point_random[GEN.dim];
+
+    r2=pow((V-GEN.vmax/2.)/(GEN.vmax/2), 2);
+    /* checking U coordinates */
+    for (d=0; d<GEN.dim; d++) {
+      U = GEN.point_random[d];
+      r2 += pow((U-GEN.umax[d]/2)*2./(GEN.umax[d]/2), 2);
+    }
+    if (r2>=1) inside=0;    
+  }
   
 
   return inside;
@@ -1219,6 +1236,8 @@ _unur_hitrou_debug_shape( const struct unur_gen *gen )
     fprintf(log,"%s: Sampling shape : two stacked simplex (along v-direction)\n",gen->genid); 
   if (GEN.shape_flag==4)
     fprintf(log,"%s: Sampling shape : two stacked simplex (along u[0]-direction)\n",gen->genid);
+  if (GEN.shape_flag==5)
+    fprintf(log,"%s: Sampling shape : ellipsoid\n",gen->genid);
 } /* end of _unur_hitrou_debug_shape() */
 
 

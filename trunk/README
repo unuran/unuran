@@ -7,38 +7,48 @@
 
 
 UNU.RAN  is an ANSI-C library licensed under GPL. 
-It contains universal (also called automatic or 
-black-box) algorithms that can generate from large classes of continuous
-or discrete distributions. Of course the user must supply some information
-about the desired distribution, especialy a c-function that computes the
+It contains universal (also called automatic or black-box) algorithms that can
+generate random numbers from large classes of continuous or discrete 
+distributions. 
+
+The library and an extensive online documentation are available at:
+          -------------------------------------------
+             http://statistik.wu-wien.ac.at/unuran/ 
+          -------------------------------------------
+
+
+
+---------------------------------------------------------
+A short overview
+---------------------------------------------------------
+
+To generate random numbers the user must supply some information
+about the desired distribution, especially a C-function that computes the
 density and - depending on the chosen methods - some additional information 
 (like the borders of the domain, the mode, the derivative of the density ...).
 After a user has given this information an init-program computes all tables
 and constants necessary for the random variate generation. The sample program 
 can then generate variates from the desired distribution. 
 
-The main part of UNURAN are the different universal algorithms 
-(called methods). There are:
-7 methods for continuous univariate distributions
-3 methods for discrete univariate distributions
-1 method for univariate empirical distributions (given by an observed sample)
-1 method for multivariate empirical distributions (given by a vector sample)
+The main part 
+of UNURAN are different universal algorithms (called methods).
+ There are:
+  7 methods for continuous univariate distributions
+  3 methods for discrete univariate distributions
+  1 method for univariate empirical distributions (given by an observed sample)
+  1 method for multivariate empirical distributions (given by a vector sample)
 
 The choice of the method depends on the information available for the 
 distribution and on the desired charateristics of the algorithm 
-(fast initialisation and slow sampling, slow initialisation and fast sampling)
+(fast initialisation and slow sampling, slow initialisation and fast sampling).
 
-A second important part of UNURAN is the distribution module containing all 
-necessary programs for about 15 continuous and 6 discrete univariate standard
-distributions. Thus UNURAN can be used without any problem (and without extra 
-coding) to obtain very fast generators for the best known standard 
-distributions. Especailly for the cumulative distribution functions of this
-standard distributions we need 5 mathematical functions. We used the 
-programs of the Cephes Library (not licensed under GPL) to evaluate these
-functions.
+A second important part
+of UNURAN is the distribution module containing all necessary functions for 
+many continuous and discrete univariate standard distributions. 
+Thus UNURAN can be used  without extra coding to obtain very fast 
+generators for the best known standard distributions. 
 
-
-Allthough coded in ANSI-C UNURAN uses an object oriented user interface relying
+Although coded in ANSI-C UNURAN uses an object oriented user interface relying
 on: 
   distribution objects (containing all information of the distribution)
   parameter objects (containing all input parameters (and defaults) for the
@@ -46,263 +56,33 @@ on:
   generator object (produced by the initialization program, containing
                     everything necessary for sampling)
 
-Together with the most important functions init() to initializa a new generator
-and sample() to generate random variates, the library provides new(), free(), 
-get() and set() functions to manipulate the above objects.
-                    
-
-Available at: http://statistik.wu-wien.ac.at/unuran
-
 
 Of course a uniform random number generator is necessary to use UNURAN. We 
 provide an interface to use the PRNG uniform package from the University
-of Salzburg (Austria), available at http://random.mat.sbg.ac.at/ or from
-the UNURAN-webpage. It is also no problem to include any other uniform
-random number generators as long as it can be called as a double function
-without parameters.
+of Salzburg (Austria), available at http://statistik.wu-wien.ac.at/prng/
+or http://random.mat.ac.at .
+It is also no problem to include any other uniform random number generators.
 
 
-
+---------------------------------------------------------
 ADVANTAGES OF UNUNRAN
-Why can it be worth the to download UNURAN and to 
-understand the concept of the interface? Is'nt it much faster to implement
-a simple standard method for the distribution I am interested in?
+---------------------------------------------------------
+Why can it be worth the to download UNURAN and to understand the concept
+ of the interface? 
+Isn't it much faster to implement a simple standard method for the 
+distribution I am interested in?
 
 The first and main advantage lies in the modelling flexibility you gain for 
-yor simulation. Once you have implemented UNURAN you can generate without 
-problems (and without coding more than the desired density function) from 
+for simulation. Once you have installed UNURAN you can generate without
+ coding more than the desired density function from 
 practically all uni-modal distributions. For a really big number of standard
 distributions (and truncated versions of these standard distributions) you 
 need not even code the density, as it is included in UNURAN.
-
-You get fast generation algorithms. Their speed is only slightly influenced
-by the chosen distribution.
-
-Correlation induction facilities are included.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-User interface:
-
-Structures:
-
-struct unur_par parameter;  /* structure for (default) parameters for initializing generator */ 
-struct unur_gen generator;  /* structure for generator object */
-
-For every transformation method <tm> there exists:
-
-/* get default parameters       */
-struct unur_par *<tm>_new( ... args ... );
-
-the generator can be started and used via:
-
-/* initialize new generator     */
-struct unur_gen *unur_init(struct unur_par *params);
-
-/* sample from generator */
-int    unur_sample_discr(struct unur_gen *generator);  /* discrete variates */
-double unur_sample_cont (struct unur_gen *generator);  /* cont. variates    */
-
-/* destroy generator object */
-void unur_free(struct unur_gen *generator);
-
-Notice, that unur_init() deallocates the memory where "params" points to.
-
-You MUST NOT provide a pointer to an object on the stack!
-You MUST NOT use the object returned by <tm>_new() after you have called unur_init()!
-
-<tm>_new() and unur_init() return a NULL pointer in case of errors.
-
-unur_sample_discr()  and unur_sample_cont()
-always return 0 in case of error 
-(e.g. because the user did not check whether unur_init() has returned a valid 
-pointer to a generator object or a NULL pointer).
-
-/******************************************************************************/
-
-Here is small example that demonstrates how to use this library:
-
-Assume you want to generate a discrete random variate with an arbitrary but
-finite probability vector. Indexed search is a proper method for this job. 
-Its name is DIS.
-
-So we need the following routines:
-
-Here is the C source:
-
-/* example.c */
-
-#include "unuran.h"  /* include library header */
-
-#define SIZE 8       /* length of probability vector */   
-
-int main()
-{ 
-  int x;
-
-  struct unur_par *parameter;   /* pointer to parameter structure */
-  struct unur_gen *generator;   /* pointer to generator object    */
-
-  /* the probability vector (need not sum to 1 !) */
-  double p[] = {1.,1.,0.75,0.56,0.43,0.35,0.05,0.78};
-
-  /* Now let's start */ 
-
-  /* get default parameters for new generator */
-  parameter = dis_new(p,SIZE);
-  if( parameter == NULL ) { fprintf(stderr,"error!"); exit(-1); }
-
-  /* initialize generator */
-  generator = unur_init(parameter);
-  if( generator == NULL ) { fprintf(stderr,"error!"); exit(-1); }
-
-  /* sample from distribution */
-  x = unur_sample_discr(generator);
-
-  /* free generator (when we do not need it any more) */
-  unur_free(generator);
-
-  /* end of program */
-  exit(0);
-}
-
-/******************************************************************************/
-
-There are some internal calls for programers of the library.
-
-/****/
-
-set and check magic cookies for parameter structure and generator object:
-
-   COOKIE_SET  (*ptr, ck, rval);
-   COOKIE_CHECK(*ptr, ck), rval);
-
-ptr  is the pointer to the respective structure,
-ck   is the magic cookie for this structure,
-rval value that should be returned by routine in case of error.
-
-implemented as macro.
-
-This call has no effect unless the UNURAN_DEBUG is set.
-
-/****/
-
-check for NULL pointer:
-
-   CHECK_NULL(ptr, rval);
-
-ptr  pointer to be checked,
-rval value that should be returned by routine in case of error.
-
-implemented as macro.
-
-This call has no effect unless the UNURAN_DEBUG is set.
-
-/****/
-
-To produce a warning or error message use
-
-   unur_warning(char *genid, int errcode, char *str);
-
-genid   points to an identifying string. Can be NULL.
-errcode type of error
-str     points to message
-
-implemented as marco and subroutine.
-
-The message is printed to stderr and/or a logfile
-(depends on UNURAN_DEBUG).
-
-This call has no effect unless the UNURAN_DEBUG is set.
-
-/****/
-
-Each generator object should have a unique identifier. 
-You get such an identifier by this routine:
-
-   void set_genid(*generator, char *gentype);
-
-it produces a string of the form <gentype>.<number>,
-where <gentype> is the string in the argument list,
-and sets the pointer in the generator object to this address.
-
-Since set_genid calls malloc(), you can free this memory space by
-
-   void free_genid(*generator);
-
-implemented as marcos.
-
-set_genid() and free_genid() have no effect unless UNURAN_DEBUG is set.
-
-/****/
-
-To call a uniform random number generator always use
-
-   urng(*generator);
-
-for the case where the urng is not linked at compile time you MUST use
-
-   urng_set_default(*parameter)
-
-to set the pointer to the default urng in <tm>_new(), and
-
-   void urng_copy_pointer(*parameter,*generator);
-
-to copy the pointer to the urng provided in the parameter structure 
-into the generator object.
-
-implemented as marcos.
-
-urng_set_default() and urng_copy_pointer() have no effect if the urng
-is linked at compile time.
-
-/****/
-/****/
-/****/
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+The library consists many extreme robust and fast generation algorithms 
+which were developed during the last ten years.
+Their speed is only slightly influencedby the chosen distribution.
+
+Nevertheless Correlation induction facilities are included!
 
 
 

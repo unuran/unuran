@@ -194,7 +194,7 @@ unur_utdr_new( struct unur_distr *distr )
   par->set         = 0u;              /* inidicate default parameters        */    
   par->urng        = unur_get_default_urng(); /* use default urng            */
 
-  _unur_set_debugflag_default(par);  /* set default debugging flags          */
+  par->debug       = UNUR_DEBUGFLAG_DEFAULT;  /* set default debugging flags */
 
   /* routine for starting generator */
   par->init = unur_utdr_init;
@@ -576,7 +576,7 @@ unur_utdr_free( struct unur_gen *gen )
   SAMPLE = NULL;   /* make sure to show up a programming error */
 
   /* free memory */
-  _unur_free_genid(gen);
+  free(gen->genid);
   free(gen);
 
 } /* end of unur_utdr_free() */
@@ -613,7 +613,7 @@ _unur_utdr_create( struct unur_par *par )
   COOKIE_SET(gen,CK_UTDR_GEN);
 
   /* set generator identifier */
-  _unur_set_genid(gen,GENTYPE);
+  gen->genid = _unur_make_genid(GENTYPE);
 
   /* copy distribution object into generator object */
   memcpy( &(gen->distr), par->distr, sizeof( struct unur_distr ) );
@@ -630,10 +630,10 @@ _unur_utdr_create( struct unur_par *par )
   DISTR.mode = max(DISTR.mode,GEN.il);
   DISTR.mode = min(DISTR.mode,GEN.ir);
 
-  gen->method = par->method;         /* indicates method                     */
-  gen->variant = par->variant;       /* indicates variant                    */
-  _unur_copy_urng_pointer(par,gen);  /* pointer to urng into generator object*/
-  _unur_copy_debugflag(par,gen);     /* copy debugging flags into generator object */
+  gen->method = par->method;        /* indicates method                      */
+  gen->variant = par->variant;      /* indicates variant                     */
+  gen->debug = par->debug;          /* debuging flags                        */
+  gen->urng = par->urng;            /* pointer to urng                       */
 
   /* initialize parameters */
   /** TODO !!! **/

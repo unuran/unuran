@@ -75,13 +75,8 @@ double UNUR_URNG_DEFAULT(void);
 typedef double (*UNUR_URNG_TYPE)(void);
 
 /* function call to uniform rng */
-#define _unur_call_urng(gen)                 ((*(gen->urng))())
-#define _unur_call_urng_prt(urng)            (urng())
-
-#define _unur_copy_urng_pointer(param,gen)   {           \
-  if( (param)->urng )  (gen)->urng = (param)->urng;      \
-  else _unur_error(NULL,UNUR_ERR_NULL,"No URNG given!"); \
-}
+#define _unur_call_urng(gen)        ((*(gen->urng))())
+#define _unur_call_urng_prt(urng)   (urng())
 
 /*---------------------------------------------------------------------------*/
 #elif UNUR_URNG_INVOKE == UNUR_URNG_PRNG
@@ -94,13 +89,8 @@ typedef double (*UNUR_URNG_TYPE)(void);
 typedef struct prng *UNUR_URNG_TYPE;
 
 /* function call to uniform rng */
-#define _unur_call_urng(gen)                 (prng_get_next(gen->urng))
-#define _unur_call_urng_prt(urng)            (prng_get_next(urng))
-
-#define _unur_copy_urng_pointer(param,gen)   {           \
-  if( (param)->urng )  (gen)->urng = (param)->urng;      \
-  else _unur_error(NULL,UNUR_ERR_NULL,"No URNG given!"); \
-}
+#define _unur_call_urng(gen)        (prng_get_next(gen->urng))
+#define _unur_call_urng_prt(urng)   (prng_get_next(urng))
 
 /*---------------------------------------------------------------------------*/
 #else

@@ -204,7 +204,7 @@ unur_dis_new( struct unur_distr *distr )
   par->set         = 0u;             /* inidicate default parameters         */    
   par->urng        = unur_get_default_urng(); /* use default urng            */
 
-  _unur_set_debugflag_default(par);  /* set default debugging flags          */
+  par->debug    = UNUR_DEBUGFLAG_DEFAULT;  /* set default debugging flags    */
 
   /* routine for starting generator */
   par->init = unur_dis_init;
@@ -449,7 +449,7 @@ unur_dis_free( struct unur_gen *gen )
   SAMPLE = NULL;   /* make sure to show up a programming error */
 
   /* free memory */
-  _unur_free_genid(gen);
+  free(gen->genid);
   free(GEN.guide_table);
   free(GEN.cumprob);
   free(gen);
@@ -489,7 +489,7 @@ _unur_dis_create( struct unur_par *par )
   COOKIE_SET(gen,CK_DIS_GEN);
 
   /* set generator identifier */
-  _unur_set_genid(gen,GENTYPE);
+  gen->genid = _unur_make_genid(GENTYPE);
 
   /* copy distribution object into generator object */
   memcpy( &(gen->distr), par->distr, sizeof( struct unur_distr ) );
@@ -503,8 +503,8 @@ _unur_dis_create( struct unur_par *par )
   GEN.guide_table = NULL;
 
   /* copy some parameters into generator object */
-  _unur_copy_urng_pointer(par,gen); /* pointer to urng into generator object */
-  _unur_copy_debugflag(par,gen);    /* copy debugging flags into generator object */
+  gen->debug = par->debug;          /* debuging flags                        */
+  gen->urng = par->urng;            /* pointer to urng                       */
 
   /* length of probability vector */
   n_prob = DISTR.n_prob;

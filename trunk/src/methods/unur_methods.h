@@ -135,11 +135,9 @@ struct unur_par {
 
   struct unur_distr *distr;   /* pointer to distribution object              */
 
+  unsigned debug;             /* debugging flags                             */
 #if UNUR_DEBUG & UNUR_DB_COOKIES  /* use magic cookies */
   unsigned cookie;            /* magic cookie                                */
-#endif
-#if UNUR_DEBUG & UNUR_DB_INFO     /* print data about generators */
-  unsigned debug;             /* debugging flags                             */
 #endif
 };
 
@@ -173,15 +171,11 @@ struct unur_gen {
   UNUR_URNG_TYPE  urng;       /* pointer to uniform random number generator  */
 
   struct unur_distr distr;    /* distribution object                         */
+  char *genid;                /* identifier for generator                    */
   
+  unsigned debug;             /* debugging flags                             */
 #if UNUR_DEBUG & UNUR_DB_COOKIES  /* use magic cookies */
   unsigned cookie;            /* magic cookie                                */
-#endif
-#if UNUR_DEBUG & UNUR_DB_INFO /* print data about generators */
-  unsigned debug;             /* debugging flags                             */
-#endif
-#if UNUR_DEBUG > 0            /* debugging compiled into generators */
-  char *genid;                /* identifier for generator                    */
 #endif
 };
 

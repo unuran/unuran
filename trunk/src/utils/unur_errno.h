@@ -58,7 +58,6 @@ FILE *unur_get_stream( void );
 void _unur_stream_printf( const char *genid, char *filename, int line, const char *format, ... );
 char *_unur_make_genid( const char *gentype );
 
-
 /*---------------------------------------------------------------------------*/
 /* error types                                                               */
 
@@ -136,31 +135,10 @@ const char *unur_get_strerror ( const int unur_errno );
    } while (0)
 
 /*---------------------------------------------------------------------------*/
-/* an identifier for the generator object                                    */
-
-/* set generator id */
-#define _unur_set_genid(par,gentype)  (par)->genid = _unur_make_genid(gentype)
-#define _unur_free_genid(gen)         free((gen)->genid)
-
-/*---------------------------------------------------------------------------*/
 /* write infos into log file                                                 */
 
-#if UNUR_DEBUG & UNUR_DB_INFO
-
-/* debugging flags for generators */
-#define _unur_set_debugflag_default(par)       (par)->debug = UNUR_DEBUGFLAG_DEFAULT
-#define _unur_copy_debugflag(par,gen)          (gen)->debug = (par)->debug
-
+/* an abbreviation */
 #define _unur_print_if_default(par,flag)   if(!((par)->set & (flag))) fprintf(log,"  [default]")
-
-#else
-
-#define _unur_set_debugflag_default(par)
-#define _unur_copy_debugflag(par,gen)
-
-#define _unur_print_if_default(par,flag)
-
-#endif   /* UNUR_DB_INFO */
 
 /*---------------------------------------------------------------------------*/
 #else    /* no debugging */
@@ -168,14 +146,6 @@ const char *unur_get_strerror ( const int unur_errno );
 
 #define _unur_error(genid,errortype,str)      do { } while(0)
 #define _unur_warning(genid,errortype,str)    do { } while(0)
-
-#define _unur_set_genid(gen,gentype)
-#define _unur_free_genid(gen)
-
-#define _unur_set_debugflag_default(par)
-#define _unur_copy_debugflag(par,gen)
-
-#define _unur_print_if_default(par,flag)
 
 /*---------------------------------------------------------------------------*/
 #endif   /* UNUR_DEBUG */

@@ -511,13 +511,13 @@ unur_tdr_new( struct unur_distr* distr )
 				       area / ((A_hat - A_squeeze)/number of segments) < bound_for_adding */
  
   par->method   = UNUR_METH_TDR;                 /* method                   */
-  par->variant  = ( TDR_VARFLAG_USECENTER |     /* default variant          */
+  par->variant  = ( TDR_VARFLAG_USECENTER |      /* default variant          */
 		    TDR_VARFLAG_USEMODE );
 
   par->set      = 0u;               /* inidicate default parameters          */    
-  par->urng     = unur_get_default_urng(); /* use default urng     */
+  par->urng     = unur_get_default_urng(); /* use default urng               */
 
-  _unur_set_debugflag_default(par); /* set default debugging flags           */
+  par->debug    = UNUR_DEBUGFLAG_DEFAULT;  /* set default debugging flags    */
 
   /* we use the mode (if known) as center of the distribution */
   if (distr->set & UNUR_DISTR_SET_MODE) {
@@ -1372,7 +1372,7 @@ unur_tdr_free( struct unur_gen *gen )
   _unur_free_mblocks(GEN.mblocks);
 
   /* free other memory not stored in list */
-  _unur_free_genid(gen);
+  free(gen->genid);
   free(GEN.guide);
   free(gen);
 
@@ -1410,7 +1410,7 @@ _unur_tdr_create( struct unur_par *par )
   COOKIE_SET(gen,CK_TDR_GEN);
 
   /* set generator identifier */
-  _unur_set_genid(gen,GENTYPE);
+  gen->genid = _unur_make_genid(GENTYPE);
 
   /* copy distribution object into generator object */
   memcpy( &(gen->distr), par->distr, sizeof( struct unur_distr ) );
@@ -1470,9 +1470,8 @@ _unur_tdr_create( struct unur_par *par )
 
   gen->method = par->method;        /* indicates method                      */
   gen->variant = par->variant;      /* indicates variant                     */
-
-  _unur_copy_urng_pointer(par,gen); /* pointer to urng into generator object */
-  _unur_copy_debugflag(par,gen);    /* copy debugging flags into generator object */
+  gen->debug = par->debug;          /* debuging flags                        */
+  gen->urng = par->urng;            /* pointer to urng                       */
 
   /* mode known and in given domain ?? */
   if ( !(par->distr->set & UNUR_DISTR_SET_MODE)

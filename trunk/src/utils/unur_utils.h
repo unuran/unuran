@@ -73,26 +73,6 @@
 #endif
 
 /*---------------------------------------------------------------------------*/
-/* Check number of arguments                                                 */
-
-#if UNUR_DEBUG & UNUR_DB_CHECKARGS
-
-#define CHECK_N_PARAMS(obsed,expted,rval)    \
-  if (obsed != expted ) {                    \
-     _unur_error(NULL,UNUR_ERR_NPARAM,"");   \
-     return rval;                            \
-  }
-
-#else               /* do not check (be carefull) */
-
-#define CHECK_N_PARAMS(obsed,expted,rval)
-
-#endif 
-
-/* an abbreviation */
-#define CHECKARGS (UNUR_DEBUG & UNUR_DB_CHECKARGS)
-
-/*---------------------------------------------------------------------------*/
 
 double _unur_arcmean( double x0, double x1 );
 

@@ -194,7 +194,7 @@ unur_stdr_new( struct unur_distr *distr )
   par->set         = 0u;              /* inidicate default parameters        */    
   par->urng        = unur_get_default_urng(); /* use default urng            */
 
-  _unur_set_debugflag_default(par);  /* set default debugging flags          */
+  par->debug       = UNUR_DEBUGFLAG_DEFAULT;  /* set default debugging flags */
 
   /* routine for starting generator */
   par->init = unur_stdr_init;
@@ -588,7 +588,7 @@ unur_stdr_free( struct unur_gen *gen )
   SAMPLE = NULL;   /* make sure to show up a programming error */
 
   /* free memory */
-  _unur_free_genid(gen);
+  free(gen->genid);
   free(gen);
 
 } /* end of unur_stdr_free() */
@@ -628,7 +628,7 @@ _unur_stdr_create( struct unur_par *par )
   memcpy( &(gen->distr), par->distr, sizeof( struct unur_distr ) );
 
   /* set generator identifier */
-  _unur_set_genid(gen,GENTYPE);
+  gen->genid = _unur_make_genid(GENTYPE);
 
   /* routines for sampling and destroying generator */
   SAMPLE = (par->variant & STDR_VARFLAG_VERIFY) ? unur_stdr_sample_check : unur_stdr_sample;
@@ -645,10 +645,10 @@ _unur_stdr_create( struct unur_par *par )
     DISTR.mode = min(DISTR.mode,DISTR.BD_RIGHT);
   }
 
-  gen->method = par->method;         /* indicates method                     */
-  gen->variant = par->variant;       /* indicates variant                    */
-  _unur_copy_urng_pointer(par,gen);  /* pointer to urng into generator object*/
-  _unur_copy_debugflag(par,gen);     /* copy debugging flags into generator object */
+  gen->method = par->method;        /* indicates method                      */
+  gen->variant = par->variant;      /* indicates variant                     */
+  gen->debug = par->debug;          /* debuging flags                        */
+  gen->urng = par->urng;            /* pointer to urng                       */
 
   /* initialize parameters */
 

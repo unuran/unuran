@@ -51,7 +51,16 @@
  *****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
-#if UNUR_URNG_TYPE == UNUR_URNG_SIMPLE || UNUR_URNG_TYPE == UNUR_URNG_GENERIC
+#include <source_unuran.h>
+/*---------------------------------------------------------------------------*/
+
+/* seed (must not be 0!) */
+#define SEED  (12345L);
+
+/* status variable */
+static unsigned long x = SEED;
+static unsigned long x_start = SEED; /* seed of last stream */
+
 /*---------------------------------------------------------------------------*/
 
 double
@@ -61,9 +70,6 @@ unur_urng_fish (void)
 # define A   742938285
 # define AHI (A>>15)
 # define ALO (A&0x7FFF)
-
-  /* seed */
-  static unsigned long x = 12345;
 
   unsigned long xhi, xlo, mid;   /* for intermediate results */
 
@@ -80,5 +86,28 @@ unur_urng_fish (void)
 } /* end of unur_urng_fish() */
 
 /*---------------------------------------------------------------------------*/
-#endif
+
+int
+unur_urng_fish_seed (long seed)
+{
+  if (seed==0) {
+    _unur_error("URNG.fish",UNUR_ERR_GENERIC,"seed = 0");
+    return 0;
+  }
+  
+  x_start = seed;
+  x = seed;
+
+  return 1;
+} /* end of unur_urng_fish_seed() */
+
+/*---------------------------------------------------------------------------*/
+
+int 
+unur_urng_fish_reset (void)
+{
+  x = x_start;
+  return 1;
+} /* end of unur_urng_fish_reset() */
+
 /*---------------------------------------------------------------------------*/

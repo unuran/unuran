@@ -118,7 +118,6 @@ unuran_tests.h      ... header file for test routines
 chi2test.c          ... chi^2 test for goodness of fit
 counturn.c          ... count used uniform random numbers
 printsample.c       ... print a small sample into logfile
-scatter.c           ... make a scatter plot with baby generator (LCG)
 timing.c            ... measure setup time and marginal generation time
 
 tests.c             ... interface to start these tests

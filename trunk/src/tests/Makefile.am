@@ -7,7 +7,8 @@ INCLUDES = \
  -I$(top_srcdir)/src \
  -I$(top_srcdir)/src/distributions \
  -I$(top_srcdir)/src/methods \
- -I$(top_srcdir)/src/parser
+ -I$(top_srcdir)/src/parser \
+ -I$(top_srcdir)/src/uniform
 
 noinst_LIBRARIES = libtests.a
 
@@ -18,11 +19,8 @@ libtests_a_SOURCES = \
  moments.c \
  printsample.c \
  quantiles.c \
- scatter.c \
  tests.c \
  timing.c
-
-# scatter.c \ removed from source
 
 include_HEADERS = \
  unuran_tests.h

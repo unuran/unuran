@@ -38,17 +38,6 @@
 #define PVAL_LIMIT 1e-3             /* treshold for p-value for stat. test   */
 
 /*---------------------------------------------------------------------------*/
-/* reset uniform random number generator                                     */
-
-#if UNUR_URNG_TYPE == UNUR_URNG_PRNG
-#  define unur_urng_reset(urng)   (prng_reset(urng))
-#else
-#  ifdef unur_urng_reset
-#     undef unur_urng_reset
-#  endif
-#endif
-
-/*---------------------------------------------------------------------------*/
 /* True and false                                                            */
 
 #ifndef TRUE

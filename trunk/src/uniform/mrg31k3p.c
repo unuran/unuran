@@ -53,10 +53,36 @@
  *****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
-#if UNUR_URNG_TYPE == UNUR_URNG_SIMPLE || UNUR_URNG_TYPE == UNUR_URNG_GENERIC
+#include <source_unuran.h>
 /*---------------------------------------------------------------------------*/
 
-double 
+/* seed (must not be 0!) */
+#define SEED10  (12345L);
+#define SEED11  (23456L);
+#define SEED12  (34067L);
+#define SEED20  (45678L);
+#define SEED21  (56789L);
+#define SEED22  (67890L);
+
+/* status variable */
+static unsigned long x10 = SEED10;
+static unsigned long x11 = SEED11;
+static unsigned long x12 = SEED12;
+static unsigned long x20 = SEED20;
+static unsigned long x21 = SEED21;
+static unsigned long x22 = SEED22;
+
+/* seed of last stream */
+static unsigned long x10_start = SEED10;
+static unsigned long x11_start = SEED11;
+static unsigned long x12_start = SEED12;
+static unsigned long x20_start = SEED20;
+static unsigned long x21_start = SEED21;
+static unsigned long x22_start = SEED22;
+
+/*---------------------------------------------------------------------------*/
+
+double
 unur_urng_MRG31k3p (void)
      /* Combined multiple recursive generator.                               */
      /* Copyright (c) 2002 Renee Touzin.                                     */
@@ -69,13 +95,6 @@ unur_urng_MRG31k3p (void)
 # define mask12  16777215
 # define mask20  65535
  
-  /* seed (must not be 0!) */
-  static unsigned long x10 = 12345;
-  static unsigned long x11 = 23456;
-  static unsigned long x12 = 34567;
-  static unsigned long x20 = 45678;
-  static unsigned long x21 = 56789;
-  static unsigned long x22 = 67890;
 
   register unsigned long y1, y2;  /* For intermediate results */
   
@@ -107,6 +126,39 @@ unur_urng_MRG31k3p (void)
 } /* end of unur_urng_MRG31k3p() */
  
 /*---------------------------------------------------------------------------*/
-#endif
+
+int
+unur_urng_MRG31k3p_seed (long seed)
+{
+  if (seed==0) {
+    _unur_error("URNG.fish",UNUR_ERR_GENERIC,"seed = 0");
+    return 0;
+  }
+  
+  /* the following is not really optimal */
+  x10 = x10_start = seed; 
+  x11 = x11_start = seed; 
+  x12 = x12_start = seed; 
+  x20 = x20_start = seed; 
+  x21 = x21_start = seed; 
+  x22 = x22_start = seed; 
+
+  return 1;
+} /* end of unur_urng_MRG31k3p_seed() */
+
 /*---------------------------------------------------------------------------*/
 
+int 
+unur_urng_MRG31k3p_reset (void)
+{
+  x10 = x10_start;
+  x11 = x11_start;
+  x12 = x12_start;
+  x20 = x20_start;
+  x21 = x21_start;
+  x22 = x22_start;
+
+  return 1;
+} /* end of unur_urng_MRG31k3p_reset() */
+
+/*---------------------------------------------------------------------------*/

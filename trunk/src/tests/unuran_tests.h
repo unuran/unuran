@@ -63,7 +63,6 @@
 #define UNUR_TEST_N_URNG   0x002u    /* count number of urng (needs compiler switch) */
 #define UNUR_TEST_CHI2     0x004u    /* run chi^2 test for goodness of fit */
 #define UNUR_TEST_SAMPLE   0x008u    /* print a sample file */
-#define UNUR_TEST_SCATTER  0x010u    /* make a scatter plot */
 
 /*---------------------------------------------------------------------------*/
 /* =ROUTINES */

@@ -14,7 +14,7 @@
 #include <unuran_acg.h>
 #include <unuran_tests.h>
 
-#define RUN_TESTS       (~0x0u & ~UNUR_TEST_SCATTER)
+#define RUN_TESTS       (~0x0u)
 
 /*---------------------------------------------------------------------------*/
 

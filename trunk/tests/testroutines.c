@@ -339,23 +339,23 @@ int compare_double_sequence_gen( FILE *LOG, int line, UNUR_URNG *urng, UNUR_GEN 
 
 static int cannot_compare_sequence ( FILE *LOG )
 {
-  fprintf (LOG,"\nURNG cannot be reset. Cannot compare sequences.\n");
-  printf ("URNG cannot be reset. Cannot compare sequences.\n");
+  fprintf (LOG,"\nURNG cannot be reset. Cannot compare sequences. (Skip)\n");
+  printf ("URNG cannot be reset. Cannot compare sequences. (Skip)\n");
 
   return 0; /* indicate as "not failed" for practical reasons */
 }
 
 int compare_double_sequence_par_start( FILE *LOG, int line, UNUR_URNG *urng, UNUR_PAR *par, int ss ) {
-  return cannot_compare_sequence (LOG); }
+  return 0; }
 
 int compare_double_sequence_urng_start( FILE *LOG, int line, UNUR_URNG *urng, int ss ) {
-  return cannot_compare_sequence (LOG); }
+  return 0; }
 
 int compare_double_sequence_par( FILE *LOG, int line, UNUR_URNG *urng, UNUR_PAR *par, int ss ) {
   return cannot_compare_sequence (LOG); }
 
 int compare_double_sequence_gen_start( FILE *LOG, int line, UNUR_URNG *urng, UNUR_GEN *gen, int ss ) {
-  return cannot_compare_sequence (LOG); }
+  return 0; }
 
 int compare_double_sequence_gen( FILE *LOG, int line, UNUR_URNG *urng, UNUR_GEN *gen, int ss ) {
   return cannot_compare_sequence (LOG); }
@@ -509,13 +509,13 @@ int compare_int_sequence_gen( FILE *LOG, int line, UNUR_URNG *urng, UNUR_GEN *ge
 #else  /* no reset routine for uniform RNG */
 
 int compare_int_sequence_par_start( FILE *LOG, int line, UNUR_URNG *urng, UNUR_PAR *par, int sample_size ) {
-  return cannot_compare_sequence (LOG); }
+  return 0; }
 
 int compare_int_sequence_par( FILE *LOG, int line, UNUR_URNG *urng, UNUR_PAR *par, int sample_size ) {
   return cannot_compare_sequence (LOG); }
 
 int compare_int_sequence_gen_start( FILE *LOG, int line, UNUR_URNG *urng, UNUR_GEN *gen, int sample_size ) {
-  return cannot_compare_sequence (LOG); }
+  return 0; }
 
 int compare_int_sequence_gen( FILE *LOG, int line, UNUR_URNG *urng, UNUR_GEN *gen, int sample_size ) {
   return cannot_compare_sequence (LOG); }

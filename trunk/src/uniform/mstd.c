@@ -49,7 +49,16 @@
  *****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
-#if UNUR_URNG_TYPE == UNUR_URNG_SIMPLE || UNUR_URNG_TYPE == UNUR_URNG_GENERIC
+#include <source_unuran.h>
+/*---------------------------------------------------------------------------*/
+
+/* seed (must not be 0!) */
+#define SEED  (1804289L);
+
+/* status variable */
+static unsigned long x = SEED;
+static unsigned long x_start = SEED; /* seed of last stream */
+
 /*---------------------------------------------------------------------------*/
 
 double
@@ -60,9 +69,6 @@ unur_urng_mstd (void)
 # define m 2147483647  /* modulus */
 # define q 127773      /* m / a */
 # define r 2836        /* m % a */
-
-  /* seed (must not be 0!) */
-  static unsigned long x = 1804289383;
 
   int hi, lo, test;   /* intermediate results */
 
@@ -75,5 +81,27 @@ unur_urng_mstd (void)
 } /* end of unur_urng_mstd() */
 
 /*---------------------------------------------------------------------------*/
-#endif
+
+int
+unur_urng_mstd_seed (long seed)
+{
+  if (seed==0) {
+    _unur_error("URNG.mstd",UNUR_ERR_GENERIC,"seed = 0");
+    return 0;
+  }
+  
+  x = x_start = seed;
+
+  return 1;
+} /* end of unur_urng_mstd_seed() */
+
+/*---------------------------------------------------------------------------*/
+
+int 
+unur_urng_mstd_reset (void)
+{
+  x = x_start;
+  return 1;
+} /* end of unur_urng_mstd_reset() */
+
 /*---------------------------------------------------------------------------*/

@@ -61,14 +61,14 @@
 /*---------------------------------------------------------------------------*/
 /* define the possible compiler switches                                     */
 #define UNUR_URNG_SIMPLE   1     /* use type `double urng(void)'             */
-#define UNUR_URNG_GENERIC  2     /* use type `double urng(void *status)'     */
-#define UNUR_URNG_PRNG     3     /* use prng-3.0                             */
+#define UNUR_URNG_PRNG     2     /* use prng-3.0                             */
+#define UNUR_URNG_GENERIC  3     /* use type `double urng(void *status)'     */
 /*---------------------------------------------------------------------------*/
 
 /* set type of uniform generator                                             */
 /*  #define UNUR_URNG_TYPE UNUR_URNG_SIMPLE */
-/*  #define UNUR_URNG_TYPE UNUR_URNG_GENERIC */
 #define UNUR_URNG_TYPE UNUR_URNG_PRNG
+/*  #define UNUR_URNG_TYPE UNUR_URNG_GENERIC */
 
 /* IMPORTANT:                                                                */
 /* You must *not* use UNUR_URNG_PRNG if the prng library is not installed!   */
@@ -84,34 +84,24 @@
 
 /* ......................................................................... */
 
-/* prototype for uniform rng                  (don't touch these two lines!) */
-double UNUR_URNG_DEFAULT(void);
-double UNUR_URNG_AUX_DEFAULT(void);
-
 /* type of uniform random number generator          (don't touch this line!) */
 typedef double (UNUR_URNG)(void);
 
 /* function call to uniform rng                     (don't touch this line!) */
 #define _unur_call_urng(urng)        ((*(urng))())
 
-/*---------------------------------------------------------------------------*/
-#elif UNUR_URNG_TYPE == UNUR_URNG_GENERIC
-/*---------------------------------------------------------------------------*/
+/* function call to reset uniform rng               (don't touch this line!) */
+#define unur_urng_reset(urng)        (unur_urng_MRG31k3p_reset());
 
-/* valid pointer to a C routine of type `double urng(void *status)'          */
-#define UNUR_URNG_DEFAULT     NULL
-#define UNUR_URNG_AUX_DEFAULT NULL
-
-/* ......................................................................... */
 
 /*---------------------------------------------------------------------------*/
 #elif UNUR_URNG_TYPE == UNUR_URNG_PRNG
 /*---------------------------------------------------------------------------*/
 
-/* Default name of uniform random number generator.                          */
-/* valid parameter (char) string for prng-3.x                                */
-#define UNUR_URNG_DEFAULT     "mt19937(19863)"
-#define UNUR_URNG_AUX_DEFAULT "LCG(2147483647,16807,0,1)"
+/* Default uniform random number generators.                                 */
+/* (see prng-3.x manual)                                                     */
+#define UNUR_URNG_DEFAULT     (prng_new("mt19937(19863)"))
+#define UNUR_URNG_AUX_DEFAULT (prng_new("LCG(2147483647,16807,0,1)"))
 
 /* ......................................................................... */
 
@@ -123,6 +113,14 @@ typedef struct prng UNUR_URNG;
 
 /* function call to uniform rng                     (don't touch this line!) */
 #define _unur_call_urng(urng)        (prng_get_next(urng))
+
+/* function call to reset uniform rng                                        */
+/* (for test suite only)                            (don't touch this line!) */
+#define unur_urng_reset(urng)        (prng_reset(urng))
+
+/*---------------------------------------------------------------------------*/
+/* #elif UNUR_URNG_TYPE == UNUR_URNG_GENERIC */
+/*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*/
 #else

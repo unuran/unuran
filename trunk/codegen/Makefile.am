@@ -13,7 +13,8 @@ INCLUDES = \
  -I$(top_srcdir)/src \
  -I$(top_srcdir)/src/distributions \
  -I$(top_srcdir)/src/methods \
- -I$(top_srcdir)/src/parser
+ -I$(top_srcdir)/src/parser \
+ -I$(top_srcdir)/src/uniform
 
 
 bin_PROGRAMS = acg

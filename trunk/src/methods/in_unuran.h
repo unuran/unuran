@@ -82,6 +82,7 @@ typedef int UNUR_VFUNCT_CVEC(double *result, double *x, struct unur_distr *distr
 /**  Declarations for uniform random number generators                      **/
 /*****************************************************************************/
 
+#include <uniform.h>
 #include <x_urng.h>
 
 /*****************************************************************************/

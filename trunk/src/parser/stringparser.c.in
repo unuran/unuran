@@ -2068,7 +2068,7 @@ _unur_str2urng( char *str_urng )
 #else
 /*---------------------------------------------------------------------------*/
 
-  _unur_error(GENTYPE,UNUR_ERR_STR,"setting URNG required PRNG library enabled"); 
+  _unur_error(GENTYPE,UNUR_ERR_STR,"setting URNG requires PRNG library enabled"); 
   return NULL;
 
 /*---------------------------------------------------------------------------*/

@@ -316,6 +316,7 @@ unur_cstd_free( struct unur_gen *gen )
   /* free memory */
   _unur_free_genid(gen);
   free(GEN.gen_param);
+  free(GEN.gen_aux);
   free(gen);
 
 } /* end of unur_cstd_free() */
@@ -362,17 +363,18 @@ _unur_cstd_create( struct unur_par *par )
   gen->destroy = unur_cstd_free;
 
   /* defaults */
-  GEN.gen_param = NULL;  /* parameters for the generator     */
-  GEN.n_gen_param = 0;   /* (computed in special GEN.init()  */
+  GEN.gen_param = NULL;  /* parameters for the generator      */
+  GEN.n_gen_param = 0;   /* (computed in special GEN.init()   */
+  GEN.gen_aux = NULL;    /* no axilliary generator is default */
 
   /* copy some parameters into generator object */
-  GEN.umin        = 0;    /* cdf at left boundary of domain  */
-  GEN.umax        = 1;    /* cdf at right boundary of domain */
+  GEN.umin        = 0;    /* cdf at left boundary of domain   */
+  GEN.umax        = 1;    /* cdf at right boundary of domain  */
 
-  gen->method = par->method;        /* indicates used method */
-  gen->variant = par->variant;      /* indicates variant     */
-  gen->debug = par->debug;          /* debuging flags        */
-  gen->urng = par->urng;            /* pointer to urng                       */
+  gen->method = par->method;        /* indicates used method  */
+  gen->variant = par->variant;      /* indicates variant      */
+  gen->debug = par->debug;          /* debuging flags         */
+  gen->urng = par->urng;            /* pointer to urng        */
 
   /* return pointer to (almost empty) generator object */
   return(gen);

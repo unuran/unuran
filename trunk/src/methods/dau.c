@@ -216,6 +216,7 @@ unur_dau_new( struct unur_distr *distr )
   par->variant   = 0u;               /* default variant (no other variants)  */
   par->set       = 0u;               /* inidicate default parameters         */    
   par->urng      = unur_get_default_urng(); /* use default urng              */
+  par->urng_aux  = NULL;                    /* no auxilliary URNG required   */
 
   par->genid     = _unur_set_genid(GENTYPE);/* set generator id              */
   par->debug     = _unur_default_debugflag; /* set default debugging flags   */
@@ -528,6 +529,10 @@ _unur_dau_create( struct unur_par *par)
   gen->variant = 0u;                /* only the default variant is possible  */
   gen->debug = par->debug;          /* debuging flags                        */
   gen->urng = par->urng;            /* pointer to urng                       */
+
+  gen->urng_aux = NULL;             /* no auxilliary URNG required           */
+  gen->gen_aux = NULL;              /* no auxilliary generator objects       */
+  gen->gen_aux_2 = NULL;
 
   /* size of table */
   GEN.urn_size = (int)(GEN.len * PAR.urn_factor);

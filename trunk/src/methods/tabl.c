@@ -268,20 +268,21 @@ unur_tabl_new( struct unur_distr *distr )
   PAR.guide_factor  = 1.; /* guide table has same size as array of intervals */
 
   /* default boundary of compution area */
-  PAR.bleft  = -TABL_DEFAULT_COMPUTATION_LIMIT;
-  PAR.bright = TABL_DEFAULT_COMPUTATION_LIMIT;
+  PAR.bleft     = -TABL_DEFAULT_COMPUTATION_LIMIT;
+  PAR.bright    = TABL_DEFAULT_COMPUTATION_LIMIT;
 
-  par->method       = UNUR_METH_TABL;         /* indicate method             */
-  par->variant      = (TABL_VARFLAG_SPLIT_ARC   |     /* variant: split at arc_mean  */
-		       TABL_VARFLAG_STP_A |     /* run SPLIT A on slopes       */
-		       TABL_VARFLAG_STP_B  );   /* run SPLIT B on slopes       */
+  par->method   = UNUR_METH_TABL;              /* indicate method            */
+  par->variant  = (TABL_VARFLAG_SPLIT_ARC |    /* variant: split at arc_mean */
+		   TABL_VARFLAG_STP_A     |    /* run SPLIT A on slopes      */
+		   TABL_VARFLAG_STP_B      );  /* run SPLIT B on slopes      */
 
 
-  par->set          = 0u;        /* inidicate default parameters             */    
-  par->urng         = unur_get_default_urng(); /* use default urng           */
+  par->set      = 0u;                      /* inidicate default parameters   */    
+  par->urng     = unur_get_default_urng(); /* use default urng               */
+  par->urng_aux = NULL;                    /* no auxilliary URNG required    */
 
-  par->genid        = _unur_set_genid(GENTYPE);/* set generator id           */
-  par->debug        = _unur_default_debugflag; /* set default debugging flags*/
+  par->genid    = _unur_set_genid(GENTYPE);/* set generator id               */
+  par->debug    = _unur_default_debugflag; /* set default debugging flags    */
 
   /* routine for starting generator */
   par->init = unur_tabl_init;
@@ -1081,6 +1082,10 @@ _unur_tabl_create( struct unur_par *par )
   gen->variant = par->variant;         /* indicates variant                  */
   gen->debug = par->debug;             /* debuging flags                     */
   gen->urng = par->urng;               /* pointer to urng                    */
+
+  gen->urng_aux = NULL;             /* no auxilliary URNG required           */
+  gen->gen_aux = NULL;              /* no auxilliary generator objects       */
+  gen->gen_aux_2 = NULL;
 
   /* return pointer to (almost empty) generator object */
   return(gen);

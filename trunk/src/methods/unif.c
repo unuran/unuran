@@ -107,6 +107,7 @@ unur_unif_new( int start, int skip )
   par->variant  = 0u;              /* default variant                        */
   par->set      = 0u;              /* inidicate default parameters           */    
   par->urng     = unur_get_default_urng(); /* use default urng               */
+  par->urng_aux = NULL;                    /* no auxilliary URNG required    */
 
   par->genid    = _unur_set_genid(GENTYPE);/* set generator id               */
   par->debug    = _unur_default_debugflag; /* set default debugging flags    */
@@ -271,6 +272,10 @@ _unur_unif_create( struct unur_par *par )
   gen->variant = par->variant;      /* indicates variant                     */
   gen->debug = par->debug;          /* debuging flags                        */
   gen->urng = par->urng;            /* pointer to urng                       */
+
+  gen->urng_aux = NULL;             /* no auxilliary URNG required           */
+  gen->gen_aux = NULL;              /* no auxilliary generator objects       */
+  gen->gen_aux_2 = NULL;
 
   GEN.start = PAR.start;    /* starting point for subsequence */
   GEN.skip = PAR.skip;      /* skip for subsequence */

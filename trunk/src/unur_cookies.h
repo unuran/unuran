@@ -58,6 +58,8 @@
 #define CK_DGT_GEN       0x00000031u
 #define CK_DSROU_PAR     0x00000040u
 #define CK_DSROU_GEN     0x00000041u
+#define CK_DSS_PAR       0x00000050u
+#define CK_DSS_GEN       0x00000051u
 
 /* generators continuous distributions */
 #define CK_AROU_PAR      0x00100010u

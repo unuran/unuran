@@ -106,6 +106,7 @@ typedef void _UNUR_SAMPLING_ROUTINE_VEC(struct unur_gen *gen, double *vec);
 #include <methods/dau_struct.h>
 #include <methods/dgt_struct.h>
 #include <methods/dsrou_struct.h>
+#include <methods/dss_struct.h>
 
 /* continuous distributions */
 #include <methods/arou_struct.h>
@@ -146,6 +147,7 @@ struct unur_par {
     struct unur_dau_par   dau;
     struct unur_dgt_par   dgt;
     struct unur_dsrou_par dsrou;
+    struct unur_dss_par   dss;
     struct unur_arou_par  arou;
     struct unur_hinv_par  hinv;
     struct unur_hrb_par   hrb;
@@ -193,6 +195,7 @@ struct unur_gen {
     struct unur_dau_gen   dau;
     struct unur_dgt_gen   dgt;
     struct unur_dsrou_gen dsrou;
+    struct unur_dss_gen   dss;
     struct unur_arou_gen  arou;
     struct unur_hinv_gen  hinv;
     struct unur_hrb_gen   hrb;

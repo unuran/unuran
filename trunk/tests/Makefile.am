@@ -37,6 +37,7 @@ check_PROGRAMS = \
  t_dau \
  t_dgt \
  t_dsrou \
+ t_dss \
  t_dstd \
  t_empk \
  t_empl \
@@ -92,6 +93,7 @@ EXTRA_DIST = \
  t_dau.conf \
  t_dgt.conf \
  t_dsrou.conf \
+ t_dss.conf \
  t_dstd.conf \
  t_empk.conf \
  t_empl.conf \

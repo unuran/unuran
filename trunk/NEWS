@@ -1,3 +1,9 @@
+Version 0.4.5: July 2003
+
+	- added method DSS (discrete sequential search)
+
+	- bug fixes with discrete distributions
+
 Version 0.4.4: July 2003
 
 	- "orderstatistics" need not be last entry in string API

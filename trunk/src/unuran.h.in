@@ -90,6 +90,7 @@
 #include <methods/dau.h>
 #include <methods/dgt.h>
 #include <methods/dsrou.h>
+#include <methods/dss.h>
 
 /* methods for continuous distributions */
 #include <methods/arou.h>

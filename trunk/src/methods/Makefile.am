@@ -16,6 +16,7 @@ libmethods_la_SOURCES = \
  dau.c   dau.h   dau_struct.h \
  dgt.c   dgt.h   dgt_struct.h \
  dsrou.c dsrou.h dsrou_struct.h \
+ dss.c   dss.h   dss_struct.h \
  dstd.c  dstd.h  dstd_struct.h \
  empk.c  empk.h  empk_struct.h \
  empl.c  empl.h  empl_struct.h \

@@ -171,6 +171,10 @@ _unur_print_method( struct unur_par *par )
     COOKIE_CHECK(par,CK_DSROU_PAR,0);
     printf("METHOD:\t\tdiscrete simple universal ratio-of-uniforms search (DSROU)\n");
     break;
+  case UNUR_METH_DSS:
+    COOKIE_CHECK(par,CK_DSS_PAR,0);
+    printf("METHOD:\t\tsequential search (DSS)\n");
+    break;
   case UNUR_METH_DSTD:
     COOKIE_CHECK(par,CK_DSTD_PAR,0);
     printf("METHOD:\t\tspecial (DSTD)\n");

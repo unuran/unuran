@@ -431,6 +431,7 @@ unur_distr_cvec_set_mean( struct unur_distr *distr, const double *mean )
   /* check arguments */
   _unur_check_NULL( NULL, distr, 0 );
   _unur_check_distr_object( distr, CVEC, 0 );
+  _unur_check_NULL( distr->name, mean, 0 );
 
   /* we have to allocate memory first */
   if (DISTR.mean == NULL)
@@ -674,6 +675,7 @@ unur_distr_cvec_set_mode( struct unur_distr *distr, const double *mode )
   /* check arguments */
   _unur_check_NULL( NULL, distr, 0 );
   _unur_check_distr_object( distr, CVEC, 0 );
+  _unur_check_NULL( distr->name, mode, 0 );
 
   /* mode already set ? */
   if (DISTR.mode == NULL) {

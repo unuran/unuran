@@ -49,7 +49,6 @@ struct unur_vmt_par {
 
 struct unur_vmt_gen { 
   struct unur_gen *uvgen;   /* univariate generator                          */
-  double *mean;             /* mean vector of distribution                   */
   double *cholesky;         /* cholesky factor of covariance matrix          */
   int    dim;               /* dimension of distribution                     */
 };

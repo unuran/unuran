@@ -209,9 +209,10 @@ unur_distr_cemp_set_data( struct unur_distr *distr, const double *sample, int n_
   /* check arguments */
   _unur_check_NULL( NULL, distr, 0 );
   _unur_check_distr_object( distr, CEMP, 0 );
+  _unur_check_NULL( distr->name, sample, 0 );
 
   /* check new parameter for generator */
-  if (n_sample < 0) {
+  if (n_sample <= 0) {
     _unur_error(NULL,UNUR_ERR_DISTR_SET,"sample size");
     return 0;
   }

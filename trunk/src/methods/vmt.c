@@ -264,12 +264,15 @@ _unur_vmt_init( struct unur_par *par )
   if (GEN.uvgen == NULL) {
     GEN.uvgen = _unur_vmt_default_uvgen();
     if (GEN.uvgen == NULL) {
-      _unur_error(gen->genid,UNUR_ERR_GENERIC,"init of marginal generator failt");
+      _unur_error(gen->genid,UNUR_ERR_GENERIC,"init of marginal generator failed");
       _unur_vmt_free(gen);
       return NULL;
     }
   }
   /* else: generator provided by user */
+
+  /* the marginal generator is an auxilliary generator for method VMT, of course */
+  gen->gen_aux = GEN.uvgen;
 
   /* cholesky factor of covariance matrix */
   if (DISTR.covar)
@@ -328,28 +331,6 @@ _unur_vmt_create( struct unur_par *par )
   /* dimension of distribution */
   GEN.dim = gen->distr->dim; 
 
-  /* copy mean vector */
-  if (DISTR.mean) {
-    DISTR.mean = _unur_malloc( GEN.dim * sizeof(double) );
-    memcpy( DISTR.mean, par->distr->data.cvec.mean, GEN.dim * sizeof(double) );
-  }
-  else {
-    _unur_error(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
-    _unur_distr_free(gen->distr); free(gen);
-    return NULL;
-  }
-
-  /* copy covariance matrix */
-  if (DISTR.covar) {
-    DISTR.covar = _unur_malloc( GEN.dim * GEN.dim * sizeof(double) );
-    memcpy( DISTR.covar, par->distr->data.cvec.covar, GEN.dim * GEN.dim * sizeof(double) );
-  }
-  else {
-    _unur_error(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
-    _unur_distr_free(gen->distr); free (DISTR.mean); free(gen);
-    return NULL;
-  }
-
   /* set generator identifier */
   gen->genid = _unur_set_genid(GENTYPE);
 
@@ -359,8 +340,6 @@ _unur_vmt_create( struct unur_par *par )
   gen->clone = _unur_vmt_clone;
 
   /* copy some parameters into generator object */
-  GEN.uvgen = PAR.uvgen;            /* generator for univariate distribution */
-
   gen->method = par->method;        /* indicates method                      */
   gen->variant = par->variant;      /* indicates variant                     */
   gen->set = par->set;              /* indicates parameter settings          */
@@ -370,8 +349,8 @@ _unur_vmt_create( struct unur_par *par )
   gen->urng_aux = NULL;             /* no auxilliary URNG required           */
   gen->gen_aux = NULL;              /* no auxilliary generator objects       */
 
-  /* mean vector for generator */
-  GEN.mean = DISTR.mean;
+  /* generator for univariate distribution */
+  GEN.uvgen = unur_gen_clone(PAR.uvgen);
 
   /* initialize pointer */
   GEN.cholesky = NULL;
@@ -447,23 +426,17 @@ _unur_vmt_clone( const struct unur_gen *gen )
   /* copy distribution object into generator object */
   clone->distr = _unur_distr_cont_clone( gen->distr );
 
-#if 0
-
   /* copy additional data for generator object */
-  clone->distr.data.cvec.mean _unur_malloc( GEN.dim * sizeof(double) );
-  memcpy( clone->distr.data.cvec.mean, DISTR.mean, GEN.dim * sizeof(double) );
-
-  CLONE.uvgen = unur_gen_clone( GEN.uvgen );
-  /** TODO: clone->gen_aux = CLONE.uvgen;
-      (auch in init() !!! )  **/
-
-  /** double *cholesky;     cholesky factor of covariance matrix          */
+  if (GEN.cholesky) {
+    CLONE.cholesky = _unur_malloc( GEN.dim * GEN.dim * sizeof(double) );
+    memcpy( CLONE.cholesky, GEN.cholesky, GEN.dim * GEN.dim * sizeof(double) );
+  }
+  if (GEN.uvgen) {
+    CLONE.uvgen = unur_gen_clone(GEN.uvgen);
+    clone->gen_aux = CLONE.uvgen;
+  }
 
   return clone;
-
-#endif
-
-  return NULL;
 
 #undef CLONE
 } /* end of _unur_vmt_clone() */
@@ -504,7 +477,7 @@ _unur_vmt_sample_cvec( struct unur_gen *gen, double *vec )
     vec[k] *= GEN.cholesky[idx(k,k)];
     for (j=k-1; j>=0; j--)
       vec[k] += vec[j] * GEN.cholesky[idx(k,j)];
-    vec[k] += GEN.mean[k];
+    vec[k] += DISTR.mean[k];
   }
 
 #undef idx
@@ -535,9 +508,7 @@ _unur_vmt_free( struct unur_gen *gen )
   SAMPLE = NULL;   /* make sure to show up a programming error */
 
   /* free memory */
-  if (!(gen->set & VMT_SET_UVGEN)) unur_free(GEN.uvgen);
-  if (DISTR.mean)   free(DISTR.mean);
-  if (DISTR.covar)  free(DISTR.covar);
+  if (GEN.uvgen)    unur_free(GEN.uvgen);
   if (GEN.cholesky) free(GEN.cholesky);
 
   _unur_distr_free(gen->distr);

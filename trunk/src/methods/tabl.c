@@ -1341,11 +1341,7 @@ _unur_tabl_free( struct unur_gen *gen )
   if (GEN.guide)  free(GEN.guide);
 
   /* free other memory */
-  _unur_distr_free(gen->distr);
-  _unur_free_genid(gen);
-
-  COOKIE_CLEAR(gen);
-  free(gen);
+  _unur_generic_free(gen);
 
 } /* end of _unur_tabl_free() */
 

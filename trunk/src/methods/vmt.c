@@ -491,14 +491,9 @@ _unur_vmt_free( struct unur_gen *gen )
   SAMPLE = NULL;   /* make sure to show up a programming error */
 
   /* free memory */
-  if (GEN.uvgen)    _unur_free(GEN.uvgen);
   /* if (GEN.cholesky) free(GEN.cholesky); (cholesky is now freed from distr-object) */
 
-  _unur_distr_free(gen->distr);
-  _unur_free_genid(gen);
-
-  COOKIE_CLEAR(gen);
-  free(gen);
+  _unur_generic_free(gen);
 
 } /* end of _unur_vmt_free() */
 

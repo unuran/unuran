@@ -1403,12 +1403,9 @@ _unur_arou_free( struct unur_gen *gen )
   }
 
   /* free other memory not stored in list */
-  _unur_distr_free( gen->distr );
-  _unur_free_genid(gen);
   if (GEN.guide) free(GEN.guide);
 
-  COOKIE_CLEAR(gen);
-  free(gen);
+  _unur_generic_free(gen);
 
 } /* end of _unur_arou_free() */
 

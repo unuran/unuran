@@ -676,13 +676,8 @@ _unur_vempk_free( struct unur_gen *gen )
 
   /* free memory */
   if (GEN.xbar)   free( GEN.xbar );
-  unur_free( GEN.kerngen );
 
-  _unur_distr_free(gen->distr);
-  _unur_free_genid(gen);
-
-  COOKIE_CLEAR(gen);
-  free(gen);
+  _unur_generic_free(gen);
 
 } /* end of _unur_vempk_free() */
 

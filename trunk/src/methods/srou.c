@@ -1528,11 +1528,7 @@ _unur_srou_free( struct unur_gen *gen )
   SAMPLE = NULL;   /* make sure to show up a programming error */
 
   /* free memory */
-  _unur_distr_free(gen->distr);
-  _unur_free_genid(gen);
-
-  COOKIE_CLEAR(gen);
-  free(gen);
+  _unur_generic_free(gen);
 
 } /* end of _unur_srou_free() */
 

@@ -285,4 +285,23 @@ _unur_generic_clone( const struct unur_gen *gen, const char *type )
   /* finished clone */
   return clone;
 } /* _unur_generic_clone() */
+
+/*---------------------------------------------------------------------------*/
+
+void
+_unur_generic_free( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* deallocate generator object                                          */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen  ... pointer to generator object                               */
+     /*----------------------------------------------------------------------*/
+{ 
+  if (gen->distr) _unur_distr_free( gen->distr );
+  if (gen->gen_aux) _unur_free(gen->gen_aux);
+  _unur_free_genid(gen);
+  COOKIE_CLEAR(gen);
+  free(gen);
+} /* end of _unur_generic_free() */
+
 /*---------------------------------------------------------------------------*/

@@ -1637,11 +1637,7 @@ _unur_ninv_free( struct unur_gen *gen )
   if (GEN.f_table) free(GEN.f_table);
 
   /* free memory */
-  _unur_distr_free(gen->distr);
-  _unur_free_genid(gen);
-
-  COOKIE_CLEAR(gen);
-  free(gen);
+  _unur_generic_free(gen);
 
 } /* end of _unur_ninv_free() */
 

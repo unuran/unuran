@@ -101,3 +101,8 @@ struct unur_gen *_unur_vmt_clone( const struct unur_gen *gen );
 #define _unur_gen_clone(gen)    ((gen)->clone(gen))
 
 /*---------------------------------------------------------------------------*/
+/* free generic generator object                                             */
+
+void _unur_generic_free( struct unur_gen *gen );
+
+/*---------------------------------------------------------------------------*/

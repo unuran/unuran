@@ -403,12 +403,8 @@ _unur_mcorr_free( struct unur_gen *gen )
 
   /* free memory */
   if (GEN.H) free (GEN.H);
-  if (gen->gen_aux) _unur_free( gen->gen_aux );
-  _unur_distr_free(gen->distr);
-  _unur_free_genid(gen);
 
-  COOKIE_CLEAR(gen);
-  free(gen);
+  _unur_generic_free(gen);
 
 } /* end of _unur_mcorr_free() */
 

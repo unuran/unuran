@@ -23,12 +23,6 @@
 
 -----------------------------------------------------------------------------
 
-(*) set:
-	ersetze unur_set_... befehle durch unur_<methode>_set... befehle (?)
-	soll dabei immer der unur_par structure ueberprueft werden??
-
------------------------------------------------------------------------------
-
 (*) Floating point arithmetic: (its a pain!!)
 
 	unterscheide zwischen IEEE 754 ja/nein
@@ -108,36 +102,6 @@
 (*) jede methode enthaelt am beginn der datei eine aufzaehlung
     aller moeglichen parameter. die ist momentan sehr unvollstaendig
     oder ueberhaupt falsch.
-
------------------------------------------------------------------------------
-
-(*) unterscheidung zwischen
-
-	_unur_error    ... fehler, generator funktioniert nicht mit den
-                           angegebenen parametern nicht.
-
-	_unur_warning  ... hinweis, parameter muessen veraendert
-                           werden oder ein schritt kann nicht
-                           ausgefuehrt werden.
-		 	   (z.B. angegebener parameter bei unur_set
-                           ungueltig, oder rundungsfehler erlauben
-                           nicht das einfuegen eines neuen
-                           beruehrpunktes an der vorgesehenen stelle,
-	                   oder angegebener Mode != mode)
-
------------------------------------------------------------------------------
-
-(*) error reporting:
-	
-	(.) gen->error in structure aufnehmen damit der user im
-	    programm nach eventuellen fehlern abfragen kann
-	    (z.b. falls in unur_tdr_check ein fehler entdeckt wurde.)
-	(.) oder besser: errno aus ANSI C verwenden???
-
------------------------------------------------------------------------------
-
-(*) Soll _unur_malloc() bei einem fehler exit(0) aufrufen oder (nach
-    einer fehlermeldung) NULL liefern ?
 
 -----------------------------------------------------------------------------
 

@@ -180,13 +180,14 @@ int unur_tdr_set_usedars( UNUR_PAR *parameters, int usedars );
 /* 
    If @var{usedars} is set to TRUE, ``derandomized adaptive rejection
    sampling'' (DARS) is used in setup.
-   Intervals, where the area between hat and squeeze is too
+   Intervals where the area between hat and squeeze is too
    large compared to the average area between hat and squeeze
-   over all intervals, are splitted.
-   This procedure is repeated until the ratio between squeeze and hat
-   exceeds the bound given by unur_tdr_set_max_sqhratio() call or the
-   maximum number of intervals is reached. Moreover, it also aborts
-   when no more intervals can be found for splitting.
+   over all intervals are split.
+   This procedure is repeated until the ratio between area below squeeze
+   and area below hat exceeds the bound given by 
+   unur_tdr_set_max_sqhratio() call or the maximum number of intervals is 
+   reached. Moreover, it also aborts when no more intervals can be
+   found for splitting.
 
    For finding splitting points the following rules are used (in
    this order, i.e., is if the first rule cannot be applied, the next
@@ -231,7 +232,7 @@ int unur_tdr_set_darsfactor( UNUR_PAR *parameters, double factor );
    large'', that is, all intervals where the area between squeeze and
    hat is larger than @var{factor} times the average area over all
    intervals between squeeze and hat.
-   Notice that all intervals are splitted when @var{factor} is set to
+   Notice that all intervals are split when @var{factor} is set to
    @code{0.}, and that there is no splitting at all when @var{factor}
    is set to UNUR_INFINITY.
 

@@ -36,9 +36,10 @@
 /*---------------------------------------------------------------------------*/
 
 #include "codegen_source.h"
+#include <tdr_source.h>
 
 /*---------------------------------------------------------------------------*/
-
+#if 0
 /*---------------------------------------------------------------------------*/
 /* Variants                                                                  */
 
@@ -54,6 +55,7 @@
 #define DISTR     gen->distr.data.cont  /* data for distribution in generator object */
 
 /*---------------------------------------------------------------------------*/
+#endif
 
 /*****************************************************************************/
 
@@ -84,6 +86,17 @@ _unur_tdr_ps_codegen( struct unur_gen *gen, FILE *out, const char *rand_name, co
   /* check arguments */
   _unur_check_NULL("ACG",gen, 0);
   COOKIE_CHECK(gen,CK_TDR_GEN,0);
+
+  /* check variant */
+  switch (gen->variant & TDR_VARMASK_VARIANT) {
+  case TDR_VARIANT_GW:
+  case TDR_VARIANT_IA:
+    _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"Cannot make generator code");
+    return 0;
+  case TDR_VARIANT_PS:
+    /* it should work! */
+    break;
+  }
 
   /* make section header for code file */
   sprintf(buffer,"Sampling from %.35s distribution.",gen->distr.name);
@@ -134,8 +147,18 @@ _unur_tdr_ps_codegen( struct unur_gen *gen, FILE *out, const char *rand_name, co
 
   fprintf(out,"\tconst struct {\n");
   fprintf(out,"\t\tdouble x;\n");
-  fprintf(out,"\t\tdouble fx;\n");
-  fprintf(out,"\t\tdouble Tfx;\n");
+  switch (gen->variant & TDR_VARMASK_T) {
+  case TDR_VAR_T_LOG:
+    fprintf(out,"\t\tdouble fx;\n");
+    break;
+  case TDR_VAR_T_SQRT:
+    fprintf(out,"\t\tdouble fx;\n");
+    fprintf(out,"\t\tdouble Tfx;\n");
+    break;
+  default:
+    _unur_error(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
+    return 0;
+  }
   fprintf(out,"\t\tdouble dTfx;\n");
   fprintf(out,"\t\tdouble sq;\n");
   fprintf(out,"\t\tdouble Acum;\n");
@@ -145,8 +168,18 @@ _unur_tdr_ps_codegen( struct unur_gen *gen, FILE *out, const char *rand_name, co
   for (iv=GEN.iv; iv->next!=NULL; iv=iv->next) {
     fprintf(out,(iv==GEN.iv)?"\t\t{":",\n\t\t{");
     fprintf(out," %.20e",iv->x);
-    fprintf(out,", %.20e",iv->fx);
-    fprintf(out,", %.20e",iv->Tfx);
+    switch (gen->variant & TDR_VARMASK_T) {
+    case TDR_VAR_T_LOG:
+      fprintf(out,", %.20e",iv->fx);
+      break;
+    case TDR_VAR_T_SQRT:
+      fprintf(out,", %.20e",iv->fx);
+      fprintf(out,", %.20e",iv->Tfx);
+      break;
+    default:
+      _unur_error(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
+      return 0;
+    }
     fprintf(out,", %.20e",iv->dTfx);
     fprintf(out,", %.20e",iv->sq);
     fprintf(out,", %.20e",iv->Acum);
@@ -191,7 +224,6 @@ _unur_tdr_ps_codegen( struct unur_gen *gen, FILE *out, const char *rand_name, co
   /* reuse of uniform random number */
   fprintf(out,"\t\tU -= iv[I].Acum - iv[I].Ahatr;\n");
   /* result: U in (-A_hatl, A_hatr) */
-
 
   /* generate from hat distribution */
   switch (gen->variant & TDR_VARMASK_T) {
@@ -258,8 +290,6 @@ struct unur_tdr_interval {
 
 /*****************************************************************************/
 
-/*****************************************************************************/
-
 double
 _unur_tdr_ia_sample( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
@@ -311,12 +341,6 @@ _unur_tdr_ia_sample( struct unur_gen *gen )
   int use_ia;
   double U, V, X;
   double fx, hx, Thx;
-
-  /* check arguments */
-  CHECK_NULL(gen,0.);  COOKIE_CHECK(gen,CK_TDR_GEN,0.);
-
-  /* main URNG */
-  urng = gen->urng;
 
   while (1) {
 
@@ -406,10 +430,6 @@ _unur_tdr_ia_sample( struct unur_gen *gen )
       return 1.;
     } /* end switch */
 
-    /* from now on we use the auxilliary generator
-       (it can be the same as the main generator) */
-    urng = gen->urng_aux;
-
     /* rejection from region between hat and (proportional) squeeze */
     V = _unur_call_urng(urng);
 
@@ -430,3 +450,4 @@ _unur_tdr_ia_sample( struct unur_gen *gen )
 
 /*****************************************************************************/
 #endif
+

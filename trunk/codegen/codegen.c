@@ -26,7 +26,7 @@ unur_acg( struct unur_gen *gen, FILE *out, const char *distr_name )
   rand_name = _unur_malloc((6+strlen(distr_name)) * sizeof(char));
   sprintf(rand_name,"rand_%s",distr_name);
 
-
+  /* make code */
   switch (gen->method) {
   case UNUR_METH_TDR:
     if (! _unur_acg_C_PDF(&(gen->distr),out,pdf_name)) {

@@ -69,7 +69,7 @@ noinst_HEADERS = \
  srou.h  srou_struct.h \
  ssr.h   ssr_struct.h \
  tabl.h  tabl_struct.h \
- tdr.h   tdr_struct.h tdr_newset.c tdr_init.c tdr_sample.c tdr_debug.c \
+ tdr.h   tdr_struct.h tdr_source.h tdr_newset.c tdr_init.c tdr_sample.c tdr_debug.c \
  unif.h  unif_struct.h \
  utdr.h  utdr_struct.h \
  vempk.h vempk_struct.h \

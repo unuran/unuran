@@ -1,5 +1,5 @@
 /* ------------------------------------------------------------- */
-/* File: example_anit.c                                          */
+/* File: example_anti.c                                          */
 /* ------------------------------------------------------------- */
 
 /* Include UNURAN header file.                                   */
@@ -7,8 +7,8 @@
 
 /* ------------------------------------------------------------- */
 
-/* Example how to sample two streams of antithetic random        */
-/* varaites from Gaussian N(2,5) and Gamma(4) distribution.      */
+/* Example how to sample from two streams of antithetic random   */
+/* variates from Gaussian N(2,5) and Gamma(4) distribution, resp.*/
 
 /* ------------------------------------------------------------- */
 

@@ -1,5 +1,5 @@
 /* ------------------------------------------------------------- */
-/* File: example_cont.c                                          */
+/* File: example_discr.c                                         */
 /* ------------------------------------------------------------- */
 
 /* Include UNURAN header file.                                   */
@@ -7,8 +7,7 @@
 
 /* ------------------------------------------------------------- */
 
-/* Example how to sample from a discrete univariate distribution */
-/* and sample from this distribution.                            */
+/* Example how to sample from a discrete univariate distribution.*/
 
 /* ------------------------------------------------------------- */
 

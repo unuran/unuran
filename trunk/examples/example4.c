@@ -84,7 +84,7 @@ int main()
   /* generator.                                                  */
   /* Now we use an ICG (Inversive Congruental Generator).        */
   urng2 = prng_new("icg(2147483647,1,1,0)");
-  if (urng1 == NULL) exit (EXIT_FAILURE);
+  if (urng2 == NULL) exit (EXIT_FAILURE);
   unur_chg_urng( gen, urng2 );
 
   /* ... and sample again.                                       */

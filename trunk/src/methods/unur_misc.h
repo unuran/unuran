@@ -52,7 +52,8 @@
 
 /*---------------------------------------------------------------------------*/
 /* set debugging flag for generator                                          */
-int unur_set_debug( struct unur_par *parameter, unsigned debug );
+int unur_set_debug( UNUR_PAR *parameters, unsigned debug );
+int unur_chg_debug( UNUR_GEN *generator, unsigned debug );
 int unur_set_default_debug( unsigned debug );
 extern unsigned _unur_default_debugflag;     /* default debugging flags      */
 
@@ -77,9 +78,9 @@ const char *unur_get_strerror ( const int unur_errno );
 /*---------------------------------------------------------------------------*/
 /* set, get or change uniform RNG for generator                              */
 
-int unur_set_urng( struct unur_par *par, UNUR_URNG_TYPE urng );
-UNUR_URNG_TYPE unur_chg_urng( struct unur_gen *gen, UNUR_URNG_TYPE urng );
-UNUR_URNG_TYPE unur_get_urng( struct unur_gen *gen );
+int unur_set_urng( UNUR_PAR *parameters, UNUR_URNG_TYPE urng );
+UNUR_URNG_TYPE unur_chg_urng( UNUR_GEN *generator, UNUR_URNG_TYPE urng );
+UNUR_URNG_TYPE unur_get_urng( UNUR_GEN *generator );
 
 /*---------------------------------------------------------------------------*/
 /* get and set default uniform RNG                                           */
@@ -91,7 +92,7 @@ UNUR_URNG_TYPE unur_set_default_urng( UNUR_URNG_TYPE urng_new );
 /*---------------------------------------------------------------------------*/
 /* get dimension of generator for (multivariate) distribution                */
 
-int unur_get_dimension( struct unur_gen *gen );
+int unur_get_dimension( UNUR_GEN *generator );
 
 /*---------------------------------------------------------------------------*/
 /* get type of transformation method                                         */

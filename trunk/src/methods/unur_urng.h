@@ -54,7 +54,7 @@
           to be set in unuran_config.h
 
    _unur_call_urng(gen)
-      ... function call to urng (via struct unur_gen)
+      ... function call to urng (via UNUR_GEN)
 */
 
 /*---------------------------------------------------------------------------*/

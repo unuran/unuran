@@ -64,7 +64,7 @@ void unur_run_tests( UNUR_PAR *parameters, unsigned tests);
 void unur_test_printsample( UNUR_GEN *generator, int n_rows, int n_cols );
 
 /* timing                                                                    */
-struct unur_gen *unur_test_timing( struct unur_par *par, int log_samplesize );
+UNUR_GEN *unur_test_timing( UNUR_PAR *parameters, int log_samplesize );
 
 /* count used uniform random numbers                                         */
 int unur_test_count_urn( UNUR_GEN *generator, int samplesize );

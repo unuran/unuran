@@ -62,7 +62,7 @@ const char *unur_distr_get_name( UNUR_DISTR *distribution );
 /*---------------------------------------------------------------------------*/
 /* univariate continuous distributions                                       */
 
-struct unur_distr *unur_distr_cont_new( void );
+UNUR_DISTR *unur_distr_cont_new( void );
 /* create a new distribution object                                          */
 
 int unur_distr_cont_set_pdf( UNUR_DISTR *distribution, void *pdf );
@@ -101,7 +101,7 @@ void _unur_distr_cont_debug( UNUR_DISTR *distribution, char *genid );
 /*---------------------------------------------------------------------------*/
 /* discrete univariate distributions                                         */
 
-struct unur_distr *unur_distr_discr_new( void );
+UNUR_DISTR *unur_distr_discr_new( void );
 /* create a new distribution object                                          */
 
 int unur_distr_discr_set_prob( UNUR_DISTR *distribution, double *prob, int n_prob );

@@ -121,6 +121,31 @@ unur_set_debug( struct unur_par *par, unsigned debug )
 /*---------------------------------------------------------------------------*/
 
 int
+unur_chg_debug( struct unur_gen *gen, unsigned debug )
+     /*----------------------------------------------------------------------*/
+     /* change debugging flag for generator                                  */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen   ... pointer to generator object                              */
+     /*   debug ... debugging flag                                           */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  CHECK_NULL( gen,0 );
+
+#ifdef UNUR_ENABLE_LOGGING
+  gen->debug = debug;
+  return 1;
+#else
+  _unur_warning("DEBUG",_UNUR_ERR_COMPILE,"debugging, #define UNUR_ENABLE_LOGGING");
+  return 0;
+#endif
+
+} /* end of unur_chg_debug() */
+  
+/*---------------------------------------------------------------------------*/
+
+int
 unur_set_default_debug( unsigned debug )
      /*----------------------------------------------------------------------*/
      /* set default debugging flag for generator                             */

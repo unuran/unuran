@@ -426,7 +426,7 @@ To change any parameter you habe to use the according function call.
 @c * TABL:: Ahren
 @c * TDR::  Trandformed Density Rejection
 @c * UNIF:: ???
-@c * UTDR:: Universal Transformed Density Rejection (3-point method)
+* UTDR:: Universal Transformed Density Rejection (3-point method)
 @end menu
 
 @include qstart_method_description.texi
@@ -474,7 +474,7 @@ Notation:
 @c * TABLref:: Ahren
 @c * TDRref::  Trandformed Density Rejection
 @c * UNIFref:: ???
-@c * UTDRref:: Universal Transformed Density Rejection (3-point method)
+* UTDRref:: Universal Transformed Density Rejection (3-point method)
 @end menu
 
 @include qstart_function_reference.texi

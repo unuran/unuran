@@ -468,7 +468,7 @@ unur_srou_chg_pdfparams( struct unur_gen *gen, double *params, int n_params )
   if (n_params>0) _unur_check_NULL(gen->genid,params,0);
   
   /* check new parameter for generator */
-  if (n_params > UNUR_DISTR_MAXPARAMS ) {
+  if (n_params > UNUR_DISTR_MAXPARAMS || n_params < 0) {
     _unur_error(gen->genid,UNUR_ERR_DISTR_NPARAMS,"");
     return 0;
   }

@@ -126,7 +126,6 @@ it will be better to look for a specific tool for that distribution.
 First unzip and untar the package. Then change to the directory
 @file{/unuran} and execute the following commands:
 @smallexample
-autogen.sh
 configure --prefix=HOMEDIRECTORY
 make
 make install

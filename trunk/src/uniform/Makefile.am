@@ -13,7 +13,7 @@ noinst_LIBRARIES = libuniform.a
 
 libuniform_a_SOURCES = mrg31k3p.c fish.c mstd.c
 
-include_HEADERS =
+noinst_HEADERS = uniform.h
 
 # clean backup files
 CLEANFILES = *~

@@ -16,32 +16,44 @@
 #ifdef T_SROU
 /*---------------------------------------------------------------------------*/
 
-static const char method_name[] = "srou";
-
 /*---------------------------------------------------------------------------*/
 /* global variables                                                          */
 
-static int test_ok = TRUE;        /* all tests ok (boolean)                  */
-static FILE *TESTLOG = NULL;      /* test log file                           */
+int test_ok = TRUE;               /* all tests ok (boolean)                  */
+int test_ok_local = TRUE;         /* running test ok (boolean)               */
+FILE *TESTLOG = NULL;             /* test log file                           */
+
 static FILE *UNURANLOG = NULL;    /* unuran log file                         */
+
+/*---------------------------------------------------------------------------*/
+
+void test_srou_new( void );
 
 /*---------------------------------------------------------------------------*/
 
 int main()
 { 
   char filename[128];
-
   /* open test log file */
-  sprintf(filename,"%s_test.log",method_name);
+  sprintf(filename,"%s_test.log",__FILE__);
   TESTLOG = fopen(filename,"w");
   if (TESTLOG == NULL) exit (-1);
 
   /* set output stream for unuran messages */
-  sprintf(filename,"%s_unuran.log",method_name);
+  sprintf(filename,"%s_unuran.log",__FILE__);
   UNURANLOG = fopen(filename,"w");
   if (UNURANLOG == NULL) exit (-1);
   unur_set_stream( UNURANLOG );
-  
+
+  /* start test */
+  printf("%s: ",__FILE__);
+
+  /* run tests */
+  test_srou_new();
+
+  /* test finished */
+  printf("\n");
+
   /* close log files and exit */
   fclose(TESTLOG);
   fclose(UNURANLOG);
@@ -49,6 +61,24 @@ int main()
 }
 
 /*---------------------------------------------------------------------------*/
+
+void test_srou_new( void )
+{
+  // UNUR_PAR *par;
+
+  /* start test */
+  printf("[new ");
+  fprintf(TESTLOG,"[new]\n");
+
+  test_ok_local = TRUE;
+
+  /* check error handling */
+  check_expected_NULL( (unur_srou_new(NULL)) );
+     
+  /* test finished */
+  test_ok &= test_ok_local;
+  (test_ok_local) ? printf("... ok] ") : printf("... failed] ");
+}
 
 /*---------------------------------------------------------------------------*/
 #else

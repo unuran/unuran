@@ -100,6 +100,13 @@ int _unur_matrix_eigensystem(int dim, const double *M, double *values, double *v
   /* Check arguments */
   CHECK_NULL(M,UNUR_ERR_NULL);
 
+  /* Special case when M is one-dimensional */
+  if (dim==1) {
+    values[0]=M[0];
+    vectors[0]=1.;
+    return ret;
+  }
+
   /* make a local copy of the matrix M -> A */
   A = _unur_xmalloc(dim*dim*sizeof(double));
   memcpy(A, M, dim*dim*sizeof(double));

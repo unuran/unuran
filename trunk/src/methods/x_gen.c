@@ -36,6 +36,7 @@
 
 #include <unur_source.h>
 #include <distr/distr_source.h>
+#include "unur_methods_source.h"
 #include "x_gen.h"
 #include "x_gen_source.h"
 
@@ -207,7 +208,7 @@ unur_gen_clone( const struct unur_gen *gen )
 
 /*****************************************************************************/
 /**                                                                         **/
-/**  create and Copy (clone) generator objects                              **/
+/**  Create and copy (clone) generator objects                              **/
 /**                                                                         **/
 /*****************************************************************************/
 
@@ -303,5 +304,137 @@ _unur_generic_free( struct unur_gen *gen )
   COOKIE_CLEAR(gen);
   free(gen);
 } /* end of _unur_generic_free() */
+
+/*---------------------------------------------------------------------------*/
+
+/*****************************************************************************/
+/**                                                                         **/
+/**  Set and copy (clone) arrays of auxiliary generators                    **/
+/**                                                                         **/
+/*****************************************************************************/
+
+struct unur_gen ** 
+_unur_gen_list_set( const struct unur_gen *gen, int n_gen_list )
+     /*----------------------------------------------------------------------*/
+     /* set all entries in list to same generator object                     */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen        ... pointer to generator object                         */
+     /*   n_gen_list ... length of array of generator objects                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to list of generator objects                               */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return NULL                                                        */
+     /*----------------------------------------------------------------------*/
+{
+  struct unur_gen **gen_list;
+  struct unur_gen *clone;
+  int i;
+
+  /* check arguments */
+  _unur_check_NULL( "gen_list_set", gen, NULL );
+
+  if (n_gen_list < 1) {
+    _unur_error("gen_list_set",UNUR_ERR_PAR_SET,"dimension < 1");
+    return NULL;
+  }
+
+  /* allocate memory for array */
+  gen_list = _unur_malloc (n_gen_list * sizeof(struct unur_gen *));
+  
+  /* make copy of generator object */
+  clone = _unur_gen_clone( gen );
+  
+  /* copy pointer */
+  for (i=0; i<n_gen_list; i++)
+    gen_list[i] = clone;
+
+  return gen_list;
+
+} /* end of _unur_gen_list_set() */
+
+/*---------------------------------------------------------------------------*/
+
+struct unur_gen ** 
+_unur_gen_list_clone( const struct unur_gen **gen_list, int n_gen_list )
+     /*----------------------------------------------------------------------*/
+     /* clone list of generator objects                                      */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen_list   ... pointer to array of generator objects               */
+     /*   n_gen_list ... length of array of generator objects                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to clone of list of generator objects                      */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return NULL                                                        */
+     /*----------------------------------------------------------------------*/
+{
+  struct unur_gen **clone_list;
+  int i;
+
+  /* check arguments */
+  _unur_check_NULL( "gen_list_clone", gen_list, NULL );
+
+  if (n_gen_list < 1) {
+    _unur_error("gen_list_clone",UNUR_ERR_PAR_SET,"dimension < 1");
+    return NULL;
+  }
+
+  for (i=0; i<n_gen_list; i++)
+    _unur_check_NULL( "gen_list_clone", *(gen_list+i), NULL );
+
+  /* allocate memory for array */
+  clone_list = _unur_malloc (n_gen_list * sizeof(struct unur_gen *));
+    
+  /* make copy of marginal distribution object */
+  for (i=0; i<n_gen_list; i++)
+    clone_list[i] = _unur_gen_clone( gen_list[i] );
+
+  return clone_list;
+
+} /* end of _unur_gen_list_clone() */
+
+/*---------------------------------------------------------------------------*/
+
+void
+_unur_gen_list_free( struct unur_gen **gen_list, int n_gen_list )
+     /*----------------------------------------------------------------------*/
+     /* free list of generator objects                                       */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen_list   ... pointer to array of generator objects               */
+     /*   n_gen_list ... length of array of generator objects                */
+     /*----------------------------------------------------------------------*/
+{
+  int i, i2, imax;
+
+  /* check arguments */
+  if (gen_list==NULL) 
+    /* nothing to do */
+    return; 
+
+  if (n_gen_list < 1) {
+    _unur_error("gen_list_free",UNUR_ERR_PAR_SET,"dimension < 1");
+    return;
+  }
+
+  /* free memory */
+  /* There are (should be) only two possibilities: 
+     either all entries in the array point to the same generator object;
+       (set by _unur_gen_list_set() call)
+     or each entry has its own copy of some generation object.
+       (set by _unur_gen_list_clone() call)
+  */
+  i2 = (n_gen_list>1) ? 1 : 0; 
+  imax = (gen_list[0] == gen_list[i2]) ? 1 : n_gen_list;
+  for (i=0; i<imax; i++)
+    if (gen_list[i]) { _unur_free(gen_list[i]); gen_list[i]=NULL; }
+  free (gen_list);
+
+} /* end of _unur_gen_list_clone() */
 
 /*---------------------------------------------------------------------------*/

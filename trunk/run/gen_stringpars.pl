@@ -66,6 +66,31 @@ close Outfile;
 
 
 
+# ##################################################################
+#
+# Exits with Error if number of opening and closing parenthesis
+# in the argument doesn't coincede
+#
+# ##################################################################
+sub parenthesis_check{
+    my $open = 0;   # number of `('
+    my $close = 0;  # number of `)'
+    my $retval = 0; 
+
+    while ( $_ =~ /\(/g){
+	$open++;
+    }
+    while ( $_ =~ /\)/g){
+	$close++;
+    }
+
+    if ( $open != $close){ # Syntax error
+	$retval = 0;
+    }
+
+    return $retval;
+}
+
 
 # ##################################################################
 #
@@ -113,7 +138,7 @@ sub distr_info{
 	# search for standard distribution
 	if ( $_ =~ /^\s*=DISTR\s+(\w+)/ ){
 	    print Outfile "if ( !strcmp(value, \"$1\") ){\n";
-	    print Outfile "\t\t\tdistr = unur_distr_$1(list, no_of_elem);\n\t\t}\n\t\telse ";
+	    print Outfile "\t\t\tdistr = unur_distr_$1(list, no_of_elem;\n\t\t}\n\t\telse ";
 	}
     }
 
@@ -220,6 +245,7 @@ sub method_info{
 
 	# search routines setting parameters -- method dependent
 	my $method = "UNKNOWN"; # initialize method-name to empty string
+        my $check  = 0;         # Variable for checking syntax
 
 	open INFILE,  "< $Methinfopath/$hfile" or  die ("can't open file: $!");
 	while ( $_ =  <INFILE> ){
@@ -234,6 +260,7 @@ sub method_info{
 
 	    # only parameter object passed
 	    if ( $_ =~ /unur_($method)_set_(.*?)\s*\(\s*UNUR_PAR\s+\*parameters\s*\)/ ){
+		$check = parenthesis_check($_);
 		print Outfile "if ( !strcmp(key, \"$2\") ){\n";
 		# set parameter
                 print Outfile "\t\t\tcheck = unur_$method\_set_$2(par);\n";
@@ -245,6 +272,7 @@ sub method_info{
 	    }
 	    # parameter object and a single value passed
 	    elsif ( $_ =~ /unur_($method)_set_(.*?)\s*\(\s*UNUR_PAR\s+\*parameters\s*,\s*(\w+)\s+(\w+)\s*\)/ ){
+		$check = parenthesis_check($_);
 		print Outfile "if ( !strcmp(key, \"$2\") ){\n";
 		# set parameter
 		print Outfile "\t\t\tcheck = unur_$method\_set_$2(par, ($3) dblvalue);\n";
@@ -256,6 +284,7 @@ sub method_info{
 	    }
 	    # parameter object and two doubles passed
 	    elsif ( $_ =~ /unur_($method)_set_(.*?)\s*\(\s*UNUR_PAR\s+\*parameters\s*,\s*double\s+\w+\s*,\s*double\s+\w+\s*\)/ ){
+		$check = parenthesis_check($_);
 		print Outfile "if ( !strcmp(key, \"$2\") ){\n";
 		# set parameter
 		print Outfile "\t\t\tcheck = unur_$method\_set_$2(par, list[0], list[1]);\n";
@@ -267,9 +296,15 @@ sub method_info{
 	    }
 	    # parameter object, size_of_list and double list passed
 	    elsif ( $_ =~ /unur_($method)_set_(.*?)\s*\(\s*UNUR_PAR\s+\*parameters\s*,\s*int\s+\w+\s*,\s*double\s+\*\w+\s*\)/ ){
+		$check = parenthesis_check($_);
 		print Outfile "if ( !strcmp(key, \"$2\") ){\n";
 		# set parameter
-		print Outfile "\t\t\tcheck = unur_$method\_set_$2(par, no_of_elem, list);\n";    
+                print Outfile "\t\t\tif (no_of_elem != 0 ){\n";
+		print Outfile "\t\t\t\tcheck = unur_$method\_set_$2(par, no_of_elem, list);\n";
+		print Outfile "\t\t\t}\n";
+		print Outfile "\t\t\telse{\n";
+		print Outfile "\t\t\t\tcheck = unur_$method\_set_$2(par, (int) dblvalue, NULL);\n";
+		print Outfile "\t\t\t}\n";
                 # check for error
 		print Outfile "\t\t\tif ( ! check ){\n";
 		print Outfile "\t\t\t\tfprintf(stderr, \"ERROR: while trying to set $2\\n\");\n";
@@ -277,11 +312,19 @@ sub method_info{
 		print Outfile "\t\t}\n\t\telse ";
 	    }
 	    elsif ( $_ =~ /unur_($method)_set_(.*?)\s*\(\s*UNUR_PAR\s+\*parameters(.*)\)/ ){
+		$check = parenthesis_check($_);
 		print Outfile "if ( !strcmp(key, \"$2\") ){\n";
 		print Outfile "\t\t\tfprintf(stderr, \"Setting $2 for method $method not supported via this interface.\\n\");\n";
 		print Outfile "\t\t}\n\t\telse ";
 	    }
+	    elsif ( $_ =~ /^\s*\w+\s*unur_($method)_set_(.*?)\s*\(\s*\w+.*\)/  ){
+		$check = 1;
+	    }
 
+            if ( $check == 1 ){
+                print "Unknown Syntax of set command in $hfile line $.: $_\n";
+		exit (-1);
+	    }
 
 	} # end of while-loop
 	close INFILE;

@@ -456,10 +456,11 @@ All parameters have default settings documented in @ref{Defaults}.
 @node Description
 @section Description of the methods
 @menu
-@c * AROU:: Adaptive Ratio Of Uniforms
+* AROU:: Adaptive Ratio Of Uniforms
 * CSTD:: Interface for extern generators
 * DAU::  (Discrete) Alias-Urn
 * DGT:: ???
+* EMPK:: ???
 @c * DIS::  (Discrete) Alias-Urn
 * DSTD:: ???
 * NINV:: Numerical INVersion
@@ -570,10 +571,11 @@ For information about the following distributions see
 @node MethodsRef
 @section Methods
 @menu
-@c * AROUref:: Adaptive Ratio Of Uniforms
+* AROUref:: Adaptive Ratio Of Uniforms
 * CSTDref:: Interface for extern generators
 * DAUref::  (Discrete) Alias-Urn
 * DGTref::  ???
+* EMPKref:: ???
 @c * DISref::  (Discrete) Alias-Urn
 * DSTDref:: ???
 * NINVref:: Numerical INVersion

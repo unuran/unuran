@@ -121,7 +121,8 @@ _unur_stdgen_beta_init( struct unur_par *par, struct unur_gen *gen )
 
 /*****************************************************************************
  *                                                                           *
- * Beta Distribution: Acceptance/Rejection from log-logistic hats            *
+ * Beta Distribution: Acceptance/Rejection from log-logistic hats for the    *
+ *                    beta prime distribution                                *
  *                                                                           *
  *****************************************************************************
  *                                                                           *
@@ -139,15 +140,15 @@ _unur_stdgen_beta_init( struct unur_par *par, struct unur_gen *gen )
  *    WinRand (c) 1995 Ernst Stadlober, Institut fuer Statistitk, TU Graz    *
  *****************************************************************************/
 
-#define am      GEN.gen_param[0]
-#define bm      GEN.gen_param[1]
-#define al      GEN.gen_param[2]
-#define alnam   GEN.gen_param[3]
-#define be      GEN.gen_param[4]
-#define ga      GEN.gen_param[5]
-#define si      GEN.gen_param[6]
-#define rk1     GEN.gen_param[7]
-#define rk2     GEN.gen_param[8]
+#define am      (GEN.gen_param[0])
+#define bm      (GEN.gen_param[1])
+#define al      (GEN.gen_param[2])
+#define alnam   (GEN.gen_param[3])
+#define be      (GEN.gen_param[4])
+#define ga      (GEN.gen_param[5])
+#define si      (GEN.gen_param[6])
+#define rk1     (GEN.gen_param[7])
+#define rk2     (GEN.gen_param[8])
 
 inline static void
 beta_bc_init( struct unur_gen *gen )
@@ -169,11 +170,9 @@ beta_bc_init( struct unur_gen *gen )
   /* -X- end of setup code -X- */
 } /* end of beta_bbbc_init() */
 
-
 double 
 unur_stdgen_sample_beta_bc(  struct unur_gen *gen )
      /* a <= 1. || b <= 1. */ 
-     /** TODO: chi^2 test failed !! **/
 {
   /* -X- generator code -X- */
   double X;
@@ -183,65 +182,72 @@ unur_stdgen_sample_beta_bc(  struct unur_gen *gen )
   CHECK_NULL(gen,0.);
   COOKIE_CHECK(gen,CK_CSTD_GEN,0.);
 
-  while (1)
-    {       /* Step 1 */
-      u1 = uniform();
-      u2 = uniform();
-      if (u1 < 0.5)
-	{       /* Step 2 */
-	  y = u1 * u2;
-	  z = u1 * y;
-	  if ((0.25 * u2 - y + z) >= rk1) continue;  /* goto 1 */
-	  
-	  /* Step 5 */
-	  v = be * log(u1 / (1.0 - u1));
-	  if (v > 80.0)
-	    {
-	      if (alnam < log(z)) continue;
-	      X = (am == a) ? 1. : 0.;
-	      break;
-	    }
-	  else
-	    {
-	      w = am * exp(v);
-	      if ((al * (log(al / (bm + w)) + v) - 1.386294361) < log(z)) continue;  /* goto 1 */
-	      
-	      /* Step 6_a */
-	      X = (am != a) ? bm / (bm + w) : w / (bm + w);
-	      break;
-	    }
-	}
-      else
-	{     /* Step 3 */
-	  z = u1 * u1 * u2;
-	  if (z < 0.25)
-	    {
-	      /* Step 5 */
-	      v = be * log(u1 / (1.0 - u1));
-	      if (v > 80.0) return ((am == a)? 1.0 : 0.0);
-	      w = am * exp(v);
-	      X = (am != a) ? bm / (bm + w) : w / (bm + w);
-	      break;
-	    }
-	  else
-	    {
-	      if (z >= rk2) continue;
-	      v = be * log(u1 / (1.0 - u1));
-	      if ( v > 80.0)
-		{
-		  if (alnam < log(z)) continue;
-		  X = (am == a) ? 1. : 0.;
-		  break;
-		}
-	      w = am * exp(v);
-	      if ((al * (log(al / (bm + w)) + v) - 1.386294361) < log(z)) continue;  /* goto 1 */
-	      
-	      /* Step 6_b */
-	      X = (am != a) ? bm / (bm + w) : w / (bm + w);
-	      break;
-	    }
-	}
+  while (1) {
+
+    /* Step 1 */
+    u1 = uniform();
+    u2 = uniform();
+
+    if (u1 < 0.5) {
+      /* Step 2 */
+      y = u1 * u2;
+      z = u1 * y;
+
+      if ((0.25 * u2 - y + z) >= rk1) 
+	continue;  /* goto 1 */
+
+      /* Step 5 */
+      v = be * log(u1 / (1.0 - u1));
+      if (v > 80.) {
+	if (alnam < log(z)) continue;
+	X = (am == a) ? 1. : 0.;
+	break;
+      }
+      else {
+	w = am * exp(v);
+	if ((al * (log(al / (bm + w)) + v) - 1.386294361) < log(z)) 
+	  continue;  /* goto 1 */
+
+	/* Step 6_a */
+	X = (am != a) ? bm / (bm + w) : w / (bm + w);
+	break;
+      }
     }
+    else {
+      /* Step 3 */
+      z = u1 * u1 * u2;
+      if (z < 0.25) {
+	/* Step 5 */
+	v = be * log(u1 / (1.0 - u1));
+	if (v > 80.) {
+	  X = (am == a) ? 1.0 : 0.0;
+	  break;
+	}
+
+	w = am * exp(v);
+	X = (am != a) ? bm / (bm + w) : w / (bm + w);
+	break;
+      }
+      else {
+	if (z >= rk2) continue;
+
+	v = be * log(u1 / (1.0 - u1));
+	if ( v > 80.) {
+	  if (alnam < log(z)) continue;
+	  X = (am == a) ? 1. : 0.;
+	  break;
+	}
+
+	w = am * exp(v);
+	if ((al * (log(al / (bm + w)) + v) - 1.386294361) < log(z)) 
+	  continue;  /* goto 1 */
+	      
+	/* Step 6_b */
+	X = (am != a) ? bm / (bm + w) : w / (bm + w);
+	break;
+      }
+    }
+  }
   /* -X- end of generator code -X- */
   
   return X;

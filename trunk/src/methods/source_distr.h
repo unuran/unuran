@@ -53,14 +53,6 @@
 #define UNUR_DISTR_SET_PDFAREA        0x00000002
 
 /*---------------------------------------------------------------------------*/
-/* create empty distribution object for ...                                  */
-
-struct unur_distr *_unur_distr_cont_new( void );  /* univ. continuous        */
-struct unur_distr *_unur_distr_cemp_new( void );  /* emp. univ. continuous   */
-struct unur_distr *_unur_distr_discr_new( void ); /* univ. discrete          */
-struct unur_distr *_unur_distr_demp_new( void );  /* emp. univ. discrete     */
-
-/*---------------------------------------------------------------------------*/
 /* call pdf's and cdf's                                                      */
 /* (no checking for NULL pointer !)                                          */
 
@@ -75,6 +67,9 @@ struct unur_distr *_unur_distr_demp_new( void );  /* emp. univ. discrete     */
 /* debuging routines for distributions                                       */
 
 void _unur_distr_cont_debug( UNUR_DISTR *distribution, char *genid );
+/* write info about distribution into logfile                                */
+
+void _unur_distr_corder_debug( UNUR_DISTR *order_statistics, char *genid );
 /* write info about distribution into logfile                                */
 
 void _unur_distr_cemp_debug( UNUR_DISTR *distribution, char *genid, int printvector );

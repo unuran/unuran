@@ -46,6 +46,9 @@
 
 enum {
   UNUR_DISTR_GENERIC  = 0x0u,
+
+  UNUR_DISTR_CORDER,              /* order statistics                        */
+
   /**                                  pdf   cdf   mode  area  gen   doc     */
   UNUR_DISTR_BETA,                /*    X     X     X     X     X     .      */
   UNUR_DISTR_CAUCHY,              /*    X     X     X     X     X     .      */

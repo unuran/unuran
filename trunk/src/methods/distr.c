@@ -126,6 +126,9 @@ unur_distr_free( struct unur_distr *distr )
     _unur_warning(NULL,UNUR_ERR_DISTR_UNKNOWN,"");
   }
 
+  /* derived distribution ? */
+  free( distr->base );
+
   free( distr );
 
 } /* end of unur_distr_free() */

@@ -4,11 +4,9 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   FILE:      distr.c                                                      *
+ *   FILE:      distr_demp.c                                                 *
  *                                                                           *
  *   manipulate empirical univariate discrete distribution objects           *
- *                                                                           *
- *   PARAMETER: struct unur_distr *                                          *
  *                                                                           *
  *   return:                                                                 *
  *     1 ... on success                                                      *
@@ -93,6 +91,9 @@ unur_distr_demp_new( void )
 
   /* name of distribution */
   distr->name = unknown_distr_name;
+
+  /* this is not a derived distribution */
+  distr->base = NULL;
 
   /* set defaults                                                            */
 

@@ -9,8 +9,6 @@
  *   manipulate empirical univariate continuous distribution objects         *
  *   (i.e. samples)                                                          *
  *                                                                           *
- *   PARAMETER: struct unur_distr *                                          *
- *                                                                           *
  *   return:                                                                 *
  *     1 ... on success                                                      *
  *     0 ... on error                                                        *
@@ -94,6 +92,9 @@ unur_distr_cemp_new( void )
 
   /* name of distribution */
   distr->name = unknown_distr_name;
+
+  /* this is not a derived distribution */
+  distr->base = NULL;
 
   /* set defaults                                                            */
 

@@ -222,6 +222,7 @@ int unur_distr_cont_get_pdfparams( UNUR_DISTR *distribution, double **params );
    @code{params} to array of parameters. If no parameters are stored
    in the object, @code{0} is returned and @code{params} is set to
    NULL.
+   Warning: Do not change the entries in @var{params}!
 */
 
 int unur_distr_cont_set_domain( UNUR_DISTR *distribution, double left, double right );
@@ -304,6 +305,55 @@ double unur_distr_cont_get_pdfarea( UNUR_DISTR *distribution );
    @code{unur_errno} is set to @code{UNUR_ERR_DISTR_GET}.
 */
 
+/*---------------------------------------------------------------------------*/
+
+/* 
+   Routines for handling univariate continuous order statistics (CORDER).
+*/
+
+UNUR_DISTR *unur_distr_corder_new( UNUR_DISTR *distr, int n, int k );
+/* 
+   Create an object for order statistics of for a sample size
+   @var{n} and rank @var{k}.
+   @var{distr} must be a pointer to a univariate continuous distribution.
+
+   The result is of the same type as of unur_distr_cont_new() calls.
+   (Except it cannot be used to for making the order statistics of the
+   order statistics.)
+*/
+
+/* Essential parameters. */
+
+/* 
+   The result of unur_distr_corder_new() can be handled with
+   unur_distr_cont_... calls with the following exceptions:
+
+   the p.d.f.s and c.d.f. cannot be set or changed.
+   unur_distr_cont_set_pdfparams() changes the parameters of the
+      underlying distribution.
+   unur_distr_cont_upd_mode() does not work.
+
+   Additionally the following routines can be used.
+*/
+  
+
+UNUR_DISTR *unur_distr_corder_get_distribution( UNUR_DISTR *distribution );
+/* 
+   Get pointer to distribution object for underlying distribution.
+*/
+
+int unur_distr_corder_set_rank( UNUR_DISTR *distribution, int n, int k );
+/* 
+   Change sample size $var{n} and rank @var{k} of order statistics.
+   In case of invalid data, no parameters are changed and @code{0} is
+   returned.
+*/
+
+int unur_distr_corder_get_rank( UNUR_DISTR *distribution, int *n, int *k );
+/* 
+   Get sample size $var{n} and rank @var{k} of order statistics.
+   In case of error @code{0} is returned.
+*/
 
 /*---------------------------------------------------------------------------*/
 

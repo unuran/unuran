@@ -4,11 +4,9 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   FILE:      distr.c                                                      *
+ *   FILE:      distr_cont.c                                                 *
  *                                                                           *
  *   manipulate univariate continuous distribution objects                   *
- *                                                                           *
- *   PARAMETER: struct unur_distr *                                          *
  *                                                                           *
  *   return:                                                                 *
  *     1 ... on success                                                      *
@@ -49,6 +47,10 @@ static const char unknown_distr_name[] = "unknown";
 /*---------------------------------------------------------------------------*/
 
 #define DISTR distr->data.cont
+
+/* for derived distributions (e.g. order statistics):
+   data of underlying distributions */
+#define BASE  distr->base->data.cont
 
 /*---------------------------------------------------------------------------*/
 
@@ -94,6 +96,9 @@ unur_distr_cont_new( void )
 
   /* name of distribution */
   distr->name = unknown_distr_name;
+
+  /* this is not a derived distribution */
+  distr->base = NULL;
 
   /* set defaults                                                            */
   DISTR.pdf       = NULL;          /* pointer to p.d.f.                      */
@@ -143,6 +148,9 @@ unur_distr_cont_set_pdf( struct unur_distr *distr, UNUR_FUNCT_CONT *pdf )
   _unur_check_NULL( distr->name,pdf,0 );
   _unur_check_distr_object( distr, CONT, 0 );
 
+  /* for derived distributions (e.g. order statistics) not possible */
+  if (distr->base) return 0;
+
   /* changelog */
   distr->set &= ~UNUR_DISTR_SET_MASK_DERIVED;
   /* derived parameters like mode, area, etc. might be wrong now! */
@@ -173,6 +181,9 @@ unur_distr_cont_set_dpdf( struct unur_distr *distr, UNUR_FUNCT_CONT *dpdf )
   _unur_check_NULL( distr->name,dpdf,0 );
   _unur_check_distr_object( distr, CONT, 0 );
   
+  /* for derived distributions (e.g. order statistics) not possible */
+  if (distr->base) return 0;
+
   /* changelog */
   distr->set &= ~UNUR_DISTR_SET_MASK_DERIVED;
   /* derived parameters like mode, area, etc. might be wrong now! */
@@ -202,6 +213,9 @@ unur_distr_cont_set_cdf( struct unur_distr *distr, UNUR_FUNCT_CONT *cdf )
   _unur_check_NULL( distr->name,cdf,0 );
   _unur_check_distr_object( distr, CONT, 0 );
   
+  /* for derived distributions (e.g. order statistics) not possible */
+  if (distr->base) return 0;
+
   /* changelog */
   distr->set &= ~UNUR_DISTR_SET_MASK_DERIVED;
   /* derived parameters like mode, area, etc. might be wrong now! */
@@ -387,8 +401,17 @@ unur_distr_cont_set_pdfparams( struct unur_distr *distr, double *params, int n_p
   /* derived parameters like mode, area, etc. might be wrong now! */
 
   /* copy parameters */
-  DISTR.n_params = n_params;
-  if (n_params) memcpy( DISTR.params, params, n_params*sizeof(double) );
+
+  if (distr->base) {
+    /* for derived distributions (e.g. order statistics)
+       the parameters for the underlying distributions are set */
+    BASE.n_params = n_params;
+    if (n_params) memcpy( BASE.params, params, n_params*sizeof(double) );
+  }
+  else {
+    DISTR.n_params = n_params;
+    if (n_params) memcpy( DISTR.params, params, n_params*sizeof(double) );
+  }
 
   /* o.k. */
   return 1;
@@ -417,8 +440,16 @@ unur_distr_cont_get_pdfparams( struct unur_distr *distr, double **params )
   _unur_check_NULL( NULL, distr, 0 );
   _unur_check_distr_object( distr, CONT, 0 );
 
-  *params = (DISTR.n_params) ? DISTR.params : NULL;
-  return DISTR.n_params;
+  if (distr->base) {
+    /* for derived distributions (e.g. order statistics)
+       the parameters for the underlying distributions are returned */
+    *params = (BASE.n_params) ? BASE.params : NULL;
+    return BASE.n_params;
+  }
+  else {
+    *params = (DISTR.n_params) ? DISTR.params : NULL;
+    return DISTR.n_params;
+  }
 
 } /* end of unur_distr_cont_get_pdfparams() */
 
@@ -460,6 +491,11 @@ unur_distr_cont_set_domain( struct unur_distr *distr, double left, double right 
 
   /* derived parameters like mode, area, etc. might be wrong now! */
   distr->set &= ~UNUR_DISTR_SET_MASK_DERIVED;
+
+  if (distr->base)
+    /* for derived distributions (e.g. order statistics)
+       we also set the domain for the underlying distribution */
+    unur_distr_cont_set_domain(distr->base, left, right);
 
   /* o.k. */
   return 1;
@@ -629,6 +665,11 @@ unur_distr_cont_set_pdfarea( struct unur_distr *distr, double area )
   /* changelog */
   distr->set |= UNUR_DISTR_SET_PDFAREA;
 
+  if (distr->base)
+    /* for derived distributions (e.g. order statistics)
+       we also set the area for the underlying distribution */
+    unur_distr_cont_set_pdfarea(distr->base, area);
+
   /* o.k. */
   return 1;
 
@@ -653,14 +694,26 @@ unur_distr_cont_upd_pdfarea( struct unur_distr *distr )
   _unur_check_NULL( NULL, distr, 0 );
   _unur_check_distr_object( distr, CONT, 0 );
 
-  if (DISTR.upd_area == NULL) {
-    /* no function to compute mode available */
-    _unur_error(distr->name,UNUR_ERR_DISTR_DATA,"");
-    return 0;
+  if (distr->base) {
+    /* for derived distributions (e.g. order statistics)
+       we use the update routine of the underlying distribution */
+    if (!unur_distr_cont_upd_pdfarea(distr->base))
+      return 0;
+    else
+      DISTR.area = BASE.area;
   }
 
-  /* compute mode */
-  DISTR.area = (DISTR.upd_area)(distr);
+  else { /* this is not a derived distribution */
+
+    if (DISTR.upd_area == NULL) {
+      /* no function to compute mode available */
+      _unur_error(distr->name,UNUR_ERR_DISTR_DATA,"");
+      return 0;
+    }
+
+    /* compute mode */
+    DISTR.area = (DISTR.upd_area)(distr);
+  }
 
   /* changelog */
   distr->set |= UNUR_DISTR_SET_PDFAREA;
@@ -729,6 +782,18 @@ _unur_distr_cont_debug( struct unur_distr *distr, char *genid )
   COOKIE_CHECK(distr,CK_DISTR_CONT,/*void*/);
 
   log = unur_get_stream();
+
+  /* is this a derived distribution */
+  if (distr->base) {
+    switch (distr->id) {
+    case UNUR_DISTR_CORDER:
+      _unur_distr_corder_debug(distr,genid);
+      return;
+    default:
+      _unur_warning(distr->name,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
+      return;
+    }
+  }
 
   fprintf(log,"%s: distribution:\n",genid);
   fprintf(log,"%s:\ttype = continuous univariate distribution\n",genid);

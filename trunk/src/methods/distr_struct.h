@@ -109,6 +109,10 @@ struct unur_distr {
 
   unsigned set;                     /* indicate changed parameters           */
 
+  struct unur_distr *base;          /* pointer to distribution object for
+				       derived distribution 
+				       (e.g. order statistics)               */
+
 #ifdef UNUR_COOKIES
   unsigned cookie;                  /* magic cookie                          */
 #endif

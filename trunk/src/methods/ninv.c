@@ -673,13 +673,11 @@ unur_ninv_chg_domain( struct unur_gen *gen, double left, double right )
   DISTR.BD_RIGHT = right;
   if (GEN.table_on && left < GEN.table[0]){
     _unur_warning(NULL, UNUR_ERR_DISTR_SET,
-        "left border of domain exceeds range of table -> truncated");
-    DISTR.BD_LEFT = GEN.table[0];
+        "left border of domain exceeds range of table");
   }
   if (GEN.table_on && right > GEN.table[GEN.table_size-1]){
     _unur_warning(NULL, UNUR_ERR_DISTR_SET,
-        "right border of domain exceeds range of table -> truncated");
-    DISTR.BD_LEFT = GEN.table[GEN.table_size-1];
+        "right border of domain exceeds range of table");
   }
 
   /* changelog */

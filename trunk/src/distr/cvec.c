@@ -1663,6 +1663,7 @@ unur_distr_cvec_set_pdfparams( struct unur_distr *distr, const double *params, i
 {
   /* check arguments */
   _unur_check_NULL( NULL, distr, UNUR_ERR_NULL );
+  _unur_check_NULL( NULL, params, UNUR_ERR_NULL );  
   _unur_check_distr_object( distr, CVEC, UNUR_ERR_DISTR_INVALID );
   if (n_params>0) _unur_check_NULL(distr->name,params,UNUR_ERR_NULL);
 

@@ -383,7 +383,6 @@ _unur_matrix_LU_invert (int dim, double *LU, int *p, double *inverse)
 /*---------------------------------------------------------------------------*/
 
 int 
-<<<<<<< matrix.c
 _unur_matrix_invert_matrix(int dim, double *A, double detmin, double *Ainv, double *det)
      /*-------------------------------------------------------------------------*/
      /* Calculates the inverse matrix (by means of LU decomposition)         	*/
@@ -441,7 +440,7 @@ _unur_matrix_invert_matrix(int dim, double *A, double detmin, double *Ainv, doub
 
   /* check for small determinant */
   if (fabs(*det) <= detmin) {
-    _unur_warning("matrix",UNUR_WARNING,"matrix determinant is near zero");
+    _unur_error("matrix",UNUR_FAILURE,"matrix determinant is near zero");
   }
 
   /* calculate matrix norm */

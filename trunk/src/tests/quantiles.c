@@ -205,15 +205,12 @@ unur_test_quartiles( UNUR_GEN *gen, double *q0 ,double *q1, double *q2, double *
 
       } /* end for -- all markers updated  */
 
-   
+
+/* 
       for (i=0;i<5;i++)
 	printf("%6.2f ", h[i]);
       printf("\n");
-   /*
-      for (i=0;i<5;i++)
-      printf("%2d  ", pos[i]+1);
-      printf("\n");
-   */
+*/
 
     } /* end n>4 */
 

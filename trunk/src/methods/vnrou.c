@@ -815,12 +815,13 @@ _unur_vnrou_sample_check( struct unur_gen *gen, double *vec )
     fx = PDF(vec);
     
     /* a point on the boundary of the region of acceptance
-       has the coordinates ( (vec[]-center[]) * (fx)^(1/dim+1)), fx^(1/dim+1) ). */
-    sfx = pow( fx, 1./(dim+1.) );
+       has the coordinates ( (vec[]-center[]) * (fx)^(r/r*dim+1)), fx^(1/r*dim+1) ). */
+    sfx = pow( fx, 1./(GEN.r * dim+1.) );
     /* check hat */
     hat_error=0;
     if ( sfx > (1.+DBL_EPSILON) * GEN.vmax ) hat_error++;  
-    
+   
+    sfx = pow( fx, GEN.r/(GEN.r * dim + 1.) );
     for (d=0; d<dim; d++) {
      xfx = (vec[d]-GEN.center[d]) * sfx;
      if ( (xfx < (1.+UNUR_EPSILON) * GEN.umin[d]) 
@@ -899,7 +900,7 @@ _unur_vnrou_debug_init( const struct unur_gen *gen )
 
   fprintf(log,"%s:\n",gen->genid);
   fprintf(log,"%s: type    = continuous multivariate random variates\n",gen->genid);
-  fprintf(log,"%s: method  = vnrou (naive ratio-of-uniforms) r=%g\n",gen->genid, GEN.r);
+  fprintf(log,"%s: method  = vnrou (naive ratio-of-uniforms)\n",gen->genid);
   fprintf(log,"%s:\n",gen->genid);
   
   _unur_distr_cvec_debug( gen->distr, gen->genid );
@@ -908,7 +909,8 @@ _unur_vnrou_debug_init( const struct unur_gen *gen )
   if (gen->variant & VNROU_VARFLAG_VERIFY) fprintf(log,"_check");
   fprintf(log,"()\n%s:\n",gen->genid);
 
-
+  fprintf(log,"%s: r-parameter = %g\n",gen->genid, GEN.r);
+  
   /* write center[] */
   fprintf(log,"%s: center = (", gen->genid);
   for (d=0; d<dim; d++) {

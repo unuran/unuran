@@ -4,6 +4,11 @@
 # This program is free software; you can redistribute it and/or modify
 # it under the same terms as Perl itself.
 
+# ChangeLog:
+# 2004-11-16: Josef Leydold
+#   added support for GNU automake "make check" output
+# 
+
 # Use this wrapper program to a filter and color make and cc/c++ output.
 #   Especially useful if your warning level is so high that the compiler
 #   starts to complain about your system header files.
@@ -151,6 +156,10 @@ while (<OUT>) {
     s/(^\*+>.*$)/color("bold green on_black") . $1 . color("reset")/eg;
     # Personal environment variable wildcard
     s/(NAN_[^ ]*)/color("cyan") . $1 . color("reset")/eg;
+
+    # added additonal color for make check
+    s/(PASS)/color("bold yellow") . $1 . color("reset")/egi;
+    s/(FAILE?D?)/color("bold yellow on_red") . $1 . color("reset")/egi;
 
     print $_;
 }

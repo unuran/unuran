@@ -129,6 +129,7 @@
 
 #define AROU_VARFLAG_VERIFY     0x01u   /* flag for verifying mode           */
 #define AROU_VARFLAG_USECENTER  0x02u   /* flag whether center is used as cpoint or not */
+#define AROU_VARFLAG_PEDANTIC   0x04u   /* whether pedantic checking is used */
 
 /*---------------------------------------------------------------------------*/
 /* Debugging flags                                                           */
@@ -220,16 +221,6 @@ static int _unur_arou_make_guide_table( struct unur_gen *gen );
 static double _unur_arou_segment_arcmean( struct unur_arou_segment *seg );
 /*---------------------------------------------------------------------------*/
 /* compute the "arcmean" of the two construction points of a segement.       */
-/*---------------------------------------------------------------------------*/
-
-static struct unur_arou_segment *_unur_arou_segment_stack_pop( struct unur_gen *gen );
-/*---------------------------------------------------------------------------*/
-/* pop a segment from the stack of free segments.                            */
-/*---------------------------------------------------------------------------*/
-
-static void _unur_arou_segment_stack_push( struct unur_gen *gen );
-/*---------------------------------------------------------------------------*/
-/* push the last popped segment back onto the stack.                         */
 /*---------------------------------------------------------------------------*/
 
 #ifdef UNUR_ENABLE_LOGGING
@@ -339,8 +330,9 @@ unur_arou_new( struct unur_distr *distr )
 				       where abiguous region is too small, i.e. if 
 				       the area / (|S^e\S^s|/number of segments) < bound_for_adding */
 
-  par->method   = UNUR_METH_AROU;          /* method                         */
-  par->variant  = AROU_VARFLAG_USECENTER;  /* default variant                */
+  par->method   = UNUR_METH_AROU;             /* method                      */
+  par->variant  = ( AROU_VARFLAG_USECENTER |  /* default variant             */
+		    AROU_VARFLAG_PEDANTIC );
   par->set      = 0u;                      /* inidicate default parameters   */    
   par->urng     = unur_get_default_urng(); /* use default urng               */
   par->urng_aux = NULL;                    /* no auxilliary URNG required    */
@@ -495,6 +487,28 @@ unur_arou_set_max_sqhratio( struct unur_par *par, double max_ratio )
 
 /*---------------------------------------------------------------------------*/
 
+double
+unur_arou_get_sqhratio( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* get ratio A(squeeze) / A(hat)                                        */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen  ... pointer to generator object                               */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   ratio ... on success                                               */
+     /*   0     ... on error                                                 */
+     /*----------------------------------------------------------------------*/
+{
+  /* check input */
+  _unur_check_gen_object( gen,AROU );
+
+  return (GEN.Asqueeze / GEN.Atotal);
+
+} /* end of unur_arou_get_sqhratio() */
+
+/*---------------------------------------------------------------------------*/
+
 int
 unur_arou_set_max_segments( struct unur_par *par, int max_segs )
      /*----------------------------------------------------------------------*/
@@ -630,6 +644,39 @@ unur_arou_set_verify( struct unur_par *par, int verify )
 
 } /* end of unur_arou_set_verify() */
 
+/*---------------------------------------------------------------------------*/
+
+int
+unur_arou_set_pedantic( struct unur_par *par, int pedantic )
+     /*----------------------------------------------------------------------*/
+     /* turn pedantic mode on/off                                            */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par      ... pointer to parameter for building generator object    */
+     /*   pedantic ... 0 = no pedantic mode, !0 = use pedantic mode          */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... on success                                                   */
+     /*   0 ... on error                                                     */
+     /*                                                                      */
+     /* comment:                                                             */
+     /*   pedantic is the default                                            */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( GENTYPE,par,0 );
+
+  /* check input */
+  _unur_check_par_object( par,AROU );
+
+  /* we use a bit in variant */
+  par->variant = (pedantic) ? (par->variant | AROU_VARFLAG_PEDANTIC) : (par->variant & (~AROU_VARFLAG_PEDANTIC));
+
+  /* o.k. */
+  return 1;
+
+} /* end of unur_arou_set_pedantic() */
+
 /*****************************************************************************/
 
 struct unur_gen *
@@ -748,9 +795,6 @@ _unur_arou_create( struct unur_par *par )
   GEN.n_segs      = 0;
   GEN.guide       = NULL;
   GEN.guide_size  = 0;
-  GEN.seg_stack   = NULL;
-  GEN.seg_free    = 0;
-  GEN.mblocks     = NULL;
   GEN.Atotal      = 0.;
   GEN.Asqueeze    = 0.;
 
@@ -854,9 +898,19 @@ _unur_arou_sample( struct unur_gen *gen )
       /* density at x */
       fx = PDF(x);
 
+
+
       /* being outside the squeeze is bad. improve the situation! */
       if (GEN.n_segs < GEN.max_segs && GEN.max_ratio * GEN.Atotal > GEN.Asqueeze)
-	_unur_arou_segment_split(gen,seg,x,fx);
+	if ( !_unur_arou_segment_split(gen,seg,x,fx) ) {
+	  /* condition for pdf is violated! */
+	  _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"");
+	  if (gen->variant & AROU_VARFLAG_PEDANTIC) {
+	    /* replace sampling routine by dummy routine that just returns INFINITY */
+	    SAMPLE = _unur_sample_cont_error;
+	    return INFINITY;
+	  }
+	}
 
       /* if inside region of acceptance, return ratio x */
       if (u*u <= fx) 
@@ -959,7 +1013,15 @@ _unur_arou_sample_check( struct unur_gen *gen )
 
       /* being outside the squeeze is bad. improve the situation! */
       if (GEN.n_segs < GEN.max_segs && GEN.max_ratio * GEN.Atotal > GEN.Asqueeze)
-	_unur_arou_segment_split(gen,seg,x,fx);
+	if ( !_unur_arou_segment_split(gen,seg,x,fx) ) {
+	  /* condition for pdf is violated! */
+	  _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"");
+	  if (gen->variant & AROU_VARFLAG_PEDANTIC) {
+	    /* replace sampling routine by dummy routine that just returns INFINITY */
+	    SAMPLE = _unur_sample_cont_error;
+	    return INFINITY;
+	  }
+	}
 
       /* if inside region of acceptance, return ratio x */
       if (u*u <= fx) 
@@ -998,8 +1060,14 @@ _unur_arou_free( struct unur_gen *gen )
   if (gen->debug) _unur_arou_debug_free(gen);
 #endif
 
-  /* free linked list of segments and others */
-  _unur_free_mblocks(GEN.mblocks);
+  /* free linked list of segments */
+  {
+    struct unur_arou_segment *seg,*next;
+    for (seg = GEN.seg; seg != NULL; seg = next) {
+      next = seg->next;
+      free(seg);
+    }
+  }
 
   /* free other memory not stored in list */
   _unur_free_genid(gen);
@@ -1088,8 +1156,8 @@ _unur_arou_get_starting_cpoints( struct unur_par *par, struct unur_gen *gen )
       }
       else {
 	/* compute construction points by means of "equidistance" rule */
-	angle += diff_angle;                /** TODO: angle >= M_PI/2. !! **/
-	x = tan( angle ) + PAR.center;      /** TODO: possible over/underflow **/
+	angle += diff_angle;
+	x = tan( angle ) + PAR.center;
       }
     }
     else {
@@ -1200,7 +1268,7 @@ _unur_arou_get_starting_segments( struct unur_par *par, struct unur_gen *gen )
      /*   0 ... error                                                        */
      /*----------------------------------------------------------------------*/
 {
-  struct unur_arou_segment *seg, *seg_new; 
+  struct unur_arou_segment *seg, *seg_new, *seg_tmp; 
   double x,fx;              /* construction point, value of p.d.f. at x */
 
   /* check arguments */
@@ -1212,15 +1280,34 @@ _unur_arou_get_starting_segments( struct unur_par *par, struct unur_gen *gen )
 
     /* compute parameters for semgent */
     switch (_unur_arou_segment_parameter(gen, seg)) {
-    case 0:     /* p.d.f. not T-concave */
-      return 0;
     case 1:     /* computation of parameters for segment successful */
       /* skip to next segment. */
       seg = seg->next;
       continue;
+    case -2:     /* p.d.f. not T-concave */
+      return 0;
     case -1:    /* segment unbounded */
       /* split segment */
       break;
+    case 0:    /* construction points too close */
+      /* we have to remove this last segment from list */
+      /* (the last construction point in the list is a boundary point.
+         thus we might change the domain of the distribution.
+         however, we only cut off a piece that is beyond the precesion
+         of the floating point arithmetic.)  */
+      seg_tmp = seg->next;
+      seg->next = seg->next->next;
+      free(seg_tmp);
+      --(GEN.n_segs);
+      
+      if (seg->next==NULL) {
+        /* last (virtuel) interval in list.
+           make shure that we will never use this segment */
+	seg->Ain = seg->Aout = 0.;
+	seg->Acum = INFINITY;
+      }
+
+      continue;
     }
 
     /* area in segment infinite. insert new construction point. */
@@ -1237,9 +1324,11 @@ _unur_arou_get_starting_segments( struct unur_par *par, struct unur_gen *gen )
     }
     seg_new = _unur_arou_segment_new( gen, x, fx );
     CHECK_NULL(seg_new,0);     /* case of internal error */
+
     /* insert into linked list */
     seg_new->next = seg->next;
     seg->next = seg_new;
+
     /* right vertices */
     seg_new->rtp = seg->rtp;
     seg_new->drtp = seg->drtp;
@@ -1285,8 +1374,10 @@ _unur_arou_segment_new( struct unur_gen *gen, double x, double fx )
   }
 
   /* we need new segment */
-  seg = _unur_arou_segment_stack_pop(gen);
-  CHECK_NULL(seg,NULL);  COOKIE_CHECK(seg,CK_AROU_SEG,NULL); 
+  seg = _unur_malloc( sizeof(struct unur_arou_segment) );
+  seg->next = NULL; /* add eol marker */
+  ++(GEN.n_segs);   /* increment counter for segments */
+  COOKIE_SET(seg,CK_AROU_SEG);
 
   /* make left construction point in segment */
 
@@ -1335,16 +1426,16 @@ _unur_arou_segment_new( struct unur_gen *gen, double x, double fx )
   seg->dltp[0] = -u;   /* dv */
   seg->dltp[1] = v;    /* du */
   seg->dltp[2] = 0.;
+
   return seg;
 
 } /* end of _unur_arou_segment_new() */
 
 /*****************************************************************************/
 
-/** TODO ???? **/
-#define MAX_NORM_INTERSECTION  1.e6    /* maximal distance of intersection point
-					  from origin compared to distance of
-					  construction points to origin      */
+/* maximal distance of intersection point from origin 
+   compared to distance of construction points to origin */
+#define MAX_NORM_OF_INTERSECTION_POINT  1.e6
 
 /*---------------------------------------------------------------------------*/
 
@@ -1359,12 +1450,11 @@ _unur_arou_segment_parameter( struct unur_gen *gen, struct unur_arou_segment *se
      /*                                                                      */
      /* return:                                                              */
      /*   1 ... if successful                                                */
+     /*   0 ... do not add this construction point                           */
      /*  -1 ... area = INFINITY                                              */
-     /*   0 ... error (not p.d.f. T-concave)                                 */
+     /*  -2 ... error (not p.d.f. T-concave)                                 */
      /*----------------------------------------------------------------------*/
 {
-  /** TODO: roundoff errors ?? **/ 
-
   double coeff_det, cramer_det[2];
   double norm_vertex;
   double det_bound;
@@ -1402,24 +1492,24 @@ _unur_arou_segment_parameter( struct unur_gen *gen, struct unur_arou_segment *se
 	    coeff_det == cramer_det[0] == cramer_det[1] == 0.
   */
 
-  /* sum of 1-norm of vertices (notice that u > 0 by assumption) */
+  /* sum of 1-norms of vertices (notice that u > 0 by assumption) */
   norm_vertex = fabs(seg->ltp[0]) + seg->ltp[1] + fabs(seg->rtp[0]) + seg->rtp[1];
 
   /* we to not allow that the outer triangles becomes too large.
-     so if the sup-norm of intersection point is too large compared
+     so if the 1-norm of intersection point is too large compared
      to norm_vertex we assume that this triangle is unbounded.
      we thus avoid numerical errors.
-     (we use the sup-norm here since it much easier to handle.)
+     (we use the 1-norm here since it much easier to handle.)
 
      (However this might also happen due to roundoff errors,
      when the real position is extremely close to the secant.
      But at least we are on the save side.)
   */
-  det_bound = fabs(coeff_det) * norm_vertex * MAX_NORM_INTERSECTION;
+  det_bound = fabs(coeff_det) * norm_vertex * MAX_NORM_OF_INTERSECTION_POINT;
 
   if ( fabs(cramer_det[0]) > det_bound || fabs(cramer_det[1]) > det_bound ) {
     /* case: triangle is assumed to be unbounded */	     
-/*      _unur_warning(gen->genid,UNUR_ERR_....,"outer triangle assumed unbounded"); */
+    /*      _unur_warning(gen->genid,UNUR_ERR_GENERIC,"outer triangle assumed unbounded  1"); */
     seg->Aout = INFINITY;
     return -1;
   }
@@ -1436,46 +1526,43 @@ _unur_arou_segment_parameter( struct unur_gen *gen, struct unur_arou_segment *se
 		  - (seg->ltp[1] - seg->mid[1]) * (seg->rtp[0] - seg->mid[0])) / 2.;
     /* due to our ordering of construction points, seg->Aout must be >= 0
        for a regular triangle.
-       Thus if seg->aout < 0, then the intersection point of tangents is on
+       Thus if seg->Aout < 0, then the intersection point of tangents is on
        the WRONG side of the secant through vertices of segment,
        i.e. the "triangle" outside the squeeze region is unbounded.
 
        However this might also happen due to roundoff errors when 
        the real position is extremely close to the secant.
        We can distinguish between these two case by means of the u-coordinate
-       of the intersection point. If it really is on the wrong side if secant 
-       then seg->mid[1] < 0.
-    */
+       of the intersection point. If it is on the wrong side of the secant,
+       then we have seg->mid[1] < 0 (Otherwise we have either a round-off error
+       or the p.d.f. is not T-concave.) */
     if( seg->mid[1] < 0. ) {
-/*        _unur_warning(gen->genid,UNUR_ERR_....,"outer triangle unbounded"); */
+      /*        _unur_warning(gen->genid,UNUR_ERR_GENERIC,"outer triangle unbounded  2"); */
       seg->Aout = INFINITY;
       return -1;
     }
 
     /* at last check result.
        we must have:
-         (*) seg->aout > 0
+         (*) seg->Aout > 0
          (*) intersection point right of left construction point
-         (*) intersection point left of right construction point
-    */
+         (*) intersection point left of right construction point */
     if ( seg->Aout > 0. &&
-	 seg->mid[0] * seg->ltp[1] >= seg->ltp[0] * seg->mid[1] &&
-	 seg->mid[0] * seg->rtp[1] <= seg->rtp[0] * seg->mid[1]	) {
+	 ! _FP_less( seg->mid[0] * seg->ltp[1], seg->ltp[0] * seg->mid[1] ) &&
+	 ! _FP_greater( seg->mid[0] * seg->rtp[1], seg->rtp[0] * seg->mid[1] ) ) {
       /* everything o.k. */
       return 1;
     }
 
-    /* there are two case is a second reason why the above check failed:
+    /* there are two cases why the above check failed:
        (1) the p.d.f. is not T-concave
        (2) small roundoff errors.
     */
 
-    /* this is a pain */
-
     /** TODO: check for roundoff-errors !!! **/
-    /*      _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"p.d.f. not T-concave"); */
-    /*      return 0; */
-    return 1;
+
+    _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"p.d.f. not T-concave");
+    return 0;
   }
 
   /* remaining case: triangle degenerates to a line segment, i.e.
@@ -1486,7 +1573,7 @@ _unur_arou_segment_parameter( struct unur_gen *gen, struct unur_arou_segment *se
      use middle point as intersection point and 
      set area outside the squeeze to 0.
   */
-/*    _unur_warning(gen->genid,UNUR_ERR_...,"outer triangle is line"); */
+  /*    _unur_warning(gen->genid,UNUR_ERR_GENERIC,"outer triangle is line"); */
   seg->mid[0] =  0.5 * (seg->ltp[0] + seg->rtp[0]);
   seg->mid[1] =  0.5 * (seg->ltp[1] + seg->rtp[1]);
   seg->Aout = 0.;
@@ -1520,7 +1607,8 @@ _unur_arou_segment_split( struct unur_gen *gen, struct unur_arou_segment *seg_ol
      /*   0  ... error                                                       */
      /*----------------------------------------------------------------------*/
 {
-  struct unur_arou_segment *seg_newr;
+  struct unur_arou_segment *seg_newr;    /* pointer to newly created segment */
+  struct unur_tdr_interval seg_bak;      /* space for saving data of segment */
   double backup;
 
   /* check arguments */
@@ -1535,7 +1623,16 @@ _unur_arou_segment_split( struct unur_gen *gen, struct unur_arou_segment *seg_ol
 
   /* we only add a new construction point, if the relative area is large enough */
   if (GEN.n_segs * seg_oldl->Aout / (GEN.Atotal - GEN.Asqueeze) < GEN.bound_for_adding )
+    return 1;
+
+  /* check for data error */
+  if (fx < 0.) {
+    _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"pdf(x) < 0.!");
     return 0;
+  }
+
+  /* back up data */
+  memcpy(&seg_bak, seg_oldl, sizeof(struct unur_arou_segment));
 
   /* p.d.f. at x is 0. */
   if (fx <= 0.) {
@@ -1606,22 +1703,14 @@ _unur_arou_segment_split( struct unur_gen *gen, struct unur_arou_segment *seg_ol
 	_unur_arou_debug_split_stop( gen,seg_oldl,seg_newr );
 #endif
       
-      /* remove from linked list */
-      seg_oldl->rtp  = seg_newr->rtp;
-      seg_oldl->drtp = seg_newr->drtp;
-      seg_oldl->next = seg_newr->next;
-      /* push seg_newr back to stack */
-      _unur_arou_segment_stack_push(gen);
-      /* we have to restore the old segment.
-	 (this case should not happen, so it is easier not to make a 
-	 backup of the old segment) */
-      if ( !_unur_arou_segment_parameter(gen,seg_oldl) ) {
-	/* this should not happen:
-	   Cannot restore segment. */
-	_unur_error(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
-	exit (EXIT_FAILURE);
+      /* restore the old segment */
+      memcpy(seg_oldl, &seg_bak, sizeof(struct unur_arou_segment));
+
+      /* decrement counter for segments and free unused segment */
+      if (seg_newr) {
+	--(GEN.n_segs); 
+	free( seg_newr );
       }
-      return 0;
     }
   }
     
@@ -1737,78 +1826,15 @@ _unur_arou_segment_arcmean( struct unur_arou_segment *seg )
 
   /* if u != 0 ... x is stored in tp (= v/u)   */
   /* else      ... x is stored in tangent dltp */
-  xl = (seg->ltp[0] > 0.) ? (seg->ltp[1] / seg->ltp[0]) :
+  xl = (seg->ltp[1] > 0.) ? (seg->ltp[0] / seg->ltp[1]) :
     ( (seg->dltp[0] == 0.) ? -INFINITY : (seg->dltp[1]) );
 
-  xr = (seg->rtp[0] > 0.) ? (seg->rtp[1] / seg->rtp[0]) :
+  xr = (seg->rtp[1] > 0.) ? (seg->rtp[0] / seg->rtp[1]) :
     ( (seg->drtp[0] == 0.) ? INFINITY : (seg->drtp[1]) );
 
   return _unur_arcmean(xl,xr);
 
 } /* end of _unur_arou_segment_arcmean() */
-
-/*****************************************************************************/
-
-static struct unur_arou_segment *
-_unur_arou_segment_stack_pop( struct unur_gen *gen )
-     /*----------------------------------------------------------------------*/
-     /* pop free segment from stack; allocate memory block if necessary.     */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   gen ... pointer to generator object                                */
-     /*                                                                      */
-     /* return:                                                              */
-     /*   pointer to segment                                                 */
-     /*                                                                      */
-     /* error:                                                               */
-     /*   return NULL                                                        */
-     /*----------------------------------------------------------------------*/
-{
-  /* check arguments */
-  CHECK_NULL(gen,NULL);  COOKIE_CHECK(gen,CK_AROU_GEN,NULL);
-
-  /* look for an unused segment */
-  if( ! GEN.seg_free ) {
-    /* no more unused segments. make some. */
-    GEN.seg_stack = _unur_malloc( UNUR_MALLOC_SIZE * sizeof(struct unur_arou_segment) );
-
-    /* reset counter */
-    GEN.seg_free = UNUR_MALLOC_SIZE;
-
-    /* set cookies */
-    COOKIE_SET_ARRAY( GEN.seg_stack, CK_AROU_SEG, UNUR_MALLOC_SIZE);
-
-    /* add to list of allocated blocks */
-    _unur_add_mblocks( &(GEN.mblocks), GEN.seg_stack);
-  }
-
-  /* update ....                                   */
-  --(GEN.seg_free);   /* pointer to free segments  */
-  ++(GEN.n_segs);     /* counter for used segments */
-
-  /* return pointer to segment */
-  return (GEN.seg_stack + GEN.seg_free);
-
-} /* end of _unur_arou_segment_stack_pop() */
-
-/*---------------------------------------------------------------------------*/
-
-static void
-_unur_arou_segment_stack_push( struct unur_gen *gen )
-     /*----------------------------------------------------------------------*/
-     /* push the last popped segment back onto the stack.                    */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   gen ... pointer to generator object                                */
-     /*----------------------------------------------------------------------*/
-{
-  /* check arguments */
-  CHECK_NULL(gen,/*void*/);  COOKIE_CHECK(gen,CK_AROU_GEN,/*void*/);
-
-  /* update counters and pointers */
-  --(GEN.n_segs);
-  ++(GEN.seg_free);
-} /* end of _unur_arou_segment_stack_push() */
 
 /*---------------------------------------------------------------------------*/
 

@@ -69,7 +69,6 @@ int unur_arou_set_max_sqhratio( UNUR_PAR *parameters, double max_ratio );
    Default is ??.
 */
 
-/** TODO **/
 double unur_arou_get_sqhratio( UNUR_GEN *generator );
 /* 
    Get the current ratio (area inside squeeze) / (area inside envelope)
@@ -117,7 +116,6 @@ int unur_arou_set_verify( UNUR_PAR *parameters, int verify );
    Turn verifying of algorithm while sampling on/off.
 */
 
-/** TODO **/
 int unur_arou_set_pedantic( UNUR_PAR *parameters, int pedantic );
 /* 
    Sometimes it might happen that unur_init() has been executed

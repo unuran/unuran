@@ -93,10 +93,6 @@ struct unur_arou_gen {
   int     max_segs;             /* maximum number of segments                */
 
   double  bound_for_adding;     /* lower bound for relative area             */
-
-  struct unur_arou_segment *seg_stack; /* stack of allocated segments        */
-  int     seg_free;             /* position of last free segment in stack    */
-  struct unur_mblock  *mblocks; /* linked list for allocated blocks          */
 };
 
 /*---------------------------------------------------------------------------*/

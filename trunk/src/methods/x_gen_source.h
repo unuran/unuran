@@ -4,7 +4,7 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   FILE: source_gen.h                                                      *
+ *   FILE: x_gen_source.h                                                    *
  *                                                                           *
  *   PURPOSE:                                                                *
  *         defines macros and function prototypes for handling               *

@@ -4,7 +4,7 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   FILE: source_distr.h                                                    *
+ *   FILE: distr_source.h                                                    *
  *                                                                           *
  *   PURPOSE:                                                                *
  *         defines macros and function prototypes for handling               *

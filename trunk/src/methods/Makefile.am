@@ -44,20 +44,16 @@ noinst_HEADERS = \
  in_unuran.h \
  source_unuran.h \
  source_cookies.h \
- source_debug.h \
- source_distr.h \
  source_fp.h \
- source_gen.h \
- source_math.h \
  source_misc.h \
  source_methods.h \
  source_struct.h \
- x_debug.h \
+ x_debug.h x_debug_source.h \
  x_errno.h \
- x_gen.h \
- x_math.h \
+ x_gen.h x_gen_source.h \
+ x_math.h x_math_source.h \
  x_urng.h \
- distr.h distr_struct.h \
+ distr.h distr_struct.h distr_source.h \
  arou.h  arou_struct.h \
  empk.h  empk_struct.h \
  cstd.h  cstd_struct.h \

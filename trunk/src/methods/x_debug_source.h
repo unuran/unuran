@@ -4,7 +4,7 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   FILE: source_debug.h                                                    *
+ *   FILE: x_debug_source.h                                                  *
  *                                                                           *
  *   PURPOSE:                                                                *
  *         defines macros and function prototypes for debugging routines.    *

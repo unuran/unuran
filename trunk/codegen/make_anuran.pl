@@ -197,16 +197,22 @@ sub anuran_params_distribution
 
 	    # ruler
 	    p().hr().p();
+
+	return;
     }
 
 # ................................................................
 # Distribution selected
 # ................................................................
     
-    if (\$step >= 2) {
-	print 
-	    'Step 2: ',
-	    b('Parameters for '.\$data_distr{\$distr}{'=NAME'}).br();
+    print 
+	'Step 2: ',
+	b('Parameters for '.\$data_distr{\$distr}{'=NAME'}).br();
+
+
+    # Store id of parameter
+    for (my \$i=0; \$i < \$n_tot; \$i++) {
+	\$param_by_name{\$data_distr{\$distr}{'=FPARAMS'}[\$i]{'=NAME'}} = \$i;
     }
 
 # ................................................................
@@ -218,17 +224,25 @@ sub anuran_params_distribution
 	# Read parameters for distribution
 	if (\$Stdform eq 'yes') {
 	    # Standardform
-
 	    \$n_param = \$n_req;
 	    for (my \$i=0; \$i < \$n_tot; \$i++) {
+		# first transform string to number (if possible)
+		if (param("Std_param_\$i") =~ /\\d+/) {
+		    param("Std_param_\$i",param("Std_param_\$i")+0);
+		}
+		# copy parameter into temporary array
 		\$param[\$i] = param("Std_param_\$i");
 	    }
 	}
 	else {
 	    # Non-Standardform
-
 	    \$n_param = \$n_tot;
 	    for (my \$i=0; \$i < \$n_tot; \$i++) {
+		# first transform string to number (if possible)
+		if (param("param_\$i") =~ /\\d+/) {
+		    param("param_\$i",param("param_\$i")+0);
+		}
+		# copy parameter into temporary array
 		\$param[\$i] = param("param_\$i");
 	    }
 	}
@@ -238,14 +252,38 @@ sub anuran_params_distribution
 	    \$print_param[\$i] = \$param[\$i];
 	}
 	
-	# Check parameters
+	# Check input for empty entries and transform string to numbers
 	for (my \$i=0; \$i < \$n_tot; \$i++) {
 	    unless (\$param[\$i] =~ /\\d+/) {
 		\$step = 2;
-		\$print_param[\$i] = '<FONT COLOR="red"><BLINK>missing</BLINK></FONT>';
+		\$print_param[\$i] = '<FONT COLOR="red"><BLINK>missing</BLINK></FONT> ';
 	    }
 	}
 
+	# Check validity of parameters
+	for (my \$i=0; \$i < \$n_tot; \$i++) {
+	    my \$lower = \$data_distr{\$distr}{'=FPARAMS'}[\$i]{'=LOWER'};
+	    if (defined \$lower) {
+		if ( (\$lower =~ /\\d+/ and \$lower > \$param[\$i]) or
+		     (\$lower !~ /\\d+/ and \$param[\$param_by_name{\$lower}] > \$param[\$i]) ) {
+		    \$step = 2;
+		    \$print_param[\$i] = ' <FONT COLOR="red">'
+			.\$print_param[\$i]
+			    .' <BLINK>invalid</BLINK></FONT> ';
+		}
+	    }
+	    my \$upper = \$data_distr{\$distr}{'=FPARAMS'}[\$i]{'=UPPER'};
+	    if (defined \$upper) {
+		if ( (\$upper =~ /\\d+/ and \$upper < \$param[\$i]) or
+		     (\$upper !~ /\\d+/ and \$param[\$param_by_name{\$upper}] < \$param[\$i]) ) {
+		    \$step = 2;
+		    \$print_param[\$i] = ' <FONT COLOR="red">'
+			.\$print_param[\$i]
+			    .' <BLINK>invalid</BLINK></FONT> ';
+		}
+	    }
+	}
+	
 	# Print parameters into web page
 	print start_blockquote();
 
@@ -425,18 +463,9 @@ sub anuran_domain_distribution
 	b('Domain for '.\$data_distr{\$distr}{'=NAME'}).br();
 
 
-    # compute standard domain
-    \$std_left = '-infinity';
-    \$std_right = 'infinity';
-
-    for (my \$i=0; \$i < \$n_tot; \$i++) {
-	if (\$data_distr{\$distr}{'=LEFT'} eq \$data_distr{\$distr}{'=FPARAMS'}[\$i]{'=NAME'}) {
-	    \$std_left = \$param[\$i];
-	}
-	if (\$data_distr{\$distr}{'=RIGHT'} eq \$data_distr{\$distr}{'=FPARAMS'}[\$i]{'=NAME'}) {
-	    \$std_right = \$param[\$i];
-	}
-    }
+    # Compute standard domain
+    \$std_left = \$param[\$param_by_name{\$data_distr{\$distr}{'=LEFT'}}];
+    \$std_right = \$param[\$param_by_name{\$data_distr{\$distr}{'=RIGHT'}}];
 
     # Get domain
     if (!defined(param('left')) or param('left') < \$std_left) {
@@ -452,7 +481,7 @@ sub anuran_domain_distribution
 
     # Truncated domain ?
     if (param('truncated') ne 'yes' && \$step == 3) {
-	\$step = 4; # nothing to do --> skip
+	\$step = 5; # nothing to do --> skip
     }
     if (param('truncated' ne 'yes')) {
 	param('truncated','no');
@@ -474,11 +503,11 @@ sub anuran_domain_distribution
 	else {
 	    # print domain
 	    print 
-		blockquote( ' domain = ( ',
+		blockquote( ' domain = [ ',
 			    param('left'), 
 			    ',',
 			    param('right'),
-			    ')',
+			    ']',
 			    '&nbsp;&nbsp;&nbsp;',
 			    ((param('truncated')eq'yes') ? '(truncated)' : '') );
 	}
@@ -869,6 +898,32 @@ sub scan_FPARAM {
 	$params .= "'=NAME' => '$name', ";
 	$params .= "'=DEF'  => '".((length $default) ? $default : "*")."', ";
 	$params .= "'=COND' => '$cond', ";
+
+	# upper and lower bounds for parameter
+	$cond =~ s/\s//g;
+	my $upper = '';
+	my $lower = '';
+      SWITCH: {
+	  if ($cond =~ /^>([^<>=]+)$/) {
+	      $lower = $1;
+	      last SWITCH;
+	  }
+	  if ($cond =~ /^([^<>=]+)[<=]+([^<>=]+)[<=]+([^<>=]+)$/) {
+	      die "wrong variable in condition" if $2 ne $name; 
+	      $lower = $1;
+	      $upper = $3;
+	      last SWITCH;
+	  }
+      }
+	
+	if (length $upper > 0) {
+	    $params .= "'=UPPER' => '$upper', ";
+	}
+	if (length $lower > 0) {
+	    $params .= "'=LOWER' => '$lower', ";
+	}
+
+	# close
 	$params .= "},\n\t\t\t";
 
 

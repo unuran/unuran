@@ -446,29 +446,10 @@ unur_dari_chg_pmfparams( struct unur_gen *gen, double *params, int n_params )
   /* check arguments */
   CHECK_NULL(gen,0);
   _unur_check_gen_object( gen,DARI );
-  if (n_params>0) _unur_check_NULL(gen->genid,params,0);
-  
-  /* check new parameter for generator */
-  if (n_params > UNUR_DISTR_MAXPARAMS || n_params < 0 ) {
-    _unur_error(NULL,UNUR_ERR_DISTR_NPARAMS,"");
-    return 0;
-  }
 
-  /* copy parameters */
-  DISTR.n_params = n_params;
-  for (i=0; i < n_params; i++)
-    DISTR.params[i] = params[i];
+  /* set new parameters in distribution object */
+  return unur_distr_discr_set_pmfparams(&(gen->distr),params,n_params);
 
-  /* changelog */
-  /* mode and sum might be wrong now! 
-     but the user is responsible to change it.
-     so we dont say:
-     gen->distr.set &= ~(UNUR_DISTR_SET_MODE | UNUR_DISTR_SET_PMFSUM );
-     gen->set &= ~DARI_SET_CDFMODE;
-  */
-
-  /* o.k. */
-  return 1;
 } /* end of unur_dari_chg_pmfparams() */
 
 /*---------------------------------------------------------------------------*/

@@ -45,9 +45,24 @@
    =UP Distribution_objects [30]
 
    =DESCRIPTION
-   
 
-     ... add remarks about contradicting parameters ...
+   The following calls handle multivariate distributions.
+   However, the requirements of particular generation methods is not
+   as unique as for univariate distribution. Moreover, the area of
+   random vector generation is still under development. 
+   The below functions are a first attempt to handle this situation. 
+
+   Notice that some of the parameters when given carelessly might
+   contradict to others. For example: Some methods require the
+   marginal distribution and some methods need a standardized form of
+   the marginal distributions, where the actual mean and variance is
+   stored in the mean vector and the covariance matrix, respectively. 
+
+   We also have to mention that some methods might abuse some of the
+   parameters. For example, method VMT (@pxref{VMT}) uses standard
+   marginal distributions. However, the marginal distribution of the
+   generated vectors might be transformed. Please read the discription
+   of the choosen sampling method carfully.
 
    =END
 */

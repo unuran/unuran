@@ -110,7 +110,7 @@ _unur_pdf_multinormal( const double *x, const UNUR_DISTR *distr )
   const double *covar_inv; 
   
   double xx; /* argument used in the evaluation of exp(-xx/2) */
-  double *cx; /* multiplication of covariance matrix and x*/
+  double *cx; /* multiplication of covariance matrix and x */
   
   dim = distr->dim;
   
@@ -124,14 +124,22 @@ _unur_pdf_multinormal( const double *x, const UNUR_DISTR *distr )
   /* general form */
   covar_inv = (DISTR.covar_inv == NULL) ? 
               unur_distr_cvec_get_covar_inv ( ( UNUR_DISTR *) distr ) : DISTR.covar_inv;
-  /* TODO ? ... check if covar_inv could be computed */
+
+  /* check if covar_inv could be computed */
+  if (covar_inv==NULL) {
+    /* what should we return here ? */
+    /* maybe it would be better to use the variable "result" for the function-value */
+    /* and the return-value to indicate UNUR_SUCCESS or UNUR_FAILURE like in the */
+    /* evaluation of _unur_dpdf_multinormal() ? */
+    return -1.;
+  }
 
   mean = DISTR.mean;
   
-  xx=0.;
+  xx=0.; /* resetting exponential function argument */
   cx = _unur_malloc(dim * sizeof(double));
   for (i=0; i<dim; i++) {
-    cx[i]=0.;
+    cx[i]=0.; 
     /* multiplication of inverse covariance matrix and (x-mean) */
     for (j=0; j<dim; j++) {
       cx[i] += covar_inv[idx(i,j)] * (x[j]-mean[j]);
@@ -162,9 +170,14 @@ _unur_dpdf_multinormal( double *result, const double *x, const UNUR_DISTR *distr
   mean = DISTR.mean;
   covar_inv = (DISTR.covar_inv == NULL) ?
               unur_distr_cvec_get_covar_inv ( ( UNUR_DISTR *) distr ) : DISTR.covar_inv;
-  /* TODO ? ... check if covar_inv could be computed */
 
+  /* check if covar_inv could be computed */
+  if (covar_inv==NULL) {
+    return UNUR_FAILURE;
+  }
+  
   fx = _unur_pdf_multinormal(x, distr);
+
   for (i=0; i<dim; i++) {
     result[i]=0;
     for (j=0; j<dim; j++) {
@@ -268,8 +281,7 @@ unur_distr_multinormal( int dim, const double *mean, const double *covar )
   memcpy( DISTR.mode, DISTR.mean, distr->dim * sizeof(double) );
 
   /* volume below p.d.f. */
-  /** TODO **/
-  /*    DISTR.volume = 1.; */
+  DISTR.volume = 1.; 
 
   /* indicate which parameters are set (additional to mean and covariance) */
   distr->set |= ( UNUR_DISTR_SET_STDDOMAIN |

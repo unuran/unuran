@@ -125,13 +125,12 @@ int unur_mcorr_set_eigenvalues( UNUR_PAR *par, double *eigenvalues );
    If set, then the Marsaglia and Olkin algorithm will be used 
    to generate random correlation matrices with given eigenvalues.
 
-   Important: all eigenvalues must be positive, i.e. greater than
-   0. Otherwise no eigenvalues are set and an error code is returned.
-
-   Notice, that the eigenvalues of a correlation matrix are positive
-   (to be precise: non-negative) and must sum to the dimension of the
-   matrix. Otherwise, the given eigenvalues are normalized
-   implicitly. 
+   Important: the given eigenvalues of the correlation matrix must be 
+   strictly positive and sum to the dimension of the matrix.
+   If non-positive eigenvalues are attempted, no eigenvalues are set
+   and an error code is returned.
+   In case, that their sum is different from the dimension, an implicit
+   scaling to give the correct sum is performed. 
 */
 
 /* =END */

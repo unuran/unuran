@@ -97,7 +97,11 @@ struct unur_distr_discr {
   int    n_params;              /* number of parameters of the pdf           */
 
   double norm_constant;         /* (log of) normalization constant for p.m.f.*/
+
+  int    mode;                  /* location of mode                          */
   double sum;                   /* sum over p.m.f.                           */
+
+  int (*upd_mode)(struct unur_distr *distr); /* funct for computing mode     */
   int (*upd_sum)(struct unur_distr *distr);  /* funct for computing sum      */
 
   /* other parameters */

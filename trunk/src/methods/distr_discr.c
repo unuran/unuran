@@ -555,6 +555,110 @@ unur_distr_discr_get_domain( struct unur_distr *distr, int *left, int *right )
 /*---------------------------------------------------------------------------*/
 
 int
+unur_distr_discr_set_mode( struct unur_distr *distr, int mode )
+     /*----------------------------------------------------------------------*/
+     /* set mode of distribution                                             */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   distr ... pointer to distribution object                           */
+     /*   mode  ... mode of PMF                                              */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... on success                                                   */
+     /*   0 ... on error                                                     */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( NULL, distr, 0 );
+  _unur_check_distr_object( distr, DISCR, 0 );
+
+  DISTR.mode = mode;
+
+  /* changelog */
+  distr->set |= UNUR_DISTR_SET_MODE;
+
+  /* o.k. */
+  return 1;
+} /* end of unur_distr_discr_set_mode() */
+
+/*---------------------------------------------------------------------------*/
+
+int 
+unur_distr_discr_upd_mode( struct unur_distr *distr )
+     /*----------------------------------------------------------------------*/
+     /* (re-) compute mode of distribution (if possible)                     */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   distr ... pointer to distribution object                           */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... on success                                                   */
+     /*   0 ... on error                                                     */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( NULL, distr, 0 );
+  _unur_check_distr_object( distr, DISCR, 0 );
+
+  if (DISTR.upd_mode == NULL) {
+    /* no function to compute mode available */
+    _unur_error(distr->name,UNUR_ERR_DISTR_DATA,"");
+    return 0;
+  }
+
+  /* compute mode */
+  if ((DISTR.upd_mode)(distr)) {
+    /* changelog */
+    distr->set |= UNUR_DISTR_SET_MODE;
+    return 1;
+  }
+  else {
+    /* computing of mode failed */
+    _unur_error(distr->name,UNUR_ERR_DISTR_SET,"");
+    return 0;
+  }
+
+} /* end of unur_distr_discr_upd_mode() */
+  
+/*---------------------------------------------------------------------------*/
+
+int
+unur_distr_discr_get_mode( struct unur_distr *distr )
+     /*----------------------------------------------------------------------*/
+     /* get mode of distribution                                             */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   distr ... pointer to distribution object                           */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   mode of distribution                                               */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( NULL, distr, INT_MAX );
+  _unur_check_distr_object( distr, DISCR, INT_MAX );
+
+  /* mode known ? */
+  if ( !(distr->set & UNUR_DISTR_SET_MODE) ) {
+    /* try to compute mode */
+    if (DISTR.upd_mode == NULL) {
+      /* no function to compute mode available */
+      _unur_error(distr->name,UNUR_ERR_DISTR_GET,"mode");
+      return INT_MAX;
+    }
+    else {
+      /* compute mode */
+      unur_distr_discr_upd_mode( distr );
+    }
+  }
+
+  return DISTR.mode;
+
+} /* end of unur_distr_discr_get_mode() */
+
+/*---------------------------------------------------------------------------*/
+
+int
 unur_distr_discr_set_pmfsum( struct unur_distr *distr, double sum )
      /*----------------------------------------------------------------------*/
      /* set sum over p.m.f.                                                  */

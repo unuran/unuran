@@ -195,6 +195,33 @@ int unur_distr_discr_get_domain( UNUR_DISTR *distribution, int *left, int *right
    for the chosen method).
 */
 
+int unur_distr_discr_set_mode( UNUR_DISTR *distribution, int mode );
+/* 
+   Set mode of distribution.
+*/
+
+int unur_distr_discr_upd_mode( UNUR_DISTR *distribution );
+/* 
+   Recompute the mode of the distribution. This call works properly
+   for distribution objects from the 
+   (=>) UNURAN library of standard distributions 
+   when the corresponding function is available.
+   Otherwise a (slow) numerical mode finder is used. If it failes
+   @code{unur_errno} is set to @code{UNUR_ERR_DISTR_DATA}.
+*/
+
+int unur_distr_discr_get_mode( UNUR_DISTR *distribution );
+/* 
+   Get mode of distribution. If the mode is not marked as known, 
+   unur_distr_cont_upd_mode() is called to compute the mode. If this
+   is not successful @code{INT_MAX} is returned and 
+   @code{unur_errno} is set to @code{UNUR_ERR_DISTR_GET}.
+   (There is no difference between the case where no routine for
+   computing the mode is available and the case where no mode exists
+   for the distribution at all.)
+*/
+
+
 int unur_distr_discr_set_pmfsum(UNUR_DISTR *distribution, double sum);
 /* 
    Set the sum over the p.m.f. If @code{sum} is non-positive, no

@@ -76,7 +76,7 @@ struct unur_gen *unur_cstd_init( struct unur_par *parameters );
 /** 
     double unur_cstd_sample( struct unur_gen *gen );
     Does not exists !!!
-    Sampling routines are defined in ../std_gen/ for each distributions.
+    Sampling routines are defined in ../distributions/ for each distributions.
 **/
 
 void unur_cstd_free( struct unur_gen *generator);

@@ -6,14 +6,19 @@
  *                                                                           *
  *   FILE:      vc_multicauchy.c                                             *
  *                                                                           *
- *****************************************************************************
+ *   REFERENCES:                                                             *
+ *                                                                           *
+ *   [5] S. Kotz, N. Balakrishnan, and N.L. Johnson                          *
+ *       Continuous Multivariate Distributions,                              *
+ *       Volume 1: Models and Applications                                   *
+ *       John Wiley & Sons, Inc., New York, 2000                             *
  *****************************************************************************
  *                                                                           *
- *  distr: Multivariate Cauchy distribution                                  *
+ *  distr: Multivariate Cauchy distribution [5; ch.45, p.219]                *
  *                                                                           *
  *  pdf:       f(x) = 1 / ( 1 + (x-mu)^t . Sigma^-1 . (x-mu) )^(dim+1)/2     * 
  *  domain:    Reals^(dim)                                                   *
- *  constant:  (2 pi)^(dim/2) * sqrt(det(Sigma))                             *
+ *  constant:  pi^((dim+1)/2) * sqrt(det(Sigma)) / Gamma((dim+1)/2           *
  *                                                                           *
  *  parameters:                                                              *
  *     0:  mean    ... mu      (default : 0-vector)                          *

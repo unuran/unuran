@@ -1,19 +1,23 @@
+
 @multitable @columnfractions .10 .06 .06 .065 .07 .06 .06
-@item name @tab cdf@footnote{cumulative distribution function} @tab pdf@footnote{distribution function} @tab dpdf@footnote{derivative of pdf} @tab mode@footnote{mode of the distribution} @tab area@footnote{area under pdf} @tab pv@footnote{probability vector}
+@item name @tab cdf @tab pdf @tab dpdf@tab mode@tab area@tab pv
 @c @item      @tab   @tab   @tab   @tab   @tab    @tab 
 @item AROU @tab     @tab @ x  @tab @ x @tab     @tab     @tab 
 @item CSTD @tab     @tab      @tab     @tab     @tab     @tab 
-@item DAU  @tab     @tab      @tab     @tab     @tab     @tab @ x 
-@item DGT  @tab     @tab      @tab     @tab     @tab     @tab 
-@item DSTD @tab     @tab      @tab     @tab     @tab     @tab 
-@item EMPK @tab     @tab      @tab     @tab     @tab     @tab
 @item NINV @tab @ x @tab (x) @footnote{Only required when inversion is done by Newton's method}              @tab     @tab     @tab     @tab
 @item SROU @tab     @tab @ x  @tab     @tab @ x @tab @ x @tab
 @item SSR  @tab     @tab @ x  @tab     @tab @ x @tab @ x @tab 
 @item TDR  @tab     @tab @ x  @tab @ x @tab     @tab     @tab
 @item UNIF @tab     @tab      @tab     @tab     @tab     @tab
 @item UTDR @tab     @tab @ x  @tab     @tab @ x @tab     @tab
+@item DAU  @tab     @tab      @tab     @tab     @tab     @tab @ x 
+@item DGT  @tab     @tab      @tab     @tab     @tab     @tab 
+@item DSTD @tab     @tab      @tab     @tab     @tab     @tab 
+@item EMPK @tab     @tab      @tab     @tab     @tab     @tab
 @end multitable
+Where cdf is the cumulated distribution function, pdf the distribution
+function, dpdf its derivative, mode the mode of the distribution, area is
+area below the pdf and pv is a probability vector.
 
 
 

@@ -450,6 +450,7 @@ All parameters have default settings documented in @ref{Defaults}.
 * Arbitrary::  Arbitrary distributions 
 * Continuous:: Preset continuous distributions
 * Discrete::   Preset discrete distributions
+* OtherDists:: Other kinds of distributions
 @end menu
 
 @noindent @strong{WARNING:} Naturally the computational accuracy
@@ -501,6 +502,10 @@ looked up in @ref{Do_it_yourself}.
 @node Discrete
 @section Discrete Distributions
 @include ref_distr_discr.texi
+
+@node OtherDists
+@section Other kinds of  Distributions
+@include ref_distr_other.texi
 
 @c --------------------------------------------------------------------
 

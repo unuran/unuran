@@ -17,6 +17,7 @@ texi_generated = \
  ref_distr.texi \
  ref_distr_discr.texi \
  ref_distr_cont.texi \
+ ref_distr_other.texi \
  ref_distr_lib.texi \
  ref_methods.texi \
  ref_method_functions.texi \
@@ -51,10 +52,13 @@ ref_distr.texi: $(method_dir)/distr.h
 	./distr.perl $(method_dir)/distr.h        > ref_distr.texi
 
 ref_distr_discr.texi: $(distr_dir)/d_*.c
-	./distr_discr.perl $(distr_dir)/d_*.c     > ref_distr_discr.texi
+	./distr_ref.perl $(distr_dir)/d_*.c     > ref_distr_discr.texi
 
 ref_distr_cont.texi: $(distr_dir)/c_*.c
-	./distr_cont.perl $(distr_dir)/c_*.c      > ref_distr_cont.texi
+	./distr_ref.perl $(distr_dir)/c_*.c      > ref_distr_cont.texi
+
+ref_distr_other.texi: $(distr_dir)/vc_*.c
+	./distr_ref.perl $(distr_dir)/vc_*.c      > ref_distr_other.texi
 
 ref_distr_lib.texi: $(distr_dir)/unuran_distributions.h
 	./distr_lib.perl $(distr_dir)/unuran_distributions.h > ref_distr_lib.texi

@@ -896,6 +896,13 @@ sub scan_validate {
 	}
     }
 
+    ## free distributions ##
+
+    print OUT "\n/* free distributions */\n";
+    for (my $i=0; $i<$n_distributions; ++$i) {
+	print OUT "\tunur_distr_free(distr[$i]);\n";
+    }
+
     ## end ##
 
     print OUT "\n\t/* test finished */\n";

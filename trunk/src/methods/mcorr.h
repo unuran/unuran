@@ -49,40 +49,58 @@
    =SPEED Set-up: fast,
           Sampling: depends on dimension
 
-   =REF  [DLa86: Sect.6.1; p.605], [MOa84]
+   =REF  [DLa86: Sect.6.1; p.605] [MOa84]
 
    =DESCRIPTION
-      MCORR generates a random correlation matrix.
-      Thus a matrix @unurmath{H} is generated where all rows are
+      MCORR generates a random correlation matrix
+      (Pearson's correlation).
+      Two methods are used:
+
+      @enumerate 
+      @item 
+      When a random correlation matrix having given eigenvalues is
+      sought, the method of Marsaglia and Olkin [MOa84] is used. 
+      In this case, the correlation matrix @unurmath{R}
+      is given as @unurmath{R=PDP'} where @unurmath{D} is a diagonal
+      matrix containing the eigenvalues and @unurmath{P} is a random
+      orthonormal matrix. In higher dimensions, the rounding-errors
+      introduced in the previous matrix multiplications could lead
+      to a non-symmetric correlation matrix. Therefore the symmetric 
+      correlation matrix is computed as @unurmath{R=(PDP'+P'DP)/2}.
+
+      @item 
+      A matrix @unurmath{H} is generated where all rows are
       independent random vectors of unit length uniformly on a sphere.
       Then @unurmath{HH'} is a correlation matrix (and vice versa if
       @unurmath{HH'} is a correlation matrix then the rows of
       @unurmath{H} are random vectors on a sphere).
+
+      @end enumerate
+
+      Notice that due to round-off errors the generated matrices might
+      not be positive definit in extremely rare cases
+      (especially when the given eigenvalues are amost 0).
+
       There are many other possibilites (distributions) of sampling
-      the random rows from a sphere. The chosen one is simple but
-      does in not result in a uniform distriubution of the random
+      the random rows from a sphere. The chosen methods are simple but
+      does not result in a uniform distriubution of the random
       correlation matrices.
 
       It only works with distribution objects of random correlation
       matrices (@pxref{correlation,,Random Correlation Matrix}).
 
-      Alternatively, when a random correlation matrix having given 
-      eigenvalues is sought, the method of Marsaglia and Olkin
-      will be used. In this case, the correlation matrix @unurmath{C}
-      is given as @unurmath{C=PDP'} where @unurmath{D} is a diagonal
-      matrix containing the eigenvalues and @unurmath{P} is a random
-      orthogonal matrix. In higher dimensions, the rounding-errors
-      introduced in the previous matrix multiplications could lead
-      to a non-symmetric correlation matrix.
-      We have therefore chosen to calculate the explicitely symmetric 
-      correlation matrix as @unurmath{C=(PDP'+P'DP)/2}.
-      Thus, in very rare cases, this explicit symmetrization may produce 
-      matrices which are not positive definite.
-   
    =HOWTOUSE
       Create a distibution object for random correlation matrices by a
       @code{unur_distr_correlation} call
       (@pxref{correlation,,Random Correlation Matrix}).
+      
+      When a correlation matrix with given eigenvalues should be
+      generated, these eigenvalues can be set by a
+      unur_mcorr_set_eigenvalues() call.
+      
+      Otherwise, a faster algorithm is used that generates
+      correlation matrices with random eigenstructure.
+
       Notice that due to round-off errors,
       there is a (small) chance that the resulting matrix is
       not positive definite for a Cholesky decomposition algorithm,
@@ -106,6 +124,14 @@ int unur_mcorr_set_eigenvalues( UNUR_PAR *par, double *eigenvalues );
    Sets the (optional) eigenvalues of the correlation matrix.
    If set, then the Marsaglia and Olkin algorithm will be used 
    to generate random correlation matrices with given eigenvalues.
+
+   Important: all eigenvalues must be positive, i.e. greater than
+   0. Otherwise no eigenvalues are set and an error code is returned.
+
+   Notice, that eigenvalues of a correlation matrix sum to positive
+   (to be precise: non-negative) and sum to the dimension of the
+   matrix. Otherwise, the given eigenvalues are normalized
+   implicitly. 
 */
 
 /* =END */

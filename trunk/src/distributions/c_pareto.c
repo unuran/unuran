@@ -79,7 +79,7 @@ double
 _unur_pdf_pareto( double x, UNUR_DISTR *distr )
 { 
   register double *params = DISTR.params;
-  return ( (x<k) ? 0. : pow(x,-(a+1.))/NORMCONSTANT );
+  return ( (x<k) ? 0. : pow(x,-(a+1.))*NORMCONSTANT );
 } /* end of _unur_pdf_pareto() */
 
 /*---------------------------------------------------------------------------*/
@@ -88,7 +88,7 @@ double
 _unur_dpdf_pareto( double x, UNUR_DISTR *distr )
 { 
   register double *params = DISTR.params;
-  return ( (x<k) ? 0. : (1.-a) * pow(x,-(a+2.))/NORMCONSTANT );
+  return ( (x<k) ? 0. : (-1.-a) * pow(x,-(a+2.))*NORMCONSTANT );
 } /* end of _unur_dpdf_pareto() */
 
 /*---------------------------------------------------------------------------*/

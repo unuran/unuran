@@ -21,7 +21,7 @@
 
 /*---------------------------------------------------------------------------*/
 
-int test_cont_cdf_pdf( UNUR_DISTR *distr, char *datafile, double max_diff )
+int test_cdf_pdf( UNUR_DISTR *distr, char *datafile, double max_diff )
      /*----------------------------------------------------------------------*/
      /* test CDF, PDF and derivative of PDF by comparing to data             */
      /* read from file created by Mathematica.                               */
@@ -200,7 +200,7 @@ int test_cont_cdf_pdf( UNUR_DISTR *distr, char *datafile, double max_diff )
 
 #undef BUFSIZE
 #undef MAX_FPARAMS
-} 
+} /* end of test_cdf_pdf() */
 
 /*---------------------------------------------------------------------------*/
 

@@ -107,7 +107,7 @@ _unur_pdf_chi(double x, UNUR_DISTR *distr)
     /* out of support */
     return 0.;
 
-  return (pow(x,nu - 1.) * exp(-x*x/2. - LOGNORMCONSTANT));
+  return (exp(log(x)*(nu - 1.) -x*x/2. - LOGNORMCONSTANT));
 
 } /* end of _unur_pdf_chi() */
 
@@ -122,7 +122,7 @@ _unur_dpdf_chi(double x, UNUR_DISTR *distr)
     /* out of support */
     return 0.;
 
-  return ( pow(x,nu - 2.) * exp(-x*x/2. - LOGNORMCONSTANT) * (nu - 1. - x*x) );
+  return ( exp(log(x)*(nu - 2.)-x*x/2. - LOGNORMCONSTANT) * (nu - 1. - x*x) );
 } /* end of _unur_dpdf_chi() */
 
 /*---------------------------------------------------------------------------*/
@@ -167,7 +167,7 @@ int
 _unur_upd_area_chi( UNUR_DISTR *distr )
 {
   /* normalization constant */
-  LOGNORMCONSTANT = _unur_sf_ln_gamma(DISTR.nu/2.) - M_LN2 * (DISTR.nu/2. - 1.);
+  LOGNORMCONSTANT = _unur_sf_ln_gamma(DISTR.nu/2.) + M_LN2 * (DISTR.nu/2. - 1.);
 
   if (distr->set & UNUR_DISTR_SET_STDDOMAIN) {
     DISTR.area = 1.;
@@ -266,7 +266,7 @@ unur_distr_chi( double *params, int n_params )
 
   /* log of normalization constant */
 #ifdef HAVE_AREA
-  LOGNORMCONSTANT = _unur_sf_ln_gamma(DISTR.nu/2.) - M_LN2 * (DISTR.nu/2. - 1.);
+  LOGNORMCONSTANT = _unur_sf_ln_gamma(DISTR.nu/2.) + M_LN2 * (DISTR.nu/2. - 1.);
 #else
   LOGNORMCONSTANT = 0.;
 #endif

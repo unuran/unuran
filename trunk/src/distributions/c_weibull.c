@@ -139,7 +139,7 @@ _unur_dpdf_weibull( double x, UNUR_DISTR *distr )
 
   /* else */
   xc = -pow (x, c);
-  return (exp (xc + (c-2.) * log (x)) * (-1. - c * (xc-1.)) * NORMCONSTANT);
+  return (exp (xc + (c-2.) * log (x)) * (-1. - c * (-xc-1.)) * NORMCONSTANT * factor);
 
 } /* end of unur_dpdf_weibull() */
 

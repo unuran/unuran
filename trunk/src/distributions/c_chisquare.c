@@ -172,7 +172,7 @@ int
 _unur_upd_area_chisquare( UNUR_DISTR *distr )
 {
   /* normalization constant */
-  LOGNORMCONSTANT = _unur_sf_ln_gamma(DISTR.nu/2.) - M_LN2 * (DISTR.nu/2.);
+  LOGNORMCONSTANT = _unur_sf_ln_gamma(DISTR.nu/2.) + M_LN2 * (DISTR.nu/2.);
 
   if (distr->set & UNUR_DISTR_SET_STDDOMAIN) {
     DISTR.area = 1.;
@@ -271,7 +271,7 @@ unur_distr_chisquare( double *params, int n_params )
 
   /* log of normalization constant */
 #ifdef HAVE_AREA
-  LOGNORMCONSTANT = _unur_sf_ln_gamma(DISTR.nu/2.) - M_LN2 * (DISTR.nu/2.);
+  LOGNORMCONSTANT = _unur_sf_ln_gamma(DISTR.nu/2.) + M_LN2 * (DISTR.nu/2.);
 #else
   LOGNORMCONSTANT = 0.;
 #endif

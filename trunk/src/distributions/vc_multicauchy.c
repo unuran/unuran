@@ -186,7 +186,7 @@ _unur_dlogpdf_multicauchy( double *result, const double *x, UNUR_DISTR *distr )
     for (j=0; j<dim; j++) 
       result[i] -= (x[j]-mean[j]) * (covar_inv[idx(i,j)]+covar_inv[idx(j,i)]);
   
-    result[i] *= 1./(1+xx);
+    result[i] *= .5*(dim+1)/(1+xx);
   }
   
   return UNUR_SUCCESS; 

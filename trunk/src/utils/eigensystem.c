@@ -61,6 +61,90 @@ static int _unur_eigensystem_back(int dim, double *a, double *e, double *c);
 
 /* ---------------------------------------------------------------------------- */
 
+
+int _unur_matrix_eigensystem(int dim, const double *M, double *values, double *vectors)
+     /*----------------------------------------------------------------------*/
+     /* Computes the eigenvalues and the corresponding eigenvectors          */
+     /* of a real symmetric matrix M. 					     */
+     /* The eigenvectors are normalized and (almost) orthognal.              */
+     /* The eigenvectors are stored consecutively in vectors.                */
+     /*	                                                                     */
+     /* Method:                                                              */
+     /*   Householder tri-diagonalization                                    */
+     /*   Secant-QR method                                                   */
+     /*   Inverse iteration                                                  */
+     /*	                                                                     */
+     /* Parameters:                                                          */
+     /*   dim     : dimension                                                */
+     /*   M       : real symmetric dim x dim matrix                          */
+     /*	                                                                     */
+     /* Output:                                                              */
+     /*   values  : eigenvalues of M in ascending order                      */
+     /*   vectors : normalized eigenvectors of M stored row-wise             */
+     /*	                                                                     */
+     /* Return:                                                              */
+     /*   UNUR_SUCCESS : eignesystem successfully computed                   */
+     /*   UNUR_FAILURE : qr algorithm did not converge                       */
+     /*   UNUR_ERR_NULL: invalid NULL pointer occurred                       */
+     /*----------------------------------------------------------------------*/
+{
+  double *A; /* local working copy of M (elements of A will be overwritten) */
+  double *diag; 
+  double *codiag; 
+  double *wk;
+  int *in;
+
+  int i;
+  int ret = 0; /* UNUR_SUCCESS */
+ 
+  /* Check arguments */
+  CHECK_NULL(M,UNUR_ERR_NULL);
+
+  /* make a local copy of the matrix M -> A */
+  A = _unur_malloc(dim*dim*sizeof(double));
+  memcpy(A, M, dim*dim*sizeof(double));
+
+  /* alocate working arrays */
+  diag = _unur_malloc(dim*sizeof(double));   
+  codiag = _unur_malloc(dim*sizeof(double)); /* stored in 0..(dim-2) */
+  wk = _unur_malloc((5*dim+2)*sizeof(double)); /*working array */
+  in = _unur_malloc(dim*sizeof(int)); /*working array */
+
+  /* calculate tridiagonal Householder matrix */
+  _unur_eigensystem_house(dim, A, diag, codiag, &wk[0]);
+  for (i=1; i<dim; i++) { 
+    wk[  dim+i-1] = diag[i-1];
+    wk[2*dim+i-1] = codiag[i-1];
+    wk[3*dim+i-1] = wk[i-1];
+  }
+  wk[dim+dim-1]=diag[dim-1];
+
+  /* obtain the eigenvalues */
+  ret = _unur_eigensystem_newqr(dim, &wk[dim], &wk[2*dim], &wk[3*dim], values);
+  if (ret != UNUR_SUCCESS) {
+    /* could not compute eigenvalues */
+    goto free_memory;
+  }
+
+  /* obtain the eigenvectors of the tri-diagonal matrix */
+  _unur_eigensystem_trinv(dim, diag, codiag, values, vectors,
+     &wk[0], &wk[dim], &wk[2*dim], &wk[3*dim], &wk[4*dim], in);
+  
+  /* obtain eigenvectors of original matrix A */
+  _unur_eigensystem_back(dim, A, codiag, vectors);
+  
+free_memory:
+
+  if (A) free(A);
+  if (diag) free(diag);
+  if (codiag) free(codiag);
+  if (wk) free(wk);
+  if (in) free(in);
+
+  return ret; 
+} /* end of _unur_matrix_eigensystem() */
+
+/* ---------------------------------------------------------------------------- */
 int 
 _unur_eigensystem_house(int dim, double *A, double *d, double *e, double *e2)
 	/*----------------------------------------------------------------------*/
@@ -454,80 +538,4 @@ int _unur_eigensystem_back(int dim, double *a, double *e, double *c)
 #undef idx1  
 } /* end of _unur_eigensystem_back() */
 
-/* ---------------------------------------------------------------------------- */
-
-int _unur_matrix_eigensystem(int dim, const double *M, double *values, double *vectors)
-{
-	/*----------------------------------------------------------------------*/
-        /* Computes the eigenvalues and the corresponding eigenvectors		*/
-	/* of a real symmetric matrix M 					*/
-	/*									*/
-	/* Method :								*/
-	/*   Householder tri-diagonalization					*/
-	/*   Secant-QR method							*/
-	/*   Inverse iteration							*/
-	/*									*/
-	/* Parameters								*/
-	/*   dim     : dimension						*/
-	/*   M	     : real symmetric dim x dim matrix				*/
-	/*   values  : eigenvalues of M in ascending order			*/
-	/*   vectors : (normalized) eigenvectors of M stored row-wise	 	*/
-	/*									*/
-	/* Return value								*/
-	/*   UNUR_SUCCESS : normal case 	 				*/
-	/*   UNUR_FAILURE : qr algorithm did not converge			*/
-	/*----------------------------------------------------------------------*/
-  double *A; /* local copy of M (elements of A will be overwritten) */
-  double *diag; 
-  double *codiag; 
-  double *wk;
-  int *in;
-
-  int i;
-  int ret = 0; /* UNUR_SUCCESS */
- 
-  /* make a local copy of the matrix M -> A */
-  A = _unur_malloc(dim*dim*sizeof(double));
-  memcpy(A, M, dim*dim*sizeof(double));
-
-  /* alocate working arrays */
-  diag = _unur_malloc(dim*sizeof(double));   
-  codiag = _unur_malloc(dim*sizeof(double)); /* stored in 0..(dim-2) */
-  wk = _unur_malloc((5*dim+2)*sizeof(double)); /*working array */
-  in = _unur_malloc(dim*sizeof(int)); /*working array */
-
-  /* calculate tridiagonal Householder matrix */
-  _unur_eigensystem_house(dim, A, diag, codiag, &wk[0]);
-  for (i=1; i<dim; i++) { 
-    wk[  dim+i-1] = diag[i-1];
-    wk[2*dim+i-1] = codiag[i-1];
-    wk[3*dim+i-1] = wk[i-1];
-  }
-  wk[dim+dim-1]=diag[dim-1];
-
-  /* obtain the eigenvalues */
-  ret = _unur_eigensystem_newqr(dim, &wk[dim], &wk[2*dim], &wk[3*dim], values);
-  if (ret != UNUR_SUCCESS) {
-    /* could not compute eigenvalues */
-    goto free_memory;
-  }
-
-  /* obtain the eigenvectors of the tri-diagonal matrix */
-  _unur_eigensystem_trinv(dim, diag, codiag, values, vectors,
-     &wk[0], &wk[dim], &wk[2*dim], &wk[3*dim], &wk[4*dim], in);
-  
-  /* obtain eigenvectors of original matrix A */
-  _unur_eigensystem_back(dim, A, codiag, vectors);
-  
-free_memory:
-
-  if (A) free(A);
-  if (diag) free(diag);
-  if (codiag) free(codiag);
-  if (wk) free(wk);
-  if (in) free(in);
-
-  return ret; 
-} /* end of _unur_matrix_eigensystem() */
-
-/* ---------------------------------------------------------------------------- */
+/* ------------------------------------------------------------------------- */

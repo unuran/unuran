@@ -62,7 +62,7 @@ int _unur_matrix_debug (int dim, const double *M, const char *info, const char *
 
 int _unur_matrix_eigensystem (int dim, const double *M, double *values, double *vectors );
 /* Calculates eigenvalues and eigenvectors of real symmetric matrix M.      */
+/* The eigenvectors are normalized and (almost) orthognal.                  */
 /* The eigenvectors are stored consecutively in the array vectors.          */
-
 
 /*--------------------------------------------------------------------------*/

@@ -779,6 +779,14 @@ unur_ninv_chg_pdfparams( struct unur_gen *gen, double *params, int n_params )
      gen->set &= ~NINV_SET_CDFMODE;
   */
 
+  /* set bounds of U -- in respect to given bounds                          */
+  GEN.Umin = (DISTR.BD_LEFT  <= -INFINITY) ? 0.0 : CDF(DISTR.BD_LEFT); 
+  GEN.Umax = (DISTR.BD_RIGHT >=  INFINITY) ? 1.0 : CDF(DISTR.BD_RIGHT); 
+
+  /* regenerate table */
+  if (GEN.table_on)
+     _unur_ninv_create_table(gen);
+
   /* o.k. */
   return 1;
 } /* end of unur_ninv_chg_pdfparams() */

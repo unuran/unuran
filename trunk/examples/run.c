@@ -383,7 +383,7 @@ int main()
   unur_run_tests(par,RUN_TESTS);
 #endif
 
-#if 1
+#if 0
   fpar[0] = 5;
   distr_xxx = unur_distr_poisson(fpar,1);
   par = unur_dstd_new(distr_xxx);
@@ -392,6 +392,20 @@ int main()
   fpar[0] = 15;
   distr_xxx = unur_distr_poisson(fpar,1);
   par = unur_dstd_new(distr_xxx);
+  unur_run_tests(par,RUN_TESTS);
+#endif
+
+#if 1
+  fpar[0] = 5;
+  distr_xxx = unur_distr_poisson(fpar,1);
+  par = unur_dstd_new(distr_xxx);
+  unur_dstd_set_variant(par,2);
+  unur_run_tests(par,RUN_TESTS);
+
+  fpar[0] = 15;
+  distr_xxx = unur_distr_poisson(fpar,1);
+  par = unur_dstd_new(distr_xxx);
+  unur_dstd_set_variant(par,2);
   unur_run_tests(par,RUN_TESTS);
 #endif
 

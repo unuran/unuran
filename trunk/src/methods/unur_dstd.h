@@ -62,7 +62,8 @@ struct unur_dstd_gen {
   double  umin;           /* cdf at left boundary of domain                  */
   double  umax;           /* cdf at right boundary of domain                 */
 
-  struct unur_gen *gen_aux; /* pointer to auxilliary generator               */
+  struct unur_gen *gen_aux;   /* pointer to auxilliary generator             */
+  struct unur_gen *gen_aux_2; /* pointer to second auxilliary generator      */
 };
 
 /*---------------------------------------------------------------------------*/

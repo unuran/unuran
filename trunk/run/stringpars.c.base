@@ -410,23 +410,3 @@ UNUR_GEN *make_gen_obj (char *str){
   return (gen);
 
 }
-
-
-
-
-
-/* main -- test program */
-int main(){
-
-  int i;
-
-  UNUR_GEN *gen;
-  char str[] = "    distr  =normal   ((((1,  1  )  ; domain  =  (  -1,  1) : method= arou   (1,2)  :   weiter =(2,2)  ";
-  gen = make_gen_obj(str);
-
-  for ( i=0; i<15; i++){
-    printf("random number: %f\n", unur_sample_cont(gen));
-  }
-
-  return (0);
-}

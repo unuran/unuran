@@ -1,4 +1,3 @@
-
 \input texinfo   @c -*-texinfo-*-
 
 @c $Id$
@@ -43,6 +42,7 @@ Date: @value{UPDATED}
 
 @menu
 * Intro::                  Introduction
+* Examples::               Examples
 * Methods::                How should the random numbers be created
 * Distributions::          Distributions
 @end menu
@@ -71,10 +71,101 @@ Date: @value{UPDATED}
 
 @c --------------------------------------------------------------------
 
+@node Examples
+@chapter Examples
+@menu
+* Ex1:: As short as possible
+* Ex2:: Use of arbitrary pdf
+* Ex3:: Change function parameters
+* Ex4:: Change the uniform random generator
+@end menu
+
+Assuming UNURAN has been installed successfully, here are some examples
+showing how to obtain random numbers. Beginning with the basics of using
+UNURAN we evolve to examples using more advanced features.@*
+Call the compiler with:
+@smallexample
+  gcc -Wall -O2 example.c -lunuran -lprng -lm -lmd -o outfile
+@end smallexample 
+@*
+If the PRNG-library is not installed, @code{-lprng} must be
+omitted and of course can't be used.
+@*
+The internals of UNURAN are hidden behind three basic structures:
+The @emph{distribution object},
+the @emph{parameter object}
+and the @emph{generator object}.
+It is not important to understand the details of these objects but
+to observe the order of creating them which is the order given above.
+The actual sampling is done with the @emph{generator object} while
+the other two objects are mainly aids for creating it. 
+(The @emph{paramter object} is destroyed during the creation of
+the @emph{generator object} and can't be reused.)
+It is also recommended not to change the @emph{distribution object}
+between the creation of the other two objects.
+
+
+@node Ex1
+@section Ex1: As short as possible
+
+@smallexample
+@include ref_example1.texi
+@end smallexample
+
+@node Ex2
+@section Ex2: Arbitrary distributions
+
+If you want to sample from a non-standard distribution,
+UNURAN might be exactly what you need. 
+Depending on the information is available, a method
+must be choosen for sampling.
+--> REFERENCE to table!!!
+
+@smallexample
+@include ref_example2.texi
+@end smallexample
+
+@node Ex3
+@section Ex3: Changing Parameters of the method
+
+Each method for generating random numbers allows several
+parameters to be modified. If you don't wand UNURAN to choose
+default values, it is possible to change them.
+--> REFERENCE to Methods
+The following example will illustrate how to change parameters.
+
+@smallexample
+@include ref_example3.texi
+@end smallexample
+
+@node Ex4
+@section Ex4: Changing the uniform random generator
+
+To generate special uniformly distributed random numbers,
+the PRNG-package can be used (it must be installed seperately).
+This can be done by changing two lines in the file
+@code{unuran_config.c}. Find the following lines in the file
+and modify them as shown below:
+@smallexample
+  /* set type of uniform generator             */
+  /* #define UNUR_URNG_TYPE UNUR_URNG_POINTER  */
+  #DEFINE UNUR_URNG_TYPE UNUR_URNG_PRGN
+@end smallexample
+@* (Just comment one line and uncomment the next) 
+
+@smallexample
+@include ref_example4.texi
+@end smallexample
+
+@c --------------------------------------------------------------------
+
 @include unuran_src.texi
+
+
 
 @c --------------------------------------------------------------------
 @bye
+
 
 
 

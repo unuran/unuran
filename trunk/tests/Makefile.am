@@ -7,25 +7,38 @@ INCLUDES = \
  -I$(top_srcdir)/src/tests
 
 check_PROGRAMS = \
+ t_dgt \
  t_stdr \
  t_srou \
  t_unif 
 
 TESTS = \
+ t_dgt \
  t_stdr \
  t_srou \
  t_unif 
 
+EXTRA_DIST = \
+ dgt.conf \
+ stdr.conf \
+ srou.conf \
+ unif.conf
 
-t_srou_SOURCES = t_srou.c list_of_distributions.c
+t_dgt_SOURCES = t_dgt.c testroutines.c list_of_distributions.c
+t_dgt_LDADD = $(top_builddir)/src/libunuran.a -lprng -lml -lm
+
+t_srou_SOURCES = t_srou.c testroutines.c list_of_distributions.c
 t_srou_LDADD = $(top_builddir)/src/libunuran.a -lprng -lml -lm
 
-t_stdr_SOURCES = t_stdr.c list_of_distributions.c
+t_stdr_SOURCES = t_stdr.c testroutines.c list_of_distributions.c
 t_stdr_LDADD = $(top_builddir)/src/libunuran.a -lprng -lml -lm
 
-t_unif_SOURCES = t_unif.c list_of_distributions.c
+t_unif_SOURCES = t_unif.c  testroutines.c list_of_distributions.c
 t_unif_LDADD = $(top_builddir)/src/libunuran.a -lprng -lml -lm
 
+
+t_dgt.c: dgt.conf make_test_files.pl
+	./make_test_files.pl dgt.conf
 
 t_srou.c: srou.conf make_test_files.pl
 	./make_test_files.pl srou.conf

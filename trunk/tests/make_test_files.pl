@@ -26,6 +26,10 @@ use English;
 
 ############################################################
 
+$unuran_h_file = "../src/unuran.h";
+
+#############################################################
+
 ############################################################
 #                                                          #
 #  main                                                    #
@@ -140,6 +144,9 @@ while (1) {
     }
 }
 
+# transform \# --> #
+$C_header_aux =~ s/\\#/#/g;
+
 # check data ...
 die "Data missing" unless (defined $gen_type and
 			   defined $distr_type and 
@@ -169,12 +176,12 @@ int main()
 { 
 	/* open log file for unuran and set output stream for unuran messages */
 	UNURANLOG = fopen( "$file_unuranlog","w" );
-	abort_if_NULL( -1, UNURANLOG );
+	abort_if_NULL( stderr,-1, UNURANLOG );
 	unur_set_stream( UNURANLOG );
 
 	/* open log file for testing */
 	TESTLOG = fopen( "$file_testlog","w" );
-	abort_if_NULL( -1, TESTLOG );
+	abort_if_NULL( stderr,-1, TESTLOG );
 
 	/* write header into log file */
   	{
@@ -230,12 +237,12 @@ EOM
 #                                                          #
 ############################################################
 
-	$section = $next_section;
+    $section = $next_section;
 
-    until ($section =~ /verbatim/) {
-	$next_section = scan_section($section);
-	$section = $next_section;
-    }
+until ($section =~ /verbatim/) {
+    $next_section = scan_section($section);
+    $section = $next_section;
+}
 
 ############################################################
 #                                                          #
@@ -251,6 +258,8 @@ while (<IN>) {
 }
 
 print_C_routines();
+
+add_unur_set_verify_routine();
 
 ############################################################
 #                                                          #
@@ -349,10 +358,12 @@ EOM
 		last unless /[^\s]+/;
 	    }
 
+            # transform \# --> #
+	    $line =~ s/\\#/#/g;
+
 	    # there should be a closing ] ...
 	    die "closing ] missing" unless $line =~ /\]\s*$/;
 	
-
 	    # remove this bracket ...
 	    $line =~ s/\]\s*$/\n/;
 	
@@ -371,7 +382,7 @@ EOM
 	    }
 	
 	    # lines indicated with "<-- ! NULL" must not produce a NULL pointer 
-	    $line =~ s/^(.*)=(.*)<--\s+!\s*NULL\s*\n/$1=$2\nabort_if_NULL\($INPUT_LINE_NUMBER, $1\)\;\n/mg;
+	    $line =~ s/^(.*)=(.*)<--\s+!\s*NULL\s*\n/$1=$2\nabort_if_NULL\(TESTLOG, $INPUT_LINE_NUMBER, $1\)\;\n/mg;
 
 	}
 	else {
@@ -408,6 +419,9 @@ EOM
 	    }
 	    last if /^\[/;       # start of next (sub) section
 
+            # transform \# --> #
+	    $line =~ s/\\#/#/g;
+
 	    # analyze string ...
 	    my ($code,$test_command,$errno) = split /-->/, $line;
 
@@ -441,7 +455,7 @@ EOM
 
 	    # error code ...
 	    $errno =~ s/[\s\n]+//g if defined $errno;
-	    print OUT "check_errorcode( $INPUT_LINE_NUMBER, $errno )\;\n" if $errno;
+	    print OUT "n_tests_failed += check_errorcode( TESTLOG, $INPUT_LINE_NUMBER, $errno )\;\n" if $errno;
 
 	}
 
@@ -484,7 +498,7 @@ sub print_test_command {
 	  $test_command =~ /^\s*expected_reinit\s*/ or
 	  $test_command =~ /^\s*expected_no_reinit\s*/) {
 	  $test_command =~ s/\s+//g;
-	  print OUT "check_$test_command\( $INPUT_LINE_NUMBER, ($last_C_line) )\;\n";
+	  print OUT "n_tests_failed += check_$test_command\( TESTLOG, $INPUT_LINE_NUMBER, ($last_C_line) )\;\n";
 	  last SWITCH;
       }
       if ($test_command =~ /^\s*compare_double_sequence_par\s*$/ or
@@ -493,18 +507,18 @@ sub print_test_command {
 	  $test_command =~ /^\s*compare_int_sequence_par_start\s*$/ ) {
 	  $test_command =~ s/\s+//g;
 	  print OUT "$last_C_line\;\n";
-	  print OUT "$test_command\( $INPUT_LINE_NUMBER, par, COMPARE_SAMPLE_SIZE );\n";
+	  print OUT "n_tests_failed += $test_command\( TESTLOG, $INPUT_LINE_NUMBER, urng, par, COMPARE_SAMPLE_SIZE );\n";
 	  last SWITCH;
       }
       if ($test_command =~ /^\s*compare_double_sequence_urng_start\s*$/ ) {
 	  $test_command =~ s/\s+//g;
 	  print OUT "$last_C_line\;\n";
-	  print OUT "$test_command\( $INPUT_LINE_NUMBER, urng, COMPARE_SAMPLE_SIZE );\n";
+	  print OUT "$test_command\( TESTLOG, $INPUT_LINE_NUMBER, urng, COMPARE_SAMPLE_SIZE );\n";
 	  last SWITCH;
       }
       if ($test_command =~ /^\s*run_verify_generator\s*$/) {
 	  print OUT "$last_C_line\;\n";
-	  print OUT "$test_command( $INPUT_LINE_NUMBER, par );\n";
+	  print OUT "$test_command( TESTLOG,$INPUT_LINE_NUMBER, par );\n";
 	  last SWITCH;
       }
       if ($test_command =~ /^\s*run_validate_chi2\s*\{(.*)/) {
@@ -579,24 +593,10 @@ void test_reinit( void );
 void test_sample( void );
 void test_validate( void );
 
-void abort_if_NULL( int line, void *ptr );
-void check_errorcode( int line, unsigned errno );
-void check_expected_NULL( int line, void *ptr );
-void check_expected_setfailed( int line, int ok );
-void check_expected_reinit( int line, int ok );
-void check_expected_no_reinit( int line, int ok );
-void compare_double_sequence_par( int line, UNUR_PAR *par, int sample_size );
-void compare_double_sequence_par_start( int line, UNUR_PAR *par, int sample_size );
-void compare_double_sequence_urng_start( int line, struct prng *prng, int sample_size );
-void compare_int_sequence_par( int line, UNUR_PAR *par, int sample_size );
-void compare_int_sequence_par_start( int line, UNUR_PAR *par, int sample_size );
-void run_verify_generator( int line, UNUR_PAR *par );
+void run_verify_generator( FILE *LOG, int line, UNUR_PAR *par );
 void run_validate_chi2( int line );
-void run_cont_chi2( int line, UNUR_PAR *par, UNUR_DISTR *distr );
-void run_level2( int line, double *pvals, int n_pvals );
-void print_distr_name( UNUR_DISTR *distr, const char *genid );
-void print_pval( double pval, int trial );
-void check_pval( int line, UNUR_GEN *gen, double pval, int trial );
+
+int unur_$method\_set_verify( UNUR_PAR *par, int );
 
 /*---------------------------------------------------------------------------*/
 
@@ -612,251 +612,11 @@ sub print_C_routines {
 
     print OUT <<EOM;
 
-/*---------------------------------------------------------------------------*/
-/* check for invalid NULL pointer, that should not happen in this program */
-
-void abort_if_NULL( int line, void *ptr )
-{
-	if (ptr) return; /* o.k. */
-
-	/* 
-	   There must not be a NULL pointer.
-	   Since we do not expect a NULL pointer something serious has
-	   happend. So it is better to abort the tests.
-	*/
-	fprintf(TESTLOG,"line %4d: Unexpected NULL pointer. Panik --> Abort tests!!\\n\\n",line);
-	printf(" Panik --> Tests aborted\\n"); fflush(stdout);
-
-	test_ok = FALSE;
-  
-	/* test finished */
-	printf("\\n");  fflush(stdout);
-
-	/* close log files and exit */
-	fclose(TESTLOG);
-	fclose(UNURANLOG);
-	exit(-1);
-} /* abort_if_NULL() */
 
 /*---------------------------------------------------------------------------*/
-/* compare error code */
+/* run generator in verifying mode */
 
-void check_errorcode( int line, unsigned errno )
-{
-	fprintf(TESTLOG,"line %4d: Error code ...\\t\\t",line);
-	if (unur_errno != errno) {
-		++n_tests_failed;
-		fprintf(TESTLOG," Failed");
-		fprintf(TESTLOG," (observed = %#x, expected = %#x)\\n",unur_errno,errno);
-	}
-	else
-		fprintf(TESTLOG," ok\\n");
-} /* end of check_errorcode() */
-
-/*---------------------------------------------------------------------------*/
-/* check for expected NULL pointer */
-
-void check_expected_NULL( int line, void *ptr )
-{
-	fprintf(TESTLOG,"line %4d: NULL pointer expected ...\\t",line);
-	if (ptr != NULL) { 
-		++n_tests_failed;
-		fprintf(TESTLOG," Failed\\n");
-	}
-	else
-		fprintf(TESTLOG," ok\\n");
-} /* end of check_expected_NULL() */
-
-/*---------------------------------------------------------------------------*/
-/* check for "set failed" */
-
-void check_expected_setfailed( int line, int ok )
-{
-	fprintf(TESTLOG,"line %4d: `failed' expected ...\\t",line);
-	if (ok) {
-		++n_tests_failed;
-		fprintf(TESTLOG," Failed\\n");
-	}
-	else
-		fprintf(TESTLOG," ok\\n");
-} /* end of check_expected_setfailed() */
-
-/*---------------------------------------------------------------------------*/
-/* check for reinit */
-
-void check_expected_reinit( int line, int ok )
-{
-	fprintf(TESTLOG,"line %4d: reinit ...\\t\\t\\t",line);
-	if (!ok) {
-		++n_tests_failed;
-		fprintf(TESTLOG," Failed\\n");
-	}
-	else
-		fprintf(TESTLOG," ok\\n");
-} /* end of check_expected_reinit() */
-
-/*---------------------------------------------------------------------------*/
-/* check for non existing reinit */
-
-void check_expected_no_reinit( int line, int ok )
-{
-	fprintf(TESTLOG,"line %4d: no reinit ...\\t\\t",line);
-	if (ok) {
-		++n_tests_failed;
-		fprintf(TESTLOG," Failed\\n");
-	}
-	else
-		fprintf(TESTLOG," ok\\n");
-} /* end of check_expected_no_reinit() */
-
-/*---------------------------------------------------------------------------*/
-/* compare double sequences generated by generator */
-
-#define double_not_equal(a,b) \\
-	( ((a) > 0. && ((a) > (1.+DBL_EPSILON) * (b) || \\
-			(a) < (1.-DBL_EPSILON) * (b)) ) || \\
-	  ((a) < 0. && ((a) < (1.+DBL_EPSILON) * (b) || \\
-			(a) > (1.-DBL_EPSILON) * (b)) ) )
-
-static double *double_sequence_A = NULL;
-
-void compare_double_sequence_par_start( int line, UNUR_PAR *par, int sample_size )
-{
-	UNUR_GEN *gen;
-	int i;
-
-	if (double_sequence_A == NULL) {
-		double_sequence_A = malloc( sample_size * sizeof(double) );
-		abort_if_NULL(-1, double_sequence_A);
-	}
-
-	/* generate sequence */
-	prng_reset(urng);
-	gen = unur_init( par ); abort_if_NULL(line,gen);
-
-	for (i=0; i<sample_size; i++)
-		double_sequence_A[i] = unur_sample_cont(gen);
-
-	unur_free(gen); 
-
-} /* end of compare_double_sequence_par_start() */
-
-
-void compare_double_sequence_urng_start( int line, struct prng *prng, int sample_size )
-{
-	int i;
-
-	if (double_sequence_A == NULL) {
-		double_sequence_A = malloc( sample_size * sizeof(double) );
-		abort_if_NULL(-1, double_sequence_A);
-	}
-
-	/* generate sequence */
-	prng_reset(prng);
-	for (i=0; i<sample_size; i++)
-		double_sequence_A[i] = prng_get_next(prng);
-
-} /* end of compare_double_sequence_urng() */
-
-
-void compare_double_sequence_par( int line, UNUR_PAR *par, int sample_size )
-{
-	UNUR_GEN *gen;
-	int i;
-	int ok = TRUE;
-	double x;
-
-	/* init generator */
-	prng_reset(urng);
-	gen = unur_init( par ); abort_if_NULL(line,gen);
-
-	/* compare sequence */
-	for (i=0; i<sample_size; i++) {
-		x = unur_sample_cont(gen);	
-		if (double_not_equal(double_sequence_A[i], x)) {
-			ok = FALSE;
-			break;
-		}
-	}
-
-	/* free generator */
-	unur_free(gen); 
-
-	/* print result */
-	fprintf(TESTLOG,"line %4d: random seqences ...\\t\\t",line);
-	if (!ok) {
-		++n_tests_failed;
-		fprintf(TESTLOG," Failed\\n");
-	}
-	else
-	fprintf(TESTLOG," ok\\n");
-
-} /* end of compare_double_sequence_par() */
-
-#undef double_not_equal(a,b)
-	
-/*---------------------------------------------------------------------------*/
-/* compare int sequences generated by generator */
-
-static int *int_sequence_A = NULL;
-
-void compare_int_sequence_par_start( int line, UNUR_PAR *par, int sample_size )
-{
-	UNUR_GEN *gen;
-	int i;
-
-	if (int_sequence_A == NULL) {
-		int_sequence_A = malloc( sample_size * sizeof(int) );
-		abort_if_NULL(-1, int_sequence_A);
-	}
-
-	/* generate sequence */
-	prng_reset(urng);
-	gen = unur_init( par ); abort_if_NULL(line,gen);
-
-	for (i=0; i<sample_size; i++)
-		int_sequence_A[i] = unur_sample_discr(gen);
-
-	unur_free(gen); 
-
-} /* end of compare_int_sequence_par_start() */
-
-
-void compare_int_sequence_par( int line, UNUR_PAR *par, int sample_size )
-{
-	UNUR_GEN *gen;
-	int i;
-	int ok = TRUE;
-
-	/* init generator */
-	prng_reset(urng);
-	gen = unur_init( par ); abort_if_NULL(line,gen);
-
-	/* compare sequence */
-	for (i=0; i<sample_size; i++)
-		if (int_sequence_A[i] != unur_sample_discr(gen)) {
-			ok = FALSE;
-			break;
-		}
-
-	/* free generator */
-	unur_free(gen); 
-
-	/* print result */
-	fprintf(TESTLOG,"line %4d: random seqences ...\\t\\t",line);
-	if (!ok) {
-		++n_tests_failed;
-		fprintf(TESTLOG," Failed\\n");
-	}
-	else
-	fprintf(TESTLOG," ok\\n");
-
-} /* end of compare_int_sequence_par() */
-	
-/*---------------------------------------------------------------------------*/
-/* check for reinit */
-
-void run_verify_generator( int line, UNUR_PAR *par )
+void run_verify_generator( FILE *LOG, int line, UNUR_PAR *par )
 {
 	UNUR_GEN *gen;
 	int i;
@@ -865,7 +625,7 @@ void run_verify_generator( int line, UNUR_PAR *par )
 	unur_$method\_set_verify(par,1);
 
 	/* initialize generator */
-	gen = unur_init( par ); abort_if_NULL(line, gen);
+	gen = unur_init( par ); abort_if_NULL(LOG, line, gen);
 
 	/* run generator */
 	for (i=0; i<VIOLATE_SAMPLE_SIZE; i++)
@@ -913,199 +673,51 @@ void run_validate_chi2( int line )
 
 		/* run tests */
 EOM
+    my $TYPE = ($gen_type =~ "cont") ? "CONTINUOUS" : "DISCRETE";
     foreach (@run_validate_chi2_commands) {
 	s/[\s\n]+/ /g;
 	print OUT <<EOM;
 		{
 			$_
-			run_$gen_type\_chi2( $INPUT_LINE_NUMBER, par, distr ); 
+			n_tests_failed += run_chi2( TESTLOG,$INPUT_LINE_NUMBER, $TYPE, par, distr, 
+                                  &list_pvals, &size_pvals, &n_pvals );
+
+
 		}
 EOM
     }
     print OUT <<EOM;
 	}
 	/* run level 2 test on collected p-values */
-	run_level2($INPUT_LINE_NUMBER, list_pvals, n_pvals);
+	n_tests_failed += run_level2(TESTLOG, $INPUT_LINE_NUMBER, list_pvals, n_pvals);
+
+	/* one test might fail */
+	if (n_tests_failed == 1)
+	    n_tests_failed = 0;
 
 } /* end of run_validate_chi2() */
 
 /*...........................................................................*/
 
-void run_cont_chi2( int line, UNUR_PAR *par, UNUR_DISTR *distr )
-{
-	UNUR_GEN *gen;
-	double pval;
-	int i;
-
-	gen = unur_init(par);
-	if (gen==NULL) {
-		/* this must not happen */
-		++n_tests_failed;
-		fprintf(TESTLOG,"line %4d: pval =     Initialization failed\\t\\t",line);
-		print_distr_name( distr,"");
-		fprintf(TESTLOG,"\\n");
-		printf("0");
-		return;
-	}
-
-	/* run chi^2 test */
-	for (i=1; i<=2; i++) {
-
-		/* we run the test twice when it fails the first time */
-		pval = unur_test_chi2( gen, CHI_TEST_INTERVALS, 0, 20, 0);
-		check_pval(line,gen,pval,i);
-
-		/* store p-value */
-		if (n_pvals >= size_pvals) {
-			/* no space left in list: enlarge with 100 entries */
-			size_pvals += 100;
-			list_pvals = realloc( list_pvals, size_pvals * sizeof(double) );
-		}
-		/* append to list */
-		list_pvals[n_pvals++] = pval;
-
-		if (pval >= PVAL_LIMIT || pval < 0.) 
-		/* test succeeded or not performed */
-			break; 
-	}
-
-	unur_free(gen);
-
-} /* end of run_cont_chi2() */
-
-/*---------------------------------------------------------------------------*/
-/* run level 2 test on collected p-values */
-
-void run_level2( int line, double *pvals, int n_pvals )
-{
-	int i;
-	int *classes;
-	int n_classes;
-	double pval2;
-
-	if (pvals==NULL)
-		/* nothing to do */
-		return;
-
-	/* number classes */
-	n_classes = (int) (sqrt(n_pvals)+0.5);
-	if (n_pvals/n_classes < 6)
-		/* classes would have too few entries */
-		n_classes = n_pvals / 6;
-
-	/* allocate memory for classes */
-	classes = calloc( n_classes+1, sizeof(int) );
-
-	/* count bins */
-	for (i=0; i<n_pvals; i++)
-		++(classes[ (int)(pvals[i] * n_classes) ]);
-
-	/* run test */
-	pval2 = _unur_test_chi2test( NULL, classes, n_classes, 5, 0 );
-
-	/* print result */
-	printf(" Level-2-test(%d)",n_pvals);
-	fprintf(TESTLOG,"line %4d: ",__LINE__);
-	print_pval(pval2,100);
-	fprintf(TESTLOG,"\\tLevel 2 Test (n=%d) (not powerful)\\n",n_pvals);
-
-	/* clear */
-	free(classes);
-
-} /* end of run_level2() */
-
-/*---------------------------------------------------------------------------*/
-/* print name of distribution */
-
-void print_distr_name( UNUR_DISTR *distr, const char *genid )
-{
-	int i,n_fpar;
-	double *fpar;
-
-	fprintf(TESTLOG,"%s: %s ",genid,unur_distr_get_name(distr));
-
-	if ( unur_distr_is_cont(distr) ) {
-		n_fpar = unur_distr_cont_get_pdfparams( distr, &fpar );
-		fprintf(TESTLOG,"(");
-		if (n_fpar) {
-			fprintf(TESTLOG,"%g",fpar[0]);
-			for (i=1; i<n_fpar; i++)
-				fprintf(TESTLOG,", %g",fpar[i]);
-		}
-		fprintf(TESTLOG,")");
-	}
-
-} /* end of print_distr_name() */
-
-/*---------------------------------------------------------------------------*/
-/* print p-value of statistical test */
-
-void print_pval( double pval, int trial )
-{
-	int l;
-
-	if (pval < 0.) {
-	/* test has not been executed */
-		fprintf(TESTLOG,"pval = (0)\\t      Not performed");
-		printf(".");
-		return;
-	}
-
-	fprintf(TESTLOG,"pval = %8.6f   ",pval);
-
-	l = -(int) ((pval > 1e-6) ? (log(pval) / M_LN10) : 6.);
-
-	switch (l) {
-	case 0:
-		fprintf(TESTLOG,"      "); break;
-	case 1:
-		fprintf(TESTLOG,".     "); break;
-	case 2:
-		fprintf(TESTLOG,"**    "); break;
-	case 3:
-		fprintf(TESTLOG,"XXX   "); break;
-	case 4:
-		fprintf(TESTLOG,"XXXX  "); break;
-	case 5:
-		fprintf(TESTLOG,"XXXXX "); break;
-	default:
-		fprintf(TESTLOG,"######"); break;
-	}
-    
-	if (pval < PVAL_LIMIT) {
-		++n_tests_failed;
-		if (trial > 1) {
-			fprintf(TESTLOG,"\\t Failed");
-			printf("X");
-		}
-		else {
-			fprintf(TESTLOG,"\\t Try again");
-			printf("?");
-		}
-	}
-	else {
-		fprintf(TESTLOG,"\\t ok");
-		printf("+");
-	}
-	fflush(stdout);
-
-} /* end of print_pval() */
-
-/*---------------------------------------------------------------------------*/
-/* check p-value of statistical test */
-
-void check_pval( int line, UNUR_GEN *gen, double pval, int trial )
-{
-	fprintf(TESTLOG,"line %4d: ",line);
-	print_pval(pval,trial);
-
-	/* print distribution name */
-	fprintf(TESTLOG,"\\t");
-	print_distr_name( unur_get_distr(gen), unur_get_genid(gen) );
-	fprintf(TESTLOG,"\\n");
-
-} /* end of check_pval() */
   
 EOM
 
 } # end of print_C_routines()
+
+############################################################
+
+sub add_unur_set_verify_routine {
+    my $verify = "unur_$method\_set_verify";
+    undef my $have_found;
+
+    open (H,"$unuran_h_file")    or die "Cannot open file $unuran_h_file for reading";
+    while (<H>) {
+	$have_found = 1 if /$verify/;
+    }
+
+    unless ($have_found) {
+	print OUT "int $verify(UNUR_PAR *par, int verify) {return 0;}\n";
+    }
+}
+
+############################################################

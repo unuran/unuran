@@ -68,6 +68,7 @@ struct unur_gen *unur_srou_init( struct unur_par *parameters );
 /* initialize new generator                                                  */
 
 double unur_srou_sample( struct unur_gen *generator );
+double unur_srou_sample_mirror( struct unur_gen *generator );
 double unur_srou_sample_check( struct unur_gen *generator );
 /* sample from generator                                                     */
 

@@ -4,11 +4,12 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   FILE: unur_urng.h                                                       *
+ *   FILE: unif.h                                                            *
  *                                                                           *
  *   PURPOSE:                                                                *
- *         declares macros and function prototypes for using uniform         *
- *         random number generators inside UNURAN.                           *
+ *         function prototypes for method UNIF                               *
+ *         (passes UNIForm random numbers through UNURAN framework;          *
+ *         for testing only)                                                 *
  *                                                                           *
  *   USAGE:                                                                  *
  *         only included in unuran.h                                         *
@@ -38,65 +39,19 @@
  *****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
-#ifndef __X_URNG_H_SEEN
-#define __X_URNG_H_SEEN
-/*---------------------------------------------------------------------------*/
+/* Routines for user interface                                               */
 
-#include <unuran_config.h>
+UNUR_PAR *unur_unif_new( int start, int skip );
+/* get default parameters for generator                                      */
 
-/*---------------------------------------------------------------------------*/
-/* uniform random number generator                                           */
+UNUR_GEN *unur_unif_init( UNUR_PAR *parameters );
+/* initialize new generator                                                  */
 
-/* We have to define the following macros:
+double unur_unif_sample( UNUR_GEN *generator );
+/* sample from generator                                                     */
 
-   UNUR_URNG_DEFAULT
-      ... name|pointer of default urng (depends on UNUR_URNG_INVOKE)
-          to be set in unuran_config.h
-
-   _unur_call_urng(gen)
-      ... function call to urng (via struct unur_gen)
-*/
+void unur_unif_free( UNUR_GEN *generator );
+/* destroy generator object                                                  */
 
 /*---------------------------------------------------------------------------*/
-#if UNUR_URNG_INVOKE == UNUR_URNG_POINTER
-/*---------------------------------------------------------------------------*/
-
-/* prototype for uniform rng  */
-double UNUR_URNG_DEFAULT(void);
-
-/* type of uniform random number generator                                   */
-typedef double (*UNUR_URNG_TYPE)(void);
-
-/* function call to uniform rng */
-#define _unur_call_urng(gen)        ((*(gen->urng))())
-
-/*---------------------------------------------------------------------------*/
-#elif UNUR_URNG_INVOKE == UNUR_URNG_PRNG
-/*---------------------------------------------------------------------------*/
-
-/* header file from prng library */
-#include <prng.h>
-
-/* type of uniform random number generator                                   */
-typedef struct prng *UNUR_URNG_TYPE;
-
-/* function call to uniform rng */
-#define _unur_call_urng(gen)        (prng_get_next(gen->urng))
-
-/*---------------------------------------------------------------------------*/
-#else
-/*---------------------------------------------------------------------------*/
-#error UNUR_URNG_INVOKE not valid !!
-/*---------------------------------------------------------------------------*/
-#endif  /* UNUR_URNG_INVOKE */
-/*---------------------------------------------------------------------------*/
-
-/*---------------------------------------------------------------------------*/
-#endif  /* __X_URNG_H_SEEN */
-/*---------------------------------------------------------------------------*/
-
-
-
-
-
 

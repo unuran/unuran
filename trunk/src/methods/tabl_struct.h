@@ -4,14 +4,14 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   FILE: unur_tabl.h                                                       *
+ *   FILE: tabl_struct.h                                                     *
  *                                                                           *
  *   PURPOSE:                                                                *
- *         declares structures and function prototypes for method TABL       *
+ *         declares structures for method TABL                               *
  *         (Ahren's TABLe method: piecewise constant hat)                    *
  *                                                                           *
  *   USAGE:                                                                  *
- *         only included in unuran.h                                         *
+ *         only included in source_struct.h                                  *
  *                                                                           *
  *****************************************************************************
      $Id$
@@ -104,54 +104,3 @@ struct unur_tabl_gen {
 };
 
 /*---------------------------------------------------------------------------*/
-/* Routines for user interface                                               */
-
-struct unur_par *unur_tabl_new( struct unur_distr *distr );
-/* get default parameters for generator                                      */
-
-struct unur_gen *unur_tabl_init( struct unur_par *parameters );
-/* initialize new generator                                                  */
-
-double unur_tabl_sample( struct unur_gen *generator );
-double unur_tabl_sample_check( struct unur_gen *generator );
-/* sample from generator                                                     */
-
-void unur_tabl_free( struct unur_gen *generator);
-/* destroy generator object                                                  */
-
-/*...........................................................................*/
-
-int unur_tabl_set_nstp( struct unur_par *par, int n_stp );
-/* set number of construction points for hat at initialization               */
-
-int unur_tabl_set_max_sqhratio( struct unur_par *par, double max_ratio );
-/* set bound for ratio A(squeeze) / A(hat)                                   */
-
-int unur_tabl_set_max_intervals( struct unur_par *par, int max_ivs );
-/* set maximum number of intervals                                           */
-
-int unur_tabl_set_areafraction( struct unur_par *par, double fraction );
-/* set parameter for equal area rule                                         */
-
-int unur_tabl_set_slopes( struct unur_par *par, double *slopes, int n_slopes );
-/* set slopes of p.d.f.                                                      */
-
-int unur_tabl_set_boundary( struct unur_par *par, double left, double right );
-/* set left and right boundary of computation interval                       */
-
-int unur_tabl_set_variant( struct unur_par *parameters, unsigned variant );
-/* set variant for method                                                    */
-
-int unur_tabl_set_guidefactor( struct unur_par *par, double factor );
-/* set factor for relative size of guide table                               */
-
-int unur_tabl_set_verify( struct unur_par *par, int verify );
-/* turn verifying of algorithm while sampling on/off                         */
-
-#define unur_dis_set_debug(par,debugflags)  unur_set_debug((par),(debugflags))
-/* set debuging flags                                                        */
-
-/*---------------------------------------------------------------------------*/
-
-
-

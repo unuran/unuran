@@ -4,14 +4,14 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   FILE: unur_utdr.h                                                       *
+ *   FILE: rect_struct.h                                                     *
  *                                                                           *
  *   PURPOSE:                                                                *
- *         declares structures and function prototypes for method UTDR       *
- *         (Universal Transformed Density Rejection; 3-point method)         *
+ *         declares structures for method RECT                               *
+ *         (uniformly distributed in (multidimensional) RECTangle)           *
  *                                                                           *
  *   USAGE:                                                                  *
- *         only included in unuran.h                                         *
+ *         only included in source_struct.h                                  *
  *                                                                           *
  *****************************************************************************
      $Id$
@@ -40,52 +40,17 @@
 /*---------------------------------------------------------------------------*/
 /* Information for constructing the generator                                */
 
-struct unur_utdr_par { 
-  double  c_factor;     /* constant for choosing the design points           */
-  double  delta_factor; /* constant for choosing delta to replace the tangent*/
+struct unur_rect_par { 
+  int      dim;         /* dimension                                         */
+  double **domain;      /* vertices of rectangle                             */
 };
 
 /*---------------------------------------------------------------------------*/
 /* The generator object                                                      */
 
-struct unur_utdr_gen { 
-
-  double  il;                   /* left border of the domain                 */
-  double  ir;                   /* right border of the domain                */
-
-  double  vollc,volcompl,voll,fm,hm,
-    al,ar,col,cor,sal,sar,bl,br,tlx,trx,
-    brblvolc,drar,dlal,ooar2,ooal2;/* constants of the hat and for generation*/
+struct unur_rect_gen { 
+  int      dim;         /* dimension                                         */
+  double **domain;      /* vertices of rectangle                             */
 };
-
-/*---------------------------------------------------------------------------*/
-/* Routines for user interface                                               */
-
-struct unur_par *unur_utdr_new( struct unur_distr *distr );
-/* get default parameters for generator                                      */
-
-struct unur_gen *unur_utdr_init( struct unur_par *parameters );
-/* initialize new generator                                                  */
-
-double unur_utdr_sample( struct unur_gen *generator );
-double unur_utdr_sample_check( struct unur_gen *generator );  /** TODO **/
-/* sample from generator                                                     */
-
-void unur_utdr_free( struct unur_gen *generator);
-/* destroy generator object                                                  */
-
-/*...........................................................................*/
-
-int unur_utdr_set_cfactor( struct unur_par *par, double cfactor );
-/* set factor for position of left and right construction point              */
-
-int unur_utdr_set_delta( struct unur_par *par, double delta );
-/* set factor for replacing tangents by secants                              */
-
-int unur_utdr_set_verify( struct unur_par *par, int verify );
-/* turn verifying of algorithm while sampling on/off                         */
-
-#define unur_utdr_set_debug(par,debugflags)  unur_set_debug((par),(debugflags))
-/* set debuging flags                                                        */
 
 /*---------------------------------------------------------------------------*/

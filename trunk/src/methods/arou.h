@@ -4,11 +4,11 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   FILE: unur_urng.h                                                       *
+ *   FILE: arou.h                                                            *
  *                                                                           *
  *   PURPOSE:                                                                *
- *         declares macros and function prototypes for using uniform         *
- *         random number generators inside UNURAN.                           *
+ *         function prototypes for method AROU                               *
+ *         (Adaptive Ratio-Of-Uniforms)                                      *
  *                                                                           *
  *   USAGE:                                                                  *
  *         only included in unuran.h                                         *
@@ -38,65 +38,48 @@
  *****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
-#ifndef __X_URNG_H_SEEN
-#define __X_URNG_H_SEEN
-/*---------------------------------------------------------------------------*/
+/* Routines for user interface                                               */
 
-#include <unuran_config.h>
+UNUR_PAR *unur_arou_new( UNUR_DISTR *distribution );
+/* get default parameters for generator                                      */
 
-/*---------------------------------------------------------------------------*/
-/* uniform random number generator                                           */
+UNUR_GEN *unur_arou_init( UNUR_PAR *parameters );
+/* initialize new generator                                                  */
 
-/* We have to define the following macros:
+double unur_arou_sample( UNUR_GEN *generator );
+double unur_arou_sample_check( UNUR_GEN *generator );
+/* sample from generator                                                     */
 
-   UNUR_URNG_DEFAULT
-      ... name|pointer of default urng (depends on UNUR_URNG_INVOKE)
-          to be set in unuran_config.h
+void unur_arou_free( UNUR_GEN *generator);
+/* destroy generator object                                                  */
 
-   _unur_call_urng(gen)
-      ... function call to urng (via struct unur_gen)
-*/
+/*...........................................................................*/
 
-/*---------------------------------------------------------------------------*/
-#if UNUR_URNG_INVOKE == UNUR_URNG_POINTER
-/*---------------------------------------------------------------------------*/
+int unur_arou_set_cpoints( UNUR_PAR *parameters, int n_stp, double *stp );
+/* set construction points for envelope and/or its number for initialization */
 
-/* prototype for uniform rng  */
-double UNUR_URNG_DEFAULT(void);
+int unur_arou_set_guidefactor( UNUR_PAR *parameters, double factor );
+/* set factor for relative size of guide table                               */
 
-/* type of uniform random number generator                                   */
-typedef double (*UNUR_URNG_TYPE)(void);
+int unur_arou_set_max_sqhratio( UNUR_PAR *parameters, double max_ratio );
+/* set bound for ratio A(squeeze) / A(hat)                                   */
 
-/* function call to uniform rng */
-#define _unur_call_urng(gen)        ((*(gen->urng))())
+int unur_arou_set_max_segments( UNUR_PAR *parameters, int max_segs );
+/* set maximum number of segments                                            */
 
-/*---------------------------------------------------------------------------*/
-#elif UNUR_URNG_INVOKE == UNUR_URNG_PRNG
-/*---------------------------------------------------------------------------*/
+int unur_arou_set_center( UNUR_PAR *parameters, double center );
+/* set center (approximate mode) of p.d.f.                                   */
 
-/* header file from prng library */
-#include <prng.h>
+int unur_arou_set_usecenter( UNUR_PAR *parameters, int usecenter );
+/* set flag for using center as construction point                           */
 
-/* type of uniform random number generator                                   */
-typedef struct prng *UNUR_URNG_TYPE;
+int unur_arou_set_verify( UNUR_PAR *parameters, int verify );
+/* turn verifying of algorithm while sampling on/off                         */
 
-/* function call to uniform rng */
-#define _unur_call_urng(gen)        (prng_get_next(gen->urng))
+#define unur_arou_set_debug(parameters,debugflags)  unur_set_debug((parameters),(debugflags))
+/* set debuging flags                                                        */
 
 /*---------------------------------------------------------------------------*/
-#else
-/*---------------------------------------------------------------------------*/
-#error UNUR_URNG_INVOKE not valid !!
-/*---------------------------------------------------------------------------*/
-#endif  /* UNUR_URNG_INVOKE */
-/*---------------------------------------------------------------------------*/
-
-/*---------------------------------------------------------------------------*/
-#endif  /* __X_URNG_H_SEEN */
-/*---------------------------------------------------------------------------*/
-
-
-
 
 
 

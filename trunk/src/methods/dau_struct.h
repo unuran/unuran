@@ -4,14 +4,14 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   FILE: unur_urng.h                                                       *
+ *   FILE: dau_struct.h                                                      *
  *                                                                           *
  *   PURPOSE:                                                                *
- *         declares macros and function prototypes for using uniform         *
- *         random number generators inside UNURAN.                           *
+ *         declares structures for method DAU                                *
+ *         ((Discrete) Alias-Urn)                                            *
  *                                                                           *
  *   USAGE:                                                                  *
- *         only included in unuran.h                                         *
+ *         only included in source_struct.h                                  *
  *                                                                           *
  *****************************************************************************
      $Id$
@@ -38,65 +38,22 @@
  *****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
-#ifndef __X_URNG_H_SEEN
-#define __X_URNG_H_SEEN
-/*---------------------------------------------------------------------------*/
+/* Information for constructing the generator                                */
 
-#include <unuran_config.h>
-
-/*---------------------------------------------------------------------------*/
-/* uniform random number generator                                           */
-
-/* We have to define the following macros:
-
-   UNUR_URNG_DEFAULT
-      ... name|pointer of default urng (depends on UNUR_URNG_INVOKE)
-          to be set in unuran_config.h
-
-   _unur_call_urng(gen)
-      ... function call to urng (via struct unur_gen)
-*/
+struct unur_dau_par { 
+  double  urn_factor;  /* relative length of table for alias-urn method      */
+                       /*    (DEFAULT = 1 --> alias method)                  */
+                       /*   length of table = urn_factor * len               */
+};
 
 /*---------------------------------------------------------------------------*/
-#if UNUR_URNG_INVOKE == UNUR_URNG_POINTER
-/*---------------------------------------------------------------------------*/
+/* The generator object                                                      */
 
-/* prototype for uniform rng  */
-double UNUR_URNG_DEFAULT(void);
-
-/* type of uniform random number generator                                   */
-typedef double (*UNUR_URNG_TYPE)(void);
-
-/* function call to uniform rng */
-#define _unur_call_urng(gen)        ((*(gen->urng))())
+struct unur_dau_gen { 
+  int     len;         /* length of probability vector                       */
+  int     urn_size;    /* size of table for alias-urn method                 */
+  double *qx;          /* pointer to cut points for strips                   */
+  int    *jx;          /* pointer to donor                                   */
+};
 
 /*---------------------------------------------------------------------------*/
-#elif UNUR_URNG_INVOKE == UNUR_URNG_PRNG
-/*---------------------------------------------------------------------------*/
-
-/* header file from prng library */
-#include <prng.h>
-
-/* type of uniform random number generator                                   */
-typedef struct prng *UNUR_URNG_TYPE;
-
-/* function call to uniform rng */
-#define _unur_call_urng(gen)        (prng_get_next(gen->urng))
-
-/*---------------------------------------------------------------------------*/
-#else
-/*---------------------------------------------------------------------------*/
-#error UNUR_URNG_INVOKE not valid !!
-/*---------------------------------------------------------------------------*/
-#endif  /* UNUR_URNG_INVOKE */
-/*---------------------------------------------------------------------------*/
-
-/*---------------------------------------------------------------------------*/
-#endif  /* __X_URNG_H_SEEN */
-/*---------------------------------------------------------------------------*/
-
-
-
-
-
-

@@ -4,14 +4,15 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   FILE: unur_urng.h                                                       *
+ *   FILE: cstd_struct.h                                                     *
  *                                                                           *
  *   PURPOSE:                                                                *
- *         declares macros and function prototypes for using uniform         *
- *         random number generators inside UNURAN.                           *
+ *         declares structures for method CSTD                               *
+ *         (wrapper for special generators for                               *
+ *         Continuous STanDard distributions)                                *
  *                                                                           *
  *   USAGE:                                                                  *
- *         only included in unuran.h                                         *
+ *         only included in source_struct.h                                  *
  *                                                                           *
  *****************************************************************************
      $Id$
@@ -38,65 +39,30 @@
  *****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
-#ifndef __X_URNG_H_SEEN
-#define __X_URNG_H_SEEN
-/*---------------------------------------------------------------------------*/
 
-#include <unuran_config.h>
+#define UNUR_MAX_DIST_PARAMS  5    /* maximal numbers of parameters for distributions */
 
 /*---------------------------------------------------------------------------*/
-/* uniform random number generator                                           */
+/* Information for constructing the generator                                */
 
-/* We have to define the following macros:
-
-   UNUR_URNG_DEFAULT
-      ... name|pointer of default urng (depends on UNUR_URNG_INVOKE)
-          to be set in unuran_config.h
-
-   _unur_call_urng(gen)
-      ... function call to urng (via struct unur_gen)
-*/
+struct unur_cstd_par { 
+  const char *sample_routine_name; /* name of sampling routine               */
+  int  is_inversion;      /* indicate whether method is inversion method     */     
+};
 
 /*---------------------------------------------------------------------------*/
-#if UNUR_URNG_INVOKE == UNUR_URNG_POINTER
-/*---------------------------------------------------------------------------*/
+/* The generator object                                                      */
 
-/* prototype for uniform rng  */
-double UNUR_URNG_DEFAULT(void);
+struct unur_cstd_gen { 
+  double *gen_param;      /* parameters for the generator                    */
+  int     n_gen_param;    /* number of parameters for the generator          */
 
-/* type of uniform random number generator                                   */
-typedef double (*UNUR_URNG_TYPE)(void);
+  int    flag;            /* sometimes it is convenient to have a flag       */
 
-/* function call to uniform rng */
-#define _unur_call_urng(gen)        ((*(gen->urng))())
+  double  umin;           /* cdf at left boundary of domain                  */
+  double  umax;           /* cdf at right boundary of domain                 */
 
-/*---------------------------------------------------------------------------*/
-#elif UNUR_URNG_INVOKE == UNUR_URNG_PRNG
-/*---------------------------------------------------------------------------*/
-
-/* header file from prng library */
-#include <prng.h>
-
-/* type of uniform random number generator                                   */
-typedef struct prng *UNUR_URNG_TYPE;
-
-/* function call to uniform rng */
-#define _unur_call_urng(gen)        (prng_get_next(gen->urng))
+  int  is_inversion;      /* indicate whether method is inversion method     */     
+};
 
 /*---------------------------------------------------------------------------*/
-#else
-/*---------------------------------------------------------------------------*/
-#error UNUR_URNG_INVOKE not valid !!
-/*---------------------------------------------------------------------------*/
-#endif  /* UNUR_URNG_INVOKE */
-/*---------------------------------------------------------------------------*/
-
-/*---------------------------------------------------------------------------*/
-#endif  /* __X_URNG_H_SEEN */
-/*---------------------------------------------------------------------------*/
-
-
-
-
-
-

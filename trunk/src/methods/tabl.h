@@ -4,11 +4,11 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   FILE: unur_urng.h                                                       *
+ *   FILE: tabl.h                                                            *
  *                                                                           *
  *   PURPOSE:                                                                *
- *         declares macros and function prototypes for using uniform         *
- *         random number generators inside UNURAN.                           *
+ *         function prototypes for method TABL                               *
+ *         (Ahren's TABLe method: piecewise constant hat)                    *
  *                                                                           *
  *   USAGE:                                                                  *
  *         only included in unuran.h                                         *
@@ -38,65 +38,54 @@
  *****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
-#ifndef __X_URNG_H_SEEN
-#define __X_URNG_H_SEEN
-/*---------------------------------------------------------------------------*/
+/* Routines for user interface                                               */
 
-#include <unuran_config.h>
+UNUR_PAR *unur_tabl_new( UNUR_DISTR *distribution );
+/* get default parameters for generator                                      */
 
-/*---------------------------------------------------------------------------*/
-/* uniform random number generator                                           */
+UNUR_GEN *unur_tabl_init( UNUR_PAR *parameters );
+/* initialize new generator                                                  */
 
-/* We have to define the following macros:
+double unur_tabl_sample( UNUR_GEN *generator );
+double unur_tabl_sample_check( UNUR_GEN *generator );
+/* sample from generator                                                     */
 
-   UNUR_URNG_DEFAULT
-      ... name|pointer of default urng (depends on UNUR_URNG_INVOKE)
-          to be set in unuran_config.h
+void unur_tabl_free( UNUR_GEN *generator);
+/* destroy generator object                                                  */
 
-   _unur_call_urng(gen)
-      ... function call to urng (via struct unur_gen)
-*/
+/*...........................................................................*/
 
-/*---------------------------------------------------------------------------*/
-#if UNUR_URNG_INVOKE == UNUR_URNG_POINTER
-/*---------------------------------------------------------------------------*/
+int unur_tabl_set_nstp( UNUR_PAR *parameters, int n_stp );
+/* set number of construction points for hat at initialization               */
 
-/* prototype for uniform rng  */
-double UNUR_URNG_DEFAULT(void);
+int unur_tabl_set_max_sqhratio( UNUR_PAR *parameters, double max_ratio );
+/* set bound for ratio A(squeeze) / A(hat)                                   */
 
-/* type of uniform random number generator                                   */
-typedef double (*UNUR_URNG_TYPE)(void);
+int unur_tabl_set_max_intervals( UNUR_PAR *parameters, int max_ivs );
+/* set maximum number of intervals                                           */
 
-/* function call to uniform rng */
-#define _unur_call_urng(gen)        ((*(gen->urng))())
+int unur_tabl_set_areafraction( UNUR_PAR *parameters, double fraction );
+/* set parameter for equal area rule                                         */
 
-/*---------------------------------------------------------------------------*/
-#elif UNUR_URNG_INVOKE == UNUR_URNG_PRNG
-/*---------------------------------------------------------------------------*/
+int unur_tabl_set_slopes( UNUR_PAR *parameters, double *slopes, int n_slopes );
+/* set slopes of p.d.f.                                                      */
 
-/* header file from prng library */
-#include <prng.h>
+int unur_tabl_set_boundary( UNUR_PAR *parameters, double left, double right );
+/* set left and right boundary of computation interval                       */
 
-/* type of uniform random number generator                                   */
-typedef struct prng *UNUR_URNG_TYPE;
+int unur_tabl_set_variant( UNUR_PAR *parameters, unsigned variant );
+/* set variant for method                                                    */
 
-/* function call to uniform rng */
-#define _unur_call_urng(gen)        (prng_get_next(gen->urng))
+int unur_tabl_set_guidefactor( UNUR_PAR *parameters, double factor );
+/* set factor for relative size of guide table                               */
 
-/*---------------------------------------------------------------------------*/
-#else
-/*---------------------------------------------------------------------------*/
-#error UNUR_URNG_INVOKE not valid !!
-/*---------------------------------------------------------------------------*/
-#endif  /* UNUR_URNG_INVOKE */
-/*---------------------------------------------------------------------------*/
+int unur_tabl_set_verify( UNUR_PAR *parameters, int verify );
+/* turn verifying of algorithm while sampling on/off                         */
+
+#define unur_dis_set_debug(par,debugflags)  unur_set_debug((par),(debugflags))
+/* set debuging flags                                                        */
 
 /*---------------------------------------------------------------------------*/
-#endif  /* __X_URNG_H_SEEN */
-/*---------------------------------------------------------------------------*/
-
-
-
 
 
 

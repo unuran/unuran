@@ -38,8 +38,47 @@
 
 /*---------------------------------------------------------------------------*/
 
-/* global variable for default debugging flags */
-unsigned _unur_default_debugflag = UNUR_DEBUGFLAG_DEFAULT;
+/*****************************************************************************/
+/**                                                                         **/
+/**  Call Init, Sampling, and Free functions                                **/
+/**                                                                         **/
+/*****************************************************************************/
+
+/*---------------------------------------------------------------------------*/
+
+UNUR_GEN *unur_init( UNUR_PAR *par )
+{                
+  CHECK_NULL(par,NULL);
+  return (par->init(par));
+} /* end of unur_init() */
+
+/*---------------------------------------------------------------------------*/
+
+int unur_sample_discr(UNUR_GEN *gen)
+{
+  CHECK_NULL(gen,0);
+  return (gen->sample.discr(gen));
+} /* end of unur_sample_discr() */
+
+double unur_sample_cont(UNUR_GEN *gen)
+{
+  CHECK_NULL(gen,0.);
+  return (gen->sample.cont(gen));
+} /* end of unur_sample_cont() */
+
+void unur_sample_vec(UNUR_GEN *gen, double *vector)
+{
+  CHECK_NULL(gen,/*void*/);
+  gen->sample.vec(gen,vector);
+} /* end of unur_sample_vec() */
+
+/*---------------------------------------------------------------------------*/
+
+void unur_free( UNUR_GEN *gen )
+{                
+  CHECK_NULL(gen,/*void*/);
+  gen->destroy(gen);
+} /* end of unur_init() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -48,6 +87,11 @@ unsigned _unur_default_debugflag = UNUR_DEBUGFLAG_DEFAULT;
 /**  Set debuging flags                                                     **/
 /**                                                                         **/
 /*****************************************************************************/
+
+/*---------------------------------------------------------------------------*/
+
+/* global variable for default debugging flags */
+unsigned _unur_default_debugflag = UNUR_DEBUGFLAG_DEFAULT;
 
 /*---------------------------------------------------------------------------*/
 

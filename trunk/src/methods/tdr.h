@@ -4,11 +4,11 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   FILE: unur_stdr.h                                                       *
+ *   FILE: tdr.h                                                             *
  *                                                                           *
  *   PURPOSE:                                                                *
- *         declares structures and function prototypes for method STDR       *
- *         (transformed density rejection with universal bounds)             *
+ *         function prototypes for method TDR                                *
+ *         (Transformed Density Rejection)                                   *
  *                                                                           *
  *   USAGE:                                                                  *
  *         only included in unuran.h                                         *
@@ -38,53 +38,52 @@
  *****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
-/* Information for constructing the generator                                */
-
-struct unur_stdr_par { 
-  double Fmode;              /* cdf at mode                                  */
-};
-
-/*---------------------------------------------------------------------------*/
-/* The generator object                                                      */
-
-struct unur_stdr_gen { 
-  double  fm;                /* pdf at mode                                  */
-  double  um;                /* sqrt of pdf at mode                          */
-  double  vl, vr;            /* parameters for hat function                  */
-  double  xl, xr;            /* partition points of hat                      */
-  double  al, ar;            /* areas below hat in first and secont part     */
-  double  A;                 /* area below hat                               */
-  double  Aleft, Ain;        /* areas below hat in left tails and inside domain of pdf */
-};
-
-/*---------------------------------------------------------------------------*/
 /* Routines for user interface                                               */
 
-struct unur_par *unur_stdr_new( struct unur_distr *distr );
+UNUR_PAR *unur_tdr_new( UNUR_DISTR* distribution );
 /* get default parameters for generator                                      */
 
-struct unur_gen *unur_stdr_init( struct unur_par *parameters );
+UNUR_GEN *unur_tdr_init( UNUR_PAR *parameters );
 /* initialize new generator                                                  */
 
-double unur_stdr_sample( struct unur_gen *generator );
-double unur_stdr_sample_check( struct unur_gen *generator );
+double unur_tdr_sample_log( UNUR_GEN *gen );
+double unur_tdr_sample_sqrt( UNUR_GEN *gen );
+double unur_tdr_sample_check( UNUR_GEN *generator );
 /* sample from generator                                                     */
 
-void unur_stdr_free( struct unur_gen *generator);
+void unur_tdr_free( UNUR_GEN *generator);
 /* destroy generator object                                                  */
 
 /*...........................................................................*/
 
-int unur_stdr_set_Fmode( struct unur_par *par, double Fmode );
-/* set cdf at mode                                                           */
+int unur_tdr_set_cpoints( UNUR_PAR *parameters, int n_stp, double *stp );
+/* set construction points for envelope and/or its number for initialization */
 
-int unur_stdr_set_verify( struct unur_par *par, int verify );
+int unur_tdr_set_guidefactor( UNUR_PAR *parameters, double factor );
+/* set factor for relative size of guide table                               */
+
+int unur_tdr_set_max_sqhratio( UNUR_PAR *parameters, double max_ratio );
+/* set bound for ratio A(squeeze) / A(hat)                                   */
+
+int unur_tdr_set_max_intervals( UNUR_PAR *parameters, int max_ivs );
+/* set maximum number of intervals                                           */
+
+int unur_tdr_set_center( UNUR_PAR *parameters, double center );
+/* set center (approximate mode) of p.d.f.                                   */
+
+int unur_tdr_set_usecenter( UNUR_PAR *parameters, int usecenter );
+/* set flag for using center as construction point                           */
+
+int unur_tdr_set_usemode( UNUR_PAR *parameters, int usemode );
+/* set flag for using (exact) mode as construction point                     */
+
+int unur_tdr_set_c( UNUR_PAR *parameters, double c );
+/* set parameter c for transformation T_c                                    */
+
+int unur_tdr_set_verify( UNUR_PAR *parameters, int verify );
 /* turn verifying of algorithm while sampling on/off                         */
 
-int unur_stdr_set_usesqueeze( struct unur_par *par, int usesqueeze );
-/* set flag for using universal squeeze (default: off)                       */
-
-#define unur_stdr_set_debug(par,debugflags)  unur_set_debug((par),(debugflags))
+#define unur_tabl_set_debug(par,debugflags)  unur_set_debug((par),(debugflags))
 /* set debuging flags                                                        */
 
 /*---------------------------------------------------------------------------*/

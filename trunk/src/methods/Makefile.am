@@ -33,30 +33,45 @@ libunuran_a_SOURCES = \
 pkginclude_HEADERS = \
  unuran.h \
  unuran_errno.h \
- unur_umalloc.h \
  unur_urng.h \
- unur_distr.h \
  unur_misc.h  \
- unur_arou.h \
- unur_cstd.h \
- unur_dau.h  \
- unur_dis.h  \
- unur_dstd.h \
- unur_ninv.h  \
- unur_rect.h \
- unur_srou.h \
- unur_stdr.h \
- unur_tabl.h \
- unur_tdr.h  \
- unur_unif.h \
- unur_utdr.h
+ distr.h \
+ arou.h \
+ cstd.h \
+ dau.h  \
+ dis.h  \
+ dstd.h \
+ ninv.h  \
+ rect.h \
+ srou.h \
+ stdr.h \
+ tabl.h \
+ tdr.h  \
+ unif.h \
+ utdr.h
 
 noinst_HEADERS = \
  source_unuran.h \
  source_cookies.h \
  source_distr.h \
  source_math.h \
- source_methods.h
+ source_methods.h \
+ source_struct.h \
+ distr_struct.h \
+ x_umalloc_struct.h \
+ arou_struct.h \
+ cstd_struct.h \
+ dau_struct.h  \
+ dis_struct.h  \
+ dstd_struct.h \
+ ninv_struct.h  \
+ rect_struct.h \
+ srou_struct.h \
+ stdr_struct.h \
+ tabl_struct.h \
+ tdr_struct.h  \
+ unif_struct.h \
+ utdr_struct.h
 
 # clean backup files too
 clean-local:

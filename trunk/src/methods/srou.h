@@ -4,12 +4,11 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   FILE: unur_unif.h                                                       *
+ *   FILE: srou.h                                                            *
  *                                                                           *
  *   PURPOSE:                                                                *
- *         declares structures and function prototypes for method UNIF       *
- *         (passes UNIForm random numbers through UNURAN framework;          *
- *         for testing only)                                                 *
+ *         function prototypes for method SROU                               *
+ *         (Simple universal generator, ratio-of-uniforms method)            *
  *                                                                           *
  *   USAGE:                                                                  *
  *         only included in unuran.h                                         *
@@ -39,35 +38,38 @@
  *****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
-/* Information for constructing the generator                                */
-
-struct unur_unif_par { 
-  int start;            /* starting point in sequence (0 = first number)     */
-  int skip;             /* skip for subsequence (1 = full sequence)          */
-};
-
-/*---------------------------------------------------------------------------*/
-/* The generator object                                                      */
-
-struct unur_unif_gen { 
-  int start;            /* starting point in sequence                        */
-  int skip;             /* skip for subsequence                              */
-};
-
-/*---------------------------------------------------------------------------*/
 /* Routines for user interface                                               */
 
-struct unur_par *unur_unif_new( int start, int skip );
+UNUR_PAR *unur_srou_new( UNUR_DISTR *distribution );
 /* get default parameters for generator                                      */
 
-struct unur_gen *unur_unif_init( struct unur_par *parameters );
+UNUR_GEN *unur_srou_init( UNUR_PAR *parameters );
 /* initialize new generator                                                  */
 
-double unur_unif_sample( struct unur_gen *generator );
+double unur_srou_sample( UNUR_GEN *generator );
+double unur_srou_sample_mirror( UNUR_GEN *generator );
+double unur_srou_sample_check( UNUR_GEN *generator );
 /* sample from generator                                                     */
 
-void unur_unif_free( struct unur_gen *generator );
+void unur_srou_free( UNUR_GEN *generator);
 /* destroy generator object                                                  */
+
+/*...........................................................................*/
+
+int unur_srou_set_Fmode( UNUR_PAR *parameters, double Fmode );
+/* set cdf at mode                                                           */
+
+int unur_srou_set_verify( UNUR_PAR *parameters, int verify );
+/* turn verifying of algorithm while sampling on/off                         */
+
+int unur_srou_set_usesqueeze( UNUR_PAR *parameters, int usesqueeze );
+/* set flag for using universal squeeze (default: off)                       */
+
+int unur_srou_set_usemirror( UNUR_PAR *parameters, int usemirror );
+/* set flag for using mirror principle (default: off)                        */
+
+#define unur_srou_set_debug(par,debugflags)  unur_set_debug((par),(debugflags))
+/* set debuging flags                                                        */
 
 /*---------------------------------------------------------------------------*/
 

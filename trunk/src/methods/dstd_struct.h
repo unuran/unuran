@@ -4,14 +4,15 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   FILE: unur_srou.h                                                       *
+ *   FILE: dstd_struct.h                                                     *
  *                                                                           *
  *   PURPOSE:                                                                *
- *         declares structures and function prototypes for method SROU       *
- *         (Simple universal generator, ratio-of-uniforms method)            *
+ *         declares structures for method DSTD                               *
+ *         (wrapper for special generators for                               *
+ *         Discrete STanDard distributions)                                  *
  *                                                                           *
  *   USAGE:                                                                  *
- *         only included in unuran.h                                         *
+ *         only included in source_struct.h                                  *
  *                                                                           *
  *****************************************************************************
      $Id$
@@ -38,54 +39,29 @@
  *****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
+
+#define UNUR_MAX_DIST_PARAMS  5    /* maximal numbers of parameters for distributions */
+
+/*---------------------------------------------------------------------------*/
 /* Information for constructing the generator                                */
 
-struct unur_srou_par { 
-  double Fmode;              /* cdf at mode                                  */
+struct unur_dstd_par { 
+  const char *sample_routine_name; /* name of sampling routine               */
+  int  is_inversion;      /* indicate whether method is inversion method     */     
 };
 
 /*---------------------------------------------------------------------------*/
 /* The generator object                                                      */
 
-struct unur_srou_gen { 
-  double  um;                /* height of rectangle: square root of f(mode)  */
-  double  vl, vr;            /* left and right boundary of rectangle         */
-  double  xl, xr;            /* ratios vl/um and vr/um                       */
+struct unur_dstd_gen { 
+  double *gen_param;      /* parameters for the generator                    */
+  int     n_gen_param;    /* number of parameters for the generator          */
+
+  int    *gen_iparam;     /* integer parameters for generator                */
+  int     n_gen_iparam;   /* number of integer parameters for the generator  */
+
+  double  umin;           /* cdf at left boundary of domain                  */
+  double  umax;           /* cdf at right boundary of domain                 */
 };
 
 /*---------------------------------------------------------------------------*/
-/* Routines for user interface                                               */
-
-struct unur_par *unur_srou_new( struct unur_distr *distr );
-/* get default parameters for generator                                      */
-
-struct unur_gen *unur_srou_init( struct unur_par *parameters );
-/* initialize new generator                                                  */
-
-double unur_srou_sample( struct unur_gen *generator );
-double unur_srou_sample_mirror( struct unur_gen *generator );
-double unur_srou_sample_check( struct unur_gen *generator );
-/* sample from generator                                                     */
-
-void unur_srou_free( struct unur_gen *generator);
-/* destroy generator object                                                  */
-
-/*...........................................................................*/
-
-int unur_srou_set_Fmode( struct unur_par *par, double Fmode );
-/* set cdf at mode                                                           */
-
-int unur_srou_set_verify( struct unur_par *par, int verify );
-/* turn verifying of algorithm while sampling on/off                         */
-
-int unur_srou_set_usesqueeze( struct unur_par *par, int usesqueeze );
-/* set flag for using universal squeeze (default: off)                       */
-
-int unur_srou_set_usemirror( struct unur_par *par, int usemirror );
-/* set flag for using mirror principle (default: off)                        */
-
-#define unur_srou_set_debug(par,debugflags)  unur_set_debug((par),(debugflags))
-/* set debuging flags                                                        */
-
-/*---------------------------------------------------------------------------*/
-

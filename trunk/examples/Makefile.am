@@ -13,13 +13,13 @@ INCLUDES = \
  -I$(top_srcdir)/src/uniform \
  -I$(top_srcdir)/src/tests
 
-noinst_PROGRAMS = run example
+noinst_PROGRAMS = run 
 
 run_SOURCES = run.c
-example_SOURCE = example.c
+# example_SOURCE = example.c
 
 run_LDADD = -lunuran_tests -lunuran_distributions -lunuran -luniform -lprng -lml -lm
-example_LDADD = -lunuran_tests -lunuran_distributions -lunuran -luniform -lprng -lml -lm
+# example_LDADD = -lunuran_tests -lunuran_distributions -lunuran -luniform -lprng -lml -lm
 
 # clean backup files too
 clean-local:

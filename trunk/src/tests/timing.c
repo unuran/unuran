@@ -80,9 +80,17 @@ unur_test_timing( struct unur_par *par, int log_samplesize )
   double time_start, time_setup, time_marg, *time_gen;
   long samples, samplesize, log_samples;
 
+  /* pointer to sampling routines */
+  _UNUR_SAMPLING_ROUTINE_DISCR *sample_discr = NULL;
+  _UNUR_SAMPLING_ROUTINE_CONT  *sample_cont  = NULL;
+  _UNUR_SAMPLING_ROUTINE_VEC   *sample_vec   = NULL;
+
   /* check parameter */
   _unur_check_NULL(test_name,par,NULL);
   if (log_samplesize < 2) log_samplesize = 2;
+
+  /* need an array to store timings */
+  time_gen = _unur_malloc((log_samplesize+1) * sizeof(double));
 
   /* fastest possible generation time */
   fast = _unur_test_timing_uniform( par,log_samplesize );
@@ -95,8 +103,17 @@ unur_test_timing( struct unur_par *par, int log_samplesize )
   /* init successful ? */
   if (!gen) return NULL;
 
-  /* need an array to store timings */
-  time_gen = _unur_malloc((log_samplesize+1) * sizeof(double));
+  /* get sampling routines */
+  switch (gen->method & UNUR_MASK_TYPE) {
+  case UNUR_METH_DISCR:
+    sample_discr = gen->sample.discr; break;
+  case UNUR_METH_CONT:
+    sample_cont  = gen->sample.cont;  break;
+  case UNUR_METH_VEC:
+    sample_vec   = gen->sample.vec;   break;
+  default: /* unknown ! */
+    _unur_error(test_name,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
+  }
 
   /* we need an array for the vector */
   if (unur_is_vec(par)) {
@@ -112,15 +129,18 @@ unur_test_timing( struct unur_par *par, int log_samplesize )
     switch (gen->method & UNUR_MASK_TYPE) {
     case UNUR_METH_DISCR:
       for( ; samples < samplesize; samples++ )
-	unur_sample_discr(gen);
+	//	unur_sample_discr(gen);
+	sample_discr(gen);
       break;
     case UNUR_METH_CONT:
       for( ; samples < samplesize; samples++ )
-	unur_sample_cont(gen);
+	// unur_sample_cont(gen);
+	sample_cont(gen);
       break;
     case UNUR_METH_VEC:
       for( ; samples < samplesize; samples++ )
-	unur_sample_vec(gen,vec);
+	// unur_sample_vec(gen,vec);
+	sample_vec(gen,vec);
       break;
     default: /* unknown ! */
       _unur_error(test_name,UNUR_ERR_SHOULD_NOT_HAPPEN,"");

@@ -4,14 +4,14 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   FILE: unur_cstd.h                                                       *
+ *   FILE: x_umalloc_struct.h                                                *
  *                                                                           *
  *   PURPOSE:                                                                *
- *         declares structures and function prototypes for method CSTD       *
- *         (generators for Continuous STanDard distributions)                *
+ *         declares structures for allocating memory and storing allocated   *
+ *         blocks in a linked list.                                          *
  *                                                                           *
  *   USAGE:                                                                  *
- *         only included in unuran.h                                         *
+ *         only included in source_struct.h                                  *
  *                                                                           *
  *****************************************************************************
      $Id$
@@ -38,59 +38,14 @@
  *****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
+/* linked list to store pointers to allocated blocks                         */
 
-#define UNUR_MAX_DIST_PARAMS  5    /* maximal numbers of parameters for distributions */
-
-/*---------------------------------------------------------------------------*/
-/* Information for constructing the generator                                */
-
-struct unur_cstd_par { 
-  const char *sample_routine_name; /* name of sampling routine               */
-  int  is_inversion;      /* indicate whether method is inversion method     */     
+struct unur_mblock {
+  void *memptr;                 /* store pointer to allocated block          */
+  struct unur_mblock *next;     /* pointer to next entry in list             */
+#ifdef UNUR_COOKIES
+  unsigned cookie;              /* magic cookie                              */
+#endif
 };
-
-/*---------------------------------------------------------------------------*/
-/* The generator object                                                      */
-
-struct unur_cstd_gen { 
-  double *gen_param;      /* parameters for the generator                    */
-  int     n_gen_param;    /* number of parameters for the generator          */
-
-  int    flag;            /* sometimes it is convenient to have a flag       */
-
-  double  umin;           /* cdf at left boundary of domain                  */
-  double  umax;           /* cdf at right boundary of domain                 */
-
-  int  is_inversion;      /* indicate whether method is inversion method     */     
-};
-
-/*---------------------------------------------------------------------------*/
-/* Routines for user interface                                               */
-
-struct unur_par *unur_cstd_new( struct unur_distr *distr );
-/* get default parameters for generator                                      */
-
-struct unur_gen *unur_cstd_init( struct unur_par *parameters );
-/* initialize new generator                                                  */
-
-/** 
-    double unur_cstd_sample( struct unur_gen *gen );
-    Does not exists !!!
-    Sampling routines are defined in ../distributions/ for each distributions.
-**/
-
-void unur_cstd_free( struct unur_gen *generator);
-/* destroy generator object                                                  */
-
-/*...........................................................................*/
-
-int unur_cstd_set_variant( struct unur_par *par, unsigned variant );
-/* set variant of method                                                     */
-
-int unur_cstd_chg_param( struct unur_gen *gen, double *params, int n_params );
-/* change array of parameters for distribution                               */
-
-#define unur_cstd_set_debug(par,debugflags)  unur_set_debug((par),(debugflags))
-/* set debuging flags                                                        */
 
 /*---------------------------------------------------------------------------*/

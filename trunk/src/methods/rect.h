@@ -4,11 +4,11 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   FILE: unur_rect.h                                                       *
+ *   FILE: rect.h                                                            *
  *                                                                           *
  *   PURPOSE:                                                                *
- *         declares structures and function prototypes for method RECT       *
- *         (uniformly distributed in (multidimensional) RECTangle            *
+ *         function prototypes for method RECT                               *
+ *         (uniformly distributed in (multidimensional) RECTangle)           *
  *                                                                           *
  *   USAGE:                                                                  *
  *         only included in unuran.h                                         *
@@ -38,39 +38,23 @@
  *****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
-/* Information for constructing the generator                                */
-
-struct unur_rect_par { 
-  int      dim;         /* dimension                                         */
-  double **domain;      /* vertices of rectangle                             */
-};
-
-/*---------------------------------------------------------------------------*/
-/* The generator object                                                      */
-
-struct unur_rect_gen { 
-  int      dim;         /* dimension                                         */
-  double **domain;      /* vertices of rectangle                             */
-};
-
-/*---------------------------------------------------------------------------*/
 /* Routines for user interface                                               */
 
-struct unur_par *unur_rect_new( int dim );
+UNUR_PAR *unur_rect_new( int dim );
 /* get default parameters for generator                                      */
 
-struct unur_gen *unur_rect_init( struct unur_par *parameters );
+UNUR_GEN *unur_rect_init( UNUR_PAR *parameters );
 /* initialize new generator                                                  */
 
-void unur_rect_sample_vec( struct unur_gen *gen, double *vec );
+void unur_rect_sample_vec( UNUR_GEN *gen, double *vec );
 /* sample from generator                                                     */
 
-void unur_rect_free( struct unur_gen *generator);
+void unur_rect_free( UNUR_GEN *generator);
 /* destroy generator object                                                  */
 
 /*...........................................................................*/
 
-int unur_rect_set_domain_vec( struct unur_par *par, double **domain );
+int unur_rect_set_domain_vec( UNUR_PAR *parameters, double **domain );
 /* set coordinates for domain boundary                                       */
 
 #define unur_rect_set_debug(par,debugflags)  unur_set_debug((par),(debugflags))

@@ -4,11 +4,12 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   FILE: unur_urng.h                                                       *
+ *   FILE: dstd.h                                                            *
  *                                                                           *
  *   PURPOSE:                                                                *
- *         declares macros and function prototypes for using uniform         *
- *         random number generators inside UNURAN.                           *
+ *         function prototypes for method DSTD                               *
+ *         (wrapper for special generators for                               *
+ *         Discrete STanDard distributions)                                  *
  *                                                                           *
  *   USAGE:                                                                  *
  *         only included in unuran.h                                         *
@@ -38,65 +39,33 @@
  *****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
-#ifndef __X_URNG_H_SEEN
-#define __X_URNG_H_SEEN
-/*---------------------------------------------------------------------------*/
+/* Routines for user interface                                               */
 
-#include <unuran_config.h>
+UNUR_PAR *unur_dstd_new( UNUR_DISTR *distribution );
+/* get default parameters for generator                                      */
 
-/*---------------------------------------------------------------------------*/
-/* uniform random number generator                                           */
+UNUR_GEN *unur_dstd_init( UNUR_PAR *parameters );
+/* initialize new generator                                                  */
 
-/* We have to define the following macros:
+/** 
+    double unur_dstd_sample( UNUR_GEN *gen );
+    Does not exists !!!
+    Sampling routines are defined in ../distributions/ for each distributions.
+**/
 
-   UNUR_URNG_DEFAULT
-      ... name|pointer of default urng (depends on UNUR_URNG_INVOKE)
-          to be set in unuran_config.h
+void unur_dstd_free( UNUR_GEN *generator);
+/* destroy generator object                                                  */
 
-   _unur_call_urng(gen)
-      ... function call to urng (via struct unur_gen)
-*/
+/*...........................................................................*/
 
-/*---------------------------------------------------------------------------*/
-#if UNUR_URNG_INVOKE == UNUR_URNG_POINTER
-/*---------------------------------------------------------------------------*/
+int unur_dstd_set_variant( UNUR_PAR *parameters, unsigned variant );
+/* set variant of method                                                     */
 
-/* prototype for uniform rng  */
-double UNUR_URNG_DEFAULT(void);
+int unur_dstd_chg_param( UNUR_GEN *gen, double *params, int n_params );
+/* change array of parameters for distribution                               */
 
-/* type of uniform random number generator                                   */
-typedef double (*UNUR_URNG_TYPE)(void);
-
-/* function call to uniform rng */
-#define _unur_call_urng(gen)        ((*(gen->urng))())
+#define unur_dstd_set_debug(par,debugflags)  unur_set_debug((par),(debugflags))
+/* set debuging flags                                                        */
 
 /*---------------------------------------------------------------------------*/
-#elif UNUR_URNG_INVOKE == UNUR_URNG_PRNG
-/*---------------------------------------------------------------------------*/
-
-/* header file from prng library */
-#include <prng.h>
-
-/* type of uniform random number generator                                   */
-typedef struct prng *UNUR_URNG_TYPE;
-
-/* function call to uniform rng */
-#define _unur_call_urng(gen)        (prng_get_next(gen->urng))
-
-/*---------------------------------------------------------------------------*/
-#else
-/*---------------------------------------------------------------------------*/
-#error UNUR_URNG_INVOKE not valid !!
-/*---------------------------------------------------------------------------*/
-#endif  /* UNUR_URNG_INVOKE */
-/*---------------------------------------------------------------------------*/
-
-/*---------------------------------------------------------------------------*/
-#endif  /* __X_URNG_H_SEEN */
-/*---------------------------------------------------------------------------*/
-
-
-
-
-
 

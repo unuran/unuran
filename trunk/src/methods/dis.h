@@ -4,11 +4,11 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   FILE: unur_dstd.h                                                       *
+ *   FILE: dis.h                                                             *
  *                                                                           *
  *   PURPOSE:                                                                *
- *         declares structures and function prototypes for method DSTD       *
- *         (generators for Continuous STanDard distributions)                *
+ *         function prototypes for method DIS                                *
+ *         ((Discrete) Indexed Search (guide table))                         *
  *                                                                           *
  *   USAGE:                                                                  *
  *         only included in unuran.h                                         *
@@ -38,58 +38,29 @@
  *****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
-
-#define UNUR_MAX_DIST_PARAMS  5    /* maximal numbers of parameters for distributions */
-
-/*---------------------------------------------------------------------------*/
-/* Information for constructing the generator                                */
-
-struct unur_dstd_par { 
-  const char *sample_routine_name; /* name of sampling routine               */
-  int  is_inversion;      /* indicate whether method is inversion method     */     
-};
-
-/*---------------------------------------------------------------------------*/
-/* The generator object                                                      */
-
-struct unur_dstd_gen { 
-  double *gen_param;      /* parameters for the generator                    */
-  int     n_gen_param;    /* number of parameters for the generator          */
-
-  int    *gen_iparam;     /* integer parameters for generator                */
-  int     n_gen_iparam;   /* number of integer parameters for the generator  */
-
-  double  umin;           /* cdf at left boundary of domain                  */
-  double  umax;           /* cdf at right boundary of domain                 */
-};
-
-/*---------------------------------------------------------------------------*/
 /* Routines for user interface                                               */
 
-struct unur_par *unur_dstd_new( struct unur_distr *distr );
+UNUR_PAR *unur_dis_new( UNUR_DISTR *distribution );
 /* get default parameters for generator                                      */
 
-struct unur_gen *unur_dstd_init( struct unur_par *parameters );
+UNUR_GEN *unur_dis_init( UNUR_PAR *parameter );
 /* initialize new generator                                                  */
 
-/** 
-    double unur_dstd_sample( struct unur_gen *gen );
-    Does not exists !!!
-    Sampling routines are defined in ../distributions/ for each distributions.
-**/
+int unur_dis_sample( UNUR_GEN *generator );
+/* sample from generator                                                     */
 
-void unur_dstd_free( struct unur_gen *generator);
+void unur_dis_free( UNUR_GEN *generator );
 /* destroy generator object                                                  */
 
 /*...........................................................................*/
 
-int unur_dstd_set_variant( struct unur_par *par, unsigned variant );
+int unur_dis_set_variant( UNUR_PAR *parameters, unsigned variant );
 /* set variant of method                                                     */
 
-int unur_dstd_chg_param( struct unur_gen *gen, double *params, int n_params );
-/* change array of parameters for distribution                               */
+int unur_dis_set_guidefactor( UNUR_PAR *parameters, double factor );
+/* set factor for relative size of guide table                               */
 
-#define unur_dstd_set_debug(par,debugflags)  unur_set_debug((par),(debugflags))
+#define unur_dis_set_debug(par,debugflags)  unur_set_debug((par),(debugflags))
 /* set debuging flags                                                        */
 
 /*---------------------------------------------------------------------------*/

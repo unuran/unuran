@@ -4,15 +4,14 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   FILE: unur_umalloc.h                                                    *
+ *   FILE: utdr.h                                                            *
  *                                                                           *
  *   PURPOSE:                                                                *
- *         declares structures and function prototypes for allocating        *
- *         memory and storing allocated blocks in a linked list.             *
+ *         function prototypes for method UTDR                               *
+ *         (Universal Transformed Density Rejection; 3-point method)         *
  *                                                                           *
  *   USAGE:                                                                  *
- *         internal header file.                                             *
- *         included in umalloc.c, error.c and ../methods/unur_methods.h.     *
+ *         only included in unuran.h                                         *
  *                                                                           *
  *****************************************************************************
      $Id$
@@ -39,29 +38,33 @@
  *****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
-#ifndef __UNUR_UMALLOC_H_SEEN
-#define __UNUR_UMALLOC_H_SEEN
+/* Routines for user interface                                               */
+
+UNUR_PAR *unur_utdr_new( UNUR_DISTR *distribution );
+/* get default parameters for generator                                      */
+
+UNUR_GEN *unur_utdr_init( UNUR_PAR *parameters );
+/* initialize new generator                                                  */
+
+double unur_utdr_sample( UNUR_GEN *generator );
+double unur_utdr_sample_check( UNUR_GEN *generator );  /** TODO **/
+/* sample from generator                                                     */
+
+void unur_utdr_free( UNUR_GEN *generator);
+/* destroy generator object                                                  */
+
+/*...........................................................................*/
+
+int unur_utdr_set_cfactor( UNUR_PAR *parameters, double cfactor );
+/* set factor for position of left and right construction point              */
+
+int unur_utdr_set_delta( UNUR_PAR *parameters, double delta );
+/* set factor for replacing tangents by secants                              */
+
+int unur_utdr_set_verify( UNUR_PAR *parameters, int verify );
+/* turn verifying of algorithm while sampling on/off                         */
+
+#define unur_utdr_set_debug(par,debugflags)  unur_set_debug((par),(debugflags))
+/* set debuging flags                                                        */
+
 /*---------------------------------------------------------------------------*/
-
-#include <unuran_config.h>
-
-/*---------------------------------------------------------------------------*/
-/* linked list to store pointers to allocated blocks                         */
-
-struct unur_mblock {
-  void *memptr;                 /* store pointer to allocated block          */
-  struct unur_mblock *next;     /* pointer to next entry in list             */
-#ifdef UNUR_COOKIES
-  unsigned cookie;              /* magic cookie                              */
-#endif
-};
-
-/*---------------------------------------------------------------------------*/
-#endif  /* __UNUR_UMALLOC_H_SEEN */
-/*---------------------------------------------------------------------------*/
-
-
-
-
-
-

@@ -4,11 +4,11 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   FILE: unur_dau.h                                                        *
+ *   FILE: ninv.h                                                            *
  *                                                                           *
  *   PURPOSE:                                                                *
- *         declares structures and function prototypes for method DAU        *
- *         ((Discrete) Alias-Urn)                                            *
+ *         function prototypes for method NINV                               *
+ *         (Numerical INVersion of cumulative distribution function)         *
  *                                                                           *
  *   USAGE:                                                                  *
  *         only included in unuran.h                                         *
@@ -38,48 +38,45 @@
  *****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
-/* Information for constructing the generator                                */
-
-struct unur_dau_par { 
-  double  urn_factor;  /* relative length of table for alias-urn method      */
-                       /*    (DEFAULT = 1 --> alias method)                  */
-                       /*   length of table = urn_factor * len               */
-};
-
-/*---------------------------------------------------------------------------*/
-/* The generator object                                                      */
-
-struct unur_dau_gen { 
-  int     len;         /* length of probability vector                       */
-  int     urn_size;    /* size of table for alias-urn method                 */
-  double *qx;          /* pointer to cut points for strips                   */
-  int    *jx;          /* pointer to donor                                   */
-};
-
-/*---------------------------------------------------------------------------*/
 /* Routines for user interface                                               */
 
-struct unur_par *unur_dau_new(  struct unur_distr *distr );
+UNUR_PAR *unur_ninv_new( UNUR_DISTR *distribution );
 /* get default parameters for generator                                      */
 
-struct unur_gen *unur_dau_init( struct unur_par *parameters );
+UNUR_GEN *unur_ninv_init( UNUR_PAR *parameters );
 /* initialize new generator                                                  */
 
-int unur_dau_sample( struct unur_gen *generator );
+double unur_ninv_sample_regula( UNUR_GEN *generator );
+double unur_ninv_sample_newton( UNUR_GEN *generator );
 /* sample from generator                                                     */
 
-void unur_dau_free( struct unur_gen *generator );
+void unur_ninv_free( UNUR_GEN *generator);
 /* destroy generator object                                                  */
 
 /*...........................................................................*/
 
-int unur_dau_set_urnfactor( struct unur_par *par, double factor );
-/* set factor for relative size of urn                                       */
+int unur_ninv_use_newton( UNUR_PAR *parameters );
+/* use Newton's method                                                       */
 
-#define unur_dau_set_debug(par,debugflags)  unur_set_debug((par),(debugflags))
+int unur_ninv_use_regula( UNUR_PAR *parameters );
+/* use regula falsi                                                          */
+
+int unur_ninv_set_max_iter( UNUR_PAR *parameters, int max_iter );
+/* set number of maximal iterations                                          */
+
+int unur_ninv_set_x_resolution( UNUR_PAR *parameters, double x_resolution);
+/* set maximal relative error in x                                           */
+
+int unur_ninv_set_start( UNUR_PAR *parameters, double s1, double s2, double s3 );
+/* set starting points.                                                      */
+/*   Newton:        s1:           starting point                             */
+/*   regular falsi: s1, s2:       boundary of starting interval              */
+/*   Muller/Brent:  s1. s2, s3:   starting points                            */
+/* arguments that are not used by method are ignored.                        */
+
+
+#define unur_ninv_set_debug(par,debugflags)  unur_set_debug((par),(debugflags))
 /* set debuging flags                                                        */
 
 /*---------------------------------------------------------------------------*/
-
-
 

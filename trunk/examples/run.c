@@ -31,25 +31,25 @@
 #define RUN_TESTS       (~0x0u & ~UNUR_TEST_SCATTER)
 
 /* define which tests should run (1) or not (0) */
-#define RUN_DAU           0
-#define RUN_DIS           0
+#define RUN_DAU           1
+#define RUN_DIS           1
 
-#define RUN_NINV          0
-#define RUN_UTDR          0
-#define RUN_AROU          0
-#define RUN_SROU          0
-#define RUN_STDR          0
-#define RUN_TDRSQRT       0
-#define RUN_TDRLOG        0
-#define RUN_TABL          0
+#define RUN_NINV          1
+#define RUN_UTDR          1
+#define RUN_AROU          1
+#define RUN_SROU          1
+#define RUN_STDR          1
+#define RUN_TDRSQRT       1
+#define RUN_TDRLOG        1
+#define RUN_TABL          1
 
-#define RUN_NORMAL        0
-#define RUN_GAMMA         0
-#define RUN_BETA          0
+#define RUN_NORMAL        1
+#define RUN_GAMMA         1
+#define RUN_BETA          1
 #define RUN_CAUCHY        1
-#define RUN_UNIFORM       0
+#define RUN_UNIFORM       1
 
-#define RUN_RECT          0
+#define RUN_RECT          1
 
 #define RUN_CSTD          1
 
@@ -62,23 +62,23 @@ double *set_prob(int len);       /* make a probability vector */
 int main()
 { 
   double     *prob;    /* probability vector */
-  struct unur_par *par;
-  struct unur_gen *gen;
+  UNUR_PAR *par;
+  UNUR_GEN *gen;
   double moments[10];
   double fpar[2];
 /*    double stp[10]; */
   double slopes[10];
 /*    UNUR_URNG_TYPE urng; */
 
-  struct unur_distr *distr_normal;
-  struct unur_distr *distr_gamma;
-  struct unur_distr *distr_beta;
-  struct unur_distr *distr_cauchy;
-  struct unur_distr *distr_uniform;
+  UNUR_DISTR *distr_normal;
+  UNUR_DISTR *distr_gamma;
+  UNUR_DISTR *distr_beta;
+  UNUR_DISTR *distr_cauchy;
+  UNUR_DISTR *distr_uniform;
 
-  struct unur_distr *distr_geom;
+  UNUR_DISTR *distr_geom;
 
-  struct unur_distr *distr_xxx;
+  UNUR_DISTR *distr_xxx;
 
   /* ------------------------- */
 
@@ -246,13 +246,14 @@ int main()
   unur_cstd_set_variant(par,0);
   unur_run_tests(par,RUN_TESTS);
 
+#if 0
   par = unur_cstd_new(distr_xxx);
   unur_cstd_set_variant(par,0);
   gen = unur_init(par);
   unur_test_moments(gen,2,moments,10000);
   printf("mean =\t%g\nstddev =\t%g\n\n",moments[1],sqrt(moments[2]-moments[1]*moments[1]));
   unur_free(gen);
-
+#endif
 
 
   par = unur_cstd_new(distr_cauchy);
@@ -412,6 +413,7 @@ int main()
   unur_dstd_set_debug(par,UNUR_DEBUG_INIT);
   unur_run_tests(par,RUN_TESTS);
 
+#if 0
   fpar[0] = 0.1;
   fpar[1] = 100.;
   par = unur_dstd_new(distr_xxx);
@@ -422,6 +424,7 @@ int main()
   unur_test_chi2( gen, 1000, 100000, 20, 1 );
 
   unur_free(gen);
+#endif
 
 #endif
 

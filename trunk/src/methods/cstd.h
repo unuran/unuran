@@ -4,11 +4,12 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   FILE: unur_dis.h                                                        *
+ *   FILE: cstd.h                                                            *
  *                                                                           *
  *   PURPOSE:                                                                *
- *         declares structures and function prototypes for method DIS        *
- *         ((Discrete) Alias-Urn)                                            *
+ *         function prototypes for method CSTD                               *
+ *         (wrapper for special generators for                               *
+ *         Continuous STanDard distributions)                                *
  *                                                                           *
  *   USAGE:                                                                  *
  *         only included in unuran.h                                         *
@@ -38,48 +39,32 @@
  *****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
-/* Information for constructing the generator                                */
-
-struct unur_dis_par { 
-  double  guide_factor; /* relative length of guide table.  (DEFAULT = 1)    */
-                        /*   length of guide table = guide_factor * len      */
-};
-
-/*---------------------------------------------------------------------------*/
-/* The generator object                                                      */
-
-struct unur_dis_gen { 
-  double  sum;          /* sum of all probabilities = cumprob[len-1]         */
-  double *cumprob;      /* pointer to the vector of cumulated probabilities  */
-  int    *guide_table;  /* pointer to guide table                            */
-  int     guide_size;   /* length of guide table                             */
-};
-
-/*---------------------------------------------------------------------------*/
 /* Routines for user interface                                               */
 
-struct unur_par *unur_dis_new( struct unur_distr *distr );
+UNUR_PAR *unur_cstd_new( UNUR_DISTR *distribution );
 /* get default parameters for generator                                      */
 
-struct unur_gen *unur_dis_init( struct unur_par *parameter );
+UNUR_GEN *unur_cstd_init( UNUR_PAR *parameters );
 /* initialize new generator                                                  */
 
-int unur_dis_sample( struct unur_gen *generator );
-/* sample from generator                                                     */
+/** 
+    double unur_cstd_sample( UNUR_GEN *gen );
+    Does not exists !!!
+    Sampling routines are defined in ../distributions/ for each distributions.
+**/
 
-void unur_dis_free( struct unur_gen *generator );
+void unur_cstd_free( UNUR_GEN *generator);
 /* destroy generator object                                                  */
 
 /*...........................................................................*/
 
-int unur_dis_set_variant( struct unur_par *par, unsigned variant );
+int unur_cstd_set_variant( UNUR_PAR *parameters, unsigned variant );
 /* set variant of method                                                     */
 
-int unur_dis_set_guidefactor( struct unur_par *par, double factor );
-/* set factor for relative size of guide table                               */
+int unur_cstd_chg_param( UNUR_GEN *gen, double *params, int n_params );
+/* change array of parameters for distribution                               */
 
-#define unur_dis_set_debug(par,debugflags)  unur_set_debug((par),(debugflags))
+#define unur_cstd_set_debug(parameters,debugflags)  unur_set_debug((parameters),(debugflags))
 /* set debuging flags                                                        */
 
 /*---------------------------------------------------------------------------*/
-

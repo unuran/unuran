@@ -4,14 +4,14 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   FILE: unur_urng.h                                                       *
+ *   FILE: srou_struct.h                                                     *
  *                                                                           *
  *   PURPOSE:                                                                *
- *         declares macros and function prototypes for using uniform         *
- *         random number generators inside UNURAN.                           *
+ *         declares structures for method SROU                               *
+ *         (Simple universal generator, Ratio-Of-Uniforms method)            *
  *                                                                           *
  *   USAGE:                                                                  *
- *         only included in unuran.h                                         *
+ *         only included in source_struct.h                                  *
  *                                                                           *
  *****************************************************************************
      $Id$
@@ -38,65 +38,19 @@
  *****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
-#ifndef __X_URNG_H_SEEN
-#define __X_URNG_H_SEEN
-/*---------------------------------------------------------------------------*/
+/* Information for constructing the generator                                */
 
-#include <unuran_config.h>
-
-/*---------------------------------------------------------------------------*/
-/* uniform random number generator                                           */
-
-/* We have to define the following macros:
-
-   UNUR_URNG_DEFAULT
-      ... name|pointer of default urng (depends on UNUR_URNG_INVOKE)
-          to be set in unuran_config.h
-
-   _unur_call_urng(gen)
-      ... function call to urng (via struct unur_gen)
-*/
+struct unur_srou_par { 
+  double Fmode;              /* cdf at mode                                  */
+};
 
 /*---------------------------------------------------------------------------*/
-#if UNUR_URNG_INVOKE == UNUR_URNG_POINTER
-/*---------------------------------------------------------------------------*/
+/* The generator object                                                      */
 
-/* prototype for uniform rng  */
-double UNUR_URNG_DEFAULT(void);
-
-/* type of uniform random number generator                                   */
-typedef double (*UNUR_URNG_TYPE)(void);
-
-/* function call to uniform rng */
-#define _unur_call_urng(gen)        ((*(gen->urng))())
+struct unur_srou_gen { 
+  double  um;                /* height of rectangle: square root of f(mode)  */
+  double  vl, vr;            /* left and right boundary of rectangle         */
+  double  xl, xr;            /* ratios vl/um and vr/um                       */
+};
 
 /*---------------------------------------------------------------------------*/
-#elif UNUR_URNG_INVOKE == UNUR_URNG_PRNG
-/*---------------------------------------------------------------------------*/
-
-/* header file from prng library */
-#include <prng.h>
-
-/* type of uniform random number generator                                   */
-typedef struct prng *UNUR_URNG_TYPE;
-
-/* function call to uniform rng */
-#define _unur_call_urng(gen)        (prng_get_next(gen->urng))
-
-/*---------------------------------------------------------------------------*/
-#else
-/*---------------------------------------------------------------------------*/
-#error UNUR_URNG_INVOKE not valid !!
-/*---------------------------------------------------------------------------*/
-#endif  /* UNUR_URNG_INVOKE */
-/*---------------------------------------------------------------------------*/
-
-/*---------------------------------------------------------------------------*/
-#endif  /* __X_URNG_H_SEEN */
-/*---------------------------------------------------------------------------*/
-
-
-
-
-
-

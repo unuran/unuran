@@ -4,14 +4,14 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   FILE: unur_tdr.h                                                        *
+ *   FILE: tdr_struct.h                                                      *
  *                                                                           *
  *   PURPOSE:                                                                *
- *         declares structures and function prototypes for method TDR        *
+ *         declares structures for method TDR                                *
  *         (Transformed Density Rejection)                                   *
  *                                                                           *
  *   USAGE:                                                                  *
- *         only included in unuran.h                                         *
+ *         only included in source_struct.h                                  *
  *                                                                           *
  *****************************************************************************
      $Id$
@@ -104,53 +104,3 @@ struct unur_tdr_gen {
 };
 
 /*---------------------------------------------------------------------------*/
-/* Routines for user interface                                               */
-
-struct unur_par *unur_tdr_new( struct unur_distr* distr );
-/* get default parameters for generator                                      */
-
-struct unur_gen *unur_tdr_init( struct unur_par *parameters );
-/* initialize new generator                                                  */
-
-double unur_tdr_sample_log( struct unur_gen *gen );
-double unur_tdr_sample_sqrt( struct unur_gen *gen );
-double unur_tdr_sample_check( struct unur_gen *generator );
-/* sample from generator                                                     */
-
-void unur_tdr_free( struct unur_gen *generator);
-/* destroy generator object                                                  */
-
-/*...........................................................................*/
-
-int unur_tdr_set_cpoints( struct unur_par *par, int n_stp, double *stp );
-/* set construction points for envelope and/or its number for initialization */
-
-int unur_tdr_set_guidefactor( struct unur_par *par, double factor );
-/* set factor for relative size of guide table                               */
-
-int unur_tdr_set_max_sqhratio( struct unur_par *par, double max_ratio );
-/* set bound for ratio A(squeeze) / A(hat)                                   */
-
-int unur_tdr_set_max_intervals( struct unur_par *par, int max_ivs );
-/* set maximum number of intervals                                           */
-
-int unur_tdr_set_center( struct unur_par *par, double center );
-/* set center (approximate mode) of p.d.f.                                   */
-
-int unur_tdr_set_usecenter( struct unur_par *par, int usecenter );
-/* set flag for using center as construction point                           */
-
-int unur_tdr_set_usemode( struct unur_par *par, int usemode );
-/* set flag for using (exact) mode as construction point                     */
-
-int unur_tdr_set_c( struct unur_par *par, double c );
-/* set parameter c for transformation T_c                                    */
-
-int unur_tdr_set_verify( struct unur_par *par, int verify );
-/* turn verifying of algorithm while sampling on/off                         */
-
-#define unur_tabl_set_debug(par,debugflags)  unur_set_debug((par),(debugflags))
-/* set debuging flags                                                        */
-
-/*---------------------------------------------------------------------------*/
-

@@ -55,192 +55,65 @@
 /*****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
-/* structures                                                                */
-struct unur_distr;    /* distribution object      */
-struct unur_par;      /* parameters for generator */
-struct unur_gen;      /* generator object         */
+/* objects                                                                   */
 
-/*---------------------------------------------------------------------------*/
-/* a function for continuous univariate c.d.f., p.d.f. and its derivative    */
-typedef double _UNUR_FUNCTION_CONT(double x, double *params, int n_params);
-typedef double _UNUR_FUNCTION_DISCR(int x, double *params, int n_params);
-
-/*---------------------------------------------------------------------------*/
-/* sampling routines                                                         */
-
-/* for univariate continuous distribution */
-typedef double _UNUR_SAMPLING_ROUTINE_CONT(struct unur_gen *gen);
-
-/* for univariate discrete distribution */
-typedef int _UNUR_SAMPLING_ROUTINE_DISCR(struct unur_gen *gen);
-
-/* for multivariate continuous distribution */
-typedef void _UNUR_SAMPLING_ROUTINE_VEC(struct unur_gen *gen, double *vec);
+typedef struct unur_distr UNUR_DISTR;    /* distribution object              */
+typedef struct unur_par   UNUR_PAR;      /* parameters for generator         */
+typedef struct unur_gen   UNUR_GEN;      /* generator object                 */
 
 /*****************************************************************************/
-/**  More header files                                                      **/
+/**  Declarations for uniform random bumber generators                      **/
 /*****************************************************************************/
 
-/* structures for blocked memory allocation */
-#include <unur_umalloc.h>
-
-/* typedefs and prototypes for uniform random number generators */
 #include <unur_urng.h>
 
-/* distribution objects */
-#include <unur_distr.h>
+/*****************************************************************************/
+/**  Function prototypes for manipulating distribution objects              **/
+/*****************************************************************************/
+
+#include <distr.h>
 
 /*****************************************************************************/
-/**  Header files for generators                                            **/
+/**  Function prototypes for manipulating generator objects                 **/
 /*****************************************************************************/
 
 /* methods for discrete distributions */
-#include <unur_dau.h>
-#include <unur_dis.h>
+#include <dau.h>
+#include <dis.h>
 
 /* methods for continuous distributions */
-#include <unur_arou.h>
-#include <unur_ninv.h>
-#include <unur_srou.h>
-#include <unur_stdr.h>
-#include <unur_tabl.h>
-#include <unur_tdr.h>
-#include <unur_unif.h>
-#include <unur_utdr.h>
+#include <arou.h>
+#include <ninv.h>
+#include <srou.h>
+#include <stdr.h>
+#include <tabl.h>
+#include <tdr.h>
+#include <unif.h>
+#include <utdr.h>
 
 /* methods for continuous multivariate distributions */
-#include <unur_rect.h>
+#include <rect.h>
 
 /* generators for standard distributions */
-#include <unur_cstd.h>     /* continuous */
-#include <unur_dstd.h>     /* discrete   */
-
-/*****************************************************************************/
-/**  Main structure for all UNURAN generators                               **/  
-/*****************************************************************************/
-
-/*---------------------------------------------------------------------------*/
-/* parameter objects                                                         */
-
-struct unur_par {
-  union {             
-    struct unur_dau_par   dau;
-    struct unur_dis_par   dis;
-    struct unur_arou_par  arou;
-    struct unur_ninv_par  ninv;
-    struct unur_srou_par  srou;
-    struct unur_stdr_par  stdr;
-    struct unur_tabl_par  tabl;
-    struct unur_tdr_par   tdr;
-    struct unur_unif_par  unif;
-    struct unur_utdr_par  utdr;
-    struct unur_rect_par  rect;
-    struct unur_cstd_par  cstd;
-    struct unur_dstd_par  dstd;
-  }               data;       /* data for method                             */
-
-  struct unur_gen* (*init)(struct unur_par *par);
-
-  unsigned method;            /* indicates method and generator to be used   */
-  unsigned variant;           /* indicates variant of method                 */
-  unsigned set;               /* stores which parameters have been changed   */
-
-  UNUR_URNG_TYPE  urng;       /* pointer to uniform random number generator  */
-  UNUR_URNG_TYPE  urng_aux;   /* pointer to second (auxilliary) uniform RNG  */
-
-  struct unur_distr *distr;   /* pointer to distribution object              */
-  char *genid;                /* identifier for generator                    */
-
-  unsigned debug;             /* debugging flags                             */
-#ifdef UNUR_COOKIES
-  unsigned cookie;            /* magic cookie                                */
-#endif
-};
-
-/*---------------------------------------------------------------------------*/
-/* generator objects                                                         */
-
-struct unur_gen { 
-  union {   
-    struct unur_dau_gen   dau;
-    struct unur_dis_gen   dis;
-    struct unur_arou_gen  arou;
-    struct unur_ninv_gen  ninv;
-    struct unur_srou_gen  srou;
-    struct unur_stdr_gen  stdr;
-    struct unur_tabl_gen  tabl;
-    struct unur_tdr_gen   tdr;
-    struct unur_unif_gen  unif;
-    struct unur_utdr_gen  utdr;
-    struct unur_rect_gen  rect;
-    struct unur_cstd_gen  cstd;
-    struct unur_dstd_gen  dstd;
-  }               data;       /* data for method                             */
-  
-  union {
-    _UNUR_SAMPLING_ROUTINE_CONT  *cont;
-    _UNUR_SAMPLING_ROUTINE_DISCR *discr;
-    _UNUR_SAMPLING_ROUTINE_VEC   *vec;
-  }               sample;     /* pointer to sampling routine                 */
-  
-  void (*destroy)(struct unur_gen *gen); /* pointer to destructor            */ 
-  
-  unsigned method;            /* indicates method and generator to be used   */
-  unsigned variant;           /* indicates variant of method                 */
-  
-  UNUR_URNG_TYPE  urng;       /* pointer to uniform random number generator  */
-  UNUR_URNG_TYPE  urng_aux;   /* pointer to second (auxilliary) uniform RNG  */
-
-  struct unur_distr distr;    /* distribution object                         */
-  char *genid;                /* identifier for generator                    */
-
-  struct unur_gen *gen_aux;   /* pointer to auxilliary generator object      */
-  struct unur_gen *gen_aux_2; /* pointer to second aux. generator object     */
-
-  unsigned debug;             /* debugging flags                             */
-
-#ifdef UNUR_COOKIES
-  unsigned cookie;            /* magic cookie                                */
-#endif
-};
+#include <cstd.h>     /* continuous */
+#include <dstd.h>     /* discrete   */
 
 /*****************************************************************************/
 /**  Invoke generators                                                      **/  
 /*****************************************************************************/
 
-/*---------------------------------------------------------------------------*/
-#ifdef UNUR_ENABLE_CHECKNULL
-/*---------------------------------------------------------------------------*/
-/* check for (invalid) NULL pointer */
+UNUR_GEN *unur_init( UNUR_PAR *parameters );
 
-#define unur_init(par)                ((par) ? (par)->init(par) : NULL)
+int    unur_sample_discr(UNUR_GEN *generator);
+double unur_sample_cont(UNUR_GEN *generator);
+void   unur_sample_vec(UNUR_GEN *generator, double *vector);
 
-#define unur_sample_discr(gen)        ((gen) ? (gen)->sample.discr(gen) : 0)
-#define unur_sample_cont(gen)         ((gen) ? (gen)->sample.cont(gen)  : 0.)
-#define unur_sample_vec(gen,vector)   if(gen) (gen)->sample.vec(gen,vector)
-
-#define unur_free(gen)                if (gen) (gen)->destroy(gen)
-
-/*---------------------------------------------------------------------------*/
-#else
-/*---------------------------------------------------------------------------*/
-/* do not check for (invalid) NULL pointer */
-
-#define unur_init(par)                (par)->init(par)
-
-#define unur_sample_discr(gen)        (gen)->sample.discr(gen)
-#define unur_sample_cont(gen)         (gen)->sample.cont(gen)
-#define unur_sample_vec(gen,vector)   (gen)->sample.vec(gen,vector)
-
-#define unur_free(gen)                (gen)->destroy(gen)
-
-/*---------------------------------------------------------------------------*/
-#endif  /* UNUR_CHECKNULL */
-/*---------------------------------------------------------------------------*/
+void unur_free( UNUR_GEN *gen );
 
 /*****************************************************************************/
 /**  Additional header files for further function prototypes                **/
 /*****************************************************************************/
+
 
 #include <unur_misc.h>
 

@@ -93,9 +93,10 @@
       numerically much more stable than Newton's algorithm.
 
       It might happen that NINV aborts unur_sample_cont() without
-      computing the correct value. Then @code{UNUR_INFINITY} is
-      returned and @code{unur_error} is set to
-      @code{UNUR_ERR_GEN_SAMPLING}.
+      computing the correct value (because the maximal number
+      iterations has been exceeded). Then the last approximate value
+      for @i{x} is returned (with might be fairly false) and
+      @code{unur_error} is set to @code{UNUR_ERR_GEN_SAMPLING}.
 
    =END
 */

@@ -1252,9 +1252,12 @@ _unur_ninv_regula( struct unur_gen *gen, double u )
       step *= 2.;
     }
     else {
-      _unur_error(GENTYPE,UNUR_ERR_GEN_SAMPLING,
+      _unur_error(gen->genid,UNUR_ERR_GEN_SAMPLING,
 		  "Regula Falsi can't find interval with sign change");
-      return INFINITY;
+      x2 = 0.5*x1 + 0.5*x2;
+      x2 = max( x2, DISTR.trunc[0]);
+      x2 = min( x2, DISTR.trunc[1]);
+      return x2;
     }
   }  /* while end -- interval found */ 
 
@@ -1321,13 +1324,20 @@ _unur_ninv_regula( struct unur_gen *gen, double u )
     
   }  /* for-loop  end */
 
+  if (i >= GEN.max_iter) {
+    _unur_warning(gen->genid,UNUR_ERR_GEN_SAMPLING,
+		  "max number of iterations exceeded");
+    x2 = max( x2, DISTR.trunc[0]);
+    x2 = min( x2, DISTR.trunc[1]);
+  }
+  
 #ifdef UNUR_ENABLE_LOGGING
-    /* write info into log file (in case error) */
-    if (gen->debug & NINV_DEBUG_SAMPLE)
-      _unur_ninv_debug_sample_regula( gen,u,x2,f2,i );
+  /* write info into log file (in case error) */
+  if (gen->debug & NINV_DEBUG_SAMPLE)
+    _unur_ninv_debug_sample_regula( gen,u,x2,f2,i );
 #endif
-
-   return x2;
+  
+  return x2;
 
 } /* end of _unur_ninv_sample_regula()  */
 
@@ -1479,11 +1489,12 @@ _unur_ninv_newton( struct unur_gen *gen, double U )
       if (flat_count < MAX_FLAT_COUNT)
 	flat_count++;
       else {
-	_unur_error(GENTYPE,UNUR_ERR_GEN_SAMPLING,
+	_unur_error(gen->genid,UNUR_ERR_GEN_SAMPLING,
 		    "Newton's method can't leave flat region");
-	return INFINITY;
+	x = max( x, DISTR.trunc[0]);
+	x = min( x, DISTR.trunc[1]);
+	return x;
       }
-      
     }   /* end of while-loop, (leaving flat region) */
     
     step = 1.;   /* set back stepsize */
@@ -1515,12 +1526,20 @@ _unur_ninv_newton( struct unur_gen *gen, double U )
 
   }  /* end of for-loop  (MAXITER reached -> finished) */
 
-#ifdef UNUR_ENABLE_LOGGING
-    /* write info into log file (in case error) */
-    if (gen->debug & NINV_DEBUG_SAMPLE)
-      _unur_ninv_debug_sample_newton(gen, U, x, fx, i);
-#endif
+  if (i >= GEN.max_iter)
+    _unur_warning(gen->genid,UNUR_ERR_GEN_SAMPLING,
+		  "max number of iterations exceeded");
 
+  /* make sure that result is within boundaries of (truncated) domain */
+  x = max( x, DISTR.trunc[0]);
+  x = min( x, DISTR.trunc[1]);
+
+#ifdef UNUR_ENABLE_LOGGING
+  /* write info into log file (in case error) */
+  if (gen->debug & NINV_DEBUG_SAMPLE)
+    _unur_ninv_debug_sample_newton(gen, U, x, fx, i);
+#endif
+  
   return x;
 
 } /* end of _unur_ninv_sample_newton() */

@@ -28,7 +28,7 @@ libunuran_distributions_a_SOURCES = \
  slash.c       slash_gen.c \
  student.c     student_gen.c \
  triangular.c  triangular_gen.c \
- uniform.c \
+ uniform.c     uniform_gen.c \
  weibull.c     weibull_gen.c
 
 pkginclude_HEADERS = \

@@ -302,8 +302,15 @@ double unur_stdgen_sample_triangular_inv( struct unur_gen *gen );
 /* Inversion method                                                          */
 
 /*---------------------------------------------------------------------------*/
-/* Uniform distribution                                                      */
+/* Uniform distribution  [3; ch.26, p.276]                                   */
 struct unur_distr *unur_distr_uniform(double *params, int n_params);
+
+/* special generators */
+int _unur_stdgen_uniform_init( struct unur_par *par, struct unur_gen *gen );
+/* initialize new generator                                                  */
+double unur_stdgen_sample_uniform_inv( struct unur_gen *gen );
+/* Inversion method                                                          */
+
 
 /*---------------------------------------------------------------------------*/
 /* Weibull distribution  [2; ch.21, p.628]                                   */

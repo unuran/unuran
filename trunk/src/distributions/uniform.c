@@ -18,8 +18,9 @@
  *                                                                           *
  *  Uniform distribution [3; ch.26, p.276]                                   *
  *                                                                           *
- *  pdf:     f(x) = 1 / (b-a)                                                *
- *  domain:  a <= x <= b                                                     *
+ *  pdf:       f(x) = 1 / (b-a)                                              *
+ *  domain:    a <= x <= b                                                   *
+ *  constant:  1                                                             *
  *                                                                           *
  *  parameters:                                                              *
  *     0:  a      ... location                                               *
@@ -130,7 +131,7 @@ unur_distr_uniform( double *params, int n_params )
   distr->name = distr_name;
 
   /* how to get special generators */
-  DISTR.init = NULL;    /* _unur_stdgen_uniform_init; ???? */
+  DISTR.init = _unur_stdgen_uniform_init;
 
   /* functions */
   DISTR.pdf  = _unur_pdf_uniform;  /* pointer to p.d.f.            */

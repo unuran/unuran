@@ -62,7 +62,7 @@ int main()
 { 
   double     *prob;    /* probability vector */
   struct unur_par *par;
-/*    struct unur_gen *gen; */
+  struct unur_gen *gen;
   double fpar[2];
 /*    double stp[10]; */
   double slopes[10];
@@ -115,7 +115,7 @@ int main()
 
 #if RUN_CSTD == 1
 
-#if 0
+#if 1
   distr_xxx = unur_distr_normal(NULL,0);
   // unur_distr_cont_set_domain(distr_xxx,3,UNUR_INFINITY);
   par = unur_cstd_new(distr_xxx);
@@ -187,10 +187,10 @@ int main()
 
 #endif
 
+#if 0
   fpar[2] = -1.;
   fpar[3] = 2.;
 
-#if 0
   fpar[0] = 0.5;
   fpar[1] = 0.2;
   distr_xxx = unur_distr_beta(fpar,2);
@@ -211,7 +211,6 @@ int main()
   par = unur_cstd_new(distr_xxx);
   unur_cstd_set_variant(par,1);
   unur_run_tests(par,RUN_TESTS);
-#endif
 
   fpar[0] = 5;
   fpar[1] = 2;
@@ -236,10 +235,37 @@ int main()
 
   fpar[0] = 1.5;
   fpar[1] = 1.8;
-  distr_xxx = unur_distr_beta(fpar,4);
+  distr_xxx = unur_distr_beta(fpar,2);
   par = unur_cstd_new(distr_xxx);
   unur_cstd_set_variant(par,1);
   unur_run_tests(par,RUN_TESTS);
+
+#endif
+
+  fpar[0] = 10.;
+  distr_xxx = unur_distr_chi(fpar,1);
+  par = unur_cstd_new(distr_xxx);
+  unur_cstd_set_variant(par,0);
+  unur_run_tests(par,RUN_TESTS);
+
+  par = unur_cstd_new(distr_xxx);
+  gen = unur_init(par);
+
+  {
+    int i;
+    double x;
+    double x1 = 0.;
+    double x2 = 0.;
+    for (i=0; i<10000; i++) {
+      x = unur_sample_cont(gen);
+      x1 += x;
+      x = x*x;
+      x2 += x;
+    }
+    x1 /= 10000.;
+    x2 /= 10000.;
+    printf("mean = %g, stddev = %g\n",x1, sqrt(x2 - x1*x1));
+  }
 
 #endif
 

@@ -60,14 +60,13 @@
 extern long double incbetl(long double a, long double b, long double x);
 #define _unur_cdf_beta_ext(x,a,b) ((double)incbetl((long double)(a),(long double)(b),(long double)(x)))
 
-/* cdf of chi^2 distribution with nu degrees of freedom */
-extern long double chdtrl(long double df, long double x);
-#define _unur_cdf_chisquare_ext(x,nu)  ((double)chdtrl((long double)(nu),(long double)(x)))
-
 /* logarithm of gamma function */
 extern long double lgaml(long double x);
-#define _unur_gammaln_ext(x)  ((double)(lgaml((long double)(x))))
-#define _unur_gammaln(x)      _unur_gammaln_ext(x)
+#define _unur_gammaln(x)  ((double)(lgaml((long double)(x))))
+
+/* incomplete gamma function */
+extern long double igaml(long double a, long double x);
+#define _unur_incgamma(x,a)  ((double)(igaml((long double)(a),(long double)(x))))
 
 /* cdf of gamma(a,b) distribution */
 extern long double gdtrl(long double a, long double b, long double x);

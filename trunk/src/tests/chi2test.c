@@ -241,6 +241,8 @@ _unur_test_chi2_cont(struct unur_gen *gen,
   double pval;               /* p-value */
   int i,j;
 
+  double x;
+
   /* check arguments */
   CHECK_NULL(gen,-1.);
   /* we do not check magic cookies here */
@@ -398,7 +400,7 @@ _unur_test_chi2test( double *prob,
 
   /* evaluate test statistics */
   df = (double)(classes-1);                    /* degrees of freedom */
-  pval = 1. - _unur_cdf_chisquare(chi2,&df,1);  /* p-value            */
+  pval = 1. - _unur_cdf_chisquare(chi2,&df,1); /* p-value            */
 
   /* print result (if requested) */
   if (verbose >= 1) {

@@ -126,17 +126,21 @@ double unur_stdgen_sample_beta_b1prs( struct unur_gen *gen );
 struct unur_distr *unur_distr_cauchy(double *params, int n_params);
 
 /*---------------------------------------------------------------------------*/
+/*  Chi distribution [2; ch.18, p.417]                                 */
+struct unur_distr *unur_distr_chi(double *params, int n_params);
+
+/* special generators */
+int _unur_stdgen_chi_init( struct unur_par *par, struct unur_gen *gen );
+/* initialize new generator                                                  */
+double unur_stdgen_sample_chi_chru( struct unur_gen *gen );
+  /* Ratio of Uniforms with shift */    /* Default */
+
+/*---------------------------------------------------------------------------*/
 /*  Chisquare distribution [2; ch.18, p.416]                                 */
 struct unur_distr *unur_distr_chisquare(double *params, int n_params);
 
 double _unur_cdf_chisquare(double x, double *params, int n_params);
 /* required for chi^2 tests */
-
-/* special generators */
-int _unur_stdgen_chisquare_init( struct unur_par *par, struct unur_gen *gen );
-/* initialize new generator                                                  */
-double unur_stdgen_sample_chisquare_chru( struct unur_gen *gen );
-  /* Ratio of Uniforms with shift */    /* Default */
 
 /*---------------------------------------------------------------------------*/
 /* Erlang distribution                                                       */

@@ -4,7 +4,7 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   FILE:      chi2.c                                                       *
+ *   FILE:      chi.c                                                       *
  *                                                                           *
  *   REFERENCES:                                                             *
  *                                                                           *
@@ -16,11 +16,12 @@
  *****************************************************************************
  *****************************************************************************
  *                                                                           *
- *  Chisquare distribution [2; ch.18, p.416]                                 *
+ *  Chi distribution [2; ch.18, p.417]                                       *
+ *  (Do not confuse with Chi^2 distribution!)                                *
  *                                                                           *
- *  pdf:       f(x) = x^((nu/2)-1) * exp( -x/2 )                             *
+ *  pdf:       f(x) = x^(nu-1) * exp( -x^2/2 )                               *
  *  domain:    0 <= x < infinity                                             *
- *  constant:  2^(nu/2) * Gamma(nu/2)                                        *
+ *  constant:  2^((nu/2)-1) * Gamma(nu/2)                                    *
  *                                                                           *
  *  parameters:                                                              *
  *     0:  nu > 0   ... shape (degrees of freedom)                           *
@@ -56,62 +57,57 @@
 
 /*---------------------------------------------------------------------------*/
 
-static const char distr_name[] = "chisquare";
+static const char distr_name[] = "chi";
 
 /* parameters */
 #define nu  params[0]
 
 /* function prototypes                                                       */
-static double _unur_pdf_chisquare(double x, double *params, int n_params);
-static double _unur_dpdf_chisquare(double x, double *params, int n_params);
+static double _unur_pdf_chi(double x, double *params, int n_params);
+static double _unur_dpdf_chi(double x, double *params, int n_params);
+static double _unur_cdf_chi(double x, double *params, int n_params);
 
 /*---------------------------------------------------------------------------*/
 
 double
-_unur_pdf_chisquare(double x, double *params, int n_params)
+_unur_pdf_chi(double x, double *params, int n_params)
 { 
   if (x <= 0.)
     /* out of support */
     return 0.;
 
-  if (nu == 2.)
-    return exp(-x/2. - LOGNORMCONSTANT);
+  return (pow(x,nu - 1.) * exp(-x*x/2. - LOGNORMCONSTANT));
 
-  return (pow(x,nu/2. - 1.) * exp(-x/2. - LOGNORMCONSTANT));
-
-} /* end of _unur_pdf_chisquare() */
+} /* end of _unur_pdf_chi() */
 
 /*---------------------------------------------------------------------------*/
 
 double
-_unur_dpdf_chisquare(double x, double *params, int n_params)
+_unur_dpdf_chi(double x, double *params, int n_params)
 { 
   if (x <= 0.)
     /* out of support */
     return 0.;
 
-  if (nu == 2.)
-    return ( -exp(-x/2. - LOGNORMCONSTANT) / 2. );
-
-  return ( pow(x,nu/2. - 2.) * exp(-x/2. - LOGNORMCONSTANT) * (nu - 2. - x)/2. );
-} /* end of _unur_dpdf_chisquare() */
+  return ( pow(x,nu - 2.) * exp(-x*x/2. - LOGNORMCONSTANT) * (nu - 1. - x*x) );
+} /* end of _unur_dpdf_chi() */
 
 /*---------------------------------------------------------------------------*/
 
 double
-_unur_cdf_chisquare(double x, double *params, int n_params)
+_unur_cdf_chi(double x, double *params, int n_params)
 { 
   if (x <= 0.)
     /* out of support of p.d.f. */
     return 0.;
 
-  return _unur_incgamma(x/2.,nu/2.);
-} /* end of _unur_cdf_chisquare() */
+  return _unur_incgamma(x*x/2.,nu/2.);
+} /* end of _unur_cdf_chi() */
 
 /*---------------------------------------------------------------------------*/
 
 struct unur_distr *
-unur_distr_chisquare( double *params, int n_params )
+unur_distr_chi( double *params, int n_params )
 {
 #define DISTR distr->data.cont
   register struct unur_distr *distr;
@@ -127,18 +123,18 @@ unur_distr_chisquare( double *params, int n_params )
   distr = unur_distr_cont_new();
 
   /* set distribution id */
-  distr->id = UNUR_DISTR_CHISQUARE;
+  distr->id = UNUR_DISTR_CHI;
 
   /* name of distribution */
   distr->name = distr_name;
              
   /* how to get special generators */
-  DISTR.init = NULL;
+  DISTR.init = _unur_stdgen_chi_init;
    
   /* functions */
-  DISTR.pdf  = _unur_pdf_chisquare;   /* pointer to p.d.f.            */
-  DISTR.dpdf = _unur_dpdf_chisquare;  /* pointer to derivative of p.d.f. */
-  DISTR.cdf  = _unur_cdf_chisquare;   /* pointer to c.d.f.            */
+  DISTR.pdf  = _unur_pdf_chi;   /* pointer to p.d.f.            */
+  DISTR.dpdf = _unur_dpdf_chi;  /* pointer to derivative of p.d.f. */
+  DISTR.cdf  = _unur_cdf_chi;   /* pointer to c.d.f.            */
 
   /* copy parameters */
   DISTR.nu = nu;
@@ -153,10 +149,10 @@ unur_distr_chisquare( double *params, int n_params )
   DISTR.n_params = n_params;
 
   /* log of normalization constant */
-  DISTR.LOGNORMCONSTANT = _unur_gammaln(nu/2.) - M_LN2 * (nu/2.);
+  DISTR.LOGNORMCONSTANT = _unur_gammaln(nu/2.) - M_LN2 * (nu/2. - 1.);
 
   /* mode and area below p.d.f. */
-  DISTR.mode = (nu >= 2.) ? (nu - 2.) : 0.;
+  DISTR.mode = (nu >= 1.) ? sqrt(nu - 1.) : 0.;
   DISTR.area = 1.;
 
   /* domain */
@@ -174,7 +170,7 @@ unur_distr_chisquare( double *params, int n_params )
   return distr;
 
 #undef DISTR
-} /* end of unur_distr_chisquare() */
+} /* end of unur_distr_chi() */
 
 /*---------------------------------------------------------------------------*/
 #undef nu

@@ -1733,7 +1733,6 @@ unur_distr_cvec_set_pdfparams_vec( struct unur_distr *distr, int par, const doub
 {
   /* check arguments */
   _unur_check_NULL( NULL, distr, UNUR_ERR_NULL );
-  _unur_check_NULL( NULL, param_vec, UNUR_ERR_NULL );
   _unur_check_distr_object( distr, CVEC, UNUR_ERR_DISTR_INVALID );
 
   /* check new parameter for distribution */
@@ -1742,14 +1741,19 @@ unur_distr_cvec_set_pdfparams_vec( struct unur_distr *distr, int par, const doub
     return UNUR_ERR_DISTR_NPARAMS;
   }
 
-  /* allocate memory */
-  DISTR.param_vecs[par] = _unur_xrealloc( DISTR.param_vecs[par], n_param_vec * sizeof(double) );
 
-  /* copy parameters */
-  memcpy( DISTR.param_vecs[par], param_vec, n_param_vec*sizeof(double) );
-
-  /* set length of array */
-  DISTR.n_param_vec[par] = n_param_vec;
+  if (param_vec != NULL) {
+    /* allocate memory */
+    DISTR.param_vecs[par] = _unur_xrealloc( DISTR.param_vecs[par], n_param_vec * sizeof(double) );
+    /* copy parameters */
+    memcpy( DISTR.param_vecs[par], param_vec, n_param_vec*sizeof(double) );
+    /* set length of array */
+    DISTR.n_param_vec[par] = n_param_vec;
+  }
+  else {
+    if (DISTR.param_vecs[par]) free(DISTR.param_vecs[par]);
+    DISTR.n_param_vec[par] = 0;
+  }
 
   /* changelog */
   distr->set &= ~UNUR_DISTR_SET_MASK_DERIVED;

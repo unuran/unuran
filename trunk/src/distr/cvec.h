@@ -493,6 +493,8 @@ int unur_distr_cvec_set_pdfparams_vec( UNUR_DISTR *distribution, int par, const 
    Due to great variety of possible parameters for a multivariate
    @var{distribution} there is no simpler interface.
 
+   If @var{param_vec} is NULL then the corresponding entry is cleared.
+
    If an error occurs no parameters are copied into the parameter
    object @code{unur_errno} is set to @code{UNUR_ERR_DISTR_DATA}.
 */

@@ -494,11 +494,12 @@ _unur_matrix_determinant ( int dim, const double *A )
 {
 #define idx(a,b) ((a)*dim+b)
 
-  CHECK_NULL(A,  INFINITY);
-  
   int *p, s, i;
   double *LU;     /* array for storing LU decomposition of matrix A */
   double det;
+
+  /* check arguments */
+  CHECK_NULL(A,  INFINITY);
   
   /* one-dimensional case */
   if (dim==1) return A[0];

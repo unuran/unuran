@@ -383,5 +383,15 @@ int unur_stdgen_sample_zipf_zet( struct unur_gen *gen );
 /* Acceptance Rejection                                                      */
 
 /*---------------------------------------------------------------------------*/
+/* Logarithmic distribution  [1; ch.7, p.285]                                */
+struct unur_distr *unur_distr_logarithmic(double *params, int n_params);
+
+/* special generators */
+int _unur_stdgen_logarithmic_init( struct unur_par *par, struct unur_gen *gen );
+/* initialize new generator                                                  */
+int unur_stdgen_sample_logarithmic_lsk( struct unur_gen *gen );
+/* Acceptance Rejection                                                      */
+
+/*---------------------------------------------------------------------------*/
 #endif  /* __UNURAN_DISTRIBUTIONS_H_SEEN */
 /*---------------------------------------------------------------------------*/

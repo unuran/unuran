@@ -51,6 +51,7 @@ qstart.texi: scripts
 	tex qstart.texi
 	makeinfo --html qstart.texi
 	makeinfo --no-headers -o qstart.txt qstart.texi
+	makeinfo qstart.texi
 
 # run perl scripts
 scripts:
@@ -75,4 +76,6 @@ clean-local:
 # clean html files
 maintainer-clean:
 	rm -f *.html
+
+
 

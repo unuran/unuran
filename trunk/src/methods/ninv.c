@@ -104,7 +104,8 @@
 /*    bits 13-24 ... adaptive steps                                          */
 /*    bits 25-32 ... trace sampling                                          */
 
-#define NINV_DEBUG_SAMPLE        0x01000000u
+#define NINV_DEBUG_SAMPLE       0x01000000u
+#define NINV_DEBUG_CHG          0x00001000u   /* print changed parameters    */
 
 /*---------------------------------------------------------------------------*/
 /* Flags for logging set calls                                               */
@@ -135,6 +136,8 @@ static double _unur_ninv_newton( struct unur_gen *gen, double u);
 /*---------------------------------------------------------------------------*/
 
 
+
+
 #ifdef UNUR_ENABLE_LOGGING
 /*---------------------------------------------------------------------------*/
 /* the following functions print debugging information on output stream,     */
@@ -155,6 +158,11 @@ static void _unur_ninv_debug_sample_newton( struct unur_gen *gen,
 					    double u, double x, double fx, int iter );
 /*---------------------------------------------------------------------------*/
 /* trace sampling (newton's method).                                         */
+/*---------------------------------------------------------------------------*/
+
+static void _unur_ninv_debug_chg_domain(UNUR_GEN *gen);
+/*---------------------------------------------------------------------------*/
+/*  track changes of the domain                                              */
 /*---------------------------------------------------------------------------*/
 
 
@@ -493,6 +501,67 @@ unur_ninv_use_table( struct unur_par *par )
 
 
 /*****************************************************************************/
+
+int 
+unur_ninv_chg_domain(UNUR_GEN *gen, double left, double right )
+     /*----------------------------------------------------------------------*/
+     /* change the left and right borders of the domain of the distribution  */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen      ... pointer to generator object                           */
+     /*   left  ... left boundary point                                      */
+     /*   right ... right boundary point                                     */
+     /*                                                                      */
+     /* comment:                                                             */
+     /*   the new boundary points may be +/- INFINITY                        */
+     /*----------------------------------------------------------------------*/
+{
+
+  /* check arguments */
+  CHECK_NULL(gen, 0);
+  _unur_check_gen_object(gen, NINV);
+
+  /* check new parameter for generator */
+  if (left >= right) {
+    _unur_warning(NULL,UNUR_ERR_DISTR_SET,"domain, left >= right");
+    return 0;
+  }
+
+  /* copy new boundaries into generator object */
+  if (left <= right) {
+     DISTR.BD_LEFT  = left;
+     DISTR.BD_RIGHT = right;
+  }
+  else{
+     DISTR.BD_RIGHT = left;
+     DISTR.BD_LEFT  = right;
+  }
+
+  /* changelog */
+  gen->distr.set |= UNUR_DISTR_SET_DOMAIN;
+
+  /* indicate that we have a truncated distribution.
+     (do not have the standard domain any more) */
+  gen->distr.set &= ~UNUR_DISTR_SET_STDDOMAIN;
+
+  /* set bounds of U -- in respect to given bounds                         */
+  GEN.Umin = (DISTR.BD_LEFT  <= -INFINITY) ? 0.0 : CDF(DISTR.BD_LEFT); 
+  GEN.Umax = (DISTR.BD_RIGHT >=  INFINITY) ? 1.0 : CDF(DISTR.BD_RIGHT); 
+
+#ifdef UNUR_ENABLE_LOGGING
+    /* write info into log file */
+    if (gen->debug & NINV_DEBUG_CHG) 
+      _unur_ninv_debug_chg_domain( gen );
+#endif
+
+  
+  /* o.k. */
+  return 1;
+  
+} /* end of unur_ninv_chg_domain() */
+
+/*****************************************************************************/
+
 
 struct unur_gen *
 _unur_ninv_init( struct unur_par *par )
@@ -1131,6 +1200,28 @@ _unur_ninv_debug_sample_newton( struct unur_gen *gen, double u, double x, double
 } /* end of _unur_ninv_debug_sample_newton() */
 
 /*---------------------------------------------------------------------------*/
+static void 
+_unur_ninv_debug_chg_domain( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* print new (changed) domain of (truncated) distribution               */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*----------------------------------------------------------------------*/
+{
+  FILE *log;
+
+  /* check arguments */
+  CHECK_NULL(gen,/*void*/);  COOKIE_CHECK(gen,CK_NINV_GEN,/*void*/);
+
+  log = unur_get_stream();
+
+  fprintf(log,"%s: domain of (truncated) distribution changed:\n",gen->genid);
+  fprintf(log,"%s:\tdomain = (%g, %g)\n",gen->genid, DISTR.BD_LEFT, DISTR.BD_RIGHT);
+  if (!(gen->distr.set & UNUR_DISTR_SET_STDDOMAIN))
+    fprintf(log,"%s:\tU in (%g,%g)\n",gen->genid,GEN.Umin,GEN.Umax);
+
+} /* end of _unur_ninv_debug_chg_domain() */
 
 
 /*---------------------------------------------------------------------------*/

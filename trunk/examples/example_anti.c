@@ -16,17 +16,19 @@
 /* http://statistik.wu-wien.ac.at/prng/) for generating          */
 /* uniform random numbers.                                       */
 /* To compile this example you must have set                     */
-/* #define  UNUR_URNG_TYPE  UNUR_URNG_PRNG                       */
+/*                                                               */
+/*   #define  UNUR_URNG_TYPE  UNUR_URNG_GENERIC                  */
+/*   #define  UNURAN_HAS_PRNG 1                                  */
+/*                                                               */
 /* in `src/unuran_config.h'.                                     */
-
-/* It also works with necessary modifications with other uniform */
-/* random number generators.                                     */
+/* (Of course the executable has to be linked against the        */
+/* prng library.)                                                */
 
 /* ------------------------------------------------------------- */
 
 int main()
 {
-#if UNUR_URNG_TYPE == UNUR_URNG_PRNG
+#if UNUR_URNG_TYPE == UNUR_URNG_GENERIC && defined(UNURAN_HAS_PRNG)
 
   int    i;          /* loop variable                            */
   double xn, xg;     /* will hold the random number              */
@@ -49,7 +51,7 @@ int main()
   /* The first generator: Gaussian N(2,5) */
 
   /* uniform generator: We use the Mersenne Twister.             */
-  urng1 = prng_new("mt19937(1237)");
+  urng1 = unur_urng_prng_new("mt19937(1237)");
   if (urng1 == NULL) exit (EXIT_FAILURE);
 
   /* UNURAN generator object for N(2,5) */
@@ -71,7 +73,7 @@ int main()
   /* Alternatively you can create and use your own auxilliary    */
   /* uniform random number generator:                            */
   /*    UNUR_URNG  *urng_aux;                                    */
-  /*    urng_aux = prng_new("tt800");                            */
+  /*    urng_aux = unur_urng_prng_new("tt800");                  */
   /*    if (urng_aux == NULL) exit (EXIT_FAILURE);               */
   /*    unur_set_urng_aux( par, urng_aux );                      */                    
 
@@ -89,7 +91,7 @@ int main()
   /* The second generator: Gamma(4) with antithetic variates.    */
 
   /* uniform generator: We use the Mersenne Twister.             */
-  urng2 = prng_new("anti(mt19937(1237))");
+  urng2 = unur_urng_prng_new("anti(mt19937(1237))");
   if (urng2 == NULL) exit (EXIT_FAILURE);
 
   /* UNURAN generator object for gamma(4) */
@@ -138,8 +140,8 @@ int main()
   unur_free(gen_gamma);
 
   /* We also should destroy the uniform random number generators.*/
-  prng_free(urng1);
-  prng_free(urng2);
+  unur_urng_free(urng1);
+  unur_urng_free(urng2);
 
   exit (EXIT_SUCCESS);
 

@@ -37,12 +37,16 @@
 @end ifnottex     
 Hier steht also Text in tex und auch sonst -- the top node summary
 @menu
-* Intro::     Introduction
-* Methods::   How should the random numbers be created
-* FAQ::       Frequently asked questions
-* Reference:: Function Reference
+* Intro::         Introduction
+* Methods::       How should the random numbers be created
+* FAQ::           Frequently asked questions
+* Reference::     Function Reference
+* Distributions:: Distributions
+* Internal::     Internal remarks
 @end menu
-
+@ifhtml
+Table of @ref{Contents}
+@end ifhtml
 
 @node Intro
 @chapter Introduction
@@ -325,9 +329,10 @@ Notation:
 @c @* @indent get default parameters for generator                                      
 
 
-
+@node Distributions
 @chapter distributions
 
+@node Internal
 @chapter internals
 @section ....
 @section Internal remarks 
@@ -339,13 +344,7 @@ better: one struct unur with unur.d, unur.p, unur.g
 standard configuration: Log outout to file
 @end enumerate
 
-@c ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
-@c
-@c The End of the Document
-@c
-
-
-
+@anchor{Contents}
 @contents
 
 

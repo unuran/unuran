@@ -1,4 +1,4 @@
-/* my third UNURAN program example3.c */
+/* my third UNURAN program example3.c                         */
 
 #include <unuran.h>
 
@@ -8,29 +8,34 @@ int main()
   double x;
   double params[2] = {10.0, 0.5};
 
-  UNUR_DISTR *distr;    /* distribution */
-  UNUR_PAR   *par;      /* parameter */
-  UNUR_GEN   *gen;      /* generator */
+  UNUR_DISTR *distr;    /* distribution object                */
+  UNUR_PAR   *par;      /* parameter object                   */
+  UNUR_GEN   *gen;      /* generator object                   */
 
-  /* choose Gaussian distribution with parameters 10.0 and 0.5 */
+  /* choose Gaussian distribution with the 2 parmeters
+     stored in the array params  -> N(10,5)                   */
   distr = unur_distr_normal(params, 2);
 
-  /* choose method */
-  par = unur_ninv_new(distr);
+  /* choose method: TABL -- an acceptance/rejection method
+     using piecewise constant hats and sqeezes                */
+  par = unur_tabl_new(distr);
 
-  /* change a parameter of the used method */
-  unur_ninv_set_usenewton(par);
+  /* change a parameter of the used method:
+     set upper bound allowed for the ratio of the areas
+     below sqeeze and hat                                     */
+  unur_tabl_set_max_sqhratio(par, 0.8);
 
-  /* make generator object */
+  /* create generator object -- destroy parameter object      */
   gen = unur_init(par);
 
-  /* sample: print 100 random numbers */
-  for (i=0; i<100; i++) {
-    x = unur_sample_cont(gen);
-    printf("%f\n",x);
-  }
+  /* sample: print mean of 100 random numbers                 */
+  for (i=0, x=0; i<100; i++) 
+     x += unur_sample_cont(gen);
 
-  /* destroy distribution- and generator object */
+  printf("Mean value of 100 random numbers: %f\n",x/100);
+
+
+  /* destroy distribution- and generator object               */
   unur_distr_free(distr);
   unur_free(gen);
 

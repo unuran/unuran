@@ -47,8 +47,10 @@ my %SUPPORTED_DISTR_TYPES =
 
 # Commands substituted by string parser
 my %SUBST_COMMANDS =
-    ( 'unur_distr_cont_set_pdfstr' => 'pdf',
-      'unur_distr_cont_set_cdfstr' => 'cdf'
+    ( 'unur_distr_cont_set_pdfstr'  => 'pdf',
+      'unur_distr_cont_set_cdfstr'  => 'cdf',
+      'unur_distr_discr_set_pmfstr' => 'pmf',
+      'unur_distr_discr_set_cdfstr' => 'cdf'
     );
 
 # Commands ignored by string parser

@@ -233,7 +233,6 @@ After the example itself the relevant code will be explained.
 @*call the compiler with:
 @* @file{gcc -Wall -O2 test.c -lunuran -lprng -lml -lm -o test}
 
-
 @node Ex1
 @section Ex1: As short as possible
 Name: test1.c
@@ -393,8 +392,6 @@ uniformly distributed random numbers
 @smallexample
 @include qstart_test4.texi
 @end smallexample
-
-
 
 @c --------------------------------------------------------------------
 

@@ -1,76 +1,80 @@
-/* my fourth UNURAN program: test4.c*/
+/* ------------------------------------------------------------- */
+/* File: example_cont.c                                          */
+/* ------------------------------------------------------------- */
 
-
+/* Include UNURAN header file.                                   */
 #include <unuran.h>
+
+/* ------------------------------------------------------------- */
+
+/* Example how to sample from an empirial continuous             */
+/* multivariate distribution.                                    */
+
+/* ------------------------------------------------------------- */
+
 int main()
 {
+
+#define DIM 2
+
   int    i;
-  double x;
-  double params[2] = {145.1, 1.0};
 
-  UNUR_DISTR *distr;    /* distribution */
-  UNUR_PAR   *par;      /* parameter */
-  UNUR_GEN   *gen;      /* generator */
-  UNUR_URNG  *ug;       /* uniform generator */
+  /* 4 data points of dimension 2                                */
+  double data[] = { 1. ,1.,       /* 1st data point              */
+		    -1.,1.,       /* 2nd data point              */
+		    1.,-1.,       /* 3rd data point              */
+		    -1.,-1. };    /* 4th data point              */
 
-  /* choose kind of uniform generator: Mersenne Twister */
-  ug =  prng_new("mt19937(1237)");
+  const char datafile[] = "vemp.data";
+  double result[DIM];
 
-  /* choose a implemented distribution: Gaussian */
-  distr = unur_distr_normal(params, 2);
-  //unur_distr_cont_set_domain(distr, -2, 2);
-  unur_distr_cont_set_mode(distr, 1.0);
-  //  _unur_distr_cont_find_mode(distr);
-  printf("mode: %f\n",unur_distr_cont_get_mode(distr) );
+  /* Declare the three UNURAN objects.                           */
+  UNUR_DISTR *distr;    /* distribution object                   */
+  UNUR_PAR   *par;      /* parameter object                      */
+  UNUR_GEN   *gen;      /* generator object                      */
 
+  /* Create a distribution object with dimension DIM             */
+  distr = unur_distr_cvemp_new( DIM );
 
-  /* choose method */
-  par = unur_ninv_new(distr);
-  unur_ninv_set_usenewton(par);
+  /* Set empirical sample.                                       */
+  //unur_distr_cvemp_set_data(distr, data, 4); 
+  unur_distr_cvemp_read_data(distr, datafile);
 
-  /* Set uniform generator in parameter object */   
-  unur_set_urng(par, ug);
-  
-  unur_ninv_set_table(par, 100);
+  /* Choose a method: VEMPK.                                     */
+  par = unur_vempk_new(distr);
 
+  /* Use variance correction.                                    */
+  unur_vempk_set_varcor( par, 1 );
 
-  /* make generator object */
+  /* Create the generator object.                                */
   gen = unur_init(par);
-  
-  /* sample: print 100 random numbers */
-  for (i=0; i<16; i++) {
-    x = unur_sample_cont(gen);
-    printf("%f\n",x);
+
+  /* It is important to check if the creation of the generator   */
+  /* object was successful. Otherwise `gen' is the NULL pointer  */ 
+  /* and would cause a segmentation fault if used for sampling.  */
+  if (gen == NULL) {
+     fprintf(stderr, "ERROR: cannot create generator object\n");
+     exit (EXIT_FAILURE);
   }
 
-  unur_ninv_chg_max_iter(gen,10);
+  /* It is possible to reuse the distribution object to create   */
+  /* another generator object. If you do not need it any more,   */
+  /* it should be destroyed to free memory.                      */
+  unur_distr_free(distr);
 
-  unur_ninv_chg_truncated(gen, -3, 6);   
+  /* Now you can use the generator object `gen' to sample from   */
+  /* the distribution. Eg.:                                      */
   for (i=0; i<10; i++) {
-    x = unur_sample_cont(gen);
-    printf("%f\n",x);
+    unur_sample_vec(gen, result);
+    printf("(%f,%f)\n", result[0], result[1]);
   }
-  unur_ninv_chg_truncated(gen, -1, .3);   
-  for (i=0; i<10; i++) {
-    x = unur_sample_cont(gen);
-    printf("%f\n",x);
-  }
+ 
+  /* When you do not need the generator object any more, you     */
+  /* can destroy it.                                             */
+  unur_free(gen);
 
+  exit (EXIT_SUCCESS);
 
+} /* end of main() */
 
-
-  return 0;
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
+/* ------------------------------------------------------------- */

@@ -562,15 +562,35 @@ unur_ninv_chg_start( struct unur_gen *gen, double s1, double s2 )
      GEN.s[1] = s1;
   }
 
- if ( _FP_same(GEN.s[0], GEN.s[1]) && !GEN.table_on) {
-      /* length of interval == 0 -> choose bounderies with                   */
-      /*  INTERVAL_COVERS *100% chance for sign change in interval           */
-      GEN.s[0] = -10.;      /* arbitrary starting value                      */
-      GEN.s[1] =  10.;      /* arbitrary starting value                      */
-      GEN.s[0] = _unur_ninv_regula(gen, (1.-INTERVAL_COVERS)/2. );
-      GEN.s[1] = GEN.s[0] + 10.;   /* arbitrary interval length              */
-      GEN.s[1] = _unur_ninv_regula(gen, (1.+INTERVAL_COVERS)/2. );
-    }
+ if ( !GEN.table_on ) {
+   if ( _FP_same(GEN.s[0], GEN.s[1]) ){
+      switch (gen->variant) {
+
+      case NINV_VARFLAG_REGULA:
+
+         /* length of interval == 0 -> choose bounderies with                */
+         /*  INTERVAL_COVERS *100% chance for sign change in interval        */
+         GEN.s[0] = -10.;      /* arbitrary starting value                   */
+         GEN.s[1] =  10.;      /* arbitrary starting value                   */
+         GEN.s[0] = _unur_ninv_regula(gen, (1.-INTERVAL_COVERS)/2. );
+         GEN.s[1] = GEN.s[0] + 10.;   /* arbitrary interval length           */
+         GEN.s[1] = _unur_ninv_regula(gen, (1.+INTERVAL_COVERS)/2. );
+         GEN.CDFs[0] = CDF(GEN.s[0]);
+         GEN.CDFs[1] = CDF(GEN.s[1]);
+         break;
+
+      case NINV_VARFLAG_NEWTON:
+
+         GEN.s[0] = -9.987655;             /* arbitrary starting values      */
+         GEN.s[1] =  9.987655;
+         GEN.s[0] = _unur_ninv_regula(gen, 0.5);
+         GEN.CDFs[0] = CDF(GEN.s[0]);
+	 break;
+      } /* end of switch            */
+
+   }    /* end of if (... same)     */
+ }      /* end of if (... table_on) */
+    
 
   /* changelog */
   gen->set |= NINV_SET_START;
@@ -671,13 +691,13 @@ unur_ninv_chg_domain( struct unur_gen *gen, double left, double right )
   /* copy new boundaries into generator object */
   DISTR.BD_LEFT  = left;
   DISTR.BD_RIGHT = right;
-  if (GEN.table_on && left < GEN.table[0]){
-    _unur_warning(NULL, UNUR_ERR_DISTR_SET,
-        "left border of domain exceeds range of table");
-  }
-  if (GEN.table_on && right > GEN.table[GEN.table_size-1]){
-    _unur_warning(NULL, UNUR_ERR_DISTR_SET,
-        "right border of domain exceeds range of table");
+  if (GEN.table_on ){
+    if ( left < GEN.table[0] )
+       _unur_warning(NULL, UNUR_ERR_DISTR_SET,
+           "left border of domain exceeds range of table");
+    if ( right > GEN.table[GEN.table_size-1] )
+       _unur_warning(NULL, UNUR_ERR_DISTR_SET,
+           "right border of domain exceeds range of table");
   }
 
   /* changelog */
@@ -803,6 +823,8 @@ _unur_ninv_init( struct unur_par *par )
       GEN.s[0] = _unur_ninv_regula(gen, (1.-INTERVAL_COVERS)/2. );
       GEN.s[1] = GEN.s[0] + 10.;   /* arbitrary interval length              */
       GEN.s[1] = _unur_ninv_regula(gen, (1.+INTERVAL_COVERS)/2. );
+      GEN.CDFs[0] = CDF(GEN.s[0]);
+      GEN.CDFs[1] = CDF(GEN.s[1]);
     }
 
     break;    /* case REGULA end */
@@ -815,6 +837,7 @@ _unur_ninv_init( struct unur_par *par )
       GEN.s[0] = -9.987655;                /* arbitrary starting values      */
       GEN.s[1] =  9.987655;
       GEN.s[0] = _unur_ninv_regula(gen, 0.5);
+      GEN.CDFs[0] = CDF(GEN.s[0]);
     }
 
     break;    /* case NEWTON end */
@@ -936,6 +959,8 @@ _unur_ninv_create_table(UNUR_GEN *gen)
 
   GEN.s[0] = - 10.;  /* arbitrary starting values                        */
   GEN.s[1] =   10.;
+  GEN.CDFs[0] = CDF(GEN.s[0]);
+  GEN.CDFs[1] = CDF(GEN.s[1]);
   GEN.table_on = FALSE;   /* table can't be used to calculate itself     */
 
   GEN.CDFmin = GEN.Umin;
@@ -953,6 +978,8 @@ _unur_ninv_create_table(UNUR_GEN *gen)
     GEN.s[0] = (GEN.table[i] <= -INFINITY)? GEN.table[i+1]: GEN.table[i]; 
     GEN.s[1] = (GEN.table[i] >= INFINITY)?
       GEN.table[GEN.table_size-i-2]: GEN.table[GEN.table_size-i-1];
+    GEN.CDFs[0] = CDF(GEN.s[0]);
+    GEN.CDFs[1] = CDF(GEN.s[1]);
  
   }  /* end of for()                                                     */
 
@@ -1057,10 +1084,9 @@ _unur_ninv_regula( struct unur_gen *gen, double u )
   else { /* no table    */
 
    x1 =  GEN.s[0];      /* left boudary of interval */
-   f1 =  CDF(x1);   /** TODO **/
+   f1 =  GEN.CDFs[0];
    x2 =  GEN.s[1];      /* right boudary of interval*/   
-   f2 =  CDF(x2);   /** TODO **/
-
+   f2 =  GEN.CDFs[1];
   }   /* end of if()    */
 
   if ( x1 >= x2 ) { 
@@ -1237,7 +1263,7 @@ _unur_ninv_newton( struct unur_gen *gen, double U )
   }
   else{
     x     = GEN.s[0];
-    fx    = CDF(x); /** TODO **/
+    fx    = GEN.CDFs[0];
   }
 
 

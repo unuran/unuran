@@ -54,7 +54,8 @@ struct unur_ninv_par {
 struct unur_ninv_gen { 
   int max_iter;              /* maximal number of iterations                 */
   double rel_x_resolution;   /* maximal relative error in x                  */
-  double s[2];               /* interval boundaries at start (left/right)    */
+  double s[2];               /* interval boundaries at start (left/right) ...*/
+  double CDFs[2];            /* ... and their CDF-values                     */
   double *table;             /* table with possible starting values for NINV */
   double Umin, Umax;         /* bounds for iid random variable in respect to
                                 the given bounds of the distribution         */

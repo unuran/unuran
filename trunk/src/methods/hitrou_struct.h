@@ -60,7 +60,6 @@ struct unur_hitrou_gen {
   const double *center;     /* center of distribution                        */  
   double *direction;        /* random direction vector                       */
   double *point;            /* current point inside the RoU shape            */
-  UNUR_GEN *gen_normal;     /* generator for normal disribution              */
 };
 
 /*---------------------------------------------------------------------------*/

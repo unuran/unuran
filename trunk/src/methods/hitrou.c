@@ -60,6 +60,7 @@
 #include <distr/distr.h>
 #include <distr/distr_source.h>
 #include <distr/cvec.h>
+#include <distributions/unur_distributions.h>
 #include <utils/fmax_source.h>
 #include <utils/hooke_source.h> 
 #include <utils/matrix_source.h>
@@ -71,6 +72,7 @@
 #include "unur_methods_source.h"
 #include "x_gen_source.h"
 #include "x_gen.h"
+#include "arou.h"
 #include "hitrou.h"
 
 /*---------------------------------------------------------------------------*/
@@ -135,7 +137,7 @@ static void _unur_hitrou_debug_init( const struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 #endif
 
-static void _unur_hitrou_random_direction( UNUR_GEN *gen_normal, 
+static void _unur_hitrou_random_direction( struct unur_gen *gen, 
                                            int dim, double *direction);
 /*---------------------------------------------------------------------------*/
 /* generte a random direction vector                                         */
@@ -153,6 +155,7 @@ static void _unur_hitrou_random_direction( UNUR_GEN *gen_normal,
 #define SAMPLE    gen->sample.cvec       /* pointer to sampling routine      */     
 #define PDF(x)    _unur_cvec_PDF((x),(gen->distr))    /* call to PDF         */
 
+#define NORMAL    gen->gen_aux        /* pointer to normal variate generator */
 /*---------------------------------------------------------------------------*/
 
 /*****************************************************************************/
@@ -475,6 +478,24 @@ _unur_hitrou_init( struct unur_par *par )
     return NULL; 
   }
 
+  /* we need a generator for standard normal distributons */
+  if (NORMAL==NULL) {
+    struct unur_distr *normaldistr = unur_distr_normal(NULL,0);
+    struct unur_par   *normalpar = unur_arou_new( normaldistr );
+    unur_arou_set_usedars( normalpar, TRUE );
+    NORMAL = unur_init( normalpar );
+    _unur_distr_free( normaldistr );
+    if (NORMAL == NULL) {
+       _unur_error(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,
+        "Cannot create aux Gaussian generator");
+       _unur_free(gen); free (par);
+       return NULL;
+    }
+    /* uniform random number generator and debugging flags */
+    NORMAL->urng = gen->urng;
+    NORMAL->debug = gen->debug;
+  }
+
   /* compute bounding rectangle */
   if (_unur_hitrou_rectangle(gen)!=UNUR_SUCCESS) {
     free(par); _unur_hitrou_free(gen);
@@ -620,9 +641,6 @@ _unur_hitrou_create( struct unur_par *par )
   /* get center of the distribution */
   GEN.center = unur_distr_cvec_get_center(gen->distr);
 
-  /* set auxiliary generator for normal distributed random numbers */
-  GEN.gen_normal = unur_str2gen("normal(0,1)");
- 
   /* initialize parameters */
   for (d=0; d<GEN.dim+1; d++) GEN.point[d]=0.;
 
@@ -666,8 +684,6 @@ _unur_hitrou_clone( const struct unur_gen *gen )
   CLONE.point = _unur_xmalloc( (GEN.dim+1) * sizeof(double));
   CLONE.direction = _unur_xmalloc( (GEN.dim+1) * sizeof(double));
 
-  CLONE.gen_normal = _unur_xmalloc( sizeof(UNUR_GEN));
- 
   /* copy parameters into clone object */
   CLONE.skip = GEN.skip;
   CLONE.r = GEN.r;
@@ -676,8 +692,6 @@ _unur_hitrou_clone( const struct unur_gen *gen )
   memcpy(CLONE.umax, GEN.umax, GEN.dim * sizeof(double));
   memcpy(CLONE.point, GEN.point, (GEN.dim+1) * sizeof(double));
   memcpy(CLONE.direction, GEN.direction, (GEN.dim+1) * sizeof(double));
-
-  CLONE.gen_normal = unur_str2gen("normal(0,1)");;
 
   /* copy data */
   CLONE.center = unur_distr_cvec_get_center(clone->distr);
@@ -713,7 +727,7 @@ _unur_hitrou_sample_cvec( struct unur_gen *gen, double *vec )
   for (skip=0; skip<=GEN.skip; skip++) {
  
     /* generate random direction vector in (U,V) space */
-    _unur_hitrou_random_direction(GEN.gen_normal, dim+1, GEN.direction);
+    _unur_hitrou_random_direction(gen, dim+1, GEN.direction);
 
     /* some random initialization in order to avoid compiler warnings */
     lmin=0; lmax=0;
@@ -811,7 +825,6 @@ _unur_hitrou_free( struct unur_gen *gen )
   if (GEN.umax) free(GEN.umax);
   if (GEN.direction) free(GEN.direction);
   if (GEN.point) free(GEN.point);
-  if (GEN.gen_normal) _unur_generic_free(GEN.gen_normal);
   _unur_generic_free(gen);
 
 } /* end of _unur_hitrou_free() */
@@ -821,7 +834,7 @@ _unur_hitrou_free( struct unur_gen *gen )
 /*****************************************************************************/
 
 void 
-_unur_hitrou_random_direction( UNUR_GEN *gen_normal, 
+_unur_hitrou_random_direction( struct unur_gen *gen, 
                                int dim, double *direction)
      /*----------------------------------------------------------------------*/
      /* generte a random direction vector (not necessarily unit vector)      */
@@ -830,7 +843,7 @@ _unur_hitrou_random_direction( UNUR_GEN *gen_normal,
   int d;
   
   for (d=0; d<dim; d++) {
-    direction[d] = unur_sample_cont(gen_normal);
+    direction[d] = unur_sample_cont(NORMAL);
   }
 
 }

@@ -56,9 +56,14 @@ my $distr_dir = "$top_srcdir/src/distributions";
 my $distr_h_file = "$distr_dir/unuran_distributions.h";
 
 ##############################################################################
+# Global variables
+
+# Store unsupported set calls
+my $unsupported;
+
+##############################################################################
 # Read template C file from STDIN and insert C code for string interpreter 
 #
-my $code;
 while ( <STDIN> ){
 
     unless (/^s*=INPUT\s*(\w*)/){
@@ -72,17 +77,24 @@ while ( <STDIN> ){
 	    distr_info();
 	}
 	elsif ( $type eq "methodinfo" ){
-	    $code .= xxx();
 	    method_info();
+	}
+	elsif ( $type eq "list_of_methods" ){
+	    print make_list_of_methods();
+	}
+	elsif ( $type eq "list_of_sets_method" ){
+	    print make_list_of_sets_method();
 	}
 	else{
 	    print "Error: unknown qualifier after =INPUT: -$type-\n";
 	}
     }
-
 }
 
-print $code;
+if ($unsupported) {
+    print STDERR "\nUnsupported set commands:\n";
+    print STDERR "$unsupported\n";
+}
 
 ##############################################################################
 #
@@ -118,52 +130,14 @@ sub unmatched_parenthesis {
 #
 # Read header files for all methods and ...
 # 
-# 
-#
-sub xxx {
-    my $code;
-
-    $code = str2method();
-    $code .= str2set();
-
-    return $code;
-}
 
 ##############################################################################
 #
 # Make subroutine for getting parameter object for method
 #
-sub str2method {
+sub make_list_of_methods {
 
-    # Header for subroutine
-    my $code = <<EOS;
-
-struct unur_par *
-_unur_str2method( const char *method, UNUR_DISTR *distr )
-\t /*----------------------------------------------------------------------*/
-\t /* get default parameters for method                                    */
-\t /*                                                                      */
-\t /* parameters:                                                          */
-\t /*   method ... string that contains method name                        */
-\t /*   distr  ... pointer to distribution object                          */
-\t /*                                                                      */
-\t /* return:                                                              */
-\t /*   default parameters (pointer to structure)                          */
-\t /*                                                                      */
-\t /* error:                                                               */
-\t /*   return NULL                                                        */
-\t /*----------------------------------------------------------------------*/
-{
-\t struct unur_par *par;
-
-#ifdef UNUR_ENABLE_LOGGING
-\t /* write info into log file */
-\t _unur_str_debug_string(1,"nxi",method);
-#endif
-
-EOS
-
-    $code .= "\t ";
+    my $code .= "\t ";
 
     # Read all header files 
     foreach my $hfile (@methods_h_files) {
@@ -189,56 +163,23 @@ EOS
 
     # Otherwise ...
     $code .= "{\n\t\t par = NULL;\n";
-    $code .= "\t\t fprintf(stderr, \"ERROR: Unknown method: %s\\n\",method);\n\t }\n\n";
-
-    # End 
-    $code .= "\t return par;\n";
-    $code .= "} /* end of _unur_str2method() */\n\n";
+    $code .= "\t\t fprintf(stderr, \"ERROR: Unknown method: %s\\n\",method);\n\t }\n";
 
     # Return result
     return $code;
 
-} # end of str2method() 
+} # end of make_list_of_methods()
 
 ##############################################################################
 #
 # Make subroutine for setting parameters
 #
-sub str2set {
+sub make_list_of_sets_method {
 
-    # Header for subroutine
-    my $code = <<EOS;
+    my $code .= "\t ";
 
-int
-_unur_str2set( UNUR_PAR *par, const char *key, const char *value )
-\t /*----------------------------------------------------------------------*/
-\t /* set parameters for method                                            */
-\t /*                                                                      */
-\t /* parameters:                                                          */
-\t /*   par   ... pointer to parameter for building generator object       */
-\t /*   key   ... string that contains key for parameter                   */
-\t /*   value ... string that contains list of arguments for parameter     */
-\t /*                                                                      */
-\t /* return:                                                              */
-\t /*   1 ... on success                                                   */
-\t /*   0 ... on error                                                     */
-\t /*                                                                      */
-\t /* error:                                                               */
-\t /*   return 0                                                           */
-\t /*----------------------------------------------------------------------*/
-{
-\t int result;
-
-#ifdef UNUR_ENABLE_LOGGING
-\t /* write info into log file */
-\t _unur_str_debug_string(1,key,value);
-#endif
-
-EOS
-
-    $code .= "\t ";
-
-
+    # print info on screen
+    print STDERR "Set commands for Methods:\n" if $VERBOSE;
 
     # Read all header files 
     foreach my $hfile (@methods_h_files) {
@@ -254,7 +195,7 @@ EOS
 	next unless $content =~ /[^\n]\s*=METHOD\s+(\w+)/;
 
 	# ID for method
-	print STDERR "$1: " if $VERBOSE;
+	print STDERR "  $1: " if $VERBOSE;
 	my $method = "\L$1";
 
 	# Remove all comments and empty lines ...
@@ -289,14 +230,14 @@ EOS
 	    }
 
 	    # print name of parameter
-	    print STDERR "$command ";
+	    print STDERR "$command " if $VERBOSE;
 
 	    # process list of args
 	    $args =~ s/\)\s*$//;             # remove closing parenthesis
 	    my @args_list = split /\,/, $args;
 
 	    # first argement must be of type UNUR_PAR
-	    $a = shift @args_list;
+	    my $a = shift @args_list;
 	    unless ($a =~ /UNUR_PAR/) {
 		die "Unknown syntax (first argument not of type UNUR_PAR) in $hfile:\n$l\n";
 	    }
@@ -304,87 +245,79 @@ EOS
 	    # number of arguments
 	    my $n_args = $#args_list+1;
 
-	    $code .= "if ( !strcmp(key, \"$command\") ){\n";
-###	    $code .= "\t\t result = unur_$method\_set_$command(par);\n";
-	    $code .= "\t\t result = 0;\n";
+	    # get type of arguments
+	    my $type_args;
+	    foreach my $a (@args_list) {
+		my $t;
+		# type of argument
+		if    ($a =~ /double/)   { $t = 'd'; }
+		elsif ($a =~ /int/)      { $t = 'i'; }
+		elsif ($a =~ /unsigned/) { $t = 'i'; }
+		elsif ($a =~ /char/)     { $t = 'c'; }
+		else                     { $t = '?'; }
 
-	    if (0) {
-	    # only parameter object passed
-#	    if ( $_ =~ /unur_($method)_set_(.*?)\s*\(\s*UNUR_PAR\s+\*parameters\s*\)/ ){
-##		print "if ( !strcmp(key, \"$2\") ){\n";
-##		# set parameter
-#                print "\t\t\tcheck = unur_$method\_set_$2(par);\n";
-##                # check for error
-##		print "\t\t\tif ( ! check ){\n";
-##		print "\t\t\t\tfprintf(stderr, \"ERROR: while trying to set $2\\n\");\n";
-##		print "\t\t\t}\n";
-##		print "\t\t}\n\t\telse ";
-##	    }
-	    # parameter object and a single value passed
-#	    elsif ( $_ =~ /unur_($method)_set_(.*?)\s*\(\s*UNUR_PAR\s+\*parameters\s*,\s*(\w+)\s+(\w+)\s*\)/ ){
-##		print "if ( !strcmp(key, \"$2\") ){\n";
-##		# set parameter
-#		print "\t\t\tcheck = unur_$method\_set_$2(par, ($3) dblvalue);\n";
-#                # check for error
-##		print "\t\t\tif ( ! check ){\n";
-##		print "\t\t\t\tfprintf(stderr, \"ERROR: while trying to set $2\\n\");\n";
-##		print "\t\t\t}\n";
-##		print "\t\t}\n\t\telse ";
-##	    }
-	    # parameter object and two doubles passed
-#	    elsif ( $_ =~ /unur_($method)_set_(.*?)\s*\(\s*UNUR_PAR\s+\*parameters\s*,\s*double\s+\w+\s*,\s*double\s+\w+\s*\)/ ){
-##		print "if ( !strcmp(key, \"$2\") ){\n";
-##		# set parameter
-#		print "\t\t\tcheck = unur_$method\_set_$2(par, list[0], list[1]);\n";
-##                # check for error
-##		print "\t\t\tif ( ! check ){\n";
-##		print "\t\t\t\tfprintf(stderr, \"ERROR: while trying to set $2\\n\");\n";
-##		print "\t\t\t}\n";
-##		print "\t\t}\n\t\telse ";
-##	    }
-	    # parameter object, size_of_list and double list passed
-#	    elsif ( $_ =~ /unur_($method)_set_(.*?)\s*\(\s*UNUR_PAR\s+\*parameters\s*,\s*int\s+\w+\s*,\s*double\s+\*\w+\s*\)/ ){
-##		print "if ( !strcmp(key, \"$2\") ){\n";
-##		# set parameter
-#                print "\t\t\tif (no_of_elem != 0 ){\n";
-#		print "\t\t\t\tcheck = unur_$method\_set_$2(par, no_of_elem, list);\n";
-#		print "\t\t\t}\n";
-#		print "\t\t\telse{\n";
-#		print "\t\t\t\tcheck = unur_$method\_set_$2(par, (int) dblvalue, NULL);\n";
-#		print "\t\t\t}\n";
-                # check for error
-#		print "\t\t\tif ( no_of_elem != (int) dblvalue ){\n";
-#		print "\t\t\t\tfprintf(stderr, \"WARNING: Check size of list when setting $2\\n\");\n";
-#		print "\t\t\t}\n";
-#		print "\t\t\tif ( ! check ){\n";
-#		print "\t\t\t\tfprintf(stderr, \"ERROR: while trying to set $2\\n\");\n";
-#		print "\t\t\t}\n";
-#		print "\t\t}\n\t\telse ";
-#	    }
+		# arrays are indicated by capital letters
+		if ($a =~ /\*/ or $a =~ /\[/) {
+		    # this is interprated as list
+		    $t = "\U$t";
+		}
+		$type_args .= $t;
+	    }
+	    
+
+	    $code .= "if ( !strcmp(key, \"$command\") ){\n";
+	    $code .= "\t\t /* n = $n_args; type = $type_args: $args*/\n";
+
+	    if ($n_args == 0) {
+		$code .= "\t\t if (n_args > 0)\n";
+		$code .= "\t\t\t _unur_warning(GENTYPE,UNUR_ERR_GENERIC,\"too many arguments\");\n";
+		$code .= "\t\t result = unur_$method\_set_$command(par);\n";
+	    }
+	    elsif ($type_args eq "i") {
+		$code .= "\t\t if (n_args < 1) {\n";
+		$code .= "\t\t\t _unur_error(GENTYPE,UNUR_ERR_GENERIC,\"too few arguments\");\n";
+		$code .= "\t\t\t result = 0;\n\t\t }\n";
+		$code .= "\t\t if (n_args > 1)\n";
+		$code .= "\t\t\t _unur_warning(GENTYPE,UNUR_ERR_GENERIC,\"too many arguments\");\n";
+
+		$code .= "\t\t iarg = _unur_atoi( args[0] );\n";
+		$code .= "\t\t result = unur_$method\_set_$command(par,iarg);\n";
+	    }
+	    elsif ($type_args eq "d") {
+		$code .= "\t\t if (n_args < 1) {\n";
+		$code .= "\t\t\t _unur_error(GENTYPE,UNUR_ERR_GENERIC,\"too few arguments\");\n";
+		$code .= "\t\t\t result = 0;\n\t\t }\n";
+		$code .= "\t\t if (n_args > 1)\n";
+		$code .= "\t\t\t _unur_warning(GENTYPE,UNUR_ERR_GENERIC,\"too many arguments\");\n";
+
+		$code .= "\t\t darg = _unur_atod( args[0] );\n";
+		$code .= "\t\t result = unur_$method\_set_$command(par,darg);\n";
+	    }
+	    else {
+		$unsupported .= "  unur_$method\_set_$command()\n"
 	    }
 
+	    $code .= "\t\t result = 0;\n";
 
 	    $code .= "\t }\n\t else ";
 
 	}
 
 	# end of method
-	print STDERR "\n";
+	print STDERR "\n" if $VERBOSE;
     }
 
     # Otherwise ...
     $code .= "{\n\t\t result = 0;\n";
-    $code .= "\t\t fprintf(stderr, \"ERROR: Unknown ....: %s\\n\",key);\n\t }\n\n";
+    $code .= "\t\t fprintf(stderr, \"ERROR: Unknown ....: %s\\n\",key);\n\t }\n";
 
-    # End 
-    $code .= "\t return 0;\n";
-    $code .= "} /* end of _unur_str2set() */\n\n";
+    # print info on screen
+    print STDERR "\n" if $VERBOSE;
 
     # Return result
     return $code;
 
-} # end of str2set() 
-
+} # end of make_list_of_sets_method() 
 
 
 

@@ -135,6 +135,9 @@ static void _unur_str_debug_string( int level, const char *key, const char *valu
 /* Maximal entries of any list allowed */
 #define MAX_ELEM (2048)
 
+
+#define MAX_SET_ARGS  (10)  /* maximal number of arguments for set calls */
+
 /* function prototypes */
 
 static UNUR_DISTR * _unur_str2distr        (char *);
@@ -148,12 +151,14 @@ static UNUR_PAR   * _unur_str2par ( char *strmethod, UNUR_DISTR *distr );
 
 
 static UNUR_PAR *_unur_str2method( const char *method, UNUR_DISTR *distr );
-static int _unur_str2set( UNUR_PAR *par, const char *key, const char *value );
+static int _unur_str2set( UNUR_PAR *par, const char *key, char *value );
 
 
 static int  _unur_parse_dlist (char *, double *);
 static void _unur_prepare_string (char *str);
 
+static int _unur_atoi ( const char *str );
+static double _unur_atod ( const char *str );
 
 /*---------------------------------------------------------------------------*/
 
@@ -364,6 +369,160 @@ UNUR_PAR *_unur_str2parxx(UNUR_DISTR *distr, char *methstr){
 /*---------------------------------------------------------------------------*/
 
 struct unur_par *
+_unur_str2method( const char *method, UNUR_DISTR *distr )
+     /*----------------------------------------------------------------------*/
+     /* get default parameters for method                                    */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   method ... string that contains method name                        */
+     /*   distr  ... pointer to distribution object                          */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   default parameters (pointer to structure)                          */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return NULL                                                        */
+     /*----------------------------------------------------------------------*/
+{
+  struct unur_par *par;
+  
+#ifdef UNUR_ENABLE_LOGGING
+  /* write info into log file */
+  _unur_str_debug_string(1,"method",method);
+#endif
+
+=INPUT list_of_methods
+
+   return par;
+} /* end of _unur_str2method() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+_unur_str2set( UNUR_PAR *par, const char *key, char *value )
+     /*----------------------------------------------------------------------*/
+     /* set parameters for method                                            */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par   ... pointer to parameter for building generator object       */
+     /*   key   ... string that contains key for parameter                   */
+     /*   value ... string that contains list of arguments for parameter     */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... on success                                                   */
+     /*   0 ... on error                                                     */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return 0                                                           */
+     /*----------------------------------------------------------------------*/
+{
+  int result;    /* result of UNURAN set call (0 or 1) */
+
+  char *token;             /* pointer to token in string */
+  char *next;              /* pointer to next token in string */
+
+  int     iarg;            /* store integer argument */
+  double  darg;            /* store double argument  */
+  int    *iarr;            /* store integer array    */
+  double *darr;            /* store double array     */
+
+  /* storing arguments of set calls: */
+  int n_args;                      /* number of arguments in set call */
+  char type_args[MAX_SET_ARGS+1];  /* array containing info about arguments */
+  char *args[MAX_SET_ARGS+1];      /* pointers to argument strings */
+
+#ifdef UNUR_ENABLE_LOGGING
+  /* write info into log file */
+  _unur_str_debug_string(2,key,value);
+#endif
+  
+  /* initialize pointers */
+  n_args = 0;
+  *type_args = '\0';
+  *args = NULL;
+
+  /* we have two types of arguments:
+     a single item, or
+     a list, indicated by (...)
+  */
+#define IS_ITEM 'i'
+#define IS_LIST 'L'
+
+  /* split value string into separate arguments */
+  if (value && *value != '\0') {
+    /* there is at least one argument */
+
+    for ( token = next = value;
+	  next != NULL && *token != '\0' && n_args < MAX_SET_ARGS;
+	  token = next, n_args++ ) {
+      
+      /* get type of argument */
+
+      if ( *value == '(' ) {
+	/* argument is a list */
+	type_args[n_args] = IS_LIST;
+	/* skip to next character */
+	token++;
+	/* store pointer to argument */
+	args[n_args] = token;
+	/* find end of list using ')' as terminating character */
+	next = strchr(token,')');
+	if (next != NULL) {
+	  /* end of list found */
+	  *next = '\0';      /* terminate token string    */
+	  token = ++next;    /* set pointer to first character after ')' */
+	  /* first character after ')' must be ',' */
+	  if ( !(*token == ',' || *token == '\0') ) {
+	    _unur_error(GENTYPE,UNUR_ERR_GENERIC,") not followed by comma"); 
+	    return FALSE;
+	  }
+	}
+	else {
+	  /* no ')' found */
+	  token = NULL;
+	}
+      }
+
+      else {
+	/* argument is a sigle item */
+	type_args[n_args] = IS_ITEM;
+	/* store pointer to argument */
+	args[n_args] = token;
+      }
+
+      /* find end of argument string using ',' as separator */
+      if (token) {
+	next = strchr(token,',');
+	if (next != NULL) {
+	  /* next separator found */
+	  *next = '\0';     /* terminate token string    */
+	  next++;           /* set pointer to next token */
+	}
+      }
+      else {
+	next = NULL;
+      }
+    }
+
+    /* terminate string */
+    type_args[n_args] = '\0';
+
+    /** TODO: abfrage ob n_args >= MAX_SET_ARGS   --> warning **/
+
+  }
+
+=INPUT list_of_sets_method
+
+   return result;
+
+#undef IS_ITEM
+#undef IS_LIST
+
+} /* end of _unur_str2set() */
+
+/*---------------------------------------------------------------------------*/
+
+struct unur_par *
 _unur_str2par( char *str_method, UNUR_DISTR *distr )
      /*----------------------------------------------------------------------*/
      /* get parameter object for distribution and method                     */
@@ -381,20 +540,21 @@ _unur_str2par( char *str_method, UNUR_DISTR *distr )
 {
   struct unur_par *par = NULL;     /* pointer to parameter object */
 
-  char * token, *next;             /* char pointer to tokenize the string */
-  char *key, *value;               /* the key and its value */
+  char *token;             /* pointer to token in string */
+  char *next;              /* pointer to next token in string */
+  char *key, *value;       /* the key and its value */
 
   /* tokenize the string using ';' as separator and handle the tokens */
   for ( token = next = str_method;
 	next != NULL && *token != '\0';
 	token = next ) {
 
-    /* find end of token */
+    /* find end of token (i.e. the pointer to next token) */
     next = strchr(token,';');
     if (next != NULL) {
       /* next separator found */
-      *next = '\0';
-      next++;
+      *next = '\0';     /* terminate token string    */
+      next++;           /* set pointer to next token */
     }
 
     /* token points to a key */
@@ -403,8 +563,8 @@ _unur_str2par( char *str_method, UNUR_DISTR *distr )
     /* get the value from the pair key=value and terminate key string */
     value = strchr(key, '=');
     if (value != NULL) {
-      *value = '\0';
-      value++;
+      *value = '\0';    /* terminate key string        */
+      value++;          /* set pointer to value string */
     }
 
     /* get (default) parameter object for method */
@@ -544,7 +704,7 @@ UNUR_GEN *unur_str2gen (char *str){
 
 #ifdef UNUR_ENABLE_LOGGING
   /* write info into log file */
-  _unur_str_debug_string(0,"input: ",str);
+  _unur_str_debug_string(0,"[input]",str);
 #endif
 
 
@@ -620,10 +780,6 @@ UNUR_GEN *unur_str2gen (char *str){
 } /* end of unur_str2gen() */
 
 
-
-
-
-
 /*---------------------------------------------------------------------------*/
 
 int 
@@ -639,7 +795,6 @@ _unur_parse_dlist( char *liststr, double *darray )
      /*                                                                      */
      /* return:                                                              */
      /*   number of elements extracted                                       */
-     /*                                                                      */
      /*----------------------------------------------------------------------*/
 {
   int n_darray = 0; /* number of elements in processed list */
@@ -690,6 +845,49 @@ _unur_prepare_string( char *str )
 
 /*---------------------------------------------------------------------------*/
 
+int 
+_unur_atoi ( const char *str )
+     /*----------------------------------------------------------------------*/
+     /* Converts the string into its integer representation.                 */
+     /* 'true' and 'on' are converted to 1, 'false' and 'off' to 0.          */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   str      ... pointer to string                                     */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   integer                                                            */
+     /*----------------------------------------------------------------------*/
+{
+  if ( !strcmp(str,"true") || !strcmp(str,"on") )
+    return 1;
+
+  else if ( !strcmp(str,"false") || !strcmp(str,"off") )
+    return 0;
+
+  else
+    return atoi(str);
+
+} /* end of _unur_atoi() */
+
+/*---------------------------------------------------------------------------*/
+
+double
+_unur_atod ( const char *str )
+     /*----------------------------------------------------------------------*/
+     /* Converts the string into its double value.                           */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   str      ... pointer to string                                     */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   double                                                             */
+     /*----------------------------------------------------------------------*/
+{
+    return atof(str);
+} /* end of _unur_atod() */
+
+/*---------------------------------------------------------------------------*/
+
 /*****************************************************************************/
 /**  Debugging utilities                                                    **/
 /*****************************************************************************/
@@ -717,7 +915,10 @@ _unur_str_debug_string( int level, const char *key, const char *value  )
   fprintf(log,"%s: ",GENTYPE);
   for (; level>0; level--) 
     fprintf(log,"\t");
-  fprintf(log,"%s%s\n",key,value);
+  fprintf(log,"%s",key);
+  if (value)
+    fprintf(log,": %s\n",value);
+  fprintf(log,"\n");
 
 /*    fprintf(log,"%s:\n",GENTYPE); */
 

@@ -26,10 +26,6 @@ include_HEADERS = \
 unuran.h:
 	$(top_srcdir)/scripts/merge_h.pl $(top_srcdir)/src/methods/in_unuran.h > unuran.h
 
-# strip library libunuran
-#install-exec-hook:
-#	strip $(libdir)/libunuran.a
-
 # clean backup files
 CLEANFILES = *~
 

@@ -1,5 +1,16 @@
-Version 0.5.0: ???? 2004
+Version 0.5.0: August 2004
 
+	- UNU.RAN now makes use of IEEE 754 compliant floating point
+	  arithmetic. In particular, 1./0. and 0./0. must result in 
+	  infinity and NaN (not a number), respectively, and must not
+	  cause a floating point exception.
+	  For all modern compting architecture this is implemented in
+	  hardware or in software using a special compiler flag.
+
+	- new methods NROU and VNROU
+
+	- new method MCORR
+	
 	- return codes of _set_ and _get_ functions have been changed:
 	  in case of successful execution 0 (or UNUR_SUCCESS) is returned 
 	  (instead of 1 in previous versions). 
@@ -15,6 +26,11 @@ Version 0.5.0: ???? 2004
 
 	- unur_distr_cvec_set_covar() now checks for positive definiteness of
 	  given covariance matrix.
+
+	- fixed bug in function that (automatically) computes a 
+	  probability vector by means of the probability mass
+	  function. This caused methods that require explicitly given
+	  probability vectors (like DAU) to truncate the last entry.
 
 	- some other minor bug fixes
 

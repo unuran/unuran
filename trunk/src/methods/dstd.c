@@ -349,6 +349,13 @@ _unur_dstd_init( struct unur_par *par )
     free(par); _unur_dstd_free(gen); return NULL; 
   }
 
+  /* domain must not be changed */
+  if (!(gen->distr.set & UNUR_DISTR_SET_STDDOMAIN)) {
+    /* domain has been modified --> not allowed */
+    _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"domain changed");
+    free(par); _unur_cstd_free(gen); return NULL; 
+  }
+
 #ifdef UNUR_ENABLE_LOGGING
   /* write info into log file */
   if (gen->debug) _unur_dstd_debug_init(par,gen);

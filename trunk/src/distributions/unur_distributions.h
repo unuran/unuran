@@ -469,7 +469,8 @@ UNUR_DISTR *unur_distr_multinormal(int dim, const double *mean, const double *co
 UNUR_DISTR *unur_distr_correlation( int n );
 /* 
    Creates a distribution object for a random correlation matrix of
-   @var{n} rows and columns. It can be used with method ... to
+   @var{n} rows and columns. It can be used with method MCORR 
+   (@pxref{MCORR,,Random Correlation Matrix}) to 
    generate random correlation matrices of the given size.
 */
 

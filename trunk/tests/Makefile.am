@@ -150,12 +150,16 @@ if HAVE_MATHEMATICA
 test_StdDistr_SOURCES = test_StdDistr.c
 test_StdDistr_DEPENDENCIES = t_StdDistr.data
 
+test_StdDistr.o: t_StdDistr.data
+
 t_StdDistr.data: test_StdDistr.m
 	math -initfile $(top_srcdir)/tests/test_StdDistr.m
 
 
 test_functionparser_SOURCES = test_functionparser.c
 test_functionparser_DEPENDENCIES = t_functionparser.data
+
+test_functionparser.o: t_functionparser.data
 
 t_functionparser.data: test_functionparser.m
 	math -initfile $(top_srcdir)/tests/test_functionparser.m

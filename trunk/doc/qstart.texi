@@ -76,6 +76,7 @@ Table of @ref{Contents}
 @menu
 * Overview::  Overview
 * Install::   Installing the thing
+* Remark::    Remark about this document
 @end menu
 
 
@@ -94,6 +95,22 @@ cvs update @*
 @* Type @file{make} in UNURAN to compile UNURAN
 @* @file{Makefile.am} in @file{/examples} modify in regard to testprogram 
 @* make in @file{/examples}
+
+@node Remark
+@section Remark about this document
+
+Great parts of this document are generated automatically from
+the program code by perl scripts.
+@*
+If there are problems with this document because of missing
+@file{.texi}-files, maybe UNURAN hasn't been installed properly.
+In this case it might help reading the short description within
+each script (@file{*.perl}) to learn how to use it.
+@*
+The idea behind this strategy is to hold this document
+easier up-to-date because comments inside the code
+are used and in the ideal case these are simutanuously
+changed with the code itself.
 
 
 @c --------------------------------------------------------------------
@@ -314,7 +331,7 @@ int main()
 @c --------------------------------------------------------------------
 
 @node Distributions
-@chapter distributions
+@chapter Distributions
 @menu
 * Preset:: Preset Distributions
 * Arbitrary:: Arbitrary Distributions 
@@ -421,13 +438,13 @@ Notation:
 
 
 @node DistrRef
-@section distributions
+@section Distributions
 
 @node General
-@section general
+@section General
 
 @node MethodsRef
-@section methods
+@section Methods
 @menu
 @c * AROUref:: Adaptive Ratio Of Uniforms
 * CSTDref:: Interface for extern generators

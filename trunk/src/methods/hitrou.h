@@ -58,12 +58,9 @@
       
 
    =HOWTOUSE
-      For using the VNROU method UNURAN needs the PDF of the
+      For using the HITROU method UNURAN needs the PDF of the
       distribution. Additionally, the parameter @i{r} can be set via
-      a unur_vnrou_set_r() call. Notice that the acceptance
-      probability decreases when @i{r} is increased. On the other
-      hand is is more unlikely that the bounding rectangle does not
-      exist if @i{r} is small.
+      a unur_vnrou_set_r() call. 
 
       A bounding rectangle can be given by the
       unur_vnrou_set_u() and unur_vnrou_set_v() calls. 

@@ -287,18 +287,78 @@ To change any parameter you habe to use the according function call.
  
 
 @chapter Function reference
+Notation:
 
-@unnumberedsubsec unur_distr_normal
-@code{ struct unur_distr distr = unur_distr_normal( )}
-@* create a distribiution objekt with all necessary parameters for the normal distribution
-@unnumberedsubsec unur_distr_cont_new
-create a new distribution objekt witout special entries
-@unnumberedsubsec  unur_distr_cont_set_cdf
+
+
+@section distributions
+@section general
+@section methods
+@subsection AROU
+
+
+
+@unnumberedsubsubsec  unur_arou_new
+@indent @code{struct unur_par *@b{unur_arou_new}( struct unur_distr *@i{distr} )}
+@* @indent get default parameters for generator                                      
+
+struct unur_gen *unur_arou_init( struct unur_par *parameters );
+/* initialize new generator                                                  */
+
+double unur_arou_sample( struct unur_gen *generator );
+double unur_arou_sample_check( struct unur_gen *generator );
+/* sample from generator                                                     */
+
+void unur_arou_free( struct unur_gen *generator);
+/* destroy generator object                                                  */
+
+/*...........................................................................*/
+
+int unur_arou_set_cpoints( struct unur_par *par, int n_stp, double *stp );
+/* set construction points for envelope and/or its number for initialization */
+
+int unur_arou_set_guidefactor( struct unur_par *par, double factor );
+/* set factor for relative size of guide table                               */
+
+int unur_arou_set_max_sqhratio( struct unur_par *par, double max_ratio );
+/* set bound for ratio A(squeeze) / A(hat)                                   */
+
+int unur_arou_set_max_segments( struct unur_par *par, int max_segs );
+/* set maximum number of segments                                            */
+
+int unur_arou_set_center( struct unur_par *par, double center );
+/* set center (approximate mode) of p.d.f.                                   */
+
+int unur_arou_set_usecenter( struct unur_par *par, int usecenter );
+/* set flag for using center as construction point                           */
+
+int unur_arou_set_verify( struct unur_par *par, int verify );
+/* turn verifying of algorithm while sampling on/off                         */
+
+#define unur_arou_set_debug(par,debugflags)  unur_set_debug((par),(debugflags))
+/* set debuging flags                                                        */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+@unnumberedsubsubsec  unur_distr_cont_set_cdf
 initialize an distribution object with a continous cdf
-@unnumberedsubsec unur_init
+@unnumberedsubsubsec unur_init
 @code{ struct unur_gen gen = unur_init(struct unur_par);}
 
-@unnumberedsubsec unur_sample_cont
+@unnumberedsubsubsec unur_sample_cont
 
 
 @chapter distributions

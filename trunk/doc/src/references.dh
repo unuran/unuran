@@ -128,13 +128,19 @@ ACM Trans. Math. Software 26(1), pp. 78-98.
 @sc{J. Leydold} (2001).
 @i{A simple universal generator for continuous and discrete 
 univariate T-concave distributions},
-ACM Trans. Math. Software 27(1), pp. 66--82.
+ACM Trans. Math. Software 27(1), pp. 66-82.
 
 @anchor{bib:LJa02}
 @item [LJa02]
-@sc{J. Leydold} (2002).
+@sc{J. Leydold} (2003).
 @i{Short universal generators via generalized ratio-of-uniforms method},
-Preprint
+Math. Comp. 72(243), pp. 1453-1471.
+
+@anchor{bib:WGS91}
+@item [WGS91]
+@sc{J.C. Wakefield, A.E. Gelfand, and A.F.M. Smith} (1992).
+@i{Efficient generation of random variates via the ratio-of-uniforms method},
+Statist. Comput. 1(2), pp. 129-133.
 
 @anchor{bib:WAa77}
 @item [WAa77]
@@ -225,6 +231,19 @@ Forschungsgesellschaft Joanneum, Graz.
 @sc{H. Zechner} (1994).
 @i{Efficient sampling from continuous and discrete unimodal distributions},
 Pd.D. Thesis, 156 pp., Technical University Graz, Austria.
+
+@end table
+
+@c -------------------------------------------------------
+
+@subheading Other references
+
+@table @t
+@anchor{bib:HJa61}
+@item [HJa61]
+@sc{R. Hooke and T.A. Jeeves} (1961).
+@i{Direct Search Solution of Numerical and Statistical Problems},
+Journal of the ACM, Vol. 8, April 1961, pp. 212-229.
 
 @end table
 

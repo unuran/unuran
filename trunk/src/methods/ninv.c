@@ -59,10 +59,16 @@
 #define NINV_VARFLAG_NEWTON   0x1u   /* use Newton's method                  */
 #define NINV_VARFLAG_REGULA   0x2u   /* use regula falsi (default)           */
 
+
 /*---------------------------------------------------------------------------*/
 /* Debugging flags (do not use first 8 bits)                                 */
 
 #define NINV_DEBUG_SAMPLE        0x100u
+
+/*---------------------------------------------------------------------------*/
+/* Starting interval includes this percentage of all univariate rand numbers */
+/* must be > 0. and < 1.                                                     */
+#define INTERVAL_COVERS  (.9)
 
 /*---------------------------------------------------------------------------*/
 /* Flags for logging set calls                                               */
@@ -165,6 +171,9 @@ unur_ninv_new( struct unur_distr *distr )
   PAR.rel_x_resolution = 1.0e-8 ;  /* maximal relative error in x            */
   PAR.s[0]      = 0.;              /* left boundary of interval              */
   PAR.s[1]      = 0.;              /* right boundary of interval             */
+  /* if the PAR.s[i] are identical, the PAR.s[i] are set in unur_ninv_init   */
+  /* such that INTERVAL_COVERS *100 Percent of the used univariate random    */
+  /* numbers will be in that interval                                        */
 
   par->method   = UNUR_METH_NINV;          /* method and default variant     */
   par->variant  = NINV_VARFLAG_REGULA;     /* default variant                */
@@ -383,43 +392,37 @@ unur_ninv_init( struct unur_par *par )
     return NULL; }
   COOKIE_CHECK(par,CK_NINV_PAR,NULL);
 
+  /* create a new empty generator object */    
+  gen = _unur_ninv_create(par);
+  if (!gen) { free(par); return NULL; }
+
+
   /* check arguments */
   switch (par->variant) {
 
   case NINV_VARFLAG_REGULA:
-    if (PAR.s[0] > PAR.s[1]) {
+    if (GEN.s[0] > GEN.s[1]) {
       /* swap interval boundaries */
       double tmp;
-      tmp = PAR.s[0]; PAR.s[0] = PAR.s[1]; PAR.s[1] = tmp;
+      tmp = GEN.s[0]; GEN.s[0] = GEN.s[1]; GEN.s[1] = tmp;
     }
 
-    if (PAR.s[0] == PAR.s[1]) {
-      /* length of interval == 0 -> choose bounderies with */
-      /*  90% chance for sign change in interval           */
-      PAR.s[0] = -10.;      /* arbitrary starting value    */
-      PAR.s[1] =  10.;      /* arbitrary starting value    */
-     gen = _unur_ninv_create(par);
-     if (!gen) { free(par); return NULL; }
-      GEN.s[0] = _unur_ninv_regula(gen, 0.05);
-      GEN.s[1] = GEN.s[0]+10.;
-      GEN.s[1] = _unur_ninv_regula(gen, 0.95);
-    }
-    else {
-     gen = _unur_ninv_create(par);
-     if (!gen) { free(par); return NULL; }
+    if (GEN.s[0] == GEN.s[1]) {
+      /* length of interval == 0 -> choose bounderies with            */
+      /*  INTERVAL_COVERS *100 % chance for sign change in interval   */
+      GEN.s[0] = -10.;      /* arbitrary starting value               */
+      GEN.s[1] =  10.;      /* arbitrary starting value               */
+      GEN.s[0] = _unur_ninv_regula(gen, (1.-INTERVAL_COVERS)/2. );
+      GEN.s[1] = GEN.s[0] + 10.;   /* arbitrary interval length       */
+      GEN.s[1] = _unur_ninv_regula(gen, (1.+INTERVAL_COVERS)/2. );
     }
     break;
 
   case NINV_VARFLAG_NEWTON:
     /* nothing to do */
-     gen = _unur_ninv_create(par);
-     if (!gen) { free(par); return NULL; }
     break;
   }
 
-  /* create a new empty generator object */
-  //  gen = _unur_ninv_create(par);
-  // if (!gen) { free(par); return NULL; }
 
 #ifdef UNUR_ENABLE_LOGGING
   /* write info into log file */
@@ -878,3 +881,25 @@ _unur_ninv_debug_sample_regula( struct unur_gen *gen, double u, double x, double
 /*---------------------------------------------------------------------------*/
 #endif   /* end UNUR_ENABLE_LOGGING */
 /*---------------------------------------------------------------------------*/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

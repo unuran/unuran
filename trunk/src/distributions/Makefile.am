@@ -10,29 +10,29 @@ INCLUDES = \
 lib_LIBRARIES = libunuran_distributions.a
 
 libunuran_distributions_a_SOURCES = \
- beta.c        beta_gen.c \
- burr.c        burr_gen.c \
- cauchy.c      cauchy_gen.c \
- chi.c         chi_gen.c \
- chisquare.c \
- exponential.c exponential_gen.c \
- extremeI.c    extremeI_gen.c \
- extremeII.c   extremeII_gen.c \
- gamma.c       gamma_gen.c \
- gig.c         gig_gen.c \
- laplace.c     laplace_gen.c \
- logistic.c    logistic_gen.c \
- lognormal.c \
- lomax.c \
- normal.c      normal_gen.c \
- pareto.c \
- powerexponential.c \
- rayleigh.c \
- slash.c       slash_gen.c \
- student.c     student_gen.c \
- triangular.c  triangular_gen.c \
- uniform.c     uniform_gen.c \
- weibull.c     weibull_gen.c
+ c_beta.c        c_beta_gen.c \
+ c_burr.c        c_burr_gen.c \
+ c_cauchy.c      c_cauchy_gen.c \
+ c_chi.c         c_chi_gen.c \
+ c_chisquare.c \
+ c_exponential.c c_exponential_gen.c \
+ c_extreme-I.c   c_extreme-I_gen.c \
+ c_extreme-II.c  c_extreme-II_gen.c \
+ c_gamma.c       c_gamma_gen.c \
+ c_gig.c         c_gig_gen.c \
+ c_laplace.c     c_laplace_gen.c \
+ c_logistic.c    c_logistic_gen.c \
+ c_lognormal.c \
+ c_lomax.c \
+ c_normal.c      c_normal_gen.c \
+ c_pareto.c \
+ c_powerexponential.c c_powerexponential_gen.c \
+ c_rayleigh.c \
+ c_slash.c       c_slash_gen.c \
+ c_student.c     c_student_gen.c \
+ c_triangular.c  c_triangular_gen.c \
+ c_uniform.c     c_uniform_gen.c \
+ c_weibull.c     c_weibull_gen.c
 
 pkginclude_HEADERS = \
  unuran_distributions.h

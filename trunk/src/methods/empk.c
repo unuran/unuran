@@ -15,7 +15,7 @@
  *                                                                           *
  *   REQUIRED:                                                               *
  *      pointer to sample                                                    *
- *      alpha factor                                                         *
+ *      alpha factor (is required if a kernel is given)                      *
  *                                                                           *
  *   OPTIONAL:                                                               *
  *      kernel                                                               *
@@ -48,27 +48,119 @@
  *****************************************************************************
  *                                                                           *
  *   REFERENCES:                                                             *
- *   [1] ....                                                                *
+ *                                                                           *
+ *   [1] Devroye, L. and Gyorfi, L. (1985): Nonparametric Density            *
+ *       Estimation: The $L_1$ View. New-York: John Wiley.                   *
+ *                                                                           *
+ *   [2] Devroye, L. (1986): Non-Uniform Random Variate Generation. (p. 765) *
+ *       New York: Springer-Verlag.                                          *
+ *                                                                           *
+ *   [3] Hoermann, W. and Leydold, J. (2000): Automatic random variate       *
+ *       generation for simulation input. Proceedings of the 2000 Winter     *
+ *       Simulation Conference. (??? eds.)                                   *
+ *                                                                           *
+ *   [4] Silverman, B. (1986): Density Estimation for Statistics and         *
+ *       Data Analysis. London: Chapman and Hall.                            *
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *  ... Beschreibung ...                                                     *
+ *   The method here is based on the fact that it is very easy to generate   *
+ *   random variates that have as density the kernel density estimate of a   *
+ *   given sample: It is enough to randomly select a point from the given    *
+ *   sample and return it together with some additive noise (see [1], [2]    *
+ *   [3] and [4]). Note that it is not necessary to compute the density      * 
+ *   estimate itself! In fact it is much easier to generate variates from    *
+ *   the density estimate than to compute the estimate itself!               *
  *                                                                           *
- TODO: (bitte auf englisch)
-
- alpha(K) = Var(K)^(-2/5){ \int K(t)^2 dt}^(1/5)
-
- bwidth = alpha * beta * (mixture of stdev and interquartile srange of sample)
- * smoothing_factor
-
- dann ist der default 1, und man kann, wenn man zB annimmt, dass die
- Verteilung der Daten
- multimodal ist, oder aus anderen Gruenden smoothing factor auch kleiner
- als 1 waehlen.
- 
+ *   For kernel density estimation we have to choose the kernel function     *
+ *   (this is for us the density of the noise) and the smoothing parameter   *
+ *   (i.e. the scale parameter of the kernel variate.) There is a lot        *
+ *   of theory discussing the optimal smoothing parameter for density        *
+ *   estimation. As we are mainly interested in a simple formula we          *
+ *   use the formula explained in [4] p.46-47 that is minimizing the         *
+ *   asymptotically MISE (mean integrated squared error) for a given         *
+ *   kernel. We have the danger of oversmoothing the data if they are        *
+ *   non-normal. Especially for multimodal distributions we get a better     *
+ *   bandwidth if we replace the sample's stdev s in the formula by the      *
+ *   minimum of s and the interquartilsrange R divided through 1.34.         *
  *                                                                           *
+ *      bwidth_opt = alpha * beta *  min(s,R/1.34) * n^(-1/5)                *
  *                                                                           *
+ *   If we assume normal data we have to take beta = 1.364, which            *
+ *   is the default value of beta for the library.                           *
+ *   To make it easy for the user to choose the bwidth as a fraction         *
+ *   of the bwidth_opt explained above we introduced the parameter           *
+ *   smoothing_factor and compute:                                           *
  *                                                                           *
+ *      bwidth= bwidth_opt * smoothing_factor                                *
+ *                                                                           *
+ *   Alpha is a constant only depending on the kernel K(t) and can be        *
+ *   computed as                                                             *
+ *                                                                           *
+ *      alpha(K) = Var(K)^(-2/5){ \int K(t)^2 dt}^(1/5)                      *
+ *                                                                           *
+ *...........................................................................*
+ *                                                                           *
+ *   Algorithm EMPK:                                                         *
+ *                                                                           *
+ *   [Input]                                                                 *
+ *   Sample X(i) for i=1,2,..,n                                              *
+ *                                                                           *
+ *   [Generate]                                                              *
+ *   1: Generate a random variate I uniformly distributed on {1, 2,...,n}    *
+ *   2: Generate a random variate W from the distribution with density K(t)  *
+ *   3: Return X(I) + bwidth * W                                             *
+ *                                                                           *
+ *...........................................................................*
+ *                                                                           *
+ *   As kernel we can take any unimodal density symmetric around 0 that has  *
+ *   finite variance. Regarding the asymptotic MISE the so called            *
+ *   Epanechnikov (or Bartlett) kernel (K(x) = 3/4(1-x^2) |x|<=1)            *
+ *   is optimal, but several others have almost the same efficiency.         *
+ *   From a statistical point of view it may be attractive to add            *
+ *   Gaussian noise. If we are interested in the speed of the sampling       *
+ *   procedure it is of course fastest to use the rectangular (or Boxcar)    *
+ *   kernel as this means uniform noise.                                     *
+ *                                                                           *
+ *   The mean of the empirical distribution is equal to the sample mean.     *
+ *   One disadvantage of this method lies in the fact that the variance of   *
+ *   the empirical distribution generated by the kernel method is always     *
+ *   higher than the sample standard-deviation s. As pointed out in [4]      *
+ *   it is not difficult to correct this error. For the variance             *
+ *   corrected version we have to compute the mean mux and the               *
+ *   standardeviation s of the sample and we have to know the Variance of    *
+ *   the kernel V(K). Then we can replace step (3) of the algorithm above    *
+ *   by:                                                                     *
+ *                                                                           *
+ *   3': Return mux +(X(I) - mux + bwidth * W)/(1+bwidth^2 V(K)/s^2)^(1/2)   *
+ *                                                                           *
+ *   We can turn on or off variance correction with the function             *
+ *                                                                           *
+ *      unur_empk_set_varcor();                                              *
+ *                                                                           *
+ *   We also have problems with this method if we want to generate only      *
+ *   positive random variates, as due to the added noise it can happen       *
+ *   that the generated variate is negative, even if all values of the       *
+ *   observed sample are positive. One simple possibility to get around      *
+ *   this problem is the so called mirroring principle. If the generated     *
+ *   variate X is negative we simply return -X.                              *
+ *                                                                           *
+ *   We can turn on or off the mirroring with the function                   *
+ *                                                                           *
+ *      unur_empk_set_positive();                                            *
+ *                                                                           *
+ *   It is not difficult to see that the mirroring principle is              *
+ *   disturbing the variance correction, which can no longer guarantee       *
+ *   that the variance of the generated distribution is equal to the         *
+ *   sample variance.                                                        *
+ *   The mirroring principle is also spoiling the nice property that the     *
+ *   mean of the generated distribution is equal to the sample mean. Both    *
+ *   problems are only of practical relevance if a high proportion of the    *
+ *   sample is close to 0. There are no simple methods to get around these   *
+ *   problems. It is a well-known fact that kernel density estimation        *
+ *   performs poor around a point of discontinuity of the density! There     *
+ *   are special kernels suggested in the literature to cope with this       *
+ *   problem but they are not easily applicable to our algorithm.            *
  *                                                                           *
  *****************************************************************************/
 
@@ -282,6 +374,7 @@ unur_empk_set_kernel( struct unur_par *par, unsigned kernel)
 
   /* check for standard distribution and set data */
   switch (kernel) {
+    /** TODO: Epanechnikov-Kernel **/
   case UNUR_DISTR_GAUSSIAN:
     /* Gaussian (normal) kernel. efficiency = 0.951 */
     PAR.alpha   = 0.7763884;
@@ -338,7 +431,7 @@ unur_empk_set_kernelgen( struct unur_par *par, struct unur_gen *kernelgen)
      /*                                                                      */
      /* parameters:                                                          */
      /*   par       ... pointer to parameter for building generator object   */
-     /*   kernelgen ... generator object that hold the kernel                */
+     /*   kernelgen ... generator object that holds the kernel               */
      /*                                                                      */
      /* return:                                                              */
      /*   1 ... on success                                                   */
@@ -723,6 +816,8 @@ _unur_empk_init( struct unur_par *par )
   /* the observed data */
 
   /* sort entries */
+  /** TODO: this sort can be removed after we have implemented a new 
+      version of the function iqrtrange, that does not depend on sorting **/
   qsort( GEN.observ, GEN.n_observ, sizeof(double), compare_doubles);
 
   /* compute mean and standard deviation of observed sample */
@@ -962,6 +1057,8 @@ _unur_empk_comp_stddev( double *data, int n_data, double *mean, double *stddev)
 
 /*---------------------------------------------------------------------------*/
 
+/** TODO: implement a new version of interquartilsrang that does not depend
+    on sorting. (Only important if we want to use really large samples) **/
 double
 _unur_empk_comp_iqrtrange( double *data, int n )
      /*----------------------------------------------------------------------*/

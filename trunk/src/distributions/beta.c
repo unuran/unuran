@@ -254,6 +254,9 @@ unur_distr_beta( double *params, int n_params )
   /* name of distribution */
   distr->name = distr_name;
 
+  /* how to get special generators */
+  DISTR.init = _unur_stdgen_beta_init;
+
   /* functions */
   DISTR.pdf  = unur_pdf_beta;     /* pointer to p.d.f.               */
   DISTR.dpdf = unur_dpdf_beta;    /* pointer to derivative of p.d.f. */

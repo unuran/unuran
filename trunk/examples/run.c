@@ -113,6 +113,7 @@ int main()
 
 #if RUN_CSTD == 1
 
+#if 0
   distr_xxx = unur_distr_normal(NULL,0);
   // unur_distr_cont_set_domain(distr_xxx,3,UNUR_INFINITY);
   par = unur_cstd_new(distr_xxx);
@@ -172,6 +173,21 @@ int main()
   fpar[1] = 0.;
   distr_xxx = unur_distr_exponential(fpar,2);
   unur_distr_cont_set_domain(distr_xxx,3,UNUR_INFINITY);
+  par = unur_cstd_new(distr_xxx);
+  unur_run_tests(par,RUN_TESTS);
+  unur_distr_free(distr_xxx);
+#endif
+
+  fpar[0] = 7.;
+  fpar[1] = 5.;
+  distr_xxx = unur_distr_beta(fpar,2);
+  par = unur_cstd_new(distr_xxx);
+  unur_run_tests(par,RUN_TESTS);
+  unur_distr_free(distr_xxx);
+
+  fpar[0] = 0.5;
+  fpar[1] = 0.2;
+  distr_xxx = unur_distr_beta(fpar,2);
   par = unur_cstd_new(distr_xxx);
   unur_run_tests(par,RUN_TESTS);
   unur_distr_free(distr_xxx);

@@ -48,13 +48,17 @@
 /* set routine for sampling                                                  */
 #if UNUR_DEBUG & UNUR_DB_INFO
 #define _unur_cstd_set_sampling_routine(par,gen,routine) \
-   if ((gen)==NULL) return 1;                       /* test existence only */ \
-   (gen)->sample.cont = (routine);                  /* set pointer */ \
-   (par)->data.cstd.sample_routine_name = #routine; /* set routine name */
+   do { \
+     if ((gen)==NULL) return 1;                       /* test existence only */ \
+     (gen)->sample.cont = (routine);                  /* set pointer */ \
+     (par)->data.cstd.sample_routine_name = #routine; /* set routine name */ \
+   } while (0)
 #else
 #define _unur_cstd_set_sampling_routine(par,gen,routine) \
-   if ((gen)==NULL) return 1;                       /* test existence only */ \
-   (gen)->sample.cont = (routine);                  /* set pointer */
+   do { \
+     if ((gen)==NULL) return 1;                       /* test existence only */ \
+     (gen)->sample.cont = (routine);                  /* set pointer */ \
+   } while (0)
 #endif
 
 /*---------------------------------------------------------------------------*/

@@ -11,7 +11,7 @@ INCLUDES = \
 noinst_LIBRARIES = libdistr.a
 
 libdistr_a_SOURCES = \
- beta.c \
+ beta.c        beta_gen.c \
  cauchy.c \
  chi2.c \
  exponential.c exponential_gen.c \

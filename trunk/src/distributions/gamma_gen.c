@@ -4,7 +4,7 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   FILE:      gamma.c                                                      *
+ *   FILE:      gamma_gen.c                                                  *
  *                                                                           *
  *   Special generators for Gamma distribution                               *
  *                                                                           *

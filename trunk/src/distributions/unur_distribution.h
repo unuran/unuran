@@ -111,6 +111,12 @@ double unur_dpdf_beta(double x, double *params, int n_params);
 double unur_cdf_beta(double x, double *params, int n_params);
 double unur_mode_beta(double *params, int n_params);
 double unur_area_beta(double *params, int n_params);
+/* special generators */
+int _unur_stdgen_beta_init( struct unur_par *par, struct unur_gen *gen );
+/* initialize new generator                                                  */
+double unur_stdgen_sample_beta_bb( struct unur_gen *gen );
+double unur_stdgen_sample_beta_bc( struct unur_gen *gen );
+  /* Acceptance/Rejection from log-logistic hats */
 
 
 /*---------------------------------------------------------------------------*/

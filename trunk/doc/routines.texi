@@ -596,11 +596,25 @@ struct unur_gen @var{*gen},                                               double
   
 @c cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 
-@node    Utils ,    Continuous Distribution , Tests,    Function Calls
-@comment node-name, next,                     previous, up
+@node    Utils ,    Common , Tests,    Function Calls
+@comment node-name, next,    previous, up
+
+@menu 
+* Common::  auxilliary functions in general
+* Stream::  functions concerning the determination of the output stream
+@end menu
 
 
 @section utils
+
+
+
+@c cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
+@node    Common ,    Stream , Utils,    Utils
+@comment node-name,  next,    previous, up
+
+@subsection common
 
 @ifhtml
 <h4>
@@ -661,10 +675,67 @@ double @var{x0},
 double @var{x1} )
 @end deftypefn               
 
+@c cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
+@node    Stream ,    Continuous Distribution , Common,   Utils
+@comment node-name,  next,                     previous, up
+
+@subsection stream
 
 
+@deftp {Output streams}
+In case of sucess the output stream is sent to `stdout´ and by default the error stream is sent to `stderr'. Both streams can be turned on/off with a compiler switch  /** TODO **/. 
+@end deftp
 
+@deftp {Manipulating the error stream}
+You can redirect the error stream to a file on the command line. There are also two ways to change this within your program. Firstly, the stream can be redirected to another file by providing a suitable file pointer. Alternatively you can set up an error stream handler, which is a function that accepts error message strings. By using an error stream handler function you have complete control over where the messages are stored.
+@end deftp
 
+@deftypefn {Library Function} 
+void _unur_stream_printf( const char @var{*genid}, char @var{*filename},
+@center int @var{line}, const char @var{*format}, @dots{})
+@end deftypefn        
+
+@deftp {The Function}
+In case of an error, this function writes a message (such as ERROR or
+WARNING) on the output stream. This message inludes information about
+the source file in which the error occurred, the line number in that
+file and a description of the error. The dots represent the arguments to
+be printed. Filename represents the name of source file (provided by
+__FILE__) while line stands for the line number in source file (provided
+by __LINE__).
+@end deftp
+
+@deftypefn {Library Function} 
+FILE * unur_set_stream( FILE * @var{new_stream} )
+@end deftypefn            
+
+@deftp {The Function}
+This function selects the stream used for UNUR error messages. After
+calling ´unur_set_stream´ any further messages sent to the default
+stream handler will be printed on NEW_STREAM.The previous stream is
+retruned, so that you can close it or restore it later. Note that the
+stream is stored un a static variable, so there can only be one error
+stream per program.
+@end deftp
+
+@deftypefn {Library Function} 
+inline FILE * unur_get_stream( void )
+@end deftypefn            
+
+@deftp {The Function}
+The function opens the logfile where the (error) stream has been printed
+and returns a pointer to the output stream.
+@end deftp
+
+@deftypefn {Library Function}
+static FILE * _unur_logfile_open( const char @var{*logfilename} )
+@end deftypefn            
+
+@deftp {The Function}
+This function opens the LOG file so the message can be written into the
+file closes it after the message has been written and returns the LOG file.
+@end deftp
 
 
 

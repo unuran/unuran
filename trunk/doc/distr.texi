@@ -32,7 +32,7 @@ Discrete Distribution
 
 @c ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 
-@node    Continuous Distribution, Burr Distribution,  Utils,    Distribution Library
+@node    Continuous Distribution, Burr Distribution,  Stream,   Distribution Library
 @comment node-name,               next,               previous, up
 
 @menu

@@ -210,7 +210,7 @@ unur_hitrou_new( const struct unur_distr *distr )
   PAR.umin  = NULL;       /* u-boundary of bounding rectangle (unknown)  */
   PAR.umax  = NULL;       /* u-boundary of bounding rectangle (unknown)  */
   PAR.u_planes  = 0;      /* do not calculate the bounding u-planes      */
-  PAR.recursion = 1;      /* reusing outside points as new line-segment ends */
+  PAR.adaptive = 1;      /* reusing outside points as new line-segment ends */
   par->method   = UNUR_METH_HITROU;   /* method and default variant          */
   par->variant  = 0u;                 /* default variant                     */
   par->set      = 0u;                 /* inidicate default parameters        */
@@ -412,20 +412,20 @@ unur_hitrou_set_u_planes( struct unur_par *par, int u_planes )
 /*****************************************************************************/
 
 int 
-unur_hitrou_set_recursion( struct unur_par *par, int recursion_flag )
+unur_hitrou_set_adaptive( struct unur_par *par, int adaptive_flag )
 {
   /* check arguments */
   _unur_check_NULL( GENTYPE, par, UNUR_ERR_NULL );
   _unur_check_par_object( par, HITROU );
 
   /* check new parameter for generator */
-  if (recursion_flag!=0 && recursion_flag!=1) {
-    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"recursion_flag must be 0 or 1");
+  if (adaptive_flag!=0 && adaptive_flag!=1) {
+    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"adaptive_flag must be 0 or 1");
     return UNUR_ERR_PAR_SET;
   }
 
   /* store data */
-  PAR.recursion = recursion_flag;
+  PAR.adaptive = adaptive_flag;
 
   /* o.k. */
   return UNUR_SUCCESS;
@@ -632,7 +632,7 @@ _unur_hitrou_create( struct unur_par *par )
   GEN.vmax  = PAR.vmax;             /* upper v-boundary of bounding rectangle */
   GEN.skip  = PAR.skip;             /* number of skipped poins in chain */
   GEN.u_planes = PAR.u_planes;      /* flag to calculate and use u-planes */
-  GEN.recursion = PAR.recursion;    /* reusing outside points for line-segment */
+  GEN.adaptive = PAR.adaptive;    /* reusing outside points for line-segment */
   
   if (PAR.umin != NULL) memcpy(GEN.umin, PAR.umin, GEN.dim * sizeof(double));
   if (PAR.umax != NULL) memcpy(GEN.umax, PAR.umax, GEN.dim * sizeof(double));
@@ -770,7 +770,7 @@ _unur_hitrou_sample_cvec( struct unur_gen *gen, double *vec )
     while (1) {
 
       lambda = lmin + (lmax-lmin) * _unur_call_urng(gen->urng);
-      if (GEN.recursion==1) {
+      if (GEN.adaptive==1) {
         if (lambda>0) lmax=lambda;
         if (lambda<0) lmin=lambda;
       }
@@ -1152,9 +1152,9 @@ _unur_hitrou_debug_init( const struct unur_gen *gen )
   /* print center */
   _unur_matrix_print_vector( GEN.dim, GEN.center, "center =", log, gen->genid, "\t   ");
 
-  /* print recursion flag */
-  fprintf(log,"%s: Recursion:", gen->genid);  
-  if (GEN.recursion==0)
+  /* print adaptive flag */
+  fprintf(log,"%s: adaptive:", gen->genid);  
+  if (GEN.adaptive==0)
     fprintf(log,"\tno (direction line segment is kept constant)");  
   else
     fprintf(log,"\tyes (direction line segment is adapted by each step)");

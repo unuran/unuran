@@ -191,14 +191,14 @@ int unur_hitrou_set_u_planes( UNUR_PAR *parameters, int u_planes );
    Default: @code{0}.
 */
 
-int unur_hitrou_set_recursion( UNUR_PAR *parameters, int recursion_flag );
+int unur_hitrou_set_adaptive( UNUR_PAR *parameters, int adaptive_flag );
 /*
    When calculating a random point along the given direction,
-   this recursion flag controls how to proceed, when the random
+   this adaptive flag controls how to proceed, when the random
    point is located outside the shape.
-   In case, that the recursion_flag is set to 0, we sample again
+   In case, that the adaptive_flag is set to 0, we sample again
    without changing the ends of the direction-line-segment.
-   In case, that the recursion_flag is set to 1, we sample again
+   In case, that the adaptive_flag is set to 1, we sample again
    reusing the previous outside point as new end of the direction-
    line-segment.
 

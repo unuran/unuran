@@ -47,7 +47,7 @@ struct unur_hitrou_par {
   int u_planes;             /* if we calculate and use the bounding u-planes */
   double *umin, *umax;      /* boundary rectangle u-coordinates              */
   double vmax;              /* boundary rectangle v-coordinate               */
-  int recursion;            /* adaptive reusability of outside points (0/1)  */
+  int adaptive;            /* adaptive reusability of outside points (0/1)  */
 };
 
 /*---------------------------------------------------------------------------*/
@@ -69,7 +69,7 @@ struct unur_hitrou_gen {
   int shape_flag;           /* 0=RoU shape, 1=test rect, 2=simplex, 3=2simpl */
   double *test_rectangle;   /* (dim+1) array : relative size of test rect    */
   long simplex_jumps;       /* counter for jumps for double-simplex shape    */
-  int recursion;            /* adaptive reusability of outside points (0/1)  */
+  int adaptive;            /* adaptive reusability of outside points (0/1)  */
 };
 
 /*---------------------------------------------------------------------------*/

@@ -879,7 +879,19 @@ void print_distr_name( FILE *LOG, const UNUR_DISTR *distr, const char *genid )
 int print_pval( FILE *LOG, UNUR_GEN *gen, const UNUR_DISTR *distr, double pval, int trial, char todo )
 {
   int failed = 0;
+  double pval_corrected;
+  int dim;
   int l;
+
+  /* Correct p-value.   */
+  /* For multivariate distributions unur_test_chi2() runs chi^2 tests on the   */
+  /* multivariate distribution itself as well as on all marginal distibutions. */
+  /* It returns the minimum of all p-palues. Thus we have to adjust this       */
+  /* value and multiply it with (dim+1) before deciding about the significance */
+  /* of the result.                                                            */
+  dim = unur_distr_get_dim(distr);
+  pval_corrected = (dim>1) ? pval : pval*(dim+1);
+
 
   if (pval < -1.5) {
     /* was not able to run test (CDF missing) */
@@ -901,7 +913,7 @@ int print_pval( FILE *LOG, UNUR_GEN *gen, const UNUR_DISTR *distr, double pval, 
 
   if (pval >= 0.) {
     fprintf(LOG,"   pval = %8.6f   ",pval);
-    l = -(int) ((pval > 1e-6) ? (log(pval) / M_LN10) : 6.);
+    l = -(int) ((pval_corrected > 1e-6) ? (log(pval_corrected) / M_LN10) : 6.);
     switch (l) {
     case 0:
       fprintf(LOG,"      "); break;
@@ -925,7 +937,7 @@ int print_pval( FILE *LOG, UNUR_GEN *gen, const UNUR_DISTR *distr, double pval, 
   
   switch (todo) {
   case '+':
-    if (pval < PVAL_LIMIT) {
+    if (pval_corrected < PVAL_LIMIT) {
       failed = 1;
       if (trial > 1) {
 	fprintf(LOG,"\t Failed");
@@ -947,7 +959,7 @@ int print_pval( FILE *LOG, UNUR_GEN *gen, const UNUR_DISTR *distr, double pval, 
     printf("0");
     break;
   case '-':
-    if (pval < PVAL_LIMIT) {
+    if (pval_corrected < PVAL_LIMIT) {
       /* in this case it is expected to fail */
       failed = 0;
       fprintf(LOG,"\t ok (expected to fail)");

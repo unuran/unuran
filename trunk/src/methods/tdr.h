@@ -415,11 +415,14 @@ int unur_tdr_set_pedantic( UNUR_PAR *parameters, int pedantic );
    Default is FALSE.
 */
 
-double unur_tdr_eval_invcdfhat( const UNUR_GEN *generator, double u, double *hx );
-/*
+double unur_tdr_eval_invcdfhat( const UNUR_GEN *generator, double u, 
+				double *hx, double *fx, double *sqx );
+/* 
    Evaluate the CDF of the hat distribution at @var{u}. As a
-   side effect the value of the hat is stored in @var{hx}. However,
-   this is suppressed if @var{hx} is set to NULL.
+   side effect the values of the hat, the density, and the squeeze
+   at the computed point @i{x} are stored in @var{hx}, @var{fx}, and
+   @var{sqx}, respectively. However, these computations are suppressed
+   if the corresponding variable is set to NULL.
 
    If @var{u} is out of the domain [0,1] then @code{unur_errno} is set
    to @code{UNUR_ERR_DOMAIN} and the respective bound of
@@ -440,3 +443,4 @@ double unur_tdr_eval_invcdfhat( const UNUR_GEN *generator, double u, double *hx 
 
 /* =END */
 /*---------------------------------------------------------------------------*/
+

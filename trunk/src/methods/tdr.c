@@ -361,11 +361,11 @@ static double _unur_tdr_ia_sample_check( struct unur_gen *generator );
 /*---------------------------------------------------------------------------*/
 
 static double _unur_tdr_gw_eval_invcdfhat( const struct unur_gen *generator, double u,
-					   double *hx,
+					   double *hx, double *fx, double *sqx,
 					   struct unur_tdr_interval **iv,
 					   struct unur_tdr_interval **cpt );
 static double _unur_tdr_ps_eval_invcdfhat( const struct unur_gen *generator, double u,
-					   double *hx,
+					   double *hx, double *fx, double *sqx,
 					   struct unur_tdr_interval **iv );
 /*---------------------------------------------------------------------------*/
 /* auxiliary routines to evaluate the inverse of the hat CDF.                */

@@ -358,16 +358,16 @@ _unur_dau_init( struct unur_par *par )
   /* find rich and poor strips at start                                 */
   ratio = GEN.urn_size / sum;
   for( i=0; i<n_pv; i++ ) {
-    GEN.qx[i] = pv[i] * ratio;
-    if (GEN.qx[i] >= 1.) {  /* rich strip                  */
-      *rich = i;            /* add to list ...             */
-      --rich;               /* and update pointer          */
-      GEN.jx[i] = i;        /* init donor (itself)         */
+    GEN.qx[i] = pv[i] * ratio;  /* probability rescaled        */
+    if (GEN.qx[i] >= 1.) {      /* rich strip                  */
+      *rich = i;                /* add to list ...             */
+      --rich;                   /* and update pointer          */
+      GEN.jx[i] = i;            /* init donor (itself)           */
     }
-    else {                  /* poor strip                  */
-      *poor = i;            /* add to list                 */
-      ++poor;               /* update pointer              */
-      /* it is not necessary to mark donor                 */
+    else {                      /* poor strip                    */
+      *poor = i;                /* add to list                 */
+      ++poor;                   /* update pointer              */
+      /* it is not necessary to mark donor                     */
     }
   }
 
@@ -387,8 +387,8 @@ _unur_dau_init( struct unur_par *par )
     return NULL;
   }
   
-  /* rich doesn not point to a valid rich strip yet */
-  ++rich;        /* now it does                     */
+  /* rich must point to the first rich strip yet */
+  ++rich;
 
   /* now make the "squared histogram" with Robin Hood algorithm (Marsaglia) */
   while (poor != begin) {
@@ -420,7 +420,7 @@ _unur_dau_init( struct unur_par *par )
       GEN.qx[*npoor] = 1.;      /* set probability to 1 (we assume that it is very close to one) */
       --poor;                   /* remove from list */
     }
-    if (fabs(sum) > UNUR_EPSILON)
+    if (fabs(sum) > UNUR_SQRT_DBL_EPSILON)
       /* sum of deviations very large */
       _unur_warning(gen->genid,UNUR_ERR_ROUNDOFF,"squared histogram");
   }

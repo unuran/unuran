@@ -60,8 +60,9 @@ AC_OUTPUT( \
 	Makefile \
         scripts/Makefile \
 	src/Makefile \
-	src/methods/Makefile \
 	src/distributions/Makefile \
+	src/methods/Makefile \
+	src/parser/Makefile \
 	src/specfunct/Makefile \
 	src/tests/Makefile \
 	src/uniform/Makefile \

@@ -99,7 +99,8 @@ unur_make_scatterplot( struct unur_gen *gen )
   int start, skip;                      /* parameter for subsequence of urng */
   int error;                            /* exit code of system call          */  
 
-  UNUR_URNG *urng_bak, *urng_babygen;   /* pointer to uniform RNG            */
+  UNUR_URNG *urng_bak, *urng_aux_bak;   /* for saving URNG of generator      */
+  UNUR_URNG *urng_babygen;         /* pointer to uniform baby RNG            */
 
   /* check arguments */
   _unur_check_NULL(test_name,gen,0);
@@ -159,10 +160,17 @@ unur_make_scatterplot( struct unur_gen *gen )
     return 0;
   }
  
+  /* save generators */
+  urng_bak = gen->urng;
+  urng_aux_bak = gen->urng_aux;
+
   /* store uniform random number generator */
   urng_babygen = _unur_get_babygen();
   if (urng_babygen == NULL) return 0;
-  urng_bak = unur_chg_urng(gen, urng_babygen);
+  unur_chg_urng(gen, urng_babygen);
+
+  /* we do not change the auxilliary URNG */
+  unur_chg_urng_aux(gen, urng_aux_bak);
 
   /* make string for scatter file name */
   len_scatter_filename = strlen(gen->genid) + strlen(".scatterplot") + 2;

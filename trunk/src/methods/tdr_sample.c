@@ -449,6 +449,7 @@ _unur_tdr_ps_sample( struct unur_gen *gen )
      /*      U ~ U(-area below left hat, area below left hat)                */
      /*----------------------------------------------------------------------*/
 { 
+  UNUR_URNG *urng;             /* pointer to uniform random number generator */
   struct unur_tdr_interval *iv;
   double U, V, X;
   double fx, Thx;
@@ -456,10 +457,13 @@ _unur_tdr_ps_sample( struct unur_gen *gen )
   /* check arguments */
   CHECK_NULL(gen,0.);  COOKIE_CHECK(gen,CK_TDR_GEN,0.);
 
+  /* main URNG */
+  urng = gen->urng;
+
   while (1) {
 
     /* sample from U(0,1) */
-    U = _unur_call_urng(gen->urng);
+    U = _unur_call_urng(urng);
 
     /* look up in guide table and search for segment */
     iv =  GEN.guide[(int) (U * GEN.guide_size)];
@@ -515,7 +519,7 @@ _unur_tdr_ps_sample( struct unur_gen *gen )
     } /* end switch */
 
     /* accept or reject */
-    V = _unur_call_urng(gen->urng);
+    V = _unur_call_urng(urng);
 
     /* squeeze rejection */
     if (V <= iv->sq)
@@ -554,6 +558,11 @@ _unur_tdr_ps_sample( struct unur_gen *gen )
       }
 
     /* else reject and try again */
+
+    /* use the auxilliary generator the next time
+       (it can be the same as the main generator) */
+    urng = gen->urng_aux;
+
   }
 
 } /* end of _unur_tdr_ps_sample() */

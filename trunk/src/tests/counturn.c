@@ -107,12 +107,16 @@ unur_test_count_urn( struct unur_gen *gen, int samplesize )
      /*----------------------------------------------------------------------*/
 {
   long j;
+  UNUR_URNG *urng_aux = gen->urng_aux;
 
   /* check arguments */
   _unur_check_NULL(test_name,gen,-1);
 
   /* reset counter */
   urng_counter = 0;
+
+  /* save auxilliary generator */
+  urng_aux = gen->urng_aux;
 
   /* exchange pointer to uniform rng with counting wrapper */
 #if UNUR_URNG_TYPE == UNUR_URNG_POINTER
@@ -121,6 +125,7 @@ unur_test_count_urn( struct unur_gen *gen, int samplesize )
 #elif UNUR_URNG_TYPE == UNUR_URNG_PRNG
   urng_to_use_next = gen->urng->get_next;
   gen->urng->get_next = _urng_with_counter_next;
+  if (gen->urng_aux) gen->urng_aux = gen->urng;
 #endif
 
   /* run generator */
@@ -156,10 +161,16 @@ unur_test_count_urn( struct unur_gen *gen, int samplesize )
   gen->urng->get_next = urng_to_use_next;
 #endif
 
+  /* restore auxilliary generator */
+  gen->urng_aux = urng_aux;
+
   /* print result */
   printf("\nCOUNT: %g urng per generated number (total = %ld)\n",
 	 ((double)urng_counter)/((double) samplesize),urng_counter);
 
   /* return total number of used uniform random numbers */
   return urng_counter;
+
 } /* end of unur_test_count_urn() */
+
+/*---------------------------------------------------------------------------*/

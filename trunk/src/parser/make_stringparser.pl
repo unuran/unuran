@@ -748,7 +748,7 @@ sub make_list_of_par_sets {
 	    my %type_args_doc = 
 		( 'void' => ' ',
 		  'i'  => '[= @i{<int>}]',
-		  'u'  => '= @i{<unsigned>}]',
+		  'u'  => '= @i{<unsigned>}',
 		  'd'  => '= @i{<double>}',
 		  'dd' => '= @i{<double>}, @i{<double>} | (@i{<list>})',
 		  'iD' => '= @i{<int>} [, (@i{<list>})] | (@i{<list>})',

@@ -78,7 +78,7 @@
  *      int:      'true' and 'on' are transformed to 1,                      *
  *                'false' and 'off' are transformed to 0.                    *
  *                a missing argument is transformed to 1.                    *
- *      int, int: Instead of two doubles, a list with at least two           *
+ *      int, int: Instead of two integers, a list with at least two          *
  *                numbers can be given.                                      *
  *                'inf' is transformed to infinity.                          *
  *                implementation of strtod().                                *

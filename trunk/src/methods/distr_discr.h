@@ -187,7 +187,7 @@ int unur_distr_discr_set_pmfstr( UNUR_DISTR *distribution, const char *pmfstr );
    This function provides an alternative way to set a PMF of the 
    @var{distribution}.
    @var{pmfstr} is a character string that contains the formula
-   for the PMF, see ..... for details.
+   for the PMF, see @ref{StringFunct,,Function String} for details.
    See also the remarks for the unur_distr_discr_set_pmf() call.
 
    It is not possible to call this funtion twice or to call this

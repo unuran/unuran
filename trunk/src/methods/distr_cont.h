@@ -156,7 +156,7 @@ int unur_distr_cont_set_pdfstr( UNUR_DISTR *distribution, const char *pdfstr );
    This function provides an alternative way to set a PDF and its
    derivative of the @var{distribution}.
    @var{pdfstr} is a character string that contains the formula
-   for the PDF, see ..... for details.
+   for the PDF, see @ref{StringFunct,,Function String} for details.
    See also the remarks for the unur_distr_cont_set_pdf() call.
 
    It is not possible to call this funtion twice or to call this

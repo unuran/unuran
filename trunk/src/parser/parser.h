@@ -54,7 +54,7 @@
    set to the corresponding error codes
    (see @ref{Error_reporting,,Error reporting}).
    Additionally there exists the call unur_str2distr() that only
-   produces a generator object.
+   produces a distribution object.
 
    Notice that the string interface does not implement all features of
    the UNURAN library. For trickier tasks it might be necessary to use
@@ -70,16 +70,18 @@
 
 UNUR_GEN *unur_str2gen( const char *string );
 /* 
-   Get a generator object for the distribution, method and unifrom
+   Get a generator object for the distribution, method and uniform
    random number generator as described in the given @var{string}.
    See @ref{StringSyntax,,Syntax of String Interface} for details.
 */
 
 UNUR_DISTR *unur_str2distr( const char *string );
 /*
-   Get a distribution object for the distribution described in @var{string}.
-   See @ref{StringSyntax,,Syntax of String Interface} for
-   details. However only the block for the distribution object is
+   Get a distribution object for the distribution described in
+   @var{string}. 
+   See @ref{StringSyntax,,Syntax of String Interface}
+   and @ref{StringDistr,,Distribution String}
+   for details. However only the block for the distribution object is
    allowed.
 */
 
@@ -107,20 +109,19 @@ UNUR_DISTR *unur_str2distr( const char *string );
    semicolons @code{;}.
 
    The first key in each block is used to indicate each block.
-
    We have three different blocks with the following (first) keys:
    @table @code 
    @item distr
       definition of the distribution (see 
-      @ref{StringDistr, Distribution String, Distribution String}).
+      @ref{StringDistr,,Distribution String}).
 
    @item method
       description of the transformation method
-      (see @ref{StringMethod, Method String, Method String}).
+      (see @ref{StringMethod,,Method String}).
 
    @item urng
       uniform random number generation
-      (see @ref{StringURNG,Uniform RNG String,Uniform RNG String}).
+      (see @ref{StringURNG,,Uniform RNG String}).
    @end table
 
    The @code{distr} block must be the very first block and is
@@ -129,75 +130,106 @@ UNUR_DISTR *unur_str2distr( const char *string );
 
    For details see the following description of each block.
 
-   The other @code{<key>=<value>} pairs are used to set parameters.
+   In the following example
+   @smallexample
+   distr = normal(3.,0.75); domain = (0,inf) & method = tdr; c = 0 
+   @end smallexample
+   we have a distribution block for the truncated normal distribution
+   with mean 3 and standard deviation 0.75 on domain (0,infinity);
+   and block for choosing method TDR with parameter c set to 0.
+
+   @sp 1
+   The @code{<key>=<value>} pairs that follow the first (initial) pair
+   in each block are used to set parameters.
    The name of the parameter is given by the @code{<key>} string. It is
    deduced from the UNURAN set calls by taking the part after
    @code{@dots{}_set_}.
-   The @code{<value>} string holds tokens for the parameters to be
+   The @code{<value>} string holds the parameters to be
    set, separated by commata @code{,}.
-   There are two types of tokens:
+   There are three types of parameters:
    @table @emph
-   @item single token
-      that represents a number, and
-
-   @item list
-      i.e., a list of single tokens, separated by commata @code{,},
-      enclosed in parenthesis @code{(...)}.
+   @item string @code{"@dots{}"}
+      i.e. any sequence of characters enclosed by double quotes 
+      @code{"@dots{}"}, 
+   @item list @code{(@dots{},@dots{})}
+      i.e. list of @emph{numbers}, separated by commata @code{,},
+      enclosed in parenthesis @code{(...)}, and
+   @item number
+      a sequence of characters that is not enclosed by quotes
+      @code{"@dots{}"} or parenthesis @code{(...)}. It is interpreted
+      as float or integer depending on the type of the corresponding
+      parameter.
    @end table
-
    The @code{<value>} string (including the character @code{=}) can be
    omitted when no argument is required.
 
    At the moment not all @command{set} calls are supported.
    The syntax for the @code{<value>} can be directly derived from the
    corresponding @command{set} calls. To simplify the syntax additional
-   shortcuts are possible. The following table list the parameters for
+   shortcuts are possible. The following table lists the parameters for
    the @code{set} calls that are supported by the string interface; the
-   entry in parenthesis gives the type of the argument in the string:
+   entry in parenthesis gives the type of the argument as 
+   @code{<value>} string:
 
    @table @code
-   @item int  @r{(}token@r{):}
-      The token is interpreted as an integer number.
+   @item int  @i{(number)}:
+      The @i{number} is interpreted as an integer.
       @code{true} and @code{on} are transformed to @code{1},
       @code{false} and @code{off} are transformed to @code{0}.
       A missing argument is interpreted as @code{1}.
 
-   @item unsigned @r{(}token@r{):} 
-      The token is interpreted as an unsigned hexadecimal integer number.
+   @item int, int  @i{(number, number} @r{or} @i{list)}:
+      The two numbers or the first two entries in the list are
+      interpreted as a integers.
+      @code{inf} and @code{-inf} are transformed to @code{INT_MAX} and
+      @code{INT_MIN} respectively, i.e. the largest and smallest
+      integers that can be represented by the computer.
 
-   @item double  @r{(}token@r{):}
-      The token is interpreted as a floating point number.
+   @item unsigned @i{(number)}: 
+      The @i{number} is interpreted as an unsigned hexadecimal
+      integer.
+
+   @item double  @i{(number)}:
+      The number is interpreted as a floating point number.
       @code{inf} is transformed to @code{UNUR_INFINITY}.
 
-   @item double, double  @r{(}token, token @r{or} list@r{):}
-      The two tokens or the first two entries in the list are interpreted as
-      a floating point numbers.
+   @item double, double  @i{(number, number} @r{or} @i{list)}:
+      The two numbers or the first two entries in the list are
+      interpreted as a floating point numbers.
       @code{inf} is transformed to @code{UNUR_INFINITY}. However using
-      @code{inf} in the list might not work for all versions of C. Thus it
-      is recommended to use two single tokens instead of a list.
+      @code{inf} in the list might not work for all versions of C. Then it
+      is recommended to use two single numbers instead of a list.
 
-   @item int, double*  @r{(}[token,] list @r{or} token@r{):}
+   @item int, double*  @i{([number,] list} @r{or} @i{number)}:
       @itemize @minus
       @item
          The list is interpreted as a double array.
-	 The (first) token as its length.
-	 If it is less than the actual size if the array only the first entries
-	 of the array is used.
+	 The (first) number as its length.
+	 If it is less than the actual size of the array only the
+	 first entries of the array are used.
       @item
-         If only the list is given (i.e., if the first token is omitted),
-	 it is replaced by the actual size of the array.
+         If only the list is given (i.e., if the first number is omitted),
+	 the first number is set to the actual size of the array.
       @item
-	 If only the token is given (i.e., if the list is omitted), the NULL
+	 If only the number is given (i.e., if the list is omitted), the NULL
 	 pointer is used instead an array as argument.
       @end itemize
 
-   @item double*, int  @r{(}list [,token]@r{):}
+   @item double*, int  @i{(list [,number])}:
       The list is interpreted as a double array.
-      The (second) token as its length. 
+      The (second) number as its length. 
       If the length is omitted, it is replaced by the actual size of the
       array. (Only in the @code{distribution} block!)
 
+   @item char*  @i{(string)}:
+      The character string is passed as is to the corresponding set
+      call.
+
    @end table
+
+   The the list of @code{key} strings in
+   @ref{KeysDistr,,Keys for Distribution String} and 
+   @ref{KeysMethod,,Keys for Method String} for further details.
 
 =EON */
 /*---------------------------------------------------------------------------*/
@@ -212,13 +244,18 @@ UNUR_DISTR *unur_str2distr( const char *string );
 
    The @code{distr} block must be the very first block and is
    obligatory. For that reason the keyword @code{distr} is optional and
-   can be omitted. Moreover it is ignored while parsing the string. To
-   avoid some possible confusion, however, it has to start with the
+   can be omitted (together with the @code{=} character). 
+   Moreover it is ignored while parsing the string. However, to
+   avoid some possible confusion it has to start with the
    letter @code{d} (if it is given at all). 
 
    The value of the @code{distr} key is used to get the distribution
    object, either via a @command{unur_distr_<value>} call for a standard
-   distribution. The parameters for the standard distribution are given
+   distribution via a @command{unur_distr_<value>_new} call to get an
+   object of a generic distribution. 
+   However not all generic distributions are supported yet.
+
+   The parameters for the standard distribution are given
    as a list. There must not be any character (other than white space)
    between the name of the standard distribution and the opening
    parenthesis @code{(} of this list. E.g., to get a beta distribution,
@@ -227,13 +264,24 @@ UNUR_DISTR *unur_str2distr( const char *string );
       distr = beta(2,4)
    @end smallexample
 
-   Or via a @command{unur_distr_<value>_new} call to get an object of a generic
-   distribution. However not all generic distributions are supported yet.
-   E.g., to get an object for a discrete distribution with probability
+   To get an object for a discrete distribution with probability
    vector (0.5,0.2,0.3), use 
    @smallexample
       distr = discr; pv = (0.5,0.2,0.3)
    @end smallexample
+
+   It is also possible to set a PDF, PMF, or CDF using a string.
+   E.g., to create a continuous distribution with PDF proportional to 
+   @code{exp(-sqrt(2+(x-1)^2) + (x-1))} and domain (0,inf) use
+   @smallexample
+      distr = cont; pdf = "exp(-sqrt(2+(x-1)^2) + (x-1))"
+   @end smallexample
+   (Notice: If this string is used in an unur_str2distr() or
+   unur_str2gen() call the double quotes @code{"} must be protected by
+   @code{\"}.) 
+
+   For the details of function strings see
+   @ref{StringFunct,,Function String}.
 
 =EON
 */
@@ -265,11 +313,11 @@ UNUR_DISTR *unur_str2distr( const char *string );
       max_sqhratio = 0.9
    @end smallexample
    Additionally the keyword @code{debug} can be used to set debugging
-   flags (see @xref{Debug,Debugging,Debugging}. for details).
+   flags (see @ref{Debug,,Debugging}. for details).
    
    If this block is omitted, a suitable default method is used. Notice
    however that the default method may change in future versions of
-   UNURAN. Moreover, only standard distributions are supported yet.
+   UNURAN.
 
 =EON
 */
@@ -285,7 +333,7 @@ UNUR_DISTR *unur_str2distr( const char *string );
 
    The value of the @code{urng} key is passed to the PRNG interface (see
    @ifinfo
-      @xref{Top, , Overview, prng, PRNG Manual}.
+      @xref{Top,,Overview,prng,PRNG Manual}.
    @end ifinfo
    @ifnotinfo
       @uref{http://statistik.wu-wien.ac.at/prng/manual/,PRNG manual}
@@ -300,11 +348,23 @@ UNUR_DISTR *unur_str2distr( const char *string );
 */
 /*---------------------------------------------------------------------------*/
 
+/*---------------------------------------------------------------------------*/
+/*
+
+=NODE  StringFunct    Function String
+=UP StringAPI [25]
+
+=DESCRIPTION
+
+   blah ...
+
+=EON
+*/
+/*---------------------------------------------------------------------------*/
+
 /*
 Example:
 
-The standard distribution block must be first!
-Here an example to illustrate that, the details will be explained below:
 unur_str2gen("distr=normal(0,1) : method=arou; max_sqhratio=0.9 : prng=MT19937(133)")
 */
 

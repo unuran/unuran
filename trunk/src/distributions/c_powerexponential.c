@@ -16,32 +16,16 @@
  *****************************************************************************
  *****************************************************************************
  *                                                                           *
- *  Power-exponential (Subbotin) distribution [3; ch.24, p.195]              *
+ *  Power-exponential distribution                                           *
+ *  (see also [3; ch.24, p.195] for a different definition;                  *
+ *  also called Subbotin distribution)                                       *
  *                                                                           *
- *  pdf:       exp(-1/2 * abs((x-theta)/phi) ^ (2/delta) )                   *
+ *  pdf:       exp(-abs(x)^tau)                                              *
  *  domain:    -infinity < x < infinity                                      *
- *  constant:  2^(delta/2 + 1) * Gamma(delta/2 + 1) * phi                    *
- *                                                                           *
- *  parameters: 3                                                            *
- *     0:  delta > 0 ... shape                                               *
- *     1:  theta     ... location                                            *
- *     2:  phi > 0   ... scale                                               *
- *                                                                           *
- *****************************************************************************
- *                                                                           *
- *  Standard form:                                                           *
- *                                                                           *
- *  pdf:       exp(-1/2 * abs(x) ^ (2/delta) )                               *
- *  domain:    -infinity < x < infinity                                      *
- *  constant:  2^(delta/2 + 1) * Gamma(delta/2 + 1)                          *
+ *  constant:  2 * Gamma(1+1/tau)                                            *
  *                                                                           *
  *  parameters: 1                                                            *
- *     0:  delta > 0 ... shape                                               *
- *                                                                           *
- *     1:  theta = 0                                                         *
- *     2:  phi   = 1                                                         *
- *                                                                           *
- *                                                                           *
+ *     0:  tau > 0 ... shape                                                 *
  *                                                                           *
  *****************************************************************************
      $Id$
@@ -75,13 +59,12 @@
 static const char distr_name[] = "powerexponential";
 
 /* parameters */
-#define delta  params[0]
-#define theta  params[1]
-#define phi    params[2]
+#define tau  params[0]
 
 /* function prototypes                                                       */
 static double _unur_pdf_powerexponential(double x, double *params, int n_params);
 static double _unur_dpdf_powerexponential(double x, double *params, int n_params);
+static double _unur_cdf_powerexponential(double x, double *params, int n_params);
 static double _unur_lognormconstant_powerexponential(double *params, int n_params);
 
 /*---------------------------------------------------------------------------*/
@@ -89,9 +72,7 @@ static double _unur_lognormconstant_powerexponential(double *params, int n_param
 double
 _unur_pdf_powerexponential( double x, double *params, int n_params )
 { 
-  register double z;
-  z = (x - theta) / phi;
-  return exp( - pow( abs(z), 2./delta ) * 0.5 - LOGNORMCONSTANT);
+  return exp( - pow(fabs(x), tau) - LOGNORMCONSTANT);
 } /* end of _unur_pdf_powerexponential() */
 
 /*---------------------------------------------------------------------------*/
@@ -99,25 +80,36 @@ _unur_pdf_powerexponential( double x, double *params, int n_params )
 double
 _unur_dpdf_powerexponential( double x, double *params, int n_params )
 {
-  register double z, tmp;
+  register double tmp;
 
-  z = (x - theta) / phi;
-
-  if (z == 0.)    /* derivative is not defined, but ...        */
+  if (x == 0.)    /* derivative is not defined, but ...        */
     return 0.;    /* a tangent parallel to x-axis is possible. */
 
-  tmp = exp( - pow( abs(z), 2./delta ) * 0.5 - LOGNORMCONSTANT) * pow(abs(z),2./delta-1.) / (delta*phi);
+  tmp = exp( -pow(fabs(x),tau) - LOGNORMCONSTANT + (tau-1.)*log(x) ) * tau;
 
   /* sign ! */
-  return ( (z<0.) ? tmp : -tmp );
+  return ( (x<0.) ? tmp : -tmp );
 } /* end of _unur_dpdf_powerexponential() */
+
+/*---------------------------------------------------------------------------*/
+
+double
+_unur_cdf_powerexponential( double x, double *params, int n_params )
+{ 
+  register double cdf;
+
+  /* compute cdf(abs(x)) - cdf(0) */
+  cdf = _unur_incgamma(pow(fabs(x),tau),1./tau) / 2.;
+  return ((x<0.) ? 0.5 - cdf : 0.5 + cdf);
+
+} /* end of _unur_cdf_powerexponential() */
 
 /*---------------------------------------------------------------------------*/
 
 double
 _unur_lognormconstant_powerexponential(double *params, int n_params)
 { 
-  return ( M_LN2 * (delta/2. + 1.) + _unur_gammaln(delta/2. + 1.) + log(phi) );
+  return  _unur_gammaln(1+1/tau) + M_LN2;
 } /* end of _unur_lognormconstant_powerexponential() */
 
 /*---------------------------------------------------------------------------*/
@@ -131,7 +123,7 @@ unur_distr_powerexponential( double *params, int n_params )
   /* check new parameter for generator */
   if (n_params < 1) {
     _unur_error(distr_name,UNUR_ERR_DISTR_NPARAMS,"too few"); return NULL; }
-  if (n_params > 3)
+  if (n_params > 1)
     _unur_warning(distr_name,UNUR_ERR_DISTR_NPARAMS,"too many");
   CHECK_NULL(params,NULL);
 
@@ -150,26 +142,14 @@ unur_distr_powerexponential( double *params, int n_params )
   /* functions */
   DISTR.pdf  = _unur_pdf_powerexponential;  /* pointer to p.d.f.               */
   DISTR.dpdf = _unur_dpdf_powerexponential; /* pointer to derivative of p.d.f. */
-  /* DISTR.cdf = _unur_cdf_powerexponential;    pointer to c.d.f.               */
+  DISTR.cdf  = _unur_cdf_powerexponential;  /* pointer to c.d.f.               */
 
-  /* default parameters */
-  DISTR.theta = 0.;
-  DISTR.phi   = 1.;
-
-  /* copy parameters */
-  DISTR.delta = delta;
-  switch (n_params) {
-  case 3:
-    DISTR.phi = phi;
-  case 1:
-    DISTR.theta = theta;
-  default:
-    n_params = 3;
-  }
+  /* copy parameter */
+  DISTR.tau = tau;
 
   /* check parameter sigma */
-  if (DISTR.delta <= 0. || DISTR.phi <= 0.) {
-    _unur_error(distr_name,UNUR_ERR_DISTR_DOMAIN,"delta <= 0 or phi <= 0");
+  if (DISTR.tau <= 0.) {
+    _unur_error(distr_name,UNUR_ERR_DISTR_DOMAIN,"tau <= 0");
     free( distr ); return NULL;
   }
 
@@ -180,7 +160,7 @@ unur_distr_powerexponential( double *params, int n_params )
   DISTR.LOGNORMCONSTANT = _unur_lognormconstant_powerexponential(DISTR.params,DISTR.n_params);
 
   /* mode and area below p.d.f. */
-  /* DISTR.mode = unur_mode_powerexponential(DISTR.params,DISTR.n_params); */
+  DISTR.mode = 0;
   DISTR.area = 1.;
 
   /* domain */
@@ -191,7 +171,7 @@ unur_distr_powerexponential( double *params, int n_params )
   distr->set = ( UNUR_DISTR_SET_PARAMS | 
 		 UNUR_DISTR_SET_DOMAIN |
 		 UNUR_DISTR_SET_STDDOMAIN |
-/*  		 UNUR_DISTR_SET_MODE   | */
+		 UNUR_DISTR_SET_MODE   |
   		 UNUR_DISTR_SET_PDFAREA ); 
 
   /* return pointer to object */
@@ -201,7 +181,5 @@ unur_distr_powerexponential( double *params, int n_params )
 } /* end of unur_distr_powerexponential() */
 
 /*---------------------------------------------------------------------------*/
-#undef theta
-#undef delta
-#undef phi  
+#undef tau
 /*---------------------------------------------------------------------------*/

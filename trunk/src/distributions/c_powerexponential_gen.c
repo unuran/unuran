@@ -53,9 +53,7 @@ inline static int powerexponential_epd_init( struct unur_gen *gen );
 #define uniform()  _unur_call_urng(gen) /* call for uniform prng             */
 
 /*---------------------------------------------------------------------------*/
-#define delta  (DISTR.params[0])        /* shape */
-#define theta  (DISTR.params[1])        /* location */
-#define phi    (DISTR.params[2])        /* scale */
+#define tau    (DISTR.params[0])        /* shape */
 /*---------------------------------------------------------------------------*/
 
 /*****************************************************************************/
@@ -114,7 +112,7 @@ _unur_stdgen_powerexponential_init( struct unur_par *par, struct unur_gen *gen )
  *****************************************************************************
  *                                                                           *
  * FUNCTION:   - samples a random number from the Power-exponential          *
- *               distribution with parameter delta <= 2 by using the         *
+ *               distribution with parameter tau >= 1 by using the           *
  *               non-universal rejection method for logconcave densities.    *
  *                                                                           *
  * REFERENCE:  - L. Devroye (1986): Non-Uniform Random Variate Generation,   *
@@ -143,7 +141,7 @@ powerexponential_epd_init( struct unur_gen *gen )
   }
 
   /* -X- setup code -X- */
-  s = delta / 2.;
+  s = 1. / tau;
   sm1 = 1. - s;
   /* -X- end of setup code -X- */
 
@@ -156,12 +154,11 @@ _unur_stdgen_sample_powerexponential_epd( struct unur_gen *gen )
 {
   /* -X- generator code -X- */
   double U,u1,V,X,y;
-  double tau = 2./delta;
 
   /* check arguments */
   CHECK_NULL(gen,0.);  COOKIE_CHECK(gen,CK_CSTD_GEN,0.);
 
-  while (1) {
+  do {
     U = 2. * uniform() - 1.;                                  /* U(-1.0/1.0) */
     u1 = fabs(U);                                             /* u1=|u|      */
     V = uniform();                                            /* U(0/1)      */
@@ -178,12 +175,12 @@ _unur_stdgen_sample_powerexponential_epd( struct unur_gen *gen )
   } while (log(V) > -exp(log(X)*tau));               /* Acceptance/Rejection */
   
   /* Random sign */
-  if (U < 0.)
+  if (U > 0.)
     X = -X;
 
   /* -X- end of generator code -X- */
 
-  return ((DISTR.n_params==1) ? X : theta + phi * X );
+  return X;
 
 } /* end of _unur_stdgen_sample_powerexponential_epd() */
 

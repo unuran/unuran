@@ -73,9 +73,17 @@ int _unur_acg_JAVA_urng( FILE *out );
 /* Uniform random number generator (for demo mode only).                     */
 /*---------------------------------------------------------------------------*/
 
-void _unur_acg_C_print_sectionheader( FILE *out, int n_lines, ... );
-void _unur_acg_FORTRAN_print_sectionheader( FILE *out, int n_lines, ... );
-void _unur_acg_JAVA_print_sectionheader( FILE *out, int n_lines, ... );
+void _unur_acg_C_print_section_rule( FILE *out );
+void _unur_acg_C_print_section_line( FILE *out, const char *format, ... );
+void _unur_acg_C_print_section_title( FILE *out, const char *title );
+
+void _unur_acg_FORTRAN_print_section_rule( FILE *out );
+void _unur_acg_FORTRAN_print_section_line( FILE *out, const char *format, ... );
+void _unur_acg_FORTRAN_print_section_title( FILE *out, const char *title );
+
+void _unur_acg_JAVA_print_section_rule( FILE *out );
+void _unur_acg_JAVA_print_section_line( FILE *out, const char *format, ... );
+void _unur_acg_JAVA_print_section_title( FILE *out, const char *title );
 /*---------------------------------------------------------------------------*/
 /* Print a section header with n_lines lines to output stream.               */
 /*---------------------------------------------------------------------------*/

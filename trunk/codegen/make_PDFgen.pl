@@ -307,7 +307,7 @@ sub make_PDF_distr_C
 
     # Print a short description of PDF
     $gencode .= 
-	"\t_unur_acg_C_print_sectionheader(out, 1, \"PDF for $d distribution.\");\n\n";
+	"\t_unur_acg_C_print_section_title(out,\"PDF for $d distribution.\");\n\n";
 
     # compose PDF name
     $gencode .= 
@@ -361,7 +361,7 @@ sub make_PDF_distr_FORTRAN
 
     # Print a short description of PDF
     $gencode .= 
-	"\t_unur_acg_FORTRAN_print_sectionheader(out, 1, \"PDF for $d distribution.\");\n\n";
+	"\t_unur_acg_FORTRAN_print_section_title(out, \"PDF for $d distribution.\");\n\n";
 
     # print PDF function name
     $gencode .= 
@@ -421,7 +421,7 @@ sub make_PDF_distr_JAVA
 
     # Print a short description of PDF
     $gencode .= 
-	"\t_unur_acg_JAVA_print_sectionheader(out, 1, \"PDF for $d distribution.\");\n\n";
+	"\t_unur_acg_JAVA_print_section_title(out, \"PDF for $d distribution.\");\n\n";
 
     # compose PDF name
     $gencode .= 

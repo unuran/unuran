@@ -72,7 +72,6 @@ _unur_acg_FORTRAN_tdr_ps( struct unur_gen *gen,
 
   struct unur_tdr_interval *iv;
   int i,j;
-  char buffer[80], transf[80];
 
   /* check arguments */
   _unur_check_NULL("ACG",gen, 0);
@@ -90,21 +89,21 @@ _unur_acg_FORTRAN_tdr_ps( struct unur_gen *gen,
   }
 
   /* make section header for code file */
-  sprintf(buffer,"Sampling from %.35s distribution.",gen->distr.name);
+  fprintf(out,"\n");
+  _unur_acg_FORTRAN_print_section_rule(out);
+  _unur_acg_FORTRAN_print_section_line(out,"Sampling from %.35s distribution.",gen->distr.name);
+  _unur_acg_FORTRAN_print_section_line(out,"Method: TDR - PS (Transformed Density Rejection / prop. squeeze)");
   switch( gen->variant & TDR_VARMASK_T ) {
   case TDR_VAR_T_LOG:
-    sprintf(transf,"        Transformtaion = log(x) ... c = 0");         break;
+    _unur_acg_FORTRAN_print_section_line(out,"        Transformation = log(x) ... c = 0");         break;
   case TDR_VAR_T_SQRT:
-    sprintf(transf,"        Transformtaion = -1/sqrt(x)  ... c = -1/2"); break;
+    _unur_acg_FORTRAN_print_section_line(out,"        Transformation = -1/sqrt(x)  ... c = -1/2"); break;
   case TDR_VAR_T_POW:
-    sprintf(transf,"        Transformtaion = -x^c  ... c = %g",GEN.c_T); break;
+    _unur_acg_FORTRAN_print_section_line(out,"        Transformation = -x^c  ... c = %g",GEN.c_T); break;
   }
-  _unur_acg_FORTRAN_print_sectionheader
-    ( out, 3, 
-      buffer,
-      "Method: TDR - PS (Transformed Density Rejection / prop. squeeze)",
-      transf
-      );
+  _unur_acg_FORTRAN_print_section_line(out,"        hat / squeeze ratio = %g",GEN.Atotal / GEN.Asqueeze);
+  _unur_acg_FORTRAN_print_section_rule(out);
+  fprintf(out,"\n");
 
   /* sampling routine */
   fprintf(out,"      DOUBLE PRECISION FUNCTION %s()\n",rand_name);

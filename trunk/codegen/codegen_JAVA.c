@@ -101,7 +101,7 @@ unur_acg_JAVA( struct unur_gen *gen, FILE *out, const char *distr_name )
     fprintf(out,"\n#error Sorry. Could not make generator code!!\n\n");
 
   /* end */
-  _unur_acg_JAVA_print_sectionheader( out, 1, "End of Generator" );
+  _unur_acg_JAVA_print_section_title( out, "End of Generator" );
 
   return return_code;
 
@@ -125,10 +125,7 @@ _unur_acg_JAVA_urng( FILE *out )
      /*   return 0                                                           */
      /*----------------------------------------------------------------------*/
 {
-  _unur_acg_C_print_sectionheader
-    ( out, 1, 
-      "Uniform (pseudo-)random number generator"
-      );
+  _unur_acg_JAVA_print_section_title( out, "Uniform (pseudo-)random number generator");
       
   fprintf(out,"\t// Define the uniform (pseudo-)random number generator\n");
   fprintf(out,"\t// of your choice here by operator overload.\n");
@@ -150,36 +147,65 @@ _unur_acg_JAVA_urng( FILE *out )
 /*---------------------------------------------------------------------------*/
 
 void
-_unur_acg_JAVA_print_sectionheader( FILE *out, int n_lines, ... )
+_unur_acg_JAVA_print_section_title( FILE *out, const char *title )
+     /*----------------------------------------------------------------------*/
+     /* print a section header with title to output stream                   */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   out       ... output stream                                        */
+     /*   title     ... section title                                        */
+     /*----------------------------------------------------------------------*/
+{
+  fprintf(out,"\n");
+  _unur_acg_JAVA_print_section_rule(out);
+  _unur_acg_JAVA_print_section_line(out,title);
+  _unur_acg_JAVA_print_section_rule(out);
+  fprintf(out,"\n");
+
+} /* end of _unur_acg_JAVA_print_section_title() */
+
+/*---------------------------------------------------------------------------*/
+
+void
+_unur_acg_JAVA_print_section_rule( FILE *out )
+     /*----------------------------------------------------------------------*/
+     /* print a rule for section header                                      */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   out       ... output stream                                        */
+     /*----------------------------------------------------------------------*/
+{
+  const char hrule[] = "/* ---------------------------------------------------------------- */\n";
+  fprintf (out, hrule);
+} /* end of _unur_acg_JAVA_print_section_rule() */
+
+/*---------------------------------------------------------------------------*/
+
+void
+_unur_acg_JAVA_print_section_line( FILE *out, const char *format, ... )
      /*----------------------------------------------------------------------*/
      /* print a section header with n_lines lines to output stream           */
      /*                                                                      */
      /* parameters:                                                          */
      /*   out       ... output stream                                        */
-     /*   n_lines   ... number of lines                                      */
+     /*   format    ... format for output                                    */
      /*   ...       ... (optional) arguments to be be printed                */
      /*----------------------------------------------------------------------*/
 {
-  char *string;     /* string to printed in section header   */
+  char buffer[256];
   va_list ap;       /* pointer to variable list of arguments */
-  const char hrule[] = "/* ---------------------------------------------------------------- */\n";
 
   /* start of variable parameter list */
-  va_start(ap, n_lines);
+  va_start(ap, format);
 
   /* write into output stream */
-  fprintf (out, "\n");
-  fprintf (out, hrule);
-  for (; n_lines>0; n_lines--) {
-    string = va_arg( ap, char* );
-    fprintf(out,"/* %-64.64s */\n",string);
-  }
-  fprintf (out, hrule);
-  fprintf (out,"\n");
+  vsprintf(buffer,format,ap);
+  fprintf(out,"* %-64.64s *\n",buffer);
         
   /* end of variable parameter list */
   va_end(ap);
 
-} /* end of _unur_acg_JAVA_print_sectionheader() */
+} /* end of _unur_acg_JAVA_print_section_line() */
 
 /*---------------------------------------------------------------------------*/
+

@@ -450,6 +450,9 @@ int run_chi2( FILE *LOG, int line, int type, UNUR_PAR *par, UNUR_DISTR *distr,
   int i;
   int failed = 0;
 
+  /* set debugging flag */
+  unur_set_debug(par,1);
+
   gen = unur_init(par);
   if (gen==NULL) {
     /* this must not happen */

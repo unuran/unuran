@@ -6,8 +6,6 @@
  *                                                                           *
  *   FILE:      student.c                                                    *
  *                                                                           *
- *   Normalization constants for pdf OMITTED!                                *
- *                                                                           *
  *   REFERENCES:                                                             *
  *                                                                           *
  *   [3] N.L. Johnson, S. Kotz and N. Balakrishnan                           *
@@ -20,11 +18,13 @@
  *                                                                           *
  *  Student distribution or t-distribution [3; ch. 28; p. 362]               *
  *                                                                           *
- *  pdf:     f(x) = ( 1 + (x^2)/nu )^(-(nu+1)/2)                             *
- *  domain:  -infinity < x < infintiy                                        *
+ *  pdf:       f(x) = ( 1 + (x^2)/nu )^(-(nu+1)/2)                           *
+ *  domain:    -infinity < x < infintiy                                      *
+ *  constant:  sqrt(nu) * Beta(1/2,nu/2)                                     *
+ *             = sqrt(pi*nu) * Gamma(nu/2) / Gamma((nu+1)/2)                 *
  *                                                                           *
  *  parameters:                                                              *
- *     0: a >= 1  ... shape                                                  *
+ *     0: nu > 0  ... shape                                                  *
  *                                                                           *
  *****************************************************************************
      $Id$
@@ -68,22 +68,32 @@
 /*---------------------------------------------------------------------------*/
 static const char distr_name[] = "student";
 
+/* parameters */
 #define nu (params [0])
-/*---------------------------------------------------------------------------*/
-
-double
-unur_pdf_student( double x, double *params, int n_params )
-{
-  return pow( (1. + x*x/nu), (-nu-1.)*0.5 );
-}  /* end of unur_pdf_student() */
 
 /*---------------------------------------------------------------------------*/
 
 double
-unur_dpdf_student( double x, double *params, int n_params )
+_unur_pdf_student( double x, double *params, int n_params )
 {
-  return ( (-nu-1.)*x/nu * pow( (1. + x*x/nu), (-nu-3.)*0.5 ) );
-} /* end of unur_dpdf_student() */
+  return pow( (1. + x*x/nu), (-nu-1.)*0.5 ) / NORMCONSTANT;
+}  /* end of _unur_pdf_student() */
+
+/*---------------------------------------------------------------------------*/
+
+double
+_unur_dpdf_student( double x, double *params, int n_params )
+{
+  return ( (-nu-1.)*x/nu * pow( (1. + x*x/nu), (-nu-3.)*0.5 ) / NORMCONSTANT );
+} /* end of _unur_dpdf_student() */
+
+/*---------------------------------------------------------------------------*/
+
+double
+_unur_normconstant_student( double *params, int n_params )
+{
+  return( sqrt(M_PI * nu) * exp(_unur_gammaln(0.5*nu) - _unur_gammaln(0.5*(nu+1.))) );
+} /* end of _unur_normconstant_student() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -110,10 +120,13 @@ unur_distr_student( double *params, int n_params )
   /* name of distribution */
   distr->name = distr_name;
                 
+  /* how to get special generators */
+  DISTR.init = NULL;    /* _unur_stdgen_student_init; */
+
   /* functions */
-  DISTR.pdf  = unur_pdf_student;  /* pointer to p.d.f.               */
-  DISTR.dpdf = unur_dpdf_student; /* pointer to derivative of p.d.f. */
-  /* DISTR.cdf = unur_cdf_student;   pointer to c.d.f.               */
+  DISTR.pdf  = _unur_pdf_student;  /* pointer to p.d.f.               */
+  DISTR.dpdf = _unur_dpdf_student; /* pointer to derivative of p.d.f. */
+  /* DISTR.cdf = _unur_cdf_student;   pointer to c.d.f.               */
 
   /* copy parameters */
   DISTR.params[0] = nu;
@@ -127,9 +140,12 @@ unur_distr_student( double *params, int n_params )
   /* number of arguments */
   DISTR.n_params = n_params;
 
+  /* log of normalization constant */
+  DISTR.NORMCONSTANT = _unur_normconstant_student(DISTR.params,DISTR.n_params);
+
   /* mode and area below p.d.f. */
-  /* DISTR.mode = unur_mode_exponential(DISTR.params,DISTR.n_params); */
-  /* DISTR.area = unur_area_exponential(DISTR.params,DISTR.n_params); */
+  DISTR.mode = 0.;
+  DISTR.area = 1.;
 
   /* domain */
   DISTR.domain[0] = -INFINITY;        /* left boundary  */
@@ -138,10 +154,9 @@ unur_distr_student( double *params, int n_params )
   /* indicate which parameters are set */
   distr->set = ( UNUR_DISTR_SET_PARAMS | 
 		 UNUR_DISTR_SET_DOMAIN |
-		 UNUR_DISTR_SET_STDDOMAIN );
-
-/*  		 UNUR_DISTR_SET_MODE   | */
-/*  		 UNUR_DISTR_SET_PDFAREA ); */
+		 UNUR_DISTR_SET_STDDOMAIN |
+  		 UNUR_DISTR_SET_MODE   |
+  		 UNUR_DISTR_SET_PDFAREA );
 
   /* return pointer to object */
   return distr;

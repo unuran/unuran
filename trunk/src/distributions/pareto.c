@@ -6,8 +6,6 @@
  *                                                                           *
  *   FILE:      pareto.c                                                     *
  *                                                                           *
- *   Normalization constants for pdf OMITTED!                                *
- *                                                                           *
  *   REFERENCES:                                                             *
  *                                                                           *
  *   [2] N.L. Johnson, S. Kotz and N. Balakrishnan                           *
@@ -20,8 +18,9 @@
  *                                                                           *
  *  Pareto distribution (of first kind) [2; ch.20, p.574]                    *
  *                                                                           *
- *  pdf:     f(x) = x^(-(a+1))                                               *
- *  domain:  x >= k                                                          *
+ *  pdf:       f(x) = x^(-(a+1))                                              *
+ *  domain:    x >= k                                                         *
+ *  constant:  a * k^a                                                       *
  *                                                                           *
  *  parameters:                                                              *
  *     0:  k > 0   ... location, shape                                       *
@@ -69,23 +68,40 @@
 /*---------------------------------------------------------------------------*/
 static const char distr_name[] = "pareto";
 
+/* parameters */
 #define k (params[0])
 #define a (params[1])
 /*---------------------------------------------------------------------------*/
 
 double
-unur_pdf_pareto( double x, double *params, int n_params )
+_unur_pdf_pareto( double x, double *params, int n_params )
 { 
-  return ( (x<k) ? 0. : pow(x,-(a+1.)) );
-} /* end of unur_pdf_pareto() */
+  return ( (x<k) ? 0. : pow(x,-(a+1.))/NORMCONSTANT );
+} /* end of _unur_pdf_pareto() */
 
 /*---------------------------------------------------------------------------*/
 
 double
-unur_dpdf_pareto( double x, double *params, int n_params )
+_unur_dpdf_pareto( double x, double *params, int n_params )
 { 
-  return ( (x<k) ? 0. : (1.-a) * pow(x,-(a+2.)) );
-} /* end of unur_dpdf_pareto() */
+  return ( (x<k) ? 0. : (1.-a) * pow(x,-(a+2.))/NORMCONSTANT );
+} /* end of _unur_dpdf_pareto() */
+
+/*---------------------------------------------------------------------------*/
+
+double
+_unur_cdf_pareto( double x, double *params, int n_params )
+{ 
+  return ( (x<k) ? 0. : (1. - pow(k/x,a)) );
+} /* end of _unur_cdf_pareto() */
+
+/*---------------------------------------------------------------------------*/
+
+double
+_unur_normconstant_pareto( double *params, int n_params )
+{ 
+  return ( a * pow(k,a) );
+} /* end of _unur_normconstant_pareto() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -111,10 +127,13 @@ unur_distr_pareto( double *params, int n_params )
   /* name of distribution */
   distr->name = distr_name;
                 
+  /* how to get special generators */
+  DISTR.init = NULL;            /* _unur_stdgen_pareto_init; */
+
   /* functions */
-  DISTR.pdf  = unur_pdf_pareto;  /* pointer to p.d.f.               */
-  DISTR.dpdf = unur_dpdf_pareto; /* pointer to derivative of p.d.f. */
-  /* DISTR.cdf = unur_cdf_pareto;  pointer to c.d.f.               */
+  DISTR.pdf  = _unur_pdf_pareto;  /* pointer to p.d.f.               */
+  DISTR.dpdf = _unur_dpdf_pareto; /* pointer to derivative of p.d.f. */
+  DISTR.cdf  = _unur_cdf_pareto;  /* pointer to c.d.f.               */
 
   /* copy parameters */
   DISTR.params[0] = k;
@@ -129,9 +148,12 @@ unur_distr_pareto( double *params, int n_params )
   /* number of arguments */
   DISTR.n_params = n_params;
 
+  /* log of normalization constant */
+  DISTR.NORMCONSTANT = _unur_normconstant_pareto(DISTR.params,DISTR.n_params);
+
   /* mode and area below p.d.f. */
-  /* DISTR.mode = unur_mode_pareto(DISTR.params,DISTR.n_params); */
-  /* DISTR.area = unur_area_pareto(DISTR.params,DISTR.n_params); */
+  DISTR.mode = DISTR.params[0];    /* k */
+  DISTR.area = 1.;
 
   /* domain */
   DISTR.domain[0] = DISTR.params[0]; /* left boundary  */
@@ -140,10 +162,9 @@ unur_distr_pareto( double *params, int n_params )
   /* indicate which parameters are set */
   distr->set = ( UNUR_DISTR_SET_PARAMS | 
 		 UNUR_DISTR_SET_DOMAIN |
-		 UNUR_DISTR_SET_STDDOMAIN );
-
-/*  		 UNUR_DISTR_SET_MODE   | */
-/*  		 UNUR_DISTR_SET_PDFAREA ); */
+		 UNUR_DISTR_SET_STDDOMAIN |
+  		 UNUR_DISTR_SET_MODE   |
+  		 UNUR_DISTR_SET_PDFAREA );
 
   /* return pointer to object */
   return distr;

@@ -6,8 +6,6 @@
  *                                                                           *
  *   FILE:      exponential.c                                                *
  *                                                                           *
- *   Normalization constants for pdf OMITTED!                                *
- *                                                                           *
  *   REFERENCES:                                                             *
  *                                                                           *
  *   [2] N.L. Johnson, S. Kotz and N. Balakrishnan                           *
@@ -20,8 +18,9 @@
  *                                                                           *
  *  Exponential distribution [2; ch.19, p.494]                               *
  *                                                                           *
- *  pdf:     f(x) = exp( - (x-theta)/sigma )                                 *
- *  domain:  x >= theta                                                      *
+ *  pdf:       f(x) = exp( - (x-theta)/sigma )                               *
+ *  domain:    x >= theta                                                    *
+ *  constant:  sigma                                                         *
  *                                                                           *
  *  parameters:                                                              *
  *     0:  sigma > 0  ... scale                                              *
@@ -82,12 +81,13 @@
 /*---------------------------------------------------------------------------*/
 static const char distr_name[] = "exponential";
 
+/* parameters */
 #define sigma (params[0])
 #define theta (params[1])
 /*---------------------------------------------------------------------------*/
 
 double
-unur_pdf_exponential( double x, double *params, int n_params )
+_unur_pdf_exponential( double x, double *params, int n_params )
 {
   switch (n_params) {
 
@@ -95,24 +95,24 @@ unur_pdf_exponential( double x, double *params, int n_params )
     /* standardize */
     x = (x-theta) / sigma;
   case 0:  /* standard */
-    return ( (x<0.) ? 0. : exp(-x) );
+    return ( (x<0.) ? 0. : exp(-x) / sigma );
 
   default:
     _unur_error(distr_name,UNUR_ERR_NPARAM,"");
     return 0.;
   }
 
-} /* end of unur_pdf_exponential() */
+} /* end of _unur_pdf_exponential() */
 
 /*---------------------------------------------------------------------------*/
   
 double
-unur_dpdf_exponential( double x, double *params, int n_params )
+_unur_dpdf_exponential( double x, double *params, int n_params )
 {
   switch (n_params) {
 
   case 2:  /* non standard */
-    return ( (x<theta) ? 0. : -exp( -(x-theta)/sigma ) / sigma);
+    return ( (x<theta) ? 0. : -exp( -(x-theta)/sigma ) / (sigma*sigma));
   case 0:  /* standard */
     return ( (x<0.) ? 0. : -exp(-x) );
 
@@ -121,12 +121,12 @@ unur_dpdf_exponential( double x, double *params, int n_params )
     return 0.;
   }
 
-} /* end of unur_dpdf_exponential() */
+} /* end of _unur_dpdf_exponential() */
 
 /*---------------------------------------------------------------------------*/
 
 double
-unur_cdf_exponential( double x, double *params, int n_params )
+_unur_cdf_exponential( double x, double *params, int n_params )
 {
   switch (n_params) {
 
@@ -141,45 +141,7 @@ unur_cdf_exponential( double x, double *params, int n_params )
     return 0.;
   }
 
-} /* end of unur_cdf_exponential() */
-
-/*---------------------------------------------------------------------------*/
-
-double
-unur_area_exponential( double *params, int n_params )
-{
-  switch (n_params) {
-
-  case 2:  /* non standard */
-    return sigma;
-  case 0:  /* standard */
-    return 1.;
-    
-  default:
-    _unur_error(distr_name,UNUR_ERR_NPARAM,"");
-    return 0.;
-  }
-
-} /* end of unur_area_exponential() */
-
-/*---------------------------------------------------------------------------*/
-
-double
-unur_mode_exponential( double *params, int n_params )
-{
-  switch (n_params) {
-
-  case 2:  /* non standard */
-    return theta;
-  case 0:  /* standard */
-    return 0.;
-    
-  default:
-    _unur_error(distr_name,UNUR_ERR_NPARAM,"");
-    return 0.;
-  }
-
-} /* end of unur_mode_exponential() */
+} /* end of _unur_cdf_exponential() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -218,9 +180,9 @@ unur_distr_exponential( double *params, int n_params )
   DISTR.init = _unur_stdgen_exponential_init;
 
   /* functions */
-  DISTR.pdf  = unur_pdf_exponential;  /* pointer to p.d.f.               */
-  DISTR.dpdf = unur_dpdf_exponential; /* pointer to derivative of p.d.f. */
-  DISTR.cdf  = unur_cdf_exponential;  /* pointer to c.d.f.               */
+  DISTR.pdf  = _unur_pdf_exponential;  /* pointer to p.d.f.               */
+  DISTR.dpdf = _unur_dpdf_exponential; /* pointer to derivative of p.d.f. */
+  DISTR.cdf  = _unur_cdf_exponential;  /* pointer to c.d.f.               */
 
   /* default parameters */
   DISTR.params[0] = 1.;        /* default for sigma */
@@ -246,8 +208,8 @@ unur_distr_exponential( double *params, int n_params )
   DISTR.n_params = n_params;
 
   /* mode and area below p.d.f. */
-  DISTR.mode = unur_mode_exponential(DISTR.params,DISTR.n_params);
-  DISTR.area = unur_area_exponential(DISTR.params,DISTR.n_params);
+  DISTR.mode = DISTR.params[1];   /* theta */
+  DISTR.area = 1.;
 
   /* domain */
   DISTR.domain[0] = DISTR.params[1]; /* left boundary  */

@@ -13,7 +13,7 @@ noinst_LIBRARIES = libdistr.a
 libdistr_a_SOURCES = \
  beta.c        beta_gen.c \
  cauchy.c \
- chi2.c \
+ chisquare.c \
  exponential.c exponential_gen.c \
  gamma.c       gamma_gen.c \
  laplace.c \
@@ -21,7 +21,7 @@ libdistr_a_SOURCES = \
  lomax.c \
  normal.c      normal_gen.c \
  pareto.c \
- powerexpon.c \
+ powerexponential.c \
  rayleigh.c \
  student.c \
  uniform.c

@@ -15,25 +15,30 @@
  *         required for every application of distributions library.          *
  *                                                                           *
  *   COMMENT:                                                                *
- *         Normalization constants OMITTED!                                  *
+ *         Normalization constants may be OMITTED!                           *
  *                                                                           *
  *   NAMING SCHEME:                                                          *
  *         (Not all of these function exist for every distribution!)         *
  *                                                                           *
- *      double unur_pdf_<distr>(double x, double *params, int n_params)      *
+ *      double _unur_pdf_<distr>(double x, double *params, int n_params)     *
  *          ... value of p.d.f. at x                                         *
- *      double unur_dpdf_<distr>(double x, double *params, int n_params)     *
+ *      double _unur_dpdf_<distr>(double x, double *params, int n_params)    *
  *          ... value of derivative of p.d.f. at x                           *
- *      double unur_cdf_<distr>(double x, double *params, int n_params)      *
+ *      double _unur_cdf_<distr>(double x, double *params, int n_params)     *
  *          ... value of c.d.f. at x                                         *
- *      double unur_mode_<distr>(double *params, int n_params)               *
+ *      double _unur_mode_<distr>(double *params, int n_params)              *
  *          ... mode of distribution                                         *
- *      double unur_area_<distr>(double *params, int n_params)               *
- *          ... area below p.d.f. (= normalization constant)                 *
+ *      double _unur_normconstant_<distr>(double *params, int n_params)      *
+ *          ... normalization constant of p.d.f.                             *
+ *      double _unur_lognormconstant_<distr>(double *params, int n_params)   *
+ *          ... log of normalization constant of p.d.f.                      *
  *                                                                           *
  *      double  x        ... argument of p.d.f.                              *
  *      double* params   ... parameter list for p.d.f.                       *
  *      int     n_params ... number of parameters (length of parameter array)*
+ *                                                                           *
+ *                                                                           *
+ *   In case of error INIFINITY is returned and _unur_errno is set.          *
  *                                                                           *
  *   REFERENCES:                                                             *
  *                                                                           *
@@ -106,11 +111,11 @@
 /*---------------------------------------------------------------------------*/
 /*  Beta distribution [3; ch.25, p.210]                                      */
 struct unur_distr *unur_distr_beta(double *params, int n_params);
-double unur_pdf_beta(double x, double *params, int n_params);
-double unur_dpdf_beta(double x, double *params, int n_params);
-double unur_cdf_beta(double x, double *params, int n_params);
-double unur_mode_beta(double *params, int n_params);
-double unur_area_beta(double *params, int n_params);
+double _unur_pdf_beta(double x, double *params, int n_params);
+double _unur_dpdf_beta(double x, double *params, int n_params);
+double _unur_cdf_beta(double x, double *params, int n_params);
+double _unur_mode_beta(double *params, int n_params);
+double _unur_lognormconstant_beta(double *params, int n_params);
 /* special generators */
 int _unur_stdgen_beta_init( struct unur_par *par, struct unur_gen *gen );
 /* initialize new generator                                                  */
@@ -127,19 +132,19 @@ double unur_stdgen_sample_beta_bc( struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 /*  Cauchy distribution [2; ch.16, p.299]                                    */
 struct unur_distr *unur_distr_cauchy(double *params, int n_params);
-double unur_pdf_cauchy(double x, double *params, int n_params);
-double unur_dpdf_cauchy(double x, double *params, int n_params);
-double unur_cdf_cauchy(double x, double *params, int n_params);
-double unur_mode_cauchy(double *params, int n_params);
-double unur_area_cauchy(double *params, int n_params);
-
+double _unur_pdf_cauchy(double x, double *params, int n_params);
+double _unur_dpdf_cauchy(double x, double *params, int n_params);
+double _unur_cdf_cauchy(double x, double *params, int n_params);
+double _unur_normconstant_cauchy(double *params, int n_params);
 
 /*---------------------------------------------------------------------------*/
 /*  Chisquare distribution [2; ch.18, p.416]                                 */
 struct unur_distr *unur_distr_chisquare(double *params, int n_params);
-double unur_pdf_chisquare(double x, double *params, int n_params);
-double unur_dpdf_chisquare(double x, double *params, int n_params);
-double unur_cdf_chisquare(double x, double *params, int n_params);
+double _unur_pdf_chisquare(double x, double *params, int n_params);
+double _unur_dpdf_chisquare(double x, double *params, int n_params);
+double _unur_cdf_chisquare(double x, double *params, int n_params);
+double _unur_mode_chisquare(double *params, int n_params);
+double _unur_lognormconstant_chisquare(double *params, int n_params);
 
 
 /*---------------------------------------------------------------------------*/
@@ -150,11 +155,9 @@ double unur_cdf_chisquare(double x, double *params, int n_params);
 /*---------------------------------------------------------------------------*/
 /*  Exponential distribution [2; ch.19, p.494]                               */
 struct unur_distr *unur_distr_exponential(double *params, int n_params);
-double unur_pdf_exponential(double x, double *params, int n_params);
-double unur_dpdf_exponential(double x, double *params, int n_params);
-double unur_cdf_exponential(double x, double *params, int n_params);
-double unur_area_exponential(double *params, int n_params);
-double unur_mode_exponential(double *params, int n_params);
+double _unur_pdf_exponential(double x, double *params, int n_params);
+double _unur_dpdf_exponential(double x, double *params, int n_params);
+double _unur_cdf_exponential(double x, double *params, int n_params);
 /* special generators */
 int _unur_stdgen_exponential_init( struct unur_par *par, struct unur_gen *gen );
 /* initialize new generator                                                  */
@@ -165,11 +168,11 @@ double unur_stdgen_sample_exponential_inv( struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 /*  Gamma distribution [2; ch.17, p.337]                                     */
 struct unur_distr *unur_distr_gamma(double *params, int n_params);
-double unur_pdf_gamma(double x, double *params, int n_params);
-double unur_dpdf_gamma(double x, double *params, int n_params);
-double unur_cdf_gamma(double x, double *params, int n_params);
-double unur_mode_gamma(double *params, int n_params);
-double unur_area_gamma(double *params, int n_params);
+double _unur_pdf_gamma(double x, double *params, int n_params);
+double _unur_dpdf_gamma(double x, double *params, int n_params);
+double _unur_cdf_gamma(double x, double *params, int n_params);
+double _unur_mode_gamma(double *params, int n_params);
+double _unur_lognormconstant_gamma(double *params, int n_params);
 /* special generators */
 int _unur_stdgen_gamma_init( struct unur_par *par, struct unur_gen *gen );
 /* initialize new generator                                                  */
@@ -185,8 +188,9 @@ double unur_stdgen_sample_gamma_gll( struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 /*  Laplace distribution [3; ch.24, p.164]                                   */
 struct unur_distr *unur_distr_laplace(double *params, int n_params);
-double unur_pdf_laplace(double x, double *params, int n_params);
-double unur_dpdf_laplace(double x, double *params, int n_params);
+double _unur_pdf_laplace(double x, double *params, int n_params);
+double _unur_dpdf_laplace(double x, double *params, int n_params);
+double _unur_cdf_laplace(double x, double *params, int n_params);
 
 
 /*---------------------------------------------------------------------------*/
@@ -197,25 +201,25 @@ double unur_dpdf_laplace(double x, double *params, int n_params);
 /*---------------------------------------------------------------------------*/
 /*  Lognormal distribution [2; ch.14, p.208]                                 */
 struct unur_distr *unur_distr_lognormal(double *params, int n_params);
-double unur_pdf_lognormal(double x, double *params, int n_params);
-double unur_dpdf_lognormal(double x, double *params, int n_params);
+double _unur_pdf_lognormal(double x, double *params, int n_params);
+double _unur_dpdf_lognormal(double x, double *params, int n_params);
 
 
 /*---------------------------------------------------------------------------*/
 /*  Lomax distribution (Pareto distr. of second kind) [2; ch.20, p.575]      */
 struct unur_distr *unur_distr_lomax(double *params, int n_params);
-double unur_pdf_lomax(double x, double *params, int n_params);
-double unur_dpdf_lomax(double x, double *params, int n_params);
+double _unur_pdf_lomax(double x, double *params, int n_params);
+double _unur_dpdf_lomax(double x, double *params, int n_params);
+double _unur_cdf_lomax(double x, double *params, int n_params);
 
 
 /*---------------------------------------------------------------------------*/
 /*  Normal distribution [2; ch.13, p.80]                                     */
 struct unur_distr *unur_distr_normal( double *params, int n_params );
-double unur_pdf_normal(double x, double *params, int n_params);
-double unur_dpdf_normal(double x, double *params, int n_params);
-double unur_cdf_normal(double x, double *params, int n_params);
-double unur_mode_normal(double *params, int n_params);
-double unur_area_normal(double *params, int n_params);
+double _unur_pdf_normal(double x, double *params, int n_params);
+double _unur_dpdf_normal(double x, double *params, int n_params);
+double _unur_cdf_normal(double x, double *params, int n_params);
+double _unur_lognormconstant_normal(double *params, int n_params);
 /* special generators */
 int _unur_stdgen_normal_init( struct unur_par *par, struct unur_gen *gen );
 /* initialize new generator                                                  */
@@ -240,8 +244,10 @@ double unur_stdgen_sample_normal_sum( struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 /*  Pareto distribution (of first kind) [2; ch.20, p.574]                    */
 struct unur_distr *unur_distr_pareto( double *params, int n_params );
-double unur_pdf_pareto(double x, double *params, int n_params);
-double unur_dpdf_pareto(double x, double *params, int n_params);
+double _unur_pdf_pareto(double x, double *params, int n_params);
+double _unur_dpdf_pareto(double x, double *params, int n_params);
+double _unur_cdf_pareto(double x, double *params, int n_params);
+double _unur_normconstant_pareto(double *params, int n_params);
 
 
 /*---------------------------------------------------------------------------*/
@@ -262,15 +268,19 @@ double unur_dpdf_pareto(double x, double *params, int n_params);
 /*---------------------------------------------------------------------------*/
 /*  Power-exponential (Subbotin) distribution [3; ch.24, p.195]              */
 struct unur_distr *unur_distr_powerexponential(double *params, int n_params);
-double unur_pdf_powerexponential(double x, double *params, int n_params);
-double unur_dpdf_powerexponential(double x, double *params, int n_params);
+double _unur_pdf_powerexponential(double x, double *params, int n_params);
+double _unur_dpdf_powerexponential(double x, double *params, int n_params);
+double _unur_lognormconstant_powerexponential(double *params, int n_params);
 
 
 /*---------------------------------------------------------------------------*/
 /*  Rayleigh distribution [2; ch.18, p.456]                                  */
 struct unur_distr *unur_distr_rayleigh(double *params, int n_params);
-double unur_pdf_rayleigh(double x, double *params, int n_params);
-double unur_dpdf_rayleigh(double x, double *params, int n_params);
+double _unur_pdf_rayleigh(double x, double *params, int n_params);
+double _unur_dpdf_rayleigh(double x, double *params, int n_params);
+double _unur_pdf_rayleigh(double x, double *params, int n_params);
+double _unur_mode_rayleigh(double *params, int n_params);
+double _unur_lognormconstant_rayleigh(double *params, int n_params);
 
 
 /*---------------------------------------------------------------------------*/
@@ -281,18 +291,17 @@ double unur_dpdf_rayleigh(double x, double *params, int n_params);
 /*---------------------------------------------------------------------------*/
 /* Student's t distribution                                                  */
 struct unur_distr *unur_distr_student(double *params, int n_params);
-double unur_pdf_student(double x, double *params, int n_params);
-double unur_dpdf_student(double x, double *params, int n_params);
+double _unur_pdf_student(double x, double *params, int n_params);
+double _unur_dpdf_student(double x, double *params, int n_params);
+double _unur_normconstant_student(double *params, int n_params);
 
 
 /*---------------------------------------------------------------------------*/
 /* Uniform distribution                                                      */
 struct unur_distr *unur_distr_uniform(double *params, int n_params);
-double unur_pdf_uniform(double x, double *params, int n_params);
-double unur_dpdf_uniform(double x, double *params, int n_params);
-double unur_cdf_uniform(double x, double *params, int n_params);
-double unur_mode_uniform(double *params, int n_params);
-double unur_area_uniform(double *params, int n_params);
+double _unur_pdf_uniform(double x, double *params, int n_params);
+double _unur_dpdf_uniform(double x, double *params, int n_params);
+double _unur_cdf_uniform(double x, double *params, int n_params);
 
 
 /*---------------------------------------------------------------------------*/

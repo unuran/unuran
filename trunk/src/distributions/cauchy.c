@@ -6,8 +6,6 @@
  *                                                                           *
  *   FILE:      cauchy.c                                                     *
  *                                                                           *
- *   Normalization constants for pdf OMITTED!                                *
- *                                                                           *
  *   REFERENCES:                                                             *
  *                                                                           *
  *   [2] N.L. Johnson, S. Kotz and N. Balakrishnan                           *
@@ -20,8 +18,9 @@
  *                                                                           *
  *  Cauchy distribution [2; ch.16, p.299]                                    *
  *                                                                           *
- *  pdf:     f(x) = 1./( 1 + ((x-theta)/lambda)^2 )                          *
- *  domain:  -infinity < x < infinity                                        *
+ *  pdf:       f(x) = 1./( 1 + ((x-theta)/lambda)^2 )                        *
+ *  domain:    -infinity < x < infinity                                      *
+ *  constant:  pi * lambda                                                   *
  *                                                                           *
  *  parameters:                                                              *
  *     0:  theta       ... location                                          *
@@ -70,55 +69,49 @@
 
 static const char distr_name[] = "cauchy";
 
+/* parameters */
 #define theta  (params[0])
 #define lambda (params[1])
+
 /*---------------------------------------------------------------------------*/
 
 double
-unur_pdf_cauchy(double x, double *params, int n_params)
+_unur_pdf_cauchy(double x, double *params, int n_params)
 { 
   /* standardize */
   x = (x - theta) / lambda;
 
-  return (1./(1+x*x));
+  return (1./((1+x*x)*NORMCONSTANT));
 
-} /* end of unur_pdf_cauchy() */
+} /* end of _unur_pdf_cauchy() */
 
 /*---------------------------------------------------------------------------*/
 
 double
-unur_dpdf_cauchy(double x, double *params, int n_params)
+_unur_dpdf_cauchy(double x, double *params, int n_params)
 {
   /* standardize */
   x = (x - theta) / lambda;
 
-  return ( -2.*x/(lambda*(1+x*x)*(1+x*x)) );
+  return ( -2.*x/(lambda*(1+x*x)*(1+x*x)*NORMCONSTANT) );
 
-} /* end of unur_dpdf_cauchy() */
+} /* end of _unur_dpdf_cauchy() */
 
 /*---------------------------------------------------------------------------*/
 
 double
-unur_cdf_cauchy(double x, double *params, int n_params)
+_unur_cdf_cauchy(double x, double *params, int n_params)
 {
   return ( 0.5 + atan( (x-theta)/lambda )/M_PI );
-} /* end of unur_cdf_cauchy() */
+} /* end of _unur_cdf_cauchy() */
 
 /*---------------------------------------------------------------------------*/
 
-double
-unur_mode_cauchy(double *params, int n_params)
-{
-  return theta;
-} /* end of unur_mode_cauchy() */
-
-/*---------------------------------------------------------------------------*/
-
-double
-unur_area_cauchy(double *params, int n_params)
+double 
+_unur_normconstant_cauchy(double *params, int n_params)
 {
   return (M_PI*lambda);
-} /* end of unur_area_cauchy() */
+} /* end of _unur_normconstant_cauchy() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -144,10 +137,13 @@ unur_distr_cauchy( double *params, int n_params )
   /* name of distribution */
   distr->name = distr_name;
                 
+  /* how to get special generators */
+  DISTR.init = NULL;           /* _unur_stdgen_cauchy_init */;
+
   /* functions */
-  DISTR.pdf  = unur_pdf_cauchy;   /* pointer to p.d.f.            */
-  DISTR.dpdf = unur_dpdf_cauchy;  /* pointer to derivative of p.d.f. */
-  DISTR.cdf  = unur_cdf_cauchy;   /* pointer to c.d.f.            */
+  DISTR.pdf  = _unur_pdf_cauchy;   /* pointer to p.d.f.            */
+  DISTR.dpdf = _unur_dpdf_cauchy;  /* pointer to derivative of p.d.f. */
+  DISTR.cdf  = _unur_cdf_cauchy;   /* pointer to c.d.f.            */
 
   /* copy parameters */
   DISTR.params[0] = params[0];    /* theta */
@@ -162,9 +158,12 @@ unur_distr_cauchy( double *params, int n_params )
   /* number of arguments */
   DISTR.n_params = n_params;
 
+  /* normalization constant */
+  DISTR.NORMCONSTANT = _unur_normconstant_cauchy(DISTR.params,DISTR.n_params);
+
   /* mode and area below p.d.f. */
-  DISTR.mode = unur_mode_cauchy(DISTR.params,DISTR.n_params);
-  DISTR.area = unur_area_cauchy(DISTR.params,DISTR.n_params);
+  DISTR.mode = DISTR.params[0];    /* theta */
+  DISTR.area = 1.;
 
   /* domain */
   DISTR.domain[0] = -INFINITY;   /* left boundary  */
@@ -173,8 +172,8 @@ unur_distr_cauchy( double *params, int n_params )
   /* indicate which parameters are set */
   distr->set = ( UNUR_DISTR_SET_PARAMS | 
 		 UNUR_DISTR_SET_DOMAIN |
-		 UNUR_DISTR_SET_MODE   |
 		 UNUR_DISTR_SET_STDDOMAIN |
+		 UNUR_DISTR_SET_MODE   |
 		 UNUR_DISTR_SET_PDFAREA );
                 
   /* return pointer to object */
@@ -187,3 +186,4 @@ unur_distr_cauchy( double *params, int n_params )
 #undef theta 
 #undef lambda
 /*---------------------------------------------------------------------------*/
+

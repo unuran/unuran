@@ -6,8 +6,6 @@
  *                                                                           *
  *   FILE:      beta.c                                                       *
  *                                                                           *
- *   Normalization constants for pdf OMITTED!                                *
- *                                                                           *
  *   REFERENCES:                                                             *
  *                                                                           *
  *   [3] N.L. Johnson, S. Kotz and N. Balakrishnan                           *
@@ -20,8 +18,9 @@
  *                                                                           *
  *  Beta distribution [3; ch.25, p.210]                                      *
  *                                                                           *
- *  pdf:     f(x) = (x-a)^(p-1) * (b-x)^(q-1)                                *
- *  domain:  a < x < b                                                       *
+ *  pdf:       f(x) = (x-a)^(p-1) * (b-x)^(q-1)                              *
+ *  domain:    a < x < b                                                     *
+ *  constant:  Beta(p,q) * (b-a)^(p+q-1)                                     *
  *                                                                           *
  *  parameters: 4                                                            *
  *     0:  p > 0    ... shape                                                *
@@ -33,8 +32,9 @@
  *                                                                           *
  *  standard form                                                            *
  *                                                                           *
- *  pdf:     f(x) = x^(p-1) * (1-x)^(q-1)                                    *
- *  domain:  0 < x < 1                                                       *
+ *  pdf:       f(x) = x^(p-1) * (1-x)^(q-1)                                  *
+ *  domain:    0 < x < 1                                                     *
+ *  constant:  Beta(p,q)                                                     *
  *                                                                           *
  *  parameters: 2                                                            *
  *     0:  p > 0    ... shape                                                *
@@ -86,14 +86,16 @@
 
 static const char distr_name[] = "beta";
 
+/* parameters */
 #define p (params[0])
 #define q (params[1])
 #define a (params[2])
 #define b (params[3])
+
 /*---------------------------------------------------------------------------*/
 
 double
-unur_pdf_beta(double x, double *params, int n_params)
+_unur_pdf_beta(double x, double *params, int n_params)
 { 
   switch (n_params) {
   case 4:  /* non standard */
@@ -103,26 +105,20 @@ unur_pdf_beta(double x, double *params, int n_params)
   case 2:  /* standard */
     if (x <= 0. || x >= 1.)
       return 0.;
-    
-    if (p == 1.)
-      return pow(1.-x,q-1.);
-    
-    if (q == 1.)
-      return pow(x,p-1.);
-    
-    return (pow(x,p-1.) * pow(1.-x,q-1.));
-    
+    else
+      return exp((p-1.)*log(x) + (q-1.)*log(1.-x) - LOGNORMCONSTANT);
+
   default:
     _unur_error(distr_name,UNUR_ERR_NPARAM,"");
-    return 0.;
+    return INFINITY;
   }
 
-} /* end of unur_pdf_beta() */
+} /* end of _unur_pdf_beta() */
 
 /*---------------------------------------------------------------------------*/
 
 double
-unur_dpdf_beta(double x, double *params, int n_params)
+_unur_dpdf_beta(double x, double *params, int n_params)
 { 
   register double factor = 1.;
 
@@ -135,26 +131,20 @@ unur_dpdf_beta(double x, double *params, int n_params)
   case 2:  /* standard */
     if (x <= 0. || x >= 1.)
       return 0.;
-    
-    if (p == 1.)
-      return ( -(q-1.) * pow(1.-x,q-2.) * factor );
+    else
+      return (exp((p-2.)*log(x) + (q-2.)*log(1.-x) - LOGNORMCONSTANT) * ( (p-1.)*(1.-x) - (q-1.)*x ) * factor );
 
-    if (q == 1.)
-      return ((p-1.) * pow(x,p-2.) * factor);
-
-    return (pow(x,p-2.) * pow(1.-x,q-2.) * ( (p-1.)*(1.-x) - (q-1.)*x ) * factor);
-    
   default:
     _unur_error(distr_name,UNUR_ERR_NPARAM,"");
-    return 0.;
+    return INFINITY;
   }
 
-} /* end of unur_dpdf_beta() */
+} /* end of _unur_dpdf_beta() */
 
 /*---------------------------------------------------------------------------*/
 
 double
-unur_cdf_beta(double x, double *params, int n_params)
+_unur_cdf_beta(double x, double *params, int n_params)
 {
   switch (n_params) {
   case 4:  /* non standard */
@@ -169,17 +159,17 @@ unur_cdf_beta(double x, double *params, int n_params)
 
   default:
     _unur_error(distr_name,UNUR_ERR_NPARAM,"");
-    return 0.;
+    return INFINITY;
   }
 
-} /* end of unur_cdf_beta() */
+} /* end of _unur_cdf_beta() */
 
 /*---------------------------------------------------------------------------*/
 
 double
-unur_mode_beta(double *params, int n_params)
+_unur_mode_beta(double *params, int n_params)
 { 
-  double mode = NOT_UNIMODAL;
+  double mode = INFINITY;
 
   if (p <= 1. && q > 1.)
     mode = 0.;              /* left limit of domain */
@@ -204,31 +194,31 @@ unur_mode_beta(double *params, int n_params)
 
   default:
     _unur_error(distr_name,UNUR_ERR_NPARAM,"");
-    return 0.;
+    return INFINITY;
   }
   
-} /* end of unur_mode_beta() */
+} /* end of _unur_mode_beta() */
 
 /*---------------------------------------------------------------------------*/
 
 double
-unur_area_beta(double *params, int n_params)
+_unur_lognormconstant_beta(double *params, int n_params)
 { 
   switch (n_params) {
   case 2:  /* standard */
-    /* Beta(p,q) */
-    return exp(_unur_gammaln(p) + _unur_gammaln(q) - _unur_gammaln(p+q));
+    /* log( Beta(p,q) ) */
+    return (_unur_gammaln(p) + _unur_gammaln(q) - _unur_gammaln(p+q));
 
   case 4:  /* non standard */
-    /* Beta(p,q) * (b-a)^(p+q-1) */
-    return exp(_unur_gammaln(p) + _unur_gammaln(q) - _unur_gammaln(p+q) + (b-a)*(p+q-1.) );
+    /* log( Beta(p,q) * (b-a)^(p+q-1) ) */
+    return (_unur_gammaln(p) + _unur_gammaln(q) - _unur_gammaln(p+q) + (b-a)*(p+q-1.) );
 
   default:
     _unur_error(distr_name,UNUR_ERR_NPARAM,"");
-    return 0.;
+    return INFINITY;
   }
 
-} /* end of unur_area_beta() */
+} /* end of _unur_lognormconstant_beta() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -258,9 +248,9 @@ unur_distr_beta( double *params, int n_params )
   DISTR.init = _unur_stdgen_beta_init;
 
   /* functions */
-  DISTR.pdf  = unur_pdf_beta;     /* pointer to p.d.f.               */
-  DISTR.dpdf = unur_dpdf_beta;    /* pointer to derivative of p.d.f. */
-  DISTR.cdf  = unur_cdf_beta;     /* pointer to c.d.f.               */
+  DISTR.pdf  = _unur_pdf_beta;    /* pointer to p.d.f.               */
+  DISTR.dpdf = _unur_dpdf_beta;   /* pointer to derivative of p.d.f. */
+  DISTR.cdf  = _unur_cdf_beta;    /* pointer to c.d.f.               */
 
   /* default parameters */
   DISTR.params[2] = 0.;           /* default for a */
@@ -292,9 +282,12 @@ unur_distr_beta( double *params, int n_params )
   /* number of arguments */
   DISTR.n_params = n_params;
 
+  /* log of normalization constant */
+  DISTR.LOGNORMCONSTANT = _unur_lognormconstant_beta(DISTR.params,DISTR.n_params);
+
   /* mode and area below p.d.f. */
-  DISTR.mode = unur_mode_beta(DISTR.params,DISTR.n_params);
-  DISTR.area = unur_area_beta(DISTR.params,DISTR.n_params);
+  DISTR.mode = _unur_mode_beta(DISTR.params,DISTR.n_params);
+  DISTR.area = 1.;
 
   /* domain */
   DISTR.domain[0] = DISTR.params[2]; /* left boundary  */
@@ -303,8 +296,8 @@ unur_distr_beta( double *params, int n_params )
   /* indicate which parameters are set */
   distr->set = ( UNUR_DISTR_SET_PARAMS | 
 		 UNUR_DISTR_SET_DOMAIN |
-		 UNUR_DISTR_SET_MODE   |
 		 UNUR_DISTR_SET_STDDOMAIN |
+		 UNUR_DISTR_SET_MODE   |
 		 UNUR_DISTR_SET_PDFAREA );
 
   /* return pointer to object */

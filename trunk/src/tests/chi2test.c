@@ -402,7 +402,7 @@ _unur_test_chi2test( double *prob,
 
   /* evaluate test statistics */
   df = (double)(classes-1);                    /* degrees of freedom */
-  pval = 1. - unur_cdf_chisquare(chi2,&df,1);  /* p-value            */
+  pval = 1. - _unur_cdf_chisquare(chi2,&df,1);  /* p-value            */
 
   /* print result (if requested) */
   if (verbose >= 1) {

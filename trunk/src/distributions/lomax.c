@@ -6,8 +6,6 @@
  *                                                                           *
  *   FILE:      lomax.c                                                      *
  *                                                                           *
- *   Normalization constants for pdf OMITTED!                                *
- *                                                                           *
  *   REFERENCES:                                                             *
  *                                                                           *
  *   [2] N.L. Johnson, S. Kotz and N. Balakrishnan                           *
@@ -20,8 +18,9 @@
  *                                                                           *
  *  Lomax distribution (Pareto distr. of second kind) [2; ch.20, p.575]      *
  *                                                                           *
- *  pdf:     f(x) = (x+C)^(-(a+1))                                           *
- *  domain:  x >= 0                                                          *
+ *  pdf:       f(x) = (x+C)^(-(a+1))                                         *
+ *  domain:    x >= 0                                                        *
+ *  constant:  a * C^a                                                       *
  *                                                                           *
  *  parameters:                                                              *
  *     0:  a > 0   ... shape                                                 *
@@ -69,23 +68,32 @@
 /*---------------------------------------------------------------------------*/
 static const char distr_name[] = "lomax";
 
+/* parameters */
 #define a (params[0])
 #define C (params[1])
 /*---------------------------------------------------------------------------*/
 
 double
-unur_pdf_lomax( double x, double *params, int n_params )
+_unur_pdf_lomax( double x, double *params, int n_params )
 { 
-  return ( (x<0.) ? 0. : pow(x+C,-(a+1.)) );
-} /* end of unur_pdf_lomax() */
+  return ( (x<0.) ? 0. : pow(x+C,-(a+1.)) / NORMCONSTANT );
+} /* end of _unur_pdf_lomax() */
 
 /*---------------------------------------------------------------------------*/
 
 double
-unur_dpdf_lomax( double x, double *params, int n_params )
+_unur_dpdf_lomax( double x, double *params, int n_params )
 { 
-  return ( (x<0.) ? 0. : -(a+1.) * pow(x+C,-(a+2.)) );
-} /* end of unur_dpdf_lomax() */
+  return ( (x<0.) ? 0. : -(a+1.) * pow(x+C,-(a+2.)) / NORMCONSTANT );
+} /* end of _unur_dpdf_lomax() */
+
+/*---------------------------------------------------------------------------*/
+
+double
+_unur_cdf_lomax( double x, double *params, int n_params )
+{ 
+  return ( (x<0.) ? 0. : 1. - pow((C/(x+C)),a) );
+} /* end of _unur_cdf_lomax() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -111,10 +119,13 @@ unur_distr_lomax( double *params, int n_params )
   /* name of distribution */
   distr->name = distr_name;
                 
+  /* how to get special generators */
+  DISTR.init = NULL;            /* _unur_stdgen_lomax_init; */
+
   /* functions */
-  DISTR.pdf  = unur_pdf_lomax;  /* pointer to p.d.f.               */
-  DISTR.dpdf = unur_dpdf_lomax; /* pointer to derivative of p.d.f. */
-  /* DISTR.cdf = unur_cdf_lomax; pointer to c.d.f.               */
+  DISTR.pdf  = _unur_pdf_lomax;  /* pointer to p.d.f.               */
+  DISTR.dpdf = _unur_dpdf_lomax; /* pointer to derivative of p.d.f. */
+  DISTR.cdf  = _unur_cdf_lomax;  /* pointer to c.d.f.               */
 
   /* default parameters */
   DISTR.params[1] = 1.;        /* default for C */
@@ -137,9 +148,12 @@ unur_distr_lomax( double *params, int n_params )
   /* number of arguments */
   DISTR.n_params = n_params;
 
+  /* normalization constant */
+  DISTR.NORMCONSTANT = a * pow(C,a);
+
   /* mode and area below p.d.f. */
-  /* DISTR.mode = unur_mode_lomax(DISTR.params,DISTR.n_params); */
-  /* DISTR.area = unur_area_lomax(DISTR.params,DISTR.n_params); */
+  DISTR.mode = 0.;
+  DISTR.area = 1.;
 
   /* domain */
   DISTR.domain[0] = 0;               /* left boundary  */
@@ -148,10 +162,9 @@ unur_distr_lomax( double *params, int n_params )
   /* indicate which parameters are set */
   distr->set = ( UNUR_DISTR_SET_PARAMS | 
 		 UNUR_DISTR_SET_DOMAIN |
-		 UNUR_DISTR_SET_STDDOMAIN );
-
-/*  		 UNUR_DISTR_SET_MODE   | */
-/*  		 UNUR_DISTR_SET_PDFAREA ); */
+		 UNUR_DISTR_SET_STDDOMAIN |
+  		 UNUR_DISTR_SET_MODE   | 
+  		 UNUR_DISTR_SET_PDFAREA );
 
   /* return pointer to object */
   return distr;
@@ -163,9 +176,3 @@ unur_distr_lomax( double *params, int n_params )
 #undef a
 #undef C
 /*---------------------------------------------------------------------------*/
-
-
-
-
-
-

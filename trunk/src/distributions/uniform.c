@@ -67,12 +67,13 @@
 /*---------------------------------------------------------------------------*/
 static const char distr_name[] = "uniform";
 
+/* parameters */
 #define a (params[0])
 #define b (params[1])
 /*---------------------------------------------------------------------------*/
 
 double
-unur_pdf_uniform( double x, double *params, int n_params )
+_unur_pdf_uniform( double x, double *params, int n_params )
 { 
   switch (n_params) {
   case 2:  /* non standard */
@@ -87,20 +88,20 @@ unur_pdf_uniform( double x, double *params, int n_params )
     return 0.;
   }
 
-} /* end of unur_pdf_uniform() */
+} /* end of _unur_pdf_uniform() */
 
 /*---------------------------------------------------------------------------*/
 
 double
-unur_dpdf_uniform( double x, double *params, int n_params )
+_unur_dpdf_uniform( double x, double *params, int n_params )
 { 
   return 0.;
-} /* end of unur_dpdf_uniform() */
+} /* end of _unur_dpdf_uniform() */
 
 /*---------------------------------------------------------------------------*/
 
 double
-unur_cdf_uniform( double x, double *params, int n_params )
+_unur_cdf_uniform( double x, double *params, int n_params )
 { 
   switch (n_params) {
   case 2:  /* non standard */
@@ -117,45 +118,7 @@ unur_cdf_uniform( double x, double *params, int n_params )
     return 0.;
   }
 
-} /* end of unur_cdf_uniform() */
-
-/*---------------------------------------------------------------------------*/
-
-double
-unur_mode_uniform( double *params, int n_params )
-{ 
-  switch (n_params) {
-  case 2:  /* non standard */
-    return (a+b)/2.;
-
-  case 0:  /* standard */
-    return 0.5;
-    
-  default:
-    _unur_error(distr_name,UNUR_ERR_NPARAM,"");
-    return 0.;
-  }
-
-} /* end of unur_mode_uniform() */
-
-/*---------------------------------------------------------------------------*/
-
-double
-unur_area_uniform( double *params, int n_params )
-{ 
-  switch (n_params) {
-  case 2:  /* non standard */
-    return b-a;
-
-  case 0:  /* standard */
-    return 1.;
-    
-  default:
-    _unur_error(distr_name,UNUR_ERR_NPARAM,"");
-    return 0.;
-  }
-
-} /* end of unur_area_uniform() */
+} /* end of _unur_cdf_uniform() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -182,10 +145,13 @@ unur_distr_uniform( double *params, int n_params )
   /* name of distribution */
   distr->name = distr_name;
 
+  /* how to get special generators */
+  DISTR.init = NULL;    /* _unur_stdgen_uniform_init; ???? */
+
   /* functions */
-  DISTR.pdf  = unur_pdf_uniform;  /* pointer to p.d.f.            */
-  DISTR.dpdf = unur_dpdf_uniform; /* pointer to derivative of p.d.f. */
-  DISTR.cdf  = unur_cdf_uniform;  /* pointer to c.d.f.            */
+  DISTR.pdf  = _unur_pdf_uniform;  /* pointer to p.d.f.            */
+  DISTR.dpdf = _unur_dpdf_uniform; /* pointer to derivative of p.d.f. */
+  DISTR.cdf  = _unur_cdf_uniform;  /* pointer to c.d.f.            */
 
   /* default parameters */
   DISTR.params[0] = 0.;         /* default for a */
@@ -209,8 +175,8 @@ unur_distr_uniform( double *params, int n_params )
   DISTR.n_params = n_params;
 
   /* mode and area below p.d.f. */
-  DISTR.mode = unur_mode_uniform(DISTR.params,DISTR.n_params);
-  DISTR.area = unur_area_uniform(DISTR.params,DISTR.n_params);
+  DISTR.mode = (DISTR.params[0]+DISTR.params[1]) / 2.;  /* (a+b)/2 */
+  DISTR.area = 1.;
 
   /* domain */
   DISTR.domain[0] = DISTR.params[0]; /* left boundary  */

@@ -6,8 +6,6 @@
  *                                                                           *
  *   FILE:      normal.c                                                     *
  *                                                                           *
- *   Normalization constants for pdf OMITTED!                                *
- *                                                                           *
  *   REFERENCES:                                                             *
  *                                                                           *
  *   [2] N.L. Johnson, S. Kotz and N. Balakrishnan                           *
@@ -20,8 +18,9 @@
  *                                                                           *
  *  Normal (Gaussian) distribution [2; ch.13, p.80]                          *
  *                                                                           *
- *  pdf:     f(x) = exp( -1/2 * ((x-mu)/sigma)^2 )                           *
- *  domain:  -infinity < x < infinity                                        *
+ *  pdf:       f(x) = exp( -1/2 * ((x-mu)/sigma)^2 )                         *
+ *  domain:    -infinity < x < infinity                                      *
+ *  constant:  sigma * sqrt(2 pi)                                            *
  *                                                                           *
  *  parameters:                                                              *
  *     0:  mu          ... location                                          *
@@ -31,8 +30,9 @@
  *                                                                           *
  *  standard form                                                            *
  *                                                                           *
- *  pdf:     f(x) = exp( - x^2 / 2)                                          *
- *  domain:  -infinity < x < infinity                                        *
+ *  pdf:       f(x) = exp( - x^2 / 2)                                        *
+ *  domain:    -infinity < x < infinity                                      *
+ *  constant:  sqrt(2 pi)                                                    *
  *                                                                           *
  *  parameters:                                                              *
  *     none                                                                  *
@@ -83,30 +83,31 @@
 
 static const char distr_name[] = "normal";
 
+/* parameters */
 #define mu    (params[0])
 #define sigma (params[1])
 /*---------------------------------------------------------------------------*/
 
 double
-unur_pdf_normal( double x, double *params, int n_params )
+_unur_pdf_normal( double x, double *params, int n_params )
 { 
   switch (n_params) {
   case 2:  /* non standard */
     /* standardize */
     x = (x - mu) / sigma;
   case 0:  /* standard */
-    return exp(-x*x/2.); 
+    return exp(-x*x/2. - LOGNORMCONSTANT); 
   default:
     _unur_error(distr_name,UNUR_ERR_NPARAM,"");
     return 0.;
   }
 
-} /* end of unur_pdf_normal() */
+} /* end of _unur_pdf_normal() */
 
 /*---------------------------------------------------------------------------*/
 
 double
-unur_dpdf_normal( double x, double *params, int n_params )
+_unur_dpdf_normal( double x, double *params, int n_params )
 {
   register double factor = 1.;
 
@@ -116,18 +117,18 @@ unur_dpdf_normal( double x, double *params, int n_params )
     factor = 1./sigma;
     x = (x - mu) / sigma;
   case 0:  /* standard */
-    return ( -x * exp(-x*x/2.) * factor );
+    return ( -x * exp(-x*x/2. - LOGNORMCONSTANT) * factor );
   default:
     _unur_error(distr_name,UNUR_ERR_NPARAM,"");
     return 0.;
   }
 
-} /* end of unur_dpdf_normal() */
+} /* end of _unur_dpdf_normal() */
 
 /*---------------------------------------------------------------------------*/
 
 double
-unur_cdf_normal( double x, double *params, int n_params ) 
+_unur_cdf_normal( double x, double *params, int n_params ) 
 {
   switch (n_params) {
   case 2:  /* non standard */
@@ -140,42 +141,25 @@ unur_cdf_normal( double x, double *params, int n_params )
     return 0.;
   }
 
-} /* end of unur_cdf_normal() */
+} /* end of _unur_cdf_normal() */
 
 /*---------------------------------------------------------------------------*/
 
 double
-unur_mode_normal( double *params, int n_params )
-{
-  switch (n_params) {
-  case 2:  /* non standard */
-    CHECK_NULL(params,RETURN_NULL);
-    return mu;
-  case 0:  /* standard */
-    return 0.;
-  default:
-    _unur_error(distr_name,UNUR_ERR_NPARAM,"");
-    return 0.;
-  }
-} /* end of unur_mode_normal() */
-
-/*---------------------------------------------------------------------------*/
-
-double
-unur_area_normal( double *params, int n_params )
+_unur_lognormconstant_normal( double *params, int n_params )
 {
   switch (n_params) {
 
   case 2:  /* non standard */
-    return M_SQRTPI * M_SQRT2 * sigma;
+    return( log(M_SQRTPI * M_SQRT2 * sigma) );
   case 0:  /* standard */
-    return M_SQRTPI * M_SQRT2;
+    return( log(M_SQRTPI * M_SQRT2) );
   default:
     _unur_error(distr_name,UNUR_ERR_NPARAM,"");
     return 0.;
   }
 
-} /* end of unur_area_normal() */
+} /* end of _unur_lognormconstant_normal() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -214,9 +198,9 @@ unur_distr_normal( double *params, int n_params )
   DISTR.init = _unur_stdgen_normal_init;
 
   /* functions */
-  DISTR.pdf  = unur_pdf_normal;   /* pointer to p.d.f.            */
-  DISTR.dpdf = unur_dpdf_normal;  /* pointer to derivative of p.d.f. */
-  DISTR.cdf  = unur_cdf_normal;   /* pointer to c.d.f.            */
+  DISTR.pdf  = _unur_pdf_normal;   /* pointer to p.d.f.            */
+  DISTR.dpdf = _unur_dpdf_normal;  /* pointer to derivative of p.d.f. */
+  DISTR.cdf  = _unur_cdf_normal;   /* pointer to c.d.f.            */
 
   /* default parameters */
   DISTR.params[0] = 0.;        /* default for mu */
@@ -241,9 +225,12 @@ unur_distr_normal( double *params, int n_params )
   /* number of arguments */
   DISTR.n_params = n_params;
 
+  /* log of normalization constant */
+  DISTR.LOGNORMCONSTANT = _unur_lognormconstant_normal(DISTR.params,DISTR.n_params);
+
   /* mode and area below p.d.f. */
-  DISTR.mode = unur_mode_normal(DISTR.params,DISTR.n_params);
-  DISTR.area = unur_area_normal(DISTR.params,DISTR.n_params);
+  DISTR.mode = DISTR.params[0];    /* mu */
+  DISTR.area = 1.;
 
   /* domain */
   DISTR.domain[0] = -INFINITY;   /* left boundary  */
@@ -252,8 +239,8 @@ unur_distr_normal( double *params, int n_params )
   /* indicate which parameters are set */
   distr->set = ( UNUR_DISTR_SET_PARAMS | 
 		 UNUR_DISTR_SET_DOMAIN |
-		 UNUR_DISTR_SET_MODE   |
 		 UNUR_DISTR_SET_STDDOMAIN |
+		 UNUR_DISTR_SET_MODE   |
 		 UNUR_DISTR_SET_PDFAREA );
                 
   /* return pointer to object */

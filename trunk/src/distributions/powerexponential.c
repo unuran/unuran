@@ -6,8 +6,6 @@
  *                                                                           *
  *   FILE:      powerexpon.c                                                 *
  *                                                                           *
- *   Normalization constants for pdf OMITTED!                                *
- *                                                                           *
  *   REFERENCES:                                                             *
  *                                                                           *
  *   [3] N.L. Johnson, S. Kotz and N. Balakrishnan                           *
@@ -20,8 +18,9 @@
  *                                                                           *
  *  Power-exponential (Subbotin) distribution [3; ch.24, p.195]              *
  *                                                                           *
- *  pdf:     exp(-1/2 * abs((x-theta)/phi) ^ (2/delta) )                     *
- *  domain:  -infinity < x < infinity                                        *
+ *  pdf:       exp(-1/2 * abs((x-theta)/phi) ^ (2/delta) )                   *
+ *  domain:    -infinity < x < infinity                                      *
+ *  constant:  2^(delta/2 + 1) * Gamma(delta/2 + 1) * phi                    *
  *                                                                           *
  *  parameters:                                                              *
  *     0:  delta > 0 ... shape                                               *
@@ -70,23 +69,24 @@
 /*---------------------------------------------------------------------------*/
 static const char distr_name[] = "powerexponential";
 
+/* parameters */
 #define delta (params[0])
 #define theta (params[1])
 #define phi   (params[2])
 /*---------------------------------------------------------------------------*/
 
 double
-unur_pdf_powerexponential( double x, double *params, int n_params )
+_unur_pdf_powerexponential( double x, double *params, int n_params )
 { 
   register double z;
   z = (x - theta) / phi;
-  return exp( - pow( abs(z), 2./delta ) * 0.5 );
-} /* end of unur_pdf_powerexponential() */
+  return exp( - pow( abs(z), 2./delta ) * 0.5 - LOGNORMCONSTANT);
+} /* end of _unur_pdf_powerexponential() */
 
 /*---------------------------------------------------------------------------*/
 
 double
-unur_dpdf_powerexponential( double x, double *params, int n_params )
+_unur_dpdf_powerexponential( double x, double *params, int n_params )
 {
   register double z, tmp;
 
@@ -95,11 +95,19 @@ unur_dpdf_powerexponential( double x, double *params, int n_params )
   if (z == 0.)    /* derivative is not defined, but ...        */
     return 0.;    /* a tangent parallel to x-axis is possible. */
 
-  tmp = exp( - pow( abs(z), 2./delta ) * 0.5 ) * pow(abs(z),2./delta-1.) / (delta*phi);
+  tmp = exp( - pow( abs(z), 2./delta ) * 0.5 - LOGNORMCONSTANT) * pow(abs(z),2./delta-1.) / (delta*phi);
 
   /* sign ! */
   return ( (z<0.) ? tmp : -tmp );
-} /* end of unur_dpdf_powerexponential() */
+} /* end of _unur_dpdf_powerexponential() */
+
+/*---------------------------------------------------------------------------*/
+
+double
+_unur_lognormconstant_powerexponential(double *params, int n_params)
+{ 
+  return ( M_LN2 * (delta/2. + 1.) + _unur_gammaln(delta/2. + 1.) + log(phi) );
+} /* end of _unur_lognormconstant_powerexponential() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -124,11 +132,14 @@ unur_distr_powerexponential( double *params, int n_params )
 
   /* name of distribution */
   distr->name = distr_name;
-                
+             
+  /* how to get special generators */
+  DISTR.init = NULL;             /* _unur_stdgen_powerexponential_init; ??? */
+   
   /* functions */
-  DISTR.pdf  = unur_pdf_powerexponential;  /* pointer to p.d.f.               */
-  DISTR.dpdf = unur_dpdf_powerexponential; /* pointer to derivative of p.d.f. */
-  /* DISTR.cdf = unur_cdf_powerexponential;    pointer to c.d.f.               */
+  DISTR.pdf  = _unur_pdf_powerexponential;  /* pointer to p.d.f.               */
+  DISTR.dpdf = _unur_dpdf_powerexponential; /* pointer to derivative of p.d.f. */
+  /* DISTR.cdf = _unur_cdf_powerexponential;    pointer to c.d.f.               */
 
   /* default parameters */
   DISTR.params[1] = 0.;        /* default for theta */
@@ -154,9 +165,12 @@ unur_distr_powerexponential( double *params, int n_params )
   /* number of arguments */
   DISTR.n_params = n_params;
 
+  /* log of normalization constant */
+  DISTR.LOGNORMCONSTANT = _unur_lognormconstant_powerexponential(DISTR.params,DISTR.n_params);
+
   /* mode and area below p.d.f. */
   /* DISTR.mode = unur_mode_powerexponential(DISTR.params,DISTR.n_params); */
-  /* DISTR.area = unur_area_powerexponential(DISTR.params,DISTR.n_params); */
+  DISTR.area = 1.;
 
   /* domain */
   DISTR.domain[0] = -INFINITY;       /* left boundary  */

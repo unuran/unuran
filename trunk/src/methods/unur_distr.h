@@ -4,14 +4,14 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   FILE: unur_distribution.h                                               *
+ *   FILE: unur_distr.h                                                      *
  *                                                                           *
  *   PURPOSE:                                                                *
  *         defines distribution object and                                   *
  *         declares function prototypes for manipulating such an object      *
  *                                                                           *
  *   USAGE:                                                                  *
- *         only be used in unur_methods.h and unur_distr.h                   *
+ *         only be used in unur_methods.h and unur_distribution.h            *
  *                                                                           *
  *****************************************************************************
      $Id$
@@ -50,7 +50,8 @@ struct unur_distr_cont {
   _UNUR_FUNCTION_CONT *dpdf;    /* pointer to derivative of p.d.f.           */
   _UNUR_FUNCTION_CONT *cdf;     /* pointer to c.d.f.                         */
 
-  double params[UNUR_DISTR_MAXPARAMS];  /* parameters of the p.d.f.          */
+  double params[UNUR_DISTR_MAXPARAMS + 1];  /* parameters of the p.d.f.      */
+  /* params[UNUR_DISTR_MAXPARAMS] is used to store normalization constants!! */
   int    n_params;              /* number of parameters of the pdf           */
 
   double mode;                  /* location of mode                          */

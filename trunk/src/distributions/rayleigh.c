@@ -6,8 +6,6 @@
  *                                                                           *
  *   FILE:      rayleigh.c                                                   *
  *                                                                           *
- *   Normalization constants for pdf OMITTED!                                *
- *                                                                           *
  *   REFERENCES:                                                             *
  *                                                                           *
  *   [2] N.L. Johnson, S. Kotz and N. Balakrishnan                           *
@@ -20,8 +18,9 @@
  *                                                                           *
  *  Rayleigh distribution [2; ch.18, p.456]                                  *
  *                                                                           *
- *  pdf:     f(x) = x * exp( -1/2 * (x/sigma)^2 )                            *
- *  domain:  0 <= x < infinity                                               *
+ *  pdf:       f(x) = x * exp( -1/2 * (x/sigma)^2 )                          *
+ *  domain:    0 <= x < infinity                                             *
+ *  constant:  sigma^2                                                       *
  *                                                                           *
  *  parameters:                                                              *
  *     0:  sigma > 0   ... scale                                             *
@@ -68,24 +67,50 @@
 /*---------------------------------------------------------------------------*/
 static const char distr_name[] =  "rayleigh";
 
+/* parameters */
 #define sigma (params[0])
+
 /*---------------------------------------------------------------------------*/
 
 double
-unur_pdf_rayleigh( double x, double *params, int n_params )
+_unur_pdf_rayleigh( double x, double *params, int n_params )
 { 
-  return ( (x<=0.) ? 0. : x * exp(-x*x/(2.*sigma*sigma) ) ); 
-} /* end of unur_pdf_rayleigh() */
+  return ( (x<=0.) ? 0. : x * exp(-x*x/(2.*sigma*sigma) - LOGNORMCONSTANT ) ); 
+} /* end of _unur_pdf_rayleigh() */
 
 /*---------------------------------------------------------------------------*/
 
 double
-unur_dpdf_rayleigh(double x, double *params, int n_params)
+_unur_dpdf_rayleigh( double x, double *params, int n_params )
 { 
   register double z;
   z = x*x/(sigma*sigma);
-  return ( (x<=0.) ? 0. : exp(-z/2) * (1-z) ); 
-} /* end of unur_dpdf_rayleigh() */
+  return ( (x<=0.) ? 0. : exp(-z/2 - LOGNORMCONSTANT) * (1-z) ); 
+} /* end of _unur_dpdf_rayleigh() */
+
+/*---------------------------------------------------------------------------*/
+
+double
+_unur_cdf_rayleigh( double x, double *params, int n_params )
+{ 
+  return ( (x<=0.) ? 0. : 1. - exp(-x*x/(2.*sigma*sigma)) );
+} /* end of _unur_cdf_rayleigh() */
+
+/*---------------------------------------------------------------------------*/
+
+double
+_unur_mode_rayleigh( double *params, int n_params )
+{ 
+  return sigma;
+} /* end of _unur_mode_rayleigh() */
+
+/*---------------------------------------------------------------------------*/
+
+double
+_unur_lognormconstant_rayleigh( double *params, int n_params )
+{ 
+  return (2. * log(sigma));
+} /* end of _unur_lognormconstant_rayleigh() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -111,11 +136,14 @@ unur_distr_rayleigh( double *params, int n_params )
 
   /* name of distribution */
   distr->name = distr_name;
+
+  /* how to get special generators */
+  DISTR.init = NULL;    /* _unur_stdgen_rayleigh_init; */
                 
   /* functions */
-  DISTR.pdf  = unur_pdf_rayleigh;  /* pointer to p.d.f.               */
-  DISTR.dpdf = unur_dpdf_rayleigh; /* pointer to derivative of p.d.f. */
-  /* DISTR.cdf  = unur_cdf_rayleigh; pointer to c.d.f.               */
+  DISTR.pdf  = _unur_pdf_rayleigh;  /* pointer to p.d.f.               */
+  DISTR.dpdf = _unur_dpdf_rayleigh; /* pointer to derivative of p.d.f. */
+  DISTR.cdf  = _unur_cdf_rayleigh;  /* pointer to c.d.f.               */
 
   /* copy parameters */
   DISTR.params[0] = sigma;
@@ -129,9 +157,12 @@ unur_distr_rayleigh( double *params, int n_params )
   /* number of arguments */
   DISTR.n_params = n_params;
 
+  /* log of normalization constant */
+  DISTR.LOGNORMCONSTANT = _unur_lognormconstant_rayleigh(DISTR.params,DISTR.n_params);
+
   /* mode and area below p.d.f. */
-  /* DISTR.mode = unur_mode_exponential(DISTR.params,DISTR.n_params); */
-  /* DISTR.area = unur_area_exponential(DISTR.params,DISTR.n_params); */
+  DISTR.mode = _unur_mode_rayleigh(DISTR.params,DISTR.n_params); 
+  DISTR.area = 1.;
 
   /* domain */
   DISTR.domain[0] = 0.;              /* left boundary  */
@@ -140,10 +171,9 @@ unur_distr_rayleigh( double *params, int n_params )
   /* indicate which parameters are set */
   distr->set = ( UNUR_DISTR_SET_PARAMS | 
 		 UNUR_DISTR_SET_DOMAIN |
-		 UNUR_DISTR_SET_STDDOMAIN );
-
-  /*  		 UNUR_DISTR_SET_MODE   | */
-  /*  		 UNUR_DISTR_SET_PDFAREA ); */ 
+		 UNUR_DISTR_SET_STDDOMAIN |
+		 UNUR_DISTR_SET_MODE   |
+		 UNUR_DISTR_SET_PDFAREA );
 
   /* return pointer to object */
   return distr; 

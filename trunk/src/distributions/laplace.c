@@ -6,8 +6,6 @@
  *                                                                           *
  *   FILE:      laplace.c                                                    *
  *                                                                           *
- *   Normalization constants for pdf OMITTED!                                *
- *                                                                           *
  *   REFERENCES:                                                             *
  *                                                                           *
  *   [3] N.L. Johnson, S. Kotz and N. Balakrishnan                           *
@@ -20,8 +18,9 @@
  *                                                                           *
  *  Laplace distribution [3; ch.24, p.164]                                   *
  *                                                                           *
- *  pdf:     f(x) = exp(- abs(x-theta) / phi )                               *
- *  domain:  -infinity < x < infinity                                        *
+ *  pdf:       f(x) = exp(- abs(x-theta) / phi )                             *
+ *  domain:    -infinity < x < infinity                                      *
+ *  constant:  2 * phi                                                       *
  *                                                                           *
  *  parameters:                                                              *
  *     0:  theta     ... location                                            *
@@ -69,22 +68,23 @@
 /*---------------------------------------------------------------------------*/
 static const char distr_name[] = "laplace";
 
+/* parameters */
 #define theta (params[0])
 #define phi   (params[1])
 /*---------------------------------------------------------------------------*/
 
 double
-unur_pdf_laplace( double x, double *params, int n_params )
+_unur_pdf_laplace( double x, double *params, int n_params )
 { 
   register double z;
   z = (x>theta) ? (x-theta)/phi : (theta-x)/phi;
-  return exp(-z); 
-} /* end of unur_pdf_laplace() */
+  return exp(-z) / (2.*phi); 
+} /* end of _unur_pdf_laplace() */
 
 /*---------------------------------------------------------------------------*/
 
 double
-unur_dpdf_laplace( double x, double *params, int n_params )
+_unur_dpdf_laplace( double x, double *params, int n_params )
 { 
   register double z;
   z = (x>theta) ? (x-theta)/phi : (theta-x)/phi;
@@ -92,8 +92,18 @@ unur_dpdf_laplace( double x, double *params, int n_params )
   if (z == 0.)   /* derivative is not defined, but ...                      */
     return 0.;   /* a tangent parallel to x-axis is possible.               */
 
-  return ( (x>theta) ? -exp(-z)/phi : exp(-z)/phi );
-} /* end of unur_dpdf_laplace() */
+  return ( ((x>theta) ? -exp(-z)/phi : exp(-z)/phi) / (2.*phi) );
+} /* end of unur_cpdf_laplace() */
+
+/*---------------------------------------------------------------------------*/
+
+double
+_unur_cdf_laplace( double x, double *params, int n_params )
+{ 
+  register double z;
+  z = (x-theta)/phi;
+  return ( (x>theta) ? 1.-0.5 * exp(-z) : 0.5*exp(z) );
+} /* end of _unur_cdf_laplace() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -120,10 +130,13 @@ unur_distr_laplace( double *params, int n_params )
   /* name of distribution */
   distr->name = distr_name;
                 
+  /* how to get special generators */
+  DISTR.init = NULL;     /* _unur_stdgen_beta_init; */
+
   /* functions */
-  DISTR.pdf  = unur_pdf_laplace;  /* pointer to p.d.f.               */
-  DISTR.dpdf = unur_dpdf_laplace; /* pointer to derivative of p.d.f. */
-  /* DISTR.cdf  = unur_cdf_laplace;  * pointer to c.d.f.               */
+  DISTR.pdf  = _unur_pdf_laplace;  /* pointer to p.d.f.               */
+  DISTR.dpdf = _unur_dpdf_laplace; /* pointer to derivative of p.d.f. */
+  DISTR.cdf  = _unur_cdf_laplace;  /* pointer to c.d.f.               */
 
   /* default parameters */
   DISTR.params[0] = 0.;        /* default for theta */
@@ -149,8 +162,8 @@ unur_distr_laplace( double *params, int n_params )
   DISTR.n_params = n_params;
 
   /* mode and area below p.d.f. */
-  /* DISTR.mode = unur_mode_laplace(DISTR.params,DISTR.n_params); */
-  /* DISTR.area = unur_area_laplace(DISTR.params,DISTR.n_params); */
+  DISTR.mode = 0.;
+  DISTR.area = 1.;
 
   /* domain */
   DISTR.domain[0] = -INFINITY;       /* left boundary  */
@@ -159,10 +172,9 @@ unur_distr_laplace( double *params, int n_params )
   /* indicate which parameters are set */
   distr->set = ( UNUR_DISTR_SET_PARAMS | 
 		 UNUR_DISTR_SET_DOMAIN |
-		 UNUR_DISTR_SET_STDDOMAIN );
-
-/*  		 UNUR_DISTR_SET_MODE   | */
-/*  		 UNUR_DISTR_SET_PDFAREA ); */
+		 UNUR_DISTR_SET_STDDOMAIN |
+ 		 UNUR_DISTR_SET_MODE   |
+  		 UNUR_DISTR_SET_PDFAREA );
 
   /* return pointer to object */
   return distr;

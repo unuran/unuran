@@ -6,8 +6,6 @@
  *                                                                           *
  *   FILE:      gamma.c                                                      *
  *                                                                           *
- *   Normalization constants for pdf OMITTED!                                *
- *                                                                           *
  *   REFERENCES:                                                             *
  *                                                                           *
  *   [2] N.L. Johnson, S. Kotz and N. Balakrishnan                           *
@@ -20,8 +18,9 @@
  *                                                                           *  
  *  Gamma distribution [2; ch.17, p.337]                                     *
  *                                                                           *
- *  pdf:     f(x) = (x-gamma)^(alpha-1) * exp( -(x-gamma)/beta )             *
- *  domain:  x > gamma                                                       *
+ *  pdf:       f(x) = (x-gamma)^(alpha-1) * exp( -(x-gamma)/beta )           *
+ *  domain:    x > gamma                                                     *
+ *  constant:  beta^alpha * Gamma(alpha)                                     *
  *                                                                           *
  *  parameters:                                                              *
  *     0:  alpha > 0  ... shape                                              *
@@ -32,8 +31,9 @@
  *                                                                           *
  *  standard form                                                            *
  *                                                                           *
- *  pdf:     f(x) = x^(alpha-1) * exp(-x)                                    *
- *  domain:  x > 0                                                           *
+ *  pdf:       f(x) = x^(alpha-1) * exp(-x)                                  *
+ *  domain:    x > 0                                                         *
+ *  constant:  Gamma(alpha)                                                  *
  *                                                                           *
  *  parameters:                                                              *
  *     0:  alpha > 0  ... shape                                              *
@@ -84,13 +84,14 @@
 
 static const char distr_name[] = "gamma";
 
+/* parameters */
 #define alpha (params[0])
 #define beta  (params[1])
 #define gamma (params[2])
 /*---------------------------------------------------------------------------*/
 
 double
-unur_pdf_gamma( double x, double *params, int n_params )
+_unur_pdf_gamma( double x, double *params, int n_params )
 { 
   switch (n_params) {
   case 3:  /* non standard */
@@ -101,7 +102,7 @@ unur_pdf_gamma( double x, double *params, int n_params )
       return exp( -x );
     if (x <= 0.)
       return 0.;
-    return exp( (alpha-1.)*log(x) - x );
+    return exp( (alpha-1.)*log(x) - x - LOGNORMCONSTANT);
     /*    return ( pow(x,alpha-1.) * exp(-x) ); */
 
   default:
@@ -109,12 +110,12 @@ unur_pdf_gamma( double x, double *params, int n_params )
     return 0.;
   }
 
-} /* end of unur_pdf_gamma() */
+} /* end of _unur_pdf_gamma() */
 
 /*---------------------------------------------------------------------------*/
 
 double
-unur_dpdf_gamma( double x, double *params, int n_params )
+_unur_dpdf_gamma( double x, double *params, int n_params )
 {
   register double factor = 1.;
 
@@ -128,19 +129,19 @@ unur_dpdf_gamma( double x, double *params, int n_params )
       return 0.;
     if (alpha == 1.)
       return( -exp(-x) * factor );
-    return ( pow(x,alpha-2.) * exp(-x) *  ((alpha-1.) -x) * factor ); 
+    return ( pow(x,alpha-2.) * exp(-x - LOGNORMCONSTANT) *  ((alpha-1.) -x) * factor ); 
 
   default:
     _unur_error(distr_name,UNUR_ERR_NPARAM,"");
     return 0.;
   }
 
-} /* end of unur_dpdf_gamma() */
+} /* end of _unur_dpdf_gamma() */
 
 /*---------------------------------------------------------------------------*/
 
 double
-unur_cdf_gamma( double x, double *params, int n_params )
+_unur_cdf_gamma( double x, double *params, int n_params )
 { 
   switch (n_params) {
   case 3:  /* non standard */
@@ -156,12 +157,12 @@ unur_cdf_gamma( double x, double *params, int n_params )
     return 0.;
   }
 
-} /* end of unur_cdf_gamma() */
+} /* end of _unur_cdf_gamma() */
 
 /*---------------------------------------------------------------------------*/
 
 double
-unur_mode_gamma( double *params, int n_params )
+_unur_mode_gamma( double *params, int n_params )
 {
   register double mode;
 
@@ -178,25 +179,25 @@ unur_mode_gamma( double *params, int n_params )
     return 0.;
   }
 
-} /* end of unur_mode_gamma() */
+} /* end of _unur_mode_gamma() */
 
 /*---------------------------------------------------------------------------*/
 
 double
-unur_area_gamma( double *params, int n_params )
+_unur_lognormconstant_gamma( double *params, int n_params )
 {
   switch (n_params) {
   case 3:  /* non standard */
-    return exp( _unur_gammaln(alpha) + beta*alpha );
+    return ( _unur_gammaln(alpha) + log(beta)*alpha );
   case 1:  /* standard */
-    return exp(_unur_gammaln(alpha));
+    return (_unur_gammaln(alpha));
 
   default:
     _unur_error(distr_name,UNUR_ERR_NPARAM,"");
     return 0.;
   }
 
-} /* end of unur_area_gamma() */
+} /* end of _unur_lognormconstant_gamma() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -234,9 +235,9 @@ unur_distr_gamma( double *params, int n_params )
   DISTR.init = _unur_stdgen_gamma_init;
 
   /* functions */
-  DISTR.pdf  = unur_pdf_gamma;    /* pointer to p.d.f.            */
-  DISTR.dpdf = unur_dpdf_gamma;   /* pointer to derivative of p.d.f. */
-  DISTR.cdf  = unur_cdf_gamma;    /* pointer to c.d.f.            */
+  DISTR.pdf  = _unur_pdf_gamma;    /* pointer to p.d.f.            */
+  DISTR.dpdf = _unur_dpdf_gamma;   /* pointer to derivative of p.d.f. */
+  DISTR.cdf  = _unur_cdf_gamma;    /* pointer to c.d.f.            */
 
   /* default parameters */
   DISTR.params[1] = 1.;         /* default for beta  */
@@ -266,9 +267,12 @@ unur_distr_gamma( double *params, int n_params )
   /* number of arguments */
   DISTR.n_params = n_params;
 
+  /* log of normalization constant */
+  DISTR.LOGNORMCONSTANT = _unur_lognormconstant_gamma(DISTR.params,DISTR.n_params);
+
   /* mode and area below p.d.f. */
-  DISTR.mode = unur_mode_gamma(DISTR.params,DISTR.n_params);
-  DISTR.area = unur_area_gamma(DISTR.params,DISTR.n_params);
+  DISTR.mode = _unur_mode_gamma(DISTR.params,DISTR.n_params);
+  DISTR.area = 1.;
 
   /* domain */
   DISTR.domain[0] = DISTR.params[2];  /* left boundary  */

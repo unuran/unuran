@@ -6,8 +6,6 @@
  *                                                                           *
  *   FILE:      lognormal.c                                                  *
  *                                                                           *
- *   Normalization constants for pdf OMITTED!                                *
- *                                                                           *
  *   REFERENCES:                                                             *
  *                                                                           *
  *   [2] N.L. Johnson, S. Kotz and N. Balakrishnan                           *
@@ -20,8 +18,9 @@
  *                                                                           *
  *  Lognormal distribution [2; ch.14, p.207]                                 *
  *                                                                           *
- *  pdf:     f(x) = 1/(x-theta) * exp( -(log(x-theta)-zeta)^2/(2 sigma^2) )  *
- *  domain:  x > theta                                                       *
+ *  pdf:       f(x) = 1/(x-theta) * exp( -(log(x-theta)-zeta)^2/(2 sigma^2) )*
+ *  domain:    x > theta                                                     *
+ *  constant:  sigma * sqrt(2*pi)                                            *
  *                                                                           *
  *  parameters:                                                              *
  *     0:  zeta                                                              *
@@ -70,13 +69,14 @@
 /*---------------------------------------------------------------------------*/
 static const char distr_name[] = "lognormal";
 
+/* parameters */
 #define zeta  (params[0])
 #define sigma (params[1])
 #define theta (params[2])
 /*---------------------------------------------------------------------------*/
 
 double
-unur_pdf_lognormal( double x, double *params, int n_params )
+_unur_pdf_lognormal( double x, double *params, int n_params )
 { 
   register double z;
 
@@ -84,14 +84,14 @@ unur_pdf_lognormal( double x, double *params, int n_params )
     return 0.;
 
   z = log(x-theta)-zeta;
-  return ( 1./(x-theta) * exp( -z*z/(2.*sigma*sigma) ) );
+  return ( 1./(x-theta) * exp( -z*z/(2.*sigma*sigma) ) / NORMCONSTANT );
 
-} /* end of unur_pdf_lognormal() */
+} /* end of _unur_pdf_lognormal() */
 
 /*---------------------------------------------------------------------------*/
 
 double
-unur_dpdf_lognormal( double x, double *params, int n_params )
+_unur_dpdf_lognormal( double x, double *params, int n_params )
 { 
   register double z, sigmasqu;
 
@@ -100,8 +100,9 @@ unur_dpdf_lognormal( double x, double *params, int n_params )
 
   z = log(x-theta)-zeta;
   sigmasqu = sigma * sigma;
-  return ( 1/((x-theta)*(x-theta)) * exp( -z*z/(2*sigmasqu) ) * (1.+z/sigmasqu) );
-} /* end of unur_dpdf_lognormal() */
+
+  return ( 1/((x-theta)*(x-theta)) * exp( -z*z/(2*sigmasqu) ) * (1.+z/sigmasqu) / NORMCONSTANT );
+} /* end of _unur_dpdf_lognormal() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -126,11 +127,14 @@ unur_distr_lognormal( double *params, int n_params )
 
   /* name of distribution */
   distr->name = distr_name;
-                
+
+  /* how to get special generators */
+  DISTR.init = NULL;         /* _unur_stdgen_lognormal_init; */
+
   /* functions */
-  DISTR.pdf  = unur_pdf_lognormal;  /* pointer to p.d.f.               */
-  DISTR.dpdf = unur_dpdf_lognormal; /* pointer to derivative of p.d.f. */
-  /* DISTR.cdf = unur_cdf_lognormal; pointer to c.d.f.               */
+  DISTR.pdf  = _unur_pdf_lognormal;  /* pointer to p.d.f.               */
+  DISTR.dpdf = _unur_dpdf_lognormal; /* pointer to derivative of p.d.f. */
+  /* DISTR.cdf = _unur_cdf_lognormal; pointer to c.d.f.               */
 
   /* default parameters */
   DISTR.params[2] = 0.;        /* default for theta */
@@ -154,9 +158,12 @@ unur_distr_lognormal( double *params, int n_params )
   /* number of arguments */
   DISTR.n_params = n_params;
 
+  /* normalization constant */
+  DISTR.NORMCONSTANT = sigma * sqrt(2.*M_PI);
+
   /* mode and area below p.d.f. */
   /* DISTR.mode = unur_mode_lognormal(DISTR.params,DISTR.n_params); */
-  /* DISTR.area = unur_area_lognormal(DISTR.params,DISTR.n_params); */
+  DISTR.area = 1.;
 
   /* domain */
   DISTR.domain[0] = DISTR.params[2]; /* left boundary  */
@@ -165,10 +172,9 @@ unur_distr_lognormal( double *params, int n_params )
   /* indicate which parameters are set */
   distr->set = ( UNUR_DISTR_SET_PARAMS | 
 		 UNUR_DISTR_SET_DOMAIN |
-		 UNUR_DISTR_SET_STDDOMAIN );
-
+		 UNUR_DISTR_SET_STDDOMAIN |
 /*  		 UNUR_DISTR_SET_MODE   | */
-/*  		 UNUR_DISTR_SET_PDFAREA ); */
+  		 UNUR_DISTR_SET_PDFAREA );
 
   /* return pointer to object */
   return distr;
@@ -181,6 +187,3 @@ unur_distr_lognormal( double *params, int n_params )
 #undef sigma
 #undef theta
 /*---------------------------------------------------------------------------*/
-
-
-

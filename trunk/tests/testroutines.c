@@ -842,7 +842,8 @@ int print_verifyhat_result( FILE *LOG, UNUR_GEN *gen, int failed, char todo )
 /*---------------------------------------------------------------------------*/
 /* print result of timings */
 
-void print_timing_results( FILE *LOG, int line, UNUR_DISTR *distr, double *timing_result, int n_results )
+void print_timing_results( FILE *LOG, int line, UNUR_DISTR *distr,
+			   double *timing_setup, double *timing_marginal, int n_results )
 {
   const char *distr_name;
   static const char *last_distr_name = "";
@@ -862,11 +863,11 @@ void print_timing_results( FILE *LOG, int line, UNUR_DISTR *distr, double *timin
   
   /* print timings into log file */
   for (i=0; i<n_results; i++)
-    if (timing_result[i] < 0.)
+    if (timing_marginal[i] < 0.)
       /* no test */
-      fprintf(LOG, "    .  ");
+      fprintf(LOG, "      /        ");
     else
-      fprintf(LOG, "%7.2f", timing_result[i]);
+      fprintf(LOG, "%5.0f /%7.2f ", timing_setup[i], timing_marginal[i]);
 
   /* print name of distribution into log file */
   fprintf(LOG,"\t");

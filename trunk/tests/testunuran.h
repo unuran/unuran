@@ -137,6 +137,7 @@ int run_validate_verifyhat( FILE *LOG, int line, UNUR_GEN *gen, char todo );
 int print_verifyhat_result( FILE *LOG, UNUR_GEN *gen, int failed, char todo );
 
 /* print result of timings */
-void print_timing_results( FILE *LOG, int line, UNUR_DISTR *distr, double *timing_result, int n_results );
+void print_timing_results( FILE *LOG, int line, UNUR_DISTR *distr,
+			   double *timing_setup, double *timing_marginal, int n_results );
 
 /*---------------------------------------------------------------------------*/

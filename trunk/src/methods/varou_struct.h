@@ -53,22 +53,25 @@ struct unur_varou_cone {
 /* Parameter object                                                          */
 
 struct unur_varou_par { 
-  int    dim;               /* dimension of distribution                     */
+  int    dim;            /* dimension of distribution */
+  long   max_cones;      /* maximum number of cones created */
 };
 
 /*---------------------------------------------------------------------------*/
 /* The generator object                                                      */
 
 struct unur_varou_gen { 
-  int    dim;               /* dimension of distribution */
-  double *umin, *umax;      /* boundary rectangle u-coordinates */
-  double vmax;              /* boundary rectangle v-coordinate  */
-  const double *center;     /* center of distribution */
-  int aux_dim;              /* parameter used my auxiliary functions */
-  long n_vertex;            /* number of verteces on upper half-unit-sphere */
-  double **vertex_list;     /* list of verteces on upper half-unit-sphere */
-  long n_cone;              /* number of constructed cones */
+  int    dim;            /* dimension of distribution */
+  double *umin, *umax;   /* boundary rectangle u-coordinates */
+  double vmax;           /* boundary rectangle v-coordinate  */
+  const double *center;  /* center of distribution */
+  int   aux_dim;         /* parameter used my auxiliary functions */
+  long   n_vertex;       /* number of verteces on upper half-unit-sphere */
+  double **vertex_list;  /* list of verteces on upper half-unit-sphere */
+  long   n_cone;         /* number of constructed cones */
   struct unur_varou_cone **cone_list; /* list of constructed cones */
+  long   max_verteces;   /* maximum number of verteces created */
+  long   max_cones;      /* maximum number of cones created */
 };
 
 /*---------------------------------------------------------------------------*/

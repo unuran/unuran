@@ -226,6 +226,11 @@ _unur_print_method( struct unur_par *par )
     printf("METHOD:\t\tvector matrix transformation (VMT)\n");
     break;
 
+  case UNUR_METH_VNROU:
+    COOKIE_CHECK(par,CK_VNROU_PAR,UNUR_ERR_COOKIE);
+    printf("METHOD:\t\tvector naive ratio-of-uniforms (VNROU)\n");
+    break;
+
     /* misc */
   case UNUR_METH_UNIF:
     COOKIE_CHECK(par,CK_UNIF_PAR,UNUR_ERR_COOKIE);

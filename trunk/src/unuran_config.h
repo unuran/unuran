@@ -197,6 +197,15 @@
 /*     (see http://www.gnu.org/software/gsl/)                                */
 /*                                                                           */
 /*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/* IMPORTANT!                                                                */
+/*   The generic interface has been changed and extended!                    */
+/*   It is now the recommended interface to uniform random number generators */
+/*   (URNG). For this reason there are calls to create and handle objects    */
+/*   that contain all necessary data about a URNG (see ... ).                */
+/*                                                                           */
+/*   The structure cannot be used directly any more.                         */
+/*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*/
 /* Define the possible sources for uniform (pseudo-) random numbers.         */
@@ -227,11 +236,11 @@
 /* Set a default generator type for the UNUR_URNG_GENERIC interface.         */
 /* (Define one of the following)                                             */
 
-/* IMPORTANT:                                                                */
-/* The corresponding library must be installed and linked when a particular  */
-/* default is chosen (with the exception of type UNUR_URNG_FVOID which       */
-/* included in UNURAN).                                                      */
-/* If you have none of these libraries use UNUR_URNG_FVOID.                  */
+/* IMPORTANT!                                                                */
+/*   The corresponding library must be installed and linked when a           */
+/*   particular default is chosen (with the exception of type                */
+/*   UNUR_URNG_FVOID which included in UNURAN).                              */
+/*   If you have none of these libraries use UNUR_URNG_FVOID.                */
 
 #define UNUR_URNG_DEFAULT_TYPE UNUR_URNG_FVOID
 /* #define UNUR_URNG_DEFAULT_TYPE UNUR_URNG_PRNG */
@@ -253,27 +262,19 @@
 #define UNUR_URNG_DEFAULT_PRNG            ("mt19937(19863)")
 #define UNUR_URNG_AUX_DEFAULT_PRNG        ("LCG(2147483647,16807,0,1)")
 
-/* type: RNGSTREAM */
+/* type: RNGSTREAMS */
+/*   none required  */
 
 /* type: GSL */
 #define UNUR_URNG_DEFAULT_GSL             (gsl_rng_mt19937)
 #define UNUR_URNG_AUX_DEFAULT_GSL         (gsl_rng_cmrg)
 
+/*---------------------------------------------------------------------------*/
+
 /* ... */
 #define UNURAN_HAS_PRNG 1
 #define UNURAN_HAS_RNGSTREAMS 1
 #define UNURAN_HAS_GSL 1
-
-
-/*---------------------------------------------------------------------------*/
-/* IMPORTANT!                                                                */
-/*   The generic interface has been changed and extended!                    */
-/*   It is now the recommended interface to uniform random number generators */
-/*   (URNG). For this reason there are calls to create and handle objects    */
-/*   that contain all necessary data about a URNG (see ... ).                */
-/*                                                                           */
-/*   The structure cannot be used directly any more.                         */
-/*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*/
 #endif  /* UNURAN_CONFIG_H_SEEN */

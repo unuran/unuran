@@ -213,20 +213,14 @@ int unur_distr_cvec_set_pdfparams( UNUR_DISTR *distribution, int par, double *pa
    @var{par} indicates directly which of the parameters is set and
    must be a number between @code{0} and @code{UNUR_DISTR_MAXPARAMS}-1
    (the upper limit of possible parameters defined in
-   unuran_config.h; it is set to 5 but can be changed to any 
+   @file{unuran_config.h}; it is set to 5 but can be changed to any 
    appropriate nonnegative number.)
 
-   All parameters are given by the array @var{params} of size
-   @var{n_params}. Thus for a single parameter an array of size 1 and
-   @var{n_params} has to be used. 
-   For a vector @var{n_params} has to be set to the size of the array.
-   An (n x m)-matrix has to be stored in an array of length
-   @var{n_params} = n m; where the rows of the matrix are stored
-   consecutively in this array.
-
-   When more than one type of parameters are used (e.g. the mean
-   vector and the covariance matrix) then there for each of these 
-   unur_distr_cvec_set_pdfparams() are required.
+   The entries of a this parameter are given by the array @var{params}
+   of size @var{n_params}. Notice that using this interface an
+   An (@i{n} x @i{m})-matrix has to be stored in an array of length
+   @var{n_params} = @i{n} times @i{m}; where the rows of the matrix
+   are stored consecutively in this array.
 
    Due to great variety of possible parameters for a multivariate
    @var{distribution} there is no simpler interface.

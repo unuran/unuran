@@ -349,7 +349,7 @@ if ($JAVA_errors) {
 }
 
 unless ($HAVE_JAVA) {
-    print_log("Cannot run JAVA tests!\n\n");
+    print_log("\nCannot run JAVA tests!\n\n");
 }
 
 unless ($errors) {

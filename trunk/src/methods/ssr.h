@@ -190,7 +190,7 @@ int unur_ssr_chg_pdfparams( UNUR_GEN *generator, double *params, int n_params );
    For other distributions @var{params} is simply copied into to
    distribution object. It is only checked that @var{n_params} does
    not exceed the maximum number of parameters allowed.
-   Then @code is returned and @code{unur_errno} is set to
+   Then @code{0} is returned and @code{unur_errno} is set to
    @code{UNUR_ERR_DISTR_NPARAMS}.
 */
 

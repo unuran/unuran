@@ -97,7 +97,7 @@ int unur_utdr_set_cfactor( UNUR_PAR *parameters, double cfactor );
    There is no need to change this factor it almost all situations.
 */
 
-int unur_utdr_set_delta( UNUR_PAR *parameters, double delta );
+int unur_utdr_set_deltafactor( UNUR_PAR *parameters, double delta );
 /* set factor for replacing tangents by secants.
    higher factors increase the rejection constant but reduces the risk of
    serious round-off errors.

@@ -116,8 +116,8 @@ static int _unur_utdr_reinit( struct unur_gen *gen );
 /* Re-initialize (existing) generator.                                       */
 /*---------------------------------------------------------------------------*/
 
-static double _unur_utdr_sample( UNUR_GEN *generator );
-/** TODO: static double _unur_utdr_sample_check( UNUR_GEN *generator ); **/
+static double _unur_utdr_sample( struct unur_gen *generator );
+static double _unur_utdr_sample_check( struct unur_gen *generator );
 /*---------------------------------------------------------------------------*/
 /* sample from generator                                                     */
 /*---------------------------------------------------------------------------*/
@@ -132,8 +132,9 @@ static void _unur_utdr_free( struct unur_gen *gen);
 /* the following functions print debugging information on output stream,     */
 /* i.e., into the log file if not specified otherwise.                       */
 /*---------------------------------------------------------------------------*/
-static void _unur_utdr_debug_init( struct unur_gen *gen,
-				   double try, double trys, double cfac, int setupok);
+
+static void _unur_utdr_debug_init(struct unur_gen *gen, double tly, double tlys,
+				  double try, double trys, double cfac, int setupok, double c );
 /*---------------------------------------------------------------------------*/
 /* print after generator has been initialized has completed.                 */
 /*---------------------------------------------------------------------------*/
@@ -194,6 +195,30 @@ unur_utdr_new( struct unur_distr *distr )
     _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"p.d.f."); return NULL; }
   if (!(distr->set & UNUR_DISTR_SET_MODE)) {
     _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"mode"); return NULL; }
+  if (!(distr->set & UNUR_DISTR_SET_PDFAREA)) {
+    _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"area below p.d.f.");
+    return NULL; }
+
+  /**TODOWH:
+     Kann man eigentlich einen bound fuer die area auch
+     im Distribution-objekt eingeben????? 
+     so dass es klar ist, dass da nur ein bound ist?
+
+     JL: ich habe ich SSR die moeglichkeit eingebaut, dass nur eine
+     obere schranke eingegeben wurde. dass einzige problem dabei ist, 
+     dass dann der squeeze nicht mehr verwendet werden kann. 
+     man kann aber die verwendung des squeezes (der eigentlich nur bei
+     sehr teuren dichten etwas bringt, mittels 
+     int unur_ssr_set_usesqueeze( UNUR_PAR *parameters, int usesqueeze );
+     abschalten.
+
+     waere das ein brauchbarer weg fuer Dich?
+     
+     alternativ koennten wir auch ein unur_distr_set_approx_pdfarea()
+     einbauen. die unterscheidung zwischen exactem wert und naehrung kann 
+     man mittels set-flag machen. (irgendwie ist mir bis jetzt nie die idee
+     gekommen, dass so zu machen.) ist das so besser?
+  **/
 
   /* allocate structure */
   par = _unur_malloc(sizeof(struct unur_par));
@@ -292,11 +317,18 @@ unur_utdr_set_cfactor( struct unur_par *par, double cfactor )
   _unur_check_par_object( par,UTDR );
 
   /* check new parameter for generator */
-  /** TODO: welche werte fuer c sind zulaessig / sinnvoll ? **/
-  if (cfactor < 0) {
-    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"c-factor < 0");
+  /** TODO: welche werte fuer c sind zulaessig / sinnvoll ? 
+  zulaessig ist jedes c>0, man koennte damit falsche Flaechenangaben kompensieren.
+  Wenn area genau bekannt ist, ist ein c > 2 (2 ist der minimax approach) so weit
+  ich weiss nie sinnvoll. Ich denke aber, das sollte man besser nicht prinzipiell
+  verbieten, hoechstens eine warnung.**/
+  if (cfactor <= 0.) {
+    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"c-factor <= 0");
     return 0;
   }
+
+  if (cfactor > 2.1)
+    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"c-factor > 2 not recommended. skip");
 
   /* store date */
   PAR.c_factor = cfactor;
@@ -311,7 +343,7 @@ unur_utdr_set_cfactor( struct unur_par *par, double cfactor )
 /*---------------------------------------------------------------------------*/
 
 int
-unur_utdr_set_delta( struct unur_par *par, double delta )
+unur_utdr_set_deltafactor( struct unur_par *par, double delta )
      /*----------------------------------------------------------------------*/
      /* set factor for replacing tangents by secants                         */
      /* (which then are move above the transformed density)                  */
@@ -332,9 +364,28 @@ unur_utdr_set_delta( struct unur_par *par, double delta )
   _unur_check_par_object( par,UTDR );
 
   /* check new parameter for generator */
-  /** TODO: welche werte fuer delta sind zulaessig / sinnvoll ? **/
-  if (delta < 0) {
-    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"delta < 0");
+  /** TODO: welche werte fuer delta sind zulaessig / sinnvoll ? 
+      von einem rein numerischen Gesichtspunkt kann man sagen: Delta_factor
+      soll nicht kleiner sein als sqrt(epsilon) (mit epsilon meine ich die
+      kleinste Zahl die einen Unterschied zwischen 1 und 1+epsilon erkennen
+      laesst). Dann ist garantiert, dass wir durch Ausloeschung nicht mehr
+      als die haelfte der mantisse verlieren
+      Von Algorithmus ueberlegungen her sollte delta>=xl*deltafactor sicher
+      nicht groesser sein als ein Bruchteil (wohl hoechstens 1/10) zwischen
+      mode und Design-punkt, weil sonst die Anahmewahrscheinlichkeit schlechter
+      wird. Das ergibt sicher probleme fuer Dichten wo der mode sehr gross
+      und der skale-parameter im Vergleich dazu klein ist.
+      Ich habe den Algorithmus so geaendert, dass er, falls es dieses
+      Problem gibt, eine (roundoff-problem) Warnung ausspuckt, und als
+      Delta 1/100*|designpoint-mode| nimmt Empirisch habe ich dafuer
+      festgestellt, dass damit die Flaeche unterm Hut Kaum mehr als 1%
+      zunimmt und das ist ja nicht schlimm**/
+  if (delta <= 0.) {
+    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"delta <= 0");
+    return 0;
+  }
+  if (delta > 0.1) {
+    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"delta must be small");
     return 0;
   }
 
@@ -407,10 +458,10 @@ unur_utdr_chg_pdfparams( struct unur_gen *gen, double *params, int n_params )
   /* check arguments */
   CHECK_NULL(gen,0);
   _unur_check_gen_object( gen,UTDR );
-  if (n_params>0) CHECK_NULL(params,0);
+  if (n_params>0) _unur_check_NULL(gen->genid,params,0);
   
   /* check new parameter for generator */
-  if (n_params > UNUR_DISTR_MAXPARAMS ) {
+  if (n_params > UNUR_DISTR_MAXPARAMS || n_params < 0 ) {
     _unur_error(NULL,UNUR_ERR_DISTR_NPARAMS,"");
     return 0;
   }
@@ -624,6 +675,13 @@ _unur_utdr_init( struct unur_par *par )
 
 /*---------------------------------------------------------------------------*/
 
+/** TODO gibts da schon eine UNURAN constante? ich hab sie nicht gefunden!! **/
+#define SMALL_VAL 1.e-50
+/** JL: was soll die leisten?
+    wenn sie gebraucht wird, wuerde ich sie mit einer entsprenden beschreibung
+    in unuran_config.h stellen.
+**/
+
 int
 _unur_utdr_hat( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
@@ -643,7 +701,7 @@ _unur_utdr_hat( struct unur_gen *gen )
   double fm;
 
   int setupok=1;
-  double c,cfac,volc,volr,tly,tlys,try,trys,dl,dr,delta,delta1;
+  double c,cfac,volc,volr,tly,tlys,try,trys,dl,dr,delta,delta1,delta2,pdfx;
 
   /* check arguments */
   CHECK_NULL( gen, 0 );
@@ -663,6 +721,18 @@ _unur_utdr_hat( struct unur_gen *gen )
   }
 
   /** TODO: inititialisieren notwendig ?? **/
+
+  /** ich habe diese variablen initialisiert, weil ich auf einem
+      alpha rechner eine flaoting exception bei der ersten verwendung
+      von try oder trys bekommen habe.
+      das ist keine IEEE 764 architektur.
+      es stand dann try irgend ein bitmuster, dass keiner regulaeren
+      zahl entsprochen hat und daher die FPE versucht hat
+      (in eine if abfrage !!)
+      das zeigt, das da try tatsaechlich nicht initialiesiert verwendet 
+      wurde. das sollte man sauberer programmieren.
+  **/
+
   try = 0.;
   trys = 0.;
   dl = 0.;
@@ -684,96 +754,150 @@ _unur_utdr_hat( struct unur_gen *gen )
     GEN.trx = DISTR.mode + c;
 
     /* 1.2 */
-    if (GEN.il > -INFINITY && GEN.tlx < GEN.il) { 
+    /** TODO: kann man das nicht loeschen ?? **/
+    if (/*GEN.il > -INFINITY &&*/ GEN.tlx < GEN.il) { 
+      /* this is the case of no left tail*/
       GEN.bl = GEN.il;
       GEN.al = 0.;
       GEN.voll = 0.;
       if (GEN.il < DISTR.mode) {
+	/* if the left domain border is left of the mode we set tlx
+	   only to use it for the squeeze*/
         GEN.tlx = DISTR.mode + (GEN.il - DISTR.mode) * 0.6;
-        GEN.sal = (GEN.hm + 1./sqrt(PDF(GEN.tlx))) / (DISTR.mode - GEN.tlx);
+        pdfx=PDF(GEN.tlx);
+        if (pdfx > SMALL_VAL)
+          GEN.sal = (GEN.hm + 1./sqrt(pdfx)) / (DISTR.mode - GEN.tlx);
+        else 
+	  GEN.tlx = DISTR.mode;
+	/* pdfx is too small. We set tlx=mode that no squeeze is used */
       }  
     }
     else {
-      tlys = PDF(GEN.tlx);
-      if (tlys > 0.) 
-	tlys = -1./sqrt(tlys);
-      else {
-	_unur_warning(gen->genid,UNUR_ERR_GEN_DATA,"f(tlx)=0!!, Perhaps pdf or mode or domain wrong\n");
-	goto error;
-      }
+     tlys = PDF(GEN.tlx);
+     if (tlys < SMALL_VAL) { 
+       /* in this case we cut off the left tail*/
+       GEN.il = GEN.tlx;
+       GEN.bl = GEN.il;
+       GEN.al = 0.;
+       GEN.voll = 0.;
+       GEN.tlx=DISTR.mode;
+       /* pdfx is too small. We set tlx=mode that no squeeze is used */
+     }
+     else {
+       tlys = -1./sqrt(tlys);
+       GEN.sal =  (GEN.hm - tlys) / (DISTR.mode - GEN.tlx);
 
-      GEN.sal =  (GEN.hm - tlys) / (DISTR.mode - GEN.tlx);
+       /* delta1> 0 as -tlys>0 und sal >0; */
+       delta2 = ( GEN.sal > 0. ) ? -tlys/GEN.sal : -tlys;
+       delta1 = fabs(GEN.tlx);
+       delta = GEN.delta_factor * ((delta1<=delta2) ? delta2 : delta1);
+       if (delta > c * 0.01) {
+	 delta = FLT_EPSILON * ((delta1<=delta2) ? delta2 : delta1);
+	 /** Using sqrt(DBL_EPSILON) as delta_factor guarantees that not more than
+	    half of the precision will be lost when computing the slope GEN.al 
+	    TODO: JL: zumindest auf einem pentium ist sqrt(DBL_EPSILON) = FLT_EPSILON.
+	    kann man das nehmen?
+	 */
+	 if (delta > c * 0.01) {
+	   delta = c * 0.01;
+	   /* delta is forced to be c * 0.01 although this can 
+	      result in numerical inaccuracies when computing 
+	      the slope GEN.al. Therefore a warning is
+	      issued */
+	   _unur_warning(gen->genid,UNUR_ERR_GEN_DATA,
+			 "Delta larger than c/100!!, perhaps you can use a mode closer to 0 to remove this problem?");
+         }
+       }
+       
+       tly = -1./sqrt(PDF(GEN.tlx+delta));
+       GEN.al = (tly-tlys)/delta;
 
-      /* da kenn ich mich nicht aus! delta1 > 0; aber was ist mit delta, das is < 0. */
-      /* Nein delta1> 0 da -tlys>0 und sal >0; im Fall sal==0 habe ich mich geirrt, da gehoert -tlys */
-      delta = ( GEN.sal > 0. ) ? -tlys/GEN.sal : -tlys;
-      delta1 = fabs(GEN.tlx);
-      delta = GEN.delta_factor * ((delta1<=delta) ? delta : delta1);
-
-      tly = -1./sqrt(PDF(GEN.tlx+delta));
-      GEN.al = (tly-tlys)/delta;
-
-      if (GEN.al <= 0.) 
-	setupok = 0; /* break ?? soll wenn 1.3 erfolgreich ist, soll das dann
-                        nochmals durchlaufen werden?? oder soll 1.3 gar nicht erst 
-                        berechnet werden falls dieser Fall hier eintritt??
-                        es braucht nichts mehr berechnet werden  */
-/*ich mach e hier kein continue, da das zu Endlosschleife fuehren wuerde,sondern
-  frage setupok spaeter ab*/
-      else {
-	GEN.bl = GEN.tlx + (GEN.hm - tly)/GEN.al;
-
-      /* warum wir der rest ausgerechnet wenn setupok auf 0 gesetzt wurde ? */
-/*nicht noetig!!*/
-
-        dl = tly - GEN.al * GEN.tlx;
-        GEN.voll = -1./(GEN.al * GEN.hm);
-        GEN.col = GEN.voll;
-        if (GEN.il > -INFINITY)
-          GEN.voll += 1./(GEN.al * (GEN.al * GEN.il + dl));
-      }
+       if (GEN.al <= 0.) 
+	 /* setupok==0 means that this setup is quitted and set-up is restarted
+	    with different value for cfac */
+	 setupok = 0; 
+       else {
+	 GEN.bl = GEN.tlx + (GEN.hm - tly)/GEN.al;
+	 dl = tly - GEN.al * GEN.tlx;
+	 GEN.voll = -1./(GEN.al * GEN.hm);
+	 GEN.col = GEN.voll;
+	 if (GEN.il > -INFINITY)
+	   GEN.voll += 1./(GEN.al * (GEN.al * GEN.il + dl));
+       }
+     }
     }
 
     /* 1.3 */
     if(setupok) {
-      if (GEN.ir < INFINITY && GEN.trx > GEN.ir) {
+      if (/*GEN.ir < INFINITY &&*/ GEN.trx > GEN.ir) {
+	/* this is the case of no right tail */
         GEN.br = GEN.ir;
         GEN.ar = 0.;
         volr = 0.;
         if (GEN.ir > DISTR.mode) {
+	  /* if the right domain border is right of the mode we set trx
+	     only to use it for the squeeze */
           GEN.trx = DISTR.mode + (GEN.ir - DISTR.mode) * 0.6;
-          GEN.sar = (GEN.hm + 1./sqrt(PDF(GEN.trx))) / (DISTR.mode - GEN.trx);
+          pdfx = PDF(GEN.trx);
+          if (pdfx > SMALL_VAL)
+            GEN.sar = (GEN.hm + 1./sqrt(PDF(GEN.trx))) / (DISTR.mode - GEN.trx);
+          else 
+	    GEN.trx = DISTR.mode;
+	  /* pdfx is too small. We set trx=mode that no squeeze is used */
         } 
       }
       else {
-        trys = sqrt(PDF(GEN.trx));
-        if (trys>0.)
-          trys= -1./trys;
-        else {
-          _unur_warning(gen->genid,UNUR_ERR_GEN_DATA,"f(trx)=0!!, Perhaps pdf or mode or domain wrong\n");
-	  goto error;
-        }
-  
-        /* siehe 1.2. !! */
-        GEN.sar = (GEN.hm - trys) / (DISTR.mode - GEN.trx);
-/*delta ist positiv, da trys<0 und sar <0 */
-        delta = (GEN.sar<0.) ? trys/GEN.sar : -trys;
-        delta1 = fabs(GEN.trx);
-        delta = GEN.delta_factor * ((delta1<=delta) ? delta : delta1);
-        try = -1./sqrt(PDF(GEN.trx-delta));
-        GEN.ar = (trys - try)/delta;
-        if (GEN.ar >= 0.) 
-          setupok = 0;
-        else{ 
-          GEN.br = GEN.trx + (GEN.hm - try) / GEN.ar;
-          dr = try - GEN.ar * GEN.trx;
-          volr = 1./(GEN.ar * GEN.hm);
-          GEN.cor = volr;
-          if (GEN.ir<INFINITY)
-            volr -= 1./(GEN.ar * (GEN.ar * GEN.ir + dr));
-        }
+        trys = PDF(GEN.trx);
+        if (trys < SMALL_VAL){
+	  /* in this case we cut off the right tail */
+          GEN.ir = GEN.trx;
+          GEN.br = GEN.ir;
+          GEN.ar = 0.;
+          volr = 0.;
+          GEN.trx = DISTR.mode;
+	  /* pdfx is too small. We set trx=mode that no squeeze is used */
+	}
+	else {
+	  trys= -1./sqrt(trys);
+	  /* see 1.2. for explanations */
+	  GEN.sar = (GEN.hm - trys) / (DISTR.mode - GEN.trx);
+	  /* delta is positive, da trys<0 und sar <0 */
+	  delta2 = (GEN.sar<0.) ? trys/GEN.sar : -trys;
+	  delta1 = fabs(GEN.trx);
+	  delta = GEN.delta_factor * ((delta1<=delta2) ? delta2 : delta1);
+	  if (delta > c*0.01) { 
+	    delta = FLT_EPSILON * ((delta1<=delta2) ? delta2 : delta1);
+	    /** Using sqrt(DBL_EPSILON) as delta_factor guarantees that not more than
+		have of the precision will be lost when computing the slope GEN.al 
+		TODO: wie oben **/
+	    if (delta > c*0.01) {
+	      delta=c*0.01;
+	      /* delta is forced to be c*0.01 allthough this can result in numerical
+		 inaccuracies when computing the slope GEN.al. Therefore a warning is
+		 issued*/
+	      _unur_warning(gen->genid,UNUR_ERR_ROUNDOFF,
+			    "Delta larger than c/100!!, perhaps you can use a mode closer to 0 to remove this problem?");
+	    }
+	  }
+	  
+	  try = -1./sqrt(PDF(GEN.trx-delta));
+	  GEN.ar = (trys - try)/delta;
+	  if (GEN.ar >= 0.) 
+	    /* setupok==0 means that this setup is quitted and set-up is 
+	       restarted with different value for cfac */
+	    setupok = 0;
+	  else { 
+	    GEN.br = GEN.trx + (GEN.hm - try) / GEN.ar;
+	    dr = try - GEN.ar * GEN.trx;
+	    volr = 1./(GEN.ar * GEN.hm);
+	    GEN.cor = volr;
+	    if (GEN.ir<INFINITY)
+	      volr -= 1./(GEN.ar * (GEN.ar * GEN.ir + dr));
+	  }
+	}
       }
     }
+
     /* 1.4 */
     if(setupok) {
       volc = (GEN.br - GEN.bl) * GEN.fm;
@@ -793,7 +917,7 @@ _unur_utdr_hat( struct unur_gen *gen )
 
 #ifdef UNUR_ENABLE_LOGGING
     /* write info into log file */
-    if (gen->debug) _unur_utdr_debug_init(gen,try,trys,cfac,setupok);
+    if (gen->debug) _unur_utdr_debug_init(gen,tly,tlys,try,trys,cfac,setupok,c);
 #endif
 
     if (cfac!=2.) {
@@ -803,8 +927,8 @@ _unur_utdr_hat( struct unur_gen *gen )
     }
     else { 
       if (setupok==0 || GEN.volcompl > 8. * DISTR.area || GEN.volcompl < 0.5 * DISTR.area) {
-        _unur_warning(gen->genid,UNUR_ERR_GEN_DATA,"Area below hat too large! Perhaps pdf or mode wrong\n");
-	goto error;
+        _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"; Area below hat too large or zero!! possible reasons: pdf, mode or area below pdf wrong;  density not T-concave\n");
+        return 0;
       }
     }
 
@@ -812,12 +936,6 @@ _unur_utdr_hat( struct unur_gen *gen )
 
   return 1;
 
- error:
-#ifdef UNUR_ENABLE_LOGGING
-  /* write info into log file */
-  if (gen->debug) _unur_utdr_debug_init(gen,try,trys,cfac,setupok);
-#endif
-  return 0;
 } /* end of _unur_utdr_hat() */
 
 /*---------------------------------------------------------------------------*/
@@ -855,7 +973,7 @@ _unur_utdr_create( struct unur_par *par )
   gen->genid = _unur_set_genid(GENTYPE);
 
   /* routines for sampling and destroying generator */
-  SAMPLE = _unur_utdr_sample;
+  SAMPLE = (par->variant & UTDR_VARFLAG_VERIFY) ? _unur_utdr_sample_check : _unur_utdr_sample;
   gen->destroy = _unur_utdr_free;
   gen->reinit = _unur_utdr_reinit;
 
@@ -959,6 +1077,7 @@ _unur_utdr_sample( struct unur_gen *gen )
     u = _unur_call_urng(gen->urng) * GEN.volcompl;
     /*2.1*/
     if (u <= GEN.voll) {
+      u = GEN.voll-u; /*added to ensure inversion for the hat-generation*/
       x = -GEN.dlal+GEN.ooal2/(u-GEN.col);
       help = GEN.al*(u-GEN.col);
       linx = help*help;
@@ -993,6 +1112,87 @@ _unur_utdr_sample( struct unur_gen *gen )
   }
 
 } /* end of _unur_utdr_sample() */
+
+/*****************************************************************************/
+
+double
+_unur_utdr_sample_check( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* sample from generator                                                */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   double (sample from random variate)                                */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return 0.                                                          */
+     /*----------------------------------------------------------------------*/
+{ 
+  double u,v,x,help,linx,pdfx,squeezex;
+
+  /* check arguments */
+  CHECK_NULL(gen,0.);  COOKIE_CHECK(gen,CK_UTDR_GEN,0.);
+  
+  while (1) {
+    /*2*/
+    u = _unur_call_urng(gen->urng) * GEN.volcompl;
+    /*2.1*/
+    if (u <= GEN.voll) {
+      u = GEN.voll-u; /* added to ensure inversion for the hat-generation */
+      x = -GEN.dlal+GEN.ooal2/(u-GEN.col);
+      help = GEN.al*(u-GEN.col);
+      linx = help*help;
+    }
+    else {
+      if (u <= GEN.vollc) {
+	x = (u-GEN.voll) * GEN.brblvolc + GEN.bl;
+	linx = GEN.fm;
+      }
+      else {
+	x = - GEN.drar - GEN.ooar2 / (u-GEN.vollc - GEN.cor);
+	help = GEN.ar * (u-GEN.vollc - GEN.cor);
+	linx = help*help;
+      }
+    }
+    /*2.2*/
+    v = _unur_call_urng(gen->urng) * linx;
+    /*2.3*/
+    squeezex=0.;
+    if (x<DISTR.mode) {
+      if (x >= GEN.tlx) {
+	help = GEN.hm - (DISTR.mode - x) * GEN.sal;
+        squeezex=1./(help*help);
+	/*        if (v * help * help <= 1.) return x;*/
+      } 
+    }
+    else {
+      if (x <= GEN.trx) {
+	help = GEN.hm - (DISTR.mode - x) * GEN.sar;
+        squeezex=1./(help*help);
+	/*        if (v * help * help <= 1.) return x; */
+      }
+    }
+    /*evaluate density-function*/
+    pdfx=PDF(x);
+    
+    /* verify hat function */
+    if(_FP_less(linx,pdfx))
+      { _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"pdf(x) > hat(x)");
+      _unur_stream_printf(gen->genid,__FILE__,__LINE__,"x %e PDF(x) %e hat(x) %e squeeze(x) %e", \
+                          x,pdfx,linx,squeezex ); 
+      }
+    /* verify squeeze function */
+    if(_FP_less(pdfx,squeezex))
+      { _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"pdf(x) < squeeze(x)");
+      _unur_stream_printf(gen->genid,__FILE__,__LINE__,"x %e PDF(x) %e hat(x) %e squeeze(x) %e", \
+                          x,pdfx,linx,squeezex ); 
+      }
+    if (v <= PDF(x)) return x;
+  }
+  
+} /* end of _unur_utdr_sample_check() */
 
 /*****************************************************************************/
 
@@ -1038,8 +1238,8 @@ _unur_utdr_free( struct unur_gen *gen )
 /*---------------------------------------------------------------------------*/
 
 static void
-_unur_utdr_debug_init( struct unur_gen *gen,
-		       double try, double trys, double cfac, int setupok)
+_unur_utdr_debug_init( struct unur_gen *gen, double tly, double tlys, 
+		       double try, double trys, double cfac, int setupok, double c )
      /*----------------------------------------------------------------------*/
      /* write info about generator into logfile                              */
      /*                                                                      */
@@ -1057,7 +1257,7 @@ _unur_utdr_debug_init( struct unur_gen *gen,
 
   fprintf(log,"%s:\n",gen->genid);
   fprintf(log,"%s: type    = continuous univariate random variates\n",gen->genid);
-  fprintf(log,"%s: method  = utdr (transformed density rejection with 3 points of contact)\n",gen->genid);
+  fprintf(log,"%s: method  = utdr(transformed density rejection with 3 points of contact)\n",gen->genid);
   fprintf(log,"%s:\n",gen->genid);
 
   _unur_distr_cont_debug( &(gen->distr), gen->genid );
@@ -1072,11 +1272,12 @@ _unur_utdr_debug_init( struct unur_gen *gen,
   fprintf(log,"%s:\n",gen->genid);
 #endif
 
-  /** TODO: c_factor, delta_factor **/
-
-  fprintf(log,"%s: tlx %e bl %e mode %e br %e trx %e\n",gen->genid,GEN.tlx,GEN.bl,DISTR.mode,GEN.br,GEN.trx);
+  fprintf(log,"%s: c_factor %e delta_factor %e real c: %e\n",gen->genid,GEN.c_factor,GEN.delta_factor,c);
+  fprintf(log,"%s: tlx %e bl %e mode %e\n",gen->genid,GEN.tlx,GEN.bl,DISTR.mode);
+  fprintf(log,"%s: br %e trx %e\n",gen->genid,GEN.br,GEN.trx);
+  fprintf(log,"%s: tly %e tlys %e al %e \n",gen->genid,tly,tlys,GEN.al);
   fprintf(log,"%s: try %e trys %e ar %e \n",gen->genid,try,trys,GEN.ar);
-  fprintf(log,"%s: cfac %e setupok %d volcompl %e pdf_area %e\n",gen->genid,cfac,setupok,GEN.volcompl,DISTR.area);
+  fprintf(log,"%s:cfac %e setupok %d volcompl %e pdf_area %e\n",gen->genid,cfac,setupok,GEN.volcompl,DISTR.area);
   fprintf(log,"%s:\n",gen->genid);
 
 } /* end of _unur_utdr_debug_init() */

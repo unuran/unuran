@@ -15,7 +15,8 @@ check_PROGRAMS = \
  t_tdr \
  t_tdr_log \
  t_tdr_sqrt \
- t_unif 
+ t_unif \
+ t_utdr
 
 TESTS = \
  t_distr \
@@ -26,7 +27,8 @@ TESTS = \
  t_tdr \
  t_tdr_log \
  t_tdr_sqrt \
- t_unif 
+ t_unif \
+ t_utdr
 
 EXTRA_DIST = \
  make_test_files.pl \
@@ -39,7 +41,8 @@ EXTRA_DIST = \
  tdr.conf \
  tdr_log.conf \
  tdr_sqrt.conf \
- unif.conf
+ unif.conf \
+ utdr.conf
 
 
 t_distr_SOURCES = t_distr.c testroutines.c list_of_distributions.c
@@ -69,6 +72,9 @@ t_tdr_sqrt_LDADD = $(top_builddir)/src/libunuran.a -lprng -lml -lm
 t_unif_SOURCES = t_unif.c  testroutines.c list_of_distributions.c
 t_unif_LDADD = $(top_builddir)/src/libunuran.a -lprng -lml -lm
 
+t_utdr_SOURCES = t_utdr.c testroutines.c list_of_distributions.c
+t_utdr_LDADD = $(top_builddir)/src/libunuran.a -lprng -lml -lm
+
 
 t_distr.c: distr.conf make_test_files.pl
 	./make_test_files.pl distr.conf
@@ -93,6 +99,9 @@ t_tdr_log.c: tdr_log.conf make_test_files.pl
 
 t_tdr_sqrt.c: tdr_sqrt.conf make_test_files.pl
 	./make_test_files.pl tdr_sqrt.conf
+
+t_utdr.c: utdr.conf make_test_files.pl
+	./make_test_files.pl utdr.conf
 
 t_unif.c: unif.conf make_test_files.pl
 	./make_test_files.pl unif.conf

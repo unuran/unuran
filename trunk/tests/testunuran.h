@@ -42,6 +42,7 @@
 #define T_SSR
 #define T_TDR
 #define T_UNIF
+#define T_UTDR
 
 /* continuous univariate distributions                                       */
 #define D_BETA

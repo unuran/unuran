@@ -19,7 +19,7 @@
 # eingeleitet werden
 #
 #
-# =METHODS name [LAngtext]
+# =METHOD  name [Langtext]
 #          allg. Beschreibung der Methode in Header file
 #
 #          name      ... Name der Methode, Nur ein Wort!
@@ -51,74 +51,87 @@
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 
-# $ON = 1, wenn der "Dokumentations-Bereich" gefunden ist
-$ON = 0;
-
-# Schalter, um Kommentarzeilen hinter Funktionsdefinitionen zu erkennen 
+# Kommentare sind nun erlaubt 
+$CENABLE = 0;
+# $_ ist Kommentarzeile (bei $CENABLe = 1) 
 $KOMMENT = 0;
 
-#Name der aktuellen Methode (von unuran)
-$MName = "a";  # mit nicht vorkommendem Namen initialisiert
+# Deklarations/Beschreibungsbereich der Routinen gefunden
+$ROUTINES = 0;
 
-$ERST = 1;  # garantiert,dass keine itemize-umgebung beendet
-            # wird bevor es ueberhaupt eine gibt
-$ENDE = 0;  # ueberprueft, ob itemize-umgebung gesetzt wird
-            # und garantiert, dass letztes itemize beendet wird
-
-# 
+# erlaubte Datentypen 
 @TYPES = ("UNUR_PAR", "UNUR_GEN", "struct", "void", "int", "double", "float", "long", "char", "short", "unsigned", "signed");
 
+# erlaubte Befehle
+@COMMAND =("=METHOD", "=ROUTINES", "=END");
 
-
-#  output file:
+# output file:
 open(OUTFILE, ">qstart_function_reference.texi");
+
 
 while($_ = <>)
 { 
-    # Kommentare enden mit einere Leerzeile
-    if ($_ =~ /^\s$/ ){
-	$KOMMENT = 0;
+    chomp; 
+   
+    # Beschreibung der Routinen beginnt mit =ROUTINES
+    if ($_ =~/(^\s*\/\*\s*|^\s*)=ROUTINES/){
+     $ROUTINES = 1;  
     }
 
-    # bestimmen des dokumentationsbereiches
-    if ($_ =~/\/\* Routines for user interface/){
-	$ON = 1;}
-    if ($ON == 1 && $_ =~/\/\*-------------------/){
-	$ON = 0;}
+    # Beschreibung der Routinen endet mit =END
+    if ($_ =~/(^\s*\/\*\s*|^\s*)=END/){
+       # =END kann nur bei $ROUTINES = 1 erfolgen
+       if ($ROUTINES = 0){
+           print "\n\nERROR: =END before =ROUTINES\n\n";
+       }
+       $ROUTINES = 0;
+       # letzte itemize-Umgebung muss beendet werden
+       print OUTFILE "\@end itemize\n";
+    }
 
-    chomp;
 
+    # Kommentare(Bloecke) beginnen mit /* (bei $CENABLE=1)
+    if ($CENABLE == 1 && $_ =~/^\s*\/\*/){    
+	$KOMMENT = 1;
+    }
+
+    # Kommentare enden mit Leerzeile
+    if ($_ =~ /^\s+$/){
+        $KOMMENT = 0;
+        $CENABLE = 0;
+    }
+  
+    # ueberpruefung ob falsches command (z.B.tippfehler?)
+    if ($_ =~/^(\s*\/\*\s*|\s*)(=.*)\s/){
+	foreach $command (@COMMAND){
+	    if ($2 != $command){
+		print "ERROR: unknown command: ", $2;
+	    }
+	}
+    }
+   
+    # Suche Beschreibung der Methode (=METHOD)
+    if ($_ =~/^(\s*\/\*\s*|\s*)=METHOD\s*(\w+)\s*(.*)/){
+        # folgende Kommentare werden gedruckt 
+        $CENABLE = 1;
+        # sind bereits mitten im Kommentar
+	$KOMMENT = 1;
+        print OUTFILE "\n\n\@node ", $2, "\n";
+        print OUTFILE "\@subsection ", $2, " ", $3, "\n\n";
+        print OUTFILE "\@itemize \@minus\{\}\n";
+    }
 
    # Suche Funktion und Definitionszeilen
    foreach $type (@TYPES){
 
-       # Wenn neuer MName vorkommt, dann neues Kapitel
-       if ( $ON == 1 && $_ =~/^\s*($type.*)\s*\((.*\))\s*;/){
-          # neues Texinfo-Kapitel, wenn sich methode ($MName) aendert
-          /\*unur_(\w*)_/; 
-          if ($type eq UNUR_PAR && $MName ne $1){
-             $MName = $1;
-             if ($ERST == 0){
-		print OUTFILE "\@end itemize\n\n";
-             }
-             else{
-		 $ERST = 0;
-                 $ENDE = 1;
-	     }
-	     print OUTFILE "\n\n\@node ", $MName, "\n";
-	     print OUTFILE "\@subsection ", $MName, "\n\n";
-             print OUTFILE "\@itemize \@minus{} \n";
-          }
-       }
-
-       # suche Funktionszeile, funktion darf nicht
-       # _unur enthalten (underscore!!)
-       if ($_ =~ /_unur/ ){
-	   $KOMMENT = 0;
-       }
-       elsif ( $ON == 1 && $_ =~/^\s*($type.*)\s*\((.*\))\s*;/){
-           #Kommentar zur funktion moeglich wenn $KOMMENT = 1
-           $KOMMENT = 1;
+      # Suche Zeile mit erlauben Funktionsdeklarationen
+      # (beginnen mit unur_  (_unur_ nicht erlaubt (-> intern) )
+      if ($_ =~ /_unur/ ){
+          $CENABLE = 0;
+          $KOMMENT = 0; # eigentlich enden Kommentare mit Leerzeile
+      }
+      elsif ( $ROUTINES == 1 && $_ =~/^\s*($type.*)\s*\((.*\))\s*;/){
+           $CENABLE = 1;
            $DECL = $1;   # vor der oeffnenden Funktionsklammer
            $FUNC = $2;   # zwischen den Funktionsklammern 
            $DECL  =~ /(.*(\s+?|\*))(\w+)/;
@@ -137,17 +150,17 @@ while($_ = <>)
   }
 
 
-# Suche zugehoerige Kommentare
-  if($KOMMENT == 1 && $_ =~/^\/\*(.*)(\*\/)$/){
-	  print OUTFILE $1, "\@\*\n";
+  # Ausgabe der Kommentare    
+  # extrahiere alles zw. /* und */ (falls /* oder */ vorhanden)
+  if ($KOMMENT == 1){
+     m/^(\s*\/\*\s*|\s*)?(.*?)(\s*\*\/)?/;   
+     print OUTFILE $2;
+     # Ende eines Kommentarblocks -> Zeilenumbruch 
+     if ($_ =~/\*\//){
+         print OUTFILE "\@*\n";
+     }
   }
 
-
-
-}
-
-if ($ENDE == 1){
-  print OUTFILE "\@end itemize";
 }
 
 

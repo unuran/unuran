@@ -33,8 +33,10 @@ unuran_TEXINFOS = \
  ./src/unuran_method_requirements.texi \
  $(unuran_src) \
  $(unuran_examples) \
- figures/*.eps figures/*.pdf figures/*.png figures/*.txt \
- version.texi
+ $(top_srcdir)/doc/figures/*.eps \
+ $(top_srcdir)/doc/figures/*.pdf \
+ $(top_srcdir)/doc/figures/*.png \
+ $(top_srcdir)/doc/figures/*.txt
 
 noinst_DATA = 
 

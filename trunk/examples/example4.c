@@ -11,7 +11,7 @@
 /* http://statistik.wu-wien.ac.at/prng/) for generating          */
 /* uniform random numbers.                                       */
 /* To compile this example you must have set                     */
-/* #define  UNUR_URNG_TYPE  UNUR_URNG_POINTER                    */
+/* #define  UNUR_URNG_TYPE  UNUR_URNG_PRNG                       */
 /* in `src/unuran_config.h'.                                     */
 
 /* It also works with necessary modifications with other uniform */

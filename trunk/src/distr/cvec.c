@@ -690,7 +690,7 @@ unur_distr_cvec_get_covar_inv( struct unur_distr *distr )
     DISTR.covar_inv = _unur_malloc( dim * dim * sizeof(double) );   
 
   /* calculate inverse covariance matrix */
-  if ( !(distr->set & UNUR_DISTR_SET_COVAR) )
+  if ( !(distr->set & UNUR_DISTR_SET_COVAR_INV) )
     if (_unur_matrix_invert_matrix(dim, DISTR.covar, COVARIANCE_DETMIN, DISTR.covar_inv, &det) != UNUR_SUCCESS) {
       _unur_error(distr->name ,UNUR_ERR_DISTR_DOMAIN,"cannot compute inverse of covariance");
       return NULL;

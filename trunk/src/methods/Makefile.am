@@ -39,6 +39,7 @@ libmethods_a_SOURCES = \
  tdr.c  \
  unif.c \
  utdr.c \
+ vempk.c \
  vmt.c
 
 noinst_HEADERS = \
@@ -73,6 +74,7 @@ noinst_HEADERS = \
  tdr.h   tdr_struct.h tdr_newset.c tdr_init.c tdr_sample.c tdr_debug.c \
  unif.h  unif_struct.h \
  utdr.h  utdr_struct.h \
+ vempk.h vempk_struct.h \
  vmt.h   vmt_struct.h
 
 # clean backup files

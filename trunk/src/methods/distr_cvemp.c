@@ -257,7 +257,7 @@ _unur_distr_cvemp_debug( struct unur_distr *distr, char *genid, int printvector 
       }
     }
   }
-  fprintf(log,"\n%s:\n",genid);
+  fprintf(log,"%s:\n",genid);
 
 #undef idx
 } /* end of _unur_distr_cvemp_debug() */

@@ -422,6 +422,7 @@ All parameters have default settings documented in @ref{Defaults}.
 * UNIF:: ???
 * UTDR:: Universal Transformed Density Rejection (3-point method)
 * VMT:: Vector Matrix Transformation
+* VEMPK:: (Vector) EMPirical distribution with Kernel smoothing
 @end menu
 
 @include ref_methods.texi
@@ -544,6 +545,7 @@ For information about the following distributions see
 * UNIFref:: ???
 * UTDRref:: Universal Transformed Density Rejection (3-point method)
 * VMTref:: Vector Matrix Transformation
+* VEMPKref:: (Vector) EMPirical distribution with Kernel smoothing
 @end menu
 
 As explained above, the parameter object is destroyed when the

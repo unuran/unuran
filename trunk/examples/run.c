@@ -22,7 +22,7 @@
 
 int main()
 {
-  int i,j;
+  int i;
   double vec[3];
 
   UNUR_DISTR *distr;    /* distribution */
@@ -30,29 +30,22 @@ int main()
   UNUR_GEN   *gen;      /* generator */
   UNUR_URNG *urng;      
 
-  UNUR_DISTR *uv;
-  UNUR_GEN *uvgen;
-
-  double mean[5] = { 1.,2.,3.};
-
-  double covar[25] = {  1.0, 0.5, 0.6,
-		        0.5, 2.0, 0.7,
-		        0.6, 0.7, 3.0};
-
+  double data[] = {1.1, 2.1, 2.3,
+		   0.9, 2.0, 2.0,
+		   1.2, 1.8, 2.5,
+		   1.5, 2.5, 1.7,
+		   0.,  0.5, 0.8,
+		   1.8, 2.8, 0. };
 
   urng = prng_new("mt19937(2345)");
   if (!urng) exit(-1);
 
   unur_set_default_urng(urng);
 
-/*    uv = unur_distr_cauchy(NULL,0); */
-/*    uvgen = unur_init( unur_tdr_new( uv )); */
-/*    unur_distr_free(uv); */
+  distr = unur_distr_cvemp_new(3);
+  unur_distr_cvemp_set_data( distr, data, 6 );
 
-  distr = unur_distr_multinormal(3,mean,covar);
-  par = unur_vmt_new(distr);
-/*    unur_vmt_set_marginalgen( par, uvgen ); */
-/*    unur_run_tests(par,RUN_TESTS); */
+  par = unur_vempk_new(distr);
   gen = unur_init(par);
 
   for (i=0; i<20; i++) {
@@ -62,7 +55,6 @@ int main()
 
   unur_distr_free(distr);
   unur_free(gen);
-/*    unur_free(uvgen); */
 
   exit (0);
 }

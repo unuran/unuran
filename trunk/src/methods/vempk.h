@@ -4,11 +4,11 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   FILE: empk.h                                                            *
+ *   FILE: vempk.h                                                           *
  *                                                                           *
  *   PURPOSE:                                                                *
- *         function prototypes for method EMPK                               *
- *         (EMPirical distribution with Kernel smoothing)                    *
+ *         function prototypes for method VEMPK                              *
+ *         ((Vector) EMPirical distribution with Kernel smoothing)           *
  *                                                                           *
  *   USAGE:                                                                  *
  *         only included in unuran.h                                         *
@@ -38,9 +38,12 @@
  *****************************************************************************/
 
 /* 
-   =METHOD  EMPK   EMPirical distribution with Kernel smoothing
+   =METHOD  VEMPK   (Vector) EMPirical distribution with Kernel smoothing
 
-   EMPK generates random variates from an empirical distribution that is
+*/
+
+#if 0
+   VEMPK generates random variates from an empirical distribution that is
    given by an observed sample. The idea is that simply choosing a random
    point from the sample and to return it with some added noise results
    in a method that has very nice properties, as it can be seen as sampling
@@ -64,79 +67,33 @@
    All other parameters are only necessary for people knowing the theory
    of kernel density estimation.
 
-*/
+ double smooth;/*should be mostly between 0 and 1, controls the smoothing*/ 
+ /*1. smooth estimate optimal for normal distribution, 0. no noise added
+   for bimodal distributions a value smaller than 1 should be used to
+   avoid oversmoothing;
+   if smooth is chosen very big (eg. 1000) together with varcor=1.
+   this results approximately in fitting the kernel distribution (multi
+   normal distribution) to the data*/
+
+
+
+#endif
 
 /*---------------------------------------------------------------------------*/
 /* Routines for user interface                                               */
 
 /* =ROUTINES */
 
-UNUR_PAR *unur_empk_new( UNUR_DISTR *distribution );
+UNUR_PAR *unur_vempk_new( UNUR_DISTR *distribution );
 /* Get default parameters for generator                                      */
 
 /*...........................................................................*/
 
-int unur_empk_set_kernel( UNUR_PAR *parameters, unsigned kernel);
-/* 
-   Select one of the supported kernel distributions. Currently the following 
-   kernels are supported:
-
-     UNUR_DISTR_GAUSSIAN     ... Gaussian (normal) kernel
-     UNUR_DISTR_EPANECHNIKOV ... Epanechnikov kernel
-     UNUR_DISTR_BOXCAR       ... Boxcar (uniform, rectangular) kernel
-     UNUR_DISTR_STUDENT      ... t3 kernel (Student's distribution with 3 degrees of freedom)
-     UNUR_DISTR_LOGISTIC     ... logistic kernel
-
-   For other kernels (including kernels with Student's distribution other with
-   3 degrees of freedom) use the unur_empk_set_kernelgen() call.
-
-   It is not possible to call unur_empk_set_kernel() twice.
-
-   Default is a Gaussian kernel.
-*/
-
-int unur_empk_set_kernelgen( UNUR_PAR *parameters, UNUR_GEN *kernelgen, double alpha, double kernelvar );
-/* 
-   Set generator for the kernel used for density estimation.
-
-   @var{alpha} is used to compute the optimal bandwidth from the point of
-   view of minimizing the mean integrated square error (MISE).
-   It depends on the kernel K and is given by 
-     alpha(K) = Var(K)^(-2/5)@{ \int K(t)^2 dt@}^(1/5)
-   For standard kernels (see above) alpha is computed by the algorithm.
-
-   @var{kernvar} is the variance of the used kernel. It is only required 
-   for the variance reduced version of the density estimation (which is 
-   used by default); otherwise it is ignored.
-   If @var{kernelvar} is nonpositive, variance correction is disabled.
-   For standard kernels (see above) kernvar is computed by the algorithm.
-
-   It is not possible to call unur_empk_set_kernelgen() after a standard kernel
-   has been selected by a unur_empk_set_kernel() call.
-
-   Notice that the uniform random number generator of the kernel
-   generator is overwritten during the unur_init() call and at each
-   unur_chg_urng() call with generator for the empirical
-   distribution.
-
-   Default is a Gaussian kernel.
-*/
-
-int unur_empk_set_beta( UNUR_PAR *parameters, double beta );
-/*
-  beta is used to compute the optimal bandwidth from the point of
-  view of minimizing the mean integrated square error (MISE).
-  beta depends on the (unknown) distribution of the sampled data
-  points. Thus its value contains some guess on this distribution.
-  By default Gaussian distribution is assumed for the sample
-  (beta = 1.3637439). There is no requirement to set beta.
-*/
-
-int unur_empk_set_smoothing( UNUR_PAR *parameters, double smoothing );
+int unur_vempk_set_smoothing( UNUR_PAR *parameters, double smoothing );
 /*
   The smoothing factor controlles how "smooth" the resulting density
   estimation will be. A smoothing factor equal to 0 results in naive
-  resampling. A very large smoothing factor (together with the
+  resampling. A very large smoothing factor (together with
   variance correction) results in a density which is approximately
   equal to the kernel.
   Default is 1 which results in a smoothing parameter minimising
@@ -144,12 +101,12 @@ int unur_empk_set_smoothing( UNUR_PAR *parameters, double smoothing );
   far away from normal.
 */
 
-int unur_empk_chg_smoothing( UNUR_GEN *generator, double smoothing );
+int unur_vempk_chg_smoothing( UNUR_GEN *generator, double smoothing );
 /* 
    Change smoothing factor in generator.
 */
 
-int unur_empk_set_varcor( UNUR_PAR *parameters, int varcor );
+int unur_vempk_set_varcor( UNUR_PAR *parameters, int varcor );
 /*
   Set whether the variance corrected version of the density estimation
   is used. If @code{varcor} is TRUE then the variance of the used
@@ -158,17 +115,10 @@ int unur_empk_set_varcor( UNUR_PAR *parameters, int varcor );
   Default is TRUE.
 */
 
-int unur_empk_chg_varcor( UNUR_GEN *generator, int varcor );
+int unur_vempk_chg_varcor( UNUR_GEN *generator, int varcor );
 /* 
    Switch variance correction in generator on/off.
    Default is FALSE.
-*/
-
-int unur_empk_set_positive( UNUR_PAR *parameters, int positive );
-/*
-  If @code{positive} is TRUE then only nonnegative random variates are
-  generated. This is done by means of mirroring technique.
-  Default is FALSE.
 */
 
 /* =END */

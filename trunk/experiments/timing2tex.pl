@@ -20,7 +20,7 @@ my $null;
 
 my $tag = \$null;
 
-my $Format = "%-5.3f";
+my $Format = "%-5.2f";
 
 #----------------------------------------------------------------------------
 # Read data ...
@@ -36,6 +36,7 @@ while(<STDIN>) {
 	$tag = \$dxm,next     if /^<Distribution x Method>/;
 	$tag = \$null;
     }
+    $_ =~ s/_/\\_/g;
     $$tag .= $_;
 }
 
@@ -50,31 +51,37 @@ if ($Debug) {
 unless ($distr and $method and $mxd) { die "data missing\n"; }
 
 #----------------------------------------------------------------------------
-# Print tables of distributions
-
+# Print table headng 
 print
     "\\begin{table}\n",
     "  \\centering\n",
-    "  \\caption{Distributions for timing tests}\n",
-    "  \\label{tab:timing-distributions}\n",
-    "  \\begin{tabular}{l\@{~~~}l}\n",
+    "  \\caption{Timing tests}\n",
+    "  \\label{tab:timing}\n";
+
+#----------------------------------------------------------------------------
+# Print tables of distributions
+
+print
+    "  \\mbox{}\\hfill\n",
+    "  \\begin{tabular}[t]{l\@{~~~}l}\n",
     "    \\hlinex\n",
-    "    Symbol \& Distribution \\\\\n",
+    "     Symbol \& Distribution \\\\\n",
     "    \\xhlinex\n";
 
 my @lines = split /\n/, $distr;
 my $n_distr = $#lines + 1;
 foreach my $l (@lines) {
     chomp $l;
+    $l =~ s/^\s*//;
     (my $symbol, my $name) = split /\s+\.\.\.\s+/, $l;
     $name =~ s/distr=\s*//;
-    print "      $symbol \& $name \\\\\n";
+    print "      {$symbol} \& $name \\\\\n";
 }
 
 print
     "    \\xhline\n",
     "  \\end{tabular}\n",
-    "\\end{table}\n\n";
+    "  \\hfill\\mbox{}\n";
 
 if ($Debug) { print STDERR "number of distributions = $n_distr\n"; }
 
@@ -82,13 +89,10 @@ if ($Debug) { print STDERR "number of distributions = $n_distr\n"; }
 # Print tables of Methods
 
 print
-    "\\begin{table}\n",
-    "  \\centering\n",
-    "  \\caption{Algorithms for timing tests}\n",
-    "  \\label{tab:timing-algorithms}\n",
-    "  \\begin{tabular}{l\@{~~~}l}\n",
+    "  \\mbox{}\\hfill\n",
+    "  \\begin{tabular}[t]{l\@{~~~}l}\n",
     "    \\hlinex\n",
-    "    Symbol \& Algorithm \\\\\n",
+    "      Symbol \& Algorithm \\\\\n",
     "    \\xhlinex\n";
 
 my @lines = split /\n/, $method;
@@ -97,13 +101,13 @@ foreach my $l (@lines) {
     chomp $l;
     (my $symbol, my $name) = split /\s+\.\.\.\s+/, $l;
     $name =~ s/method=\s*//;
-    print "      $symbol \& $name \\\\\n";
+    print "      {$symbol} \& $name \\\\\n";
 }
 
 print
     "    \\xhline\n",
     "  \\end{tabular}\n",
-    "\\end{table}\n\n";
+    "  \\hfill\\mbox{}\n";
 
 if ($Debug) { print STDERR "number of methods = $n_methods\n"; }
 
@@ -111,12 +115,9 @@ if ($Debug) { print STDERR "number of methods = $n_methods\n"; }
 # Print timings
 
 print
-    "\\begin{table}\n",
-    "  \\centering\n",
-    "  \\caption{Results of timing tests}\n",
-    "  \\label{tab:timing-result}\n";
+    "  \\par\\bigskip\n";
 printf
-    "  \\begin{tabular}{l*{%d}{\@{~~}l}}\n", $n_distr;
+    "  \\begin{tabular}{l*{%d}{\@{~~}c}}\n", $n_distr;
 print
     "    \\hlinex\n";
 
@@ -125,7 +126,7 @@ my @lines = split /\n/, $mxd;
 my $header = shift @lines;
 $header =~ s/\s+/ \& /g;
 print
-    "          $header\n",
+    "          $header \\\\\n",
     "    \\xhlinex\n";
 
 foreach my $l (@lines) {
@@ -134,7 +135,7 @@ foreach my $l (@lines) {
     $l =~ s/\s*$//;
     my @results = split /\s+/, $l;
     my $m = shift @results;
-    print "      $m";
+    print "    {$m}";
     foreach my $t (@results) {
 	my $s = ($t =~ /\d/) ? sprintf($Format,$t) : "--";
 	printf " \& %-8s",$s;
@@ -144,7 +145,12 @@ foreach my $l (@lines) {
 
 print
     "    \\xhline\n",
-    "  \\end{tabular}\n",
+    "  \\end{tabular}\n";
+
+#----------------------------------------------------------------------------
+# end of table
+
+print
     "\\end{table}\n\n";
 
 #----------------------------------------------------------------------------

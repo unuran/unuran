@@ -130,7 +130,8 @@ unur_distr_discr_new( void )
   DISTR.trunc[0] = DISTR.domain[0] = INT_MIN;   /* left boundary of domain   */
   DISTR.trunc[1] = DISTR.domain[1] = INT_MAX;   /* right boundary of domain  */
 
-  /* DISTR.mode      = 0.;            location of mode                       */
+  DISTR.mode     = 0;              /* location of mode                       */
+  DISTR.upd_mode = NULL;           /* funct for computing mode               */
 
   DISTR.sum     = 1.;              /* sum over PMF                           */
   DISTR.upd_sum = NULL;            /* funct for computing sum                */

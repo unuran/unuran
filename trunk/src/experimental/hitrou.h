@@ -176,7 +176,7 @@ int unur_hitrou_set_skip( UNUR_PAR *parameters, long skip );
 
    @emph{Notice}: This parameter must satisfy @var{skip}>=0.
 
-   Default: @code{10}.
+   Default: @code{0}.
 */
 
 int unur_hitrou_set_u_planes( UNUR_PAR *parameters, int u_planes );

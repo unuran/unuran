@@ -51,14 +51,14 @@ Cephes Math Library Release 2.8:  June, 2000
 Copyright 1984, 1987, 1989, 2000 by Stephen L. Moshier
 */
 
-#include "mconf.h"
+#include "source_mconf.h"
 /*
 extern double MAXNUM;
   this was changed to defines*/
 
 #ifdef UNK
 /* sqrt(2pi) */
-static double s2pi = 2.50662827463100050242E0;
+#define s2pi   M_SQRT2PI
 #endif
 
 

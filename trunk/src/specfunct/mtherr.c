@@ -43,7 +43,7 @@
  * mconf.h
  *
  */
-
+
 /*
 Cephes Math Library Release 2.0:  April, 1987
 Copyright 1984, 1987 by Stephen L. Moshier
@@ -51,9 +51,11 @@ Direct inquiries to 30 Frost Street, Cambridge, MA 02140
 */
 
 #include <stdio.h>
-#include "mconf.h"
+#include "source_mconf.h"
 
 int merror = 0;
+
+#ifdef DEBUG
 
 /* Notice: the order of appearance of the following
  * messages is bound to the error codes defined
@@ -69,19 +71,21 @@ static char *ermsg[7] = {
 "partial loss of precision"
 };
 
+#endif
 
 int mtherr( name, code )
 char *name;
 int code;
 {
 
+#ifdef DEBUG
+
 /* Display string passed by calling program,
  * which is supposed to be the name of the
  * function in which the error occurred:
  */
-#ifdef DEBUG
 printf( "\n%s ", name );
-#endif
+
 /* Set global error message word */
 merror = code;
 
@@ -90,15 +94,13 @@ merror = code;
  */
 if( (code <= 0) || (code >= 7) )
 	code = 0;
-#ifdef DEBUG
  printf( "%s error\n", ermsg[code] );
+
 #endif
+
 /* Return to calling
  * program
  */
 return( 0 );
 }
-
-
-
 

@@ -144,7 +144,7 @@ Copyright 1984, 1987, 1988, 1992, 2000 by Stephen L. Moshier
 */
 
 
-#include "mconf.h"
+#include "source_mconf.h"
 
 /*
 extern double SQRTH;

@@ -104,7 +104,7 @@ Copyright 1984, 1987, 1989, 1992, 2000 by Stephen L. Moshier
 */
 
 
-#include "mconf.h"
+#include "source_mconf.h"
 
 #ifdef UNK
 static double P[] = {
@@ -127,9 +127,8 @@ static double Q[] = {
  1.00000000000000000320E0
 };
 
-static double LOGPI = 1.14472988584940017414;
+#define LOGPI   M_LNPI            /* log(Pi) */
 #endif
-
 
 /* Stirling's formula for the gamma function */
 #if UNK
@@ -141,7 +140,7 @@ static double STIR[5] = {
  8.33333333333482257126E-2,
 };
 
-static double SQTPI = 2.50662827463100050242E0;
+#define SQTPI   M_SQRT2PI        /* sqrt(2*pi) */
 #endif
 
 int sgngam = 0;

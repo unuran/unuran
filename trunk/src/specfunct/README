@@ -1,3 +1,20 @@
+
+The code in this directory is taken from the CEPHES library by 
+Stephen L. Moshier and modified for UNURAN. It is not covered by the
+GNU Public License. The original library source can be found at 
+
+	http://www.netlib.org/cephes/
+
+were it is indicated as public domain. 
+
+March 26th, 2001
+Josef Leydold       (leydold@statistik.wu-wien.ac.at)
+Wolfgang Hoermann.
+
+The README file from netlib is given below.
+
+--------------------------------------------------
+
    Some software in this archive may be from the book _Methods and
 Programs for Mathematical Functions_ (Prentice-Hall, 1989) or
 from the Cephes Mathematical Library, a commercial product. In
@@ -13,5 +30,3 @@ integral.
    moshier@world.std.com
 
 --------------------------------------------------
-
-http://www.netlib.org/cephes/

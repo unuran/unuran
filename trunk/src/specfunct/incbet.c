@@ -59,7 +59,7 @@ Cephes Math Library, Release 2.8:  June, 2000
 Copyright 1984, 1995, 2000 by Stephen L. Moshier
 */
 
-#include "mconf.h"
+#include "source_mconf.h"
 
 /*#define MAXGAM 171.624376956302725*/
 #define MAXGAM (MAXLOG/log(MAXLOG))

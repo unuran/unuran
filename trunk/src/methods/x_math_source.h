@@ -58,6 +58,10 @@
 #define M_SQRT3    1.73205080756887729352744634151      /* sqrt(3) */
 #endif
 
+#ifndef M_SQRTH
+#define M_SQRTH    0.707106781186547524400844362105     /* sqrt(1/2) */
+#endif
+
 #ifndef M_PI
 #define M_PI       3.14159265358979323846264338328      /* pi */
 #endif
@@ -68,6 +72,10 @@
 
 #ifndef M_SQRTPI
 #define M_SQRTPI   1.77245385090551602729816748334      /* sqrt(pi) */
+#endif
+
+#ifndef M_SQRT2PI
+#define M_SQRT2PI  2.50662827463100050241576528481      /* sqrt(2*pi) */
 #endif
 
 #ifndef M_LN10

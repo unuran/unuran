@@ -139,6 +139,22 @@ double unur_test_timing_exponential( struct unur_par *par, int log_samplesize );
    unur_test_timing() to compute the relative timings results.
 */
 
+int unur_test_timing_total( const UNUR_PAR *parameters, double *time_0, double *time_6 );
+/* 
+   Timing. @var{parameters} is an parameter object for which average
+   times for sampling 1 and for sampling 1 million random variates 
+   (including setup). The results in micro seconds are stored in
+   @var{time_0} and @var{time_6}.
+   The sample sizes are selected automatically such that the 
+   total time for sampling takes about 2 seconds.
+
+   It returns @code{1} if the timing procedure was successful.
+
+   Notice: All timing results are subject to heavy changes. Reruning
+   timings usually results in different results. Minor changes in 
+   the source code can cause changes in such timings up to 20 percent.
+*/
+
 int unur_test_count_urn( UNUR_GEN *generator, int samplesize, int verbosity, FILE *out );
 /* 
    Count used uniform random numbers. It returns the total number of

@@ -55,6 +55,18 @@ static struct timeval tv;
 static char test_name[] = "Timing";
 /*---------------------------------------------------------------------------*/
 
+#define TIME_BOUND   1000000
+/*---------------------------------------------------------------------------*/
+/*  approximate time for running timing test unur_test_timing_total_run()    */
+/*---------------------------------------------------------------------------*/
+
+double unur_test_timing_total_run( const struct unur_par *par, int samplesize, int repeat );
+/*---------------------------------------------------------------------------*/
+/*  estimate average time (in micro seconds) for sampling 1 random variate   */
+/*---------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------*/
+
 /* compare two doubles (needed for sorting) */
 inline static int
 compare_doubles (const void *a, const void *b)
@@ -97,7 +109,6 @@ unur_test_timing( struct unur_par *par,
   int k;
   double x;
   double *vec = NULL;
-  int dim = 1;
   double time_uniform, time_exponential;
   double time_start, *time_gen;
   long samples, samplesize, log_samples;
@@ -114,6 +125,10 @@ unur_test_timing( struct unur_par *par,
   /* marginal generation time for one exponential random variate */
   time_exponential = unur_test_timing_exponential( par,log_samplesize );
 
+  /* we need an array for the vector */
+  if (_unur_gen_is_vec(par))
+    vec = _unur_malloc( par->distr->dim * sizeof(double) );
+
   /* initialize generator (and estimate setup time) */
   time_start = _unur_get_time();
   gen = _unur_init(par);
@@ -123,12 +138,6 @@ unur_test_timing( struct unur_par *par,
   if (!gen) {
     free (time_gen);
     return NULL;
-  }
-
-  /* we need an array for the vector */
-  if (_unur_gen_is_vec(par)) {
-    dim = unur_get_dimension(gen);
-    vec = _unur_malloc( dim * sizeof(double) );
   }
 
   /* evaluate generation time */
@@ -201,6 +210,157 @@ unur_test_timing( struct unur_par *par,
   return gen;
 
 } /* end of unur_test_timing() */
+
+/*---------------------------------------------------------------------------*/
+
+int 
+unur_test_timing_total( const struct unur_par *par, double *time_0, double *time_6 )
+     /*----------------------------------------------------------------------*/
+     /*  estimate average time (in micro seconds) for sampling 1 and         */
+     /*  for sampling 1 million random variates (including setup).           */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par            ... pointer to parameters for generator object      */
+     /*   time_0         ... average time for sampling 1 random variate      */
+     /*   time_6         ... average time for sampling 1 million r.v.        */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... success                                                      */
+     /*         store average generation times in `time_0' and `time_6'      */
+     /*   0 ... error                                                        */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return 0                                                           */
+     /*----------------------------------------------------------------------*/
+{
+#define REPEAT_0_PILOT 11         /* size of pilot study */
+
+  double time_pilot;
+  int repeat;
+
+  /* check parameter */
+  _unur_check_NULL(test_name,par,-1);
+
+  *time_0 = -1;
+  *time_6 = -1;
+
+  /* get time for sampling 1 random variate */
+
+  /* pilot study */
+  time_pilot = unur_test_timing_total_run(par,1,REPEAT_0_PILOT) / REPEAT_0_PILOT;
+  if (time_pilot < 0)
+    return 0;
+
+  /* now run timing test */
+  repeat = (int) (TIME_BOUND / time_pilot);
+  if (repeat <= 11)
+    /* there is no need to run this test again */
+    *time_0 = time_pilot;
+  else
+    *time_0 = unur_test_timing_total_run(par,1,repeat) / repeat;
+
+
+  /* get time for sampling 1 million random variate */
+
+  /* pilot study */
+/*    time_pilot = unur_test_timing_total_run(par,1000000,SIZE_0_PILOT) / SIZE_0_PILOT; */
+/*    if (time_pilot < 0) */
+/*      return 0; */
+
+  /* now run timing test */
+/*    repeat = (int) (TIME_BOUND / time_pilot); */
+/*    if (repeat <= 11) */
+    /* there is no need to run this test again */
+/*      *time_0 = time_pilot; */
+/*    else */
+/*      *time_0 = unur_test_timing_total_run(par,1,repeat) / repeat; */
+
+  /* o.k. */
+  return 1;
+
+#undef SIZE_0_PILOT
+} /* end of unur_test_timing_average() */
+
+/*---------------------------------------------------------------------------*/
+
+double unur_test_timing_total_run( const struct unur_par *par, int samplesize, int repeat )
+     /*----------------------------------------------------------------------*/
+     /*  estimate average time (in micro seconds) for sampling               */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par        ... pointer to parameters for generator object          */
+     /*   samplesize ... sample size                                         */
+     /*   repeat     ... number of samples (repetitions of sampling)         */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   total time in micro seconds                                        */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return -1                                                          */
+     /*----------------------------------------------------------------------*/
+{
+  struct unur_par *par_tmp;    /* temporary working copy of parameter opject */
+  struct unur_gen *gen_tmp;    /* temporary generator object                 */
+  int n;
+  double time_total = 0.;      /* total time for sampling                    */
+  double time_start;
+  int k;
+  double x;
+  double *vec = NULL;
+
+  /* check parameter */
+  _unur_check_NULL(test_name,par,-1.);
+  if (samplesize < 0 || repeat < 1) 
+    return -1.;
+
+  /* we need an array for the vector */
+  if (_unur_gen_is_vec(par))
+    vec = _unur_malloc( par->distr->dim * sizeof(double) );
+
+  /* make samples */
+  for (; repeat > 0; repeat--) {
+
+    /* make a working copy of parameter object */
+    par_tmp = _unur_malloc(sizeof(struct unur_par));
+    memcpy (par_tmp, par, sizeof(struct unur_par));
+
+    /* start timer */
+    time_start = _unur_get_time();
+
+    /* make generator object (init) */
+    gen_tmp = _unur_init(par_tmp);
+    if (!gen_tmp) return -1.;
+
+    /* run generator */
+    switch (gen_tmp->method & UNUR_MASK_TYPE) {
+    case UNUR_METH_DISCR:
+      for( n=1; n<samplesize; n++ )
+	k = unur_sample_discr(gen_tmp);
+      break;
+    case UNUR_METH_CONT:
+      for( n=1; n<samplesize; n++ )
+	x = unur_sample_cont(gen_tmp);
+      break;
+    case UNUR_METH_VEC:
+      for( n=1; n<samplesize; n++ )
+	unur_sample_vec(gen_tmp,vec);
+      break;
+    default: /* unknown ! */
+      _unur_error(test_name,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
+    }
+
+    /* stop timer */
+    time_total += _unur_get_time() - time_start;
+
+    /* destroy parameter object */
+    unur_free(gen_tmp);
+  }
+
+  /* free memory */
+  if (vec) free(vec);
+
+  return time_total;
+} /* end of unur_test_timing_total_run() */
 
 /*---------------------------------------------------------------------------*/
 

@@ -29,6 +29,8 @@ int main()
   UNUR_GEN *gen;
   int i;
 
+  double time_0, time_6;
+
   double unur_urng_mstd(void);
 
   double fpm[] = {1,5};
@@ -53,6 +55,9 @@ int main()
 
 /*    unur_test_chi2(gen, 10, 100, 5, 1, stdout); */
 
+  unur_test_timing_total(par, &time_0, &time_6 );
+
+  printf("time_0 = %g\n\n",time_0);
   
   unur_run_tests(par,RUN_TESTS);
 

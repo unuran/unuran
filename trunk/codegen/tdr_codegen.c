@@ -216,10 +216,7 @@ _unur_tdr_ps_codegen( struct unur_gen *gen, FILE *out, const char *rand_name, co
     fprintf(out,"\t\t\tX = iv[I].x + U / iv[I].fx * (1 - t/2.);\n");
     break;
   case TDR_VAR_T_SQRT:
-    fprintf(out,"\t\tif (iv[I].dTfx == 0.)\n");
-    fprintf(out,"\t\t\tX = iv[I].x + U / iv[I].fx;\n");
-    fprintf(out,"\t\telse\n");
-    fprintf(out,"\t\t\tX = iv[I].x + (U / iv[I].fx) / (1.-iv[I].Tfx*iv[I].dTfx*U);\n");
+    fprintf(out,"\t\tX = iv[I].x + (U * iv[I].Tfx * iv[I].Tfx) / (1.-iv[I].Tfx*iv[I].dTfx*U);\n");
     break;
   } /* end switch */
 

@@ -55,7 +55,7 @@ qstart.texi: scripts
 
 # run perl scripts
 scripts:
-	./change_distr.perl $(method_PATH)*.h
+	./change_distr.perl $(method_PATH)distr.h
 	./defaults.perl  $(method_PATH)*.c
 	./description.perl $(method_PATH)*.h
 	./distr.perl $(distr_PATH)c_*.c

@@ -31,11 +31,11 @@ while($_ = <>)
  
     foreach $type (@TYPES){
 
-	if ( $_ =~/^\s*($type\s+\*?unur_distr_cont_set_\w+)\s*\((.*\))\s*;/ ){
+	if ( $_ =~/^\s*($type\s+\*?unur_distr_cont_[A-Za-z_]+)\s*\((.*\))\s*;/ ){
            $CENABLE = 1;
            $DECL = $1;   # string before the braces
            $FUNC = $2;   # string between the braces 
-	   $DECL  =~ /(.*(\s+?|\*))(unur_distr_cont_set_(\w+))/;
+	   $DECL  =~ /(.*(\s+?|\*))(unur_distr_cont_([A-Za-z_]+))/;
            $DECL1 = $1;
 	   $DECL2 = $4;
            $DECL3 = $3;
@@ -53,16 +53,17 @@ while($_ = <>)
 	   chomp;
 	   while ($_ !~ /^\s*$/){
 	       $print = join '', split /\s*\*\// , ( join '', split /\/\*/, $_);
+               $print = join '', split /\(=>\)/ , $print;
 	       print OUTFILE $print, "\n";
 	       $_ = <>;
 	       chomp;
 	   }
        }
-	elsif ( $_ =~/^\s*($type\s+unur_distr_discr_set_\w+)\s*\((.*\))\s*;/ ){
+	elsif ( $_ =~/^\s*($type\s+unur_distr_discr_[A-Za-z_]+)\s*\((.*\))\s*;/ ){
            $CENABLE = 1;
            $DECL = $1;   # string before the braces
            $FUNC = $2;   # string between the braces 
-	   $DECL  =~ /(.*(\s+?|\*))(unur_distr_discr_set_(\w+))/;
+	   $DECL  =~ /(.*(\s+?|\*))(unur_distr_discr_([A-Za-z_]+))/;
            $DECL1 = $1;
 	   $DECL2 = $4;
            $DECL3 = $3;
@@ -80,6 +81,7 @@ while($_ = <>)
 	   chomp;
 	   while ($_ !~ /^\s*$/){
 	       $print = join '', split /\s*\*\// , ( join '', split /\/\*/, $_);
+               $print = join '', split /\(=>\)/ , $print;
 	       print OUTFILE $print, "\n";
 	       $_ = <>;
 	       chomp;
@@ -89,7 +91,7 @@ while($_ = <>)
            $CENABLE = 1;
            $DECL = $1;   # string before the braces
            $FUNC = $2;   # string between the braces 
-	   $DECL  =~ /(.*(\s+?|\*))(unur_distr_(\w+))/;
+	   $DECL  =~ /(.*(\s+?|\*))(unur_distr_([A-Za-z_]+))/;
            $DECL1 = $1;
 	   $DECL2 = $4;
            $DECL3 = $3;
@@ -108,6 +110,7 @@ while($_ = <>)
 	   while ($_ !~ /^\s*$/){
                if ($_ =~ /\*\//){print OUTFILE "\@*"}
 	       $print = join '', split /\s*\*\// , ( join '', split /\/\*/, $_);
+               $print = join '', split /\(=>\)/ , $print;
 	       print OUTFILE $print, "\n";
 	       $_ = <>;
 	       chomp;

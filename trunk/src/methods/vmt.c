@@ -328,18 +328,25 @@ _unur_vmt_create( struct unur_par *par )
   /* dimension of distribution */
   GEN.dim = gen->distr.dim; 
 
-  /* mean vector */
+  /* copy mean vector */
   if (DISTR.mean) {
     DISTR.mean = _unur_malloc( GEN.dim * sizeof(double) );
     memcpy( DISTR.mean, par->distr->data.cvec.mean, GEN.dim * sizeof(double) );
   }
-  /* else: DISTR.mean == NULL  --> (0,0,...,0) */
+  else {
+    _unur_error(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
+    return NULL;
+  }
 
+  /* copy covariance matrix */
   if (DISTR.covar) {
     DISTR.covar = _unur_malloc( GEN.dim * GEN.dim * sizeof(double) );
     memcpy( DISTR.covar, par->distr->data.cvec.covar, GEN.dim * GEN.dim * sizeof(double) );
   }
-  /* else: DISTR.covar == NULL  --> identity matrix */
+  else {
+    _unur_error(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
+    return NULL;
+  }
 
   /* set generator identifier */
   gen->genid = _unur_set_genid(GENTYPE);
@@ -470,8 +477,8 @@ _unur_vmt_free( struct unur_gen *gen )
 
   /* free memory */
   if (!(gen->set & VMT_SET_UVGEN)) unur_free(GEN.uvgen);
-  if (DISTR.mean) free(DISTR.mean);
-  if (DISTR.covar) free(DISTR.covar);
+  free(DISTR.mean);
+  free(DISTR.covar);
   free(GEN.cholesky);
   _unur_free_genid(gen);
   free(gen);

@@ -359,22 +359,24 @@ unur_distr_cvec_set_mean( struct unur_distr *distr, double *mean )
      /*   0 ... on error                                                     */
      /*----------------------------------------------------------------------*/
 {
+  int i;
+
   /* check arguments */
   _unur_check_NULL( NULL, distr, 0 );
   _unur_check_distr_object( distr, CVEC, 0 );
 
-  if (mean) {
-    if (DISTR.mean == NULL)
-      /* we have to allocate memory first */
-      DISTR.mean = _unur_malloc( distr->dim * sizeof(double) );
-    /* copy data */
-    memcpy( DISTR.mean, mean, distr->dim * sizeof(double) );
-  }
+  /* we have to allocate memory first */
+  if (DISTR.mean == NULL)
+    DISTR.mean = _unur_malloc( distr->dim * sizeof(double) );
 
-  else { /* mean == NULL */
-    /* we do not need the allocated memory any more */
-    if (DISTR.mean) free (DISTR.mean);
-  }
+  if (mean)
+    /* mean vector given --> copy */
+    memcpy( DISTR.mean, mean, distr->dim * sizeof(double) );
+
+  else  /* mean == NULL --> use zero vector instead */
+    for (i=0; i<distr->dim; i++)
+      DISTR.mean[i] = 0.;
+
 
   if ( (distr->set & UNUR_DISTR_SET_MODE) &&
        DISTR.mode == DISTR.mean) 
@@ -441,38 +443,40 @@ unur_distr_cvec_set_covar( struct unur_distr *distr, double *covar )
 
   dim = distr->dim;
 
-  /* check covariance matrix: diagonal entries > 0 */
   if (covar) {
+    /* check covariance matrix: diagonal entries > 0 */
     for (i=0; i<dim*dim; i+= dim+1)
       if (covar[i] <= 0.) {
 	_unur_error(distr->name ,UNUR_ERR_DISTR_DOMAIN,"variance <= 0");
 	return 0;
       }
-  }
 
-  /* check for symmetry */
-  for (i=0; i<dim; i++)
-    for (j=i+1; j<dim; j++)
-      if (!_unur_FP_equal(covar[i*dim+j],covar[j*dim+i])) {
-	_unur_error(distr->name ,UNUR_ERR_DISTR_DOMAIN,"covariance matrix not symmetric");
-	return 0;
-      }
+    /* check for symmetry */
+    for (i=0; i<dim; i++)
+      for (j=i+1; j<dim; j++)
+	if (!_unur_FP_equal(covar[i*dim+j],covar[j*dim+i])) {
+	  _unur_error(distr->name ,UNUR_ERR_DISTR_DOMAIN,"covariance matrix not symmetric");
+	  return 0;
+	}
+  }
+  /* else: covar == NULL --> use identity matrix */
 	
   /* there is no check for positive definitness yet.        */
   /* this can be done easily during cholesky decomposition. */
 
-  if (covar) {
-    if (DISTR.covar == NULL)
-      /* we have to allocate memory first */
-      DISTR.covar = _unur_malloc( dim * dim * sizeof(double) );
-    /* copy data */
-    memcpy( DISTR.covar, covar, dim * dim * sizeof(double) );
-  }
+  /* we have to allocate memory first */
+  if (DISTR.covar == NULL)
+    DISTR.covar = _unur_malloc( dim * dim * sizeof(double) );
 
-  else { /* covar == NULL */
-    /* we do not need the allocated memory any more */
-    if (DISTR.covar) free (DISTR.covar);
-  }
+
+  if (covar)
+    /* covariance vector given --> copy data */
+    memcpy( DISTR.covar, covar, dim * dim * sizeof(double) );
+
+  else  /* covar == NULL --> use identity matrix instead */
+    for (i=0; i<dim; i++)
+      for (j=0; j<dim; j++)
+      	DISTR.covar[i*dim + j] = (i==j) ? 1. : 0.;
 
   /* changelog */
   distr->set |= UNUR_DISTR_SET_COVAR;

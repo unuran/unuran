@@ -17,8 +17,9 @@ $JAVA_exec = "./Uniftest";
 
 ####################################################
 
-$seed = 12345;
-$sample_size = 10;
+$seed = int(rand 12345678) + 1;
+$sample_size = 10000;
+$accuracy = 1.0e-15;
 
 ####################################################
 
@@ -38,6 +39,8 @@ system "javac $JAVA_src";
 # Print Test data
 print "seed = $seed\n";
 print "sample size = $sample_size\n";
+print "accuracy = $accuracy\n";
+print "languages = C, FORTRAN, JAVA\n";
 
 # Start generators
 open C, "$C_exec |" or die "cannot run $C_exec"; 
@@ -45,18 +48,25 @@ open FORTRAN, "$FORTRAN_exec |" or die "cannot run $FORTRAN_exec";
 open JAVA, "java $JAVA_exec |" or die "cannot run $JAVA_exec"; 
 
 # Run generatores and compare output
-$n_diffs = 0;
+$FORTRAN_n_diffs = 0;
+$JAVA_n_diffs = 0;
 while ($C_out = <C>) {
     $FORTRAN_out = <FORTRAN>;
     $JAVA_out = <JAVA>;
     chomp $C_out;
     chomp $FORTRAN_out;
+    chomp $JAVA_out;
 
-    $diff = abs($C_out - $FORTRAN_out);
+    $FORTRAN_diff = abs($C_out - $FORTRAN_out);
+    $JAVA_diff = abs($C_out - $JAVA_out);
 
-    if ($diff > 1.0e-15) {
-	++$n_diffs;
-	print "C = $C_out\tFORTRAN = $FORTRAN_out\tdifference = $diff\n";
+    if ($FORTRAN_diff > $accuracy) {
+	++$FORTRAN_n_diffs;
+	print "C = $C_out\tFORTRAN = $FORTRAN_out\tdifference = $FORTRAN_diff\n";
+    }
+    if ($JAVA_diff > $accuracy) {
+	++$JAVA_n_diffs;
+	print "C = $C_out\tJAVA = $JAVA_out\tdifference = $JAVA_diff\n";
     }
 }
 
@@ -67,18 +77,23 @@ close JAVA;
 
 ####################################################
 
-if ($n_diffs > 0) {
-    print "Test FAILED\n";
-    exit (1);
+$exitcode = 0;
+
+if ($FORTRAN_n_diffs > 0) {
+    print "FORTRAN Test FAILED\n";
+    ++$exitcode;
 }
-else {
+if ($JAVA_n_diffs > 0) {
+    print "JAVA Test FAILED\n";
+    ++$exitcode;
+}
+if ($exitcode == 0) {
     print "Test PASSED\n";
-    exit (0);
 }
 
 ####################################################
 
-exit (1);
+exit ($exitcode);
 
 
 ####################################################
@@ -295,9 +310,3 @@ EOX
 } # end of make_JAVA_src() 
 
 ####################################################
-
-
-
-
-
-

@@ -16,4 +16,4 @@ test: test.c ../src/unuran.h ../src/libunuran.a
 
 clean:
 	rm -f *~ *.o run test run_acg getopttst unuran.log
-	rm -f uniftest.c uniftest_c uniftest.f uniftest_f uniftest.java
+	rm -f uniftest.c uniftest_c uniftest.f uniftest_f uniftest.java Uniftest.class Urand.class

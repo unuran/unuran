@@ -69,6 +69,16 @@ typedef int _UNUR_SAMPLING_ROUTINE_DISCR(struct unur_gen *gen);
 /* for multivariate continuous distribution */
 typedef void _UNUR_SAMPLING_ROUTINE_VEC(struct unur_gen *gen, double *vec);
 
+/*---------------------------------------------------------------------------*/
+/* Generic function                                                          */
+
+typedef double UNUR_FUNCT_GENERIC (double x, void *params);
+
+struct unur_funct_generic {
+  UNUR_FUNCT_GENERIC *f;
+  void *params;
+};
+
 /*****************************************************************************/
 /**  Auxiliary tools                                                        **/
 /*****************************************************************************/
@@ -136,9 +146,6 @@ typedef void _UNUR_SAMPLING_ROUTINE_VEC(struct unur_gen *gen, double *vec);
 /* wrappers for special generators for standard distributions */
 #include <methods/cstd_struct.h>     /* continuous */
 #include <methods/dstd_struct.h>     /* discrete   */
-
-/* structure for generic functions */
-#include <utils/fminmax_struct.h>
 
 /*****************************************************************************/
 /**  Main structure for all UNURAN generators                               **/  

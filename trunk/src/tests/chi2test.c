@@ -49,6 +49,9 @@
 #define CHI2_CLASSMIN_DEFAULT  20  /* minimum number of observations in class */
 #define CHI2_INTERVALS_DEFAULT 50  /* number of intervals for chi^2 test     */
 
+/* constants */
+#define CHI2_MAX_SAMPLESIZE 1000000
+
 /*---------------------------------------------------------------------------*/
 static char test_name[] = "Chi^2-Test";
 /*---------------------------------------------------------------------------*/
@@ -179,6 +182,8 @@ _unur_test_chi2_discr( struct unur_gen *gen,
   if( samplesize <= 0 )
     samplesize = (INT_MAX/n_prob > n_prob) ? n_prob*n_prob : INT_MAX;
 
+  samplesize = min( samplesize, CHI2_MAX_SAMPLESIZE );
+
   /* now run generator */
   for( i=0; i<samplesize; i++ ) {
     /* sample */
@@ -273,6 +278,8 @@ _unur_test_chi2_cont(struct unur_gen *gen,
   /* samplesize */
   if( samplesize <= 0 )
     samplesize = (INT_MAX/intervals > intervals) ? intervals*intervals : INT_MAX;
+
+  samplesize = min( samplesize, CHI2_MAX_SAMPLESIZE );
 
   /* compute Fl and Fr */
   if (gen->distr.set & UNUR_DISTR_SET_TRUNCATED) {

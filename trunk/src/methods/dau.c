@@ -329,16 +329,8 @@ _unur_dau_init( struct unur_par *par )
   if (!gen) { free(par); return NULL; }
 
   /* probability vector */
-  if (DISTR.prob) {
-    /* probability vector given by user */
-    prob = DISTR.prob;
-    n_prob = DISTR.n_prob;
-  }
-  else {
-    _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"PV"); 
-    free(par); _unur_free(gen);
-    return NULL;
-  }
+  prob = DISTR.prob;
+  n_prob = DISTR.n_prob;
 
   /* compute sum of all probabilities */
   for( sum=0, i=0; i<n_prob; i++ ) {
@@ -485,9 +477,14 @@ _unur_dau_create( struct unur_par *par)
     DISTR.prob = _unur_malloc( DISTR.n_prob * sizeof(double) );
     memcpy( DISTR.prob, par->distr->data.discr.prob, DISTR.n_prob * sizeof(double) );
   }
-  else
+  else {
     /* try to compute PV */
-    unur_distr_discr_make_prob(&(gen->distr));
+    if (unur_distr_discr_make_prob(&(gen->distr)) <= 0) {
+      /* not successful */
+      _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"PV"); 
+      free(gen); return NULL;
+    }
+  }
 
   /* routines for sampling and destroying generator */
   SAMPLE = _unur_dau_sample;

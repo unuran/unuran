@@ -103,6 +103,9 @@ int unur_distr_discr_make_prob( UNUR_DISTR *distribution );
    defined in @file{unuran_config.h}.
    If successful the length of the generated probablity vector is
    returned.
+   If the sum over the PMF on the chopped tail is not neglible small,
+   then the last entry of the computed PV contains this sum and the
+   negative of the length of the PV is returned.
 
    Notice that when a discrete distribution object is created from
    scratch, then the left boundary is set to @code{INT_MIN}. Therefore
@@ -112,6 +115,7 @@ int unur_distr_discr_make_prob( UNUR_DISTR *distribution );
 
    If computing a PV fails for some reasons, @code{0} is returned and
    @code{unur_errno} is set to @code{UNUR_ERR_DISTR_SET}.
+
    Notice that it is not possible to execute this call when the
    distribution object already contains a PV.
 */

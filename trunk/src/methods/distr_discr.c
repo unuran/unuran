@@ -251,8 +251,10 @@ unur_distr_discr_make_prob( struct unur_distr *distr )
      /*   return 0                                                           */
      /*----------------------------------------------------------------------*/
 {
-  double *prob;    /* pointer to probability vector */
-  int n_prob;      /* length of PV */
+  double *prob;        /* pointer to probability vector */
+  int n_prob;          /* length of PV */
+  double sum = 0.;     /* accumulated sum of PV */
+  int valid;           /* whether cumputed PV is valid */
   int i;
 
   /* check arguments */
@@ -286,13 +288,14 @@ unur_distr_discr_make_prob( struct unur_distr *distr )
     prob = _unur_malloc( n_prob * sizeof(double) );
     for (i=0; i<n_prob; i++)
       prob[i] = _unur_discr_PMF(DISTR.domain[0]+i,distr);
+    
+    valid = TRUE;
   }
 
   else {
     /* second case: domain too big but sum over PMF given       */
 #define MALLOC_SIZE 1000 /* allocate 1000 doubles at once       */
 
-    double sum = 0.;     /* accumulated sum                     */
     int n_alloc = 0;     /* number of doubles allocated         */
     
     int max_alloc;       /* maximal number of allocated doubles */
@@ -312,13 +315,19 @@ unur_distr_discr_make_prob( struct unur_distr *distr )
       if (_unur_FP_approx(DISTR.sum, sum) )
 	break;
     } while (n_alloc <= max_alloc );
-    
+
+    /* store remaining part in last entry (but take care about round off errors) */
+    prob[n_prob-1] += (DISTR.sum > sum) ? (DISTR.sum - sum) : 0.;
+
+    /* make a warning if computed PV might not be valid */
     if (!_unur_FP_approx(DISTR.sum, sum) ) {
       /* not successful */
-      free (prob);
-      _unur_error(distr->name,UNUR_ERR_DISTR_GET,"cannot compute PV");
-      return 0;
+      _unur_warning(distr->name,UNUR_ERR_DISTR_GET,"cannot compute PV");
+      valid = FALSE;
     }
+    else
+      valid = TRUE;
+    
 #undef MALLOC_SIZE
   }
     
@@ -327,7 +336,7 @@ unur_distr_discr_make_prob( struct unur_distr *distr )
   DISTR.n_prob = n_prob;
 
   /* o.k. */
-  return 1;
+  return (valid) ? n_prob : -n_prob;
 } /* end of unur_distr_discr_make_prob() */
 
 /*---------------------------------------------------------------------------*/

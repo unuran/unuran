@@ -549,10 +549,6 @@ unur_distr_cont_set_domain( struct unur_distr *distr, double left, double right 
     _unur_error(NULL,UNUR_ERR_DISTR_SET,"domain, left >= right");
     return 0;
   }
-  if (left < DISTR.domain[0] || right > DISTR.domain[1]) {
-    _unur_error(NULL,UNUR_ERR_DISTR_SET,"domain exceeds old domain, not allowed");
-    return 0;
-  }
 
   /* store data */
   DISTR.trunc[0] = DISTR.domain[0] = left;

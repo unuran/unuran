@@ -61,8 +61,8 @@ $file_name =~ s#^.*/##g;
 $file_name =~ s/\.conf$//;
 
 # name of log files
-my $file_testlog = "t\_$file_name\_test\.log";
-my $file_unuranlog = "t\_$file_name\_unuran\.log";
+my $file_testlog = "$file_name\_test\.log";
+my $file_unuranlog = "$file_name\_unuran\.log";
 
 # open files ...
 open (IN,"$file_in")    or die "Cannot open file $file_in for reading";

@@ -902,14 +902,15 @@ _unur_varou_cones_split( struct unur_gen *gen )
   struct unur_varou_cone *c1; 
   struct unur_varou_cone *c2;
   
-
   dim = GEN.dim;
 
   /* volume enclosed by surface v^(dim+1)=pdf(u,v) */
   potato_volume=1./(dim+1.);
 
+#if VAROU_DEBUG
 /* quick and dirty debugging */
 printf("n_cone; n_inf; vol; vol-vol0; rho\n"); 
+#endif
 
   while (GEN.n_cone <= VAROU_MAX_CONES) {
 
@@ -933,10 +934,12 @@ printf("n_cone; n_inf; vol; vol-vol0; rho\n");
       mean_volume=sum_volume+1.; 
     }
 
+#if VAROU_DEBUG
 /* quick and dirty debugging */
 printf("%8ld; %8ld; %e; %e; %e\n", 
         GEN.n_cone, GEN.n_cone - n_bounded, sum_volume, 
 	sum_volume-potato_volume, sum_volume/potato_volume - 1.);
+#endif
 
     /* splitting of cones with volume >= mean_volume */
     nc=GEN.n_cone; 
@@ -1028,9 +1031,12 @@ done_splitting:
       sum_volume += GEN.cone_list[ic]->volume;
     }
   }
+
+#if VAROU_DEBUG
   printf("%8ld; %8ld; %e; %e; %e\n", 
          GEN.n_cone, GEN.n_cone - n_bounded, sum_volume, 
          sum_volume-potato_volume, sum_volume/potato_volume - 1.);
+#endif
 
   return;
 } /* end of _unur_varou_cones_split() */

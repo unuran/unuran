@@ -76,18 +76,34 @@ _unur_tdr_ps_codegen( struct unur_gen *gen, FILE *out, const char *rand_name, co
      /*   return 0                                                           */
      /*----------------------------------------------------------------------*/
 {
-  const char hline[] = "\n/* ------------------------- */\n/* %-25s */\n/* ------------------------- */\n\n";
 
   struct unur_tdr_interval *iv;
   int i,j;
+  char buffer[80], transf[80];
 
   /* check arguments */
   _unur_check_NULL("ACG",gen, 0);
   COOKIE_CHECK(gen,CK_TDR_GEN,0);
 
+  /* make section header for code file */
+  sprintf(buffer,"Sampling from %.35s distribution.",gen->distr.name);
+  switch( gen->variant & TDR_VARMASK_T ) {
+  case TDR_VAR_T_LOG:
+    sprintf(transf,"        Transformtaion = log(x) ... c = 0");         break;
+  case TDR_VAR_T_SQRT:
+    sprintf(transf,"        Transformtaion = -1/sqrt(x)  ... c = -1/2"); break;
+  case TDR_VAR_T_POW:
+    sprintf(transf,"        Transformtaion = -x^c  ... c = %g",GEN.c_T); break;
+  }
+  _unur_acg_print_sectionheader
+    ( out, 3, 
+      buffer,
+      "Method: TDR - PS (Transformed Density Rejection / prop. squeeze)",
+      transf
+      );
+
   /* sampling routine */
-  fprintf(out,hline,"Sampling");
-  fprintf(out,"double %s(void)\n{\n",rand_name);
+  fprintf(out,"double %s (void)\n{\n",rand_name);
 
   /* constants */
   fprintf(out,"\t/* data */\n");
@@ -221,8 +237,6 @@ _unur_tdr_ps_codegen( struct unur_gen *gen, FILE *out, const char *rand_name, co
 
   /* end of function */
   fprintf(out,"}\n");
-
-  fprintf(out,hline,"End");
 
   /* o.k. */
   return 1;

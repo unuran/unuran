@@ -103,8 +103,7 @@ sub make_codegen_tests
     my $test_header = <<EOX;
 \#include <string.h>
 \#include <float.h>
-\#include <unuran.h>
-\#include <config.h>
+\#include \"codegen_source.h\"
 
 \#ifdef WITH_DMALLOC
 \#  include <dmalloc.h>
@@ -114,7 +113,7 @@ sub make_codegen_tests
 \#  error UNUR_URNG_TYPE must be set to UNUR_URNG_PRNG in unuran_config.h
 \#endif
 
-\#define FP_equal(a,b)  ((a)==(b) ||  fabs((a)-(b)) <= ((fabs(a)<fabs(b))?fabs(a):fabs(b))*1000*DBL_EPSILON)
+\#define FP_equal(a,b)  ((a)==(b) ||  fabs((a)-(b)) <= ((fabs(a)<fabs(b))?fabs(a):fabs(b))*UNUR_SQRT_DBL_EPSILON)
 
 /* We use global variables for the uniform random number generators */
 static struct prng *urng1 = NULL;
@@ -141,7 +140,7 @@ EOX
 
 	# short name for distribution
 	my $distr_short = $distr;
-	$distr_short =~ s/\_[^\_]+$//;
+	$distr_short =~ s/\_.*$//;
 	my $distr_print_name;
 	if ($last_distr_short ne $distr_short) {
 	    $distr_print_name = "\tprintf(\" $distr_short \");\n";
@@ -201,12 +200,13 @@ EOX
 	    # Print info on screen
 	    $test_test_body .= $distr_print_name; 
 	    $test_test_body .= "\tfflush(stdout);\n\n";
+	    $distr_print_name = ""; # but only once for each distribution
 
 	    # Compare generator output
 	    $test_test_body .= <<EOX;
 \tfor (i=0; i<$SAMPLE_SIZE; i++) {
 \t\tx1 = unur_sample_cont(gen);
-\t\tx2 = rand_$distr();
+\t\tx2 = rand_$distr\_$gen();
 \t\tif (!FP_equal(x1,x2)) {
 \t\t\tfprintf(stderr,\"error! %%g, %%g, diff = %%g\\n\",x1,x2,x1-x2);
 \t\t\t++n_failed;
@@ -270,7 +270,7 @@ EOX
 
 	    # Make code
 	    $make_test_body .=
-		"\tunur_acg(gen,out,\"$distr\");\n\n".   # make code 
+		"\tunur_acg(gen,out,\"$distr\_$gen\");\n\n".   # make code 
 		"\tunur_distr_free(distr);\n".           # free distribution object
 		"\tunur_free(gen);\n\n";                 # free generator object
 

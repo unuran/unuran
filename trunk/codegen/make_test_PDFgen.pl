@@ -100,7 +100,8 @@ sub make_PDFgen_tests
 \#include <float.h>
 \#include <unuran.h>
 \#include <config.h>
-\#include \"PDFgen_source.h\"
+\#include \"codegen_source.h\"
+
 \#ifdef WITH_DMALLOC
 \#  include <dmalloc.h>
 \#endif
@@ -109,7 +110,7 @@ sub make_PDFgen_tests
 \#  error UNUR_URNG_TYPE must be set to UNUR_URNG_PRNG in unuran_config.h
 \#endif
 
-\#define FP_equal(a,b)  ((a)==(b) ||  fabs((a)-(b)) <= ((fabs(a)<fabs(b))?fabs(a):fabs(b))*1000*DBL_EPSILON)
+\#define FP_equal(a,b)  ((a)==(b) ||  fabs((a)-(b)) <= ((fabs(a)<fabs(b))?fabs(a):fabs(b))*UNUR_SQRT_DBL_EPSILON)
 
 /* We use a global variable for an auxilliary generators */
 static UNUR_GEN *gen_aux = NULL;

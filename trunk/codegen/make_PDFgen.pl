@@ -132,7 +132,7 @@ sub make_PDFgen_C
 
 	# Write PDF
 	$PDFgen .= 
-	    "\t_unur_acg_print_sectionheader(out, 1, \"PDF for $d distribution\");\n\n".
+	    "\t_unur_acg_print_sectionheader(out, 1, \"PDF for $d distribution.\");\n\n".
 	    $PDFname.
 	    $PDFconst.
 	    $PDFbody;
@@ -282,21 +282,6 @@ sub make_bar_C
 
     return $bar;
 } # end of make_bar_C()
-
-# ----------------------------------------------------------------
-# Make section header for PDF code
-
-sub make_section_C
-{
-    my $DISTR = $_[0];    # data for distributions
-    my $d = $_[1];        # name of distribution
-
-    my $string = "\t_unur_acg_print_sectionheader(out, 1, \"PDF for $d distribution\");\n";
-
-
-    return $string;
-
-} # end of make_section_C()
 
 # ----------------------------------------------------------------
 

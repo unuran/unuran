@@ -83,7 +83,7 @@ _unur_acg_print_sectionheader( FILE *out, int n_lines, ... )
   fprintf (out, hrule);
   for (; n_lines>0; n_lines--) {
     string = va_arg( ap, char* );
-    fprintf(out,"/* %-64s */\n",string);
+    fprintf(out,"/* %-64.64s */\n",string);
   }
   fprintf (out, hrule);
   fprintf (out,"\n");

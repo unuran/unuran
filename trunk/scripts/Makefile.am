@@ -16,15 +16,14 @@ unur_fp_const_source.h: compute_machine_constants
 	cp unur_fp_const_source.h $(top_builddir)/src/utils/
 
 # we do not put unur_fp_const_source.h into the distribution
-dist-hook:
-	rm -f $(distdir)/unur_fp_const_source.h
+##dist-hook:
+##	rm -f $(distdir)/unur_fp_const_source.h
 
 # clean backup files
 CLEANFILES = \
- *~ \
- unur_fp_const_source.h
-
+ *~
 
 # clean generated files
 MAINTAINERCLEANFILES = \
- Makefile.in
+ Makefile.in \
+ unur_fp_const_source.h

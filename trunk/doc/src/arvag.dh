@@ -367,7 +367,28 @@
    better fitting envelopes, like method AROU (@pxref{AROU}), or even
    avoid the computation of these design constants and thus have
    almost no setup, like method SROU (@pxref{SROU}).
+
+   @subheading The Generalized Ratio-of-Uniforms Method
+
+   The Ratio-of-Uniforms method can be generalized: If a point
+   @unurmath{(U,V)} is uniformly distributed in the set
+   @display
+   @unurmath{A_f= \{(u,v)\colon 0 < v \leq (f(u/v^r+\mu))^{1/(r+1)}\}}
+   @end display
+   then @unurmath{X=U/V^r+\mu} has the denity @unurmath{f(x)}.
+   The minimal bounding rectangle of this region is given by 
+   @unurmath{(u^-,u^+)\times (0,v^+)} where
    
+   @display
+   @unurmath{v^+ = \sup\limits_{b_l<x<b_r}         (f(x))^{1/(r+1)},} @*
+   @unurmath{u^- = \inf\limits_{b_l<x<b_r} (x-\mu) (f(x))^{r/(r+1)},} @*
+   @unurmath{u^+ = \sup\limits_{b_l<x<b_r} (x-\mu) (f(x))^{r/(r+1)}.}
+   @end display
+
+   The above algorithm has then to be adjusted accordingly.
+   Notice that the original Ratio-of-Uniforms method is the special
+   case with @unurmath{r=1}.
+
 =EON
 */
 /* ------------------------------------------------------------------------- */

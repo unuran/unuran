@@ -3,7 +3,7 @@ dnl $Id$
 
 dnl Initialize.
 AC_PREREQ(2.57)
-AC_INIT([UNURAN], [0.4.1], [unuran@statistik.wu-wien.ac.at])
+AC_INIT([UNURAN], [0.4.2], [unuran@statistik.wu-wien.ac.at])
 AM_INIT_AUTOMAKE
 AC_CONFIG_SRCDIR([src/unuran_config.h])
 AC_CONFIG_HEADER([config.h])
@@ -12,8 +12,9 @@ dnl Library versioning (current:revision:age)
 dnl See the libtool manual for an explanation of the numbers
 dnl 
 dnl unuran-0.4.0   0:0:0
+dnl unuran-0.4.2   1:0:1
 
-UNURAN_LT_VERSION="0:0:0"
+UNURAN_LT_VERSION="1:0:1"
 AC_SUBST([UNURAN_LT_VERSION])
 
 dnl Add dmalloc support.

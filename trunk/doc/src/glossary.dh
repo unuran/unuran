@@ -38,7 +38,7 @@ We only deal with transformations @unurmath{T_c}, where
 @item @i{c} = @math{-0.5}
 @unurmath{T(x) = -1/\sqrt{x}}
 @item @i{c} != 0
-@unurmath{T(x) = \sign(x) \cdot x^c}
+@unurmath{T(x) = sign(x) \cdot x^c}
 @end table
 
 @end table

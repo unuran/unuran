@@ -1526,7 +1526,7 @@ sub next_tex_token {
 	    $$info .= $value;
 	    return;
 	}
-	if ($value =~ /^\\(inf|sup|min|max|log|sign)\s*$/) {
+	if ($value =~ /^\\(inf|sup|min|max|log)\s*$/) {
 	    # macros that are printed as is in non-TeX formats
 	    $$tex .= $value;
 	    $$html .= " $1";

@@ -172,7 +172,7 @@ logarithmic_lsk_init( struct unur_gen *gen )
     h=log(1.0 - theta);
   /* -X- end of setup code -X- */
 
-} /* end of logarithmic_zet_init() */
+} /* end of logarithmic_lsk_init() */
 
 
 int
@@ -216,7 +216,7 @@ unur_stdgen_sample_logarithmic_lsk( struct unur_gen *gen )
 
   /* -X- end of generator code -X- */
   
-} /* end of unur_stdgen_sample_logarithmic_zet() */
+} /* end of unur_stdgen_sample_logarithmic_lsk() */
 
 /*---------------------------------------------------------------------------*/
 #undef t

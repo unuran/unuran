@@ -4,6 +4,7 @@
 #include <ctype.h>
 #include <unuran.h>
 
+
 /* Maximal length of provides string allowed */
 #define MAX_STRLENGTH (1024)
 /* Maximal entries of any list allowed */
@@ -31,7 +32,7 @@ int          parselist(char *, double *);
 UNUR_DISTR * make_distr_obj(char *);
 UNUR_PAR   * make_par_obj(UNUR_DISTR *, char *);
 UNUR_GEN   * make_gen_obj (char *);
-
+int          make_urng_obj(UNUR_PAR *, char *);
 
 
 
@@ -244,6 +245,36 @@ UNUR_PAR *make_par_obj(UNUR_DISTR *distr, char *methstr){
 
 /**********************************************************************/
 /*                                                                    */
+/* function: make_urng_obj()                                          */
+/*                                                                    */
+/* called by: make_gen_obj()                                          */
+/*                                                                    */
+/* gets a pointer to a parameter object and a string with             */
+/* information about the uniform random number generator (urng)       */
+/* and sets the urng withing the parameter object.                    */
+/*                                                                    */
+/* The string must be as specified within the PRNG package            */
+/*                                                                    */
+/**********************************************************************/
+int make_urng_obj(UNUR_PAR *par, char *urngstr){
+
+   UNUR_URNG *urng;
+
+   urng = prng_new(urngstr);
+   unur_set_urng(par, urng); 
+
+   if ( urng == NULL ){ /* failure */
+      fprintf(stderr, "PRNG ERROR: Can't set uniform number generator.\n");
+      return (1);
+   }
+   else{                /* success */
+      return (0);
+   }
+} /* end fo make_urng_obj() */
+
+
+/**********************************************************************/
+/*                                                                    */
 /* function: subst_whitespce()                                        */
 /*                                                                    */
 /* finds all occurences of sep_char in str and replaces the           */
@@ -373,6 +404,11 @@ UNUR_GEN *make_gen_obj (char *str){
     par = unur_cstd_new(distr);
   }
 
+  /* set uniform random number generator -- if provided */
+  if ( urngstr != NULL ){
+     make_urng_obj(par, urngstr);
+  }
+
   /* generate generator object */
   gen = unur_init(par);
   if ( gen == NULL ){
@@ -382,4 +418,4 @@ UNUR_GEN *make_gen_obj (char *str){
   /* return generator object to calling routine */
   return (gen);
 
-}
+} /* end of make_gen_obj() */

@@ -63,6 +63,15 @@ int unur_empk_set_kernel( UNUR_PAR *parameters, UNUR_DISTR *kernel);
 int unur_empk_set_kernelgen( UNUR_PAR *parameters, UNUR_GEN *kernelgen);
 /* 
    Set generator for the kernel used the density estimation.
+   It is not necessary to set both the kernel and the kernel generator.
+   If no kernel generator is provided one is automatically created
+   from the distribution object given by the unur_empk_set_kernel()
+   call. On the other hand the unur_empk_set_kernelgen() overwrites
+   the unur_empk_set_kernel() call.
+   Notice that the uniform random number generator of the kernel
+   generator is overwritten during the unur_init() and at each
+   unur_chg_urng() call with generator for the empirical
+   distribution.
    Default is a Gaussian kernel.
 */
 

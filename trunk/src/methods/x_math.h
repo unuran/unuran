@@ -44,6 +44,17 @@
 #define UNUR_INFINITY  HUGE_VAL     
 
 /*---------------------------------------------------------------------------*/
+/* True and false                                                            */
+
+#ifndef TRUE
+#define TRUE   (1)
+#endif
+
+#ifndef FALSE
+#define FALSE  (0)
+#endif
+
+/*---------------------------------------------------------------------------*/
 
 
 

@@ -99,17 +99,6 @@ double _unur_arcmean( double x0, double x1 );
 #define max(x,y)   (((x)>(y)) ? (x) : (y))
 
 /*---------------------------------------------------------------------------*/
-/* True and false                                                            */
-
-#ifndef TRUE
-#define TRUE   (1)
-#endif
-
-#ifndef FALSE
-#define FALSE  (0)
-#endif
-
-/*---------------------------------------------------------------------------*/
 /** TODO: Provisorium !!!!                                                  **/
 #define TOLERANCE 1.e-10  
 

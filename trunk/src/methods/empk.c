@@ -46,15 +46,27 @@
  *****************************************************************************
  *                                                                           *
  *   REFERENCES:                                                             *
- *   [1] Leydold J. (2000): A simple universal generator for continuous and  *
- *       discrete univariate T-concave distributions, preprint.              *
- *                                                                           *
- *   [2] Hoermann W. (1995): A rejection technique for sampling from         *
- *       T-concave distributions, ACM TOMS 21, p. 182-193                    *
+ *   [1] ....                                                                *
  *                                                                           *
  *****************************************************************************
  *                                                                           *
  *  ... Beschreibung ...                                                     *
+ *                                                                           *
+ TODO: (bitte auf englisch)
+
+ alpha(K) = Var(K)^(-2/5){ \int K(t)^2 dt}^(1/5)
+
+ bwidth = alpha * beta * (mixture of stdev and interquartilsrange of sample)
+ * smoothing_factor
+
+ dann ist der default 1, und man kann, wenn man zB annimmt, dass die
+ Verteilung der Daten
+ multimodal ist, oder aus anderen Gruenden smoothing factor auch kleiner
+ als 1 waehlen.
+ 
+ *                                                                           *
+ *                                                                           *
+ *                                                                           *
  *                                                                           *
  *****************************************************************************/
 
@@ -78,6 +90,8 @@
 /*---------------------------------------------------------------------------*/
 /* Flags for logging set calls                                               */
 
+#define EMPK_SET_KERN           0x010u    /* kernel density                  */
+#define EMPK_SET_KERNGEN        0x020u    /* generator for kernel            */
 #define EMPK_SET_KERNELVAR      0x001u    /* variance of kernel              */
 #define EMPK_SET_ALPHA          0x002u    /* alpha factor                    */
 #define EMPK_SET_BETA           0x004u    /* beta factor                     */
@@ -97,6 +111,11 @@ static struct unur_gen *_unur_empk_init( struct unur_par *par );
 static struct unur_gen *_unur_empk_create( struct unur_par *par );
 /*---------------------------------------------------------------------------*/
 /* create new (almost empty) generator object.                               */
+/*---------------------------------------------------------------------------*/
+
+static int _unur_empk_start_kernel( struct unur_par *par, struct unur_gen *gen );
+/*---------------------------------------------------------------------------*/
+/* start generator for kernel distribution                                   */
 /*---------------------------------------------------------------------------*/
 
 /* No reinit() call                                                          */
@@ -210,19 +229,78 @@ unur_empk_new( struct unur_distr *distr )
 
 /*****************************************************************************/
 
-int unur_empk_set_kernel( UNUR_PAR *parameters, UNUR_DISTR *kernel);
-/* 
-   Set kernel distribution.
-   Default is a Gaussian kernel.
-*/
+int 
+unur_empk_set_kernel( struct unur_par *par, struct unur_distr *kernel)
+     /*----------------------------------------------------------------------*/
+     /* set kernel distribution                                              */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par    ... pointer to parameter for building generator object      */
+     /*   kernel ... distribution object that hold the kernel                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... on success                                                   */
+     /*   0 ... on error                                                     */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( GENTYPE,par,0 );
+
+  /* check input */
+  _unur_check_par_object( par,EMPK );
+
+  /* check kernel distribution */
+  if (kernel->type != UNUR_DISTR_CONT) {
+    _unur_error(GENTYPE,UNUR_ERR_DISTR_INVALID,""); return 0; }
+  COOKIE_CHECK(kernel,CK_DISTR_CONT,0);
+
+  /* set kernel distribution */
+  PAR.kern = kernel;
+
+  /* changelog */
+  par->set |= EMPK_SET_KERN;
+
+  /* o.k. */
+  return 1;
+
+} /* end of unur_empk_set_kernel() */
 
 /*---------------------------------------------------------------------------*/
 
-int unur_empk_set_kernelgen( UNUR_PAR *parameters, UNUR_GEN *kernelgen);
-/* 
-   Set generator for the kernel used the density estimation.
-   Default is a Gaussian kernel.
-*/
+int
+unur_empk_set_kernelgen( struct unur_par *par, struct unur_gen *kernelgen)
+     /*----------------------------------------------------------------------*/
+     /* set generator for kernel distribution                                */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par       ... pointer to parameter for building generator object   */
+     /*   kernelgen ... generator object that hold the kernel                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... on success                                                   */
+     /*   0 ... on error                                                     */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( GENTYPE,par,0 );
+
+  /* check input */
+  _unur_check_par_object( par,EMPK );
+
+  /* check kernel distribution */
+  if ( (kernelgen->method & UNUR_MASK_TYPE) != UNUR_METH_CONT ) {
+    _unur_error(GENTYPE,UNUR_ERR_DISTR_INVALID,""); return 0; }
+
+  /* set kernel distribution */
+  PAR.kerngen = kernelgen;
+
+  /* changelog */
+  par->set |= EMPK_SET_KERNGEN;
+
+  /* o.k. */
+  return 1;
+
+} /* end of unur_empk_set_kernelgen() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -448,3 +526,243 @@ unur_empk_set_positive( struct unur_par *par, int positive )
 } /* end of unur_empk_set_positive() */
 
 /*****************************************************************************/
+
+struct unur_gen *
+_unur_empk_init( struct unur_par *par )
+     /*----------------------------------------------------------------------*/
+     /* initialize new generator                                             */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par ... pointer to paramters for building generator object         */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to generator object                                        */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return NULL                                                        */
+     /*----------------------------------------------------------------------*/
+{ 
+  struct unur_gen *gen;
+
+  /* check arguments */
+  CHECK_NULL(par,NULL);
+
+  /* check input */
+  if ( par->method != UNUR_METH_EMPK ) {
+    _unur_error(GENTYPE,UNUR_ERR_PAR_INVALID,"");
+    return NULL; }
+  COOKIE_CHECK(par,CK_EMPK_PAR,NULL);
+
+  /* create a new empty generator object */
+  gen = _unur_empk_create(par);
+  if (!gen) { free(par); return NULL; }
+
+  if (!_unur_empk_start_kernel( par, gen )) 
+    { free(par); _unur_empk_free(gen); return NULL; }
+
+#ifdef UNUR_ENABLE_LOGGING
+    /* write info into log file */
+/*      if (gen->debug) _unur_ssr_debug_init(par,gen); */
+#endif
+
+  /* free parameters */
+  free(par);
+
+  return gen;
+
+} /* end of _unur_empk_init() */
+
+#if 0
+  GEN.kernrvg=PAR.kernrvg;/*random variate generator function for the kernel*/
+
+  qksort(GEN.observ,0,(GEN.n-1));   /*the observations must be ordered first*/
+
+#define BETA 1.3637439 /*optimal BETA if data follow normal distribution*/
+  GEN.bwidth = PAR.alfa*BETA*
+   iqrtilestdev(GEN.observ,GEN.n,&(GEN.xbar),&(GEN.stdev))/exp(0.2*log(GEN.n));
+#undef BETA
+  GEN.sconst=1./sqrt(1. + PAR.kernvar*SQ(GEN.bwidth/GEN.stdev));
+#endif
+
+/*---------------------------------------------------------------------------*/
+
+static struct unur_gen *
+_unur_empk_create( struct unur_par *par )
+     /*----------------------------------------------------------------------*/
+     /* allocate memory for generator                                        */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par ... pointer to parameter for building generator object         */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to (empty) generator object with default settings          */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return NULL                                                        */
+     /*----------------------------------------------------------------------*/
+{
+  struct unur_gen *gen;
+
+  /* check arguments */
+  CHECK_NULL(par,NULL);  COOKIE_CHECK(par,CK_EMPK_PAR,NULL);
+
+  /* allocate memory for generator object */
+  gen = _unur_malloc( sizeof(struct unur_gen) );
+
+  /* magic cookies */
+  COOKIE_SET(gen,CK_EMPK_GEN);
+
+  /* copy distribution object into generator object */
+  memcpy( &(gen->distr), par->distr, sizeof( struct unur_distr ) );
+
+  /* set generator identifier */
+  gen->genid = _unur_set_genid(GENTYPE);
+
+  /* routines for sampling and destroying generator */
+  SAMPLE = _unur_empk_sample;
+  gen->destroy = _unur_empk_free;
+  gen->reinit = _unur_reinit_error;
+
+  /* copy observed data into generator object */
+  GEN.n_observ = par->distr->data.cemp.n_sample;     /* sample size */
+  GEN.observ = _unur_malloc( GEN.n_observ * sizeof(double) );
+  memcpy( GEN.observ, par->distr->data.cemp.sample, GEN.n_observ * sizeof(double) );
+  DISTR.sample = GEN.observ;  /* update pointer in local distribution object */
+
+  /* copy some parameters into generator object */
+  GEN.kerngen = PAR.kerngen;        /* generator for kernel distribution     */
+
+  gen->method = par->method;        /* indicates method                      */
+  gen->variant = par->variant;      /* indicates variant                     */
+  gen->set = par->set;              /* indicates parameter settings          */
+  gen->debug = par->debug;          /* debuging flags                        */
+  gen->urng = par->urng;            /* pointer to urng                       */
+
+  gen->urng_aux = NULL;             /* no auxilliary URNG required           */
+  gen->gen_aux = NULL;              /* no auxilliary generator objects       */
+  gen->gen_aux_2 = NULL;
+
+  /* return pointer to (almost empty) generator object */
+  return gen;
+
+} /* end of _unur_empk_create() */
+
+/*---------------------------------------------------------------------------*/
+
+int 
+_unur_empk_start_kernel( struct unur_par *par, struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* start generator for kernel                                           */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par ... pointer to parameter for building generator object         */
+     /*   gen ... pointer to generator object                                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... on success                                                   */
+     /*   0 ... on error                                                     */
+     /*----------------------------------------------------------------------*/
+{
+  /* get generator for kernel */
+
+  if (GEN.kerngen == NULL) {
+    /* no generator provided by user */
+
+    if (PAR.kern == NULL) {
+      /* no kernel distribution given --> use Gaussian kernel (default) */
+      PAR.kern = unur_distr_normal(NULL,0);
+      if (!PAR.kern) return 0;
+    }
+
+    /* check kernel distribution */
+    if (PAR.kern->type != UNUR_DISTR_CONT) {
+      _unur_error(gen->genid,UNUR_ERR_DISTR_INVALID,""); return 0; }
+    COOKIE_CHECK(PAR.kern,CK_DISTR_CONT,0);
+
+    /* get generator object */
+    GEN.kerngen = unur_init( unur_cstd_new( PAR.kern ) );
+    if (!GEN.kerngen) {
+      _unur_error(gen->genid,UNUR_ERR_PAR_INVALID,"cannot init kernel generator");
+      return 0;
+    }
+  }
+
+  /* check generator for kernel distribution */
+  if ( (GEN.kerngen->method & UNUR_MASK_TYPE) != UNUR_METH_CONT ) {
+    _unur_error(GENTYPE,UNUR_ERR_DISTR_INVALID,"");
+    return 0;
+  }
+
+  /* clear up */
+  if ( !(par->set & EMPK_SET_KERN) )
+    /* no kernel distribution given by user.
+       delete automatically created distribution object. */
+    unur_distr_free( PAR.kern );
+
+  /* o.k. */
+  return 1;
+
+} /* _unur_empk_start_kernel() */
+
+
+/*****************************************************************************/
+
+double
+_unur_empk_sample( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* sample from generator                                                */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   double (sample from random variate)                                */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return 0.                                                          */
+     /*----------------------------------------------------------------------*/
+{ 
+  return 0.;
+} /* end of _unur_empk_sample() */
+
+/*****************************************************************************/
+
+void
+_unur_empk_free( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* deallocate generator object                                          */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*----------------------------------------------------------------------*/
+{ 
+
+  /* check arguments */
+  if( !gen ) /* nothing to do */
+    return;
+
+  /* check input */
+  if ( gen->method != UNUR_METH_EMPK ) {
+    _unur_warning(gen->genid,UNUR_ERR_GEN_INVALID,"");
+    return; }
+  COOKIE_CHECK(gen,CK_EMPK_GEN,/*void*/);
+
+  /* we cannot use this generator object any more */
+  SAMPLE = NULL;   /* make sure to show up a programming error */
+
+  /* free memory */
+  if (GEN.observ) free(GEN.observ);
+
+  if ( !(gen->set & EMPK_SET_KERNGEN) )
+    /* no generator for kernel distribution given by user.
+       delete automatically created generation object. */
+    unur_free( GEN.kerngen );
+
+  _unur_free_genid(gen);
+  free(gen);
+
+} /* end of _unur_empk_free() */
+
+/*****************************************************************************/
+
+/*---------------------------------------------------------------------------*/

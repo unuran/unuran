@@ -33,6 +33,7 @@
 /* (comment out the methods or distributions that are not tested)            */
 
 /* methods                                                                   */
+#define T_DAU
 #define T_DGT
 /*  #define T_SROU */
 /*  #define T_STDR */

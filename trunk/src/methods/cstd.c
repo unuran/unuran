@@ -62,13 +62,24 @@
 
 /*---------------------------------------------------------------------------*/
 
-static struct unur_gen *cstd_create( struct unur_par *par );
+static struct unur_gen *_unur_cstd_create( struct unur_par *par );
+/*---------------------------------------------------------------------------*/
+/* create new (almost empty) generator object.                               */
+/*---------------------------------------------------------------------------*/
 
-static int cstd_parse_definition( struct unur_gen *gen, char *definition );
-static int cstd_check_param( struct unur_gen *gen );
+static int _unur_cstd_parse_definition( struct unur_gen *gen, char *definition );
+static int _unur_cstd_check_param( struct unur_gen *gen );
 
 #if UNUR_DEBUG & UNUR_DB_INFO
-static void cstd_info_init( struct unur_par *par, struct unur_gen *gen, int succeeded );
+/*---------------------------------------------------------------------------*/
+/* the following functions print debugging information on output stream,     */
+/* i.e., into the log file if not specified otherwise.                       */
+/*---------------------------------------------------------------------------*/
+
+static void _unur_cstd_debug_init( struct unur_par *par, struct unur_gen *gen, int succeeded );
+/*---------------------------------------------------------------------------*/
+/* print after generator has been initialized has completed.                 */
+/*---------------------------------------------------------------------------*/
 #endif
 
 /*---------------------------------------------------------------------------*/
@@ -98,14 +109,14 @@ static void cstd_info_init( struct unur_par *par, struct unur_gen *gen, int succ
 
 #define UNUR_MAX_DIST_LEN     64   /* maximal length of string for distribution name */
 
-struct cstd_id {
+struct unur_cstd_id {
   char name[UNUR_MAX_DIST_LEN];    /* name of distribution                   */
   unsigned long id;                /* id number                              */
 };
 
 /* the following table should be sorted by the frequency of the use of the 
    corresponding distribution.                                               */
-static struct cstd_id dist_table[] = {
+static struct unur_cstd_id distr_table[] = {
   {"normal",      DIST_NORMAL},
   {"exponential", DIST_EXP},
   {"gamma",       DIST_GAMMA},
@@ -120,19 +131,19 @@ static struct cstd_id dist_table[] = {
 /*****************************************************************************/
 
 struct unur_par *
- unur_cstd_new( char *definition )
-/*---------------------------------------------------------------------------*/
-/* get default parameters                                                    */
-/*                                                                           */
-/* parameters:                                                               */
-/*   definition ... string containing description of distribution            */
-/*                                                                           */
-/* return:                                                                   */
-/*   default parameters (pointer to structure)                               */
-/*                                                                           */
-/* error:                                                                    */
-/*   return NULL                                                             */
-/*---------------------------------------------------------------------------*/
+unur_cstd_new( char *definition )
+     /*----------------------------------------------------------------------*/
+     /* get default parameters                                               */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   definition ... string containing description of distribution       */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   default parameters (pointer to structure)                          */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return NULL                                                        */
+     /*----------------------------------------------------------------------*/
 { 
   struct unur_par *par;
 
@@ -160,19 +171,19 @@ struct unur_par *
 /*****************************************************************************/
 
 struct unur_gen *
- unur_cstd_init( struct unur_par *par )
-/*---------------------------------------------------------------------------*/
-/* initialize new generator                                                  */
-/*                                                                           */
-/* parameters:                                                               */
-/*   params  pointer to paramters for building generator object              */
-/*                                                                           */
-/* return:                                                                   */
-/*   pointer to generator object                                             */
-/*                                                                           */
-/* error:                                                                    */
-/*   return NULL                                                             */
-/*---------------------------------------------------------------------------*/
+unur_cstd_init( struct unur_par *par )
+     /*----------------------------------------------------------------------*/
+     /* initialize new generator                                             */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   params  pointer to paramters for building generator object         */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to generator object                                        */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return NULL                                                        */
+     /*----------------------------------------------------------------------*/
 { 
   struct unur_gen *gen;
   int succeeded;
@@ -182,17 +193,17 @@ struct unur_gen *
   COOKIE_CHECK(par,CK_CSTD_PAR,NULL);
 
   /* create a new empty generator object */
-  gen = cstd_create(par);
+  gen = _unur_cstd_create(par);
   if (!gen) { free(par); return NULL; }
 
-  succeeded = cstd_parse_definition( gen, PAR.definition );
+  succeeded = _unur_cstd_parse_definition( gen, PAR.definition );
 
   if (succeeded)
-    succeeded = cstd_check_param(gen);
+    succeeded = _unur_cstd_check_param(gen);
 
 #if UNUR_DEBUG & UNUR_DB_INFO
   /* write info into log file */
-  if (gen->debug) cstd_info_init(par,gen,succeeded);
+  if (gen->debug) _unur_cstd_debug_init(par,gen,succeeded);
 #endif
 
   /* free parameters */
@@ -209,19 +220,19 @@ struct unur_gen *
 /*****************************************************************************/
 
 double
- unur_cstd_sample( struct unur_gen *gen )
-/*---------------------------------------------------------------------------*/
-/* sample from generator                                                     */
-/*                                                                           */
-/* parameters:                                                               */
-/*   gen ... pointer to generator object                                     */
-/*                                                                           */
-/* return:                                                                   */
-/*   double (sample from random variate)                                     */
-/*                                                                           */
-/* error:                                                                    */
-/*   return 0.                                                               */
-/*---------------------------------------------------------------------------*/
+unur_cstd_sample( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* sample from generator                                                */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   double (sample from random variate)                                */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return 0.                                                          */
+     /*----------------------------------------------------------------------*/
 { 
 
   /* check arguments */
@@ -245,13 +256,13 @@ double
 /*****************************************************************************/
 
 void
- unur_cstd_free( struct unur_gen *gen )
-/*---------------------------------------------------------------------------*/
-/* deallocate generator object                                               */
-/*                                                                           */
-/* parameters:                                                               */
-/*   gen ... pointer to generator object                                     */
-/*---------------------------------------------------------------------------*/
+unur_cstd_free( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* deallocate generator object                                          */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*----------------------------------------------------------------------*/
 { 
 
   /* check arguments */
@@ -274,19 +285,19 @@ void
 /*****************************************************************************/
 
 static struct unur_gen *
- cstd_create( struct unur_par *par )
-/*---------------------------------------------------------------------------*/
-/* allocate memory for generator                                             */
-/*                                                                           */
-/* parameters:                                                               */
-/*   par ... pointer to parameter for building generator object              */
-/*                                                                           */
-/* return:                                                                   */
-/*   pointer to (empty) generator object with default settings               */
-/*                                                                           */
-/* error:                                                                    */
-/*   return NULL                                                             */
-/*---------------------------------------------------------------------------*/
+_unur_cstd_create( struct unur_par *par )
+     /*----------------------------------------------------------------------*/
+     /* allocate memory for generator                                        */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par ... pointer to parameter for building generator object         */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to (empty) generator object with default settings          */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return NULL                                                        */
+     /*----------------------------------------------------------------------*/
 {
   struct unur_gen *gen;
   int i;
@@ -322,43 +333,43 @@ static struct unur_gen *
   /* return pointer to (almost empty) generator object */
   return(gen);
   
-} /* end of cstd_create() */
+} /* end of _unur_cstd_create() */
 
 /*****************************************************************************/
 /**  Definition parsing code                                                **/
 /*****************************************************************************/
 
 static int
- cstd_parse_definition( struct unur_gen *gen, char *def )
-/*---------------------------------------------------------------------------*/
-/* parse definition string, split into its components                        */
-/*                                                                           */
-/* parameters:                                                               */
-/*   gen  ... pointer to generator object                                    */
-/*   def   ... definition string like "normal(0.,1.)"                        */
-/*                                                                           */
-/* return:                                                                   */
-/*   1 ... if successful                                                     */
-/*   0 ... otherwise                                                         */
-/*                                                                           */
-/* error:                                                                    */
-/*   return 0                                                                */
-/*                                                                           */
-/* comment:                                                                  */
-/*   have the following components:                                          */
-/*      string ( number [, number [, number [...]]] )                        */
-/*   where the string is interpreted as the name of the distribution and     */
-/*   number as a parameter.                                                  */
-/*                                                                           */
-/* warning:                                                                  */
-/*   the input is not not checked against typos.                             */
-/*   case sensitive: always use lower case letters.                          */
-/*---------------------------------------------------------------------------*/
+_unur_cstd_parse_definition( struct unur_gen *gen, char *def )
+     /*----------------------------------------------------------------------*/
+     /* parse definition string, split into its components                   */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen  ... pointer to generator object                               */
+     /*   def   ... definition string like "normal(0.,1.)"                   */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... if successful                                                */
+     /*   0 ... otherwise                                                    */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return 0                                                           */
+     /*                                                                      */
+     /* comment:                                                             */
+     /*   have the following components:                                     */
+     /*      string ( number [, number [, number [...]]] )                   */
+     /*   where the string is interpreted as the name of the distribution    */
+     /*   and number as a parameter.                                         */
+     /*                                                                      */
+     /* warning:                                                             */
+     /*   the input is not not checked against typos.                        */
+     /*   case sensitive: always use lower case letters.                     */
+     /*----------------------------------------------------------------------*/
 {
   static char *string = NULL;
   static int len_string = 0;
 
-  char *dist, *param;
+  char *distr, *param;
   int len_def;
   int n_param;
   int i;
@@ -386,7 +397,7 @@ static int
   /* tokenize definition string */
 
   /* name of distribution */
-  dist = strtok(string, " (");
+  distr = strtok(string, " (");
 
   /* parameters of distribution */
   for( n_param = 0; n_param <= UNUR_MAX_DIST_PARAMS; n_param++ ) {
@@ -409,10 +420,10 @@ static int
   /* get id number of distribution */
   i = 0;
   gen->method &= ~UNUR_MASK_DISTR;     /* clear bits for indicating distribution */
-  while(dist_table[i].name[0] != '\0') {  /* empty string ? */
-    if (strcmp(dist,dist_table[i].name) == 0) {
+  while(distr_table[i].name[0] != '\0') {  /* empty string ? */
+    if (strcmp(distr,distr_table[i].name) == 0) {
       /* non ISO C alternative: strcasecmp for non case-sensitive comparison */
-      gen->method |= dist_table[i].id;
+      gen->method |= distr_table[i].id;
       break;
     }
     i++; /* try next distribution */
@@ -426,29 +437,29 @@ static int
 
   /* o.k. */
   return 1;
-} /* end of cstd_parse_definition() */
+} /* end of _unur_cstd_parse_definition() */
 
 /*****************************************************************************/
 /**  Check input                                                            **/
 /*****************************************************************************/
 
 static int
- cstd_check_param( struct unur_gen *gen )
-/*---------------------------------------------------------------------------*/
-/* check parameters for distribution                                         */
-/* if no optional parameters are given, use defaults                         */
-/* if essential parameter is missing, make error message and abort           */
-/*                                                                           */
-/* parameters:                                                               */
-/*   gen ... pointer to generator object                                     */
-/*                                                                           */
-/* return:                                                                   */
-/*   1 ... if successful                                                     */
-/*   0 ... otherwise                                                         */
-/*                                                                           */
-/* error:                                                                    */
-/*   return 0                                                                */
-/*---------------------------------------------------------------------------*/
+_unur_cstd_check_param( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* check parameters for distribution                                    */
+     /* if no optional parameters are given, use defaults                    */
+     /* if essential parameter is missing, make error message and abort      */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... if successful                                                */
+     /*   0 ... otherwise                                                    */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return 0                                                           */
+     /*----------------------------------------------------------------------*/
 {
   switch (gen->method & UNUR_MASK_DISTR) {
 
@@ -519,7 +530,7 @@ static int
     return 0;
   }
 
-} /* end of cstd_check_param() */
+} /* end of _unur_cstd_check_param() */
 
 /*****************************************************************************/
 /**  Debugging utilities                                                    **/
@@ -528,18 +539,18 @@ static int
 #if UNUR_DEBUG & UNUR_DB_INFO
 
 static void
- cstd_info_init( struct unur_par *par, struct unur_gen *gen, int succeeded )
-/*---------------------------------------------------------------------------*/
-/* write info about generator into logfile                                   */
-/*                                                                           */
-/* parameters:                                                               */
-/*   par ... pointer to parameter for building generator object              */
-/*   gen ... pointer to generator object                                     */
-/*---------------------------------------------------------------------------*/
+_unur_cstd_debug_init( struct unur_par *par, struct unur_gen *gen, int succeeded )
+     /*----------------------------------------------------------------------*/
+     /* write info about generator into logfile                              */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par ... pointer to parameter for building generator object         */
+     /*   gen ... pointer to generator object                                */
+     /*----------------------------------------------------------------------*/
 {
   FILE *log;
   int i;
-  char *dist_name;
+  char *distr_name;
 
   log = unur_get_log();
 
@@ -557,17 +568,17 @@ static void
 
   /* get name of distribution */
   i = 0;
-  dist_name = NULL;
-  while(dist_table[i].id != 0UL) {
-    if ( dist_table[i].id == (gen->method & UNUR_MASK_DISTR) ) {
-      dist_name = dist_table[i].name;
+  distr_name = NULL;
+  while(distr_table[i].id != 0UL) {
+    if ( distr_table[i].id == (gen->method & UNUR_MASK_DISTR) ) {
+      distr_name = distr_table[i].name;
       break;
     }
     i++;
   }
   
-  if (dist_name) {
-    fprintf(log,"%s:    name = %s\n",gen->genid,dist_name);
+  if (distr_name) {
+    fprintf(log,"%s:    name = %s\n",gen->genid,distr_name);
     fprintf(log,"%s:    parameters: %d",gen->genid,GEN.n_dist_param);
     if( !succeeded ) 
       fprintf(log,"\t INVALID!\n");
@@ -584,7 +595,7 @@ static void
     fprintf(log,"%s: INIT failed!\n",gen->genid);
   fprintf(log,"%s:\n",gen->genid);
 
-} /* end of cstd_info_init() */
+} /* end of _unur_cstd_info_init() */
 
 #endif
 

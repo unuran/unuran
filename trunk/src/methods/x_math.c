@@ -38,7 +38,7 @@
 
 /*---------------------------------------------------------------------------*/
 
-#define ARCMEAN_HARMONIC 1.e5  /* use harmonic mean when abs larger than this value */
+#define ARCMEAN_HARMONIC 1.e3  /* use harmonic mean when abs larger than this value */
 
 double
 _unur_arcmean( double x0, double x1 )
@@ -58,16 +58,19 @@ _unur_arcmean( double x0, double x1 )
      /*   and the harmonic mean (for |x0| and |x1| large).                   */
      /*----------------------------------------------------------------------*/
 {
-  /** TODO: possible over/underflow (?) **/
+  double x;
 
   /* we need x0 < x1 */
   if (x0>x1) {double tmp = x0; x0=x1; x1=tmp;}
 
   if (x1 < -ARCMEAN_HARMONIC || x0 > ARCMEAN_HARMONIC)
     /* use harmonic mean */
-    return 2./(1./x0 + 1./x1);
-  
-  return tan( (((x0<=-INFINITY) ? -M_PI/2. : atan(x0)) + ((x1>=INFINITY) ? M_PI/2. : atan(x1))) / 2. );
+    x = 2./(1./x0 + 1./x1);
+
+  else
+    x = tan( (((x0<=-INFINITY) ? -M_PI/2. : atan(x0)) + ((x1>=INFINITY) ? M_PI/2. : atan(x1))) / 2. );
+
+  return x;
 
 } /* end of _unur_arcmean() */
 

@@ -1,0 +1,25 @@
+
+Type `make check' in this directory to run a test suite.
+
+It tests whether the library recognizes invalid input and validates
+the various routines.
+
+
+`+'    test successful  (ok)
+`0'    expected init to failed  (ok)
+`-'    expected init or run test to fail  (ok)
+
+`?'    test failed, try again
+
+`(~x)' test failed for less than 1 %  (tolerated --> ok)
+
+`(!+)' test failed  (error)
+`(!0)' init did not fail as expected  (error)
+`(!-)' test did not fail as expected  (error)
+
+`='    test has been executed, result printed into log file
+
+`.'    test not executed
+`X'    could not run test, data missing
+
+

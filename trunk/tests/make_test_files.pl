@@ -675,6 +675,7 @@ sub scan_validate {
 		my @lines = split /\n/, $genline;
 		
 		# print lines 
+		print OUT "\tdo {\n";
 		print OUT "\tunur_errno = 0;\n";
 		
 		my $have_gen_lines = 0;
@@ -685,16 +686,23 @@ sub scan_validate {
 		    }
 		    
 		    print OUT "$l\n";
+		    
+		    # we cannot run the test if par == NULL.
+		    # then essential parameters are missing.
+		    if ($l =~ /^\s*par\s*=\s*/) {
+			print OUT "\tif (par==NULL) { printf(\"X\"); fflush(stdout); break; }\n";
+		    }
 		}
 		
 		if ($have_gen_lines) {
-		    print OUT "\t;}\n";
+		    print OUT "\t}\n";
 		}
 		else {
 		    print OUT "\tgen = unur_init(par);\n";
 		}
 		print OUT "\tn_tests_failed += run_validate_chi2( TESTLOG, 0, gen, '$todo' );\n";
-		print OUT "\tunur_free(gen);\n\n";
+		print OUT "\tunur_free(gen);\n";
+		print OUT "\t} while (0);\n\n";
 	    }	    
 	}
     }
@@ -853,6 +861,7 @@ sub scan_validate {
 		my @lines = split /\n/, $genline;
 		
 		# print lines 
+		print OUT "\tdo {\n";
 		print OUT "\tunur_errno = 0;\n";
 		
 		my $have_gen_lines = 0;
@@ -865,11 +874,16 @@ sub scan_validate {
 		    print OUT "$l\n";
 		    if ($l =~ /^\s*par\s*=/) {
 			print OUT "\tunur_$method\_set_pedantic(par,0);\n";
+
+			# we cannot run the test if par == NULL.
+			# then essential parameters are missing.
+			print OUT "\tif (par==NULL) { printf(\"X\"); fflush(stdout); break; }\n";
 		    }
+
 		}
 		
 		if ($have_gen_lines) {
-		    print OUT "\t;}\n";
+		    print OUT "\t}\n";
 		}
 		else {
 		    print OUT "\tgen = unur_init(par);\n";
@@ -877,6 +891,7 @@ sub scan_validate {
 		print OUT "\tif (gen) unur_$method\_chg_verify(gen,1);\n";
 		print OUT "\tn_tests_failed += run_validate_verifyhat( TESTLOG, 0, gen, '$todo' );\n";
 		print OUT "\tunur_free(gen);\n\n";
+		print OUT "\t} while (0);\n\n";
 	    }	    
 	}
     }

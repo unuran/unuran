@@ -125,7 +125,8 @@ static void _unur_hri_debug_init( const struct unur_gen *gen );
 /* print after generator has been initialized has completed.                 */
 /*---------------------------------------------------------------------------*/
 
-static void _unur_hri_debug_sample( const struct unur_gen *gen, double x, int i );
+static void _unur_hri_debug_sample( const struct unur_gen *gen,
+				    double x, double p1, int i0, int i1 );
 /*---------------------------------------------------------------------------*/
 /* trace sampling.                                                           */
 /*---------------------------------------------------------------------------*/
@@ -362,6 +363,11 @@ _unur_hri_init( struct unur_par *par )
 
   /* compute hazard rate at construction point */
   GEN.hrp0 = HR(GEN.p0);
+  if (GEN.hrp0 <= 0. || _unur_FP_is_infinity(GEN.hrp0)) {
+    _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"design point p0 not valid");
+    free(par); _unur_free(gen);
+    return NULL;
+  }
 
 #ifdef UNUR_ENABLE_LOGGING
   /* write info into log file */
@@ -582,6 +588,14 @@ _unur_hri_sample( struct unur_gen *gen )
   /* parameter for majorizing hazard rate of first component */
   lambda1 = hrx1 - lambda0;
 
+  /* check parameter */
+  if (lambda1 <= 0.)
+    /* hazard rate not strictly increasing.
+       assume hazard rate satisfies condition (i.e. increasing),
+       and this hazard rate constant between p0 and X.
+    */
+    return X;
+
   /* starting point */
   p1 = X;
   X = GEN.p0;
@@ -630,8 +644,10 @@ _unur_hri_sample_check( struct unur_gen *gen )
      /*   return 0.                                                          */
      /*----------------------------------------------------------------------*/
 { 
-  double U, V, E, X, hrx1;
+  double U, V, E, X, hrx, hrx1;
   double lambda0, p1, lambda1;
+  int i0 = 0;
+  int i1 = 0;
 
   /*
     -------------------
@@ -645,7 +661,7 @@ _unur_hri_sample_check( struct unur_gen *gen )
   /* starting point */
   X = GEN.left_border;
 
-  for(;;) {
+  for(i0=1;;i0++) {
     /* sample from U(0,1) */
     while ( (U = _unur_call_urng(gen->urng)) == 0.);
 
@@ -661,14 +677,25 @@ _unur_hri_sample_check( struct unur_gen *gen )
     /* reject or accept */
     V =  lambda0 * _unur_call_urng(gen->urng);
 
+    /* verify majorizing hazard rate */
+    if ( (X <= GEN.p0 && (1.+UNUR_EPSILON) * lambda0 < hrx1 ) || 
+	 (X >= GEN.p0 && (1.-UNUR_EPSILON) * lambda0 > hrx1 ) )
+      _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"HR not increasing");
+
     if( V <= hrx1 )
       /* accept */
       break;
   }
 
   /* accept point if not larger than design (split) point */
-  if (X <= GEN.p0)
+  if (X <= GEN.p0) {
+#ifdef UNUR_ENABLE_LOGGING
+    /* write info into log file */
+    if (gen->debug & HRI_DEBUG_SAMPLE)
+      _unur_hri_debug_sample( gen, X, X, i0, 0 );
+#endif
     return X;
+  }
 
   /* 
      -------------------
@@ -679,11 +706,25 @@ _unur_hri_sample_check( struct unur_gen *gen )
   /* parameter for majorizing hazard rate of first component */
   lambda1 = hrx1 - lambda0;
 
+  /* check parameter */
+  if (lambda1 <= 0.) {
+    /* hazard rate not strictly increasing.
+       assume hazard rate satisfies condition (i.e. increasing),
+       and this hazard rate constant between p0 and X.
+    */
+#ifdef UNUR_ENABLE_LOGGING
+    /* write info into log file */
+    if (gen->debug & HRI_DEBUG_SAMPLE)
+      _unur_hri_debug_sample( gen, X, X, i0, 0 );
+#endif
+    return X;
+  }
+
   /* starting point */
   p1 = X;
   X = GEN.p0;
 
-  for(;;) {
+  for(i1=1;;i1++) {
     /* sample from U(0,1) */
     while ( (U = _unur_call_urng(gen->urng)) == 0.);
 
@@ -696,15 +737,29 @@ _unur_hri_sample_check( struct unur_gen *gen )
     /* reject or accept */
     V = lambda0 + lambda1 * _unur_call_urng(gen->urng);
 
+    /* hazard rate at generated point */
+    hrx = HR(X);
+
+    /* verify majorizing hazard rate */
+    if ( (X <= p1 && (1.+UNUR_EPSILON) * (lambda0+lambda1) < hrx ) || 
+	 (X >= p1 && (1.-UNUR_EPSILON) * (lambda0+lambda1) > hrx ) )
+      _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"HR not increasing");
+
     /* squeeze */
     if (V <= GEN.hrp0)
       /* we use hazard rate at design point p0 as squeeze (since HR increasing) */ 
       break;
 
     /* hazard rate at generated point */
-    if (V <= HR(X))
+    if (V <= hrx)
       break;
   }
+
+#ifdef UNUR_ENABLE_LOGGING
+  /* write info into log file */
+  if (gen->debug & HRI_DEBUG_SAMPLE)
+    _unur_hri_debug_sample( gen, X, p1, i0, i1 );
+#endif
 
   return ((X <= p1) ? X : p1);
 
@@ -805,7 +860,7 @@ _unur_hri_debug_init( const struct unur_gen *gen )
 
   fprintf(log,"%s: design point p0 = %g  (HR(p0)=%g)",gen->genid,GEN.p0,GEN.hrp0);
   _unur_print_if_default(gen,HRI_SET_P0);
-  fprintf(log,"%s: left boundary = %g\n",gen->genid,GEN.left_border);
+  fprintf(log,"\n%s: left boundary = %g\n",gen->genid,GEN.left_border);
 
   fprintf(log,"%s:\n",gen->genid);
 
@@ -816,12 +871,17 @@ _unur_hri_debug_init( const struct unur_gen *gen )
 /*---------------------------------------------------------------------------*/
 
 void
-_unur_hri_debug_sample( const struct unur_gen *gen, double x, int i )
+_unur_hri_debug_sample( const struct unur_gen *gen, 
+			double x, double p1, int i0, int i1 )
      /*----------------------------------------------------------------------*/
      /* write info about generated point into logfile                        */
      /*                                                                      */
      /* parameters:                                                          */
      /*   gen ... pointer to generator object                                */
+     /*   x   ... generated point                                            */
+     /*   p1  ... point generated at first thing loop                        */
+     /*   i0  ... number of iterations in first thinning loop                */
+     /*   i1  ... number of iterations in second thinning loop               */
      /*----------------------------------------------------------------------*/
 {
   FILE *log;
@@ -831,7 +891,12 @@ _unur_hri_debug_sample( const struct unur_gen *gen, double x, int i )
 
   log = unur_get_stream();
 
-/*    fprintf(log,"%s: X = %g\t #iterations = %d\n",gen->genid,x,i); */
+  fprintf(log,"%s: X = %g\t(p1=%g)\t#iterations = %d + %d = %d",gen->genid,
+	  x, p1, i0, i1, i0+i1);
+  if (i1) 
+    fprintf(log,"   2nd loop\n");
+  else
+    fprintf(log,"\n");
 
 } /* end of _unur_hri_debug_init() */
 

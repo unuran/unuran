@@ -264,13 +264,13 @@ int main (int argc, char *argv[]){
   /* generate code                                                           */
 
   if (langfunc == unur_acg_UNURAN) {
-      if (!unur_acg_UNURAN( gen, stdout, NULL, n_cpoints )) {
+      if (!unur_acg_UNURAN( gen, stdout, distrname, n_cpoints )) {
 	  fatal("Cannot generate program code.\\n");
 	  exit (ACG_EXIT_FAIL_CODE);
       }
   }
   else {
-      if (!langfunc( gen, stdout, NULL )) {
+      if (!langfunc( gen, stdout, distrname )) {
 	  fatal("Cannot generate program code.\\n");
 	  exit (ACG_EXIT_FAIL_CODE);
       }
@@ -320,6 +320,7 @@ usage (void)
   fprintf(stderr," -d Distribution");
   fprintf(stderr," [-p PDF parameters]");
   fprintf(stderr," [-D Domain]");
+  fprintf(stderr," [-N name of distribution]");
   fprintf(stderr," [-n number of construction points]");
   fprintf(stderr," [-c parameter of TDR]");
   fprintf(stderr," [-l Language]");

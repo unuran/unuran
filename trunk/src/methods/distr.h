@@ -164,7 +164,7 @@ unsigned int unur_distr_get_type( UNUR_DISTR *distribution );
    @item UNUR_DISTR_CVEC
    continuous mulitvariate distributions
    @item UNUR_DISTR_CVEMP
-   empirical continuous multivaraiate distributions (ie. samples)
+   empirical continuous multivariate distributions (ie. samples)
    @item UNUR_DISTR_DISCR
    discrete univariate distributions
    @end table

@@ -1,44 +1,60 @@
-Parentheses indicate optional information while a tilde indicates
+Brackets indicate optional information while a tilde indicates
 that only an approximation must be provided. See the glossary for
 unfamiliar terms (Appendix A).
-@sp 1
 
-@noindent Methods for continuous distributions:
+@cartouche
+@noindent Methods for continuous distributions /
+ sample with: @code{unur_sample_cont()}:
 @multitable {method} {PDF} {dPDF} {mode} {area} {implemented distribution}
 @item method @tab PDF @tab dPDF @tab mode @tab area @tab other
-@item AROU   @tab  x  @tab  x   @tab  (x) @tab      @tab T-concave
+@item AROU   @tab  x  @tab  x   @tab  [x] @tab      @tab T-concave
 @item CSTD   @tab     @tab      @tab      @tab      @tab implemented distribution
-@item NINV   @tab (x) @tab      @tab      @tab      @tab CDF 
+@item NINV   @tab [x] @tab      @tab      @tab      @tab CDF 
 @item SROU   @tab     @tab      @tab   x  @tab   x  @tab T-concave
 @item SSR    @tab     @tab      @tab   x  @tab   x  @tab T-concave
-@item TABLE  @tab  x  @tab      @tab      @tab  (~) @tab all local extrema
+@item TABLE  @tab  x  @tab      @tab      @tab  [~] @tab all local extrema
 @item TDR    @tab  x  @tab  x   @tab      @tab      @tab T-concave
 @item UTDR   @tab  x  @tab      @tab   x  @tab   ~  @tab T-concave
 @end multitable
-@sp 1
+@end cartouche
 
-@noindent Methods for continuous empirical univariate distributions:@*
+@cartouche
+@noindent Methods for continuous empirical univariate distributions /
+ sample with: @code{unur_sample_cont()}:@*
 EMPK:  Requires an observed sample
-@sp 1
+@end cartouche
 
-@noindent Methods for continuous multivariate distributions:@*
+@cartouche
+@noindent Methods for continuous multivariate distributions /
+ sample with: @code{unur_sample_vec()}:@*
 VMT: Requires the mean vector and the covariance matrix. Optional
 is a marginal distribution (for non-Gaussian distributions)
-@sp 1
+@end cartouche
 
-@noindent Methods for continuous empirical multivariate distributions:@*
+@cartouche
+@noindent Methods for continuous empirical multivariate distributions /
+ sample with: @code{unur_sample_vec()}:@*
 VEMPK: Requires an observed sample
-@sp 1
+@end cartouche
 
-@noindent Methods for discrete univariate distributions:
+@cartouche
+@noindent Methods for discrete univariate distributions /
+ sample with: @code{unur_sapmple_discr()}:
 @multitable {method} {PMF} {PV} {mode} {area} {implementded distribution}
-@item method@tab PMF @tab PV @tab mode @tab area @tab other
+@item method@tab PMF @tab PV @tab mode @tab sum @tab other
 @item DARI  @tab  x  @tab    @tab  x   @tab  ~   @tab T-concave
-@item DAU   @tab     @tab  x @tab      @tab      @tab 
-@item DGT   @tab     @tab  x @tab      @tab      @tab 
+@item DAU   @tab [x] @tab  x @tab      @tab      @tab 
+@item DGT   @tab [x] @tab  x @tab      @tab      @tab 
 @item DSTD  @tab     @tab    @tab      @tab      @tab implemented distribution
 @end multitable
-@sp 1
+@end cartouche
+
+
+
+
+
+
+
 
 
 

@@ -12,6 +12,7 @@
 # $Id$
 #
 # This script scans h-files for "type unur_distr_cont_set_xxx()"
+# or  "type unur_distr_discr_set_xxx()"
 # and produces texi-output
 #
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -30,11 +31,11 @@ while($_ = <>)
  
     foreach $type (@TYPES){
 
-       if ( $_ =~/^\s*($type\s+unur_distr_cont_set_\w+)\s*\((.*\))\s*;/ ){
+	if ( $_ =~/^\s*($type\s+unur_distr_cont_set_\w+)\s*\((.*\))\s*;/ ){
            $CENABLE = 1;
            $DECL = $1;   # string before the braces
            $FUNC = $2;   # string between the braces 
-           $DECL  =~ /(.*(\s+?|\*))(unur_distr_cont_set_(\w+))/;
+	   $DECL  =~ /(.*(\s+?|\*))(unur_distr_cont_set_(\w+))/;
            $DECL1 = $1;
 	   $DECL2 = $4;
            $DECL3 = $3;
@@ -45,14 +46,52 @@ while($_ = <>)
            while ($FUNC =~ /(.*?)(\w*?)\s*?(,|\))/g){
 	      print OUTFILE $1,"\@var{", $2,"}", $3;
 	   }
-           print OUTFILE "}\n"; 
-       }
+           print OUTFILE "}\n\@*";
+
+           # print comments
+           $_ = <>;
+	   chomp;
+	   while ($_ !~ /^\s*$/){
+	       $print = join '', split /\s*\*\// , ( join '', split /\/\*/, $_);
+	       print OUTFILE $print, "\n";
+	       $_ = <>;
+	       chomp;
+	   }
+
+        }
+	elsif ( $_ =~/^\s*($type\s+unur_distr_discr_set_\w+)\s*\((.*\))\s*;/ ){
+           $CENABLE = 1;
+           $DECL = $1;   # string before the braces
+           $FUNC = $2;   # string between the braces 
+	   $DECL  =~ /(.*(\s+?|\*))(unur_distr_discr_set_(\w+))/;
+           $DECL1 = $1;
+	   $DECL2 = $4;
+           $DECL3 = $3;
+
+           print OUTFILE  "\n\@item \@strong{", $DECL2 , "}\@*\n";
+ 
+           print OUTFILE "\@code{", $DECL1 , "\@b{", $DECL3,"}("; 
+           while ($FUNC =~ /(.*?)(\w*?)\s*?(,|\))/g){
+	      print OUTFILE $1,"\@var{", $2,"}", $3;
+	   }
+           print OUTFILE "}\n\@*"; 
+
+           # print comments
+           $_ = <>;
+	   chomp;
+	   while ($_ !~ /^\s*$/){
+	       $print = join '', split /\s*\*\// , ( join '', split /\/\*/, $_);
+	       print OUTFILE $print, "\n";
+	       $_ = <>;
+	       chomp;
+	   }
+
+        }
 
    }
 
 }
     print OUTFILE "\@end itemize\n";
-
 
 
 

@@ -66,6 +66,10 @@
 #define CK_HINV_PAR      0x00100020u
 #define CK_HINV_GEN      0x00100021u
 #define CK_HINV_IV       0x00100022u
+#define CK_HRB_PAR       0x001000c0u
+#define CK_HRB_GEN       0x001000c1u
+#define CK_HRD_PAR       0x001000d0u
+#define CK_HRD_GEN       0x001000d1u
 #define CK_NINV_PAR      0x00100030u
 #define CK_NINV_GEN      0x00100031u
 #define CK_SROU_PAR      0x00100040u

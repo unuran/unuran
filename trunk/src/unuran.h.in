@@ -93,6 +93,8 @@
 /* methods for continuous distributions */
 #include <methods/arou.h>
 #include <methods/hinv.h>
+#include <methods/hrb.h>
+#include <methods/hrd.h>
 #include <methods/ninv.h>
 #include <methods/srou.h>
 #include <methods/ssr.h>

@@ -22,6 +22,8 @@ libmethods_la_SOURCES = \
  empk.c  empk.h  empk_struct.h \
  empl.c  empl.h  empl_struct.h \
  hinv.c  hinv.h  hinv_struct.h \
+ hrb.c   hrb.h   hrb_struct.h \
+ hrd.c   hrd.h   hrd_struct.h \
  ninv.c  ninv.h  ninv_struct.h \
  srou.c  srou.h  srou_struct.h \
  ssr.c   ssr.h   ssr_struct.h \

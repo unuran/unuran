@@ -19,8 +19,18 @@ my $ACG = "../acg";
 # ----------------------------------------------------------------
 # Constants
 
-$sample_size = 10;
+$sample_size = 10000;
 $accuracy = 1.0e-7;
+
+# ----------------------------------------------------------------
+# Prefix for file names
+
+$file_prefix = "./run_test_acg";
+
+# ----------------------------------------------------------------
+# Global log file
+
+open LOG, ">$file_prefix.log" or die "Cannot open log file $file_prefix.log";
 
 # ----------------------------------------------------------------
 # Compiler
@@ -60,66 +70,91 @@ my $DISTR = read_PDFdata('../..');
 
 # Print Test data
 print "sample size = $sample_size\n";
+print LOG "sample size = $sample_size\n";
+
 print "accuracy = $accuracy\n";
+print LOG "accuracy = $accuracy\n";
+
 print "languages = C, FORTRAN\n\n";
+print LOG "languages = C, FORTRAN\n\n";
 
 # ----------------------------------------------------------------
 # Get list of distributions 
 
-    my $list_distr = get_test_distributions( $test_conf_file, $DISTR );
+my $list_distr = get_test_distributions( $test_conf_file, $DISTR );
 
 #.................................................................
 # Check for missing CONTinuous distributions
 
-    # list of names of distributions without distribution number
-    my $list_distr_short;
-    foreach my $d (sort keys %{$list_distr}) {
-	my $distr_short = $d;
-	$distr_short =~ s/\_[^\_]+$//;
-	$list_distr_short->{$distr_short} = $d;
-    }
+# list of names of distributions without distribution number
+my $list_distr_short;
+foreach my $d (sort keys %{$list_distr}) {
+    my $distr_short = $d;
+    $distr_short =~ s/\_[^\_]+$//;
+    $list_distr_short->{$distr_short} = $d;
+}
 
-    foreach my $d (sort keys %{$DISTR}) {
-	next unless $DISTR->{$d}->{"=TYPE"} eq "CONT";
-	unless ($list_distr_short->{$d}) {
-	    print STDERR "test missing for distribution \"$d\"\n";
-	}
+foreach my $d (sort keys %{$DISTR}) {
+    next unless $DISTR->{$d}->{"=TYPE"} eq "CONT";
+    unless ($list_distr_short->{$d}) {
+	print STDERR "test missing for distribution \"$d\"\n";
     }
+}
+
+# ----------------------------------------------------------------
+# Make sources for test files
+
+##my $C_exec = "$file_prefix\_C";
+##my $C_src = "$C_exec.c";
+##my $C_log = "$C_exec.log";
+
+##my $FORTRAN_exec = "$file_prefix\_FORTRAN";
+##my $FORTRAN_src = "$FORTRAN_exec.f";
+##my $FORTRAN_log = "$FORTRAN_exec.log";
+
+##my $UNURAN_exec = "$file_prefix\_UNURAN";
+##my $UNURAN_src = "$UNURAN_exec.c";
+##my $UNURAN_log = "$UNURAN_exec.log";
 
 # ----------------------------------------------------------------
 # Process test for each distribution
 
+my $test_nr = 0;
+
 foreach my $d (sort keys %{$list_distr}) {
+    # number of test
+    ++$test_nr;
+    my $test_key = sprintf "%03d", $test_nr;
 
     # get name of distribution
     my $distr_key = $d;
     my $distr = $d;
     $distr =~ s/\_(.*)$//;
-    my $distr_nr = $1;
 
     # get parameter list
     my $fparam = $list_distr->{$distr_key};
 
     # print on screen
-    print "[$distr_nr] $distr($fparam)";
+    print "[$test_key] $distr($fparam)";
+    print LOG "[$test_key] $distr($fparam)";
 
     # seed for uniform rng
-    $seed = int(rand 12345678) + 1;
+    my $seed = int(rand 12345678) + 1;
 
     # Files
-    $file_name = "./run_test\_acg\_$distr_nr";
+    my $file_name = "$file_prefix\_$test_key";
 
-    $UNURAN_exec = "$file_name\_UNURAN";
-    $UNURAN_src = "$UNURAN_exec.c";
-    $UNURAN_log = "$UNURAN_exec.log";
+    my $UNURAN_exec = "$file_name\_UNURAN";
+    my $UNURAN_src = "$UNURAN_exec.c";
+    my $UNURAN_log = "$UNURAN_exec.log";
 
-    $C_exec = "$file_name\_C";
-    $C_src = "$C_exec.c";
-    $C_log = "$C_exec.log";
+    my $C_exec = "$file_name\_C";
+    my $C_src = "$C_exec.c";
+    my $C_log = "$C_exec.log";
 
-    $FORTRAN_exec = "$file_name\_FORTRAN";
-    $FORTRAN_src = "$FORTRAN_exec.f";
-    $FORTRAN_log = "$FORTRAN_exec.log";
+    my $FORTRAN_exec = "$file_name\_FORTRAN";
+    my $FORTRAN_src = "$FORTRAN_exec.f";
+    my $FORTRAN_log = "$FORTRAN_exec.log";
 
     # Get random variate generators
 
@@ -127,6 +162,7 @@ foreach my $d (sort keys %{$list_distr}) {
     my $C_code = make_C_code($C_log,$distr,$fparam,$seed);
     unless ($C_code) {
 	print "  .........  cannot create generator.\n";
+	print LOG "  .........  cannot create generator.\n";
 	next;
     }
     make_C_exec($C_code,$C_src,$C_exec);
@@ -142,51 +178,72 @@ foreach my $d (sort keys %{$list_distr}) {
     # Start generators
     open UNURAN, "$UNURAN_exec |" or die "cannot run $UNURAN_exec"; 
     open C, "$C_exec |" or die "cannot run $C_exec"; 
+    open FORTRAN, "$FORTRAN_exec |" or die "cannot run $FORTRAN_exec"; 
 
     # Run generatores and compare output
     $C_n_diffs = 0;
+    $FORTRAN_n_diffs = 0;
     $n_sample = 0;
 
     while ($UNURAN_out = <UNURAN>) {
 	$C_out = <C>;
+	$FORTRAN_out = <FORTRAN>;
 	
 	chomp $UNURAN_out;
 	chomp $C_out;
-
+	chomp $FORTRAN_out;
+	
 	++$n_sample;
 	
 	($UNURAN_x, $UNURAN_pdfx) = split /\s+/, $UNURAN_out, 2;
 	($C_x, $C_pdfx) = split /\s+/, $C_out, 2;
-
+	($FORTRAN_x, $FORTRAN_pdfx) = split /\s+/, $FORTRAN_out, 2;
+	
 	$C_x_diff = abs($UNURAN_x - $C_x);
 	$C_pdfx_diff = abs($UNURAN_pdfx - $C_pdfx);
-
+	$FORTRAN_x_diff = abs($UNURAN_x - $FORTRAN_x);
+	$FORTRAN_pdfx_diff = abs($UNURAN_pdfx - $FORTRAN_pdfx);
+	
 	if ( !FP_equal($C_x,$UNURAN_x) or !FP_equal($C_pdfx,$UNURAN_pdfx) ) {
 	    ++$C_n_diffs;
-	    print "\n  C: x    = $UNURAN_x\tdifference = $C_x_diff\n";
-	    print "  C: pdfx = $UNURAN_pdfx\tdifference = $C_pdfx_diff";
+	    print LOG "\n  C: x    = $C_x\tdifference = $C_x_diff\n";
+	    print LOG "  C: pdfx = $C_pdfx\tdifference = $C_pdfx_diff";
 	}
-
+	if ( !FP_equal($FORTRAN_x,$UNURAN_x) or !FP_equal($FORTRAN_pdfx,$UNURAN_pdfx) ) {
+	    ++$FORTRAN_n_diffs;
+	    print LOG "\n  FORTRAN: x    = $FORTRAN_x\tdifference = $FORTRAN_x_diff\n";
+	    print LOG "  FORTRAN: pdfx = $FORTRAN_pdfx\tdifference = $FORTRAN_pdfx_diff";
+	}
+	
     }
-
+    
     # End
     close UNURAN;
     close C;
-
+    
     $errorcode = $n_sample ? 0 : 1;
-
+    
     if ($C_n_diffs > 0) {
 	print "\n\t ...  C Test FAILED\n";
+	print LOG "\n\t ...  C Test FAILED\n";
 	++$errorcode;
     }
-
+    if ($FORTRAN_n_diffs > 0) {
+	print "\n\t ...  FORTRAN Test FAILED\n";
+	print LOG "\n\t ...  FORTRAN Test FAILED\n";
+	++$errorcode;
+    }
+    
     if ($errorcode == 0) {
 	print "  ...  PASSED\n";
+	print LOG "  ...  PASSED\n";
     }
 }
 
 # ----------------------------------------------------------------
 # End
+
+close LOG;
 
 exit 0;
 

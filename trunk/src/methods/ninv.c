@@ -145,8 +145,7 @@ unur_ninv_new( struct unur_distr *distr )
   struct unur_par *par;
 
   /* check arguments */
-  if (distr==NULL) {
-    _unur_error(GENTYPE,UNUR_ERR_NULL,""); return NULL; }
+  _unur_check_NULL( GENTYPE,distr,NULL );
 
   /* check distribution */
   if (distr->type != UNUR_DISTR_CONT) {
@@ -199,8 +198,7 @@ int unur_ninv_use_newton( struct unur_par *par )
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  if (!par) {
-    _unur_error(GENTYPE,UNUR_ERR_NULL,""); return 0; }
+  _unur_check_NULL( GENTYPE,par,0 );
 
   /* check input */
   _unur_check_par_object( NINV );
@@ -231,8 +229,7 @@ int unur_ninv_use_regula( struct unur_par *par )
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  if (!par) {
-    _unur_error(GENTYPE,UNUR_ERR_NULL,""); return 0; }
+  _unur_check_NULL( GENTYPE,par,0 );
 
   /* check input */
   _unur_check_par_object( NINV );
@@ -260,8 +257,7 @@ int unur_ninv_set_max_iter( struct unur_par *par, int max_iter )
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  if (!par) {
-    _unur_error(GENTYPE,UNUR_ERR_NULL,""); return 0; }
+  _unur_check_NULL( GENTYPE,par,0 );
 
   /* check input */
   _unur_check_par_object( NINV );
@@ -298,8 +294,7 @@ int unur_ninv_set_x_resolution( struct unur_par *par, double x_resolution)
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  if (!par) {
-    _unur_error(GENTYPE,UNUR_ERR_NULL,""); return 0; }
+  _unur_check_NULL( GENTYPE,par,0 );
 
   /* check input */
   _unur_check_par_object( NINV );
@@ -343,8 +338,7 @@ unur_ninv_set_start( struct unur_par *par, double s1, double s2, double s3 )
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  if (!par) {
-    _unur_error(GENTYPE,UNUR_ERR_NULL,""); return 0; }
+  _unur_check_NULL( GENTYPE,par,0 );
 
   /* check input */
   _unur_check_par_object( NINV );
@@ -383,10 +377,7 @@ unur_ninv_init( struct unur_par *par )
   struct unur_gen *gen;
 
   /* check arguments */
-  if (par==NULL) {
-    _unur_error(GENTYPE,UNUR_ERR_NULL,"");
-    return NULL;
-  }
+  _unur_check_NULL( GENTYPE,par,NULL );
 
   /* check input */
   if ( par->method != UNUR_METH_NINV ) {
@@ -459,8 +450,7 @@ unur_ninv_sample_regula( struct unur_gen *gen )
   double u;     /* uniform random number */
 
   /* check arguments */
-  CHECK_NULL(gen,0.);
-  COOKIE_CHECK(gen,CK_NINV_GEN,0.);
+  CHECK_NULL(gen,0.);  COOKIE_CHECK(gen,CK_NINV_GEN,0.);
 
   /* initialize starting interval */
   x1 =  GEN.s[0];      /* left boudary of interval */
@@ -580,10 +570,8 @@ unur_ninv_sample_newton( struct unur_gen *gen )
   int i;              /* counter for for-loop                         */
     
   /* check arguments */
-  CHECK_NULL(gen,0.);
-  COOKIE_CHECK(gen,CK_NINV_GEN,0.);
+  CHECK_NULL(gen,0.);  COOKIE_CHECK(gen,CK_NINV_GEN,0.);
 
-  
   damp = 2.;        /* to be halved at least once */  
   step = 1.;
 
@@ -720,8 +708,7 @@ _unur_ninv_create( struct unur_par *par )
   struct unur_gen *gen;
 
   /* check arguments */
-  CHECK_NULL(par,NULL);
-  COOKIE_CHECK(par,CK_NINV_PAR,NULL);
+  CHECK_NULL(par,NULL);  COOKIE_CHECK(par,CK_NINV_PAR,NULL);
 
   /* allocate memory for generator object */
   gen = _unur_malloc( sizeof(struct unur_gen) );
@@ -784,6 +771,10 @@ _unur_ninv_debug_init( struct unur_par *par, struct unur_gen *gen )
 {
   FILE *log;
 
+  /* check arguments */
+  CHECK_NULL(par,/*void*/);  COOKIE_CHECK(par,CK_NINV_PAR,/*void*/);
+  CHECK_NULL(gen,/*void*/);  COOKIE_CHECK(gen,CK_NINV_GEN,/*void*/);
+
   log = unur_get_stream();
 
   fprintf(log,"%s:\n",gen->genid);
@@ -819,6 +810,9 @@ _unur_ninv_debug_sample_regula( struct unur_gen *gen, double u, double x, double
      /*----------------------------------------------------------------------*/
 {
   FILE *log;
+
+  /* check arguments */
+  CHECK_NULL(gen,/*void*/);  COOKIE_CHECK(gen,CK_NINV_GEN,/*void*/);
 
   log = unur_get_stream();
 

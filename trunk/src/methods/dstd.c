@@ -180,7 +180,7 @@ unur_dstd_set_variant( struct unur_par *par, unsigned variant )
 
   /* check arguments */
   _unur_check_NULL( GENTYPE,par,0 );
-  _unur_check_NULL( par->penid,par->distr,0 );
+  _unur_check_NULL( par->genid,par->distr,0 );
 
   /* check input */
   _unur_check_par_object( DSTD );

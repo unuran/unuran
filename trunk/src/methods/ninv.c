@@ -967,20 +967,22 @@ _unur_ninv_compute_start( struct unur_gen *gen )
 {
   double u;
 
+
   /* check arguments */
   CHECK_NULL(gen, 0);
   _unur_check_gen_object(gen, NINV);
 
-  if ( GEN.table_on || !_unur_FP_same(GEN.s[0], GEN.s[1]))
+
+  if ( GEN.table_on || _unur_FP_same(GEN.s[0], GEN.s[1])){
     /* use table || use given starting points (indicated by s[0] == s[1]) */
     /* nothing to do */
     return 1;
-
+  }
 
   switch (gen->variant) {
 
   case NINV_VARFLAG_REGULA:
-    
+
     /* get arbitrary points */
     GEN.s[0] = max( DISTR.domain[0], -10.);
     GEN.s[1] = min( DISTR.domain[1], GEN.s[0]+20. );

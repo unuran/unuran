@@ -61,7 +61,8 @@ double mycdf( double x, UNUR_DISTR *distr )
      /* for the PDF. (We do not use parameters in our example.)  */
 { 
   whcdfcount++;
-  return 1.-exp(-x);
+  //return x*x;
+  return (1.-exp(-x));
 
 
 } /* end of mycdf() */
@@ -98,7 +99,7 @@ int main()
 
   /* Choose a method: TDR.                                       */
   par = unur_ninv_new(distr);
-    unur_ninv_set_start(par,1.,10.);
+  unur_ninv_set_start(par,1.,10.0);
 /*wenn man das set_start hier weglaesst funktioniert alles
 bestens*/
 
@@ -116,7 +117,8 @@ bestens*/
   
   /* Now you can use the generator object `gen' to sample from   */
   /* the distribution. Eg.:                                      */
-  for (i=0; i<N; i++) {
+  //for (i=0; i<N; i++) {
+  for (i=0; i<5; i++) {
     x = unur_sample_cont(gen);
     printf("%f\n",x);
 
@@ -145,7 +147,6 @@ bestens*/
 /*    unur_distr_free(distr); */
 
 /*---------------------------------------------------------------------------*/
-
 
 
 

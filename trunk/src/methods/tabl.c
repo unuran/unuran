@@ -57,10 +57,6 @@
  *       Unimodal Density by Cutting Corners, unpublished manuskript         *
  *       available at http://chenab.lums.edu.pk/~arifz/                      *
  *                                                                           *
- *****************************************************************************
- *                                                                           *
- * ..... beschreibung ....                                                   *
- *                                                                           *
  *****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
@@ -79,9 +75,9 @@
 
 /* indicate how to split interval */
 #define TABL_VARMASK_SPLIT        0x0f0u  /* split at        computation     convergence of hat */
-#define TABL_VARFLAG_SPLIT_POINT  0x000u  /* sampled point    none            slowest          */
-#define TABL_VARFLAG_SPLIT_MEAN   0x010u  /* mean point       slower          better           */
-#define TABL_VARFLAG_SPLIT_ARC    0x020u  /* "arcmean"        very slow       very good for almost unbounded domain */
+#define TABL_VARFLAG_SPLIT_POINT  0x010u  /* sampled point    none            slowest          */
+#define TABL_VARFLAG_SPLIT_MEAN   0x020u  /* mean point       slower          better           */
+#define TABL_VARFLAG_SPLIT_ARC    0x040u  /* "arcmean"        very slow       very good for almost unbounded domain */
 
 /* indicate if starting intervals have to be split */
 #define TABL_VARMASK_STP          0xf00u
@@ -102,7 +98,6 @@
 /* Flags for logging set calls                                               */
 
 #define TABL_SET_GUIDEFACTOR      0x01u
-#define TABL_SET_VARIANT          0x02u
 #define TABL_SET_SLOPES           0x04u
 #define TABL_SET_AREAFRACTION     0x08u
 #define TABL_SET_MAX_IVS          0x10u
@@ -300,9 +295,9 @@ unur_tabl_new( struct unur_distr *distr )
 /*****************************************************************************/
 
 int 
-unur_tabl_set_variant( struct unur_par *par, unsigned variant )
+unur_tabl_set_variant_setup( struct unur_par *par, unsigned variant )
      /*----------------------------------------------------------------------*/
-     /* set variant of method                                                */
+     /* set setup variant of method                                          */
      /*                                                                      */
      /* parameters:                                                          */
      /*   par     ... pointer to parameter for building generator object     */
@@ -316,15 +311,64 @@ unur_tabl_set_variant( struct unur_par *par, unsigned variant )
   _unur_check_par_object( par,TABL );
 
   /* store date */
-  /** TODO: check variant ?? **/
-  par->variant = variant;
+  par->variant &= ~TABL_VARMASK_STP;
+  switch (variant) {
+  case 1:
+    par->variant |= TABL_VARFLAG_STP_A;
+    return 1;
+  case 2:
+    par->variant |= TABL_VARFLAG_STP_A | TABL_VARFLAG_STP_B;
+    return 1;
+  default:
+    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"invalid variant");
+    return 0;
+  }
+} /* end if unur_tabl_set_variant_setup() */
 
-  /* changelog */
-  par->set |= TABL_SET_VARIANT;
+/*---------------------------------------------------------------------------*/
+int unur_tabl_set_variant_splitmode( UNUR_PAR *parameters, unsigned splitmode );
+/* 
+   There are three variants for adaptive rejection sampling. These
+   differ in the way how an interval is split:
+   splitmode @code{1}: use the generated point to split the interval.
+   splitmode @code{2}: use the mean point of the interval.
+   splitmode @code{3}: use the arcmean point.
+   Default is splitmode @code{3}.
+*/
 
-  return 1;
+int 
+unur_tabl_set_variant_splitmode( struct unur_par *par, unsigned splitmode )
+     /*----------------------------------------------------------------------*/
+     /* set setup variant for adaptive rejection sampling                    */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par       ... pointer to parameter for building generator object   */
+     /*   splitmode ... indicator for variant                                */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( GENTYPE,par,0 );
 
-} /* end if unur_tabl_set_variant() */
+  /* check input */
+  _unur_check_par_object( par,TABL );
+
+  /* store date */
+  par->variant &= ~TABL_VARMASK_SPLIT;
+  switch (splitmode) {
+  case 1:
+    par->variant |= TABL_VARFLAG_SPLIT_POINT;
+    return 1;
+  case 2:
+    par->variant |= TABL_VARFLAG_SPLIT_MEAN;
+    return 1;
+  case 3:
+    par->variant |= TABL_VARFLAG_SPLIT_ARC;
+    return 1;
+  default:
+    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"invalid variant");
+    return 0;
+  }
+} /* end if unur_tabl_set_variant_splitmode() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -740,7 +784,6 @@ _unur_tabl_init( struct unur_par *par )
   /* we have to update the maximal number of intervals,
      if the user wants more starting points. */
   if (GEN.n_ivs > GEN.max_ivs) {
-    /** TODO: do not allow too many intervals ?? **/
     _unur_warning(gen->genid,UNUR_ERR_GEN_DATA,"maximal number of intervals too small. increase.");
     GEN.max_ivs = GEN.n_ivs;
   }
@@ -1005,9 +1048,6 @@ _unur_tabl_sample_check( struct unur_gen *gen )
       if (GEN.n_ivs < GEN.max_ivs && GEN.max_ratio * GEN.Atotal > GEN.Asqueeze) {
       	_unur_tabl_split_interval( gen, iv, x, fx, (gen->variant & TABL_VARMASK_SPLIT) );
 	_unur_tabl_make_guide_table(gen);
-	/** TODO: it is not necessary to update the guide table every time. 
-	    But then (1) some additional bookkeeping is required and
-	    (2) the guide table method requires a acc./rej. step. **/
       }
   
       /* now accept or reject */
@@ -1270,7 +1310,6 @@ _unur_tabl_get_starting_intervals_from_mode( struct unur_par *par, struct unur_g
     iv->Ahat = iv->slope * (iv->xmax - iv->xmin) * iv->fmax;
     /** TODO: possible overflow/underflow ?? **/
     iv->Asqueeze = iv->slope * (iv->xmax - iv->xmin) * iv->fmin;
-    /** TODO: possible overflow/underflow ?? **/
     /* avoid strange (possible) floating point execption on non IEEE754 architecture */
     iv->Acum = 0.;
 

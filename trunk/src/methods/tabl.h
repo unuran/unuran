@@ -40,10 +40,40 @@
 /* 
    =METHOD  TABL   a TABLe method with piecewise constant hats
 
-   blah
+   TABL is an acceptance/rejection method that uses piecewise
+   constant hat and squeezes. Immediate acceptance of points below the
+   squeeze reduces the expected number of uniform random numbers to
+   less than two and makes this method extremely fast.
 
+   The method only works for distributions with bounded domain. Thus
+   for unbounded domains the left and right tails are cut off
+   (the cutting points can be set by a unur_tabl_set_boundary() call).
+   This no problem when the probability of falling into these tail
+   regions is beyond computational relevance.
 
+   The method works for all probability density functions where the
+   regions of monotonicity (called slopes) are given. This can be done
+   explicitly by a unur_tabl_set_slopes() call. If (and only if) no
+   slopes are given, the domain and the mode of the p.d.f. are used to
+   compute the slopes. If neither slopes nor the mode and the domain
+   are given initializing of the generator fails.
 
+   In the setup first the equal area rule is used to construct a hat
+   function, i.e., the interval boundaries are chosen such that the
+   area below each interval is equal to a given fraction of the total
+   area below the given p.d.f. This fraction can be set by a
+   unur_tabl_set_areafraction() call. Additionally these intervals are
+   split by until the maximum number of intervals is reached or the
+   ration between the area below squeeze and the area below the hat is
+   exceeded. 
+
+   It is possible to switch off this second setup step. Then adaptive
+   rejection sampling is used to split these intervals. There are
+   three variants for adaptive rejection sampling. These differ in the
+   way how an interval is split: 
+   (1) use the generated point to split the interval;
+   (2) use the mean point of the interval; or
+   (3) use the arcmean point.
 */
 
 /*---------------------------------------------------------------------------*/
@@ -56,12 +86,26 @@ UNUR_PAR *unur_tabl_new( UNUR_DISTR* distribution );
 
 /*...........................................................................*/
 
-int unur_tabl_set_variant( UNUR_PAR *parameters, unsigned variant );
+int unur_tabl_set_variant_setup( UNUR_PAR *parameters, unsigned variant );
 /* 
-   Set variant for method.
+   Set variant for setup. Two modes are possible for @var{variant}:
+   @code{1}: only use the equal area rule to construct hat.
+   @code{2}: additionally split the intervals created by the equal
+   area rule until the maximum number of intervals is reached or the
+   ration between the area below squeeze and the area below the hat is
+   exceeded.
+   Default is variant @code{2}.
 */
 
-/** TODO **/
+int unur_tabl_set_variant_splitmode( UNUR_PAR *parameters, unsigned splitmode );
+/* 
+   There are three variants for adaptive rejection sampling. These
+   differ in the way how an interval is split:
+   splitmode @code{1}: use the generated point to split the interval.
+   splitmode @code{2}: use the mean point of the interval.
+   splitmode @code{3}: use the arcmean point.
+   Default is splitmode @code{3}.
+*/
 
 int unur_tabl_set_max_sqhratio( UNUR_PAR *parameters, double max_ratio );
 /* 
@@ -122,6 +166,9 @@ int unur_tabl_set_slopes( UNUR_PAR *parameters, double *slopes, int n_slopes );
    @code{(slopes[2], slopes[3])}, etc.)
    and must not overlapping. Otherwise no slopes are set and
    @var{unur_errno} is set to @code{UNUR_ERR_PAR_SET}.
+
+   Notice that setting slopes resets the given domain for the
+   distribution.
 */
 
 int unur_tabl_set_guidefactor( UNUR_PAR *parameters, double factor );

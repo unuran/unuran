@@ -13,6 +13,7 @@
 #
 # This script scans h-files for "type unur_distr_cont_xxx()"
 # or  "type unur_distr_discr_xxx()" or "unur_distr_new()"
+# or "unur_distr_free()".
 # and produces texi-output
 #
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -87,7 +88,8 @@ while($_ = <>)
 	       chomp;
 	   }
         }
-	elsif ( $_ =~/^\s*($type\s+\*?unur_distr_new)\s*\((.*\))\s*;/ ){
+	elsif ($_ =~/^\s*($type\s+\*?unur_distr_new)\s*\((.*\))\s*;/
+            || $_ =~/^\s*($type\s+\*?unur_distr_free)\s*\((.*\))\s*;/ ){
            $CENABLE = 1;
            $DECL = $1;   # string before the braces
            $FUNC = $2;   # string between the braces 

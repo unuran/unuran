@@ -60,14 +60,16 @@
 /*                                                                           */
 /*---------------------------------------------------------------------------*/
 /* define the possible compiler switches                                     */
-#define UNUR_URNG_SIMPLE   1     /* use type `double urng(void)'             */
-#define UNUR_URNG_PRNG     2     /* use prng-3.0                             */
-#define UNUR_URNG_GENERIC  3     /* use type `double urng(void *status)'     */
+#define UNUR_URNG_SIMPLE     1     /* use type `double urng(void)'           */
+#define UNUR_URNG_PRNG       2     /* use prng-3.x                           */
+#define UNUR_URNG_RNGSTREAM  3     /* use RngStream                          */
+#define UNUR_URNG_GENERIC    9     /* use type `double urng(void *status)'   */
 /*---------------------------------------------------------------------------*/
 
 /* set type of uniform generator                                             */
 /*  #define UNUR_URNG_TYPE UNUR_URNG_SIMPLE */
-#define UNUR_URNG_TYPE UNUR_URNG_PRNG
+/*  #define UNUR_URNG_TYPE UNUR_URNG_PRNG */
+#define UNUR_URNG_TYPE UNUR_URNG_RNGSTREAM
 /*  #define UNUR_URNG_TYPE UNUR_URNG_GENERIC */
 
 /* IMPORTANT:                                                                */
@@ -117,6 +119,31 @@ typedef struct prng UNUR_URNG;
 /* function call to reset uniform rng                                        */
 /* (for test suite only)                            (don't touch this line!) */
 #define unur_urng_reset(urng)        (prng_reset(urng))
+
+
+/*---------------------------------------------------------------------------*/
+#elif UNUR_URNG_TYPE == UNUR_URNG_RNGSTREAM
+/*---------------------------------------------------------------------------*/
+
+/* Default uniform random number generators.                                 */
+/* (see RngStream manual)                                                    */
+#define UNUR_URNG_DEFAULT     (RngStream_CreateStream("URNG_main"))
+#define UNUR_URNG_AUX_DEFAULT (RngStream_CreateStream("URNG_aux"))
+
+/* ......................................................................... */
+
+/* header file from prng library                   (don't remove this line!) */
+#include <RngStream.h>
+
+/* type of uniform random number generator          (don't touch this line!) */
+typedef struct RngStream_InfoState UNUR_URNG;
+
+/* function call to uniform rng                     (don't touch this line!) */
+#define _unur_call_urng(urng)        (RngStream_RandU01(urng))
+
+/* function call to reset uniform rng                                        */
+/* (for test suite only)                            (don't touch this line!) */
+#define unur_urng_reset(urng)        (RngStream_ResetStartStream(urng))
 
 /*---------------------------------------------------------------------------*/
 /* #elif UNUR_URNG_TYPE == UNUR_URNG_GENERIC */

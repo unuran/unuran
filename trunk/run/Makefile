@@ -3,7 +3,7 @@
 all: run run_acg test parsetest
 
 run: run.c ../src/unuran.h ../src/libunuran.a
-	gcc -I. -I.. -I../src -I../src/tests -L../src -Wall -g -O2 -o run run.c -lunuran -lm -lprng
+	gcc -I. -I.. -I../src -I../src/tests -L../src -Wall -g -O2 -o run run.c -lunuran -lm -lprng -lrngstream
 
 run_acg: run_acg.c ../src/unuran.h ../codegen/libunuracg.a ../src/libunuran.a
 	gcc -I. -I.. -I../src -I../src/tests -I../codegen -L../src -L../codegen -Wall -g -O2 -o run_acg run_acg.c -lunuracg -lunuran -lm -lprng

@@ -42,7 +42,11 @@
 
 /*---------------------------------------------------------------------------*/
 static char test_name[] = "Counting";
+
 /*---------------------------------------------------------------------------*/
+/* common variables                                                          */
+
+static long urng_counter = 0;                /* count uniform random numbers */
 
 /*---------------------------------------------------------------------------*/
 /* wrapper for uniform random number generator that performs counting        */
@@ -50,7 +54,6 @@ static char test_name[] = "Counting";
 /*---------------------------------------------------------------------------*/
 #if UNUR_URNG_TYPE == UNUR_URNG_SIMPLE 
 /*---------------------------------------------------------------------------*/
-static long urng_counter = 0;                /* count uniform random numbers */
 static double (*urng_to_use)(void);          /* pointer to real uniform rng  */
 /*---------------------------------------------------------------------------*/
 
@@ -67,7 +70,6 @@ _urng_with_counter(void)
 /*---------------------------------------------------------------------------*/
 #elif UNUR_URNG_TYPE == UNUR_URNG_PRNG
 /*---------------------------------------------------------------------------*/
-static long urng_counter = 0;                /* count uniform random numbers */
 static double (*urng_to_use_next)(struct prng *); /* pointer to real URNG    */
 /*---------------------------------------------------------------------------*/
 
@@ -80,6 +82,10 @@ _urng_with_counter_next( struct prng *gen )
   ++urng_counter;
   return urng_to_use_next(gen);
 } /* end of urng_with_counter() */
+
+/*---------------------------------------------------------------------------*/
+#elif UNUR_URNG_TYPE == UNUR_URNG_RNGSTREAM
+/*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*/
 #else
@@ -110,7 +116,7 @@ unur_test_count_urn( struct unur_gen *gen, int samplesize, int verbosity, FILE *
      /*----------------------------------------------------------------------*/
 {
   long j;
-  UNUR_URNG *urng_aux = gen->urng_aux;
+  UNUR_URNG *urng_aux;
 
   /* check arguments */
   _unur_check_NULL(test_name,gen,-1);
@@ -129,8 +135,12 @@ unur_test_count_urn( struct unur_gen *gen, int samplesize, int verbosity, FILE *
   urng_to_use_next = gen->urng->get_next;
   gen->urng->get_next = _urng_with_counter_next;
   if (gen->urng_aux) gen->urng_aux = gen->urng;
+/*  #elif UNUR_URNG_TYPE == UNUR_URNG_RNGSTREAM */
 #else
-#error UNUR_URNG_TYPE not valid !!
+  /* no counter available */
+  if (verbosity)
+    fprintf(out,"\nCOUNT: ---  (cannot count urng for URNG type)\n");
+  return -1;
 #endif  /* UNUR_URNG_TYPE */
 
   /* run generator */
@@ -164,8 +174,8 @@ unur_test_count_urn( struct unur_gen *gen, int samplesize, int verbosity, FILE *
   unur_chg_urng(gen,urng_to_use);
 #elif UNUR_URNG_TYPE == UNUR_URNG_PRNG
   gen->urng->get_next = urng_to_use_next;
+#elif UNUR_URNG_TYPE == UNUR_URNG_RNGSTREAM
 #else
-#error UNUR_URNG_TYPE not valid !!
 #endif  /* UNUR_URNG_TYPE */
 
   /* restore auxilliary generator */

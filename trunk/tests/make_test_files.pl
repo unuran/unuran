@@ -181,18 +181,19 @@ int main()
 		fprintf(TESTLOG,"\\n====================================================\\n\\n");
 	}
 
-	/* set uniform random number generator */
-#if UNUR_URNG_TYPE == UNUR_URNG_SIMPLE
+        /* seed build-in uniform generators */
+        unur_urng_MRG31k3p_seed($seed);
+	unur_urng_fish_seed($seed);
+	unur_urng_mstd_seed($seed);
+
+	/* seed uniform random number generator */
+#if UNUR_URNG_TYPE == UNUR_URNG_PRNG
+	unur_set_default_urng(prng_new("mt19937($seed)"));
+#elif UNUR_URNG_TYPE == UNUR_URNG_RNGSTREAM
 	{
-        double unur_urng_MRG31k3p (void);
-        urng = unur_urng_MRG31k3p;
+	    long seed[] = {$seed,$seed+1,$seed+2,$seed+3,$seed+4,$seed+5};
+	    RngStream_SetPackageSeed(seed);
 	}
-/* #elif UNUR_URNG_TYPE == UNUR_URNG_GENERIC */
-#elif UNUR_URNG_TYPE == UNUR_URNG_PRNG
-	urng = prng_new("mt19937($seed)");
-	unur_set_default_urng(urng);
-#else
-#error UNUR_URNG_TYPE not valid !!
 #endif  /* UNUR_URNG_TYPE */
 
 	/* set default debugging flag */
@@ -958,7 +959,7 @@ sub print_test_command {
 	  $test_command =~ /^\s*compare_int_sequence_par_start\s*$/ ) {
 	  $test_command =~ s/\s+//g;
 	  print "$last_C_line\;\n";
-	  print "n_tests_failed += $test_command\( TESTLOG, $INPUT_LINE_NUMBER, urng, par, COMPARE_SAMPLE_SIZE );\n";
+	  print "n_tests_failed += $test_command\( TESTLOG, $INPUT_LINE_NUMBER, par, COMPARE_SAMPLE_SIZE );\n";
 	  last SWITCH;
       }
       if ($test_command =~ /^\s*compare_double_sequence_gen\s*$/ or
@@ -967,13 +968,13 @@ sub print_test_command {
 	  $test_command =~ /^\s*compare_int_sequence_gen_start\s*$/ ) {
 	  $test_command =~ s/\s+//g;
 	  print "$last_C_line\;\n";
-	  print "n_tests_failed += $test_command\( TESTLOG, $INPUT_LINE_NUMBER, urng, gen, COMPARE_SAMPLE_SIZE );\n";
+	  print "n_tests_failed += $test_command\( TESTLOG, $INPUT_LINE_NUMBER, gen, COMPARE_SAMPLE_SIZE );\n";
 	  last SWITCH;
       }
       if ($test_command =~ /^\s*compare_double_sequence_urng_start\s*$/ ) {
 	  $test_command =~ s/\s+//g;
 	  print "$last_C_line\;\n";
-	  print "$test_command\( TESTLOG, $INPUT_LINE_NUMBER, urng, COMPARE_SAMPLE_SIZE );\n";
+	  print "$test_command\( TESTLOG, $INPUT_LINE_NUMBER, COMPARE_SAMPLE_SIZE );\n";
 	  last SWITCH;
       }
       if ($test_command =~ /^\s*run_verify_generator\s*$/) {
@@ -1014,8 +1015,6 @@ sub print_C_prototypes {
 
 /*---------------------------------------------------------------------------*/
 /* global variables                                                          */
-
-static UNUR_URNG *urng;             /* uniform random number generator       */
 
 static FILE *TESTLOG;               /* test log file                         */
 static FILE *UNURANLOG;             /* unuran log file                       */

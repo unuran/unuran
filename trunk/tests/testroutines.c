@@ -173,10 +173,11 @@ int check_expected_no_reinit( FILE *LOG, int line, int ok )
 
 static double *double_sequence_A = NULL;
 
-int compare_double_sequence_par_start( FILE *LOG, int line, UNUR_URNG *urng, UNUR_PAR *par, int sample_size )
+int compare_double_sequence_par_start( FILE *LOG, int line, UNUR_PAR *par, int sample_size )
 {
-  UNUR_GEN *gen;
   int i;
+  UNUR_GEN *gen;
+  UNUR_URNG *urng = unur_get_default_urng();
 
   /* allocate memory for storing sequence */
   if (double_sequence_A == NULL) {
@@ -200,9 +201,10 @@ int compare_double_sequence_par_start( FILE *LOG, int line, UNUR_URNG *urng, UNU
 
 /*...........................................................................*/
 
-int compare_double_sequence_urng_start( FILE *LOG, int line, UNUR_URNG *urng, int sample_size )
+int compare_double_sequence_urng_start( FILE *LOG, int line, int sample_size )
 {
   int i;
+  UNUR_URNG *urng = unur_get_default_urng();
   
   /* allocate memory for storing sequence */
   if (double_sequence_A == NULL) {
@@ -222,13 +224,14 @@ int compare_double_sequence_urng_start( FILE *LOG, int line, UNUR_URNG *urng, in
 
 /*...........................................................................*/
 
-int compare_double_sequence_par( FILE *LOG, int line, UNUR_URNG *urng, UNUR_PAR *par, int sample_size )
+int compare_double_sequence_par( FILE *LOG, int line, UNUR_PAR *par, int sample_size )
 {
   UNUR_GEN *gen;
   int i;
   int ok = TRUE;
   double x = 0.;
   int failed = 0;
+  UNUR_URNG *urng = unur_get_default_urng();
 
   /* init generator */
   unur_urng_reset(urng);
@@ -263,9 +266,10 @@ int compare_double_sequence_par( FILE *LOG, int line, UNUR_URNG *urng, UNUR_PAR 
 
 /*...........................................................................*/
 
-int compare_double_sequence_gen_start( FILE *LOG, int line, UNUR_URNG *urng, UNUR_GEN *gen, int sample_size )
+int compare_double_sequence_gen_start( FILE *LOG, int line, UNUR_GEN *gen, int sample_size )
 {
   int i;
+  UNUR_URNG *urng = unur_get_default_urng();
 
   /* check generator object */
   if (gen==NULL) {
@@ -295,12 +299,13 @@ int compare_double_sequence_gen_start( FILE *LOG, int line, UNUR_URNG *urng, UNU
 
 /*...........................................................................*/
 
-int compare_double_sequence_gen( FILE *LOG, int line, UNUR_URNG *urng, UNUR_GEN *gen, int sample_size )
+int compare_double_sequence_gen( FILE *LOG, int line, UNUR_GEN *gen, int sample_size )
 {
   int i;
   int ok = TRUE;
   double x = 0.;
   int failed = 0;
+  UNUR_URNG *urng = unur_get_default_urng();
 
   /* check generator object and stored sequence */
   if (gen==NULL || double_sequence_A==NULL) {
@@ -345,19 +350,19 @@ static int cannot_compare_sequence ( FILE *LOG )
   return 0; /* indicate as "not failed" for practical reasons */
 }
 
-int compare_double_sequence_par_start( FILE *LOG, int line, UNUR_URNG *urng, UNUR_PAR *par, int ss ) {
+int compare_double_sequence_par_start( FILE *LOG, int line, UNUR_PAR *par, int ss ) {
   return 0; }
 
-int compare_double_sequence_urng_start( FILE *LOG, int line, UNUR_URNG *urng, int ss ) {
+int compare_double_sequence_urng_start( FILE *LOG, int line, int ss ) {
   return 0; }
 
-int compare_double_sequence_par( FILE *LOG, int line, UNUR_URNG *urng, UNUR_PAR *par, int ss ) {
+int compare_double_sequence_par( FILE *LOG, int line, UNUR_PAR *par, int ss ) {
   return cannot_compare_sequence (LOG); }
 
-int compare_double_sequence_gen_start( FILE *LOG, int line, UNUR_URNG *urng, UNUR_GEN *gen, int ss ) {
+int compare_double_sequence_gen_start( FILE *LOG, int line, UNUR_GEN *gen, int ss ) {
   return 0; }
 
-int compare_double_sequence_gen( FILE *LOG, int line, UNUR_URNG *urng, UNUR_GEN *gen, int ss ) {
+int compare_double_sequence_gen( FILE *LOG, int line, UNUR_GEN *gen, int ss ) {
   return cannot_compare_sequence (LOG); }
 
 /*...........................................................................*/
@@ -373,10 +378,11 @@ int compare_double_sequence_gen( FILE *LOG, int line, UNUR_URNG *urng, UNUR_GEN 
 
 static int *int_sequence_A = NULL;
 
-int compare_int_sequence_par_start( FILE *LOG, int line, UNUR_URNG *urng, UNUR_PAR *par, int sample_size )
+int compare_int_sequence_par_start( FILE *LOG, int line, UNUR_PAR *par, int sample_size )
 {
-  UNUR_GEN *gen;
   int i;
+  UNUR_GEN *gen;
+  UNUR_URNG *urng = unur_get_default_urng();
 
   /* allocate memory for storing sequence */
   if (int_sequence_A == NULL) {
@@ -400,12 +406,13 @@ int compare_int_sequence_par_start( FILE *LOG, int line, UNUR_URNG *urng, UNUR_P
 
 /*...........................................................................*/
 
-int compare_int_sequence_par( FILE *LOG, int line, UNUR_URNG *urng, UNUR_PAR *par, int sample_size )
+int compare_int_sequence_par( FILE *LOG, int line, UNUR_PAR *par, int sample_size )
 {
   UNUR_GEN *gen;
   int i;
   int ok = TRUE;
   int failed = 0;
+  UNUR_URNG *urng = unur_get_default_urng();
 
   /* init generator */
   unur_urng_reset(urng);
@@ -437,9 +444,10 @@ int compare_int_sequence_par( FILE *LOG, int line, UNUR_URNG *urng, UNUR_PAR *pa
 
 /*...........................................................................*/
 
-int compare_int_sequence_gen_start( FILE *LOG, int line, UNUR_URNG *urng, UNUR_GEN *gen, int sample_size )
+int compare_int_sequence_gen_start( FILE *LOG, int line, UNUR_GEN *gen, int sample_size )
 {
   int i;
+  UNUR_URNG *urng = unur_get_default_urng();
 
   /* check generator object */
   if (gen==NULL) {
@@ -468,11 +476,12 @@ int compare_int_sequence_gen_start( FILE *LOG, int line, UNUR_URNG *urng, UNUR_G
 
 /*...........................................................................*/
 
-int compare_int_sequence_gen( FILE *LOG, int line, UNUR_URNG *urng, UNUR_GEN *gen, int sample_size )
+int compare_int_sequence_gen( FILE *LOG, int line, UNUR_GEN *gen, int sample_size )
 {
   int i;
   int ok = TRUE;
   int failed = 0;
+  UNUR_URNG *urng = unur_get_default_urng();
 
   /* check generator object and stored sequence */
   if (gen==NULL || int_sequence_A==NULL) {
@@ -508,16 +517,16 @@ int compare_int_sequence_gen( FILE *LOG, int line, UNUR_URNG *urng, UNUR_GEN *ge
 
 #else  /* no reset routine for uniform RNG */
 
-int compare_int_sequence_par_start( FILE *LOG, int line, UNUR_URNG *urng, UNUR_PAR *par, int sample_size ) {
+int compare_int_sequence_par_start( FILE *LOG, int line, UNUR_PAR *par, int sample_size ) {
   return 0; }
 
-int compare_int_sequence_par( FILE *LOG, int line, UNUR_URNG *urng, UNUR_PAR *par, int sample_size ) {
+int compare_int_sequence_par( FILE *LOG, int line, UNUR_PAR *par, int sample_size ) {
   return cannot_compare_sequence (LOG); }
 
-int compare_int_sequence_gen_start( FILE *LOG, int line, UNUR_URNG *urng, UNUR_GEN *gen, int sample_size ) {
+int compare_int_sequence_gen_start( FILE *LOG, int line, UNUR_GEN *gen, int sample_size ) {
   return 0; }
 
-int compare_int_sequence_gen( FILE *LOG, int line, UNUR_URNG *urng, UNUR_GEN *gen, int sample_size ) {
+int compare_int_sequence_gen( FILE *LOG, int line, UNUR_GEN *gen, int sample_size ) {
   return cannot_compare_sequence (LOG); }
 
 #endif

@@ -129,7 +129,9 @@ int unur_test_count_urn( UNUR_GEN *generator, int samplesize, int verbosity, FIL
 /* 
    Count used uniform random numbers. It returns the total number of
    uniform random numbers required for a sample of non-uniform random
-   variates of size @var{samplesize}.
+   variates of size @var{samplesize}. Counting uniform random numbers
+   might not work for the chosen @code{UNUR_URNG_TYPE} in
+   @file{unuran_config.h}. In this case @code{-1} is returned.
 
    If @var{verbosity} is TRUE the result is written to the output
    stream @var{out}.

@@ -79,7 +79,7 @@
 
 /*---------------------------------------------------------------------------*/
 
-static char distr_name[] = "Normal distribution";
+static char distr_name[] = "normal";
 
 #define mu    (params[0])
 #define sigma (params[1])
@@ -211,21 +211,18 @@ unur_distr_normal( double *params, int n_params )
   DISTR.dpdf = unur_dpdf_normal;  /* pointer to derivative of p.d.f. */
   DISTR.cdf  = unur_cdf_normal;   /* pointer to c.d.f.            */
 
+  /* default parameters */
+  DISTR.params[0] = 0.;        /* default for mu */
+  DISTR.params[1] = 1.;        /* default for sigma */
+
   /* copy parameters */
   switch (n_params) {
-  case 0:
-    DISTR.params[0] = 0.;        /* default for mu */
-    DISTR.params[1] = 1.;        /* default for sigma */
-    break;
-  case 1:
-    DISTR.params[0] = params[0]; /* mu */
-    DISTR.params[1] = 1.;        /* default for sigma */
-    n_params = 2;
-    break;
   case 2:
-    DISTR.params[0] = params[0];  /* mu */
-    DISTR.params[1] = params[1];  /* sigma */
-    break;
+    DISTR.params[1] = sigma;
+  case 1:
+    DISTR.params[0] = mu;
+    n_params = 2;           /* number of parameters for non-standard form */
+  default:
   }
 
   /* check parameter sigma */

@@ -64,7 +64,7 @@
 
 /*---------------------------------------------------------------------------*/
 
-static char distr_name[] = "Uniform distribution";
+static char distr_name[] = "uniform";
 
 #define a (params[0])
 #define b (params[1])
@@ -175,7 +175,7 @@ unur_distr_uniform( double *params, int n_params )
   /* allocate structure */
   distr = _unur_malloc( sizeof(struct unur_distr) );
 
-  /* set magiv cookie */
+  /* set magic cookie */
   COOKIE_SET(distr,CK_DISTR_CONT);
 
   /* set type of distribution */
@@ -192,16 +192,16 @@ unur_distr_uniform( double *params, int n_params )
   DISTR.dpdf = unur_dpdf_uniform; /* pointer to derivative of p.d.f. */
   DISTR.cdf  = unur_cdf_uniform;  /* pointer to c.d.f.            */
 
+  /* default parameters */
+  DISTR.params[0] = 0.;         /* default for a */
+  DISTR.params[1] = 1.;         /* default for b */
+
   /* copy parameters */
   switch (n_params) {
-  case 0:
-    DISTR.params[0] = 0.;         /* default for a */
-    DISTR.params[1] = 1.;         /* default for b */
-    break;
   case 2:
-    DISTR.params[0] = params[0];  /* a */
-    DISTR.params[1] = params[1];  /* b */
-    break;
+    DISTR.params[0] = a;
+    DISTR.params[1] = b;
+  default:
   }
 
   /* check parameters a and b */

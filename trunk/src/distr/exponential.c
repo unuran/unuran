@@ -78,17 +78,16 @@
 #include <unur_utils.h>
 
 /*---------------------------------------------------------------------------*/
+static char distr_name[] = "exponential";
 
-static char distr_name[] = "Exponential distribution";
-
-#define sigma (param[0])
-#define theta (param[1])
+#define sigma (params[0])
+#define theta (params[1])
 /*---------------------------------------------------------------------------*/
 
 double
-unur_pdf_exponential( double x, double *param, int n_param )
+unur_pdf_exponential( double x, double *params, int n_params )
 {
-  switch (n_param) {
+  switch (n_params) {
 
   case 2:  /* non standard */
     /* standardize */
@@ -106,9 +105,9 @@ unur_pdf_exponential( double x, double *param, int n_param )
 /*---------------------------------------------------------------------------*/
   
 double
-unur_dpdf_exponential( double x, double *param, int n_param )
+unur_dpdf_exponential( double x, double *params, int n_params )
 {
-  switch (n_param) {
+  switch (n_params) {
 
   case 2:  /* non standard */
     return ( (x<theta) ? 0. : -exp( -(x-theta)/sigma ) / sigma);
@@ -125,9 +124,9 @@ unur_dpdf_exponential( double x, double *param, int n_param )
 /*---------------------------------------------------------------------------*/
 
 double
-unur_cdf_exponential( double x, double *param, int n_param )
+unur_cdf_exponential( double x, double *params, int n_params )
 {
-  switch (n_param) {
+  switch (n_params) {
 
   case 2:  /* non standard */
     /* standardize */
@@ -145,9 +144,9 @@ unur_cdf_exponential( double x, double *param, int n_param )
 /*---------------------------------------------------------------------------*/
 
 double
-unur_area_exponential( double *param, int n_param )
+unur_area_exponential( double *params, int n_params )
 {
-  switch (n_param) {
+  switch (n_params) {
 
   case 2:  /* non standard */
     return sigma;
@@ -164,9 +163,9 @@ unur_area_exponential( double *param, int n_param )
 /*---------------------------------------------------------------------------*/
 
 double
-unur_mode_exponential( double *param, int n_param )
+unur_mode_exponential( double *params, int n_params )
 {
-  switch (n_param) {
+  switch (n_params) {
 
   case 2:  /* non standard */
     return theta;
@@ -181,6 +180,7 @@ unur_mode_exponential( double *param, int n_param )
 } /* end of unur_mode_exponential() */
 
 /*---------------------------------------------------------------------------*/
+
 struct unur_distr *
 unur_distr_exponential( double *params, int n_params )
 {
@@ -215,21 +215,18 @@ unur_distr_exponential( double *params, int n_params )
   DISTR.dpdf = unur_dpdf_exponential; /* pointer to derivative of p.d.f. */
   DISTR.cdf  = unur_cdf_exponential;  /* pointer to c.d.f.               */
 
+  /* default parameters */
+  DISTR.params[0] = 1.;        /* default for sigma */
+  DISTR.params[1] = 0.;        /* default for theta */
+  
   /* copy parameters */
   switch (n_params) {
-  case 0:
-    DISTR.params[0] = 1.;        /* default for sigma */
-    DISTR.params[1] = 0.;        /* default for theta */
-    break;
-  case 1:
-    DISTR.params[0] = params[0]; /* sigma */
-    DISTR.params[1] = 0.;        /* default for theta */
-    n_params = 2;
-    break;
   case 2:
-    DISTR.params[0] = params[0];  /* sigma */
-    DISTR.params[1] = params[1];  /* theta */
-    break;
+    DISTR.params[1] = theta;
+  case 1:
+    DISTR.params[0] = sigma;
+    n_params = 2;           /* number of parameters for non-standard form */
+  default:
   }
 
   /* check parameter sigma */

@@ -80,7 +80,7 @@
 
 /*---------------------------------------------------------------------------*/
 
-static char distr_name[] = "Gamma distribution";
+static char distr_name[] = "gamma";
 
 #define alpha (params[0])
 #define beta  (params[1])
@@ -214,7 +214,7 @@ unur_distr_gamma( double *params, int n_params )
   /* allocate structure */
   distr = _unur_malloc( sizeof(struct unur_distr) );
 
-  /* set magiv cookie */
+  /* set magic cookie */
   COOKIE_SET(distr,CK_DISTR_CONT);
 
   /* set type of distribution */
@@ -231,22 +231,19 @@ unur_distr_gamma( double *params, int n_params )
   DISTR.dpdf = unur_dpdf_gamma;   /* pointer to derivative of p.d.f. */
   DISTR.cdf  = unur_cdf_gamma;    /* pointer to c.d.f.            */
 
+  /* default parameters */
+  DISTR.params[1] = 1.;         /* default for beta  */
+  DISTR.params[2] = 0.;         /* default for gamma */
+
   /* copy parameters */
-  DISTR.params[0] = params[0];    /* alpha */
+  DISTR.params[0] = alpha;
   switch (n_params) {
-  case 1:
-    DISTR.params[1] = 1.;         /* default for beta  */
-    DISTR.params[2] = 0.;         /* default for gamma */
-    break;
-  case 2:
-    DISTR.params[1] = params[1];  /* beta */
-    DISTR.params[2] = 0.;         /* default for gamma */
-    n_params = 3;
-    break;
   case 3:
-    DISTR.params[1] = params[1];  /* beta */
-    DISTR.params[2] = params[2];  /* gamma */
-    break;
+    DISTR.params[2] = gamma;
+  case 2:
+    DISTR.params[1] = beta;
+    n_params = 3;           /* number of parameters for non-standard form */
+  default:
   }
 
   /* check parameters alpha and beta */
@@ -267,8 +264,8 @@ unur_distr_gamma( double *params, int n_params )
   DISTR.area = unur_area_gamma(DISTR.params,DISTR.n_params);
 
   /* domain */
-  DISTR.domain[0] = 0;           /* left boundary  */
-  DISTR.domain[1] = INFINITY;    /* right boundary */
+  DISTR.domain[0] = DISTR.params[2];  /* left boundary  */
+  DISTR.domain[1] = INFINITY;         /* right boundary */
 
   /* indicate which parameters are set */
   distr->set = ( UNUR_DISTR_SET_PARAMS | 

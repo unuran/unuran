@@ -66,7 +66,7 @@
 
 /*---------------------------------------------------------------------------*/
 
-static char distr_name[] = "Cauchy distribution";
+static char distr_name[] = "cauchy";
 
 #define theta  (params[0])
 #define lambda (params[1])
@@ -136,7 +136,7 @@ unur_distr_cauchy( double *params, int n_params )
   /* allocate structure */
   distr = _unur_malloc( sizeof(struct unur_distr) );
 
-  /* set magiv cookie */
+  /* set magic cookie */
   COOKIE_SET(distr,CK_DISTR_CONT);
 
   /* set type of distribution */

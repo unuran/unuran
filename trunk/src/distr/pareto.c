@@ -58,64 +58,103 @@
 
 #include <unur_distr.h>
 
+#include <unur_cookies.h>
 #include <unur_errno.h>
 #include <unur_math.h>
+#include <unur_umalloc.h>
 #include <unur_utils.h>
 
 /*---------------------------------------------------------------------------*/
+static char distr_name[] = "pareto";
 
-static char distr_name[] = "Pareto distribution";
-
-#define k (param[0])
-#define a (param[1])
+#define k (params[0])
+#define a (params[1])
 /*---------------------------------------------------------------------------*/
 
 double
-unur_pdf_pareto( double x, double *param, int n_param )
+unur_pdf_pareto( double x, double *params, int n_params )
 { 
-  CHECK_NULL(param,RETURN_NULL);
-  CHECK_N_PARAMS(n_param,2,0.);
-
-#if CHECKARGS
-  if (k <= 0. || a <= 0.) {
-    _unur_error(distr_name ,UNUR_ERR_DISTR,"k <= 0 or a <= 0.");
-    return 0.;
-  }
-#endif
-
   return ( (x<k) ? 0. : pow(x,-(a+1.)) );
-
 } /* end of unur_pdf_pareto() */
 
 /*---------------------------------------------------------------------------*/
 
 double
-unur_dpdf_pareto( double x, double *param, int n_param )
+unur_dpdf_pareto( double x, double *params, int n_params )
 { 
-  CHECK_NULL(param,RETURN_NULL);
-  CHECK_N_PARAMS(n_param,2,0.);
-
-#if CHECKARGS
-  if (k <= 0. || a <= 0.) {
-    _unur_error(distr_name ,UNUR_ERR_DISTR,"k <= 0 or a <= 0.");
-    return 0.;
-  }
-#endif
-
   return ( (x<k) ? 0. : (1.-a) * pow(x,-(a+2.)) );
 } /* end of unur_dpdf_pareto() */
+
+/*---------------------------------------------------------------------------*/
+
+struct unur_distr *
+unur_distr_pareto( double *params, int n_params )
+{
+#define DISTR distr->data.cont
+  register struct unur_distr *distr;
+
+  /* check new parameter for generator */
+  if (n_params != 2) {
+    _unur_warning(distr_name,UNUR_ERR_GENERIC,"invalid number parameter");
+    return NULL;
+  }
+  CHECK_NULL(params,RETURN_NULL);
+
+  /* allocate structure */
+  distr = _unur_malloc( sizeof(struct unur_distr) );
+
+  /* set magic cookie */
+  COOKIE_SET(distr,CK_DISTR_CONT);
+
+  /* set type of distribution */
+  distr->type = UNUR_DISTR_CONT;
+
+  /* set distribution id */
+  distr->id = UNUR_DISTR_PARETO;
+
+  /* name of distribution */
+  distr->name = distr_name;
+                
+  /* functions */
+  DISTR.pdf  = unur_pdf_pareto;  /* pointer to p.d.f.               */
+  DISTR.dpdf = unur_dpdf_pareto; /* pointer to derivative of p.d.f. */
+  DISTR.cdf  = NULL;             /* pointer to c.d.f.               */
+
+  /* copy parameters */
+  DISTR.params[0] = k;
+  DISTR.params[1] = a;
+
+  /* check parameters k and a */
+  if (DISTR.params[0] <= 0. || DISTR.params[1] <= 0.) {
+    _unur_error(distr_name ,UNUR_ERR_DISTR,"k <= 0 or a <= 0.");
+    free( distr ); return NULL;
+  }
+
+  /* number of arguments */
+  DISTR.n_params = n_params;
+
+  /* mode and area below p.d.f. */
+  DISTR.mode = 0.;     /* unur_mode_pareto(DISTR.params,DISTR.n_params); */
+  DISTR.area = 1.;     /* unur_area_pareto(DISTR.params,DISTR.n_params); */
+
+  /* domain */
+  DISTR.domain[0] = DISTR.params[0]; /* left boundary  */
+  DISTR.domain[1] = INFINITY;        /* right boundary */
+
+  /* indicate which parameters are set */
+  distr->set = ( UNUR_DISTR_SET_PARAMS | 
+		 UNUR_DISTR_SET_DOMAIN );
+
+/*  		 UNUR_DISTR_SET_MODE   | */
+/*  		 UNUR_DISTR_SET_PDFAREA ); */
+
+  /* return pointer to object */
+  return distr;
+
+#undef DISTR
+} /* end of unur_distr_pareto() */
 
 /*---------------------------------------------------------------------------*/
 #undef k
 #undef a
 /*---------------------------------------------------------------------------*/
-
-
-
-
-
-
-
-
-
-

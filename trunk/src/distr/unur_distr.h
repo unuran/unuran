@@ -123,6 +123,7 @@ double unur_mode_cauchy(double *params, int n_params);
 double unur_area_cauchy(double *params, int n_params);
 
 /*  Chisquare distribution [2; ch.18, p.416]                                 */
+struct unur_distr *unur_distr_chisquare(double *params, int n_params);
 double unur_pdf_chisquare(double x, double *params, int n_params);
 double unur_dpdf_chisquare(double x, double *params, int n_params);
 double unur_cdf_chisquare(double x, double *params, int n_params);
@@ -150,6 +151,7 @@ double unur_area_gamma(double *params, int n_params);
 /** TODO **/
 
 /*  Laplace distribution [3; ch.24, p.164]                                   */
+struct unur_distr *unur_distr_laplace(double *params, int n_params);
 double unur_pdf_laplace(double x, double *params, int n_params);
 double unur_dpdf_laplace(double x, double *params, int n_params);
 
@@ -157,10 +159,12 @@ double unur_dpdf_laplace(double x, double *params, int n_params);
 /** TODO **/
 
 /*  Lognormal distribution [2; ch.14, p.208]                                 */
+struct unur_distr *unur_distr_lognormal(double *params, int n_params);
 double unur_pdf_lognormal(double x, double *params, int n_params);
 double unur_dpdf_lognormal(double x, double *params, int n_params);
 
 /*  Lomax distribution (Pareto distr. of second kind) [2; ch.20, p.575]      */
+struct unur_distr *unur_distr_lomax(double *params, int n_params);
 double unur_pdf_lomax(double x, double *params, int n_params);
 double unur_dpdf_lomax(double x, double *params, int n_params);
 

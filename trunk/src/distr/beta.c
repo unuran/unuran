@@ -82,7 +82,7 @@
 
 /*---------------------------------------------------------------------------*/
 
-static char distr_name[] = "Beta distribution";
+static char distr_name[] = "beta";
 
 #define p (params[0])
 #define q (params[1])
@@ -246,7 +246,7 @@ unur_distr_beta( double *params, int n_params )
   /* allocate structure */
   distr = _unur_malloc( sizeof(struct unur_distr) );
 
-  /* set magiv cookie */
+  /* set magic cookie */
   COOKIE_SET(distr,CK_DISTR_CONT);
 
   /* set type of distribution */
@@ -259,22 +259,24 @@ unur_distr_beta( double *params, int n_params )
   distr->name = distr_name;
 
   /* functions */
-  DISTR.pdf  = unur_pdf_beta;     /* pointer to p.d.f.            */
+  DISTR.pdf  = unur_pdf_beta;     /* pointer to p.d.f.               */
   DISTR.dpdf = unur_dpdf_beta;    /* pointer to derivative of p.d.f. */
-  DISTR.cdf  = unur_cdf_beta;     /* pointer to c.d.f.            */
+  DISTR.cdf  = unur_cdf_beta;     /* pointer to c.d.f.               */
+
+  /* default parameters */
+  DISTR.params[2] = 0.;           /* default for a */
+  DISTR.params[3] = 1.;           /* default for b */
 
   /* copy parameters */
-  DISTR.params[0] = params[0];    /* p */
-  DISTR.params[1] = params[1];    /* q */
+  DISTR.params[0] = p;
+  DISTR.params[1] = q;
   switch (n_params) {
-  case 2:
-    DISTR.params[2] = 0.;         /* default for a */
-    DISTR.params[3] = 1.;         /* default for b */
-    break;
   case 4:
-    DISTR.params[2] = params[2];  /* a */
-    DISTR.params[3] = params[3];  /* b */
-    break;
+    DISTR.params[3] = b;
+  case 3:
+    DISTR.params[2] = a;
+    n_params = 4;              /* number of parameters for non-standard form */
+  default:
   }
 
   /* check parameters p and q */

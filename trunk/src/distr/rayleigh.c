@@ -57,57 +57,104 @@
 
 #include <unur_distr.h>
 
+#include <unur_cookies.h>
 #include <unur_errno.h>
 #include <unur_math.h>
+#include <unur_umalloc.h>
 #include <unur_utils.h>
 
 /*---------------------------------------------------------------------------*/
+static char distr_name[] =  "rayleigh";
 
-static char distr_name[] =  "Rayleigh distribution";
-
-#define sigma (param[0])
+#define sigma (params[0])
 /*---------------------------------------------------------------------------*/
 
 double
-unur_pdf_rayleigh( double x, double *param, int n_param )
+unur_pdf_rayleigh( double x, double *params, int n_params )
 { 
-  CHECK_NULL(param,RETURN_NULL);
-  CHECK_N_PARAMS(n_param,1,0.);
-
-#if CHECKARGS
-  if (sigma <= 0.) {
-    _unur_error(distr_name ,UNUR_ERR_DISTR,"scale parameter sigma <= 0.");
-    return 0.;
-  }
-#endif
-
   return ( (x<=0.) ? 0. : x * exp(-x*x/(2.*sigma*sigma) ) ); 
-
 } /* end of unur_pdf_rayleigh() */
 
 /*---------------------------------------------------------------------------*/
 
 double
-unur_dpdf_rayleigh(double x, double *param, int n_param)
+unur_dpdf_rayleigh(double x, double *params, int n_params)
 { 
-  double z;
-
-  CHECK_NULL(param,RETURN_NULL);
-  CHECK_N_PARAMS(n_param,1,0.);
-
-#if CHECKARGS
-  if (sigma <= 0.) {
-    _unur_error(distr_name ,UNUR_ERR_DISTR,"scale parameter sigma <= 0.");
-    return 0.;
-  }
-#endif
-
+  register double z;
   z = x*x/(sigma*sigma);
-
   return ( (x<=0.) ? 0. : exp(-z/2) * (1-z) ); 
-
 } /* end of unur_dpdf_rayleigh() */
+
+/*---------------------------------------------------------------------------*/
+
+struct unur_distr *
+unur_distr_rayleigh( double *params, int n_params )
+{
+#define DISTR distr->data.cont
+  register struct unur_distr *distr;
+
+  /* check new parameter for generator */
+  if (n_params != 1) {
+    _unur_warning(distr_name,UNUR_ERR_GENERIC,"invalid number parameter");
+    return NULL;
+  }
+  if (n_params > 0)
+    CHECK_NULL(params,RETURN_NULL);
+
+  /* allocate structure */
+  distr = _unur_malloc( sizeof(struct unur_distr) );
+
+  /* set magic cookie */
+  COOKIE_SET(distr,CK_DISTR_CONT);
+
+  /* set type of distribution */
+  distr->type = UNUR_DISTR_CONT;
+
+  /* set distribution id */
+  distr->id = UNUR_DISTR_RAYLEIGH;
+
+  /* name of distribution */
+  distr->name = distr_name;
+                
+  /* functions */
+  DISTR.pdf  = unur_pdf_rayleigh;  /* pointer to p.d.f.               */
+  DISTR.dpdf = unur_dpdf_rayleigh; /* pointer to derivative of p.d.f. */
+  DISTR.cdf  = NULL;               /* pointer to c.d.f.               */
+
+  /* copy parameters */
+  DISTR.params[0] = sigma;
+
+  /* check parameter sigma */
+  if (DISTR.params[0] <= 0.) {
+    _unur_error(distr_name,UNUR_ERR_DISTR,"scale parameter sigma <= 0.");
+    free( distr ); return NULL;
+  }
+
+  /* number of arguments */
+  DISTR.n_params = n_params;
+
+  /* mode and area below p.d.f. */
+  DISTR.mode = 0.;      /* unur_mode_exponential(DISTR.params,DISTR.n_params); */
+  DISTR.area = 1.;      /* unur_area_exponential(DISTR.params,DISTR.n_params); */
+
+  /* domain */
+  DISTR.domain[0] = 0.;              /* left boundary  */
+  DISTR.domain[1] = INFINITY;        /* right boundary */
+
+  /* indicate which parameters are set */
+  distr->set = ( UNUR_DISTR_SET_PARAMS | 
+		 UNUR_DISTR_SET_DOMAIN );
+
+  /*  		 UNUR_DISTR_SET_MODE   | */
+  /*  		 UNUR_DISTR_SET_PDFAREA ); */ 
+
+  /* return pointer to object */
+  return distr; 
+
+#undef DISTR
+} /* end of unur_distr_rayleigh() */
 
 /*---------------------------------------------------------------------------*/
 #undef sigma
 /*---------------------------------------------------------------------------*/
+

@@ -24,8 +24,8 @@
  *  domain:  -infinity < x < infinity                                        *
  *                                                                           *
  *  parameters:                                                              *
- *     0:  theta     ... location                                            *
- *     1:  delta > 0 ... shape                                               *
+ *     0:  delta > 0 ... shape                                               *
+ *     1:  theta     ... location                                            *
  *     2:  phi > 0   ... scale                                               *
  *                                                                           *
  *****************************************************************************
@@ -59,56 +59,34 @@
 
 #include <unur_distr.h>
 
+#include <unur_cookies.h>
 #include <unur_errno.h>
 #include <unur_math.h>
+#include <unur_umalloc.h>
 #include <unur_utils.h>
 
 /*---------------------------------------------------------------------------*/
+static char distr_name[] = "power-exponential";
 
-static char distr_name[] = "Power-exponential distribution";
-
-#define theta (param[0])
-#define delta (param[1])
-#define phi   (param[2])
+#define delta (params[0])
+#define theta (params[1])
+#define phi   (params[2])
 /*---------------------------------------------------------------------------*/
 
 double
-unur_pdf_powerexponential( double x, double *param, int n_param )
+unur_pdf_powerexponential( double x, double *params, int n_params )
 { 
   register double z;
-
-  CHECK_NULL(param,RETURN_NULL);
-  CHECK_N_PARAMS(n_param,3,0.);
-
-#if CHECKARGS
-  if (delta <= 0. || phi <= 0.) {
-    _unur_error(distr_name ,UNUR_ERR_DISTR,"delta <= 0 or phi <= 0.");
-    return 0.;
-  }
-#endif
-
   z = (x - theta) / phi;
-
   return exp( - pow( abs(z), 2./delta ) * 0.5 );
-
 } /* end of unur_pdf_powerexponential() */
 
 /*---------------------------------------------------------------------------*/
 
 double
-unur_dpdf_powerexponential( double x, double *param, int n_param )
+unur_dpdf_powerexponential( double x, double *params, int n_params )
 {
   register double z, tmp;
-
-  CHECK_NULL(param,RETURN_NULL);
-  CHECK_N_PARAMS(n_param,3,0.);
-
-#if CHECKARGS
-  if (delta <= 0. || phi <= 0.) {
-    _unur_error(distr_name ,UNUR_ERR_DISTR,"delta <= 0 or phi <= 0.");
-    return 0.;
-  }
-#endif
 
   z = (x - theta) / phi;
 
@@ -119,12 +97,93 @@ unur_dpdf_powerexponential( double x, double *param, int n_param )
 
   /* sign ! */
   return ( (z<0.) ? tmp : -tmp );
-
 } /* end of unur_dpdf_powerexponential() */
+
+/*---------------------------------------------------------------------------*/
+
+struct unur_distr *
+unur_distr_powerexponential( double *params, int n_params )
+{
+#define DISTR distr->data.cont
+  register struct unur_distr *distr;
+
+  /* check new parameter for generator */
+  if (n_params < 1 || n_params > 3) {
+    _unur_warning(distr_name,UNUR_ERR_GENERIC,"invalid number parameter");
+    return NULL;
+  }
+  CHECK_NULL(params,RETURN_NULL);
+
+  /* allocate structure */
+  distr = _unur_malloc( sizeof(struct unur_distr) );
+
+  /* set magic cookie */
+  COOKIE_SET(distr,CK_DISTR_CONT);
+
+  /* set type of distribution */
+  distr->type = UNUR_DISTR_CONT;
+
+  /* set distribution id */
+  distr->id = UNUR_DISTR_POWEREXPONENTIAL;
+
+  /* name of distribution */
+  distr->name = distr_name;
+                
+  /* functions */
+  DISTR.pdf  = unur_pdf_powerexponential;  /* pointer to p.d.f.               */
+  DISTR.dpdf = unur_dpdf_powerexponential; /* pointer to derivative of p.d.f. */
+  DISTR.cdf  = NULL;                       /* pointer to c.d.f.               */
+
+  /* default parameters */
+  DISTR.params[1] = 0.;        /* default for theta */
+  DISTR.params[2] = 1.;        /* default for phi   */
+
+  /* copy parameters */
+  DISTR.params[0] = delta;
+  switch (n_params) {
+  case 3:
+    DISTR.params[2] = phi;
+  case 1:
+    DISTR.params[1] = theta;
+  default:
+    n_params = 3;
+  }
+
+  /* check parameter sigma */
+  if (DISTR.params[0] <= 0. || DISTR.params[2] <= 0.) {
+    _unur_error(distr_name ,UNUR_ERR_DISTR,"delta <= 0 or phi <= 0.");
+    free( distr ); return NULL;
+  }
+
+  /* number of arguments */
+  DISTR.n_params = n_params;
+
+  /* mode and area below p.d.f. */
+  DISTR.mode = 0.;  /* unur_mode_powerexponential(DISTR.params,DISTR.n_params); */
+  DISTR.area = 1.;  /* unur_area_powerexponential(DISTR.params,DISTR.n_params); */
+
+  /* domain */
+  DISTR.domain[0] = -INFINITY;       /* left boundary  */
+  DISTR.domain[1] = INFINITY;        /* right boundary */
+
+  /* indicate which parameters are set */
+  distr->set = ( UNUR_DISTR_SET_PARAMS | 
+		 UNUR_DISTR_SET_DOMAIN );
+
+/*  		 UNUR_DISTR_SET_MODE   | */
+/*  		 UNUR_DISTR_SET_PDFAREA ); */
+
+  /* return pointer to object */
+  return distr;
+
+#undef DISTR
+} /* end of unur_distr_powerexponential() */
 
 /*---------------------------------------------------------------------------*/
 #undef theta
 #undef delta
 #undef phi  
 /*---------------------------------------------------------------------------*/
+
+
 

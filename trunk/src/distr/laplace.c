@@ -58,64 +58,120 @@
 
 #include <unur_distr.h>
 
+#include <unur_cookies.h>
 #include <unur_errno.h>
 #include <unur_math.h>
+#include <unur_umalloc.h>
 #include <unur_utils.h>
 
 /*---------------------------------------------------------------------------*/
+static char distr_name[] = "laplace";
 
-static char distr_name[] = "Laplace distribution";
-
-#define theta (param[0])
-#define phi   (param[1])
+#define theta (params[0])
+#define phi   (params[1])
 /*---------------------------------------------------------------------------*/
 
 double
-unur_pdf_laplace( double x, double *param, int n_param )
+unur_pdf_laplace( double x, double *params, int n_params )
 { 
-  double z;
-
-  CHECK_NULL(param,RETURN_NULL);
-  CHECK_N_PARAMS(n_param,2,0.);
-
-#if CHECKARGS
-  if (phi <= 0.) {
-    _unur_error(distr_name ,UNUR_ERR_DISTR,"scale parameter phi <= 0.");
-    return 0.;
-  }
-#endif
-
+  register double z;
   z = (x>theta) ? (x-theta)/phi : (theta-x)/phi;
- 
   return exp(-z); 
-
 } /* end of unur_pdf_laplace() */
 
 /*---------------------------------------------------------------------------*/
 
 double
-unur_dpdf_laplace( double x, double *param, int n_param )
+unur_dpdf_laplace( double x, double *params, int n_params )
 { 
-  double z;
-
-  CHECK_NULL(param,RETURN_NULL);
-  CHECK_N_PARAMS(n_param,2,0.);
-
-#if CHECKARGS
-  if (phi <= 0.) {
-    _unur_error(distr_name ,UNUR_ERR_DISTR,"scale parameter phi <= 0.");
-    return 0.;
-  }
-#endif
-
+  register double z;
   z = (x>theta) ? (x-theta)/phi : (theta-x)/phi;
 
   if (z == 0.)   /* derivative is not defined, but ...                      */
-    return 0.;    /* a tangent parallel to x-axis is possible.               */
+    return 0.;   /* a tangent parallel to x-axis is possible.               */
 
   return ( (x>theta) ? -exp(-z)/phi : exp(-z)/phi );
-
 } /* end of unur_dpdf_laplace() */
+
+/*---------------------------------------------------------------------------*/
+
+struct unur_distr *
+unur_distr_laplace( double *params, int n_params )
+{
+#define DISTR distr->data.cont
+  register struct unur_distr *distr;
+
+  /* check new parameter for generator */
+  if (n_params < 0 || n_params > 2) {
+    _unur_warning(distr_name,UNUR_ERR_GENERIC,"invalid number parameter");
+    return NULL;
+  }
+  if (n_params > 0)
+    CHECK_NULL(params,RETURN_NULL);
+
+  /* allocate structure */
+  distr = _unur_malloc( sizeof(struct unur_distr) );
+
+  /* set magic cookie */
+  COOKIE_SET(distr,CK_DISTR_CONT);
+
+  /* set type of distribution */
+  distr->type = UNUR_DISTR_CONT;
+
+  /* set distribution id */
+  distr->id = UNUR_DISTR_LAPLACE;
+
+  /* name of distribution */
+  distr->name = distr_name;
+                
+  /* functions */
+  DISTR.pdf  = unur_pdf_laplace;  /* pointer to p.d.f.               */
+  DISTR.dpdf = unur_dpdf_laplace; /* pointer to derivative of p.d.f. */
+  DISTR.cdf  = NULL;    /* unur_cdf_laplace;  * pointer to c.d.f.               */
+
+  /* default parameters */
+  DISTR.params[0] = 0.;        /* default for theta */
+  DISTR.params[1] = 1.;        /* default for phi */
+  
+  /* copy parameters */
+  switch (n_params) {
+  case 2:
+    DISTR.params[1] = phi;
+  case 1:
+    DISTR.params[0] = theta;
+    n_params = 2;           /* number of parameters for non-standard form */
+  default:
+  }
+
+  /* check parameter sigma */
+  if (DISTR.params[1] <= 0.) {
+    _unur_error(distr_name,UNUR_ERR_DISTR,"scale parameter phi <= 0.");
+    free( distr ); return NULL;
+  }
+
+  /* number of arguments */
+  DISTR.n_params = n_params;
+
+  /* mode and area below p.d.f. */
+  DISTR.mode = 0.;        /* unur_mode_laplace(DISTR.params,DISTR.n_params); */
+  DISTR.area = 1.;        /* unur_area_laplace(DISTR.params,DISTR.n_params); */
+
+  /* domain */
+  DISTR.domain[0] = -INFINITY;       /* left boundary  */
+  DISTR.domain[1] = INFINITY;        /* right boundary */
+
+  /* indicate which parameters are set */
+  distr->set = ( UNUR_DISTR_SET_PARAMS | 
+		 UNUR_DISTR_SET_DOMAIN );
+
+/*  		 UNUR_DISTR_SET_MODE   | */
+/*  		 UNUR_DISTR_SET_PDFAREA ); */
+
+  /* return pointer to object */
+  return distr;
+
+#undef DISTR
+} /* end of unur_distr_laplace() */
 
 /*---------------------------------------------------------------------------*/
 #undef theta

@@ -57,57 +57,103 @@
 
 #include <unur_distr.h>
 
+#include <unur_cookies.h>
 #include <unur_errno.h>
 #include <unur_math.h>
+#include <unur_umalloc.h>
 #include <unur_utils.h>
 
 /*---------------------------------------------------------------------------*/
 
-static char distr_name[] = "Student distribution";
+static char distr_name[] = "student";
 
-#define nu (param [0])
+#define nu (params [0])
 /*---------------------------------------------------------------------------*/
 
 double
-unur_pdf_student( double x, double *param, int n_param )
+unur_pdf_student( double x, double *params, int n_params )
 {
-  CHECK_NULL(param, RETURN_NULL);
-  CHECK_N_PARAMS(n_param,1,0.);
-  
-#if CHECKARGS
-  if (nu <= 0.) {
-    _unur_error(distr_name , UNUR_ERR_DISTR,"shape parameter nu <= 0.");
-    return 0.;
-  }
-#endif
-
   return pow( (1. + x*x/nu), (-nu-1.)*0.5 );
-
 }  /* end of unur_pdf_student() */
 
 /*---------------------------------------------------------------------------*/
 
 double
-unur_dpdf_student( double x, double *param, int n_param )
+unur_dpdf_student( double x, double *params, int n_params )
 {
-  CHECK_NULL(param,RETURN_NULL);
-  CHECK_N_PARAMS(n_param,1,0);
-
-#if CHECKARGS
-  if (nu <= 0.) {
-    _unur_error(distr_name , UNUR_ERR_DISTR,"scale parameter nu <= 0.");
-    return 0.;
-  }
-#endif
-
   return ( (-nu-1.)*x/nu * pow( (1. + x*x/nu), (-nu-3.)*0.5 ) );
-
 } /* end of unur_dpdf_student() */
+
+/*---------------------------------------------------------------------------*/
+
+struct unur_distr *
+unur_distr_student( double *params, int n_params )
+{
+#define DISTR distr->data.cont
+  register struct unur_distr *distr;
+
+  /* check new parameter for generator */
+  if (n_params != 1) {
+    _unur_warning(distr_name,UNUR_ERR_GENERIC,"invalid number parameter");
+    return NULL;
+  }
+  if (n_params > 0)
+    CHECK_NULL(params,RETURN_NULL);
+
+  /* allocate structure */
+  distr = _unur_malloc( sizeof(struct unur_distr) );
+
+  /* set magic cookie */
+  COOKIE_SET(distr,CK_DISTR_CONT);
+
+  /* set type of distribution */
+  distr->type = UNUR_DISTR_CONT;
+
+  /* set distribution id */
+  distr->id = UNUR_DISTR_STUDENT;
+
+  /* name of distribution */
+  distr->name = distr_name;
+                
+  /* functions */
+  DISTR.pdf  = unur_pdf_student;  /* pointer to p.d.f.               */
+  DISTR.dpdf = unur_dpdf_student; /* pointer to derivative of p.d.f. */
+  DISTR.cdf  = NULL;              /* pointer to c.d.f.               */
+
+  /* copy parameters */
+  DISTR.params[0] = nu;
+
+  /* check parameter sigma */
+  if (DISTR.params[0] <= 0.) {
+    _unur_error(distr_name , UNUR_ERR_DISTR,"scale parameter nu <= 0.");
+    free( distr ); return NULL;
+  }
+
+  /* number of arguments */
+  DISTR.n_params = n_params;
+
+  /* mode and area below p.d.f. */
+  DISTR.mode = 0.;       /* unur_mode_exponential(DISTR.params,DISTR.n_params); */
+  DISTR.area = 1.;       /* unur_area_exponential(DISTR.params,DISTR.n_params); */
+
+  /* domain */
+  DISTR.domain[0] = -INFINITY;        /* left boundary  */
+  DISTR.domain[1] = INFINITY;        /* right boundary */
+
+  /* indicate which parameters are set */
+  distr->set = ( UNUR_DISTR_SET_PARAMS | 
+		 UNUR_DISTR_SET_DOMAIN );
+
+/*  		 UNUR_DISTR_SET_MODE   | */
+/*  		 UNUR_DISTR_SET_PDFAREA ); */
+
+  /* return pointer to object */
+  return distr;
+
+#undef DISTR
+} /* end of unur_distr_student() */
 
 /*---------------------------------------------------------------------------*/
 #undef nu
 /*---------------------------------------------------------------------------*/
-
-
-
 

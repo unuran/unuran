@@ -183,8 +183,8 @@ Of course you can do this only if you have the right permissions.
 @node Contact
 @section Contact the authors
 
-If there are problems with UNURAN or you have any suggestions,
-please contact us via the UNURAN-homepage:
+If you have any problems with UNURAN, suggestions how to improve
+the program or find a bug, please contact us via the UNURAN-homepage:
 @uref{http://statistik.wu-wien.ac.at}
 or via email:
 @email{leydold@@statistik.wu-wien.ac.at}

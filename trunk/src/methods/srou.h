@@ -131,6 +131,24 @@ int unur_srou_reinit( UNUR_GEN *generator );
    in case of a failure @code{0} is returned.
 */
 
+int unur_srou_set_r( UNUR_PAR *parameters, double r );
+/* 
+   Set parameter @var{r} for transformation.
+   Only values greater than or equal to 1 are allowed.
+   The performance of the generator decreases when @var{r} is
+   increased. On the other hand @var{r} must not be set to small,
+   since the given density must be T_c-concave for 
+   @i{c = -r/(r+1)}.
+
+   Notice: If @var{r} is set to @code{1.} then this equivalent to
+   method SROU but @emph{much slower}.
+
+   TODO!!!!
+
+
+   Default is @code{1}.
+*/
+
 int unur_srou_set_cdfatmode( UNUR_PAR *parameters, double Fmode );
 /* 
    Set CDF at mode. 

@@ -35,7 +35,6 @@ libmethods_a_SOURCES = \
  dgt.c  \
  dsrou.c \
  dstd.c \
- gsrou.c \
  ninv.c \
  srou.c \
  ssr.c \
@@ -71,7 +70,6 @@ noinst_HEADERS = \
  dgt.h   dgt_struct.h \
  dsrou.h dsrou_struct.h \
  dstd.h  dstd_struct.h \
- gsrou.h gsrou_struct.h \
  ninv.h  ninv_struct.h \
  srou.h  srou_struct.h \
  ssr.h   ssr_struct.h \

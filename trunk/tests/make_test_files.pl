@@ -630,8 +630,11 @@ sub scan_validate {
     if ($chi2) {
 
 	# analyse chi^2 tests
-	my @chi2tests = split /\n/, $chi2; 
-	die "wrong number of chi2 tests" unless ($#chi2tests <= $#distributions);
+	my @chi2tests = split /\n/, $chi2;
+
+	unless ($#chi2tests <= $#distributions) {
+	    die "wrong number of chi2 tests ($#chi2tests > $#distributions)";
+	}
 
 	print "\tprintf(\"\\n(chi^2) \"); fflush(stdout);\n";
 	print "\n/* chi^2 tests: ".($#generators+1)*$n_distributions." */\n\n";

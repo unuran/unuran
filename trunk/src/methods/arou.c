@@ -710,7 +710,7 @@ _unur_arou_sample( struct unur_gen *gen )
   while (1) {
 
     /* sample from U(0,1) */
-    R = _unur_call_urng(gen);
+    R = _unur_call_urng(gen->urng);
 
     /* look up in guide table and search for segment */
     seg =  GEN.guide[(int) (R * GEN.guide_size)];
@@ -737,7 +737,7 @@ _unur_arou_sample( struct unur_gen *gen )
 
       /* three uniform random numbers with R1 + R2 + R3 = 1 */
       R1 = (R - seg->Ain) / seg->Aout;  /* reuse of random number (good ?? ) */
-      R2 = _unur_call_urng(gen);
+      R2 = _unur_call_urng(gen->urng);
       if (R1>R2) { tmp = R1; R1=R2; R2=tmp; }  /* swap */
       R3 = 1.-R2;
       R2 -= R1;
@@ -788,7 +788,7 @@ _unur_arou_sample_check( struct unur_gen *gen )
   while (1) {
 
     /* sample from U(0,1) */
-    R = _unur_call_urng(gen);
+    R = _unur_call_urng(gen->urng);
 
     /* look up in guide table and search for segment */
     seg =  GEN.guide[(int) (R * GEN.guide_size)];
@@ -830,7 +830,7 @@ _unur_arou_sample_check( struct unur_gen *gen )
 
       /* three uniform random numbers with R1 + R2 + R3 = 1 */
       R1 = (R - seg->Ain) / seg->Aout;  /* reuse of random number (good ?? ) */
-      R2 = _unur_call_urng(gen);
+      R2 = _unur_call_urng(gen->urng);
       if (R1>R2) { tmp = R1; R1=R2; R2=tmp; }  /* swap */
       R3 = 1.-R2;
       R2 -= R1;

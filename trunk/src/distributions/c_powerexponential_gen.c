@@ -50,7 +50,7 @@ inline static int powerexponential_epd_init( struct unur_gen *gen );
 
 #define MAX_gen_params  2      /* maximal number of parameters for generator */
 
-#define uniform()  _unur_call_urng(gen) /* call for uniform prng             */
+#define uniform()  _unur_call_urng(gen->urng) /* call for uniform prng       */
 
 /*---------------------------------------------------------------------------*/
 #define tau    (DISTR.params[0])        /* shape */

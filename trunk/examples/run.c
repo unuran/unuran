@@ -30,8 +30,8 @@ int main()
   
   UNUR_URNG *urng;
 
-  urng = prng_new("mt19937(2345)");
-  unur_set_default_urng(urng);
+/*    urng = prng_new("mt19937(2345)"); */
+/*    unur_set_default_urng(urng); */
   
 
   //distr = unur_distr_normal(NULL,0);
@@ -43,14 +43,14 @@ int main()
   // distr = unur_distr_normal(fpar,2);
 
   par = unur_tdr_new(distr);
-  unur_tdr_set_version_ps(par);
+  unur_tdr_set_variant_ps(par);
 /*    unur_tdr_set_cpoints(par,5,cp); */
 /*    unur_tdr_set_max_sqhratio(par,0.); */
   unur_tdr_set_c(par,0.);
   unur_run_tests(par,~0);
   
 /*    par = unur_tdr_new(distr); */
-/*    unur_tdr_set_version_ia(par); */
+/*    unur_tdr_set_variant_ia(par); */
 /*    unur_tdr_set_cpoints(par,10,NULL); */
 /*    unur_run_tests(par,~0); */
   
@@ -59,34 +59,34 @@ int main()
 
 
 /*    par = unur_tdr_new(distr); */
-/*    unur_tdr_set_version_gw(par); */
+/*    unur_tdr_set_variant_gw(par); */
 /*    unur_tdr_set_cpoints(par,40,NULL); */
 /*    unur_run_tests(par,~0); */
 
 /*    par = unur_tdr_new(distr); */
-/*    unur_tdr_set_version_gw(par); */
+/*    unur_tdr_set_variant_gw(par); */
 /*    unur_tdr_set_c(par,0.); */
 /*    unur_tdr_set_cpoints(par,40,NULL); */
 /*    unur_run_tests(par,~0); */
 
 /*    par = unur_tdr_new(distr); */
-/*    unur_tdr_set_version_ps(par); */
+/*    unur_tdr_set_variant_ps(par); */
 /*    unur_tdr_set_cpoints(par,4,NULL); */
 /*    unur_run_tests(par,~0); */
 
 /*    par = unur_tdr_new(distr); */
-/*    unur_tdr_set_version_ps(par); */
+/*    unur_tdr_set_variant_ps(par); */
 /*    unur_tdr_set_c(par,0.); */
 /*    unur_tdr_set_cpoints(par,4,NULL); */
 /*    unur_run_tests(par,~0); */
 
 /*    par = unur_tdr_new(distr); */
-/*    unur_tdr_set_version_ia(par); */
+/*    unur_tdr_set_variant_ia(par); */
 /*    unur_tdr_set_cpoints(par,40,NULL); */
 /*    unur_run_tests(par,~0); */
 
 /*    par = unur_tdr_new(distr); */
-/*    unur_tdr_set_version_ia(par); */
+/*    unur_tdr_set_variant_ia(par); */
 /*    unur_tdr_set_c(par,0.); */
 /*    unur_tdr_set_cpoints(par,40,NULL); */
 /*    unur_run_tests(par,~0); */

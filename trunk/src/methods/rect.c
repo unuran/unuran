@@ -234,7 +234,7 @@ _unur_rect_sample_vec( struct unur_gen *gen, double *vec )
 
   if (GEN.domain == NULL) {
     for (i=0; i<GEN.dim; i++)
-      vec[i] = _unur_call_urng(gen);
+      vec[i] = _unur_call_urng(gen->urng);
   }
   else ;
   /* not implemented yet */

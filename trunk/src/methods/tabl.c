@@ -771,7 +771,7 @@ _unur_tabl_sample_adaptive( struct unur_gen *gen )
       */
 
       /* sample from U(0,1) */
-      u = _unur_call_urng(gen);
+      u = _unur_call_urng(gen->urng);
     
       /* look up in guide table and search for interval */
       iv =  GEN.guide[(int) (u * GEN.guide_size)];
@@ -813,7 +813,7 @@ _unur_tabl_sample_adaptive( struct unur_gen *gen )
 	    (2) the guide table method requires a acc./rej. step. **/
       }
       /* now accept or reject */
-      u = _unur_call_urng(gen);
+      u = _unur_call_urng(gen->urng);
       if (fx >= u * (iv->fmax - iv->fmin) + iv->fmin)
 	/** TODO: possible overflow/underflow ?? **/
 	return x;
@@ -848,7 +848,7 @@ _unur_tabl_sample( struct unur_gen *gen )
   while(1) {
 
     /* sample from U(0,1) */
-    u = _unur_call_urng(gen);
+    u = _unur_call_urng(gen->urng);
 
     /* look up in guide table and search for interval */
     iv =  GEN.guide[(int) (u * GEN.guide_size)];
@@ -881,7 +881,7 @@ _unur_tabl_sample( struct unur_gen *gen )
 	    (2) the guide table method requires a acc./rej. step. **/
       }
       /* now accept or reject */
-      u = _unur_call_urng(gen);
+      u = _unur_call_urng(gen->urng);
       if (fx >= u * (iv->fmax - iv->fmin) + iv->fmin)
 	/** TODO: possible overflow/underflow ?? **/
 	return x;
@@ -916,7 +916,7 @@ _unur_tabl_sample_check( struct unur_gen *gen )
   while(1) {
 
     /* sample from U(0,1) */
-    u = _unur_call_urng(gen);
+    u = _unur_call_urng(gen->urng);
 
     /* look up in guide table and search for interval */
     iv =  GEN.guide[(int) (u * GEN.guide_size)];
@@ -963,7 +963,7 @@ _unur_tabl_sample_check( struct unur_gen *gen )
       }
   
       /* now accept or reject */
-      u = _unur_call_urng(gen);
+      u = _unur_call_urng(gen->urng);
       if (fx >= u * (iv->fmax - iv->fmin) + iv->fmin)
 	/** TODO: possible overflow/underflow ?? **/
 	return x;

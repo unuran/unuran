@@ -48,7 +48,7 @@ inline static int slash_slash_init( struct unur_gen *gen );
 #define GEN       gen->data.cstd        /* data for generator object         */
 #define DISTR     gen->distr.data.cont  /* data for distribution in generator object */
 
-#define uniform()  _unur_call_urng(gen) /* call for uniform prng             */
+#define uniform()  _unur_call_urng(gen->urng) /* call for uniform prng       */
 
 /*---------------------------------------------------------------------------*/
 

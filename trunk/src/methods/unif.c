@@ -248,7 +248,7 @@ _unur_unif_sample( struct unur_gen *gen )
   COOKIE_CHECK(gen,CK_UNIF_GEN,0.);
 
   /* sample uniform random number */
-  return _unur_call_urng(gen);
+  return _unur_call_urng(gen->urng);
 
 } /* end of _unur_unif_sample() */
 

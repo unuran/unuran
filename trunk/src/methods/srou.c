@@ -911,9 +911,9 @@ _unur_srou_sample( struct unur_gen *gen )
 
   while (1) {
     /* generate point uniformly on rectangle */
-    while ( (U = _unur_call_urng(gen)) == 0.);
+    while ( (U = _unur_call_urng(gen->urng)) == 0.);
     U *= GEN.um;
-    V = GEN.vl + _unur_call_urng(gen) * (GEN.vr - GEN.vl);
+    V = GEN.vl + _unur_call_urng(gen->urng) * (GEN.vr - GEN.vl);
 
     /* ratio */
     X = V/U;
@@ -966,9 +966,9 @@ _unur_srou_sample_mirror( struct unur_gen *gen )
 
   while (1) {
     /* generate point uniformly on rectangle */
-    while ( (U = _unur_call_urng(gen)) == 0.);
+    while ( (U = _unur_call_urng(gen->urng)) == 0.);
     U *= GEN.um * SQRT2;
-    V = GEN.vl + _unur_call_urng(gen) * (GEN.vr - GEN.vl);
+    V = GEN.vl + _unur_call_urng(gen->urng) * (GEN.vr - GEN.vl);
 
     /* ratio */
     X = V/U;
@@ -1025,9 +1025,9 @@ _unur_srou_sample_check( struct unur_gen *gen )
 
     while (1) {
       /* generate point uniformly on rectangle */
-      while ( (U = _unur_call_urng(gen)) == 0.);
+      while ( (U = _unur_call_urng(gen->urng)) == 0.);
       U *= GEN.um * SQRT2;
-      V = GEN.vl + _unur_call_urng(gen) * (GEN.vr - GEN.vl);
+      V = GEN.vl + _unur_call_urng(gen->urng) * (GEN.vr - GEN.vl);
 
       /* ratio */
       X = V/U;
@@ -1074,9 +1074,9 @@ _unur_srou_sample_check( struct unur_gen *gen )
 
     while (1) {
       /* generate point uniformly on rectangle */
-      while ( (U = _unur_call_urng(gen)) == 0.);
+      while ( (U = _unur_call_urng(gen->urng)) == 0.);
       U *= GEN.um;
-      V = GEN.vl + _unur_call_urng(gen) * (GEN.vr - GEN.vl);
+      V = GEN.vl + _unur_call_urng(gen->urng) * (GEN.vr - GEN.vl);
 
       /* ratio */
       X = V/U;

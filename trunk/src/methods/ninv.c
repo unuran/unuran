@@ -932,7 +932,7 @@ _unur_ninv_sample_regula( struct unur_gen *gen )
      /*   double (sample from random variate)                                */
      /*----------------------------------------------------------------------*/
 {
-  return _unur_ninv_regula(gen, _unur_call_urng(gen) ) ;
+  return _unur_ninv_regula(gen, _unur_call_urng(gen->urng) ) ;
 }
 
 
@@ -1109,7 +1109,7 @@ double _unur_ninv_sample_newton(struct unur_gen *gen)
      /*   double (sample from random variate)                                */
      /*----------------------------------------------------------------------*/
 {
-  return _unur_ninv_newton(gen, _unur_call_urng(gen) ) ;
+  return _unur_ninv_newton(gen, _unur_call_urng(gen->urng) ) ;
 }
 
 double

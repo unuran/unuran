@@ -511,7 +511,7 @@ _unur_dgt_sample( struct unur_gen *gen )
   CHECK_NULL(gen,0);  COOKIE_CHECK(gen,CK_DGT_GEN,0);
 
   /* sample from U(0,1) */
-  u = _unur_call_urng(gen);
+  u = _unur_call_urng(gen->urng);
 
   /* look up in guide table ... */
   j = GEN.guide_table[(int)(u * GEN.guide_size)];

@@ -106,8 +106,8 @@
       ... name|pointer of default urng (depends on UNUR_URNG_TYPE)
           to be set in unuran_config.h
 
-   _unur_call_urng(gen)
-      ... function call to urng (via UNUR_GEN)
+   _unur_call_urng(urng)
+      ... function call to urng 
 */
 /* Remark: UNUR_URNG_DEFAULT and _unur_call_urng() should be defined in      */
 /*         source_urng.h. However this would be a confusing splitting of     */
@@ -124,7 +124,7 @@ double UNUR_URNG_DEFAULT(void);
 typedef double (UNUR_URNG)(void);
 
 /* function call to uniform rng */
-#define _unur_call_urng(gen)        ((*(gen->urng))())
+#define _unur_call_urng(urng)        ((*(urng))())
 
 /*---------------------------------------------------------------------------*/
 #elif UNUR_URNG_TYPE == UNUR_URNG_PRNG
@@ -137,7 +137,7 @@ typedef double (UNUR_URNG)(void);
 typedef struct prng UNUR_URNG;
 
 /* function call to uniform rng */
-#define _unur_call_urng(gen)        (prng_get_next(gen->urng))
+#define _unur_call_urng(urng)        (prng_get_next(urng))
 
 /*---------------------------------------------------------------------------*/
 #else

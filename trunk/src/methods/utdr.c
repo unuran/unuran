@@ -956,7 +956,7 @@ _unur_utdr_sample( struct unur_gen *gen )
 
   while (1) {
     /*2*/
-    u = _unur_call_urng(gen) * GEN.volcompl;
+    u = _unur_call_urng(gen->urng) * GEN.volcompl;
     /*2.1*/
     if (u <= GEN.voll) {
       x = -GEN.dlal+GEN.ooal2/(u-GEN.col);
@@ -975,7 +975,7 @@ _unur_utdr_sample( struct unur_gen *gen )
       }
     }
     /*2.2*/
-    v = _unur_call_urng(gen) * linx;
+    v = _unur_call_urng(gen->urng) * linx;
     /*2.3*/
     if (x<DISTR.mode) {
       if (x >= GEN.tlx) {

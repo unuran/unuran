@@ -871,7 +871,7 @@ _unur_ssr_sample( struct unur_gen *gen )
 
   while (1) {
     /* uniform ~U(0,1) */
-    while ( (U = GEN.Aleft + _unur_call_urng(gen) * GEN.Ain) == 0. );
+    while ( (U = GEN.Aleft + _unur_call_urng(gen->urng) * GEN.Ain) == 0. );
 
     if (U < GEN.al) {        /* first part */
       X = - GEN.vl * GEN.vl / U;
@@ -889,7 +889,7 @@ _unur_ssr_sample( struct unur_gen *gen )
     }
 
     /* accept or reject */
-    V = _unur_call_urng(gen);
+    V = _unur_call_urng(gen->urng);
     y *= V;
 
     /* evaluate squeeze */
@@ -933,7 +933,7 @@ _unur_ssr_sample_check( struct unur_gen *gen )
 
   while (1) {
     /* uniform ~U(0,1) */
-    while ( (U = GEN.Aleft + _unur_call_urng(gen) * GEN.Ain) == 0. );
+    while ( (U = GEN.Aleft + _unur_call_urng(gen->urng) * GEN.Ain) == 0. );
 
     if (U < GEN.al) {        /* first part */
       X = - GEN.vl * GEN.vl / U;
@@ -958,7 +958,7 @@ _unur_ssr_sample_check( struct unur_gen *gen )
       _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"pdf(x) > hat(x)");
 
     /* accept or reject */
-    V = _unur_call_urng(gen);
+    V = _unur_call_urng(gen->urng);
     y *= V;
 
     /* evaluate and check squeeze */

@@ -524,7 +524,7 @@ _unur_dau_sample( struct unur_gen *gen )
   CHECK_NULL(gen,0);  COOKIE_CHECK(gen,CK_DAU_GEN,0);
 
   /* sample from U(0,urn_size) */
-  u = _unur_call_urng(gen);
+  u = _unur_call_urng(gen->urng);
   u *= GEN.urn_size;
   iu = (int) u;
 

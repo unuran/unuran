@@ -50,7 +50,7 @@ inline static int poisson_pprsc_init( struct unur_gen *gen );
 #define GEN       gen->data.dstd        /* data for generator object         */
 #define DISTR     gen->distr.data.discr /* data for distribution in generator object */
 
-#define uniform()  _unur_call_urng(gen) /* call for uniform prng             */
+#define uniform()  _unur_call_urng(gen->urng) /* call for uniform prng       */
 
 #define MAX_gen_params   39    /* maximal number of parameters for generator */
 #define MAX_gen_iparams   5    /* maximal number of integer param. for gen.  */

@@ -43,6 +43,8 @@
 /*---------------------------------------------------------------------------*/
 
 int _unur_acg_C_header (UNUR_DISTR *distr, FILE *out, const char *rand);
+int _unur_acg_FORTRAN_header (UNUR_DISTR *distr, FILE *out, const char *rand);
+int _unur_acg_JAVA_header (UNUR_DISTR *distr, FILE *out, const char *rand);
 /*---------------------------------------------------------------------------*/
 /* Code generator for file header.                                           */
 /*---------------------------------------------------------------------------*/

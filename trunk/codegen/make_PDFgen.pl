@@ -289,8 +289,6 @@ sub make_PDF_main_JAVA
 } # end of make_PDF_main_JAVA()
 
 
-
-
 # ----------------------------------------------------------------
 # Print PDF code (C version)
 
@@ -405,8 +403,6 @@ sub make_PDF_distr_FORTRAN
 } # make_PDF_distr_FORTRAN()
 
 
-
-
 # ----------------------------------------------------------------
 # Print PDF code (JAVA version)
 
@@ -429,12 +425,12 @@ sub make_PDF_distr_JAVA
 
     # compose PDF name
     $gencode .= 
-	"\tfprintf (out,\"static double %s (double x)\\n{\\n\",".
+	"\tfprintf (out,\"\\tstatic double %s (double x)\\n\\t{\\n\",".
         " ((pdf) ? pdf : \"pdf_$d\") );\n";
 
     # Constants (parameters)
     $gencode .= 
-	"\tfprintf (out,\"\\t/* parameters for PDF */\\n\");\n";
+	"\tfprintf (out,\"\\t\\t/* parameters for PDF */\\n\");\n";
 
     #   List of parameters
     $gencode .= make_PDF_params_JAVA($DISTR,$d);
@@ -446,7 +442,7 @@ sub make_PDF_distr_JAVA
     $gencode .= make_PDF_body_JAVA($DISTR,$d);
 
     # End of function
-    $gencode .= "\tfprintf (out,\"}\\n\");\n";
+    $gencode .= "\tfprintf (out,\"\\t}\\n\");\n";
     $gencode .= $empty_line;
 
     $gencode .= "\n\treturn 1;\n";
@@ -455,7 +451,6 @@ sub make_PDF_distr_JAVA
     return $gencode;
     
 } # make_PDF_distr_JAVA()
-
 
 
 # ----------------------------------------------------------------
@@ -604,7 +599,7 @@ sub make_PDF_params_JAVA
 	if ($have_n_params) {
 	    $params .=
 		"\tif (".$DISTR->{$d}->{"=PDF"}->{"=DISTR"}.".n_params > $i)\n".
-		"\t\tfprintf (out,\"\\tstatic final double ".
+		"\t\tfprintf (out,\"\\t\\tstatic final double ".
 		$in_params->[$i].
 		" = %.20e;\\n\",".
 		$DISTR->{$d}->{"=PDF"}->{"=DISTR"}.".params[$i]);\n";
@@ -612,7 +607,7 @@ sub make_PDF_params_JAVA
 
 	else {
 	    $params .= 
-		"\tfprintf (out,\"\\tstatic final double ".
+		"\tfprintf (out,\"\\t\\tstatic final double ".
 	        $in_params->[$i].
 	        " = %.20e;\\n\",".
 	        $DISTR->{$d}->{"=PDF"}->{"=DISTR"}.".params[$i]);\n";
@@ -682,7 +677,7 @@ sub make_PDF_normconstant_JAVA
     if ($DISTR->{$distr}->{"=PDF"}->{"=CONST"}) {
 	if ($DISTR->{$distr}->{"=PDF"}->{"=BODY"} =~ /((LOG)?NORMCONSTANT)/) {
 	    return 
-		"\tfprintf (out,\"\\tstatic final double $1 = %.20e;\\n\\n\",".
+		"\tfprintf (out,\"\\t\\tstatic final double $1 = %.20e;\\n\\n\",".
 		$DISTR->{$distr}->{"=PDF"}->{"=CONST"}.");\n";
 	}
     }
@@ -865,7 +860,7 @@ sub make_PDF_body_JAVA
     } 
 
     # string for make PDF function
-    my $body = "\tfprintf (out,\"\\t/* compute PDF */\\n\");\n";
+    my $body = "\tfprintf (out,\"\\t\\t/* compute PDF */\\n\");\n";
 
     foreach my $l (split /\n/, $in_body) {
 	if ($l =~ /if\s*\(\s*n_params\s*[<>=!]+\s*\d+\s*\)/) {
@@ -879,7 +874,7 @@ sub make_PDF_body_JAVA
         #remove declaratien "register"
         $l =~ s/register//;
 
-	$body .= "\tfprintf (out,\"$l\\n\");\n";
+	$body .= "\tfprintf (out,\"\\t$l\\n\");\n";
     }
 
     return $body;

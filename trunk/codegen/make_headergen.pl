@@ -115,17 +115,16 @@ sub make_headergen
 	next unless $DISTR->{$d}->{"=TYPE"} eq "CONT";
 
 	# Function prototype
-	$headergen_prototypes .= "static ".get_headergen_funct_C($d).";\n";
+	$headergen_prototypes .= "static ".get_headergen_funct($d).";\n";
 
 	# Function for distribution
-	$headergen .= make_header_distr_C($DISTR,$d);
+	$headergen .= make_header_distr($DISTR,$d);
     }
 
     # End
     return $headergen;
 
 } # end of make_headergen()
-
 
 # ----------------------------------------------------------------
 # Main (C version)
@@ -139,22 +138,21 @@ sub make_header_main_C
     # Mark begin of Main
     $gencode .= make_bar("ACG header main (C version)");
 
-    # Function header
-    $gencode .= "int _unur_acg_C_header (UNUR_DISTR *distr, FILE *out, const char *rand)\n{\n";
-
-    # Check for invalid NULL pointer
-    $gencode .= "\t_unur_check_NULL(\"ACG\", distr, 0 );\n\n";
-
-    # Switch (distribution)
-    $gencode .= "\treturn _unur_acg_header_switch (distr,out,rand);\n";
-   
-    # End of function
-    $gencode .= "}\n";
+    # ACG
+    $gencode .= <<EOX;
+int _unur_acg_C_header (UNUR_DISTR *distr, FILE *out, const char *rand)
+{
+\t_unur_check_NULL(\"ACG_C\", distr, 0 );
+\thrule = hrule_C;
+\tsformat = sformat_C;
+\tsynopsis = synopsis_C;
+\treturn _unur_acg_header_switch (distr,out,rand);
+}
+EOX
 
     return $gencode;
 
 } # end of make_header_main_C()
-
 
 # ----------------------------------------------------------------
 # Main (FORTRAN version)
@@ -168,22 +166,21 @@ sub make_header_main_FORTRAN
     # Mark begin of Main
     $gencode .= make_bar("ACG header main (FORTRAN version)");
 
-    # Function header
-    $gencode .= "int _unur_acg_FORTRAN_header (UNUR_DISTR *distr, FILE *out, const char *rand)\n{\n";
-
-    # Check for invalid NULL pointer
-    $gencode .= "\t_unur_check_NULL(\"ACG\", distr, 0 );\n\n";
-
-    # Switch (distribution)
-    $gencode .= "\treturn _unur_acg_header_switch (distr,out,rand);\n";
-   
-    # End of function
-    $gencode .= "}\n";
+    # ACG
+    $gencode .= <<EOX;
+int _unur_acg_FORTRAN_header (UNUR_DISTR *distr, FILE *out, const char *rand)
+{
+\t_unur_check_NULL(\"ACG_FORTRAN\", distr, 0 );
+\thrule = hrule_FORTRAN;
+\tsformat = sformat_FORTRAN;
+\tsynopsis = synopsis_FORTRAN;
+\treturn _unur_acg_header_switch (distr,out,rand);
+}
+EOX
 
     return $gencode;
 
 } # end of make_header_main_FORTRAN()
-
 
 # ----------------------------------------------------------------
 # Main (JAVA version)
@@ -197,22 +194,21 @@ sub make_header_main_JAVA
     # Mark begin of Main
     $gencode .= make_bar("ACG header main (JAVA version)");
 
-    # Function header
-    $gencode .= "int _unur_acg_JAVA_header (UNUR_DISTR *distr, FILE *out, const char *rand)\n{\n";
-
-    # Check for invalid NULL pointer
-    $gencode .= "\t_unur_check_NULL(\"ACG\", distr, 0 );\n\n";
-
-    # Switch (distribution)
-    $gencode .= "\treturn _unur_acg_header_switch (distr,out,rand);\n";
-   
-    # End of function
-    $gencode .= "}\n";
+    # ACG
+    $gencode .= <<EOX;
+int _unur_acg_JAVA_header (UNUR_DISTR *distr, FILE *out, const char *rand)
+{
+\t_unur_check_NULL(\"ACG_JAVA\", distr, 0 );
+\thrule = hrule_JAVA;
+\tsformat = sformat_JAVA;
+\tsynopsis = synopsis_JAVA;
+\treturn _unur_acg_header_switch (distr,out,rand);
+}
+EOX
 
     return $gencode;
 
 } # end of make_header_main_JAVA()
-
 
 # ----------------------------------------------------------------
 # Switch for distributions 
@@ -237,7 +233,7 @@ sub make_header_switch
     foreach my $d (sort keys %{$DISTR}) {
 	next unless $DISTR->{$d}->{"=TYPE"} eq "CONT";
 	$gencode .= "\tcase ".$DISTR->{$d}->{"=ID"}.":\n";
-	$gencode .= "\t\treturn _unur_acg_C_header_$d (distr,out,rand);\n";
+	$gencode .= "\t\treturn _unur_acg_header_$d (distr,out,rand);\n";
     }
     $gencode .= "\tdefault:\n";
     $gencode .= "\t\t_unur_error(distr->name,UNUR_ERR_GEN_DATA,\"Cannot make ACG header\");\n";
@@ -253,9 +249,9 @@ sub make_header_switch
 
 
 # ----------------------------------------------------------------
-# Print header code for distribution (C version)
+# Print header code for distribution
 
-sub make_header_distr_C
+sub make_header_distr
 {
     my $DISTR = $_[0];   # data for distributions
     my $d = $_[1];       # distribution
@@ -266,7 +262,7 @@ sub make_header_distr_C
     $gencode .= make_bar("PDF $d: ".$DISTR->{$d}->{"=NAME"});
 
     # Function header
-    $gencode .= get_headergen_funct_C($d)."\n{\n";
+    $gencode .= get_headergen_funct($d)."\n{\n";
 
     # Name of distribution
     $gencode .= 
@@ -298,7 +294,7 @@ sub make_header_distr_C
     $gencode .= 
 	 "\tfprintf (out,hrule);\n"
 	."\tfprintf (out,sformat,\"Synopsis:\");\n"
-	."\tfprintf (out,\"\\ndouble %s (void);\\n\\n\",rand);\n";
+	."\tfprintf (out,synopsis,rand);\n";
 
     # Copyright notice
     $gencode .= 
@@ -311,19 +307,19 @@ sub make_header_distr_C
 
     return $gencode;
     
-} # make_header_distr_C()
+} # make_header_distr()
 
 
 # ----------------------------------------------------------------
-# Get name of generation routine (C version)
+# Get name of generation routine
 
-sub get_headergen_funct_C
+sub get_headergen_funct
 {
     my $d = $_[0];       # distribution
 
-    return "int _unur_acg_C_header_$d (UNUR_DISTR *distr, FILE *out, const char *rand)";
+    return "int _unur_acg_header_$d (UNUR_DISTR *distr, FILE *out, const char *rand)";
 
-} # end of get_headergen_funct_C()
+} # end of get_headergen_funct()
 
 
 # ----------------------------------------------------------------
@@ -440,22 +436,27 @@ sub make_header_constants
 /* C version */
 const static char hrule_C[] = "/* ---------------------------------------------------------------- */\\n";
 const static char sformat_C[] = "/* %-64.64s */\\n";
+const static char synopsis_C[] = "\\ndouble %s (void);\\n\\n";
 
 /* FORTRAN version */
 const static char hrule_FORTRAN[] = "* ------------------------------------------------------------------ *\\n";
 const static char sformat_FORTRAN[] = "* %-66.66s *\\n";
+const static char synopsis_FORTRAN[] = "*\\n* %s\\n*\\n";
 
 /* JAVA version */
 const static char *hrule_JAVA = hrule_C;
 const static char *sformat_JAVA = sformat_C;
+const static char synopsis_JAVA[] = "\\n// FEHLT\\n\\n";
 
 /* switch */
-const static char *hrule = hrule_C;
-const static char *sformat = sformat_C;
+const static char *hrule;
+const static char *sformat;
+const static char *synopsis;
+
 EOX
 
     return $gencode;
-} # end of make_header_constants_C()
+} # end of make_header_constants()
 
 # ----------------------------------------------------------------
 # Print copyright notice
@@ -517,7 +518,7 @@ sub make_header_date
     my $gencode;         # code for creating ACG header
 
     # Mark begin of date printing function
-    $gencode .= make_bar("ACG copyright notice");
+    $gencode .= make_bar("ACG date of generation");
 
     # Function prototype
     $headergen_prototypes .= "static int _unur_acg_header_date (FILE *out);\n";

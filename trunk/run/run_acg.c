@@ -34,8 +34,8 @@ int main()
   unur_tdr_set_cpoints(par,4,NULL),
   gen = unur_init( par );
 /*    unur_acg_C( gen, stdout, NULL ); */
-  unur_acg_FORTRAN( gen, stdout, NULL );
-/*    unur_acg_JAVA( gen, stdout, NULL ); */
+/*    unur_acg_FORTRAN( gen, stdout, NULL ); */
+  unur_acg_JAVA( gen, stdout, NULL );
   unur_distr_free(distr);
   unur_free(gen);
 

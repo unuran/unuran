@@ -108,7 +108,7 @@ _unur_acg_JAVA_tdr_ps( struct unur_gen *gen,
 
   /* guide table */
   fprintf(out, "\t\tstatic final int guide_size = %d;\n", GEN.guide_size);
-  fprintf(out, "\t\tstatic final int guide[] = {\n\t\t");
+  fprintf(out, "\t\tstatic final int guide[] = {\n\t\t\t");
   iv = GEN.iv;
   j = 0;
   for (i=0; i<GEN.guide_size; i++) {
@@ -121,11 +121,11 @@ _unur_acg_JAVA_tdr_ps( struct unur_gen *gen,
       return 0;
     }
     if (i==0)
-      fprintf(out, "\t%d",j);
+      fprintf(out,"%d",j);
     else
-      fprintf(out,(i%16)?", %d":",\n\t\t%d",j);
+      fprintf(out,(i%16)?", %d":",\n\t\t\t%d",j);
   }      
-  fprintf(out, "\t };\n");
+  fprintf(out," };\n");
 
   /* hat function */
   fprintf(out, "\t\tstatic final double Atotal = %.20e;\n", GEN.Atotal);
@@ -274,14 +274,16 @@ _unur_acg_JAVA_tdr_class_IV( struct unur_gen *gen, FILE *out )
     break;
   }
 
+  _unur_acg_JAVA_print_sectionheader(out, 1, "Class for intervals.");
+
   /* class IV */
-  fprintf(out,"\n\n\tprivate class IV {\n");
+  fprintf(out,"\tprivate class IV {\n");
   fprintf(out,"\t\tprivate double x, fx, Tfx, dTfx, sq, Acum, Ahatr;\n\n");
 
   fprintf(out, "\t\t/* Constructor */\n");
   fprintf(out, "\t\tpublic IV(double x, double fx_or_Tfx, double dTfx,\n");
-
-  fprintf(out, "\t\t\tdouble sq, double Acum, double Ahatr){\n");
+  fprintf(out, "\t\t\t\tdouble sq, double Acum, double Ahatr)\n");
+  fprintf(out, "\t\t{\n");
 
   fprintf(out,"\t\t\tthis.x\t\t= x;\n");
   switch (gen->variant & TDR_VARMASK_T) {
@@ -300,7 +302,7 @@ _unur_acg_JAVA_tdr_class_IV( struct unur_gen *gen, FILE *out )
   fprintf(out,"\t\t\tthis.Acum\t= Acum;\n");
   fprintf(out,"\t\t\tthis.Ahatr\t= Ahatr;\n");
 
-  fprintf(out, "\t\t}\n\t}\n\n\n");
+  fprintf(out, "\t\t}\n\t}\n");
 
   /* o.k. */
   return 1;
@@ -326,7 +328,8 @@ _unur_acg_JAVA_begin_class( struct unur_gen *gen, FILE *out )
      /*----------------------------------------------------------------------*/
 {
 
-  fprintf(out,"public class Generator implements Math{\n");
+  _unur_acg_JAVA_print_sectionheader(out, 1, "Class for generator.");
+  fprintf(out,"public class Generator implements Math {\n");
 
   /* o.k. */
   return 1;

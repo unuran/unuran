@@ -81,7 +81,7 @@ unur_acg_FORTRAN( struct unur_gen *gen, FILE *out, const char *distr_name )
   switch (gen->method) {
   case UNUR_METH_TDR:
     return_code =
-      _unur_acg_C_header( &(gen->distr), out, rand_name ) &&
+      _unur_acg_FORTRAN_header( &(gen->distr), out, rand_name ) &&
       _unur_acg_FORTRAN_demo_urng( out ) &&
       _unur_acg_FORTRAN_PDF( &(gen->distr), out, pdf_name ) &&
       _unur_acg_FORTRAN_tdr_ps( gen, out, rand_name, pdf_name );
@@ -129,9 +129,8 @@ _unur_acg_FORTRAN_demo_urng( FILE *out )
       "Uniform (pseudo-)random number generator"
       );
       
-  fprintf(out,"C  Define the uniform (pseudo-)random number generator\n");
-  fprintf(out,"C  of your choice here.\n\n");
-  fprintf(out,"C  #define uniform()   your_uniform_rng()\n");
+  fprintf(out,"C  Replace the uniform (pseudo-)random number generator 'unif()'\n");
+  fprintf(out,"C  by a generator of your choice.\n\n");
   fprintf(out,"\n");
 
   _unur_acg_FORTRAN_print_sectionheader
@@ -154,9 +153,6 @@ _unur_acg_FORTRAN_demo_urng( FILE *out )
    * Zaremba, ed., Academic Press, New York 1972               *
    *************************************************************/
   
-  fprintf(out,"C  #ifndef uniform\n");
-  fprintf(out,"C  #define uniform() _uniform_demo()\n");
-  fprintf(out,"\n");
   fprintf(out,"      DOUBLE PRECISION FUNCTION unif()\n");
   fprintf(out,"\n");
   fprintf(out,"      INTEGER x\n");

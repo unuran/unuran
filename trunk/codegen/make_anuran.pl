@@ -879,7 +879,7 @@ sub anuran_code
 	\$log .= "date = ".(scalar localtime)."\\n";
 
 	# client
-	\$log .= "client = \$ENV{'REMOTE_ADDR'}\\n";
+	\$log .= "client = ".remote_addr()."\\n";
 
 	# id of generated code
 	\$log .= "code_id = \$cid\\n";

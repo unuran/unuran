@@ -46,6 +46,7 @@ struct unur_varou_cone {
   double *normal;  /* normal vector to tangential plane through spoint       */
   double unit_volume; /* volume of cone spanned by unit vectors              */
   double volume;   /* volume of cone : spanning vectors + tangential surface */
+  double sum_volume; /* cummulated sum of cone volumes */
 };
 
 /*---------------------------------------------------------------------------*/

@@ -55,11 +55,11 @@ sub acg_header
 /* Include header file                                                       */
 /* ------------------------------------------------------------------------- */
 
-\#include <unistd.h>
-\#include <string.h>
+#include <unistd.h>
+#include <string.h>
 
-\#include <source_unuran.h>
-\#include <unuran_acg.h>
+#include <source_unuran.h>
+#include <unuran_acg.h>
 
 /* ------------------------------------------------------------------------- */
 /* Program name                                                              */
@@ -71,10 +71,10 @@ static const char progname[] = "acg";
 /* Exit codes                                                                */
 /* ------------------------------------------------------------------------- */
 
-\#define ACG_EXIT_SUCCESS       0     /* terminated successfully              */
-\#define ACG_EXIT_FAIL_INPUT   -1     /* input error                          */
-\#define ACG_EXIT_FAIL_GEN      1     /* cannot create generator object       */
-\#define ACG_EXIT_FAIL_CODE     2     /* cannot generator code                */
+#define ACG_EXIT_SUCCESS       0     /* terminated successfully              */
+#define ACG_EXIT_FAIL_INPUT   -1     /* input error                          */
+#define ACG_EXIT_FAIL_GEN      1     /* cannot create generator object       */
+#define ACG_EXIT_FAIL_CODE     2     /* cannot generator code                */
 
 /* ------------------------------------------------------------------------- */
 /* Local prototypes                                                          */

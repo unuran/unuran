@@ -1,11 +1,19 @@
 #!/usr/bin/perl
 # ----------------------------------------------------------------
-# Make files for code generator
+# Test automatic code generator
 # ----------------------------------------------------------------
 # $Id$
 # ----------------------------------------------------------------
 
+## use strict;
+
 my $DEBUG = 0;
+
+# ----------------------------------------------------------------
+# seed PERL random number generator.
+# uncomment this line if reproducible results are required
+# (change the seed if necessary).
+## srand 12345678;
 
 # ----------------------------------------------------------------
 
@@ -89,7 +97,7 @@ print_log("languages = C, FORTRAN, JAVA\n\n");
 
 my %distr_names;
 foreach my $distr (@distr_list) {
-    die unless "$distr " =~ /-d\s+(\w+)\s+/;
+    die unless $distr =~ /^(\w+)\s*\(/;
     $distr_names{$1} = 1;
 }
 
@@ -162,25 +170,22 @@ foreach my $distr (@distr_list) {
 	# Seed for uniform rng
 	my $seed = int(rand 12345678) + 1;
 	
-	# Remove commas from ./acg command line
-	$distr =~ s/\,/ /g;
-	
 	# Get random variate generators
 	
 	# UNURAN version
-	my $test_name = make_UNURAN_gen(\$UNURAN_gen,"$distr $method",$test_key,$seed);
+	my $test_name = make_UNURAN_gen(\$UNURAN_gen,$distr,$method,$test_key,$seed);
 	$UNURAN_main .= "\t$test_name ();\n";
 	
 	# C version
-	$test_name = make_C_gen(\$C_gen,"$distr $method",$test_key,$seed);
+	$test_name = make_C_gen(\$C_gen,$distr,$method,$test_key,$seed);
 	$C_main .= "\t$test_name ();\n";
 	
 	# FORTRAN version
-	$test_name = make_FORTRAN_gen(\$FORTRAN_gen,"$distr $method",$test_key,$seed);
+	$test_name = make_FORTRAN_gen(\$FORTRAN_gen,$distr,$method,$test_key,$seed);
 	$FORTRAN_main .= "      CALL $test_name\n";
 	
 	# JAVA version
-	$JAVA_main .= make_JAVA_gen(\$JAVA_gen,"$distr $method",$test_key,$seed);
+	$JAVA_main .= make_JAVA_gen(\$JAVA_gen,$distr,$method,$test_key,$seed);
     }
 }
 
@@ -660,8 +665,9 @@ sub make_UNURAN_gen
 {
     my $UNURAN_code = $_[0];
     my $distr = $_[1];
-    my $test_key = $_[2];
-    my $seed = $_[3];
+    my $method = $_[2];
+    my $test_key = $_[3];
+    my $seed = $_[4];
     
     # Programming language
     my $l = "UNURAN";
@@ -670,12 +676,11 @@ sub make_UNURAN_gen
     my $Log = "$file_prefix.log.$test_key.$l";
 
     # Get name of distribution
-    my $distr_name;
-    die unless "$distr " =~ /-d\s+(\w+)\s+/;
-    $distr_name = $1."\_$test_key";
+    die unless $distr =~ /^(\w+)\s*\(/;
+    my $distr_name = $1."\_$test_key";
 
     # Get code for generator
-    my $gencode = `$ACG $distr -N $distr_name -l $l -L $Log`;
+    my $gencode = `$ACG -l $l -L $Log -N $distr_name \"$distr & $method\"`;
     my $failed = $?;
 
     # Name of test routine
@@ -692,7 +697,7 @@ sub make_UNURAN_gen
     my $testcode = "int $test_name (void)\n{\n";
     
     if ($failed) {
-	$testcode .= "\tprintf(\"[$test_key] $distr  .........  cannot create generator.\\n\");\n";
+	$testcode .= "\tprintf(\"[$test_key] $distr & $method .........  cannot create generator.\\n\");\n";
 	$testcode .= "\tprintf(\"start\\nstop\\n\");\n";
 	$testcode .= "\treturn 0;\n}\n\n";
     }
@@ -704,7 +709,7 @@ sub make_UNURAN_gen
 
 \tuseed($seed);
 
-\tprintf("[$test_key] $distr\\n");
+\tprintf("[$test_key] $distr & $method\\n");
 \tprintf("start\\n");
 
 \tfor (i=0; i<$sample_size; i++) {
@@ -738,9 +743,10 @@ sub make_C_gen
 {
     my $C_code = $_[0];
     my $distr = $_[1];
-    my $test_key = $_[2];
-    my $seed = $_[3];
-    
+    my $method = $_[2];
+    my $test_key = $_[3];
+    my $seed = $_[4];
+
     # Programming language
     my $l = "C";
 
@@ -748,12 +754,11 @@ sub make_C_gen
     my $Log = "$file_prefix.log.$test_key.$l";
 
     # Get name of distribution
-    my $distr_name;
-    die unless "$distr " =~ /-d\s+(\w+)\s+/;
-    $distr_name = $1."\_$test_key";
+    die unless $distr =~ /^(\w+)\s*\(/;
+    my $distr_name = $1."\_$test_key";
 
     # Get code for generator
-    my $gencode = `$ACG $distr -N $distr_name -l $l -L $Log`;
+    my $gencode = `$ACG -l $l -L $Log -N $distr_name \"$distr & $method\"`;
     my $failed = $?;
 
     # Name of test routine
@@ -770,7 +775,7 @@ sub make_C_gen
     my $testcode = "int $test_name (void)\n{\n";
     
     if ($failed) {
-	$testcode .= "\tprintf(\"[$test_key] $distr  .........  cannot create generator.\\n\");\n";
+	$testcode .= "\tprintf(\"[$test_key] $distr & $method .........  cannot create generator.\\n\");\n";
 	$testcode .= "\tprintf(\"start\\nstop\\n\");\n";
 	$testcode .= "\treturn 0;\n}\n\n";
     }
@@ -817,8 +822,9 @@ sub make_FORTRAN_gen
 {
     my $FORTRAN_code = $_[0];
     my $distr = $_[1];
-    my $test_key = $_[2];
-    my $seed = $_[3];
+    my $method = $_[2];
+    my $test_key = $_[3];
+    my $seed = $_[4];
     
     # Programming language
     my $l = "FORTRAN";
@@ -827,12 +833,11 @@ sub make_FORTRAN_gen
     my $Log = "$file_prefix.log.$test_key.$l";
     
     # Get name of distribution
-    my $distr_name;
-    die unless "$distr " =~ /-d\s+(\w+)\s+/;
-    $distr_name = substr($1,0,1)."$test_key";
+    die unless $distr =~ /^(\w+)\s*\(/;
+    my $distr_name = substr($1,0,1)."$test_key";
     
     # Get code for generator
-    my $gencode = `$ACG $distr -N $distr_name -l $l -L $Log`;
+    my $gencode = `$ACG -l $l -L $Log -N $distr_name \"$distr & $method\"`;
     my $failed = $?;
     
     # Remove built-in uniform rng
@@ -900,8 +905,9 @@ sub make_JAVA_gen
 {
     my $JAVA_code = $_[0];
     my $distr = $_[1];
-    my $test_key = $_[2];
-    my $seed = $_[3];
+    my $method = $_[2];
+    my $test_key = $_[3];
+    my $seed = $_[4];
     
     # Programming language
     my $l = "JAVA";
@@ -910,12 +916,11 @@ sub make_JAVA_gen
     my $Log = "$file_prefix.log.$test_key.$l";
 
     # Get name of distribution
-    my $distr_name;
-    die unless "$distr " =~ /-d\s+(\w+)\s+/;
-    $distr_name = $1."\_$test_key";
+    die unless $distr =~ /^(\w+)\s*\(/;
+    my $distr_name = $1."\_$test_key";
 
     # Get code for generator
-    my $gencode = `$ACG $distr -N $distr_name -l $l -L $Log`;
+    my $gencode = `$ACG -l $l -L $Log -N $distr_name \"$distr & $method\"`;
     my $failed = $?;
 
     # We have to mask "
@@ -924,7 +929,7 @@ sub make_JAVA_gen
     # We have nothing to do when ACG did not work
     if ($failed) {
 	return <<EOS;
-\t\tSystem.out.println("[$test_key] $distr  .........  cannot create generator.");
+\t\tSystem.out.println("[$test_key] $distr & $method .........  cannot create generator.");
 \t\tSystem.out.println("start");
 \t\tSystem.out.println("stop");
 

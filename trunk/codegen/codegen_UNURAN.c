@@ -43,7 +43,7 @@
 /*---------------------------------------------------------------------------*/
 
 int
-unur_acg_UNURAN( struct unur_gen *gen, FILE *out, const char *distr_name, int n_cpoints )
+unur_acg_UNURAN( struct unur_gen *gen, FILE *out, const char *distr_name, int with_main )
      /*----------------------------------------------------------------------*/
      /* Automatic code generator (C version)                                 */
      /*                                                                      */
@@ -53,7 +53,7 @@ unur_acg_UNURAN( struct unur_gen *gen, FILE *out, const char *distr_name, int n_
      /*   distr_name ... name of distribution                                */
      /*                  (used to name routines, if NULL the UNURAN          */
      /*                   build-in name is used.)                            */
-     /*   n_cpoints  ... number of construction points                       */
+     /*   with_main  ... whether to include main into source                 */
      /*                                                                      */
      /* return:                                                              */
      /*   1 ... on success                                                   */
@@ -65,6 +65,8 @@ unur_acg_UNURAN( struct unur_gen *gen, FILE *out, const char *distr_name, int n_
 {
   char *pdf_name, *rand_name;     /* names for function */
   int return_code;                /* exit status of routine */
+
+  int n_cpoints = 30;
 
   /* check arguments */
   _unur_check_NULL("unur_acg", gen, 0 );

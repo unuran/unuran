@@ -46,7 +46,6 @@ noinst_HEADERS =
 EXTRA_DIST = \
  make_PDFgen.pl \
  make_headergen.pl \
- make_acg.pl \
  make_anuran.pl
 
 
@@ -55,9 +54,6 @@ PDFgen.c: make_PDFgen.pl $(top_srcdir)/scripts/read_PDF.pl
 
 headergen.c: make_headergen.pl $(top_srcdir)/scripts/read_PDF.pl
 	./make_headergen.pl
-
-acg.c: make_acg.pl  $(top_srcdir)/scripts/read_PDF.pl
-	./make_acg.pl > acg.c
 
 anuran.pl: make_anuran.pl $(top_srcdir)/scripts/read_PDF.pl
 	./make_anuran.pl > anuran.pl
@@ -73,6 +69,4 @@ MAINTAINERCLEANFILES = \
  Makefile.in \
  PDFgen.c \
  headergen.c \
- acg.c \
  anuran.pl
-

@@ -457,7 +457,12 @@ _unur_matrix_invert_matrix(int dim, double *A, double detmin, double *Ainv, doub
 
   /* check for ill-conditioned matrix */
   if ( fabs(*det) / (dim * norm) < detmin ) { 
-    _unur_error("matrix",UNUR_ERR_GENERIC,"matrix ill-conditioned, cannot invert");  
+    _unur_warning("matrix",UNUR_ERR_GENERIC,"matrix could be ill-conditioned");  
+  } 
+  
+  /* check for ill-conditioned matrix */
+  if ( fabs(*det) / (dim * norm) < 2/DBL_MAX ) { 
+    _unur_error("matrix",UNUR_ERR_GENERIC,"matrix could not be inverted");  
     free(LU); free(p);
     return UNUR_FAILURE; 
   } 

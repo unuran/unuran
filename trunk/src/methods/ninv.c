@@ -598,6 +598,8 @@ int unur_ninv_chg_table(UNUR_GEN *gen)
      /*   0 ... on error                                                     */
      /*----------------------------------------------------------------------*/
 {
+  int i;
+
   /* check arguments */
   CHECK_NULL(gen, 0);
  
@@ -630,7 +632,7 @@ int unur_ninv_chg_table(UNUR_GEN *gen)
 /*****************************************************************************/
 
 
-int unur_ninv_table_on(UNUR_GEN *gen, int onoff)
+int unur_ninv_table_onoff(UNUR_GEN *gen, int onoff)
      /*--------------------------------------------------------------------*/
      /* can only be used if a table already exists                         */
      /* onoff  = 1  ... table is used                                      */
@@ -679,7 +681,7 @@ int unur_ninv_table_on(UNUR_GEN *gen, int onoff)
 
   return 1;
 
-} /* end of unur_ninv_table_on() */
+} /* end of unur_ninv_table_onoff() */
 
 
 /*****************************************************************************/

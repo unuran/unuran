@@ -45,13 +45,17 @@ while($_ = <>)
            while ($FUNC =~ /(.*?)(\w*?)\s*?(,|\))/g){
 	      print OUTFILE $1,"\@var{", $2,"}", $3;
 	   }
-           print OUTFILE "}\@\*\n"; 
+           print OUTFILE "}\n"; 
        }
 
    }
 
 }
     print OUTFILE "\@end itemize\n";
+
+
+
+
 
 
 

@@ -502,7 +502,7 @@ Read this random numbers ...
 @c --------------------------------------------------------------------
 
 @node Internal
-@chapter internals
+@chapter Internals
 @menu
 * Functions:: Functions for internal use
 * Remarks:: Internal remarks

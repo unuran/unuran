@@ -105,7 +105,7 @@ int main()
 
 #else
   printf("You must use the PRNG library to run this example!\n\n");
-  exit (EXIT_FAILURE);
+  exit (77);    /* exit code for automake check routines */
 #endif
 
 } /* end of main() */

@@ -204,8 +204,6 @@ double uniform_aux()
 {
   unsigned long int h,xurnhi,xurnlo,mid;
 
-  STEP_COUNTER;
-
   xurnhi=xurn5>>16;
   xurnlo=xurn5&0xFFFF;
   mid=A5HI*xurnlo+(A5LO<<1)*xurnhi;

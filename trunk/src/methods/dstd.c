@@ -63,7 +63,7 @@
  *                                                                           *
  * It is possible to change the parameters of the chosen distribution        *
  * without building a new generator object by means of the                   *
- * unur_dstd_chg_pdfparams() call.                                           *
+ * unur_dstd_chg_pmfparams() call.                                           *
  * Notice that it is not possible to change the number of parameters.        *
  * This function only copies the given arguments into the array of           *
  * parameters.                                                               *
@@ -131,7 +131,7 @@ static void _unur_dstd_debug_init( struct unur_par *par, struct unur_gen *gen );
 /* print after generator has been initialized has completed.                 */
 /*---------------------------------------------------------------------------*/
 
-static void _unur_dstd_debug_chg_pdfparams( struct unur_gen *gen );
+static void _unur_dstd_debug_chg_pmfparams( struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 /* print new (changed) parameters of distribution                            */
 /*---------------------------------------------------------------------------*/
@@ -263,7 +263,7 @@ unur_dstd_set_variant( struct unur_par *par, unsigned variant )
 /*---------------------------------------------------------------------------*/
 
 int 
-unur_dstd_chg_pdfparams( struct unur_gen *gen, double *params, int n_params )
+unur_dstd_chg_pmfparams( struct unur_gen *gen, double *params, int n_params )
      /*----------------------------------------------------------------------*/
      /* change array of parameters for distribution                          */
      /*                                                                      */
@@ -277,23 +277,23 @@ unur_dstd_chg_pdfparams( struct unur_gen *gen, double *params, int n_params )
      /*   0 ... on error                                                     */
      /*----------------------------------------------------------------------*/
 {
-  register int i;
-
   /* check arguments */
   CHECK_NULL(gen,0);
   _unur_check_gen_object( gen,DSTD );
   if (n_params>0) CHECK_NULL(params,0);
   
   /* check new parameter for generator */
-  if (n_params < 0 || n_params > UNUR_DISTR_MAXPARAMS ) {
+  if (n_params <= 0 || n_params > UNUR_DISTR_MAXPARAMS ) {
     _unur_error(NULL,UNUR_ERR_DISTR_NPARAMS,"");
     return 0;
   }
 
   /* copy parameters */
-  DISTR.n_params = n_params;
-  for (i=0; i < n_params; i++)
-    DISTR.params[i] = params[i];
+  memcpy( DISTR.params, params, n_params*sizeof(double) );
+  
+  /* we only enlarge the number of parameters */
+  if (n_params > DISTR.n_params)
+    DISTR.n_params = n_params;
 
   /* changelog */
   gen->distr.set &= ~UNUR_DISTR_SET_MASK_DERIVED;
@@ -309,13 +309,13 @@ unur_dstd_chg_pdfparams( struct unur_gen *gen, double *params, int n_params )
 #ifdef UNUR_ENABLE_LOGGING
     /* write info into log file */
     if (gen->debug & DSTD_DEBUG_CHG) 
-      _unur_dstd_debug_chg_pdfparams( gen );
+      _unur_dstd_debug_chg_pmfparams( gen );
 #endif
 
   /* o.k. */
   return 1;
 
-} /* end of unur_dstd_chg_pdfparams() */
+} /* end of unur_dstd_chg_pmfparams() */
 
 /*****************************************************************************/
 
@@ -545,7 +545,7 @@ _unur_dstd_debug_init( struct unur_par *par, struct unur_gen *gen )
 /*---------------------------------------------------------------------------*/
 
 static void 
-_unur_dstd_debug_chg_pdfparams( struct unur_gen *gen )
+_unur_dstd_debug_chg_pmfparams( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* print new (changed) parameters of distribution                       */
      /*                                                                      */
@@ -565,7 +565,7 @@ _unur_dstd_debug_chg_pdfparams( struct unur_gen *gen )
   for( i=0; i<DISTR.n_params; i++ )
       fprintf(log,"%s:\tparam[%d] = %g\n",gen->genid,i,DISTR.params[i]);
 
-} /* end of _unur_dstd_debug_chg_pdfparams() */
+} /* end of _unur_dstd_debug_chg_pmfparams() */
 
 /*---------------------------------------------------------------------------*/
 #endif   /* end UNUR_ENABLE_LOGGING */

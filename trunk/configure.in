@@ -27,6 +27,7 @@ dnl cephes: Stephen L. Moshier's library of mathematical functions
 AC_CHECK_LIB(md, lgam)
 dnl prng: Otmar Lendl's library for pseudo random number generators
 AC_CHECK_LIB(prng, prng_new)
+AC_CHECK_HEADERS(prng.h)
 dnl libm: the standard math library
 AC_CHECK_LIB(m, sqrt)
 

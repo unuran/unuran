@@ -467,7 +467,9 @@ unur_distr_cont_set_pdfparams( struct unur_distr *distr, double *params, int n_p
     if (n_params) memcpy( BASE.params, params, n_params*sizeof(double) );
   }
   else {
-    DISTR.n_params = n_params;
+    /* we only enlarge the number of parameters */
+    if (n_params > DISTR.n_params)
+      DISTR.n_params = n_params;
     if (n_params) memcpy( DISTR.params, params, n_params*sizeof(double) );
   }
 

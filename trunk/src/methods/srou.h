@@ -196,10 +196,13 @@ int unur_srou_chg_verify( UNUR_GEN *generator, int verify );
 
 int unur_srou_chg_pdfparams( UNUR_GEN *generator, double *params, int n_params );
 /* 
-   Change array of parameters of distribution in given generator object.
-   Notice that it is not possible to change the number of parameters.
-   This function only copies the given arguments into the array of 
-   distribution parameters.
+   Change array of parameters of the distribution in a given generator
+   object. Notice that this call simply copies the parameters into
+   the generator object. Thus if fewer parameters are provided then
+   the remaining parameters are left unchanged.
+
+   unur_srou_reinit() must be executed before sampling from the 
+   generator again.
 
    @emph{Important:} The given parameters are not checked against
    domain errors; in opposition to the 

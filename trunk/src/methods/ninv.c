@@ -747,14 +747,17 @@ unur_ninv_chg_pdfparams( struct unur_gen *gen, double *params, int n_params )
   if (n_params>0) CHECK_NULL(params, 0);
   
   /* check new parameter for generator */
-  if (n_params > UNUR_DISTR_MAXPARAMS || n_params < 0 ) {
+  if (n_params > UNUR_DISTR_MAXPARAMS || n_params <= 0 ) {
     _unur_error(NULL,UNUR_ERR_DISTR_NPARAMS,"");
     return 0;
   }
 
   /* copy parameters */
-  DISTR.n_params = n_params;
   memcpy(DISTR.params, params, n_params * sizeof(double));
+
+  /* we only enlarge the number of parameters */
+  if (n_params > DISTR.n_params)
+    DISTR.n_params = n_params;
 
   /* changelog */
   gen->distr.set &= ~UNUR_DISTR_SET_MASK_DERIVED;

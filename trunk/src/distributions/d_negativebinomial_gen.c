@@ -209,7 +209,7 @@ _unur_stdgen_sample_negativebinomial_nbp( struct unur_gen *gen )
   y = x * _unur_sample_cont(GAMMA);
 
   /* sample from poisson distribution */
-  unur_dstd_chg_pdfparams(POISSON,&y,1);
+  unur_dstd_chg_pmfparams(POISSON,&y,1);
   return _unur_sample_discr(POISSON);
 
   /* -X- end of generator code -X- */

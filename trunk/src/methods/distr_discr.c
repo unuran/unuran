@@ -616,8 +616,11 @@ unur_distr_discr_set_pmfparams( struct unur_distr *distr, double *params, int n_
   /* derived parameters like mode, sum, etc. might be wrong now! */
 
   /* copy parameters */
-  DISTR.n_params = n_params;
   if (n_params) memcpy( DISTR.params, params, n_params*sizeof(double) );
+
+  /* we only enlarge the number of parameters */
+  if (n_params > DISTR.n_params)
+    DISTR.n_params = n_params;
 
   /* o.k. */
   return 1;

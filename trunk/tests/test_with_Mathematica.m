@@ -80,7 +80,7 @@ UnurTestDistrResultFile[dname_, distr_, fparbd__, size_] := Module[
 
 		(* make an argument at random (use importance sampling) *)
 		x = Round[1000 * Random[ Apply[distr,fparams] ]] / 1000;
-	
+
 		(* print line with this parameters *)
 		UnurTestDistrResult[stream,distr,fparams,x],
 

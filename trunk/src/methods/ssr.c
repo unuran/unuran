@@ -439,23 +439,23 @@ unur_ssr_chg_pdfparams( struct unur_gen *gen, double *params, int n_params )
      /*                                                                      */
      /*----------------------------------------------------------------------*/
 {
-  register int i;
-
   /* check arguments */
   CHECK_NULL(gen,0);
   _unur_check_gen_object( gen,SSR );
   if (n_params>0) _unur_check_NULL(gen->genid,params,0);
   
   /* check new parameter for generator */
-  if (n_params > UNUR_DISTR_MAXPARAMS || n_params < 0 ) {
+  if (n_params > UNUR_DISTR_MAXPARAMS || n_params <= 0 ) {
     _unur_error(NULL,UNUR_ERR_DISTR_NPARAMS,"");
     return 0;
   }
 
   /* copy parameters */
-  DISTR.n_params = n_params;
-  for (i=0; i < n_params; i++)
-    DISTR.params[i] = params[i];
+  memcpy( DISTR.params, params, n_params*sizeof(double) );
+  
+  /* we only enlarge the number of parameters */
+  if (n_params > DISTR.n_params)
+    DISTR.n_params = n_params;
 
   /* changelog */
   gen->distr.set &= ~UNUR_DISTR_SET_MASK_DERIVED;

@@ -180,10 +180,11 @@ unur_distr_corder_new( const struct unur_distr *distr, int n, int k )
   OS.trunc[0] = OS.domain[0] = DISTR.domain[0];  /* left boundary of domain  */
   OS.trunc[0] = OS.domain[1] = DISTR.domain[1];  /* right boundary of domain */
   
-  /* pointer to PDF, its derivative and CDF */
+  /* pointer to PDF, its derivative, CDF, and hazard rate */
   OS.pdf  = NULL;
   OS.dpdf = NULL;
   OS.cdf  = NULL;
+  OS.hr   = NULL;
 
   if (DISTR.cdf) {
 #ifdef HAVE_CDF
@@ -199,6 +200,7 @@ unur_distr_corder_new( const struct unur_distr *distr, int n, int k )
   OS.pdftree    = NULL;            /* pointer to function tree for PDF       */
   OS.dpdftree   = NULL;            /* pointer to function tree for dPDF      */
   OS.cdftree    = NULL;            /* pointer to function tree for CDF       */
+  OS.hrtree     = NULL;            /* pointer to function tree for HR        */
 
   /* set defaults                                                            */
   OS.mode      = INFINITY;         /* location of mode (default: not known)  */

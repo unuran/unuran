@@ -73,6 +73,7 @@
 #define _unur_cont_PDF(x,distr)    ((*((distr)->data.cont.pdf)) ((x),(distr)))
 #define _unur_cont_dPDF(x,distr)   ((*((distr)->data.cont.dpdf))((x),(distr)))
 #define _unur_cont_CDF(x,distr)    ((*((distr)->data.cont.cdf)) ((x),(distr)))
+#define _unur_cont_HR(x,distr)     ((*((distr)->data.cont.hr))  ((x),(distr)))
 
 #define _unur_discr_PMF(x,distr)   ((*((distr)->data.discr.pmf))((x),(distr)))
 #define _unur_discr_CDF(x,distr)   ((*((distr)->data.discr.cdf))((x),(distr)))

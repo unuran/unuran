@@ -253,6 +253,74 @@ int unur_distr_cont_get_truncated( const UNUR_DISTR *distribution, double *left,
    of a generator object.
 */
 
+int unur_distr_cont_set_hr( UNUR_DISTR *distribution, UNUR_FUNCT_CONT *hazard );
+/* 
+   Set pointer to the hazard rate (HR) of the @var{distribution}.
+
+   The @emph{hazard rate} (or failure rate) is a mathematical way of
+   describing aging. If the lifetime @i{X} is a random variable with
+   density @i{f(x)} and CDF @i{F(x)} the hazard rate @i{h(x)} 
+   is defined as @i{h(x) = f(x) / (1-F(x))}.
+   In other words, @i{h(x)} represents the (conditional) rate of
+   failure of a unit that has survived up to time @i{x} with
+   probability @i{1-F(x)}. 
+   The key distribution is the exponential distribution as it has
+   constant hazard rate of value 1. Hazard rates tending to infinity
+   describe distributions with sub-exponential tails whereas
+   distributions with hazard rates tending to zero have heavier tails
+   than the exponential distribution. 
+
+   It is important to note that all these functions must return a
+   result for all floats @i{x}. In case of an overflow the PDF should
+   return @code{UNUR_INFINITY}.
+
+   @strong{Important}: Do not simply use @i{f(x) / (1-F(x))}, since
+   this is numerically very unstable and results in numerical noise
+   if @i{F(x)} is (very) close to 1.
+
+   It is not possible to change such a function. Once the HR is set it
+   cannot be overwritten. This also holds when the HR is given by the
+   unur_distr_cont_set_hrstr() call. A new distribution object has to
+   be used instead.
+*/
+
+UNUR_FUNCT_CONT *unur_distr_cont_get_hr( const UNUR_DISTR *distribution );
+/* 
+   Get the pointer to the hazard rate of the @var{distribution}. The
+   pointer is of type 
+   @code{double funct(double x, const UNUR_DISTR *distr)}.
+   If the corresponding function is not available for the distribution,
+   the NULL pointer is returned.
+*/
+
+double unur_distr_cont_eval_hr( double x, const UNUR_DISTR *distribution );
+/* 
+   Evaluate the hazard rate at @var{x}. 
+   Notice that @var{distribution} must not be the NULL pointer.
+   If the corresponding function is not available for the distribution,
+   @code{UNUR_INFINITY} is returned and @code{unur_errno} is set to
+   @code{UNUR_ERR_DISTR_DATA}.
+*/
+
+int unur_distr_cont_set_hrstr( UNUR_DISTR *distribution, const char *hrstr );
+/* 
+   This function provides an alternative way to set a hazard rate and its
+   derivative of the @var{distribution}.
+   @var{hrstr} is a character string that contains the formula
+   for the HR, see @ref{StringFunct,,Function String}, for details.
+   See also the remarks for the unur_distr_cont_set_hr() call.
+
+   It is not possible to call this funtion twice or to call this
+   function after a unur_distr_cont_set_hr() call.
+*/
+
+char *unur_distr_cont_get_hrstr( const UNUR_DISTR *distribution );
+/* 
+   Get pointer to string for HR of @var{distribution} that is given
+   via the string interface. This call allocates memory to produce
+   this string. It should be freed when it is not used any more.
+*/
+
 
 /* ==DOC
    @subsubheading Derived parameters

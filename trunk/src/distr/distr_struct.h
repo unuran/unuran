@@ -44,6 +44,7 @@ struct unur_distr_cont {
   UNUR_FUNCT_CONT *pdf;         /* pointer to PDF                            */
   UNUR_FUNCT_CONT *dpdf;        /* pointer to derivative of PDF              */
   UNUR_FUNCT_CONT *cdf;         /* pointer to CDF                            */
+  UNUR_FUNCT_CONT *hr;          /* pointer to hazard rate                    */
 
   double params[UNUR_DISTR_MAXPARAMS];  /* parameters of the PDF             */
   int    n_params;              /* number of parameters of the PDF           */
@@ -58,6 +59,7 @@ struct unur_distr_cont {
   struct ftreenode *pdftree;    /* pointer to function tree for PDF          */
   struct ftreenode *dpdftree;   /* pointer to function tree for dPDF         */
   struct ftreenode *cdftree;    /* pointer to function tree for CDF          */
+  struct ftreenode *hrtree;     /* pointer to function tree for hazard rate  */
 
   int (*set_params)(struct unur_distr *distr, const double *params, int n_params );
                                 /* function for setting parameters and domain*/

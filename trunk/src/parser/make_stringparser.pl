@@ -53,6 +53,7 @@ my %SUPPORTED_DISTR_TYPES =
 my %SUBST_COMMANDS =
     ( 'unur_distr_cont_set_pdfstr'  => 'pdf',
       'unur_distr_cont_set_cdfstr'  => 'cdf',
+      'unur_distr_cont_set_hrstr'   => 'hr',
       'unur_distr_discr_set_pmfstr' => 'pmf',
       'unur_distr_discr_set_cdfstr' => 'cdf'
     );
@@ -62,6 +63,7 @@ my %IGNORED_COMMANDS =
     ( 'unur_distr_cont_set_pdf'  => 1,
       'unur_distr_cont_set_dpdf' => 1,
       'unur_distr_cont_set_cdf'  => 1,
+      'unur_distr_cont_set_hr'   => 1,
       'unur_distr_discr_set_pmf' => 1,
       'unur_distr_discr_set_cdf' => 1
     );

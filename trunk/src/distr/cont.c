@@ -74,6 +74,11 @@ static double _unur_distr_cont_eval_cdf_tree( double x, const struct unur_distr 
 /* evaluate function tree for CDF.                                           */
 /*---------------------------------------------------------------------------*/
 
+static double _unur_distr_cont_eval_hr_tree( double x, const struct unur_distr *distr );
+/*---------------------------------------------------------------------------*/
+/* evaluate function tree for HR.                                            */
+/*---------------------------------------------------------------------------*/
+
 void _unur_distr_cont_free( struct unur_distr *distr );
 /*---------------------------------------------------------------------------*/
 /* destroy distribution object.                                              */
@@ -146,9 +151,10 @@ unur_distr_cont_new( void )
   distr->clone = _unur_distr_cont_clone;
 
   /* set defaults                                                            */
-  DISTR.pdf       = NULL;          /* pointer to p.d.f.                      */
-  DISTR.dpdf      = NULL;          /* pointer to derivative of p.d.f.        */
-  DISTR.cdf       = NULL;          /* pointer to c.d.f.                      */
+  DISTR.pdf       = NULL;          /* pointer to PDF                         */
+  DISTR.dpdf      = NULL;          /* pointer to derivative of PDF           */
+  DISTR.cdf       = NULL;          /* pointer to CDF                         */
+  DISTR.hr        = NULL;          /* pointer to HR                          */
 
   DISTR.init      = NULL;          /* pointer to special init routine        */
 
@@ -162,7 +168,7 @@ unur_distr_cont_new( void )
 				      point exception                        */
 
   DISTR.mode       = INFINITY;     /* location of mode (default: not known)  */
-  DISTR.area       = 1.;           /* area below p.d.f. (default: not known) */
+  DISTR.area       = 1.;           /* area below PDF (default: not known)    */
 
   DISTR.trunc[0] = DISTR.domain[0] = -INFINITY; /* left boundary of domain   */
   DISTR.trunc[1] = DISTR.domain[1] = INFINITY;  /* right boundary of domain  */
@@ -174,6 +180,7 @@ unur_distr_cont_new( void )
   DISTR.pdftree    = NULL;         /* pointer to function tree for PDF       */
   DISTR.dpdftree   = NULL;         /* pointer to function tree for dPDF      */
   DISTR.cdftree    = NULL;         /* pointer to function tree for CDF       */
+  DISTR.hrtree     = NULL;         /* pointer to function tree for HR        */
 
   distr->set = 0u;                 /* no parameters set                      */
   
@@ -218,6 +225,7 @@ _unur_distr_cont_clone( const struct unur_distr *distr )
   CLONE.pdftree  = (DISTR.pdftree)  ? _unur_fstr_dup_tree(DISTR.pdftree)  : NULL;
   CLONE.dpdftree = (DISTR.dpdftree) ? _unur_fstr_dup_tree(DISTR.dpdftree) : NULL;
   CLONE.cdftree  = (DISTR.cdftree)  ? _unur_fstr_dup_tree(DISTR.cdftree)  : NULL;
+  CLONE.hrtree   = (DISTR.hrtree)   ? _unur_fstr_dup_tree(DISTR.hrtree)   : NULL;
 
   /* copy user name for distribution */
   if (distr->name_str) {
@@ -258,6 +266,7 @@ _unur_distr_cont_free( struct unur_distr *distr )
   if (DISTR.pdftree)  _unur_fstr_free(DISTR.pdftree);
   if (DISTR.dpdftree) _unur_fstr_free(DISTR.dpdftree);
   if (DISTR.cdftree)  _unur_fstr_free(DISTR.cdftree);
+  if (DISTR.hrtree)   _unur_fstr_free(DISTR.hrtree);
 
   /* derived distribution */
   if (distr->base) _unur_distr_free(distr->base);
@@ -274,11 +283,11 @@ _unur_distr_cont_free( struct unur_distr *distr )
 int
 unur_distr_cont_set_pdf( struct unur_distr *distr, UNUR_FUNCT_CONT *pdf )
      /*----------------------------------------------------------------------*/
-     /* set p.d.f. of distribution                                           */
+     /* set PDF of distribution                                              */
      /*                                                                      */
      /* parameters:                                                          */
      /*   distr ... pointer to distribution object                           */
-     /*   pdf   ... pointer to p.d.f.                                        */
+     /*   pdf   ... pointer to PDF                                           */
      /*                                                                      */
      /* return:                                                              */
      /*   1 ... on success                                                   */
@@ -313,11 +322,11 @@ unur_distr_cont_set_pdf( struct unur_distr *distr, UNUR_FUNCT_CONT *pdf )
 int
 unur_distr_cont_set_dpdf( struct unur_distr *distr, UNUR_FUNCT_CONT *dpdf )
      /*----------------------------------------------------------------------*/
-     /* set derivative of p.d.f. of distribution                             */
+     /* set derivative of PDF of distribution                                */
      /*                                                                      */
      /* parameters:                                                          */
      /*   distr ... pointer to distribution object                           */
-     /*   dpdf   ... pointer to derivative of p.d.f.                         */
+     /*   dpdf   ... pointer to derivative of PDF                            */
      /*                                                                      */
      /* return:                                                              */
      /*   1 ... on success                                                   */
@@ -351,11 +360,11 @@ unur_distr_cont_set_dpdf( struct unur_distr *distr, UNUR_FUNCT_CONT *dpdf )
 int
 unur_distr_cont_set_cdf( struct unur_distr *distr, UNUR_FUNCT_CONT *cdf )
      /*----------------------------------------------------------------------*/
-     /* set p.d.f. of distribution                                           */
+     /* set CDF of distribution                                              */
      /*                                                                      */
      /* parameters:                                                          */
      /*   distr ... pointer to distribution object                           */
-     /*   cdf   ... pointer to c.d.f.                                        */
+     /*   cdf   ... pointer to CDF                                           */
      /*                                                                      */
      /* return:                                                              */
      /*   1 ... on success                                                   */
@@ -383,6 +392,44 @@ unur_distr_cont_set_cdf( struct unur_distr *distr, UNUR_FUNCT_CONT *cdf )
   DISTR.cdf = cdf;
   return 1;
 } /* end of unur_distr_cont_set_cdf() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+unur_distr_cont_set_hr( struct unur_distr *distr, UNUR_FUNCT_CONT *hr )
+     /*----------------------------------------------------------------------*/
+     /* set HR of distribution                                               */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   distr ... pointer to distribution object                           */
+     /*   hr    ... pointer to HR                                            */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... on success                                                   */
+     /*   0 ... on error                                                     */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( NULL,distr,0 );
+  _unur_check_NULL( distr->name,hr,0 );
+  _unur_check_distr_object( distr, CONT, 0 );
+  
+  /* we do not allow overwriting a cdf */
+  if (DISTR.hr != NULL) {
+    _unur_warning(distr->name,UNUR_ERR_DISTR_SET,"Overwriting of HR not allowed");
+    return 0;
+  }
+
+  /* for derived distributions (e.g. order statistics) not possible */
+  if (distr->base) return 0;
+
+  /* changelog */
+  distr->set &= ~UNUR_DISTR_SET_MASK_DERIVED;
+  /* derived parameters like mode, area, etc. might be wrong now! */
+
+  DISTR.hr = hr;
+  return 1;
+} /* end of unur_distr_cont_set_hr() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -481,6 +528,52 @@ unur_distr_cont_set_cdfstr( struct unur_distr *distr, const char *cdfstr )
 
 /*---------------------------------------------------------------------------*/
 
+int
+unur_distr_cont_set_hrstr( struct unur_distr *distr, const char *hrstr )
+     /*----------------------------------------------------------------------*/
+     /* set HR of distribution via a string interface                        */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   distr  ... pointer to distribution object                          */
+     /*   hrstr  ... string that describes function term of CDF              */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... on success                                                   */
+     /*   0 ... on error                                                     */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( NULL,distr,0 );
+  _unur_check_distr_object( distr, CONT, 0 );
+  _unur_check_NULL( NULL,hrstr,0 );
+
+  /* we do not allow overwriting a CDF */
+  if (DISTR.hr != NULL) {
+    _unur_warning(distr->name,UNUR_ERR_DISTR_SET,"Overwriting of CDF not allowed");
+    return 0;
+  }
+
+  /* for derived distributions (e.g. order statistics) not possible */
+  if (distr->base) return 0;
+
+  /* changelog */
+  distr->set &= ~UNUR_DISTR_SET_MASK_DERIVED;
+  /* derived parameters like mode, area, etc. might be wrong now! */
+
+  /* parse string */
+  if ( (DISTR.hrtree = _unur_fstr2tree(hrstr)) == NULL ) {
+    _unur_error(distr->name,UNUR_ERR_DISTR_SET,"Syntax error in function string");
+    return 0;
+  }
+
+  /* set evaluation function */
+  DISTR.hr  = _unur_distr_cont_eval_hr_tree;
+
+  return 1;
+} /* end of unur_distr_cont_set_hrstr() */
+
+/*---------------------------------------------------------------------------*/
+
 double
 _unur_distr_cont_eval_pdf_tree( double x, const struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
@@ -532,6 +625,24 @@ _unur_distr_cont_eval_cdf_tree( double x, const struct unur_distr *distr )
 {
   return ((DISTR.cdftree) ? _unur_fstr_eval_tree(DISTR.cdftree,x) : 0.);
 } /* end of _unur_distr_cont_eval_cdf_tree() */
+
+/*---------------------------------------------------------------------------*/
+
+double
+_unur_distr_cont_eval_hr_tree( double x, const struct unur_distr *distr )
+     /*----------------------------------------------------------------------*/
+     /* evaluate function tree for HR.                                       */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   x     ... argument for CDF                                         */
+     /*   distr ... pointer to distribution object                           */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   CDF at x                                                           */
+     /*----------------------------------------------------------------------*/
+{
+  return ((DISTR.hrtree) ? _unur_fstr_eval_tree(DISTR.hrtree,x) : 0.);
+} /* end of _unur_distr_cont_eval_hr_tree() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -613,6 +724,32 @@ unur_distr_cont_get_cdfstr( const struct unur_distr *distr )
 
 /*---------------------------------------------------------------------------*/
 
+char *
+unur_distr_cont_get_hrstr( const struct unur_distr *distr )
+     /*----------------------------------------------------------------------*/
+     /* get HR string that is given via the string interface                 */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   distr  ... pointer to distribution object                          */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to resulting string.                                       */
+     /*                                                                      */
+     /* comment:                                                             */
+     /*   This string should be freed when it is not used any more.          */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( NULL,distr,NULL );
+  _unur_check_distr_object( distr, CONT, NULL );
+  _unur_check_NULL( NULL,DISTR.hrtree,NULL );
+
+  /* make and return string */
+  return _unur_fstr_tree2string(DISTR.hrtree,"x","HR",TRUE);
+} /* end of unur_distr_cont_get_hrstr() */
+
+/*---------------------------------------------------------------------------*/
+
 UNUR_FUNCT_CONT *
 unur_distr_cont_get_pdf( const struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
@@ -673,6 +810,27 @@ unur_distr_cont_get_cdf( const struct unur_distr *distr )
 
   return DISTR.cdf;
 } /* end of unur_distr_cont_get_cdf() */
+
+/*---------------------------------------------------------------------------*/
+
+UNUR_FUNCT_CONT *
+unur_distr_cont_get_hr( const struct unur_distr *distr )
+     /*----------------------------------------------------------------------*/
+     /* get pointer to HR of distribution                                   */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   distr ... pointer to distribution object                           */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to HR                                                    */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( NULL,distr,NULL );
+  _unur_check_distr_object( distr, CONT, NULL );
+
+  return DISTR.hr;
+} /* end of unur_distr_cont_get_hr() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -754,6 +912,33 @@ unur_distr_cont_eval_cdf( double x, const struct unur_distr *distr )
 
   return _unur_cont_CDF(x,distr);
 } /* end of unur_distr_cont_eval_cdf() */
+
+/*---------------------------------------------------------------------------*/
+
+double
+unur_distr_cont_eval_hr( double x, const struct unur_distr *distr )
+     /*----------------------------------------------------------------------*/
+     /* evaluate HR of distribution at x                                     */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   x     ... argument for cdf                                         */
+     /*   distr ... pointer to distribution object                           */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   hr(x)                                                              */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( NULL, distr, INFINITY );
+  _unur_check_distr_object( distr, CONT, INFINITY );
+
+  if (DISTR.hr == NULL) {
+    _unur_warning(distr->name,UNUR_ERR_DISTR_DATA,"");
+    return INFINITY;
+  }
+
+  return _unur_cont_HR(x,distr);
+} /* end of unur_distr_cont_eval_hr() */
 
 /*---------------------------------------------------------------------------*/
 

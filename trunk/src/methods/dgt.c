@@ -129,7 +129,7 @@ static struct unur_gen *_unur_dgt_create( struct unur_par *par );
 /*---------------------------------------------------------------------------*/
 
 /* No reinit() cal                                                           */
-/*  static int _unur_srou_reinit( struct unur_gen *gen );                    */
+/*  static int _unur_dgt_reinit( struct unur_gen *gen );                     */
 /*---------------------------------------------------------------------------*/
 /* Re-initialize (existing) generator.                                       */
 /*---------------------------------------------------------------------------*/

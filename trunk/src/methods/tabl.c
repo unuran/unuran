@@ -574,6 +574,29 @@ unur_tabl_set_max_intervals( struct unur_par *par, int max_ivs )
 /*---------------------------------------------------------------------------*/
 
 int
+unur_tabl_get_intervals( const struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* get current number of intervals                                      */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen  ... pointer to generator object                               */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   number of intervals     ... on success                             */
+     /*   0 ... on error                                                     */
+     /*----------------------------------------------------------------------*/
+{
+  /* check input */
+  _unur_check_NULL( GENTYPE, gen, 0 );
+  _unur_check_gen_object( gen, TABL, 0 );
+
+  return GEN.n_ivs;
+
+} /* end of unur_tabl_get_intervals() */
+
+/*---------------------------------------------------------------------------*/
+
+int
 unur_tabl_set_areafraction( struct unur_par *par, double fraction )
      /*----------------------------------------------------------------------*/
      /* set parameter for equal area rule                                    */

@@ -19,7 +19,7 @@
  *  distr: Binomial distribution  [1; ch.3, p.105]                           *
  *                                                                           *
  *  pmf:       p(k) = (n \choose k) * p^k * (1-p)^(n-k)                      *
- *  domain:    0 <= k < infinity                                             *
+ *  domain:    0 <= k <= n                                                   *
  *  constant:  1                                                             *
  *                                                                           *
  *  parameters:                                                              *

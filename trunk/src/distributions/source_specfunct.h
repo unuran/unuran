@@ -66,11 +66,6 @@ double incbet(double a, double b, double x);
 #define _unur_sf_incomplete_beta(x,a,b)   incbet((a),(b),(x))
 #define HAVE_UNUR_SF_INCOMPLETE_BETA
 
-/* inverse of incomplete beta integral */
-double incbi(double a, double b, double x);
-#define _unur_sf_inv_incomplete_beta(x,a,b)  incbi((a),(b),(x))
-#define HAVE_UNUR_SF_INV_INCOMPLETE_BETA
-
 /** functions related to gamma distribution **/
 
 /* logarithm of gamma function */
@@ -86,11 +81,6 @@ double lgam(double x);
 double igam(double a, double x);
 #define _unur_sf_incomplete_gamma(x,a)  igam((a),(x))
 #define HAVE_UNUR_SF_INCOMPLETE_GAMMA
-
-/* inverse of incomplete gamma function */
-double igami(double a, double x);
-#define _unur_sf_inv_incomplete_gamma(x,a)  igami((a),1.-(x))
-#define HAVE_UNUR_SF_INV_INCOMPLETE_GAMMA
 
 /** functions related to normal distribution **/
 
@@ -124,9 +114,6 @@ double ndtri(double x);
 /* NO incomplete beta integral */
 #undef HAVE_UNUR_SF_INCOMPLETE_BETA
 
-/* NO inverse of incomplete beta integral */
-#undef HAVE_UNUR_SF_INV_INCOMPLETE_BETA
-
 /** functions related to gamma distribution **/
 
 /* NO logarithm of gamma function */
@@ -137,9 +124,6 @@ double ndtri(double x);
 
 /* NO incomplete gamma function */
 #undef HAVE_UNUR_SF_INCOMPLETE_GAMMA
-
-/* NO inverse of incomplete gamma function */
-#undef HAVE_UNUR_SF_INV_INCOMPLETE_GAMMA
 
 /** functions related to normal distribution **/
 

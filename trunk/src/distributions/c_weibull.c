@@ -20,7 +20,7 @@
  *                                                                           *
  *  pdf:       f(x) = ((x-zeta)/alpha)^(c-1) * exp(-((x-zeta)/alpha)^c)      *
  *  domain:    zeta < x < infinity                                           *
- *  constant:  c / alpha                                                     *
+ *  constant:  alpha / c                                                     *
  *                                                                           *
  *  parameters: 3                                                            *
  *     0:  c     > 0         ... shape                                       *

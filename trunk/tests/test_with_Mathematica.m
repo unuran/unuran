@@ -17,7 +17,7 @@
 RunFileName = "run_test_with_Mathematica.c";
 
 (* sample size for tests *)
-RunSampleSize = 1000;   
+RunSampleSize = 10000;   
 
 (* constants *)
 isCONT = 1;
@@ -34,9 +34,72 @@ isDISCR = 2;
 CDF[___] := 0.;
 PDF[___] := 0.;
 
+(* --- Extreme Value II Distribution --------------------------------------- *)
+
+ExtremeValueIIDistribution/: Domain[ExtremeValueIIDistribution[k_,zeta_,theta_]] := 
+	Interval[{zeta, Infinity}];
+
+ExtremeValueIIDistribution/: PDF[ExtremeValueIIDistribution[k_,zeta_,theta_], x_] :=
+	If [ x >= zeta,
+		Exp[ -((x-zeta)/theta)^(-k)] * ((x-zeta)/theta)^(-k-1) * k/theta,
+	(* else *)
+		0
+	];
+
+ExtremeValueIIDistribution/: CDF[ExtremeValueIIDistribution[k_,zeta_,theta_], x_] :=
+	If [ x >= zeta,
+		Exp[ -((x-zeta)/theta)^(-k)],
+	(* else *)
+		0
+	];
+
+ExtremeValueIIDistribution/: Random[ExtremeValueIIDistribution[k_,zeta_,theta_]] :=
+	zeta + theta * Exp[ -Log[ -Log[Random[]] ]/k ];
+
+(* --- Laplace Distribution ------------------------------------------------ *)
+
+(* Mathematica's implementation of the Laplace Distribution is wrong!!       *)
+(* We have to fix it!                                                        *)
+
+Unprotect[LaplaceDistribution];
+Clear[LaplaceDistribution];
+
+LaplaceDistribution/: Domain[LaplaceDistribution[___]] := 
+	Interval[{-Infinity, Infinity}];
+
+LaplaceDistribution/: PDF[LaplaceDistribution[m_,s_], x_] :=
+	If [ x-m < 0,
+		Exp[(x-m)/s] / (2 s),
+	(* Else *)
+		Exp[(-x+m)/s] / (2 s) ];
+
+LaplaceDistribution/: CDF[LaplaceDistribution[m_,s_], x_] :=
+	If [ x-m < 0,
+		Exp[(-m + x)/s]/2,
+	(* Else *)
+		1 - Exp[(m - x)/s]/2 ];
+
+LaplaceDistribution/: Random[LaplaceDistribution[m_,s_]] := 
+	m + If[ Random[]>0.5, 1,-1 ] * s * Log[Random[]];
+
+(* --- Lomax Distribution -------------------------------------------------- *)
+
+LomaxDistribution/: Domain[LomaxDistribution[___]] := 
+	Interval[{0,1}];
+
+LomaxDistribution/: PDF[LomaxDistribution[a_,C_], x_] :=
+	(x+C)^(-(a+1)) * a * C^a;
+
+LomaxDistribution/: CDF[LomaxDistribution[a_,C_], x_] :=
+	1 - C^a/(C + x)^a;
+
+LomaxDistribution/: Random[LomaxDistribution[a_,C_]] :=
+	-C + (-(C^a/(-1 + Random[])))^(1/a);
+
 (* --- Powerexponential Distribution --------------------------------------- *)
 
-PowerexponentialDistribution/: Domain[PowerexponentialDistribution[___]] := Interval[{-Infinity, Infinity}]
+PowerexponentialDistribution/: Domain[PowerexponentialDistribution[___]] := 
+	Interval[{-Infinity, Infinity}];
 
 PowerexponentialDistribution/: PDF[PowerexponentialDistribution[r_], x_] :=
 	If [ x>0, 
@@ -56,30 +119,35 @@ PowerexponentialDistribution/: Random[PowerexponentialDistribution[r_]] :=
 	(*  is correct but very slow. So we use a Laplace random variate instead !!     *)
 	If[ Random[] < 0.5, 1, -1] * If[ Random[] < Max[0.3,(1-1/r)], Random[], 1-Log[Random[]]/r ];
 
-(* --- Laplace Distribution ------------------------------------------------ *)
+(* --- Triangular Distribution --------------------------------------------- *)
 
-(* Mathematica's implementation of the Laplace Distribution is wrong!!       *)
-(* We have to fix it!                                                        *)
+TriangularDistribution/: Domain[TriangularDistribution[___]] := 
+	Interval[{0,1}];
 
-Unprotect[LaplaceDistribution];
-Clear[LaplaceDistribution];
+TriangularDistribution/: PDF[TriangularDistribution[H_], x_] :=
+	Which [ x > 0 && x <= H,
+			2*x / H,
+		x > H && x < 1,
+			2*(1-x) / (1-H),
+		True,
+			0
+	];
 
-LaplaceDistribution/: Domain[LaplaceDistribution[___]] := Interval[{-Infinity, Infinity}]
+TriangularDistribution/: CDF[TriangularDistribution[H_], x_] := 
+	Which [ x <= 0,
+			0,
+		x > 0 && x <= H,
+			x*x / H,
+		x > H && x < 1,
+			(H + x * (x-2))/(H-1),
+		True,
+			1
+	];
 
-LaplaceDistribution/: PDF[LaplaceDistribution[m_,s_], x_] :=
-	If [ x-m < 0,
-		Exp[(x-m)/s] / (2 s),
-	(* Else *)
-		Exp[(-x+m)/s] / (2 s) ];
-
-LaplaceDistribution/: CDF[LaplaceDistribution[m_,s_], x_] :=
-	If [ x-m < 0,
-		Exp[(-m + x)/s]/2,
-	(* Else *)
-		1 - Exp[(m - x)/s]/2 ];
-
-LaplaceDistribution/: Random[LaplaceDistribution[m_,s_]] := 
-	m + If[ Random[]>0.5, 1,-1 ] * s * Log[Random[]];
+TriangularDistribution/: Random[TriangularDistribution[H_]] := 
+	(* Warning!! This not a generator for the Triangular Distribution!!       *)
+	(* We simply use uniform distribution!!                                   *)
+	Random[];
 
 (* === End of Distributions ================================================ *)
 
@@ -321,18 +389,25 @@ UnurTestDistrResultFile["exponential", isCONT, runfile, fparams, RunSampleSize, 
 fparams = {{-100,100},{1/100,100}};
 UnurTestDistrResultFile["extremeI",isCONT, runfile, fparams, RunSampleSize, ExtremeValueDistribution];
 
+(* ExtremeValue II *)
+fparams = {{1/100,100}, {-100,100}, {1/100,100}};
+UnurTestDistrResultFile["extremeII",isCONT, runfile, fparams, RunSampleSize, ExtremeValueIIDistribution];
+
 (* Gamma *)
-fparams = {{1/2,10},{1/100,100}};
+fparams = {{1/2,10}, {1/100,100}};
 UnurTestDistrResultFile["gamma", isCONT, runfile, fparams, RunSampleSize];
 
 (* Laplace *)
 fparams = {{-100,100}, {1/100,100}};
 UnurTestDistrResultFile["laplace", isCONT, runfile, fparams, RunSampleSize];
 
-(* Logistic -- reverse order of parameters *)
-fparams = {{1/100,100},{-100,100}};
-ld[beta_,mu_] = LogisticDistribution[mu,beta];
-UnurTestDistrResultFile["logistic", isCONT, runfile, fparams, RunSampleSize, ld];
+(* Lomax *)
+fparams = {{1/100,100}, {1/100,100}};
+UnurTestDistrResultFile["lomax", isCONT, runfile, fparams, RunSampleSize];
+
+(* Logistic *)
+fparams = {{-100,100},{1/100,100}};
+UnurTestDistrResultFile["logistic", isCONT, runfile, fparams, RunSampleSize];
 
 (* Normal *)
 fparams = {{-100,100}, {1/100,100}};
@@ -353,6 +428,14 @@ UnurTestDistrResultFile["rayleigh", isCONT, runfile, fparams, RunSampleSize];
 (* Student *)
 fparams = {{1/100,100}};
 UnurTestDistrResultFile["student", isCONT, runfile, fparams, RunSampleSize, StudentTDistribution];
+
+(* Triangular *)
+fparams = {{0,1}};
+UnurTestDistrResultFile["triangular", isCONT, runfile, fparams, RunSampleSize];
+
+(* Uniform *)
+fparams = {{-100,1}, {1001/1000,100}};
+UnurTestDistrResultFile["uniform", isCONT, runfile, fparams, RunSampleSize];
 
 (* Weibull *)
 fparams = {{1/2,10},{1/100,100}};

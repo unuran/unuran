@@ -104,12 +104,6 @@ _unur_stdgen_gamma_init( struct unur_par *par, struct unur_gen *gen )
     }
 
   case UNUR_STDGEN_INVERSION:   /* inversion method */
-#ifdef HAVE_UNUR_SF_INV_INCOMPLETE_GAMMA
-    if (par) PAR.is_inversion = TRUE;
-    _unur_cstd_set_sampling_routine(par,gen,_unur_stdgen_sample_gamma_inv); 
-    return 1;
-#endif
-
   default: /* no such generator */
     if (gen) _unur_warning(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
     return 0;
@@ -124,46 +118,6 @@ _unur_stdgen_gamma_init( struct unur_par *par, struct unur_gen *gen )
 /**  Special generators                                                     **/
 /**                                                                         **/
 /*****************************************************************************/
-
-/*---------------------------------------------------------------------------*/
-
-#ifdef HAVE_UNUR_SF_INV_INCOMPLETE_GAMMA
-
-/*****************************************************************************
- *                                                                           *
- * Gamma Distribution: inversion method (slow)                               *
- *                                                                           *
- *****************************************************************************
- *                                                                           *
- * FUNCTION:   - samples a random number from the gamma distribution.        *
- *                                                                           *
- *****************************************************************************
- * UNURAN (c) 2000  W. Hoermann & J. Leydold, Institut f. Statistik, WU Wien *
- *****************************************************************************/
-
-double _unur_stdgen_sample_gamma_inv( struct unur_gen *gen )
-     /* Inversion method */
-{
-  /* -X- generator code -X- */
-  double U,X;
-
-  /* check arguments */
-  CHECK_NULL(gen,0.);  COOKIE_CHECK(gen,CK_CSTD_GEN,0.);
-
-  /* sample from uniform random number generator */
-  while ((U = GEN.umin + uniform() * (GEN.umax-GEN.umin)) == 0)
-    ;
-
-  /* transform to random variate */
-  X = _unur_sf_inv_incomplete_gamma(U,alpha);
-
-  /* -X- end of generator code -X- */
-
-  return ((DISTR.n_params==1) ? X : gamma + beta * X );
-
-} /* end of _unur_stdgen_sample_gamma_inv() */
-
-#endif
 
 /*---------------------------------------------------------------------------*/
 

@@ -48,8 +48,8 @@
 
 #define uniform()  _unur_call_urng(gen->urng) /* call for uniform prng       */
 
-#define beta   (DISTR.params[0])   /* scale */
-#define alpha  (DISTR.params[1])   /* location */
+#define alpha  (DISTR.params[0])   /* location */
+#define beta   (DISTR.params[1])   /* scale */
 
 /*---------------------------------------------------------------------------*/
 

@@ -23,8 +23,8 @@
 #define MAX_REL_DIFF 1.e-10
 
 /* mode test: */
-#define EPSX 1.e-11    /* stepsize */
-#define EPSY 1.e-13    /* maximal allowed relative error */
+#define EPSX 1.e-5     /* stepsize */
+#define EPSY 1.e-12    /* maximal allowed relative error */
 
 /*---------------------------------------------------------------------------*/
 

@@ -158,8 +158,6 @@ _unur_upd_sum_zipf( UNUR_DISTR *distr )
 int
 _unur_set_params_zipf( UNUR_DISTR *distr, double *params, int n_params )
 {
-  int nh;
-
   /* check number of parameters for distribution */
   if (n_params < 1) {
     _unur_error(distr_name,UNUR_ERR_DISTR_NPARAMS,"too few"); return 0; }

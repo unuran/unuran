@@ -70,12 +70,14 @@ EXTRA_DIST = \
 
 # compare results of CDF, PDF, and dPDF to those produced with Mathematica ...
 
+data:
+	math -initfile test_with_Mathematica.m
+
 run_test_with_Mathematica.c: test_with_Mathematica.m
 	math -initfile test_with_Mathematica.m
 
 run_test_with_Mathematica_SOURCES = run_test_with_Mathematica.c test_with_Mathematica.c 
 run_test_with_Mathematica_LDADD = $(top_builddir)/src/libunuran.a
-
 
 # run tests for methods ...
 

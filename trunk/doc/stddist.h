@@ -81,10 +81,10 @@ domain PDF and PMF, resp.
 @item parameters  @var{n_std} (@var{n_total}): @r{list}
 list of parameters for distribution, where @var{n_std} is the number
 of parameters for the standard form of the distribution and
-@var{n_total} the number for the non-standard form. 
-@var{list} is the list of parameter in the order as they are stored in
-the array of parameters. Optional parameter that can be omitted are
-enclosed in square brackets @code{[@dots{}]}.
+@var{n_total} the total number for the (non-standard form of the)
+distribution. @var{list} is the list of parameters in the order as
+they are stored in the array of parameters. Optional parameter that
+can be omitted are enclosed in square brackets @code{[@dots{}]}.
 
 A detailed list of these parameters gives then the range of valid
 parameters and defaults for optional parameters that are used when

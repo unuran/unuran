@@ -25,7 +25,7 @@
  *  cdf:       F(x) = exp( -((x-zeta)/theta)^(-k) )                          *
  *  pdf:       f(x) = exp( -((x-zeta)/theta)^(-k)) * ((x-zeta)/theta)^(-k-1) *
  *  domain:    zeta < x <infinity                                            *
- *  constant:  k/theta                                                       *
+ *  constant:  theta/k                                                       *
  *                                                                           *
  *  parameters: 3                                                            *
  *     0:  k     > 0        ... shape                                        *
@@ -118,6 +118,7 @@ _unur_pdf_extremeII( double x, UNUR_DISTR *distr )
 } /* end of _unur_pdf_extremeII() */
 
 /*---------------------------------------------------------------------------*/
+
 double
 _unur_dpdf_extremeII( double x, UNUR_DISTR *distr )
 { 
@@ -127,7 +128,7 @@ _unur_dpdf_extremeII( double x, UNUR_DISTR *distr )
 
   if (DISTR.n_params > 1) {
     /* standardize */
-    factor = 1. / theta;
+    factor = 1. / (theta * theta);
     x = (x - zeta) / theta;
   }
 
@@ -135,8 +136,8 @@ _unur_dpdf_extremeII( double x, UNUR_DISTR *distr )
 
   if (x<=0.) return 0.;
 
-  xk = pow( x, -k);
-  return ( -exp(xk) * k * pow( x, -2.*(k+1.) ) * (xk + k*(xk-1.)) * factor );
+  xk = pow(x, k);
+  return (- factor * exp(-1./xk) * k * (xk + k*(xk - 1.)) / pow(x,2. + 2.*k)) ;
 
 } /* end of unur_dpdf_extremeII() */
 

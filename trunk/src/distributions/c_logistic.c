@@ -21,11 +21,11 @@
  *  pdf:       f(x) = exp(-(x-alpha)/beta) * (1 + exp(-(x-alpha)/beta))^(-2) *
  *  cdf:       F(x) = (1 + exp(-(x-alpha)/beta))^(-1)                        *
  *  domain:    infinity < x < infinity                                       *
- *  constant:  1 / beta                                                      *
+ *  constant:  beta                                                          *
  *                                                                           *
  *  parameters: 2                                                            *
- *     0:  beta  > 0   (1)  ... scale                                        *
- *     1:  alpha       (0)  ... location                                     *
+ *     0:  alpha       (0)  ... location                                     *
+ *     1:  beta  > 0   (1)  ... scale                                        *
  *                                                                           *
  *****************************************************************************
  *                                                                           *
@@ -38,8 +38,8 @@
  *                                                                           *
  *  parameters: none                                                         *
  *                                                                           *
- *     0:  beta  = 1                                                         *
- *     1:  alpha = 0                                                         *
+ *     0:  alpha = 0                                                         *
+ *     1:  beta  = 1                                                         *
  *                                                                           *
  *****************************************************************************
      $Id$
@@ -73,8 +73,8 @@
 static const char distr_name[] = "logistic";
 
 /* parameters */
-#define beta   params[0]
-#define alpha  params[1]
+#define alpha  params[0]
+#define beta   params[1]
 
 #define DISTR distr->data.cont
 #define NORMCONSTANT (distr->data.cont.norm_constant)

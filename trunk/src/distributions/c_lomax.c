@@ -20,7 +20,7 @@
  *                                                                           *
  *  pdf:       f(x) = (x+C)^(-(a+1))                                         *
  *  domain:    x >= 0                                                        *
- *  constant:  a * C^a                                                       *
+ *  constant:  1 / (a * C^a)                                                 *
  *                                                                           *
  *  parameters:                                                              *
  *     0:  a > 0   ... shape                                                 *
@@ -79,7 +79,7 @@ double
 _unur_pdf_lomax( double x, UNUR_DISTR *distr )
 { 
   register double *params = DISTR.params;
-  return ( (x<0.) ? 0. : pow(x+C,-(a+1.)) / NORMCONSTANT );
+  return ( (x<0.) ? 0. : pow(x+C,-(a+1.)) * NORMCONSTANT );
 } /* end of _unur_pdf_lomax() */
 
 /*---------------------------------------------------------------------------*/
@@ -88,7 +88,7 @@ double
 _unur_dpdf_lomax( double x, UNUR_DISTR *distr )
 { 
   register double *params = DISTR.params;
-  return ( (x<0.) ? 0. : -(a+1.) * pow(x+C,-(a+2.)) / NORMCONSTANT );
+  return ( (x<0.) ? 0. : -(a+1.) * pow(x+C,-(a+2.)) * NORMCONSTANT );
 } /* end of _unur_dpdf_lomax() */
 
 /*---------------------------------------------------------------------------*/

@@ -76,6 +76,8 @@ The following TAGs are valid:
 
 =PDF    PDF of distribution.
 
+=PMF    PMF of distribution.
+
 =CONST  Area below PDF or sum over PMF.
 
 =DOMAIN	Domain of PDF or PMF.

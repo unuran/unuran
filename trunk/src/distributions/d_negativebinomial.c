@@ -108,7 +108,7 @@ _unur_pmf_negativebinomial(int k, UNUR_DISTR *distr)
   if (k<0) return 0.;
 
   else
-    return exp( r*log(p) + k*log(1-p) 
+    return exp( k*log(1-p) 
 		+ _unur_sf_ln_gamma(k+r) - _unur_sf_ln_gamma(k+1.) - LOGNORMCONSTANT ) ;
 
 } /* end of _unur_pmf_negativebinomial() */
@@ -162,7 +162,7 @@ int
 _unur_upd_sum_negativebinomial( UNUR_DISTR *distr )
 {
   /* log of normalization constant */
-  LOGNORMCONSTANT = _unur_sf_ln_gamma(DISTR.r);
+  LOGNORMCONSTANT = - DISTR.r * log(DISTR.p) + _unur_sf_ln_gamma(DISTR.r);
 
   if (distr->set & UNUR_DISTR_SET_STDDOMAIN) {
     DISTR.sum = 1.;
@@ -263,7 +263,7 @@ unur_distr_negativebinomial( double *params, int n_params )
 
   /* log of normalization constant */
 #ifdef HAVE_SUM
-  LOGNORMCONSTANT = _unur_sf_ln_gamma(DISTR.r);
+  _unur_upd_sum_negativebinomial( distr );
 #else
   LOGNORMCONSTANT = 0.;
 #endif

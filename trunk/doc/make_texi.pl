@@ -67,6 +67,7 @@ use FileHandle;
      "=REF"         => { "scan" => \&scan_REF },
 
      "=PDF"         => { "scan" => \&scan_PDF },
+     "=PMF"         => { "scan" => \&scan_PDF },
      "=CONST"       => { "scan" => \&scan_PDF },
      "=DOMAIN"      => { "scan" => \&scan_DOMAIN },
      "=FPARAM"      => { "scan" => \&scan_FPARAM },
@@ -427,10 +428,13 @@ sub texi_node {
 
     # print PDF, domain, etc. distribution 
     if ($IN->{$node}->{"=NODE_TYPE"} eq "=DISTR") {
-	if ($IN->{$node}->{"=PDF"}) {
+	if ($IN->{$node}->{"=PDF"} or $IN->{$node}->{"=PMF"}) {
 	    $TEXI .= "\@table \@i\n";
 	    if ($IN->{$node}->{"=PDF"}) {
 		$TEXI .= "\@item PDF:\n".$IN->{$node}->{"=PDF"}."\n";
+	    }
+	    if ($IN->{$node}->{"=PMF"}) {
+		$TEXI .= "\@item PMF:\n".$IN->{$node}->{"=PMF"}."\n";
 	    }
 	    if ($IN->{$node}->{"=CONST"}) {
 		$TEXI .= "\@item constant:\n".$IN->{$node}->{"=CONST"}."\n";
@@ -509,6 +513,41 @@ sub scan_REF {
 } # end of scan_REF()
 
 #############################################################
+# texify string
+#
+
+sub texify_string {
+    my $string = $_[0];
+
+    # infinity --> oo 
+    $string =~ s/(infinity)/\\infty/g;
+
+    # replace '*' by space 
+    $string =~ s/\*/\\, /g;
+
+    # name of funktions
+    $string =~ s/(exp|max|min|sqrt)/\\$1/g;
+
+    # small greek letters
+    $string =~ s/(alpha|beta|gamma|lambda|mu|nu|pi|phi|sigma|tau|theta|zeta)/\\$1/g;
+
+    # capital greek letters
+    $string =~ s/(Gamma)/\\$1/g;
+
+    # <, <=, etc.
+    $string =~ s/<=/\\leq/g;
+    $string =~ s/>=/\\geq/g;
+
+    # fractions
+    $string =~ s/\\frac\{([^\}]+)\}\{([^\}]+)\}/\{$1\\over $2\}/g;
+
+    return $string;
+
+} # end of texify_string()
+
+
+
+#############################################################
 # scan domain for distribution
 #
 
@@ -531,14 +570,8 @@ sub scan_DOMAIN {
     # remove newlines
     $entry =~ s/\n+/ /g;
 
-    # make a copy for TeX output
-    my $texentry = $entry;
-
     # format tex output
-    $texentry =~ s/(infinity)/\\infty/g;
-    $texentry =~ s/<=/\\leq/g;
-    $texentry =~ s/\*/\\, /g;
-    $texentry =~ s/(gamma|Gamma)/\\$1/g;
+    my $texentry = texify_string($entry);
 
     # return result
     $IN->{$node_name}->{$tag} = "\@iftex\n\@tex\n\$$texentry\$\n\@end tex\n\@end iftex\n";
@@ -569,19 +602,14 @@ sub scan_PDF {
     # remove newlines
     $entry =~ s/\n+/ /g;
 
-    # make a copy for TeX output
-    my $texentry = $entry;
-
     # format tex output
-    $texentry =~ s/(infinity)/\\infty/g;
-    $texentry =~ s/\*/\\, /g;
-    $texentry =~ s/(exp|sqrt)/\\$1/g;
-    $texentry =~ s/(alpha|beta|gamma|mu|pi|sigma)/\\$1/g;
-    $texentry =~ s/(Gamma)/\\$1/g;
-    $texentry =~ s/\\frac\{([^\}]+)\}\{([^\}]+)\}/\{$1\\over $2\}/g;
+    my $texentry = texify_string($entry);
 
     # format other output
     $entry =~ s/\\over\s+/\//g;
+
+    $entry =~ s/\\hbox{\s*(\w+)\s*}/ $1 /g;
+    $entry =~ s/\\hfil+\\break/\n\n/g;
 
     $entry =~ s/\\frac\{([^\}]+[\s\+\-]+[^\}]+)\}\{([^\}]+[\s\+\-]+[^\}]+)\}/\($1\)\/\($2\)/g;
     $entry =~ s/\\frac\{([^\}]+)\}\{([^\}]+[\s\+\-]+[^\}]+)\}/$1\/\($2\)/g;
@@ -652,9 +680,14 @@ sub scan_FPARAM {
 	# append list of parameters
 	if ($opt_level ne $last_opt_level) {
 	    $last_opt_level = $opt_level;
-	    $flist .= "[ ";
+	    $flist .= " [";
 	}
-	$flist .= "$name, ";
+	if ($n_total) {
+	    $flist .= ", $name";
+	}
+	else {
+	    $flist .= " $name";
+	}
 
 	# process
 	$out    .= "\@item \@code{$number} \@tab $name \@tab $cond \@tab $default \@tab \@i{($type)}\n";
@@ -670,18 +703,17 @@ sub scan_FPARAM {
     }
     my $n_required = $n_total - $n_optional;
 
-    $last_opt_level =~ s/\[/\]/g;
+    $last_opt_level =~ s/\[/ \]/g;
     $flist .= $last_opt_level;
-    $flist =~ s/\,\s*\]/ \]/;
 
     # make TeX output
     $texout =~ s/<=/\\leq/g;
     $texout =~ s/>=/\\geq/g;
-    $texout =~ s/(alpha|beta|gamma|mu|pi|sigma)(\W)/\\$1$2/g;
+    $texout =~ s/(alpha|beta|gamma|lambda|mu|nu|pi|phi|sigma|tau|theta|zeta)(\W)/\\$1$2/g;
 
     $texout_header  = "\@iftex\n";
     $texout_header .= "\@item parameters $n_required ($n_total): \@r{$flist}\n\@sp 1\n";
-    $texout_header .= "\@multitable {No.} {namex} {99999} {defaultx} {xxxxxxxxxxxxxxxxxxxxxxxx}\n";
+    $texout_header .= "\@multitable {No.} {namex} {999999999999} {defaultx} {xxxxxxxxxxxxxxxxxxxxxxxx}\n";
     $texout_header .= "\@item No. \@tab name \@tab \@tab default\n";
 
     $IN->{$node_name}->{$tag} = $texout_header.$texout."\@end multitable\n\@end iftex\n";
@@ -689,7 +721,7 @@ sub scan_FPARAM {
     # make other output
     $out_header  = "\@ifnottex\n";
     $out_header .= "\@item parameters $n_required ($n_total): $flist\n";
-    $out_header .= "\@multitable {No.xx} {namexxx} {99999} {defaultx} {xxxxxxxxxxxxxxxxxxxxxxxx}\n";
+    $out_header .= "\@multitable {No.xx} {namexxx} {99999999999} {defaultx} {xxxxxxxxxxxxxxxxxxxxxxxx}\n";
     $out_header .= "\@item No. \@tab name \@tab \@tab default\n";
 
     $IN->{$node_name}->{$tag} .= $out_header.$out."\@end multitable\n\@end ifnottex\n";
@@ -997,3 +1029,5 @@ sub transform_special_strings {
 } # end of transform_special_strings()
 
 #############################################################
+
+

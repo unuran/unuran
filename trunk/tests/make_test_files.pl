@@ -474,6 +474,11 @@ EOM
 	test_ok &= (n_tests_failed) ? 0 : 1;
 	(n_tests_failed) ? printf("--> failed] ") : printf("--> ok] ");
 
+#if WITH_DMALLOC
+	dmalloc_vmessage("section = $section  ================================\\n",NULL);
+	dmalloc_log_unfreed();
+#endif
+
 } /* end of test_$section() */
 
 EOM
@@ -904,6 +909,11 @@ sub scan_validate {
     }
 
     ## end ##
+
+    print OUT "#if WITH_DMALLOC\n";
+    print OUT "\tdmalloc_vmessage(\"section = $section  ================================\\n\",\"\");\n";
+    print OUT "\tdmalloc_log_unfreed();\n";
+    print OUT "#endif\n\n";
 
     print OUT "\n\t/* test finished */\n";
     print OUT "\tif (n_tests_failed>0) n_tests_failed--;  /* we accept one failure */\n";

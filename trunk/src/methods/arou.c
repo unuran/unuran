@@ -821,11 +821,11 @@ _unur_arou_create( struct unur_par *par )
   /* magic cookies */
   COOKIE_SET(gen,CK_AROU_GEN);
 
-  /* set generator identifier */
-  gen->genid = _unur_set_genid(GENTYPE);
-
   /* copy distribution object into generator object */
   memcpy( &(gen->distr), par->distr, sizeof( struct unur_distr ) );
+
+  /* set generator identifier */
+  gen->genid = _unur_set_genid(GENTYPE);
 
   /* routines for sampling and destroying generator */
   SAMPLE = (par->variant & AROU_VARFLAG_VERIFY) ? _unur_arou_sample_check : _unur_arou_sample;

@@ -335,6 +335,7 @@ _unur_vmt_create( struct unur_par *par )
   }
   else {
     _unur_error(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
+    free (gen);
     return NULL;
   }
 
@@ -345,6 +346,7 @@ _unur_vmt_create( struct unur_par *par )
   }
   else {
     _unur_error(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
+    free (DISTR.mean); free (gen);
     return NULL;
   }
 

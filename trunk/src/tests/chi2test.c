@@ -298,6 +298,7 @@ _unur_test_chi2_cont(struct unur_gen *gen,
   /* Fr - Fl <= 0. is a fatal error */
   if (Fdelta <= 0.) {
     _unur_error(gen->genid,UNUR_ERR_GENERIC,"Fdelta <= 0.");
+    free (observed);
     return -1.;
   }
 

@@ -883,11 +883,11 @@ _unur_tabl_create( struct unur_par *par )
   /* magic cookies */
   COOKIE_SET(gen,CK_TABL_GEN);
 
-  /* set generator identifier */
-  gen->genid = _unur_set_genid(GENTYPE);
-
   /* copy distribution object into generator object */
   memcpy( &(gen->distr), par->distr, sizeof( struct unur_distr ) );
+
+  /* set generator identifier */
+  gen->genid = _unur_set_genid(GENTYPE);
 
   /* routines for sampling and destroying generator */
   SAMPLE = (par->variant & TABL_VARFLAG_VERIFY) ? _unur_tabl_sample_check : _unur_tabl_sample;

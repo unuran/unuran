@@ -438,9 +438,6 @@ _unur_dgt_create( struct unur_par *par )
   /* magic cookies */
   COOKIE_SET(gen,CK_DGT_GEN);
 
-  /* set generator identifier */
-  gen->genid = _unur_set_genid(GENTYPE);
-
   /* copy distribution object into generator object */
   memcpy( &(gen->distr), par->distr, sizeof( struct unur_distr ) );
 
@@ -454,9 +451,14 @@ _unur_dgt_create( struct unur_par *par )
     if (unur_distr_discr_make_pv(&(gen->distr)) <= 0) {
       /* not successful */
       _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"PV"); 
-      _unur_dgt_free(gen); return NULL;
+      if (DISTR.pv) free(DISTR.pv);
+      free(gen);
+      return NULL;
     }
   }
+
+  /* set generator identifier */
+  gen->genid = _unur_set_genid(GENTYPE);
 
   /* routines for sampling and destroying generator */
   SAMPLE = _unur_dgt_sample;

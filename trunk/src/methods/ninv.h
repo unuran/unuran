@@ -43,6 +43,11 @@
 NINV is the implementation of numerical inversion.
 For finding the root it is possible to choose between
 Newton's method and the regula falsi.
+If many random numbers will be generatet, it is possible
+to speed up the algorithm by generating a table of possible
+start values.
+It is also possible to use this method if one is interested
+in cdf's with truncated support by specifying a desired domain.
 */
 
 /*
@@ -114,7 +119,7 @@ int unur_ninv_chg_start(UNUR_GEN *gen, double left, double right);
 /* If left==right, UNURAN chooses the starting points (see the
    function @code{unur_ninv_set_start()}*/
 
-int unur_ninv_chg_table(UNUR_GEN *gen, int points);
+int unur_ninv_chg_table(UNUR_GEN *gen, int no_of_points);
 /*
    Regenerates a table as described in @code{unur_ninv_use_table()}
    and uses it for further random number generations. 

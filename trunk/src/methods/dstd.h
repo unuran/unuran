@@ -86,18 +86,6 @@ UNUR_PAR *unur_dstd_new( UNUR_DISTR *distribution );
    Using a truncated distribution is not allowed.
 */
 
-UNUR_GEN *_unur_dstd_init( UNUR_PAR *parameters );
-/* Initialize new generator.                                                 */
-
-/** 
-    double _unur_dstd_sample( UNUR_GEN *gen );
-    Does not exists !!!
-    Sampling routines are defined in ../distributions/ for each distributions.
-**/
-
-void _unur_dstd_free( UNUR_GEN *generator);
-/* Destroy generator object.                                                 */
-
 /*...........................................................................*/
 
 int unur_dstd_set_variant( UNUR_PAR *parameters, unsigned variant );

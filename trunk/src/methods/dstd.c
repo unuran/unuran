@@ -99,9 +99,25 @@
 
 /*---------------------------------------------------------------------------*/
 
+static struct unur_gen *_unur_dstd_init( struct unur_par *par );
+/*---------------------------------------------------------------------------*/
+/* Initialize new generator.                                                 */
+/*---------------------------------------------------------------------------*/
+
 static struct unur_gen *_unur_dstd_create( struct unur_par *par );
 /*---------------------------------------------------------------------------*/
 /* create new (almost empty) generator object.                               */
+/*---------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------*/
+/* There are no sampling routines, since every distribution has its own.     */
+/* Sampling routines are defined in ../distributions/ for each distributions.*/
+/* double _unur_dstd_sample( UNUR_GEN *gen ); does not exist!                */
+/*---------------------------------------------------------------------------*/
+
+static void _unur_dstd_free( struct unur_gen *gen);
+/*---------------------------------------------------------------------------*/
+/* destroy generator object.                                                 */
 /*---------------------------------------------------------------------------*/
 
 #ifdef UNUR_ENABLE_LOGGING

@@ -45,6 +45,7 @@ Date: @value{UPDATED}
 * Examples::               Examples
 * Methods::                How should the random numbers be created
 * Distributions::          Distributions
+* FIndex::                 Function index
 @end menu
 
 @c --------------------------------------------------------------------
@@ -161,15 +162,13 @@ and modify them as shown below:
 
 @include unuran_src.texi
 
+@c --------------------------------------------------------------------
+@c Index
 
+@node FIndex
+@unnumbered Function Index
+
+@printindex fn
 
 @c --------------------------------------------------------------------
 @bye
-
-
-
-
-
-
-
-

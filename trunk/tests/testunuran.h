@@ -54,13 +54,13 @@
 
 /*---------------------------------------------------------------------------*/
 /* check for invalid NULL pointer, that should not happen in this program */
-void abort_if_NULL( FILE *LOG, int line, void *ptr );
+void abort_if_NULL( FILE *LOG, int line, const void *ptr );
 
 /* compare error code */
 int check_errorcode( FILE *LOG, int line, unsigned cherrno );
 
 /* check for expected NULL pointer */
-int check_expected_NULL( FILE *LOG, int line, void *ptr );
+int check_expected_NULL( FILE *LOG, int line, const void *ptr );
 
 /* check for "set failed" */
 int check_expected_setfailed( FILE *LOG, int line, int ok );

@@ -925,6 +925,14 @@ sub scan_validate {
     print "\n\t/* test finished */\n";
     print "\ttest_ok &= (n_tests_failed>2) ? 0 : 1;   /* we accept 2 failure */\n";
     print "\t(n_tests_failed>2) ? printf(\" --> failed] \") : printf(\" --> ok] \");\n";
+
+    print "\n\t/* prevent compiler from making useless annoying warnings */\n";
+    print "\tdistr[0] = NULL;\n";
+    print "\tpar = NULL;\n";
+    print "\tgen = NULL;\n";
+    print "\tdarray = NULL;\n";
+    print "\tfpm[0] = 0.;\n";
+
     print "\n} /* end of test_validate */\n\n";
 
     # return name of next section ...

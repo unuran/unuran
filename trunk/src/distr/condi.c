@@ -367,7 +367,7 @@ _unur_distr_condi_debug( const struct unur_distr *condi, const char *genid )
 
   /* print data about underlying distribution */
   fprintf(log,"%s: Underlying distribution:\n",genid);
-  _unur_distr_cont_debug(condi->base, genid);
+  _unur_distr_cvec_debug(condi->base, genid);
 
 } /* end of _unur_distr_condi_debug() */
 /*---------------------------------------------------------------------------*/

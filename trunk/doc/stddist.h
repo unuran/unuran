@@ -13,7 +13,7 @@ and their parameters.
 The syntax to get a distribuion object for distributions
 @code{<dname>} is:
 
-@deftypefn -- {UNUR_DISTR*} unur_distr_<dname> (double* @var{params}, int @var{n_params})
+@deftypefn -- {UNUR_DISTR*} unur_distr_@code{<dname>} (double* @var{params}, int @var{n_params})
 @var{params} is an array of doubles of size 
 @var{n_params} holding the parameters.
 @end deftypefn

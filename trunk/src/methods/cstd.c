@@ -316,7 +316,7 @@ unur_cstd_free( struct unur_gen *gen )
   /* free memory */
   _unur_free_genid(gen);
   free(GEN.gen_param);
-  unur_free(GEN.gen_aux);
+  if (GEN.gen_aux) unur_free(GEN.gen_aux);
   free(gen);
 
 } /* end of unur_cstd_free() */

@@ -75,6 +75,10 @@ noinst_HEADERS = \
  tabl.h \
  tabl_struct.h \
  tdr.h \
+ tdr_newset.c \
+ tdr_init.c \
+ tdr_sample.c \
+ tdr_debug.c \
  tdr_struct.h  \
  unif.h \
  unif_struct.h \

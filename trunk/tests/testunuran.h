@@ -36,10 +36,10 @@
 /* methods                                                                   */
 #define T_DISTR
 
-#define T_DAU
-#define T_DGT
-#define T_SROU
-#define T_SSR
+/*  #define T_DAU */
+/*  #define T_DGT */
+/*  #define T_SROU */
+/*  #define T_SSR */
 #define T_TDR
 #define T_UNIF
 

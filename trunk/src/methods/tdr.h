@@ -69,6 +69,25 @@ int unur_tdr_set_usecenter( UNUR_PAR *parameters, int usecenter );
 int unur_tdr_set_usemode( UNUR_PAR *parameters, int usemode );
 /* set flag for using (exact) mode as construction point                     */
 
+int unur_tdr_set_version_orig( UNUR_PAR *parameters );
+/* 
+   Use original version with squeezes as proposed by Gilks & Wild 
+   (but with generalized transformations T).
+   This is the default.
+*/
+
+int unur_tdr_set_version_ps( UNUR_PAR *parameters );
+/*
+  Use squeezes proportional to the hat function. This is faster than the
+  original version.
+*/
+
+int unur_tdr_set_version_ia( UNUR_PAR *parameters );
+/* 
+   Use squeezes proportional to the hat function together with a 
+   composition method that required less uniform random numbers.
+*/
+
 int unur_tdr_set_c( UNUR_PAR *parameters, double c );
 /* set parameter c for transformation T_c                                    */
 

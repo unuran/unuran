@@ -306,6 +306,9 @@ sub method_info{
 		print Outfile "\t\t\t\tcheck = unur_$method\_set_$2(par, (int) dblvalue, NULL);\n";
 		print Outfile "\t\t\t}\n";
                 # check for error
+		print Outfile "\t\t\tif ( no_of_elem != (int) dblvalue ){\n";
+		print Outfile "\t\t\t\tfprintf(stderr, \"WARNING: Check size of list when setting $2\\n\");\n";
+		print Outfile "\t\t\t}\n";
 		print Outfile "\t\t\tif ( ! check ){\n";
 		print Outfile "\t\t\t\tfprintf(stderr, \"ERROR: while trying to set $2\\n\");\n";
 		print Outfile "\t\t\t}\n";

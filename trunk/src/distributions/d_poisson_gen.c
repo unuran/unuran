@@ -514,7 +514,7 @@ poisson_pprsc_init( struct unur_gen *gen )
 
 } /* end of poisson_pprsc_init() */
 
-#define my  (DISTR.params[0])    /* shape */
+// #define my  (DISTR.params[0])    /* shape */
 
 
 static double f(long int k, double l_nu, double c_pm)
@@ -528,42 +528,25 @@ unur_stdgen_sample_poisson_pprsc( struct unur_gen *gen )
 {
   /* -X- generator code -X- */
 
- static double my_old = -1.0;
- double t,g,my_k;
-
- double gx,gy,px,py,e,x,xx,delta,v;
- long sign;
-
- static double p,q,p0,pp[36];
- static long ll,m;
- double u;
- long k,i;
-
- if (0);
-
-  else    /* CASE A: acceptance complement */
-
-
-   {
-			static double        my_last = -1.0;
-			static long int      m,  k2, k4, k1, k5;
-			static double        dl, dr, r1, r2, r4, r5, ll, lr, l_my, c_pm,
-													 f1, f2, f4, f5, p1, p2, p3, p4, p5, p6;
-			long int             Dk, X, Y;
-			double               Ds, U, V, W;
-
-			if (my != my_last)
+  static double        theta_last = -1.0;
+  static long int      m,  k2, k4, k1, k5;
+  static double        dl, dr, r1, r2, r4, r5, ll, lr, l_theta, c_pm,
+    f1, f2, f4, f5, p1, p2, p3, p4, p5, p6;
+  long int             Dk, X, Y;
+  double               Ds, U, V, W;
+  
+  if (theta != theta_last)
 			{                               /* set-up           */
-				my_last = my;
+				theta_last = theta;
 
- /* approximate deviation of reflection points k2, k4 from my - 1/2      */
-				Ds = sqrt(my + 0.25);
+ /* approximate deviation of reflection points k2, k4 from theta - 1/2      */
+				Ds = sqrt(theta + 0.25);
 
  /* mode m, reflection points k2 and k4, and points k1 and k5, which     */
  /* delimit the centre region of h(x)                                    */
-				m  = (long int) my;
-				k2 = (long int) ceil(my - 0.5 - Ds);
-				k4 = (long int)     (my - 0.5 + Ds);
+				m  = (long int) theta;
+				k2 = (long int) ceil(theta - 0.5 - Ds);
+				k4 = (long int)     (theta - 0.5 + Ds);
 				k1 = k2 + k2 - m + 1L;
 				k5 = k4 + k4 - m;
 
@@ -572,24 +555,24 @@ unur_stdgen_sample_poisson_pprsc( struct unur_gen *gen )
 				dr = (double) (k5 - k4);
 
  /* recurrence constants r(k) = p(k)/p(k-1) at k = k1, k2, k4+1, k5+1    */
-				r1 = my / (double) k1;
-				r2 = my / (double) k2;
-				r4 = my / (double)(k4 + 1L);
-				r5 = my / (double)(k5 + 1L);
+				r1 = theta / (double) k1;
+				r2 = theta / (double) k2;
+				r4 = theta / (double)(k4 + 1L);
+				r5 = theta / (double)(k5 + 1L);
 
  /* reciprocal values of the scale parameters of expon. tail envelopes   */
 				ll =  log(r1);                                   /* expon. tail left */
 				lr = -log(r5);                                   /* expon. tail right*/
 
  /* Poisson constants, necessary for computing function values f(k)      */
-				l_my = log(my);
-				c_pm = m * l_my - _unur_factorialln(m);
+				l_theta = log(theta);
+				c_pm = m * l_theta - _unur_factorialln(m);
 
  /* function values f(k) = p(k)/p(m) at k = k2, k4, k1, k5               */
-				f2 = f(k2, l_my, c_pm);
-				f4 = f(k4, l_my, c_pm);
-				f1 = f(k1, l_my, c_pm);
-				f5 = f(k5, l_my, c_pm);
+				f2 = f(k2, l_theta, c_pm);
+				f4 = f(k4, l_theta, c_pm);
+				f1 = f(k1, l_theta, c_pm);
+				f5 = f(k5, l_theta, c_pm);
 
  /* area of the two centre and the two exponential tail regions          */
  /* area of the two immediate acceptance regions between k2, k4          */
@@ -627,7 +610,7 @@ unur_stdgen_sample_poisson_pprsc( struct unur_gen *gen )
 					{  /* quick accept of  */
 						return(Y);                                 /* Y = k2 + Dk      */
 					}
-					if (V <= f(Y, l_my, c_pm))  return(Y);       /* final accept of Y*/
+					if (V <= f(Y, l_theta, c_pm))  return(Y);       /* final accept of Y*/
 				}
 				X = k2 - Dk;
 			}
@@ -652,7 +635,7 @@ unur_stdgen_sample_poisson_pprsc( struct unur_gen *gen )
 					{         /* quick accept of  */
 						return(Y);                                 /* Y = k4 - Dk      */
 					}
-					if (V <= f(Y, l_my, c_pm))  return(Y);       /* final accept of Y*/
+					if (V <= f(Y, l_theta, c_pm))  return(Y);       /* final accept of Y*/
 				}
 				X = k4 + Dk;
 			}
@@ -677,10 +660,9 @@ unur_stdgen_sample_poisson_pprsc( struct unur_gen *gen )
 
  /* acceptance-rejection test of candidate X from the original area      */
  /* test, whether  W <= f(k),    with  W = U*h(x)  and  U -- U(0, 1)     */
- /* log f(X) = (X - m)*log(my) - log X! + log m!                         */
-			if (log(W) <= X * l_my - _unur_factorialln(X) - c_pm)  return(X);
+ /* log f(X) = (X - m)*log(theta) - log X! + log m!                         */
+			if (log(W) <= X * l_theta - _unur_factorialln(X) - c_pm)  return(X);
 		}
-	} /* end of my >= 10 */
 
 
   /* -X- end of generator code -X- */

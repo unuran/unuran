@@ -6,14 +6,15 @@ info_TEXINFOS = unuran.texi
 
 # these example files are generated from the corresponding
 # files $(top_srcdir)/examples/example?.c
-#unuran_examples = \
-# ref_example1.texi \
-# ref_example2.texi \
-# ref_example3.texi \
-# ref_example4.texi
+unuran_examples = \
+ ref_example1.texi \
+ ref_example2.texi \
+ ref_example3.texi \
+ ref_example4.texi
 
 unuran_TEXINFOS = \
  unuran.texi \
+ $(unuran_examples) \
  unuran_src.texi
 
 noinst_DATA = 
@@ -36,6 +37,7 @@ EXTRA_DIST = \
 unuran_src.texi: $(sripts)
 	./make_texi.pl $(top_srcdir)/src/ > unuran_src.texi
 
+example_dir  = $(top_srcdir)/examples
 $(unuran_examples): $(example_dir)/example*.c
 	sed 's/{/@{/g;s/}/@}/g' < $(example_dir)/`echo $* | sed 's/ref_//'`.c > $@
 
@@ -71,6 +73,7 @@ MAINTAINERCLEANFILES = \
  unuran.txt \
  unuran.pdf \
  mdate-sh \
+ $(unuran_examples) \
  unuran_src.texi
 
 

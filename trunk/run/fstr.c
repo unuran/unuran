@@ -1,10 +1,8 @@
 
-#include <stdio.h> 
-#include <stdlib.h>
-#include <string.h> 
+#include <source_unuran.h>
 
+/*---------------------------------------------------------------------------*/
 
-#define SYMBLENGTH 40 
 #define MAXLENGTH  256 
 #define NOSYMB  0 
 #define ADD_OP  1 
@@ -18,31 +16,6 @@
 #define UFUNCS  9 
 #define SFUNCS 10 
 
-#ifndef FALSE
-#define FALSE  (0)                   /* boolean false                   */
-#define TRUE   (!FALSE)              /* boolean true                    */
-#endif
-
-struct treenode { 
-  char            symb[SYMBLENGTH];  /* zeigt auf Symbol aus Symboltab. */ 
-  int             token;             /* Token des Symbols               */ 
-  int             symbkind;          /* Art des Symbols (REL_OP etc.)   */ 
-  float           val;               /* aktueller arithmetischer Wert   */ 
-  struct treenode *left;             /* Zeiger auf linken Sohn          */ 
-  struct treenode *right;            /* Zeiger auf rechten Sohn         */ 
-}; 
-
-struct symbols { 
-  char            name[SYMBLENGTH];  /* Name des Symbols (z. B. "SIN")  */ 
-  int             info;              /* Prioritaet bzw. Argumentanzahl  */ 
-  double           val;               /* Konstanten: numerischer Wert    */ 
-  double           (*vcalc)(int t, double l, double r);        
-                                     /* Zeiger auf Berechnungsfunktion  */ 
-  char            *(*dcalc)(char *par,struct treenode *w,
-                            char *l, char *r, char *dl, char *dr,char *s);
-                                     /* Zeiger auf Ableitungsfunktion   */ 
-  struct treenode *tree;             /* Bei UFUNCS: Zeiger auf Baum     */ 
-};
 
 /* --- Prototypen: --- */
 void   _unur_fstr_init   (void);
@@ -52,48 +25,45 @@ static char  get_ch_after_spaces(char *function, int *scanposp);
 static char *get_ds             (char *function, int  *scanposp, char *ds);
 static char *get_sf             (char *function, int  *scanposp, char *sf);
 static int   get_uc_symbol      (char *function, int *scanposp, char *uc);
-int   nxt_symbol         (char function[], int *scanposp, char symb[],
+static int   nxt_symbol         (char function[], int *scanposp, char symb[],
 			      int *tokenp, int *symbkindp, int *errposp);
 static int   get_id_symbol      (char *function, int  *scanposp, char *id);
 static int   get_le_symbol      (char *function, int  *scanposp, char *le);
 static int   get_ge_symbol      (char *function, int  *scanposp, char *ge);
-int   find_kind          (int token);
-int   find_index         (char *symb, int start, int end, int nxt_c);
+static int   find_kind          (int token);
+static int   find_index         (char *symb, int start, int end, int nxt_c);
 
 /* --- Bereichs-Start- und -Endemarkierungen in der Symboltabelle: --- */
-int ros, roe, aos, aoe, mos, moe, hos, hoe, oss, ose, scs, sce;
-int ucs, uce, uis, uie, ufs, ufe, sfs, sfe;
-
-
-
-
+static int ros, roe, aos, aoe, mos, moe, hos, hoe, oss, ose, scs, sce;
+static int ucs, uce, uis, uie, ufs, ufe, sfs, sfe;
 
 /* --- forward-declarations aus Modul CALC.C; Bewertungsfunktionen: --- */
-extern double v_exp(), v_dummy  (), v_or   (), v_mul(), v_sconst();
-extern double v_ln (), v_less   (), v_xor  (), v_and(), v_uconst();
-extern double v_log(), v_equal  (), v_plus (), v_div(), v_uident();
-extern double v_sin(), v_greater(), v_minus(), v_mod();
-extern double v_cos(), v_less_or();
-extern double v_tan(), v_unequal(), v_power(), v_ufuncs();
-extern double v_sec(), v_grtr_or(), v_not  ();
-extern double v_sqr();
-extern double v_abs();
+static double v_exp(), v_dummy  (), v_or   (), v_mul(), v_sconst();
+static double v_ln (), v_less   (), v_xor  (), v_and(), v_uconst();
+static double v_log(), v_equal  (), v_plus (), v_div(), v_uident();
+static double v_sin(), v_greater(), v_minus(), v_mod();
+static double v_cos(), v_less_or();
+static double v_tan(), v_unequal(), v_power(), v_ufuncs();
+static double v_sec(), v_grtr_or(), v_not  ();
+static double v_sqr();
+static double v_abs();
 
 /* --- forward-declarations aus Modul CALC.C; Ableitungsfunktionen: --- */
-extern char *d_exp(), *d_dummy ();
-extern char *d_ln (), *d_add   ();
-extern char *d_log(), *d_mul   ();
-extern char *d_sin(), *d_div   ();
-extern char *d_cos(), *d_power ();
-extern char *d_tan(), *d_const ();
-extern char *d_sec(), *d_par   ();
-extern char *d_sqr(), *d_ufuncs();
-extern char *d_abs();
+static char *d_exp(), *d_dummy ();
+static char *d_ln (), *d_add   ();
+static char *d_log(), *d_mul   ();
+static char *d_sin(), *d_div   ();
+static char *d_cos(), *d_power ();
+static char *d_tan(), *d_const ();
+static char *d_sec(), *d_par   ();
+static char *d_sqr(), *d_ufuncs();
+static char *d_abs();
 
 
-#include <math.h>
-#include <time.h>
-#include <stdlib.h>
+/* --- Import aus SCANNER.C: --- */ 
+static void init_scanner(void);
+static int  nxt_symbol(char function[], int *scanposp,  char symb[],
+                       int  *tokenp,    int *symbkindp, int *errposp);
 
 /*long _STKSIZ = 500000; grosser Stack f. Rekursion in derive_expression*/
 
@@ -101,72 +71,68 @@ extern char *d_abs();
 
 /* --- Importe aus scanner.c und parser.c: --- */
 
-extern struct symbols symbol[];
-extern int            ros, roe, aos, aoe, mos, moe, hos, hoe, oss, ose; 
-extern int            scs, sce, ucs, uce, uis, uie, ufs, ufe, sfs, sfe; 
-extern char           *errorstrings[]; 
-extern struct treenode *string2tree(char *function, int *errcodep, 
+static struct symbols symbol[];
+static int            ros, roe, aos, aoe, mos, moe, hos, hoe, oss, ose; 
+static int            scs, sce, ucs, uce, uis, uie, ufs, ufe, sfs, sfe; 
+static struct treenode *string2tree(char *function, int *errcodep, 
                                                     int *errposp);
-extern int  nxt_symbol  (char function[], int *scanposp,  char symb[],
-                             int *tokenp, int *symbkindp, int *errposp);
-extern void init_scanner(void), show_symb_tab(void); 
-extern void pt_error    (char *function, int errcode, int errpos);
-extern void show_tree   (struct treenode *root);
-extern void _unur_fstr_free (struct treenode *root);                                
-extern char *readln     (char *s);
+static void pt_error    (char *function, int errcode, int errpos);
+static void show_tree   (struct treenode *root);
+
+char *readln     (char *s);
 
 /************************************************************************/ 
 
 /* --- Prototypen: --- */
 
-char *tree2string(struct treenode *tree_root, char *ret_str);
-char *tree2Cstring(struct treenode *tree_root, char *ret_str);
-char *strcpy3    (char *s1, char *s2, char *s3, char *s4); 
-char *strcpy5    (char *s1, char *s2, char *s3, char *s4, char *s5, char *s6); 
-double tree2float (struct treenode *E_root); 
-double v_dummy  (int t, double l, double r);
-double v_less   (int t, double l, double r);
-double v_equal  (int t, double l, double r);
-double v_greater(int t, double l, double r);
-double v_less_or(int t, double l, double r);
-double v_unequal(int t, double l, double r);
-double v_grtr_or(int t, double l, double r);
-double v_or     (int t, double l, double r);
-double v_xor    (int t, double l, double r);
-double v_plus   (int t, double l, double r); 
-double v_minus  (int t, double l, double r); 
-double v_mul    (int t, double l, double r);
-double v_and    (int t, double l, double r);
-double v_div    (int t, double l, double r);
-double v_mod    (int t, double l, double r);
-double v_power  (int t, double l, double r);
-double v_not    (int t, double l, double r);
-double v_sconst (int t, double l, double r);
-double v_uconst (int t, double l, double r);
-double v_uident (int t, double l, double r);
-double v_ufuncs (int t, double l, double r);
-double v_exp    (int t, double l, double r);
-double v_ln     (int t, double l, double r);
-double v_log    (int t, double l, double r);
-double v_sin    (int t, double l, double r); 
-double v_cos    (int t, double l, double r);
-double v_tan    (int t, double l, double r);
-double v_sec    (int t, double l, double r); 
-double v_sqr    (int t, double l, double r);
-double v_abs    (int t, double l, double r);
-void gradient(struct treenode *root);
-void nxt_part_derivation(struct treenode *DP_root,struct treenode *root);
-struct treenode *part_deriv(struct treenode *root,char *par,char *ret_str); 
-char *derive_expression(struct treenode *E_root,char *par,char *ret_str);
-char *strcpy6(char *s1, char *s2, char *s3,
+static char *tree2string(struct treenode *tree_root, char *ret_str);
+static char *tree2Cstring(struct treenode *tree_root, char *ret_str);
+static char *strcpy3    (char *s1, char *s2, char *s3, char *s4); 
+static char *strcpy5    (char *s1, char *s2, char *s3, char *s4, char *s5, char *s6); 
+static double tree2float (struct treenode *E_root); 
+static double v_dummy  (int t, double l, double r);
+static double v_less   (int t, double l, double r);
+static double v_equal  (int t, double l, double r);
+static double v_greater(int t, double l, double r);
+static double v_less_or(int t, double l, double r);
+static double v_unequal(int t, double l, double r);
+static double v_grtr_or(int t, double l, double r);
+static double v_or     (int t, double l, double r);
+static double v_xor    (int t, double l, double r);
+static double v_plus   (int t, double l, double r); 
+static double v_minus  (int t, double l, double r); 
+static double v_mul    (int t, double l, double r);
+static double v_and    (int t, double l, double r);
+static double v_div    (int t, double l, double r);
+static double v_mod    (int t, double l, double r);
+static double v_power  (int t, double l, double r);
+static double v_not    (int t, double l, double r);
+static double v_sconst (int t, double l, double r);
+static double v_uconst (int t, double l, double r);
+static double v_uident (int t, double l, double r);
+static double v_ufuncs (int t, double l, double r);
+static double v_exp    (int t, double l, double r);
+static double v_ln     (int t, double l, double r);
+static double v_log    (int t, double l, double r);
+static double v_sin    (int t, double l, double r); 
+static double v_cos    (int t, double l, double r);
+static double v_tan    (int t, double l, double r);
+static double v_sec    (int t, double l, double r); 
+static double v_sqr    (int t, double l, double r);
+static double v_abs    (int t, double l, double r);
+static void gradient(struct treenode *root);
+static void nxt_part_derivation(struct treenode *DP_root,struct treenode *root);
+static struct treenode *part_deriv(struct treenode *root,char *par,char *ret_str); 
+static char *derive_expression(struct treenode *E_root,char *par,char *ret_str);
+static char *strcpy6(char *s1, char *s2, char *s3,
 	      char *s4, char *s5, char *s6, char *s7);
-void str_upr(char *s);
+static void str_upr(char *s);
 
 
 /************************************************************************/
 /* --- SYMBOLTABELLE, mit Funktionsadressen --- */
 
-struct symbols symbol[] = {   
+static struct symbols symbol[] = {   
   {"ros",0, .0,v_dummy,  d_dummy, 0},            /* RelationalOperators */
   {"<",  1, .0,v_less,   d_const, 0}, {"=",  1, .0,v_equal,  d_const, 0},
   {">",  1, .0,v_greater,d_const, 0}, {"<=", 1, .0,v_less_or,d_const, 0},
@@ -234,22 +200,6 @@ struct symbols symbol[] = {
   {"end",0, .0,v_dummy,  d_dummy, 0},
 };
 
-
-
-
-/* --- Import aus SCANNER.C: --- */ 
-extern int ros, roe, aos, aoe, mos, moe, hos, hoe, oss, ose, scs, sce; 
-extern int ucs, uce, uis, uie, ufs, ufe, sfs, sfe; 
-
-extern struct symbols symbol[]; 
-
-extern void init_scanner(void);
-extern void show_symb_tab(void);
-extern int  nxt_symbol(char function[], int *scanposp,  char symb[],
-                       int  *tokenp,    int *symbkindp, int *errposp);
-extern int  find_kind(int token);
-extern int  find_index(char *symb, int start, int end, int nxt_c);
-
 /* --- Prototypen: --- */ 
 struct treenode *string2tree(char *function, int *errcodep, int *errposp);
 static struct treenode *FuncDefinition   (char *f, int *spp, int *ecp, int *epp);
@@ -274,13 +224,12 @@ char            *readln  (char *s);
 static char            *erase_back_blancs (char *s); 
 static int             simplification(char *symb, int t, struct treenode *l, 
                                                       struct treenode *r);
-void            check_reorg (struct treenode *root);
-void            show_tree   (struct treenode *root);
-void            _unur_fstr_free (struct treenode *root);                            
+static void            check_reorg (struct treenode *root);
+static void            show_tree   (struct treenode *root);
                
-void            pt_error    (char *function, int errcode, int errpos);
+static void            pt_error    (char *function, int errcode, int errpos);
 
-char *errorstrings[] = { 
+static char *errorstrings[] = { 
      "OK",                                                /* 0*/ 
      "scan pointer too big",                              /* 1*/ 
      "unsigned constant area full",                       /* 2*/ 
@@ -302,6 +251,64 @@ char *errorstrings[] = {
      "expected symbol: ')'     in ActualParameterlist",   /*23*/ 
      "expected symbol: ','     in ActualParameterlist",   /*24*/ 
 };
+
+/************************************************************************/
+
+/* --- Importe aus scanner.c und parser.c: --- */
+
+static struct treenode *string2tree(char *function, int *errcodep, 
+                                                    int *errposp);
+static int  nxt_symbol  (char function[], int *scanposp,  char symb[],
+                             int *tokenp, int *symbkindp, int *errposp);
+void show_symb_tab(void); 
+static void pt_error    (char *function, int errcode, int errpos);
+static void show_tree   (struct treenode *root);
+
+/* --- Prototypen: --- */
+
+static char *tree2string(struct treenode *tree_root, char *ret_str);
+static char *tree2Cstring(struct treenode *tree_root, char *ret_str);
+static char *strcpy3    (char *s1, char *s2, char *s3, char *s4); 
+static char *strcpy5    (char *s1, char *s2, char *s3, char *s4, char *s5, char *s6); 
+static double tree2float (struct treenode *E_root); 
+static double v_dummy  (int t, double l, double r);
+static double v_less   (int t, double l, double r);
+static double v_equal  (int t, double l, double r);
+static double v_greater(int t, double l, double r);
+static double v_less_or(int t, double l, double r);
+static double v_unequal(int t, double l, double r);
+static double v_grtr_or(int t, double l, double r);
+static double v_or     (int t, double l, double r);
+static double v_xor    (int t, double l, double r);
+static double v_plus   (int t, double l, double r); 
+static double v_minus  (int t, double l, double r); 
+static double v_mul    (int t, double l, double r);
+static double v_and    (int t, double l, double r);
+static double v_div    (int t, double l, double r);
+static double v_mod    (int t, double l, double r);
+static double v_power  (int t, double l, double r);
+static double v_not    (int t, double l, double r);
+static double v_sconst (int t, double l, double r);
+static double v_uconst (int t, double l, double r);
+static double v_uident (int t, double l, double r);
+static double v_ufuncs (int t, double l, double r);
+static double v_exp    (int t, double l, double r);
+static double v_ln     (int t, double l, double r);
+static double v_log    (int t, double l, double r);
+static double v_sin    (int t, double l, double r); 
+static double v_cos    (int t, double l, double r);
+static double v_tan    (int t, double l, double r);
+static double v_sec    (int t, double l, double r); 
+static double v_sqr    (int t, double l, double r);
+static double v_abs    (int t, double l, double r);
+static void gradient(struct treenode *root);
+static void nxt_part_derivation(struct treenode *DP_root,struct treenode *root);
+static struct treenode *part_deriv(struct treenode *root,char *par,char *ret_str); 
+static char *derive_expression(struct treenode *E_root,char *par,char *ret_str);
+static char *strcpy6(char *s1, char *s2, char *s3,
+	      char *s4, char *s5, char *s6, char *s7);
+static void str_upr(char *s);
+
 
 
 /************************************************************************/
@@ -535,7 +542,7 @@ static int get_le_symbol(char *function, int *scanposp, char *le)
 }
 /*********************************** ************************************/
 
-static int get_ge_symbol(char *function, int *scanposp, char *ge)
+int get_ge_symbol(char *function, int *scanposp, char *ge)
 						 /*  *ge= ">" oder ">=".*/
 {
   while ( (*ge = function[*scanposp]) == '>' || *ge == '=') {
@@ -1334,76 +1341,8 @@ void _unur_fstr_free(struct treenode *root)
  *                                                                      * 
  ************************************************************************/
 
-#include <math.h>
-#include <time.h>
-#include <stdlib.h>
-
-/*long _STKSIZ = 500000; grosser Stack f. Rekursion in derive_expression*/
-
-/************************************************************************/
-
-/* --- Importe aus scanner.c und parser.c: --- */
-
-extern struct symbols symbol[];
-extern int            ros, roe, aos, aoe, mos, moe, hos, hoe, oss, ose; 
-extern int            scs, sce, ucs, uce, uis, uie, ufs, ufe, sfs, sfe; 
-extern char           *errorstrings[]; 
-extern struct treenode *string2tree(char *function, int *errcodep, 
-                                                    int *errposp);
-extern int  nxt_symbol  (char function[], int *scanposp,  char symb[],
-                             int *tokenp, int *symbkindp, int *errposp);
-extern void init_scanner(void), show_symb_tab(void); 
-extern void pt_error    (char *function, int errcode, int errpos);
-extern void show_tree   (struct treenode *root);
-extern void _unur_fstr_free (struct treenode *root);                                
-extern char *readln     (char *s);
 
 /************************************************************************/ 
-
-/* --- Prototypen: --- */
-
-char *tree2string(struct treenode *tree_root, char *ret_str);
-char *tree2Cstring(struct treenode *tree_root, char *ret_str);
-char *strcpy3    (char *s1, char *s2, char *s3, char *s4); 
-char *strcpy5    (char *s1, char *s2, char *s3, char *s4, char *s5, char *s6); 
-double tree2float (struct treenode *E_root); 
-double v_dummy  (int t, double l, double r);
-double v_less   (int t, double l, double r);
-double v_equal  (int t, double l, double r);
-double v_greater(int t, double l, double r);
-double v_less_or(int t, double l, double r);
-double v_unequal(int t, double l, double r);
-double v_grtr_or(int t, double l, double r);
-double v_or     (int t, double l, double r);
-double v_xor    (int t, double l, double r);
-double v_plus   (int t, double l, double r); 
-double v_minus  (int t, double l, double r); 
-double v_mul    (int t, double l, double r);
-double v_and    (int t, double l, double r);
-double v_div    (int t, double l, double r);
-double v_mod    (int t, double l, double r);
-double v_power  (int t, double l, double r);
-double v_not    (int t, double l, double r);
-double v_sconst (int t, double l, double r);
-double v_uconst (int t, double l, double r);
-double v_uident (int t, double l, double r);
-double v_ufuncs (int t, double l, double r);
-double v_exp    (int t, double l, double r);
-double v_ln     (int t, double l, double r);
-double v_log    (int t, double l, double r);
-double v_sin    (int t, double l, double r); 
-double v_cos    (int t, double l, double r);
-double v_tan    (int t, double l, double r);
-double v_sec    (int t, double l, double r); 
-double v_sqr    (int t, double l, double r);
-double v_abs    (int t, double l, double r);
-void gradient(struct treenode *root);
-void nxt_part_derivation(struct treenode *DP_root,struct treenode *root);
-struct treenode *part_deriv(struct treenode *root,char *par,char *ret_str); 
-char *derive_expression(struct treenode *E_root,char *par,char *ret_str);
-char *strcpy6(char *s1, char *s2, char *s3,
-	      char *s4, char *s5, char *s6, char *s7);
-void str_upr(char *s);
 
 
 /************************************************************************
@@ -1744,8 +1683,6 @@ double tree2float(struct treenode *E_root)
 }
 /*********************************** ************************************/
 
-/* #pragma warn -par */    /* Compiler-Warnung "Parameter nicht benutzt" aus,*/
-		      /* denn Parameter t wird hier selten gebraucht.   */
 double v_dummy  (int t, double l, double r) { return 0.0; }
 double v_less   (int t, double l, double r) { return (l <  r); }
 double v_equal  (int t, double l, double r) { return (l == r); }
@@ -1777,7 +1714,6 @@ double v_tan (int t, double l, double r) { return tan (  r); }
 double v_sec (int t, double l, double r) { return 1/cos( r); }
 double v_sqr (int t, double l, double r) { return sqrt(  r); }
 double v_abs (int t, double l, double r) { return abs (  r); }
-/* #pragma warn .par      */                /* Compiler-Warnungen wieder ein */
 
 /************************************************************************
  * Prozeduren zur analytischen Ableitung eines Parse-Baumes:            *

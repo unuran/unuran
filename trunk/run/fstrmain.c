@@ -1,10 +1,9 @@
-#include <stdlib.h>
-#include <math.h>
-#include <stdio.h>
 
-#include "pars.h"
+#include <source_unuran.h>
 
 char            *readln  (char *s);
+void show_tree   (struct treenode *root);
+void  show_symb_tab      (void);
 
 
 #define MAXLENGTH 50
@@ -64,7 +63,10 @@ printf("\n Wert: %f \n", _unur_fstr_eval_tree(parsetree,atof(input_string)));
     } while (0); 
   
    
-   show_tree(parsetree);
+   // show_tree(parsetree);
+   show_symb_tab();
+
+
    
    /* Speicher fuer tree freigeben */
      _unur_fstr_free(parsetree);

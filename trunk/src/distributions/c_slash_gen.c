@@ -128,13 +128,16 @@ slash_slash_init( struct unur_gen *gen )
 
   /* make a normal variate generator (use default special generator) */
   if (NORMAL==NULL) {
-    struct unur_par *par = unur_cstd_new( unur_distr_normal(NULL,0) );
+    struct unur_distr *distr = unur_distr_normal(NULL,0);
+    struct unur_par *par = unur_cstd_new( distr );
     NORMAL = (par) ? _unur_init(par) : NULL;
     _unur_check_NULL( NULL,NORMAL,0 );
     /* need same uniform random number generator as slash generator */
     NORMAL->urng = gen->urng;
     /* copy debugging flags */
     NORMAL->debug = gen->debug;
+    /* we do not need the distribution object any more */
+    unur_distr_free( distr );
   }
   /* else we are in the re-init mode 
      --> there is no necessity to make the generator object again */

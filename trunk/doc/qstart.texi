@@ -617,7 +617,7 @@ looked up in @ref{Selfmade}.
 @item                    @tab  (regula falsi)        @tab cdf            @tab
 @item                    @tab  newton                @tab cdf, pdf       @tab only for continous cdf
 @item RECT               @tab                        @tab                @tab multi variate experimental
-@item STDR               @tab                        @tab pdf, mode,area under pdf       @tab transformed density rejection with universal bounds
+@item SSR               @tab                        @tab pdf, mode,area under pdf       @tab transformed density rejection with universal bounds
 
 @item SROU               @tab                        @tab pdf, mode,area under pdf      @tab (Simple universal generator, ratio-of-uniforms method
 @item TABL               @tab                        @tab pdf            @tab Ahren
@@ -667,7 +667,7 @@ All parameters have default settings documented in @ref{Defaults}.
 * NINV:: Numerical INVersion
 @c * RECT:: experimental multivariate Method
 * SROU:: Simple Ratio Of Uniforms
-* STDR:: Transformed Density Rejection (with universal bounds)
+* SSR:: Transformed Density Rejection (with universal bounds)
 @c * TABL:: Ahren
 @c * TDR::  Trandformed Density Rejection
 * UNIF:: ???
@@ -720,7 +720,7 @@ For information about the following distributions see
 * NINVref:: Numerical INVersion
 @c * RECTref:: experimental multivariate Method
 * SROUref:: Simple Ratio Of Uniforms
-* STDRref:: Transformed Density Rejection (with universal bounds)
+* SSRref:: Transformed Density Rejection (with universal bounds)
 @c * TABLref:: Ahren
 @c * TDRref::  Trandformed Density Rejection
 * UNIFref:: ???

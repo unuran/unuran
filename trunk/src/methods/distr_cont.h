@@ -40,7 +40,7 @@
 /*---------------------------------------------------------------------------*/
 
 /* 
-   =DISTRIBUTION  CONT  [1]  continuous univariate distribution
+   =DISTRIBUTION  CONT  [10]  continuous univariate distribution
 
 
    =END

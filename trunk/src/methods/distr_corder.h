@@ -41,7 +41,7 @@
 /*---------------------------------------------------------------------------*/
 
 /* 
-   =DISTRIBUTION  CORDER  [-1]  continuous univariate order statistics
+   =DISTRIBUTION  CORDER  [-15]  continuous univariate order statistics
 
 
    =END
@@ -88,7 +88,7 @@ UNUR_DISTR *unur_distr_corder_get_distribution( UNUR_DISTR *distribution );
 
 int unur_distr_corder_set_rank( UNUR_DISTR *distribution, int n, int k );
 /* 
-   Change sample size $var{n} and rank @var{k} of order statistics.
+   Change sample size @var{n} and rank @var{k} of order statistics.
    In case of invalid data, no parameters are changed and @code{0} is
    returned.
    The area below the PDF can be set to that of the underlying
@@ -97,7 +97,7 @@ int unur_distr_corder_set_rank( UNUR_DISTR *distribution, int n, int k );
 
 int unur_distr_corder_get_rank( UNUR_DISTR *distribution, int *n, int *k );
 /* 
-   Get sample size $var{n} and rank @var{k} of order statistics.
+   Get sample size @var{n} and rank @var{k} of order statistics.
    In case of error @code{0} is returned.
 */
 

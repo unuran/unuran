@@ -4,11 +4,11 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   FILE: distr_unif.h                                                      *
+ *   FILE: distr_unid.h                                                      *
  *                                                                           *
  *   PURPOSE:                                                                *
  *         function prototypes for manipulating distribution objects of      *
- *         type  UNIF  (uniform univariate distribution)                     *
+ *         type  UNID  (uniform univariate distribution)                     *
  *                                                                           *
  *   USAGE:                                                                  *
  *         just for documentation (only included in unuran.h)                *
@@ -40,7 +40,7 @@
 /*---------------------------------------------------------------------------*/
 
 /* 
-   =DISTRIBUTION  UNIF  [6]  (uniform univariate distribution)
+   =DISTRIBUTION  UNID  [60]  (uniform univariate distribution)
 
 
    =END

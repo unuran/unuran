@@ -42,7 +42,7 @@
    =METHOD  UNIF  wrapper for UNIForm random number generator
 
    =TYPE
-      UNIF  uniform univariate
+      UNID  uniform univariate
 
    =DESCRIPTION
       UNIF is a simple wrapper that makes it possible to use a uniform

@@ -40,7 +40,7 @@
 /*---------------------------------------------------------------------------*/
 
 /* 
-   =DISTRIBUTION  DISCR  [5]  discrete univariate distribution
+   =DISTRIBUTION  DISCR  [50]  discrete univariate distribution
 
 
    =END

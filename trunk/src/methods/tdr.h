@@ -299,6 +299,13 @@ double unur_tdr_get_squeezearea( UNUR_GEN *generator );
    (In case of an error @code{0} is returned.)
 */
 
+int _unur_tdr_is_ARS_running( struct unur_gen *generator );
+/* 
+   Check whether more points will be added by adaptive rejection sampling.
+   (Internal call)
+*/
+
+
 int unur_tdr_set_max_intervals( UNUR_PAR *parameters, int max_ivs );
 /* 
    Set maximum number of intervals.

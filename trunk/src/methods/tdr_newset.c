@@ -359,6 +359,28 @@ unur_tdr_set_max_intervals( struct unur_par *par, int max_ivs )
 /*---------------------------------------------------------------------------*/
 
 int
+_unur_tdr_is_ARS_running( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* check whether more points will be added by adaptive rejection        */
+     /* sampling                                                             */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen  ... pointer to generator object                               */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... if ARS is still running.                                     */
+     /*   0 ... otherwise.                                                   */
+     /*----------------------------------------------------------------------*/
+{
+  /* check input */
+  _unur_check_gen_object( gen,TDR );
+
+  return (GEN.n_ivs < GEN.max_ivs) ? 1 : 0;
+} /* end of _unur_tdr_is_ARS_running() */
+
+/*---------------------------------------------------------------------------*/
+
+int
 unur_tdr_set_center( struct unur_par *par, double center )
      /*----------------------------------------------------------------------*/
      /* set center (approximate mode) of PDF                                 */

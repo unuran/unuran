@@ -102,11 +102,69 @@ unur_set_default_urng( UNUR_URNG *urng_new )
   /* NULL pointer not allowed */
   _unur_check_NULL("URNG", urng_new, urng_default);
 
-  urng_default = urng_new;     /* reset urng */
+  urng_default = urng_new;     /* set urng */
 
   /* return old default generator */
   return (urng_old);
 } /* end of unur_set_default_urng() */
+
+/*---------------------------------------------------------------------------*/
+
+UNUR_URNG *
+unur_get_default_urng_aux( void )
+     /*----------------------------------------------------------------------*/
+     /* return default auxilliary uniform random number generator            */
+     /* (initialize generator if necessary)                                  */
+     /*                                                                      */
+     /* parameters: none                                                     */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to default auxilliary uniform generator                    */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return NULL                                                        */
+     /*----------------------------------------------------------------------*/
+{
+  /* default generator already running ? */
+  if( urng_aux_default == NULL ) {
+    /* have to initialize default generator first */
+    urng_aux_default = UNUR_URNG_AUX_DEFAULT;
+
+    if( urng_aux_default == NULL ) {
+      /* some parameters invalid! */
+      _unur_error("URNG",UNUR_ERR_NULL,"Cannot set default auxilliary URNG. EXIT !!!");
+      /* we cannot recover from this error */
+      exit(EXIT_FAILURE);
+    }
+  }
+
+  /* return default generator */
+  return (urng_aux_default);
+} /* end of unur_get_default_urng_aux() */
+
+/*---------------------------------------------------------------------------*/
+
+UNUR_URNG *
+unur_set_default_urng_aux( UNUR_URNG *urng_aux_new )
+     /*----------------------------------------------------------------------*/
+     /* set default auxilliary uniform RNG and return old one.               */
+     /*                                                                      */
+     /* parameters: pointer to new default auxilliary uniform RNG            */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to old auxilliary uniform RNG                              */
+     /*----------------------------------------------------------------------*/
+{
+  UNUR_URNG *urng_aux_old = urng_aux_default;
+
+  /* NULL pointer not allowed */
+  _unur_check_NULL("URNG", urng_aux_new, urng_aux_default);
+
+  urng_aux_default = urng_aux_new;     /* set auxilliary urng */
+
+  /* return old default generator */
+  return (urng_aux_old);
+} /* end of unur_set_default_urng_aux() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -128,21 +186,8 @@ unur_use_urng_aux_default( UNUR_PAR *par )
     /* no auxilliary generator is required */
     return 0;
 
-  /* default generator already running ? */
-  if( urng_aux_default == NULL ) {
-    /* have to initialize default generator first */
-    urng_aux_default = UNUR_URNG_AUX_DEFAULT;
-
-    if( urng_aux_default == NULL ) {
-      /* some parameters invalid! */
-      _unur_error("URNG",UNUR_ERR_NULL,"Cannot set default aux URNG. EXIT !!!");
-      /* we cannot recover from this error */
-      return 0;
-    }
-  }
-
   /* set aux URNG */
-  par->urng_aux = urng_aux_default;
+  par->urng_aux = unur_get_default_urng_aux();
 
   return 1;
 

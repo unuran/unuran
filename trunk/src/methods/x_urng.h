@@ -106,11 +106,12 @@
       It can be set and changed by the unur_set_urng_aux() and
       unur_chg_urng_aux() call, respectively. Since the auxilliary
       generator is by default the same as the main generator, the
-      auxilliary URNG must be set after any unur_set_urng() ot
+      auxilliary URNG must be set after any unur_set_urng() or
       unur_chg_urng() call! Since in special cases mixing of two URNG
       might cause problems, we supply a default auxilliary generator that
       can be used by the unur_use_urng_aux_default() call (after the main
-      URNG has been set).
+      URNG has been set). This default auxilliary generator can be changed
+      with analogous calls as the (main) default uniform generator.
 
    =END
 
@@ -138,6 +139,15 @@ UNUR_URNG *unur_get_default_urng( void );
 UNUR_URNG *unur_set_default_urng( UNUR_URNG *urng_new );
 /*
   Change the default URNG for new parameter objects. 
+*/
+
+
+UNUR_URNG *unur_set_default_urng_aux( UNUR_URNG *urng_new );
+/* */
+
+UNUR_URNG *unur_get_default_urng_aux( void );
+/*
+  Analogous calls for default auxilliary generator.
 */
 
 /*---------------------------------------------------------------------------*/

@@ -213,7 +213,7 @@ With
 @*
 the random numbers will be standard normal distributed.
 The second argument is the number of parameters of the 
-used distribution (see @ref{Preset}) and
+used distribution (see @ref{Continuous} or @ref{Discrete}) and
 the first argument is a pointer to an array holding
 these parameters.
 @*
@@ -403,18 +403,21 @@ The available parameters are documented in @ref{MethodsRef}.
 @node Distributions
 @chapter Distributions
 @menu
-* Arbitrary:: Arbitrary Distributions 
-* Preset:: Preset Distributions
+* Arbitrary::  Arbitrary distributions 
+* Continuous:: Preset continuous distributions
+* Discrete::   Preset discrete distributions
 @end menu
 
 @node Arbitrary
 @section Arbitrary distributions
 
-@node Preset
-@section Preset distributions 
-@include qstart_distributions.texi
+@node Continuous
+@section Continuous Distributions
+@include qstart_c_distributions.texi
 
-
+@node Discrete
+@section Discrete Distributions
+@include qstart_d_distributions.texi
 
 @c --------------------------------------------------------------------
 

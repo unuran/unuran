@@ -24,7 +24,7 @@ $PARAM = 0;
 $distrcount = 0;
 
 # file for  output:
-open(OUTFILE, ">qstart_c_distributions.texi");
+open(OUTFILE, ">qstart_d_distributions.texi");
 
 
 while($_ = <>)

@@ -1,11 +1,12 @@
 /* my fourth UNURAN program: test4.c*/
 
-#include <unuran.h>
 
+#include <unuran.h>
 int main()
 {
   int    i;
   double x;
+  double params[2] = {10.0, 0.5};
 
   UNUR_DISTR *distr;    /* distribution */
   UNUR_PAR   *par;      /* parameter */
@@ -16,7 +17,7 @@ int main()
   ug =  prng_new("mt19937(1237)");
 
   /* choose a implemented distribution: Gaussian */
-  distr = unur_distr_normal(NULL, 0);
+  distr = unur_distr_normal(params, 2);
   //unur_distr_cont_set_domain(distr, -1, 0);
 
   /* choose method */
@@ -42,15 +43,31 @@ int main()
     printf("%f\n",x);
   }
 
+  printf("Table off:\n");
   unur_ninv_table_onoff(gen,0);
-
   for (i=0; i<8; i++) {
     x = unur_sample_cont(gen);
     printf("%f\n",x);
   }
- unur_ninv_table_onoff(gen,1);
+
+  printf("Table on:\n");
+  unur_ninv_table_onoff(gen,1);
 
   for (i=0; i<8; i++) {
+    x = unur_sample_cont(gen);
+  }
+
+  printf("Und nun mit veraenderten Parametern:\n");
+  params[0] = 0.;
+  params[1] = 1.;
+  unur_ninv_chg_pdfparams(gen, params, 2);
+  for (i=0; i<10; i++) {
+    x = unur_sample_cont(gen);
+    printf("%f\n",x);
+  }
+
+  unur_ninv_chg_table(gen);
+  for (i=0; i<10; i++) {
     x = unur_sample_cont(gen);
     printf("%f\n",x);
   }

@@ -67,9 +67,10 @@
 #define UNUR_DISTR_SET_MASK_DERIVED   0x0000ffff
 
 #define UNUR_DISTR_SET_MODE           0x00000001
-#define UNUR_DISTR_SET_PDFAREA        0x00000002
-#define UNUR_DISTR_SET_PMFSUM         0x00000004
-#define UNUR_DISTR_SET_PDFVOLUME      0x00000008
+#define UNUR_DISTR_SET_CENTER         0x00000002
+#define UNUR_DISTR_SET_PDFAREA        0x00000004
+#define UNUR_DISTR_SET_PMFSUM         0x00000008
+#define UNUR_DISTR_SET_PDFVOLUME      0x00000010
 
 /*---------------------------------------------------------------------------*/
 /* call pdf's and cdf's                                                      */

@@ -97,6 +97,7 @@ struct unur_distr_cvec {
   double norm_constant;         /* (log of) normalization constant for PDF   */
 
   double *mode;                 /* location of mode                          */
+  double *center;               /* location of center                        */
   double volume;                /* volume below PDF                          */
 
   int  (*init)(struct unur_par *par,struct unur_gen *gen);

@@ -19,7 +19,7 @@ include_HEADERS = \
  unuran.h \
  unuran_config.h
 
-EXTRA-DIST = \
+EXTRA_DIST = \
  unuran.h 
 
 unuran.h:	$(top_srcdir)/src/methods/x_gen.o

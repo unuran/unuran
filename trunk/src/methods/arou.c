@@ -135,6 +135,7 @@
 #define AROU_VARFLAG_VERIFY     0x01u   /* flag for verifying mode           */
 #define AROU_VARFLAG_USECENTER  0x02u   /* flag whether center is used as cpoint or not */
 #define AROU_VARFLAG_PEDANTIC   0x04u   /* whether pedantic checking is used */
+#define AROU_VARFLAG_USEDARS    0x10u   /* whether DARS is used in setup or not */
 
 /*---------------------------------------------------------------------------*/
 /* Debugging flags                                                           */
@@ -145,7 +146,7 @@
 
 #define AROU_DEBUG_SEGMENTS     0x00000010u   /* print list of segments      */
 #define AROU_DEBUG_SPLIT        0x00010000u   /* trace splitting of segments */
-
+#define AROU_DEBUG_DARS         0x00020000u
 
 /*---------------------------------------------------------------------------*/
 /* Flags for logging set calls                                               */
@@ -156,6 +157,8 @@
 #define AROU_SET_GUIDEFACTOR    0x010u
 #define AROU_SET_MAX_SQHRATIO   0x020u
 #define AROU_SET_MAX_SEGS       0x040u
+#define AROU_SET_USE_DARS       0x100u
+#define AROU_SET_DARS_FACTOR    0x200u
 
 /*---------------------------------------------------------------------------*/
 
@@ -194,6 +197,16 @@ static int _unur_arou_get_starting_cpoints( struct unur_par *par, struct unur_ge
 static int _unur_arou_get_starting_segments( struct unur_par *par, struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 /* compute segments from given starting construction points.                 */
+/*---------------------------------------------------------------------------*/
+
+static double _unur_arou_compute_x( double v, double u );
+/*---------------------------------------------------------------------------*/
+/* compute point x from (v,u) tuple.                                         */
+/*---------------------------------------------------------------------------*/
+
+static int _unur_arou_run_dars( struct unur_par *par, struct unur_gen *gen );
+/*---------------------------------------------------------------------------*/
+/* run derandomized adaptive rejection sampling.                             */
 /*---------------------------------------------------------------------------*/
 
 static struct unur_arou_segment *_unur_arou_segment_new( struct unur_gen *gen, double x, double fx );
@@ -235,6 +248,16 @@ static double _unur_arou_segment_arcmean( struct unur_arou_segment *seg );
 static void _unur_arou_debug_init( const struct unur_par *par, const struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 /* print after generator has been initialized has completed.                 */
+/*---------------------------------------------------------------------------*/
+
+static void _unur_arou_debug_dars_start( const struct unur_par *par, const struct unur_gen *gen );
+/*---------------------------------------------------------------------------*/
+/* print header before runniung derandomized adaptive rejection sampling.    */
+/*---------------------------------------------------------------------------*/
+
+static void _unur_arou_debug_dars( const struct unur_par *par, const struct unur_gen *gen );
+/*---------------------------------------------------------------------------*/
+/* print after generator has run derandomized adaptive rejection sampling.   */
 /*---------------------------------------------------------------------------*/
 
 static void _unur_arou_debug_free( const struct unur_gen *gen );
@@ -326,15 +349,16 @@ unur_arou_new( const struct unur_distr *distr )
 
   /* set default values */
   PAR.guide_factor        = 2.;     /* size of guide table / number of intervals */
+  PAR.darsfactor          = 0.99;   /* factor for (derandomized) ARS.
+                                       do not add a new construction point in a segment, 
+				       where abiguous region is too small, i.e. if
+				       area / (|S^e\S^s|/number of segments) < darsfactor */
 
   PAR.starting_cpoints    = NULL;   /* pointer to array of starting points   */
   PAR.n_starting_cpoints  = 30;     /* number of starting points             */
   PAR.max_segs            = 100;    /* maximum number of segments            */
   PAR.max_ratio           = 0.99;   /* do not add construction points if
 				       ratio r_n = |P^s| / |P^e| > max_ratio */
-  PAR.bound_for_adding    = 0.5;    /* do not add a new construction point in a segment, 
-				       where abiguous region is too small, i.e. if 
-				       the area / (|S^e\S^s|/number of segments) < bound_for_adding */
 
   par->method   = UNUR_METH_AROU;             /* method                      */
   par->variant  = AROU_VARFLAG_USECENTER;     /* default variant             */
@@ -360,6 +384,80 @@ unur_arou_new( const struct unur_distr *distr )
 } /* end of unur_arou_new() */
 
 /*****************************************************************************/
+
+int
+unur_arou_set_usedars( struct unur_par *par, int usedars )
+     /*----------------------------------------------------------------------*/
+     /* set flag for using DARS (derandomized adaptive rejection sampling).  */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par       ... pointer to parameter for building generator object   */
+     /*   usedars   ... 0 = do not use,  !0 = use DARS                       */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... on success                                                   */
+     /*   0 ... on error                                                     */
+     /*                                                                      */
+     /* comment:                                                             */
+     /*   using not using DARS is the default                                */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( GENTYPE,par,0 );
+
+  /* check input */
+  _unur_check_par_object( par,AROU );
+
+  /* we use a bit in variant */
+  par->variant = (usedars) ? (par->variant | AROU_VARFLAG_USEDARS) : (par->variant & (~AROU_VARFLAG_USEDARS));
+
+  /* changelog */
+  par->set |= AROU_SET_USE_DARS;
+
+  /* o.k. */
+  return 1;
+
+} /* end of unur_arou_set_usedars() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+unur_arou_set_darsfactor( struct unur_par *par, double factor )
+     /*----------------------------------------------------------------------*/
+     /* set factor for derandomized adaptive rejection sampling              */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par    ... pointer to parameter for building generator object      */
+     /*   factor ... parameter for DARS                                      */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... on success                                                   */
+     /*   0 ... on error                                                     */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( GENTYPE,par,0 );
+
+  /* check input */
+  _unur_check_par_object( par,AROU );
+
+  /* check new parameter for generator */
+  if (factor < 0.) {
+    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"DARS factor < 0");
+    return 0;
+  }
+    
+  /* store date */
+  PAR.darsfactor = factor;
+
+  /* changelog */
+  par->set |= AROU_SET_DARS_FACTOR;
+
+  return 1;
+
+} /* end of unur_arou_arou_darsfactor() */
+
+/*---------------------------------------------------------------------------*/
 
 int
 unur_arou_set_cpoints( struct unur_par *par, int n_stp, const double *stp )
@@ -786,6 +884,7 @@ _unur_arou_init( struct unur_par *par )
      /*----------------------------------------------------------------------*/
 { 
   struct unur_gen *gen;
+  int i,k;
 
   /* check arguments */
   CHECK_NULL(par,NULL);
@@ -826,13 +925,62 @@ _unur_arou_init( struct unur_par *par )
     GEN.max_segs = GEN.n_segs;
   }
 
-  /* make initial guide table */
-  _unur_arou_make_guide_table(gen);
+  if (par->variant & AROU_VARFLAG_USEDARS) {
+    /* run derandomized adaptive rejection sampling (DARS) */
 
 #ifdef UNUR_ENABLE_LOGGING
-  /* write info into log file */
-  if (gen->debug) _unur_arou_debug_init(par,gen);
+    if (gen->debug & AROU_DEBUG_DARS) {
+      /* make initial guide table (only necessary for writing debug info) */
+      _unur_arou_make_guide_table(gen);
+      /* write info into log file */
+      _unur_arou_debug_init(par,gen);
+      _unur_arou_debug_dars_start(par,gen);
+    }
 #endif
+
+    for (i=0; i<3; i++) {
+      /* we make several tries */
+
+      /* run DARS */
+      if ( !_unur_arou_run_dars(par,gen) ) {
+	free(par); _unur_arou_free(gen);
+	return NULL;
+      }
+   
+      /* make initial guide table */
+      _unur_arou_make_guide_table(gen);
+
+      /* check if DARS was completed */
+      if (GEN.n_segs < GEN.max_segs) {
+  	/* ran ARS instead */
+	for (k=0; k<5; k++)
+	  _unur_sample_cont(gen);
+      }
+      else
+	break;
+    }
+
+#ifdef UNUR_ENABLE_LOGGING
+    /* write info into log file */
+    if (gen->debug) {
+      if (gen->debug & AROU_DEBUG_DARS)
+	_unur_arou_debug_dars(par,gen);
+      else 
+  	_unur_arou_debug_init(par,gen);
+    }
+#endif
+  }
+
+  else { /* do not run DARS */
+    /* make initial guide table */
+    _unur_arou_make_guide_table(gen);
+
+#ifdef UNUR_ENABLE_LOGGING
+    /* write info into log file */
+    if (gen->debug) _unur_arou_debug_init(par,gen);
+#endif
+
+  }
 
   /* free parameters */
   free(par);
@@ -902,7 +1050,7 @@ _unur_arou_create( struct unur_par *par )
   /* bounds for adding construction points  */
   GEN.max_segs = PAR.max_segs;      /* maximum number of segments            */
   GEN.max_ratio = PAR.max_ratio;    
-  GEN.bound_for_adding = PAR.bound_for_adding;
+  GEN.darsfactor = PAR.darsfactor;
 
   gen->method = par->method;        /* indicates method and variant          */
   gen->variant = par->variant;      /* indicates variant                     */
@@ -1080,7 +1228,7 @@ _unur_arou_sample( struct unur_gen *gen )
       /* being outside the squeeze is bad. improve the situation! */
       if (GEN.n_segs < GEN.max_segs) {
 	if (GEN.max_ratio * GEN.Atotal > GEN.Asqueeze) {
-	  if ( !_unur_arou_segment_split(gen,seg,x,fx) ) {
+	  if ( _unur_arou_segment_split(gen,seg,x,fx) < 0) {
 	    /* condition for PDF is violated! */
 	    _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"");
 	    if (gen->variant & AROU_VARFLAG_PEDANTIC) {
@@ -1089,9 +1237,13 @@ _unur_arou_sample( struct unur_gen *gen )
 	      return INFINITY;
 	    }
 	  }
+	  else {
+	    /* splitting successful --> update guide table */ 
+	    _unur_arou_make_guide_table(gen);
+	  }
 	}
 	else 
-	  /* no more construction points (avoid to many second if statement above */
+	  /* no more construction points (avoid too many second if statements above) */
 	  GEN.max_segs = GEN.n_segs;
       }
 
@@ -1205,7 +1357,7 @@ _unur_arou_sample_check( struct unur_gen *gen )
       /* being outside the squeeze is bad. improve the situation! */
       if (GEN.n_segs < GEN.max_segs) {
 	if (GEN.max_ratio * GEN.Atotal > GEN.Asqueeze) {
-	  if ( !_unur_arou_segment_split(gen,seg,x,fx) ) {
+	  if ( _unur_arou_segment_split(gen,seg,x,fx) < 0) {
 	    /* condition for PDF is violated! */
 	    _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"");
 	    if (gen->variant & AROU_VARFLAG_PEDANTIC) {
@@ -1213,6 +1365,10 @@ _unur_arou_sample_check( struct unur_gen *gen )
 	      SAMPLE = _unur_sample_cont_error;
 	      return INFINITY;
 	    }
+	  }
+	  else {
+	    /* splitting successful --> update guide table */ 
+	    _unur_arou_make_guide_table(gen);
 	  }
 	}
 	else 
@@ -1594,7 +1750,7 @@ _unur_arou_segment_new( struct unur_gen *gen, double x, double fx )
     return NULL;
   }
 
-  /* we need new segment */
+  /* we need a new segment */
   seg = _unur_malloc( sizeof(struct unur_arou_segment) );
   seg->next = NULL; /* add eol marker */
   ++(GEN.n_segs);   /* increment counter for segments */
@@ -1845,7 +2001,7 @@ _unur_arou_segment_parameter( struct unur_gen *gen, struct unur_arou_segment *se
 
 /*****************************************************************************/
 
-static int
+int
 _unur_arou_segment_split( struct unur_gen *gen, struct unur_arou_segment *seg_oldl, double x, double fx )
      /*----------------------------------------------------------------------*/
      /* insert new segment                                                   */
@@ -1860,11 +2016,12 @@ _unur_arou_segment_split( struct unur_gen *gen, struct unur_arou_segment *seg_ol
      /*                                                                      */
      /* return:                                                              */
      /*   1  ... if successful                                               */
-     /*   0  ... error                                                       */
+     /*   0  ... if no intervals are splitted                                */
+     /*  -1  ... error                                                       */
      /*----------------------------------------------------------------------*/
 {
   struct unur_arou_segment *seg_newr;    /* pointer to newly created segment */
-  struct unur_tdr_interval seg_bak;      /* space for saving data of segment */
+  struct unur_arou_segment seg_bak;      /* space for saving data of segment */
   double backup;
 
   /* check arguments */
@@ -1878,16 +2035,16 @@ _unur_arou_segment_split( struct unur_gen *gen, struct unur_arou_segment *seg_ol
 #endif
 
   /* we only add a new construction point, if the relative area is large enough */
-  if (GEN.n_segs * seg_oldl->Aout / (GEN.Atotal - GEN.Asqueeze) < GEN.bound_for_adding )
+  if (GEN.n_segs * seg_oldl->Aout / (GEN.Atotal - GEN.Asqueeze) < GEN.darsfactor )
     return 1;
 
   /* check for data error */
   if (fx < 0.) {
     _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"PDF(x) < 0.!");
-    return 0;
+    return -1;
   }
 
-  /* back up data */
+  /* backup data */
   memcpy(&seg_bak, seg_oldl, sizeof(struct unur_arou_segment));
 
   /* PDF at x is 0. */
@@ -1908,7 +2065,7 @@ _unur_arou_segment_split( struct unur_gen *gen, struct unur_arou_segment *seg_ol
     }
     else {
       _unur_error(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
-      return 0;
+      return -1;
     }
     
     /* parameters of new segment */
@@ -1928,7 +2085,7 @@ _unur_arou_segment_split( struct unur_gen *gen, struct unur_arou_segment *seg_ol
 
     /* need new segment */
     seg_newr = _unur_arou_segment_new(gen,x,fx);
-    if (seg_newr == NULL) return 0;  /* case of error */
+    if (seg_newr == NULL) return -1;  /* case of error */
     
     /* link into list */
     seg_newr->next = seg_oldl->next;
@@ -1964,9 +2121,6 @@ _unur_arou_segment_split( struct unur_gen *gen, struct unur_arou_segment *seg_ol
       return 0;
     }
   }
-    
-  /* update guide table */ 
-  _unur_arou_make_guide_table(gen);
 
 #ifdef UNUR_ENABLE_LOGGING
   /* write info into log file */
@@ -1978,6 +2132,172 @@ _unur_arou_segment_split( struct unur_gen *gen, struct unur_arou_segment *seg_ol
   return 1;
 
 } /* end of _unur_arou_segment_split() */
+
+
+/*****************************************************************************/
+
+double
+_unur_arou_compute_x( double v, double u )
+     /*----------------------------------------------------------------------*/
+     /* compute point x from (v,u) tuple.                                    */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   v      ... numerator                                               */
+     /*   u      ... denominator                                             */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   point x of (x,y) tuple                                             */
+     /*                                                                      */
+     /* remark:                                                              */
+     /*   if (v,u)=(0,0) then x is set to INFINITY                           */
+     /*----------------------------------------------------------------------*/
+{
+  if (u!=0.)     return v/u;
+  else if (v<0.) return -INFINITY;
+  else           return INFINITY;
+} /* end of _unur_arou_compute_x() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+_unur_arou_run_dars( struct unur_par *par, struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* run derandomized adaptive rejection sampling.                         */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par          ... pointer to parameter list                         */
+     /*   gen          ... pointer to generator object                       */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... success                                                      */
+     /*   0 ... error                                                        */
+     /*----------------------------------------------------------------------*/
+{
+  struct unur_arou_segment *seg, *seg_next;
+  double Atot, Asqueezetot;    /* total area below hat and squeeze, resp. */
+  double Alimit;               /* threshhold value for splitting interval */
+  int n_splitted;              /* count splitted intervals */
+  int splitted;                /* result of splitting routine */
+  double x0, x1;               /* boundary of interval */
+  double xsp, fxsp;            /* splitting point in interval */
+
+  /* check arguments */
+  CHECK_NULL(par,0);     COOKIE_CHECK(par,CK_AROU_PAR,0);
+  CHECK_NULL(gen,0);     COOKIE_CHECK(gen,CK_AROU_GEN,0);
+
+  /* there is no need to run DARS when the DARS factor is INFINITY */
+  if (_unur_FP_is_infinity(GEN.darsfactor))
+    return 1;
+
+  /* first we need the total areas below hat and squeeze.
+     (This is only necessary, when _unur_arou_make_guide_table() has not been
+     called!)                                                                */
+  Atot = 0.;            /* area below hat */
+  Asqueezetot = 0.;     /* area below squeeze */
+  for (seg = GEN.seg; seg != NULL; seg = seg->next ) {
+    COOKIE_CHECK(seg,CK_AROU_SEG,0);
+    Asqueezetot += seg->Ain;
+    Atot += seg->Ain + seg->Aout;
+  }
+  GEN.Atotal = Atot;
+  GEN.Asqueeze = Asqueezetot;
+
+  /* now split intervals */
+  while ( (GEN.max_ratio * GEN.Atotal > GEN.Asqueeze) &&
+	  (GEN.n_segs < GEN.max_segs) ) {
+
+    /* compute threshhold value. every interval with area between
+       hat and squeeze greater than this value will be splitted.  */
+    if (GEN.n_segs > 1)
+      Alimit = GEN.darsfactor * ( (GEN.Atotal - GEN.Asqueeze) / GEN.n_segs );
+    else
+      /* we split every interval if there are only one interval */
+      Alimit = 0.; 
+
+    /* reset counter for splitted intervals */
+    n_splitted = 0;
+
+    /* for all intervals do ... */
+    for (seg = GEN.seg; seg->next != NULL; seg = seg->next ) {
+      COOKIE_CHECK(seg,CK_AROU_SEG,0);
+
+      /* do not exceed the maximum number of intervals */
+      if (GEN.n_segs >= GEN.max_segs)
+	break;
+
+      /* we skip over all intervals where the area between hat and
+	 squeeze does not exceed the threshhold value.             */
+      if (seg->Aout <= Alimit) 
+	continue;  /* goto next interval */
+
+      /* store pointer to next interval */
+      seg_next = seg->next;
+
+      /* boundary of interval */
+      x0 = _unur_arou_compute_x(seg->ltp[0],seg->ltp[1]);
+      x1 = _unur_arou_compute_x(seg->rtp[0],seg->rtp[1]);
+      if (x0>x1) x0 = -INFINITY;   /* (0,0) is mapped to INF instead of -INF */
+
+      /* get splitting point (arc-mean rule) */
+      xsp = _unur_arcmean(x0,x1);
+
+      /* value of PDF at splitting point */
+      fxsp = PDF(xsp);
+
+      /* now split interval at given point */
+      splitted = _unur_arou_segment_split(gen, seg, xsp, fxsp);
+
+      if (splitted > 0) {
+      	/* splitting successful */
+      	++n_splitted;
+	
+	/* now depending on the location of xsp in the segment seg,
+	   seg points to the left of the two new segments,
+	   or to the right of the two new segments.
+	   For the first case we have to move the pointer to the
+	   new right interval. Then seg will be moved to the next
+	   old segment in the list by the for loop.
+	   We can distinguish between these two cases by looking 
+	   at the seg->next pointer and compare it the pointer in the
+	   old unsplitted segment.                                  */
+
+	if (seg->next != seg_next)
+	  seg = seg->next;
+	/* no more splitting points in this interval */
+	break;
+      }
+      else if (splitted < 0) {
+	/* some serious error occurred */
+	/* condition for PDF is violated! */
+	_unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"");
+	return 0;
+      }
+      /* else: could not split construction points: too close (?) */
+    }
+
+    if (n_splitted == 0) {
+      /* we are not successful in splitting any inteval.
+	 abort to avoid endless loop */
+      _unur_warning(gen->genid,UNUR_ERR_GENERIC,"DARS aborted: no intervals could be splitted.");
+      break;
+    }
+  }
+
+  /* ratio between squeeze and hat o.k. ? */
+  if ( GEN.max_ratio * GEN.Atotal > GEN.Asqueeze ) {
+    if ( GEN.n_segs >= GEN.max_segs )
+      _unur_warning(gen->genid,UNUR_ERR_GENERIC,"DARS aborted: maximum number of intervals exceeded.");
+    _unur_warning(gen->genid,UNUR_ERR_GENERIC,"hat/squeeze ratio too small.");
+  }
+  else {
+    /* no more construction points */
+    GEN.max_segs = GEN.n_segs;
+  }
+
+  /* o.k. */
+  return 1;
+
+} /* end of _unur_arou_run_dars() */
 
 /*****************************************************************************/
 
@@ -2142,6 +2462,18 @@ _unur_arou_debug_init( const struct unur_par *par, const struct unur_gen *gen )
   _unur_print_if_default(par,AROU_SET_MAX_SQHRATIO);
   fprintf(log,"\n%s:\n",gen->genid);
 
+  if (par->variant & AROU_VARFLAG_USEDARS) {
+    fprintf(log,"%s: Derandomized ARS enabled ",gen->genid);
+    _unur_print_if_default(par,AROU_SET_USE_DARS);
+    fprintf(log,"\n%s:\tDARS factor = %g",gen->genid,GEN.darsfactor);
+    _unur_print_if_default(par,AROU_SET_DARS_FACTOR);
+  }
+  else {
+    fprintf(log,"%s: Derandomized ARS disabled ",gen->genid);
+    _unur_print_if_default(par,AROU_SET_USE_DARS);
+  }
+  fprintf(log,"\n%s:\n",gen->genid);
+
   fprintf(log,"%s: sampling from list of segments: indexed search (guide table method)\n",gen->genid);
   fprintf(log,"%s:    relative guide table size = %g%%",gen->genid,100.*PAR.guide_factor);
   _unur_print_if_default(par,AROU_SET_GUIDEFACTOR);
@@ -2167,6 +2499,66 @@ _unur_arou_debug_init( const struct unur_par *par, const struct unur_gen *gen )
   fflush(log);
 
 } /* end of _unur_arou_debug_init() */
+
+/*****************************************************************************/
+
+static void 
+_unur_arou_debug_dars_start( const struct unur_par *par, const struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* print header before runniung DARS into logfile                       */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par ... pointer to parameter for building generator object         */
+     /*   gen ... pointer to generator object                                */
+     /*----------------------------------------------------------------------*/
+{
+  FILE *log;
+
+  /* check arguments */
+  CHECK_NULL(gen,RETURN_VOID);  COOKIE_CHECK(gen,CK_AROU_GEN,RETURN_VOID);
+  CHECK_NULL(par,RETURN_VOID);  COOKIE_CHECK(par,CK_AROU_PAR,RETURN_VOID);
+
+  log = unur_get_stream();
+
+  fprintf(log,"%s: DARS started **********************\n",gen->genid);
+  fprintf(log,"%s:\n",gen->genid);
+  fprintf(log,"%s: DARS factor = %g",gen->genid,GEN.darsfactor);
+  _unur_print_if_default(par,AROU_SET_DARS_FACTOR);
+  fprintf(log,"\n%s:\n",gen->genid);
+
+  fflush(log);
+} /* end of _unur_arou_debug_dars_start() */
+
+/*---------------------------------------------------------------------------*/
+
+static void
+_unur_arou_debug_dars( const struct unur_par *par, const struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* print infor after generator has run DARS into logfile                */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par ... pointer to parameter for building generator object         */
+     /*   gen ... pointer to generator object                                */
+     /*----------------------------------------------------------------------*/
+{
+  FILE *log;
+
+  /* check arguments */
+  CHECK_NULL(gen,RETURN_VOID);  COOKIE_CHECK(gen,CK_AROU_GEN,RETURN_VOID);
+  CHECK_NULL(par,RETURN_VOID);  COOKIE_CHECK(par,CK_AROU_PAR,RETURN_VOID);
+
+  log = unur_get_stream();
+
+  fprintf(log,"%s:\n",gen->genid);
+  fprintf(log,"%s: DARS finished **********************\n",gen->genid);
+  fprintf(log,"%s:\n",gen->genid);
+  _unur_arou_debug_segments(gen);
+  fprintf(log,"%s:\n",gen->genid);
+  fprintf(log,"%s: DARS completed **********************\n",gen->genid);
+  fprintf(log,"%s:\n",gen->genid);
+
+  fflush(log);
+} /* end of _unur_arou_debug_dars() */
 
 /*****************************************************************************/
 

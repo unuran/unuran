@@ -49,6 +49,7 @@ struct unur_arou_par {
   int     n_starting_cpoints;   /* number of construction points at start    */
   const double *starting_cpoints;  /* pointer to array of starting points    */
   int     max_segs;             /* maximum number of segments                */
+  double  darsfactor;           /* factor for (derandomized) ARS             */
 };
 
 /*---------------------------------------------------------------------------*/
@@ -91,8 +92,7 @@ struct unur_arou_gen {
   struct unur_arou_segment *seg;     /* pointer to linked list of segments   */
   int     n_segs;               /* number of construction points             */
   int     max_segs;             /* maximum number of segments                */
-
-  double  bound_for_adding;     /* lower bound for relative area             */
+  double  darsfactor;           /* factor for (derandomized) ARS             */
 };
 
 /*---------------------------------------------------------------------------*/

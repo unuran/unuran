@@ -89,6 +89,39 @@ UNUR_PAR *unur_arou_new( const UNUR_DISTR *distribution );
 
 /*...........................................................................*/
 
+int unur_arou_set_usedars( UNUR_PAR *parameters, int usedars );
+/* 
+   If @var{usedars} is set to TRUE, ``derandomized adaptive rejection
+   sampling'' (DARS) is used in setup.
+   Segments where the area between hat and squeeze is too
+   large compared to the average area between hat and squeeze
+   over all intervals are split.
+   This procedure is repeated until the ratio between area below squeeze
+   and area below hat exceeds the bound given by 
+   unur_arou_set_max_sqhratio() call or the maximum number of segments is 
+   reached. Moreover, it also aborts when no more segments can be
+   found for splitting.
+
+   Segments are split such that the angle of the segments are halved
+   (corresponds to arc-mean rule of method TDR (@pxref{TDR})).
+
+   Default is FALSE.
+*/
+
+int unur_arou_set_darsfactor( UNUR_PAR *parameters, double factor );
+/* 
+   Set factor for ``derandomized adaptive rejection sampling''.
+   This factor is used to determine the segments that are ``too
+   large'', that is, all segments where the area between squeeze and
+   hat is larger than @var{factor} times the average area over all
+   intervals between squeeze and hat.
+   Notice that all segments are split when @var{factor} is set to
+   @code{0.}, and that there is no splitting at all when @var{factor}
+   is set to UNUR_INFINITY.
+
+   Default is @code{0.99}. There is no need to change this parameter.
+*/
+
 int unur_arou_set_max_sqhratio( UNUR_PAR *parameters, double max_ratio );
 /* 
    Set upper bound for the

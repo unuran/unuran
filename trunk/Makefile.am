@@ -26,3 +26,7 @@ MAINTAINERCLEANFILES = \
  ltmain.sh \
  missing \
  mkinstalldirs
+
+# remove windows directory
+maintainer-clean-local:
+	rm -rf win

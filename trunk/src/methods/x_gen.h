@@ -46,7 +46,8 @@ UNUR_GEN *unur_init( UNUR_PAR *parameters );
   stored in the parameter object.
   Warning: If an error has occurred a NULL pointer is return. This
   must not be used for the sampling routines (this causes a
-  segmentation fault). Thus always check if the call was successful.
+  segmentation fault). 
+  ALWAYS check whether the call was successful or not!
 */
 
 int unur_reinit( UNUR_GEN *generator );

@@ -26,12 +26,15 @@ int main()
   //  UNUR_GEN   *gen;      /* generator */
 
   double fpar[2] = {2.,2.};
-  double cp[5] = {-10.,-2.,-0.6,-0.5,-0.1};
+  double cp[2] = {-2.,2.};
   
   UNUR_URNG *urng, *urng_aux;
 
+  //urng = prng_new("tt800");
   urng = prng_new("mt19937(2345)");
-  urng_aux = prng_new("mt19937(9987)");
+  if (!urng) exit(-1);
+
+  //urng_aux = prng_new("mt19937(9987)");
   unur_set_default_urng(urng);
   
 
@@ -44,12 +47,14 @@ int main()
 /*    distr = unur_distr_normal(fpar,2); */
 
   par = unur_tdr_new(distr);
-  unur_set_urng_aux(par,urng_aux);
+  //  unur_set_urng_aux(par,urng_aux);
   unur_tdr_set_variant_ps(par);
-  unur_tdr_set_cpoints(par,5,cp);
+  unur_tdr_set_cpoints(par,2,cp);
 /*    unur_tdr_set_max_sqhratio(par,0.); */
 /*    unur_tdr_set_verify(par,1); */
-  unur_tdr_set_c(par,0.);
+  //  unur_tdr_set_c(par,0.);
+  unur_tdr_set_usemode(par,0);
+  unur_tdr_set_usecenter(par,0);
   unur_run_tests(par,~0);
   
 /*    par = unur_tdr_new(distr); */

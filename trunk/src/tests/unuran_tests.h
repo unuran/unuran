@@ -75,6 +75,11 @@ double unur_test_chi2( UNUR_GEN *generator, int intervals, int samplesize, int c
 /* central moments                                                           */
 int unur_test_moments( UNUR_GEN *generator, double *moments, int n_moments, int samplesize );
 
+/* estimate quartiles                                                        */
+int unur_test_quartiles( UNUR_GEN *generator,
+			 double *q0, double *q1, double *q2, double *q3, double *q4, 
+			 int samplesize );
+
 /* make scatterplot of generated numbers                                     */
 int unur_make_scatterplot( UNUR_GEN *generator );
 

@@ -54,21 +54,21 @@
       NROU is an implementation of the ratio-of-uniforms method
       which uses (minimal) bounding rectangles.
 
-      Given a quasi-density function f(x) on the domain 
-      @unurmath{x \in [b_l, b_r]}, the random variable 
-      @unurmath{X = U/V + \mu} has f(x) as PDF whenever
-      (U,V) is uniformly distributed in the set :
+      Given a quasi-density function @unurmath{f(x)} on the domain 
+      @unurmath{x \in [b_l, b_r],} the random variable 
+      @unurmath{X = U/V + \mu} has @unurmath{f(x)} as PDF whenever
+      @unurmath{(U,V)} is uniformly distributed in the set :
       @unurmath{A_f = \lbrace (u,v): 0 < v <= \sqrt{f(u/v+\mu)},
-                                     b_l < u/v + \mu < b_r \rbrace }
+                                     b_l < u/v + \mu < b_r \rbrace. }
 
       The minimum bounding rectangle @unurmath{R} is the smallest 
       possible rectangle that contains 
       @unurmath{A_f \subset R = \lbrace (u,v) : u_{min} <= u <= u_{max},
-                                                0 <= v <= v_{max} \rbrace}
+                                                0 <= v <= v_{max} \rbrace.}
       
       The naive ratio-of-uniforms method NROU is thus an acceptance-rejection
       method from the minimum bounding rectangle to obtain uniformly 
-      distributed points in @unurmath{A_f}. 
+      distributed points in @unurmath{A_f.}
       
       See the Appendix for more details on the ratio-of-uniforms method.
    =END

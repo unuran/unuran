@@ -108,7 +108,7 @@
    method to generate variates from continuous distributions. 
 
    We explain the rejection principle first for the density
-   @unurmath{f(x) = sin(x)/2} on the interval @unurmath{(0,pi)}.
+   @unurmath{f(x) = sin(x)/2} on the interval @unurmath{(0,\pi).}
    To generate random variates from this distribution we also can
    sample random points that are uniformly distributed in the region
    between the graph of @unurmath{f(x)} and the @unurmath{x}-axis,
@@ -119,13 +119,13 @@
    In general this is not a trivial task but in this example we can 
    easily use the rejection trick: 
    Sample a random point @unurmath{(X,Y)} uniformly in the
-   bounding rectangle @unurmath{(0,Pi)x(0,0.5)}. This is easy since
+   bounding rectangle @unurmath{(0,\pi)\times(0,0.5).} This is easy since
    each coordinate can be sampled independently from the respective
-   uniform distributions @unurmath{U(0,Pi)} and @unurmath{U(0,0.5)}.
+   uniform distributions @unurmath{U(0,\pi)} and @unurmath{U(0,0.5).}
    Whenever the point falls into the shaded region below the graph 
    (indicated by dots in the figure), i.e., when @unurmath{Y <
    sin(X)/2}, we accept it and return @unurmath{X} as a random variate
-   from the distribution with density @unurmath{f(x)}. 
+   from the distribution with density @unurmath{f(x).} 
    Otherwise we have to reject the point (indicated by small circles
    in the figure), and try again.
 
@@ -143,7 +143,7 @@
    non-rectangular shaped regions for the envelopes are important and
    we have to solve the problem of sampling points uniformly from such
    domains. Looking again at the example above we notice that the
-   @unurmath{x}-coordinate of the random point @code{(X,Y)} was
+   @unurmath{x}-coordinate of the random point @unurmath{(X,Y)} was
    sampled by inversion from the uniform distribution on the domain of
    the given density. This motivates us to replace the density of the
    uniform distribution by the (multiple of a) density @unurmath{h(x)}
@@ -153,20 +153,20 @@
    distribution. To generate the pair @unurmath{(X,Y)} we generate
    @unurmath{X} from the distribution with density proportional to
    @unurmath{h(x)} and @unurmath{Y} uniformly between @unurmath{0} and
-   @unurmath{h(X)}. The first step (generate @unurmath{X}) is usually
+   @unurmath{h(X).} The first step (generate @unurmath{X}) is usually
    done by inversion (@pxref{Inversion}).
 
    Thus the general rejection algorithm for a hat @unurmath{h(x)} with 
    inverse CDF @unurmath{H^{-1}}consists of the following steps:
    @enumerate
    @item
-   Generate a @unurmath{U(0,1)} random number @unurmath{U}.
+   Generate a @unurmath{U(0,1)} random number @unurmath{U.}
    @item
-   Set @unurmath{X} to @unurmath{H^{-1}(U)}.
+   Set @unurmath{X} to @unurmath{H^{-1}(U).}
    @item
-   Generate a @unurmath{U(0,1)} random number @unurmath{V}.
+   Generate a @unurmath{U(0,1)} random number @unurmath{V.}
    @item
-   Set @unurmath{Y} to @unurmath{V h(X)}.
+   Set @unurmath{Y} to @unurmath{V h(X).}
    @item
    If @unurmath{Y <= f(X)} accept @unurmath{X} as the random variate.
    @item
@@ -209,7 +209,7 @@
    methods is easy to compute. It is useful as its reciprocal is an
    upper bound for the expected number of trials of the rejection
    algoritm. The expected number of evaluations of the density is
-   bounded by @unurmath{(1/sqhratio)-1}.
+   bounded by @unurmath{(1/sqhratio)-1.}
    @end itemize
 
 =EON
@@ -245,9 +245,9 @@
    proportional to the area below the hat.
    @item
    Generate a random variate @unurmath{X} proportional to the hat in
-   interval @unurmath{J}.
+   interval @unurmath{J.}
    @item
-   Generate the @unurmath{U(0,f(X))} random number @unurmath{Y}.
+   Generate the @unurmath{U(0,f(X))} random number @unurmath{Y.}
    @item
    If @unurmath{Y <= f(X)} accept @unurmath{X} as random variate.
    @item
@@ -288,7 +288,7 @@
    @enumerate
    @item
    Generate a @unurmath{U(-1,1)} random number @unurmath{U} and a
-   @unurmath{U(0,1)} randum number @unurmath{V}.
+   @unurmath{U(0,1)} random number @unurmath{V.}
    @item
    If @unurmath{U^2 + V^2 <= 1} accept @unurmath{X=U/V} as a Cauchy
    random variate. 
@@ -320,7 +320,7 @@
    distributed in the set
 
    @display
-   @unurmath{A_f= \{(u,v)\colon 0 < v \leq \sqrt{f(u/v+\mu)}\}}.
+   @unurmath{A_f= \{(u,v)\colon 0 < v \leq \sqrt{f(u/v+\mu)}\}.}
    @end display
 
    For most distributions it is best to set the constant
@@ -332,9 +332,9 @@
    It is given by @unurmath{(u^-,u^+)\times (0,v^+)} where
    
    @display
-   @unurmath{v^+ = \sup\limits_{b_l<x<b_r}         \sqrt{f(x)}}, @*
-   @unurmath{u^- = \inf\limits_{b_l<x<b_r} (x-\mu) \sqrt{f(x)}}, @*
-   @unurmath{u^+ = \sup\limits_{b_l<x<b_r} (x-\mu) \sqrt{f(x)}}.
+   @unurmath{v^+ = \sup\limits_{b_l<x<b_r}         \sqrt{f(x)},} @*
+   @unurmath{u^- = \inf\limits_{b_l<x<b_r} (x-\mu) \sqrt{f(x)},} @*
+   @unurmath{u^+ = \sup\limits_{b_l<x<b_r} (x-\mu) \sqrt{f(x)}.}
    @end display
 
    Then the ratio-of-uniforms method consists of the following simple
@@ -342,9 +342,9 @@
    @enumerate
    @item
    Generate a @unurmath{U(u^-,u^+)} random number @unurmath{U} and a
-   @unurmath{U(0,v^+)} random number @unurmath{V}.
+   @unurmath{U(0,v^+)} random number @unurmath{V.}
    @item
-   Set @unurmath{X} to @unurmath{U/V+\mu}.
+   Set @unurmath{X} to @unurmath{U/V+\mu.}
    @item
    If @unurmath{V^2 \leq f(X)} accept @unurmath{X} as the random
    variate.
@@ -354,13 +354,13 @@
 
    To apply the ratio-of-uniforms algorithm to a certain density 
    we have to solve the simple optimization problems in the
-   definitions above to obtain the design constants @unurmath{u^-},
-   @unurmath{u^+}, and @unurmath{v^+}.  
+   definitions above to obtain the design constants @unurmath{u^-,}
+   @unurmath{u^+,} and @unurmath{v^+.}  
    This simple algorithm works for all distributions
    with bounded densities that have subquadratic tails (i.e.,
    tails like @unurmath{1/x^2} or lower). For most standard
    distributions it has quite good rejection constants. 
-   (E.g.\ 1.3688 for the normal and 1.4715 for the exponential
+   (E.g. 1.3688 for the normal and 1.4715 for the exponential
    distribution.)
 
    Nevertheless, we use more sophisticated method that construct
@@ -384,7 +384,7 @@
    mathematically in the same way:
 
    @display
-   @unurmath{X=F^{-1}(U)},
+   @unurmath{X=F^{-1}(U),}
    @end display
 
    where @unurmath{F} is the CDF of the desired distribution and 
@@ -401,33 +401,33 @@
    @unurmath{p(k)}, since this is usually much cheaper than computing
    the CDF directly. It is obvious that the basic form of the search
    algorithm only works for discrete random variables with probability
-   mass functions @unurmath{p(k)} for nonnegative @unurmath{k}. The
+   mass functions @unurmath{p(k)} for nonnegative @unurmath{k.} The
    sequential search algorithm consists of the following basic steps:
 
    @enumerate
    @item
-   Generate a @unurmath{U(0,1)} random number @unurmath{U}.
+   Generate a @unurmath{U(0,1)} random number @unurmath{U.}
    @item
    Set @unurmath{X} to @unurmath{0} and @unurmath{P} to
-   @unurmath{p(0)}.
+   @unurmath{p(0).}
    @item
    Do while @unurmath{U > P} 
    @item
    @w{ } @w{ } @w{ } Set @unurmath{X} to @unurmath{X+1} and 
-   @unurmath{P} to @unurmath{P+p(X)}.
+   @unurmath{P} to @unurmath{P+p(X).}
    @item
-   Return @unurmath{X}.
+   Return @unurmath{X.}
    @end enumerate
 
    With the exception of some very simple discrete distributions,
    sequential search algorithms become very slow as the while-loop has
    to be repeated very often. The expected number of iterations,
    i.e., the number of comparisons in the while condition, is equal to
-   the expectation of the distribution plus @unurmath{1}.
+   the expectation of the distribution plus @unurmath{1.}
    It can therefore become arbitrary large or even infinity if the tail
    of the distribution is very heavy. Another serious problem can be
    critical round-off errors due to summing up many probabilities
-   @unurmath{p(k)}. To speed up the search procedure it is best to use
+   @unurmath{p(k).} To speed up the search procedure it is best to use
    indexed search.
 
 =EON
@@ -444,12 +444,12 @@
    understand. Instead of starting always at @unurmath{0} we store a
    table of size @unurmath{C} with starting points for our search. For
    this table we compute @unurmath{F^{-1}(U)} for @unurmath{C}
-   equidistributed values of @unurmath{U}, i.e., 
-   for @unurmath{u_i = i/C}, @unurmath{i=0,...,C-1}. Such a table is
+   equidistributed values of @unurmath{U,} i.e., 
+   for @unurmath{u_i = i/C,} @unurmath{i=0,...,C-1.} Such a table is
    called @emph{guide table} or @emph{hash table}.
    Then it is easy to prove that for every @unurmath{U} in
    @unurmath{(0,1)} the guide table entry for @unurmath{k=floor(UC)}
-   is bounded by @unurmath{F^{-1}(U)}. This shows that we can really
+   is bounded by @unurmath{F^{-1}(U).} This shows that we can really
    start our sequential search procedure from the table entry for
    @unurmath{k} and the index @unurmath{k} of the correct table entry
    can be found rapidly by means of the truncation operation.
@@ -464,9 +464,9 @@
    Compared to sequential search we have now the obvious drawback
    of a slow setup. The computation of the cumulative probabilities
    grows linear with the size of the domain of the distribution
-   @unurmath{L}. What we gain is really high speed as the marginal
+   @unurmath{L.} What we gain is really high speed as the marginal
    execution time of the sampling algorithm becomes very small. The
-   expected number of comparisons is bounded by @unurmath{1+L/C}.
+   expected number of comparisons is bounded by @unurmath{1+L/C.}
    This shows that there is a trade-off between speed and
    the size of the guide table. Cache-effects in modern computers will
    however slow down the speed-up for really large table sizes. 

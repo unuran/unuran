@@ -101,7 +101,7 @@ int unur_vnrou_set_r( UNUR_PAR *parameters, double r );
    Sets the parameter @var{r} of the generalized multivariate 
    ratio-of-uniforms method.
 
-   @emph{Notice}: This parameter must satisfy @unurmath{r>0}. 
+   @emph{Notice}: This parameter must satisfy @var{r}>0. 
    Setting to a nonpositive value is ignored and in this case the
    default value value is used instead.
 

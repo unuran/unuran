@@ -134,7 +134,7 @@ EOX
     my $last_distr_short;
 
     # Each distribution 
-    foreach my $d (keys %{$list_distr}) {
+    foreach my $d (sort keys %{$list_distr}) {
 
 	# use local copy
 	my $distr = $d;

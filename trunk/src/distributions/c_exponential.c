@@ -98,8 +98,13 @@ _unur_pdf_exponential( double x, UNUR_DISTR *distr )
     x = (x - theta) / sigma;
 
   /* standard form */
+  if (x<0.) 
+    return 0.;
+
+  /* else */
+  return exp(-x - LOGNORMCONSTANT);
   
-  return ( (x<0.) ? 0. : exp(-x - LOGNORMCONSTANT) );
+  /*    return ( (x<0.) ? 0. : exp(-x - LOGNORMCONSTANT) ); */
 
 } /* end of _unur_pdf_exponential() */
 

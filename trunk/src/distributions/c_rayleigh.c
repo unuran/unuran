@@ -77,7 +77,13 @@ double
 _unur_pdf_rayleigh( double x, UNUR_DISTR *distr )
 { 
   register double *params = DISTR.params;
-  return ( (x<=0.) ? 0. : x * exp(-x*x/(2.*sigma*sigma) - LOGNORMCONSTANT ) ); 
+  
+  if (x<=0.) 
+    return 0.;
+  /* else */
+  return (x * exp(-x*x/(2.*sigma*sigma) - LOGNORMCONSTANT ) ); 
+
+  /*    return ( (x<=0.) ? 0. : x * exp(-x*x/(2.*sigma*sigma) - LOGNORMCONSTANT ) );  */
 } /* end of _unur_pdf_rayleigh() */
 
 /*---------------------------------------------------------------------------*/

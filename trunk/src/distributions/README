@@ -22,6 +22,8 @@
 #      must be on the next line (comment lines and empty lines are
 #      allowed).
 #
+#  (5) Do not use ?: statements. 
+#
 #
 # Remark: 
 # These rules need not be satisfied any other routine (e.g. dPDF, CDF, ...).

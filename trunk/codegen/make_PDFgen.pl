@@ -297,6 +297,10 @@ sub make_PDF_distr_FORTRAN
     $gencode .= 
 	"\tfprintf (out,\"      IMPLICIT DOUBLE PRECISION (A-Z)\\n\");\n";
 
+    # Define pow()
+    $gencode .= 
+	"\tfprintf (out,\"      pow(base,exponent) = base**exponent\\n\");\n";
+
     # Constants (parameters)
     $gencode .= 
 	"\tfprintf (out,\"C\\n\");\n".
@@ -545,14 +549,18 @@ sub make_PDF_body_FORTRAN
     my $is_if_block = 0;
     my $next_is_if_block = 0;
 
+    foreach my $l (split /\n/, $in_body) {
 
-    foreach my $l (split /\n/, $body1) {
+	# if (n_params ...) statement
 	if ($l =~ /if\s*\(\s*n_params\s*[<>=!]+\s*\d+\s*\)/) {
 	    $l =~ s/n_params/$DISTR->{$d}->{"=PDF"}->{"=DISTR"}.n_params/;
 	    $l =~ s/  /\t/g;
 	    $body .= "$l\n\t";
 	    next;
 	}
+
+	# remove variable declarations 
+	next if $l =~ /^\s*(register)?\s*(double|int)/;
 
 	my $indent = ($is_if_block) ? "        " : "     ";
 	my $return = "";
@@ -576,12 +584,15 @@ sub make_PDF_body_FORTRAN
 	$l =~ s/\&\&/.AND./g;
 	$l =~ s/\|\|/.OR./g;
 
-	
+	$l =~ s/fabs\(([^\)]+)\)/ABS($1)/g;
 
 	# return statement
 	if ($l =~ /return\s+(.*);/) {
 	    my $val = $1;
 	    $val =~ s/^\s*/$indent %.6s = /g;
+	    if (length $val > 71) {
+		substr($val,71,0) = "\\n     #  ";
+	    }
 	    $body .= "\tfprintf (out,\"$val\\n\", pdf_name);\n";
 	    $return = "\tfprintf (out,\"$indent RETURN\\n\");\n";
 	}
@@ -601,17 +612,20 @@ sub make_PDF_body_FORTRAN
 	    $l =~ s/^\s*/$indent /g;
 
 	    # print
+	    if (length $l > 71) {
+		substr($l,71,0) = "\\n     #  ";
+	    }
 	    $body .= "\tfprintf (out,\"$l\\n\");\n";
 	}
 
 	# return statement (if there is one)
 	$body .= $return;
 
-	# we assume that each if block consists of one line
+	# inside if block ?
+	#       we assume that each if block consists of one line
 	if ($is_if_block) {
 	    $body .= "\tfprintf (out,\"      ENDIF\\n\");\n";
 	}
-
 	$is_if_block = $next_is_if_block;
 	$next_is_if_block = 0;
 

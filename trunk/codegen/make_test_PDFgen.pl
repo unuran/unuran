@@ -57,6 +57,9 @@ exit 0;
 #
 # ----------------------------------------------------------------
 
+# counter for PDFs
+$n_PDF = 0;
+
 # ----------------------------------------------------------------
 # Make C file for testing code generator
 
@@ -145,7 +148,9 @@ EOX
 	my $testroutine = "test\_$distr";
 
 	# Name of PDF function
-	my $PDFroutine = "pdf\_$distr";
+	my $PDFroutine_C = "pdf\_$distr";
+	++$n_PDF;
+	my $PDFroutine_FORTRAN = "f_$n_PDF";
 
 	# Distribution object
 	my $distribution = $list_distr->{$distr};
@@ -182,7 +187,7 @@ EOX
 \tfor (i=0; i<$SAMPLE_SIZE; i++) \{
 \t\tx  = unur_sample_cont(gen);
 \t\tf1 = unur_distr_cont_eval_pdf (x,distr);
-\t\tf2 = $PDFroutine (x);
+\t\tf2 = $PDFroutine_C (x);
 \t\tif (!FP_equal(f1,f2)) \{
 \t\t\tfprintf(stderr,\"error! %%g, %%g, diff = %%g\\n\",f1,f2,f1-f2);
 \t\t\t++n_failed;
@@ -217,8 +222,8 @@ EOX
 	# Body of make test routine
 	my $make_test_body = 
 	    "$distribution\n".                       # the distribution object
-	    "\t_unur_acg_C_PDF(distr,out_C,\"$PDFroutine\");\n".  # make code 
-	    "\t_unur_acg_FORTRAN_PDF(distr,out_FORTRAN,\"$PDFroutine\");\n".  # make code 
+	    "\t_unur_acg_C_PDF(distr,out_C,\"$PDFroutine_C\");\n".  # make code 
+	    "\t_unur_acg_FORTRAN_PDF(distr,out_FORTRAN,\"$PDFroutine_FORTRAN\");\n".  # make code 
 	    "\tunur_distr_free(distr);\n\n";         # free distribution object
 
 	# write test file

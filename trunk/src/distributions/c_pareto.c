@@ -79,7 +79,12 @@ double
 _unur_pdf_pareto( double x, UNUR_DISTR *distr )
 { 
   register double *params = DISTR.params;
-  return ( (x<k) ? 0. : (a/k) / pow(x/k, a + 1.) );
+  if (x<k)
+    return 0.;
+  /* else */
+  return ((a/k) / pow(x/k, a + 1.) );
+
+/*    return ( (x<k) ? 0. : (a/k) / pow(x/k, a + 1.) ); */
 } /* end of _unur_pdf_pareto() */
 
 /*---------------------------------------------------------------------------*/

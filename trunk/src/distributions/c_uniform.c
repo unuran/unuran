@@ -80,7 +80,12 @@ _unur_pdf_uniform( double x, UNUR_DISTR *distr )
 { 
   register double *params = DISTR.params;
 
-  return ((x < a || x > b) ? 0. : 1./(b-a));
+  if (x < a || x > b)
+    return 0.;
+  /* else */
+  return 1./(b-a);
+
+  /*    return ((x < a || x > b) ? 0. : 1./(b-a)); */
 } /* end of _unur_pdf_uniform() */
 
 /*---------------------------------------------------------------------------*/

@@ -92,10 +92,12 @@ double
 _unur_pdf_laplace( double x, UNUR_DISTR *distr )
 { 
   register double *params = DISTR.params;
-  register double z;
 
-  z = (x>theta) ? (x-theta)/phi : (theta-x)/phi;
-  return exp(-z) / (2.*phi); 
+  if (x<theta) 
+    return ( exp( (x-theta)/phi ) / (2.*phi) ); 
+  /* else */
+  return ( exp( (theta-x)/phi ) / (2.*phi) ); 
+
 } /* end of _unur_pdf_laplace() */
 
 /*---------------------------------------------------------------------------*/

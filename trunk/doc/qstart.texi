@@ -55,10 +55,10 @@ Date: @value{DATE}
 @menu
 * Intro::                  Introduction
 * Examples::               Examples
-* Methods::                How should the random numbers be created
-* FAQ::                    Frequently asked questions
-* Function Reference::     Function Reference
 * Distributions::          Distributions
+* Methods::                How should the random numbers be created
+* Function Reference::     Function Reference
+* FAQ::                    Frequently asked questions
 * Internal::               Internal remarks
 @end menu
 @end ifnottex     
@@ -91,9 +91,9 @@ Table of @ref{Contents}
 @node Now
 @subsection Now
 cvs update @*
-@* 'make' in UNURAN to compile UNURAN
-@* Makefile.am in /examples modify in regard to testprogram 
-@* make in /examples
+@* Type @file{make} in UNURAN to compile UNURAN
+@* @file{Makefile.am} in @file{/examples} modify in regard to testprogram 
+@* make in @file{/examples}
 
 
 @c --------------------------------------------------------------------
@@ -107,11 +107,12 @@ cvs update @*
 * Ex3:: Change function parameters
 @end menu
 
-@*Here are some exmples to show you what to do. Beginning with the basics
-of using unuran we evolve to examples using  more advanced features of
-unuran.
+@*Assuming UNURAN has been installed sucessfully,
+here are some exmples to showing how to obtain random numbers.
+Beginning with the basics of using unuran we evolve to examples
+using  more advanced features of UNURAN.
 @*call the compiler with:
-@*gcc -Wall  -L../src/methods  -L../src/distributions  -L../src/tests  -L../src/uniform -g -O2  -o test1  test1.o -lunuran_tests -lunuran_distributions -lunuran -luniform -lprng -lm
+@* @file{gcc -Wall  -L../src/methods  -L../src/distributions  -L../src/tests  -L../src/uniform -g -O2  -o test1  test1.o -lunuran_tests -lunuran_distributions -lunuran -luniform -lm -lprng}
 
 @node Ex1
 @section Ex1: As short as possible
@@ -164,38 +165,40 @@ These headers provide all functions/features for generating random numbers.
 The following three structures: 
 @smallexample
 struct unur_distr *distr;  /* distribution */ 
-  struct unur_par *par;    /* parameter */
-  struct unur_gen *gen;    /* generator */
+struct unur_par *par;      /* parameter */
+struct unur_gen *gen;      /* generator */
 @end smallexample
 @*
-are necesssary to store the used parameters. It is not necessary to understand the structure in detail to get random numbers. 
+are necesssary to store the used parameters. It is not necessary to
+understand the structure in detail to get random numbers. 
 @*
 With
 @smallexample
  distr = unur_distr_normal(NULL, 0);
 @end smallexample
 @*
-we choose that the random numbers will be standard normal distributed,
+the random numbers will be standard normal distributed,
 and with
 @smallexample
  par = unur_arou_new(distr);
 @end smallexample
 @*
-we choose the method `AROU' for sampling.
+the method `AROU' is chosen for sampling.
 @*
 For actual sampling it's necessary to build a generator object:
 @smallexample
 gen = unur_init(par)
 @end smallexample
 @*
-(Now the objects distr and par have no further use and will be destroyed).@*
+(Now the objects @code{distr} and @code{par} have no further use
+and will be destroyed).@*
 The following line shows how actual sampling works:
 @smallexample
  x = unur_sample_cont(gen);
 @end smallexample
 
 @node Ex2
-@section Ex2: Arbitrary CDF
+@section Ex2: Arbitrary distributions
 
 If you know the c.d.f you can genarate +random numbers in the following way
 The important lines are in bold face.
@@ -310,6 +313,23 @@ int main()
 
 @c --------------------------------------------------------------------
 
+@node Distributions
+@chapter distributions
+@menu
+* Preset:: Preset Distributions
+* Arbitrary:: Arbitrary Distributions 
+@end menu
+
+@node Preset
+@section Preset distributions 
+@include qstart_distributions.texi
+
+@node Arbitrary
+@section Arbitrary distributions
+@include qstart_change_distr.texi
+
+@c --------------------------------------------------------------------
+
 
 @node Methods
 @chapter Methods
@@ -390,16 +410,6 @@ To change any parameter you habe to use the according function call.
 @c --------------------------------------------------------------------
 
 
-@node FAQ
-@chapter FAQ
-@subsection Q1: I have a simulation program in FORTRAN. How can I use your
-library.
-
-Use the following program xyz.c which produce afile with randoom numbers. Read this random numbers ... 
-
-@c --------------------------------------------------------------------
-
-
 @node Function Reference
 @chapter Function reference
 @menu
@@ -436,27 +446,27 @@ Notation:
 
 @include qstart_function_reference.texi
 
-
 @c --------------------------------------------------------------------
 
 
-@node Distributions
-@chapter distributions
+@node FAQ
+@chapter FAQ
 @menu
-* Preset:: Preset Distributions
-* Arbitrary:: Arbitrary Distributions 
+* Q1:: Other languages than @code{C}
+* Q2:: Other operation systems then UNIX
 @end menu
 
-@node Preset
-@section Preset distributions 
-@include qstart_distributions.texi
+@node Q1
+@section Q1: I have a simulation program in FORTRAN. How can I use your
+library.
 
-@node Arbitrary
-@section Arbitrary distributions
-@include qstart_change_distr.texi
+Use the following program xyz.c which produce a file with random numbers.
+Read this random numbers ... 
+
+@node Q2
+@section Q2: I am not working under Windows, how can I install ...
 
 @c --------------------------------------------------------------------
-
 
 @node Internal
 @chapter internals

@@ -100,14 +100,16 @@ while($_ = <>)
     # search lines with =DEF
     if (($value, $method, $wert, $description) = 
       $_ =~ /.*=(.*?);\s*\/\*\s*=DEF\s+(\w+)\s+(\w+)\s*(.*)/) {
+        $wert  = join '', "\@code{", $wert;
+        $value = join '', $value, "}";
         # are there more lines of description?
 	$BLOCK = 0;
 	if ($description !~ s/(.*?)\*\/\s*$/$1/){
 	   $BLOCK = 1;
         }
 
-    $PRINT = join  ' ', "\@*". $method, ": \@", $wert, "=", $value,
-                        $description, "\n";
+    $PRINT = join  '', "\@* ". $method, ":  ", $wert, " = ", $value,
+                        "\@ \@ \@ \@ ", $description, "\n";
     }
  
 

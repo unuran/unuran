@@ -215,16 +215,16 @@ unur_ninv_new( struct unur_distr *distr )
   par->distr       = distr;        /* pointer to distribution object         */
 
   /* set default values */
-  PAR.max_iter  = 40;  /* =DEF NINV maxiter maximal number of iterations */
+  PAR.max_iter  = 40;  /* =DEF NINV maxiter Maximal number of iterations */
   PAR.rel_x_resolution = 1.0e-8;  /* =DEF NINV rel_error
-                                       maximal relative error in x        */
+                                       Maximal relative error allowed in x   */
   PAR.table_on = 0;            /* =DEF NINV table_on If equal to 1 a table
                                    containing potential starting points
                                    is generated  */
-  PAR.s[0]      = 0.0;              /* =DEF NINV s1  left boundary of
+  PAR.s[0]      = 0.0;              /* =DEF NINV s1  Left boundary of
                                       starting  interval for regula falsi
                                       and newton starting point.             */
-  PAR.s[1]      = 0.0;              /* =DEF NINV s2 right boundary of
+  PAR.s[1]      = 0.0;              /* =DEF NINV s2 Right boundary of
                                       of starting interval for regula falsi. */
   /* If s1 and s2 are equal,  are chosen
   such that in case of the regula falsi the integral of the pdf over
@@ -233,7 +233,7 @@ unur_ninv_new( struct unur_distr *distr )
  
   par->method   = UNUR_METH_NINV;          /* method and default variant     */
   par->variant  = NINV_VARFLAG_REGULA;     /* =DEF NINV variant The default
-             method used by NINV (either newton's method or the regula falsi)*/
+             method used by NINV (either Newton's method or the regula falsi)*/
   par->set      = 0u;                      /* inidicate default parameters   */
   par->urng     = unur_get_default_urng(); /* use default urng               */
   par->urng_aux = NULL;                    /* no auxilliary URNG required    */

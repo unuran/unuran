@@ -576,6 +576,8 @@ _unur_test_chi2_vec ( struct unur_gen *gen,
      pval=-1; goto free_memory;
   }
   
+  for (i=0; i<dim; i++) bg[i]=NULL;
+  
   for (i=0; i<dim; i++) {
   bg[i] = _unur_malloc( dimintervals[i] * sizeof(int));
   if (bg[i]==NULL) {
@@ -601,8 +603,7 @@ _unur_test_chi2_vec ( struct unur_gen *gen,
     for (j=0; j<dim; j++) {
       idx[j] = (int)( dimintervals[j] * _unur_sf_cdfnormal(z[j]) );
       if (idx[j]==dimintervals[j]) idx[j]--; /* cdf can return 1 ? */
-      offset=sumintervals+idx[j];
-      ++bg[offset][i];
+      bg[j][idx[j]] +=1 ;
       sumintervals += dimintervals[j];
     }
   }
@@ -612,11 +613,17 @@ _unur_test_chi2_vec ( struct unur_gen *gen,
   for (j=0; j<dim; j++) {
     if (verbose >= 1) {
       fprintf(out,"\nChi^2-Test for multivariate continuous distribution\n");
+      fprintf(out,"  samplesize = %d\n",samplesize);
       fprintf(out,"  intervals  = %d\n",dimintervals[j]);
       fprintf(out,"  marginal   = %d\n",j);
+
+      for (i=0; i<dimintervals[j]; i++) {
+        fprintf(out,"  bg[%d][%d]     = %d\n",j ,i ,bg[j][i] );
+      }
+
     }
 
-    pval = _unur_test_chi2test(NULL, &bg[sumintervals][j] , dimintervals[j], classmin, verbose, out );
+    pval = _unur_test_chi2test(NULL, &bg[j] , dimintervals[j], classmin, verbose, out );
     sumintervals += dimintervals[j];
     
   }
@@ -624,13 +631,12 @@ _unur_test_chi2_vec ( struct unur_gen *gen,
 
 free_memory:
   /* free memory */
-  free(idx);
-  free(z);
-  for (i=0; i<dim; i++) free(bg[i]);
+  (idx==NULL) ? : free(idx);
+  (z==NULL) ? : free(z);
+  for (i=0; i<dim; i++) (bg[i]==NULL) ? : free(bg[i]);
 
   /* return result of test */
 
-  /* TODO : what should we return here ? */
   return pval;
 
 } /* end of _unur_test_chi2_vec() */

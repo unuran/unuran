@@ -148,7 +148,7 @@ unur_rect_set_domain_vec( struct unur_par *par, double **domain )
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  CHECK_NULL(par,0);
+  _unur_check_NULL( GENTYPE,par,0 );
 
   /* check input */
   _unur_check_par_object( RECT );
@@ -187,7 +187,7 @@ unur_rect_init( struct unur_par *par )
   struct unur_gen *gen;
 
   /* check arguments */
-  CHECK_NULL(par,NULL);
+  _unur_check_NULL( GENTYPE,par,NULL );
 
   /* check input */
   if ( par->method != UNUR_METH_RECT ) {
@@ -226,8 +226,7 @@ unur_rect_sample_vec( struct unur_gen *gen, double *vec )
   int i;
 
   /* check arguments */
-  CHECK_NULL(gen,/*void*/);
-  COOKIE_CHECK(gen,CK_RECT_GEN,/*void*/);
+  CHECK_NULL(gen,/*void*/);  COOKIE_CHECK(gen,CK_RECT_GEN,/*void*/);
 
   if (GEN.domain == NULL) {
     for (i=0; i<GEN.dim; i++)
@@ -292,8 +291,7 @@ _unur_rect_create( struct unur_par *par )
   struct unur_gen *gen;
 
   /* check arguments */
-  CHECK_NULL(par,NULL);
-  COOKIE_CHECK(par,CK_RECT_PAR,NULL);
+  CHECK_NULL(par,NULL);  COOKIE_CHECK(par,CK_RECT_PAR,NULL);
 
   /* allocate memory for generator object */
   gen = _unur_malloc( sizeof(struct unur_gen) );
@@ -343,6 +341,10 @@ _unur_rect_debug_init( struct unur_par *par, struct unur_gen *gen )
 {
   FILE *log;
   
+  /* check arguments */
+  CHECK_NULL(par,/*void*/);  COOKIE_CHECK(par,CK_RECT_PAR,/*void*/);
+  CHECK_NULL(gen,/*void*/);  COOKIE_CHECK(gen,CK_RECT_GEN,/*void*/);
+
   log = unur_get_stream();
 
   fprintf(log,"%s:\n",gen->genid);

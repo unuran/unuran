@@ -79,7 +79,7 @@ unur_distr_dup( struct unur_distr *distr )
   struct unur_distr *distr_new;
 
   /* check arguments */
-  CHECK_NULL(distr,NULL);
+  _unur_check_NULL( NULL,distr,NULL );
   
   /* allocate memory */
   distr_new = _unur_malloc( sizeof (struct unur_distr) );
@@ -116,7 +116,7 @@ unur_distr_free( struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  CHECK_NULL(distr,/*void*/);
+  _unur_check_NULL( NULL,distr,/*void*/ );
 
   switch (distr->type) {
   case UNUR_DISTR_CONT:
@@ -151,7 +151,7 @@ unur_distr_set_name( struct unur_distr *distr, const char *name )
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  CHECK_NULL(distr,0);
+  _unur_check_NULL( NULL,distr,0 );
 
   distr->name = name;
   return 1;
@@ -172,7 +172,7 @@ unur_distr_get_name( struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  CHECK_NULL(distr,0);
+  _unur_check_NULL( NULL,distr,0 );
 
   return distr->name;
 } /* end of unur_distr_get_name() */
@@ -265,9 +265,9 @@ unur_distr_cont_set_pdf( struct unur_distr *distr, void *pdf )
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  CHECK_NULL(distr,0);
-  CHECK_NULL(pdf,0);
+  _unur_check_NULL( NULL,distr,0 );
   COOKIE_CHECK(distr,CK_DISTR_CONT,0);
+  _unur_check_NULL( distr->name,pdf,0 );
 
   DISTR.pdf = pdf;
   return 1;
@@ -291,7 +291,7 @@ unur_distr_cont_pdf( struct unur_distr *distr, double x )
   /* check arguments */
   CHECK_NULL(distr,-1.);
   COOKIE_CHECK(distr,CK_DISTR_CONT,-1.);
-  CHECK_NULL(DISTR.pdf,-1.);
+  _unur_check_NULL( distr->name,DISTR.pdf,-1.);
 
   return ((*(DISTR.pdf))(x,DISTR.params,DISTR.n_params));
 } /* end of unur_distr_cont_pdf() */
@@ -313,9 +313,9 @@ unur_distr_cont_set_dpdf( struct unur_distr *distr, void *dpdf )
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  CHECK_NULL(distr,0);
-  CHECK_NULL(dpdf,0);
+  _unur_check_NULL( NULL,distr,0 );
   COOKIE_CHECK(distr,CK_DISTR_CONT,0);
+  _unur_check_NULL( distr->name,dpdf,0 );
   
   DISTR.dpdf = dpdf;
   return 1;
@@ -339,9 +339,9 @@ unur_distr_cont_set_cdf( struct unur_distr *distr, void *cdf )
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  CHECK_NULL(distr,0);
-  CHECK_NULL(cdf,0);
+  _unur_check_NULL( NULL,distr,0 );
   COOKIE_CHECK(distr,CK_DISTR_CONT,0);
+  _unur_check_NULL( distr->name,cdf,0 );
   
   DISTR.cdf = cdf;
   return 1;
@@ -365,7 +365,7 @@ unur_distr_cont_cdf( struct unur_distr *distr, double x )
   /* check arguments */
   CHECK_NULL(distr,-1.);
   COOKIE_CHECK(distr,CK_DISTR_CONT,-1.);
-  CHECK_NULL(DISTR.cdf,-1.);
+  _unur_check_NULL( distr->name,DISTR.cdf,-1.);
 
   return ((*(DISTR.cdf))(x,DISTR.params,DISTR.n_params));
 } /* end of unur_distr_cont_cdf() */
@@ -390,9 +390,9 @@ unur_distr_cont_set_params( struct unur_distr *distr, double *params, int n_para
   register int i;
 
   /* check arguments */
-  CHECK_NULL(distr,0);
+  _unur_check_NULL( NULL,distr,0);
   COOKIE_CHECK(distr,CK_DISTR_CONT,0);
-  if (n_params>0) CHECK_NULL(params,0);
+  if (n_params>0) _unur_check_NULL(distr->name,params,0);
   
   /* check new parameter for generator */
   if (n_params < 0 || n_params > UNUR_DISTR_MAXPARAMS ) {
@@ -429,7 +429,7 @@ unur_distr_cont_set_mode( struct unur_distr *distr, double mode )
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  CHECK_NULL(distr,0);
+  _unur_check_NULL( NULL,distr,0 );
   COOKIE_CHECK(distr,CK_DISTR_CONT,0);
   
   DISTR.mode = mode;
@@ -456,7 +456,7 @@ unur_distr_cont_get_mode( struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  CHECK_NULL(distr,0);
+  _unur_check_NULL( NULL,distr,0. );
   COOKIE_CHECK(distr,CK_DISTR_CONT,0);
 
   /* mode known ? */
@@ -484,7 +484,7 @@ unur_distr_cont_set_pdfarea( struct unur_distr *distr, double area )
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  CHECK_NULL(distr,0);
+  _unur_check_NULL( NULL,distr,0 );
   COOKIE_CHECK(distr,CK_DISTR_CONT,0);
 
   /* check new parameter for generator */
@@ -520,7 +520,7 @@ unur_distr_cont_set_domain( struct unur_distr *distr, double left, double right 
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  CHECK_NULL(distr,0);
+  _unur_check_NULL( NULL,distr,0 );
   COOKIE_CHECK(distr,CK_DISTR_CONT,0);
 
   /* check new parameter for generator */
@@ -695,9 +695,9 @@ unur_distr_discr_set_prob( struct unur_distr *distr, double *prob, int n_prob )
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  CHECK_NULL(distr,0);
-  CHECK_NULL(prob,0);
+  _unur_check_NULL( NULL,distr,0 );
   COOKIE_CHECK(distr,CK_DISTR_DISCR,0);
+  _unur_check_NULL( distr->name,prob,0 );
 
   /* check new parameter for generator */
   if (n_prob < 0) {
@@ -783,6 +783,3 @@ _unur_distr_discr_debug( struct unur_distr *distr, char *genid, int printvector 
 /*---------------------------------------------------------------------------*/
 #undef DISTR
 /*---------------------------------------------------------------------------*/
-
-
-

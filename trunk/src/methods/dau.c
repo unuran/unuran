@@ -610,7 +610,7 @@ _unur_dau_debug_table( struct unur_gen *gen )
   int i, j, m;
   
   /* check arguments */
-  CHECK_NULL(gen,/*void*/);  COOKIE_CHECK(par,CK_DAU_GEN,/*void*/);
+  CHECK_NULL(gen,/*void*/);  COOKIE_CHECK(gen,CK_DAU_GEN,/*void*/);
    
   log = unur_get_stream();
   

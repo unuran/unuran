@@ -986,7 +986,6 @@ _unur_tdr_create( struct unur_par *par )
      /*----------------------------------------------------------------------*/
 {
   struct unur_gen *gen;
-  unsigned variant;
 
   /* check arguments */
   CHECK_NULL(par,NULL);  COOKIE_CHECK(par,CK_TDR_PAR,NULL);
@@ -1004,10 +1003,12 @@ _unur_tdr_create( struct unur_par *par )
   memcpy( &(gen->distr), par->distr, sizeof( struct unur_distr ) );
 
   /* which transformation */
-  if      (PAR.c_T == 0.)    variant = TDR_VAR_T_LOG;
-  else if (PAR.c_T == -0.5)  variant = TDR_VAR_T_SQRT;
-  else                       variant = TDR_VAR_T_POW;
-  par->variant = (par->variant & (~TDR_VARMASK_T)) | variant;
+  if (PAR.c_T == 0.)
+    par->variant = (par->variant & (~TDR_VARMASK_T)) | TDR_VAR_T_LOG;
+  else if (_FP_same(PAR.c_T, -0.5))
+    par->variant = (par->variant & (~TDR_VARMASK_T)) | TDR_VAR_T_SQRT;
+  else
+    par->variant = (par->variant & (~TDR_VARMASK_T)) | TDR_VAR_T_POW;
 
   /** TODO: remove this **/
   if ((par->variant & TDR_VARMASK_T) == TDR_VAR_T_POW) {
@@ -1031,7 +1032,7 @@ _unur_tdr_create( struct unur_par *par )
       break;
     case TDR_VAR_T_POW:
       /** TODO **/
-      SAMPLE = NULL;
+      SAMPLE = _unur_sample_cont_error;
       return NULL;
       break;
     default:
@@ -1141,7 +1142,17 @@ _unur_tdr_sample_log( struct unur_gen *gen )
     if (pt->dTfx == 0.)
       x = pt->x + u/pt->fx;
     else
-      x = pt->x + log(pt->dTfx / pt->fx * u + 1.) / pt->dTfx;     /** TODO: possible over/underflow **/
+      {
+	double t = pt->dTfx * u / pt->fx;
+	if (fabs(t) > 1.e-6)
+	  x = pt->x + log(t + 1.) * u / (pt->fx * t);
+	  /* x = pt->x + log(t + 1.) / pt->dTfx; is cheaper but numerical unstable */
+	else if (fabs(t) > 1.e-8)
+	  /* use Taylor series */
+	  x = pt->x + u / pt->fx * (1 - t/2. + t*t/3.);
+	else
+	  x = pt->x + u / pt->fx * (1 - t/2.);
+      }
 
     /** TODO: possible over/underflow in the following calculations (?) **/
 
@@ -1239,7 +1250,6 @@ _unur_tdr_sample_sqrt( struct unur_gen *gen )
 	 however, this is unstable for small pt->dTfx */
       x = pt->x + (pt->Tfx*pt->Tfx*u) / (1.-pt->Tfx*pt->dTfx*u);  
       /* It cannot happen, that the denominator becomes 0 ! */
-      /** TODO: underflow possible ?? **/
     }
 
     /** TODO: possible over/underflow in the following calculations (?) **/
@@ -1381,12 +1391,20 @@ _unur_tdr_sample_check( struct unur_gen *gen )
     else
       switch( gen->variant & TDR_VARMASK_T ) {
       case TDR_VAR_T_LOG:
-	x = pt->x + log(pt->dTfx / pt->fx * u + 1.) / pt->dTfx;     /** TODO: possible over/underflow **/
+	{
+	  double t = pt->dTfx * u / pt->fx;
+	  if (fabs(t) > 1.e-6)
+	    x = pt->x + log(t + 1.) * u / (pt->fx * t);
+	  else if (fabs(t) > 1.e-8)
+	    /* use Taylor series */
+	    x = pt->x + u / pt->fx * (1 - t/2. + t*t/3.);
+	  else
+	    x = pt->x + u / pt->fx * (1 - t/2.);
+	}
 	break;
       case TDR_VAR_T_SQRT:
 	x = pt->x + (pt->Tfx*pt->Tfx*u) / (1.-pt->Tfx*pt->dTfx*u);  
 	/* It cannot happen, that the denominator becomes 0 (in theory!) */
-	/** TODO: underflow possible ?? **/
 	break;
       case TDR_VAR_T_POW:
 	/** TODO **/
@@ -1497,14 +1515,19 @@ _unur_tdr_free( struct unur_gen *gen )
   /* we cannot use this generator object any more */
   SAMPLE = NULL;   /* make sure to show up a programming error */
 
-
 #ifdef UNUR_ENABLE_LOGGING
   /* write info into log file */
   if (gen->debug) _unur_tdr_debug_free(gen);
 #endif
 
-  /* free linked list of intervals and others */
-  //   _unur_free_mblocks(GEN.mblocks);
+  /* free linked list of intervals */
+  {
+    struct unur_tdr_interval *iv,*next;
+    for (iv = GEN.iv; iv != NULL; iv = next) {
+      next = iv->next;
+      free(iv);
+    }
+  }
 
   /* free other memory not stored in list */
   _unur_free_genid(gen);
@@ -1984,8 +2007,6 @@ _unur_tdr_interval_division_point( struct unur_gen *gen, struct unur_tdr_interva
      /*   0  ... error                                                       */
      /*----------------------------------------------------------------------*/
 {
-  double delta;
-
   /* check arguments */
   CHECK_NULL(gen,0);  COOKIE_CHECK(gen,CK_TDR_GEN,0);
   CHECK_NULL(iv,0);   COOKIE_CHECK(iv,CK_TDR_IV,0); 
@@ -2028,25 +2049,26 @@ _unur_tdr_interval_division_point( struct unur_gen *gen, struct unur_tdr_interva
   /*    } */
   
   /* case (3) */
-  /** TODO: very very important to avoid some numerical errors **/
-
-  delta = iv->dTfx - iv->next->dTfx;
+  /** TODO: important to avoid some numerical errors **/
 
   /* case (2): computing intersection of tangents is unstable */
-  if (delta < TOLERANCE) {          /** TODO: define "very small" instead of TOLERANCE **/
+  if (_FP_approx(iv->dTfx, iv->next->dTfx)) {
     /* use mean point */
     *ipt = 0.5 * (iv->x + iv->next->x);
     return 1;
   }
 
   /* case (1): compute intersection point of tangents (regular case) */
-  *ipt = ((iv->next->Tfx - iv->Tfx) - (iv->next->dTfx * iv->next->x - iv->dTfx * iv->x)) / delta;
+  *ipt = ( (iv->next->Tfx - iv->Tfx - iv->next->dTfx * iv->next->x + iv->dTfx * iv->x) / 
+	   (iv->dTfx - iv->next->dTfx) );
   /* check position of intersection point */
-  if (*ipt < iv->x || *ipt > iv->next->x) {
-    /** TODO: skip over simple round off error. use mean in this case */
-    _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"intersection point of tangents not in interval. p.d.f. not T-concave!");
-    return 0;
-  }
+  if (_FP_less(*ipt, iv->x) || _FP_greater(*ipt, iv->next->x))
+    /* intersection point of tangents not in interval.
+       This is mostly the case for numerical reasons.
+       Thus we is the center of the interval instead.
+       if the p.d.f. not T-concave, it will catched at a later
+       point when we compare slope of tangents and squeeze. */
+    *ipt = 0.5 * (iv->x + iv->next->x);
 
   /* o.k. */
   return 1;
@@ -2111,11 +2133,13 @@ _unur_tdr_interval_area( struct unur_gen *gen, struct unur_tdr_interval *iv, dou
 	area = iv->fx / slope;
       else {
 	double t = slope * (x - iv->x);
-	if (fabs(t) < 1.e-8)
+	if (fabs(t) > 1.e-6)
+	  area = iv->fx * (x - iv->x) * ( exp(t) - 1. ) / t;
+	else if (fabs(t) > 1.e-8)
 	  /* use Taylor series */
 	  area = iv->fx * (x - iv->x) * (1. + t/2. + t*t/6.);
 	else
-	  area = iv->fx / slope * ( exp(slope*(x - iv->x)) - 1. );
+	  area = iv->fx * (x - iv->x) * (1. + t/2.);
       }
     }
     else { /* hat/squeeze almost constant */
@@ -2128,7 +2152,6 @@ _unur_tdr_interval_area( struct unur_gen *gen, struct unur_tdr_interval *iv, dou
   case TDR_VAR_T_SQRT:
     /* T(x) = -1./sqrt(x) */
     if (slope != 0.) {
-      /** TODO: cannot use this case if slope is `very small' **/
       if (x<=-INFINITY || x>= INFINITY)
 	area = 1. / ( iv->Tfx * slope );
       else {

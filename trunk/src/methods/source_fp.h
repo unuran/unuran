@@ -45,9 +45,17 @@
 /*---------------------------------------------------------------------------*/
 /* Comparisons                                                               */
 
+/* a == b (except precision bit) */
+#define _FP_same(a,b) \
+ (fabs((a)-(b)) <= ((fabs(a)<fabs(b))?fabs(a):fabs(b)) * DBL_EPSILON)
+
 /* a == b */
 #define _FP_equal(a,b) \
- (fabs((a)-(b)) <= ((fabs(a)<fabs(b)) ? fabs(a) : fabs(b))*UNUR_EPSILON)
+ (fabs((a)-(b)) <= ((fabs(a)<fabs(b))?fabs(a):fabs(b)) * UNUR_EPSILON)
+
+/* a is approximately equal to b */
+#define _FP_approx(a,b) \
+ (fabs((a)-(b)) <= ((fabs(a)<fabs(b))?fabs(a):fabs(b)) * FLT_EPSILON)
 
 /* a < b */
 #define _FP_less(a,b) \

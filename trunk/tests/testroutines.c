@@ -481,7 +481,7 @@ int run_chi2( FILE *LOG, int line, int type, UNUR_PAR *par, UNUR_DISTR *distr,
     print_distr_name( LOG,distr,"");
     fprintf(LOG,"\n");
     printf("0");
-    return 0;
+    return 2;
   }
 
   /* run chi^2 test */

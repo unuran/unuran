@@ -32,14 +32,14 @@ int main()
   UNUR_PAR   *par;      /* parameter object                      */
   UNUR_GEN   *gen;      /* generator object                      */
 
-  /* Declare object for uniform random number generator.         */
+  /* Declare objects for uniform random number generators.       */
   UNUR_URNG  *urng1, *urng2;    /* uniform generator objects     */
 
   /* PRNG only:                                                  */
   /* Make a object for uniform random number generator.          */
   /* For details see http://statistik.wu-wien.ac.at/prng/        */
   /* We use the Mersenne Twister.                                */
-  urng1 =  prng_new("mt19937(1237)");
+  urng1 = prng_new("mt19937(1237)");
   if (urng1 == NULL) exit (EXIT_FAILURE);
 
   /* Use a predefined standard distribution:                     */

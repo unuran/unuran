@@ -226,6 +226,10 @@ static const char distr_name[] = "burr";
 /*  static double _unur_dpdf_burr(double x, UNUR_DISTR *distr);   */
 static double _unur_cdf_burr(double x, UNUR_DISTR *distr);
 
+/*  static int _unur_upd_mode_burr( UNUR_DISTR *distr ); */
+/*  static int _unur_upd_area_burr( UNUR_DISTR *distr ); */
+static int _unur_set_params_burr( UNUR_DISTR *distr, double *params, int n_params );
+
 /*---------------------------------------------------------------------------*/
 
 double
@@ -291,11 +295,92 @@ _unur_cdf_burr( double x, UNUR_DISTR *distr )
 
 /*---------------------------------------------------------------------------*/
 
-/*****************************************************************************/
-/**                                                                         **/
-/**  Make distribution object                                               **/
-/**                                                                         **/
-/*****************************************************************************/
+int
+_unur_set_params_burr( UNUR_DISTR *distr, double *params, int n_params )
+{
+
+  /* check new parameter for generator */
+  if (n_params < 2) {
+    _unur_error(distr_name,UNUR_ERR_DISTR_NPARAMS,"too few"); return 0; }
+  if (n_params > 3) {
+    _unur_warning(distr_name,UNUR_ERR_DISTR_NPARAMS,"too many");
+    n_params = 3; }
+  CHECK_NULL(params,0);
+
+  /* check number of parameters for == 3 */
+  switch (distr->id) {
+  case UNUR_DISTR_BURR_III:
+  case UNUR_DISTR_BURR_IV:
+  case UNUR_DISTR_BURR_V:
+  case UNUR_DISTR_BURR_VI:
+  case UNUR_DISTR_BURR_IX:
+  case UNUR_DISTR_BURR_XII:
+    if (n_params < 3) {
+      _unur_error(distr_name,UNUR_ERR_DISTR_NPARAMS,"too few");
+      free( distr ); return 0;
+    }
+  default: /* all other cases */
+    if (n_params == 3) {
+      _unur_warning(distr_name,UNUR_ERR_DISTR_NPARAMS,"too many");
+      n_params = 2;
+    }
+  }
+
+  /* check parameters */
+  if (k <= 0. || (c <= 0. && n_params == 3) ) {
+    _unur_error(distr_name,UNUR_ERR_DISTR_DOMAIN,"k <= 0 || c <= 0");
+    return 0;
+  }
+
+  /* copy parameters */
+  DISTR.burr_type = burr_type;
+  switch (n_params) {
+  case 3:
+    DISTR.c = c;
+  case 2:
+    DISTR.k = k;
+  default:
+  }
+
+  /* number of arguments */
+  DISTR.n_params = n_params;
+
+  /* set (standard) domain */
+  if (distr->set & UNUR_DISTR_SET_STDDOMAIN) {
+    DISTR.domain[0] = -INFINITY;  /* left boundary  */
+    DISTR.domain[1] = INFINITY;   /* right boundary */
+
+    switch (distr->id) {
+    case UNUR_DISTR_BURR_I:
+      DISTR.domain[0] = 0.;       /* left boundary  */
+      DISTR.domain[1] = 1.;       /* right boundary */
+      break;
+    case UNUR_DISTR_BURR_III:
+      DISTR.domain[0] = 0.;       /* left boundary  */
+      break;
+    case UNUR_DISTR_BURR_IV:
+      DISTR.domain[0] = 0.;       /* left boundary  */
+      DISTR.domain[1] = DISTR.c;  /* right boundary */
+      break;
+    case UNUR_DISTR_BURR_V:
+      DISTR.domain[0] = -M_PI/2.; /* left boundary  */
+      DISTR.domain[1] = M_PI/2.;  /* right boundary */
+      break;
+    case UNUR_DISTR_BURR_X:
+      DISTR.domain[0] = 0.;       /* left boundary  */
+      break;
+    case UNUR_DISTR_BURR_XI:
+      DISTR.domain[0] = 0.;       /* left boundary  */
+      DISTR.domain[1] = 1.;       /* right boundary */
+      break;
+    case UNUR_DISTR_BURR_XII:
+      DISTR.domain[0] = 0.;       /* left boundary  */
+      break;
+    }
+  }
+
+  return 1;
+} /* end of _unur_set_params_burr() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -303,14 +388,6 @@ struct unur_distr *
 unur_distr_burr( double *params, int n_params )
 {
   register struct unur_distr *distr;
-
-  /* check new parameter for generator */
-  if (n_params < 2) {
-    _unur_error(distr_name,UNUR_ERR_DISTR_NPARAMS,"too few"); return NULL; }
-  if (n_params > 3) {
-    _unur_warning(distr_name,UNUR_ERR_DISTR_NPARAMS,"too many");
-    n_params = 3; }
-  CHECK_NULL(params,NULL);
 
   /* get new (empty) distribution object */
   distr = unur_distr_cont_new();
@@ -346,85 +423,30 @@ unur_distr_burr( double *params, int n_params )
   /* DISTR.dpdf = _unur_dpdf_burr; pointer to derivative of PDF    */
   DISTR.cdf  = _unur_cdf_burr;  /* pointer to CDF                  */
 
-  /* check number of parameters for == 3 */
-  switch (distr->id) {
-  case UNUR_DISTR_BURR_III:
-  case UNUR_DISTR_BURR_IV:
-  case UNUR_DISTR_BURR_V:
-  case UNUR_DISTR_BURR_VI:
-  case UNUR_DISTR_BURR_IX:
-  case UNUR_DISTR_BURR_XII:
-    if (n_params < 3) {
-      _unur_error(distr_name,UNUR_ERR_DISTR_NPARAMS,"too few");
-      free( distr ); return NULL;
-    }
-  default: /* all other cases */
-    if (n_params == 3) {
-      _unur_warning(distr_name,UNUR_ERR_DISTR_NPARAMS,"too many");
-      n_params = 2;
-    }
-  }
-
-  /* copy parameters */
-  DISTR.burr_type = burr_type;
-  switch (n_params) {
-  case 3:
-    DISTR.c = c;
-  case 2:
-    DISTR.k = k;
-  default:
-  }
-
-  /* check parameters */
-  if (DISTR.k <= 0. || (DISTR.c <= 0. && n_params == 3) ) {
-    _unur_error(distr_name,UNUR_ERR_DISTR_DOMAIN,"k <= 0 || c <= 0");
-    free( distr ); return NULL;
-  }
-
-  /* number of arguments */
-  DISTR.n_params = n_params;
-
-  /* mode and area below p.d.f. */
-/*    DISTR.mode = 0.; */
-/*    DISTR.area = 1.; */
-
-  /* domain */
-  DISTR.domain[0] = -INFINITY;  /* left boundary  */
-  DISTR.domain[1] = INFINITY;   /* right boundary */
-
-  switch (distr->id) {
-  case UNUR_DISTR_BURR_I:
-    DISTR.domain[0] = 0.;       /* left boundary  */
-    DISTR.domain[1] = 1.;       /* right boundary */
-    break;
-  case UNUR_DISTR_BURR_III:
-    DISTR.domain[0] = 0.;       /* left boundary  */
-    break;
-  case UNUR_DISTR_BURR_IV:
-    DISTR.domain[0] = 0.;       /* left boundary  */
-    DISTR.domain[1] = DISTR.c;  /* right boundary */
-    break;
-  case UNUR_DISTR_BURR_V:
-    DISTR.domain[0] = -M_PI/2.; /* left boundary  */
-    DISTR.domain[1] = M_PI/2.;  /* right boundary */
-    break;
-  case UNUR_DISTR_BURR_X:
-    DISTR.domain[0] = 0.;       /* left boundary  */
-    break;
-  case UNUR_DISTR_BURR_XI:
-    DISTR.domain[0] = 0.;       /* left boundary  */
-    DISTR.domain[1] = 1.;       /* right boundary */
-    break;
-  case UNUR_DISTR_BURR_XII:
-    DISTR.domain[0] = 0.;       /* left boundary  */
-    break;
-  }
-
   /* indicate which parameters are set */
   distr->set = ( UNUR_DISTR_SET_DOMAIN |
 		 UNUR_DISTR_SET_STDDOMAIN );
 		 /* UNUR_DISTR_SET_MODE   | */
 		 /* UNUR_DISTR_SET_PDFAREA ); */
+
+  /* set parameters for distribution */
+  if (!_unur_set_params_burr(distr,params,n_params)) {
+    free(distr);
+    return NULL;
+  }
+
+  /* normalization constant: none */
+
+  /* mode and area below p.d.f. */
+/*    DISTR.mode = 0.; */
+/*    DISTR.area = 1.; */
+
+  /* function for setting parameters and updating domain */
+  DISTR.set_params = _unur_set_params_burr;
+
+  /* function for updating derived parameters */
+  /* DISTR.upd_mode  = _unur_upd_mode_burr; funct for computing mode */
+  /* DISTR.upd_area  = _unur_upd_area_burr; funct for computing area */
 
   /* return pointer to object */
   return distr;

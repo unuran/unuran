@@ -103,6 +103,7 @@ UNUR_DISTR *unur_distr_beta(double *params, int n_params);
 /*---------------------------------------------------------------------------*/
 /* Burr family of distributions  [2; ch.12, p.54]                            */
 UNUR_DISTR *unur_distr_burr(double *params, int n_params);
+/** under construction **/
 
 /*---------------------------------------------------------------------------*/
 /* Cauchy distribution  [2; ch.16, p.299]                                    */

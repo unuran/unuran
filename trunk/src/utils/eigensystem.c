@@ -6,13 +6,13 @@
  *                                                                           *
  *   FILE: eigensystem.c                                                     *
  *                                                                           *
- *   Routines for calculating eigenvalues and eigenvectors of matrices.      *
+ *   Routines for calculating eigenvalues and eigenvectors of real           *
+ *   symmetric matrices.                                                     *
  *                                                                           *
  *   Mainly adapted and modified from FORTRAN77 code POLYEN created by       *
  *   G. Derflinger                                                           *
  *                                                                           *
  *****************************************************************************
-
  *****************************************************************************
  *                                                                           *
  *   Dept. for Statistics, University of Economics, Vienna, Austria          *
@@ -37,31 +37,28 @@
 #include <unur_source.h>
 #include "eigensystem_source.h"
 
-double EPS = DBL_EPSILON;
-double EPS2 = (DBL_EPSILON * DBL_EPSILON);
+/* ---------------------------------------------------------------------------- */
+
+const static double EPS = DBL_EPSILON;
+const static double EPS2 = (DBL_EPSILON * DBL_EPSILON);
 
 /* ---------------------------------------------------------------------------- */
 
-int _unur_eigensystem(int dim, const double *M, double *values, double *vectors);
-/* calculate eigenvalues and eigenvectors of a real symmetrix dim x dim matrix M */
-
-int _unur_eigensystem_house(int dim, double *A, double *d, double *e, double *e2);
+static int _unur_eigensystem_house ( int dim, double *A, double *d, double *e, double *e2 );
 /* householder reduction of a real symmetric matrix A to its tridiagonal form */
 
-int _unur_eigensystem_newqr(int dim, double *a, double *b, double *b2, double *g);
+static int _unur_eigensystem_newqr(int dim, double *a, double *b, double *b2, double *g);
 /* computes the eigenvalues of a real symmetric tri-diagonal matrix */
 
-int _unur_eigensystem_trinv(int dim, double *a, double *b, double *g, double *c,
+static int _unur_eigensystem_trinv(int dim, double *a, double *b, double *g, double *c,
                             double *p, double *q, double *r, double *w, double *y,
   	                    int *in);
 /* computes the eigenvectors of a real symmetric tri-diagonal matrix */
 
-int _unur_eigensystem_back(int dim, double *a, double *e, double *c);
+static int _unur_eigensystem_back(int dim, double *a, double *e, double *c);
 /* backtransformation of eigenvectors of tridiagonal matrix to original matrix */
 
-
 /* ---------------------------------------------------------------------------- */
-
 
 int 
 _unur_eigensystem_house(int dim, double *A, double *d, double *e, double *e2)
@@ -80,7 +77,7 @@ _unur_eigensystem_house(int dim, double *A, double *d, double *e, double *e2)
 	/* vol. 2, Springer 1971, p. 215					*/
 	/*----------------------------------------------------------------------*/
 {
-#define idx1(a,b) ((a-1)*dim+(b-1))
+#define idx1(a,b) (((a)-1)*dim+((b)-1))
 
   int i,j,k,k1;
   double s,f,g,h,ek,fk,uj; /* parameter for Householder algorithm */
@@ -125,14 +122,12 @@ _unur_eigensystem_house(int dim, double *A, double *d, double *e, double *e2)
   e[dim-2]=A[idx1(dim,dim-1)];
   e2[dim-2]=e[dim-2]*e[dim-2];
 
-  return 0; /* UNUR_SUCCESS */
+  return UNUR_SUCCESS;
 
 #undef idx1
 }
 
-
 /* ---------------------------------------------------------------------------- */
-
 
 int _unur_eigensystem_newqr(int dim, double *a, double *b, double *b2, double *g)
 	/*----------------------------------------------------------------------*/
@@ -273,14 +268,13 @@ next_eigenvalue:
   
   g[dim-1] = xnull + a[0];
 
-  return 0; /* UNUR_SUCCESS */
+  return UNUR_SUCCESS;
 
 #undef ZERO
 #undef ONE
 #undef TWO
 #undef MAXIT
 }
-
 
 /* ---------------------------------------------------------------------------- */
 
@@ -401,7 +395,7 @@ _unur_eigensystem_trinv(int dim, double *a, double *b, double *g, double *c,
 
   }
   
-  return 0; /* UNUR_SUCESS */
+  return UNUR_SUCCESS;
 
 #undef idx1  
 }
@@ -450,14 +444,12 @@ int _unur_eigensystem_back(int dim, double *a, double *e, double *c)
     }
   }
 
-  return 0; /* UNUR_SUCESS */
+  return UNUR_SUCCESS;
 
 #undef idx1  
 }
 
-
 /* ---------------------------------------------------------------------------- */
-
 
 int _unur_eigensystem(int dim, const double *M, double *values, double *vectors)
 {
@@ -512,7 +504,7 @@ int _unur_eigensystem(int dim, const double *M, double *values, double *vectors)
 
   /* obtain the eigenvalues */
   ret = _unur_eigensystem_newqr(dim, &wk[dim], &wk[2*dim], &wk[3*dim], values);
-  if (ret != 0) {
+  if (ret != UNUR_SUCCESS) {
     /* could not compute eigenvalues */
     goto free_memory;
   }
@@ -523,8 +515,6 @@ int _unur_eigensystem(int dim, const double *M, double *values, double *vectors)
   
   /* obtain eigenvectors of original matrix A */
   _unur_eigensystem_back(dim, A, codiag, vectors);
-
-
   
 free_memory:
 
@@ -536,7 +526,6 @@ free_memory:
 
   return ret; 
 }
-
 
 /* ---------------------------------------------------------------------------- */
 

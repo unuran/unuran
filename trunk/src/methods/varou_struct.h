@@ -42,7 +42,8 @@
 struct unur_varou_cone {
   long   *index;   /* indices of the spanning cone vectors (unit verteces)   */
   double *length;    /* lengths of the spanning vectors                      */
-  double *normal;  /* normal vector to tangential surface */
+  double *spoint;  /* touching point of surface tangential plane             */
+  double *normal;  /* normal vector to tangential plane through spoint       */
   double unit_volume; /* volume of cone spanned by unit vectors              */
   double volume;   /* volume of cone : spanning vectors + tangential surface */
   long   index_normal; /* index of cone vector at which we lay tangent plane */

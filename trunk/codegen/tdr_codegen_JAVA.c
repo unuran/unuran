@@ -106,8 +106,8 @@ _unur_acg_JAVA_tdr_ps( struct unur_gen *gen,
   fprintf(out, "\t\t/* data */\n");
 
   /* guide table */
-  fprintf(out, "\t\tstatic final int guide_size = %d;\n", GEN.guide_size);
-  fprintf(out, "\t\tstatic final int guide[] = {\n\t\t\t");
+  fprintf(out, "\t\tfinal int guide_size = %d;\n", GEN.guide_size);
+  fprintf(out, "\t\tfinal int guide[] = {\n\t\t\t");
   iv = GEN.iv;
   j = 0;
   for (i=0; i<GEN.guide_size; i++) {
@@ -127,10 +127,10 @@ _unur_acg_JAVA_tdr_ps( struct unur_gen *gen,
   fprintf(out," };\n");
 
   /* hat function */
-  fprintf(out, "\t\tstatic final double Atotal = %.20e;\n", GEN.Atotal);
+  fprintf(out, "\t\tfinal double Atotal = %.20e;\n", GEN.Atotal);
 
 
-  fprintf(out, "\t\tstatic final IV[] iv = {\n");
+  fprintf(out, "\t\tfinal IV[] iv = {\n");
   for ( iv=GEN.iv , i=0; i<GEN.n_ivs; iv=iv->next, i++){
     fprintf(out, "\t\t\tnew IV(\t"); /* zeilenklammer auf */
     fprintf(out, "%.20e, ",iv->x);             /* x         */
@@ -185,7 +185,7 @@ _unur_acg_JAVA_tdr_ps( struct unur_gen *gen,
   /* look up in guide table and search for interval */
   fprintf(out, "\t\t\tI =  guide[(int) (U * guide_size)];\n");
   fprintf(out, "\t\t\tU *= Atotal;\n");
-  fprintf(out, "\t\t\twhile (iv[I].Acum < U) I++;\n");
+  fprintf(out, "\t\t\twhile (iv[I].Acum < U) { I++; }\n");
 
   /* reuse of uniform random number */
   fprintf(out, "\t\t\tU -= iv[I].Acum - iv[I].Ahatr;\n");
@@ -195,10 +195,10 @@ _unur_acg_JAVA_tdr_ps( struct unur_gen *gen,
   switch (gen->variant & TDR_VARMASK_T) {
   case TDR_VAR_T_LOG:
     fprintf(out, "\t\t\tt = iv[I].dTfx * U / iv[I].fx;\n");
-    fprintf(out, "\t\t\tif (abs(t) > 1.e-8)\n");
-    fprintf(out, "\t\t\t\tX = iv[I].x + log(t + 1.) * U / (iv[I].fx * t);\n");
-    fprintf(out, "\t\t\telse\n");
-    fprintf(out, "\t\t\t\tX = iv[I].x + U / iv[I].fx * (1 - t/2.);\n");
+    fprintf(out, "\t\t\tif (Math.abs(t) > 1.e-8) {\n");
+    fprintf(out, "\t\t\t\tX = iv[I].x + Math.log(t + 1.) * U / (iv[I].fx * t); }\n");
+    fprintf(out, "\t\t\telse {\n");
+    fprintf(out, "\t\t\t\tX = iv[I].x + U / iv[I].fx * (1 - t/2.); }\n");
     break;
   case TDR_VAR_T_SQRT:
     fprintf(out, "\t\t\tX = iv[I].x + (U * iv[I].Tfx * iv[I].Tfx) / (1.-iv[I].Tfx*iv[I].dTfx*U);\n");
@@ -209,13 +209,13 @@ _unur_acg_JAVA_tdr_ps( struct unur_gen *gen,
   fprintf(out, "\t\t\tV = random();\n");
 
   /* squeeze acceptance */
-  fprintf(out, "\t\t\tif (V <= iv[I].sq) return X;\n");
+  fprintf(out, "\t\t\tif (V <= iv[I].sq) { return X; }\n");
 
   /* evaluate hat at X:
      get uniform random number between 0 and hat(X) */
   switch (gen->variant & TDR_VARMASK_T) {
   case TDR_VAR_T_LOG:
-    fprintf(out, "\t\t\tV *= iv[I].fx * exp(iv[I].dTfx * (X - iv[I].x));\n");
+    fprintf(out, "\t\t\tV *= iv[I].fx * Math.exp(iv[I].dTfx * (X - iv[I].x));\n");
     break;
   case TDR_VAR_T_SQRT:
      /* transformed hat at X */ 
@@ -225,7 +225,7 @@ _unur_acg_JAVA_tdr_ps( struct unur_gen *gen,
   } /* end switch */
 
   /* main rejection */
-  fprintf(out, "\t\t\tif (V <= %s(X)) return X;\n",pdf_name);
+  fprintf(out, "\t\t\tif (V <= %s(X)) { return X; }\n",pdf_name);
 
   /* end of loop */
   fprintf(out, "\t\t}\n");
@@ -276,7 +276,7 @@ _unur_acg_JAVA_tdr_class_IV( struct unur_gen *gen, FILE *out )
   _unur_acg_JAVA_print_section_title(out, "Class for intervals.");
 
   /* class IV */
-  fprintf(out,"\tprivate class IV {\n");
+  fprintf(out,"\tprivate static class IV {\n");
   fprintf(out,"\t\tprivate double x, fx, Tfx, dTfx, sq, Acum, Ahatr;\n\n");
 
   fprintf(out, "\t\t/* Constructor */\n");
@@ -328,7 +328,7 @@ _unur_acg_JAVA_begin_class( struct unur_gen *gen, FILE *out, const char *class_n
 {
 
   _unur_acg_JAVA_print_section_title(out, "Class for generator.");
-  fprintf(out,"public class %s implements Math {\n", class_name);
+  fprintf(out,"public class %s {\n", class_name);
 
   /* o.k. */
   return 1;

@@ -105,7 +105,7 @@ double
 _unur_pdf_powerexponential( double x, UNUR_DISTR *distr )
 { 
   register double *params = DISTR.params;
-  return exp( - pow(fabs(x), tau) - LOGNORMCONSTANT);
+  return exp( - pow( fabs(x), tau ) - LOGNORMCONSTANT);
 } /* end of _unur_pdf_powerexponential() */
 
 /*---------------------------------------------------------------------------*/

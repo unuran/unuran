@@ -31,7 +31,7 @@ open LOG, ">$file_prefix.log" or die "Cannot open log file $file_prefix.log";
 
 $GCC = "gcc -Wall -ansi -pedantic -I../../src -L../../src";
 $G77 = "g77 -Wall";
-$JAVAC = "javac -w1";
+$JAVAC = "javac";
 
 # ----------------------------------------------------------------
 
@@ -111,9 +111,11 @@ my $C_src = "$C_exec.c";
 my $FORTRAN_exec = "$file_prefix\_FORTRAN";
 my $FORTRAN_src = "$FORTRAN_exec.f";
 
+my $JAVA_urand_src = "./Urand.java";
 my $JAVA_exec = "$file_prefix\_JAVA";
 my $JAVA_src = "$JAVA_exec.java";
-my $JAVA_urand_src = "./Urand.java";
+my $JAVA_class = $JAVA_exec;
+$JAVA_class =~ s/^\.\///;
 
 # ----------------------------------------------------------------
 # Get code for Uniform random number generator
@@ -215,11 +217,11 @@ system "$JAVAC $JAVA_src";
 print_log("Run tests ...\n\n");
 
 # Start generators
-open UNURAN, "$UNURAN_exec |" or die "cannot run $UNURAN_exec"; 
-open C, "$C_exec |" or die "cannot run $C_exec"; 
-open FORTRAN, "$FORTRAN_exec |" or die "cannot run $FORTRAN_exec"; 
+open UNURAN, "$UNURAN_exec |";
+open C, "$C_exec |";
+open FORTRAN, "$FORTRAN_exec |";
 
-open JAVA, "java $JAVA_exec |" or die "cannot run $JAVA_exec"; 
+open JAVA, "java $JAVA_class |";
 $HAVE_JAVA = ($?) ? 0 : 1;
 
 # Run generatores and compare output
@@ -586,18 +588,15 @@ public class Urand {
     /* class variables */
 
     private static int xn = 1;  /* seed */
+    private static final int a = 16807;
+    private static final int m = 2147483647;
+    private static final int q = 127773;      /* m / a */
+    private static final int r = 2836;        /* m % a */
 
     /* member functions */
-
     public static double random() 
     {
-
-        static final int a = 16807;
-        static final int m = 2147483647;
-        static final int q = 127773;      /* m / a */
-        static final int r = 2836;        /* m % a */
-
-	private int hi, lo, test;
+	int hi, lo, test;
 
         hi = xn / q;
         lo = xn % q;
@@ -935,7 +934,7 @@ EOS
 \t\tSystem.out.println("[$test_key] $distr");
 \t\tUrand.useed($seed);
 \t\tSystem.out.println("start");
-\t\tfor (private int i = 0; i<$sample_size;i++) {
+\t\tfor (int i = 0; i<$sample_size;i++) {
 \t\t\tx = $gen_name.sample();
 \t\t\tpdfx = $gen_name.pdf(x);
 \t\t\tSystem.out.println( x +" "+ pdfx);
@@ -1021,8 +1020,8 @@ sub make_JAVA_main
 public class $class {
 \tpublic static void main(String[] args) throws Exception {
 
-\t\tprivate double x;
-\t\tprivate double pdfx;
+\t\tdouble x;
+\t\tdouble pdfx;
 
 $body
 

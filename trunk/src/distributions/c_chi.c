@@ -107,7 +107,7 @@ _unur_pdf_chi(double x, UNUR_DISTR *distr)
     /* out of support */
     return 0.;
 
-  return (exp(log(x)*(nu - 1.) -x*x/2. - LOGNORMCONSTANT));
+  return (exp( log(x)*(nu - 1.) -x*x/2. - LOGNORMCONSTANT ));
 
 } /* end of _unur_pdf_chi() */
 

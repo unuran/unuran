@@ -135,7 +135,7 @@ _unur_acg_JAVA_urng( FILE *out )
   fprintf(out,"\t// Mersenne Twister by Makoto Matsumoto and Takuji Nishimura,\n");
   fprintf(out,"\t// see http://www.math.keio.ac.jp/~matumoto/emt.html.\n");
   fprintf(out,"\t//\n");
-  fprintf(out,"\t// static double Random ()\n");
+  fprintf(out,"\t// double Random ()\n");
   fprintf(out,"\t// {\n");
   fprintf(out,"\t//\t...\n");
   fprintf(out,"\t//\treturn U;\n");

@@ -162,7 +162,7 @@ sub make_PDFgen_JAVA
 	next unless $DISTR->{$d}->{"=TYPE"} eq "CONT";
 
 	# Function prototype
-	$PDFgen_prototypes .= "static ".get_PDFgen_funct_JAVA($d).";\n";
+	$PDFgen_prototypes .= get_PDFgen_funct_JAVA($d).";\n";
 
 	# Function for distribution
 	$PDFgen .= make_PDF_distr_JAVA($DISTR,$d);
@@ -427,20 +427,20 @@ sub make_PDF_distr_JAVA
     $gencode .= 
 	"\t_unur_acg_JAVA_print_section_title(out, \"PDF for $d distribution.\");\n\n";
 
-    # compose PDF name
-    $gencode .= 
-	"\tfprintf (out,\"\\tstatic double %s (double x)\\n\\t{\\n\",".
-        " ((pdf) ? pdf : \"pdf_$d\") );\n";
-
     # Constants (parameters)
     $gencode .= 
-	"\tfprintf (out,\"\\t\\t/* parameters for PDF */\\n\");\n";
+	"\tfprintf (out,\"\\t/* parameters for PDF */\\n\");\n";
 
     #   List of parameters
     $gencode .= make_PDF_params_JAVA($DISTR,$d);
 
     #   Normalization constant
     $gencode .= make_PDF_normconstant_JAVA($DISTR,$d);
+
+    # compose PDF name
+    $gencode .= 
+	"\tfprintf (out,\"\\tstatic double %s (double x)\\n\\t{\\n\",".
+        " ((pdf) ? pdf : \"pdf_$d\") );\n";
 
     # Body of PDF
     $gencode .= make_PDF_body_JAVA($DISTR,$d);
@@ -603,7 +603,7 @@ sub make_PDF_params_JAVA
 	if ($have_n_params) {
 	    $params .=
 		"\tif (".$DISTR->{$d}->{"=PDF"}->{"=DISTR"}.".n_params > $i)\n".
-		"\t\tfprintf (out,\"\\t\\tstatic final double ".
+		"\t\tfprintf (out,\"\\tprivate static final double ".
 		$in_params->[$i].
 		" = %.20e;\\n\",".
 		$DISTR->{$d}->{"=PDF"}->{"=DISTR"}.".params[$i]);\n";
@@ -681,7 +681,7 @@ sub make_PDF_normconstant_JAVA
     if ($DISTR->{$distr}->{"=PDF"}->{"=CONST"}) {
 	if ($DISTR->{$distr}->{"=PDF"}->{"=BODY"} =~ /((LOG)?NORMCONSTANT)/) {
 	    return 
-		"\tfprintf (out,\"\\t\\tstatic final double $1 = %.20e;\\n\\n\",".
+		"\tfprintf (out,\"\\tprivate static final double $1 = %.20e;\\n\\n\",".
 		$DISTR->{$distr}->{"=PDF"}->{"=CONST"}.");\n";
 	}
     }
@@ -877,6 +877,10 @@ sub make_PDF_body_JAVA
        
         #remove declaratien "register"
         $l =~ s/register//;
+
+	# modify mathematical functions
+	$l =~ s/(\W)(exp|log|pow)(\W)/$1Math\.$2$3/g;
+	$l =~ s/(\W)fabs(\W)/$1Math\.abs$2$3/g;
 
 	$body .= "\tfprintf (out,\"\\t$l\\n\");\n";
     }

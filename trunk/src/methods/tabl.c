@@ -128,6 +128,7 @@ static struct unur_gen *_unur_tabl_create( struct unur_par *par );
 
 static double _unur_tabl_sample( struct unur_gen *gen );
 static double _unur_tabl_sample_check( struct unur_gen *gen );
+/** TODO:  static double _unur_tabl_sample_adaptive( struct unur_gen *gen ); **/
 /*---------------------------------------------------------------------------*/
 /* sample from generator                                                     */
 /*---------------------------------------------------------------------------*/
@@ -851,6 +852,10 @@ _unur_tabl_create( struct unur_par *par )
 
 /*****************************************************************************/
 
+#if 0
+
+/** TODO **/
+
 double
 _unur_tabl_sample_adaptive( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
@@ -866,77 +871,21 @@ _unur_tabl_sample_adaptive( struct unur_gen *gen )
      /*   return 0.                                                          */
      /*----------------------------------------------------------------------*/
 { 
-  struct unur_tabl_interval *iv;
-  double u,x,fx;
-
-  /* check arguments */
-  CHECK_NULL(gen,0.);  COOKIE_CHECK(gen,CK_TABL_GEN,0.);
-
-  while(1) {
-
-    do {
-      /* since we do not upgrade the guide table every time we 
-	 split an interval, there exists "black intervals".
-	 The total area below the hat decreases, but the values 
-	 of iv->Acum cannot be upgraded every time.
-	 So there arise holes, i.e., these "black intervals",
-	 that represent area above the hat function (cut off by
-	 the splitting process).
-	 if we hit such a hole, we have to reject the generated 
-	 interval, and try again. 
-      */
-
-      /* sample from U(0,1) */
-      u = _unur_call_urng(gen->urng);
-    
-      /* look up in guide table and search for interval */
-      iv =  GEN.guide[(int) (u * GEN.guide_size)];
-      COOKIE_CHECK(iv,CK_TABL_IV,0.);
-      u *= GEN.Atotal;
-      while (iv->Acum < u) {
-	if (iv->next == NULL)
-	  /* we have hit an imaginary "black interval" at the end of the list. try again. */
-	  break;
-	iv = iv->next;
-	COOKIE_CHECK(iv,CK_TABL_IV,0.);
-      }
-      
-      /* reuse of uniform random number */
-      u = iv->Acum - u;
-    
-    } while (u > iv->Ahat); /* check whether we have hit a "black interval" */
-
-    /* generation w.r.t. squeeze should be inversion */
-    if (iv->slope>0)
-      u = iv->Ahat - u;
-
-    if( u <= iv->Asqueeze ) {
-      /* below squeeze */
-      return( iv->xmax + (iv->Asqueeze-u) * (iv->xmin - iv->xmax)/iv->Asqueeze ); 
-      /** TODO: possible overflow/underflow ?? **/
-    }
-    else {
-      /* between spueeze and hat --> have to valuate p.d.f. */
-      x = iv->xmax + (u-iv->Asqueeze) * (iv->xmin - iv->xmax)/(iv->Ahat - iv->Asqueeze);
-      /** TODO: possible overflow/underflow ?? **/
-      fx = PDF(x);
-      /* split interval */
-      if (GEN.n_ivs < GEN.max_ivs && GEN.max_ratio * GEN.Atotal > GEN.Asqueeze) {
-      	_unur_tabl_split_interval( gen, iv, x, fx, (gen->variant & TABL_VARMASK_SPLIT) );
-  	_unur_tabl_make_guide_table(gen);
-	/** TODO: it is not necessary to update the guide table every time. 
-	    But then (1) some additional bookkeeping is required and
-	    (2) the guide table method requires a acc./rej. step. **/
-      }
-      /* now accept or reject */
-      u = _unur_call_urng(gen->urng);
-      if (fx >= u * (iv->fmax - iv->fmin) + iv->fmin)
-	/** TODO: possible overflow/underflow ?? **/
-	return x;
-    }
-  }
-
+  /* 
+     since we do not upgrade the guide table every time we 
+     split an interval, there exists "black intervals".
+     The total area below the hat decreases, but the values 
+     of iv->Acum cannot be upgraded every time.
+     So there arise holes, i.e., these "black intervals",
+     that represent area above the hat function (cut off by
+     the splitting process).
+     if we hit such a hole, we have to reject the generated 
+     interval, and try again. 
+  */
+  ;
 } /* end of _unur_tabl_sample_adaptive() */
+
+#endif
 
 /*****************************************************************************/
 
@@ -981,12 +930,10 @@ _unur_tabl_sample( struct unur_gen *gen )
     if( u < iv->Asqueeze ) {
       /* below squeeze */
       return( iv->xmax + (iv->Asqueeze-u) * (iv->xmin - iv->xmax)/iv->Asqueeze ); 
-      /** TODO: possible overflow/underflow ?? **/
     }
     else {
       /* between spueeze and hat --> have to valuate p.d.f. */
       x = iv->xmax + (u-iv->Asqueeze) * (iv->xmin - iv->xmax)/(iv->Ahat - iv->Asqueeze);
-      /** TODO: possible overflow/underflow ?? **/
       fx = PDF(x);
       /* split interval */
       if (GEN.n_ivs < GEN.max_ivs && GEN.max_ratio * GEN.Atotal > GEN.Asqueeze) {
@@ -999,7 +946,6 @@ _unur_tabl_sample( struct unur_gen *gen )
       /* now accept or reject */
       u = _unur_call_urng(gen->urng);
       if (fx >= u * (iv->fmax - iv->fmin) + iv->fmin)
-	/** TODO: possible overflow/underflow ?? **/
 	return x;
     }
   }
@@ -1049,7 +995,6 @@ _unur_tabl_sample_check( struct unur_gen *gen )
     if( u <= iv->Asqueeze ) {
       /* below squeeze */
       x = iv->xmax + (iv->Asqueeze-u) * (iv->xmin - iv->xmax)/iv->Asqueeze;
-      /** TODO: possible overflow/underflow ?? **/
       /* test whether p.d.f. is monotone */
       fx = PDF(x);
       if (fx > iv->fmax)
@@ -1062,7 +1007,6 @@ _unur_tabl_sample_check( struct unur_gen *gen )
     else {
       /* between spueeze and hat --> have to valuate p.d.f. */
       x = iv->xmax + (u-iv->Asqueeze) * (iv->xmin - iv->xmax)/(iv->Ahat - iv->Asqueeze);
-      /** TODO: possible overflow/underflow ?? **/
       fx = PDF(x);
       /* test whether p.d.f. is monotone */
       if (fx > iv->fmax)
@@ -1081,7 +1025,6 @@ _unur_tabl_sample_check( struct unur_gen *gen )
       /* now accept or reject */
       u = _unur_call_urng(gen->urng);
       if (fx >= u * (iv->fmax - iv->fmin) + iv->fmin)
-	/** TODO: possible overflow/underflow ?? **/
 	return x;
     }
   }

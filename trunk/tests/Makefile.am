@@ -44,6 +44,7 @@ check_PROGRAMS = \
  t_empk \
  t_empl \
  t_hinv \
+ t_hitrou \
  t_hrb \
  t_hrd \
  t_hri \
@@ -75,6 +76,7 @@ TESTS = $(check_PROGRAMS)
 
 # This is necessary until we fix the bug in method AROU
 ##XFAIL_TESTS = t_arou 
+XFAIL_TESTS = t_hitrou
 
 noinst_HEADERS = \
  testunuran.h

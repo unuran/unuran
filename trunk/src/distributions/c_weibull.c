@@ -240,6 +240,7 @@ _unur_set_params_weibull( UNUR_DISTR *distr, double *params, int n_params )
     DISTR.alpha = alpha;
     n_params = 3;           /* number of parameters for non-standard form */
   default:
+    break;
   }
 
   /* store number of parameters */

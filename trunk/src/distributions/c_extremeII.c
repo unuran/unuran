@@ -236,6 +236,7 @@ _unur_set_params_extremeII( UNUR_DISTR *distr, double *params, int n_params )
     DISTR.zeta = zeta;
     n_params = 3;           /* number of parameters for non-standard form */
   default:
+    break;
   }
 
   /* store number of parameters */

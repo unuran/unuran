@@ -1115,8 +1115,7 @@ _unur_distr_discr_find_mode(struct unur_distr *distr )
     }
     if (fx[2] == 0.){  /* no success */
       _unur_error(distr->name,UNUR_ERR_DISTR_DATA,
-         "In find_mode(): no positive entry in probability vector found
-          during 100 trials");
+         "In find_mode(): no positive entry in PV found during 100 trials");
       return 0;  
     }
 

@@ -811,6 +811,7 @@ _unur_utdr_hat( struct unur_gen *gen )
   tlys = 0.;
   dl = 0.;
   dr = 0.;
+  volr = 0.;
 
   /* start of the set-up procedure */
 

@@ -552,7 +552,6 @@ if (i < end ) return i;
 }
 
 
-#define CALC_TEST   TRUE
 
 /* --- Import aus SCANNER.C: --- */ 
 extern int ros, roe, aos, aoe, mos, moe, hos, hoe, oss, ose, scs, sce; 
@@ -1047,6 +1046,11 @@ static struct treenode *create_node(char *symb, int token, int symbkind,
   sum  = strcmp(root->symb,"+")==0 || strcmp(root->symb,"-")==0; 
   prod = strcmp(root->symb,"*")==0 || strcmp(root->symb,"/")==0; 
   if (sum || prod) check_reorg(root); 
+
+  /* TIRLER */
+  // printf("Adresse root:%p  -   Symbol: %s --- %s\n",root,symb,root->symb);
+
+
   return root; 
 } 
 /**************** ****************** ****************** *****************/ 
@@ -1114,7 +1118,6 @@ static int simplification(char *symb, int t, struct treenode *l,
      return TRUE; 
   } 
 
-  #if CALC_TEST
 
   /* --- Ueberpruefen, ob beide Blaetter Konstanten => ausrechnen: --- */ 
   if( l_const && r_const ){ 
@@ -1131,7 +1134,6 @@ static int simplification(char *symb, int t, struct treenode *l,
      return TRUE; 
   } 
 
-  #endif
 
   return FALSE; 
 } 
@@ -1299,6 +1301,12 @@ void show_tree(struct treenode *root)
           root->left, root->right); 
           show_tree(root->right); 
           show_tree(root->left); 
+
+ /* TIRLER */
+	  //  printf("Adresse root:%p  -   Symbol:    --- %s\n",root,root->symb);
+
+
+
      }else{ printf("NULL"); 
   } 
   count--; 
@@ -1308,7 +1316,8 @@ void show_tree(struct treenode *root)
 void _unur_fstr_free(struct treenode *root)  
                           /* Gibt Speicher fuer schon exist. Baum frei. */ 
 { 
-  if( root != NULL ){ 
+  if( root != NULL ){
+ 
      _unur_fstr_free(root->right); 
      _unur_fstr_free(root->left); 
      free((char*)root); 
@@ -2031,9 +2040,13 @@ double  _unur_fstr_eval_tree(struct treenode *E_root, double argument)
 
   xtok=find_index("X",uis,ufe,0);
   ftok=find_index("F",uis,ufe,0);
-  froot=(*symbol[ftok].tree).right;             /* Achtung Fehler in Beschreibung !!! */
+    froot=(*symbol[ftok].tree).right;             /* Achtung Fehler in Beschreibung !!! */
+  //   froot=symbol[ftok].tree;  
+  show_tree(E_root);
   symbol[xtok].val= argument;
-  result=tree2float(froot);
+  show_tree(E_root); 
+ result=tree2float(froot);
+  // show_tree(E_root);
   return result;
   }
 

@@ -26,7 +26,7 @@ int main()
   //  UNUR_GEN   *gen;      /* generator */
 
   double fpar[2] = {2.,2.};
-  double cp[5] = {0.1, 0.5,0.6,2.,10.};
+  double cp[5] = {-10.,-2.,-0.6,-0.5,-0.1};
   
   UNUR_URNG *urng, *urng_aux;
 
@@ -46,7 +46,7 @@ int main()
   par = unur_tdr_new(distr);
   unur_set_urng_aux(par,urng_aux);
   unur_tdr_set_variant_ps(par);
-/*    unur_tdr_set_cpoints(par,5,cp); */
+  unur_tdr_set_cpoints(par,5,cp);
 /*    unur_tdr_set_max_sqhratio(par,0.); */
 /*    unur_tdr_set_verify(par,1); */
   unur_tdr_set_c(par,0.);

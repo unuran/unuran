@@ -674,12 +674,12 @@ _unur_tdr_ps_starting_intervals( struct unur_par *par, struct unur_gen *gen )
 
     /* compute parameters for interval */
     switch (_unur_tdr_ps_interval_parameter(gen, iv)) {
-    case -2:     /* p.d.f. not T-concave */
-      return 0;
     case 1:     /* computation of parameters for interval successful */
       /* skip to next interval */
       iv = iv->next;
       continue;
+    case -2:     /* p.d.f. not T-concave */
+      return 0;
     case -1:    /* interval unbounded */
       /* split interval */
       break;
@@ -705,28 +705,74 @@ _unur_tdr_ps_starting_intervals( struct unur_par *par, struct unur_gen *gen )
 	iv->next->prev = iv;
       continue;
     }
-    
-    /* area below hat infinite.
-       insert new construction point. */
-    x = _unur_arcmean(iv->x,iv->next->x);  /* use mean point in interval */
-    
-    /* value of p.d.f. at x */
-    fx = PDF(x);
 
-    /* add a new interval, but check if we had to used too many intervals */
+    /* check if we had to used too many intervals */
     if (GEN.n_ivs >= GEN.max_ivs) {
       /* we do not want to create too many intervals */
       _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"cannot create bounded hat!");
       return 0;
     }
-    iv_new = _unur_tdr_interval_new( gen, x, fx, FALSE );
-    if (iv_new == NULL) return 0; /* pdf(x) < 0. */
+    
+    /* area below hat infinite --> insert new construction point.
+       We have to find out on which side of the construction point
+       the area of the hat is unbounded. */
+    if (iv->Ahatr >= INFINITY) {
 
-    /* insert into linked list */
-    iv_new->prev = iv;
-    iv_new->next = iv->next;
-    iv->next->prev = iv_new;
-    iv->next = iv_new;
+      /* right hand side */
+      CHECK_NULL(iv->next,0);  /* this should never be the last (virtual) interval */
+
+      /* use mean point between the construction point and the right
+	 boundary of the interval.
+	 (The right boundary point might be a better choice
+	 but cannot be used in every case.) */
+      x = _unur_arcmean(iv->x,iv->next->ip);
+      fx = PDF(x);
+
+      iv_new = _unur_tdr_interval_new( gen, x, fx, FALSE );
+      if (iv_new == NULL) return 0; /* pdf(x) < 0. */
+
+      /* insert the new interval after the old one. */
+      iv_new->prev = iv;
+      iv_new->next = iv->next;
+      iv->next->prev = iv_new;
+      iv->next = iv_new;
+
+      /* the old interval has to be recomputed. */
+    }
+
+    else {
+      /* left hand side */
+
+      x = _unur_arcmean(iv->ip,iv->x);
+      fx = PDF(x);
+
+      iv_new = _unur_tdr_interval_new( gen, x, fx, FALSE );
+      if (iv_new == NULL) return 0; /* pdf(x) < 0. */
+
+      if (iv->prev) {
+	/* insert new interval in just before the old unbounded one */
+	iv_new->prev = iv->prev;
+	iv_new->next = iv;
+	iv->prev = iv_new;
+	iv->prev->next = iv_new;
+
+	/* continue with the interval before the old one
+	   (neccessary since it will change too). */
+	iv = iv->prev;
+      }
+      else { /* iv->prev == NULL */
+	/* insert new interval as first entry in list */
+	iv_new->ip = iv->ip;
+	iv_new->fip = iv->fip;
+	iv_new->prev = NULL;
+	iv_new->next = iv;
+	iv->prev = iv_new;
+	GEN.iv = iv_new;
+
+	/* continue with this new interval */
+	iv = iv_new;
+      }
+    }     
   }
 
   /* o.k. */

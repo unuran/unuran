@@ -61,6 +61,12 @@ int unur_distr_set_name( UNUR_DISTR *distribution, const char *name );
 const char *unur_distr_get_name( UNUR_DISTR *distribution );
 /* get name of distribution                                                  */
 
+int unur_distr_is_cont( UNUR_DISTR *distribution );
+/* TRUE if distribution is univariate continuous.                            */
+
+int unur_distr_is_discr( UNUR_DISTR *distribution );
+/* TRUE if distribution is univariate discrete.                              */
+
 /*---------------------------------------------------------------------------*/
 /* univariate continuous distributions                                       */
 

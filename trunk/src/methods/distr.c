@@ -179,6 +179,48 @@ unur_distr_get_name( struct unur_distr *distr )
 
 /*---------------------------------------------------------------------------*/
 
+int 
+unur_distr_is_cont( struct unur_distr *distr )
+     /*----------------------------------------------------------------------*/
+     /* TRUE if distribution is univariate continuous.                       */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   distr ... pointer to distribution object                           */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... if univariate continuous                                     */
+     /*   0 ... otherwise                                                    */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( NULL,distr,0 );
+
+  return ((distr->type == UNUR_DISTR_CONT) ? 1 : 0);
+} /* end of unur_distr_is_cont() */
+
+/*---------------------------------------------------------------------------*/
+
+int 
+unur_distr_is_discr( struct unur_distr *distr )
+     /*----------------------------------------------------------------------*/
+     /* TRUE if distribution is univariate discrete.                         */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   distr ... pointer to distribution object                           */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... if univariate discrete                                       */
+     /*   0 ... otherwise                                                    */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( NULL,distr,0 );
+
+  return ((distr->type == UNUR_DISTR_DISCR) ? 1 : 0);
+} /* end of unur_distr_is_discr() */
+
+/*---------------------------------------------------------------------------*/
+
 /*****************************************************************************/
 /**                                                                         **/
 /** univariate continuous distributions                                     **/

@@ -65,13 +65,15 @@
  (!_unur_FP_equal((a),(b)) && ((a) > (b)))
 
 /*---------------------------------------------------------------------------*/
-/* Infinity                                                                  */
+/* Infinity and NaN (Not a Number)                                           */
 
-/* Defining infinity (just to avoid writing UNUR_INIFINITY)                  */
+/* wrapper / replacement for corresponding C99 functions */
+int _unur_isfinite (const double x);
+int _unur_isnan (const double x);
+int _unur_isinf (const double x);
 
-#define INFINITY  UNUR_INFINITY   /* This must be already defined in umath.h */
-
-/* check for infinity */
+/*---------------------------------------------------------------------------*/
+/* Other checks for infinity                                                 */
 
 /* +oo */
 #define _unur_FP_is_infinity(a)  ((a) >= INFINITY)

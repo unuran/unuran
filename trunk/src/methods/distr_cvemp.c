@@ -149,10 +149,10 @@ _unur_distr_cvemp_clone( const struct unur_distr *distr )
   memcpy( clone, distr, sizeof( struct unur_distr ) );
 
   /* copy data about sample into generator object (when there is one) */
-/*    if (DISTR.sample) { */
-/*      CLONE.sample = _unur_malloc( DISTR.n_sample * sizeof(double) ); */
-/*      memcpy( CLONE.sample, DISTR.sample, DISTR.n_sample * sizeof(double) ); */
-/*    } */
+  if (DISTR.sample) {
+    CLONE.sample = _unur_malloc( DISTR.n_sample * distr->dim * sizeof(double) );
+    memcpy( CLONE.sample, DISTR.sample, DISTR.n_sample * distr->dim * sizeof(double) );
+  }
 
   /* copy user name for distribution */
   if (distr->name_str) {

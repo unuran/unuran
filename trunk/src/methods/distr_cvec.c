@@ -159,7 +159,7 @@ _unur_distr_cvec_clone( const struct unur_distr *distr )
 #define CLONE clone->data.cvec
 
   struct unur_distr *clone;
-  int len;
+  int i,len;
 
   /* check arguments */
   _unur_check_NULL( NULL, distr, NULL );
@@ -171,11 +171,28 @@ _unur_distr_cvec_clone( const struct unur_distr *distr )
   /* copy distribution object into clone */
   memcpy( clone, distr, sizeof( struct unur_distr ) );
 
-  /* copy data about sample into generator object (when there is one) */
-/*    if (DISTR.sample) { */
-/*      CLONE.sample = _unur_malloc( DISTR.n_sample * sizeof(double) ); */
-/*      memcpy( CLONE.sample, DISTR.sample, DISTR.n_sample * sizeof(double) ); */
-/*    } */
+  /* copy data about distribution */
+  if (DISTR.mean) {
+    CLONE.mean = _unur_malloc( distr->dim * sizeof(double) );
+    memcpy( CLONE.mean, DISTR.mean, distr->dim * sizeof(double) );
+  }
+
+  if (DISTR.covar) {
+    CLONE.covar = _unur_malloc( distr->dim * distr->dim * sizeof(double) );
+    memcpy( CLONE.covar, DISTR.covar, distr->dim * distr->dim * sizeof(double) );
+  }
+
+  if (DISTR.mode) {
+    CLONE.mode = _unur_malloc( distr->dim * sizeof(double) );
+    memcpy( CLONE.mode, DISTR.mode, distr->dim * sizeof(double) );
+  }
+
+  for (i=0; i<UNUR_DISTR_MAXPARAMS; i++) {
+    if (DISTR.params[i]) {
+      CLONE.params[i] = _unur_malloc( DISTR.n_params[i] * sizeof(double) );
+      memcpy( CLONE.params[i], DISTR.params[i], DISTR.n_params[i] * sizeof(double) );
+    }
+  }
 
   /* copy user name for distribution */
   if (distr->name_str) {
@@ -214,10 +231,7 @@ _unur_distr_cvec_free( struct unur_distr *distr )
 
   if (DISTR.mean)  free(DISTR.mean); 
   if (DISTR.covar) free(DISTR.covar);
-
-  if (DISTR.mode && DISTR.mode != DISTR.mean)
-    /* only free mode if it does not point to the mean vector */
-    free(DISTR.mode);
+  if (DISTR.mode)  free(DISTR.mode);
 
   /* user name for distribution */
   if (distr->name_str) free(distr->name_str);
@@ -430,12 +444,6 @@ unur_distr_cvec_set_mean( struct unur_distr *distr, const double *mean )
     for (i=0; i<distr->dim; i++)
       DISTR.mean[i] = 0.;
 
-
-  if ( (distr->set & UNUR_DISTR_SET_MODE) &&
-       DISTR.mode == DISTR.mean) 
-    /* the mode is equal to the mean vector */
-    DISTR.mode = DISTR.mean;
-
   /* changelog */
   distr->set |= UNUR_DISTR_SET_MEAN;
 
@@ -507,7 +515,7 @@ unur_distr_cvec_set_covar( struct unur_distr *distr, const double *covar )
     /* check for symmetry */
     for (i=0; i<dim; i++)
       for (j=i+1; j<dim; j++)
-	if (!_unur_FP_equal(covar[i*dim+j],covar[j*dim+i])) {
+	if (!_unur_FP_same(covar[i*dim+j],covar[j*dim+i])) {
 	  _unur_error(distr->name ,UNUR_ERR_DISTR_DOMAIN,"covariance matrix not symmetric");
 	  return 0;
 	}
@@ -520,7 +528,6 @@ unur_distr_cvec_set_covar( struct unur_distr *distr, const double *covar )
   /* we have to allocate memory first */
   if (DISTR.covar == NULL)
     DISTR.covar = _unur_malloc( dim * dim * sizeof(double) );
-
 
   if (covar)
     /* covariance vector given --> copy data */

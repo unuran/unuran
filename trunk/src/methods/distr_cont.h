@@ -274,7 +274,7 @@ int unur_distr_cont_upd_mode( UNUR_DISTR *distribution );
    UNURAN library of standard distributions 
    when the corresponding function is available.
    Otherwise a (slow) numerical mode finder is used. If it failes
-   @code{unur_errno} is set to @code{UNUR_ERR_DISTR_GET}.
+   @code{unur_errno} is set to @code{UNUR_ERR_DISTR_DATA}.
 */
 
 double unur_distr_cont_get_mode( UNUR_DISTR *distribution );

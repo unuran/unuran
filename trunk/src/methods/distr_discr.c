@@ -726,6 +726,7 @@ unur_distr_discr_set_cdfstr( struct unur_distr *distr, const char *cdfstr )
   /* check arguments */
   _unur_check_NULL( NULL,distr,0 );
   _unur_check_distr_object( distr, DISCR, 0 );
+  _unur_check_NULL( NULL,cdfstr,0 );
 
   /* we do not allow overwriting a CDF */
   if (DISTR.cdf != NULL) {
@@ -742,6 +743,7 @@ unur_distr_discr_set_cdfstr( struct unur_distr *distr, const char *cdfstr )
 
   /* parse string */
   if ( (DISTR.cdftree = _unur_fstr2tree(cdfstr)) == NULL )
+    _unur_error(distr->name,UNUR_ERR_DISTR_SET,"Syntax error in function string");
     return 0;
 
   /* set evaluation function */
@@ -1058,7 +1060,7 @@ unur_distr_discr_upd_mode( struct unur_distr *distr )
   }
   else {
     /* computing of mode failed */
-    _unur_error(distr->name,UNUR_ERR_DISTR_SET,"");
+    _unur_error(distr->name,UNUR_ERR_DISTR_DATA,"");
     return 0;
   }
 
@@ -1092,7 +1094,11 @@ unur_distr_discr_get_mode( struct unur_distr *distr )
     }
     else {
       /* compute mode */
-      unur_distr_discr_upd_mode( distr );
+      if (!unur_distr_discr_upd_mode( distr )) {
+	/* finding mode not successfully */
+	_unur_error(distr->name,UNUR_ERR_DISTR_GET,"mode");
+	return INT_MAX;
+      }
     }
   }
 

@@ -950,6 +950,7 @@ sub print_test_command {
       if ($test_command =~ /^\s*expected_NULL\s*/ or 
 	  $test_command =~ /^\s*expected_setfailed\s*/ or 
 	  $test_command =~ /^\s*expected_INFINITY\s*/ or 
+	  $test_command =~ /^\s*expected_INTMAX\s*/ or 
 	  $test_command =~ /^\s*expected_reinit\s*/) {
 	  $test_command =~ s/\s+//g;
 	  print "n_tests_failed += check_$test_command\( TESTLOG, $INPUT_LINE_NUMBER, ($last_C_line) )\;\n";

@@ -1045,7 +1045,7 @@ unur_distr_cont_upd_mode( struct unur_distr *distr )
   }
   else {
     /* computing of mode failed */
-    _unur_error(distr->name,UNUR_ERR_DISTR_GET,"");
+    _unur_error(distr->name,UNUR_ERR_DISTR_DATA,"");
     return 0;
   }
 

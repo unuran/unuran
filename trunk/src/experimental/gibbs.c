@@ -323,6 +323,7 @@ _unur_gibbs_create( struct unur_par *par )
   
   /* initialize parameters */
   GEN->pdfcount = 0;
+  GEN->coordinate = 0;
   for (d=0; d<GEN->dim; d++) {
     GEN->point_current[d]=0.;
   }
@@ -383,7 +384,7 @@ _unur_gibbs_sample_cvec( struct unur_gen *gen, double *vec )
      /*   vec ... random vector (result)                                     */
      /*----------------------------------------------------------------------*/
 {
-  int d, dim; /* index used in dimension loops (0 <= d < dim) */
+  int dim; 
   long skip;
   
   /* possibly move this to the gibbs generator structure */
@@ -396,14 +397,12 @@ _unur_gibbs_sample_cvec( struct unur_gen *gen, double *vec )
   COOKIE_CHECK(gen,CK_GIBBS_GEN,RETURN_VOID);
 
   dim = GEN->dim;
-
-  
+ 
   for (skip=0; skip<=GEN->skip; skip++) {
 
-    /* moving "candidate" point along each coordinate */
-    for (d=0; d<dim; d++) {
+      /* stepping along current coordinate */
 
-      distr_conditional = unur_distr_condi_new(gen->distr, GEN->point_current, NULL, d);
+      distr_conditional = unur_distr_condi_new(gen->distr, GEN->point_current, NULL, GEN->coordinate);
       par_conditional = unur_tdr_new(distr_conditional);
       gen_conditional = unur_init(par_conditional);
       
@@ -411,14 +410,16 @@ _unur_gibbs_sample_cvec( struct unur_gen *gen, double *vec )
         /* TODO : stopping ? */
       }
       else {
-        GEN->point_current[d] = unur_sample_cont(gen_conditional);
+        GEN->point_current[GEN->coordinate] = unur_sample_cont(gen_conditional);
       }
     
       /* free allocated memory */
       if (distr_conditional) unur_distr_free(distr_conditional);
       if (gen_conditional)   unur_free(gen_conditional);
-    
-    }
+
+      /* prepare next coordinate direction */
+      GEN->coordinate = GEN->coordinate + 1; 
+      if (GEN->coordinate >= dim) GEN->coordinate = 0;
       
   }
 
@@ -464,67 +465,6 @@ _unur_gibbs_free( struct unur_gen *gen )
 /**  Auxilliary routines                                                    **/
 /*****************************************************************************/
 
-#if 0
-/*---------------------------------------------------------------------------*/
-
-double _unur_gibbs_pdf_conditional(double x, const UNUR_DISTR *distr_conditional) {
-   
-  const double *fpar, *xpar;
-  double *xvec;
-  int coordinate, dim;
-  double pdf;
-  
-  unur_distr_cont_get_pdfparams( distr_conditional, &fpar );	
-  dim = fpar[0];
-  coordinate = (int) fpar[1];
-  
-  unur_distr_cont_get_pdfparams_vec( distr_conditional, 0, &xpar );    
-  
-  /* inserting actual coordinate */
-  xvec = _unur_xmalloc( dim * sizeof(double));
-  memcpy(xvec, xpar, dim*sizeof(double));
-  xvec[coordinate] = x;
-  
-  pdf = unur_distr_cvec_eval_pdf(xvec, distr_conditional->base); 
-  
-  free(xvec);
-  
-  return pdf;
-  
-} /* end of _unur_gibbs_pdf_conditional() */
-
-/*---------------------------------------------------------------------------*/
-
-double _unur_gibbs_dpdf_conditional(double x, const UNUR_DISTR *distr_conditional) {
-  
-  const double *fpar, *xpar;
-  double *xvec, *gradient;
-  int coordinate, dim;
-  double dpdf;
-  
-  unur_distr_cont_get_pdfparams( distr_conditional, &fpar );	
-  dim = fpar[0];
-  coordinate = (int) fpar[1];
-  
-  unur_distr_cont_get_pdfparams_vec( distr_conditional, 0, &xpar );    
-  
-  /* inserting actual coordinate */
-  xvec = _unur_xmalloc( dim * sizeof(double));
-  memcpy(xvec, xpar, dim*sizeof(double));
-  xvec[coordinate] = x;
-  
-  /* evaluating gradient vector */  
-  gradient = _unur_xmalloc( dim * sizeof(double));
-  unur_distr_cvec_eval_dpdf(gradient, xvec, distr_conditional->base);
-  dpdf = gradient[coordinate];
-  
-  free(xvec); free(gradient);
-  
-  return dpdf;
-} /* end of _unur_gibbs_dpdf_conditional() */
-
-/*---------------------------------------------------------------------------*/
-#endif
 
 /*****************************************************************************/
 /**  Additional routines used for testing                                   **/

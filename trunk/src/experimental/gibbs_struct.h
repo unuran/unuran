@@ -51,6 +51,7 @@ struct unur_gibbs_gen {
   int    dim;               /* dimension of distribution                     */
   long   skip;              /* skip-parameter of the hitrou method           */
   double *point_current;    /* current point                                 */
+  int    coordinate;        /* current coordinate used for stepping          */
   long   pdfcount;          /* counting the number of PDF calls              */
 };
 

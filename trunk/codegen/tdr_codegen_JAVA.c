@@ -42,16 +42,16 @@
 /*---------------------------------------------------------------------------*/
 
 int
-_unur_acg_JAVA_tdr_ps( struct unur_gen *gen, 
-		       FILE *out, 
+_unur_acg_JAVA_tdr_ps( FILE *out, 
+		       struct unur_gen *gen, 
 		       const char *rand_name, 
 		       const char *pdf_name )
      /*----------------------------------------------------------------------*/
      /* code generator for method TDR variant PS (proportional squeeze)      */
      /*                                                                      */
      /* parameters:                                                          */
-     /*   gen       ... pointer to generator object                          */
      /*   out       ... output stream                                        */
+     /*   gen       ... pointer to generator object                          */
      /*   rand_name ... name of sampling routine                             */
      /*   pdf_name  ... name of PDF                                          */
      /*                                                                      */
@@ -241,13 +241,13 @@ _unur_acg_JAVA_tdr_ps( struct unur_gen *gen,
 /*---------------------------------------------------------------------------*/
 
 int
-_unur_acg_JAVA_tdr_class_IV( struct unur_gen *gen, FILE *out )
+_unur_acg_JAVA_tdr_class_IV( FILE *out, struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* code generator for method TDR variant PS -- class                    */
      /*                                                                      */
      /* parameters:                                                          */
-     /*   gen       ... pointer to generator object                          */
      /*   out       ... output stream                                        */
+     /*   gen       ... pointer to generator object                          */
      /*                                                                      */
      /* return:                                                              */
      /*   1 ... on success                                                   */
@@ -310,13 +310,13 @@ _unur_acg_JAVA_tdr_class_IV( struct unur_gen *gen, FILE *out )
 /*---------------------------------------------------------------------------*/
 
 int
-_unur_acg_JAVA_begin_class( struct unur_gen *gen, FILE *out, const char *class_name )
+_unur_acg_JAVA_begin_class( FILE *out, struct unur_gen *gen, const char *class_name )
      /*----------------------------------------------------------------------*/
      /* begin of class containing PDF (as member fuction) and the tdr method */
      /*                                                                      */
      /* parameters:                                                          */
-     /*   gen       ... pointer to generator object                          */
      /*   out       ... output stream                                        */
+     /*   gen       ... pointer to generator object                          */
      /*                                                                      */
      /* return:                                                              */
      /*   1 ... on success                                                   */
@@ -337,13 +337,13 @@ _unur_acg_JAVA_begin_class( struct unur_gen *gen, FILE *out, const char *class_n
 /*---------------------------------------------------------------------------*/
 
 int
-_unur_acg_JAVA_end_class( struct unur_gen *gen, FILE *out )
+_unur_acg_JAVA_end_class( FILE *out, struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* end of class containing PDF (as member fuction) and the tdr method   */
      /*                                                                      */
      /* parameters:                                                          */
-     /*   gen       ... pointer to generator object                          */
      /*   out       ... output stream                                        */
+     /*   gen       ... pointer to generator object                          */
      /*                                                                      */
      /* return:                                                              */
      /*   1 ... on success                                                   */

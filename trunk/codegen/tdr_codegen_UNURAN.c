@@ -42,16 +42,16 @@
 /*---------------------------------------------------------------------------*/
 
 int
-_unur_acg_UNURAN_tdr_ps( struct unur_gen *gen, 
-			 FILE *out, 
+_unur_acg_UNURAN_tdr_ps( FILE *out, 
+			 struct unur_gen *gen, 
 			 const char *rand_name,
 			 int n_cpoints ) 
      /*----------------------------------------------------------------------*/
      /* code generator for method TDR variant PS (proportional squeeze)      */
      /*                                                                      */
      /* parameters:                                                          */
-     /*   gen       ... pointer to generator object                          */
      /*   out       ... output stream                                        */
+     /*   gen       ... pointer to generator object                          */
      /*   rand_name ... name of sampling routine                             */
      /*   n_cpoints ... number of construction points                        */
      /*                                                                      */

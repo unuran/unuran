@@ -85,9 +85,9 @@ unur_acg_UNURAN( struct unur_gen *gen, FILE *out, const char *distr_name, int wi
   switch (gen->method) {
   case UNUR_METH_TDR:
     return_code =
-      _unur_acg_UNURAN_header( &(gen->distr), out, rand_name ) &&
-      _unur_acg_UNURAN_PDF( &(gen->distr), out, pdf_name ) &&
-      _unur_acg_UNURAN_tdr_ps( gen, out, rand_name, n_cpoints );
+      _unur_acg_UNURAN_header ( out, &(gen->distr), rand_name ) &&
+      _unur_acg_UNURAN_PDF    ( out, &(gen->distr), pdf_name ) &&
+      _unur_acg_UNURAN_tdr_ps ( out, gen, rand_name, n_cpoints );
     break;
   default:
     _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"Cannot make generator code");
@@ -112,7 +112,7 @@ unur_acg_UNURAN( struct unur_gen *gen, FILE *out, const char *distr_name, int wi
 /*---------------------------------------------------------------------------*/
 
 int 
-_unur_acg_UNURAN_PDF (UNUR_DISTR *distr, FILE *out, const char *pdf_name)
+_unur_acg_UNURAN_PDF (FILE *out, UNUR_DISTR *distr, const char *pdf_name)
      /*----------------------------------------------------------------------*/
      /* Code generator for PDFs of UNURAN build-in standard distributions.   */
      /*                                                                      */

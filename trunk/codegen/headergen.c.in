@@ -6,7 +6,6 @@
  *                                                                           *
  *   FILE:      headergen.c.in / headergen.c                                 *
  *                                                                           *
- *                                                                           *
  *   DESCRIPTION:                                                            *
  *      Creates header for automatically generated code.                     *
  *                                                                           *
@@ -94,7 +93,7 @@ const static char synopsis_JAVA[] = "//\n// double %s.sample ()\n//\n";
 /* ACG header main (C version)                                               */
 /* ------------------------------------------------------------------------- */
 
-int _unur_acg_C_header (UNUR_DISTR *distr, FILE *out, const char *rand)
+int _unur_acg_C_header (FILE *out, UNUR_DISTR *distr, const char *rand)
 {
   _unur_check_NULL("ACG_C", distr, 0 );
   return _unur_acg_header_distribution (out, distr, rand,
@@ -105,7 +104,7 @@ int _unur_acg_C_header (UNUR_DISTR *distr, FILE *out, const char *rand)
 /* ACG header main (FORTRAN version)                                         */
 /* ------------------------------------------------------------------------- */
 
-int _unur_acg_FORTRAN_header (UNUR_DISTR *distr, FILE *out, const char *rand)
+int _unur_acg_FORTRAN_header (FILE *out, UNUR_DISTR *distr, const char *rand)
 {
   _unur_check_NULL("ACG_FORTRAN", distr, 0 );
   return _unur_acg_header_distribution (out, distr, rand,
@@ -116,7 +115,7 @@ int _unur_acg_FORTRAN_header (UNUR_DISTR *distr, FILE *out, const char *rand)
 /* ACG header main (JAVA version)                                            */
 /* ------------------------------------------------------------------------- */
 
-int _unur_acg_JAVA_header (UNUR_DISTR *distr, FILE *out, const char *rand)
+int _unur_acg_JAVA_header (FILE *out, UNUR_DISTR *distr, const char *rand)
 {
 	_unur_check_NULL("ACG_JAVA", distr, 0 );
 	return _unur_acg_header_distribution (out, distr, rand,
@@ -127,7 +126,7 @@ int _unur_acg_JAVA_header (UNUR_DISTR *distr, FILE *out, const char *rand)
 /* ACG header main (UNURAN version)                                          */
 /* ------------------------------------------------------------------------- */
 
-int _unur_acg_UNURAN_header (UNUR_DISTR *distr, FILE *out, const char *rand)
+int _unur_acg_UNURAN_header (FILE *out, UNUR_DISTR *distr, const char *rand)
 {
 	_unur_check_NULL("ACG_UNURAN", distr, 0 );
 	return _unur_acg_header_distribution (out, distr, rand,
@@ -304,7 +303,7 @@ _unur_acg_header_GENERIC ( FILE *out, UNUR_DISTR *distr, const char *rand,
 
   switch (distr->type) {
   case UNUR_DISTR_CONT:
-    pdf = _unur_fstr_tree2string(distr->data.cont.pdftree,"x","pdf");
+    pdf = _unur_fstr_tree2string(distr->data.cont.pdftree,"x","pdf",FALSE);
     sprintf(str,"PDF(x) = %-66.66s",pdf);
     free (pdf);
     fprintf (out,sformat,str);

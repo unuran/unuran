@@ -71,7 +71,7 @@ _unur_distr_cvec_eval_dpdf_from_dlogpdf( double *result, const double *x, const 
 /* Inverse of covariance matrix cannot be computed it is ill-conditioned.    */
 /* We use the threshold |det(A)| / (dim * ||A||) < COVARIANCE_DETMIN.        */
 /* (see _unur_matrix_invert() in ./src/utils/matrix.c)                       */
-#define COVARIANCE_DETMIN  (1.e-10) 
+#define COVARIANCE_DETMIN  (1.e-40) 
 
 /*---------------------------------------------------------------------------*/
 
@@ -1950,7 +1950,7 @@ _unur_distr_cvec_debug( const struct unur_distr *distr, const char *genid )
   /* center vector */
   if ((distr->set & UNUR_DISTR_SET_CENTER) && DISTR.center)
     _unur_matrix_print_vector( distr->dim, DISTR.center, "\tcenter vector =", log, genid, "\t   ");
-
+   
   /* covariance matrix */
   mat = ((distr->set & UNUR_DISTR_SET_COVAR) && DISTR.covar) ? DISTR.covar : NULL;
   _unur_matrix_print_matrix( distr->dim, mat, "\tcovariance matrix =", log, genid, "\t   ");
@@ -1958,7 +1958,7 @@ _unur_distr_cvec_debug( const struct unur_distr *distr, const char *genid )
   /* cholesky matrix */
   mat = ((distr->set & UNUR_DISTR_SET_CHOLESKY) && DISTR.cholesky) ? DISTR.cholesky : NULL;
   _unur_matrix_print_matrix( distr->dim, mat, "\tcholesky factor (of covariance matrix) =", log, genid, "\t   ");
-
+  
   /* marginal distributions */
   fprintf(log,"%s:\tmarginal distributions:   [see also standardized marginal distributions]\n",genid);
   if (distr->set & UNUR_DISTR_SET_MARGINAL) {

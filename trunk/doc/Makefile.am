@@ -50,7 +50,7 @@ EXTRA_DIST = \
  $(scripts)
 
 # generated texi files ...
-unuran_src.texi: $(sripts) unuran.texi
+unuran_src.texi: $(sripts) unuran.texi $(top_srcdir)/src/unuran.h  
 	./make_texi.pl $(top_srcdir) > unuran_src.texi
 
 example_dir  = $(top_srcdir)/examples

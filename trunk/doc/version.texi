@@ -1,0 +1,6 @@
+@set VERSION 0.05
+@set DATE November 2000
+
+
+@c set UPDATED 30 October 2000
+@c set EDITION 0.00

@@ -69,9 +69,9 @@ unur_get_default_urng( void )
   /* default generator already running ? */
   if( urng_default == NULL ) {
     /* have to initialize default generator first */
-#if UNUR_URNG_INVOKE == UNUR_URNG_POINTER 
+#if UNUR_URNG_TYPE == UNUR_URNG_POINTER 
     urng_default = UNUR_URNG_DEFAULT;
-#elif UNUR_URNG_INVOKE == UNUR_URNG_PRNG
+#elif UNUR_URNG_TYPE == UNUR_URNG_PRNG
     urng_default = prng_new(UNUR_URNG_DEFAULT);
     if( urng_default == NULL ) {
       /* some parameters invalid! */
@@ -80,7 +80,7 @@ unur_get_default_urng( void )
       exit(EXIT_FAILURE);
     }
 #else
-#error UNUR_URNG_INVOKE not valid !!
+#error UNUR_URNG_TYPE not valid !!
 #endif
   }
 

@@ -53,7 +53,7 @@ static int _unur_make_uniform_scatter( int start, int skip );
 
 #define UNUR_BABYGEN_PERIOD  1024 
 
-#if UNUR_URNG_INVOKE == UNUR_URNG_POINTER 
+#if UNUR_URNG_TYPE == UNUR_URNG_POINTER 
 static double _unur_babygen( void );
 #endif
 static UNUR_URNG *_unur_get_babygen( void );
@@ -75,8 +75,8 @@ unur_make_scatterplot( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*/
-#if ( ( (UNUR_URNG_INVOKE == UNUR_URNG_POINTER) || \
-        (UNUR_URNG_INVOKE == UNUR_URNG_PRNG) )  && \
+#if ( ( (UNUR_URNG_TYPE == UNUR_URNG_POINTER) || \
+        (UNUR_URNG_TYPE == UNUR_URNG_PRNG) )  && \
         defined( UNUR_ENABLE_LOGGING ) )
 /*---------------------------------------------------------------------------*/
 {
@@ -224,11 +224,11 @@ unur_make_scatterplot( struct unur_gen *gen )
 #else
 /*---------------------------------------------------------------------------*/
 {
-  _unur_error(test_name,UNUR_ERR_GENERIC,"Cannot make scatter plot.\n Recompile with different UNUR_URNG_INVOKE!\n Set flag UNUR_ENABLE_LOGGING");
+  _unur_error(test_name,UNUR_ERR_GENERIC,"Cannot make scatter plot.\n Recompile with different UNUR_URNG_TYPE!\n Set flag UNUR_ENABLE_LOGGING");
   return -1;
 } /* end of unur_make_scatterplot() */
 /*---------------------------------------------------------------------------*/
-#endif  /* UNUR_URNG_INVOKE */
+#endif  /* UNUR_URNG_TYPE */
 /*---------------------------------------------------------------------------*/
 
 /*--------------------------------------------------------------------------*/
@@ -303,7 +303,7 @@ _unur_make_uniform_scatter( int start, int skip )
  *****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
-#if UNUR_URNG_INVOKE == UNUR_URNG_POINTER 
+#if UNUR_URNG_TYPE == UNUR_URNG_POINTER 
 /*---------------------------------------------------------------------------*/
 
 static int u = 0;   /* state variable of baby generator                      */
@@ -346,7 +346,7 @@ _unur_get_babygen( void )
 } /* end of _unur_get_babygen */
 
 /*---------------------------------------------------------------------------*/
-#elif UNUR_URNG_INVOKE == UNUR_URNG_PRNG
+#elif UNUR_URNG_TYPE == UNUR_URNG_PRNG
 /*---------------------------------------------------------------------------*/
 
 UNUR_URNG *
@@ -383,14 +383,14 @@ _unur_get_babygen( void )
 static UNUR_URNG_TYPE
 _unur_get_babygen( void )
      /*----------------------------------------------------------------------*/
-     /* not implemented for this choice of UNUR_URNG_INVOKE !!               */
+     /* not implemented for this choice of UNUR_URNG_TYPE !!               */
      /*----------------------------------------------------------------------*/
 {
   return NULL;
 } /* end of _unur_get_babygen */
 
 /*---------------------------------------------------------------------------*/
-#endif  /* UNUR_URNG_INVOKE */
+#endif  /* UNUR_URNG_TYPE */
 /*---------------------------------------------------------------------------*/
 
 

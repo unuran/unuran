@@ -115,20 +115,20 @@
 /*---------------------------------------------------------------------------*/
 
 /* set type of uniform generator                                             */
-#define UNUR_URNG_INVOKE UNUR_URNG_POINTER
-/*  #define UNUR_URNG_INVOKE UNUR_URNG_PRNG */
+#define UNUR_URNG_TYPE UNUR_URNG_POINTER
+/*  #define UNUR_URNG_TYPE UNUR_URNG_PRNG */
 
 /*---------------------------------------------------------------------------*/
 /* Default name of uniform random number generator.                          */
-#if UNUR_URNG_INVOKE == UNUR_URNG_POINTER
+#if UNUR_URNG_TYPE == UNUR_URNG_POINTER
 /* valid name of a C routine                                                 */
 #define UNUR_URNG_DEFAULT uniform
-#elif UNUR_URNG_INVOKE == UNUR_URNG_PRNG
+#elif UNUR_URNG_TYPE == UNUR_URNG_PRNG
 /* valid parameter (char) string for prng-2.2                                */
 #define UNUR_URNG_DEFAULT "LCG(2147483647,950706376,0,1)"
 #else
-#error UNUR_URNG_INVOKE not valid !!
-#endif  /* UNUR_URNG_INVOKE */
+#error UNUR_URNG_TYPE not valid !!
+#endif  /* UNUR_URNG_TYPE */
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -48,7 +48,7 @@ static char test_name[] = "Counting";
 /* wrapper for uniform random number generator that performs counting        */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-#if UNUR_URNG_INVOKE == UNUR_URNG_POINTER 
+#if UNUR_URNG_TYPE == UNUR_URNG_POINTER 
 /*---------------------------------------------------------------------------*/
 static long urng_counter = 0;                /* count uniform random numbers */
 static double (*urng_to_use)(void);          /* pointer to real uniform rng  */
@@ -65,7 +65,7 @@ _urng_with_counter(void)
 } /* end of urng_with_counter() */
 
 /*---------------------------------------------------------------------------*/
-#elif UNUR_URNG_INVOKE == UNUR_URNG_PRNG
+#elif UNUR_URNG_TYPE == UNUR_URNG_PRNG
 /*---------------------------------------------------------------------------*/
 static long urng_counter = 0;                /* count uniform random numbers */
 static double (*urng_to_use_next)(struct prng *); /* pointer to real URNG    */
@@ -84,9 +84,9 @@ _urng_with_counter_next( struct prng *gen )
 /*---------------------------------------------------------------------------*/
 #else
 /*---------------------------------------------------------------------------*/
-#error UNUR_URNG_INVOKE not valid !!
+#error UNUR_URNG_TYPE not valid !!
 /*---------------------------------------------------------------------------*/
-#endif  /* UNUR_URNG_INVOKE */
+#endif  /* UNUR_URNG_TYPE */
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*/
@@ -115,10 +115,10 @@ unur_test_count_urn( struct unur_gen *gen, int samplesize )
   urng_counter = 0;
 
   /* exchange pointer to uniform rng with counting wrapper */
-#if UNUR_URNG_INVOKE == UNUR_URNG_POINTER
+#if UNUR_URNG_TYPE == UNUR_URNG_POINTER
   urng_to_use = gen->urng;
   unur_chg_urng(gen,_urng_with_counter);
-#elif UNUR_URNG_INVOKE == UNUR_URNG_PRNG
+#elif UNUR_URNG_TYPE == UNUR_URNG_PRNG
   urng_to_use_next = gen->urng->get_next;
   gen->urng->get_next = _urng_with_counter_next;
 #endif
@@ -150,9 +150,9 @@ unur_test_count_urn( struct unur_gen *gen, int samplesize )
   }
 
   /* reset pointer to uniform rng */
-#if UNUR_URNG_INVOKE == UNUR_URNG_POINTER
+#if UNUR_URNG_TYPE == UNUR_URNG_POINTER
   unur_chg_urng(gen,urng_to_use);
-#elif UNUR_URNG_INVOKE == UNUR_URNG_PRNG
+#elif UNUR_URNG_TYPE == UNUR_URNG_PRNG
   gen->urng->get_next = urng_to_use_next;
 #endif
 

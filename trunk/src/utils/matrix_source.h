@@ -43,7 +43,7 @@
 int _unur_matrix_cholesky_decomposition (int dim, const double *S, double *L );
 /* The Colesky factor L of a variance-covariance matrix S is computed: S = LL' */
 
-int _unur_matrix_invert_matrix (int dim, double *A, double detmin, double *Ainv, double *det);
+int _unur_matrix_invert_matrix (int dim, double *A, double detmin, double *Ainv, double *det );
 /* Calculates the inverse matrix (by means of LU decomposition).             */
 /* If |det(A)| <= detmin a message is printed. 				     */
 /* The matrix is not inverted if it is ill-conditioned. We use the           */
@@ -51,13 +51,13 @@ int _unur_matrix_invert_matrix (int dim, double *A, double detmin, double *Ainv,
 /* where ||A|| denotes the L_1 norm of A.                                    */
 /* As a side effect det(A) is computed.                                      */
 
-int _unur_matrix_determinant ( int dim, double *A, double *det);
+double _unur_matrix_determinant ( int dim, const double *A );
 /* Calculates the determinant of the matrix A                                */
 
-double _unur_matrix_qf(int dim, double *x, double *A);
+double _unur_matrix_qf (int dim, double *x, double *A );
 /* Compute quadratic form x'Ax.                                              */
 
-int _unur_matrix_debug (int dim, const double *M, const char *info, const char *genid);
+int _unur_matrix_debug (int dim, const double *M, const char *info, const char *genid );
 /* Writes the matrix-elements to the log file */
 
 /*--------------------------------------------------------------------------*/

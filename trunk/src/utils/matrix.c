@@ -476,8 +476,8 @@ _unur_matrix_invert_matrix(int dim, double *A, double detmin, double *Ainv, doub
 
 /*---------------------------------------------------------------------------*/
 
-int
-_unur_matrix_determinant ( int dim, double *A, double *det)
+double
+_unur_matrix_determinant ( int dim, const double *A )
      /*-------------------------------------------------------------------------*/
      /* Calculates the determinant of the matrix A                              */
      /* (by means of LU decomposition).                                  	*/
@@ -485,27 +485,23 @@ _unur_matrix_determinant ( int dim, double *A, double *det)
      /*   dim    ... dimension of the square matrix A                        	*/
      /*   A      ... dim x dim -matrix                                       	*/
      /*									     	*/
-     /* output:                                                                 */
-     /*   det    ... determinant of A                                           */
+     /* return:                                                                 */
+     /*   determinant of A                                                      */
      /*									     	*/
-     /* return:								     	*/
-     /*   UNUR_SUCCESS  on success                                            	*/
-     /*   UNUR_ERR_NULL on error e.g. *A is a NULL pointer   		        */
+     /* error:                                                                  */
+     /*   return INFINITY                                                       */
      /*-------------------------------------------------------------------------*/
 {
 #define idx(a,b) ((a)*dim+b)
 
-  CHECK_NULL(A,  UNUR_ERR_NULL);
-  CHECK_NULL(det,UNUR_ERR_NULL);
+  CHECK_NULL(A,  INFINITY);
   
   int *p, s, i;
   double *LU;     /* array for storing LU decomposition of matrix A */
+  double det;
   
   /* one-dimensional case */
-  if (dim==1) {
-    *det = A[0];
-    return UNUR_SUCCESS;
-  }
+  if (dim==1) return A[0];
 
   /* allocate working space */
   p = _unur_malloc(dim*sizeof(int));
@@ -516,15 +512,15 @@ _unur_matrix_determinant ( int dim, double *A, double *det)
   _unur_matrix_LU_decomp(dim, LU, p, &s);
 
   /* compute determinant */
-  *det = s;
+  det = s;
   for(i=0;i<dim;i++)
-    *det *= LU[idx(i,i)];
+    det *= LU[idx(i,i)];
 
   /* free working space */
   free(LU);
   free(p);
 
-  return UNUR_SUCCESS ;
+  return det;
   
 #undef idx
 } /* end of _unur_matrix_determinant() */

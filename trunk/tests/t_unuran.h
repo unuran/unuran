@@ -88,6 +88,12 @@ void open_log_files( const char *file );
 void close_log_files( void );
 
 /*---------------------------------------------------------------------------*/
+/* check for invalid NULL pointer, that should not happen in this program */
+#define abort_if_NULL(ptr) \
+  do {do_abort_if_NULL(__LINE__,(ptr));} while (0)
+void do_abort_if_NULL( int line, void *ptr );
+
+/*---------------------------------------------------------------------------*/
 /* make list of distributions                                                */
 void make_list_of_distributions( void );
 

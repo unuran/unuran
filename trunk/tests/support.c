@@ -66,6 +66,30 @@ void close_log_files( void )
 
 /*---------------------------------------------------------------------------*/
 
+/* check for invalid NULL pointer, that should not happen in this program */
+void do_abort_if_NULL( int line, void *ptr )
+{
+  if (ptr) return; /* o.k. */
+
+  /* There must not be a NULL pointer.
+     Since we do not expect a NULL pointer something serious has
+     happend. So it is better to abort the tests.
+  */
+  fprintf(TESTLOG,"line %4d: Unexpected NULL pointer. Panik --> Abort tests!!\t\t",line);
+  printf(" Panik --> Tests aborted\n"); fflush(stdout);
+
+  test_ok = FALSE;
+  
+  /* test finished */
+  printf("\n");  fflush(stdout);
+
+  /* close log files and exit */
+  close_log_files();
+  exit(-1);
+} /* abort_if_NULL() */
+
+/*---------------------------------------------------------------------------*/
+
 /* compare error code */
 void do_check_errorcode( int line, unsigned errno )
 {
@@ -254,7 +278,7 @@ void run_level2( int line, double *pvals, int n_pvals )
   printf(" Level-2-test(%d)",n_pvals);
   fprintf(TESTLOG,"line %4d: ",__LINE__);
   print_pval(pval2,100);
-  fprintf(TESTLOG,"\tLevel 2 Test (n=%d)\n",n_pvals);
+  fprintf(TESTLOG,"\tLevel 2 Test (n=%d) (not powerful)\n",n_pvals);
 
   /* clear */
   free(classes);

@@ -55,7 +55,7 @@ int main()
   make_list_of_distributions();
 
   /* we use Mersenne Twister as uniform random number generator */
-  urng = prng_new("mt19937(5678)");
+  urng = prng_new("mt19937(3298)");
   unur_set_default_urng(urng);
 
   /* set default debugging flag */
@@ -102,20 +102,25 @@ void test_stdr_new( void )
      
   /* error: invalid distribution type */
   distr = unur_distr_discr_new();
+
   check_expected_NULL( unur_stdr_new(distr) );
   check_errorcode( UNUR_ERR_DISTR_INVALID );
+
   unur_distr_free(distr);
 
   /* error: data missing in distribution object */
   distr = unur_distr_cont_new();               /* pdf, mode, pdfarea */
   check_expected_NULL( unur_stdr_new(distr) );
   check_errorcode( UNUR_ERR_DISTR_REQUIRED );
+
   unur_distr_cont_set_pdf(distr,pdf);          /* mode, pdfarea */
   check_expected_NULL( unur_stdr_new(distr) );
   check_errorcode( UNUR_ERR_DISTR_REQUIRED );
+
   unur_distr_cont_set_mode(distr,1.);          /* pdfarea */
   check_expected_NULL( unur_stdr_new(distr) );
   check_errorcode( UNUR_ERR_DISTR_REQUIRED );
+
   unur_distr_free(distr);
 
   /* test finished */
@@ -142,36 +147,48 @@ void test_stdr_set( void )
 
   /* error: NULL pointer */
   par = NULL;   
+
   check_expected_setfailed( unur_stdr_set_cdfatmode(par,0.) );
   check_errorcode( UNUR_ERR_NULL );
+
   check_expected_setfailed( unur_stdr_set_pdfatmode(par,1.) );
   check_errorcode( UNUR_ERR_NULL );
+
   check_expected_setfailed( unur_stdr_set_verify(par,1) );
   check_errorcode( UNUR_ERR_NULL );
+
   check_expected_setfailed( unur_stdr_set_usesqueeze(par,1) );
   check_errorcode( UNUR_ERR_NULL );
 
   /* error: invalid parameter object */
   distr = unur_distr_normal(fpar,2);
   par = unur_arou_new(distr);
+
   check_expected_setfailed( unur_stdr_set_cdfatmode(par,0.) );
   check_errorcode( UNUR_ERR_PAR_INVALID );
+
   check_expected_setfailed( unur_stdr_set_pdfatmode(par,1.) );
   check_errorcode( UNUR_ERR_PAR_INVALID );
+
   check_expected_setfailed( unur_stdr_set_verify(par,1) );
   check_errorcode( UNUR_ERR_PAR_INVALID );
+
   check_expected_setfailed( unur_stdr_set_usesqueeze(par,1) );
   check_errorcode( UNUR_ERR_PAR_INVALID );
+
   free(par); 
   unur_distr_free(distr);
 
   /* error: invalid parameters */
   distr = unur_distr_normal(fpar,2);
   par = unur_stdr_new(distr);
+
   check_expected_setfailed( unur_stdr_set_cdfatmode(par,-1.) );
   check_errorcode( UNUR_ERR_PAR_SET );
+
   check_expected_setfailed( unur_stdr_set_pdfatmode(par,-1.) );
   check_errorcode( UNUR_ERR_PAR_SET );
+
   free(par); 
   unur_distr_free(distr);
 
@@ -202,38 +219,52 @@ void test_stdr_chg( void )
   distr = unur_distr_normal(fpar,2);
   par = unur_arou_new(distr);
   unur_set_debug(par,0);
-  gen = unur_init( par );
+  gen = unur_init( par ); abort_if_NULL(gen);
+
   check_expected_setfailed( unur_stdr_chg_pdfparams(gen,fpar,2) );
   check_errorcode( UNUR_ERR_GEN_INVALID );
+
   check_expected_setfailed( unur_stdr_chg_domain(gen,0.,1.) );
   check_errorcode( UNUR_ERR_GEN_INVALID );
+
   check_expected_setfailed( unur_stdr_chg_mode(gen,0.) );
   check_errorcode( UNUR_ERR_GEN_INVALID );
+
   check_expected_setfailed( unur_stdr_chg_cdfatmode(gen,1.) );
   check_errorcode( UNUR_ERR_GEN_INVALID );
+
   check_expected_setfailed( unur_stdr_chg_pdfatmode(gen,1.) );
   check_errorcode( UNUR_ERR_GEN_INVALID );
+
   check_expected_setfailed( unur_stdr_chg_pdfarea(gen,1.) );
   check_errorcode( UNUR_ERR_GEN_INVALID );
+
   unur_free(gen); 
   unur_distr_free(distr);
 
   /* error: invalid parameters */
   distr = unur_distr_normal(fpar,2);
   par = unur_stdr_new(distr);
-  gen = unur_init( par );
+  gen = unur_init( par ); abort_if_NULL(gen);
+
   check_expected_setfailed( unur_stdr_chg_pdfparams(gen,NULL,1) );
   check_errorcode( UNUR_ERR_NULL );
+
   check_expected_setfailed( unur_stdr_chg_pdfparams(gen,fpar,UNUR_DISTR_MAXPARAMS+10) );
   check_errorcode( UNUR_ERR_DISTR_NPARAMS );
+
   check_expected_setfailed( unur_stdr_chg_cdfatmode(gen,-1.) );
   check_errorcode( UNUR_ERR_PAR_SET );
+
   check_expected_setfailed( unur_stdr_chg_pdfatmode(gen,-1.) );
   check_errorcode( UNUR_ERR_PAR_SET );
+
   check_expected_setfailed( unur_stdr_chg_domain(gen,1.,-1.) );
   check_errorcode( UNUR_ERR_DISTR_SET );
+
   check_expected_setfailed( unur_stdr_chg_pdfarea(gen,-1.) );
   check_errorcode( UNUR_ERR_DISTR_SET );
+
   unur_free(gen); 
   unur_distr_free(distr);
 
@@ -262,8 +293,10 @@ void test_stdr_init( void )
   unur_distr_cont_set_mode(distr,0.);
   unur_distr_cont_set_pdfarea(distr,1.);
   par = unur_stdr_new(distr);
+
   check_expected_NULL( unur_init(par) );
   check_errorcode( UNUR_ERR_GEN_DATA );
+
   unur_distr_free(distr);
 
   /* test finished */
@@ -290,6 +323,7 @@ void test_stdr_reinit( void )
   distr = unur_distr_normal(NULL,0);
   par = unur_stdr_new(distr);
   gen = unur_init(par);
+
   fprintf(TESTLOG,"line %4d: reinit ...\t\t\t",__LINE__);  
   if (!unur_reinit(gen)) {
     ++test_failed;
@@ -332,7 +366,8 @@ void test_stdr_sample( void )
   /* basic algorithm */
   prng_reset(urng);
   par = unur_stdr_new(distr);
-  gen = unur_init( par );
+  gen = unur_init( par ); abort_if_NULL(gen);
+
   for (i=0; i<N_SAMPLE; i++)
     sa[i] = unur_sample_cont(gen);
   unur_free(gen); 
@@ -341,10 +376,12 @@ void test_stdr_sample( void )
   prng_reset(urng);
   par = unur_stdr_new(distr);
   unur_stdr_set_verify(par,1);
-  gen = unur_init( par );
+  gen = unur_init( par ); abort_if_NULL(gen);
+
   for (i=0; i<N_SAMPLE; i++)
     sb[i] = unur_sample_cont(gen);
   unur_free(gen); 
+
   compare_sequences(sa,sb,N_SAMPLE);
 
   /* the following generator should generate the same sequence */
@@ -353,7 +390,8 @@ void test_stdr_sample( void )
   prng_reset(urng);
   par = unur_stdr_new(distr);
   unur_stdr_set_cdfatmode(par,0.5);
-  gen = unur_init( par );
+  gen = unur_init( par ); abort_if_NULL(gen);
+
   for (i=0; i<N_SAMPLE; i++)
     sa[i] = unur_sample_cont(gen);
   unur_free(gen); 
@@ -363,10 +401,12 @@ void test_stdr_sample( void )
   par = unur_stdr_new(distr);
   unur_stdr_set_cdfatmode(par,0.5);
   unur_stdr_set_usesqueeze(par,1);
-  gen = unur_init( par );
+  gen = unur_init( par ); abort_if_NULL(gen);
+
   for (i=0; i<N_SAMPLE; i++)
     sb[i] = unur_sample_cont(gen);
   unur_free(gen); 
+
   compare_sequences(sa,sb,N_SAMPLE);
 
   /* use cdf at mode - verifying mode */
@@ -374,10 +414,12 @@ void test_stdr_sample( void )
   par = unur_stdr_new(distr);
   unur_stdr_set_cdfatmode(par,0.5);
   unur_stdr_set_verify(par,1);
-  gen = unur_init( par );
+  gen = unur_init( par ); abort_if_NULL(gen);
+
   for (i=0; i<N_SAMPLE; i++)
     sb[i] = unur_sample_cont(gen);
   unur_free(gen); 
+
   compare_sequences(sa,sb,N_SAMPLE);
 
   /* use cdf at mode and squeeze - verifying mode */
@@ -386,55 +428,68 @@ void test_stdr_sample( void )
   unur_stdr_set_cdfatmode(par,0.5);
   unur_stdr_set_usesqueeze(par,1);
   unur_stdr_set_verify(par,1);
-  gen = unur_init( par );
+  gen = unur_init( par ); abort_if_NULL(gen);
+
   for (i=0; i<N_SAMPLE; i++)
     sb[i] = unur_sample_cont(gen);
   unur_free(gen); 
+
   compare_sequences(sa,sb,N_SAMPLE);
 
   /* the following distribution violates the condition of the method:
      pdf at mode is too small --> hat < pdf near mode */
+
+  /* basic algorithm */
   unur_errno = 0;
   par = unur_stdr_new(distr);
   unur_stdr_set_pdfatmode(par,0.1);
   unur_stdr_set_verify(par,1);
-  gen = unur_init( par );
+  gen = unur_init( par ); abort_if_NULL(gen);
+
   for (i=0; i<20; i++)
     unur_sample_cont(gen);
   unur_free(gen); 
+
   check_errorcode( UNUR_ERR_GEN_CONDITION );
   
+  /* use cdf at mode and squeeze */
   unur_errno = 0;
   par = unur_stdr_new(distr);
   unur_stdr_set_pdfatmode(par,0.1);
   unur_stdr_set_cdfatmode(par,0.5);
   unur_stdr_set_usesqueeze(par,1);
   unur_stdr_set_verify(par,1);
-  gen = unur_init( par );
+  gen = unur_init( par ); abort_if_NULL(gen);
+
   for (i=0; i<20; i++)
     unur_sample_cont(gen);
   unur_free(gen); 
+
   check_errorcode( UNUR_ERR_GEN_CONDITION );
   
   /* the following distribution violates the condition of the method:
      pdf at mode is too large --> squeeze > pdf near mode */
+
+  /* use cdf at mode and squeeze */
   unur_errno = 0;
   par = unur_stdr_new(distr);
   unur_stdr_set_cdfatmode(par,0.5);
   unur_stdr_set_pdfatmode(par,10.);
   unur_stdr_set_usesqueeze(par,1);
   unur_stdr_set_verify(par,1);
-  gen = unur_init( par );
+  gen = unur_init( par ); abort_if_NULL(gen);
   unur_stdr_chg_pdfarea(gen,10.);
   unur_reinit(gen);
+
   for (i=0; i<20; i++)
     unur_sample_cont(gen);
   unur_free(gen); 
+
   check_errorcode( UNUR_ERR_GEN_CONDITION );
 
+  /* test finished */
   unur_distr_free(distr);
 
-  /* test finished */
   test_ok &= (test_failed) ? 0 : 1;
   (test_failed) ? printf("--> failed] ") : printf("--> ok] ");
 

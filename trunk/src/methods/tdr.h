@@ -126,6 +126,12 @@ int unur_tdr_set_max_sqhratio( UNUR_PAR *parameters, double max_ratio );
    Default is ??.
 */
 
+double unur_tdr_get_sqhratio( UNUR_GEN *generator );
+/* 
+   Get the current ratio (area below squeeze) / (area below hat)
+   for the generator. (In case of an error 0 is returned.)
+*/
+
 int unur_tdr_set_max_intervals( UNUR_PAR *parameters, int max_ivs );
 /* 
    Set maximum number of intervals (default is ??).

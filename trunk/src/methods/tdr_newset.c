@@ -100,8 +100,8 @@ unur_tdr_new( struct unur_distr* distr )
                     TDR_VARIANT_GW );
 
   par->set      = 0u;               /* inidicate default parameters          */    
-  par->urng     = unur_get_default_urng(); /* use default urng               */
-  par->urng_aux = NULL;                    /* no auxilliary URNG required    */
+  par->urng     = unur_get_default_urng(); /* use default URNG               */
+  par->urng_aux = par->urng;               /* no special auxilliary URNG     */
 
   par->debug    = _unur_default_debugflag; /* set default debugging flags    */
 
@@ -249,6 +249,28 @@ unur_tdr_set_max_sqhratio( struct unur_par *par, double max_ratio )
   return 1;
 
 } /* end of unur_tdr_set_max_sqhratio() */
+
+/*---------------------------------------------------------------------------*/
+
+double
+unur_tdr_get_sqhratio( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* get ratio A(squeeze) / A(hat)                                        */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen  ... pointer to generator object                               */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   ratio ... on success                                               */
+     /*   0     ... on error                                                 */
+     /*----------------------------------------------------------------------*/
+{
+  /* check input */
+  _unur_check_gen_object( gen,TDR );
+
+  return (GEN.Asqueeze / GEN.Atotal);
+
+} /* end of unur_tdr_get_sqhratio() */
 
 /*---------------------------------------------------------------------------*/
 

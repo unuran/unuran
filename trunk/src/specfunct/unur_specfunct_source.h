@@ -91,11 +91,6 @@ double ndtri(double x);
 #define _unur_sf_inv_cdfnormal(x)   ndtri(x)
 #define HAVE_UNUR_SF_INV_CDFNORMAL
 
-/** functions related to Student's t distribution **/
-
-double _unur_sf_cdfstudent(double x, double nu);
-#define HAVE_UNUR_SF_CDFSTUDENT
-
 /*---------------------------------------------------------------------------*/
 /* end: CEPHES library                                                       */
 /*---------------------------------------------------------------------------*/

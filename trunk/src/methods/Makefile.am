@@ -5,7 +5,7 @@ AM_CFLAGS = -Wall
 
 INCLUDES = \
  -I$(top_srcdir)/src \
- -I$(top_srcdir)/src/distr \
+ -I$(top_srcdir)/src/distributions \
  -I$(top_srcdir)/src/utils
 
 noinst_LIBRARIES = libmethods.a

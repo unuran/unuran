@@ -2003,7 +2003,7 @@ trap 'rm -fr `echo "\
 	src/Makefile \
 	src/utils/Makefile \
 	src/methods/Makefile \
-	src/distr/Makefile \
+	src/distributions/Makefile \
 	src/tests/Makefile \
 	src/uniform/Makefile \
 	examples/Makefile \
@@ -2110,7 +2110,7 @@ CONFIG_FILES=\${CONFIG_FILES-"\
 	src/Makefile \
 	src/utils/Makefile \
 	src/methods/Makefile \
-	src/distr/Makefile \
+	src/distributions/Makefile \
 	src/tests/Makefile \
 	src/uniform/Makefile \
 	examples/Makefile \

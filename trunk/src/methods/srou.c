@@ -567,7 +567,7 @@ _unur_srou_sample_check( struct unur_gen *gen )
      /*   return 0.                                                          */
      /*----------------------------------------------------------------------*/
 { 
-  double u,uu,v,x,fx,fnx,xfx,xfnx,xx;
+  double u,uu,v,x,fx,sfx,fnx,xfx,xfnx,xx;
 
   /* check arguments */
   CHECK_NULL(gen,0.);  COOKIE_CHECK(gen,CK_SROU_GEN,0.);
@@ -592,7 +592,7 @@ _unur_srou_sample_check( struct unur_gen *gen )
       /* check hat */
       xfx = x * sqrt(fx);
       xfnx = -x * sqrt(fnx);
-      if ( (2 * GEN.um*GEN.um < fx + fnx) 
+      if ( (2 * GEN.um*GEN.um < fx + fnx)       /* this comparison is sensitive against round of error! */
 	   || (xfx < GEN.vl) || (xfx > GEN.vr)
 	   || (xfnx < GEN.vl) || (xfnx > GEN.vr) )
 	_unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"pdf(x) > hat(x)");
@@ -620,12 +620,14 @@ _unur_srou_sample_check( struct unur_gen *gen )
 
       /* evaluate p.d.f. */
       fx = PDF(x + DISTR.mode);
-      
+
       /* check hat */
-      xfx = x * sqrt(fx);
-      if ( (GEN.um*GEN.um < fx) || (xfx < GEN.vl) || (xfx > GEN.vr) )
+      sfx = sqrt(fx);
+      xfx = x * sfx;
+      /** printf("um = %g\n",GEN.um); TODO!! **/
+      if ( (GEN.um < sfx) || (xfx < GEN.vl) || (xfx > GEN.vr) )
 	_unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"pdf(x) > hat(x)");
-      
+
       /* evaluate squeeze */
       if ( (gen->variant & SROU_VARFLAG_SQUEEZE) &&
 	   (x >= GEN.xl) && 
@@ -639,7 +641,7 @@ _unur_srou_sample_check( struct unur_gen *gen )
       /* compute X */
       x += DISTR.mode;
       
-    /* accept or reject */
+      /* accept or reject */
       if (u*u <= fx)
 	return x;
     }

@@ -122,6 +122,15 @@ it will be better to look for a specific tool for that distribution.
 
 @node Install
 @section Install
+First unzip and untar the package
+./autogen.sh
+./configure --prefix=/home/staff/tirler/
+make
+make install
+
+
+Then change to the directory  @file{/unuran} and type  @file{make} to compile unuran.
+ 
 @menu
 * Now::
 @end menu
@@ -177,8 +186,6 @@ Name: test1.c
 /* my first UNURAN program: test1.c*/
 
 #include <unuran.h>
-#include <unuran_distributions.h>
-#include <unuran_tests.h>
 
 int main()
 @{
@@ -212,7 +219,6 @@ First you have to include the libraries @code{unuran.h}
 and @code{unuran_distributions.h} with the commands:
 @smallexample
 #include <unuran.h>
-#include <unuran_distributions.h> 
 @end smallexample
 @* 
 These headers provide all functions/features for generating random numbers.
@@ -273,8 +279,6 @@ What you have to provide depends on the method used for sampling
 /* my second UNURAN program test2.c */ 
 
 #include <unuran.h>
-#include <unuran_distributions.h>
-#include <unuran_tests.h>
 
 /* desired cdf  -- piecewise parabolic */
 double mycdf (double x)
@@ -376,8 +380,6 @@ The important lines are in bold face.
 /* my third UNURAN program test3.c */ 
 
 #include <unuran.h>
-#include <unuran_distributions.h>
-#include <unuran_tests.h>
 
 int main()
 @{

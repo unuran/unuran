@@ -63,6 +63,7 @@ _unur_fstr_parser_init ( const char *fstr )
 
   /* allocate memory for parser object */
   pdata = _unur_malloc(sizeof(struct parser_data));
+  COOKIE_SET(pdata,CK_FSTR_PDATA);
 
   /* make a working copy of the function string,                */
   /* remove all white spaces and convert to lower case letters. */
@@ -160,6 +161,7 @@ _unur_fstr_parser_free ( struct parser_data *pdata )
      /*----------------------------------------------------------------------*/
 {
   if (pdata) {
+    COOKIE_CHECK(pdata,CK_FSTR_PDATA,/*void*/);
     free(pdata->fstr);
     free(pdata->token);
     free(pdata->tpos);
@@ -192,7 +194,10 @@ _unur_fstr_tokenize (struct parser_data *pdata)
   int token;
 
   int n_token = 0;                    /* counter for token      */
-  char *symb = pdata->tstr;       /* array to store token   */
+  char *symb = pdata->tstr;           /* array to store token   */
+
+  /* check arguments */
+  CHECK_NULL(pdata,UNUR_ERR_COOKIE);  COOKIE_CHECK(pdata,CK_FSTR_PDATA,UNUR_ERR_COOKIE);
 
   /* locate token in function string and copy into token string */
   while ((token = _unur_fstr_next_symbol(pdata,symb)) != S_NOSYMBOL) {
@@ -231,6 +236,9 @@ _unur_fstr_next_symbol (struct parser_data *pdata, char *symb)
   int token;
   int errcode = 0;
   char c;
+
+  /* check arguments */
+  CHECK_NULL(pdata,S_NOSYMBOL);  COOKIE_CHECK(pdata,CK_FSTR_PDATA,S_NOSYMBOL);
 
   /* store position of pointer */
   pdata->lastpos = pdata->scanpos;
@@ -336,6 +344,9 @@ _unur_fstr_find_user_defined (struct parser_data *pdata, char *symb, char next_c
      /*   return 0                                                           */
      /*----------------------------------------------------------------------*/
 {
+  /* check arguments */
+  CHECK_NULL(pdata,0);  COOKIE_CHECK(pdata,CK_FSTR_PDATA,0);
+
   /* we use next_char to distinguish between variables and functions */
 
   if (next_char == '(') {
@@ -393,6 +404,9 @@ _unur_fstr_UnsignedConstant (struct parser_data *pdata, char *uc)
   /* store scan position */
   int startpos = pdata->scanpos;
 
+  /* check arguments */
+  CHECK_NULL(pdata,1);  COOKIE_CHECK(pdata,CK_FSTR_PDATA,1);
+
   /* copy digit sequence into uc */
   _unur_fstr_DigitalSequence(pdata,uc);
 
@@ -429,6 +443,9 @@ _unur_fstr_DigitalSequence (struct parser_data *pdata, char *ds)
      /*   Digit         ::= '0' | '1' | '2' | ... | '8' | '9'                */
      /*----------------------------------------------------------------------*/
 {
+  /* check arguments */
+  CHECK_NULL(pdata,1);  COOKIE_CHECK(pdata,CK_FSTR_PDATA,1);
+
   /* copy digit */
   while ( (*ds = pdata->fstr[pdata->scanpos]) >= '0' && *ds <= '9' ) {
      ds++;
@@ -456,6 +473,9 @@ _unur_fstr_ScaleFactor (struct parser_data *pdata, char *sf)
      /*   Sign        ::= '+' | '-'                                          */
      /*----------------------------------------------------------------------*/
 {
+  /* check arguments */
+  CHECK_NULL(pdata,1);  COOKIE_CHECK(pdata,CK_FSTR_PDATA,1);
+
   /* copy sign */
   if ( (sf[0] = pdata->fstr[pdata->scanpos]) == '+' || sf[0] == '-' ) {
      sf++;
@@ -484,6 +504,9 @@ _unur_fstr_Identifier (struct parser_data *pdata, char *id)
      /*   Digit      ::= '0' | '1' | ... | '9'                               */
      /*----------------------------------------------------------------------*/
 {
+  /* check arguments */
+  CHECK_NULL(pdata,1);  COOKIE_CHECK(pdata,CK_FSTR_PDATA,1);
+
   /* copy word */
   while ( ((*id = pdata->fstr[pdata->scanpos]) >= 'a' && *id <= 'z')
 	  || *id == '_' 
@@ -513,6 +536,9 @@ _unur_fstr_RelationOperator (struct parser_data *pdata, char *ro)
      /*   RelationChar     ::= '<' | '>' | '=' | '!'                         */
      /*----------------------------------------------------------------------*/
 {
+  /* check arguments */
+  CHECK_NULL(pdata,1);  COOKIE_CHECK(pdata,CK_FSTR_PDATA,1);
+
   /* copy relation operator */
   while ((*ro = pdata->fstr[pdata->scanpos]) == '<' || *ro == '>' || *ro == '=' || *ro == '!' ) {
     ro++;
@@ -545,6 +571,9 @@ _unur_fstr_error_scan (const struct parser_data *pdata, const char *symb)
   char format[124];
   int wsp;
   
+  /* check arguments */
+  CHECK_NULL(pdata,/*void*/);  COOKIE_CHECK(pdata,CK_FSTR_PDATA,/*void*/);
+
   /* set unuran error code */
   unur_errno = UNUR_ERR_FSTR_SYNTAX;
 

@@ -62,6 +62,9 @@ _unur_FunctDefinition (struct parser_data *pdata)
   char             *symb;
   int              token; 
 
+  /* check arguments */
+  CHECK_NULL(pdata,NULL);  COOKIE_CHECK(pdata,CK_FSTR_PDATA,NULL);
+
   /* left hand side: DefFunctDesignator */
   left = _unur_DefFunctDesignator(pdata);
   if (pdata->errno) return NULL;
@@ -106,6 +109,9 @@ _unur_DefFunctDesignator (struct parser_data *pdata)
   char             *fsymb, *symb;
   int              n_params; 
   int              funct, token;
+
+  /* check arguments */
+  CHECK_NULL(pdata,NULL);  COOKIE_CHECK(pdata,CK_FSTR_PDATA,NULL);
 
   /* get function identifier */
   if ( _unur_fstr_next_token(pdata,&funct,&fsymb) == FALSE ||
@@ -158,6 +164,9 @@ _unur_DefParameterlist(struct parser_data *pdata, int *n_params)
   struct ftreenode *node, *left, *right; 
   char             *symb;
   int              token;
+
+  /* check arguments */
+  CHECK_NULL(pdata,NULL);  COOKIE_CHECK(pdata,CK_FSTR_PDATA,NULL);
 
   /* read user defined identifier, i.e. a variable */ 
   if ( _unur_fstr_next_token(pdata,&token,&symb) == FALSE ||
@@ -219,6 +228,9 @@ _unur_Expression (struct parser_data *pdata)
   char             *symb;
   int              token;
 
+  /* check arguments */
+  CHECK_NULL(pdata,NULL);  COOKIE_CHECK(pdata,CK_FSTR_PDATA,NULL);
+
   /* read simple expression from function string */
   left = _unur_SimpleExpression(pdata);
   if (pdata->errno) return NULL; 
@@ -265,6 +277,9 @@ _unur_SimpleExpression (struct parser_data *pdata)
   struct ftreenode *node, *left, *right; 
   char             *symb;
   int              token;
+
+  /* check arguments */
+  CHECK_NULL(pdata,NULL);  COOKIE_CHECK(pdata,CK_FSTR_PDATA,NULL);
 
   /* get next Term in string */
   node = _unur_STerm(pdata);
@@ -313,6 +328,9 @@ _unur_STerm (struct parser_data *pdata)
   struct ftreenode *node, *left, *right; 
   char             *symb; 
   int              token;
+
+  /* check arguments */
+  CHECK_NULL(pdata,NULL);  COOKIE_CHECK(pdata,CK_FSTR_PDATA,NULL);
 
   /* get next token */
   if ( _unur_fstr_next_token(pdata,&token,&symb) &&
@@ -363,6 +381,9 @@ _unur_Term (struct parser_data *pdata)
   char             *symb;
   int              token;
 
+  /* check arguments */
+  CHECK_NULL(pdata,NULL);  COOKIE_CHECK(pdata,CK_FSTR_PDATA,NULL);
+
   /* get next factor of multiplication */
   node = _unur_Factor(pdata);
   if (pdata->errno) return NULL;
@@ -408,6 +429,9 @@ _unur_Factor (struct parser_data *pdata)
   struct ftreenode *node, *left, *right; 
   char             *symb;
   int              token;
+
+  /* check arguments */
+  CHECK_NULL(pdata,NULL);  COOKIE_CHECK(pdata,CK_FSTR_PDATA,NULL);
 
   /* get base of factor */
   left = _unur_Bas_Exp(pdata);
@@ -461,6 +485,9 @@ _unur_Bas_Exp (struct parser_data *pdata)
   struct ftreenode *node; 
   char             *symb;
   int              token;
+
+  /* check arguments */
+  CHECK_NULL(pdata,NULL);  COOKIE_CHECK(pdata,CK_FSTR_PDATA,NULL);
 
   /* get next token */
   if ( _unur_fstr_next_token(pdata,&token,&symb) == FALSE)
@@ -527,6 +554,9 @@ _unur_FunctDesignator (struct parser_data *pdata)
   int              funct, token;
   int              n_params; 
 
+  /* check arguments */
+  CHECK_NULL(pdata,NULL);  COOKIE_CHECK(pdata,CK_FSTR_PDATA,NULL);
+
   /* get function identifier for system function */
   if ( _unur_fstr_next_token(pdata,&funct,&fsymb) == FALSE ||
        symbol[funct].type != S_SFUNCT )
@@ -579,6 +609,9 @@ _unur_ActualParameterlist (struct parser_data *pdata, int n_params)
   char             *symb;
   int              token;
   int              c_params;   /* counter for parameters */
+
+  /* check arguments */
+  CHECK_NULL(pdata,NULL);  COOKIE_CHECK(pdata,CK_FSTR_PDATA,NULL);
 
   /* read first parameter from string ...  */
   node = _unur_Expression(pdata);
@@ -661,6 +694,7 @@ _unur_fstr_simplification (char *symb, int token,
    *              X     Y
    */ 
   if ( left == NULL && right && right->symbol[0] == ',' ) {
+    COOKIE_CHECK(right,CK_FSTR_TNODE,NULL);
     right->token  = token;
     right->symbol = symbol[token].name; 
     right->type   = symbol[token].type;
@@ -672,6 +706,7 @@ _unur_fstr_simplification (char *symb, int token,
    *       Const     Const     NULL     Const
    */ 
   if ( (l_const || left==NULL) && r_const && s!=',') { 
+    CHECK_NULL(right,NULL); COOKIE_CHECK(right,CK_FSTR_TNODE,NULL);
     /* compute new value */
     right->val   = ( (left) 
 		     ? (*symbol[token].vcalc)(left->val,right->val)
@@ -689,6 +724,8 @@ _unur_fstr_simplification (char *symb, int token,
    *        0     X           1     X
    */ 
   if ( (l_0 && s=='+' ) || (l_1 && s=='*') ) { 
+    CHECK_NULL(left,NULL);  COOKIE_CHECK(left,CK_FSTR_TNODE,NULL);
+    CHECK_NULL(right,NULL); COOKIE_CHECK(right,CK_FSTR_TNODE,NULL);
     free(left);
     return right;
   } 
@@ -707,6 +744,8 @@ _unur_fstr_simplification (char *symb, int token,
    */ 
   if ( (r_0 && (s=='+' || s=='-')) ||
        (r_1 && (s=='*' || s=='/' || s=='^')) ) {
+    CHECK_NULL(left,NULL);  COOKIE_CHECK(left,CK_FSTR_TNODE,NULL);
+    CHECK_NULL(right,NULL); COOKIE_CHECK(right,CK_FSTR_TNODE,NULL);
     free(right);
     return left;
   }
@@ -725,10 +764,14 @@ _unur_fstr_simplification (char *symb, int token,
    */
   and = (strcmp(symb,"and")==0);
   if ( l_0 && (s=='*' || s=='/' || s=='^' || and) ) {
+    CHECK_NULL(left,NULL);  COOKIE_CHECK(left,CK_FSTR_TNODE,NULL);
+    CHECK_NULL(right,NULL); COOKIE_CHECK(right,CK_FSTR_TNODE,NULL);
     _unur_fstr_free(right);
     return left;
   }
   if (r_0 && (s=='*' || and ) ) {
+    CHECK_NULL(left,NULL);  COOKIE_CHECK(left,CK_FSTR_TNODE,NULL);
+    CHECK_NULL(right,NULL); COOKIE_CHECK(right,CK_FSTR_TNODE,NULL);
     _unur_fstr_free(left);
     return right;
   }
@@ -738,11 +781,15 @@ _unur_fstr_simplification (char *symb, int token,
    *        X     0           1     X
    */ 
   if (r_0 && s=='^') {
+    CHECK_NULL(left,NULL);  COOKIE_CHECK(left,CK_FSTR_TNODE,NULL);
+    CHECK_NULL(right,NULL); COOKIE_CHECK(right,CK_FSTR_TNODE,NULL);
     _unur_fstr_free(left);
     right->val = 1.;
     return right;
   }
   if (l_1 && s=='^') {
+    CHECK_NULL(left,NULL);  COOKIE_CHECK(left,CK_FSTR_TNODE,NULL);
+    CHECK_NULL(right,NULL); COOKIE_CHECK(right,CK_FSTR_TNODE,NULL);
     _unur_fstr_free(right);
     return left;
   }
@@ -758,6 +805,8 @@ _unur_fstr_simplification (char *symb, int token,
 	 left  && left->left==NULL  && left->right==NULL  && 
 	 right && right->left==NULL && right->right==NULL &&
 	 strcmp(left->symbol,right->symbol)== 0 ) ) {
+    CHECK_NULL(left,NULL);  COOKIE_CHECK(left,CK_FSTR_TNODE,NULL);
+    CHECK_NULL(right,NULL); COOKIE_CHECK(right,CK_FSTR_TNODE,NULL);
     free(left);
     right->token = s_uconst;
     right->symbol= symbol[s_uconst].name; 
@@ -787,16 +836,23 @@ _unur_fstr_reorganize (struct ftreenode *node)
      /*   0 otherwise                                                        */
      /*----------------------------------------------------------------------*/
 {
-  struct ftreenode *left  = node->left;
-  struct ftreenode *right = node->right;
-  struct ftreenode *tmp;
-  char symb = node->symbol[0];
+  struct ftreenode *left, *right, *tmp;
+  char symb;
+  int l_const, r_const;
+  int rl_0, ll_0;
+
+  /* check arguments */
+  CHECK_NULL(node,0);  COOKIE_CHECK(node,CK_FSTR_TNODE,0);
+
+  left  = node->left;
+  right = node->right;
+  symb = node->symbol[0];
 
   /* some booleans */
-  int l_const = left  && (left->type  == S_SCONST || left->type  == S_UCONST); 
-  int r_const = right && (right->type == S_SCONST || right->type == S_UCONST); 
-  int rl_0 = (right && right->left && right->left->type == S_UCONST && right->left->val == 0.);
-  int ll_0 = (left  && left->left  && left->left->type  == S_UCONST && left->left->val  == 0.);
+  l_const = left  && (left->type  == S_SCONST || left->type  == S_UCONST); 
+  r_const = right && (right->type == S_SCONST || right->type == S_UCONST); 
+  rl_0 = (right && right->left && right->left->type == S_UCONST && right->left->val == 0.);
+  ll_0 = (left  && left->left  && left->left->type  == S_UCONST && left->left->val  == 0.);
 
   /*          Operator            Operator
    *            /   \      or      /   \        ==>     Const (result of computation)
@@ -913,6 +969,9 @@ _unur_fstr_next_token (struct parser_data *pdata, int *token, char **symbol)
      /*   0 ... if there are no tokens any more in the list                  */
      /*----------------------------------------------------------------------*/
 {
+  /* check arguments */
+  CHECK_NULL(pdata,0);  COOKIE_CHECK(pdata,CK_FSTR_PDATA,0);
+
   if (pdata->tno < pdata->n_tokens) {
     /* return token and increment scan position */
     *token = pdata->token[pdata->tno];
@@ -955,6 +1014,8 @@ _unur_fstr_create_node (char *symb, double val, int token,
   else {
     /* make new node */
     node = _unur_malloc(sizeof(struct ftreenode)); 
+    COOKIE_SET(node,CK_FSTR_TNODE);
+
     node->symbol = symbol[token].name; 
     node->token  = token; 
     node->type   = symbol[token].type; 
@@ -1002,6 +1063,9 @@ _unur_fstr_error_parse ( struct parser_data *pdata, int errno )
      /*----------------------------------------------------------------------*/
 { 
   int i;
+
+  /* check arguments */
+  CHECK_NULL(pdata,NULL);  COOKIE_CHECK(pdata,CK_FSTR_PDATA,NULL);
 
   /* set unuran error code */
   unur_errno = UNUR_ERR_FSTR_SYNTAX;

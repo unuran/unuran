@@ -91,8 +91,11 @@ _unur_fstr_free (struct ftreenode *root)
      /*----------------------------------------------------------------------*/
 { 
   if( root != NULL ) {
-    _unur_fstr_free(root->left);
-    _unur_fstr_free(root->right);
+    /* check arguments */
+    COOKIE_CHECK(root,CK_FSTR_TNODE,/*void*/);
+
+    if (root->left)  _unur_fstr_free(root->left);
+    if (root->right) _unur_fstr_free(root->right);
     free(root); 
   } 
 } /* end of _unur_fstr_free() */

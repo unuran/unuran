@@ -293,6 +293,10 @@ struct parser_data {
   int    lastpos;       /* position in string before scanning next token     */
   int    len_fstr;      /* length of function string                         */
   int    errno;         /* error code                                        */
+
+#ifdef UNUR_COOKIES
+  unsigned cookie;      /* magic cookie                                      */
+#endif
 };
 
 /*---------------------------------------------------------------------------*/

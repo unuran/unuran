@@ -476,8 +476,8 @@ unur_str2gen (const char *string)
       str_urng = token;
     }
     else {
-      if (str) free(str);
      _unur_error_unknown(token,"category");
+      if (str) free(str);
      return NULL;
     }
   }

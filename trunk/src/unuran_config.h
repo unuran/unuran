@@ -153,11 +153,11 @@
 
 /* Write warnings and error messages to stderr.                              */
 /* #undef this macro to suppress output on stderr.                           */
-/*  #define UNUR_ENABLE_STDERR  1 */
+#define UNUR_ENABLE_STDERR  1
 
 /* Notice that if neither UNUR_ENABLE_LOGFILE nor UNUR_ENABLE_STDERR is      */
-/* defined, then there are warnigs and error messages at all.                */
-/* However then it is recommend not to define UNUR_WARNINGS_ON, either.      */
+/* defined, then there are no warnings and error messages at all.            */
+/* However then it is recommend _not_ to define UNUR_WARNINGS_ON, either.    */
 
 
 /*---------------------------------------------------------------------------*/
@@ -178,7 +178,7 @@
 /* changes are made in the library.)                                         */
 
 /* use magic cookies to validate type of pointer */
-/*  #define UNUR_COOKIES  1 */
+#define UNUR_COOKIES  1
 
 
 /*---------------------------------------------------------------------------*/

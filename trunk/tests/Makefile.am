@@ -42,6 +42,7 @@ check_PROGRAMS = \
  t_dsrou \
  t_dstd \
  t_empk \
+ t_empl \
  t_hinv \
  t_ninv \
  t_srou \
@@ -86,6 +87,7 @@ EXTRA_DIST = \
  t_dsrou.conf \
  t_dstd.conf \
  t_empk.conf \
+ t_empl.conf \
  t_hinv.conf \
  t_ninv.conf \
  t_srou.conf \
@@ -127,6 +129,7 @@ SUFFIXES = .c
 .conf.c: make_test_files.pl
 	./make_test_files.pl $< > $@
 
+t_*.c: make_test_files.pl
 
 # clean backup files
 CLEANFILES = *~ *.log

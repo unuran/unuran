@@ -26,7 +26,7 @@ libdistr_a_SOURCES = \
  student.c \
  uniform.c
 
-pkginclude_HEADERS = unur_distr.h
+pkginclude_HEADERS = unur_distribution.h
 
 noinst_HEADERS = unur_distribution_lib.h
 

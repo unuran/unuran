@@ -46,7 +46,6 @@
 /** TODO **/
 #include <unur_methods_lib.h>
 
-
 #include <float.h>
 #include <stdlib.h>
 
@@ -75,7 +74,7 @@ typedef void _UNUR_SAMPLING_ROUTINE_VEC(struct unur_gen *gen, double *vec);
 
 /*---------------------------------------------------------------------------*/
 /* include header file for distribtion object                                */
-#include <unur_distribution.h>
+#include <unur_distr.h>
 
 /*---------------------------------------------------------------------------*/
 /* include header files for generators                                       */

@@ -13,7 +13,7 @@
 #include <stdio.h>
 
 #include <unur_methods.h>
-#include <unur_distr.h>
+#include <unur_distribution.h>
 #include <unur_tests.h>
 
 /*---------------------------------------------------------------------------*/

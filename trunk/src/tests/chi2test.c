@@ -43,7 +43,7 @@
 #include <unur_tests.h>
 
 #include <unur_cookies.h>
-#include <unur_distr.h>
+#include <unur_distribution.h>
 #include <unur_errno.h>
 #include <unur_math.h>
 #include <unur_utils.h>

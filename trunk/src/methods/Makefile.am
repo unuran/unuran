@@ -11,7 +11,7 @@ INCLUDES = \
 noinst_LIBRARIES = libmethods.a
 
 libmethods_a_SOURCES = \
- distribution.c \
+ distr.c \
  misc.c \
  arou.c \
  cstd.c \
@@ -25,7 +25,7 @@ libmethods_a_SOURCES = \
 
 pkginclude_HEADERS = \
  unur_methods.h \
- unur_distribution.h \
+ unur_distr.h \
  unur_misc.h  \
  unur_arou.h \
  unur_cstd.h \

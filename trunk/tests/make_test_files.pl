@@ -61,13 +61,10 @@ $file_testlog =~ s/\.c$/_test\.log/;
 $file_unuranlog = $file_out;
 $file_unuranlog =~ s/\.c$/_unuran\.log/;
 
-#get name of method 
-$method = $file_in;
-$method =~ s#^.*/##g;
-$method =~ s/\.conf$//;
-$method =~ tr/[A-Z]/[a-z]/;
-$METHOD = $method;
-$METHOD =~ tr/[a-z]/[A-Z]/;
+#get name of file
+$file_name = $file_in;
+$file_name =~ s#^.*/##g;
+$file_name =~ s/\.conf$//;
 
 #open files ...
 open (IN,"$file_in")    or die "Cannot open file $file_in for reading";
@@ -85,6 +82,7 @@ print OUT "\n*/\n\n";
 ############################################################
 
 # data we want ...
+undef $method;
 undef $gen_type;
 undef $distr_type;
 undef $urng;
@@ -127,6 +125,7 @@ while (1) {
     while (1) {
 	if ( $subsection =~ /data/ ) {
 	    #read data ...
+	    if (/^\s*method\s*:\s*(\w+)/)        { $method = $1; }
 	    if (/^\s*type\s*:\s*(\w+)/)          { $gen_type = $1; }
 	    if (/^\s*distributions\s*:\s*(.+)$/) { $distr_type = $1; }
 	    if (/^\s*urng\s*:\s*(.+)[\s\n]/)     { $urng = $1; }
@@ -148,9 +147,16 @@ while (1) {
 $C_header_aux =~ s/\\#/#/g;
 
 # check data ...
-die "Data missing" unless (defined $gen_type and
+die "Data missing" unless (defined $method and
+			   defined $gen_type and
 			   defined $distr_type and 
 			   defined $urng);
+
+# name of method 
+$method =~ tr/[A-Z]/[a-z]/;
+$METHOD = $method;
+$METHOD =~ tr/[a-z]/[A-Z]/;
+
 
 # which distributions ...
 my @distr_lines = split /,/, $distr_type;

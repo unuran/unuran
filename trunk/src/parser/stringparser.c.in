@@ -130,18 +130,18 @@ static void _unur_str_debug_string( int level, const char *key, const char *valu
 
 
 
+
 /* Maximal length of provides string allowed */
 #define MAX_STRLENGTH (2048)
 /* Maximal entries of any list allowed */
 #define MAX_ELEM (2048)
 
 
-#define MAX_SET_ARGS  (10)  /* maximal number of arguments for set calls */
+#define MAX_SET_ARGS  (10)  /* maximal number of arguments for set calls (must be at least 2) */
 
 /* function prototypes */
 
 static UNUR_DISTR * _unur_str2distr        (char *);
-static UNUR_PAR   * _unur_str2parxx          (UNUR_DISTR *, char *);
 UNUR_GEN   * unur_str2gen           (char *);
 static int          _unur_str2urng         (UNUR_PAR *, char *);
 
@@ -154,11 +154,32 @@ static UNUR_PAR *_unur_str2method( const char *method, UNUR_DISTR *distr );
 static int _unur_str2set( UNUR_PAR *par, const char *key, char *value );
 
 
-static int  _unur_parse_dlist (char *, double *);
+static int  _unur_parse_dlist_xx (char *, double *);
+static int  _unur_parse_dlist (char *, double **);
 static void _unur_prepare_string (char *str);
 
 static int _unur_atoi ( const char *str );
+static unsigned _unur_atou ( const char *str );
 static double _unur_atod ( const char *str );
+
+/* ... */
+typedef int void_set( UNUR_PAR *par );
+typedef int i_set( UNUR_PAR *par, int i );
+typedef int u_set( UNUR_PAR *par, unsigned u );
+typedef int d_set( UNUR_PAR *par, double d );
+typedef int dd_set( UNUR_PAR *par, double d1, double d2 );
+typedef int iD_set( UNUR_PAR *par, int size, double *array );
+typedef int Di_set( UNUR_PAR *par, double *array, int size );
+
+static int _unur_str_par_set_void (UNUR_PAR *par, char *type_args, char **args, void_set set);
+static int _unur_str_par_set_i (UNUR_PAR *par, char *type_args, char **args, i_set set);
+static int _unur_str_par_set_u (UNUR_PAR *par, char *type_args, char **args, u_set set);
+static int _unur_str_par_set_d (UNUR_PAR *par, char *type_args, char **args, d_set set);
+static int _unur_str_par_set_dd (UNUR_PAR *par, char *type_args, char **args, dd_set set);
+static int _unur_str_par_set_iD (UNUR_PAR *par, char *type_args, char **args, iD_set set);
+static int _unur_str_par_set_Di (UNUR_PAR *par, char *type_args, char **args, Di_set set);
+ 
+
 
 /*---------------------------------------------------------------------------*/
 
@@ -222,7 +243,7 @@ UNUR_DISTR *_unur_str2distr(char *str){
          tmpstr++;       /* points to begin of list (if available) */
    
          /* extract list of doubles from string  */
-         no_of_elem = _unur_parse_dlist(tmpstr ,list);
+         no_of_elem = _unur_parse_dlist_xx(tmpstr ,list);
        }
 
        /* value must terminate before the first Komma */
@@ -257,114 +278,6 @@ UNUR_DISTR *_unur_str2distr(char *str){
 
 
 /**********************************************************************/
-/*                                                                    */
-/* function: _unur_str2parxx()                                          */
-/*                                                                    */
-/* called by: unur_str2gen()                                          */
-/*                                                                    */
-/* parameters: pointer do distribution object                         */
-/*             pointer to char array / string                         */
-/*                                                                    */
-/* return: pointer to parameter object                                */
-/*                                                                    */
-/* comments:                                                          */
-/* gets a pointer to a distribution object and a string with          */
-/* information about the distribution,                                */
-/* generates the corresponding parameter object and returns it        */
-/*                                                                    */
-/* The string consists of key=value entries separeted by `;'          */
-/*                                                                    */
-/* four possibilities:                                                */
-/* key                                                                */
-/* key=value                                                          */
-/* key=(komma separated list of numbers)                              */
-/* key=value(komma separated list of numbers)                         */
-/*                                                                    */
-/* for each key the corresponding `unur_<name>_set' command           */
-/* is executed                                                        */
-/*                                                                    */
-/**********************************************************************/
-UNUR_PAR *_unur_str2parxx(UNUR_DISTR *distr, char *methstr){
-
-  UNUR_PAR *par;
-
-  int check;          /* variable used to check for errors */
-
-  char * token;  /* char pointer to tokenize the string */
-  char *key, *value; /* the key and its value */
-  char *tmpstr;  /* temporary pointer to char */
-
-  double dblvalue; /* double representation of value */
-
-  double list[MAX_ELEM]; /* value contains a list of double numbers */
-  int no_of_elem;        /* size of that list */
-
-
-
-  /* tokenize the string and handle the tokens */
-  for ( token = strtok( methstr, ";");
-       token != NULL;
-       token = strtok(NULL, ";") ){
-
-
-    /* determine key and value */
-    key = token;
-    /* none or several '=' seperates key from value */
-    value = strchr(key, '=');
-    if (value != NULL ){
-       for ( *value='\0', value++; *value=='='; value++ );
-
-
-       /* split value into leading value and list (if possible) */
-       no_of_elem = 0;
-       if (NULL != strchr(value, '(') ){
-         tmpstr = strchr(value, '(');
-         *tmpstr = '\0';                  /* terminate value */
-         tmpstr++;
-
-         /* extract list of doubles from string  */
-         no_of_elem = _unur_parse_dlist(tmpstr ,list);
-       }
-
-       /* value must terminate before the first Komma */
-       if ( NULL != strchr(value, ',' ) ){
-          tmpstr = strchr(value, ',');
-          *tmpstr = '\0';                 /* terminate value */
-       }
- 
-       /* extract double value from string value */
-       if ( !strcmp(value, "true") || !strcmp(value, "on") ){
-          dblvalue = 1.0;
-       }
-       else if ( !strcmp(value, "false") || !strcmp(value, "off") ){
-          dblvalue = 0.0;
-       }
-       else {
-          dblvalue = atof(value);
-       }
-
-    }
-
-    /* Now: key, value, dblvalue and list are set           */
-
-    /* ********************************************************** */ 
-    /* ********************************************************** */ 
-    /* the following code is automatic generated by a perl script */
-
-=INPUT methodinfo
-
-    /* end of automatically generated code */
-    /* ********************************************************** */ 
-    /* ********************************************************** */ 
-
-  } /* end for -- all tokens handled */
-
-
-  /* return the parameter object */
-  return ( par );
-
-}
-/* end of _unur_str2parxx()                                              */
 
 /*---------------------------------------------------------------------------*/
 
@@ -416,15 +329,10 @@ _unur_str2set( UNUR_PAR *par, const char *key, char *value )
      /*   return 0                                                           */
      /*----------------------------------------------------------------------*/
 {
-  int result;    /* result of UNURAN set call (0 or 1) */
+  int result = FALSE;      /* result of UNURAN set call (0 or 1) */
 
   char *token;             /* pointer to token in string */
   char *next;              /* pointer to next token in string */
-
-  int     iarg;            /* store integer argument */
-  double  darg;            /* store double argument  */
-  int    *iarr;            /* store integer array    */
-  double *darr;            /* store double array     */
 
   /* storing arguments of set calls: */
   int n_args;                      /* number of arguments in set call */
@@ -445,7 +353,7 @@ _unur_str2set( UNUR_PAR *par, const char *key, char *value )
      a single item, or
      a list, indicated by (...)
   */
-#define IS_ITEM 'i'
+#define IS_ITEM 't'
 #define IS_LIST 'L'
 
   /* split value string into separate arguments */
@@ -511,7 +419,11 @@ _unur_str2set( UNUR_PAR *par, const char *key, char *value )
 
   }
 
-=INPUT list_of_sets_method
+  do {
+
+=INPUT list_of_par_sets
+
+   } while (0);
 
    return result;
 
@@ -519,6 +431,392 @@ _unur_str2set( UNUR_PAR *par, const char *key, char *value )
 #undef IS_LIST
 
 } /* end of _unur_str2set() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+_unur_str_par_set_void (UNUR_PAR *par, char *type_args, char **args, void_set set)
+     /*----------------------------------------------------------------------*/
+     /* Set parameter in given parameter object.                             */
+     /* The list of arguments and their types are given as string.           */
+     /*                                                                      */
+     /* type: void   (no arguments required)                                 */
+     /*                                                                      */
+     /* input: void  (no arguments should be given)                          */
+     /*                                                                      */
+     /* action:                                                              */
+     /*    execute set call.                                                 */
+     /*    warning if any argument is given.                                 */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par       ... pointer to parameter object                          */
+     /*   type_args ... contains types of arguments. Possible values:        */
+     /*                   't'   for single token                             */
+     /*                   'L'   for a list                                   */
+     /*   args      ... array of pointers to argument strings                */
+     /*   set       ... pointer to UNURAN function for set call              */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   return code from set call, i.e.                                    */
+     /*      1 ... on success                                                */
+     /*      0 ... on error                                                  */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return 0                                                           */
+     /*----------------------------------------------------------------------*/
+{
+  if (*type_args != '\0')
+    _unur_warning(GENTYPE,UNUR_ERR_GENERIC,"too many argument(s)");
+
+  return set(par);
+
+} /* end of _unur_str_par_set_void() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+_unur_str_par_set_i (UNUR_PAR *par, char *type_args, char **args, i_set set)
+     /*----------------------------------------------------------------------*/
+     /* Set parameter in given parameter object.                             */
+     /* The list of arguments and their types are given as string.           */
+     /*                                                                      */
+     /* type: "i"   (int)                                                    */
+     /*                                                                      */
+     /* input: "t"  (exactly one single token)                               */
+     /*                                                                      */
+     /* action:                                                              */
+     /*    convert token to int.                                             */
+     /*    execute set call.                                                 */
+     /*    error if input != "t"                                             */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par       ... pointer to parameter object                          */
+     /*   type_args ... contains types of arguments. Possible values:        */
+     /*                   't'   for single token                             */
+     /*                   'L'   for a list                                   */
+     /*   args      ... array of pointers to argument strings                */
+     /*   set       ... pointer to UNURAN function for set call              */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   return code from set call, i.e.                                    */
+     /*      1 ... on success                                                */
+     /*      0 ... on error                                                  */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return 0                                                           */
+     /*----------------------------------------------------------------------*/
+{
+  int iarg;
+
+  if ( strcmp(type_args, "t") ) {
+    _unur_error(GENTYPE,UNUR_ERR_GENERIC,"invalid argument(s)");
+    return 0;
+  }
+  
+  iarg = _unur_atoi( args[0] );
+  return set(par,iarg);
+
+} /* end of _unur_str_par_set_i() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+_unur_str_par_set_u (UNUR_PAR *par, char *type_args, char **args, u_set set)
+     /*----------------------------------------------------------------------*/
+     /* Set parameter in given parameter object.                             */
+     /* The list of arguments and their types are given as string.           */
+     /*                                                                      */
+     /* type: "u"   (unsigned)                                               */
+     /*                                                                      */
+     /* input: "t"  (exactly one single token)                               */
+     /*                                                                      */
+     /* action:                                                              */
+     /*    convert token to unsigned.                                        */
+     /*    execute set call.                                                 */
+     /*    error if input != "t"                                             */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par       ... pointer to parameter object                          */
+     /*   type_args ... contains types of arguments. Possible values:        */
+     /*                   't'   for single token                             */
+     /*                   'L'   for a list                                   */
+     /*   args      ... array of pointers to argument strings                */
+     /*   set       ... pointer to UNURAN function for set call              */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   return code from set call, i.e.                                    */
+     /*      1 ... on success                                                */
+     /*      0 ... on error                                                  */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return 0                                                           */
+     /*----------------------------------------------------------------------*/
+{
+  unsigned uarg;
+
+  if ( strcmp(type_args, "t") ) {
+    _unur_error(GENTYPE,UNUR_ERR_GENERIC,"invalid argument(s)");
+    return 0;
+  }
+  
+  uarg = _unur_atou( args[0] );
+  return set(par,uarg);
+
+} /* end of _unur_str_par_set_u() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+_unur_str_par_set_d (UNUR_PAR *par, char *type_args, char **args, d_set set)
+     /*----------------------------------------------------------------------*/
+     /* Set parameter in given parameter object.                             */
+     /* The list of arguments and their types are given as string.           */
+     /*                                                                      */
+     /* type: "d"   (double)                                                 */
+     /*                                                                      */
+     /* input: "t"  (exactly one single token)                               */
+     /*                                                                      */
+     /* action:                                                              */
+     /*    convert token to double.                                          */
+     /*    execute set call.                                                 */
+     /*    error if input != "t"                                             */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par       ... pointer to parameter object                          */
+     /*   type_args ... contains types of arguments. Possible values:        */
+     /*                   't'   for single token                             */
+     /*                   'L'   for a list                                   */
+     /*   args      ... array of pointers to argument strings                */
+     /*   set       ... pointer to UNURAN function for set call              */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   return code from set call, i.e.                                    */
+     /*      1 ... on success                                                */
+     /*      0 ... on error                                                  */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return 0                                                           */
+     /*----------------------------------------------------------------------*/
+{
+  double darg;
+
+  if ( strcmp(type_args, "t") ) {
+    _unur_error(GENTYPE,UNUR_ERR_GENERIC,"invalid argument(s)");
+    return 0;
+  }
+  
+  darg = _unur_atod( args[0] );
+  return set(par,darg);
+
+} /* end of _unur_str_par_set_d() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+_unur_str_par_set_dd (UNUR_PAR *par, char *type_args, char **args, dd_set set)
+     /*----------------------------------------------------------------------*/
+     /* Set parameter in given parameter object.                             */
+     /* The list of arguments and their types are given as string.           */
+     /*                                                                      */
+     /* type: "dd"   (double,double)                                         */
+     /*                                                                      */
+     /* input: "tt"  (exactly two single tokens)                             */
+     /*        "L"   (exactly one list)                                      */
+     /*                                                                      */
+     /* action:                                                              */
+     /*    if "tt": convert both to double.                                  */
+     /*             execute set call.                                        */
+     /*    if "L":  convert list entries to double.                          */
+     /*             execute set call with first two entries.                 */
+     /*                (error if list has less than two entries)             */
+     /*    otherwise: error                                                  */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par       ... pointer to parameter object                          */
+     /*   type_args ... contains types of arguments. Possible values:        */
+     /*                   't'   for single token                             */
+     /*                   'L'   for a list                                   */
+     /*   args      ... array of pointers to argument strings                */
+     /*   set       ... pointer to UNURAN function for set call              */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   return code from set call, i.e.                                    */
+     /*      1 ... on success                                                */
+     /*      0 ... on error                                                  */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return 0                                                           */
+     /*----------------------------------------------------------------------*/
+{
+  double *darray = NULL;
+  double darg[2];
+  int result;
+
+  /* either exactly two arguments are given */
+  if ( strcmp(type_args, "tt") ) {
+    darg[0] = _unur_atod( args[0] );
+    darg[1] = _unur_atod( args[1] );
+    return set( par,darg[0],darg[1] );
+  }
+
+  /* or one list with 2 entries is given */
+  else if ( strcmp(type_args, "L") ) {
+    if ( _unur_parse_dlist( args[0], &darray ) < 2 ) {
+      _unur_error(GENTYPE,UNUR_ERR_GENERIC,"invalid argument(s)");
+      free (darray);
+      return 0;
+    }
+    result = set( par,darray[0],darray[1] );
+    free (darray);
+    return result;
+  }
+  
+  else {
+    _unur_error(GENTYPE,UNUR_ERR_GENERIC,"invalid argument(s)");
+    return 0;
+  }
+
+} /* end of _unur_str_par_set_dd() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+_unur_str_par_set_iD (UNUR_PAR *par, char *type_args, char **args, iD_set set)
+     /*----------------------------------------------------------------------*/
+     /* Set parameter in given parameter object.                             */
+     /* The list of arguments and their types are given as string.           */
+     /*                                                                      */
+     /* type: "iD"   (int, array of doubles)                                 */
+     /*                                                                      */
+     /* input: "tL"  (single token & list)                                   */
+     /*        "L"   (exactly one list)                                      */
+     /*        "t"   (single token)                                          */
+     /*                                                                      */
+     /* action:                                                              */
+     /*    if "L":  convert list to array of doubles.                        */
+     /*             execute set with size if array as first argument.        */
+     /*    if "t":  convert token to int.                                    */ 
+     /*             execute set call with NULL as its second argument.       */
+     /*    if "tL": convert list to array of doubles.                        */
+     /*             convert first token to int.                              */
+     /*             set int to min of int and size of array.                 */
+     /*             execute set call with int and array.                     */
+     /*    otherwise: error                                                  */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par       ... pointer to parameter object                          */
+     /*   type_args ... contains types of arguments. Possible values:        */
+     /*                   't'   for single token                             */
+     /*                   'L'   for a list                                   */
+     /*   args      ... array of pointers to argument strings                */
+     /*   set       ... pointer to UNURAN function for set call              */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   return code from set call, i.e.                                    */
+     /*      1 ... on success                                                */
+     /*      0 ... on error                                                  */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return 0                                                           */
+     /*----------------------------------------------------------------------*/
+{
+  int result;
+  int size, t_size;
+  double *darray = NULL;
+  
+  /* either an integer and a list are given */
+  if ( strcmp(type_args, "tL") ) {
+    t_size = _unur_atoi( args[0] );
+    size = _unur_parse_dlist( args[1], &darray );
+    if (size > 0) {
+      if (size > t_size)  size = t_size;
+    }
+    else {
+      /* empty list */
+      size = t_size;
+      if (darray) free (darray);
+      darray = NULL;
+    }
+  }
+
+  /* or only an integer is given */
+  if ( strcmp(type_args, "t") ) {
+    t_size = _unur_atoi( args[0] );
+    darray = NULL;
+  }
+
+  /* or only a list is given */
+  if ( strcmp(type_args, "L") ) {
+    size = _unur_parse_dlist( args[0], &darray );
+  }
+
+  /* or there is a syntay error */
+  else {
+    _unur_error(GENTYPE,UNUR_ERR_GENERIC,"invalid argument(s)");
+    return 0;
+  }
+
+  /* execute set command */
+  result = set( par,size,darray );
+  if (darray) free (darray);
+
+  return result;
+
+} /* end of _unur_str_par_set_iD() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+_unur_str_par_set_Di (UNUR_PAR *par, char *type_args, char **args, Di_set set)
+     /*----------------------------------------------------------------------*/
+     /* Set parameter in given parameter object.                             */
+     /* The list of arguments and their types are given as string.           */
+     /*                                                                      */
+     /* type: "Di"   (array of doubles, int)                                 */
+     /*                                                                      */
+     /* input: "Lt"  (list & single token & list)                            */
+     /*                                                                      */
+     /* action:                                                              */
+     /*    convert list to array of doubles.                                 */
+     /*    convert token to int.                                             */
+     /*    execute set call with array and int.                              */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par       ... pointer to parameter object                          */
+     /*   type_args ... contains types of arguments. Possible values:        */
+     /*                   't'   for single token                             */
+     /*                   'L'   for a list                                   */
+     /*   args      ... array of pointers to argument strings                */
+     /*   set       ... pointer to UNURAN function for set call              */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   return code from set call, i.e.                                    */
+     /*      1 ... on success                                                */
+     /*      0 ... on error                                                  */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return 0                                                           */
+     /*----------------------------------------------------------------------*/
+{
+  int result;
+  int size;
+  double *darray = NULL;
+
+  if ( strcmp(type_args, "Lt") ) {
+    size = _unur_atoi( args[1] );
+    size = _unur_parse_dlist( args[0], &darray );
+    result = set( par,darray,size );
+    if (darray) free (darray);
+  }
+
+  else {
+    /* there is a syntay error */
+    _unur_error(GENTYPE,UNUR_ERR_GENERIC,"invalid argument(s)");
+    return 0;
+  }
+
+  return result;
+} /* end of _unur_str_par_set_Di() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -783,7 +1081,7 @@ UNUR_GEN *unur_str2gen (char *str){
 /*---------------------------------------------------------------------------*/
 
 int 
-_unur_parse_dlist( char *liststr, double *darray )
+_unur_parse_dlist_xx( char *liststr, double *darray )
      /*----------------------------------------------------------------------*/
      /* Process a comma separated list of numbers (doubles), convert it to   */
      /* doubles and store it an array. The list (string) is terminated by    */
@@ -813,6 +1111,68 @@ _unur_parse_dlist( char *liststr, double *darray )
 
   } /* end while -- all elements of list read */
 
+  return n_darray;
+
+} /* end of _unur_parse_dlist_xx() */
+
+/*---------------------------------------------------------------------------*/
+
+int 
+_unur_parse_dlist( char *liststr, double **darray )
+     /*----------------------------------------------------------------------*/
+     /* Process a comma separated list of numbers (doubles), convert it to   */
+     /* doubles and store it an array. The list (string) is terminated by    */
+     /* by a closing parenthesis ')' or '\0'.                                */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   liststr ... string containing list of numbers                      */
+     /*   darray  ... pointer to adress of double array for storing result   */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   number of elements extracted                                       */
+     /*                                                                      */
+     /* comment:                                                             */
+     /*   as a side effect a double array of appropriate size is allocated.  */
+     /*----------------------------------------------------------------------*/
+{
+  double *darr = NULL;  /* pointer to double array */
+  int n_darray = 0;     /* number of elements in processed list */
+  int n_alloc = 0;      /* number allocated elements */
+  char *tailstr;        /* pointer to the remaining string in strtod() */
+
+  /* extract doubles from string and write them to array of doubles   */
+  /* end of list is indicated by right bracket ')' or '\0' */  
+  while ( *liststr != ')' && *liststr != '\0' ) {
+    /* there can only be ',' or '(' in front of the numbers           */
+    while ( *liststr == ',' || *liststr == '(' ){
+      liststr++; /* next char */
+    }
+
+    /* check if there is enough space in darr */
+    if (n_darray >= n_alloc) {
+      /* no --> allocate memory */
+      n_alloc += 100;
+      darr = _unur_realloc( darr, n_alloc * sizeof(double) );
+    }
+
+    /* extract double and write to array and increase counter */
+    darr[n_darray] = strtod(liststr, &tailstr);
+    if (liststr == tailstr) {
+      /* conversion failed */
+      _unur_error(GENTYPE,UNUR_ERR_GENERIC,"cannot convert float"); 
+      break;
+    }
+    else {
+      /* conversion successfully */
+      liststr = tailstr;
+      n_darray++;
+    }
+  } /* end while -- all elements of list read */
+
+  /* store pointer to double array */
+  *darray = darr;
+
+  /* return number of elements in array */
   return n_darray;
 
 } /* end of _unur_parse_dlist() */
@@ -868,6 +1228,34 @@ _unur_atoi ( const char *str )
     return atoi(str);
 
 } /* end of _unur_atoi() */
+
+/*---------------------------------------------------------------------------*/
+
+unsigned
+_unur_atou ( const char *str )
+     /*----------------------------------------------------------------------*/
+     /* Converts the string into its unsigned representation.                */
+     /* strings are interprated as hexadecimal numbers.                      */
+     /* 'true' and 'on' are converted to 1u, 'false' and 'off' to 0u.        */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   str      ... pointer to string                                     */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   unsigned                                                           */
+     /*----------------------------------------------------------------------*/
+{
+  char *tail;
+
+  if ( !strcmp(str,"true") || !strcmp(str,"on") )
+    return 1u;
+
+  else if ( !strcmp(str,"false") || !strcmp(str,"off") )
+    return 0u;
+
+  else
+    return ((unsigned) strtoul(str, &tail, 16));
+} /* end of _unur_atou() */
 
 /*---------------------------------------------------------------------------*/
 

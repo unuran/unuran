@@ -76,14 +76,11 @@ while ( <STDIN> ){
 	if ( $type eq "distrinfo" ){
 	    distr_info();
 	}
-	elsif ( $type eq "methodinfo" ){
-	    method_info();
-	}
 	elsif ( $type eq "list_of_methods" ){
 	    print make_list_of_methods();
 	}
-	elsif ( $type eq "list_of_sets_method" ){
-	    print make_list_of_sets_method();
+	elsif ( $type eq "list_of_par_sets" ){
+	    print make_list_of_par_sets();
 	}
 	else{
 	    print "Error: unknown qualifier after =INPUT: -$type-\n";
@@ -109,27 +106,6 @@ exit (0);
 # Subroutines                                                                #
 #                                                                            #
 ##############################################################################
-
-##############################################################################
-#
-# Simple test for unmatched parenthesis.
-# It returns the number of opening parenthesis `(' minus the number
-# of closing parenthesis `)' in argument $_.
-#
-sub unmatched_parenthesis {
-    my $open = 0;   # number of unmatched `('
-
-    ++$open while /\(/g;
-    --$open while /\)/g;
-
-    return $open;
-} # end of unmachted_parenthesis()
-
-
-##############################################################################
-#
-# Read header files for all methods and ...
-# 
 
 ##############################################################################
 #
@@ -172,11 +148,12 @@ sub make_list_of_methods {
 
 ##############################################################################
 #
-# Make subroutine for setting parameters
+# Make subroutine for setting parameters in parameter objects
 #
-sub make_list_of_sets_method {
+sub make_list_of_par_sets {
 
-    my $code .= "\t ";
+    my $code_unsupported;
+    my $code = "\t ";
 
     # print info on screen
     print STDERR "Set commands for Methods:\n" if $VERBOSE;
@@ -246,13 +223,13 @@ sub make_list_of_sets_method {
 	    my $n_args = $#args_list+1;
 
 	    # get type of arguments
-	    my $type_args;
+	    my $type_args = "";
 	    foreach my $a (@args_list) {
 		my $t;
 		# type of argument
 		if    ($a =~ /double/)   { $t = 'd'; }
 		elsif ($a =~ /int/)      { $t = 'i'; }
-		elsif ($a =~ /unsigned/) { $t = 'i'; }
+		elsif ($a =~ /unsigned/) { $t = 'u'; }
 		elsif ($a =~ /char/)     { $t = 'c'; }
 		else                     { $t = '?'; }
 
@@ -263,44 +240,40 @@ sub make_list_of_sets_method {
 		}
 		$type_args .= $t;
 	    }
-	    
 
-	    $code .= "if ( !strcmp(key, \"$command\") ){\n";
-	    $code .= "\t\t /* n = $n_args; type = $type_args: $args*/\n";
+	    # make set calls
+	    my $set;
+	    my $args_comment;
 
-	    if ($n_args == 0) {
-		$code .= "\t\t if (n_args > 0)\n";
-		$code .= "\t\t\t _unur_warning(GENTYPE,UNUR_ERR_GENERIC,\"too many arguments\");\n";
-		$code .= "\t\t result = unur_$method\_set_$command(par);\n";
+	    # beginning of case
+	    $set = "if ( !strcmp(key, \"$command\") ) {\n";
+	    $args_comment = "\t /* n = $n_args; type = $type_args: $args*/\n";
+	    $set .= "\t$args_comment";
+
+	    # use keyword "void" when no argument is required
+	    $type_args = "void" if $type_args eq "";
+
+	    # we support the following cases:
+	    #   void   ... no argument required
+	    #   "i"    ... one argument of type int required
+	    #   "u"    ... one argument of type unsigned required
+	    #   "d"    ... one argument of type double required 
+	    #   "dd"   ... two arguments of type double required 
+	    #   "iD"   ... one argument of type int and a list of doubles required
+	    #              (the first argument is considered as size of the double array
+	    #   "Di"   ... a list of doubles and one argument of type int required
+	    if ($type_args =~ /^(void|i|u|d|dd|iD|Di)$/) {
+		my $type = $1;
+		$set .= "\t\t result = _unur_str_par_set_$type(par,type_args,args,unur_$method\_set_$command);\n";
+		$code .= $set;
+		$code .= "\t }\n\t else ";
 	    }
-	    elsif ($type_args eq "i") {
-		$code .= "\t\t if (n_args < 1) {\n";
-		$code .= "\t\t\t _unur_error(GENTYPE,UNUR_ERR_GENERIC,\"too few arguments\");\n";
-		$code .= "\t\t\t result = 0;\n\t\t }\n";
-		$code .= "\t\t if (n_args > 1)\n";
-		$code .= "\t\t\t _unur_warning(GENTYPE,UNUR_ERR_GENERIC,\"too many arguments\");\n";
 
-		$code .= "\t\t iarg = _unur_atoi( args[0] );\n";
-		$code .= "\t\t result = unur_$method\_set_$command(par,iarg);\n";
-	    }
-	    elsif ($type_args eq "d") {
-		$code .= "\t\t if (n_args < 1) {\n";
-		$code .= "\t\t\t _unur_error(GENTYPE,UNUR_ERR_GENERIC,\"too few arguments\");\n";
-		$code .= "\t\t\t result = 0;\n\t\t }\n";
-		$code .= "\t\t if (n_args > 1)\n";
-		$code .= "\t\t\t _unur_warning(GENTYPE,UNUR_ERR_GENERIC,\"too many arguments\");\n";
-
-		$code .= "\t\t darg = _unur_atod( args[0] );\n";
-		$code .= "\t\t result = unur_$method\_set_$command(par,darg);\n";
-	    }
 	    else {
+		# cannot handle this set command
+		$code_unsupported .= $args_comment;
 		$unsupported .= "  unur_$method\_set_$command()\n"
 	    }
-
-	    $code .= "\t\t result = 0;\n";
-
-	    $code .= "\t }\n\t else ";
-
 	}
 
 	# end of method
@@ -314,148 +287,13 @@ sub make_list_of_sets_method {
     # print info on screen
     print STDERR "\n" if $VERBOSE;
 
+    # add comment on unsupported code into C file
+    $code .= "\n\t /* Unsupported set commands: */\n $code_unsupported\n";
+
     # Return result
     return $code;
 
-} # end of make_list_of_sets_method() 
-
-
-
-# #######################################################################################
-# 
-# UNURAN's input as string interface: 
-# generates code for generating parameter object
-#
-# #######################################################################################
-sub method_info{
-
-
-    print "\t/* ************************ */\n";
-    print "\t/* determine choosen method */\n";
-    print "\t/* ************************ */\n";
-
-    print "\tif ( !strcmp( key, \"method\") ){\n";
-    print "\t\tpar = _unur_str2method(value,distr);\n";
-    print "\t}\n";
-
-##    print "\tif ( !strcmp( key, \"method\") ){\n";
-##    print "\t\tif ( no_of_elem != 0 ){\n";
-##    print "\t\t\tfprintf(stderr, \"SYNTAX ERROR: No list expected when setting method.\\n\");\n";
-##    print "\t\t}\n\t\t";
-
-
-
-    print "\n\t/* ****************************************** */\n";
-    print "\t/*                                            */\n";
-    print "\t/* set parameters depending on choosen method */\n";
-    print "\t/*                                            */\n";
-    print "\t/* ****************************************** */\n\n\t";
-
-
-    foreach my $hfile (@methods_h_files){
-
-	# search routines setting parameters -- method dependent
-	my $method = "UNKNOWN"; # initialize method-name to empty string
-        my $check  = 0;         # Variable for checking syntax
-
-	open INFILE,  "< $methods_dir/$hfile" or  die ("can't open file: $methods_dir/$hfile");
-	while ( $_ =  <INFILE> ){
-
-	    if ( $_ =~ /^\s*=METHOD\s+(\w+)/ ){ # h-file with method description found
-		$method = "\L$1";
-		my $METHOD = "\U$method";
-
-		# key is "method"
-		print "if ( par->method == UNUR_METH_$METHOD && strcmp(key, \"method\") ){\n\t\t";
-	    }
-
-	    # only parameter object passed
-	    if ( $_ =~ /unur_($method)_set_(.*?)\s*\(\s*UNUR_PAR\s+\*parameters\s*\)/ ){
-		$check = unmatched_parenthesis($_);
-		print "if ( !strcmp(key, \"$2\") ){\n";
-		# set parameter
-                print "\t\t\tcheck = unur_$method\_set_$2(par);\n";
-                # check for error
-		print "\t\t\tif ( ! check ){\n";
-		print "\t\t\t\tfprintf(stderr, \"ERROR: while trying to set $2\\n\");\n";
-		print "\t\t\t}\n";
-		print "\t\t}\n\t\telse ";
-	    }
-	    # parameter object and a single value passed
-	    elsif ( $_ =~ /unur_($method)_set_(.*?)\s*\(\s*UNUR_PAR\s+\*parameters\s*,\s*(\w+)\s+(\w+)\s*\)/ ){
-		$check = unmatched_parenthesis($_);
-		print "if ( !strcmp(key, \"$2\") ){\n";
-		# set parameter
-		print "\t\t\tcheck = unur_$method\_set_$2(par, ($3) dblvalue);\n";
-                # check for error
-		print "\t\t\tif ( ! check ){\n";
-		print "\t\t\t\tfprintf(stderr, \"ERROR: while trying to set $2\\n\");\n";
-		print "\t\t\t}\n";
-		print "\t\t}\n\t\telse ";
-	    }
-	    # parameter object and two doubles passed
-	    elsif ( $_ =~ /unur_($method)_set_(.*?)\s*\(\s*UNUR_PAR\s+\*parameters\s*,\s*double\s+\w+\s*,\s*double\s+\w+\s*\)/ ){
-		$check = unmatched_parenthesis($_);
-		print "if ( !strcmp(key, \"$2\") ){\n";
-		# set parameter
-		print "\t\t\tcheck = unur_$method\_set_$2(par, list[0], list[1]);\n";
-                # check for error
-		print "\t\t\tif ( ! check ){\n";
-		print "\t\t\t\tfprintf(stderr, \"ERROR: while trying to set $2\\n\");\n";
-		print "\t\t\t}\n";
-		print "\t\t}\n\t\telse ";
-	    }
-	    # parameter object, size_of_list and double list passed
-	    elsif ( $_ =~ /unur_($method)_set_(.*?)\s*\(\s*UNUR_PAR\s+\*parameters\s*,\s*int\s+\w+\s*,\s*double\s+\*\w+\s*\)/ ){
-		$check = unmatched_parenthesis($_);
-		print "if ( !strcmp(key, \"$2\") ){\n";
-		# set parameter
-                print "\t\t\tif (no_of_elem != 0 ){\n";
-		print "\t\t\t\tcheck = unur_$method\_set_$2(par, no_of_elem, list);\n";
-		print "\t\t\t}\n";
-		print "\t\t\telse{\n";
-		print "\t\t\t\tcheck = unur_$method\_set_$2(par, (int) dblvalue, NULL);\n";
-		print "\t\t\t}\n";
-                # check for error
-		print "\t\t\tif ( no_of_elem != (int) dblvalue ){\n";
-		print "\t\t\t\tfprintf(stderr, \"WARNING: Check size of list when setting $2\\n\");\n";
-		print "\t\t\t}\n";
-		print "\t\t\tif ( ! check ){\n";
-		print "\t\t\t\tfprintf(stderr, \"ERROR: while trying to set $2\\n\");\n";
-		print "\t\t\t}\n";
-		print "\t\t}\n\t\telse ";
-	    }
-	    elsif ( $_ =~ /unur_($method)_set_(.*?)\s*\(\s*UNUR_PAR\s+\*parameters(.*)\)/ ){
-		$check = unmatched_parenthesis($_);
-		print "if ( !strcmp(key, \"$2\") ){\n";
-		print "\t\t\tfprintf(stderr, \"Setting $2 for method $method not supported via this interface.\\n\");\n";
-		print "\t\t}\n\t\telse ";
-	    }
-	    elsif ( $_ =~ /^\s*\w+\s*unur_($method)_set_(.*?)\s*\(\s*\w+.*\)/  ){
-		$check = 1;
-	    }
-
-            if ( $check != 0 ){
-                die "Unknown Syntax of set command in $hfile line $.: $_\n";
-	    }
-
-	} # end of while-loop
-	close INFILE;
-	
-	# closing the method-block 
-	if ( $method !~ /UNKNOWN/){
-	    print "{\n\t\t\tfprintf(stderr, \"Unknown option for method $method: %s\\n\", key);\n\t\t}\n";
-	    print "\t}\n\telse ";
-	}
-
-    } # end of foreach loop
-
-    # case of unknown method
-    print "if ( !strcmp(key, \"method\") && par->method == UNUR_METH_UNKNOWN){\n";
-    print "\t\tfprintf(stderr, \"ERROR: No or unknown method defined.\\n\");\n\t}\n";
-
-    close INFILE;
-}
+} # end of make_list_of_par_sets() 
 
 
 
@@ -521,4 +359,25 @@ sub distr_info{
     close INFILE;
 
 } # end of distr_info()
+
+##############################################################################
+##############################################################################
+##############################################################################
+
+
+
+##############################################################################
+#
+# Simple test for unmatched parenthesis.
+# It returns the number of opening parenthesis `(' minus the number
+# of closing parenthesis `)' in argument $_.
+#
+sub unmatched_parenthesis {
+    my $open = 0;   # number of unmatched `('
+
+    ++$open while /\(/g;
+    --$open while /\)/g;
+
+    return $open;
+} # end of unmachted_parenthesis()
 

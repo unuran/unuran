@@ -423,183 +423,183 @@ _unur_matrix_invert_matrix(int dim, const double *A, double detmin, double *Ainv
   CHECK_NULL(A,UNUR_ERR_NULL);
   CHECK_NULL(Ainv,UNUR_ERR_NULL);
   CHECK_NULL(det,UNUR_ERR_NULL);
-  if (dim<2) {
-    _unur_error("matrix",UNUR_ERR_GENERIC,"dimension < 2");
-    return UNUR_ERR_GENERIC;
-  }
+	  if (dim<2) {
+	    _unur_error("matrix",UNUR_ERR_GENERIC,"dimension < 2");
+	//    return UNUR_ERR_GENERIC;
+	  }
 
-  /* allocate working space */
-  p = _unur_xmalloc(dim*sizeof(int));
-  LU = _unur_xmalloc(dim*dim*sizeof(double));
+	  /* allocate working space */
+	  p = _unur_xmalloc(dim*sizeof(int));
+	  LU = _unur_xmalloc(dim*dim*sizeof(double));
 
-  /* compute LU decomposition */
-  memcpy(LU, A, dim*dim*sizeof(double));
-  _unur_matrix_LU_decomp(dim, LU, p, &s);
+	  /* compute LU decomposition */
+	  memcpy(LU, A, dim*dim*sizeof(double));
+	  _unur_matrix_LU_decomp(dim, LU, p, &s);
 
-  /* compute determinant */
-  *det = s;
-  for(i=0;i<dim;i++)
-    *det *= LU[idx(i,i)];
+	  /* compute determinant */
+	  *det = s;
+	  for(i=0;i<dim;i++)
+	    *det *= LU[idx(i,i)];
 
-  /* check for small determinant */
-  if (fabs(*det) <= detmin) {
-    _unur_warning("matrix",UNUR_ERR_GENERIC,"det(A) < detmin");
-  }
+	  /* check for small determinant */
+	  if (fabs(*det) <= detmin) {
+	    _unur_warning("matrix",UNUR_ERR_GENERIC,"det(A) < detmin");
+	  }
 
-  /* calculate matrix norm */
-  norm=0.;
-  for(i=0;i<dim;i++) {
-    halfnorm=0.;
-    for(j=0;j<dim;j++)
-      halfnorm += fabs(A[idx(i,j)]);
-    if (halfnorm > norm) norm=halfnorm;
-  }
+	  /* calculate matrix norm */
+	  norm=0.;
+	  for(i=0;i<dim;i++) {
+	    halfnorm=0.;
+	    for(j=0;j<dim;j++)
+	      halfnorm += fabs(A[idx(i,j)]);
+	    if (halfnorm > norm) norm=halfnorm;
+	  }
 
-  /* check for ill-conditioned matrix */
-  if ( fabs(*det) / (dim * norm) < detmin ) { 
-    _unur_error("matrix",UNUR_ERR_GENERIC,"matrix ill-conditioned, cannot invert");
-    free(LU); free(p);
-    return UNUR_FAILURE; 
-  } 
-  
-  /* compute inverse by means of LU factors */
-  _unur_matrix_LU_invert(dim, LU, p, Ainv);   
-  
-  /* free working space */
-  free(LU);
-  free(p);
+	  /* check for ill-conditioned matrix */
+	  if ( fabs(*det) / (dim * norm) < detmin ) { 
+	    _unur_error("matrix",UNUR_ERR_GENERIC,"matrix ill-conditioned, cannot invert");
+	    free(LU); free(p);
+	    return UNUR_FAILURE; 
+	  } 
+	  
+	  /* compute inverse by means of LU factors */
+	  _unur_matrix_LU_invert(dim, LU, p, Ainv);   
+	  
+	  /* free working space */
+	  free(LU);
+	  free(p);
 
-  return UNUR_SUCCESS;
+	  return UNUR_SUCCESS;
 
-#undef idx
-} /* end of _unur_matrix_invert_matrix() */
+	#undef idx
+	} /* end of _unur_matrix_invert_matrix() */
 
-/*---------------------------------------------------------------------------*/
+	/*---------------------------------------------------------------------------*/
 
-double
-_unur_matrix_determinant ( int dim, const double *A )
-     /*-------------------------------------------------------------------------*/
-     /* Calculates the determinant of the matrix A                              */
-     /* (by means of LU decomposition).                                  	*/
-     /* input:                                                                  */
-     /*   dim    ... dimension of the square matrix A                        	*/
-     /*   A      ... dim x dim -matrix                                       	*/
-     /*									     	*/
-     /* return:                                                                 */
-     /*   determinant of A                                                      */
-     /*									     	*/
-     /* error:                                                                  */
-     /*   return INFINITY                                                       */
-     /*-------------------------------------------------------------------------*/
-{
-#define idx(a,b) ((a)*dim+b)
+	double
+	_unur_matrix_determinant ( int dim, const double *A )
+	     /*-------------------------------------------------------------------------*/
+	     /* Calculates the determinant of the matrix A                              */
+	     /* (by means of LU decomposition).                                  	*/
+	     /* input:                                                                  */
+	     /*   dim    ... dimension of the square matrix A                        	*/
+	     /*   A      ... dim x dim -matrix                                       	*/
+	     /*									     	*/
+	     /* return:                                                                 */
+	     /*   determinant of A                                                      */
+	     /*									     	*/
+	     /* error:                                                                  */
+	     /*   return INFINITY                                                       */
+	     /*-------------------------------------------------------------------------*/
+	{
+	#define idx(a,b) ((a)*dim+b)
 
-  int *p, s, i;
-  double *LU;     /* array for storing LU decomposition of matrix A */
-  double det;
+	  int *p, s, i;
+	  double *LU;     /* array for storing LU decomposition of matrix A */
+	  double det;
 
-  /* check arguments */
-  CHECK_NULL(A,  INFINITY);
-  
-  /* one-dimensional case */
-  if (dim==1) return A[0];
+	  /* check arguments */
+	  CHECK_NULL(A,  INFINITY);
+	  
+	  /* one-dimensional case */
+	  if (dim==1) return A[0];
 
-  /* allocate working space */
-  p = _unur_xmalloc(dim*sizeof(int));
-  LU = _unur_xmalloc(dim*dim*sizeof(double));
+	  /* allocate working space */
+	  p = _unur_xmalloc(dim*sizeof(int));
+	  LU = _unur_xmalloc(dim*dim*sizeof(double));
 
-  /* compute LU decomposition */
-  memcpy(LU, A, dim*dim*sizeof(double));
-  _unur_matrix_LU_decomp(dim, LU, p, &s);
+	  /* compute LU decomposition */
+	  memcpy(LU, A, dim*dim*sizeof(double));
+	  _unur_matrix_LU_decomp(dim, LU, p, &s);
 
-  /* compute determinant */
-  det = s;
-  for(i=0;i<dim;i++)
-    det *= LU[idx(i,i)];
+	  /* compute determinant */
+	  det = s;
+	  for(i=0;i<dim;i++)
+	    det *= LU[idx(i,i)];
 
-  /* free working space */
-  free(LU);
-  free(p);
+	  /* free working space */
+	  free(LU);
+	  free(p);
 
-  return det;
-  
-#undef idx
-} /* end of _unur_matrix_determinant() */
+	  return det;
+	  
+	#undef idx
+	} /* end of _unur_matrix_determinant() */
 
-/*---------------------------------------------------------------------------*/
+	/*---------------------------------------------------------------------------*/
 
-double 
-_unur_matrix_qf (int dim, double *x, double *A)
-     /*----------------------------------------------------------------------*/
-     /* Compute quadratic form x'Ax                                          */
-     /*									     */
-     /* input:                                                               */
-     /*   dim ... number of columns and rows of                              */
-     /*   x   ... vector                                                     */
-     /*   A   ... dim x dim matrix                                           */
-     /*									     */
-     /* return:								     */
-     /*   returns the result of x'Ax                                         */
-     /*                                                                      */
-     /* error:                                                               */
-     /*   return INFINITY                                                    */
-     /*----------------------------------------------------------------------*/
-{
-#define idx(a,b) ((a)*dim+b)
+	double 
+	_unur_matrix_qf (int dim, double *x, double *A)
+	     /*----------------------------------------------------------------------*/
+	     /* Compute quadratic form x'Ax                                          */
+	     /*									     */
+	     /* input:                                                               */
+	     /*   dim ... number of columns and rows of                              */
+	     /*   x   ... vector                                                     */
+	     /*   A   ... dim x dim matrix                                           */
+	     /*									     */
+	     /* return:								     */
+	     /*   returns the result of x'Ax                                         */
+	     /*                                                                      */
+	     /* error:                                                               */
+	     /*   return INFINITY                                                    */
+	     /*----------------------------------------------------------------------*/
+	{
+	#define idx(a,b) ((a)*dim+b)
 
-  int i,j;
-  double sum,outersum;
-  
-  /* check arguments */
-  CHECK_NULL(x,INFINITY);
-  CHECK_NULL(A,INFINITY);
-  if (dim<2) {
-    _unur_error("matrix",UNUR_ERR_GENERIC,"dimension < 2");
-    return INFINITY;
-  }
+	  int i,j;
+	  double sum,outersum;
+	  
+	  /* check arguments */
+	  CHECK_NULL(x,INFINITY);
+	  CHECK_NULL(A,INFINITY);
+	  if (dim<2) {
+	    _unur_error("matrix",UNUR_ERR_GENERIC,"dimension < 2");
+	    return INFINITY;
+	  }
 
-  outersum=0.;
-  for(i=0;i<dim;i++){
-    sum=0.;
-    for(j=0;j<dim;j++)
-      sum+=A[idx(i,j)]*x[j];
-    outersum+=sum*x[i];
-  }
+	  outersum=0.;
+	  for(i=0;i<dim;i++){
+	    sum=0.;
+	    for(j=0;j<dim;j++)
+	      sum+=A[idx(i,j)]*x[j];
+	    outersum+=sum*x[i];
+	  }
 
-  return outersum;
+	  return outersum;
 
-#undef idx
-} /* end of _unur_matrix_qf() */
+	#undef idx
+	} /* end of _unur_matrix_qf() */
 
-/*---------------------------------------------------------------------------*/
+	/*---------------------------------------------------------------------------*/
 
-int
-_unur_matrix_cholesky_decomposition (int dim, const double *S, double *L )
-     /*----------------------------------------------------------------------*/
-     /* The Colesky factor L of a variance-covariance matrix S is computed:  */
-     /*    S = LL'                                                           */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   dim ... dimension of covariance matrix S                           */
-     /*   S   ... variance-covariance matrix                                 */
-     /*   L   ... pointer to array where cholesky factor should be stored    */
-     /*                                                                      */
-     /* return:								     */
-     /*   UNUR_SUCCESS on success                                            */
-     /*   UNUR_FAILURE when matrix is not positive definite                  */
-     /*   other error code, otherwise                                        */
-     /*----------------------------------------------------------------------*/
-{ 
-#define idx(a,b) ((a)*dim+b)
+	int
+	_unur_matrix_cholesky_decomposition (int dim, const double *S, double *L )
+	     /*----------------------------------------------------------------------*/
+	     /* The Colesky factor L of a variance-covariance matrix S is computed:  */
+	     /*    S = LL'                                                           */
+	     /*                                                                      */
+	     /* parameters:                                                          */
+	     /*   dim ... dimension of covariance matrix S                           */
+	     /*   S   ... variance-covariance matrix                                 */
+	     /*   L   ... pointer to array where cholesky factor should be stored    */
+	     /*                                                                      */
+	     /* return:								     */
+	     /*   UNUR_SUCCESS on success                                            */
+	     /*   UNUR_FAILURE when matrix is not positive definite                  */
+	     /*   other error code, otherwise                                        */
+	     /*----------------------------------------------------------------------*/
+	{ 
+	#define idx(a,b) ((a)*dim+b)
 
-  int i,j,k;
-  double sum1,sum2;
+	  int i,j,k;
+	  double sum1,sum2;
 
-  /* check arguments */
-  CHECK_NULL(S,UNUR_ERR_NULL);
-  if (dim<2) {
-    _unur_error("matrix",UNUR_ERR_GENERIC,"dimension < 2");
-    return UNUR_ERR_GENERIC;
+	  /* check arguments */
+	  CHECK_NULL(S,UNUR_ERR_NULL);
+	  if (dim<2) {
+	    _unur_error("matrix",UNUR_ERR_GENERIC,"dimension < 2");
+	//    return UNUR_ERR_GENERIC;
   }
 
   L[idx(0,0)] = sqrt( S[idx(0,0)] );

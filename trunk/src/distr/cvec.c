@@ -101,7 +101,7 @@ unur_distr_cvec_new( int dim )
   /* check dimension for new parameter for distribution */
   if (dim < 2) {
     _unur_error(NULL,UNUR_ERR_DISTR_SET,"dimension < 2");
-    return NULL;
+//  return NULL;
   }
 
   /* allocate structure */

@@ -239,6 +239,21 @@ static void _unur_varou_dF( struct unur_gen *gen, double *uv, double *dF);
 
 /*---------------------------------------------------------------------------*/
 
+void __printf_vector(int dim, double *x) 
+     /*------------------------------------*/
+     /* quick and very dirty debugging ... */
+     /*------------------------------------*/
+{
+  int i;
+  printf(" (" );
+  for (i=0; i<dim; i++) {
+    printf("%g ", x[i]);
+  }
+  printf(")\n");
+}
+
+/*---------------------------------------------------------------------------*/
+
 /*****************************************************************************/
 /**  User Interface                                                         **/
 /*****************************************************************************/
@@ -660,8 +675,12 @@ _unur_varou_sample_cvec( struct unur_gen *gen, double *vec )
         /* sampling in cone #ic */
         _unur_varou_sample_cone(gen, GEN.cone_list[ic], UV);
 
+/*
+        printf("v^(dim+1)=%g \tf()=%g ", pow(UV[dim], 1.+dim), _unur_varou_f(gen, UV));
+        printf("ic=%ld",ic); __printf_vector(dim+1, UV); 
+*/
         /* check if UV is inside the potato volume */
-        if ( pow(UV[dim], 1.+dim) <= _unur_varou_f(gen, UV) ) {
+	if ( pow(UV[dim], 1.+dim) <= _unur_varou_f(gen, UV) ) {
            for (d=0; d<dim; d++) {  
              vec[d] = UV[d]/UV[dim]+GEN.center[d] ;
            }
@@ -961,21 +980,6 @@ _unur_varou_minimize_volume(struct unur_gen *gen, struct unur_varou_cone *c)
 
 /*---------------------------------------------------------------------------*/
 
-void __printf_vector(int dim, double *x) 
-     /*------------------------------------*/
-     /* quick and very dirty debugging ... */
-     /*------------------------------------*/
-{
-  int i;
-  printf(" (" );
-  for (i=0; i<dim; i++) {
-    printf("%f ", x[i]);
-  }
-  printf(")\n");
-}
-
-/*---------------------------------------------------------------------------*/
-
 void
 _unur_varou_cones_split( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
@@ -1192,22 +1196,24 @@ _unur_varou_cone_parameters( struct unur_gen *gen, struct unur_varou_cone *c, do
 
   /*------------------------------------------------------------*/
   
-  /* calculating top surface vector */
+  /* top vertex vector */
   t=_unur_vector_new(dim+1); 
   itop =  c->index[it];
   for (i=0; i<=dim; i++) {
     t[i]=GEN.vertex_list[itop][i];
   }
-    
+
+#if 0
   v = pow(_unur_varou_f(gen, t), 1./(1.+dim)) ;
     
-  /* it should never happen that the denominator is 0 ... */
   normt = v/t[dim]; 
     
   for (i=0; i<=dim; i++) {
     t[i] *= normt;
   }
- 
+#endif
+
+
   /*------------------------------------------------------------*/
   
   /* calculating centre of face opposite of the top vector */
@@ -1215,7 +1221,7 @@ _unur_varou_cone_parameters( struct unur_gen *gen, struct unur_varou_cone *c, do
   for (iv=0; iv<=dim; iv++) {
     if (iv != it) {
       for (i=0; i<=dim; i++) {
-        f[i] += GEN.vertex_list[ c->index[iv] ][i];
+        f[i] += GEN.vertex_list[ c->index[iv] ][i] / dim; 
       }
     }
   }
@@ -1259,6 +1265,7 @@ _unur_varou_cone_parameters( struct unur_gen *gen, struct unur_varou_cone *c, do
 
   /* setting normal vector to tangent plane through p[]  */
   _unur_varou_dF(gen, p, c->normal);
+  
   normn=_unur_vector_norm(dim+1, c->normal);    
   for (i=0; i<=dim; i++) c->normal[i] /= normn;
 

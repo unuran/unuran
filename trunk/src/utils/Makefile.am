@@ -13,6 +13,7 @@ libutils_la_SOURCES = \
  error.c  \
  fmax.c 	  fmax_source.h \
  hooke.c 	  hooke_source.h \
+ integral.c	  integral_source.h \
  matrix.c 	  matrix_source.h \
  mrou_rectangle.c mrou_rectangle_source.h mrou_rectangle_struct.h \
  slist.c  slist.h slist_struct.h \

@@ -578,16 +578,14 @@ _unur_nrou_rectangle( struct unur_gen *gen )
       GEN.vmax = pow(PDF(DISTR.mode), 1./(1.+GEN.r));
     }
     else {
-      /* calculating vmax as maximum of (f(x))^(1/(1+r)) in the domain */
-      faux.f = (UNUR_FUNCT_GENERIC*) _unur_aux_bound_vmax;
-      faux.params = gen; ;
-  
-      x = _unur_util_find_max(faux, DISTR.BD_LEFT, DISTR.BD_RIGHT, cx);
-      if (_unur_FP_is_plusminus_infinity(x)) {
-         _unur_error(gen->genid , UNUR_ERR_GENERIC, "Bounding rect (vmax)");  
-         return UNUR_ERR_GENERIC;
+      x = unur_distr_cont_get_mode(gen->distr);
+
+      if (_unur_isinf(x)!=0) {
+        /* unur_distr_cont_get_mode was unable to get mode, returning UNUR_INFINITY */
+        _unur_error(gen->genid , UNUR_ERR_GENERIC, "Bounding rect (vmax)");  
+        return UNUR_ERR_GENERIC;
       }
-      GEN.vmax = faux.f(x,faux.params);
+      GEN.vmax = pow(PDF(x), 1./(1.+GEN.r));
     }
 
     /* additional scaling of boundary rectangle */

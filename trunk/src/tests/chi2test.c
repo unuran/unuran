@@ -55,8 +55,7 @@
 /* constants */
 
 #define CHI2_SAMPLEFAC  40
-         /* if samplesize<=0 use samplesize = CHI2_SAMPLEFAC * intervals^dim */
-
+/* if samplesize<=0 use samplesize = CHI2_SAMPLEFAC * intervals^dim */
 
 #define CHI2_CLASSMIN_DEFAULT  20
 /* default number of observations in class */
@@ -72,6 +71,9 @@
 
 #define CHI2_MAX_TOTALINTERVALS 1000000
 /* maximal product of intervals used in chi2vec test */
+
+#define CHI2_TEST_ADDITIONAL 0
+/* wheather we should perform additional global test for multivariate distribution */
 
 /*---------------------------------------------------------------------------*/
 static char test_name[] = "Chi^2-Test";
@@ -546,7 +548,7 @@ _unur_test_chi2_vec ( struct unur_gen *gen,
 #define idx(i,j) ((i)*dim+j)
 
   int dim;         /* dimension of multivariate distribution */
-
+  int ntests;      /* number of tests performed              */
   UNUR_DISTR **marginals;  /* pointer to marginal distributions */
   UNUR_FUNCT_CONT **marginal_cdf;  /* pointer to CDFs of marginal distributions */
 
@@ -582,12 +584,15 @@ _unur_test_chi2_vec ( struct unur_gen *gen,
   samplesize = min( samplesize, CHI2_MAX_SAMPLESIZE );
 
   /* dimension of distribution */
-  dim = gen->distr->dim;
+  dim = gen->distr->dim;  
   if (dim < 1) {
     _unur_error(test_name,UNUR_ERR_GENERIC,"distribution dimension < 1 ?");
     return -1.;
   }
 
+  ntests = dim; /* number of marginal tests */
+  /* this number is increased below when making more tests */
+  
   /* we need mean vector and covariance matrix */
   mean = unur_distr_cvec_get_mean(gen->distr);
   if (mean==NULL) {
@@ -704,22 +709,25 @@ _unur_test_chi2_vec ( struct unur_gen *gen,
     pval = _unur_test_chi2test(NULL, bm+(j*n_intervals), n_intervals, classmin, verbose, out );
     pval_min = min(pval_min,pval);
   }
-
+  
   /* ----------------------------------------------------------------------------*/
+#if CHI2_TEST_ADDITIONAL
+  if (dim>1) {
+    /* make chi^2 test */
+    if (verbose >= 1) {
+      fprintf(out,"\nChi^2-Test for multivariate continuous distribution\n");
+    }
 
-  /* make chi^2 test */
-  if (verbose >= 1) {
-    fprintf(out,"\nChi^2-Test for multivariate continuous distribution\n");
+    pval = _unur_test_chi2test(NULL, b, n_intervals_total, classmin, verbose, out );
+    pval_min = min(pval_min,pval);
+    ntests ++;
   }
-
-  pval = _unur_test_chi2test(NULL, b, n_intervals_total, classmin, verbose, out );
-  pval_min = min(pval_min,pval);
-
+#endif  
   /* ----------------------------------------------------------------------------*/
 
   if (verbose >= 1) {
     fprintf(out,"\nSummary:\n");
-    fprintf(out,"  Minimal p-value * number_of_tests = %g:\n\n",pval_min*(dim+1));
+    fprintf(out,"  Minimal p-value * number_of_tests = %g:\n\n",pval_min*ntests);
   }
 
 free_memory:
@@ -734,7 +742,7 @@ free_memory:
   if (marginal_cdf)  free (marginal_cdf);
 
   /* return result of test */
-  return pval_min*(dim+1);
+  return pval_min*ntests;
 
 #undef idx
 #undef DISTR

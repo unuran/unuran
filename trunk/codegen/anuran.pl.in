@@ -25,7 +25,9 @@ my $n_frogs = 12;
 # ----------------------------------------------------------------
 # URLs ...
 
-my $URL_root   = "http://statistik.wu-wien.ac.at";
+# my $URL_root   = "http://statistik.wu-wien.ac.at";
+my $URL_root   = "";
+
 my $URL_arvag  = "$URL_root/arvag";
 my $URL_anuran = "$URL_root/anuran";
 
@@ -91,6 +93,11 @@ my $step = $q->param('Step');
 $q->delete('Step');
 
 # ----------------------------------------------------------------
+# Need of help
+my $help = $q->param('Help');
+$q->delete('Help');
+
+# ----------------------------------------------------------------
 # Reset interface if requested
 
 if ($q->param('Restart')) {
@@ -132,11 +139,16 @@ my $img_frog =
 # ----------------------------------------------------------------
 
 anuran_start();
-anuran_type_distribution();
-anuran_select_distribution();
-anuran_params_distribution();
-anuran_properties_generator();
-anuran_code();
+if ($help) {
+    anuran_help();
+}
+else {
+    anuran_type_distribution();
+    anuran_select_distribution();
+    anuran_params_distribution();
+    anuran_properties_generator();
+    anuran_code();
+}
 anuran_end();
 
 # ----------------------------------------------------------------
@@ -155,38 +167,52 @@ exit 0;
 
 sub anuran_start
 {
-    print
+    my $title;
 	
-	# HTTP header
-	header(),
+    # HTTP header
+    if ($help) {
+	$title  = '/ Help';
+	print $q->header(-target=>'Help');
+    }
+    else {
+	print $q->header(-target=>'Code');
+    }
 
-	# HTML header and title
-	start_html(-title  =>'ANURAN Automatic Code Generator',
-		   -author =>'anuran@statistik.wu-wien.ac.at',
-		   -meta   =>{'keywords'=>'nonuniform random number generator,
-                                           automatic code generator',
-			      'copyright'=>'copyright (C) 2001 Josef.Leydold@statistik.wu-wien.ac.at'},
-		   -BGCOLOR=>'#FFFFF5',
-		   -TEXT   =>'#000000',
-		   -LINK   =>'#000000',
-		   -VLINK  =>'#000000',
-		   -ALINK  =>'#000000',
-		   -MARGINWIDTH =>'5',
-		   -MARGINHEIGHT=>'5',
-		   -LEFTMARGIN  =>'5',
-		   -TOPMARGIN   =>'5'),
+    # HTML header and title
+    print
+	$q->start_html(-title  =>"ANURAN Automatic Code Generator $title",
+		       -author =>'anuran@statistik.wu-wien.ac.at',
+		       -meta   =>{'keywords'=>'nonuniform random number generator,
+                                               automatic code generator',
+				  'copyright'=>'copyright (C) 2001 Josef.Leydold@statistik.wu-wien.ac.at'},
+		       -BGCOLOR=>'#FFFFF5',
+		       -TEXT   =>'#000000',
+		       -LINK   =>'#000000',
+		       -VLINK  =>'#000000',
+		       -ALINK  =>'#000000',
+		       -MARGINWIDTH =>'5',
+		       -MARGINHEIGHT=>'5',
+		       -LEFTMARGIN  =>'5',
+		       -TOPMARGIN   =>'5');
+    
+    # Make anuran heading and bar with links
+    print anuran_heading();
+    
+    # Heading
+    if ($help) {
+	print
+	    h1('Automatic Code Generator / Help');
+    }
+    else {
+	print
+	    h1('Automatic Code Generator'),
+	    h2('Experimental version'),
+	    b('Resulting code is reliable but should used with care!<BR>
+	   This code generator cannot produce generators for all distributions / parameters.');
+    }
 
-        # Make anuran heading and bar with links
-	anuran_heading(),
-
-        # Heading
-	h1('Automatic Code Generator'),
-	h2('Experimental version'),
-	b('Resulting code is reliable but should used with care!<BR>
-	   This code generator cannot produce generators for all distributions / parameters.'),
-
-	# ruler
-	p().hr().p(),"\n";
+    # ruler
+    print p().hr().p(),"\n";
 
 } # end of anuran_start()
 
@@ -301,7 +327,8 @@ sub anuran_submit
 
 	$q->submit('Continue'),
 	$img_frog,
-	$q->submit('Restart');
+	$q->submit('Restart'),
+	$q->submit('Help');
 	
 } # end of anuran_submit()
 
@@ -318,7 +345,8 @@ sub anuran_type_distribution
 # ................................................................
     if ($step <=1) { 
 	print
-	    'Step 1: '.b('Type of Distribution'),
+	    '<a name="step1">Step 1:</a> ',
+	    b('Type of Distribution'),
 	    blockquote( $q->startform (-method => 'GET',
 				       -action => $q->url()),
 			$q->popup_menu(-name   => 'DistrType',
@@ -337,7 +365,8 @@ sub anuran_type_distribution
 # ................................................................
     if ($step > 1) {
 	print
-	    'Step 1: '.b('Type of Distribution'),
+	    '<a name="step1">Step 1:</a> ',
+	    b('Type of Distribution'),
 	    blockquote($labels_menue_distrtypes{$distrtype}),
 	    p().hr().p();
 	return;
@@ -358,7 +387,7 @@ sub anuran_select_distribution
 # ................................................................
     if ($step < 2) {
 	print
-	    font({-color=>$Gray},'Step 2: '.b('Distribution')),
+	    font({-color=>$Gray},'<a name="step2">Step 2:</a> '.b('Distribution')),
 	    p().hr().p();
 	return;
     }
@@ -386,7 +415,8 @@ sub anuran_select_cstd
 # ................................................................
     if ($step <= 2) {
 	print
-	    'Step 2: '.b('Distribution'),
+	    '<a name="step2">Step 2:</a> ',
+	    b('Distribution'),
 	    blockquote(	$q->startform (-method => 'GET',
 				       -action => $q->url()),
 			$q->popup_menu(-name   => 'Distribution',
@@ -414,7 +444,8 @@ sub anuran_select_cstd
 # ................................................................
     if ($step > 2) {
 	print
-	    'Step 2: '.b($distrname),
+	    '<a name="step2">Step 2:</a/> ',
+	    b($distrname),
 	    blockquote( 'PDF(x) = [const] * ',
 			$data_distr{$distr}{'=PDF'} ),
 	    p().hr().p();
@@ -444,7 +475,8 @@ sub anuran_select_cpdf
 	$q->param('Name',$data_distr{'cont'}{'=NAME'}) unless $distrname;
 
 	print
-	    'Step 2: '.b('Distribution with given Density'),
+	    '<a name="step2">Step 2:</a> ',
+	    b('Distribution with given Density'),
 	    blockquote(	$q->startform (-method => 'GET',
 				       -action => $q->url()),
 			"Name = $sp",
@@ -471,7 +503,8 @@ sub anuran_select_cpdf
 # ................................................................
     if ($step > 2) {
 	print
-	    'Step 2: '.b($distrname),
+	    '<a name="step2">Step 2:</a> ',
+	    b($distrname),
 	    blockquote( "PDF = $PDF" ),
 	    p().hr().p();
 	return;
@@ -493,7 +526,7 @@ sub anuran_params_distribution
 # ................................................................
     if ($step < 3) {
 	print
-	    font({-color=>$Gray},'Step 3: '.b('Parameters for distribution')),
+	    font({-color=>$Gray},'<a name="step3">Step 3:</a> '.b('Parameters for distribution')),
 	    p().hr().p();
 	return;
     }
@@ -617,7 +650,7 @@ sub anuran_params_distribution
 	# Print data
 	unless ($invalid_params) {
 	    print 
-		'Step 3: ',
+		'<a name="step3">Step 3:</a> ',
 		b("Parameters for $distrname"),
 		blockquote( $params_show,p(),
 			    $domain_show,p() ),
@@ -720,7 +753,7 @@ sub anuran_params_distribution
 
 	# Make form
 	print 
-	    'Step 3: ',
+	    '<a name="step3">Step 3:</a> ',
 	    b("Parameters for $distrname"),
 	    blockquote( startform (-method => 'GET',
 				   -action => $q->url()),
@@ -746,7 +779,7 @@ sub anuran_properties_generator
 # ................................................................
     if ($step < 4) {
 	print
-	    font({-color=>$Gray},'Step 4: '.b('Properties of generator')),
+	    font({-color=>$Gray},'<a name="step4">Step 4:</a> '.b('Properties of generator')),
 	    p().hr().p();
 	return;
     }
@@ -756,10 +789,10 @@ sub anuran_properties_generator
 # ................................................................
     if ($step == 4) {
 	print 
-	    'Step 4: ',
+	    '<a name="step4">Step 4:</a> ',
 	    b("Properties of generator for $distrname"),
 	    blockquote( startform(-method => 'GET',
-				  -action => $q->url() ),
+				  -action => $q->url()."#step3" ),
 			b('Programming language: '),
 			$q->popup_menu(-name  => 'Language',
 				       -values=> ['C','FORTRAN','JAVA']),
@@ -804,8 +837,8 @@ sub anuran_properties_generator
 # CASE: properties set
 # ................................................................
     if ($step > 4) {
-	print 
-	    'Step 4: ',
+	print
+	    '<a name="step4">Step 4:</a> ',
 	    b("Properties of generator for $distrname"),
 	    blockquote( 'Programming language: '.$q->param('Language').
 			p().
@@ -834,7 +867,7 @@ sub anuran_code
 # ................................................................
     if ($step < 5) {
 	print
-	    font({-color=>$Gray},'Step 5: '.b('Generator code for distribution')),
+	    font({-color=>$Gray},'<a name="step5">Step 5:</a> '.b('Generator code for distribution')),
 	    p().hr().p();
 	return;
     }
@@ -908,7 +941,7 @@ sub anuran_code
 # ................................................................
 
 	print 
-	    'Step 5: ',
+	    '<a name="step5">Step 5</a> ',
 	    b("Generator for $distrname"),
 	    ($q->param('Codetype') eq 'demo') ? ' (Complete demo version)' : '' ,
 	    blockquote( $q->startform (-method => 'GET',
@@ -1059,4 +1092,228 @@ sub anuran_error
     return font({-color=>'red'},"<BLINK>$msg</BLINK>");
 } # end of anuran_error() 
 
+##################################################################
+#                                                                #
+# Help                                                           #
+#                                                                #
+##################################################################
+
+sub anuran_help
+{
+    # we have decrement the step counter
+    --$step;
+
+    if ($step == 1 or not defined $step) {
+	anuran_help_1();
+    }
+    
+    elsif ($step == 2) {
+	anuran_help_2();
+    }
+
+    elsif ($step == 3) {
+	anuran_help_3();
+    }
+
+    elsif ($step == 4) {
+	anuran_help_4();
+    }
+
+    else {
+	print
+	    'Oops ... There is something wrong!';
+    }
+
+    # end
+    print p().hr().p();
+
+} # end of anuran_help()
+
+
+# ----------------------------------------------------------------
+# Help (Step 1)
+# ----------------------------------------------------------------
+
+sub anuran_help_1
+{
+    print
+	'Step 1: ',
+	b('Type of Distribution'),
+	blockquote('We provide the following input formats for distributions:'.
+		   '<ul>'.
+                   '<li><code>Continuous standard distribution</code>'.
+		   blockquote('Select one of the standard distributions from a menue in Step 2
+                               and insert the necessary parameters in Step 3.
+                               It is also possible to truncate the domain in Step 3.').
+		   '<li><code>Continuous distribution with given PDF</code>'.
+		   blockquote('Insert the probability density function (PDF) for the desired
+                               distribution (Step 2). In Step 3 the domain can be given.').
+		   '</ul>' );
+    
+} # end of anuran_help_1() 
+
+
+# ----------------------------------------------------------------
+# Help (Step 2)
+# ----------------------------------------------------------------
+
+sub anuran_help_2
+{
+# ................................................................
+# CASE: select a distribution
+# ................................................................
+    if ($distrtype eq 'cstd') { anuran_help_2_cstd(); return; } 
+    if ($distrtype eq 'cpdf') { anuran_help_2_cpdf(); return; } 
+
+    # error use default
+    anuran_help_2_cstd(); return;
+
+} # end of anuran_help_2() 
+
+sub anuran_help_2_cstd
+{
+    print
+	'Step 2: ',
+	b('Continuous Standard Distribution'),
+	blockquote('Select a standard distribution from the menue.
+                    Two flags can be set:'.
+                   '<ul>'.
+                   '<li><code>Use standard form</code>'.
+		   blockquote('Some distributions have a standard form.
+                               E.g., the normal distribution has mean <i>mu</i> and 
+                               standard deviation <i>sigma</i> as its parameters. 
+                               The standard form always has parameters <i>mu=0</i>
+                               and <i>sigma=1</i>.  
+                               It is always possible to transform a random variable that
+                               follows a distribution with the standard form to a random variable
+                               that follows any non-standard form. E.g., if a standard normal
+                               distributed random variable <i>Z</i> is given, then
+                               <i>X=mu+sigma*Z</i> follows a normal law with parameters 
+                               <i>mu</i> and <i>sigma</i>. <p>
+                               Using the standard form is numerically always the most
+                               stable method and thus is the recommended method although
+                               it might be necessary to transform the output of the generator
+                               into the required non-standard form. <p>
+                               If this flag is not set then this transformation is not necessary.
+                               However this option only works well if the given parameters are 
+                               not too extreme.'). 
+		   '<li><code>Truncated domain</code>'.
+		   blockquote('If this flag is set, then it is possible to trucate the domain
+                               of the distribution in Step 3.').
+		   '</ul>' );
+
+} # end of anuran_help_2_cstd() 
+
+sub anuran_help_2_cpdf
+{
+    print
+	'Step 2: ',
+	b('Continuous Distribution with given PDF').
+	blockquote('Insert the name and PDF for the distribution:'.
+                   '<ul>'.
+                   '<li><code>Name</code>'.
+		   blockquote('Insert a string. This string is used for the name of the generator.').
+		   '<li><code>(Multiple of) density</code>'.
+		   blockquote('Insert the density for the desired distribution. ' .
+			      'It is not necessary that the given function integrates to one, ' .
+			      'e.g., you can insert <code>"exp(-(x^2)/2)"</code> for your ' .
+			      'distribution instead of the real density ' .
+			      '<code>"1/sqrt(2*pi)*exp(-(x^2)/2)"</code>. <p>' .
+			      anuran_help_functparser().
+			      'No parameters.').
+		   '</ul>' );
+
+} # end of anuran_help_2_cpdf() 
+
+sub anuran_help_functparser
+{
+    return
+'The string for the function should be composed similar to functions in
+ programming languages. The following symbols are available
+ (for conviency for some operators there exists more than one symbol): <p>
+
+ <table border=0>
+ <tr><td colspan=2><i>numbers</i>
+ <tr><td colspan=2><i>symbolic constants</i>
+ <tr><td colspan=2><i>binary operators</i>
+ <tr><td colspan=2><i>functions</i>
+ <tr><td colspan=2><i>relational operators</i>
+ </table>
+
+ <p>';
+
+} # end of anuran_help_functparser()
+
+# ----------------------------------------------------------------
+# Help (Step 3)
+# ----------------------------------------------------------------
+
+sub anuran_help_3
+{
+    print 
+	'Step 3: ',
+	b('Parameters for distribution'),
+	blockquote('<ul>'.
+		   '<li>Parameters for distributions from the menue.' .
+		   blockquote('The meaning of these parameters can be seen from the density ' .
+			      'printed as result of Step 2. <p>' .
+			      'The restrictions for valid parameters are given ' .
+			      '(if there are any) and the inserted values are verified. ' .
+			      'However only basic conditions are checked. ' .
+			      'Passing these tests does not necessarily mean that a ' .
+			      'generator code can be produced for the given parameters. <p>' .
+			      'Parameters that are fixed in the standard form of the ' .
+			      'distribution are printed in '.font({-color=>$Gray},'gray').'. <p>' .
+			      'The input fields for the parameters depend on the selected ' .
+			      'distribution, of course.'),
+		   '<li><code>Domain</code>',
+		   blockquote('Enter the domain of the (truncated) distribution.<p>' .
+			      'Notice that only numbers can be entered but not symbolic ' .
+			      'constants like <code>pi</code>. <p>' .
+			      'This field only appears if a PDF is given for a distribution, ' .
+			      'or if the box <code>Truncated domain</code> has been checked ' .
+			      'for distributions from the menue in Step 2.'),
+		   '</ul>' );
+    
+} # end of anuran_help_3() 
+
+# ----------------------------------------------------------------
+# Help (Step 4)
+# ----------------------------------------------------------------
+
+sub anuran_help_4
+{
+    print 
+	'Step 4: ',
+	b('Properties of generator'),
+	blockquote('It is possible to enter some properties for the desired generator code.' .
+		   '<ul>' .
+		   '<li><code>Programming language</code>',
+		   blockquote('Enter the programming language for which the generator code '.
+			      'should be produced.'),
+		   '<li><code>Speed / Code length</code>',
+		   blockquote('The produced programming code is depends on your requirements ' .
+			      'on the random number generator. ' .
+			      'Although this is an experimental version ANURAN tries to ' .
+			      'make code that fits your given properties ' .
+			      '(within its internal restrictions).'),
+		   '<li><code>Generator only / Make complete demo version</code>',
+		   blockquote('If <code>Make complete demo version</code> is checked, ' .
+			      'the produced code is a program by its own that can be simply ' .
+			      'compiled and executed. It then draws 10 random numbers from the ' .
+			      'given distribution. It shows how the generator has to be used ' .
+			      'in your application. The main routine can removed if you only '.
+			      'want to use the random number generator. <p>' .
+			      'If <code>Generator only</code> is checked, then only the code ' .
+			      'for the generator is printed. It can be compiled and linked with ' .
+			      'your program.'),
+		   '</ul>');
+
+} # end of anuran_help_4() 
+
+
 ###################################################################
+
+
+
+

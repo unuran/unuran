@@ -85,7 +85,7 @@ int unur_distr_cont_set_cdf( UNUR_DISTR *distribution, void *cdf );
 double unur_distr_cont_cdf( UNUR_DISTR *distribution, double x );
 /* evaluate c.d.f. of distribution at x                                      */
 
-int unur_distr_cont_set_params( UNUR_DISTR *distribution, double *params, int n_params );
+int unur_distr_cont_set_pdfparams( UNUR_DISTR *distribution, double *params, int n_params );
 /* set array of parameters for distribution                                  */
 
 int unur_distr_cont_set_mode( UNUR_DISTR *distribution, double mode );

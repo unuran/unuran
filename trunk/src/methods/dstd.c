@@ -63,7 +63,7 @@
  *                                                                           *
  * It is possible to change the parameters of the chosen distribution        *
  * without building a new generator object by means of the                   *
- * unur_dstd_chg_param() call.                                               *
+ * unur_dstd_chg_pdfparams() call.                                           *
  * Notice that it is not possible to change the number of parameters.        *
  * This function only copies the given arguments into the array of           *
  * parameters.                                                               *
@@ -116,7 +116,7 @@ static void _unur_dstd_debug_init( struct unur_par *par, struct unur_gen *gen );
 /* print after generator has been initialized has completed.                 */
 /*---------------------------------------------------------------------------*/
 
-static void _unur_dstd_debug_chg_param( struct unur_gen *gen );
+static void _unur_dstd_debug_chg_pdfparams( struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 /* print new (changed) parameters of distribution                            */
 /*---------------------------------------------------------------------------*/
@@ -251,7 +251,7 @@ unur_dstd_set_variant( struct unur_par *par, unsigned variant )
 /*---------------------------------------------------------------------------*/
 
 int 
-unur_dstd_chg_param( struct unur_gen *gen, double *params, int n_params )
+unur_dstd_chg_pdfparams( struct unur_gen *gen, double *params, int n_params )
      /*----------------------------------------------------------------------*/
      /* change array of parameters for distribution                          */
      /*                                                                      */
@@ -297,13 +297,13 @@ unur_dstd_chg_param( struct unur_gen *gen, double *params, int n_params )
 #ifdef UNUR_ENABLE_LOGGING
     /* write info into log file */
     if (gen->debug & DSTD_DEBUG_CHG) 
-      _unur_dstd_debug_chg_param( gen );
+      _unur_dstd_debug_chg_pdfparams( gen );
 #endif
 
   /* o.k. */
   return 1;
 
-} /* end of unur_dstd_chg_param() */
+} /* end of unur_dstd_chg_pdfparams() */
 
 /*****************************************************************************/
 
@@ -533,7 +533,7 @@ _unur_dstd_debug_init( struct unur_par *par, struct unur_gen *gen )
 /*---------------------------------------------------------------------------*/
 
 static void 
-_unur_dstd_debug_chg_param( struct unur_gen *gen )
+_unur_dstd_debug_chg_pdfparams( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* print new (changed) parameters of distribution                       */
      /*                                                                      */
@@ -553,7 +553,7 @@ _unur_dstd_debug_chg_param( struct unur_gen *gen )
   for( i=0; i<DISTR.n_params; i++ )
       fprintf(log,"%s:\tparam[%d] = %g\n",gen->genid,i,DISTR.params[i]);
 
-} /* end of _unur_dstd_debug_chg_param() */
+} /* end of _unur_dstd_debug_chg_pdfparams() */
 
 /*---------------------------------------------------------------------------*/
 #endif   /* end UNUR_ENABLE_LOGGING */

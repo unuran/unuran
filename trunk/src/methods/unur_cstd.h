@@ -94,7 +94,7 @@ int unur_cstd_set_variant( UNUR_PAR *parameters, unsigned variant );
 
 /*...........................................................................*/
 
-int unur_cstd_chg_param( UNUR_GEN *generator, double *params, int n_params );
+int unur_cstd_chg_pdfparams( UNUR_GEN *generator, double *params, int n_params );
 /* 
    Change array of parameters of distribution in given generator object.
    Notice that it is not possible to change the number of parameters.

@@ -104,7 +104,7 @@ int unur_dstd_set_variant( UNUR_PAR *parameters, unsigned variant );
    If the selected variant number is not implemented, this call has no effect.
 */
 
-int unur_dstd_chg_param( UNUR_GEN *gen, double *params, int n_params );
+int unur_dstd_chg_pdfparams( UNUR_GEN *gen, double *params, int n_params );
 /*
   Change array of parameters of distribution in given generator object.
   Notice that it is not possible to change the number of parameters.

@@ -41,32 +41,46 @@
 /* Routines for user interface                                               */
 
 UNUR_PAR *unur_srou_new( UNUR_DISTR *distribution );
-/* get default parameters for generator                                      */
-
-UNUR_GEN *_unur_srou_init( UNUR_PAR *parameters );
-/* initialize new generator                                                  */
-
-double _unur_srou_sample( UNUR_GEN *generator );
-double _unur_srou_sample_mirror( UNUR_GEN *generator );
-double _unur_srou_sample_check( UNUR_GEN *generator );
-/* sample from generator                                                     */
-
-void _unur_srou_free( UNUR_GEN *generator);
-/* destroy generator object                                                  */
+/* Get default parameters for generator                                      */
 
 /*...........................................................................*/
 
 int unur_srou_set_Fmode( UNUR_PAR *parameters, double Fmode );
-/* set cdf at mode                                                           */
+/* Set cdf at mode                                                           */
 
 int unur_srou_set_verify( UNUR_PAR *parameters, int verify );
-/* turn verifying of algorithm while sampling on/off                         */
+/* Turn verifying of algorithm while sampling on/off                         */
 
 int unur_srou_set_usesqueeze( UNUR_PAR *parameters, int usesqueeze );
-/* set flag for using universal squeeze (default: off)                       */
+/* Set flag for using universal squeeze (default: off)                       */
 
 int unur_srou_set_usemirror( UNUR_PAR *parameters, int usemirror );
-/* set flag for using mirror principle (default: off)                        */
+/* Set flag for using mirror principle (default: off)                        */
+
+/*...........................................................................*/
+
+int unur_srou_chg_pdfparam( UNUR_GEN *generator, double *params, int n_params );
+/* 
+   Change array of parameters of distribution in given generator object.
+   Notice that it is not possible to change the number of parameters.
+   This function only copies the given arguments into the array of 
+   distribution parameters.
+   IMPORTANT: The given parameters are not checked against domain errors;
+   in opposition to the (=>) unur_<distr>_new() call.
+   (=>) unur_reinit() must be called afterwards.
+*/
+
+int unur_srou_chg_mode( UNUR_GEN *generator, double mode );
+/* Change mode of distribution                                               */
+
+int unur_srou_chg_Fmode( UNUR_GEN *generator, double Fmode );
+/* Change c.d.f. at mode of distribution                                     */
+
+int unur_srou_chg_domain( UNUR_GEN *generator, double left, double right );
+/* Change left and right border of the domain of the 
+   (truncated) distribution.                                                 */
+
+int unur_srou_chg_pdfarea( UNUR_GEN *generator, double area );
+/* Change area below p.d.f. of distribution                                  */
 
 /*---------------------------------------------------------------------------*/
-

@@ -396,7 +396,7 @@ unur_distr_cont_cdf( struct unur_distr *distr, double x )
 /*---------------------------------------------------------------------------*/
 
 int
-unur_distr_cont_set_params( struct unur_distr *distr, double *params, int n_params )
+unur_distr_cont_set_pdfparams( struct unur_distr *distr, double *params, int n_params )
      /*----------------------------------------------------------------------*/
      /* set array of parameters for distribution                             */
      /*                                                                      */
@@ -433,7 +433,7 @@ unur_distr_cont_set_params( struct unur_distr *distr, double *params, int n_para
 
   /* o.k. */
   return 1;
-} /* end of unur_distr_cont_set_param() */
+} /* end of unur_distr_cont_set_pdfparams() */
 
 /*---------------------------------------------------------------------------*/
 

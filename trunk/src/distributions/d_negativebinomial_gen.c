@@ -166,7 +166,7 @@ negativebinomial_nbp_init( struct unur_gen *gen )
     GAMMA->debug = gen->debug;
   }
   else  /* re-init mode --> change shape parameter */
-    unur_cstd_chg_param(GAMMA,&gamma_param,1);
+    unur_cstd_chg_pdfparams(GAMMA,&gamma_param,1);
 
   /* make a poisson variate generator (use default special generator) */
   if (POISSON==NULL) {
@@ -202,7 +202,7 @@ _unur_stdgen_sample_negativebinomial_nbp( struct unur_gen *gen )
   y = x * _unur_sample_cont(GAMMA);
 
   /* sample from poisson distribution */
-  unur_dstd_chg_param(POISSON,&y,1);
+  unur_dstd_chg_pdfparams(POISSON,&y,1);
   return _unur_sample_discr(POISSON);
 
   /* -X- end of generator code -X- */

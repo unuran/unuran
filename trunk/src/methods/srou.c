@@ -133,9 +133,31 @@
 
 /*---------------------------------------------------------------------------*/
 
+static struct unur_gen *_unur_srou_init( struct unur_par *par );
+/*---------------------------------------------------------------------------*/
+/* Initialize new generator.                                                 */
+/*---------------------------------------------------------------------------*/
+
 static struct unur_gen *_unur_srou_create( struct unur_par *par );
 /*---------------------------------------------------------------------------*/
 /* create new (almost empty) generator object.                               */
+/*---------------------------------------------------------------------------*/
+
+static int _unur_srou_reinit( struct unur_gen *gen );
+/*---------------------------------------------------------------------------*/
+/* Re-initialize (existing) generator.                                       */
+/*---------------------------------------------------------------------------*/
+
+double _unur_srou_sample( UNUR_GEN *generator );
+double _unur_srou_sample_mirror( UNUR_GEN *generator );
+double _unur_srou_sample_check( UNUR_GEN *generator );
+/*---------------------------------------------------------------------------*/
+/* sample from generator                                                     */
+/*---------------------------------------------------------------------------*/
+
+static void _unur_srou_free( struct unur_gen *gen);
+/*---------------------------------------------------------------------------*/
+/* destroy generator object.                                                 */
 /*---------------------------------------------------------------------------*/
 
 #ifdef UNUR_ENABLE_LOGGING
@@ -453,6 +475,94 @@ _unur_srou_init( struct unur_par *par )
 
 } /* end of _unur_srou_init() */
 
+/*---------------------------------------------------------------------------*/
+
+static struct unur_gen *
+_unur_srou_create( struct unur_par *par )
+     /*----------------------------------------------------------------------*/
+     /* allocate memory for generator                                        */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par ... pointer to parameter for building generator object         */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to (empty) generator object with default settings          */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return NULL                                                        */
+     /*----------------------------------------------------------------------*/
+{
+  struct unur_gen *gen;
+
+  /* check arguments */
+  CHECK_NULL(par,NULL);  COOKIE_CHECK(par,CK_SROU_PAR,NULL);
+
+  /* allocate memory for generator object */
+  gen = _unur_malloc( sizeof(struct unur_gen) );
+
+  /* magic cookies */
+  COOKIE_SET(gen,CK_SROU_GEN);
+
+  /* copy distribution object into generator object */
+  memcpy( &(gen->distr), par->distr, sizeof( struct unur_distr ) );
+
+  /* copy generator identifier */
+  gen->genid = par->genid;
+
+  /* routines for sampling and destroying generator */
+  if (par->variant & SROU_VARFLAG_VERIFY)
+    SAMPLE = _unur_srou_sample_check;
+  else
+    SAMPLE = (par->variant & SROU_VARFLAG_MIRROR) ? _unur_srou_sample_mirror : _unur_srou_sample;
+
+  gen->destroy = _unur_srou_free;
+  gen->reinit = _unur_srou_reinit;
+
+  /* mode must be in domain */
+  if ( (DISTR.mode < DISTR.BD_LEFT) ||
+       (DISTR.mode > DISTR.BD_RIGHT) ) {
+    /* there is something wrong.
+       assume: user has change domain without changing mode.
+       but then, she probably has not updated area and is to large */
+    _unur_warning(par->genid,UNUR_ERR_GEN_DATA,"area and/or cdf at mode");
+    DISTR.mode = max(DISTR.mode,DISTR.BD_LEFT);
+    DISTR.mode = min(DISTR.mode,DISTR.BD_RIGHT);
+  }
+
+  gen->method = par->method;        /* indicates method                      */
+  gen->variant = par->variant;      /* indicates variant                     */
+  gen->debug = par->debug;          /* debuging flags                        */
+  gen->urng = par->urng;            /* pointer to urng                       */
+
+  gen->urng_aux = NULL;             /* no auxilliary URNG required           */
+  gen->gen_aux = NULL;              /* no auxilliary generator objects       */
+  gen->gen_aux_2 = NULL;
+
+  /* initialize parameters */
+
+  /* return pointer to (almost empty) generator object */
+  return(gen);
+
+} /* end of _unur_srou_create() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+_unur_srou_reinit( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* re-initialize (existing) generator.                                  */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... on success                                                   */
+     /*   0 ... on error                                                     */
+     /*----------------------------------------------------------------------*/
+{
+  return _unur_reinit_error(gen);
+} /* end of _unur_srou_reinit() */
+
 /*****************************************************************************/
 
 double
@@ -683,74 +793,6 @@ _unur_srou_free( struct unur_gen *gen )
 /*****************************************************************************/
 /**  Auxilliary Routines                                                    **/
 /*****************************************************************************/
-
-static struct unur_gen *
-_unur_srou_create( struct unur_par *par )
-     /*----------------------------------------------------------------------*/
-     /* allocate memory for generator                                        */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   par ... pointer to parameter for building generator object         */
-     /*                                                                      */
-     /* return:                                                              */
-     /*   pointer to (empty) generator object with default settings          */
-     /*                                                                      */
-     /* error:                                                               */
-     /*   return NULL                                                        */
-     /*----------------------------------------------------------------------*/
-{
-  struct unur_gen *gen;
-
-  /* check arguments */
-  CHECK_NULL(par,NULL);  COOKIE_CHECK(par,CK_SROU_PAR,NULL);
-
-  /* allocate memory for generator object */
-  gen = _unur_malloc( sizeof(struct unur_gen) );
-
-  /* magic cookies */
-  COOKIE_SET(gen,CK_SROU_GEN);
-
-  /* copy distribution object into generator object */
-  memcpy( &(gen->distr), par->distr, sizeof( struct unur_distr ) );
-
-  /* copy generator identifier */
-  gen->genid = par->genid;
-
-  /* routines for sampling and destroying generator */
-  if (par->variant & SROU_VARFLAG_VERIFY)
-    SAMPLE = _unur_srou_sample_check;
-  else
-    SAMPLE = (par->variant & SROU_VARFLAG_MIRROR) ? _unur_srou_sample_mirror : _unur_srou_sample;
-
-  gen->destroy = _unur_srou_free;
-  gen->reinit = _unur_reinit_error;
-
-  /* mode must be in domain */
-  if ( (DISTR.mode < DISTR.BD_LEFT) ||
-       (DISTR.mode > DISTR.BD_RIGHT) ) {
-    /* there is something wrong.
-       assume: user has change domain without changing mode.
-       but then, she probably has not updated area and is to large */
-    _unur_warning(par->genid,UNUR_ERR_GEN_DATA,"area and/or cdf at mode");
-    DISTR.mode = max(DISTR.mode,DISTR.BD_LEFT);
-    DISTR.mode = min(DISTR.mode,DISTR.BD_RIGHT);
-  }
-
-  gen->method = par->method;        /* indicates method                      */
-  gen->variant = par->variant;      /* indicates variant                     */
-  gen->debug = par->debug;          /* debuging flags                        */
-  gen->urng = par->urng;            /* pointer to urng                       */
-
-  gen->urng_aux = NULL;             /* no auxilliary URNG required           */
-  gen->gen_aux = NULL;              /* no auxilliary generator objects       */
-  gen->gen_aux_2 = NULL;
-
-  /* initialize parameters */
-
-  /* return pointer to (almost empty) generator object */
-  return(gen);
-
-} /* end of _unur_srou_create() */
 
 /*****************************************************************************/
 /**  Debugging utilities                                                    **/

@@ -436,7 +436,7 @@ int main()
   unur_set_debug(par,UNUR_DEBUG_INIT);
   gen = unur_init(par);
   unur_test_chi2( gen, 1000, 100000, 20, 1 );
-  unur_dstd_chg_param(gen,fpar,2);
+  unur_dstd_chg_pdfparams(gen,fpar,2);
   unur_test_chi2( gen, 1000, 100000, 20, 1 );
 
   unur_free(gen);
@@ -450,7 +450,7 @@ int main()
   gen = unur_init(par);
   unur_test_chi2( gen, 100, 10000, 20, 1 );
   unur_cstd_chg_domain(gen,-1.,3.);
-  unur_cstd_chg_param(gen,fpar,2);
+  unur_cstd_chg_pdfparams(gen,fpar,2);
   unur_test_chi2( gen, 100, 10000, 20, 1 );
 
 #endif

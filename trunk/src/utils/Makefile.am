@@ -5,6 +5,8 @@ INCLUDES = -I$(top_srcdir)/src
 
 noinst_LTLIBRARIES = libutils.la
 
+libutils_la_DEPENDENCIES = unur_fp_const_source.h
+
 libutils_la_SOURCES = \
  debug.c  debug.h debug_source.h \
  eigensystem.c \

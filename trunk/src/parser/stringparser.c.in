@@ -103,6 +103,11 @@
  *   the keywords found in the string.                                       *
  *                                                                           *
  *****************************************************************************
+ *                                                                           *
+ *   REMARK:                                                                 *
+ *   The stringparser always uses the default debugging flag.                *
+ *                                                                           *
+ *****************************************************************************
      $Id$
  *****************************************************************************
  *                                                                           *
@@ -127,13 +132,8 @@
  *****************************************************************************/
 
 #include <stdarg.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 #include <ctype.h>
 #include <source_unuran.h>
-
-
 
 /*---------------------------------------------------------------------------*/
 /* Variants: none                                                            */
@@ -144,8 +144,6 @@
 /*    bits 02-12 ... setup                                                   */
 /*    bits 13-24 ... adaptive steps                                          */
 /*    bits 25-32 ... trace sampling                                          */
-
-#define STRING_DEBUG_INIT    0x00000010u   /* print parameters               */
 
 /*---------------------------------------------------------------------------*/
 /* Flags for logging set calls                                               */
@@ -400,7 +398,8 @@ unur_str2gen (const char *string)
 
 #ifdef UNUR_ENABLE_LOGGING
   /* write info into log file */
-  _unur_str_debug_string(0,"[input]",str);
+  if (_unur_default_debugflag)
+    _unur_str_debug_string(0,"[input]",str);
 #endif
 
   /* split string into blocks separated by colons ':' */
@@ -475,7 +474,8 @@ unur_str2gen (const char *string)
 
 #ifdef UNUR_ENABLE_LOGGING
   /* write info into log file */
-  _unur_str_debug_string(0,"",NULL);
+  if (_unur_default_debugflag)
+    _unur_str_debug_string(0,"",NULL);
 #endif
 
   /* return pointer to generator object */
@@ -542,6 +542,12 @@ _unur_str2distr(char *str_distr)
       if (value == NULL) {
 	/* no "distribution" keyword given, so the key points to the value */
 	value = key;
+      }
+      else {
+	if (*key != 'd') {
+	  _unur_error(GENTYPE,UNUR_ERR_STR_SYNTAX,"key for distribution does not start with 'd'"); 
+	  return NULL;
+	}
       }
 
       /* get new distribution object */
@@ -610,7 +616,8 @@ _unur_str_distr_new( char *distribution )
 
 #ifdef UNUR_ENABLE_LOGGING
   /* write info into log file */
-  _unur_str_debug_distr(1,name,darray,n_darray);
+  if (_unur_default_debugflag & UNUR_DEBUG_SETUP)
+    _unur_str_debug_distr(1,name,darray,n_darray);
 #endif
 
   /* mark distribution as unknown (this is a very ugly hack) */
@@ -741,14 +748,16 @@ _unur_str_distr_set_i (UNUR_DISTR *distr, const char *key, char *type_args, char
     _unur_error_args(key);
 #ifdef UNUR_ENABLE_LOGGING
     /* write info into log file */
-    _unur_str_debug_set(2,key,"!");
+    if (_unur_default_debugflag & UNUR_DEBUG_SETUP)
+      _unur_str_debug_set(2,key,"!");
 #endif
     return 0;
   }
   
 #ifdef UNUR_ENABLE_LOGGING
   /* write info into log file */
-  _unur_str_debug_set(2,key,"i",iarg);
+  if (_unur_default_debugflag & UNUR_DEBUG_SETUP)
+    _unur_str_debug_set(2,key,"i",iarg);
 #endif
 
   return set(distr,iarg);
@@ -796,7 +805,8 @@ _unur_str_distr_set_d (UNUR_DISTR *distr, const char *key, char *type_args, char
     _unur_error_args(key);
 #ifdef UNUR_ENABLE_LOGGING
     /* write info into log file */
-    _unur_str_debug_set(2,key,"!");
+    if (_unur_default_debugflag & UNUR_DEBUG_SETUP)
+      _unur_str_debug_set(2,key,"!");
 #endif
     return 0;
   }
@@ -805,7 +815,8 @@ _unur_str_distr_set_d (UNUR_DISTR *distr, const char *key, char *type_args, char
 
 #ifdef UNUR_ENABLE_LOGGING
   /* write info into log file */
-  _unur_str_debug_set(2,key,"d",darg);
+  if (_unur_default_debugflag & UNUR_DEBUG_SETUP)
+    _unur_str_debug_set(2,key,"d",darg);
 #endif
 
   return set(distr,darg);
@@ -862,7 +873,8 @@ _unur_str_distr_set_dd (UNUR_DISTR *distr, const char *key, char *type_args, cha
 
 #ifdef UNUR_ENABLE_LOGGING
     /* write info into log file */
-    _unur_str_debug_set(2,key,"dd",darg[0],darg[1]);
+    if (_unur_default_debugflag & UNUR_DEBUG_SETUP)
+      _unur_str_debug_set(2,key,"dd",darg[0],darg[1]);
 #endif
 
     return set( distr,darg[0],darg[1] );
@@ -875,7 +887,8 @@ _unur_str_distr_set_dd (UNUR_DISTR *distr, const char *key, char *type_args, cha
       free (darray);
 #ifdef UNUR_ENABLE_LOGGING
       /* write info into log file */
-      _unur_str_debug_set(2,key,"!");
+      if (_unur_default_debugflag & UNUR_DEBUG_SETUP)
+	_unur_str_debug_set(2,key,"!");
 #endif
       return 0;
     }
@@ -883,7 +896,8 @@ _unur_str_distr_set_dd (UNUR_DISTR *distr, const char *key, char *type_args, cha
 
 #ifdef UNUR_ENABLE_LOGGING
     /* write info into log file */
-    _unur_str_debug_set(2,key,"dd",darray[0],darray[1] );
+    if (_unur_default_debugflag & UNUR_DEBUG_SETUP)
+      _unur_str_debug_set(2,key,"dd",darray[0],darray[1] );
 #endif
 
     free (darray);
@@ -894,7 +908,8 @@ _unur_str_distr_set_dd (UNUR_DISTR *distr, const char *key, char *type_args, cha
     _unur_error_args(key);
 #ifdef UNUR_ENABLE_LOGGING
     /* write info into log file */
-    _unur_str_debug_set(2,key,"!");
+    if (_unur_default_debugflag & UNUR_DEBUG_SETUP)
+      _unur_str_debug_set(2,key,"!");
 #endif
     return 0;
   }
@@ -964,7 +979,8 @@ _unur_str_distr_set_Di (UNUR_DISTR *distr, const char *key, char *type_args, cha
     _unur_error_args(key);
 #ifdef UNUR_ENABLE_LOGGING
     /* write info into log file */
-    _unur_str_debug_set(2,key,"!");
+    if (_unur_default_debugflag & UNUR_DEBUG_SETUP)
+      _unur_str_debug_set(2,key,"!");
 #endif
     result = 0;
   }
@@ -974,7 +990,8 @@ _unur_str_distr_set_Di (UNUR_DISTR *distr, const char *key, char *type_args, cha
     result = set( distr,darray,size );
 #ifdef UNUR_ENABLE_LOGGING
     /* write info into log file */
-    _unur_str_debug_set(2,key,"Di",darray,size,size);
+    if (_unur_default_debugflag & UNUR_DEBUG_SETUP)
+      _unur_str_debug_set(2,key,"Di",darray,size,size);
 #endif
   }
 
@@ -1053,7 +1070,7 @@ _unur_str2par( char *str_method, UNUR_DISTR *distr )
       }
       else {
 	if (par) free (par);
-	_unur_error(GENTYPE,UNUR_ERR_STR_SYNTAX,"method must be first key"); 
+	_unur_error(GENTYPE,UNUR_ERR_STR_SYNTAX,"method must be first key in block"); 
 	return NULL;
       }
     }
@@ -1094,7 +1111,8 @@ _unur_str_par_new( const char *method, UNUR_DISTR *distr )
   
 #ifdef UNUR_ENABLE_LOGGING
   /* write info into log file */
-  _unur_str_debug_string(1,"method",method);
+  if (_unur_default_debugflag & UNUR_DEBUG_SETUP)
+    _unur_str_debug_string(1,"method",method);
 #endif
 
   /* mark method as unknown (this is a very ugly hack) */
@@ -1208,7 +1226,8 @@ _unur_str_par_set_void (UNUR_PAR *par, const char *key, char *type_args, char **
 
 #ifdef UNUR_ENABLE_LOGGING
   /* write info into log file */
-  _unur_str_debug_set(2,key,"v");
+  if (_unur_default_debugflag & UNUR_DEBUG_SETUP)
+    _unur_str_debug_set(2,key,"v");
 #endif
 
   if (*type_args != '\0')
@@ -1267,14 +1286,16 @@ _unur_str_par_set_i (UNUR_PAR *par, const char *key, char *type_args, char **arg
     _unur_error_args(key);
 #ifdef UNUR_ENABLE_LOGGING
     /* write info into log file */
-    _unur_str_debug_set(2,key,"!");
+    if (_unur_default_debugflag & UNUR_DEBUG_SETUP)
+      _unur_str_debug_set(2,key,"!");
 #endif
     return 0;
   }
   
 #ifdef UNUR_ENABLE_LOGGING
   /* write info into log file */
-  _unur_str_debug_set(2,key,"i",iarg);
+  if (_unur_default_debugflag & UNUR_DEBUG_SETUP)
+    _unur_str_debug_set(2,key,"i",iarg);
 #endif
 
   return set(par,iarg);
@@ -1322,7 +1343,8 @@ _unur_str_par_set_u (UNUR_PAR *par, const char *key, char *type_args, char **arg
     _unur_error_args(key);
 #ifdef UNUR_ENABLE_LOGGING
     /* write info into log file */
-    _unur_str_debug_set(2,key,"!");
+    if (_unur_default_debugflag & UNUR_DEBUG_SETUP)
+      _unur_str_debug_set(2,key,"!");
 #endif
     return 0;
   }
@@ -1331,7 +1353,8 @@ _unur_str_par_set_u (UNUR_PAR *par, const char *key, char *type_args, char **arg
 
 #ifdef UNUR_ENABLE_LOGGING
   /* write info into log file */
-  _unur_str_debug_set(2,key,"u",uarg);
+  if (_unur_default_debugflag & UNUR_DEBUG_SETUP)
+    _unur_str_debug_set(2,key,"u",uarg);
 #endif
 
   return set(par,uarg);
@@ -1379,7 +1402,8 @@ _unur_str_par_set_d (UNUR_PAR *par, const char *key, char *type_args, char **arg
     _unur_error_args(key);
 #ifdef UNUR_ENABLE_LOGGING
     /* write info into log file */
-    _unur_str_debug_set(2,key,"!");
+    if (_unur_default_debugflag & UNUR_DEBUG_SETUP)
+      _unur_str_debug_set(2,key,"!");
 #endif
     return 0;
   }
@@ -1388,7 +1412,8 @@ _unur_str_par_set_d (UNUR_PAR *par, const char *key, char *type_args, char **arg
 
 #ifdef UNUR_ENABLE_LOGGING
   /* write info into log file */
-  _unur_str_debug_set(2,key,"d",darg);
+  if (_unur_default_debugflag & UNUR_DEBUG_SETUP)
+    _unur_str_debug_set(2,key,"d",darg);
 #endif
 
   return set(par,darg);
@@ -1445,7 +1470,8 @@ _unur_str_par_set_dd (UNUR_PAR *par, const char *key, char *type_args, char **ar
 
 #ifdef UNUR_ENABLE_LOGGING
     /* write info into log file */
-    _unur_str_debug_set(2,key,"dd",darg[0],darg[1]);
+    if (_unur_default_debugflag & UNUR_DEBUG_SETUP)
+      _unur_str_debug_set(2,key,"dd",darg[0],darg[1]);
 #endif
 
     return set( par,darg[0],darg[1] );
@@ -1458,7 +1484,8 @@ _unur_str_par_set_dd (UNUR_PAR *par, const char *key, char *type_args, char **ar
       free (darray);
 #ifdef UNUR_ENABLE_LOGGING
       /* write info into log file */
-      _unur_str_debug_set(2,key,"!");
+      if (_unur_default_debugflag & UNUR_DEBUG_SETUP)
+	_unur_str_debug_set(2,key,"!");
 #endif
       return 0;
     }
@@ -1466,7 +1493,8 @@ _unur_str_par_set_dd (UNUR_PAR *par, const char *key, char *type_args, char **ar
 
 #ifdef UNUR_ENABLE_LOGGING
     /* write info into log file */
-    _unur_str_debug_set(2,key,"dd",darray[0],darray[1] );
+    if (_unur_default_debugflag & UNUR_DEBUG_SETUP)
+      _unur_str_debug_set(2,key,"dd",darray[0],darray[1] );
 #endif
 
     free (darray);
@@ -1477,7 +1505,8 @@ _unur_str_par_set_dd (UNUR_PAR *par, const char *key, char *type_args, char **ar
     _unur_error_args(key);
 #ifdef UNUR_ENABLE_LOGGING
     /* write info into log file */
-    _unur_str_debug_set(2,key,"!");
+    if (_unur_default_debugflag & UNUR_DEBUG_SETUP)
+      _unur_str_debug_set(2,key,"!");
 #endif
     return 0;
   }
@@ -1563,7 +1592,8 @@ _unur_str_par_set_iD (UNUR_PAR *par, const char *key, char *type_args, char **ar
     _unur_error_args(key);
 #ifdef UNUR_ENABLE_LOGGING
     /* write info into log file */
-    _unur_str_debug_set(2,key,"!");
+    if (_unur_default_debugflag & UNUR_DEBUG_SETUP)
+      _unur_str_debug_set(2,key,"!");
 #endif
     result = 0;
   }
@@ -1573,7 +1603,8 @@ _unur_str_par_set_iD (UNUR_PAR *par, const char *key, char *type_args, char **ar
     result = set( par,size,darray );
 #ifdef UNUR_ENABLE_LOGGING
     /* write info into log file */
-    _unur_str_debug_set(2,key,"iD",size,darray,size);
+    if (_unur_default_debugflag & UNUR_DEBUG_SETUP)
+      _unur_str_debug_set(2,key,"iD",size,darray,size);
 #endif
   }
 
@@ -1630,7 +1661,8 @@ _unur_str_par_set_Di (UNUR_PAR *par, const char *key, char *type_args, char **ar
       result = set( par,darray,t_size );
 #ifdef UNUR_ENABLE_LOGGING
       /* write info into log file */
-      _unur_str_debug_set(2,key,"Di",darray,size,size);
+      if (_unur_default_debugflag & UNUR_DEBUG_SETUP)
+	_unur_str_debug_set(2,key,"Di",darray,size,size);
 #endif
       if (darray) free (darray);
 
@@ -1642,7 +1674,8 @@ _unur_str_par_set_Di (UNUR_PAR *par, const char *key, char *type_args, char **ar
   _unur_error_args(key);
 #ifdef UNUR_ENABLE_LOGGING
   /* write info into log file */
-  _unur_str_debug_set(2,key,"!");
+  if (_unur_default_debugflag & UNUR_DEBUG_SETUP)
+    _unur_str_debug_set(2,key,"!");
 #endif
 
   return 0;
@@ -1653,8 +1686,6 @@ _unur_str_par_set_Di (UNUR_PAR *par, const char *key, char *type_args, char **ar
 /*****************************************************************************/
 /**  Uniform RNG                                                            **/
 /*****************************************************************************/
-
-/*---------------------------------------------------------------------------*/
 
 UNUR_URNG *
 _unur_str2urng( char *str_urng )
@@ -1674,6 +1705,10 @@ _unur_str2urng( char *str_urng )
      /*   return NULL                                                        */
      /*----------------------------------------------------------------------*/
 {
+/*---------------------------------------------------------------------------*/
+#if UNUR_URNG_TYPE == UNUR_URNG_PRNG
+/*---------------------------------------------------------------------------*/
+
   UNUR_URNG *urng = NULL;
 
   char *token;             /* pointer to token in string */
@@ -1713,8 +1748,16 @@ _unur_str2urng( char *str_urng )
 	urng = prng_new(value);
 	if (urng == NULL) {
 	  /* error */
-	  _unur_error(GENTYPE,UNUR_ERR_STR,"setting urng failed"); 
+	  _unur_error(GENTYPE,UNUR_ERR_STR,"setting URNG failed"); 
 	  return NULL;
+	}
+	else {
+#ifdef UNUR_ENABLE_LOGGING
+	  /* write info into log file */
+	  if (_unur_default_debugflag & UNUR_DEBUG_SETUP)
+	    _unur_str_debug_string(1,"urng",value);
+#endif
+	  ;
 	}
       }
       else {
@@ -1736,6 +1779,16 @@ _unur_str2urng( char *str_urng )
   /*return pointer to uniform RNG */
   return urng;
 
+/*---------------------------------------------------------------------------*/
+#else
+/*---------------------------------------------------------------------------*/
+
+  _unur_error(GENTYPE,UNUR_ERR_STR,"setting URNG required PRNG library enabled"); 
+  return NULL;
+
+/*---------------------------------------------------------------------------*/
+#endif
+/*---------------------------------------------------------------------------*/
 } /* end of _unur_str2urng() */
 
 /*---------------------------------------------------------------------------*/

@@ -5,6 +5,10 @@ SUBDIRS = . tests
 
 AM_CFLAGS = -Wall
 
+# acg does not build with -ansi -pedantic
+# (there should be a better fix)
+CFLAGS = -O2
+
 INCLUDES = \
  -I$(top_srcdir)/src \
  -I$(top_srcdir)/src/distributions \

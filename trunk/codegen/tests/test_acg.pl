@@ -15,6 +15,7 @@ require "../read_PDF.pl";
 # ----------------------------------------------------------------
 
 my $ACG = "../acg";
+my $default_conf_file = "./test_acg_conf.pl";
 
 # ----------------------------------------------------------------
 # Prefix for file names
@@ -36,8 +37,8 @@ $JAVAC = "javac";
 # ----------------------------------------------------------------
 
 # Read configuration file name for tests from argument list ...
-my $test_conf_file = shift
-    or die "no argument given";
+$test_conf_file = shift
+    or $test_conf_file = $default_conf_file;
 
 # C file for making code generator tests
 my $make_test_codegen = "make_test_codegen.c";

@@ -82,6 +82,7 @@
 #define VNROU_SET_U       0x001u     /* set u values of bounding rectangle   */
 #define VNROU_SET_V       0x002u     /* set v values of bounding rectangle   */
 #define VNROU_SET_CENTER  0x004u     /* set approximate mode of distribution */
+#define VNROU_SET_R       0x008u     /* set r-parameter                      */
 
 /*---------------------------------------------------------------------------*/
 
@@ -198,6 +199,7 @@ unur_vnrou_new( const struct unur_distr *distr )
   PAR.center = _unur_xmalloc( PAR.dim * sizeof(double)); /* center of distrib*/
 
   /* set default values */
+  PAR.r		= 1.; 	      /* r-parameter of the generalized method       */
   PAR.vmax      = 0.;         /* v-boundary of bounding rectangle (unknown)  */
   for (d=0; d<PAR.dim; d++) PAR.center[d]=0.; /* default center = (0,...,0)  */
 
@@ -219,7 +221,7 @@ unur_vnrou_new( const struct unur_distr *distr )
 
 
 int
-unur_vnrou_set_rect_u( struct unur_par *par, double *umin, double *umax )
+unur_vnrou_set_u( struct unur_par *par, double *umin, double *umax )
      /*----------------------------------------------------------------------*/
      /* Sets left and right u-boundary of bounding rectangle.                */
      /*                                                                      */
@@ -263,7 +265,7 @@ unur_vnrou_set_rect_u( struct unur_par *par, double *umin, double *umax )
 
 
 int
-unur_vnrou_set_rect_v( struct unur_par *par, double vmax )
+unur_vnrou_set_v( struct unur_par *par, double vmax )
      /*----------------------------------------------------------------------*/
      /* Sets upper v-boundary of bounding rectangle.                         */
      /*                                                                      */
@@ -298,6 +300,36 @@ unur_vnrou_set_rect_v( struct unur_par *par, double vmax )
 
 /*---------------------------------------------------------------------------*/
 
+int
+unur_vnrou_set_r( struct unur_par *par, double r )
+     /*----------------------------------------------------------------------*/
+     /* Set the r-parameter for the generalized ratio-of-uniforms method.    */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   r  ... r-parameter                                                 */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( GENTYPE, par, UNUR_ERR_NULL );
+  _unur_check_par_object( par, VNROU );
+  if (r<0.) r=1.;
+
+  /* store data */
+  PAR.r = r;
+
+  /* changelog */
+  par->set |= VNROU_SET_R;
+
+  /* o.k. */
+  return UNUR_SUCCESS;
+
+} /* end of unur_vnrou_set_r() */
+
+/*---------------------------------------------------------------------------*/
 
 int
 unur_vnrou_set_center( struct unur_par *par, double *center )
@@ -460,10 +492,11 @@ _unur_vnrou_aux_vmax(double *x, void *p )
      /* Auxiliary function used in the computation of the bounding rectangle */
      /*----------------------------------------------------------------------*/
 {
-  struct unur_gen *g;
+  struct unur_gen *gen;
   
-  g = p; /* typecast from void* to unur_gen* */
-  return -pow( _unur_cvec_PDF((x),(g->distr)) , 1./(1.+ g->data.vnrou.dim) ); 
+  gen = p; /* typecast from void* to unur_gen* */
+  return -pow( _unur_cvec_PDF((x),(gen->distr)) , 
+                              1./(1.+ GEN.r * GEN.dim) ); 
 }
 
 /*---------------------------------------------------------------------------*/
@@ -474,11 +507,11 @@ _unur_vnrou_aux_umin(double *x, void *p)
      /* Auxiliary function used in the computation of the bounding rectangle */
      /*----------------------------------------------------------------------*/	
 {
-  struct unur_gen *g;
+  struct unur_gen *gen;
   
-  g = p; /* typecast from void* to unur_gen* */
-  return (x[g->data.vnrou.aux_dim]) * pow( _unur_cvec_PDF((x),(g->distr)), 
-                                           1./(1.+ g->data.vnrou.dim) );
+  gen = p; /* typecast from void* to unur_gen* */
+  return (x[GEN.aux_dim]) * pow( _unur_cvec_PDF((x),(gen->distr)), 
+                                 GEN.r / (1.+ GEN.r * GEN.dim) );
 }
 
 /*---------------------------------------------------------------------------*/
@@ -643,6 +676,7 @@ _unur_vnrou_create( struct unur_par *par )
 
   /* copy parameters into generator object */
   GEN.dim   = PAR.dim;              /* dimension */
+  GEN.r     = PAR.r;                /* r-parameter of the vnrou method */  
   GEN.vmax  = PAR.vmax;             /* upper v-boundary of bounding rectangle */
   
   GEN.umin = PAR.umin;
@@ -732,7 +766,7 @@ _unur_vnrou_sample_cvec( struct unur_gen *gen, double *vec )
     /* X[] inside domain ? */
     
     /* accept or reject */
-    if (V <= pow(PDF(vec),1./(dim+1.)))
+    if (V <= pow(PDF(vec),1./(GEN.r * dim + 1.)))
       return;
   }
 
@@ -793,7 +827,7 @@ _unur_vnrou_sample_check( struct unur_gen *gen, double *vec )
     if (hat_error>0) _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"PDF(x) > hat(x)");
  
     /* accept or reject */
-    if (V <= pow(PDF(vec),1./(dim+1.)))
+    if (V <= pow(PDF(vec),1./( GEN.r * dim + 1.)))
       return;
   }
 

@@ -42,6 +42,7 @@
 
 struct unur_vnrou_par { 
   int    dim;               /* dimension of distribution                     */
+  double r;		    /* r-parameter of the vnrou method 	*/
   double *umin, *umax;      /* boundary rectangle u-coordinates */
   double vmax;              /* boundary rectangle v-coordinate  */
   double *center;           /* center of distribution */  
@@ -53,6 +54,7 @@ struct unur_vnrou_par {
 
 struct unur_vnrou_gen { 
   int    dim;               /* dimension of distribution                     */
+  double r;		    /* r-parameter of the vnrou method 	*/
   double *umin, *umax;      /* boundary rectangle u-coordinates */
   double vmax;              /* boundary rectangle v-coordinate  */
   double *center;           /* center of distribution */  

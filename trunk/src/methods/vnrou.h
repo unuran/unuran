@@ -70,7 +70,7 @@ UNUR_PAR *unur_vnrou_new( const UNUR_DISTR *distribution );
 
 /*...........................................................................*/
 
-int unur_vnrou_set_rect_u( UNUR_PAR *parameters, double *umin, double *umax );
+int unur_vnrou_set_u( UNUR_PAR *parameters, double *umin, double *umax );
 /* 
    Sets left and right boundaries of bounding hyper-rectangle.
    If no values are given, the boundary of the minimal bounding
@@ -79,10 +79,10 @@ int unur_vnrou_set_rect_u( UNUR_PAR *parameters, double *umin, double *umax );
    @emph{Notice}: These are the boundaries where the generating
    function is shifted by the center-vector.
   
-   Default: not set.
+   Default: not set (i.e. computed automatically)
 */
 
-int unur_vnrou_set_rect_v( UNUR_PAR *parameters, double vmax );
+int unur_vnrou_set_v( UNUR_PAR *parameters, double vmax );
 /* 
    Set upper boundary for bounding hyper-rectangle. 
    If no values are given, the boundary of the minimal bounding
@@ -91,7 +91,21 @@ int unur_vnrou_set_rect_v( UNUR_PAR *parameters, double vmax );
    @emph{Notice}: These are the boundaries where the generating
    function is shifted by the center-vector.
   
-   Default: not set.
+   Default: not set (i.e. computed automatically)
+*/
+
+int unur_vnrou_set_r( UNUR_PAR *parameters, double rparameter );
+/* 
+   Sets the parameter r of the generalized multivariate 
+   ratio-of-uniforms method.
+
+   If no value is given, the dafault value r=1 is assumed.
+
+   @emph{Notice} This parameter must satisfy r>=0. 
+   Setting a negative value is ignored and in this case r=1 
+   is chosen instead.
+
+   Default: not set (i.e. r=1)
 */
 
 int unur_vnrou_set_center( UNUR_PAR *parameters, double *center );

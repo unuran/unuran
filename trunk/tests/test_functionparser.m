@@ -13,9 +13,9 @@
 
 (* === List of tests ========================================================*)
 
-(* Eingeben der zu testenden Funktion im Format : 
-      {"Funktion_als_string",{kleinster_Funktionswert,maximaler_Funktionswert,\
-Anzahl_Funktionswerte}       *)
+(* Input the function of testing in the following format : 
+      {"function_string",{minimal_function_value,maximal_function_value,\
+number_of_function_value}       *)
 Testsample = {
          {"3.45+x", {-2, 2, 5}},                (* arithmetic operator *)
          {"x-4.673", {-2, 2, 5}},
@@ -24,6 +24,9 @@ Testsample = {
 	 {"x^12-3.345+5", {-2, 2, 5}},
       	 {"3*x", {-2, 2, 5}},
          {"2.894736*10^2", {-2, 2, 5}},
+         {"2.784e-2", {-2,2,5}},
+         {"2.784*e",{-2,2,5}},
+	 {"-4.7285e-7*x",{-2,2,5}},
 
 	 {"3*(x^5-x^4/(1.5-x))", {-2, 2, 5}},    (*  brackets  *)
 
@@ -35,6 +38,8 @@ Testsample = {
         {"3*(2==x)",{-2,2,5}},
         {"3*(x<>1)",{-2,2,5}},
         {"3*(2<>x)",{-2,2,5}},
+        {"3*(2=x)",{-2,2,5}},
+
  
         {"3*not[2<>x]",{-2,2,5}},
         {"(3*(2<>x)and(x>2))+x",{-2,2,5}},
@@ -54,8 +59,8 @@ Testsample = {
       	{"exp[x^2]*(cos[x]<1)", {-3, 8, 5}},
 	{"abs[x]-3*x", {-2, 2, 5}},
 
+	{"(sin[ ln[3*x*(cos[ 3*x^3-4.6789/(x+4)])]])-1", {-3,7,5}},
         {"exp[x^2]*(sin[x*cos[x^2-1]]+1)*((x-3*pi*x)<1)", {-3,7,5}} };
-  
 
 
 (* === Set Constants ========================================================*)
@@ -150,7 +155,7 @@ UnurWriteData[expression_,points__] := Module [
 	WriteString[DataFile,
 		    "function=",
 		    UnurTransformExpression[funct],
-		    "\n"]; 
+		    "\n"];
 
 	(* get values for x                                                  *)
 	xmin = points[[1]];
@@ -183,6 +188,40 @@ UnurTransformExpression[expression_] := Module [
 
 ]; (* end of UnurTransformExpression[] *)
 
+(* --- Transform expression into string for Mathematica computation ----------*)
+
+
+UnurTransformMathExpression[expression_] := Module [
+	(*	expression ... function term                                 *)
+
+	(* local variables                                                   *)
+	{fstr},
+
+        (*  replace '<>' -> '!='                                             *)
+        fstr = StringReplace[expression, {"<>" -> "!="}];
+ 
+        (*  replace 'and' -> '&&', 'or' -> '||'                              *)
+        fstr = StringReplace[fstr,{"and" -> "&&","or" -> "||"}]; 
+
+        (*  replace '=' -> '=='                                              *)
+        fstr = StringReplace[fstr,{"=" -> "=="}]; 
+        fstr = StringReplace[fstr,{"====" -> "==","<==" -> "<=",">=="->">=",
+                                   "!=="  -> "!="}];
+	
+        (*  replace e.g'2.45e-3' -> '1.45*10^2                               *)
+        fstr = StringReplace[fstr,{"0e" -> "0*10^","1e" -> "1*10^",
+                                   "2e" -> "2*10^","3e" -> "3*10^",
+                                   "3e" -> "3*10^","4e" -> "4*10^",
+                                   "5e" -> "5*10^","6e" -> "6*10^",
+                                   "7e" -> "7*10^","8e" -> "8*10^",
+                                   "8e" -> "8*10^","9e" -> "9*10^"}];
+
+	(* return result *)
+	Return[fstr];
+
+]; (* end of UnurTransformMathExpression[] *)
+
+
 
 (* --- Compute function and write line into date file       ---------------- *)
 
@@ -195,20 +234,15 @@ UnurWriteLine[xarg_,funct_] := Module [
 	  xval, (* numerical value of argument x                             *)
 	  fx,   (* value of function at x                                    *)
 	  dfx,  (* value of derivative of function at x                      *)
-	  fstr  (* functtion term                                            *)
+	  fstr  (* function term                                             *)
         },
 
 	(* argument *)
 	xval = N[xarg];
 	WriteString[DataFile, CForm[xval],"\t"];
 
-	(*  replace '<>' -> '!='   *)
-        fstr = StringReplace[funct, {"<>" -> "!="}];
- 
-        (*  replace 'and' -> '&&', 'or' -> '||'   *)
-        fstr = StringReplace[fstr,{"and" -> "&&","or" -> "||"}]; 
-
-					(* WriteString["stdout",fstr,"\n"]; *)
+        fstr = UnurTransformMathExpression[funct]; 
+				    
 	(* function *)
 	fx = N[ToExpression[fstr]] /. x -> xval /. {True -> 1, False -> 0};
 	WriteString[DataFile, CForm[fx],"\t"];

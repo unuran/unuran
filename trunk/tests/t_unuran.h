@@ -35,8 +35,10 @@
 
 /* distributions                                                             */
 #define D_BETA
+#define D_CAUCHY
 #define D_GAMMA
 #define D_NORMAL
+#define D_UNIFORM
 
 /*---------------------------------------------------------------------------*/
 /* global variables                                                          */

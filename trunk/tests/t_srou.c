@@ -75,6 +75,9 @@ int main()
   urng = prng_new("mt19937(5678)");
   unur_set_default_urng(urng);
 
+  /* set default debugging flag */
+  unur_set_default_debug(UNUR_DEBUG_ALL);
+
   /* start test */
   printf("%s: ",__FILE__);
 
@@ -240,7 +243,6 @@ void test_srou_chg( void )
   /* error: invalid parameters */
   distr = unur_distr_normal(fpar,2);
   par = unur_srou_new(distr);
-  unur_set_debug(par,0);
   gen = unur_init( par );
   check_expected_setfailed( unur_srou_chg_pdfparams(gen,NULL,1) );
   check_errorcode( UNUR_ERR_NULL );
@@ -324,8 +326,6 @@ void test_srou_sample( void )
   fprintf(TESTLOG,"\n[sample]\n");
 
   test_failed = 0;
-
-  unur_set_default_debug(UNUR_DEBUG_ALL);
 
   /* we use the normal distributions for the next tests */
   distr = unur_distr_normal(fpar,2);
@@ -482,13 +482,11 @@ void test_srou_validate(void)
 
   test_failed = 0;
 
-  unur_set_default_debug(UNUR_DEBUG_ALL);
-
   /* run chi^2 tests on test distributions */
   for (n=0; n<n_distr; n++) {
 
     /* test type of distribution */
-    if( (list_of_distr[n].type != T_TYPE_TDR) ||
+    if( ( !(list_of_distr[n].type & T_TYPE_TDR)) ||
 	(list_of_distr[n].c_max < -0.5) )
       /* we cannot use this method for this distribution */
       continue;

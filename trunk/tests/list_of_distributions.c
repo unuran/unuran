@@ -71,6 +71,29 @@ void make_list_of_distributions( void )
   list->c_max = 0.;
   ++n_distr; ++list;
 
+  fpar[0] = 5.;
+  fpar[1] = 10.;
+  fpar[2] = -3.;
+  fpar[3] = 15.;
+  list->distr = unur_distr_beta(fpar,4);
+  list->type  = T_TYPE_TDR;
+  list->c_max = 0.;
+  ++n_distr; ++list;
+#endif
+
+#ifdef D_CAUCHY
+  /** Cauchy distribution **/
+  list->distr = unur_distr_cauchy(NULL,0);
+  list->type  = T_TYPE_TDR;
+  list->c_max = -0.5;
+  ++n_distr; ++list;
+
+  fpar[0] = 1.;
+  fpar[1] = 20.;
+  list->distr = unur_distr_cauchy(fpar,2);
+  list->type  = T_TYPE_TDR;
+  list->c_max = -0.5;
+  ++n_distr; ++list;
 #endif
 
 #ifdef D_GAMMA
@@ -145,6 +168,21 @@ void make_list_of_distributions( void )
   fpar[0] = 0.;
   fpar[1] = 1.e+10;
   list->distr = unur_distr_normal(fpar,2);
+  list->type  = T_TYPE_TDR;
+  list->c_max = 0.;
+  ++n_distr; ++list;
+#endif
+
+#ifdef D_UNIFORM
+  /** Uniform distribution **/
+  list->distr = unur_distr_uniform(NULL,0);
+  list->type  = T_TYPE_TDR;
+  list->c_max = 0.;
+  ++n_distr; ++list;
+
+  fpar[0] = 1.;
+  fpar[1] = 20.;
+  list->distr = unur_distr_uniform(fpar,2);
   list->type  = T_TYPE_TDR;
   list->c_max = 0.;
   ++n_distr; ++list;

@@ -1657,7 +1657,7 @@ _unur_tabl_split_a_starting_intervals( struct unur_par *par,
   /* (maximal) area of bar (= hat in one interval) */
   bar_area = DISTR.area * PAR->area_fract;
 
-  while (iv->Ahat > bar_area) {
+  while (_unur_FP_greater(iv->Ahat, bar_area)) {
     /* compute splitting point:
        slope == +1 --> move from right to left
        slope == -1 --> move from left to right */
@@ -1723,7 +1723,7 @@ _unur_tabl_run_dars( struct unur_par *par, struct unur_gen *gen )
   double Atot, Asqueezetot;    /* total area below hat and squeeze, resp. */
   double Alimit;               /* threshhold value for splitting interval */
   int n_splitted = 1;          /* count splitted intervals */
-
+  
   /* check arguments */
   CHECK_NULL(par,UNUR_ERR_NULL);  COOKIE_CHECK(par,CK_TABL_PAR,UNUR_ERR_COOKIE);
   CHECK_NULL(gen,UNUR_ERR_NULL);  COOKIE_CHECK(gen,CK_TABL_GEN,UNUR_ERR_COOKIE);
@@ -1837,7 +1837,7 @@ _unur_tabl_split_interval( struct unur_gen *gen,
 {
   struct unur_tabl_interval *iv_new;
   double A_hat_old, A_squ_old;
-      
+  
   /* check arguments */
   CHECK_NULL(gen,UNUR_ERR_NULL);     COOKIE_CHECK(gen,CK_TABL_GEN,UNUR_ERR_COOKIE);
   CHECK_NULL(iv_old,UNUR_ERR_NULL);  COOKIE_CHECK(iv_old,CK_TABL_IV,UNUR_ERR_COOKIE);

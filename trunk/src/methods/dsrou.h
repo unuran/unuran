@@ -38,11 +38,11 @@
  *****************************************************************************/
 
 /* 
-   =XXXMETHOD  DSROU   Discrete Simple Ratio-Of-Uniforms method
+   =METHOD  DSROU   Discrete Simple Ratio-Of-Uniforms method
 
    =UP  Methods_for_DISCR
 
-   =REQUIRED T-concave PMF, mode, sum of PMF
+   =REQUIRED T-concave PMF, mode, sum over PMF
 
    =SPEED Set-up: fast, Sampling: slow
 
@@ -53,57 +53,35 @@
       inequalities for constructing a (universal) bounding rectangle.
       It works for all T-concave distributions with T(x) = -1/sqrt(x).
       
-      It requires the PDF, the (exact) location of the mode and the
-      area below the given PDF. The rejection constant is 4 for all
-      T-concave distributions. Optionally the CDF at the mode can
+      It requires the PMF, the (exact) location of the mode and the
+      sum over the given PDF. The rejection constant is 4 for all
+      T-concave distributions. Optionally the CDF at mode-1 can
       be given to increase the performance of the algorithm by means
-      of the unur_srou_set_cdfatmode() call. Then the rejection
-      constant is reduced to 2 and even a universal squeeze can (but
-      need not be) used. 
-      A way to increase the performence of the algorithm when the
-      CDF at the mode is not provided is the usage of the mirror
-      principle. However using squeezes and using the mirror principle
-      is not recommended in general (see below).
+      of the unur_dsrou_set_cdfbeforemode() call. Then the rejection
+      constant is reduced to 2.
       
-      If the exact location of the mode is not known, then use the
-      approximate location and provide the (exact) value of the
-      PDF at the mode by means of the unur_srou_set_pdfatmode()
-      call. But then unur_srou_set_cdfatmode() must not be used.
-      Notice if no mode is given at all, a (slow) numerical mode
-      finder will be used. 
-      
-      If the (exact) area below the PDF is not known, then an upper
+      If the (exact) sum over the PMF is not known, then an upper
       bound can be used instead (which of course increases the
-      rejection constant). But then the squeeze flag must not be set
-      and unur_srou_set_cdfatmode() must not be used.
-      
-      It is even possible to give an upper bound for the area below
-      the PDF only.
-      However then the (upper bound for the) area below the PDF has
-      to be multiplied by the ratio between the upper bound and the
-      lower bound of the PDF at the mode. Again setting the squeeze
-      flag and using unur_srou_set_cdfatmode() is not allowed.
+      rejection constant). But then unur_dsrou_set_cdfbeforemode()
+      must not be called.
       
       It is possible to change the parameters and the domain of the
       chosen distribution without building a new generator object
-      using the unur_srou_chg_pdfparams() and unur_srou_chg_domain()
-      call, respectively. But then unur_srou_chg_pdfarea(),
-      unur_srou_chg_mode() and unur_srou_chg_cdfatmode() have to be
-      used to reset the corresponding figures whenever they have
-      changed. If the PDF at the mode has been provided by a 
-      unur_srou_set_pdfatmode() call, additionally
-      unur_srou_chg_pdfatmode() must be used (otherwise this call is
-      not necessary since then this figure is computed directly from
-      the PDF). If any of mode, PDF or CDF at the mode, or
-      the area below the mode has been changed, then
-      unur_srou_reinit() must be executed. 
+      using the unur_dsrou_chg_pmfparams() and unur_dsrou_chg_domain()
+      call, respectively. But then unur_dsrou_chg_pmfsum(),
+      unur_dsrou_chg_mode() and unur_dsrou_chg_cdfbeforemode() have to
+      be used to reset the corresponding figures whenever they have
+      changed. 
+
+      If any of mode, CDF at mode-1, or the sum over the PMF has been
+      changed, then unur_dsrou_reinit() must be executed. 
       (Otherwise the generator produces garbage).
-      
+
       There exists a test mode that verifies whether the conditions
       for the method are satisfied or not while sampling. It can be
-      switched on by calling unur_srou_set_verify() and unur_srou_chg_verify(),
-      respectively. Notice however that sampling is (a little bit)
-      slower then.
+      switched on or off by calling unur_dsrou_set_verify() and
+      unur_dsrou_chg_verify(), respectively.
+      Notice however that sampling is (a little bit) slower then.
 
    =END
 */
@@ -124,7 +102,7 @@ int unur_dsrou_reinit( UNUR_GEN *generator );
 /* 
    Update an existing generator object after the distribution has been
    modified. It must be executed whenever the parameters or the domain
-   of the distributions have been changed (see below).
+   of the distribution have been changed (see below).
    It is faster than destroying the existing object and building
    a new one from scratch.
    If reinitialization has been successful @code{1} is returned,
@@ -133,7 +111,7 @@ int unur_dsrou_reinit( UNUR_GEN *generator );
 
 int unur_dsrou_set_cdfbeforemode( UNUR_PAR *parameters, double Fbmode );
 /* 
-   Set CDF at mode. 
+   Set CDF at mode-1. 
    When set, the performance of the algorithm is increased by factor 2.
    However, when the parameters of the distribution are changed
    unur_dsrou_chg_cdfbeforemode() has to be used to update this value.
@@ -147,7 +125,7 @@ int unur_dsrou_set_verify( UNUR_PAR *parameters, int verify );
 int unur_dsrou_chg_verify( UNUR_GEN *generator, int verify );
 /* 
    Turn verifying of algorithm while sampling on/off.
-   If the condition squeeze(@i{x}) <= PDF(@i{x}) <= hat(@i{x}) is
+   If the condition squeeze(@i{x}) <= PMF(@i{x}) <= hat(@i{x}) is
    violated for some @i{x} then @code{unur_errno} is set to
    @code{UNUR_ERR_GEN_CONDITION}. However notice that this might
    happen due to round-off errors for a few values of
@@ -205,7 +183,7 @@ int unur_dsrou_upd_mode( UNUR_GEN *generator );
 
 int unur_dsrou_chg_cdfbeforemode( UNUR_GEN *generator, double Fbmode );
 /* 
-   Change CDF at mode of distribution.
+   Change CDF at mode-1 of distribution.
    unur_dsrou_reinit() must be executed before sampling from the 
    generator again.
 */
@@ -213,14 +191,14 @@ int unur_dsrou_chg_cdfbeforemode( UNUR_GEN *generator, double Fbmode );
 
 int unur_dsrou_chg_pmfsum( UNUR_GEN *generator, double sum );
 /* 
-   Change area below PDF of distribution.
+   Change sum over PMF of distribution.
    unur_dsrou_reinit() must be executed before sampling from the 
    generator again.
 */
 
 int unur_dsrou_upd_pmfsum( UNUR_GEN *generator );
 /*
-   Recompute the area below the PDF of the distribution. 
+   Recompute the sum over the the PMF of the distribution. 
    It only works when a distribution objects from the
    UNURAN library of standard distributions is used
    (@pxref{Stddist,Standard distributions,Standard distributions}).

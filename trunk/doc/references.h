@@ -111,10 +111,10 @@ ACM Trans. Math. Software 26(1), pp. 78-98.
 
 @anchor{bib:LJa01}
 @item [LJa01]
-@sc{J. Leydold} (2000).
+@sc{J. Leydold} (2001).
 @i{A simple universal generator for continuous and discrete 
 univariate T-concave distributions},
-ACM Trans. Math. Software, to appear.
+ACM Trans. Math. Software 27(1), pp. 66--82.
 
 @anchor{bib:WAa77}
 @item [WAa77]

@@ -46,8 +46,9 @@
  *****************************************************************************
  *                                                                           *
  *   REFERENCES:                                                             *
- *   [1] Leydold J. (2000): A simple universal generator for continuous and  *
- *       discrete univariate T-concave distributions, preprint.              *
+ *   [1] Leydold J. (2001): A simple universal generator for continuous and  *
+ *       discrete univariate T-concave distributions,                        *
+ *       ACM Trans. Math. Software 27(1), pp. 66--82.                        *
  *                                                                           *
  *   [2] Kinderman, A.J. and Monahan, F.J. (1977): Computer generation of    *
  *       random variables using the ratio of uniform deviates,               *

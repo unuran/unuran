@@ -46,8 +46,9 @@
  *****************************************************************************
  *                                                                           *
  *   REFERENCES:                                                             *
- *   [1] Leydold J. (2000): A simple universal generator for continuous and  *
- *       discrete univariate T-concave distributions, preprint.              *
+ *   [1] Leydold J. (2001): A simple universal generator for continuous and  *
+ *       discrete univariate T-concave distributions,                        *
+ *       ACM Trans. Math. Software 27(1), pp. 66--82.                        *
  *                                                                           *
  *   [2] Hoermann W. (1995): A rejection technique for sampling from         *
  *       T-concave distributions, ACM TOMS 21, p. 182-193                    *

@@ -76,20 +76,22 @@ int unur_vnrou_set_u( UNUR_PAR *parameters, double *umin, double *umax );
    If no values are given, the boundary of the minimal bounding
    hyper-rectangle is computed numerically.
   
-   @emph{Notice}: These are the boundaries where the generating
-   function is shifted by the center-vector.
-  
+   @strong{Important}: The boundaries are those of the density shifted
+   by the center of the distribution.
+
+   @emph{Notice}: Computing the minimal bounding rectangle may fail
+   under some circumstances. In particular for multimodal
+   distributions this might fail.
+
    Default: not set (i.e. computed automatically)
 */
 
 int unur_vnrou_set_v( UNUR_PAR *parameters, double vmax );
 /* 
    Set upper boundary for bounding hyper-rectangle. 
-   If no values are given, the boundary of the minimal bounding
-   hyper-rectangle is computed numerically.
-
-   @emph{Notice}: These are the boundaries where the generating
-   function is shifted by the center-vector.
+   If no values are given, the density at the mode is evaluated.
+   If no mode is given for the distribution it is computed
+   numercally (and might fail).
   
    Default: not set (i.e. computed automatically)
 */

@@ -136,6 +136,7 @@ int main (int argc, char *argv[]){
 
   if (!langfunc( gen, stdout, gen_name, with_main )) {
     fatal("Cannot generate program code.\n");
+    unur_free(gen);
     exit (ACG_EXIT_FAIL_CODE);
   }
 

@@ -1,0 +1,319 @@
+/*****************************************************************************
+ *                                                                           *
+ *          UNURAN -- Universal Non-Uniform Random number generator          *
+ *                                                                           *
+ *****************************************************************************
+ *                                                                           *
+ *   FILE:      headergen.c.in / headergen.c                                 *
+ *                                                                           *
+ *                                                                           *
+ *   DESCRIPTION:                                                            *
+ *      Creates header for automatically generated code.                     *
+ *                                                                           *
+ *****************************************************************************
+ *                                                                           *
+ *   REMARK:                                                                 *
+ *   This file contains the main part of the subroutines for generating      *
+ *   the header of the generator code. The perl script make_headergen.pl     *
+ *   replaces the                                                            *
+ *        =INPUT keyword                                                     *
+ *   tags with the corresponding SWITCH lists for distribution.              *
+ *                                                                           *
+ *****************************************************************************
+     $Id$
+ *****************************************************************************
+ *                                                                           *
+ *   Copyright (c) 2000 Wolfgang Hoermann and Josef Leydold                  *
+ *   Dept. for Statistics, University of Economics, Vienna, Austria          *
+ *                                                                           *
+ *   This program is free software; you can redistribute it and/or modify    *
+ *   it under the terms of the GNU General Public License as published by    *
+ *   the Free Software Foundation; either version 2 of the License, or       *
+ *   (at your option) any later version.                                     *
+ *                                                                           *
+ *   This program is distributed in the hope that it will be useful,         *
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of          *
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the           *
+ *   GNU General Public License for more details.                            *
+ *                                                                           *
+ *   You should have received a copy of the GNU General Public License       *
+ *   along with this program; if not, write to the                           *
+ *   Free Software Foundation, Inc.,                                         *
+ *   59 Temple Place, Suite 330, Boston, MA 02111-1307, USA                  *
+ *                                                                           *
+ *****************************************************************************/
+
+/* ------------------------------------------------------------------------- */
+/* include header file                                                       */
+
+#include <codegen_source.h>
+
+/* ------------------------------------------------------------------------- */
+/* local prototypes                                                          */
+
+static int _unur_acg_header_distribution(FILE *out, UNUR_DISTR *distr, const char *rand,
+					 const char *hrule, const char *sformat, const char *synopsis);
+static int _unur_acg_header_distrname   (FILE *out, UNUR_DISTR *distr,
+					 const char *hrule, const char *sformat);
+static int _unur_acg_header_param       (FILE *out, char *par, double val,
+					 const char *hrule, const char *sformat);
+static int _unur_acg_header_domain      (FILE *out, UNUR_DISTR *distr,
+					 const char *hrule, const char *sformat);
+static int _unur_acg_header_synopsis    (FILE *out, UNUR_DISTR *distr, const char *rand,
+					 const char *hrule, const char *sformat, const char *synopsis);
+static int _unur_acg_header_date        (FILE *out,
+					 const char *hrule, const char *sformat);
+static int _unur_acg_header_copyright   (FILE *out,
+					 const char *hrule, const char *sformat);
+static int _unur_acg_header_GENERIC     (FILE *out, UNUR_DISTR *distr, const char *rand,
+					 const char *hrule, const char *sformat);
+
+/* ------------------------------------------------------------------------- */
+/* constants                                                                 */
+
+/* C version */
+const static char hrule_C[] = "/* ---------------------------------------------------------------- */\n";
+const static char sformat_C[] = "/* %-64.64s */\n";
+const static char synopsis_C[] = "\ndouble %s (void);\n\n";
+
+/* FORTRAN version */
+const static char hrule_FORTRAN[] = "* ------------------------------------------------------------------ *\n";
+const static char sformat_FORTRAN[] = "* %-66.66s *\n";
+const static char synopsis_FORTRAN[] = "*\n* %s\n*\n";
+
+/* JAVA version */
+const static char *hrule_JAVA = hrule_C;
+const static char *sformat_JAVA = sformat_C;
+const static char synopsis_JAVA[] = "//\n// double %s.sample ()\n//\n";
+
+/*****************************************************************************/
+/**  API                                                                    **/
+/*****************************************************************************/
+
+/* ------------------------------------------------------------------------- */
+/* ACG header main (C version)                                               */
+/* ------------------------------------------------------------------------- */
+
+int _unur_acg_C_header (UNUR_DISTR *distr, FILE *out, const char *rand)
+{
+  _unur_check_NULL("ACG_C", distr, 0 );
+  return _unur_acg_header_distribution (out, distr, rand,
+					hrule_C, sformat_C, synopsis_C);
+}
+
+/* ------------------------------------------------------------------------- */
+/* ACG header main (FORTRAN version)                                         */
+/* ------------------------------------------------------------------------- */
+
+int _unur_acg_FORTRAN_header (UNUR_DISTR *distr, FILE *out, const char *rand)
+{
+  _unur_check_NULL("ACG_FORTRAN", distr, 0 );
+  return _unur_acg_header_distribution (out, distr, rand,
+					hrule_FORTRAN, sformat_FORTRAN, synopsis_FORTRAN);
+}
+
+/* ------------------------------------------------------------------------- */
+/* ACG header main (JAVA version)                                            */
+/* ------------------------------------------------------------------------- */
+
+int _unur_acg_JAVA_header (UNUR_DISTR *distr, FILE *out, const char *rand)
+{
+	_unur_check_NULL("ACG_JAVA", distr, 0 );
+	return _unur_acg_header_distribution (out, distr, rand,
+					      hrule_JAVA, sformat_JAVA, synopsis_JAVA);
+}
+
+/* ------------------------------------------------------------------------- */
+/* ACG header main (UNURAN version)                                          */
+/* ------------------------------------------------------------------------- */
+
+int _unur_acg_UNURAN_header (UNUR_DISTR *distr, FILE *out, const char *rand)
+{
+	_unur_check_NULL("ACG_UNURAN", distr, 0 );
+	return _unur_acg_header_distribution (out, distr, rand,
+					      hrule_C, sformat_C, synopsis_C);
+}
+
+/*****************************************************************************/
+/**  Subroutines                                                            **/
+/*****************************************************************************/
+
+/* ------------------------------------------------------------------------- */
+/* ACG distribution switch                                                   */
+/* ------------------------------------------------------------------------- */
+
+int 
+_unur_acg_header_distribution ( FILE *out, UNUR_DISTR *distr, const char *rand,
+				const char *hrule, const char *sformat, const char *synopsis )
+{
+  _unur_acg_header_distrname (out, distr, hrule, sformat);
+
+  /* PDF */
+  switch (distr->id) {
+
+=INPUT list_of_distributions
+
+  case UNUR_DISTR_GENERIC:
+    if (_unur_acg_header_GENERIC (out, distr, rand, hrule, sformat))
+      break;
+  default:
+    _unur_error(distr->name,UNUR_ERR_GEN_DATA,"Cannot make ACG header");
+    return 0;
+  }
+
+  _unur_acg_header_domain (out, distr, hrule, sformat);
+  fprintf (out,sformat,"(normalization constant omitted. PDF formula might be truncated!)");
+
+  _unur_acg_header_synopsis (out, distr, rand, hrule, sformat, synopsis);
+  _unur_acg_header_copyright (out, hrule, sformat);
+
+  return 1;
+}
+
+/* ------------------------------------------------------------------------- */
+/* Print distribution name                                                   */
+/* ------------------------------------------------------------------------- */
+
+int
+_unur_acg_header_distrname ( FILE *out, UNUR_DISTR *distr,
+			     const char *hrule, const char *sformat )
+{
+	char buf[1024];
+
+	if ( distr->set & UNUR_DISTR_SET_STDDOMAIN || 
+	     distr->id == UNUR_DISTR_GENERIC )
+	  sprintf (buf,"Generator for %s distribution.",distr->name);
+	else
+	  sprintf (buf,"Generator for truncated %s distribution.",distr->name);
+
+	fprintf (out,hrule);
+	fprintf (out,sformat,buf);
+	fprintf (out,hrule);
+
+	return 1;
+}
+
+/* ------------------------------------------------------------------------- */
+/* Print parameter for PDF                                                   */
+/* ------------------------------------------------------------------------- */
+
+int
+_unur_acg_header_param ( FILE *out, char *par, double val,
+			 const char *hrule, const char *sformat )
+{
+	char buf[1024];
+	sprintf (buf,"      %s = %g", par, val);
+	fprintf (out,sformat,buf);
+	return 1;
+}
+
+/* ------------------------------------------------------------------------- */
+/* Print domain for PDF                                                      */
+/* ------------------------------------------------------------------------- */
+
+int
+_unur_acg_header_domain ( FILE *out, UNUR_DISTR *distr,
+			  const char *hrule, const char *sformat )
+{
+	char buf[1024];
+	sprintf (buf,"      domain = [ %g, %g ]", distr->data.cont.domain[0], distr->data.cont.domain[1]);
+	fprintf (out,sformat,buf);
+	return 1;
+}
+
+/* ------------------------------------------------------------------------- */
+/* ACG synopsis for generation subroutine                                    */
+/* ------------------------------------------------------------------------- */
+
+int
+_unur_acg_header_synopsis ( FILE *out, UNUR_DISTR *distr, const char *rand,
+			    const char *hrule, const char *sformat, const char *synopsis )
+{
+  fprintf (out,hrule);
+  fprintf (out,sformat,"Synopsis:");
+  fprintf (out,synopsis,rand);
+	return 1;
+}
+
+/* ------------------------------------------------------------------------- */
+/* ACG date of generation                                                    */
+/* ------------------------------------------------------------------------- */
+
+int
+_unur_acg_header_date ( FILE *out,
+			const char *hrule, const char *sformat )
+{
+	char buf[1024];
+	char date[64];
+	time_t timer;
+	timer = time(&timer);
+	strftime(date,60,"%B %d %Y %H:%M:%S",localtime(&timer));
+	sprintf (buf,"Generated by ANURAN (v.%s).   %s", VERSION, date);
+	fprintf (out,sformat,buf);
+	return 1;
+}
+
+/* ------------------------------------------------------------------------- */
+/* ACG copyright notice                                                      */
+/* ------------------------------------------------------------------------- */
+
+int
+_unur_acg_header_copyright ( FILE *out,
+			     const char *hrule, const char *sformat )
+{
+	fprintf (out,hrule);
+	fprintf (out,sformat,"See NOTICE for uniform random number generator below!");
+	fprintf (out,hrule);
+	_unur_acg_header_date (out, hrule, sformat);
+	fprintf (out,sformat,"");
+	fprintf (out,sformat,"Copyright (c) 2001   Wolfgang Hoermann and Josef Leydold");
+	fprintf (out,sformat,"Dept. for Statistics, University of Economics, Vienna, Austria");
+	fprintf (out,sformat,"All rights reserved.");
+	fprintf (out,sformat,"");
+	fprintf (out,sformat,"Redistribution and use in source and binary forms, with or");
+	fprintf (out,sformat,"without modification, are permitted without a fee.");
+	fprintf (out,sformat,"Redistributions of source code must retain this copyright notice");
+	fprintf (out,sformat,"and the following disclaimer.");
+	fprintf (out,sformat,"");
+	fprintf (out,sformat,"THIS PROGRAM IS PROVIDED \"AS IS\" AND WITHOUT ANY EXPRESS OR");
+	fprintf (out,sformat,"IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED");
+	fprintf (out,sformat,"WARRANTIES OF MERCHANTIBILITY AND FITNESS FOR A PARTICULAR");
+	fprintf (out,sformat,"PURPOSE.");
+	fprintf (out,sformat,"");
+	fprintf (out,sformat,"IN NO EVENT SHALL JOSEF LEYDOLD OR WOLFGANG HOERMANN BE LIABLE");
+	fprintf (out,sformat,"FOR ANY SPECIAL, INCIDENTAL, INDIRECT OR CONSEQUENTIAL DAMAGES");
+	fprintf (out,sformat,"OF ANY KIND, OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF");
+	fprintf (out,sformat,"USE, DATA OR PROFITS, WHETHER OR NOT ADVISED OF THE POSSIBILITY");
+	fprintf (out,sformat,"OF DAMAGE, AND ON ANY THEORY OF LIABILITY, ARISING OUT OF OR IN");
+	fprintf (out,sformat,"CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.");
+	fprintf (out,hrule);
+
+	return 1;
+}
+
+/* ------------------------------------------------------------------------- */
+/* PDF for generic (user defined) distribution with given PDF                */
+/* ------------------------------------------------------------------------- */
+
+int 
+_unur_acg_header_GENERIC ( FILE *out, UNUR_DISTR *distr, const char *rand,
+			   const char *hrule, const char *sformat )
+{
+  char *pdf;
+  char str[80];
+
+  switch (distr->type) {
+  case UNUR_DISTR_CONT:
+    pdf = _unur_fstr_tree2string(distr->data.cont.pdftree,"x","pdf");
+    sprintf(str,"PDF(x) = %-66.66s",pdf);
+    free (pdf);
+    fprintf (out,sformat,str);
+    return 1;
+  default:
+    return 0;
+  }
+}
+
+/* ------------------------------------------------------------------------- */
+/* End                                                                       */
+/* ------------------------------------------------------------------------- */

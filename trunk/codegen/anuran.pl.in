@@ -50,6 +50,13 @@ my %labels_menue_distributions = (
 my @menue_distributions = sort keys %labels_menue_distributions;
 
 my %data_distr = (
+	'cont' => {
+		'=NAME' => 'User defined distribution',
+		'=N_REQ' => '0',
+		'=N_TOT' => '0',
+		'=LEFT' => '-infinity',
+		'=RIGHT' => 'infinity',
+		},
 	'beta' => {
 		'=NAME' => 'Beta distribution',
 		'=PDF' => '(x-a)<SUP>(p-1)</SUP> * (b-x)<SUP>(q-1)</SUP>',
@@ -125,11 +132,18 @@ if ($q->param('Restart')) {
 # selected distribution
 my $distrtype = $q->param('DistrType');
 my $distr     = $q->param('Distribution');
+my $distrname = $q->param('Name');
 my $Stdform   = $q->param('Stdform');
 my $Truncated = $q->param('Truncated');
+my $PDF       = $q->param('PDF');
+
+# set some defaults
+unless ($distrname) {
+    $distrname = $data_distr{$distr}{'=NAME'};
+    $q->param('Name',$distrname);
+}
 
 # read some data for selected distribution
-my $distrname = $data_distr{$distr}{'=NAME'};
 my $n_req     = $data_distr{$distr}{'=N_REQ'};
 my $n_tot     = $data_distr{$distr}{'=N_TOT'};
 my $n_params  = ($Stdform eq 'yes') ? $n_req : $n_tot;
@@ -287,8 +301,10 @@ sub anuran_submit
     }
     if ($step > 2) {
 	$hidden_param .= $q->hidden('Distribution');
+	$hidden_param .= $q->hidden('Name');
 	$hidden_param .= $q->hidden('Stdform');
 	$hidden_param .= $q->hidden('Truncated');
+	$hidden_param .= $q->hidden('PDF');
     }
     if ($step > 3) {
 	for (my $i=0; $i < $n_tot; $i++) {
@@ -398,7 +414,6 @@ sub anuran_select_cstd
     if ($step <= 2) {
 	print
 	    'Step 2: '.b('Distribution'),
-	    '<a name="junk">',
 	    blockquote(	$q->startform (-method => 'GET',
 				       -action => $q->url()),
 			$q->popup_menu(-name   => 'Distribution',
@@ -442,17 +457,53 @@ sub anuran_select_cstd
 
 sub anuran_select_cpdf
 {
+    # check input
+    my $error_PDF;
+    unless ($step <= 2 or $PDF) {
+	$step = 2;
+	$error_PDF = $sp.anuran_error('missing');
+    }
+
 # ................................................................
 # CASE: select a distribution
 # ................................................................
     if ($step <= 2) {
+	$q->param('Name',$data_distr{'cont'}{'=NAME'}) unless $distrname;
+
+	print
+	    'Step 2: '.b('Distribution with given Density'),
+	    blockquote(	$q->startform (-method => 'GET',
+				       -action => $q->url()),
+			"Name = $sp",
+			$q->textfield(-name     => 'Name',
+				      -size     => 50,
+				      -maxlength=> 100),
+			p(),
+			"(Multiple of) Density = $sp",
+			$q->textfield(-name     => 'PDF',
+				      -size     => 50,
+				      -maxlength=> 200),
+			$error_PDF,
+			p(),
+			$q->hidden('Distribution','cont'),
+			$q->hidden('Truncated','yes'),
+			anuran_submit('3'),
+			endform() ),
+	    p().hr().p();
+	return;
     }
- 
+
 # ................................................................
 # CASE: distribution selected
 # ................................................................
     if ($step > 2) {
+	print
+	    'Step 2: '.b($distrname),
+	    blockquote( "PDF = $PDF" ),
+	    p().hr().p();
+	return;
     }
+ 
  
 } # end of anuran_select_cpdf()
 
@@ -580,7 +631,7 @@ sub anuran_params_distribution
 
 	# show domain
 	my $domain_show = 'Domain = [ '.$q->param('Left').', '.$q->param('Right').' ]';
-	if ($Truncated) {
+	if ($Truncated and $distrtype ne 'cpdf') {
 	    $domain_show .= $sp.'(truncated)';
 	}
 
@@ -835,21 +886,27 @@ sub anuran_code
 	$distr_str .= $distr;
 
 	# List of parameters
-	$distr_str .= '(';
 	if ($n_params) {
+	    $distr_str .= '(';
 	    for (my $i=0; $i < $n_params; $i++) {
 		my $param = $q->param("Param_$i");
 		$command_ok = 0 if $param =~ /[^\d\.\-\+eE]/;
 		$distr_str .= (($i)?', ':'').$param;
 	    }
+	    $distr_str .= ')';
 	}
-	$distr_str .= ')';
 
 	# Domain
 	if ($Truncated) {
 	    $command_ok = 0 if $q->param('Left')  =~ /[^\d\.\-\+eEiInNfF]/;
 	    $command_ok = 0 if $q->param('Right') =~ /[^\d\.\-\+eEiInNfF]/;
 	    $distr_str .= '; domain=('.$q->param('Left').','.$q->param('Right').')';
+	}
+
+	# User defined distribution
+	if ($PDF) {
+	    $command_ok = 0 if $PDF =~ /[^a-zA-Z\d\.\(\)\*\/\+\-\=\!<>\^]/;
+	    $distr_str .= "; pdf=\\\"$PDF\\\"";
 	}
 
 	# Programming language
@@ -894,7 +951,6 @@ sub anuran_code
 	# print result
 	my $ACG_query = "$ACG $gen_opts $gen";
 	print
-	    font({-size=>'small'},"UNURAN generator = $gen"),p(),
 	    "<PRE>\n",
 	    `$ACG_query`,
 	    "\n</PRE>\n";
@@ -931,7 +987,7 @@ sub anuran_code
 	# list of parameters (defaults settings start with '[ '
 	for (my $i=0; $i < $n_tot; $i++) {
 	    $log .= 
-		( (($i >= $n_params) ? '[ ' : '').
+		( (($i >= $n_params) ? ' [ ' : '').
 		  "param[$i] = ".
 		  $data_distr{$distr}{'=FPARAMS'}[$i]{'=NAME'}.
 		  " = " .
@@ -943,7 +999,8 @@ sub anuran_code
 	# Programming language
 	$log .= 'language = '.$q->param('Language')."\n";
 	# Code Properties
-	$log .= 'speed = '.$q->param('Speed')."\t code length = ".$q->param('Codelength')."\n";
+	$log .= 'speed = '.$q->param('Speed')."\n";
+	$log .= 'code length = '.$q->param('Codelength')."\n";
 	# ACG code
 	$log .= "command = $ACG_query\n";
 	# Exit code
@@ -953,7 +1010,7 @@ sub anuran_code
 
 	# Write into log file
 	# (This is not save !!)
-	open LOG, ">>/home/staff/leydold/public_html/anuran.log";
+	open LOG, ">>$ANURAN_log";
 	print LOG $log;
 	close LOG;
 

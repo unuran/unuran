@@ -45,15 +45,15 @@ noinst_HEADERS =
 
 EXTRA_DIST = \
  make_PDFgen.pl \
- make_headergen.pl \
+ make_headergen.pl headergen.c.in \
  make_anuran.pl
 
 
 PDFgen.c: make_PDFgen.pl $(top_srcdir)/scripts/read_PDF.pl
 	./make_PDFgen.pl
 
-headergen.c: make_headergen.pl $(top_srcdir)/scripts/read_PDF.pl
-	./make_headergen.pl
+headergen.c: make_headergen.pl headergen.c.in $(top_srcdir)/scripts/read_PDF.pl
+	./make_headergen.pl < headergen.c.in > headergen.c
 
 anuran.pl: make_anuran.pl $(top_srcdir)/scripts/read_PDF.pl
 	./make_anuran.pl > anuran.pl

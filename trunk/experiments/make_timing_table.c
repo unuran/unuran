@@ -334,7 +334,7 @@ print_legend ( struct unur_slist *distr_str_list, struct unur_slist *meth_str_li
   n_meth  = _unur_slist_length(meth_str_list);
 
   /* print legend */
-  printf("%d distributions:\n",n_distr);
+  printf("<%d distributions>\n",n_distr);
   for (i=0; i<n_distr; i++) {
     str = _unur_slist_get(distr_str_list, i);
     print_label(i, LABEL_DISTR);
@@ -342,7 +342,7 @@ print_legend ( struct unur_slist *distr_str_list, struct unur_slist *meth_str_li
   }
   printf("\n");
 
-  printf("%d methods:\n",n_meth);
+  printf("<%d methods>\n",n_meth);
   for (k=0; k<n_meth; k++) {
     str = _unur_slist_get(meth_str_list, k);
     print_label(k, LABEL_METH);
@@ -360,6 +360,7 @@ int
 print_timing_legend ( int samplesize )
      /* print legend for timings results */
 {
+  printf("<Timing results>\n"); 
   printf("Average generation times (including setup) for sample of size %d.\n",samplesize);
   printf("Timings are relative to generation of expontential random variate\n");
   printf("using inversion within UNU.RAN environment\n");
@@ -470,6 +471,7 @@ print_timings ( double *timings,
     rltype = LABEL_DISTR;
     n_col = n_meth;
     cltype = LABEL_METH;
+    printf("<Method x Distribution>\n");
     break;
   case ROW_METHOD:
   default:
@@ -478,6 +480,7 @@ print_timings ( double *timings,
     rltype = LABEL_METH;
     n_col = n_distr;
     cltype = LABEL_DISTR;
+    printf("<Distribution x Method>\n");
     break;
   }
 

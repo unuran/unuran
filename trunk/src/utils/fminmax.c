@@ -34,26 +34,42 @@
 /*---------------------------------------------------------------------------*/
 
 #include <unur_source.h>
-#include <parser/functparser_source.h>
 #include "fminmax_source.h"
+
+static double _unur_function_minmax(struct UNUR_FUNCT_GENERIC fs, int minmax, 
+                             double a, double b, double c, double tol);  
+/* calculation routine for minimum or maximum of a continous function */
 
 /*---------------------------------------------------------------------------*/
 
 
+/* Wrapper function for the max calculation routine */
 double
-_unur_function_max(f_invest, a, b, c, tol)  /* An estimate to the min location   */
-     UNUR_FUNCT_CONT *f_invest;         /* Function under investigation      */
+_unur_function_max(fs, a, b, c, tol)  /* An estimate to the max location     */
+     struct UNUR_FUNCT_GENERIC fs;    /* Function struct                     */
+     double a;                          /* Left border | of the range	     */
+     double b;                          /* Right border| the min is seeked   */
+     double c;                          /* first guess for the max           */
+     double tol;                        /* Acceptable tolerance              */
+{
+   return _unur_function_minmax(fs, -1, a, b, c, tol);
+} /* end of _unur_function_max() */
+
+/*---------------------------------------------------------------------------*/
+
+/* Wrapper function for the min calculation routine */
+double
+_unur_function_min(fs, a, b, c, tol)  /* An estimate to the min location   */
+     struct UNUR_FUNCT_GENERIC fs;    /* Function struct                     */
      double a;                          /* Left border | of the range	     */
      double b;                          /* Right border| the min is seeked   */
      double c;                          /* first guess for the min           */
      double tol;                        /* Acceptable tolerance              */
 {
-#define f(x) (-(*f_invest)(x))          /* minimize negative function        */
-   
-   return _unur_function_min(f, a,b,c,tol);
+   return _unur_function_minmax(fs, +1,  a, b, c, tol);
+} /* end of _unur_function_min() */
 
-#undef f
-} /* end of _unur_function_max() */
+/*---------------------------------------------------------------------------*/
 
 /*
  *****************************************************************************
@@ -113,14 +129,16 @@ _unur_function_max(f_invest, a, b, c, tol)  /* An estimate to the min location  
 /* in case of any error INFINITY is returned */
 
 double
-_unur_function_min(f_invest, a, b, c, tol)  /* An estimate to the min location   */
-     UNUR_FUNCT_CONT *f_invest;         /* Function under investigation      */
-     double a;                          /* Left border | of the range	     */
-     double b;                          /* Right border| the min is seeked   */
-     double c;                          /* first guess for the min           */
-     double tol;                        /* Acceptable tolerance              */
+_unur_function_minmax(fs, minmax, a, b, c, tol)  
+                                   /* An estimate to the min or max location */
+     struct UNUR_FUNCT_GENERIC fs; /* Function struct                        */
+     int minmax ; 	           /* -1 for maximum, +1 for minimum         */
+     double a;                     /* Left border | of the range	     */
+     double b;                     /* Right border| the min is seeked        */
+     double c;                     /* first guess for the min/max            */
+     double tol;                   /* Acceptable tolerance                   */
 {
-#define f(x) ((*f_invest)(x))          
+#define f(x) ( (minmax) * ((fs.f)(x, fs.params)) )          
 #define SQRT_EPSILON  (1.e-7)           /* tolerance for relative error      */
 #define MAXIT         (1000)            /* maximum number of iterations      */
 
@@ -134,7 +152,7 @@ _unur_function_min(f_invest, a, b, c, tol)  /* An estimate to the min location  
   const double r = (3.-sqrt(5.0))/2;    /* Gold section ratio                */
 
   /* check arguments */
-  CHECK_NULL(f_invest,INFINITY);
+  CHECK_NULL(fs.f,INFINITY);
   if ( tol < 0. || b <= a || c <= a || b <= c) {
     _unur_error("CMAX",UNUR_ERR_SHOULD_NOT_HAPPEN,"");
     return INFINITY;

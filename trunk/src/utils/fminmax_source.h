@@ -34,8 +34,16 @@
 
 /*---------------------------------------------------------------------------*/
 
-double _unur_function_min( UNUR_FUNCT_CONT *f, double a, double b, double c, double tol );
-double _unur_function_max( UNUR_FUNCT_CONT *f, double a, double b, double c, double tol );
+struct UNUR_FUNCT_GENERIC {
+  double (*f)(double _x, void *_params);
+  void *params;
+};
+
+double _unur_function_min( struct UNUR_FUNCT_GENERIC fs, double a, double b, double c, double tol );
+/* calculate the position of the minimum of a continuous function in an interval */
+
+double _unur_function_max( struct UNUR_FUNCT_GENERIC fs, double a, double b, double c, double tol );
+/* calculate the position of the maximum of a continuous function in an interval */
 
 /*---------------------------------------------------------------------------*/
 

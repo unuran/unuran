@@ -1,6 +1,5 @@
 #!/usr/bin/perl
 
-
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # Perl spript zur automatischen Erstellung der   
 # (Methoden-)Funktions- Referenz von UNURAN im TEX-Info Format
@@ -13,8 +12,45 @@
 # E.JANKA und G.TIRLER  August 2000
 # $Id$
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# Das Perl-skrip durchsucht nach folgenden Schluesselworten      
+# und und erzeugt Output wiefolgt:
+# Folgende Schluesselwoerter beginnen mit '=...'
+# Schluesselwort darf nur von Leerzeichen oder '/*'
+# eingeleitet werden
+#
+#
+# =METHODS name [LAngtext]
+#          allg. Beschreibung der Methode in Header file
+#
+#          name      ... Name der Methode, Nur ein Wort!
+#          [Langtext]... optional, Lange Beschreibung
+#          Beispiel:
+#             =METHODS NINV Numerical inversion 
+#                     
+#          folgende Kommentarzeilen/Block (bis zur ersten
+#          Leerzeile) wird in TEXInfoformat ausgegeben
+#          
+# =ROUTINES
+#          sucht C function zwischen =ROUTINES und =END 
+#          beginnend mit 'unur_' und mit '()' abgeschlossen
+#
+#          Der Nachfolgende Kommentarblock/Zeilen werden mit
+#          einer Leerzeile abgeschlossen.
+#          Kommentare direkt vor jeder Funktion gelten als
+#          interne Kommentare und werden nicht ausgegeben.
+# =END     schliesst =ROUTINES ab (notwendig)
+#
+# (=>)     diese Zeichenfolge in Kommentarzeile wird in TEXINFO 
+#          nicht ausgegegben (dient zur spaeteren Verwendung)
+#
+# =[A-Z,0-9] Unbekannte '=...' Zeichenfolgen wereden mit FEhler 
+#            erkannt 
+#
+# =ERRORCODE derzeit ohne Funktion
+#
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-# 
+
 # $ON = 1, wenn der "Dokumentations-Bereich" gefunden ist
 $ON = 0;
 

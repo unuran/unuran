@@ -426,12 +426,12 @@ unur_vnrou_chg_verify( struct unur_gen *gen, int verify )
   _unur_check_gen_object( gen, VNROU, UNUR_ERR_GEN_INVALID );
 
   if (verify) {
-    /* turn verify mode on */
+    /* turn verify bounding rectangle on */
     gen->variant |= VNROU_VARFLAG_VERIFY;
     SAMPLE = _unur_vnrou_sample_check;
   }
   else {
-    /* turn verify mode off */
+    /* turn verify bounding rectangle off */
     gen->variant &= ~VNROU_VARFLAG_VERIFY;
     SAMPLE = _unur_vnrou_sample_cvec;
   }
@@ -481,7 +481,6 @@ _unur_vnrou_init( struct unur_par *par )
     free(par); _unur_vnrou_free(gen);
     return NULL;
   }
-
 
 #ifdef UNUR_ENABLE_LOGGING
     /* write info into log file */

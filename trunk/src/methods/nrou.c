@@ -561,18 +561,26 @@ _unur_nrou_rectangle( struct unur_gen *gen )
     faux.params = p;
 
     x = _unur_util_find_max(faux, DISTR.BD_LEFT, p[0], p[0]);
-    if (isinf(x) && isinf(DISTR.BD_LEFT) ) {
-	 
-      /* checking if a minimum could be expected 'near' DISTR.BD_LEFT */
-      if ( faux.f(-2*BD_MAX,p) <= faux.f(-BD_MAX,p) )  x = -BD_MAX;
-      else {
-        /* this would be a rare case, but maybe increasing the number 
-	   of iterations in the Brent algorithm would help ? */
-        _unur_warning(gen->genid ,UNUR_ERR_SHOULD_NOT_HAPPEN, 
-                      "Boundary rectangle not computed");
-        return UNUR_ERR_SHOULD_NOT_HAPPEN;
+    if (isinf(x)) {
+      /* _unur_util_find_max() could not find a suitable maximum */
+      if ( isinf(DISTR.BD_LEFT) ) {
+        /* domain is unbound to the left */	 
+        /* checking if a minimum could be expected 'near' DISTR.BD_LEFT */
+        if ( faux.f(-2*BD_MAX,p) <= faux.f(-BD_MAX,p) )  x = -BD_MAX;
+        else {
+          /* this would be a rare case, but maybe increasing the number 
+	     of iterations in the Brent algorithm would help ? */
+          _unur_warning(gen->genid ,UNUR_ERR_SHOULD_NOT_HAPPEN, 
+                        "Boundary rectangle not computed");
+          return UNUR_ERR_SHOULD_NOT_HAPPEN;
+        }
       }
-      
+      else {
+        /* finite domain to the left */
+	if (DISTR.BD_LEFT == p[0]) x=p[0];
+        else x = _unur_util_find_max(faux, DISTR.BD_LEFT, p[0],
+	         (p[0]+DISTR.BD_LEFT)/2.);
+      }
     }
     
     GEN.umin = -faux.f(x,p);
@@ -581,9 +589,11 @@ _unur_nrou_rectangle( struct unur_gen *gen )
     faux.params = p;
 
     x = _unur_util_find_max(faux, p[0], DISTR.BD_RIGHT, p[0]);
-    if (isinf(x) && isinf(DISTR.BD_RIGHT)) {
-	 
-      /* checking if a maximum could be expected 'near' DISTR.BD_RIGHT */
+    if (isinf(x)) {
+      /* _unur_util_find_max() could not find a suitable maximum */
+      if ( isinf(DISTR.BD_RIGHT) ) {
+        /* domain is unbound to the right */	 
+        /* checking if a maximum could be expected 'near' DISTR.BD_RIGHT */
         if ( faux.f(BD_MAX,p) <= faux.f(2*BD_MAX,p) )  x = BD_MAX;
         else {
 	  /* this would be a rare case, but maybe increasing the number 
@@ -592,7 +602,14 @@ _unur_nrou_rectangle( struct unur_gen *gen )
    	                "Boundary rectangle not computed");
           return UNUR_ERR_SHOULD_NOT_HAPPEN;
 	}
-
+      }
+      else {
+        /* finite domain to the right */
+	if (DISTR.BD_RIGHT == p[0]) x=p[0];
+        else x = _unur_util_find_max(faux, p[0], DISTR.BD_RIGHT,
+	         (p[0]+DISTR.BD_RIGHT)/2.);
+      
+      }
     }
 
     GEN.umax = faux.f(x,p);

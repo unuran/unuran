@@ -54,6 +54,23 @@
       NROU is an implementation of the ratio-of-uniforms method
       which uses (minimal) bounding rectangles.
 
+      Given a quasi-density function f(x) on the domain 
+      @unurmath{x \in [b_l, b_r]}, the random variable 
+      @unurmath{X = U/V + \mu} has f(x) as PDF whenever
+      (U,V) is uniformly distributed in the set :
+      @unurmath{A_f = \lbrace (u,v): 0 < v <= \sqrt{f(u/v+\mu)},
+                                     b_l < u/v + \mu < b_r \rbrace }
+
+      The minimum bounding rectangle @unurmath{R} is the smallest 
+      possible rectangle that contains 
+      @unurmath{A_f \subset R = \lbrace (u,v) : u_{min} <= u <= u_{max},
+                                                0 <= v <= v_{max} \rbrace}
+      
+      The naive ratio-of-uniforms method NROU is thus an acceptance-rejection
+      method from the minimum bounding rectangle to obtain uniformly 
+      distributed points in @unurmath{A_f}. 
+      
+      See the Appendix for more details on the ratio-of-uniforms method.
    =END
 */
 
@@ -97,7 +114,7 @@ int unur_nrou_set_rect_v( UNUR_PAR *parameters, double vmax );
 
 int unur_nrou_set_center( UNUR_PAR *parameters, double center );
 /* 
-   Set the center (approximate mode) of the PDF.
+   Set the center (@unurmath{\mu}) of the PDF.
    For distributions like the gamma distribution with large shape
    parameters the acceptance region becomes a long inclined skinny
    oval with a large bounding rectangle and thus an extremely large
@@ -113,11 +130,9 @@ int unur_nrou_set_center( UNUR_PAR *parameters, double center );
 */
 
 int unur_nrou_set_verify( UNUR_PAR *parameters, int verify );
-/* */
-
-int unur_nrou_chg_verify( UNUR_GEN *generator, int verify );
 /* 
    Turn verifying of algorithm while sampling on/off.
+
    If the condition squeeze(@i{x}) <= PDF(@i{x}) <= hat(@i{x}) is
    violated for some @i{x} then @code{unur_errno} is set to
    @code{UNUR_ERR_GEN_CONDITION}. However notice that this might
@@ -125,6 +140,11 @@ int unur_nrou_chg_verify( UNUR_GEN *generator, int verify );
    @i{x} (less than 1%).
 
    Default is FALSE.
+*/
+
+int unur_nrou_chg_verify( UNUR_GEN *generator, int verify );
+/* 
+   Change the verifying of algorithm while sampling on/off.
 */
 
 /* =END */

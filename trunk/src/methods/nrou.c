@@ -80,6 +80,7 @@
 #include <distr/distr_source.h>
 #include <distr/cont.h>
 #include <utils/fminmax_source.h>
+#include <utils/unur_fp_source.h>
 #include "unur_methods_source.h"
 #include "x_gen_source.h"
 #include "nrou.h"
@@ -160,7 +161,6 @@ struct unur_gen *_gen; /* generator object for bounding rect calculations */
 #define SAMPLE    gen->sample.cont      /* pointer to sampling routine       */     
 
 #define PDF(x)    _unur_cont_PDF((x),(gen->distr))    /* call to PDF         */
-
 
 /*---------------------------------------------------------------------------*/
 
@@ -543,7 +543,7 @@ _unur_nrou_rectangle( struct unur_gen *gen )
       faux.params = NULL;
   
       x = _unur_util_find_max(faux, DISTR.BD_LEFT, DISTR.BD_RIGHT, p[0]);
-      if (isinf(x)) {
+      if (_unur_FP_is_plusminus_infinity(x)) {
          _unur_error(gen->genid , UNUR_ERR_GENERIC, "Bounding rect (vmax)");  
          return UNUR_ERR_GENERIC;
       }
@@ -558,19 +558,19 @@ _unur_nrou_rectangle( struct unur_gen *gen )
     faux.params = p;
 
     /* calculating start point for extremum search routine */
-    sx = isinf(DISTR.BD_LEFT) ? p[0]-1.: (p[0]+DISTR.BD_LEFT)/2. ; 
-    bx = isinf(DISTR.BD_LEFT) ? -BD_MAX: DISTR.BD_LEFT;
+    sx = _unur_FP_is_plusminus_infinity(DISTR.BD_LEFT) ? p[0]-1.: (p[0]+DISTR.BD_LEFT)/2. ; 
+    bx = _unur_FP_is_plusminus_infinity(DISTR.BD_LEFT) ? -BD_MAX: DISTR.BD_LEFT;
 
     x = (DISTR.BD_LEFT == p[0]) ? p[0]: _unur_util_find_max(faux, bx, p[0], sx);
           
-    while (isinf(x) && (fabs(bx) >= UNUR_EPSILON) ) { 
+    while (_unur_FP_is_plusminus_infinity(x) && (fabs(bx) >= UNUR_EPSILON) ) { 
        /* _unur_util_find_max() could not yet find a suitable extremum */
        /* trying with a sequence of intervals with decreasing length   */
        bx = bx/10.; sx = bx/2.;  
        x = _unur_util_find_max(faux, bx, p[0], sx);
     }
          
-    if (isinf(x)) {
+    if (_unur_FP_is_plusminus_infinity(x)) {
        /* not able to compute a boundary recangle ...  */ 
        _unur_error(gen->genid , UNUR_ERR_GENERIC, "Bounding rect (umin)");  
        return UNUR_ERR_GENERIC;
@@ -583,19 +583,19 @@ _unur_nrou_rectangle( struct unur_gen *gen )
     faux.params = p;
 
     /* calculating start point for extremum search routine */
-    sx = isinf(DISTR.BD_RIGHT) ? p[0]+1.: (p[0]+DISTR.BD_RIGHT)/2. ; 
-    bx = isinf(DISTR.BD_RIGHT) ? BD_MAX: DISTR.BD_RIGHT;
+    sx = _unur_FP_is_plusminus_infinity(DISTR.BD_RIGHT) ? p[0]+1.: (p[0]+DISTR.BD_RIGHT)/2. ; 
+    bx = _unur_FP_is_plusminus_infinity(DISTR.BD_RIGHT) ? BD_MAX: DISTR.BD_RIGHT;
 
     x = (DISTR.BD_RIGHT == p[0]) ? p[0]: _unur_util_find_max(faux, p[0], bx, sx);
       
-    while (isinf(x) && (fabs(bx) >= UNUR_EPSILON) ) { 
+    while (_unur_FP_is_plusminus_infinity(x) && (fabs(bx) >= UNUR_EPSILON) ) { 
        /* _unur_util_find_max() could not yet find a suitable extremum */
        /* trying with a sequence of intervals with decreasing length   */
        bx = bx/10.; sx = bx/2.; 
        x = _unur_util_find_max(faux, p[0], bx, sx);
     }
            
-    if (isinf(x)) {
+    if (_unur_FP_is_plusminus_infinity(x)) {
        /* not able to compute a boundary recangle ...  */ 
        _unur_error(gen->genid , UNUR_ERR_GENERIC, "Bounding rect (umax)");  
        return UNUR_ERR_GENERIC;

@@ -44,8 +44,10 @@
 #include <methods/x_gen_source.h>
 #include <distr/discr.h>
 #include <distr/distr_source.h>
+#include <distr/cvec.h>
 #include <distributions/unur_distributions.h>
 #include <specfunct/unur_specfunct_source.h>
+#include <utils/matrix_source.h>
 #include "unuran_tests.h"
 
 /*---------------------------------------------------------------------------*/
@@ -535,16 +537,21 @@ _unur_test_chi2_vec ( struct unur_gen *gen,
      /*   -1. ... other errors                                               */
      /*----------------------------------------------------------------------*/
 {
+#define idx(i,j) ((i)*dim+j)
 
   int dim;         /* dimension of multivariate distribution */
   double *x, *z;   /* sampling vectors */
   double pval;     /* p-value */
 
-  double *Linv;    /* pointer to inverse Cholesky factor */
-
-  int *bg[CHI2_MAX_DIMENSIONS]; /* vectors for observed occurrences */
-  int i,j, sumintervals;
+  const double *L;       /* pointer to Cholesky factor */
+  double *Linv;          /* pointer to inverse Cholesky factor (is calculated here) */
+  const double *Cinv;    /* pointer to inverse covariance matrix */
+  const double *mean;    /* pointer to mean vector */
+  
   int *idx;	   /* index array */
+  int *bm;         /* array for counting bins */
+
+  int i,j,k, sumintervals;
   int dimintervals[CHI2_MAX_DIMENSIONS]; /* for marginal chi2 tests */ 
   int totalintervals; /* sum of the dimintervals[] */
   
@@ -568,54 +575,35 @@ _unur_test_chi2_vec ( struct unur_gen *gen,
   }
 
   /* setup of intervals for each dimension */
-  totalintervals=0;
-  for (i=0; i<dim; i++) {
-    dimintervals[i] = (int) ( intervals * (1./(1+i)) ) ;  
-    if (dimintervals[i]<2) dimintervals[i]=2;  /* we want to have at least to intervals */
-    totalintervals += dimintervals[i];
+  if (dim<=3) {
+    for (i=0; i<dim; i++) dimintervals[i] = intervals;  
+    totalintervals = dim * intervals;
   }
-
-  /*
-  if(  
-      (idx=_unur_malloc( dim * sizeof(int))==NULL) ||
-      (z=_unur_malloc( dim * sizeof(double))==NULL) ) {
-    free(...); free(...);
-    _unur_error(test_name,UNUR_ERR_MALLOC,"cannot run chi2 test");
-    return -1.;
-  }
-  */
-
-  /* allocate memory */
-  idx = _unur_malloc( dim * sizeof(int));
-  if (idx==NULL) {
-      _unur_error(test_name,UNUR_ERR_MALLOC,"idx");
-      pval=-1; goto free_memory;
-  }
-
-  /* inverse Cholesky factor */
-
-  /* random vectors: x, z */
-  z = _unur_malloc( dim * sizeof(double));
-  if (z==NULL) {
-     _unur_error(test_name,UNUR_ERR_MALLOC,"z");
-     pval=-1; goto free_memory;
-  }
-
-  /* arrays for counting bins */
-  for (i=0; i<dim; i++) bg[i]=NULL;
-
-  for (i=0; i<dim; i++) {
-    bg[i] = _unur_malloc( dimintervals[i] * sizeof(int));
-    if (bg[i]==NULL) {
-      _unur_error(test_name,UNUR_ERR_MALLOC,"bg");
-      pval=-1; goto free_memory;
+  else {
+    /* dim > 3, use harmonic decreasing sequence for dimintervals[] */
+    totalintervals=0;
+    for (i=0; i<dim; i++) {
+      dimintervals[i] = (int) ( intervals * (1./(1+i)) ) ;  
+      if (dimintervals[i]<2) dimintervals[i]=2;  /* we want to have at least two intervals */
+      totalintervals += dimintervals[i];
     }
-  }   
+  }
+  
+  /* allocate memory */  
+  idx = _unur_malloc( dim * sizeof(int));
+  x   = _unur_malloc( dim * sizeof(double));
+  z   = _unur_malloc( dim * sizeof(double));
+  bm  = _unur_malloc( totalintervals * sizeof(int));
+  Linv  = _unur_malloc( dim*dim * sizeof(double));
 
-  /* 
+  /* check if memory could be allocated */
+  if (  (idx == NULL) || (z == NULL) || (bm == NULL) ) {
+      _unur_error(test_name,UNUR_ERR_MALLOC,"cannot run chi2 test");
+      pval=-1; goto free_memory;
+  }
 
   /* clear arrays */
-  for (i=0; i<dim; i++) (void) memset(bg[i] , 0, dimintervals[i] * sizeof(int));
+  (void) memset(bm , 0, totalintervals  * sizeof(int));
   (void) memset(idx, 0, dim * sizeof(int));
 
   /* samplesize */
@@ -626,18 +614,42 @@ _unur_test_chi2_vec ( struct unur_gen *gen,
   }
   samplesize = min( samplesize, CHI2_MAX_SAMPLESIZE );
 
+  /* calculation of inverse Cholesky factor */
+  L = unur_distr_cvec_get_cholesky(gen->distr);
+  Cinv = unur_distr_cvec_get_covar_inv(gen->distr);
+
+  for (i=0; i<dim; i++) {
+  for (j=0; j<dim; j++) {
+    Linv[idx(i,j)]=0;
+    if (i>=j) { 
+      /* Linv = LT * Cinv */
+      for (k=0; k<dim; k++) {
+        Linv[idx(i,j)] += L[idx(k,i)] * Cinv[idx(k,j)];   
+      }
+    }
+  }}
+  _unur_matrix_debug (dim, Linv, "Inverse Cholesky factor", "CHI2VEC" );
+  
+  mean = unur_distr_cvec_get_mean(gen->distr);
+
   /* now run generator */
   for( i=0; i<samplesize; i++ ) {
     /* get random vector */
-    _unur_sample_vec(gen, z);
+    _unur_sample_vec(gen, x);
     /* standardize vector: z = L^{-1} (x - mean) */
-    /* ... */
+    for (j=0; j<dim; j++) {
+      z[j]=0;
+      for (k=0; k<=j; k++) {
+        z[j] += Linv[idx(j,k)] * (x[k]-mean[k]);
+      }
+    }
+    
     sumintervals=0;
     for (j=0; j<dim; j++) {
       idx[j] = (int)( dimintervals[j] * _unur_sf_cdfnormal(z[j]) );
 
       if (idx[j]==dimintervals[j]) idx[j]--; /* cdf can return 1 ? */
-      bg[j][idx[j]] += 1 ;
+      bm[sumintervals + idx[j]] += 1;
       sumintervals += dimintervals[j];
     }
   }
@@ -652,26 +664,27 @@ _unur_test_chi2_vec ( struct unur_gen *gen,
       fprintf(out,"  marginal   = %d\n",j);
 
       for (i=0; i<dimintervals[j]; i++) {
-        fprintf(out,"  bg[%d][%d]     = %d\n",j ,i ,bg[j][i] );
+        fprintf(out,"  histogram[%d][%d]   = %d\n",j ,i ,bm[sumintervals+i] );
       }
-
     }
 
-    pval = _unur_test_chi2test(NULL, bg[j] , dimintervals[j], classmin, verbose, out );
+    pval = _unur_test_chi2test(NULL, &bm[sumintervals] , dimintervals[j], classmin, verbose, out );
     sumintervals += dimintervals[j];
     
   }
 
-
 free_memory:
   /* free memory */
-  if (idx) free(idx);
-  if (z) free(z);
-  for (i=0; i<dim; i++) if (bg[i]) free(bg[i]);
+  if (idx)  free(idx);
+  if (x)    free(x);
+  if (z)    free(z);
+  if (bm)   free(bm);
+  if (Linv) free(Linv);
 
   /* return result of test */
   return pval;
 
+#undef idx
 } /* end of _unur_test_chi2_vec() */
 
 /*---------------------------------------------------------------------------*/

@@ -100,7 +100,7 @@ foreach my $distr (@distr_list) {
 # ----------------------------------------------------------------
 # File names
 
-print_log("Make sources for tests ...\n\n");
+print_log("Make sources for tests (".(($#distr_list+1)*($#method_list+1)).") ...\n\n");
 
 my $UNURAN_exec = "$file_prefix\_UNURAN";
 my $UNURAN_src = "$UNURAN_exec.c";
@@ -144,6 +144,7 @@ foreach my $distr (@distr_list) {
 	
 	# Make a 3 digit string from test number
 	my $test_key = sprintf "%03d", $test_nr;
+	print_log("[$test_key]");
 	
 	# Seed for uniform rng
 	my $seed = int(rand 12345678) + 1;
@@ -174,7 +175,7 @@ foreach my $distr (@distr_list) {
 # Print number of tests
 
 my $test_runs_rel = 100.0 * $test_runs / $test_nr;
-print_log("Found $test_nr tests.  Build $test_runs tests ($test_runs_rel \%) ...\n\n");
+print_log("\n\nFound $test_nr tests.  Build $test_runs tests ($test_runs_rel \%) ...\n\n");
 
 # ----------------------------------------------------------------
 # Make source files
@@ -924,7 +925,7 @@ EOS
     close SRC;
 
     # Compile
-    system "$JAVAC $gen_src";
+##    system "$JAVAC $gen_src";
 
     # Name of generator and pdf
     my $gen_name = "Generator\_$distr_name";

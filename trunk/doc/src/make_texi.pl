@@ -571,7 +571,7 @@ sub texify_string {
     $string =~ s/(alpha|beta|gamma|lambda|mu|nu|pi|phi|sigma|tau|theta|zeta)/\\$1/g;
 
     # capital greek letters
-    $string =~ s/(Gamma)/\\$1/g;
+    $string =~ s/(Gamma|Sigma)/\\$1/g;
 
     # <, <=, etc.
     $string =~ s/<=/\\leq/g;
@@ -1445,6 +1445,9 @@ sub parse_tex {
     $$info =~ s/[\s\n]+/ /g;
     $$info =~ s/^[\s\n]+//g;
     $$info =~ s/[\s\n]+$//g;
+
+    # texify TeX string
+    $$tex = texify_string($$tex);
 
 } # end of parse_tex()
 

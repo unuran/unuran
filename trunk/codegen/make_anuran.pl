@@ -6,6 +6,16 @@
 # ----------------------------------------------------------------
 
 # ----------------------------------------------------------------
+# File names and pathes
+
+# Log file
+my $log_dir = "/home/staff/leydold/public_html";
+my $anuran_log_file = "$log_dir/anuran.log";
+
+# Automatic code generator
+my $ACG = './acg';
+
+# ----------------------------------------------------------------
 
 require "read_PDF.pl";
 
@@ -13,14 +23,6 @@ require "read_PDF.pl";
 # Gray Color for disabled text
 
 my $Gray = "\#C0C0C0";
-
-# ----------------------------------------------------------------
-# File names and pathes
-
-my $log_file = '/home/staff/leydold/public_html/anuran.log';
-
-my $tmp_dir = '/home/staff/leydold/public_html';
-my $tmp_anuran = "$tmp_dir/tmp_anuran_\$\$";
 
 # ----------------------------------------------------------------
 # C compiler
@@ -64,34 +66,40 @@ EOX
 my $links = <<EOX;
 "<TABLE WIDTH='100%' BORDER='0' CELLSPACING='2'>
   <TR> 
-    <TD WIDTH='20%' BGCOLOR='#1E426E'> 
+    <TD WIDTH='17%' BGCOLOR='#1E426E'> 
       <A HREF='/anuran/index.html'>
       <DIV ALIGN='CENTER'>
       <FONT FACE='Arial, Helvetica, sans-serif' SIZE='2' COLOR='#FFFFFF'>
       <B>ANURAN</B></FONT></A></DIV>
     </TD>
-    <TD WIDTH='20%' BGCOLOR='#BCD2EE'> 
+    <TD WIDTH='17%' BGCOLOR='#BCD2EE'> 
       <DIV ALIGN='CENTER'>
       <FONT FACE='Arial, Helvetica, sans-serif' SIZE='2' COLOR='#1E426E'>
       <B>Code Generator</B></FONT></DIV>
     </TD>
-    <TD WIDTH='20%' BGCOLOR='#1E426E'> 
+    <TD WIDTH='17%' BGCOLOR='#1E426E'> 
       <DIV ALIGN='CENTER'>
       <A HREF='/anuran/project.html'>
       <FONT FACE='Arial, Helvetica, sans-serif' SIZE='2' COLOR='#FFFFFF'>
       <B>Project</B></FONT></A></DIV>
     </TD>
-    <TD WIDTH='20%' BGCOLOR='#1E426E'> 
+    <TD WIDTH='17%' BGCOLOR='#1E426E'> 
       <DIV ALIGN='CENTER'>
       <A HREF='/arvag/software.html'>
       <FONT FACE='Arial, Helvetica, sans-serif' SIZE='2' COLOR='#FFFFFF'>
       <B>Other Software</B></FONT></A></DIV>
     </TD>
-    <TD WIDTH='20%' BGCOLOR='#1E426E'> 
+    <TD WIDTH='17%' BGCOLOR='#1E426E'> 
       <DIV ALIGN='CENTER'>
       <A HREF='/arvag/index.html'>
       <FONT FACE='Arial, Helvetica, sans-serif' SIZE='2' COLOR='#FFFFFF'>
       <B>ARVAG</B></FONT></A></DIV>
+    </TD>
+    <TD WIDTH='17%' BGCOLOR='#1E426E'> 
+      <DIV ALIGN='CENTER'>
+      <A HREF='mailto:anuran\\\@statistik.wu-wien.ac.at'>
+      <FONT FACE='Arial, Helvetica, sans-serif' SIZE='2' COLOR='#FFFFFF'>
+      <B>Feedback</B></FONT></A></DIV>
     </TD>
     <TD WIDTH='1%'>&nbsp;</TD>
   </TR>
@@ -118,20 +126,6 @@ use CGI::Pretty;
 # Create CGI object
 
 my \$q = new CGI;
-
-# ----------------------------------------------------------------
-# Files
-
-my \$cid = get_code_cid();
-
-my \$tmp_acg = "$tmp_anuran\\_acg.c";
-my \$tmp_acg_exec = "$tmp_anuran\\_acg";
-
-my \%tmp_code = ( 'C'       => "$tmp_anuran\\_code.c",
-		  'FORTRAN' => "$tmp_anuran\\_code.f",
-		  'JAVA'    => "$tmp_anuran\\_code.java",
-		  );
-my \$tmp_code_exec = "$tmp_anuran\\_code";
 
 # ----------------------------------------------------------------
 # Data for distributions
@@ -169,25 +163,6 @@ anuran_end();
 exit 0;
 # ----------------------------------------------------------------
 
-# ----------------------------------------------------------------
-# Compute id for generated code
-# ----------------------------------------------------------------
-
-sub get_code_cid
-{
-    my \$cid;
-
-    # use date
-    (my \$sec, my \$min, my \$hour, my \$day, my \$month, my \$year) 
-	= localtime;
-    \$cid .= sprintf("%d-%02d-%02d.%02d:%02d:%02d",
-		     \$year+1900,\$month+1,\$day,\$hour,\$min,\$sec);
-
-    # use pid
-    \$cid .= '_'.\$\$;
-
-    return \$cid;
-} # get_code_cid()
 
 # ----------------------------------------------------------------
 # Start of HTML page
@@ -204,7 +179,7 @@ sub anuran_start
 	start_html(-title  =>'ANURAN Test Page',
 		   -author =>'anuran\@statistik.wu-wien.ac.at',
 		   -meta   =>{'keywords'=>'nonuniform random number generator',
-			      'copyright'=>'copyright 2001 Institut fuer Statistik, WU Wien'},
+			      'copyright'=>'copyright 2001 Josef.Leydold\@statistik.wu-wien.ac.at'},
 		   -BGCOLOR=>'#FFFFF5', 
 		   -TEXT   =>'#000000',
 		   -LINK   =>'#000000',
@@ -223,12 +198,13 @@ sub anuran_start
 	h1('Automatic Code Generator'),
 	h2('Experimental version'),
 	b('Resulting code is reliable but should used with care!'),br
-	b('There is no message when the code generator has failed. There is simply no output.'),br,
+	b('This code generator cannot produce generators for all distributions / parameters.'),br,
 
 	# ruler
 	p().hr().p();
 
 } # end of anuran_start()
+
 
 # ----------------------------------------------------------------
 # Step 1: Select a distribution
@@ -242,7 +218,7 @@ sub anuran_select_distribution
     if (\$step > 1 && \$distr eq '--none--') {
 	# no distribution selected at step 1
 	\$step = 1;
-	\$warning = p().b('You must select a distribution first!').'\n';
+	\$warning = p().b('You must select a distribution first!');
     }
 
 # ................................................................
@@ -262,9 +238,9 @@ sub anuran_select_distribution
 			popup_menu(-name=>'distribution',
 				   -values=>\\\@menue_distributions,
 				   -labels=>\\\%labels_menue_distributions),
-			'&nbsp;&nbsp;&nbsp;\n',
-			hidden('step','2'),'\n',
-			submit('Continue'),'\n',
+			'&nbsp;&nbsp;&nbsp;',
+			hidden('step','2'),
+			submit('Continue'),
 			endform() ),
 	    
 	    # ruler
@@ -290,6 +266,7 @@ sub anuran_select_distribution
     }
 
 } # end of anuran_select_distribution()
+
 
 # ----------------------------------------------------------------
 # Step 2: Parameters of distribution
@@ -448,7 +425,7 @@ sub anuran_params_distribution
 	    # Standardform exists
 
 	    if (\$Stdform ne 'no') {
-		print '\t<INPUT TYPE="radio" NAME="Stdform" VALUE="yes" CHECKED> Standardform\n';
+		print '\t<INPUT TYPE="radio" NAME="Stdform" VALUE="yes" CHECKED> Standardform'."\\n";
 		print start_blockquote();
 		for (my \$i = 0; \$i < \$n_req; \$i++) {
 		    print 
@@ -480,7 +457,7 @@ sub anuran_params_distribution
 
 	    if (\$Stdform ne 'yes') {
 		my \$checked = (\$Stdform eq 'no') ? 'CHECKED' : ''; 
-		print '\t<INPUT TYPE="radio" NAME="Stdform" VALUE="no" '.\$checked.'> Non-Standardform\n';
+		print '\t<INPUT TYPE="radio" NAME="Stdform" VALUE="no" '.\$checked.'> Non-Standardform'."\\n";
 		print start_blockquote();
 		for (my \$i = 0; \$i < \$n_tot; \$i++) {
 		    print 
@@ -503,7 +480,7 @@ sub anuran_params_distribution
 	
 	else {
 	    # No special standard form
-	    print hidden('Stdform','no'),'\n';
+	    print hidden('Stdform','no'),"\\n";
 	    for (my \$i = 0; \$i < \$n_tot; \$i++) {
 		print 
 		    \$data_distr{\$distr}{'=FPARAMS'}[\$i]{'=NAME'},
@@ -528,9 +505,9 @@ sub anuran_params_distribution
 	# Continue
 	print
 	    p(),
-	    hidden('step','3'),'\n',
+	    hidden('step','3'),"\\n",
 	    hidden('distribution'),
-	    submit('Continue'),'\n';
+	    submit('Continue'),"\\n";
 
 	# end of form
 	print 
@@ -543,6 +520,7 @@ sub anuran_params_distribution
 
 
 } # end of anuran_params_distribution()
+
 
 # ----------------------------------------------------------------
 # Step 3: Domain of distribution
@@ -655,7 +633,7 @@ sub anuran_domain_distribution
 		      -size=>10,
 		      -maxlength=>10),
 	    p(),
-	    hidden('step','5'),'\n',
+	    hidden('step','5'),"\\n",
 	    hidden('distribution'),
 	    hidden('truncated'),
 	    hidden('Stdform');
@@ -672,7 +650,7 @@ sub anuran_domain_distribution
 	}
 	
 	print
-	    submit('Continue'),'\n',
+	    submit('Continue'),"\\n",
 	    end_form(),
 	    end_blockquote();
     }
@@ -684,6 +662,7 @@ sub anuran_domain_distribution
 
 
 } # end of anuran_domain_distribution()
+
 
 # ----------------------------------------------------------------
 # Step 4: Properties of generator
@@ -741,6 +720,7 @@ sub anuran_properties_generator
 
 } # end of anuran_properties_generator()
 
+
 # ----------------------------------------------------------------
 # Step 5: Select a programming language
 # ----------------------------------------------------------------
@@ -788,7 +768,7 @@ sub anuran_language
 	    b('Programming language: '),
 	    popup_menu(-name=>'language',
 		       -values=>['C','FORTRAN','JAVA']),
-	    hidden('step','6'),'\n',
+	    hidden('step','6'),"\\n",
 	    hidden('distribution'),
 	    hidden('left'),
 	    hidden('right'),
@@ -807,7 +787,7 @@ sub anuran_language
 	}
 	
 	print
-	    submit('Continue'),'\n',
+	    submit('Continue'),"\\n",
 	    endform();
     }
 
@@ -817,6 +797,7 @@ sub anuran_language
     print p().hr().p();
 
 } # end of anuran_language()
+
 
 # ----------------------------------------------------------------
 # Step 6: Finally the code
@@ -858,82 +839,79 @@ sub anuran_code
     if (\$step >= 6) {
 
 # ................................................................
-# Make unuran code for code generator
+# Make acg command
 # ................................................................
 
-	my \$unuran;
+	# check also for command line
+	my \$command_ok = 1;
+
+	# Command
+	my \$acg_query = "$ACG";
+
+	# Distribution
+	\$acg_query .= " -d \$distr";
+	\$command_ok = 0 if \$distr =~ /[^a-zA-Z]/;
 
 	# List of parameters
-	my \$fpar;
 	if (\$n_param) {
-	    \$fpar = "double fpar[\$n_param] = { \$param[0]";
+	    \$acg_query .= " -p \\\"\$param[0]";
 	    for (my \$i=1; \$i < \$n_param; \$i++) {
-		\$fpar .= ", \$param[\$i]";
+		\$acg_query .= " \$param[\$i]";
+		\$command_ok = 0 if \$param[\$i] =~ /[^\\d\\.\\-\\+eE]/;
 	    }
-	    \$fpar .= " }";
-	}
-	else {
-	    \$fpar = "double *fpar = NULL";
+	    \$acg_query .= "\\\"";
 	}
 	
 	# Domain
-	my \$domain = '';
 	if (param('truncated')) {
-	    \$domain = "\\t unur_distr_cont_set_domain( distr, "
-		     . ((param('left') !~ /^\s*-inf/) ? param('left') : '-UNUR_INFINITY') 
-		     . ', '
-	             . ((param('right') !~ /^\s*inf/) ? param('right') : 'UNUR_INFINITY') 
-		     . " );\\n";
+	    \$acg_query .= ' -D "'.param('left').' '.param('right').'"';
+	    \$command_ok = 0 if param('left') =~ /[^\\d\\.\\-\\+eEiInNfF]/;
+	    \$command_ok = 0 if param('right') =~ /[^\\d\\.\\-\\+eEiInNfF]/;
 	}
 
-	# Unuran code
-	\$unuran .= "#include <unuran.h>\\n";
-	\$unuran .= "#include <unuran_acg.h>\\n";
-	\$unuran .= "\\n";
-	\$unuran .= "int main()\\n";
-	\$unuran .= "{\\n";
-	\$unuran .= "\\t UNUR_DISTR *distr;\\n";
-	\$unuran .= "\\t UNUR_PAR *par;\\n";
-	\$unuran .= "\\t UNUR_GEN *gen;\\n";
-	\$unuran .= "\\t \$fpar;\\n";
-	\$unuran .= "\\n";
-	\$unuran .= "\\t unur_set_default_debug(0u);\\n";
-	\$unuran .= "\\n";
-	\$unuran .= "\\t distr = unur_distr_\$distr(fpar,\$n_param);\\n";
-	\$unuran .= \$domain;
-	\$unuran .= "\\n";
-	\$unuran .= "\\t par = unur_tdr_new( distr );\\n";
-	\$unuran .= "\\t gen = unur_init( par );\\n";
-	\$unuran .= "\\t unur_acg_".param('language')."( gen, stdout, NULL );\\n";
-	\$unuran .= "\\n";
-	\$unuran .= "\\t unur_distr_free(distr);\\n";
-	\$unuran .= "\\t unur_free(gen);\\n";
-	\$unuran .= "\\n";
-	\$unuran .= "\\t exit (0);\\n";
-	\$unuran .= "}\\n";
-
-	# Print into file
-	open ACG, ">\$tmp_acg" or die;
-	print ACG \$unuran;
-	close ACG;
-
-# ................................................................
-# Compile and run code generator 
-# ................................................................
-
-	system "$CC $C_inc_dir $C_lib_dir -O2 -o \$tmp_acg_exec \$tmp_acg $C_libs";
-
-	system "\$tmp_acg_exec > \$tmp_code{param('language')}";
+	# Programming language
+	\$acg_query .= ' -l '.param('language');
+	\$command_ok = 0 if param('language') =~ /[^a-zA-Z]/;
 
 # ................................................................
 # Print result
 # ................................................................
 
-	\$code_file = \$tmp_code{param('language')};
+	if (\$command_ok) {
+	    print '<PRE>';
+	    print `\$acg_query`;
+	    print '</PRE>';
+	}
 
-	print '<PRE>';
-	print `cat \$code_file`;
-	print '</PRE>';
+# ................................................................
+# Exit status
+# ................................................................
+
+	my \$status;
+
+	if (\$command_ok) {
+	    if (\$?) {
+		# error
+		\$status = "failed"; 
+		print p(),
+		font({-color=>"red"},
+		     b("Sorry. Cannot make generator for given distribution / parameters.")),
+		p();
+	    }
+
+	    else {
+		# successfull
+		\$status = "ok"; 
+	    }
+	}
+
+	else { # the composed command line might execute unsecure code
+	    \$status = "dangerous command, not executed";
+		print p(),
+		font({-color=>"red"},
+		     b("Sorry. Cannot make generator. Internal error.")),
+		p();
+	}
 
 # ................................................................
 # Make Entry into log file
@@ -946,9 +924,6 @@ sub anuran_code
 
 	# client
 	\$log .= "client = ".remote_addr()."\\n";
-
-	# id of generated code
-	\$log .= "code_id = \$cid\\n";
 
 	# name of distribution
 	\$log .= "distribution = \$distr\\n";
@@ -968,12 +943,20 @@ sub anuran_code
 	# Programming language
 	\$log .= 'language = '.param('language')."\\n";
 
+	# ACG code
+	\$log .= "command = \$acg_query\\n";
+
+	# Exit code
+	\$log .= "status = \$status\\n";
+
 	# Use blank line as separator
 	\$log .= "\\n";
 
 	# Write into log file
 	# (This is not save !!)
-	system("echo \\"\$log\\" >> $log_file");
+	open LOG, ">>$anuran_log_file";
+	print LOG \$log;
+	close LOG;
 
     }
 

@@ -2,8 +2,8 @@ dnl Process this file with autoconf to produce a configure script.
 dnl $Id$
 
 dnl Initialize.
-AC_PREREQ(2.57)
-AC_INIT([UNURAN], [0.4.5], [unuran@statistik.wu-wien.ac.at])
+AC_PREREQ(2.59)
+AC_INIT([UNURAN],[0.4.5],[unuran@statistik.wu-wien.ac.at])
 AM_INIT_AUTOMAKE
 AC_CONFIG_SRCDIR([src/unuran_config.h])
 AC_CONFIG_HEADER([config.h])
@@ -72,6 +72,13 @@ AC_CHECK_FUNCS([floor gettimeofday pow sqrt strcasecmp strchr strtol strtoul])
 dnl Checks for GNU extensions
 AC_CHECK_DECLS([getopt, vsnprintf])
 
+dnl Check for C99 functions */
+AC_CHECK_DECLS(isfinite,,,[#include <math.h>])
+AC_CHECK_DECLS(isinf,,,[#include <math.h>])
+AC_CHECK_DECLS(isnan,,,[#include <math.h>])
+AC_CHECK_DECLS(INFINITY,,,[#include <math.h>])
+AC_CHECK_DECLS(HUGE_VAL,,,[#include <math.h>])
+
 dnl We need Mathematica(R) for some tests
 AC_CHECK_PROG(have_mathematica,math,true,false) 
 AM_CONDITIONAL(HAVE_MATHEMATICA, test x$have_mathematica = xtrue)
@@ -88,7 +95,32 @@ if test X"$GCC" = Xyes ; then
 	AC_SUBST(AM_CFLAGS,-Wall)
 fi
 
+dnl Check IEEE comparisons, whether "x != x" is true for NaNs
+AC_CACHE_CHECK([for IEEE comparisons], ac_cv_c_ieee_comparisons,
+[AC_RUN_IFELSE([AC_LANG_SOURCE([[
+#include <math.h>
+int main (void) 
+{ 
+   int status; double inf, nan;
+   /* inf = exp(1.0e10); */
+   /* nan = inf / inf ; */
+   nan = 0.0 / 0.0;
+   status = (nan == nan);
+   exit (status);
+}]])],
+[ac_cv_c_ieee_comparisons="yes"],
+[ac_cv_c_ieee_comparisons="no"],
+[ac_cv_c_ieee_comparisons="yes"])
+])
 
+if test "$ac_cv_c_ieee_comparisons" != no ; then
+  AC_DEFINE([HAVE_IEEE_COMPARISONS], [1], 
+      [Define to 1 if "x != x" is true for NaNs])
+  AC_SUBST(HAVE_IEEE_COMPARISONS)
+fi
+
+
+dnl create Makefiles
 AC_CONFIG_FILES([\
 	Makefile \
         scripts/Makefile \

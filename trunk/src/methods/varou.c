@@ -105,7 +105,7 @@
 
 /*---------------------------------------------------------------------------*/
 
-long N_INTERVALS=40; /* TODO: move this parameter into generator object */
+int N_ALPHA_INTERVALS=10; /* should we move this parameter into generator object ? */
 /*---------------------------------------------------------------------------*/
 
 static struct unur_gen *_unur_varou_init( struct unur_par *par );
@@ -185,9 +185,14 @@ static void _unur_varou_cone_set(struct unur_gen *gen, struct unur_varou_cone *c
 /* sets the spoint and normal vectors in cone c                              */
 /*---------------------------------------------------------------------------*/
 
-static void _unur_varou_volume(struct unur_gen *gen, struct unur_varou_cone *c);
+static void _unur_varou_minimize_volume(struct unur_gen *gen, struct unur_varou_cone *c);
 /*---------------------------------------------------------------------------*/
 /* find appropriate tangent plane by choosing smallest cone volume           */
+/*---------------------------------------------------------------------------*/
+
+static double _unur_varou_volume(double alpha, void *p );
+/*---------------------------------------------------------------------------*/
+/* auxiliary function used in the computation of cone volumes                */
 /*---------------------------------------------------------------------------*/
 
 static void _unur_varou_sample_cone( struct unur_gen *gen, 
@@ -901,7 +906,7 @@ _unur_varou_cones_init( struct unur_gen *gen )
     }
 
     /* setup tangent plane and calculate cone volume */
-    _unur_varou_volume(gen, GEN.cone_list[ic]);
+    _unur_varou_minimize_volume(gen, GEN.cone_list[ic]);
   }
 
   return;
@@ -910,28 +915,49 @@ _unur_varou_cones_init( struct unur_gen *gen )
 /*---------------------------------------------------------------------------*/
 
 void
-_unur_varou_volume(struct unur_gen *gen, struct unur_varou_cone *c)
+_unur_varou_minimize_volume(struct unur_gen *gen, struct unur_varou_cone *c)
      /*----------------------------------------------------------------------*/
      /* find appropriate tangent plane by choosing smallest cone volume      */
      /*----------------------------------------------------------------------*/
 {
   long i;
-  double alpha, min_alpha, min_volume;
+  double alpha, alpha_min;
+  double alpha_start, alpha_end; /* interval in which a minimu is sought */
+  struct unur_funct_generic fs;
+  
+  /* filling function structure to be used by the brent algorithm */
+  fs.f = (UNUR_FUNCT_GENERIC *) _unur_varou_volume;
+  fs.params = gen;
 
-  min_alpha=1;
-  min_volume=UNUR_INFINITY;
-  for (i=0; i<N_INTERVALS; i++) {
-    alpha = i/((double)N_INTERVALS); /* alpha in [0,1) */
+  /* storing the actual cone */
+  GEN.current_cone = c;
+
+  /* setting initial values */
+  alpha_start=0;
+  alpha_end=0;
+  alpha=0;
+  alpha_min=0;
+
+  /* initial bracketing of alpha between alpha_start and alpha_end             */
+  /* alpha_start is the first value of alpha, where the volume becomes  finite */
+  /* alpha_end   is tha last  value of alpha, where the volume is still finite */
+  for (i=0; i<N_ALPHA_INTERVALS; i++) {
+    alpha = i/((double)N_ALPHA_INTERVALS); /* alpha in [0,1) */
     _unur_varou_cone_parameters(gen, c, alpha); 
-    if (min_volume > c->volume) {
-      min_volume=c->volume;
-      min_alpha=alpha;
-    }
+    if ( !_unur_isinf(c->volume) && alpha_start==0) {alpha_start=alpha; alpha_end=alpha;}
+    if ( !_unur_isinf(c->volume) )                                     {alpha_end=alpha;}
   }
-  _unur_varou_cone_parameters(gen, c, min_alpha); 
+  
+  /* minimization step */
+  alpha=_unur_util_brent(fs, alpha_start, alpha_end, (alpha_start+alpha_end)/2., 0.01);
+
+  /* just to be sure, that we have obtained a good value for alpha */
+  if (alpha_start <= alpha && alpha <= alpha_end)  alpha_min=alpha;
+  
+  _unur_varou_cone_parameters(gen, c, alpha_min); 
 
   return;
-} /* end of _unur_varou_volume() */
+} /* end of _unur_varou_minimize_volume() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -1062,8 +1088,8 @@ printf("%8ld; %8ld; %e; %e; %e\n",
         c2->unit_volume = c1->unit_volume; 
      
         /* searching for volume minimum of c1 and c2 */
-        _unur_varou_volume(gen, c1);
-        _unur_varou_volume(gen, c2);
+        _unur_varou_minimize_volume(gen, c1);
+        _unur_varou_minimize_volume(gen, c2);
 
 	/* comparing the old volume with the sum of the two new volumes  */
 	if (!_unur_isinf(GEN.cone_list[ic]->volume) &&
@@ -1361,6 +1387,24 @@ _unur_varou_sample_cone( struct unur_gen *gen, struct unur_varou_cone *c, double
 
   return;
 } /* end of _unur_varou_sample_cone() */
+
+/*---------------------------------------------------------------------------*/
+
+double
+_unur_varou_volume(double alpha, void *p )
+     /*----------------------------------------------------------------------*/
+     /* auxiliary function used in the computation of cone volumes           */
+     /*----------------------------------------------------------------------*/
+{
+
+  struct unur_gen *gen;
+  gen = p; /* typecast from void* to unur_gen* */
+
+  _unur_varou_cone_parameters(gen, GEN.current_cone, alpha);
+ 
+  return -(GEN.current_cone->volume);
+
+} /* end of _unur_varou_volume() */
 
 /*---------------------------------------------------------------------------*/
 

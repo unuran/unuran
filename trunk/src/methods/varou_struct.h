@@ -72,6 +72,7 @@ struct unur_varou_gen {
   struct unur_varou_cone **cone_list; /* list of constructed cones */
   long   max_verteces;   /* maximum number of verteces created */
   long   max_cones;      /* maximum number of cones created */
+  struct unur_varou_cone *current_cone; /* used in brent calculations */
 };
 
 /*---------------------------------------------------------------------------*/

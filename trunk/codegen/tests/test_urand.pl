@@ -6,7 +6,7 @@
 
 $GCC = "gcc -Wall -ansi -pedantic";
 $G77 = "g77 -Wall";
-$JAVAC = "javac -w1";
+$JAVAC = "javac";
 
 # ----------------------------------------------------------------
 # Constants
@@ -40,6 +40,8 @@ $FORTRAN_src = "$FORTRAN_exec.f";
 $JAVA_urand_src = "./Urand.java";
 $JAVA_src = "$file_prefix\_JAVA.java";
 $JAVA_exec = "$file_prefix\_JAVA";
+$JAVA_class = $JAVA_exec;
+$JAVA_class =~ s/^\.\///;
 
 # ----------------------------------------------------------------
 # number of different results
@@ -73,10 +75,10 @@ print_log("languages = C, FORTRAN, JAVA\n");
 # ----------------------------------------------------------------
 # Start generators
 
-open PRNG, "$PRNG_exec |" or die "cannot run $PRNG_exec"; 
-open C, "$C_exec |" or die "cannot run $C_exec"; 
-open FORTRAN, "$FORTRAN_exec |" or die "cannot run $FORTRAN_exec"; 
-open JAVA, "java $JAVA_exec |" or die "cannot run $JAVA_exec"; 
+open PRNG, "$PRNG_exec |";
+open C, "$C_exec |";
+open FORTRAN, "$FORTRAN_exec |";
+open JAVA, "java $JAVA_class |";
 
 # ----------------------------------------------------------------
 # Run generatores and compare output
@@ -408,15 +410,14 @@ public class Urand {
 
     /* member functions */
 
-    public static double random() 
+    private static final int a = 16807;
+    private static final int m = 2147483647;
+    private static final int q = 127773;      /* m / a */
+    private static final int r = 2836;        /* m % a */
+
+    static double random() 
     {
-
-        static final int a = 16807;
-        static final int m = 2147483647;
-        static final int q = 127773;      /* m / a */
-        static final int r = 2836;        /* m % a */
-
-	private int hi, lo, test;
+	int hi, lo, test;
 
         hi = xn / q;
         lo = xn % q;
@@ -428,7 +429,7 @@ public class Urand {
     }
 
 
-    public static void useed(int seed) 
+    static void useed(int seed) 
     {
 	xn = seed;
     }
@@ -447,12 +448,12 @@ EOS
 /* ---------------------------------------------------------------- */
 
 public class run_test_urand_JAVA {
-   public static void main(String[] args) throws Exception {
+  public static void main(String[] args) throws Exception {
 
       /* set new seed */
       Urand.useed($seed);
 
-      for (private int i = 0; i<$sample_size;i++) {
+      for (int i = 0; i<$sample_size;i++) {
         System.out.println( Urand.random() );
       }
    }

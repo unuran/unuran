@@ -46,7 +46,7 @@ Newton's method and the regula falsi.
 */
 
 /*
- =REQUIRED
+ =REQUIRED NINV
 
  cdf, (in addition pdf only in case of Newton's method) 
 */

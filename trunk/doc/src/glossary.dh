@@ -25,6 +25,9 @@ probability mass function
 @item PV
 (finite) probability vector
 
+@item @unurmath{U(a,b)}
+continuous uniform distribution on the interval @unurmath{(a,b)}
+
 @item T-concave
 @itemx T_c-concave
 a function @i{f(x)} is called T-convace if the transformed function

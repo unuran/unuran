@@ -53,6 +53,7 @@ this permission notice are preserved on all copies.
 @author Josef Leydold
 @author Wolfgang H@"ormann
 @author Erich Janka
+@author Roman Karawatzki
 @author G@"unter Tirler
 
 @page

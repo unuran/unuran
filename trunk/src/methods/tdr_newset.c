@@ -713,11 +713,14 @@ unur_tdr_chg_truncated( struct unur_gen *gen, double left, double right )
     DISTR.trunc[1] = right;
 
   /* set bounds of U -- in respect to given bounds */
-/*    GEN.Umin = (DISTR.trunc[0] > -INFINITY) ? CDF(DISTR.trunc[0]) : 0.; */
-/*    GEN.Umax = (DISTR.trunc[1] < INFINITY)  ? CDF(DISTR.trunc[1]) : 1.; */
+  GEN.Umin = _unur_tdr_eval_cdfhat(gen,DISTR.trunc[0]);
+  GEN.Umax = _unur_tdr_eval_cdfhat(gen,DISTR.trunc[1]);
 
-  /* changelog not necessary */
-  /*    gen->distr.set |= UNUR_DISTR_SET_TRUNCATED; */
+  /* we have to disable adaptive rejection sampling */
+  GEN.max_ivs = GEN.n_ivs;
+
+  /* changelog */
+  gen->distr.set |= UNUR_DISTR_SET_TRUNCATED;
 
 #ifdef UNUR_ENABLE_LOGGING
   /* write info into log file */
@@ -729,6 +732,96 @@ unur_tdr_chg_truncated( struct unur_gen *gen, double left, double right )
   return 1;
   
 } /* end of unur_tdr_chg_truncated() */
+
+/*---------------------------------------------------------------------------*/
+
+static double
+_unur_tdr_eval_cdfhat( struct unur_gen *gen, double x )
+     /*----------------------------------------------------------------------*/
+     /* evaluate CDF of hat at x (i.e. \int_\infty^x hat(t) dt)              */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*   x   ... point at which hat(x) has to be computed                   */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   CDF of hat(x) or                                                   */
+     /*   0. in case of error                                                */
+     /*----------------------------------------------------------------------*/
+{
+  struct unur_tdr_interval *iv;
+  double Aint;
+  double cdf;
+
+  /* check arguments */
+  CHECK_NULL(gen,0.);  COOKIE_CHECK(gen,CK_TDR_GEN,0.);
+
+  /* the easy case */
+  if (DISTR.trunc[0] <= -INFINITY) return 0.;
+  if (DISTR.trunc[1] >=  INFINITY) return 1.;
+
+  /* there are differencies between variant GW and variant PS */
+  switch (gen->variant & TDR_VARMASK_VARIANT) {
+
+  case TDR_VARIANT_GW:    /* original variant (Gilks&Wild) */
+
+    /* find interval (sequential search) */
+    for (iv = GEN.iv; iv->next!=NULL; iv=iv->next) {
+      COOKIE_CHECK(iv,CK_TDR_IV,INFINITY); 
+      /* iv->x is left construction point of interval */
+      if (x < iv->next->x) break;
+    }
+
+    if (iv->next == NULL)
+      /* right boundary of domain */
+      return 1.;
+
+    /* now iv->x < x <= iv->next->x */
+
+    /* compute are below hat between construction point of tangent and x. */
+    /* we have to cases on either side of the intersection point.         */
+
+    if (x < iv->ip) {
+      /* left h.s. of intersection point */
+      Aint = _unur_tdr_interval_area( gen, iv, iv->dTfx, x);
+      cdf = iv->Acum - iv->Ahat + Aint;
+      if (cdf < 0.) cdf = 0.;
+    }
+    else {
+      /* right h.s. of intersection point */
+      Aint = _unur_tdr_interval_area( gen, iv->next, iv->next->dTfx, x);
+      cdf = iv->Acum - Aint;
+    }
+
+    /* normalize to one (and mind round-off errors) */
+    cdf /= GEN.Atotal;
+    return ((cdf > 1.) ? 1. : cdf);
+
+    
+  case TDR_VARIANT_PS:    /* proportional squeeze */
+#if 0
+    /* find interval (sequential search) */
+    for (iv = GEN.iv; iv->next!=NULL; iv=iv->next) {
+      COOKIE_CHECK(iv,CK_TDR_IV,INFINITY); 
+      if (x > iv->ip) break;
+    }
+#endif
+    return 1.;
+
+  case TDR_VARIANT_IA:    /* immediate acceptance */
+    /* this variant is not a pure rejection algorithm, but a
+       composition method. Thus it does not make to much sense
+       to compute the "CDF" of the hat.
+    */
+  default:
+    _unur_error(GENTYPE,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
+    return 0.;
+  }
+
+  return 1.;
+
+
+} /* end of _unur_tdr_eval_cdfhat() */
 
 /*****************************************************************************/
 

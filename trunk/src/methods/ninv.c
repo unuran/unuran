@@ -706,8 +706,8 @@ unur_ninv_chg_truncated( struct unur_gen *gen, double left, double right )
   GEN.Umin = (DISTR.trunc[0] > -INFINITY) ? CDF(DISTR.trunc[0]) : 0.;
   GEN.Umax = (DISTR.trunc[1] < INFINITY)  ? CDF(DISTR.trunc[1]) : 1.;
 
-  /* changelog not necessary */
-  /*    gen->distr.set |= UNUR_DISTR_SET_TRUNCATED; */
+  /* changelog */
+  gen->distr.set |= UNUR_DISTR_SET_TRUNCATED;
 
 #ifdef UNUR_ENABLE_LOGGING
   /* write info into log file */

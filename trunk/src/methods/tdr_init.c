@@ -91,6 +91,10 @@ _unur_tdr_init( struct unur_par *par )
   /* make initial guide table */
   _unur_tdr_make_guide_table(gen);
 
+  /* set boundaries for U */
+  GEN.Umin = 0.;
+  GEN.Umax = 1.;
+
 #ifdef UNUR_ENABLE_LOGGING
   /* write info into log file */
   if (gen->debug) _unur_tdr_debug_init(par,gen);
@@ -1087,7 +1091,7 @@ _unur_tdr_ps_interval_parameter( struct unur_gen *gen, struct unur_tdr_interval 
      squeeze ration = min_{boundary points} PDF(x) / hat(x) */
   
   /* left boundary point */
-  hxl = _unur_tdr_eval_hat(gen,iv,iv->ip);
+  hxl = _unur_tdr_eval_intervalhat(gen,iv,iv->ip);
   if (_unur_FP_greater(iv->fip, hxl) ) {
     /* PDF(x) > hat(x); this should not happen */
     if (_unur_FP_approx(iv->fip, hxl)) {
@@ -1104,7 +1108,7 @@ _unur_tdr_ps_interval_parameter( struct unur_gen *gen, struct unur_tdr_interval 
   iv->sq = (_unur_FP_is_infinity(hxl) || hxl <= 0.) ? 0. : iv->fip / hxl;
 
   /* right boundary point */
-  hxr = _unur_tdr_eval_hat(gen,iv,iv->next->ip);
+  hxr = _unur_tdr_eval_intervalhat(gen,iv,iv->next->ip);
   if (_unur_FP_greater(iv->next->fip, hxr)) {
     /* PDF(x) > hat(x); this should not happen */
     if (_unur_FP_approx(iv->fip, hxr)) {
@@ -1341,40 +1345,43 @@ _unur_tdr_interval_area( struct unur_gen *gen, struct unur_tdr_interval *iv, dou
 /*---------------------------------------------------------------------------*/
 
 static double
-_unur_tdr_eval_hat( struct unur_gen *gen, struct unur_tdr_interval *iv, double x )
-     /*---------------------------------------------------------------------------*/
-     /* evaluate hat at x in interval.                                            */
-     /*                                                                           */
-     /* parameters:                                                               */
-     /*   gen   ... pointer to generator object                                   */
-     /*   iv    ... pointer to interval that stores construction point of tangent */
-     /*   x     ... point at which hat(x) has to be computed                      */
-     /*                                                                           */
-     /* return:                                                                   */
-     /*   hat(x) or                                                               */
-     /*   INFINITY if x is not finite or the hat cannot be computed               */
-     /*                                                                           */
-     /* comment:                                                                  */
-     /*   x0    ... construction point of tangent (= iv->x)                       */
-     /*                                                                           */
-     /* log(x)                                                                    */
-     /*   hat(x) = f(x0) * exp( Tf'(x0)(x - x_0) )                                */
-     /*                                                                           */
-     /* 1/sqrt(x)                                                                 */
-     /*   hat(x) = 1/(Tf(x0) + Tf'(x0)(x - x_0))^2                                */
-     /*                                                                           */
-     /*---------------------------------------------------------------------------*/
+_unur_tdr_eval_intervalhat( struct unur_gen *gen, struct unur_tdr_interval *iv, double x )
+     /*----------------------------------------------------------------------*/
+     /* evaluate hat at x in interval.                                       */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*   iv  ... pointer to interval that stores constr. point of tangent   */
+     /*   x   ... point at which hat(x) has to be computed                   */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   hat(x) or                                                          */
+     /*   0. if x is not finite or                                           */
+     /*   INFINITY the hat cannot be computed                                */
+     /*                                                                      */
+     /* comment:                                                             */
+     /*   x0    ... construction point of tangent (= iv->x)                  */
+     /*                                                                      */
+     /* log(x)                                                               */
+     /*   hat(x) = f(x0) * exp( Tf'(x0)(x - x_0) )                           */
+     /*                                                                      */
+     /* 1/sqrt(x)                                                            */
+     /*   hat(x) = 1/(Tf(x0) + Tf'(x0)(x - x_0))^2                           */
+     /*                                                                      */
+     /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  CHECK_NULL(gen,0);  COOKIE_CHECK(gen,CK_TDR_GEN,0);
-  CHECK_NULL(iv,0);   COOKIE_CHECK(iv,CK_TDR_IV,0); 
+  CHECK_NULL(gen,0);  COOKIE_CHECK(gen,CK_TDR_GEN,INFINITY);
+  CHECK_NULL(iv,0);   COOKIE_CHECK(iv,CK_TDR_IV,INFINITY); 
 
-  /* we cannot compute the hat if any of the parameters are not finite */
-  if ( _unur_FP_is_infinity(x) || _unur_FP_is_minus_infinity(x) ||
-       _unur_FP_is_infinity(iv->x) || _unur_FP_is_minus_infinity(iv->x) ||
-       _unur_FP_is_minus_infinity(iv->Tfx) || 
-       _unur_FP_is_infinity(iv->dTfx) )
+  /* we cannot compute the hat at x if any of the parameters are not finite  */
+  if ( _unur_FP_is_minus_infinity(iv->Tfx) || _unur_FP_is_infinity(iv->dTfx) )
     return INFINITY;
+
+  /* at +/- infinity the hat should be 0 (or infinity) */
+  if ( _unur_FP_is_infinity(x) || _unur_FP_is_minus_infinity(x) ||
+       _unur_FP_is_infinity(iv->x) || _unur_FP_is_minus_infinity(iv->x) )
+    return 0.;
 
   /* now evaluate hat at x */
   switch( gen->variant & TDR_VARMASK_T ) {
@@ -1396,12 +1403,13 @@ _unur_tdr_eval_hat( struct unur_gen *gen, struct unur_tdr_interval *iv, double x
     /* T(x) = -1./x^c */
     /** TODO **/
     return INFINITY;
+
+  default:
+    _unur_error(GENTYPE,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
+    return INFINITY;
   }
 
-  /* in case of error */
-  return INFINITY;
-
-} /* end of _unur_tdr_eval_hat() */
+} /* end of _unur_tdr_eval_intervalhat() */
 
 /*****************************************************************************/
 

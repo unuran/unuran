@@ -115,8 +115,8 @@ _unur_tdr_gw_sample( struct unur_gen *gen )
 
   while (1) {
 
-    /* sample from U(0,1) */
-    U = _unur_call_urng(urng);
+    /* sample from U( Umin, Umax ) */
+    U = GEN.Umin + _unur_call_urng(urng) * (GEN.Umax - GEN.Umin);
 
     /* look up in guide table and search for segment */
     iv =  GEN.guide[(int) (U * GEN.guide_size)];
@@ -218,16 +218,22 @@ _unur_tdr_gw_sample( struct unur_gen *gen )
     fx = PDF(X);
 
     /* being above squeeze is bad. improve the situation! */
-    if (GEN.n_ivs < GEN.max_ivs && GEN.max_ratio * GEN.Atotal > GEN.Asqueeze)
-      if ( !_unur_tdr_gw_interval_split(gen, iv, X, fx) ) {
-	/* condition for PDF is violated! */
-	_unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"");
-	if (gen->variant & TDR_VARFLAG_PEDANTIC) {
-	  /* replace sampling routine by dummy routine that just returns INFINITY */
-	  SAMPLE = _unur_sample_cont_error;
-	  return INFINITY;
+    if (GEN.n_ivs < GEN.max_ivs) {
+      if (GEN.max_ratio * GEN.Atotal > GEN.Asqueeze) {
+	if ( !_unur_tdr_gw_interval_split(gen, iv, X, fx) ) {
+	  /* condition for PDF is violated! */
+	  _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"");
+	  if (gen->variant & TDR_VARFLAG_PEDANTIC) {
+	    /* replace sampling routine by dummy routine that just returns INFINITY */
+	    SAMPLE = _unur_sample_cont_error;
+	    return INFINITY;
+	  }
 	}
+	if (!(GEN.max_ratio * GEN.Atotal > GEN.Asqueeze))
+	  /* no more construction points (avoid to many second if statement above */
+	  GEN.max_ivs = GEN.n_ivs;
       }
+    }
 
     if (V <= fx)
       /* between PDF and squeeze */
@@ -274,8 +280,8 @@ _unur_tdr_gw_sample_check( struct unur_gen *gen )
 
   while (1) {
 
-    /* sample from U(0,1) */
-    U = _unur_call_urng(urng);
+    /* sample from U( Umin, Umax ) */
+    U = GEN.Umin + _unur_call_urng(urng) * (GEN.Umax - GEN.Umin);
 
     /* look up in guide table and search for segment */
     iv =  GEN.guide[(int) (U * GEN.guide_size)];
@@ -396,17 +402,24 @@ _unur_tdr_gw_sample_check( struct unur_gen *gen )
       /* between PDF and squeeze */
       return X;
 
-    /* evaluation of PDF is expensive. improve the situation! */
-    if (GEN.n_ivs < GEN.max_ivs && GEN.max_ratio * GEN.Atotal > GEN.Asqueeze)
-      if ( !_unur_tdr_gw_interval_split(gen, iv, X, fx) ) {
-	/* condition for PDF is violated! */
-	_unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"");
-	if (gen->variant & TDR_VARFLAG_PEDANTIC) {
-	  /* replace sampling routine by dummy routine that just returns INFINITY */
-	  SAMPLE = _unur_sample_cont_error;
-	  return INFINITY;
+    /* being above squeeze is bad. improve the situation! */
+    if (GEN.n_ivs < GEN.max_ivs) {
+      if (GEN.max_ratio * GEN.Atotal > GEN.Asqueeze) {
+	if ( !_unur_tdr_gw_interval_split(gen, iv, X, fx) ) {
+	  /* condition for PDF is violated! */
+	  _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"");
+	  if (gen->variant & TDR_VARFLAG_PEDANTIC) {
+	    /* replace sampling routine by dummy routine that just returns INFINITY */
+	    SAMPLE = _unur_sample_cont_error;
+	    return INFINITY;
+	  }
 	}
+	if (!(GEN.max_ratio * GEN.Atotal > GEN.Asqueeze))
+	  /* no more construction points (avoid to many second if statement above */
+	  GEN.max_ivs = GEN.n_ivs;
       }
+    }
+
     /* reject and try again */
 
     /* use the auxilliary generator the next time

@@ -442,9 +442,15 @@ static double _unur_tdr_interval_area( struct unur_gen *gen, struct unur_tdr_int
 /* compute area below piece of hat or slope in                               */
 /*---------------------------------------------------------------------------*/
 
-static double _unur_tdr_eval_hat( struct unur_gen *gen, struct unur_tdr_interval *iv, double x );
+static double _unur_tdr_eval_intervalhat( struct unur_gen *gen,
+					  struct unur_tdr_interval *iv, double x );
 /*---------------------------------------------------------------------------*/
 /* evaluate hat at x in interval.                                            */
+/*---------------------------------------------------------------------------*/
+
+static double _unur_tdr_eval_cdfhat( struct unur_gen *gen, double x );
+/*---------------------------------------------------------------------------*/
+/* evaluate CDF of hat at x.                                                 */
 /*---------------------------------------------------------------------------*/
 
 static int _unur_tdr_gw_interval_split( struct unur_gen *gen, 

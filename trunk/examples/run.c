@@ -39,13 +39,18 @@ int main()
 
   unur_set_default_urng(urng);
 
-  fpm[0] = 0.001;
-  distr = unur_distr_geometric(fpm,1);
-  //  unur_distr_discr_set_domain(distr, 0, 100);
+  distr = unur_distr_normal(NULL,0);
+  //  unur_distr_cont_set_domain(distr,1,20);
 
-  par = unur_dgt_new(distr);
+  par = unur_tdr_new(distr);
+  gen = unur_init(par);
 
-  unur_run_tests( par, RUN_TESTS) ;
+  unur_tdr_chg_truncated(gen,3,3.1);
+
+  unur_test_chi2( gen, 100, 0, 20, 1 );
+
+
+  // unur_run_tests( par, RUN_TESTS) ;
 
   unur_distr_free(distr);
 

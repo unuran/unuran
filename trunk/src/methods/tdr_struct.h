@@ -91,6 +91,8 @@ struct unur_tdr_gen {
   double  Asqueeze;             /* area below squeeze                        */
 
   double  c_T;                  /* parameter c for transformation T_c        */           
+  double  Umin, Umax;           /* bounds for iid random variable in respect to
+				   the given (truncated) domain of the distr.*/
 
   struct unur_tdr_interval *iv; /* pointer to linked list of intervals       */
   int     n_ivs;                /* number of intervals                       */

@@ -47,7 +47,7 @@ my %SUPPORTED_DISTR_TYPES =
     );
 
 # Unsupported types:
-#   corder, cvec, cvemp
+#   corder, cvec, cvemp, matr
 
 # Commands substituted by string parser
 my %SUBST_COMMANDS =
@@ -66,6 +66,14 @@ my %IGNORED_COMMANDS =
       'unur_distr_cont_set_hr'   => 1,
       'unur_distr_discr_set_pmf' => 1,
       'unur_distr_discr_set_cdf' => 1
+    );
+
+# distributions ignored by string parser
+# (We cannot handle this distributions yet. Thus we will ignore them 
+# until we find some time to fix this.)
+my %IGNORED_DISTRIBUTIONS =
+    ( 'multinormal' => 1,   
+      'correlation' => 1
     );
 
 ##############################################################################
@@ -224,6 +232,14 @@ sub make_list_of_distributions {
 
     # Make list of all distributions
     foreach my $distr (sort keys %{$DISTR}) {
+
+	# check whether command should be ignored
+	if ($IGNORED_DISTRIBUTIONS{$distr}) {
+	    # ignore this distribution
+	    $msg_ignored .= "  unur_distr_$distr()\n";
+	    next;
+	}
+
 	print STDERR $distr,"  ";
 
 	my $char = substr $distr,0,1;

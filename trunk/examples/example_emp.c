@@ -5,9 +5,9 @@
 int main()
 {
   int    i;
-  double data[15] = {-0.1, 0.05, -0.5, 0.08, 0.13,\
-                     -0.21,-0.44, -0.43, -0.33, -0.3,\
-                     0.18, 0.2, -0.37, -0.29, -0.9};
+  double data[15] = { -0.1,  0.05, -0.5,   0.08,  0.13,\
+		      -0.21,-0.44, -0.43, -0.33, -0.3, \
+		       0.18, 0.2,  -0.37, -0.29, -0.9 };
 
   UNUR_DISTR *distr;  /* distribution                              */
   UNUR_PAR   *par;    /* parameter                                 */
@@ -15,7 +15,7 @@ int main()
 
   /* create distribution object and set empirical sample           */
   distr = unur_distr_cemp_new();
-  unur_distr_cemp_set_data(distr, &data[0], 15); 
+  unur_distr_cemp_set_data(distr, data, 15); 
 
   par = unur_empk_new(distr);
 

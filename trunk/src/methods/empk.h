@@ -158,6 +158,8 @@ int unur_empk_set_beta( UNUR_PAR *parameters, double beta );
    By default Gaussian distribution is assumed for the sample
    (@var{beta} = 1.3637439). There is no requirement to change
    @var{beta}.
+
+   Default: @code{1.3637439}
 */
 
 int unur_empk_set_smoothing( UNUR_PAR *parameters, double smoothing );
@@ -173,7 +175,10 @@ int unur_empk_chg_smoothing( UNUR_GEN *generator, double smoothing );
    equal to the kernel.
    Default is 1 which results in a smoothing parameter minimising
    the MISE (mean integrated squared error) if the data are not too
-   far away from normal.
+   far away from normal. If a large smoothing factor is used, then
+   variance correction must be switched on.
+
+   Default: @code{1}
 */
 
 int unur_empk_set_varcor( UNUR_PAR *parameters, int varcor );
@@ -186,7 +191,7 @@ int unur_empk_chg_varcor( UNUR_GEN *generator, int varcor );
    density estimation is the same as the sample variance. However this 
    increases the MISE of the estimation a little bit.
 
-   Default is TRUE.
+   Default is FALSE.
 */
 
 int unur_empk_set_positive( UNUR_PAR *parameters, int positive );

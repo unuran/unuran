@@ -320,8 +320,8 @@ unur_empk_new( struct unur_distr *distr )
   /* kernel */
   PAR.kerngen   = NULL;          /* random variate generator for kernel      */
 
-  par->method   = UNUR_METH_EMPK; /* method and default variant              */
-  par->variant  = EMPK_VARFLAG_VARCOR; /* default variant                    */
+  par->method   = UNUR_METH_EMPK; /* method                                  */
+  par->variant  = 0u;             /* default variant                         */
 
   par->set      = 0u;                 /* inidicate default parameters        */    
   par->urng     = unur_get_default_urng(); /* use default urng               */
@@ -614,7 +614,8 @@ unur_empk_chg_smoothing( struct unur_gen *gen, double smoothing )
   /* store smoothing factor */
   GEN.smoothing = smoothing;
 
-  /* no changelog required */
+  /* changelog */
+  gen->set |= EMPK_SET_SMOOTHING;
 
   return 1;
 
@@ -646,7 +647,7 @@ unur_empk_set_varcor( struct unur_par *par, int varcor )
   _unur_check_par_object( par,EMPK );
 
   /* kernel variance known ? */
-  if (! (par->set &= EMPK_SET_KERNELVAR) ) {
+  if (! (par->set & EMPK_SET_KERNELVAR) ) {
     _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"variance correction disabled");
     return 0;
   }
@@ -682,7 +683,7 @@ unur_empk_chg_varcor( struct unur_gen *gen, int varcor )
   _unur_check_gen_object( gen,EMPK );
   
   /* kernel variance known ? */
-  if (! (gen->set &= EMPK_SET_KERNELVAR) ) {
+  if (! (gen->set & EMPK_SET_KERNELVAR) ) {
     _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"variance correction disabled");
     return 0;
   }
@@ -765,18 +766,18 @@ _unur_empk_init( struct unur_par *par )
     return NULL; }
   COOKIE_CHECK(par,CK_EMPK_PAR,NULL);
 
+  /* Is there already a running kernel generator */
+  if (PAR.kerngen == NULL)
+    if ( !unur_empk_set_kernel( par, UNUR_DISTR_GAUSSIAN ) ) {
+      free(par); return NULL; }
+
   /* if variance correction is used, the variance of the kernel
      must be known and positive */
   if( (par->variant & EMPK_VARFLAG_VARCOR) &&
       !( (par->set & EMPK_SET_KERNELVAR) && PAR.kernvar > 0. )) {
     _unur_warning(GENTYPE,UNUR_ERR_GEN_DATA,"variance correction disabled");
-    par->variant |= ~EMPK_SET_KERNELVAR;
+    par->variant &= ~EMPK_SET_KERNELVAR;
   }
-
-  /* Is there already a running kernel generator */
-  if (PAR.kerngen == NULL)
-    if ( !unur_empk_set_kernel( par, UNUR_DISTR_GAUSSIAN ) ) {
-      free(par); return NULL; }
 
   /* set uniform random number generator */
   PAR.kerngen->urng = par->urng;

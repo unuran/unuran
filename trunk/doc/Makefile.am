@@ -16,7 +16,8 @@ unuran_examples = \
  ref_example_cont.texi  ref_example_cont_str.texi \
  ref_example_discr.texi ref_example_discr_str.texi \
  ref_example_emp.texi   ref_example_emp_str.texi \
- ref_example_vemp.texi
+ ref_example_vemp.texi  ref_example_FuncStr.texi
+
 
 unuran_TEXINFOS = \
  FuncString.texi \

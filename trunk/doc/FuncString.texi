@@ -6,6 +6,14 @@ But of course the possibilities are more restricted as a definition by C-Code (@
 
 If you use a self defined function of course you have to proof if your definitions fulfill the qualifications.
 
+The notation is very similar do the most programming language and mathamatical programs (see also the examples at the end of this capter).
+
+Especially with relation operators it is very easy to define functions in pieces :
+So you can define the piecewise linear function defined throug the points (-1,0),(0,1),(1,0) with 
+@example
+(x>-1)*(x<0)*(1+x) + (x>=0)*(x<1)*(1-x) .
+@end example  
+
 It is possible to use the string-defined function with the common interface as well as in the StringAPI.
 
 @subheading common interface 
@@ -22,24 +30,7 @@ unur_distr_<cont/discr>_get_<..>str.
 
 How it works you can see in the following example:
 @example
-#include <unuran.h>
-
-int main()
-@{
-  UNUR_DISTR *distr;    /* distribution object   */
-  char       *functionstring = "1-x*x";
-
-  distr = unur_distr_cont_new();
-  unur_distr_cont_set_pdfstr(distr,functionstring); 
- 
-
-  printf("functionstring_:\n%s\n",unur_distr_cont_get_pdfstr(distr));
-  unur_distr_free(distr);
-
-  exit (EXIT_SUCCESS);
-@} 
-
-
+@include ref_example_FuncStr.texi
 @end example
 
 
@@ -51,56 +42,115 @@ int main()
 @subheading symbols and examples
 
 The string isn't case-sensitive and use the usual priorities of operations (sorted from highest to lowest preceedance: bracket, system functions, relation operators, power, multiplication, addition)
+You can use only on argument which must have the name 'x'. Parameters must written as real values.
 
 
+In the following table you can see all symbols you can use sorted by symbol groups:
 
-In the following table you can see all symbols you can use:
 
 @sp 1
 @cartouche
-@multitable {xxxxxxxxxxxxxxxxxxx} {xxxxxxxxxxx} {xxxxxxxxxxxxxxxxxxx} {xxxxxxxxxxxxxxxxxxxxxxx}
-@item symbol group     @tab symbols   @tab explanation   @tab examples 
-@item numbers
-@item           @tab @b{0-9}       @tab numbers       @tab 123   
-@item           @tab @b{.}         @tab comma         @tab 165.567  
-@item           @tab @b{e}         @tab exponet       @tab  123e-7
-@item relation operators
-@item           @tab @b{<}         @tab less          @tab 3*(x<1) 
-@item           @tab @b{=}         @tab equal         @tab 3*(2=x)
-@item           @tab @b{==}        @tab equal         @tab 3*(2==x)
-@item           @tab @b{>}         @tab greater       @tab 3*(x>1)
-@item           @tab @b{<=}        @tab less or equal @tab 3*(x<=1)      
-@item           @tab @b{<>}        @tab not equal     @tab 3*(x<>1)
-@item           @tab @b{!=}        @tab not equal     @tab 3*(2!=x)
-@item           @tab @b{>=}        @tab greater or equal @tab 3*(x>=1)
-@item special symbols
-@item           @tab @b{(}         @tab open bracket  @tab 2*(3+x)      
-@item           @tab @b{)}         @tab close bracket @tab 2*(3+x)
-@item           @tab @b{,}         @tab 
-@item arithmetic operators 
-@item           @tab @b{+}         @tab  addition       @tab 2+x
-@item           @tab @b{-}         @tab  subtraction    @tab 2-x
-@item           @tab @b{*}         @tab  multiplication @tab 2*x
-@item           @tab @b{/}         @tab  division       @tab x/2
-@item           @tab @b{^}         @tab  power          @tab x^2
-@item system constants: 
-@item           @tab @b{pi}        @tab  3,1415...
-@item           @tab @b{e}         @tab  2,7
-@item system functions: 
-@item           @tab @b{mod}      @tab mod(m,n) gives the remainder on devision m by n   @tab mod(x,2)   
-@item           @tab @b{exp}      @tab exponential function @tab exp(-x^2)
-@item           @tab @b{log}       @tab natural logarithm    @tab log(x)
-@item           @tab @b{sin}      @tab sine                 @tab sin(x)             
-@item           @tab @b{cos}      @tab cosine               @tab cos(x)
-@item           @tab @b{tan}      @tab tangent              @tab tan(x)
-@item           @tab @b{sec}      @tab secant               @tab sec(x*2)
-@item           @tab @b{sqrt}     @tab square root          @tab sqrt(2*x)
-@item           @tab @b{abs}      @tab absolute value       @tab abs(x)
-@item           @tab @b{sgn}      @tab sign function        @tab sign(x)*3 
-@item variable
-@item           @tab @b{x}        @tab variable             @tab 3*x^2
+@noindent
+@b{numbers}
+@multitable   {xxxxxxxxxxx} {xxxxxxxxxxxxxxxxxxxxxxxxxxxxx} {xxxxxxxxxxxxxxxxxxxxxxx} 
+@item         symbols   @tab explanation @tab examples 
+@item         @b{[numbers]} @tab numbers @tab 123   
+@item         @b{.}     @tab comma       @tab 165.567  
+@item         @b{e}     @tab exponet     @tab  123e-7
 @end multitable
 @end cartouche
+
+
+
+@sp 1
+@cartouche
+@noindent
+@b{relation operators}
+@multitable {xxxxxxxxxxx} {xxxxxxxxxxxxxxxxxxxxxxxxxxxxx} {xxxxxxxxxxxxxxxxxxxxxxx}
+@item       symbols       @tab explanation      @tab examples 
+@item       @b{<}         @tab less             @tab 3*(x<1) 
+@item       @b{=}, @b{==} @tab equal            @tab 3*(2=x), 3*(2==x)
+@item       @b{>}         @tab greater          @tab 3*(x>1)
+@item       @b{<=}        @tab less or equal    @tab 3*(x<=1)      
+@item       @b{<> , !=}   @tab not equal        @tab 3*(x<>1), (x!=1)
+@item       @b{>=}        @tab greater or equal @tab 3*(x>=1)
+@end multitable
+@end cartouche
+
+
+
+@sp 1
+@cartouche
+@noindent
+@b{special symbols}
+@multitable {xxxxxxxxxxx} {xxxxxxxxxxxxxxxxxxxxxxxxxxxxx} {xxxxxxxxxxxxxxxxxxxxxxx}
+@item symbols @tab explanation @tab examples 
+@item        @b{(}   @tab open bracket @tab 2*(3+x)      
+@item        @b{)}   @tab close bracket @tab 2*(3+x)
+@item        @b{,}   @tab 
+@end multitable
+@end cartouche
+
+
+@sp 1
+@cartouche
+@noindent
+@b{arithmetic operators}
+@multitable  {xxxxxxxxxxx} {xxxxxxxxxxxxxxxxxxxxxxxxxxxxx} {xxxxxxxxxxxxxxxxxxxxxxx}
+@item         symbols      @tab explanation      @tab examples 
+@item         @b{+}        @tab  addition        @tab 2+x
+@item         @b{-}        @tab  subtraction     @tab 2-x
+@item         @b{*}        @tab  multiplication  @tab 2*x
+@item         @b{/}        @tab  division        @tab x/2
+@item         @b{^}        @tab  power           @tab x^2
+@end multitable
+@end cartouche
+
+
+@sp 1
+@cartouche
+@noindent
+@b{system constants}
+@multitable  {xxxxxxxxxxx} {xxxxxxxxxxxxxxxxxxxxxxxxxxxxx} {xxxxxxxxxxxxxxxxxxxxxxx}
+@item         symbols      @tab explanation      @tab examples 
+@item         @b{pi}       @tab  pi: 3,1415...   @tab 3*pi+2
+@item         @b{e}        @tab  exponential constant: 2,7182... @tab 3*e+2       
+@end multitable
+@end cartouche
+
+
+@sp 1
+@cartouche
+@noindent
+@b{system functions}
+@multitable  {xxxxxxxxxxx} {xxxxxxxxxxxxxxxxxxxxxxxxxxxxx} {xxxxxxxxxxxxxxxxxxxxxxx}
+@item         symbols      @tab explanation      @tab examples 
+@item         @b{mod}      @tab mod(m,n) gives the remainder on devision m by n   @tab mod(x,2)   
+@item         @b{exp}      @tab exponential function @tab exp(-x^2)
+@item         @b{log}      @tab natural logarithm    @tab log(x)
+@item         @b{sin}      @tab sine                 @tab sin(x)             
+@item         @b{cos}      @tab cosine               @tab cos(x)
+@item         @b{tan}      @tab tangent              @tab tan(x)
+@item         @b{sec}      @tab secant               @tab sec(x*2)
+@item         @b{sqrt}     @tab square root          @tab sqrt(2*x)
+@item         @b{abs}      @tab absolute value       @tab abs(x)
+@item         @b{sgn}      @tab sign function        @tab sign(x)*3 
+@end multitable
+@end cartouche
+
+
+@sp 1
+@cartouche
+@noindent
+@b{variable}
+@multitable  {xxxxxxxxxxx} {xxxxxxxxxxxxxxxxxxxxxxxxxxxxx} {xxxxxxxxxxxxxxxxxxxxxxx}
+@item        symbols       @tab explanation      @tab examples 
+@item        @b{x}         @tab variable         @tab 3*x^2
+@end multitable
+@end cartouche
+
+
+
 @sp 2
 Several complex examples for string-defined 'distributions':
 
@@ -114,7 +164,19 @@ Several complex examples for string-defined 'distributions':
 exp(x^2)*(sin(x*cos(x^2-1))+1)*((x-3*pi*x)<1)
 
 (3*(2<>x)and(x>2))+x
+
+(x>-1)*(x<0)*(1+x) + (x>=0)*(x<1)*(1-x
 @end smallexample
+
+
+
+
+
+
+
+
+
+
 
 
 

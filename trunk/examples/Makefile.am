@@ -19,7 +19,7 @@ EXAMPLES = \
  example_discr example_discr_str \
  example_cont  example_cont_str \
  example_emp   example_emp_str \
- example_vemp
+ example_vemp  example_FuncStr
 
 noinst_PROGRAMS = $(EXAMPLES)
 

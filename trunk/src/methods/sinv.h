@@ -50,10 +50,9 @@
       SINV is a variant of numerical inversion, where the inverse CDF
       is approximated using splines. These splines have to be computed 
       in a setup step. However, it only works for distributions with 
-      bounded domain (i.e., for distributions with unbounded domain the 
-      tails have to be chopped off using the unur_sinv_set_boundary()
-      call. If these boundaries are not set, SINV tries to find out
-      proper boundaries.
+      bounded domain; for distributions with unbounded domain the 
+      tails are chopped off such that the probability for the tail
+      regions is small compared to the given u-resulution.
       
       It is possible to use this method for generating from truncated
       distributions. It even can be changed for an existing generator
@@ -89,7 +88,12 @@ int unur_sinv_set_order( UNUR_PAR *parameters, int order);
 /* 
    Set order of Hermite interpolation. Valid orders are
    @code{1}, @code{3}, and @code{5}.
-   Default is @code{3}.
+   Notice that @var{order} greater than 1 requires the density 
+   of the distribution, and @var{order} greater than 3 even
+   requires the derivative of the density.
+
+   Default is @code{3} if the density is given
+   and @code{1} otherwise.
 */
 
 int unur_sinv_set_u_resolution( UNUR_PAR *parameters, double u_resolution);
@@ -106,17 +110,6 @@ int unur_sinv_set_guidefactor( UNUR_PAR *parameters, double factor );
    When set to @code{0}, then sequential search is used.
 
    Default is @code{1}.
-*/
-
-int unur_sinv_set_boundary( UNUR_PAR *parameters, double left, double right );
-/* 
-   Set the left and right boundary of the computation interval.
-   The probability outside of this region must not be of
-   computational relevance.
-   Of course @code{+/- UNUR_INFINITY} is not allowed.
-
-   If no such boundary is given, the CDF and the u-resolution is
-   used in a search procedure to find appropriate points.
 */
 
 int unur_sinv_chg_truncated(UNUR_GEN *gen, double left, double right);

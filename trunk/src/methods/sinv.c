@@ -12,7 +12,10 @@
  *   DESCRIPTION:                                                            *
  *                                                                           *
  *   REQUIRED:                                                               *
- *      pointer to the CDF and PDF                                           *
+ *      pointer to the CDF                                                   *
+ *                                                                           *
+ *   OPTIONAL:                                                               *
+ *      pointer to PDF and dPDF                                              *
  *                                                                           *
  *****************************************************************************
      $Id$
@@ -118,7 +121,6 @@ Approximative in u-richtung besser zu sein*/
 #define SINV_SET_ORDER          0x001u  /* order of polynomial               */
 #define SINV_SET_U_RESOLUTION   0x002u  /* maximal error in u                */
 #define SINV_SET_GUIDEFACTOR    0x004u  /* relative size of guide table      */
-#define SINV_SET_BOUNDARY       0x008u  /* boundary for comput. interval     */
 
 /*---------------------------------------------------------------------------*/
 
@@ -256,8 +258,6 @@ unur_sinv_new( const struct unur_distr *distr )
   if (DISTR_IN.cdf == NULL) {
     _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"CDF"); return NULL; }
 
-  /** TODO: ueberpruefe auch PDF und dPDF (je nach order) **/
-
   /* if default variant is Newton's method, then we also need the PDF ! */
 
   /* allocate structure */
@@ -268,7 +268,7 @@ unur_sinv_new( const struct unur_distr *distr )
   par->distr   = distr;         /* pointer to distribution object            */
 
   /* set default values */
-  PAR.order = 3;                /* order of polynomial                       */
+  PAR.order = (DISTR_IN.pdf) ? 3 : 1; /* order of polynomial                 */
   PAR.u_resolution = 1.0e-8;    /* maximal error allowed in u-direction      */
   PAR.guide_factor = 1.;        /* size of guide table / number of intervals */
   PAR.bleft = -1.e20;           /* left border of the computational domain   */
@@ -318,7 +318,15 @@ unur_sinv_set_order( struct unur_par *par, int order)
     return 0;
   }
 
-  /** TODO: ueberpruefe auch PDF und dPDF (je nach order) **/
+  if (order > 1 && par->distr->data.cont.pdf == NULL) {
+    _unur_warning(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"PDF");
+    return 0;
+  }
+
+  if (order > 3 && par->distr->data.cont.dpdf == NULL) {
+    _unur_warning(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"dPDF");
+    return 0;
+  }
 
   /* store date */
   PAR.order = order;
@@ -408,53 +416,6 @@ unur_sinv_set_guidefactor( struct unur_par *par, double factor )
 
 /*---------------------------------------------------------------------------*/
 
-int
-unur_sinv_set_boundary( struct unur_par *par, double left, double right )
-     /*----------------------------------------------------------------------*/
-     /* set left and right boundary of computation interval                  */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   par   ... pointer to parameter for building generator object       */
-     /*   left  ... left boundary point                                      */
-     /*   right ... right boundary point                                     */
-     /*                                                                      */
-     /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
-     /*                                                                      */
-     /* comment:                                                             */
-     /*   new boundary points must not be +/- INFINITY                       */
-     /*----------------------------------------------------------------------*/
-{
-  /* check arguments */
-  _unur_check_NULL( GENTYPE,par,0 );
-
-  /* check input */
-  _unur_check_par_object( par,SINV );
-
-  /* check new parameter for generator */
-  if (left >= right) {
-    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"domain");
-    return 0;
-  }
-  if (left <= -INFINITY || right >= INFINITY) {
-    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"domain (+/- INFINITY not allowed)");
-    return 0;
-  }
-
-  /* store date */
-  PAR.bleft = left;
-  PAR.bright = right;
-
-  /* changelog */
-  par->set |= SINV_SET_BOUNDARY;
-
-  return 1;
-
-} /* end of unur_sinv_set_boundary() */
-
-/*---------------------------------------------------------------------------*/
-
 int 
 unur_sinv_chg_truncated( struct unur_gen *gen, double left, double right )
      /*----------------------------------------------------------------------*/
@@ -517,8 +478,8 @@ unur_sinv_chg_truncated( struct unur_gen *gen, double left, double right )
   /* copy new boundaries into generator object */
   DISTR.trunc[0] = left;
   DISTR.trunc[1] = right;
-/*    GEN.Umin = Umin; */
-/*    GEN.Umax = Umax; */
+  GEN.Umin = Umin;
+  GEN.Umax = Umax;
 
   /* changelog */
   gen->distr->set |= UNUR_DISTR_SET_TRUNCATED;
@@ -576,8 +537,8 @@ _unur_sinv_init( struct unur_par *par )
   DISTR.trunc[1] = DISTR.domain[1];
 
   /* set bounds of U -- in respect to given bounds                          */
-  GEN.CDFmin = GEN.Umin = (DISTR.trunc[0] > -INFINITY) ? CDF(DISTR.trunc[0]) : 0.;
-  GEN.CDFmax = GEN.Umax = (DISTR.trunc[1] < INFINITY)  ? CDF(DISTR.trunc[1]) : 1.;
+  GEN.Umin = GEN.CDFmin = (DISTR.trunc[0] > -INFINITY) ? CDF(DISTR.trunc[0]) : 0.;
+  GEN.Umax = GEN.CDFmax = (DISTR.trunc[1] < INFINITY)  ? CDF(DISTR.trunc[1]) : 1.;
 
   if (GEN.CDFmin > GEN.CDFmax) {
     _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"CDF not increasing");
@@ -699,8 +660,10 @@ _unur_sinv_create_table( struct unur_gen *gen )
   GEN.iv->next = _unur_sinv_interval_new(gen,GEN.bright,CDF(GEN.bright));
   if (GEN.iv->next == NULL) return 0;
 
-  for (iv=GEN.iv; iv->next!=NULL; )
+  for (iv=GEN.iv; iv->next!=NULL; ) {
+    COOKIE_CHECK(iv,CK_SINV_IV,0);
     iv = _unur_sinv_interval_adapt(gen,iv);
+  }
 
   /* last interval is only used to store right boundary */
   iv->spline[0] = iv->p;
@@ -729,10 +692,11 @@ _unur_sinv_interval_adapt( struct unur_gen *gen, struct unur_sinv_interval *iv )
   struct unur_sinv_interval *iv_new, *iv_tmp;
   double x, Fx;
 
-  /* 1st check: right most interval with CDF greater than 1.- TAILCUTOFF */
+  /* 1st check: right most interval (of at least 2)
+     with CDF greater than 1.- TAILCUTOFF */
 
   iv_tmp = iv->next->next;
-  if(iv_tmp && iv->next->u > 1. - max(SINV_TAILCUTOFF, 0.1*GEN.u_resolution)) {
+  if(iv_tmp && iv->next->u > 1. - min(SINV_TAILCUTOFF, 0.1*GEN.u_resolution)) {
     /* chop off right hand tail */
     free (iv_tmp);
     iv->next->next = NULL;
@@ -742,9 +706,10 @@ _unur_sinv_interval_adapt( struct unur_gen *gen, struct unur_sinv_interval *iv )
     return iv;
   }
 
-  /* 2nd check: is the left most interval with CDF less than TAILCUTOFF */
+  /* 2nd check: is the left most interval (of at least 2) 
+     with CDF less than TAILCUTOFF */
 
-  if (iv==GEN.iv && iv->next->u < max(SINV_TAILCUTOFF, 0.1*GEN.u_resolution)) {
+  if (iv==GEN.iv && iv->next->next && iv->next->u < min(SINV_TAILCUTOFF, 0.1*GEN.u_resolution)) {
     /* chop off left hand tail */
     iv_tmp = GEN.iv;
     GEN.iv = iv->next;
@@ -752,7 +717,7 @@ _unur_sinv_interval_adapt( struct unur_gen *gen, struct unur_sinv_interval *iv )
     GEN.N--;
     /* update left boundary */
     GEN.bleft = GEN.iv->p;
-    return iv->next;
+    return GEN.iv;
   }
 
   /* 3rd check: |u_i - u_{i-1}| must not exceed threshold value */
@@ -1047,6 +1012,7 @@ _unur_sinv_make_guide_table( struct unur_gen *gen )
   delta_U = GEN.CDFmax - GEN.CDFmin;
   imax = (GEN.N-1) * (GEN.order+2);
 
+  /* u value at end of interval */
 #define u(i)  (((GEN.intervals[(i)+GEN.order+2])-GEN.CDFmin)/delta_U)
 
   i = 0;
@@ -1063,15 +1029,6 @@ _unur_sinv_make_guide_table( struct unur_gen *gen )
 
 #undef u
 
-//  gen->gt[0]=0;
-//  for(j=1,i=0; j < gen->size_of_guidetable; j++)
-//    {
-//     while(gen->intervals[(i+1)*(gen->order+2)]<(j/(double)gen->size_of_guidetable))
-//       i++;
-//     gen->gt[j]=i;
-//    }
-
-
   /* if there has been an round off error, we have to complete the guide table */
   for( ; j<GEN.guide_size ;j++ )
     GEN.guide[j] = i;
@@ -1079,16 +1036,6 @@ _unur_sinv_make_guide_table( struct unur_gen *gen )
   /* o.k. */
   return 1;
 } /* end of _unur_sinv_make_guide_table() */
-
-
-
-//  gen->gt[0]=0;
-//  for(j=1,i=0; j < gen->size_of_guidetable; j++)
-//    {
-//     while(gen->intervals[(i+1)*(gen->order+2)]<(j/(double)gen->size_of_guidetable))
-//       i++;
-//     gen->gt[j]=i;
-//    }
 
 /*---------------------------------------------------------------------------*/
 
@@ -1129,7 +1076,11 @@ _unur_sinv_clone( const struct unur_gen *gen )
   /* auxiliary generator */
   if (gen->gen_aux) clone->gen_aux = unur_gen_clone( gen->gen_aux );
 
-  /* copy additional data for generator object */
+  /* copy tables for generator object */
+  CLONE.intervals = _unur_malloc( GEN.N*(GEN.order+2) * sizeof(double) );
+  memcpy( CLONE.intervals, GEN.intervals, GEN.N*(GEN.order+2) * sizeof(double) );
+  CLONE.guide = _unur_malloc( GEN.guide_size * sizeof(int) );
+  memcpy( CLONE.guide, GEN.guide, GEN.guide_size * sizeof(int) );
 
   return clone;
 
@@ -1161,7 +1112,18 @@ _unur_sinv_free( struct unur_gen *gen )
   /* we cannot use this generator object any more */
   SAMPLE = NULL;   /* make sure to show up a programming error */
 
+  /* free linked list of intervals */
+  if (GEN.iv) {
+    struct unur_sinv_interval *iv,*next;
+    for (iv = GEN.iv; iv != NULL; iv = next) {
+      next = iv->next;
+      free(iv);
+    }
+  }
+
   /* free tables */
+  if (GEN.intervals) free (GEN.intervals);
+  if (GEN.guide)     free (GEN.guide);
 
   /* free memory */
   _unur_distr_free(gen->distr);
@@ -1189,10 +1151,25 @@ _unur_sinv_sample( struct unur_gen *gen )
      /*   return 0.                                                          */
      /*----------------------------------------------------------------------*/
 { 
+  double U;
+  int i;
+
   /* check arguments */
   CHECK_NULL(gen,0.);  COOKIE_CHECK(gen,CK_SINV_GEN,0.);
 
-  return 0.;
+  /* sample from U( Umin, Umax ) */
+  U = GEN.Umin + _unur_call_urng(gen->urng) * (GEN.Umax - GEN.Umin);
+
+  /* look up in guide table and search for interval */
+  i =  GEN.guide[(int) (GEN.guide_size*(U-GEN.CDFmin)/(GEN.CDFmax-GEN.CDFmin))];
+  while (U > GEN.intervals[i+GEN.order+2])
+    i += GEN.order+2;
+
+  /* rescale uniform random number */
+  U = (U-GEN.intervals[i])/(GEN.intervals[i+GEN.order+2] - GEN.intervals[i]);
+
+  /* evaluate polynome */
+  return _unur_sinv_eval_polynomial( U, GEN.intervals+i+1, GEN.order );
 
 } /* end of _unur_sinv_sample() */
 
@@ -1239,9 +1216,8 @@ _unur_sinv_debug_init( const struct unur_gen *gen )
   _unur_print_if_default(gen,SINV_SET_ORDER);
   fprintf(log,"\n%s: u-resolution = %g",gen->genid,GEN.u_resolution);
   _unur_print_if_default(gen,SINV_SET_U_RESOLUTION);
-  fprintf(log,"\n%s: domain of computation = [%g,%g]",gen->genid,GEN.bleft,GEN.bright);
-  _unur_print_if_default(gen,SINV_SET_BOUNDARY);
-  fprintf(log,"\n%s:\tU in (%g,%g)\n",gen->genid,GEN.Umin,GEN.Umax);
+  fprintf(log,"\n%s: domain of computation = [%g,%g]\n",gen->genid,GEN.bleft,GEN.bright);
+  fprintf(log,"%s:\tU in (%g,%g)\n",gen->genid,GEN.Umin,GEN.Umax);
   fprintf(log,"%s:\n",gen->genid);
 
   fprintf(log,"%s: sampling from list of intervals: indexed search (guide table method)\n",gen->genid);
@@ -1250,6 +1226,8 @@ _unur_sinv_debug_init( const struct unur_gen *gen )
   fprintf(log,"\n%s:\n",gen->genid);
 
   _unur_sinv_debug_intervals(gen);
+
+  fflush(stdout);
 
 } /* end of _unur_sinv_debug_init() */
 

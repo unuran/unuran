@@ -30,8 +30,7 @@ int main()
 		     2., 4., 3.,
 		     1., 3., 3. };
 
-  /* "Marginal" distributions.                                   */
-  UNUR_DISTR *marginals[dim];
+  /* parameters for beta "marginal" distribution.                */
   double beta_params[2];
 
   /* Declare the three UNURAN objects.                           */
@@ -39,21 +38,17 @@ int main()
   UNUR_PAR   *par;      /* parameter object                      */
   UNUR_GEN   *gen;      /* generator object                      */
 
-  /* Create "marginal" distributions:                            */
+  /* Create a multivariate distribution object with given mean,  */
+  /* covariance matrix,and the "marginal" distributions          */
   /*   normal, Cauchy, and beta(3,5) distribution.               */
-  marginals[0] = unur_distr_normal(NULL,0);
-  marginals[1] = unur_distr_cauchy(NULL,0);
-  beta_params[0] = 3; beta_params[1] = 5;
-  marginals[2] = unur_distr_beta(beta_params,2);
-
-  /* Create a multivariate distribution object.                   */
   distr = unur_distr_cvec_new(dim);
   unur_distr_cvec_set_mean(distr,mean);
   unur_distr_cvec_set_covar(distr,covar);
-  unur_distr_cvec_set_stdmarginal_array(distr,marginals);
-  unur_distr_free(marginals[0]);
-  unur_distr_free(marginals[1]);
-  unur_distr_free(marginals[2]);
+  beta_params[0] = 3; beta_params[1] = 5;
+  unur_distr_cvec_set_stdmarginal_list(distr,
+				       unur_distr_normal(NULL,0),
+				       unur_distr_cauchy(NULL,0),
+				       unur_distr_beta(beta_params,2));
 
   /* Choose a method: VMT.                                       */
   par = unur_vmt_new(distr);

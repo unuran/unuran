@@ -97,10 +97,10 @@ unur_pdf_gamma( double x, double *params, int n_params )
     /* standardize */
     x = (x-gamma) / beta;
   case 1:  /* standard */
+    if (alpha == 1. && x >= 0.)
+      return exp( -x );
     if (x <= 0.)
       return 0.;
-    if (alpha == 1.)
-      return exp( -x );
     return exp( (alpha-1.)*log(x) - x );
     /*    return ( pow(x,alpha-1.) * exp(-x) ); */
 

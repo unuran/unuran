@@ -696,6 +696,7 @@ _unur_varou_cone_new(int dim)
       _unur_xmalloc( sizeof(struct unur_varou_cone)
                    + sizeof(long)*(dim+1)      /* vertex index  */
                    + sizeof(double)*(dim+1)    /* lengths       */
+                   + sizeof(double)*(dim+1)    /* spoint        */
                    + sizeof(double)*(dim+1) ); /* normal vector */
 
   /* we need a char * to get the following pointer arithmetic right */
@@ -703,8 +704,12 @@ _unur_varou_cone_new(int dim)
   s->index   = (long *)   (b + sizeof(struct unur_varou_cone));
   s->length  = (double *) (b + sizeof(struct unur_varou_cone)
                              + sizeof(long)*(dim+1) );
+  s->spoint  = (double *) (b + sizeof(struct unur_varou_cone)
+                             + sizeof(long)*(dim+1) 
+			     + sizeof(double)*(dim+1) );
   s->normal  = (double *) (b + sizeof(struct unur_varou_cone)
                              + sizeof(long)*(dim+1) 
+			     + sizeof(double)*(dim+1) 
 			     + sizeof(double)*(dim+1) );
 
   return s;
@@ -726,6 +731,7 @@ _unur_varou_cone_copy(int dim, struct unur_varou_cone *c_destination,
   block_size= sizeof(struct unur_varou_cone)
             + sizeof(long)*(dim+1)      /* vertex index  */
             + sizeof(double)*(dim+1)    /* lengths       */
+	    + sizeof(double)*(dim+1) ;  /* spoint        */
 	    + sizeof(double)*(dim+1) ;  /* normal vector */
 
   memcpy(c_destination, c_source, block_size);
@@ -735,8 +741,12 @@ _unur_varou_cone_copy(int dim, struct unur_varou_cone *c_destination,
   c_destination->index   = (long *)   (b + sizeof(struct unur_varou_cone));
   c_destination->length  = (double *) (b + sizeof(struct unur_varou_cone)
                                          + sizeof(long)*(dim+1) );
+  c_destination->spoint  = (double *) (b + sizeof(struct unur_varou_cone)
+                                         + sizeof(long)*(dim+1) 
+			                 + sizeof(double)*(dim+1) );
   c_destination->normal  = (double *) (b + sizeof(struct unur_varou_cone)
                                          + sizeof(long)*(dim+1) 
+			                 + sizeof(double)*(dim+1) 
 			                 + sizeof(double)*(dim+1) );
 
 
@@ -840,6 +850,8 @@ _unur_varou_cones_split( struct unur_gen *gen )
 
   dim = GEN.dim;
 
+printf("n_cone; n_infinite; mean; sum\n"); 
+
   while (GEN.n_cone <= UNUR_VAROU_MAX_CONES) {
 
     /* obtaining the number of bounded cones and their volume sum */
@@ -866,7 +878,7 @@ _unur_varou_cones_split( struct unur_gen *gen )
 /*
 printf("***************************************************************\n");
 */
-printf("n_cone=%08d n_infinite=%08d mean=%e sum=%e\n", 
+printf("%8d; %8d; %e; %e\n", 
         GEN.n_cone, GEN.n_cone - n_bounded, mean_volume, sum_volume);
 /*
 printf("***************************************************************\n");

@@ -25,33 +25,33 @@ int main()
   //unur_ninv_use_newton(par);
 
   /* Set uniform generator in parameter object */   
+  unur_ninv_set_table(par, 50);
   unur_set_urng(par, ug);    
 
   /* make generator object */
   gen = unur_init(par);
-
+  
   /* sample: print 100 random numbers */
   for (i=0; i<6; i++) {
     x = unur_sample_cont(gen);
     printf("%f\n",x);
   }
   unur_ninv_chg_max_iter(gen,10);
-  unur_ninv_chg_table(gen);
+  unur_ninv_chg_table(gen, 100);
+
+  fprintf(stderr, "vorherr\n");
+  unur_ninv_chg_table(gen, 500);
+  fprintf(stderr, "nachherr\n");
+ 
+  for (i=0; i<8; i++) {
+    x = unur_sample_cont(gen);
+    printf("1--%f\n",x);
+  }
 
   for (i=0; i<8; i++) {
     x = unur_sample_cont(gen);
-    printf("%f\n",x);
+    printf("2--%f\n",x);
   }
-
-  printf("Table off:\n");
-  unur_ninv_table_onoff(gen,0);
-  for (i=0; i<8; i++) {
-    x = unur_sample_cont(gen);
-    printf("%f\n",x);
-  }
-
-  printf("Table on:\n");
-  unur_ninv_table_onoff(gen,1);
 
   for (i=0; i<8; i++) {
     x = unur_sample_cont(gen);
@@ -63,13 +63,16 @@ int main()
   unur_ninv_chg_pdfparams(gen, params, 2);
   for (i=0; i<10; i++) {
     x = unur_sample_cont(gen);
-    printf("%f\n",x);
+    printf("3--%f\n",x);
   }
 
-  unur_ninv_chg_table(gen);
+  printf("vorher\n");
+  unur_ninv_chg_table(gen, 1000);
+  printf("nachher\n");
+  
   for (i=0; i<10; i++) {
     x = unur_sample_cont(gen);
-    printf("%f\n",x);
+    printf("4--%f\n",x);
   }
 
 

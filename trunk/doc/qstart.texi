@@ -16,13 +16,13 @@
 @c September 2000 Janka & Tirler                
 @c $Id$
 
-@set VERSION 0.03
-@set DATE October 2000
+@set VERSION 0.04
+@set DATE November 2000
 
 @dircategory Scientific software
 @direntry
-* unuran-ref: (unuran-ref).  UNURAN -- Universal Non-Uniform Random
-number generator
+* unuran-ref: (unuran-ref).  UNURAN -- Universal Non-Uniform RAndom
+Number generator
 @end direntry
 
 @ifinfo
@@ -96,6 +96,7 @@ Table of @ref{Contents}
 @menu
 * Overview::  Overview
 * Install::   Installing the thing
+* Contact::   Contact the authors
 * Remark::    Remark about this document
 @end menu
 
@@ -103,21 +104,45 @@ Table of @ref{Contents}
 @node Overview
 @section Overview
 @menu
-* target:: Target group
+* Explain:: What is UNURAN
+* Document:: Usage of this document
 @end menu
 
-@node target
-@subsection Target group
+@node Explain
+@subsection What is UNURAN
 
-UNURAN is designed for applications using non-standard distributions
+UNURAN (Universal Non-Uniform RAndom Number generator) is
+designed for applications using non-standard distributions
 where no seperate generator is yet available.
 UNURAN is also useful if the parameters of a standard distribution
 should be changed frequently.
-@*
-For applications depending on a standard distribution
-without changing the paramters a lot,
-it will be better to look for a specific tool for that distribution. 
 
+Additionaly there are lots of predifined distributions available
+(see @ref{Distributions}) but we recommend the usage of specific
+generators for applications depending on a standard distribution
+without changing the paramters a lot.
+
+UNURAN implements several methods for generating random numbers.
+The choice depents primary on what information about the
+distribution can be provided and---if the user is familar with
+the different methods---with the preferences of the user.
+
+
+@node Document
+@subsection Usage of this document
+
+We tried do design this document in a way one can
+use UNURAN with reading as little as possible.
+On basis of the available information about the density,
+one should choose a suitable method (see @ref{Requirements}).
+Then the Examples @ref{Ex1} and @ref{Ex2} in addition
+with a short look at section @ref{Selfmade} should be enough.
+
+The function for changing the parameters while sampling can be
+found in @ref{Function Reference}.
+
+The rest of this document is for users with knowledge about
+the methods who want to change method-specific parameters. 
 
 @node Install
 @section Install
@@ -151,6 +176,17 @@ If every user on your machine should be able to use UNURAN,
 you omit @file{--prefix=HOMEDIRECTORY} when calling @file{configure}
 (as usual the standard value of @file{$(prefix)} is @file{/usr/local}.
 Of course you can do this only if you have the right permissions.
+
+
+@node Contact
+@section Contact the authors
+
+If there are problems with UNURAN or you have any suggestions,
+please contact us via the UNURAN-homepage:
+@uref{http://statistik.wu-wien.ac.at}
+or via email:
+@email{leydold@@statistik.wu-wien.ac.at}
+
 
 @node Remark
 @section Remark about this document
@@ -262,7 +298,7 @@ With
 @end smallexample
 @*
 the method `AROU' is chosen for sampling and a parameter object `par'
-is generated.
+is generated. 
 @*
 For actual sampling it's necessary to build a generator object:
 @smallexample
@@ -507,6 +543,16 @@ int main()
 * Discrete::   Preset discrete distributions
 @end menu
 
+@noindent @strong{WARNING:} Naturally the computational accuracy
+limits the possible parameters. There shouldn't be problems
+when the parameters of a distribution are in a "reasonable" range but
+e.g. the normal distribution N(10^50,1) won't yield the desired results.
+(In this case it would be better generating N(0,1) and THEN
+transform the results.)
+@* Of course computational inaccuracy is not specific to UNURAN
+and should always kept in mind when working with computers.
+
+
 @node Arbitrary
 @section Arbitrary distributions
 
@@ -535,6 +581,15 @@ are set to the provided values and the remaining are set to the
 standard values in the order specified in this section.
 (See @ref{Ex1} (0 parameters provided)
  and @ref{Ex3} (2 parameters provided).)
+
+@noindent @strong{WARNING:} Naturally the computational accuracy
+limits the possible parameters. There shouldn't be problems
+when the parameters are in a "reasonable" range but e.g. the
+normal distribution N(10^50,1) won't yield the desired results.
+(In this case it would be better generating N(0,1) and THEN
+transform the results.)
+@* Of course computational inaccuracy is not specific to UNURAN
+and  should always kept in mind when working with computers.
 
 @include qstart_c_distributions.texi
 
@@ -600,7 +655,6 @@ E.g: NINV should use Newton's method:
 To change any parameter you habe to use the
 according function call documented in @ref{MethodsRef}.
 All parameters have default settings documented in @ref{Defaults}.
-
 
 
 @node Description

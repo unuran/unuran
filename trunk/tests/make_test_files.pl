@@ -37,6 +37,11 @@ my $unuran_h_file = "../src/unuran.h";
 #                                                          #
 ############################################################
 
+
+# seed for uniform random number generator.
+my $seed = int(rand 1000000) + 1;
+
+
 # get file names
 
 # program name ...
@@ -77,7 +82,6 @@ print "\n*/\n\n";
 my $method;
 my $gen_type;
 my $distr_type;
-my $urng;
 my $C_header_aux;
 
 my $section = "main";
@@ -118,7 +122,6 @@ while (1) {
 	if ( $subsection =~ /data/ ) {
 	    #read data ...
 	    if (/^\s*method\s*:\s*(\w+)/)        { $method = $1; }
-	    if (/^\s*urng\s*:\s*(.+)[\s\n]/)     { $urng = $1; }
 	}
 	elsif ( $subsection =~ /header/ ) {
 	    # add verbatim to C header (except conf comments) ...
@@ -137,8 +140,7 @@ while (1) {
 $C_header_aux =~ s/\\#/#/g;
 
 # check data ...
-die "Data missing" unless (defined $method and
-			   defined $urng);
+die "Data missing" unless (defined $method);
 
 # name of method 
 $method =~ tr/[A-Z]/[a-z]/;
@@ -180,8 +182,18 @@ int main()
 	}
 
 	/* set uniform random number generator */
-	urng = prng_new("$urng");
+#if UNUR_URNG_TYPE == UNUR_URNG_SIMPLE
+	{
+        double unur_urng_MRG31k3p (void);
+        urng = unur_urng_MRG31k3p;
+	}
+/* #elif UNUR_URNG_TYPE == UNUR_URNG_GENERIC */
+#elif UNUR_URNG_TYPE == UNUR_URNG_PRNG
+	urng = prng_new("mt19937($seed)");
 	unur_set_default_urng(urng);
+#else
+#error UNUR_URNG_TYPE not valid !!
+#endif  /* UNUR_URNG_TYPE */
 
 	/* set default debugging flag */
 	unur_set_default_debug(UNUR_DEBUG_ALL);
@@ -264,16 +276,6 @@ add_unur_set_verify_routine();
 #  end                                                     #
 #                                                          #
 ############################################################
-
-print <<EOM;
-/*---------------------------------------------------------------------------*/
-#else
-/*---------------------------------------------------------------------------*/
-int main() { exit(77); } /* ignore test */
-/*---------------------------------------------------------------------------*/
-#endif  /* T_$METHOD */
-/*---------------------------------------------------------------------------*/
-EOM
 
 ############################################################
 
@@ -1009,13 +1011,11 @@ sub print_C_prototypes {
 /*---------------------------------------------------------------------------*/
 #include "testunuran.h"
 /*---------------------------------------------------------------------------*/
-#ifdef T_$METHOD
-/*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*/
 /* global variables                                                          */
 
-static struct prng *urng;           /* uniform random number generator       */
+static UNUR_URNG *urng;             /* uniform random number generator       */
 
 static FILE *TESTLOG;               /* test log file                         */
 static FILE *UNURANLOG;             /* unuran log file                       */

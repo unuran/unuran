@@ -35,9 +35,9 @@
 #define RUN_DIS           0
 
 #define RUN_UTDR          0
-#define RUN_AROU          1
+#define RUN_AROU          0
 #define RUN_TDRSQRT       0
-#define RUN_TDRLOG        0
+#define RUN_TDRLOG        1
 #define RUN_TABL          0
 
 #define RUN_NORMAL        1
@@ -213,7 +213,7 @@ int main()
   unur_set_tdr_c(par,0.);
   unur_set_cpoints(par,30,NULL);
   unur_set_max_shratio(par,0.);
-  
+
   /* run tests */
   unur_run_tests(par,RUN_TESTS,unur_cdf_normal);
 
@@ -233,8 +233,6 @@ int main()
   unur_set_mode(par,0.);
   unur_set_domain(par,-50.,50.);
   unur_set_variant(par,1UL);
-
-  unur_set_check(par,0);
 
 /*    unur_set_max_intervals(par,1000); */
 /*    unur_set_max_shratio(par,1.); */
@@ -568,7 +566,7 @@ int main()
 #if RUN_AROU == 1
 
   par = unur_arou_new(unur_pdf_uniform,unur_dpdf_uniform);
-  unur_set_domain(par,-0.5,1.5);
+  unur_set_domain(par,0.,1.);
   unur_set_cpoints(par,30,NULL);
   unur_set_max_shratio(par,1.);
 
@@ -582,11 +580,11 @@ int main()
 #if RUN_TDRSQRT == 1
 
   par = unur_tdr_new(unur_pdf_uniform,unur_dpdf_uniform);
-  unur_set_mode(par,0.5);
-  unur_set_domain(par,0.,1.);
+/*    unur_set_mode(par,0.5); */
+  unur_set_domain(par,-0.5,1.5);
   unur_set_tdr_c(par,-0.5);
   unur_set_cpoints(par,30,NULL);
-  unur_set_max_shratio(par,0.);
+  unur_set_max_shratio(par,1.);
 /*    unur_set_debug(par,1); */
 
   /* run tests */
@@ -604,7 +602,7 @@ int main()
   unur_set_tdr_c(par,0.);
   unur_set_cpoints(par,30,NULL);
   unur_set_max_shratio(par,0.);
-  
+
   /* run tests */
   unur_run_tests(par,RUN_TESTS,unur_cdf_uniform);
 
@@ -616,7 +614,7 @@ int main()
     
   par = unur_tabl_new(unur_pdf_uniform);
   unur_set_mode(par,0.5);
-  unur_set_domain(par,0.,1.);
+  unur_set_domain(par,-1.5,2.5);
 /*    unur_set_variant(par,1UL); */
   unur_set_pdf_area(par,1.);
   unur_set_tabl_c(par,0.25);

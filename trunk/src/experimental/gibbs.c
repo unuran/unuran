@@ -166,7 +166,7 @@ unur_gibbs_new( const struct unur_distr *distr )
 
   /* allocate structure */
   par = _unur_par_new( sizeof(struct unur_gibbs_par) );
-  COOKIE_SET(par,CK_HITROU_PAR);
+  COOKIE_SET(par,CK_GIBBS_PAR);
 
   /* copy input */
   par->distr    = distr;      /* pointer to distribution object              */
@@ -388,7 +388,7 @@ _unur_gibbs_sample_cvec( struct unur_gen *gen, double *vec )
      /*   vec ... random vector (result)                                     */
      /*----------------------------------------------------------------------*/
 {
-  int d, dim; /* index used in dimension loops (0 <= d < dim) */
+  int i, d, dim; /* index used in dimension loops (0 <= d < dim) */
   long skip;
   double fpar[2]; /* parameter array */
   
@@ -415,12 +415,18 @@ _unur_gibbs_sample_cvec( struct unur_gen *gen, double *vec )
       unur_distr_cont_set_pdfparams( distr_conditional, fpar, 2 );	
 
       /* set the current point as vector parameter */
+      for (i=0; i<dim; i++) {
+      printf("GEN->point_current[%d]=%f\n", i, GEN->point_current[i]);
+      }
+      printf("---\n");
       unur_distr_cont_set_pdfparams_vec( distr_conditional, 0, GEN->point_current, dim );
 
       /* setting pdf and dpdf */
       unur_distr_cont_set_pdf(distr_conditional, _unur_gibbs_pdf_conditional);
       unur_distr_cont_set_dpdf(distr_conditional, _unur_gibbs_dpdf_conditional);
-      
+
+      distr_conditional->base = _unur_distr_cvec_clone( gen->distr );
+            
       par_conditional = unur_tdr_new(distr_conditional);
       gen_conditional = unur_init(par_conditional);
       
@@ -484,7 +490,7 @@ _unur_gibbs_free( struct unur_gen *gen )
 
 double _unur_gibbs_pdf_conditional(double x, const UNUR_DISTR *distr_conditional) {
    
-  const double *fpar;
+  const double *fpar, *xpar;
   double *xvec;
   int coordinate, dim;
   double pdf;
@@ -493,12 +499,14 @@ double _unur_gibbs_pdf_conditional(double x, const UNUR_DISTR *distr_conditional
   dim = fpar[0];
   coordinate = (int) fpar[1];
   
+  unur_distr_cont_get_pdfparams_vec( distr_conditional, 0, &xpar );    
+  
+  /* inserting actual coordinate */
   xvec = _unur_xmalloc( dim * sizeof(double));
-  unur_distr_cont_get_pdfparams_vec( distr_conditional, 0, (const double **) &xvec );    
+  memcpy(xvec, xpar, dim*sizeof(double));
   xvec[coordinate] = x;
   
-  pdf=0.; /* dummy */
-  /* pdf = unur_distr_cvec_eval_pdf(xvec, distr); */
+  pdf = unur_distr_cvec_eval_pdf(xvec, distr_conditional->base); 
   
   free(xvec);
   
@@ -510,8 +518,8 @@ double _unur_gibbs_pdf_conditional(double x, const UNUR_DISTR *distr_conditional
 
 double _unur_gibbs_dpdf_conditional(double x, const UNUR_DISTR *distr_conditional) {
   
-  const double *fpar;
-  double *xvec;
+  const double *fpar, *xpar;
+  double *xvec, *gradient;
   int coordinate, dim;
   double dpdf;
   
@@ -519,14 +527,19 @@ double _unur_gibbs_dpdf_conditional(double x, const UNUR_DISTR *distr_conditiona
   dim = fpar[0];
   coordinate = (int) fpar[1];
   
+  unur_distr_cont_get_pdfparams_vec( distr_conditional, 0, &xpar );    
+  
+  /* inserting actual coordinate */
   xvec = _unur_xmalloc( dim * sizeof(double));
-  unur_distr_cont_get_pdfparams_vec( distr_conditional, 0, (const double **) &xvec );    
+  memcpy(xvec, xpar, dim*sizeof(double));
   xvec[coordinate] = x;
   
-  dpdf=0.; /* dummy */
-  /* dpdf = unur_distr_cvec_eval_dpdf(xvec, distr); */
+  /* evaluating gradient vector */  
+  gradient = _unur_xmalloc( dim * sizeof(double));
+  unur_distr_cvec_eval_dpdf(gradient, xvec, distr_conditional->base);
+  dpdf = gradient[coordinate];
   
-  free(xvec);
+  free(xvec); free(gradient);
   
   return dpdf;
 } /* end of _unur_gibbs_dpdf_conditional() */

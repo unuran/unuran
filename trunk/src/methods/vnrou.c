@@ -73,6 +73,7 @@
 #include "unur_methods_source.h"
 #include "x_gen_source.h"
 #include "vnrou.h"
+#include "vnrou_struct.h"
 
 /*---------------------------------------------------------------------------*/
 /* Variants:                                                                 */
@@ -140,8 +141,8 @@ static void _unur_vnrou_debug_init( const struct unur_gen *gen );
 
 #define DISTR_IN  distr->data.cvec      /* data for distribution object      */
 
-#define PAR       par->data.vnrou        /* data for parameter object        */
-#define GEN       gen->data.vnrou        /* data for generator object        */
+#define PAR       ((struct unur_vnrou_par*)par->datap) /* data for parameter object */
+#define GEN       ((struct unur_vnrou_gen*)gen->datap) /* data for generator object */
 #define DISTR     gen->distr->data.cvec  /* data for distribution in generator object */
 #define SAMPLE    gen->sample.cvec       /* pointer to sampling routine      */     
 #define PDF(x)    _unur_cvec_PDF((x),(gen->distr))    /* call to PDF         */
@@ -183,21 +184,21 @@ unur_vnrou_new( const struct unur_distr *distr )
   }
 
   /* allocate structure */
-  par = _unur_xmalloc(sizeof(struct unur_par));
+  par = _unur_par_new( sizeof(struct unur_vnrou_par) );
   COOKIE_SET(par,CK_VNROU_PAR);
 
   /* copy input */
   par->distr    = distr;      /* pointer to distribution object              */
 
   /* copy number of dimensions from the distribution object */
-  PAR.dim = distr->dim;
+  PAR->dim = distr->dim;
 
 
   /* set default values */
-  PAR.r		= 1.; 	      /* r-parameter of the generalized method       */
-  PAR.vmax      = 0.;         /* v-boundary of bounding rectangle (unknown)  */
-  PAR.umin 	= NULL;       /* u-boundary of bounding rectangle (unknown)  */
-  PAR.umax 	= NULL;       /* u-boundary of bounding rectangle (unknown)  */
+  PAR->r		= 1.; 	      /* r-parameter of the generalized method       */
+  PAR->vmax      = 0.;         /* v-boundary of bounding rectangle (unknown)  */
+  PAR->umin 	= NULL;       /* u-boundary of bounding rectangle (unknown)  */
+  PAR->umax 	= NULL;       /* u-boundary of bounding rectangle (unknown)  */
   par->method   = UNUR_METH_VNROU;    /* method and default variant          */
   par->variant  = 0u;                 /* default variant                     */
   par->set      = 0u;                 /* inidicate default parameters        */    
@@ -237,7 +238,7 @@ unur_vnrou_set_u( struct unur_par *par, double *umin, double *umax )
   _unur_check_NULL( GENTYPE, umax, UNUR_ERR_NULL );
 
   /* check new parameter for generator */
-  dim = PAR.dim; /* making source code more readable */ 
+  dim = PAR->dim; /* making source code more readable */ 
   for (d=0; d<dim; d++) {
     if (!_unur_FP_greater(umax[d],umin[d])) {
       _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"umax <= umin");
@@ -246,8 +247,8 @@ unur_vnrou_set_u( struct unur_par *par, double *umin, double *umax )
   }
   
   /* set values */
-  PAR.umin = umin;
-  PAR.umax = umax;
+  PAR->umin = umin;
+  PAR->umax = umax;
   
   /* changelog */
   par->set |= VNROU_SET_U;
@@ -282,7 +283,7 @@ unur_vnrou_set_v( struct unur_par *par, double vmax )
   }
   
   /* store values */
-  PAR.vmax = vmax;
+  PAR->vmax = vmax;
 
   /* changelog */
   par->set |= VNROU_SET_V;
@@ -317,7 +318,7 @@ unur_vnrou_set_r( struct unur_par *par, double r )
   }
 
   /* store data */
-  PAR.r = r;
+  PAR->r = r;
 
   /* changelog */
   par->set |= VNROU_SET_R;
@@ -428,13 +429,13 @@ _unur_vnrou_init( struct unur_par *par )
   /* create a new empty generator object */
   gen = _unur_vnrou_create(par);
   if (!gen) { 
-    free(par); 
+    _unur_par_free(par); 
     return NULL; 
   }
 
   /* compute bounding rectangle */
   if (_unur_vnrou_rectangle(gen)!=UNUR_SUCCESS) {
-    free(par); _unur_vnrou_free(gen);
+    _unur_par_free(par); _unur_vnrou_free(gen);
     return NULL;
   }
 
@@ -444,7 +445,7 @@ _unur_vnrou_init( struct unur_par *par )
 #endif
 
   /* free parameters */
-  free(par);
+  _unur_par_free(par);
 
   return gen;
 
@@ -482,11 +483,11 @@ _unur_vnrou_rectangle( struct unur_gen *gen )
   rr = _unur_mrou_rectangle_new();
 
   rr->distr  = gen->distr;
-  rr->dim    = GEN.dim;
-  rr->umin   = GEN.umin;
-  rr->umax   = GEN.umax;
-  rr->r      = GEN.r;
-  rr->center = GEN.center; 
+  rr->dim    = GEN->dim;
+  rr->umin   = GEN->umin;
+  rr->umax   = GEN->umax;
+  rr->r      = GEN->r;
+  rr->center = GEN->center; 
   rr->genid  = gen->genid;
   
   /* calculate bounding rectangle */
@@ -495,14 +496,14 @@ _unur_vnrou_rectangle( struct unur_gen *gen )
 
   if (!(gen->set & VNROU_SET_V)) {
      /* user has not provided any upper bound for v */
-     GEN.vmax = rr->vmax;
+     GEN->vmax = rr->vmax;
   }
 
   if (!(gen->set & VNROU_SET_U)) {
     /* user has not provided any bounds for u */
-    for (d=0; d<GEN.dim; d++) {
-      GEN.umin[d] = rr->umin[d];
-      GEN.umax[d] = rr->umax[d];
+    for (d=0; d<GEN->dim; d++) {
+      GEN->umin[d] = rr->umin[d];
+      GEN->umax[d] = rr->umax[d];
     }
   }
 
@@ -536,7 +537,7 @@ _unur_vnrou_create( struct unur_par *par )
   CHECK_NULL(par,NULL);  COOKIE_CHECK(par,CK_VNROU_PAR,NULL);
 
   /* create new generic generator object */
-  gen = _unur_generic_create( par );
+  gen = _unur_generic_create( par, sizeof(struct unur_vnrou_gen) );
 
   /* magic cookies */
   COOKIE_SET(gen,CK_VNROU_GEN);
@@ -551,19 +552,19 @@ _unur_vnrou_create( struct unur_par *par )
   gen->clone = _unur_vnrou_clone;
 
   /* allocate memory for u-boundary arrays */
-  GEN.umin = _unur_xmalloc( PAR.dim * sizeof(double)); /* bounding rectangle */
-  GEN.umax = _unur_xmalloc( PAR.dim * sizeof(double)); /* bounding rectangle */
+  GEN->umin = _unur_xmalloc( PAR->dim * sizeof(double)); /* bounding rectangle */
+  GEN->umax = _unur_xmalloc( PAR->dim * sizeof(double)); /* bounding rectangle */
 
   /* copy parameters into generator object */
-  GEN.dim   = PAR.dim;              /* dimension */
-  GEN.r     = PAR.r;                /* r-parameter of the vnrou method */  
-  GEN.vmax  = PAR.vmax;             /* upper v-boundary of bounding rectangle */
+  GEN->dim   = PAR->dim;              /* dimension */
+  GEN->r     = PAR->r;                /* r-parameter of the vnrou method */  
+  GEN->vmax  = PAR->vmax;             /* upper v-boundary of bounding rectangle */
   
-  if (PAR.umin != NULL) memcpy(GEN.umin, PAR.umin, GEN.dim * sizeof(double));
-  if (PAR.umax != NULL) memcpy(GEN.umax, PAR.umax, GEN.dim * sizeof(double));
+  if (PAR->umin != NULL) memcpy(GEN->umin, PAR->umin, GEN->dim * sizeof(double));
+  if (PAR->umax != NULL) memcpy(GEN->umax, PAR->umax, GEN->dim * sizeof(double));
 
   /* get center of the distribution */
-  GEN.center = unur_distr_cvec_get_center(gen->distr);
+  GEN->center = unur_distr_cvec_get_center(gen->distr);
  
   /* initialize parameters */
 
@@ -589,7 +590,7 @@ _unur_vnrou_clone( const struct unur_gen *gen )
      /*   return NULL                                                        */
      /*----------------------------------------------------------------------*/
 { 
-#define CLONE clone->data.vnrou
+#define CLONE  ((struct unur_vnrou_gen*)clone->datap)
 
   struct unur_gen *clone;
 
@@ -600,15 +601,15 @@ _unur_vnrou_clone( const struct unur_gen *gen )
   clone = _unur_generic_clone( gen, GENTYPE );
 
   /* allocate memory for u-arrays and center */
-  CLONE.umin = _unur_xmalloc( GEN.dim * sizeof(double));
-  CLONE.umax = _unur_xmalloc( GEN.dim * sizeof(double));
+  CLONE->umin = _unur_xmalloc( GEN->dim * sizeof(double));
+  CLONE->umax = _unur_xmalloc( GEN->dim * sizeof(double));
   
   /* copy parameters into clone object */
-  memcpy(CLONE.umin, GEN.umin, GEN.dim * sizeof(double));
-  memcpy(CLONE.umax, GEN.umax, GEN.dim * sizeof(double));
+  memcpy(CLONE->umin, GEN->umin, GEN->dim * sizeof(double));
+  memcpy(CLONE->umax, GEN->umax, GEN->dim * sizeof(double));
 
   /* copy data */
-  CLONE.center = unur_distr_cvec_get_center(clone->distr);
+  CLONE->center = unur_distr_cvec_get_center(clone->distr);
 
   return clone;
 
@@ -634,22 +635,22 @@ _unur_vnrou_sample_cvec( struct unur_gen *gen, double *vec )
   CHECK_NULL(gen,RETURN_VOID);  
   COOKIE_CHECK(gen,CK_VNROU_GEN,RETURN_VOID); 
 
-  dim = GEN.dim;
+  dim = GEN->dim;
  
   while (1) {
 
     /* generate point uniformly on rectangle */
     while ( (V = _unur_call_urng(gen->urng)) == 0.);
-    V *= GEN.vmax;
+    V *= GEN->vmax;
     for (d=0; d<dim; d++) {
-      U = GEN.umin[d] + _unur_call_urng(gen->urng) * (GEN.umax[d] - GEN.umin[d]);
-      vec[d] = U/pow(V,GEN.r) + GEN.center[d];
+      U = GEN->umin[d] + _unur_call_urng(gen->urng) * (GEN->umax[d] - GEN->umin[d]);
+      vec[d] = U/pow(V,GEN->r) + GEN->center[d];
     }
     
     /* X[] inside domain ? */
     
     /* accept or reject */
-    if (V <= pow(PDF(vec),1./(GEN.r * dim + 1.)))
+    if (V <= pow(PDF(vec),1./(GEN->r * dim + 1.)))
       return;
   }
 
@@ -677,15 +678,15 @@ _unur_vnrou_sample_check( struct unur_gen *gen, double *vec )
   CHECK_NULL(gen,RETURN_VOID);  
   COOKIE_CHECK(gen,CK_VNROU_GEN,RETURN_VOID); 
 
-  dim = GEN.dim;
+  dim = GEN->dim;
  
   while (1) {
     /* generate point uniformly on rectangle */
     while ( (V = _unur_call_urng(gen->urng)) == 0.);
-    V *= GEN.vmax;
+    V *= GEN->vmax;
     for (d=0; d<dim; d++) {
-      U = GEN.umin[d] + _unur_call_urng(gen->urng) * (GEN.umax[d] - GEN.umin[d]);
-      vec[d] = U/pow(V,GEN.r) + GEN.center[d];
+      U = GEN->umin[d] + _unur_call_urng(gen->urng) * (GEN->umax[d] - GEN->umin[d]);
+      vec[d] = U/pow(V,GEN->r) + GEN->center[d];
     }
     
     /* X[] inside domain ? */
@@ -695,23 +696,23 @@ _unur_vnrou_sample_check( struct unur_gen *gen, double *vec )
     
     /* a point on the boundary of the region of acceptance
        has the coordinates ( (vec[]-center[]) * (fx)^(r/r*dim+1)), fx^(1/r*dim+1) ). */
-    sfx = pow( fx, 1./(GEN.r * dim+1.) );
+    sfx = pow( fx, 1./(GEN->r * dim+1.) );
     /* check hat */
     hat_error=0;
-    if ( sfx > (1.+DBL_EPSILON) * GEN.vmax ) hat_error++;  
+    if ( sfx > (1.+DBL_EPSILON) * GEN->vmax ) hat_error++;  
    
-    sfx = pow( fx, GEN.r/(GEN.r * dim + 1.) );
+    sfx = pow( fx, GEN->r/(GEN->r * dim + 1.) );
     for (d=0; d<dim; d++) {
-     xfx = (vec[d]-GEN.center[d]) * sfx;
-     if ( (xfx < (1.+UNUR_EPSILON) * GEN.umin[d]) 
-       || (xfx > (1.+UNUR_EPSILON) * GEN.umax[d]))
+     xfx = (vec[d]-GEN->center[d]) * sfx;
+     if ( (xfx < (1.+UNUR_EPSILON) * GEN->umin[d]) 
+       || (xfx > (1.+UNUR_EPSILON) * GEN->umax[d]))
        hat_error++;
     }
 
     if (hat_error>0) _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"PDF(x) > hat(x)");
  
     /* accept or reject */
-    if (V <= pow(PDF(vec),1./( GEN.r * dim + 1.)))
+    if (V <= pow(PDF(vec),1./( GEN->r * dim + 1.)))
       return;
   }
 
@@ -742,8 +743,8 @@ _unur_vnrou_free( struct unur_gen *gen )
   SAMPLE = NULL;   /* make sure to show up a programming error */
 
   /* free memory */
-  if (GEN.umin) free(GEN.umin); 
-  if (GEN.umax) free(GEN.umax);
+  if (GEN->umin) free(GEN->umin); 
+  if (GEN->umax) free(GEN->umax);
   _unur_generic_free(gen);
 
 } /* end of _unur_vnrou_free() */
@@ -777,7 +778,7 @@ _unur_vnrou_debug_init( const struct unur_gen *gen )
   CHECK_NULL(gen,RETURN_VOID);  COOKIE_CHECK(gen,CK_VNROU_GEN,RETURN_VOID);
 
   log = unur_get_stream();
-  dim = GEN.dim;
+  dim = GEN->dim;
 
   fprintf(log,"%s:\n",gen->genid);
   fprintf(log,"%s: type    = continuous multivariate random variates\n",gen->genid);
@@ -791,12 +792,12 @@ _unur_vnrou_debug_init( const struct unur_gen *gen )
   fprintf(log,"()\n%s:\n",gen->genid);
 
   /* parameters */
-  fprintf(log,"%s: r-parameter = %g",gen->genid, GEN.r);
+  fprintf(log,"%s: r-parameter = %g",gen->genid, GEN->r);
   _unur_print_if_default(gen,VNROU_SET_R);
   fprintf(log,"\n%s:\n",gen->genid);
 
   /* print center */
-  _unur_matrix_print_vector( GEN.dim, GEN.center, "center =", log, gen->genid, "\t   ");
+  _unur_matrix_print_vector( GEN->dim, GEN->center, "center =", log, gen->genid, "\t   ");
 
   /* print bounding rectangle */
   fprintf(log,"%s: Rectangle:",gen->genid);
@@ -806,15 +807,15 @@ _unur_vnrou_debug_init( const struct unur_gen *gen )
     fprintf(log,"\t[input]");
   fprintf(log,"\n");
 
-  vol = GEN.vmax;
-  fprintf(log,"%s:\tvmax = %g\n",gen->genid, GEN.vmax);
+  vol = GEN->vmax;
+  fprintf(log,"%s:\tvmax = %g\n",gen->genid, GEN->vmax);
   for (d=0; d<dim; d++) {
-    vol *= (GEN.umax[d]-GEN.umin[d]);
+    vol *= (GEN->umax[d]-GEN->umin[d]);
     fprintf(log,"%s:\tumin[%d],umax[%d] = (%g,%g)\n",gen->genid, 
-	    d, d, GEN.umin[d], GEN.umax[d]);
+	    d, d, GEN->umin[d], GEN->umax[d]);
   }
   fprintf(log,"%s:\n",gen->genid);
-  fprintf(log,"%s:\tvolume = %g\t(hat = %g)\n",gen->genid, vol, vol*(GEN.r*GEN.dim+1));
+  fprintf(log,"%s:\tvolume = %g\t(hat = %g)\n",gen->genid, vol, vol*(GEN->r*GEN->dim+1));
   fprintf(log,"%s:\n",gen->genid);
 
 } /* end of _unur_vnrou_debug_init() */

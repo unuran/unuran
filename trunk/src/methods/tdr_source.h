@@ -94,8 +94,8 @@
 
 #define DISTR_IN  distr->data.cont      /* data for distribution object      */
 
-#define PAR       par->data.tdr         /* data for parameter object         */
-#define GEN       gen->data.tdr         /* data for generator object         */
+#define PAR       ((struct unur_tdr_par*)par->datap) /* data for parameter object */
+#define GEN       ((struct unur_tdr_gen*)gen->datap) /* data for generator object */
 #define DISTR     gen->distr->data.cont /* data for distribution in generator object */
 
 #define BD_LEFT   domain[0]             /* left boundary of domain of distribution */

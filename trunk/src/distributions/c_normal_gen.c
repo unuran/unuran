@@ -36,6 +36,7 @@
 
 #include <unur_source.h>
 #include <methods/cstd.h>
+#include <methods/cstd_struct.h>
 #include <specfunct/unur_specfunct_source.h>
 #include "unur_distributions_source.h"
 
@@ -48,8 +49,8 @@ inline static int normal_pol_init( struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 /* abbreviations */
 
-#define PAR       par->data.cstd        /* data for parameter object         */
-#define GEN       gen->data.cstd        /* data for generator object         */
+#define PAR       ((struct unur_cstd_par*)par->datap) /* data for parameter object */
+#define GEN       ((struct unur_cstd_gen*)gen->datap) /* data for generator object */
 #define DISTR     gen->distr->data.cont /* data for distribution in generator object */
 
 #define uniform()  _unur_call_urng(gen->urng) /* call for uniform prng       */
@@ -122,7 +123,7 @@ _unur_stdgen_normal_init( struct unur_par *par, struct unur_gen *gen )
 
   case UNUR_STDGEN_INVERSION:   /* inversion method */
 #ifdef HAVE_UNUR_SF_INV_CDFNORMAL
-    if (par) PAR.is_inversion = TRUE;
+    if (par) PAR->is_inversion = TRUE;
     _unur_cstd_set_sampling_routine(par,gen,_unur_stdgen_sample_normal_inv); 
     return UNUR_SUCCESS;
 #endif
@@ -170,7 +171,7 @@ double _unur_stdgen_sample_normal_inv( struct unur_gen *gen )
   COOKIE_CHECK(gen,CK_CSTD_GEN,INFINITY);
 
   /* sample from uniform random number generator */
-  while ((U = GEN.umin + uniform() * (GEN.umax-GEN.umin)) == 0)
+  while ((U = GEN->umin + uniform() * (GEN->umax-GEN->umin)) == 0)
     ;
 
   /* transform to random variate */
@@ -209,8 +210,8 @@ double _unur_stdgen_sample_normal_inv( struct unur_gen *gen )
  *    WinRand (c) 1995 Ernst Stadlober, Institut fuer Statistitk, TU Graz    *
  *****************************************************************************/
 
-#define Xstore  GEN.gen_param[0]
-#define flag    GEN.flag
+#define Xstore  GEN->gen_param[0]
+#define flag    GEN->flag
 
 inline static int
 normal_bm_init( struct unur_gen *gen )
@@ -219,9 +220,9 @@ normal_bm_init( struct unur_gen *gen )
   CHECK_NULL(gen,UNUR_ERR_NULL);
   COOKIE_CHECK(gen,CK_CSTD_GEN,UNUR_ERR_COOKIE);
 
-  if (GEN.gen_param == NULL) {
-    GEN.n_gen_param = MAX_gen_params;
-    GEN.gen_param = _unur_xmalloc(GEN.n_gen_param * sizeof(double));
+  if (GEN->gen_param == NULL) {
+    GEN->n_gen_param = MAX_gen_params;
+    GEN->gen_param = _unur_xmalloc(GEN->n_gen_param * sizeof(double));
   }
 
   /* -X- setup code -X- */
@@ -283,8 +284,8 @@ _unur_stdgen_sample_normal_bm( struct unur_gen *gen )
  *    WinRand (c) 1995 Ernst Stadlober, Institut fuer Statistitk, TU Graz    *
  *****************************************************************************/
 
-#define Xstore  GEN.gen_param[0]
-#define flag    GEN.flag
+#define Xstore  GEN->gen_param[0]
+#define flag    GEN->flag
 
 inline static int
 normal_pol_init( struct unur_gen *gen )
@@ -293,9 +294,9 @@ normal_pol_init( struct unur_gen *gen )
   CHECK_NULL(gen,UNUR_ERR_NULL);
   COOKIE_CHECK(gen,CK_CSTD_GEN,UNUR_ERR_COOKIE);
 
-  if (GEN.gen_param == NULL) {
-    GEN.n_gen_param = MAX_gen_params;
-    GEN.gen_param = _unur_xmalloc(GEN.n_gen_param * sizeof(double));
+  if (GEN->gen_param == NULL) {
+    GEN->n_gen_param = MAX_gen_params;
+    GEN->gen_param = _unur_xmalloc(GEN->n_gen_param * sizeof(double));
   }
 
   /* -X- setup code -X- */

@@ -89,11 +89,12 @@
 #include "unur_methods_source.h"
 #include "x_gen.h"
 #include "x_gen_source.h"
-#include "norta.h"
 #include "cstd.h"
 #include "hinv.h"
 #include "ninv.h"
 #include "vmt.h"
+#include "norta.h"
+#include "norta_struct.h"
 
 /*---------------------------------------------------------------------------*/
 #if UNUR_URNG_TYPE == UNUR_URNG_GENERIC
@@ -211,8 +212,8 @@ static void _unur_norta_debug_nmgenerator( const struct unur_gen *gen );
 
 #define DISTR_IN  distr->data.cvec      /* data for distribution object      */
 
-#define PAR       par->data.norta       /* data for parameter object         */
-#define GEN       gen->data.norta       /* data for generator object         */
+#define PAR       ((struct unur_norta_par*)par->datap) /* data for parameter object */
+#define GEN       ((struct unur_norta_gen*)gen->datap) /* data for generator object */
 #define DISTR     gen->distr->data.cvec /* data for distribution in generator object */
 
 #define SAMPLE    gen->sample.cvec      /* pointer to sampling routine       */     
@@ -260,7 +261,7 @@ unur_norta_new( const struct unur_distr *distr )
     return NULL; }
 
   /* allocate structure */
-  par = _unur_xmalloc(sizeof(struct unur_par));
+  par = _unur_par_new( sizeof(struct unur_norta_par) );
   COOKIE_SET(par,CK_NORTA_PAR);
 
   /* copy input */
@@ -312,7 +313,7 @@ _unur_norta_init( struct unur_par *par )
 
   /* create a new empty generator object */
   gen = _unur_norta_create(par);
-  if (!gen) { free(par); return NULL; }
+  if (!gen) { _unur_par_free(par); return NULL; }
 
 #ifdef UNUR_ENABLE_LOGGING
   /* write info into log file */
@@ -321,31 +322,31 @@ _unur_norta_init( struct unur_par *par )
 
   /* compute parameters for NORTU (normal to uniform) */
   if (_unur_norta_nortu_setup(gen) != UNUR_SUCCESS) {
-    free(par); _unur_norta_free(gen); return NULL;
+    _unur_par_free(par); _unur_norta_free(gen); return NULL;
   }
 
   /* distribution object for standard normal distribution */
-  GEN.normaldistr = unur_distr_normal(NULL,0);
+  GEN->normaldistr = unur_distr_normal(NULL,0);
 
   /* we need a wrapper to call the inversion method with a given U-value */
-  GEN.marginal_urng = unur_urng_new (_unur_norta_urng_wrapper, GEN.urng_U) ;
+  GEN->marginal_urng = unur_urng_new (_unur_norta_urng_wrapper, GEN->urng_U) ;
 
   if (gen->distr->id != UNUR_DISTR_COPULA) {
     /* we have to initialize generator for marginal distributions */
 
-    if (_unur_distr_cvec_marginals_are_equal(DISTR.marginals, GEN.dim)) {
+    if (_unur_distr_cvec_marginals_are_equal(DISTR.marginals, GEN->dim)) {
       /* we can use the same generator object for all marginal distribuitons */
       struct unur_gen *marginalgen = _unur_norta_make_marginalgen( gen, DISTR.marginals[0] );
       if (marginalgen)
-	GEN.marginalgen_list = _unur_gen_list_set(marginalgen,GEN.dim);
+	GEN->marginalgen_list = _unur_gen_list_set(marginalgen,GEN->dim);
     }
 
     else {
       /* we need different generator objects for all marginal distribuitons */
       int i,j;
       int failed = FALSE;
-      struct unur_gen **marginalgens = _unur_xmalloc( GEN.dim * sizeof(struct unur_gen*) );
-      for (i=0; i<GEN.dim; i++) {
+      struct unur_gen **marginalgens = _unur_xmalloc( GEN->dim * sizeof(struct unur_gen*) );
+      for (i=0; i<GEN->dim; i++) {
 	marginalgens[i] = _unur_norta_make_marginalgen( gen, DISTR.marginals[i] );
 	if (marginalgens[i]==NULL) {
 	  failed=TRUE; break;
@@ -356,20 +357,20 @@ _unur_norta_init( struct unur_par *par )
 	free (marginalgens);
       }
       else
-	GEN.marginalgen_list = marginalgens;
+	GEN->marginalgen_list = marginalgens;
     }
 
     /* verify initialization of marginal generators */
-    if (GEN.marginalgen_list == NULL) {
+    if (GEN->marginalgen_list == NULL) {
       _unur_error(gen->genid,UNUR_ERR_GENERIC,"init of marginal generators failed");
       _unur_norta_free(gen);
-      free(par);
+      _unur_par_free(par);
       return NULL;
     }
   }
 
   /* free parameters */
-  free(par);
+  _unur_par_free(par);
 
   /* o.k. */
   return gen;
@@ -399,7 +400,7 @@ _unur_norta_create( struct unur_par *par )
   CHECK_NULL(par,NULL);  COOKIE_CHECK(par,CK_NORTA_PAR,NULL);
 
   /* create new generic generator object */
-  gen = _unur_generic_create( par );
+  gen = _unur_generic_create( par, sizeof(struct unur_norta_gen) );
 
   /* magic cookies */
   COOKIE_SET(gen,CK_NORTA_GEN);
@@ -413,17 +414,17 @@ _unur_norta_create( struct unur_par *par )
   gen->clone = _unur_norta_clone;
 
   /* dimension of distribution */
-  GEN.dim = gen->distr->dim;
+  GEN->dim = gen->distr->dim;
 
   /* allocate array for auxiliary copula */
-  GEN.copula = _unur_xmalloc(sizeof(double)*GEN.dim);
+  GEN->copula = _unur_xmalloc(sizeof(double)*GEN->dim);
 
   /* initialize pointer */
   MNORMAL = NULL;
-  GEN.normaldistr = NULL;
-  GEN.marginalgen_list = NULL;
-  GEN.marginal_urng = NULL;
-  GEN.urng_U[0] = 0.;
+  GEN->normaldistr = NULL;
+  GEN->marginalgen_list = NULL;
+  GEN->marginal_urng = NULL;
+  GEN->urng_U[0] = 0.;
 
   /* return pointer to (almost empty) generator object */
   return gen;
@@ -447,7 +448,7 @@ _unur_norta_clone( const struct unur_gen *gen )
      /*   return NULL                                                        */
      /*----------------------------------------------------------------------*/
 { 
-#define CLONE clone->data.norta
+#define CLONE  ((struct unur_norta_gen*)clone->datap)
 
   int i;
   struct unur_gen *clone;
@@ -456,27 +457,27 @@ _unur_norta_clone( const struct unur_gen *gen )
   CHECK_NULL(gen,NULL);  COOKIE_CHECK(gen,CK_NORTA_GEN,NULL);
 
 /*   /\* the marginal generator is an auxiliary generator for method NORTA, of course *\/ */
-/*   GEN.marginalgen_list = gen->gen_aux_list; */
+/*   GEN->marginalgen_list = gen->gen_aux_list; */
 
   /* create generic clone */
   clone = _unur_generic_clone( gen, GENTYPE );
 
   /* allocate array for auxiliary copula */
-  CLONE.copula = _unur_xmalloc(sizeof(double)*GEN.dim);
+  CLONE->copula = _unur_xmalloc(sizeof(double)*GEN->dim);
 
   /* clone marginal distribution */
-  CLONE.normaldistr = _unur_distr_clone(GEN.normaldistr);
+  CLONE->normaldistr = _unur_distr_clone(GEN->normaldistr);
 
   /* we need a wrapper to call the inversion method with a given U-value */
-  if (GEN.marginal_urng) 
-    CLONE.marginal_urng = unur_urng_new (_unur_norta_urng_wrapper, CLONE.urng_U) ;
+  if (GEN->marginal_urng) 
+    CLONE->marginal_urng = unur_urng_new (_unur_norta_urng_wrapper, CLONE->urng_U) ;
 
   /* marginal generators */
-  if (GEN.marginalgen_list) {
-    CLONE.marginalgen_list = _unur_gen_list_clone( GEN.marginalgen_list, GEN.dim );
-    for (i=0; i<GEN.dim; i++) 
+  if (GEN->marginalgen_list) {
+    CLONE->marginalgen_list = _unur_gen_list_clone( GEN->marginalgen_list, GEN->dim );
+    for (i=0; i<GEN->dim; i++) 
       /* set urng: use wrapper function */
-      CLONE.marginalgen_list[i]->urng = CLONE.marginal_urng;
+      CLONE->marginalgen_list[i]->urng = CLONE->marginal_urng;
   }
 
   return clone;
@@ -501,7 +502,7 @@ _unur_norta_nortu_setup( struct unur_gen *gen )
 {
 #define idx(a,b) ((a)*dim+(b))
 
-  int dim = GEN.dim;    /* dimension of distribution */
+  int dim = GEN->dim;    /* dimension of distribution */
   double *sigma_y;      /* correlation matrix for corresponding normal distr. */
   double *eigenvalues;  /* eigenvalues of sigma_y */
   double *eigenvectors; /* eigenvectors of sigma_y */
@@ -675,7 +676,7 @@ _unur_norta_make_marginalgen( const struct unur_gen *gen,
       break;
     }
     else {
-      free(par);
+      _unur_par_free(par);
     }
 
     /* HINV (Hermite interpolation based INVersion of CDF) */
@@ -699,7 +700,7 @@ _unur_norta_make_marginalgen( const struct unur_gen *gen,
   marginalgen->debug = gen->debug;
 
   /* set urng: use wrapper function */
-  marginalgen->urng = GEN.marginal_urng;
+  marginalgen->urng = GEN->marginal_urng;
 
   /* return generator object */
   return marginalgen;
@@ -718,7 +719,7 @@ _unur_norta_sample_cvec( struct unur_gen *gen, double *vec )
      /*   vec ... random vector (result)                                     */
      /*----------------------------------------------------------------------*/
 {
-#define idx(a,b) ((a)*GEN.dim+(b))
+#define idx(a,b) ((a)*GEN->dim+(b))
   int j;
   double *u;
 
@@ -727,27 +728,27 @@ _unur_norta_sample_cvec( struct unur_gen *gen, double *vec )
   COOKIE_CHECK(gen,CK_NORTA_GEN,RETURN_VOID);
 
   /* pointer to auxiliary array of uniforms */
-  u = GEN.copula;
+  u = GEN->copula;
 
   /* sample from multinormal distribution */
   _unur_sample_vec(MNORMAL,u);
 
   /* make copula */
-  for (j=0; j<GEN.dim; j++)
-    u[j] = unur_distr_cont_eval_cdf( u[j], GEN.normaldistr );
+  for (j=0; j<GEN->dim; j++)
+    u[j] = unur_distr_cont_eval_cdf( u[j], GEN->normaldistr );
 
   if (gen->distr->id == UNUR_DISTR_COPULA) {
     /* we want to have a normal copula --> just copy data */
-    for (j=0; j<GEN.dim; j++) vec[j] = u[j];
+    for (j=0; j<GEN->dim; j++) vec[j] = u[j];
     return;
   }
 
   /* else non-uniform marginals */
-  for (j=0; j<GEN.dim; j++) {
+  for (j=0; j<GEN->dim; j++) {
     /* set U-value for wrapper urng function */
-    GEN.urng_U[0] = u[j];
+    GEN->urng_U[0] = u[j];
     /* call marginal generator (using this U-value) */
-    vec[j] = unur_sample_cont(GEN.marginalgen_list[j]);
+    vec[j] = unur_sample_cont(GEN->marginalgen_list[j]);
   }
   
   return;
@@ -777,17 +778,17 @@ _unur_norta_free( struct unur_gen *gen )
   COOKIE_CHECK(gen,CK_NORTA_GEN,RETURN_VOID);
 
   /* free auxiliary arrays */
-  if (GEN.copula) free (GEN.copula);
+  if (GEN->copula) free (GEN->copula);
 
   /* free normal distribution object */
-  if (GEN.normaldistr) free (GEN.normaldistr);
+  if (GEN->normaldistr) free (GEN->normaldistr);
 
   /* free urng wrapper */
-  if (GEN.marginal_urng) unur_urng_free(GEN.marginal_urng);
+  if (GEN->marginal_urng) unur_urng_free(GEN->marginal_urng);
 
   /* free marginal generators */
-  if (GEN.marginalgen_list)
-    _unur_gen_list_free( GEN.marginalgen_list, GEN.dim);
+  if (GEN->marginalgen_list)
+    _unur_gen_list_free( GEN->marginalgen_list, GEN->dim);
 
   /* we cannot use this generator object any more */
   SAMPLE = NULL;   /* make sure to show up a programming error */
@@ -856,7 +857,7 @@ _unur_norta_debug_sigma_y( const struct unur_gen *gen,
 
   fprintf(log,"%s: %s\n",gen->genid,comment);
   fprintf(log,"%s:\n",gen->genid);
-  _unur_matrix_print_matrix( GEN.dim, sigma_y, "\tsigma_y =", 
+  _unur_matrix_print_matrix( GEN->dim, sigma_y, "\tsigma_y =", 
 			     log, gen->genid, "\t   ");
 
 } /* end of _unur_norta_debug_sigma_y() */
@@ -883,10 +884,10 @@ _unur_norta_debug_eigensystem( const struct unur_gen *gen,
 
   log = unur_get_stream();
 
-  _unur_matrix_print_vector( GEN.dim, eigenvalues, 
+  _unur_matrix_print_vector( GEN->dim, eigenvalues, 
 			     "\teigenvalues of sigma_y =", 
 			     log, gen->genid, "\t   ");
-  _unur_matrix_print_matrix( GEN.dim, eigenvectors, 
+  _unur_matrix_print_matrix( GEN->dim, eigenvectors, 
 			     "\teigenvectors of sigma_y [rows] =", 
 			     log, gen->genid, "\t   ");
 

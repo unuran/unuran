@@ -94,6 +94,7 @@
 #include "unur_methods_source.h"
 #include "x_gen_source.h"
 #include "dgt.h"
+#include "dgt_struct.h"
 
 /*---------------------------------------------------------------------------*/
 /* Variants                                                                  */
@@ -172,8 +173,8 @@ static void _unur_dgt_debug_table( struct unur_gen *gen );
 
 #define DISTR_IN  distr->data.discr      /* data for distribution object      */
 
-#define PAR       par->data.dgt         /* data for parameter object         */
-#define GEN       gen->data.dgt         /* data for generator object         */
+#define PAR       ((struct unur_dgt_par*)par->datap) /* data for parameter object */
+#define GEN       ((struct unur_dgt_gen*)gen->datap) /* data for generator object */
 #define DISTR     gen->distr->data.discr /* data for distribution in generator object */
 
 #define SAMPLE    gen->sample.discr     /* pointer to sampling routine       */
@@ -224,14 +225,14 @@ unur_dgt_new( const struct unur_distr *distr )
   }
 
   /* allocate structure */
-  par = _unur_xmalloc( sizeof(struct unur_par) );
+  par = _unur_par_new( sizeof(struct unur_dgt_par) );
   COOKIE_SET(par,CK_DGT_PAR);
 
   /* copy input */
   par->distr       = distr;          /* pointer to distribution object       */
 
   /* set default values */
-  PAR.guide_factor = 1.;             /* use same size for guide table        */
+  PAR->guide_factor = 1.;             /* use same size for guide table        */
 
   par->method      = UNUR_METH_DGT;  /* method                               */
   par->variant     = 0u;             /* default variant                      */
@@ -309,7 +310,7 @@ unur_dgt_set_guidefactor( struct unur_par *par, double factor )
   }
 
   /* store date */
-  PAR.guide_factor = factor;
+  PAR->guide_factor = factor;
 
   /* changelog */
   par->set |= DGT_SET_GUIDEFACTOR;
@@ -353,7 +354,7 @@ _unur_dgt_init( struct unur_par *par )
   
   /* create a new empty generator object */
   gen = _unur_dgt_create(par);
-  if (!gen) { free(par); return NULL; }
+  if (!gen) { _unur_par_free(par); return NULL; }
   
   /* probability vector */
   pv = DISTR.pv;
@@ -361,49 +362,49 @@ _unur_dgt_init( struct unur_par *par )
 
   /* computation of cumulated probabilities */
   for( i=0, pvh=0.; i<n_pv; i++ ) {
-    GEN.cumpv[i] = ( pvh += pv[i] );
+    GEN->cumpv[i] = ( pvh += pv[i] );
     /* ... and check probability vector */
     if (pv[i] < 0.) {
       _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"probability < 0");
-      _unur_dgt_free(gen); free(par); 
+      _unur_dgt_free(gen); _unur_par_free(par); 
       return NULL;
     }
   }
-  GEN.sum = GEN.cumpv[n_pv-1];
+  GEN->sum = GEN->cumpv[n_pv-1];
 
   /* computation of guide-table */
   
   if (gen->variant == DGT_VARFLAG_DIV) {
-    GEN.guide_table[0] = 0;
-    for( j=1, i=0; j<GEN.guide_size ;j++ ) {
-      while( GEN.cumpv[i]/GEN.sum < ((double)j)/GEN.guide_size ) 
+    GEN->guide_table[0] = 0;
+    for( j=1, i=0; j<GEN->guide_size ;j++ ) {
+      while( GEN->cumpv[i]/GEN->sum < ((double)j)/GEN->guide_size ) 
 	i++;
       if (i >= n_pv) {
 	_unur_warning(gen->genid,UNUR_ERR_ROUNDOFF,"guide table");
 	break;
       }
-      GEN.guide_table[j]=i;
+      GEN->guide_table[j]=i;
     }
   }
 
   else { /* gen->variant == DGT_VARFLAG_ADD */
-    gstep = GEN.sum / GEN.guide_size;
+    gstep = GEN->sum / GEN->guide_size;
     pvh = 0.;
-    for( j=0, i=0; j<GEN.guide_size ;j++ ) {
-      while (GEN.cumpv[i] < pvh) 
+    for( j=0, i=0; j<GEN->guide_size ;j++ ) {
+      while (GEN->cumpv[i] < pvh) 
 	i++;
       if (i >= n_pv) {
 	_unur_warning(gen->genid,UNUR_ERR_ROUNDOFF,"guide table");
 	break;
       }
-      GEN.guide_table[j] = i;
+      GEN->guide_table[j] = i;
       pvh += gstep;
     }
   }
 
   /* if there has been an round off error, we have to complete the guide table */
-  for( ; j<GEN.guide_size ;j++ )
-    GEN.guide_table[j] = n_pv - 1;
+  for( ; j<GEN->guide_size ;j++ )
+    GEN->guide_table[j] = n_pv - 1;
 
   /* write info into log file */
 #ifdef UNUR_ENABLE_LOGGING
@@ -412,7 +413,7 @@ _unur_dgt_init( struct unur_par *par )
 #endif
 
   /* free parameters */
-  free(par);
+  _unur_par_free(par);
 
   return gen;
 } /* end of _unur_dgt_init() */
@@ -441,7 +442,7 @@ _unur_dgt_create( struct unur_par *par )
   CHECK_NULL(par,NULL);  COOKIE_CHECK(par,CK_DGT_PAR,NULL);
 
   /* create new generic generator object */
-  gen = _unur_generic_create( par );
+  gen = _unur_generic_create( par, sizeof(struct unur_dgt_gen) );
 
   /* magic cookies */
   COOKIE_SET(gen,CK_DGT_GEN);
@@ -466,8 +467,8 @@ _unur_dgt_create( struct unur_par *par )
   gen->clone = _unur_dgt_clone;
 
   /* set all pointers to NULL */
-  GEN.cumpv = NULL;
-  GEN.guide_table = NULL;
+  GEN->cumpv = NULL;
+  GEN->guide_table = NULL;
 
   /* copy some parameters into generator object */
 
@@ -479,16 +480,16 @@ _unur_dgt_create( struct unur_par *par )
     gen->variant = (n_pv > DGT_VAR_THRESHOLD) ? DGT_VARFLAG_DIV : DGT_VARFLAG_ADD;
 
   /* allocation for cummulated probabilities */
-  GEN.cumpv = _unur_xmalloc( n_pv * sizeof(double) );
+  GEN->cumpv = _unur_xmalloc( n_pv * sizeof(double) );
 
   /* size of guide table */
-  GEN.guide_size = (int)( n_pv * PAR.guide_factor);
-  if (GEN.guide_size <= 0)
+  GEN->guide_size = (int)( n_pv * PAR->guide_factor);
+  if (GEN->guide_size <= 0)
     /* do not use a guide table whenever params->guide_factor is 0 or less */
-    GEN.guide_size = 1;
+    GEN->guide_size = 1;
 
   /* allocate memory for the guide table */
-  GEN.guide_table = _unur_xmalloc( GEN.guide_size * sizeof(int) );
+  GEN->guide_table = _unur_xmalloc( GEN->guide_size * sizeof(int) );
 
   /* return pointer to (almost empty) generator object */
   return gen;
@@ -512,7 +513,7 @@ _unur_dgt_clone( const struct unur_gen *gen )
      /*   return NULL                                                        */
      /*----------------------------------------------------------------------*/
 { 
-#define CLONE clone->data.dgt
+#define CLONE  ((struct unur_dgt_gen*)clone->datap)
 
   struct unur_gen *clone;
 
@@ -523,10 +524,10 @@ _unur_dgt_clone( const struct unur_gen *gen )
   clone = _unur_generic_clone( gen, GENTYPE );
 
   /* copy data for distribution */
-  CLONE.cumpv = _unur_xmalloc( DISTR.n_pv * sizeof(double) );
-  memcpy( CLONE.cumpv, GEN.cumpv, DISTR.n_pv * sizeof(double) );
-  CLONE.guide_table = _unur_xmalloc( GEN.guide_size * sizeof(int) );
-  memcpy( CLONE.guide_table, GEN.guide_table, GEN.guide_size * sizeof(int) );
+  CLONE->cumpv = _unur_xmalloc( DISTR.n_pv * sizeof(double) );
+  memcpy( CLONE->cumpv, GEN->cumpv, DISTR.n_pv * sizeof(double) );
+  CLONE->guide_table = _unur_xmalloc( GEN->guide_size * sizeof(int) );
+  memcpy( CLONE->guide_table, GEN->guide_table, GEN->guide_size * sizeof(int) );
 
   return clone;
 
@@ -560,10 +561,10 @@ _unur_dgt_sample( struct unur_gen *gen )
   u = _unur_call_urng(gen->urng);
 
   /* look up in guide table ... */
-  j = GEN.guide_table[(int)(u * GEN.guide_size)];
+  j = GEN->guide_table[(int)(u * GEN->guide_size)];
   /* ... and search */
-  u *= GEN.sum;
-  while (GEN.cumpv[j] < u) j++;
+  u *= GEN->sum;
+  while (GEN->cumpv[j] < u) j++;
 
   return (j + DISTR.domain[0]);
 
@@ -595,8 +596,8 @@ _unur_dgt_free( struct unur_gen *gen )
   SAMPLE = NULL;   /* make sure to show up a programming error */
 
   /* free two auxiliary tables */
-  if (GEN.guide_table) free(GEN.guide_table);
-  if (GEN.cumpv)       free(GEN.cumpv);
+  if (GEN->guide_table) free(GEN->guide_table);
+  if (GEN->cumpv)       free(GEN->cumpv);
 
   /* free memory */
   _unur_generic_free(gen);
@@ -648,13 +649,13 @@ _unur_dgt_debug_init( struct unur_par *par, struct unur_gen *gen )
 
   fprintf(log,"%s: length of probability vector = %d\n",gen->genid,DISTR.n_pv);
   fprintf(log,"%s: length of guide table = %d   (rel. = %g%%",
-	  gen->genid,GEN.guide_size,100.*PAR.guide_factor);
+	  gen->genid,GEN->guide_size,100.*PAR->guide_factor);
   _unur_print_if_default(par,DGT_SET_GUIDEFACTOR);
-  if (GEN.guide_size == 1) 
+  if (GEN->guide_size == 1) 
     fprintf(log,") \t (-->sequential search");
   fprintf(log,")\n%s:\n",gen->genid);
 
-  fprintf(log,"%s: sum over PMF (as computed) = %#-20.16g\n",gen->genid,GEN.sum);
+  fprintf(log,"%s: sum over PMF (as computed) = %#-20.16g\n",gen->genid,GEN->sum);
 
   if (gen->debug & DGT_DEBUG_TABLE)
     _unur_dgt_debug_table(gen);
@@ -684,13 +685,13 @@ _unur_dgt_debug_table( struct unur_gen *gen )
   fprintf(log,"%s: guide table:\n", gen->genid); 
   fprintf(log,"%s:\n", gen->genid);
   n_asts = 0;
-  for (i=0; i<GEN.guide_size; i++){
-    fprintf(log,"%s: [%5d] -> %5d ", gen->genid, i, GEN.guide_table[i]);
+  for (i=0; i<GEN->guide_size; i++){
+    fprintf(log,"%s: [%5d] -> %5d ", gen->genid, i, GEN->guide_table[i]);
     /* print row of asterisks */
-    if (i == GEN.guide_size-1)
-      j = GEN.guide_size - GEN.guide_table[i];
+    if (i == GEN->guide_size-1)
+      j = GEN->guide_size - GEN->guide_table[i];
     else
-      j = GEN.guide_table[i+1] - GEN.guide_table[i] + 1;
+      j = GEN->guide_table[i+1] - GEN->guide_table[i] + 1;
     for (m=0; m<j && m<10; m++ ) {
       fprintf(log," *");
       ++n_asts;
@@ -706,7 +707,7 @@ _unur_dgt_debug_table( struct unur_gen *gen )
   /* print expected number of comparisons */
   fprintf(log,"%s:\n", gen->genid);
   fprintf(log,"%s: expected number of comparisons = %g\n",gen->genid,
-          ((double)n_asts)/GEN.guide_size);
+          ((double)n_asts)/GEN->guide_size);
   fprintf(log,"%s:\n", gen->genid);
 
   fprintf(log,"%s:\n",gen->genid);

@@ -69,8 +69,9 @@
 #include "unur_methods_source.h"
 #include "x_gen.h"
 #include "x_gen_source.h"
-#include "vmt.h"
 #include "auto.h"
+#include "vmt.h"
+#include "vmt_struct.h"
 
 /*---------------------------------------------------------------------------*/
 /* Variants                                                                  */
@@ -133,8 +134,8 @@ static void _unur_vmt_debug_init( const struct unur_gen *gen );
 
 #define DISTR_IN  distr->data.cvec      /* data for distribution object      */
 
-#define PAR       par->data.vmt         /* data for parameter object         */
-#define GEN       gen->data.vmt         /* data for generator object         */
+#define PAR       ((struct unur_vmt_par*)par->datap) /* data for parameter object */
+#define GEN       ((struct unur_vmt_gen*)gen->datap) /* data for generator object */
 #define DISTR     gen->distr->data.cvec /* data for distribution in generator object */
 
 #define SAMPLE    gen->sample.cvec      /* pointer to sampling routine       */     
@@ -180,7 +181,7 @@ unur_vmt_new( const struct unur_distr *distr )
     return NULL; }
 
   /* allocate structure */
-  par = _unur_xmalloc(sizeof(struct unur_par));
+  par = _unur_par_new( sizeof(struct unur_vmt_par) );
   COOKIE_SET(par,CK_VMT_PAR);
 
   /* copy input */
@@ -232,22 +233,22 @@ _unur_vmt_init( struct unur_par *par )
 
   /* create a new empty generator object */
   gen = _unur_vmt_create(par);
-  if (!gen) { free(par); return NULL; }
+  if (!gen) { _unur_par_free(par); return NULL; }
 
   /* initialize generators for marginal distribution */
 
-  if (_unur_distr_cvec_marginals_are_equal(DISTR.stdmarginals, GEN.dim)) {
+  if (_unur_distr_cvec_marginals_are_equal(DISTR.stdmarginals, GEN->dim)) {
     /* we can use the same generator object for all marginal distribuitons */
     struct unur_gen *marginalgen = unur_init( unur_auto_new( DISTR.stdmarginals[0] ) );
     if (marginalgen)
-      gen->gen_aux_list = _unur_gen_list_set(marginalgen,GEN.dim);
+      gen->gen_aux_list = _unur_gen_list_set(marginalgen,GEN->dim);
   }
 
   else {
     int i,j;
     int failed = FALSE;
-    struct unur_gen **marginalgens = _unur_xmalloc( GEN.dim * sizeof(struct unur_gen*) );
-    for (i=0; i<GEN.dim; i++) {
+    struct unur_gen **marginalgens = _unur_xmalloc( GEN->dim * sizeof(struct unur_gen*) );
+    for (i=0; i<GEN->dim; i++) {
       marginalgens[i] = unur_init( unur_auto_new( DISTR.stdmarginals[i] ) );
       if (marginalgens[i]==NULL) {
 	failed=TRUE; break; 
@@ -262,13 +263,13 @@ _unur_vmt_init( struct unur_par *par )
   }
 
   /* the marginal generator is an auxiliary generator for method VMT, of course */
-  GEN.marginalgen_list = gen->gen_aux_list;
+  GEN->marginalgen_list = gen->gen_aux_list;
   
   /* verify initialization of marginal generators */
-  if (GEN.marginalgen_list == NULL) {
+  if (GEN->marginalgen_list == NULL) {
     _unur_error(gen->genid,UNUR_ERR_GENERIC,"init of marginal generators failed");
     _unur_vmt_free(gen);
-    free(par);
+    _unur_par_free(par);
     return NULL;
   }
 
@@ -278,7 +279,7 @@ _unur_vmt_init( struct unur_par *par )
 #endif
 
   /* free parameters */
-  free(par);
+  _unur_par_free(par);
 
   /* o.k. */
   return gen;
@@ -308,13 +309,13 @@ _unur_vmt_create( struct unur_par *par )
   CHECK_NULL(par,NULL);  COOKIE_CHECK(par,CK_VMT_PAR,NULL);
 
   /* create new generic generator object */
-  gen = _unur_generic_create( par );
+  gen = _unur_generic_create( par, sizeof(struct unur_vmt_gen) );
 
   /* magic cookies */
   COOKIE_SET(gen,CK_VMT_GEN);
 
   /* dimension of distribution */
-  GEN.dim = gen->distr->dim; 
+  GEN->dim = gen->distr->dim; 
 
   /* set generator identifier */
   gen->genid = _unur_set_genid(GENTYPE);
@@ -325,10 +326,10 @@ _unur_vmt_create( struct unur_par *par )
   gen->clone = _unur_vmt_clone;
 
   /* cholesky factor of covariance matrix */
-  GEN.cholesky =  DISTR.cholesky;  
+  GEN->cholesky =  DISTR.cholesky;  
 
   /* initialize pointer */
-  GEN.marginalgen_list = NULL;
+  GEN->marginalgen_list = NULL;
 
   /* return pointer to (almost empty) generator object */
   return gen;
@@ -352,7 +353,7 @@ _unur_vmt_clone( const struct unur_gen *gen )
      /*   return NULL                                                        */
      /*----------------------------------------------------------------------*/
 { 
-#define CLONE clone->data.vmt
+#define CLONE  ((struct unur_vmt_gen*)clone->datap)
 
   struct unur_gen *clone;
 
@@ -363,11 +364,11 @@ _unur_vmt_clone( const struct unur_gen *gen )
   clone = _unur_generic_clone( gen, GENTYPE );
 
   /* cholesky factor of covariance matrix */
-  CLONE.cholesky =  clone->distr->data.cvec.cholesky;
+  CLONE->cholesky =  clone->distr->data.cvec.cholesky;
 
   /* marginal generators are (also) stored as auxiliary generator */
   /* which has already been cloned by generic_clone.              */
-  CLONE.marginalgen_list = clone->gen_aux_list;
+  CLONE->marginalgen_list = clone->gen_aux_list;
 
   return clone;
 
@@ -386,7 +387,7 @@ _unur_vmt_sample_cvec( struct unur_gen *gen, double *vec )
      /*   vec ... random vector (result)                                     */
      /*----------------------------------------------------------------------*/
 {
-#define idx(a,b) (a*GEN.dim+b)
+#define idx(a,b) (a*GEN->dim+b)
   int j,k;
 
   /* check arguments */
@@ -394,8 +395,8 @@ _unur_vmt_sample_cvec( struct unur_gen *gen, double *vec )
   COOKIE_CHECK(gen,CK_VMT_GEN,RETURN_VOID);
 
   /* generate random vector with independent components */
-  for (j=0; j<GEN.dim; j++)
-    vec[j] = unur_sample_cont(GEN.marginalgen_list[j]);
+  for (j=0; j<GEN->dim; j++)
+    vec[j] = unur_sample_cont(GEN->marginalgen_list[j]);
 
   /* 
      transform to desired covariance structure: 
@@ -406,10 +407,10 @@ _unur_vmt_sample_cvec( struct unur_gen *gen, double *vec )
      mu ... mean vector
      (notice that L is a lower triangular matrix)
   */
-  for (k=GEN.dim-1; k>=0; k--) {
-    vec[k] *= GEN.cholesky[idx(k,k)];
+  for (k=GEN->dim-1; k>=0; k--) {
+    vec[k] *= GEN->cholesky[idx(k,k)];
     for (j=k-1; j>=0; j--)
-      vec[k] += vec[j] * GEN.cholesky[idx(k,j)];
+      vec[k] += vec[j] * GEN->cholesky[idx(k,j)];
     vec[k] += DISTR.mean[k];
   }
 
@@ -478,8 +479,8 @@ _unur_vmt_debug_init( const struct unur_gen *gen )
 
   fprintf(log,"%s: generators for standardized marginal distributions = \n",gen->genid);
   fprintf(log,"%s:\t",gen->genid);
-  for (i=0; i<GEN.dim; i++)
-    fprintf(log,"[%s] ", GEN.marginalgen_list[i]->genid);
+  for (i=0; i<GEN->dim; i++)
+    fprintf(log,"[%s] ", GEN->marginalgen_list[i]->genid);
   fprintf(log,"\n%s:\n",gen->genid);
 
   fprintf(log,"%s: sampling routine = _unur_vmt_sample()\n",gen->genid);

@@ -61,8 +61,19 @@
 double _unur_sample_cont_error( struct unur_gen *gen );
 
 /*---------------------------------------------------------------------------*/
+/* create, copy and free parameter object                                    */
+
+/* create an empty parameter object with data structure of size 's'          */ 
+inline struct unur_par *_unur_par_new( size_t s );
+
+struct unur_par *_unur_par_clone( const struct unur_par *par );
+
+/* free memory allocated by parameter obejct                                 */
+#define _unur_par_free(par)  do {free((par)->datap); free(par);} while(0)
+
+/*---------------------------------------------------------------------------*/
 /* create (new) generic generator object                                     */
-struct unur_gen *_unur_generic_create( struct unur_par *par );
+struct unur_gen *_unur_generic_create( struct unur_par *par, size_t s );
 
 /*---------------------------------------------------------------------------*/
 /* copy (clone) generator objects                                            */

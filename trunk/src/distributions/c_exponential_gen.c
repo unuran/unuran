@@ -36,6 +36,7 @@
 
 #include <unur_source.h>
 #include <methods/cstd.h>
+#include <methods/cstd_struct.h>
 #include <specfunct/unur_specfunct_source.h>
 #include "unur_distributions_source.h"
 
@@ -45,8 +46,8 @@
 /*---------------------------------------------------------------------------*/
 /* abbreviations */
 
-#define PAR       par->data.cstd        /* data for parameter object         */
-#define GEN       gen->data.cstd        /* data for generator object         */
+#define PAR       ((struct unur_cstd_par*)par->datap) /* data for parameter object */
+#define GEN       ((struct unur_cstd_gen*)gen->datap) /* data for generator object */
 #define DISTR     gen->distr->data.cont /* data for distribution in generator object */
 
 #define uniform()  _unur_call_urng(gen->urng) /* call for uniform prng       */
@@ -84,7 +85,7 @@ _unur_stdgen_exponential_init( struct unur_par *par, struct unur_gen *gen )
 
   case 0:  /* DEFAULT */
   case UNUR_STDGEN_INVERSION:   /* inversion method */
-    if (par) PAR.is_inversion = TRUE;
+    if (par) PAR->is_inversion = TRUE;
     _unur_cstd_set_sampling_routine(par,gen,_unur_stdgen_sample_exponential_inv); 
     return UNUR_SUCCESS;
 
@@ -116,7 +117,7 @@ double _unur_stdgen_sample_exponential_inv( struct unur_gen *gen )
   COOKIE_CHECK(gen,CK_CSTD_GEN,INFINITY);
 
   /* sample from uniform random number generator */
-  U = GEN.umin + uniform() * (GEN.umax-GEN.umin);
+  U = GEN->umin + uniform() * (GEN->umax-GEN->umin);
 
   /* transform to random variate */
   X = - log( 1. - U );

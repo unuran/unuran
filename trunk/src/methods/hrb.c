@@ -64,6 +64,7 @@
 #include "unur_methods_source.h"
 #include "x_gen_source.h"
 #include "hrb.h"
+#include "hrb_struct.h"
 
 /*---------------------------------------------------------------------------*/
 /* Constants                                                                 */
@@ -142,8 +143,8 @@ static void _unur_hrb_debug_sample( const struct unur_gen *gen, double x, int i 
 
 #define DISTR_IN  distr->data.cont      /* data for distribution object      */
 
-#define PAR       par->data.hrb         /* data for parameter object         */
-#define GEN       gen->data.hrb         /* data for generator object         */
+#define PAR       ((struct unur_hrb_par*)par->datap) /* data for parameter object */
+#define GEN       ((struct unur_hrb_gen*)gen->datap) /* data for generator object */
 #define DISTR     gen->distr->data.cont /* data for distribution in generator object */
 
 #define SAMPLE    gen->sample.cont      /* pointer to sampling routine       */
@@ -184,14 +185,14 @@ unur_hrb_new( const struct unur_distr *distr )
     _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"HR"); return NULL; }
 
   /* allocate structure */
-  par = _unur_xmalloc(sizeof(struct unur_par));
+  par = _unur_par_new( sizeof(struct unur_hrb_par) );
   COOKIE_SET(par,CK_HRB_PAR);
 
   /* copy input */
   par->distr   = distr;         /* pointer to distribution object            */
 
   /* set default values */
-  PAR.upper_bound = INFINITY;   /* upper bound for hazard rate (not set yet) */
+  PAR->upper_bound = INFINITY;   /* upper bound for hazard rate (not set yet) */
 
   par->method   = UNUR_METH_HRB;  /* method                                  */
   par->variant  = 0u;             /* default variant                         */
@@ -236,7 +237,7 @@ unur_hrb_set_upperbound( struct unur_par *par, double upperbound )
   }
 
   /* store date */
-  PAR.upper_bound = upperbound;
+  PAR->upper_bound = upperbound;
 
   /* changelog */
   par->set |= HRB_SET_UPPERBOUND;
@@ -340,19 +341,19 @@ _unur_hrb_init( struct unur_par *par )
 
   /* create a new empty generator object */    
   gen = _unur_hrb_create(par);
-  if (!gen) { free(par); return NULL; }
+  if (!gen) { _unur_par_free(par); return NULL; }
 
   /* set left border and check domain */
   if (DISTR.domain[0] < 0.)       DISTR.domain[0] = 0.;
   if (DISTR.domain[1] < INFINITY) DISTR.domain[1] = INFINITY;
-  GEN.left_border = DISTR.domain[0];
+  GEN->left_border = DISTR.domain[0];
 
   /* check upper bound for hazard rate */
   if (!(gen->set & HRB_SET_UPPERBOUND)) {
-    GEN.upper_bound = HR(GEN.left_border);
-    if (GEN.upper_bound <= 0. || _unur_FP_is_infinity(GEN.upper_bound)) {
+    GEN->upper_bound = HR(GEN->left_border);
+    if (GEN->upper_bound <= 0. || _unur_FP_is_infinity(GEN->upper_bound)) {
       _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"no valid upper bound for HR at left boundary");
-      free(par); _unur_free(gen);
+      _unur_par_free(par); _unur_free(gen);
       return NULL;
     }
   }
@@ -363,7 +364,7 @@ _unur_hrb_init( struct unur_par *par )
 #endif
 
   /* free parameters */
-  free(par);
+  _unur_par_free(par);
 
   return gen;
 
@@ -392,7 +393,7 @@ _unur_hrb_create( struct unur_par *par )
   CHECK_NULL(par,NULL);  COOKIE_CHECK(par,CK_HRB_PAR,NULL);
 
   /* create new generic generator object */
-  gen = _unur_generic_create( par );
+  gen = _unur_generic_create( par, sizeof(struct unur_hrb_gen) );
 
   /* magic cookies */
   COOKIE_SET(gen,CK_HRB_GEN);
@@ -407,12 +408,12 @@ _unur_hrb_create( struct unur_par *par )
   gen->clone = _unur_hrb_clone;
 
   /* copy parameters into generator object */
-  GEN.upper_bound = PAR.upper_bound;   /* upper bound for hazard rate        */ 
+  GEN->upper_bound = PAR->upper_bound;   /* upper bound for hazard rate        */ 
 
   /* default values */
 
   /* initialize variables */
-  GEN.left_border = 0.;             /* left border of domain                 */
+  GEN->left_border = 0.;             /* left border of domain                 */
 
   /* return pointer to (almost empty) generator object */
   return gen;
@@ -436,7 +437,7 @@ _unur_hrb_clone( const struct unur_gen *gen )
      /*   return NULL                                                        */
      /*----------------------------------------------------------------------*/
 { 
-#define CLONE clone->data.hrb
+#define CLONE  ((struct unur_hrb_gen*)clone->datap)
 
   struct unur_gen *clone;
 
@@ -504,10 +505,10 @@ _unur_hrb_sample( struct unur_gen *gen )
   CHECK_NULL(gen,INFINITY);  COOKIE_CHECK(gen,CK_HRB_GEN,INFINITY);
 
   /* parameter for majorizing hazard rate */
-  lambda = GEN.upper_bound;
+  lambda = GEN->upper_bound;
 
   /* starting point */
-  X = GEN.left_border;
+  X = GEN->left_border;
 
   for(;;) {
     /* sample from U(0,1) */
@@ -551,10 +552,10 @@ _unur_hrb_sample_check( struct unur_gen *gen )
   CHECK_NULL(gen,INFINITY);  COOKIE_CHECK(gen,CK_HRB_GEN,INFINITY);
 
   /* parameter for majorizing hazard rate */
-  lambda = GEN.upper_bound;
+  lambda = GEN->upper_bound;
 
   /* starting point */
-  X = GEN.left_border;
+  X = GEN->left_border;
 
   for(i=1;;i++) {
     /* sample from U(0,1) */
@@ -631,7 +632,7 @@ _unur_hrb_debug_init( const struct unur_gen *gen )
     fprintf(log,"()\n");
   fprintf(log,"%s:\n",gen->genid);
 
-  fprintf(log,"%s: upper bound for hazard rate = %g",gen->genid,GEN.upper_bound);
+  fprintf(log,"%s: upper bound for hazard rate = %g",gen->genid,GEN->upper_bound);
   _unur_print_if_default(gen,HRB_SET_UPPERBOUND);
   fprintf(log,"\n");
 

@@ -53,7 +53,7 @@ struct unur_slist *make_distr_list ( struct unur_slist *distr_str_list );
 int print_legend ( struct unur_slist *distr_str_list, struct unur_slist *meth_str_list ); 
 
 /* print legend for timings results */
-int print_timing_legend ( int samplesize );
+int print_timing_legend ( int samplesize, double unit, int is_default );
 
 /* print label for distribution and methods with index n*/
 int print_label ( int n, char ltype );
@@ -63,7 +63,7 @@ int print_label ( int n, char ltype );
 
 /* compute timings table */
 double *compute_timings ( struct unur_slist *distr_str_list, struct unur_slist *meth_str_list,
-			  int samplesize, double duration ); 
+			  int samplesize, double duration, double unit ); 
 
 /* print timings table */
 int print_timings ( double *timings,
@@ -90,6 +90,7 @@ print_usage(void)
   fprintf(stderr,"\t-D          ... debug mode\n");
   fprintf(stderr,"\t-n size     ... size of sample (default: 1000)\n");
   fprintf(stderr,"\t-d time     ... duration for each test in sec. (default: 0.1)\n");
+  fprintf(stderr,"\t-u unit     ... timing unit in micro sec. (default: generation for exponential)\n");
   fprintf(stderr,"\t   conffile ... file with list of distributions and methods\n");
   fprintf(stderr,"\n");
 
@@ -116,13 +117,14 @@ int main (int argc, char *argv[])
   int debug = 0;            /* debug mode (on/off) */
   int samplesize = 1000;    /* size of samples */
   double duration = 0.1;    /* duration in seconds for timing generation of a sample */
+  double unit = -1.;         /* timing unit in micro sec. (<= 0. --> use default) */
   char *conffile;           /* name of configuration file */
 
   struct unur_slist *distr_str_list; /* list of strings for distributions */
   struct unur_slist *meth_str_list;  /* list of strings for methods */
 
+  double timing_unit; /* unit for timing result */
   double *time_0;
-
 
   /* ------------------------------------------------------------------------*/
   /* read parameters                                                         */
@@ -131,7 +133,7 @@ int main (int argc, char *argv[])
 
   int c;
 
-  while ((c = getopt(argc, argv, "Dd:n:")) != -1) {
+  while ((c = getopt(argc, argv, "Dd:n:u:")) != -1) {
     switch (c) {
     case 'D':     /* debug */
       debug = 1;
@@ -141,6 +143,9 @@ int main (int argc, char *argv[])
       break;
     case 'n':     /* sample size */
       samplesize = atoi(optarg);
+      break;
+    case 'u':     /* sample size */
+      unit = atof(optarg);
       break;
     case '?':     /* Help Message  */
     case 'h':
@@ -182,12 +187,15 @@ int main (int argc, char *argv[])
 
   /* print legend */
   print_legend(distr_str_list,meth_str_list);
-  print_timing_legend(samplesize);
+
+  /* get unit for relative timings */
+  timing_unit = (unit <= 0.) ? get_timing_unit() : unit;
   
   /* make timings */
-  time_0 = compute_timings(distr_str_list,meth_str_list,samplesize,duration);
+  time_0 = compute_timings(distr_str_list,meth_str_list,samplesize,duration,timing_unit);
 
   /* print timings */
+  print_timing_legend(samplesize, timing_unit,((unit<= 0.)?TRUE:FALSE));
   print_timings(time_0,distr_str_list,meth_str_list,samplesize,ROW_DISTRIBUTION);
   print_timings(time_0,distr_str_list,meth_str_list,samplesize,ROW_METHOD);
 
@@ -216,7 +224,8 @@ get_timing_unit(void)
     distr = unur_distr_exponential(NULL,0);
     par = unur_cstd_new(distr);
     timing_unit = unur_test_timing_exponential(par, 6);
-    free(par);
+    unur_par_free(par);
+    unur_distr_free(distr);
   }
 
   return timing_unit;
@@ -365,14 +374,16 @@ print_legend ( struct unur_slist *distr_str_list, struct unur_slist *meth_str_li
 /*---------------------------------------------------------------------------*/
 
 int 
-print_timing_legend ( int samplesize )
+print_timing_legend ( int samplesize, double unit, int is_default )
      /* print legend for timings results */
 {
   printf("<Timing results>\n"); 
   printf("Average generation times (including setup) for sample of size %d.\n",samplesize);
-  printf("Timings are relative to generation of exponential random variate\n");
-  printf("using inversion within UNU.RAN environment\n");
-  printf("(timing unit = %g microseconds)\n\n",get_timing_unit());
+  if (is_default) {
+    printf("Timings are relative to generation of exponential random variate\n");
+    printf("using inversion within UNU.RAN environment\n");
+  }
+  printf("(timing unit = %g microseconds)\n\n", unit);
   return 1;
 } /* end of print_timing_legend() */
 
@@ -402,7 +413,7 @@ print_label ( int n, char ltype )
 
 double *
 compute_timings ( struct unur_slist *distr_str_list, struct unur_slist *meth_str_list,
-		  int samplesize, double duration )
+		  int samplesize, double duration, double timing_unit )
      /* compute timings table */
 {
   struct unur_slist *distr_list; /* list of distributions */
@@ -412,12 +423,9 @@ compute_timings ( struct unur_slist *distr_str_list, struct unur_slist *meth_str
   UNUR_DISTR *distr;  /* pointer to working distribution object */
   UNUR_PAR *par;      /* pointer to working parameter object */
   int i,k;
-  struct unur_slist *mlist;  /* list of allocated memory blocks in running _unur_str2par() */
+  struct unur_slist *mlist = NULL;  /* list of allocated memory 
+				       blocks in running _unur_str2par() */
   double *timing;     /* timing results */
-  double timing_unit; /* unit for timing result */
-
-  /* get unit for relative timings */
-  timing_unit = get_timing_unit();
 
   /* get all distribution objects */
   distr_list = make_distr_list(distr_str_list);
@@ -431,20 +439,21 @@ compute_timings ( struct unur_slist *distr_str_list, struct unur_slist *meth_str
 
   /* make timings */
   for (i=0; i<n_distr; i++) {
-    distr = _unur_slist_get(distr_list, i);
+    distr = _unur_slist_replace(distr_list, i, NULL);
     for (k=0; k<n_meth; k++) {
       str = _unur_slist_get(meth_str_list, k);
       par = _unur_str2par(distr, str, &mlist);
       if (par) {
 	timing[i*n_meth+k] = unur_test_timing_total(par, samplesize, duration );
 	timing[i*n_meth+k] /= samplesize * timing_unit;
-	free(par);
-	_unur_slist_free(mlist);
+	unur_par_free(par);
       }
       else {
 	timing[i*n_meth+k] = -1.;  /* no timing result */
       }
-    }  
+      _unur_slist_free(mlist);
+    }
+    unur_distr_free(distr);
   }
 
   /* free memory */

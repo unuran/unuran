@@ -36,6 +36,7 @@
 
 #include <unur_source.h>
 #include <methods/cstd.h>
+#include <methods/cstd_struct.h>
 #include <methods/x_gen_source.h>
 #include <distr/distr_source.h>
 #include <specfunct/unur_specfunct_source.h>
@@ -50,8 +51,8 @@ inline static int slash_slash_init( struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 /* abbreviations */
 
-#define PAR       par->data.cstd        /* data for parameter object         */
-#define GEN       gen->data.cstd        /* data for generator object         */
+#define PAR       ((struct unur_cstd_par*)par->datap) /* data for parameter object */
+#define GEN       ((struct unur_cstd_gen*)gen->datap) /* data for generator object */
 #define DISTR     gen->distr->data.cont /* data for distribution in generator object */
 
 #define uniform()  _unur_call_urng(gen->urng) /* call for uniform prng       */

@@ -36,6 +36,7 @@
 
 #include <unur_source.h>
 #include <methods/cstd.h>
+#include <methods/cstd_struct.h>
 #include <specfunct/unur_specfunct_source.h>
 #include "unur_distributions_source.h"
 
@@ -50,10 +51,10 @@ inline static int beta_b01_init( struct unur_gen *gen );
 inline static int beta_b1prs_init( struct unur_gen *gen );
 
 /*---------------------------------------------------------------------------*/
-/* abbreviations */
+ /* abbreviations */
 
-#define PAR       par->data.cstd        /* data for parameter object         */
-#define GEN       gen->data.cstd        /* data for generator object         */
+#define PAR       ((struct unur_cstd_par*)par->datap) /* data for parameter object */
+#define GEN       ((struct unur_cstd_gen*)gen->datap) /* data for generator object */
 #define DISTR     gen->distr->data.cont /* data for distribution in generator object */
 
 #define uniform()  _unur_call_urng(gen->urng) /* call for uniform prng       */
@@ -169,15 +170,15 @@ _unur_stdgen_beta_init( struct unur_par *par, struct unur_gen *gen )
  *****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
-#define am      (GEN.gen_param[0])
-#define bm      (GEN.gen_param[1])
-#define al      (GEN.gen_param[2])
-#define alnam   (GEN.gen_param[3])
-#define be      (GEN.gen_param[4])
-#define ga      (GEN.gen_param[5])
-#define si      (GEN.gen_param[6])
-#define rk1     (GEN.gen_param[7])
-#define rk2     (GEN.gen_param[8])
+#define am      (GEN->gen_param[0])
+#define bm      (GEN->gen_param[1])
+#define al      (GEN->gen_param[2])
+#define alnam   (GEN->gen_param[3])
+#define be      (GEN->gen_param[4])
+#define ga      (GEN->gen_param[5])
+#define si      (GEN->gen_param[6])
+#define rk1     (GEN->gen_param[7])
+#define rk2     (GEN->gen_param[8])
 /*---------------------------------------------------------------------------*/
 
 inline static int
@@ -188,9 +189,9 @@ beta_bc_init( struct unur_gen *gen )
   CHECK_NULL(gen,UNUR_ERR_NULL);
   COOKIE_CHECK(gen,CK_CSTD_GEN,UNUR_ERR_COOKIE);
 
-  if (GEN.gen_param == NULL) {
-    GEN.n_gen_param = MAX_gen_params;
-    GEN.gen_param = _unur_xmalloc(GEN.n_gen_param * sizeof(double));
+  if (GEN->gen_param == NULL) {
+    GEN->n_gen_param = MAX_gen_params;
+    GEN->gen_param = _unur_xmalloc(GEN->n_gen_param * sizeof(double));
   }
 
   /* -X- setup code -X- */
@@ -304,9 +305,9 @@ beta_bb_init( struct unur_gen *gen )
   CHECK_NULL(gen,UNUR_ERR_NULL);
   COOKIE_CHECK(gen,CK_CSTD_GEN,UNUR_ERR_COOKIE);
 
-  if (GEN.gen_param == NULL) {
-    GEN.n_gen_param = MAX_gen_params;
-    GEN.gen_param = _unur_xmalloc(GEN.n_gen_param * sizeof(double));
+  if (GEN->gen_param == NULL) {
+    GEN->n_gen_param = MAX_gen_params;
+    GEN->gen_param = _unur_xmalloc(GEN->n_gen_param * sizeof(double));
   }
 
   /* -X- setup code -X- */
@@ -418,14 +419,14 @@ _unur_stdgen_sample_beta_bb(  struct unur_gen *gen )
  *****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
-#define p_      (GEN.gen_param[0])
-#define q_      (GEN.gen_param[1])
-#define c       (GEN.gen_param[2])
-#define t       (GEN.gen_param[3])
-#define fp      (GEN.gen_param[4])
-#define fq      (GEN.gen_param[5])
-#define p1      (GEN.gen_param[6])
-#define p2      (GEN.gen_param[7])
+#define p_      (GEN->gen_param[0])
+#define q_      (GEN->gen_param[1])
+#define c       (GEN->gen_param[2])
+#define t       (GEN->gen_param[3])
+#define fp      (GEN->gen_param[4])
+#define fq      (GEN->gen_param[5])
+#define p1      (GEN->gen_param[6])
+#define p2      (GEN->gen_param[7])
 /*---------------------------------------------------------------------------*/
 
 inline static int
@@ -436,9 +437,9 @@ beta_b00_init( struct unur_gen *gen )
   CHECK_NULL(gen,UNUR_ERR_NULL);
   COOKIE_CHECK(gen,CK_CSTD_GEN,UNUR_ERR_COOKIE);
 
-  if (GEN.gen_param == NULL) {
-    GEN.n_gen_param = MAX_gen_params;
-    GEN.gen_param = _unur_xmalloc(GEN.n_gen_param * sizeof(double));
+  if (GEN->gen_param == NULL) {
+    GEN->n_gen_param = MAX_gen_params;
+    GEN->gen_param = _unur_xmalloc(GEN->n_gen_param * sizeof(double));
   }
 
   /* -X- setup code -X- */
@@ -515,17 +516,17 @@ _unur_stdgen_sample_beta_b00(  struct unur_gen *gen )
 #undef p1
 #undef p2
 /*---------------------------------------------------------------------------*/
-#define pint    (GEN.gen_param[0])
-#define qint    (GEN.gen_param[1])
-#define p_      (GEN.gen_param[2])
-#define q_      (GEN.gen_param[3])
-#define t       (GEN.gen_param[4])
-#define fp      (GEN.gen_param[5])
-#define fq      (GEN.gen_param[6])
-#define ml      (GEN.gen_param[7])
-#define mu      (GEN.gen_param[8])
-#define p1      (GEN.gen_param[9])
-#define p2      (GEN.gen_param[10])
+#define pint    (GEN->gen_param[0])
+#define qint    (GEN->gen_param[1])
+#define p_      (GEN->gen_param[2])
+#define q_      (GEN->gen_param[3])
+#define t       (GEN->gen_param[4])
+#define fp      (GEN->gen_param[5])
+#define fq      (GEN->gen_param[6])
+#define ml      (GEN->gen_param[7])
+#define mu      (GEN->gen_param[8])
+#define p1      (GEN->gen_param[9])
+#define p2      (GEN->gen_param[10])
 /*---------------------------------------------------------------------------*/
 
 inline static int
@@ -536,9 +537,9 @@ beta_b01_init( struct unur_gen *gen )
   CHECK_NULL(gen,UNUR_ERR_NULL);
   COOKIE_CHECK(gen,CK_CSTD_GEN,UNUR_ERR_COOKIE);
 
-  if (GEN.gen_param == NULL) {
-    GEN.n_gen_param = MAX_gen_params;
-    GEN.gen_param = _unur_xmalloc(GEN.n_gen_param * sizeof(double));
+  if (GEN->gen_param == NULL) {
+    GEN->n_gen_param = MAX_gen_params;
+    GEN->gen_param = _unur_xmalloc(GEN->n_gen_param * sizeof(double));
   }
 
   /* -X- setup code -X- */
@@ -639,28 +640,28 @@ _unur_stdgen_sample_beta_b01(  struct unur_gen *gen )
 #undef p1
 #undef p2
 /*---------------------------------------------------------------------------*/
-#define p_      (GEN.gen_param[0])
-#define q_      (GEN.gen_param[1])
-#define s       (GEN.gen_param[2])
-#define m       (GEN.gen_param[3])
-#define D       (GEN.gen_param[4])
-#define Dl      (GEN.gen_param[5])
-#define x1      (GEN.gen_param[6])
-#define x2      (GEN.gen_param[7])
-#define x4      (GEN.gen_param[8])
-#define x5      (GEN.gen_param[9])
-#define f1      (GEN.gen_param[10])
-#define f2      (GEN.gen_param[11])
-#define f4      (GEN.gen_param[12])
-#define f5      (GEN.gen_param[13])
-#define ll      (GEN.gen_param[14])
-#define lr      (GEN.gen_param[15])
-#define z2      (GEN.gen_param[16])
-#define z4      (GEN.gen_param[17])
-#define p1      (GEN.gen_param[18])
-#define p2      (GEN.gen_param[19])
-#define p3      (GEN.gen_param[20])
-#define p4      (GEN.gen_param[21])
+#define p_      (GEN->gen_param[0])
+#define q_      (GEN->gen_param[1])
+#define s       (GEN->gen_param[2])
+#define m       (GEN->gen_param[3])
+#define D       (GEN->gen_param[4])
+#define Dl      (GEN->gen_param[5])
+#define x1      (GEN->gen_param[6])
+#define x2      (GEN->gen_param[7])
+#define x4      (GEN->gen_param[8])
+#define x5      (GEN->gen_param[9])
+#define f1      (GEN->gen_param[10])
+#define f2      (GEN->gen_param[11])
+#define f4      (GEN->gen_param[12])
+#define f5      (GEN->gen_param[13])
+#define ll      (GEN->gen_param[14])
+#define lr      (GEN->gen_param[15])
+#define z2      (GEN->gen_param[16])
+#define z4      (GEN->gen_param[17])
+#define p1      (GEN->gen_param[18])
+#define p2      (GEN->gen_param[19])
+#define p3      (GEN->gen_param[20])
+#define p4      (GEN->gen_param[21])
 /*---------------------------------------------------------------------------*/
 
 inline static int
@@ -671,9 +672,9 @@ beta_b1prs_init( struct unur_gen *gen )
   CHECK_NULL(gen,UNUR_ERR_NULL);
   COOKIE_CHECK(gen,CK_CSTD_GEN,UNUR_ERR_COOKIE);
 
-  if (GEN.gen_param == NULL) {
-    GEN.n_gen_param = MAX_gen_params;
-    GEN.gen_param = _unur_xmalloc(GEN.n_gen_param * sizeof(double));
+  if (GEN->gen_param == NULL) {
+    GEN->n_gen_param = MAX_gen_params;
+    GEN->gen_param = _unur_xmalloc(GEN->n_gen_param * sizeof(double));
   }
 
   /* -X- setup code -X- */

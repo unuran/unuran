@@ -68,28 +68,28 @@ _unur_tdr_init( struct unur_par *par )
 
   /* create a new empty generator object */
   gen = _unur_tdr_create(par);
-  if (!gen) { free(par); return NULL; }
+  if (!gen) { _unur_par_free(par); return NULL; }
 
   /* get starting points */
   if (_unur_tdr_starting_cpoints(par,gen)!=UNUR_SUCCESS) {
-    free(par); _unur_tdr_free(gen);
+    _unur_par_free(par); _unur_tdr_free(gen);
     return NULL;
   }
 
   /* compute intervals for given starting points */
   if (_unur_tdr_starting_intervals(par,gen)!=UNUR_SUCCESS) {
-    free(par); _unur_tdr_free(gen);
+    _unur_par_free(par); _unur_tdr_free(gen);
     return NULL;
   }
 
   /* update maximal number of intervals */
-  if (GEN.n_ivs > GEN.max_ivs) {
-    GEN.max_ivs = GEN.n_ivs;
+  if (GEN->n_ivs > GEN->max_ivs) {
+    GEN->max_ivs = GEN->n_ivs;
   }
   
   /* set boundaries for U */
-  GEN.Umin = 0.;
-  GEN.Umax = 1.;
+  GEN->Umin = 0.;
+  GEN->Umax = 1.;
 
 
   if (par->variant & TDR_VARFLAG_USEDARS) {
@@ -110,7 +110,7 @@ _unur_tdr_init( struct unur_par *par )
 
       /* run DARS */
       if (_unur_tdr_run_dars(par,gen)!=UNUR_SUCCESS) {
-	free(par); _unur_tdr_free(gen);
+	_unur_par_free(par); _unur_tdr_free(gen);
 	return NULL;
       }
     
@@ -118,7 +118,7 @@ _unur_tdr_init( struct unur_par *par )
       _unur_tdr_make_guide_table(gen);
 
       /* check if DARS was completed */
-      if (GEN.n_ivs < GEN.max_ivs) {
+      if (GEN->n_ivs < GEN->max_ivs) {
 	/* ran ARS instead */
 	for (k=0; k<5; k++)
 	  _unur_sample_cont(gen);
@@ -149,10 +149,10 @@ _unur_tdr_init( struct unur_par *par )
   }
 
   /* free parameters */
-  free(par);
+  _unur_par_free(par);
 
   /* is there any hat at all ? */
-  if (GEN.Atotal <= 0.) {
+  if (GEN->Atotal <= 0.) {
     _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"bad construction points.");
     _unur_tdr_free(gen);
     return NULL;
@@ -186,7 +186,7 @@ _unur_tdr_create( struct unur_par *par )
   CHECK_NULL(par,NULL);  COOKIE_CHECK(par,CK_TDR_PAR,NULL);
 
   /* create new generic generator object */
-  gen = _unur_generic_create( par );
+  gen = _unur_generic_create( par, sizeof(struct unur_tdr_gen) );
 
   /* magic cookies */
   COOKIE_SET(gen,CK_TDR_GEN);
@@ -195,9 +195,9 @@ _unur_tdr_create( struct unur_par *par )
   gen->genid = _unur_set_genid(GENTYPE);
 
   /* which transformation */
-  if (PAR.c_T == 0.)
+  if (PAR->c_T == 0.)
     par->variant = (par->variant & (~TDR_VARMASK_T)) | TDR_VAR_T_LOG;
-  else if (_unur_FP_same(PAR.c_T, -0.5))
+  else if (_unur_FP_same(PAR->c_T, -0.5))
     par->variant = (par->variant & (~TDR_VARMASK_T)) | TDR_VAR_T_SQRT;
   else
     par->variant = (par->variant & (~TDR_VARMASK_T)) | TDR_VAR_T_POW;
@@ -231,21 +231,21 @@ _unur_tdr_create( struct unur_par *par )
   }
   
   /* set all pointers to NULL */
-  GEN.guide       = NULL;
-  GEN.guide_size  = 0;
-  GEN.iv          = NULL;
-  GEN.n_ivs       = 0;
-  GEN.Atotal      = 0.;
-  GEN.Asqueeze    = 0.;
+  GEN->guide       = NULL;
+  GEN->guide_size  = 0;
+  GEN->iv          = NULL;
+  GEN->n_ivs       = 0;
+  GEN->Atotal      = 0.;
+  GEN->Asqueeze    = 0.;
 
   /* copy some parameters into generator object */
-  GEN.guide_factor = PAR.guide_factor; /* relative size of guide tables      */
-  GEN.c_T = PAR.c_T;                /* parameter for transformation          */
+  GEN->guide_factor = PAR->guide_factor; /* relative size of guide tables      */
+  GEN->c_T = PAR->c_T;                /* parameter for transformation          */
 
   /* bounds for adding construction points  */
-  GEN.max_ivs = max(2*PAR.n_starting_cpoints,PAR.max_ivs);  /* maximum number of intervals */
-  GEN.max_ratio = PAR.max_ratio;    /* bound for ratio  Atotal / Asqueeze    */
-  GEN.bound_for_adding = PAR.bound_for_adding;
+  GEN->max_ivs = max(2*PAR->n_starting_cpoints,PAR->max_ivs);  /* maximum number of intervals */
+  GEN->max_ratio = PAR->max_ratio;    /* bound for ratio  Atotal / Asqueeze    */
+  GEN->bound_for_adding = PAR->bound_for_adding;
 
   /* mode known and in given domain ?? */
   if ( !(par->distr->set & UNUR_DISTR_SET_MODE)
@@ -260,12 +260,12 @@ _unur_tdr_create( struct unur_par *par )
     par->variant = par->variant & (~TDR_VARFLAG_USECENTER);
   else {
     /* center must be in domain */
-    PAR.center = max(PAR.center,DISTR.BD_LEFT);
-    PAR.center = min(PAR.center,DISTR.BD_RIGHT);
+    PAR->center = max(PAR->center,DISTR.BD_LEFT);
+    PAR->center = min(PAR->center,DISTR.BD_RIGHT);
   }
 
   /* set default for DARS */
-  if (!(par->set & TDR_SET_USE_DARS) && !PAR.starting_cpoints)
+  if (!(par->set & TDR_SET_USE_DARS) && !PAR->starting_cpoints)
     /* no starting points given by user
        --> enable derandomized ARS      */
     par->variant |= TDR_VARFLAG_USEDARS;
@@ -295,7 +295,7 @@ _unur_tdr_clone( const struct unur_gen *gen )
      /*   return NULL                                                        */
      /*----------------------------------------------------------------------*/
 { 
-#define CLONE clone->data.tdr
+#define CLONE  ((struct unur_tdr_gen*)clone->datap)
 
   struct unur_gen *clone;
   struct unur_tdr_interval *iv,*next, *clone_iv, *clone_prev;
@@ -309,13 +309,13 @@ _unur_tdr_clone( const struct unur_gen *gen )
   /* copy linked list of intervals */
   clone_iv = NULL;
   clone_prev = NULL;
-  for (iv = GEN.iv; iv != NULL; iv = next) {
+  for (iv = GEN->iv; iv != NULL; iv = next) {
     /* copy segment */
     clone_iv = _unur_xmalloc( sizeof(struct unur_tdr_interval) );
     memcpy( clone_iv, iv, sizeof(struct unur_tdr_interval) );
     if (clone_prev == NULL) {
       /* starting point of linked list */
-      CLONE.iv = clone_iv;
+      CLONE->iv = clone_iv;
       clone_iv->prev = NULL;
     }
     else {
@@ -331,7 +331,7 @@ _unur_tdr_clone( const struct unur_gen *gen )
   if (clone_iv) clone_iv->next = NULL;
 
   /* make new guide table */
-  CLONE.guide = NULL;
+  CLONE->guide = NULL;
   _unur_tdr_make_guide_table(clone);
 
   /* finished clone */
@@ -372,14 +372,14 @@ _unur_tdr_free( struct unur_gen *gen )
   /* free linked list of intervals */
   {
     struct unur_tdr_interval *iv,*next;
-    for (iv = GEN.iv; iv != NULL; iv = next) {
+    for (iv = GEN->iv; iv != NULL; iv = next) {
       next = iv->next;
       free(iv);
     }
   }
 
   /* free table */
-  if (GEN.guide)  free(GEN.guide);
+  if (GEN->guide)  free(GEN->guide);
 
   /* free other memory not stored in list */
   _unur_generic_free(gen);
@@ -425,20 +425,20 @@ _unur_tdr_starting_cpoints( struct unur_par *par, struct unur_gen *gen )
 
   /* add extra construction point        */
   /* (use either mode or center or none) */
-  extra_cpoint = use_mode ? DISTR.mode : (use_center ? PAR.center : 0. );
+  extra_cpoint = use_mode ? DISTR.mode : (use_center ? PAR->center : 0. );
 
   /* reset counter of intervals */
-  GEN.n_ivs = 0;
+  GEN->n_ivs = 0;
 
   /* prepare for computing construction points */
-  if (!PAR.starting_cpoints) {
+  if (!PAR->starting_cpoints) {
     /* move center into  x = 0 */
     /* angles of boundary of domain */
-    left_angle =  _unur_FP_is_minus_infinity(DISTR.BD_LEFT) ? -M_PI/2. : atan(DISTR.BD_LEFT  - PAR.center);
-    right_angle = _unur_FP_is_infinity(DISTR.BD_RIGHT)      ? M_PI/2.  : atan(DISTR.BD_RIGHT - PAR.center);
+    left_angle =  _unur_FP_is_minus_infinity(DISTR.BD_LEFT) ? -M_PI/2. : atan(DISTR.BD_LEFT  - PAR->center);
+    right_angle = _unur_FP_is_infinity(DISTR.BD_RIGHT)      ? M_PI/2.  : atan(DISTR.BD_RIGHT - PAR->center);
     /* we use equal distances between the angles of the cpoints   */
     /* and the boundary points                                    */
-    diff_angle = (right_angle-left_angle) / (PAR.n_starting_cpoints + 1);
+    diff_angle = (right_angle-left_angle) / (PAR->n_starting_cpoints + 1);
     angle = left_angle;
   }
   else
@@ -452,7 +452,7 @@ _unur_tdr_starting_cpoints( struct unur_par *par, struct unur_gen *gen )
     use_mode = FALSE;  /* do not use the mode again */
     is_increasing = FALSE;
   }
-  else if (use_center && PAR.center <= x) {
+  else if (use_center && PAR->center <= x) {
     is_mode = FALSE;
     use_center = FALSE;     /* do not use the center again */
     is_increasing = TRUE;   /* the center may be left of (unknown) mode */
@@ -463,21 +463,21 @@ _unur_tdr_starting_cpoints( struct unur_par *par, struct unur_gen *gen )
   }
     
   fx = fx_last = _unur_FP_is_minus_infinity(x) ? 0. : PDF(x);
-  iv = GEN.iv = _unur_tdr_interval_new( gen, x, fx, is_mode );
+  iv = GEN->iv = _unur_tdr_interval_new( gen, x, fx, is_mode );
   if (iv == NULL) return UNUR_ERR_GEN_DATA;  /* PDF(x) < 0 or overflow !! */
 
   /* terminate beginning of list */
   iv->prev = NULL;
 
   /* now all the other points */
-  for( i=0; i<=PAR.n_starting_cpoints; i++ ) {
+  for( i=0; i<=PAR->n_starting_cpoints; i++ ) {
     was_mode = is_mode;
 
     /* construction point */
-    if (i < PAR.n_starting_cpoints) {
-      if (PAR.starting_cpoints) {   
+    if (i < PAR->n_starting_cpoints) {
+      if (PAR->starting_cpoints) {   
 	/* construction points provided by user */
-	x = PAR.starting_cpoints[i];
+	x = PAR->starting_cpoints[i];
 	/* check starting point */
 	if (x < DISTR.BD_LEFT || x > DISTR.BD_RIGHT) {
 	  _unur_warning(gen->genid,UNUR_ERR_GEN_DATA,"starting point out of domain");
@@ -487,7 +487,7 @@ _unur_tdr_starting_cpoints( struct unur_par *par, struct unur_gen *gen )
       else {
 	/* compute construction points by means of "equiangular rule" */
 	angle += diff_angle;
-	x = tan( angle ) + PAR.center;
+	x = tan( angle ) + PAR->center;
       }
     }
     else {
@@ -503,7 +503,7 @@ _unur_tdr_starting_cpoints( struct unur_par *par, struct unur_gen *gen )
       if (x>extra_cpoint) {
 	x = extra_cpoint;     /* use the mode now ... */
 	--i;              /* and push the orignal starting point back on stack */
-	if (!PAR.starting_cpoints)
+	if (!PAR->starting_cpoints)
 	  angle -= diff_angle; /* we have to compute the starting point in this case */
       }
       /* else: x == extra_cpoint --> nothing to do */
@@ -535,7 +535,7 @@ _unur_tdr_starting_cpoints( struct unur_par *par, struct unur_gen *gen )
       /* we do not need two such point */
       if (is_increasing) {
 	/* PDF is still increasing, i.e., constant 0 til now */
-	if (i<PAR.n_starting_cpoints) {
+	if (i<PAR->n_starting_cpoints) {
 	  /* and it is not the right boundary.
 	     otherwise the PDF is constant 0 on all construction points.
 	     then we need both boundary points. */
@@ -574,7 +574,7 @@ _unur_tdr_starting_cpoints( struct unur_par *par, struct unur_gen *gen )
   iv->ip = iv->x;
   iv->fip = iv->fx;
   iv->next = NULL;         /* terminate list */
-  --(GEN.n_ivs);           /* we do not count this interval */
+  --(GEN->n_ivs);           /* we do not count this interval */
 
   /* o.k. */
   return UNUR_SUCCESS;
@@ -631,10 +631,10 @@ _unur_tdr_gw_starting_intervals( struct unur_par *par, struct unur_gen *gen )
   /* check arguments */
   CHECK_NULL(par,UNUR_ERR_NULL);  COOKIE_CHECK(par,CK_TDR_PAR,UNUR_ERR_COOKIE);
   CHECK_NULL(gen,UNUR_ERR_NULL);  COOKIE_CHECK(gen,CK_TDR_GEN,UNUR_ERR_COOKIE);
-  CHECK_NULL(GEN.iv,UNUR_ERR_NULL);  COOKIE_CHECK(GEN.iv,CK_TDR_IV,UNUR_ERR_COOKIE); 
+  CHECK_NULL(GEN->iv,UNUR_ERR_NULL);  COOKIE_CHECK(GEN->iv,CK_TDR_IV,UNUR_ERR_COOKIE); 
   
   /* compute paramters for all intervals */
-  for( iv=GEN.iv; iv->next != NULL; ) {
+  for( iv=GEN->iv; iv->next != NULL; ) {
 
     /* compute parameters for interval */
     switch (_unur_tdr_gw_interval_parameter(gen, iv)) {
@@ -654,7 +654,7 @@ _unur_tdr_gw_starting_intervals( struct unur_par *par, struct unur_gen *gen )
       iv_tmp = iv->next;
       iv->next = iv->next->next;
       free(iv_tmp);
-      --(GEN.n_ivs);
+      --(GEN->n_ivs);
       
       if (iv->next==NULL) {
 	/* last (virtuel) interval in list.
@@ -678,7 +678,7 @@ _unur_tdr_gw_starting_intervals( struct unur_par *par, struct unur_gen *gen )
     fx = PDF(x);
 
     /* add a new interval, but check if we had to used too many intervals */
-    if (GEN.n_ivs >= GEN.max_ivs) {
+    if (GEN->n_ivs >= GEN->max_ivs) {
       /* we do not want to create too many intervals */
       _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"cannot create bounded hat!");
       return UNUR_ERR_GEN_CONDITION;
@@ -694,8 +694,8 @@ _unur_tdr_gw_starting_intervals( struct unur_par *par, struct unur_gen *gen )
 	/* cut off left tail */
 	iv_new->next = iv->next;
 	free(iv); 
-	--(GEN.n_ivs);
-	GEN.iv = iv_new;
+	--(GEN->n_ivs);
+	GEN->iv = iv_new;
 	iv_new->prev = NULL;
 	/* compute the parameters for the new left part */
 	iv = iv_new;
@@ -703,7 +703,7 @@ _unur_tdr_gw_starting_intervals( struct unur_par *par, struct unur_gen *gen )
       else if (iv->next->fx <= 0.) {
 	/* cut off right tail */
 	free(iv->next);
-	--(GEN.n_ivs);	
+	--(GEN->n_ivs);	
 	iv->next = iv_new;
 	iv_new->prev = iv;
 	/* compute the paramters for the new part */
@@ -752,10 +752,10 @@ _unur_tdr_ps_starting_intervals( struct unur_par *par, struct unur_gen *gen )
   /* check arguments */
   CHECK_NULL(par,UNUR_ERR_NULL);  COOKIE_CHECK(par,CK_TDR_PAR,UNUR_ERR_COOKIE);
   CHECK_NULL(gen,UNUR_ERR_NULL);  COOKIE_CHECK(gen,CK_TDR_GEN,UNUR_ERR_COOKIE);
-  CHECK_NULL(GEN.iv,UNUR_ERR_NULL);  COOKIE_CHECK(GEN.iv,CK_TDR_IV,UNUR_ERR_COOKIE); 
+  CHECK_NULL(GEN->iv,UNUR_ERR_NULL);  COOKIE_CHECK(GEN->iv,CK_TDR_IV,UNUR_ERR_COOKIE); 
 
   /* first interval in list */
-  iv = GEN.iv;
+  iv = GEN->iv;
 
   /* the left boundary of the domain:
      iv->x in the first interval is always the left boundary of 
@@ -770,11 +770,11 @@ _unur_tdr_ps_starting_intervals( struct unur_par *par, struct unur_gen *gen )
      Thus we remove it from the list. At such points the slope of the
      tangents to the transformed density is set to INFINITY. */
   if (_unur_FP_is_infinity(iv->dTfx)) {
-    GEN.iv = iv->next;
-    GEN.iv->prev = NULL;
+    GEN->iv = iv->next;
+    GEN->iv->prev = NULL;
     free (iv);
-    --(GEN.n_ivs);
-    iv = GEN.iv;
+    --(GEN->n_ivs);
+    iv = GEN->iv;
   }
 
   /* set left boundary:
@@ -832,7 +832,7 @@ _unur_tdr_ps_starting_intervals( struct unur_par *par, struct unur_gen *gen )
       iv_tmp = iv->next;
       iv->next = iv->next->next;
       free(iv_tmp);
-      --(GEN.n_ivs);
+      --(GEN->n_ivs);
       
       if (iv->next==NULL) {
 	/* last (virtuel) interval in list.
@@ -849,7 +849,7 @@ _unur_tdr_ps_starting_intervals( struct unur_par *par, struct unur_gen *gen )
     }
 
     /* check if we had to used too many intervals */
-    if (GEN.n_ivs >= GEN.max_ivs) {
+    if (GEN->n_ivs >= GEN->max_ivs) {
       /* we do not want to create too many intervals */
       _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"cannot create bounded hat!");
       return UNUR_ERR_GEN_CONDITION;
@@ -884,7 +884,7 @@ _unur_tdr_ps_starting_intervals( struct unur_par *par, struct unur_gen *gen )
 
 	/* cut off right tail */
 	free(iv->next);
-	--(GEN.n_ivs);
+	--(GEN->n_ivs);
 	iv->next = iv_new;
 	iv_new->prev = iv;
 
@@ -924,8 +924,8 @@ _unur_tdr_ps_starting_intervals( struct unur_par *par, struct unur_gen *gen )
 	iv_new->prev = iv->prev;
 	iv_new->ip = iv->ip;
 	iv_new->fip = iv->fip;
-	--(GEN.n_ivs);
-	GEN.iv = iv_new;
+	--(GEN->n_ivs);
+	GEN->iv = iv_new;
 	/* continue with this new interval */
 	free(iv);
 	iv = iv_new;
@@ -955,7 +955,7 @@ _unur_tdr_ps_starting_intervals( struct unur_par *par, struct unur_gen *gen )
 	  iv_new->prev = NULL;
 	  iv_new->next = iv;
 	  iv->prev = iv_new;
-	  GEN.iv = iv_new;
+	  GEN->iv = iv_new;
 	  
 	  /* continue with this new interval */
 	  iv = iv_new;
@@ -993,7 +993,7 @@ _unur_tdr_run_dars( struct unur_par *par, struct unur_gen *gen )
   CHECK_NULL(gen,UNUR_ERR_NULL);  COOKIE_CHECK(gen,CK_TDR_GEN,UNUR_ERR_COOKIE);
   
   /* there is no need to run DARS when the DARS factor is INFINITY */
-  if (_unur_FP_is_infinity(PAR.darsfactor))
+  if (_unur_FP_is_infinity(PAR->darsfactor))
     return UNUR_SUCCESS;
 
   /* first we need the total areas below hat and squeeze.
@@ -1001,14 +1001,14 @@ _unur_tdr_run_dars( struct unur_par *par, struct unur_gen *gen )
      called!)                                                                */
   Atot = 0.;            /* area below hat */
   Asqueezetot = 0.;     /* area below squeeze */
-  for (iv = GEN.iv; iv != NULL; iv = iv->next ) {
+  for (iv = GEN->iv; iv != NULL; iv = iv->next ) {
     COOKIE_CHECK(iv,CK_TDR_IV,UNUR_ERR_COOKIE);
     Atot += iv->Ahat;
     Asqueezetot += iv->Asqueeze;
   }
 
-  GEN.Atotal = Atot;
-  GEN.Asqueeze = Asqueezetot;
+  GEN->Atotal = Atot;
+  GEN->Asqueeze = Asqueezetot;
 
   /* now run DARS for different variants */
   switch (gen->variant & TDR_VARMASK_VARIANT) {
@@ -1054,13 +1054,13 @@ _unur_tdr_gw_dars( struct unur_par *par, struct unur_gen *gen )
   CHECK_NULL(gen,UNUR_ERR_NULL);  COOKIE_CHECK(gen,CK_TDR_GEN,UNUR_ERR_COOKIE);
   
   /* now split intervals */
-  while ( (GEN.max_ratio * GEN.Atotal > GEN.Asqueeze) &&
-	  (GEN.n_ivs < GEN.max_ivs) ) {
+  while ( (GEN->max_ratio * GEN->Atotal > GEN->Asqueeze) &&
+	  (GEN->n_ivs < GEN->max_ivs) ) {
 
     /* compute threshhold value. every interval with area between
        hat and squeeze greater than this value will be splitted.  */
-    if (GEN.n_ivs > 1)
-      Alimit = PAR.darsfactor * ( (GEN.Atotal - GEN.Asqueeze) / GEN.n_ivs );
+    if (GEN->n_ivs > 1)
+      Alimit = PAR->darsfactor * ( (GEN->Atotal - GEN->Asqueeze) / GEN->n_ivs );
     else
       /* we split every interval if there are only one interval */
       Alimit = 0.; 
@@ -1069,11 +1069,11 @@ _unur_tdr_gw_dars( struct unur_par *par, struct unur_gen *gen )
     n_splitted = 0;
 
     /* for all intervals do ... */
-    for (iv = GEN.iv; iv->next != NULL; iv = iv->next ) {
+    for (iv = GEN->iv; iv->next != NULL; iv = iv->next ) {
       COOKIE_CHECK(iv,CK_TDR_IV,UNUR_ERR_COOKIE);
       
       /* do not exceed the maximum number of intervals */
-      if (GEN.n_ivs >= GEN.max_ivs)
+      if (GEN->n_ivs >= GEN->max_ivs)
 	break;
 
       /* we skip over all intervals where the area between hat and
@@ -1089,7 +1089,7 @@ _unur_tdr_gw_dars( struct unur_par *par, struct unur_gen *gen )
       x1 = iv->next->x;
 
       /* get splitting point */
-      for (rule = PAR.darsrule; rule <= 3; rule++) {
+      for (rule = PAR->darsrule; rule <= 3; rule++) {
 	switch (rule) {
 	case 1:   /* rule 1: expected value */
 	  
@@ -1182,14 +1182,14 @@ _unur_tdr_gw_dars( struct unur_par *par, struct unur_gen *gen )
   }
 
   /* ratio between squeeze and hat o.k. ? */
-  if ( GEN.max_ratio * GEN.Atotal > GEN.Asqueeze ) {
-    if ( GEN.n_ivs >= GEN.max_ivs )
+  if ( GEN->max_ratio * GEN->Atotal > GEN->Asqueeze ) {
+    if ( GEN->n_ivs >= GEN->max_ivs )
       _unur_warning(gen->genid,UNUR_ERR_GENERIC,"DARS aborted: maximum number of intervals exceeded.");
     _unur_warning(gen->genid,UNUR_ERR_GENERIC,"hat/squeeze ratio too small.");
   }
   else {
     /* no more construction points */
-    GEN.max_ivs = GEN.n_ivs;
+    GEN->max_ivs = GEN->n_ivs;
   }
   
   /* o.k. */
@@ -1231,13 +1231,13 @@ _unur_tdr_ps_dars( struct unur_par *par, struct unur_gen *gen )
   CHECK_NULL(gen,UNUR_ERR_NULL);  COOKIE_CHECK(gen,CK_TDR_GEN,UNUR_ERR_COOKIE);
 
   /* split intervals */
-  while ( (GEN.max_ratio * GEN.Atotal > GEN.Asqueeze) &&
-	  (GEN.n_ivs < GEN.max_ivs) ) {
+  while ( (GEN->max_ratio * GEN->Atotal > GEN->Asqueeze) &&
+	  (GEN->n_ivs < GEN->max_ivs) ) {
 
     /* compute threshhold value. every interval with area between
        hat and squeeze greater than this value will be splitted.  */
-    if (GEN.n_ivs > 1)
-      Alimit = PAR.darsfactor * ( (GEN.Atotal - GEN.Asqueeze) / GEN.n_ivs );
+    if (GEN->n_ivs > 1)
+      Alimit = PAR->darsfactor * ( (GEN->Atotal - GEN->Asqueeze) / GEN->n_ivs );
     else
       /* we split every interval if there are only one interval */
       Alimit = 0.; 
@@ -1246,11 +1246,11 @@ _unur_tdr_ps_dars( struct unur_par *par, struct unur_gen *gen )
     n_splitted = 0;
 
     /* for all intervals do ... */
-    for (iv = GEN.iv; iv != NULL; iv = iv->next ) {
+    for (iv = GEN->iv; iv != NULL; iv = iv->next ) {
       COOKIE_CHECK(iv,CK_TDR_IV,UNUR_ERR_COOKIE);
 
       /* do not exceed the maximum number of intervals */
-      if (GEN.n_ivs >= GEN.max_ivs)
+      if (GEN->n_ivs >= GEN->max_ivs)
 	break;
 
       /* boundary of interval:
@@ -1264,7 +1264,7 @@ _unur_tdr_ps_dars( struct unur_par *par, struct unur_gen *gen )
 	 compute some data and the first and last interval has to 
 	 be treated differently.
       */
-      if (iv==GEN.iv) {
+      if (iv==GEN->iv) {
 	/* the first interval */
 	x0 = iv->ip;       /* left boundary of interval */
 	x1 = iv->x;        /* right boundary of interval */
@@ -1290,7 +1290,7 @@ _unur_tdr_ps_dars( struct unur_par *par, struct unur_gen *gen )
 	continue;  /* goto next interval */
 
       /* get splitting point */
-      for (rule = PAR.darsrule; rule <= 3; rule++) {
+      for (rule = PAR->darsrule; rule <= 3; rule++) {
 	switch (rule) {
 	case 1:   /* rule 1: expected value */
 	  
@@ -1406,14 +1406,14 @@ _unur_tdr_ps_dars( struct unur_par *par, struct unur_gen *gen )
   }
 
   /* ratio between squeeze and hat o.k. ? */
-  if ( GEN.max_ratio * GEN.Atotal > GEN.Asqueeze ) {
-    if ( GEN.n_ivs >= GEN.max_ivs )
+  if ( GEN->max_ratio * GEN->Atotal > GEN->Asqueeze ) {
+    if ( GEN->n_ivs >= GEN->max_ivs )
       _unur_warning(gen->genid,UNUR_ERR_GENERIC,"DARS aborted: maximum number of intervals exceeded.");
     _unur_warning(gen->genid,UNUR_ERR_GENERIC,"hat/squeeze ratio too small.");
   }
   else {
     /* no more construction points */
-    GEN.max_ivs = GEN.n_ivs;
+    GEN->max_ivs = GEN->n_ivs;
   }
   
   /* o.k. */
@@ -1461,7 +1461,7 @@ _unur_tdr_interval_new( struct unur_gen *gen, double x, double fx, int is_mode )
   /* we need a new segment */
   iv = _unur_xmalloc( sizeof(struct unur_tdr_interval) );
   iv->next = NULL; /* add eol marker */
-  ++(GEN.n_ivs);   /* increment counter for intervals */
+  ++(GEN->n_ivs);   /* increment counter for intervals */
   COOKIE_SET(iv,CK_TDR_IV);
 
   /* avoid uninitialized variables */
@@ -1499,7 +1499,7 @@ _unur_tdr_interval_new( struct unur_gen *gen, double x, double fx, int is_mode )
     break;
   case TDR_VAR_T_POW:
     /** TODO **/
-    /*      iv->Tfx = -pow(fx,GEN.c_T); */
+    /*      iv->Tfx = -pow(fx,GEN->c_T); */
     /*      iv->dTfx = 0.; */
     break;
   }
@@ -2162,8 +2162,8 @@ _unur_tdr_gw_interval_split( struct unur_gen *gen, struct unur_tdr_interval *iv_
   }
 
   /* we only add a new construction point, if the relative area is large enough */
-  if ( (GEN.n_ivs * (iv_oldl->Ahat - iv_oldl->Asqueeze) / (GEN.Atotal - GEN.Asqueeze))
-       < GEN.bound_for_adding)
+  if ( (GEN->n_ivs * (iv_oldl->Ahat - iv_oldl->Asqueeze) / (GEN->Atotal - GEN->Asqueeze))
+       < GEN->bound_for_adding)
     return UNUR_ERR_SILENT;
 
   /* check for data error */
@@ -2244,7 +2244,7 @@ _unur_tdr_gw_interval_split( struct unur_gen *gen, struct unur_tdr_interval *iv_
 
     /* decrement counter for intervals and free unused interval */
     if (iv_newr) {
-      --(GEN.n_ivs); 
+      --(GEN->n_ivs); 
       free( iv_newr );
     }
 
@@ -2255,9 +2255,9 @@ _unur_tdr_gw_interval_split( struct unur_gen *gen, struct unur_tdr_interval *iv_
   /* successful */
 
   /* update total area below hat and squeeze */
-  GEN.Atotal   = ( GEN.Atotal - iv_bak.Ahat
+  GEN->Atotal   = ( GEN->Atotal - iv_bak.Ahat
 		   + iv_oldl->Ahat + ((iv_newr) ? iv_newr->Ahat : 0.) );
-  GEN.Asqueeze = ( GEN.Asqueeze - iv_bak.Asqueeze
+  GEN->Asqueeze = ( GEN->Asqueeze - iv_bak.Asqueeze
 		   + iv_oldl->Asqueeze + ((iv_newr) ? iv_newr->Asqueeze : 0. ) );
 
 #ifdef UNUR_ENABLE_LOGGING
@@ -2302,8 +2302,8 @@ _unur_tdr_ps_interval_split( struct unur_gen *gen, struct unur_tdr_interval *iv,
   CHECK_NULL(iv,UNUR_ERR_NULL);  COOKIE_CHECK(iv,CK_TDR_IV,UNUR_ERR_COOKIE);
 
   /* we only add a new construction point, if the relative area is large enough */
-  if ( (GEN.n_ivs * (iv->Ahat - iv->Asqueeze) / (GEN.Atotal - GEN.Asqueeze))
-       < GEN.bound_for_adding)
+  if ( (GEN->n_ivs * (iv->Ahat - iv->Asqueeze) / (GEN->Atotal - GEN->Asqueeze))
+       < GEN->bound_for_adding)
     return UNUR_ERR_SILENT;
 
   /* the splitting point must be inside the interval */
@@ -2431,7 +2431,7 @@ _unur_tdr_ps_interval_split( struct unur_gen *gen, struct unur_tdr_interval *iv,
 
     /* decrement counter for intervals and free unused interval */
     if (iv_new) {
-      --(GEN.n_ivs); 
+      --(GEN->n_ivs); 
       free( iv_new );
     }
 
@@ -2444,13 +2444,13 @@ _unur_tdr_ps_interval_split( struct unur_gen *gen, struct unur_tdr_interval *iv,
   /* we have update the pointer to the list */
   if (oldl == NULL && iv_new)
     /* new first entry */
-    GEN.iv = iv_new;
+    GEN->iv = iv_new;
 
   /* update total area below hat and squeeze */
-  GEN.Atotal   = ( GEN.Atotal + (oldr->Ahat - oldr_bak.Ahat)
+  GEN->Atotal   = ( GEN->Atotal + (oldr->Ahat - oldr_bak.Ahat)
 		   + ((oldl) ? (oldl->Ahat - oldl_bak.Ahat) : 0.)
 		   + ((iv_new) ? iv_new->Ahat : 0.) );
-  GEN.Asqueeze = ( GEN.Asqueeze + (oldr->Asqueeze - oldr_bak.Asqueeze)
+  GEN->Asqueeze = ( GEN->Asqueeze + (oldr->Asqueeze - oldr_bak.Asqueeze)
 		   + ((oldl) ? (oldl->Asqueeze - oldl_bak.Asqueeze) : 0.)
 		   + ((iv_new) ? iv_new->Asqueeze : 0.) );
 
@@ -2489,15 +2489,15 @@ _unur_tdr_make_guide_table( struct unur_gen *gen )
 
   /* allocate blocks for guide table (if necessary).
      (we allocate blocks for maximal guide table.) */
-  if (!GEN.guide) {
-    int max_guide_size = (GEN.guide_factor > 0.) ? (GEN.max_ivs * GEN.guide_factor) : 1;
-    GEN.guide = _unur_xmalloc( max_guide_size * sizeof(struct unur_tdr_interval*) );
+  if (!GEN->guide) {
+    int max_guide_size = (GEN->guide_factor > 0.) ? (GEN->max_ivs * GEN->guide_factor) : 1;
+    GEN->guide = _unur_xmalloc( max_guide_size * sizeof(struct unur_tdr_interval*) );
   }
 
   /* first we need cumulated areas in intervals */
   Acum = 0.;            /* area below hat */
   Asqueezecum = 0.;     /* area below squeeze */
-  for (iv = GEN.iv; iv != NULL; iv = iv->next ) {
+  for (iv = GEN->iv; iv != NULL; iv = iv->next ) {
     COOKIE_CHECK(iv,CK_TDR_IV,UNUR_ERR_COOKIE);
     Acum += iv->Ahat;
     Asqueezecum += iv->Asqueeze;
@@ -2505,18 +2505,18 @@ _unur_tdr_make_guide_table( struct unur_gen *gen )
   }
 
   /* total area below hat */
-  GEN.Atotal = Acum;
-  GEN.Asqueeze = Asqueezecum;
+  GEN->Atotal = Acum;
+  GEN->Asqueeze = Asqueezecum;
 
   /* actual size of guide table */
-  GEN.guide_size = (int)(GEN.n_ivs * GEN.guide_factor);
+  GEN->guide_size = (int)(GEN->n_ivs * GEN->guide_factor);
   /* we do not vary the relative size of the guide table,
      since it has very little influence on speed */
 
   /* make table (use variant 2; see dis.c) */
-  Astep = GEN.Atotal / GEN.guide_size;
+  Astep = GEN->Atotal / GEN->guide_size;
   Acum=0.;
-  for( j=0, iv=GEN.iv; j < GEN.guide_size; j++ ) {
+  for( j=0, iv=GEN->iv; j < GEN->guide_size; j++ ) {
     COOKIE_CHECK(iv,CK_TDR_IV,UNUR_ERR_COOKIE);
     while( iv->Acum < Acum )
       iv = iv->next;
@@ -2524,13 +2524,13 @@ _unur_tdr_make_guide_table( struct unur_gen *gen )
 	_unur_warning(gen->genid,UNUR_ERR_ROUNDOFF,"guide table");
 	break;
       }
-    GEN.guide[j] = iv;
+    GEN->guide[j] = iv;
     Acum += Astep;
   }
 
   /* if there has been an round off error, we have to complete the guide table */
-  for( ; j<GEN.guide_size ;j++ )
-    GEN.guide[j] = iv;
+  for( ; j<GEN->guide_size ;j++ )
+    GEN->guide[j] = iv;
 
   return UNUR_SUCCESS;
 } /* end of _unur_tdr_make_guide_table() */

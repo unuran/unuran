@@ -129,6 +129,7 @@
 #include "unur_methods_source.h"
 #include "x_gen_source.h"
 #include "arou.h"
+#include "arou_struct.h"
 
 /*---------------------------------------------------------------------------*/
 /* Variants                                                                  */
@@ -297,8 +298,8 @@ static void _unur_arou_debug_printratio( double v, double u, char *string );
 
 #define DISTR_IN  distr->data.cont      /* data for distribution object      */
 
-#define PAR       par->data.arou        /* data for parameter object         */
-#define GEN       gen->data.arou        /* data for generator object         */
+#define PAR       ((struct unur_arou_par*)par->datap) /* data for parameter object */
+#define GEN       ((struct unur_arou_gen*)gen->datap) /* data for generator object */
 #define DISTR     gen->distr->data.cont /* data for distribution in generator object */
 
 #define BD_LEFT   domain[0]             /* left boundary of domain of distribution */
@@ -347,23 +348,23 @@ unur_arou_new( const struct unur_distr *distr )
     _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"derivative of PDF"); return NULL; }
 
   /* allocate structure */
-  par = _unur_xmalloc( sizeof(struct unur_par) );
+  par = _unur_par_new( sizeof(struct unur_arou_par) );
   COOKIE_SET(par,CK_AROU_PAR);
 
   /* copy input */
   par->distr              = distr;  /* pointer to distribution object        */
 
   /* set default values */
-  PAR.guide_factor        = 2.;     /* size of guide table / number of intervals */
-  PAR.darsfactor          = 0.99;   /* factor for (derandomized) ARS.
+  PAR->guide_factor        = 2.;     /* size of guide table / number of intervals */
+  PAR->darsfactor          = 0.99;   /* factor for (derandomized) ARS.
                                        do not add a new construction point in a segment, 
 				       where abiguous region is too small, i.e. if
 				       area / (|S^e\S^s|/number of segments) < darsfactor */
 
-  PAR.starting_cpoints    = NULL;   /* pointer to array of starting points   */
-  PAR.n_starting_cpoints  = 30;     /* number of starting points             */
-  PAR.max_segs            = 100;    /* maximum number of segments            */
-  PAR.max_ratio           = 0.99;   /* do not add construction points if
+  PAR->starting_cpoints    = NULL;   /* pointer to array of starting points   */
+  PAR->n_starting_cpoints  = 30;     /* number of starting points             */
+  PAR->max_segs            = 100;    /* maximum number of segments            */
+  PAR->max_ratio           = 0.99;   /* do not add construction points if
 				       ratio r_n = |P^s| / |P^e| > max_ratio */
 
   par->method   = UNUR_METH_AROU;             /* method                      */
@@ -376,11 +377,11 @@ unur_arou_new( const struct unur_distr *distr )
 
   /* we use the mode (if known) as center of the distribution */
   if (distr->set & UNUR_DISTR_SET_MODE) {
-    PAR.center = DISTR_IN.mode;
+    PAR->center = DISTR_IN.mode;
     par->set |= AROU_SET_CENTER;
   }
   else
-    PAR.center = 0.;        /* the default */
+    PAR->center = 0.;        /* the default */
 
   /* routine for starting generator */
   par->init = _unur_arou_init;
@@ -454,7 +455,7 @@ unur_arou_set_darsfactor( struct unur_par *par, double factor )
   }
     
   /* store date */
-  PAR.darsfactor = factor;
+  PAR->darsfactor = factor;
 
   /* changelog */
   par->set |= AROU_SET_DARS_FACTOR;
@@ -508,8 +509,8 @@ unur_arou_set_cpoints( struct unur_par *par, int n_stp, const double *stp )
       }
 
   /* store date */
-  PAR.starting_cpoints = stp;
-  PAR.n_starting_cpoints = n_stp;
+  PAR->starting_cpoints = stp;
+  PAR->n_starting_cpoints = n_stp;
 
   /* changelog */
   par->set |= AROU_SET_N_STP | ((stp) ? AROU_SET_STP : 0);
@@ -547,7 +548,7 @@ unur_arou_set_guidefactor( struct unur_par *par, double factor )
   }
 
   /* store date */
-  PAR.guide_factor = factor;
+  PAR->guide_factor = factor;
 
   /* changelog */
   par->set |= AROU_SET_GUIDEFACTOR;
@@ -585,7 +586,7 @@ unur_arou_set_max_sqhratio( struct unur_par *par, double max_ratio )
   }
 
   /* store date */
-  PAR.max_ratio = max_ratio;
+  PAR->max_ratio = max_ratio;
 
   /* changelog */
   par->set |= AROU_SET_MAX_SQHRATIO;
@@ -613,7 +614,7 @@ unur_arou_get_sqhratio( const struct unur_gen *gen )
   _unur_check_NULL( GENTYPE, gen, INFINITY );
   _unur_check_gen_object( gen, AROU, INFINITY );
 
-  return (GEN.Asqueeze / GEN.Atotal);
+  return (GEN->Asqueeze / GEN->Atotal);
 
 } /* end of unur_arou_get_sqhratio() */
 
@@ -636,7 +637,7 @@ unur_arou_get_hatarea( const struct unur_gen *gen )
   _unur_check_NULL( GENTYPE, gen, INFINITY );
   _unur_check_gen_object( gen, AROU, INFINITY );
 
-  return GEN.Atotal;
+  return GEN->Atotal;
 
 } /* end of unur_arou_get_hatarea() */
 
@@ -659,7 +660,7 @@ unur_arou_get_squeezearea( const struct unur_gen *gen )
   _unur_check_NULL( GENTYPE, gen, INFINITY );
   _unur_check_gen_object( gen, AROU, INFINITY );
 
-  return GEN.Asqueeze;
+  return GEN->Asqueeze;
 
 } /* end of unur_arou_get_squeezearea() */
 
@@ -692,7 +693,7 @@ unur_arou_set_max_segments( struct unur_par *par, int max_segs )
   }
 
   /* store date */
-  PAR.max_segs = max_segs;
+  PAR->max_segs = max_segs;
 
   /* changelog */
   par->set |= AROU_SET_MAX_SEGS;
@@ -724,7 +725,7 @@ unur_arou_set_center( struct unur_par *par, double center )
   _unur_check_par_object( par, AROU );
 
   /* store data */
-  PAR.center = center;
+  PAR->center = center;
 
   /* changelog */
   par->set |= AROU_SET_CENTER;
@@ -903,14 +904,14 @@ _unur_arou_init( struct unur_par *par )
 
   /* create a new empty generator object */
   gen = _unur_arou_create(par);
-  if (!gen) { free(par); return NULL; }
+  if (!gen) { _unur_par_free(par); return NULL; }
 
   /* get starting points */
   if (_unur_arou_get_starting_cpoints(par,gen)!=UNUR_SUCCESS ) {
 #ifdef UNUR_ENABLE_LOGGING
     _unur_arou_debug_init(par,gen);
 #endif
-    free(par); _unur_arou_free(gen);
+    _unur_par_free(par); _unur_arou_free(gen);
     return NULL;
   }
 
@@ -920,15 +921,15 @@ _unur_arou_init( struct unur_par *par )
 #ifdef UNUR_ENABLE_LOGGING
     _unur_arou_debug_init(par,gen);
 #endif
-    free(par); _unur_arou_free(gen);
+    _unur_par_free(par); _unur_arou_free(gen);
     return NULL;
   }
 
   /* we have to update the maximal number of segments,
      if the user wants more starting points. */
-  if (GEN.n_segs > GEN.max_segs) {
+  if (GEN->n_segs > GEN->max_segs) {
     _unur_warning(gen->genid,UNUR_ERR_GEN_DATA,"maximal number of segments too small. increase.");
-    GEN.max_segs = GEN.n_segs;
+    GEN->max_segs = GEN->n_segs;
   }
 
   if (par->variant & AROU_VARFLAG_USEDARS) {
@@ -949,7 +950,7 @@ _unur_arou_init( struct unur_par *par )
 
       /* run DARS */
       if ( _unur_arou_run_dars(par,gen)!=UNUR_SUCCESS ) {
-	free(par); _unur_arou_free(gen);
+	_unur_par_free(par); _unur_arou_free(gen);
 	return NULL;
       }
    
@@ -957,7 +958,7 @@ _unur_arou_init( struct unur_par *par )
       _unur_arou_make_guide_table(gen);
 
       /* check if DARS was completed */
-      if (GEN.n_segs < GEN.max_segs) {
+      if (GEN->n_segs < GEN->max_segs) {
   	/* ran ARS instead */
 	for (k=0; k<5; k++)
 	  _unur_sample_cont(gen);
@@ -989,10 +990,10 @@ _unur_arou_init( struct unur_par *par )
   }
 
   /* free parameters */
-  free(par);
+  _unur_par_free(par);
 
   /* is there any envelope at all ? */
-  if (GEN.Atotal <= 0.) {
+  if (GEN->Atotal <= 0.) {
     _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"bad construction points");
     _unur_arou_free(gen);
     return NULL;
@@ -1026,7 +1027,7 @@ _unur_arou_create( struct unur_par *par )
   CHECK_NULL(par,NULL);  COOKIE_CHECK(par,CK_AROU_PAR,NULL);
 
   /* create new generic generator object */
-  gen = _unur_generic_create( par );
+  gen = _unur_generic_create( par, sizeof(struct unur_arou_gen) );
 
   /* magic cookies */
   COOKIE_SET(gen,CK_AROU_GEN);
@@ -1040,20 +1041,20 @@ _unur_arou_create( struct unur_par *par )
   gen->clone = _unur_arou_clone;
 
   /* set all pointers to NULL */
-  GEN.seg         = NULL;
-  GEN.n_segs      = 0;
-  GEN.guide       = NULL;
-  GEN.guide_size  = 0;
-  GEN.Atotal      = 0.;
-  GEN.Asqueeze    = 0.;
+  GEN->seg         = NULL;
+  GEN->n_segs      = 0;
+  GEN->guide       = NULL;
+  GEN->guide_size  = 0;
+  GEN->Atotal      = 0.;
+  GEN->Asqueeze    = 0.;
 
   /* copy some parameters into generator object */
-  GEN.guide_factor = PAR.guide_factor; /* relative size of guide tables      */
+  GEN->guide_factor = PAR->guide_factor; /* relative size of guide tables      */
 
   /* bounds for adding construction points  */
-  GEN.max_segs = PAR.max_segs;      /* maximum number of segments            */
-  GEN.max_ratio = PAR.max_ratio;    
-  GEN.darsfactor = PAR.darsfactor;
+  GEN->max_segs = PAR->max_segs;      /* maximum number of segments            */
+  GEN->max_ratio = PAR->max_ratio;    
+  GEN->darsfactor = PAR->darsfactor;
 
   /* center known ?? */
   if (!(par->set & AROU_SET_CENTER))
@@ -1061,8 +1062,8 @@ _unur_arou_create( struct unur_par *par )
     par->variant = par->variant & (~AROU_VARFLAG_USECENTER);
   else {
     /* center must be in domain */
-    PAR.center = max(PAR.center,DISTR.BD_LEFT);
-    PAR.center = min(PAR.center,DISTR.BD_RIGHT);
+    PAR->center = max(PAR->center,DISTR.BD_LEFT);
+    PAR->center = min(PAR->center,DISTR.BD_RIGHT);
   }
 
   /* return pointer to (almost empty) generator object */
@@ -1087,7 +1088,7 @@ _unur_arou_clone( const struct unur_gen *gen )
      /*   return NULL                                                        */
      /*----------------------------------------------------------------------*/
 { 
-#define CLONE clone->data.arou
+#define CLONE  ((struct unur_arou_gen*)clone->datap)
 
   struct unur_gen *clone;
   struct unur_arou_segment *seg,*next, *clone_seg, *clone_prev;
@@ -1101,13 +1102,13 @@ _unur_arou_clone( const struct unur_gen *gen )
   /* copy linked list of segments */
   clone_seg = NULL;
   clone_prev = NULL;
-  for (seg = GEN.seg; seg != NULL; seg = next) {
+  for (seg = GEN->seg; seg != NULL; seg = next) {
     /* copy segment */
     clone_seg = _unur_xmalloc( sizeof(struct unur_arou_segment) );
     memcpy( clone_seg, seg, sizeof(struct unur_arou_segment) );
     if (clone_prev == NULL) {
       /* starting point of linked list */
-      CLONE.seg = clone_seg;
+      CLONE->seg = clone_seg;
     }
     else {
       /* insert into linked list */
@@ -1123,7 +1124,7 @@ _unur_arou_clone( const struct unur_gen *gen )
   if (clone_seg) clone_seg->next = NULL;
 
   /* make new guide table */
-  CLONE.guide = NULL;
+  CLONE->guide = NULL;
   _unur_arou_make_guide_table(clone);
 
   /* finished clone */
@@ -1168,8 +1169,8 @@ _unur_arou_sample( struct unur_gen *gen )
     R = _unur_call_urng(urng);
 
     /* look up in guide table and search for segment */
-    seg =  GEN.guide[(int) (R * GEN.guide_size)];
-    R *= GEN.Atotal;
+    seg =  GEN->guide[(int) (R * GEN->guide_size)];
+    R *= GEN->Atotal;
     while (seg->Acum < R) {
       seg = seg->next;
     }
@@ -1209,8 +1210,8 @@ _unur_arou_sample( struct unur_gen *gen )
       fx = PDF(x);
 
       /* being outside the squeeze is bad. improve the situation! */
-      if (GEN.n_segs < GEN.max_segs) {
-	if (GEN.max_ratio * GEN.Atotal > GEN.Asqueeze) {
+      if (GEN->n_segs < GEN->max_segs) {
+	if (GEN->max_ratio * GEN->Atotal > GEN->Asqueeze) {
 	  result_split = _unur_arou_segment_split(gen,seg,x,fx);
 	  if ( !(result_split == UNUR_SUCCESS || result_split == UNUR_ERR_SILENT) ) {
 	    /* condition for PDF is violated! */
@@ -1228,7 +1229,7 @@ _unur_arou_sample( struct unur_gen *gen )
 	}
 	else 
 	  /* no more construction points (avoid too many second if statements above) */
-	  GEN.max_segs = GEN.n_segs;
+	  GEN->max_segs = GEN->n_segs;
       }
 
       /* if inside region of acceptance, return ratio x */
@@ -1274,8 +1275,8 @@ _unur_arou_sample_check( struct unur_gen *gen )
     R = _unur_call_urng(gen->urng);
 
     /* look up in guide table and search for segment */
-    seg =  GEN.guide[(int) (R * GEN.guide_size)];
-    R *= GEN.Atotal;
+    seg =  GEN->guide[(int) (R * GEN->guide_size)];
+    R *= GEN->Atotal;
     while (seg->Acum < R) {
       seg = seg->next;
     }
@@ -1340,8 +1341,8 @@ _unur_arou_sample_check( struct unur_gen *gen )
 	_unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"PDF not T-concave.");
 
       /* being outside the squeeze is bad. improve the situation! */
-      if (GEN.n_segs < GEN.max_segs) {
-	if (GEN.max_ratio * GEN.Atotal > GEN.Asqueeze) {
+      if (GEN->n_segs < GEN->max_segs) {
+	if (GEN->max_ratio * GEN->Atotal > GEN->Asqueeze) {
 	  result_split = _unur_arou_segment_split(gen,seg,x,fx);
 	  if ( !(result_split == UNUR_SUCCESS || result_split == UNUR_ERR_SILENT) ) {
 	    /* condition for PDF is violated! */
@@ -1359,7 +1360,7 @@ _unur_arou_sample_check( struct unur_gen *gen )
 	}
 	else 
 	  /* no more construction points (avoid to many second if statement above */
-	  GEN.max_segs = GEN.n_segs;
+	  GEN->max_segs = GEN->n_segs;
       }
 
       /* if inside region of acceptance, return ratio x */
@@ -1402,14 +1403,14 @@ _unur_arou_free( struct unur_gen *gen )
   /* free linked list of segments */
   {
     struct unur_arou_segment *seg,*next;
-    for (seg = GEN.seg; seg != NULL; seg = next) {
+    for (seg = GEN->seg; seg != NULL; seg = next) {
       next = seg->next;
       free(seg);
     }
   }
 
   /* free other memory not stored in list */
-  if (GEN.guide) free(GEN.guide);
+  if (GEN->guide) free(GEN->guide);
 
   _unur_generic_free(gen);
 
@@ -1451,17 +1452,17 @@ _unur_arou_get_starting_cpoints( struct unur_par *par, struct unur_gen *gen )
   use_center = (par->variant & AROU_VARFLAG_USECENTER) ? TRUE : FALSE;
 
   /* reset counter of segments */
-  GEN.n_segs = 0;
+  GEN->n_segs = 0;
 
   /* prepare for computing construction points */
-  if (!PAR.starting_cpoints) {
+  if (!PAR->starting_cpoints) {
     /* move center into  x = 0 */
     /* angles of boundary of domain */
-    left_angle =  ( DISTR.BD_LEFT  <= -INFINITY ) ? -M_PI/2. : atan(DISTR.BD_LEFT  - PAR.center);  
-    right_angle = ( DISTR.BD_RIGHT >= INFINITY )  ? M_PI/2.  : atan(DISTR.BD_RIGHT - PAR.center);
+    left_angle =  ( DISTR.BD_LEFT  <= -INFINITY ) ? -M_PI/2. : atan(DISTR.BD_LEFT  - PAR->center);  
+    right_angle = ( DISTR.BD_RIGHT >= INFINITY )  ? M_PI/2.  : atan(DISTR.BD_RIGHT - PAR->center);
     /* we use equal distances between the angles of the cpoints   */
     /* and the boundary points                                    */
-    diff_angle = (right_angle-left_angle) / (PAR.n_starting_cpoints + 1);
+    diff_angle = (right_angle-left_angle) / (PAR->n_starting_cpoints + 1);
     angle = left_angle;
   }
   else
@@ -1470,19 +1471,19 @@ _unur_arou_get_starting_cpoints( struct unur_par *par, struct unur_gen *gen )
   /* the left boundary point */
   x = x_last = DISTR.BD_LEFT;
   fx = fx_last = (x <= -INFINITY) ? 0. : PDF(x);
-  seg = GEN.seg = _unur_arou_segment_new( gen, x, fx );
+  seg = GEN->seg = _unur_arou_segment_new( gen, x, fx );
   if (seg == NULL) return UNUR_ERR_GEN_CONDITION;  /* case of error */
   is_increasing = 1; /* assume PDF(x) is increasing for the first construction points */
 
   /* now all the other points */
-  for( i=0; i<=PAR.n_starting_cpoints; i++ ) {
+  for( i=0; i<=PAR->n_starting_cpoints; i++ ) {
     was_center = is_center;
 
     /* starting point */
-    if (i < PAR.n_starting_cpoints) {
-      if (PAR.starting_cpoints) {   
+    if (i < PAR->n_starting_cpoints) {
+      if (PAR->starting_cpoints) {   
 	/* construction points provided by user */
-	x = PAR.starting_cpoints[i];
+	x = PAR->starting_cpoints[i];
 	/* check starting point */
 	if (x <= DISTR.BD_LEFT || x >= DISTR.BD_RIGHT) {
 	  _unur_warning(gen->genid,UNUR_ERR_GEN_DATA,"starting point out of domain");
@@ -1496,7 +1497,7 @@ _unur_arou_get_starting_cpoints( struct unur_par *par, struct unur_gen *gen )
       else {
 	/* compute construction points by means of "equidistance" rule */
 	angle += diff_angle;
-	x = tan( angle ) + PAR.center;
+	x = tan( angle ) + PAR->center;
       }
     }
     else {
@@ -1506,16 +1507,16 @@ _unur_arou_get_starting_cpoints( struct unur_par *par, struct unur_gen *gen )
     }
 
     /* insert center ? */
-    if (use_center && x >= PAR.center) {
+    if (use_center && x >= PAR->center) {
       use_center = FALSE;   /* we use the center only once (of course) */
       is_center = TRUE;     /* the next construction point is the center */
-      if (x>PAR.center) {
-	x = PAR.center;   /* use the center now ... */
+      if (x>PAR->center) {
+	x = PAR->center;   /* use the center now ... */
 	--i;              /* and push the orignal starting point back on stack */
-	if (!PAR.starting_cpoints)
+	if (!PAR->starting_cpoints)
 	  angle -= diff_angle; /* we have to compute the starting point in this case */
       }
-      /* else: x == PAR.center --> nothing to do */
+      /* else: x == PAR->center --> nothing to do */
     }
     else
       is_center = FALSE;
@@ -1533,7 +1534,7 @@ _unur_arou_get_starting_cpoints( struct unur_par *par, struct unur_gen *gen )
       /* we do not need two such points */
       if (is_increasing) {
 	/* PDF is still increasing, i.e., constant 0 til now */
-	if (i<PAR.n_starting_cpoints) {
+	if (i<PAR->n_starting_cpoints) {
 	  /* and it is not the right boundary.
 	     otherwise the PDF is constant 0 on all construction points.
 	     then we need both boundary points. */
@@ -1581,7 +1582,7 @@ _unur_arou_get_starting_cpoints( struct unur_par *par, struct unur_gen *gen )
   seg->Ain = seg->Aout = 0.;
   seg->Acum = INFINITY;
   seg->next = NULL;         /* terminate list */
-  --(GEN.n_segs);           /* we do not count this segment */
+  --(GEN->n_segs);           /* we do not count this segment */
 
   /* o.k. */
   return UNUR_SUCCESS;
@@ -1616,7 +1617,7 @@ _unur_arou_get_starting_segments( struct unur_par *par, struct unur_gen *gen )
   CHECK_NULL(gen,UNUR_ERR_NULL);  COOKIE_CHECK(gen,CK_AROU_GEN,UNUR_ERR_COOKIE);
 
   /* compute paramters for all segments */
-  for( seg=GEN.seg; seg->next != NULL; ) {
+  for( seg=GEN->seg; seg->next != NULL; ) {
 
     /* compute parameters for semgent */
     switch (_unur_arou_segment_parameter(gen, seg)) {
@@ -1636,7 +1637,7 @@ _unur_arou_get_starting_segments( struct unur_par *par, struct unur_gen *gen )
 	seg->rtp = seg->next->ltp;
 	seg->drtp = seg->next->dltp;
 	free(seg_tmp);
-	--(GEN.n_segs);
+	--(GEN->n_segs);
       }
       else { /* seg->next==NULL */
         /* last (virtuel) interval in list.
@@ -1672,7 +1673,7 @@ _unur_arou_get_starting_segments( struct unur_par *par, struct unur_gen *gen )
     }
 
     /* add a new segment, but check if we had to used too many segments */
-    if (GEN.n_segs >= GEN.max_segs) {
+    if (GEN->n_segs >= GEN->max_segs) {
       /* we do not want to create too many segments */
       _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"cannot create bounded envelope!");
       return UNUR_ERR_GEN_CONDITION;
@@ -1736,7 +1737,7 @@ _unur_arou_segment_new( struct unur_gen *gen, double x, double fx )
   /* we need a new segment */
   seg = _unur_xmalloc( sizeof(struct unur_arou_segment) );
   seg->next = NULL; /* add eol marker */
-  ++(GEN.n_segs);   /* increment counter for segments */
+  ++(GEN->n_segs);   /* increment counter for segments */
   COOKIE_SET(seg,CK_AROU_SEG);
 
   /* initialize some entries in seg */
@@ -2022,7 +2023,7 @@ _unur_arou_segment_split( struct unur_gen *gen, struct unur_arou_segment *seg_ol
 #endif
 
   /* we only add a new construction point, if the relative area is large enough */
-  if (GEN.n_segs * seg_oldl->Aout / (GEN.Atotal - GEN.Asqueeze) < GEN.darsfactor )
+  if (GEN->n_segs * seg_oldl->Aout / (GEN->Atotal - GEN->Asqueeze) < GEN->darsfactor )
     return UNUR_SUCCESS;
 
   /* check for data error */
@@ -2103,7 +2104,7 @@ _unur_arou_segment_split( struct unur_gen *gen, struct unur_arou_segment *seg_ol
 
       /* decrement counter for segments and free unused segment */
       if (seg_newr) {
-	--(GEN.n_segs); 
+	--(GEN->n_segs); 
 	free( seg_newr );
       }
 
@@ -2115,9 +2116,9 @@ _unur_arou_segment_split( struct unur_gen *gen, struct unur_arou_segment *seg_ol
 
   /* update total area below hat and squeeze */
   Adiff =  - seg_bak.Ain  + seg_oldl->Ain  + ((seg_newr!=seg_oldl) ? seg_newr->Ain : 0. );
-  GEN.Asqueeze += Adiff;
+  GEN->Asqueeze += Adiff;
   Adiff += - seg_bak.Aout + seg_oldl->Aout + ((seg_newr!=seg_oldl) ? seg_newr->Aout : 0. );
-  GEN.Atotal += Adiff;
+  GEN->Atotal += Adiff;
 
 #ifdef UNUR_ENABLE_LOGGING
   /* write info into log file */
@@ -2183,7 +2184,7 @@ _unur_arou_run_dars( struct unur_par *par, struct unur_gen *gen )
   CHECK_NULL(gen,UNUR_ERR_NULL);     COOKIE_CHECK(gen,CK_AROU_GEN,UNUR_ERR_COOKIE);
 
   /* there is no need to run DARS when the DARS factor is INFINITY */
-  if (_unur_FP_is_infinity(GEN.darsfactor))
+  if (_unur_FP_is_infinity(GEN->darsfactor))
     return UNUR_SUCCESS;
 
   /* first we need the total areas below hat and squeeze.
@@ -2191,22 +2192,22 @@ _unur_arou_run_dars( struct unur_par *par, struct unur_gen *gen )
      called!)                                                                */
   Atot = 0.;            /* area below hat */
   Asqueezetot = 0.;     /* area below squeeze */
-  for (seg = GEN.seg; seg != NULL; seg = seg->next ) {
+  for (seg = GEN->seg; seg != NULL; seg = seg->next ) {
     COOKIE_CHECK(seg,CK_AROU_SEG,UNUR_ERR_COOKIE);
     Asqueezetot += seg->Ain;
     Atot += seg->Ain + seg->Aout;
   }
-  GEN.Atotal = Atot;
-  GEN.Asqueeze = Asqueezetot;
+  GEN->Atotal = Atot;
+  GEN->Asqueeze = Asqueezetot;
 
   /* now split intervals */
-  while ( (GEN.max_ratio * GEN.Atotal > GEN.Asqueeze) &&
-	  (GEN.n_segs < GEN.max_segs) ) {
+  while ( (GEN->max_ratio * GEN->Atotal > GEN->Asqueeze) &&
+	  (GEN->n_segs < GEN->max_segs) ) {
 
     /* compute threshhold value. every interval with area between
        hat and squeeze greater than this value will be splitted.  */
-    if (GEN.n_segs > 1)
-      Alimit = GEN.darsfactor * ( (GEN.Atotal - GEN.Asqueeze) / GEN.n_segs );
+    if (GEN->n_segs > 1)
+      Alimit = GEN->darsfactor * ( (GEN->Atotal - GEN->Asqueeze) / GEN->n_segs );
     else
       /* we split every interval if there are only one interval */
       Alimit = 0.; 
@@ -2215,11 +2216,11 @@ _unur_arou_run_dars( struct unur_par *par, struct unur_gen *gen )
     n_splitted = 0;
 
     /* for all intervals do ... */
-    for (seg = GEN.seg; seg->next != NULL; seg = seg->next ) {
+    for (seg = GEN->seg; seg->next != NULL; seg = seg->next ) {
       COOKIE_CHECK(seg,CK_AROU_SEG,UNUR_ERR_COOKIE);
 
       /* do not exceed the maximum number of intervals */
-      if (GEN.n_segs >= GEN.max_segs)
+      if (GEN->n_segs >= GEN->max_segs)
 	break;
 
       /* we skip over all intervals where the area between hat and
@@ -2288,14 +2289,14 @@ _unur_arou_run_dars( struct unur_par *par, struct unur_gen *gen )
   }
 
   /* ratio between squeeze and hat o.k. ? */
-  if ( GEN.max_ratio * GEN.Atotal > GEN.Asqueeze ) {
-    if ( GEN.n_segs >= GEN.max_segs )
+  if ( GEN->max_ratio * GEN->Atotal > GEN->Asqueeze ) {
+    if ( GEN->n_segs >= GEN->max_segs )
       _unur_warning(gen->genid,UNUR_ERR_GENERIC,"DARS aborted: maximum number of intervals exceeded.");
     _unur_warning(gen->genid,UNUR_ERR_GENERIC,"hat/squeeze ratio too small.");
   }
   else {
     /* no more construction points */
-    GEN.max_segs = GEN.n_segs;
+    GEN->max_segs = GEN->n_segs;
   }
 
   /* o.k. */
@@ -2327,15 +2328,15 @@ _unur_arou_make_guide_table( struct unur_gen *gen )
 
   /* allocate blocks for guide table (if necessary).
      (we allocate blocks for maximal guide table.) */
-  if (!GEN.guide) {
-    int max_guide_size = (GEN.guide_factor > 0.) ? (GEN.max_segs * GEN.guide_factor) : 1;
-    GEN.guide = _unur_xmalloc( max_guide_size * sizeof(struct unur_arou_segment*) );
+  if (!GEN->guide) {
+    int max_guide_size = (GEN->guide_factor > 0.) ? (GEN->max_segs * GEN->guide_factor) : 1;
+    GEN->guide = _unur_xmalloc( max_guide_size * sizeof(struct unur_arou_segment*) );
   }
 
   /* first we need cumulated areas in segments */
   Acum = 0.;       /* area in enveloping polygon */
   Aincum = 0.;     /* area in squeeze */
-  for (seg = GEN.seg; seg != NULL; seg = seg->next ) {
+  for (seg = GEN->seg; seg != NULL; seg = seg->next ) {
     COOKIE_CHECK(seg,CK_AROU_SEG,UNUR_ERR_COOKIE);
     Acum += seg->Ain + seg->Aout;
     Aincum += seg->Ain;
@@ -2343,18 +2344,18 @@ _unur_arou_make_guide_table( struct unur_gen *gen )
   }
 
   /* total area below hat */
-  GEN.Atotal = Acum;
-  GEN.Asqueeze = Aincum;
+  GEN->Atotal = Acum;
+  GEN->Asqueeze = Aincum;
 
   /* actual size of guide table */
-  GEN.guide_size = (int)(GEN.n_segs * GEN.guide_factor);
+  GEN->guide_size = (int)(GEN->n_segs * GEN->guide_factor);
   /* we do not vary the relative size of the guide table,
      since it has very little influence on speed */
 
   /* make table (use variant 2; see dis.c) */
-  Astep = GEN.Atotal / GEN.guide_size;
+  Astep = GEN->Atotal / GEN->guide_size;
   Acum=0.;
-  for( j=0, seg=GEN.seg; j < GEN.guide_size; j++ ) {
+  for( j=0, seg=GEN->seg; j < GEN->guide_size; j++ ) {
     COOKIE_CHECK(seg,CK_AROU_SEG,UNUR_ERR_COOKIE);
     while( seg->Acum < Acum )
       if( seg->next != NULL )    /* skip to next segment if it exists */
@@ -2363,13 +2364,13 @@ _unur_arou_make_guide_table( struct unur_gen *gen )
 	_unur_warning(gen->genid,UNUR_ERR_ROUNDOFF,"guide table");
 	break;
       }
-    GEN.guide[j] = seg;
+    GEN->guide[j] = seg;
     Acum += Astep;
   }
 
   /* if there has been an round off error, we have to complete the guide table */
-  for( ; j<GEN.guide_size ;j++ )
-    GEN.guide[j] = seg;
+  for( ; j<GEN->guide_size ;j++ )
+    GEN->guide[j] = seg;
 
   return UNUR_SUCCESS;
 } /* end of _unur_arou_make_guide_table() */
@@ -2457,22 +2458,22 @@ _unur_arou_debug_init( const struct unur_par *par, const struct unur_gen *gen )
     fprintf(log,"()\n");
   fprintf(log,"%s:\n",gen->genid);
 
-  fprintf(log,"%s: center = %g",gen->genid,PAR.center);
+  fprintf(log,"%s: center = %g",gen->genid,PAR->center);
   _unur_print_if_default(par,AROU_SET_CENTER);
   if (par->variant & AROU_VARFLAG_USECENTER)
     fprintf(log,"\n%s: use center as construction point",gen->genid);
   fprintf(log,"\n%s:\n",gen->genid);
 
-  fprintf(log,"%s: maximum number of segments         = %d",gen->genid,PAR.max_segs);
+  fprintf(log,"%s: maximum number of segments         = %d",gen->genid,PAR->max_segs);
   _unur_print_if_default(par,AROU_SET_MAX_SEGS);
-  fprintf(log,"\n%s: bound for ratio  Asqueeze / Atotal = %g%%",gen->genid,PAR.max_ratio*100.);
+  fprintf(log,"\n%s: bound for ratio  Asqueeze / Atotal = %g%%",gen->genid,PAR->max_ratio*100.);
   _unur_print_if_default(par,AROU_SET_MAX_SQHRATIO);
   fprintf(log,"\n%s:\n",gen->genid);
 
   if (par->variant & AROU_VARFLAG_USEDARS) {
     fprintf(log,"%s: Derandomized ARS enabled ",gen->genid);
     _unur_print_if_default(par,AROU_SET_USE_DARS);
-    fprintf(log,"\n%s:\tDARS factor = %g",gen->genid,GEN.darsfactor);
+    fprintf(log,"\n%s:\tDARS factor = %g",gen->genid,GEN->darsfactor);
     _unur_print_if_default(par,AROU_SET_DARS_FACTOR);
   }
   else {
@@ -2482,17 +2483,17 @@ _unur_arou_debug_init( const struct unur_par *par, const struct unur_gen *gen )
   fprintf(log,"\n%s:\n",gen->genid);
 
   fprintf(log,"%s: sampling from list of segments: indexed search (guide table method)\n",gen->genid);
-  fprintf(log,"%s:    relative guide table size = %g%%",gen->genid,100.*PAR.guide_factor);
+  fprintf(log,"%s:    relative guide table size = %g%%",gen->genid,100.*PAR->guide_factor);
   _unur_print_if_default(par,AROU_SET_GUIDEFACTOR);
   fprintf(log,"\n%s:\n",gen->genid);
 
-  fprintf(log,"%s: number of starting points = %d",gen->genid,PAR.n_starting_cpoints);
+  fprintf(log,"%s: number of starting points = %d",gen->genid,PAR->n_starting_cpoints);
   _unur_print_if_default(par,AROU_SET_N_STP);
   fprintf(log,"\n%s: starting points:",gen->genid);
   if (par->set & AROU_SET_STP)
-    for (i=0; i<PAR.n_starting_cpoints; i++) {
+    for (i=0; i<PAR->n_starting_cpoints; i++) {
       if (i%5==0) fprintf(log,"\n%s:\t",gen->genid);
-      fprintf(log,"   %#g,",PAR.starting_cpoints[i]);
+      fprintf(log,"   %#g,",PAR->starting_cpoints[i]);
     }
   else
     fprintf(log," use \"equdistribution\" rule [default]");
@@ -2529,7 +2530,7 @@ _unur_arou_debug_dars_start( const struct unur_par *par, const struct unur_gen *
 
   fprintf(log,"%s: DARS started **********************\n",gen->genid);
   fprintf(log,"%s:\n",gen->genid);
-  fprintf(log,"%s: DARS factor = %g",gen->genid,GEN.darsfactor);
+  fprintf(log,"%s: DARS factor = %g",gen->genid,GEN->darsfactor);
   _unur_print_if_default(par,AROU_SET_DARS_FACTOR);
   fprintf(log,"\n%s:\n",gen->genid);
 
@@ -2616,10 +2617,10 @@ _unur_arou_debug_segments( const struct unur_gen *gen )
 
   log = unur_get_stream();
 
-  fprintf(log,"%s:Segments: %d\n",gen->genid,GEN.n_segs);
-  if ((gen->debug & AROU_DEBUG_SEGMENTS) && GEN.seg != NULL) {
+  fprintf(log,"%s:Segments: %d\n",gen->genid,GEN->n_segs);
+  if ((gen->debug & AROU_DEBUG_SEGMENTS) && GEN->seg != NULL) {
     fprintf(log,"%s: Nr.\t    left touching point\t\t   intersection point\t\t tangent at left touching point\n",gen->genid);
-    for (seg = GEN.seg, i=0; seg->next!=NULL; seg=seg->next, i++) {
+    for (seg = GEN->seg, i=0; seg->next!=NULL; seg=seg->next, i++) {
       COOKIE_CHECK(seg,CK_AROU_SEG,RETURN_VOID); 
       fprintf(log,"%s:[%3d]: (%-12.6g,%-12.6g)   (%-12.6g,%-12.6g)   (%-12.6g,%-12.6g,%-12.6g)\n", gen->genid, i,
 	      seg->ltp[0],seg->ltp[1],
@@ -2631,22 +2632,22 @@ _unur_arou_debug_segments( const struct unur_gen *gen )
   }
   fprintf(log,"%s:\n",gen->genid);
 
-  if (GEN.Atotal <= 0.) {
+  if (GEN->Atotal <= 0.) {
     fprintf(log,"%s: Construction of enveloping polygon not successful\n",gen->genid);
     fprintf(log,"%s: Areas may be meaningless !!!!!!!!!!!!!!!!!!!!!!!!\n",gen->genid);
     fprintf(log,"%s:\n",gen->genid);
     Atotal = -1.;   /* to avoid floating point exceptions */
   }
   else {
-    Atotal = GEN.Atotal;
+    Atotal = GEN->Atotal;
   }
 
   /* print and sum areas inside and outside of squeeze */
-  if ((gen->debug & AROU_DEBUG_SEGMENTS) && GEN.seg != NULL) {
+  if ((gen->debug & AROU_DEBUG_SEGMENTS) && GEN->seg != NULL) {
     fprintf(log,"%s:Areas in segments:\n",gen->genid);
     fprintf(log,"%s: Nr.\t inside squeeze\t\t   outside squeeze\t     total segment\t\tcumulated\n",gen->genid);
     sAin = sAout = 0.;
-    for (seg = GEN.seg, i=0; seg->next!=NULL; seg=seg->next, i++) {
+    for (seg = GEN->seg, i=0; seg->next!=NULL; seg=seg->next, i++) {
       COOKIE_CHECK(seg,CK_AROU_SEG,RETURN_VOID); 
       sAin += seg->Ain;
       sAout += seg->Aout;
@@ -2668,9 +2669,9 @@ _unur_arou_debug_segments( const struct unur_gen *gen )
 
   /* summary of areas */
   fprintf(log,"%s: A(squeeze)     = %-12.6g  (%6.3f%%)\n",gen->genid,
-	  GEN.Asqueeze, GEN.Asqueeze * 100./Atotal);
+	  GEN->Asqueeze, GEN->Asqueeze * 100./Atotal);
   fprintf(log,"%s: A(hat\\squeeze) = %-12.6g  (%6.3f%%)\n",gen->genid,
-	  GEN.Atotal - GEN.Asqueeze, (Atotal - GEN.Asqueeze) * 100./Atotal);
+	  GEN->Atotal - GEN->Asqueeze, (Atotal - GEN->Asqueeze) * 100./Atotal);
   fprintf(log,"%s: A(total)       = %-12.6g\n",gen->genid, Atotal);
 
   fprintf(log,"%s:\n",gen->genid);
@@ -2718,11 +2719,11 @@ _unur_arou_debug_split_start( const struct unur_gen *gen,
 	  gen->genid, seg->rtp[0], seg->rtp[1], ratio, sqrt(seg->rtp[1]) );
 
   fprintf(log,"%s:   A(squeeze)     = %-12.6g\t(%6.3f%%)\n",gen->genid,
-	  seg->Ain, seg->Ain * 100./GEN.Atotal);
+	  seg->Ain, seg->Ain * 100./GEN->Atotal);
   fprintf(log,"%s:   A(hat\\squeeze) = %-12.6g\t(%6.3f%%)\n",gen->genid,
-	  seg->Aout, seg->Aout * 100./GEN.Atotal);
+	  seg->Aout, seg->Aout * 100./GEN->Atotal);
   fprintf(log,"%s:   A(hat)         = %-12.6g\t(%6.3f%%)\n",gen->genid,
-	  (seg->Ain + seg->Aout), (seg->Ain +seg->Aout) * 100./GEN.Atotal);
+	  (seg->Ain + seg->Aout), (seg->Ain +seg->Aout) * 100./GEN->Atotal);
 
   fflush(log);
 
@@ -2793,27 +2794,27 @@ _unur_arou_debug_split_stop( const struct unur_gen *gen,
   if (!chopped) {
     fprintf(log,"%s: left segment:\n",gen->genid);
     fprintf(log,"%s:   A(squeeze)     = %-12.6g\t(%6.3f%%)\n",gen->genid,
-	    seg_left->Ain, seg_left->Ain * 100./GEN.Atotal);
+	    seg_left->Ain, seg_left->Ain * 100./GEN->Atotal);
     fprintf(log,"%s:   A(hat\\squeeze) = %-12.6g\t(%6.3f%%)\n",gen->genid,
-	    seg_left->Aout, seg_left->Aout * 100./GEN.Atotal);
+	    seg_left->Aout, seg_left->Aout * 100./GEN->Atotal);
     fprintf(log,"%s:   A(hat)         = %-12.6g\t(%6.3f%%)\n",gen->genid,
-	    (seg_left->Ain + seg_left->Aout), (seg_left->Ain +seg_left->Aout) * 100./GEN.Atotal);
+	    (seg_left->Ain + seg_left->Aout), (seg_left->Ain +seg_left->Aout) * 100./GEN->Atotal);
     
     fprintf(log,"%s: right segment:\n",gen->genid);
     fprintf(log,"%s:   A(squeeze)     = %-12.6g\t(%6.3f%%)\n",gen->genid,
-	    seg_right->Ain, seg_right->Ain * 100./GEN.Atotal);
+	    seg_right->Ain, seg_right->Ain * 100./GEN->Atotal);
     fprintf(log,"%s:   A(hat\\squeeze) = %-12.6g\t(%6.3f%%)\n",gen->genid,
-	    seg_right->Aout, seg_right->Aout * 100./GEN.Atotal);
+	    seg_right->Aout, seg_right->Aout * 100./GEN->Atotal);
     fprintf(log,"%s:   A(hat)         = %-12.6g\t(%6.3f%%)\n",gen->genid,
-	    (seg_right->Ain + seg_right->Aout), (seg_right->Ain +seg_right->Aout) * 100./GEN.Atotal);
+	    (seg_right->Ain + seg_right->Aout), (seg_right->Ain +seg_right->Aout) * 100./GEN->Atotal);
   }
 
   fprintf(log,"%s: total areas:\n",gen->genid);
   fprintf(log,"%s:   A(squeeze)     = %-12.6g\t(%6.3f%%)\n",gen->genid,
-	  GEN.Asqueeze, GEN.Asqueeze * 100./GEN.Atotal);
+	  GEN->Asqueeze, GEN->Asqueeze * 100./GEN->Atotal);
   fprintf(log,"%s:   A(hat\\squeeze) = %-12.6g\t(%6.3f%%)\n",gen->genid,
-	  GEN.Atotal - GEN.Asqueeze, (GEN.Atotal - GEN.Asqueeze) * 100./GEN.Atotal);
-  fprintf(log,"%s:   A(total)       = %-12.6g\n",gen->genid, GEN.Atotal);
+	  GEN->Atotal - GEN->Asqueeze, (GEN->Atotal - GEN->Asqueeze) * 100./GEN->Atotal);
+  fprintf(log,"%s:   A(total)       = %-12.6g\n",gen->genid, GEN->Atotal);
 
   fprintf(log,"%s:\n",gen->genid);
 

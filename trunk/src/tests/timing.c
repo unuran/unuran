@@ -357,8 +357,7 @@ double unur_test_timing_total_run( const struct unur_par *par, int samplesize, i
   for (rep = 0; rep < n_repeat; rep++) {
 
     /* make a working copy of parameter object */
-    par_tmp = _unur_xmalloc(sizeof(struct unur_par));
-    memcpy (par_tmp, par, sizeof(struct unur_par));
+    par_tmp = _unur_par_clone(par);
 
     /* start timer */
     time_start = _unur_get_time();

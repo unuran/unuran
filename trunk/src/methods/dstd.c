@@ -83,6 +83,7 @@
 #include "unur_methods_source.h"
 #include "x_gen_source.h"
 #include "dstd.h"
+#include "dstd_struct.h"
 
 /*---------------------------------------------------------------------------*/
 /* Variants: none                                                            */
@@ -156,8 +157,8 @@ static void _unur_dstd_debug_chg_pmfparams( const struct unur_gen *gen );
 
 #define DISTR_IN  distr->data.discr     /* data for distribution object      */
 
-#define PAR       par->data.dstd        /* data for parameter object         */
-#define GEN       gen->data.dstd        /* data for generator object         */
+#define PAR       ((struct unur_dstd_par*)par->datap) /* data for parameter object */
+#define GEN       ((struct unur_dstd_gen*)gen->datap) /* data for generator object */
 #define DISTR     gen->distr->data.discr /* data for distribution in generator object */
 
 #define BD_LEFT   domain[0]             /* left boundary of domain of distribution */
@@ -206,15 +207,15 @@ unur_dstd_new( const struct unur_distr *distr )
   }
 
   /* allocate structure */
-  par = _unur_xmalloc(sizeof(struct unur_par));
+  par = _unur_par_new( sizeof(struct unur_dstd_par) );
   COOKIE_SET(par,CK_DSTD_PAR);
 
   /* copy input */
   par->distr    = distr;            /* pointer to distribution object        */
 
   /* set default values */
-  PAR.sample_routine_name = NULL ;  /* name of sampling routine              */
-  PAR.is_inversion = FALSE;         /* method not based on inversion         */
+  PAR->sample_routine_name = NULL ;  /* name of sampling routine              */
+  PAR->is_inversion = FALSE;         /* method not based on inversion         */
 
   par->method   = UNUR_METH_DSTD;   /* method                                */
   par->variant  = 0u;               /* default variant                       */
@@ -347,7 +348,7 @@ _unur_dstd_init( struct unur_par *par )
 
   /* create a new empty generator object */
   gen = _unur_dstd_create(par);
-  if (!gen) { free(par); return NULL; }
+  if (!gen) { _unur_par_free(par); return NULL; }
 
   /* check for initializing routine for special generator */
   if (DISTR.init == NULL) {
@@ -360,14 +361,14 @@ _unur_dstd_init( struct unur_par *par )
   if ( DISTR.init(par,gen)!=UNUR_SUCCESS ) {
     /* init failed --> could not find a sampling routine */
     _unur_error(GENTYPE,UNUR_ERR_GEN_DATA,"variant for special generator");
-    free(par); _unur_dstd_free(gen); return NULL; 
+    _unur_par_free(par); _unur_dstd_free(gen); return NULL; 
   }
 
   /* domain must not be changed */
   if (!(gen->distr->set & UNUR_DISTR_SET_STDDOMAIN)) {
     /* domain has been modified --> not allowed */
     _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"domain changed");
-    free(par); _unur_dstd_free(gen); return NULL; 
+    _unur_par_free(par); _unur_dstd_free(gen); return NULL; 
   }
 
 #ifdef UNUR_ENABLE_LOGGING
@@ -376,7 +377,7 @@ _unur_dstd_init( struct unur_par *par )
 #endif
 
   /* free parameters */
-  free(par);
+  _unur_par_free(par);
 
   /* o.k. */
   return gen;
@@ -400,7 +401,7 @@ _unur_dstd_clone( const struct unur_gen *gen )
      /*   return NULL                                                        */
      /*----------------------------------------------------------------------*/
 { 
-#define CLONE clone->data.dstd
+#define CLONE  ((struct unur_dstd_gen*)clone->datap)
 
   struct unur_gen *clone;
 
@@ -411,13 +412,13 @@ _unur_dstd_clone( const struct unur_gen *gen )
   clone = _unur_generic_clone( gen, GENTYPE );
 
   /* copy parameters for special generators */
-  if (GEN.gen_param) {
-    CLONE.gen_param = _unur_xmalloc( GEN.n_gen_param * sizeof(double) );
-    memcpy( CLONE.gen_param, GEN.gen_param, GEN.n_gen_param * sizeof(double) );
+  if (GEN->gen_param) {
+    CLONE->gen_param = _unur_xmalloc( GEN->n_gen_param * sizeof(double) );
+    memcpy( CLONE->gen_param, GEN->gen_param, GEN->n_gen_param * sizeof(double) );
   }
-  if (GEN.gen_iparam) {
-    CLONE.gen_iparam = _unur_xmalloc( GEN.n_gen_iparam * sizeof(int) );
-    memcpy( CLONE.gen_iparam, GEN.gen_iparam, GEN.n_gen_iparam * sizeof(int) );
+  if (GEN->gen_iparam) {
+    CLONE->gen_iparam = _unur_xmalloc( GEN->n_gen_iparam * sizeof(int) );
+    memcpy( CLONE->gen_iparam, GEN->gen_iparam, GEN->n_gen_iparam * sizeof(int) );
   }
 
   return clone;
@@ -462,8 +463,8 @@ _unur_dstd_free( struct unur_gen *gen )
   SAMPLE = NULL;   /* make sure to show up a programming error */
 
   /* free memory */
-  if (GEN.gen_param)   free(GEN.gen_param);
-  if (GEN.gen_iparam)  free(GEN.gen_iparam);
+  if (GEN->gen_param)   free(GEN->gen_param);
+  if (GEN->gen_iparam)  free(GEN->gen_iparam);
 
   _unur_generic_free(gen);
 } /* end of _unur_dstd_free() */
@@ -493,7 +494,7 @@ _unur_dstd_create( struct unur_par *par )
   CHECK_NULL(par,NULL);  COOKIE_CHECK(par,CK_DSTD_PAR,NULL);
 
   /* create new generic generator object */
-  gen = _unur_generic_create( par );
+  gen = _unur_generic_create( par, sizeof(struct unur_dstd_gen) );
 
   /* magic cookies */
   COOKIE_SET(gen,CK_DSTD_GEN);
@@ -507,14 +508,14 @@ _unur_dstd_create( struct unur_par *par )
   gen->clone = _unur_dstd_clone;
 
   /* defaults */
-  GEN.gen_param = NULL;  /* parameters for the generator      */
-  GEN.n_gen_param = 0;   /* (computed in special GEN.init()   */
-  GEN.gen_iparam = NULL; /* smake for integer parameters      */
-  GEN.n_gen_iparam = 0;
+  GEN->gen_param = NULL;  /* parameters for the generator      */
+  GEN->n_gen_param = 0;   /* (computed in special GEN->init()   */
+  GEN->gen_iparam = NULL; /* smake for integer parameters      */
+  GEN->n_gen_iparam = 0;
 
   /* copy some parameters into generator object */
-  GEN.umin        = 0;    /* cdf at left boundary of domain   */
-  GEN.umax        = 1;    /* cdf at right boundary of domain  */
+  GEN->umin        = 0;    /* cdf at left boundary of domain   */
+  GEN->umax        = 1;    /* cdf at right boundary of domain  */
 
   /* return pointer to (almost empty) generator object */
   return gen;
@@ -556,16 +557,16 @@ _unur_dstd_debug_init( const struct unur_par *par, const struct unur_gen *gen )
 
   /* sampling routine */
   fprintf(log,"%s: sampling routine = ",gen->genid);
-  if (PAR.sample_routine_name)
-    fprintf(log,"%s()",PAR.sample_routine_name);
+  if (PAR->sample_routine_name)
+    fprintf(log,"%s()",PAR->sample_routine_name);
   else
     fprintf(log,"(Unknown)");
-  if (PAR.is_inversion)
+  if (PAR->is_inversion)
     fprintf(log,"   (Inversion)");
   fprintf(log,"\n%s:\n",gen->genid);
 
   if (!(par->distr->set & UNUR_DISTR_SET_STDDOMAIN)) {
-    fprintf(log,"%s: domain has been changed. U in (%g,%g)\n",gen->genid,GEN.umin,GEN.umax);
+    fprintf(log,"%s: domain has been changed. U in (%g,%g)\n",gen->genid,GEN->umin,GEN->umax);
     fprintf(log,"%s:\n",gen->genid);
   }
 

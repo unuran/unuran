@@ -126,6 +126,7 @@
 #include "unur_methods_source.h"
 #include "x_gen_source.h"
 #include "srou.h"
+#include "srou_struct.h"
 
 /*---------------------------------------------------------------------------*/
 /* Variants:                                                                 */
@@ -216,8 +217,8 @@ static void _unur_srou_debug_init( const struct unur_gen *gen, int is_reinit );
 
 #define DISTR_IN  distr->data.cont      /* data for distribution object      */
 
-#define PAR       par->data.srou        /* data for parameter object         */
-#define GEN       gen->data.srou        /* data for generator object         */
+#define PAR       ((struct unur_srou_par*)par->datap) /* data for parameter object */
+#define GEN       ((struct unur_srou_gen*)gen->datap) /* data for generator object */
 #define DISTR     gen->distr->data.cont /* data for distribution in generator object */
 
 #define BD_LEFT   domain[0]             /* left boundary of domain of distribution */
@@ -269,16 +270,16 @@ unur_srou_new( const struct unur_distr *distr )
   }
 
   /* allocate structure */
-  par = _unur_xmalloc(sizeof(struct unur_par));
+  par = _unur_par_new( sizeof(struct unur_srou_par) );
   COOKIE_SET(par,CK_SROU_PAR);
 
   /* copy input */
   par->distr    = distr;      /* pointer to distribution object              */
 
   /* set default values */
-  PAR.r         = 1.;                 /* parameter for power transformation  */
-  PAR.Fmode     = -1.;                /* CDF at mode (unknown yet   )        */
-  PAR.um        = -1.;                /* (square) root of PDF at mode (unknown)*/
+  PAR->r         = 1.;                 /* parameter for power transformation  */
+  PAR->Fmode     = -1.;                /* CDF at mode (unknown yet   )        */
+  PAR->um        = -1.;                /* (square) root of PDF at mode (unknown)*/
 
   par->method   = UNUR_METH_SROU;     /* method and default variant          */
   par->variant  = 0u;                 /* default variant                     */
@@ -323,13 +324,13 @@ unur_srou_set_r( struct unur_par *par, double r )
   
   if (r == 1 ) {
     /* simple version, same as R is not set */ 
-    PAR.r = r;
+    PAR->r = r;
     par->set &= ~SROU_SET_R;
   }
   else {
     /* for computational reasons r should be at least 1.01 */
     if (r<1.01) r = 1.01;
-    PAR.r = r;
+    PAR->r = r;
     par->set |= SROU_SET_R;
   }
 
@@ -367,7 +368,7 @@ unur_srou_set_cdfatmode( struct unur_par *par, double Fmode )
   }
 
   /* store date */
-  PAR.Fmode = Fmode;
+  PAR->Fmode = Fmode;
 
   /* changelog */
   par->set |= SROU_SET_CDFMODE;
@@ -407,7 +408,7 @@ unur_srou_set_pdfatmode( UNUR_PAR *par, double fmode )
   }
 
   /* store date ((square) root of fmode) */
-  PAR.um = (par->set & SROU_SET_R) ? pow(fmode,1./(PAR.r+1.)) : sqrt(fmode);
+  PAR->um = (par->set & SROU_SET_R) ? pow(fmode,1./(PAR->r+1.)) : sqrt(fmode);
 
   /* changelog */
   par->set |= SROU_SET_PDFMODE;
@@ -659,7 +660,7 @@ unur_srou_chg_cdfatmode( struct unur_gen *gen, double Fmode )
   }
   
   /* copy parameters */
-  GEN.Fmode = Fmode;
+  GEN->Fmode = Fmode;
 
   /* changelog */
   gen->set |= SROU_SET_CDFMODE;
@@ -699,7 +700,7 @@ unur_srou_chg_pdfatmode( struct unur_gen *gen, double fmode )
   }
 
   /* store date ((square) root of fmode) */
-  GEN.um = (gen->set & SROU_SET_R) ? pow(fmode,1./(GEN.r+1.)) : sqrt(fmode);
+  GEN->um = (gen->set & SROU_SET_R) ? pow(fmode,1./(GEN->r+1.)) : sqrt(fmode);
 
   /* changelog */
   gen->set |= SROU_SET_PDFMODE;
@@ -854,7 +855,36 @@ _unur_srou_init( struct unur_par *par )
 
   /* create a new empty generator object */
   gen = _unur_srou_create(par);
-  if (!gen) { free(par); return NULL; }
+  if (!gen) { _unur_par_free(par); return NULL; }
+
+  /* check for required data: mode */
+  if (!(gen->distr->set & UNUR_DISTR_SET_MODE)) {
+    _unur_warning(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"mode: try finding it (numerically)"); 
+    if (unur_distr_cont_upd_mode(gen->distr)!=UNUR_SUCCESS) {
+      _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"mode"); 
+      _unur_par_free(par); _unur_srou_free(gen);
+      return NULL; 
+    }
+  }
+
+  /* check for required data: area */
+  if (!(gen->distr->set & UNUR_DISTR_SET_PDFAREA))
+    if (unur_distr_cont_upd_pdfarea(gen->distr)!=UNUR_SUCCESS) {
+      _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"area below PDF");
+      _unur_par_free(par); _unur_srou_free(gen);
+      return NULL; 
+    }
+
+  /* mode must be in domain */
+  if ( (DISTR.mode < DISTR.BD_LEFT) ||
+       (DISTR.mode > DISTR.BD_RIGHT) ) {
+    /* there is something wrong.
+       assume: user has change domain without changing mode.
+       but then, she probably has not updated area and is to large */
+    _unur_warning(GENTYPE,UNUR_ERR_GEN_DATA,"area and/or CDF at mode");
+    DISTR.mode = max(DISTR.mode,DISTR.BD_LEFT);
+    DISTR.mode = min(DISTR.mode,DISTR.BD_RIGHT);
+  }
 
   /* compute universal bounding envelope */
   if (par->set & SROU_SET_R)
@@ -864,7 +894,7 @@ _unur_srou_init( struct unur_par *par )
 
   if (rcode!=UNUR_SUCCESS) {
     /* error */
-    free(par); _unur_srou_free(gen);
+    _unur_par_free(par); _unur_srou_free(gen);
     return NULL;
   }
 
@@ -874,7 +904,7 @@ _unur_srou_init( struct unur_par *par )
 #endif
 
   /* free parameters */
-  free(par);
+  _unur_par_free(par);
 
   return gen;
 
@@ -913,25 +943,25 @@ _unur_srou_rectangle( struct unur_gen *gen )
       _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"PDF(mode) overflow");
       return UNUR_ERR_PAR_SET;
     }
-    GEN.um = sqrt(fm);    /* height of rectangle */
+    GEN->um = sqrt(fm);    /* height of rectangle */
   }
 
   /* width of rectangle */
-  vm = DISTR.area / GEN.um;
+  vm = DISTR.area / GEN->um;
 
   if (gen->set & SROU_SET_CDFMODE) {
     /* cdf at mode known */
-    GEN.vl = -GEN.Fmode * vm;
-    GEN.vr = vm + GEN.vl;
-    GEN.xl = GEN.vl/GEN.um;
-    GEN.xr = GEN.vr/GEN.um;
+    GEN->vl = -GEN->Fmode * vm;
+    GEN->vr = vm + GEN->vl;
+    GEN->xl = GEN->vl/GEN->um;
+    GEN->xr = GEN->vr/GEN->um;
   }
   else {
     /* cdf at mode unknown */
-    GEN.vl = -vm;
-    GEN.vr = vm;
-    GEN.xl = GEN.vl/GEN.um;
-    GEN.xr = GEN.vr/GEN.um;
+    GEN->vl = -vm;
+    GEN->vr = vm;
+    GEN->xl = GEN->vl/GEN->um;
+    GEN->xr = GEN->vr/GEN->um;
     /* we cannot use universal squeeze */
     gen->variant &= ~SROU_VARFLAG_SQUEEZE;
   }
@@ -961,7 +991,7 @@ _unur_gsrou_envelope( struct unur_gen *gen )
   double pr;             /* p^r                       */
 
   double p;              /* short cuts                */
-  double r = GEN.r;
+  double r = GEN->r;
 
   /* check arguments */
   CHECK_NULL( gen, UNUR_ERR_NULL );
@@ -979,31 +1009,31 @@ _unur_gsrou_envelope( struct unur_gen *gen )
       _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"PDF(mode) overflow");
       return UNUR_ERR_PAR_SET;
     }
-    GEN.um = pow(fm,1./(r+1.));    /* height of envelope */
+    GEN->um = pow(fm,1./(r+1.));    /* height of envelope */
   }
 
   /* maximal width of envelope */
-  vm = DISTR.area / (GEN.r*GEN.um);
+  vm = DISTR.area / (GEN->r*GEN->um);
 
   if (gen->set & SROU_SET_CDFMODE) {
     /* cdf at mode known */
-    GEN.vl = -GEN.Fmode * vm;
-    GEN.vr = vm + GEN.vl;
+    GEN->vl = -GEN->Fmode * vm;
+    GEN->vr = vm + GEN->vl;
   }
   else {
     /* cdf at mode unknown */
-    GEN.vl = -vm;
-    GEN.vr = vm;
+    GEN->vl = -vm;
+    GEN->vr = vm;
   }
 
   /* construction point for bounding curve */
-  GEN.p = p = 1. - 2.187/pow(r + 5 - 1.28/r, 0.9460 );
+  GEN->p = p = 1. - 2.187/pow(r + 5 - 1.28/r, 0.9460 );
   pr = pow(p,r);
 
   /* parameters for bounding envelope */
-  GEN.b = (1. - r * pr/p + (r-1.)*pr) / ((pr-1.)*(pr-1));
-  GEN.a = -(p-1.)/(pr-1.) - p * GEN.b;
-  GEN.log_ab = log(GEN.a/(GEN.a+GEN.b));
+  GEN->b = (1. - r * pr/p + (r-1.)*pr) / ((pr-1.)*(pr-1));
+  GEN->a = -(p-1.)/(pr-1.) - p * GEN->b;
+  GEN->log_ab = log(GEN->a/(GEN->a+GEN->b));
 
   /* o.k. */
   return UNUR_SUCCESS;
@@ -1033,28 +1063,10 @@ _unur_srou_create( struct unur_par *par )
   CHECK_NULL(par,NULL);  COOKIE_CHECK(par,CK_SROU_PAR,NULL);
 
   /* create new generic generator object */
-  gen = _unur_generic_create( par );
+  gen = _unur_generic_create( par, sizeof(struct unur_srou_gen) );
 
   /* magic cookies */
   COOKIE_SET(gen,CK_SROU_GEN);
-
-  /* check for required data: mode */
-  if (!(gen->distr->set & UNUR_DISTR_SET_MODE)) {
-    _unur_warning(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"mode: try finding it (numerically)"); 
-    if (unur_distr_cont_upd_mode(gen->distr)!=UNUR_SUCCESS) {
-      _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"mode"); 
-      _unur_distr_free(gen->distr); free(gen);
-      return NULL; 
-    }
-  }
-
-  /* check for required data: area */
-  if (!(gen->distr->set & UNUR_DISTR_SET_PDFAREA))
-    if (unur_distr_cont_upd_pdfarea(gen->distr)!=UNUR_SUCCESS) {
-      _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"area below PDF");
-      _unur_distr_free(gen->distr); free(gen);
-      return NULL; 
-    }
 
   /* set generator identifier */
   gen->genid = _unur_set_genid(GENTYPE);
@@ -1072,28 +1084,17 @@ _unur_srou_create( struct unur_par *par )
   gen->destroy = _unur_srou_free;
   gen->clone = _unur_srou_clone;
 
-  /* mode must be in domain */
-  if ( (DISTR.mode < DISTR.BD_LEFT) ||
-       (DISTR.mode > DISTR.BD_RIGHT) ) {
-    /* there is something wrong.
-       assume: user has change domain without changing mode.
-       but then, she probably has not updated area and is to large */
-    _unur_warning(GENTYPE,UNUR_ERR_GEN_DATA,"area and/or CDF at mode");
-    DISTR.mode = max(DISTR.mode,DISTR.BD_LEFT);
-    DISTR.mode = min(DISTR.mode,DISTR.BD_RIGHT);
-  }
-
   /* copy some parameters into generator object */
-  GEN.r     = PAR.r;                /* parameter for power transformation    */
-  GEN.Fmode = PAR.Fmode;            /* CDF at mode                           */
-  GEN.um    = PAR.um;               /* square root of PDF at mode            */
+  GEN->r     = PAR->r;                /* parameter for power transformation    */
+  GEN->Fmode = PAR->Fmode;            /* CDF at mode                           */
+  GEN->um    = PAR->um;               /* square root of PDF at mode            */
 
   /* initialize variables */
-  GEN.vl = GEN.vr = 0.;
-  GEN.xl = GEN.xr = 0.;
-  GEN.p = 0.;
-  GEN.a = GEN.b = 0.;
-  GEN.log_ab = 0.;
+  GEN->vl = GEN->vr = 0.;
+  GEN->xl = GEN->xr = 0.;
+  GEN->p = 0.;
+  GEN->a = GEN->b = 0.;
+  GEN->log_ab = 0.;
 
   /* initialize parameters */
 
@@ -1155,7 +1156,7 @@ _unur_srou_clone( const struct unur_gen *gen )
      /*   return NULL                                                        */
      /*----------------------------------------------------------------------*/
 { 
-#define CLONE clone->data.srou
+#define CLONE  ((struct unur_srou_gen*)clone->datap)
 
   struct unur_gen *clone;
 
@@ -1195,8 +1196,8 @@ _unur_srou_sample( struct unur_gen *gen )
   while (1) {
     /* generate point uniformly on rectangle */
     while ( (U = _unur_call_urng(gen->urng)) == 0.);
-    U *= GEN.um;
-    V = GEN.vl + _unur_call_urng(gen->urng) * (GEN.vr - GEN.vl);
+    U *= GEN->um;
+    V = GEN->vl + _unur_call_urng(gen->urng) * (GEN->vr - GEN->vl);
 
     /* ratio */
     X = V/U;
@@ -1210,11 +1211,11 @@ _unur_srou_sample( struct unur_gen *gen )
 
     /* evaluate squeeze */
     if ( (gen->variant & SROU_VARFLAG_SQUEEZE) &&
-	 (X >= GEN.xl) && 
-	 (X <= GEN.xr ) && 
-	 (U < GEN.um) ) {
-      xx = V / (GEN.um - U);
-      if ( (xx >= GEN.xl) && (xx <= GEN.xr ) )
+	 (X >= GEN->xl) && 
+	 (X <= GEN->xr ) && 
+	 (U < GEN->um) ) {
+      xx = V / (GEN->um - U);
+      if ( (xx >= GEN->xl) && (xx <= GEN->xr ) )
 	return x;
     }
 
@@ -1250,8 +1251,8 @@ _unur_srou_sample_mirror( struct unur_gen *gen )
   while (1) {
     /* generate point uniformly on rectangle */
     while ( (U = _unur_call_urng(gen->urng)) == 0.);
-    U *= GEN.um * SQRT2;
-    V = 2. * (_unur_call_urng(gen->urng) - 0.5) * GEN.vr;
+    U *= GEN->um * SQRT2;
+    V = 2. * (_unur_call_urng(gen->urng) - 0.5) * GEN->vr;
     /* vr = vm when the CDF at the mode is not known */
 
     /* ratio */
@@ -1303,8 +1304,8 @@ _unur_srou_sample_check( struct unur_gen *gen )
     while (1) {
       /* generate point uniformly on rectangle */
       while ( (U = _unur_call_urng(gen->urng)) == 0.);
-      U *= GEN.um * SQRT2;
-      V = 2. * (_unur_call_urng(gen->urng) - 0.5) * GEN.vr;
+      U *= GEN->um * SQRT2;
+      V = 2. * (_unur_call_urng(gen->urng) - 0.5) * GEN->vr;
       /* vr = vm when the CDF at the mode is not known */	
 
       /* ratio */
@@ -1323,11 +1324,11 @@ _unur_srou_sample_check( struct unur_gen *gen )
       xfx  = (x  - DISTR.mode) * sqrt(fx);
       xfnx = (nx - DISTR.mode) * sqrt(fnx);
 
-      if ( ((2.+4.*DBL_EPSILON) * GEN.um*GEN.um < fx + fnx)    /* avoid roundoff error with FP registers */
-	   || (xfx < (1.+UNUR_EPSILON) * GEN.vl) 
-	   || (xfx > (1.+UNUR_EPSILON) * GEN.vr)
-	   || (xfnx < (1.+UNUR_EPSILON) * GEN.vl) 
-	   || (xfnx > (1.+UNUR_EPSILON) * GEN.vr) )
+      if ( ((2.+4.*DBL_EPSILON) * GEN->um*GEN->um < fx + fnx)    /* avoid roundoff error with FP registers */
+	   || (xfx < (1.+UNUR_EPSILON) * GEN->vl) 
+	   || (xfx > (1.+UNUR_EPSILON) * GEN->vr)
+	   || (xfnx < (1.+UNUR_EPSILON) * GEN->vl) 
+	   || (xfnx > (1.+UNUR_EPSILON) * GEN->vr) )
 	_unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"PDF(x) > hat(x)");
 
       /* accept or reject */
@@ -1345,8 +1346,8 @@ _unur_srou_sample_check( struct unur_gen *gen )
     while (1) {
       /* generate point uniformly on rectangle */
       while ( (U = _unur_call_urng(gen->urng)) == 0.);
-      U *= GEN.um;
-      V = GEN.vl + _unur_call_urng(gen->urng) * (GEN.vr - GEN.vl);
+      U *= GEN->um;
+      V = GEN->vl + _unur_call_urng(gen->urng) * (GEN->vr - GEN->vl);
 
       /* ratio */
       X = V/U;
@@ -1368,26 +1369,26 @@ _unur_srou_sample_check( struct unur_gen *gen )
       xfx = X * sfx;
 
       /* check hat */
-      if ( ( sfx > (1.+DBL_EPSILON) * GEN.um )   /* avoid roundoff error with FP registers */
-	   || (xfx < (1.+UNUR_EPSILON) * GEN.vl) 
-	   || (xfx > (1.+UNUR_EPSILON) * GEN.vr) )
+      if ( ( sfx > (1.+DBL_EPSILON) * GEN->um )   /* avoid roundoff error with FP registers */
+	   || (xfx < (1.+UNUR_EPSILON) * GEN->vl) 
+	   || (xfx > (1.+UNUR_EPSILON) * GEN->vr) )
 	_unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"PDF(x) > hat(x)");
 
       /* evaluate and check squeeze */
       if ( (gen->variant & SROU_VARFLAG_SQUEEZE) &&
-	   (X >= GEN.xl) && 
-	   (X <= GEN.xr ) && 
-	   (U < GEN.um) ) {
+	   (X >= GEN->xl) && 
+	   (X <= GEN->xr ) && 
+	   (U < GEN->um) ) {
 
 	/* check squeeze */
-	xx = xfx / (GEN.um - sfx);
-	if ( (xx > (1.-UNUR_EPSILON) * GEN.xl) &&
-	     (xx < (1.-UNUR_EPSILON) * GEN.xr) )
+	xx = xfx / (GEN->um - sfx);
+	if ( (xx > (1.-UNUR_EPSILON) * GEN->xl) &&
+	     (xx < (1.-UNUR_EPSILON) * GEN->xr) )
 	  _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"PDF(x) < squeeze(x)");
 
 	/* squeeze acceptance */
-	xx = V / (GEN.um - U);
-	if ( (xx >= GEN.xl) && (xx <= GEN.xr ) )
+	xx = V / (GEN->um - U);
+	if ( (xx >= GEN->xl) && (xx <= GEN->xr ) )
 	  return x;
       }
       
@@ -1422,12 +1423,12 @@ _unur_gsrou_sample( struct unur_gen *gen )
   CHECK_NULL(gen,INFINITY);  COOKIE_CHECK(gen,CK_SROU_GEN,INFINITY);
 
   while (1) {
-    W = GEN.log_ab *_unur_call_urng(gen->urng);
-    Z = GEN.vl + _unur_call_urng(gen->urng) * (GEN.vr - GEN.vl);
-    U = (exp(-W)-1.) * GEN.a/GEN.b;
-    V = -Z/(GEN.a + GEN.b*U);
-    U *= GEN.um;
-    Ur = pow(U,GEN.r);
+    W = GEN->log_ab *_unur_call_urng(gen->urng);
+    Z = GEN->vl + _unur_call_urng(gen->urng) * (GEN->vr - GEN->vl);
+    U = (exp(-W)-1.) * GEN->a/GEN->b;
+    V = -Z/(GEN->a + GEN->b*U);
+    U *= GEN->um;
+    Ur = pow(U,GEN->r);
     X = V/Ur + DISTR.mode;
 
     /* inside domain ? */
@@ -1466,12 +1467,12 @@ _unur_gsrou_sample_check( struct unur_gen *gen )
 
   while (1) {
 
-    W = GEN.log_ab *_unur_call_urng(gen->urng);
-    Z = GEN.vl + _unur_call_urng(gen->urng) * (GEN.vr - GEN.vl);
-    U = (exp(-W)-1.) * GEN.a/GEN.b;
-    V = -Z/(GEN.a + GEN.b*U);
-    U *= GEN.um;
-    Ur = pow(U,GEN.r);
+    W = GEN->log_ab *_unur_call_urng(gen->urng);
+    Z = GEN->vl + _unur_call_urng(gen->urng) * (GEN->vr - GEN->vl);
+    U = (exp(-W)-1.) * GEN->a/GEN->b;
+    V = -Z/(GEN->a + GEN->b*U);
+    U *= GEN->um;
+    Ur = pow(U,GEN->r);
     X = V/Ur;
     
     /* compute x */
@@ -1486,16 +1487,16 @@ _unur_gsrou_sample_check( struct unur_gen *gen )
     /* the point on the boundary of the region of acceptance
        in direction X = V/U^r has the coordinates
        ( (x-mode) * (fx)^(r/(r+1)), sqrt[r+1](fx) ). */
-    uf = pow(fx,1./(GEN.r+1));
-    vf = X * pow(fx,GEN.r/(GEN.r+1.));
+    uf = pow(fx,1./(GEN->r+1));
+    vf = X * pow(fx,GEN->r/(GEN->r+1.));
 
     /* the corresponding point on boundary of the enveloping region */
     /* with same u-coordinate.                                      */
-    vhl = - GEN.vl /(GEN.a + GEN.b*(uf/GEN.um));
-    vhr = - GEN.vr /(GEN.a + GEN.b*(uf/GEN.um));
+    vhl = - GEN->vl /(GEN->a + GEN->b*(uf/GEN->um));
+    vhr = - GEN->vr /(GEN->a + GEN->b*(uf/GEN->um));
 
     /* check hat */
-    if ( ( uf > (1.+DBL_EPSILON) * GEN.um )   /* avoid roundoff error with FP registers */
+    if ( ( uf > (1.+DBL_EPSILON) * GEN->um )   /* avoid roundoff error with FP registers */
 	 || (vf < (1.+UNUR_EPSILON) * vhl )
 	 || (vf > (1.+UNUR_EPSILON) * vhr ) )
       {
@@ -1579,7 +1580,7 @@ _unur_srou_debug_init( const struct unur_gen *gen, int is_reinit )
   _unur_distr_cont_debug( gen->distr, gen->genid );
 
   if (gen->set & SROU_SET_R) {
-    fprintf(log,"%s: Generalized version: r = %g\n",gen->genid,GEN.r);
+    fprintf(log,"%s: Generalized version: r = %g\n",gen->genid,GEN->r);
     fprintf(log,"%s:\n",gen->genid);
 
     fprintf(log,"%s: sampling routine = _unur_gsrou_sample",gen->genid);
@@ -1600,7 +1601,7 @@ _unur_srou_debug_init( const struct unur_gen *gen, int is_reinit )
   }
 
   if (gen->set & SROU_SET_CDFMODE)
-    fprintf(log,"%s: F(mode) = %g\n",gen->genid,GEN.Fmode);
+    fprintf(log,"%s: F(mode) = %g\n",gen->genid,GEN->Fmode);
   else
     fprintf(log,"%s: F(mode) unknown\n",gen->genid);
 
@@ -1616,17 +1617,17 @@ _unur_srou_debug_init( const struct unur_gen *gen, int is_reinit )
 
   if (gen->set & SROU_SET_R) {
     fprintf(log,"%s: Enveloping region:\n",gen->genid);
-    fprintf(log,"%s:    um = %g\n",gen->genid,GEN.um);
-    fprintf(log,"%s:    vl = %g\n",gen->genid,GEN.vl);
-    fprintf(log,"%s:    vr = %g\n",gen->genid,GEN.vr);
-    fprintf(log,"%s:    p  = %g\n",gen->genid,GEN.p);
-    fprintf(log,"%s:    a  = %g\n",gen->genid,GEN.a);
-    fprintf(log,"%s:    b  = %g\n",gen->genid,GEN.b);
+    fprintf(log,"%s:    um = %g\n",gen->genid,GEN->um);
+    fprintf(log,"%s:    vl = %g\n",gen->genid,GEN->vl);
+    fprintf(log,"%s:    vr = %g\n",gen->genid,GEN->vr);
+    fprintf(log,"%s:    p  = %g\n",gen->genid,GEN->p);
+    fprintf(log,"%s:    a  = %g\n",gen->genid,GEN->a);
+    fprintf(log,"%s:    b  = %g\n",gen->genid,GEN->b);
   }
   else {
     fprintf(log,"%s: Rectangle:\n",gen->genid);
-    fprintf(log,"%s:    left upper point  = (%g,%g)\n",gen->genid,GEN.vl,GEN.um);
-    fprintf(log,"%s:    right upper point = (%g,%g)\n",gen->genid,GEN.vr,GEN.um);
+    fprintf(log,"%s:    left upper point  = (%g,%g)\n",gen->genid,GEN->vl,GEN->um);
+    fprintf(log,"%s:    right upper point = (%g,%g)\n",gen->genid,GEN->vr,GEN->um);
   }
 
   fprintf(log,"%s:\n",gen->genid);

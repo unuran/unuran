@@ -64,6 +64,7 @@
 #include "unur_methods_source.h"
 #include "x_gen_source.h"
 #include "hri.h"
+#include "hri_struct.h"
 
 /*---------------------------------------------------------------------------*/
 /* Constants                                                                 */
@@ -143,8 +144,8 @@ static void _unur_hri_debug_sample( const struct unur_gen *gen,
 
 #define DISTR_IN  distr->data.cont      /* data for distribution object      */
 
-#define PAR       par->data.hri         /* data for parameter object         */
-#define GEN       gen->data.hri         /* data for generator object         */
+#define PAR       ((struct unur_hri_par*)par->datap) /* data for parameter object */
+#define GEN       ((struct unur_hri_gen*)gen->datap) /* data for generator object */
 #define DISTR     gen->distr->data.cont /* data for distribution in generator object */
 
 #define SAMPLE    gen->sample.cont      /* pointer to sampling routine       */
@@ -185,14 +186,14 @@ unur_hri_new( const struct unur_distr *distr )
     _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"HR"); return NULL; }
 
   /* allocate structure */
-  par = _unur_xmalloc(sizeof(struct unur_par));
+  par = _unur_par_new( sizeof(struct unur_hri_par) );
   COOKIE_SET(par,CK_HRI_PAR);
 
   /* copy input */
   par->distr   = distr;         /* pointer to distribution object            */
 
   /* set default values */
-  PAR.p0        = 1.;                      /* design point                   */
+  PAR->p0        = 1.;                      /* design point                   */
 
   par->method   = UNUR_METH_HRI;           /* method                         */
   par->variant  = 0u;                      /* default variant                */
@@ -239,7 +240,7 @@ unur_hri_set_p0( struct unur_par *par, double p0 )
   }
 
   /* store date */
-  PAR.p0 = p0;
+  PAR->p0 = p0;
 
   /* changelog */
   par->set |= HRI_SET_P0;
@@ -344,30 +345,30 @@ _unur_hri_init( struct unur_par *par )
 
   /* create a new empty generator object */    
   gen = _unur_hri_create(par);
-  if (!gen) { free(par); return NULL; }
+  if (!gen) { _unur_par_free(par); return NULL; }
 
   /* set left border and check domain */
   if (DISTR.domain[0] < 0.)       DISTR.domain[0] = 0.;
   if (DISTR.domain[1] < INFINITY) DISTR.domain[1] = INFINITY;
-  GEN.left_border = DISTR.domain[0];
+  GEN->left_border = DISTR.domain[0];
 
   /* check design point */
   if (gen->set & HRI_SET_P0) {
-    if (GEN.p0 <= GEN.left_border) {
+    if (GEN->p0 <= GEN->left_border) {
       _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"p0 <= left boundary");
-      GEN.p0 = GEN.left_border + 1.;
+      GEN->p0 = GEN->left_border + 1.;
     }
   }
   else {
     /* p0 not set */
-    GEN.p0 = GEN.left_border + 1.;
+    GEN->p0 = GEN->left_border + 1.;
   }
 
   /* compute hazard rate at construction point */
-  GEN.hrp0 = HR(GEN.p0);
-  if (GEN.hrp0 <= 0. || _unur_FP_is_infinity(GEN.hrp0)) {
+  GEN->hrp0 = HR(GEN->p0);
+  if (GEN->hrp0 <= 0. || _unur_FP_is_infinity(GEN->hrp0)) {
     _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"design point p0 not valid");
-    free(par); _unur_free(gen);
+    _unur_par_free(par); _unur_free(gen);
     return NULL;
   }
 
@@ -377,7 +378,7 @@ _unur_hri_init( struct unur_par *par )
 #endif
 
   /* free parameters */
-  free(par);
+  _unur_par_free(par);
   
   return gen;
 
@@ -406,7 +407,7 @@ _unur_hri_create( struct unur_par *par )
   CHECK_NULL(par,NULL);  COOKIE_CHECK(par,CK_HRI_PAR,NULL);
 
   /* create new generic generator object */
-  gen = _unur_generic_create( par );
+  gen = _unur_generic_create( par, sizeof(struct unur_hri_gen) );
 
   /* magic cookies */
   COOKIE_SET(gen,CK_HRI_GEN);
@@ -421,14 +422,14 @@ _unur_hri_create( struct unur_par *par )
   gen->clone = _unur_hri_clone;
 
   /* copy parameters into generator object */
-  GEN.p0 = PAR.p0;                  /* design (splitting) point              */
+  GEN->p0 = PAR->p0;                  /* design (splitting) point              */
 
   /* default values */
-  GEN.left_border = 0.;             /* left border of domain                 */
-  GEN.hrp0 = 0.;                    /* hazard rate at p0                     */
+  GEN->left_border = 0.;             /* left border of domain                 */
+  GEN->hrp0 = 0.;                    /* hazard rate at p0                     */
 
   /* initialize variables */
-  GEN.left_border = 0.;             /* left border of domain                 */
+  GEN->left_border = 0.;             /* left border of domain                 */
 
   /* return pointer to (almost empty) generator object */
   return gen;
@@ -452,7 +453,7 @@ _unur_hri_clone( const struct unur_gen *gen )
      /*   return NULL                                                        */
      /*----------------------------------------------------------------------*/
 { 
-#define CLONE clone->data.hri
+#define CLONE  ((struct unur_hri_gen*)clone->datap)
 
   struct unur_gen *clone;
 
@@ -526,10 +527,10 @@ _unur_hri_sample( struct unur_gen *gen )
   */
 
   /* parameter for majorizing hazard rate of first component */
-  lambda0 = GEN.hrp0;
+  lambda0 = GEN->hrp0;
 
   /* starting point */
-  X = GEN.left_border;
+  X = GEN->left_border;
 
   for(;;) {
     /* sample from U(0,1) */
@@ -553,7 +554,7 @@ _unur_hri_sample( struct unur_gen *gen )
   }
 
   /* accept point if not larger than design (split) point */
-  if (X <= GEN.p0)
+  if (X <= GEN->p0)
     return X;
 
   /* 
@@ -575,7 +576,7 @@ _unur_hri_sample( struct unur_gen *gen )
 
   /* starting point */
   p1 = X;
-  X = GEN.p0;
+  X = GEN->p0;
 
   for(;;) {
     /* sample from U(0,1) */
@@ -591,7 +592,7 @@ _unur_hri_sample( struct unur_gen *gen )
     V = lambda0 + lambda1 * _unur_call_urng(gen->urng);
 
     /* squeeze */
-    if (V <= GEN.hrp0)
+    if (V <= GEN->hrp0)
       /* we use hazard rate at design point p0 as squeeze (since HR increasing) */ 
       break;
 
@@ -636,10 +637,10 @@ _unur_hri_sample_check( struct unur_gen *gen )
   */
 
   /* parameter for majorizing hazard rate of first component */
-  lambda0 = GEN.hrp0;
+  lambda0 = GEN->hrp0;
 
   /* starting point */
-  X = GEN.left_border;
+  X = GEN->left_border;
 
   for(i0=1;;i0++) {
     /* sample from U(0,1) */
@@ -658,8 +659,8 @@ _unur_hri_sample_check( struct unur_gen *gen )
     V =  lambda0 * _unur_call_urng(gen->urng);
 
     /* verify majorizing hazard rate */
-    if ( (X <= GEN.p0 && (1.+UNUR_EPSILON) * lambda0 < hrx1 ) || 
-	 (X >= GEN.p0 && (1.-UNUR_EPSILON) * lambda0 > hrx1 ) )
+    if ( (X <= GEN->p0 && (1.+UNUR_EPSILON) * lambda0 < hrx1 ) || 
+	 (X >= GEN->p0 && (1.-UNUR_EPSILON) * lambda0 > hrx1 ) )
       _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"HR not increasing");
 
     if( V <= hrx1 )
@@ -668,7 +669,7 @@ _unur_hri_sample_check( struct unur_gen *gen )
   }
 
   /* accept point if not larger than design (split) point */
-  if (X <= GEN.p0) {
+  if (X <= GEN->p0) {
 #ifdef UNUR_ENABLE_LOGGING
     /* write info into log file */
     if (gen->debug & HRI_DEBUG_SAMPLE)
@@ -702,7 +703,7 @@ _unur_hri_sample_check( struct unur_gen *gen )
 
   /* starting point */
   p1 = X;
-  X = GEN.p0;
+  X = GEN->p0;
 
   for(i1=1;;i1++) {
     /* sample from U(0,1) */
@@ -726,7 +727,7 @@ _unur_hri_sample_check( struct unur_gen *gen )
       _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"HR not increasing");
 
     /* squeeze */
-    if (V <= GEN.hrp0)
+    if (V <= GEN->hrp0)
       /* we use hazard rate at design point p0 as squeeze (since HR increasing) */ 
       break;
 
@@ -750,10 +751,10 @@ _unur_hri_sample_check( struct unur_gen *gen )
   int i;
 
   /* parameter for majorizing hazard rate */
-  lambda = GEN.upper_bound;
+  lambda = GEN->upper_bound;
 
   /* starting point */
-  X = GEN.left_border;
+  X = GEN->left_border;
 
   for(i=1;;i++) {
     /* sample from U(0,1) */
@@ -838,9 +839,9 @@ _unur_hri_debug_init( const struct unur_gen *gen )
     fprintf(log,"()\n");
   fprintf(log,"%s:\n",gen->genid);
 
-  fprintf(log,"%s: design point p0 = %g  (HR(p0)=%g)",gen->genid,GEN.p0,GEN.hrp0);
+  fprintf(log,"%s: design point p0 = %g  (HR(p0)=%g)",gen->genid,GEN->p0,GEN->hrp0);
   _unur_print_if_default(gen,HRI_SET_P0);
-  fprintf(log,"\n%s: left boundary = %g\n",gen->genid,GEN.left_border);
+  fprintf(log,"\n%s: left boundary = %g\n",gen->genid,GEN->left_border);
 
   fprintf(log,"%s:\n",gen->genid);
 

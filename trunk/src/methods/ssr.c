@@ -75,6 +75,7 @@
 #include "unur_methods_source.h"
 #include "x_gen_source.h"
 #include "ssr.h"
+#include "ssr_struct.h"
 
 /*---------------------------------------------------------------------------*/
 /* Variants: none                                                            */
@@ -154,8 +155,8 @@ static void _unur_ssr_debug_init( const struct unur_gen *gen, int is_reinit );
 
 #define DISTR_IN  distr->data.cont      /* data for distribution object      */
 
-#define PAR       par->data.ssr         /* data for parameter object         */
-#define GEN       gen->data.ssr         /* data for generator object         */
+#define PAR       ((struct unur_ssr_par*)par->datap) /* data for parameter object */
+#define GEN       ((struct unur_ssr_gen*)gen->datap) /* data for generator object */
 #define DISTR     gen->distr->data.cont /* data for distribution in generator object */
 
 #define BD_LEFT   domain[0]             /* left boundary of domain of distribution */
@@ -207,16 +208,16 @@ unur_ssr_new( const struct unur_distr *distr )
   }
 
   /* allocate structure */
-  par = _unur_xmalloc(sizeof(struct unur_par));
+  par = _unur_par_new( sizeof(struct unur_ssr_par) );
   COOKIE_SET(par,CK_SSR_PAR);
 
   /* copy input */
   par->distr    = distr;              /* pointer to distribution object      */
 
   /* set default values */
-  PAR.Fmode     = -1.;                /* CDF at mode (unknown yet)           */
-  PAR.fm        = -1.;                /* PDF at mode (unknown)               */
-  PAR.um        = -1.;                /* square of PDF at mode (unknown)     */
+  PAR->Fmode     = -1.;                /* CDF at mode (unknown yet)           */
+  PAR->fm        = -1.;                /* PDF at mode (unknown)               */
+  PAR->um        = -1.;                /* square of PDF at mode (unknown)     */
 
   par->method   = UNUR_METH_SSR;      /* method and default variant          */
   par->variant  = 0u;                 /* default variant                     */
@@ -260,7 +261,7 @@ unur_ssr_set_cdfatmode( struct unur_par *par, double Fmode )
   }
 
   /* store date */
-  PAR.Fmode = Fmode;
+  PAR->Fmode = Fmode;
 
   /* changelog */
   par->set |= SSR_SET_CDFMODE;
@@ -300,8 +301,8 @@ unur_ssr_set_pdfatmode( UNUR_PAR *par, double fmode )
   }
 
   /* store date */
-  PAR.fm = fmode;
-  PAR.um = sqrt(fmode);
+  PAR->fm = fmode;
+  PAR->um = sqrt(fmode);
 
   /* changelog */
   par->set |= SSR_SET_PDFMODE;
@@ -519,7 +520,7 @@ unur_ssr_chg_cdfatmode( struct unur_gen *gen, double Fmode )
   }
   
   /* copy parameters */
-  GEN.Fmode = Fmode;
+  GEN->Fmode = Fmode;
 
   /* changelog */
   gen->set |= SSR_SET_CDFMODE;
@@ -559,8 +560,8 @@ unur_ssr_chg_pdfatmode( struct unur_gen *gen, double fmode )
   }
 
   /* store date */
-  GEN.fm = fmode;
-  GEN.um = sqrt(fmode);
+  GEN->fm = fmode;
+  GEN->um = sqrt(fmode);
 
   /* changelog */
   gen->set |= SSR_SET_PDFMODE;
@@ -704,11 +705,41 @@ _unur_ssr_init( struct unur_par *par )
 
   /* create a new empty generator object */
   gen = _unur_ssr_create(par);
-  if (!gen) { free(par); return NULL; }
+  if (!gen) { _unur_par_free(par); return NULL; }
+
+  /* check for required data: mode */
+  if (!(gen->distr->set & UNUR_DISTR_SET_MODE)) {
+    _unur_warning(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"mode: try finding it (numerically)"); 
+    if (unur_distr_cont_upd_mode(gen->distr)!=UNUR_SUCCESS) {
+      _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"mode"); 
+      _unur_par_free(par); _unur_ssr_free(gen);
+      _unur_distr_free(gen->distr); free(gen);
+      return NULL; 
+    }
+  }
+
+  /* check for required data: area */
+  if (!(gen->distr->set & UNUR_DISTR_SET_PDFAREA))
+    if (unur_distr_cont_upd_pdfarea(gen->distr)!=UNUR_SUCCESS) {
+      _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"area below PDF");
+      _unur_par_free(par); _unur_ssr_free(gen);
+      return NULL; 
+    }
+
+  /* mode must be in domain */
+  if ( (DISTR.mode < DISTR.BD_LEFT) ||
+       (DISTR.mode > DISTR.BD_RIGHT) ) {
+    /* there is something wrong.
+       assume: user has change domain without changing mode.
+       but then, she probably has not updated area and is to large */
+    _unur_warning(GENTYPE,UNUR_ERR_GEN_DATA,"area and/or CDF at mode");
+    DISTR.mode = max(DISTR.mode,DISTR.BD_LEFT);
+    DISTR.mode = min(DISTR.mode,DISTR.BD_RIGHT);
+  }
 
   /* compute universal bounding rectangle */
   if (_unur_ssr_hat(gen)!=UNUR_SUCCESS) {
-    free(par); _unur_ssr_free(gen);
+    _unur_par_free(par); _unur_ssr_free(gen);
     return NULL;
   }
 
@@ -718,10 +749,58 @@ _unur_ssr_init( struct unur_par *par )
 #endif
 
   /* free parameters */
-  free(par);
+  _unur_par_free(par);
 
   return gen;
 } /* end of _unur_ssr_init() */
+
+/*---------------------------------------------------------------------------*/
+
+struct unur_gen *
+_unur_ssr_create( struct unur_par *par )
+     /*----------------------------------------------------------------------*/
+     /* allocate memory for generator                                        */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par ... pointer to parameter for building generator object         */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to (empty) generator object with default settings          */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return NULL                                                        */
+     /*----------------------------------------------------------------------*/
+{
+  struct unur_gen *gen;
+
+  /* check arguments */
+  CHECK_NULL(par,NULL);  COOKIE_CHECK(par,CK_SSR_PAR,NULL);
+
+  /* create new generic generator object */
+  gen = _unur_generic_create( par, sizeof(struct unur_ssr_gen) );
+
+  /* magic cookies */
+  COOKIE_SET(gen,CK_SSR_GEN);
+
+  /* set generator identifier */
+  gen->genid = _unur_set_genid(GENTYPE);
+
+  /* routines for sampling and destroying generator */
+  SAMPLE = (par->variant & SSR_VARFLAG_VERIFY) ? _unur_ssr_sample_check : _unur_ssr_sample;
+  gen->destroy = _unur_ssr_free;
+  gen->clone = _unur_ssr_clone;
+
+  /* copy some parameters into generator object */
+  GEN->Fmode = PAR->Fmode;            /* CDF at mode                           */
+  GEN->fm    = PAR->fm;               /* PDF at mode                           */
+  GEN->um    = PAR->um;               /* square root of PDF at mode            */
+
+  /* initialize parameters */
+
+  /* return pointer to (almost empty) generator object */
+  return gen;
+
+} /* end of _unur_ssr_create() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -757,65 +836,65 @@ _unur_ssr_hat( struct unur_gen *gen )
       _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"PDF(mode) overflow");
       return UNUR_ERR_PAR_SET;
     }
-    GEN.fm = fm;        /* PDF at mode */
-    GEN.um = sqrt(fm);  /* square root of PDF at mode */
+    GEN->fm = fm;        /* PDF at mode */
+    GEN->um = sqrt(fm);  /* square root of PDF at mode */
   }
 
   /* compute parameters */
-  vm = DISTR.area / GEN.um;
+  vm = DISTR.area / GEN->um;
 
   if (gen->set & SSR_SET_CDFMODE) {
     /* cdf at mode known */
-    GEN.vl = -GEN.Fmode * vm;
-    GEN.vr = vm + GEN.vl;
-    GEN.xl = GEN.vl/GEN.um;
-    GEN.xr = GEN.vr/GEN.um;
-    GEN.A  = 2 * DISTR.area;
-    GEN.al = (DISTR.BD_LEFT  < DISTR.mode) ? (GEN.Fmode * DISTR.area) : 0.;
-    GEN.ar = (DISTR.BD_RIGHT > DISTR.mode) ? (GEN.al + DISTR.area) : GEN.A;
+    GEN->vl = -GEN->Fmode * vm;
+    GEN->vr = vm + GEN->vl;
+    GEN->xl = GEN->vl/GEN->um;
+    GEN->xr = GEN->vr/GEN->um;
+    GEN->A  = 2 * DISTR.area;
+    GEN->al = (DISTR.BD_LEFT  < DISTR.mode) ? (GEN->Fmode * DISTR.area) : 0.;
+    GEN->ar = (DISTR.BD_RIGHT > DISTR.mode) ? (GEN->al + DISTR.area) : GEN->A;
     /* Compute areas below hat in left tails and inside domain of PDF */
     if ( (DISTR.BD_LEFT > -INFINITY) &&
 	 (DISTR.BD_LEFT < DISTR.mode) )
-      GEN.Aleft = GEN.vl * GEN.vl / (DISTR.mode - DISTR.BD_LEFT);
+      GEN->Aleft = GEN->vl * GEN->vl / (DISTR.mode - DISTR.BD_LEFT);
     else
-      GEN.Aleft = 0.;
+      GEN->Aleft = 0.;
     
     if ( (DISTR.BD_RIGHT < INFINITY) &&
 	 (DISTR.BD_RIGHT > DISTR.mode) )
-      GEN.Ain = GEN.A - GEN.vr * GEN.vr / (DISTR.BD_RIGHT - DISTR.mode);
+      GEN->Ain = GEN->A - GEN->vr * GEN->vr / (DISTR.BD_RIGHT - DISTR.mode);
     else
-      GEN.Ain = GEN.A;
-    GEN.Ain -= GEN.Aleft;
+      GEN->Ain = GEN->A;
+    GEN->Ain -= GEN->Aleft;
   }
 
   else {
     /* cdf at mode unknown */
-    GEN.vl = -vm;
-    GEN.vr = vm;
-    GEN.xl = GEN.vl/GEN.um;
-    GEN.xr = GEN.vr/GEN.um;
-    GEN.A  = 4 * DISTR.area;
-    GEN.al = DISTR.area;
-    GEN.ar = 3 * DISTR.area;
+    GEN->vl = -vm;
+    GEN->vr = vm;
+    GEN->xl = GEN->vl/GEN->um;
+    GEN->xr = GEN->vr/GEN->um;
+    GEN->A  = 4 * DISTR.area;
+    GEN->al = DISTR.area;
+    GEN->ar = 3 * DISTR.area;
     /* Compute areas below hat in left tails and inside domain of PDF */
     if (DISTR.BD_LEFT > -INFINITY) {
       left = DISTR.BD_LEFT - DISTR.mode;
-      GEN.Aleft = (GEN.xl > left) 
-	? (GEN.vl * GEN.vl / (-left)) 
-	: (GEN.al + GEN.fm * (left - GEN.xl));
+      GEN->Aleft = (GEN->xl > left) 
+	? (GEN->vl * GEN->vl / (-left)) 
+	: (GEN->al + GEN->fm * (left - GEN->xl));
     }
     else 
-      GEN.Aleft = 0.;
+      GEN->Aleft = 0.;
     
     if (DISTR.BD_RIGHT < INFINITY) {
       right = DISTR.BD_RIGHT - DISTR.mode;
-      GEN.Ain = (GEN.xr < right) 
-	? (GEN.A - GEN.vr * GEN.vr / right)
-	: (GEN.ar - GEN.fm * (GEN.xr - right));
+      GEN->Ain = (GEN->xr < right) 
+	? (GEN->A - GEN->vr * GEN->vr / right)
+	: (GEN->ar - GEN->fm * (GEN->xr - right));
     }
     else 
-      GEN.Ain = GEN.A;
-    GEN.Ain -= GEN.Aleft;
+      GEN->Ain = GEN->A;
+    GEN->Ain -= GEN->Aleft;
   }
 
 #ifdef UNUR_ENABLE_LOGGING
@@ -824,83 +903,6 @@ _unur_ssr_hat( struct unur_gen *gen )
 
   return UNUR_SUCCESS;
 } /* end of _unur_ssr_hat() */
-
-/*---------------------------------------------------------------------------*/
-
-static struct unur_gen *
-_unur_ssr_create( struct unur_par *par )
-     /*----------------------------------------------------------------------*/
-     /* allocate memory for generator                                        */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   par ... pointer to parameter for building generator object         */
-     /*                                                                      */
-     /* return:                                                              */
-     /*   pointer to (empty) generator object with default settings          */
-     /*                                                                      */
-     /* error:                                                               */
-     /*   return NULL                                                        */
-     /*----------------------------------------------------------------------*/
-{
-  struct unur_gen *gen;
-
-  /* check arguments */
-  CHECK_NULL(par,NULL);  COOKIE_CHECK(par,CK_SSR_PAR,NULL);
-
-  /* create new generic generator object */
-  gen = _unur_generic_create( par );
-
-  /* magic cookies */
-  COOKIE_SET(gen,CK_SSR_GEN);
-
-  /* check for required data: mode */
-  if (!(gen->distr->set & UNUR_DISTR_SET_MODE)) {
-    _unur_warning(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"mode: try finding it (numerically)"); 
-    if (unur_distr_cont_upd_mode(gen->distr)!=UNUR_SUCCESS) {
-      _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"mode"); 
-      _unur_distr_free(gen->distr); free(gen);
-      return NULL; 
-    }
-  }
-
-  /* check for required data: area */
-  if (!(gen->distr->set & UNUR_DISTR_SET_PDFAREA))
-    if (unur_distr_cont_upd_pdfarea(gen->distr)!=UNUR_SUCCESS) {
-      _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"area below PDF");
-      _unur_distr_free(gen->distr); free(gen);
-      return NULL; 
-    }
-
-  /* set generator identifier */
-  gen->genid = _unur_set_genid(GENTYPE);
-
-  /* routines for sampling and destroying generator */
-  SAMPLE = (par->variant & SSR_VARFLAG_VERIFY) ? _unur_ssr_sample_check : _unur_ssr_sample;
-  gen->destroy = _unur_ssr_free;
-  gen->clone = _unur_ssr_clone;
-
-  /* mode must be in domain */
-  if ( (DISTR.mode < DISTR.BD_LEFT) ||
-       (DISTR.mode > DISTR.BD_RIGHT) ) {
-    /* there is something wrong.
-       assume: user has change domain without changing mode.
-       but then, she probably has not updated area and is to large */
-    _unur_warning(GENTYPE,UNUR_ERR_GEN_DATA,"area and/or CDF at mode");
-    DISTR.mode = max(DISTR.mode,DISTR.BD_LEFT);
-    DISTR.mode = min(DISTR.mode,DISTR.BD_RIGHT);
-  }
-
-  /* copy some parameters into generator object */
-  GEN.Fmode = PAR.Fmode;            /* CDF at mode                           */
-  GEN.fm    = PAR.fm;               /* PDF at mode                           */
-  GEN.um    = PAR.um;               /* square root of PDF at mode            */
-
-  /* initialize parameters */
-
-  /* return pointer to (almost empty) generator object */
-  return gen;
-
-} /* end of _unur_ssr_create() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -952,7 +954,7 @@ _unur_ssr_clone( const struct unur_gen *gen )
      /*   return NULL                                                        */
      /*----------------------------------------------------------------------*/
 { 
-#define CLONE clone->data.ssr
+#define CLONE  ((struct unur_ssr_gen*)clone->datap)
 
   struct unur_gen *clone;
 
@@ -991,20 +993,20 @@ _unur_ssr_sample( struct unur_gen *gen )
 
   while (1) {
     /* uniform ~U(0,1) */
-    while ( (U = GEN.Aleft + _unur_call_urng(gen->urng) * GEN.Ain) == 0. );
+    while ( (U = GEN->Aleft + _unur_call_urng(gen->urng) * GEN->Ain) == 0. );
 
-    if (U < GEN.al) {        /* first part */
-      X = - GEN.vl * GEN.vl / U;
-      y = (U / GEN.vl);
+    if (U < GEN->al) {        /* first part */
+      X = - GEN->vl * GEN->vl / U;
+      y = (U / GEN->vl);
       y = y*y;
     }
-    else if (U <= GEN.ar) {  /* second part */
-      X = GEN.xl + (U-GEN.al)/GEN.fm;
-      y = GEN.fm;
+    else if (U <= GEN->ar) {  /* second part */
+      X = GEN->xl + (U-GEN->al)/GEN->fm;
+      y = GEN->fm;
     }
     else {                   /* third part */
-      X = GEN.vr * GEN.vr / (GEN.um * GEN.vr - (U-GEN.ar));
-      y = (GEN.A - U) / GEN.vr;
+      X = GEN->vr * GEN->vr / (GEN->um * GEN->vr - (U-GEN->ar));
+      y = (GEN->A - U) / GEN->vr;
       y = y*y;
     }
 
@@ -1015,7 +1017,7 @@ _unur_ssr_sample( struct unur_gen *gen )
     /* evaluate squeeze */
     if (gen->variant & SSR_VARFLAG_SQUEEZE) {
       xx = 2 * X;
-      if ( xx >= GEN.xl && xx <= GEN.xr && y <= GEN.fm/4. )
+      if ( xx >= GEN->xl && xx <= GEN->xr && y <= GEN->fm/4. )
 	return (X + DISTR.mode);
     }
 
@@ -1053,20 +1055,20 @@ _unur_ssr_sample_check( struct unur_gen *gen )
 
   while (1) {
     /* uniform ~U(0,1) */
-    while ( (U = GEN.Aleft + _unur_call_urng(gen->urng) * GEN.Ain) == 0. );
+    while ( (U = GEN->Aleft + _unur_call_urng(gen->urng) * GEN->Ain) == 0. );
 
-    if (U < GEN.al) {        /* first part */
-      X = - GEN.vl * GEN.vl / U;
-      y = (U / GEN.vl);
+    if (U < GEN->al) {        /* first part */
+      X = - GEN->vl * GEN->vl / U;
+      y = (U / GEN->vl);
       y = y*y;
     }
-    else if (U <= GEN.ar) {  /* second part */
-      X = GEN.xl + (U-GEN.al)/GEN.fm;
-      y = GEN.fm;
+    else if (U <= GEN->ar) {  /* second part */
+      X = GEN->xl + (U-GEN->al)/GEN->fm;
+      y = GEN->fm;
     }
     else {                   /* third part */
-      X = GEN.vr * GEN.vr / (GEN.um * GEN.vr - (U-GEN.ar));
-      y = (GEN.A - U) / GEN.vr;
+      X = GEN->vr * GEN->vr / (GEN->um * GEN->vr - (U-GEN->ar));
+      y = (GEN->A - U) / GEN->vr;
       y = y*y;
     }
 
@@ -1084,12 +1086,12 @@ _unur_ssr_sample_check( struct unur_gen *gen )
     /* evaluate and check squeeze */
     if (gen->variant & SSR_VARFLAG_SQUEEZE) {
       xx = 2 * X;
-      if ( xx >= GEN.xl && xx <= GEN.xr ) {
+      if ( xx >= GEN->xl && xx <= GEN->xr ) {
 	/* check squeeze */
-	if ( fx < (1.-UNUR_EPSILON) * GEN.fm/4. )
+	if ( fx < (1.-UNUR_EPSILON) * GEN->fm/4. )
 	  _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"PDF(x) < squeeze(x)");
 	/* evaluate squeeze */
-	if ( y <= GEN.fm/4. )
+	if ( y <= GEN->fm/4. )
 	  return (X + DISTR.mode);
       }
     }
@@ -1182,7 +1184,7 @@ _unur_ssr_debug_init( const struct unur_gen *gen, int is_reinit )
   fprintf(log,"()\n%s:\n",gen->genid);
 
   if (gen->set & SSR_SET_CDFMODE)
-    fprintf(log,"%s: CDF at mode = %g\n",gen->genid,GEN.Fmode);
+    fprintf(log,"%s: CDF at mode = %g\n",gen->genid,GEN->Fmode);
   else
     fprintf(log,"%s: CDF at mode unknown\n",gen->genid);
 
@@ -1197,21 +1199,21 @@ _unur_ssr_debug_init( const struct unur_gen *gen, int is_reinit )
   fprintf(log,"%s:\n",gen->genid);
 
   fprintf(log,"%s: parts:\n",gen->genid);
-  fprintf(log,"%s:\txl = %g\n",gen->genid,GEN.xl);
-  fprintf(log,"%s:\txr = %g\n",gen->genid,GEN.xr);
+  fprintf(log,"%s:\txl = %g\n",gen->genid,GEN->xl);
+  fprintf(log,"%s:\txr = %g\n",gen->genid,GEN->xr);
   fprintf(log,"%s:\n",gen->genid);
 
   fprintf(log,"%s: PDF at mode:\n",gen->genid);
-  fprintf(log,"%s:\tfm = %g\n",gen->genid,GEN.fm);
-  fprintf(log,"%s:\tum = %g\n",gen->genid,GEN.um);
+  fprintf(log,"%s:\tfm = %g\n",gen->genid,GEN->fm);
+  fprintf(log,"%s:\tum = %g\n",gen->genid,GEN->um);
   fprintf(log,"%s:\n",gen->genid);
 
   fprintf(log,"%s: areas:\n",gen->genid);
-  fprintf(log,"%s:\t    al = %g\n",gen->genid,GEN.al);
-  fprintf(log,"%s:\t    ar = %g\n",gen->genid,GEN.ar);
-  fprintf(log,"%s:\t Aleft = %g\n",gen->genid,GEN.Aleft);
-  fprintf(log,"%s:\t   Ain = %g\n",gen->genid,GEN.Ain);
-  fprintf(log,"%s:\tAtotal = %g\n",gen->genid,GEN.A);
+  fprintf(log,"%s:\t    al = %g\n",gen->genid,GEN->al);
+  fprintf(log,"%s:\t    ar = %g\n",gen->genid,GEN->ar);
+  fprintf(log,"%s:\t Aleft = %g\n",gen->genid,GEN->Aleft);
+  fprintf(log,"%s:\t   Ain = %g\n",gen->genid,GEN->Ain);
+  fprintf(log,"%s:\tAtotal = %g\n",gen->genid,GEN->A);
 
   fprintf(log,"%s:\n",gen->genid);
 

@@ -116,6 +116,7 @@
 #include "unur_methods_source.h"
 #include "x_gen_source.h"
 #include "dau.h"
+#include "dau_struct.h"
 
 /*---------------------------------------------------------------------------*/
 /* Variants: none                                                            */
@@ -188,8 +189,8 @@ static void _unur_dau_debug_table( struct unur_gen *gen );
 
 #define DISTR_IN  distr->data.discr      /* data for distribution object      */
 
-#define PAR       par->data.dau         /* data for parameter object         */
-#define GEN       gen->data.dau         /* data for generator object         */
+#define PAR       ((struct unur_dau_par*)par->datap) /* data for parameter object */
+#define GEN       ((struct unur_dau_gen*)gen->datap) /* data for generator object */
 #define DISTR     gen->distr->data.discr /* data for distribution in generator object */
 
 #define SAMPLE    gen->sample.discr     /* pointer to sampling routine       */
@@ -240,14 +241,14 @@ unur_dau_new( const struct unur_distr *distr )
   }
 
   /* allocate structure */
-  par = _unur_xmalloc( sizeof(struct unur_par) );
+  par = _unur_par_new( sizeof(struct unur_dau_par) );
   COOKIE_SET(par,CK_DAU_PAR);
 
   /* copy input */
   par->distr     = distr;            /* pointer to distribution object       */
 
   /* set default values */
-  PAR.urn_factor = 1.;               /* use same size for table              */
+  PAR->urn_factor = 1.;               /* use same size for table              */
 
   par->method    = UNUR_METH_DAU;    /* method                               */
   par->variant   = 0u;               /* default variant (no other variants)  */
@@ -291,7 +292,7 @@ unur_dau_set_urnfactor( struct unur_par *par, double factor )
   }
 
   /* store date */
-  PAR.urn_factor = factor;
+  PAR->urn_factor = factor;
 
   /* changelog */
   par->set |= DAU_SET_URNFACTOR;
@@ -336,7 +337,7 @@ _unur_dau_init( struct unur_par *par )
   
   /* create a new empty generator object */
   gen = _unur_dau_create(par);
-  if (!gen) { free(par); return NULL; }
+  if (!gen) { _unur_par_free(par); return NULL; }
 
   /* probability vector */
   pv = DISTR.pv;
@@ -348,25 +349,25 @@ _unur_dau_init( struct unur_par *par )
     /* ... and check probability vector */
     if (pv[i] < 0.) {
       _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"probability < 0");
-      free(par); _unur_dau_free(gen);
+      _unur_par_free(par); _unur_dau_free(gen);
       return NULL;
     }
   }
 
   /* make list of poor and rich strips */
-  begin = _unur_xmalloc( (GEN.urn_size+2) * sizeof(int) );
+  begin = _unur_xmalloc( (GEN->urn_size+2) * sizeof(int) );
   poor = begin;                    /* poor strips are stored at the beginning ... */
-  rich = begin + GEN.urn_size + 1; /* ... rich strips at the end of the list      */
+  rich = begin + GEN->urn_size + 1; /* ... rich strips at the end of the list      */
 
-  /* copy probability vector; scale so that it sums to GEN.urn_size and */
+  /* copy probability vector; scale so that it sums to GEN->urn_size and */
   /* find rich and poor strips at start                                 */
-  ratio = GEN.urn_size / sum;
+  ratio = GEN->urn_size / sum;
   for( i=0; i<n_pv; i++ ) {
-    GEN.qx[i] = pv[i] * ratio;  /* probability rescaled        */
-    if (GEN.qx[i] >= 1.) {      /* rich strip                  */
+    GEN->qx[i] = pv[i] * ratio;  /* probability rescaled        */
+    if (GEN->qx[i] >= 1.) {      /* rich strip                  */
       *rich = i;                /* add to list ...             */
       --rich;                   /* and update pointer          */
-      GEN.jx[i] = i;            /* init donor (itself)           */
+      GEN->jx[i] = i;            /* init donor (itself)           */
     }
     else {                      /* poor strip                    */
       *poor = i;                /* add to list                 */
@@ -376,18 +377,18 @@ _unur_dau_init( struct unur_par *par )
   }
 
   /* all other (additional) strips own nothing yet */
-  for( ; i<GEN.urn_size; i++ ) {
-    GEN.qx[i] = 0.;
+  for( ; i<GEN->urn_size; i++ ) {
+    GEN->qx[i] = 0.;
     *poor = i; 
     ++poor;
   }
 
   /* there must be at least one rich strip */
-  if (rich == begin + GEN.urn_size + 1 ) {
+  if (rich == begin + GEN->urn_size + 1 ) {
     /* this must not happen:
        no rich strips found for Robin Hood algorithm. */
     _unur_error(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
-    _unur_dau_free(gen); free(par); free(begin);
+    _unur_dau_free(gen); _unur_par_free(par); free(begin);
     return NULL;
   }
   
@@ -396,17 +397,17 @@ _unur_dau_init( struct unur_par *par )
 
   /* now make the "squared histogram" with Robin Hood algorithm (Marsaglia) */
   while (poor != begin) {
-    if (rich > begin + GEN.urn_size + 1) {
+    if (rich > begin + GEN->urn_size + 1) {
       /* there might be something wrong; assume a neglectable round off error */
       break;
     }
 
     npoor = poor - 1;                       /* take next poor from stack */
-    GEN.jx[*npoor] = *rich;                 /* store the donor */
-    GEN.qx[*rich] -= 1. - GEN.qx[*npoor];   /* update rich */
+    GEN->jx[*npoor] = *rich;                 /* store the donor */
+    GEN->qx[*rich] -= 1. - GEN->qx[*npoor];   /* update rich */
 
     /* rich might has given too much, so it is poor then */
-    if (GEN.qx[*rich] < 1.) {
+    if (GEN->qx[*rich] < 1.) {
       *npoor = *rich;      /* exchange noveau-poor with former poor in list */
       ++rich;              /* remove it from list of rich */
     }
@@ -419,9 +420,9 @@ _unur_dau_init( struct unur_par *par )
     sum = 0.;                   /* we estimate the round off error            */
     while (poor != begin) {
       npoor = poor - 1;         /* take next poor from stack */
-      sum += 1. - GEN.qx[*npoor];
-      GEN.jx[*npoor] = *npoor;  /* mark donor as "not valid" */
-      GEN.qx[*npoor] = 1.;      /* set probability to 1 (we assume that it is very close to one) */
+      sum += 1. - GEN->qx[*npoor];
+      GEN->jx[*npoor] = *npoor;  /* mark donor as "not valid" */
+      GEN->qx[*npoor] = 1.;      /* set probability to 1 (we assume that it is very close to one) */
       --poor;                   /* remove from list */
     }
     if (fabs(sum) > UNUR_SQRT_DBL_EPSILON)
@@ -439,7 +440,7 @@ _unur_dau_init( struct unur_par *par )
 #endif
 
   /* free parameters */
-  free(par);
+  _unur_par_free(par);
   
   return gen;
 
@@ -468,7 +469,7 @@ _unur_dau_create( struct unur_par *par)
   CHECK_NULL(par,NULL);  COOKIE_CHECK(par,CK_DAU_PAR,NULL);
 
   /* create new generic generator object */
-  gen = _unur_generic_create( par );
+  gen = _unur_generic_create( par, sizeof(struct unur_dau_gen) );
 
   /* magic cookies */
   COOKIE_SET(gen,CK_DAU_GEN);
@@ -493,17 +494,17 @@ _unur_dau_create( struct unur_par *par)
   gen->clone = _unur_dau_clone;
 
   /* copy some parameters into generator object */
-  GEN.len = DISTR.n_pv;             /* length of probability vector          */
+  GEN->len = DISTR.n_pv;             /* length of probability vector          */
 
   /* size of table */
-  GEN.urn_size = (int)(GEN.len * PAR.urn_factor);
-  if (GEN.urn_size < GEN.len)
+  GEN->urn_size = (int)(GEN->len * PAR->urn_factor);
+  if (GEN->urn_size < GEN->len)
     /* do not use a table that is smaller then length of probability vector */
-    GEN.urn_size = GEN.len;
+    GEN->urn_size = GEN->len;
 
   /* allocate memory for the tables */
-  GEN.jx = _unur_xmalloc( GEN.urn_size * sizeof(int) );
-  GEN.qx = _unur_xmalloc( GEN.urn_size * sizeof(double) );
+  GEN->jx = _unur_xmalloc( GEN->urn_size * sizeof(int) );
+  GEN->qx = _unur_xmalloc( GEN->urn_size * sizeof(double) );
 
   /* return pointer to (almost empty) generator object */
   return gen;
@@ -527,7 +528,7 @@ _unur_dau_clone( const struct unur_gen *gen )
      /*   return NULL                                                        */
      /*----------------------------------------------------------------------*/
 { 
-#define CLONE clone->data.dau
+#define CLONE  ((struct unur_dau_gen*)clone->datap)
 
   struct unur_gen *clone;
 
@@ -538,10 +539,10 @@ _unur_dau_clone( const struct unur_gen *gen )
   clone = _unur_generic_clone( gen, GENTYPE );
 
   /* copy data for generator */
-  CLONE.jx = _unur_xmalloc( GEN.urn_size * sizeof(int) );
-  memcpy( CLONE.jx, GEN.jx, GEN.urn_size * sizeof(int) );
-  CLONE.qx = _unur_xmalloc( GEN.urn_size * sizeof(double) );
-  memcpy( CLONE.qx, GEN.qx, GEN.urn_size * sizeof(double) );
+  CLONE->jx = _unur_xmalloc( GEN->urn_size * sizeof(int) );
+  memcpy( CLONE->jx, GEN->jx, GEN->urn_size * sizeof(int) );
+  CLONE->qx = _unur_xmalloc( GEN->urn_size * sizeof(double) );
+  memcpy( CLONE->qx, GEN->qx, GEN->urn_size * sizeof(double) );
 
   return clone;
 
@@ -573,16 +574,16 @@ _unur_dau_sample( struct unur_gen *gen )
 
   /* sample from U(0,urn_size) */
   u = _unur_call_urng(gen->urng);
-  u *= GEN.urn_size;
+  u *= GEN->urn_size;
   iu = (int) u;
 
   /* immediate return ? */
-  if (iu >= GEN.len) return (GEN.jx[iu] + DISTR.domain[0]);
+  if (iu >= GEN->len) return (GEN->jx[iu] + DISTR.domain[0]);
 
   /* else choose number or its alias at random */
   u -= iu;   /* reuse of random number */
 
-  return (((u <= GEN.qx[iu]) ? iu : GEN.jx[iu] ) + DISTR.domain[0]);
+  return (((u <= GEN->qx[iu]) ? iu : GEN->jx[iu] ) + DISTR.domain[0]);
 
 } /* end of _unur_dau_sample() */
 
@@ -611,8 +612,8 @@ _unur_dau_free( struct unur_gen *gen )
   SAMPLE = NULL;   /* make sure to show up a programming error */
 
   /* free two auxiliary tables */
-  if (GEN.jx) free(GEN.jx);
-  if (GEN.qx) free(GEN.qx);
+  if (GEN->jx) free(GEN->jx);
+  if (GEN->qx) free(GEN->qx);
 
   /* free memory */
   _unur_generic_free(gen);
@@ -660,11 +661,11 @@ _unur_dau_debug_init( struct unur_par *par, struct unur_gen *gen )
   fprintf(log,"%s: sampling routine = _unur_dau_sample()\n",gen->genid);
   fprintf(log,"%s:\n",gen->genid);
 
-  fprintf(log,"%s: length of probability vector = %d\n",gen->genid,GEN.len);
+  fprintf(log,"%s: length of probability vector = %d\n",gen->genid,GEN->len);
   fprintf(log,"%s: size of urn table = %d   (rel. = %g%%",
-	  gen->genid,GEN.urn_size,100.*PAR.urn_factor);
+	  gen->genid,GEN->urn_size,100.*PAR->urn_factor);
   _unur_print_if_default(par,DAU_SET_URNFACTOR);
-  if (GEN.urn_size == GEN.len)
+  if (GEN->urn_size == GEN->len)
     fprintf(log,")   (--> alias method)\n");
   else
     fprintf(log,")   (--> alias-urn method)\n");
@@ -707,8 +708,8 @@ _unur_dau_debug_table( struct unur_gen *gen )
     fprintf(log," ");
   fprintf(log,"jx:     qx:\n");
     
-  for (i=0; i<GEN.urn_size; i++){
-    m = HIST_WIDTH * GEN.qx[i] + 0.5;
+  for (i=0; i<GEN->urn_size; i++){
+    m = HIST_WIDTH * GEN->qx[i] + 0.5;
     fprintf(log,"%s:[%4d]: ", gen->genid,i); 
 
     /* illustrate ratio donor/acceptor graphically */
@@ -718,8 +719,8 @@ _unur_dau_debug_table( struct unur_gen *gen )
       else                
 	fprintf(log,"-");
  
-    fprintf(log," %5d  ", GEN.jx[i]);           /* name donor */
-    fprintf(log,"  %6.3f%%\n", GEN.qx[i]*100);  /* cut point */
+    fprintf(log," %5d  ", GEN->jx[i]);           /* name donor */
+    fprintf(log,"  %6.3f%%\n", GEN->qx[i]*100);  /* cut point */
   }
 
 } /* end of _unur_dau_debug_table() */

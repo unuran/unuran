@@ -36,6 +36,7 @@
 
 #include <unur_source.h>
 #include <methods/cstd.h>   /* for the definition of `UNUR_STDGEN_INVERSION' */
+#include <methods/dstd_struct.h>
 #include <methods/x_gen_source.h>
 #include <distr/distr_source.h>
 #include <specfunct/unur_specfunct_source.h>
@@ -55,8 +56,8 @@ inline static int poisson_pprsc_init( struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 /* abbreviations */
 
-#define PAR       par->data.dstd        /* data for parameter object         */
-#define GEN       gen->data.dstd        /* data for generator object         */
+#define PAR       ((struct unur_dstd_par*)par->datap) /* data for parameter object */
+#define GEN       ((struct unur_dstd_gen*)gen->datap) /* data for generator object */
 #define DISTR     gen->distr->data.discr /* data for distribution in generator object */
 
 #define uniform()  _unur_call_urng(gen->urng) /* call for uniform prng       */
@@ -170,13 +171,13 @@ _unur_stdgen_poisson_init( struct unur_par *par, struct unur_gen *gen )
  *****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
-#define m    (GEN.gen_iparam[0])
-#define ll   (GEN.gen_iparam[1])
+#define m    (GEN->gen_iparam[0])
+#define ll   (GEN->gen_iparam[1])
 
-#define p0   (GEN.gen_param[0])
-#define q    (GEN.gen_param[1])
-#define p    (GEN.gen_param[2])
-#define pp   ((GEN.gen_param)+3)  /* array of length 36 */
+#define p0   (GEN->gen_param[0])
+#define q    (GEN->gen_param[1])
+#define p    (GEN->gen_param[2])
+#define pp   ((GEN->gen_param)+3)  /* array of length 36 */
 /*---------------------------------------------------------------------------*/
 
 inline static int
@@ -187,11 +188,11 @@ poisson_pdtabl_init( struct unur_gen *gen )
   CHECK_NULL(gen,UNUR_ERR_NULL);
   COOKIE_CHECK(gen,CK_DSTD_GEN,UNUR_ERR_COOKIE);
 
-  if (GEN.gen_param == NULL) {
-    GEN.n_gen_param = MAX_gen_params;
-    GEN.gen_param = _unur_xmalloc(GEN.n_gen_param * sizeof(double));
-    GEN.n_gen_iparam = MAX_gen_iparams;
-    GEN.gen_iparam = _unur_xmalloc(GEN.n_gen_param * sizeof(int));
+  if (GEN->gen_param == NULL) {
+    GEN->n_gen_param = MAX_gen_params;
+    GEN->gen_param = _unur_xmalloc(GEN->n_gen_param * sizeof(double));
+    GEN->n_gen_iparam = MAX_gen_iparams;
+    GEN->gen_iparam = _unur_xmalloc(GEN->n_gen_param * sizeof(int));
   }
 
   /* -X- setup code -X- */
@@ -257,18 +258,18 @@ _unur_stdgen_sample_poisson_pdtabl( struct unur_gen *gen )
 #undef pp
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-#define l     (GEN.gen_iparam[0])
+#define l     (GEN->gen_iparam[0])
 
-#define s     (GEN.gen_param[0])
-#define d     (GEN.gen_param[1])
-#define omega (GEN.gen_param[2])
-#define b1    (GEN.gen_param[3])
-#define b2    (GEN.gen_param[4])
-#define c     (GEN.gen_param[5])
-#define c0    (GEN.gen_param[6])
-#define c1    (GEN.gen_param[7])
-#define c2    (GEN.gen_param[8])
-#define c3    (GEN.gen_param[9])
+#define s     (GEN->gen_param[0])
+#define d     (GEN->gen_param[1])
+#define omega (GEN->gen_param[2])
+#define b1    (GEN->gen_param[3])
+#define b2    (GEN->gen_param[4])
+#define c     (GEN->gen_param[5])
+#define c0    (GEN->gen_param[6])
+#define c1    (GEN->gen_param[7])
+#define c2    (GEN->gen_param[8])
+#define c3    (GEN->gen_param[9])
 
 #define NORMAL  gen->gen_aux    /* pointer to normal variate generator        */
 /*---------------------------------------------------------------------------*/
@@ -281,11 +282,11 @@ poisson_pdac_init( struct unur_gen *gen )
   CHECK_NULL(gen,UNUR_ERR_NULL);
   COOKIE_CHECK(gen,CK_DSTD_GEN,UNUR_ERR_COOKIE);
 
-  if (GEN.gen_param == NULL) {
-    GEN.n_gen_param = MAX_gen_params;
-    GEN.gen_param = _unur_xmalloc(GEN.n_gen_param * sizeof(double));
-    GEN.n_gen_iparam = MAX_gen_iparams;
-    GEN.gen_iparam = _unur_xmalloc(GEN.n_gen_param * sizeof(int));
+  if (GEN->gen_param == NULL) {
+    GEN->n_gen_param = MAX_gen_params;
+    GEN->gen_param = _unur_xmalloc(GEN->n_gen_param * sizeof(double));
+    GEN->n_gen_iparam = MAX_gen_iparams;
+    GEN->gen_iparam = _unur_xmalloc(GEN->n_gen_param * sizeof(int));
   }
 
   /* -X- setup code -X- */
@@ -517,32 +518,32 @@ inline static double f(int k, double l_nu, double c_pm)
 }
 
 /*---------------------------------------------------------------------------*/
-#define m       (GEN.gen_iparam[0])
-#define k2      (GEN.gen_iparam[1])
-#define k4      (GEN.gen_iparam[2])
-#define k1      (GEN.gen_iparam[3])
-#define k5      (GEN.gen_iparam[4])
+#define m       (GEN->gen_iparam[0])
+#define k2      (GEN->gen_iparam[1])
+#define k4      (GEN->gen_iparam[2])
+#define k1      (GEN->gen_iparam[3])
+#define k5      (GEN->gen_iparam[4])
 
-#define dl      (GEN.gen_param[0])
-#define dr      (GEN.gen_param[1])
-#define r1      (GEN.gen_param[2])
-#define r2      (GEN.gen_param[3])
-#define r4      (GEN.gen_param[4])
-#define r5      (GEN.gen_param[5])
-#define ll      (GEN.gen_param[6])
-#define lr      (GEN.gen_param[7])
-#define l_theta (GEN.gen_param[8])
-#define c_pm    (GEN.gen_param[9])
-#define f2      (GEN.gen_param[10])
-#define f4      (GEN.gen_param[11])
-#define f1      (GEN.gen_param[12])
-#define f5      (GEN.gen_param[13])
-#define p1      (GEN.gen_param[14])
-#define p2      (GEN.gen_param[15])
-#define p3      (GEN.gen_param[16])
-#define p4      (GEN.gen_param[17])
-#define p5      (GEN.gen_param[18])
-#define p6      (GEN.gen_param[19])
+#define dl      (GEN->gen_param[0])
+#define dr      (GEN->gen_param[1])
+#define r1      (GEN->gen_param[2])
+#define r2      (GEN->gen_param[3])
+#define r4      (GEN->gen_param[4])
+#define r5      (GEN->gen_param[5])
+#define ll      (GEN->gen_param[6])
+#define lr      (GEN->gen_param[7])
+#define l_theta (GEN->gen_param[8])
+#define c_pm    (GEN->gen_param[9])
+#define f2      (GEN->gen_param[10])
+#define f4      (GEN->gen_param[11])
+#define f1      (GEN->gen_param[12])
+#define f5      (GEN->gen_param[13])
+#define p1      (GEN->gen_param[14])
+#define p2      (GEN->gen_param[15])
+#define p3      (GEN->gen_param[16])
+#define p4      (GEN->gen_param[17])
+#define p5      (GEN->gen_param[18])
+#define p6      (GEN->gen_param[19])
 /*---------------------------------------------------------------------------*/
 
 inline static int
@@ -555,11 +556,11 @@ poisson_pprsc_init( struct unur_gen *gen )
   CHECK_NULL(gen,UNUR_ERR_NULL);
   COOKIE_CHECK(gen,CK_DSTD_GEN,UNUR_ERR_COOKIE);
 
-  if (GEN.gen_param == NULL) {
-    GEN.n_gen_param = MAX_gen_params;
-    GEN.gen_param = _unur_xmalloc(GEN.n_gen_param * sizeof(double));
-    GEN.n_gen_iparam = MAX_gen_iparams;
-    GEN.gen_iparam = _unur_xmalloc(GEN.n_gen_param * sizeof(int));
+  if (GEN->gen_param == NULL) {
+    GEN->n_gen_param = MAX_gen_params;
+    GEN->gen_param = _unur_xmalloc(GEN->n_gen_param * sizeof(double));
+    GEN->n_gen_iparam = MAX_gen_iparams;
+    GEN->gen_iparam = _unur_xmalloc(GEN->n_gen_param * sizeof(int));
   }
 
   /* -X- setup code -X- */

@@ -123,7 +123,6 @@
 
 #define UNUR_ENABLE_CHECKNULL 1
 
-
 /*---------------------------------------------------------------------------*/
 /* Debugging tools.                                                          */
 /* (for development only. there is no need to set these flags unless         */

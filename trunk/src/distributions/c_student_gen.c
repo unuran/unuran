@@ -36,6 +36,7 @@
 
 #include <unur_source.h>
 #include <methods/cstd.h>
+#include <methods/cstd_struct.h>
 #include <specfunct/unur_specfunct_source.h>
 #include "unur_distributions_source.h"
 
@@ -47,8 +48,8 @@ inline static int student_trouo_init( struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 /* abbreviations */
 
-#define PAR       par->data.cstd        /* data for parameter object         */
-#define GEN       gen->data.cstd        /* data for generator object         */
+#define PAR       ((struct unur_cstd_par*)par->datap) /* data for parameter object */
+#define GEN       ((struct unur_cstd_gen*)gen->datap) /* data for generator object */
 #define DISTR     gen->distr->data.cont /* data for distribution in generator object */
 
 #define MAX_gen_params  6      /* maximal number of parameters for generator */
@@ -182,12 +183,12 @@ _unur_stdgen_sample_student_tpol( struct unur_gen *gen )
  *****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
-#define c       (GEN.gen_param[0])
-#define e       (GEN.gen_param[1])
-#define p       (GEN.gen_param[2])
-#define q       (GEN.gen_param[3])
-#define r       (GEN.gen_param[4])
-#define vm      (GEN.gen_param[5])
+#define c       (GEN->gen_param[0])
+#define e       (GEN->gen_param[1])
+#define p       (GEN->gen_param[2])
+#define q       (GEN->gen_param[3])
+#define r       (GEN->gen_param[4])
+#define vm      (GEN->gen_param[5])
 /*---------------------------------------------------------------------------*/
 
 inline static int
@@ -197,9 +198,9 @@ student_trouo_init( struct unur_gen *gen )
   CHECK_NULL(gen,UNUR_ERR_NULL);
   COOKIE_CHECK(gen,CK_CSTD_GEN,UNUR_ERR_COOKIE);
 
-  if (GEN.gen_param == NULL) {
-    GEN.n_gen_param = MAX_gen_params;
-    GEN.gen_param = _unur_xmalloc(GEN.n_gen_param * sizeof(double));
+  if (GEN->gen_param == NULL) {
+    GEN->n_gen_param = MAX_gen_params;
+    GEN->gen_param = _unur_xmalloc(GEN->n_gen_param * sizeof(double));
   }
 
   /* -X- setup code -X- */

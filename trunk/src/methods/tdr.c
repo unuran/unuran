@@ -337,6 +337,7 @@
 #include "unur_methods_source.h"
 #include "x_gen_source.h"
 #include "tdr.h"
+#include "tdr_struct.h"
 #include "tdr_source.h"
 
 /*---------------------------------------------------------------------------*/

@@ -36,6 +36,7 @@
 
 #include <unur_source.h>
 #include <methods/cstd.h>   /* for the definition of `UNUR_STDGEN_INVERSION' */
+#include <methods/dstd_struct.h>
 #include <specfunct/unur_specfunct_source.h>
 #include "unur_distributions_source.h"
 
@@ -45,8 +46,8 @@
 /*---------------------------------------------------------------------------*/
 /* abbreviations */
 
-#define PAR       par->data.dstd        /* data for parameter object         */
-#define GEN       gen->data.dstd        /* data for generator object         */
+#define PAR       ((struct unur_dstd_par*)par->datap) /* data for parameter object */
+#define GEN       ((struct unur_dstd_gen*)gen->datap) /* data for generator object */
 #define DISTR     gen->distr->data.discr /* data for distribution in generator object */
 
 #define uniform()  _unur_call_urng(gen->urng) /* call for uniform prng       */
@@ -165,22 +166,22 @@ _unur_stdgen_hypergeometric_init( struct unur_par *par, struct unur_gen *gen )
 #define flogfak(k) (_unur_sf_ln_factorial(k))
 #define delta(k) (flogfak(k)+flogfak(Mc-k)+flogfak(nc-k)+flogfak(NMn+k))
 
-#define b       (GEN.gen_iparam[0])
-#define m       (GEN.gen_iparam[1])
-#define NMn     (GEN.gen_iparam[2])
-#define Mc      (GEN.gen_iparam[3])
-#define nc      (GEN.gen_iparam[4])
-#define N_half  (GEN.gen_iparam[5])
+#define b       (GEN->gen_iparam[0])
+#define m       (GEN->gen_iparam[1])
+#define NMn     (GEN->gen_iparam[2])
+#define Mc      (GEN->gen_iparam[3])
+#define nc      (GEN->gen_iparam[4])
+#define N_half  (GEN->gen_iparam[5])
 
 
-#define NMnp    (GEN.gen_param[0])
-#define Np      (GEN.gen_param[1])
-#define Mp      (GEN.gen_param[2])
-#define np      (GEN.gen_param[3])
-#define g       (GEN.gen_param[4])
-#define a       (GEN.gen_param[5])
-#define h       (GEN.gen_param[6])
-#define p0      (GEN.gen_param[7])
+#define NMnp    (GEN->gen_param[0])
+#define Np      (GEN->gen_param[1])
+#define Mp      (GEN->gen_param[2])
+#define np      (GEN->gen_param[3])
+#define g       (GEN->gen_param[4])
+#define a       (GEN->gen_param[5])
+#define h       (GEN->gen_param[6])
+#define p0      (GEN->gen_param[7])
 
 /*---------------------------------------------------------------------------*/
 
@@ -194,11 +195,11 @@ hypergeometric_hruec_init( struct unur_gen *gen )
   CHECK_NULL(gen,UNUR_ERR_NULL);
   COOKIE_CHECK(gen,CK_DSTD_GEN,UNUR_ERR_COOKIE);
 
-  if (GEN.gen_param == NULL) {
-    GEN.n_gen_param = MAX_gen_params;
-    GEN.gen_param = _unur_xmalloc(GEN.n_gen_param * sizeof(double));
-    GEN.n_gen_iparam = MAX_gen_iparams;
-    GEN.gen_iparam = _unur_xmalloc(GEN.n_gen_param * sizeof(int));
+  if (GEN->gen_param == NULL) {
+    GEN->n_gen_param = MAX_gen_params;
+    GEN->gen_param = _unur_xmalloc(GEN->n_gen_param * sizeof(double));
+    GEN->n_gen_iparam = MAX_gen_iparams;
+    GEN->gen_iparam = _unur_xmalloc(GEN->n_gen_param * sizeof(int));
   }
 
   /* -X- setup code -X- */

@@ -128,8 +128,9 @@
 #include "unur_methods_source.h"
 #include "x_gen.h"
 #include "x_gen_source.h"
-#include "vempk.h"
 #include "vmt.h"
+#include "vempk.h"
+#include "vempk_struct.h"
 
 /*---------------------------------------------------------------------------*/
 /* Variants:                                                                 */
@@ -208,8 +209,8 @@ static void _unur_vempk_debug_init( const struct unur_par *par, const struct unu
 
 #define DISTR_IN  distr->data.cvemp      /* data for distribution object      */
 
-#define PAR       par->data.vempk        /* data for parameter object         */
-#define GEN       gen->data.vempk        /* data for generator object         */
+#define PAR       ((struct unur_vempk_par*)par->datap) /* data for parameter object */
+#define GEN       ((struct unur_vempk_gen*)gen->datap) /* data for generator object */
 #define DISTR     gen->distr->data.cvemp /* data for distribution in generator object */
 
 #define SAMPLE    gen->sample.cvec      /* pointer to sampling routine       */     
@@ -256,14 +257,14 @@ unur_vempk_new( const struct unur_distr *distr )
     _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"size of observed sample"); return NULL; }
 
   /* allocate structure */
-  par = _unur_xmalloc(sizeof(struct unur_par));
+  par = _unur_par_new( sizeof(struct unur_vempk_par) );
   COOKIE_SET(par,CK_VEMPK_PAR);
 
   /* copy input */
   par->distr    = distr;         /* pointer to distribution object           */
 
   /* set default values */
-  PAR.smoothing = 1.;            /* determines how "smooth" the estimated density will be */
+  PAR->smoothing = 1.;            /* determines how "smooth" the estimated density will be */
 
   par->method   = UNUR_METH_VEMPK; /* method                                 */
   par->variant  = 0u;              /* default variant                        */
@@ -308,7 +309,7 @@ unur_vempk_set_smoothing( struct unur_par *par, double smoothing )
   }
 
   /* store date */
-  PAR.smoothing = smoothing;
+  PAR->smoothing = smoothing;
 
   /* changelog */
   par->set |= VEMPK_SET_SMOOTHING;
@@ -346,13 +347,13 @@ unur_vempk_chg_smoothing( struct unur_gen *gen, double smoothing )
   }
 
   /* store smoothing factor */
-  GEN.smoothing = smoothing;
+  GEN->smoothing = smoothing;
 
   /* recompute band width */
-  GEN.hact = GEN.hopt * GEN.smoothing;
+  GEN->hact = GEN->hopt * GEN->smoothing;
 
   /* recompute constant for variance corrected version */
-  GEN.corfac = 1./sqrt( 1. + GEN.hact * GEN.hact);
+  GEN->corfac = 1./sqrt( 1. + GEN->hact * GEN->hact);
 
   /* changelog */
   gen->set |= VEMPK_SET_SMOOTHING;
@@ -460,46 +461,46 @@ _unur_vempk_init( struct unur_par *par )
 
   /* create a new empty generator object */
   gen = _unur_vempk_create(par);
-  if (!gen) { free(par); return NULL; }
+  if (!gen) { _unur_par_free(par); return NULL; }
 
   /* compute mean vector and covariance matrix of sample */
-  GEN.xbar = _unur_xmalloc( GEN.dim * sizeof(double) );
-  S  = _unur_xmalloc( GEN.dim * GEN.dim * sizeof(double) );
-  compute_mean_covar( DISTR.sample, DISTR.n_sample, GEN.dim, GEN.xbar, S );
+  GEN->xbar = _unur_xmalloc( GEN->dim * sizeof(double) );
+  S  = _unur_xmalloc( GEN->dim * GEN->dim * sizeof(double) );
+  compute_mean_covar( DISTR.sample, DISTR.n_sample, GEN->dim, GEN->xbar, S );
   
   /* make a distribution object for multinormal distribution */
-  kernel_distr = unur_distr_multinormal( GEN.dim, NULL, S );
+  kernel_distr = unur_distr_multinormal( GEN->dim, NULL, S );
 
   /* create kernel generator */
-  GEN.kerngen = unur_init( unur_vmt_new( kernel_distr ) );
-  if (GEN.kerngen==NULL) {
+  GEN->kerngen = unur_init( unur_vmt_new( kernel_distr ) );
+  if (GEN->kerngen==NULL) {
     _unur_error(GENTYPE,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
     free (par); free (S); _unur_vempk_free(gen);
     return NULL;
   }
 
   /* set uniform random number generator */
-  GEN.kerngen->urng = par->urng;
+  GEN->kerngen->urng = par->urng;
 
   /* copy debugging flags */
-  GEN.kerngen->debug = par->debug;
+  GEN->kerngen->debug = par->debug;
 
   /* the kernel is an auxiliary generator for method VEMPK, of course */
-  gen->gen_aux = GEN.kerngen;
+  gen->gen_aux = GEN->kerngen;
   
   /* compute bandwith:
      Silverman (1986), p.86, formular 4.14 for normal kernel */
-  GEN.hopt = (exp((1./(GEN.dim+4.))*log(4./(GEN.dim+2.)))*
-	      exp(-1./(GEN.dim+4.) *log(GEN.n_observ)));
+  GEN->hopt = (exp((1./(GEN->dim+4.))*log(4./(GEN->dim+2.)))*
+	      exp(-1./(GEN->dim+4.) *log(GEN->n_observ)));
 
   /* hopt is optimal for the multi-normal distribution
      as it is oversmoothing especially multimodal distributions */
   
   /* compute used band width */
-  GEN.hact = GEN.hopt * GEN.smoothing;
+  GEN->hact = GEN->hopt * GEN->smoothing;
   
   /* compute constant for variance corrected version */
-  GEN.corfac = 1./sqrt(1. + GEN.hact * GEN.hact);
+  GEN->corfac = 1./sqrt(1. + GEN->hact * GEN->hact);
   
 #ifdef UNUR_ENABLE_LOGGING
   /* write info into log file */
@@ -507,7 +508,7 @@ _unur_vempk_init( struct unur_par *par )
 #endif
   
   /* free parameters */
-  free(par);
+  _unur_par_free(par);
 
   /* we do not need mu and S any more */
   free(S);
@@ -540,17 +541,17 @@ _unur_vempk_create( struct unur_par *par )
   CHECK_NULL(par,NULL);  COOKIE_CHECK(par,CK_VEMPK_PAR,NULL);
 
   /* create new generic generator object */
-  gen = _unur_generic_create( par );
+  gen = _unur_generic_create( par, sizeof(struct unur_vempk_gen) );
 
   /* magic cookies */
   COOKIE_SET(gen,CK_VEMPK_GEN);
 
   /* dimension of distribution */
-  GEN.dim = gen->distr->dim; 
+  GEN->dim = gen->distr->dim; 
 
   /* copy observed data into generator object */
-  GEN.observ   = DISTR.sample;          /* observations in distribution object */
-  GEN.n_observ = DISTR.n_sample;        /* sample size */
+  GEN->observ   = DISTR.sample;          /* observations in distribution object */
+  GEN->n_observ = DISTR.n_sample;        /* sample size */
 
   /* set generator identifier */
   gen->genid = _unur_set_genid(GENTYPE);
@@ -561,11 +562,11 @@ _unur_vempk_create( struct unur_par *par )
   gen->clone = _unur_vempk_clone;
 
   /* copy some parameters into generator object */
-  GEN.smoothing = PAR.smoothing;    /* smoothing factor                      */
+  GEN->smoothing = PAR->smoothing;    /* smoothing factor                      */
 
   /* initialize pointer */
-  GEN.kerngen = NULL;               /* generator for kernel distribution     */
-  GEN.xbar = NULL;                  /* mean vector of sample                 */
+  GEN->kerngen = NULL;               /* generator for kernel distribution     */
+  GEN->xbar = NULL;                  /* mean vector of sample                 */
 
   /* return pointer to (almost empty) generator object */
   return gen;
@@ -589,7 +590,7 @@ _unur_vempk_clone( const struct unur_gen *gen )
      /*   return NULL                                                        */
      /*----------------------------------------------------------------------*/
 { 
-#define CLONE clone->data.vempk
+#define CLONE  ((struct unur_vempk_gen*)clone->datap)
 
   struct unur_gen *clone;
 
@@ -600,16 +601,16 @@ _unur_vempk_clone( const struct unur_gen *gen )
   clone = _unur_generic_clone( gen, GENTYPE );
 
   /* copy additional data for generator object */
-  CLONE.observ = clone->distr->data.cvemp.sample;   /* observations in distribution object */
+  CLONE->observ = clone->distr->data.cvemp.sample;   /* observations in distribution object */
 
-  if (GEN.xbar) {
-    CLONE.xbar = _unur_xmalloc( GEN.dim * sizeof(double) );
-    memcpy( CLONE.xbar, GEN.xbar, GEN.dim * sizeof(double) );
+  if (GEN->xbar) {
+    CLONE->xbar = _unur_xmalloc( GEN->dim * sizeof(double) );
+    memcpy( CLONE->xbar, GEN->xbar, GEN->dim * sizeof(double) );
   }
 
   /* kernel generator is (also) stored as auxiliary generator */
   /* which has already been cloned by generic_clone.          */
-  CLONE.kerngen = clone->gen_aux;
+  CLONE->kerngen = clone->gen_aux;
 
   return clone;
 
@@ -628,7 +629,7 @@ _unur_vempk_sample_cvec( struct unur_gen *gen, double *result )
      /*   result ... random vector (result)                                  */
      /*----------------------------------------------------------------------*/
 { 
-  #define idx(a,b) (a*GEN.dim+b)
+  #define idx(a,b) (a*GEN->dim+b)
   double U;
   int j,k;
 
@@ -636,21 +637,21 @@ _unur_vempk_sample_cvec( struct unur_gen *gen, double *result )
   CHECK_NULL(gen,RETURN_VOID);  COOKIE_CHECK(gen,CK_VEMPK_GEN,RETURN_VOID);
 
   /* select uniformly one of the observations */
-  U = _unur_call_urng(gen->urng) * GEN.n_observ;
+  U = _unur_call_urng(gen->urng) * GEN->n_observ;
   j = (int) (U);
 
   /* sample from kernel distribution */
-  unur_sample_vec( GEN.kerngen, result );
+  unur_sample_vec( GEN->kerngen, result );
 
   if (gen->variant & VEMPK_VARFLAG_VARCOR)
     /* use variance correction */
-    for (k=0; k<GEN.dim; k++) 
-      result[k] = GEN.xbar[k] + (GEN.observ[idx(j,k)] - GEN.xbar[k] + result[k]*GEN.hact) * GEN.corfac;
+    for (k=0; k<GEN->dim; k++) 
+      result[k] = GEN->xbar[k] + (GEN->observ[idx(j,k)] - GEN->xbar[k] + result[k]*GEN->hact) * GEN->corfac;
   
   else
     /* no variance correction */
-    for (k=0; k<GEN.dim; k++) 
-      result[k] = GEN.hact * result[k] + GEN.observ[idx(j,k)];
+    for (k=0; k<GEN->dim; k++) 
+      result[k] = GEN->hact * result[k] + GEN->observ[idx(j,k)];
   
 #undef idx
 } /* end of _unur_vempk_sample() */
@@ -681,7 +682,7 @@ _unur_vempk_free( struct unur_gen *gen )
   SAMPLE = NULL;   /* make sure to show up a programming error */
 
   /* free memory */
-  if (GEN.xbar)   free( GEN.xbar );
+  if (GEN->xbar)   free( GEN->xbar );
 
   _unur_generic_free(gen);
 
@@ -795,29 +796,29 @@ _unur_vempk_debug_init( const struct unur_par *par, const struct unur_gen *gen )
   _unur_distr_cvemp_debug( gen->distr, gen->genid, (gen->debug & VEMPK_DEBUG_PRINTDATA));
 
   fprintf(log,"%s:\tmean vector =\n",gen->genid);
-  fprintf(log,"%s:\t   ( %g",gen->genid,GEN.xbar[0]);
-  for (i=1; i<GEN.dim; i++) 
-    fprintf(log,", %g",GEN.xbar[i]);
+  fprintf(log,"%s:\t   ( %g",gen->genid,GEN->xbar[0]);
+  for (i=1; i<GEN->dim; i++) 
+    fprintf(log,", %g",GEN->xbar[i]);
   fprintf(log,")\n%s:\n",gen->genid);
 
-  fprintf(log,"%s:\tcovariance matrix = [see %s]\n",gen->genid, GEN.kerngen->genid);
+  fprintf(log,"%s:\tcovariance matrix = [see %s]\n",gen->genid, GEN->kerngen->genid);
   fprintf(log,"%s:\n",gen->genid);
 
   fprintf(log,"%s: sampling routine = _unur_vempk_sample_cvec()\n",gen->genid);
   fprintf(log,"%s:\n",gen->genid);
 
-  fprintf(log,"%s: smoothing factor = %g",gen->genid, PAR.smoothing);
+  fprintf(log,"%s: smoothing factor = %g",gen->genid, PAR->smoothing);
   _unur_print_if_default(par,VEMPK_SET_SMOOTHING); fprintf(log,"\n");
   fprintf(log,"%s:\n",gen->genid);
 
 
-  fprintf(log,"%s: bandwith hopt = %g\n",gen->genid, GEN.hopt);
-  fprintf(log,"%s: (used)   hact = %g\n",gen->genid, GEN.hact);
+  fprintf(log,"%s: bandwith hopt = %g\n",gen->genid, GEN->hopt);
+  fprintf(log,"%s: (used)   hact = %g\n",gen->genid, GEN->hact);
   fprintf(log,"%s:\n",gen->genid);
 
   if (gen->variant & VEMPK_VARFLAG_VARCOR) {
     fprintf(log,"%s: use variance correction\n",gen->genid);
-    fprintf(log,"%s:\tcorrection factor = %g\n",gen->genid, GEN.corfac);
+    fprintf(log,"%s:\tcorrection factor = %g\n",gen->genid, GEN->corfac);
   }
   else
     fprintf(log,"%s: no variance correction\n",gen->genid);

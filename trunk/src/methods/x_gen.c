@@ -208,17 +208,84 @@ unur_gen_clone( const struct unur_gen *gen )
 
 /*****************************************************************************/
 /**                                                                         **/
-/**  Create and copy (clone) generator objects                              **/
+/**  Create and free parameter objects                                      **/
+/**                                                                         **/
+/*****************************************************************************/
+
+struct unur_par *
+_unur_par_new( size_t s)
+     /*----------------------------------------------------------------------*/
+     /* create new parameter object                                          */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   s ... size of data structure                                       */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return NULL                                                        */
+     /*----------------------------------------------------------------------*/
+{
+  struct unur_par *par = _unur_xmalloc( sizeof(struct unur_par) );
+  par->datap = _unur_xmalloc(s);
+  par->s_datap = s;
+  return par;
+} /* end of _unur_par_new() */
+
+/*---------------------------------------------------------------------------*/
+
+struct unur_par *
+_unur_par_clone( const struct unur_par *par )
+     /*----------------------------------------------------------------------*/
+     /* copy parameter object                                                */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par ... pointer to parameter object                                */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return NULL                                                        */
+     /*----------------------------------------------------------------------*/
+{
+  struct unur_par *clone;
+
+  _unur_check_NULL("clone", par, NULL);
+
+  clone = _unur_xmalloc( sizeof(struct unur_par) );
+  memcpy (clone, par, sizeof(struct unur_par));
+
+  clone->datap = _unur_xmalloc(par->s_datap);
+  memcpy (clone->datap, par->datap, par->s_datap);
+
+  return clone;
+} /* end of unur_par_free() */
+
+/*---------------------------------------------------------------------------*/
+
+void 
+unur_par_free( struct unur_par *par)
+     /*----------------------------------------------------------------------*/
+     /* free parameter object                                                */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par ... pointer to parameter object                                */
+     /*----------------------------------------------------------------------*/
+{
+  _unur_check_NULL("free", par, RETURN_VOID );
+  _unur_par_free(par);
+} /* end of unur_par_free() */
+
+/*****************************************************************************/
+/**                                                                         **/
+/**  Create, copy (clone) and free generator objects                        **/
 /**                                                                         **/
 /*****************************************************************************/
 
 struct unur_gen *
-_unur_generic_create( struct unur_par *par )
+_unur_generic_create( struct unur_par *par, size_t s )
      /*----------------------------------------------------------------------*/
      /* create new generic generator object                                  */
      /*                                                                      */
      /* parameters:                                                          */
      /*   par ... pointer to parameter for building generator object         */
+     /*   s   ... size of data structure                                     */
      /*                                                                      */
      /* error:                                                               */
      /*   return NULL                                                        */
@@ -228,6 +295,8 @@ _unur_generic_create( struct unur_par *par )
 
   /* allocate memory for generator object */
   gen = _unur_xmalloc( sizeof(struct unur_gen) );
+  gen->datap = _unur_xmalloc(s);
+  gen->s_datap = s;
 
   /* copy distribution object into generator object */
   gen->distr = (par->distr) ? _unur_distr_clone(par->distr) : NULL;
@@ -268,11 +337,11 @@ _unur_generic_clone( const struct unur_gen *gen, const char *type )
 { 
   struct unur_gen *clone;
 
-  /* allocate memory for generator object */
+  /* allocate memory for generator object and copy main part */
   clone = _unur_xmalloc( sizeof(struct unur_gen) );
-
-  /* copy main part */
   memcpy( clone, gen, sizeof(struct unur_gen) );
+  clone->datap = _unur_xmalloc(gen->s_datap);
+  memcpy (clone->datap, gen->datap, gen->s_datap);
 
   /* set generator identifier */
   clone->genid = _unur_set_genid(type);
@@ -312,6 +381,7 @@ _unur_generic_free( struct unur_gen *gen )
 
   _unur_free_genid(gen);
   COOKIE_CLEAR(gen);
+  free(gen->datap);
   free(gen);
 } /* end of _unur_generic_free() */
 

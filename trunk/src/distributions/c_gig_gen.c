@@ -36,6 +36,7 @@
 
 #include <unur_source.h>
 #include <methods/cstd.h>
+#include <methods/cstd_struct.h>
 #include <specfunct/unur_specfunct_source.h>
 #include "unur_distributions_source.h"
 
@@ -47,8 +48,8 @@ inline static int gig_gigru_init( struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 /* abbreviations */
 
-#define PAR       par->data.cstd        /* data for parameter object         */
-#define GEN       gen->data.cstd        /* data for generator object         */
+#define PAR       ((struct unur_cstd_par*)par->datap) /* data for parameter object */
+#define GEN       ((struct unur_cstd_gen*)gen->datap) /* data for generator object */
 #define DISTR     gen->distr->data.cont /* data for distribution in generator object */
 
 #define uniform()  _unur_call_urng(gen->urng) /* call for uniform prng       */
@@ -138,16 +139,16 @@ _unur_stdgen_gig_init( struct unur_par *par, struct unur_gen *gen )
  *****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
-#define m       (GEN.gen_param[0])
-#define linvmax (GEN.gen_param[1])
-#define vminus  (GEN.gen_param[2])
-#define vdiff   (GEN.gen_param[3])
-#define b2      (GEN.gen_param[4])
-#define hm12    (GEN.gen_param[5])
-#define a       (GEN.gen_param[6])
-#define d       (GEN.gen_param[7])
-#define e       (GEN.gen_param[8])
-#define c       (GEN.gen_param[9])
+#define m       (GEN->gen_param[0])
+#define linvmax (GEN->gen_param[1])
+#define vminus  (GEN->gen_param[2])
+#define vdiff   (GEN->gen_param[3])
+#define b2      (GEN->gen_param[4])
+#define hm12    (GEN->gen_param[5])
+#define a       (GEN->gen_param[6])
+#define d       (GEN->gen_param[7])
+#define e       (GEN->gen_param[8])
+#define c       (GEN->gen_param[9])
 /*---------------------------------------------------------------------------*/
 static const double drittel = 0.3333333333333333;                    /* 1/3  */
 static const double pdrittel = 0.037037037037037;                    /* 1/27 */
@@ -162,9 +163,9 @@ gig_gigru_init( struct unur_gen *gen )
   CHECK_NULL(gen,UNUR_ERR_NULL);
   COOKIE_CHECK(gen,CK_CSTD_GEN,UNUR_ERR_COOKIE);
 
-  if (GEN.gen_param == NULL) {
-    GEN.n_gen_param = MAX_gen_params;
-    GEN.gen_param = _unur_xmalloc(GEN.n_gen_param * sizeof(double));
+  if (GEN->gen_param == NULL) {
+    GEN->n_gen_param = MAX_gen_params;
+    GEN->gen_param = _unur_xmalloc(GEN->n_gen_param * sizeof(double));
   }
 
   /* -X- setup code -X- */

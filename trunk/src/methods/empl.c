@@ -66,6 +66,7 @@
 #include "unur_methods_source.h"
 #include "x_gen_source.h"
 #include "empl.h"
+#include "empl_struct.h"
 
 /*---------------------------------------------------------------------------*/
 /* Variants:                                                                 */
@@ -130,8 +131,8 @@ static void _unur_empl_debug_init( const struct unur_par *par, const struct unur
 
 #define DISTR_IN  distr->data.cemp      /* data for distribution object      */
 
-#define PAR       par->data.empl        /* data for parameter object         */
-#define GEN       gen->data.empl        /* data for generator object         */
+#define PAR       ((struct unur_empl_par*)par->datap) /* data for parameter object */
+#define GEN       ((struct unur_empl_gen*)gen->datap) /* data for generator object */
 #define DISTR     gen->distr->data.cemp /* data for distribution in generator object */
 
 #define SAMPLE    gen->sample.cont      /* pointer to sampling routine       */     
@@ -187,7 +188,7 @@ unur_empl_new( const struct unur_distr *distr )
     _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"number of observed sample"); return NULL; }
 
   /* allocate structure */
-  par = _unur_xmalloc(sizeof(struct unur_par));
+  par = _unur_par_new( sizeof(struct unur_empl_par) );
   COOKIE_SET(par,CK_EMPL_PAR);
 
   /* copy input */
@@ -243,12 +244,12 @@ _unur_empl_init( struct unur_par *par )
 
   /* create a new empty generator object */
   gen = _unur_empl_create(par);
-  if (!gen) { free(par); return NULL; }
+  if (!gen) { _unur_par_free(par); return NULL; }
 
   /* the observed data */
 
   /* sort entries */
-  qsort( GEN.observ, GEN.n_observ, sizeof(double), compare_doubles);
+  qsort( GEN->observ, GEN->n_observ, sizeof(double), compare_doubles);
 
 #ifdef UNUR_ENABLE_LOGGING
     /* write info into log file */
@@ -256,7 +257,7 @@ _unur_empl_init( struct unur_par *par )
 #endif
 
   /* free parameters */
-  free(par);
+  _unur_par_free(par);
 
   return gen;
 
@@ -285,7 +286,7 @@ _unur_empl_create( struct unur_par *par )
   CHECK_NULL(par,NULL);  COOKIE_CHECK(par,CK_EMPL_PAR,NULL);
 
   /* create new generic generator object */
-  gen = _unur_generic_create( par );
+  gen = _unur_generic_create( par, sizeof(struct unur_empl_gen) );
 
   /* magic cookies */
   COOKIE_SET(gen,CK_EMPL_GEN);
@@ -299,8 +300,8 @@ _unur_empl_create( struct unur_par *par )
   gen->clone = _unur_empl_clone;
 
   /* copy observed data into generator object */
-  GEN.observ   = DISTR.sample;          /* observations in distribution object */
-  GEN.n_observ = DISTR.n_sample;        /* sample size */
+  GEN->observ   = DISTR.sample;          /* observations in distribution object */
+  GEN->n_observ = DISTR.n_sample;        /* sample size */
 
   /* return pointer to (almost empty) generator object */
   return gen;
@@ -324,7 +325,7 @@ _unur_empl_clone( const struct unur_gen *gen )
      /*   return NULL                                                        */
      /*----------------------------------------------------------------------*/
 { 
-#define CLONE clone->data.empl
+#define CLONE  ((struct unur_empl_gen*)clone->datap)
 
   struct unur_gen *clone;
 
@@ -335,7 +336,7 @@ _unur_empl_clone( const struct unur_gen *gen )
   clone = _unur_generic_clone( gen, GENTYPE );
 
   /* copy observed data into generator object */
-  CLONE.observ = clone->distr->data.cemp.sample;   /* observations in distribution object */
+  CLONE->observ = clone->distr->data.cemp.sample;   /* observations in distribution object */
 
   return clone;
 
@@ -366,11 +367,11 @@ _unur_empl_sample( struct unur_gen *gen )
   CHECK_NULL(gen,INFINITY);  COOKIE_CHECK(gen,CK_EMPL_GEN,INFINITY);
 
   /* select uniformly an interval */
-  U = _unur_call_urng(gen->urng) * (GEN.n_observ-1);
+  U = _unur_call_urng(gen->urng) * (GEN->n_observ-1);
   J = (int) (U);
 
   /* linear CDF between obeservation points */
-  X = GEN.observ[J] + (U-J)*(GEN.observ[J+1] - GEN.observ[J]);
+  X = GEN->observ[J] + (U-J)*(GEN->observ[J+1] - GEN->observ[J]);
 
   return X;
 

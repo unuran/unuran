@@ -40,6 +40,7 @@
 #include "unur_methods_source.h"
 #include "x_gen_source.h"
 #include "unif.h"
+#include "unif_struct.h"
 
 /*---------------------------------------------------------------------------*/
 /* Variants: none                                                            */
@@ -85,8 +86,8 @@ static struct unur_gen *_unur_unif_clone( const struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 /* abbreviations */
 
-#define PAR     par->data.unif
-#define GEN     gen->data.unif
+#define PAR       ((struct unur_unif_par*)par->datap) /* data for parameter object */
+#define GEN       ((struct unur_unif_gen*)gen->datap) /* data for generator object */
 #define SAMPLE  gen->sample.cont
 
 /*---------------------------------------------------------------------------*/
@@ -116,7 +117,7 @@ unur_unif_new( const struct unur_distr *dummy )
   struct unur_par *par;
 
   /* allocate structure */
-  par = _unur_xmalloc(sizeof(struct unur_par));
+  par = _unur_par_new( sizeof(struct unur_unif_par) );
   COOKIE_SET(par,CK_UNIF_PAR);
 
   /* there is no need for a distribution object */
@@ -168,10 +169,9 @@ _unur_unif_init( struct unur_par *par )
 
   /* create a new empty generator object */
   gen = _unur_unif_create(par);
-  if (!gen) { free(par); return NULL; }
 
   /* free parameters */
-  free(par);
+  _unur_par_free(par);
 
   return gen;
 
@@ -201,7 +201,7 @@ _unur_unif_create( struct unur_par *par )
   COOKIE_CHECK(par,CK_UNIF_PAR,NULL);
 
   /* create new generic generator object */
-  gen = _unur_generic_create( par );
+  gen = _unur_generic_create( par, sizeof(struct unur_unif_gen) );
 
   /* magic cookies */
   COOKIE_SET(gen,CK_UNIF_GEN);

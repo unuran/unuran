@@ -64,6 +64,7 @@
 #include "unur_methods_source.h"
 #include "x_gen_source.h"
 #include "dss.h"
+#include "dss_struct.h"
 
 /*---------------------------------------------------------------------------*/
 /* Variants                                                                  */
@@ -133,8 +134,8 @@ static void _unur_dss_debug_init( struct unur_par *par, struct unur_gen *gen );
 
 #define DISTR_IN  distr->data.discr      /* data for distribution object      */
 
-#define PAR       par->data.dss         /* data for parameter object         */
-#define GEN       gen->data.dss         /* data for generator object         */
+#define PAR       ((struct unur_dss_par*)par->datap) /* data for parameter object */
+#define GEN       ((struct unur_dss_gen*)gen->datap) /* data for generator object */
 #define DISTR     gen->distr->data.discr /* data for distribution in generator object */
 
 #define SAMPLE    gen->sample.discr     /* pointer to sampling routine       */
@@ -187,7 +188,7 @@ unur_dss_new( const struct unur_distr *distr )
   }
 
   /* allocate structure */
-  par = _unur_xmalloc( sizeof(struct unur_par) );
+  par = _unur_par_new( sizeof(struct unur_dss_par) );
   COOKIE_SET(par,CK_DSS_PAR);
 
   /* copy input */
@@ -239,7 +240,7 @@ _unur_dss_init( struct unur_par *par )
   
   /* create a new empty generator object */
   gen = _unur_dss_create(par);
-  if (!gen) { free(par); return NULL; }
+  if (!gen) { _unur_par_free(par); return NULL; }
   
   /* write info into log file */
 #ifdef UNUR_ENABLE_LOGGING
@@ -248,7 +249,7 @@ _unur_dss_init( struct unur_par *par )
 #endif
 
   /* free parameters */
-  free(par);
+  _unur_par_free(par);
 
   return gen;
 } /* end of _unur_dss_init() */
@@ -276,7 +277,7 @@ _unur_dss_create( struct unur_par *par )
   CHECK_NULL(par,NULL);  COOKIE_CHECK(par,CK_DSS_PAR,NULL);
 
   /* create new generic generator object */
-  gen = _unur_generic_create( par );
+  gen = _unur_generic_create( par, sizeof(struct unur_dss_gen) );
 
   /* magic cookies */
   COOKIE_SET(gen,CK_DSS_GEN);
@@ -311,7 +312,7 @@ _unur_dss_clone( const struct unur_gen *gen )
      /*   return NULL                                                        */
      /*----------------------------------------------------------------------*/
 { 
-#define CLONE clone->data.dss
+#define CLONE  ((struct unur_dss_gen*)clone->datap)
 
   struct unur_gen *clone;
 

@@ -115,6 +115,7 @@
 #include "unur_methods_source.h"
 #include "x_gen_source.h"
 #include "dsrou.h"
+#include "dsrou_struct.h"
 
 /*---------------------------------------------------------------------------*/
 /* Variants:                                                                 */
@@ -189,8 +190,8 @@ static void _unur_dsrou_debug_init( const struct unur_gen *gen, int is_reinit );
 
 #define DISTR_IN  distr->data.discr     /* data for distribution object      */
 
-#define PAR       par->data.dsrou       /* data for parameter object         */
-#define GEN       gen->data.dsrou       /* data for generator object         */
+#define PAR       ((struct unur_dsrou_par*)par->datap) /* data for parameter object */
+#define GEN       ((struct unur_dsrou_gen*)gen->datap) /* data for generator object */
 #define DISTR     gen->distr->data.discr /* data for distribution in generator object */
 
 #define BD_LEFT   domain[0]             /* left boundary of domain of distribution */
@@ -242,14 +243,14 @@ unur_dsrou_new( const struct unur_distr *distr )
   }
 
   /* allocate structure */
-  par = _unur_xmalloc(sizeof(struct unur_par));
+  par = _unur_par_new( sizeof(struct unur_dsrou_par) );
   COOKIE_SET(par,CK_DSROU_PAR);
 
   /* copy input */
   par->distr    = distr;      /* pointer to distribution object              */
 
   /* set default values */
-  PAR.Fmode     = -1.;                /* CDF at mode (unknown yet)           */
+  PAR->Fmode     = -1.;                /* CDF at mode (unknown yet)           */
 
   par->method   = UNUR_METH_DSROU;    /* method and default variant          */
   par->variant  = 0u;                 /* default variant                     */
@@ -293,7 +294,7 @@ unur_dsrou_set_cdfatmode( struct unur_par *par, double Fmode )
    }
  
   /* store date */
-  PAR.Fmode = Fmode;
+  PAR->Fmode = Fmode;
 
   /* changelog */
   par->set |= DSROU_SET_CDFMODE;
@@ -479,7 +480,7 @@ unur_dsrou_chg_cdfatmode( struct unur_gen *gen, double Fmode )
   }
   
   /* copy parameters */
-  GEN.Fmode = Fmode;
+  GEN->Fmode = Fmode;
 
   /* changelog */
   gen->set |= DSROU_SET_CDFMODE;
@@ -619,11 +620,40 @@ _unur_dsrou_init( struct unur_par *par )
 
   /* create a new empty generator object */
   gen = _unur_dsrou_create(par);
-  if (!gen) { free(par); return NULL; }
+  if (!gen) { _unur_par_free(par); return NULL; }
+
+  /* check for required data: mode */
+  if (!(gen->distr->set & UNUR_DISTR_SET_MODE)) {
+    _unur_warning(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"mode: try finding it (numerically)"); 
+    if (unur_distr_discr_upd_mode(gen->distr)!=UNUR_SUCCESS) {
+      _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"mode"); 
+      _unur_par_free(par); _unur_dsrou_free(gen);
+      return NULL; 
+    }
+  }
+
+  /* check for required data: sum over PMF */
+  if (!(gen->distr->set & UNUR_DISTR_SET_PMFSUM))
+    if (unur_distr_discr_upd_pmfsum(gen->distr)!=UNUR_SUCCESS) {
+      _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"sum over PMF");
+      _unur_par_free(par); _unur_dsrou_free(gen);
+      return NULL; 
+    }
+
+  /* mode must be in domain */
+  if ( (DISTR.mode < DISTR.BD_LEFT) ||
+       (DISTR.mode > DISTR.BD_RIGHT) ) {
+    /* there is something wrong.
+       assume: user has change domain without changing mode.
+       but then, she probably has not updated area and is to large */
+    _unur_warning(GENTYPE,UNUR_ERR_GEN_DATA,"area and/or CDF at mode");
+    DISTR.mode = max(DISTR.mode,DISTR.BD_LEFT);
+    DISTR.mode = min(DISTR.mode,DISTR.BD_RIGHT);
+  }
 
   /* compute universal bounding rectangle */
   if ( _unur_dsrou_rectangle(gen)!=UNUR_SUCCESS ) {
-    free(par); _unur_dsrou_free(gen);
+    _unur_par_free(par); _unur_dsrou_free(gen);
     return NULL;
   }
 
@@ -633,11 +663,55 @@ _unur_dsrou_init( struct unur_par *par )
 #endif
 
   /* free parameters */
-  free(par);
+  _unur_par_free(par);
 
   return gen;
 
 } /* end of _unur_dsrou_init() */
+
+/*---------------------------------------------------------------------------*/
+
+struct unur_gen *
+_unur_dsrou_create( struct unur_par *par )
+     /*----------------------------------------------------------------------*/
+     /* allocate memory for generator                                        */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par ... pointer to parameter for building generator object         */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to (empty) generator object with default settings          */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return NULL                                                        */
+     /*----------------------------------------------------------------------*/
+{
+  struct unur_gen *gen;
+  
+  /* check arguments */
+  CHECK_NULL(par,NULL);  COOKIE_CHECK(par,CK_DSROU_PAR,NULL);
+
+  /* create new generic generator object */
+  gen = _unur_generic_create( par, sizeof(struct unur_dsrou_gen) );
+
+  /* magic cookies */
+  COOKIE_SET(gen,CK_DSROU_GEN);
+
+  /* set generator identifier */
+  gen->genid = _unur_set_genid(GENTYPE);
+
+  /* routines for sampling and destroying generator */
+  SAMPLE = (par->variant & DSROU_VARFLAG_VERIFY) ? _unur_dsrou_sample_check : _unur_dsrou_sample;
+  gen->destroy = _unur_dsrou_free;
+  gen->clone = _unur_dsrou_clone;
+
+  /* copy some parameters into generator object */
+  GEN->Fmode = PAR->Fmode;            /* CDF at mode                           */
+
+  /* return pointer to (almost empty) generator object */
+  return gen;
+
+} /* end of _unur_dsrou_create() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -671,102 +745,29 @@ _unur_dsrou_rectangle( struct unur_gen *gen )
   }
 
   /* heights of rectangles */
-  GEN.ul = sqrt(pbm);
-  GEN.ur = sqrt(pm);
+  GEN->ul = sqrt(pbm);
+  GEN->ur = sqrt(pm);
 
   /* areas of rectangle */
-  if (GEN.ul == 0.) {
+  if (GEN->ul == 0.) {
     /* PMF monotonically decreasing */
-    GEN.al = 0.;
-    GEN.ar = DISTR.sum;
+    GEN->al = 0.;
+    GEN->ar = DISTR.sum;
   }
   else if (gen->set & DSROU_SET_CDFMODE) {
     /* CDF at mode known */
-    GEN.al = -(GEN.Fmode * DISTR.sum)+pm;
-    GEN.ar = DISTR.sum + GEN.al;
+    GEN->al = -(GEN->Fmode * DISTR.sum)+pm;
+    GEN->ar = DISTR.sum + GEN->al;
   }
   else {
-    GEN.al = -(DISTR.sum - pm);
-    GEN.ar = DISTR.sum;
+    GEN->al = -(DISTR.sum - pm);
+    GEN->ar = DISTR.sum;
   }    
 
   /* o.k. */
   return UNUR_SUCCESS;
   
 } /* end of _unur_dsrou_rectangle() */
-
-/*---------------------------------------------------------------------------*/
-
-static struct unur_gen *
-_unur_dsrou_create( struct unur_par *par )
-     /*----------------------------------------------------------------------*/
-     /* allocate memory for generator                                        */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   par ... pointer to parameter for building generator object         */
-     /*                                                                      */
-     /* return:                                                              */
-     /*   pointer to (empty) generator object with default settings          */
-     /*                                                                      */
-     /* error:                                                               */
-     /*   return NULL                                                        */
-     /*----------------------------------------------------------------------*/
-{
-  struct unur_gen *gen;
-  
-  /* check arguments */
-  CHECK_NULL(par,NULL);  COOKIE_CHECK(par,CK_DSROU_PAR,NULL);
-
-  /* create new generic generator object */
-  gen = _unur_generic_create( par );
-
-  /* magic cookies */
-  COOKIE_SET(gen,CK_DSROU_GEN);
-
-  /* check for required data: mode */
-  if (!(gen->distr->set & UNUR_DISTR_SET_MODE)) {
-    _unur_warning(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"mode: try finding it (numerically)"); 
-    if (unur_distr_discr_upd_mode(gen->distr)!=UNUR_SUCCESS) {
-      _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"mode"); 
-      _unur_distr_free(gen->distr); free(gen);
-      return NULL; 
-    }
-  }
-
-  /* check for required data: sum over PMF */
-  if (!(gen->distr->set & UNUR_DISTR_SET_PMFSUM))
-    if (unur_distr_discr_upd_pmfsum(gen->distr)!=UNUR_SUCCESS) {
-      _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"sum over PMF");
-      _unur_distr_free(gen->distr); free(gen);
-      return NULL; 
-    }
-
-  /* set generator identifier */
-  gen->genid = _unur_set_genid(GENTYPE);
-
-  /* routines for sampling and destroying generator */
-  SAMPLE = (par->variant & DSROU_VARFLAG_VERIFY) ? _unur_dsrou_sample_check : _unur_dsrou_sample;
-  gen->destroy = _unur_dsrou_free;
-  gen->clone = _unur_dsrou_clone;
-
-  /* mode must be in domain */
-  if ( (DISTR.mode < DISTR.BD_LEFT) ||
-       (DISTR.mode > DISTR.BD_RIGHT) ) {
-    /* there is something wrong.
-       assume: user has change domain without changing mode.
-       but then, she probably has not updated area and is to large */
-    _unur_warning(GENTYPE,UNUR_ERR_GEN_DATA,"area and/or CDF at mode");
-    DISTR.mode = max(DISTR.mode,DISTR.BD_LEFT);
-    DISTR.mode = min(DISTR.mode,DISTR.BD_RIGHT);
-  }
-
-  /* copy some parameters into generator object */
-  GEN.Fmode = PAR.Fmode;            /* CDF at mode                           */
-
-  /* return pointer to (almost empty) generator object */
-  return gen;
-
-} /* end of _unur_dsrou_create() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -818,7 +819,7 @@ _unur_dsrou_clone( const struct unur_gen *gen )
      /*   return NULL                                                        */
      /*----------------------------------------------------------------------*/
 { 
-#define CLONE clone->data.dsrou
+#define CLONE  ((struct unur_dsrou_gen*)clone->datap)
 
   struct unur_gen *clone;
 
@@ -858,11 +859,11 @@ _unur_dsrou_sample( struct unur_gen *gen )
 
   while (1) {
     /* generate point uniformly in union of rectangles */
-    V = GEN.al + _unur_call_urng(gen->urng) * (GEN.ar - GEN.al);
-    V /= (V<0.) ? GEN.ul : GEN.ur;    /* if ul==0. then al==0. and thus V>=0. */
+    V = GEN->al + _unur_call_urng(gen->urng) * (GEN->ar - GEN->al);
+    V /= (V<0.) ? GEN->ul : GEN->ur;    /* if ul==0. then al==0. and thus V>=0. */
 
     while ( (U = _unur_call_urng(gen->urng)) == 0.);
-    U *= (V<0.) ? GEN.ul : GEN.ur;
+    U *= (V<0.) ? GEN->ul : GEN->ur;
 
     /* ratio */
     I = (int)(floor(V/U)) + DISTR.mode;
@@ -903,11 +904,11 @@ _unur_dsrou_sample_check( struct unur_gen *gen )
 
   while (1) {
     /* generate point uniformly in union of rectangles */
-    V = GEN.al + _unur_call_urng(gen->urng) * (GEN.ar - GEN.al);
-    V /= (V<0.) ? GEN.ul : GEN.ur;
+    V = GEN->al + _unur_call_urng(gen->urng) * (GEN->ar - GEN->al);
+    V /= (V<0.) ? GEN->ul : GEN->ur;
 
     while ( (U = _unur_call_urng(gen->urng)) == 0.);
-    U *= (V<0.) ? GEN.ul : GEN.ur;
+    U *= (V<0.) ? GEN->ul : GEN->ur;
 
     /* ratios */
     I = (int)(floor(V/U)) + DISTR.mode;
@@ -922,9 +923,9 @@ _unur_dsrou_sample_check( struct unur_gen *gen )
 
     /* values of boundary of rectangle          */
     /* (avoid roundoff error with FP registers) */
-    um2 = (2.+4.*DBL_EPSILON) * ((V<0) ? GEN.ul*GEN.ul : GEN.ur*GEN.ur);
-    vl = (GEN.ul>0.) ? (1.+UNUR_EPSILON) * GEN.al/GEN.ul : 0.;
-    vr = (1.+UNUR_EPSILON) * GEN.ar/GEN.ur;
+    um2 = (2.+4.*DBL_EPSILON) * ((V<0) ? GEN->ul*GEN->ul : GEN->ur*GEN->ur);
+    vl = (GEN->ul>0.) ? (1.+UNUR_EPSILON) * GEN->al/GEN->ul : 0.;
+    vr = (1.+UNUR_EPSILON) * GEN->ar/GEN->ur;
 
     /* check hat */
     if ( pI > um2 || VI < vl || VI > vr ) {
@@ -1014,7 +1015,7 @@ _unur_dsrou_debug_init( const struct unur_gen *gen, int is_reinit )
   fprintf(log,"()\n%s:\n",gen->genid);
  
   if (gen->set & DSROU_SET_CDFMODE)
-    fprintf(log,"%s: CDF(mode) = %g\n",gen->genid,GEN.Fmode);
+    fprintf(log,"%s: CDF(mode) = %g\n",gen->genid,GEN->Fmode);
   else
     fprintf(log,"%s: CDF(mode) unknown\n",gen->genid);
 
@@ -1023,14 +1024,14 @@ _unur_dsrou_debug_init( const struct unur_gen *gen, int is_reinit )
   fprintf(log,"%s:\n",gen->genid);
 
   fprintf(log,"%s: Rectangles:\n",gen->genid);
-  if (GEN.ul > 0.)
+  if (GEN->ul > 0.)
     fprintf(log,"%s:    left upper point  = (%g,%g) \tarea = %g   (%5.2f%%)\n",
-	    gen->genid,GEN.al/GEN.ul,GEN.ul,fabs(GEN.al),100.*fabs(GEN.al)/(-GEN.al+GEN.ar));
+	    gen->genid,GEN->al/GEN->ul,GEN->ul,fabs(GEN->al),100.*fabs(GEN->al)/(-GEN->al+GEN->ar));
   else
     fprintf(log,"%s:    left upper point  = (0,0) \tarea = 0   (0.00%%)\n",gen->genid);
 
   fprintf(log,"%s:    right upper point = (%g,%g) \tarea = %g   (%5.2f%%)\n",
-	  gen->genid,GEN.ar/GEN.ur,GEN.ur,GEN.ar,100.*GEN.ar/(-GEN.al+GEN.ar));
+	  gen->genid,GEN->ar/GEN->ur,GEN->ur,GEN->ar,100.*GEN->ar/(-GEN->al+GEN->ar));
 
   fprintf(log,"%s:\n",gen->genid);
 

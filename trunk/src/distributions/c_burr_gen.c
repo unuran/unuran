@@ -36,6 +36,7 @@
 
 #include <unur_source.h>
 #include <methods/cstd.h>
+#include <methods/cstd_struct.h>
 #include <specfunct/unur_specfunct_source.h>
 #include "unur_distributions_source.h"
 #include "unur_stddistr.h"
@@ -46,8 +47,8 @@
 /*---------------------------------------------------------------------------*/
 /* abbreviations */
 
-#define PAR       par->data.cstd        /* data for parameter object         */
-#define GEN       gen->data.cstd        /* data for generator object         */
+#define PAR       ((struct unur_cstd_par*)par->datap) /* data for parameter object */
+#define GEN       ((struct unur_cstd_gen*)gen->datap) /* data for generator object */
 #define DISTR     gen->distr->data.cont /* data for distribution in generator object */
 
 #define uniform()  _unur_call_urng(gen->urng) /* call for uniform prng       */
@@ -90,7 +91,7 @@ _unur_stdgen_burr_init( struct unur_par *par, struct unur_gen *gen )
       _unur_error(NULL,UNUR_ERR_GEN_CONDITION,"");
       return UNUR_ERR_GEN_CONDITION;
     }
-    if (par) PAR.is_inversion = TRUE;
+    if (par) PAR->is_inversion = TRUE;
     _unur_cstd_set_sampling_routine(par,gen,_unur_stdgen_sample_burr_inv); 
     return UNUR_SUCCESS;
 
@@ -122,7 +123,7 @@ double _unur_stdgen_sample_burr_inv( struct unur_gen *gen )
   COOKIE_CHECK(gen,CK_CSTD_GEN,INFINITY);
 
   /* sample from uniform random number generator */
-  while ((U = GEN.umin + uniform() * (GEN.umax-GEN.umin)) == 0.);
+  while ((U = GEN->umin + uniform() * (GEN->umax - GEN->umin)) == 0.);
 
   /* transform to random variate */
   switch (burr_type) {

@@ -74,26 +74,26 @@ unur_tdr_new( const struct unur_distr* distr )
     _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"derivative of PDF"); return NULL; }
 
   /* allocate structure */
-  par = _unur_xmalloc( sizeof(struct unur_par) );
+  par = _unur_par_new( sizeof(struct unur_tdr_par) );
   COOKIE_SET(par,CK_TDR_PAR);
 
   /* copy input */
   par->distr              = distr;  /* pointer to distribution object        */
 
   /* set default values */
-  PAR.guide_factor        = 2.;     /* size of guide table / number of intervals */
+  PAR->guide_factor        = 2.;     /* size of guide table / number of intervals */
 
-  PAR.c_T                 = -0.5;   /* parameter for transformation (-1. <= c < 0.) */
+  PAR->c_T                 = -0.5;   /* parameter for transformation (-1. <= c < 0.) */
 
-  PAR.starting_cpoints    = NULL;   /* pointer to array of starting points   */
-  PAR.n_starting_cpoints  = 30;     /* number of starting points             */
-  PAR.max_ivs             = 100;    /* maximum number of intervals           */
-  PAR.max_ratio           = 0.99;   /* bound for ratio  Atotal / Asqueeze    */
-  PAR.bound_for_adding    = 0.5;    /* do not add a new construction point in an interval,
+  PAR->starting_cpoints    = NULL;   /* pointer to array of starting points   */
+  PAR->n_starting_cpoints  = 30;     /* number of starting points             */
+  PAR->max_ivs             = 100;    /* maximum number of intervals           */
+  PAR->max_ratio           = 0.99;   /* bound for ratio  Atotal / Asqueeze    */
+  PAR->bound_for_adding    = 0.5;    /* do not add a new construction point in an interval,
 				       where ambigous region is too small, i.e. if 
 				       area / ((A_hat - A_squeeze)/number of segments) < bound_for_adding */
-  PAR.darsfactor          = 0.99;   /* factor for derandomized ARS           */ 
-  PAR.darsrule            = 1;      /* rule for finding splitting points in DARS */
+  PAR->darsfactor          = 0.99;   /* factor for derandomized ARS           */ 
+  PAR->darsrule            = 1;      /* rule for finding splitting points in DARS */
  
   par->method   = UNUR_METH_TDR;                 /* method                   */
   par->variant  = ( TDR_VARFLAG_USECENTER |      /* default variant          */
@@ -108,11 +108,11 @@ unur_tdr_new( const struct unur_distr* distr )
 
   /* we use the mode (if known) as center of the distribution */
   if (distr->set & UNUR_DISTR_SET_MODE) {
-    PAR.center = DISTR_IN.mode;
+    PAR->center = DISTR_IN.mode;
     par->set |= TDR_SET_CENTER;
   }
   else
-    PAR.center = 0.;        /* the default */
+    PAR->center = 0.;        /* the default */
 
   /* routine for starting generator */
   par->init = _unur_tdr_init;
@@ -163,8 +163,8 @@ unur_tdr_set_cpoints( struct unur_par *par, int n_stp, const double *stp )
       }
 
   /* store date */
-  PAR.starting_cpoints = stp;
-  PAR.n_starting_cpoints = n_stp;
+  PAR->starting_cpoints = stp;
+  PAR->n_starting_cpoints = n_stp;
 
   /* changelog */
   par->set |= TDR_SET_N_STP | ((stp) ? TDR_SET_STP : 0);
@@ -200,7 +200,7 @@ unur_tdr_set_guidefactor( struct unur_par *par, double factor )
   }
 
   /* store date */
-  PAR.guide_factor = factor;
+  PAR->guide_factor = factor;
 
   /* changelog */
   par->set |= TDR_SET_GUIDEFACTOR;
@@ -236,7 +236,7 @@ unur_tdr_set_max_sqhratio( struct unur_par *par, double max_ratio )
   }
 
   /* store date */
-  PAR.max_ratio = max_ratio;
+  PAR->max_ratio = max_ratio;
 
   /* changelog */
   par->set |= TDR_SET_MAX_SQHRATIO;
@@ -264,7 +264,7 @@ unur_tdr_get_sqhratio( const struct unur_gen *gen )
   _unur_check_NULL( GENTYPE, gen, INFINITY );
   _unur_check_gen_object( gen, TDR, INFINITY );
 
-  return (GEN.Asqueeze / GEN.Atotal);
+  return (GEN->Asqueeze / GEN->Atotal);
 
 } /* end of unur_tdr_get_sqhratio() */
 
@@ -287,7 +287,7 @@ unur_tdr_get_hatarea( const struct unur_gen *gen )
   _unur_check_NULL( GENTYPE, gen, INFINITY );
   _unur_check_gen_object( gen, TDR, INFINITY );
 
-  return GEN.Atotal;
+  return GEN->Atotal;
 
 } /* end of unur_tdr_get_hatarea() */
 
@@ -310,7 +310,7 @@ unur_tdr_get_squeezearea( const struct unur_gen *gen )
   _unur_check_NULL( GENTYPE, gen, INFINITY );
   _unur_check_gen_object( gen, TDR, INFINITY );
 
-  return GEN.Asqueeze;
+  return GEN->Asqueeze;
 
 } /* end of unur_tdr_get_squeezearea() */
 
@@ -341,7 +341,7 @@ unur_tdr_set_max_intervals( struct unur_par *par, int max_ivs )
   }
 
   /* store date */
-  PAR.max_ivs = max_ivs;
+  PAR->max_ivs = max_ivs;
 
   /* changelog */
   par->set |= TDR_SET_MAX_IVS;
@@ -370,7 +370,7 @@ _unur_tdr_is_ARS_running( const struct unur_gen *gen )
   _unur_check_NULL( GENTYPE, gen, FALSE );
   _unur_check_gen_object( gen, TDR, FALSE );
 
-  return (GEN.n_ivs < GEN.max_ivs) ? TRUE : FALSE;
+  return (GEN->n_ivs < GEN->max_ivs) ? TRUE : FALSE;
 } /* end of _unur_tdr_is_ARS_running() */
 
 /*---------------------------------------------------------------------------*/
@@ -394,7 +394,7 @@ unur_tdr_set_center( struct unur_par *par, double center )
   _unur_check_par_object( par, TDR );
 
   /* store data */
-  PAR.center = center;
+  PAR->center = center;
 
   /* changelog */
   par->set |= TDR_SET_CENTER;
@@ -580,7 +580,7 @@ unur_tdr_set_usedars( struct unur_par *par, int usedars )
   }
     
   /* set rule for DARS */
-  PAR.darsrule = usedars;
+  PAR->darsrule = usedars;
 
   /* we use a bit in variant */
   par->variant = (usedars) ? (par->variant | TDR_VARFLAG_USEDARS) : (par->variant & (~TDR_VARFLAG_USEDARS));
@@ -620,7 +620,7 @@ unur_tdr_set_darsfactor( struct unur_par *par, double factor )
   }
     
   /* store date */
-  PAR.darsfactor = factor;
+  PAR->darsfactor = factor;
 
   /* changelog */
   par->set |= TDR_SET_DARS_FACTOR;
@@ -670,7 +670,7 @@ unur_tdr_set_c( struct unur_par *par, double c )
   }
     
   /* store date */
-  PAR.c_T = c;
+  PAR->c_T = c;
 
   /* changelog */
   par->set |= TDR_SET_C;
@@ -820,9 +820,9 @@ unur_tdr_chg_truncated( struct unur_gen *gen, double left, double right )
   _unur_check_gen_object( gen, TDR, UNUR_ERR_GEN_INVALID );
 
   /* we have to disable adaptive rejection sampling */
-  if (GEN.max_ivs > GEN.n_ivs) {
+  if (GEN->max_ivs > GEN->n_ivs) {
     _unur_warning(gen->genid,UNUR_ERR_GEN_DATA,"adaptive rejection sampling disabled for truncated distribution");
-    GEN.max_ivs = GEN.n_ivs;
+    GEN->max_ivs = GEN->n_ivs;
   }
 
   /* we cannot use immadate acceptance (IA), switch to variant PS instead */
@@ -875,8 +875,8 @@ unur_tdr_chg_truncated( struct unur_gen *gen, double left, double right )
   /* set bounds for truncated domain and for U (CDF) */
   DISTR.trunc[0] = left;
   DISTR.trunc[1] = right;
-  GEN.Umin = Umin;
-  GEN.Umax = Umax;
+  GEN->Umin = Umin;
+  GEN->Umax = Umax;
 
   /* changelog */
   gen->distr->set |= UNUR_DISTR_SET_TRUNCATED;
@@ -931,7 +931,7 @@ _unur_tdr_eval_cdfhat( struct unur_gen *gen, double x )
   case TDR_VARIANT_GW:    /* original variant (Gilks&Wild) */
 
     /* find interval (sequential search) */
-    for (iv = GEN.iv; iv->next!=NULL; iv=iv->next) {
+    for (iv = GEN->iv; iv->next!=NULL; iv=iv->next) {
       COOKIE_CHECK(iv,CK_TDR_IV,INFINITY); 
       /* iv->x is left construction point of interval */
       if (x < iv->next->x) break;
@@ -960,7 +960,7 @@ _unur_tdr_eval_cdfhat( struct unur_gen *gen, double x )
     }
 
     /* normalize to one (and mind round-off errors) */
-    cdf /= GEN.Atotal;
+    cdf /= GEN->Atotal;
     return ((cdf > 1.) ? 1. : cdf);
 
     
@@ -970,7 +970,7 @@ _unur_tdr_eval_cdfhat( struct unur_gen *gen, double x )
   case TDR_VARIANT_PS:    /* proportional squeeze */
 
     /* find interval (sequential search) */
-    for (iv = GEN.iv; iv->next!=NULL; iv=iv->next) {
+    for (iv = GEN->iv; iv->next!=NULL; iv=iv->next) {
       COOKIE_CHECK(iv,CK_TDR_IV,INFINITY); 
       if (x <= iv->next->ip) break;
     }
@@ -988,7 +988,7 @@ _unur_tdr_eval_cdfhat( struct unur_gen *gen, double x )
 
     /* normalize to one (and mind round-off errors) */
     if (cdf < 0.) return 0.;
-    cdf /= GEN.Atotal;
+    cdf /= GEN->Atotal;
     return ((cdf > 1.) ? 1. : cdf);
     
   default:

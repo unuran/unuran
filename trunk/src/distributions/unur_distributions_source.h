@@ -496,14 +496,14 @@ int _unur_stdgen_sample_zipf_zet( UNUR_GEN *generator );
    do { \
      if ((gen)==NULL) return UNUR_SUCCESS;           /* test existence only  */ \
      (gen)->sample.cont = (routine);                 /* set pointer        */ \
-     if (par) (par)->data.cstd.sample_routine_name = #routine;  /* set routine name */ \
+     if (par) {((struct unur_cstd_par*)par->datap)->sample_routine_name = #routine;}  /* set routine name */ \
    } while (0)
 
 #define _unur_dstd_set_sampling_routine(par,gen,routine) \
    do { \
      if ((gen)==NULL) return UNUR_SUCCESS;           /* test existence only  */ \
      (gen)->sample.discr = (routine);                /* set pointer        */ \
-     if (par) (par)->data.dstd.sample_routine_name = #routine;  /* set routine name */ \
+     if (par) {((struct unur_dstd_par*)par->datap)->sample_routine_name = #routine;}  /* set routine name */ \
    } while (0)
 
 /*---------------------------------------------------------------------------*/

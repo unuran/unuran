@@ -64,6 +64,7 @@
 #include "unur_methods_source.h"
 #include "x_gen_source.h"
 #include "hrd.h"
+#include "hrd_struct.h"
 
 /*---------------------------------------------------------------------------*/
 /* Constants                                                                 */
@@ -140,8 +141,8 @@ static void _unur_hrd_debug_sample( const struct unur_gen *gen, double x, int i 
 
 #define DISTR_IN  distr->data.cont      /* data for distribution object      */
 
-#define PAR       par->data.hrd         /* data for parameter object         */
-#define GEN       gen->data.hrd         /* data for generator object         */
+#define PAR       ((struct unur_hrd_par*)par->datap) /* data for parameter object */
+#define GEN       ((struct unur_hrd_gen*)gen->datap) /* data for generator object */
 #define DISTR     gen->distr->data.cont /* data for distribution in generator object */
 
 #define SAMPLE    gen->sample.cont      /* pointer to sampling routine       */
@@ -182,7 +183,7 @@ unur_hrd_new( const struct unur_distr *distr )
     _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"HR"); return NULL; }
 
   /* allocate structure */
-  par = _unur_xmalloc(sizeof(struct unur_par));
+  par = _unur_par_new( sizeof(struct unur_hrd_par) );
   COOKIE_SET(par,CK_HRD_PAR);
 
   /* copy input */
@@ -301,18 +302,18 @@ _unur_hrd_init( struct unur_par *par )
 
   /* create a new empty generator object */    
   gen = _unur_hrd_create(par);
-  if (!gen) { free(par); return NULL; }
+  if (!gen) { _unur_par_free(par); return NULL; }
 
   /* set left border and check domain */
   if (DISTR.domain[0] < 0.)       DISTR.domain[0] = 0.;
   if (DISTR.domain[1] < INFINITY) DISTR.domain[1] = INFINITY;
-  GEN.left_border = DISTR.domain[0];
+  GEN->left_border = DISTR.domain[0];
 
   /* compute upper bound for hazard rate (at left border) */
-  GEN.upper_bound = HR(GEN.left_border);
-  if (GEN.upper_bound <= 0. || _unur_FP_is_infinity(GEN.upper_bound)) {
+  GEN->upper_bound = HR(GEN->left_border);
+  if (GEN->upper_bound <= 0. || _unur_FP_is_infinity(GEN->upper_bound)) {
     _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"no valid upper bound for HR at left boundary");
-    free(par); _unur_free(gen);
+    _unur_par_free(par); _unur_free(gen);
     return NULL;
   }
 
@@ -322,7 +323,7 @@ _unur_hrd_init( struct unur_par *par )
 #endif
 
   /* free parameters */
-  free(par);
+  _unur_par_free(par);
   
   return gen;
 
@@ -351,7 +352,7 @@ _unur_hrd_create( struct unur_par *par )
   CHECK_NULL(par,NULL);  COOKIE_CHECK(par,CK_HRD_PAR,NULL);
 
   /* create new generic generator object */
-  gen = _unur_generic_create( par );
+  gen = _unur_generic_create( par, sizeof(struct unur_hrd_gen) );
 
   /* magic cookies */
   COOKIE_SET(gen,CK_HRD_GEN);
@@ -368,7 +369,7 @@ _unur_hrd_create( struct unur_par *par )
   /* default values */
 
   /* initialize variables */
-  GEN.left_border = 0.;             /* left border of domain                 */
+  GEN->left_border = 0.;             /* left border of domain                 */
 
   /* return pointer to (almost empty) generator object */
   return gen;
@@ -392,7 +393,7 @@ _unur_hrd_clone( const struct unur_gen *gen )
      /*   return NULL                                                        */
      /*----------------------------------------------------------------------*/
 { 
-#define CLONE clone->data.hrd
+#define CLONE  ((struct unur_hrd_gen*)clone->datap)
 
   struct unur_gen *clone;
 
@@ -460,10 +461,10 @@ _unur_hrd_sample( struct unur_gen *gen )
   CHECK_NULL(gen,INFINITY);  COOKIE_CHECK(gen,CK_HRD_GEN,INFINITY);
 
   /* parameter for majorizing hazard rate */
-  lambda = GEN.upper_bound;
+  lambda = GEN->upper_bound;
 
   /* starting point */
-  X = GEN.left_border;
+  X = GEN->left_border;
 
   for(;;) {
     /* sample from U(0,1) */
@@ -522,10 +523,10 @@ _unur_hrd_sample_check( struct unur_gen *gen )
   CHECK_NULL(gen,INFINITY);  COOKIE_CHECK(gen,CK_HRD_GEN,INFINITY);
 
   /* parameter for majorizing hazard rate */
-  lambda = GEN.upper_bound;
+  lambda = GEN->upper_bound;
 
   /* starting point */
-  X = GEN.left_border;
+  X = GEN->left_border;
 
   for(i=1;;i++) {
     /* sample from U(0,1) */

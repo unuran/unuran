@@ -599,7 +599,7 @@ _unur_str2par (const struct unur_distr *distr, const char *string, struct unur_s
   /* return pointer to parameter object */
   return par;
 
-} /* end of unur_str2par() */
+} /* end of _unur_str2par() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -1473,7 +1473,7 @@ _unur_str_par( char *str_method, const UNUR_DISTR *distr, struct unur_slist *mli
 	}
       }
       else {
-	if (par) free (par);
+	if (par) unur_par_free (par);
 	_unur_error(GENTYPE,UNUR_ERR_STR_SYNTAX,"method must be first key in block"); 
 	return NULL;
       }

@@ -14,10 +14,8 @@ LDADD = libtestroutines.la $(top_builddir)/src/libunuran.la
 # Special files for tests with Mathematica(TM)
 if HAVE_MATHEMATICA
 MATHEMATICA_PROGS = test_StdDistr  test_functionparser
-MATHEMATICA_TESTS = test_StdDistr  test_functionparser
 else
 MATHEMATICA_PROGS = 
-MATHEMATICA_TESTS = 
 endif
 
 
@@ -64,6 +62,7 @@ check_PROGRAMS = \
  t_stringparser \
  test_special_matrix \
  $(MATHEMATICA_PROGS)
+
 
 ## Troubles with dmalloc:
 ##   t_dstd

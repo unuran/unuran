@@ -36,6 +36,7 @@
 
 #include <unur_source.h>
 #include <methods/cstd.h>   /* for the definition of `UNUR_STDGEN_INVERSION' */
+#include <methods/dstd_struct.h>
 #include <specfunct/unur_specfunct_source.h>
 #include "unur_distributions_source.h"
 
@@ -47,8 +48,8 @@ inline static int logarithmic_lsk_init( struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 /* abbreviations */
 
-#define PAR       par->data.dstd        /* data for parameter object         */
-#define GEN       gen->data.dstd        /* data for generator object         */
+#define PAR       ((struct unur_dstd_par*)par->datap) /* data for parameter object */
+#define GEN       ((struct unur_dstd_gen*)gen->datap) /* data for generator object */
 #define DISTR     gen->distr->data.discr /* data for distribution in generator object */
 
 #define uniform()  _unur_call_urng(gen->urng) /* call for uniform prng       */
@@ -146,8 +147,8 @@ _unur_stdgen_logarithmic_init( struct unur_par *par, struct unur_gen *gen )
  *****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
-#define t   (GEN.gen_param[0])
-#define h   (GEN.gen_param[1])
+#define t   (GEN->gen_param[0])
+#define h   (GEN->gen_param[1])
 
 #define theta_limit  0.97
 /* theta <  theta_limit --> Inversion
@@ -161,9 +162,9 @@ logarithmic_lsk_init( struct unur_gen *gen )
   CHECK_NULL(gen,UNUR_ERR_NULL);
   COOKIE_CHECK(gen,CK_DSTD_GEN,UNUR_ERR_COOKIE);
 
-  if (GEN.gen_param == NULL) {
-    GEN.n_gen_param = MAX_gen_params;
-    GEN.gen_param = _unur_xmalloc(GEN.n_gen_param * sizeof(double));
+  if (GEN->gen_param == NULL) {
+    GEN->n_gen_param = MAX_gen_params;
+    GEN->gen_param = _unur_xmalloc(GEN->n_gen_param * sizeof(double));
   }
 
   /* -X- setup code -X- */

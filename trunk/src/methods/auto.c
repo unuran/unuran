@@ -38,6 +38,9 @@
 #include <unur_source.h>
 #include <unuran.h.in>
 #include "unur_methods_source.h"
+#include "x_gen_source.h"
+#include "auto.h"
+#include "auto_struct.h"
 
 /*---------------------------------------------------------------------------*/
 /* Variants: none                                                            */
@@ -84,7 +87,7 @@ static struct unur_gen *_unur_init_cvemp( struct unur_par *par );
 /*---------------------------------------------------------------------------*/
 /* abbreviations */
 
-#define PAR     par->data.mauto
+#define PAR       ((struct unur_auto_par*)par->datap) /* data for parameter object */
 
 /*---------------------------------------------------------------------------*/
 
@@ -116,7 +119,7 @@ unur_auto_new( const struct unur_distr *distr )
   _unur_check_NULL(GENTYPE,distr,NULL);
 
   /* allocate structure */
-  par = _unur_xmalloc(sizeof(struct unur_par));
+  par = _unur_par_new( sizeof(struct unur_auto_par) );
   COOKIE_SET(par,CK_AUTO_PAR);
 
   /* copy input */
@@ -166,7 +169,7 @@ unur_auto_set_logss( UNUR_PAR *par, int logss )
   }
 
   /* store date */
-  PAR.logss = logss;
+  PAR->logss = logss;
 
   /* changelog */
   par->set |= AUTO_SET_LOGSS;
@@ -234,7 +237,7 @@ _unur_auto_init( struct unur_par *par )
   }
 
   /* free parameters */
-  free(par);
+  _unur_par_free(par);
 
   return gen;
 

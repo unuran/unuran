@@ -85,7 +85,7 @@ _unur_tdr_debug_init( const struct unur_par *par, const struct unur_gen *gen )
   case TDR_VAR_T_SQRT:
     fprintf(log,"-1/sqrt(x)  ... c = -1/2");            break;
   case TDR_VAR_T_POW:
-    fprintf(log,"-x^(%g)  ... c = %g",PAR.c_T,PAR.c_T); break;
+    fprintf(log,"-x^(%g)  ... c = %g",PAR->c_T,PAR->c_T); break;
   }
   _unur_print_if_default(par,TDR_SET_C);
   fprintf(log,"\n%s:\n",gen->genid);
@@ -107,7 +107,7 @@ _unur_tdr_debug_init( const struct unur_par *par, const struct unur_gen *gen )
     fprintf(log,"_sample()\n");
   fprintf(log,"%s:\n",gen->genid);
 
-  fprintf(log,"%s: center = %g",gen->genid,PAR.center);
+  fprintf(log,"%s: center = %g",gen->genid,PAR->center);
   _unur_print_if_default(par,TDR_SET_CENTER);
   if (par->variant & TDR_VARFLAG_USEMODE)
     fprintf(log,"\n%s: use mode as construction point",gen->genid);
@@ -115,18 +115,18 @@ _unur_tdr_debug_init( const struct unur_par *par, const struct unur_gen *gen )
     fprintf(log,"\n%s: use center as construction point",gen->genid);
   fprintf(log,"\n%s:\n",gen->genid);
 
-  fprintf(log,"%s: maximum number of intervals        = %d",gen->genid,GEN.max_ivs);
+  fprintf(log,"%s: maximum number of intervals        = %d",gen->genid,GEN->max_ivs);
   _unur_print_if_default(par,TDR_SET_MAX_IVS);
-  fprintf(log,"\n%s: bound for ratio  Asqueeze / Atotal = %g%%",gen->genid,PAR.max_ratio*100.);
+  fprintf(log,"\n%s: bound for ratio  Asqueeze / Atotal = %g%%",gen->genid,PAR->max_ratio*100.);
   _unur_print_if_default(par,TDR_SET_MAX_SQHRATIO);
   fprintf(log,"\n%s:\n",gen->genid);
 
   if (par->variant & TDR_VARFLAG_USEDARS) {
     fprintf(log,"%s: Derandomized ARS enabled ",gen->genid);
     _unur_print_if_default(par,TDR_SET_USE_DARS);
-    fprintf(log,"\n%s:\tDARS factor = %g",gen->genid,PAR.darsfactor);
+    fprintf(log,"\n%s:\tDARS factor = %g",gen->genid,PAR->darsfactor);
     _unur_print_if_default(par,TDR_SET_DARS_FACTOR);
-    fprintf(log,"\n%s:\tDARS rule %d",gen->genid,PAR.darsrule);
+    fprintf(log,"\n%s:\tDARS rule %d",gen->genid,PAR->darsrule);
     _unur_print_if_default(par,TDR_SET_USE_DARS);
   }
   else {
@@ -136,17 +136,17 @@ _unur_tdr_debug_init( const struct unur_par *par, const struct unur_gen *gen )
   fprintf(log,"\n%s:\n",gen->genid);
 
   fprintf(log,"%s: sampling from list of intervals: indexed search (guide table method)\n",gen->genid);
-  fprintf(log,"%s:    relative guide table size = %g%%",gen->genid,100.*PAR.guide_factor);
+  fprintf(log,"%s:    relative guide table size = %g%%",gen->genid,100.*PAR->guide_factor);
   _unur_print_if_default(par,TDR_SET_GUIDEFACTOR);
   fprintf(log,"\n%s:\n",gen->genid);
 
-  fprintf(log,"%s: number of starting points = %d",gen->genid,PAR.n_starting_cpoints);
+  fprintf(log,"%s: number of starting points = %d",gen->genid,PAR->n_starting_cpoints);
   _unur_print_if_default(par,TDR_SET_N_STP);
   fprintf(log,"\n%s: starting points:",gen->genid);
   if (par->set & TDR_SET_STP)
-    for (i=0; i<PAR.n_starting_cpoints; i++) {
+    for (i=0; i<PAR->n_starting_cpoints; i++) {
       if (i%5==0) fprintf(log,"\n%s:\t",gen->genid);
-      fprintf(log,"   %#g,",PAR.starting_cpoints[i]);
+      fprintf(log,"   %#g,",PAR->starting_cpoints[i]);
     }
   else
     fprintf(log," use \"equdistribution\" rule [default]");
@@ -183,9 +183,9 @@ _unur_tdr_debug_dars_start( const struct unur_par *par, const struct unur_gen *g
 
   fprintf(log,"%s: DARS started **********************\n",gen->genid);
   fprintf(log,"%s:\n",gen->genid);
-  fprintf(log,"%s: DARS factor = %g",gen->genid,PAR.darsfactor);
+  fprintf(log,"%s: DARS factor = %g",gen->genid,PAR->darsfactor);
   _unur_print_if_default(par,TDR_SET_DARS_FACTOR);
-  fprintf(log,"\n%s: DARS rule %d",gen->genid,PAR.darsrule);
+  fprintf(log,"\n%s: DARS rule %d",gen->genid,PAR->darsrule);
   _unur_print_if_default(par,TDR_SET_USE_DARS);
   fprintf(log,"\n%s:\n",gen->genid);
 
@@ -297,11 +297,11 @@ _unur_tdr_gw_debug_intervals( const struct unur_gen *gen )
 
   log = unur_get_stream();
 
-  fprintf(log,"%s:Intervals: %d\n",gen->genid,GEN.n_ivs);
-  if (GEN.iv) {
+  fprintf(log,"%s:Intervals: %d\n",gen->genid,GEN->n_ivs);
+  if (GEN->iv) {
     if (gen->debug & TDR_DEBUG_IV) {
       fprintf(log,"%s: Nr.            tp            ip          f(tp)      T(f(tp))    d(T(f(tp)))      squeeze\n",gen->genid);
-      for (iv = GEN.iv, i=0; iv->next!=NULL; iv=iv->next, i++) {
+      for (iv = GEN->iv, i=0; iv->next!=NULL; iv=iv->next, i++) {
 	COOKIE_CHECK(iv,CK_TDR_IV,RETURN_VOID); 
 	fprintf(log,"%s:[%3d]: %#12.6g  %#12.6g  %#12.6g  %#12.6g  %#12.6g  %#12.6g\n", gen->genid, i,
 		iv->x, iv->ip, iv->fx, iv->Tfx, iv->dTfx, iv->sq);
@@ -315,14 +315,14 @@ _unur_tdr_gw_debug_intervals( const struct unur_gen *gen )
   else
     fprintf(log,"%s: No intervals !\n",gen->genid);
 
-  if (GEN.Atotal <= 0.) {
+  if (GEN->Atotal <= 0.) {
     fprintf(log,"%s: Construction of hat function not successful\n",gen->genid);
     fprintf(log,"%s: Areas may be meaningless !!!!!!!!!!!!!!!!!!\n",gen->genid);
     fprintf(log,"%s:\n",gen->genid);
     Atotal = -1.;   /* to avoid floating point exceptions */
   }
   else {
-    Atotal = GEN.Atotal;
+    Atotal = GEN->Atotal;
   }
 
   /* print and sum areas below squeeze and hat */
@@ -330,8 +330,8 @@ _unur_tdr_gw_debug_intervals( const struct unur_gen *gen )
     fprintf(log,"%s:Areas in intervals:\n",gen->genid);
     fprintf(log,"%s: Nr.\tbelow squeeze\t\t  below hat (left and right)\t\t  cumulated\n",gen->genid);
     sAsqueeze = sAhatl = sAhatr = 0.;
-    if (GEN.iv) {
-      for (iv = GEN.iv, i=0; iv->next!=NULL; iv=iv->next, i++) {
+    if (GEN->iv) {
+      for (iv = GEN->iv, i=0; iv->next!=NULL; iv=iv->next, i++) {
 	COOKIE_CHECK(iv,CK_TDR_IV,RETURN_VOID); 
 	sAsqueeze += iv->Asqueeze;
 	sAhatl += iv->Ahat - iv->Ahatr;
@@ -352,9 +352,9 @@ _unur_tdr_gw_debug_intervals( const struct unur_gen *gen )
 
   /* summary of areas */
   fprintf(log,"%s: A(squeeze)     = %-12.6g  (%6.3f%%)\n",gen->genid,
-	  GEN.Asqueeze, GEN.Asqueeze * 100./Atotal);
+	  GEN->Asqueeze, GEN->Asqueeze * 100./Atotal);
   fprintf(log,"%s: A(hat\\squeeze) = %-12.6g  (%6.3f%%)\n",gen->genid,
-	  Atotal - GEN.Asqueeze, (Atotal - GEN.Asqueeze) * 100./Atotal);
+	  Atotal - GEN->Asqueeze, (Atotal - GEN->Asqueeze) * 100./Atotal);
   fprintf(log,"%s: A(total)       = %-12.6g\n",gen->genid, Atotal);
 
   fprintf(log,"%s:\n",gen->genid);
@@ -382,11 +382,11 @@ _unur_tdr_ps_debug_intervals( const struct unur_gen *gen )
 
   log = unur_get_stream();
 
-  fprintf(log,"%s:Intervals: %d\n",gen->genid,GEN.n_ivs);
-  if (GEN.iv) {
+  fprintf(log,"%s:Intervals: %d\n",gen->genid,GEN->n_ivs);
+  if (GEN->iv) {
     if (gen->debug & TDR_DEBUG_IV) {
       fprintf(log,"%s: Nr.       left ip           tp        f(tp)     T(f(tp))   d(T(f(tp)))       f(ip)   squ. ratio\n",gen->genid);
-      for (iv=GEN.iv,i=0; iv->next; iv=iv->next, i++) {
+      for (iv=GEN->iv,i=0; iv->next; iv=iv->next, i++) {
 	COOKIE_CHECK(iv,CK_TDR_IV,RETURN_VOID); 
 	fprintf(log,"%s:[%3d]:%#12.6g %#12.6g %#12.6g %#12.6g %#12.6g %#12.6g %#12.6g\n", gen->genid, i,
 		iv->ip, iv->x, iv->fx, iv->Tfx, iv->dTfx, iv->fip, iv->sq);
@@ -400,14 +400,14 @@ _unur_tdr_ps_debug_intervals( const struct unur_gen *gen )
   else
     fprintf(log,"%s: No intervals !\n",gen->genid);
 
-  if (GEN.Atotal <= 0.) {
+  if (GEN->Atotal <= 0.) {
     fprintf(log,"%s: Construction of hat function not successful\n",gen->genid);
     fprintf(log,"%s: Areas may be meaningless !!!!!!!!!!!!!!!!!!\n",gen->genid);
     fprintf(log,"%s:\n",gen->genid);
     Atotal = -1.;   /* to avoid floating point exceptions */
   }
   else {
-    Atotal = GEN.Atotal;
+    Atotal = GEN->Atotal;
   }
 
   /* print and sum areas below squeeze and hat */
@@ -415,8 +415,8 @@ _unur_tdr_ps_debug_intervals( const struct unur_gen *gen )
     fprintf(log,"%s:Areas in intervals:\n",gen->genid);
     fprintf(log,"%s: Nr.\tbelow squeeze\t\t  below hat (left and right)\t\t  cumulated\n",gen->genid);
     sAsqueeze = sAhatl = sAhatr = 0.;
-    if (GEN.iv) {
-      for (iv=GEN.iv,i=0; iv->next; iv=iv->next, i++) {
+    if (GEN->iv) {
+      for (iv=GEN->iv,i=0; iv->next; iv=iv->next, i++) {
 	COOKIE_CHECK(iv,CK_TDR_IV,RETURN_VOID); 
 	sAsqueeze += iv->Asqueeze;
 	sAhatl += iv->Ahat - iv->Ahatr;
@@ -437,9 +437,9 @@ _unur_tdr_ps_debug_intervals( const struct unur_gen *gen )
 
   /* summary of areas */
   fprintf(log,"%s: A(squeeze)     = %-12.6g  (%6.3f%%)\n",gen->genid,
-	  GEN.Asqueeze, GEN.Asqueeze * 100./Atotal);
+	  GEN->Asqueeze, GEN->Asqueeze * 100./Atotal);
   fprintf(log,"%s: A(hat\\squeeze) = %-12.6g  (%6.3f%%)\n",gen->genid,
-	  Atotal - GEN.Asqueeze, (Atotal - GEN.Asqueeze) * 100./Atotal);
+	  Atotal - GEN->Asqueeze, (Atotal - GEN->Asqueeze) * 100./Atotal);
   fprintf(log,"%s: A(total)       = %-12.6g\n",gen->genid, Atotal);
 
   fprintf(log,"%s:\n",gen->genid);
@@ -583,11 +583,11 @@ _unur_tdr_gw_debug_split_start( const struct unur_gen *gen,
   fprintf(log,"%s:   left  construction point = %-12.6g\tf(x) = %-12.6g\n",gen->genid,iv->x,iv->fx);
   fprintf(log,"%s:   right construction point = %-12.6g\tf(x) = %-12.6g\n",gen->genid,iv->next->x,iv->next->fx);
   fprintf(log,"%s:   A(squeeze)     = %-12.6g\t\t(%6.3f%%)\n",gen->genid,
-	  iv->Asqueeze,iv->Asqueeze*100./GEN.Atotal);
+	  iv->Asqueeze,iv->Asqueeze*100./GEN->Atotal);
   fprintf(log,"%s:   A(hat\\squeeze) = %-12.6g\t\t(%6.3f%%)\n",gen->genid,
-	  (iv->Ahat - iv->Asqueeze),(iv->Ahat - iv->Asqueeze)*100./GEN.Atotal);
+	  (iv->Ahat - iv->Asqueeze),(iv->Ahat - iv->Asqueeze)*100./GEN->Atotal);
   fprintf(log,"%s:   A(hat)         = %-12.6g +  %-12.6g(%6.3f%%)\n",gen->genid,
-	  iv->Ahat - iv->Ahatr, iv->Ahatr, iv->Ahat*100./GEN.Atotal);
+	  iv->Ahat - iv->Ahatr, iv->Ahatr, iv->Ahat*100./GEN->Atotal);
 
   fflush(log);
 
@@ -630,14 +630,14 @@ _unur_tdr_gw_debug_split_stop( const struct unur_gen *gen,
   fprintf(log,"%s: left interval:\n",gen->genid);
   fprintf(log,"%s:   A(squeeze)     = %-12.6g\t\t(%6.3f%%)\n",gen->genid,
 	  iv_left->Asqueeze,
-	  iv_left->Asqueeze*100./GEN.Atotal);
+	  iv_left->Asqueeze*100./GEN->Atotal);
   fprintf(log,"%s:   A(hat\\squeeze) = %-12.6g\t\t(%6.3f%%)\n",gen->genid,
 	  (iv_left->Ahat - iv_left->Asqueeze),
-	  (iv_left->Ahat - iv_left->Asqueeze) * 100./GEN.Atotal);
+	  (iv_left->Ahat - iv_left->Asqueeze) * 100./GEN->Atotal);
   fprintf(log,"%s:   A(hat)         = %-12.6g +  %-12.6g(%6.3f%%)\n",gen->genid,
 	  iv_left->Ahat - iv_left->Ahatr,
 	  iv_left->Ahatr,
-	  iv_left->Ahat * 100./GEN.Atotal);
+	  iv_left->Ahat * 100./GEN->Atotal);
 
   if (iv_left == iv_right)
     fprintf(log,"%s: interval chopped.\n",gen->genid);
@@ -645,22 +645,22 @@ _unur_tdr_gw_debug_split_stop( const struct unur_gen *gen,
     fprintf(log,"%s: right interval:\n",gen->genid);
     fprintf(log,"%s:   A(squeeze)     = %-12.6g\t\t(%6.3f%%)\n",gen->genid,
 	    iv_right->Asqueeze,
-	    iv_right->Asqueeze*100./GEN.Atotal);
+	    iv_right->Asqueeze*100./GEN->Atotal);
     fprintf(log,"%s:   A(hat\\squeeze) = %-12.6g\t\t(%6.3f%%)\n",gen->genid,
 	    (iv_right->Ahat - iv_right->Asqueeze),
-	    (iv_right->Ahat - iv_right->Asqueeze) * 100./GEN.Atotal);
+	    (iv_right->Ahat - iv_right->Asqueeze) * 100./GEN->Atotal);
     fprintf(log,"%s:   A(hat)         = %-12.6g +  %-12.6g(%6.3f%%)\n",gen->genid,
 	    iv_right->Ahat - iv_right->Ahatr,
 	    iv_right->Ahatr,
-	    iv_right->Ahat * 100./GEN.Atotal);
+	    iv_right->Ahat * 100./GEN->Atotal);
   }
 
   fprintf(log,"%s: total areas:\n",gen->genid);
   fprintf(log,"%s:   A(squeeze)     = %-12.6g\t\t(%6.3f%%)\n",gen->genid,
-	  GEN.Asqueeze, GEN.Asqueeze * 100./GEN.Atotal);
+	  GEN->Asqueeze, GEN->Asqueeze * 100./GEN->Atotal);
   fprintf(log,"%s:   A(hat\\squeeze) = %-12.6g\t\t(%6.3f%%)\n",gen->genid,
-	  GEN.Atotal - GEN.Asqueeze, (GEN.Atotal - GEN.Asqueeze) * 100./GEN.Atotal);
-  fprintf(log,"%s:   A(total)       = %-12.6g\n",gen->genid, GEN.Atotal);
+	  GEN->Atotal - GEN->Asqueeze, (GEN->Atotal - GEN->Asqueeze) * 100./GEN->Atotal);
+  fprintf(log,"%s:   A(total)       = %-12.6g\n",gen->genid, GEN->Atotal);
 
   fprintf(log,"%s:\n",gen->genid);
 
@@ -709,26 +709,26 @@ _unur_tdr_ps_debug_split_start( const struct unur_gen *gen,
   fprintf(log,"%s:   A(squeeze) =\n",gen->genid);
   if (iv_left)
     fprintf(log,"%s:\t%-12.6g\t(%6.3f%%)\n",gen->genid,
-	    iv_left->Asqueeze,iv_left->Asqueeze*100./GEN.Atotal);
+	    iv_left->Asqueeze,iv_left->Asqueeze*100./GEN->Atotal);
   if (iv_right->next)
     fprintf(log,"%s:\t%-12.6g\t(%6.3f%%)\n",gen->genid,
-	    iv_right->Asqueeze,iv_right->Asqueeze*100./GEN.Atotal);
+	    iv_right->Asqueeze,iv_right->Asqueeze*100./GEN->Atotal);
 
   fprintf(log,"%s:   A(hat\\squeeze) =\n",gen->genid);
   if (iv_left)
     fprintf(log,"%s:\t%-12.6g\t(%6.3f%%)\n",gen->genid,
-	    (iv_left->Ahat - iv_left->Asqueeze),(iv_left->Ahat - iv_left->Asqueeze)*100./GEN.Atotal);
+	    (iv_left->Ahat - iv_left->Asqueeze),(iv_left->Ahat - iv_left->Asqueeze)*100./GEN->Atotal);
   if (iv_right->next)
     fprintf(log,"%s:\t%-12.6g\t(%6.3f%%)\n",gen->genid,
-	  (iv_right->Ahat - iv_right->Asqueeze),(iv_right->Ahat - iv_right->Asqueeze)*100./GEN.Atotal);
+	  (iv_right->Ahat - iv_right->Asqueeze),(iv_right->Ahat - iv_right->Asqueeze)*100./GEN->Atotal);
 
   fprintf(log,"%s:   A(hat) =\n",gen->genid);
   if (iv_left)
     fprintf(log,"%s:\t%-12.6g\t(%6.3f%%)\n",gen->genid,
-	    iv_left->Ahat, iv_left->Ahat*100./GEN.Atotal);
+	    iv_left->Ahat, iv_left->Ahat*100./GEN->Atotal);
   if (iv_right->next)
     fprintf(log,"%s:\t%-12.6g\t(%6.3f%%)\n",gen->genid,
-	    iv_right->Ahat, iv_right->Ahat*100./GEN.Atotal);
+	    iv_right->Ahat, iv_right->Ahat*100./GEN->Atotal);
 
   fflush(log);
 
@@ -778,42 +778,42 @@ _unur_tdr_ps_debug_split_stop( const struct unur_gen *gen,
   fprintf(log,"%s:   A(squeeze) =\n",gen->genid);
   if (iv_left)
     fprintf(log,"%s:\t%-12.6g\t(%6.3f%%)\n",gen->genid,
-	    iv_left->Asqueeze,iv_left->Asqueeze*100./GEN.Atotal);
+	    iv_left->Asqueeze,iv_left->Asqueeze*100./GEN->Atotal);
   if (iv_middle)
     fprintf(log,"%s:\t%-12.6g\t(%6.3f%%)\n",gen->genid,
-	    iv_middle->Asqueeze,iv_middle->Asqueeze*100./GEN.Atotal);
+	    iv_middle->Asqueeze,iv_middle->Asqueeze*100./GEN->Atotal);
   if (iv_right->next)
     fprintf(log,"%s:\t%-12.6g\t(%6.3f%%)\n",gen->genid,
-	    iv_right->Asqueeze,iv_right->Asqueeze*100./GEN.Atotal);
+	    iv_right->Asqueeze,iv_right->Asqueeze*100./GEN->Atotal);
 
   fprintf(log,"%s:   A(hat\\squeeze) =\n",gen->genid);
   if (iv_left)
     fprintf(log,"%s:\t%-12.6g\t(%6.3f%%)\n",gen->genid,
-	    (iv_left->Ahat - iv_left->Asqueeze),(iv_left->Ahat - iv_left->Asqueeze)*100./GEN.Atotal);
+	    (iv_left->Ahat - iv_left->Asqueeze),(iv_left->Ahat - iv_left->Asqueeze)*100./GEN->Atotal);
   if (iv_middle)
     fprintf(log,"%s:\t%-12.6g\t(%6.3f%%)\n",gen->genid,
-	    (iv_middle->Ahat - iv_middle->Asqueeze),(iv_middle->Ahat - iv_middle->Asqueeze)*100./GEN.Atotal);
+	    (iv_middle->Ahat - iv_middle->Asqueeze),(iv_middle->Ahat - iv_middle->Asqueeze)*100./GEN->Atotal);
   if (iv_right->next)
     fprintf(log,"%s:\t%-12.6g\t(%6.3f%%)\n",gen->genid,
-	  (iv_right->Ahat - iv_right->Asqueeze),(iv_right->Ahat - iv_right->Asqueeze)*100./GEN.Atotal);
+	  (iv_right->Ahat - iv_right->Asqueeze),(iv_right->Ahat - iv_right->Asqueeze)*100./GEN->Atotal);
 
   fprintf(log,"%s:   A(hat) =\n",gen->genid);
   if (iv_left)
     fprintf(log,"%s:\t%-12.6g\t(%6.3f%%)\n",gen->genid,
-	    iv_left->Ahat, iv_left->Ahat*100./GEN.Atotal);
+	    iv_left->Ahat, iv_left->Ahat*100./GEN->Atotal);
   if (iv_middle)
     fprintf(log,"%s:\t%-12.6g\t(%6.3f%%)\n",gen->genid,
-	    iv_middle->Ahat, iv_middle->Ahat*100./GEN.Atotal);
+	    iv_middle->Ahat, iv_middle->Ahat*100./GEN->Atotal);
   if (iv_right->next)
     fprintf(log,"%s:\t%-12.6g\t(%6.3f%%)\n",gen->genid,
-	    iv_right->Ahat, iv_right->Ahat*100./GEN.Atotal);
+	    iv_right->Ahat, iv_right->Ahat*100./GEN->Atotal);
 
   fprintf(log,"%s: total areas:\n",gen->genid);
   fprintf(log,"%s:   A(squeeze)     = %-12.6g   (%6.3f%%)\n",gen->genid,
-	  GEN.Asqueeze, GEN.Asqueeze * 100./GEN.Atotal);
+	  GEN->Asqueeze, GEN->Asqueeze * 100./GEN->Atotal);
   fprintf(log,"%s:   A(hat\\squeeze) = %-12.6g   (%6.3f%%)\n",gen->genid,
-	  GEN.Atotal - GEN.Asqueeze, (GEN.Atotal - GEN.Asqueeze) * 100./GEN.Atotal);
-  fprintf(log,"%s:   A(total)       = %-12.6g\n",gen->genid, GEN.Atotal);
+	  GEN->Atotal - GEN->Asqueeze, (GEN->Atotal - GEN->Asqueeze) * 100./GEN->Atotal);
+  fprintf(log,"%s:   A(total)       = %-12.6g\n",gen->genid, GEN->Atotal);
 
   fprintf(log,"%s:\n",gen->genid);
 

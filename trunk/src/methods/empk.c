@@ -175,9 +175,10 @@
 #include "unur_methods_source.h"
 #include "x_gen.h"
 #include "x_gen_source.h"
-#include "empk.h"
 #include "arou.h"
 #include "cstd.h"
+#include "empk.h"
+#include "empk_struct.h"
 
 /*---------------------------------------------------------------------------*/
 /* Variants:                                                                 */
@@ -263,8 +264,8 @@ static void _unur_empk_debug_init( const struct unur_par *par, const struct unur
 
 #define DISTR_IN  distr->data.cemp      /* data for distribution object      */
 
-#define PAR       par->data.empk        /* data for parameter object         */
-#define GEN       gen->data.empk        /* data for generator object         */
+#define PAR       ((struct unur_empk_par*)par->datap) /* data for parameter object */
+#define GEN       ((struct unur_empk_gen*)gen->datap) /* data for generator object */
 #define DISTR     gen->distr->data.cemp /* data for distribution in generator object */
 
 #define SAMPLE    gen->sample.cont      /* pointer to sampling routine       */     
@@ -324,21 +325,21 @@ unur_empk_new( const struct unur_distr *distr )
     _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"number of observed sample"); return NULL; }
 
   /* allocate structure */
-  par = _unur_xmalloc(sizeof(struct unur_par));
+  par = _unur_par_new( sizeof(struct unur_empk_par) );
   COOKIE_SET(par,CK_EMPK_PAR);
 
   /* copy input */
   par->distr    = distr;         /* pointer to distribution object           */
 
   /* set default values */
-  PAR.kernvar   = 1.;            /* variance of used kernel, only used if varcor == 1 */
-  PAR.alpha     = 0.7763884;     /* alpha for Gaussian kernel, efficiency = 0.951 */
-  PAR.beta      = 1.3637439;     /* optimal BETA if data follow normal distribution */
-  PAR.smoothing = 1.;            /* determines how "smooth" the estimated density will be */
+  PAR->kernvar   = 1.;            /* variance of used kernel, only used if varcor == 1 */
+  PAR->alpha     = 0.7763884;     /* alpha for Gaussian kernel, efficiency = 0.951 */
+  PAR->beta      = 1.3637439;     /* optimal BETA if data follow normal distribution */
+  PAR->smoothing = 1.;            /* determines how "smooth" the estimated density will be */
 
   /* kernel */
-  PAR.kerngen   = NULL;          /* random variate generator for kernel (by user)  */
-  PAR.kernel    = NULL;          /* random variate generator for kernel (internal) */
+  PAR->kerngen   = NULL;          /* random variate generator for kernel (by user)  */
+  PAR->kernel    = NULL;          /* random variate generator for kernel (internal) */
 
   par->method   = UNUR_METH_EMPK; /* method                                  */
   par->variant  = 0u;             /* default variant                         */
@@ -397,18 +398,18 @@ unur_empk_set_kernel( struct unur_par *par, unsigned kernel)
     fpar[2]     = -1.;
     fpar[3]     = 1.;
     kerndist    = unur_distr_beta( fpar, 4 );
-    PAR.kernel  = unur_init( unur_arou_new ( kerndist ) );
-    PAR.alpha   = 1.718771928;
-    PAR.kernvar = 0.2;
+    PAR->kernel  = unur_init( unur_arou_new ( kerndist ) );
+    PAR->alpha   = 1.718771928;
+    PAR->kernvar = 0.2;
     unur_distr_free( kerndist );
     break;
 
   case UNUR_DISTR_GAUSSIAN:
     /* Gaussian (normal) kernel. efficiency = 0.951 */
     kerndist    = unur_distr_normal( NULL, 0 );
-    PAR.kernel  = unur_init( unur_cstd_new ( kerndist ) );
-    PAR.alpha   = 0.7763884;
-    PAR.kernvar = 1.;
+    PAR->kernel  = unur_init( unur_cstd_new ( kerndist ) );
+    PAR->alpha   = 0.7763884;
+    PAR->kernvar = 1.;
     unur_distr_free( kerndist );
     break;
 
@@ -417,9 +418,9 @@ unur_empk_set_kernel( struct unur_par *par, unsigned kernel)
     fpar[0]     = -1.;
     fpar[1]     = 1.;
     kerndist    = unur_distr_uniform( fpar, 2 );
-    PAR.kernel  = unur_init( unur_cstd_new ( kerndist ) );
-    PAR.alpha   = 1.351;
-    PAR.kernvar = 1./3.;
+    PAR->kernel  = unur_init( unur_cstd_new ( kerndist ) );
+    PAR->alpha   = 1.351;
+    PAR->kernvar = 1./3.;
     unur_distr_free( kerndist );
     break;
 
@@ -428,18 +429,18 @@ unur_empk_set_kernel( struct unur_par *par, unsigned kernel)
        efficiency = 0.679 */
     fpar[0] = 3.;
     kerndist    = unur_distr_student( fpar, 1 );
-    PAR.kernel  = unur_init( unur_cstd_new ( kerndist ) );
-    PAR.alpha   = 0.48263;
-    PAR.kernvar = 3.;
+    PAR->kernel  = unur_init( unur_cstd_new ( kerndist ) );
+    PAR->alpha   = 0.48263;
+    PAR->kernvar = 3.;
     unur_distr_free( kerndist );
     break;
 
   case UNUR_DISTR_LOGISTIC:
     /* logistic kernel. efficiency = efficiency = 0.887 */
     kerndist    = unur_distr_logistic( NULL, 0 );
-    PAR.kernel  = unur_init( unur_cstd_new ( kerndist ) );
-    PAR.alpha   = 0.434;
-    PAR.kernvar = 3.289868133696; /* Pi^2/3 */
+    PAR->kernel  = unur_init( unur_cstd_new ( kerndist ) );
+    PAR->alpha   = 0.434;
+    PAR->kernvar = 3.289868133696; /* Pi^2/3 */
     unur_distr_free( kerndist );
     break;
 
@@ -449,7 +450,7 @@ unur_empk_set_kernel( struct unur_par *par, unsigned kernel)
   }
 
   /* generation of kernel successful ? */
-  if (PAR.kernel == NULL) {
+  if (PAR->kernel == NULL) {
     _unur_error(GENTYPE,UNUR_ERR_SHOULD_NOT_HAPPEN,"Could not initialize kernel generator");
     return UNUR_ERR_SHOULD_NOT_HAPPEN;
   }
@@ -506,16 +507,16 @@ unur_empk_set_kernelgen( struct unur_par *par, const struct unur_gen *kernelgen,
   }
 
   /* set kernel distribution */
-  PAR.kerngen = kernelgen;
+  PAR->kerngen = kernelgen;
 
   /* store alpha factor */
-  PAR.alpha = alpha;
+  PAR->alpha = alpha;
 
   /* changelog */
   par->set |= EMPK_SET_KERNGEN | EMPK_SET_ALPHA;
 
   /* set kernel variance */
-  PAR.kernvar = kernelvar;
+  PAR->kernvar = kernelvar;
   
   if (kernelvar > 0.)
     par->set |= EMPK_SET_KERNELVAR;
@@ -554,7 +555,7 @@ unur_empk_set_beta( struct unur_par *par, double beta )
   }
 
   /* store date */
-  PAR.beta = beta;
+  PAR->beta = beta;
 
   /* changelog */
   par->set |= EMPK_SET_BETA;
@@ -590,7 +591,7 @@ unur_empk_set_smoothing( struct unur_par *par, double smoothing )
   }
 
   /* store date */
-  PAR.smoothing = smoothing;
+  PAR->smoothing = smoothing;
 
   /* changelog */
   par->set |= EMPK_SET_SMOOTHING;
@@ -628,13 +629,13 @@ unur_empk_chg_smoothing( struct unur_gen *gen, double smoothing )
   }
 
   /* recompute band width */
-  GEN.bwidth = smoothing * GEN.bwidth_opt;
+  GEN->bwidth = smoothing * GEN->bwidth_opt;
 
   /* recompute constant for variance corrected version */
-  GEN.sconst = 1./sqrt(1. + GEN.kernvar * SQU( GEN.bwidth/GEN.stddev_observ ) );
+  GEN->sconst = 1./sqrt(1. + GEN->kernvar * SQU( GEN->bwidth/GEN->stddev_observ ) );
 
   /* store smoothing factor */
-  GEN.smoothing = smoothing;
+  GEN->smoothing = smoothing;
 
   /* changelog */
   gen->set |= EMPK_SET_SMOOTHING;
@@ -781,44 +782,44 @@ _unur_empk_init( struct unur_par *par )
   COOKIE_CHECK(par,CK_EMPK_PAR,NULL);
 
   /* check kernel generator */
-  if ( PAR.kerngen==NULL && PAR.kernel == NULL) {
+  if ( PAR->kerngen==NULL && PAR->kernel == NULL) {
     /* no kernel given. use default kernel */
     if ( unur_empk_set_kernel( par, UNUR_DISTR_GAUSSIAN )!=UNUR_SUCCESS ) {
       /* cannot make kernel generator (should not happen!) */
-      free(par); return NULL; 
+      _unur_par_free(par); return NULL; 
     }
   }
 
   /* create a new empty generator object */
   gen = _unur_empk_create(par);
-  if (!gen) { free(par); return NULL; }
+  if (!gen) { _unur_par_free(par); return NULL; }
 
   /* if variance correction is used, the variance of the kernel
      must be known and positive */
   if( (gen->variant & EMPK_VARFLAG_VARCOR) &&
-      !( (gen->set & EMPK_SET_KERNELVAR) && GEN.kernvar > 0. )) {
+      !( (gen->set & EMPK_SET_KERNELVAR) && GEN->kernvar > 0. )) {
     _unur_warning(GENTYPE,UNUR_ERR_GEN_DATA,"variance correction disabled");
     gen->variant &= ~EMPK_SET_KERNELVAR;
   }
 
   /* set uniform random number generator */
-  GEN.kerngen->urng = par->urng;
+  GEN->kerngen->urng = par->urng;
 
   /* copy debugging flags */
-  GEN.kerngen->debug = par->debug;
+  GEN->kerngen->debug = par->debug;
 
   /* the observed data */
 
   /* sort entries */
   /** TODO: this sort can be removed after we have implemented a new 
       version of the function iqrtrange, that does not depend on sorting **/
-  qsort( GEN.observ, GEN.n_observ, sizeof(double), compare_doubles);
+  qsort( GEN->observ, GEN->n_observ, sizeof(double), compare_doubles);
 
   /* compute mean and standard deviation of observed sample */
-  _unur_empk_comp_stddev( GEN.observ, GEN.n_observ, &(GEN.mean_observ), &(GEN.stddev_observ) );
+  _unur_empk_comp_stddev( GEN->observ, GEN->n_observ, &(GEN->mean_observ), &(GEN->stddev_observ) );
 
   /* compute interquartile range of the sample */
-  iqrtrange = _unur_empk_comp_iqrtrange( GEN.observ, GEN.n_observ );
+  iqrtrange = _unur_empk_comp_iqrtrange( GEN->observ, GEN->n_observ );
 
   /* get an estimation (guess) of the "real" standard deviation of 
      the observed data.
@@ -826,14 +827,14 @@ _unur_empk_init( struct unur_par *par )
      If this is greater than the observed standard deviation we use that 
      instead of.  */
   sigma = iqrtrange / 1.34;
-  if (GEN.stddev_observ < sigma) sigma = GEN.stddev_observ;
+  if (GEN->stddev_observ < sigma) sigma = GEN->stddev_observ;
 
   /* compute band width (also called window width) */
-  GEN.bwidth_opt = PAR.alpha * PAR.beta * sigma / exp(0.2 * log(GEN.n_observ));
-  GEN.bwidth = PAR.smoothing * GEN.bwidth_opt;
+  GEN->bwidth_opt = PAR->alpha * PAR->beta * sigma / exp(0.2 * log(GEN->n_observ));
+  GEN->bwidth = PAR->smoothing * GEN->bwidth_opt;
 
   /* compute constant for variance corrected version */
-  GEN.sconst = 1./sqrt(1. + PAR.kernvar * SQU( GEN.bwidth/GEN.stddev_observ ) );
+  GEN->sconst = 1./sqrt(1. + PAR->kernvar * SQU( GEN->bwidth/GEN->stddev_observ ) );
 
 #ifdef UNUR_ENABLE_LOGGING
     /* write info into log file */
@@ -841,7 +842,7 @@ _unur_empk_init( struct unur_par *par )
 #endif
 
   /* free parameters */
-  free(par);
+  _unur_par_free(par);
 
   return gen;
 
@@ -870,7 +871,7 @@ _unur_empk_create( struct unur_par *par )
   CHECK_NULL(par,NULL);  COOKIE_CHECK(par,CK_EMPK_PAR,NULL);
 
   /* create new generic generator object */
-  gen = _unur_generic_create( par );
+  gen = _unur_generic_create( par, sizeof(struct unur_empk_gen) );
 
   /* magic cookies */
   COOKIE_SET(gen,CK_EMPK_GEN);
@@ -884,25 +885,25 @@ _unur_empk_create( struct unur_par *par )
   gen->clone = _unur_empk_clone;
 
   /* copy observed data into generator object */
-  GEN.observ   = DISTR.sample;          /* observations in distribution object */
-  GEN.n_observ = DISTR.n_sample;        /* sample size */
+  GEN->observ   = DISTR.sample;          /* observations in distribution object */
+  GEN->n_observ = DISTR.n_sample;        /* sample size */
 
   /* copy some parameters into generator object */
-  GEN.smoothing = PAR.smoothing;    /* smoothing factor                      */
+  GEN->smoothing = PAR->smoothing;    /* smoothing factor                      */
 
   /* copy kernel generator into generator object */
-  if (PAR.kerngen)
+  if (PAR->kerngen)
     /* kernel provided by user */
-    GEN.kerngen = _unur_gen_clone(PAR.kerngen);
+    GEN->kerngen = _unur_gen_clone(PAR->kerngen);
   else
     /* kernel from UNURAN list of kernels */
-    GEN.kerngen = PAR.kernel;
+    GEN->kerngen = PAR->kernel;
 
   /* variance of kernel */
-  GEN.kernvar = PAR.kernvar;
+  GEN->kernvar = PAR->kernvar;
 
   /* the kernel is an auxilliary generator for method EMPK, of course */
-  gen->gen_aux = GEN.kerngen;
+  gen->gen_aux = GEN->kerngen;
 
   /* return pointer to (almost empty) generator object */
   return gen;
@@ -926,7 +927,7 @@ _unur_empk_clone( const struct unur_gen *gen )
      /*   return NULL                                                        */
      /*----------------------------------------------------------------------*/
 { 
-#define CLONE clone->data.empk
+#define CLONE  ((struct unur_empk_gen*)clone->datap)
 
   struct unur_gen *clone;
 
@@ -937,11 +938,11 @@ _unur_empk_clone( const struct unur_gen *gen )
   clone = _unur_generic_clone( gen, GENTYPE );
 
   /* copy observed data into generator object */
-  CLONE.observ = clone->distr->data.cemp.sample;   /* observations in distribution object */
+  CLONE->observ = clone->distr->data.cemp.sample;   /* observations in distribution object */
 
   /* kernel generator is (also) stored as auxiliary generator */
   /* which has already been cloned by generic_clone.          */
-  CLONE.kerngen = clone->gen_aux;
+  CLONE->kerngen = clone->gen_aux;
 
   return clone;
 
@@ -972,7 +973,7 @@ _unur_empk_sample( struct unur_gen *gen )
   CHECK_NULL(gen,INFINITY);  COOKIE_CHECK(gen,CK_EMPK_GEN,INFINITY);
 
   /* select uniformly one of the observations */
-  U = _unur_call_urng(gen->urng) * GEN.n_observ;
+  U = _unur_call_urng(gen->urng) * GEN->n_observ;
   j = (int) (U);
 
   /** TODO: recycle uniform random variate??
@@ -980,14 +981,14 @@ _unur_empk_sample( struct unur_gen *gen )
   /* U -= j;   u is now a "recycled" U(0,1) random variate, aber wie weiter verwenden, ? */
 
   /* sample from kernel distribution */
-  K = unur_sample_cont( GEN.kerngen );
+  K = unur_sample_cont( GEN->kerngen );
   
   if (gen->variant & EMPK_VARFLAG_VARCOR)
     /* use variance correction */
-    X = GEN.mean_observ + (GEN.observ[j] - GEN.mean_observ + GEN.bwidth * K) * GEN.sconst;
+    X = GEN->mean_observ + (GEN->observ[j] - GEN->mean_observ + GEN->bwidth * K) * GEN->sconst;
   else
     /* no variance correction */
-    X = GEN.observ[j] + GEN.bwidth * K;
+    X = GEN->observ[j] + GEN->bwidth * K;
 
   if (gen->variant & EMPK_VARFLAG_POSITIVE)
     /* use mirroring to avoid non-positive numbers */
@@ -1150,7 +1151,7 @@ _unur_empk_debug_init( const struct unur_par *par, const struct unur_gen *gen )
   fprintf(log,"%s: sampling routine = _unur_empk_sample()\n",gen->genid);
   fprintf(log,"%s:\n",gen->genid);
 
-  fprintf(log,"%s: smoothing factor = %g",gen->genid, PAR.smoothing);
+  fprintf(log,"%s: smoothing factor = %g",gen->genid, PAR->smoothing);
   _unur_print_if_default(par,EMPK_SET_SMOOTHING); fprintf(log,"\n");
   if (gen->variant & EMPK_VARFLAG_POSITIVE)
     fprintf(log,"%s: positive random variable only; use mirroring \n",gen->genid);
@@ -1163,7 +1164,7 @@ _unur_empk_debug_init( const struct unur_par *par, const struct unur_gen *gen )
   fprintf(log,"%s:\n",gen->genid);
   fprintf(log,"%s: Kernel:\n",gen->genid);
 
-  fprintf(log,"%s:    type = %s  ",gen->genid,GEN.kerngen->distr->name);
+  fprintf(log,"%s:    type = %s  ",gen->genid,GEN->kerngen->distr->name);
   if (gen->set & EMPK_SET_KERNGEN)
     fprintf(log,"[kernel generator set]\n");
   else if (gen->set & EMPK_SET_KERNEL)
@@ -1171,21 +1172,21 @@ _unur_empk_debug_init( const struct unur_par *par, const struct unur_gen *gen )
   else 
     fprintf(log,"[default kernel]\n");
 
-  fprintf(log,"%s:    window width = %g\t(opt = %g)\n",gen->genid, GEN.bwidth, GEN.bwidth_opt);
-  fprintf(log,"%s:    alpha = %g",gen->genid, PAR.alpha);
+  fprintf(log,"%s:    window width = %g\t(opt = %g)\n",gen->genid, GEN->bwidth, GEN->bwidth_opt);
+  fprintf(log,"%s:    alpha = %g",gen->genid, PAR->alpha);
   _unur_print_if_default(par,EMPK_SET_ALPHA); fprintf(log,"\n");
   if (gen->variant & EMPK_VARFLAG_VARCOR) {
-    fprintf(log,"%s:    kernel variance = %g",gen->genid, PAR.kernvar);
+    fprintf(log,"%s:    kernel variance = %g",gen->genid, PAR->kernvar);
     _unur_print_if_default(par,EMPK_SET_KERNELVAR); fprintf(log,"\n");
-    fprintf(log,"%s:    variance correction factor = %g\n",gen->genid, GEN.sconst);
+    fprintf(log,"%s:    variance correction factor = %g\n",gen->genid, GEN->sconst);
   }
 
   fprintf(log,"%s:\n",gen->genid);
   fprintf(log,"%s: Data:\n",gen->genid);
-  fprintf(log,"%s:    beta  = %g",gen->genid, PAR.beta);
+  fprintf(log,"%s:    beta  = %g",gen->genid, PAR->beta);
   _unur_print_if_default(par,EMPK_SET_BETA); fprintf(log,"\n");
-  fprintf(log,"%s:    mean (data) = %g\n",gen->genid, GEN.mean_observ);
-  fprintf(log,"%s:    stddev (data) = %g\n",gen->genid, GEN.stddev_observ);
+  fprintf(log,"%s:    mean (data) = %g\n",gen->genid, GEN->mean_observ);
+  fprintf(log,"%s:    stddev (data) = %g\n",gen->genid, GEN->stddev_observ);
 
   fprintf(log,"%s:\n",gen->genid);
 

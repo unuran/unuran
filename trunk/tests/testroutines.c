@@ -973,7 +973,7 @@ int print_pval( FILE *LOG, UNUR_GEN *gen, const UNUR_DISTR *distr, double pval, 
     }
     break;
   default:
-    fprintf(stderr,"invalid test symbol\n");
+    fprintf(stderr, "%s:%d: invalid test symbol\n", __FILE__, __LINE__);
     exit (-1);
   }
 
@@ -1072,7 +1072,7 @@ int run_validate_chi2( FILE *LOG, int line, UNUR_GEN *gen, const UNUR_DISTR *dis
       pval = unur_test_chi2( gen, CHI_TEST_INTERVALS, 0, 20, CHI_TEST_VERBOSITY, LOG);
       break;
     default:
-      fprintf(stderr,"\nrun_validate_chi2: this should not happen\n");
+      fprintf(stderr, "\n%s:%d: run_validate_chi2: this should not happen\n", __FILE__, __LINE__);
       exit (EXIT_FAILURE);
     }
 
@@ -1102,6 +1102,8 @@ int run_validate_verifyhat( FILE *LOG, int line, UNUR_GEN *gen, const UNUR_DISTR
   unsigned int type;
   int i;
   int failed = 0;
+  int dim;
+  double *x = NULL;
 
   /* get name of distribution */
   distr_name = unur_distr_get_name( distr );
@@ -1150,6 +1152,15 @@ int run_validate_verifyhat( FILE *LOG, int line, UNUR_GEN *gen, const UNUR_DISTR
     }
   }
 
+  /* get dimension of distribution */
+  dim = unur_get_dimension (gen);
+  
+  /* allocate working space */
+  if (dim > 1) {
+    x = malloc( dim * sizeof(double) );
+    abort_if_NULL(LOG, line, x);
+  }
+
   /* run verify hat test */
   for (i=0; i<VERIFYHAT_SAMPLESIZE; i++) {
 
@@ -1162,8 +1173,11 @@ int run_validate_verifyhat( FILE *LOG, int line, UNUR_GEN *gen, const UNUR_DISTR
     case UNUR_DISTR_CEMP:
       unur_sample_cont(gen);
       break;
+    case UNUR_DISTR_CVEC:
+      unur_sample_vec(gen,x);
+      break;
     default:
-      fprintf(stderr,"\nrun_validate_verifyhat: this should not happen\n");
+      fprintf(stderr, "\n%s:%d: run_validate_verifyhat: this should not happen\n", __FILE__, __LINE__);
       exit (EXIT_FAILURE);
     }
 
@@ -1176,6 +1190,9 @@ int run_validate_verifyhat( FILE *LOG, int line, UNUR_GEN *gen, const UNUR_DISTR
     
   }
   
+  /* free working space */
+  if (x!=NULL) free(x);
+
   return print_verifyhat_result(LOG,gen,distr,failed,todo);
   
 } /* end of run_validate_verifyhat() */
@@ -1231,7 +1248,7 @@ int print_verifyhat_result( FILE *LOG, UNUR_GEN *gen, const UNUR_DISTR *distr, i
       }
       break;
     default:
-      fprintf(stderr,"invalid test symbol\n");
+      fprintf(stderr,"%s:%d: invalid test symbol\n", __FILE__, __LINE__);
       exit (EXIT_FAILURE);
     }
   }

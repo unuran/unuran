@@ -53,7 +53,7 @@
 #include <stdlib.h>
 
 #include <config.h>
-#include <unuran.h>
+#include <in_unuran.h>
 
 #include <unuran_errno.h>
 #include <source_struct.h>

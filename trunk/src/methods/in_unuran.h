@@ -71,34 +71,34 @@ typedef struct unur_gen   UNUR_GEN;      /* generator object                 */
 /**  Function prototypes for manipulating distribution objects              **/
 /*****************************************************************************/
 
-#include <unur_distr.h>
+#include <distr.h>
 
 /*****************************************************************************/
 /**  Function prototypes for manipulating generator objects                 **/
 /*****************************************************************************/
 
 /* methods for discrete distributions */
-#include <unur_dau.h>
-#include <unur_dgt.h>
+#include <dau.h>
+#include <dgt.h>
 
 /* methods for continuous distributions */
-#include <unur_arou.h>
-#include <unur_ninv.h>
-#include <unur_srou.h>
-#include <unur_stdr.h>
-#include <unur_tabl.h>
-#include <unur_tdr.h>
-#include <unur_utdr.h>
+#include <arou.h>
+#include <ninv.h>
+#include <srou.h>
+#include <stdr.h>
+#include <tabl.h>
+#include <tdr.h>
+#include <utdr.h>
 
 /* methods for continuous multivariate distributions */
-#include <unur_rect.h>
+#include <rect.h>
 
 /* wrapper for special generators for standard distributions */
-#include <unur_cstd.h>     /* continuous */
-#include <unur_dstd.h>     /* discrete   */
+#include <cstd.h>     /* continuous */
+#include <dstd.h>     /* discrete   */
 
 /* wrapper for uniform random number generator */
-#include <unur_unif.h>
+#include <unif.h>
 
 
 /*****************************************************************************/

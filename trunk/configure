@@ -2000,6 +2000,7 @@ ac_given_INSTALL="$INSTALL"
 
 trap 'rm -fr `echo "\
 	Makefile \
+        scripts/Makefile \
 	src/Makefile \
 	src/methods/Makefile \
 	src/distributions/Makefile \
@@ -2106,6 +2107,7 @@ cat >> $CONFIG_STATUS <<EOF
 
 CONFIG_FILES=\${CONFIG_FILES-"\
 	Makefile \
+        scripts/Makefile \
 	src/Makefile \
 	src/methods/Makefile \
 	src/distributions/Makefile \

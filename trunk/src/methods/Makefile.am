@@ -7,9 +7,9 @@ INCLUDES = \
  -I$(top_srcdir)/src \
  -I$(top_srcdir)/src/distributions
 
-lib_LIBRARIES = libunuran.a
+lib_LIBRARIES = libmethods.a
 
-libunuran_a_SOURCES = \
+libmethods_a_SOURCES = \
  distr.c \
  x_error.c \
  x_misc.c \
@@ -31,48 +31,49 @@ libunuran_a_SOURCES = \
  utdr.c
 
 pkginclude_HEADERS = \
- unuran.h \
  unuran_errno.h \
  unur_urng.h \
- unur_misc.h  \
- unur_distr.h \
- unur_arou.h \
- unur_cstd.h \
- unur_dau.h  \
- unur_dgt.h  \
- unur_dstd.h \
- unur_ninv.h  \
- unur_rect.h \
- unur_srou.h \
- unur_stdr.h \
- unur_tabl.h \
- unur_tdr.h  \
- unur_unif.h \
- unur_utdr.h
+ unur_misc.h
 
 noinst_HEADERS = \
+ in_unuran.h \
  source_unuran.h \
  source_cookies.h \
  source_distr.h \
  source_math.h \
  source_methods.h \
  source_struct.h \
- distr_struct.h \
  x_umalloc_struct.h \
+ distr.h \
+ distr_struct.h \
+ arou.h \
  arou_struct.h \
+ cstd.h \
  cstd_struct.h \
- dau_struct.h  \
- dgt_struct.h  \
+ dau.h \
+ dau_struct.h \
+ dgt.h \
+ dgt_struct.h \
+ dstd.h \
  dstd_struct.h \
- ninv_struct.h  \
+ ninv.h \
+ ninv_struct.h \
+ rect.h \
  rect_struct.h \
+ srou.h \
  srou_struct.h \
+ stdr.h \
  stdr_struct.h \
+ tabl.h \
  tabl_struct.h \
+ tdr.h \
  tdr_struct.h  \
+ unif.h \
  unif_struct.h \
+ utdr.h \
  utdr_struct.h
 
 # clean backup files too
 clean-local:
 	rm -f *~
+

@@ -1,10 +1,7 @@
 ## Process this file with automake to produce Makefile.in
 
 AM_CFLAGS = -Wall\
- -L$(top_builddir)/src/methods\
- -L$(top_builddir)/src/distributions\
- -L$(top_builddir)/src/tests\
- -L$(top_builddir)/src/uniform
+ -L$(top_builddir)/src
 
 INCLUDES = \
  -I$(top_srcdir)/src \
@@ -18,8 +15,8 @@ noinst_PROGRAMS = run test
 run_SOURCES = run.c
 example_SOURCE = test.c
 
-run_LDADD = -lunuran_tests -lunuran_distributions -lunuran -luniform -lprng -lml -lm
-test_LDADD = -lunuran_tests -lunuran_distributions -lunuran -luniform -lprng -lml -lm
+run_LDADD = -lunuran -lprng -lml -lm
+test_LDADD = -lunuran -lprng -lml -lm
 
 # clean backup files too
 clean-local:

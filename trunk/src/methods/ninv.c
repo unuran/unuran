@@ -176,7 +176,7 @@ static void _unur_ninv_debug_sample_newton( struct unur_gen *gen,
 
 static void _unur_ninv_debug_chg_domain(UNUR_GEN *gen);
 /*---------------------------------------------------------------------------*/
-/*  track changes of the domain                                              */
+/* trace changes of the domain.                                              */
 /*---------------------------------------------------------------------------*/
 #endif
 
@@ -229,33 +229,33 @@ unur_ninv_new( struct unur_distr *distr )
   if (DISTR_IN.cdf == NULL) {
     _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"c.d.f."); return NULL; }
 
+  /* if default variant is Newton's method, then we also need the p.d.f. ! */
+
   /* allocate structure */
   par = _unur_malloc(sizeof(struct unur_par));
   COOKIE_SET(par,CK_NINV_PAR);
 
   /* copy input */
-  par->distr       = distr;        /* pointer to distribution object         */
+  par->distr   = distr;           /* pointer to distribution object          */
 
   /* set default values */
-  PAR.max_iter  = 40;  /* =DEF NINV maxiter Maximal number of iterations */
-  PAR.rel_x_resolution = 1.0e-8;  /* =DEF NINV rel_error
-                                       Maximal relative error allowed in x   */
-  PAR.table_on = 0;            /* =DEF NINV table_on If equal to 1 a table
-                                   containing potential starting points
-                                   is generated  */
-  PAR.s[0]      = 0.0;              /* =DEF NINV s1  Left boundary of
-                                      starting  interval for regula falsi
-                                      and newton starting point.             */
-  PAR.s[1]      = 0.0;              /* =DEF NINV s2 Right boundary of
-                                      of starting interval for regula falsi. */
-  /* If s1 and s2 are equal,  are chosen
-  such that in case of the regula falsi the integral of the pdf over
-  the interval is a given value (e.g. 0.9) and in case of Newton's method
-  cdf at s1 equals a given value (e.g. 0.5)                                 */
+  PAR.max_iter  = 40;             /* maximal number of iterations            */
+  PAR.rel_x_resolution = 1.0e-8;  /* maximal relative error allowed in x     */
+
+  /* starting points for numerical inversion */
+  PAR.s[0]      = 0.0;     /* regula falsi: left boundary of starting interval
+			      newton: starting point                         */
+  PAR.s[1]      = 0.0;     /* regula falsi: right boundary of starting interval
+			      newton: not used                               */
+  /* If s1 and s2 are equal a defaults are used, see below */
+
+  PAR.table_on  = FALSE;   /* Do not use a table for starting points
+			      by default.                                    */
  
   par->method   = UNUR_METH_NINV;          /* method and default variant     */
-  par->variant  = NINV_VARFLAG_REGULA;     /* =DEF NINV variant The default
-             method used by NINV (either Newton's method or the regula falsi)*/
+  par->variant  = NINV_VARFLAG_REGULA;     /* Use regula falsi as default 
+					      method                         */
+
   par->set      = 0u;                      /* inidicate default parameters   */
   par->urng     = unur_get_default_urng(); /* use default urng               */
   par->urng_aux = NULL;                    /* no auxilliary URNG required    */
@@ -271,7 +271,7 @@ unur_ninv_new( struct unur_distr *distr )
 
 /*****************************************************************************/
 
-int unur_ninv_use_newton( struct unur_par *par )
+int unur_ninv_set_usenewton( struct unur_par *par )
      /*----------------------------------------------------------------------*/
      /* use Newton's method                                                  */
      /*                                                                      */
@@ -301,11 +301,11 @@ int unur_ninv_use_newton( struct unur_par *par )
 
   return 1;
 
-} /* end of unur_ninv_use_newton() */
+} /* end of unur_ninv_set_usenewton() */
 
 /*---------------------------------------------------------------------------*/
 
-int unur_ninv_use_regula( struct unur_par *par )
+int unur_ninv_set_useregula( struct unur_par *par )
      /*----------------------------------------------------------------------*/
      /* use regula falsi                                                     */
      /*                                                                      */
@@ -328,7 +328,7 @@ int unur_ninv_use_regula( struct unur_par *par )
 
   return 1;
 
-} /* end of unur_ninv_use_regula() */
+} /* end of unur_ninv_set_useregula() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -369,7 +369,6 @@ int unur_ninv_set_max_iter(UNUR_PAR *par, int max_iter )
 
 /*---------------------------------------------------------------------------*/
 
-
 int unur_ninv_chg_max_iter(UNUR_GEN *gen, int max_iter )
      /*----------------------------------------------------------------------*/
      /* change number of maximal iterations                                  */
@@ -402,7 +401,6 @@ int unur_ninv_chg_max_iter(UNUR_GEN *gen, int max_iter )
   return 1;
 
 } /* end of unur_ninv_chg_max_iter() */
-
 
 /*---------------------------------------------------------------------------*/
 
@@ -503,8 +501,14 @@ unur_ninv_set_start(UNUR_PAR *par, double s1, double s2)
   _unur_check_par_object( par,NINV );
 
   /* store date */
-  PAR.s[0] = s1;
-  PAR.s[1] = s2;
+  if ( s1 <= s2 ){
+     PAR.s[0] = s1;
+     PAR.s[1] = s2;
+  }
+  else{
+     PAR.s[0] = s2;
+     PAR.s[1] = s1;
+  }
 
   /* changelog */
   par->set |= NINV_SET_START;
@@ -514,7 +518,6 @@ unur_ninv_set_start(UNUR_PAR *par, double s1, double s2)
 } /* end of unur_ninv_set_start() */
 
 /*---------------------------------------------------------------------------*/
-
 
 int unur_ninv_chg_start(UNUR_GEN *gen, double s1, double s2)
      /*----------------------------------------------------------------------*/
@@ -547,7 +550,7 @@ int unur_ninv_chg_start(UNUR_GEN *gen, double s1, double s2)
      GEN.s[1] = s1;
   }
 
- if ( _FP_same(GEN.s[0], GEN.s[1]) && GEN.table_on == 0) {
+ if ( _FP_same(GEN.s[0], GEN.s[1]) && !GEN.table_on) {
       /* length of interval == 0 -> choose bounderies with                   */
       /*  INTERVAL_COVERS *100% chance for sign change in interval           */
       GEN.s[0] = -10.;      /* arbitrary starting value                      */
@@ -566,9 +569,7 @@ int unur_ninv_chg_start(UNUR_GEN *gen, double s1, double s2)
 
 /*---------------------------------------------------------------------------*/
 
-
-
-int unur_ninv_use_table(UNUR_PAR *par, int tbl_pnts)
+int unur_ninv_set_table(UNUR_PAR *par, int tbl_pnts)
      /*----------------------------------------------------------------------*/
      /* if used, a table is generated to find better startig points          */
      /* the function unur_ninv_set_start() is overruled                      */
@@ -586,16 +587,14 @@ int unur_ninv_use_table(UNUR_PAR *par, int tbl_pnts)
 
   /* check input */
   _unur_check_par_object( par,NINV );
-  PAR.table_points = (tbl_pnts >= 10) ? tbl_pnts : 10;
-  PAR.table_on = 1;
+  PAR.table_size = (tbl_pnts >= 10) ? tbl_pnts : 10;
+  PAR.table_on = TRUE;
 
   return 1;
 
-} /* end of unur_ninv_use_table() */
+} /* end of unur_ninv_set_table() */
 
-
-
-/*****************************************************************************/
+/*---------------------------------------------------------------------------*/
 
 int unur_ninv_chg_table(UNUR_GEN *gen, int tbl_pnts)
      /*----------------------------------------------------------------------*/
@@ -616,92 +615,36 @@ int unur_ninv_chg_table(UNUR_GEN *gen, int tbl_pnts)
   CHECK_NULL(gen, 0);
 
   free(GEN.table);   
-  GEN.table_points = (tbl_pnts >= 10) ? tbl_pnts : 10;
-  GEN.table = (double *) malloc(GEN.table_points*sizeof(double));
+  GEN.table_size = (tbl_pnts >= 10) ? tbl_pnts : 10;
+  GEN.table = (double *) malloc(GEN.table_size*sizeof(double));
 
       GEN.s[0] = - 10.;  /* arbitrary starting values                        */
       GEN.s[1] =   10.;
-      GEN.table_on = 0;   /* table can't be used to calculate itself         */
+      GEN.table_on = FALSE;   /* table can't be used to calculate itself         */
 
-      for (i=0; i<GEN.table_points/2; i++){
+      for (i=0; i<GEN.table_size/2; i++){
 	GEN.table[i] =
-           _unur_ninv_regula(gen, (i+1.)/(GEN.table_points+1.) );
-        GEN.table[GEN.table_points-1-i] = 
-           _unur_ninv_regula(gen, ((GEN.table_points-1.-i)+1.)/(GEN.table_points+1.) );
+           _unur_ninv_regula(gen, (i+1.)/(GEN.table_size+1.) );
+        GEN.table[GEN.table_size-1-i] = 
+           _unur_ninv_regula(gen, ((GEN.table_size-1.-i)+1.)/(GEN.table_size+1.) );
          
         GEN.s[0] = GEN.table[i];
-        GEN.s[1] = GEN.table[GEN.table_points-1-i];
+        GEN.s[1] = GEN.table[GEN.table_size-1-i];
  
       }  /* end of for()                                                     */
 
-      if (GEN.table_points/2 != GEN.table_points/2.){  /*  GEN.table_points is odd ?     */
-         GEN.table[GEN.table_points/2] =  
-           _unur_ninv_regula(gen, ((GEN.table_points/2)+1.)/(GEN.table_points+1.) );
+      if (GEN.table_size/2 != GEN.table_size/2.){  /*  GEN.table_size is odd ?     */
+         GEN.table[GEN.table_size/2] =  
+           _unur_ninv_regula(gen, ((GEN.table_size/2)+1.)/(GEN.table_size+1.) );
       }
 
-  GEN.table_on = 1;
+  GEN.table_on = TRUE;
 
   return 1;
 
 } /* end of unur_ninv_chg_table() */
 
-/*****************************************************************************/
-
-
-int unur_ninv_table_onoff(UNUR_GEN *gen, int onoff)
-     /*--------------------------------------------------------------------*/
-     /* can only be used if a table already exists                         */
-     /* onoff  = 1  ... table is used                                      */
-     /* onoff  = 0  ... table is not used                                  */
-     /*                                                                    */
-     /* parameters:                                                        */
-     /*   gen      ... pointer to generator object                         */
-     /*   onoff    ... decides about usage of table                        */
-     /*                                                                    */
-     /* return:                                                            */
-     /*   1 ... on success                                                 */
-     /*   0 ... on error                                                   */
-     /*--------------------------------------------------------------------*/
-{
-  /* check arguments */
-  CHECK_NULL(gen, 0);
-
-  if (onoff == 0){
-    GEN.table_on = 0;
- 
-    GEN.s[0] =  -10.;  /* arbitrary starting values                      */
-    GEN.s[1] =   10.;
-
-    switch (gen->variant) {
-    case NINV_VARFLAG_REGULA:
- 	GEN.s[0] = _unur_ninv_regula(gen, (1.-INTERVAL_COVERS)/2. );
-	GEN.s[1] = GEN.s[0] + 10.;   /* arbitrary interval length          */
-	GEN.s[1] = _unur_ninv_regula(gen, (1.+INTERVAL_COVERS)/2. );
-       break;    /* case REGULA end */
-    case NINV_VARFLAG_NEWTON:
- 	GEN.s[0] = -9.987655;            /* arbitrary starting values      */
-	GEN.s[1] =  9.987655;
-	GEN.s[0] = _unur_ninv_regula(gen, 0.5);
-       break;    /* case NEWTON end */
-    }  /* end of switch  */
-
-  }  /* end of (onoff == 0) */ 
-  else if (onoff == 1){
-    GEN.table_on = 1;
-  }
-  else{
-    _unur_warning(gen->genid,UNUR_ERR_PAR_SET,
-          "onoff should be 0 or 1, will be treated as 1");
-    GEN.table_on = 1;
-  }
-
-  return 1;
-
-} /* end of unur_ninv_table_onoff() */
-
-
-/*****************************************************************************/
-
+/*---------------------------------------------------------------------------*/
 
 int 
 unur_ninv_chg_domain(UNUR_GEN *gen, double left, double right )
@@ -729,39 +672,28 @@ unur_ninv_chg_domain(UNUR_GEN *gen, double left, double right )
   }
 
   /* copy new boundaries into generator object */
-  if (left <= right) {
-     DISTR.BD_LEFT  = left;
-     DISTR.BD_RIGHT = right;
-  }
-  else{
-     DISTR.BD_RIGHT = left;
-     DISTR.BD_LEFT  = right;
-  }
+  DISTR.BD_LEFT  = left;
+  DISTR.BD_RIGHT = right;
 
   /* changelog */
   gen->distr.set |= UNUR_DISTR_SET_DOMAIN;
 
-  /* indicate that we have a truncated distribution.
-     (do not have the standard domain any more) */
-  gen->distr.set &= ~UNUR_DISTR_SET_STDDOMAIN;
-
-  /* set bounds of U -- in respect to given bounds                         */
+  /* set bounds of U -- in respect to given bounds */
   GEN.Umin = (DISTR.BD_LEFT  <= -INFINITY) ? 0.0 : CDF(DISTR.BD_LEFT); 
   GEN.Umax = (DISTR.BD_RIGHT >=  INFINITY) ? 1.0 : CDF(DISTR.BD_RIGHT); 
 
 #ifdef UNUR_ENABLE_LOGGING
-    /* write info into log file */
-    if (gen->debug & NINV_DEBUG_CHG) 
-      _unur_ninv_debug_chg_domain( gen );
+  /* write info into log file */
+  if (gen->debug & NINV_DEBUG_CHG) 
+    _unur_ninv_debug_chg_domain( gen );
 #endif
-
   
   /* o.k. */
   return 1;
   
 } /* end of unur_ninv_chg_domain() */
 
-/*****************************************************************************/
+/*---------------------------------------------------------------------------*/
 
 int
 unur_ninv_chg_pdfparams( struct unur_gen *gen, double *params, int n_params )
@@ -782,8 +714,6 @@ unur_ninv_chg_pdfparams( struct unur_gen *gen, double *params, int n_params )
      /*                                                                      */
      /*----------------------------------------------------------------------*/
 {
-  register int i;
-
   /* check arguments */
   CHECK_NULL(gen,0);
   _unur_check_gen_object(gen, NINV);
@@ -797,8 +727,7 @@ unur_ninv_chg_pdfparams( struct unur_gen *gen, double *params, int n_params )
 
   /* copy parameters */
   DISTR.n_params = n_params;
-  for (i=0; i < n_params; i++)
-    DISTR.params[i] = params[i];
+  memcpy(DISTR.params, params, n_params * sizeof(double));
 
   /* changelog */
   /* mode and area might be wrong now! 
@@ -812,9 +741,7 @@ unur_ninv_chg_pdfparams( struct unur_gen *gen, double *params, int n_params )
   return 1;
 } /* end of unur_ninv_chg_pdfparams() */
 
-
 /*****************************************************************************/
-
 
 struct unur_gen *
 _unur_ninv_init( struct unur_par *par )
@@ -833,7 +760,6 @@ _unur_ninv_init( struct unur_par *par )
 { 
   struct unur_gen *gen;
   int i;
-  double tmp; 
 
   /* check arguments */
   _unur_check_NULL( GENTYPE,par,NULL );
@@ -848,8 +774,7 @@ _unur_ninv_init( struct unur_par *par )
   gen = _unur_ninv_create(par);
   if (!gen) { free(par); return NULL; }
 
-
-  /* set bounds of U -- in respect to givven bounds                         */
+  /* set bounds of U -- in respect to given bounds                          */
   GEN.Umin = (DISTR.BD_LEFT  <= -INFINITY) ? 0.0 : CDF(DISTR.BD_LEFT); 
   GEN.Umax = (DISTR.BD_RIGHT >=  INFINITY) ? 1.0 : CDF(DISTR.BD_RIGHT); 
 
@@ -857,12 +782,8 @@ _unur_ninv_init( struct unur_par *par )
   switch (par->variant) {
 
   case NINV_VARFLAG_REGULA:
-    if (GEN.s[0] > GEN.s[1]) {
-      /* swap interval boundaries                                            */
-       tmp = GEN.s[0]; GEN.s[0] = GEN.s[1]; GEN.s[1] = tmp;
-    }
 
-    if ( _FP_same(GEN.s[0], GEN.s[1]) && GEN.table_on == 0) {
+    if ( _FP_same(GEN.s[0], GEN.s[1]) && !GEN.table_on) {
       /* length of interval == 0 -> choose bounderies with                   */
       /*  INTERVAL_COVERS *100 % chance for sign change in interval          */
       GEN.s[0] = -10.;      /* arbitrary starting value                      */
@@ -875,12 +796,8 @@ _unur_ninv_init( struct unur_par *par )
     break;    /* case REGULA end */
 
   case NINV_VARFLAG_NEWTON:
-   if (GEN.s[0] > GEN.s[1]) {
-      /* swap interval boundaries                                            */
-       tmp = GEN.s[0]; GEN.s[0] = GEN.s[1]; GEN.s[1] = tmp;
-    }
 
-    if (_FP_same(GEN.s[0], GEN.s[1]) && GEN.table_on == 0) {
+    if (_FP_same(GEN.s[0], GEN.s[1]) && !GEN.table_on) {
     /* s0 == s1  -> starting value set to value                              */
     /* such that CDF(value) = .5                                             */
       GEN.s[0] = -9.987655;                /* arbitrary starting values      */
@@ -895,31 +812,31 @@ _unur_ninv_init( struct unur_par *par )
   
  
   /* generating the table with potential starting values                     */
-  if (GEN.table_on == 1){
+  if (GEN.table_on){
 
-      GEN.table = (double *) malloc(GEN.table_points*sizeof(double));      
+      GEN.table = (double *) malloc(GEN.table_size*sizeof(double));      
 
       GEN.s[0] = - 10.;  /* arbitrary starting values                        */
       GEN.s[1] =   10.;
-      GEN.table_on = 0;   /* table can't be used to calculate itself         */
+      GEN.table_on = FALSE;   /* table can't be used to calculate itself         */
 
-      for (i=0; i<GEN.table_points/2; i++){
+      for (i=0; i<GEN.table_size/2; i++){
 	GEN.table[i] =
-           _unur_ninv_regula(gen, (i+1.)/(GEN.table_points+1.) );
-        GEN.table[GEN.table_points-1-i] = 
-           _unur_ninv_regula(gen, ((GEN.table_points-1.-i)+1.)/(GEN.table_points+1.) );
+           _unur_ninv_regula(gen, (i+1.)/(GEN.table_size+1.) );
+        GEN.table[GEN.table_size-1-i] = 
+           _unur_ninv_regula(gen, ((GEN.table_size-1.-i)+1.)/(GEN.table_size+1.) );
          
         GEN.s[0] = GEN.table[i];
-        GEN.s[1] = GEN.table[GEN.table_points-1-i];
+        GEN.s[1] = GEN.table[GEN.table_size-1-i];
  
       }  /* end of for()                                                     */
 
-      if (GEN.table_points/2 != GEN.table_points/2.){  /*  GEN.table_points is odd ?     */
-         GEN.table[GEN.table_points/2] =  
-           _unur_ninv_regula(gen, ((GEN.table_points/2)+1.)/(GEN.table_points+1.) );
+      if (GEN.table_size/2 != GEN.table_size/2.){  /*  GEN.table_size is odd ?     */
+         GEN.table[GEN.table_size/2] =  
+           _unur_ninv_regula(gen, ((GEN.table_size/2)+1.)/(GEN.table_size+1.) );
       }
       
-      GEN.table_on = 1;
+      GEN.table_on = TRUE;
 
   }
   else{
@@ -939,8 +856,80 @@ _unur_ninv_init( struct unur_par *par )
 
 } /* end of _unur_ninv_init() */
 
-/*****************************************************************************/
+/*---------------------------------------------------------------------------*/
 
+static struct unur_gen *
+_unur_ninv_create( struct unur_par *par )
+     /*----------------------------------------------------------------------*/
+     /* allocate memory for generator                                        */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par ... pointer to parameter for building generator object         */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to (empty) generator object with default settings          */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return NULL                                                        */
+     /*----------------------------------------------------------------------*/
+{
+  struct unur_gen *gen;
+
+  /* check arguments */
+  CHECK_NULL(par,NULL);  COOKIE_CHECK(par,CK_NINV_PAR,NULL);
+
+  /* allocate memory for generator object */
+  gen = _unur_malloc( sizeof(struct unur_gen) );
+
+  /* magic cookies */
+  COOKIE_SET(gen,CK_NINV_GEN);
+
+  /* copy distribution object into generator object */
+  memcpy( &(gen->distr), par->distr, sizeof( struct unur_distr ) );
+
+  /* set generator identifier */
+  gen->genid = _unur_set_genid(GENTYPE);
+
+  /* routines for sampling and destroying generator */
+  switch (par->variant) {
+  case NINV_VARFLAG_NEWTON:
+    SAMPLE = _unur_ninv_sample_newton;
+    break;
+  case NINV_VARFLAG_REGULA: default:
+    SAMPLE = _unur_ninv_sample_regula;
+    break;
+  }
+
+  gen->destroy = _unur_ninv_free;
+  gen->reinit = NULL;               /* no re-initialization routine required */
+
+  /* copy parameters into generator object */
+  GEN.max_iter = PAR.max_iter;      /* maximal number of iterations          */
+  GEN.rel_x_resolution = PAR.rel_x_resolution; /* maximal relative error in x*/
+  GEN.table_on = PAR.table_on;      /* useage of table for starting points   */
+  GEN.table_size = PAR.table_size;  /* number of points for table            */
+  GEN.s[0] = PAR.s[0];              /* staring points                        */
+  GEN.s[1] = PAR.s[1];
+
+  gen->method = par->method;        /* indicates method                      */
+  gen->variant = par->variant;      /* indicates variant                     */
+  gen->set = par->set;              /* indicates parameter settings          */
+  gen->debug = par->debug;          /* debuging flags                        */
+  gen->urng = par->urng;            /* pointer to urng                       */
+
+  gen->urng_aux = NULL;             /* no auxilliary URNG required           */
+  gen->gen_aux = NULL;              /* no auxilliary generator objects       */
+  gen->gen_aux_2 = NULL;
+
+  /* init pointer */
+  GEN.table = NULL;
+
+  /* return pointer to (almost empty) generator object */
+  return(gen);
+
+} /* end of _unur_ninv_create() */
+
+/*****************************************************************************/
 
 double
 _unur_ninv_sample_regula( struct unur_gen *gen )
@@ -957,8 +946,9 @@ _unur_ninv_sample_regula( struct unur_gen *gen )
   return _unur_ninv_regula(gen, _unur_call_urng(gen->urng) ) ;
 }
 
+/*---------------------------------------------------------------------------*/
 
-static double 
+double 
 _unur_ninv_regula( struct unur_gen *gen, double u )
      /*---------------------------------------------------------------------*/
      /*   algorithm: regula falsi                                           */
@@ -990,20 +980,20 @@ _unur_ninv_regula( struct unur_gen *gen, double u )
   CHECK_NULL(gen,0.);  COOKIE_CHECK(gen,CK_NINV_GEN,0.);
 
   /* rescale u in respect to given bounds */
-  u = u*GEN.Umax + (1.0-u)*GEN.Umin;
+  u = GEN.Umin + u * (GEN.Umax-GEN.Umin);
 
 
   /* initialize starting interval */
-  if (GEN.table_on == 1){
-    i = (int) floor(u*(GEN.table_points+1));  /* i is between 0 and table_points */
+  if (GEN.table_on){
+    i = (int) (u * (GEN.table_size+1));  /* i is between 0 and table_size */
 
     if ( i == 0){
       x1 = 2.*GEN.table[0] - GEN.table[1];
       x2 = GEN.table[0];
     }
-    else if ( i == GEN.table_points){
-      x1 = GEN.table[GEN.table_points-1];
-      x2 = 2.*GEN.table[GEN.table_points-1] - GEN.table[GEN.table_points-2];
+    else if ( i == GEN.table_size){
+      x1 = GEN.table[GEN.table_size-1];
+      x2 = 2.*GEN.table[GEN.table_size-1] - GEN.table[GEN.table_size-2];
     }
     else{
     x1 = GEN.table[i-1];
@@ -1011,16 +1001,16 @@ _unur_ninv_regula( struct unur_gen *gen, double u )
     }
 
   }
-  else{
+
+  else { /* no table */
    x1 =  GEN.s[0];      /* left boudary of interval */
    x2 =  GEN.s[1];      /* right boudary of interval*/
-  }   /* end of if(GEN.table_on = ...)  */
+  }   /* end of if(GEN.table_on)  */
 
   if (x1-x2 >= 0) { 
     xtmp=x1;
     x1 = x2;
     x2 = xtmp + DBL_EPSILON; 
-    //_unur_error(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,""); return 0.;
   }
 
  
@@ -1121,8 +1111,7 @@ _unur_ninv_regula( struct unur_gen *gen, double u )
 
 } /* end of _unur_ninv_sample_regula()  */
 
-/*---------------------------------------------------------------------------*/
-
+/*****************************************************************************/
 
 double _unur_ninv_sample_newton(struct unur_gen *gen)
      /*----------------------------------------------------------------------*/
@@ -1137,6 +1126,8 @@ double _unur_ninv_sample_newton(struct unur_gen *gen)
 {
   return _unur_ninv_newton(gen, _unur_call_urng(gen->urng) ) ;
 }
+
+/*---------------------------------------------------------------------------*/
 
 double
 _unur_ninv_newton( struct unur_gen *gen, double U )
@@ -1176,8 +1167,8 @@ _unur_ninv_newton( struct unur_gen *gen, double U )
 
 
   /* initialize starting point */
-  if (GEN.table_on == 1){
-    i = (int) floor(U*GEN.table_points);  /* i is between 0 and table_points-1 */
+  if (GEN.table_on){
+    i = (int) floor(U*GEN.table_size);  /* i is between 0 and table_size-1 */
     x = GEN.table[i];
   }
   else{
@@ -1302,73 +1293,6 @@ _unur_ninv_free( struct unur_gen *gen )
 /**  Auxilliary Routines                                                    **/
 /*****************************************************************************/
 
-static struct unur_gen *
-_unur_ninv_create( struct unur_par *par )
-     /*----------------------------------------------------------------------*/
-     /* allocate memory for generator                                        */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   par ... pointer to parameter for building generator object         */
-     /*                                                                      */
-     /* return:                                                              */
-     /*   pointer to (empty) generator object with default settings          */
-     /*                                                                      */
-     /* error:                                                               */
-     /*   return NULL                                                        */
-     /*----------------------------------------------------------------------*/
-{
-  struct unur_gen *gen;
-
-  /* check arguments */
-  CHECK_NULL(par,NULL);  COOKIE_CHECK(par,CK_NINV_PAR,NULL);
-
-  /* allocate memory for generator object */
-  gen = _unur_malloc( sizeof(struct unur_gen) );
-
-  /* magic cookies */
-  COOKIE_SET(gen,CK_NINV_GEN);
-
-  /* copy distribution object into generator object */
-  memcpy( &(gen->distr), par->distr, sizeof( struct unur_distr ) );
-
-  /* set generator identifier */
-  gen->genid = _unur_set_genid(GENTYPE);
-
-  /* routines for sampling and destroying generator */
-  switch (par->variant) {
-  case NINV_VARFLAG_NEWTON:
-    SAMPLE = _unur_ninv_sample_newton;
-    break;
-  case NINV_VARFLAG_REGULA: default:
-    SAMPLE = _unur_ninv_sample_regula;
-    break;
-  }
-
-  gen->destroy = _unur_ninv_free;
-  gen->reinit = _unur_reinit_error;
-
-  /* copy parameters into generator object */
-  GEN.max_iter = PAR.max_iter;  /* maximal number of iterations              */
-  GEN.rel_x_resolution = PAR.rel_x_resolution; /* maximal relative error in x*/
-  GEN.table_on = PAR.table_on;  /* useage of table for starting points       */
-  GEN.table_points = PAR.table_points; /* number of points for table         */
-  GEN.s[0] = PAR.s[0];     /* staring points                                 */
-  GEN.s[1] = PAR.s[1];
-
-  gen->method = par->method;        /* indicates method                      */
-  gen->variant = par->variant;      /* indicates variant                     */
-  gen->set = par->set;              /* indicates parameter settings          */
-  gen->debug = par->debug;          /* debuging flags                        */
-  gen->urng = par->urng;            /* pointer to urng                       */
-
-  gen->urng_aux = NULL;             /* no auxilliary URNG required           */
-  gen->gen_aux = NULL;              /* no auxilliary generator objects       */
-  gen->gen_aux_2 = NULL;
-
-  /* return pointer to (almost empty) generator object */
-  return(gen);
-
-} /* end of _unur_ninv_create() */
 
 /*****************************************************************************/
 /**  Debugging utilities                                                    **/
@@ -1378,7 +1302,7 @@ _unur_ninv_create( struct unur_par *par )
 #ifdef UNUR_ENABLE_LOGGING
 /*---------------------------------------------------------------------------*/
 
-static void
+void
 _unur_ninv_debug_init( struct unur_par *par, struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* write info about generator into logfile                              */
@@ -1419,7 +1343,7 @@ _unur_ninv_debug_init( struct unur_par *par, struct unur_gen *gen )
 
 /*---------------------------------------------------------------------------*/
 
-static void
+void
 _unur_ninv_debug_sample_regula( struct unur_gen *gen, double u, double x, double fx, int iter )
      /*----------------------------------------------------------------------*/
      /* trace sampling (regula falsi)                                       */
@@ -1442,8 +1366,7 @@ _unur_ninv_debug_sample_regula( struct unur_gen *gen, double u, double x, double
 
 /*---------------------------------------------------------------------------*/
 
-
-static void
+void
 _unur_ninv_debug_sample_newton( struct unur_gen *gen, double u, double x, double fx, int iter )
      /*----------------------------------------------------------------------*/
      /* trace sampling (newton's method)                                     */
@@ -1465,7 +1388,8 @@ _unur_ninv_debug_sample_newton( struct unur_gen *gen, double u, double x, double
 } /* end of _unur_ninv_debug_sample_newton() */
 
 /*---------------------------------------------------------------------------*/
-static void 
+
+void 
 _unur_ninv_debug_chg_domain( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* print new (changed) domain of (truncated) distribution               */
@@ -1483,34 +1407,10 @@ _unur_ninv_debug_chg_domain( struct unur_gen *gen )
 
   fprintf(log,"%s: domain of (truncated) distribution changed:\n",gen->genid);
   fprintf(log,"%s:\tdomain = (%g, %g)\n",gen->genid, DISTR.BD_LEFT, DISTR.BD_RIGHT);
-  if (!(gen->distr.set & UNUR_DISTR_SET_STDDOMAIN))
-    fprintf(log,"%s:\tU in (%g,%g)\n",gen->genid,GEN.Umin,GEN.Umax);
+  fprintf(log,"%s:\tU in (%g,%g)\n",gen->genid,GEN.Umin,GEN.Umax);
 
 } /* end of _unur_ninv_debug_chg_domain() */
-
 
 /*---------------------------------------------------------------------------*/
 #endif   /* end UNUR_ENABLE_LOGGING */
 /*---------------------------------------------------------------------------*/
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

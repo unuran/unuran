@@ -44,8 +44,8 @@ struct unur_ninv_par {
   int max_iter;              /* maximal number of iterations                 */
   double rel_x_resolution;   /* maximal relative error in x                  */
   double s[2];               /* interval boundaries at start (left/right)    */
-  int  table_on;             /* = 1 if table should be used                  */
-  int  table_points;
+  int  table_on;             /* if TRUE a table for starting points is used  */
+  int  table_size;           /* size of table                                */
 };
 
 /*---------------------------------------------------------------------------*/
@@ -58,8 +58,8 @@ struct unur_ninv_gen {
   double *table;             /* table with possible starting values for NINV */
   double Umin, Umax;         /* bounds for iid random variable in respect to
                                 the given bounds of the distribution         */
-  int  table_on;             /* = 1 if table should be used                  */
-  int  table_points;
+  int  table_on;             /* if TRUE a table for starting points is used  */
+  int  table_size;           /* size of table                                */
 };
 
 /*---------------------------------------------------------------------------*/

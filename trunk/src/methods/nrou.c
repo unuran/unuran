@@ -555,21 +555,11 @@ _unur_nrou_rectangle( struct unur_gen *gen )
   CHECK_NULL( gen, UNUR_ERR_NULL );
   COOKIE_CHECK( gen,CK_NROU_GEN, UNUR_ERR_COOKIE );
 
-  /* Boundary rectangle is already set */
+  /* boundary rectangle is already set */
   if ((gen->set & NROU_SET_U) && (gen->set & NROU_SET_V)) {
     return UNUR_SUCCESS;
   }
 
-  /* If center has not been set, we'll set it to the (optional) mode          */
-  /* (provided the user has not set any parameters of the bounding rectangle) */
-  /* Otherwise the center defaults to the value set in unur_nrou_new() i.e. 0 */
-  if (!(gen->set & NROU_SET_CENTER) &&
-       (gen->distr->set & UNUR_DISTR_SET_MODE) && 
-      !(gen->set & NROU_SET_U) && 
-      !(gen->set & NROU_SET_V) ) {
-    GEN.center = DISTR.mode; 
-  }  
-	  
   /* starting point in min/max algorithm */
   cx=GEN.center;  
  
@@ -712,6 +702,10 @@ _unur_nrou_create( struct unur_par *par )
   GEN.r = PAR.r;                    /* r-parameter of the generalized rou-method */
 
   /* initialize parameters */
+  if (!(gen->set & NROU_SET_CENTER))
+    /* center not set via unur_nrou_set_center */
+    /* use center of distribution instead.     */
+    GEN.center = unur_distr_cont_get_center(par->distr) ;
 
   /* return pointer to (almost empty) generator object */
   return gen;

@@ -98,6 +98,10 @@
 
       @emph{Important:} The bounding rectangle has to be
       provided for the function @unurmath{PDF(x-center)!} 
+      Notice that @code{center} is the center of the given
+      distribution, see unur_distr_cont_set_center().
+      If in doubt or if this value is not optimal, it can be changed
+      (overridden) by a unur_nrou_set_center() call.
 
       If the coordinates of the bounding rectangle are not provided by
       the user then the minimal bounding rectangle is computed
@@ -169,15 +173,10 @@ int unur_nrou_set_r( UNUR_PAR *parameters, double r );
 
 int unur_nrou_set_center( UNUR_PAR *parameters, double center );
 /* 
-   Set the center (@unurmath{\mu}) of the PDF.
-   For distributions like the gamma distribution with large shape
-   parameters the acceptance region becomes a long inclined skinny
-   oval with a large bounding rectangle and thus an extremely large
-   rejection constant. Using the @var{center} shifts the mode of the
-   distribution near the origin and thus makes the bounding box of the
-   acception region smaller.
+   Set the center (@unurmath{\mu}) of the PDF. 
+   If not set the center of the given distribution object is used.
 
-   Default: Mode if known, else @code{0}.
+   Default: see unur_distr_cont_set_center().
 */
 
 int unur_nrou_set_verify( UNUR_PAR *parameters, int verify );

@@ -6,17 +6,17 @@ $GCC = "gcc -Wall";
 $G77 = "g77 -Wall";
 
 # Files
-$PRNG_src = "./uniftest_prng.c";
-$PRNG_exec = "./uniftest_prng";
+$PRNG_src = "./urand_prng.c";
+$PRNG_exec = "./urand_prng";
 
-$C_src = "./uniftest_c.c";
-$C_exec = "./uniftest_c";
+$C_src = "./urand_c.c";
+$C_exec = "./urand_c";
 
-$FORTRAN_src = "./uniftest_f.f";
-$FORTRAN_exec = "./uniftest_f";
+$FORTRAN_src = "./urand_f.f";
+$FORTRAN_exec = "./urand_f";
 
-$JAVA_src = "./uniftest_java.java";
-$JAVA_exec = "./Uniftest";
+$JAVA_src = "./urand_java.java";
+$JAVA_exec = "./Urandtest";
 
 ####################################################
 
@@ -369,7 +369,7 @@ public class Urand {
 /* ---------------------------------------------------------------- */
 /* ---------------------------------------------------------------- */
 
-public class Uniftest {
+public class Urandtest {
    public static void main(String[] args) throws Exception {
 
       /* set new seed */

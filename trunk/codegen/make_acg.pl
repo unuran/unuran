@@ -5,13 +5,15 @@
 # $Id$
 # ----------------------------------------------------------------
 
+$DEBUG = 0;
+
 # ----------------------------------------------------------------
 
 require "read_PDF.pl";
 
 # ----------------------------------------------------------------
 # List of distributions
-my $DISTR = read_PDFdata();
+my $DISTR = read_PDFdata('..');
 
 # For description of data fields in this list see file `readPDF.pl'.
 
@@ -30,37 +32,6 @@ print acg_language();
 # ----------------------------------------------------------------
 exit 0;
 # ----------------------------------------------------------------
-
-# ----------------------------------------------------------------
-# make entries for popup menue for list of distributions
-# ----------------------------------------------------------------
-
-sub make_label_menue_distribution
-{
-    my $DISTR = $_[0];
-
-    # associate array for CGI script
-    my $label = 
-	"(\n\t".
-	"'--none--' => '-- Select a distribution --',\n\t";
-
-    # list of distributions
-    foreach my $d (sort keys %{$DISTR}) { 
-	next unless $DISTR->{$d}->{"=TYPE"} eq "CONT";
-
-	$label .= "'$d' => '".$DISTR->{$d}->{"=NAME"}."',\n\t";
-    }
-
-    # close array
-    $label .= ")";
-
-    # end
-    return $label;
-
-} # end of make_label_menue_distribution()
-
-
-
 
 # ----------------------------------------------------------------
 # make header for C file 
@@ -118,8 +89,17 @@ int get_domain(char *domain, double fdomain[]);
 int get_n_cpoints(char *n_cpoints);
 
 /* ------------------------------------------------------------------------- */
+/* Error messages                                                            */
+/* ------------------------------------------------------------------------- */
 
 EOS
+
+    if ($DEBUG) {
+	$header .= "#define fatal(msg) do { fprintf(stderr,msg); } while(0)\n\n";
+    }
+    else {
+	$header .= "#define fatal(msg) do { } while(0)\n\n";
+    }
 
     return $header;
 } # end of acg_header()
@@ -194,8 +174,8 @@ int main (int argc, char *argv[]){
   /* ------------------------------------------------------------------------*/
   /* check whether distribution is set */
 
-  if (distrfunc == NULL){
-    fprintf(stderr, "Distribution not set.\\n");
+  if (distrfunc == NULL) {
+    fatal("Distribution not set.\\n");
     usage();
     exit (ACG_EXIT_FAIL_INPUT);
   }
@@ -205,13 +185,13 @@ int main (int argc, char *argv[]){
 
   distr = distrfunc(fpar, n_params); 
   if (distr == NULL) {
-    fprintf(stderr, "Cannot create distribution object.\\n");
+    fatal("Cannot create distribution object.\\n");
     exit (ACG_EXIT_FAIL_INPUT);
   }
 
   if (domainset == 1) {
     if (!unur_distr_cont_set_domain(distr, domain[0], domain[1])) {
-      fprintf(stderr, "Cannot set domain for distribution object.\\n");
+      fatal("Cannot set domain for distribution object.\\n");
       exit (ACG_EXIT_FAIL_INPUT);
     }
   }
@@ -221,7 +201,7 @@ int main (int argc, char *argv[]){
 
   par = unur_tdr_new(distr);       /* parameter object    */
   if (par == NULL) {
-    fprintf(stderr, "Cannot create parameter object.\\n");
+    fatal("Cannot create parameter object.\\n");
     exit (ACG_EXIT_FAIL_INPUT);
   }
   
@@ -230,7 +210,7 @@ int main (int argc, char *argv[]){
 
   gen = unur_init( par );          /* generator object    */
   if (gen == NULL) {
-    fprintf(stderr, "Cannot create generator object.\\n");
+    fatal("Cannot create generator object.\\n");
     exit (ACG_EXIT_FAIL_GEN);
   }
 
@@ -238,7 +218,7 @@ int main (int argc, char *argv[]){
   /* generate code                                                           */
 
   if (!langfunc( gen, stdout, NULL )) {
-    fprintf(stderr, "Cannot generate program code.\\n");
+    fatal("Cannot generate program code.\\n");
     exit (ACG_EXIT_FAIL_CODE);
   }
 
@@ -343,7 +323,7 @@ EOS
 
     $distribution .= <<EOS;
   else {
-    fprintf(stderr, "Unknown distribution: %s\\n",distribution);
+    fatal("Unknown distribution.\\n");
     exit (ACG_EXIT_FAIL_INPUT);
   }
 
@@ -439,7 +419,7 @@ get_domain(char *domain, double fdomain[])
   fdomain[1] = strtod(toopts, &toopts);
 
   if (chktoopts == toopts || fdomain[0] >= fdomain[1]) {
-    fprintf(stderr, "Passed Domain not correct\\n");
+    fatal("Passed Domain not correct\\n");
     exit (ACG_EXIT_FAIL_INPUT);
   }
 
@@ -486,7 +466,7 @@ get_n_cpoints(char *n_cpoints)
   n_cp = strtol(toopts, &toopts,10);
 
   if (chktoopts == toopts || n_cp < 3) {
-    fprintf(stderr, "Passed n_cpoints not correct, use default instead.\\n");
+    fatal("Passed n_cpoints not correct, use default instead.\\n");
     n_cp = 30;
   }
 
@@ -532,7 +512,7 @@ int
     return unur_acg_FORTRAN;
   }
   else {
-    fprintf(stderr, "Unknown programming language: %s\\n",language);
+    fatal("Unknown programming language.\\n");
     exit (ACG_EXIT_FAIL_INPUT);
   }
 

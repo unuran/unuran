@@ -9,8 +9,12 @@ $DEBUG = 0;
 
 # ----------------------------------------------------------------
 
-require "read_PDF.pl";
+require "../read_PDF.pl";
 require "read_test_conf.pl";
+
+# ----------------------------------------------------------------
+
+my $ACG = "../acg";
 
 # ----------------------------------------------------------------
 
@@ -29,7 +33,7 @@ my $SAMPLE_SIZE = 100000;
 
 # ----------------------------------------------------------------
 # List of distributions
-my $DISTR = read_PDFdata('..');
+my $DISTR = read_PDFdata('../..');
 
 # For description of data fields in this list see file `read_PDF.pl'.
 
@@ -41,9 +45,58 @@ my $DISTR = read_PDFdata('..');
     }
 
 # ----------------------------------------------------------------
+# Get list of distributions 
 
-# Make test files for code generator
-make_codegen_tests();
+    my $list_distr = get_test_distributions( $test_conf_file, $DISTR );
+
+#.................................................................
+# Check for missing CONTinuous distributions
+
+    # list of names of distributions without distribution number
+    my $list_distr_short;
+    foreach my $d (sort keys %{$list_distr}) {
+	my $distr_short = $d;
+	$distr_short =~ s/\_[^\_]+$//;
+	$list_distr_short->{$distr_short} = $d;
+    }
+
+    foreach my $d (sort keys %{$DISTR}) {
+	next unless $DISTR->{$d}->{"=TYPE"} eq "CONT";
+	unless ($list_distr_short->{$d}) {
+	    print STDERR "test missing for distribution \"$d\"\n";
+	}
+    }
+
+# ----------------------------------------------------------------
+# Process test for each distribution
+
+foreach my $d (sort keys %{$list_distr}) {
+
+    # get name of distribution
+    my $distr_key = $d;
+    my $distr = $d;
+    $distr =~ s/\_.*$//;
+
+    # get parameter list
+    my $fparam = $list_distr->{$distr_key};
+
+    # print on screen
+    print "$distr($fparam)";
+
+    # get random variate generator code
+    my $UNURAN_code = make_UNURAN_code($distr,$fparam);
+
+    unless ($UNURAN_code) {
+	print " cannot create generator.\n";
+	next;
+    }
+    
+    print "\n";
+
+
+##    print $UNURAN_code;
+
+}
 
 # ----------------------------------------------------------------
 # End
@@ -55,6 +108,94 @@ exit 0;
 # Subroutines
 #
 # ----------------------------------------------------------------
+
+# ----------------------------------------------------------------
+# Make code for test file (UNURAN version)
+
+sub make_UNURAN_code
+{
+    my $distr = $_[0];
+    my $fparam = $_[1];
+
+    my $acg_query = "$ACG -d $distr";
+    $acg_query .= " -p \"$fparam\"" if $fparam; 
+
+    my $code = `$acg_query`;
+
+    # $? != 0 --> error
+    return $code;
+
+} # end of make_UNURAN_code()
+
+# ----------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 # ----------------------------------------------------------------
 # Make C file for testing code generator

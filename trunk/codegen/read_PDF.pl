@@ -9,9 +9,6 @@ use File::Find;
 # ----------------------------------------------------------------
 # Global constants
 
-# Start the search for the files in these directories
-my @Startdirs = ('..');
-
 # Header file for UNURAN standard distributions
 my $h_stddistr = "unuran_distributions.h";
 
@@ -65,6 +62,9 @@ my $DISTR;
 # Read data for PDF from source code
 
 sub read_PDFdata {
+
+# Start the search for the files in these directories
+    my @Startdirs = @_;
 
 # ................................................................
 # List of files

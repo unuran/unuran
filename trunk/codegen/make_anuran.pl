@@ -32,7 +32,7 @@ my $CC        = 'gcc';
 
 # ----------------------------------------------------------------
 # List of distributions
-my $DISTR = read_PDFdata();
+my $DISTR = read_PDFdata('..');
 
 # For description of data fields in this list see file `readPDF.pl'.
 

@@ -44,6 +44,7 @@ check_PROGRAMS = \
  t_empk \
  t_empl \
  t_hinv \
+ t_hitrou \
  t_hrb \
  t_hrd \
  t_hri \
@@ -107,6 +108,7 @@ EXTRA_DIST = \
  t_empk.conf \
  t_empl.conf \
  t_hinv.conf \
+ t_hitrou.conf \
  t_hrb.conf \
  t_hrd.conf \
  t_hri.conf \

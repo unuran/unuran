@@ -35,7 +35,6 @@
 /*---------------------------------------------------------------------------*/
 
 #include <unur_source.h>
-#include <distr/distr_source.h>
 
 /*---------------------------------------------------------------------------*/
 #ifdef WITH_DMALLOC
@@ -105,44 +104,4 @@ _unur_realloc(void *ptr, size_t size)
 
 /*---------------------------------------------------------------------------*/
 #endif   /* WITH_DMALLOC */
-/*---------------------------------------------------------------------------*/
-
-/*---------------------------------------------------------------------------*/
-/* Function prototypes for allocating new generator objects                  */
-struct unur_gen *
-_unur_malloc_gen( struct unur_par *par )
-     /*----------------------------------------------------------------------*/
-     /* allocate memory for new generator object                             */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   par ... pointer to parameter for building generator object         */
-     /*                                                                      */
-     /* error:                                                               */
-     /*   return NULL                                                        */
-     /*----------------------------------------------------------------------*/
-{
-  struct unur_gen *gen;
-
-  /* allocate memory for generator object */
-  gen = _unur_malloc( sizeof(struct unur_gen) );
-
-  /* copy distribution object into generator object */
-  gen->distr = (par->distr) ? _unur_distr_clone(par->distr) : NULL;
-
-  /* copy some parameters into generator object */
-  gen->method = par->method;        /* indicates method and variant          */
-  gen->variant = par->variant;      /* indicates variant                     */
-  gen->set = par->set;              /* indicates parameter settings          */
-  gen->debug = par->debug;          /* debuging flags                        */
-  gen->urng = par->urng;            /* pointer to urng                       */
-  gen->urng_aux = par->urng_aux;    /* pointer to auxilliary URNG            */
-
-  gen->gen_aux = NULL;              /* no auxilliary generator objects       */
-  gen->gen_aux_list = NULL;         /* no auxilliary generator objects       */
-
-  /* return pointer to (almost empty) generator object */
-  return gen;
-
-} /* end of _unur_malloc_gen() */
-
 /*---------------------------------------------------------------------------*/

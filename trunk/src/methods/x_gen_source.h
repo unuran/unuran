@@ -61,6 +61,10 @@
 double _unur_sample_cont_error( UNUR_GEN *gen );
 
 /*---------------------------------------------------------------------------*/
+/* create (new) generic generator object                                     */
+struct unur_gen *_unur_generic_create( struct unur_par *par );
+
+/*---------------------------------------------------------------------------*/
 /* copy (clone) generator objects                                            */
 
 UNUR_GEN *_unur_arou_clone( const UNUR_GEN *gen );

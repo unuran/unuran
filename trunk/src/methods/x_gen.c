@@ -35,6 +35,7 @@
 /*---------------------------------------------------------------------------*/
 
 #include <unur_source.h>
+#include <distr/distr_source.h>
 #include "x_gen.h"
 #include "x_gen_source.h"
 
@@ -201,5 +202,49 @@ unur_gen_clone( const struct unur_gen *gen )
 
   return (gen->clone(gen));
 } /* end of unur_get_clone() */
+
+/*---------------------------------------------------------------------------*/
+
+/*****************************************************************************/
+/**                                                                         **/
+/**  create and Copy (clone) generator objects                              **/
+/**                                                                         **/
+/*****************************************************************************/
+
+struct unur_gen *
+_unur_generic_create( struct unur_par *par )
+     /*----------------------------------------------------------------------*/
+     /* create new generic generator object                                  */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par ... pointer to parameter for building generator object         */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return NULL                                                        */
+     /*----------------------------------------------------------------------*/
+{
+  struct unur_gen *gen;
+
+  /* allocate memory for generator object */
+  gen = _unur_malloc( sizeof(struct unur_gen) );
+
+  /* copy distribution object into generator object */
+  gen->distr = (par->distr) ? _unur_distr_clone(par->distr) : NULL;
+
+  /* copy some parameters into generator object */
+  gen->method = par->method;        /* indicates method and variant          */
+  gen->variant = par->variant;      /* indicates variant                     */
+  gen->set = par->set;              /* indicates parameter settings          */
+  gen->debug = par->debug;          /* debuging flags                        */
+  gen->urng = par->urng;            /* pointer to urng                       */
+  gen->urng_aux = par->urng_aux;    /* pointer to auxilliary URNG            */
+
+  gen->gen_aux = NULL;              /* no auxilliary generator objects       */
+  gen->gen_aux_list = NULL;         /* no auxilliary generator objects       */
+
+  /* return pointer to (almost empty) generator object */
+  return gen;
+
+} /* end of _unur_generic_create() */
 
 /*---------------------------------------------------------------------------*/

@@ -411,8 +411,10 @@ static double _unur_tdr_eval_hat( struct unur_gen *gen, struct unur_tdr_interval
 /* evaluate hat at x in interval.                                            */
 /*---------------------------------------------------------------------------*/
 
-static int _unur_tdr_interval_split( struct unur_gen *gen, 
-				      struct unur_tdr_interval *iv_old, double x, double fx );
+static int _unur_tdr_gw_interval_split( struct unur_gen *gen, 
+					struct unur_tdr_interval *iv_old, double x, double fx );
+static int _unur_tdr_ps_interval_split( struct unur_gen *gen, 
+					struct unur_tdr_interval *iv_old, double x, double fx );
 /*---------------------------------------------------------------------------*/
 /* split am interval point x. return 0 if not successful.                    */                                           
 /*---------------------------------------------------------------------------*/
@@ -451,10 +453,20 @@ static void _unur_tdr_debug_sample( struct unur_gen *gen, struct unur_tdr_interv
 /* print data while sampling from generators.                                */
 /*---------------------------------------------------------------------------*/
 
-static void _unur_tdr_debug_split_start( struct unur_gen *gen, 
-					 struct unur_tdr_interval *iv, double x, double fx );
-static void _unur_tdr_debug_split_stop( struct unur_gen *gen, 
-					struct unur_tdr_interval *iv_left, struct unur_tdr_interval *iv_right );
+static void _unur_tdr_gw_debug_split_start( struct unur_gen *gen, 
+					    struct unur_tdr_interval *iv,
+					    double x, double fx );
+static void _unur_tdr_gw_debug_split_stop( struct unur_gen *gen, 
+					   struct unur_tdr_interval *iv_left,
+					   struct unur_tdr_interval *iv_right );
+static void _unur_tdr_ps_debug_split_start( struct unur_gen *gen, 
+					    struct unur_tdr_interval *iv_left,
+					    struct unur_tdr_interval *iv_right,
+					    double x, double fx );
+static void _unur_tdr_ps_debug_split_stop( struct unur_gen *gen, 
+					   struct unur_tdr_interval *iv_left,
+					   struct unur_tdr_interval *iv_middle,
+					   struct unur_tdr_interval *iv_right );
 /*---------------------------------------------------------------------------*/
 /* print before and after an interval has been split (not / successfully).   */
 /*---------------------------------------------------------------------------*/

@@ -215,7 +215,7 @@ _unur_tdr_gw_sample( struct unur_gen *gen )
 
     /* being above squeeze is bad. improve the situation! */
     if (GEN.n_ivs < GEN.max_ivs && GEN.max_ratio * GEN.Atotal > GEN.Asqueeze)
-      if ( !_unur_tdr_interval_split(gen, iv, X, fx) ) {
+      if ( !_unur_tdr_gw_interval_split(gen, iv, X, fx) ) {
 	/* condition for pdf is violated! */
 	_unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"");
 	/* replace sampling routine by dummy routine that just returns INFINITY */
@@ -370,7 +370,7 @@ _unur_tdr_gw_sample_check( struct unur_gen *gen )
 
     /* being above squeeze is bad. improve the situation! */
     if (GEN.n_ivs < GEN.max_ivs && GEN.max_ratio * GEN.Atotal > GEN.Asqueeze)
-      if ( !_unur_tdr_interval_split(gen, iv, X, fx) ) {
+      if ( !_unur_tdr_gw_interval_split(gen, iv, X, fx) ) {
 	/* condition for pdf is violated! */
 	_unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"");
 	/* replace sampling routine by dummy routine that just returns INFINITY */
@@ -382,7 +382,16 @@ _unur_tdr_gw_sample_check( struct unur_gen *gen )
       /* between p.d.f. and squeeze */
       return X;
 
-    /* else reject and try again */
+    /* evaluation of pdf is expensive. improve the situation! */
+    if (GEN.n_ivs < GEN.max_ivs && GEN.max_ratio * GEN.Atotal > GEN.Asqueeze)
+      if ( !_unur_tdr_gw_interval_split(gen, iv, X, fx) ) {
+	/* condition for pdf is violated! */
+	_unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"");
+	/* replace sampling routine by dummy routine that just returns INFINITY */
+	SAMPLE = _unur_sample_cont_error;
+	return INFINITY;
+      }
+    /* reject and try again */
 
   }
 } /* end of _unur_tdr_gw_sample_check() */
@@ -528,18 +537,10 @@ _unur_tdr_ps_sample( struct unur_gen *gen )
     if (V <= fx)
       return X;
 
-
-
-    /* between p.d.f. and squeeze */
-    /* else reject and try again */
-
-
-  }
-
 #if 0
-    /* being above squeeze is bad. improve the situation! */
+    /* evaluation of pdf is expensive. improve the situation! */
     if (GEN.n_ivs < GEN.max_ivs && GEN.max_ratio * GEN.Atotal > GEN.Asqueeze)
-      if ( !_unur_tdr_interval_split(gen, iv, X, fx) ) {
+      if ( !_unur_tdr_ps_interval_split(gen, iv, X, fx) ) {
 	/* condition for pdf is violated! */
 	_unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"");
 	/* replace sampling routine by dummy routine that just returns INFINITY */
@@ -547,6 +548,9 @@ _unur_tdr_ps_sample( struct unur_gen *gen )
 	return INFINITY;
       }
 #endif
+
+    /* else reject and try again */
+  }
 
 } /* end of _unur_tdr_ps_sample() */
 

@@ -203,7 +203,7 @@ _unur_unif_create( struct unur_par *par )
   COOKIE_SET(gen,CK_UNIF_GEN);
 
   /* set generator identifier */
-  gen->genid = _unur_set_genid(GENTYPE);
+  gen->genid = GENTYPE;
 
   /* routines for sampling and destroying generator */
   SAMPLE = _unur_unif_sample;

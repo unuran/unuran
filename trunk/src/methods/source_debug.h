@@ -80,14 +80,14 @@ void _unur_distr_demp_debug( UNUR_DISTR *distribution, char *genid, int printvec
 #define _unur_error(genid,errortype,str) \
    do { \
       unur_errno = (errortype); \
-      _unur_stream_printf((genid),__FILE__,__LINE__,"error: %s %s", \
+      _unur_stream_printf((genid),__FILE__,__LINE__,"error: %s: %s", \
                           unur_get_strerror(errortype), (str) ); \
    } while (0)
 
 #define _unur_warning(genid,errortype,str) \
    do { \
       unur_errno = (errortype); \
-      _unur_stream_printf((genid),__FILE__,__LINE__,"warning: %s %s", \
+      _unur_stream_printf((genid),__FILE__,__LINE__,"warning: %s: %s", \
                           unur_get_strerror(errortype), (str) ); \
    } while (0)
 /*---------------------------------------------------------------------------*/

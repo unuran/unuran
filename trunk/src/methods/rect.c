@@ -63,9 +63,21 @@
 
 /*---------------------------------------------------------------------------*/
 
-static struct unur_gen *rect_create( struct unur_par *par );
+static struct unur_gen *_unur_rect_create( struct unur_par *par );
+/*---------------------------------------------------------------------------*/
+/* create new (almost empty) generator object.                               */
+/*---------------------------------------------------------------------------*/
+
 #if UNUR_DEBUG & UNUR_DB_INFO
-static void rect_info_init( struct unur_par *par, struct unur_gen *gen );
+/*---------------------------------------------------------------------------*/
+/* the following functions print debugging information on output stream,     */
+/* i.e., into the log file if not specified otherwise.                       */
+/*---------------------------------------------------------------------------*/
+
+static void _unur_rect_debug_init( struct unur_par *par, struct unur_gen *gen );
+/*---------------------------------------------------------------------------*/
+/* print after generator has been initialized has completed.                 */
+/*---------------------------------------------------------------------------*/
 #endif
 
 /*---------------------------------------------------------------------------*/
@@ -82,19 +94,19 @@ static void rect_info_init( struct unur_par *par, struct unur_gen *gen );
 /*****************************************************************************/
 
 struct unur_par *
- unur_rect_new( int dim )
-/*---------------------------------------------------------------------------*/
-/* get default parameters                                                    */
-/*                                                                           */
-/* parameters:                                                               */
-/*   dim ... dimension of hypercube                                          */
-/*                                                                           */
-/* return:                                                                   */
-/*   default parameters (pointer to structure)                               */
-/*                                                                           */
-/* error:                                                                    */
-/*   return NULL                                                             */
-/*---------------------------------------------------------------------------*/
+unur_rect_new( int dim )
+     /*----------------------------------------------------------------------*/
+     /* get default parameters                                               */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   dim ... dimension of hypercube                                     */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   default parameters (pointer to structure)                          */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return NULL                                                        */
+     /*----------------------------------------------------------------------*/
 { 
   struct unur_par *par;
 
@@ -125,19 +137,19 @@ struct unur_par *
 /*****************************************************************************/
 
 struct unur_gen *
- unur_rect_init( struct unur_par *par )
-/*---------------------------------------------------------------------------*/
-/* initialize new generator                                                  */
-/*                                                                           */
-/* parameters:                                                               */
-/*   params  pointer to paramters for building generator object              */
-/*                                                                           */
-/* return:                                                                   */
-/*   pointer to generator object                                             */
-/*                                                                           */
-/* error:                                                                    */
-/*   return NULL                                                             */
-/*---------------------------------------------------------------------------*/
+unur_rect_init( struct unur_par *par )
+     /*----------------------------------------------------------------------*/
+     /* initialize new generator                                             */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   params  pointer to paramters for building generator object         */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to generator object                                        */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return NULL                                                        */
+     /*----------------------------------------------------------------------*/
 { 
   struct unur_gen *gen;
 
@@ -146,12 +158,12 @@ struct unur_gen *
   COOKIE_CHECK(par,CK_RECT_PAR,NULL);
 
   /* create a new empty generator object */
-  gen = rect_create(par);
+  gen = _unur_rect_create(par);
   if (!gen) { free(par); return NULL; }
 
 #if UNUR_DEBUG & UNUR_DB_INFO
     /* write info into log file */
-    if (gen->debug) rect_info_init(par,gen);
+    if (gen->debug) _unur_rect_debug_init(par,gen);
 #endif
 
   /* free parameters */
@@ -164,19 +176,14 @@ struct unur_gen *
 /*****************************************************************************/
 
 void
- unur_rect_sample_vec( struct unur_gen *gen, double *vec )
-/*---------------------------------------------------------------------------*/
-/* sample from generator                                                     */
-/*                                                                           */
-/* parameters:                                                               */
-/*   gen ... pointer to generator object                                     */
-/*                                                                           */
-/* return:                                                                   */
-/*   double (sample from random variate)                                     */
-/*                                                                           */
-/* error:                                                                    */
-/*   return 0.                                                               */
-/*---------------------------------------------------------------------------*/
+unur_rect_sample_vec( struct unur_gen *gen, double *vec )
+     /*---------------------------------------------------------------------------*/
+     /* sample from generator                                                     */
+     /*                                                                           */
+     /* parameters:                                                               */
+     /*   gen ... pointer to generator object                                     */
+     /*   vec ... array for storing random vector                                 */
+     /*---------------------------------------------------------------------------*/
 { 
   int i;
 
@@ -196,13 +203,13 @@ void
 /*****************************************************************************/
 
 void
- unur_rect_free( struct unur_gen *gen )
-/*---------------------------------------------------------------------------*/
-/* deallocate generator object                                               */
-/*                                                                           */
-/* parameters:                                                               */
-/*   gen ... pointer to generator object                                     */
-/*---------------------------------------------------------------------------*/
+unur_rect_free( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* deallocate generator object                                          */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*----------------------------------------------------------------------*/
 { 
 
   /* check arguments */
@@ -226,19 +233,19 @@ void
 /*****************************************************************************/
 
 static struct unur_gen *
- rect_create( struct unur_par *par )
-/*---------------------------------------------------------------------------*/
-/* allocate memory for generator                                             */
-/*                                                                           */
-/* parameters:                                                               */
-/*   par ... pointer to parameter for building generator object              */
-/*                                                                           */
-/* return:                                                                   */
-/*   pointer to (empty) generator object with default settings               */
-/*                                                                           */
-/* error:                                                                    */
-/*   return NULL                                                             */
-/*---------------------------------------------------------------------------*/
+_unur_rect_create( struct unur_par *par )
+     /*----------------------------------------------------------------------*/
+     /* allocate memory for generator                                        */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par ... pointer to parameter for building generator object         */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to (empty) generator object with default settings          */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return NULL                                                        */
+     /*----------------------------------------------------------------------*/
 {
   struct unur_gen *gen;
 
@@ -270,7 +277,7 @@ static struct unur_gen *
   /* return pointer to (almost empty) generator object */
   return(gen);
   
-} /* end of rect_create() */
+} /* end of _unur_rect_create() */
 
 /*****************************************************************************/
 /**  Debugging utilities                                                    **/
@@ -279,17 +286,17 @@ static struct unur_gen *
 #if UNUR_DEBUG & UNUR_DB_INFO
 
 static void
- rect_info_init( struct unur_par *par, struct unur_gen *gen )
-/*---------------------------------------------------------------------------*/
-/* write info about generator into logfile                                   */
-/*                                                                           */
-/* parameters:                                                               */
-/*   par ... pointer to parameter for building generator object              */
-/*   gen ... pointer to generator object                                     */
-/*---------------------------------------------------------------------------*/
+_unur_rect_debug_init( struct unur_par *par, struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* write info about generator into logfile                              */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par ... pointer to parameter for building generator object         */
+     /*   gen ... pointer to generator object                                */
+     /*----------------------------------------------------------------------*/
 {
   FILE *log;
-
+  
   log = unur_get_log();
 
   fprintf(log,"%s:\n",gen->genid);
@@ -303,7 +310,7 @@ static void
   fprintf(log,"%s: dimension = %d\n",gen->genid,GEN.dim);
   fprintf(log,"%s:\n",gen->genid);
 
-} /* end of rect_info_init() */
+} /* end of _unur_rect_debug_init() */
 
 #endif
 

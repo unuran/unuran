@@ -1,32 +1,42 @@
+Parentheses indicate optional information while a tilde indicates
+that only an approximation must be provided. See the glossary for
+unfamiliar terms.
 
-@multitable @columnfractions .10 .06 .06 .065 .07 .06 .06
-@item name @tab cdf @tab pdf @tab dpdf@tab mode@tab area@tab pv
-@c @item      @tab   @tab   @tab   @tab   @tab    @tab 
-@item AROU @tab     @tab @ x  @tab @ x @tab     @tab     @tab 
-@item CSTD @tab     @tab      @tab     @tab     @tab     @tab 
-@item NINV @tab @ x @tab (x) @footnote{Only required when inversion is done by Newton's method}              @tab     @tab     @tab     @tab
-@item SROU  @tab     @tab @ x  @tab     @tab @ x @tab @ x @tab
-@item SSR   @tab     @tab @ x  @tab     @tab @ x @tab @ x @tab 
-@item TABL  @tab     @tab      @tab     @tab     @tab     @tab
-@item TDR   @tab     @tab @ x  @tab @ x @tab     @tab     @tab
-@item UNIF  @tab     @tab      @tab     @tab     @tab     @tab
-@item UTDR  @tab     @tab @ x  @tab     @tab @ x @tab     @tab
-@item DAU   @tab     @tab      @tab     @tab     @tab     @tab @ x 
-@item DGT   @tab     @tab      @tab     @tab     @tab     @tab 
-@item DSTD  @tab     @tab      @tab     @tab     @tab     @tab 
-@item EMPK  @tab     @tab      @tab     @tab     @tab     @tab
-@item VEMPK @tab     @tab      @tab     @tab     @tab     @tab
-@item VMT   @tab     @tab      @tab     @tab     @tab     @tab
+
+Methods for continuous distributions:
+@multitable {method} {PDF} {dPDF} {mode} {area} {implemented distribution}
+@item method @tab PDF @tab dPDF @tab mode @tab area @tab other
+@item AROU   @tab  x  @tab  x   @tab  (x) @tab      @tab T-concave
+@item CSTD   @tab     @tab      @tab      @tab      @tab implemented distribution
+@item NINV   @tab (x) @tab      @tab      @tab      @tab CDF 
+@item SROU   @tab     @tab      @tab   x  @tab   x  @tab T-concave
+@item SSR    @tab     @tab      @tab   x  @tab   x  @tab T-concave
+@item TABLE  @tab  x  @tab      @tab      @tab  (~) @tab all local extrema
+@item TDR    @tab  x  @tab  x   @tab      @tab      @tab T-concave
+@item UTDR   @tab  x  @tab      @tab   x  @tab   ~  @tab T-concave
 @end multitable
-Where cdf is the cumulated distribution function, pdf the distribution
-function, dpdf its derivative, mode the mode of the distribution, area is
-area below the pdf and pv is a probability vector.
 
+Methods for continuous empirical univariate distributions:@*
+EMPK:  Requires an observed sample
+@sp 1
 
+Methods for continuous multivariate distributions:@*
+VMT: Requires the mean vector and the covariance matrix. Optional
+is a marginal distribution (for non-Gaussian distributions)
+@sp 1
 
+Methods for continuous empirical multivariate distributions:@*
+VEMPK: Requires an observed sample
+@sp 1
 
-
-
+Methods for discrete univariate distributions:
+@multitable {method} {PMF} {PV} {mode} {area} {implementded distribution}
+@item method @tab PMF @tab PV @tab mode @tab area @tab other
+@item DARI   @tab  x  @tab    @tab  x   @tab  ~   @tab T-concave
+@item DAU    @tab     @tab  x @tab      @tab      @tab 
+@item DGT    @tab     @tab  x @tab      @tab      @tab 
+@item DSTD   @tab     @tab    @tab      @tab      @tab implemented distribution  
+@end multitable
 
 
 

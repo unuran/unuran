@@ -528,6 +528,7 @@ _unur_dau_create( struct unur_par *par)
   GEN.len = DISTR.n_prob;           /* length of probability vector          */
   gen->method = par->method;        /* indicates used method                 */
   gen->variant = 0u;                /* only the default variant is possible  */
+  gen->set = par->set;              /* indicates parameter settings          */
   gen->debug = par->debug;          /* debuging flags                        */
   gen->urng = par->urng;            /* pointer to urng                       */
 

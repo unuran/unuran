@@ -468,6 +468,7 @@ _unur_dstd_create( struct unur_par *par )
 
   gen->method = par->method;        /* indicates used method  */
   gen->variant = par->variant;      /* indicates variant      */
+  gen->set = par->set;              /* indicates parameter settings          */
   gen->debug = par->debug;          /* debuging flags         */
   gen->urng = par->urng;            /* pointer to urng        */
 

@@ -513,6 +513,7 @@ _unur_dgt_create( struct unur_par *par )
 
   /* store method in generator structure */
   gen->method = par->method;
+  gen->set = par->set;              /* indicates parameter settings          */
 
   /* which variant? */
   if (par->variant == 0)   /* default variant */

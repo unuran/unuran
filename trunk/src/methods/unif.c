@@ -270,6 +270,7 @@ _unur_unif_create( struct unur_par *par )
   /* copy some parameters into generator object */
   gen->method = par->method;        /* indicates method                      */
   gen->variant = par->variant;      /* indicates variant                     */
+  gen->set = par->set;              /* indicates parameter settings          */
   gen->debug = par->debug;          /* debuging flags                        */
   gen->urng = par->urng;            /* pointer to urng                       */
 

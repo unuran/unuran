@@ -191,6 +191,7 @@ struct unur_gen {
   
   unsigned method;            /* indicates method and generator to be used   */
   unsigned variant;           /* indicates variant of method                 */
+  unsigned set;               /* stores which parameters have been changed   */
   
   UNUR_URNG_TYPE  urng;       /* pointer to uniform random number generator  */
   UNUR_URNG_TYPE  urng_aux;   /* pointer to second (auxilliary) uniform RNG  */

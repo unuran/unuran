@@ -966,6 +966,7 @@ _unur_arou_create( struct unur_par *par )
 
   gen->method = par->method;        /* indicates method and variant          */
   gen->variant = par->variant;      /* indicates variant                     */
+  gen->set = par->set;              /* indicates parameter settings          */
   gen->debug = par->debug;          /* debuging flags                        */
   gen->urng = par->urng;            /* pointer to urng                       */
 

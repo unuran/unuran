@@ -322,9 +322,11 @@ unur_cstd_chg_pdfparams( struct unur_gen *gen, double *params, int n_params )
     DISTR.params[i] = params[i];
 
   /* changelog */
-  gen->distr.set |= UNUR_DISTR_SET_PARAMS;
-  /* mode and area might be wrong now! */
-  gen->distr.set &= ~(UNUR_DISTR_SET_MODE | UNUR_DISTR_SET_PDFAREA );
+  /* mode and area might be wrong now!
+     however there is no need for these two numbers.
+     so we don't say:
+     gen->distr.set &= ~(UNUR_DISTR_SET_MODE | UNUR_DISTR_SET_PDFAREA ); 
+  */
 
   /* run special init routine for generator */
   if ( !(DISTR.init(NULL,gen)) ) {
@@ -550,6 +552,7 @@ _unur_cstd_create( struct unur_par *par )
 
   gen->method = par->method;        /* indicates used method                 */
   gen->variant = par->variant;      /* indicates variant                     */
+  gen->set = par->set;              /* indicates parameter settings          */
   gen->debug = par->debug;          /* debuging flags                        */
   gen->urng = par->urng;            /* pointer to urng                       */
 

@@ -52,6 +52,7 @@
 #include <distr/distr_source.h>
 #include <distr/cvec.h>
 #include <distr/cont.h>
+#include <distr/condi.h>
 #include <utils/matrix_source.h>
 #include <uniform/urng.h>
 #include <methods/tdr.h>
@@ -109,12 +110,6 @@ static void _unur_gibbs_debug_init ( const struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 #endif
 
-
-static double _unur_gibbs_pdf_conditional(double x, const UNUR_DISTR *distr); 
-static double _unur_gibbs_dpdf_conditional(double x, const UNUR_DISTR *distr); 
-/*---------------------------------------------------------------------------*/
-/* auxiliary functions for the full-conditionals                             */
-/*---------------------------------------------------------------------------*/
 
 
 /*---------------------------------------------------------------------------*/
@@ -390,7 +385,6 @@ _unur_gibbs_sample_cvec( struct unur_gen *gen, double *vec )
 {
   int i, d, dim; /* index used in dimension loops (0 <= d < dim) */
   long skip;
-  double fpar[2]; /* parameter array */
   
   /* possibly move this to the gibbs generator structure */
   UNUR_PAR *par_conditional = NULL;
@@ -409,39 +403,31 @@ _unur_gibbs_sample_cvec( struct unur_gen *gen, double *vec )
     /* moving "candidate" point along each coordinate */
     for (d=0; d<dim; d++) {
 
-      distr_conditional = unur_distr_cont_new();
+      //distr_conditional = unur_distr_cont_new();
       /* set the current coordinate direction as scalar parameter */
-      fpar[0] = dim;
-      fpar[1] = d;
-      unur_distr_cont_set_pdfparams( distr_conditional, fpar, 2 );	
 
       for (i=0; i<dim; i++) {
         printf("GEN->point_current[%d]=%f\n", i, GEN->point_current[i]);
       }
-      printf("---\n");
       
-      /* set the current point as vector parameter */
-      unur_distr_cont_set_pdfparams_vec( distr_conditional, 0, GEN->point_current, dim );
-
-      /* setting pdf and dpdf */
-      unur_distr_cont_set_pdf(distr_conditional, _unur_gibbs_pdf_conditional);
-      unur_distr_cont_set_dpdf(distr_conditional, _unur_gibbs_dpdf_conditional);
-
-      distr_conditional->base = _unur_distr_cvec_clone( gen->distr );
-            
+      distr_conditional = unur_distr_condi_new(gen->distr, GEN->point_current, d);
+      if (distr_conditional) printf("--- distr\n");
       par_conditional = unur_tdr_new(distr_conditional);
+      if (par_conditional) printf("--- par\n");
       gen_conditional = unur_init(par_conditional);
+      if (gen_conditional) printf("--- gen\n");
       
       if (gen_conditional==NULL) {
         /* stopping ? */
+	printf("no generator ...\n");
       }
       else {
         GEN->point_current[d] = unur_sample_cont(gen_conditional);
       }
     
       /* free allocated memory */
-      unur_distr_free(distr_conditional);
-      unur_free(gen_conditional);
+      if (distr_conditional) unur_distr_free(distr_conditional);
+      if (gen_conditional)   unur_free(gen_conditional);
     
     }
       
@@ -489,7 +475,7 @@ _unur_gibbs_free( struct unur_gen *gen )
 /**  Auxilliary routines                                                    **/
 /*****************************************************************************/
 
-
+#if 0
 /*---------------------------------------------------------------------------*/
 
 double _unur_gibbs_pdf_conditional(double x, const UNUR_DISTR *distr_conditional) {
@@ -549,27 +535,12 @@ double _unur_gibbs_dpdf_conditional(double x, const UNUR_DISTR *distr_conditiona
 } /* end of _unur_gibbs_dpdf_conditional() */
 
 /*---------------------------------------------------------------------------*/
-
+#endif
 
 /*****************************************************************************/
 /**  Additional routines used for testing                                   **/
 /*****************************************************************************/
 
-long
-_unur_gibbs_get_pdfcount( UNUR_GEN *gen)
-     /* Return the number of PDF calls */
-{
-  return GEN->pdfcount;
-}
-
-/*---------------------------------------------------------------------------*/
-
-void
-_unur_gibbs_reset_pdfcount( UNUR_GEN *gen)
-     /* Reset the number of PDF calls to 0 */
-{
-  GEN->pdfcount = 0;
-}
 
 /*---------------------------------------------------------------------------*/
 

@@ -82,11 +82,3 @@ int unur_gibbs_set_skip( UNUR_PAR *parameters, long skip );
    Default: @code{0}.
 */
 
-/*...........................................................................*/
-
-long _unur_gibbs_get_pdfcount( UNUR_GEN *gen);
-/* Return the number of PDF calls */
-
-void _unur_gibbs_reset_pdfcount( UNUR_GEN *gen);
-/* Reset the number of PDF calls to 0 */
-

@@ -80,7 +80,7 @@ _unur_stdgen_triangular_init( struct unur_par *par, struct unur_gen *gen )
 
   case 0:  /* DEFAULT */
   case UNUR_STDGEN_INVERSION:   /* inversion method */
-    PAR.is_inversion = TRUE;
+    if (par) PAR.is_inversion = TRUE;
     _unur_cstd_set_sampling_routine(par,gen,unur_stdgen_sample_triangular_inv); 
     return 1;
 

@@ -38,11 +38,21 @@
  *****************************************************************************/
 
 /* 
-   =TEST
+   =METHOD  GENERAL
+
+   =TYPE
+      general
+   
+   =DESCRIPTION
+      Routines for all generator objects
+
+   =END
 */
 
 /*---------------------------------------------------------------------------*/
 /* (Re-) Initialize generators                                               */
+
+/* =ROUTINES */
 
 UNUR_GEN *unur_init( UNUR_PAR *parameters );
 /*
@@ -58,7 +68,11 @@ UNUR_GEN *unur_init( UNUR_PAR *parameters );
 /* Sample from generator                                                     */
 
 int    unur_sample_discr(UNUR_GEN *generator);
+/* */
+
 double unur_sample_cont(UNUR_GEN *generator);
+/* */
+
 void   unur_sample_vec(UNUR_GEN *generator, double *vector);
 /*
   Sample from generator object. The three routines depend on the type
@@ -105,9 +119,9 @@ UNUR_DISTR *unur_get_distr( UNUR_GEN *generator );
    (How should the poor generator object know what you have done?)
 */
 
+/* =END */
+
 /*---------------------------------------------------------------------------*/
-
-
 
 
 

@@ -67,7 +67,14 @@
 UNUR_GEN *unur_str2gen( const char *string );
 /* 
    Get a generator object for the distribution, method and unifrom
-   random number generator as discribed in the given @var{string}.
+   random number generator as described in the given @var{string}.
+   See @ref{StringSyntax,Syntax of String Interface,Syntax of String
+   Interface} for details.
+*/
+
+UNUR_DISTR *unur_str2distr( const char *string );
+/*
+   Get a distribution object for the distribution described in @var{string}.
    See @ref{StringSyntax,Syntax of String Interface,Syntax of String
    Interface} for details.
 */

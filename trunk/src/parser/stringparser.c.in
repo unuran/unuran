@@ -169,7 +169,7 @@ struct malloc_list {
 
 /*---------------------------------------------------------------------------*/
 
-static struct unur_distr *_unur_str2distr( char *str_distr );
+static struct unur_distr *_unur_str_distr( char *str_distr );
 /*---------------------------------------------------------------------------*/
 /* get distribution object for given distribution.                           */
 /*---------------------------------------------------------------------------*/
@@ -223,7 +223,7 @@ static struct unur_par *_unur_str2par_default( UNUR_DISTR *distr );
 /* get parameter object for distribution and default method.                 */
 /*---------------------------------------------------------------------------*/
 
-static struct unur_par *_unur_str2par( char *str_method, UNUR_DISTR *distr, struct malloc_list *mlist );
+static struct unur_par *_unur_str_par( char *str_method, UNUR_DISTR *distr, struct malloc_list *mlist );
 /*---------------------------------------------------------------------------*/
 /* get parameter object for distribution and method.                         */
 /*---------------------------------------------------------------------------*/
@@ -474,7 +474,7 @@ unur_str2gen (const char *string)
   }
 
   /* make distribution object */
-  distr = _unur_str2distr(str_distr);
+  distr = _unur_str_distr(str_distr);
   if ( distr == NULL ) {
     /* error */
     if (str) free(str);
@@ -484,7 +484,7 @@ unur_str2gen (const char *string)
   /* get parameter object */
   if ( str_method != NULL ) {
     /* method is provided in string */
-    par = _unur_str2par(str_method, distr, &mlist);
+    par = _unur_str_par(str_method, distr, &mlist);
   }
   else {
     /* otherwise use default method */
@@ -536,6 +536,67 @@ unur_str2gen (const char *string)
 
 /*---------------------------------------------------------------------------*/
 
+struct unur_distr *
+unur_str2distr (const char *string)
+     /*----------------------------------------------------------------------*/
+     /* get distribution object for given distribution                       */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   string ... string that contains description of distribution        */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   distribution object                                                   */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return NULL                                                        */
+     /*----------------------------------------------------------------------*/
+{
+  UNUR_DISTR *distr = NULL;       /* distribution object */
+
+  //  char *str_distr   = NULL;       /* string for distribution */
+
+  char *str = NULL;               /* pointer to working string */
+
+  // char *token;
+
+  /* (empty) list of allocated memory blocks */ 
+  //  struct malloc_list mlist = { NULL, 0 };
+
+  /* check arguments */
+  _unur_check_NULL( GENTYPE,string,NULL );
+
+  /* Prepare string for processing:            */
+  /*   Remove all white spaces,                */
+  /*   convert to lower case letters,          */
+  /*   copy into working string                */
+  str = _unur_parser_prepare_string( string );
+
+#ifdef UNUR_ENABLE_LOGGING
+  /* write info into log file */
+  if (_unur_default_debugflag)
+    _unur_str_debug_string(0,"[input]",str);
+#endif
+
+  /* make distribution object */
+  distr = _unur_str_distr(str);
+
+  /* free allocated memory blocks */
+  if (str) free(str);
+
+#ifdef UNUR_ENABLE_LOGGING
+  /* write info into log file */
+  if (_unur_default_debugflag)
+     if ( distr != NULL )
+     _unur_str_debug_string(0,"",NULL);
+#endif
+
+  /* return pointer to distribution object */
+  return distr;
+
+} /* end of unur_str2distr() */
+
+/*---------------------------------------------------------------------------*/
+
 /*****************************************************************************/
 /**  Distributions                                                          **/
 /*****************************************************************************/
@@ -543,7 +604,7 @@ unur_str2gen (const char *string)
 /*---------------------------------------------------------------------------*/
 
 struct unur_distr *
-_unur_str2distr( char *str_distr )
+_unur_str_distr( char *str_distr )
      /*----------------------------------------------------------------------*/
      /* get distribution object for given distribution                       */
      /*                                                                      */
@@ -623,7 +684,7 @@ _unur_str2distr( char *str_distr )
 
   return distr;
 
-} /* end of _unur_str2distr() */
+} /* end of _unur_str_distr() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -1108,7 +1169,7 @@ _unur_str2par_default( UNUR_DISTR *distr )
 /*---------------------------------------------------------------------------*/
 
 struct unur_par *
-_unur_str2par( char *str_method, UNUR_DISTR *distr, struct malloc_list *mlist )
+_unur_str_par( char *str_method, UNUR_DISTR *distr, struct malloc_list *mlist )
      /*----------------------------------------------------------------------*/
      /* get parameter object for distribution and method                     */
      /*                                                                      */
@@ -1185,7 +1246,7 @@ _unur_str2par( char *str_method, UNUR_DISTR *distr, struct malloc_list *mlist )
   /* end */
   return par;
 
-} /* end of _unur_str2par() */
+} /* end of _unur_str_par() */
 
 /*---------------------------------------------------------------------------*/
 

@@ -45,7 +45,6 @@
 	(.) ueberpruefe ob PDF(x) NaN liefert
 	(.) make_guide_table nicht jedesmal aufrufen
 	(.) teste ob uniform = 0 or = 1 (?)
-	(.) konvergiert nicht gegen inversion !!!
 
 -----------------------------------------------------------------------------
 
@@ -71,7 +70,7 @@
 
 -----------------------------------------------------------------------------
 
-(*) CDF aus CEPHES is ein problem. lieber GSL ??
+(*) CDF aus CEPHES is ein problem. besser GSL ??
 
 -----------------------------------------------------------------------------
 

@@ -160,10 +160,20 @@ sub method_info{
 		print Outfile "if ( !strcmp( value, \"\L$1\") ){\n";
 		print Outfile "\t\t\tmethod = $1;\n";
 		if ( "\U$1" eq "UNIF"){
-		    print Outfile "\t\t\tpar = unur_\L$1_new();\n";
+		    # print Outfile "\t\t\tpar = unur_\L$1_new();\n";
+		    print Outfile "\t\t\tfprintf(stderr, \"Method UNIF not intended for usage within this string content.\\n\");\n";
 		}
 		else{
 		    print Outfile "\t\t\tpar = unur_\L$1_new(distr);\n";
+		    while ( $_ !~ /^\s*=UP\s+Methods_for_\w+/ ){
+			$_ = <INFILE>;
+		    }
+		    $_ =~ /^\s*=UP\s+Methods_for_(\w+)/;
+                    # Method and distribution must be related to common type
+		    print Outfile "\t\t\tif ( ! unur_distr_is_\L$1(distr) ){\n";
+		    print Outfile "\t\t\t\tfprintf(stderr, \"Error: Method and distribution don't match up. \\n\");\n";
+		    print Outfile "\t\t\t}\n";
+
 		}
 		print Outfile "\t\t}\n\t\telse ";
 	    }

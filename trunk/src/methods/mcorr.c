@@ -635,6 +635,14 @@ _unur_mcorr_sample_matr_eigen( struct unur_gen *gen, double *mat )
     }
   }
 
+  /* symmetrization (necessery due to rounding-errors) */
+  for (i=0; i<dim; i++) {
+    for (j=(i+1); j<dim; j++) {
+      mat[idx(i,j)] = (mat[idx(i,j)]+mat[idx(j,i)])/2.;
+      mat[idx(j,i)] = mat[idx(i,j)];
+    }
+  }  
+
 #undef idx
 } /* end of _unur_mcorr_eigen() */
 

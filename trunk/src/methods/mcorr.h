@@ -68,8 +68,17 @@
 
       Alternatively, when a random correlation matrix having given 
       eigenvalues is sought, the method of Marsaglia and Olkin
-      will be used.
-    
+      will be used. In this case, the correlation matrix @unurmath{C}
+      is given as @unurmath{C=PDP'} where @unurmath{D} is a diagonal
+      matrix containing the eigenvalues and @unurmath{P} is a random
+      orthogonal matrix. In higher dimensions, the rounding-errors
+      introduced in the previous matrix multiplications could lead
+      to a non-symmetric correlation matrix.
+      We have therefore chosen to calculate the explicitely symmetric 
+      correlation matrix as @unurmath{C=(PDP'+P'DP)/2}.
+      Thus, in very rare cases, this explicit symmetrization may produce 
+      matrices which are not positive definite.
+   
    =HOWTOUSE
       Create a distibution object for random correlation matrices by a
       @code{unur_distr_correlation} call

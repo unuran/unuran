@@ -45,6 +45,12 @@ For finding the root it is possible to choose between
 Newton's method and the regula falsi.
 */
 
+/*
+ =REQUIRED
+
+ cdf, (in addition pdf only in case of Newton's method) 
+*/
+
 
 /*---------------------------------------------------------------------------*/
 /* Routines for user interface                                               */
@@ -88,7 +94,7 @@ int unur_ninv_set_start( UNUR_PAR *parameters, double s1, double s2 );
 /*   Regula falsi: s1, s2:       boundary of starting interval              */
 /*   If s1 == s2, UNURAN sets starting values as follows:                   */
 /*   Newton: CDF(s1) = 0.5                                                  */
-/*   Regula falsi: CDF(s1) = 0.1, CDF(s2) = .9                              */
+/*   Regula falsi: CDF(s1) = 0.1, CDF(s2) = 0.9                             */
 
 int unur_ninv_use_table( UNUR_PAR *parameters );
 /* Generates a table (of size TABLE_POINTS) with suitable starting values

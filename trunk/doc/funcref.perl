@@ -17,7 +17,8 @@
 # This script searches for keywords beginning with `=...'
 # The keywords may only be preceded by white space or `/*'
 #
-# =METHOD  name [longform]
+# =METHOD
+# usage:   =METHOD  name [longform]
 #          name and description of a method within a header file
 #
 #          name       ... Name of method (ONE word!)
@@ -44,13 +45,6 @@
 #          Function declarations not being within this block
 #          will be ingored. =END must not be omitted.
 #
-# =OPTIONAL, =REQUIRED
-#          These key words are allowed BETWEEN =ROUTINES and
-#          and =END and might be used for specification of
-#          the subroutines.
-#          Both will be ingored by this script;
-#          There won't be a warning if used.
-#
 # (=>)     This string within a comment won't appear in
 #          the texinfo output. 
 #
@@ -58,6 +52,10 @@
 #
 # =ERRORCODE not in use
 #
+# keywords used by other scripts (no warnings):
+#    =DEF
+#    =REQUIRED
+# 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 
@@ -77,7 +75,7 @@ $ROUTINES = 0;
 @TYPES = ("UNUR_PAR", "UNUR_GEN", "struct", "void", "int", "double", "float", "long", "char", "short", "unsigned", "signed");
 
 # permitted key words (no warning)
-@COMMAND =("=METHOD", "=ROUTINES", "=REQUIRED", "=OPTIONAL", "=END");
+@COMMAND =("=METHOD", "=ROUTINES", "=REQUIRED", "=DEF", "=END");
 
 # output file:
 open(OUTFILE, ">qstart_function_reference.texi");
@@ -117,7 +115,7 @@ while($_ = <>)
     }
   
     # check for wrong key worde (e.g. typing error)
-    if ($_ =~/^(\s*\/\*\s*|\s*)(=.*?)\W/){
+    if ($_ =~/^(\s*\/\*\s*|\s*)(=\w+?)\W/){
 	$ERROR = 1;
 	foreach $command (@COMMAND){
 	    if ($2 eq $command){

@@ -45,6 +45,7 @@ check_PROGRAMS = \
  t_hinv \
  t_hrb \
  t_hrd \
+ t_hri \
  t_ninv \
  t_srou \
  t_ssr \
@@ -99,6 +100,7 @@ EXTRA_DIST = \
  t_hinv.conf \
  t_hrb.conf \
  t_hrd.conf \
+ t_hri.conf \
  t_ninv.conf \
  t_srou.conf \
  t_ssr.conf \

@@ -108,6 +108,7 @@ Copyright 1984, 1987, 1989, 1995 by Stephen L. Moshier
 /*---------------------------------------------------------------------------*/
 /* Include constants used in UNURAN.                                         */
 
+#include <float.h>
 #include <x_math.h>
 #include <x_math_source.h>
 #include <source_fp_const.h>

@@ -21,7 +21,8 @@ include_HEADERS = \
  unuran.h \
  unuran_config.h
 
-unuran.h: $(top_srcdir)/src/methods/*.h $(top_srcdir)/src/distributions/*.h 
+##unuran.h: $(top_srcdir)/src/methods/*.h $(top_srcdir)/src/distributions/*.h 
+unuran.h:
 	$(top_srcdir)/scripts/merge_h.pl $(top_srcdir)/src/methods/in_unuran.h > unuran.h
 
 # strip library libunuran

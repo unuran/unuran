@@ -275,7 +275,7 @@ enum {
     Internal error. This should not happen. 
     Please make a bug report.
   */
-  UNUR_ERR_SHOULD_NOT_HAPPEN = 0x0fu, /* error should not happen, report this! */
+  UNUR_ERR_SHOULD_NOT_HAPPEN = 0x0fu  /* error should not happen, report this! */
 
 };
 

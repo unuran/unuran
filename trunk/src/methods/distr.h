@@ -120,7 +120,7 @@ enum {
   UNUR_DISTR_CEMP  = 0x011u,     /* empirical univ. cont. distr. (a sample)  */ 
   UNUR_DISTR_CVEC  = 0x110u,     /* mulitvariate continuous distribution     */ 
   UNUR_DISTR_CVEMP = 0x111u,     /* empirical multiv. cont. distr. (sample)  */ 
-  UNUR_DISTR_DISCR = 0x020u,     /* univariate discrete distribution         */ 
+  UNUR_DISTR_DISCR = 0x020u      /* univariate discrete distribution         */ 
 };
 
 /*---------------------------------------------------------------------------*/

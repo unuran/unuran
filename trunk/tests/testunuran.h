@@ -15,6 +15,8 @@
 #include <string.h>
 #include <malloc.h>
 #include <time.h>
+#include <math.h>
+#include <float.h>
 
 #include <prng.h>
 #include <unuran.h>

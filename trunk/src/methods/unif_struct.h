@@ -41,11 +41,11 @@
 /*---------------------------------------------------------------------------*/
 /* Information for constructing the generator                                */
 
-struct unur_unif_par {};
+struct unur_unif_par { int dummy; };
 
 /*---------------------------------------------------------------------------*/
 /* The generator object                                                      */
 
-struct unur_unif_gen {};
+struct unur_unif_gen { int dummy; };
 
 /*---------------------------------------------------------------------------*/

@@ -5,15 +5,18 @@
 @item AROU @tab     @tab @ x  @tab @ x @tab     @tab     @tab 
 @item CSTD @tab     @tab      @tab     @tab     @tab     @tab 
 @item NINV @tab @ x @tab (x) @footnote{Only required when inversion is done by Newton's method}              @tab     @tab     @tab     @tab
-@item SROU @tab     @tab @ x  @tab     @tab @ x @tab @ x @tab
-@item SSR  @tab     @tab @ x  @tab     @tab @ x @tab @ x @tab 
-@item TDR  @tab     @tab @ x  @tab @ x @tab     @tab     @tab
-@item UNIF @tab     @tab      @tab     @tab     @tab     @tab
-@item UTDR @tab     @tab @ x  @tab     @tab @ x @tab     @tab
-@item DAU  @tab     @tab      @tab     @tab     @tab     @tab @ x 
-@item DGT  @tab     @tab      @tab     @tab     @tab     @tab 
-@item DSTD @tab     @tab      @tab     @tab     @tab     @tab 
-@item EMPK @tab     @tab      @tab     @tab     @tab     @tab
+@item SROU  @tab     @tab @ x  @tab     @tab @ x @tab @ x @tab
+@item SSR   @tab     @tab @ x  @tab     @tab @ x @tab @ x @tab 
+@item TABL  @tab     @tab      @tab     @tab     @tab     @tab
+@item TDR   @tab     @tab @ x  @tab @ x @tab     @tab     @tab
+@item UNIF  @tab     @tab      @tab     @tab     @tab     @tab
+@item UTDR  @tab     @tab @ x  @tab     @tab @ x @tab     @tab
+@item DAU   @tab     @tab      @tab     @tab     @tab     @tab @ x 
+@item DGT   @tab     @tab      @tab     @tab     @tab     @tab 
+@item DSTD  @tab     @tab      @tab     @tab     @tab     @tab 
+@item EMPK  @tab     @tab      @tab     @tab     @tab     @tab
+@item VEMPK @tab     @tab      @tab     @tab     @tab     @tab
+@item VMT   @tab     @tab      @tab     @tab     @tab     @tab
 @end multitable
 Where cdf is the cumulated distribution function, pdf the distribution
 function, dpdf its derivative, mode the mode of the distribution, area is

@@ -42,9 +42,10 @@
 #include <unur_source.h>
 #include <methods/unur_methods_source.h>
 #include <methods/x_gen_source.h>
+#include <distr/cont.h>
+#include <distr/cvec.h>
 #include <distr/discr.h>
 #include <distr/distr_source.h>
-#include <distr/cvec.h>
 #include <distributions/unur_distributions.h>
 #include <specfunct/unur_specfunct_source.h>
 #include <utils/matrix_source.h>
@@ -72,7 +73,7 @@
 #define CHI2_MAX_DIMENSIONS 40 
 /* max number of dimensions for chi^2 tests for multivariate distributions */
 
-#define CHI2_MAX_TOTALINTERVALS 100000   
+#define CHI2_MAX_TOTALINTERVALS 1000000   
 /* maximal product of intervals used in chi2vec test */
 
 /*---------------------------------------------------------------------------*/
@@ -148,7 +149,6 @@ unur_test_chi2( struct unur_gen *gen,
     return _unur_test_chi2_cemp(gen, intervals, samplesize, classmin, verbose, out);
 
   case UNUR_METH_VEC:
-    /* TODO : testing for other than normal distributions */
     return _unur_test_chi2_vec(gen, intervals, samplesize, classmin, verbose, out);
 
   default:
@@ -508,7 +508,7 @@ _unur_test_chi2_cemp( struct unur_gen *gen,
 
 static double
 _unur_test_chi2_vec ( struct unur_gen *gen, 
-		      int intervals, 
+		      int n_intervals, 
 		      int samplesize, 
 		      int classmin,
 		      int verbose,
@@ -520,8 +520,8 @@ _unur_test_chi2_vec ( struct unur_gen *gen,
      /*                                                                      */
      /* parameters:                                                          */
      /*   gen        ... pointer to generator object                         */
-     /*   intervals  ... number of intervals in which (0,1) is partitioned   */
-     /*                  (each dimension is partitioned in #intervals)       */
+     /*   n_intervals... number of intervals in which (0,1) is partitioned   */
+     /*                  (each dimension is partitioned in n_intervals)      */
      /*   samplesize ... samplesize for test                                 */
      /*                  (if <= 0, CHI2_SAMPLEFAC * intervals^dim is used)   */
      /*   classmin   ... minimum number of expected occurrences for each class */
@@ -540,34 +540,47 @@ _unur_test_chi2_vec ( struct unur_gen *gen,
      /*   -1. ... other errors                                               */
      /*----------------------------------------------------------------------*/
 {
+#define DISTR   gen->distr->data.cvec
 #define idx(i,j) ((i)*dim+j)
 
   int dim;         /* dimension of multivariate distribution */
-  double *x, *z;   /* sampling vectors */
-  double pval;     /* p-value */
+  int *n_intervals_marginal; /* number of intervals for each dimension */ 
+  int n_intervals_total;  /* product of all dimintervals[] */
 
-  double *L;             /* pointer to Cholesky factor */
-  double *Linv;          /* pointer to inverse Cholesky factor (is calculated here) */
+  const double *L;             /* pointer to Cholesky factor */
+  double *Linv;          /* pointer to inverse Cholesky factor */
+  double Linv_det;       /* determinant of Linv */
   const double *mean;    /* pointer to mean vector */
+
+  double *X;             /* sampling vector */
+  double *U;             /* X transformed to uniform */
+
+  UNUR_DISTR **marginals;  /* pointer to marginal distributions */
+  UNUR_FUNCT_CONT **marginal_cdf;  /* pointer to CDFs of marginal distributions */
+  int i, j, k, itmp;     /* auxiliary variables */
+
+  double pval;     /* p-value */
 
   int *idx;	   /* index array */
   int *bm;         /* array for counting bins for marginals */
   int *b;          /* array for counting bins */
 
-  int i, j, k, sumintervals, prodintervals, offset;
-  int dimintervals[CHI2_MAX_DIMENSIONS]; /* for each dimension in chi2 test */ 
-  int totalintervals;  /* product of all dimintervals[] */
+  int sumintervals, prodintervals, offset;
 
-  double det; /* determinant of Linv */
-  
+
   /* check arguments */
   CHECK_NULL(gen,-1.);
   /* we do not check magic cookies here */
 
   /* check given number of intervals */
-  if (intervals <= 2)
-    intervals = CHI2_INTERVALS_DEFAULT;
+  if (n_intervals <= 2)
+    n_intervals = CHI2_INTERVALS_DEFAULT;
 
+  /* samplesize */
+  if( samplesize <= 0 ) samplesize = CHI2_DEFAULT_SAMPLESIZE;
+  samplesize = min( samplesize, CHI2_MAX_SAMPLESIZE );
+
+  /* dimension of distribution */
   dim = gen->distr->dim;
   if (dim < 2) {
     _unur_error(test_name,UNUR_ERR_GENERIC,"distribution dimension < 2 ?");
@@ -579,91 +592,105 @@ _unur_test_chi2_vec ( struct unur_gen *gen,
     return -1.; 
   }
 
-  /* setup of intervals for each dimension */
-  if (dim<=3) {
-    totalintervals=1;
-    for (i=0; i<dim; i++) {
-      dimintervals[i] = intervals;  
-      totalintervals *= intervals;
-    }
+  /* we need mean vector and covariance matrix */
+  mean = unur_distr_cvec_get_mean(gen->distr);
+  if (mean==NULL) {
+    _unur_error(gen->distr->name,UNUR_ERR_DISTR_REQUIRED,"mean vector");
+    return -2.; }
+  L = unur_distr_cvec_get_cholesky(gen->distr);
+  if (L==NULL) {
+    _unur_error(gen->distr->name,UNUR_ERR_DISTR_REQUIRED,"covariance matrix");
+    return -2.; }
+
+  /* we need all standardized marginal distributions */
+  if (DISTR.stdmarginals==NULL) {
+    _unur_error(gen->distr->name,UNUR_ERR_DISTR_REQUIRED,"standardized marginals");
+    return -2.; }
+  marginals = _unur_malloc(dim * sizeof(UNUR_DISTR *));
+  marginal_cdf = _unur_malloc(dim * sizeof(UNUR_FUNCT_CONT *));
+  for (i=0; i<dim; i++) {
+    marginals[i] = DISTR.stdmarginals[i];
+    marginal_cdf[i] = unur_distr_cont_get_cdf(DISTR.stdmarginals[i]);
+    if (marginals[i]==NULL || marginal_cdf[i]==NULL) {
+      _unur_error(gen->distr->name,UNUR_ERR_DISTR_REQUIRED,"CDF of continuous standardized marginal");
+      free (marginals);  free (marginal_cdf);
+      return -2.; }
   }
-  else {
-    /* dim > 3, use harmonic decreasing sequence for dimintervals[] */
-    totalintervals=1;
-    for (i=0; i<dim; i++) {
-      dimintervals[i] = (int) ( intervals * (1./(1+i)) ) ;  
-      if (dimintervals[i]<2) dimintervals[i]=2;  /* we want to have at least two intervals */
-      totalintervals *= dimintervals[i];
+
+  /* setup of intervals for each dimension */
+  n_intervals_marginal = _unur_malloc(dim * sizeof(int));
+  n_intervals_total = 1;
+  itmp = n_intervals;
+  for (i=0; i<dim; i++) {
+    n_intervals_marginal[i] = itmp;
+    n_intervals_total *= itmp;
+    itmp /= 2;
+    if (itmp < 1) 
+      itmp = 2;
+    if (itmp > CHI2_MAX_TOTALINTERVALS / n_intervals_total) {
+      itmp = CHI2_MAX_TOTALINTERVALS/n_intervals_total;
+      if (itmp < 1) itmp = 1; 
     }
   }
 
-  /* allocate memory */  
+  /* allocate working space memory */  
   idx = _unur_malloc( dim * sizeof(int));
-  x   = _unur_malloc( dim * sizeof(double));
-  z   = _unur_malloc( dim * sizeof(double));
-  Linv  = _unur_malloc( dim*dim * sizeof(double));
-  bm  = _unur_malloc( dim*intervals * sizeof(int)); /* bins for marginal test */
-  if (totalintervals <= CHI2_MAX_TOTALINTERVALS) 
-  b  = _unur_malloc( totalintervals * sizeof(int)); /* bins for chi2 test */
+  X   = _unur_malloc( dim * sizeof(double));
+  U   = _unur_malloc( dim * sizeof(double));
+  Linv  = _unur_malloc( dim * dim * sizeof(double));
+  bm  = _unur_malloc( dim * n_intervals * sizeof(int)); /* bins for marginal test */
+  b  = _unur_malloc( n_intervals_total * sizeof(int)); /* bins for chi2 test */
   
   /* check if memory could be allocated */
-  if (  (idx == NULL) || (x==NULL) || (z == NULL) || (bm == NULL) || (Linv==NULL) || 
-        (b == NULL) || (totalintervals > CHI2_MAX_TOTALINTERVALS) ) {
-      _unur_error(test_name,UNUR_ERR_MALLOC,"cannot run chi2 test");
-      pval=-1; goto free_memory;
+  if ( !(n_intervals_marginal && idx && X && U && bm && Linv && b) )  {
+    _unur_error(test_name,UNUR_ERR_MALLOC,"cannot run chi2 test");
+    pval=-1; goto free_memory;
   }
 
   /* clear arrays */
-  (void) memset(b ,  0, totalintervals  * sizeof(int));
-  (void) memset(bm , 0, dim * intervals  * sizeof(int));
-  (void) memset(idx, 0, dim * sizeof(int));
-
-  /* samplesize */
-  if( samplesize == 0 ) samplesize = CHI2_DEFAULT_SAMPLESIZE;
-
-  if( samplesize < 0 ) {
-    samplesize = abs(samplesize);
-  }
-  samplesize = min( samplesize, CHI2_MAX_SAMPLESIZE );
+  memset(b ,  0, n_intervals_total  * sizeof(int));
+  memset(bm , 0, dim * n_intervals  * sizeof(int));
+  memset(idx, 0, dim * sizeof(int));
 
   /* calculation of inverse Cholesky factor */
-  L = (double *) unur_distr_cvec_get_cholesky(gen->distr);
-  _unur_matrix_invert_matrix (dim, L, 0 , Linv, &det);
+  _unur_matrix_invert_matrix (dim, L, 0 , Linv, &Linv_det);
  
-  mean = unur_distr_cvec_get_mean(gen->distr);
-
   /* now run generator */
   for( i=0; i<samplesize; i++ ) {
-    /* get random vector */
-    _unur_sample_vec(gen, x);
-    /* standardize vector: z = L^{-1} (x - mean) */
+
+    /* get random vector X */
+    _unur_sample_vec(gen, X);
+
+    /* standardize vector: Z = L^{-1} (X - mean) */
+    /* and transform to uniform U                */
     for (j=0; j<dim; j++) {
-      z[j]=0;
+      double Z=0;
       for (k=0; k<=j; k++) {
-        z[j] += Linv[idx(j,k)] * (x[k]-mean[k]);
+        Z += Linv[idx(j,k)] * (X[k]-mean[k]);
       }
+      U[j] = marginal_cdf[j](Z,marginals[j]);
     }
     
     /* increase bins for marginal test */
     sumintervals=0;
     for (j=0; j<dim; j++) {
-      idx[j] = (int)( intervals * _unur_sf_cdfnormal(z[j]) );
+      idx[j] = (int)( n_intervals * U[j] );
 
-      if (idx[j]==intervals) idx[j]--; /* cdf can return 1 ? */
+      if (idx[j]==n_intervals) idx[j]--; /* cdf can return 1 ? */
       bm[sumintervals + idx[j]] += 1;
-      sumintervals += intervals;
+      sumintervals += n_intervals;
     }
     
     /* increase bins for total chi^2 test */
     offset=0;
     prodintervals=1; /* cumulative products of dimintervals[] */
     for (j=0; j<dim; j++) {
-      idx[j] = (int)( dimintervals[j] * _unur_sf_cdfnormal(z[j]) );
+      idx[j] = (int)( n_intervals_marginal[j] * U[j] );
 
-      if (idx[j]==dimintervals[j]) idx[j]--; /* cdf can return 1 ? */
+      if (idx[j]==n_intervals_marginal[j]) idx[j]--; /* cdf can return 1 ? */
       
       offset += prodintervals * idx[j];
-      prodintervals *= dimintervals[j];
+      prodintervals *= n_intervals_marginal[j];
     }
     b[offset] += 1;
   } 
@@ -675,11 +702,11 @@ _unur_test_chi2_vec ( struct unur_gen *gen,
   for (j=0; j<dim; j++) {
     if (verbose >= 1) {
       fprintf(out,"\nMarginal Chi^2-Test for multivariate continuous distribution\n");
-      fprintf(out,"  marginal   = %d\n",j);
+      fprintf(out,"  marginal = [%d]\n",j);
     }
 
-    pval = _unur_test_chi2test(NULL, &bm[sumintervals] , intervals, classmin, verbose, out );
-    sumintervals += intervals;
+    pval = _unur_test_chi2test(NULL, &bm[sumintervals] , n_intervals, classmin, verbose, out );
+    sumintervals += n_intervals;
   } 
 
   /* ----------------------------------------------------------------------------*/
@@ -689,21 +716,25 @@ _unur_test_chi2_vec ( struct unur_gen *gen,
     fprintf(out,"\nChi^2-Test for multivariate continuous distribution\n");
   }
 
-  pval = _unur_test_chi2test(NULL, &b[0] , totalintervals, classmin, verbose, out );
+  pval = _unur_test_chi2test(NULL, &b[0] , n_intervals_total, classmin, verbose, out );
 
 free_memory:
   /* free memory */
   if (idx)  free(idx);
-  if (x)    free(x);
-  if (z)    free(z);
+  if (X)    free(X);
+  if (U)    free(U);
   if (b)    free(b);
   if (bm)   free(bm);
   if (Linv) free(Linv);
+  if (n_intervals_marginal)  free(n_intervals_marginal);
+  if (marginals)  free (marginals);
+  if (marginal_cdf)  free (marginal_cdf);
 
   /* return result of test */
   return pval;
 
 #undef idx
+#undef DISTR
 } /* end of _unur_test_chi2_vec() */
 
 /*---------------------------------------------------------------------------*/

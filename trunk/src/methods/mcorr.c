@@ -316,23 +316,11 @@ _unur_mcorr_clone( const struct unur_gen *gen )
   /* check arguments */
   CHECK_NULL(gen,NULL);  COOKIE_CHECK(gen,CK_MCORR_GEN,NULL);
 
-  /* allocate memory for generator object */
-  clone = _unur_malloc( sizeof(struct unur_gen) );
-
-  /* copy main part */
-  memcpy( clone, gen, sizeof(struct unur_gen) );
+  /* create generic clone */
+  clone = _unur_generic_clone( gen, GENTYPE );
 
   /* allocate new working array */
   CLONE.H = _unur_malloc(GEN.dim * GEN.dim * sizeof(double));
-
-  /* set generator identifier */
-  clone->genid = _unur_set_genid(GENTYPE);
-
-  /* copy distribution object into generator object */
-  clone->distr = _unur_distr_clone( gen->distr );
-
-  /* auxiliary generator */
-  if (gen->gen_aux) clone->gen_aux = _unur_gen_clone( gen->gen_aux );
 
   return clone;
 

@@ -325,17 +325,8 @@ _unur_empl_clone( const struct unur_gen *gen )
   /* check arguments */
   CHECK_NULL(gen,NULL);  COOKIE_CHECK(gen,CK_EMPL_GEN,NULL);
 
-  /* allocate memory for generator object */
-  clone = _unur_malloc( sizeof(struct unur_gen) );
-
-  /* copy main part */
-  memcpy( clone, gen, sizeof(struct unur_gen) );
-
-  /* set generator identifier */
-  clone->genid = _unur_set_genid(GENTYPE);
-
-  /* copy distribution object into generator object */
-  clone->distr = _unur_distr_clone( gen->distr );
+  /* create generic clone */
+  clone = _unur_generic_clone( gen, GENTYPE );
 
   /* copy observed data into generator object */
   CLONE.observ = clone->distr->data.cemp.sample;   /* observations in distribution object */

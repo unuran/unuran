@@ -58,7 +58,7 @@
 /*---------------------------------------------------------------------------*/
 /* aux routine when no sampling routine is available                         */
 
-double _unur_sample_cont_error( UNUR_GEN *gen );
+double _unur_sample_cont_error( struct unur_gen *gen );
 
 /*---------------------------------------------------------------------------*/
 /* create (new) generic generator object                                     */
@@ -67,34 +67,36 @@ struct unur_gen *_unur_generic_create( struct unur_par *par );
 /*---------------------------------------------------------------------------*/
 /* copy (clone) generator objects                                            */
 
-UNUR_GEN *_unur_arou_clone( const UNUR_GEN *gen );
-UNUR_GEN *_unur_cstd_clone( const UNUR_GEN *gen );
-UNUR_GEN *_unur_dari_clone( const UNUR_GEN *gen );
-UNUR_GEN *_unur_dau_clone( const UNUR_GEN *gen );
-UNUR_GEN *_unur_dgt_clone( const UNUR_GEN *gen );
-UNUR_GEN *_unur_dsrou_clone( const UNUR_GEN *gen );
-UNUR_GEN *_unur_dss_clone( const UNUR_GEN *gen );
-UNUR_GEN *_unur_dstd_clone( const UNUR_GEN *gen );
-UNUR_GEN *_unur_empk_clone( const UNUR_GEN *gen );
-UNUR_GEN *_unur_empl_clone( const UNUR_GEN *gen );
-UNUR_GEN *_unur_hinv_clone( const UNUR_GEN *gen );
-UNUR_GEN *_unur_hrb_clone( const UNUR_GEN *gen );
-UNUR_GEN *_unur_hrd_clone( const UNUR_GEN *gen );
-UNUR_GEN *_unur_hri_clone( const UNUR_GEN *gen );
-UNUR_GEN *_unur_mcorr_clone( const UNUR_GEN *gen );
-UNUR_GEN *_unur_ninv_clone( const UNUR_GEN *gen );
-UNUR_GEN *_unur_nrou_clone( const UNUR_GEN *gen );
-UNUR_GEN *_unur_srou_clone( const UNUR_GEN *gen );
-UNUR_GEN *_unur_ssr_clone( const UNUR_GEN *gen );
-UNUR_GEN *_unur_tabl_clone( const UNUR_GEN *gen );
-UNUR_GEN *_unur_tdr_clone( const UNUR_GEN *gen );
-UNUR_GEN *_unur_unif_clone( const UNUR_GEN *gen );
-UNUR_GEN *_unur_utdr_clone( const UNUR_GEN *gen );
-UNUR_GEN *_unur_vempk_clone( const UNUR_GEN *gen );
-UNUR_GEN *_unur_vmt_clone( const UNUR_GEN *gen );
+struct unur_gen *_unur_generic_clone( const struct unur_gen *gen, const char *type );
+
+struct unur_gen *_unur_arou_clone( const struct unur_gen *gen );
+struct unur_gen *_unur_cstd_clone( const struct unur_gen *gen );
+struct unur_gen *_unur_dari_clone( const struct unur_gen *gen );
+struct unur_gen *_unur_dau_clone( const struct unur_gen *gen );
+struct unur_gen *_unur_dgt_clone( const struct unur_gen *gen );
+struct unur_gen *_unur_dsrou_clone( const struct unur_gen *gen );
+struct unur_gen *_unur_dss_clone( const struct unur_gen *gen );
+struct unur_gen *_unur_dstd_clone( const struct unur_gen *gen );
+struct unur_gen *_unur_empk_clone( const struct unur_gen *gen );
+struct unur_gen *_unur_empl_clone( const struct unur_gen *gen );
+struct unur_gen *_unur_hinv_clone( const struct unur_gen *gen );
+struct unur_gen *_unur_hrb_clone( const struct unur_gen *gen );
+struct unur_gen *_unur_hrd_clone( const struct unur_gen *gen );
+struct unur_gen *_unur_hri_clone( const struct unur_gen *gen );
+struct unur_gen *_unur_mcorr_clone( const struct unur_gen *gen );
+struct unur_gen *_unur_ninv_clone( const struct unur_gen *gen );
+struct unur_gen *_unur_nrou_clone( const struct unur_gen *gen );
+struct unur_gen *_unur_srou_clone( const struct unur_gen *gen );
+struct unur_gen *_unur_ssr_clone( const struct unur_gen *gen );
+struct unur_gen *_unur_tabl_clone( const struct unur_gen *gen );
+struct unur_gen *_unur_tdr_clone( const struct unur_gen *gen );
+struct unur_gen *_unur_unif_clone( const struct unur_gen *gen );
+struct unur_gen *_unur_utdr_clone( const struct unur_gen *gen );
+struct unur_gen *_unur_vempk_clone( const struct unur_gen *gen );
+struct unur_gen *_unur_vmt_clone( const struct unur_gen *gen );
 
 /* no such routines:                                                         */
-/* UNUR_GEN *_unur_auto_clone( const UNUR_GEN *gen );                        */
+/* struct unur_gen *_unur_auto_clone( const struct unur_gen *gen );          */
 
 #define _unur_gen_clone(gen)    ((gen)->clone(gen))
 

@@ -236,14 +236,8 @@ _unur_unif_clone( const struct unur_gen *gen )
   /* check arguments */
   CHECK_NULL(gen,NULL);  COOKIE_CHECK(gen,CK_UNIF_GEN,NULL);
 
-  /* allocate memory for generator object */
-  clone = _unur_malloc( sizeof(struct unur_gen) );
-
-  /* copy main part */
-  memcpy( clone, gen, sizeof(struct unur_gen) );
-
-  /* set generator identifier */
-  clone->genid = GENTYPE;
+  /* create generic clone */
+  clone = _unur_generic_clone( gen, GENTYPE );
 
   return clone;
 } /* end of _unur_unif_clone() */

@@ -248,3 +248,41 @@ _unur_generic_create( struct unur_par *par )
 } /* end of _unur_generic_create() */
 
 /*---------------------------------------------------------------------------*/
+
+struct unur_gen *
+_unur_generic_clone( const struct unur_gen *gen, const char *type )
+     /*----------------------------------------------------------------------*/
+     /* copy (clone) generic generator object                                */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen  ... pointer to generator object                               */
+     /*   type ... type of generator (string)                                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to clone of generator object                               */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return NULL                                                        */
+     /*----------------------------------------------------------------------*/
+{ 
+  struct unur_gen *clone;
+
+  /* allocate memory for generator object */
+  clone = _unur_malloc( sizeof(struct unur_gen) );
+
+  /* copy main part */
+  memcpy( clone, gen, sizeof(struct unur_gen) );
+
+  /* set generator identifier */
+  clone->genid = _unur_set_genid(type);
+
+  /* copy distribution object into generator object */
+  if (gen->distr) clone->distr = _unur_distr_clone(gen->distr);
+
+  /* auxiliary generator */
+  if (gen->gen_aux) clone->gen_aux = _unur_gen_clone( gen->gen_aux );
+
+  /* finished clone */
+  return clone;
+} /* _unur_generic_clone() */
+/*---------------------------------------------------------------------------*/

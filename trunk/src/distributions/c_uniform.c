@@ -77,8 +77,7 @@ _unur_pdf_uniform( double x, UNUR_DISTR *distr )
 
   switch (DISTR.n_params) {
   case 2:  /* non standard */
-    /* standardize */
-    x = (x-a) / (b-a);
+    return ((x < a || x > b) ? 0. : 1./(b-a));
   case 0: default: /* standard */
     return ((x < 0. || x > 1.) ? 0. : 1.);
   }

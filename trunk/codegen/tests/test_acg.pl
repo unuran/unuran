@@ -20,11 +20,12 @@ my $ACG = "../acg";
 # Constants
 
 $sample_size = 10;
-$accuracy = 1.0e-15;
+$accuracy = 1.0e-7;
 
 # ----------------------------------------------------------------
 # Compiler
-$GCC = "gcc -Wall";
+
+$GCC = "gcc -Wall -ansi -pedantic -I../../src -L../../src";
 $G77 = "g77 -Wall";
 
 # ----------------------------------------------------------------
@@ -54,6 +55,13 @@ my $DISTR = read_PDFdata('../..');
     if ($DEBUG) {
 	print_data($DISTR);
     }
+
+# ................................................................
+
+# Print Test data
+print "sample size = $sample_size\n";
+print "accuracy = $accuracy\n";
+print "languages = C\n\n";
 
 # ----------------------------------------------------------------
 # Get list of distributions 
@@ -107,12 +115,12 @@ foreach my $d (sort keys %{$list_distr}) {
     $C_exec = "$file_name\_C";
     $C_src = "$C_exec.c";
 
-    # get random variate generators
+    # Get random variate generators
 
     # UNURAN version
     my $UNURAN_code = make_UNURAN_code($distr,$fparam,$seed);
     unless ($UNURAN_code) {
-	print " cannot create generator.\n";
+	print "  .........  cannot create generator.\n";
 	next;
     }
     print "\n";
@@ -122,6 +130,36 @@ foreach my $d (sort keys %{$list_distr}) {
     my $C_code = make_C_code($distr,$fparam,$seed);
     make_C_exec($C_code,$C_src,$C_exec);
 
+    # Start generators
+    open UNURAN, "$UNURAN_exec |" or die "cannot run $UNURAN_exec"; 
+    open C, "$C_exec |" or die "cannot run $C_exec"; 
+
+    # Run generatores and compare output
+    $C_n_diffs = 0;
+
+    while ($UNURAN_out = <UNURAN>) {
+	$C_out = <C>;
+
+	chomp $UNURAN_out;
+	chomp $C_out;
+	
+	($UNURAN_x, $UNURAN_pdfx) = split /\s+/, $UNURAN_out, 2;
+	($C_x, $C_pdfx) = split /\s+/, $C_out, 2;
+
+	$C_x_diff = abs($UNURAN_x - $C_x);
+	$C_pdfx_diff = abs($UNURAN_pdfx - $C_pdfx);
+
+	if ( !FP_equal($C_x,$UNURAN_x) or !FP_equal($C_pdfx,$UNURAN_pdfx) ) {
+	    ++$C_n_diffs;
+	    print "x    = $UNURAN_x\tdifference = $C_x_diff\n";
+	    print "pdfx = $UNURAN_pdfx\tdifference = $C_pdfx_diff\n";
+	}
+
+    }
+
+    # End
+    close UNURAN;
+    close C;
 
 }
 
@@ -129,6 +167,21 @@ foreach my $d (sort keys %{$list_distr}) {
 # End
 
 exit 0;
+
+# ****************************************************************
+
+sub FP_equal
+{
+    my $a = $_[0];
+    my $b = $_[1];
+
+    if ($a==$b || abs($a-$b) <= ((abs($a)<abs($b)) ? abs($a) : abs($b)) * $accuracy) {
+	return 1;
+    }
+    else {
+	return 0;
+    }
+} # end of FP_equal()
 
 # ****************************************************************
 #
@@ -258,7 +311,7 @@ sub make_UNURAN_exec
     close SRC;
 
     # compile
-    system "$GCC -Wall -ansi -pedantic -o $exec $src -lunuran -lprng -lm";
+    system "$GCC -o $exec $src -lunuran -lprng -lm";
 
 
     
@@ -269,7 +322,7 @@ sub make_UNURAN_exec
 
 # ****************************************************************
 #
-# UNURAN version
+# C version
 #
 # ****************************************************************
 
@@ -313,6 +366,8 @@ sub make_C_urng
 /* LCG (Linear Congruential Generator) by Park & Miller (1988).     */
 /*   x_(n+1) = 16807 * x_n mod 2^31 - 1    (Minimal Standard)       */
 /* ---------------------------------------------------------------- */
+
+#define uniform() urand()
 
 static unsigned int xn = $seed;   /* seed  */
 
@@ -390,7 +445,7 @@ sub make_C_exec
     close SRC;
 
     # compile
-    system "$GCC -Wall -ansi -pedantic -o $exec $src -lm";
+    system "$GCC -o $exec $src -lm";
 
 } # end of make_C_exec()
 

@@ -41,7 +41,6 @@
 /*
   =METHOD  DSTD    Discrete STandarD distributions
   
-  =DESCRIPTION
   DSTD is a wrapper for special generator for discrete univariate standard
   distributions. It only works for distributions in the 
   (=>) UNURAN library of standard distributions.
@@ -65,7 +64,6 @@
   It is possible to change the parameters and the domain of the chosen 
   distribution without building a new generator object.
 
-  =END
 */
 
 /*---------------------------------------------------------------------------*/

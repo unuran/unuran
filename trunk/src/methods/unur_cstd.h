@@ -41,7 +41,6 @@
 /*
   =METHOD  CSTD   Continuous STandarD distributions
   
-  =DESCRIPTION
   CSTD is a wrapper for special generators for continuous univariate standard
   distributions. It only works for distributions in the 
   (=>) UNURAN library of standard distributions.
@@ -64,7 +63,6 @@
   It is possible to change the parameters and the domain of the chosen 
   distribution without building a new generator object.
 
-  =END
 */
 
 /*---------------------------------------------------------------------------*/
@@ -124,6 +122,8 @@ int unur_cstd_chg_domain( struct unur_gen *gen, double left, double right );
    Otherwise this call has no effect.
 */
 
+
+/* =END */
 /*---------------------------------------------------------------------------*/
 
 

@@ -37,8 +37,22 @@
  *                                                                           *
  *****************************************************************************/
 
+/*
+  =METHOD NINV Numerical INVersion
+
+NINV is the implementation of numerical inversion.
+For finding the root it is possible to choose between
+Newton's method and the regula falsi.
+*/
+
+
 /*---------------------------------------------------------------------------*/
 /* Routines for user interface                                               */
+
+/*
+  =ROUTINES
+*/
+
 
 UNUR_PAR *unur_ninv_new( UNUR_DISTR *distribution );
 /* get default parameters for generator                                      */
@@ -74,5 +88,15 @@ int unur_ninv_set_start( UNUR_PAR *parameters, double s1, double s2, double s3 )
 /*   Muller/Brent:  s1. s2, s3:   starting points                            */
 /* arguments that are not used by method are ignored.                        */
 
+/* =END */
 /*---------------------------------------------------------------------------*/
+
+
+
+
+
+
+
+
+
 

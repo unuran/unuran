@@ -1,0 +1,131 @@
+/*****************************************************************************
+ *                                                                           *
+ *          UNURAN -- Universal Non-Uniform Random number generator          *
+ *                                                                           *
+ *****************************************************************************
+ *                                                                           *
+ *   FILE:      malloc.c                                                     *
+ *                                                                           *
+ *   allocate memory                                                         *
+ *   store allocated blocks in linked list                                   *
+ *                                                                           *
+ *****************************************************************************
+ *****************************************************************************
+ *                                                                           *
+ *   author: Josef.Leydold @ statistik.wu-wien.ac.at                         *
+ *                                                                           *
+ *   last modification: Mon Oct 18 20:46:18 CEST 1999                        *
+ *                                                                           *
+ *****************************************************************************
+ *                                                                           *
+ *   Copyright (c) 1999 Wolfgang Hoermann and Josef Leydold                  *
+ *   Dept. for Statistics, University of Economics, Vienna, Austria          *
+ *                                                                           *
+ *                                                                           *
+ *   This library is free software; you can redistribute it and/or           *
+ *   modify it under the terms of the GNU Library General Public             *
+ *   License as published by the Free Software Foundation; either            *
+ *   version 2 of the License, or (at your option) any later version.        *
+ *                                                                           *
+ *   This library is distributed in the hope that it will be useful,         *
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of          *
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU       *
+ *   Library General Public License for more details.                        *
+ *                                                                           *
+ *   You should have received a copy of the GNU Library General Public       *
+ *   License along with this library; if not, write to the Free              *
+ *   Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.      *
+ *                                                                           *
+ *****************************************************************************/
+
+/*---------------------------------------------------------------------------*/
+
+#include <stdlib.h>
+
+#include <unur_umalloc.h>
+
+#include <unur_cookies.h>
+#include <unur_errno.h>
+#include <unur_utils.h>
+
+/*---------------------------------------------------------------------------*/
+
+void*
+_unur_malloc(size_t size)
+     /*----------------------------------------------------------------------*/
+     /* allocate memory                                                      */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   size ... size of allocated block                                   */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   abort program                                                      */
+     /*----------------------------------------------------------------------*/
+{
+  register void *ptr;
+
+  /* allocate memory */
+  ptr = malloc( size );
+
+  /* successful ? */
+  if (ptr == NULL) {
+    _unur_error(NULL,UNUR_ERR_ALLOC,"");
+    exit (-1);
+  }
+
+  return ptr;
+
+} /* end of _unur_malloc() */
+
+/*---------------------------------------------------------------------------*/
+
+void
+_unur_add_mblocks( struct unur_mblock **mblocks, void *ptr )
+     /*----------------------------------------------------------------------*/
+     /* add pointer to allocated block to list                               */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   mblocks ... pointer to generator object                                */
+     /*   ptr ... allocated block                                            */
+     /*----------------------------------------------------------------------*/
+{
+  register struct unur_mblock *new;
+
+  /* get new entry */
+  /* (only once. maybe it we could allocate a larger block.
+     but this would require some additional book keeping.) */
+  new = malloc( sizeof(struct unur_mblock) );
+  COOKIE_SET(new,CK_MBLOCK);
+
+  /* store allocated block */
+  new->memptr = ptr;
+
+  /* link new entry into list */
+  new->next = *mblocks;
+  *mblocks = new;
+
+} /* end of _unur_add_mblocks() */
+
+/*---------------------------------------------------------------------------*/
+
+void
+_unur_free_mblocks( struct unur_mblock *block )
+     /*----------------------------------------------------------------------*/
+     /* free all blocks in list of allocate memory and free (destroy) list   */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   blocks ... pointer to list of blocks                               */
+     /*----------------------------------------------------------------------*/
+{
+  register struct unur_mblock *next;
+
+  while (block != NULL) {
+    COOKIE_CHECK(block,CK_MBLOCK,/*void*/);
+    next = block->next;
+    free(block->memptr);  /* free memory block */
+    free(block);          /* free postition in list */
+    block = next;
+  }
+} /* end of _unur_free_mblocks() */
+
+/*---------------------------------------------------------------------------*/

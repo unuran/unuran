@@ -1,0 +1,137 @@
+
+-----------------------------------------------------------------------------
+
+(*) set:
+	unur_set_mode() und unur_set_usemode().
+	ersters sollte den usemode setzen/nicht setzen ??
+
+-----------------------------------------------------------------------------
+
+(*) Floating point arithmetic: (its a pain!!)
+
+	unterscheide zwischen IEEE 754 ja/nein
+
+	macro layer fuer floating point arithmetic
+
+	probleme z.B.:
+	(.) x != 0. ersetzen durch fabs(x) < epsilon  (?????)
+	(.) was ergibt:
+		double a = 1.2345;
+		double b = 1.2345;
+
+		(a == 1.2345)   /* das kann wegen dec->bin imrechnung falsch sein! */
+		(a == b)        /* das auch ?? */
+		b = a; (a == b) /* das wohl eher nicht. oder doch ? */
+
+	(.) ergibt fuer zwei doubles a,b:
+		isnan(a / b) dann und nur dann wenn b==0??
+
+	(.) 1./a ergibt fuer alle "regulaeren" double a eine regulaere double ??
+
+-----------------------------------------------------------------------------
+
+(*) TABL: 
+	(.) ist eine baustelle!!
+	(.) ueberpruefe ob area unter hut zu gross (wie??)
+	(.) make_guide_table nicht jedesmal aufrufen
+	(.) ueberpruefe ob PDF(x) NaN liefert
+	(.) maximale anzahl an startpunkten ??
+	    (notwendig wenn bei equiarea rule die anzahl angegebene
+	    anzahl nicht ausreicht!)
+	
+-----------------------------------------------------------------------------
+
+(*) TDR:
+	(.) ueberpruefe ob PDF(x) NaN liefert
+	(.) make_guide_table nicht jedesmal aufrufen
+	(.) teste ob uniform = 0 or = 1 (?)
+	(.) konvergiert nicht gegen inversion !!!
+
+-----------------------------------------------------------------------------
+
+(*) AROU:
+	(.) ueberpruefe ob PDF(x) NaN liefert
+	(.) make_guide_table nicht jedesmal aufrufen
+	(.) teste ob uniform = 0 or = 1 (?)
+	(.) ueberpruefe of p.d.f. T-konkave
+	    (in funktion _unur_arou_segment_parameter)
+	(.) mode in ursprung schieben (?)
+	    (wird dardurch numerisch stabiler (?))
+
+-----------------------------------------------------------------------------
+
+(*) RECT:
+	(.) ist eine baustelle!!
+
+-----------------------------------------------------------------------------
+
+(*) UNIF:
+	(.) ist eine baustelle!!
+	(.) wird zur zeit nur zum testen verwendet. ausbauen?
+
+-----------------------------------------------------------------------------
+
+(*) CDF aus CEPHES is ein problem. lieber GSL ??
+
+-----------------------------------------------------------------------------
+
+(*) CSTD:
+	(.) ist eine baustelle!!
+	(.) sollen wir fuer eine verteilung mehr als einen generator
+	    inkludieren?
+
+-----------------------------------------------------------------------------
+
+(*) jede methode enthaelt am beginn der datei eine aufzaehlung
+    aller moeglichen parameter. die ist momentan sehr unvollstaendig
+    oder ueberhaupt falsch.
+
+-----------------------------------------------------------------------------
+
+(*) unterscheidung zwischen
+
+	_unur_error    ... fehler, generator funktioniert nicht mit den
+                           angegebenen parametern nicht.
+
+	_unur_warning  ... hinweis, parameter muessen veraendert
+                           werden oder ein schritt kann nicht
+                           ausgefuehrt werden.
+		 	   (z.B. angegebener parameter bei unur_set
+                           ungueltig, oder rundungsfehler erlauben
+                           nicht das einfuegen eines neuen
+                           beruehrpunktes an der vorgesehenen stelle,
+	                   oder angegebener Mode != mode)
+
+-----------------------------------------------------------------------------
+
+(*) error reporting:
+	
+	(.) gen->error in structure aufnehmen damit der user im
+	    programm nach eventuellen fehlern abfragen kann
+	    (z.b. falls in unur_tdr_check ein fehler entdeckt wurde.)
+	(.) oder besser: errno aus ANSI C verwenden???
+
+-----------------------------------------------------------------------------
+
+(*) sollen alle internen funktionen mit _unur_... beginnen ??
+    (z.B. _unur_call_urng() statt unur_call_urng())
+
+-----------------------------------------------------------------------------
+
+(*) Soll _unur_malloc() bei einem fehler exit(0) aufrufen oder (nach
+    einer fehlermeldung) NULL liefern ?
+
+-----------------------------------------------------------------------------
+
+(*) correlation induction
+
+-----------------------------------------------------------------------------
+
+(*) discrete log-concave
+
+-----------------------------------------------------------------------------
+
+
+
+
+

@@ -1,0 +1,1281 @@
+This is unuran-ref.info, produced by makeinfo version 4.0 from
+unuran-ref.texi.
+
+INFO-DIR-SECTION Scientific software
+START-INFO-DIR-ENTRY
+* unuran-ref: (unuran-ref).  UNURAN - Universal Non-Uniform Random number generator
+END-INFO-DIR-ENTRY
+
+   UNURAN User Manual.
+
+   Copyright 1999 Josef Leydold, Institut fuer Statistik, WU Wien
+
+   Permission is granted to make and distribute verbatim copies of this
+manual provided the copyright notice and this permission notice are
+preserved on all copies.
+
+   Permission is granted to copy and distribute modified versions of
+this manual under the conditions for verbatim copying, provided also
+that the section entitled "Copying" and "GNU General Public License"
+are included exactly as in the original, and provided that the entire
+resulting derived work is distributed under the terms of a permission
+notice identical to this one.
+
+   Permission is granted to copy and distribute translations of this
+manual into another language, under the above conditions for modified
+versions, except that this permission notice may be stated in a
+translation approved by the Free Software Foundation.
+
+
+File: unuran-ref.info,  Node: Top,  Next: Introduction,  Prev: (dir),  Up: (dir)
+
+* Menu:
+
+* Introduction::         This chapter contains the file unuran-ref2.texi.
+* Distribution Library:: This chapter contains a library of
+* Function Calls::       The implemented functions are described here.
+* Concept Index::        This index has two entries.
+
+
+File: unuran-ref.info,  Node: Introduction,  Next: Routines for User,  Prev: Top,  Up: Top
+
+* Menu:
+
+* Routines for User::       The function syntax used in the user
+                            interface is described here.
+* Example::                 This chaper provides a short demo program.
+
+Introduction
+************
+
+   This chapter gives a brief overwiew about the implemented functions
+and their structure. Additionally, a short example is provided.
+
+
+File: unuran-ref.info,  Node: Routines for User,  Next: Method Functions,  Prev: Introduction,  Up: Introduction
+
+* Menu:
+
+* Method Functions::            The functions listed here, depend on the desired method.
+* Set Functions::               These functions are invoked to set ceratin parameters.
+
+Routines for User
+=================
+
+   The chapter Routines for User gives a brief overview on the function
+syntax used in this library.
+
+
+File: unuran-ref.info,  Node: Method Functions,  Next: Set Functions,  Prev: Routines for User,  Up: Routines for User
+
+* Menu:
+
+Method Functions
+----------------
+
+   Method dependend routines for user interface:
+
+ - Library Function:
+     struct unur_par *unur_<method>_new( ... PARAMETERS ... )
+
+     The function gets default parameters for the generator. It
+     initializes all parameters and returns these parameters, if
+     sucessful. Otherwise it returns NULL.
+
+ - Library Function:
+     struct unur_gen *unur_init( ... PARAMETERS ... )
+
+     The function initializes the generator and returns the pointer to
+     a generator object, if sucessful. Otherwse it returns NULL.
+
+ - Library Function:
+     double unur_<method>_sample( ... GENERATOR ... )
+
+     The function gets samples from the generator. It uses the chosen
+     method to generate a non-uniform random number from uniform random
+     numbers. In case of success, it returns the random number,
+     otherwise it returns NULL.
+
+ - Library Function:
+     void unur_free ( ... GENERATOR ... )
+
+     This function destroys the generator object. It was built to free
+     the memory, allocated for the generator object.
+
+   LIST OF THE IMPLEMENTED METHODS:
+
+(see *Note Methods:: for more information about the methods)
+   * arou
+
+   * cstd
+
+   * dau
+
+   * dis
+
+   * tabl
+
+   * tdr
+
+   * rect
+
+   * unif
+
+   * utdr
+
+
+File: unuran-ref.info,  Node: Set Functions,  Next: Example,  Prev: Method Functions,  Up: Routines for User
+
+Set Functions
+-------------
+
+   Method independend routines for user interface:
+(For more detailed information see *Note Set::.)
+
+   Parameters for the distribution and its p.d.f.:
+
+ - Library Function: int unur_set_<PARAMETER>
+
+   <domain> ...
+The function sets the left and right borders of the domain of the
+p.d.f., returns 1 in the successful case, NULL otherwise.
+
+   <domain_vec> ...
+The function sets coordinates for domain boundary, returns 1 in the
+successful case, NULL otherwise.
+
+   <pdf_param>  ...
+The Function sets array of parameters for p.d.f., returns 1 in the
+successful case, NULL otherwise.
+
+   <mode> ...
+The function sets mode of p.d.f., returns 1 in the successful case,
+NULL otherwise.
+
+   <pdf_area> ...
+The function sets the (approximate) area below the pdf (default value
+1.), returns 1 in the successful case, NULL otherwise.
+
+
+
+   Parameters for generators of univariate discrete distributions:
+
+
+ - Library Function: int unur_set_factor(
+     struct UNUR_PAR *PARAMETER, double FACTOR );
+   The function sets the factor for relative size of
+(search|guide|alias) table, returns 1 in the successful case, NULL
+otherwise.
+
+
+
+   Parameters for generators of univariate continuous distributions:
+
+
+ - Library Function: int unur_set_<PARAMETER>
+
+   <cpoints> ...
+The function sets construction points for hat and/or its number for
+initialization and  returns 1 in the successful case, NULL otherwise.
+
+   <max_ratio> ...
+The function sets bound for ratio A(squeeze) / A(hat) and  returns 1 in
+the successful case, NULL otherwise.
+
+   <max_intervals> ...
+The function sets maximum number of intervals or segments and  returns
+1 in the successful case, NULL otherwise.
+
+   <tdr_c> ...
+The function sets parameter c for transformation T_c  (method TDR only)
+and  returns 1 in the successful case, NULL otherwise.
+
+   <tabl_c> ...
+The function sets the parameter for equal area rule  (method TABL only)
+and returns 1 in the successful case, NULL otherwise.
+
+   <slopes> . . . The function sets slopes of p.d.f. (method TABL only)
+and returns 1 in the successful case, NULL otherwise.
+
+
+
+   Parameters for generators of mulitvariate continuous distributions:
+
+
+ - Library Function: int unur_get_dimension(
+          struct UNUR_GEN *GEN );
+     The function gets the dimension of generators for multivariate
+     distribution and returns 1 in the successful case, NULL otherwise.
+
+
+
+   Parameters for all generators:
+
+
+ - Library Function: UNUR_URNG_TYPE unur_chg_urng(
+          struct UNUR_GEN *GEN, UNUR_URNG_TYPE URNG );
+     The function changes the uniform random number generator and
+     returns 1 in the successful case, NULL otherwise.
+
+ - Library Function: UNUR_URNG_TYPE unur_get_urng(
+          struct UNUR_GEN *GEN );
+     The function sets uniform random number generator and returns 1 in
+     the successful case, NULL otherwise.
+
+ - Library Function: int unur_set_<PARAMETER>
+
+   <urng> ...
+The function sets uniform random number generator and  returns 1 in the
+successful case, NULL otherwise.
+
+   <variant> ...
+The function sets variants of method and  returns 1 in the successful
+case, NULL otherwise.
+
+   <check> ...
+The function turns testing of sampling on/off and returns 1 in the
+successful case, NULL otherwise.
+
+   <copyall> ...
+The funciton turns copaing of all inputs into generator object on/off
+and returns 1 in the successful case, NULL otherwise.
+
+   <debug> ...
+The function sets debugging flag for generator and returns 1 in the
+successful case, NULL otherwise.
+
+
+
+   Parameters for debugging (defined in debug.c):
+
+
+ - Library Function: FILE* unur_set_log(FILE *LOG);
+
+ - Library Function: FILE* unur_get_log(void);
+
+
+File: unuran-ref.info,  Node: Example,  Next: Distribution Library,  Prev: Set Functions,  Up: Introduction
+
+Example
+=======
+
+   The chapter Example provides a demo program, using functions of the
+user inerface as described above (see node *Note Routines for User::)
+
+     int main()  {
+     
+           double *prob;
+           struct unur_par *par;
+           struct unur_gen *gen;
+           int i;
+     
+       /* ------------------------- */
+     
+     
+       par = unur_arou_new(unur_pdf_normal,unur_dpdf_normal);
+       unur_set_domain(par,0.,INFINITY);
+       unur_set_cpoints(par,30,NULL);
+       unur_set_max_ratio(par,0.);
+       gen = unur_arou_init(par);
+       unur_arou_sample( gen );
+       unur_arou_sample_check( gen );
+     
+        for (i = 0; i <= 10; i++)
+            printf("x= %f\n",unur_sample_cont(gen));
+     
+       unur_arou_free( gen );
+     
+     } /* end of main () */
+
+
+File: unuran-ref.info,  Node: Distribution Library,  Next: Function Calls,  Prev: Example,  Up: Top
+
+* Menu:
+
+* Continuous Distribution:: This section contains only continuous
+                             univariate distributions.
+* Discrete Distribution::   This section contains only discrete
+                             distribution functions.
+
+Distribution Library
+********************
+
+   The chapter Distribution Library contains documentation of various
+distribution functions. Each of these functions may be the base of the
+implemented generator.
+
+  1. Continuous Distribuitons
+
+  2. Discrete Distribution
+
+
+File: unuran-ref.info,  Node: Continuous Distribution,  Next: Burr Distribution,  Prev: Utils,  Up: Distribution Library
+
+* Menu:
+
+* Burr Distribution::        There is a lot of Burrs.
+* Beta Distribution::        Standard and Nonstandard.
+* Cauchy Distribution::      Only Nonstandard form exists.
+* Chisquare Distribution::   Chisqu.
+* Exponential Distribution:: Exp.Distr.
+* Gamma Distribution::       Standard and Nonstandard.
+* Laplace Distribution::     Only Nonstandard form exists.
+* Lognormal Distribution::   This distrib.
+* Lomax Distribution::       This distrib.
+* Normal Distribution::      This distrib.
+* Pareto Distribution::      This distrib.
+* Powerexp. Distribution::   This distrib.
+* Rayleigh Distribution::    This distrib.
+* Student Distribution::     This distrib.
+* Uniform Distribution::     This distrib.
+
+Continuous Distribuitons
+========================
+
+
+File: unuran-ref.info,  Node: Burr Distribution,  Next: BurrI Distribution,  Prev: Continuous Distribution,  Up: Continuous Distribution
+
+* Menu:
+
+* BurrI    Distribution::     There are a lot of Burr-Distr.
+* BurrII   Distribution::     There are a lot of Burr-Distr.
+* BurrIII  Distribution::     There are a lot of Burr-Distr.
+* BurrIV   Distribution::     There are a lot of Burr-Distr.
+* BurrV    Distribution::     There are a lot of Burr-Distr.
+* BurrVI   Distribution::     There are a lot of Burr-Distr.
+* BurrVII  Distribution::     There are a lot of Burr-Distr.
+* BurrVIII Distribution::     There are a lot of Burr-Distr.
+* BurrIX   Distribution::     There are a lot of Burr-Distr.
+* BurrX    Distribution::     There are a lot of Burr-Distr.
+* BurrXI   Distribution::     There are a lot of Burr-Distr.
+* BurrXII  Distribution::     There are a lot of Burr-Distr.
+
+Burr Distribution
+-----------------
+
+
+File: unuran-ref.info,  Node: BurrI Distribution,  Next: BurrII Distribution,  Prev: Burr Distribution,  Up: Burr Distribution
+
+BurrI Distribution
+..................
+
+   pdf_burrI
+     pdf(x) = 1
+
+   dpdf_burrI
+     dpdf(x) = 0
+
+   cdf_burrI
+     cdf(x) = x
+
+
+File: unuran-ref.info,  Node: BurrII Distribution,  Next: BurrIII Distribution,  Prev: BurrI Distribution,  Up: Burr Distribution
+
+BurrII Distribution
+...................
+
+   pdf_burrII
+     pdf(x) = (1+ e^(-x))^-k \over (1+ e^x)
+
+   dpdf_burrII
+     dpdf(x) =(1+ \exp (-x))^-k  * (\exp (x) - k) \over (1+ \exp (x))^2
+
+   cdf_burrII
+     cdf(x) = (1- \exp(-x))^ -k
+
+
+File: unuran-ref.info,  Node: BurrIII Distribution,  Next: BurrIV Distribution,  Prev: BurrII Distribution,  Up: Burr Distribution
+
+BurrIII Distribution
+....................
+
+   pdf_burrIII
+     pdf(x) = (1+ x^-c)^-k \over (x * (1 + x^c))
+
+   dpdf_burrIII
+     dpdf(x) =(1+ x^-c)^-k  * ( 1+x^c+c*(x^c-k)) \over (x^2 * (1 + x^c)^2)
+
+   cdf_burrIII
+     cdf(x) = (1+x^-c)^ -k
+
+
+File: unuran-ref.info,  Node: BurrIV Distribution,  Next: BurrV Distribution,  Prev: BurrIII Distribution,  Up: Burr Distribution
+
+BurrIV Distribution
+...................
+
+   pdf_burrIV
+
+   dpdf_burrIV
+
+   cdf_burrIV
+
+
+File: unuran-ref.info,  Node: BurrV Distribution,  Next: BurrVI Distribution,  Prev: BurrIV Distribution,  Up: Burr Distribution
+
+BurrV Distribution
+..................
+
+   pdf_burrV
+
+   dpdf_burrV
+
+   cdf_burrV
+
+
+File: unuran-ref.info,  Node: BurrVI Distribution,  Next: BurrVII Distribution,  Prev: BurrV Distribution,  Up: Burr Distribution
+
+BurrVI Distribution
+...................
+
+   pdf_burrVI
+     pdf(x) = (1+c*\exp(-r*\sinh(x)))^-k * \cosh(x) \over (c + \exp (r*\sinh(x)))
+
+   dpdf_burrVI
+     dpdf(x) = (1+c*\exp(-r*\sinh(x)))^-k * \cosh(x)^2 * (-(\exp(r*\sinh(x))-c*k)) + (c+\exp(r*sinh(x))*\sinh(x)) \over (c + \exp (r*\sinh(x)))^2
+
+   cdf_burrVI
+     cdf(x) = (c* \exp(-r*\sinh(x)) + 1)^-k
+
+
+File: unuran-ref.info,  Node: BurrVII Distribution,  Next: BurrVIII Distribution,  Prev: BurrVI Distribution,  Up: Burr Distribution
+
+BurrVII Distribution
+....................
+
+   pdf_burrVII
+     pdf(x) = (1+\tanh(x))^(k-1) \over \cosh(x)^2
+
+   dpdf_burrVII
+     dpdf(x) = (1+\tanh(x))^(k-2) * ((k-1)* 1 \over \cosh(x)^2 - 2 * \tanh(x) * (1+\tanh(x))) \over \cosh(x)^2
+
+   cdf_burrVII
+     cdf(x) = (1+\tanh(x))^k
+
+
+File: unuran-ref.info,  Node: BurrVIII Distribution,  Next: BurrIX Distribution,  Prev: BurrVII Distribution,  Up: Burr Distribution
+
+BurrVIII Distribution
+.....................
+
+   pdf_burrVIII
+     pdf(x) = -\exp(x) * (2 \over \pi)^k * \cot(\exp(x))^k * \csc(\exp(x)) * \sec(\exp(x))
+
+   dpdf_burrVIII
+     dpdf(x) = 2^(k-1) * \exp(x) * \pi^-k * \cot(\exp(x))^k * \csc(\exp(x))^2 * \sec(\exp(x))^2 * (2 *\exp(x)*k + 2*\exp(x)*\cos(2*\exp(x)) - \sin(2*\exp(x)))
+
+   cdf_burrVIII
+     cdf(x) = (2 \over (\pi * \tan(\exp(x))))^k
+
+
+File: unuran-ref.info,  Node: BurrIX Distribution,  Next: BurrX Distribution,  Prev: BurrVIII Distribution,  Up: Burr Distribution
+
+BurrIX Distribution
+...................
+
+   pdf_burrIX
+     pdf(x) = \exp(x) * (1+\exp(x))^k-1 \over (2 + c*((1+\exp(x))^k - 1))^2
+
+   dpdf_burrIX
+     dpdf(x) = -(\exp(x) * (1+\exp(x))^k-2 * (-2 * (1+\exp(x)*k) + c*((1-(1+\exp(x))^k + \exp(x) * (1+(1+\exp(x))^k)*k)))) \over (2 + c*((1+\exp(x))^k - 1))^3
+
+   cdf_burrIX
+     cdf(x) = 1- 2 \over (c*(((1+ \exp(x))^k)-1)+2)
+
+
+File: unuran-ref.info,  Node: BurrX Distribution,  Next: BurrXI Distribution,  Prev: BurrIX Distribution,  Up: Burr Distribution
+
+BurrX Distribution
+..................
+
+   pdf_burrX
+     pdf(x) = x* (1-\exp(-x^2))^k \over (\exp(x^2) - 1)
+
+   dpdf_burrX
+     dpdf(x) = (1-\exp(-x^2))^k * (\exp(x^2) - 1 - 2*(\exp(x^2)-k)* x^2) \over (\exp(x^2) - 1)^2
+
+   cdf_burrX
+     cdf(x) = ( 1 - \exp(-x^2))^k
+
+
+File: unuran-ref.info,  Node: BurrXI Distribution,  Next: BurrXII Distribution,  Prev: BurrX Distribution,  Up: Burr Distribution
+
+BurrXI Distribution
+...................
+
+   pdf_burrXI
+     pdf(x) = \sin(\pi*x)^2 * (x - \sin(2*\pi*x) \over (2* \pi))^(k-1)
+
+   dpdf_burrXI
+     dpdf(x) = -(2*\pi^2*\sin(\pi*x) * (-4*\pi*x*\cos(\pi*x) + 2*(2-k+k*\cos(2*\pi\x))*\sin(\pi*x)) * (x - \sin(2*\pi*x) \over (2*\pi))^k) \over (-2*\pi*x + \sin(2*\pi*x))^2
+
+   cdf_burrXI
+     cdf(x) = (x-(1 \over (2* \pi)) * \sin(2*\pi*x))^k
+
+
+File: unuran-ref.info,  Node: BurrXII Distribution,  Next: Beta Distribution,  Prev: BurrXI Distribution,  Up: Burr Distribution
+
+BurrXII Distribution
+....................
+
+   pdf_burrXII
+     pdf(x) = x^(c-1) * (1 + x^c) ^(-k-1)
+
+   dpdf_burrXII
+     dpdf(x) = x^[c-2] * (1 + x^c) ^[-k-2] * (1 + x^c + c*(k*x^c-1))
+
+   cdf_burrXII
+     cdf(x) = 1-(1+x^c) ^-k
+
+
+File: unuran-ref.info,  Node: Beta Distribution,  Next: Cauchy Distribution,  Prev: BurrXII Distribution,  Up: Continuous Distribution
+
+Beta Distribution
+-----------------
+
+   pdf_beta_nonstd
+     pdf(x) = ((x-a)^(p-1)) * ((b-x)^(q-1))
+
+   dpdf_beta_nonstd
+     dpdf(x) = ((x-a)^(p-2)) * ((b-x)^(q-2)) * ((p-1)*(b-x) - (q-1)*(x-a))
+
+   pdf_beta_std
+     pdf(x) = (x^(p-1)) * ((1-x)^(q-1))
+
+   dpdf_beta_std
+     dpf(x) = (x^(p-2)) * ((1-x)^(q-2)) * ((p-1)*(1-x) - (q-1)*x)
+
+
+File: unuran-ref.info,  Node: Cauchy Distribution,  Next: Chisquare Distribution,  Prev: Beta Distribution,  Up: Continuous Distribution
+
+Cauchy Distribution
+-------------------
+
+   pdf_cauchy
+     pdf(x) = 1 \over (1+(((x-\theta) \over \lambda)^2))
+
+   dpdf_cauchy
+     dpdf(x) = (-2*( (x-\theta) \over \lambda) ) \over \lambda * ((1+(((x-\theta) \over \lambda)^2))^2)
+
+
+File: unuran-ref.info,  Node: Chisquare Distribution,  Next: Exponential Distribution,  Prev: Cauchy Distribution,  Up: Continuous Distribution
+
+Chisquare Distribution
+----------------------
+
+   pdf_chisquare
+     pdf(x) = x^(\nu \over 2-1) * \exp (-x \over 2)
+
+   dpdf-chisquare
+     dpdf(x) = x^(\nu \over 2-2) * \exp (-x \over 2) * (\nu -2-x) \over 2
+
+
+File: unuran-ref.info,  Node: Exponential Distribution,  Next: Gamma Distribution,  Prev: Chisquare Distribution,  Up: Continuous Distribution
+
+Exponential Distribution
+------------------------
+
+   cdf_exponential_nonstd
+     cdf(x) = 1-\exp (-(x-\theta) \over \sigma)
+
+   pdf_exponential_nonstd
+     pdf(x) = \exp (-(x-\theta) \over \sigma)
+
+   dpdf_exponential_nonstd
+     dpdf(x) = -(\exp (-(x-\theta) \over \sigma)) \over \sigma
+
+   cdf_exponential_std
+     cdf(x) = 1-(\exp (-x))
+
+   pdf_exponential_std
+     pdf(x) = \exp (-x)
+
+   dpdf_exponential_std
+     pdf(x) = -(\exp (-x))
+
+
+File: unuran-ref.info,  Node: Gamma Distribution,  Next: Laplace Distribution,  Prev: Exponential Distribution,  Up: Continuous Distribution
+
+Gamma Distribution
+------------------
+
+   pdf_gamma_nonstd
+     pdf(x) = ((x-\gamma)^(\alpha-1) * (\exp ((\gamma-x)/\beta))
+
+   dpdf_gamma_nonstd
+     dpdf(x) = (x-\gamma)^(\alpha-2) * (\exp ((\gamma-x)/\beta)) *((\alpha-1) + ((\gamma-x)/\beta))
+
+   pdf_gamma_std
+     pdf(x) = x^(\alpha-1) * \exp (-x)
+
+   dpdf_gamma_std
+     dpdf(x) = x^(\alpha-2) * \exp (-x) * ((\alpha-1)-x)
+
+
+File: unuran-ref.info,  Node: Laplace Distribution,  Next: Lognormal Distribution,  Prev: Gamma Distribution,  Up: Continuous Distribution
+
+Laplace Distribution
+--------------------
+
+   pdf_laplace
+     pdf(x) = \exp (-|(x-\theta) \over \phi|)
+
+   dpdf_laplace
+     dpdf(x) =  (\exp (-|(x-\theta) \over \phi|) \over \phi )
+
+
+File: unuran-ref.info,  Node: Lognormal Distribution,  Next: Lomax Distribution,  Prev: Laplace Distribution,  Up: Continuous Distribution
+
+Lognormal Distribution
+----------------------
+
+   pdf_lognormal
+     pdf(x) =(1 \over (x-\theta)) * \exp -(\ln(x-\theta)-\zeta)^2 \over (2*\sigma^2)
+
+   dpdf_lognormal
+     dpdf(x) = 1 \over ((x-\theta)^2) * ((1 \over (x-\theta)) * \exp (-((\ln(x-\theta)-\zeta)^2) \over (2*\sigma^2))) * (1 + (\ln(x-\theta)-\zeta) \over \sigma^2)
+
+
+File: unuran-ref.info,  Node: Lomax Distribution,  Next: Normal Distribution,  Prev: Lognormal Distribution,  Up: Continuous Distribution
+
+Lomax Distribution
+------------------
+
+   pdf_lomax
+     pdf(x) = (x+C)^(-a-1)
+
+   dpdf_lomax
+     dpdf(x) = (-a-1) * (x+C)^(-a-1)
+
+
+File: unuran-ref.info,  Node: Normal Distribution,  Next: Pareto Distribution,  Prev: Lomax Distribution,  Up: Continuous Distribution
+
+Normal Distribution
+-------------------
+
+   pdf_normal_nonstd
+     pdf(x) = \exp ((-(x-\mu) \over 2\sigma)^2)
+
+   dpdf_normal_nonstd
+     dpdf(x) = (-(x-\mu) \over \sigma * \exp ((-(x-\mu) \over 2\sigma)^2)
+
+   pdf_normal_std
+     pdf(x) = \exp (-(x^2 \over 2)
+
+   dpdf_normal_std
+     pdf(x) = -x * \exp (-(x^2) \over 2)
+
+
+File: unuran-ref.info,  Node: Pareto Distribution,  Next: Powerexp. Distribution,  Prev: Normal Distribution,  Up: Continuous Distribution
+
+Pareto Distribution
+-------------------
+
+   pdf_pareto
+     pdf(x) = x^(-a-1)
+
+   dpdf_pareto
+     dpdf(x) = (-a-1) * x^(-a-2)
+
+
+File: unuran-ref.info,  Node: Powerexp. Distribution,  Next: Rayleigh Distribution,  Prev: Pareto Distribution,  Up: Continuous Distribution
+
+Powerexponential Distribution
+-----------------------------
+
+   pdf_powerexponential
+     pdf(x) = \exp (((-|(x-\theta) \over \phi|)^(2 \over \delta)) * 0.5)
+
+   dpdf_powerexponential
+     dpdf(x) = \exp (((-|(x-\theta) \over \phi|)^(2 \over \delta)) * 0.5) *((-|(x-\theta) \over \phi|)^(2 \over \delta-1))) \over (\delta * \phi)
+
+
+File: unuran-ref.info,  Node: Rayleigh Distribution,  Next: Student Distribution,  Prev: Powerexp. Distribution,  Up: Continuous Distribution
+
+Rayleigh Distribution
+---------------------
+
+   pdf_rayleigh
+     pdf(x) = x * \exp (-x^2 \over (2 * \sigma^2))
+
+   dpdf_rayleigh
+     dpdf(x) = \exp (-x^2 \over (2 * \sigma^2)) * (1 - x^2 \over \sigma^2)
+
+
+File: unuran-ref.info,  Node: Student Distribution,  Next: Uniform Distribution,  Prev: Rayleigh Distribution,  Up: Continuous Distribution
+
+Student Distribution
+--------------------
+
+   pdf_student
+     pdf(x) = (1 + x^2 \over \nu) ^ ((-1-\nu) * 0.5)
+
+   dpdf_student
+     dpdf(x) =(-\nu-1) * (x \over \nu) * (1 + x^2 \over \nu) ^ ((-3-\nu) * 0.5)
+
+
+File: unuran-ref.info,  Node: Uniform Distribution,  Next: Discrete Distribution,  Prev: Student Distribution,  Up: Continuous Distribution
+
+Uniform Distribution
+--------------------
+
+   pdf_uniform
+     pdf(x) = 1 / (b-a)
+
+   dpdf_uniform
+     dpdf(x) = 0
+
+   cdf_uniform
+     cdf(x) = (x-a) / (b-a)
+
+
+File: unuran-ref.info,  Node: Discrete Distribution,  Next: Concept Index,  Prev: Uniform Distribution,  Up: Distribution Library
+
+Discrete Distribution
+=====================
+
+   There are no discrete distributions implemented at the moment.
+
+
+File: unuran-ref.info,  Node: Function Calls,  Next: Methods,  Prev: Distribution Library,  Up: Top
+
+   The chapter Function calls  contains documentation of various
+functions.
+
+* Menu:
+
+* Methods:: Different methods to generate random numbers
+* Stdgen::  Standard generators
+* Tests::   Run various statistical tests, check timing...
+* Utils::   Auxilliary Subroutines
+
+Function Calls
+**************
+
+
+File: unuran-ref.info,  Node: Methods,  Next: Arou,  Prev: Function Calls,  Up: Function Calls
+
+* Menu:
+
+* Arou::                   Type:continuous univariate random variate
+                           Method:ratio-of uniforms with enveloping polygon
+* Cstd::                   Type: continuous univariate random variate
+                           Method: generators form standard distribution
+                            (from CRAND)
+* Dau::                    Type: discrete random variate
+                           Method: alias and alias-urn method
+* Dis::                    Type: discrete univariate random variate
+                           Method: indexed search (guide table)
+* Tabl::                   Type: cantinuous univariate random variate
+                           Method: rejection form piecewise constant
+                            hat (Ahren´s table method)
+* Tdr::                    Type: contiuous univariate random variate
+                           Method: transformed density rejection
+* Rect::                   Type: continuous multivariate random variate
+                           Method: uniformly distributed in rectangle
+* Unif::                   Dummy generator, produces uniform random
+                            numbers in UNURAN framework
+* Utdr::                   Type: continuous univariate random variate
+                           Method: transformed density rejection with
+                            three points of contact
+* Set::                    Set, change, get parameters for generators
+
+methods
+=======
+
+
+File: unuran-ref.info,  Node: Arou,  Next: Cstd,  Prev: Methods,  Up: Methods
+
+arou
+----
+
+ - Library Function: struct unur_par *unur_arou_new(
+     double *PDF(double X,double *PDF_PARAM, int N_PDF_PARAMS),
+     double *DPDF(double X,double *PDF_PARAM, int N_PDF_PARAMS) )
+     ...get default parameters for generator
+
+ - Library Function: struct unur_gen *unur_arou_init(
+     struct unur_par *PARAMETERS )
+          ...initialize new generator
+
+ - Library Function: double unur_arou_sample(
+     struct unur_gen *GENERATOR )
+          ...sample from generator
+
+ - Library Function: double unur_arou_sample_check(
+     struct unur_gen *GENERATOR )
+          ...sample from generator
+
+ - Library Function: void unur_arou_free(
+     struct unur_gen *GENERATOR)
+          ...destroy generator object
+
+
+File: unuran-ref.info,  Node: Cstd,  Next: Dau,  Prev: Arou,  Up: Methods
+
+cstd
+----
+
+ - Library Function: struct unur_par *unur_cstd_new(
+     char *DEFINITION )
+          ...get default parameters for generator
+
+ - Library Function: struct unur_gen *unur_cstd_init(
+     struct unur_par *PARAMETERS )
+          ...initialize new generator
+
+ - Library Function: double unur_cstd_sample(
+     struct unur_gen *GENERATOR )
+          ...sample from generator
+
+ - Library Function: void unur_cstd_free(
+     struct unur_gen *GENERATOR)
+          ...destroy generator object
+
+
+File: unuran-ref.info,  Node: Dau,  Next: Dis,  Prev: Cstd,  Up: Methods
+
+dau
+---
+
+ - Library Function: struct unur_par *unur_dau_new(
+     double *PROBABILITIES, int PLENGTH)       ...get default
+     parameters for generator
+
+ - Library Function: struct unur_gen *unur_dau_init(
+     struct unur_par *PARAMETERS )
+          ...initialize new generator
+
+ - Library Function: int unur_dau_sample(
+     struct unur_gen *GENERATOR )
+          ...sample from generator
+
+ - Library Function: void unur_dau_free(
+     struct unur_gen *GENERATOR )
+          ...destroy generator object
+
+
+File: unuran-ref.info,  Node: Dis,  Next: Tabl,  Prev: Dau,  Up: Methods
+
+dis
+---
+
+ - Library Function: struct unur_par *unur_dis_new(
+     double *PROBABILITIES, int PLENGTH )
+     ...get default parameters for generator
+
+ - Library Function: struct unur_gen *unur_dis_init(
+     struct unur_par *PARAMETER )
+          ...initialize new generator
+
+ - Library Functionint: unur_dis_sample (
+     struct unur_gen *GENERATOR )
+          ...sample from generator
+
+ - Library Function: void unur_dis_free(
+     struct unur_gen *GENERATOR )
+          ...destroy generator object
+
+
+File: unuran-ref.info,  Node: Tabl,  Next: Tdr,  Prev: Dis,  Up: Methods
+
+tabl
+----
+
+ - Library Function: struct unur_par *unur_tabl_new(
+     double *PDF(double X,double *PDF_PARAM, int N_PDF_PARAMS) )
+     ...get default parameters for generator
+
+ - Library Function: struct unur_gen *unur_tabl_init(
+     struct unur_par *PARAMETERS )
+          ...initialize new generator
+
+ - Library Function: double unur_tabl_sample(
+     struct UNUR_GEN *GENERATOR )
+          ...sample from generator
+
+ - Library Function: double unur_tabl_sample_check(
+     struct UNUR_GEN *GENERATOR )
+          ...sample from generator
+
+ - Library Function: void unur_tabl_free(
+     struct UNUR_GEN *GENERATOR)
+          ...destroy generator object
+
+
+File: unuran-ref.info,  Node: Tdr,  Next: Rect,  Prev: Tabl,  Up: Methods
+
+tdr
+---
+
+ - Library Function: struct unur_par *unur_tdr_new(
+     double *PDF(double X,double *PDF_PARAM, int N_PDF_PARAMS),
+     double *DPDF(double X,double *PDF_PARAM, int N_PDF_PARAMS) )
+     ...get default parameters for generator
+
+ - Library Function: struct unur_gen *unur_tdr_init(
+     struct unur_par *PARAMETERS )
+          ...initialize new generator
+
+ - Library Function: double unur_tdr_sample_log( struct UNUR_GEN *GEN );
+     ...sample from generator
+
+ - Library Function: double unur_tdr_sample_sqrt(
+     struct unur_gen *GEN )
+          ...sample from generator
+
+ - Library Function: double unur_tdr_sample_check(
+     struct unur_gen *GENERATOR )
+          ...sample from generator
+
+ - Library Function: void unur_tdr_free(
+     struct unur_gen *GENERATOR)
+          ...destroy generator object
+
+
+File: unuran-ref.info,  Node: Rect,  Next: Unif,  Prev: Tdr,  Up: Methods
+
+rect
+----
+
+ - Library Function: struct unur_par *unru_rect_new(
+     int DIM )
+          ...get default parameters for generator
+
+ - Library Function: struct unur_gen *unur_rect_init(
+     struct unur_par *PARAMETERS )
+          ...initialize new generator
+
+ - Library Function: void unur_rect_sample_vec(
+     struct unur_gen *GEN, double *VEC )
+     ...sample from generator
+
+ - Library Function: void unur_rect_free (
+     struct unur_gen *GENERATOR )
+          ...destroy generator
+
+
+File: unuran-ref.info,  Node: Unif,  Next: Utdr,  Prev: Rect,  Up: Methods
+
+unif
+----
+
+ - Library Function: struct unur_par *unur_unif_new(
+     int START, int SKIP )
+     ...get default parameters for generator
+
+ - Library Function: struct unur_gen *unur_unif_init(
+     struct unur_par *PARAMETERS )
+          ...initialize new generator
+
+ - Library Function: double unur_unif_sample(
+     struct unur_gen *GENERATOR )
+          ...sample from generator
+
+ - Library Function: void unur_unif_free(
+     struct unur_gen *GENERATOR )
+          ...destroy generator object
+
+
+File: unuran-ref.info,  Node: Utdr,  Next: Set,  Prev: Unif,  Up: Methods
+
+utdr
+----
+
+ - Library Function: struct unur_par *unur_utdr_new(
+     double *PDF(double X,double *PDF_PARAM, int N_PDF_PARAMS),
+     double MODE)
+          ...get default parameters for generator
+
+ - Library Function: struct unur_gen *unur_utdr_init(
+     struct unur_par *PARAMETERS )
+          ...initialize new generator
+
+ - Library Function: double unur_utdr_sample(
+     struct unur_gen *GENERATOR )
+          ...sample from generator
+
+ - Library Function: double unur_utdr_sample_check(
+     struct unur_gen *GENERATOR )
+          ...sample from generator
+
+ - Library Function: void unur_utdr_free(
+     struct unur_gen *GENERATOR)
+          ...destroy generator object
+
+
+File: unuran-ref.info,  Node: Set,  Next: Stdgen,  Prev: Utdr,  Up: Methods
+
+set
+---
+
+   Parameters for the distribution and its p.d.f.:
+
+ - Library Function: int unur_set_domain(
+     struct unur_par *PARAMETER, double LEFT, double RIGHT )
+     ...set the left and right borders of the domain of the distribution
+
+ - Library Function: int unur_set_domain_vec(
+     struct unur_par *PAR, double **DOMAIN )
+     ...set coordinates for domain boundary
+
+ - Library Function: int unur_set_pdf_param(
+     struct unur_par *PARAMETER, double *PDF_PARAMS, int N_PARAMS )
+          ...set array of parameters for p.d.f.
+
+ - Library Function: int unur_set_mode(
+     struct unur_par *PARAMETER, double MODE )
+     ...set mode of p.d.f.
+
+ - Library Function: int unur_set_pdf_area(
+     struct unur_par *PARAMETER, double AREA )
+     ...set the (approximate) area below the pdf (default value 1.)
+
+   Parameters for generators of univariate discrete distributions:
+
+ - Library Function: int unur_set_factor(
+     struct unur_par *PARAMETER, double FACTOR )
+     ...set factor for relative size of (search|guide|alias) table
+
+   Parameters for generators of univariate continuous distributions:
+
+ - Library Function: int unur_set_cpoints( struct unur_par *PARAMETER,
+          int N_STP, double *STARTING_CPOINTS ) ...set construction
+          points for hat and/or its number for initialization
+
+ - Library Function: int unur_set_max_ratio(
+     struct unur_par *PARAMETER, double MAX_RATIO )
+     ...set bound for ratio A(squeeze) / A(hat)
+
+ - Library Function: int unur_set_max_intervals(
+     struct unur_par *PARAMETER, int MAX_IVS )
+     ...set maximum number of intervals or segments
+
+ - Library Function: int unur_set_tdr_c(
+     struct unur_par *PAR, double C )
+     ...set parameter c for transformation T_c  (method TDR only)
+
+ - Library Function: int unur_set_tabl_c( struct UNUR_PAR *PAR, double
+          C );
+     ...set parameter for equal area rule  (method TABL only)
+
+ - Library Function: int unur_set_slopes(
+     struct unur_par *PAR, double *SLOPES, int N_SLOPES )
+     ...set slopes of p.d.f. (method TABL only)
+
+   Parameters for generators of mulitvariate continuous distributions:
+
+ - Library Function: int unur_get_dimension(
+     struct unur_gen *GEN )
+
+   Parameters for all generators:
+
+ - Library Function: int unur_set_urng(
+     struct unur_par *PAR, UNUR_URNG_TYPE URNG )
+     ...set uniform random number generator
+
+ - Library Function: UNUR_URNG_TYPE unur_chg_urng(
+     struct unur_gen *GEN, UNUR_URNG_TYPE URNG )
+     ...change uniform random number generator
+
+ - Library Function: UNUR_URNG_TYPE unur_get_urng(
+     struct unur_gen *GEN )
+          ...get uniform random number generator
+
+ - Library Function: int unur_set_variant(
+     struct unur_par *PAR, unsigned long VARIANT )
+     ...set variant of method
+
+ - Library Function: int unur_set_check(
+     struct unur_par *PARAMETER, int CHECK )
+     ...turn testing of sampling on/off
+
+ - Library Function: int unur_set_copyall(
+     struct unur_par *PAR, int COPY )
+     ...turn copaing of all inputs into generator object on/off
+
+ - Library Function: int unur_set_debug(
+     struct unur_par *PARAMETER, unsigned long DB )
+     ...set debugging flag for generator
+
+   Parameters for debugging (defined in debug.c):
+
+ - Library Function: FILE* unur_set_log(FILE *LOG)
+
+ - Library Function: FILE* unur_get_log(void)
+
+
+File: unuran-ref.info,  Node: Stdgen,  Next: Tests,  Prev: Set,  Up: Function Calls
+
+stdgen
+======
+
+ - Library Function: double nbm(
+     UNUR_URNG_TYPE  URNG)
+          ...normal distribution
+
+ - Library Function: double gammarand(
+     double A, UNUR_URNG_TYPE  URNG )
+     ...gamma distribution
+
+
+File: unuran-ref.info,  Node: Tests,  Next: Utils,  Prev: Stdgen,  Up: Function Calls
+
+tests
+=====
+
+   run battery of tests:
+
+ - Library Function: void unur_run_tests(
+     struct unur_par *PAR, unsigned long TESTS,
+     double *CDF(double X, double *FPARAM, int N_FPARAM))
+
+   particular tests:
+
+ - Library Function: void unur_test_printsample(
+     struct unur_gen *GEN, int N_ROWS, int N_COLS )               ...
+     print a sample
+
+ - Library Function: struct unur_gen *unur_test_timing(
+     struct unur_par *PAR, int LOG_SAMPLESIZE )
+     ...timing
+
+ - Library Function: int unur_test_count_urn(
+     struct unur_gen *GEN, int SAMPLESIZE )
+     ...count used uniform random numbers
+
+ - Library Function: double unur_test_chi2(
+     struct unur_gen *GEN,
+     double *CDF(double X, double *FPARAM, int N_FPARAM),
+     int INTERVALS,
+     int SAMPLESIZE,
+     int CLASSMIN,
+     int OUTPUT )
+     ...chi^2 tests
+
+ - Library Function: int unur_make_scatterplot(
+     struct unur_gen *GEN,
+     double *CDF(double X, double *FPARAM, int N_FPARAM))
+     ...make scatterplot of generated numbers
+
+ - Library Function: double _unur_sample_cont_transformed(
+     struct unur_gen *GEN,
+     double *CDF(double X, double *FPARAM, int N_FPARAM) )
+     ...sample from generator and transform to uniform by means of the
+     c.d.f.
+
+
+File: unuran-ref.info,  Node: Utils,  Next: Continuous Distribution,  Prev: Tests,  Up: Function Calls
+
+utils
+=====
+
+   allocate memory :
+
+ - Library Function: void* _unur_malloc(size_t size);
+
+   debugging tools:
+
+ - Library Function: char* _unur_make_genid(
+     char *GENTYPE)
+
+ - Library Function: void _unur_db_error(
+     char *GENID,
+     int ERRORTYPE,
+     char *MSG,
+     char *FILENAME,
+     int LINE)
+
+ - Library Function: void _unur_db_warning(
+     char *GENID,
+     int ERRORTYPE,
+     char *MSG,
+     char *FILENAME,
+     int LINE)
+
+ - Library Function: void _unur_db_cookie_warning(
+     unsigned long EXPECTED,
+     unsigned long OBSERVED,
+     char *FILENAME,
+     int LINE)
+
+   miscellaneous:
+
+ - Library Function: double _unur_arcmean(
+     double X0,
+     double X1 )
+
+
+File: unuran-ref.info,  Node: Concept Index,  Prev: Discrete Distribution,  Up: Top
+
+Concept Index
+*************
+
+* Menu:
+
+* Another sample index entry <1>:        Function Calls.
+* Another sample index entry <2>:        Distribution Library.
+* Another sample index entry <3>:        Example.
+* Another sample index entry:            Method Functions.
+* Sample index entry <1>:                Distribution Library.
+* Sample index entry <2>:                Example.
+* Sample index entry <3>:                Method Functions.
+* Sample index entry:                    Routines for User.
+
+
+
+Tag Table:
+Node: Top1136
+Node: Introduction1488
+Node: Routines for User1948
+Node: Method Functions2389
+Node: Set Functions3773
+Node: Example7559
+Node: Distribution Library8464
+Node: Continuous Distribution9082
+Node: Burr Distribution9970
+Node: BurrI Distribution10889
+Node: BurrII Distribution11150
+Node: BurrIII Distribution11518
+Node: BurrIV Distribution11895
+Node: BurrV Distribution12115
+Node: BurrVI Distribution12329
+Node: BurrVII Distribution12821
+Node: BurrVIII Distribution13239
+Node: BurrIX Distribution13770
+Node: BurrX Distribution14278
+Node: BurrXI Distribution14679
+Node: BurrXII Distribution15199
+Node: Beta Distribution15562
+Node: Cauchy Distribution16038
+Node: Chisquare Distribution16411
+Node: Exponential Distribution16768
+Node: Gamma Distribution17356
+Node: Laplace Distribution17880
+Node: Lognormal Distribution18206
+Node: Lomax Distribution18680
+Node: Normal Distribution18953
+Node: Pareto Distribution19414
+Node: Powerexp. Distribution19684
+Node: Rayleigh Distribution20159
+Node: Student Distribution20510
+Node: Uniform Distribution20862
+Node: Discrete Distribution21166
+Node: Function Calls21411
+Node: Methods21815
+Node: Arou23376
+Node: Cstd24177
+Node: Dau24751
+Node: Dis25334
+Node: Tabl25911
+Node: Tdr26642
+Node: Rect27535
+Node: Unif28099
+Node: Utdr28673
+Node: Set29427
+Node: Stdgen32830
+Node: Tests33131
+Node: Utils34460
+Node: Concept Index35253
+
+End Tag Table

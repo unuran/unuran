@@ -1,0 +1,2041 @@
+@c ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+@c
+@c   Distribtions
+@c
+@c ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
+@node    Distribution Library, Function Calls , Example,      Top
+@comment node-name,            next,            previous,     up
+
+@menu
+* Continuous Distribution:: This section contains only continuous 
+                             univariate distributions.
+* Discrete Distribution::   This section contains only discrete 
+                             distribution functions.
+@end menu
+
+@chapter Distribution Library
+@cindex Sample index entry
+    
+The chapter Distribution Library contains documentation of 
+various distribution functions. Each of these functions may be the base 
+of the implemented generator.
+
+@cindex Another sample index entry
+     
+@enumerate
+@item
+Continuous Distribuitons
+     
+@item
+Discrete Distribution
+@end enumerate
+
+@c ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
+@node    Continuous Distribution, Burr Distribution,  Utils,    Distribution Library
+@comment node-name,               next,               previous, up
+
+@menu
+* Burr Distribution::        There is a lot of Burrs.
+* Beta Distribution::        Standard and Nonstandard.
+* Cauchy Distribution::      Only Nonstandard form exists.
+* Chisquare Distribution::   Chisqu.
+* Exponential Distribution:: Exp.Distr.
+* Gamma Distribution::       Standard and Nonstandard.
+* Laplace Distribution::     Only Nonstandard form exists.
+* Lognormal Distribution::   This distrib.
+* Lomax Distribution::       This distrib.
+* Normal Distribution::      This distrib.
+* Pareto Distribution::      This distrib.
+* Powerexp. Distribution::   This distrib.
+* Rayleigh Distribution::    This distrib.
+* Student Distribution::     This distrib.
+* Uniform Distribution::     This distrib.
+@end menu
+
+@section Continuous Distribuitons
+
+
+@node    Burr Distribution, BurrI Distribution, Continuous Distribution, Continuous Distribution
+@comment node-name,         next,               previous,                up
+
+
+@menu
+* BurrI    Distribution::     There are a lot of Burr-Distr.
+* BurrII   Distribution::     There are a lot of Burr-Distr.
+* BurrIII  Distribution::     There are a lot of Burr-Distr.
+* BurrIV   Distribution::     There are a lot of Burr-Distr.
+* BurrV    Distribution::     There are a lot of Burr-Distr.
+* BurrVI   Distribution::     There are a lot of Burr-Distr.
+* BurrVII  Distribution::     There are a lot of Burr-Distr.
+* BurrVIII Distribution::     There are a lot of Burr-Distr.
+* BurrIX   Distribution::     There are a lot of Burr-Distr.
+* BurrX    Distribution::     There are a lot of Burr-Distr.
+* BurrXI   Distribution::     There are a lot of Burr-Distr.
+* BurrXII  Distribution::     There are a lot of Burr-Distr.
+@end menu
+
+@subsection Burr Distribution
+
+@c ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
+@node    BurrI Distribution, BurrII Distribution, Burr Distribution, Burr Distribution
+@comment node-name,          next,                previous,          up
+
+@subsubsection BurrI Distribution
+
+
+@ifhtml 
+<h4> 
+@end ifhtml
+pdf_burrI
+@ifhtml 
+</h4> 
+@end ifhtml
+@tex
+\beforedisplay
+$$
+pdf(x) = 1
+$$
+\afterdisplay
+@end tex
+@ifinfo
+@example
+pdf(x) = 1
+@end example
+@end ifinfo
+@ifhtml
+<p><i>pdf(x) = 1</i></p>
+@end ifhtml
+
+@ifhtml 
+<h4> 
+@end ifhtml
+dpdf_burrI
+@ifhtml 
+</h4> 
+@end ifhtml
+@tex
+\beforedisplay
+$$
+dpdf(x) = 0
+$$
+\afterdisplay
+@end tex
+@ifinfo
+@example
+dpdf(x) = 0
+@end example
+@end ifinfo
+@ifhtml
+<p><i>dpdf(x) = 0</i></p>
+@end ifhtml
+
+@ifhtml 
+<h4> 
+@end ifhtml
+cdf_burrI
+@ifhtml 
+</h4> 
+@end ifhtml
+@tex
+\beforedisplay
+$$
+cdf(x) = x
+$$
+\afterdisplay
+@end tex
+@ifinfo
+@example
+cdf(x) = x
+@end example
+@end ifinfo
+@ifhtml
+<p><i>cdf(x) = x</i></p>
+@end ifhtml
+
+
+@c cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
+@node    BurrII Distribution, BurrIII Distribution, BurrI Distribution, Burr Distribution
+@comment node-name,           next,                 previous,           up
+
+@subsubsection BurrII Distribution
+
+@ifhtml 
+<h4> 
+@end ifhtml
+pdf_burrII
+@ifhtml 
+</h4> 
+@end ifhtml
+@tex
+\beforedisplay
+$$
+pdf(x) = {(1+ e^{-x})^{-k} \over (1+ e^x)}
+$$
+\afterdisplay
+@end tex
+@ifinfo
+@example
+pdf(x) = (1+ e^(-x))^-k \over (1+ e^x)
+@end example
+@end ifinfo
+@ifhtml
+<p><i>pdf(x) =(1+e<sup>-x</sup>)<sup>-k</sup> / (1+e<sup>x</sup> )</i></p>
+@end ifhtml
+
+@ifhtml 
+<h4> 
+@end ifhtml
+dpdf_burrII
+@ifhtml 
+</h4> 
+@end ifhtml
+@tex
+\beforedisplay
+$$
+dpdf(x) = {(1+ e^{-x})^{-k}  * (e^x - k) \over (1+ e^x)^2 }
+$$
+\afterdisplay
+@end tex
+@ifinfo
+@example
+dpdf(x) =(1+ \exp (-x))^-k  * (\exp (x) - k) \over (1+ \exp (x))^2 
+@end example
+@end ifinfo
+@ifhtml
+<p><i>dpdf(x) =(1+ e<sup>-x</sup>)<sup>-k</sup>  * (e<sup>x</sup> - k) / (1+(e<sup>x</sup>)<sup>2</sup>  </i></p>
+@end ifhtml
+
+@ifhtml 
+<h4> 
+@end ifhtml
+cdf_burrII
+@ifhtml 
+</h4> 
+@end ifhtml
+@tex
+\beforedisplay
+$$
+cdf(x) = (1- e^{-x})^{-k}
+$$
+\afterdisplay
+@end tex
+@ifinfo
+@example
+cdf(x) = (1- \exp(-x))^ -k
+@end example
+@end ifinfo
+@ifhtml
+<p><i>cdf(x) =(1-e<sup>-x</sup>)<sup>-k</sup></i></p>
+@end ifhtml
+
+@c cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
+@node    BurrIII Distribution, BurrIV Distribution, BurrII Distribution, Burr Distribution
+@comment node-name,            next,                previous,            up
+
+@subsubsection BurrIII Distribution
+
+@ifhtml 
+<h4> 
+@end ifhtml
+pdf_burrIII
+@ifhtml 
+</h4> 
+@end ifhtml
+@tex
+\beforedisplay
+$$
+pdf(x) = {(1+ x^{-c})^{-k} \over (x * (1 + x^c)}
+$$
+\afterdisplay
+@end tex
+@ifinfo
+@example
+pdf(x) = (1+ x^-c)^-k \over (x * (1 + x^c))
+@end example
+@end ifinfo
+@ifhtml
+<p><i>pdf(x) = (1+ x<sup>-c</sup>)<sup>-k</sup> / (x * (1 + x<sup>c</sup>))</i></p>
+@end ifhtml
+
+@ifhtml 
+<h4> 
+@end ifhtml
+dpdf_burrIII
+@ifhtml 
+</h4> 
+@end ifhtml
+@tex
+\beforedisplay
+$$
+dpdf(x) = {(1+ x^{-c})^{-k}  * ( 1+x^c+c*(x^{c-k})) \over (x^2 * (1 + x^c)^2)}
+$$
+\afterdisplay
+@end tex
+@ifinfo
+@example
+dpdf(x) =(1+ x^-c)^-k  * ( 1+x^c+c*(x^c-k)) \over (x^2 * (1 + x^c)^2) 
+@end example
+@end ifinfo
+@ifhtml
+<p><i>dpdf(x) =(1+ x<sup>-c</sup>)<sup>-k</sup>  * ( 1+x<sup>c</sup>+c*(x<sup>c</sup>-k)) / (x<sup>2</sup> * (1 + x<sup>c</sup> )<sup>2</sup>)</i></p>
+@end ifhtml
+
+@ifhtml 
+<h4> 
+@end ifhtml
+cdf_burrIII
+@ifhtml 
+</h4> 
+@end ifhtml
+@tex
+\beforedisplay
+$$
+cdf(x) = (1+x^{-c})^{-k}
+$$
+\afterdisplay
+@end tex
+@ifinfo
+@example
+cdf(x) = (1+x^-c)^ -k
+@end example
+@end ifinfo
+@ifhtml
+<p><i>cdf(x) = (1+x<sup>-c</sup>)<sup>-k</sup></i></p>
+@end ifhtml
+
+
+@c ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
+@node    BurrIV Distribution, BurrV Distribution, BurrIII Distribution, Burr Distribution
+@comment node-name,           next,               previous,             up
+
+@subsubsection BurrIV Distribution
+
+@ifhtml 
+<h4> 
+@end ifhtml
+pdf_burrIV
+@ifhtml 
+</h4> 
+@end ifhtml
+@tex
+\beforedisplay
+$$
+pdf(x) = (1+({c \over x} - 1)^{1 \over c})^{-1-k} * ({c \over x}-1)^{1 \over c} / ((c-x) * x)
+$$
+\afterdisplay
+@end tex
+@ifinfo
+@example
+@c pdf(x) = 1+{c \over x} - 1^{1 \over c} ^ {-1-k} * {c \over x-1}^{1 \over c}  /  ((c-x) * x)
+@end example
+@end ifinfo
+@ifhtml
+<p><i>pdf(x) = (1+(c / x - 1)<sup>1/c</sup>) <sup>-1-k</sup> * (c/x - 1)<sup>1/c</sup>) / ((c-x) * x) </i></p>
+@end ifhtml
+
+@ifhtml 
+<h4> 
+@end ifhtml
+dpdf_burrIV
+@ifhtml 
+</h4> 
+@end ifhtml
+@tex
+\beforedisplay
+$$
+dpdf(x) = (1 + ({c \over x}-1)^{1 \over c}) ^ {-2-k} * ({c \over x}-1)^{1 \over c}) * (-1 - c*(1+({c \over x}-1)^{1 \over c} + k ) * ({c \over x}-1)^{1 \over c} + 2x + 2x({c \over x}-1)^{1 \over c}) * {1 \over (c-x)^2 * x^2} 
+$$
+\afterdisplay
+@end tex
+@ifinfo
+@example
+@c dpdf(x) = (1 + (c \over x-1)^{1 \over c}) ^ {-2-k} * ({c \over x}-1)^{1 \over c}) * (-1 - c*(1+({c \over x}-1)^{1 \over c} + k ) * ({c \over x}-1)^{1 \over c} + 2x + 2x({c \over x}-1)^{1 \over c}) * {1 \over (c-x)^2 * x^2} 
+@end example
+@end ifinfo
+@ifhtml
+<p><i>dpdf(x) =  (1+(c/x - 1)<sup>1/c</sup>)<sup>-2-k</sup> * (c/x - 1)<sup>1/c</sup> * [-1-c * (1+(c/x - 1)<sup>1/c</sup>) + k * (c/x - 1)<sup>1/c</sup> + 2x + 2x(c/x - 1)<sup>1/c</sup>]  /  (c-x)<sup>2</sup> * x<sup>2</sup> </i></p>
+@end ifhtml
+
+@ifhtml 
+<h4> 
+@end ifhtml
+cdf_burrIV
+@ifhtml 
+</h4> 
+@end ifhtml
+@tex
+\beforedisplay
+$$
+cdf(x) = (1+{(c-x) \over x}^{1 \over c})^-k
+$$
+\afterdisplay
+@end tex
+@ifinfo
+@example
+@c cdf(x) = (1+{(c-x) \over x}^{1 \over c})^-k
+@end example
+@end ifinfo
+@ifhtml
+<p><i>cdf(x) = (1+((c-x) / x)<sup>(1/c)</sup>)<sup>-k</sup></i></p>
+@end ifhtml
+
+@c ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
+@node    BurrV Distribution, BurrVI Distribution, BurrIV Distribution, Burr Distribution
+@comment node-name,          next,                previous,            up
+
+@subsubsection BurrV Distribution
+
+@ifhtml 
+<h4> 
+@end ifhtml
+pdf_burrV
+@ifhtml 
+</h4> 
+@end ifhtml
+@tex
+\beforedisplay
+$$
+pdf(x) = (1 + c * e^{-\tan(x)})^{-k} * \sec(x^2) * 1 / (c+e^{\tan(x)})
+$$
+\afterdisplay
+@end tex
+@ifinfo
+@example
+@c pdf(x) = 1 + c * e^{-\tan(x)}^{-k} * \sec(x^2) * 1 / (c+e^{\tan(x)})
+@end example
+@end ifinfo
+@ifhtml
+<p><i>pdf(x) =(1+c * e<sup>-tan(x)</sup>)<sup>-k</sup> * sec (x<sup>2</sup>) / (c+e<sup>tan(x)</sup>)</i></p>
+@end ifhtml
+
+@ifhtml 
+<h4> 
+@end ifhtml
+dpdf_burrV
+@ifhtml 
+</h4> 
+@end ifhtml
+@tex
+\beforedisplay
+$$
+dpdf(x) = (1+c*e^{-\tan(x)})^{-k} * \sec(x^2) * [(-e^{\tan(x)} + c*k) * \sec(x^2) + 2\tan(x)(c+e^{\tan(x)})] * 1 / (c+e^{\tan(x)})^2
+$$
+\afterdisplay
+@end tex
+@ifinfo
+@example
+@c dpdf(x) = (1+c*e^{-\tan(x)})^{-k} * \sec(x^2) * ((-e^{\tan(x)} + c*k) * \sec(x^2) + 2*(c+e^{\tan(x)})*\tan(x)) * 1 / (c+e^{\tan(x)})^2
+@end example
+@end ifinfo
+@ifhtml
+<p><i>dpdf(x) =(1+c*e<sup>-tan(x)</sup>)<sup>-k</sup> * sec (x<sup>2</sup>) * [(-e<sup>tan(x)</sup>+c*k) * sec (x<sup>2</sup>) + 2tan(x)(c+e<sup>tan(x)</sup>]  /  (c+e<sup>tan(x)</sup>)<sup>2</sup>    </i></p>
+@end ifhtml
+
+@ifhtml 
+<h4> 
+@end ifhtml
+cdf_burrV
+@ifhtml 
+</h4> 
+@end ifhtml
+@tex
+\beforedisplay
+$$
+cdf(x) = (1+c * e^{-\tan(x)})^{-k}
+$$
+\afterdisplay
+@end tex
+@ifinfo
+@example
+@c cdf(x) = (1+c * e^{-\tan(x)})^{-k}
+@end example
+@end ifinfo
+@ifhtml
+<p><i>cdf(x) =  (1+c * e<sup>-tan(x)</sup>)<sup>-k</sup></i></p>
+@end ifhtml
+
+
+@c ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
+@node    BurrVI Distribution, BurrVII Distribution, BurrV Distribution, Burr Distribution
+@comment node-name,           next,                 previous,           up
+
+@subsubsection BurrVI Distribution
+
+@ifhtml 
+<h4> 
+@end ifhtml
+pdf_burrVI
+@ifhtml 
+</h4> 
+@end ifhtml
+@tex
+\beforedisplay
+$$
+pdf(x) = (1+c*e^{-r*\sinh(x)})^{-k} * \cosh(x) * 1  /  (c + e^{r*\sinh(x)})
+$$
+\afterdisplay
+@end tex
+@ifinfo
+@example
+pdf(x) = (1+c*\exp(-r*\sinh(x)))^-k * \cosh(x) \over (c + \exp (r*\sinh(x)))
+@end example
+@end ifinfo
+@ifhtml
+<p><i>pdf(x) = (1+c*e<sup>(-r*sinh(x))</sup>)<sup>-k</sup> * cosh(x) / (c + e<sup>(r*sinh(x))</sup>)</i></p>
+@end ifhtml
+
+@ifhtml 
+<h4> 
+@end ifhtml
+dpdf_burrVI
+@ifhtml 
+</h4> 
+@end ifhtml
+@tex
+\beforedisplay
+$$
+dpdf(x) = (1+c*e^{-r*\sinh(x)})^{-k} * \cosh(x)^2 * (-(e^{r*\sinh(x)}-c*k)) + (c+e^{r*sinh(x)} * \sinh(x)) * 1  /  (c + e^{r*\sinh(x)})^2
+$$
+\afterdisplay
+@end tex
+@ifinfo
+@example
+dpdf(x) = (1+c*\exp(-r*\sinh(x)))^-k * \cosh(x)^2 * (-(\exp(r*\sinh(x))-c*k)) + (c+\exp(r*sinh(x))*\sinh(x)) \over (c + \exp (r*\sinh(x)))^2
+@end example
+@end ifinfo
+@ifhtml
+<p><i>dpdf(x) = (1+c*e<sup>(-r*sinh(x))</sup>)<sup>-k</sup> * cosh(x)<sup>2</sup> * (-(e<sup>(r*\sinh(x))</sup>-c*k)) + (c+e<sup>(r*sinh(x))</sup> * sinh(x)) / (c + e<sup>(r*sinh(x))</sup>)<sup>2</sup></i></p>
+@end ifhtml
+
+@ifhtml 
+<h4> 
+@end ifhtml
+cdf_burrVI
+@ifhtml 
+</h4> 
+@end ifhtml
+@tex
+\beforedisplay
+$$
+cdf(x) = (c* e^{-r*\sinh(x)} + 1)^{-k}
+$$
+\afterdisplay
+@end tex
+@ifinfo
+@example
+cdf(x) = (c* \exp(-r*\sinh(x)) + 1)^-k
+@end example
+@end ifinfo
+@ifhtml
+<p><i>cdf(x) = (c*e<sup>(-r*sinh(x))</sup> + 1)<sup>-k</sup></i></p>
+@end ifhtml
+
+@c ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
+@node    BurrVII Distribution, BurrVIII Distribution, BurrVI Distribution, Burr Distribution
+@comment node-name,            next,                  previous,            up
+
+@subsubsection BurrVII Distribution
+
+@ifhtml 
+<h4> 
+@end ifhtml
+pdf_burrVII
+@ifhtml 
+</h4> 
+@end ifhtml
+@tex
+\beforedisplay
+$$
+pdf(x) = (1+\tanh(x))^{k-1} * {1 \over \cosh(x)^2}
+$$
+\afterdisplay
+@end tex
+@ifinfo
+@example
+pdf(x) = (1+\tanh(x))^(k-1) \over \cosh(x)^2
+@end example
+@end ifinfo
+@ifhtml
+<p><i>pdf(x) = (1+tanh(x))<sup>k-1</sup> / cosh(x)<sup>2</sup>  </i></p>
+@end ifhtml
+
+@ifhtml 
+<h4> 
+@end ifhtml
+dpdf_burrVII
+@ifhtml
+</h4>
+@end ifhtml
+@tex
+\beforedisplay
+$$
+dpdf(x) = (1+\tanh(x))^{k-2} * [(k-1)* {1 \over \cosh(x)^2} - 2 * \tanh(x) * 1 +\tanh(x)] * {1 \over \cosh(x)^2}
+$$
+\afterdisplay
+@end tex
+@ifinfo
+@example
+dpdf(x) = (1+\tanh(x))^(k-2) * ((k-1)* 1 \over \cosh(x)^2 - 2 * \tanh(x) * (1+\tanh(x))) \over \cosh(x)^2
+@end example
+@end ifinfo
+@ifhtml
+<p><i>dpdf(x) = (1+tanh(x))<sup>k-2</sup> * ((k-1)* 1/cosh(x)<sup>2</sup> - 2 * tanh(x) * (1+tanh(x))) / cosh(x)<sup>2</sup> </i></p>
+@end ifhtml
+
+@ifhtml 
+<h4> 
+@end ifhtml
+cdf_burrVII
+@ifhtml 
+</h4> 
+@end ifhtml
+@tex
+\beforedisplay
+$$
+cdf(x) = 1+\tanh(x)^k
+$$
+\afterdisplay
+@end tex
+@ifinfo
+@example
+cdf(x) = (1+\tanh(x))^k
+@end example
+@end ifinfo
+@ifhtml
+<p><i>cdf(x) =1+tanh(x)<sup>k</sup></i></p>
+@end ifhtml
+
+
+@c ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
+@node    BurrVIII Distribution, BurrIX Distribution, BurrVII Distribution, Burr Distribution
+@comment node-name,             next,                previous,             up
+
+@subsubsection BurrVIII Distribution
+
+@ifhtml 
+<h4> 
+@end ifhtml
+pdf_burrVIII
+@ifhtml 
+</h4> 
+@end ifhtml
+@tex
+\beforedisplay
+$$
+pdf(x) = -e^x * {2 \over \pi}^k * \cot(e^x)^k * \csc(e^x) * \sec(e^x) 
+$$
+\afterdisplay
+@end tex
+@ifinfo
+@example
+pdf(x) = -\exp(x) * (2 \over \pi)^k * \cot(\exp(x))^k * \csc(\exp(x)) * \sec(\exp(x)) 
+@end example
+@end ifinfo
+@ifhtml
+<p><i>pdf(x) = -e<sup>x</sup> * (2 / pi)<sup>k</sup> * cot (e<sup>x</sup>)<sup>k</sup> * csc (e<sup>x</sup>) * sec (e<sup>x</sup>)</i></p>
+@end ifhtml
+
+@ifhtml 
+<h4> 
+@end ifhtml
+dpdf_burrVIII
+@ifhtml 
+</h4> 
+@end ifhtml
+@tex
+\beforedisplay
+$$
+dpdf(x) = 2^{k-1} * e^x * \pi^{-k} * \cot(e^x)^k * \csc(e^x)^2 * \sec(e^x)^2 * (2e^x*k + 2e^x*\cos(2e^x) - \sin(2e^x)) 
+$$
+\afterdisplay
+@end tex
+@ifinfo
+@example
+dpdf(x) = 2^(k-1) * \exp(x) * \pi^-k * \cot(\exp(x))^k * \csc(\exp(x))^2 * \sec(\exp(x))^2 * (2 *\exp(x)*k + 2*\exp(x)*\cos(2*\exp(x)) - \sin(2*\exp(x))) 
+@end example
+@end ifinfo
+@ifhtml
+<p><i>dpdf(x) = 2<sup>k-1</sup> * e<sup>x</sup> * pi<sup>k</sup> * (e<sup>x</sup>)<sup>k</sup> * csc (e<sup>x</sup>)<sup>2</sup> * sec (e<sup>x</sup>)<sup>2</sup> * (2e<sup>x</sup> * k + 2e<sup>x</sup>*cos (2e<sup>x</sup>) - sin (2e<sup>x</sup>))</i></p>
+@end ifhtml
+
+@ifhtml 
+<h4> 
+@end ifhtml
+cdf_burrVIII
+@ifhtml 
+</h4> 
+@end ifhtml
+@tex
+\beforedisplay
+$$
+cdf(x) = \big({2 \over \pi * \tan (e^x)}\big)^k 
+$$
+\afterdisplay
+@end tex
+@ifinfo
+@example
+cdf(x) = (2 \over (\pi * \tan(\exp(x))))^k 
+@end example
+@end ifinfo
+@ifhtml
+<p><i>cdf(x) = (2 / (pi * tan (e<sup>x</sup>)))<sup>k</sup></i></p>
+@end ifhtml
+
+@c cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
+@node    BurrIX Distribution, BurrX Distribution, BurrVIII Distribution, Burr Distribution
+@comment node-name,           next,               previous,              up
+
+@subsubsection BurrIX Distribution
+
+@ifhtml 
+<h4> 
+@end ifhtml
+pdf_burrIX
+@ifhtml 
+</h4> 
+@end ifhtml
+@tex
+\beforedisplay
+$$
+pdf(x) = e^x * (1+e^x)^{k-1} * {1 \over (2 + c*((1+e^x)^k - 1))^2}
+$$
+\afterdisplay
+@end tex
+@ifinfo
+@example
+pdf(x) = \exp(x) * (1+\exp(x))^k-1 \over (2 + c*((1+\exp(x))^k - 1))^2
+@end example
+@end ifinfo
+@ifhtml
+<p><i>pdf(x) = e<sup>x</sup> * (1+e<sup>x</sup>)<sup>k-1</sup> * 1  /  (2 + c*(1+e<sup>x</sup>)<sup>k-1</sup>)<sup>2</sup> </i></p>
+@end ifhtml
+
+@ifhtml 
+<h4> 
+@end ifhtml
+dpdf_burrIX
+@ifhtml 
+</h4> 
+@end ifhtml
+@tex
+\beforedisplay
+$$
+dpdf(x) = -[e^x * (1+e^x)^{k-2} * (-2 * (1+e^x*k) + c*((1-(1+e^x)^k + e^x * (1+(1+e^x)^k)*k)))] * {1 \over (2 + c*((1+e^x)^k - 1))^3} 
+$$
+\afterdisplay
+@end tex
+@ifinfo
+@example
+dpdf(x) = -(\exp(x) * (1+\exp(x))^k-2 * (-2 * (1+\exp(x)*k) + c*((1-(1+\exp(x))^k + \exp(x) * (1+(1+\exp(x))^k)*k)))) \over (2 + c*((1+\exp(x))^k - 1))^3 
+@end example
+@end ifinfo
+@ifhtml
+<p><i> dpdf(x) = -(e<sup>x</sup> * (1+e<sup>x</sup>)<sup>k-2</sup> * (-2k*(1+e<sup>x</sup>)) + c * (1 - (1+e<sup>x</sup>)<sup>k</sup> + e<sup>x</sup>) * (1+(1+e<sup>x</sup>)<sup>k</sup>)*k)   /   (2 + c*(1+e<sup>x</sup><sup>k</sup> - 1))<sup>3</sup>      </i></p>
+@end ifhtml
+
+@ifhtml 
+<h4> 
+@end ifhtml
+cdf_burrIX
+@ifhtml 
+</h4> 
+@end ifhtml
+@tex
+\beforedisplay
+$$
+cdf(x) = 1- {2 \over (c * (((1 + e^x)^k)-1)+2)}
+$$
+\afterdisplay
+@end tex
+@ifinfo
+@example
+cdf(x) = 1- 2 \over (c*(((1+ \exp(x))^k)-1)+2)
+@end example
+@end ifinfo
+@ifhtml
+<p><i>cdf(x) = 1- 2 / (c * ( (1+e<sup>x</sup>)<sup>k</sup>-1)+2) </i></p>
+@end ifhtml
+
+
+@c ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
+@node    BurrX Distribution, BurrXI Distribution, BurrIX Distribution, Burr Distribution
+@comment node-name,          next,                previous,            up
+
+@subsubsection BurrX Distribution
+
+@ifhtml 
+<h4> 
+@end ifhtml
+pdf_burrX
+@ifhtml 
+</h4> 
+@end ifhtml
+@tex
+\beforedisplay
+$$
+pdf(x) = x (1 - e^{-x^2})^k * {1 \over e^{x^2} - 1}
+$$
+\afterdisplay
+@end tex
+@ifinfo
+@example
+pdf(x) = x* (1-\exp(-x^2))^k \over (\exp(x^2) - 1)
+@end example
+@end ifinfo
+@ifhtml
+<p><i>pdf(x) = x (1-e<sup>-x<sup>2</sup></sup>)<sup>k</sup>   /   (e<sup>x<sup>2</sup></sup> - 1)</i></p>
+@end ifhtml
+
+@ifhtml 
+<h4> 
+@end ifhtml
+dpdf_burrX
+@ifhtml 
+</h4> 
+@end ifhtml
+@tex
+\beforedisplay
+$$
+dpdf(x) = (1 - e^{-x^2})^k * (e^{x^2} - 1 - 2*(e^{x^2}-k)* x^2) * {1 \over (e^{x^2} - 1)^2}
+$$
+\afterdisplay
+@end tex
+@ifinfo
+@example
+dpdf(x) = (1-\exp(-x^2))^k * (\exp(x^2) - 1 - 2*(\exp(x^2)-k)* x^2) \over (\exp(x^2) - 1)^2
+@end example
+@end ifinfo
+@ifhtml
+<p><i>dpdf(x) =(1-e<sup>-x<sup>2</sup></sup>)<sup>k</sup> * (e<sup>x<sup>2</sup></sup> - 1 - 2x<sup>2</sup>(e<sup>x<sup>2</sup></sup>-k))   /   (e<sup>x<sup>2</sup></sup> - 1)<sup>2</sup>  </i></p>
+@end ifhtml
+
+@ifhtml 
+<h4> 
+@end ifhtml
+cdf_burrX
+@ifhtml 
+</h4> 
+@end ifhtml
+@tex
+\beforedisplay
+$$
+cdf(x) = ( 1 - e^{-x^2})^k
+$$
+\afterdisplay
+@end tex
+@ifinfo
+@example
+cdf(x) = ( 1 - \exp(-x^2))^k
+@end example
+@end ifinfo
+@ifhtml
+<p><i>pdf(x) = (1-e<sup>-x<sup>2</sup></sup>)<sup>k</sup></i></p>
+@end ifhtml
+
+@c ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
+@node    BurrXI Distribution, BurrXII Distribution, BurrX Distribution, Burr Distribution
+@comment node-name,           next,                 previous,           up
+
+@subsubsection BurrXI Distribution
+
+@ifhtml 
+<h4> 
+@end ifhtml
+pdf_burrXI
+@ifhtml 
+</h4> 
+@end ifhtml
+@tex
+\beforedisplay
+$$
+pdf(x) = \sin(\pi*x)^2 * (x - \sin(2\pi*x)  /  (2\pi))^{k-1}
+$$
+\afterdisplay
+@end tex
+@ifinfo
+@example
+pdf(x) = \sin(\pi*x)^2 * (x - \sin(2*\pi*x) \over (2* \pi))^(k-1)
+@end example
+@end ifinfo
+@ifhtml
+<p><i>pdf(x) = sin(pi*x)<sup>2</sup> * (x - sin(2pi*x)   /   (2pi))<sup>k-1</sup></i></p>
+@end ifhtml
+
+@ifhtml 
+<h4> 
+@end ifhtml
+dpdf_burrXI
+@ifhtml 
+</h4> 
+@end ifhtml
+@tex
+\beforedisplay
+$$
+dpdf(x) = {-(2\pi^2*\sin(\pi*x) * (-4\pi*x*\cos(\pi*x) + 2(2-k+k*\cos(2\pi*x))*\sin(\pi*x)) * (x - \sin(2\pi*x)  /  (2\pi))^k) \over (-2\pi*x + \sin(2\pi*x))^2}
+$$
+\afterdisplay
+@end tex
+@ifinfo
+@example
+dpdf(x) = -(2*\pi^2*\sin(\pi*x) * (-4*\pi*x*\cos(\pi*x) + 2*(2-k+k*\cos(2*\pi\x))*\sin(\pi*x)) * (x - \sin(2*\pi*x) \over (2*\pi))^k) \over (-2*\pi*x + \sin(2*\pi*x))^2
+@end example
+@end ifinfo
+@ifhtml
+<p><i>dpdf(x) =  -(2pi<sup>2</sup>*sin(pi*x) * (-4pi*x*cos(pi*x) + 2 (2 - k + k * cos(2pi*x))*sin(pi*x)) * (x - sin(2pi*x) / (2pi))<sup>k</sup>)   /   (-2pi*x + sin(2pi*x))<sup>2</sup> </i></p>
+@end ifhtml
+
+@ifhtml 
+<h4> 
+@end ifhtml
+cdf_burrXI
+@ifhtml 
+</h4> 
+@end ifhtml
+@tex
+\beforedisplay
+$$
+cdf(x) = (x-{1 \over 2\pi} * \sin(2\pi*x))^k
+$$
+\afterdisplay
+@end tex
+@ifinfo
+@example
+cdf(x) = (x-(1 \over (2* \pi)) * \sin(2*\pi*x))^k
+@end example
+@end ifinfo
+@ifhtml
+<p><i>cdf(x) = (x - (1   /   (2pi)) * sin(2pi*x))<sup>k</sup></i></p>
+@end ifhtml
+
+
+@c ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
+@node    BurrXII Distribution, Beta Distribution, BurrXI Distribution, Burr Distribution
+@comment node-name,            next,              previous,            up
+
+@subsubsection BurrXII Distribution
+
+@ifhtml 
+<h4> 
+@end ifhtml
+pdf_burrXII
+@ifhtml 
+</h4> 
+@end ifhtml
+@tex
+\beforedisplay
+$$
+pdf(x) = x^{c-1} * (1 + x^c) ^{-k-1}
+$$
+\afterdisplay
+@end tex
+@ifinfo
+@example
+pdf(x) = x^(c-1) * (1 + x^c) ^(-k-1)
+@end example
+@end ifinfo
+@ifhtml
+<p><i>pdf(x) = x<sup>c-1</sup> * (1 + x<sup>c</sup>)<sup>-k-1</sup> </i></p>
+@end ifhtml
+
+@ifhtml 
+<h4> 
+@end ifhtml
+dpdf_burrXII
+@ifhtml 
+</h4> 
+@end ifhtml
+@tex
+\beforedisplay
+$$
+dpdf(x) = x^{c-2} * (1 + x^c) ^{-k-2} * (1 + x^c + c*(k*x^c-1))
+$$
+\afterdisplay
+@end tex
+@ifinfo
+@example
+dpdf(x) = x^[c-2] * (1 + x^c) ^[-k-2] * (1 + x^c + c*(k*x^c-1))
+@end example
+@end ifinfo
+@ifhtml
+<p><i> dpdf(x) = x<sup>c-2</sup> * (1 +x<sup>c</sup>)<sup>-k-2</sup> * (1 + x<sup>c</sup> + c(k * x<sup>c</sup>-1))</i></p>
+@end ifhtml
+
+@ifhtml 
+<h4> 
+@end ifhtml
+cdf_burrXII
+@ifhtml 
+</h4> 
+@end ifhtml
+@tex
+\beforedisplay
+$$
+cdf(x) = 1-(1+x^c) ^{-k}
+$$
+\afterdisplay
+@end tex
+@ifinfo
+@example
+cdf(x) = 1-(1+x^c) ^-k
+@end example
+@end ifinfo
+@ifhtml
+<p><i>cdf(x) = 1-(1+x<sup>c</sup>)<sup>-k</sup></i></p>
+@end ifhtml
+
+
+@c cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
+@node    Beta Distribution, Cauchy Distribution, BurrXII Distribution, Continuous Distribution
+@comment node-name,         next,                previous,             up
+
+@subsection Beta Distribution
+
+@ifhtml 
+<h4> 
+@end ifhtml
+pdf_beta_nonstd
+@ifhtml 
+</h4> 
+@end ifhtml
+@tex
+\beforedisplay
+$$
+pdf(x) = ((x-a)^{p-1}) * ((b-x)^{q-1})
+$$
+\afterdisplay">
+@end tex
+@ifinfo
+@example
+pdf(x) = ((x-a)^(p-1)) * ((b-x)^(q-1))
+@end example
+@end ifinfo
+@ifhtml
+<p><i>pdf(x) = (x-a)<sup>(p-1)</sup> * (b-x)<sup>(q-1)</sup></i></p>
+<p align=center><img src="fig-pdf-beta.png" alt="bild"></p>
+@end ifhtml
+
+@ifhtml 
+<h4> 
+@end ifhtml
+dpdf_beta_nonstd
+@ifhtml 
+</h4> 
+@end ifhtml
+@tex
+\beforedisplay
+$$
+dpdf(x) = ((x-a)^{p-2}) * ((b-x)^{q-2}) * ((p-1)*(b-x) - (q-1)*(x-a))
+$$
+\afterdisplay
+@end tex
+@ifinfo
+@example
+dpdf(x) = ((x-a)^(p-2)) * ((b-x)^(q-2)) * ((p-1)*(b-x) - (q-1)*(x-a))
+@end example
+@end ifinfo
+@ifhtml
+<p><i>dpdf(x) = (x-a)<sup>(p-2)</sup> * (b-x)<sup>(q-2)</sup> * ((p-1)*(b-x) - (q-1)*(x-a))</i></p>
+@end ifhtml
+
+@ifhtml 
+<h4> 
+@end ifhtml
+pdf_beta_std
+@ifhtml 
+</h4> 
+@end ifhtml
+@tex
+\beforedisplay
+$$
+pdf(x) = (x^{p-1}) * ((1-x)^{q-1})
+$$
+\afterdisplay
+@end tex
+@ifinfo
+@example
+pdf(x) = (x^(p-1)) * ((1-x)^(q-1))
+@end example
+@end ifinfo
+@ifhtml
+<p><i>pdf(x) = x<sup>(p-1)</sup> * (1-x)<sup>(q-1)</sup></i></p>
+@end ifhtml
+
+@ifhtml 
+<h4> 
+@end ifhtml
+dpdf_beta_std
+@ifhtml 
+</h4> 
+@end ifhtml
+@tex
+\beforedisplay
+$$
+dpf(x) = (x^{p-2}) * ((1-x)^{q-2}) * ((p-1)*(1-x) - (q-1)*x)
+$$
+\afterdisplay
+@end tex
+@ifinfo
+@example
+dpf(x) = (x^(p-2)) * ((1-x)^(q-2)) * ((p-1)*(1-x) - (q-1)*x)
+@end example
+@end ifinfo
+@ifhtml
+<p><i>dpf(x) = x<sup>(p-2)</sup> * (1-x)<sup>(q-2)</sup> * ((p-1)*(1-x) - (q-1)*x)</i></p>
+@end ifhtml
+
+@c cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
+@node    Cauchy Distribution, Chisquare Distribution, Beta Distribution, Continuous Distribution
+@comment node-name,           next,                   previous,          up
+
+@subsection Cauchy Distribution
+
+@ifhtml 
+<h4> 
+@end ifhtml
+pdf_cauchy
+@ifhtml 
+</h4> 
+@end ifhtml
+@tex
+\beforedisplay
+$$
+pdf(x) = {1 \over 1+[(x-\theta)/\lambda]^2}
+$$
+\afterdisplay
+@end tex
+@ifinfo
+@example
+pdf(x) = 1 \over (1+(((x-\theta) \over \lambda)^2))
+@end example
+@end ifinfo
+@ifhtml
+<p><i>pdf(x) = 1 / <big>(</big> 1 + ( (x-theta) / lambda )<sup>2</sup> ) <big>)</big><su)</i></p>
+<p align=center><img src="fig-pdf-cauchy.png" alt="bild"></p>
+@end ifhtml
+
+@ifhtml 
+<h4> 
+@end ifhtml
+dpdf_cauchy
+@ifhtml 
+</h4> 
+@end ifhtml
+@tex
+\beforedisplay
+$$
+dpdf(x) = {-2*[(x-\theta)/\lambda] \over \lambda} * ({1+(x-\theta) \over \lambda}^2)^2
+$$
+\afterdisplay
+@end tex
+@ifinfo
+@example
+dpdf(x) = (-2*( (x-\theta) \over \lambda) ) \over \lambda * ((1+(((x-\theta) \over \lambda)^2))^2)
+@end example
+@end ifinfo
+@ifhtml
+<p><i>dpdf(x) = [-2 * ( (x-theta) / lambda))  /  <fontsize="+n">  (</font> lambda * (( 1 + ((x-theta) / lambda)<sup>2</sup>)<sup>2</sup>) <fontsize="+n">)</font></i></p>
+@end ifhtml
+
+@c ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
+@node    Chisquare Distribution, Exponential Distribution, Cauchy Distribution, Continuous Distribution
+@comment node-name,              next,                     previous, up
+
+@subsection Chisquare Distribution
+
+@ifhtml 
+<h4> 
+@end ifhtml
+pdf_chisquare
+@ifhtml 
+</h4> 
+@end ifhtml
+@tex
+\beforedisplay
+$$
+pdf(x) = x^{\nu \over 2-1} * e^{-x \over 2}
+$$
+\afterdisplay
+@end tex
+@ifinfo
+@example
+pdf(x) = x^(\nu \over 2-1) * \exp (-x \over 2)
+@end example
+@end ifinfo
+@ifhtml
+<p><i>pdf(x) = x<sup>(nu/2-1)</sup> * e<sup>(-x/2)</sup></i></p>
+<p align=center><img src="fig-pdf-chisquare.png" alt="bild"></p>
+@end ifhtml
+
+@ifhtml 
+<h4> 
+@end ifhtml
+dpdf-chisquare
+@ifhtml 
+</h4> 
+@end ifhtml
+@tex
+\beforedisplay
+$$
+dpdf(x) = x^{\nu \over 2-2} * e^{-x \over 2} * {(\nu -2-x) \over 2}
+$$
+\afterdisplay
+@end tex
+@ifinfo
+@example
+dpdf(x) = x^(\nu \over 2-2) * \exp (-x \over 2) * (\nu -2-x) \over 2
+@end example
+@end ifinfo
+@ifhtml
+<p><i>dpdf(x) = x<sup>(nu/2-2)</sup> * e<sup>(-x/2)</sup> * (nu-2-x)/2</i></p>
+@end ifhtml
+
+
+@c ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
+@node    Exponential Distribution, Gamma Distribution, Chisquare Distribution, Continuous Distribution
+@comment node-name,                next,               previous, up
+
+
+@subsection Exponential Distribution
+
+@ifhtml 
+<h4> 
+@end ifhtml
+cdf_exponential_nonstd
+@ifhtml 
+</h4> 
+@end ifhtml
+@tex
+\beforedisplay
+$$
+cdf(x) = 1- e^{-(x-\theta) \over \sigma}
+$$
+\afterdisplay
+@end tex
+@ifinfo
+@example
+cdf(x) = 1-\exp (-(x-\theta) \over \sigma)
+@end example
+@end ifinfo
+@ifhtml
+<p><i>cdf(x) = 1-e<sup>(-(x-theta) / sigma)</sup></i></p>
+@end ifhtml
+ 
+@ifhtml 
+<h4> 
+@end ifhtml
+pdf_exponential_nonstd
+@ifhtml 
+</h4> 
+@end ifhtml
+@tex
+\beforedisplay
+$$
+pdf(x) = e^{-(x-\theta) \over \sigma}
+$$
+\afterdisplay
+@end tex
+@ifinfo
+@example
+pdf(x) = \exp (-(x-\theta) \over \sigma)
+@end example
+@end ifinfo
+@ifhtml
+<p><i>pdf(x) = e<sup>(-(x-theta)/sigma)</sup></i></p>
+<p align=center><img src="fig-pdf-exponential.png" alt="bild"></p>
+@end ifhtml
+
+@ifhtml 
+<h4> 
+@end ifhtml
+dpdf_exponential_nonstd
+@ifhtml 
+</h4> 
+@end ifhtml
+@tex
+\beforedisplay
+$$
+dpdf(x) = {1  \over \sigma} * -e^{-(x-\theta)\over \sigma}
+$$
+\afterdisplay
+@end tex
+@ifinfo
+@example
+dpdf(x) = -(\exp (-(x-\theta) \over \sigma)) \over \sigma
+@end example
+@end ifinfo
+@ifhtml
+<p><i>dpdf(x) = -(e<sup>(-(x-theta)/sigma)</sup>)<big>/</big>sigma</i></p>
+@end ifhtml
+ 
+@ifhtml 
+<h4> 
+@end ifhtml
+cdf_exponential_std
+@ifhtml 
+</h4> 
+@end ifhtml
+@tex
+\beforedisplay
+$$
+cdf(x) = 1-e^{-x}
+$$
+\afterdisplay
+@end tex
+@ifinfo
+@example
+cdf(x) = 1-(\exp (-x))
+@end example
+@end ifinfo
+@ifhtml
+<p><i>cdf(x) = 1-e<sup>-x</sup></i></p>
+@end ifhtml
+ 
+@ifhtml 
+<h4> 
+@end ifhtml
+pdf_exponential_std
+@ifhtml 
+</h4> 
+@end ifhtml
+@tex
+\beforedisplay
+$$
+pdf(x) = e^{-x}
+$$
+\afterdisplay
+@end tex
+@ifinfo
+@example
+pdf(x) = \exp (-x)
+@end example
+@end ifinfo
+@ifhtml
+<p><i>pdf(x) = e<sup>-x</sup></i></p>
+@end ifhtml
+
+@ifhtml 
+<h4> 
+@end ifhtml
+dpdf_exponential_std
+@ifhtml 
+</h4> 
+@end ifhtml
+@tex
+\beforedisplay
+$$
+dpdf(x) = -e^{-x}
+$$
+\afterdisplay
+@end tex
+@ifinfo
+@example
+pdf(x) = -(\exp (-x))
+@end example
+@end ifinfo
+@ifhtml
+<p><i>pdf(x) = -e<sup>-x</sup></i></p>
+@end ifhtml
+
+@c ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
+@node    Gamma Distribution, Laplace Distribution, Exponential Distribution, Continuous Distribution
+@comment node-name,          next,                 previous,                 up
+
+@subsection Gamma Distribution
+
+@ifhtml 
+<h4> 
+@end ifhtml
+pdf_gamma_nonstd
+@ifhtml 
+</h4> 
+@end ifhtml
+@tex
+\beforedisplay
+$$
+pdf(x) = (x-\gamma)^{\alpha-1} * e^{(gamma-x) \over \beta}
+$$
+\afterdisplay
+@end tex
+@ifinfo
+@example
+pdf(x) = ((x-\gamma)^(\alpha-1) * (\exp ((\gamma-x)/\beta))
+@end example
+@end ifinfo
+@ifhtml
+<p><i>pdf(x) = ((x-gamma)<sup>(alpha-1)</sup> * e<sup>(gamma-x)/beta</sup></i></p>
+<p align=center><img src="fig-pdf-gamma.png" alt="bild"></p>
+@end ifhtml
+
+@ifhtml 
+<h4> 
+@end ifhtml
+dpdf_gamma_nonstd
+@ifhtml 
+</h4> 
+@end ifhtml
+@tex
+\beforedisplay
+$$
+dpdf(x) = (x-\gamma)^{\alpha-2} * e^{(\gamma-x) \over \beta} *\bigl((\alpha-1) + {(\gamma-x) \over \beta}\bigr)
+$$
+\afterdisplay
+@end tex
+@ifinfo
+@example
+dpdf(x) = (x-\gamma)^(\alpha-2) * (\exp ((\gamma-x)/\beta)) *((\alpha-1) + ((\gamma-x)/\beta))
+@end example
+@end ifinfo
+@ifhtml
+<p><i>dpdf(x) = (x-gamma)<sup>(alpha-2)</sup> * e<sup>(gamma-x)/beta</sup> *((alpha-1) + ((gamma-x)/beta))</i></p>
+@end ifhtml
+
+@ifhtml 
+<h4> 
+@end ifhtml
+pdf_gamma_std
+@ifhtml 
+</h4> 
+@end ifhtml
+@tex
+\beforedisplay
+$$
+pdf(x) = x^{\alpha-1} * e^{-x}
+$$
+\afterdisplay
+@end tex
+@ifinfo
+@example
+pdf(x) = x^(\alpha-1) * \exp (-x)
+@end example
+@end ifinfo
+@ifhtml
+<p><i>pdf(x) = x<sup>(alpha-1)</sup> * e<sup>-x</sup></i></p>
+@end ifhtml
+
+@ifhtml 
+<h4> 
+@end ifhtml
+dpdf_gamma_std
+@ifhtml 
+</h4> 
+@end ifhtml
+@tex
+\beforedisplay
+$$
+dpdf(x) = x^{\alpha-2} * e^{-x} * ((\alpha-1)-x)
+$$
+\afterdisplay
+@end tex
+@ifinfo
+@example
+dpdf(x) = x^(\alpha-2) * \exp (-x) * ((\alpha-1)-x)
+@end example
+@end ifinfo
+@ifhtml
+<p><i>dpdf(x) = x<sup>(alpha-2)</sup> * e<sup>-x</sup> * ((alpha-1)-x)</i></p>
+@end ifhtml
+
+@c ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
+@node    Laplace Distribution, Lognormal Distribution, Gamma Distribution, Continuous Distribution
+@comment node-name,            next,                   previous,           up
+
+
+@subsection Laplace Distribution
+
+@ifhtml 
+<h4> 
+@end ifhtml
+pdf_laplace
+@ifhtml 
+</h4> 
+@end ifhtml
+@tex
+\beforedisplay
+$$
+pdf(x) = e^{-|(x-\theta) \over \phi|}
+$$
+\afterdisplay
+@end tex
+@ifinfo
+@example
+pdf(x) = \exp (-|(x-\theta) \over \phi|)
+@end example
+@end ifinfo
+@ifhtml
+<p><i>pdf(x) = e<sup>(- </i>|<i> (x-theta)/phi </i>|<i> )</sup></i></p>
+<p align=center><img src="fig-pdf-laplace.png" alt="bild"></p>
+@end ifhtml
+
+@ifhtml 
+<h4> 
+@end ifhtml
+dpdf_laplace
+@ifhtml 
+</h4> 
+@end ifhtml
+@tex
+\beforedisplay
+$$
+dpdf(x) = e^{-|(x-\theta) \over \phi|} * {1  \over \phi}
+$$
+\afterdisplay
+@end tex
+@ifinfo
+@example
+dpdf(x) =  (\exp (-|(x-\theta) \over \phi|) \over \phi )
+@end example
+@end ifinfo
+@ifhtml
+<p><i>dpdf(x) = <big>(</big>e<sup>(- </i>|<i> (x-theta)/phi </i>|<i> )</sup><big>)</big><big>/</big>phi</i></p>
+@end ifhtml
+
+@c ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
+@node    Lognormal Distribution, Lomax Distribution, Laplace Distribution, Continuous Distribution
+@comment node-name,              next,               previous,             up
+
+@subsection Lognormal Distribution
+
+@ifhtml 
+<h4> 
+@end ifhtml
+pdf_lognormal
+@ifhtml 
+</h4> 
+@end ifhtml
+@tex
+\beforedisplay
+$$
+pdf(x) = [1 / (x-\theta)] * (e^{-\ln (x-\theta) - \zeta})^2 * {1 \over 2\sigma^2} 
+$$
+\afterdisplay
+@end tex
+@ifinfo
+@example
+pdf(x) =(1 \over (x-\theta)) * \exp -(\ln(x-\theta)-\zeta)^2 \over (2*\sigma^2) 
+@end example
+@end ifinfo
+@ifhtml
+<p><i>pdf(x) =(1 / (x-theta)) * e<sup>(-( (ln ( x-theta ) -zeta)<sup>2</sup>)</sup> / (2*sigma<sup>2</sup>) </i></p>
+<p align=center><img src="fig-pdf-lognormal.png" alt="bild"></p>
+@end ifhtml
+
+@ifhtml 
+<h4> 
+@end ifhtml
+dpdf_lognormal
+@ifhtml 
+</h4> 
+@end ifhtml
+@tex
+\beforedisplay
+$$
+dpdf(x) = {1 \over (x-\theta)^2} * {1 \over x-\theta} * e^{-(\ln(x-\theta)-\zeta^2) \over 2*\sigma^2} * {1 + \ln(x-\theta)-\zeta \over \sigma^2}
+$$
+\afterdisplay
+@end tex
+@ifinfo
+@example
+dpdf(x) = 1 \over ((x-\theta)^2) * ((1 \over (x-\theta)) * \exp (-((\ln(x-\theta)-\zeta)^2) \over (2*\sigma^2))) * (1 + (\ln(x-\theta)-\zeta) \over \sigma^2) 
+@end example
+@end ifinfo
+@ifhtml
+<p><i>dpdf(x) = 1 / (x-theta)<sup>2</sup>) * ((1 / (x-theta)) * e<sup>(-(ln ( x-theta ) -zeta )<sup>2</sup> / (2*sigma<sup>2</sup>))</sup>) * (1 + (ln ( x-theta ) -zeta) / sigma<sup>2</sup>)   </i></p>
+@end ifhtml
+
+@c ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
+@node    Lomax Distribution, Normal Distribution, Lognormal Distribution, Continuous Distribution
+@comment node-name,          next,                previous,               up
+
+@subsection Lomax Distribution
+
+@ifhtml 
+<h4> 
+@end ifhtml
+pdf_lomax
+@ifhtml 
+</h4> 
+@end ifhtml
+@tex
+\beforedisplay
+$$
+pdf(x) = (x+C)^{-a-1}
+$$
+\afterdisplay
+@end tex
+@ifinfo
+@example
+pdf(x) = (x+C)^(-a-1)
+@end example
+@end ifinfo
+@ifhtml
+<p><i>pdf(x) = (x+C)<sup>(-a-1)</sup> </i></p>
+@end ifhtml
+
+@ifhtml 
+<h4> 
+@end ifhtml
+dpdf_lomax
+@ifhtml 
+</h4> 
+@end ifhtml
+@tex
+\beforedisplay
+$$
+dpdf(x) = (-a-1) * (x+C)^{-a-1}
+$$
+\afterdisplay
+@end tex
+@ifinfo
+@example
+dpdf(x) = (-a-1) * (x+C)^(-a-1)
+@end example
+@end ifinfo
+@ifhtml
+<p><i>dpdf(x) =(-a-1) * (x+C)<sup>(-a-1)</sup></i></p>
+@end ifhtml
+
+@c cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
+@node    Normal Distribution, Pareto Distribution, Lomax Distribution, Continuous Distribution
+@comment node-name,           next,                previous,           up
+
+
+@subsection Normal Distribution
+
+@ifhtml 
+<h4> 
+@end ifhtml
+pdf_normal_nonstd
+@ifhtml 
+</h4> 
+@end ifhtml
+@tex
+\beforedisplay
+$$
+pdf(x) = e^{-(x-\mu)^2 \over 2\sigma}
+$$
+\afterdisplay
+@end tex
+@ifinfo
+@example
+pdf(x) = \exp ((-(x-\mu) \over 2\sigma)^2) 
+@end example
+@end ifinfo
+@ifhtml
+<p><i>pdf(x) = e<sup> (-((x-mu)/2 * sigma)<sup>2</sup>)</sup> </i></p>
+<p align=center><img src="fig-pdf-normal.png" alt="bild"></p>
+@end ifhtml
+
+@ifhtml 
+<h4> 
+@end ifhtml
+dpdf_normal_nonstd
+@ifhtml 
+</h4> 
+@end ifhtml
+@tex
+\beforedisplay
+$$
+dpdf(x) = {-(x-\mu) \over \sigma} * e^{-(x-\mu) \over 2\sigma^2}
+$$
+\afterdisplay
+@end tex
+@ifinfo
+@example
+dpdf(x) = (-(x-\mu) \over \sigma * \exp ((-(x-\mu) \over 2\sigma)^2) 
+@end example
+@end ifinfo
+@ifhtml
+<p><i>dpdf(x) = (-(x-mu) / sigma * e<sup>((-(x-mu) / 2 * sigma)<sup>2</sup>)</sup></i></p>
+@end ifhtml
+
+@ifhtml 
+<h4> 
+@end ifhtml
+pdf_normal_std
+@ifhtml 
+</h4> 
+@end ifhtml
+@tex
+\beforedisplay
+$$
+pdf(x) = e^{-x^2 \over 2}
+$$
+\afterdisplay
+@end tex
+@ifinfo
+@example
+pdf(x) = \exp (-(x^2 \over 2)
+@end example
+@end ifinfo
+@ifhtml
+<p><i>pdf(x) = e<sup>(-(x<sup>2</sup>/2)</sup></i></p>
+@end ifhtml
+
+@ifhtml 
+<h4> 
+@end ifhtml
+dpdf_normal_std
+@ifhtml 
+</h4> 
+@end ifhtml
+@tex
+\beforedisplay
+$$
+dpdf(x) = -x * e^{-x^2 \over 2}
+$$
+\afterdisplay
+@end tex
+@ifinfo
+@example
+pdf(x) = -x * \exp (-(x^2) \over 2) 
+@end example
+@end ifinfo
+@ifhtml
+<p><i>pdf(x) = -x * e<sup> (-(x<sup>2</sup>)/2)</sup></i></p> 
+@end ifhtml
+
+@c ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
+@node    Pareto Distribution, Powerexp. Distribution, Normal Distribution, Continuous Distribution
+@comment node-name,           next,                   previous,            up
+
+@subsection Pareto Distribution
+
+@ifhtml 
+<h4> 
+@end ifhtml
+pdf_pareto
+@ifhtml 
+</h4> 
+@end ifhtml
+@tex
+\beforedisplay
+$$
+pdf(x) = x^{-a-1}
+$$
+\afterdisplay
+@end tex
+@ifinfo
+@example
+pdf(x) = x^(-a-1)
+@end example
+@end ifinfo
+@ifhtml
+<p><i>pdf(x) = x<sup>(-a-1)</sup> </i></p>
+<p align=center><img src="fig-pdf-pareto.png" alt="bild"></p>
+@end ifhtml
+
+@ifhtml 
+<h4> 
+@end ifhtml
+dpdf_pareto
+@ifhtml 
+</h4> 
+@end ifhtml
+@tex
+\beforedisplay
+$$
+dpdf(x) = (-a-1) * x^{-a-2} 
+$$
+\afterdisplay
+@end tex
+@ifinfo
+@example
+dpdf(x) = (-a-1) * x^(-a-2) 
+@end example
+@end ifinfo
+@ifhtml
+<p><i>dpdf(x) =(-a-1) * x<sup>(-a-2)</sup>   </i></p>
+@end ifhtml
+
+
+@c ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
+@node    Powerexp. Distribution, Rayleigh Distribution, Pareto Distribution, Continuous Distribution
+@comment node-name,              next,                  previous,            up
+
+@subsection Powerexponential Distribution
+
+@ifhtml 
+<h4> 
+@end ifhtml
+pdf_powerexponential
+@ifhtml 
+</h4> 
+@end ifhtml
+@tex
+\beforedisplay
+$$
+pdf(x) = \exp (({-|(x-\theta) \over \phi|}^{2 \over \delta}) * 0.5)
+$$
+\afterdisplay
+@end tex
+@ifinfo
+@example
+pdf(x) = \exp (((-|(x-\theta) \over \phi|)^(2 \over \delta)) * 0.5)
+@end example
+@end ifinfo
+@ifhtml
+<p><i>pdf(x) = e<sup>(((-|(x-theta) / phi|)<sup>(2 / delta)</sup>) * 0.5)</sup></i></p>
+<p align=center><img src="fig-pdf-lognormal.png" alt="bild"></p>
+@end ifhtml
+
+@ifhtml 
+<h4> 
+@end ifhtml
+dpdf_powerexponential
+@ifhtml 
+</h4> 
+@end ifhtml
+@tex
+\beforedisplay
+$$
+dpdf(x) = \exp (({-|(x-\theta) \over \phi|}^{2 \over \delta}) * 0.5) *({-|(x-\theta) \over \phi|}^{2 \over (\delta-1)}) * {1  \over (\delta * \phi)} 
+$$
+\afterdisplay
+@end tex
+@ifinfo
+@example
+dpdf(x) = \exp (((-|(x-\theta) \over \phi|)^(2 \over \delta)) * 0.5) *((-|(x-\theta) \over \phi|)^(2 \over \delta-1))) \over (\delta * \phi)  
+@end example
+@end ifinfo
+@ifhtml
+<p><i>dpdf(x) = e<sup>(((-|(x-theta) / phi|)<sup>(2 / delta)</sup>) * 0.5)</sup> *((-|(x-theta) / phi|)<sup>(2 / delta-1)</sup>)) / (delta * phi)</i></p>
+@end ifhtml
+
+@c ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
+@node    Rayleigh Distribution, Student Distribution, Powerexp. Distribution, Continuous Distribution
+@comment node-name,             next,                 previous,              up
+
+@subsection Rayleigh Distribution
+
+@ifhtml 
+<h4> 
+@end ifhtml
+pdf_rayleigh
+@ifhtml 
+</h4> 
+@end ifhtml
+@tex
+\beforedisplay
+$$
+pdf(x) = x * e^{-x^2 \over 2 * \sigma^2} 
+$$
+\afterdisplay
+@end tex
+@ifinfo
+@example
+pdf(x) = x * \exp (-x^2 \over (2 * \sigma^2)) 
+@end example
+@end ifinfo
+@ifhtml
+<p><i>pdf(x) =x * e<sup>(-x<sup>2</sup> / (2 * sigma<sup>2</sup>))</sup></i></p>
+<p align=center><img src="fig-pdf-rayleigh.png" alt="bild"></p>
+@end ifhtml
+
+@ifhtml 
+<h4> 
+@end ifhtml
+dpdf_rayleigh
+@ifhtml 
+</h4> 
+@end ifhtml
+@tex
+\beforedisplay
+$$
+dpdf(x) = e^{-x^2 \over (2 * \sigma^2)} * {1 - x^2 \over \sigma^2} 
+$$
+\afterdisplay
+@end tex
+@ifinfo
+@example
+dpdf(x) = \exp (-x^2 \over (2 * \sigma^2)) * (1 - x^2 \over \sigma^2)  
+@end example
+@end ifinfo
+@ifhtml
+<p><i>dpdf(x) = e<sup>(-x<sup>2</sup> / (2 * sigmax<sup>2</sup>))</sup> * (1 - x<sup>2</sup> / sigma<sup>2</sup>)</i></p>
+@end ifhtml
+
+@c cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
+@node    Student Distribution, Uniform Distribution, Rayleigh Distribution, Continuous Distribution
+@comment node-name,            next,                 previous,              up
+
+@subsection Student Distribution
+
+@ifhtml 
+<h4> 
+@end ifhtml
+pdf_student
+@ifhtml 
+</h4> 
+@end ifhtml
+@tex
+\beforedisplay
+$$
+pdf(x) = (1 + {x^2 \over \nu})^{(-1-\nu) * 0.5}
+$$
+\afterdisplay
+@end tex
+@ifinfo
+@example
+pdf(x) = (1 + x^2 \over \nu) ^ ((-1-\nu) * 0.5)
+@end example
+@end ifinfo
+@ifhtml
+<p><i>pdf(x) = (1 + x<sup>2</sup> / nu) <sup>((-1-nu) * 0.5) </sup></i></p>
+<p align=center><img src="fig-pdf-student.png" alt="bild"></p>
+@end ifhtml
+
+@ifhtml 
+<h4> 
+@end ifhtml 
+dpdf_student
+@ifhtml 
+</h4> 
+@end ifhtml
+@tex
+\beforedisplay
+$$
+dpdf(x) = (-\nu-1) * {x \over \nu} * {1 + x^2 \over \nu} ^{(-3-\nu) * 0.5}
+$$
+\afterdisplay
+@end tex
+@ifinfo
+@example
+dpdf(x) =(-\nu-1) * (x \over \nu) * (1 + x^2 \over \nu) ^ ((-3-\nu) * 0.5) 
+@end example
+@end ifinfo
+@ifhtml
+<p><i>dpdf(x) = (-nu-1) * (x / nu) * (1 + x<sup>2</sup> / nu) <sup>((-1-nu) * 0.5) </sup> </i></p>
+@end ifhtml
+
+@c cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
+@node    Uniform Distribution, Discrete Distribution, Student Distribution, Continuous Distribution
+@comment node-name,            next,                  previous,             up
+
+@subsection Uniform Distribution
+
+@ifhtml 
+<h4> 
+@end ifhtml
+pdf_uniform
+@ifhtml 
+</h4> 
+@end ifhtml
+@tex
+\beforedisplay
+$$
+pdf(x) = {1 \over b-a}
+$$
+\afterdisplay
+@end tex
+@ifinfo
+@example
+pdf(x) = 1 / (b-a)
+@end example
+@end ifinfo
+@ifhtml
+<p><i>pdf(x) = 1 / (b-a)</i></p>
+<p align=center><img src="fig-pdf-uniform.png" alt="bild"></p>
+@end ifhtml
+
+@ifhtml 
+<h4> 
+@end ifhtml
+dpdf_uniform
+@ifhtml 
+</h4> 
+@end ifhtml
+@tex
+\beforedisplay
+$$
+dpdf(x) = 0
+$$
+\afterdisplay
+@end tex
+@ifinfo
+@example
+dpdf(x) = 0
+@end example
+@end ifinfo
+@ifhtml
+<p><i>dpdf(x) = 0</i></p>
+@end ifhtml
+ 
+@ifhtml 
+<h4> 
+@end ifhtml
+cdf_uniform
+@ifhtml 
+</h4> 
+@end ifhtml
+@tex
+\beforedisplay
+$$
+cdf(x) = {(x-a) \over (b-a)}
+$$
+\afterdisplay
+@end tex
+@ifinfo
+@example
+cdf(x) = (x-a) / (b-a)
+@end example
+@end ifinfo
+@ifhtml
+<p><i>cdf(x) = (x-a) / (b-a)</i></p>
+@end ifhtml
+ 
+
+@c ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
+
+@node    Discrete Distribution, Concept Index, Uniform Distribution , Distribution Library
+@comment node-name,             next,          previous,              up
+
+
+@section Discrete Distribution
+
+There are no discrete distributions implemented at the moment.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

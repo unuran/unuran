@@ -1,0 +1,317 @@
+@c ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+@c
+@c   Introduction
+@c
+@c ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
+
+@chapter Introduction
+
+This chapter gives a brief overwiew about the implemented functions and
+their structure. Additionally, a short example is provided. 
+
+@c ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+     
+@node    Routines for User , Method Functions , Introduction,     Introduction
+@comment node-name,     next,          previous, up
+
+@menu
+* Method Functions::            The functions listed here, depend on the desired method.
+* Set Functions::               These functions are invoked to set ceratin parameters.
+@end menu
+
+@section Routines for User
+@cindex Sample index entry
+    
+The chapter Routines for User gives a brief overview on the function
+syntax used in this library.
+
+@c ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+     
+@node    Method Functions, Set Functions, Routines for User, Routines for User
+@comment node-name,        next,          previous,          up
+
+@menu
+
+@end menu
+
+@subsection Method Functions
+@cindex Sample index entry
+ 
+@cindex Another sample index entry
+
+Method dependend routines for user interface:
+
+@deftypefn {Library Function}
+        struct unur_par *unur_<method>_new( @dots{} @var{parameters} @dots{} )
+
+The function gets default parameters for the generator. It initializes all parameters and returns these parameters, if sucessful. Otherwise it returns NULL.
+@end deftypefn
+
+@deftypefn {Library Function}
+        struct unur_gen *unur_init( @dots{} @var{parameters} @dots{} ) 
+
+The function initializes the generator and returns the pointer to a generator object, if sucessful. Otherwse it returns NULL.
+@end deftypefn
+
+@deftypefn {Library Function}
+         double unur_<method>_sample( @dots{} @var{generator} @dots{} )
+
+The function gets samples from the generator. It uses the chosen method to generate a non-uniform random number from uniform random numbers. In case of success, it returns the random number, otherwise it returns NULL.
+@end deftypefn
+
+@deftypefn {Library Function} 
+        void unur_free ( @dots{} @var{generator} @dots{} )
+
+This function destroys the generator object. It was built to free the memory, allocated for the generator object.
+@end deftypefn
+
+
+LIST OF THE IMPLEMENTED METHODS:
+
+@* (see @ref{Methods} for more information about the methods)
+@itemize @bullet
+@item arou 
+@item cstd
+@item dau
+@item dis
+@item tabl
+@item tdr
+@item rect
+@item unif
+@item utdr
+@end itemize
+
+
+@c ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+     
+@node    Set Functions , Example , Method Functions, Routines for User
+@comment node-name,     next,          previous, up
+
+
+@subsection Set Functions
+
+Method independend routines for user interface:
+@* (For more detailed information see @ref{Set}.)
+
+@ifhtml
+<h3>
+@end ifhtml
+Parameters for the distribution and its p.d.f.: 
+@ifhtml
+</h3>
+<p></p>
+@end ifhtml
+
+
+@deftypefn {Library Function} int unur_set_<PARAMETER>
+@end deftypefn
+
+<domain> @dots{} @* 
+The function sets the left and right borders of the domain of the p.d.f., returns 1 in the successful case, NULL otherwise.
+
+<domain_vec> @dots{} @* 
+The function sets coordinates for domain boundary, returns 1 in the successful case, NULL otherwise.
+
+
+<pdf_param>  @dots{} @*
+The Function sets array of parameters for p.d.f., returns 1 in the successful case, NULL otherwise.
+
+
+<mode> @dots{} @* 
+The function sets mode of p.d.f., returns 1 in the successful case, NULL otherwise.
+
+
+<pdf_area> @dots{} @*
+The function sets the (approximate) area below the pdf (default value 1.), returns 1 in the successful case, NULL otherwise.
+
+
+@sp 2      
+@ifhtml
+<h3><p></p><p></p>
+@end ifhtml
+Parameters for generators of univariate discrete distributions:
+@ifhtml
+</h3><p></p>
+@end ifhtml
+@sp 1
+
+
+@deftypefn {Library Function} int unur_set_factor( 
+struct @var{unur_par *parameter}, double @var{factor} );
+@end deftypefn                       
+The function sets the factor for relative size of (search|guide|alias) table, returns 1 in the successful case, NULL otherwise.
+
+
+@sp 2
+@ifhtml
+<h3><p></p><p></p>
+@end ifhtml
+Parameters for generators of univariate continuous distributions:
+@ifhtml
+</h3><p></p>
+@end ifhtml 
+@sp 1
+
+@deftypefn {Library Function} int unur_set_<PARAMETER>
+@end deftypefn
+
+
+<cpoints> @dots{} @*
+The function sets construction points for hat and/or its number for initialization and  returns 1 in the successful case, NULL otherwise.
+
+
+<max_ratio> @dots{} @*
+The function sets bound for ratio A(squeeze) / A(hat) and  returns 1 in the successful case, NULL otherwise.
+
+
+<max_intervals> @dots{} @*
+The function sets maximum number of intervals or segments and  returns 1 in the successful case, NULL otherwise.
+             
+
+<tdr_c> @dots{} @*
+The function sets parameter c for transformation T_c  (method TDR only) and  returns 1 in the successful case, NULL otherwise.
+
+
+<tabl_c> @dots{} @*
+The function sets the parameter for equal area rule  (method TABL only) and returns 1 in the successful case, NULL otherwise.
+
+
+<slopes> . . . The function sets slopes of p.d.f. (method TABL only) and returns 1 in the successful case, NULL otherwise.
+
+
+@sp 2
+@ifhtml
+<h3><p></p><p></p>
+@end ifhtml
+Parameters for generators of mulitvariate continuous distributions:
+@ifhtml
+</h3><p></p>
+@end ifhtml
+@sp 1
+
+
+@deftypefn {Library Function} int unur_get_dimension(  @* struct @var{unur_gen *gen} );
+The function gets the dimension of generators for multivariate distribution and returns 1 in the successful case, NULL otherwise.
+@end deftypefn
+
+
+@sp 2
+@ifhtml
+<h3><p></p><p></p>
+@end ifhtml
+Parameters for all generators:
+@ifhtml
+</h3><p></p>
+@end ifhtml
+@sp 1
+
+
+@deftypefn {Library Function} UNUR_URNG_TYPE unur_chg_urng(  @* struct @var{unur_gen *gen}, UNUR_URNG_TYPE @var{urng} );
+The function changes the uniform random number generator and returns 1 in the successful case, NULL otherwise.
+@end deftypefn
+
+
+@deftypefn {Library Function} UNUR_URNG_TYPE unur_get_urng(  @* struct @var{unur_gen *gen} );
+The function sets uniform random number generator and returns 1 in the successful case, NULL otherwise.
+@end deftypefn
+
+@deftypefn {Library Function} int unur_set_<PARAMETER>
+@end deftypefn
+
+
+<urng> @dots{} @*
+The function sets uniform random number generator and  returns 1 in the successful case, NULL otherwise.
+
+<variant> @dots{} @*
+The function sets variants of method and  returns 1 in the successful case, NULL otherwise.
+
+<check> @dots{} @*
+The function turns testing of sampling on/off and returns 1 in the successful case, NULL otherwise.
+
+<copyall> @dots{} @*
+The funciton turns copaing of all inputs into generator object on/off and returns 1 in the successful case, NULL otherwise.
+    
+<debug> @dots{} @*
+The function sets debugging flag for generator and returns 1 in the successful case, NULL otherwise.
+
+@sp 2
+@ifhtml
+<h3><p></p><p></p>
+@end ifhtml
+Parameters for debugging (defined in debug.c):
+@ifhtml
+</h3><p></p>
+@end ifhtml
+@sp 1
+
+
+@deftypefn {Library Function} FILE* unur_set_log(FILE @var{*log});
+@end deftypefn
+
+
+@deftypefn {Library Function} FILE* unur_get_log(void);
+@end deftypefn
+
+
+
+@c ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+     
+@node    Example, Distribution Library , Set Functions ,    Introduction
+@comment node-name,     next,          previous, up
+
+
+@section Example
+@cindex Sample index entry
+    
+The chapter Example provides a demo program, using functions of the user 
+inerface as described above (see node @ref{Routines for User})
+
+
+@cindex Another sample index entry
+
+@example
+int main()  @{
+ 
+      double *prob; 
+      struct unur_par *par;
+      struct unur_gen *gen;
+      int i;
+
+  /* ------------------------- */
+
+
+  par = unur_arou_new(unur_pdf_normal,unur_dpdf_normal);
+  unur_set_domain(par,0.,INFINITY);
+  unur_set_cpoints(par,30,NULL);
+  unur_set_max_ratio(par,0.);
+  gen = unur_arou_init(par);
+  unur_arou_sample( gen );
+  unur_arou_sample_check( gen );
+
+   for (i = 0; i <= 10; i++) 
+       printf("x= %f\n",unur_sample_cont(gen));  
+
+  unur_arou_free( gen );  
+
+@} /* end of main () */
+@end example
+
+@c ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

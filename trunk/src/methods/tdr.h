@@ -142,9 +142,9 @@ int unur_tdr_set_variant_gw( UNUR_PAR *parameters );
 */
 
 int unur_tdr_set_variant_ps( UNUR_PAR *parameters );
-/*
-  Use squeezes proportional to the hat function. This is faster than the
-  original version.
+/* 
+   Use squeezes proportional to the hat function. This is faster than the
+   original version.
 */
 
 int unur_tdr_set_variant_ia( UNUR_PAR *parameters );
@@ -152,6 +152,21 @@ int unur_tdr_set_variant_ia( UNUR_PAR *parameters );
    Use squeezes proportional to the hat function together with a 
    composition method that required less uniform random numbers.
 */
+
+int unur_tdr_chg_truncated(UNUR_GEN *gen, double left, double right);
+/*
+   Change the borders of the domain of the (truncated) distribution. 
+
+   Notice that the given truncated domain must be a subset of the
+   domain of the given distribution. The generator always uses the
+   intersection of the domain of the distribution and the truncated
+   domain given by this call. The hat function will not be changed.
+
+   @emph{Important:}
+   This call does not work for variant @code{IA} (immediate
+   acceptance). In this case it switches to variant @code{PS}.
+*/
+
 
 int unur_tdr_set_max_sqhratio( UNUR_PAR *parameters, double max_ratio );
 /* 

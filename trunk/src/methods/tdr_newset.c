@@ -665,5 +665,70 @@ unur_tdr_set_pedantic( struct unur_par *par, int pedantic )
 
 } /* end of unur_tdr_set_pedantic() */
 
+/*---------------------------------------------------------------------------*/
+
+int 
+unur_tdr_chg_truncated( struct unur_gen *gen, double left, double right )
+     /*----------------------------------------------------------------------*/
+     /* change the left and right borders of the domain of the distribution  */
+     /* the new domain should not exceed the original domain given by        */
+     /* unur_distr_cont_set_domain(). Otherwise it is truncated.             */
+     /*                                                                      */
+     /* This call does not work for variant IA (immediate acceptance).       */
+     /* In this case it switches to variant PS!!                             */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen      ... pointer to generator object                           */
+     /*   left  ... left boundary point                                      */
+     /*   right ... right boundary point                                     */
+     /*                                                                      */
+     /* comment:                                                             */
+     /*   the new boundary points may be +/- INFINITY                        */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  CHECK_NULL(gen, 0);
+  _unur_check_gen_object(gen, TDR);
+
+  /* check new parameter for generator */
+  if (left >= right) {
+    _unur_warning(NULL,UNUR_ERR_DISTR_SET,"domain, left >= right");
+    return 0;
+  }
+
+  /* copy new boundaries into generator object */
+  /* (the truncated domain must be a subset of the domain) */
+  if (left < DISTR.domain[0]) {
+    _unur_warning(NULL,UNUR_ERR_DISTR_SET,"truncated domain too large");
+    DISTR.trunc[0] = DISTR.domain[0];
+  }
+  else
+    DISTR.trunc[0] = left;
+
+  if (right > DISTR.domain[1]) {
+    _unur_warning(NULL,UNUR_ERR_DISTR_SET,"truncated domain too large");
+    DISTR.trunc[1] = DISTR.domain[1];
+  }
+  else
+    DISTR.trunc[1] = right;
+
+  /* set bounds of U -- in respect to given bounds */
+/*    GEN.Umin = (DISTR.trunc[0] > -INFINITY) ? CDF(DISTR.trunc[0]) : 0.; */
+/*    GEN.Umax = (DISTR.trunc[1] < INFINITY)  ? CDF(DISTR.trunc[1]) : 1.; */
+
+  /* changelog not necessary */
+  /*    gen->distr.set |= UNUR_DISTR_SET_TRUNCATED; */
+
+#ifdef UNUR_ENABLE_LOGGING
+  /* write info into log file */
+/*    if (gen->debug & NINV_DEBUG_CHG)  */
+/*      _unur_ninv_debug_chg_truncated( gen ); */
+#endif
+  
+  /* o.k. */
+  return 1;
+  
+} /* end of unur_tdr_chg_truncated() */
+
 /*****************************************************************************/
 

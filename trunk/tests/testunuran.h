@@ -36,6 +36,7 @@
 /* methods                                                                   */
 #define T_DISTR
 
+/*  #define T_AROU */
 #define T_DAU
 #define T_DGT
 #define T_SROU

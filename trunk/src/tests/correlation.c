@@ -200,7 +200,7 @@ unur_test_cvec_rankcorr( double *rc, struct unur_gen *gen, int samplesize, int v
   /* we do not check magic cookies here */
 
   if (verbose >= 1)
-    fprintf(out,"\nRank correlation of random vector:\n");
+    fprintf(out,"\nRank correlations of random vector:\n");
 
   /* samplesize */
   if( samplesize <= 0 ) samplesize = CORR_DEFAULT_SAMPLESIZE;
@@ -216,7 +216,7 @@ unur_test_cvec_rankcorr( double *rc, struct unur_gen *gen, int samplesize, int v
   /* type of distribution */
   if ( (gen->method & UNUR_MASK_TYPE) != UNUR_METH_VEC ) {
     _unur_error(test_name,UNUR_ERR_GENERIC,
-		"rank correlation coefficient cannot be computed");
+		"rank correlation coefficients cannot be computed");
     return UNUR_ERR_GENERIC;
   }
 

@@ -865,7 +865,7 @@ _unur_dsrou_sample_check( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
 { 
   double U,V,pI,VI;
-  double ur2, vl, vr;
+  double um2, vl, vr;
   int I;
 
   /* check arguments */
@@ -892,12 +892,12 @@ _unur_dsrou_sample_check( struct unur_gen *gen )
 
     /* values of boundary of rectangle          */
     /* (avoid roundoff error with FP registers) */
-    ur2 = (2.+4.*DBL_EPSILON) * GEN.ur*GEN.ur;
+    um2 = (2.+4.*DBL_EPSILON) * ((V<0) ? GEN.ul*GEN.ul : GEN.ur*GEN.ur);
     vl = (GEN.ul>0.) ? (1.+UNUR_EPSILON) * GEN.al/GEN.ul : 0.;
     vr = (1.+UNUR_EPSILON) * GEN.ar/GEN.ur;
 
     /* check hat */
-    if ( pI > ur2 || VI < vl || VI > vr ) {
+    if ( pI > um2 || VI < vl || VI > vr ) {
       /*        printf("pI = %g < %g     VI = %g < %g < %g\n", */
       /*  	     pI, ur2, vl, VI, vr); */
       _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"PMF(x) > hat(x)");

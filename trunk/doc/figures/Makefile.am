@@ -5,7 +5,9 @@ EXTRA_DIST = \
  texpict2img.pl
 
 # clean backup files
-CLEANFILES = *~
+CLEANFILES = \
+ *~ \
+ tmp-*
 
 # clean generated files
 MAINTAINERCLEANFILES = \

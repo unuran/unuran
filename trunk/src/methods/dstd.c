@@ -405,10 +405,14 @@ _unur_dstd_clone( const struct unur_gen *gen )
   _unur_distr_discr_copy( &(clone->distr), &(gen->distr) );
 
   /* copy parameters for special generators */
-  if (GEN.gen_param)
-    CLONE.gen_param = _unur_malloc( CLONE.n_gen_param * sizeof(double) );
-  if (GEN.gen_iparam)
-    CLONE.gen_iparam = _unur_malloc( CLONE.n_gen_iparam * sizeof(int) );
+  if (GEN.gen_param) {
+    CLONE.gen_param = _unur_malloc( GEN.n_gen_param * sizeof(double) );
+    memcpy( CLONE.gen_param, GEN.gen_param, GEN.n_gen_param * sizeof(double) );
+  }
+  if (GEN.gen_iparam) {
+    CLONE.gen_iparam = _unur_malloc( GEN.n_gen_iparam * sizeof(int) );
+    memcpy( CLONE.gen_iparam, GEN.gen_iparam, GEN.n_gen_iparam * sizeof(int) );
+  }
 
   if (gen->gen_aux)
     clone->gen_aux = unur_gen_clone( gen->gen_aux );

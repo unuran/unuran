@@ -88,6 +88,7 @@
 */
 
 /*---------------------------------------------------------------------------*/
+/* =INT                                                                      */
 /* set debugging flag for generator                                          */
 
 int unur_set_debug( UNUR_PAR *parameters, unsigned debug );
@@ -105,6 +106,7 @@ int unur_set_default_debug( unsigned debug );
   Overwrite the default debugging flag.
 */
 
+/* =END                                                                      */
 /*---------------------------------------------------------------------------*/
 
 

@@ -168,7 +168,6 @@ extern int merror;
 #undef NANS 
 
 /* We use or own definition of INFINITY in UNURAN.                           */
-#define INFINITY  UNUR_INFINITY
 
 #if 0
 

@@ -49,7 +49,7 @@
    =SPEED Set-up: fast,
           Sampling: depends on dimension
 
-   =REF  [DLa86: Sect.6.1; p.605]
+   =REF  [DLa86: Sect.6.1; p.605], [MOa84]
 
    =DESCRIPTION
       MCORR generates a random correlation matrix.
@@ -66,6 +66,10 @@
       It only works with distribution objects of random correlation
       matrices (@pxref{correlation,,Random Correlation Matrix}).
 
+      Alternatively, when a random correlation matrix having given 
+      eigenvalues is sought, the method of Marsaglia and Olkin
+      will be used.
+    
    =HOWTOUSE
       Create a distibution object for random correlation matrices by a
       @code{unur_distr_correlation} call
@@ -86,6 +90,13 @@
 UNUR_PAR *unur_mcorr_new( const UNUR_DISTR *distribution );
 /* 
    Get default parameters for generator.
+*/
+
+int unur_mcorr_set_eigenvalues( UNUR_PAR *par, double *eigenvalues );
+/*
+   Sets the (optional) eigenvalues of the correlation matrix.
+   If set, then the Marsaglia and Olkin algorithm will be used 
+   to generate random correlation matrices with given eigenvalues.
 */
 
 /* =END */

@@ -56,6 +56,7 @@
 #include <distr/matr.h>
 #include <distributions/unur_distributions.h>
 #include <uniform/urng.h>
+#include <utils/unur_fp_source.h>
 #include "unur_methods_source.h"
 #include "x_gen.h"
 #include "x_gen_source.h"
@@ -77,6 +78,8 @@
 
 /*---------------------------------------------------------------------------*/
 /* Flags for logging set calls                                               */
+
+#define MCORR_SET_EIGENVALUES  0x001u   /* set eigenvalues of corr-matrix    */
 
 /*---------------------------------------------------------------------------*/
 
@@ -104,6 +107,13 @@ static void _unur_mcorr_free( struct unur_gen *gen);
 /* destroy generator object.                                                 */
 /*---------------------------------------------------------------------------*/
 
+static int _unur_mcorr_eigen (int dim, double *values, double *M );
+/*---------------------------------------------------------------------------*/
+/* Calculates a random correlation matrix M with given eigenvalues           */
+/* using the Marsaglia-Olkin method                                          */
+/*---------------------------------------------------------------------------*/
+
+
 #ifdef UNUR_ENABLE_LOGGING
 /*---------------------------------------------------------------------------*/
 /* the following functions print debugging information on output stream,     */
@@ -125,7 +135,7 @@ static void _unur_mcorr_debug_init( const struct unur_gen *gen );
 #define GEN       gen->data.mcorr       /* data for generator object         */
 #define DISTR     gen->distr->data.matr /* data for distribution in generator object */
 
-#define SAMPLE    gen->sample.matr      /* pointer to sampling routine       */     
+#define SAMPLE    gen->sample.matr      /* pointer to sampling routine       */
 
 /*---------------------------------------------------------------------------*/
 #define NORMAL  gen->gen_aux        /* pointer to normal variate generator   */
@@ -149,7 +159,7 @@ unur_mcorr_new( const struct unur_distr *distr )
      /* error:                                                               */
      /*   return NULL                                                        */
      /*----------------------------------------------------------------------*/
-{ 
+{
   struct unur_par *par;
 
   /* check arguments */
@@ -171,11 +181,18 @@ unur_mcorr_new( const struct unur_distr *distr )
   /* set default values */
   par->method   = UNUR_METH_MCORR;    /* method                              */
   par->variant  = 0u;                 /* default variant                     */
-  par->set      = 0u;                 /* inidicate default parameters        */    
+  par->set      = 0u;                 /* inidicate default parameters        */
   par->urng     = unur_get_default_urng(); /* use default urng               */
   par->urng_aux = NULL;                    /* no auxilliary URNG required    */
 
   par->debug    = _unur_default_debugflag; /* set default debugging flags    */
+
+  /* number of rows and columns (dimension of distribution). */
+  /* do not confuse with distr->dim which is the size of     */
+  /* the array that stores the matrix.                       */
+  PAR.dim = distr->data.matr.n_rows;
+
+  PAR.eigenvalues = NULL; /* (optional) eigenvalues of correlation matrix */
 
   /* routine for starting generator */
   par->init = _unur_mcorr_init;
@@ -200,7 +217,7 @@ _unur_mcorr_init( struct unur_par *par )
      /* error:                                                               */
      /*   return NULL                                                        */
      /*----------------------------------------------------------------------*/
-{ 
+{
   struct unur_gen *gen;
 
   /* check arguments */
@@ -239,6 +256,7 @@ _unur_mcorr_init( struct unur_par *par )
 #endif
 
   /* free parameters */
+  if (PAR.eigenvalues) free(PAR.eigenvalues);
   free(par);
 
   /* o.k. */
@@ -247,6 +265,60 @@ _unur_mcorr_init( struct unur_par *par )
 } /* end of _unur_mcorr_init() */
 
 /*---------------------------------------------------------------------------*/
+
+int
+unur_mcorr_set_eigenvalues( UNUR_PAR *par, double *eigenvalues  )
+     /*----------------------------------------------------------------------*/
+     /* sets the (optional) eigenvalues of the correlation matrix            */
+     /*----------------------------------------------------------------------*/
+{
+  int i;
+  double sum_eigenvalues = 0;
+
+  /* check arguments */
+  _unur_check_NULL( GENTYPE, par, UNUR_ERR_NULL );
+  _unur_check_par_object( par, MCORR );
+  CHECK_NULL( eigenvalues, UNUR_ERR_NULL );
+
+  /* allocate memory if needed */
+  if (PAR.eigenvalues==NULL)
+    PAR.eigenvalues=_unur_xmalloc(PAR.dim * sizeof(double));
+
+  /* set given eigenvalues */
+  for (i=0; i<PAR.dim; i++) {
+    PAR.eigenvalues[i] = eigenvalues[i];
+    
+    /* check for negative eigenvalues */
+    if (PAR.eigenvalues[i]<0) {
+      PAR.eigenvalues[i] = -PAR.eigenvalues[i];
+      _unur_warning("MCORR", UNUR_ERR_GENERIC,"negative eigenvalue -> positive");
+    }
+    sum_eigenvalues += PAR.eigenvalues[i];
+  }
+  
+  /* check if all eigenvalues = 0 ? */
+  if (sum_eigenvalues==0) {
+    _unur_error("MCORR", UNUR_ERR_GENERIC,"sum(eigenvalues)=0");
+    return UNUR_ERR_GENERIC;
+  }
+
+  /* scaling values */
+  if (!_unur_FP_same(sum_eigenvalues, (double) PAR.dim)) {
+    _unur_warning("MCORR", UNUR_ERR_GENERIC,"scaling sum(eigenvalues) -> dim");
+    for (i=0; i<PAR.dim; i++) {
+      PAR.eigenvalues[i] = PAR.dim * PAR.eigenvalues[i]/sum_eigenvalues;
+    }
+  }
+
+  /* changelog */
+  par->set |= MCORR_SET_EIGENVALUES;
+
+  return UNUR_SUCCESS;
+}
+
+
+/*---------------------------------------------------------------------------*/
+
 
 static struct unur_gen *
 _unur_mcorr_create( struct unur_par *par )
@@ -264,6 +336,7 @@ _unur_mcorr_create( struct unur_par *par )
      /*----------------------------------------------------------------------*/
 {
   struct unur_gen *gen;
+  int i;
 
   /* check arguments */
   CHECK_NULL(par,NULL);  COOKIE_CHECK(par,CK_MCORR_PAR,NULL);
@@ -290,9 +363,16 @@ _unur_mcorr_create( struct unur_par *par )
   /* allocate working array */
   GEN.H = _unur_xmalloc(GEN.dim * GEN.dim * sizeof(double));
 
+  /* copy optional eigenvalues of the correlation matrix */
+  GEN.eigenvalues = NULL;
+  if (gen->set && MCORR_SET_EIGENVALUES) {
+    GEN.eigenvalues = _unur_xmalloc(GEN.dim * sizeof(double));
+    for (i=0; i<GEN.dim; i++) GEN.eigenvalues[i]=PAR.eigenvalues[i];
+  }
+
   /* return pointer to (almost empty) generator object */
   return gen;
-  
+
 } /* end of _unur_mcorr_create() */
 
 /*---------------------------------------------------------------------------*/
@@ -311,7 +391,7 @@ _unur_mcorr_clone( const struct unur_gen *gen )
      /* error:                                                               */
      /*   return NULL                                                        */
      /*----------------------------------------------------------------------*/
-{ 
+{
 #define CLONE clone->data.mcorr
 
   struct unur_gen *clone;
@@ -349,11 +429,19 @@ _unur_mcorr_sample_matr( struct unur_gen *gen, double *mat )
   /* check arguments */
   CHECK_NULL(gen,RETURN_VOID);
   COOKIE_CHECK(gen,CK_MCORR_GEN,RETURN_VOID);
+  CHECK_NULL(mat,RETURN_VOID);
 
+  /* Marsaglia Olkin method with given eigenvalues */
+  if (gen->set && MCORR_SET_EIGENVALUES) {
+    _unur_mcorr_eigen(GEN.dim, GEN.eigenvalues, mat);
+    return; 
+  }
+
+  /* eigenvalues have not been provided */
   /* generate rows vectors of matrix H uniformly distributed in the unit sphere */
   for (i=0; i<GEN.dim; i++) {
     sum=0.;
-    for (j=0; j<GEN.dim; j++) {  
+    for (j=0; j<GEN.dim; j++) {
       x = _unur_sample_cont(NORMAL);
       GEN.H[idx(i,j)] = x;
       sum += x * x;
@@ -365,13 +453,13 @@ _unur_mcorr_sample_matr( struct unur_gen *gen, double *mat )
   /* Compute HH' */
   for (i=0; i<GEN.dim; i++)
     for (j=0; j<GEN.dim; j++) {
-      if (j<i) 
+      if (j<i)
 	mat[idx(i,j)] = mat[idx(j,i)];
       else if(j==i)
 	mat[idx(i,j)] = 1.;
-      else { 
-	sum=0.; 
-	for (k=0; k<GEN.dim; k++) 
+      else {
+	sum=0.;
+	for (k=0; k<GEN.dim; k++)
 	  sum += GEN.H[idx(i,k)]*GEN.H[idx(j,k)];
 	mat[idx(i,j)] = sum;
       }
@@ -390,7 +478,7 @@ _unur_mcorr_free( struct unur_gen *gen )
      /* parameters:                                                          */
      /*   gen ... pointer to generator object                                */
      /*----------------------------------------------------------------------*/
-{ 
+{
   /* check arguments */
   if( !gen ) /* nothing to do */
     return;
@@ -405,11 +493,169 @@ _unur_mcorr_free( struct unur_gen *gen )
   SAMPLE = NULL;   /* make sure to show up a programming error */
 
   /* free memory */
-  if (GEN.H) free (GEN.H);
+  if (GEN.eigenvalues) free(GEN.eigenvalues);
+  if (GEN.H)           free(GEN.H);
 
   _unur_generic_free(gen);
 
 } /* end of _unur_mcorr_free() */
+
+/*--------------------------------------------------------------------------*/
+
+int _unur_mcorr_eigen (int dim, double *values, double *M )
+     /* Calculates a random correlation matrix M with given eigenvalues     */
+     /* using the Marsaglia-Olkin method                                    */
+{
+#define idx(a,b) ((a)*dim+(b))
+  int i,j,k;
+  double *E, *P;
+  double *x, *y, *z, *w, *r; /* misc vectors used in the marsaglia-olkin method */
+  double a, b, c, e, e2, sumval;
+  int s; /* random sign +-1 */
+
+  /* check parameters */
+  CHECK_NULL(values, UNUR_ERR_NULL);
+  CHECK_NULL(M, UNUR_ERR_NULL);
+  if (dim<1) {
+    _unur_error("matrix",UNUR_ERR_GENERIC,"dimension < 1");
+    return UNUR_ERR_GENERIC;
+  }
+
+#if 1
+  /* TODO : checks for values<0 and warnings ... */
+  /* calculating sum of eigenvalues */
+  sumval=0;
+  for (i=0; i<dim; i++) {
+    sumval += values[i];
+  }
+
+#endif
+
+  /* initialization steps */
+  x=_unur_xmalloc(dim*sizeof(double));
+  y=_unur_xmalloc(dim*sizeof(double));
+  z=_unur_xmalloc(dim*sizeof(double));
+  w=_unur_xmalloc(dim*sizeof(double));
+  r=_unur_xmalloc(dim*sizeof(double));
+  E=_unur_xmalloc(dim*dim*sizeof(double));
+  P=_unur_xmalloc(dim*dim*sizeof(double));
+
+  /* initially E is an identity matrix */
+  for (i=0; i<dim; i++) {
+  for (j=0; j<dim; j++) {
+    E[idx(i,j)] = (i==j) ? 1: 0;
+  }}
+
+
+  for (k=0; k<dim-1; k++) {
+    /* w is a random vector */
+    for (i=0; i<dim; i++) w[i] = unur_urng_sample(NULL);
+
+    /* x = E*w */
+    for (i=0; i<dim; i++) {
+      x[i]=0;
+      for (j=0; j<dim; j++) {
+        x[i] += E[idx(i,j)]*w[j];
+      }
+    }
+
+    /* a=sum{(1-lambda_i)*x_i*x_i} */
+    a=0;
+    for (i=0; i<dim; i++)
+      a += (1-values[i])*x[i]*x[i];
+
+    do {
+
+      /* z is a random vector */
+      for (i=0; i<dim; i++) z[i] = unur_urng_sample(NULL);
+
+      /* y = E*z */
+      for (i=0; i<dim; i++) {
+        y[i]=0;
+        for (j=0; j<dim; j++) {
+          y[i] += E[idx(i,j)]*z[j];
+        }
+      }
+
+      /* b=sum{(1-lambda_i)*x_i*y_i} */
+      /* c=sum{(1-lambda_i)*y_i*y_i} */
+      b=0; c=0;
+      for (i=0; i<dim; i++) {
+        b += (1-values[i])*x[i]*y[i];
+        c += (1-values[i])*y[i]*y[i];
+      }
+
+      /* e^2 = b^2 - a*c */
+      e2 = b*b - a*c;
+
+    } while (e2<0);
+
+    e=sqrt(e2);
+
+
+    /* random sign */
+    s = (unur_urng_sample(NULL)>.5) ? 1: -1 ;
+
+    /* r=x*(b+s*e)/a - y */
+    for (i=0; i<dim; i++) r[i] = x[i]*(b+s*e)/a - y[i];
+
+    /* another random sign */
+    s = (unur_urng_sample(NULL)>.5) ? 1: -1 ;
+
+    /* pk=s*r/norm(r) */
+    _unur_vector_normalize(dim, r);
+    for (i=0; i<dim; i++) P[idx(k,i)] = s * r[i];
+
+    /* E = E - r r^T */
+    for (i=0; i<dim; i++) {
+      for (j=0; j<dim; j++) {
+        E[idx(i,j)] -= r[i]*r[j];
+      }
+    }
+
+  } /* next k */
+
+  /* w is a random vector */
+  for (i=0; i<dim; i++) w[i] = unur_urng_sample(NULL);
+
+  /* x = E*w */
+  for (i=0; i<dim; i++) {
+    x[i]=0;
+    for (j=0; j<dim; j++) {
+      x[i] += E[idx(i,j)]*w[j];
+    }
+  }
+
+  _unur_vector_normalize(dim, x);
+
+  /* last row of the orthogonal matrix P */
+  for (i=0; i<dim; i++) {
+    P[idx(dim-1,i)] = x[i];
+  }
+
+  /* M = P L P^T, where L diagonal containing the eigenvalues */
+  for (i=0; i<dim; i++) {
+    for (j=0; j<dim; j++) {
+      M[idx(i,j)] = 0;
+      for (k=0; k<dim; k++) {
+        M[idx(i,j)] += P[idx(i,k)] * values[k] * P[idx(j,k)];
+      }
+    }
+  }
+
+  free(E); free(P);
+  free(x); free(y); free(z); free(w); free(r);
+
+  return UNUR_SUCCESS;
+
+#undef idx
+} /* end of _unur_mcorr_eigen() */
+
+/*--------------------------------------------------------------------------*/
+
+
+
+
 
 /*****************************************************************************/
 /**  Debugging utilities                                                    **/

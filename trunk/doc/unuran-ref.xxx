@@ -56,60 +56,6 @@ according function call documented in @ref{MethodsRef}.
 All parameters have default settings documented in @ref{Defaults}.
 
 @c --------------------------------------------------------------------
-
-@node Distributions
-@chapter Distributions
-@menu
-* Arbitrary::  Arbitrary distributions 
-* Continuous:: Preset continuous distributions
-* Discrete::   Preset discrete distributions
-* OtherDists:: Other kinds of distributions
-@end menu
-
-@noindent @strong{WARNING:} Naturally the computational accuracy
-limits the possible parameters. There shouldn't be problems
-when the parameters of a distribution are in a "reasonable" range but
-e.g. the normal distribution N(10^50,1) won't yield the desired results.
-(In this case it would be better generating N(0,1) and THEN
-transform the results.)
-@* Of course computational inaccuracy is not specific to UNURAN
-and should always kept in mind when working with computers.
-
-
-@node Arbitrary
-@section Arbitrary distributions
-
-See @ref{Do_it_yourself}
-
-
-@node Continuous
-@section Continuous Distributions
-
-Although it is not its primary target, many
-distributions are already implemented in UNURAN.
-This section presents these available distributions
-and the belonging parameters.
-
-The syntax of using one of these distributions is always the
-same (see  @ref{Ex1} and @ref{Ex3}) and the actual code for
-each distribution can be looked up in @ref{Readymade}.
-If standard values for parameters of a specific distribution
-are available, it is possible to pass as second argument
-(the number of passed arguments) a number smaller than the
-number of required parameters.
-Of course you have to provide at least as much as parameters
-as the second argument indicates.
-The first paramters (as much as the value of the second argument)
-are set to the provided values and the remaining are set to the
-standard values in the order specified in this section.
-(See @ref{Ex1} (0 parameters provided) and @ref{Ex3} (2 parameters provided).)
-
-Some methods allow arbitrary domains with predefined densities
-(e.g. NINV -- numerical inversion):
-And if the domain is changed so might the mode. How to change the
-domain and due to that the mode or mayby another parameter can be
-looked up in @ref{Do_it_yourself}.
-
 @c --------------------------------------------------------------------
 
 

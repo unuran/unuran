@@ -118,16 +118,91 @@
       description of the error by a unur_get_strerror() call.
       All The error code numbers have prefix @code{UNUR_ERR_} and expand
       to non-zero constant unsigned integer values. 
-      Error codes are divided into six main groups:
+      Error codes are divided into six main groups.
 
-      TODO!!
+   =END
+*/
+
+/*---------------------------------------------------------------------------*/
+/* List of error codes:                                                      */
+/*---------------------------------------------------------------------------*/
+
+/* 
+   =DESCRIPTION
+
+      @subsubheading List of error codes
+
+      @itemize @bullet
+      @item Errors that occurred while handling distribution objects.
+      @ftable @code
+      @item UNUR_ERR_DISTR_SET
+      set failed (invalid parameter).
+      @item UNUR_ERR_DISTR_GET
+      get failed (parameter not set).
+      @item UNUR_ERR_DISTR_NPARAMS
+      invalid number of parameters.
+      @item UNUR_ERR_DISTR_DOMAIN
+      parameter(s) out of domain.
+      @item UNUR_ERR_DISTR_GEN
+      invalid variant for special generator.
+      @item UNUR_ERR_DISTR_REQUIRED
+      incomplete distribution object, entry missing.
+      @item UNUR_ERR_DISTR_UNKNOWN
+      unknown distribution, cannot handle.
+      @item UNUR_ERR_DISTR_INVALID
+      invalid distribution object.
+      @item UNUR_ERR_DISTR_DATA
+      data are missing.
+      @end ftable
+
+      @item Errors that occurred while handling parameter objects.
+      @ftable @code
+      @item UNUR_ERR_PAR_SET 
+      set failed (invalid parameter)
+      @item UNUR_ERR_PAR_VARIANT
+      invalid variant -> using default
+      @item UNUR_ERR_PAR_INVALID
+      invalid parameter object
+      @end ftable
+
+      @item Errors that occurred while handling generator objects.
+      @ftable @code
+      @item UNUR_ERR_GEN
+      error with generator object.
+      @item UNUR_ERR_GEN_DATA
+      (possibly) invalid data.
+      @item UNUR_ERR_GEN_CONDITION
+      condition for method violated.
+      @item UNUR_ERR_GEN_INVALID
+      invalid generator object.
+      @end ftable
+
+      @item Other run time errors.
+      @ftable @code
+      @item UNUR_ERR_ROUNDOFF
+      (serious) round-off error.
+      @item UNUR_ERR_MALLOC
+      virtual memory exhausted.
+      @item UNUR_ERR_NULL
+      invalid NULL pointer.
+      @item UNUR_ERR_COOKIE
+      invalid cookie.
+      @item UNUR_ERR_GENERIC
+      generic error.
+      @item UNUR_ERR_COMPILE
+      Requested routine requires different compilation switches.
+      Recompilation of library necessary.
+      @item UNUR_ERR_SHOULD_NOT_HAPPEN
+      Internal error, that should not happen.
+      Please report this bug!
+      @end ftable
+
+      @end itemize
 
    =END
 
-      @cindex error codes
 */
-/*---------------------------------------------------------------------------*/
-/* List of error codes:                                                      */
+
 /*---------------------------------------------------------------------------*/
 
 enum { 
@@ -194,6 +269,20 @@ enum {
   UNUR_ERR_SHOULD_NOT_HAPPEN = 0x0fu, /* error should not happen, report this! */
 
 };
+
+/*---------------------------------------------------------------------------*/
+
+/* =ROUTINES */
+
+/*---------------------------------------------------------------------------*/
+/* global variable used to record errors                                     */
+
+extern unsigned unur_errno;
+/*
+  Global variable for reporting diagnostics of error.
+*/
+
+/* =END */
 
 /* =EON */
   
@@ -272,14 +361,6 @@ FILE *unur_set_stream( FILE *new_stream );
 FILE *unur_get_stream( void );
 /*
   Get the file handle for the current output stream.
-*/
-
-/*---------------------------------------------------------------------------*/
-/* global variable used to record errors                                     */
-
-extern unsigned unur_errno;
-/*
-  Global variable for reporting diagnostics of error.
 */
 
 /* =END */

@@ -38,6 +38,31 @@
  *****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
+
+/* 
+   =NODE Math Mathematics
+
+   =UP Misc [0]
+
+   =DESCRIPTION
+      The following macros have been defined
+
+      @ftable @code
+      @item UNUR_INFINITY
+      indicates infinity for floating point numbers (of type @code{double}).
+      @item INT_MAX
+      @itemx INT_MIN
+      indicate infinity and minus infinity, resp., for integers
+      (defined by ISO C standard).
+      @item  TRUE
+      @itemx FALSE
+      bolean expression for return values of @code{set} functions.
+      @end ftable
+
+   =END
+*/
+
+/*---------------------------------------------------------------------------*/
 /* Defining infinity                                                         */
 /* (we use the largest possible value to indicate infinity)                  */
 #include <math.h>

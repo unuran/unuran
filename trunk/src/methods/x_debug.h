@@ -67,7 +67,7 @@
 
       Common debug flags:
 
-      @table @code
+      @ftable @code
       @item UNUR_DEBUG_OFF
       @findex UNUR_DEBUG_OFF
       switch off all debuging information
@@ -86,7 +86,7 @@
       @item UNUR_DEBUG_SAMPLE
       @findex UNUR_DEBUG_SAMPLE
       trace sampling   
-      @end table
+      @end ftable
 
 
       Almost all routines check a given pointer they read from or write

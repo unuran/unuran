@@ -14,8 +14,9 @@ unuran_examples = \
 
 unuran_TEXINFOS = \
  unuran.texi \
+ unuran_src.texi \
  $(unuran_examples) \
- unuran_src.texi
+ version.texi
 
 noinst_DATA = 
 
@@ -57,9 +58,9 @@ SUFFIXES = .html .txt .pdf
 # abbreviations
 .PHONY: html txt pdf ps
 html: version.texi unuran.html
-txt: version.texi unuran.txt
-pdf: version.texi unuran.pdf
-ps: version.texi unuran.ps
+txt:  version.texi unuran.txt
+pdf:  version.texi unuran.pdf
+ps:   version.texi unuran.ps
 
 # clean backup files
 CLEANFILES = *~
@@ -84,9 +85,6 @@ MAINTAINERCLEANFILES = \
 #distr_dir    = $(top_srcdir)/src/distributions
 #example_dir  = $(top_srcdir)/examples
 
-#ref_geninfo.texi: $(method_dir)/x_gen.h
-#	./geninfo.perl $(method_dir)/x_gen.h      > ref_geninfo.texi
-
 #ref_distr.texi: $(method_dir)/distr.h
 #	./distr.perl $(method_dir)/distr.h        > ref_distr.texi
 
@@ -99,24 +97,8 @@ MAINTAINERCLEANFILES = \
 #ref_distr_lib.texi: $(distr_dir)/unuran_distributions.h
 #	./distr_lib.perl $(distr_dir)/unuran_distributions.h > ref_distr_lib.texi
 
-#ref_methods.texi: $(method_dir)/*.h
-#	./methods.perl $(method_dir)/*.h          > ref_methods.texi
-
-#ref_method_functions.texi: $(method_dir)/*.h
-#	./method_functions.perl $(method_dir)/*.h > ref_method_functions.texi
-
-#ref_internals.texi: $(method_dir)/*.h
-#	./internals.perl $(method_dir)/*.h        > ref_internals.texi
-
-
 #texi_generated = \
-# ref_geninfo.texi \
 # ref_distr.texi \
 # ref_distr_discr.texi \
 # ref_distr_cont.texi \
 # ref_distr_lib.texi \
-# ref_methods.texi \
-# ref_method_functions.texi \
-# ref_internals.texi \
-# $(unuran_examples)
-

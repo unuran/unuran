@@ -43,7 +43,7 @@
    =UP Methods [0]
 
    =DESCRIPTION
-      Routines for all generator objects
+      Routines for all generator objects.
 
    =END
 */

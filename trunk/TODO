@@ -1,7 +1,7 @@
 
 Lieber Josef!
 
-Ich bin ja derzeit ein UNURAB Benutzer.
+Ich bin ja derzeit ein UNURAN Benutzer.
 
 Folgende Dinge sind mir unangenehm aufgefallen Vielleicht koennte man
 daraus TODOs machen?
@@ -53,6 +53,24 @@ Schritt jedoch vergessen worden zu sein.
 Allerdings ist die source von tdr so umfanreich, dass sie fuer mich doch
 sehr unuebersichtlich ist.
 
+
+-----------------------------------------------------------------------------
+
+(*) Funktionen in stetigen 'Standarddichten'
+    (sind noch nicht alle implementiert):
+exp
+log
+abs
+pow
+sqrt
+tan
+sin
+atan
+tanh
+sinh
+Besselfunktion 3. Art
+Gamma
+Beta
 
 -----------------------------------------------------------------------------
 

@@ -65,6 +65,11 @@
 #include "varou.h"
 
 /*---------------------------------------------------------------------------*/
+/* Debugging flag for additional data dump                                   */
+
+#define VAROU_DEBUG 0
+
+/*---------------------------------------------------------------------------*/
 /* Variants:                                                                 */
 
 #define VAROU_VARFLAG_VERIFY   0x002u   /* run verify mode                   */
@@ -98,7 +103,7 @@
 /* during the triangulation of the upper half-unit-sphere, this parameter    */
 /* define the maximal number of verteces that will be created during the     */
 /* adaptive process.                                                         */
-#define UNUR_VAROU_MAX_VERTECES 4000
+#define UNUR_VAROU_MAX_VERTECES 100000
 
 /*---------------------------------------------------------------------------*/
 
@@ -164,6 +169,12 @@ static struct unur_varou_cone *_unur_varou_cone_new(int dim);
 static void _unur_varou_cones_init( struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 /* compute initial (2*dim+1) verteces on (half) unit sphere and 2^dim cones  */
+/*---------------------------------------------------------------------------*/
+
+static void _unur_varou_cone_copy(int dim, struct unur_varou_cone *c_destination, 
+                                           struct unur_varou_cone *c_source);
+/*---------------------------------------------------------------------------*/
+/* copies the structure and data block between two cones                     */
 /*---------------------------------------------------------------------------*/
 
 static void _unur_varou_cones_split( struct unur_gen *gen );
@@ -708,6 +719,7 @@ _unur_varou_cone_copy(int dim, struct unur_varou_cone *c_destination,
      /*----------------------------------------------------------------------*/
      /* copies the structure and data block between two cones                */
      /*----------------------------------------------------------------------*/
+
   long block_size;
   char *b;
 
@@ -826,8 +838,6 @@ _unur_varou_cones_split( struct unur_gen *gen )
   struct unur_varou_cone *c1; 
   struct unur_varou_cone *c2;
 
-
-
   dim = GEN.dim;
 
   while (GEN.n_cone <= UNUR_VAROU_MAX_CONES) {
@@ -849,14 +859,14 @@ _unur_varou_cones_split( struct unur_gen *gen )
     else {
       /* some volumes are (still) infinite */
       /* we set the mean volume to be higher than every bounded volume */
-      mean_volume=sum_volume; 
+      mean_volume=sum_volume+1.; 
     }
 
 /* quick and dirty debugging */
 /*
 printf("***************************************************************\n");
 */
-printf("n_cone=%d \tn_infinite=%d \tmean=%f \tsum=%f\n", 
+printf("n_cone=%08d n_infinite=%08d mean=%e sum=%e\n", 
         GEN.n_cone, GEN.n_cone - n_bounded, mean_volume, sum_volume);
 /*
 printf("***************************************************************\n");
@@ -865,7 +875,7 @@ printf("***************************************************************\n");
     nc=GEN.n_cone; 
     for (ic=0; ic<nc; ic++) {
       if (GEN.cone_list[ic]->volume >= mean_volume ) {
-        /* TODO : this is brain-dead ... change this !!! */
+        /* determining two distinct verteces of edge to be splitted  */
         iv1=0; iv2=0;
         while (iv1==iv2) {
           iv1=(long) (dim+1)*_unur_call_urng(gen->urng);
@@ -910,7 +920,6 @@ __printf_vector(dim+1, GEN.vertex_list[nv]);
       
         GEN.n_vertex++; /* adjust current number of verteces */
         
-	
 	/*------------------------------------------------------------*/
         
 	if (GEN.n_cone>=UNUR_VAROU_MAX_CONES) return; /* TODO: realloc() */
@@ -954,7 +963,7 @@ __printf_vector(dim+1, GEN.vertex_list[nv]);
           free(c1); /* not c2 !!! */
 	
           GEN.n_cone++; /* adjust current number of cones */
-        }
+         }
 
       }
     } 
@@ -1046,7 +1055,6 @@ _unur_varou_cone_parameters( struct unur_gen *gen, struct unur_varou_cone *c)
     __printf_vector(dim+1,  GEN.vertex_list[ c->index[i]] );
   }
 #endif
-
 
     free(p);
 //  }

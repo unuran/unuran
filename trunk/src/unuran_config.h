@@ -60,6 +60,9 @@
 /*  #define UNUR_URNG_TYPE UNUR_URNG_POINTER */
 #define UNUR_URNG_TYPE UNUR_URNG_PRNG
 
+/* IMPORTANT:                                                                */
+/* You must not use UNUR_URNG_PRNG if the prng library is not installed!     */
+
 /*---------------------------------------------------------------------------*/
 /* Default name of uniform random number generator.                          */
 

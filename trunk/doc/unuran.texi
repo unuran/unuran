@@ -30,7 +30,7 @@
 @c
 
 @ifinfo
-UNURAN User Manual.
+UNU.RAN User Manual.
   
 Version @value{VERSION}, @value{UPDATED}
    
@@ -61,7 +61,7 @@ translation approved by the Free Software Foundation.
 @c
 
 @titlepage
-@title{UNURAN User Manual}
+@title{UNU.RAN User Manual}
 @subtitle Generating non-uniform random numbers
 @subtitle Version @value{VERSION}, @value{UPDATED}
 

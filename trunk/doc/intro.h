@@ -10,12 +10,26 @@
 
 =DESCRIPTION
    UNURAN (Universal Non-Uniform RAndom Number generator) is
-   designed for applications using non-standard distributions
-   where no seperate generator is yet available.
-   UNURAN is also useful if the parameters of a standard distribution
-   should be changed frequently.
-   Additionally there are lots of predefined distributions available
-   (@pxref{Stddist,Standard distributions,Standard distributions}).
+   especially designed for such situations where 
+
+   @itemize @minus
+   @item a non-standard distribution or a truncated distribution is
+	 needed.
+
+   @item experiments with different types of distributions are made.
+
+   @item random variates for variance reduction techniques are used.
+
+   @item fast generators of predictable quality are necessary.
+
+   @end itemize
+
+   Of course it is also well suited for standard distributions. 
+   However due to its more sophisticated programming interface it
+   might not be as easy to use if you only look for a generator for
+   the standard normal distribution. (Although UNURAN provides
+   generators that are superior in many aspects to those found in
+   quite a number of other libraries.)
 
    UNURAN implements several methods for generating random numbers.
    The choice depends primary on the information about the
@@ -32,18 +46,21 @@
 =DESCRIPTION
    We designed this document in a way such that one can
    use UNURAN with reading as little as necessary.
-   On basis of the available information about the distribution
-   one should choose a suitable method.
-   Thus we give examples that can be copied and modified
-   (@pxref{Examples}).
+   Read @ref{Installation} for the instructions to
+   install the library.
+   @ref{Concepts,Concepts of UNURAN,Concepts of UNURAN}
+   discribes the basics of UNURAN.
+   It also has a short guideline for choosing an appropriate method.
+   In @ref{Examples} gives examples that can be copied and modified.
+   They also can be found in the directory @file{examples} in the
+   source tree.
 
-   Predefined distributions can be found in
-   @pxref{Stddist,Standard distributions,Standard distributions}.
-   If these should be changed or if it is necessary to build a
-   distribution object from scratch
-   @pxref{Distribution_objects,Handling distribution objects,Handling distribution objects}.
-
-   The various methods are described in @ref{Methods}.
+   Further information are given in consecutive chapters.
+   @ref{Distribution_objects,Handling distribution objects,Handling distribution objects}
+   describes how to create and manipulate distribution objects.
+   @ref{Stddist,standard distributions,standard distributions}
+   describes predefined distribution objects that are ready to use.
+   @ref{Methods} describes the various methods in detail.
    For each of possible distribution classes 
    (continuous, discrete, empirical, multivariate)
    there exists a short overview section that can be used to choose an
@@ -53,46 +70,140 @@
    the methods who want to change method-specific parameters and can
    be ignored by others.
 
+   Abbreviations and explanation of some basic terms can be found in
+   @ref{Glossary}.
 =EON
 
 /*---------------------------------------------------------------------------*/
 
-=NODE  Install Installation
-=UP Intro [20]
+=NODE  Installation Installation
+=UP Intro [30]
 
 =DESCRIPTION
    UNURAN was develloped on an Intel architecture under Linux with
    the gnu C compiler.
+
+
+   @subsubheading Uniform random number generator
+
+   It can be used with any uniform random number generator but (at the
+   moment) some features work best with Otmar Lendl's @emph{prng}
+   library (see @url{http://statistik.wu-wien.ac.at/prng/} for
+   description and downloading).
+   For more details on using uniform random number in UNURAN
+   @pxref{URNG,Using uniform random number generators,Using uniform random number generators}.
+
+
+   @subsubheading Special mathematical functions
+
+   We used Stephen L. Moshier's @emph{Cephes} mathematical library for
+   special function (eg. Gamma function). So we recommend to install
+   this library too. It can be found at
+   @url{http://www.netlib.org/cephes/}. 
+
+   A local copy that we have used can be downloaded from
+   @url{ftp://statistik.wu-wien.ac.at/src/cephes-math-28.tar.gz}.
+   Unfortunately there is no comfortable installation script. So you
+   have 
+
+   @enumerate
+   @item Unpack the tar archiv:
+	 @smallexample
+	    tar zxvf cephes-math-28.tar.gz
+	 @end smallexample
+   @item Compile the double library:
+	 @smallexample
+	    cd cephes/double
+	    make
+	 @end smallexample
+   @item Copy the library to a place in the search path of your
+	 compiler (eg. @file{/usr/local/lib}):
+	 @smallexample
+	    cp libmd.a /usr/local/lib
+	    chmod 644 /usr/local/lib/libmd.a
+	 @end smallexample
+	 (You must be root when you want to install it into 
+	 @file{/usr/local/lib}).
+   @end enumerate
+
+   If you do not install the Cephes library then some of the predefined
+   distrubutions have some of the described features.
+   In future releases we plan to include such special functions in to
+   the library.
+
    
-   First unzip and untar the package. Then change to the directory
-   @file{/unuran} and execute the following commands:
-   @smallexample
-   configure --prefix=HOMEDIRECTORY
-   make
-   make install
-   @end smallexample
-   @c
-   @noindent This installs the following files:
-   @c
-   @smallexample
-   $(prefix)/include/unuran_tests.h
-   $(prefix)/include/unuran.h
-   $(prefix)/include/unuran_config.h
-   $(prefix)/lib/libunuran.a
-   @end smallexample
-   
-   @noindent
-   If you set the follwing systemvariables:
-   @smallexample
-   LIBRARY_PATH="HOMEDIRECTORY/lib"
-   C_INCLURE_PATH="HOMEDIRECTORY/include"
-   @end smallexample
-   @noindent
-   the relevant files are where the C-compiler can find them.
-   If every user on your machine should be able to use UNURAN,
-   you omit @file{--prefix=HOMEDIRECTORY} when calling @file{configure}
-   (as usual the standard value of @file{$(prefix)} is @file{/usr/local}.
-   Of course you can do this only if you have the right permissions.
+   @subsubheading UNURAN
+
+   @enumerate 
+
+   @item First unzip and untar the package and change to the directory:
+	 @smallexample
+	    tar zxvf unuran-@value{VERSION}.tar.gz
+            cd unuran-@value{VERSION}
+	 @end smallexample
+
+   @item Edit the file @file{src/unuran_config.h}.
+	 Set the appropriate source of uniform random numbers:
+	 @code{#define UNUR_URNG_TYPE}
+	 (@pxref{URNG} for details).
+
+	 @emph{Important:} If the prng library is not installed you
+	 must not use @code{UNUR_URNG_PRNG}.
+
+	 @emph{Warning:} If @code{UNUR_URNG_POINTER} is used then the
+	 buildin default uniform random number generators should be
+	 used only for small sample sizes or for demonstration. They
+	 are not state of the art any more.
+	 
+   @item Run a configuration script:
+	 @smallexample
+	    sh ./configure --prefix=<prefix>
+	 @end smallexample
+	 where @code{<prefix>} is the root of the installation tree.
+	 When omitted @file{/usr/local} is used.
+
+	 Use @code{configure --help} to get a list of other options.
+
+	 @emph{Important:} You must install prng and Cephes
+	 @emph{before} @code{configure} is executed.
+
+   @item Compile and install the libray:
+	 @smallexample
+	    make
+	    make install
+	 @end smallexample
+	 This installs the following files:
+	 @smallexample
+	    $(prefix)/include/unuran.h
+	    $(prefix)/include/unuran_config.h
+	    $(prefix)/include/unuran_tests.h
+	    $(prefix)/lib/libunuran.a
+	    $(prefix)/info/unuran.info
+         @end smallexample
+	 Obviously @code{$(prefix)/include} and @code{$(prefix)/lib}
+	 must be in the search path of your compiler. You can use environment
+	 variables to add these directories to the search path. If you
+	 are using the bash type (or add to your profile):
+	 @smallexample
+	    export LIBRARY_PATH="HOMEDIRECTORY/lib"
+	    export C_INCLURE_PATH="HOMEDIRECTORY/include"
+	@end smallexample
+
+   @item Documentation in various formats (PS, PDF, info, dvi, HTML,
+	 plain text) can be found in the directory @file{doc}.
+
+   @item You can run some tests my 
+	 @smallexample
+	    make check
+	 @end smallexample
+	 Notice a number of these tests fail if you have not installed
+	 the Cephes library. Moreover it might happen that some of the
+	 tests might fail due to roundoff errors or the mysteries of
+	 floating point arithmetic, since we have used some extreme
+	 settings to test the library.
+
+   @end enumerate
+
 =EON
 
 

@@ -93,7 +93,7 @@ _unur_eigensystem_house(int dim, double *A, double *d, double *e, double *e2)
       if (s == 0.) e[k-1]=0;
       else {
         f = A[idx1(k1,k)];
-        ek = sqrt(s) * ((f <= 0) ? 1: -1);
+        ek = sqrt(s) * ((f <= 0) ? 1 : -1);
         A[idx1(k1,k)] = f-ek;
 	h = s-f*ek;
 
@@ -485,14 +485,14 @@ int _unur_matrix_eigensystem(int dim, const double *M, double *values, double *v
   int ret = 0; /* UNUR_SUCCESS */
  
   /* make a local copy of the matrix M -> A */
-  A=malloc(dim*dim*sizeof(double));
+  A = _unur_malloc(dim*dim*sizeof(double));
   memcpy(A, M, dim*dim*sizeof(double));
 
   /* alocate working arrays */
-  diag=malloc(dim*sizeof(double));   
-  codiag=malloc(dim*sizeof(double)); /* stored in 0..(dim-2) */
-  wk=malloc((5*dim+2)*sizeof(double)); /*working array */
-  in=malloc(dim*sizeof(int)); /*working array */
+  diag = _unur_malloc(dim*sizeof(double));   
+  codiag = _unur_malloc(dim*sizeof(double)); /* stored in 0..(dim-2) */
+  wk = _unur_malloc((5*dim+2)*sizeof(double)); /*working array */
+  in = _unur_malloc(dim*sizeof(int)); /*working array */
 
   /* calculate tridiagonal Householder matrix */
   _unur_eigensystem_house(dim, A, diag, codiag, &wk[0]);

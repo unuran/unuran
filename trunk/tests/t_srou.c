@@ -20,10 +20,16 @@
 /* global variables                                                          */
 
 int test_ok = TRUE;               /* all tests ok (boolean)                  */
-int test_failed = 0;              /* failed tests                          */
+int test_failed = 0;              /* failed tests                            */
 FILE *TESTLOG = NULL;             /* test log file                           */
 
 static FILE *UNURANLOG = NULL;    /* unuran log file                         */
+
+static struct prng *urng;         /* uniform random number generator         */
+
+#define FAILED_LIMIT 1            /* maximal number of single failed 
+				     statistical tests (if there are more 
+				     the generator has failed the test.)     */
 
 /*---------------------------------------------------------------------------*/
 
@@ -36,6 +42,7 @@ void test_srou_sample( void );
 
 void test_srou_validate( void );
 void test_srou_validate_chi2( UNUR_DISTR *distr );
+void run_chi2( UNUR_PAR *par, int line );
 
 double pdf( double x, UNUR_DISTR *distr );
 
@@ -44,6 +51,7 @@ double pdf( double x, UNUR_DISTR *distr );
 int main()
 { 
   char filename[128];
+
   /* open test log file */
   sprintf(filename,"%s_test.log",__FILE__);
   TESTLOG = fopen(filename,"w");
@@ -58,6 +66,10 @@ int main()
   /* make a list of distributions */
   make_list_of_distributions();
 
+  /* we use Mersenne Twister as uniform random number generator */
+  urng = prng_new("mt19937(5678)");
+  unur_set_default_urng(urng);
+
   /* start test */
   printf("%s: ",__FILE__);
 
@@ -71,7 +83,7 @@ int main()
   test_srou_validate();
 
   /* test finished */
-  printf("\n");
+  printf("\n");  fflush(stdout);
 
   /* close log files and exit */
   fclose(TESTLOG);
@@ -86,7 +98,7 @@ void test_srou_new( void )
   UNUR_DISTR *distr;
 
   /* start test */
-  printf("[new ");
+  printf("[new "); fflush(stdout);
   fprintf(TESTLOG,"\n[new]\n");
 
   test_failed = 0;
@@ -119,6 +131,7 @@ void test_srou_new( void )
   /* test finished */
   test_ok &= (test_failed) ? 0 : 1;
   (test_failed) ? printf("... failed] ") : printf("... ok] ");
+
 } /* end of test_srou_new() */
 
 /*---------------------------------------------------------------------------*/
@@ -130,7 +143,7 @@ void test_srou_set( void )
   double fpar[2] = {0.,1.};
 
   /* start test */
-  printf("[set ");
+  printf("[set "); fflush(stdout);
   fprintf(TESTLOG,"\n[set]\n");
 
   test_failed = 0;
@@ -192,7 +205,7 @@ void test_srou_chg( void )
   double fpar[2] = {0.,1.};
 
   /* start test */
-  printf("[chg ");
+  printf("[chg ");  fflush(stdout);
   fprintf(TESTLOG,"\n[chg]\n");
 
   test_failed = 0;
@@ -251,7 +264,7 @@ void test_srou_init( void )
 {
   /* nothing to do */
 
-  printf("[init ");
+  printf("[init ");  fflush(stdout);
   fprintf(TESTLOG,"\n[init]\n");
 
   test_failed = 0;
@@ -266,7 +279,7 @@ void test_srou_reinit( void )
 {
   /* nothing to do */
 
-  printf("[reinit ");
+  printf("[reinit ");  fflush(stdout);
   fprintf(TESTLOG,"\n[reinit]\n");
 
   test_failed = 0;
@@ -282,7 +295,6 @@ void test_srou_sample( void )
   UNUR_DISTR *distr;
   UNUR_PAR *par;
   UNUR_GEN *gen;
-  struct prng *urng;
 
   int i;
   double fpar[2] = {0.,1.};
@@ -291,16 +303,12 @@ void test_srou_sample( void )
   double sa[N_SAMPLE], sb[N_SAMPLE];
 
   /* start test */
-  printf("[sample ");
+  printf("[sample ");  fflush(stdout);
   fprintf(TESTLOG,"\n[sample]\n");
 
   test_failed = 0;
 
   unur_set_default_debug(UNUR_DEBUG_ALL);
-
-  /* we need a uniform random number generator */
-  urng = prng_new("mt19937(5678)");
-  unur_set_default_urng(urng);
 
   /* we use the normal distributions for the next tests */
   distr = unur_distr_normal(fpar,2);
@@ -435,10 +443,7 @@ void test_srou_sample( void )
 
   unur_distr_free(distr);
 
-
   /* test finished */
-  prng_free(urng);
-
   test_ok &= (test_failed) ? 0 : 1;
   (test_failed) ? printf("... failed] ") : printf("... ok] ");
 
@@ -449,51 +454,100 @@ void test_srou_sample( void )
 
 void test_srou_validate(void)
 {
-  struct prng *urng;
   int n;
-
+  UNUR_DISTR *distr;
+  const char *distr_name;
+  const char *last_distr_name = "";
+  
   /* start test */
-  printf("[validate ");
+  printf("[validate: ");  fflush(stdout);
   fprintf(TESTLOG,"\n[validate]\n");
 
   test_failed = 0;
 
   unur_set_default_debug(UNUR_DEBUG_ALL);
 
-  /* we need a uniform random number generator */
-  urng = prng_new("mt19937(5678)");
-  unur_set_default_urng(urng);
-
   /* run chi^2 tests on test distributions */
-  for (n=0; n<n_distr; n++)
-    test_srou_validate_chi2(list_of_distr[n]);
+  for (n=0; n<n_distr; n++) {
+
+    /* test type of distribution */
+    if( (list_of_distr[n].type != T_TYPE_TDR) ||
+	(list_of_distr[n].c_max < -0.5) )
+      /* we cannot use this method for this distribution */
+      continue;
+
+    /* get pointer to distribution */
+    distr = list_of_distr[n].distr;
+
+    /* get name of distribution */
+    distr_name = unur_distr_get_name(distr);
+    if (strcmp(distr_name,last_distr_name) ) {
+      /* different distributions */
+      last_distr_name = distr_name;
+      printf(" %s",distr_name); fflush(stdout);
+    }
+
+    /* run tests */
+    test_srou_validate_chi2(distr);
+  }
     
   /* test finished */
-  prng_free(urng);
-
-  test_ok &= (test_failed > 1) ? 0 : 1;  /* one time the statistical test might fail */
-  (test_failed>1) ? printf("... failed] ") : printf("... ok] ");
+  test_ok &= (test_failed > FAILED_LIMIT) ? 0 : 1;
+  (test_failed>FAILED_LIMIT) ? printf(" ... failed] ") : printf(" ... ok] ");
 
 } /* end of test_srou_validate() */
+
+/*...........................................................................*/
 
 void test_srou_validate_chi2( UNUR_DISTR *distr )
 {
   UNUR_PAR *par;
+
+  /* basic algorithm */
+  par = unur_srou_new(distr);
+  run_chi2(par,__LINE__); 
+
+  /* use mirror principle */
+  par = unur_srou_new(distr);
+  unur_srou_set_usemirror(par,1);
+  run_chi2(par,__LINE__); 
+
+  /* use cdf at mode */
+
+  /* use cdf at mode and squeeze */
+
+
+
+} /* end of test_srou_validate_chi2() */  
+
+/*...........................................................................*/
+
+void run_chi2( UNUR_PAR *par, int line )
+{
   UNUR_GEN *gen;
   double pval;
+  int i;
 
-#define TEST_CHI2 \
- gen=unur_init(par);\
- pval=unur_test_chi2(gen,CHI_TEST_INTERVALS,0,20,0);\
- check_pval(gen,pval);\
- unur_free(gen);\
- unur_distr_free(distr)
+  gen = unur_init(par);
+  if (gen==NULL) {
+    /* this must not happen */
+    ++test_failed;
+    return;
+  }
 
-  par = unur_srou_new(distr);
-  TEST_CHI2; 
+  /* run chi^2 test */
+  for (i=1; i<=2; i++) {
+    /* we run the test twice when it fails the first time */
+    pval = unur_test_chi2( gen, CHI_TEST_INTERVALS, 0, 20, 0);
+    do_check_pval(line,gen,pval,i);
+    if (pval >= PVAL_LIMIT) 
+      /* test succeeded */
+      break; 
+  }
 
-#undef TEST_CHI2
-} /* end of test_srou_validate_chi2() */  
+  unur_free(gen);
+
+} /* end of run_chi2() */
 
 /*---------------------------------------------------------------------------*/
 

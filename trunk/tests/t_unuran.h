@@ -40,13 +40,25 @@
 /*---------------------------------------------------------------------------*/
 /* global variables                                                          */
 
+/* tests */
 extern int test_ok;                 /* all tests ok (boolean)                */
 extern int test_failed;             /* failed tests                          */
 extern FILE *TESTLOG;               /* test log file                         */
 
-extern UNUR_DISTR **list_of_distr;  /* pointer to list of distributions      */
+/* tresholds */
+#define PVAL_LIMIT 1e-3             /* treshold for p-value for stat. test   */
+
+/* distributions */
+struct list_distr {
+  UNUR_DISTR *distr;                /* pointer to distribution object        */
+  unsigned    type;                 /* type of distribution                  */
+  double      c_max;                /* maximal value for c to be T_c concave */
+};
+
+#define T_TYPE_TDR 0x00000001
+
+extern struct list_distr *list_of_distr;  /* pointer to list of distributions */
 extern int n_distr;                 /* number of distributions               */
-#define N_DISTRIBUTIONS 100         /* maximum number of distributions       */
 
 /*---------------------------------------------------------------------------*/
 /* True and false                                                            */
@@ -91,6 +103,8 @@ inline void do_check_expected_setfailed( int line, int ok );
 void do_compare_sequences( int line, double *a, double *b, int n );
 
 /* check p-value of statistical test */
-void check_pval( UNUR_GEN *gen, double pval );
+#define check_pval(gen,pval,trial) \
+  do {do_check_pval(__LINE__,(gen),(pval),(trial)); } while(0)
+void do_check_pval( int line, UNUR_GEN *gen, double pval, int trial );
 
 /*---------------------------------------------------------------------------*/

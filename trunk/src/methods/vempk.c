@@ -322,7 +322,7 @@ unur_vempk_chg_smoothing( struct unur_gen *gen, double smoothing )
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  CHECK_NULL(gen,0);
+  _unur_check_NULL( GENTYPE,gen,0 );
   _unur_check_gen_object( gen,VEMPK );
   
   /* no changelog required */
@@ -401,7 +401,7 @@ unur_vempk_chg_varcor( struct unur_gen *gen, int varcor )
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  CHECK_NULL(gen,0);
+  _unur_check_NULL( GENTYPE,gen,0 );
   _unur_check_gen_object( gen,VEMPK );
   
   /* no changelog required */

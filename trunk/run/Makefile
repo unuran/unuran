@@ -4,6 +4,9 @@
 all: run run_acg rungen test
 
 run: run.c ../src/unuran.h ../src/libunuran.a
+	gcc -I. -I.. -I../src -I../src/tests -L../src -Wall -g -O3 -o run run.c -lunuran -lm -lprng
+
+rundmalloc: run.c ../src/unuran.h ../src/libunuran.a
 	gcc -I. -I.. -I../src -I../src/tests -L../src -Wall -g -O3 -o run run.c -lunuran -lm -lprng -ldmalloc
 
 run_acg: run_acg.c ../src/unuran.h ../codegen/libunuracg.a ../src/libunuran.a

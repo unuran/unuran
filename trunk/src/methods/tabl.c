@@ -422,6 +422,7 @@ unur_tabl_get_sqhratio( const struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
 {
   /* check input */
+  _unur_check_NULL( GENTYPE,gen,0 );
   _unur_check_gen_object( gen,TABL );
 
   return (GEN.Asqueeze / GEN.Atotal);
@@ -444,6 +445,7 @@ unur_tabl_get_hatarea( const struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
 {
   /* check input */
+  _unur_check_NULL( GENTYPE,gen,0 );
   _unur_check_gen_object( gen,TABL );
 
   return GEN.Atotal;
@@ -466,6 +468,7 @@ unur_tabl_get_squeezearea( const struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
 {
   /* check input */
+  _unur_check_NULL( GENTYPE,gen,0 );
   _unur_check_gen_object( gen,TABL );
 
   return GEN.Asqueeze;
@@ -793,10 +796,8 @@ unur_tabl_chg_verify( struct unur_gen *gen, int verify )
      /*   no verifying is the default                                        */
      /*----------------------------------------------------------------------*/
 {
-  /* check arguments */
-  CHECK_NULL( gen,0 );
-
   /* check input */
+  _unur_check_NULL( GENTYPE,gen,0 );
   _unur_check_gen_object( gen,TABL );
 
   if (verify) {

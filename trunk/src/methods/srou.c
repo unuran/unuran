@@ -462,10 +462,8 @@ unur_srou_chg_verify( struct unur_gen *gen, int verify )
      /*   no verifying is the default                                        */
      /*----------------------------------------------------------------------*/
 {
-  /* check arguments */
-  CHECK_NULL( gen,0 );
-
   /* check input */
+  _unur_check_NULL( GENTYPE,gen,0 );
   _unur_check_gen_object( gen,SROU );
 
   if (verify) {
@@ -575,7 +573,7 @@ unur_srou_chg_pdfparams( struct unur_gen *gen, double *params, int n_params )
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  CHECK_NULL(gen,0);
+  _unur_check_NULL( GENTYPE,gen,0 );
   _unur_check_gen_object( gen,SROU );
   
   /* set new parameters in distribution object */
@@ -600,7 +598,7 @@ unur_srou_chg_mode( struct unur_gen *gen, double mode )
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  CHECK_NULL(gen,0);
+  _unur_check_NULL( GENTYPE,gen,0 );
   _unur_check_gen_object( gen,SROU );
   
   /* copy parameters */
@@ -628,7 +626,7 @@ unur_srou_upd_mode( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  CHECK_NULL(gen,0);
+  _unur_check_NULL( GENTYPE,gen,0 );
   _unur_check_gen_object( gen,SROU );
 
   return unur_distr_cont_upd_mode( gen->distr );
@@ -651,7 +649,7 @@ unur_srou_chg_cdfatmode( struct unur_gen *gen, double Fmode )
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  CHECK_NULL(gen,0);
+  _unur_check_NULL( GENTYPE,gen,0 );
   _unur_check_gen_object( gen,SROU );
 
   /* check new parameter for generator */
@@ -687,7 +685,7 @@ unur_srou_chg_pdfatmode( struct unur_gen *gen, double fmode )
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  CHECK_NULL(gen,0);
+  _unur_check_NULL( GENTYPE,gen,0 );
   _unur_check_gen_object( gen,SROU );
 
   /* check new parameter for generator */
@@ -727,7 +725,7 @@ unur_srou_chg_domain( struct unur_gen *gen, double left, double right )
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  CHECK_NULL(gen,0);
+  _unur_check_NULL( GENTYPE,gen,0 );
   _unur_check_gen_object( gen,SROU );
 
   /* check new parameter for generator */
@@ -770,7 +768,7 @@ unur_srou_chg_pdfarea( struct unur_gen *gen, double area )
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  CHECK_NULL(gen,0);
+  _unur_check_NULL( GENTYPE,gen,0 );
   _unur_check_gen_object( gen,SROU );
   
   /* check new parameter for generator */
@@ -804,7 +802,7 @@ unur_srou_upd_pdfarea( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  CHECK_NULL(gen,0);
+  _unur_check_NULL( GENTYPE,gen,0 );
   _unur_check_gen_object( gen,SROU );
 
   return unur_distr_cont_upd_pdfarea( gen->distr );
@@ -1134,7 +1132,7 @@ unur_srou_reinit( struct unur_gen *gen )
   int rcode;
 
   /* check arguments */
-  CHECK_NULL(gen,0);
+  _unur_check_NULL( GENTYPE,gen,0 );
   _unur_check_gen_object( gen,SROU );
 
   /* compute universal bounding envelope */

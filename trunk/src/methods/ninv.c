@@ -681,7 +681,7 @@ unur_ninv_chg_truncated( struct unur_gen *gen, double left, double right )
   double Umin, Umax;
 
   /* check arguments */
-  CHECK_NULL(gen, 0);
+  _unur_check_NULL( GENTYPE,gen,0 );
   _unur_check_gen_object(gen, NINV);
 
   /* check new parameter for generator */
@@ -761,7 +761,7 @@ unur_ninv_chg_pdfparams( struct unur_gen *gen, double *params, int n_params )
   int ok;
 
   /* check arguments */
-  CHECK_NULL(gen,0);
+  _unur_check_NULL( GENTYPE,gen,0 );
   _unur_check_gen_object(gen, NINV);
   if (n_params>0) CHECK_NULL(params, 0);
   
@@ -977,9 +977,8 @@ _unur_ninv_compute_start( struct unur_gen *gen )
 {
   double u;
 
-
   /* check arguments */
-  CHECK_NULL(gen, 0);
+  CHECK_NULL(gen,0);
   _unur_check_gen_object(gen, NINV);
 
   if( GEN.table_on )

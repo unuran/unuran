@@ -343,10 +343,8 @@ unur_dsrou_chg_verify( struct unur_gen *gen, int verify )
      /*   no verifying is the default                                        */
      /*----------------------------------------------------------------------*/
 {
-  /* check arguments */
-  CHECK_NULL( gen,0 );
-  
   /* check input */
+  _unur_check_NULL( GENTYPE,gen,0 );
   _unur_check_gen_object( gen,DSROU );
  
   if (verify) {
@@ -387,7 +385,7 @@ unur_dsrou_chg_pmfparams( struct unur_gen *gen, double *params, int n_params )
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  CHECK_NULL(gen,0);
+  _unur_check_NULL( GENTYPE,gen,0 );
   _unur_check_gen_object( gen,DSROU );
   
   /* set new parameters in distribution object */
@@ -412,7 +410,7 @@ unur_dsrou_chg_mode( struct unur_gen *gen, int mode )
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  CHECK_NULL(gen,0);
+  _unur_check_NULL( GENTYPE,gen,0 );
   _unur_check_gen_object( gen,DSROU );
   
   /* copy parameters */
@@ -440,7 +438,7 @@ unur_dsrou_upd_mode( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  CHECK_NULL(gen,0);
+  _unur_check_NULL( GENTYPE,gen,0 );
   _unur_check_gen_object( gen,DSROU );
 
   return unur_distr_discr_upd_mode( gen->distr );
@@ -463,7 +461,7 @@ unur_dsrou_chg_cdfatmode( struct unur_gen *gen, double Fmode )
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  CHECK_NULL(gen,0);
+  _unur_check_NULL( GENTYPE,gen,0 );
   _unur_check_gen_object( gen,DSROU );
 
   /* check new parameter for generator */
@@ -496,7 +494,7 @@ unur_dsrou_chg_domain( struct unur_gen *gen, int left, int right )
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  CHECK_NULL(gen,0);
+  _unur_check_NULL( GENTYPE,gen,0 );
   _unur_check_gen_object( gen,DSROU );
 
   /* check new parameter for generator */
@@ -539,7 +537,7 @@ unur_dsrou_chg_pmfsum( struct unur_gen *gen, double sum )
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  CHECK_NULL(gen,0);
+  _unur_check_NULL( GENTYPE,gen,0 );
   _unur_check_gen_object( gen,DSROU );
   
   /* check new parameter for generator */
@@ -573,7 +571,7 @@ unur_dsrou_upd_pmfsum( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  CHECK_NULL(gen,0);
+  _unur_check_NULL( GENTYPE,gen,0 );
   _unur_check_gen_object( gen,DSROU );
 
   return unur_distr_discr_upd_pmfsum( gen->distr );
@@ -793,7 +791,7 @@ unur_dsrou_reinit( struct unur_gen *gen )
   int result;
 
   /* check arguments */
-  CHECK_NULL(gen,0);
+  _unur_check_NULL( GENTYPE,gen,0 );
   _unur_check_gen_object( gen,DSROU );
 
   /* compute universal bounding rectangle */

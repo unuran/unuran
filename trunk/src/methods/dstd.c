@@ -278,7 +278,7 @@ unur_dstd_chg_pmfparams( struct unur_gen *gen, double *params, int n_params )
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  CHECK_NULL(gen,0);
+  _unur_check_NULL( GENTYPE,gen,0 );
   _unur_check_gen_object( gen,DSTD );
   if (n_params>0) CHECK_NULL(params,0);
   

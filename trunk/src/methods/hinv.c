@@ -518,12 +518,9 @@ unur_hinv_get_n_intervals( const struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
 {
   /* check input */
-/*    _unur_check_gen_object( gen,HINV ); */
-
-/*    return GEN.N; */
-
-  return 0.;
-
+  _unur_check_NULL( GENTYPE,gen,0 );
+  _unur_check_gen_object( gen,HINV );
+  return GEN.N;
 } /* end of unur_hinv_get_n_intervals() */
 
 /*---------------------------------------------------------------------------*/
@@ -547,7 +544,7 @@ unur_hinv_chg_truncated( struct unur_gen *gen, double left, double right )
   double Umin, Umax;
 
   /* check arguments */
-  CHECK_NULL(gen, 0);
+  _unur_check_NULL( GENTYPE,gen,0 );
   _unur_check_gen_object(gen, HINV);
 
   /* check new parameter for generator */

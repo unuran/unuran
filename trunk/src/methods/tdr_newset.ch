@@ -267,6 +267,7 @@ unur_tdr_get_sqhratio( const struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
 {
   /* check input */
+  _unur_check_NULL( GENTYPE,gen,0 );
   _unur_check_gen_object( gen,TDR );
 
   return (GEN.Asqueeze / GEN.Atotal);
@@ -289,6 +290,7 @@ unur_tdr_get_hatarea( const struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
 {
   /* check input */
+  _unur_check_NULL( GENTYPE,gen,0 );
   _unur_check_gen_object( gen,TDR );
 
   return GEN.Atotal;
@@ -311,6 +313,7 @@ unur_tdr_get_squeezearea( const struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
 {
   /* check input */
+  _unur_check_NULL( GENTYPE,gen,0 );
   _unur_check_gen_object( gen,TDR );
 
   return GEN.Asqueeze;
@@ -372,6 +375,7 @@ _unur_tdr_is_ARS_running( const struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
 {
   /* check input */
+  _unur_check_NULL( GENTYPE,gen,0 );
   _unur_check_gen_object( gen,TDR );
 
   return (GEN.n_ivs < GEN.max_ivs) ? 1 : 0;
@@ -753,10 +757,8 @@ unur_tdr_chg_verify( struct unur_gen *gen, int verify )
      /*   no verifying is the default                                        */
      /*----------------------------------------------------------------------*/
 {
-  /* check arguments */
-  CHECK_NULL( gen,0 );
-
   /* check input */
+  _unur_check_NULL( GENTYPE,gen,0 );
   _unur_check_gen_object( gen,TDR );
 
   /* we use a bit in variant */
@@ -840,7 +842,7 @@ unur_tdr_chg_truncated( struct unur_gen *gen, double left, double right )
   double Umin, Umax;
 
   /* check arguments */
-  CHECK_NULL(gen, 0);
+  _unur_check_NULL( GENTYPE,gen,0 );
   _unur_check_gen_object(gen, TDR);
 
   /* we have to disable adaptive rejection sampling */

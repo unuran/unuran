@@ -38,7 +38,7 @@ int main()
   par = unur_hinv_new(distr);
   unur_hinv_set_u_resolution(par,1.e-8);
   unur_hinv_set_order(par,1);
-  unur_hinv_set_cpoints(par,stp,6);
+/*    unur_hinv_set_cpoints(par,stp,6); */
   unur_hinv_set_max_intervals(par,1000);
 
   gen = unur_init(par);

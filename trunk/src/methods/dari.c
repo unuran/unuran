@@ -386,10 +386,8 @@ unur_dari_chg_verify( struct unur_gen *gen, int verify )
      /*   no verifying is the default                                        */
      /*----------------------------------------------------------------------*/
 {
-  /* check arguments */
-  CHECK_NULL( gen,0 );
-  
   /* check input */
+  _unur_check_NULL( GENTYPE,gen,0 );
   _unur_check_gen_object( gen,DARI );
 
   if (verify) {
@@ -430,7 +428,7 @@ unur_dari_chg_pmfparams( struct unur_gen *gen, double *params, int n_params )
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  CHECK_NULL(gen,0);
+  _unur_check_NULL( GENTYPE,gen,0 );
   _unur_check_gen_object( gen,DARI );
 
   /* set new parameters in distribution object */
@@ -455,7 +453,7 @@ unur_dari_chg_domain( struct unur_gen *gen, int left, int right )
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  CHECK_NULL(gen,0);
+  _unur_check_NULL( GENTYPE,gen,0 );
   _unur_check_gen_object( gen,DARI );
 
   /* check new parameter for generator */
@@ -497,7 +495,7 @@ unur_dari_chg_mode( struct unur_gen *gen, int mode )
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  CHECK_NULL(gen,0);
+  _unur_check_NULL( GENTYPE,gen,0 );
   _unur_check_gen_object( gen,DARI );
   
   /* copy parameters */
@@ -526,7 +524,7 @@ unur_dari_upd_mode( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  CHECK_NULL(gen,0);
+  _unur_check_NULL( GENTYPE,gen,0 );
   _unur_check_gen_object( gen,DARI );
 
   return unur_distr_discr_upd_mode( gen->distr );
@@ -549,7 +547,7 @@ unur_dari_chg_pmfsum( struct unur_gen *gen, double sum )
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  CHECK_NULL(gen,0);
+  _unur_check_NULL( GENTYPE,gen,0 );
   _unur_check_gen_object( gen,DARI );
   
   /* check new parameter for generator */
@@ -583,7 +581,7 @@ unur_dari_upd_pmfsum( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  CHECK_NULL(gen,0);
+  _unur_check_NULL( GENTYPE,gen,0 );
   _unur_check_gen_object( gen,DARI );
 
   return unur_distr_discr_upd_pmfsum( gen->distr );
@@ -912,7 +910,7 @@ unur_dari_reinit( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  CHECK_NULL(gen,0);
+  _unur_check_NULL( GENTYPE,gen,0 );
   _unur_check_gen_object( gen,DARI );
   
   /* compute hat  */

@@ -523,7 +523,6 @@ UNUR_GEN *make_gen_obj (char *str){
      make_urng_obj(par, urngstr);
   }
 
-if (par == NULL) fprintf(stderr, "aldfjkafjkd\n");
   /* generate generator object */
   gen = unur_init(par);
   if ( gen == NULL ){

@@ -11,6 +11,9 @@ noinst_LIBRARIES = libmethods.a
 
 libmethods_a_SOURCES = \
  distr.c \
+ distr_cont.c \
+ distr_demp.c \
+ distr_discr.c \
  x_debug.c \
  x_error.c \
  x_gen.c \

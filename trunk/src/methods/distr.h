@@ -130,6 +130,11 @@ int unur_distr_is_discr( UNUR_DISTR *distribution );
    Test if distribution is a univariate discrete distribution.
 */
 
+int unur_distr_is_demp( UNUR_DISTR *distribution );
+/* 
+   Test if distribution is an empirical univariate discrete distribution.
+*/
+
 
 /*---------------------------------------------------------------------------*/
 

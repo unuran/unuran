@@ -68,7 +68,7 @@ void _unur_stream_printf( const char *genid, char *filename, int line, const cha
 void _unur_distr_cont_debug( UNUR_DISTR *distribution, char *genid );
 /* write info about distribution into logfile                                */
 
-void _unur_distr_discr_debug( UNUR_DISTR *distribution, char *genid, int printvector );
+void _unur_distr_discr_debug( UNUR_DISTR *distribution, char *genid );
 /* write info about distribution into logfile                                */
 
 void _unur_distr_demp_debug( UNUR_DISTR *distribution, char *genid, int printvector );

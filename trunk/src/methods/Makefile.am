@@ -24,6 +24,7 @@ libmethods_la_SOURCES = \
  hrb.c   hrb.h   hrb_struct.h \
  hrd.c   hrd.h   hrd_struct.h \
  hri.c   hri.h   hri_struct.h \
+ mcorr.c mcorr.h mcorr_struct.h \
  ninv.c  ninv.h  ninv_struct.h \
  srou.c  srou.h  srou_struct.h \
  ssr.c   ssr.h   ssr_struct.h \

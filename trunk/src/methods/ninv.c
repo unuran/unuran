@@ -163,8 +163,8 @@ unur_ninv_new( struct unur_distr *distr )
   /* set default values */
   PAR.max_iter  = 40;              /* maximal number of iterations           */
   PAR.rel_x_resolution = 1.0e-8 ;  /* maximal relative error in x            */
-  PAR.s[0]      = -10.;            /* left boundary of interval              */
-  PAR.s[1]      = 10.;             /* right boundary of interval             */
+  PAR.s[0]      = 0.;              /* left boundary of interval              */
+  PAR.s[1]      = 0.;              /* right boundary of interval             */
 
   par->method   = UNUR_METH_NINV;          /* method and default variant     */
   par->variant  = NINV_VARFLAG_REGULA;     /* default variant                */
@@ -385,25 +385,41 @@ unur_ninv_init( struct unur_par *par )
 
   /* check arguments */
   switch (par->variant) {
+
   case NINV_VARFLAG_REGULA:
-    if (PAR.s[0] == PAR.s[1]) {
-      _unur_error(par->genid,UNUR_ERR_GEN_DATA,"interval length = 0");
-      return NULL;
-    }
     if (PAR.s[0] > PAR.s[1]) {
       /* swap interval boundaries */
       double tmp;
       tmp = PAR.s[0]; PAR.s[0] = PAR.s[1]; PAR.s[1] = tmp;
     }
+
+    if (PAR.s[0] == PAR.s[1]) {
+      /* length of interval == 0 -> choose bounderies with */
+      /*  90% chance for sign change in interval           */
+      PAR.s[0] = -10.;      /* arbitrary starting value    */
+      PAR.s[1] =  10.;      /* arbitrary starting value    */
+     gen = _unur_ninv_create(par);
+     if (!gen) { free(par); return NULL; }
+      GEN.s[0] = _unur_ninv_regula(gen, 0.05);
+      GEN.s[1] = GEN.s[0]+10.;
+      GEN.s[1] = _unur_ninv_regula(gen, 0.95);
+    }
+    else {
+     gen = _unur_ninv_create(par);
+     if (!gen) { free(par); return NULL; }
+    }
     break;
+
   case NINV_VARFLAG_NEWTON:
     /* nothing to do */
+     gen = _unur_ninv_create(par);
+     if (!gen) { free(par); return NULL; }
     break;
   }
 
   /* create a new empty generator object */
-  gen = _unur_ninv_create(par);
-  if (!gen) { free(par); return NULL; }
+  //  gen = _unur_ninv_create(par);
+  // if (!gen) { free(par); return NULL; }
 
 #ifdef UNUR_ENABLE_LOGGING
   /* write info into log file */
@@ -475,9 +491,7 @@ _unur_ninv_regula( struct unur_gen *gen, double u )
   if (x1>=x2) {
     _unur_error(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,""); return 0.; }
 
-  /* sample from uniform pseudorandom number generator */
-  u = _unur_call_urng(gen);
-
+ 
   /* compute c.d.f. at interval boundaries */
   f1 = CDF(x1) - u;
   f2 = CDF(x2) - u;

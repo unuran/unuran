@@ -160,8 +160,12 @@ int
 _unur_upd_mode_normal( UNUR_DISTR *distr )
 {
   DISTR.mode = DISTR.mu;
-  if (DISTR.domain[0] > DISTR.mode) DISTR.mode = DISTR.domain[0];
-  if (DISTR.domain[1] < DISTR.mode) DISTR.mode = DISTR.domain[1];
+
+  /* mode must be in domain */
+  if (DISTR.mode < DISTR.domain[0]) 
+    DISTR.mode = DISTR.domain[0];
+  else if (DISTR.mode > DISTR.domain[1]) 
+    DISTR.mode = DISTR.domain[1];
 
   return 1;
 } /* end of _unur_upd_mode_normal() */

@@ -123,6 +123,13 @@ int
 _unur_upd_mode_cauchy( UNUR_DISTR *distr )
 {
   DISTR.mode = DISTR.theta; 
+
+  /* mode must be in domain */
+  if (DISTR.mode < DISTR.domain[0]) 
+    DISTR.mode = DISTR.domain[0];
+  else if (DISTR.mode > DISTR.domain[1]) 
+    DISTR.mode = DISTR.domain[1];
+
   return 1;
 } /* end of _unur_upd_mode_cauchy() */
 

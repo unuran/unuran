@@ -216,6 +216,12 @@ _unur_upd_mode_beta( UNUR_DISTR *distr )
   if (DISTR.n_params > 2)
     DISTR.mode = DISTR.mode * (b - a) + a;
 
+  /* mode must be in domain */
+  if (DISTR.mode < DISTR.domain[0]) 
+    DISTR.mode = DISTR.domain[0];
+  else if (DISTR.mode > DISTR.domain[1]) 
+    DISTR.mode = DISTR.domain[1];
+
   /* o.k. */
   return 1;
 } /* end of _unur_upd_mode_beta() */

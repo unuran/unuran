@@ -189,8 +189,13 @@ _unur_upd_mode_gamma( UNUR_DISTR *distr )
   if (DISTR.n_params > 1)
     DISTR.mode = DISTR.mode * beta + gamma;
 
-  return 1;
+  /* mode must be in domain */
+  if (DISTR.mode < DISTR.domain[0]) 
+    DISTR.mode = DISTR.domain[0];
+  else if (DISTR.mode > DISTR.domain[1]) 
+    DISTR.mode = DISTR.domain[1];
 
+  return 1;
 } /* end of _unur_upd_mode_gamma() */
 
 /*---------------------------------------------------------------------------*/

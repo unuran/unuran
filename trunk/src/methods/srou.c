@@ -122,6 +122,8 @@
 /*    bits 13-24 ... adaptive steps                                          */
 /*    bits 25-32 ... trace sampling                                          */
 
+#define SROU_DEBUG_REINIT    0x00000010u   /* print parameters after reinit  */
+
 /*---------------------------------------------------------------------------*/
 /* Flags for logging set calls                                               */
 
@@ -166,7 +168,7 @@ static void _unur_srou_free( struct unur_gen *gen);
 /* the following functions print debugging information on output stream,     */
 /* i.e., into the log file if not specified otherwise.                       */
 /*---------------------------------------------------------------------------*/
-static void _unur_srou_debug_init( struct unur_par *par, struct unur_gen *gen );
+static void _unur_srou_debug_init( struct unur_gen *gen, int is_reinit );
 
 /*---------------------------------------------------------------------------*/
 /* print after generator has been initialized has completed.                 */
@@ -474,12 +476,8 @@ unur_srou_chg_pdfparams( struct unur_gen *gen, double *params, int n_params )
     DISTR.params[i] = params[i];
 
   /* changelog */
-  /* mode and area might be wrong now! 
-     but the user is responsible to change it.
-     so we dont say:
-     gen->distr.set &= ~(UNUR_DISTR_SET_MODE | UNUR_DISTR_SET_PDFAREA );
-     gen->set &= ~SROU_SET_CDFMODE;
-  */
+  gen->distr.set &= ~UNUR_DISTR_SET_MASK_DERIVED;
+  /* derived parameters like mode, area, etc. might be wrong now! */
 
   /* o.k. */
   return 1;
@@ -639,6 +637,7 @@ unur_srou_chg_domain( struct unur_gen *gen, double left, double right )
   DISTR.BD_RIGHT = right;
 
   /* changelog */
+  gen->distr.set &= ~(UNUR_DISTR_SET_STDDOMAIN | UNUR_DISTR_SET_MASK_DERIVED );
   gen->distr.set |= UNUR_DISTR_SET_DOMAIN;
 
 #ifdef UNUR_ENABLE_LOGGING
@@ -756,7 +755,7 @@ _unur_srou_init( struct unur_par *par )
 
 #ifdef UNUR_ENABLE_LOGGING
     /* write info into log file */
-    if (gen->debug) _unur_srou_debug_init(par,gen);
+    if (gen->debug) _unur_srou_debug_init(gen, FALSE);
 #endif
 
   /* free parameters */
@@ -916,13 +915,22 @@ unur_srou_reinit( struct unur_gen *gen )
      /*   0 ... on error                                                     */
      /*----------------------------------------------------------------------*/
 {
+  int result;
+
   /* check arguments */
   CHECK_NULL(gen,0);
   _unur_check_gen_object( gen,SROU );
 
   /* compute universal bounding rectangle */
-  return _unur_srou_rectangle( gen );
+  result = _unur_srou_rectangle( gen );
 
+#ifdef UNUR_ENABLE_LOGGING
+    /* write info into log file */
+  if (gen->debug & SROU_DEBUG_REINIT)
+    if (gen->debug) _unur_srou_debug_init(gen,TRUE);
+#endif
+
+  return result;
 } /* end of unur_srou_reinit() */
 
 /*****************************************************************************/
@@ -1210,39 +1218,42 @@ _unur_srou_free( struct unur_gen *gen )
 /*---------------------------------------------------------------------------*/
 
 static void
-_unur_srou_debug_init( struct unur_par *par, struct unur_gen *gen )
+_unur_srou_debug_init( struct unur_gen *gen, int is_reinit )
      /*----------------------------------------------------------------------*/
      /* write info about generator into logfile                              */
      /*                                                                      */
      /* parameters:                                                          */
-     /*   par ... pointer to parameter for building generator object         */
-     /*   gen ... pointer to generator object                                */
+     /*   gen       ... pointer to generator object                          */
+     /*   is_reinit ... if TRUE the generator has been reinitialized         */
      /*----------------------------------------------------------------------*/
 {
   FILE *log;
 
   /* check arguments */
-  CHECK_NULL(par,/*void*/);  COOKIE_CHECK(par,CK_SROU_PAR,/*void*/);
   CHECK_NULL(gen,/*void*/);  COOKIE_CHECK(gen,CK_SROU_GEN,/*void*/);
 
   log = unur_get_stream();
 
   fprintf(log,"%s:\n",gen->genid);
-  fprintf(log,"%s: type    = continuous univariate random variates\n",gen->genid);
-  fprintf(log,"%s: method  = srou (simple universal ratio-of-uniforms)\n",gen->genid);
+  if (!is_reinit) {
+    fprintf(log,"%s: type    = continuous univariate random variates\n",gen->genid);
+    fprintf(log,"%s: method  = srou (simple universal ratio-of-uniforms)\n",gen->genid);
+  }
+  else
+    fprintf(log,"%s: reinit!\n",gen->genid);
   fprintf(log,"%s:\n",gen->genid);
 
   _unur_distr_cont_debug( &(gen->distr), gen->genid );
 
   fprintf(log,"%s: sampling routine = _unur_srou_sample",gen->genid);
-  if (par->variant & SROU_VARFLAG_VERIFY)
+  if (gen->variant & SROU_VARFLAG_VERIFY)
     fprintf(log,"_check");
-  else if (par->variant & SROU_VARFLAG_MIRROR)
+  else if (gen->variant & SROU_VARFLAG_MIRROR)
     fprintf(log,"_mirror");
   fprintf(log,"()\n%s:\n",gen->genid);
 
-  if (par->set & SROU_SET_CDFMODE)
-    fprintf(log,"%s: F(mode) = %g\n",gen->genid,PAR.Fmode);
+  if (gen->set & SROU_SET_CDFMODE)
+    fprintf(log,"%s: F(mode) = %g\n",gen->genid,GEN.Fmode);
   else
     fprintf(log,"%s: F(mode) unknown\n",gen->genid);
 

@@ -118,7 +118,7 @@ _unur_cdf_uniform( double x, UNUR_DISTR *distr )
 int
 _unur_upd_mode_uniform( UNUR_DISTR *distr )
 {
-  DISTR.mode = (DISTR.a + DISTR.b) / 2.;
+  DISTR.mode = (DISTR.domain[0] + DISTR.domain[1]) / 2.;
   return 1;
 } /* end of _unur_upd_mode_uniform() */
 

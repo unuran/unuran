@@ -537,8 +537,8 @@ unur_distr_cont_set_domain( struct unur_distr *distr, double left, double right 
   /* However, since we have changed the domain, we assume      */
   /* that this is not a truncated distribution.                */
   /* At last we have to mark all derived parameters as unknown */
-  distr->set &= ~(UNUR_DISTR_SET_STDDOMAIN & 
-		  UNUR_DISTR_SET_TRUNCATED & 
+  distr->set &= ~(UNUR_DISTR_SET_STDDOMAIN |
+		  UNUR_DISTR_SET_TRUNCATED | 
 		  UNUR_DISTR_SET_MASK_DERIVED );
 
   if (distr->base) {

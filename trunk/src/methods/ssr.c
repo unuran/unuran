@@ -404,12 +404,8 @@ unur_ssr_chg_pdfparams( struct unur_gen *gen, double *params, int n_params )
     DISTR.params[i] = params[i];
 
   /* changelog */
-  /* mode and area might be wrong now! 
-     but the user is responsible to change it.
-     so we dont say:
-     gen->distr.set &= ~(UNUR_DISTR_SET_MODE | UNUR_DISTR_SET_PDFAREA );
-     gen->set &= ~SSR_SET_CDFMODE;
-  */
+  gen->distr.set &= ~UNUR_DISTR_SET_MASK_DERIVED;
+  /* derived parameters like mode, area, etc. might be wrong now! */
 
   /* o.k. */
   return 1;
@@ -548,6 +544,7 @@ unur_ssr_chg_domain( struct unur_gen *gen, double left, double right )
   DISTR.BD_RIGHT = right;
 
   /* changelog */
+  gen->distr.set &= ~(UNUR_DISTR_SET_STDDOMAIN | UNUR_DISTR_SET_MASK_DERIVED );
   gen->distr.set |= UNUR_DISTR_SET_DOMAIN;
 
 #ifdef UNUR_ENABLE_LOGGING

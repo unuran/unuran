@@ -16,6 +16,9 @@
 void _unur_test_set_matrix_1(int dim, double *M);
 void _unur_test_set_matrix_2(int dim, double *M);
 
+/* dimension of test matrix */
+static int dim = 50;
+
 /* number of failed tests */
 static int n_failed = 0;
 
@@ -68,7 +71,7 @@ void _unur_test_set_matrix_2(int dim, double *M) {
 void _unur_test_matrix() {
 #define idx1(a,b) ((a-1)*dim+(b-1))
 
-  int i, dim, ret;
+  int i, ret;
 
   double *M;
   double *values;
@@ -76,7 +79,6 @@ void _unur_test_matrix() {
 
   int error_counter;
   
-  dim=50; 
   M=malloc(dim*dim*sizeof(double));
   values=malloc(dim*sizeof(double));
   vectors=malloc(dim*dim*sizeof(double));
@@ -86,9 +88,10 @@ void _unur_test_matrix() {
   error_counter = 0;
   ret = _unur_matrix_eigensystem(dim, M, values, vectors);
   if (ret == UNUR_SUCCESS) {
+    fprintf(TESTLOG, " #   \t   Eigenvalue \t\t   Expected \t\tDifference \n"); 
     for (i=0; i<dim; i++) {
-      fprintf(TESTLOG, "Eigenvalue #%02d : %e  (scaled %e)\n", i+1, values[i], 
-      2.*values[i]/(dim+1));
+      fprintf(TESTLOG, "%02d : \t%18.15f   \t%18.15f  \t%g\n", i+1,  
+      2.*values[i]/(dim+1),  (double) (i+1) , 2.*values[i]/(dim+1) - (i+1));
       if ( _unur_FP_approx(2.*values[i]/(dim+1), i+1) ) {
         /* eigenvalue is ok */
       } 
@@ -104,8 +107,6 @@ void _unur_test_matrix() {
     printf("[Eigensystem --> failed]");
   }
  
-  /* TODO ? additional tests using _unur_test_set_matrix_2 */
-  
 #undef idx1
 }
 

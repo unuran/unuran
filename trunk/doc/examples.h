@@ -110,8 +110,22 @@ modified accordingly.
 
 /*---------------------------------------------------------------------------*/
 
-=NODE  Example_More  More examples
+=NODE  Example_anti  Sample pairs of antithetic random variates
 =UP Examples [50]
+
+=DESCRIPTION
+Using Method TDR it is easy to sample pairs of antithetic random variates.
+
+@smallexample
+@include ref_example_anti.texi
+@end smallexample
+
+=EON
+
+/*---------------------------------------------------------------------------*/
+
+=NODE  Example_More  More examples
+=UP Examples [60]
 =DESCRIPTION
 
 @xref{Methods_for_CONT,Methods for continuous univariate distributions,Methods for continuous univariate distributions}.

@@ -11,6 +11,7 @@ unuran_examples = \
  ref_example2.texi \
  ref_example3.texi \
  ref_example4.texi \
+ ref_example_anti.texi \
  ref_example_cont.texi \
  ref_example_discr.texi \
  ref_example_emp.texi \

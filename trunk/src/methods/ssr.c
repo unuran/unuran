@@ -84,6 +84,8 @@
 /*    bits 13-24 ... adaptive steps                                          */
 /*    bits 25-32 ... trace sampling                                          */
 
+#define SSR_DEBUG_REINIT    0x00000010u   /* print parameters after reinit  */
+
 /*---------------------------------------------------------------------------*/
 /* Flags for logging set calls                                               */
 
@@ -443,6 +445,28 @@ unur_ssr_chg_mode( struct unur_gen *gen, double mode )
 /*---------------------------------------------------------------------------*/
 
 int
+unur_ssr_upd_mode( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* recompute mode of distribution                                       */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen   ... pointer to generator object                              */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... on success                                                   */
+     /*   0 ... on error                                                     */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  CHECK_NULL(gen,0);
+  _unur_check_gen_object( gen,SSR );
+
+  return unur_distr_cont_upd_mode( &(gen->distr) );
+} /* end of unur_ssr_upd_mode() */
+
+/*---------------------------------------------------------------------------*/
+
+int
 unur_ssr_chg_cdfatmode( struct unur_gen *gen, double Fmode )
      /*----------------------------------------------------------------------*/
      /* change value of cdf at mode                                          */
@@ -590,6 +614,28 @@ unur_ssr_chg_pdfarea( struct unur_gen *gen, double area )
   /* o.k. */
   return 1;
 } /* end of unur_ssr_chg_pdfarea() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+unur_ssr_upd_pdfarea( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* recompute area below p.d.f. of distribution                          */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen   ... pointer to generator object                              */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... on success                                                   */
+     /*   0 ... on error                                                     */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  CHECK_NULL(gen,0);
+  _unur_check_gen_object( gen,SSR );
+
+  return unur_distr_cont_upd_pdfarea( &(gen->distr) );
+} /* end of unur_ssr_upd_pdfarea() */
 
 /*****************************************************************************/
 
@@ -829,13 +875,22 @@ unur_ssr_reinit( struct unur_gen *gen )
      /*   0 ... on error                                                     */
      /*----------------------------------------------------------------------*/
 {
+  int result;
+
   /* check arguments */
   CHECK_NULL(gen,0);
   _unur_check_gen_object( gen,SSR );
 
   /* compute universal bounding rectangle */
-  return _unur_ssr_hat( gen );
+  result = _unur_ssr_hat( gen );
 
+#ifdef UNUR_ENABLE_LOGGING
+  /* write info into log file */
+/*    if (gen->debug & SSR_DEBUG_REINIT) */
+/*      if (gen->debug) _unur_ssr_debug_init(gen,TRUE); */
+#endif
+
+  return result;
 } /* end of unur_ssr_reinit() */
 
 /*****************************************************************************/

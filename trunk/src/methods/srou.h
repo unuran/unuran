@@ -215,7 +215,6 @@ int unur_srou_chg_pdfarea( UNUR_GEN *generator, double area );
    generator again.
 */
 
-
 int unur_srou_upd_pdfarea( UNUR_GEN *generator );
 /*
    Recompute the area below the p.d.f. of the distribution. 
@@ -226,8 +225,6 @@ int unur_srou_upd_pdfarea( UNUR_GEN *generator );
    unur_srou_reinit() must be executed before sampling from the 
    generator again.
 */
-
-
 
 /* =END */
 /*---------------------------------------------------------------------------*/

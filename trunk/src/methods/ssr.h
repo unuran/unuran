@@ -48,7 +48,7 @@
    the given p.d.f. The rejection constant is 4 for all T-concave distributions
    with unbounded domain and is less than 4 when the domain is bounded.
    Optionally the c.d.f. at the mode can be given to increase the performance
-   of the algorithm by means of the unur_srou_set_cdfatmode() call.
+   of the algorithm by means of the unur_ssr_set_cdfatmode() call.
    Then the rejection constant is reduced by one half
    and even a universal squeeze can (but need not be) used.
    However using squeezes is not recommended unless the evaluation of the p.d.f.
@@ -59,18 +59,18 @@
    If the exact location of the mode is not known, then use the approximate
    location and provide the (exact) value of the p.d.f. at the mode by means
    of the unur_ssr_set_pdfatmode() call.
-   But then unur_srou_set_cdfatmode() must not be used.
+   But then unur_ssr_set_cdfatmode() must not be used.
 
    If the (exact) area below the p.d.f. is not known, then an upper bound can be
    used instead (which of course increases the rejection constant). 
    But then the squeeze flag must not be set and
-   unur_srou_set_cdfatmode() must not be used.
+   unur_ssr_set_cdfatmode() must not be used.
 
    It is even possible to give an upper bound for the p.d.f. only.
    However then the (upper bound for the) area below the p.d.f. has to be 
    multiplied by the ratio between the upper bound and the lower bound of the 
    p.d.f. at the mode.
-   Again seting the squeeze flag and using unur_srou_set_cdfatmode()
+   Again seting the squeeze flag and using unur_ssr_set_cdfatmode()
    is not allowed.
 
    It is possible to change the parameters and the domain of the chosen 
@@ -172,6 +172,17 @@ int unur_ssr_chg_mode( UNUR_GEN *generator, double mode );
    generator again.
 */
 
+int unur_ssr_upd_mode( UNUR_GEN *generator );
+/* 
+   Recompute the mode of the distribution. This call only works when
+   a distribution object from the (=>) UNURAN library of standard
+   distributions is used.
+   Otherwise @code{unur_errno} is set to @code{UNUR_ERR_DISTR_DATA}.
+
+   unur_ssr_reinit() must be executed before sampling from the 
+   generator again.
+*/
+
 int unur_ssr_chg_cdfatmode( UNUR_GEN *generator, double Fmode );
 /* 
    Change c.d.f. at mode of distribution.
@@ -189,6 +200,17 @@ int unur_ssr_chg_pdfatmode( UNUR_GEN *generator, double fmode );
 int unur_ssr_chg_pdfarea( UNUR_GEN *generator, double area );
 /* 
    Change area below p.d.f. of distribution.
+   unur_ssr_reinit() must be executed before sampling from the 
+   generator again.
+*/
+
+int unur_ssr_upd_pdfarea( UNUR_GEN *generator );
+/*
+   Recompute the area below the p.d.f. of the distribution. 
+   It only works when a distribution objects from the
+   (=>) UNURAN library of standard distributions is used. 
+   Otherwise @code{unur_errno} is set to @code{UNUR_ERR_DISTR_DATA}. 
+
    unur_ssr_reinit() must be executed before sampling from the 
    generator again.
 */

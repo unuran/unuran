@@ -99,6 +99,8 @@ int unur_dgt_set_variant( UNUR_PAR *parameters, unsigned variant );
    vectors (N<1000) and variant 1 otherwise.
 */
 
+/* =END */
+
 /*---------------------------------------------------------------------------*/
 
 

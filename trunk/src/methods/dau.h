@@ -66,7 +66,16 @@ int unur_dau_set_urnfactor( UNUR_PAR *parameters, double factor );
    larger than 2 are not recommended; default is 1.
 */
 
+/* =END */
+
 /*---------------------------------------------------------------------------*/
+
+
+
+
+
+
+
 
 
 

@@ -57,5 +57,18 @@ UNUR_PAR *unur_unif_new( void );
    UNIF does not need a distribution object.
 */
 
+/* =END */
+
 /*---------------------------------------------------------------------------*/
+
+
+
+
+
+
+
+
+
+
+
 

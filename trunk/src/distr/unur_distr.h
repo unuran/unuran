@@ -177,6 +177,7 @@ double unur_mode_normal(double *params, int n_params);
 double unur_area_normal(double *params, int n_params);
 
 /*  Pareto distribution (of first kind) [2; ch.20, p.574]                    */
+struct unur_distr *unur_distr_pareto( double *params, int n_params );
 double unur_pdf_pareto(double x, double *params, int n_params);
 double unur_dpdf_pareto(double x, double *params, int n_params);
 
@@ -190,10 +191,12 @@ double unur_dpdf_pareto(double x, double *params, int n_params);
 /** TODO **/
 
 /*  Power-exponential (Subbotin) distribution [3; ch.24, p.195]              */
+struct unur_distr *unur_distr_powerexponential(double *params, int n_params);
 double unur_pdf_powerexponential(double x, double *params, int n_params);
 double unur_dpdf_powerexponential(double x, double *params, int n_params);
 
 /*  Rayleigh distribution [2; ch.18, p.456]                                  */
+struct unur_distr *unur_distr_rayleigh(double *params, int n_params);
 double unur_pdf_rayleigh(double x, double *params, int n_params);
 double unur_dpdf_rayleigh(double x, double *params, int n_params);
 
@@ -201,6 +204,7 @@ double unur_dpdf_rayleigh(double x, double *params, int n_params);
 /** TODO **/
 
 /* Student's t distribution                                                  */
+struct unur_distr *unur_distr_student(double *params, int n_params);
 double unur_pdf_student(double x, double *params, int n_params);
 double unur_dpdf_student(double x, double *params, int n_params);
 

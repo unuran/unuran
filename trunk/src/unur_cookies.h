@@ -110,6 +110,8 @@
 #define CK_HITROU_GEN    0x00200051u
 #define CK_NORTA_PAR     0x00200060u
 #define CK_NORTA_GEN     0x00200061u
+#define CK_GIBBS_PAR     0x00200070u
+#define CK_GIBBS_GEN     0x00200071u
 
 /* generators for random matrices */
 #define CK_MCORR_PAR     0x00400010u

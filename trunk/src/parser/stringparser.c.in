@@ -116,6 +116,149 @@
 
 /*---------------------------------------------------------------------------*/
 
+
+/*---------------------------------------------------------------------------*/
+
+static struct unur_distr *_unur_str2distr(char *str_distr);
+/*---------------------------------------------------------------------------*/
+/* get distribution object for given distribution.                           */
+/*---------------------------------------------------------------------------*/
+
+static struct unur_distr *_unur_str_distr_new( char *distribution );
+/*---------------------------------------------------------------------------*/
+/* get new distribution object.                                              */
+/*---------------------------------------------------------------------------*/
+
+static int _unur_str_distr_set( UNUR_DISTR *distr, const char *key, char *value );
+/*---------------------------------------------------------------------------*/
+/* set parameters for distribution.                                          */
+/*---------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------*/
+/* Set parameter in given distribution object.                               */
+/*---------------------------------------------------------------------------*/
+typedef int distr_set_i( UNUR_DISTR *distr, int i );
+typedef int distr_set_d( UNUR_DISTR *distr, double d );
+typedef int distr_set_dd( UNUR_DISTR *distr, double d1, double d2 );
+typedef int distr_set_Di( UNUR_DISTR *distr, double *array, int size );
+/*---------------------------------------------------------------------------*/
+/* types of set calls                                                        */
+/*---------------------------------------------------------------------------*/
+
+static int _unur_str_distr_set_i (UNUR_DISTR *distr, const char *key, char *type_args, char **args, distr_set_i set);
+/*---------------------------------------------------------------------------*/
+/* integer.                                                                  */
+/*---------------------------------------------------------------------------*/
+static int _unur_str_distr_set_d (UNUR_DISTR *distr, const char *key, char *type_args, char **args, distr_set_d set);
+/*---------------------------------------------------------------------------*/
+/* double.                                                                   */
+/*---------------------------------------------------------------------------*/
+static int _unur_str_distr_set_dd (UNUR_DISTR *distr, const char *key, char *type_args, char **args, distr_set_dd set);
+/*---------------------------------------------------------------------------*/
+/* 2 doubles.                                                                */
+/*---------------------------------------------------------------------------*/
+static int _unur_str_distr_set_Di (UNUR_DISTR *distr, const char *key, char *type_args, char **args, distr_set_Di set);
+/*---------------------------------------------------------------------------*/
+/* array of doubles & integer.                                               */
+/*---------------------------------------------------------------------------*/
+
+
+
+static struct unur_par *_unur_str2par( char *str_method, UNUR_DISTR *distr );
+/*---------------------------------------------------------------------------*/
+/* get parameter object for distribution and method.                         */
+/*---------------------------------------------------------------------------*/
+
+static struct unur_par *_unur_str_par_new( const char *method, UNUR_DISTR *distr );
+/*---------------------------------------------------------------------------*/
+/* get new parameter object for method.                                      */
+/*---------------------------------------------------------------------------*/
+
+static int _unur_str_par_set( UNUR_PAR *par, const char *key, char *value );
+/*---------------------------------------------------------------------------*/
+/* set parameters for method.                                                */
+/*---------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------*/
+/* Set parameter in given parameter object.                                 */
+/*---------------------------------------------------------------------------*/
+typedef int par_set_void( UNUR_PAR *par );
+typedef int par_set_i( UNUR_PAR *par, int i );
+typedef int par_set_u( UNUR_PAR *par, unsigned u );
+typedef int par_set_d( UNUR_PAR *par, double d );
+typedef int par_set_dd( UNUR_PAR *par, double d1, double d2 );
+typedef int par_set_iD( UNUR_PAR *par, int size, double *array );
+typedef int par_set_Di( UNUR_PAR *par, double *array, int size );
+/*---------------------------------------------------------------------------*/
+/* types of set calls                                                        */
+/*---------------------------------------------------------------------------*/
+
+static int _unur_str_par_set_void (UNUR_PAR *par, const char *key, char *type_args, char **args, par_set_void set);
+/*---------------------------------------------------------------------------*/
+/* void (no argument required).                                              */
+/*---------------------------------------------------------------------------*/
+static int _unur_str_par_set_i (UNUR_PAR *par, const char *key, char *type_args, char **args, par_set_i set);
+/*---------------------------------------------------------------------------*/
+/* integer.                                                                  */
+/*---------------------------------------------------------------------------*/
+static int _unur_str_par_set_u (UNUR_PAR *par, const char *key, char *type_args, char **args, par_set_u set);
+/*---------------------------------------------------------------------------*/
+/* unsigned integer.                                                         */
+/*---------------------------------------------------------------------------*/
+static int _unur_str_par_set_d (UNUR_PAR *par, const char *key, char *type_args, char **args, par_set_d set);
+/*---------------------------------------------------------------------------*/
+/* double.                                                                   */
+/*---------------------------------------------------------------------------*/
+static int _unur_str_par_set_dd (UNUR_PAR *par, const char *key, char *type_args, char **args, par_set_dd set);
+/*---------------------------------------------------------------------------*/
+/* 2 doubles.                                                                */
+/*---------------------------------------------------------------------------*/
+static int _unur_str_par_set_iD (UNUR_PAR *par, const char *key, char *type_args, char **args, par_set_iD set);
+/*---------------------------------------------------------------------------*/
+/* integer & array of doubles.                                               */
+/*---------------------------------------------------------------------------*/
+static int _unur_str_par_set_Di (UNUR_PAR *par, const char *key, char *type_args, char **args, par_set_Di set);
+/*---------------------------------------------------------------------------*/
+/* array of doubles & integer.                                               */
+/*---------------------------------------------------------------------------*/
+
+
+static UNUR_URNG *_unur_str2urng (char *str_urng);
+/*---------------------------------------------------------------------------*/
+/* get uniform RNG.                                                          */
+/*---------------------------------------------------------------------------*/
+
+
+static int _unur_str_set_args (char *value, char *type_args, char **args, int max_args);
+/*---------------------------------------------------------------------------*/
+/* parse argument string for set call.                                       */
+/*---------------------------------------------------------------------------*/
+
+static char *_unur_prepare_string (const char *str);
+/*---------------------------------------------------------------------------*/
+/* Prepare string for processing.                                            */
+/*---------------------------------------------------------------------------*/
+
+static int _unur_parse_dlist( char *liststr, double **darray );
+/*---------------------------------------------------------------------------*/
+/* Process a comma separated list of numbers.                                */
+/*---------------------------------------------------------------------------*/
+
+static int _unur_atoi ( const char *str );
+/*---------------------------------------------------------------------------*/
+/* Convert string into its integer representation.                           */
+/*---------------------------------------------------------------------------*/
+
+static unsigned _unur_atou ( const char *str );
+/*---------------------------------------------------------------------------*/
+/* Convert string into its unsigned representation (using hexadecimal).      */
+/*---------------------------------------------------------------------------*/
+
+static double _unur_atod ( const char *str );
+/*---------------------------------------------------------------------------*/
+/* Convert string into its double value.                                     */
+/*---------------------------------------------------------------------------*/
+
 #ifdef UNUR_ENABLE_LOGGING
 /*---------------------------------------------------------------------------*/
 /* the following functions print debugging information on output stream,     */
@@ -124,19 +267,23 @@
 
 static void _unur_str_debug_string( int level, const char *key, const char *value );
 /*---------------------------------------------------------------------------*/
-/* print string into log file.                                               */
+/* print key & value info into logfile.                                      */
+/*---------------------------------------------------------------------------*/
+
+static void _unur_str_debug_distr( int level, const char *name, double *params, int n_params );
+/*---------------------------------------------------------------------------*/
+/* write info about distribution into logfile.                               */
 /*---------------------------------------------------------------------------*/
 
 static void _unur_str_debug_set( int level, const char *key, const char *type, ... );
-
-static void _unur_str_debug_distr( int level, const char *name, double *params, int n_params );
-
+/*---------------------------------------------------------------------------*/
+/* write info about set command into logfile.                                */
+/*---------------------------------------------------------------------------*/
 
 #endif
 
-
-
-
+/*---------------------------------------------------------------------------*/
+/* abbreviations */
 
 /* unknown keyword */
 #define _unur_error_unknown(key,what) \
@@ -166,73 +313,16 @@ static void _unur_str_debug_distr( int level, const char *name, double *params, 
    } while (0)
 
 
+/*---------------------------------------------------------------------------*/
+/* constants                                                                 */
 
-
-/* Maximal length of provides string allowed */
-#define MAX_STRLENGTH (2048)
-/* Maximal entries of any list allowed */
-#define MAX_ELEM (2048)
-
-
-#define MAX_SET_ARGS  (10)  /* maximal number of arguments for set calls (must be at least 2) */
+#define MAX_SET_ARGS  (10)  
+/* maximal number of arguments for set calls (must be at least 2) */
 
 /* function prototypes */
-
-static UNUR_DISTR * _unur_str2distr        (char *);
 UNUR_GEN   * unur_str2gen           (const char *);
-static int          _unur_str2urng         (UNUR_PAR *, char *);
 
 
-
-static UNUR_PAR   * _unur_str2par ( char *strmethod, UNUR_DISTR *distr );
-
-
-static UNUR_DISTR *_unur_str_distr_new( char *distribution );
-static int _unur_str_distr_set( UNUR_DISTR *distr, const char *key, char *value );
-
-
-static UNUR_PAR *_unur_str_par_new( const char *str_method, UNUR_DISTR *distr );
-static int _unur_str_par_set( UNUR_PAR *par, const char *key, char *value );
-
-
-static int _unur_str_set_args( char *value, char *type_args, char **args, int max_args );
-/* parse argument string for set call                                   */
-
-
-static int  _unur_parse_dlist (char *, double **);
-static char *_unur_prepare_string (const char *str);
-
-static int _unur_atoi ( const char *str );
-static unsigned _unur_atou ( const char *str );
-static double _unur_atod ( const char *str );
-
-/* ... */
-typedef int par_set_void( UNUR_PAR *par );
-typedef int par_set_i( UNUR_PAR *par, int i );
-typedef int par_set_u( UNUR_PAR *par, unsigned u );
-typedef int par_set_d( UNUR_PAR *par, double d );
-typedef int par_set_dd( UNUR_PAR *par, double d1, double d2 );
-typedef int par_set_iD( UNUR_PAR *par, int size, double *array );
-typedef int par_set_Di( UNUR_PAR *par, double *array, int size );
-
-static int _unur_str_par_set_void (UNUR_PAR *par, const char *key, char *type_args, char **args, par_set_void set);
-static int _unur_str_par_set_i (UNUR_PAR *par, const char *key, char *type_args, char **args, par_set_i set);
-static int _unur_str_par_set_u (UNUR_PAR *par, const char *key, char *type_args, char **args, par_set_u set);
-static int _unur_str_par_set_d (UNUR_PAR *par, const char *key, char *type_args, char **args, par_set_d set);
-static int _unur_str_par_set_dd (UNUR_PAR *par, const char *key, char *type_args, char **args, par_set_dd set);
-static int _unur_str_par_set_iD (UNUR_PAR *par, const char *key, char *type_args, char **args, par_set_iD set);
-static int _unur_str_par_set_Di (UNUR_PAR *par, const char *key, char *type_args, char **args, par_set_Di set);
-
-/* ... */
-typedef int distr_set_i( UNUR_DISTR *distr, int i );
-typedef int distr_set_d( UNUR_DISTR *distr, double d );
-typedef int distr_set_dd( UNUR_DISTR *distr, double d1, double d2 );
-typedef int distr_set_Di( UNUR_DISTR *distr, double *array, int size );
-
-static int _unur_str_distr_set_i (UNUR_DISTR *distr, const char *key, char *type_args, char **args, distr_set_i set);
-static int _unur_str_distr_set_d (UNUR_DISTR *distr, const char *key, char *type_args, char **args, distr_set_d set);
-static int _unur_str_distr_set_dd (UNUR_DISTR *distr, const char *key, char *type_args, char **args, distr_set_dd set);
-static int _unur_str_distr_set_Di (UNUR_DISTR *distr, const char *key, char *type_args, char **args, distr_set_Di set);
  
 
 /*---------------------------------------------------------------------------*/
@@ -261,8 +351,9 @@ unur_str2gen (const char *string)
   UNUR_DISTR *distr = NULL;       /* distribution object */
   UNUR_PAR   *par   = NULL;       /* parameter object */
   UNUR_GEN   *gen   = NULL;       /* generator object    */
+  UNUR_URNG  *urng  = NULL;       /* uniform random number generator */
 
-  char *str_distr    = NULL;      /* string for distribution */
+  char *str_distr   = NULL;       /* string for distribution */
   char *str_method  = NULL;       /* string for method       */
   char *str_urng    = NULL;       /* string for uniform RNG  */
 
@@ -299,7 +390,7 @@ unur_str2gen (const char *string)
       str_urng = token;
     }
     else {
-      free (str);
+      if (str) free(str);
      _unur_error_unknown(token,"category");
      return NULL;
     }
@@ -309,6 +400,7 @@ unur_str2gen (const char *string)
   distr = _unur_str2distr(str_distr);
   if ( distr == NULL ) {
     /* error */
+    if (str) free(str);
     return NULL;
   }
 
@@ -324,23 +416,22 @@ unur_str2gen (const char *string)
   /* check if parameter object was generated successfully */
   if ( par == NULL ) {
     /* error */
+    if (str) free(str);
     unur_distr_free(distr);
     return NULL;
   }
 
-
-
   /* set uniform random number generator -- if provided */
   if ( str_urng != NULL ){
-     _unur_str2urng(par, str_urng);
+    if ((urng = _unur_str2urng(str_urng)) != NULL )
+      unur_set_urng(par, urng); 
   }
-
-
 
   /* make generator object */
   gen = unur_init(par);
   if ( gen == NULL ) {
     /* error */
+    if (str) free(str);
     unur_distr_free(distr);
     return NULL;
   }
@@ -348,12 +439,17 @@ unur_str2gen (const char *string)
   /* destroy distribution object */
   unur_distr_free(distr);
 
+  /* free memory */
+  if (str) free(str);
+
 #ifdef UNUR_ENABLE_LOGGING
   /* write info into log file */
   _unur_str_debug_string(0,"",NULL);
 #endif
 
+  /* return pointer to generator object */
   return gen;
+
 } /* end of unur_str2gen() */
 
 /*---------------------------------------------------------------------------*/
@@ -367,7 +463,7 @@ unur_str2gen (const char *string)
 struct unur_distr *
 _unur_str2distr(char *str_distr)
      /*----------------------------------------------------------------------*/
-     /* get parameter object for distribution and method                     */
+     /* get distribution object for given distribution                       */
      /*                                                                      */
      /* parameters:                                                          */
      /*   str_distr ... string that contains description of distribution     */
@@ -446,7 +542,7 @@ _unur_str2distr(char *str_distr)
 struct unur_distr *
 _unur_str_distr_new( char *distribution )
      /*----------------------------------------------------------------------*/
-     /* get new distribution object for method                               */
+     /* get new distribution object                                          */
      /*                                                                      */
      /* parameters:                                                          */
      /*   distribution ... string that contains distribution name            */
@@ -570,7 +666,7 @@ _unur_str_distr_set( UNUR_DISTR *distr, const char *key, char *value )
 int
 _unur_str_distr_set_i (UNUR_DISTR *distr, const char *key, char *type_args, char **args, distr_set_i set)
      /*----------------------------------------------------------------------*/
-     /* Set parameter in given parameter object.                             */
+     /* Set parameter in given distribution object.                          */
      /* The list of arguments and their types are given as string.           */
      /*                                                                      */
      /* type: "i"   (int)                                                    */
@@ -585,7 +681,7 @@ _unur_str_distr_set_i (UNUR_DISTR *distr, const char *key, char *type_args, char
      /*    error if input != "t"                                             */
      /*                                                                      */
      /* parameters:                                                          */
-     /*   distr     ... pointer to parameter object                          */
+     /*   distr     ... pointer to distribution object                          */
      /*   key       ... name of parameter to be set                          */
      /*   type_args ... contains types of arguments. Possible values:        */
      /*                   't'   for single token                             */
@@ -633,7 +729,7 @@ _unur_str_distr_set_i (UNUR_DISTR *distr, const char *key, char *type_args, char
 int
 _unur_str_distr_set_d (UNUR_DISTR *distr, const char *key, char *type_args, char **args, distr_set_d set)
      /*----------------------------------------------------------------------*/
-     /* Set parameter in given parameter object.                             */
+     /* Set parameter in given distribution object.                          */
      /* The list of arguments and their types are given as string.           */
      /*                                                                      */
      /* type: "d"   (double)                                                 */
@@ -646,7 +742,7 @@ _unur_str_distr_set_d (UNUR_DISTR *distr, const char *key, char *type_args, char
      /*    error if input != "t"                                             */
      /*                                                                      */
      /* parameters:                                                          */
-     /*   distr     ... pointer to parameter object                          */
+     /*   distr     ... pointer to distribution object                       */
      /*   key       ... name of parameter to be set                          */
      /*   type_args ... contains types of arguments. Possible values:        */
      /*                   't'   for single token                             */
@@ -690,7 +786,7 @@ _unur_str_distr_set_d (UNUR_DISTR *distr, const char *key, char *type_args, char
 int
 _unur_str_distr_set_dd (UNUR_DISTR *distr, const char *key, char *type_args, char **args, distr_set_dd set)
      /*----------------------------------------------------------------------*/
-     /* Set parameter in given parameter object.                             */
+     /* Set parameter in given distribution object.                          */
      /* The list of arguments and their types are given as string.           */
      /*                                                                      */
      /* type: "dd"   (double,double)                                         */
@@ -707,7 +803,7 @@ _unur_str_distr_set_dd (UNUR_DISTR *distr, const char *key, char *type_args, cha
      /*    otherwise: error                                                  */
      /*                                                                      */
      /* parameters:                                                          */
-     /*   distr     ... pointer to parameter object                          */
+     /*   distr     ... pointer to distribution object                       */
      /*   key       ... name of parameter to be set                          */
      /*   type_args ... contains types of arguments. Possible values:        */
      /*                   't'   for single token                             */
@@ -779,7 +875,7 @@ _unur_str_distr_set_dd (UNUR_DISTR *distr, const char *key, char *type_args, cha
 int
 _unur_str_distr_set_Di (UNUR_DISTR *distr, const char *key, char *type_args, char **args, distr_set_Di set)
      /*----------------------------------------------------------------------*/
-     /* Set parameter in given parameter object.                             */
+     /* Set parameter in given distribution object.                          */
      /* The list of arguments and their types are given as string.           */
      /*                                                                      */
      /* type: "Di"   (array of doubles, int)                                 */
@@ -797,7 +893,7 @@ _unur_str_distr_set_Di (UNUR_DISTR *distr, const char *key, char *type_args, cha
      /*    otherwise: error                                                  */
      /*                                                                      */
      /* parameters:                                                          */
-     /*   distr     ... pointer to parameter object                          */
+     /*   distr     ... pointer to distribution object                       */
      /*   key       ... name of parameter to be set                          */
      /*   type_args ... contains types of arguments. Possible values:        */
      /*                   't'   for single token                             */
@@ -1529,75 +1625,87 @@ _unur_str_par_set_Di (UNUR_PAR *par, const char *key, char *type_args, char **ar
 
 /*---------------------------------------------------------------------------*/
 
-int 
-_unur_str2urng( UNUR_PAR *par, char *str_urng )
+UNUR_URNG *
+_unur_str2urng( char *str_urng )
      /*----------------------------------------------------------------------*/
-     /* get parameter object for distribution and method                     */
+     /* get uniform RNG                                                      */
      /*                                                                      */
      /* parameters:                                                          */
-     /*   str_distr ... string that contains description of distribution     */
+     /*   str_urng ... string that contains description of uniform RNG       */
      /*                                                                      */
      /* return:                                                              */
-     /*   distribution object                                                */
+     /*   pointer to uniform RNG                                             */
+     /*                                                                      */
+     /* The string must not contain any other keywords than "urng".          */
+     /* the argument is passed unchanged to the PRNG package.                */
      /*                                                                      */
      /* error:                                                               */
      /*   return NULL                                                        */
      /*----------------------------------------------------------------------*/
 {
+  UNUR_URNG *urng = NULL;
 
+  char *token;             /* pointer to token in string */
+  char *next;              /* pointer to next token in string */
+  char *key, *value;       /* the key and its value */
 
+  /* tokenize the string using ';' as separator and handle the tokens */
+  for ( token = next = str_urng;
+	next != NULL && *token != '\0';
+	token = next ) {
 
+    /* find end of token (i.e. the pointer to next token) */
+    next = strchr(token,';');
+    if (next != NULL) {
+      /* next separator found */
+      *next = '\0';     /* terminate token string    */
+      next++;           /* set pointer to next token */
+    }
+    
+    /* token points to a key */
+    key = token;
 
-/**********************************************************************/
-/*                                                                    */
-/* function: _unur_str2urng()                                         */
-/*                                                                    */
-/* called by: unur_str2gen()                                          */
-/*                                                                    */
-/* parameters: pointer to parameter object                            */
-/*             pointer to char array / string                         */
-/*                                                                    */
-/* return: error-code                                                 */         
-/*                                                                    */
-/* comments:                                                          */
-/* gets a pointer to a parameter object and a string with             */
-/* information about the uniform random number generator (urng)       */
-/* and sets the urng withing the parameter object.                    */
-/*                                                                    */
-/* The string must be as specified within the PRNG package            */
-/*                                                                    */
-/**********************************************************************/
+    /* get the value from the pair key=value and terminate key string */
+    value = strchr(key, '=');
+    if (value != NULL) {
+      *value = '\0';    /* terminate key string        */
+      value++;          /* set pointer to value string */
+    }
+    
+    /* get (default) parameter object for method */
+    if ( !strcmp( key, "urng") ) {
+      if (key == str_urng) {
+	/* "urng" must be the first key.                                  */
+	/* (on the other hand, the first keyword always must be "urng"    */
+	/* since otherwise we had not called this subroutine.             */
+	/* hence, we only check, whether the keyword "urng" is unique.)   */
+	urng = prng_new(value);
+	if (urng == NULL) {
+	  /* error */
+	  _unur_error(GENTYPE,UNUR_ERR_STR,"setting urng failed"); 
+	  return NULL;
+	}
+      }
+      else {
+	if (urng) prng_free (urng);
+	_unur_error(GENTYPE,UNUR_ERR_STR_SYNTAX,"urng must be first key"); 
+	return NULL;
+      }
+    }
 
-   char *tmpchar;
-   UNUR_URNG *urng;
-   
+    /* there are no other parameters */
+    else {
+      /* error: unknown parameter */
+      if (urng) prng_free (urng);
+      _unur_error_unknown(key,"parameter for uniform RNG");
+      return NULL;
+    }
+  }
 
-   /* split key and value */
-   tmpchar = str_urng;
-   str_urng = strchr(tmpchar, '=');
-   while (*str_urng == '='){
-      *str_urng = '\0';
-      str_urng++;
-   }
-   /* only possible key: `prng' */
-   if (  0 != strcmp(tmpchar, "urng") ){
-      fprintf(stderr, "SYNTAX ERROR: Unknown key for setting uniform random number generator : %s\n",tmpchar);
-   }
-   
-   /* set uniform random number generator */
-   urng = prng_new(str_urng);
-   unur_set_urng(par, urng); 
+  /*return pointer to uniform RNG */
+  return urng;
 
-   /* error while setting uniform random number generator */
-   if ( urng == NULL ){
-      fprintf(stderr, "PRNG ERROR: Can't set uniform number generator.\n");
-      return (0);
-   }
-   else{                /* success */
-      return (1);
-   }
-} /* end fo _unur_str2urng() */
-
+} /* end of _unur_str2urng() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -1924,7 +2032,7 @@ _unur_atod ( const char *str )
 void 
 _unur_str_debug_string( int level, const char *key, const char *value  )
      /*----------------------------------------------------------------------*/
-     /* write info about generator into logfile                              */
+     /* print key & value info into logfile                                  */
      /*                                                                      */
      /* parameters:                                                          */
      /*   level ... level of indentation                                     */
@@ -1992,7 +2100,8 @@ _unur_str_debug_set( int level, const char *key, const char *type, ... )
      /* parameters:                                                          */
      /*   level ... level of indentation                                     */
      /*   key   ... pointer to key string                                    */
-     /*   value ... pointer to value string                                  */
+     /*   type  ... list of types of argments                                */
+     /*   ...   ... variable list of arguments                               */
      /*----------------------------------------------------------------------*/
 {
   va_list ap;

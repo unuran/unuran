@@ -103,7 +103,7 @@ while ( <STDIN> ){
 	    print make_list_of_par_sets();
 	}
 	else{
-	    die "Error: unknown qualifier after =INPUT: -$type-\n";
+	    die "Error: unknown qualifier after =INPUT: $type\n";
 	}
     }
 }
@@ -323,15 +323,11 @@ sub make_list_of_distr_sets {
 	    $type_args = "void" if $type_args eq "";
 
 	    # we support the following cases:
-### ????
-	    #   void   ... no argument required
 	    #   "i"    ... one argument of type int required
-	    #   "u"    ... one argument of type unsigned required
 	    #   "d"    ... one argument of type double required 
 	    #   "dd"   ... two arguments of type double required 
-	    #   "iD"   ... one argument of type int and a list of doubles required
-	    #              (the first argument is considered as size of the double array
 	    #   "Di"   ... a list of doubles and one argument of type int required
+	    #              (the second argument is considered as size of the double array)
 	    if ($type_args =~ /^(void|i|u|d|dd|iD|Di)$/) {
 		my $type = $1;
 		$set .= "\t\t\t\t result = _unur_str_distr_set_$type(distr,key,type_args,args,unur_distr_$distr_type\_set_$command);\n";
@@ -351,7 +347,6 @@ sub make_list_of_distr_sets {
 
     # print info on screen
     print STDERR "\n" if $VERBOSE;
-
 
     # get list of all distribution types
     my @distr_type_list = sort (keys %{$set_commands});
@@ -582,7 +577,7 @@ sub make_list_of_par_sets {
 	    #   "d"    ... one argument of type double required 
 	    #   "dd"   ... two arguments of type double required 
 	    #   "iD"   ... one argument of type int and a list of doubles required
-	    #              (the first argument is considered as size of the double array
+	    #              (the first argument is considered as size of the double array)
 	    #   "Di"   ... a list of doubles and one argument of type int required
 	    if ($type_args =~ /^(void|i|u|d|dd|iD|Di)$/) {
 		my $type = $1;
@@ -672,53 +667,4 @@ sub unmatched_parenthesis {
     return $open;
 } # end of unmachted_parenthesis()
 
-
-
-
-
-
-
-# ###########################################################################
-# 
-# input as string interface:
-# generates code for generating distribution object
-#
-# ###########################################################################
-sub distr_info{
-
-    print "\t/* ------------------------------------------- */\n";
-    print "\t/*                                             */\n";
-    print "\t/* key = \"domain\"                              */\n";
-    print "\t/*                                             */\n";
-    print "\t/* ------------------------------------------- */\n";
-    print "\telse if ( !strcmp( key , \"domain\") ){\n";
-    print "\t  /* list must contain exactly two entries */\n";
-    print "\t  if ( no_of_elem != 2 ){\n";
-    print "\t    fprintf(stderr, \"SYNTAX ERROR: To set the domain use a list with exactly 2 entries -- Standard domain is used instead.\\n\");\n";
-    print "\t  }\n";
-    print "\t  else if ( unur_distr_is_cont(distr) ){\n";
-    print "\t    unur_distr_cont_set_domain( distr, list[0], list[1]);\n";
-    print "\t  }\n";
-    print "\t  else if ( unur_distr_is_discr(distr) ){\n";
-    print "\t    unur_distr_discr_set_domain( distr, list[0], list[1]);\n";
-    print "\t  }\n";
-    print "\t  else{\n";
-    print "\t    fprintf(stderr, \"ERROR: Can't set domain for this type of distribution\\n\");\n";
-    print "\t    break;\n";
-    print "\t  }\n";
-    print "\t}\n";
-    print "\telse {\n";
-    print "\t  fprintf(stderr, \"SYNTAX ERROR?: Unknown key will be ignored: %s\\n\", key);\n";
-    print "\t}\n";
-
-
-    close INFILE;
-
-} # end of distr_info()
-
 ##############################################################################
-##############################################################################
-##############################################################################
-
-
-

@@ -1125,9 +1125,9 @@ _unur_ninv_regula( struct unur_gen *gen, double u )
   }  /* while end -- interval found */ 
 
 
-  a     = x1;       /* a und x2 soll immer ZW enthalten */
+  a     = x1;       /* always sign change between a and x2 */
 
-  /* Sekantensuche, ZW wird beibehalten */
+  /* secant step, preserve sign change */
   for (i=0; i < GEN.max_iter; i++) {
     count++;
      
@@ -1144,12 +1144,12 @@ _unur_ninv_regula( struct unur_gen *gen, double u )
     if ( f2 == 0. || _FP_same(f1, f2) )
       break; /* -> finished */
 
-    if ( f1*f2 <= 0) {  /* ZeichenWechsel vorhanden             */
-      count = 0;   /* zaehler fuer bisektion wird rueckgestellt */
-      a    = x1;   /* [a, x2] enthaelt ZW                       */
+    if ( f1*f2 <= 0) {  /* sign change found             */
+      count = 0;   /* reset bisection counter  */
+      a    = x1;   /* sign change within [a, x2]               */
     }
     
-    length = x2 - a;  /* gerichtete laenge */
+    length = x2 - a;  /* oriented length  */
     lengthabs = fabs(length);
     lengthsgn = (length < 0.) ? -1. : 1.;
     
@@ -1158,33 +1158,33 @@ _unur_ninv_regula( struct unur_gen *gen, double u )
       break; /* -> finished */
 
   
-    /* Sekanten-Schritt  oder Bisektion */
+    /* secant or bisection step   */
     dx = ( f1-f2==0. ) ? length/2. : f2*(x2-x1)/(f2-f1) ;  
     
     /* minimaler schritt */
     if ( fabs(dx) < GEN.rel_x_resolution * x2abs ){
       dx = lengthsgn * 0.99 * GEN.rel_x_resolution * x2abs;
-      while (x2 == x2 - dx){ /* dx zu klein */
-	if ( dx != 2.*dx)    /* am genauigkeits-limit des rechners */
+      while (x2 == x2 - dx){ /* dx too small  */
+	if ( dx != 2.*dx)    /* near limit of calculations */
 	  dx = 2.*dx;
         else
-	  dx = length/2.;    /* Bisektion */
+	  dx = length/2.;    /* bisection step   */
       }
     }
 
        
-    /* Bisektionsschritt, wenn:                             */  
-    /* kein  ZW  || Schritt fuhrt aus Intervall             */
+    /* bisection step if:                             */  
+    /* no sign change   || step leads out of interval             */
     if ( count > 1 || 
         (lengthabs-GEN.rel_x_resolution*x2abs)/(dx*lengthsgn) <= 1. )
-      dx = length/2.; /* Bisektionsschritt */
+      dx = length/2.; /* bisection step        */
   
 
-    /* Update der Punkte */    
+    /* point update  */    
     x1 = x2;       f1 = f2;
     x2 = x2-dx;    f2 = CDF(x2) - u; 
     
-  }  /* for-schleife ende */
+  }  /* for-loop  end */
 
 #ifdef UNUR_ENABLE_LOGGING
     /* write info into log file (in case error) */

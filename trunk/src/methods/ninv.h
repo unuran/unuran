@@ -42,6 +42,10 @@
 
    =UP  Methods_for_CONT
 
+   =REQUIRED CDF
+
+   =SPEED Set-up: optional, Sample: (very) slow
+
    =DESCRIPTION
       NINV is the implementation of numerical inversion.
       For finding the root it is possible to choose between

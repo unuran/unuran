@@ -42,6 +42,12 @@
 
    =UP  Methods_for_CONT
 
+   =REQUIRED PDF, all local extrema
+
+   =SPEED Set-up: slow, Sample: fast
+
+   =ABSTRACT Not suited for heavy tailed distributions
+
    =DESCRIPTION
       TABL is an acceptance/rejection method that uses piecewise
       constant hat and squeezes. Immediate acceptance of points below the

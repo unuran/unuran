@@ -44,7 +44,7 @@
 #define T_DARI
 #define T_DAU
 #define T_DGT
-#define T_DSTD
+#define T_DSTD 
 #define T_SROU
 #define T_SSR
 #define T_TABL

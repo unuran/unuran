@@ -42,6 +42,10 @@
 
    =UP  Methods_for_CEMP
 
+   =REQUIRED observed sample
+
+   =SPEED Set-up: slow (as sample is sorted), Sample: very fast
+
    =DESCRIPTION
       EMPK generates random variates from an empirical distribution that is
       given by an observed sample. The idea is that simply choosing a random

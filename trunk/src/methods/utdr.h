@@ -42,6 +42,10 @@
 
    =UP  Methods_for_CONT
 
+   =REQUIRED T-concave PDF, mode, approximate area
+
+   =SPEED Set-up: moderate, Sample: Moderate
+
    =DESCRIPTION
       UTDR is based on the transformed density rejection and uses three almost
       optimal points for constructing hat and squeezes.

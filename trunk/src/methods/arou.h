@@ -42,6 +42,12 @@
 
    =UP  Methods_for_CONT
 
+   =REQUIRED T-concave PDF, dPDF
+
+   =OPTIONAL mode
+
+   =SPEED Set-up: slow, Sample: fast
+
    =DESCRIPTION
       AROU is a variant of the ratio-of-uniforms method that uses the
       fact that the transformed region is convex for many distributions.

@@ -42,6 +42,10 @@
 
    =UP  Methods_for_CONT
 
+   =REQUIRED T-concave PDF, mode, area
+
+   =SPEED Set-up: fast, Sample: slow
+
    =DESCRIPTION
       SSR is an acceptance/rejection method that uses universal
       inequalities for constructing (universal) hats and squeezes.

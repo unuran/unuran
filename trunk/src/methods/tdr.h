@@ -42,6 +42,12 @@
 
    =UP  Methods_for_CONT
 
+   =REQUIRED T-concave PDF, dPDF
+
+   =OPTIONAL mode
+
+   =SPEED Set-up: slow, Sample: fast
+
    =DESCRIPTION
       TDR is an acceptance/rejection method that uses the concavity of a
       transformed density to construct hat function and squeezes

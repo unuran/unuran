@@ -42,6 +42,10 @@
 
    =UP  Methods_for_CONT
 
+   =REQUIRED T-concave PDF, mode, area
+
+   =SPEED Set-up: fast, Sample: slow
+
    =DESCRIPTION
       SROU is based on the ratio-of-uniforms method but uses universal 
       inequalities for constructing a (universal) bounding rectangle.

@@ -42,6 +42,10 @@
 
    =UP  Methods_for_DISCR
 
+   =REQUIRED T-concave PMF, mode, approximate area
+
+   =SPEED Set-up: moderate, Sample: fast
+
    =DESCRIPTION
       DARI is based on rejection inversion, which can be seen as an
       adaptation of transformed density rejection to discrete

@@ -40,6 +40,8 @@ enum {
   F_FUNCT_ERROR = 0x80000000u,      /* error                                 */
 
   F_FUNCT_SGN   = 0x00000001u,      /* sign function                         */
+  F_FUNCT_SEC   = 0x00000002u,      /* secant function                       */
+
   F_FUNCT_LT    = 0x00000010u,      /* '<'  function                         */
   F_FUNCT_LE    = 0x00000020u,      /* '<=' function                         */
   F_FUNCT_GT    = 0x00000040u,      /* '>'  function                         */
@@ -285,12 +287,23 @@ F_ne ( struct concat *output, const struct ftreenode *node, const char *variable
 /*---------------------------------------------------------------------------*/
 
 unsigned
+F_sec ( struct concat *output, const struct ftreenode *node, const char *variable )
+     /*----------------------------------------------------------------------*/
+     /* string for secant function                                           */
+     /*----------------------------------------------------------------------*/
+{
+  return (F_FUNCT_SEC | F_prefix_generic(output,node,variable,"sec"));
+} /* end of F_sec() */
+
+/*---------------------------------------------------------------------------*/
+
+unsigned
 F_sgn ( struct concat *output, const struct ftreenode *node, const char *variable )
      /*----------------------------------------------------------------------*/
      /* string for sign function                                            */
      /*----------------------------------------------------------------------*/
 {
-  return (F_FUNCT_SGN | F_prefix_generic(output,node,variable,"acgsgn"));
+  return (F_FUNCT_SGN | F_prefix_generic(output,node,variable,"sgn"));
 } /* end of F_sgn() */
 
 /*---------------------------------------------------------------------------*/
@@ -416,6 +429,14 @@ _unur_fstr_F_specfunct ( FILE *out, unsigned flags )
      /*   1 on success                                                       */
      /*----------------------------------------------------------------------*/
 {
+  if (flags & F_FUNCT_SEC) {
+    fprintf (out,"      sec(a)=1.d0/cos(a)\n");
+  }
+
+  if (flags & F_FUNCT_SGN) {
+    fprintf (out,"      sgn(a)=sign(1.d0,a)\n");
+  }
+
   if (flags & F_FUNCT_LE) {
     fprintf (out,"      RelLE(a,b)=sign(0.5d0,b-a)+0.5d0\n");
   }
@@ -433,10 +454,6 @@ _unur_fstr_F_specfunct ( FILE *out, unsigned flags )
   }
   if (flags & F_FUNCT_NE) {
     fprintf (out,"      RelNE(a,b)=1.d0-RelGE(a,b)*RelLE(a,b)\n");
-  }
-
-  if (flags & F_FUNCT_SGN) {
-    fprintf (out,"      acgsgn(a)=sign(1.d0,a)\n");
   }
 
   return 1;

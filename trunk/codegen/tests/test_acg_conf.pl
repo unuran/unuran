@@ -47,6 +47,8 @@ our @distr_list =
       'cont; pdf=\"cos((x-1/2)*pi)\"; domain=(0,1)',
       
       'cont; pdf=\"1-tan(x*pi/2)\"; domain=(0,0.5)',
+      
+      'cont; pdf=\"3-sec(x*pi/2)\"; domain=(-0.7836,0.7836)',
 
       'cont; pdf=\"sqrt(1+2*x)\"; domain=(0,1)',
 

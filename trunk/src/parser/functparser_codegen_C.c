@@ -40,6 +40,7 @@ enum {
   C_FUNCT_ERROR = 0x80000000u,      /* error                                 */
 
   C_FUNCT_SGN   = 0x00000001u,      /* sign function                         */
+  C_FUNCT_SEC   = 0x00000002u,      /* secant function                       */
 };
 
 /*---------------------------------------------------------------------------*/
@@ -205,6 +206,17 @@ C_power ( struct concat *output, const struct ftreenode *node, const char *varia
 /*---------------------------------------------------------------------------*/
 
 unsigned
+C_sec ( struct concat *output, const struct ftreenode *node, const char *variable )
+     /*----------------------------------------------------------------------*/
+     /* string for secant function                                           */
+     /*----------------------------------------------------------------------*/
+{
+  return (C_FUNCT_SEC | C_prefix_generic(output,node,variable,"_acg_sec"));
+} /* end of C_sec() */
+
+/*---------------------------------------------------------------------------*/
+
+unsigned
 C_abs ( struct concat *output, const struct ftreenode *node, const char *variable )
      /*----------------------------------------------------------------------*/
      /* string for absolute value function                                   */
@@ -350,6 +362,9 @@ _unur_fstr_C_specfunct ( FILE *out, unsigned flags )
   if (flags & C_FUNCT_SGN) {
     _unur_fstr_C_sgn(out);
   }
+  if (flags & C_FUNCT_SEC) {
+    _unur_fstr_C_sec(out);
+  }
 
   return 1;
 } /* end of _unur_fstr_C_specfunct() */
@@ -359,7 +374,7 @@ _unur_fstr_C_specfunct ( FILE *out, unsigned flags )
 int
 _unur_fstr_C_sgn ( FILE *out )
      /*----------------------------------------------------------------------*/
-     /* Print C code for special functions                                   */
+     /* Print C code for sign function                                       */
      /*                                                                      */
      /* parameters:                                                          */
      /*   out   ... output stream                                            */
@@ -378,7 +393,34 @@ _unur_fstr_C_sgn ( FILE *out )
   fprintf(out,"#endif /* _ACG_FUNCT_SGN */\n\n");
 
   return 1;
-} /* end of _unur_fstr_C_specfunct() */
+} /* end of _unur_fstr_C_sgn() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+_unur_fstr_C_sec ( FILE *out )
+     /*----------------------------------------------------------------------*/
+     /* Print C code for secant function                                     */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   out   ... output stream                                            */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 on success                                                       */
+     /*----------------------------------------------------------------------*/
+{
+  fprintf(out,"#ifndef _ACG_FUNCT_SEC\n");
+  fprintf(out,"#define _ACG_FUNCT_SEC\n");
+
+  fprintf(out,"static double _acg_sec(double x)\n{\n");
+  fprintf(out,"\tdouble cosx = cos(x);\n");
+  fprintf(out,"\treturn ((cosx == 0.) ? HUGE_VAL : 1./cosx) ;\n");
+  fprintf(out,"}\n");
+
+  fprintf(out,"#endif /* _ACG_FUNCT_SEC */\n\n");
+
+  return 1;
+} /* end of _unur_fstr_C_sec() */
 
 /*---------------------------------------------------------------------------*/
 

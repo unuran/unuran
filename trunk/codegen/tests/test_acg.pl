@@ -23,8 +23,8 @@ $| = 1;
 # ----------------------------------------------------------------
 # Directory with sources
 
-my $top_srcdir = $ENV{'srcdir'} ? $ENV{'srcdir'} : '.';
-$top_srcdir .= "/../..";
+my $srcdir = $ENV{'srcdir'} ? $ENV{'srcdir'} : '.';
+my $top_srcdir = "$srcdir/../..";
 
 # ----------------------------------------------------------------
 # Load routines for reading data about PDF from UNURAN files
@@ -49,7 +49,7 @@ open LOG, ">$file_prefix.log" or die "Cannot open log file $file_prefix.log";
 # ----------------------------------------------------------------
 # Compiler
 
-my $GCC = "gcc -Wall -ansi -pedantic -I../../src -L../../src";
+my $GCC = "gcc -Wall -ansi -pedantic -I$top_srcdir/src -L../../src";
 my $G77 = "g77 -Wall";
 my $JAVAC = "javac";
 

@@ -110,6 +110,7 @@ static unsigned C_prefix_generic ( struct concat *output, const struct ftreenode
 static unsigned C_prefix ( struct concat *output, const struct ftreenode *node, const char *variable );
 /* special operators */
 static unsigned C_power  ( struct concat *output, const struct ftreenode *node, const char *variable );
+static unsigned C_sec    ( struct concat *output, const struct ftreenode *node, const char *variable );
 static unsigned C_abs    ( struct concat *output, const struct ftreenode *node, const char *variable );
 static unsigned C_sgn    ( struct concat *output, const struct ftreenode *node, const char *variable );
 
@@ -148,6 +149,7 @@ static unsigned F_ge     ( struct concat *output, const struct ftreenode *node, 
 static unsigned F_eq     ( struct concat *output, const struct ftreenode *node, const char *variable );
 static unsigned F_ne     ( struct concat *output, const struct ftreenode *node, const char *variable );
 /* special operators */
+static unsigned F_sec    ( struct concat *output, const struct ftreenode *node, const char *variable );
 static unsigned F_sgn    ( struct concat *output, const struct ftreenode *node, const char *variable );
 
 /* infix (binary) operators (eg. x + y) */
@@ -184,6 +186,7 @@ static unsigned J_eq     ( struct concat *output, const struct ftreenode *node, 
 static unsigned J_ne     ( struct concat *output, const struct ftreenode *node, const char *variable );
 /* special operators */
 static unsigned J_power  ( struct concat *output, const struct ftreenode *node, const char *variable );
+static unsigned J_sec    ( struct concat *output, const struct ftreenode *node, const char *variable );
 static unsigned J_sgn    ( struct concat *output, const struct ftreenode *node, const char *variable );
 
 /* infix (binary) operators (eg. x + y) */
@@ -329,7 +332,7 @@ static struct symbols symbol[] = {
   {"sin" , S_SFUNCT  , 1, 0.0 , v_sin    , d_sin  , C_prefix , F_prefix, J_prefix },
   {"cos" , S_SFUNCT  , 1, 0.0 , v_cos    , d_cos  , C_prefix , F_prefix, J_prefix },
   {"tan" , S_SFUNCT  , 1, 0.0 , v_tan    , d_tan  , C_prefix , F_prefix, J_prefix },
-  {"sec" , S_SFUNCT  , 1, 0.0 , v_sec    , d_sec  , C_error  , F_error , J_error  },   /** TODO **/
+  {"sec" , S_SFUNCT  , 1, 0.0 , v_sec    , d_sec  , C_sec    , F_sec   , J_sec    },
   {"sqrt", S_SFUNCT  , 1, 0.0 , v_sqrt   , d_sqrt , C_prefix , F_prefix, J_prefix },
   {"abs" , S_SFUNCT  , 1, 0.0 , v_abs    , d_abs  , C_abs    , F_prefix, J_prefix },
   {"sgn" , S_SFUNCT  , 1, 0.0 , v_sgn    , d_const, C_sgn    , F_sgn   , J_sgn    },

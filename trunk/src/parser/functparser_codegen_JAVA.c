@@ -40,6 +40,8 @@ enum {
   J_FUNCT_ERROR = 0x80000000u,      /* error                                 */
 
   J_FUNCT_SGN   = 0x00000001u,      /* sign function                         */
+  J_FUNCT_SEC   = 0x00000002u,      /* secant function                       */
+
   J_FUNCT_LT    = 0x00000010u,      /* '<'  function                         */
   J_FUNCT_LE    = 0x00000020u,      /* '<=' function                         */
   J_FUNCT_GT    = 0x00000040u,      /* '>'  function                         */
@@ -208,17 +210,6 @@ J_prefix ( struct concat *output, const struct ftreenode *node, const char *vari
 /*---------------------------------------------------------------------------*/
 
 unsigned
-J_power ( struct concat *output, const struct ftreenode *node, const char *variable )
-     /*----------------------------------------------------------------------*/
-     /* string for power function                                            */
-     /*----------------------------------------------------------------------*/
-{
-  return J_prefix_generic(output,node,variable,"Math.pow");
-} /* end of J_power() */
-
-/*---------------------------------------------------------------------------*/
-
-unsigned
 J_lt ( struct concat *output, const struct ftreenode *node, const char *variable )
      /*----------------------------------------------------------------------*/
      /* string for '<' function                                              */
@@ -281,6 +272,28 @@ J_ne ( struct concat *output, const struct ftreenode *node, const char *variable
 {
   return (J_FUNCT_NE | J_prefix_generic(output,node,variable,"RelNE"));
 } /* end of J_ne() */
+
+/*---------------------------------------------------------------------------*/
+
+unsigned
+J_power ( struct concat *output, const struct ftreenode *node, const char *variable )
+     /*----------------------------------------------------------------------*/
+     /* string for power function                                            */
+     /*----------------------------------------------------------------------*/
+{
+  return J_prefix_generic(output,node,variable,"Math.pow");
+} /* end of J_power() */
+
+/*---------------------------------------------------------------------------*/
+
+unsigned
+J_sec ( struct concat *output, const struct ftreenode *node, const char *variable )
+     /*----------------------------------------------------------------------*/
+     /* string for secant function                                           */
+     /*----------------------------------------------------------------------*/
+{
+  return (J_FUNCT_SEC | J_prefix_generic(output,node,variable,"sec"));
+} /* end of J_sec() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -398,6 +411,11 @@ _unur_fstr_J_specfunct ( FILE *out, unsigned flags )
     _unur_fstr_J_sgn(out);
   }
 
+  if (flags & J_FUNCT_SEC) {
+    fprintf(out,"\tstatic double sec (double x) { ");
+    fprintf(out,"return (1./Math.cos(x)); }\n\n");
+  }
+
   if (flags & J_FUNCT_LE) {
     fprintf(out,"\tstatic double RelLE (double x, double y) { ");
     fprintf(out,"return ((x<=y) ? 1. : 0.); }\n\n");
@@ -446,7 +464,7 @@ _unur_fstr_J_sgn ( FILE *out )
   fprintf(out,"\t}\n\n");
 
   return 1;
-} /* end of _unur_fstr_J_specfunct() */
+} /* end of _unur_fstr_J_sgn() */
 
 /*---------------------------------------------------------------------------*/
 

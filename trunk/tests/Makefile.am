@@ -6,6 +6,16 @@ INCLUDES = \
  -I$(top_srcdir)/src \
  -I$(top_srcdir)/src/tests
 
+# Special files for tests with Mathematica
+if HAVE_MATHEMATICA
+MATHEMATICA_PROGS = t_StdDistr
+MATHEMATICA_TESTS = t_StdDistr
+else
+MATHEMATICA_PROGS = 
+MATHEMATICA_TESTS = 
+endif
+
+
 check_PROGRAMS = \
  test_functionparser \
  t_distr \
@@ -25,11 +35,9 @@ check_PROGRAMS = \
  t_tabl \
  t_tdr \
  t_unif \
- t_utdr
+ t_utdr \
+ $(MATHEMATICA_PROGS)
 
-## commented out
-## run_test_with_Mathematica
- 
 TESTS = \
  t_distr \
  t_stringparser \
@@ -47,18 +55,18 @@ TESTS = \
  t_tabl \
  t_tdr \
  t_unif \
- t_utdr
+ t_utdr \
+ $(MATHEMATICA_TESTS)
 
 ## commented out
-## run_test_with_Mathematica
 ## t_timing
 
 noinst_HEADERS = \
  testunuran.h \
- test_with_Mathematica.h
+ test_StdDistr.h
 
 EXTRA_DIST = \
- test_with_Mathematica.m \
+ test_StdDistr.m \
  make_test_files.pl \
  README.conf \
  distr.conf \
@@ -80,16 +88,20 @@ EXTRA_DIST = \
  unif.conf \
  utdr.conf
 
-# compare results of CDF, PDF, and dPDF to those produced with Mathematica ...
+# compare results of CDF, PDF, and dPDF of standard distributions
+# to those produced with Mathematica ...
 
 data:
-	math -initfile test_with_Mathematica.m
+	math -initfile test_StdDistr.m
 
-run_test_with_Mathematica.c: test_with_Mathematica.m
-	math -initfile test_with_Mathematica.m
+t_StdDistr.c: test_StdDistr.m
+	math -initfile test_StdDistr.m
 
-## run_test_with_Mathematica_SOURCES = run_test_with_Mathematica.c test_with_Mathematica.c 
-## run_test_with_Mathematica_LDADD = $(top_builddir)/src/libunuran.a
+if HAVE_MATHEMATICA
+t_StdDistr_SOURCES = t_StdDistr.c test_StdDistr.c
+t_StdDistr_LDADD = $(top_builddir)/src/libunuran.a
+endif
+
 
 test_functionparser_LDADD = $(top_builddir)/src/libunuran.a
 
@@ -211,6 +223,5 @@ CLEANFILES = *~ *.log
 # clean generated files
 MAINTAINERCLEANFILES = \
  Makefile.in \
- run_test_with_Mathematica.c \
  t_*
 

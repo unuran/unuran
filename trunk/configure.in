@@ -49,6 +49,10 @@ dnl Checks for library functions.
 AC_CHECK_FUNCS(strtod strtol)
 AC_CHECK_FUNCS(gettimeofday)
 
+dnl We need Mathematica(R) for some tests
+AM_CONDITIONAL(HAVE_MATHEMATICA,true)
+dnl AM_CONDITIONAL(HAVE_MATHEMATICA,false)
+
 dnl versuch
 dnl AC_ARG_WITH(xxx, \
 dnl	[  --with-prng             use prng library for uniform random number generation], \

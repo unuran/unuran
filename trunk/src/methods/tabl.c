@@ -574,7 +574,7 @@ unur_tabl_set_max_intervals( struct unur_par *par, int max_ivs )
 /*---------------------------------------------------------------------------*/
 
 int
-unur_tabl_get_intervals( const struct unur_gen *gen )
+unur_tabl_get_n_intervals( const struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* get current number of intervals                                      */
      /*                                                                      */
@@ -592,7 +592,7 @@ unur_tabl_get_intervals( const struct unur_gen *gen )
 
   return GEN.n_ivs;
 
-} /* end of unur_tabl_get_intervals() */
+} /* end of unur_tabl_get_n_intervals() */
 
 /*---------------------------------------------------------------------------*/
 

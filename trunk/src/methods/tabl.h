@@ -138,7 +138,7 @@
       reached. If that value is below the desired value it is necessary to
       increase the maximal number of subintervals, which defaults to 1000,
       using the unur_tabl_set_max_intervals() call. 
-      The unur_tabl_get_intervals() call can be used to find out the 
+      The unur_tabl_get_n_intervals() call can be used to find out the 
       number of subintervals the setup calculated.
 
       The usage of the commands mentioned here are demonstrated in
@@ -258,7 +258,7 @@ int unur_tabl_set_max_intervals( UNUR_PAR *parameters, int max_ivs );
    Default is @code{1000}.
 */
 
-int unur_tabl_get_intervals( const UNUR_GEN *generator );
+int unur_tabl_get_n_intervals( const UNUR_GEN *generator );
 /* 
    Get the current number of intervals.
    (In case of an error 0 is returned.)

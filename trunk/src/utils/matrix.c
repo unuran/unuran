@@ -41,10 +41,6 @@
 /*--------------------------------------------------------------------------*/
 
 #include <unur_source.h>
-#include <methods/x_gen.h>
-#include <uniform/urng.h>
-#include <parser/parser.h>
-#include <utils/vector_source.h>
 #include "matrix_source.h"
 
 /*---------------------------------------------------------------------------*/

@@ -10,10 +10,20 @@
 
 /*---------------------------------------------------------------------------*/
 
+#ifdef HAVE_CONFIG_H
+#  include <config.h>
+#else
+#  error "config.h" required
+#endif
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
 #include <string.h>
+
+#ifdef HAVE_UNISTD_H
+#  include <unistd.h>
+#endif
 
 #include <unuran.h>
 #include <unuran_tests.h>
@@ -21,7 +31,7 @@
 /* ------------------------------------------------------------------------- */
 
 /* Program name                                                              */
-static char *progname;
+const static char *progname = "make_timing_table";
 
 /*---------------------------------------------------------------------------*/
 
@@ -42,6 +52,9 @@ struct unur_slist *make_distr_list ( struct unur_slist *distr_str_list );
 /* print legend for distributions and methods */
 int print_legend ( struct unur_slist *distr_str_list, struct unur_slist *meth_str_list ); 
 
+/* print legend for timings results */
+int print_timing_legend ( int samplesize );
+
 /* print label for distribution and methods with index n*/
 int print_label ( int n, char ltype );
 
@@ -60,36 +73,94 @@ int print_timings ( double *timings,
 #define ROW_DISTRIBUTION   1  /* print distributions on row, methods in columns */
 #define ROW_METHOD         2  /* print distributions on columns, methods in rows*/
 
-/* print usage */
-void print_usage(void);
-
 /*---------------------------------------------------------------------------*/
+/* print usage */
+
+void
+print_usage(void)
+{
+
+#ifdef HAVE_GETOPT
+
+  fprintf(stderr,"\n%s [-n samplesize] conffile\n",progname);
+  fprintf(stderr,"\n");
+  fprintf(stderr,"Compute average generation time (including setup) for a sampling.\n");
+  fprintf(stderr,"\n");
+  fprintf(stderr,"Arguments:\n");
+  fprintf(stderr,"\t-n size     ... size of sample (default: 1000)\n");
+  fprintf(stderr,"\t-d time     ... duration for each test in sec. (default: 0.1)\n");
+  fprintf(stderr,"\t   conffile ... file with list of distributions and methods\n");
+  fprintf(stderr,"\n");
+
+#else
+
+  fprintf(stderr,"\n%s conffile [samplesize]\n",progname);
+  fprintf(stderr,"\n");
+  fprintf(stderr,"Compute average generation time (including setup) for a sampling.\n");
+  fprintf(stderr,"\n");
+  fprintf(stderr,"Arguments:\n");
+  fprintf(stderr,"\tconffile   ... file with list of distributions and methods\n");
+  fprintf(stderr,"\tsamplesize ... size of sample (default: 1000)\n");
+  fprintf(stderr,"\n");
+
+#endif
+
+} /* end of print_usage() */
+
+/*****************************************************************************/
 
 int main (int argc, char *argv[])
 {
   /* defaults */
   int samplesize = 1000;    /* size of samples */
   double duration = 0.1;    /* duration in seconds for timing generation of a sample */
+  char *conffile;           /* name of configuration file */
 
   struct unur_slist *distr_str_list; /* list of strings for distributions */
   struct unur_slist *meth_str_list;  /* list of strings for methods */
-  char *conffile;                    /* name of configuration file */
 
   double *time_0;
 
 
-  /* read parameters */
-  progname = argv[0];
-  if (argc<2) {
-    print_usage();
-    exit (EXIT_FAILURE);
+  /* ------------------------------------------------------------------------*/
+  /* read parameters                                                         */
+
+#ifdef HAVE_GETOPT
+
+  int c;
+
+  while ((c = getopt(argc, argv, "d:n:")) != -1) {
+    switch (c) {
+    case 'd':     /* duration */
+      duration = atof(optarg);
+      break;
+    case 'n':     /* sample size */
+      samplesize = atoi(optarg);
+      break;
+    case '?':     /* Help Message  */
+    case 'h':
+    default:
+      print_usage(); exit (EXIT_FAILURE);
+    }
   }
+
   /* name of configuration file */
+  if (optind >= argc) { print_usage(); exit (EXIT_FAILURE); }
+  conffile = argv[optind]; 
+
+#else
+
+  /* name of configuration file */
+  if (argc<2) { print_usage(); exit (EXIT_FAILURE); }
   conffile = argv[1];
   
   /* sample size */
   if (argc >= 3)
     samplesize = atoi(argv[2]);
+
+#endif
+
+  /* ------------------------------------------------------------------------*/
 
   /* switch off all debugging and logging information*/
   unur_set_default_debug(0u);
@@ -103,6 +174,7 @@ int main (int argc, char *argv[])
 
   /* print legend */
   print_legend(distr_str_list,meth_str_list);
+  print_timing_legend(samplesize);
   
   /* make timings */
   time_0 = compute_timings(distr_str_list,meth_str_list,samplesize,duration);
@@ -127,14 +199,17 @@ get_timing_unit(void)
      /* get unit for relative timings                                        */
      /* (use generation of exponential random variate via inversion)         */
 {
-  UNUR_DISTR *distr;    /* pointer to working distribution object */
-  UNUR_PAR *par;        /* pointer to working parameter object */
-  double timing_unit;   /* timing result for basis of relative timings */
+  UNUR_DISTR *distr;                /* pointer to working distribution object */
+  UNUR_PAR *par;                    /* pointer to working parameter object */
+  static double timing_unit = -1.;  /* timing result for basis of relative timings */
 
-  distr = unur_distr_exponential(NULL,0);
-  par = unur_cstd_new(distr);
-  timing_unit = unur_test_timing_exponential(par, 5);
-  free(par);
+  if (timing_unit < 0.) {
+    /* compute timing unit */
+    distr = unur_distr_exponential(NULL,0);
+    par = unur_cstd_new(distr);
+    timing_unit = unur_test_timing_exponential(par, 5);
+    free(par);
+  }
 
   return timing_unit;
 } /* end of get_timing_unit() */
@@ -177,13 +252,13 @@ read_config_file ( const char *filename,
     }
     
     /* store distribution object */
-    if ( !strncmp( str, "distr", 5) ) {
+    if ( strncmp( str, "distr", 5)==0 ) {
       _unur_slist_append(distr_str_list,str);
       continue;
     }
 
     /* store method (parameter object) */
-    if ( !strncmp( str, "method=", 7) ) {
+    if ( strncmp( str, "method=", 7)==0 ) {
       _unur_slist_append(meth_str_list,str);
       continue;
     }
@@ -278,6 +353,19 @@ print_legend ( struct unur_slist *distr_str_list, struct unur_slist *meth_str_li
   /* o.k. */
   return 1;
 } /* end of print_legend() */
+
+/*---------------------------------------------------------------------------*/
+
+int 
+print_timing_legend ( int samplesize )
+     /* print legend for timings results */
+{
+  printf("Average generation times (including setup) for sample of size %d.\n",samplesize);
+  printf("Timings are relative to generation of expontential random variate\n");
+  printf("using inversion within UNU.RAN environment\n");
+  printf("(timing unit = %g microseconds)\n\n",get_timing_unit());
+  return 1;
+} /* end of print_timing_legend() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -393,11 +481,6 @@ print_timings ( double *timings,
     break;
   }
 
-  printf("Average generation times (including setup) for sample of size %d.\n",samplesize);
-  printf("Timings are relative to generation of expontential random variate\n");
-  printf("using inversion within UNU.RAN environment\n");
-  printf("(timing unit = %g microseconds)\n\n",get_timing_unit());
-
   /* print table header */
   printf("    ");
   for (row=0; row<n_row; row++) {
@@ -438,19 +521,3 @@ print_timings ( double *timings,
 
 /*---------------------------------------------------------------------------*/
 
-void
-print_usage(void)
-     /* print usage */
-{
-  fprintf(stderr,"\n%s conffile [samplesize]\n",progname);
-  fprintf(stderr,"\n");
-  fprintf(stderr,"Compute average generation time (including setup) for a sampling.\n");
-  fprintf(stderr,"\n");
-  fprintf(stderr,"Arguments:\n");
-  fprintf(stderr,"\tconffile   ... file with list of distributions and methods\n");
-  fprintf(stderr,"\tsamplesize ... size of sample\n");
-  fprintf(stderr,"\n");
-
-} /* end of print_usage() */
-
-/*---------------------------------------------------------------------------*/

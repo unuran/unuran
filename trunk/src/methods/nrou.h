@@ -54,23 +54,23 @@
       NROU is an implementation of the (generalized) ratio-of-uniforms
       method which uses (minimal) bounding rectangles, see
       @ref{Ratio-of-Uniforms}. It uses a positive control parameter
-      @code{r} to adjust the algorithmto the given distribution to
+      @i{r} for adjusting the algorithm to the given distribution to
       improve performance and/or to make this method applicable.
-      Larger values of @code{r} increase the class of distributions
+      Larger values of @i{r} increase the class of distributions
       for which the method works at the expense of a higher rejection
-      constant. For computations reasons @code{r=1} should be used if
+      constant. For computational reasons @i{r=1} should be used if
       possible (this is the default).
       Moreover, this implementation uses the center @unurmath{\mu} of
       the distribution (see unur_distr_cont_set_center() for 
       details of its default values). 
 
-      For the special case with @unurmath{r=1} the coordinates of the minimal
-      bounding rectangles are given by 
+      For the special case with @unurmath{r=1} the coordinates of the
+      minimal bounding rectangles are given by 
 
       @unurmathdisplay{
       v^+ = \sup\limits_{x}         \sqrt{PDF(x)}, \\
       u^- = \inf\limits_{x} (x-\mu) \sqrt{PDF(x)}, \\
-      u^+ = \sup\limits_{x} (x-\mu) \sqrt{PDF(x)}. }
+      u^+ = \sup\limits_{x} (x-\mu) \sqrt{PDF(x)}, }
 
       where @unurmath{\mu} is the center of the distribution.
       For other values of @i{r} we have
@@ -80,7 +80,7 @@
       u^- = \inf\limits_{x} (x-\mu) (PDF(x))^{r/(r+1)}, \\
       u^+ = \sup\limits_{x} (x-\mu) (PDF(x))^{r/(r+1)}. }
 
-      These bounds can be given directly. Otherwise these are computed
+      These bounds can be given directly. Otherwise they are computed
       automatically by means of a (slow) numerical routine.
       Of course this routine can fail, especially when this rectangle
       is not bounded. 
@@ -137,13 +137,13 @@ int unur_nrou_set_u( UNUR_PAR *parameters, double umin, double umax );
    rectangle is computed numerically.
    
    @emph{Notice}: Computing the minimal bounding rectangle may fail
-   under some circumstances. In particular for multimodal
-   distributions this might fail.
+   under some circumstances, e.g. this is likely for multimodal
+   distributions. 
    For @unurmath{T_c}-concave distributions with @unurmath{c=-1/2} it
    should work.
 
    @emph{Important:} The bounding rectangle that has to be
-   provided is the function @unurmath{PDF(x-center)!}
+   provided is for the function @unurmath{PDF(x-center)!}
 
    Default: not set.
 */
@@ -185,7 +185,7 @@ int unur_nrou_set_verify( UNUR_PAR *parameters, int verify );
 
    If the condition @unurmath{PDF(x) \leq hat(x)} is
    violated for some @i{x} then @code{unur_errno} is set to
-   @code{UNUR_ERR_GEN_CONDITION}. However notice that this might
+   @code{UNUR_ERR_GEN_CONDITION}. However, notice that this might
    happen due to round-off errors for a few values of
    @i{x} (less than 1%).
 
@@ -194,7 +194,7 @@ int unur_nrou_set_verify( UNUR_PAR *parameters, int verify );
 
 int unur_nrou_chg_verify( UNUR_GEN *generator, int verify );
 /* 
-   Change the verifying of algorithm while sampling on/off.
+   Change the verifying of algorithm while sampling (on/off).
 */
 
 /* =END */

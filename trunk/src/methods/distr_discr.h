@@ -89,12 +89,27 @@ int unur_distr_discr_set_prob( UNUR_DISTR *distribution, double *prob, int n_pro
    (=>) UNURAN library of standard distributions.)
 */
 
+int unur_distr_discr_make_prob( UNUR_DISTR *distribution );
+/* 
+   Compute a probability vector when a PMF is given. However it only
+   works when the domain of the distribution is bounded and not too
+   large or the sum over the PMF is given. The maximal size of the
+   created PV is bounded by the macro @code{UNUR_MAX_AUTO_PV} that is
+   defined in @file{unuran_config.h}.
+   If successful the length of the generated probablity vector is
+   returned.
+   If computing a PV fails for some reasons, @code{0} is returned and
+   @code{unur_errno} is set to @code{UNUR_ERR_DISTR_SET}.
+   Notice that it is not possible to execute this call when the
+   distribution object already contains a PV.
+*/
 
 int unur_distr_discr_get_prob( UNUR_DISTR *distribution, double **prob );
 /* 
    Get length of probability vector of the distribution and set pointer
    @code{prob} to array of probabilities. If no probability vector is given,
    @code{0} is returned and @code{prob} is set to NULL.
+   (It does not call unur_distr_discr_make_prob()!)
 */
 
 

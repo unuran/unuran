@@ -198,13 +198,13 @@ unur_distr_discr_set_prob( struct unur_distr *distr, double *prob, int n_prob )
 
   /* it is not possible to set a PV when a PMF is given. */
   if (DISTR.pmf != NULL) {
-    _unur_error(NULL,UNUR_ERR_DISTR_SET,"PMF given, cannot set PV");
+    _unur_error(distr->name,UNUR_ERR_DISTR_SET,"PMF given, cannot set PV");
     return 0;
   }
 
   /* check new parameter for distribution */
   if (n_prob < 0) {
-    _unur_error(NULL,UNUR_ERR_DISTR_SET,"length of p.v.");
+    _unur_error(distr->name,UNUR_ERR_DISTR_SET,"length of PV");
     return 0;
   }
   /* we do not check non-negativity of p.v.
@@ -224,11 +224,107 @@ unur_distr_discr_set_prob( struct unur_distr *distr, double *prob, int n_prob )
 
 /*---------------------------------------------------------------------------*/
 
+int
+unur_distr_discr_make_prob( struct unur_distr *distr )
+     /*----------------------------------------------------------------------*/
+     /* compute probability vector                                           */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   distr   ... pointer to distribution object                         */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   length of probability vector                                       */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return 0                                                           */
+     /*----------------------------------------------------------------------*/
+{
+  double *prob;    /* pointer to probability vector */
+  int n_prob;      /* length of PV */
+  int i;
+
+  /* check arguments */
+  _unur_check_NULL( NULL, distr, 0 );
+  _unur_check_distr_object( distr, DISCR, 0 );
+
+  /* it is not possible to reset a PV */
+  if (DISTR.prob != NULL) {
+    _unur_error(distr->name,UNUR_ERR_DISTR_GET,"cannot override PV");
+    return 0;
+  }
+
+  /* PMF required */
+  if ( DISTR.pmf == NULL ) {
+    _unur_error(distr->name,UNUR_ERR_DISTR_GET,"PMF");
+    return 0;
+  }
+
+  /* domain bounded or sum over PMF */
+  if ( !( ( (DISTR.domain[1] - DISTR.domain[0]) < UNUR_MAX_AUTO_PV )
+	  || ( (distr->set & UNUR_DISTR_SET_PMFSUM) && DISTR.domain[0] > INT_MIN ) ) ) {
+    _unur_error(distr->name,UNUR_ERR_DISTR_GET,"domain too large and no sum over PMF given");
+    return 0;
+  }
+
+  /* compute PV */
+
+  if ( (n_prob = DISTR.domain[1] - DISTR.domain[0]) < UNUR_MAX_AUTO_PV ) {
+
+    /* first case: bounded domain */
+    prob = _unur_malloc( n_prob * sizeof(double) );
+    for (i=0; i<n_prob; i++)
+      prob[i] = _unur_discr_PMF(DISTR.domain[0]+i,distr);
+  }
+
+  else {
+    /* second case: domain too big but sum over PMF given       */
+#define MALLOC_SIZE 1000 /* allocate 1000 doubles at once       */
+
+    double sum = 0.;     /* accumulated sum                     */
+    int n_alloc = 0;     /* number of doubles allocated         */
+    
+    int max_alloc;       /* maximal number of allocated doubles */
+    
+    max_alloc = min( UNUR_MAX_AUTO_PV, (INT_MAX - DISTR.domain[0] - MALLOC_SIZE) );
+    
+    n_prob = 0;
+    prob = NULL;
+    
+    do {
+      n_alloc += MALLOC_SIZE;
+      prob = _unur_realloc( prob, n_alloc * sizeof(double) );
+      for (i=0; i<MALLOC_SIZE; i++) {
+	sum += prob[n_prob] = _unur_discr_PMF(DISTR.domain[0]+n_prob,distr);
+	n_prob++;
+      }
+      if (_unur_FP_approx(DISTR.sum, sum) )
+	break;
+    } while (n_alloc <= max_alloc );
+    
+    if (!_unur_FP_approx(DISTR.sum, sum) ) {
+      /* not successful */
+      free (prob);
+      _unur_error(distr->name,UNUR_ERR_DISTR_GET,"cannot compute PV");
+      return 0;
+    }
+#undef MALLOC_SIZE
+  }
+    
+  /* store vector */
+  DISTR.prob = prob;
+  DISTR.n_prob = n_prob;
+
+  /* o.k. */
+  return 1;
+} /* end of unur_distr_discr_make_prob() */
+
+/*---------------------------------------------------------------------------*/
+
 int 
 unur_distr_discr_get_prob( struct unur_distr *distr, double **prob )
      /*----------------------------------------------------------------------*/
      /* get length of probability vector and set pointer to probability      */
-     /* vector.                                                              */
+     /* vector                                                               */
      /*                                                                      */
      /* parameters:                                                          */
      /*   distr    ... pointer to distribution object                        */
@@ -273,7 +369,7 @@ unur_distr_discr_set_pmf( struct unur_distr *distr, UNUR_FUNCT_DISCR *pmf )
 
   /* it is not possible to set a PMF when a PV is given. */
   if (DISTR.prob != NULL) {
-    _unur_error(NULL,UNUR_ERR_DISTR_SET,"PV given, cannot set PMF");
+    _unur_error(distr->name,UNUR_ERR_DISTR_SET,"PV given, cannot set PMF");
     return 0;
   }
 
@@ -447,7 +543,7 @@ unur_distr_discr_set_pmfparams( struct unur_distr *distr, double *params, int n_
 
   /* check new parameter for distribution */
   if (n_params < 0 || n_params > UNUR_DISTR_MAXPARAMS ) {
-    _unur_error(NULL,UNUR_ERR_DISTR_NPARAMS,"");
+    _unur_error(distr->name,UNUR_ERR_DISTR_NPARAMS,"");
     return 0;
   }
 
@@ -513,11 +609,11 @@ unur_distr_discr_set_domain( struct unur_distr *distr, int left, int right )
 
   /* check new parameter for distribution */
   if (left >= right) {
-    _unur_error(NULL,UNUR_ERR_DISTR_SET,"domain, left >= right");
+    _unur_error(distr->name,UNUR_ERR_DISTR_SET,"domain, left >= right");
     return 0;
   }
   if (left < DISTR.domain[0] || right > DISTR.domain[1]) {
-    _unur_error(NULL,UNUR_ERR_DISTR_SET,"domain exceeds old domain, not allowed");
+    _unur_error(distr->name,UNUR_ERR_DISTR_SET,"domain exceeds old domain, not allowed");
     return 0;
   }
 
@@ -665,7 +761,7 @@ unur_distr_discr_get_mode( struct unur_distr *distr )
     /* try to compute mode */
     if (DISTR.upd_mode == NULL) {
       /* no function to compute mode available */
-            _unur_error(distr->name,UNUR_ERR_DISTR_GET,"mode");
+      _unur_error(distr->name,UNUR_ERR_DISTR_GET,"mode");
       return INT_MAX;
     }
     else {
@@ -937,7 +1033,7 @@ unur_distr_discr_set_pmfsum( struct unur_distr *distr, double sum )
 
   /* check new parameter for distribution */
   if (sum <= 0.) {
-    _unur_error(NULL,UNUR_ERR_DISTR_SET,"pmf sum <= 0");
+    _unur_error(distr->name,UNUR_ERR_DISTR_SET,"pmf sum <= 0");
     return 0;
   }
 
@@ -1079,11 +1175,12 @@ _unur_distr_discr_debug( struct unur_distr *distr, char *genid, int printvector 
   if ( DISTR.pmf )
     /* have probability mass function */
     fprintf(log,"%s:\tdomain for pmf = (%d, %d)",genid,DISTR.domain[0],DISTR.domain[1]);
+  _unur_print_if_default(distr,UNUR_DISTR_SET_DOMAIN);
+  fprintf(log,"\n%s:\n",genid);
 
   if (DISTR.n_prob>0)
     /* have probability vector */
     fprintf(log,"%s:\tdomain for pv = (%d, %d)",genid,DISTR.domain[0],DISTR.domain[0]-1+DISTR.n_prob);
-
   _unur_print_if_default(distr,UNUR_DISTR_SET_DOMAIN);
   fprintf(log,"\n%s:\n",genid);
 
@@ -1092,20 +1189,12 @@ _unur_distr_discr_debug( struct unur_distr *distr, char *genid, int printvector 
   else
     fprintf(log,"%s:\tmode unknown\n",genid);
   
-  fprintf(log,"\n%s:\tsum over PMF = %g",genid,DISTR.sum);
+  fprintf(log,"%s:\tsum over PMF = %g",genid,DISTR.sum);
   _unur_print_if_default(distr,UNUR_DISTR_SET_PMFSUM);
+  fprintf(log,"\n%s:\n",genid);
   
 } /* end of _unur_distr_discr_debug() */
 
 /*---------------------------------------------------------------------------*/
 #undef DISTR
 /*---------------------------------------------------------------------------*/
-
-
-
-
-
-
-
-
-

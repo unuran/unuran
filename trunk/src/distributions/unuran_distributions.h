@@ -363,6 +363,16 @@ double unur_stdgen_sample_weibull_inv( struct unur_gen *gen );
  *****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
+/* Geometric distribution  [1; ch.5.2, p.201]                                */
+struct unur_distr *unur_distr_geometric(double *params, int n_params);
+
+/* special generators */
+int _unur_stdgen_geometric_init( struct unur_par *par, struct unur_gen *gen );
+/* initialize new generator                                                  */
+int unur_stdgen_sample_geometric_inv( struct unur_gen *gen );
+/* Inversion                                                                 */
+
+/*---------------------------------------------------------------------------*/
 /* Zipf (or Zeta) distribution  [1; ch.11.20, p.465]                         */
 struct unur_distr *unur_distr_zipf(double *params, int n_params);
 

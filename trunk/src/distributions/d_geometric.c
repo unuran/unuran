@@ -70,7 +70,8 @@ static double _unur_pmf_geometric(int k, double *params, int n_params);
 double
 _unur_pmf_geometric(int k, double *params, int n_params)
 { 
-  return ((k<0) ? 0. : p * pow( 1.-p, k );
+/*    return ((k<0) ? 0. : p * pow( 1.-p, k ); */
+  return 1.;
 } /* end of _unur_pmf_geometric() */
 
 /*---------------------------------------------------------------------------*/

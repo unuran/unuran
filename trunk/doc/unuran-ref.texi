@@ -417,7 +417,7 @@ All parameters have default settings documented in @ref{Defaults}.
 @c * RECT:: experimental multivariate Method
 * SROU:: Simple Ratio Of Uniforms
 * SSR:: Transformed Density Rejection (with universal bounds)
-@c * TABL:: Ahren
+* TABL:: Ahren
 * TDR::  Trandformed Density Rejection
 * UNIF:: ???
 * UTDR:: Universal Transformed Density Rejection (3-point method)
@@ -538,7 +538,7 @@ For information about the following distributions see
 @c * RECTref:: experimental multivariate Method
 * SROUref:: Simple Ratio Of Uniforms
 * SSRref:: Transformed Density Rejection (with universal bounds)
-@c * TABLref:: Ahren
+* TABLref:: Ahren
 * TDRref::  Trandformed Density Rejection
 * UNIFref:: ???
 * UTDRref:: Universal Transformed Density Rejection (3-point method)

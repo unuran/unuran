@@ -37,49 +37,117 @@
  *                                                                           *
  *****************************************************************************/
 
+/* 
+   =METHOD  TABL   a TABLe method with piecewise constant hats
+
+   blah
+
+
+
+*/
+
 /*---------------------------------------------------------------------------*/
 /* Routines for user interface                                               */
 
-UNUR_PAR *unur_tabl_new( UNUR_DISTR *distribution );
-/* get default parameters for generator                                      */
+/* =ROUTINES */
 
-UNUR_GEN *_unur_tabl_init( UNUR_PAR *parameters );
-/* initialize new generator                                                  */
-
-double _unur_tabl_sample( UNUR_GEN *generator );
-double _unur_tabl_sample_check( UNUR_GEN *generator );
-/* sample from generator                                                     */
-
-void _unur_tabl_free( UNUR_GEN *generator);
-/* destroy generator object                                                  */
+UNUR_PAR *unur_tabl_new( UNUR_DISTR* distribution );
+/* Get default parameters for generator.                                     */
 
 /*...........................................................................*/
 
-int unur_tabl_set_nstp( UNUR_PAR *parameters, int n_stp );
-/* set number of construction points for hat at initialization               */
+int unur_tabl_set_variant( UNUR_PAR *parameters, unsigned variant );
+/* 
+   Set variant for method.
+*/
+
+/** TODO **/
 
 int unur_tabl_set_max_sqhratio( UNUR_PAR *parameters, double max_ratio );
-/* set bound for ratio A(squeeze) / A(hat)                                   */
+/* 
+   Set upper bound for the
+   ratio (area below squeeze) / (area below hat).
+   It must be a number between 0 and 1.
+   When the ratio exceed the given number no further construction
+   points are inserted via adaptive rejection sampling.
+   Use 0 if no construction points should be added after the setup.
+   Use 1 if added new construction points should not be stopped until
+   the maximum number of construction points is reached.
+   Default is ??.
+*/
+
+double unur_tabl_get_sqhratio( UNUR_GEN *generator );
+/* 
+   Get the current ratio (area below squeeze) / (area below hat)
+   for the generator. (In case of an error 0 is returned.)
+*/
 
 int unur_tabl_set_max_intervals( UNUR_PAR *parameters, int max_ivs );
-/* set maximum number of intervals                                           */
+/* 
+   Set maximum number of intervals (default is ??).
+   No construction points are added after the setup when the number of
+   intervals suceeds @code{max_ivs}.
+*/
 
 int unur_tabl_set_areafraction( UNUR_PAR *parameters, double fraction );
-/* set parameter for equal area rule                                         */
+/* 
+   Set parameter for equal area rule. During the setup a piecewise
+   constant hat is constructed, such that the area below each of these
+   pieces (strips) is the same and equal to the (given) area below the
+   distribution times @var{fraction} (which must be greater than
+   zero).
+   Default is @code{0.25}.
+*/
+
+int unur_tabl_set_nstp( UNUR_PAR *parameters, int n_stp );
+/* 
+   Set number of construction points for the hat function. @var{n_stp}
+   must be greater than zero. After the setup there are about
+   @var{n_stp} construction points. However it might be larger when a
+   small fraction is given by the unur_tabl_set_areafraction() call.
+   It also might be smaller for some variants.
+   Default is @code{30}.
+*/
 
 int unur_tabl_set_slopes( UNUR_PAR *parameters, double *slopes, int n_slopes );
-/* set slopes of p.d.f.                                                      */
-
-int unur_tabl_set_boundary( UNUR_PAR *parameters, double left, double right );
-/* set left and right boundary of computation interval                       */
-
-int unur_tabl_set_variant( UNUR_PAR *parameters, unsigned variant );
-/* set variant for method                                                    */
+/* 
+   Set slopes for the PDF.
+   A slope <a,b> is an interval [a,b] or [b,a] where the PDF is
+   monotone and PDF(a) >= PDF(b). 
+   The list of slopes are given by an array @var{slopes} where each
+   consecutive duples (i.e. @code{(slopes[0], slopes[1])}, 
+   @code{(slopes[2], slopes[3])}, etc.) is one slopes.
+   Slopes must be sorted (i.e. both @code{slopes[0]} and
+   @code{slopes[1]} must not be greater than any entry of the slope
+   @code{(slopes[2], slopes[3])}, etc.)
+   and must not overlapping. Otherwise no slopes are set and
+   @var{unur_errno} is set to @code{UNUR_ERR_PAR_SET}.
+*/
 
 int unur_tabl_set_guidefactor( UNUR_PAR *parameters, double factor );
-/* set factor for relative size of guide table                               */
+/* 
+   Set factor for relative size of the guide table for indexed search
+   (see also method DGT). It must be greater than or equal to 0.
+   If it is set to 0, then sequential search is used.
+   Default is ??.
+*/
+
+int unur_tabl_set_boundary( UNUR_PAR *parameters, double left, double right );
+/* 
+   Set the left and right boundary of the computation interval.
+   The piecewise hat is only constructed inside this interval. The
+   region outside of this region must/should not be should be of
+   computational importance.
+   Of course +/- @code{UNUR_INFINITY} is not allowed.
+   Default is ??.
+*/
 
 int unur_tabl_set_verify( UNUR_PAR *parameters, int verify );
-/* turn verifying of algorithm while sampling on/off                         */
+/* 
+   Turn verifying of algorithm while sampling on/off.
+*/
 
+/* =END */
 /*---------------------------------------------------------------------------*/
+
+

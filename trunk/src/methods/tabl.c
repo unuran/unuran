@@ -116,9 +116,25 @@
 
 /*---------------------------------------------------------------------------*/
 
+static struct unur_gen *_unur_tabl_init( struct unur_par *par );
+/*---------------------------------------------------------------------------*/
+/* Initialize new generator.                                                 */
+/*---------------------------------------------------------------------------*/
+
 static struct unur_gen *_unur_tabl_create( struct unur_par *par );
 /*---------------------------------------------------------------------------*/
 /* create new (almost empty) generator object.                               */
+/*---------------------------------------------------------------------------*/
+
+static double _unur_tabl_sample( struct unur_gen *gen );
+static double _unur_tabl_sample_check( struct unur_gen *gen );
+/*---------------------------------------------------------------------------*/
+/* sample from generator                                                     */
+/*---------------------------------------------------------------------------*/
+
+static void _unur_tabl_free( struct unur_gen *gen);
+/*---------------------------------------------------------------------------*/
+/* destroy generator object.                                                 */
 /*---------------------------------------------------------------------------*/
 
 static int _unur_tabl_get_starting_intervals( struct unur_par *par, struct unur_gen *gen );
@@ -292,18 +308,14 @@ unur_tabl_new( struct unur_distr *distr )
 
 /*****************************************************************************/
 
-int
-unur_tabl_set_nstp( struct unur_par *par, int n_stp )
+int 
+unur_tabl_set_variant( struct unur_par *par, unsigned variant )
      /*----------------------------------------------------------------------*/
-     /* set number of construction points for hat at initialization          */
+     /* set variant of method                                                */
      /*                                                                      */
      /* parameters:                                                          */
-     /*   par    ... pointer to parameter for building generator object      */
-     /*   n_stp  ... number of starting points                               */
-     /*                                                                      */
-     /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   par     ... pointer to parameter for building generator object     */
+     /*   variant ... indicator for variant                                  */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
@@ -312,23 +324,16 @@ unur_tabl_set_nstp( struct unur_par *par, int n_stp )
   /* check input */
   _unur_check_par_object( par,TABL );
 
-  /* check starting construction points */
-  /* we always use the boundary points as additional starting points,
-     so we do not count these here! */
-  if (n_stp < 0 ) {
-    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"number of starting points < 0");
-    return 0;
-  }
-
   /* store date */
-  PAR.n_starting_cpoints = n_stp;
+  /** TODO: check variant ?? **/
+  par->variant = variant;
 
   /* changelog */
-  par->set |= TABL_SET_N_STP;
+  par->set |= TABL_SET_VARIANT;
 
   return 1;
 
-} /* end of unur_tabl_set_nstp() */
+} /* end if unur_tabl_set_variant() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -367,6 +372,28 @@ unur_tabl_set_max_sqhratio( struct unur_par *par, double max_ratio )
   return 1;
 
 } /* end of unur_tabl_set_max_sqhratio() */
+
+/*---------------------------------------------------------------------------*/
+
+double
+unur_tabl_get_sqhratio( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* get ratio A(squeeze) / A(hat)                                        */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen  ... pointer to generator object                               */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   ratio ... on success                                               */
+     /*   0     ... on error                                                 */
+     /*----------------------------------------------------------------------*/
+{
+  /* check input */
+  _unur_check_gen_object( gen,TABL );
+
+  return (GEN.Asqueeze / GEN.Atotal);
+
+} /* end of unur_tabl_get_sqhratio() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -448,6 +475,46 @@ unur_tabl_set_areafraction( struct unur_par *par, double fraction )
 /*---------------------------------------------------------------------------*/
 
 int
+unur_tabl_set_nstp( struct unur_par *par, int n_stp )
+     /*----------------------------------------------------------------------*/
+     /* set number of construction points for hat at initialization          */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par    ... pointer to parameter for building generator object      */
+     /*   n_stp  ... number of starting points                               */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... on success                                                   */
+     /*   0 ... on error                                                     */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( GENTYPE,par,0 );
+
+  /* check input */
+  _unur_check_par_object( par,TABL );
+
+  /* check starting construction points */
+  /* we always use the boundary points as additional starting points,
+     so we do not count these here! */
+  if (n_stp < 0 ) {
+    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"number of starting points < 0");
+    return 0;
+  }
+
+  /* store date */
+  PAR.n_starting_cpoints = n_stp;
+
+  /* changelog */
+  par->set |= TABL_SET_N_STP;
+
+  return 1;
+
+} /* end of unur_tabl_set_nstp() */
+
+/*---------------------------------------------------------------------------*/
+
+int
 unur_tabl_set_slopes( struct unur_par *par, double *slopes, int n_slopes )
      /*----------------------------------------------------------------------*/
      /* set slopes of p.d.f.                                                 */
@@ -509,83 +576,6 @@ unur_tabl_set_slopes( struct unur_par *par, double *slopes, int n_slopes )
 /*---------------------------------------------------------------------------*/
 
 int
-unur_tabl_set_boundary( struct unur_par *par, double left, double right )
-     /*----------------------------------------------------------------------*/
-     /* set left and right boundary of computation interval                  */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   par   ... pointer to parameter for building generator object       */
-     /*   left  ... left boundary point                                      */
-     /*   right ... right boundary point                                     */
-     /*                                                                      */
-     /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
-     /*                                                                      */
-     /* comment:                                                             */
-     /*   new boundary points must not be +/- INFINITY                       */
-     /*----------------------------------------------------------------------*/
-{
-  /* check arguments */
-  _unur_check_NULL( GENTYPE,par,0 );
-
-  /* check input */
-  _unur_check_par_object( par,TABL );
-
-  /* check new parameter for generator */
-  if (left >= right) {
-    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"domain");
-     /*                                                                      */
-    return 0;
-  }
-  if (left <= -INFINITY || right >= INFINITY) {
-    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"domain (+/- INFINITY not allowed)");
-    return 0;
-  }
-
-  /* store date */
-  PAR.bleft = left;
-  PAR.bright = right;
-
-  /* changelog */
-  par->set |= TABL_SET_BOUNDARY;
-
-  return 1;
-
-} /* end of unur_tabl_set_boundary() */
-
-/*---------------------------------------------------------------------------*/
-
-int 
-unur_tabl_set_variant( struct unur_par *par, unsigned variant )
-     /*----------------------------------------------------------------------*/
-     /* set variant of method                                                */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   par     ... pointer to parameter for building generator object     */
-     /*   variant ... indicator for variant                                  */
-     /*----------------------------------------------------------------------*/
-{
-  /* check arguments */
-  _unur_check_NULL( GENTYPE,par,0 );
-
-  /* check input */
-  _unur_check_par_object( par,TABL );
-
-  /* store date */
-  /** TODO: check variant ?? **/
-  par->variant = variant;
-
-  /* changelog */
-  par->set |= TABL_SET_VARIANT;
-
-  return 1;
-
-} /* end if unur_tabl_set_variant() */
-
-/*---------------------------------------------------------------------------*/
-
-int
 unur_tabl_set_guidefactor( struct unur_par *par, double factor )
      /*----------------------------------------------------------------------*/
      /* set factor for relative size of guide table                          */
@@ -620,6 +610,53 @@ unur_tabl_set_guidefactor( struct unur_par *par, double factor )
   return 1;
 
 } /* end of unur_tabl_set_guidefactor() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+unur_tabl_set_boundary( struct unur_par *par, double left, double right )
+     /*----------------------------------------------------------------------*/
+     /* set left and right boundary of computation interval                  */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par   ... pointer to parameter for building generator object       */
+     /*   left  ... left boundary point                                      */
+     /*   right ... right boundary point                                     */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... on success                                                   */
+     /*   0 ... on error                                                     */
+     /*                                                                      */
+     /* comment:                                                             */
+     /*   new boundary points must not be +/- INFINITY                       */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( GENTYPE,par,0 );
+
+  /* check input */
+  _unur_check_par_object( par,TABL );
+
+  /* check new parameter for generator */
+  if (left >= right) {
+    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"domain");
+    return 0;
+  }
+  if (left <= -INFINITY || right >= INFINITY) {
+    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"domain (+/- INFINITY not allowed)");
+    return 0;
+  }
+
+  /* store date */
+  PAR.bleft = left;
+  PAR.bright = right;
+
+  /* changelog */
+  par->set |= TABL_SET_BOUNDARY;
+
+  return 1;
+
+} /* end of unur_tabl_set_boundary() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -732,6 +769,85 @@ _unur_tabl_init( struct unur_par *par )
   return gen;
 
 } /* end of _unur_tabl_init() */
+
+/*---------------------------------------------------------------------------*/
+
+static struct unur_gen *
+_unur_tabl_create( struct unur_par *par )
+     /*----------------------------------------------------------------------*/
+     /* allocate memory for generator                                        */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par ... pointer to parameter for building generator object         */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to (empty) generator object with default settings          */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return NULL                                                        */
+     /*----------------------------------------------------------------------*/
+{
+  struct unur_gen *gen;
+
+  /* check arguments */
+  CHECK_NULL(par,NULL);  COOKIE_CHECK(par,CK_TABL_PAR,NULL);
+
+  /* allocate memory for generator object */
+  gen = _unur_malloc( sizeof(struct unur_gen) );
+
+  /* magic cookies */
+  COOKIE_SET(gen,CK_TABL_GEN);
+
+  /* set generator identifier */
+  gen->genid = _unur_set_genid(GENTYPE);
+
+  /* copy distribution object into generator object */
+  memcpy( &(gen->distr), par->distr, sizeof( struct unur_distr ) );
+
+  /* routines for sampling and destroying generator */
+  SAMPLE = (par->variant & TABL_VARFLAG_VERIFY) ? _unur_tabl_sample_check : _unur_tabl_sample;
+  gen->destroy = _unur_tabl_free;
+
+  /* set all pointers to NULL */
+  GEN.Atotal      = 0.;
+  GEN.Asqueeze    = 0.;
+  GEN.guide       = NULL;
+  GEN.guide_size  = 0;
+  GEN.iv          = NULL;
+  GEN.n_ivs       = 0;
+  GEN.iv_stack    = NULL;
+  GEN.iv_free     = 0;
+  GEN.mblocks     = NULL;
+
+  /* the boundaries for our computation limits are intersection of the       */
+  /* domain of the distribution and the given computation boundaries.        */
+  if (par->distr->set & UNUR_DISTR_SET_DOMAIN) {
+    PAR.bleft  = max(PAR.bleft, DISTR.BD_LEFT);
+    PAR.bright = min(PAR.bright,DISTR.BD_RIGHT);
+  }
+  GEN.bleft       = PAR.bleft;         /* left boundary of domain            */
+  GEN.bright      = PAR.bright;        /* right boundary of domain           */
+
+  GEN.guide_factor = PAR.guide_factor; /* relative size of guide tables      */
+
+  /* bounds for adding construction points  */
+  GEN.max_ivs   = PAR.max_ivs;         /* maximum number of intervals        */
+  GEN.max_ratio = PAR.max_ratio;       /* bound for ratio  Atotal / Asqueeze */
+
+  gen->method = par->method;           /* indicates method                   */
+  gen->variant = par->variant;         /* indicates variant                  */
+  gen->set = par->set;              /* indicates parameter settings          */
+  gen->debug = par->debug;             /* debuging flags                     */
+  gen->urng = par->urng;               /* pointer to urng                    */
+
+  gen->urng_aux = NULL;             /* no auxilliary URNG required           */
+  gen->gen_aux = NULL;              /* no auxilliary generator objects       */
+  gen->gen_aux_2 = NULL;
+
+  /* return pointer to (almost empty) generator object */
+  return(gen);
+
+} /* end of _unur_tabl_create() */
 
 /*****************************************************************************/
 
@@ -1013,85 +1129,6 @@ _unur_tabl_free( struct unur_gen *gen )
 
 /*****************************************************************************/
 /**  Auxilliary Routines                                                    **/
-/*****************************************************************************/
-
-static struct unur_gen *
-_unur_tabl_create( struct unur_par *par )
-     /*----------------------------------------------------------------------*/
-     /* allocate memory for generator                                        */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   par ... pointer to parameter for building generator object         */
-     /*                                                                      */
-     /* return:                                                              */
-     /*   pointer to (empty) generator object with default settings          */
-     /*                                                                      */
-     /* error:                                                               */
-     /*   return NULL                                                        */
-     /*----------------------------------------------------------------------*/
-{
-  struct unur_gen *gen;
-
-  /* check arguments */
-  CHECK_NULL(par,NULL);  COOKIE_CHECK(par,CK_TABL_PAR,NULL);
-
-  /* allocate memory for generator object */
-  gen = _unur_malloc( sizeof(struct unur_gen) );
-
-  /* magic cookies */
-  COOKIE_SET(gen,CK_TABL_GEN);
-
-  /* set generator identifier */
-  gen->genid = _unur_set_genid(GENTYPE);
-
-  /* copy distribution object into generator object */
-  memcpy( &(gen->distr), par->distr, sizeof( struct unur_distr ) );
-
-  /* routines for sampling and destroying generator */
-  SAMPLE = (par->variant & TABL_VARFLAG_VERIFY) ? _unur_tabl_sample_check : _unur_tabl_sample;
-  gen->destroy = _unur_tabl_free;
-
-  /* set all pointers to NULL */
-  GEN.Atotal      = 0.;
-  GEN.Asqueeze    = 0.;
-  GEN.guide       = NULL;
-  GEN.guide_size  = 0;
-  GEN.iv          = NULL;
-  GEN.n_ivs       = 0;
-  GEN.iv_stack    = NULL;
-  GEN.iv_free     = 0;
-  GEN.mblocks     = NULL;
-
-  /* the boundaries for our computation limits are intersection of the       */
-  /* domain of the distribution and the given computation boundaries.        */
-  if (par->distr->set & UNUR_DISTR_SET_DOMAIN) {
-    PAR.bleft  = max(PAR.bleft, DISTR.BD_LEFT);
-    PAR.bright = min(PAR.bright,DISTR.BD_RIGHT);
-  }
-  GEN.bleft       = PAR.bleft;         /* left boundary of domain            */
-  GEN.bright      = PAR.bright;        /* right boundary of domain           */
-
-  GEN.guide_factor = PAR.guide_factor; /* relative size of guide tables      */
-
-  /* bounds for adding construction points  */
-  GEN.max_ivs   = PAR.max_ivs;         /* maximum number of intervals        */
-  GEN.max_ratio = PAR.max_ratio;       /* bound for ratio  Atotal / Asqueeze */
-
-  gen->method = par->method;           /* indicates method                   */
-  gen->variant = par->variant;         /* indicates variant                  */
-  gen->set = par->set;              /* indicates parameter settings          */
-  gen->debug = par->debug;             /* debuging flags                     */
-  gen->urng = par->urng;               /* pointer to urng                    */
-
-  gen->urng_aux = NULL;             /* no auxilliary URNG required           */
-  gen->gen_aux = NULL;              /* no auxilliary generator objects       */
-  gen->gen_aux_2 = NULL;
-
-  /* return pointer to (almost empty) generator object */
-  return(gen);
-
-} /* end of _unur_tabl_create() */
-
 /*****************************************************************************/
 
 static int

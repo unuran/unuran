@@ -312,7 +312,6 @@ unur_tdr_set_max_intervals( struct unur_par *par, int max_ivs )
 
 /*---------------------------------------------------------------------------*/
 
-
 int
 unur_tdr_set_center( struct unur_par *par, double center )
      /*----------------------------------------------------------------------*/

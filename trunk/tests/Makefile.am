@@ -14,6 +14,7 @@ check_PROGRAMS = \
  t_dgt \
  t_srou \
  t_ssr \
+ t_tabl \
  t_tdr \
  t_unif \
  t_utdr
@@ -26,6 +27,7 @@ TESTS = \
  t_dgt \
  t_srou \
  t_ssr \
+ t_tabl \
  t_tdr \
  t_unif \
  t_utdr
@@ -42,6 +44,7 @@ EXTRA_DIST = \
  dgt.conf \
  srou.conf \
  ssr.conf \
+ tabl.conf \
  tdr.conf \
  unif.conf \
  utdr.conf
@@ -67,6 +70,9 @@ t_srou_LDADD = $(top_builddir)/src/libunuran.a
 
 t_ssr_SOURCES = t_ssr.c testroutines.c
 t_ssr_LDADD = $(top_builddir)/src/libunuran.a
+
+t_tabl_SOURCES = t_tabl.c testroutines.c
+t_tabl_LDADD = $(top_builddir)/src/libunuran.a
 
 t_tdr_SOURCES = t_tdr.c testroutines.c
 t_tdr_LDADD = $(top_builddir)/src/libunuran.a
@@ -98,6 +104,9 @@ t_srou.c: srou.conf make_test_files.pl
 
 t_ssr.c: ssr.conf make_test_files.pl
 	./make_test_files.pl ssr.conf
+
+t_tabl.c: tabl.conf make_test_files.pl
+	./make_test_files.pl tabl.conf
 
 t_tdr.c: tdr.conf make_test_files.pl
 	./make_test_files.pl tdr.conf

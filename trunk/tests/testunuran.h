@@ -42,6 +42,7 @@
 #define T_DGT
 #define T_SROU
 #define T_SSR
+#define T_TABL
 #define T_TDR
 #define T_UNIF
 #define T_UTDR

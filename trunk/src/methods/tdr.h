@@ -93,7 +93,7 @@
 /* =ROUTINES */
 
 UNUR_PAR *unur_tdr_new( UNUR_DISTR* distribution );
-/* Get default parameters for generator                                      */
+/* Get default parameters for generator.                                     */
 
 /*...........................................................................*/
 
@@ -218,6 +218,8 @@ int unur_tdr_set_pedantic( UNUR_PAR *parameters, int pedantic );
 
 /* =END */
 /*---------------------------------------------------------------------------*/
+
+
 
 
 

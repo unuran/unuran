@@ -122,6 +122,18 @@ int unur_ninv_chg_start(UNUR_GEN *gen, double left, double right);
    @code{unur_ninv_set_start()}).
 */
 
+int unur_ninv_chg_table(UNUR_GEN *gen);
+/*
+   Regenerates a table as described in @code{unur_ninv_use_table}
+   and uses it for further random number generations. 
+*/
+
+int unur_ninv_table_on(UNUR_GEN *gen, int onoff)
+/*
+  If onoff=1, table will be used (a table must already exist!!!) and
+  if onoff=0, the table won't be used.
+*/
+
 int unur_ninv_chg_domain(UNUR_GEN *gen, double left, double right );
 /*
    Change the borders of the (truncated) distribution. Notice that

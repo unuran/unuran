@@ -556,8 +556,7 @@ int unur_ninv_chg_start(UNUR_GEN *gen, double s1, double s2)
 
 
 
-int
-unur_ninv_use_table( struct unur_par *par )
+int unur_ninv_use_table(UNUR_PAR *par)
      /*----------------------------------------------------------------------*/
      /* if used, a table is generated to find better startig points          */
      /* the function unur_ninv_set_start() is overruled                      */
@@ -585,6 +584,106 @@ unur_ninv_use_table( struct unur_par *par )
 
 
 /*****************************************************************************/
+
+int unur_ninv_chg_table(UNUR_GEN *gen)
+     /*----------------------------------------------------------------------*/
+     /* if used, a table is generated to find better startig points          */
+     /* set somewhere else will be ignored                                   */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen   ... pointer to generator object                              */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... on success                                                   */
+     /*   0 ... on error                                                     */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  CHECK_NULL(gen, 0);
+ 
+      GEN.s[0] = - 10.;  /* arbitrary starting values                        */
+      GEN.s[1] =   10.;
+      GEN.table_on = 0;   /* table can't be used to calculate itself         */
+
+      for (i=0; i<TABLE_POINTS/2; i++){
+	GEN.table[i] =
+           _unur_ninv_regula(gen, (i+1.)/(TABLE_POINTS+1.) );
+        GEN.table[TABLE_POINTS-1-i] = 
+           _unur_ninv_regula(gen, ((TABLE_POINTS-1.-i)+1.)/(TABLE_POINTS+1.) );
+         
+        GEN.s[0] = GEN.table[i];
+        GEN.s[1] = GEN.table[TABLE_POINTS-1-i];
+ 
+      }  /* end of for()                                                     */
+
+      if (TABLE_POINTS/2 != TABLE_POINTS/2.){  /*  TABLE_POINTS is odd ?     */
+         GEN.table[TABLE_POINTS/2] =  
+           _unur_ninv_regula(gen, ((TABLE_POINTS/2)+1.)/(TABLE_POINTS+1.) );
+      }
+
+  GEN.table_on = 1;
+
+  return 1;
+
+} /* end of unur_ninv_chg_table() */
+
+/*****************************************************************************/
+
+
+int unur_ninv_table_on(UNUR_GEN *gen, int onoff)
+     /*--------------------------------------------------------------------*/
+     /* can only be used if a table already exists                         */
+     /* onoff  = 1  ... table is used                                      */
+     /* onoff  = 0  ... table is not used                                  */
+     /*                                                                    */
+     /* parameters:                                                        */
+     /*   gen      ... pointer to generator object                         */
+     /*   onoff    ... decides about usage of table                        */
+     /*                                                                    */
+     /* return:                                                            */
+     /*   1 ... on success                                                 */
+     /*   0 ... on error                                                   */
+     /*--------------------------------------------------------------------*/
+{
+  /* check arguments */
+  CHECK_NULL(gen, 0);
+
+  if (onoff == 0){
+    GEN.table_on = 0;
+ 
+    GEN.s[0] =  -10.;  /* arbitrary starting values                      */
+    GEN.s[1] =   10.;
+
+    switch (gen->variant) {
+    case NINV_VARFLAG_REGULA:
+ 	GEN.s[0] = _unur_ninv_regula(gen, (1.-INTERVAL_COVERS)/2. );
+	GEN.s[1] = GEN.s[0] + 10.;   /* arbitrary interval length          */
+	GEN.s[1] = _unur_ninv_regula(gen, (1.+INTERVAL_COVERS)/2. );
+       break;    /* case REGULA end */
+    case NINV_VARFLAG_NEWTON:
+ 	GEN.s[0] = -9.987655;            /* arbitrary starting values      */
+	GEN.s[1] =  9.987655;
+	GEN.s[0] = _unur_ninv_regula(gen, 0.5);
+       break;    /* case NEWTON end */
+    }  /* end of switch  */
+
+  }  /* end of (onoff == 0) */ 
+  else if (onoff == 1){
+    GEN.table_on = 1;
+  }
+  else{
+    _unur_warning(gen->genid,UNUR_ERR_PAR_SET,
+          "onoff should be 0 or 1, will be treated as 1");
+    GEN.table_on = 1;
+  }
+
+  return 1;
+
+} /* end of unur_ninv_table_on() */
+
+
+/*****************************************************************************/
+
 
 int 
 unur_ninv_chg_domain(UNUR_GEN *gen, double left, double right )

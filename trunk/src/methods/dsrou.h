@@ -204,7 +204,7 @@ int unur_dsrou_upd_pmfsum( UNUR_GEN *generator );
    Recompute the sum over the the PMF of the distribution. 
    It only works when a distribution objects from the
    UNURAN library of standard distributions is used
-   (@pxref{Stddist,Standard distributions,Standard distributions}).
+   (@pxref{Stddist,,Standard distributions}).
    Otherwise @code{unur_errno} is set to @code{UNUR_ERR_DISTR_DATA}. 
 
    unur_dsrou_reinit() must be executed before sampling from the 

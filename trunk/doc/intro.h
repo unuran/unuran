@@ -13,7 +13,7 @@
    use UNURAN with reading as little as necessary.
    Read @ref{Installation} for the instructions to
    install the library.
-   @ref{Concepts,Concepts of UNURAN,Concepts of UNURAN}
+   @ref{Concepts,,Concepts of UNURAN},
    discribes the basics of UNURAN.
    It also has a short guideline for choosing an appropriate method.
    In @ref{Examples} gives examples that can be copied and modified.
@@ -21,9 +21,9 @@
    source tree.
 
    Further information are given in consecutive chapters.
-   @ref{Distribution_objects,Handling distribution objects,Handling distribution objects}
+   @ref{Distribution_objects,,Handling distribution objects},
    describes how to create and manipulate distribution objects.
-   @ref{Stddist,standard distributions,standard distributions}
+   @ref{Stddist,,standard distributions},
    describes predefined distribution objects that are ready to use.
    @ref{Methods} describes the various methods in detail.
    For each of possible distribution classes 
@@ -56,7 +56,7 @@
    library (see @url{http://statistik.wu-wien.ac.at/prng/} for
    description and downloading).
    For more details on using uniform random number in UNURAN
-   @pxref{URNG,Using uniform random number generators,Using uniform random number generators}.
+   see @ref{URNG,,Using uniform random number generators}.
 
 
    @subsubheading UNURAN
@@ -194,7 +194,7 @@
    Analogous commands exist for discrete and multivariate
    distributions.
    For detailed examples that can be copied and modified
-   @pxref{Examples}.
+   see @ref{Examples}.
 
 
    @subheading Distribution objects
@@ -229,7 +229,7 @@
    Notice that these commands only create an @emph{empty} object which
    still must be filled by means of calls for each type of
    distribution object
-   (@pxref{Distribution_objects,Handling distribution objects,Handling distribution objects}).
+   (@pxref{Distribution_objects,,Handling distribution objects}).
    The naming scheme of these functions is designed to indicate the
    corresponding type of the distribution object and the task to be
    performed. It is demonstated on the following example.
@@ -252,7 +252,7 @@
    @end example
    @noindent
    For a list of standard distributions
-   @pxref{Stddist,Standard distributions,Standard distributions}.
+   see @ref{Stddist,,Standard distributions}.
 
 
    @subheading Generation methods
@@ -295,7 +295,7 @@
     unur_ninv_set_max_iteration(par, 50);
    @end example
    All available methods are described in details in 
-   @ref{Methods,Methods,Methods}.
+   @ref{Methods}.
   
 
    @subheading Creating a generator object
@@ -337,7 +337,7 @@
    the function name includes the term @command{chg} and the first
    argument must be of type @code{UNUR_GEN}.
 
-   For details @pxref{Methods,Methods,Methods}.
+   For details see @ref{Methods}.
 
 
    @subheading Sampling
@@ -377,7 +377,7 @@
    @end example
    @noindent
    respectively.
-   See @ref{URNG,Using uniform random number generators,Using uniform random number generators}
+   See @ref{URNG,,Using uniform random number generators},
    for details.
 
 =EON

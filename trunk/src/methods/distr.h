@@ -43,15 +43,15 @@
 
    =DESCRIPTION
       Objects of type @code{UNUR_DISTR} are used for handling
-      distributions. All data about a distribution are stored on this
+      distributions. All data about a distribution are stored in this
       object. UNURAN provides functions that return such objects for
       standard distributions 
-      (@pxref{Stddist,Standard distributions,Standard distributions}).
+      (@pxref{Stddist,,Standard distributions}).
       It is then possible to change this distribution object by
       various set calls. Moreover it is possible to build a
       distribution object entirely from scratch. For this purpose
-      there exists an @command{unur_distr_<type>_new} call for each
-      object type that returns an empty object of this type
+      there exists an @command{unur_distr_<type>_new} call 
+      that returns an empty object of this type for each object type 
       (eg. univariate contiuous) which can be filled with the
       appropriate set calls.
       

@@ -44,7 +44,7 @@
    =UP  Methods_for_CONT
 
    =REQUIRED standard distribution from UNURAN library
-      (@pxref{Stddist,Standard distributions,Standard distributions}).
+      (@pxref{Stddist,,Standard distributions}).
 
    =SPEED Set-up: fast, Sampling: depends on distribution and generator
 
@@ -52,7 +52,7 @@
       CSTD is a wrapper for special generators for continuous
       univariate standard distributions. It only works for
       distributions in the UNURAN library of standard distributions
-      (@pxref{Stddist,Standard distributions,Standard distributions}).
+      (@pxref{Stddist,,Standard distributions}).
       If a distribution object is provided that is build from scratch,
       or if no special generator for the given standard distribution is
       provided, the NULL pointer is returned.
@@ -60,7 +60,7 @@
       For some distributions more than one special generator
       (@emph{variants}) is possible. These can be choosen by a
       unur_cstd_set_variant() call. For possible variants 
-      @pxref{Stddist,Standard distributions,Standard distributions}.
+      @pxref{Stddist,,Standard distributions}.
       However the following are common to all distributions:
 
       @table @code
@@ -104,7 +104,7 @@ UNUR_PAR *unur_cstd_new( UNUR_DISTR *distribution );
    Get default parameters for new generator. It requires a distribution object 
    for a continuous univariant distribution from the 
    UNURAN library of standard distributions 
-   (@pxref{Stddist,Standard distributions,Standard distributions}).
+   (@pxref{Stddist,,Standard distributions}).
 
    Using a truncated distribution is allowed only if the inversion method
    is available and selected by the unur_cstd_set_variant() call immediately 
@@ -120,7 +120,7 @@ int unur_cstd_set_variant( UNUR_PAR *parameters, unsigned variant );
 /*
    Set variant (special generator) for sampling from a given distribution.
    For possible variants 
-   @pxref{Stddist,Standard distributions,Standard distributions}.
+   @pxref{Stddist,,Standard distributions}.
 
    Common variants are @code{UNUR_STDGEN_DEFAULT} for the default generator,
    @code{UNUR_STDGEN_FAST} for (one of the) fastest implemented

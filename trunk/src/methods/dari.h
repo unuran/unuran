@@ -205,7 +205,7 @@ int unur_dari_upd_mode( UNUR_GEN *generator );
    Recompute the mode of the distribution. This call only works well
    when a distribution object from the UNURAN library of standard
    distributions is used
-   (@pxref{Stddist,Standard distributions,Standard distributions}).
+   (@pxref{Stddist,,Standard distributions}).
    Otherwise a (slow) numerical mode finder is called.
    If no mode can be found, then @code{0} is returnded and
    @code{unur_errno} is set to @code{UNUR_ERR_DISTR_DATA}.
@@ -226,7 +226,7 @@ int unur_dari_upd_pmfsum( UNUR_GEN *generator );
    Recompute sum over the PMF of the distribution. 
    It only works when a distribution objects from the
    UNURAN library of standard distributions is used
-   (@pxref{Stddist,Standard distributions,Standard distributions}).
+   (@pxref{Stddist,,Standard distributions}).
    Otherwise @code{0} is returned and @code{unur_errno} is set to
    @code{UNUR_ERR_DISTR_DATA}.
 

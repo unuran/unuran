@@ -52,7 +52,7 @@ If you want to sample from a non-standard distribution,
 UNURAN might be exactly what you need. 
 Depending on the information is available, a method
 must be choosen for sampling, 
-@pxref{Concepts} for an overview and 
+see @ref{Concepts} for an overview and 
 @ref{Methods} for details.
 
 @smallexample
@@ -72,7 +72,7 @@ Each method for generating random numbers allows several
 parameters to be modified. If you do not want to use default values,
 it is possible to change them.
 The following example illustrates how to change parameters.
-For details @pxref{Methods}.
+For details see @ref{Methods}.
 
 @smallexample
 @include ref_example3.texi
@@ -92,7 +92,7 @@ generator by default. This can be changed to any generator of your
 choice such that each generator object has its own random number
 generator or can share it with some other objects.
 It is also possible to change the default generator at any time.
-See @ref{URNG,Using uniform random number generators,Using uniform random number generators}
+See @ref{URNG,,Using uniform random number generators},
 for details.
 
 The following example shows how the uniform random number generator

@@ -1,6 +1,6 @@
 Brackets indicate optional information while a tilde indicates
 that only an approximation must be provided.
-See @ref{Glossary} for unfamiliar terms.
+See @ref{Glossary}, for unfamiliar terms.
 
 @sp 1
 @cartouche

@@ -52,7 +52,7 @@
    object. It returns NULL if this fails, either due to a syntax
    error, or due to invalid data. In both cases @code{unur_error} is
    set to the corresponding error codes
-   (see @ref{Error_reporting,,Error reporting}).
+   (@pxref{Error_reporting,,Error reporting}).
    Additionally there exists the call unur_str2distr() that only
    produces a distribution object.
 
@@ -72,15 +72,15 @@ UNUR_GEN *unur_str2gen( const char *string );
 /* 
    Get a generator object for the distribution, method and uniform
    random number generator as described in the given @var{string}.
-   See @ref{StringSyntax,,Syntax of String Interface} for details.
+   See @ref{StringSyntax,,Syntax of String Interface}, for details.
 */
 
 UNUR_DISTR *unur_str2distr( const char *string );
 /*
    Get a distribution object for the distribution described in
    @var{string}. 
-   See @ref{StringSyntax,,Syntax of String Interface}
-   and @ref{StringDistr,,Distribution String}
+   See @ref{StringSyntax,,Syntax of String Interface},
+   and @ref{StringDistr,,Distribution String},
    for details. However only the block for the distribution object is
    allowed.
 */
@@ -112,16 +112,16 @@ UNUR_DISTR *unur_str2distr( const char *string );
    We have three different blocks with the following (first) keys:
    @table @code 
    @item distr
-      definition of the distribution (see 
-      @ref{StringDistr,,Distribution String}).
+      definition of the distribution
+      (@pxref{StringDistr,,Distribution String}).
 
    @item method
       description of the transformation method
-      (see @ref{StringMethod,,Method String}).
+      (@pxref{StringMethod,,Method String}).
 
    @item urng
       uniform random number generation
-      (see @ref{StringURNG,,Uniform RNG String}).
+      (@pxref{StringURNG,,Uniform RNG String}).
    @end table
 
    The @code{distr} block must be the very first block and is
@@ -228,8 +228,8 @@ UNUR_DISTR *unur_str2distr( const char *string );
    @end table
 
    The the list of @code{key} strings in
-   @ref{KeysDistr,,Keys for Distribution String} and 
-   @ref{KeysMethod,,Keys for Method String} for further details.
+   @ref{KeysDistr,,Keys for Distribution String}, and 
+   @ref{KeysMethod,,Keys for Method String}, for further details.
 
 =EON */
 /*---------------------------------------------------------------------------*/
@@ -313,7 +313,7 @@ UNUR_DISTR *unur_str2distr( const char *string );
       max_sqhratio = 0.9
    @end smallexample
    Additionally the keyword @code{debug} can be used to set debugging
-   flags (see @ref{Debug,,Debugging}. for details).
+   flags (see @ref{Debug,,Debugging}, for details).
    
    If this block is omitted, a suitable default method is used. Notice
    however that the default method may change in future versions of

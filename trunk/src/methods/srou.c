@@ -191,7 +191,7 @@ unur_srou_new( struct unur_distr *distr )
   struct unur_par *par;
 
   /* check arguments */
-  CHECK_NULL(distr,NULL);
+  _unur_check_NULL( GENTYPE,distr,NULL );
 
   /* check distribution */
   if (distr->type != UNUR_DISTR_CONT) {
@@ -248,7 +248,7 @@ unur_srou_set_Fmode( struct unur_par *par, double Fmode )
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  CHECK_NULL(par,0);
+  _unur_check_NULL( GENTYPE,par,0 );
 
   /* check input */
   _unur_check_par_object( SROU );
@@ -289,7 +289,7 @@ unur_srou_set_verify( struct unur_par *par, int verify )
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  CHECK_NULL(par,0);
+  _unur_check_NULL( GENTYPE,par,0 );
 
   /* check input */
   _unur_check_par_object( SROU );
@@ -322,7 +322,7 @@ unur_srou_set_usesqueeze( struct unur_par *par, int usesqueeze )
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  CHECK_NULL(par,0);
+  _unur_check_NULL( GENTYPE,par,0 );
 
   /* check input */
   _unur_check_par_object( SROU );
@@ -355,7 +355,7 @@ unur_srou_set_usemirror( struct unur_par *par, int usemirror )
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  CHECK_NULL(par,0);
+  _unur_check_NULL( GENTYPE,par,0 );
 
   /* check input */
   _unur_check_par_object( SROU );
@@ -389,7 +389,7 @@ unur_srou_init( struct unur_par *par )
   double vm, fm;             /* width of rectangle, pdf at mode              */
 
   /* check arguments */
-  CHECK_NULL(par,NULL);
+  _unur_check_NULL( GENTYPE,par,NULL );
 
   /* check input */
   if ( par->method != UNUR_METH_SROU ) {
@@ -468,8 +468,7 @@ unur_srou_sample( struct unur_gen *gen )
   double u,v,x,xx;
 
   /* check arguments */
-  CHECK_NULL(gen,0.);
-  COOKIE_CHECK(gen,CK_SROU_GEN,0.);
+  CHECK_NULL(gen,0.);  COOKIE_CHECK(gen,CK_SROU_GEN,0.);
 
   while (1) {
     /* generate point uniformly on rectangle */
@@ -520,8 +519,7 @@ unur_srou_sample_mirror( struct unur_gen *gen )
   double u,v,x,fx,uu;
 
   /* check arguments */
-  CHECK_NULL(gen,0.);
-  COOKIE_CHECK(gen,CK_SROU_GEN,0.);
+  CHECK_NULL(gen,0.);  COOKIE_CHECK(gen,CK_SROU_GEN,0.);
 
   while (1) {
     /* generate point uniformly on rectangle */
@@ -567,8 +565,7 @@ unur_srou_sample_check( struct unur_gen *gen )
   double u,uu,v,x,fx,fnx,xfx,xfnx,xx;
 
   /* check arguments */
-  CHECK_NULL(gen,0.);
-  COOKIE_CHECK(gen,CK_SROU_GEN,0.);
+  CHECK_NULL(gen,0.);  COOKIE_CHECK(gen,CK_SROU_GEN,0.);
 
   if (gen->variant & SROU_VARFLAG_MIRROR) {
     /* use mirror principle */
@@ -656,7 +653,6 @@ unur_srou_free( struct unur_gen *gen )
      /*   gen ... pointer to generator object                                */
      /*----------------------------------------------------------------------*/
 { 
-
   /* check arguments */
   if( !gen ) /* nothing to do */
     return;
@@ -698,8 +694,7 @@ _unur_srou_create( struct unur_par *par )
   struct unur_gen *gen;
 
   /* check arguments */
-  CHECK_NULL(par,NULL);
-  COOKIE_CHECK(par,CK_SROU_PAR,NULL);
+  CHECK_NULL(par,NULL);  COOKIE_CHECK(par,CK_SROU_PAR,NULL);
 
   /* allocate memory for generator object */
   gen = _unur_malloc( sizeof(struct unur_gen) );
@@ -763,6 +758,10 @@ _unur_srou_debug_init( struct unur_par *par, struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
 {
   FILE *log;
+
+  /* check arguments */
+  CHECK_NULL(par,/*void*/);  COOKIE_CHECK(par,CK_SROU_PAR,/*void*/);
+  CHECK_NULL(gen,/*void*/);  COOKIE_CHECK(gen,CK_SROU_GEN,/*void*/);
 
   log = unur_get_stream();
 

@@ -53,7 +53,7 @@
 /*---------------------------------------------------------------------------*/
 /* set debugging flag for generator                                          */
 int unur_set_debug( struct unur_par *parameter, unsigned debug );
-int unur_set_default_debug( struct unur_par *parameter, unsigned debug );
+int unur_set_default_debug( unsigned debug );
 extern unsigned _unur_default_debugflag;     /* default debugging flags      */
 
 /*---------------------------------------------------------------------------*/

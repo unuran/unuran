@@ -152,7 +152,7 @@ unur_utdr_new( struct unur_distr *distr )
   struct unur_par *par;
 
   /* check arguments */
-  CHECK_NULL(distr,NULL);
+  _unur_check_NULL( GENTYPE,distr,NULL );
 
   /* check distribution */
   if (distr->type != UNUR_DISTR_CONT) {
@@ -213,7 +213,7 @@ unur_utdr_set_cfactor( struct unur_par *par, double cfactor )
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  CHECK_NULL(par,0);
+  _unur_check_NULL( GENTYPE,par,0 );
 
   /* check input */
   _unur_check_par_object( UTDR );
@@ -253,7 +253,7 @@ unur_utdr_set_delta( struct unur_par *par, double delta )
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  CHECK_NULL(par,0);
+  _unur_check_NULL( GENTYPE,par,0 );
 
   /* check input */
   _unur_check_par_object( UTDR );
@@ -295,7 +295,7 @@ unur_utdr_set_verify( struct unur_par *par, int verify )
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  CHECK_NULL(par,0);
+  _unur_check_NULL( GENTYPE,par,0 );
 
   /* check input */
   _unur_check_par_object( UTDR );
@@ -331,7 +331,7 @@ unur_utdr_init( struct unur_par *par )
   double c,cfac,volc,volr,tly,tlys,try,trys,dl,dr,delta,delta1;
 
   /* check arguments */
-  CHECK_NULL(par,NULL);
+  _unur_check_NULL( GENTYPE,par,NULL );
 
   /* check input */
   if ( par->method != UNUR_METH_UTDR ) {
@@ -344,10 +344,6 @@ unur_utdr_init( struct unur_par *par )
   trys = 0.;
   dl = 0.;
   dr = 0.;
-
-  /* check arguments */
-  CHECK_NULL(par,NULL);
-  COOKIE_CHECK(par,CK_UTDR_PAR,NULL);
 
   /* create a new empty generator object */
   gen = _unur_utdr_create(par);
@@ -533,8 +529,7 @@ unur_utdr_sample( struct unur_gen *gen )
   double u,v,x,help,linx;
 
   /* check arguments */
-  CHECK_NULL(gen,0.);
-  COOKIE_CHECK(gen,CK_UTDR_GEN,0.);
+  CHECK_NULL(gen,0.);  COOKIE_CHECK(gen,CK_UTDR_GEN,0.);
 
   while (1) {
     /*2*/
@@ -629,8 +624,7 @@ _unur_utdr_create( struct unur_par *par )
   struct unur_gen *gen;
 
   /* check arguments */
-  CHECK_NULL(par,NULL);
-  COOKIE_CHECK(par,CK_UTDR_PAR,NULL);
+  CHECK_NULL(par,NULL);  COOKIE_CHECK(par,CK_UTDR_PAR,NULL);
 
   /* allocate memory for generator object */
   gen = _unur_malloc( sizeof(struct unur_gen) );
@@ -711,6 +705,10 @@ _unur_utdr_debug_init( struct unur_par *par, struct unur_gen *gen,
      /*----------------------------------------------------------------------*/
 {
   FILE *log;
+
+  /* check arguments */
+  CHECK_NULL(par,/*void*/);  COOKIE_CHECK(par,CK_UTDR_PAR,/*void*/);
+  CHECK_NULL(gen,/*void*/);  COOKIE_CHECK(gen,CK_UTDR_GEN,/*void*/);
 
   log = unur_get_stream();
 

@@ -61,7 +61,8 @@ unur_set_debug( struct unur_par *par, unsigned debug )
      /*   debug ... debugging flag                                           */
      /*----------------------------------------------------------------------*/
 {
-  CHECK_NULL(par,0);
+  /* check arguments */
+  _unur_check_NULL( NULL,par,0 );
 
 #ifdef UNUR_ENABLE_LOGGING
   par->debug = debug;
@@ -76,7 +77,7 @@ unur_set_debug( struct unur_par *par, unsigned debug )
 /*---------------------------------------------------------------------------*/
 
 int
-unur_set_default_debug( struct unur_par *par, unsigned debug )
+unur_set_default_debug( unsigned debug )
      /*----------------------------------------------------------------------*/
      /* set default debugging flag for generator                             */
      /*                                                                      */
@@ -85,8 +86,6 @@ unur_set_default_debug( struct unur_par *par, unsigned debug )
      /*   debug ... debugging flag                                           */
      /*----------------------------------------------------------------------*/
 {
-  CHECK_NULL(par,0);
-
   _unur_default_debugflag = debug;
   return 1;
 } /* end of unur_set_default_debug() */

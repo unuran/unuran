@@ -140,7 +140,7 @@ unur_set_urng( struct unur_par *par, UNUR_URNG_TYPE urng )
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  CHECK_NULL(par,0);
+  _unur_check_NULL( NULL,par,0 );
   CHECK_NULL(urng,0);
 
   par->urng = urng;
@@ -169,7 +169,6 @@ unur_get_urng( struct unur_gen *gen )
   CHECK_NULL(gen,NULL);
 
   return gen->urng;
-
 } /* end of unur_get_urng() */
 
 /*---------------------------------------------------------------------------*/

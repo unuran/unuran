@@ -58,6 +58,8 @@ FALSE       --> @code{FALSE}
 		additionally hyperlinks are made automatically to
 		its definition in HTML output
 		(and in TeX and info with some restrictions).
+		NOTICE: there must not be blanks between the 
+		function name and `(' or the braces!
 
 
 (*) =METHOD

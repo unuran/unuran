@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 ############################################################
 
-$VERBOSE = 1;
+$VERBOSE = 0;
 
 ############################################################
 # $Id$
@@ -51,6 +51,11 @@ require "URNG_to_texi.pl";
 			  "format" => \&format_URNG },
 
      );
+
+############################################################
+
+# list of all routines
+my $list_routines;
 
 ############################################################
 
@@ -289,11 +294,20 @@ sub scan_ROUTINES {
 	# the last word is the function name
 	my $fn_type = $1;
 	my $fn_name = $2;
-	
+
+	# routine name must be unique
+	die "Function defined twice: $fn_name" if $list_routines->{$fn_name};
+
+	# store in list of all routines
+	$list_routines->{$fn_name} = 1;
+
 	# write entry
 	my $first = 1;
 	if (@argslist) {
 	    # this is a function with arguments
+	    # make anchor
+	    $fkt_block .= "\@anchor{funct:$fn_name}\n";
+	    # make texinfo tag
 	    $fkt_block .= (($defblock_open) ? "\@deftypefnx" : "\@deftypefn");
 	    $fkt_block .= " %%%Function%%% \{$fn_type\} $fn_name (";
 	    foreach $arg (@argslist) {
@@ -312,6 +326,9 @@ sub scan_ROUTINES {
 	else {
 	    # this is a function does not have arguments
 	    # maybe it is an variable
+	    # make anchor
+	    $fkt_block .= "\@anchor{var:$fn_name}\n";
+	    # make texinfo tag
 	    $fkt_block .= (($defblock_open) ? "\@deftypevarx" : "\@deftypevar");
 	    $fkt_block .= " \{$fn_type\} $fn_name\n";
 	    $fkt_block .= "\@findex $fn_name\n";
@@ -368,6 +385,10 @@ sub transform_special_strings {
 
     # FALSE --> @code{FALSE}
     $$line =~ s/ FALSE/ \@code\{FALSE\}/g;
+
+    # transform (\w+)\(\)   --> @command($1)
+    $$line =~ s/(\w+)\(\)/\@command\{$1\}/g;
+##    $$line =~ s/(\w+)\(\)/\@ref\{funct\:$1\,\@command\{$1\}\}/g;
 
     return;
 } # end of transform_special_strings()

@@ -80,7 +80,7 @@
       It is possible to change the parameters and the domain of the chosen 
       distribution without building a new generator object using the
       unur_ssr_chg_pdfparams() and unur_ssr_chg_domain() call, respectively.
-      But then unur_ssr_chg_pdfarea(), unur_ssr_chg_mode and 
+      But then unur_ssr_chg_pdfarea(), unur_ssr_chg_mode() and 
       unur_ssr_chg_cdfatmode() have to used to reset the corresponding figures 
       whenever they have changed.
       If the PDF at the mode has been provided by a 

@@ -4,70 +4,91 @@
 # ----------------------------------------------------------------
 
 
-$DISTR     = normal;
-@PARAMS    = (1.,2.);
-$PROG_LANG = JAVA;
-$no_of_params = scalar(@PARAMS);
-
-
+# program lanugates to test
+@LANGUAGES = ("C", "FORTRAN", "JAVA");
 
 # Array of Hashes (Hash-entries: prog_language, distr, parameters)
 @Test = (
    {
-     lang => "FORTRAN", 
      name => "normal",  
-     params => [3.1, 2.7, 3.3]
+     params => [0, 1]
    },
    {
-     lang => "JAVA",
      name => "beta",
      params => [3.14, 2.71]
    },
    {
-     lang => "C",
      name => "normal",
-     params => [3.141, 2.718]
+     params => [10, 2]
    }
 );
 
 
 
 for ($i=0; $i<scalar(@Test); $i++){
-   $DISTR     = $Test[$i]{name};
-   @PARAMS    = @{$Test[$i]{params}};
-   $PROG_LANG = $Test[$i]{lang};
-   $no_of_params = scalar(@PARAMS);
 
-   # write acg generator
-   open(OUT, ">./acg.c") or die "Can't open outfile: $!";
-   write_acg();
-   close(OUT);
+    foreach $PROG_LANG (@LANGUAGES){
+	$DISTR     = $Test[$i]{name};
+	@PARAMS    = @{$Test[$i]{params}};
+	$no_of_params = scalar(@PARAMS);
 
-   # generate acg
-   system( "gcc -I. -I.. -I../.. -I../../src -I../../src/tests  -L../../src -Wall -g -O3 -o ./acg acg.c -lunuracg -lunuran -lm -lprng" );
-   # remove acg.c
-   system("rm ./acg.c");
+        # write acg generator
+	open(OUT, ">./acg.c") or die "Can't open outfile: $!";
+	write_acg();
+	close(OUT);
 
-   # create random number generator
-   if ( $PROG_LANG eq "C" ){
-       $suffix = ".c";
-       write_c_main();
-   }
-   elsif ( $PROG_LANG eq "FORTRAN" ){
-       $suffix = ".f";
-   }
-   elsif ( $PROG_LANG eq "JAVA" ){
-       $suffix = ".java";
-   }
-   else{
-       die "Can't determine desired programming language!";
-   }
-   system( "./acg > ./gen$suffix");
-   # remove acg
-   system ("rm ./acg");
+        # generate acg
+	system( "gcc -I. -I.. -I../.. -I../../src -I../../src/tests  -L../../src -Wall -g -O3 -o ./acg acg.c -lunuracg -lunuran -lm -lprng" );
+        # remove acg.c
+	system("rm ./acg.c");
 
-   print "Test $i: $DISTR with ", (join ", ", @PARAMS), " in $PROG_LANG done\n";
+        # create random number generator
+	if ( $PROG_LANG eq "C" ){
+	    $suffix = ".c";
+	    write_c_main();
 
+            # random number generator uses math.h 
+            # o.k. maybe using Perl filehandles would be nicer
+            system ("echo '#include <math.h>' > ./gen.c");
+        }
+        elsif ( $PROG_LANG eq "FORTRAN" ){
+             $suffix = ".f";
+        }
+        elsif ( $PROG_LANG eq "JAVA" ){
+ 	   $suffix = ".java";
+        }
+        else{
+	    die "Can't determine desired programming language!";
+        }
+       system( "./acg >> ./gen$suffix");
+       # remove acg
+       system ("rm ./acg");
+
+       # compile and execute random number - test
+       if ( $PROG_LANG eq "C" ){
+	   system ("gcc -Wall -lm *.c");
+	   system ("./a.out");
+
+	   #clean up
+	   #system ("rm *.c");
+
+       }
+       elsif ( $PROG_LANG eq "FORTRAN" ){
+
+	   #clean up
+	   #system ("rm *.f");
+       }
+       elsif ( $PROG_LANG eq "JAVA" ){
+
+	   #clean up
+	   system ("rm *.java");
+       }
+       else{
+	   die "Can't determine desired programming language!";
+       }
+
+       print "Test $i: $DISTR with ", (join ", ", @PARAMS), " with $PROG_LANG done\n";
+    }
 }
 
 
@@ -145,7 +166,7 @@ sub write_c_main{
     print MAIN_C_OUT "{\n";
     print MAIN_C_OUT "\n\tint i;\n";
     print MAIN_C_OUT "\n\tfor (i=0; i<10; i++)\n";
-    print MAIN_C_OUT "\t\tprintf(\"%1.10e\\n\", rand_normal());\n";
+    print MAIN_C_OUT "\t\tprintf(\"%1.10e\\n\", rand_$DISTR());\n";
 
 
     print MAIN_C_OUT "\n\treturn (0);\n";

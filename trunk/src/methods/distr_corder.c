@@ -135,20 +135,29 @@ unur_distr_corder_new( struct unur_distr *distr, int n, int k )
   OS.domain[0] = DISTR.domain[0];  /* left boundary of domain                */
   OS.domain[1] = DISTR.domain[1];  /* right boundary of domain               */
 
-  OS.pdf  = (DISTR.pdf)  ? _unur_pdf_corder  : NULL;  /* pointer to p.d.f.   */
-  OS.dpdf = (DISTR.dpdf) ? _unur_dpdf_corder : NULL;  /* derivative of p.d.f.*/
-  OS.cdf  = (DISTR.cdf)  ? _unur_cdf_corder  : NULL;  /* pointer to c.d.f.   */
-
+  /* pointer to p.d.f., its derivative and c.d.f. */
+  OS.pdf  = NULL;
+  OS.dpdf = NULL;
+  OS.cdf  = NULL;
+  if (DISTR.cdf) {
+    OS.cdf = _unur_cdf_corder;        /* pointer to c.d.f.   */
+    if (DISTR.pdf) {
+      OS.pdf = _unur_pdf_corder;      /* pointer to p.d.f.   */
+      if (DISTR.dpdf)
+	OS.dpdf = _unur_dpdf_corder;  /* derivative of p.d.f.*/
+    }
+  }
+  
   /* set defaults                                                            */
-  OS.mode         = INFINITY;      /* location of mode (default: not known)  */
+  OS.mode      = INFINITY;         /* location of mode (default: not known)  */
 
-  DISTR.init      = NULL;          /* pointer to special init routine        */
+  OS.init      = NULL;             /* pointer to special init routine        */
 
   /* there is no function for computing the mode of the order statistics     */
-  DISTR.upd_mode  = NULL;
+  OS.upd_mode  = NULL;
 
   /* there is no necessity for a function that computes the area below pdf   */
-  DISTR.upd_area  = NULL;
+  OS.upd_area  = NULL;
 
   /* parameters set */
   os->set = distr->set & ~UNUR_DISTR_SET_MODE; /* mode not derived from distr */

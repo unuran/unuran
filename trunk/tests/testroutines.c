@@ -1056,8 +1056,11 @@ int run_validate_chi2( FILE *LOG, int line, UNUR_GEN *gen, const UNUR_DISTR *dis
     case UNUR_DISTR_CEMP:
       pval = unur_test_chi2( gen, CHI_TEST_INTERVALS, 0, 20, CHI_TEST_VERBOSITY, LOG);
       break;
+    case UNUR_DISTR_CVEC:
+      pval = unur_test_chi2( gen, CHI_TEST_INTERVALS, 0, 20, CHI_TEST_VERBOSITY, LOG);
+      break;
     default:
-      fprintf(stderr,"this should not happen\n");
+      fprintf(stderr,"\nrun_validate_chi2: this should not happen\n");
       exit (EXIT_FAILURE);
     }
 
@@ -1148,7 +1151,7 @@ int run_validate_verifyhat( FILE *LOG, int line, UNUR_GEN *gen, const UNUR_DISTR
       unur_sample_cont(gen);
       break;
     default:
-      fprintf(stderr,"this should not happen\n");
+      fprintf(stderr,"\nrun_validate_verifyhat: this should not happen\n");
       exit (EXIT_FAILURE);
     }
 

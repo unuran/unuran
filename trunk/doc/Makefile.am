@@ -1,6 +1,7 @@
 ## Process this file with automake to produce Makefile.in
 ## $Id$
 
+SUBDIRS = src . 
 
 info_TEXINFOS = unuran.texi
 
@@ -32,22 +33,15 @@ scripts = \
  make_texi.pl
 
 EXTRA_DIST = \
- examples.dh \
- glossary.dh \
- index.dh \
- intro.dh \
- methods.dh \
- misc.dh \
- references.dh \
- stddist.dh \
- top.dh \
  unuran.html \
  unuran.txt \
  unuran.dvi \
  unuran.ps \
  unuran.pdf \
- texinfo.tex \
  $(scripts)
+
+# location of same source files 
+TEXINFO_TEX = ./src/texinfo.tex
 
 # generated texi files ...
 unuran_src.texi: $(scripts) unuran.texi $(top_srcdir)/src/unuran.h  
@@ -58,26 +52,24 @@ $(unuran_examples): $(example_dir)/example*.c
 	sed 's/{/@{/g;s/}/@}/g' < $(example_dir)/`echo $* | sed 's/ref_//'`.c > $@
 
 
-SUFFIXES = .html .txt .pdf
+# rules for creating info, dvi, ps, and pdf files are provided by automake.
+# add new rules for html and txt.
+SUFFIXES = .html .txt
 
-# make html file ...
-.texi.html:
+.texi.html:	unuran.info
 	$(MAKEINFO) --html --no-split $< -o $@
 
-# make plain text file ...
 .texi.txt:
 	$(MAKEINFO) --fill-column=80 --no-headers --number-sections $< -o $@
 
-# make pdf file ...
-.texi.pdf:
-	texi2pdf $<
+# dependencies
+unuran.html: unuran.texi version.texi $(unuran_TEXINFOS)
+unuran.txt: unuran.texi version.texi $(unuran_TEXINFOS)
 
 # abbreviations
-.PHONY: html txt pdf ps
-html: version.texi unuran.html
-txt:  version.texi unuran.txt
-pdf:  version.texi unuran.pdf
-ps:   version.texi unuran.ps
+.PHONY: html txt
+html: unuran.html
+txt: unuran.txt
 
 # clean backup files
 CLEANFILES = *~

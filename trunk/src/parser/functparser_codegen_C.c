@@ -76,13 +76,16 @@ _unur_fstr_tree2C ( FILE *out, const struct ftreenode *root,
 
   /* make body of C routine */
   rcode = symbol[root->token].node2C (&output,root,variable);
-  *(output.string + output.length) = '\0';
-  if (rcode & C_FUNCT_ERROR) return 0;
+  if (rcode & C_FUNCT_ERROR) { 
+    if (output.string) free(output.string);
+    return 0;
+  }
 
   /* print code for special functions (if necessary) */ 
   _unur_fstr_C_specfunct (out,rcode);
 
   /* print C routine */
+  *(output.string + output.length) = '\0';
   fprintf (out,"static double %s (double %s)\n",funct_name,variable );
   fprintf (out,"{\n\treturn (%s);\n}\n",output.string);
 
@@ -219,7 +222,7 @@ C_sgn ( struct concat *output, const struct ftreenode *node, const char *variabl
      /*----------------------------------------------------------------------*/
 {
   return (C_FUNCT_SGN | C_prefix_generic(output,node,variable,"_acg_sgn"));
-} /* end of C_power() */
+} /* end of C_sgn() */
 
 /*---------------------------------------------------------------------------*/
 

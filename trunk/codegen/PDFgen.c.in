@@ -166,7 +166,18 @@ _unur_acg_C_PDF_GENERIC (FILE *out, UNUR_DISTR *distr, const char *pdf)
 int
 _unur_acg_FORTRAN_PDF_GENERIC (FILE *out, UNUR_DISTR *distr, const char *pdf)
 {
-  return 0;
+  char pdf_name[7];
+
+  /* check arguments */
+  _unur_check_NULL( NULL, distr, 0 );
+  _unur_check_distr_object( distr, CONT, 0 );
+  _unur_check_NULL( NULL, distr->data.cont.pdftree, 0 );
+
+  _unur_acg_FORTRAN_print_section_title(out,"PDF for distribution.");
+
+  sprintf (pdf_name,"%.6s",((pdf) ? pdf : "fgener") );
+
+  return _unur_fstr_tree2FORTRAN( out,distr->data.cont.pdftree,"x",pdf_name);
 }
 
 /* ---------------------------------------------------------------- */

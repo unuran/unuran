@@ -20,7 +20,7 @@ our $accuracy = 1.0e-7;
 
 our %language = ( 'C'       => 1,
 		  'FORTRAN' => 1,
-		  'JAVA'    => 1
+		  'JAVA'    => 0
 		   );
     
 # ----------------------------------------------------------------
@@ -35,9 +35,13 @@ our @method_list =
 
 our @distr_list = 
     ( 
-#      'cont; pdf=\"exp(-x^2)\"',
-#      'cont; pdf=\"exp(-x^2)\"; domain=(0,inf)',
-#      'cont; pdf=\"exp(-x^2)\"; domain=(-1,1)',
+      'cont; pdf=\"exp(-x^2)\"',
+      'cont; pdf=\"exp(-x^2)\"; domain=(0,inf)',
+      'cont; pdf=\"exp(-x^2)\"; domain=(-1,1)',
+
+      'cont; pdf=\"(x>-1)*(x<0)*(1+x) + (x>=0)*(x<1)*(1-x)\"',
+      'cont; pdf=\"(x>-1)*(x<0)*(1+x) + (x>=0)*(x<1)*(1-x)\"; domain=(-1,1)',
+      'cont; pdf=\"(x>-1)*(x<0)*(1+x) + (x>=0)*(x<1)*(1-x)\"; domain=(0.2,8.e-1)',
 
       'beta (1 .. 10, 1 .. 10)',
       'beta (10 .. 1000, 10 .. 1000)',

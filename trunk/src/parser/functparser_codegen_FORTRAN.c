@@ -37,9 +37,15 @@
 /* (use bits in integer)                                                     */
 
 enum {
-  FUNCT_ERROR = 0x80000000u,        /* error                                 */
+  F_FUNCT_ERROR = 0x80000000u,      /* error                                 */
 
-  FUNCT_SGN   = 0x00000001u,        /* sign function                         */
+  F_FUNCT_SGN   = 0x00000001u,      /* sign function                         */
+  F_FUNCT_LT    = 0x00000010u,      /* '<'  function                         */
+  F_FUNCT_LE    = 0x00000020u,      /* '<=' function                         */
+  F_FUNCT_GT    = 0x00000040u,      /* '>'  function                         */
+  F_FUNCT_GE    = 0x00000080u,      /* '>=' function                         */
+  F_FUNCT_EQ    = 0x00000100u,      /* '==' function                         */
+  F_FUNCT_NE    = 0x00000200u,      /* '!=' function                         */
 };
 
 /*---------------------------------------------------------------------------*/
@@ -51,8 +57,8 @@ enum {
 /*--------------------------------------------------------------------------*/
 
 int 
-_unur_fstr_tree2F ( FILE *out, const struct ftreenode *root,
-		    const char *variable, const char *funct_name )
+_unur_fstr_tree2FORTRAN ( FILE *out, const struct ftreenode *root,
+			  const char *variable, const char *funct_name )
      /*----------------------------------------------------------------------*/
      /* Produce string from function tree.                                   */
      /*                                                                      */
@@ -69,6 +75,7 @@ _unur_fstr_tree2F ( FILE *out, const struct ftreenode *root,
 {
   struct concat output = {NULL, 0, 0};
   unsigned rcode;
+  int line;
 
   /* check arguments */
   _unur_check_NULL( GENTYPE,root,0 );
@@ -76,22 +83,43 @@ _unur_fstr_tree2F ( FILE *out, const struct ftreenode *root,
 
   /* make body of FORTRAN routine */
   rcode = symbol[root->token].node2F (&output,root,variable);
-  *(output.string + output.length) = '\0';
-  if (rcode & FUNCT_ERROR) return 0;
+  if (rcode & F_FUNCT_ERROR) { 
+    if (output.string) free(output.string);
+    return 0;
+  }
 
-  /* print code for special functions (if necessary) */ 
-  _unur_fstr_F_specfunct (out,rcode);
+  *(output.string + output.length) = '\0';
 
   /* print FORTRAN routine */
-  fprintf (out,"static double %s (double %s)\n",funct_name,variable );
-  fprintf (out,"{\n\treturn (%s);\n}\n",output.string);
+  fprintf (out,"      DOUBLE PRECISION FUNCTION %.6s(x)\n\n", funct_name);
+  fprintf (out,"      IMPLICIT DOUBLE PRECISION (A-Z)\n");
+
+  /* print code for special statement functions (if necessary) */ 
+  _unur_fstr_F_specfunct (out,rcode);
+
+  fprintf (out,"C\n");
+  fprintf (out,"C     compute PDF\n");
+  fprintf (out,"C\n");
+
+  /* print body */
+  fprintf (out,"      %.6s = \n", funct_name);
+  for (line = 0; line < (output.length-1)/60 + 1; line++) {
+    fprintf (out,"     $   %.60s\n", output.string+60*line);
+  }
+/*    fprintf (out,"%s\n\n",output.string); */
+
+
+  fprintf (out,"      RETURN\n");
+  fprintf (out,"\n");
+  fprintf (out,"      END\n");
+  fprintf (out,"\n");
 
   /* free memory */
   free(output.string);
 
   return 1;
 
-} /* end of _unur_fstr_tree2F() */
+} /* end of _unur_fstr_tree2FORTRAN() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -119,7 +147,7 @@ F_error ( struct concat *output, const struct ftreenode *node, const char *varia
      /*----------------------------------------------------------------------*/
 {
   _unur_error(GENTYPE,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
-  return FUNCT_ERROR;
+  return F_FUNCT_ERROR;
 } /* end of F_error() */
 
 /*---------------------------------------------------------------------------*/
@@ -191,24 +219,68 @@ F_prefix ( struct concat *output, const struct ftreenode *node, const char *vari
 /*---------------------------------------------------------------------------*/
 
 unsigned
-F_power ( struct concat *output, const struct ftreenode *node, const char *variable )
+F_lt ( struct concat *output, const struct ftreenode *node, const char *variable )
      /*----------------------------------------------------------------------*/
-     /* string for power function                                            */
+     /* string for '<' function                                              */
      /*----------------------------------------------------------------------*/
 {
-  return F_prefix_generic(output,node,variable,"pow");
-} /* end of F_power() */
+  return (F_FUNCT_LT | F_FUNCT_GE | F_prefix_generic(output,node,variable,"RelLT"));
+} /* end of F_lt() */
 
 /*---------------------------------------------------------------------------*/
 
 unsigned
-F_abs ( struct concat *output, const struct ftreenode *node, const char *variable )
+F_le ( struct concat *output, const struct ftreenode *node, const char *variable )
      /*----------------------------------------------------------------------*/
-     /* string for absolute value function                                   */
+     /* string for '<=' function                                             */
      /*----------------------------------------------------------------------*/
 {
-  return F_prefix_generic(output,node,variable,"fabs");
-} /* end of F_power() */
+  return (F_FUNCT_LE | F_prefix_generic(output,node,variable,"RelLE"));
+} /* end of F_le() */
+
+/*---------------------------------------------------------------------------*/
+
+unsigned
+F_gt ( struct concat *output, const struct ftreenode *node, const char *variable )
+     /*----------------------------------------------------------------------*/
+     /* string for '>' function                                              */
+     /*----------------------------------------------------------------------*/
+{
+  return (F_FUNCT_GT | F_FUNCT_LE | F_prefix_generic(output,node,variable,"RelGT"));
+} /* end of F_gt() */
+
+/*---------------------------------------------------------------------------*/
+
+unsigned
+F_ge ( struct concat *output, const struct ftreenode *node, const char *variable )
+     /*----------------------------------------------------------------------*/
+     /* string for '>=' function                                             */
+     /*----------------------------------------------------------------------*/
+{
+  return (F_FUNCT_GE | F_prefix_generic(output,node,variable,"RelGE"));
+} /* end of F_ge() */
+
+/*---------------------------------------------------------------------------*/
+
+unsigned
+F_eq ( struct concat *output, const struct ftreenode *node, const char *variable )
+     /*----------------------------------------------------------------------*/
+     /* string for '==' function                                             */
+     /*----------------------------------------------------------------------*/
+{
+  return (F_FUNCT_EQ | F_FUNCT_LE | F_FUNCT_GE | F_prefix_generic(output,node,variable,"RelEQ"));
+} /* end of F_eq() */
+
+/*---------------------------------------------------------------------------*/
+
+unsigned
+F_ne ( struct concat *output, const struct ftreenode *node, const char *variable )
+     /*----------------------------------------------------------------------*/
+     /* string for '!=' function                                             */
+     /*----------------------------------------------------------------------*/
+{
+  return (F_FUNCT_NE | F_FUNCT_LE | F_FUNCT_GE | F_prefix_generic(output,node,variable,"RelNE"));
+} /* end of F_ne() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -218,8 +290,8 @@ F_sgn ( struct concat *output, const struct ftreenode *node, const char *variabl
      /* string for sign function                                            */
      /*----------------------------------------------------------------------*/
 {
-  return (FUNCT_SGN | F_prefix_generic(output,node,variable,"_acg_sgn"));
-} /* end of F_power() */
+  return (F_FUNCT_SGN | F_prefix_generic(output,node,variable,"acgsgn"));
+} /* end of F_sgn() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -237,7 +309,7 @@ F_infix_generic ( struct concat *output, const struct ftreenode *node,
 
   if (left==NULL || right==NULL)
     /* error */
-    return FUNCT_ERROR;
+    return F_FUNCT_ERROR;
 
   /* '(' left node right ')' */
   _unur_fstr_print_F( output, "(", 0 );
@@ -298,7 +370,7 @@ F_minus ( struct concat *output, const struct ftreenode *node, const char *varia
 
   if (left==NULL || right==NULL)
     /* error */
-    return FUNCT_ERROR;
+    return F_FUNCT_ERROR;
 
   /* '(' [left] '-' right ')' */
   _unur_fstr_print_F( output, "(", 0 );
@@ -311,6 +383,17 @@ F_minus ( struct concat *output, const struct ftreenode *node, const char *varia
 
   return rcode;
 } /* end of F_minus() */
+
+/*---------------------------------------------------------------------------*/
+
+unsigned
+F_power ( struct concat *output, const struct ftreenode *node, const char *variable )
+     /*----------------------------------------------------------------------*/
+     /* string for power function                                            */
+     /*----------------------------------------------------------------------*/
+{
+  return F_infix_generic(output,node,variable,"**");
+} /* end of F_power() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -343,34 +426,28 @@ _unur_fstr_F_specfunct ( FILE *out, unsigned flags )
      /*   1 on success                                                       */
      /*----------------------------------------------------------------------*/
 {
-  if (flags & FUNCT_SGN) {
-    _unur_fstr_F_sgn(out);
+  if (flags & F_FUNCT_LE) {
+    fprintf (out,"      RelLE(a,b)=sign(0.5d0,b-a)+0.5d0\n");
+  }
+  if (flags & F_FUNCT_GE) {
+    fprintf (out,"      RelGE(a,b)=sign(0.5d0,a-b)+0.5d0\n");
+  }
+  if (flags & F_FUNCT_LT) {
+    fprintf (out,"      RelLT(a,b)=1.d0-RelGE(a,b)\n");
+  }
+  if (flags & F_FUNCT_GT) {
+    fprintf (out,"      RelGT(a,b)=1.d0-RelLE(a,b)\n");
+  }
+  if (flags & F_FUNCT_EQ) {
+    fprintf (out,"      RelEQ(a,b)=RelGE(a,b)*RelLE(a,b)\n");
+  }
+  if (flags & F_FUNCT_NE) {
+    fprintf (out,"      RelNE(a,b)=1.d0-RelGE(a,b)*RelLE(a,b)\n");
   }
 
-  return 1;
-} /* end of _unur_fstr_F_specfunct() */
-
-/*---------------------------------------------------------------------------*/
-
-int
-_unur_fstr_F_sgn ( FILE *out )
-     /*----------------------------------------------------------------------*/
-     /* Print FORTRAN code for special functions                             */
-     /*                                                                      */
-     /* parameters: none                                                     */
-     /*                                                                      */
-     /* return:                                                              */
-     /*   1 on success                                                       */
-     /*----------------------------------------------------------------------*/
-{
-  fprintf(out,"#ifndef _ACG_FUNCT_SGN\n");
-  fprintf(out,"#define _ACG_FUNCT_SGN\n");
-
-  fprintf(out,"static double _acg_sgn(double x)\n{\n");
-  fprintf(out,"\treturn ((x<0.) ? -1. : ((x>0.) ? 1. : 0.));\n");
-  fprintf(out,"}\n");
-
-  fprintf(out,"#endif /* _ACG_FUNCT_SGN */\n\n");
+  if (flags & F_FUNCT_SGN) {
+    fprintf (out,"      acgsgn(a)=sign(1.d0,a)\n");
+  }
 
   return 1;
 } /* end of _unur_fstr_F_specfunct() */
@@ -418,9 +495,14 @@ _unur_fstr_print_F ( struct concat *output, const char *symb, const double numbe
   if (symb)
     /* copy symbol into output */
     memcpy( output->string+output->length, symb, len );
-  else
+  else {
     /* copy number symbol into output */
-    len = sprintf(output->string+output->length,"%.16e",number);
+    char *here_is_e;
+    len = sprintf(output->string+output->length,"%.20e",number);
+    /* replace `e' by `D' */
+    here_is_e = strchr(output->string+output->length, 'e');
+    if (here_is_e) *here_is_e = 'D';
+  }
 
   /* update length of output string */
   output->length += len;

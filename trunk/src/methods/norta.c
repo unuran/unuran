@@ -59,7 +59,16 @@
 #include "x_gen.h"
 #include "x_gen_source.h"
 #include "norta.h"
+#include "cstd.h"
+#include "hinv.h"
+#include "ninv.h"
 #include "vmt.h"
+
+
+/*---------------------------------------------------------------------------*/
+#if UNUR_URNG_TYPE == UNUR_URNG_GENERIC
+/* This routine does not work with other URNG APIs!                          */
+/*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*/
 /* Constants                                                                 */
@@ -108,6 +117,12 @@ static int _unur_norta_make_correlationmatrix( int dim, double *M);
 /* make correlation matrix by transforming symmetric positive definit matrix */
 /*---------------------------------------------------------------------------*/
 
+static struct unur_gen *_unur_norta_make_marginalgen( const struct unur_gen *gen,
+						      const struct unur_distr *marginal );
+/*---------------------------------------------------------------------------*/
+/* make generator for marginal distribution                                  */
+/*---------------------------------------------------------------------------*/
+
 static void _unur_norta_sample_cvec( struct unur_gen *gen, double *vec );
 /*---------------------------------------------------------------------------*/
 /* sample from generator                                                     */
@@ -116,6 +131,11 @@ static void _unur_norta_sample_cvec( struct unur_gen *gen, double *vec );
 static void _unur_norta_free( struct unur_gen *gen);
 /*---------------------------------------------------------------------------*/
 /* destroy generator object.                                                 */
+/*---------------------------------------------------------------------------*/
+
+static double _unur_norta_urng_wrapper (void *state);
+/*---------------------------------------------------------------------------*/
+/* work-around to call inversion method with given U-value.                  */
 /*---------------------------------------------------------------------------*/
 
 #ifdef UNUR_ENABLE_LOGGING
@@ -161,7 +181,7 @@ static void _unur_norta_debug_nmgenerator( const struct unur_gen *gen );
 
 #define SAMPLE    gen->sample.cvec      /* pointer to sampling routine       */     
 
-#define NORMAL    gen->gen_aux          /* pointer to normal variate generator */
+#define MNORMAL   gen->gen_aux          /* pointer to multinormal generator  */
 
 /*---------------------------------------------------------------------------*/
 
@@ -199,10 +219,9 @@ unur_norta_new( const struct unur_distr *distr )
     _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"rank correlation matrix");
     return NULL; }
 
-  /* TODO: */
-  /*   if (!(distr->set & UNUR_DISTR_SET_MARGINAL)) { */
-  /*     _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"marginals"); */
-  /*     return NULL; } */
+  if (!(distr->set & UNUR_DISTR_SET_MARGINAL)) {
+    _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"marginals");
+    return NULL; }
 
   /* allocate structure */
   par = _unur_xmalloc(sizeof(struct unur_par));
@@ -271,6 +290,34 @@ _unur_norta_init( struct unur_par *par )
 
   /* distribution object for standard normal distribution */
   GEN.normaldistr = unur_distr_normal(NULL,0);
+
+  /* we need a wrapper to call the inversion method with a given U-value */
+  GEN.marginal_urng = unur_urng_new (_unur_norta_urng_wrapper, GEN.urng_U) ;
+
+  if (gen->distr->id != UNUR_DISTR_COPULA) {
+    /* we have to initialize generator for marginal distributions */
+
+    if (_unur_distr_cvec_marginals_are_equal(DISTR.marginals, GEN.dim)) {
+      /* we can use the same generator object for all marginal distribuitons */
+      struct unur_gen *marginalgen = _unur_norta_make_marginalgen( gen, DISTR.marginals[0] );
+
+      /* TODO !! */
+      if (marginalgen)
+	gen->gen_aux_list = _unur_gen_list_set(marginalgen,GEN.dim);
+    }
+    else {
+      abort();
+    }
+
+
+    /* TODO !! */
+    /* the marginal generator is an auxiliary generator for method NORTA, of course */
+    GEN.marginalgen_list = gen->gen_aux_list;
+
+
+  }
+
+
 
 
 
@@ -368,9 +415,11 @@ _unur_norta_create( struct unur_par *par )
   GEN.copula = _unur_xmalloc(sizeof(double)*GEN.dim);
 
   /* initialize pointer */
-  NORMAL = NULL;
+  MNORMAL = NULL;
   GEN.normaldistr = NULL;
   GEN.marginalgen_list = NULL;
+  GEN.marginal_urng = NULL;
+  GEN.urng_U[0] = 0.;
 
   /* return pointer to (almost empty) generator object */
   return gen;
@@ -413,10 +462,14 @@ _unur_norta_clone( const struct unur_gen *gen )
   /* TODO: marginal gen and others !! */
   /* (normal generator) */
 
-  /* marginal generators are (also) stored as auxiliary generator */
-  /* which has already been cloned by generic_clone.              */
-  CLONE.marginalgen_list = clone->gen_aux_list;
+/*   /\* marginal generators are (also) stored as auxiliary generator *\/ */
+/*   /\* which has already been cloned by generic_clone.              *\/ */
+/*   CLONE.marginalgen_list = clone->gen_aux_list; */
 
+
+  /* TODO */
+  CLONE.marginal_urng = NULL;
+  
   return clone;
 
 #undef CLONE
@@ -519,11 +572,11 @@ _unur_norta_nortu_setup( struct unur_gen *gen )
     free(sigma_y);
     return UNUR_ERR_GEN_DATA;
   }
-  NORMAL = mn_gen;
+  MNORMAL = mn_gen;
   /* need same uniform random number generator as NORTA generator */
-  NORMAL->urng = gen->urng;
+  MNORMAL->urng = gen->urng;
   /* copy debugging flags */
-  NORMAL->debug = gen->debug;
+  MNORMAL->debug = gen->debug;
 
 #ifdef UNUR_ENABLE_LOGGING
     if (gen->debug & NORTA_DEBUG_SIGMA_Y) 
@@ -575,6 +628,75 @@ _unur_norta_make_correlationmatrix( int dim, double *M)
 
 /*---------------------------------------------------------------------------*/
 
+struct unur_gen *
+_unur_norta_make_marginalgen( const struct unur_gen *gen,
+			      const struct unur_distr *marginal )
+     /*----------------------------------------------------------------------*/
+     /* make generator for marginal distribution                             */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen      ... pointer to multivariate generator object              */
+     /*   marginal ... distribution object for marginal distribution         */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   generator for marginal distribution                                */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return NULL                                                        */
+     /*----------------------------------------------------------------------*/
+{
+  struct unur_gen *marginalgen;
+  struct unur_par *par;
+
+  /* check arguments */
+  CHECK_NULL(gen,NULL);      COOKIE_CHECK(gen,CK_NORTA_GEN,NULL);
+  CHECK_NULL(marginal,NULL);
+
+  /* check distribution */
+  if (marginal->type != UNUR_DISTR_CONT) {
+    _unur_error(GENTYPE,UNUR_ERR_DISTR_INVALID,""); return NULL; }
+  COOKIE_CHECK(marginal,CK_DISTR_CONT,NULL);
+
+  /* try CSTD+Inversion, HINV, and NINV */
+  do {
+    /* CSTD + inversion */
+    par = unur_cstd_new( marginal );
+    if (unur_cstd_set_variant( par, UNUR_STDGEN_INVERSION)==UNUR_SUCCESS) {
+      marginalgen = _unur_init(par);
+      break;
+    }
+    else {
+      free(par);
+    }
+
+    /* HINV (Hermite interpolation based INVersion of CDF) */
+    par = unur_hinv_new( marginal );
+    if ( (marginalgen = _unur_init(par)) != NULL )
+      break;
+
+    /* NINV (Numerical inversion with regula falsi */
+    par = unur_ninv_new( marginal );
+    unur_ninv_set_table( par, 100 );
+    if ( (marginalgen = _unur_init(par)) != NULL ) 
+      break;
+
+    /* no inversion method avaiblable */
+    _unur_error(gen->genid,UNUR_ERR_DISTR_REQUIRED,"data for (numerical) inversion of marginal missing");
+    return NULL;
+    
+  } while (1);
+
+  /* set debugging flags */
+  marginalgen->debug = gen->debug;
+
+  /* set urng: use wrapper function */
+  marginalgen->urng = GEN.marginal_urng;
+
+  /* return generator object */
+  return marginalgen;
+
+} /* end of _unur_norta_make_marginalgen() */
+
 /*****************************************************************************/
 
 void
@@ -599,7 +721,7 @@ _unur_norta_sample_cvec( struct unur_gen *gen, double *vec )
   u = GEN.copula;
 
   /* sample from multinormal distribution */
-  _unur_sample_vec(NORMAL,u);
+  _unur_sample_vec(MNORMAL,u);
 
   /* make copula */
   for (j=0; j<GEN.dim; j++)
@@ -611,10 +733,13 @@ _unur_norta_sample_cvec( struct unur_gen *gen, double *vec )
     return;
   }
 
-
-
-  fprintf(stderr,"junk\n");
-  
+  /* else non-uniform marginals */
+  for (j=0; j<GEN.dim; j++) {
+    /* set U-value for wrapper urng function */
+    GEN.urng_U[0] = u[j];
+    /* call marginal generator (using this U-value) */
+    vec[j] = unur_sample_cont(GEN.marginalgen_list[j]);
+  }
   
   return;
 
@@ -648,12 +773,24 @@ _unur_norta_free( struct unur_gen *gen )
   /* free normal distribution object */
   if (GEN.normaldistr) free (GEN.normaldistr);
 
+  /* free urng wrapper */
+  if (GEN.marginal_urng) unur_urng_free(GEN.marginal_urng);
+
   /* we cannot use this generator object any more */
   SAMPLE = NULL;   /* make sure to show up a programming error */
 
   _unur_generic_free(gen);
 
 } /* end of _unur_norta_free() */
+
+/*---------------------------------------------------------------------------*/
+
+/*****************************************************************************/
+/**  Work-around to call inversion method with given U-value.               **/
+/*****************************************************************************/
+
+double 
+_unur_norta_urng_wrapper (void *state) { return ((double*)state)[0]; }
 
 /*****************************************************************************/
 /**  Debugging utilities                                                    **/
@@ -686,21 +823,6 @@ _unur_norta_debug_init( const struct unur_gen *gen )
   fprintf(log,"%s:\n",gen->genid);
 
   _unur_distr_cvec_debug( gen->distr, gen->genid );
-
-/*   fprintf(log,"%s: data for corresponding normal distribution\n",gen->genid); */
-  
-
-/*   fprintf(log,"%s: generators for standardized marginal distributions = \n",gen->genid); */
-/*   fprintf(log,"%s:\t",gen->genid); */
-/*   for (i=0; i<GEN.dim; i++) */
-/*     fprintf(log,"[%s] ", GEN.marginalgen_list[i]->genid); */
-/*   fprintf(log,"\n%s:\n",gen->genid); */
-
-/*   fprintf(log,"%s: sampling routine = _unur_norta_sample()\n",gen->genid); */
-/*   fprintf(log,"%s:\n",gen->genid); */
-
-/*   fprintf(log,"%s:\n",gen->genid); */
-/*   fprintf(log,"%s: INIT completed **********************\n",gen->genid); */
 
 } /* end of _unur_norta_debug_init() */
 
@@ -783,7 +905,7 @@ _unur_norta_debug_nmgenerator( const struct unur_gen *gen )
   log = unur_get_stream();
 
   fprintf(log,"%s: generator for multinormal auxiliary distribution = %s\n", gen->genid,
-	  NORMAL->genid );
+	  MNORMAL->genid );
   fprintf(log,"%s:\n",gen->genid);
 
 } /* end of _unur_norta_debug_nmgenerator() */
@@ -792,193 +914,7 @@ _unur_norta_debug_nmgenerator( const struct unur_gen *gen )
 #endif   /* end UNUR_ENABLE_LOGGING */
 /*---------------------------------------------------------------------------*/
 
+/*---------------------------------------------------------------------------*/
+#endif   /* UNUR_URNG_TYPE == UNUR_URNG_GENERIC */
+/*---------------------------------------------------------------------------*/
 
-
-
-
-
-
-
-#if 0
-
-int
-_unur_norta_nortu_setup( strunct unur_gen *gen )
-     /*----------------------------------------------------------------------*/
-     /* Compute parameter for NORTU.                                         */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   gen ... pointer to generator object                                */
-     /*                                                                      */
-     /* return:                                                              */
-     /*   UNUR_SUCCESS if computed successfully                              */
-     /*   error code   otherwise                                             */
-     /*----------------------------------------------------------------------*/
-/* input 
- * dim ... dimension
- * cor ... correlation matrix (must be symmetric, positive definite and
- *         must have ones in the diagonal; for uniform marginals the 
- *         rank correlation and the (standard=Pearson) correlation are the same)
- * eps ... small positive constant, negative Eigenvalues are set to eps
- *
- * calculates the correlation matrix Sigma_Y for the normal vector such that
- * transformed to uniform the the correlation matrix cor is attained.
- * If Sigma_Y is not positive definite a "close" matrix is found by
- * calculating the Eigenvalues and Eigenvectors and forcing that all
- * Eigenvalues are non-negative. This idea is due to S. Ghosh but not published yet.
- *
- */
-{ 
-/* #define idx(a,b) ((a)*dim+(b)) */
-
-/*   double *sigma_y;     /\* covariance matrix for ... *\/ */
-
-  int i,j,notposdef,notpos;
-  double *helpm,*eval,*evec;
-  struct nortu_gen *gen;
-  
-/*   int dim = GEN.dim; */
-
-  /* allocate working arrays */
-/*   sigma_y = _unur_xmalloc(dim*dim*sizeof(double)); */
-
-
-/*   gen = malloc(sizeof(struct nortu_gen)); */
-/*   gen->dim = dim; */
-  gen->cholesky = malloc(sizeof(double)*dim*dim);
-/*   gen->distrN01 = unur_distr_normal(NULL,0);/\* to use the CDF in nortu_sample*\/ */
-/*   gen->genN01 = unur_str2gen("normal()");/\*to generate N(0,1) variates in nortu_sample*\/ */
-  helpm = malloc(sizeof(double)*dim*dim);
-
-  //  printf("begin of nortusetup correlation matrix:\n");
-  //  printsqmatrix(cor,dim);
-
-  /* setup correlation matrix for ... */
-/*   for(i=0; i<dim; i++) { */
-/*     for(j=0; j<i; j++) */
-/*       /\* left lower part: make matrix symmetric *\/ */
-/* 	 sigma_y[idx(i,j)] = sigma_y[idx(j,i)]; */
-/*     /\*   diagonal *\/ */
-/*     sigma_y[idx(i,i)] = 1.; */
-/*     for(j=i+1;j<dim;j++) */
-/*       /\* right upper part *\/ */
-/*       sigma_y[idx(i,j)] = 2.*sin(GEN.corr[idx(i,j)]*(M_PI/6.));   */
-/*   } */
-
-
-  //  printf("nortusetup sigma_y:\n");
-  //  printsqmatrix(sigma_y,dim);
-
-/*   gsl_matrix_view m */
-/*     = gsl_matrix_view_array (sigma_y, dim, dim); */
-/*   gsl_vector *evalgsl = gsl_vector_alloc (dim); */
-/*   gsl_matrix *evecgsl = gsl_matrix_alloc (dim, dim); */
-/*   gsl_eigen_symmv_workspace * w = */
-/*     gsl_eigen_symmv_alloc (dim); */
-/*   gsl_eigen_symmv (&m.matrix, evalgsl, evecgsl, w); */
-/*   gsl_eigen_symmv_free (w); */
-/*   eval = evalgsl->data; */
-/*   evec = evecgsl->data; */
-
-  //  printf("the eigenvalues\n");
-  //  printvector(eval,dim);
-
-  /*  printf("the eigenvectors\n");
-  printsqmatrix(evec,dim);
-  */
-  /* the vector eval is now containing the eigenvalues
-     and evec the corresponding eigenvectors */
-
-  /*as gsl_eigen_symmv is destroying the diagonal and the lower triangular
-    we have to restore the full matrix sigma_y  */
-/*   for(i=0;i<dim;i++){ */
-/*     for(j=0;j<i;j++) */
-/*       sigma_y[idx(i,j)] = sigma_y[idx(j,i)]; */
-/*     sigma_y[idx(i,i)] = 1.; */
-/*   } */
-
-
-  /* check if all eval are positive */
-/*   notpos = 0; */
-/*   for(i=0; i<dim; i++) */
-/*     if(eval[i]<=0.){ /\*oder <= eps ?????*\/ */
-/*       eval[i]=eps; */
-/*       notpos++; */
-/*     } */
-
-/*   if(notpos>0){ */
-/*     mmult_matr_diagonal(evec,eval,dim,helpm); */
-/*     mmult_matr_matrt(helpm,evec,dim,sigma_y); */
-/*     makecorrelationmatrix(sigma_y,dim); */
-/*     //    printf("as sigma_y not positive definite EC corrected correlation matrix\n"); */
-/*     //printsqmatrix(sigma_y,dim); */
-/*   } */
-
-
-  //  printf("nortusetup sigma_y:\n");
-  //  printsqmatrix(sigma_y,dim);
-  notposdef = cholesky_decomp(sigma_y, dim, gen->cholesky);
-  //  printf("nortusetup cholesky factor:\n");
-  //  printsqmatrix(gen->cholesky,dim);
-
-
-
-  gsl_vector_free(evalgsl);
-  gsl_matrix_free(evecgsl);
-  free(sigma_y);
-  free(helpm);
-  if(notposdef){
-    printf("ERROR nortu-setup: Eigenvalue corrected matrix not positive definite\n");
-    free(gen->cholesky);
-    free_nortu_gen(gen);
-    return NULL;
-  }
-  return gen;
-/* #undef idx */
-} /* end of _unur_norta_nortu_setup() */
-
-/*****************************************************************************/
-
-void
-_unur_norta_sample_cvec( struct unur_gen *gen, double *vec )
-     /*----------------------------------------------------------------------*/
-     /* sample from generator                                                */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   gen ... pointer to generator object                                */
-     /*   vec ... random vector (result)                                     */
-     /*----------------------------------------------------------------------*/
-{
-#define idx(a,b) (a*GEN.dim+b)
-  int j,k;
-
-  /* check arguments */
-  CHECK_NULL(gen,RETURN_VOID);
-  COOKIE_CHECK(gen,CK_NORTA_GEN,RETURN_VOID);
-
-  /* generate random vector with independent components */
-  for (j=0; j<GEN.dim; j++)
-    vec[j] = unur_sample_cont(GEN.uvgen);
-
-  /* 
-     transform to desired covariance structure: 
-     X = L.Y + mu 
-     where
-     L  ... cholesky factor of the covariance matrix
-     Y  ... vector with indenpent components (generated above)
-     mu ... mean vector
-     (notice that L is a lower triangular matrix)
-  */
-  for (k=GEN.dim-1; k>=0; k--) {
-    vec[k] *= GEN.cholesky[idx(k,k)];
-    for (j=k-1; j>=0; j--)
-      vec[k] += vec[j] * GEN.cholesky[idx(k,j)];
-    vec[k] += DISTR.mean[k];
-  }
-
-#undef idx
-} /* end of _unur_norta_sample_cvec() */
-
-
-/*****************************************************************************/
-
-#endif

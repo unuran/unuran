@@ -9,7 +9,8 @@ $DEBUG = 0;
 
 # ----------------------------------------------------------------
 
-require "readPDF.pl";
+require "read_PDF.pl";
+require "read_test_conf.pl";
 
 # ----------------------------------------------------------------
 
@@ -18,10 +19,10 @@ my $test_conf_file = shift
     or die "no argument given";
 
 # C file for making code generator tests
-my $make_test_PDFgen = "make_test_codegen.c";
+my $make_test_codegen = "make_test_codegen.c";
 
 # C file for tests
-my $test_PDFgen = "test_codegen.c";
+my $test_codegen = "test_codegen.c";
 
 # Sample size for test
 my $SAMPLE_SIZE = 10000;
@@ -30,7 +31,7 @@ my $SAMPLE_SIZE = 10000;
 # List of distributions
 my $DISTR = read_PDFdata();
 
-# For description of data fields in this list see file `readPDF.pl'.
+# For description of data fields in this list see file `read_PDF.pl'.
 
 # ................................................................
 
@@ -64,86 +65,20 @@ sub make_codegen_tests
     my $test_list;
     my $test_number = 0;
 
-    # Read the test.conf file
-    open CONF, $test_conf_file or die "cannot open file $test_conf_file\n";
-    my $conf_content;
-    while (<CONF>) {
-	next if /^\#/;
-	if (/^\s+[^\s\n]/) {
-	    # concatenate lines
-	    $conf_content =~ s/\n$//;
-	}
-	$conf_content .= $_;
-    }
-    close CONF;
-    
-    # Get tests
-    my @tests = split /\n\s*\n/, $conf_content;
-
     # rule for C files 
     my $hrule = "/* ----------------------------------------------------------------- */";
 
 #.................................................................
 # Get list of distributions 
 
-    my $test_distr;
-    my $n_distr = 0;
-    
-    foreach my $test (@tests) {
-	# There might be empty entries in @tests
-	next unless $test;
-	
-	# use local copy
-	my $t = $test;
-	
-	# Get name and parameters of distribution
-	$t =~ /DISTR:\s*(\w+)\s*\(([^\)]*)\)/ or next;
-
-	# Store data
-	my $distr = $1;
-	my $params = $2;
-
-	# Check for existing distribution
-	die "Unknown distribution: $distr" unless $DISTR->{$distr};
-	
-	# Process parameters
-	my @param_list = split /\,/, $params;
-	my $n_params = $#param_list + 1;
-	my $fpm;
-	if ($n_params > 0) {
-	    $fpm = "double fpm[] = { ";
-	    foreach my $p (@param_list) {
-		if ($p =~ /(.+)\.\.(.+)/) {
-		    $fpm .= ($1>0) ? exp(log($1)+rand()*(log($2)-log($1))) : $1+rand()*($2-$1);
-		    $fpm .= ", ";
-		}
-		else {
-		    $fpm .= "$p, ";
-		}
-	    }
-	    $fpm =~ s/,\s*$/ \}/;
-	}
-	else {
-	    $fpm = "double *fpm = NULL";
-	}
-
-	# Make distribution object
-	$test_distr->{"$distr\_$n_distr"} =
-	    "\t{\n".
-	    "\t\t$fpm;\n".
-	    "\t\tdistr = unur_distr_$distr(fpm,$n_params);\n".
-	    "\t}\n";    
-
-	# increment counter for distributions
-	++$n_distr;
-    }
+    my $list_distr = get_test_distributions( $test_conf_file, $DISTR );
 
 #.................................................................
 # Check for missing CONTinuous distributions
 
     foreach my $d (sort keys %{$DISTR}) {
 	next unless $DISTR->{$d}->{"=TYPE"} eq "CONT";
-	unless ($test_distr->{$d}) {
+	unless ($list_distr->{$d}) {
 	    print STDERR "test missing for distribution \"$d\"\n";
 	}
     }
@@ -151,25 +86,7 @@ sub make_codegen_tests
 #.................................................................
 # Get list of generation methods
 
-    my $test_gen;
-    my $n_gen = 0;
-    
-    foreach my $test (@tests) {
-	# There might be empty entries in @tests
-	next unless $test;
-	
-	# use local copy
-	my $t = $test;
-
-	# Get name and commands for generation method
-	$t =~ /PAR:\s*(par\s*=\s*unur\_([a-z]+)\_new.+)$/ or next;
-
-	# Store data
-	$test_gen->{"$2\_$n_gen"} = $1;
-
-	# increment counter for distributions
-	++$n_gen;
-    }	
+    my $list_gen = get_test_methods( $test_conf_file );
 
 #.................................................................
 # C file for tests
@@ -205,14 +122,22 @@ EOX
 #.................................................................
 # Process each test
 
+    # short name for distribution
+    my $last_distr_short;
+
     # Each distribution 
-    foreach my $d (keys %{$test_distr}) {
+    foreach my $d (keys %{$list_distr}) {
 
 	# use local copy
 	my $distr = $d;
 
+	# short name for distribution
+	my $distr_short = $distr;
+	$distr_short =~ s/\_[^\_]+$//;
+	my $distr_print_name = "\tprintf(\"$distr_short \");\n";
+
 	# Each generation method
-	foreach my $g (keys %{$test_gen}) {
+	foreach my $g (keys %{$list_gen}) {
 
 	    # use local copy
 	    my $gen = $g;
@@ -221,11 +146,11 @@ EOX
 	    my $testroutine = "test\_$distr\_$gen";
 
 	    # Distribution object
-	    my $distribution = $test_distr->{$distr};
+	    my $distribution = $list_distr->{$distr};
 	
 	    # Generator object
 	    my $generator;
-	    foreach my $l (split /\;/, $test_gen->{$gen}) {
+	    foreach my $l (split /\;/, $list_gen->{$gen}) {
 		$l =~ s/^\s+//;
 		$l =~ s/\s+$//;
 		$generator .= "\t$l;\n";
@@ -251,11 +176,15 @@ EOX
 		"$distribution\n".         # the distribution object
 		"$generator\n";            # the generator object
 
+	    # Init of generator failed
+	    $test_test_body .=
+		"\tif (gen == NULL) return 1;\n\n";
+
 	    # Set uniform random number generator
 	    $test_test_body .= "\tunur_chg_urng(gen,urng1);\n\n";
 
 	    # Print info on screen
-	    $test_test_body .= "\tprintf(\\\"$distr \\\");\n";
+	    $test_test_body .= $distr_print_name; # "\tprintf(\"$distr_short \");\n";
 	    $test_test_body .= "\tfflush(stdout);\n\n";
 
 	    # Compare generator output
@@ -264,7 +193,7 @@ EOX
 \t\tx1 = unur_sample_cont(gen);
 \t\tx2 = rand_$distr();
 \t\tif (!FP_equal(x1,x2)) {
-\t\t\tfprintf(stderr,\\\"error! %%g, %%g, diff = %%g\\\\n\\\",x1,x2,x1-x2);
+\t\t\tfprintf(stderr,\"error! %%g, %%g, diff = %%g\\\\n\",x1,x2,x1-x2);
 \t\t\t++n_failed;
 \t\t}
 \t}
@@ -283,8 +212,16 @@ EOX
 		$test_test_decl.
 		$test_test_body;
 
+	    # Test routine when init of generator object failed
+	    $test_test_routine =~ s/\n/\\n/g;
+	    my $test_test_failed = 
+		$test_test_routine.
+		"\\tprintf(\\\".\\\");\\n".
+		"\\treturn 0;\\n".
+		"\}\\n";
+
 # The make test routine
-	    # Begin of test routines 
+	    # Begin of make test routines 
 	    my $make_test_routine = "void $testroutine (FILE *out)\n\{\n";
 
 	    # Declarations for make test routine
@@ -296,14 +233,26 @@ EOX
 	    # Body of make test routine
 	    my $make_test_body = 
 		"$distribution\n".                       # the distribution object
-		"$generator\n".                          # the generator object
+		"$generator\n";                          # the generator object
+
+	    # Init of generator failed
+	    $make_test_body .=
+		"\tif (gen == NULL) {\n".
+		"\t\tunur_distr_free(distr);\n".
+		"\t\tfprintf(out,\"$test_test_failed\\n\");\n".
+		"\t\treturn;\n".
+		"\t}\n\n";
+
+	    # Make code
+	    $make_test_body .=
 		"\tunurgen(gen,out,\"$distr\");\n\n".    # make code 
 		"\tunur_distr_free(distr);\n".           # free distribution object
 		"\tunur_free(gen);\n\n";                 # free generator object
 
-	    # Header for test routine for distribution
+	    # write test file
 	    foreach $l (split /\n/, $test_test) { 
 		$l =~ s/\t/\\t/g;
+		$l =~ s/\"/\\"/g;
 		$make_test_body .= "\tfprintf(out,\"$l\\n\");\n";
 	    }
 
@@ -350,19 +299,19 @@ EOX
 	"\tFILE *LOG;\n".
 	"\tint n_failed = 0;\n";
 
-    # Body of make main()
+    # Body of main()
     my $test_main_body = '';
 
     # Log files 
     $test_main_body =
-	"\tLOG = fopen( \\\"test_codegen.log\\\",\\\"w\\\" );\n".
+	"\tLOG = fopen( \"test_codegen.log\",\"w\" );\n".
 	"\tunur_set_stream( LOG );\n".
-        "unur_set_default_debug(UNUR_DEBUG_ALL);\n\n";
+        "\tunur_set_default_debug(UNUR_DEBUG_ALL);\n\n";
 
     # Initialize URNG
     my $seed = int(rand 123456) + 1;
-    $test_main_body .= "\turng1 = prng_new(\\\"mt19937($seed)\\\");\n";
-    $test_main_body .= "\turng2 = prng_new(\\\"mt19937($seed)\\\");\n";
+    $test_main_body .= "\turng1 = prng_new(\"mt19937($seed)\");\n";
+    $test_main_body .= "\turng2 = prng_new(\"mt19937($seed)\");\n";
     $test_main_body .= "\n";
 
     # Execute the tests
@@ -372,7 +321,7 @@ EOX
     $test_main_body .= "\n";
 
     # End of main()
-    $test_main_body .= "\tprintf(\\\"\\\\n\\\");\n\n";
+    $test_main_body .= "\tprintf(\"\\\\n\");\n\n";
     $test_main_body .= "\tfclose(LOG);\n\n";
     $test_main_body .= "\texit ((n_failed) ? 1 : 0);\n";
     $test_main_body .= "}\n\n";
@@ -380,7 +329,7 @@ EOX
     # test main()
     my $test_main = 
 	$test_main_routine.
-	    $test_main_decl."\n".
+        $test_main_decl."\n".
 	$test_main_body;
 
 # The make test main() 
@@ -397,16 +346,16 @@ EOX
     my $make_main_body =
 	"\tLOG = fopen( \"make_test_codegen.log\",\"w\" );\n".
 	"\tunur_set_stream( LOG );\n".
-        "unur_set_default_debug(UNUR_DEBUG_ALL);\n\n";
+        "\tunur_set_default_debug(UNUR_DEBUG_ALL);\n\n";
 
     # Body of make main()
     $make_main_body .= 
-	"\tout = fopen(\"$test_PDFgen\",\"w\");\n";
-    $make_main_body .= "\n";
+	"\tout = fopen(\"$test_codegen\",\"w\");\n\n";
 
     # Write the header for the test file
     foreach my $l (split /\n/, $test_header) {
 	$l =~ s/\t/\\t/g;
+	$l =~ s/\"/\\"/g;
 	$make_main_body .= "\tfprintf(out,\"$l\\n\");\n";
     }
     $make_main_body .= "\n";
@@ -420,6 +369,7 @@ EOX
     # Write main for test file
     foreach my $l (split /\n/, $test_main) {
 	$l =~ s/\t/\\t/g;
+	$l =~ s/\"/\\"/g;
 	$make_main_body .= "\tfprintf(out,\"$l\\n\");\n";
     }
     $make_main_body .= "\n";
@@ -439,7 +389,7 @@ EOX
 #.................................................................
 # Make C file for creating tests
 
-    open TEST, ">$make_test_PDFgen" or die "cannot open file $make_test_PDFgen\n";
+    open TEST, ">$make_test_codegen" or die "cannot open file $make_test_codegen\n";
     print TEST $make_header;
     print TEST $test_file;
     print TEST $make_main;

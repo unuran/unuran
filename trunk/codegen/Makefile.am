@@ -36,7 +36,7 @@ TESTS = \
 noinst_HEADERS = 
 
 EXTRA_DIST = \
- readPDF.pl \
+ read_PDF.pl \
  make_PDFgen.pl \
  make_test_PDFgen.pl \
  make_test_PDFgen.c \
@@ -44,14 +44,14 @@ EXTRA_DIST = \
  make_test_codegen.c
 
 
-PDFgen.c: make_PDFgen.pl readPDF.pl
+PDFgen.c: make_PDFgen.pl read_PDF.pl
 	./make_PDFgen.pl
 
-PDFgen_source.h: make_PDFgen.pl readPDF.pl
+PDFgen_source.h: make_PDFgen.pl read_PDF.pl
 	./make_PDFgen.pl
 
 
-make_test_PDFgen.c: $(top_srcdir)/codegen/test.conf make_test_PDFgen.pl readPDF.pl
+make_test_PDFgen.c: $(top_srcdir)/codegen/test.conf make_test_PDFgen.pl read_PDF.pl
 	./make_test_PDFgen.pl $(top_srcdir)/codegen/test.conf
 
 make_test_PDFgen_SOURCES = make_test_PDFgen.c
@@ -64,7 +64,7 @@ test_PDFgen_SOURCES = test_PDFgen.c
 test_PDFgen_LDADD = libunurgen.a  $(top_builddir)/src/libunuran.a
 
 
-make_test_codegen.c: $(top_srcdir)/codegen/test.conf make_test_codegen.pl readPDF.pl
+make_test_codegen.c: $(top_srcdir)/codegen/test.conf make_test_codegen.pl read_PDF.pl
 	./make_test_codegen.pl $(top_srcdir)/codegen/test.conf
 
 make_test_codegen_SOURCES = make_test_codegen.c

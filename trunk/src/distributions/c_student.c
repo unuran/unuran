@@ -69,6 +69,11 @@ static const char distr_name[] = "student";
 
 /*---------------------------------------------------------------------------*/
 /* do we have the cdf of the distribution ? */
+#ifdef HAVE_UNUR_SF_CDFSTUDENT
+#  define HAVE_CDF
+#else
+#  undef  HAVE_CDF
+#endif
 
 /* can we compute the area below the pdf ? */
 #ifdef HAVE_UNUR_SF_LN_GAMMA
@@ -81,7 +86,13 @@ static const char distr_name[] = "student";
 /* function prototypes                                                       */
 static double _unur_pdf_student(double x, UNUR_DISTR *distr);
 static double _unur_dpdf_student(double x, UNUR_DISTR *distr);
+#if HAVE_UNUR_SF_CDFSTUDENT
+static double _unur_cdf_student(double x, UNUR_DISTR *distr);
+#endif
+
+static int _unur_upd_mode_student( UNUR_DISTR *distr );
 #ifdef HAVE_AREA
+static int _unur_upd_area_student( UNUR_DISTR *distr );
 static double _unur_normconstant_student(double *params, int n_params);
 #endif
 
@@ -105,7 +116,60 @@ _unur_dpdf_student( double x, UNUR_DISTR *distr )
 
 /*---------------------------------------------------------------------------*/
 
+#ifdef HAVE_CDF
+
+double
+_unur_cdf_student(double x, UNUR_DISTR *distr)
+{
+  return _unur_sf_cdfstudent(x,DISTR.nu);
+} /* end of _unur_cdf_student() */
+
+#endif
+
+/*---------------------------------------------------------------------------*/
+
+int
+_unur_upd_mode_student( UNUR_DISTR *distr )
+{
+  DISTR.mode = 0.;
+
+  /* mode must be in domain */
+  if (DISTR.mode < DISTR.domain[0]) 
+    DISTR.mode = DISTR.domain[0];
+  else if (DISTR.mode > DISTR.domain[1]) 
+    DISTR.mode = DISTR.domain[1];
+
+  /* o.k. */
+  return 1;
+} /* end of _unur_upd_mode_student() */
+
+/*---------------------------------------------------------------------------*/
+
 #ifdef HAVE_AREA
+
+int
+_unur_upd_area_student( UNUR_DISTR *distr )
+{
+  /* normalization constant */
+  NORMCONSTANT = _unur_normconstant_student(DISTR.params,DISTR.n_params);
+  
+  if (distr->set & UNUR_DISTR_SET_STDDOMAIN) {
+    DISTR.area = 1.;
+    return 1;
+  }
+  
+#ifdef HAVE_CDF
+  /* else */
+  DISTR.area = ( _unur_cdf_student( DISTR.domain[1],distr) 
+		 - _unur_cdf_student( DISTR.domain[0],distr) );
+  return 1;
+#else
+  return 0;
+#endif
+
+} /* end of _unur_upd_area_student() */
+
+/*---------------------------------------------------------------------------*/
 
 double
 _unur_normconstant_student( double *params, int n_params )
@@ -145,7 +209,9 @@ unur_distr_student( double *params, int n_params )
   /* functions */
   DISTR.pdf  = _unur_pdf_student;  /* pointer to PDF               */
   DISTR.dpdf = _unur_dpdf_student; /* pointer to derivative of PDF */
-  /* DISTR.cdf = _unur_cdf_student;   pointer to CDF               */
+#ifdef HAVE_CDF
+  DISTR.cdf  = _unur_cdf_student;  /* pointer to CDF               */
+#endif
 
   /* copy parameters */
   DISTR.nu = nu;
@@ -166,13 +232,19 @@ unur_distr_student( double *params, int n_params )
   NORMCONSTANT = 1.;
 #endif
 
+  /* domain */
+  DISTR.domain[0] = -INFINITY;        /* left boundary  */
+  DISTR.domain[1] = INFINITY;        /* right boundary */
+
   /* mode and area below p.d.f. */
   DISTR.mode = 0.;
   DISTR.area = 1.;
 
-  /* domain */
-  DISTR.domain[0] = -INFINITY;        /* left boundary  */
-  DISTR.domain[1] = INFINITY;        /* right boundary */
+  /* function for updating derived parameters */
+  DISTR.upd_mode  = _unur_upd_mode_student; /* funct for computing mode */
+#ifdef HAVE_AREA
+  DISTR.upd_area  = _unur_upd_area_student; /* funct for computing area */
+#endif
 
   /* indicate which parameters are set */
   distr->set = ( UNUR_DISTR_SET_DOMAIN |

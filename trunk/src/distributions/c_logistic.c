@@ -84,6 +84,9 @@ static double _unur_pdf_logistic(double x, UNUR_DISTR *distr);
 static double _unur_dpdf_logistic(double x, UNUR_DISTR *distr);
 static double _unur_cdf_logistic(double x, UNUR_DISTR *distr);
 
+static int _unur_upd_mode_logistic( UNUR_DISTR *distr );
+static int _unur_upd_area_logistic( UNUR_DISTR *distr );
+
 /*---------------------------------------------------------------------------*/
 
 double
@@ -137,6 +140,42 @@ _unur_cdf_logistic( double x, UNUR_DISTR *distr )
     return ( 1. / (1. + exp(-x)) );
   }
 } /* end of _unur_cdf_logistic() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+_unur_upd_mode_logistic( UNUR_DISTR *distr )
+{
+  DISTR.mode = DISTR.alpha;
+
+  /* mode must be in domain */
+  if (DISTR.mode < DISTR.domain[0]) 
+    DISTR.mode = DISTR.domain[0];
+  else if (DISTR.mode > DISTR.domain[1]) 
+    DISTR.mode = DISTR.domain[1];
+
+  return 1;
+} /* end of _unur_upd_mode_logistic() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+_unur_upd_area_logistic( UNUR_DISTR *distr )
+{
+  /* normalization constant */
+  NORMCONSTANT = 1. / DISTR.beta;
+
+  if (distr->set & UNUR_DISTR_SET_STDDOMAIN) {
+    DISTR.area = 1.;
+    return 1;
+  }
+
+  /* else */
+  DISTR.area = ( _unur_cdf_logistic( DISTR.domain[1],distr) 
+		 - _unur_cdf_logistic( DISTR.domain[0],distr) );
+  return 1;
+  
+} /* end of _unur_upd_area_logistic() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -196,18 +235,22 @@ unur_distr_logistic( double *params, int n_params )
   /* normalization constant */
   NORMCONSTANT = 1. / DISTR.beta;
 
-  /* mode and area below p.d.f. */
-/*    DISTR.mode = 0.; */
-  DISTR.area = 1.;
-
   /* domain */
   DISTR.domain[0] = -INFINITY;       /* left boundary  */
   DISTR.domain[1] = INFINITY;        /* right boundary */
 
+  /* mode and area below p.d.f. */
+  DISTR.mode = DISTR.alpha;
+  DISTR.area = 1.;
+
+  /* function for updating derived parameters */
+  DISTR.upd_mode  = _unur_upd_mode_logistic; /* funct for computing mode */
+  DISTR.upd_area  = _unur_upd_area_logistic; /* funct for computing area */
+
   /* indicate which parameters are set */
   distr->set = ( UNUR_DISTR_SET_DOMAIN |
 		 UNUR_DISTR_SET_STDDOMAIN |
-/*   		 UNUR_DISTR_SET_MODE   | */
+ 		 UNUR_DISTR_SET_MODE   |
   		 UNUR_DISTR_SET_PDFAREA );
 
   /* return pointer to object */

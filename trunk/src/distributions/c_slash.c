@@ -21,7 +21,7 @@
  *  pdf:       f(x) =  (1 - exp(-x^2/2)) / x^2    for x != 0                 *
  *  pdf:       f(x) =  1 / 2                      for x == 0                 *
  *  domain:    -infinity < x < infinity                                      *
- *  constant:  1 / sqrt(2 * pi)                                              *
+ *  constant:  sqrt(2 * pi)                                                  *
  *                                                                           *
  *  parameters: none                                                         *
  *                                                                           *

@@ -61,16 +61,16 @@ enum {
   UNUR_DISTR_GAMMA,               /*    X     X     X     X     X     .      */
   UNUR_DISTR_GIG,                 /*    X     X     .     .     X     .      */
   UNUR_DISTR_LAPLACE,             /*    X     X     X     X     X     .      */
-  UNUR_DISTR_LOGISTIC,            /*    X     X     .     X     X     .      */
+  UNUR_DISTR_LOGISTIC,            /*    X     X     X     X     X     .      */
   UNUR_DISTR_LOGNORMAL,           /*    X     .     .     X     .     .      */
   UNUR_DISTR_LOMAX,               /*    X     X     X     X     .     .      */
   UNUR_DISTR_NORMAL   = 0x0100u,  /*    X     X     X     X     X     .      */
    UNUR_DISTR_GAUSSIAN = 0x0100u, /*    same as NORMAL                       */
   UNUR_DISTR_PARETO,              /*    X     X     X     X     .     .      */
-  UNUR_DISTR_POWEREXPONENTIAL,    /*    X     .     .     X     X     .      */
+  UNUR_DISTR_POWEREXPONENTIAL,    /*    X     X     X     X     X     .      */
   UNUR_DISTR_RAYLEIGH,            /*    X     X     X     X     .     .      */
   UNUR_DISTR_SLASH,               /*    X     .     X     X     X     .      */
-  UNUR_DISTR_STUDENT,             /*    X     .     X     X     X     .      */
+  UNUR_DISTR_STUDENT,             /*    X    (X)    X     X     X     .      */
   UNUR_DISTR_TRIANGULAR,          /*    X     X     X     X     X     .      */
   UNUR_DISTR_UNIFORM = 0x0200u,   /*    X     X     X     X     .     .      */
    UNUR_DISTR_BOXCAR = 0x0200u,   /*    same as UNIFORM                      */

@@ -37,6 +37,11 @@ my $ACG = "../acg";
 my $default_conf_file = "$top_srcdir/codegen/tests/test_acg_conf.pl";
 
 # ----------------------------------------------------------------
+# TODO: $top_builddir
+
+my $libunuran_la = "$top_srcdir/src/libunuran.la";
+
+# ----------------------------------------------------------------
 # Prefix for file names
 
 my $file_prefix = "./run_test_acg";
@@ -250,7 +255,7 @@ if ($use_JAVA) {
 
 print_log("Compiling sources ...\n\n");
 
-system "$GCC -o $UNURAN_exec $UNURAN_src -lunuran -lprng -lm";
+system "../../libtool $GCC -o $UNURAN_exec $UNURAN_src $libunuran_la -lprng -lm";
 system "$GCC -o $C_exec $C_src -lm"                 if $use_C;
 system "$G77 -o $FORTRAN_exec $FORTRAN_src -lm"     if $use_FORTRAN;
 system "$JAVAC $JAVA_src"                           if $use_JAVA;

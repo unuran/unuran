@@ -5,7 +5,7 @@ AM_CFLAGS = -Wall\
 
 INCLUDES = -I$(top_srcdir)/src
 
-LDADD = -lunuran
+LDADD = $(top_builddir)/src/libunuran.la
 
 EXAMPLES = \
  example0 example0_str \

@@ -5,9 +5,9 @@ AM_CFLAGS = -Wall
 
 INCLUDES = -I$(top_srcdir)/src
 
-noinst_LIBRARIES = libmethods.a
+noinst_LTLIBRARIES = libmethods.la
 
-libmethods_a_SOURCES = \
+libmethods_la_SOURCES = \
  x_gen.c    x_gen.h   x_gen_source.h \
  x_urng.c   x_urng.h \
 \

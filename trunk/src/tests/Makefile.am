@@ -5,9 +5,9 @@ AM_CFLAGS = -Wall
 
 INCLUDES = -I$(top_srcdir)/src
 
-noinst_LIBRARIES = libtests.a
+noinst_LTLIBRARIES = libtests.la
 
-libtests_a_SOURCES = \
+libtests_la_SOURCES = \
  chi2test.c \
  correlation.c\
  counturn.c \

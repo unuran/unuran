@@ -5,9 +5,9 @@ AM_CFLAGS = -Wall
 
 INCLUDES = -I$(top_srcdir)/src
 
-noinst_LIBRARIES = libdistr.a
+noinst_LTLIBRARIES = libdistr.la
 
-libdistr_a_SOURCES = \
+libdistr_la_SOURCES = \
  distr.c  distr.h  distr_struct.h distr_source.h \
  cont.c   cont.h \
  corder.c corder.h \

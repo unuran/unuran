@@ -5,9 +5,9 @@ AM_CFLAGS = -Wall
 
 INCLUDES = -I$(top_srcdir)/src
 
-noinst_LIBRARIES = libspecfunct.a
+noinst_LTLIBRARIES = libspecfunct.la
 
-libspecfunct_a_SOURCES = \
+libspecfunct_la_SOURCES = \
  mconf_source.h \
  mtherr.c \
  gamma.c \

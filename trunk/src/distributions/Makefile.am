@@ -5,9 +5,9 @@ AM_CFLAGS = -Wall
 
 INCLUDES = -I$(top_srcdir)/src
 
-noinst_LIBRARIES = libdistributions.a
+noinst_LTLIBRARIES = libdistributions.la
 
-libdistributions_a_SOURCES = \
+libdistributions_la_SOURCES = \
  c_beta.c        c_beta_gen.c \
  c_burr.c        c_burr_gen.c \
  c_cauchy.c      c_cauchy_gen.c \

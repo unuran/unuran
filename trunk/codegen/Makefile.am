@@ -13,16 +13,15 @@ INCLUDES = -I$(top_srcdir)/src
 
 bin_PROGRAMS = acg
 acg_SOURCES = acg.c
-acg_LDADD = libunuracg.a $(top_builddir)/src/libunuran.a
+acg_LDADD = libunuracg.la $(top_builddir)/src/libunuran.la
 
 
-
-lib_LIBRARIES = libunuracg.a
+lib_LTLIBRARIES = libunuracg.la
 
 include_HEADERS = \
  unuran_acg.h
 
-libunuracg_a_SOURCES = \
+libunuracg_la_SOURCES = \
  PDFgen.c \
  headergen.c \
  codegen_C.c \

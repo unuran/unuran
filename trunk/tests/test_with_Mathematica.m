@@ -17,8 +17,7 @@
 RunFileName = "run_test_with_Mathematica.c";
 
 (* sample size for tests *)
-RunSampleSize = 50;   
-RunSampleSizeSlow = 10;   (* for slow routines *)
+RunSampleSize = 500;   
 
 (* constants *)
 isCONT = 1;
@@ -47,9 +46,9 @@ PowerexponentialDistribution/: PDF[PowerexponentialDistribution[r_], x_] :=
 
 PowerexponentialDistribution/: CDF[PowerexponentialDistribution[r_], x_] := 
 	If [ x<0,
-		Integrate[ Exp[-(-t)^r], {t,-Infinity,x}] / (2 Gamma[1+1/r]),
+		Gamma[1/r, (-x)^r] / (2*r*Gamma[1 + 1/r]),
 	(* Else *)
-		1/2 + Integrate[Exp[-(t)^r], {t,0,x}] / (2 Gamma[1+1/r]) ];
+		1/2 + (Gamma[1 + 1/r] - Gamma[1/r, x^r]/r) / (2 Gamma[1+1/r]) ];
 
 PowerexponentialDistribution/: Random[PowerexponentialDistribution[r_]] := 
 	(* Warning!! This not a generator for the Powerexponential Distribution!!       *)
@@ -75,9 +74,9 @@ LaplaceDistribution/: PDF[LaplaceDistribution[m_,s_], x_] :=
 
 LaplaceDistribution/: CDF[LaplaceDistribution[m_,s_], x_] :=
 	If [ x-m < 0,
-		Integrate[ Exp[(t-m)/s] / (2 s), {t,-Infinity,x}],
+		Exp[(-m + x)/s]/2,
 	(* Else *)
-		1/2 + Integrate[ Exp[(-t+m)/s] / (2 s), {t,m,x}] ];
+		1 - Exp[(m - x)/s]/2 ];
 
 LaplaceDistribution/: Random[LaplaceDistribution[m_,s_]] := 
 	m + If[ Random[]>0.5, 1,-1 ] * s * Log[Random[]];
@@ -103,26 +102,26 @@ UnurTestDistrResultLine[stream_, distr_, dtype_, fparams__, x_] := Module [
 
 	(* list of parameters *)
 	Table[
-		WriteString[stream, CForm[ N[ fparams[[i]]+0., $MachinePrecision+1]]," "],
+		WriteString[stream, CForm[ N[ fparams[[i]] ]]," "],
 		{i,1,Length[fparams]} ];
 
 	(* argument *)
-	WriteString[stream, CForm[ N[x+0.,$MachinePrecision+1] ]," "];
+	WriteString[stream, CForm[x]," "];
 
 	(* CDF *)
-	WriteString[stream, CForm[ N[ CDF[ Apply[distr,fparams], x ]+0., $MachinePrecision+1]]," "];
+	WriteString[stream, CForm[ N[ CDF[ Apply[distr,fparams], x ]]]," "];
 	
 	(* PDF *)
-	WriteString[stream, CForm[ N[ PDF[ Apply[distr,fparams], x+0. ]+0., $MachinePrecision+1]]," "];
+	WriteString[stream, CForm[ N[ PDF[ Apply[distr,fparams], x ]]]," "];
 
 	(* derivative of PDF *)
 	Switch [ dtype,
 		isCONT,
-			Fx = N[ 0. + D[ PDF[ Apply[distr,fparams], t ], t] /. t->x, $MachinePrecision+1],
+			Fx = N[ 0. + D[ PDF[ Apply[distr,fparams], t ], t] /. t->x],
 		isDISCR, (* discrete distribution: no derivative *)
-			Fx = 0.,
+			Fx = 0,
 		_, (* default: should not happen *)
-			Fx = 0.
+			Fx = 0
 	];
 	WriteString[stream, CForm[ Fx ]];
 
@@ -138,6 +137,8 @@ UnurTestDistrResultFile[dname_, dtype_, runfile_, fparbd__, size_, distribution_
 	(*	dtype   ... type of distribution (CONT|DISCR|...)            *)
 	(*	runfile ... output stream for C file running tests           *)
 	(*	fparbd  ... bounds for parameters for distribution           *)
+	(*		    (use isDISCR as 3rd entry in list for            *)
+	(*		    discrete parameters)                             *)
 	(*	size    ... size of sample                                   *)
 	(*	distribution ... (optional)				     *)
 	
@@ -169,15 +170,17 @@ UnurTestDistrResultFile[dname_, dtype_, runfile_, fparbd__, size_, distribution_
 	Do[
 		(* make parameters for distribution at random *)
 		fparams = 
-			Table[ Block [ {prec}, 
-				(* read precision (3rd optional argument) *)
-				prec = If [ Length[fparbd[[j]]]==2, 1000, fparbd[[j,3]] ];
-				(* choose parameter at random *)
-				fparbd[[j,1]] + Round[(fparbd[[j,2]]-fparbd[[j,1]])*prec*Random[]]/prec ],
+			Table[ 
+				If [ Length[fparbd[[j]]]>2 && fparbd[[j,3]] == isDISCR,
+					Round[ fparbd[[j,1]] + Random[] * (fparbd[[j,2]]-fparbd[[j,1]]) ],
+				(* else: isCONT *)
+					N[ fparbd[[j,1]] + Random[] * (fparbd[[j,2]]-fparbd[[j,1]]) ]
+				],
 			{j,nfparams} ];	
 
 		(* make an argument at random (use importance sampling) *)
-		x = Round[1000 * Random[ Apply[distr,fparams] ]] / 1000;
+		x = Random[ Apply[distr,fparams] ];
+		If [ dtype == isCONT, x = N[x] ];
 
 		(* print line with this parameters *)
 		UnurTestDistrResultLine[stream,distr,dtype,fparams,x],
@@ -194,7 +197,7 @@ UnurTestDistrResultFile[dname_, dtype_, runfile_, fparbd__, size_, distribution_
 		WriteString[runfile,"   fparams[",i,"] = ",N[fparbd[[i+1,2]]],";\n"];
 	];
 	WriteString[runfile,"   distr = unur_distr_",dname,"(fparams,",nfparams,");\n"];
-	WriteString[runfile,"   test_cdf_pdf( distr,\"",datafilename,"\", 1. );\n"];
+	WriteString[runfile,"   test_cdf_pdf( TESTLOG, distr,\"",datafilename,"\" );\n"];
         WriteString[runfile,"   unur_distr_free(distr);\n\n"];
 
 ]; (* end of UnurTestDistrResultFile[] *)
@@ -229,11 +232,26 @@ int main()                                                                     \
    double fparams[UNUR_DISTR_MAXPARAMS];  /* parameters of distribution      */\n\
    UNUR_DISTR *distr;                     /* distribution object             */\n\
    FILE *UNURANLOG;                       /* unuran log file                 */\n\
+   FILE *TESTLOG;                         /* test log file                   */\n\
                                                                                \n\
    /* open log file for unuran and set output stream for unuran messages */    \n\
    UNURANLOG = fopen( \"t_Mathematica_unuran.log\",\"w\" );                    \n\
    if (UNURANLOG == NULL) exit (-1);                                           \n\
    unur_set_stream( UNURANLOG );                                               \n\
+                                                                               \n\
+   /* open log file for testing */                                             \n\
+   TESTLOG = fopen( \"t_Mathematica_test.log\",\"w\" );                        \n\
+   if (TESTLOG == NULL) exit (-1);                                             \n\
+                                                                               \n\
+   /* write header into log file */                                            \n\
+   {                                                                           \n\
+      time_t started;                                                          \n\
+      fprintf(TESTLOG,\"\\nUNURAN - Universal Non-Uniform RANdom number generator\\n\\n\");\n\
+      if (time( &started ) != -1)                                              \n\
+         fprintf(TESTLOG,\"%s\",ctime(&started));                              \n\
+      fprintf(TESTLOG,\"\\n======================================================\\n\\n\");\n\
+      fprintf(TESTLOG,\"(Search for string \\\"data\\\" to find new section.)\\n\\n\");\n\
+   }                                                                           \n\
                                                                                \n"
 	];
 
@@ -255,6 +273,7 @@ UnurTestRunClose[stream_] := Module [
                                                                                \n\
    /* close log file */                                                        \n\
    fclose(UNURANLOG);                                                          \n\
+   fclose(TESTLOG);                                                             \n\
                                                                                \n\
    exit (0);                                                                   \n\
 }                                                                              \n"
@@ -271,7 +290,7 @@ UnurTestRunClose[stream_] := Module [
 runfile = UnurTestRunOpen[ RunFileName ];
 
 (* --- List of Continuous Distributions ------------------------------------ *)
-(*
+
 (* Beta *)
 fparams = {{1,10}, {1,100}};
 UnurTestDistrResultFile["beta", isCONT, runfile, fparams, RunSampleSize];
@@ -279,11 +298,11 @@ UnurTestDistrResultFile["beta", isCONT, runfile, fparams, RunSampleSize];
 (* Cauchy *)
 fparams = {{-100,100},{1/100,100}};
 UnurTestDistrResultFile["cauchy", isCONT, runfile, fparams, RunSampleSize];
-*)
+
 (* Chi *)
 fparams = {{1,100}};
 UnurTestDistrResultFile["chi", isCONT, runfile, fparams, RunSampleSize];
-(*
+
 (* Chisquare *)
 fparams = {{1,100}};
 UnurTestDistrResultFile["chisquare", isCONT, runfile, fparams, RunSampleSize, ChiSquareDistribution];
@@ -320,7 +339,7 @@ UnurTestDistrResultFile["pareto", isCONT, runfile, fparams, RunSampleSize];
 
 (* Powerexponential *)
 fparams = {{1/1000,3}};
-UnurTestDistrResultFile["powerexponential", isCONT, runfile, fparams, RunSampleSizeSlow];
+UnurTestDistrResultFile["powerexponential", isCONT, runfile, fparams, RunSampleSize];
 
 (* Rayleigh *)
 fparams = {{1/100,100}};
@@ -333,7 +352,6 @@ UnurTestDistrResultFile["student", isCONT, runfile, fparams, RunSampleSize, Stud
 (* Weibull *)
 fparams = {{1/2,10},{1/100,100}};
 UnurTestDistrResultFile["weibull", isCONT, runfile, fparams, RunSampleSize];
-*)
 
 (* --- List of Discrete Distributions -------------------------------------- *)
 (*
@@ -373,10 +391,3 @@ UnurTestRunClose[runfile];
 (* === Exit ================================================================ *)
 
 Quit[]
-
-
-
-
-
-
-

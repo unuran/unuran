@@ -20,6 +20,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 #include <unuran.h>
 #include <config.h>
@@ -30,7 +31,7 @@
 
 /*---------------------------------------------------------------------------*/
 
-int test_cdf_pdf( UNUR_DISTR *distr, char *datafile, double max_diff );
+int test_cdf_pdf( FILE *LOG, UNUR_DISTR *distr, char *datafile );
 /* compare CDF, PDF and dPDF for continuous univariate distributions         */
 
 /*---------------------------------------------------------------------------*/

@@ -21,6 +21,7 @@ libmethods_a_SOURCES = \
  x_error.c \
  x_gen.c \
  x_math.c \
+ x_misc.c \
  x_stream.c \
  x_umalloc.c \
  x_urng.c \

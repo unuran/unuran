@@ -20,8 +20,14 @@ my $frog_dir = "http://statistik.wu-wien.ac.at/anuran/frogs";
 my $n_frogs = 12;
 
 # ----------------------------------------------------------------
+# Directory with sources
 
-require "read_PDF.pl";
+my $top_srcdir = $ENV{'srcdir'} ? $ENV{'srcdir'} : '.';
+$top_srcdir .= "/..";
+
+# ----------------------------------------------------------------
+
+require "$top_srcdir/scripts/read_PDF.pl";
 
 # ----------------------------------------------------------------
 # Gray Color for disabled text

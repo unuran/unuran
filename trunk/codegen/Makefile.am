@@ -46,16 +46,16 @@ EXTRA_DIST = \
  make_anuran.pl
 
 
-PDFgen.c: make_PDFgen.pl read_PDF.pl
+PDFgen.c: make_PDFgen.pl ../scripts/read_PDF.pl
 	./make_PDFgen.pl
 
-headergen.c: make_headergen.pl read_PDF.pl
+headergen.c: make_headergen.pl ../scripts/read_PDF.pl
 	./make_headergen.pl
 
-acg.c: make_acg.pl read_PDF.pl
+acg.c: make_acg.pl  ../scripts/read_PDF.pl
 	./make_acg.pl > acg.c
 
-anuran.pl: make_anuran.pl
+anuran.pl: make_anuran.pl ../scripts/read_PDF.pl
 	./make_anuran.pl > anuran.pl
 
 

@@ -41,7 +41,7 @@ $top_srcdir .= "/../..";
 # ----------------------------------------------------------------
 # Load routines for reading data about PDF from UNURAN files
   
-require "$top_srcdir/codegen/read_PDF.pl";
+require "$top_srcdir/scripts/read_PDF.pl";
 
 ##############################################################################
 # Methods not supported by string input

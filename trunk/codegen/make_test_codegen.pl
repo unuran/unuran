@@ -270,7 +270,7 @@ EOX
 
 	    # Make code
 	    $make_test_body .=
-		"\tunurgen(gen,out,\"$distr\");\n\n".    # make code 
+		"\tunur_acg(gen,out,\"$distr\");\n\n".   # make code 
 		"\tunur_distr_free(distr);\n".           # free distribution object
 		"\tunur_free(gen);\n\n";                 # free generator object
 
@@ -306,7 +306,7 @@ EOX
     my $make_header = <<EOX;
 \#include <string.h>
 \#include <unuran.h>
-\#include <unurgen.h>
+\#include <unuran_acg.h>
 \#ifdef WITH_DMALLOC
 \#  include <dmalloc.h>
 \#endif

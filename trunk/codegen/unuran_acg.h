@@ -4,9 +4,9 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   file:      unurgen.h                                                    *
+ *   file:      unuran_acg                                                   *
  *                                                                           *
- *   declarations for code generators                                        *
+ *   declarations for Automatic Code Generator                               *
  *                                                                           *
  *****************************************************************************
      $Id$
@@ -33,12 +33,12 @@
  *****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
-#ifndef __UNURGEN_H_SEEN
-#define __UNURGEN_H_SEEN
+#ifndef __UNURAN_ACG_H_SEEN
+#define __UNURAN_ACG_H_SEEN
 /*---------------------------------------------------------------------------*/
 
-int unurgen( struct unur_gen *gen, FILE *out, const char *distr_name );
+int unur_acg( struct unur_gen *gen, FILE *out, const char *distr_name );
 
 /*---------------------------------------------------------------------------*/
-#endif   /* __UNURGEN_H_SEEN */
+#endif   /* __UNURAN_ACG_H_SEEN */ 
 /*---------------------------------------------------------------------------*/

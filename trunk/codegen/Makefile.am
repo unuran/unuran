@@ -11,12 +11,13 @@ INCLUDES = \
 lib_LIBRARIES = libunurgen.a
 
 include_HEADERS = \
- unurgen.h
+ unuran_acg.h
 
 libunurgen_a_SOURCES = \
  PDFgen_source.h \
  PDFgen.c \
- unurgen.c \
+ codegen.c \
+ codegen_source.h \
  tdr_codegen.c
  
 noinst_PROGRAMS = \

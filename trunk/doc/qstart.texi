@@ -16,7 +16,7 @@
 @c September 2000 Janka & Tirler                
 @c $Id$
 
-@set VERSION 0.00
+@set VERSION 0.01
 @set DATE September 2000
 
 @dircategory Scientific software
@@ -211,8 +211,13 @@ With
  distr = unur_distr_normal(NULL, 0);
 @end smallexample
 @*
-the random numbers will be standard normal distributed,
-and with
+the random numbers will be standard normal distributed.
+The second argument is the number of parameters of the 
+used distribution (see @ref{Preset}) and
+the first argument is a pointer to an array holding
+these parameters.
+@*
+With
 @smallexample
  par = unur_arou_new(distr);
 @end smallexample
@@ -332,7 +337,7 @@ chooses the method for generating random numbers
 
 
 @node Ex3
-@section Ex3: Changing Parameters
+@section Ex3: Changing Parameters of the method
 
 @* Each method for generating random numbers allows several
 parameters to modify.
@@ -342,55 +347,56 @@ it's possible to change a specific parameters (see @ref{Function Reference});
 The important lines are in bold face.
 
 @smallexample
-
-/* my third UNURAN program test2.c */ 
+/* my third UNURAN program test3.c */ 
 
 #include <unuran.h>
 #include <unuran_distributions.h>
 #include <unuran_tests.h>
 
-double trig (double x)
-@{  return ( (x<0.) ? 0. : (x>1.) ? 1. : x ); @}  
-@b{ double pdftrig (double x)
-@{  return ( (0.<x || x<1.) ? 0. : 1.); @}
-}
-
 int main()
 @{
-  double x;
   int    i;
+  double x;
+  double params[2] = @{10.0, 0.5@};
 
-  struct unur_distr *distr,*distr1;  /* distribution */ 
-  struct unur_par *par,*par1;      /* parameter */
-  struct unur_gen *gen,*gen1;      /* generator */
+  UNUR_DISTR *distr;    /* distribution */
+  UNUR_PAR   *par;      /* parameter */
+  UNUR_GEN   *gen;      /* generator */
 
- 
-  /* make distr. object: truncated Gaussian */
-  distr1 = unur_distr_cont_new();
-  unur_distr_cont_set_cdf(distr1, trig );
-  unur_distr_cont_set_pdf(distr1,pdftrig );
+  /* choose Gaussian distribution with parameters 10.0 and 0.5 */
+  distr = unur_distr_normal(&params, 2);
 
-  /* choose method and set parameters */
-  par1 = unur_ninv_new(distr1);
-@b{  unur_ninv_use_newton(par1);
- }
+  /* choose method */
+  par = unur_ninv_new(distr);
+
+  /* change a parameter of the used method */
+  unur_ninv_use_newton(par);
 
   /* make generator object */
- 
-  gen1 = unur_init(par1);
+  gen = unur_init(par);
 
-  /* sample */
-  for (i=0;i<100;i++) @{
-  x = unur_sample_cont(gen1);
-  printf("%f\n",x);
+  /* sample: print 100 random numbers */
+  for (i=0; i<100; i++) @{
+    x = unur_sample_cont(gen);
+    printf("%f\n",x);
   @}
 
-  /* destroy generator object */
-  unur_free(gen1);
-
-  exit (0);
+  return 0;
 @}
+
 @end smallexample
+@*
+This example is similar to the first example.
+The first modification is the distribution
+(normal distribution with mean 10.0 and standard deviation 0.5).
+The intention of this example was to demonstrate how to
+change parameters of the choosen method with the following line:
+@smallexample
+unur_ninv_use_newton(par);
+@end smallexample
+@*
+The available parameters are documented in @ref{MethodsRef}.
+
 
 @c --------------------------------------------------------------------
 
@@ -403,7 +409,7 @@ int main()
 
 @node Preset
 @section Preset distributions 
-
+@include qstart_distributions.texi
 
 @node Arbitrary
 @section Arbitrary distributions
@@ -503,7 +509,7 @@ Notation:
 
 @node Readymade
 @section Ready-made distributions
-@include qstart_distributions.texi
+@include qstart_distr_ref.texi
 
 @node Selfmade
 @section Self-made distributions

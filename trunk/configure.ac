@@ -20,6 +20,11 @@ dnl unuran-0.6.0   3:0:0
 UNURAN_LT_VERSION="3:0:0"
 AC_SUBST([UNURAN_LT_VERSION])
 
+dnl Whether experimental code should be included
+dnl (set to false before releasing a new version)
+AM_CONDITIONAL(INCLUDE_EXPERIMENTAL,true)
+dnl AM_CONDITIONAL(INCLUDE_EXPERIMENTAL,false)
+
 dnl Add dmalloc support.
 AM_WITH_DMALLOC
 
@@ -122,7 +127,6 @@ if test X"$GCC" = Xyes ; then
 	AC_SUBST(AM_CFLAGS,-Wall)
 fi
 
-
 dnl create Makefiles
 AC_CONFIG_FILES([\
 	Makefile \
@@ -142,6 +146,10 @@ AC_CONFIG_FILES([\
         tests/Makefile \
 	examples/Makefile \
 	experiments/Makefile ])
+
+AC_CHECK_FILE(${srcdir}/src/experimental/Makefile.am, 
+	AC_CONFIG_FILES(src/experimental/Makefile) )
+
 AC_OUTPUT
 
 dnl -----------------------------------------

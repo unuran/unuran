@@ -82,7 +82,8 @@ aclocal $ACLOCAL_FLAGS
 (autoheader --version)  < /dev/null > /dev/null 2>&1 && autoheader
 
 automake --add-missing $am_opt
-autoconf -Wobsolete
+#autoconf -Wobsolete
+autoconf
 cd $ORIGDIR
 
 $srcdir/configure "$@"

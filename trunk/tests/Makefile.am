@@ -6,10 +6,22 @@ INCLUDES = \
  -I$(top_srcdir)/src \
  -I$(top_srcdir)/src/tests
 
+# Experimental code
+if INCLUDE_EXPERIMENTAL
+EXPERIMENTAL_LDADD = $(top_builddir)/src/experimental/libunurexperimental.la
+EXPERIMENTAL_PROGS = t_hitrou
+EXPERIMENTAL_XFAIL = t_hitrou
+else
+EXPERIMENTAL_LDADD = 
+EXPERIMENTAL_PROGS =
+EXPERIMENTAL_XFAIL = 
+endif
+
+
 noinst_LTLIBRARIES = libtestroutines.la
 libtestroutines_la_SOURCES = testroutines.c
 
-LDADD = libtestroutines.la $(top_builddir)/src/libunuran.la
+LDADD = libtestroutines.la $(EXPERIMENTAL_LDADD) $(top_builddir)/src/libunuran.la
 
 # Special files for tests with Mathematica(TM)
 if HAVE_MATHEMATICA
@@ -42,7 +54,6 @@ check_PROGRAMS = \
  t_empk \
  t_empl \
  t_hinv \
- t_hitrou \
  t_hrb \
  t_hrd \
  t_hri \
@@ -61,6 +72,7 @@ check_PROGRAMS = \
  t_vnrou \
  t_stringparser \
  test_special_matrix \
+ $(EXPERIMENTAL_PROGS) \
  $(MATHEMATICA_PROGS)
 
 
@@ -76,7 +88,7 @@ TESTS = $(check_PROGRAMS)
 
 # This is necessary until we fix the bug in method AROU
 ##XFAIL_TESTS = t_arou 
-XFAIL_TESTS = t_hitrou
+XFAIL_TESTS = $(EXPERIMENTAL_XFAIL)
 
 noinst_HEADERS = \
  testunuran.h
@@ -109,14 +121,13 @@ EXTRA_DIST = \
  t_empk.conf \
  t_empl.conf \
  t_hinv.conf \
- t_hitrou \
  t_hrb.conf \
  t_hrd.conf \
  t_hri.conf \
  t_mcorr.conf \
  t_ninv.conf \
  t_norta.conf \
- t_nrou \
+ t_nrou.conf \
  t_srou.conf \
  t_ssr.conf \
  t_tabl.conf \

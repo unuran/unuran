@@ -20,7 +20,6 @@ libmethods_la_SOURCES = \
  empk.c   empk.h   empk_struct.h \
  empl.c   empl.h   empl_struct.h \
  hinv.c   hinv.h   hinv_struct.h \
- hitrou.c hitrou.h hitrou_struct.h \
  hrb.c    hrb.h    hrb_struct.h \
  hrd.c    hrd.h    hrd_struct.h \
  hri.c    hri.h    hri_struct.h \
@@ -34,7 +33,6 @@ libmethods_la_SOURCES = \
  tdr.c    tdr.h    tdr_struct.h tdr_source.h tdr_newset.ch tdr_init.ch tdr_sample.ch tdr_debug.ch \
  unif.c   unif.h   unif_struct.h \
  utdr.c   utdr.h   utdr_struct.h \
- varou.c  varou.h  varou_struct.h \
  vempk.c  vempk.h  vempk_struct.h \
  vmt.c    vmt.h    vmt_struct.h \
  vnrou.c  vnrou.h  vnrou_struct.h

@@ -115,9 +115,7 @@
 #include <methods/norta.h>
 #include <methods/vmt.h>
 #include <methods/vempk.h>
-#include <methods/varou.h>
 #include <methods/vnrou.h>
-#include <methods/hitrou.h>
 
 /* wrapper for special generators for standard distributions */
 #include <methods/cstd.h>     /* continuous */

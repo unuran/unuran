@@ -1,7 +1,27 @@
 ## Process this file with automake to produce Makefile.in
 ## $Id$
 
-SUBDIRS = utils methods specfunct distr distributions parser tests uniform .
+# Experimental code
+if INCLUDE_EXPERIMENTAL
+EXPERIMENTAL_DIRS = experimental
+else
+EXPERIMENTAL_DIRS = 
+endif
+
+
+SUBDIRS = \
+ utils \
+ methods \
+ specfunct \
+ distr \
+ distributions \
+ parser \
+ tests \
+ uniform \
+ $(EXPERIMENTAL_DIRS) \
+ .
+
+DIST_SUBDIRS = $(SUBDIRS)
 
 SUBLIBS = \
  methods/libmethods.la \

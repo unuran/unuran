@@ -118,8 +118,8 @@ Appl. Statist. 30, 249-253.
 @i{Computer Generation of Normal Random Variables},
 J. Am. Stat. Assoc. 71(356), 893 - 898.
 
-@anchor{bib:MFa87}
-@item [MFa87]
+@anchor{bib:MJa87}
+@item [MJa87]
 @sc{J.F. Monahan} (1987).
 @i{An algorithm for generating chi random variables},
 ACM Trans. Math. Software 13, 168-172.

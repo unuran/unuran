@@ -166,19 +166,20 @@ chi_chru_init( struct unur_gen *gen )
   vm = (-b > vm) ? -b : vm;
   vp = 0.6065306597 * (0.7071067812 + b) / (0.5 + b);
   vd = vp - vm;
+
   /* -X- end of setup code -X- */
 
   return 1;
 
 } /* end of chi_chru_init() */
 
+/*---------------------------------------------------------------------------*/
+
 double
 _unur_stdgen_sample_chi_chru( struct unur_gen *gen )
 {
   /* -X- generator code -X- */
   double u,v,z,zz,r;
-
-  return 0;
 
   /* check arguments */
   CHECK_NULL(gen,0.); COOKIE_CHECK(gen,CK_CSTD_GEN,0.);

@@ -132,11 +132,10 @@ UNUR_DISTR *unur_distr_cauchy(double *params, int n_params);
    =CONST    1 / (2^{(nu/2)-1} * Gamma(nu/2))
    =DOMAIN   0 <= x < infinity 
    =FPARAM   0 : nu : > 0 : : shape :
+   =STDGEN   DEF  Ratio of Uniforms with shift (only for @tex $nu >= 1$@end tex) [MJa87]
    =EON
 */
 UNUR_DISTR *unur_distr_chi(double *params, int n_params);
-/** TODO: STDGEN **/
-/** =STDGEN   DEF  Ratio of Uniforms with shift (only for @tex $nu >= 1$@end tex) [MJa87] **/
 
 /*---------------------------------------------------------------------------*/
 /* Chisquare distribution  [2; ch.18, p.416]                                 */

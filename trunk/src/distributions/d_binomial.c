@@ -108,7 +108,8 @@ _unur_pmf_binomial(int k, UNUR_DISTR *distr)
 { 
   register double *params = DISTR.params;
 
-  if ( k<0 || k>(n+0.5) ) return 0.;
+  if ( k<0 || k>(n+0.5) )
+    return 0.;
 
   else
     return exp( k * log(p) + (n-k) * log(1.-p) +
@@ -127,11 +128,17 @@ _unur_cdf_binomial(int k, UNUR_DISTR *distr)
 { 
   register double *params = DISTR.params;
 
-  if (k<0) return 0.;
+  if (k<0)
+    return 0.;
 
-  else if (k==0) return exp(n*(log(1.-p)));
-  else if(k>(n-0.5)) return(1.);
-  else return(_unur_sf_incomplete_beta(1.-p, n-k, k+1.));
+  if (k==0)
+    return exp(n*(log(1.-p)));
+
+  if(k>(n-0.5))
+    return 1.;
+
+  /* else */
+  return(_unur_sf_incomplete_beta(1.-p, n-k, k+1.));
 
 } /* end of _unur_cdf_binomial() */
 

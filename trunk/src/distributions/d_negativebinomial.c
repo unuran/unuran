@@ -105,7 +105,8 @@ _unur_pmf_negativebinomial(int k, UNUR_DISTR *distr)
 { 
   register double *params = DISTR.params;
 
-  if (k<0) return 0.;
+  if (k<0)
+    return 0.;
 
   else
     return exp( k*log(1-p) 
@@ -124,7 +125,8 @@ _unur_cdf_negativebinomial(int k, UNUR_DISTR *distr)
 { 
   register double *params = DISTR.params;
 
-  if (k<0) return 0.;
+  if (k<0)
+    return 0.;
 
   else
     return 1.;  /** TODO **/

@@ -79,10 +79,14 @@ _unur_pdf_triangular( double x, UNUR_DISTR *distr )
 { 
   register double *params = DISTR.params;
 
-  if (x <= 0.)    return 0.;
-  if (x <= H)     return (2.*x/H);
-  if (x < 1.)     return (2.*(1.-x)/(1.-H));
-  /* otherwise */ return 0.;
+  if (x <= 0.)
+    return 0.;
+  if (x <= H)
+    return (2.*x/H);
+  if (x < 1.)
+    return (2.*(1.-x)/(1.-H));
+  /* otherwise */
+  return 0.;
 } /* end of _unur_pdf_triangular() */
 
 /*---------------------------------------------------------------------------*/
@@ -92,10 +96,14 @@ _unur_dpdf_triangular( double x, UNUR_DISTR *distr )
 { 
   register double *params = DISTR.params;
 
-  if (x < 0.)           return 0.;
-  if (x <= H && H > 0.) return (2./H);
-  if (x <= 1.&& H < 1.) return (-2./(1.-H));
-  /* otherwise */       return 0.;
+  if (x < 0.)
+    return 0.;
+  if (x <= H && H > 0.)
+    return (2./H);
+  if (x <= 1.&& H < 1.)
+    return (-2./(1.-H));
+  /* otherwise */
+  return 0.;
 } /* end of unur_dpdf_triangular() */
 
 /*---------------------------------------------------------------------------*/
@@ -105,10 +113,14 @@ _unur_cdf_triangular( double x, UNUR_DISTR *distr )
 { 
   register double *params = DISTR.params;
 
-  if (x <= 0.)    return 0.;
-  if (x <= H)     return (x*x/H);
-  if (x < 1.)     return ((H + x * (x-2.))/(H-1.));
-  /* otherwise */ return 1.;
+  if (x <= 0.)
+    return 0.;
+  if (x <= H)
+    return (x*x/H);
+  if (x < 1.)
+    return ((H + x * (x-2.))/(H-1.));
+  /* otherwise */
+  return 1.;
 } /* end of _unur_cdf_triangular() */
 
 /*---------------------------------------------------------------------------*/

@@ -110,7 +110,8 @@ _unur_pdf_extremeII( double x, UNUR_DISTR *distr )
 
   /* standard form */
 
-  if (x<=0.) return 0.;
+  if (x<=0.)
+    return 0.;
 
   xk = pow( x, -k - 1.);
   return ( exp( -xk * x - LOGNORMCONSTANT) * xk * k );
@@ -134,7 +135,8 @@ _unur_dpdf_extremeII( double x, UNUR_DISTR *distr )
 
   /* standard form */
 
-  if (x<=0.) return 0.;
+  if (x<=0.)
+    return 0.;
 
   xk = pow(x, k);
   return (- factor * exp(-1./xk) * k * (xk + k*(xk - 1.)) / pow(x,2. + 2.*k)) ;
@@ -154,7 +156,8 @@ _unur_cdf_extremeII( double x, UNUR_DISTR *distr )
 
   /* standard form */
 
-  if (x<=0.) return 0.;
+  if (x<=0.)
+    return 0.;
 
   return ( exp( -pow( x, -k ) ) );
 

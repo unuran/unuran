@@ -240,25 +240,32 @@ _unur_cdf_burr( double x, UNUR_DISTR *distr )
   switch ((int) (burr_type + 0.5)) {
 
   case  1: /* Type I:   F(x) = x                                             */
-    if (x<=0.) return 0.;
-    if (x>=1.) return 1.;
+    if (x<=0.)
+      return 0.;
+    if (x>=1.)
+      return 1.;
     return x;
 
   case  2: /* Type II:  F(x) = (exp(-x) + 1)^(-k)                            */
     return pow(exp(-x) + 1., -k);
 
   case  3: /* Type III: F(x) = (x^(-c)+1)^(-k)                               */
-    if (x<=0.) return 0.;
+    if (x<=0.)
+      return 0.;
     return pow( pow(x, -c) + 1., -k);
 
   case  4: /* Type IV:  F(x) = (((c-x)/x)^(1/c) + 1)^(-k)                    */
-    if (x<=0.) return 0.;
-    if (x>=c)  return 1.;
+    if (x<=0.)
+      return 0.;
+    if (x>=c)
+      return 1.;
     return pow( pow( (c-x)/x, 1/c ) + 1., -k);
 
   case  5: /* Type V:   F(x) = (c * exp(-tan(x)) + 1)^(-k)                   */
-    if (x<=-M_PI/2.) return 0.;
-    if (x>= M_PI/2.) return 1.;
+    if (x<=-M_PI/2.)
+      return 0.;
+    if (x>= M_PI/2.)
+      return 1.;
     return pow( c * exp(-tan(x)) + 1., -k );
 
   case  6: /* Type VI:  F(x) = (c * exp(-k*sinh(x)) + 1)^(-k)                */
@@ -278,12 +285,15 @@ _unur_cdf_burr( double x, UNUR_DISTR *distr )
     return pow( 1. - exp(-x*x), k );
 
   case 11: /* Type XI:  F(x) = (x - (pi/2) * sin( 2*pi*x))^k                 */
-    if (x<=0.) return 0.;
-    if (x>=1.) return 1.;
+    if (x<=0.)
+      return 0.;
+    if (x>=1.)
+      return 1.;
     return pow( x - M_PI/2. * sin( 2. * M_PI * x), k );
 
   case 12: /* Type XII: F(x) = 1 - (1 + x^c)^(-k)                            */
-    if (x<=0.) return 0.;
+    if (x<=0.)
+      return 0.;
     return (1. - pow( 1 + pow(x, c), -k ) );
 
   default:

@@ -213,7 +213,8 @@ int unur_tabl_set_slopes( UNUR_PAR *parameters, double *slopes, int n_slopes );
    length of the array @var{slopes}).
 
    @emph{Notice} that setting slopes resets the given domain for the
-   distribution.
+   distribution. However in case of a standard distribution the area
+   below the PDF is not updated.
 */
 
 int unur_tabl_set_guidefactor( UNUR_PAR *parameters, double factor );

@@ -1324,8 +1324,12 @@ _unur_tabl_get_starting_intervals_from_slopes( struct unur_par *par, struct unur
   iv->next = NULL;
 
   /* reset domain of distribution */
-  DISTR.BD_LEFT = GEN.bleft;
-  DISTR.BD_RIGHT = GEN.bright;
+  DISTR.trunc[0] = DISTR.BD_LEFT = GEN.bleft;
+  DISTR.trunc[1] = DISTR.BD_RIGHT = GEN.bright;
+
+  /* reset area below distribution */
+  gen->distr.set &= ~UNUR_DISTR_SET_PDFAREA;
+  unur_distr_cont_upd_pdfarea(&(gen->distr));
 
   /* o.k. */
   return 1;

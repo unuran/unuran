@@ -6,7 +6,7 @@
  *                                                                           *
  *   FILE: histogram.c                                                       *
  *                                                                           *
- *   Routines fordrawing histograms in the log file                          *
+ *   Routines for drawing histograms in the log file                         *
  *                                                                           *
  *****************************************************************************
  *****************************************************************************
@@ -38,13 +38,13 @@
 /*---------------------------------------------------------------------------*/
 
 
-void 
-_unur_hist ( double *v , int length, int number_of_bins, const char *info, const char *genid )
+int 
+_unur_histogram ( double *v , int length, int number_of_bins, const char *info, const char *genid )
      /*----------------------------------------------------------------------*/
-     /* A histogram of the data-vector v is drawn into the logfile         */
+     /* A histogram of the data-vector v is drawn into the logfile           */
      /*                                                                      */
      /* parameters:                                                          */
-     /*   v     ... vector to be histogrammized                              */
+     /*   v     ... vector to be histogramized                               */
      /*   len   ... length of vector v                                       */
      /*   number_of_bins ... between min(v) and max(v)                       */
      /*   info  ... additional info string                                   */
@@ -62,73 +62,73 @@ _unur_hist ( double *v , int length, int number_of_bins, const char *info, const
   
   /* validate input values */
   /* TODO: if (length<=0) ... */
+  /*       show full array when length = number_of_bins */
   if (number_of_bins<=0) number_of_bins = length / 100;
   
+  CHECK_NULL(v,UNUR_ERR_NULL);
+
   /* allocate memory for the histogram */
   hist = _unur_malloc( (number_of_bins+1) * sizeof(long));
   
   log = unur_get_stream();
 
   fprintf(log,"%s: %s\n", genid, info); 
-  fprintf(log,"%s\n", genid); 
+  fprintf(log,"%s:\n", genid); 
 
-  if (v==NULL) {
-    fprintf(log,"%s: NULL pointer\n", genid);
+
+  /* calculate minimum and maximum of the data array v */
+  vmin=v[0]; vmax=v[0];
+  for (i=1; i<length; i++) {
+    if (v[i]<vmin) vmin=v[i];
+    if (v[i]>vmax) vmax=v[i];
   }
 
-  else {
-    /* calculate minimum and maximum of the data array v */
-    vmin=v[0]; vmax=v[0];
-    for (i=1; i<length; i++) {
-      if (v[i]<vmin) vmin=v[i];
-      if (v[i]>vmax) vmax=v[i];
-    }
-
-    /* check data range */ 
-    if ((vmax-vmin) < UNUR_EPSILON) {
-      vmax=vmin+UNUR_EPSILON;
-    }
+  /* check data range */ 
+  if ((vmax-vmin) < UNUR_EPSILON) {
+    vmax=vmin+UNUR_EPSILON;
+  }
     
-    /* reset histogram */
-    for (j=0; j<=number_of_bins; j++) {
-      hist[j]=0; 
-    } 
+  /* reset histogram */
+  for (j=0; j<=number_of_bins; j++) {
+    hist[j]=0; 
+  } 
     
-    /* fill histogramm */
-    for (i=0; i<length; i++) {
-      hist[ (int) (number_of_bins * (v[i]-vmin)/(vmax-vmin)) ] += 1; 
-    }
-
-    /* calculate hist_max */
-    int binmax; /* in which bin do we have the (first) maximum ? */
-    histmax=0;
-    for (j=0; j<=number_of_bins; j++) {
-      if (histmax<hist[j]) {
-        histmax=hist[j];
-        binmax=j;
-      }	
-    }
-
-    fprintf(log,"%s Data range %f <= x <= %f in bins #0 -> #%d\n", genid, vmin, vmax, number_of_bins); 
-    fprintf(log,"%s Histogram maximum in bin #%d i.e. in interval [%f, %f) \n", 
-                 genid, binmax, vmin + ((vmax-vmin) * binmax)/number_of_bins,
-		 vmin + ((vmax-vmin) * (binmax+1))/number_of_bins ); 
-    fprintf(log,"%s\n", genid); 
-    for (j=0; j<=number_of_bins; j++) {
-
-      fprintf(log, "%s: %7ld ", genid, hist[j]); 
-
-      for (i=0; i < (scale_factor * hist[j])/histmax; i++) {
-        fprintf(log, "*"); 
-      }
-      fprintf(log, "\n");
-    }
+  /* fill histogramm */
+  for (i=0; i<length; i++) {
+    hist[ (int) (number_of_bins * (v[i]-vmin)/(vmax-vmin)) ] += 1; 
   }
 
-  fprintf(log,"%s\n", genid); 
+  /* calculate hist_max */
+  int binmax; /* in which bin do we have the (first) maximum ? */
+  histmax=0;
+  for (j=0; j<=number_of_bins; j++) {
+    if (histmax<hist[j]) {
+      histmax=hist[j];
+      binmax=j;
+    }	
+  }
+
+  fprintf(log,"%s: Data range %f <= x <= %f in bins #0 -> #%d\n", genid, vmin, vmax, number_of_bins); 
+  fprintf(log,"%s: Histogram maximum in bin #%d i.e. in interval [%f, %f) \n", 
+               genid, binmax, vmin + ((vmax-vmin) * binmax)/number_of_bins,
+               vmin + ((vmax-vmin) * (binmax+1))/number_of_bins ); 
+  fprintf(log,"%s:\n", genid); 
+  for (j=0; j<=number_of_bins; j++) {
+
+    fprintf(log, "%s: %7ld ", genid, hist[j]); 
+
+    for (i=0; i < (scale_factor * hist[j])/histmax; i++) {
+      fprintf(log, "*"); 
+    }
+    fprintf(log, "\n");
+  }
+
+  fprintf(log,"%s:\n", genid); 
 
   if (hist) free(hist);
-  
+
+  return UNUR_SUCCESS;
+
 } /* end of _unur_hist() */  
 
 /*---------------------------------------------------------------------------*/

@@ -298,7 +298,8 @@ To change any parameter you habe to use the according function call.
 }
 
 @chapter FQA
-@subcestion Q1: I have a simulation program in FORTRAN. How can I use your library.
+@subsection Q1: I have a simulation program in FORTRAN. How can I use your
+library.
 
 Use the following program xyz.c which produce afile with randoom numbers. Read this random numbers ... 
 

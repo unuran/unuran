@@ -817,10 +817,6 @@ _unur_srou_rectangle( struct unur_gen *gen )
     gen->variant &= ~SROU_VARFLAG_SQUEEZE;
   }
 
-#ifdef UNUR_ENABLE_LOGGING
-    /* write info into log file */
-#endif
-
   /* o.k. */
   return 1;
 
@@ -1005,7 +1001,7 @@ _unur_srou_sample_mirror( struct unur_gen *gen )
      /*   return 0.                                                          */
      /*----------------------------------------------------------------------*/
 { 
-  double U,V,X,x,fx,uu;
+  double U,V,X,x,fx,fnx,uu;
 
   /* check arguments */
   CHECK_NULL(gen,0.);  COOKIE_CHECK(gen,CK_SROU_GEN,0.);
@@ -1014,32 +1010,26 @@ _unur_srou_sample_mirror( struct unur_gen *gen )
     /* generate point uniformly on rectangle */
     while ( (U = _unur_call_urng(gen->urng)) == 0.);
     U *= GEN.um * SQRT2;
-    V = GEN.vl + _unur_call_urng(gen->urng) * (GEN.vr - GEN.vl);
+    V = 2. * (_unur_call_urng(gen->urng) - 0.5) * GEN.vr;
+    /* vr = vm when the CDF at the mode is not known */
 
     /* ratio */
     X = V/U;
 
     /* evaluate p.d.f. */
     x = X + DISTR.mode;
-    fx = PDF(x);
+    fx  = (x < DISTR.BD_LEFT || x > DISTR.BD_RIGHT) ? 0. : PDF(x);
     uu = U * U;
 
     /* accept or reject */
-    if (uu <= fx) {
-      if ( (x < DISTR.BD_LEFT) || (x > DISTR.BD_RIGHT) )
-	continue; /* not inside domain */
-      else
-	return x;
-    }
+    if (uu <= fx)
+      return x;
 
     /* try mirrored p.d.f */
     x = -X + DISTR.mode;
-    if (uu <= fx + PDF(x)) {
-      if ( (x < DISTR.BD_LEFT) || (x > DISTR.BD_RIGHT) )
-	continue; /* not inside domain */
-      else
-	return x;
-    }
+    fnx  = (x < DISTR.BD_LEFT || x > DISTR.BD_RIGHT) ? 0. : PDF(x);
+    if (uu <= fx + fnx)
+      return x;
   }
 
 } /* end of _unur_srou_sample_mirror() */
@@ -1061,7 +1051,7 @@ _unur_srou_sample_check( struct unur_gen *gen )
      /*   return 0.                                                          */
      /*----------------------------------------------------------------------*/
 { 
-  double U,uu,V,X,x,fx,sfx,fnx,xfx,xfnx,xx;
+  double U,uu,V,X,x,nx,fx,sfx,fnx,xfx,xfnx,xx;
 
   /* check arguments */
   CHECK_NULL(gen,0.);  COOKIE_CHECK(gen,CK_SROU_GEN,0.);
@@ -1073,46 +1063,39 @@ _unur_srou_sample_check( struct unur_gen *gen )
       /* generate point uniformly on rectangle */
       while ( (U = _unur_call_urng(gen->urng)) == 0.);
       U *= GEN.um * SQRT2;
-      V = GEN.vl + _unur_call_urng(gen->urng) * (GEN.vr - GEN.vl);
+      V = 2. * (_unur_call_urng(gen->urng) - 0.5) * GEN.vr;
+      /* vr = vm when the CDF at the mode is not known */	
 
       /* ratio */
       X = V/U;
 
+      /* x values */
+      x = X + DISTR.mode;
+      nx = -X + DISTR.mode;
+
       /* evaluate p.d.f. */
-      fx = PDF(X + DISTR.mode);
-      fnx = PDF(-X + DISTR.mode);
+      fx  = (x  < DISTR.BD_LEFT || x  > DISTR.BD_RIGHT) ? 0. : PDF(x);
+      fnx = (nx < DISTR.BD_LEFT || nx > DISTR.BD_RIGHT) ? 0. : PDF(nx);
       uu = U * U;
 
-      /* inside domain ? */
-      if (uu <= fx) {
-	x = X + DISTR.mode;
-	if ( (x < DISTR.BD_LEFT) || (x > DISTR.BD_RIGHT) )
-	  continue; /* not inside domain */
-      }
-      else if (uu <= fx + fnx) {
-	x = -X + DISTR.mode;
-	if ( (x < DISTR.BD_LEFT) || (x > DISTR.BD_RIGHT) )
-	  continue; /* not inside domain */
-      }
-
       /* check hat */
-      xfx = X * sqrt(fx);
-      xfnx = -X * sqrt(fnx);
+      xfx  = (x  - DISTR.mode) * sqrt(fx);
+      xfnx = (nx - DISTR.mode) * sqrt(fnx);
+
       if ( ((2.+4.*DBL_EPSILON) * GEN.um*GEN.um < fx + fnx)    /* avoid roundoff error with FP registers */
 	   || (xfx < (1.+DBL_EPSILON) * GEN.vl) 
 	   || (xfx > (1.+DBL_EPSILON) * GEN.vr)
 	   || (xfnx < (1.+DBL_EPSILON) * GEN.vl) 
 	   || (xfnx > (1.+DBL_EPSILON) * GEN.vr) )
 	_unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"pdf(x) > hat(x)");
-      
+
       /* accept or reject */
       if (uu <= fx)
-	return (X + DISTR.mode);
+	return x;
       
       /* try mirrored p.d.f */
-      x = -X + DISTR.mode;
-      if (uu <= fx + PDF(x))
-	return x;
+      if (uu <= fx + fnx)
+	return nx;
     }
   }
 

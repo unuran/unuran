@@ -4,6 +4,10 @@
 
 -----------------------------------------------------------------------------
 
+(*) CSTD: Beta generatoren funktionieren nicht (ausser inv)
+
+-----------------------------------------------------------------------------
+
 (*) DOC: debug flags:
 	bits 2-12  ... setup
 	bits 13-24 ... adaptive steps
@@ -78,13 +82,8 @@
 -----------------------------------------------------------------------------
 
 (*) AROU:
-	(.) ueberpruefe ob PDF(x) NaN liefert
 	(.) make_guide_table nicht jedesmal aufrufen
 	(.) teste ob uniform = 0 or = 1 (?)
-	(.) ueberpruefe of p.d.f. T-konkave
-	    (in funktion _unur_arou_segment_parameter)
-	(.) mode in ursprung schieben (?)
-	    (wird dardurch numerisch stabiler (?))
 
 -----------------------------------------------------------------------------
 
@@ -93,23 +92,13 @@
 
 -----------------------------------------------------------------------------
 
-(*) UNIF:
-	(.) ist eine baustelle!!
-	(.) wird zur zeit nur zum testen verwendet. ausbauen?
-
------------------------------------------------------------------------------
-
-(*) CDF aus CEPHES is ein problem. besser GSL ??
+(*) CDF aus CEPHES ist ein problem. besser GSL ??
 
 -----------------------------------------------------------------------------
 
 (*) jede methode enthaelt am beginn der datei eine aufzaehlung
     aller moeglichen parameter. die ist momentan sehr unvollstaendig
     oder ueberhaupt falsch.
-
------------------------------------------------------------------------------
-
-(*) correlation induction
 
 -----------------------------------------------------------------------------
 

@@ -38,7 +38,15 @@
  *****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
-/* Information for constructing the generator                                */
+/* Cone structure */
+struct unur_varou_cone {
+  long   *index;   /* indices of the spanning cone vectors (unit verteces)   */
+  double *norm;    /* lengths of the spanning vectors                        */
+  double volume;   /* volume of cone : spanning vectors + tangential surface */
+};
+
+/*---------------------------------------------------------------------------*/
+/* Parameter object                                                          */
 
 struct unur_varou_par { 
   int    dim;               /* dimension of distribution                     */
@@ -48,16 +56,15 @@ struct unur_varou_par {
 /* The generator object                                                      */
 
 struct unur_varou_gen { 
-  int    dim;               /* dimension of distribution                     */
+  int    dim;               /* dimension of distribution */
   double *umin, *umax;      /* boundary rectangle u-coordinates */
   double vmax;              /* boundary rectangle v-coordinate  */
   const double *center;     /* center of distribution */
   int aux_dim;              /* parameter used my auxiliary functions */
+  long n_vertex;            /* number of verteces on upper half-unit-sphere */
+  double **vertex_list;     /* list of verteces on upper half-unit-sphere */
+  long n_cone;              /* number of constructed cones */
+  struct unur_varou_cone **cone_list; /* list of constructed cones */
 };
 
 /*---------------------------------------------------------------------------*/
-/* Cone structure */
-struct unur_varou_cone {
-  double *vertex;  /* spanning unit vector matrix of the cone verteces */
-  double *norm;    /* lengths of the spanning vectors                  */
-};

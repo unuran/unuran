@@ -54,7 +54,7 @@ static void _unur_distr_discr_free( struct unur_distr *distr );
 
 /*---------------------------------------------------------------------------*/
 
-// static int _unur_distr_discr_find_mode( struct unur_distr *distr );
+//static int _unur_distr_discr_find_mode( struct unur_distr *distr );
 /*---------------------------------------------------------------------------*/
 /* find mode of unimodal probability vector numerically by bisection         */
 /*---------------------------------------------------------------------------*/
@@ -487,6 +487,34 @@ unur_distr_discr_get_cdf( struct unur_distr *distr )
 } /* end of unur_distr_discr_get_cdf() */
 
 /*---------------------------------------------------------------------------*/
+double
+unur_distr_discr_eval_prob( int k, struct unur_distr *distr )
+     /*----------------------------------------------------------------------*/
+     /* returns the value of the probability vector at k or, if there is no  */
+     /* probability vector defined, evaluates  the pmf                       */
+     /*                                                                      */
+     /* parampeters:                                                         */
+     /*  k     ... argument for probability vector of pmf                    */
+     /*  distr ... pointer to distribution object                            */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   prob[k] or pmf(k)                                                  */
+     /*----------------------------------------------------------------------*/
+{
+
+  double retval = INFINITY;
+
+  if( DISTR.prob != NULL )    /* use probability vector                      */
+    retval = DISTR.prob[k];
+  else                        /* use pmf                                     */
+    retval = unur_distr_discr_eval_pmf(k, distr);
+
+  return retval;
+
+}
+
+
+/*---------------------------------------------------------------------------*/
 
 double
 unur_distr_discr_eval_pmf( int k, struct unur_distr *distr )
@@ -795,7 +823,10 @@ unur_distr_discr_get_mode( struct unur_distr *distr )
 
 } /* end of unur_distr_discr_get_mode() */
 
+
+
 /*---------------------------------------------------------------------------*/
+
 
 int 
 _unur_distr_discr_find_mode(struct unur_distr *distr )
@@ -834,12 +865,7 @@ _unur_distr_discr_find_mode(struct unur_distr *distr )
   /* check arguments */
   CHECK_NULL( distr, 0 );
   _unur_check_distr_object( distr, DISCR, 0 );
-  if (DISTR.prob == NULL) {
-    _unur_error(distr->name,UNUR_ERR_DISTR_GET,
-           "probability vektor required for finding mode numerically");
-    return 0;
-  }
-
+ 
   mode = INT_MAX;
 
   /* derive three distinct points */
@@ -849,8 +875,8 @@ _unur_distr_discr_find_mode(struct unur_distr *distr )
   if (x[1] < x[0])
     _unur_error(distr->name,UNUR_ERR_DISTR_DATA,
 		"Overflow: x[1] > INT_MAX");
-  fx[0] = DISTR.prob[x[0]];
-  fx[1] = DISTR.prob[x[1]];
+  fx[0] = unur_distr_discr_eval_prob(x[0], distr);
+  fx[1] = unur_distr_discr_eval_prob(x[1], distr);
   
   if ( x[0] == x[1] ){            /* domain contains only one point         */
     mode = x[0];
@@ -865,14 +891,14 @@ _unur_distr_discr_find_mode(struct unur_distr *distr )
       x[2]++;
     if ( x[2] == x[1] )
       x[2]--;
-    fx[2] = DISTR.prob[x[2]];
+    fx[2] = unur_distr_discr_eval_prob(x[2], distr);
 
     /* at least one of the x[i] should have a positive function value  */
     if (x[0] == 0.0 && x[1] == 0.0 ){
       int i=1;
       while (fx[2] == 0 && i < 100){
 	x[2]  = (x[1]/100)*i + (x[0]/100)*(100-i); /* integers !!! */
-        fx[2] = DISTR.prob[x[2]];
+        fx[2] = unur_distr_discr_eval_prob(x[2], distr);
         i++;
       } 
     }
@@ -905,7 +931,7 @@ _unur_distr_discr_find_mode(struct unur_distr *distr )
 	  if (xnew == x[2]){
 	    xnew = x[2];
 	    x[2] += sgn(x[2]-x[0]);  /* cant be = x[1] */
-	    fx[2] = DISTR.prob[x[2]];
+	    fx[2] = unur_distr_discr_eval_prob(x[2], distr);
 	  }
       }
       if ( xnew == x[2] ){
@@ -913,11 +939,11 @@ _unur_distr_discr_find_mode(struct unur_distr *distr )
 	  if (xnew == x[0]){
 	    xnew = x[2];
 	    x[2] += sgn(x[2]-x[0]);  /* cant be = x[1] */
-	    fx[2] = DISTR.prob[x[2]];
+	    fx[2] = unur_distr_discr_eval_prob(x[2], distr);
 	  }
       }
 
-      fxnew = DISTR.prob[xnew];
+      fxnew = unur_distr_discr_eval_prob(xnew, distr);
 
 
       /* Information of point xnew isn't enough to
@@ -928,21 +954,21 @@ _unur_distr_discr_find_mode(struct unur_distr *distr )
 	interval = -1;  /* should be impossible when entering switch */
 	if ( abs(x[1]-x[2]) > 1 ){
 	  xtmp = x[1]/2 + x[2]/2;
-	  fxtmp = DISTR.prob[xtmp];
+	  fxtmp = unur_distr_discr_eval_prob(xtmp, distr);
 	  interval = UNDEFINED;
           if ( ! _unur_FP_same(fxtmp, fx[2]) )
 	    interval = INT3;
 	}
 	if ( abs(xnew-x[0]) > 1 ){
 	  xtmp = xnew/2 + x[0]/2;
-	  fxtmp = DISTR.prob[xtmp];
+	  fxtmp = unur_distr_discr_eval_prob(xtmp, distr);
 	  interval = UNDEFINED;
           if ( ! _unur_FP_same(fxtmp, fx[2]) )
 	    interval = INT1;
         }
 	if ( abs(x[2]-xnew) > 1 ){
 	  xtmp = x[2]/2 + xnew/2;
-	  fxtmp = DISTR.prob[xtmp];
+	  fxtmp = unur_distr_discr_eval_prob(xtmp, distr);
 	  interval = UNDEFINED;
           if ( ! _unur_FP_same(fxtmp, fx[2]) )
 	    interval = INT2;

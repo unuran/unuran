@@ -165,13 +165,18 @@ UNUR_FUNCT_DISCR *unur_distr_discr_get_cdf( UNUR_DISTR *distribution );
 */
 
 
+double unur_distr_discr_eval_prob(int k, UNUR_DISTR *distribution );
+/* */
+
 double unur_distr_discr_eval_pmf( int k, UNUR_DISTR *distribution );
 /* */
 
 double unur_distr_discr_eval_cdf( int k, UNUR_DISTR *distribution );
 /* 
-   Evaluate the PMF, and the CDF, respectively, at k.
+   Evaluate the probabilty vector, PMF, and the CDF, respectively, at k.
    Notice that @code{distribution} must not be the NULL pointer.
+   If no probability vector is available @code{unur_distr_discr_eval_prob}
+   will evaluate the PMF instead.
    If the corresponding function is not available for the distribution,
    @code{UNUR_INFINITY} is returned and @code{unur_errno} is set to
    @code{UNUR_ERR_DISTR_DATA}.
@@ -296,3 +301,7 @@ double unur_distr_discr_get_pmfsum(UNUR_DISTR *distribution);
 /* =END */
 
 /*---------------------------------------------------------------------------*/
+
+
+/* REMOVE */
+int _unur_distr_discr_find_mode( struct unur_distr *distr );

@@ -70,9 +70,10 @@
       for every c'<c. However the performance decreases when c' is
       smaller than c. For computational reasons we suggest the usage of 
       c = -0.5 (this is the default). 
-      For c <= -1 is not bounded any more if the domain of the PDF is
-      unbounded. But in the case of a bounded domain using method TABL is
-      preferred to a TDR with c < -1 (except in a few special cases).
+      For c <= -1 the hat is not bounded any more if the domain of the
+      PDF is unbounded. But in the case of a bounded domain using
+      method TABL is preferred to a TDR with c < -1 (except in a few
+      special cases).
       
       We offer three variants of the algorithm. 
 
@@ -184,7 +185,7 @@ int unur_tdr_set_usedars( UNUR_PAR *parameters, int usedars );
    over all intervals, are splitted.
    This procedure is repeated until the ratio between squeeze and hat
    exceeds the bound given by unur_tdr_set_max_sqhratio() call or the
-   maximum number of intervals is reached. Moreover it also aborts
+   maximum number of intervals is reached. Moreover, it also aborts
    when no more intervals can be found for splitting.
 
    For finding splitting points the following rules are used (in
@@ -199,13 +200,13 @@ int unur_tdr_set_usedars( UNUR_PAR *parameters, int usedars );
    @item
      Use the arithmetic mean of the interval boundaries.
    @end enumerate
-   Notice however that for unbounded intervals neither rule 1 nor rule
+   Notice, however, that for unbounded intervals neither rule 1 nor rule
    3 can be used.
 
    As an additional feature, it is possible to choose amoung these
    rules. 
-   If @var{usedars} is set to @code{1} or TRUE the expectated point is
-   used (rule 1) is used (it switches to rule 2 for a particular
+   If @var{usedars} is set to @code{1} or TRUE the expected point
+   (rule 1) is used (it switches to rule 2 for a particular 
    interval if rule 1 cannot be applied).
    If it is set to @code{2} the arc-mean rule is used.
    If it is set to @code{3} the mean is used.

@@ -1,3 +1,4 @@
+
 /*****************************************************************************
  *                                                                           *
  *          UNURAN -- Universal Non-Uniform Random number generator          *
@@ -927,8 +928,18 @@ _unur_hinv_interval_adapt( struct unur_gen *gen, struct unur_hinv_interval *iv )
 
   if ( (iv->next->u - iv->u > HINV_MAX_U_LENGTH) ||
        (! _unur_hinv_interval_is_monotone(gen,iv)) ) {
+
     /* mean of x-interval as splitting point */
     p_new = 0.5 * (iv->next->p + iv->p);
+
+    if (_unur_FP_same(p_new,iv->p) || _unur_FP_same(p_new,iv->next->p)) {
+      /* cannot make more improvement steps */
+      _unur_warning(gen->genid,UNUR_ERR_ROUNDOFF,"u-error might be larger than error bound");
+      /* skip to next interval */
+      _unur_hinv_interval_parameter(gen,iv);
+      return iv->next;
+    }
+
     /* insert new interval into linked list */
     iv_new = _unur_hinv_interval_new(gen,p_new,CDF(p_new));
     iv_new->next = iv->next;
@@ -946,8 +957,17 @@ _unur_hinv_interval_adapt( struct unur_gen *gen, struct unur_hinv_interval *iv )
   Fx = CDF(x);
 
   if (fabs(Fx - 0.5*(iv->next->u + iv->u)) > GEN.u_resolution) {
+
     /* error in u-direction too large */
     p_new = 0.5 * (iv->next->p + iv->p);
+
+    if (_unur_FP_same(p_new,iv->p) || _unur_FP_same(p_new,iv->next->p)) {
+      /* cannot make more improvement steps */
+      _unur_warning(gen->genid,UNUR_ERR_ROUNDOFF,"u-error might be larger than error bound");
+      /* skip to next interval */
+      return iv->next;
+    }
+
     /* if possible we use the point x instead of p_new */
     if(fabs(p_new-x)< HINV_XDEVIATION * (iv->next->p - iv->p))
       iv_new = _unur_hinv_interval_new(gen,x,Fx);
@@ -1045,6 +1065,9 @@ _unur_hinv_interval_is_monotone( struct unur_gen *gen, struct unur_hinv_interval
     /* the monotone check is in the moment only implemented for order 3
        as approximation we use the same check for order 5*/
   case 3:
+    /* we skip the test if computing the bound has too many round-off errors */
+    if (iv->u==0. || iv->next->u==0. || _unur_FP_approx(iv->u,iv->next->u))
+      return 1;
     /* difference quotient */
     bound = 3.*(iv->next->p - iv->p)/(iv->next->u - iv->u);
     return (1./iv->next->f > bound || 1./iv->f > bound) ? 0 : 1;
@@ -1081,7 +1104,9 @@ _unur_hinv_interval_parameter( struct unur_gen *gen, struct unur_hinv_interval *
   switch (GEN.order) {
 
   case 5:    /* quintic Hermite interpolation */
-    if (iv->f > 0. && iv->next->f > 0.) {
+    if (iv->f > 0. && iv->next->f > 0. &&
+	iv->df < INFINITY && iv->df > -INFINITY && 
+	iv->next->df < INFINITY && iv->next->df > -INFINITY ) {
       f1   = delta_p;
       fs0  = delta_u / iv->f;      
       fs1  = delta_u / iv->next->f;
@@ -1370,7 +1395,7 @@ _unur_hinv_sample( struct unur_gen *gen )
      /*   return 0.                                                          */
      /*----------------------------------------------------------------------*/
 { 
-  double U;
+  double U,X;
   int i;
 
   /* check arguments */
@@ -1388,7 +1413,12 @@ _unur_hinv_sample( struct unur_gen *gen )
   U = (U-GEN.intervals[i])/(GEN.intervals[i+GEN.order+2] - GEN.intervals[i]);
 
   /* evaluate polynome */
-  return _unur_hinv_eval_polynomial( U, GEN.intervals+i+1, GEN.order );
+  X = _unur_hinv_eval_polynomial( U, GEN.intervals+i+1, GEN.order );
+
+  if (X<DISTR.trunc[0]) return DISTR.trunc[0];
+  if (X>DISTR.trunc[1]) return DISTR.trunc[1];
+
+  return X;
 
 } /* end of _unur_hinv_sample() */
 

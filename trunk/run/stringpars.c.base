@@ -46,31 +46,32 @@ int          make_urng_obj(UNUR_PAR *, char *);
 /*            make_par_obj()                                          */
 /*                                                                    */
 /* gets a string containing a list of comma separated doubles         */
-/* which is terminited via a ')' and a pointer to a double array      */
+/* which is terminited with ')'                                       */
+/* and a pointer to a double array                                    */
 /* and extracts the doubles from the list to the array                */
 /*                                                                    */
 /**********************************************************************/
 int parselist( char *liststr, double *ptr_to_list ){
 
-  int no_of_elem = 0; /* number of elements in list */
+  int no_of_elem = 0; /* number of elements in passed list */
 
-  /* extract doubles from string and write them to array of doubles */
-  while ( *liststr != ')' ){   /* end of list is indicated by right bracket */
-    /* there can only be ',' or '(' in front of the numbers */
-    while ( *liststr == ',' || *liststr == '('){
-      liststr++;               /* next char */
+  /* extract doubles from string and write them to array of doubles   */
+  /* end of list is indicated by right bracket */  
+  while ( *liststr != ')' ){
+    /* there can only be ',' or '(' in front of the numbers           */
+    while ( *liststr == ',' || *liststr == '(' ){
+      liststr++; /* next char */
     }
     
-    /* extract double and write to array */
+    /* extract double and write to array and increase counter */
     ptr_to_list[no_of_elem] = strtod(liststr, &liststr);
-    no_of_elem++; /* goto next entry of array */
+    no_of_elem++;
 
   } /* end while -- all elements of list read*/
 
   return (no_of_elem);
 
 } /* end of parselist() */
-
 
 
 
@@ -110,23 +111,24 @@ UNUR_DISTR *make_distr_obj(char *str){
 
     /* determine key and value */
     key = token;
-    /* one ore more '=' seperates key from value */
-
     value = strchr(key, '=');
-    for ( *value='\0',value++  ;  *value=='='  ;  value++ ); 
 
-    /* split value into value and list (one of them must exist) */
-    no_of_elem = 0;
-    /* is a list beginning with '(' in the value included? */
-    if (NULL != strchr(value, '(') ){
+    /* none ore more '=' seperates key from value */
+    if ( value != NULL ){
+       for ( *value='\0',value++  ;  *value=='='  ;  value++ ); 
 
-      tmpstr = strchr(value, '(');
-      *tmpstr = '\0'; /* terminate value */
-      tmpstr++;       /* points to begin of list (if available) */
+       /* split value into value and list (one of them must exist) */
+       no_of_elem = 0;
+       /* is a list beginning with '(' in the value included? */
+       if (NULL != strchr(value, '(') ){
 
-      /* extract list of doubles from string  */
-      no_of_elem = parselist(tmpstr ,list);
-
+         tmpstr = strchr(value, '(');
+         *tmpstr = '\0'; /* terminate value */
+         tmpstr++;       /* points to begin of list (if available) */
+   
+         /* extract list of doubles from string  */
+         no_of_elem = parselist(tmpstr ,list);
+       }
     }
 
     /* Now: key, value and list are determined               */
@@ -164,10 +166,13 @@ UNUR_DISTR *make_distr_obj(char *str){
 /*                                                                    */
 /* The string consists of key=value entries separeted by ';'          */
 /*                                                                    */
-/* three possibilities:                                               */
+/* four possibilities:                                                */
+/* key                                                                */
 /* key=value                                                          */
 /* key=(komma separated list of numbers)                              */
 /* key=value(komma separated list of numbers)                         */
+/*                                                                    */
+/* for each key the corresponding unur_<name>_set command is executed */
 /*                                                                    */
 /**********************************************************************/
 UNUR_PAR *make_par_obj(UNUR_DISTR *distr, char *methstr){
@@ -189,7 +194,8 @@ UNUR_PAR *make_par_obj(UNUR_DISTR *distr, char *methstr){
   int no_of_elem;        /* size of that list */
 
 
-  /* tokenize the string */
+
+  /* tokenize the string and handle the tokens */
   for ( token = strtok( methstr, ";");
        token != NULL;
        token = strtok(NULL, ";") ){

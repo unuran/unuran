@@ -1,3 +1,16 @@
+Version 0.5.0: ???? 2004
+
+	- return codes of _set_ and _get_ functions have been changed:
+	  in case of successful execution 0 (or UNUR_SUCCESS) is returned 
+	  (instead of 1 in previous versions). 
+	  Thus it is possible to return some non-zero error code in case 
+	  of an failure.
+
+	- unur_cvec_set_covar() now checks for positive definiteness of
+	  given covariance matrix.
+
+	- some other minor bug fixes
+
 Version 0.4.5: July 2003
 
 	- added method DSS (discrete sequential search)

@@ -422,7 +422,7 @@ unur_distr_cvec_get_dpdf( const struct unur_distr *distr )
 /*---------------------------------------------------------------------------*/
 
 double
-unur_distr_cvec_eval_pdf( const double *x, const struct unur_distr *distr )
+unur_distr_cvec_eval_pdf( const double *x, struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
      /* evaluate PDF of distribution at x                                    */
      /*                                                                      */
@@ -449,7 +449,7 @@ unur_distr_cvec_eval_pdf( const double *x, const struct unur_distr *distr )
 /*---------------------------------------------------------------------------*/
 
 int
-unur_distr_cvec_eval_dpdf( double *result, const double *x, const struct unur_distr *distr )
+unur_distr_cvec_eval_dpdf( double *result, const double *x, struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
      /* evaluate gradient of PDF of distribution at x                        */
      /*                                                                      */
@@ -516,7 +516,7 @@ unur_distr_cvec_set_logpdf( struct unur_distr *distr, UNUR_FUNCT_CVEC *logpdf )
 /*---------------------------------------------------------------------------*/
 
 double
-_unur_distr_cvec_eval_pdf_from_logpdf( const double *x, const struct unur_distr *distr )
+_unur_distr_cvec_eval_pdf_from_logpdf( const double *x, struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
      /* evaluate PDF of distribution at x                                    */
      /* wrapper when only logPDF is given                                    */
@@ -577,7 +577,7 @@ unur_distr_cvec_set_dlogpdf( struct unur_distr *distr, UNUR_VFUNCT_CVEC *dlogpdf
 /*---------------------------------------------------------------------------*/
 
 int
-_unur_distr_cvec_eval_dpdf_from_dlogpdf( double *result, const double *x, const struct unur_distr *distr )
+_unur_distr_cvec_eval_dpdf_from_dlogpdf( double *result, const double *x, struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
      /* evaluate gradient of PDF of distribution at x                        */
      /* wrapper when only gradient of logPDF is given                        */
@@ -655,7 +655,7 @@ unur_distr_cvec_get_dlogpdf( const struct unur_distr *distr )
 /*---------------------------------------------------------------------------*/
 
 double
-unur_distr_cvec_eval_logpdf( const double *x, const struct unur_distr *distr )
+unur_distr_cvec_eval_logpdf( const double *x, struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
      /* evaluate logPDF of distribution at x                                 */
      /*                                                                      */
@@ -682,7 +682,7 @@ unur_distr_cvec_eval_logpdf( const double *x, const struct unur_distr *distr )
 /*---------------------------------------------------------------------------*/
 
 int
-unur_distr_cvec_eval_dlogpdf( double *result, const double *x, const struct unur_distr *distr )
+unur_distr_cvec_eval_dlogpdf( double *result, const double *x, struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
      /* evaluate gradient of logPDF of distribution at x                     */
      /*                                                                      */

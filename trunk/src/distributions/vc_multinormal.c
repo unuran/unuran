@@ -91,9 +91,9 @@ static const char distr_name[] = "multinormal";
 /*---------------------------------------------------------------------------*/
 /* function prototypes                                                       */
 
-    static double _unur_pdf_multinormal( const double *x, const UNUR_DISTR *distr );
-    static double _unur_logpdf_multinormal( const double *x, const UNUR_DISTR *distr );
-    static int _unur_dlogpdf_multinormal( double *result, const double *x, const UNUR_DISTR *distr );
+    static double _unur_pdf_multinormal( const double *x, UNUR_DISTR *distr );
+    static double _unur_logpdf_multinormal( const double *x, UNUR_DISTR *distr );
+    static int _unur_dlogpdf_multinormal( double *result, const double *x, UNUR_DISTR *distr );
 /** TODO:
     static int _unur_upd_mode_multinormal( UNUR_DISTR *distr );
     static int _unur_upd_area_multinormal( UNUR_DISTR *distr );
@@ -102,7 +102,7 @@ static const char distr_name[] = "multinormal";
 /*---------------------------------------------------------------------------*/
 
 double
-_unur_pdf_multinormal( const double *x, const UNUR_DISTR *distr )
+_unur_pdf_multinormal( const double *x, UNUR_DISTR *distr )
 { 
   return exp( _unur_logpdf_multinormal( x, distr ) );
 } /* end of _unur_pdf_multinormal() */
@@ -110,7 +110,7 @@ _unur_pdf_multinormal( const double *x, const UNUR_DISTR *distr )
 /*---------------------------------------------------------------------------*/
 
 double
-_unur_logpdf_multinormal( const double *x, const UNUR_DISTR *distr )
+_unur_logpdf_multinormal( const double *x, UNUR_DISTR *distr )
 { 
 #define idx(a,b) ((a)*dim+(b))
 
@@ -133,7 +133,7 @@ _unur_logpdf_multinormal( const double *x, const UNUR_DISTR *distr )
   mean = DISTR.mean;
 
   /* get inverse of covariance matrix */
-  covar_inv = unur_distr_cvec_get_covar_inv((UNUR_DISTR *)distr);
+  covar_inv = unur_distr_cvec_get_covar_inv(distr);
   if (covar_inv==NULL) 
     /* inverse of covariance matrix not available */
     return INFINITY;
@@ -156,7 +156,7 @@ _unur_logpdf_multinormal( const double *x, const UNUR_DISTR *distr )
 /*---------------------------------------------------------------------------*/
 
 int
-_unur_dlogpdf_multinormal( double *result, const double *x, const UNUR_DISTR *distr )
+_unur_dlogpdf_multinormal( double *result, const double *x, UNUR_DISTR *distr )
 {
 #define idx(a,b) ((a)*dim+(b))
 
@@ -168,7 +168,7 @@ _unur_dlogpdf_multinormal( double *result, const double *x, const UNUR_DISTR *di
   mean = DISTR.mean;
 
   /* get inverse of covariance matrix */
-  covar_inv = unur_distr_cvec_get_covar_inv((UNUR_DISTR *)distr);
+  covar_inv = unur_distr_cvec_get_covar_inv(distr);
   if (covar_inv==NULL) 
     /* inverse of covariance matrix not available */
     return UNUR_FAILURE;

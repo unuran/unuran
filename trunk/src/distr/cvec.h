@@ -191,7 +191,7 @@ UNUR_VFUNCT_CVEC *unur_distr_cvec_get_dpdf( const UNUR_DISTR *distribution );
    @var{distribution}, the NULL pointer is returned.
 */
 
-double unur_distr_cvec_eval_pdf( const double *x, const UNUR_DISTR *distribution );
+double unur_distr_cvec_eval_pdf( const double *x, UNUR_DISTR *distribution );
 /* 
    Evaluate the PDF of the @var{distribution} at @var{x}.
    @var{x} must be a pointers to a double arrays of appropriate size
@@ -204,7 +204,7 @@ double unur_distr_cvec_eval_pdf( const double *x, const UNUR_DISTR *distribution
    @code{unur_errno} is set to @code{UNUR_ERR_DISTR_DATA}.
 */
 
-int unur_distr_cvec_eval_dpdf( double *result, const double *x, const UNUR_DISTR *distribution );
+int unur_distr_cvec_eval_dpdf( double *result, const double *x, UNUR_DISTR *distribution );
 /* 
    Evaluate the gradient of the PDF of the @var{distribution} at
    @var{x}. 
@@ -231,10 +231,10 @@ UNUR_FUNCT_CVEC *unur_distr_cvec_get_logpdf( const UNUR_DISTR *distribution );
 UNUR_VFUNCT_CVEC *unur_distr_cvec_get_dlogpdf( const UNUR_DISTR *distribution );
 /* */
 
-double unur_distr_cvec_eval_logpdf( const double *x, const UNUR_DISTR *distribution );
+double unur_distr_cvec_eval_logpdf( const double *x, UNUR_DISTR *distribution );
 /* */
 
-int unur_distr_cvec_eval_dlogpdf( double *result, const double *x, const UNUR_DISTR *distribution );
+int unur_distr_cvec_eval_dlogpdf( double *result, const double *x, UNUR_DISTR *distribution );
 /* 
    Analogous calls for the logarithm of the density function.
 */

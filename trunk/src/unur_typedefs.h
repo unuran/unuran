@@ -58,8 +58,12 @@ typedef double UNUR_FUNCT_DISCR(int x, const struct unur_distr *distr);
 /*---------------------------------------------------------------------------*/
 /* functions for continuous multivariate PDF, CDF, and their gradients       */
 
-typedef double UNUR_FUNCT_CVEC(const double *x, const struct unur_distr *distr);
-typedef int UNUR_VFUNCT_CVEC(double *result, const double *x, const struct unur_distr *distr);
+/* Remark: we cannot use a const pointer to distr as some data are           */
+/* computed "on the fly" when they are needed and stored in the              */
+/* distribution object.                                                      */
+
+typedef double UNUR_FUNCT_CVEC(const double *x, struct unur_distr *distr);
+typedef int UNUR_VFUNCT_CVEC(double *result, const double *x, struct unur_distr *distr);
 
 /*---------------------------------------------------------------------------*/
 /* structures for auxiliary tools                                            */

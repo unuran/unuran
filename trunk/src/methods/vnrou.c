@@ -714,6 +714,16 @@ _unur_vnrou_clone( const struct unur_gen *gen )
   /* create generic clone */
   clone = _unur_generic_clone( gen, GENTYPE );
 
+  /* allocate memory for u-arrays and center */
+  CLONE.umin = _unur_xmalloc( GEN.dim * sizeof(double));
+  CLONE.umax = _unur_xmalloc( GEN.dim * sizeof(double));
+  CLONE.center = _unur_xmalloc( GEN.dim * sizeof(double));
+  
+  /* copy parameters into clone object */
+  memcpy(CLONE.umin, GEN.umin, GEN.dim * sizeof(double));
+  memcpy(CLONE.umax, GEN.umax, GEN.dim * sizeof(double));
+  memcpy(CLONE.center, GEN.center, GEN.dim * sizeof(double));
+
   return clone;
 
 #undef CLONE
@@ -763,6 +773,7 @@ sample_try:
     else {
       goto sample_try;
     }
+
 
 } /* end of _unur_vnrou_sample() */
 

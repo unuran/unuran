@@ -1,3 +1,10 @@
+Version 0.4.0: ????
+	
+	- build shared libraries (libtools, new versions of autoconf and
+	  automake)
+
+	- reorganization of source tree
+
 Version 0.3.0: October 2002
 
 	- added method HINV (Hermite interpolation based INVersion of CDF)

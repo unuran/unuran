@@ -144,26 +144,6 @@ Benutzer zugaenglich sein?
 Ich koennte das machen, oder Du, oder auch gar nicht, wenn Du schon
 alles fertig hast. Dann machen wir es naechstes mal.
  
-
-
-------------------------------------------------------------------------
-
-PS. Ich hab gestern das Feedback der Seminar Studenten zum Codegenerator
-gelesen, Aufgabe war es Code fuer die Gamma(5) Verteilung zu erzeugen.
-Alle haben gesagt, dass er einfach zu bedienen ist.
-Vielleicht berechtigte Vorschlaege?? waren:
-
-1.) Es ist laestig, dass das Fenster in jedem Schritt auf den Anfang
-springt, man muss dann mit dem scrollbar wieder hinunter zum Punkt, wo
-man gerade war.
-2.) Beim C-program mit Main sollte man #include math.h stdio.h
-dazugeben.
-3.) Man sollte erklaeren, was trunctaed distribution bedeutet.
-
-Ich weiss nicht, ob diese Vorschlaege wirklich sinvoll sind und wie
-schwierig das mit dem Scroll-bar zu verwirklichen waere. Ich wollte nur,
-dass die Vorschlaege wenigstens bis zu Dir "durchkommen".
-
 ------------------------------------------------------------------------
 
 Lieber Josef!
@@ -183,5 +163,15 @@ Jedenfalls bitte TDR DOKU auf die TODO Liste, damit ich diesen Zettel
 wegschmeissen kann.
 
 LG Wolfgang
+
+
+
+
+
+
+
+
+
+
 
 

@@ -163,6 +163,11 @@ static void _unur_norta_free( struct unur_gen *gen);
 /* destroy generator object.                                                 */
 /*---------------------------------------------------------------------------*/
 
+static struct unur_gen *_unur_norta_clone( const struct unur_gen *gen );
+/*---------------------------------------------------------------------------*/
+/* copy (clone) generator object.                                            */
+/*---------------------------------------------------------------------------*/
+
 static double _unur_norta_urng_wrapper (void *state) { 
   return ((double*)state)[0]; }
 /*---------------------------------------------------------------------------*/

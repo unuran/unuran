@@ -158,6 +158,11 @@ static void _unur_ninv_free( struct unur_gen *gen );
 /* destroy generator object.                                                 */
 /*---------------------------------------------------------------------------*/
 
+static struct unur_gen *_unur_ninv_clone( const struct unur_gen *gen );
+/*---------------------------------------------------------------------------*/
+/* copy (clone) generator object.                                            */
+/*---------------------------------------------------------------------------*/
+
 static double _unur_ninv_regula( struct unur_gen *gen, double u );
 /*---------------------------------------------------------------------------*/
 /* algorithm: regula falsi                                                   */

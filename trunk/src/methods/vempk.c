@@ -176,6 +176,11 @@ static void _unur_vempk_free( struct unur_gen *gen);
 /* destroy generator object.                                                 */
 /*---------------------------------------------------------------------------*/
 
+static struct unur_gen *_unur_vempk_clone( const struct unur_gen *gen );
+/*---------------------------------------------------------------------------*/
+/* copy (clone) generator object.                                            */
+/*---------------------------------------------------------------------------*/
+
 static int compute_mean_covar( double *data, int n_data, int dim, double *xbar, double *S );
 /*---------------------------------------------------------------------------*/
 /* compute mean vector xbar and covariance matrix S of data.                 */

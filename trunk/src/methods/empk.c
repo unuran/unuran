@@ -230,6 +230,11 @@ static void _unur_empk_free( struct unur_gen *gen);
 /* destroy generator object.                                                 */
 /*---------------------------------------------------------------------------*/
 
+static struct unur_gen *_unur_empk_clone( const struct unur_gen *gen );
+/*---------------------------------------------------------------------------*/
+/* copy (clone) generator object.                                            */
+/*---------------------------------------------------------------------------*/
+
 inline static int _unur_empk_comp_stddev( double *data, int n_data,
 					  double *mean, double *stddev);
 /*---------------------------------------------------------------------------*/

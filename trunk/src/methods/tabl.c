@@ -143,6 +143,11 @@ static void _unur_tabl_free( struct unur_gen *gen);
 /* destroy generator object.                                                 */
 /*---------------------------------------------------------------------------*/
 
+static struct unur_gen *_unur_tabl_clone( const struct unur_gen *gen );
+/*---------------------------------------------------------------------------*/
+/* copy (clone) generator object.                                            */
+/*---------------------------------------------------------------------------*/
+
 static int _unur_tabl_get_starting_intervals( struct unur_par *par, struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 /* compute starting intervals.                                               */

@@ -116,7 +116,7 @@ static void _unur_hitrou_free( struct unur_gen *gen);
 
 static struct unur_gen *_unur_hitrou_clone( const struct unur_gen *gen);
 /*---------------------------------------------------------------------------*/
-/* clone of generator object.                                                */
+/* copy (clone) of generator object.                                         */
 /*---------------------------------------------------------------------------*/
 
 #ifdef UNUR_ENABLE_LOGGING

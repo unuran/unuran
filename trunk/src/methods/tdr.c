@@ -377,6 +377,11 @@ static void _unur_tdr_free( struct unur_gen *gen);
 /* destroy generator object.                                                 */
 /*---------------------------------------------------------------------------*/
 
+static struct unur_gen *_unur_tdr_clone( const struct unur_gen *gen );
+/*---------------------------------------------------------------------------*/
+/* copy (clone) generator object.                                            */
+/*---------------------------------------------------------------------------*/
+
 static int _unur_tdr_starting_cpoints( struct unur_par *par, struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 /* create list of construction points for starting segments.                 */

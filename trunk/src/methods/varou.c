@@ -1020,7 +1020,8 @@ _unur_varou_cones_split( struct unur_gen *gen )
   long ic; /* running cone index */
   long nc; /* last cone index */
   long nv; /* last vertex index */
-  long iv1, iv2; /* vertex indices */
+  long iv1, iv2, it; /* vertex indices */
+  double v, vt; /* v-coordinates of the verteces */
   double sum_volume;  /* volume sum of all bounded cones */
   double potato_volume;  /* volume of potato = 1/(dim+1)  */
   long   n_bounded;   /* number of bounded cones */
@@ -1074,9 +1075,20 @@ printf("%8ld; %8ld; %e; %e; %e\n",
     nc=GEN.n_cone; 
     for (ic=0; ic<nc; ic++) {
       if (GEN.cone_list[ic]->volume >= mean_volume ) {
-        /* determining two distinct verteces of edge to be splitted  */
+	
+        /* obtaining top vertex  */
+        vt=0.; 
+        it=0;
+        for (i=0; i<=dim; i++) {
+          v = GEN.vertex_list[ GEN.cone_list[ic]->index[i] ][dim];
+          if (v>=vt) {vt=v; it=i;}
+        }
+    
+        /* determining two distinct verteces of edge to be splitted    */
+	/* we exclude the top vertex as long as the volume is infinite */
         iv1=0; iv2=0;
-        while (iv1==iv2) {
+        while (iv1==iv2 || 
+	      (_unur_isinf(GEN.cone_list[ic]->volume) && (iv1 == it || iv2 == it)) ) {
           iv1=(long) (dim+1)*_unur_call_urng(gen->urng);
           iv2=(long) (dim+1)*_unur_call_urng(gen->urng);
         }

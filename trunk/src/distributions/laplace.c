@@ -89,7 +89,7 @@ _unur_dpdf_laplace( double x, double *params, int n_params )
     return 0.;   /* a tangent parallel to x-axis is possible.               */
 
   return ( ((x>theta) ? -exp(-z)/phi : exp(-z)/phi) / (2.*phi) );
-} /* end of unur_cpdf_laplace() */
+} /* end of unur_dpdf_laplace() */
 
 /*---------------------------------------------------------------------------*/
 

@@ -17,6 +17,7 @@ libunuran_distributions_a_SOURCES = \
  exponential.c exponential_gen.c \
  gamma.c       gamma_gen.c \
  laplace.c     laplace_gen.c \
+ logistic.c    logistic_gen.c \
  lognormal.c \
  lomax.c \
  normal.c      normal_gen.c \

@@ -264,7 +264,7 @@ int main()
   unur_run_tests(par,RUN_TESTS);
 #endif
 
-#if 1
+#if 0
   fpar[0] = 5.;
   fpar[1] = 2.;
   distr_xxx = unur_distr_laplace(fpar,1);
@@ -273,6 +273,27 @@ int main()
   unur_cstd_set_variant(par,0);
   unur_run_tests(par,RUN_TESTS);
 
+#endif
+
+#if 0
+  fpar[0] = 5.;
+  fpar[1] = 2.;
+  fpar[2] = 3.;
+  distr_xxx = unur_distr_weibull(fpar,3);
+  //  unur_distr_cont_set_domain(distr_xxx,0.,10.);
+  par = unur_cstd_new(distr_xxx);
+  unur_cstd_set_variant(par,0);
+  unur_run_tests(par,RUN_TESTS);
+#endif
+
+#if 1
+  fpar[0] = 5.;
+  fpar[1] = 2.;
+  distr_xxx = unur_distr_logistic(fpar,2);
+  unur_distr_cont_set_domain(distr_xxx,0.,10.);
+  par = unur_cstd_new(distr_xxx);
+  unur_cstd_set_variant(par,0);
+  unur_run_tests(par,RUN_TESTS);
 #endif
 
 #endif

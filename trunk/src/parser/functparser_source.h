@@ -77,6 +77,8 @@ struct treenode *_unur_fstr_make_derivative( struct treenode *functtree_root );
 double _unur_fstr_dev_eval_tree(struct treenode *E_root, double argument);
 /** ??????  **/
 
+void _unur_fstr_debug_tree( struct treenode *root );
+
 /*---------------------------------------------------------------------------*/
 #endif   /* __FSTR_SOURCE_H_SEEN */
 /*---------------------------------------------------------------------------*/

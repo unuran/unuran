@@ -1,9 +1,11 @@
 
+#include <ctype.h>
 #include <source_unuran.h>
 
 /*---------------------------------------------------------------------------*/
 
 #define MAXLENGTH  256 
+
 #define NOSYMB  0 
 #define ADD_OP  1 
 #define REL_OP  2 
@@ -18,18 +20,15 @@
 
 
 /* --- Prototypen: --- */
-void   _unur_fstr_init   (void);
 void  show_symb_tab      (void);
 void clear_symbol_area(int start, int end);
-static char  get_ch_after_spaces(char *function, int *scanposp);
-static char *get_ds             (char *function, int  *scanposp, char *ds);
-static char *get_sf             (char *function, int  *scanposp, char *sf);
-static int   get_uc_symbol      (char *function, int *scanposp, char *uc);
-static int   nxt_symbol         (char function[], int *scanposp, char symb[],
-			      int *tokenp, int *symbkindp, int *errposp);
-static int   get_id_symbol      (char *function, int  *scanposp, char *id);
-static int   get_le_symbol      (char *function, int  *scanposp, char *le);
-static int   get_ge_symbol      (char *function, int  *scanposp, char *ge);
+static void get_ds             (char *function, int  *scanpos, char *ds);
+static void get_sf             (char *function, int  *scanpos, char *sf);
+static int   get_uc_symbol      (char *function, int *scanpos, char *uc);
+static int   nxt_symbol         (char function[], int *scanpos, char symb[],
+				 int *tokenp, int *symbkindp, int *errposp);
+static int   get_id_symbol      (char *function, int  *scanpos, char *id);
+static int   get_ro_symbol      (char *function, int  *scanpos, char *ro);
 static int   find_kind          (int token);
 static int   find_index         (char *symb, int start, int end, int nxt_c);
 
@@ -37,59 +36,10 @@ static int   find_index         (char *symb, int start, int end, int nxt_c);
 static int ros, roe, aos, aoe, mos, moe, hos, hoe, oss, ose, scs, sce;
 static int ucs, uce, uis, uie, ufs, ufe, sfs, sfe;
 
-/* --- forward-declarations aus Modul CALC.C; Bewertungsfunktionen: --- */
-static double v_exp(), v_dummy  (), v_or   (), v_mul(), v_sconst();
-static double v_ln (), v_less   (), v_xor  (), v_and(), v_uconst();
-static double v_log(), v_equal  (), v_plus (), v_div(), v_uident();
-static double v_sin(), v_greater(), v_minus(), v_mod();
-static double v_cos(), v_less_or();
-static double v_tan(), v_unequal(), v_power(), v_ufuncs();
-static double v_sec(), v_grtr_or(), v_not  ();
-static double v_sqr();
-static double v_abs();
-
-/* --- forward-declarations aus Modul CALC.C; Ableitungsfunktionen: --- */
-static char *d_exp(), *d_dummy ();
-static char *d_ln (), *d_add   ();
-static char *d_log(), *d_mul   ();
-static char *d_sin(), *d_div   ();
-static char *d_cos(), *d_power ();
-static char *d_tan(), *d_const ();
-static char *d_sec(), *d_par   ();
-static char *d_sqr(), *d_ufuncs();
-static char *d_abs();
 
 
-/* --- Import aus SCANNER.C: --- */ 
-static void init_scanner(void);
-static int  nxt_symbol(char function[], int *scanposp,  char symb[],
-                       int  *tokenp,    int *symbkindp, int *errposp);
-
-/*long _STKSIZ = 500000; grosser Stack f. Rekursion in derive_expression*/
-
-/************************************************************************/
-
-/* --- Importe aus scanner.c und parser.c: --- */
-
-static struct symbols symbol[];
-static int            ros, roe, aos, aoe, mos, moe, hos, hoe, oss, ose; 
-static int            scs, sce, ucs, uce, uis, uie, ufs, ufe, sfs, sfe; 
-static struct treenode *string2tree(char *function, int *errcodep, 
-                                                    int *errposp);
-static void pt_error    (char *function, int errcode, int errpos);
-static void show_tree   (struct treenode *root);
-
-char *readln     (char *s);
-
-/************************************************************************/ 
-
-/* --- Prototypen: --- */
-
-static char *tree2string(struct treenode *tree_root, char *ret_str);
-static char *tree2Cstring(struct treenode *tree_root, char *ret_str);
-static char *strcpy3    (char *s1, char *s2, char *s3, char *s4); 
-static char *strcpy5    (char *s1, char *s2, char *s3, char *s4, char *s5, char *s6); 
-static double tree2float (struct treenode *E_root); 
+/*---------------------------------------------------------------------------*/
+/* functions for evaluating function tree                                    */
 static double v_dummy  (int t, double l, double r);
 static double v_less   (int t, double l, double r);
 static double v_equal  (int t, double l, double r);
@@ -120,115 +70,186 @@ static double v_tan    (int t, double l, double r);
 static double v_sec    (int t, double l, double r); 
 static double v_sqr    (int t, double l, double r);
 static double v_abs    (int t, double l, double r);
-static void gradient(struct treenode *root);
+
+/*---------------------------------------------------------------------------*/
+/* functions for compting derivatives                                        */
+
+/** TODO: incomplete prototype **/
+static char *d_exp(), *d_dummy ();
+static char *d_ln (), *d_add   ();
+static char *d_log(), *d_mul   ();
+static char *d_sin(), *d_div   ();
+static char *d_cos(), *d_power ();
+static char *d_tan(), *d_const ();
+static char *d_sec();
+/** static char *d_par   (); **/
+static char *d_sqr(), *d_ufuncs();
+static char *d_abs();
+
+
+/* --- Import aus SCANNER.C: --- */ 
+/** static void init_scanner(void); **/
+
+/*long _STKSIZ = 500000; grosser Stack f. Rekursion in derive_expression*/
+
+/************************************************************************/
+
+/* --- Importe aus scanner.c und parser.c: --- */
+
+static struct treenode *string2tree(char *function, int *errcodep, 
+                                                    int *errposp);
+static void pt_error    (char *function, int errcode, int errpos);
+static void show_tree   (struct treenode *node, int level, int location);
+
+char *readln     (char *s);
+
+/************************************************************************/ 
+
+/* --- Prototypen: --- */
+
+static char *tree2string(struct treenode *tree_root, char *ret_str);
+static char *tree2Cstring(struct treenode *tree_root, char *ret_str);
+static char *strcpy3    (char *s1, char *s2, char *s3, char *s4); 
+static char *strcpy5    (char *s1, char *s2, char *s3, char *s4, char *s5, char *s6); 
+static double tree2float (struct treenode *E_root); 
+/** static void gradient(struct treenode *root); **/
 static void nxt_part_derivation(struct treenode *DP_root,struct treenode *root);
 static struct treenode *part_deriv(struct treenode *root,char *par,char *ret_str); 
 static char *derive_expression(struct treenode *E_root,char *par,char *ret_str);
 static char *strcpy6(char *s1, char *s2, char *s3,
 	      char *s4, char *s5, char *s6, char *s7);
-static void str_upr(char *s);
+
+
+static char *_unur_prepare_string( const char *str );
+/*---------------------------------------------------------------------------*/
+/* Prepare string for processing.                                            */
+/*---------------------------------------------------------------------------*/
+
 
 
 /************************************************************************/
 /* --- SYMBOLTABELLE, mit Funktionsadressen --- */
 
 static struct symbols symbol[] = {   
-  {"ros",0, .0,v_dummy,  d_dummy, 0},            /* RelationalOperators */
-  {"<",  1, .0,v_less,   d_const, 0}, {"=",  1, .0,v_equal,  d_const, 0},
-  {">",  1, .0,v_greater,d_const, 0}, {"<=", 1, .0,v_less_or,d_const, 0},
-  {"<>", 1, .0,v_unequal,d_const, 0}, {">=", 1, .0,v_grtr_or,d_const, 0},
-  {"roe",0, .0,v_dummy,  d_dummy, 0},
+  {"_ROS",0, .0,v_dummy,  d_dummy, NULL},            /* RelationalOperators */
+  {"<",   1, .0,v_less,   d_const, NULL},
+  {"=",   1, .0,v_equal,  d_const, NULL},     /** TODO: == statt = **/
+  {">",   1, .0,v_greater,d_const, NULL},
+  {"<=",  1, .0,v_less_or,d_const, NULL},
+  {"<>",  1, .0,v_unequal,d_const, NULL},
+  {">=",  1, .0,v_grtr_or,d_const, NULL},
+  {"_ROE",0, .0,v_dummy,  d_dummy, NULL},
 
-  {"aos",0, .0,v_dummy,  d_dummy, 0},                /* AddingOperators */
-  {"OR", 2, .0,v_or,     d_const, 0}, {"XOR",2, .0,v_xor,    d_const, 0},
-  {"+",  2, .0,v_plus,   d_add,   0}, {"-",  3, .0,v_minus,  d_add,   0},
-  {"aoe",0, .0,v_dummy,  d_dummy, 0},
+  {"_AOS",0, .0,v_dummy,  d_dummy, NULL},                /* AddingOperators */
+  {"or",  2, .0,v_or,     d_const, NULL},
+  {"xor", 2, .0,v_xor,    d_const, NULL},
+  {"+",   2, .0,v_plus,   d_add,   NULL},
+  {"-",   3, .0,v_minus,  d_add,   NULL},
+  {"_AOE",0, .0,v_dummy,  d_dummy, NULL},
 
-  {"mos",0, .0,v_dummy,  d_dummy, 0},           /* MultiplyingOperators */
-  {"*",  4, .0,v_mul,    d_mul,   0}, {"AND",4, .0,v_and,    d_const, 0},
-  {"/",  4, .0,v_div,    d_div,   0}, {"MOD",4, .0,v_mod,    d_const, 0},
-  {"moe",4, .0,v_dummy,  d_dummy, 0},
+  {"_MOS",0, .0,v_dummy,  d_dummy, NULL},           /* MultiplyingOperators */
+  {"*",   4, .0,v_mul,    d_mul,   NULL},
+  {"and", 4, .0,v_and,    d_const, NULL},
+  {"/",   4, .0,v_div,    d_div,   NULL},
+  {"mod", 4, .0,v_mod,    d_const, NULL},
+  {"_MOE",4, .0,v_dummy,  d_dummy, NULL},
 
-  {"hos",0, .0,v_dummy,  d_dummy, 0},          /* HighPriorityOperators */
-  {"^",  5, .0,v_power,  d_power, 0}, {"NOT",6, .0,v_not,    d_const, 0},
-  {"hoe",0, .0,v_dummy,  d_dummy, 0},
+  {"_HOS",0, .0,v_dummy,  d_dummy, NULL},          /* HighPriorityOperators */
+  {"^",   5, .0,v_power,  d_power, NULL},
+  {"not", 6, .0,v_not,    d_const, NULL},
+  {"_HOE",0, .0,v_dummy,  d_dummy, NULL},
 
-  {"oss",0, .0,v_dummy,  d_dummy, 0},                   /* OtherSymbols */
-  {"(",  0, .0,v_dummy,  d_dummy, 0}, {")",  0, .0,v_dummy,  d_dummy, 0},
-  {",",  0, .0,v_dummy,  d_dummy, 0},
-  {"ose",0, .0,v_dummy,  d_dummy, 0},
+  {"_OSS",0, .0,v_dummy,  d_dummy, NULL},                   /* OtherSymbols */
+  {"(",   0, .0,v_dummy,  d_dummy, NULL},
+  {")",   0, .0,v_dummy,  d_dummy, NULL},
+  {",",   0, .0,v_dummy,  d_dummy, NULL},
+  {"_OSE",0, .0,v_dummy,  d_dummy, NULL},
 
-  {"scs",0, .0,v_dummy,  d_dummy, 0},                /* SystemConstants */
-  {"0",  0,0.0,v_sconst, d_const, 0}, {"1",  0,1.0,v_sconst, d_const, 0},
-  {"2",  0,2.0,v_sconst, d_const, 0}, {"3",  0,3.0,v_sconst, d_const, 0},
-  {"4",  0,4.0,v_sconst, d_const, 0}, {"5",  0,5.0,v_sconst, d_const, 0},
-  {"6",  0,6.0,v_sconst, d_const, 0}, {"7",  0,7.0,v_sconst, d_const, 0},
-  {"8",  0,8.0,v_sconst, d_const, 0}, {"9",  0,9.0,v_sconst, d_const, 0},
-  {"PI", 0,3.1415927,v_sconst, d_const, 0},
-  {"E",  0,2.7182818,v_sconst, d_const, 0},
-  {"sce",0, .0,v_dummy,  d_dummy, 0},
+  {"_SCS",0, .0,v_dummy,  d_dummy, NULL},                /* SystemConstants */
+  {"0",   0,0.0,v_sconst, d_const, NULL},
+  {"1",   0,1.0,v_sconst, d_const, NULL},
+/*    {"2",  0,2.0,v_sconst, d_const, NULL}, */
+/*    {"3",  0,3.0,v_sconst, d_const, NULL}, */
+/*    {"4",  0,4.0,v_sconst, d_const, NULL}, */
+/*    {"5",  0,5.0,v_sconst, d_const, NULL}, */
+/*    {"6",  0,6.0,v_sconst, d_const, NULL}, */
+/*    {"7",  0,7.0,v_sconst, d_const, NULL}, */
+/*    {"8",  0,8.0,v_sconst, d_const, NULL}, */
+/*    {"9",  0,9.0,v_sconst, d_const, NULL}, */
+  {"pi",  0, M_PI,v_sconst, d_const, NULL},
+  {"e",   0, M_E ,v_sconst, d_const, NULL},
+  {"_SCE",0, .0,v_dummy,  d_dummy, NULL},
 
-  {"ucs",0, .0,v_dummy,  d_dummy, 0},           /* UserdefinedConstants */
-  {"",   0, .0,v_uconst, d_const, 0}, {"",   0, .0,v_uconst, d_const, 0},
-  {"",   0, .0,v_uconst, d_const, 0}, {"",   0, .0,v_uconst, d_const, 0},
-  {"",   0, .0,v_uconst, d_const, 0}, {"",   0, .0,v_uconst, d_const, 0},
-  {"",   0, .0,v_uconst, d_const, 0}, {"",   0, .0,v_uconst, d_const, 0},
-  {"uce",0, .0,v_dummy,  d_dummy, 0},
+  {"_UCS",0, .0,v_dummy,  d_dummy, NULL},           /* UserdefinedConstants */
+  {"",    0, .0,v_uconst, d_const, NULL},
+  {"",    0, .0,v_uconst, d_const, NULL},
+  {"",    0, .0,v_uconst, d_const, NULL},
+  {"",    0, .0,v_uconst, d_const, NULL},
+  {"",    0, .0,v_uconst, d_const, NULL},
+  {"",    0, .0,v_uconst, d_const, NULL},
+  {"",    0, .0,v_uconst, d_const, NULL},
+  {"",    0, .0,v_uconst, d_const, NULL},
+  {"_UCE",0, .0,v_dummy,  d_dummy, NULL},
 
-  {"uis",0, .0,v_dummy,  d_dummy, 0},         /* UserdefinedIdentifiers */
-  {"",   0, .0,v_uident, d_const, 0}, {"",   0, .0,v_uident, d_const, 0},
-  {"",   0, .0,v_uident, d_const, 0}, {"",   0, .0,v_uident, d_const, 0},
-  {"",   0, .0,v_uident, d_const, 0}, {"",   0, .0,v_uident, d_const, 0},
-  {"",   0, .0,v_uident, d_const, 0}, {"",   0, .0,v_uident, d_const, 0},
-  {"uie",0, .0,v_dummy,  d_dummy, 0},
+  {"_UIS",0, .0,v_dummy,  d_dummy, NULL},         /* UserdefinedIdentifiers */
+  {"",    0, .0,v_uident, d_const, NULL},
+  {"",    0, .0,v_uident, d_const, NULL},
+  {"",    0, .0,v_uident, d_const, NULL},
+  {"",    0, .0,v_uident, d_const, NULL},
+  {"",    0, .0,v_uident, d_const, NULL},
+  {"",    0, .0,v_uident, d_const, NULL},
+  {"",    0, .0,v_uident, d_const, NULL},
+  {"",    0, .0,v_uident, d_const, NULL},
+  {"_UIE",0, .0,v_dummy,  d_dummy, NULL},
 
-  {"ufs",0, .0,v_dummy,  d_dummy, 0},           /* UserdefinedFunctions */
-  {"",   0, .0,v_ufuncs, d_ufuncs,0}, {"",   0, .0,v_ufuncs, d_ufuncs,0},
-  {"",   0, .0,v_ufuncs, d_ufuncs,0}, {"",   0, .0,v_ufuncs, d_ufuncs,0},
-  {"",   0, .0,v_ufuncs, d_ufuncs,0}, {"",   0, .0,v_ufuncs, d_ufuncs,0},
-  {"",   0, .0,v_ufuncs, d_ufuncs,0}, {"",   0, .0,v_ufuncs, d_ufuncs,0},
-  {"ufe",0, .0,v_dummy,  d_dummy, 0},
+  {"_UFS",0, .0,v_dummy,  d_dummy, NULL},           /* UserdefinedFunctions */
+  {"",    0, .0,v_ufuncs, d_ufuncs,NULL},
+  {"",    0, .0,v_ufuncs, d_ufuncs,NULL},
+  {"",    0, .0,v_ufuncs, d_ufuncs,NULL},
+  {"",    0, .0,v_ufuncs, d_ufuncs,NULL},
+  {"",    0, .0,v_ufuncs, d_ufuncs,NULL},
+  {"",    0, .0,v_ufuncs, d_ufuncs,NULL},
+  {"",    0, .0,v_ufuncs, d_ufuncs,NULL},
+  {"",    0, .0,v_ufuncs, d_ufuncs,NULL},
+  {"_UFE",0, .0,v_dummy,  d_dummy, NULL},
 
-  {"sfs",0, .0,v_dummy,  d_dummy, 0},                /* SystemFunctions */
-  {"EXP",1, .0,v_exp,    d_exp,   0}, {"LN", 1, .0,v_ln,     d_ln,    0},
-  {"LOG",2, .0,v_log,    d_log,   0}, {"SIN",1, .0,v_sin,    d_sin,   0},
-  {"COS",1, .0,v_cos,    d_cos,   0}, {"TAN",1, .0,v_tan,    d_tan,   0},
-  {"SEC",1, .0,v_sec,    d_sec,   0}, {"SQR",1, .0,v_sqr,    d_sqr,   0},
-  {"ABS",1, .0,v_abs,    d_abs,   0},
-  {"sfe",0, .0,v_dummy,  d_dummy, 0},
+  {"_SFS",0, .0,v_dummy,  d_dummy, NULL},                /* SystemFunctions */
+  {"exp", 1, .0,v_exp,    d_exp,   NULL},
+  {"ln",  1, .0,v_ln,     d_ln,    NULL},
+  {"log", 2, .0,v_log,    d_log,   NULL},
+  {"sin", 1, .0,v_sin,    d_sin,   NULL},
+  {"cos", 1, .0,v_cos,    d_cos,   NULL},
+  {"tan", 1, .0,v_tan,    d_tan,   NULL},
+  {"sec", 1, .0,v_sec,    d_sec,   NULL},
+  {"sqr", 1, .0,v_sqr,    d_sqr,   NULL},
+  {"abs", 1, .0,v_abs,    d_abs,   NULL},
+  {"_SFE",0, .0,v_dummy,  d_dummy, NULL},
 
-  {"end",0, .0,v_dummy,  d_dummy, 0},
+  {"_END",0, .0,v_dummy,  d_dummy, NULL},
 };
 
 /* --- Prototypen: --- */ 
-struct treenode *string2tree(char *function, int *errcodep, int *errposp);
-static struct treenode *FuncDefinition   (char *f, int *spp, int *ecp, int *epp);
-static struct treenode *DefFuncDesignator(char *f, int *spp, int *ecp, int *epp, 
-                                                                int *ftp);
-static struct treenode *DefParameterlist (char *f, int *spp, int *ecp, int *epp, 
-                                                            int *paranzp);
-static struct treenode *Expression       (char *f, int *spp, int *ecp, int *epp);
-static struct treenode *SimpleExpression (char *f, int *spp, int *ecp, int *epp);
-static struct treenode *VTerm            (char *f, int *spp, int *ecp, int *epp);
-static struct treenode *Term             (char *f, int *spp, int *ecp, int *epp);
-static struct treenode *Factor           (char *f, int *spp, int *ecp, int *epp);
-static struct treenode *bas_exp          (char *f, int *spp, int *ecp, int *epp);
-static struct treenode *FuncDesignator   (char *f, int *spp, int *ecp, int *epp);
-static struct treenode *ActualParameterlist(char *f, int *spp, int *ecp, 
-                                                 int *epp, int corr_panz);
+static struct treenode *FuncDefinition   (char *fstr, int *scanpos, int *ecp, int *epp);
+static struct treenode *DefFuncDesignator(char *fstr, int *scanpos, int *ecp, int *epp, int *ftp);
+static struct treenode *DefParameterlist (char *fstr, int *scanpos, int *ecp, int *epp, int *paranzp);
+static struct treenode *Expression       (char *fstr, int *scanpos, int *ecp, int *epp);
+static struct treenode *SimpleExpression (char *fstr, int *scanpos, int *ecp, int *epp);
+static struct treenode *VTerm            (char *fstr, int *scanpos, int *ecp, int *epp);
+static struct treenode *Term             (char *fstr, int *scanpos, int *ecp, int *epp);
+static struct treenode *Factor           (char *fstr, int *scanpos, int *ecp, int *epp);
+static struct treenode *bas_exp          (char *fstr, int *scanpos, int *ecp, int *epp);
+static struct treenode *FuncDesignator   (char *fstr, int *scanpos, int *ecp, int *epp);
+static struct treenode *ActualParameterlist(char *fstr, int *scanpos, int *ecp, int *epp, int corr_panz);
+
 static struct treenode *create_node(char *symb, int token, int symbkind,
                 double val, struct treenode *left, struct treenode *right);
-static struct treenode *tnalloc (void);
+
 static struct treenode *set_err (int err_nr, int *errcodep);
 char            *readln  (char *s);
-static char            *erase_back_blancs (char *s); 
 static int             simplification(char *symb, int t, struct treenode *l, 
                                                       struct treenode *r);
 static void            check_reorg (struct treenode *root);
-static void            show_tree   (struct treenode *root);
                
-static void            pt_error    (char *function, int errcode, int errpos);
-
 static char *errorstrings[] = { 
      "OK",                                                /* 0*/ 
      "scan pointer too big",                              /* 1*/ 
@@ -254,63 +275,6 @@ static char *errorstrings[] = {
 
 /************************************************************************/
 
-/* --- Importe aus scanner.c und parser.c: --- */
-
-static struct treenode *string2tree(char *function, int *errcodep, 
-                                                    int *errposp);
-static int  nxt_symbol  (char function[], int *scanposp,  char symb[],
-                             int *tokenp, int *symbkindp, int *errposp);
-void show_symb_tab(void); 
-static void pt_error    (char *function, int errcode, int errpos);
-static void show_tree   (struct treenode *root);
-
-/* --- Prototypen: --- */
-
-static char *tree2string(struct treenode *tree_root, char *ret_str);
-static char *tree2Cstring(struct treenode *tree_root, char *ret_str);
-static char *strcpy3    (char *s1, char *s2, char *s3, char *s4); 
-static char *strcpy5    (char *s1, char *s2, char *s3, char *s4, char *s5, char *s6); 
-static double tree2float (struct treenode *E_root); 
-static double v_dummy  (int t, double l, double r);
-static double v_less   (int t, double l, double r);
-static double v_equal  (int t, double l, double r);
-static double v_greater(int t, double l, double r);
-static double v_less_or(int t, double l, double r);
-static double v_unequal(int t, double l, double r);
-static double v_grtr_or(int t, double l, double r);
-static double v_or     (int t, double l, double r);
-static double v_xor    (int t, double l, double r);
-static double v_plus   (int t, double l, double r); 
-static double v_minus  (int t, double l, double r); 
-static double v_mul    (int t, double l, double r);
-static double v_and    (int t, double l, double r);
-static double v_div    (int t, double l, double r);
-static double v_mod    (int t, double l, double r);
-static double v_power  (int t, double l, double r);
-static double v_not    (int t, double l, double r);
-static double v_sconst (int t, double l, double r);
-static double v_uconst (int t, double l, double r);
-static double v_uident (int t, double l, double r);
-static double v_ufuncs (int t, double l, double r);
-static double v_exp    (int t, double l, double r);
-static double v_ln     (int t, double l, double r);
-static double v_log    (int t, double l, double r);
-static double v_sin    (int t, double l, double r); 
-static double v_cos    (int t, double l, double r);
-static double v_tan    (int t, double l, double r);
-static double v_sec    (int t, double l, double r); 
-static double v_sqr    (int t, double l, double r);
-static double v_abs    (int t, double l, double r);
-static void gradient(struct treenode *root);
-static void nxt_part_derivation(struct treenode *DP_root,struct treenode *root);
-static struct treenode *part_deriv(struct treenode *root,char *par,char *ret_str); 
-static char *derive_expression(struct treenode *E_root,char *par,char *ret_str);
-static char *strcpy6(char *s1, char *s2, char *s3,
-	      char *s4, char *s5, char *s6, char *s7);
-static void str_upr(char *s);
-
-
-
 /************************************************************************/
 
 void  _unur_fstr_init(void)
@@ -325,27 +289,27 @@ void  _unur_fstr_init(void)
 
   do {
      s = symbol[++i].name;
-     if         (strcmp(s,"ros") == 0) ros = i;
-	else if (strcmp(s,"roe") == 0) roe = i;
-	else if (strcmp(s,"aos") == 0) aos = i;
-	else if (strcmp(s,"aoe") == 0) aoe = i;
-	else if (strcmp(s,"mos") == 0) mos = i;
-	else if (strcmp(s,"moe") == 0) moe = i;
-	else if (strcmp(s,"hos") == 0) hos = i;
-	else if (strcmp(s,"hoe") == 0) hoe = i;
-	else if (strcmp(s,"oss") == 0) oss = i;
-	else if (strcmp(s,"ose") == 0) ose = i;
-	else if (strcmp(s,"scs") == 0) scs = i;
-	else if (strcmp(s,"sce") == 0) sce = i;
-	else if (strcmp(s,"ucs") == 0) ucs = i;
-	else if (strcmp(s,"uce") == 0) uce = i;
-	else if (strcmp(s,"uis") == 0) uis = i;
-	else if (strcmp(s,"uie") == 0) uie = i;
-	else if (strcmp(s,"ufs") == 0) ufs = i;
-	else if (strcmp(s,"ufe") == 0) ufe = i;
-	else if (strcmp(s,"sfs") == 0) sfs = i;
-	else if (strcmp(s,"sfe") == 0) sfe = i;
-  } while (!(strcmp(s,"end") == 0));
+     if         (strcmp(s,"_ROS") == 0) ros = i;
+	else if (strcmp(s,"_ROE") == 0) roe = i;
+	else if (strcmp(s,"_AOS") == 0) aos = i;
+	else if (strcmp(s,"_AOE") == 0) aoe = i;
+	else if (strcmp(s,"_MOS") == 0) mos = i;
+	else if (strcmp(s,"_MOE") == 0) moe = i;
+	else if (strcmp(s,"_HOS") == 0) hos = i;
+	else if (strcmp(s,"_HOE") == 0) hoe = i;
+	else if (strcmp(s,"_OSS") == 0) oss = i;
+	else if (strcmp(s,"_OSE") == 0) ose = i;
+	else if (strcmp(s,"_SCS") == 0) scs = i;
+	else if (strcmp(s,"_SCE") == 0) sce = i;
+	else if (strcmp(s,"_UCS") == 0) ucs = i;
+	else if (strcmp(s,"_UCE") == 0) uce = i;
+	else if (strcmp(s,"_UIS") == 0) uis = i;
+	else if (strcmp(s,"_UIE") == 0) uie = i;
+	else if (strcmp(s,"_UFS") == 0) ufs = i;
+	else if (strcmp(s,"_UFE") == 0) ufe = i;
+	else if (strcmp(s,"_SFS") == 0) sfs = i;
+	else if (strcmp(s,"_SFE") == 0) sfe = i;
+  } while (!(strcmp(s,"_END") == 0));
   /* --- Benutzerdefinierte Eintraege loeschen: --- */
   clear_symbol_area(ucs,uce);
   clear_symbol_area(uis,uie);
@@ -375,7 +339,7 @@ void show_symb_tab(void)         /* Gibt die aktuelle Symboltabelle aus */
   do {
        printf("\n%4d: %7s inf:%3d val:%f ",
        i, symbol[i].name,symbol[i].info,symbol[i].val);
-  } while (!(strcmp(symbol[++i].name,"end") == 0));
+  } while (!(strcmp(symbol[++i].name,"_END") == 0));
   printf("\nros=%4d hos=%4d ucs=%4d sfs=%4d",ros,hos,ucs,sfs);
   printf("\nroe=%4d hoe=%4d uce=%4d sfe=%4d",roe,hoe,uce,sfe);
   printf("\naos=%4d oss=%4d uis=%4d"        ,aos,oss,uis    );
@@ -386,172 +350,167 @@ void show_symb_tab(void)         /* Gibt die aktuelle Symboltabelle aus */
 }
 /************************************************************************/
 
-int nxt_symbol(char function[],int *scanposp, char symb[], int *tokenp,
-					     int *symbkindp, int *errposp)
+int nxt_symbol (char *fstr, int *scanpos, char *symb, int *tokenp,
+		int *symbkindp, int *errposp)
 
-/*  Liefert aus dem String function[] in symb[] das naechste Symbol ab
- *  der Position *scanposp. Nach der Bearbeitung zeigt *scanposp auf das
- *  Zeichen, das dem ermittelten Symbol unmittelbar folgt. Leerzeichen
+/*  Liefert aus dem String 'fstr' das naechste Symbol ab der
+ *  Position 'scanpos' und speichert es in 'symb'. 
+ *  Nach der Bearbeitung zeigt *scanpos auf das Zeichen, 
+ *  das dem ermittelten Symbol unmittelbar folgt. Leerzeichen
  *  werden ignoriert. In *tokenp wird der Index des Symbols in der
  *  Symboltabelle. geliefert. *symbkindp ist die Art des Symbols
  *  (UIDENT, SCONST etc.), *errposp zeigt auf das Zeichen, auf das
- *  *scanposp beim Aufruf zeigte.
+ *  *scanpos beim Aufruf zeigte.
  *  Der zurueckgelieferte Funktionswert ist der Fehlercode.
  */
 
- {
+{
   char c;
   int  dummy = 0, nxt_c, errcode = 0;
-
-  if (*scanposp > strlen(function)) return 1;
-  c = get_ch_after_spaces(function, scanposp);
-  *errposp = *scanposp;
+  
+  *errposp = *scanpos;
+  
+  if (*scanpos > strlen(fstr)) return 1;
+  
+  c = fstr[*scanpos];
+  
   if ( (c >= '0' && c <= '9') || c == '.') {           /* UnsignedConstant */
-     errcode = get_uc_symbol(function,scanposp,symb);
-     if ((*tokenp = find_index(symb,scs,uce,dummy)) <= 0) return 2; }
-  else if (c >=  'A' && c <= 'Z') {                       /* Identifier */
-     errcode = get_id_symbol(function,scanposp,symb);
-     nxt_c = function[*scanposp];
-     if ((*tokenp = find_index(symb,aos,sfe,nxt_c)) <= 0) return 3; }
-  else if (c == '<') {             /* kleiner, kleiner gleich, ungleich */
-     errcode = get_le_symbol(function,scanposp,symb);
-     *tokenp = find_index(symb,ros,roe,dummy);                      }
-  else if (c == '>') {                     /* groesser, groesser gleich */
-     errcode = get_ge_symbol(function,scanposp,symb);
-     *tokenp = find_index(symb,ros,roe,dummy);                      }
-  else { symb[0] = c; symb[1] = '\0';           /* alle anderen Zeichen */
-     (*scanposp)++;
-     *tokenp = find_index(symb,ros,sfe,dummy);
+    errcode = get_uc_symbol(fstr,scanpos,symb);
+    if ((*tokenp = find_index(symb,scs,uce,dummy)) <= 0) return 2; }
+
+  else if (c >=  'a' && c <= 'z') {                       /* Identifier */
+    errcode = get_id_symbol(fstr,scanpos,symb);
+    nxt_c = fstr[*scanpos];
+    if ((*tokenp = find_index(symb,aos,sfe,nxt_c)) <= 0) return 3; }
+
+  else if ( c == '<' || c == '>' ) {              /* relation symbol */
+    errcode = get_ro_symbol(fstr,scanpos,symb);
+    *tokenp = find_index(symb,ros,roe,dummy);                      }
+
+  else {
+    symb[0] = c; symb[1] = '\0';           /* alle anderen Zeichen */
+    (*scanpos)++;
+    *tokenp = find_index(symb,ros,sfe,dummy);
   }
+
   *symbkindp = find_kind(*tokenp);         /* Art des Symbols ermitteln */
   if (*symbkindp == 0) errcode = 4;        /*       unbekanntes Zeichen */
+
   return errcode;
- }
-/*********************************** ************************************/
-
-static char get_ch_after_spaces(char *function, int *scanposp)
-
-/*  šberliest Spaces und liefert n„chstes Zeichen im String function[].
- *  scanpos zeigt anschliessend auf dieses erste Nicht-Space-Zeichen.
- */
-
-{
-  char c;
-
-  while ((c = function[*scanposp]) == ' ') (*scanposp)++;
-  return c;
 }
+
 /*********************************** ************************************/
 
-static int get_uc_symbol(char *function, int *scanposp, char *uc)
+/*********************************** ************************************/
 
+static int get_uc_symbol(char *fstr, int *scanpos, char *uc)
+     /* get unsigned constant */
 /* UnsignedConstant ::= UnsignedInteger | UnsignedReal
  * UnsignedInteger  ::= DigitSequence
- * UnsignedReal ::= UnsignedInteger "." DigitSequence ["E" ScaleFactor] |
- *                  UnsignedInteger "E" ScaleFactor
+ * UnsignedReal ::= UnsignedInteger '.' DigitSequence ['E' ScaleFactor] |
+ *                  UnsignedInteger 'E' ScaleFactor
  */
 
 {
-  char s[SYMBLENGTH], c;
+  /* store scan position */
+  int startpos = *scanpos;
 
-  strcpy(uc,get_ds(function,scanposp,s));
-  c = function[*scanposp];
-  if( c == 'E' ){ /* wenn "E" folgt, wird noch ein ScaleFactor gelesen */
-     strcat(uc,"E");
-     (*scanposp)++;
-     strcat(uc,get_sf(function,scanposp,s));
+  /* copy digit sequence into uc */
+  get_ds(fstr,scanpos,uc);
+
+  if( fstr[*scanpos] == '.' ) {
+    /* decimal point  --> copy point and following digits */
+    *(uc + (*scanpos-startpos)) = '.';
+    (*scanpos)++;
+    get_ds(fstr,scanpos,uc+(*scanpos-startpos));
   }
-  if( c == '.' ){       /* wenn "." folgt, koennen noch Ziffern kommen */
-     strcat(uc,".");
-     (*scanposp)++;
-     strcat(uc,get_ds(function,scanposp,s));
-     c = function[*scanposp];
-     if( c == 'E' ){  /* wenn "E" folgt, wird noch ScaleFactor gelesen */
-	strcat(uc,"E");
-	(*scanposp)++;
-	strcat(uc,get_sf(function,scanposp,s));
-     }
+
+  if( fstr[*scanpos] == 'e' ) {
+    /* exponent --> copy indicator 'E' and following [sign and] digits */
+    *(uc + (*scanpos-startpos)) = 'e';
+    (*scanpos)++;
+    get_sf(fstr,scanpos,uc+(*scanpos-startpos));
   }
+
   return 0;
 }
+
 /*********************** *********************** ************************/
 
-static char *get_ds(char *function, int *scanposp, char *ds)
-
-/*  DigitSequence   ::= Digit { Digit }
- *  Digit           ::= "0" | "1" | "2" | ... | "8" | "9"
+static void get_ds(char *fstr, int *scanpos, char *ds)
+     /* get digital sequence */
+/*  DigitSequence   ::= Digit [ Digit ]
+ *  Digit           ::= '0' | '1' | '2' | ... | '8' | '9'
  */
 
 {
-  int i = 0;
-
-  while ( (ds[i] = function[*scanposp]) >= '0' && ds[i] <= '9' ) {
-     i++;
-     (*scanposp)++;
+  /* copy digit */
+  while ( (*ds = fstr[*scanpos]) >= '0' && *ds <= '9' ) {
+     ds++;
+     (*scanpos)++;
   }
-  ds[i] = '\0';
-  return ds;
+  /* terminate string */
+  *ds = '\0';
 }
+
 /*********************** *********************** ************************/
 
-static char *get_sf(char *function, int *scanposp, char *sf)
-
+static void get_sf(char *fstr, int *scanpos, char *sf)
+     /* get ??????  */
 /*  ScaleFactor ::= [Sign] DigitSequence
- *  Sign        ::= "+" | "-"
+ *  Sign        ::= '+' | '-'
  */
 
 {
-  char ds[SYMBLENGTH], c;
-
-  sf[0] = sf[1] = '\0';
-  if( (c=function[*scanposp]) == '+' || c == '-' ){
-     sf[0] = c;
-     (*scanposp)++;
+  /* copy sign */
+  if( (sf[0]=fstr[*scanpos]) == '+' || sf[0] == '-' ){
+     sf++;
+     (*scanpos)++;
   }
-  return strcat(sf,get_ds(function,scanposp,ds));
+  /* copy digital sequence (after sign) */
+  get_ds(fstr,scanpos,sf);
 }
+
 /*********************************** ************************************/
 
-static int get_id_symbol(char *function, int *scanposp, char *id)
+static int get_id_symbol(char *fstr, int *scanpos, char *id)
 
-/*  Identifier ::= Letter { Letter | Digit }
- *  Letter     ::= "A" | "B" | ... | "Z" | "_"
- *  Digit      ::= "0" | "1" | ... | "9"
+/*  Identifier ::= Letter [ Letter | Digit ]
+ *  Letter     ::= 'a' | 'b' | ... | 'z' | '_'
+ *  Digit      ::= '0' | '1' | ... | '9'
  */
 
 {
-  while ( ((*id = function[(*scanposp)]) >= 'A' && *id <= 'Z')
-     || *id == '_' ||              ( *id >= '0' && *id <= '9')) {
-     id++;
-     (*scanposp)++;
+  /* copy word */
+  while ( ((*id = fstr[(*scanpos)]) >= 'a' && *id <= 'z')
+	  || *id == '_' 
+	  || ( *id >= '0' && *id <= '9')) {
+    id++;
+    (*scanpos)++;
   }
+  /* terminate string */
   *id = '\0';
+
+  return 0;
+}
+
+/*********************************** ************************************/
+
+static int get_ro_symbol(char *fstr, int *scanpos, char *ro)
+     /*  *le='<','<=','<>'. */   /*  *ge= '>' oder '>='.*/
+{
+  /* copy relation operator */
+  while ((*ro = fstr[*scanpos]) == '<' || *ro == '=' || *ro == '>') {
+    ro++;
+    (*scanpos)++;
+  }
+  /* terminate string */
+  *ro = '\0';
+
   return 0;
 }
 /*********************************** ************************************/
 
-static int get_le_symbol(char *function, int *scanposp, char *le)
-						 /*  *le="<","<=","<>". */
-{
-  while ((*le = function[*scanposp]) == '<' || *le == '=' || *le == '>') {
-    le++;
-    (*scanposp)++;
-  }
-  *le = '\0';
-  return 0;
-}
-/*********************************** ************************************/
-
-int get_ge_symbol(char *function, int *scanposp, char *ge)
-						 /*  *ge= ">" oder ">=".*/
-{
-  while ( (*ge = function[*scanposp]) == '>' || *ge == '=') {
-    ge++;
-    (*scanposp)++;
-  }
-  *ge = '\0';
-  return 0;
-}
 /*********************************** ************************************/
 
 int find_kind(int token)            /*  Ermittelt Art des Tokens token. */
@@ -583,7 +542,7 @@ int find_index(char *symb, int start, int end, int nxt_c)
 
   for (i = start + 1; i < end; i++)
  {     if (strcmp(symb,symbol[i].name) == 0) break;
- // printf("\n %d: %s - %s -> %s",i,symb, symbol[i].name, symbol[64].name);
+ /** printf("\n %d: %s - %s -> %s",i,symb, symbol[i].name, symbol[64].name); **/
  }  
 if (i < end ) return i;
 
@@ -630,44 +589,43 @@ if (i < end ) return i;
  
 /************************************************************************/ 
 
-struct treenode *string2tree(char *function, int *errcodep, int *errposp) 
+struct treenode *
+string2tree (char *functstr, int *errcodep, int *errposp) 
 
-/*  Wandelt den String function[] in einen Parse-Baum um. function[] muss 
+/*  Wandelt den String 'functstr' in einen Parse-Baum um. 'functstr' muss 
  *  in der Form f(a,b,...)=Expression vorliegen. In *errcodep und *errposp 
  *  wird im Fehlerfall eine Fehlernummer und die -position im String 
- *  function[] zurueckgegeben, sonst ist *errcodep Null. 
+ *  'functstr' zurueckgegeben, sonst ist *errcodep Null. 
  */ 
 
 { 
   struct treenode *root;
-  char            f[MAXLENGTH]; 
-  int             scanpos = 0; 
+  char *fstr;
+  int scanpos = 0; 
 
   *errcodep = 0; 
-  strcpy(f,function);     /* damit function[] unveraendert bleiben kann */ 
-  erase_back_blancs(f);   /* fuer Fehler Nr. 11 noetig! */ 
-  str_upr(f);
-  root = FuncDefinition(f, &scanpos, errcodep, errposp); 
-  if (scanpos != strlen(f)) return set_err(11,errcodep); 
+
+  fstr = _unur_prepare_string(functstr);
+
+  root = FuncDefinition(fstr, &scanpos, errcodep, errposp); 
+
+  if (scanpos != strlen(fstr)) {
+    free (fstr);
+    return set_err(11,errcodep); 
+  }
+
+  free (fstr);
   return root; 
 } 
+
 /*********************************** ************************************/ 
 
-static char *erase_back_blancs(char *s) /* Entf. in s[] hintere Blancs. */ 
+static struct treenode *
+FuncDefinition (char *fstr,int *scanpos,int *ecp,int *epp) 
 
-{ 
-  unsigned long i = strlen(s) - 1; 
-
-  while (s[i] == ' ') s[i--] = '\0'; 
-  return s; 
- } 
-/*********************************** ************************************/ 
-
-static struct treenode *FuncDefinition(char *f,int *spp,int *ecp,int *epp) 
-
-/*  FuncDefinition ::= DefFuncDesignator "=" Expression 
+/*  FuncDefinition ::= DefFuncDesignator '=' Expression 
  * 
- *                    "=" 
+ *                    '=' 
  *                   /   \ 
  *  DefFuncDesignator     Expression 
  */ 
@@ -678,20 +636,25 @@ static struct treenode *FuncDefinition(char *f,int *spp,int *ecp,int *epp)
   int             sk, t, ft; 
   double           v = 0.0; 
 
-  l = DefFuncDesignator(f,spp,ecp,epp,&ft); if (*ecp) return NULL; 
-  *ecp = nxt_symbol(f,spp,symb,&t,&sk,epp); 
+  l = DefFuncDesignator(fstr,scanpos,ecp,epp,&ft);
+  if (*ecp) return NULL; 
+
+  *ecp = nxt_symbol(fstr,scanpos,symb,&t,&sk,epp); 
+
   if (strcmp(symb,"=") != 0) return set_err(12,ecp); 
-  r = Expression(f,spp,ecp,epp); if (*ecp) return NULL; 
+  r = Expression(fstr,scanpos,ecp,epp);
+  if (*ecp) return NULL; 
   root = create_node(symb,t,sk,v,l,r); 
   symbol[ft].tree = root; 
   return root; 
 } 
+
 /*********************** *********************** ************************/ 
 
-static struct treenode *DefFuncDesignator(char *f, int *spp, int *ecp, 
-                                                   int *epp, int *ftp) 
+static struct treenode *
+DefFuncDesignator (char *fstr, int *spp, int *ecp, int *epp, int *ftp) 
 
-/*  DefFuncDesignator ::= Identifier "(" DefParameterlist ")" 
+/*  DefFuncDesignator ::= Identifier '(' DefParameterlist ')' 
  * 
  *       Identifier 
  *      /          \ 
@@ -704,29 +667,32 @@ static struct treenode *DefFuncDesignator(char *f, int *spp, int *ecp,
   int             t, sk, fsk, paranz; 
   double           fv = 0.0; 
 
-  *ecp = nxt_symbol(f,spp,fsymb,ftp,&fsk,epp); 
+  *ecp = nxt_symbol(fstr,spp,fsymb,ftp,&fsk,epp); 
   if (fsk != UFUNCS) return set_err(13,ecp); 
   if( symbol[*ftp].info != 0 ){ 
      /* --- Funktion war schon vorhanden => alten Baum loeschen: --- */ 
      _unur_fstr_free(symbol[*ftp].tree); 
   } 
-  *ecp = nxt_symbol(f,spp,symb,&t,&sk,epp); 
+  *ecp = nxt_symbol(fstr,spp,symb,&t,&sk,epp); 
   if (strcmp(symb,"(") != 0) return set_err(14,ecp); 
-  r = DefParameterlist(f,spp,ecp,epp,&paranz); if (*ecp) return NULL; 
-  *ecp = nxt_symbol(f,spp,symb,&t,&sk,epp); 
+
+  r = DefParameterlist(fstr,spp,ecp,epp,&paranz); if (*ecp) return NULL; 
+  *ecp = nxt_symbol(fstr,spp,symb,&t,&sk,epp); 
   if (strcmp(symb,")") != 0) return set_err(15,ecp); 
+
   symbol[*ftp].info = paranz; 
   root = create_node(fsymb,*ftp,fsk,fv,NULL,r); 
   return root; 
 } 
+
 /**************** ****************** ****************** *****************/ 
 
-static struct treenode *DefParameterlist(char *f, int *spp, int *ecp, 
-                                                  int *epp, int *paranzp) 
+static struct treenode *
+DefParameterlist(char *fstr, int *spp, int *ecp, int *epp, int *paranzp) 
 
-/*  DefParameterlist ::= "(" Identifier { "," Identifier } ")" 
+/*  DefParameterlist ::= '(' Identifier [ ',' Identifier ] ')' 
  * 
- *       Identifier                                    "," 
+ *       Identifier                                    ',' 
  *      /          \      oder:                       /   \ 
  *  NULL            NULL         more identifiers tree     Identifier 
  *                                                        /          \ 
@@ -739,28 +705,30 @@ static struct treenode *DefParameterlist(char *f, int *spp, int *ecp,
   int             t, ct, sk, scanpos; 
   double           v = 0.0; 
 
-  *ecp = nxt_symbol(f,spp,symb,&t,&sk,epp); 
+  *ecp = nxt_symbol(fstr,spp,symb,&t,&sk,epp); 
   if (sk != UIDENT) return set_err(16,ecp); 
   *paranzp = 1; 
   root = create_node(symb,t,sk,v,NULL,NULL); 
   scanpos = *spp; 
-  *ecp = nxt_symbol(f,spp,symb,&ct,&sk,epp); 
+  *ecp = nxt_symbol(fstr,spp,symb,&ct,&sk,epp); 
   while (strcmp(symb,",") == 0) {
      l = root; 
-     *ecp = nxt_symbol(f,spp,symb,&t,&sk,epp); 
+     *ecp = nxt_symbol(fstr,spp,symb,&t,&sk,epp); 
      if (sk != UIDENT) return set_err(17,ecp); 
      r = create_node(symb,t,sk,v,NULL,NULL); 
      (*paranzp)++; 
      root = create_node(",",ct,sk,v,l,r); 
      scanpos = *spp; 
-     *ecp = nxt_symbol(f,spp,symb,&ct,&sk,epp); 
+     *ecp = nxt_symbol(fstr,spp,symb,&ct,&sk,epp); 
   }
   *spp = scanpos; 
   return root; 
 } 
+
 /*********************** *********************** ************************/ 
 
-static struct treenode *set_err (int err_nr, int *errcodep) 
+static struct treenode *
+set_err (int err_nr, int *errcodep) 
 
 /*  Setzt *errcodep gleich err_nr und gibt NULL zurueck. */ 
 
@@ -769,9 +737,11 @@ static struct treenode *set_err (int err_nr, int *errcodep)
   if (*errcodep == 0) *errcodep = err_nr;   /* nur den 1. Fehler melden */ 
   return NULL; 
 } 
+
 /*********************** *********************** ************************/ 
 
-static struct treenode *Expression(char *f, int *spp, int *ecp, int *epp) 
+static struct treenode *
+Expression(char *fstr, int *spp, int *ecp, int *epp) 
 
 /* Expression ::= SimpleExpression [ RelationalOperator SimpleExpression ] 
  * 
@@ -786,21 +756,22 @@ static struct treenode *Expression(char *f, int *spp, int *ecp, int *epp)
   int             sk, t, scanpos; 
   double           v = 0.0; 
 
-  l = SimpleExpression(f,spp,ecp,epp); if (*ecp) return NULL; 
+  l = SimpleExpression(fstr,spp,ecp,epp); if (*ecp) return NULL; 
   scanpos = *spp; 
-  *ecp = nxt_symbol(f,spp,symb,&t,&sk,epp); 
+  *ecp = nxt_symbol(fstr,spp,symb,&t,&sk,epp); 
   if( sk == REL_OP 
-     ){ r = SimpleExpression(f,spp,ecp,epp); if (*ecp) return NULL; 
+     ){ r = SimpleExpression(fstr,spp,ecp,epp); if (*ecp) return NULL; 
           root = create_node(symb,t,sk,v,l,r); 
      }else{ *spp = scanpos; 
           root = l; 
   } 
   return root; 
 } 
+
 /**************** ****************** ****************** *****************/ 
 
-static struct treenode *SimpleExpression(char *f, int *spp, 
-                                                  int *ecp, int *epp) 
+static struct treenode *
+SimpleExpression(char *fstr, int *spp, int *ecp, int *epp) 
 
 /*  SimpleExpression ::= VTerm { AddingOperator Term } 
  * 
@@ -815,28 +786,30 @@ static struct treenode *SimpleExpression(char *f, int *spp,
   int             sk, t, scanpos; 
   double           v = 0.0; 
 
-  root = VTerm(f,spp,ecp,epp); if (*ecp) return NULL; 
+  root = VTerm(fstr,spp,ecp,epp); if (*ecp) return NULL; 
   scanpos = *spp; 
-  *ecp = nxt_symbol(f,spp,symb,&t,&sk,epp); 
+  *ecp = nxt_symbol(fstr,spp,symb,&t,&sk,epp); 
   while (sk == ADD_OP) {
      l = root; 
-     r = Term(f,spp,ecp,epp); if (*ecp) return NULL; 
+     r = Term(fstr,spp,ecp,epp); if (*ecp) return NULL; 
      root = create_node(symb,t,sk,v,l,r); 
      scanpos = *spp; 
-     *ecp = nxt_symbol(f,spp,symb,&t,&sk,epp); 
+     *ecp = nxt_symbol(fstr,spp,symb,&t,&sk,epp); 
   }
   *spp = scanpos; 
   return root; 
 } 
+
 /************ ************** *************** ************** *************/ 
 
-static struct treenode *VTerm(char *f, int *spp, int *ecp, int *epp) 
+static struct treenode *
+VTerm(char *fstr, int *spp, int *ecp, int *epp) 
 
-/*  Vterm ::= [ "+" | "-" ] Term 
+/*  Vterm ::= [ '+' | '-' ] Term 
  * 
- *                        "-" 
+ *                        '-' 
  *  Term  oder:          /   \ 
- *                    "0"     Term 
+ *                    '0'     Term 
  *                   /   \ 
  *               NULL     NULL 
  */ 
@@ -847,24 +820,26 @@ static struct treenode *VTerm(char *f, int *spp, int *ecp, int *epp)
   int             sk, t, scanpos = *spp; 
   double           v = 0.0; 
 
-  *ecp = nxt_symbol(f,spp,symb,&t,&sk,epp); 
+  *ecp = nxt_symbol(fstr,spp,symb,&t,&sk,epp); 
   if( strcmp(symb,"-") == 0 
      ){ /* --- Term hat neg. Vorzeichen =>     --- */ 
           /* --- Vorzeichen in Operator wandeln: --- */ 
           l = create_node("0",scs+1,SCONST,0.0,NULL,NULL); 
-          r = Term(f,spp,ecp,epp); if (*ecp) return NULL; 
+          r = Term(fstr,spp,ecp,epp); if (*ecp) return NULL; 
           root = create_node(symb,t,sk,v,l,r); 
      }else{ /* --- Term hat pos. oder kein Vorzeichen: --- */ 
           if (strcmp(symb,"+") != 0) *spp = scanpos;  /* "+" ignorieren */ 
-          root = Term(f,spp,ecp,epp); if (*ecp) return NULL; 
+          root = Term(fstr,spp,ecp,epp); if (*ecp) return NULL; 
   } 
   return root; 
 } 
+
 /********** *********** ************ ************ *********** ***********/ 
 
-static struct treenode *Term(char *f, int *spp, int *ecp, int *epp) 
+static struct treenode *
+Term(char *fstr, int *spp, int *ecp, int *epp) 
 
-/*  Term ::= Factor { MultiplyingOperator Factor } 
+/*  Term ::= Factor [ MultiplyingOperator Factor ]
  * 
  *                                   MultiplyingOperator 
  *  Factor  oder:                   /                   \ 
@@ -877,26 +852,27 @@ static struct treenode *Term(char *f, int *spp, int *ecp, int *epp)
   int             sk, t, scanpos; 
   double           v = 0.0; 
 
-  root = Factor(f,spp,ecp,epp); if (*ecp) return NULL; 
+  root = Factor(fstr,spp,ecp,epp); if (*ecp) return NULL; 
   scanpos = *spp; 
-  *ecp = nxt_symbol(f,spp,symb,&t,&sk,epp); 
+  *ecp = nxt_symbol(fstr,spp,symb,&t,&sk,epp); 
   while (sk == MUL_OP) {
      l = root; 
-     r = Factor(f,spp,ecp,epp); if (*ecp) return NULL; 
+     r = Factor(fstr,spp,ecp,epp); if (*ecp) return NULL; 
      root = create_node(symb,t,sk,v,l,r); 
      scanpos = *spp; 
-     *ecp = nxt_symbol(f,spp,symb,&t,&sk,epp); 
+     *ecp = nxt_symbol(fstr,spp,symb,&t,&sk,epp); 
   }
   *spp = scanpos; 
   return root; 
 } 
 /******** ********* ********** *********** ********** ********* *********/ 
 
-static struct treenode *Factor(char *f, int *spp, int *ecp, int *epp) 
+static struct treenode *
+Factor(char *fstr, int *spp, int *ecp, int *epp) 
 
-/*  Factor ::= Base [ "^" Exponent ] 
+/*  Factor ::= Base [ '^' Exponent ] 
  * 
- *                          "^" 
+ *                          '^' 
  *  bas_exp  oder:         /   \ 
  *                  bas_exp     bas_exp 
  */ 
@@ -907,29 +883,31 @@ static struct treenode *Factor(char *f, int *spp, int *ecp, int *epp)
   int             sk, t, scanpos; 
   double           v = 0.0; 
 
-  l = bas_exp(f,spp,ecp,epp); if (*ecp) return NULL; 
+  l = bas_exp(fstr,spp,ecp,epp); if (*ecp) return NULL; 
   scanpos = *spp; 
-  *ecp = nxt_symbol(f,spp,symb,&t,&sk,epp); 
+  *ecp = nxt_symbol(fstr,spp,symb,&t,&sk,epp); 
   if( strcmp(symb,"^") == 0 
-     ){ r = bas_exp(f,spp,ecp,epp); if (*ecp) return NULL; 
+     ){ r = bas_exp(fstr,spp,ecp,epp); if (*ecp) return NULL; 
           root = create_node(symb,t,sk,v,l,r); 
      }else{ *spp = scanpos; 
           root = l; 
   } 
   return root; 
 } 
+
 /******* ******** ******** ********* ********* ******** ******** ********/ 
 
-static struct treenode *bas_exp(char *f, int *spp, int *ecp, int *epp) 
+static struct treenode *
+bas_exp(char *fstr, int *spp, int *ecp, int *epp) 
 
 /*  Base ::= Exponent ::= UnsignedConstant | Identifier | FuncDesignator | 
- *                        "NOT" Base | "(" Expression ")" 
+ *                        "not" Base | '(' Expression ')' 
  * 
  *       UnsignedConstant                Identifier 
  *      /                \     oder     /          \     oder 
  *  NULL                  NULL      NULL            NULL 
  * 
- *                                         "NOT" 
+ *                                         "not" 
  *        FuncDesignator       oder       /     \        oder Expression 
  *                                    NULL       bas_exp 
  */ 
@@ -941,23 +919,23 @@ static struct treenode *bas_exp(char *f, int *spp, int *ecp, int *epp)
   int             sk, t, scanpos = *spp; 
   double           v = 0.0; 
 
-  *ecp = nxt_symbol(f,spp,symb,&t,&sk,epp); 
-  if( sk==SCONST || sk==UCONST || sk==UIDENT || strcmp(symb,"NOT")==0 
+  *ecp = nxt_symbol(fstr,spp,symb,&t,&sk,epp); 
+  if( sk==SCONST || sk==UCONST || sk==UIDENT || strcmp(symb,"not")==0 
      ){ /* --- neuen Knoten bilden: --- */ 
-          if( strcmp(symb,"NOT") == 0 
-             ){ r = bas_exp(f,spp,ecp,epp); if (*ecp) return NULL; 
+          if( strcmp(symb,"not") == 0 
+             ){ r = bas_exp(fstr,spp,ecp,epp); if (*ecp) return NULL; 
              }else{ r = NULL; 
           } 
           root = create_node(symb,t,sk,v,NULL,r); 
      }else{ /* --- neuer Knoten nicht noetig: --- */ 
           if( sk == UFUNCS || sk == SFUNCS 
              ){ *spp = scanpos; 
-                  root = FuncDesignator(f,spp,ecp,epp); 
+                  root = FuncDesignator(fstr,spp,ecp,epp); 
                   if (*ecp) return NULL; 
              }else{ if( strcmp(symb,"(") == 0 
-                     ){ root = Expression(f,spp,ecp,epp); 
+                     ){ root = Expression(fstr,spp,ecp,epp); 
                           if (*ecp) return NULL; 
-                          *ecp = nxt_symbol(f,spp,symb,&t,&sk,epp); 
+                          *ecp = nxt_symbol(fstr,spp,symb,&t,&sk,epp); 
                           if (strcmp(symb,")")!=0) return set_err(18,ecp); 
                      }else{ *spp = scanpos; 
                           return set_err(19,ecp); 
@@ -966,11 +944,12 @@ static struct treenode *bas_exp(char *f, int *spp, int *ecp, int *epp)
   } 
   return root; 
 } 
+
 /******* ******* ******* ******* ******* ******* ******* ******* ********/ 
 
-static struct treenode *FuncDesignator(char *f, int *spp, 
-                                                int *ecp, int *epp) 
-/*  FuncDesignator ::= FuncIdentifier "(" ActualParameterlist ")" 
+static struct treenode *
+FuncDesignator(char *fstr, int *spp, int *ecp, int *epp) 
+/*  FuncDesignator ::= FuncIdentifier '(' ActualParameterlist ')' 
  * 
  *       Identifier 
  *      /          \ 
@@ -983,25 +962,26 @@ static struct treenode *FuncDesignator(char *f, int *spp,
   int             sk, fsk, t, ft, corr_panz; 
   double           fv = 0.0; 
 
-  *ecp = nxt_symbol(f,spp,fsymb,&ft,&fsk,epp); 
+  *ecp = nxt_symbol(fstr,spp,fsymb,&ft,&fsk,epp); 
   /*if (fsk != SFUNCS && fsk != UFUNCS) return set_err(20,ecp);*/ 
   if (fsk != SFUNCS) return set_err(20,ecp); 
   corr_panz = symbol[ft].info; 
-  *ecp = nxt_symbol(f,spp,symb,&t,&sk,epp); 
+  *ecp = nxt_symbol(fstr,spp,symb,&t,&sk,epp); 
   if (strcmp(symb,"(") != 0) return set_err(21,ecp); 
-  r = ActualParameterlist(f,spp,ecp,epp,corr_panz); if (*ecp) return NULL; 
-  *ecp = nxt_symbol(f,spp,symb,&t,&sk,epp); 
+  r = ActualParameterlist(fstr,spp,ecp,epp,corr_panz); if (*ecp) return NULL; 
+  *ecp = nxt_symbol(fstr,spp,symb,&t,&sk,epp); 
   if (strcmp(symb,")") != 0) return set_err(22,ecp); 
   root = create_node(fsymb,ft,fsk,fv,NULL,r); 
   return root; 
 } 
+
 /****** ****** ****** ****** ******* ******* ****** ****** ****** *******/ 
 
-static struct treenode *ActualParameterlist(char *f, int *spp, int *ecp, 
-                                           int *epp, int corr_panz) 
-/*  ActualParameterlist ::= ActualParameter { "," ActualParameter } 
+static struct treenode *
+ActualParameterlist(char *fstr, int *spp, int *ecp, int *epp, int corr_panz) 
+/*  ActualParameterlist ::= ActualParameter [ ',' ActualParameter ] 
  * 
- *                                           "," 
+ *                                           ',' 
  *  Expression  oder:                       /   \ 
  *                     more expressions tree     Expression 
  */ 
@@ -1012,18 +992,18 @@ static struct treenode *ActualParameterlist(char *f, int *spp, int *ecp,
   int             sk, ct, scanpos, panz; 
   double           v = 0.0; 
 
-  root = Expression(f,spp,ecp,epp); if (*ecp) return NULL; 
+  root = Expression(fstr,spp,ecp,epp); if (*ecp) return NULL; 
   panz = 1; 
   scanpos = *spp; 
-  *ecp = nxt_symbol(f,spp,symb,&ct,&sk,epp); 
+  *ecp = nxt_symbol(fstr,spp,symb,&ct,&sk,epp); 
   while (strcmp(symb,",") == 0) {
      panz++; 
      if (panz > corr_panz) return set_err(23,ecp); 
      l = root; 
-     r = Expression(f,spp,ecp,epp); if (*ecp) return NULL; 
+     r = Expression(fstr,spp,ecp,epp); if (*ecp) return NULL; 
      root = create_node(",",ct,sk,v,l,r); 
      scanpos = *spp; 
-     *ecp = nxt_symbol(f,spp,symb,&ct,&sk,epp); 
+     *ecp = nxt_symbol(fstr,spp,symb,&ct,&sk,epp); 
   }
   if (panz < corr_panz) return set_err(24,ecp); 
   *spp = scanpos; 
@@ -1031,8 +1011,9 @@ static struct treenode *ActualParameterlist(char *f, int *spp, int *ecp,
 } 
 /*********************** *********************** ************************/ 
 
-static struct treenode *create_node(char *symb, int token, int symbkind,
-                 double val, struct treenode *left, struct treenode *right) 
+static struct treenode *
+create_node (char *symb, int token, int symbkind,
+	     double val, struct treenode *left, struct treenode *right) 
 
 /*  Setzt im Knoten mit der Wurzel root den String, das Token und die Art 
  *  des Symbols (REL_OP, ADD_OP etc.), 
@@ -1040,29 +1021,37 @@ static struct treenode *create_node(char *symb, int token, int symbkind,
 
 { 
   struct treenode *root; 
-  int             sum, prod; 
 
-  if( left != 0 && right != 0 && simplification(symb,token,left,right) 
-     ){ root = left; 
-          free((char*)right);   /* Speicher fuer Blatt wieder freigeben */ 
-     }else{ root = tnalloc(); 
-          strcpy(root->symb,symb); 
-          root->token    = token; 
-          root->symbkind = symbkind; 
-          root->val      = val; 
-          root->left     = left; 
-          root->right    = right; 
+  if ( left != NULL && right != NULL 
+       && simplification(symb,token,left,right) ) { 
+    /* node has been simplified  -->  use left node, remove right node */
+    root = left;     
+    free(right);   /* free memory for leave */
+  }
+
+  else {
+    /* make new node */
+    root = _unur_malloc(sizeof(struct treenode)); 
+    strcpy(root->symb,symb); 
+    root->token    = token; 
+    root->symbkind = symbkind; 
+    root->val      = val; 
+    root->left     = left; 
+    root->right    = right; 
   } 
-  sum  = strcmp(root->symb,"+")==0 || strcmp(root->symb,"-")==0; 
-  prod = strcmp(root->symb,"*")==0 || strcmp(root->symb,"/")==0; 
-  if (sum || prod) check_reorg(root); 
 
-  /* TIRLER */
-  // printf("Adresse root:%p  -   Symbol: %s --- %s\n",root,symb,root->symb);
+  /* try to reorganize tree */
+  if ( ( root->symb[0] == '+' ||
+	 root->symb[0] == '-' ||
+	 root->symb[0] == '*' ||
+	 root->symb[0] == '/' )
+       && root->symb[1] == '\0' )
+    check_reorg(root); 
 
-
+  /* return node */
   return root; 
 } 
+
 /**************** ****************** ****************** *****************/ 
 
 static int simplification(char *symb, int t, struct treenode *l, 
@@ -1078,13 +1067,13 @@ static int simplification(char *symb, int t, struct treenode *l,
   int power    = strcmp(   symb,"^"  ) == 0; 
   int plus     = strcmp(   symb,"+"  ) == 0; 
   int minus    = strcmp(   symb,"-"  ) == 0; 
-  int and      = strcmp(   symb,"AND") == 0; 
-  int mod      = strcmp(   symb,"MOD") == 0; 
+  int and      = strcmp(   symb,"and") == 0; 
+  int mod      = strcmp(   symb,"mod") == 0; 
   int l_0      = strcmp(l->symb,"0"  ) == 0; 
   int r_0      = strcmp(r->symb,"0"  ) == 0; 
   int l_1      = strcmp(l->symb,"1"  ) == 0; 
   int r_1      = strcmp(r->symb,"1"  ) == 0; 
-  int leaves   = l->left==0 && l->right==0 && r->left==0 && r->right==0; 
+  int leaves   = l->left==NULL && l->right==NULL && r->left==NULL && r->right==NULL; 
   int eq_leaves= leaves && strcmp(l->symb,r->symb) == 0; 
   int l_const  = l->symbkind == SCONST || l->symbkind == UCONST; 
   int r_const  = r->symbkind == SCONST || r->symbkind == UCONST; 
@@ -1149,15 +1138,6 @@ static int simplification(char *symb, int t, struct treenode *l,
 } 
 /**************** ****************** ****************** *****************/ 
 
-static struct treenode *tnalloc(void)/* Alloziert Speicher f. Baumknoten*/ 
-{ 
-  struct treenode *p; 
-
-  p = ((struct treenode *) malloc(sizeof(struct treenode))); 
-  return p; 
-} 
-/**************** ****************** ****************** *****************/ 
-
 void check_reorg(struct treenode *root) 
 
 /*  Ueberprueft, ob bei Addition, Subtraktion, Multiplikation oder 
@@ -1166,6 +1146,10 @@ void check_reorg(struct treenode *root)
  */ 
 
 { 
+
+  /** TODO: root->left != 0 und root->right != NULL  !!!!! **/
+
+
   struct treenode *temp; 
   int             mul     = strcmp(root->       symb,"*") == 0; 
   int             div     = strcmp(root->       symb,"/") == 0; 
@@ -1188,10 +1172,10 @@ void check_reorg(struct treenode *root)
         ){ strcpy(root->symb,"-"); 
         }else{ strcpy(root->symb,"+"); 
      } 
-     free((char*)root->right->left);/* Speicher f."0"-Blatt wieder frei */ 
+     free(root->right->left);/* Speicher f."0"-Blatt wieder frei */ 
      temp        = root->right; 
      root->right = root->right->right; 
-     free((char*)temp);         /* Speicher fuer "-"-Knoten wieder frei */ 
+     free(temp);         /* Speicher fuer "-"-Knoten wieder frei */ 
      goto cr_lbl; 
   } 
 
@@ -1205,9 +1189,9 @@ void check_reorg(struct treenode *root)
       *  0   Baum1 
       */ 
      strcpy(root->symb,"-"); 
-     free((char*)root->left->left);/* Speicher f."0"-Blatt  wieder frei */ 
+     free(root->left->left);/* Speicher f."0"-Blatt  wieder frei */ 
      temp        = root->left->right; 
-     free((char*)root->left); /* Speicher fuer f."-"-Knoten wieder frei */ 
+     free(root->left); /* Speicher fuer f."-"-Knoten wieder frei */ 
      root->left  = root->right; 
      root->right = temp; 
      goto cr_lbl; 
@@ -1294,45 +1278,71 @@ void pt_error(char *function, int errcode, int errpos)
   printf("\nErrcode %d: %-46.46s",errcode,errorstrings[errcode]); 
   if (errcode !=0) printf("at pos. %d.",errpos); 
 } 
+
 /************************************************************************/ 
 
-void show_tree(struct treenode *root)
+void _unur_fstr_debug_tree( struct treenode *root )
+{
+  printf("parse tree:  (left nodes above right nodes)\n\n"); 
+
+  show_tree(root,0,0);
+  printf("\n");
+
+} /* end of _unur_fstr_debug_tree() */
+
+/************************************************************************/ 
+
+void show_tree(struct treenode *node, int level, int location)
                                  /* Gibt rekursiv einen Parse-Baum aus. */ 
+
+     /* node ... pointer to node */
+     /* level ... level of node in tree*/
+     /* location ... indicates location of node in tree by bit array */
 { 
-  static int count = 0; 
-  int i; 
+  int i, mask; 
 
-  printf("\n"); 
-  count++; 
-  for (i = 1; i < count; i++) printf("   "); 
-  if( root != NULL 
-     ){ printf("%s|root=%p|token=%d|sk=%d|val=%g|left=%p|right=%p",
-          root->symb, root, root->token, root->symbkind, root->val,
-          root->left, root->right); 
-          show_tree(root->right); 
-          show_tree(root->left); 
+  /* draw lines for tree */
+  for (i = 0, mask = 1; i < level; i++, mask <<= 1) 
+    if (mask & location) 
+      printf("|   "); 
+    else 
+      printf("    "); 
 
- /* TIRLER */
-	  //  printf("Adresse root:%p  -   Symbol:    --- %s\n",root,root->symb);
+  /* print node */
+  if( node != NULL ) {
+    printf("+--'%s'", node->symb);
 
+    printf("\t\t|token=%d|sk=%d|val=%g",
+	   node->token, node->symbkind, node->val );
 
+    printf("\n"); 
 
-     }else{ printf("NULL"); 
+    /* print left and right node */
+    if ( node->left || node->right) {
+      /* ... unless both leaves are empty */
+      show_tree(node->left,level+1,location|(mask<<1)); 
+      show_tree(node->right,level+1,location); 
+    }
+  }
+
+  else {  /* empty leave */
+    printf("+--(void)\n"); 
   } 
-  count--; 
+
 } 
+
 /************************************************************************/ 
 
 void _unur_fstr_free(struct treenode *root)  
                           /* Gibt Speicher fuer schon exist. Baum frei. */ 
 { 
-  if( root != NULL ){
- 
-     _unur_fstr_free(root->right); 
-     _unur_fstr_free(root->left); 
-     free((char*)root); 
+  if( root != NULL ) {
+    _unur_fstr_free(root->right); 
+    _unur_fstr_free(root->left); 
+    free(root); 
   } 
-} 
+} /* end of _unur_fstr_free() */
+
 /************************************************************************/ 
 
 /************************************************************************
@@ -1370,6 +1380,14 @@ char *tree2string(struct treenode *tree_root, char *ret_str)
   int             t_m, t_l, t_r;      /* Token Mitte, links, rechts     */
   int             p_m, p_l, p_r;      /* Priorit. Mitte, links, rechts  */
   int             sk_m, sk_l, sk_r;   /* symbkind Mitte,links,rechts    */
+
+  
+
+  /** TODO: initialize to avoid warning ???? **/
+  t_m = t_l = t_r = 0;
+  p_m = p_l = p_r = 0;
+  sk_m = sk_l = sk_r = 0;
+
 
   str_l[0] = str_r[0] = symb_l[0] = symb_r[0] = '\0';
   temp_str[0] = ret_str[0] = '\0';
@@ -1437,7 +1455,7 @@ char *tree2string(struct treenode *tree_root, char *ret_str)
 
      /* --- Rechten String evtl. einklammern: --- */
      if ( t_r < hoe ){                /*alle Operatoren incl. 'NOT' */
-	if( strcmp(symb_m,"/") == 0 || strcmp(symb_m,"MOD") == 0 ||
+	if( strcmp(symb_m,"/") == 0 || strcmp(symb_m,"mod") == 0 ||
 	    strcmp(symb_m,"-") == 0 || strcmp(symb_m,"^") == 0
 	    ){ /* --- klammern auch bei gleicher Prioritaet: --- */
 		 if( symbol[t_r].info <= symbol[t_m].info ){
@@ -1452,8 +1470,8 @@ char *tree2string(struct treenode *tree_root, char *ret_str)
      }
 
      /* --- Bei einigen Operatoren Spaces drumherum setzen: --- */
-     if( strcmp(symb_m,"XOR") == 0 || strcmp(symb_m,"AND") == 0 ||
-	strcmp(symb_m,"OR" ) == 0 || strcmp(symb_m,"MOD") == 0 ){
+     if( strcmp(symb_m,"xor") == 0 || strcmp(symb_m,"and") == 0 ||
+	strcmp(symb_m,"or" ) == 0 || strcmp(symb_m,"mod") == 0 ){
 	 strcpy3(temp_str," ",symb_m," ");
 	 strcpy(symb_m,temp_str);
      }
@@ -1463,13 +1481,13 @@ char *tree2string(struct treenode *tree_root, char *ret_str)
      return strcpy3(ret_str,str_l,symb_m,str_r);
   }
 
-  /*-- bei "NOT" klammern, wenn Operator geringerer Prioritaet folgt: --*/
-  if( strcmp(symb_m,"NOT") == 0 ){
+  /*-- bei "not" klammern, wenn Operator geringerer Prioritaet folgt: --*/
+  if( strcmp(symb_m,"not") == 0 ){
      if( sk_r==REL_OP || sk_r==ADD_OP||sk_r==MUL_OP||strcmp(symb_r,"^")==0
-	){ strcpy3(ret_str,"NOT(",str_r,")");
+	){ strcpy3(ret_str,"not(",str_r,")");
 	     return ret_str;
 	}else{ /* --- sonst nicht klammern: --- */
-	     return strcpy3(ret_str,"NOT ",str_r,"");
+	     return strcpy3(ret_str,"not ",str_r,"");
      }
   }
 
@@ -1514,6 +1532,14 @@ char *tree2Cstring(struct treenode *tree_root, char *ret_str)
   int             t_m, t_l, t_r;      /* Token Mitte, links, rechts     */
   int             p_m, p_l, p_r;      /* Priorit. Mitte, links, rechts  */
   int             sk_m, sk_l, sk_r;   /* symbkind Mitte,links,rechts    */
+
+  /** TODO: initialize to avoid warning ???? **/
+  t_m = t_l = t_r = 0;
+  p_m = p_l = p_r = 0;
+  sk_m = sk_l = sk_r = 0;
+
+
+
 
   str_l[0] = str_r[0] = symb_l[0] = symb_r[0] = '\0';
   temp_str[0] = ret_str[0] = '\0';
@@ -1581,7 +1607,7 @@ char *tree2Cstring(struct treenode *tree_root, char *ret_str)
 
      /* --- Rechten String evtl. einklammern: --- */
      if( t_r < hoe ){                 /*alle Operatoren incl. 'NOT' */
-	if( strcmp(symb_m,"/") == 0 || strcmp(symb_m,"MOD") == 0 ||
+	if( strcmp(symb_m,"/") == 0 || strcmp(symb_m,"mod") == 0 ||
 	    strcmp(symb_m,"-") == 0 || strcmp(symb_m,"^") == 0
 	    ){ /* --- klammern auch bei gleicher Prioritaet: --- */
 		 if( symbol[t_r].info <= symbol[t_m].info ){
@@ -1596,8 +1622,8 @@ char *tree2Cstring(struct treenode *tree_root, char *ret_str)
      }
 
      /* --- Bei einigen Operatoren Spaces drumherum setzen: --- */
-     if( strcmp(symb_m,"XOR") == 0 || strcmp(symb_m,"AND") == 0 ||
-	strcmp(symb_m,"OR" ) == 0 || strcmp(symb_m,"MOD") == 0 ){
+     if( strcmp(symb_m,"xor") == 0 || strcmp(symb_m,"and") == 0 ||
+	strcmp(symb_m,"or" ) == 0 || strcmp(symb_m,"mod") == 0 ){
 	 strcpy3(temp_str," ",symb_m," ");
 	 strcpy(symb_m,temp_str);
      }
@@ -1613,13 +1639,13 @@ char *tree2Cstring(struct treenode *tree_root, char *ret_str)
      return strcpy3(ret_str,str_l,symb_m,str_r);
   }
 
-  /*-- bei "NOT" klammern, wenn Operator geringerer Prioritaet folgt: --*/
-  if( strcmp(symb_m,"NOT") == 0 ){
+  /*-- bei "not" klammern, wenn Operator geringerer Prioritaet folgt: --*/
+  if( strcmp(symb_m,"not") == 0 ){
      if( sk_r==REL_OP || sk_r==ADD_OP||sk_r==MUL_OP||strcmp(symb_r,"^")==0
-	){ strcpy3(ret_str,"NOT(",str_r,")");
+	){ strcpy3(ret_str,"not(",str_r,")");
 	     return ret_str;
 	}else{ /* --- sonst nicht klammern: --- */
-	     return strcpy3(ret_str,"NOT ",str_r,"");
+	     return strcpy3(ret_str,"not ",str_r,"");
      }
   }
 
@@ -1673,11 +1699,14 @@ double tree2float(struct treenode *E_root)
 {
   double val_l, val_r;
 
+  /** TODO: initialize to avoid warning ???? **/
+  val_l = val_r = 0;
+
   /* --- Werte der Wurzel: --- */
   if (E_root->left  != NULL)  val_l = tree2float(E_root->left);
   if (E_root->right != NULL)  val_r = tree2float(E_root->right);
-  //  printf("ergebnis: %f - %f - %s - %f \n",val_l, val_r,
-  //      symbol[E_root->token].name , symbol[E_root->token].val      );
+  /**  printf("ergebnis: %f - %f - %s - %f \n",val_l, val_r,
+       symbol[E_root->token].name , symbol[E_root->token].val      ); **/
   return (*symbol[E_root->token].vcalc)(E_root->token,val_l,val_r);
   
 }
@@ -1703,7 +1732,7 @@ double v_not  (int t, double l, double r) { return !r   ; }
 double v_sconst (int t, double l, double r) { return symbol[t].val; }
 double v_uconst (int t, double l, double r) { return symbol[t].val; }
 double v_uident (int t, double l, double r) { return symbol[t].val; }
-/* verschachtelte userdefinierte Funktionen noch nicht implementiert: */
+/** TODO: verschachtelte userdefinierte Funktionen noch nicht implementiert: **/
 double v_ufuncs (int t, double l, double r) { return 0; }
 double v_exp (int t, double l, double r) { return exp (  r); }
 double v_ln  (int t, double l, double r) { return log (  r); }
@@ -1719,6 +1748,7 @@ double v_abs (int t, double l, double r) { return abs (  r); }
  * Prozeduren zur analytischen Ableitung eines Parse-Baumes:            *
  ************************************************************************/
 
+#if 0
 void gradient(struct treenode *root)
 
 /*  Erwartet als Input in root den Zeiger auf eine komplette Funktions-
@@ -1733,6 +1763,8 @@ void gradient(struct treenode *root)
   printf("\n\nGradient:");
   nxt_part_derivation(DP_root,root);
 }
+#endif
+
 /************************************************************************/
 
 void nxt_part_derivation(struct treenode *DP_root,struct treenode *root)
@@ -1864,7 +1896,7 @@ char *d_power(char *par,struct treenode *w,char *l,char *r,char *dl,
 		       strcpy6(s,r,"*",l,"^(",r,"-1)*");
 		       strcat (s,dl);
 		  }else{ /* --- auch im Exponenten unabh. Parameter: --- */
-		       strcpy6(s,l,"^",r,"*(",dr,"*LN(");
+		       strcpy6(s,l,"^",r,"*(",dr,"*ln(");
 		       strcpy6(dr,s,l,")+",r,"*",dl);
 		       strcpy6(s,dr,"/",l,")","","");
 	       }
@@ -1881,7 +1913,7 @@ char *d_ufuncs(char *par,struct treenode *w,char *l,char *r,char *dl,
 
 char *d_exp(char *par,struct treenode *w,char *l,char *r,char *dl,
 	    char *dr,char *s)           /* (EXP(r))' = r'*EXP(r)        */
-	   { return strcpy3(s,dr,"*EXP",r); }
+	   { return strcpy3(s,dr,"*exp",r); }
 
 char *d_ln(char *par,struct treenode *w,char *l,char *r,char *dl,
 	   char *dr,char *s)            /* (LN(r))' = r'/r              */
@@ -1895,28 +1927,28 @@ char *d_log(char *par,struct treenode *w,char *l,char *r,char *dl,
 	     derive_expression(w->right->left ,par,dl);
 	     tree2string      (w->right->right,r);
 	     derive_expression(w->right->right,par,dr);
-	     return strcpy6(s,dr,"/(",r,"*LN(",l,"))");
+	     return strcpy6(s,dr,"/(",r,"*ln(",l,"))");
 	   }
 
 char *d_sin(char *par,struct treenode *w,char *l,char *r,char *dl,
 	    char *dr,char *s)           /* (SIN(r))' = r'*COS(r)        */
-	   { return strcpy3(s,dr,"*COS",r); }
+	   { return strcpy3(s,dr,"*cos",r); }
 
 char *d_cos(char *par,struct treenode *w,char *l,char *r,char *dl,
 	    char *dr,char *s)           /* (COS(r))' = -r'*SIN(r)       */
-	   { return strcpy6(s,"-",dr,"*SIN",r,"",""); }
+	   { return strcpy6(s,"-",dr,"*sin",r,"",""); }
 
 char *d_tan(char *par,struct treenode *w,char *l,char *r,char *dl,
 	    char *dr,char *s)           /* (TAN(r))' = r'*(SEC(r))^2    */
-	   { return strcpy6(s,dr,"*(SEC",r,")^2","",""); }
+	   { return strcpy6(s,dr,"*(sec",r,")^2","",""); }
 
 char *d_sec(char *par,struct treenode *w,char *l,char *r,char *dl,
 	    char *dr,char *s)           /* (SEC(r))' = r'*TAN(r)*SEC(r) */
-	   { return strcpy6(s,dr,"*TAN",r,"*SEC",r,""); }
+	   { return strcpy6(s,dr,"*tan",r,"*sec",r,""); }
 
 char *d_sqr(char *par,struct treenode *w,char *l,char *r,char *dl,
 	    char *dr,char *s)           /* (SQR(r))' = r'/(2*SQR(r))    */
-	   { return strcpy6(s,dr,"/(2*SQR(",r,"))" ,"",""); }
+	   { return strcpy6(s,dr,"/(2*sqr(",r,"))" ,"",""); }
 
 char *d_abs(char *par,struct treenode *w,char *l,char *r,char *dl,
 	    char *dr,char *s)           /* (ABS(r))' = "ABSerror"       */
@@ -1939,17 +1971,6 @@ char *strcpy6(char *s1, char *s2, char *s3,
 
 /**************** ****************** ****************** *****************/
 
-void str_upr(char *s)
-
-/*  Wandelt Strings in Grossbuchstaben. */
-
-{
-  do
-    *s=((*s>96)&&(*s<123)) ? *s-=32 : *s;
-  while(*(++s));
-}
-
-
 
 
 /***************************************************************************************/
@@ -1959,15 +1980,15 @@ struct treenode *_unur_fstr2tree(char *function, int *errcodep, int *errposp)
   struct treenode *root;
 
  
-  str_upr(function);
-  fvonx= (char *)malloc(MAXLENGTH*sizeof(char));     
+  fvonx= malloc(MAXLENGTH*sizeof(char));     
   strcpy(fvonx,"f(x)=");  
   strcat(fvonx,function);
   function = fvonx; 
   free(fvonx); 
+
   root=string2tree(function,errcodep,errposp);
   return root;
-
+  
 }
 
 /***************************************************************************************/
@@ -1977,10 +1998,10 @@ double  _unur_fstr_eval_tree(struct treenode *E_root, double argument)
   struct treenode *froot;
   int             ftok,xtok;
 
-  xtok=find_index("X",uis,ufe,0);
-  ftok=find_index("F",uis,ufe,0);
+  xtok=find_index("x",uis,ufe,0);
+  ftok=find_index("f",uis,ufe,0);
   froot=(*symbol[ftok].tree).right;             /* Achtung Fehler in Beschreibung !!! */
-  //   froot=symbol[ftok].tree;  
+  /**   froot=symbol[ftok].tree;  **/
   symbol[xtok].val= argument;
   result=tree2float(froot);
   return result;
@@ -1992,7 +2013,7 @@ char *Ntree2string(struct treenode *tree_root, char *ret_str)
   struct treenode  *froot;
   int              ftok;
 
-  ftok=find_index("F",uis,ufe,0);
+  ftok=find_index("f",uis,ufe,0);
   froot=(*symbol[ftok].tree).right;          
   tree2Cstring(froot,ret_str); 
   return ret_str;
@@ -2005,7 +2026,7 @@ struct treenode *_unur_fstr_make_derivative(struct treenode *root)
    char            x[MAXLENGTH];
    char            ret_str[MAXLENGTH];
   
-   strcpy(x,"X"); 
+   strcpy(x,"x"); 
    parsetreeh=part_deriv(root,x,ret_str);
    return parsetreeh;
 }
@@ -2017,8 +2038,8 @@ double  _unur_fstr_dev_eval_tree(struct treenode *E_root, double argument)
   struct treenode *froot;
   int             ftok,xtok;
 
-  xtok=find_index("X",uis,ufe,0);
-  ftok=find_index("F_X",uis,ufe,0);
+  xtok=find_index("x",uis,ufe,0);
+  ftok=find_index("f_x",uis,ufe,0);
   froot=(*symbol[ftok].tree).right;            
   symbol[xtok].val= argument;
   result=tree2float(froot);
@@ -2026,24 +2047,58 @@ double  _unur_fstr_dev_eval_tree(struct treenode *E_root, double argument)
   }
 
 
+/*****************************************************************************/
+/**                                                                         **/
+/*****************************************************************************/
+
+/*---------------------------------------------------------------------------*/
+
+char *
+_unur_prepare_string( const char *str )
+     /*----------------------------------------------------------------------*/
+     /* Prepare string for processing:                                       */
+     /*   Copy into working strint.                                          */
+     /*   Remove all white spaces and convert to lower case letters.         */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   str      ... pointer to string                                     */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to working string.                                         */
+     /*                                                                      */
+     /* as a side effect, a new string is allocated.                         */
+     /*----------------------------------------------------------------------*/
+{
+  char *tmp, *ptr;
+  char *new;       /* pointer to working copy of string */
+  size_t len;      /* length of string */
+
+  /* length of string */
+  len = strlen(str)+1;
+  /* allocate memory for copy */
+  new = _unur_malloc( len * sizeof(char) );
+  /* copy memory */
+  ptr = memcpy(new,str,len);
+
+  /* copy characters but skip all white spaces */
+  for (tmp = ptr; *tmp != '\0'; tmp++)
+    if ( !isspace(*tmp) ) {
+      *ptr = tolower(*tmp);
+      ptr++;
+    }
+
+  /* terminate string */
+  *ptr = '\0';
+
+  /* return pointer to working copy */
+  return new;
+
+} /* end of _unur_prepare_string() */
+
+/*---------------------------------------------------------------------------*/
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+/*****************************************************************************/
+/**  End                                                                    **/
+/*****************************************************************************/

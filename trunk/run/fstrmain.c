@@ -2,7 +2,6 @@
 #include <source_unuran.h>
 
 char            *readln  (char *s);
-void show_tree   (struct treenode *root);
 void  show_symb_tab      (void);
 
 
@@ -63,7 +62,7 @@ printf("\n Wert: %f \n", _unur_fstr_eval_tree(parsetree,atof(input_string)));
     } while (0); 
   
    
-   // show_tree(parsetree);
+   _unur_fstr_debug_tree(parsetree);
    show_symb_tab();
 
 

@@ -677,6 +677,106 @@ _unur_dari_init( struct unur_par *par )
 } /* end of _unur_dari_init() */
 
 /*---------------------------------------------------------------------------*/
+
+static struct unur_gen *
+_unur_dari_create( struct unur_par *par )
+     /*----------------------------------------------------------------------*/
+     /* allocate memory for generator                                        */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par ... pointer to parameter for building generator object         */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to (empty) generator object with default settings          */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return NULL                                                        */
+     /*----------------------------------------------------------------------*/
+{
+  struct unur_gen *gen;
+
+  /* check arguments */
+  CHECK_NULL(par,NULL);  COOKIE_CHECK(par,CK_DARI_PAR,NULL);
+
+  /* allocate memory for generator object */
+  gen = _unur_malloc( sizeof(struct unur_gen) );
+
+  /* magic cookies */
+  COOKIE_SET(gen,CK_DARI_GEN);
+
+  /* copy distribution object into generator object */
+  memcpy( &(gen->distr), par->distr, sizeof( struct unur_distr ) );
+
+  /* set generator identifier */
+  gen->genid = _unur_set_genid(GENTYPE);
+
+  /* routines for sampling and destroying generator */
+  SAMPLE = (par->variant & DARI_VARFLAG_VERIFY) ? _unur_dari_sample_check : _unur_dari_sample;
+  gen->destroy = _unur_dari_free;
+
+  /* copy some parameters into generator object */
+  GEN.squeeze = PAR.squeeze;        /* squeeze yes/no?                       */
+  GEN.c_factor = PAR.c_factor;      /* constant for choice of design point   */
+
+  /* size of auxiliary table; 0 for none
+     it cannot be larger than the given domain */
+  GEN.size = min(PAR.size,DISTR.BD_RIGHT-DISTR.BD_LEFT+1);
+
+  gen->method = par->method;        /* indicates method                      */
+  gen->variant = par->variant;      /* indicates variant                     */
+  gen->set = par->set;              /* indicates parameter settings          */
+  gen->debug = par->debug;          /* debuging flags                        */
+  gen->urng = par->urng;            /* pointer to urng                       */
+
+  gen->urng_aux = NULL;             /* no auxilliary URNG required           */
+  gen->gen_aux = NULL;              /* no auxilliary generator objects       */
+  gen->gen_aux_2 = NULL;
+
+  /* allocate */
+  GEN.hp = _unur_malloc( PAR.size * sizeof(double) );
+  GEN.hb = _unur_malloc( PAR.size * sizeof(char) );
+
+  /* initialize parameters */
+  /** TODO: diese initialisierung ist nur zur Sicherheit,
+      man sollte kontrollieren, ob das so wirklich noetig ist*/
+  GEN.vt=0.;            /* total volume below hat                            */
+  GEN.vc=0.;            /* volume below center part                          */
+  GEN.vcr=0.;           /* volume center and right together                  */
+
+  GEN.xsq[0]=0.;        /* value necesary for the squeeze computation        */
+  GEN.xsq[1]=0.;        /* value necesary for the squeeze computation        */
+  GEN.y[0]=0.;          /* value of the transformed density in points of contact */
+  GEN.y[1]=0.;          /* value of the transformed density in points of contact */
+  GEN.ys[0]=0.;         /* the slope of the transformed hat                  */
+  GEN.ys[1]=0.;         /* the slope of the transformed hat                  */
+  GEN.ac[0]=0.;         /* left and right starting point of the uniform hat
+                           in the center                                     */
+  GEN.ac[1]=0.;         /* left and right starting point of the uniform hat
+                           in the center                                     */
+
+  GEN.pm=0.;            /* mode probability                                  */
+  GEN.Hat[0]=0.;        /* point where the hat starts for the left and
+			    the right tail                                   */
+  GEN.Hat[1]=0.;        /* point where the hat starts for the left and
+			    the right tail                                   */
+
+  GEN.m=0;              /* mode                                              */
+  GEN.x[0]=0;           /* points of contact left and right of the mode      */
+  GEN.x[1]=0;           /* points of contact left and right of the mode      */
+  GEN.s[0]=0;           /* first and last integer of the center part         */
+  GEN.s[1]=0;           /* first and last integer of the center part         */
+  GEN.n[0]=0;           /* contains the first and the last i 
+			   for which values are stored in table              */
+  GEN.n[1]=0;           /* contains the first and the last i 
+			   for which values are stored in table              */
+
+
+  /* return pointer to (almost empty) generator object */
+  return(gen);
+  
+} /* end of _unur_dari_create() */
+
+/*---------------------------------------------------------------------------*/
 #define T(x) (-1./sqrt(x))
 #define F(x) (-1./(x))
 #define FM(x) (-1./(x))
@@ -726,7 +826,7 @@ _unur_dari_hat( struct unur_gen *gen )
 
   /* step 0.1 */
   do {
-    for(i=0;i<=1;i++) {
+    for(i=0; i<=1; i++) {
       GEN.x[i] = GEN.m + sign[i] * d;
       if (sign[i]*GEN.x[i]+1 > sign[i]*b[i]) {
 	v[i] = 0; 
@@ -737,18 +837,17 @@ _unur_dari_hat( struct unur_gen *gen )
 	GEN.ys[i] = sign[i] * (T( PMF(GEN.x[i]+sign[i])) - GEN.y[i]);
 	if (GEN.ys[i]*sign[i] > -DBL_EPSILON) {
 	  setup = -setup; /* indicate that the hat is not ok */
-	  i=1; 
+	  i = 1; 
 	}
         else {
 	  GEN.s[i] = (int)(0.5+GEN.x[i]+(T(GEN.pm)-GEN.y[i])/GEN.ys[i]);
 	  GEN.Hat[i] = ( F(GEN.y[i]+GEN.ys[i]*(GEN.s[i]+sign[i]*1.5-GEN.x[i])) /
 			 GEN.ys[i]-sign[i]*PMF(GEN.s[i]+sign[i]) ); 
-	  at[i]=GEN.x[i] + (FM(GEN.ys[i]*GEN.Hat[i])-GEN.y[i]) / GEN.ys[i]; 
-#if SQUEEZE
-	  GEN.xsq[i] = sign[i]*(at[i]-(GEN.s[i]+sign[i]));
-#endif
-	  v[i]= sign[i]*(F(GEN.y[i]+GEN.ys[i]*(b[i]+sign[i]*0.5-GEN.x[i]))/
-			 GEN.ys[i]-F(GEN.y[i]+GEN.ys[i]*(at[i]-GEN.x[i]))/GEN.ys[i]);
+	  at[i] = GEN.x[i] + (FM(GEN.ys[i]*GEN.Hat[i])-GEN.y[i]) / GEN.ys[i]; 
+          if(GEN.squeeze)
+	    GEN.xsq[i] = sign[i]*(at[i]-(GEN.s[i]+sign[i]));
+	  v[i] = sign[i]*(F(GEN.y[i]+GEN.ys[i]*(b[i]+sign[i]*0.5-GEN.x[i]))/
+			  GEN.ys[i]-F(GEN.y[i]+GEN.ys[i]*(at[i]-GEN.x[i]))/GEN.ys[i]);
 	}
       }
       if (setup>0)
@@ -806,70 +905,6 @@ _unur_dari_hat( struct unur_gen *gen )
   return 1;
 
 } /* end of _unur_dari_hat() */
-
-/*---------------------------------------------------------------------------*/
-
-static struct unur_gen *
-_unur_dari_create( struct unur_par *par )
-     /*----------------------------------------------------------------------*/
-     /* allocate memory for generator                                        */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   par ... pointer to parameter for building generator object         */
-     /*                                                                      */
-     /* return:                                                              */
-     /*   pointer to (empty) generator object with default settings          */
-     /*                                                                      */
-     /* error:                                                               */
-     /*   return NULL                                                        */
-     /*----------------------------------------------------------------------*/
-{
-  struct unur_gen *gen;
-
-  /* check arguments */
-  CHECK_NULL(par,NULL);  COOKIE_CHECK(par,CK_DARI_PAR,NULL);
-
-  /* allocate memory for generator object */
-  gen = _unur_malloc( sizeof(struct unur_gen) );
-
-  /* magic cookies */
-  COOKIE_SET(gen,CK_DARI_GEN);
-
-  /* copy distribution object into generator object */
-  memcpy( &(gen->distr), par->distr, sizeof( struct unur_distr ) );
-
-  /* set generator identifier */
-  gen->genid = _unur_set_genid(GENTYPE);
-
-  /* routines for sampling and destroying generator */
-  SAMPLE = (par->variant & DARI_VARFLAG_VERIFY) ? _unur_dari_sample_check : _unur_dari_sample;
-  gen->destroy = _unur_dari_free;
-
-  /* copy some parameters into generator object */
-  GEN.squeeze = PAR.squeeze;        /* squeeze yes/no?                       */
-  GEN.size = PAR.size;              /* size of auxiliary table; 0 for none   */
-  GEN.c_factor = PAR.c_factor;      /* constant for choice of design point   */
-
-  gen->method = par->method;        /* indicates method                      */
-  gen->variant = par->variant;      /* indicates variant                     */
-  gen->set = par->set;              /* indicates parameter settings          */
-  gen->debug = par->debug;          /* debuging flags                        */
-  gen->urng = par->urng;            /* pointer to urng                       */
-
-  gen->urng_aux = NULL;             /* no auxilliary URNG required           */
-  gen->gen_aux = NULL;              /* no auxilliary generator objects       */
-  gen->gen_aux_2 = NULL;
-
-  /* allocate */
-  GEN.hp = _unur_malloc( PAR.size * sizeof(double) );
-  GEN.hb = _unur_malloc( PAR.size * sizeof(char) );
-
-  /* initialize parameters */
-
-  /* return pointer to (almost empty) generator object */
-  return(gen);
-  
-} /* end of _unur_dari_create() */
 
 /*---------------------------------------------------------------------------*/
 

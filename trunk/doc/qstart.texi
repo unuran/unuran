@@ -85,7 +85,7 @@ cvs update @*
 
 Code:
 
-@example
+@smallexample
 /* my first UNURAN program */ 
 
 #include <unuran.h>
@@ -120,51 +120,50 @@ int main()
   printf("%f\n",x);
   @}
 @} 
-@end example
+@end smallexample
 
 First you have to include the libraries @code{unuran.h} and @code{unuran_distributions.h} with the commands:
 
-@example
+@smallexample
 #include <unuran.h>
 #include <unuran_distributions.h> 
-@end example 
+@end smallexample 
 This headers provide all functions/features for generating random numbers.
 Three structures 
-@example
+@smallexample
 struct unur_distr *distr;  /* distribution */ 
   struct unur_par *par;    /* parameter */
   struct unur_gen *gen;    /* generator */
-@end example
+@end smallexample
 are necesssary to store the used parameters. It is not necessary to understand the structure in detail to get random numbers. 
 @*
 With
-@example
+@smallexample
  distr = unur_distr_normal(NULL,0);
-@end example
+@end smallexample
 we generate an distribution,
 and with
-@example
+@smallexample
  par = unur_arou_new(distr);
-@end example
+@end smallexample
 we have genarate the parameters of the method 'arou'
 Now its possible to change default parameters of the method with @code{
  unur_arou_set_max_sqhratio(par,0.99);}
 @*
 
-@example
+@smallexample
 gen = unur_init(par)
-@end example
+@end smallexample
 we generate an genarator objekt (and destroy the the objects distr.(?) and par)
 which is necessary to genarate an non uniform random number with
-@example
+@smallexample
  x = unur_sample_cont(gen);
-
-@end example
+@end smallexample
 
 If you know the c.d.f you can genarate +random numbers in the following way
 The important lines are in bold face.
 
-@example
+@smallexample
 /* my second UNURAN program test2.c */ 
 
 #include <unuran.h>
@@ -209,12 +208,12 @@ int main()
 
   exit (0);
 @}
-@end example
+@end smallexample
 
 If want to change the parameters of a method:
 The important lines are in bold face.
 
-@example
+@smallexample
 
 /* my second UNURAN program test2.c */ 
 
@@ -263,7 +262,7 @@ int main()
 
   exit (0);
 @}
-@end example
+@end smallexample
 
 @node Methods
 @chapter Methods

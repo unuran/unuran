@@ -25,6 +25,8 @@ usage: $progname < template > Cfile
     string interpreter. The routine reads all relevant information
     from the corresponding header files and inserts the different
     cases. The output is written on STDOUT.
+    Additionally the list of all key words produced for the manual
+    texi format.
       
 EOM
 
@@ -71,12 +73,16 @@ $top_srcdir .= "/../..";
   
 require "$top_srcdir/scripts/read_PDF.pl";
 
-##############################################################################
-# top source directory
-#
+# ----------------------------------------------------------------
+# doc files to be generated
 
-my $top_srcdir = $ENV{'srcdir'} ? $ENV{'srcdir'} : '.';
-$top_srcdir .= "/../..";
+my $doc_dir = $ENV{'srcdir'} ? $ENV{'srcdir'} : '.';
+
+my $distr_doc_file = "$doc_dir/parser_doc_distr.h";
+my $method_doc_file = "$doc_dir/parser_doc_method.h";
+
+my $distr_doc_string;
+my $method_doc_string;
 
 ##############################################################################
 # Get all header files in methods directory
@@ -139,6 +145,10 @@ if ($msg_unsupported) {
     print STDERR "$msg_unsupported\n";
 }
 
+# Print docu
+print_doc_distr($distr_doc_string);
+print_doc_method($method_doc_string);
+
 ##############################################################################
 #
 # The end
@@ -168,6 +178,11 @@ sub make_list_of_distributions {
     # print info on screen
     print STDERR "Distributions:\n" if $VERBOSE;
 
+    # print docu
+    $distr_doc_string .= "List of standard distributions "
+	."\@pxref{Stddist,,Standard distributions}\n\n";
+    $distr_doc_string .= "\@itemize \@minus\n";
+
     # make switch for first letter of distribution name
     $code .= "\t switch (*distribution) {\n";
 
@@ -190,15 +205,28 @@ sub make_list_of_distributions {
 	$code .= "\t\t\t distr = unur_distr_$distr (darray,n_darray);\n";
 	$code .= "\t\t\t break;\n";
 	$code .= "\t\t }\n";
+
+	# print docu
+	$distr_doc_string .= "\@item \@code{$distr} \@ \@ \@ \@ " 
+	    ." \@result{} \@pxref{$distr}";
     }
 
     # end of switch for first letter
     $code .= "\t }\n\n";
 
+    # print docu
+    $distr_doc_string .= "\@end itemize\n\n\@sp 1\n";
+
+
     print STDERR "\n\n";
 
     # Make list of generic distribution objects
     print STDERR "Generic distributions:\n";
+
+    # print docu
+    $distr_doc_string .= "List of generic distributions "
+	."\@pxref{Distribution_objects,,Handling Distribution Objects}\n\n";
+    $distr_doc_string .= "\@itemize \@minus\n";
 
     $code .= "\t /* get pointer to generic distribution object */\n";
     $code .= "\t if (distr == (struct unur_distr *) &distr_unknown) { \n";
@@ -225,10 +253,17 @@ sub make_list_of_distributions {
 	$code .= "\t\t\t\t distr = unur\_distr\_$distr_type\_new();\n";
 	$code .= "\t\t\t\t break;\n";
 	$code .= "\t\t\t }\n";
+
+	# print docu
+	$distr_doc_string .= "\@item \@code{$distr_type} \@ \@ \@ \@ " 
+	    ." \@result{} \@pxref{\U$distr_type}";
     }
 
     $code .= "\t\t } while (0);\n";
     $code .= "\t }\n\n";
+
+    # print docu
+    $distr_doc_string .= "\@end itemize\n\n\@sp 1\n";
 
     # end
     print STDERR "\n\n";
@@ -412,7 +447,16 @@ sub make_list_of_distr_sets {
     # make switch for methods
     $code .= "\t switch (distr->type) {\n";
 
+    # print docu
+    $distr_doc_string .= "List of keys that are available via the String API.\n"
+	."For description see the corresponding UNURAN set calls.\n\n";
+    $distr_doc_string .= "\@itemize \@bullet\n";
+
     foreach my $dt (@distr_type_list) {
+
+	# print docu
+	$distr_doc_string .= "\@item \@code{$dt} \@ \@i{(Distribution Type)}\@ \@ \@ \@ "
+	    ."(\@pxref{\U$dt})\n";
 
 	# make list of set commands for distributions
 	my @command_list = sort (keys %{$set_commands->{$dt}});
@@ -422,6 +466,9 @@ sub make_list_of_distr_sets {
 	
 	# make switch for first letter of key name
 	$code .= "\t\t switch (*key) {\n";
+
+	# print docu
+	$distr_doc_string .= "\@table \@code\n";
 
 	my $last_char;
 
@@ -439,15 +486,27 @@ sub make_list_of_distr_sets {
 	    $code .= $set_commands->{$dt}->{$c};
 	    $code .= "\t\t\t\t break;\n";
 	    $code .= "\t\t\t }\n";
+
+	    # print docu
+	    my $command_name = "unur\_distr\_$dt\_set\_$c";
+	    $distr_doc_string .= "\@item $c\n \@result{} "
+		."\@pxref{funct:$command_name,,\@command{$command_name}}\n";
+##		if ($SUBST_COMMANDS{$command_name}) {
 	}
 
 	# end of switch for first letter
 	$code .= "\t\t }\n";
 	$code .= "\t\t break;\n";
+
+	# print docu
+	$distr_doc_string .= "\@end table\n\n\@sp 1\n";
     }
 
     # end of switch for distribution types
     $code .= "\t }\n";
+
+    # print docu
+    $distr_doc_string .= "\@end itemize\n\n";
 
     # add comment on igored and unsupported code into C file
     if ($code_ignored) {
@@ -696,7 +755,17 @@ sub make_list_of_par_sets {
     # make switch for methods
     $code .= "\t switch (par->method) {\n";
 
+    # print docu
+    $method_doc_string .= "List of methods and keys that are available via the String API.\n"
+	."For description see the corresponding UNURAN set calls.\n\n";
+    $method_doc_string .= "\@itemize \@bullet\n";
+
     foreach my $m (@method_list) {
+
+	# print docu
+	$method_doc_string .= "\@item \@code{$m} \@ \@i{(Method)}\@ \@ \@ \@ "
+	    ." \@result{} \@command{unur\_$m\_new}\n"
+	    ."(\@pxref{\U$m})\n";
 
 	# make list of set commands for method 
 	my @command_list = sort (keys %{$set_commands->{$m}});
@@ -707,8 +776,10 @@ sub make_list_of_par_sets {
 	# make switch for first letter of key name
 	$code .= "\t\t switch (*key) {\n";
 
-	my $last_char;
+	# print docu
+	$method_doc_string .= "\@table \@code\n";
 
+	my $last_char;
 	foreach my $c (@command_list) {
 
 	    my $char = substr $c,0,1;
@@ -723,16 +794,25 @@ sub make_list_of_par_sets {
 	    $code .= $set_commands->{$m}->{$c};
 	    $code .= "\t\t\t\t break;\n";
 	    $code .= "\t\t\t }\n";
+
+	    # print docu
+	    $method_doc_string .= "\@item $c\n \@result{} "
+		."\@pxref{funct:unur\_$m\_set\_$c,,\@command{unur\_$m\_set\_$c}}\n";
 	}
 
 	# end of switch for first letter
 	$code .= "\t\t }\n";
 	$code .= "\t\t break;\n";
+
+	# print docu
+	$method_doc_string .= "\@end table\n\n\@sp 1\n";
     }
 
     # end of switch for methods
     $code .= "\t }\n";
 
+    # print docu
+    $method_doc_string .= "\@end itemize\n\n";
 
     # add comment on igored and unsupported code into C file
     if ($code_ignored) {
@@ -761,5 +841,51 @@ sub unmatched_parenthesis {
 
     return $open;
 } # end of unmachted_parenthesis()
+
+##############################################################################
+#
+# Print documentation.
+#
+sub print_doc_distr {
+    my $doc_string = $_[0];
+
+    open DOC, ">$distr_doc_file" or die "Cannot open file $distr_doc_file for writing";
+
+    print DOC
+	"/*\n",
+	"=NODE  KeysDistr   Keys for Distribution String\n",
+	"=UP StringDistr [10]\n\n",
+	"=DESCRIPTION\n\n";
+
+    print DOC 
+	$doc_string;
+
+    print DOC 
+	"\n=EON\n*/\n";
+
+    close DOC;
+} # end of print_doc_distr() 
+
+#-----------------------------------------------------------------------------
+
+sub print_doc_method {
+    my $doc_string = $_[0];
+
+    open DOC, ">$method_doc_file" or die "Cannot open file $method_doc_file for writing";
+
+    print DOC
+	"/*\n",
+	"=NODE  KeysMethod   Keys for Method String\n",
+	"=UP StringMethod [10]\n\n",
+	"=DESCRIPTION\n\n";
+
+    print DOC 
+	$doc_string;
+
+    print DOC 
+	"\n=EON\n*/\n";
+
+    close DOC;
+} # end of print_doc_method() 
 
 ##############################################################################

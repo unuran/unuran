@@ -194,7 +194,7 @@ double unur_distr_cont_eval_cdf( double x, UNUR_DISTR *distribution );
 */
 
 
-int unur_distr_cont_set_pdfparams( UNUR_DISTR *distribution, double *params, int n_params );
+int unur_distr_cont_set_pdfparams(UNUR_DISTR *distribution,double *params,int n_params);
 /* 
    Set array of parameters for distribution. There is an upper limit
    for the number of parameters @code{n_params}. It is given by the
@@ -235,8 +235,8 @@ int unur_distr_cont_get_domain( UNUR_DISTR *distribution, double *left, double *
 
 /* 
    Derived parameters.
-   
-   The following paramters MUST be set whenever one of the essential
+*/   
+/*   The following paramters MUST be set whenever one of the essential
    parameters have been set or changed (and the parameter is required
    for the chosen method).
 */
@@ -270,7 +270,7 @@ double unur_distr_cont_get_mode( UNUR_DISTR *distribution );
 int unur_distr_cont_set_pdfarea( UNUR_DISTR *distribution, double area );
 /* 
    Set the area below the p.d.f. If @code{area} is non-positive, no
-   area is set and @code{unur_errno} is set to
+   area is set and @code{unur_errno} is set to @*
    @code{UNUR_ERR_DISTR_SET}. 
 */
 
@@ -287,7 +287,7 @@ int unur_distr_cont_upd_pdfarea( UNUR_DISTR *distribution );
 double unur_distr_cont_get_pdfarea( UNUR_DISTR *distribution );
 /* 
    Get the area below the p.d.f of the distribution. If this area is
-   not known, unur_distr_cont_upd_pdfarea() is called to compute
+   not known,@* unur_distr_cont_upd_pdfarea() is called to compute
    it. If this is not successful @code{UNUR_INFINITY} is returned and
    @code{unur_errno} is set to @code{UNUR_ERR_DISTR_GET}.
 */
@@ -375,9 +375,9 @@ int unur_distr_discr_set_pmfparams( UNUR_DISTR *distribution, double *params, in
    @code{UNUR_ERR_DISTR_NPARAMS}. There is no way to use parameters of type int.
 */
 
-int unur_distr_discr_get_pmfparams( UNUR_DISTR *distribution, double **params );
+int unur_distr_discr_get_pmfparams(UNUR_DISTR *distribution,double **params);
 /* 
-   Get number of parameters of the p.m.f. and set pointer
+   Get number of parameters of the p.m.f and set pointer
    @code{params} to array of parameters. If no parameters are stored
    in the object, @code{0} is returned and @code{params} is set to
    NULL.
@@ -385,20 +385,20 @@ int unur_distr_discr_get_pmfparams( UNUR_DISTR *distribution, double **params );
 
 /* 
    Derived parameters.
-   
-   The following paramters MUST be set whenever one of the essential
+*/   
+/*   The following paramters MUST be set whenever one of the essential
    parameters have been set or changed (and the parameter is required
    for the chosen method).
 */
 
-int unur_distr_discr_set_pmfarea( UNUR_DISTR *distribution, double area );
+int unur_distr_discr_set_pmfarea(UNUR_DISTR *distribution, double area);
 /* 
    Set the area below the p.m.f. If @code{area} is non-positive, no
    area is set and @code{unur_errno} is set to
    @code{UNUR_ERR_DISTR_SET}. 
 */
 
-int unur_distr_discr_upd_pmfarea( UNUR_DISTR *distribution );
+int unur_distr_discr_upd_pmfarea( UNUR_DISTR *distribution);
 /*
    Recompute the area below the p.m.f. of the distribution. 
    In most cases the normalization constant is recompute and thus the
@@ -408,13 +408,21 @@ int unur_distr_discr_upd_pmfarea( UNUR_DISTR *distribution );
    set to @code{UNUR_ERR_DISTR_DATA}. 
 */
 
-double unur_distr_discr_get_pmfarea( UNUR_DISTR *distribution );
+double unur_distr_discr_get_pmfarea(UNUR_DISTR *distribution);
 /* 
    Get the area below the p.m.f of the distribution. If this area is
-   not known, unur_distr_cont_upd_pdfarea() is called to compute
+   not known, @* unur_distr_cont_upd_pdfarea() is called to compute
    it. If this is not successful @code{UNUR_INFINITY} is returned and
    @code{unur_errno} is set to @code{UNUR_ERR_DISTR_GET}.
 */
 
 /*---------------------------------------------------------------------------*/
+
+
+
+
+
+
+
+
 

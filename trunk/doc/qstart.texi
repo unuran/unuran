@@ -32,31 +32,38 @@
 
 @ifnottex
 @node Top,     Intro,  ,          (dir)     
-@top Hier
+@top
 @c    node-name, next,          previous,  up
 @end ifnottex     
 Hier steht also Text in tex und auch sonst -- the top node summary
 @menu
-* Intro:: Introduction
+* Intro::     Introduction
+* Methods::   How should the random numbers be created
+* FAQ::       Frequently asked questions
+* Reference:: Function Reference
 @end menu
 
-
-@c ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
-@c
-@c Introduction ...
-@c
 
 @node Intro
 @chapter Introduction
 @menu
 * Overview:: Overview
-* Install:: Installing the thing
-* Start::        Getting Started
+* Install::   Installing the thing
+* Start::    Getting Started
 @end menu
+
+
 @node Overview
 @section Overview
+
 @node Install
 @section Install
+@menu
+* Now
+@end menu
+
+
+node Now
 @subsection now
 cvs update @*
 @* 'make' in UNURAN to compile UNURAN
@@ -251,7 +258,8 @@ int main()
 @}
 @end example
 
-@chapter methods
+@node Methods
+@chapter Methods
 
 @multitable @columnfractions .25 .25 .25 .25
 @item name/references    @tab  parameter (default)   @tab required       @tab remarks
@@ -292,12 +300,14 @@ To change any parameter you habe to use the according function call.
 @* @code{  unur_ninv_use_newton(par); );
 }
 
-@chapter FQA
+@node FAQ
+@chapter FAQ
 @subsection Q1: I have a simulation program in FORTRAN. How can I use your
 library.
 
 Use the following program xyz.c which produce afile with randoom numbers. Read this random numbers ... 
 
+@node Reference
 @chapter Function reference
 Notation:
 
@@ -313,7 +323,6 @@ Notation:
 @c @unnumberedsubsubsec  unur_arou_new
 @c @indent @code{struct unur_par *@b{unur_arou_new}( struct unur_distr *@i{distr} )}
 @c @* @indent get default parameters for generator                                      
-
 
 
 

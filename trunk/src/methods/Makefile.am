@@ -41,6 +41,7 @@ pkginclude_HEADERS = \
  unur_cstd.h \
  unur_dau.h  \
  unur_dis.h  \
+ unur_dstd.h \
  unur_ninv.h  \
  unur_rect.h \
  unur_srou.h \

@@ -1,5 +1,5 @@
 
-#error method UNIF has changed!
+/*  #error method UNIF has changed! */
 
 
 /*****************************************************************************
@@ -201,9 +201,13 @@ unur_make_scatterplot( struct unur_gen *gen )
 		     + strlen(SCATTER_UNIFORM) + strlen(scatter_filename)
 		     + strlen(gen->genid) );
   call_graph = _unur_malloc( len_call_graph * sizeof(char) );
-  sprintf(call_graph,"graph -T X -C -m-4 -S 16 %s %s -L%s -C -m-1 -S 16 %s %s ",
-	  PLOT_DOT_SIZE, 
-	  SCATTER_UNIFORM,
+/*    sprintf(call_graph,"graph -T X -C -m-4 -S 16 %s %s -L%s -C -m-1 -S 16 %s %s ", */
+/*  	  PLOT_DOT_SIZE,  */
+/*  	  SCATTER_UNIFORM, */
+/*  	  gen->genid,  */
+/*  	  PLOT_DOT_SIZE,  */
+/*  	  scatter_filename);  */
+  sprintf(call_graph,"graph -T X -C -m-4 -L%s -C -m-1 -S 16 %s %s ",
 	  gen->genid, 
 	  PLOT_DOT_SIZE, 
 	  scatter_filename); 
@@ -264,7 +268,7 @@ _unur_make_uniform_scatter( int start, int skip )
   if (scatter == NULL)  return 0;
 
   /* make generator object for uniform baby generator */
-  gen = _unur_unif_init( unur_unif_new(start,skip) );
+  gen = unur_init( unur_unif_new(NULL) );
   _unur_check_NULL(test_name,gen,0 );
 
   /* get pointer to baby generator */

@@ -69,7 +69,7 @@ int unur_tdr_set_usecenter( UNUR_PAR *parameters, int usecenter );
 int unur_tdr_set_usemode( UNUR_PAR *parameters, int usemode );
 /* set flag for using (exact) mode as construction point                     */
 
-int unur_tdr_set_version_orig( UNUR_PAR *parameters );
+int unur_tdr_set_version_gw( UNUR_PAR *parameters );
 /* 
    Use original version with squeezes as proposed by Gilks & Wild 
    (but with generalized transformations T).

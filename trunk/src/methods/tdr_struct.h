@@ -60,18 +60,23 @@ struct unur_tdr_par {
 
 struct unur_tdr_interval {
 
-  double  x;                    /* left construction point                   */
-  double  fx;                   /* value of p.d.f. at tp                     */ 
-  double  Tfx;                  /* value of transformed p.d.f. at tp         */ 
-  double  dTfx;                 /* derivative of transformed p.d.f. at  tp   */
+  double  x;                    /* (left) construction point (cp)            */
+  double  fx;                   /* value of p.d.f. at cp                     */ 
+  double  Tfx;                  /* value of transformed p.d.f. at cp         */ 
+  double  dTfx;                 /* derivative of transformed p.d.f. at cp    */
   double  sq;                   /* slope of transformed squeeze in interval  */
-
+  double  ip;                   /* intersection point between two tangents   */
+  double  fip;                  /* value of p.d.f. at ip
+				     (for PS and IA only)                    */
+                                 
   double  Acum;                 /* cumulated area of intervals               */
-  double  Ahatl;                /* area between hat and squeeze on left side */
-  double  Ahatr;                /* area between hat and squeeze on right side*/
+  double  Ahat;                 /* area below hat                            */
+  double  Ahatr;                /* area below hat on right side              */
   double  Asqueeze;             /* area squeeze                              */
 
-  struct unur_tdr_interval *next; /* pointer to next segment in list         */
+  struct unur_tdr_interval *next; /* pointer to next interval in list        */
+  struct unur_tdr_interval *prev; /* pointer to previous interval in list    
+				     (for PS and IA only)                    */
 
 #ifdef UNUR_COOKIES
   unsigned cookie;              /* magic cookie                              */

@@ -17,6 +17,7 @@ libtests_a_SOURCES = \
  moments.c \
  printsample.c \
  quantiles.c \
+ scatter.c \
  tests.c \
  timing.c
 

@@ -301,7 +301,7 @@
 #define TDR_VAR_T_POW          0x003u   /* T(x) = -x^c                      */
 
 #define TDR_VARMASK_VERSION    0x0f0u   /* indicates version                */
-#define TDR_VAR_VERSION_ORIG   0x010u   /* original version (Gilks&Wild)    */
+#define TDR_VAR_VERSION_GW     0x010u   /* original version (Gilks&Wild)    */
 #define TDR_VAR_VERSION_PS     0x020u   /* use proportional squeeze         */
 #define TDR_VAR_VERSION_IA     0x030u   /* use immediate acceptance
 					   (requires prop. squeeze)         */
@@ -354,8 +354,12 @@ static struct unur_gen *_unur_tdr_create( struct unur_par *par );
 /* Re-initialize (existing) generator.                                       */
 /*---------------------------------------------------------------------------*/
 
-static double _unur_tdr_sample_orig( struct unur_gen *generator );
-static double _unur_tdr_sample_orig_check( struct unur_gen *generator );
+static double _unur_tdr_gw_sample( struct unur_gen *generator );
+static double _unur_tdr_gw_sample_check( struct unur_gen *generator );
+static double _unur_tdr_ps_sample( struct unur_gen *generator );
+static double _unur_tdr_ps_sample_check( struct unur_gen *generator );
+static double _unur_tdr_ia_sample( struct unur_gen *generator );
+static double _unur_tdr_ia_sample_check( struct unur_gen *generator );
 /*---------------------------------------------------------------------------*/
 /* sample from generator                                                     */
 /*---------------------------------------------------------------------------*/
@@ -365,14 +369,16 @@ static void _unur_tdr_free( struct unur_gen *gen);
 /* destroy generator object.                                                 */
 /*---------------------------------------------------------------------------*/
 
-static int _unur_tdr_get_starting_cpoints( struct unur_par *par, struct unur_gen *gen );
+static int _unur_tdr_starting_cpoints( struct unur_par *par, struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 /* create list of construction points for starting segments.                 */
 /* if user has not provided such points compute these by means of the        */
 /* "equi-angle rule".                                                        */
 /*---------------------------------------------------------------------------*/
 
-static int _unur_tdr_get_starting_intervals( struct unur_par *par, struct unur_gen *gen );
+static int _unur_tdr_starting_intervals( struct unur_par *par, struct unur_gen *gen );
+inline static int _unur_tdr_gw_interval_parameter( struct unur_gen *gen, struct unur_tdr_interval *iv );
+inline static int _unur_tdr_ps_interval_parameter( struct unur_gen *gen, struct unur_tdr_interval *iv );
 /*---------------------------------------------------------------------------*/
 /* compute intervals from given starting construction points.                */
 /*---------------------------------------------------------------------------*/
@@ -388,6 +394,23 @@ static int _unur_tdr_interval_parameter( struct unur_gen *gen, struct unur_tdr_i
 /* compute all necessary data for interval.                                  */
 /*---------------------------------------------------------------------------*/
 
+static int _unur_tdr_tangent_intersection_point( struct unur_gen *gen,
+						 struct unur_tdr_interval *iv, double *ipt );
+/*---------------------------------------------------------------------------*/
+/* compute cutting point of interval into left and right part.               */
+/*---------------------------------------------------------------------------*/
+
+static double _unur_tdr_interval_area( struct unur_gen *gen, struct unur_tdr_interval *iv,
+				       double slope, double x );
+/*---------------------------------------------------------------------------*/
+/* compute area below piece of hat or slope in                               */
+/*---------------------------------------------------------------------------*/
+
+static double _unur_tdr_eval_hat( struct unur_gen *gen, struct unur_tdr_interval *iv, double x );
+/*---------------------------------------------------------------------------*/
+/* evaluate hat at x in interval.                                            */
+/*---------------------------------------------------------------------------*/
+
 static int _unur_tdr_interval_split( struct unur_gen *gen, 
 				      struct unur_tdr_interval *iv_old, double x, double fx );
 /*---------------------------------------------------------------------------*/
@@ -397,18 +420,6 @@ static int _unur_tdr_interval_split( struct unur_gen *gen,
 static int _unur_tdr_make_guide_table( struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 /* make a guide table for indexed search.                                    */
-/*---------------------------------------------------------------------------*/
-
-static int _unur_tdr_interval_division_point( struct unur_gen *gen,
-					      struct unur_tdr_interval *iv, double *ipt );
-/*---------------------------------------------------------------------------*/
-/* compute cutting point of interval into left and right part.               */
-/*---------------------------------------------------------------------------*/
-
-static double _unur_tdr_interval_area( struct unur_gen *gen, struct unur_tdr_interval *iv,
-				       double slope, double x );
-/*---------------------------------------------------------------------------*/
-/* compute area below piece of hat or slope in                               */
 /*---------------------------------------------------------------------------*/
 
 #ifdef UNUR_ENABLE_LOGGING
@@ -428,6 +439,8 @@ static void _unur_tdr_debug_free( struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 
 static void _unur_tdr_debug_intervals( struct unur_gen *gen );
+static void _unur_tdr_gw_debug_intervals( struct unur_gen *gen );
+static void _unur_tdr_ps_debug_intervals( struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 /* print data for intervals                                                  */
 /*---------------------------------------------------------------------------*/

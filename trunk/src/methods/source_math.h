@@ -44,11 +44,6 @@
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*/
-/* Defining infinity (just to avoid writing UNUR_INIFINITY)                  */
-
-#define INFINITY  UNUR_INFINITY    /* This must be already defined !         */
-
-/*---------------------------------------------------------------------------*/
 /* mathematical constants                                                    */
 
 #ifndef M_E

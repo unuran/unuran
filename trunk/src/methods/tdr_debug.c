@@ -4,7 +4,7 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   FILE:      tdr.c                                                        *
+ *   FILE:      tdr_debug.c                                                  *
  *                                                                           *
  *   TYPE:      continuous univariate random variate                         *
  *   METHOD:    transformed density rejection                                *
@@ -71,12 +71,12 @@ _unur_tdr_debug_init( struct unur_par *par, struct unur_gen *gen )
   fprintf(log,"%s: method  = transformed density rejection\n",gen->genid);
   fprintf(log,"%s: version = ",gen->genid);
   switch (par->variant & TDR_VARMASK_VERSION) {
-  case TDR_VAR_VERSION_ORIG:
-    fprintf(log,"orignal (Gilks & Wild)  ... ORIG\n"); break;
+  case TDR_VAR_VERSION_GW:
+    fprintf(log,"original (Gilks & Wild)  ... GW\n"); break;
   case TDR_VAR_VERSION_PS:
     fprintf(log,"proportional squeeze  ... PS\n"); break;
   case TDR_VAR_VERSION_IA:
-    fprintf(log,"immeditaly acceptance  ... IA\n"); break;
+    fprintf(log,"immediate acceptance  ... IA\n"); break;
   }
   fprintf(log,"%s: transformation T_c(x) = ",gen->genid);
   switch( gen->variant & TDR_VARMASK_T ) {
@@ -92,19 +92,19 @@ _unur_tdr_debug_init( struct unur_par *par, struct unur_gen *gen )
 
   _unur_distr_cont_debug( &(gen->distr), gen->genid );
 
-  fprintf(log,"%s: sampling routine = _unur_tdr_sample_",gen->genid);
+  fprintf(log,"%s: sampling routine = _unur_tdr_",gen->genid);
   switch (par->variant & TDR_VARMASK_VERSION) {
-  case TDR_VAR_VERSION_ORIG:
-    fprintf(log,"orig"); break;
+  case TDR_VAR_VERSION_GW:
+    fprintf(log,"gw"); break;
   case TDR_VAR_VERSION_PS:
     fprintf(log,"ps"); break;
   case TDR_VAR_VERSION_IA:
     fprintf(log,"ia"); break;
   }
   if (par->variant & TDR_VARFLAG_VERIFY)
-    fprintf(log,"check()\n");
+    fprintf(log,"_sample_check()\n");
   else
-    fprintf(log,"()\n");
+    fprintf(log,"_sample()\n");
   fprintf(log,"%s:\n",gen->genid);
 
   fprintf(log,"%s: center = %g",gen->genid,PAR.center);
@@ -180,7 +180,32 @@ _unur_tdr_debug_free( struct unur_gen *gen )
 static void
 _unur_tdr_debug_intervals( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
-     /* write list of intervals into logfile                                 */
+     /* write list of intervals into logfile (orig. version by Gilks & Wild) */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*----------------------------------------------------------------------*/
+{
+  switch (gen->variant & TDR_VARMASK_VERSION) {
+  case TDR_VAR_VERSION_GW:    /* original version (Gilks&Wild) */
+    _unur_tdr_gw_debug_intervals(gen);
+    return;
+  case TDR_VAR_VERSION_PS:    /* proportional squeeze */
+  case TDR_VAR_VERSION_IA:    /* immediate acceptance */
+    _unur_tdr_ps_debug_intervals(gen);
+    return;
+  default:
+    _unur_error(GENTYPE,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
+    return;
+  }
+} /* end of _unur_tdr_debug_intervals() */
+
+/*---------------------------------------------------------------------------*/
+
+static void
+_unur_tdr_gw_debug_intervals( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* write list of intervals into logfile (orig. version by Gilks & Wild) */
      /*                                                                      */
      /* parameters:                                                          */
      /*   gen ... pointer to generator object                                */
@@ -199,14 +224,14 @@ _unur_tdr_debug_intervals( struct unur_gen *gen )
   fprintf(log,"%s:Intervals: %d\n",gen->genid,GEN.n_ivs);
   if (GEN.iv) {
     if (gen->debug & TDR_DEBUG_IV) {
-      fprintf(log,"%s: Nr.            tp          f(tp)        T(f(tp))    d(T(f(tp)))        squeeze\n",gen->genid);
+      fprintf(log,"%s: Nr.            tp            ip          f(tp)      T(f(tp))    d(T(f(tp)))      squeeze\n",gen->genid);
       for (iv = GEN.iv, i=0; iv->next!=NULL; iv=iv->next, i++) {
 	COOKIE_CHECK(iv,CK_TDR_IV,/*void*/); 
-	fprintf(log,"%s:[%3d]: %#12.6g   %12.6g   %#12.6g   %#12.6g   %12.6g\n", gen->genid, i,
-		iv->x, iv->fx, iv->Tfx, iv->dTfx, iv->sq);
+	fprintf(log,"%s:[%3d]: %#12.6g  %#12.6g  %#12.6g  %#12.6g  %#12.6g  %#12.6g\n", gen->genid, i,
+		iv->x, iv->ip, iv->fx, iv->Tfx, iv->dTfx, iv->sq);
       }
       COOKIE_CHECK(iv,CK_TDR_IV,/*void*/); 
-      fprintf(log,"%s:[...]: %#12.6g   %12.6g   %#12.6g   %#12.6g\n", gen->genid,
+      fprintf(log,"%s:[...]: %#12.6g                %#12.6g  %#12.6g  %#12.6g\n", gen->genid,
 	      iv->x, iv->fx, iv->Tfx, iv->dTfx);
     }
     fprintf(log,"%s:\n",gen->genid);
@@ -230,12 +255,12 @@ _unur_tdr_debug_intervals( struct unur_gen *gen )
       for (iv = GEN.iv, i=0; iv->next!=NULL; iv=iv->next, i++) {
 	COOKIE_CHECK(iv,CK_TDR_IV,/*void*/); 
 	sAsqueeze += iv->Asqueeze;
-	sAhatl += iv->Ahatl;
+	sAhatl += iv->Ahat - iv->Ahatr;
 	sAhatr += iv->Ahatr;
 	fprintf(log,"%s:[%3d]: %-12.6g(%6.3f%%)  |  %-12.6g+ %-12.6g(%6.3f%%)  |  %-12.6g(%6.3f%%)\n",
 		gen->genid,i,
 		iv->Asqueeze, iv->Asqueeze * 100. / GEN.Atotal,
-		iv->Ahatl, iv->Ahatr, (iv->Ahatl+iv->Ahatr) * 100. / GEN.Atotal, 
+		iv->Ahat-iv->Ahatr, iv->Ahatr, iv->Ahat * 100. / GEN.Atotal, 
 		iv->Acum, iv->Acum * 100. / GEN.Atotal);
       }
       fprintf(log,"%s:       ----------  ---------  |  ------------------------  ---------  +\n",gen->genid);
@@ -255,7 +280,90 @@ _unur_tdr_debug_intervals( struct unur_gen *gen )
 
   fprintf(log,"%s:\n",gen->genid);
 
-} /* end of _unur_tdr_debug_intervals() */
+} /* end of _unur_tdr_gw_debug_intervals() */
+
+/*****************************************************************************/
+
+static void
+_unur_tdr_ps_debug_intervals( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* write list of intervals into logfile (proportional squeezes)         */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*----------------------------------------------------------------------*/
+{
+  FILE *log;
+  struct unur_tdr_interval *iv;
+  double sAsqueeze, sAhatl, sAhatr;
+  int i;
+
+  /* check arguments */
+  CHECK_NULL(gen,/*void*/);  COOKIE_CHECK(gen,CK_TDR_GEN,/*void*/);
+
+  log = unur_get_stream();
+
+  fprintf(log,"%s:Intervals: %d\n",gen->genid,GEN.n_ivs-1);
+  if (GEN.iv) {
+    if (gen->debug & TDR_DEBUG_IV) {
+      fprintf(log,"%s: Nr.           tp      right ip        f(tp)     T(f(tp))   d(T(f(tp)))       f(ip)   squ. ratio\n",gen->genid);
+      iv = GEN.iv;
+      COOKIE_CHECK(iv,CK_TDR_IV,/*void*/); 
+      fprintf(log,"%s:[...]:\t\t   %#12.6g\t\t\t\t\t       %#12.6g %#12.6g\n", gen->genid,
+	      iv->ip, iv->fip, iv->sq);
+      for (iv = iv->next,i=1; iv->next!=NULL; iv=iv->next, i++) {
+	COOKIE_CHECK(iv,CK_TDR_IV,/*void*/); 
+	fprintf(log,"%s:[%3d]:%#12.6g %#12.6g %#12.6g %#12.6g %#12.6g %#12.6g %#12.6g\n", gen->genid, i,
+		iv->x, iv->ip, iv->fx, iv->Tfx, iv->dTfx, iv->fip, iv->sq);
+      }
+    }
+    fprintf(log,"%s:\n",gen->genid);
+  }
+  else
+    fprintf(log,"%s: No intervals !\n",gen->genid);
+
+  if (GEN.Atotal <= 0.) {
+    fprintf(log,"%s: Construction of hat function not successful\n",gen->genid);
+    fprintf(log,"%s: Areas may be meaningless !!!!!!!!!!!!!!!!!!\n",gen->genid);
+    fprintf(log,"%s:\n",gen->genid);
+    GEN.Atotal = -1.;   /* to avoid floating point exceptions */
+  }
+
+  /* print and sum areas below squeeze and hat */
+  if (gen->debug & TDR_DEBUG_IV) {
+    fprintf(log,"%s:Areas in intervals:\n",gen->genid);
+    fprintf(log,"%s: Nr.\tbelow squeeze\t\t  below hat (left and right)\t\t  cumulated\n",gen->genid);
+    sAsqueeze = sAhatl = sAhatr = 0.;
+    if (GEN.iv->next) {
+      for (iv = GEN.iv->next, i=1; iv->next!=NULL; iv=iv->next, i++) {
+	COOKIE_CHECK(iv,CK_TDR_IV,/*void*/); 
+	sAsqueeze += iv->Asqueeze;
+	sAhatl += iv->Ahat - iv->Ahatr;
+	sAhatr += iv->Ahatr;
+	fprintf(log,"%s:[%3d]: %-12.6g(%6.3f%%)  |  %-12.6g+ %-12.6g(%6.3f%%)  |  %-12.6g(%6.3f%%)\n",
+		gen->genid,i,
+		iv->Asqueeze, iv->Asqueeze * 100. / GEN.Atotal,
+		iv->Ahat-iv->Ahatr, iv->Ahatr, iv->Ahat * 100. / GEN.Atotal, 
+		iv->Acum, iv->Acum * 100. / GEN.Atotal);
+      }
+      fprintf(log,"%s:       ----------  ---------  |  ------------------------  ---------  +\n",gen->genid);
+      fprintf(log,"%s: Sum : %-12.6g(%6.3f%%)            %-12.6g      (%6.3f%%)\n",gen->genid,
+	      sAsqueeze, sAsqueeze * 100. / GEN.Atotal,
+	      sAhatl+sAhatr, (sAhatl+sAhatr) * 100. / GEN.Atotal);
+      fprintf(log,"%s:\n",gen->genid);
+    }
+  }
+
+  /* summary of areas */
+  fprintf(log,"%s: A(squeeze)     = %-12.6g  (%6.3f%%)\n",gen->genid,
+	  GEN.Asqueeze, GEN.Asqueeze * 100./GEN.Atotal);
+  fprintf(log,"%s: A(hat\\squeeze) = %-12.6g  (%6.3f%%)\n",gen->genid,
+	  GEN.Atotal - GEN.Asqueeze, (GEN.Atotal - GEN.Asqueeze) * 100./GEN.Atotal);
+  fprintf(log,"%s: A(total)       = %-12.6g\n",gen->genid, GEN.Atotal);
+
+  fprintf(log,"%s:\n",gen->genid);
+
+} /* end of _unur_tdr_ps_debug_intervals() */
 
 /*****************************************************************************/
 
@@ -346,9 +454,9 @@ _unur_tdr_debug_split_start( struct unur_gen *gen, struct unur_tdr_interval *iv,
   fprintf(log,"%s:   A(squeeze)     = %-12.6g\t\t(%6.3f%%)\n",gen->genid,
 	  iv->Asqueeze,iv->Asqueeze*100./GEN.Atotal);
   fprintf(log,"%s:   A(hat\\squeeze) = %-12.6g\t\t(%6.3f%%)\n",gen->genid,
-	  (iv->Ahatl+iv->Ahatr-iv->Asqueeze),(iv->Ahatl+iv->Ahatr-iv->Asqueeze)*100./GEN.Atotal);
+	  (iv->Ahat - iv->Asqueeze),(iv->Ahat - iv->Asqueeze)*100./GEN.Atotal);
   fprintf(log,"%s:   A(hat)         = %-12.6g +  %-12.6g(%6.3f%%)\n",gen->genid,
-	  iv->Ahatl,iv->Ahatr,(iv->Ahatl+iv->Ahatr)*100./GEN.Atotal);
+	  iv->Ahat - iv->Ahatr, iv->Ahatr, iv->Ahat*100./GEN.Atotal);
 
   fflush(log);
 
@@ -392,12 +500,12 @@ _unur_tdr_debug_split_stop( struct unur_gen *gen,
 	  iv_left->Asqueeze,
 	  iv_left->Asqueeze*100./GEN.Atotal);
   fprintf(log,"%s:   A(hat\\squeeze) = %-12.6g\t\t(%6.3f%%)\n",gen->genid,
-	  (iv_left->Ahatl + iv_left->Ahatr - iv_left->Asqueeze),
-	  (iv_left->Ahatl + iv_left->Ahatr - iv_left->Asqueeze) * 100./GEN.Atotal);
+	  (iv_left->Ahat - iv_left->Asqueeze),
+	  (iv_left->Ahat - iv_left->Asqueeze) * 100./GEN.Atotal);
   fprintf(log,"%s:   A(hat)         = %-12.6g +  %-12.6g(%6.3f%%)\n",gen->genid,
-	  iv_left->Ahatl,
+	  iv_left->Ahat - iv_left->Ahatr,
 	  iv_left->Ahatr,
-	  (iv_left->Ahatl + iv_left->Ahatr) * 100./GEN.Atotal);
+	  iv_left->Ahat * 100./GEN.Atotal);
 
   if (iv_left == iv_right)
     fprintf(log,"%s: interval chopped.\n",gen->genid);
@@ -407,12 +515,12 @@ _unur_tdr_debug_split_stop( struct unur_gen *gen,
 	    iv_right->Asqueeze,
 	    iv_right->Asqueeze*100./GEN.Atotal);
     fprintf(log,"%s:   A(hat\\squeeze) = %-12.6g\t\t(%6.3f%%)\n",gen->genid,
-	    (iv_right->Ahatl + iv_right->Ahatr - iv_right->Asqueeze),
-	    (iv_right->Ahatl + iv_right->Ahatr - iv_right->Asqueeze) * 100./GEN.Atotal);
+	    (iv_right->Ahat - iv_right->Asqueeze),
+	    (iv_right->Ahat - iv_right->Asqueeze) * 100./GEN.Atotal);
     fprintf(log,"%s:   A(hat)         = %-12.6g +  %-12.6g(%6.3f%%)\n",gen->genid,
-	    iv_right->Ahatl,
+	    iv_right->Ahat - iv_right->Ahatr,
 	    iv_right->Ahatr,
-	    (iv_right->Ahatl + iv_right->Ahatr) * 100./GEN.Atotal);
+	    iv_right->Ahat * 100./GEN.Atotal);
   }
 
   fprintf(log,"%s: total areas:\n",gen->genid);

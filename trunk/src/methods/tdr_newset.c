@@ -96,7 +96,7 @@ unur_tdr_new( struct unur_distr* distr )
   par->method   = UNUR_METH_TDR;                 /* method                   */
   par->variant  = ( TDR_VARFLAG_USECENTER |      /* default variant          */
 		    TDR_VARFLAG_USEMODE   |
-                    TDR_VAR_VERSION_ORIG );
+                    TDR_VAR_VERSION_GW );
 
   par->set      = 0u;               /* inidicate default parameters          */    
   par->urng     = unur_get_default_urng(); /* use default urng               */
@@ -391,7 +391,7 @@ unur_tdr_set_usemode( struct unur_par *par, int usemode )
 /*---------------------------------------------------------------------------*/
 
 int
-unur_tdr_set_version_orig( struct unur_par *par )
+unur_tdr_set_version_gw( struct unur_par *par )
      /*----------------------------------------------------------------------*/
      /* use original version with squeezes as proposed by Gilks & Wild       */
      /*                                                                      */
@@ -410,12 +410,12 @@ unur_tdr_set_version_orig( struct unur_par *par )
   _unur_check_par_object( par,TDR );
 
   /* we use a bit in variant */
-  par->variant &= ~TDR_VARMASK_VERSION & TDR_VAR_VERSION_ORIG;
+  par->variant = (par->variant & ~TDR_VARMASK_VERSION) | TDR_VAR_VERSION_GW;
 
   /* o.k. */
   return 1;
 
-} /* end of unur_tdr_set_version_orig() */
+} /* end of unur_tdr_set_version_gw() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -439,7 +439,7 @@ unur_tdr_set_version_ps( struct unur_par *par )
   _unur_check_par_object( par,TDR );
 
   /* we use a bit in variant */
-  par->variant &= ~TDR_VARMASK_VERSION & TDR_VAR_VERSION_PS;
+  par->variant = (par->variant & ~TDR_VARMASK_VERSION) | TDR_VAR_VERSION_PS;
 
   /* o.k. */
   return 1;
@@ -469,7 +469,7 @@ unur_tdr_set_version_ia( struct unur_par *par )
   _unur_check_par_object( par,TDR );
 
   /* we use a bit in variant */
-  par->variant &= ~TDR_VARMASK_VERSION & TDR_VAR_VERSION_IA;
+  par->variant = (par->variant & ~TDR_VARMASK_VERSION) | TDR_VAR_VERSION_IA;
 
   /* o.k. */
   return 1;

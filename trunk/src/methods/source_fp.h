@@ -47,15 +47,18 @@
 
 /* a == b (except precision bit) */
 #define _FP_same(a,b) \
- (fabs((a)-(b)) <= ((fabs(a)<fabs(b))?fabs(a):fabs(b)) * DBL_EPSILON)
+ ((a)==(b) || \
+ fabs((a)-(b)) <= ((fabs(a)<fabs(b))?fabs(a):fabs(b)) * DBL_EPSILON)
 
 /* a == b */
 #define _FP_equal(a,b) \
- (fabs((a)-(b)) <= ((fabs(a)<fabs(b))?fabs(a):fabs(b)) * UNUR_EPSILON)
+ ((a)==(b) || \
+ fabs((a)-(b)) <= ((fabs(a)<fabs(b))?fabs(a):fabs(b)) * UNUR_EPSILON)
 
 /* a is approximately equal to b */
 #define _FP_approx(a,b) \
- (fabs((a)-(b)) <= ((fabs(a)<fabs(b))?fabs(a):fabs(b)) * FLT_EPSILON)
+ ((a)==(b) || \
+ fabs((a)-(b)) <= ((fabs(a)<fabs(b))?fabs(a):fabs(b)) * FLT_EPSILON)
 
 /* a < b */
 #define _FP_less(a,b) \
@@ -64,6 +67,22 @@
 /* a > b */
 #define _FP_greater(a,b) \
  (!_FP_equal((a),(b)) && ((a) > (b)))
+
+/*---------------------------------------------------------------------------*/
+/* Infinity                                                                  */
+
+/* Defining infinity (just to avoid writing UNUR_INIFINITY)                  */
+
+#define INFINITY  UNUR_INFINITY  /* This must be already defined in x_math.h */
+
+/* check for infinity */
+
+/* +oo */
+#define _FP_is_infinity(a)  ((a) >= INFINITY)
+
+/* -oo */
+#define _FP_is_minus_infinity(a)  ((a) <= -INFINITY)
+
 
 /*---------------------------------------------------------------------------*/
 #endif  /* __SOURCE_FP_H_SEEN */

@@ -68,6 +68,88 @@
 /**                                                                         **/
 /*****************************************************************************/
 
+/*---------------------------------------------------------------------------*/
+
+int 
+unur_get_n_intervals( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* get number of intervals/segments                                     */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   number of intervals/segments                                       */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return -1                                                          */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  CHECK_NULL(gen,-1);
+
+  switch (gen->method & UNUR_MASK_METHOD) {
+  case UNUR_METH_AROU:
+    COOKIE_CHECK(gen,CK_AROU_GEN,-1);
+    return gen->data.arou.n_segs;
+
+  case UNUR_METH_TABL:
+    COOKIE_CHECK(gen,CK_TABL_GEN,-1);
+    return gen->data.tabl.n_ivs;
+
+  case UNUR_METH_TDR:
+    COOKIE_CHECK(gen,CK_TDR_GEN,-1);
+    return gen->data.tdr.n_ivs;
+
+  default:
+    /** TODO: error message **/
+    return -1;
+  }
+  
+} /* end of unur_get_n_intervals() */
+
+/*---------------------------------------------------------------------------*/
+
+int 
+unur_get_max_intervals( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* get maximal number of intervals/segments                             */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   maximal number of intervals/segments                               */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return -1                                                          */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  CHECK_NULL(gen,-1);
+
+  switch (gen->method & UNUR_MASK_METHOD) {
+  case UNUR_METH_AROU:
+    COOKIE_CHECK(gen,CK_AROU_GEN,-1);
+    return gen->data.arou.max_segs;
+
+  case UNUR_METH_TABL:
+    COOKIE_CHECK(gen,CK_TABL_GEN,-1);
+    return gen->data.tabl.max_ivs;
+
+  case UNUR_METH_TDR:
+    COOKIE_CHECK(gen,CK_TDR_GEN,-1);
+    return gen->data.tdr.max_ivs;
+
+  default:
+    /** TODO: error message **/
+    return -1;
+  }
+  
+} /* end of unur_get_max_intervals() */
+
+/*---------------------------------------------------------------------------*/
+
 double
 unur_get_shratio( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
@@ -78,33 +160,35 @@ unur_get_shratio( struct unur_gen *gen )
      /*                                                                      */
      /* return:                                                              */
      /*   ratio                                                              */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return -1.                                                         */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  CHECK_NULL(gen,0);
+  CHECK_NULL(gen,-1.);
 
   switch (gen->method & UNUR_MASK_METHOD) {
   case UNUR_METH_AROU:
-    COOKIE_CHECK(gen,CK_AROU_GEN,0);
+    COOKIE_CHECK(gen,CK_AROU_GEN,-1.);
     return gen->data.arou.Asqueeze / gen->data.arou.Atotal;   /** TODO check for overflow ?? **/
 
   case UNUR_METH_TABL:
-    COOKIE_CHECK(gen,CK_TABL_GEN,0);
+    COOKIE_CHECK(gen,CK_TABL_GEN,-1.);
     return gen->data.tabl.Asqueeze / gen->data.tabl.Atotal;   /** TODO check for overflow ?? **/
 
   case UNUR_METH_TDR:
-    COOKIE_CHECK(gen,CK_TDR_GEN,0);
+    COOKIE_CHECK(gen,CK_TDR_GEN,-1.);
     return gen->data.tdr.Asqueeze / gen->data.tdr.Atotal;   /** TODO check for overflow ?? **/
 
   default:
     /** TODO: error message **/
-    return 0.;
+    return -1.;
   }
   
 } /* end of unur_get_shratio() */
 
 /*---------------------------------------------------------------------------*/
-
 
 int
 unur_get_dimension( struct unur_gen *gen )

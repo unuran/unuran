@@ -550,9 +550,15 @@ _unur_hitrou_rectangle( struct unur_gen *gen )
   rr->center = GEN->center;
   rr->u_planes = GEN->u_planes;
   rr->genid  = gen->genid;
-
+  
+  /* setting dummy initialization values (stupid compiler !) */
+  for (d=0; d<GEN->dim; d++) {
+    rr->umin[d]=0;
+    rr->umax[d]=0;
+  } 
+  
   /* calculate bounding rectangle */
-  if (!(gen->set & HITROU_SET_U) && !(gen->set & HITROU_SET_V)) {
+  if (!(gen->set & HITROU_SET_U) || !(gen->set & HITROU_SET_V)) {
     _unur_mrou_rectangle_compute(rr);
   }
 

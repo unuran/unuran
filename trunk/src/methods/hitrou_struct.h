@@ -14,7 +14,7 @@
  *         only included in source_struct.h                                  *
  *                                                                           *
  *****************************************************************************
- 
+
 *****************************************************************************
  *                                                                           *
  *   Copyright (c) 2000 Wolfgang Hoermann and Josef Leydold                  *
@@ -40,10 +40,10 @@
 /*---------------------------------------------------------------------------*/
 /* Information for constructing the generator                                */
 
-struct unur_hitrou_par { 
+struct unur_hitrou_par {
   int    dim;               /* dimension of distribution                     */
-  double r;		    /* r-parameter of the hitrou method	             */
-  long skip;		    /* skip-parameter of the hitrou method 	     */
+  double r;                 /* r-parameter of the hitrou method              */
+  long skip;                /* skip-parameter of the hitrou method           */
   double *umin, *umax;      /* boundary rectangle u-coordinates              */
   double vmax;              /* boundary rectangle v-coordinate               */
 };
@@ -51,15 +51,20 @@ struct unur_hitrou_par {
 /*---------------------------------------------------------------------------*/
 /* The generator object                                                      */
 
-struct unur_hitrou_gen { 
+struct unur_hitrou_gen {
   int    dim;               /* dimension of distribution                     */
-  double r;		    /* r-parameter of the hitrou method	             */
-  long skip;		    /* skip-parameter of the hitrou method 	     */
+  double r;                 /* r-parameter of the hitrou method              */
+  long skip;                /* skip-parameter of the hitrou method           */
   double *umin, *umax;      /* boundary rectangle u-coordinates              */
   double vmax;              /* boundary rectangle v-coordinate               */
-  const double *center;     /* center of distribution                        */  
+  const double *center;     /* center of distribution                        */
   double *direction;        /* random direction vector                       */
-  double *point;            /* current point inside the RoU shape            */
+  double *point_current;    /* current point inside the shape                */
+  double *point_random;     /* random point, can be inside shape or not      */
+  double *x;                /* working point in the (xy)-coordinate system   */
+  long pdfcount;            /* counting the number of PDF calls              */
+  int shape_flag;           /* 0=normal RoU shape, 1=test rectangle          */
+  double *test_rectangle;   /* (dim+1) array : relative size of test rect    */
 };
 
 /*---------------------------------------------------------------------------*/

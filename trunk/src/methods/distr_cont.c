@@ -137,8 +137,8 @@ unur_distr_cont_new( void )
 				      (initialized to avoid accidently floating
 				      point exception                        */
 
-  DISTR.mode      = INFINITY;      /* location of mode (default: not known)  */
-  DISTR.area      = INFINITY;      /* area below p.d.f. (default: not known) */
+  DISTR.mode      = 0.;            /* location of mode (default: not known)  */
+  DISTR.area      = 1.;            /* area below p.d.f. (default: not known) */
 
   DISTR.trunc[0] = DISTR.domain[0] = -INFINITY; /* left boundary of domain   */
   DISTR.trunc[1] = DISTR.domain[1] = INFINITY;  /* right boundary of domain  */
@@ -850,6 +850,10 @@ unur_distr_cont_get_pdfarea( struct unur_distr *distr )
 
 /*****************************************************************************/
 
+/*---------------------------------------------------------------------------*/
+#ifdef UNUR_ENABLE_LOGGING
+/*---------------------------------------------------------------------------*/
+
 void
 _unur_distr_cont_debug( struct unur_distr *distr, char *genid )
      /*----------------------------------------------------------------------*/
@@ -902,6 +906,10 @@ _unur_distr_cont_debug( struct unur_distr *distr, char *genid )
   fprintf(log,"\n%s:\n",genid);
 
 } /* end of _unur_distr_cont_debug() */
+
+/*---------------------------------------------------------------------------*/
+#endif    /* end UNUR_ENABLE_LOGGING */
+/*---------------------------------------------------------------------------*/
 
 /*****************************************************************************/
 
@@ -1130,7 +1138,7 @@ _unur_distr_cont_find_mode(struct unur_distr *distr )
 /*    printf("x1: %f, fx1: %e\n", x[1], fx[1]); */
 /*    printf("x2: %f, fx2: %e\n", x[2], fx[2]); */
 
-  mode = fmaxbr( DISTR.pdf, distr, x[0], x[2], x[1], 0. );
+  mode = fmaxbr( DISTR.pdf, distr, x[0], x[2], x[1], FLT_MIN );
   if (!(_unur_FP_is_infinity( mode )) ){
     /* mode successfully computed */
     DISTR.mode = mode;
@@ -1209,7 +1217,7 @@ _unur_distr_cont_find_mode(struct unur_distr *distr )
 /* in case of any error INFINITY is returned */
 
 #define SQRT_EPSILON  (1.e-7)           /* tolerance for relative error      */
-#define MAXIT         (100)             /* maximum number of iterations      */
+#define MAXIT         (1000)            /* maximum number of iterations      */
 
 double
 fmaxbr(f_invest, distr, a, b, c, tol)   /* An estimate to the min location   */

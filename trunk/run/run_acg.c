@@ -23,7 +23,7 @@ int main()
   UNUR_DISTR *distr;
   UNUR_PAR *par;
   UNUR_GEN *gen;
-  double fpar[2] = {1., 2.};
+  double fpar[2] = {-1., 5.};
 
   unur_set_default_debug(~0u);
 
@@ -33,8 +33,9 @@ int main()
 /*    unur_tdr_set_c(par,0.); */
   unur_tdr_set_cpoints(par,4,NULL),
   gen = unur_init( par );
-  unur_acg_C( gen, stdout, NULL );
-/*    unur_acg_FORTRAN( gen, stdout, NULL ); */
+/*    unur_acg_C( gen, stdout, NULL ); */
+  unur_acg_FORTRAN( gen, stdout, NULL );
+/*    unur_acg_JAVA( gen, stdout, NULL ); */
   unur_distr_free(distr);
   unur_free(gen);
 

@@ -91,13 +91,22 @@ sub make_headergen_C
     $headergen .= make_bar("C version");
 
     # Constants 
-    $headergen .= make_header_constants_C();
+    $headergen .= make_header_constants();
 
     # Main (C)
     $headergen .= make_header_main_C( $DISTR );
 
+    # Print date when generated
+    $headergen .= make_header_date_C();
+
     # Copyright notice
     $headergen .= make_header_copyright_C();
+
+    # Function for printing parameter values
+    $headergen .= print_param();
+
+    # Function for printing of PDF
+    $headergen .= make_header_PDFdomain_C();
 
     # Continuous distributions
     foreach my $d (sort keys %{$DISTR}) {
@@ -129,7 +138,7 @@ sub make_header_main_C
     $gencode .= make_bar("ACG header main");
 
     # Function header
-    $gencode .= "int _unur_acg_C_header (UNUR_DISTR *distr, FILE *out, const char *pdf)\n{\n";
+    $gencode .= "int _unur_acg_C_header (UNUR_DISTR *distr, FILE *out, const char *rand)\n{\n";
 
     # Check for invalid NULL pointer
     $gencode .= "\t_unur_check_NULL(\"ACG\", distr, 0 );\n\n";
@@ -139,7 +148,7 @@ sub make_header_main_C
     foreach my $d (sort keys %{$DISTR}) {
 	next unless $DISTR->{$d}->{"=TYPE"} eq "CONT";
 	$gencode .= "\tcase ".$DISTR->{$d}->{"=ID"}.":\n";
-	$gencode .= "\t\treturn _unur_acg_C_header_$d (distr,out,pdf);\n";
+	$gencode .= "\t\treturn _unur_acg_C_header_$d (distr,out,rand);\n";
     }
     $gencode .= "\tdefault:\n";
     $gencode .= "\t\t_unur_error(distr->name,UNUR_ERR_GEN_DATA,\"Cannot make ACG header\");\n";
@@ -189,36 +198,20 @@ sub make_header_distr_C
     $gencode .= 
 	make_header_PDFparams_C($DISTR,$d);
 
+    # Domain of PDF
+    $gencode .= 
+	"\t_unur_acg_C_header_domain (out, distr);\n";
 
-# $DISTR->{"beta"}->{"=DOC"}->{"=PDF"}       ... formula for PDF
-#	next unless $DISTR->{$d}->{"=PDF"} eq "CONT";
-#            if ($IN->{$node}->{"=PDF"}) {
-
+    # Synopsis
+    $gencode .= 
+	 "\tfprintf (out,hrule);\n"
+	."\tfprintf (out,sformat,\"Synopsis:\");\n"
+	."\tfprintf (out,\"\\ndouble %s (void);\\n\\n\",rand);\n";
 
     # Copyright notice
-    $gencode .= "\t_unur_acg_C_header_copyright(out);\n";
+    $gencode .= 
+	"\t_unur_acg_C_header_copyright (out);\n";
 
-    
-
-
-    # compose PDF name
-#    $gencode .= 
-#	"\tfprintf (out,\"static double %s (double x)\\n{\\n\",".
-#        " ((pdf) ? pdf : \"pdf_$d\") );\n";
-
-    # Constants (parameters)
-#    $gencode .= 
-#	"\tfprintf (out,\"\\t/* parameters for PDF */\\n\");\n";
-
-
-    #   Normalization constant
-#    $gencode .= make_PDF_normconstant_C($DISTR,$d);
-
-    # Body of PDF
-#    $gencode .= make_PDF_body_C($DISTR,$d);
-
-    # End of function
-#    $gencode .= "\tfprintf (out,\"}\\n\");\n";
     $gencode .= $empty_line;
 
     $gencode .= "\n\treturn 1;\n";
@@ -236,7 +229,7 @@ sub get_headergen_funct_C
 {
     my $d = $_[0];       # distribution
 
-    return "int _unur_acg_C_header_$d (UNUR_DISTR *distr, FILE *out, const char *pdf)";
+    return "int _unur_acg_C_header_$d (UNUR_DISTR *distr, FILE *out, const char *rand)";
 
 } # end of get_headergen_funct_C()
 
@@ -251,28 +244,50 @@ sub make_header_PDFparams_C
 
     my $gencode;         # code for creating ACG header
 
+    # parameters for PDF
     my $n_in_params = $DISTR->{$d}->{"=PDF"}->{"=N_PARAMS"};
     my $in_params = $DISTR->{$d}->{"=PDF"}->{"=PARAMS"};
 
     foreach my $i (0 .. $n_in_params - 1) {
 	my $param = $in_params->[$i];
 	$gencode .= 
-	    "\tfprintf (out,sformat,\"     $param =\");\n";
-
-
-# 	$params .= $in_params->[$i]."=".$DISTR->{$d}->{"=PDF"}->{"=DISTR"}.".params[$i]);\n";
-
-
-#	    "\tfprintf (out,\"\\tconst double ".
-#	        $in_params->[$i].
-#	        " = %.20e;\\n\",".
-#	        $DISTR->{$d}->{"=PDF"}->{"=DISTR"}.".params[$i]);\n";
-
+	    "\t_unur_acg_C_header_param (out,\"$param\",distr->data.cont.params[$i]);\n";
     }
 
+    # end
     return $gencode;
 
 } # end of make_header_PDFparams_C()
+
+
+# ----------------------------------------------------------------
+# Print domain
+
+sub make_header_PDFdomain_C
+{
+    my $gencode;         # code for creating ACG header
+
+    # Mark begin of Copyright notice
+    $gencode .= make_bar("Print domain for PDF");
+
+    # Function prototype
+    $headergen_prototypes .= "static int _unur_acg_C_header_domain (FILE *out, UNUR_DISTR *distr);\n";
+
+    # Print copyright notice
+    $gencode .= <<EOX;
+int _unur_acg_C_header_domain (FILE *out, UNUR_DISTR *distr)
+{
+\tchar buf[1024];
+\tsprintf (buf,"      domain = [ %g, %g ]", distr->data.cont.domain[0], distr->data.cont.domain[1]);
+\tfprintf (out,sformat,buf);
+\treturn 1;
+}
+EOX
+
+    # end
+    return $gencode;
+
+} # end of make_header_PDFdomain_C()
 
 
 # ----------------------------------------------------------------
@@ -321,17 +336,30 @@ sub scan_PDF {
 # ----------------------------------------------------------------
 # Constants for headergen file
 
-sub make_header_constants_C
+sub make_header_constants
 {
     my $gencode;         # code for creating ACG header
 
     # Mark begin of Copyright notice
-    $gencode .= make_bar("ACG copyright notice");
+    $gencode .= make_bar("constants");
 
     # Print copyright notice
     $gencode .= <<EOX;
-const static char hrule[] = "/* ---------------------------------------------------------------- */\\n";
-const static char sformat[] = "/* %-64.64s */\\n";
+/* C version */
+const static char hrule_C[] = "/* ---------------------------------------------------------------- */\\n";
+const static char sformat_C[] = "/* %-64.64s */\\n";
+
+/* FORTRAN version */
+const static char hrule_FORTRAN[] = "* ------------------------------------------------------------------ *\\n";
+const static char sformat_FORTRAN[] = "* %-66.66s *\\n";
+
+/* JAVA version */
+const static char *hrule_JAVA = hrule_C;
+const static char *sformat_JAVA = sformat_C;
+
+/* switch */
+const static char *hrule = hrule_C;
+const static char *sformat = sformat_C;
 EOX
 
     return $gencode;
@@ -347,13 +375,18 @@ sub make_header_copyright_C
     # Mark begin of Copyright notice
     $gencode .= make_bar("ACG copyright notice");
 
+    # Function prototype
+    $headergen_prototypes .= "static int _unur_acg_C_header_copyright (FILE *out);\n";
+
     # Print copyright notice
     $gencode .= <<EOX;
-static int _unur_acg_C_header_copyright(FILE *out)
+int _unur_acg_C_header_copyright (FILE *out)
 {
 \tfprintf (out,hrule);
 \tfprintf (out,sformat,"See NOTICE for uniform random number generator below!");
 \tfprintf (out,hrule);
+\t_unur_acg_C_header_date (out);
+\tfprintf (out,sformat,"");
 \tfprintf (out,sformat,"Copyright (c) 2001   Wolfgang Hoermann and Josef Leydold");
 \tfprintf (out,sformat,"Dept. for Statistics, University of Economics, Vienna, Austria");
 \tfprintf (out,sformat,"All rights reserved.");
@@ -385,6 +418,67 @@ EOX
 } # end of make_header_copyright_C()
 
 # ----------------------------------------------------------------
+# Print date notice (C version)
+
+sub make_header_date_C
+{
+    my $gencode;         # code for creating ACG header
+
+    # Mark begin of Copyright notice
+    $gencode .= make_bar("ACG copyright notice");
+
+    # Function prototype
+    $headergen_prototypes .= "static int _unur_acg_C_header_date (FILE *out);\n";
+
+    # Print copyright notice
+    $gencode .= <<EOX;
+int _unur_acg_C_header_date (FILE *out)
+{
+\tchar buf[1024];
+\tchar date[64];
+\ttime_t timer;
+\ttimer = time(&timer);
+\tstrftime(date,60,"%B %d %Y %H:%M:%S",localtime(&timer));
+\tsprintf (buf,"Generated by ANURAN (v.%s).   %s", VERSION, date);
+\tfprintf (out,sformat,buf);
+\treturn 1;
+}
+EOX
+
+    return $gencode;
+
+} # end of  make_header_date_C()
+
+# ----------------------------------------------------------------
+# Print parameter
+
+sub print_param
+{
+
+    my $gencode;         # code for creating ACG header
+
+    # Mark begin of Copyright notice
+    $gencode .= make_bar("Print parameter for PDF");
+
+    # Function prototype
+    $headergen_prototypes .= "static int _unur_acg_C_header_param (FILE *out, char *par, double val);\n";
+
+    # Print copyright notice
+    $gencode .= <<EOX;
+int _unur_acg_C_header_param (FILE *out, char *par, double val)
+{
+\tchar buf[1024];
+\tsprintf (buf,"      %s = %g", par, val);
+\tfprintf (out,sformat,buf);
+\treturn 1;
+}
+EOX
+
+    return $gencode;
+
+} # end of print_param()
+
+# ----------------------------------------------------------------
 # Make bar in headergen file
 
 sub make_bar
@@ -409,3 +503,5 @@ sub make_bar
 } # end of make_bar()
 
 # ----------------------------------------------------------------
+
+

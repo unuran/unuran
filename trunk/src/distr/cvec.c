@@ -1598,6 +1598,10 @@ _unur_distr_cvec_debug( const struct unur_distr *distr, const char *genid )
   fprintf(log,"%s:\tdimension = %d\n",genid,distr->dim);
   fprintf(log,"%s:\n",genid);
 
+  /* mode */
+  mat = ((distr->set & UNUR_DISTR_SET_MODE) && DISTR.mode) ? DISTR.mode : NULL;
+  _unur_matrix_print_vector( distr->dim, mat, "\tmode =", log, genid, "\t   ");
+
   /* mean vector */
   mat = ((distr->set & UNUR_DISTR_SET_MEAN) && DISTR.mean) ? DISTR.mean : NULL;
   _unur_matrix_print_vector( distr->dim, mat, "\tmean vector =", log, genid, "\t   ");

@@ -114,14 +114,20 @@ double
 _unur_cdf_cauchy(double x, const UNUR_DISTR *distr)
 {
   register double *params = DISTR.params;
+  register double Fx;
 
   if (DISTR.n_params > 0)
     /* standardize */
     x = (x - theta) / lambda; 
 
   /* standard form */
+  Fx = 0.5 + atan(x)/M_PI;
 
-  return ( 0.5 + atan(x)/M_PI );
+  /* correct round off error of atan() */
+  if (Fx<0.)  Fx = 0.;
+  if (Fx>1.)  Fx = 1.;
+
+  return Fx;
 
 } /* end of _unur_cdf_cauchy() */
 

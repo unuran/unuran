@@ -92,7 +92,7 @@ static const char distr_name[] = "student";
 /* function prototypes                                                       */
 static double _unur_pdf_student( double x, const UNUR_DISTR *distr );
 static double _unur_dpdf_student( double x, const UNUR_DISTR *distr );
-#if HAVE_UNUR_SF_CDFSTUDENT
+#ifdef HAVE_UNUR_SF_CDFSTUDENT
 static double _unur_cdf_student( double x, const UNUR_DISTR *distr );
 #endif
 

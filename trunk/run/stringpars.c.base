@@ -16,7 +16,7 @@
  *   'stringpars.c'.                                                         *
  *   The string to parse contains information about the standard             *
  *   distribution, the choosen method and (optional) the uniform number      *
- *   generator (in this order!).                                             *
+ *   generator -- The distribution block must be first.                      *
  *   These three blocks must be separeted with colons `:'                    *
  *                                                                           *
  *   The information about the distribution and the method must be provided  *
@@ -45,7 +45,7 @@
  *   name of a method suitable for the choosen standard distribution.        *
  *   e.g.: method=arou                                                       *
  *   Of course the keys are dependent on the choosen method. All             *
- *   corresponding _set_ commands of UNURAN are available and the key is     *
+ *   corresponding `_set_' commands of UNURAN are available and the key is   *
  *   the string after the `unur_<methodname>_set_' part of the command.      *
  *   e.g.: UNURAN provedes the command `unur_arou_set_max_sqhratio' to       *
  *   set a parameter. To call this function via the string-interface, the    *
@@ -53,6 +53,7 @@
  *                                                                           *
  *   Uniform random number generator:                                        *
  *   The string is passed as it is to the PRNG package                       *
+ *   For information see the PRNG manual                                     *
  *                                                                           *
  *****************************************************************************
      $Id$
@@ -86,9 +87,9 @@
 #include <source_unuran.h>
 
 /* Maximal length of provides string allowed */
-#define MAX_STRLENGTH (1024)
+#define MAX_STRLENGTH (2048)
 /* Maximal entries of any list allowed */
-#define MAX_ELEM (1024)
+#define MAX_ELEM (2048)
 
 
     /* ********************************************************** */ 
@@ -122,13 +123,19 @@ int          _unur_str2urng         (UNUR_PAR *, char *);
 /* called by: _unur_str2distr()                                       */
 /*            _unur_str2par()                                         */
 /*                                                                    */
+/* parameters: char   * liststr     (pointer to char / string)        */
+/*             double * parameters  (pointer to double array)         */
+/*                                                                    */
+/* return: number of elements extracted                               */
+/*                                                                    */
+/* comment:                                                           */
 /* gets a string containing a list of comma separated doubles         */
-/* which is terminited with `)'                                       */
+/* which starts with the first double and is terminited with `)'      */
 /* and a pointer to a double array                                    */
 /* and extracts the doubles from the list to the array                */
 /*                                                                    */
 /**********************************************************************/
-int _unur_parselist( char *liststr, double *ptr_to_list ){
+int _unur_parselist( char *liststr, double *parameters ){
 
   int no_of_elem = 0; /* number of elements in passed list */
 
@@ -141,7 +148,7 @@ int _unur_parselist( char *liststr, double *ptr_to_list ){
     }
     
     /* extract double and write to array and increase counter */
-    ptr_to_list[no_of_elem] = strtod(liststr, &liststr);
+    parameters[no_of_elem] = strtod(liststr, &liststr);
     no_of_elem++;
 
   } /* end while -- all elements of list read*/
@@ -158,6 +165,11 @@ int _unur_parselist( char *liststr, double *ptr_to_list ){
 /*                                                                    */
 /* called by: unur_str2gen()                                          */
 /*                                                                    */
+/* parameters: pointer to char (string)                               */
+/*                                                                    */
+/* return: pointer to distribution object                             */
+/*                                                                    */
+/* comments:                                                          */
 /* gets a string with information about the distribution,             */
 /* generates the corresponding distribution object and returns it     */
 /*                                                                    */
@@ -237,6 +249,12 @@ UNUR_DISTR *_unur_str2distr(char *str){
 /*                                                                    */
 /* called by: unur_str2gen()                                          */
 /*                                                                    */
+/* parameters: pointer do distribution object                         */
+/*             pointer to char array / string                         */
+/*                                                                    */
+/* return: pointer to parameter object                                */
+/*                                                                    */
+/* comments:                                                          */
 /* gets a pointer to a distribution object and a string with          */
 /* information about the distribution,                                */
 /* generates the corresponding parameter object and returns it        */
@@ -249,7 +267,8 @@ UNUR_DISTR *_unur_str2distr(char *str){
 /* key=(komma separated list of numbers)                              */
 /* key=value(komma separated list of numbers)                         */
 /*                                                                    */
-/* for each key the corresponding unur_<name>_set command is executed */
+/* for each key the corresponding `unur_<name>_set' command           */
+/* is executed                                                        */
 /*                                                                    */
 /**********************************************************************/
 UNUR_PAR *_unur_str2par(UNUR_DISTR *distr, char *methstr){
@@ -329,6 +348,12 @@ UNUR_PAR *_unur_str2par(UNUR_DISTR *distr, char *methstr){
 /*                                                                    */
 /* called by: unur_str2gen()                                          */
 /*                                                                    */
+/* parameters: pointer to parameter object                            */
+/*             pointer to char array / string                         */
+/*                                                                    */
+/* return: error-code                                                 */         
+/*                                                                    */
+/* comments:                                                          */
 /* gets a pointer to a parameter object and a string with             */
 /* information about the uniform random number generator (urng)       */
 /* and sets the urng withing the parameter object.                    */
@@ -361,10 +386,10 @@ int _unur_str2urng(UNUR_PAR *par, char *urngstr){
    /* error while setting uniform random number generator */
    if ( urng == NULL ){
       fprintf(stderr, "PRNG ERROR: Can't set uniform number generator.\n");
-      return (1);
+      return (0);
    }
    else{                /* success */
-      return (0);
+      return (1);
    }
 } /* end fo _unur_str2urng() */
 
@@ -373,6 +398,12 @@ int _unur_str2urng(UNUR_PAR *par, char *urngstr){
 /*                                                                    */
 /* function: _unur_subst_whitespace()                                 */
 /*                                                                    */
+/* parameters: pointer to char / string                               */
+/*             separation character                                   */
+/*                                                                    */
+/* return: void                                                       */
+/*                                                                    */
+/* comments:                                                          */
 /* finds all occurences of sep_char in str and replaces the           */
 /* surrounding whitespace with the separation character sep_char      */
 /*                                                                    */
@@ -398,12 +429,14 @@ void _unur_subst_whitespace(char *str, char sep_char){
 /*                                                                    */
 /* function: elim_whitespce()                                         */
 /*                                                                    */
+/* parameters: pointer to char array /string                          */
+/*                                                                    */
+/* return: pointer to char array / string                             */
+/*                                                                    */
+/* comments:                                                          */
 /* gets a string, cuts off leading and terminating white space and    */
 /* replaces all other white space within the string with the nearby   */
-/* separation charakter                                               */
-/*                                                                    */
-/* returns pointer to the string                                      */
-/*                                                                    */
+/* separation character                                               */
 /**********************************************************************/
 char *_unur_elim_whitespace(char *str){
 
@@ -431,9 +464,7 @@ char *_unur_elim_whitespace(char *str){
 
   return ( str );
 }
-/* end of _unur_elim_whitespace()                                           */
-
-
+/* end of _unur_elim_whitespace()         */
 
 
 
@@ -441,10 +472,15 @@ char *_unur_elim_whitespace(char *str){
 /*                                                                    */
 /* function: unur_str2gen()                                           */
 /*                                                                    */
+/* parameters:  pointer to char array / string                        */
+/*                                                                    */
+/* return: pointer to generator object                                */
+/*                                                                    */
+/* comments:                                                          */
 /* gets a string with information about the distribution and          */
 /* the desired method and                                             */
 /* generates the corresponding generator object invoking              */
-/* the funktions                                                      */
+/* the functions                                                      */
 /*   make_dist_obj() and                                              */
 /*   _unur_str2par()                                                  */
 /*                                                                    */

@@ -59,7 +59,8 @@
 #define UNUR_DISTR_SET_COVAR          0x02000000 /* covariance matrix (for multivar. distr.) */
 #define UNUR_DISTR_SET_COVAR_INV      0x04000000 /* inverse of covariance matrix (for multivar. distr.) */
 #define UNUR_DISTR_SET_CHOLESKY       0x08000000 /* cholesky factor of covariance matrix (for multivar. distr.) */
-#define UNUR_DISTR_SET_MARGINAL       0x10000000 /* marginal distribution (for multivar. distr.) */
+#define UNUR_DISTR_SET_RANKCORR       0x10000000 /* rank-correlation (for multivar. distr.) */
+#define UNUR_DISTR_SET_MARGINAL       0x20000000 /* marginal distribution (for multivar. distr.) */
 
 /* derived parameters */
 #define UNUR_DISTR_SET_MASK_DERIVED   0x0000ffff

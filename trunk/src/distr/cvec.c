@@ -135,6 +135,7 @@ unur_distr_cvec_new( int dim )
   DISTR.cholesky  = NULL;   /* pointer to cholesky factor (default: not computed) */
   DISTR.covar_inv = NULL;   /* pointer to inverse covariance matrix 
 			       (default: not computed ) */
+  DISTR.rankcorr  = NULL;   /* rank correlation of distribution              */
   DISTR.marginals = NULL;   /* array of pointers to marginal distributions   */
 
   /* initialize parameters of the PDF                                        */
@@ -208,6 +209,11 @@ _unur_distr_cvec_clone( const struct unur_distr *distr )
     memcpy( CLONE.covar_inv, DISTR.covar_inv, distr->dim * distr->dim * sizeof(double) );
   }
 
+  if (DISTR.covar) {
+    CLONE.rankcorr = _unur_malloc( distr->dim * distr->dim * sizeof(double) );
+    memcpy( CLONE.rankcorr, DISTR.rankcorr, distr->dim * distr->dim * sizeof(double) );
+  }
+
   if (DISTR.mode) {
     CLONE.mode = _unur_malloc( distr->dim * sizeof(double) );
     memcpy( CLONE.mode, DISTR.mode, distr->dim * sizeof(double) );
@@ -278,6 +284,7 @@ _unur_distr_cvec_free( struct unur_distr *distr )
   if (DISTR.covar)     free(DISTR.covar);
   if (DISTR.covar_inv) free(DISTR.covar_inv);
   if (DISTR.cholesky)  free(DISTR.cholesky);
+  if (DISTR.rankcorr)  free(DISTR.rankcorr);
 
   if (DISTR.mode)  free(DISTR.mode);
 
@@ -564,7 +571,7 @@ unur_distr_cvec_set_covar( struct unur_distr *distr, const double *covar )
      /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
-#define idx(a,b) (a*dim+b)
+#define idx(a,b) ((a)*dim+(b))
 
   int i,j;
   int dim;
@@ -739,6 +746,125 @@ unur_distr_cvec_get_covar_inv ( struct unur_distr *distr )
   return DISTR.covar_inv;
 
 } /* end of unur_distr_cvec_get_covar_inv() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+unur_distr_cvec_set_rankcorr( struct unur_distr *distr, const double *rankcorr )
+     /*----------------------------------------------------------------------*/
+     /* Set rank-correlation matrix of distribution.                         */
+     /* The given matrix is checked for symmetry and positive definitness.   */
+     /* The diagonal entries must be equal to 1.                             */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   distr    ... pointer to distribution object                        */
+     /*   rankcorr ... rankcorrelation matrix of distribution                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+#define idx(a,b) ((a)*dim+(b))
+
+  int i,j;
+  int dim;
+  double *cholesky;
+
+  /* check arguments */
+  _unur_check_NULL( NULL, distr, UNUR_ERR_NULL );
+  _unur_check_distr_object( distr, CVEC, UNUR_ERR_DISTR_INVALID );
+
+  dim = distr->dim;
+
+  /* mark as unknown */
+  distr->set &= ~(UNUR_DISTR_SET_RANKCORR);
+
+  /* we have to allocate memory first */
+  if (DISTR.rankcorr == NULL)
+    DISTR.rankcorr = _unur_malloc( dim * dim * sizeof(double) );
+
+  /* if rankcorr == NULL --> use identity matrix */
+  if (rankcorr==NULL) { 
+    for (i=0; i<dim; i++)
+      for (j=0; j<dim; j++)
+         DISTR.rankcorr[idx(i,j)] = (i==j) ? 1. : 0.;
+  } 
+
+  /* rankcorriance matrix given --> copy data */
+  else {
+    
+    /* check rankcorriance matrix: diagonal entries == 1 */
+    for (i=0; i<dim*dim; i+= dim+1) {
+      if (!_unur_FP_same(rankcorr[i],1)) {
+	_unur_error(distr->name ,UNUR_ERR_DISTR_DOMAIN,"diagonals != 1");
+	return UNUR_ERR_DISTR_DOMAIN;
+      }
+    }
+
+    /* check for symmetry */
+    for (i=0; i<dim; i++)
+      for (j=i+1; j<dim; j++)
+	if (!_unur_FP_same(rankcorr[i*dim+j],rankcorr[j*dim+i])) {
+	  _unur_error(distr->name ,UNUR_ERR_DISTR_DOMAIN,
+	              "rank-correlation matrix not symmetric");
+	  return UNUR_ERR_DISTR_DOMAIN;
+	}
+
+    /* copy data */
+    memcpy( DISTR.rankcorr, rankcorr, dim * dim * sizeof(double) );
+
+    /* compute Cholesky decomposition and check for positive definitness */
+    cholesky = _unur_malloc( dim * dim * sizeof(double) );   
+    if (_unur_matrix_cholesky_decomposition(dim, rankcorr, cholesky) != UNUR_SUCCESS) {
+      _unur_error(distr->name, UNUR_ERR_DISTR_DOMAIN, 
+		  "rankcorriance matrix not positive definite");
+      free(cholesky);
+      return UNUR_ERR_DISTR_DOMAIN;      
+    }
+    free(cholesky);
+    
+  }
+
+  /* changelog */
+  distr->set |= UNUR_DISTR_SET_RANKCORR;
+
+  /* o.k. */
+  return UNUR_SUCCESS;
+
+#undef idx
+} /* end of unur_distr_cvec_set_rankcorr() */
+
+/*---------------------------------------------------------------------------*/
+
+const double *
+unur_distr_cvec_get_rankcorr( const struct unur_distr *distr )
+     /*----------------------------------------------------------------------*/
+     /* get rank-correlation matrix of distribution                          */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   distr ... pointer to distribution object                           */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to rank-correlation matrix of distribution                 */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return NULL                                                        */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( NULL, distr, NULL );
+  _unur_check_distr_object( distr, CVEC, NULL );
+
+  /* rankcorriance matrix known ? */
+  if ( !(distr->set & UNUR_DISTR_SET_RANKCORR) ) {
+    _unur_warning(distr->name,UNUR_ERR_DISTR_GET,"rank-correlation matrix");
+    return NULL;
+  }
+
+  return DISTR.rankcorr;
+
+} /* end of unur_distr_cvec_get_rankcorr() */
 
 /*---------------------------------------------------------------------------*/
 

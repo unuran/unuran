@@ -44,6 +44,11 @@
 
    =UP Distribution_objects [30]
 
+   =DESCRIPTION
+   
+
+     ... add remarks about contradicting parameters ...
+
    =END
 */
 
@@ -191,6 +196,10 @@ int unur_distr_cvec_set_covar( UNUR_DISTR *distribution, const double *covar );
 
    @emph{Remark:} It might happen that a covariance matrix can be set
    but the inverse if the given matrix cannot be computed.
+
+   @emph{Remark:} UNU.RAN does not check whether the an eventually
+   set covariance matrix and a rank-correlation matrix do not
+   contradict each other.
 */
 
 const double *unur_distr_cvec_get_covar( const UNUR_DISTR *distribution );
@@ -204,8 +213,7 @@ const double *unur_distr_cvec_get_covar_inv( UNUR_DISTR *distribution );
    Get covariance matrix of @var{distribution}, its Cholesky factor,
    and its inverse, respectively. The function returns a
    pointer to an array of size @code{dim} x @code{dim}.
-   The rows of the matrix have to be stored consecutively in this
-   array.
+   The rows of the matrix are stored consecutively in this array.
    If the requested matrix is not marked as known the NULL
    pointer is returned and @code{unur_errno} is set to
    @code{UNUR_ERR_DISTR_GET}. 
@@ -217,7 +225,48 @@ const double *unur_distr_cvec_get_covar_inv( UNUR_DISTR *distribution );
    if it is not already stored.
 */
 
-int unur_distr_cvec_set_marginals( UNUR_DISTR *distribution, UNUR_DISTR *marginal);
+int unur_distr_cvec_set_rankcorr( UNUR_DISTR *distribution, const double *rankcorr );
+/* 
+   Set rank-correlation matrix for multivariate @var{distribution}.
+   @var{rankcorr} must be a pointer to an array of size
+   @code{dim} x @code{dim}, where @code{dim} is the dimension returned
+   by unur_distr_get_dim(). The rows of the matrix have to be stored
+   consecutively in this array.
+
+   @var{rankcorr} must be a rank-correlation matrix of the
+   @var{distribution}, i.e. it must be symmetric and positive definite
+   and its diagonal entries must be equal to @code{1}.
+
+   The Cholesky factor is computed (and but not stored) to verify the
+   positive definiteness condition.
+
+   A NULL pointer for @var{rankcorr} is interpreted as the identity matrix.
+
+   @emph{Important:} In case of an error (e.g. because @var{rankcorr} is
+   not a valid rank-correlation matrix) an error code is returned.
+   Moreover, the rank-correlation matrix is not set and is marked as
+   unknown. A previously set rank-correlation matrix is then no longer
+   available.
+
+   @emph{Remark:} UNU.RAN does not check whether the an eventually
+   set covariance matrix and a rank-correlation matrix do not
+   contradict each other.
+*/
+
+const double *unur_distr_cvec_get_rankcorr( const UNUR_DISTR *distribution );
+/*
+   Get rank-correlation matrix of @var{distribution}. The function
+   returns a pointer to an array of size @code{dim} x @code{dim}.
+   The rows of the matrix are stored consecutively in this array.
+   If the requested matrix is not marked as known the NULL
+   pointer is returned and @code{unur_errno} is set to
+   @code{UNUR_ERR_DISTR_GET}. 
+
+   @emph{Important:} Do @strong{not} modify the array that holds the
+   rank-correlation matrix!
+*/
+
+int unur_distr_cvec_set_marginals( UNUR_DISTR *distribution, UNUR_DISTR *marginal );
 /* 
    Sets marginal distribution for all marginals of the given
    @var{distribution}. The @var{marginal} distribution must be an
@@ -231,7 +280,7 @@ int unur_distr_cvec_set_marginals( UNUR_DISTR *distribution, UNUR_DISTR *margina
    @var{distribution} object.
 */
 
-int unur_distr_cvec_set_marginal_array( UNUR_DISTR *distribution, UNUR_DISTR **marginals);
+int unur_distr_cvec_set_marginal_array( UNUR_DISTR *distribution, UNUR_DISTR **marginals );
 /* 
    Analogously to the above unur_distr_cvec_set_marginals() call.
    However, now an array @var{marginals} of the pointers to each of

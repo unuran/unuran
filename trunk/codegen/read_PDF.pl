@@ -263,9 +263,9 @@ sub read_distr_file
     #   remove empty lines
     $DISTR->{$distr}->{"=PDF"}->{"=BODY"}  =~ s /\n\s*\n/\n/gx;
     $DISTR->{$distr}->{"=PDF"}->{"=BODY"}  =~ s /^\s*\n//;
-    #   remove declaration of params
+    #   remove declaration of "params"
     $DISTR->{$distr}->{"=PDF"}->{"=BODY"}  =~ 
-	s /\s*(register)?\s+double\s*\*\s*params\W.*\n//;
+	s /.*(register)?\s+double\s*\*\s*params\W.*\n//;
     #   remove all `DISTR.' from body
     $DISTR->{$distr}->{"=PDF"}->{"=BODY"}  =~ s /DISTR\.//g;
 

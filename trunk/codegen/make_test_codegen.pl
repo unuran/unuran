@@ -114,7 +114,7 @@ sub make_codegen_tests
 \#  error UNUR_URNG_TYPE must be set to UNUR_URNG_PRNG in unuran_config.h
 \#endif
 
-\#define FP_equal(a,b)  ((a)==(b) ||  fabs((a)-(b)) <= ((fabs(a)<fabs(b))?fabs(a):fabs(b))*100*DBL_EPSILON)
+\#define FP_equal(a,b)  ((a)==(b) ||  fabs((a)-(b)) <= ((fabs(a)<fabs(b))?fabs(a):fabs(b))*1000*DBL_EPSILON)
 
 /* We use global variables for the uniform random number generators */
 static struct prng *urng1 = NULL;

@@ -3,7 +3,7 @@
 
 AM_CFLAGS = -Wall
 
-noinst_LIBRARIES = libuniform.a
+lib_LIBRARIES = libuniform.a
 
 libuniform_a_SOURCES = cranduni.c
 

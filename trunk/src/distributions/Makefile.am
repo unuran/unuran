@@ -7,7 +7,7 @@ INCLUDES = \
  -I$(top_srcdir)/src \
  -I$(top_srcdir)/src/methods
 
-noinst_LIBRARIES = libunuran_distributions.a
+lib_LIBRARIES = libunuran_distributions.a
 
 libunuran_distributions_a_SOURCES = \
  beta.c        beta_gen.c \

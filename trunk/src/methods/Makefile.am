@@ -7,7 +7,7 @@ INCLUDES = \
  -I$(top_srcdir)/src \
  -I$(top_srcdir)/src/distributions
 
-noinst_LIBRARIES = libunuran.a
+lib_LIBRARIES = libunuran.a
 
 libunuran_a_SOURCES = \
  distr.c \

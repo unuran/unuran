@@ -1182,7 +1182,7 @@ sub scan_FPARAM {
     my $n_total = 0;
     my $n_optional = 0;
 
-    foreach $l (@lines) {
+    foreach my $l (@lines) {
 	# each line must start with a [\d+]
 	next unless $l =~ /\[*\d+/;
 

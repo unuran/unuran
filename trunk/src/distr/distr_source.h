@@ -129,6 +129,10 @@ void _unur_distr_discr_debug( const UNUR_DISTR *distribution, const char *genid,
 /*---------------------------------------------------------------------------*/
 /* auxiliary routines                                                        */
 
+/* test whether all marginals are equal or not  (returns TRUE or FALSE)      */
+/* WARNING: There is no checking of arguments in this function!              */
+int _unur_distr_cvec_marginals_are_equal( struct unur_distr **marginals );
+
 /*---------------------------------------------------------------------------*/
 /* check if parameter object is of correct type, return 0 otherwise       */
 

@@ -1142,13 +1142,7 @@ _unur_distr_cvec_marginals_clone ( struct unur_distr **marginals, int dim )
   /* allocate memory for array */
   clone = _unur_malloc (dim * sizeof(struct unur_distr *));
 
-  /* There are (should be) only two possibilities: 
-     either all entries in the array point to the same distribution object;
-          (set by unur_distr_cvec_set_marginals() call)
-     or each entry has its own copy of some distribution object.
-          (set by unur_distr_cvec_set_marginal_array() call)
-  */
-  if (marginals[0] == marginals[1]) {
+  if (_unur_distr_cvec_marginals_are_equal(marginals)) {
       clone[0] = _unur_distr_clone( marginals[0] );
       for (i=1; i<dim; i++)
 	clone[i] = clone[0];
@@ -1179,13 +1173,7 @@ _unur_distr_cvec_marginals_free ( struct unur_distr **marginals, int dim )
 {
   int i;
 
-  /* There are (should be) only two possibilities: 
-     either all entries in the array point to the same distribution object;
-          (set by unur_distr_cvec_set_stdmarginals() call)
-     or each entry has its own copy of some distribution object.
-          (set by unur_distr_cvec_set_stdmarginal_array() call)
-  */
-  if (marginals[0] == marginals[1]) {
+  if (_unur_distr_cvec_marginals_are_equal(marginals)) {
     _unur_distr_free(marginals[0]);
   }
 
@@ -1196,6 +1184,33 @@ _unur_distr_cvec_marginals_free ( struct unur_distr **marginals, int dim )
 
   free (marginals);
 } /* end of _unur_distr_cvec_marginals_free() */
+
+/*---------------------------------------------------------------------------*/
+
+int 
+_unur_distr_cvec_marginals_are_equal( struct unur_distr **marginals )
+     /*----------------------------------------------------------------------*/
+     /* test whether all marginals are equal or not.                         */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   marginals ... pointer to list of marginal distribution objects     */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   TRUE  ... if equal                                                 */
+     /*   FALSE ... if unequal                                               */
+     /*                                                                      */
+     /* WARNING:                                                             */
+     /*   There is no checking of arguments in this function!                */
+     /*----------------------------------------------------------------------*/
+{
+  /* There are (should be) only two possibilities: 
+     either all entries in the array point to the same distribution object;
+          (set by unur_distr_cvec_set_marginals() call)
+     or each entry has its own copy of some distribution object.
+          (set by unur_distr_cvec_set_marginal_array() call)
+  */
+  return (marginals[0] == marginals[1]) ? TRUE : FALSE;
+} /* end of _unur_distr_cvec_marginals_are_equal() */
 
 /*---------------------------------------------------------------------------*/
 

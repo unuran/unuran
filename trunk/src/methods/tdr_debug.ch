@@ -61,8 +61,8 @@ _unur_tdr_debug_init( const struct unur_par *par, const struct unur_gen *gen )
   int i;
 
   /* check arguments */
-  CHECK_NULL(gen,/*void*/);  COOKIE_CHECK(gen,CK_TDR_GEN,/*void*/);
-  CHECK_NULL(par,/*void*/);  COOKIE_CHECK(par,CK_TDR_PAR,/*void*/);
+  CHECK_NULL(gen,RETURN_VOID);  COOKIE_CHECK(gen,CK_TDR_GEN,RETURN_VOID);
+  CHECK_NULL(par,RETURN_VOID);  COOKIE_CHECK(par,CK_TDR_PAR,RETURN_VOID);
 
   log = unur_get_stream();
 
@@ -176,8 +176,8 @@ _unur_tdr_debug_dars_start( const struct unur_par *par, const struct unur_gen *g
   FILE *log;
 
   /* check arguments */
-  CHECK_NULL(gen,/*void*/);  COOKIE_CHECK(gen,CK_TDR_GEN,/*void*/);
-  CHECK_NULL(par,/*void*/);  COOKIE_CHECK(par,CK_TDR_PAR,/*void*/);
+  CHECK_NULL(gen,RETURN_VOID);  COOKIE_CHECK(gen,CK_TDR_GEN,RETURN_VOID);
+  CHECK_NULL(par,RETURN_VOID);  COOKIE_CHECK(par,CK_TDR_PAR,RETURN_VOID);
 
   log = unur_get_stream();
 
@@ -207,8 +207,8 @@ _unur_tdr_debug_dars( const struct unur_par *par, const struct unur_gen *gen )
   FILE *log;
 
   /* check arguments */
-  CHECK_NULL(gen,/*void*/);  COOKIE_CHECK(gen,CK_TDR_GEN,/*void*/);
-  CHECK_NULL(par,/*void*/);  COOKIE_CHECK(par,CK_TDR_PAR,/*void*/);
+  CHECK_NULL(gen,RETURN_VOID);  COOKIE_CHECK(gen,CK_TDR_GEN,RETURN_VOID);
+  CHECK_NULL(par,RETURN_VOID);  COOKIE_CHECK(par,CK_TDR_PAR,RETURN_VOID);
 
   log = unur_get_stream();
 
@@ -237,7 +237,7 @@ _unur_tdr_debug_free( const struct unur_gen *gen )
   FILE *log;
 
   /* check arguments */
-  CHECK_NULL(gen,/*void*/);  COOKIE_CHECK(gen,CK_TDR_GEN,/*void*/);
+  CHECK_NULL(gen,RETURN_VOID);  COOKIE_CHECK(gen,CK_TDR_GEN,RETURN_VOID);
 
   log = unur_get_stream();
 
@@ -293,7 +293,7 @@ _unur_tdr_gw_debug_intervals( const struct unur_gen *gen )
   int i;
 
   /* check arguments */
-  CHECK_NULL(gen,/*void*/);  COOKIE_CHECK(gen,CK_TDR_GEN,/*void*/);
+  CHECK_NULL(gen,RETURN_VOID);  COOKIE_CHECK(gen,CK_TDR_GEN,RETURN_VOID);
 
   log = unur_get_stream();
 
@@ -302,11 +302,11 @@ _unur_tdr_gw_debug_intervals( const struct unur_gen *gen )
     if (gen->debug & TDR_DEBUG_IV) {
       fprintf(log,"%s: Nr.            tp            ip          f(tp)      T(f(tp))    d(T(f(tp)))      squeeze\n",gen->genid);
       for (iv = GEN.iv, i=0; iv->next!=NULL; iv=iv->next, i++) {
-	COOKIE_CHECK(iv,CK_TDR_IV,/*void*/); 
+	COOKIE_CHECK(iv,CK_TDR_IV,RETURN_VOID); 
 	fprintf(log,"%s:[%3d]: %#12.6g  %#12.6g  %#12.6g  %#12.6g  %#12.6g  %#12.6g\n", gen->genid, i,
 		iv->x, iv->ip, iv->fx, iv->Tfx, iv->dTfx, iv->sq);
       }
-      COOKIE_CHECK(iv,CK_TDR_IV,/*void*/); 
+      COOKIE_CHECK(iv,CK_TDR_IV,RETURN_VOID); 
       fprintf(log,"%s:[...]: %#12.6g                %#12.6g  %#12.6g  %#12.6g\n", gen->genid,
 	      iv->x, iv->fx, iv->Tfx, iv->dTfx);
     }
@@ -332,7 +332,7 @@ _unur_tdr_gw_debug_intervals( const struct unur_gen *gen )
     sAsqueeze = sAhatl = sAhatr = 0.;
     if (GEN.iv) {
       for (iv = GEN.iv, i=0; iv->next!=NULL; iv=iv->next, i++) {
-	COOKIE_CHECK(iv,CK_TDR_IV,/*void*/); 
+	COOKIE_CHECK(iv,CK_TDR_IV,RETURN_VOID); 
 	sAsqueeze += iv->Asqueeze;
 	sAhatl += iv->Ahat - iv->Ahatr;
 	sAhatr += iv->Ahatr;
@@ -378,7 +378,7 @@ _unur_tdr_ps_debug_intervals( const struct unur_gen *gen )
   int i;
 
   /* check arguments */
-  CHECK_NULL(gen,/*void*/);  COOKIE_CHECK(gen,CK_TDR_GEN,/*void*/);
+  CHECK_NULL(gen,RETURN_VOID);  COOKIE_CHECK(gen,CK_TDR_GEN,RETURN_VOID);
 
   log = unur_get_stream();
 
@@ -387,11 +387,11 @@ _unur_tdr_ps_debug_intervals( const struct unur_gen *gen )
     if (gen->debug & TDR_DEBUG_IV) {
       fprintf(log,"%s: Nr.       left ip           tp        f(tp)     T(f(tp))   d(T(f(tp)))       f(ip)   squ. ratio\n",gen->genid);
       for (iv=GEN.iv,i=0; iv->next; iv=iv->next, i++) {
-	COOKIE_CHECK(iv,CK_TDR_IV,/*void*/); 
+	COOKIE_CHECK(iv,CK_TDR_IV,RETURN_VOID); 
 	fprintf(log,"%s:[%3d]:%#12.6g %#12.6g %#12.6g %#12.6g %#12.6g %#12.6g %#12.6g\n", gen->genid, i,
 		iv->ip, iv->x, iv->fx, iv->Tfx, iv->dTfx, iv->fip, iv->sq);
       }
-      COOKIE_CHECK(iv,CK_TDR_IV,/*void*/); 
+      COOKIE_CHECK(iv,CK_TDR_IV,RETURN_VOID); 
       fprintf(log,"%s:[...]:%#12.6g\t\t\t\t\t\t       %#12.6g\n", gen->genid,
 	      iv->ip, iv->fip);
     }
@@ -417,7 +417,7 @@ _unur_tdr_ps_debug_intervals( const struct unur_gen *gen )
     sAsqueeze = sAhatl = sAhatr = 0.;
     if (GEN.iv) {
       for (iv=GEN.iv,i=0; iv->next; iv=iv->next, i++) {
-	COOKIE_CHECK(iv,CK_TDR_IV,/*void*/); 
+	COOKIE_CHECK(iv,CK_TDR_IV,RETURN_VOID); 
 	sAsqueeze += iv->Asqueeze;
 	sAhatl += iv->Ahat - iv->Ahatr;
 	sAhatr += iv->Ahatr;
@@ -469,9 +469,9 @@ _unur_tdr_gw_debug_sample( const struct unur_gen *gen,
   FILE *log;
 
   /* check arguments */
-  CHECK_NULL(gen,/*void*/);  COOKIE_CHECK(gen,CK_TDR_GEN,/*void*/);
-  CHECK_NULL(iv,/*void*/);   COOKIE_CHECK(iv,CK_TDR_IV,/*void*/);
-  CHECK_NULL(pt,/*void*/);   COOKIE_CHECK(pt,CK_TDR_IV,/*void*/);
+  CHECK_NULL(gen,RETURN_VOID);  COOKIE_CHECK(gen,CK_TDR_GEN,RETURN_VOID);
+  CHECK_NULL(iv,RETURN_VOID);   COOKIE_CHECK(iv,CK_TDR_IV,RETURN_VOID);
+  CHECK_NULL(pt,RETURN_VOID);   COOKIE_CHECK(pt,CK_TDR_IV,RETURN_VOID);
 
   log = unur_get_stream();
 
@@ -527,8 +527,8 @@ _unur_tdr_ps_debug_sample( const struct unur_gen *gen,
   FILE *log;
 
   /* check arguments */
-  CHECK_NULL(gen,/*void*/);  COOKIE_CHECK(gen,CK_TDR_GEN,/*void*/);
-  CHECK_NULL(iv,/*void*/);   COOKIE_CHECK(iv,CK_TDR_IV,/*void*/);
+  CHECK_NULL(gen,RETURN_VOID);  COOKIE_CHECK(gen,CK_TDR_GEN,RETURN_VOID);
+  CHECK_NULL(iv,RETURN_VOID);   COOKIE_CHECK(iv,CK_TDR_IV,RETURN_VOID);
 
   log = unur_get_stream();
 
@@ -573,8 +573,8 @@ _unur_tdr_gw_debug_split_start( const struct unur_gen *gen,
   FILE *log;
 
   /* check arguments */
-  CHECK_NULL(gen,/*void*/);  COOKIE_CHECK(gen,CK_TDR_GEN,/*void*/);
-  CHECK_NULL(iv,/*void*/);   COOKIE_CHECK(iv,CK_TDR_IV,/*void*/);
+  CHECK_NULL(gen,RETURN_VOID);  COOKIE_CHECK(gen,CK_TDR_GEN,RETURN_VOID);
+  CHECK_NULL(iv,RETURN_VOID);   COOKIE_CHECK(iv,CK_TDR_IV,RETURN_VOID);
 
   log = unur_get_stream();
 
@@ -611,8 +611,8 @@ _unur_tdr_gw_debug_split_stop( const struct unur_gen *gen,
   FILE *log;
 
   /* check arguments */
-  CHECK_NULL(gen,/*void*/);       COOKIE_CHECK(gen,CK_TDR_GEN,/*void*/);
-  CHECK_NULL(iv_left,/*void*/);   COOKIE_CHECK(iv_left,CK_TDR_IV,/*void*/);
+  CHECK_NULL(gen,RETURN_VOID);       COOKIE_CHECK(gen,CK_TDR_GEN,RETURN_VOID);
+  CHECK_NULL(iv_left,RETURN_VOID);   COOKIE_CHECK(iv_left,CK_TDR_IV,RETURN_VOID);
 
   if (iv_right == NULL) iv_right = iv_left;
 
@@ -689,7 +689,7 @@ _unur_tdr_ps_debug_split_start( const struct unur_gen *gen,
   FILE *log;
 
   /* check arguments */
-  CHECK_NULL(gen,/*void*/);      COOKIE_CHECK(gen,CK_TDR_GEN,/*void*/);
+  CHECK_NULL(gen,RETURN_VOID);      COOKIE_CHECK(gen,CK_TDR_GEN,RETURN_VOID);
 
   log = unur_get_stream();
 
@@ -754,7 +754,7 @@ _unur_tdr_ps_debug_split_stop( const struct unur_gen *gen,
   FILE *log;
 
   /* check arguments */
-  CHECK_NULL(gen,/*void*/);       COOKIE_CHECK(gen,CK_TDR_GEN,/*void*/);
+  CHECK_NULL(gen,RETURN_VOID);       COOKIE_CHECK(gen,CK_TDR_GEN,RETURN_VOID);
 
   log = unur_get_stream();
 

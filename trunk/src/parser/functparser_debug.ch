@@ -74,7 +74,7 @@ _unur_fstr_debug_token ( const struct parser_data *pdata )
   int i;
 
   /* check arguments */
-  CHECK_NULL(pdata,/*void*/);  COOKIE_CHECK(pdata,CK_FSTR_PDATA,/*void*/);
+  CHECK_NULL(pdata,RETURN_VOID);  COOKIE_CHECK(pdata,CK_FSTR_PDATA,RETURN_VOID);
 
   fprintf(log,"%s: Tokenized string (token separated by blanks):\n",GENTYPE);
   fprintf(log,"%s:   ",GENTYPE);
@@ -101,8 +101,8 @@ _unur_fstr_debug_tree( const struct parser_data *pdata,
   FILE *log = unur_get_stream();
 
   /* check arguments */
-  CHECK_NULL(pdata,/*void*/);  COOKIE_CHECK(pdata,CK_FSTR_PDATA,/*void*/);
-  CHECK_NULL(root,/*void*/);   COOKIE_CHECK(root,CK_FSTR_TNODE,/*void*/);
+  CHECK_NULL(pdata,RETURN_VOID);  COOKIE_CHECK(pdata,CK_FSTR_PDATA,RETURN_VOID);
+  CHECK_NULL(root,RETURN_VOID);   COOKIE_CHECK(root,CK_FSTR_TNODE,RETURN_VOID);
 
   fprintf(log,"%s: parse tree:  (left nodes above right nodes)\n",GENTYPE); 
   fprintf(log,"%s:\n",GENTYPE);
@@ -132,7 +132,7 @@ _unur_fstr_debug_show_tree(const struct parser_data *pdata,
   int i, mask; 
 
   /* check arguments */
-  CHECK_NULL(pdata,/*void*/);  COOKIE_CHECK(pdata,CK_FSTR_PDATA,/*void*/);
+  CHECK_NULL(pdata,RETURN_VOID);  COOKIE_CHECK(pdata,CK_FSTR_PDATA,RETURN_VOID);
 
   fprintf(log,"%s: ",GENTYPE); 
 
@@ -145,7 +145,7 @@ _unur_fstr_debug_show_tree(const struct parser_data *pdata,
   
   /* print node */
   if( node != NULL ) {
-    COOKIE_CHECK(node,CK_FSTR_TNODE,/*void*/);
+    COOKIE_CHECK(node,CK_FSTR_TNODE,RETURN_VOID);
     
     /* draw horizontal line in tree */
     (mask & location) ? fprintf(log,"+--") : fprintf(log,"\\__");
@@ -198,8 +198,8 @@ _unur_fstr_debug_deriv (const struct ftreenode *funct, const struct ftreenode *d
   char *str;
 
   /* check arguments */
-  CHECK_NULL(funct,/*void*/);  COOKIE_CHECK(funct,CK_FSTR_TNODE,/*void*/);
-  CHECK_NULL(deriv,/*void*/);  COOKIE_CHECK(deriv,CK_FSTR_TNODE,/*void*/);
+  CHECK_NULL(funct,RETURN_VOID);  COOKIE_CHECK(funct,CK_FSTR_TNODE,RETURN_VOID);
+  CHECK_NULL(deriv,RETURN_VOID);  COOKIE_CHECK(deriv,CK_FSTR_TNODE,RETURN_VOID);
 
   fprintf(log,"%s: Derivative df/dx of \n",GENTYPE);
   str = _unur_fstr_tree2string(funct,"x","f",TRUE);

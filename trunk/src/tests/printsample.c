@@ -62,7 +62,7 @@ unur_test_printsample( struct unur_gen *gen, int n_rows, int n_cols, FILE *out )
   int i,j,k;
 
   /* check arguments */
-  _unur_check_NULL(test_name,gen,/*void*/);
+  _unur_check_NULL(test_name,gen,RETURN_VOID);
 
   fprintf(out,"\nSAMPLE: ");              
 

@@ -260,7 +260,7 @@ _unur_distr_cont_free( struct unur_distr *distr )
   /* check arguments */
   if( distr == NULL ) /* nothing to do */
     return;
-  _unur_check_distr_object( distr, CONT, /*void*/ );
+  _unur_check_distr_object( distr, CONT, RETURN_VOID );
 
   /* function trees */
   if (DISTR.pdftree)  _unur_fstr_free(DISTR.pdftree);
@@ -1416,8 +1416,8 @@ _unur_distr_cont_debug( const struct unur_distr *distr, const char *genid )
   int i;
 
   /* check arguments */
-  CHECK_NULL(distr,/*void*/);
-  COOKIE_CHECK(distr,CK_DISTR_CONT,/*void*/);
+  CHECK_NULL(distr,RETURN_VOID);
+  COOKIE_CHECK(distr,CK_DISTR_CONT,RETURN_VOID);
 
   log = unur_get_stream();
 

@@ -173,7 +173,7 @@ _unur_fstr_parser_free ( struct parser_data *pdata )
      /*----------------------------------------------------------------------*/
 {
   if (pdata) {
-    COOKIE_CHECK(pdata,CK_FSTR_PDATA,/*void*/);
+    COOKIE_CHECK(pdata,CK_FSTR_PDATA,RETURN_VOID);
     free(pdata->fstr);
     free(pdata->token);
     free(pdata->tpos);
@@ -584,7 +584,7 @@ _unur_fstr_error_scan (const struct parser_data *pdata, const char *symb)
   int wsp;
   
   /* check arguments */
-  CHECK_NULL(pdata,/*void*/);  COOKIE_CHECK(pdata,CK_FSTR_PDATA,/*void*/);
+  CHECK_NULL(pdata,RETURN_VOID);  COOKIE_CHECK(pdata,CK_FSTR_PDATA,RETURN_VOID);
 
   /* set unuran error code */
   unur_errno = UNUR_ERR_FSTR_SYNTAX;

@@ -1406,7 +1406,7 @@ _unur_hinv_free( struct unur_gen *gen )
   if ( gen->method != UNUR_METH_HINV ) {
     _unur_warning(gen->genid,UNUR_ERR_GEN_INVALID,"");
     return; }
-  COOKIE_CHECK(gen,CK_HINV_GEN,/*void*/);
+  COOKIE_CHECK(gen,CK_HINV_GEN,RETURN_VOID);
 
   /* we cannot use this generator object any more */
   SAMPLE = NULL;   /* make sure to show up a programming error */
@@ -1628,7 +1628,7 @@ _unur_hinv_debug_init( const struct unur_par *par, const struct unur_gen *gen, i
   int i;
 
   /* check arguments */
-  CHECK_NULL(gen,/*void*/);  COOKIE_CHECK(gen,CK_HINV_GEN,/*void*/);
+  CHECK_NULL(gen,RETURN_VOID);  COOKIE_CHECK(gen,CK_HINV_GEN,RETURN_VOID);
 
   log = unur_get_stream();
 
@@ -1696,7 +1696,7 @@ _unur_hinv_debug_intervals( const struct unur_gen *gen )
   FILE *log;
 
   /* check arguments */
-  CHECK_NULL(gen,/*void*/);  COOKIE_CHECK(gen,CK_HINV_GEN,/*void*/);
+  CHECK_NULL(gen,RETURN_VOID);  COOKIE_CHECK(gen,CK_HINV_GEN,RETURN_VOID);
 
   log = unur_get_stream();
 
@@ -1737,7 +1737,7 @@ _unur_hinv_debug_chg_truncated( const struct unur_gen *gen )
   FILE *log;
 
   /* check arguments */
-  CHECK_NULL(gen,/*void*/);  COOKIE_CHECK(gen,CK_HINV_GEN,/*void*/);
+  CHECK_NULL(gen,RETURN_VOID);  COOKIE_CHECK(gen,CK_HINV_GEN,RETURN_VOID);
 
   log = unur_get_stream();
 

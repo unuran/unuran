@@ -122,7 +122,7 @@ _unur_fstr_free (struct ftreenode *root)
 { 
   if( root != NULL ) {
     /* check arguments */
-    COOKIE_CHECK(root,CK_FSTR_TNODE,/*void*/);
+    COOKIE_CHECK(root,CK_FSTR_TNODE,RETURN_VOID);
 
     if (root->left)  _unur_fstr_free(root->left);
     if (root->right) _unur_fstr_free(root->right);

@@ -1247,7 +1247,7 @@ _unur_arou_free( struct unur_gen *gen )
   if ( gen->method != UNUR_METH_AROU ) {
     _unur_warning(gen->genid,UNUR_ERR_GEN_INVALID,"");
     return; }
-  COOKIE_CHECK(gen,CK_AROU_GEN,/*void*/);
+  COOKIE_CHECK(gen,CK_AROU_GEN,RETURN_VOID);
 
   /* we cannot use this generator object any more */
   SAMPLE = NULL;   /* make sure to show up a programming error */
@@ -2111,8 +2111,8 @@ _unur_arou_debug_init( const struct unur_par *par, const struct unur_gen *gen )
   int i;
 
   /* check arguments */
-  CHECK_NULL(gen,/*void*/);  COOKIE_CHECK(gen,CK_AROU_GEN,/*void*/);
-  CHECK_NULL(par,/*void*/);  COOKIE_CHECK(par,CK_AROU_PAR,/*void*/);
+  CHECK_NULL(gen,RETURN_VOID);  COOKIE_CHECK(gen,CK_AROU_GEN,RETURN_VOID);
+  CHECK_NULL(par,RETURN_VOID);  COOKIE_CHECK(par,CK_AROU_PAR,RETURN_VOID);
 
   log = unur_get_stream();
 
@@ -2182,7 +2182,7 @@ _unur_arou_debug_free( const struct unur_gen *gen )
   FILE *log;
 
   /* check arguments */
-  CHECK_NULL(gen,/*void*/);  COOKIE_CHECK(gen,CK_AROU_GEN,/*void*/);
+  CHECK_NULL(gen,RETURN_VOID);  COOKIE_CHECK(gen,CK_AROU_GEN,RETURN_VOID);
 
   log = unur_get_stream();
 
@@ -2213,7 +2213,7 @@ _unur_arou_debug_segments( const struct unur_gen *gen )
   int i;
 
   /* check arguments */
-  CHECK_NULL(gen,/*void*/);  COOKIE_CHECK(gen,CK_AROU_GEN,/*void*/);
+  CHECK_NULL(gen,RETURN_VOID);  COOKIE_CHECK(gen,CK_AROU_GEN,RETURN_VOID);
 
   log = unur_get_stream();
 
@@ -2221,13 +2221,13 @@ _unur_arou_debug_segments( const struct unur_gen *gen )
   if ((gen->debug & AROU_DEBUG_SEGMENTS) && GEN.seg != NULL) {
     fprintf(log,"%s: Nr.\t    left touching point\t\t   intersection point\t\t tangent at left touching point\n",gen->genid);
     for (seg = GEN.seg, i=0; seg->next!=NULL; seg=seg->next, i++) {
-      COOKIE_CHECK(seg,CK_AROU_SEG,/*void*/); 
+      COOKIE_CHECK(seg,CK_AROU_SEG,RETURN_VOID); 
       fprintf(log,"%s:[%3d]: (%-12.6g,%-12.6g)   (%-12.6g,%-12.6g)   (%-12.6g,%-12.6g,%-12.6g)\n", gen->genid, i,
 	      seg->ltp[0],seg->ltp[1],
 	      seg->mid[0],seg->mid[1],
 	      seg->dltp[0],seg->dltp[1],seg->dltp[2]);
     }
-    COOKIE_CHECK(seg,CK_AROU_SEG,/*void*/); 
+    COOKIE_CHECK(seg,CK_AROU_SEG,RETURN_VOID); 
     fprintf(log,"%s:[...]: (%-12.6g,%-12.6g)\n", gen->genid,seg->ltp[0],seg->ltp[1]);
   }
   fprintf(log,"%s:\n",gen->genid);
@@ -2248,7 +2248,7 @@ _unur_arou_debug_segments( const struct unur_gen *gen )
     fprintf(log,"%s: Nr.\t inside squeeze\t\t   outside squeeze\t     total segment\t\tcumulated\n",gen->genid);
     sAin = sAout = 0.;
     for (seg = GEN.seg, i=0; seg->next!=NULL; seg=seg->next, i++) {
-      COOKIE_CHECK(seg,CK_AROU_SEG,/*void*/); 
+      COOKIE_CHECK(seg,CK_AROU_SEG,RETURN_VOID); 
       sAin += seg->Ain;
       sAout += seg->Aout;
       fprintf(log,"%s:[%3d]: %-12.6g(%6.3f%%)  |  %-12.6g(%6.3f%%)  |  %-12.6g(%6.3f%%)  |  %-12.6g(%6.3f%%)\n",
@@ -2298,8 +2298,8 @@ _unur_arou_debug_split_start( const struct unur_gen *gen,
   char ratio[14];
 
   /* check arguments */
-  CHECK_NULL(gen,/*void*/);  COOKIE_CHECK(gen,CK_AROU_GEN,/*void*/);
-  CHECK_NULL(seg,/*void*/);  COOKIE_CHECK(seg,CK_AROU_SEG,/*void*/);
+  CHECK_NULL(gen,RETURN_VOID);  COOKIE_CHECK(gen,CK_AROU_GEN,RETURN_VOID);
+  CHECK_NULL(seg,RETURN_VOID);  COOKIE_CHECK(seg,CK_AROU_SEG,RETURN_VOID);
 
   log = unur_get_stream();
 
@@ -2348,9 +2348,9 @@ _unur_arou_debug_split_stop( const struct unur_gen *gen,
   char ratio[14];
 
   /* check arguments */
-  CHECK_NULL(gen,/*void*/);        COOKIE_CHECK(gen,CK_AROU_GEN,/*void*/);
-  CHECK_NULL(seg_left,/*void*/);   COOKIE_CHECK(seg_left,CK_AROU_SEG,/*void*/);
-  CHECK_NULL(seg_right,/*void*/);  COOKIE_CHECK(seg_right,CK_AROU_SEG,/*void*/);
+  CHECK_NULL(gen,RETURN_VOID);        COOKIE_CHECK(gen,CK_AROU_GEN,RETURN_VOID);
+  CHECK_NULL(seg_left,RETURN_VOID);   COOKIE_CHECK(seg_left,CK_AROU_SEG,RETURN_VOID);
+  CHECK_NULL(seg_right,RETURN_VOID);  COOKIE_CHECK(seg_right,CK_AROU_SEG,RETURN_VOID);
 
   log = unur_get_stream();
 

@@ -247,7 +247,7 @@ _unur_distr_discr_free( struct unur_distr *distr )
   /* check arguments */
   if( distr == NULL ) /* nothing to do */
     return;
-  _unur_check_distr_object( distr, DISCR, /*void*/ );
+  _unur_check_distr_object( distr, DISCR, RETURN_VOID );
 
   if (DISTR.pmftree)  _unur_fstr_free(DISTR.pmftree);
   if (DISTR.cdftree)  _unur_fstr_free(DISTR.cdftree);
@@ -1246,8 +1246,8 @@ _unur_distr_discr_debug( const struct unur_distr *distr, const char *genid, int 
   int i;
 
   /* check arguments */
-  CHECK_NULL(distr,/*void*/);
-  COOKIE_CHECK(distr,CK_DISTR_DISCR,/*void*/);
+  CHECK_NULL(distr,RETURN_VOID);
+  COOKIE_CHECK(distr,CK_DISTR_DISCR,RETURN_VOID);
 
   log = unur_get_stream();
 

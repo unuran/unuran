@@ -1036,7 +1036,7 @@ _unur_empk_free( struct unur_gen *gen )
   if ( gen->method != UNUR_METH_EMPK ) {
     _unur_warning(gen->genid,UNUR_ERR_GEN_INVALID,"");
     return; }
-  COOKIE_CHECK(gen,CK_EMPK_GEN,/*void*/);
+  COOKIE_CHECK(gen,CK_EMPK_GEN,RETURN_VOID);
 
   /* we cannot use this generator object any more */
   SAMPLE = NULL;   /* make sure to show up a programming error */
@@ -1159,8 +1159,8 @@ _unur_empk_debug_init( const struct unur_par *par, const struct unur_gen *gen )
   FILE *log;
 
   /* check arguments */
-  CHECK_NULL(par,/*void*/);  COOKIE_CHECK(par,CK_EMPK_PAR,/*void*/);
-  CHECK_NULL(gen,/*void*/);  COOKIE_CHECK(gen,CK_EMPK_GEN,/*void*/);
+  CHECK_NULL(par,RETURN_VOID);  COOKIE_CHECK(par,CK_EMPK_PAR,RETURN_VOID);
+  CHECK_NULL(gen,RETURN_VOID);  COOKIE_CHECK(gen,CK_EMPK_GEN,RETURN_VOID);
 
   log = unur_get_stream();
 

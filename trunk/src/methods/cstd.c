@@ -665,7 +665,7 @@ _unur_cstd_free( struct unur_gen *gen )
     return;
 
   /* magic cookies */
-  COOKIE_CHECK(gen,CK_CSTD_GEN,/*void*/);
+  COOKIE_CHECK(gen,CK_CSTD_GEN,RETURN_VOID);
 
   /* check input */
   if ( gen->method != UNUR_METH_CSTD ) {
@@ -714,8 +714,8 @@ _unur_cstd_debug_init( struct unur_par *par, struct unur_gen *gen )
   FILE *log;
 
   /* check arguments */
-  CHECK_NULL(par,/*void*/);  COOKIE_CHECK(par,CK_CSTD_PAR,/*void*/);
-  CHECK_NULL(gen,/*void*/);  COOKIE_CHECK(gen,CK_CSTD_GEN,/*void*/);
+  CHECK_NULL(par,RETURN_VOID);  COOKIE_CHECK(par,CK_CSTD_PAR,RETURN_VOID);
+  CHECK_NULL(gen,RETURN_VOID);  COOKIE_CHECK(gen,CK_CSTD_GEN,RETURN_VOID);
 
   log = unur_get_stream();
 
@@ -759,7 +759,7 @@ _unur_cstd_debug_chg_pdfparams( struct unur_gen *gen )
   int i;
 
   /* check arguments */
-  CHECK_NULL(gen,/*void*/);  COOKIE_CHECK(gen,CK_CSTD_GEN,/*void*/);
+  CHECK_NULL(gen,RETURN_VOID);  COOKIE_CHECK(gen,CK_CSTD_GEN,RETURN_VOID);
 
   log = unur_get_stream();
 
@@ -785,7 +785,7 @@ _unur_cstd_debug_chg_truncated( struct unur_gen *gen )
   FILE *log;
 
   /* check arguments */
-  CHECK_NULL(gen,/*void*/);  COOKIE_CHECK(gen,CK_CSTD_GEN,/*void*/);
+  CHECK_NULL(gen,RETURN_VOID);  COOKIE_CHECK(gen,CK_CSTD_GEN,RETURN_VOID);
 
   log = unur_get_stream();
 

@@ -134,8 +134,8 @@ _unur_slist_append( struct unur_slist *slist, void *element )
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  CHECK_NULL(slist,/*void*/);
-  COOKIE_CHECK(slist,CK_SLIST,/*void*/);
+  CHECK_NULL(slist,RETURN_VOID);
+  COOKIE_CHECK(slist,CK_SLIST,RETURN_VOID);
 
   /* allocate memory for the list of blocks */
   slist->ptr = _unur_realloc(slist->ptr,(slist->n_ptr+1)*sizeof(void *));
@@ -163,7 +163,7 @@ _unur_slist_free( struct unur_slist *slist )
   int i;
 
   /* check arguments */
-  COOKIE_CHECK(slist,CK_SLIST,/*void*/);
+  COOKIE_CHECK(slist,CK_SLIST,RETURN_VOID);
   if (slist == NULL) return;  /* nothing to do */
 
   if ( slist->ptr != NULL ) {

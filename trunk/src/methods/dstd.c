@@ -458,7 +458,7 @@ _unur_dstd_free( struct unur_gen *gen )
     return;
 
   /* magic cookies */
-  COOKIE_CHECK(gen,CK_DSTD_GEN,/*void*/);
+  COOKIE_CHECK(gen,CK_DSTD_GEN,RETURN_VOID);
 
   /* check input */
   if ( gen->method != UNUR_METH_DSTD ) {
@@ -568,7 +568,7 @@ _unur_dstd_debug_init( const struct unur_par *par, const struct unur_gen *gen )
   FILE *log;
 
   /* check arguments */
-  CHECK_NULL(par,/*void*/);  COOKIE_CHECK(par,CK_DSTD_PAR,/*void*/);
+  CHECK_NULL(par,RETURN_VOID);  COOKIE_CHECK(par,CK_DSTD_PAR,RETURN_VOID);
 
   log = unur_get_stream();
 
@@ -612,7 +612,7 @@ _unur_dstd_debug_chg_pmfparams( const struct unur_gen *gen )
   int i;
 
   /* check arguments */
-  CHECK_NULL(gen,/*void*/);  COOKIE_CHECK(gen,CK_DSTD_GEN,/*void*/);
+  CHECK_NULL(gen,RETURN_VOID);  COOKIE_CHECK(gen,CK_DSTD_GEN,RETURN_VOID);
 
   log = unur_get_stream();
 

@@ -1658,7 +1658,7 @@ _unur_ninv_free( struct unur_gen *gen )
   if ( gen->method != UNUR_METH_NINV ) {
     _unur_warning(gen->genid,UNUR_ERR_GEN_INVALID,"");
     return; }
-  COOKIE_CHECK(gen,CK_NINV_GEN,/*void*/);
+  COOKIE_CHECK(gen,CK_NINV_GEN,RETURN_VOID);
 
   /* we cannot use this generator object any more */
   SAMPLE = NULL;   /* make sure to show up a programming error */
@@ -1701,7 +1701,7 @@ _unur_ninv_debug_init( const struct unur_gen *gen )
   FILE *log;
 
   /* check arguments */
-  CHECK_NULL(gen,/*void*/);  COOKIE_CHECK(gen,CK_NINV_GEN,/*void*/);
+  CHECK_NULL(gen,RETURN_VOID);  COOKIE_CHECK(gen,CK_NINV_GEN,RETURN_VOID);
 
   log = unur_get_stream();
 
@@ -1744,7 +1744,7 @@ _unur_ninv_debug_start( const struct unur_gen *gen )
   int i;
 
   /* check arguments */
-  CHECK_NULL(gen,/*void*/);  COOKIE_CHECK(gen,CK_NINV_GEN,/*void*/);
+  CHECK_NULL(gen,RETURN_VOID);  COOKIE_CHECK(gen,CK_NINV_GEN,RETURN_VOID);
 
   log = unur_get_stream();
 
@@ -1779,7 +1779,7 @@ _unur_ninv_debug_sample_regula( const struct unur_gen *gen, double u, double x, 
   FILE *log;
 
   /* check arguments */
-  CHECK_NULL(gen,/*void*/);  COOKIE_CHECK(gen,CK_NINV_GEN,/*void*/);
+  CHECK_NULL(gen,RETURN_VOID);  COOKIE_CHECK(gen,CK_NINV_GEN,RETURN_VOID);
 
   log = unur_get_stream();
 
@@ -1802,7 +1802,7 @@ _unur_ninv_debug_sample_newton( const struct unur_gen *gen, double u, double x, 
   FILE *log;
 
   /* check arguments */
-  CHECK_NULL(gen,/*void*/);  COOKIE_CHECK(gen,CK_NINV_GEN,/*void*/);
+  CHECK_NULL(gen,RETURN_VOID);  COOKIE_CHECK(gen,CK_NINV_GEN,RETURN_VOID);
 
   log = unur_get_stream();
 
@@ -1825,7 +1825,7 @@ _unur_ninv_debug_chg_truncated( const struct unur_gen *gen )
   FILE *log;
 
   /* check arguments */
-  CHECK_NULL(gen,/*void*/);  COOKIE_CHECK(gen,CK_NINV_GEN,/*void*/);
+  CHECK_NULL(gen,RETURN_VOID);  COOKIE_CHECK(gen,CK_NINV_GEN,RETURN_VOID);
 
   log = unur_get_stream();
 

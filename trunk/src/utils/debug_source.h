@@ -80,4 +80,9 @@ extern unsigned _unur_default_debugflag;     /* default debugging flags      */
     return rval;                          \
   }
 
+/* Some preprocessor (e.g. in MacOS X) fail when 'rval' is an empty string.  */
+/* The following should fix this problem.                                    */
+
+#define RETURN_VOID ;
+
 /*---------------------------------------------------------------------------*/

@@ -667,7 +667,7 @@ _unur_fstr_error_deriv (const struct ftreenode *node)
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  CHECK_NULL(node,/*void*/);  COOKIE_CHECK(node,CK_FSTR_TNODE,/*void*/);
+  CHECK_NULL(node,RETURN_VOID);  COOKIE_CHECK(node,CK_FSTR_TNODE,RETURN_VOID);
 
   /* set unuran error code */
   unur_errno = UNUR_ERR_FSTR_DERIV;

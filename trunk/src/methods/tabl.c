@@ -1285,7 +1285,7 @@ _unur_tabl_free( struct unur_gen *gen )
   if ( gen->method != UNUR_METH_TABL ) {
     _unur_warning(gen->genid,UNUR_ERR_GEN_INVALID,"");
     return; }
-  COOKIE_CHECK(gen,CK_TABL_GEN,/*void*/);
+  COOKIE_CHECK(gen,CK_TABL_GEN,RETURN_VOID);
 
   /* we cannot use this generator object any more */
   SAMPLE = NULL;   /* make sure to show up a programming error */
@@ -1977,8 +1977,8 @@ _unur_tabl_debug_init( const struct unur_par *par, const struct unur_gen *gen )
   int i;
 
   /* check arguments */
-  CHECK_NULL(par,/*void*/);  COOKIE_CHECK(par,CK_TABL_PAR,/*void*/);
-  CHECK_NULL(gen,/*void*/);  COOKIE_CHECK(gen,CK_TABL_GEN,/*void*/);
+  CHECK_NULL(par,RETURN_VOID);  COOKIE_CHECK(par,CK_TABL_PAR,RETURN_VOID);
+  CHECK_NULL(gen,RETURN_VOID);  COOKIE_CHECK(gen,CK_TABL_GEN,RETURN_VOID);
 
   log = unur_get_stream();
 
@@ -2074,8 +2074,8 @@ _unur_tabl_debug_init_finished( const struct unur_par *par, const struct unur_ge
   FILE *log;
 
   /* check arguments */
-  CHECK_NULL(par,/*void*/);  COOKIE_CHECK(par,CK_TABL_PAR,/*void*/);
-  CHECK_NULL(gen,/*void*/);  COOKIE_CHECK(gen,CK_TABL_GEN,/*void*/);
+  CHECK_NULL(par,RETURN_VOID);  COOKIE_CHECK(par,CK_TABL_PAR,RETURN_VOID);
+  CHECK_NULL(gen,RETURN_VOID);  COOKIE_CHECK(gen,CK_TABL_GEN,RETURN_VOID);
 
   log = unur_get_stream();
 
@@ -2101,7 +2101,7 @@ _unur_tabl_debug_free( const struct unur_gen *gen )
   FILE *log;
 
   /* check arguments */
-  CHECK_NULL(gen,/*void*/);  COOKIE_CHECK(gen,CK_TABL_GEN,/*void*/);
+  CHECK_NULL(gen,RETURN_VOID);  COOKIE_CHECK(gen,CK_TABL_GEN,RETURN_VOID);
 
   log = unur_get_stream();
 
@@ -2132,7 +2132,7 @@ _unur_tabl_debug_intervals( const struct unur_gen *gen, int print_areas )
   int i;
 
   /* check arguments */
-  CHECK_NULL(gen,/*void*/);  COOKIE_CHECK(gen,CK_TABL_GEN,/*void*/);
+  CHECK_NULL(gen,RETURN_VOID);  COOKIE_CHECK(gen,CK_TABL_GEN,RETURN_VOID);
 
   log = unur_get_stream();
 
@@ -2141,7 +2141,7 @@ _unur_tabl_debug_intervals( const struct unur_gen *gen, int print_areas )
     fprintf(log,"%s:             <   max       ,   min       >        f(max)          f(min) \n",gen->genid);
     fprintf(log,"%s:\n",gen->genid);
     for (iv = GEN.iv, i=0; iv!=NULL; iv=iv->next, i++) {
-      COOKIE_CHECK(iv,CK_TABL_IV,/*void*/);
+      COOKIE_CHECK(iv,CK_TABL_IV,RETURN_VOID);
       fprintf(log,"%s:[%3d]: (",gen->genid,i);
       switch (iv->slope) {
       case 1:  fprintf(log,"+"); break;
@@ -2183,7 +2183,7 @@ _unur_tabl_debug_intervals( const struct unur_gen *gen, int print_areas )
     empty_line();
     sAsqueeze = 0.;
     for (iv = GEN.iv, i=0; iv!=NULL; iv=iv->next, i++) {
-      COOKIE_CHECK(iv,CK_TABL_IV,/*void*/); 
+      COOKIE_CHECK(iv,CK_TABL_IV,RETURN_VOID); 
       sAsqueeze += iv->Asqueeze;
       fprintf(log,"%s:[%3d]: %-12.6g(%6.3f%%)  |  %-12.6g(%6.3f%%)  |  %-12.6g(%6.3f%%)\n",
 	      gen->genid,i,

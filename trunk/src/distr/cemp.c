@@ -186,7 +186,7 @@ _unur_distr_cemp_free( struct unur_distr *distr )
   if( distr == NULL ) /* nothing to do */
     return;
 
-  COOKIE_CHECK(distr,CK_DISTR_CEMP,/*void*/);
+  COOKIE_CHECK(distr,CK_DISTR_CEMP,RETURN_VOID);
 
   if (DISTR.sample) free( DISTR.sample );
   if (distr->name_str) free(distr->name_str);
@@ -318,8 +318,8 @@ _unur_distr_cemp_debug( const struct unur_distr *distr, const char *genid, int p
   int i;
 
   /* check arguments */
-  CHECK_NULL(distr,/*void*/);
-  COOKIE_CHECK(distr,CK_DISTR_CEMP,/*void*/);
+  CHECK_NULL(distr,RETURN_VOID);
+  COOKIE_CHECK(distr,CK_DISTR_CEMP,RETURN_VOID);
 
   log = unur_get_stream();
 

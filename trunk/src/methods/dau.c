@@ -625,7 +625,7 @@ _unur_dau_free( struct unur_gen *gen )
   if ( gen->method != UNUR_METH_DAU ) {
     _unur_warning(gen->genid,UNUR_ERR_GEN_INVALID,"");
     return; }
-  COOKIE_CHECK(gen,CK_DAU_GEN,/*void*/);
+  COOKIE_CHECK(gen,CK_DAU_GEN,RETURN_VOID);
 
   /* we cannot use this generator object any more */
   SAMPLE = NULL;   /* make sure to show up a programming error */
@@ -669,8 +669,8 @@ _unur_dau_debug_init( struct unur_par *par, struct unur_gen *gen )
   FILE *log;
 
   /* check arguments */
-  CHECK_NULL(par,/*void*/);  COOKIE_CHECK(par,CK_DAU_PAR,/*void*/);
-  CHECK_NULL(gen,/*void*/);  COOKIE_CHECK(gen,CK_DAU_GEN,/*void*/);
+  CHECK_NULL(par,RETURN_VOID);  COOKIE_CHECK(par,CK_DAU_PAR,RETURN_VOID);
+  CHECK_NULL(gen,RETURN_VOID);  COOKIE_CHECK(gen,CK_DAU_GEN,RETURN_VOID);
 
   log = unur_get_stream();
 
@@ -718,7 +718,7 @@ _unur_dau_debug_table( struct unur_gen *gen )
   int i, j, m;
   
   /* check arguments */
-  CHECK_NULL(gen,/*void*/);  COOKIE_CHECK(gen,CK_DAU_GEN,/*void*/);
+  CHECK_NULL(gen,RETURN_VOID);  COOKIE_CHECK(gen,CK_DAU_GEN,RETURN_VOID);
    
   log = unur_get_stream();
   

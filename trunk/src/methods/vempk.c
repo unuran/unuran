@@ -646,7 +646,7 @@ _unur_vempk_sample_cvec( struct unur_gen *gen, double *result )
   int j,k;
 
   /* check arguments */
-  CHECK_NULL(gen,/*void*/);  COOKIE_CHECK(gen,CK_VEMPK_GEN,/*void*/);
+  CHECK_NULL(gen,RETURN_VOID);  COOKIE_CHECK(gen,CK_VEMPK_GEN,RETURN_VOID);
 
   /* select uniformly one of the observations */
   U = _unur_call_urng(gen->urng) * GEN.n_observ;
@@ -688,7 +688,7 @@ _unur_vempk_free( struct unur_gen *gen )
   if ( gen->method != UNUR_METH_VEMPK ) {
     _unur_warning(gen->genid,UNUR_ERR_GEN_INVALID,"");
     return; }
-  COOKIE_CHECK(gen,CK_VEMPK_GEN,/*void*/);
+  COOKIE_CHECK(gen,CK_VEMPK_GEN,RETURN_VOID);
 
   /* we cannot use this generator object any more */
   SAMPLE = NULL;   /* make sure to show up a programming error */
@@ -799,8 +799,8 @@ _unur_vempk_debug_init( const struct unur_par *par, const struct unur_gen *gen )
   int i;
 
   /* check arguments */
-  CHECK_NULL(par,/*void*/);  COOKIE_CHECK(par,CK_VEMPK_PAR,/*void*/);
-  CHECK_NULL(gen,/*void*/);  COOKIE_CHECK(gen,CK_VEMPK_GEN,/*void*/);
+  CHECK_NULL(par,RETURN_VOID);  COOKIE_CHECK(par,CK_VEMPK_PAR,RETURN_VOID);
+  CHECK_NULL(gen,RETURN_VOID);  COOKIE_CHECK(gen,CK_VEMPK_GEN,RETURN_VOID);
 
   log = unur_get_stream();
 

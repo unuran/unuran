@@ -538,9 +538,9 @@ _unur_distr_corder_debug( const struct unur_distr *os, const char *genid )
   FILE *log;
 
   /* check arguments */
-  CHECK_NULL(os,/*void*/);
-  COOKIE_CHECK(os,CK_DISTR_CONT,/*void*/);
-  CHECK_NULL(os->base,/*void*/);
+  CHECK_NULL(os,RETURN_VOID);
+  COOKIE_CHECK(os,CK_DISTR_CONT,RETURN_VOID);
+  CHECK_NULL(os->base,RETURN_VOID);
 
   log = unur_get_stream();
 

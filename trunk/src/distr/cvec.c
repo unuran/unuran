@@ -231,7 +231,7 @@ _unur_distr_cvec_free( struct unur_distr *distr )
   if( distr == NULL ) /* nothing to do */
     return;
 
-  COOKIE_CHECK(distr,CK_DISTR_CVEC,/*void*/);
+  COOKIE_CHECK(distr,CK_DISTR_CVEC,RETURN_VOID);
 
   for (i=0; i<UNUR_DISTR_MAXPARAMS; i++)
     if (DISTR.params[i]) free( DISTR.params[i] );
@@ -812,8 +812,8 @@ _unur_distr_cvec_debug( const struct unur_distr *distr, const char *genid )
   int i,j;
 
   /* check arguments */
-  CHECK_NULL(distr,/*void*/);
-  COOKIE_CHECK(distr,CK_DISTR_CVEC,/*void*/);
+  CHECK_NULL(distr,RETURN_VOID);
+  COOKIE_CHECK(distr,CK_DISTR_CVEC,RETURN_VOID);
 
   log = unur_get_stream();
 

@@ -381,7 +381,7 @@ _unur_tdr_free( struct unur_gen *gen )
   if ( gen->method != UNUR_METH_TDR ) {
     _unur_warning(gen->genid,UNUR_ERR_GEN_INVALID,"");
     return; }
-  COOKIE_CHECK(gen,CK_TDR_GEN,/*void*/);
+  COOKIE_CHECK(gen,CK_TDR_GEN,RETURN_VOID);
 
   /* we cannot use this generator object any more */
   SAMPLE = NULL;   /* make sure to show up a programming error */

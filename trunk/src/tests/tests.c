@@ -80,7 +80,7 @@ unur_run_tests( struct unur_par *par, unsigned tests)
   double time_setup, time_sample;
 
   /* check arguments */
-  _unur_check_NULL("Tests",par,/*void*/);
+  _unur_check_NULL("Tests",par,RETURN_VOID);
 
   /* print info about method */
   if (! _unur_print_method(par))

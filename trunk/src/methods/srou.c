@@ -1558,7 +1558,7 @@ _unur_srou_free( struct unur_gen *gen )
   if ( gen->method != UNUR_METH_SROU ) {
     _unur_warning(gen->genid,UNUR_ERR_GEN_INVALID,"");
     return; }
-  COOKIE_CHECK(gen,CK_SROU_GEN,/*void*/);
+  COOKIE_CHECK(gen,CK_SROU_GEN,RETURN_VOID);
 
   /* we cannot use this generator object any more */
   SAMPLE = NULL;   /* make sure to show up a programming error */
@@ -1597,7 +1597,7 @@ _unur_srou_debug_init( const struct unur_gen *gen, int is_reinit )
   FILE *log;
 
   /* check arguments */
-  CHECK_NULL(gen,/*void*/);  COOKIE_CHECK(gen,CK_SROU_GEN,/*void*/);
+  CHECK_NULL(gen,RETURN_VOID);  COOKIE_CHECK(gen,CK_SROU_GEN,RETURN_VOID);
 
   log = unur_get_stream();
 

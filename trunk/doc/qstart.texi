@@ -9,6 +9,7 @@
 @afourpaper
 @end iftex
 @paragraphindent 0
+@footnotestyle separate
 @c %**end of header
 
 
@@ -403,7 +404,22 @@ uniformly distributed random numbers
 * Requirements:: The requirements of the methods
 * Defaults:: The default settings of parameters
 @end menu
-
+@multitable @columnfractions .10 .06 .06 .065 .07 .06 .06
+@item name @tab cdf@footnote{cumulative distribution function} @tab pdf@footnote{distribution function} @tab dpdf@footnote{derivative of pdf} @tab mode@footnote{mode of the distribution} @tab area@footnote{area under pdf} @tab pv@footnote{probability vector}
+@c @item      @tab   @tab   @tab   @tab   @tab    @tab 
+@item AROU @tab     @tab @ x  @tab @ x @tab     @tab     @tab 
+@item CSTD @tab     @tab      @tab     @tab     @tab     @tab 
+@item DAU  @tab     @tab      @tab     @tab     @tab     @tab @ x 
+@item DGT  @tab     @tab      @tab     @tab     @tab     @tab 
+@item DSTD @tab     @tab      @tab     @tab     @tab     @tab 
+@item EMPK @tab     @tab      @tab     @tab     @tab     @tab
+@item NINV @tab @ x @tab (x) @footnote{Only required when inversion is done by Newton's method}              @tab     @tab     @tab     @tab
+@item SROU @tab     @tab @ x  @tab     @tab @ x @tab @ x @tab
+@item SSR  @tab     @tab @ x  @tab     @tab @ x @tab @ x @tab 
+@item TDR  @tab     @tab @ x  @tab @ x @tab     @tab     @tab
+@item UNIF @tab     @tab      @tab     @tab     @tab     @tab
+@item UTDR @tab     @tab @ x  @tab     @tab @ x @tab     @tab
+@end multitable
 @multitable @columnfractions .222 .222 .222 .334
 @item name/references    @tab  parameter (default)   @tab required       @tab remarks
 @item AROU               @tab                        @tab pdf, dpdf       @tab Adaptive Ratio-Of-Uniforms
@@ -481,7 +497,6 @@ All parameters have default settings documented in @ref{Defaults}.
 
 @node Defaults
 @section Default settings of the parameters
-@include qstart_paramdefaults.texi
 
 
 @c --------------------------------------------------------------------

@@ -40,6 +40,26 @@ EXTRA_DIST = \
  fig-pdf-student.tex \
  fig-pdf-uniform.tex
 
+method_PATH = ../src/methods/
+distr_PATH  = ../src/distributions/
+
+# make qstart
+qstart: qstart.texi
+
+# qstart.texi
+qstart.texi: scripts
+	tex qstart.texi
+	makeinfo --html qstart.texi
+
+# run perl scripts
+scripts:
+	./change_distr.perl $(method_PATH)*.c
+	./defaults.perl  $(method_PATH)*.c
+	./description.perl $(method_PATH)*.h
+	./distr.perl $(distr_PATH)*.c
+	./funcref.perl $(method_PATH)*.h
+	./required.perl $(method_PATH)*.h
+
 # make html files
 html:
 	texi2html -verbose -split_chapter $(info_TEXINFOS)
@@ -51,4 +71,16 @@ clean-local:
 # clean html files
 maintainer-clean:
 	rm -f *.html
+
+
+
+
+
+
+
+
+
+
+
+
 

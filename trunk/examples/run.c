@@ -46,15 +46,15 @@ int main()
 /*    unur_distr_cont_set_mode(distr,0.5); */
 /*    distr = unur_distr_normal(fpar,2); */
 
-  par = unur_tdr_new(distr);
+  par = unur_utdr_new(distr);
   //  unur_set_urng_aux(par,urng_aux);
-  unur_tdr_set_variant_ps(par);
-  unur_tdr_set_cpoints(par,2,cp);
+  //unur_tdr_set_variant_ps(par);
+  // unur_tdr_set_cpoints(par,2,cp);
 /*    unur_tdr_set_max_sqhratio(par,0.); */
-/*    unur_tdr_set_verify(par,1); */
+/*    unur_utdr_set_verify(par,1); */
   //  unur_tdr_set_c(par,0.);
-  unur_tdr_set_usemode(par,0);
-  unur_tdr_set_usecenter(par,0);
+  //unur_tdr_set_usemode(par,0);
+  // unur_tdr_set_usecenter(par,0);
   unur_run_tests(par,~0);
   
 /*    par = unur_tdr_new(distr); */

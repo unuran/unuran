@@ -240,7 +240,7 @@ unur_utdr_new( struct unur_distr *distr )
   PAR.fm        = -1.;                /* p.d.f. at mode (unknown)            */
   PAR.hm        = -1.;                /* square of p.d.f. at mode (unknown)  */
 
-  par->method   = UNUR_METH_UTDR;     /* method and default variant          */
+  par->method   = UNUR_METH_UTDR;     /* method                              */
   par->variant  = 0u;                 /* default variant                     */
   par->set      = 0u;                 /* inidicate default parameters        */    
   par->urng     = unur_get_default_urng(); /* use default urng               */
@@ -1262,23 +1262,23 @@ _unur_utdr_debug_init( struct unur_gen *gen, double tly, double tlys,
 
   _unur_distr_cont_debug( &(gen->distr), gen->genid );
 
-#if 0
-  /** TODO **/
   fprintf(log,"%s: sampling routine = _unur_utdr_sample",gen->genid);
   if (gen->variant & UTDR_VARFLAG_VERIFY)
     fprintf(log,"_check()\n");
   else
     fprintf(log,"()\n");
   fprintf(log,"%s:\n",gen->genid);
-#endif
 
-  fprintf(log,"%s: c_factor %e delta_factor %e real c: %e\n",gen->genid,GEN.c_factor,GEN.delta_factor,c);
-  fprintf(log,"%s: tlx %e bl %e mode %e\n",gen->genid,GEN.tlx,GEN.bl,DISTR.mode);
-  fprintf(log,"%s: br %e trx %e\n",gen->genid,GEN.br,GEN.trx);
-  fprintf(log,"%s: tly %e tlys %e al %e \n",gen->genid,tly,tlys,GEN.al);
-  fprintf(log,"%s: try %e trys %e ar %e \n",gen->genid,try,trys,GEN.ar);
-  fprintf(log,"%s:cfac %e setupok %d volcompl %e pdf_area %e\n",gen->genid,cfac,setupok,GEN.volcompl,DISTR.area);
+  fprintf(log,"%s: Data for hat and squeeze:\n",gen->genid);
   fprintf(log,"%s:\n",gen->genid);
+  fprintf(log,"%s:\tc_factor=%e delta_factor=%e real c=%e\n",gen->genid,GEN.c_factor,GEN.delta_factor,c);
+  fprintf(log,"%s:\ttlx=%e bl=%e mode=%e\n",gen->genid,GEN.tlx,GEN.bl,DISTR.mode);
+  fprintf(log,"%s:\tbr=%e trx=%e\n",gen->genid,GEN.br,GEN.trx);
+  fprintf(log,"%s:\ttly=%e tlys=%e al=%e \n",gen->genid,tly,tlys,GEN.al);
+  fprintf(log,"%s:\ttry=%e trys=%e ar=%e \n",gen->genid,try,trys,GEN.ar);
+  fprintf(log,"%s:\tcfac=%e setupok=%d volcompl=%e pdf_area=%e\n",gen->genid,cfac,setupok,GEN.volcompl,DISTR.area);
+  fprintf(log,"%s:\n",gen->genid);
+  fprintf(log,"%s: INIT completed **********************\n",gen->genid);
 
 } /* end of _unur_utdr_debug_init() */
 

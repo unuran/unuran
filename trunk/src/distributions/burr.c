@@ -200,7 +200,7 @@
 #include <source_distributions.h>
 
 /*---------------------------------------------------------------------------*/
-static const char distr_name[] = "burr_*";
+static const char distr_name[] = "burr";
 
 /* parameters */
 #define burr_type  params[0]

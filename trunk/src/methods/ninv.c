@@ -702,9 +702,20 @@ unur_ninv_chg_domain(UNUR_GEN *gen, double left, double right )
     return 0;
   }
 
+
   /* copy new boundaries into generator object */
   DISTR.BD_LEFT  = left;
   DISTR.BD_RIGHT = right;
+  if (GEN.table_on && left < GEN.table[0]){
+    _unur_warning(NULL, UNUR_ERR_DISTR_SET,
+        "left boarder of domain exceeds range of table -> truncated");
+    DISTR.BD_LEFT = GEN.table[0];
+  }
+  if (GEN.table_on && right > GEN.table[GEN.table_size-1]){
+    _unur_warning(NULL, UNUR_ERR_DISTR_SET,
+        "right boarder of domain exceeds range of table -> truncated");
+    DISTR.BD_LEFT = GEN.table[GEN.table_size-1];
+  }
 
   /* changelog */
   gen->distr.set |= UNUR_DISTR_SET_DOMAIN;

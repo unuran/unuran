@@ -334,7 +334,16 @@ UNUR_PAR *_unur_str2par(UNUR_DISTR *distr, char *methstr){
        }
  
        /* extract double value from string value */
-       dblvalue = atof(value);
+       if ( !strcmp(value, "true") || !strcmp(value, "on") ){
+          dblvalue = 1.0;
+       }
+       else if ( !strcmp(value, "false") || !strcmp(value, "off") ){
+          dblvalue = 0.0;
+       }
+       else {
+          dblvalue = atof(value);
+       }
+
     }
 
     /* Now: key, value, dblvalue and list are set           */

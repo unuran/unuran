@@ -280,12 +280,12 @@ unur_arou_new( struct unur_distr *distr )
   struct unur_par *par;
 
   /* check arguments */
-  CHECK_NULL(distr,NULL);
+  _unur_check_NULL(GENTYPE,distr,NULL);
+  COOKIE_CHECK(distr,CK_DISTR_CONT,NULL);
 
   /* check distribution */
   if (distr->type != UNUR_DISTR_CONT) {
     _unur_error(GENTYPE,UNUR_ERR_DISTR_INVALID,""); return NULL; }
-  COOKIE_CHECK(distr,CK_DISTR_CONT,NULL);
 
   if (DISTR_IN.pdf == NULL) {
     _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"p.d.f."); return NULL;
@@ -357,7 +357,7 @@ unur_arou_set_cpoints( struct unur_par *par, int n_stp, double *stp )
   int i;
 
   /* check arguments */
-  CHECK_NULL(par,0);
+  _unur_check_NULL( par->genid,par,0 );
 
   /* check input */
   _unur_check_par_object( AROU );
@@ -407,7 +407,7 @@ unur_arou_set_guidefactor( struct unur_par *par, double factor )
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  CHECK_NULL(par,0);
+  _unur_check_NULL( par->genid,par,0 );
 
   /* check input */
   _unur_check_par_object( AROU );
@@ -445,7 +445,7 @@ unur_arou_set_max_sqhratio( struct unur_par *par, double max_ratio )
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  CHECK_NULL(par,0);
+  _unur_check_NULL( par->genid,par,0 );
 
   /* check input */
   _unur_check_par_object( AROU );
@@ -483,7 +483,7 @@ unur_arou_set_max_segments( struct unur_par *par, int max_segs )
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  CHECK_NULL(par,0);
+  _unur_check_NULL( par->genid,par,0 );
 
   /* check input */
   _unur_check_par_object( AROU );
@@ -521,7 +521,7 @@ unur_arou_set_center( struct unur_par *par, double center )
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  CHECK_NULL(par,0);
+  _unur_check_NULL( par->genid,par,0 );
 
   /* check input */
   _unur_check_par_object( AROU );
@@ -557,7 +557,7 @@ unur_arou_set_usecenter( struct unur_par *par, int usecenter )
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  CHECK_NULL(par,0);
+  _unur_check_NULL( par->genid,par,0 );
 
   /* check input */
   _unur_check_par_object( AROU );
@@ -590,7 +590,7 @@ unur_arou_set_verify( struct unur_par *par, int verify )
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  CHECK_NULL(par,0);
+  _unur_check_NULL( par->genid,par,0 );
 
   /* check input */
   _unur_check_par_object( AROU );
@@ -623,7 +623,7 @@ unur_arou_init( struct unur_par *par )
   struct unur_gen *gen;
 
   /* check arguments */
-  CHECK_NULL(par,NULL);
+  _unur_check_NULL( par->genid,par,NULL );
 
   /* check input */
   if ( par->method != UNUR_METH_AROU ) {
@@ -700,8 +700,7 @@ unur_arou_sample( struct unur_gen *gen )
   double R,R1,R2,R3,tmp,x,fx,u;
 
   /* check arguments */
-  CHECK_NULL(gen,0.);
-  COOKIE_CHECK(gen,CK_AROU_GEN,0.);
+  CHECK_NULL(gen,0.);  COOKIE_CHECK(gen,CK_AROU_GEN,0.);
 
   while (1) {
 
@@ -779,8 +778,7 @@ unur_arou_sample_check( struct unur_gen *gen )
   double R,R1,R2,R3,tmp,x,fx,u,sqx,a;
 
   /* check arguments */
-  CHECK_NULL(gen,0.);
-  COOKIE_CHECK(gen,CK_AROU_GEN,0.);
+  CHECK_NULL(gen,0.);  COOKIE_CHECK(gen,CK_AROU_GEN,0.);
 
   while (1) {
 
@@ -922,8 +920,7 @@ _unur_arou_create( struct unur_par *par )
   struct unur_gen *gen;
 
   /* check arguments */
-  CHECK_NULL(par,NULL);
-  COOKIE_CHECK(par,CK_AROU_PAR,NULL);
+  CHECK_NULL(par,NULL);  COOKIE_CHECK(par,CK_AROU_PAR,NULL);
 
   /* allocate memory for generator object */
   gen = _unur_malloc( sizeof(struct unur_gen) );
@@ -1004,8 +1001,8 @@ _unur_arou_get_starting_cpoints( struct unur_par *par, struct unur_gen *gen )
   int i, use_center, is_center, was_center, is_increasing;
 
   /* check arguments */
-  COOKIE_CHECK(par,CK_AROU_PAR,0);
-  COOKIE_CHECK(gen,CK_AROU_GEN,0);
+  CHECK_NULL(par,0);  COOKIE_CHECK(par,CK_AROU_PAR,0);
+  CHECK_NULL(gen,0);  COOKIE_CHECK(gen,CK_AROU_GEN,0);
 
   /* initialize boolean */
   is_center = was_center = FALSE;
@@ -1174,8 +1171,8 @@ _unur_arou_get_starting_segments( struct unur_par *par, struct unur_gen *gen )
   double x,fx;              /* construction point, value of p.d.f. at x */
 
   /* check arguments */
-  COOKIE_CHECK(par,CK_AROU_PAR,0);
-  COOKIE_CHECK(gen,CK_AROU_GEN,0);
+  CHECK_NULL(par,0);  COOKIE_CHECK(par,CK_AROU_PAR,0);
+  CHECK_NULL(gen,0);  COOKIE_CHECK(gen,CK_AROU_GEN,0);
 
   /* compute paramters for all segments */
   for( seg=GEN.seg; seg->next != NULL; ) {
@@ -1206,7 +1203,7 @@ _unur_arou_get_starting_segments( struct unur_par *par, struct unur_gen *gen )
       return 0;
     }
     seg_new = _unur_arou_segment_new( gen, x, fx );
-    CHECK_NULL(seg_new,0);     /* case of error */
+    CHECK_NULL(seg_new,0);     /* case of internal error */
     /* insert into linked list */
     seg_new->next = seg->next;
     seg->next = seg_new;
@@ -1246,7 +1243,7 @@ _unur_arou_segment_new( struct unur_gen *gen, double x, double fx )
   double u,v,dfx;
 
   /* check arguments */
-  COOKIE_CHECK(gen,CK_AROU_GEN,NULL);
+  CHECK_NULL(gen,NULL);  COOKIE_CHECK(gen,CK_AROU_GEN,NULL);
 
   /* first check fx */
   if (fx<0.) {
@@ -1256,7 +1253,7 @@ _unur_arou_segment_new( struct unur_gen *gen, double x, double fx )
 
   /* we need new segment */
   seg = _unur_arou_segment_stack_pop(gen);
-  COOKIE_CHECK(seg,CK_AROU_SEG,NULL); 
+  CHECK_NULL(seg,NULL);  COOKIE_CHECK(seg,CK_AROU_SEG,NULL); 
 
   /* make left construction point in segment */
 
@@ -1311,6 +1308,7 @@ _unur_arou_segment_new( struct unur_gen *gen, double x, double fx )
 
 /*****************************************************************************/
 
+/** TODO ???? **/
 #define MAX_NORM_INTERSECTION  1.e6    /* maximal distance of intersection point
 					  from origin compared to distance of
 					  construction points to origin      */
@@ -1339,8 +1337,8 @@ _unur_arou_segment_parameter( struct unur_gen *gen, struct unur_arou_segment *se
   double det_bound;
 
   /* check arguments */
-  COOKIE_CHECK(gen,CK_AROU_GEN,0);
-  COOKIE_CHECK(seg,CK_AROU_SEG,0);
+  CHECK_NULL(gen,0);  COOKIE_CHECK(gen,CK_AROU_GEN,0);
+  CHECK_NULL(seg,0);  COOKIE_CHECK(seg,CK_AROU_SEG,0);
 
   /* area inside the squeeze */
   seg->Ain = (seg->ltp[1] * seg->rtp[0] - seg->ltp[0] * seg->rtp[1]) / 2.;
@@ -1489,8 +1487,8 @@ _unur_arou_segment_split( struct unur_gen *gen, struct unur_arou_segment *seg_ol
   double backup;
 
   /* check arguments */
-  COOKIE_CHECK(gen,CK_AROU_GEN,0);
-  COOKIE_CHECK(seg_oldl,CK_AROU_SEG,0);
+  CHECK_NULL(gen,0);      COOKIE_CHECK(gen,CK_AROU_GEN,0);
+  CHECK_NULL(seg_oldl,0); COOKIE_CHECK(seg_oldl,CK_AROU_SEG,0);
 
 #ifdef UNUR_ENABLE_LOGGING
     /* write info into log file */
@@ -1547,7 +1545,7 @@ _unur_arou_segment_split( struct unur_gen *gen, struct unur_arou_segment *seg_ol
 
     /* need new segment */
     seg_newr = _unur_arou_segment_new(gen,x,fx);
-    CHECK_NULL(seg_newr,0);     /* case of error */
+    CHECK_NULL(seg_newr,0);     /* case of internal error */
     
   /* link into list */
     seg_newr->next = seg_oldl->next;
@@ -1624,7 +1622,7 @@ _unur_arou_make_guide_table( struct unur_gen *gen )
   int j;
 
   /* check arguments */
-  COOKIE_CHECK(gen,CK_AROU_GEN,0);
+  CHECK_NULL(gen,0);  COOKIE_CHECK(gen,CK_AROU_GEN,0);
 
   /* allocate blocks for guide table (if necessary).
      (we allocate blocks for maximal guide table.) */
@@ -1697,6 +1695,9 @@ _unur_arou_segment_arcmean( struct unur_arou_segment *seg )
 {
   double xl, xr;
 
+  /* check arguments */
+  CHECK_NULL(seg,0);  COOKIE_CHECK(seg,CK_AROU_SEG,0);
+
   /* if u != 0 ... x is stored in tp (= v/u)   */
   /* else      ... x is stored in tangent dltp */
   xl = (seg->ltp[0] > 0.) ? (seg->ltp[1] / seg->ltp[0]) :
@@ -1727,8 +1728,7 @@ _unur_arou_segment_stack_pop( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  CHECK_NULL(gen,NULL);
-  COOKIE_CHECK(gen,CK_AROU_GEN,NULL);
+  CHECK_NULL(gen,NULL);  COOKIE_CHECK(gen,CK_AROU_GEN,NULL);
 
   /* look for an unused segment */
   if( ! GEN.seg_free ) {
@@ -1766,8 +1766,7 @@ _unur_arou_segment_stack_push( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  CHECK_NULL(gen,/*void*/);
-  COOKIE_CHECK(gen,CK_AROU_GEN,/*void*/);
+  CHECK_NULL(gen,/*void*/);  COOKIE_CHECK(gen,CK_AROU_GEN,/*void*/);
 
   /* update counters and pointers */
   --(GEN.n_segs);
@@ -1798,10 +1797,8 @@ _unur_arou_debug_init( struct unur_par *par, struct unur_gen *gen )
   int i;
 
   /* check arguments */
-  CHECK_NULL(gen,/*void*/);
-  COOKIE_CHECK(gen,CK_AROU_GEN,/*void*/);
-  CHECK_NULL(par,/*void*/);
-  COOKIE_CHECK(par,CK_AROU_PAR,/*void*/);
+  CHECK_NULL(gen,/*void*/);  COOKIE_CHECK(gen,CK_AROU_GEN,/*void*/);
+  CHECK_NULL(par,/*void*/);  COOKIE_CHECK(par,CK_AROU_PAR,/*void*/);
 
   log = unur_get_stream();
 
@@ -1871,8 +1868,7 @@ _unur_arou_debug_free( struct unur_gen *gen )
   FILE *log;
 
   /* check arguments */
-  CHECK_NULL(gen,/*void*/);
-  COOKIE_CHECK(gen,CK_AROU_GEN,/*void*/);
+  CHECK_NULL(gen,/*void*/);  COOKIE_CHECK(gen,CK_AROU_GEN,/*void*/);
 
   log = unur_get_stream();
 
@@ -1903,8 +1899,7 @@ _unur_arou_debug_segments( struct unur_gen *gen )
   int i;
 
   /* check arguments */
-  CHECK_NULL(gen,/*void*/);
-  COOKIE_CHECK(gen,CK_AROU_GEN,/*void*/);
+  CHECK_NULL(gen,/*void*/);  COOKIE_CHECK(gen,CK_AROU_GEN,/*void*/);
 
   log = unur_get_stream();
 
@@ -1970,8 +1965,8 @@ _unur_arou_debug_segments( struct unur_gen *gen )
 
 static void
 _unur_arou_debug_split_start( struct unur_gen *gen,
-		       struct unur_arou_segment *seg, 
-		       double x, double fx )
+			      struct unur_arou_segment *seg, 
+			      double x, double fx )
      /*----------------------------------------------------------------------*/
      /* write info about splitting segment                                   */
      /*                                                                      */
@@ -1984,6 +1979,10 @@ _unur_arou_debug_split_start( struct unur_gen *gen,
 {
   FILE *log;
   char ratio[14];
+
+  /* check arguments */
+  CHECK_NULL(gen,/*void*/);  COOKIE_CHECK(gen,CK_AROU_GEN,/*void*/);
+  CHECK_NULL(seg,/*void*/);  COOKIE_CHECK(seg,CK_AROU_SEG,/*void*/);
 
   log = unur_get_stream();
 
@@ -2030,6 +2029,11 @@ _unur_arou_debug_split_stop( struct unur_gen *gen,
 {
   FILE *log;
   char ratio[14];
+
+  /* check arguments */
+  CHECK_NULL(gen,/*void*/);        COOKIE_CHECK(gen,CK_AROU_GEN,/*void*/);
+  CHECK_NULL(seg_left,/*void*/);   COOKIE_CHECK(seg_left,CK_AROU_SEG,/*void*/);
+  CHECK_NULL(seg_right,/*void*/);  COOKIE_CHECK(seg_right,CK_AROU_SEG,/*void*/);
 
   log = unur_get_stream();
 

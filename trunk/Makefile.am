@@ -6,6 +6,7 @@
 SUBDIRS = . scripts src examples experiments tests doc
 
 EXTRA_DIST = \
+ Announcement-0.1.0 \
  KNOWN-PROBLEMS \
  autogen.sh
 

@@ -2023,6 +2023,7 @@ _unur_arou_segment_split( struct unur_gen *gen, struct unur_arou_segment *seg_ol
   struct unur_arou_segment *seg_newr;    /* pointer to newly created segment */
   struct unur_arou_segment seg_bak;      /* space for saving data of segment */
   double backup;
+  double Adiff;
 
   /* check arguments */
   CHECK_NULL(gen,0);      COOKIE_CHECK(gen,CK_AROU_GEN,0);
@@ -2122,6 +2123,14 @@ _unur_arou_segment_split( struct unur_gen *gen, struct unur_arou_segment *seg_ol
     }
   }
 
+  /* successful */
+
+  /* update total area below hat and squeeze */
+  Adiff =  - seg_bak.Ain  + seg_oldl->Ain  + ((seg_newr!=seg_oldl) ? seg_newr->Ain : 0. );
+  GEN.Asqueeze += Adiff;
+  Adiff += - seg_bak.Aout + seg_oldl->Aout + ((seg_newr!=seg_oldl) ? seg_newr->Aout : 0. );
+  GEN.Atotal += Adiff;
+
 #ifdef UNUR_ENABLE_LOGGING
   /* write info into log file */
   if (gen->debug & AROU_DEBUG_SPLIT) 
@@ -2176,9 +2185,9 @@ _unur_arou_run_dars( struct unur_par *par, struct unur_gen *gen )
   struct unur_arou_segment *seg, *seg_next;
   double Atot, Asqueezetot;    /* total area below hat and squeeze, resp. */
   double Alimit;               /* threshhold value for splitting interval */
-  int n_splitted;              /* count splitted intervals */
+  int n_splitted = 1;          /* count splitted intervals */
   int splitted;                /* result of splitting routine */
-  double x0, x1;               /* boundary of interval */
+  double xl, xr;               /* boundary of interval */
   double xsp, fxsp;            /* splitting point in interval */
 
   /* check arguments */
@@ -2234,12 +2243,23 @@ _unur_arou_run_dars( struct unur_par *par, struct unur_gen *gen )
       seg_next = seg->next;
 
       /* boundary of interval */
-      x0 = _unur_arou_compute_x(seg->ltp[0],seg->ltp[1]);
-      x1 = _unur_arou_compute_x(seg->rtp[0],seg->rtp[1]);
-      if (x0>x1) x0 = -INFINITY;   /* (0,0) is mapped to INF instead of -INF */
+      xl = _unur_arou_compute_x(seg->ltp[0],seg->ltp[1]);
+      xr = _unur_arou_compute_x(seg->rtp[0],seg->rtp[1]);
+      if (xl>xr) xl = -INFINITY;   /* (0,0) is mapped to INF instead of -INF */
+
+      /* However ... */
+      if ( _unur_FP_is_minus_infinity(xl)
+	   && seg->dltp[0] == -1. && seg->dltp[2] == 0. )
+  	/* boundary of domain given by tangent */
+	xl = seg->dltp[1];
+
+      if ( _unur_FP_is_infinity(xr)
+	   && seg->drtp[0] == -1. && seg->drtp[2] == 0. )
+  	/* boundary of domain given by tangent */
+	xr = seg->drtp[1];
 
       /* get splitting point (arc-mean rule) */
-      xsp = _unur_arcmean(x0,x1);
+      xsp = _unur_arcmean(xl,xr);
 
       /* value of PDF at splitting point */
       fxsp = PDF(xsp);
@@ -2250,21 +2270,17 @@ _unur_arou_run_dars( struct unur_par *par, struct unur_gen *gen )
       if (splitted > 0) {
       	/* splitting successful */
       	++n_splitted;
-	
-	/* now depending on the location of xsp in the segment seg,
-	   seg points to the left of the two new segments,
-	   or to the right of the two new segments.
-	   For the first case we have to move the pointer to the
-	   new right interval. Then seg will be moved to the next
-	   old segment in the list by the for loop.
-	   We can distinguish between these two cases by looking 
-	   at the seg->next pointer and compare it the pointer in the
-	   old unsplitted segment.                                  */
 
+	/* If we have chopped off the left or right tail,
+	   we can simply continue with seg->next.
+	   Otherwise, if we have split the segment, then
+	   seg->next points to the newly created segment
+	   and there is no need to split this in this loop;
+	   thus we skip seg->next and continue we seg->next->next.
+	   we can distinguish between these two cases by comparing
+	   the stored pointer seg_next with seg->next. */
 	if (seg->next != seg_next)
 	  seg = seg->next;
-	/* no more splitting points in this interval */
-	break;
       }
       else if (splitted < 0) {
 	/* some serious error occurred */
@@ -2738,6 +2754,7 @@ _unur_arou_debug_split_stop( const struct unur_gen *gen,
 {
   FILE *log;
   char ratio[14];
+  int chopped;
 
   /* check arguments */
   CHECK_NULL(gen,RETURN_VOID);        COOKIE_CHECK(gen,CK_AROU_GEN,RETURN_VOID);
@@ -2746,43 +2763,59 @@ _unur_arou_debug_split_stop( const struct unur_gen *gen,
 
   log = unur_get_stream();
 
-  fprintf(log,"%s: new segments:\n",gen->genid);
+  /* whether segment was split or just chopped */
+  chopped = (seg_left==seg_right) ? 1 : 0;
+
+  if (chopped)
+    fprintf(log,"%s: new segment (chopped):\n",gen->genid);
+  else
+    fprintf(log,"%s: new segments:\n",gen->genid);
 
   _unur_arou_debug_printratio(seg_left->ltp[0],seg_left->ltp[1],ratio);
   fprintf(log,"%s:   left  construction point  = (%-12.6g,%-12.6g)\t x = v/u = %s\tf(x) = %-12.6g\n",
 	  gen->genid, seg_left->ltp[0], seg_left->ltp[1], ratio, sqrt(seg_left->ltp[1]) );
-
+  
   _unur_arou_debug_printratio(seg_left->mid[0],seg_left->mid[1],ratio);
   fprintf(log,"%s:   intersection point        = (%-12.6g,%-12.6g)\t x = v/u = %s\n",
 	  gen->genid, seg_left->mid[0], seg_left->mid[1], ratio );
-
-  _unur_arou_debug_printratio(seg_left->rtp[0],seg_left->rtp[1],ratio);
-  fprintf(log,"%s:   middle construction point = (%-12.6g,%-12.6g)\t x = v/u = %s\tf(x) = %-12.6g\n",
-	  gen->genid, seg_left->rtp[0], seg_left->rtp[1], ratio, sqrt(seg_left->rtp[1]) );
-
-  _unur_arou_debug_printratio(seg_right->mid[0],seg_right->mid[1],ratio);
-  fprintf(log,"%s:   intersection point        = (%-12.6g,%-12.6g)\t x = v/u = %s\n",
-	  gen->genid, seg_right->mid[0], seg_right->mid[1], ratio );
-
-  _unur_arou_debug_printratio(seg_right->rtp[0],seg_right->rtp[1],ratio);
-  fprintf(log,"%s:   right construction point  = (%-12.6g,%-12.6g)\t x = v/u = %s\tf(x) = %-12.6g\n",
-	  gen->genid, seg_right->rtp[0], seg_right->rtp[1], ratio, sqrt(seg_right->rtp[1]) );
-
-  fprintf(log,"%s: left segment:\n",gen->genid);
-  fprintf(log,"%s:   A(squeeze)     = %-12.6g\t(%6.3f%%)\n",gen->genid,
-	  seg_left->Ain, seg_left->Ain * 100./GEN.Atotal);
-  fprintf(log,"%s:   A(hat\\squeeze) = %-12.6g\t(%6.3f%%)\n",gen->genid,
-	  seg_left->Aout, seg_left->Aout * 100./GEN.Atotal);
-  fprintf(log,"%s:   A(hat)         = %-12.6g\t(%6.3f%%)\n",gen->genid,
-	  (seg_left->Ain + seg_left->Aout), (seg_left->Ain +seg_left->Aout) * 100./GEN.Atotal);
-
-  fprintf(log,"%s: right segment:\n",gen->genid);
-  fprintf(log,"%s:   A(squeeze)     = %-12.6g\t(%6.3f%%)\n",gen->genid,
-	  seg_right->Ain, seg_right->Ain * 100./GEN.Atotal);
-  fprintf(log,"%s:   A(hat\\squeeze) = %-12.6g\t(%6.3f%%)\n",gen->genid,
-	  seg_right->Aout, seg_right->Aout * 100./GEN.Atotal);
-  fprintf(log,"%s:   A(hat)         = %-12.6g\t(%6.3f%%)\n",gen->genid,
-	  (seg_right->Ain + seg_right->Aout), (seg_right->Ain +seg_right->Aout) * 100./GEN.Atotal);
+    
+  
+  if (chopped) {
+    _unur_arou_debug_printratio(seg_left->rtp[0],seg_left->rtp[1],ratio);
+    fprintf(log,"%s:   right construction point  = (%-12.6g,%-12.6g)\t x = v/u = %s\tf(x) = %-12.6g\n",
+	    gen->genid, seg_left->rtp[0], seg_left->rtp[1], ratio, sqrt(seg_left->rtp[1]) );
+  }
+  else {
+    _unur_arou_debug_printratio(seg_left->rtp[0],seg_left->rtp[1],ratio);
+    fprintf(log,"%s:   middle construction point = (%-12.6g,%-12.6g)\t x = v/u = %s\tf(x) = %-12.6g\n",
+	    gen->genid, seg_left->rtp[0], seg_left->rtp[1], ratio, sqrt(seg_left->rtp[1]) );
+    
+    _unur_arou_debug_printratio(seg_right->mid[0],seg_right->mid[1],ratio);
+    fprintf(log,"%s:   intersection point        = (%-12.6g,%-12.6g)\t x = v/u = %s\n",
+	    gen->genid, seg_right->mid[0], seg_right->mid[1], ratio );
+    
+    _unur_arou_debug_printratio(seg_right->rtp[0],seg_right->rtp[1],ratio);
+    fprintf(log,"%s:   right construction point  = (%-12.6g,%-12.6g)\t x = v/u = %s\tf(x) = %-12.6g\n",
+	    gen->genid, seg_right->rtp[0], seg_right->rtp[1], ratio, sqrt(seg_right->rtp[1]) );
+  }
+  
+  if (!chopped) {
+    fprintf(log,"%s: left segment:\n",gen->genid);
+    fprintf(log,"%s:   A(squeeze)     = %-12.6g\t(%6.3f%%)\n",gen->genid,
+	    seg_left->Ain, seg_left->Ain * 100./GEN.Atotal);
+    fprintf(log,"%s:   A(hat\\squeeze) = %-12.6g\t(%6.3f%%)\n",gen->genid,
+	    seg_left->Aout, seg_left->Aout * 100./GEN.Atotal);
+    fprintf(log,"%s:   A(hat)         = %-12.6g\t(%6.3f%%)\n",gen->genid,
+	    (seg_left->Ain + seg_left->Aout), (seg_left->Ain +seg_left->Aout) * 100./GEN.Atotal);
+    
+    fprintf(log,"%s: right segment:\n",gen->genid);
+    fprintf(log,"%s:   A(squeeze)     = %-12.6g\t(%6.3f%%)\n",gen->genid,
+	    seg_right->Ain, seg_right->Ain * 100./GEN.Atotal);
+    fprintf(log,"%s:   A(hat\\squeeze) = %-12.6g\t(%6.3f%%)\n",gen->genid,
+	    seg_right->Aout, seg_right->Aout * 100./GEN.Atotal);
+    fprintf(log,"%s:   A(hat)         = %-12.6g\t(%6.3f%%)\n",gen->genid,
+	    (seg_right->Ain + seg_right->Aout), (seg_right->Ain +seg_right->Aout) * 100./GEN.Atotal);
+  }
 
   fprintf(log,"%s: total areas:\n",gen->genid);
   fprintf(log,"%s:   A(squeeze)     = %-12.6g\t(%6.3f%%)\n",gen->genid,

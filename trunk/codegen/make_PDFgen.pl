@@ -83,6 +83,7 @@ sub make_PDFgen_C
 	$PDFgen .= "\t\treturn \_unur_acg\_C\_PDF_$d (distr,out,pdf);\n";
     }
     $PDFgen .= "\tdefault:\n";
+    $PDFgen .= "\t\t_unur_error(distr->name,UNUR_ERR_GEN_DATA,\"Cannot make PDF\");\n";
     $PDFgen .= "\t\treturn 0;\n";
     $PDFgen .= "\t}\n";
     
@@ -131,8 +132,7 @@ sub make_PDFgen_C
 
 	# Write PDF
 	$PDFgen .= 
-	    make_section_C($DISTR,$d).
-	    $empty_line.
+	    "\t_unur_acg_print_sectionheader(out, 1, \"PDF for $d distribution\");\n\n".
 	    $PDFname.
 	    $PDFconst.
 	    $PDFbody;
@@ -157,8 +157,7 @@ sub make_PDFgen_C
     open CFILE, ">$PDFgen_C_file" or die "cannot open file $PDFgen_C_file\n";
 
     print CFILE make_bar_C("include header file");
-    print CFILE "\#include <source_unuran.h>\n";
-    print CFILE "\#include \"PDFgen_source.h\"\n";
+    print CFILE "\#include <codegen_source.h>\n";
 
     print CFILE make_bar_C("local prototypes");
     print CFILE $PDFgen_static_prototypes;
@@ -292,27 +291,8 @@ sub make_section_C
     my $DISTR = $_[0];    # data for distributions
     my $d = $_[1];        # name of distribution
 
-    # make a hrule
-    my $hline = "/* ";
-    for (1..64) { $hline .= "-"; }
-    $hline .= " */";
-    $hline = "\tfprintf (out,\"$hline\\n\");\n";
+    my $string = "\t_unur_acg_print_sectionheader(out, 1, \"PDF for $d distribution\");\n";
 
-    # make an empty line
-    my $empty_line = "\tfprintf (out,\"\\n\");\n";
-
-    # print name of distribution
-    my $distr_name = "\tfprintf (out,\"/* %-64s */\\n\",\"".
-	$DISTR->{$d}->{"=NAME"}."\");\n";
-
-    my $distr = "\tfprintf (out,\"/* PDF for %-56s */\\n\",\"\\\"$d\\\"\");\n";
-
-    my $string = 
-	$empty_line.
-	$hline.
-	$distr_name.
-	$distr.
-        $hline;
 
     return $string;
 

@@ -25,11 +25,24 @@
 int main()
 {
   UNUR_DISTR *distr;
+  UNUR_PAR *par;
   UNUR_GEN *gen;
-  double fpm[] = { -29.1872470639646, 0.217061228413259 };
-  distr = unur_distr_normal(fpm,2);
-  gen = unur_init( unur_tdr_new (distr) );
-  //   unurgen(gen,out,"normal_3");
+
+  double fpm[] = { 2. };
+
+  unur_set_default_debug(~0u);
+
+
+/*    distr = unur_distr_normal(NULL,0); */
+/*    par = unur_tdr_new( distr ); */
+/*    gen = unur_init( par ); */
+/*    unur_distr_free(distr); */
+/*    unur_free(gen); */
+
+  distr = unur_distr_powerexponential(fpm,1);
+  par = unur_tdr_new( distr );
+/*    unur_tdr_set_variant_gw(par); */
+  gen = unur_init( par );
   unur_distr_free(distr);
   unur_free(gen);
 

@@ -58,39 +58,36 @@
 /*****************************************************************************/
 
 int
-_unur_tdr_ps_codegen( struct unur_gen *gen, FILE *out, const char *distr_name )
+_unur_tdr_ps_codegen( struct unur_gen *gen, FILE *out, const char *rand_name, const char *pdf_name )
+     /*----------------------------------------------------------------------*/
+     /* code generator for method TDR variant PS (proportional squeeze)      */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen       ... pointer to generator object                          */
+     /*   out       ... output stream                                        */
+     /*   rand_name ... name of sampling routine                             */
+     /*   pdf_name  ... name of PDF                                          */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... on success                                                   */
+     /*   0 ... on error                                                     */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return 0                                                           */
+     /*----------------------------------------------------------------------*/
 {
   const char hline[] = "\n/* ------------------------- */\n/* %-25s */\n/* ------------------------- */\n\n";
 
   struct unur_tdr_interval *iv;
   int i,j;
 
-  /* names for function */
-  char *pdf, *rand;
-
   /* check arguments */
   _unur_check_NULL("ACG",gen, 0);
   COOKIE_CHECK(gen,CK_TDR_GEN,0);
 
-  /* name of PDF function and sampling routine */
-  if (distr_name == NULL) 
-    distr_name = unur_distr_get_name( &(gen->distr) );
-  pdf = _unur_malloc((5+strlen(distr_name)) * sizeof(char));
-  sprintf(pdf,"pdf_%s",distr_name);
-  rand = _unur_malloc((6+strlen(distr_name)) * sizeof(char));
-  sprintf(rand,"rand_%s",distr_name);
-
-  /* PDF */
-  fprintf(out,hline,"PDF");
-  if (! _unur_acg_C_PDF(&(gen->distr),out,pdf)) {
-    _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"Cannot make PDF");
-    free(pdf); free(rand);
-    return 0;
-  }
-
   /* sampling routine */
   fprintf(out,hline,"Sampling");
-  fprintf(out,"double %s(void)\n{\n",rand);
+  fprintf(out,"double %s(void)\n{\n",rand_name);
 
   /* constants */
   fprintf(out,"\t/* data */\n");
@@ -217,7 +214,7 @@ _unur_tdr_ps_codegen( struct unur_gen *gen, FILE *out, const char *distr_name )
   } /* end switch */
 
   /* main rejection */
-  fprintf(out,"\t\tif (V <= %s(X)) return X;\n",pdf);
+  fprintf(out,"\t\tif (V <= %s(X)) return X;\n",pdf_name);
 
   /* end of loop */
   fprintf(out,"\t}\n");
@@ -226,9 +223,6 @@ _unur_tdr_ps_codegen( struct unur_gen *gen, FILE *out, const char *distr_name )
   fprintf(out,"}\n");
 
   fprintf(out,hline,"End");
-
-  /* free memory */
-  free(pdf); free(rand);
 
   /* o.k. */
   return 1;
@@ -247,164 +241,8 @@ struct unur_tdr_interval {
   double  Acum;                 /* cumulated area of intervals               */
   double  Ahatr;                /* area below hat on right side              */
 };
-#endif
-
 
 /*****************************************************************************/
-#if 0
-
-double
-_unur_tdr_ps_sample( struct unur_gen *gen )
-     /*----------------------------------------------------------------------*/
-     /* sample from generator (proportional squeeze)                         */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   gen ... pointer to generator object                                */
-     /*                                                                      */
-     /* return:                                                              */
-     /*   double (sample from random variate)                                */
-     /*                                                                      */
-     /* error:                                                               */
-     /*   return 0.                                                          */
-     /*                                                                      */
-     /*======================================================================*/
-     /* comment:                                                             */
-     /*   x   ... random point                                               */
-     /*   x0  ... left construction point in interval                        */
-     /*   x1  ... right construction point in interval                       */
-     /*   f   ... PDF                                                        */
-     /*   Tf  ... transformed PDF                                            */
-     /*   dTf ... derivative of transformed PDF                              */
-     /*   sq  ... slope of squeeze in interval                               */
-     /*                                                                      */
-     /*----------------------------------------------------------------------*/
-     /*   if (Tf)'(x0) == 0:                                                 */
-     /*   X = x0 + U / f(x0)                                                 */
-     /*   U ~ U(0,area below hat)                                            */
-     /*                                                                      */
-     /*----------------------------------------------------------------------*/
-     /*   log(x):                                                            */
-     /*                                                                      */
-     /*   hat(x) = f(x0) * exp( (Tf)'(x0) *  (x-x0) )                        */
-     /*   generation:                                                        */
-     /*      X = x0 + 1/(Tf)'(x0) * \log( (Tf)'(x0)/f(x0) * U + 1 )          */
-     /*      U ~ U(-area below left hat, area below left hat)                */
-     /*                                                                      */
-     /*----------------------------------------------------------------------*/
-     /*   T(x) = -1/sqrt(x):                                                 */
-     /*                                                                      */
-     /*   hat(x) = 1 / (Tf(x0) + (Tf)'(x0) * (x-x0))^2                       */
-     /*   generation:                                                        */
-     /*      X = x0 + (Tf(x0)^2 * U) / (1 - Tf(x0) * (Tf)'(x0) * U)          */
-     /*      U ~ U(-area below left hat, area below left hat)                */
-     /*----------------------------------------------------------------------*/
-{ 
-  UNUR_URNG *urng;             /* pointer to uniform random number generator */
-  struct unur_tdr_interval *iv;
-  double U, V, X;
-  double fx, Thx;
-
-  /* check arguments */
-  CHECK_NULL(gen,0.);  COOKIE_CHECK(gen,CK_TDR_GEN,0.);
-
-  /* main URNG */
-  urng = gen->urng;
-
-  while (1) {
-
-    /* sample from U( Umin, Umax ) */
-    U = GEN.Umin + _unur_call_urng(urng) * (GEN.Umax - GEN.Umin);
-
-    /* look up in guide table and search for segment */
-    iv =  GEN.guide[(int) (U * GEN.guide_size)];
-    U *= GEN.Atotal;
-    while (iv->Acum < U) {
-      iv = iv->next;
-    }
-
-    /* reuse of uniform random number */
-    U -= iv->Acum - iv->Ahatr;    /* result: U in (-A_hatl, A_hatr) */
-
-    /* generate from hat distribution */
-    switch (gen->variant & TDR_VARMASK_T) {
-
-    case TDR_VAR_T_LOG:
-      if (iv->dTfx == 0.)
-	X = iv->x + U / iv->fx;
-      else {
-	double t = iv->dTfx * U / iv->fx;
-	if (fabs(t) > 1.e-6)
-	  /* x = iv->x + log(t + 1.) / iv->dTfx; is cheaper but numerical unstable */
-	  X = iv->x + log(t + 1.) * U / (iv->fx * t);
-	else if (fabs(t) > 1.e-8)
-	  /* use Taylor series */
-	  X = iv->x + U / iv->fx * (1 - t/2. + t*t/3.);
-	else
-	  X = iv->x + U / iv->fx * (1 - t/2.);
-      }
-      break;
-
-    case TDR_VAR_T_SQRT:
-      if (iv->dTfx == 0.)
-	X = iv->x + U /iv->fx;
-      else {
-	/* it would be less expensive to use:
-	   X = iv->x + iv->Tfx/iv->dTfx * (1. - 1./(1. + iv->dTfx * iv->Tfx * U) )
-	   however, this is unstable for small iv->dTfx */
-	// 	X = iv->x + (iv->Tfx*iv->Tfx*U) / (1.-iv->Tfx*iv->dTfx*U);  
-	X = iv->x + (U / iv->fx) / (1.-iv->Tfx*iv->dTfx*U);  
-	/* It cannot happen, that the denominator becomes 0 ! */
-      }
-      break;
-
-    case TDR_VAR_T_POW:
-      /** TODO **/
-      return 1.;
-
-      break;
-
-    default:
-      _unur_error(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
-      return 1.;
-
-    } /* end switch */
-
-    /* accept or reject */
-    V = _unur_call_urng(urng);
-
-    /* squeeze rejection */
-    if (V <= iv->sq)
-      	return X;
-
-    /* evaluate hat at X:
-       get uniform random number between 0 and hat(X) */
-    switch (gen->variant & TDR_VARMASK_T) {
-    case TDR_VAR_T_LOG:
-      V *= iv->fx * exp(iv->dTfx*(X - iv->x)); break;
-    case TDR_VAR_T_SQRT:
-      Thx = iv->Tfx + iv->dTfx * (X - iv->x);     /* transformed hat at X */ 
-      V *= 1./(Thx*Thx); break;
-    case TDR_VAR_T_POW:
-      /** TODO **/
-      return 1.;
-    } /* end switch */
-
-    /* evaluate PDF at X */
-    fx = PDF(X);
-
-    /* main rejection */
-    if (V <= fx)
-      return X;
-
-    /* else reject and try again */
-
-    /* use the auxilliary generator the next time
-       (it can be the same as the main generator) */
-    urng = gen->urng_aux;
-
-  }
-
-} /* end of _unur_tdr_ps_sample() */
 
 /*****************************************************************************/
 

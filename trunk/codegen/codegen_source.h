@@ -42,7 +42,16 @@
 
 /*---------------------------------------------------------------------------*/
 
-int _unur_tdr_ps_codegen( struct unur_gen *gen, FILE *out, const char *distr_name );
+int _unur_tdr_ps_codegen( struct unur_gen *gen, FILE *out, 
+			  const char *rand_name, const char *pdf_name );
+/*---------------------------------------------------------------------------*/
+/* Code generator for method TDR variant PS (proportional squeeze).          */
+/*---------------------------------------------------------------------------*/
+
+void _unur_acg_print_sectionheader( FILE *out, int n_lines, ... );
+/*---------------------------------------------------------------------------*/
+/* Print a section header with n_lines lines to output stream.               */
+/*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*/
 #endif   /* __CODEGEN_H_SEEN */

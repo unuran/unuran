@@ -153,6 +153,7 @@ unur_dstd_new( struct unur_distr *distr )
   par->variant  = 0u;               /* default variant                       */
   par->set      = 0u;               /* inidicate default parameters          */    
   par->urng     = unur_get_default_urng(); /* use default urng               */
+  par->urng_aux = NULL;                    /* no auxilliary URNG required    */
 
   par->genid    = _unur_set_genid(GENTYPE);/* set generator id               */
   par->debug    = _unur_default_debugflag; /* set default debugging flags    */
@@ -240,17 +241,16 @@ unur_dstd_init( struct unur_par *par )
   gen = _unur_dstd_create(par);
   if (!gen) { free(par); return NULL; }
 
-  /* run special init routine for generator */
-  if (DISTR.init != NULL)
-    DISTR.init(par,gen);
+  /* check for initializing routine for special generator */
+  _unur_check_NULL( gen->genid, DISTR.init, (free(par),NULL) );
 
-  /* init successful ?? */
-  if (SAMPLE == NULL) {
-    /* could not find a sampling routine */
+  /* run special init routine for generator */
+  if ( !DISTR.init(par,gen) ) {
+    /* init failed --> could not find a sampling routine */
     _unur_error(par->genid,UNUR_ERR_GEN_DATA,"variant for special generator");
     free(par); unur_dstd_free(gen); return NULL; 
   }
-  
+
   /* domain valid for special generator ?? */
   if (!(par->distr->set & UNUR_DISTR_SET_STDDOMAIN)) {
     /* domain has been modified */
@@ -384,6 +384,10 @@ _unur_dstd_create( struct unur_par *par )
   gen->variant = par->variant;      /* indicates variant      */
   gen->debug = par->debug;          /* debuging flags         */
   gen->urng = par->urng;            /* pointer to urng        */
+
+  gen->urng_aux = NULL;             /* no auxilliary URNG required           */
+  gen->gen_aux = NULL;              /* no auxilliary generator objects       */
+  gen->gen_aux_2 = NULL;
 
   /* return pointer to (almost empty) generator object */
   return(gen);

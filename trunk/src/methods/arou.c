@@ -1105,6 +1105,7 @@ _unur_arou_get_starting_cpoints( struct unur_par *par, struct unur_gen *gen )
 	     then we need both boundary points. */
 	  /* we only have to change tangent line v/u = x,
 	     everything else remains unchanged */
+	  seg->dltp[0] = -1.;
 	  seg->dltp[1] = x;
 	  /* seg->dltp[0] = -1; seg->dltp[2] = 0.;  not changed */
 	  x_last = x;
@@ -1115,7 +1116,7 @@ _unur_arou_get_starting_cpoints( struct unur_par *par, struct unur_gen *gen )
 	/* there should be no more points with pdf(x) > 0 */
 	break;
     }
-    
+
     /* need a new segment */
     seg_new = _unur_arou_segment_new( gen, x, fx );
     if (seg_new == NULL) {

@@ -16,7 +16,7 @@
 @c September 2000 Janka & Tirler                
 @c $Id$
 
-@set VERSION 0.0
+@set VERSION 0.00
 @set DATE September 2000
 
 @dircategory Scientific software

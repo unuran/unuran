@@ -44,27 +44,27 @@
 /* Function prototypes for function string parser                            */
 /*---------------------------------------------------------------------------*/
 
-struct treenode *_unur_fstr2tree( char *functstring );
+struct ftreenode *_unur_fstr2tree( char *functstring );
 /*---------------------------------------------------------------------------*/
 /* Compute funtion tree from string.                                         */
 /*---------------------------------------------------------------------------*/
 
-double _unur_fstr_eval_tree( struct treenode *functtree_root, double x );
+double _unur_fstr_eval_tree( struct ftreenode *functtree_root, double x );
 /*---------------------------------------------------------------------------*/
 /* Evalutes function given by a function tree at x.                          */
 /*---------------------------------------------------------------------------*/
 
-void _unur_fstr_free( struct treenode *functtree_root);
+void _unur_fstr_free( struct ftreenode *functtree_root);
 /*---------------------------------------------------------------------------*/
 /* Destroys function tree and frees memory.                                  */
 /*---------------------------------------------------------------------------*/
 
-char *Ntree2string( struct treenode *functtree_root, char *ret_str );
+char *Ntree2string( struct ftreenode *functtree_root, char *ret_str );
 /*---------------------------------------------------------------------------*/
 /* Creates string for program code.                                          */
 /*---------------------------------------------------------------------------*/
 
-struct treenode *_unur_fstr_make_derivative( struct treenode *functtree_root );
+struct ftreenode *_unur_fstr_make_derivative( struct ftreenode *functtree_root );
 /*---------------------------------------------------------------------------*/
 /* Make function tree for derivate of given function (tree).                 */ 
 /*---------------------------------------------------------------------------*/

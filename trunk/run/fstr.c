@@ -9,12 +9,10 @@
 
 /*---------------------------------------------------------------------------*/
 
+/*****************************************************************************/
+/** Routines for evaluating nodes of the function tree                      **/
+/*****************************************************************************/
 
-/*---------------------------------------------------------------------------*/
-/* Symbols used in function string                                           */
-
-/*---------------------------------------------------------------------------*/
-/* functions for evaluating function tree                                    */
 static double v_dummy  (double l, double r);
 static double v_less   (double l, double r);
 static double v_equal  (double l, double r);
@@ -75,7 +73,7 @@ enum {
   S_ADD_OP,          /* addition operator                                    */
   S_MUL_OP,          /* multiplication operator                              */
   S_HPR_OP,          /* higher priority operator                             */
-  S_OTHERS,          /* other operator                                       */
+  S_OTHERS           /* other operator                                       */
 };
 
 /*  IMPORTANT: symbol types S_ADD_OP, S_MUL_OP and S_HPR_OP indicate         */
@@ -92,13 +90,12 @@ struct symbols {
   int    type;                   /* type of symbol */
   int    info;                   /* priority or 
 				    number of argument for system function   */
-  double val;                    /* value of constant or (and)
-				    value of node during evalution of tree   */
+  double val;                    /* value of constant (0. otherwise)         */
 
   double (*vcalc)(double l, double r);   /* pointer to function for         
 					    computing value of node          */
 
-  char            *(*dcalc)(char *par,struct treenode *w,
+  char            *(*dcalc)(char *par,struct ftreenode *w,
                             char *l, char *r, char *dl, char *dr,char *s);
                               /* Zeiger auf Ableitungsfunktion   */ 
 };
@@ -189,7 +186,7 @@ static int s_ufunct = 2;      /* user defined function                       */
 static int s_uident = 3;      /* user defined variable                       */
 
 /* location of special symbols */
-static int s_comma;
+static int s_comma, s_minus, s_plus, s_mul;
 
 /* Marker for different regions in symbol table                              */
 static int _ros_start, _ros_end;    /* relation symbols                      */
@@ -243,7 +240,7 @@ enum {
 /* Evaluate function tree                                                    */
 /*---------------------------------------------------------------------------*/
 
-static double _unur_fstr_eval_node (struct treenode *node, double x);
+static double _unur_fstr_eval_node (struct ftreenode *node, double x);
 /*---------------------------------------------------------------------------*/
 /* Evaluate function tree starting from `node' at x                          */
 /*---------------------------------------------------------------------------*/
@@ -332,62 +329,62 @@ static int _unur_fstr_find_user_defined (struct parser_data *pdata, char *symb, 
 /* Parser.                                                                   */
 /*---------------------------------------------------------------------------*/
 
-static struct treenode *_unur_FunctDefinition (struct parser_data *pdata);
+static struct ftreenode *_unur_FunctDefinition (struct parser_data *pdata);
 /*---------------------------------------------------------------------------*/
 /* Get user defined function.                                                */
 /*  FunctDefinition ::= DefFunctDesignator '=' Expression                    */
 /*---------------------------------------------------------------------------*/
 
-static struct treenode *_unur_DefFunctDesignator (struct parser_data *pdata);
+static struct ftreenode *_unur_DefFunctDesignator (struct parser_data *pdata);
 /*---------------------------------------------------------------------------*/
 /* Definition of user defined function.                                      */
 /*  DefFunctDesignator ::= Identifier '(' DefParameterlist ')'               */
 /*---------------------------------------------------------------------------*/
 
-static struct treenode *_unur_DefParameterlist (struct parser_data *pdata, int *n_params);
+static struct ftreenode *_unur_DefParameterlist (struct parser_data *pdata, int *n_params);
 /*---------------------------------------------------------------------------*/
 /* Parameter list for user defined function.                                 */
 /*  DefParameterlist ::= '(' Identifier [ ',' Identifier ] ')'                */
 /*---------------------------------------------------------------------------*/
 
-static struct treenode *_unur_Expression (struct parser_data *pdata);
+static struct ftreenode *_unur_Expression (struct parser_data *pdata);
 /*---------------------------------------------------------------------------*/
 /*  Expression ::= SimpleExpression [ RelationOperator SimpleExpression ]    */ 
 /*---------------------------------------------------------------------------*/
 
-static struct treenode *_unur_SimpleExpression (struct parser_data *pdata);
+static struct ftreenode *_unur_SimpleExpression (struct parser_data *pdata);
 /*---------------------------------------------------------------------------*/
 /*  SimpleExpression ::= STerm { AddingOperator Term }                       */
 /*---------------------------------------------------------------------------*/
 
-static struct treenode *_unur_STerm (struct parser_data *pdata);
+static struct ftreenode *_unur_STerm (struct parser_data *pdata);
 /*---------------------------------------------------------------------------*/
 /*  STerm ::= [ '+' | '-' ] Term                                             */
 /*---------------------------------------------------------------------------*/
 
-static struct treenode *_unur_Term (struct parser_data *pdata);
+static struct ftreenode *_unur_Term (struct parser_data *pdata);
 /*---------------------------------------------------------------------------*/
 /*  Term ::= Factor [ MultiplyingOperator Factor ]                           */
 /*---------------------------------------------------------------------------*/
 
-static struct treenode *_unur_Factor (struct parser_data *pdata);
+static struct ftreenode *_unur_Factor (struct parser_data *pdata);
 /*---------------------------------------------------------------------------*/
 /*  Factor ::= Base [ '^' Exponent ]                                         */
 /*---------------------------------------------------------------------------*/
 
-static struct treenode *_unur_Bas_Exp (struct parser_data *pdata);
+static struct ftreenode *_unur_Bas_Exp (struct parser_data *pdata);
 /*---------------------------------------------------------------------------*/
 /*  Base ::= Exponent                                                        */
 /*  Exponent ::= UnsignedConstant | Identifier | FunctDesignator |           */ 
 /*               "not" Base | '(' Expression ')'                             */ 
 /*---------------------------------------------------------------------------*/
 
-static struct treenode *_unur_FunctDesignator (struct parser_data *pdata);
+static struct ftreenode *_unur_FunctDesignator (struct parser_data *pdata);
 /*---------------------------------------------------------------------------*/
 /*  FunctDesignator ::= FuncIdentifier '(' ActualParameterlist ')'           */
 /*---------------------------------------------------------------------------*/
 
-static struct treenode *_unur_ActualParameterlist (struct parser_data *pdata, int n_params);
+static struct ftreenode *_unur_ActualParameterlist (struct parser_data *pdata, int n_params);
 /*---------------------------------------------------------------------------*/
 /*  ActualParameterlist ::= ActualParameter [ ',' ActualParameter ]          */
 /*---------------------------------------------------------------------------*/
@@ -397,17 +394,22 @@ static int _unur_fstr_next_token (struct parser_data *pdata, int *token, char **
 /* Get next token from list.                                                 */
 /*---------------------------------------------------------------------------*/
 
-static struct treenode *_unur_fstr_create_node (char *symb, int token,
-						struct treenode *left,
-						struct treenode *right);
+static struct ftreenode *_unur_fstr_create_node (char *symb, int token,
+						 struct ftreenode *left,
+						 struct ftreenode *right);
 /*---------------------------------------------------------------------------*/
 /* Create new node.                                                          */
 /*---------------------------------------------------------------------------*/
 
-static struct treenode *
-_unur_fstr_simplification (char *symb, int token, struct treenode *left, struct treenode *right);
+static struct ftreenode *
+_unur_fstr_simplification (char *symb, int token, struct ftreenode *left, struct ftreenode *right);
 /*---------------------------------------------------------------------------*/
 /* Try to simpify nodes.                                                     */
+/*---------------------------------------------------------------------------*/
+
+static int _unur_fstr_reorganize (struct ftreenode *node);
+/*---------------------------------------------------------------------------*/
+/* Try to reorganize tree at node.                                           */
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*/
@@ -419,7 +421,7 @@ static void _unur_fstr_error_scan (const struct parser_data *pdata, const char *
 /* Print error message when scanning function string.                        */
 /*---------------------------------------------------------------------------*/
 
-static struct treenode *_unur_fstr_error_parse ( struct parser_data *pdata, int errno );
+static struct ftreenode *_unur_fstr_error_parse ( struct parser_data *pdata, int errno );
 /*---------------------------------------------------------------------------*/
 /* Print error message when parsing function string.                         */
 /*---------------------------------------------------------------------------*/
@@ -447,13 +449,13 @@ static void _unur_fstr_debug_token ( const struct parser_data *pdata );
 /*---------------------------------------------------------------------------*/
 
 static void _unur_fstr_debug_tree( const struct parser_data *pdata,
-				   const struct treenode *root );
+				   const struct ftreenode *root );
 /*---------------------------------------------------------------------------*/
 /* Print function tree.                                                      */
 /*---------------------------------------------------------------------------*/
 
 static void _unur_fstr_debug_show_tree(const struct parser_data *pdata,
-				       const struct treenode *node,
+				       const struct ftreenode *node,
 				       int level, int location);
 /*---------------------------------------------------------------------------*/
 /* Print function tree by recursion.                                         */
@@ -467,7 +469,7 @@ static void _unur_fstr_debug_show_tree(const struct parser_data *pdata,
 /** API                                                                     **/
 /*****************************************************************************/
 
-struct treenode *
+struct ftreenode *
 _unur_fstr2tree(char *functstr)
 
 /*  Wandelt den String 'functstr' in einen Parse-Baum um. 'functstr' muss 
@@ -477,7 +479,7 @@ _unur_fstr2tree(char *functstr)
  */ 
 { 
   struct parser_data *pdata;
-  struct treenode *root;
+  struct ftreenode *root;
 
 #ifdef UNUR_ENABLE_LOGGING
   /* write info into log file */
@@ -531,7 +533,7 @@ _unur_fstr2tree(char *functstr)
 /*---------------------------------------------------------------------------*/
 
 double
-_unur_fstr_eval_tree(struct treenode *root, double x)
+_unur_fstr_eval_tree(struct ftreenode *root, double x)
      /*----------------------------------------------------------------------*/
      /* Evaluate function tree at x                                          */
      /*                                                                      */
@@ -552,7 +554,7 @@ _unur_fstr_eval_tree(struct treenode *root, double x)
 /*---------------------------------------------------------------------------*/
 
 void
-_unur_fstr_free (struct treenode *root)  
+_unur_fstr_free (struct ftreenode *root)  
      /*----------------------------------------------------------------------*/
      /* Destroy function tree.                                               */
      /*                                                                      */
@@ -574,7 +576,7 @@ _unur_fstr_free (struct treenode *root)
 /*****************************************************************************/
 
 double
-_unur_fstr_eval_node (struct treenode *node, double x)
+_unur_fstr_eval_node (struct ftreenode *node, double x)
      /*----------------------------------------------------------------------*/
      /* Evaluate function tree starting from `node' at x                     */
      /*                                                                      */
@@ -588,7 +590,7 @@ _unur_fstr_eval_node (struct treenode *node, double x)
 {
   double val_l, val_r;
 
-  switch (node->symbkind) {
+  switch (node->type) {
   case S_UCONST:
   case S_SCONST:
     /* node contains constant */
@@ -716,23 +718,10 @@ _unur_fstr_symbols_init (void)
 
   /* find location of special symbols */
   s_comma = _unur_fstr_find_symbol(",",_nas_start,_nas_end);
+  s_minus = _unur_fstr_find_symbol("-",_nas_start,_nas_end);
+  s_plus  = _unur_fstr_find_symbol("+",_nas_start,_nas_end);
+  s_mul   = _unur_fstr_find_symbol("*",_nas_start,_nas_end);
 
-#if 0
-  /* find location of marker for user defined constant */
-  uconst = find_symbol_in_table("UCONST",0,n_symbols);
-
-  /* find location of marker for user defined function */
-  ufunct = find_symbol_in_table("UFUNCT",0,n_symbols);
-
-  uident = find_symbol_in_table("VAR",0,n_symbols);
-
-  xxxminus = find_symbol_in_table("-",0,n_symbols);
-  xxxplus = find_symbol_in_table("+",0,n_symbols);
-  xxxmul = find_symbol_in_table("*",0,n_symbols);
-  xxxdiv = find_symbol_in_table("/",0,n_symbols);
-
-
-#endif
 } /* end of _unur_fstr_symbols_init() */
 
 /*---------------------------------------------------------------------------*/
@@ -1109,7 +1098,7 @@ _unur_fstr_find_user_defined (struct parser_data *pdata, char *symb, char next_c
 /** Parser                                                                  **/
 /*****************************************************************************/
 
-struct treenode *
+struct ftreenode *
 _unur_FunctDefinition (struct parser_data *pdata)
      /*----------------------------------------------------------------------*/
      /* Get user defined function.                                           */
@@ -1127,9 +1116,9 @@ _unur_FunctDefinition (struct parser_data *pdata)
      /*   pointer to function tree                                           */
      /*----------------------------------------------------------------------*/
 { 
-  struct treenode *node, *left, *right; 
-  char            *symb;
-  int             token; 
+  struct ftreenode *node, *left, *right; 
+  char             *symb;
+  int              token; 
 
   /* left hand side: DefFunctDesignator */
   left = _unur_DefFunctDesignator(pdata);
@@ -1153,7 +1142,7 @@ _unur_FunctDefinition (struct parser_data *pdata)
 
 /*---------------------------------------------------------------------------*/
 
-struct treenode *
+struct ftreenode *
 _unur_DefFunctDesignator (struct parser_data *pdata) 
      /*----------------------------------------------------------------------*/
      /* Definition of user defined function.                                 */
@@ -1171,10 +1160,10 @@ _unur_DefFunctDesignator (struct parser_data *pdata)
      /*   pointer to function tree                                           */
      /*----------------------------------------------------------------------*/
 { 
-  struct treenode *node, *params; 
-  char            *fsymb, *symb;
-  int             n_params; 
-  int             funct, token;
+  struct ftreenode *node, *params; 
+  char             *fsymb, *symb;
+  int              n_params; 
+  int              funct, token;
 
   /* get function identifier */
   if ( _unur_fstr_next_token(pdata,&funct,&fsymb) == FALSE ||
@@ -1204,7 +1193,7 @@ _unur_DefFunctDesignator (struct parser_data *pdata)
 
 /*---------------------------------------------------------------------------*/
 
-struct treenode *
+struct ftreenode *
 _unur_DefParameterlist(struct parser_data *pdata, int *n_params) 
      /*----------------------------------------------------------------------*/
      /* Parameter list for user defined function.                            */
@@ -1224,9 +1213,9 @@ _unur_DefParameterlist(struct parser_data *pdata, int *n_params)
      /*   pointer to function tree                                           */
      /*----------------------------------------------------------------------*/
 { 
-  struct treenode *node, *left, *right; 
-  char            *symb;
-  int token;
+  struct ftreenode *node, *left, *right; 
+  char             *symb;
+  int              token;
 
   /* read user defined identifier, i.e. a variable */ 
   if ( _unur_fstr_next_token(pdata,&token,&symb) == FALSE ||
@@ -1268,7 +1257,7 @@ _unur_DefParameterlist(struct parser_data *pdata, int *n_params)
 
 /*---------------------------------------------------------------------------*/
 
-struct treenode *
+struct ftreenode *
 _unur_Expression (struct parser_data *pdata)
      /*----------------------------------------------------------------------*/
      /* Expression ::= SimpleExpression [ RelationOperator SimpleExpression ] */ 
@@ -1284,9 +1273,9 @@ _unur_Expression (struct parser_data *pdata)
      /*   pointer to function tree                                           */
      /*----------------------------------------------------------------------*/
 { 
-  struct treenode *node, *left, *right; 
-  char            *symb;
-  int             token;
+  struct ftreenode *node, *left, *right; 
+  char             *symb;
+  int              token;
 
   /* read simple expression from function string */
   left = _unur_SimpleExpression(pdata);
@@ -1315,7 +1304,7 @@ _unur_Expression (struct parser_data *pdata)
 
 /*---------------------------------------------------------------------------*/
 
-struct treenode *
+struct ftreenode *
 _unur_SimpleExpression (struct parser_data *pdata)
      /*----------------------------------------------------------------------*/
      /*  SimpleExpression ::= STerm { AddingOperator Term }                  */
@@ -1331,9 +1320,9 @@ _unur_SimpleExpression (struct parser_data *pdata)
      /*   pointer to function tree                                           */
      /*----------------------------------------------------------------------*/
 { 
-  struct treenode *node, *left, *right; 
-  char            *symb;
-  int             token;
+  struct ftreenode *node, *left, *right; 
+  char             *symb;
+  int              token;
 
   /* get next Term in string */
   node = _unur_STerm(pdata);
@@ -1361,7 +1350,7 @@ _unur_SimpleExpression (struct parser_data *pdata)
 
 /*---------------------------------------------------------------------------*/
 
-struct treenode *
+struct ftreenode *
 _unur_STerm (struct parser_data *pdata)
      /*----------------------------------------------------------------------*/
      /*  STerm ::= [ '+' | '-' ] Term                                        */
@@ -1379,9 +1368,9 @@ _unur_STerm (struct parser_data *pdata)
      /*   pointer to function tree                                           */
      /*----------------------------------------------------------------------*/
 { 
-  struct treenode *node, *left, *right; 
-  char            *symb; 
-  int             token;
+  struct ftreenode *node, *left, *right; 
+  char             *symb; 
+  int              token;
 
   /* get next token */
   if ( _unur_fstr_next_token(pdata,&token,&symb) &&
@@ -1412,7 +1401,7 @@ _unur_STerm (struct parser_data *pdata)
 
 /*---------------------------------------------------------------------------*/
 
-struct treenode *
+struct ftreenode *
 _unur_Term (struct parser_data *pdata)
      /*----------------------------------------------------------------------*/
      /*  Term ::= Factor [ MultiplyingOperator Factor ]                      */
@@ -1428,9 +1417,9 @@ _unur_Term (struct parser_data *pdata)
      /*   pointer to function tree                                           */
      /*----------------------------------------------------------------------*/
 { 
-  struct treenode *node, *left, *right; 
-  char            *symb;
-  int             token;
+  struct ftreenode *node, *left, *right; 
+  char             *symb;
+  int              token;
 
   /* get next factor of multiplication */
   node = _unur_Factor(pdata);
@@ -1458,7 +1447,7 @@ _unur_Term (struct parser_data *pdata)
 
 /*---------------------------------------------------------------------------*/
 
-struct treenode *
+struct ftreenode *
 _unur_Factor (struct parser_data *pdata)
      /*----------------------------------------------------------------------*/
      /*  Factor ::= Base [ '^' Exponent ]                                    */
@@ -1474,9 +1463,9 @@ _unur_Factor (struct parser_data *pdata)
      /*   pointer to function tree                                           */
      /*----------------------------------------------------------------------*/
 { 
-  struct treenode *node, *left, *right; 
-  char            *symb;
-  int             token;
+  struct ftreenode *node, *left, *right; 
+  char             *symb;
+  int              token;
 
   /* get base of factor */
   left = _unur_Bas_Exp(pdata);
@@ -1507,7 +1496,7 @@ _unur_Factor (struct parser_data *pdata)
 
 /*---------------------------------------------------------------------------*/
 
-struct treenode *
+struct ftreenode *
 _unur_Bas_Exp (struct parser_data *pdata)
      /*----------------------------------------------------------------------*/
      /*  Base ::= Exponent                                                   */
@@ -1529,9 +1518,9 @@ _unur_Bas_Exp (struct parser_data *pdata)
      /*   pointer to function tree                                           */
      /*----------------------------------------------------------------------*/
 { 
-  struct treenode *node, *right; 
-  char            *symb;
-  int token;
+  struct ftreenode *node, *right; 
+  char             *symb;
+  int              token;
 
   /* get next token */
   if ( _unur_fstr_next_token(pdata,&token,&symb) == FALSE)
@@ -1584,7 +1573,7 @@ _unur_Bas_Exp (struct parser_data *pdata)
 
 /*---------------------------------------------------------------------------*/
 
-struct treenode *
+struct ftreenode *
 _unur_FunctDesignator (struct parser_data *pdata)
      /*----------------------------------------------------------------------*/
      /*  FunctDesignator ::= FuncIdentifier '(' ActualParameterlist ')'      */
@@ -1600,10 +1589,10 @@ _unur_FunctDesignator (struct parser_data *pdata)
      /*   pointer to function tree                                           */
      /*----------------------------------------------------------------------*/
 { 
-  struct treenode *node, *params; 
-  char            *fsymb, *symb;
-  int             funct, token;
-  int             n_params; 
+  struct ftreenode *node, *params; 
+  char             *fsymb, *symb;
+  int              funct, token;
+  int              n_params; 
 
   /* get function identifier for system function */
   if ( _unur_fstr_next_token(pdata,&funct,&fsymb) == FALSE ||
@@ -1636,7 +1625,7 @@ _unur_FunctDesignator (struct parser_data *pdata)
 
 /*---------------------------------------------------------------------------*/
 
-struct treenode *
+struct ftreenode *
 _unur_ActualParameterlist (struct parser_data *pdata, int n_params) 
      /*----------------------------------------------------------------------*/
      /*  ActualParameterlist ::= ActualParameter [ ',' ActualParameter ]     */
@@ -1653,10 +1642,10 @@ _unur_ActualParameterlist (struct parser_data *pdata, int n_params)
      /*   pointer to function tree                                           */
      /*----------------------------------------------------------------------*/
 { 
-  struct treenode *node, *left, *right; 
-  char            *symb;
-  int             token;
-  int             c_params;   /* counter for parameters */
+  struct ftreenode *node, *left, *right; 
+  char             *symb;
+  int              token;
+  int              c_params;   /* counter for parameters */
 
   /* read first parameter from string ...  */
   node = _unur_Expression(pdata);
@@ -1730,8 +1719,8 @@ _unur_fstr_next_token (struct parser_data *pdata, int *token, char **symbol)
 
 /*---------------------------------------------------------------------------*/
 
-struct treenode *
-_unur_fstr_create_node (char *symb, int token, struct treenode *left, struct treenode *right) 
+struct ftreenode *
+_unur_fstr_create_node (char *symb, int token, struct ftreenode *left, struct ftreenode *right) 
      /*----------------------------------------------------------------------*/
      /* Create new node.                                                     */
      /*                                                                      */
@@ -1745,22 +1734,20 @@ _unur_fstr_create_node (char *symb, int token, struct treenode *left, struct tre
      /*   pointer to new node                                                */
      /*----------------------------------------------------------------------*/
 { 
-  struct treenode *node; 
+  struct ftreenode *node; 
 
-  if ( (node = _unur_fstr_simplification(symb,token,left,right)) ) { 
+  if ( (node = _unur_fstr_simplification(symb,token,left,right)) ) {
     /* node has been simplified  -->  use left node, remove right node */
-    //    root = left;     
-    //    free(right);   /* free memory for leave */
   }
   else {
 
     /* make new node */
-    node = _unur_malloc(sizeof(struct treenode)); 
-    node->symbol   = symbol[token].name; 
-    node->token    = token; 
-    node->symbkind = symbol[token].type; 
-    node->left     = left; 
-    node->right    = right; 
+    node = _unur_malloc(sizeof(struct ftreenode)); 
+    node->symbol = symbol[token].name; 
+    node->token  = token; 
+    node->type   = symbol[token].type; 
+    node->left   = left; 
+    node->right  = right; 
 
     /* compute and/or store constants in val field */
     switch (symbol[token].type) {
@@ -1772,6 +1759,9 @@ _unur_fstr_create_node (char *symb, int token, struct treenode *left, struct tre
       node->val = 0.;
     }
   } 
+
+  /* it might be possible to reorganize the tree */
+  _unur_fstr_reorganize(node); 
   
   /* return node */
   return node; 
@@ -1780,9 +1770,9 @@ _unur_fstr_create_node (char *symb, int token, struct treenode *left, struct tre
 
 /*---------------------------------------------------------------------------*/
 
-struct treenode *
+struct ftreenode *
 _unur_fstr_simplification (char *symb, int token,
-			   struct treenode *left, struct treenode *right) 
+			   struct ftreenode *left, struct ftreenode *right) 
      /*----------------------------------------------------------------------*/
      /* Try to simpify nodes                                                 */
      /*                                                                      */
@@ -1797,20 +1787,27 @@ _unur_fstr_simplification (char *symb, int token,
      /*   NULL if no simplication is possible                                */
      /*----------------------------------------------------------------------*/
 {
-  int l_const = left  && (left->symbkind  == S_SCONST || left->symbkind  == S_UCONST); 
-  int r_const = right && (right->symbkind == S_SCONST || right->symbkind == S_UCONST); 
-/*    int l_0     = (l_const && left->val == 0.); */
+  /* some booleans */
+  int l_const = left  && (left->type  == S_SCONST || left->type  == S_UCONST); 
+  int r_const = right && (right->type == S_SCONST || right->type == S_UCONST); 
+  int l_0     = (l_const && left->val == 0.);
+  int l_1     = (l_const && left->val == 1.);
+  int r_0     = (r_const && right->val == 0.);
+  int r_1     = (r_const && right->val == 1.);
+  int and, mod;
 
-  /*         Expression             Expression
+  char s = symb[0];
+
+  /*             Exp                    Exp
    *            /   \                  /   \ 
    *        NULL    ','       ==>     X     Y
    *               /   \ 
    *              X     Y
    */ 
   if ( left == NULL && right && right->symbol[0] == ',' ) {
-    right->token    = token;
-    right->symbol  = symbol[token].name; 
-    right->symbkind = symbol[token].type;
+    right->token  = token;
+    right->symbol = symbol[token].name; 
+    right->type   = symbol[token].type;
     return right; 
    }
 
@@ -1818,22 +1815,209 @@ _unur_fstr_simplification (char *symb, int token,
    *            /   \      or      /   \        ==>     Const (result of computation)
    *       Const     Const     NULL     Const
    */ 
-  if ( (l_const || left==NULL) && r_const && symb[0]!=',') { 
+  if ( (l_const || left==NULL) && r_const && s!=',') { 
     /* compute new value */
     right->val   = ( (left) 
 		     ? (*symbol[token].vcalc)(left->val,right->val)
 		     : (*symbol[token].vcalc)(0.,right->val) );
     right->token = s_uconst;
-    right->symbkind = S_UCONST;
+    right->type  = S_UCONST;
     right->left  = NULL; 
     right->right = NULL;
     if (left) free (left);
     return right; 
   } 
 
-  /* no simpification */
+  /*          '+'               '*'
+   *         /   \      or     /   \        ==>     X
+   *        0     X           1     X
+   */ 
+  if ( (l_0 && s=='+' ) || (l_1 && s=='*') ) { 
+    free (left);
+    return right;
+  } 
+
+  /*          '+'               '-'  
+   *         /   \      or     /   \      or
+   *        X     0           X     0
+   *
+   *          '*'               '/'         
+   *         /   \      or     /   \      or
+   *        X     1           X     1       
+   *
+   *          '^'               "mod"
+   *         /   \      or     /     \    ==>     X
+   *        X     1           X       1
+   */ 
+  mod = (strcmp(symb,"mod")==0);
+  if ( (r_0 && (s=='+' || s=='-')) ||
+       (r_1 && (s=='*' || s=='/' || s=='^' || mod)) ) {
+    free (right);
+    return left;
+  }
+
+  /*          '*'               '*'         
+   *         /   \      or     /   \      or
+   *        0     X           X     0       
+   *
+   *          '/'               '^'         
+   *         /   \      or     /   \      or
+   *        0     X           0     X       
+   *
+   *         "and"             "and"         
+   *         /   \      or     /   \      or
+   *        0     X           X     0       
+   *
+   *         "mod"      
+   *         /   \                        ==>     0
+   *        0     X     
+   */
+  and = (strcmp(symb,"and")==0);
+  if ( l_0 && (s=='*' || s=='/' || s=='^' || and || mod) ) {
+    free (right);
+    return left;
+  }
+  if (r_0 && (s=='*' || and ) ) {
+    free (left);
+    return right;
+  }
+
+  /*          '^'               '^'
+   *         /   \      or     /   \        ==>     1
+   *        X     0           1     X
+   */ 
+  if (r_0 && s=='^') {
+    free (left);
+    right->val = 1.;
+    return right;
+  }
+  if (l_1 && s=='^') {
+    free (right);
+    return left;
+  }
+
+  /*              '/'              
+   *          ___/   \___
+   *         /           \ 
+   *        X             X        ==>     1     
+   *       / \           / \
+   *   NULL   NULL   NULL   NULL
+   */ 
+  if ( ( left  && left->left==NULL  && left->right==NULL  && 
+	 right && right->left==NULL && right->right==NULL &&
+	 strcmp(left->symbol,right->symbol)== 0 ) ) {
+    free (left);
+    right->token = s_uconst;
+    right->symbol= symbol[s_uconst].name; 
+    right->val   = 1.;
+    right->type  = S_UCONST;
+    right->left  = NULL; 
+    right->right = NULL;
+    return right; 
+  }
+
+  /* no simplification */
   return NULL; 
 } /* _unur_fstr_simplification() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+_unur_fstr_reorganize (struct ftreenode *node) 
+     /*----------------------------------------------------------------------*/
+     /* Try to reorganize tree at node                                       */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   node   ... pointer to node in tree                                 */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 if successful                                                    */
+     /*   0 otherwise                                                        */
+     /*----------------------------------------------------------------------*/
+{
+  struct ftreenode *left  = node->left;
+  struct ftreenode *right = node->right;
+  struct ftreenode *tmp;
+  char symb = node->symbol[0];
+
+  /* some booleans */
+  int rl_0 = (right && right->left && right->left->type == S_UCONST && right->left->val == 0.);
+  int ll_0 = (left  && left->left  && left->left->type  == S_UCONST && left->left->val  == 0.);
+
+  /*            '+'                  '-'  
+   *           /   \                /   \ 
+   *          X    '-'      ==>    X     Y
+   *              /   \
+   *             0     Y
+   */ 
+  if ( rl_0 && symb=='+' && right->symbol[0]=='-' ) {
+    node->symbol = symbol[s_minus].name; 
+    node->token  = s_minus; 
+    node->type   = symbol[s_minus].type; 
+    node->right  = right->right; 
+    free (right->left);
+    free (right);
+    return 1;
+  }
+
+  /*            '-'                  '+'  
+   *           /   \                /   \ 
+   *          X    '-'      ==>    X     Y
+   *              /   \
+   *             0     Y
+   */ 
+  if ( rl_0 && symb=='-' && right->symbol[0]=='-' ) {
+    node->symbol = symbol[s_plus].name; 
+    node->token  = s_plus; 
+    node->type   = symbol[s_plus].type; 
+    node->right  = right->right; 
+    free (right->left);
+    free (right);
+    return 1;
+  }
+
+  /*            '+'                  '-'  
+   *           /   \                /   \ 
+   *         '-'    Y     ==>      Y     X
+   *        /   \
+   *       0     X
+   */ 
+  if ( ll_0 && symb=='+' && left->symbol[0]=='-' ) {
+    node->symbol = symbol[s_minus].name; 
+    node->token  = s_minus; 
+    node->type   = symbol[s_minus].type; 
+    tmp = node->right;
+    node->right  = left->right; 
+    node->left   = tmp;
+    free (left->left);
+    free (left);
+    _unur_fstr_debug_tree(NULL,node);
+    return 1;
+  }
+
+  /*            '*'                  '-'  
+   *           /   \                /   \ 
+   *          X    '-'      ==>    0    '*'
+   *              /   \                /   \
+   *             0     Y              X     Y
+   */ 
+  if ( rl_0 && symb=='*' && right->symbol[0]=='-' ) {
+    node->symbol = symbol[s_minus].name; 
+    node->token  = s_minus; 
+    node->type   = symbol[s_minus].type; 
+    right->symbol= symbol[s_mul].name; 
+    right->token = s_mul; 
+    right->type  = symbol[s_mul].type; 
+    tmp = left;
+    node->left   = node->right->left;
+    node->right  = tmp;
+    return 1;
+  }
+
+  /* no reorganization */
+  return 0;
+
+} /* end of _unur_fstr_reorganize() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -1877,7 +2061,7 @@ _unur_fstr_error_scan (const struct parser_data *pdata, const char *symb)
 
 /*---------------------------------------------------------------------------*/
 
-struct treenode *
+struct ftreenode *
 _unur_fstr_error_parse ( struct parser_data *pdata, int errno )
      /*----------------------------------------------------------------------*/
      /* Print error message when parsing function string                     */
@@ -2005,7 +2189,7 @@ _unur_fstr_debug_token ( const struct parser_data *pdata )
 
 void
 _unur_fstr_debug_tree( const struct parser_data *pdata,
-		       const struct treenode *root )
+		       const struct ftreenode *root )
      /*----------------------------------------------------------------------*/
      /* Print function tree                                                  */
      /*                                                                      */
@@ -2028,7 +2212,7 @@ _unur_fstr_debug_tree( const struct parser_data *pdata,
 
 void
 _unur_fstr_debug_show_tree(const struct parser_data *pdata,
-			   const struct treenode *node,
+			   const struct ftreenode *node,
 			   int level, int location)
      /*----------------------------------------------------------------------*/
      /* Print function tree by recursion                                     */
@@ -2041,6 +2225,7 @@ _unur_fstr_debug_show_tree(const struct parser_data *pdata,
      /*----------------------------------------------------------------------*/
 { 
   FILE *log = unur_get_stream();
+  char *name;
   int i, mask; 
 
   fprintf(log,"%s: ",GENTYPE); 
@@ -2059,15 +2244,17 @@ _unur_fstr_debug_show_tree(const struct parser_data *pdata,
     (mask & location) ? fprintf(log,"+--") : fprintf(log,"\\__");
 
     /* print symbol */
-    switch (node->symbkind) {
+    switch (node->type) {
     case S_SCONST:
       fprintf(log,"'%s'\t(const=%g)", node->symbol,node->val);  break;
     case S_UCONST:
       fprintf(log,"'%g'\t(const)", node->val);  break;
     case S_UIDENT:
-      fprintf(log,"'%s'\t(variable)", pdata->variable_name);  break;
+      name = (pdata) ? pdata->variable_name : "x";
+      fprintf(log,"'%s'\t(variable)", name);  break;
     case S_UFUNCT:
-      fprintf(log,"'%s'\t(user function)", pdata->function_name);  break;
+      name = (pdata) ? pdata->function_name : "f";
+      fprintf(log,"'%s'\t(user function)", name);  break;
     default:
       fprintf(log,"'%s'", node->symbol);
     }

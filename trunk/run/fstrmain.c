@@ -9,7 +9,7 @@ void  show_symb_tab      (void);
 
 int main()
 {
-  struct treenode *parsetree;
+  struct ftreenode *parsetree;
 /*    struct treenode *dev_tree; */
 /*    char            input_string[MAXLENGTH]; */
 /*    int             errcode, errpos; */

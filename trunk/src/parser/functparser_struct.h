@@ -39,13 +39,14 @@
 /*---------------------------------------------------------------------------*/
 /* Structure for function tree                                               */
 
-struct treenode { 
-  char            *symbol;  /* zeigt auf Symbol aus Symboltab. */ 
-  int             token;             /* Token des Symbols               */ 
-  int             symbkind;          /* Art des Symbols (REL_OP etc.)   */ 
-  float           val;               /* aktueller arithmetischer Wert   */ 
-  struct treenode *left;             /* Zeiger auf linken Sohn          */ 
-  struct treenode *right;            /* Zeiger auf rechten Sohn         */ 
+struct ftreenode { 
+  char            *symbol;      /* name of token                             */
+  int             token;        /* location of token in list of symbols      */
+  int             type;         /* type of token (e.g. S_ADD_OP)             */
+  double          val;          /* value of constant or (and)
+				   value of node during evalution of tree    */
+  struct ftreenode *left;        /* pointer to left branch/leave of node      */
+  struct ftreenode *right;       /* pointer to right branch/leave of node     */
 
 #ifdef UNUR_COOKIES
   unsigned cookie;              /* magic cookie                              */

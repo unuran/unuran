@@ -50,7 +50,21 @@ John Wiley & Sons, Inc., New York.
 
 @c -------------------------------------------------------
 
-@subheading Universal methods
+@subheading Universal Methods -- Surveys
+
+@table @t
+
+@anchor{bib:HLD04}
+@item [HLD04]
+@sc{W. Hoermann, J. Leydold, and G. Derflinger}(2004).
+@i{Automatic Nonuniform Random Variate Generation},
+Springer, Berlin.
+
+@end table
+
+@c -------------------------------------------------------
+
+@subheading Universal Methods
 
 @table @t
 
@@ -132,7 +146,7 @@ ACM Trans. Math. Software 3, pp. 253-256.
 
 @c -------------------------------------------------------
 
-@subheading Special generators
+@subheading Special Generators
 
 @table @t
 

@@ -65,6 +65,7 @@ AC_TYPE_SIZE_T
 AC_HEADER_TIME
 
 dnl Checks for library functions.
+AC_CHECK_FUNCS([getopt])
 AC_CHECK_FUNCS([floor gettimeofday pow sqrt strcasecmp strchr strtol strtoul vsnprintf])
 
 dnl We need Mathematica(R) for some tests

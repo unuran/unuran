@@ -197,6 +197,8 @@
       invalid parameter.
       @item UNUR_ERR_FSTR_SYNTAX
       syntax error in function string.
+      @item UNUR_ERR_FSTR_DERIV
+      cannot derivate function.
       @end ftable
 
       @item Other run time errors.
@@ -274,6 +276,7 @@ enum {
   UNUR_ERR_STR_SYNTAX     = 0x43u,    /* syntax error in string              */
   UNUR_ERR_STR_INVALID    = 0x44u,    /* invalid parameter in argument       */
   UNUR_ERR_FSTR_SYNTAX    = 0x45u,    /* syntax error in function parser     */
+  UNUR_ERR_FSTR_DERIV     = 0x46u,    /* cannot derivate function            */
 
   /** misc **/
   /*

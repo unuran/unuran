@@ -191,9 +191,14 @@ _unur_fstr_debug_deriv (const struct ftreenode *funct, const struct ftreenode *d
   fprintf(log,"%s:  f(x) = %s\n",GENTYPE,str);
   free (str);
 
-  str = _unur_fstr_tree2string(deriv,"x","df");
-  fprintf(log,"%s:  f'(x) = %s\n",GENTYPE,str);
-  free (str);
+  if (deriv) {
+    str = _unur_fstr_tree2string(deriv,"x","df");
+    fprintf(log,"%s:  f'(x) = %s\n",GENTYPE,str);
+    free (str);
+  }
+  else {
+    fprintf(log,"%s:  f'(x) = (unknown)\n",GENTYPE);
+  }
 
   /*    _unur_fstr_debug_tree(NULL,deriv); */
 

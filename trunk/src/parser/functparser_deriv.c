@@ -55,18 +55,26 @@ _unur_fstr_make_derivative ( const struct ftreenode *root )
      /*   return NULL                                                        */
      /*----------------------------------------------------------------------*/
 {
-  struct ftreenode *deriv = NULL;
+  struct ftreenode *deriv = NULL;  /* pointer to function tree of derivative */
+  int error = 0;                   /* error code                             */
 
   /* check arguments */
   _unur_check_NULL( GENTYPE,root,NULL );
 
-  deriv = (root) ? (*symbol[root->token].dcalc)(root) : NULL;
+  deriv = (root) ? (*symbol[root->token].dcalc)(root,&error) : NULL;
 
 #ifdef UNUR_ENABLE_LOGGING
   /* write info into log file */
   if (_unur_default_debugflag)
     _unur_fstr_debug_deriv(root,deriv);
 #endif
+
+  if (error == TRUE) {
+    /* set unuran error code */
+    unur_errno = UNUR_ERR_FSTR_DERIV;
+    if (deriv) _unur_fstr_free(deriv);
+    return NULL;
+  }
 
   return deriv;
 } /* end of _unur_fstr_make_derivative() */
@@ -80,15 +88,17 @@ _unur_fstr_make_derivative ( const struct ftreenode *root )
 /*---------------------------------------------------------------------------*/
 
 struct ftreenode *
-d_dummy (const struct ftreenode *node)
+d_error (const struct ftreenode *node, int *error)
 {
+  _unur_fstr_error_deriv(node);
+  *error = TRUE;
   return NULL;
 } /* end of d_error() */
 
 /*---------------------------------------------------------------------------*/
 
 struct ftreenode *
-d_const (const struct ftreenode *node)
+d_const (const struct ftreenode *node, int *error)
      /* (const)' = 0                                                         */
      /*                                                                      */
      /*       Const                   0.                                     */
@@ -101,7 +111,7 @@ d_const (const struct ftreenode *node)
 /*---------------------------------------------------------------------------*/
 
 struct ftreenode *
-d_var (const struct ftreenode *node)
+d_var (const struct ftreenode *node, int *error)
      /* x' = 1                                                               */
      /*                                                                      */
      /*       Var                   1.                                       */
@@ -114,7 +124,7 @@ d_var (const struct ftreenode *node)
 /*---------------------------------------------------------------------------*/
 
 struct ftreenode *
-d_add (const struct ftreenode *node)
+d_add (const struct ftreenode *node, int *error)
      /* summation rule:  (l+r)' = l' + r'                                    */
      /*                                                                      */
      /*    Op             Op                                                 */
@@ -129,8 +139,8 @@ d_add (const struct ftreenode *node)
   int op = node->token;
 
   /* derivative of both branches */
-  d_left  = (left)  ? (*symbol[left->token].dcalc) (left)  : NULL;
-  d_right = (right) ? (*symbol[right->token].dcalc)(right) : NULL;
+  d_left  = (left)  ? (*symbol[left->token].dcalc) (left,error)  : NULL;
+  d_right = (right) ? (*symbol[right->token].dcalc)(right,error) : NULL;
 
   /* make subtree */
   return _unur_fstr_create_node(node->symbol,0.,op,d_left,d_right);
@@ -139,7 +149,7 @@ d_add (const struct ftreenode *node)
 /*---------------------------------------------------------------------------*/
 
 struct ftreenode *
-d_mul (const struct ftreenode *node)
+d_mul (const struct ftreenode *node, int *error)
      /* product rule:  (l*r)' = l'*r + l*r'                                  */
      /*                                                                      */
      /*    '*'              __'+'__                                          */
@@ -154,8 +164,8 @@ d_mul (const struct ftreenode *node)
   struct ftreenode *br_left, *br_right;
 
   /* derivative of both branches */
-  d_left  = (left)  ? (*symbol[left->token].dcalc) (left)  : NULL;
-  d_right = (right) ? (*symbol[right->token].dcalc)(right) : NULL;
+  d_left  = (left)  ? (*symbol[left->token].dcalc) (left,error)  : NULL;
+  d_right = (right) ? (*symbol[right->token].dcalc)(right,error) : NULL;
 
   /* make a copy of the branches of node */
   left  = _unur_fstr_dup_tree(node->left);
@@ -172,7 +182,7 @@ d_mul (const struct ftreenode *node)
 /*---------------------------------------------------------------------------*/
 
 struct ftreenode *
-d_div (const struct ftreenode *node)
+d_div (const struct ftreenode *node, int *error)
      /* Quotient rule:  (l/r)' = (l'*r-l*r')/r^2                             */
      /*                                                                      */
      /*    '/'              ___'/'___                                        */
@@ -191,8 +201,8 @@ d_div (const struct ftreenode *node)
   struct ftreenode *numerator, *denominator; 
 
   /* derivative of both branches */
-  d_left  = (left)  ? (*symbol[left->token].dcalc) (left)  : NULL;
-  d_right = (right) ? (*symbol[right->token].dcalc)(right) : NULL;
+  d_left  = (left)  ? (*symbol[left->token].dcalc) (left,error)  : NULL;
+  d_right = (right) ? (*symbol[right->token].dcalc)(right,error) : NULL;
 
   /* make a copy of the branches of node */
   left  = _unur_fstr_dup_tree(node->left);
@@ -215,7 +225,7 @@ d_div (const struct ftreenode *node)
 /*---------------------------------------------------------------------------*/
 
 struct ftreenode *
-d_power (const struct ftreenode *node)
+d_power (const struct ftreenode *node, int *error)
      /* case: r constant                                                     */
      /* (l^r)' = r * l^(r-1) * l'                                            */
      /*                                                                      */
@@ -269,7 +279,7 @@ d_power (const struct ftreenode *node)
      /*                              /   \                                   */
      /*                             X    (Y-1)                               */
     /* derivative of left branch */
-    d_left  = (left)  ? (*symbol[left->token].dcalc) (left)  : NULL;
+    d_left  = (left)  ? (*symbol[left->token].dcalc) (left,error)  : NULL;
     /* make a copy of the branches of node */
     left  = _unur_fstr_dup_tree(node->left);
     right = _unur_fstr_dup_tree(node->right);
@@ -294,7 +304,7 @@ d_power (const struct ftreenode *node)
     int s_ln = _unur_fstr_find_symbol("ln",_ans_start,_ans_end);
 
     /* derivative of right branch */
-    d_right = (right) ? (*symbol[right->token].dcalc) (right)  : NULL;
+    d_right = (right) ? (*symbol[right->token].dcalc) (right,error)  : NULL;
     /* make copies of branches */
     left = _unur_fstr_dup_tree(node->left);
     dup_node = _unur_fstr_dup_tree(node);
@@ -319,6 +329,8 @@ d_power (const struct ftreenode *node)
      /*                                             NULL      X              */
      /*                                                                      */
     /** TODO **/
+    _unur_fstr_error_deriv(node);
+    *error = TRUE;
     return NULL;
   }
 } /* end of d_power() */
@@ -326,7 +338,7 @@ d_power (const struct ftreenode *node)
 /*---------------------------------------------------------------------------*/
 
 struct ftreenode *
-d_exp (const struct ftreenode *node)
+d_exp (const struct ftreenode *node, int *error)
      /* (exp(r))' = r' * exp(r)                                              */
      /*                                                                      */
      /*     "exp"            '*'                                             */
@@ -339,7 +351,7 @@ d_exp (const struct ftreenode *node)
   struct ftreenode *d_right;
 
   /* derivative of right branch */
-  d_right = (right) ? (*symbol[right->token].dcalc)(right) : NULL;
+  d_right = (right) ? (*symbol[right->token].dcalc)(right,error) : NULL;
 
   /* make a copy of whole subrtree at node */
   right = _unur_fstr_dup_tree(node);
@@ -351,7 +363,7 @@ d_exp (const struct ftreenode *node)
 /*---------------------------------------------------------------------------*/
 
 struct ftreenode *
-d_ln (const struct ftreenode *node)
+d_ln (const struct ftreenode *node, int *error)
      /* (ln(r))' = r'/r                                                      */
      /*                                                                      */
      /*     "ln"            '/'                                              */
@@ -365,7 +377,7 @@ d_ln (const struct ftreenode *node)
   right = _unur_fstr_dup_tree(node->right);
 
   /* derivative of right branch */
-  d_right = (right) ? (*symbol[right->token].dcalc)(right) : NULL;
+  d_right = (right) ? (*symbol[right->token].dcalc)(right,error) : NULL;
 
   /* subtree */
   return _unur_fstr_create_node("/",0.,s_div,d_right,right);
@@ -374,7 +386,7 @@ d_ln (const struct ftreenode *node)
 /*---------------------------------------------------------------------------*/
 
 struct ftreenode *
-d_log (const struct ftreenode *node)
+d_log (const struct ftreenode *node, int *error)
      /* case: l = const                                                      */
      /* (log(l,r))' = r' / (r * ln(l))                                       */
      /*                                                                      */
@@ -398,7 +410,7 @@ d_log (const struct ftreenode *node)
     /* find symbol "ln" */
     int s_ln = _unur_fstr_find_symbol("ln",_ans_start,_ans_end);
     /* derivative of right branch */
-    d_right = (right) ? (*symbol[right->token].dcalc)(right) : NULL;
+    d_right = (right) ? (*symbol[right->token].dcalc)(right,error) : NULL;
     /* make a copies of both branches of node */
     left  = _unur_fstr_dup_tree(node->left);
     right = _unur_fstr_dup_tree(node->right);
@@ -411,6 +423,8 @@ d_log (const struct ftreenode *node)
 
   else {
     /** TODO **/
+    _unur_fstr_error_deriv(node);
+    *error = TRUE;
     return NULL;
   }
 } /* end of d_log() */
@@ -418,7 +432,7 @@ d_log (const struct ftreenode *node)
 /*---------------------------------------------------------------------------*/
 
 struct ftreenode *
-d_sin (const struct ftreenode *node)
+d_sin (const struct ftreenode *node, int *error)
      /* (sin(r))' = r' * cos(r)                                              */
      /*                                                                      */
      /*     "sin"            '*'                                             */
@@ -438,7 +452,7 @@ d_sin (const struct ftreenode *node)
   right = _unur_fstr_dup_tree(node->right);
 
   /* derivative of right branch */
-  d_right = (right) ? (*symbol[right->token].dcalc)(right) : NULL;
+  d_right = (right) ? (*symbol[right->token].dcalc)(right,error) : NULL;
 
   /* right branch of new tree */
   br_right = _unur_fstr_create_node("cos",0.,s_cos,NULL,right);
@@ -450,7 +464,7 @@ d_sin (const struct ftreenode *node)
 /*---------------------------------------------------------------------------*/
 
 struct ftreenode *
-d_cos (const struct ftreenode *node)
+d_cos (const struct ftreenode *node, int *error)
      /* (cos(r))' = -r' * sin(r)                                             */
      /*                                                                      */
      /*     "cos"            ____'*'____                                     */
@@ -471,7 +485,7 @@ d_cos (const struct ftreenode *node)
   right = _unur_fstr_dup_tree(node->right);
 
   /* derivative of right branch */
-  d_right = (right) ? (*symbol[right->token].dcalc)(right) : NULL;
+  d_right = (right) ? (*symbol[right->token].dcalc)(right,error) : NULL;
 
   /* branches of new tree */
   br_right = _unur_fstr_create_node("sin",0.,s_sin,NULL,right);
@@ -486,7 +500,7 @@ d_cos (const struct ftreenode *node)
 /*---------------------------------------------------------------------------*/
 
 struct ftreenode *
-d_tan (const struct ftreenode *node)
+d_tan (const struct ftreenode *node, int *error)
      /* (tan(r))' = r' * (sec(r))^2                                          */
      /*                                                                      */
      /*     "tan"            '*'                                             */
@@ -506,7 +520,7 @@ d_tan (const struct ftreenode *node)
   int s_sec = _unur_fstr_find_symbol("sec",_ans_start,_ans_end);
 
   /* derivative of right branch */
-  d_right = (right) ? (*symbol[right->token].dcalc)(right) : NULL;
+  d_right = (right) ? (*symbol[right->token].dcalc)(right,error) : NULL;
 
   /* make a copy of the right branch of node */
   right = _unur_fstr_dup_tree(node->right);
@@ -523,7 +537,7 @@ d_tan (const struct ftreenode *node)
 /*---------------------------------------------------------------------------*/
 
 struct ftreenode *
-d_sec (const struct ftreenode *node)
+d_sec (const struct ftreenode *node, int *error)
      /* (sec(r))' = r' * tan(r) * sec(r) */
      /*                                                                      */
      /*     "sec"            '*'                                             */
@@ -542,7 +556,7 @@ d_sec (const struct ftreenode *node)
   int s_tan = _unur_fstr_find_symbol("tan",_ans_start,_ans_end);
 
   /* derivative of right branch */
-  d_right = (right) ? (*symbol[right->token].dcalc)(right) : NULL;
+  d_right = (right) ? (*symbol[right->token].dcalc)(right,error) : NULL;
 
   /* make a copy of the right branch of node */
   right = _unur_fstr_dup_tree(node->right);
@@ -561,7 +575,7 @@ d_sec (const struct ftreenode *node)
 /*---------------------------------------------------------------------------*/
 
 struct ftreenode *
-d_sqrt (const struct ftreenode *node)
+d_sqrt (const struct ftreenode *node, int *error)
      /* (sqrt(r))' = r'/(2*sqrt(r))                                          */
      /*                                                                      */
      /*     "sqrt"            '/'                                            */
@@ -578,7 +592,7 @@ d_sqrt (const struct ftreenode *node)
   struct ftreenode *two;
 
   /* derivative of right branch */
-  d_right = (right) ? (*symbol[right->token].dcalc)(right) : NULL;
+  d_right = (right) ? (*symbol[right->token].dcalc)(right,error) : NULL;
 
   /* make a copy of the whole subtree at node */
   right = _unur_fstr_dup_tree(node);
@@ -594,7 +608,7 @@ d_sqrt (const struct ftreenode *node)
 /*---------------------------------------------------------------------------*/
 
 struct ftreenode *
-d_abs (const struct ftreenode *node)
+d_abs (const struct ftreenode *node, int *error)
      /* (abs(r))' = r' * sgn(x)                                              */
      /*                                                                      */
      /*     "abs"            '*'                                             */
@@ -614,7 +628,7 @@ d_abs (const struct ftreenode *node)
   right = _unur_fstr_dup_tree(node->right);
 
   /* derivative of right branch */
-  d_right = (right) ? (*symbol[right->token].dcalc)(right) : NULL;
+  d_right = (right) ? (*symbol[right->token].dcalc)(right,error) : NULL;
 
   /* right branch of new tree */
   br_right = _unur_fstr_create_node("sgn",0.,s_sgn,NULL,right);
@@ -658,3 +672,28 @@ _unur_fstr_dup_tree (const struct ftreenode *root)
 
 /*---------------------------------------------------------------------------*/
 
+/*****************************************************************************/
+/** Error messages                                                          **/
+/*****************************************************************************/
+
+/*---------------------------------------------------------------------------*/
+
+void
+_unur_fstr_error_deriv (const struct ftreenode *node)
+     /*----------------------------------------------------------------------*/
+     /* Print error message for unknown derivative                           */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   node ... pointer to node of function tree                          */
+     /*----------------------------------------------------------------------*/
+{
+  /* set unuran error code */
+  unur_errno = UNUR_ERR_FSTR_DERIV;
+
+  _unur_stream_printf_simple ( "%s: error: cannot derivate subtree at `%s':\n",GENTYPE,node->symbol);
+  _unur_fstr_debug_tree(NULL,node);
+  _unur_stream_printf_simple ( "%s:\n",GENTYPE );
+
+} /* end of _unur_fstr_error_deriv() */
+
+/*---------------------------------------------------------------------------*/

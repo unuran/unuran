@@ -81,22 +81,22 @@ static double v_sgn    (double l, double r);
 /** Routines for computing derivatives                                      **/
 /*****************************************************************************/
 
-static struct ftreenode *d_dummy ( const struct ftreenode *node );
-static struct ftreenode *d_const ( const struct ftreenode *node );
-static struct ftreenode *d_var   ( const struct ftreenode *node );
-static struct ftreenode *d_add   ( const struct ftreenode *node );
-static struct ftreenode *d_mul   ( const struct ftreenode *node );
-static struct ftreenode *d_div   ( const struct ftreenode *node );
-static struct ftreenode *d_power ( const struct ftreenode *node );
-static struct ftreenode *d_exp   ( const struct ftreenode *node );
-static struct ftreenode *d_ln    ( const struct ftreenode *node );
-static struct ftreenode *d_log   ( const struct ftreenode *node );
-static struct ftreenode *d_sin   ( const struct ftreenode *node );
-static struct ftreenode *d_cos   ( const struct ftreenode *node );
-static struct ftreenode *d_tan   ( const struct ftreenode *node );
-static struct ftreenode *d_sec   ( const struct ftreenode *node );
-static struct ftreenode *d_sqrt  ( const struct ftreenode *node );
-static struct ftreenode *d_abs   ( const struct ftreenode *node );
+static struct ftreenode *d_error ( const struct ftreenode *node, int *error );
+static struct ftreenode *d_const ( const struct ftreenode *node, int *error );
+static struct ftreenode *d_var   ( const struct ftreenode *node, int *error );
+static struct ftreenode *d_add   ( const struct ftreenode *node, int *error );
+static struct ftreenode *d_mul   ( const struct ftreenode *node, int *error );
+static struct ftreenode *d_div   ( const struct ftreenode *node, int *error );
+static struct ftreenode *d_power ( const struct ftreenode *node, int *error );
+static struct ftreenode *d_exp   ( const struct ftreenode *node, int *error );
+static struct ftreenode *d_ln    ( const struct ftreenode *node, int *error );
+static struct ftreenode *d_log   ( const struct ftreenode *node, int *error );
+static struct ftreenode *d_sin   ( const struct ftreenode *node, int *error );
+static struct ftreenode *d_cos   ( const struct ftreenode *node, int *error );
+static struct ftreenode *d_tan   ( const struct ftreenode *node, int *error );
+static struct ftreenode *d_sec   ( const struct ftreenode *node, int *error );
+static struct ftreenode *d_sqrt  ( const struct ftreenode *node, int *error );
+static struct ftreenode *d_abs   ( const struct ftreenode *node, int *error );
 
 /*****************************************************************************/
 /** List of known symbols                                                   **/
@@ -137,7 +137,7 @@ struct symbols {
 
   double (*vcalc)(double l, double r);    /* pointer to function
 					     for computing value of node     */
-  struct ftreenode *(*dcalc)(const struct ftreenode *node); 
+  struct ftreenode *(*dcalc)(const struct ftreenode *node, int *error); 
                                           /* pointer to function  
 					     for computing derivate          */
 };
@@ -168,15 +168,15 @@ struct symbols {
 
 static struct symbols symbol[] = {   
 /* symbol|type |priority | val| eval|      deriv                             */
-  {""    , S_NOSYMBOL, 0, 0.0 , v_dummy  , d_dummy }, /* void                */
+  {""    , S_NOSYMBOL, 0, 0.0 , v_dummy  , d_error }, /* void                */
 
   /* user defined symbols */                                             
   {"UCONST",S_UCONST , 9, 0.0 , v_const  , d_const }, /* constant            */
-  {"UFUNCT",S_UFUNCT , 0, 0.0 , v_dummy  , d_dummy }, /* function            */
+  {"UFUNCT",S_UFUNCT , 0, 0.0 , v_dummy  , d_error }, /* function            */
   {"VAR" , S_UIDENT  , 9, 0.0 , v_dummy  , d_var   }, /* variable            */
 
   /* relation operators  */
-  {"_ROS", S_NOSYMBOL, 0, 0.0 , v_dummy  , d_dummy }, /* marker for relation operators */
+  {"_ROS", S_NOSYMBOL, 0, 0.0 , v_dummy  , d_error }, /* marker for relation operators */
   {"<"   , S_REL_OP  , 1, 0.0 , v_less   , d_const },
   {"="   , S_REL_OP  , 1, 0.0 , v_equal  , d_const },
   {"=="  , S_REL_OP  , 1, 0.0 , v_equal  , d_const },
@@ -185,12 +185,12 @@ static struct symbols symbol[] = {
   {"<>"  , S_REL_OP  , 1, 0.0 , v_unequal, d_const },
   {">="  , S_REL_OP  , 1, 0.0 , v_grtr_or, d_const },
 
-  {"_NAS", S_NOSYMBOL, 0, 0.0 , v_dummy  , d_dummy }, /* marker for non-alphanumeric symbols */
+  {"_NAS", S_NOSYMBOL, 0, 0.0 , v_dummy  , d_error }, /* marker for non-alphanumeric symbols */
 
   /* special symbols */
-  {"("   , S_OTHERS  , 0, 0.0 , v_dummy  , d_dummy },
-  {")"   , S_OTHERS  , 0, 0.0 , v_dummy  , d_dummy },
-  {","   , S_OTHERS  , 0, 0.0 , v_dummy  , d_dummy },
+  {"("   , S_OTHERS  , 0, 0.0 , v_dummy  , d_error },
+  {")"   , S_OTHERS  , 0, 0.0 , v_dummy  , d_error },
+  {","   , S_OTHERS  , 0, 0.0 , v_dummy  , d_error },
 
   /* arithmetic operators */
   {"+"   , S_ADD_OP  , 2, 0.0 , v_plus   , d_add   },
@@ -199,7 +199,7 @@ static struct symbols symbol[] = {
   {"/"   , S_MUL_OP  , 4, 0.0 , v_div    , d_div   },
   {"^"   , S_HPR_OP  , 5, 0.0 , v_power  , d_power },
 
-  {"_ANS", S_NOSYMBOL, 0, 0.0 , v_dummy  , d_dummy }, /* marker for alphanumeric symbols */
+  {"_ANS", S_NOSYMBOL, 0, 0.0 , v_dummy  , d_error }, /* marker for alphanumeric symbols */
 
   /* logical operators */
   {"and" , S_MUL_OP  , 2, 0.0 , v_and    , d_const },
@@ -225,7 +225,7 @@ static struct symbols symbol[] = {
   {"sgn" , S_SFUNCT  , 1, 0.0 , v_sgn    , d_const },
 
   /* marker for end-of-table */
-  {"_END", S_NOSYMBOL, 0, 0.0 , v_dummy  , d_dummy },
+  {"_END", S_NOSYMBOL, 0, 0.0 , v_dummy  , d_error },
 };
 
 /*  location of special symbols in table                                     */

@@ -137,6 +137,8 @@ unur_get_strerror ( const int unur_errno )
     return "(parser) invalid parameter";
   case UNUR_ERR_FSTR_SYNTAX:
     return "(function parser) syntax error";
+  case UNUR_ERR_FSTR_DERIV:
+    return "(function parser) cannot derivate function";
 
     /** misc **/
   case UNUR_ERR_ROUNDOFF:

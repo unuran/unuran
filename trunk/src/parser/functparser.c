@@ -545,6 +545,8 @@ static const char *_unur_fstr_error_code ( int errno );
 /**-------------------------------------------------------------------------**/
 /** functparser_eval.c                                                      **/
 /**   Evaluate function tree for given argument x.                          **/
+/**                                                                         **/
+/** (see also functparser_symbols.h)                                        **/
 /**-------------------------------------------------------------------------**/
 
 static double _unur_fstr_eval_node (const struct ftreenode *node, const double x);
@@ -556,11 +558,18 @@ static double _unur_fstr_eval_node (const struct ftreenode *node, const double x
 /**-------------------------------------------------------------------------**/
 /** functparser_deriv.c                                                     **/
 /**   Compute function tree for derivative.                                 **/
+/**                                                                         **/
+/** (see also functparser_symbols.h)                                        **/
 /**-------------------------------------------------------------------------**/
 
 static struct ftreenode *_unur_fstr_dup_tree (const struct ftreenode *root);
 /*---------------------------------------------------------------------------*/
 /* Duplicate function tree rooted at root.                                   */
+/*---------------------------------------------------------------------------*/
+
+void _unur_fstr_error_deriv (const struct ftreenode *node);
+/*---------------------------------------------------------------------------*/
+/* Print error message for unknown derivative.                               */
 /*---------------------------------------------------------------------------*/
 
 

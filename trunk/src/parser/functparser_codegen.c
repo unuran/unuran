@@ -58,6 +58,10 @@ _unur_fstr_tree2string ( const struct ftreenode *root,
 {
   struct concat output = {NULL, 0, 0};
 
+  /* check arguments */
+  _unur_check_NULL( GENTYPE,root,NULL );
+
+  /* make string */
   _unur_fstr_node2string(&output,root,variable,function);
   *(output.string + output.length) = '\0';
   output.string = _unur_realloc(output.string, (output.length+1)*sizeof(char));

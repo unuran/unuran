@@ -86,33 +86,34 @@ _unur_stdgen_normal_init( struct unur_par *par, struct unur_gen *gen )
 
   switch (par->variant) {
 
-  case 0:    /* Box-Muller method */     /* DEFAULT */
+  case 0:    /* DEFAULT */
+  case 1:    /* Box-Muller method */
     _unur_cstd_set_sampling_routine( par,gen,unur_stdgen_sample_normal_bm );
     normal_bm_init( gen );
     return 1;
 
-  case 1:    /* Polarmethod with rejection */
+  case 2:    /* Polarmethod with rejection */
     _unur_cstd_set_sampling_routine( par,gen,unur_stdgen_sample_normal_pol );
     normal_pol_init( gen );
     return 1;
 
-  case 2:    /* "Naive" ratio-of-uniforms */
+  case 3:    /* "Naive" ratio-of-uniforms */
     _unur_cstd_set_sampling_routine( par,gen,unur_stdgen_sample_normal_nquo );
     return 1;
 
-  case 3:    /* Ratio-of-uniforms with squeeze */
+  case 4:    /* Ratio-of-uniforms with squeeze */
     _unur_cstd_set_sampling_routine( par,gen,unur_stdgen_sample_normal_quo );
     return 1;
 
-  case 4:    /* Ratio-of-uniforms with quadratic bounding curves */
+  case 5:    /* Ratio-of-uniforms with quadratic bounding curves */
     _unur_cstd_set_sampling_routine( par,gen,unur_stdgen_sample_normal_leva );
     return 1;
 
-  case 5:    /* Kindermann-Ramage method */
+  case 6:    /* Kindermann-Ramage method */
     _unur_cstd_set_sampling_routine( par,gen,unur_stdgen_sample_normal_kr );
     return 1;
 
-  case 6:    /* Acceptance-complement ratio */
+  case 7:    /* Acceptance-complement ratio */
     _unur_cstd_set_sampling_routine( par,gen,unur_stdgen_sample_normal_acr );
     return 1;
 

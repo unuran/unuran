@@ -86,7 +86,8 @@ _unur_stdgen_gamma_init( struct unur_par *par, struct unur_gen *gen )
 
   switch (par->variant) {
 
-  case 0:  /* Rejection with log-logistic envelopes */  /* DEFAULT */
+  case 0:  /* DEFAULT */
+  case 1:  /* Rejection with log-logistic envelopes */
     _unur_cstd_set_sampling_routine( par,gen,unur_stdgen_sample_gamma_gll );
     gamma_gll_init( gen );
     return 1;

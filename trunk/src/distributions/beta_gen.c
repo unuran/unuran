@@ -92,7 +92,8 @@ _unur_stdgen_beta_init( struct unur_par *par, struct unur_gen *gen )
 
   switch (par->variant) {
 
-  case 0:  /* Rejection with log-logistic envelopes */  /* DEFAULT */
+  case 0:  /* DEFAULT */
+  case 1:  /* Rejection with log-logistic envelopes */
     if (gen==NULL) return 1; /* test existence only  */
     if (p>1. && q>1.) {
       _unur_cstd_set_sampling_routine( par,gen,unur_stdgen_sample_beta_bb );
@@ -104,7 +105,7 @@ _unur_stdgen_beta_init( struct unur_par *par, struct unur_gen *gen )
     }
     return 1;
 
-  case 1:  /* Stratified Rejection/Patchwork Rejection */
+  case 2:  /* Stratified Rejection/Patchwork Rejection */
     if (gen==NULL) return 1; /* test existence only  */ 
     if (p>1.)
       if (q>1.) {    /* p > 1 && q > 1 */

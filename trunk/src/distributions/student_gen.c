@@ -84,13 +84,14 @@ _unur_stdgen_student_init( struct unur_par *par, struct unur_gen *gen )
 
   switch (par->variant) {
 
-  case 0:  /* Polar Method */     /* Default */
+  case 0:  /* DEFAULT */
+  case 1:  /* Polar Method */
     _unur_cstd_set_sampling_routine( par,gen,unur_stdgen_sample_student_tpol );
     /* no student_tpol_init( gen ) required */
     return 1;
 
-  case 1:  /* Ratio of Uniforms */
-    if (par->distr->data.cont.params[0] < 1.) {
+  case 2:  /* Ratio of Uniforms */
+    if (par->distr->data.cont.params[0] < 1.) {   /* nu < 1 */
       _unur_error(NULL,UNUR_ERR_GEN_CONDITION,"");
       return 0;
     }

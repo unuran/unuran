@@ -86,7 +86,8 @@ _unur_stdgen_powerexponential_init( struct unur_par *par, struct unur_gen *gen )
 
   switch (par->variant) {
 
-  case 0:  /* Transformed density rejection */  /* DEFAULT */
+  case 0:  /* DEFAULT */
+  case 1:  /* Transformed density rejection */
     _unur_cstd_set_sampling_routine( par,gen,unur_stdgen_sample_powerexponential_epd );
     powerexponential_epd_init( gen );
     return 1;

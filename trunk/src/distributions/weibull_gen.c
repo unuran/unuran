@@ -84,7 +84,7 @@ _unur_stdgen_weibull_init( struct unur_par *par, struct unur_gen *gen )
 
   switch (par->variant) {
 
-  case 0: /* Default */
+  case 0:  /* DEFAULT */
   case UNUR_STDGEN_INVERSION:   /* inversion method */
     PAR.is_inversion = TRUE;
     _unur_cstd_set_sampling_routine(par,gen,unur_stdgen_sample_weibull_inv); 

@@ -85,8 +85,9 @@ _unur_stdgen_chi_init( struct unur_par *par, struct unur_gen *gen )
 
   switch (par->variant) {
 
-  case 0:  /* Ratio of Uniforms with shift */    /* Default */
-    if (par->distr->data.cont.params[0] < 1.) {
+  case 0:  /* DEFAULT */
+  case 1:  /* Ratio of Uniforms with shift */
+    if (par->distr->data.cont.params[0] < 1.) {    /* nu < 1 */
       _unur_error(NULL,UNUR_ERR_GEN_CONDITION,"");
       return 0;
     }

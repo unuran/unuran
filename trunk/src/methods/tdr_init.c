@@ -55,6 +55,7 @@ _unur_tdr_init( struct unur_par *par )
      /*----------------------------------------------------------------------*/
 { 
   struct unur_gen *gen;
+  int i,k;
 
   /* check arguments */
   CHECK_NULL(par,NULL);
@@ -96,7 +97,7 @@ _unur_tdr_init( struct unur_par *par )
 
 #ifdef UNUR_ENABLE_LOGGING
     if (gen->debug & TDR_DEBUG_DARS) {
-      /* make initial guide table (only necessary for writing debug info */
+      /* make initial guide table (only necessary for writing debug info) */
       _unur_tdr_make_guide_table(gen);
       /* write info into log file */
       _unur_tdr_debug_init(par,gen);
@@ -104,14 +105,27 @@ _unur_tdr_init( struct unur_par *par )
     }
 #endif
 
-    /* run DARS */
-    if ( !_unur_tdr_run_dars(par,gen) ) {
-      free(par); _unur_tdr_free(gen);
-      return NULL;
-    }
+    for (i=0; i<3; i++) {
+      /* we make several tries */
+
+      /* run DARS */
+      if ( !_unur_tdr_run_dars(par,gen) ) {
+	free(par); _unur_tdr_free(gen);
+	return NULL;
+      }
     
-    /* make initial guide table */
-    _unur_tdr_make_guide_table(gen);
+      /* make initial guide table */
+      _unur_tdr_make_guide_table(gen);
+
+      /* check if DARS was completed */
+      if (GEN.n_ivs < GEN.max_ivs) {
+	/* ran ARS instead */
+	for (k=0; k<5; k++)
+	  _unur_sample_cont(gen);
+      }
+      else
+	break;
+    }
 
 #ifdef UNUR_ENABLE_LOGGING
     /* write info into log file */
@@ -1121,6 +1135,10 @@ _unur_tdr_gw_dars( struct unur_par *par, struct unur_gen *gen )
       _unur_warning(gen->genid,UNUR_ERR_GENERIC,"DARS aborted: maximum number of intervals exceeded.");
     _unur_warning(gen->genid,UNUR_ERR_GENERIC,"hat/squeeze ratio too small.");
   }
+  else {
+    /* no more construction points */
+    GEN.max_ivs = GEN.n_ivs;
+  }
   
   /* o.k. */
   return 1;
@@ -1340,6 +1358,10 @@ _unur_tdr_ps_dars( struct unur_par *par, struct unur_gen *gen )
     if ( GEN.n_ivs >= GEN.max_ivs )
       _unur_warning(gen->genid,UNUR_ERR_GENERIC,"DARS aborted: maximum number of intervals exceeded.");
     _unur_warning(gen->genid,UNUR_ERR_GENERIC,"hat/squeeze ratio too small.");
+  }
+  else {
+    /* no more construction points */
+    GEN.max_ivs = GEN.n_ivs;
   }
   
   /* o.k. */

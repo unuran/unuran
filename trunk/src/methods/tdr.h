@@ -197,17 +197,19 @@ int unur_tdr_set_usedars( UNUR_PAR *parameters, int usedars );
      Use the arithmetic mean of the interval boundaries.
    @end enumerate
    Notice however that for unbounded intervals neither rule 1 nor rule
-   2 can be used.
+   3 can be used.
 
    As an additional feature, it is possible to choose amoung these
    rules. 
    If @var{usedars} is set to @code{1} or TRUE the expectated point is
-   used (rule 1) is used (first, if is not applicaple rule 2 or 3 is
-   used). 
+   used (rule 1) is used (it switches to rule 2 for a particular
+   interval if rule 1 cannot be applied).
    If it is set to @code{2} the arc-mean rule is used.
    If it is set to @code{3} the mean is used.
-   Notice however that for the last case unbounded intervals are not
-   splitted any more.
+   Notice that rule 3 can only be used if the domain of the
+   distribution is bounded. It is faster than the other two methods
+   but for heavy-tailed distribution and large domain the hat
+   converges extremely slowly.
 
    The default depends on the given construction points.
    If the user has provided such points via a unur_tdr_set_cpoints()

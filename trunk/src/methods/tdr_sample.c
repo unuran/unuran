@@ -235,7 +235,7 @@ _unur_tdr_gw_sample( struct unur_gen *gen )
 	}
       }
       else {
-	/* no more construction points (avoid to many second if statement above */
+	/* no more construction points (avoid to many second if statement above) */
 	GEN.max_ivs = GEN.n_ivs;
       }
     }

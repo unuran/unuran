@@ -139,6 +139,12 @@
       @subsubheading List of error codes
 
       @itemize @bullet
+      @item Procedure executed successfully (no error)
+      @ftable @code
+      @item UNUR_SUCCESS (0x0u)
+      success (no error)
+      @end ftable
+
       @item Errors that occurred while handling distribution objects.
       @ftable @code
       @item UNUR_ERR_DISTR_SET
@@ -159,6 +165,8 @@
       invalid distribution object.
       @item UNUR_ERR_DISTR_DATA
       data are missing.
+      @item UNUR_ERR_DISTR_PROP
+      desired property does not exist
       @end ftable
 
       @item Errors that occurred while handling parameter objects.
@@ -215,6 +223,12 @@
       invalid cookie.
       @item UNUR_ERR_GENERIC
       generic error.
+      @item UNUR_ERR_SILENT
+      silent error (no error message).
+      @item UNUR_ERR_INF
+      infinity occured.
+      @item UNUR_ERR_NAN
+      NaN occured.
       @item UNUR_ERR_COMPILE
       Requested routine requires different compilation switches.
       Recompilation of library necessary.
@@ -233,64 +247,74 @@
 
 enum { 
 
+  /** procedure executed successfully **/
+  UNUR_SUCCESS            = 0x00,     /* exited successfully                 */                          
+
+  /** procedure executed with error (for internal use)  **/
+  UNUR_FAILURE            = 0x01,     /* failure                             */
+
   /** distribution object **/
   /*
     @code{UNUR_ERR_DISTR_...}
     Errors that occurred while handling distribution objects.
   */
-  UNUR_ERR_DISTR_SET      = 0x11u,    /* set failed (invalid parameter)      */
-  UNUR_ERR_DISTR_GET      = 0x12u,    /* get failed (parameter not set)      */
-  UNUR_ERR_DISTR_NPARAMS  = 0x13u,    /* invalid number of parameters        */
-  UNUR_ERR_DISTR_DOMAIN   = 0x14u,    /* parameter out of domain             */
-  UNUR_ERR_DISTR_GEN      = 0x15u,    /* invalid variant for special generator */
-  UNUR_ERR_DISTR_REQUIRED = 0x16u,    /* incomplete distribution object, entry missing */
-  UNUR_ERR_DISTR_UNKNOWN  = 0x17u,    /* unknown distribution, cannot handle */
-  UNUR_ERR_DISTR_INVALID  = 0x18u,    /* invalid distribution object         */
-  UNUR_ERR_DISTR_DATA     = 0x19u,    /* data are missing                    */
+  UNUR_ERR_DISTR_SET      = 0x11,     /* set failed (invalid parameter)      */
+  UNUR_ERR_DISTR_GET      = 0x12,     /* get failed (parameter not set)      */
+  UNUR_ERR_DISTR_NPARAMS  = 0x13,     /* invalid number of parameters        */
+  UNUR_ERR_DISTR_DOMAIN   = 0x14,     /* parameter out of domain             */
+  UNUR_ERR_DISTR_GEN      = 0x15,     /* invalid variant for special generator */
+  UNUR_ERR_DISTR_REQUIRED = 0x16,     /* incomplete distribution object, entry missing */
+  UNUR_ERR_DISTR_UNKNOWN  = 0x17,     /* unknown distribution, cannot handle */
+  UNUR_ERR_DISTR_INVALID  = 0x18,     /* invalid distribution object         */
+  UNUR_ERR_DISTR_DATA     = 0x19,     /* data are missing                    */
+  UNUR_ERR_DISTR_PROP     = 0x20,     /* desired property does not exist     */
 
   /** parameter object **/
   /*
     @code{UNUR_ERR_PAR_...}
     Errors that occurred while handling parameter objects.
   */
-  UNUR_ERR_PAR_SET        = 0x21u,    /* set failed (invalid parameter)      */
-  UNUR_ERR_PAR_VARIANT    = 0x22u,    /* invalid variant -> using default    */
-  UNUR_ERR_PAR_INVALID    = 0x23u,    /* invalid parameter object            */
+  UNUR_ERR_PAR_SET        = 0x21,     /* set failed (invalid parameter)      */
+  UNUR_ERR_PAR_VARIANT    = 0x22,     /* invalid variant -> using default    */
+  UNUR_ERR_PAR_INVALID    = 0x23,     /* invalid parameter object            */
 
   /** generator object **/
   /*
     @code{UNUR_ERR_GEN_...}
     Errors that occurred while handling generator objects.
   */
-  UNUR_ERR_GEN            = 0x31u,    /* bit for generator object            */
-  UNUR_ERR_GEN_DATA       = 0x32u,    /* (possible) invalid data             */
-  UNUR_ERR_GEN_CONDITION  = 0x33u,    /* condition for method violated       */
-  UNUR_ERR_GEN_INVALID    = 0x34u,    /* invalid generator object            */
-  UNUR_ERR_GEN_SAMPLING   = 0x35u,    /* sampling error                      */
+  UNUR_ERR_GEN            = 0x31,     /* bit for generator object            */
+  UNUR_ERR_GEN_DATA       = 0x32,     /* (possible) invalid data             */
+  UNUR_ERR_GEN_CONDITION  = 0x33,     /* condition for method violated       */
+  UNUR_ERR_GEN_INVALID    = 0x34,     /* invalid generator object            */
+  UNUR_ERR_GEN_SAMPLING   = 0x35,     /* sampling error                      */
 
   /** string parser **/
   /*
     @code{UNUR_ERR_STR_...}
     Errors that occurred while parsing strings.
   */
-  UNUR_ERR_STR            = 0x41u,    /* error in stringparser               */
-  UNUR_ERR_STR_UNKNOWN    = 0x42u,    /* unknown key word in string          */
-  UNUR_ERR_STR_SYNTAX     = 0x43u,    /* syntax error in string              */
-  UNUR_ERR_STR_INVALID    = 0x44u,    /* invalid parameter in argument       */
-  UNUR_ERR_FSTR_SYNTAX    = 0x45u,    /* syntax error in function parser     */
-  UNUR_ERR_FSTR_DERIV     = 0x46u,    /* cannot derivate function            */
+  UNUR_ERR_STR            = 0x41,     /* error in stringparser               */
+  UNUR_ERR_STR_UNKNOWN    = 0x42,     /* unknown key word in string          */
+  UNUR_ERR_STR_SYNTAX     = 0x43,     /* syntax error in string              */
+  UNUR_ERR_STR_INVALID    = 0x44,     /* invalid parameter in argument       */
+  UNUR_ERR_FSTR_SYNTAX    = 0x45,     /* syntax error in function parser     */
+  UNUR_ERR_FSTR_DERIV     = 0x46,     /* cannot derivate function            */
 
   /** misc **/
   /*
     @code{UNUR_ERR_...}
     Other errors.
   */
-  UNUR_ERR_DOMAIN         = 0x01u,    /* argument out of domain              */
-  UNUR_ERR_ROUNDOFF       = 0x02u,    /* (serious) round-off error           */
-  UNUR_ERR_MALLOC         = 0x03u,    /* virtual memory exhausted            */
-  UNUR_ERR_NULL           = 0x04u,    /* invalid NULL pointer                */ 
-  UNUR_ERR_COOKIE         = 0x05u,    /* invalid cookie                      */
-  UNUR_ERR_GENERIC        = 0x06u,    /* generic error                       */
+  UNUR_ERR_DOMAIN         = 0x51,     /* argument out of domain              */
+  UNUR_ERR_ROUNDOFF       = 0x52,     /* (serious) round-off error           */
+  UNUR_ERR_MALLOC         = 0x53,     /* virtual memory exhausted            */
+  UNUR_ERR_NULL           = 0x54,     /* invalid NULL pointer                */ 
+  UNUR_ERR_COOKIE         = 0x55,     /* invalid cookie                      */
+  UNUR_ERR_GENERIC        = 0x56,     /* generic error                       */
+  UNUR_ERR_SILENT         = 0x57,     /* silent error (no error message)     */
+  UNUR_ERR_INF            = 0x58,     /* infinity occured                    */
+  UNUR_ERR_NAN            = 0x59,     /* NaN occured                         */
 
   /** compilation switches **/
   /*
@@ -298,7 +322,7 @@ enum {
     Requested routine requires different compilation switches.
     Recompilation of library necessary.
   */
-  UNUR_ERR_COMPILE        = 0x0eu,    /* not available, recompile library    */
+  UNUR_ERR_COMPILE        = 0xa0,     /* not available, recompile library    */
 
   /** this should not happen **/
   /*
@@ -306,7 +330,7 @@ enum {
     Internal error. This should not happen. 
     Please make a bug report.
   */
-  UNUR_ERR_SHOULD_NOT_HAPPEN = 0x0fu  /* error should not happen, report this! */
+  UNUR_ERR_SHOULD_NOT_HAPPEN = 0xf0  /* error should not happen, report this! */
 
 };
 
@@ -317,7 +341,7 @@ enum {
 /*---------------------------------------------------------------------------*/
 /* global variable used to record errors                                     */
 
-extern unsigned unur_errno;
+extern int unur_errno;
 /*
   Global variable for reporting diagnostics of error.
 */

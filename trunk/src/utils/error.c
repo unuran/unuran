@@ -41,7 +41,7 @@
 
 /*---------------------------------------------------------------------------*/
 
-unsigned unur_errno = 0u;    /* global variable used to record errors        */
+int unur_errno = UNUR_SUCCESS;    /* global variable used to record errors   */
 
 /*---------------------------------------------------------------------------*/
 
@@ -59,6 +59,10 @@ unur_get_strerror ( const int unur_errno )
      /*----------------------------------------------------------------------*/
 {
   switch (unur_errno) {
+
+    /** procedure executed successfully **/
+  case UNUR_SUCCESS:
+    return "(no error)";
 
     /** distribution object **/
   case UNUR_ERR_DISTR_NPARAMS:
@@ -79,6 +83,8 @@ unur_get_strerror ( const int unur_errno )
     return "(distribution) get failed (parameter not set)";
   case UNUR_ERR_DISTR_DATA:
     return "(distribution) data are missing (cannot execute)";
+  case UNUR_ERR_DISTR_PROP:
+    return "(distribution) desired property does not exist";
 
     /** parameter object **/
   case UNUR_ERR_PAR_SET:

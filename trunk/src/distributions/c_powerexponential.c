@@ -65,7 +65,7 @@ static const char distr_name[] = "powerexponential";
 static double _unur_pdf_powerexponential(double x, double *params, int n_params);
 static double _unur_dpdf_powerexponential(double x, double *params, int n_params);
 static double _unur_cdf_powerexponential(double x, double *params, int n_params);
-static double _unur_lognormconstant_powerexponential(double *params, int n_params);
+inline static double _unur_lognormconstant_powerexponential(double *params, int n_params);
 
 /*---------------------------------------------------------------------------*/
 
@@ -85,7 +85,7 @@ _unur_dpdf_powerexponential( double x, double *params, int n_params )
   if (x == 0.)    /* derivative is not defined, but ...        */
     return 0.;    /* a tangent parallel to x-axis is possible. */
 
-  tmp = exp( -pow(fabs(x),tau) - LOGNORMCONSTANT + (tau-1.)*log(x) ) * tau;
+  tmp = exp( -pow(fabs(x),tau) - LOGNORMCONSTANT + (tau-1.)*log(fabs(x)) ) * tau;
 
   /* sign ! */
   return ( (x<0.) ? tmp : -tmp );

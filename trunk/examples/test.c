@@ -1,4 +1,4 @@
-/*   my second UNURAN program test2.c */ 
+/*  my second UNURAN program test2.c */ 
 
 #include <unuran.h>
 #include <unuran_distributions.h>
@@ -36,7 +36,7 @@ int main()
   /* choose method and set parameters */
   //  par = unur_arou_new(distr);
    par1 = unur_ninv_new(distr1);
-   unur_ninv_use_newton(par1);
+   unur_ninv_use_regula(par1);
    unur_ninv_use_table(par1);
   // unur_arou_set_max_sqhratio(par,0.99);
 

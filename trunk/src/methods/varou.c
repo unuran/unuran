@@ -100,14 +100,12 @@
 
 /*---------------------------------------------------------------------------*/
 
+/* this parameter define the maximal number of cones that will be created.   */
+#define VAROU_MAX_CONES 10000 
+
 /* during the triangulation of the upper half-unit-sphere, this parameter    */
 /* define the maximal number of verteces that will be created during the     */
 /* adaptive process.                                                         */
-#define UNUR_VAROU_MAX_VERTECES 10000
-
-/*---------------------------------------------------------------------------*/
-
-/* this parameter define the maximal number of cones that will be created.   */
 /* initial triangulation create v0=2*dim+1 verteces and c0=2^dim cones.      */
 /* each subsequently added vertex lead to a cone-splitting and thus to one   */
 /* additional cone structure.                                                */
@@ -115,11 +113,14 @@
 /*   c = c0 + (v-v0)                                                         */
 /*     = 2^dim + (v - (2*dim+1))                                             */
 /* i.e.                                                                      */
-/*   c_max = 2^dim + (v_max - (2*dim+1))                                     */
-/*                                                                           */
+/*   v_max =  c_max - 2^dim + (2*dim+1)                                       */
+/*         <= c_max + 1                                                       */
 /* we set this number to this value in _unur_varou_create()                  */
-long UNUR_VAROU_MAX_CONES; 
+long VAROU_MAX_VERTECES;
 
+/*---------------------------------------------------------------------------*/
+
+long N_ALPHA=1000; /* TODO: move this parameter into generator object */
 /*---------------------------------------------------------------------------*/
 
 static struct unur_gen *_unur_varou_init( struct unur_par *par );
@@ -488,17 +489,16 @@ _unur_varou_create( struct unur_par *par )
   /* get center of the distribution */
   GEN.center = unur_distr_cvec_get_center(gen->distr);
 
+  /* calculate the maximal number of verteces needed */
+  VAROU_MAX_VERTECES = VAROU_MAX_CONES + 1;
+  
   /* allocate memory for the list of the verteces on the half-unit-sphere */
-  GEN.vertex_list = (double **) _unur_xmalloc(UNUR_VAROU_MAX_VERTECES*sizeof(long));
+  GEN.vertex_list = (double **) _unur_xmalloc(VAROU_MAX_VERTECES*sizeof(long));
   GEN.n_vertex = 0;
-
-  /* calculate the maximal number of cones needed */
-  UNUR_VAROU_MAX_CONES = pow(2, GEN.dim) 
-                       + UNUR_VAROU_MAX_VERTECES - (2*GEN.dim+1);
   
   /* allocate memory for the list of the verteces on the half-unit-sphere */
   GEN.cone_list = (struct unur_varou_cone **) 
-                  _unur_xmalloc(UNUR_VAROU_MAX_CONES*sizeof(long));
+                  _unur_xmalloc(VAROU_MAX_CONES*sizeof(long));
   GEN.n_cone = 0;
 
   /* return pointer to (almost empty) generator object */
@@ -542,7 +542,7 @@ _unur_varou_clone( const struct unur_gen *gen )
   memcpy(CLONE.umax, GEN.umax, GEN.dim * sizeof(double));
 
   /* allocate memory and copy data for the vertex list */
-  CLONE.vertex_list = (double **) _unur_xmalloc(UNUR_VAROU_MAX_VERTECES*sizeof(long));
+  CLONE.vertex_list = (double **) _unur_xmalloc(VAROU_MAX_VERTECES*sizeof(long));
   for (i=0; i<GEN.n_vertex; i++) {
     CLONE.vertex_list[i] = _unur_xmalloc((GEN.dim+1)*sizeof(double));
     memcpy(CLONE.vertex_list[i], GEN.vertex_list[i], (GEN.dim+1)*sizeof(double));
@@ -556,7 +556,7 @@ _unur_varou_clone( const struct unur_gen *gen )
 		    
   /* allocate memory and copy data for the cone list */
   CLONE.cone_list = (struct unur_varou_cone **) 
-                    _unur_xmalloc(UNUR_VAROU_MAX_CONES*sizeof(long));
+                    _unur_xmalloc(VAROU_MAX_CONES*sizeof(long));
   for (i=0; i<GEN.n_cone; i++) {
     CLONE.cone_list[i] = _unur_varou_cone_new(GEN.dim);
     memcpy(CLONE.cone_list[i], GEN.cone_list[i], sizeof_cone_block );
@@ -774,7 +774,7 @@ _unur_varou_cones_init( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
 {
   int i, ic, iv, dim;
-  double alpha;
+  double alpha, min_alpha, min_volume;
 
   dim = GEN.dim;
 
@@ -810,11 +810,11 @@ _unur_varou_cones_init( struct unur_gen *gen )
       GEN.cone_list[ic]->unit_volume *= 1./(2.+i);
     }
     
+#if 0  
     /* calculate other parameters for the initial cones using the barycenter as 
        touching point */
     _unur_varou_cone_parameters(gen, GEN.cone_list[ic], 1.);
 
-#if 1 
         /* looping while volume is infinite */
         for (i=0; i<100 && _unur_isinf(GEN.cone_list[ic]->volume); i++){
 
@@ -823,6 +823,20 @@ _unur_varou_cones_init( struct unur_gen *gen )
         _unur_varou_cone_parameters(gen, GEN.cone_list[ic], alpha );
 
         }
+#endif
+        /* */
+#if 1
+	min_alpha=1;
+        min_volume=UNUR_INFINITY;
+        for (i=0; i<N_ALPHA; i++) {
+          alpha = i/((double)N_ALPHA); /* alpha in [0,1) */
+          _unur_varou_cone_parameters(gen, GEN.cone_list[ic], alpha); 
+          if (min_volume > GEN.cone_list[ic]->volume) {
+            min_volume=GEN.cone_list[ic]->volume;
+	    min_alpha=alpha;
+	  }
+	}
+        _unur_varou_cone_parameters(gen, GEN.cone_list[ic], min_alpha); 
 #endif
 
   }
@@ -869,17 +883,14 @@ _unur_varou_cones_split( struct unur_gen *gen )
   struct unur_varou_cone *c1; 
   struct unur_varou_cone *c2;
   
-  long N_ALPHA=10;
 
   dim = GEN.dim;
 
-  potato_volume=1;
-  for (i=1; i<=dim; i++) potato_volume /= (double) (i+1);
-
+  potato_volume=1./(dim+1.);
 
 printf("n_cone; n_inf; vol; vol-vol0; rho\n"); 
 
-  while (GEN.n_cone <= UNUR_VAROU_MAX_CONES) {
+  while (GEN.n_cone <= VAROU_MAX_CONES) {
 
     /* obtaining the number of bounded cones and their volume sum */
     n_bounded = 0;
@@ -925,7 +936,7 @@ printf("***************************************************************\n");
         /*------------------------------------------------------------*/
         /* create new vertex */
         nv=GEN.n_vertex;
-        if (nv>=UNUR_VAROU_MAX_VERTECES) { 
+        if (nv>=VAROU_MAX_VERTECES) { 
           goto done_splitting; /* TODO?: realloc() */
         }
         GEN.vertex_list[nv] = _unur_vector_new(dim+1);
@@ -964,7 +975,7 @@ __printf_vector(dim+1, GEN.vertex_list[nv]);
         
 	/*------------------------------------------------------------*/
         
-	if (GEN.n_cone>=UNUR_VAROU_MAX_CONES) {
+	if (GEN.n_cone>=VAROU_MAX_CONES) {
           goto done_splitting; /* TODO?: realloc() */
         }
         /* create two new cones c1 and c2 */

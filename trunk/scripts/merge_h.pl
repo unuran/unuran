@@ -10,9 +10,10 @@ sub usage {
     print STDERR <<EOM;
 usage: $progname <file.h> 
       
-Scans <file.h> and inserts all header file found in subtree 
+Scans <file.h> and inserts all header files found in subtree 
 rooted at current working directory.
-Files with name containing "config" are ignored.
+Other header files and those with names containing "config" 
+are ignored and just #included. 
 All comments and blank lines are removed.
 The output is written on stdout.
 
@@ -70,7 +71,9 @@ use FileHandle;
 $master_file = shift;
 (usage and die) unless $master_file;
 
-# header files in sub tree ...
+# header files in sub tree (except those containing "config") ...
+# (files are stored in an associate array with key=filename and
+# value=complete path of file.)
 %header_files;
 # included header files ...
 %header_included;
@@ -81,7 +84,7 @@ while (<FILES>) {
     chomp;
     next unless /^.*\/+(.*\.h)$/;
     next if /config/;
-    $header_files{$1} = $_;
+    $header_files{$1} = $_;  # store file and path of file
 }
 close FILES;
 

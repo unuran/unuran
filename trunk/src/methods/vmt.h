@@ -62,8 +62,9 @@
       abused) for other distributions. However, notice that the given
       standardized marginal distributions are not checked; i.e.
       if the given distributions do not have mean 0 and variance 1
-      then mu and Sigma are not the mean vector and covariance matrix,
-      respectively, of the resulting distribution. 
+      then @unurmath{mu} and @unurmath{Sigma} are not the mean vector
+      and covariance matrix, respectively, of the resulting
+      distribution.
 
       @strong{Important:} Notice that except for the multinormal
       distribution the given marginal distribution are distorted by
@@ -71,6 +72,8 @@
       (non-multinormal) distributions this method should only be used
       when everything else fails and some approximate results which
       might even be not entirely correct are better than no results.
+      A much better method is the NORTA (NORmal To Anything) method, 
+      see @ref{NORTA}.
 
    =HOWTOUSE
       Create a multivariate generator object, set mean vector and
@@ -78,7 +81,10 @@
       unur_distr_cvec_set_covar() call. Set standard marginal 
       distributions using unur_distr_cvec_set_stdmarginals() , 
       unur_distr_cvec_set_stdmarginal_array() , or 
-      unur_distr_cvec_set_marginal_list().
+      unur_distr_cvec_set_stdmarginal_list().
+      (Do not use the corresponding calls for the (non-standard)
+      marginal distributions).
+
       There are no optional parameters for this method.
 
    =END

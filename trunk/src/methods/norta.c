@@ -38,10 +38,41 @@
  *****************************************************************************
  *                                                                           *
  *   REFERENCES:                                                             *
+ *   [1] Hoermann, W., J. Leydold, and G. Derflinger (2004):                 *
+ *       Automatic Nonuniform Random Variate Generation, Springer, Berlin.   *
+ *                                                                           *
+ *   [2] Gosh, S. (????): Eigenvector Correction method                      *
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- * ..... beschreibung ....                                                   *
+ *   NORTA (NORmal to anything) is a model to get random vectors with        *
+ *   given marginal distributions and rank correlation. (Notice that this    *
+ *   does not uniquely define the multivariate distribution.)                *
+ *                                                                           *
+ *   In the NORTA model multinormal random variates with the given           *
+ *   rank (Spearman's) correlations are generated. For this task the rank    *
+ *   correlations are transformed into the corresponding                     *
+ *   (Pearson) correlation matrix and the VMT method is used to sample from  *
+ *   the resulting multinormal distribution (by means of the Cholesky        *
+ *   decomposition of the covariance matrix).                                *
+ *   In a second step the (standard normal distributed) marginal variates    *
+ *   are transformed by means of the CDF of the normal distribution to get   *
+ *   uniform marginals. The resulting random vectors then have uniform       *
+ *   marginals and the desired rank correlation between its components.      *
+ *   Such a random vector is called 'copula'.                                *                   
+ *                                                                           *
+ *   By means of the inverse CDF the uniform marginals are transformed into  *
+ *   the target marginal distributions. This transformation does not change  *
+ *   the rank correlation.                                                   *
+ *                                                                           *
+ *   It can happen that the desired rank correlation matrix is not feasible, *
+ *   i.e., it cannot occur as rank correlation matrix of a multinormal       *
+ *   distribution. For this case we use Gosh's "eigenvector correction       *
+ *   method" [2]. In this case a spectral decomposition of the corresponding *
+ *   (Pearson) correlation matrix is carried out. If there are some          *
+ *   non-positive eigenvalues (i.e. this matrix is not a true correlation    *
+ *   matrix) then these are set to a small value and a new (positive         *
+ *   definite) correlation matrix is created and used.                       *
  *                                                                           *
  *****************************************************************************/
 
@@ -63,7 +94,6 @@
 #include "hinv.h"
 #include "ninv.h"
 #include "vmt.h"
-
 
 /*---------------------------------------------------------------------------*/
 #if UNUR_URNG_TYPE == UNUR_URNG_GENERIC

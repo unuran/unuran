@@ -87,7 +87,8 @@
 /*---------------------------------------------------------------------------*/
 /* Flags for logging set calls                                               */
 
-#define STDR_SET_FMODE        0x001u   /* cdf at mode is known               */
+#define STDR_SET_CDFMODE      0x001u   /* cdf at mode is known               */
+#define STDR_SET_PDFMODE      0x002u   /* pdf at mode is set                 */
 
 /*---------------------------------------------------------------------------*/
 
@@ -95,9 +96,35 @@
 
 /*---------------------------------------------------------------------------*/
 
+static struct unur_gen *_unur_stdr_init( struct unur_par *par );
+/*---------------------------------------------------------------------------*/
+/* Initialize new generator.                                                 */
+/*---------------------------------------------------------------------------*/
+
+static int _unur_stdr_hat( struct unur_gen *gen );
+/*---------------------------------------------------------------------------*/
+/* compute universal hat.                                                    */
+/*---------------------------------------------------------------------------*/
+
 static struct unur_gen *_unur_stdr_create( struct unur_par *par );
 /*---------------------------------------------------------------------------*/
 /* create new (almost empty) generator object.                               */
+/*---------------------------------------------------------------------------*/
+
+static int _unur_stdr_reinit( struct unur_gen *gen );
+/*---------------------------------------------------------------------------*/
+/* Re-initialize (existing) generator.                                       */
+/*---------------------------------------------------------------------------*/
+
+static double _unur_stdr_sample( UNUR_GEN *generator );
+static double _unur_stdr_sample_check( UNUR_GEN *generator );
+/*---------------------------------------------------------------------------*/
+/* sample from generator                                                     */
+/*---------------------------------------------------------------------------*/
+
+static void _unur_stdr_free( struct unur_gen *gen);
+/*---------------------------------------------------------------------------*/
+/* destroy generator object.                                                 */
 /*---------------------------------------------------------------------------*/
 
 #ifdef UNUR_ENABLE_LOGGING
@@ -177,10 +204,11 @@ unur_stdr_new( struct unur_distr *distr )
   COOKIE_SET(par,CK_STDR_PAR);
 
   /* copy input */
-  par->distr    = distr;      /* pointer to distribution object              */
+  par->distr    = distr;              /* pointer to distribution object      */
 
   /* set default values */
-  PAR.Fmode     = -1.;        /* c.d.f. at mode (unknown yet)                */
+  PAR.Fmode     = -1.;                /* c.d.f. at mode (unknown yet)        */
+  PAR.fm        = -1.;                /* p.d.f. at mode (unknown yet)        */
 
   par->method   = UNUR_METH_STDR;     /* method and default variant          */
   par->variant  = 0u;                 /* default variant                     */
@@ -201,7 +229,7 @@ unur_stdr_new( struct unur_distr *distr )
 /*****************************************************************************/
 
 int 
-unur_stdr_set_Fmode( struct unur_par *par, double Fmode )
+unur_stdr_set_cdfatmode( struct unur_par *par, double Fmode )
      /*----------------------------------------------------------------------*/
      /* set cdf at mode                                                      */
      /*                                                                      */
@@ -230,11 +258,49 @@ unur_stdr_set_Fmode( struct unur_par *par, double Fmode )
   PAR.Fmode = Fmode;
 
   /* changelog */
-  par->set |= STDR_SET_FMODE;
+  par->set |= STDR_SET_CDFMODE;
 
   return 1;
 
-} /* end of unur_stdr_set_Fmode() */
+} /* end of unur_stdr_set_cdfatmode() */
+
+/*---------------------------------------------------------------------------*/
+
+int 
+unur_stdr_set_pdfatmode( UNUR_PAR *par, double fmode )
+     /*----------------------------------------------------------------------*/
+     /* Set pdf at mode. if set the p.d.f. at the mode is never changed.     */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par   ... pointer to parameter for building generator object       */
+     /*   fmode ... pdf at mode                                              */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... on success                                                   */
+     /*   0 ... on error                                                     */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( GENTYPE,par,0 );
+
+  /* check input */
+  _unur_check_par_object( par,STDR );
+
+  /* check new parameter for generator */
+  if (fmode <= 0.) {
+    _unur_warning(par->genid,UNUR_ERR_PAR_SET,"pdf(mode)");
+    return 0;
+  }
+
+  /* store date */
+  PAR.fm = fmode;
+
+  /* changelog */
+  par->set |= STDR_SET_PDFMODE;
+
+  return 1;
+
+} /* end of unur_stdr_set_pdfatmode() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -304,6 +370,235 @@ unur_stdr_set_usesqueeze( struct unur_par *par, int usesqueeze )
 
 /*****************************************************************************/
 
+int
+unur_stdr_chg_pdfparams( struct unur_gen *gen, double *params, int n_params )
+     /*----------------------------------------------------------------------*/
+     /* change array of parameters for distribution                          */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen      ... pointer to generator object                           */
+     /*   params   ... list of arguments                                     */
+     /*   n_params ... number of arguments                                   */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... on success                                                   */
+     /*   0 ... on error                                                     */
+     /*                                                                      */
+     /* IMPORTANT: The given parameters are not checked against domain       */
+     /*            errors (in opposition to the unur_<distr>_new() call).    */
+     /*                                                                      */
+     /*----------------------------------------------------------------------*/
+{
+  register int i;
+
+  /* check arguments */
+  CHECK_NULL(gen,0);
+  _unur_check_gen_object( gen,STDR );
+  if (n_params>0) CHECK_NULL(params,0);
+  
+  /* check new parameter for generator */
+  if (n_params > UNUR_DISTR_MAXPARAMS ) {
+    _unur_error(NULL,UNUR_ERR_DISTR_NPARAMS,"");
+    return 0;
+  }
+
+  /* copy parameters */
+  DISTR.n_params = n_params;
+  for (i=0; i < n_params; i++)
+    DISTR.params[i] = params[i];
+
+  /* changelog */
+  /* mode and area might be wrong now! 
+     but the user is responsible to change it.
+     so we dont say:
+     gen->distr.set &= ~(UNUR_DISTR_SET_MODE | UNUR_DISTR_SET_PDFAREA );
+     gen->set &= ~STDR_SET_CDFMODE;
+  */
+
+  /* o.k. */
+  return 1;
+} /* end of unur_stdr_chg_pdfparams() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+unur_stdr_chg_mode( struct unur_gen *gen, double mode )
+     /*----------------------------------------------------------------------*/
+     /* change mode of distribution                                          */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen   ... pointer to generator object                              */
+     /*   mode  ... mode                                                     */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... on success                                                   */
+     /*   0 ... on error                                                     */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  CHECK_NULL(gen,0);
+  _unur_check_gen_object( gen,STDR );
+  
+  /* copy parameters */
+  DISTR.mode = mode;
+
+  /* no changelog required */
+
+  /* o.k. */
+  return 1;
+} /* end of unur_stdr_chg_mode() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+unur_stdr_chg_cdfatmode( struct unur_gen *gen, double Fmode )
+     /*----------------------------------------------------------------------*/
+     /* change value of cdf at mode                                          */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen   ... pointer to generator object                              */
+     /*   Fmode ... cdf at mode                                              */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... on success                                                   */
+     /*   0 ... on error                                                     */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  CHECK_NULL(gen,0);
+  _unur_check_gen_object( gen,STDR );
+
+  /* check new parameter for generator */
+  if (Fmode < 0. || Fmode > 1.) {
+    _unur_warning(gen->genid,UNUR_ERR_PAR_SET,"cdf(mode)");
+    return 0;
+  }
+  
+  /* copy parameters */
+  GEN.Fmode = Fmode;
+
+  /* changelog */
+  gen->set |= STDR_SET_CDFMODE;
+
+  /* o.k. */
+  return 1;
+} /* end of unur_stdr_chg_cdfatmode() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+unur_stdr_chg_pdfatmode( struct unur_gen *gen, double fmode )
+     /*----------------------------------------------------------------------*/
+     /* change value of pdf at mode                                          */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen   ... pointer to generator object                              */
+     /*   fmode ... pdf at mode                                              */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... on success                                                   */
+     /*   0 ... on error                                                     */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  CHECK_NULL(gen,0);
+  _unur_check_gen_object( gen,STDR );
+
+  /* check new parameter for generator */
+  if (fmode <= 0.) {
+    _unur_warning(gen->genid,UNUR_ERR_PAR_SET,"pdf(mode)");
+    return 0;
+  }
+
+  /* store date */
+  GEN.fm = fmode;
+
+  /* changelog */
+  gen->set |= STDR_SET_PDFMODE;
+
+  /* o.k. */
+  return 1;
+} /* end of unur_stdr_chg_pdfatmode() */
+
+/*---------------------------------------------------------------------------*/
+
+int 
+unur_stdr_chg_domain( struct unur_gen *gen, double left, double right )
+     /*----------------------------------------------------------------------*/
+     /* change the left and right borders of the domain of the distribution  */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen      ... pointer to generator object                           */
+     /*   left  ... left boundary point                                      */
+     /*   right ... right boundary point                                     */
+     /*                                                                      */
+     /* comment:                                                             */
+     /*   the new boundary points may be +/- INFINITY                        */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  CHECK_NULL(gen,0);
+  _unur_check_gen_object( gen,STDR );
+
+  /* check new parameter for generator */
+  if (left >= right) {
+    _unur_warning(NULL,UNUR_ERR_DISTR_SET,"domain, left >= right");
+    return 0;
+  }
+
+  /* copy new boundaries into generator object */
+  DISTR.BD_LEFT = left;
+  DISTR.BD_RIGHT = right;
+
+  /* changelog */
+  gen->distr.set |= UNUR_DISTR_SET_DOMAIN;
+
+#ifdef UNUR_ENABLE_LOGGING
+  /* write info into log file */
+#endif
+  
+  /* o.k. */
+  return 1;
+  
+} /* end of unur_stdr_chg_domain() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+unur_stdr_chg_pdfarea( struct unur_gen *gen, double area )
+     /*----------------------------------------------------------------------*/
+     /* change area below p.d.f. of distribution                             */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen   ... pointer to generator object                              */
+     /*   area  ... area                                                     */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... on success                                                   */
+     /*   0 ... on error                                                     */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  CHECK_NULL(gen,0);
+  _unur_check_gen_object( gen,STDR );
+  
+  /* check new parameter for generator */
+  if (area <= 0.) {
+    _unur_warning(NULL,UNUR_ERR_DISTR_SET,"area <= 0");
+    return 0;
+  }
+
+  /* copy parameters */
+  DISTR.area = area;
+
+  /* no changelog required */
+
+  /* o.k. */
+  return 1;
+} /* end of unur_stdr_chg_pdfarea() */
+
+/*****************************************************************************/
+
 struct unur_gen *
 _unur_stdr_init( struct unur_par *par )
      /*----------------------------------------------------------------------*/
@@ -320,8 +615,6 @@ _unur_stdr_init( struct unur_par *par )
      /*----------------------------------------------------------------------*/
 { 
   struct unur_gen *gen;
-  double vm;               /* width of rectangle                             */
-  double left,right;
 
   /* check arguments */
   _unur_check_NULL( GENTYPE,par,NULL );
@@ -332,32 +625,77 @@ _unur_stdr_init( struct unur_par *par )
     return NULL; }
   COOKIE_CHECK(par,CK_STDR_PAR,NULL);
 
+  if (! (par->set & STDR_SET_CDFMODE))
+    /* cdf at mode unknown -->
+       thus we cannot use universal squeeze */
+    par->variant &= ~STDR_VARFLAG_SQUEEZE;
+
   /* create a new empty generator object */
   gen = _unur_stdr_create(par);
   if (!gen) { free(par); return NULL; }
 
-  /* compute pdf at mode */
-  GEN.fm = PDF(DISTR.mode);
-
-  /* fm must be positive */
-  if (GEN.fm <= 0.) {
-    _unur_error(par->genid,UNUR_ERR_GEN_DATA,"pdf(mode) <= 0.");
+  /* compute universal bounding rectangle */
+  if (! _unur_stdr_hat( gen ) ) {
     free(par); _unur_stdr_free(gen);
     return NULL;
+  }
+
+#ifdef UNUR_ENABLE_LOGGING
+    /* write info into log file */
+    if (gen->debug) _unur_stdr_debug_init(par,gen);
+#endif
+
+  /* free parameters */
+  free(par);
+
+  return gen;
+} /* end of _unur_stdr_init() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+_unur_stdr_hat( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* compute universal hat                                                */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... on success                                                   */
+     /*   0 ... on error                                                     */
+     /*----------------------------------------------------------------------*/
+{ 
+  double vm, fm;             /* width of rectangle, pdf at mode              */
+  double left,right;
+
+  /* check arguments */
+  CHECK_NULL( gen, 0 );
+  COOKIE_CHECK( gen,CK_STDR_GEN, 0 );
+
+  /* compute pdf at mode (if not given by user) */
+  if (!(gen->set & STDR_SET_PDFMODE)) {
+    fm = PDF(DISTR.mode);
+    /* fm must be positive */
+    if (fm <= 0.) {
+      _unur_warning(gen->genid,UNUR_ERR_GEN_DATA,"pdf(mode) <= 0.");
+      return 0;
+    }
+    GEN.fm = fm;
   }
 
   /* compute parameters */
   GEN.um = sqrt(GEN.fm);
   vm = DISTR.area / GEN.um;
 
-  if (par->set & STDR_SET_FMODE) {
+  if (gen->set & STDR_SET_CDFMODE) {
     /* cdf at mode known */
-    GEN.vl = -PAR.Fmode * vm;
+    GEN.vl = -GEN.Fmode * vm;
     GEN.vr = vm + GEN.vl;
     GEN.xl = GEN.vl/GEN.um;
     GEN.xr = GEN.vr/GEN.um;
     GEN.A  = 2 * DISTR.area;
-    GEN.al = (DISTR.BD_LEFT  < DISTR.mode) ? (PAR.Fmode * DISTR.area) : 0.;
+    GEN.al = (DISTR.BD_LEFT  < DISTR.mode) ? (GEN.Fmode * DISTR.area) : 0.;
     GEN.ar = (DISTR.BD_RIGHT > DISTR.mode) ? (GEN.al + DISTR.area) : GEN.A;
     /* Compute areas below hat in left tails and inside domain of pdf */
     if ( (DISTR.BD_LEFT > -INFINITY) &&
@@ -372,9 +710,6 @@ _unur_stdr_init( struct unur_par *par )
     else
       GEN.Ain = GEN.A;
     GEN.Ain -= GEN.Aleft;
-
-    /* it does not make sense to use the mirror principle */
-    /* gen->variant &= ~STDR_VARFLAG_MIRROR;  not implemented */
   }
 
   else {
@@ -405,22 +740,109 @@ _unur_stdr_init( struct unur_par *par )
     else 
       GEN.Ain = GEN.A;
     GEN.Ain -= GEN.Aleft;
-    
-    /* we cannot use universal squeeze */
-    gen-> variant &= ~STDR_VARFLAG_SQUEEZE;
   }
 
 #ifdef UNUR_ENABLE_LOGGING
-    /* write info into log file */
-    if (gen->debug) _unur_stdr_debug_init(par,gen);
+  /* write info into log file */
 #endif
 
-  /* free parameters */
-  free(par);
+  return 1;
+} /* end of _unur_stdr_hat() */
 
-  return gen;
+/*---------------------------------------------------------------------------*/
 
-} /* end of _unur_stdr_init() */
+static struct unur_gen *
+_unur_stdr_create( struct unur_par *par )
+     /*----------------------------------------------------------------------*/
+     /* allocate memory for generator                                        */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par ... pointer to parameter for building generator object         */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to (empty) generator object with default settings          */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return NULL                                                        */
+     /*----------------------------------------------------------------------*/
+{
+  struct unur_gen *gen;
+
+  /* check arguments */
+  CHECK_NULL(par,NULL);  COOKIE_CHECK(par,CK_STDR_PAR,NULL);
+
+  /* allocate memory for generator object */
+  gen = _unur_malloc( sizeof(struct unur_gen) );
+
+  /* magic cookies */
+  COOKIE_SET(gen,CK_STDR_GEN);
+
+  /* copy distribution object into generator object */
+  memcpy( &(gen->distr), par->distr, sizeof( struct unur_distr ) );
+
+  /* copy generator identifier */
+  gen->genid = par->genid;
+
+  /* routines for sampling and destroying generator */
+  SAMPLE = (par->variant & STDR_VARFLAG_VERIFY) ? _unur_stdr_sample_check : _unur_stdr_sample;
+  gen->destroy = _unur_stdr_free;
+  gen->reinit = _unur_stdr_reinit;
+
+  /* mode must be in domain */
+  if ( (DISTR.mode < DISTR.BD_LEFT) ||
+       (DISTR.mode > DISTR.BD_RIGHT) ) {
+    /* there is something wrong.
+       assume: user has change domain without changing mode.
+       but then, she probably has not updated area and is to large */
+    _unur_warning(par->genid,UNUR_ERR_GEN_DATA,"area and/or cdf at mode");
+    DISTR.mode = max(DISTR.mode,DISTR.BD_LEFT);
+    DISTR.mode = min(DISTR.mode,DISTR.BD_RIGHT);
+  }
+
+  /* copy some parameters into generator object */
+  GEN.Fmode = PAR.Fmode;            /* cdf at mode                           */
+  GEN.fm    = PAR.fm;               /* pdf at mode                           */
+
+  gen->method = par->method;        /* indicates method                      */
+  gen->variant = par->variant;      /* indicates variant                     */
+  gen->set = par->set;              /* indicates parameter settings          */
+  gen->debug = par->debug;          /* debuging flags                        */
+  gen->urng = par->urng;            /* pointer to urng                       */
+
+  gen->urng_aux = NULL;             /* no auxilliary URNG required           */
+  gen->gen_aux = NULL;              /* no auxilliary generator objects       */
+  gen->gen_aux_2 = NULL;
+
+  /* initialize parameters */
+
+  /* return pointer to (almost empty) generator object */
+  return(gen);
+
+} /* end of _unur_stdr_create() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+_unur_stdr_reinit( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* re-initialize (existing) generator.                                  */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... on success                                                   */
+     /*   0 ... on error                                                     */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  CHECK_NULL(gen,0);
+  _unur_check_gen_object( gen,STDR );
+
+  /* compute universal bounding rectangle */
+  return _unur_stdr_hat( gen );
+
+} /* end of _unur_stdr_reinit() */
 
 /*****************************************************************************/
 
@@ -439,48 +861,47 @@ _unur_stdr_sample( struct unur_gen *gen )
      /*   return 0.                                                          */
      /*----------------------------------------------------------------------*/
 { 
-  double u,v,x,xx,y;
+  double U,V,X,xx,y;
 
   /* check arguments */
   CHECK_NULL(gen,0.);  COOKIE_CHECK(gen,CK_STDR_GEN,0.);
 
   while (1) {
     /* uniform ~U(0,1) */
-    u = GEN.Aleft + _unur_call_urng(gen) * GEN.Ain;
-    if (u==0.) continue;
+    while ( (U = GEN.Aleft + _unur_call_urng(gen) * GEN.Ain) == 0. );
 
-    if (u < GEN.al) {        /* first part */
-      x = - GEN.vl * GEN.vl / u;
-      y = (u / GEN.vl);
+    if (U < GEN.al) {        /* first part */
+      X = - GEN.vl * GEN.vl / U;
+      y = (U / GEN.vl);
       y = y*y;
     }
-    else if (u <= GEN.ar) {  /* second part */
-      x = GEN.xl + (u-GEN.al)/GEN.fm;
+    else if (U <= GEN.ar) {  /* second part */
+      X = GEN.xl + (U-GEN.al)/GEN.fm;
       y = GEN.fm;
     }
     else {                   /* third part */
-      x = GEN.vr * GEN.vr / (GEN.um * GEN.vr - (u-GEN.ar));
-      y = (GEN.A - u) / GEN.vr;
+      X = GEN.vr * GEN.vr / (GEN.um * GEN.vr - (U-GEN.ar));
+      y = (GEN.A - U) / GEN.vr;
       y = y*y;
     }
 
     /* accept or reject */
-    v = _unur_call_urng(gen);
-    y *= v;
+    V = _unur_call_urng(gen);
+    y *= V;
 
     /* evaluate squeeze */
     if (gen->variant & STDR_VARFLAG_SQUEEZE) {
-      xx = 2 * x;
-      if ( x >= GEN.xl && x <= GEN.xr && y <= GEN.fm/4. )
-	return (x + DISTR.mode);
+      xx = 2 * X;
+      if ( xx >= GEN.xl && xx <= GEN.xr && y <= GEN.fm/4. )
+	return (X + DISTR.mode);
     }
 
     /* Compute X */
-    x += DISTR.mode;
+    X += DISTR.mode;
 
     /* evaluate p.d.f. */
-    if (y <= PDF(x))
-      return x;
+    if (y <= PDF(X))
+      return X;
   }
     
 } /* end of _unur_stdr_sample() */
@@ -502,55 +923,54 @@ _unur_stdr_sample_check( struct unur_gen *gen )
      /*   return 0.                                                          */
      /*----------------------------------------------------------------------*/
 { 
-  double u,v,x,xx,fx,y;
+  double U,V,X,xx,fx,y;
 
   /* check arguments */
   CHECK_NULL(gen,0.);  COOKIE_CHECK(gen,CK_STDR_GEN,0.);
 
   while (1) {
     /* uniform ~U(0,1) */
-    u = GEN.Aleft + _unur_call_urng(gen) * GEN.Ain;
-    if (u==0.) continue;
+    while ( (U = GEN.Aleft + _unur_call_urng(gen) * GEN.Ain) == 0. );
 
-    if (u < GEN.al) {        /* first part */
-      x = - GEN.vl * GEN.vl / u;
-      y = (u / GEN.vl);
+    if (U < GEN.al) {        /* first part */
+      X = - GEN.vl * GEN.vl / U;
+      y = (U / GEN.vl);
       y = y*y;
     }
-    else if (u <= GEN.ar) {  /* second part */
-      x = GEN.xl + (u-GEN.al)/GEN.fm;
+    else if (U <= GEN.ar) {  /* second part */
+      X = GEN.xl + (U-GEN.al)/GEN.fm;
       y = GEN.fm;
     }
     else {                   /* third part */
-      x = GEN.vr * GEN.vr / (GEN.um * GEN.vr - (u-GEN.ar));
-      y = (GEN.A - u) / GEN.vr;
+      X = GEN.vr * GEN.vr / (GEN.um * GEN.vr - (U-GEN.ar));
+      y = (GEN.A - U) / GEN.vr;
       y = y*y;
     }
 
     /* compute pdf at x */
-    fx = PDF(x + DISTR.mode);
+    fx = PDF(X + DISTR.mode);
 
     /* verify hat function */
-    if (fx > y)
+    if ( (1.+DBL_EPSILON) * y < fx )
       _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"pdf(x) > hat(x)");
 
     /* accept or reject */
-    v = _unur_call_urng(gen);
-    y *= v;
+    V = _unur_call_urng(gen);
+    y *= V;
 
     /* evaluate squeeze */
     if (gen->variant & STDR_VARFLAG_SQUEEZE) {
-      xx = 2 * x;
-      if ( x >= GEN.xl && x <= GEN.xr && y <= GEN.fm/4. )
-	return (x + DISTR.mode);
+      xx = 2 * X;
+      if ( xx >= GEN.xl && xx <= GEN.xr && y <= GEN.fm/4. )
+	return (X + DISTR.mode);
     }
 
     /* Compute X */
-    x += DISTR.mode;
+    X += DISTR.mode;
 
     /* evaluate p.d.f. */
     if (y <= fx)
-      return x;
+      return X;
   }
     
 } /* end of _unur_stdr_sample_check() */
@@ -589,71 +1009,6 @@ _unur_stdr_free( struct unur_gen *gen )
 /*****************************************************************************/
 /**  Auxilliary Routines                                                    **/
 /*****************************************************************************/
-
-static struct unur_gen *
-_unur_stdr_create( struct unur_par *par )
-     /*----------------------------------------------------------------------*/
-     /* allocate memory for generator                                        */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   par ... pointer to parameter for building generator object         */
-     /*                                                                      */
-     /* return:                                                              */
-     /*   pointer to (empty) generator object with default settings          */
-     /*                                                                      */
-     /* error:                                                               */
-     /*   return NULL                                                        */
-     /*----------------------------------------------------------------------*/
-{
-  struct unur_gen *gen;
-
-  /* check arguments */
-  CHECK_NULL(par,NULL);  COOKIE_CHECK(par,CK_STDR_PAR,NULL);
-
-  /* allocate memory for generator object */
-  gen = _unur_malloc( sizeof(struct unur_gen) );
-
-  /* magic cookies */
-  COOKIE_SET(gen,CK_STDR_GEN);
-
-  /* copy distribution object into generator object */
-  memcpy( &(gen->distr), par->distr, sizeof( struct unur_distr ) );
-
-  /* copy generator identifier */
-  gen->genid = par->genid;
-
-  /* routines for sampling and destroying generator */
-  SAMPLE = (par->variant & STDR_VARFLAG_VERIFY) ? _unur_stdr_sample_check : _unur_stdr_sample;
-  gen->destroy = _unur_stdr_free;
-  gen->reinit = _unur_reinit_error;
-
-  /* mode must be in domain */
-  if ( (DISTR.mode < DISTR.BD_LEFT) ||
-       (DISTR.mode > DISTR.BD_RIGHT) ) {
-    /* there is something wrong.
-       assume: user has change domain without changing mode.
-       but then, she probably has not updated area and is to large */
-    _unur_warning(par->genid,UNUR_ERR_GEN_DATA,"area and/or cdf at mode");
-    DISTR.mode = max(DISTR.mode,DISTR.BD_LEFT);
-    DISTR.mode = min(DISTR.mode,DISTR.BD_RIGHT);
-  }
-
-  gen->method = par->method;        /* indicates method                      */
-  gen->variant = par->variant;      /* indicates variant                     */
-  gen->set = par->set;              /* indicates parameter settings          */
-  gen->debug = par->debug;          /* debuging flags                        */
-  gen->urng = par->urng;            /* pointer to urng                       */
-
-  gen->urng_aux = NULL;             /* no auxilliary URNG required           */
-  gen->gen_aux = NULL;              /* no auxilliary generator objects       */
-  gen->gen_aux_2 = NULL;
-
-  /* initialize parameters */
-
-  /* return pointer to (almost empty) generator object */
-  return(gen);
-
-} /* end of _unur_stdr_create() */
 
 /*****************************************************************************/
 /**  Debugging utilities                                                    **/
@@ -695,7 +1050,7 @@ _unur_stdr_debug_init( struct unur_par *par, struct unur_gen *gen )
   /*   fprintf(log,"_mirror"); */
   fprintf(log,"()\n%s:\n",gen->genid);
 
-  if (par->set & STDR_SET_FMODE)
+  if (par->set & STDR_SET_CDFMODE)
     fprintf(log,"%s: c.d.f. at mode = %g\n",gen->genid,PAR.Fmode);
   else
     fprintf(log,"%s: c.d.f. at mode unknown\n",gen->genid);

@@ -125,7 +125,8 @@
 /*---------------------------------------------------------------------------*/
 /* Flags for logging set calls                                               */
 
-#define SROU_SET_FMODE        0x001u   /* cdf at mode is known               */
+#define SROU_SET_CDFMODE      0x001u   /* cdf at mode is known               */
+#define SROU_SET_PDFMODE      0x002u   /* pdf at mode is set                 */
 
 /*---------------------------------------------------------------------------*/
 
@@ -140,7 +141,7 @@ static struct unur_gen *_unur_srou_init( struct unur_par *par );
 
 static int _unur_srou_rectangle( struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
-/* compute universal bounding rectangle                                      */
+/* compute universal bounding rectangle.                                     */
 /*---------------------------------------------------------------------------*/
 
 static struct unur_gen *_unur_srou_create( struct unur_par *par );
@@ -153,9 +154,9 @@ static int _unur_srou_reinit( struct unur_gen *gen );
 /* Re-initialize (existing) generator.                                       */
 /*---------------------------------------------------------------------------*/
 
-double _unur_srou_sample( UNUR_GEN *generator );
-double _unur_srou_sample_mirror( UNUR_GEN *generator );
-double _unur_srou_sample_check( UNUR_GEN *generator );
+static double _unur_srou_sample( UNUR_GEN *generator );
+static double _unur_srou_sample_mirror( UNUR_GEN *generator );
+static double _unur_srou_sample_check( UNUR_GEN *generator );
 /*---------------------------------------------------------------------------*/
 /* sample from generator                                                     */
 /*---------------------------------------------------------------------------*/
@@ -192,6 +193,7 @@ static void _unur_srou_debug_init( struct unur_par *par, struct unur_gen *gen );
 #define SAMPLE    gen->sample.cont      /* pointer to sampling routine       */     
 
 #define PDF(x) ((*(DISTR.pdf))((x),DISTR.params,DISTR.n_params))    /* call to p.d.f. */
+#define CDF(x) ((*(DISTR.cdf))((x),DISTR.params,DISTR.n_params))    /* call to c.d.f. */
 
 /*---------------------------------------------------------------------------*/
 /* constants                                                                 */
@@ -245,7 +247,8 @@ unur_srou_new( struct unur_distr *distr )
   par->distr    = distr;      /* pointer to distribution object              */
 
   /* set default values */
-  PAR.Fmode     = -1.;        /* c.d.f. at mode (unknown yet)                */
+  PAR.Fmode     = -1.;                /* c.d.f. at mode (unknown yet)        */
+  PAR.fmode     = -1.;                /* p.d.f. at mode (unknown yet)        */
 
   par->method   = UNUR_METH_SROU;     /* method and default variant          */
   par->variant  = 0u;                 /* default variant                     */
@@ -266,7 +269,7 @@ unur_srou_new( struct unur_distr *distr )
 /*****************************************************************************/
 
 int 
-unur_srou_set_Fmode( struct unur_par *par, double Fmode )
+unur_srou_set_cdfatmode( struct unur_par *par, double Fmode )
      /*----------------------------------------------------------------------*/
      /* set value of cdf at mode                                             */
      /*                                                                      */
@@ -295,11 +298,49 @@ unur_srou_set_Fmode( struct unur_par *par, double Fmode )
   PAR.Fmode = Fmode;
 
   /* changelog */
-  par->set |= SROU_SET_FMODE;
+  par->set |= SROU_SET_CDFMODE;
 
   return 1;
 
-} /* end of unur_srou_set_Fmode() */
+} /* end of unur_srou_set_cdfatmode() */
+
+/*---------------------------------------------------------------------------*/
+
+int 
+unur_srou_set_pdfatmode( UNUR_PAR *par, double fmode )
+     /*----------------------------------------------------------------------*/
+     /* Set pdf at mode. if set the p.d.f. at the mode is never changed.     */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par   ... pointer to parameter for building generator object       */
+     /*   fmode ... pdf at mode                                              */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... on success                                                   */
+     /*   0 ... on error                                                     */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( GENTYPE,par,0 );
+
+  /* check input */
+  _unur_check_par_object( par,SROU );
+
+  /* check new parameter for generator */
+  if (fmode <= 0.) {
+    _unur_warning(par->genid,UNUR_ERR_PAR_SET,"pdf(mode)");
+    return 0;
+  }
+
+  /* store date */
+  PAR.fmode = fmode;
+
+  /* changelog */
+  par->set |= SROU_SET_PDFMODE;
+
+  return 1;
+
+} /* end of unur_srou_set_pdfatmode() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -444,7 +485,7 @@ unur_srou_chg_pdfparams( struct unur_gen *gen, double *params, int n_params )
      but the user is responsible to change it.
      so we dont say:
      gen->distr.set &= ~(UNUR_DISTR_SET_MODE | UNUR_DISTR_SET_PDFAREA );
-     gen->set &= ~SROU_SET_FMODE;
+     gen->set &= ~SROU_SET_CDFMODE;
   */
 
   /* o.k. */
@@ -483,7 +524,7 @@ unur_srou_chg_mode( struct unur_gen *gen, double mode )
 /*---------------------------------------------------------------------------*/
 
 int
-unur_srou_chg_Fmode( struct unur_gen *gen, double Fmode )
+unur_srou_chg_cdfatmode( struct unur_gen *gen, double Fmode )
      /*----------------------------------------------------------------------*/
      /* change value of cdf at mode                                          */
      /*                                                                      */
@@ -510,11 +551,47 @@ unur_srou_chg_Fmode( struct unur_gen *gen, double Fmode )
   GEN.Fmode = Fmode;
 
   /* changelog */
-  gen->set |= SROU_SET_FMODE;
+  gen->set |= SROU_SET_CDFMODE;
 
   /* o.k. */
   return 1;
-} /* end of unur_srou_chg_Fmode() */
+} /* end of unur_srou_chg_cdfatmode() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+unur_srou_chg_pdfatmode( struct unur_gen *gen, double fmode )
+     /*----------------------------------------------------------------------*/
+     /* change value of pdf at mode                                          */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen   ... pointer to generator object                              */
+     /*   fmode ... pdf at mode                                              */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... on success                                                   */
+     /*   0 ... on error                                                     */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  CHECK_NULL(gen,0);
+  _unur_check_gen_object( gen,SROU );
+
+  /* check new parameter for generator */
+  if (fmode <= 0.) {
+    _unur_warning(gen->genid,UNUR_ERR_PAR_SET,"pdf(mode)");
+    return 0;
+  }
+
+  /* store date */
+  GEN.fmode = fmode;
+
+  /* changelog */
+  gen->set |= SROU_SET_PDFMODE;
+
+  /* o.k. */
+  return 1;
+} /* end of unur_srou_chg_pdfatmode() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -579,8 +656,8 @@ unur_srou_chg_pdfarea( struct unur_gen *gen, double area )
   _unur_check_gen_object( gen,SROU );
   
   /* check new parameter for generator */
-  if (area < 0.) {
-    _unur_warning(NULL,UNUR_ERR_DISTR_SET,"area < 0");
+  if (area <= 0.) {
+    _unur_warning(NULL,UNUR_ERR_DISTR_SET,"area <= 0");
     return 0;
   }
 
@@ -611,7 +688,6 @@ _unur_srou_init( struct unur_par *par )
      /*----------------------------------------------------------------------*/
 { 
   struct unur_gen *gen;
-  double vm, fm;             /* width of rectangle, pdf at mode              */
 
   /* check arguments */
   _unur_check_NULL( GENTYPE,par,NULL );
@@ -622,43 +698,23 @@ _unur_srou_init( struct unur_par *par )
     return NULL; }
   COOKIE_CHECK(par,CK_SROU_PAR,NULL);
 
+  if (par->set & SROU_SET_CDFMODE)
+    /* cdf at mode known -->
+       thus it does not make sense to use the mirror principle */
+    par->variant &= ~SROU_VARFLAG_MIRROR;
+  else
+    /* cdf at mode unknown -->
+       thus we cannot use universal squeeze */
+    par->variant &= ~SROU_VARFLAG_SQUEEZE;
+
   /* create a new empty generator object */
   gen = _unur_srou_create(par);
   if (!gen) { free(par); return NULL; }
 
-  /* compute pdf at mode */
-  fm = PDF(DISTR.mode);
-
-  /* fm must be positive */
-  if (fm <= 0.) {
-    _unur_error(par->genid,UNUR_ERR_GEN_DATA,"pdf(mode) <= 0.");
+  /* compute universal bounding rectangle */
+  if (! _unur_srou_rectangle( gen ) ) {
     free(par); _unur_srou_free(gen);
     return NULL;
-  }
-
-  /* height of rectangle */
-  GEN.um = sqrt(fm);
-
-  /* width of rectangle */
-  vm = DISTR.area / GEN.um;
-
-  if (par->set & SROU_SET_FMODE) {
-    /* cdf at mode known */
-    GEN.vl = -PAR.Fmode * vm;
-    GEN.vr = vm + GEN.vl;
-    GEN.xl = GEN.vl/GEN.um;
-    GEN.xr = GEN.vr/GEN.um;
-    /* it does not make sense to use the mirror principle */
-    gen->variant &= ~SROU_VARFLAG_MIRROR;
-  }
-  else {
-    /* cdf at mode unknown */
-    GEN.vl = -vm;
-    GEN.vr = vm;
-    GEN.xl = GEN.vl/GEN.um;
-    GEN.xr = GEN.vr/GEN.um;
-    /* we cannot use universal squeeze */
-    gen->variant &= ~SROU_VARFLAG_SQUEEZE;
   }
 
 #ifdef UNUR_ENABLE_LOGGING
@@ -694,29 +750,29 @@ _unur_srou_rectangle( struct unur_gen *gen )
   CHECK_NULL( gen, 0 );
   COOKIE_CHECK( gen,CK_SROU_GEN, 0 );
 
-  /* compute pdf at mode */
-  fm = PDF(DISTR.mode);
-
-  /* fm must be positive */
-  if (fm <= 0.) {
-    _unur_warning(gen->genid,UNUR_ERR_GEN_DATA,"pdf(mode) <= 0.");
-    return 0;
+  /* compute pdf at mode (if not given by user) */
+  if (!(gen->set & SROU_SET_PDFMODE)) {
+    fm = PDF(DISTR.mode);
+    /* fm must be positive */
+    if (fm <= 0.) {
+      _unur_warning(gen->genid,UNUR_ERR_GEN_DATA,"pdf(mode) <= 0.");
+      return 0;
+    }
+    GEN.fmode = fm;
   }
 
   /* height of rectangle */
-  GEN.um = sqrt(fm);
+  GEN.um = sqrt(GEN.fmode);
 
   /* width of rectangle */
   vm = DISTR.area / GEN.um;
 
-  if (gen->set & SROU_SET_FMODE) {
+  if (gen->set & SROU_SET_CDFMODE) {
     /* cdf at mode known */
     GEN.vl = -GEN.Fmode * vm;
     GEN.vr = vm + GEN.vl;
     GEN.xl = GEN.vl/GEN.um;
     GEN.xr = GEN.vr/GEN.um;
-    /* it does not make sense to use the mirror principle */
-    gen->variant &= ~SROU_VARFLAG_MIRROR;
   }
   else {
     /* cdf at mode unknown */
@@ -793,6 +849,7 @@ _unur_srou_create( struct unur_par *par )
 
   /* copy some parameters into generator object */
   GEN.Fmode = PAR.Fmode;            /* cdf at mode                           */
+  GEN.fmode = PAR.fmode;            /* pdf at mode                           */
 
   gen->method = par->method;        /* indicates method                      */
   gen->variant = par->variant;      /* indicates variant                     */
@@ -830,10 +887,9 @@ _unur_srou_reinit( struct unur_gen *gen )
   CHECK_NULL(gen,0);
   _unur_check_gen_object( gen,SROU );
 
+  /* compute universal bounding rectangle */
+  return _unur_srou_rectangle( gen );
 
-
-
-  return _unur_reinit_error(gen);
 } /* end of _unur_srou_reinit() */
 
 /*****************************************************************************/
@@ -1140,7 +1196,7 @@ _unur_srou_debug_init( struct unur_par *par, struct unur_gen *gen )
     fprintf(log,"_mirror");
   fprintf(log,"()\n%s:\n",gen->genid);
 
-  if (par->set & SROU_SET_FMODE)
+  if (par->set & SROU_SET_CDFMODE)
     fprintf(log,"%s: F(mode) = %g\n",gen->genid,PAR.Fmode);
   else
     fprintf(log,"%s: F(mode) unknown\n",gen->genid);

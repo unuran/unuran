@@ -41,7 +41,8 @@
 /* Information for constructing the generator                                */
 
 struct unur_srou_par { 
-  double Fmode;              /* cdf at mode                                  */
+  double  Fmode;             /* cdf at mode                                  */
+  double  fmode;             /* pdf at mode                                  */
 };
 
 /*---------------------------------------------------------------------------*/
@@ -52,6 +53,7 @@ struct unur_srou_gen {
   double  vl, vr;            /* left and right boundary of rectangle         */
   double  xl, xr;            /* ratios vl/um and vr/um                       */
   double  Fmode;             /* cdf at mode                                  */
+  double  fmode;             /* pdf at mode                                  */
 };
 
 /*---------------------------------------------------------------------------*/

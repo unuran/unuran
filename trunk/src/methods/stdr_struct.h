@@ -42,6 +42,7 @@
 
 struct unur_stdr_par { 
   double Fmode;              /* cdf at mode                                  */
+  double fm;                 /* cdf at mode                                  */
 };
 
 /*---------------------------------------------------------------------------*/
@@ -55,6 +56,7 @@ struct unur_stdr_gen {
   double  al, ar;            /* areas below hat in first and secont part     */
   double  A;                 /* area below hat                               */
   double  Aleft, Ain;        /* areas below hat in left tails and inside domain of pdf */
+  double  Fmode;             /* cdf at mode                                  */
 };
 
 /*---------------------------------------------------------------------------*/

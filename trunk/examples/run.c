@@ -123,7 +123,7 @@ int main()
   //distr_xxx = unur_distr_laplace(fpar,1);
 
   par = unur_srou_new(distr_xxx);
-  unur_srou_set_Fmode(par,0.5);
+  unur_srou_set_cdfatmode(par,0.5);
   unur_srou_set_verify(par,1);
   unur_run_tests(par,RUN_TESTS);
   
@@ -559,7 +559,7 @@ int main()
 
   par = unur_srou_new(distr_normal);
 
-  unur_srou_set_Fmode(par,unur_distr_cont_cdf(distr_normal,unur_distr_cont_get_mode(distr_normal)));
+  unur_srou_set_cdfatmode(par,unur_distr_cont_cdf(distr_normal,unur_distr_cont_get_mode(distr_normal)));
   unur_srou_set_usesqueeze(par,1);
 /*    unur_srou_set_usemirror(par,1); */
   unur_srou_set_verify(par,1);
@@ -575,7 +575,7 @@ int main()
 
   par = unur_stdr_new(distr_normal);
 
-  unur_stdr_set_Fmode(par,unur_distr_cont_cdf(distr_normal,unur_distr_cont_get_mode(distr_normal)));
+  unur_stdr_set_cdfatmode(par,unur_distr_cont_cdf(distr_normal,unur_distr_cont_get_mode(distr_normal)));
   unur_stdr_set_usesqueeze(par,1);
 /*    unur_stdr_set_verify(par,1); */
   
@@ -676,7 +676,7 @@ int main()
 
   par = unur_srou_new(distr_gamma);
 
-  unur_srou_set_Fmode(par,unur_distr_cont_cdf(distr_gamma,unur_distr_cont_get_mode(distr_gamma)));
+  unur_srou_set_cdfatmode(par,unur_distr_cont_cdf(distr_gamma,unur_distr_cont_get_mode(distr_gamma)));
   unur_srou_set_usesqueeze(par,1);
 /*    unur_srou_set_usemirror(par,1); */
   unur_srou_set_verify(par,1);
@@ -692,7 +692,7 @@ int main()
 
   par = unur_stdr_new(distr_gamma);
 
-  unur_stdr_set_Fmode(par,unur_distr_cont_cdf(distr_gamma,unur_distr_cont_get_mode(distr_gamma)));
+  unur_stdr_set_cdfatmode(par,unur_distr_cont_cdf(distr_gamma,unur_distr_cont_get_mode(distr_gamma)));
   unur_stdr_set_usesqueeze(par,1);
 /*    unur_stdr_set_verify(par,1); */
 
@@ -795,7 +795,7 @@ int main()
 
   par = unur_srou_new(distr_beta);
 
-  unur_srou_set_Fmode(par,unur_distr_cont_cdf(distr_beta,unur_distr_cont_get_mode(distr_beta)));
+  unur_srou_set_cdfatmode(par,unur_distr_cont_cdf(distr_beta,unur_distr_cont_get_mode(distr_beta)));
   unur_srou_set_usesqueeze(par,1);
 /*    unur_srou_set_usemirror(par,1); */
   unur_srou_set_verify(par,1);
@@ -810,7 +810,7 @@ int main()
 #if RUN_STDR == 1
 
   par = unur_stdr_new(distr_beta);
-  unur_stdr_set_Fmode(par,unur_distr_cont_cdf(distr_beta,unur_distr_cont_get_mode(distr_beta)));
+  unur_stdr_set_cdfatmode(par,unur_distr_cont_cdf(distr_beta,unur_distr_cont_get_mode(distr_beta)));
   unur_stdr_set_usesqueeze(par,1);
 /*    unur_stdr_set_verify(par,1); */
 
@@ -924,7 +924,7 @@ int main()
 
   par = unur_srou_new(distr_cauchy);
 
-  unur_srou_set_Fmode(par,unur_distr_cont_cdf(distr_cauchy,unur_distr_cont_get_mode(distr_cauchy)));
+  unur_srou_set_cdfatmode(par,unur_distr_cont_cdf(distr_cauchy,unur_distr_cont_get_mode(distr_cauchy)));
   unur_srou_set_usesqueeze(par,1);
 /*    unur_srou_set_usemirror(par,1); */
   unur_srou_set_verify(par,1);
@@ -940,7 +940,7 @@ int main()
 
   par = unur_stdr_new(distr_cauchy);
 
-  unur_stdr_set_Fmode(par,unur_distr_cont_cdf(distr_cauchy,unur_distr_cont_get_mode(distr_cauchy)));
+  unur_stdr_set_cdfatmode(par,unur_distr_cont_cdf(distr_cauchy,unur_distr_cont_get_mode(distr_cauchy)));
   unur_stdr_set_usesqueeze(par,1);
 /*    unur_stdr_set_verify(par,1); */
 
@@ -1035,7 +1035,7 @@ int main()
 
   par = unur_srou_new(distr_uniform);
 
-  unur_srou_set_Fmode(par,unur_distr_cont_cdf(distr_uniform,unur_distr_cont_get_mode(distr_uniform)));
+  unur_srou_set_cdfatmode(par,unur_distr_cont_cdf(distr_uniform,unur_distr_cont_get_mode(distr_uniform)));
   unur_srou_set_usesqueeze(par,1);
 /*    unur_srou_set_usemirror(par,1); */
   unur_srou_set_verify(par,1);
@@ -1051,7 +1051,7 @@ int main()
 
   par = unur_stdr_new(distr_uniform);
 
-  unur_stdr_set_Fmode(par,unur_distr_cont_cdf(distr_uniform,unur_distr_cont_get_mode(distr_uniform)));
+  unur_stdr_set_cdfatmode(par,unur_distr_cont_cdf(distr_uniform,unur_distr_cont_get_mode(distr_uniform)));
   unur_stdr_set_usesqueeze(par,1);
 /*    unur_stdr_set_verify(par,1); */
 

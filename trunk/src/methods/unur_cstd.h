@@ -115,7 +115,3 @@ int unur_cstd_chg_domain( UNUR_GEN *generator, double left, double right );
 
 /* =END */
 /*---------------------------------------------------------------------------*/
-
-
-
-

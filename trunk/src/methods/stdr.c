@@ -395,7 +395,7 @@ unur_stdr_chg_pdfparams( struct unur_gen *gen, double *params, int n_params )
   /* check arguments */
   CHECK_NULL(gen,0);
   _unur_check_gen_object( gen,STDR );
-  if (n_params>0) CHECK_NULL(params,0);
+  if (n_params>0) _unur_check_NULL(gen->genid,params,0);
   
   /* check new parameter for generator */
   if (n_params > UNUR_DISTR_MAXPARAMS ) {

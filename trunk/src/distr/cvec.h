@@ -203,6 +203,9 @@ const double *unur_distr_cvec_get_covar( const UNUR_DISTR *distribution );
    covariance matrix!
 */
 
+const double *unur_distr_cvec_get_cholesky( const UNUR_DISTR *distribution );
+const double *unur_distr_cvec_get_covar_inv( const UNUR_DISTR *distribution );
+
 int unur_distr_cvec_set_pdfparams( UNUR_DISTR *distribution, int par, const double *params, int n_params );
 /* 
    This function provides an interface for additional parameters for a
@@ -281,6 +284,8 @@ double unur_distr_cvec_get_pdfvol( const UNUR_DISTR *distribution );
    it. If this is not successful @code{UNUR_INFINITY} is returned and
    @code{unur_errno} is set to @code{UNUR_ERR_DISTR_GET}.
 */
+
+
 
 /* =END */
 

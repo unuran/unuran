@@ -43,6 +43,7 @@
 #include "distr_source.h"
 #include "distr.h"
 #include "cvec.h"
+#include <utils/matrix_source.h>
 
 /*---------------------------------------------------------------------------*/
 
@@ -129,6 +130,8 @@ unur_distr_cvec_new( int dim )
   /* initialize parameters of the PDF                                        */
   DISTR.mean  = NULL;              /* default is zero vector                 */
   DISTR.covar = NULL;              /* default is identity matrix             */
+  DISTR.cholesky = NULL;           /* pointer to cholesky decomposition      */
+  DISTR.covar_inv = NULL;          /* pointer to inverse cholesky matrix     */
 
   for (i=0; i<UNUR_DISTR_MAXPARAMS; i++) {
     DISTR.n_params[i] = 0;
@@ -189,6 +192,16 @@ _unur_distr_cvec_clone( const struct unur_distr *distr )
     memcpy( CLONE.covar, DISTR.covar, distr->dim * distr->dim * sizeof(double) );
   }
 
+  if (DISTR.cholesky) {
+    CLONE.cholesky = _unur_malloc( distr->dim * distr->dim * sizeof(double) );
+    memcpy( CLONE.cholesky, DISTR.cholesky, distr->dim * distr->dim * sizeof(double) );
+  }
+
+  if (DISTR.covar_inv) {
+    CLONE.covar_inv = _unur_malloc( distr->dim * distr->dim * sizeof(double) );
+    memcpy( CLONE.covar_inv, DISTR.covar_inv, distr->dim * distr->dim * sizeof(double) );
+  }
+
   if (DISTR.mode) {
     CLONE.mode = _unur_malloc( distr->dim * sizeof(double) );
     memcpy( CLONE.mode, DISTR.mode, distr->dim * sizeof(double) );
@@ -237,7 +250,11 @@ _unur_distr_cvec_free( struct unur_distr *distr )
     if (DISTR.params[i]) free( DISTR.params[i] );
 
   if (DISTR.mean)  free(DISTR.mean); 
+
   if (DISTR.covar) free(DISTR.covar);
+  if (DISTR.covar_inv) free(DISTR.covar_inv);
+  if (DISTR.cholesky) free(DISTR.cholesky);
+
   if (DISTR.mode)  free(DISTR.mode);
 
   /* user name for distribution */
@@ -526,27 +543,45 @@ unur_distr_cvec_set_covar( struct unur_distr *distr, const double *covar )
 	  _unur_error(distr->name ,UNUR_ERR_DISTR_DOMAIN,"covariance matrix not symmetric");
 	  return UNUR_ERR_DISTR_DOMAIN;
 	}
+
+
+    /* check for positive definitness */
+    /* during cholesky decomposition. */
+    if (DISTR.cholesky == NULL)
+      DISTR.cholesky = _unur_malloc( dim * dim * sizeof(double) );   
+
+    DISTR.cholesky = _unur_matrix_cholesky_decomposition((double *)covar, dim); 
+    
+    if (DISTR.cholesky==NULL) {
+	  _unur_error(distr->name ,UNUR_ERR_DISTR_DOMAIN,"covariance matrix not positive definite ?");
+	  return UNUR_ERR_DISTR_DOMAIN;      
+    }
+
   }
+
   /* else: covar == NULL --> use identity matrix */
 	
-  /* there is no check for positive definitness yet.        */
-  /* this can be done easily during cholesky decomposition. */
-
   /* we have to allocate memory first */
   if (DISTR.covar == NULL)
     DISTR.covar = _unur_malloc( dim * dim * sizeof(double) );
+  if (DISTR.cholesky == NULL)
+    DISTR.cholesky = _unur_malloc( dim * dim * sizeof(double) );   
 
   if (covar)
     /* covariance vector given --> copy data */
     memcpy( DISTR.covar, covar, dim * dim * sizeof(double) );
 
   else  /* covar == NULL --> use identity matrix instead */
-    for (i=0; i<dim; i++)
-      for (j=0; j<dim; j++)
+    for (i=0; i<dim; i++) {
+      for (j=0; j<dim; j++) {
       	DISTR.covar[i*dim + j] = (i==j) ? 1. : 0.;
-
+        DISTR.cholesky[i*dim+j] = (i==j) ? 1. : 0.;
+      } 
+    } 
   /* changelog */
   distr->set |= UNUR_DISTR_SET_COVAR;
+
+  /* _unur_matrix_debug(DISTR.cholesky, dim, "cholesky"); */
 
   /* o.k. */
   return UNUR_SUCCESS;
@@ -579,6 +614,75 @@ unur_distr_cvec_get_covar( const struct unur_distr *distr )
   return DISTR.covar;
 
 } /* end of unur_distr_cvec_get_covar() */
+
+/*---------------------------------------------------------------------------*/
+
+const double *
+unur_distr_cvec_get_cholesky( const struct unur_distr *distr )
+     /*----------------------------------------------------------------------*/
+     /* get cholesky factor of the covariance matrix of distribution         */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   distr ... pointer to distribution object                           */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to cholesky factor                                         */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( NULL, distr, NULL );
+  _unur_check_distr_object( distr, CVEC, NULL );
+
+  /* covariance matrix known ? */
+  if ( !(distr->set & UNUR_DISTR_SET_COVAR) ) {
+    _unur_warning(distr->name,UNUR_ERR_DISTR_GET,"covariance matrix");
+    return NULL;
+  }
+
+  return DISTR.cholesky;
+
+} /* end of unur_distr_cvec_get_covar_cholesky() */
+
+/*---------------------------------------------------------------------------*/
+
+const double *
+unur_distr_cvec_get_covar_inv( const struct unur_distr *distr )
+     /*----------------------------------------------------------------------*/
+     /* get inverse covariance matrix of distribution                        */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   distr ... pointer to distribution object                           */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to inverse of covariance matrix                            */
+     /*----------------------------------------------------------------------*/
+{
+  double determinant;
+  int dim;
+
+  dim = distr->dim;
+
+  /* check arguments */
+  _unur_check_NULL( NULL, distr, NULL );
+  _unur_check_distr_object( distr, CVEC, NULL );
+
+  /* covariance matrix known ? */
+  if ( !(distr->set & UNUR_DISTR_SET_COVAR) ) {
+    _unur_warning(distr->name,UNUR_ERR_DISTR_GET,"covariance matrix");
+    return NULL;
+  }
+
+  /* calculate inverse covariance matrix */
+  if (DISTR.covar_inv == NULL)
+    DISTR.covar_inv = _unur_malloc( dim * dim * sizeof(double) );   
+  
+  _unur_matrix_invert_matrix(dim, DISTR.covar, DISTR.covar_inv, &determinant);
+
+  /* check if matrix inversion was successfull ... */
+
+  return DISTR.covar_inv;
+
+} /* end of unur_distr_cvec_get_covar_inv() */
 
 /*---------------------------------------------------------------------------*/
 

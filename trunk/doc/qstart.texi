@@ -239,39 +239,7 @@ After the example itself the relevant code will be explained.
 Name: test1.c
 
 @smallexample
-/* my first UNURAN program: test1.c*/
-
-#include <unuran.h>
-
-int main()
-@{
-  int    i;
-  double x;
-
-  UNUR_DISTR *distr;    /* distribution */
-  UNUR_PAR   *par;      /* parameter */
-  UNUR_GEN   *gen;      /* generator */
-
-  /* choose a implemented distribution: Gaussian */
-  distr = unur_distr_normal(NULL, 0);
-
-  /* choose method */
-  par = unur_arou_new(distr);
-
-  /* make generator object */
-  gen = unur_init(par);
-
-  /* sample: print 100 random numbers */
-  for (i=0; i<100; i++) @{
-    x = unur_sample_cont(gen);
-    printf("%f\n",x);
-  @}
-
-  /* destroy generator object */
-  unur_free(gen);
-
-  return 0;
-@}    
+@include qstart_test1.texi
 @end smallexample
 @*
 First you have to include the libraries @code{unuran.h} 
@@ -335,53 +303,7 @@ What you have to provide depends on the method used for sampling
 
 @page
 @smallexample
-/* my second UNURAN program test2.c */ 
-
-#include <unuran.h>
-
-/* desired cdf  -- piecewise parabolic */
-double mycdf (double x)
-@{
-   if (x <= 0.0)
-     return ( 0.0 );
-   else if (x <= 1.0)
-     return ( x*x/3.0 );
-   else if (x <= 3.0)
-     return( ((-x+6.0)*x-3.0)/6.0 );
-   else
-     return ( 1.0 );
-@}  
-
-int main()
-@{
-  double x;
-  int    i;
-
-  UNUR_DISTR *distr;  /* distribution */ 
-  UNUR_PAR   *par;    /* parameter    */
-  UNUR_GEN   *gen;    /* generator    */
- 
-  /* make distribution object and assign desired cdf (trig defined above) */
-  distr = unur_distr_new(UNUR_DISTR_CONT);
-  unur_distr_cont_set_cdf(distr, mycdf);
-
-  /* choose method and set parameters (Numerical INVersion) */
-  par = unur_ninv_new(distr);
- 
-  /* make generator object */
-  gen = unur_init(par);
-
-  /* print 100 random numbers */
-  for (i=0;i<100;i++) @{
-  x = unur_sample_cont(gen);
-  printf("%f\n",x);
-  @}
-
-  /* destroy generator object */
-  unur_free(gen);
-
-  exit (0);
-@}
+@include qstart_test2.texi
 @end smallexample
 @*
 The following lines represent a subroutine providing the
@@ -436,44 +358,7 @@ it's possible to change a specific parameters (see @ref{Function Reference});
 The important lines are in bold face.
 
 @smallexample
-/* my third UNURAN program test3.c */ 
-
-#include <unuran.h>
-
-int main()
-@{
-  int    i;
-  double x;
-  double params[2] = @{10.0, 0.5@};
-
-  UNUR_DISTR *distr;    /* distribution */
-  UNUR_PAR   *par;      /* parameter */
-  UNUR_GEN   *gen;      /* generator */
-
-  /* choose Gaussian distribution with parameters 10.0 and 0.5 */
-  distr = unur_distr_normal(params, 2);
-
-  /* choose method */
-  par = unur_ninv_new(distr);
-
-  /* change a parameter of the used method */
-  unur_ninv_use_newton(par);
-
-  /* make generator object */
-  gen = unur_init(par);
-
-  /* sample: print 100 random numbers */
-  for (i=0; i<100; i++) @{
-    x = unur_sample_cont(gen);
-    printf("%f\n",x);
-  @}
-
-  /* destroy generator object */
-  unur_free(gen);
-
-  return 0;
-@}
-
+@include qstart_test3.texi
 @end smallexample
 @*
 This example is similar to the first example.
@@ -506,46 +391,7 @@ uniformly distributed random numbers
 
 @noindent Name: test4.c
 @smallexample
-/* my fourth UNURAN program: test4.c*/
-
-#include <unuran.h>
-
-int main()
-@{
-  int    i;
-  double x;
-
-  UNUR_DISTR *distr;    /* distribution */
-  UNUR_PAR   *par;      /* parameter */
-  UNUR_GEN   *gen;      /* generator */
-  UNUR_URNG  *ug;       /* uniform generator */
-
-  /* choose kind of uniform generator: Mersenne Twister */
-  ug =  prng_new("mt19937(1237)");
-
-  /* choose a implemented distribution: Gaussian */
-  distr = unur_distr_normal(NULL, 0);
-
-  /* choose method */
-  par = unur_arou_new(distr);
-
-  /* Set uniform generator in parameter object */   
-  unur_set_urng(par, ug);    
-
-  /* make generator object */
-  gen = unur_init(par);
-
-  /* sample: print 100 random numbers */
-  for (i=0; i<100; i++) @{
-    x = unur_sample_cont(gen);
-    printf("%f\n",x);
-  @}
-
-  /* destroy generator object */
-  unur_free(gen);
-
-  return 0;
-@}    
+@include qstart_test4.texi
 @end smallexample
 
 

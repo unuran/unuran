@@ -18,7 +18,7 @@
 
 #define _unur_FP_equal(a,b) \
  ((a)==(b) || \
- fabs((a)-(b)) <= ((fabs(a)<fabs(b))?fabs(a):fabs(b)) * UNUR_EPSILON)
+ fabs((a)-(b)) <= ((fabs(a)<fabs(b))?fabs(a):fabs(b)) * 100. * DBL_EPSILON)
 
 /*---------------------------------------------------------------------------*/
 /* check for invalid NULL pointer, that should not happen in this program */

@@ -40,16 +40,36 @@ int main()
   printf("/*---------------------------------------------------------------------------*/\n");
   printf("#ifndef __SOURCE_FP_CONST_H_SEEN\n");
   printf("#define __SOURCE_FP_CONST_H_SEEN\n");
-  printf("/*---------------------------------------------------------------------------*/\n");
+  printf("/*---------------------------------------------------------------------------*/\n\n");
+
+
+  /* Epsilon for comparision of two doubles:                                   */
+  /* Two doubles are considered equal if there relative difference is          */
+  /* less than UNUR_EPSILON (see file `./methods/source_fp.h' for details).    */
+  /* Use 100 times DBL_EPSILON.                                                */
+
+  printf("/* maximal relative error when testing equality of two doubles */\n");
+  printf("#define UNUR_EPSILON  %.30g\n\n", 100.*DBL_EPSILON);
+
+
+  /* Square root of machine epsilon. It is used to compare two doubles         */
+  /* when round-off errors have to be considered                               */
+  /* (see file `./methods/source_fp.h' for details).                           */
+
+  printf("/* square root of DBL_EPSILON */\n");  
+  printf("#define UNUR_SQRT_DBL_EPSILON   %.30g\n\n", sqrt(DBL_EPSILON));
+
+
+  /* Constants used by CEPHES functions */
 
   printf("/* the machine roundoff error */\n");  
-  printf("#define MACHEP  %.30g\n\n",DBL_EPSILON/2.);
+  printf("#define MACHEP  %.30g\n\n", DBL_EPSILON/2.);
 
   printf("/* largest argument for exp() */\n");
-  printf("#define MAXLOG  %.30g\n\n",log(DBL_MAX)); 
+  printf("#define MAXLOG  %.30g\n\n", log(DBL_MAX)); 
 
   printf("/* smallest argument for exp() without underflow */\n");
-  printf("#define MINLOG  %.30g\n\n",log(DBL_MIN)); 
+  printf("#define MINLOG  %.30g\n\n", log(DBL_MIN)); 
 
   printf("/* the maximal number that pow(x,x-0.5) has no overflow */\n");
   printf("/* we use a (very) conservative portable bound          */\n");

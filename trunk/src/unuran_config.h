@@ -48,7 +48,8 @@
 /*                                                                           */
 /* UNUR_URNG_PRNG:                                                           */
 /*     Use a pointer to a routine from the plab library                      */
-/*     (see http://random.mat.sbg.ac.at/ftp/pub/software/gen/)               */
+/*     (see http://random.mat.sbg.ac.at/ftp/pub/software/gen/ or             */
+/*     or http://statistik.wu-wien.ac.at/prng/)                              */
 /*                                                                           */
 /*---------------------------------------------------------------------------*/
 /* define the possible compiler switches                                     */
@@ -61,7 +62,7 @@
 #define UNUR_URNG_TYPE UNUR_URNG_PRNG
 
 /* IMPORTANT:                                                                */
-/* You must not use UNUR_URNG_PRNG if the prng library is not installed!     */
+/* You must *not* use UNUR_URNG_PRNG if the prng library is not installed!   */
 
 /*---------------------------------------------------------------------------*/
 /* Default name of uniform random number generator.                          */
@@ -92,6 +93,7 @@
 /*  #define UNUR_LOG_FILE "unuran.log" */
 #define UNUR_LOG_FILE "stdout"
 
+
 /*---------------------------------------------------------------------------*/
 /* Define this macro to switch on writing information about the              */
 /* generator into log file.                                                  */
@@ -99,6 +101,7 @@
 /* If no log file should be used at all, #undef this macro.                  */
 
 #define UNUR_ENABLE_LOGGING 1
+
 
 /*---------------------------------------------------------------------------*/
 /* Every message about a generator that is written into the log file or      */
@@ -111,6 +114,7 @@
 /* generator of the same type is created).                                   */
 
 #define UNUR_ENABLE_GENID  1
+
 
 /*---------------------------------------------------------------------------*/
 /* Set default flag for debugging of generators:                             */
@@ -155,6 +159,7 @@
 /* defined, then there are warnigs and error messages at all.                */
 /* However then it is recommend not to define UNUR_WARNINGS_ON, either.      */
 
+
 /*---------------------------------------------------------------------------*/
 /* Check for invalide NULL pointer.                                          */
 /*                                                                           */
@@ -166,6 +171,7 @@
 
 #define UNUR_ENABLE_CHECKNULL 1
 
+
 /*---------------------------------------------------------------------------*/
 /* Debugging tools.                                                          */
 /* (for development only. there is no need to set these flags unless         */
@@ -173,22 +179,6 @@
 
 /* use magic cookies to validate type of pointer */
 #define UNUR_COOKIES  1
-
-
-/*---------------------------------------------------------------------------*/
-/* Precision for floating point arithmetic                                   */
-
-/* Epsilon for comparision of two doubles:                                   */
-/* Two doubles are considered equal if there relative difference is          */
-/* less than UNUR_EPSILON (see file `./methods/source_fp.h' for details).    */
-
-#define UNUR_EPSILON  1e-14    /* should be about 100 * DBL_EPSILON          */
-
-/* Square root of machine epsilon. It is used to compare two doubles         */
-/* when round-off errors have to be considered                               */
-/* (see file `./methods/source_fp.h' for details).                           */
-
-#define UNUR_SQRT_DBL_EPSILON  FLT_EPSILON  /* should be about sqrt(DBL_EPS) */
 
 
 /*---------------------------------------------------------------------------*/

@@ -140,7 +140,7 @@ unur_stdgen_sample_geometric_inv( struct unur_gen *gen )
   int K;
 
   /* check arguments */
-  CHECK_NULL(gen,0.); COOKIE_CHECK(gen,CK_DSTD_GEN,0.);
+  CHECK_NULL(gen,0);  COOKIE_CHECK(gen,CK_DSTD_GEN,0);
 
   /* sample from uniform random number generator */
 /*    while ((U = GEN.umin + uniform() * (GEN.umax-GEN.umin)) == 0.); */

@@ -184,7 +184,7 @@ unur_stdgen_sample_logarithmic_lsk( struct unur_gen *gen )
   int K;
 
   /* check arguments */
-  CHECK_NULL(gen,0.); COOKIE_CHECK(gen,CK_DSTD_GEN,0.);
+  CHECK_NULL(gen,0);  COOKIE_CHECK(gen,CK_DSTD_GEN,0);
 
   U = uniform();
 

@@ -199,9 +199,8 @@ unur_stdgen_sample_poisson_pdtabl( struct unur_gen *gen )
   double U;
   int K,i;
 
-
   /* check arguments */
-  CHECK_NULL(gen,0.); COOKIE_CHECK(gen,CK_DSTD_GEN,0.);
+  CHECK_NULL(gen,0);  COOKIE_CHECK(gen,CK_DSTD_GEN,0);
   
   while (1) {
     U = uniform();              /* Step U. Uniform sample */

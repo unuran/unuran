@@ -101,7 +101,7 @@
 /*---------------------------------------------------------------------------*/
 
 /* this parameter define the maximal number of cones that will be created.   */
-#define VAROU_MAX_CONES 10000 
+#define VAROU_MAX_CONES 10000
 
 /* during the triangulation of the upper half-unit-sphere, this parameter    */
 /* define the maximal number of verteces that will be created during the     */
@@ -531,7 +531,6 @@ _unur_varou_clone( const struct unur_gen *gen )
 
   struct unur_gen *clone;
   long i;
-  int sizeof_cone_block; /* struct size + data size */
 
   /* check arguments */
   CHECK_NULL(gen,NULL);  COOKIE_CHECK(gen,CK_VAROU_GEN,NULL);
@@ -551,19 +550,13 @@ _unur_varou_clone( const struct unur_gen *gen )
     CLONE.vertex_list[i] = _unur_xmalloc((GEN.dim+1)*sizeof(double));
     memcpy(CLONE.vertex_list[i], GEN.vertex_list[i], (GEN.dim+1)*sizeof(double));
   }
-
-  /* calculete the total size of cone structure and parameter data */
-  sizeof_cone_block = sizeof(struct unur_varou_cone)
-                    + sizeof(long)*(GEN.dim+1)     /* vertex index  */
-                    + sizeof(double)*(GEN.dim+1)   /* lengths       */
-                    + sizeof(double)*(GEN.dim+1);  /* normal vector */
 		    
   /* allocate memory and copy data for the cone list */
   CLONE.cone_list = (struct unur_varou_cone **) 
                     _unur_xmalloc(VAROU_MAX_CONES*sizeof(long));
   for (i=0; i<GEN.n_cone; i++) {
     CLONE.cone_list[i] = _unur_varou_cone_new(GEN.dim);
-    memcpy(CLONE.cone_list[i], GEN.cone_list[i], sizeof_cone_block );
+    _unur_varou_cone_copy(GEN.dim, CLONE.cone_list[i], GEN.cone_list[i]);
   }
 
   /* copy other data */
@@ -573,6 +566,7 @@ _unur_varou_clone( const struct unur_gen *gen )
   CLONE.center = unur_distr_cvec_get_center(clone->distr);
   CLONE.n_vertex = GEN.n_vertex;
 
+ 
   return clone;
 
 #undef CLONE

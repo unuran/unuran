@@ -93,7 +93,6 @@ struct unur_funct_vgeneric {
 
 #include <utils/slist_struct.h>
 #include <utils/string_struct.h>
-#include <utils/vector_struct.h>
 
 /*****************************************************************************/
 /**  Declaration for parser                                                 **/

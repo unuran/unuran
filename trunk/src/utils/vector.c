@@ -38,20 +38,17 @@
 
 /*---------------------------------------------------------------------------*/
 
-/* allocate memory for new vector structure */
-UNUR_VECTOR *
+/* allocate memory for new vector */
+double *
 _unur_vector_new(int dim)
 {
   int i;
- 
-  UNUR_VECTOR *v;
-  v = _unur_xmalloc(sizeof(UNUR_VECTOR));
+  double *v;
 
-  v->dim = dim;
-  v->x = _unur_xmalloc(dim*sizeof(double));
+  v = _unur_xmalloc(dim*sizeof(double));
 
   /* setting all coordinates to 0 */
-  for (i=0; i<dim; i++) v->x[i]=0.;
+  for (i=0; i<dim; i++) v[i]=0.;
 
   return v;
 } /* end of _unur_vector_new() */
@@ -60,10 +57,9 @@ _unur_vector_new(int dim)
 
 /* free allocated memory used by vector structure */
 void 
-_unur_vector_free(UNUR_VECTOR *v)
+_unur_vector_free(double *v)
 {
   if (v) {
-     if (v->x) free(v->x);
      free(v);
      v=NULL;
   }
@@ -73,17 +69,30 @@ _unur_vector_free(UNUR_VECTOR *v)
 
 /* calculation of vector norm */
 double 
-_unur_vector_norm(UNUR_VECTOR *v)
+_unur_vector_norm(int dim, double *v)
 {
   int i;
   double norm=0.;
+  double vmax=0;
+  double p;
 
-  /* TODO: checking if v or v->x are NULL */
+  /* checking if v is NULL */
+  /* TODO: warning ? */
+  if (v==NULL) return 0; 
 
-  for (i=0; i<v->dim; i++) {
-    norm += v->x[i]*v->x[i];
+  /* determining the largest element (absolute values) */
+  for (i=0; i<dim; i++) {
+    if (vmax < fabs(v[i])) vmax = fabs(v[i]); 
   }
-  norm = sqrt(norm);
+  
+  if (vmax<=UNUR_EPSILON) return 0;
+  
+  /* it's nummerically more stable to calculate the norm this way */
+  for (i=0; i<dim; i++) {
+    p=v[i]/vmax;
+    norm += p*p;
+  }
+  norm = vmax * sqrt(norm);
 
   return norm;
 } /* end of _unur_vector_norm() */
@@ -92,15 +101,16 @@ _unur_vector_norm(UNUR_VECTOR *v)
 
 /* calculation of scalar product */
 double 
-_unur_vector_scalar_product(UNUR_VECTOR *v1, UNUR_VECTOR *v2)
+_unur_vector_scalar_product(int dim, double *v1, double *v2)
 {
   int i;
   double scalar_product=0.;
   
-  /* TODO: checking if vi or vi->x are NULL or have unequal dimensions */
+  /* checking if v1 or v2 are NULL */
+  /* TODO: warning ? */
   
-  for (i=0; i<v1->dim; i++) {
-    scalar_product += v1->x[i]*v2->x[i];
+  for (i=0; i<dim; i++) {
+    scalar_product += v1[i]*v2[i];
   }
 
   return scalar_product;

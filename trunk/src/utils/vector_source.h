@@ -33,16 +33,16 @@
 				                                                                                    
 /*--------------------------------------------------------------------------*/
 
-UNUR_VECTOR *_unur_vector_new(int dim);
-/* allocate memory for new vector structure */
+double *_unur_vector_new(int dim);
+/* allocate memory for new vector */
 
-void _unur_vector_free(UNUR_VECTOR *v);
-/* free allocated memory used by vector structure */
+void _unur_vector_free(double *v);
+/* free allocated memory used by vector */
 
-double _unur_vector_norm(UNUR_VECTOR *v);
+double _unur_vector_norm(int dim, double *v);
 /* calculation of vector norm */
 
-double _unur_vector_scalar_product(UNUR_VECTOR *v1, UNUR_VECTOR *v2);
+double _unur_vector_scalar_product(int dim, double *v1, double *v2);
 /* calculation of scalar product */
 
 

@@ -134,13 +134,6 @@ static void _unur_vnrou_debug_init( const struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 #endif
 
-
-/* The following parameter is used to define the coordinate dimension        */
-/* along which the min/max of the bounding rectangle is calculated           */
-/* in the functions _unur_vnrou_aux_umin() and _unur_vnrou_aux_umax()        */
-int vnrou_aux_dimension; 
-
-
 /*---------------------------------------------------------------------------*/
 /* abbreviations */
 
@@ -484,8 +477,8 @@ _unur_vnrou_aux_umin(double *x, void *p)
   struct unur_gen *g;
   
   g = p; /* typecast from void* to unur_gen* */
-  return (x[vnrou_aux_dimension]) * pow( _unur_cvec_PDF((x),(g->distr)), 
-                                         1./(1.+ g->data.vnrou.dim) );
+  return (x[g->data.vnrou.aux_dim]) * pow( _unur_cvec_PDF((x),(g->distr)), 
+                                           1./(1.+ g->data.vnrou.dim) );
 }
 
 /*---------------------------------------------------------------------------*/
@@ -557,13 +550,9 @@ _unur_vnrou_rectangle( struct unur_gen *gen )
       hooke_iters = hooke( faux, dim, xstart, xend, 
                            VNROU_HOOKE_RHO, VNROU_HOOKE_EPSILON, VNROU_HOOKE_MAXITER);
 
-#if 0 /* should we implement this ? */
       if (hooke_iters >= VNROU_HOOKE_MAXITER) {
-         _unur_error(gen->genid , UNUR_ERR_GENERIC, "Bounding rect (vmax)");  
-         free(xstart); free(xend);
-	 return UNUR_ERR_GENERIC;
+         _unur_warning(gen->genid , UNUR_ERR_GENERIC, "Bounding rect uncertain (vmax)");  
       }
-#endif
 
       GEN.vmax = -faux.f(xend, faux.params);
   }
@@ -574,7 +563,7 @@ _unur_vnrou_rectangle( struct unur_gen *gen )
     for (d=0; d<dim; d++) {
 
       /* setting coordinate dimension to be used by the auxiliary functions */
-      vnrou_aux_dimension = d;
+      GEN.aux_dim  = d;
    
       /* calculation for umin */
       
@@ -584,13 +573,9 @@ _unur_vnrou_rectangle( struct unur_gen *gen )
       hooke_iters = hooke( faux, dim, xstart, xend, 
                            VNROU_HOOKE_RHO, VNROU_HOOKE_EPSILON, VNROU_HOOKE_MAXITER);
 
-#if 0 /* should we implement this ? */
       if (hooke_iters >= VNROU_HOOKE_MAXITER) {
-         _unur_error(gen->genid , UNUR_ERR_GENERIC, "Bounding rect (umin)");  
-         free(xstart); free(xend);
-	 return UNUR_ERR_GENERIC;
+         _unur_warning(gen->genid , UNUR_ERR_GENERIC, "Bounding rect uncertain (umin)");  
       }
-#endif
 
       GEN.umin[d] = faux.f(xend, faux.params);
 
@@ -602,13 +587,9 @@ _unur_vnrou_rectangle( struct unur_gen *gen )
       hooke_iters = hooke( faux, dim, xstart, xend, 
                            VNROU_HOOKE_RHO, VNROU_HOOKE_EPSILON, VNROU_HOOKE_MAXITER);
     
-#if 0 /* should we implement this ? */
       if (hooke_iters >= VNROU_HOOKE_MAXITER) {
-         _unur_error(gen->genid , UNUR_ERR_GENERIC, "Bounding rect (umax)");  
-         free(xstart); free(xend);
-	 return UNUR_ERR_GENERIC;
+         _unur_warning(gen->genid , UNUR_ERR_GENERIC, "Bounding rect uncertain (umax)");  
       }
-#endif
 
       GEN.umax[d] = -faux.f(xend, faux.params);
     

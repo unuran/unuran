@@ -840,8 +840,8 @@ _unur_distr_discr_find_mode(struct unur_distr *distr )
 {
 
   #define sgn(a)  ( (a) >= (0) ? ( (a==0)?(0):(1) ) : (-1) )
-  #define max_pos3(a,b,c) ( (a) >= (b) ? ( ((a) >= (c)) ? (1) : (3) ) :\
-                                     ( ((b) >= (c)) ? (2) : (3) ) )
+  #define max_pos3(a,b,c) ( (a) >= (b) ? ( ((a) >= (c)) ? (0) : (2) ) :\
+                                     ( ((b) >= (c)) ? (1) : (2) ) )
 
   #define INT1         (1) 
   #define INT2         (2) 
@@ -868,15 +868,25 @@ _unur_distr_discr_find_mode(struct unur_distr *distr )
  
   mode = INT_MAX;
 
+
   /* derive three distinct points */
 
   x[0] = DISTR.domain[0];
-  x[1] = DISTR.domain[0] + DISTR.n_prob - 1;
+  if (DISTR.prob != NULL)
+    x[1] = DISTR.domain[0] + DISTR.n_prob - 1;
+  else
+    x[1] =DISTR.domain[1];
+
+
+
   if (x[1] < x[0])
     _unur_error(distr->name,UNUR_ERR_DISTR_DATA,
 		"Overflow: x[1] > INT_MAX");
   fx[0] = unur_distr_discr_eval_prob(x[0], distr);
   fx[1] = unur_distr_discr_eval_prob(x[1], distr);
+
+
+
   
   if ( x[0] == x[1] ){            /* domain contains only one point         */
     mode = x[0];
@@ -892,6 +902,7 @@ _unur_distr_discr_find_mode(struct unur_distr *distr )
     if ( x[2] == x[1] )
       x[2]--;
     fx[2] = unur_distr_discr_eval_prob(x[2], distr);
+
 
     /* at least one of the x[i] should have a positive function value  */
     if (x[0] == 0.0 && x[1] == 0.0 ){
@@ -913,12 +924,13 @@ _unur_distr_discr_find_mode(struct unur_distr *distr )
     /* x[i] are now initialized -- at least one entry is > 0  
        and no two of the x[i] are identical                  */ 
 
+
     while (1){
 
       /* terminating the program legally */
       if ( (x[2]-x[0]) == sgn(x[2]-x[0]) &&
 	   (x[1]-x[2]) == sgn(x[1]-x[2])    ){
-	mode = x[ max_pos3(fx[1], fx[2], fx[3]) ];
+	mode = x[ max_pos3(fx[0], fx[1], fx[2]) ];
 	break;   /* mode found */
       }
 
@@ -944,7 +956,6 @@ _unur_distr_discr_find_mode(struct unur_distr *distr )
       }
 
       fxnew = unur_distr_discr_eval_prob(xnew, distr);
-
 
       /* Information of point xnew isn't enough to
          refine interval containig the mode -- determine new xnew    */
@@ -998,16 +1009,21 @@ _unur_distr_discr_find_mode(struct unur_distr *distr )
 
       }   /* flat region left */
 
+
       /* regular bisection */
       bisect = -1; /* should be impossibe lwhen entering switch */
-      if ( fxnew > fx[0] && fxnew > fx[2] ){
+      if (      fxnew > fx[0] && fxnew > fx[2] ){
 	bisect = X2_BORDER;
       }
       else if ( fxnew > fx[1] && fxnew > fx[2] ){
+	bisect = X2_BORDER;
+      }
+      else if ( fx[2] > fxnew && fx[2] > fx[1] ){
 	bisect = XNEW_BORDER;
       }
-      else if ( fx[2] > fxnew && fx[2] > fx[1])
+      else if ( fx[2] > fxnew && fx[2] > fx[0] ){
 	bisect = XNEW_BORDER;
+      }
       else if ( fx[0] > fxnew ){
 	bisect = X2_BORDER;
       }

@@ -2,6 +2,8 @@ Version 0.4.5: July 2003
 
 	- added method DSS (discrete sequential search)
 
+	- added rerandomized ARS to method AROU
+
 	- bug fixes with discrete distributions
 
 Version 0.4.4: July 2003

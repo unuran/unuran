@@ -29,7 +29,10 @@ int main()
   UNUR_GEN *gen;
 
   double umin[]={-1,-1,-1};
-  double umax[]={1,1,1};
+  double umax[]={2,2,2};
+  
+  double mean[]  = { 1., 2., 3. };
+  double covar[] = { 2., 2., 1.,   2., 4., 3.,   1., 3., 3. };
 
   /*
   int i;
@@ -48,18 +51,27 @@ int main()
 
   unur_set_default_debug(~0u);
 
-/*   distr = unur_distr_multinormal(dim,mean,covar); */
+/*   
   distr = unur_distr_multinormal(dim,NULL,NULL);
-  par = unur_vnrou_new(distr);
-  unur_vnrou_set_rect_u(par,umin,umax);
-  unur_vnrou_set_rect_v(par,1);
+*/
+
+  distr = unur_distr_multinormal(dim,mean,covar); 
+  par = unur_varou_new(distr);
+
+/*
+  unur_vnrou_set_u(par,umin,umax);
+  unur_vnrou_set_v(par,1);
+  unur_vnrou_set_r(par,2.);
+*/
+
   gen = unur_init(par);
 
   unur_test_printsample( gen, 3, 3, stdout);
   unur_test_count_urn( gen, 1000, 1, stdout );
 
+/*
   unur_test_chi2( gen, 10, 1000, 10, 2, stdout );
-
+*/
 
 /*   unur_sample_matr(gen,x); */
 

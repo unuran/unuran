@@ -157,6 +157,7 @@ unur_distr_cvec_new( int dim )
 				      point exception                        */
 
   DISTR.mode       = NULL;         /* location of mode (default: not known)  */
+  DISTR.center     = NULL;         /* location of center (default: not given)*/
   DISTR.volume     = INFINITY;     /* area below PDF (default: not known)    */
 
 
@@ -227,6 +228,11 @@ _unur_distr_cvec_clone( const struct unur_distr *distr )
     memcpy( CLONE.mode, DISTR.mode, distr->dim * sizeof(double) );
   }
 
+  if (DISTR.center) {
+    CLONE.center = _unur_xmalloc( distr->dim * sizeof(double) );
+    memcpy( CLONE.center, DISTR.center, distr->dim * sizeof(double) );
+  }
+
   if (DISTR.marginals)
     CLONE.marginals = _unur_distr_cvec_marginals_clone( DISTR.marginals, distr->dim );
 
@@ -281,7 +287,8 @@ _unur_distr_cvec_free( struct unur_distr *distr )
   if (DISTR.cholesky)  free(DISTR.cholesky);
   if (DISTR.rankcorr)  free(DISTR.rankcorr);
 
-  if (DISTR.mode)  free(DISTR.mode);
+  if (DISTR.mode)      free(DISTR.mode);
+  if (DISTR.center)    free(DISTR.center);
 
   if (DISTR.marginals)
     _unur_distr_cvec_marginals_free(DISTR.marginals, distr->dim);
@@ -1444,26 +1451,30 @@ unur_distr_cvec_set_mode( struct unur_distr *distr, const double *mode )
      /*                                                                      */
      /* parameters:                                                          */
      /*   distr ... pointer to distribution object                           */
-     /*   mode  ... mode of PDF                                           */
+     /*   mode  ... mode of PDF                                              */
      /*                                                                      */
      /* return:                                                              */
      /*   UNUR_SUCCESS ... on success                                        */
      /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
+  int i;
+
   /* check arguments */
   _unur_check_NULL( NULL, distr, UNUR_ERR_NULL );
   _unur_check_distr_object( distr, CVEC, UNUR_ERR_DISTR_INVALID );
-  _unur_check_NULL( distr->name, mode, UNUR_ERR_NULL );
 
-  /* mode already set ? */
-  if (DISTR.mode == NULL) {
-    /* we have to allocate memory first */
+  /* we have to allocate memory first */
+  if (DISTR.mode == NULL)
     DISTR.mode = _unur_xmalloc( distr->dim * sizeof(double) );
-  }
 
-  /* copy data */
-  memcpy( DISTR.mode, mode, distr->dim * sizeof(double) );
+  if (mode)
+    /* mode vector given --> copy */
+    memcpy( DISTR.mode, mode, distr->dim * sizeof(double) );
+
+  else  /* mode == NULL --> use zero vector instead */
+    for (i=0; i<distr->dim; i++)
+      DISTR.mode[i] = 0.;
 
   /* changelog */
   distr->set |= UNUR_DISTR_SET_MODE;
@@ -1499,6 +1510,89 @@ unur_distr_cvec_get_mode( const struct unur_distr *distr )
   return DISTR.mode;
 
 } /* end of unur_distr_cvec_get_mode() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+unur_distr_cvec_set_center( struct unur_distr *distr, const double *center )
+     /*----------------------------------------------------------------------*/
+     /* set center of distribution                                           */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   distr  ... pointer to distribution object                          */
+     /*   center ... center of PDF                                           */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+  int i;
+
+  /* check arguments */
+  _unur_check_NULL( NULL, distr, UNUR_ERR_NULL );
+  _unur_check_distr_object( distr, CVEC, UNUR_ERR_DISTR_INVALID );
+
+  /* we have to allocate memory first */
+  if (DISTR.center == NULL)
+    DISTR.center = _unur_xmalloc( distr->dim * sizeof(double) );
+
+  if (center)
+    /* center vector given --> copy */
+    memcpy( DISTR.center, center, distr->dim * sizeof(double) );
+
+  else  /* center == NULL --> use zero vector instead */
+    for (i=0; i<distr->dim; i++)
+      DISTR.center[i] = 0.;
+
+  /* changelog */
+  distr->set |= UNUR_DISTR_SET_CENTER;
+
+  /* o.k. */
+  return UNUR_SUCCESS;
+} /* end of unur_distr_cvec_set_center() */
+
+/*---------------------------------------------------------------------------*/
+
+const double *
+unur_distr_cvec_get_center( struct unur_distr *distr )
+     /*----------------------------------------------------------------------*/
+     /* get center of distribution                                           */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   distr ... pointer to distribution object                           */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to center of distribution                                  */
+     /*----------------------------------------------------------------------*/
+{
+  int i;
+
+  /* check arguments */
+  _unur_check_NULL( NULL, distr, NULL );
+  _unur_check_distr_object( distr, CVEC, NULL );
+
+  /* center given */
+  if ( distr->set & UNUR_DISTR_SET_CENTER )
+    return DISTR.center;
+
+  /* else try mode */
+  if ( distr->set & UNUR_DISTR_SET_MODE ) 
+    return DISTR.mode;
+
+  /* else try mean */
+  if ( distr->set & UNUR_DISTR_SET_MEAN ) 
+    return DISTR.mean;
+
+  /* otherwise use (0,...,0) */
+  if ( DISTR.center == NULL )
+    DISTR.center = _unur_xmalloc( distr->dim * sizeof(double) );
+  for (i=0; i<distr->dim; i++) 
+    DISTR.center[i] = 0.;
+
+  return DISTR.center;
+
+} /* end of unur_distr_cvec_get_center() */
 
 /*---------------------------------------------------------------------------*/
 

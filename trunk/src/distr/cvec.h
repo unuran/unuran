@@ -390,13 +390,15 @@ int unur_distr_cvec_get_pdfparams( const UNUR_DISTR *distribution, int par, cons
 
 int unur_distr_cvec_set_mode( UNUR_DISTR *distribution, const double *mode );
 /* 
-   Set mode of @var{distribution}. @var{mode} must be a pointer to an
+   Set mode of the @var{distribution}. @var{mode} must be a pointer to an
    array of the size returned by unur_distr_get_dim().
+   A NULL pointer for @var{mode} is interpreted as the zero
+   vector (0,@dots{},0).
 */
 
 const double *unur_distr_cvec_get_mode( const UNUR_DISTR *distribution );
 /* 
-   Get mode of @var{distribution}. The function returns a pointer to
+   Get mode of the @var{distribution}. The function returns a pointer to
    an array of the size returned by unur_distr_get_dim().
    If the mode is not marked as known the NULL pointer is returned and
    @code{unur_errno} is set to @code{UNUR_ERR_DISTR_GET}. 
@@ -405,6 +407,32 @@ const double *unur_distr_cvec_get_mode( const UNUR_DISTR *distribution );
    for the @var{distribution} at all.)
 
    @emph{Important:} Do @strong{not} modify the array that holds the mode!
+*/
+
+int unur_distr_cvec_set_center( UNUR_DISTR *distribution, const double *center );
+/* 
+   Set center of the @var{distribution}. @var{center} must be a pointer to an
+   array of the size returned by unur_distr_get_dim().
+   A NULL pointer for @var{center} is interpreted as the zero
+   vector (0,@dots{},0).
+
+   The center is used by some methods to shift the distribution in
+   order to decrease numerical round-off error.
+   If not given explicitly a default is used.
+
+   Default: The mode, if given by a unur_distr_cvec_set_mode() call;
+   else the mean, if given by a unur_distr_cvec_set_mean() call;
+   otherwise the null vector @unurmath{(0,\ldots,0)}.
+*/
+
+const double *unur_distr_cvec_get_center( UNUR_DISTR *distribution );
+/* 
+   Get center of the @var{distribution}. The function returns a pointer to
+   an array of the size returned by unur_distr_get_dim().
+   It always returns some point as there always exists a default for
+   the center, see unur_distr_cvec_set_center().
+
+   @emph{Important:} Do @strong{not} modify the array that holds the center!
 */
 
 int unur_distr_cvec_set_pdfvol( UNUR_DISTR *distribution, double volume );

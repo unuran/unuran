@@ -1,0 +1,128 @@
+
+@c --------------------------------------------------------------------
+
+
+@node Methods
+@chapter Methods
+@menu
+* Choosing:: Which method should be used
+* Description:: Description of the methods
+* Requirements:: The requirements of the methods
+* Defaults:: The default settings of parameters
+@end menu
+
+@node Choosing
+@section Choosing a method
+
+Choosing a method for random number generation
+depends on the information that can be provided.
+The following table shows the requirements of the available
+methods. The description of the methods can be found in the 
+following sections.
+
+@include unuran_method_requirements.texi
+
+
+@noindent As explained, when using UNURAN, a parameter object
+and a distribution object have to be declared:
+@smallexample
+   UNUR_PAR *par;
+   UNUR_DISTR *distr;
+@end smallexample
+
+@noindent If the distribution object is already initialized,
+you must choose the method for sampling random numbers.
+Let's say, the pdf and the the derivative of the pdf (dpdf) are
+known, then the table says that this information 
+is sufficient for the methods AROU and TDR.
+The following lines sets the method AROU as method of choice
+(notice: the method's name is in lower case letters):
+
+@noindent @code{   par  = unur_arou_new(distr);}
+
+@noindent Usage of  another method can be achived by
+replacing the methods name. 
+
+Each implemented method has some parameters, the
+user can adjust. These parameters are either
+numerical values or decision about the usage of a special
+implementation of the method.
+E.g: AROU can be told an approximation of the mode which should be 2.4:
+@smallexample
+  unur_arou_set_center(par, 2.4);
+@end smallexample
+To change any parameter you habe to use the
+according function call documented in @ref{MethodsRef}.
+All parameters have default settings documented in @ref{Defaults}.
+
+@c --------------------------------------------------------------------
+
+@node Distributions
+@chapter Distributions
+@menu
+* Arbitrary::  Arbitrary distributions 
+* Continuous:: Preset continuous distributions
+* Discrete::   Preset discrete distributions
+* OtherDists:: Other kinds of distributions
+@end menu
+
+@noindent @strong{WARNING:} Naturally the computational accuracy
+limits the possible parameters. There shouldn't be problems
+when the parameters of a distribution are in a "reasonable" range but
+e.g. the normal distribution N(10^50,1) won't yield the desired results.
+(In this case it would be better generating N(0,1) and THEN
+transform the results.)
+@* Of course computational inaccuracy is not specific to UNURAN
+and should always kept in mind when working with computers.
+
+
+@node Arbitrary
+@section Arbitrary distributions
+
+See @ref{Do_it_yourself}
+
+
+@node Continuous
+@section Continuous Distributions
+
+Although it is not its primary target, many
+distributions are already implemented in UNURAN.
+This section presents these available distributions
+and the belonging parameters.
+
+The syntax of using one of these distributions is always the
+same (see  @ref{Ex1} and @ref{Ex3}) and the actual code for
+each distribution can be looked up in @ref{Readymade}.
+If standard values for parameters of a specific distribution
+are available, it is possible to pass as second argument
+(the number of passed arguments) a number smaller than the
+number of required parameters.
+Of course you have to provide at least as much as parameters
+as the second argument indicates.
+The first paramters (as much as the value of the second argument)
+are set to the provided values and the remaining are set to the
+standard values in the order specified in this section.
+(See @ref{Ex1} (0 parameters provided) and @ref{Ex3} (2 parameters provided).)
+
+Some methods allow arbitrary domains with predefined densities
+(e.g. NINV -- numerical inversion):
+And if the domain is changed so might the mode. How to change the
+domain and due to that the mode or mayby another parameter can be
+looked up in @ref{Do_it_yourself}.
+
+@c --------------------------------------------------------------------
+
+
+@node MethodsRef
+@section Methods
+
+As explained above, the parameter object is destroyed when the
+generator object is generated. Therefore its cruical WHEN using
+the functions below. Some functions will set the parameters before
+the generator object exists. Oters can change parameters during sampling.
+It is quite easy to identify the kind of a specific function
+when looking at the passed arguments.
+
+The functions will be explained after the description of the methods:
+@ref{Description}.
+

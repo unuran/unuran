@@ -71,12 +71,12 @@
 
 /* valid name of a C routine                                                 */
 #define UNUR_URNG_DEFAULT uniform
-#define UNUR_URNG_AUX_DEFAULT uniform    /** TODO **/
+#define UNUR_URNG_AUX_DEFAULT uniform_aux
 
 #elif UNUR_URNG_TYPE == UNUR_URNG_PRNG
 
 /* valid parameter (char) string for prng-2.2                                */
-#define UNUR_URNG_DEFAULT "LCG(2147483647,950706376,0,1)"
+#define UNUR_URNG_DEFAULT "mt19332(19863)";
 #define UNUR_URNG_AUX_DEFAULT "LCG(2147483647,16807,0,1)"
 
 #else
@@ -90,8 +90,8 @@
 /* Use "stdout" to write all infos to stdout.                                */
 /* If no log file should be used, #undef the macro UNUR_ENABLE_LOGGING below.*/
 
-/*  #define UNUR_LOG_FILE "unuran.log" */
-#define UNUR_LOG_FILE "stdout"
+#define UNUR_LOG_FILE "unuran.log"
+/*  #define UNUR_LOG_FILE "stdout" */
 
 
 /*---------------------------------------------------------------------------*/
@@ -131,7 +131,7 @@
 /* Debugging information is written into the log file.                       */
 /* It only works if additionally UNUR_ENABLE_LOGGING is defined (see above). */
 
-#define UNUR_DEBUGFLAG_DEFAULT   UNUR_DEBUG_ALL
+#define UNUR_DEBUGFLAG_DEFAULT   UNUR_DEBUG_INIT
 
 
 /*---------------------------------------------------------------------------*/
@@ -178,7 +178,7 @@
 /* changes are made in the library.)                                         */
 
 /* use magic cookies to validate type of pointer */
-#define UNUR_COOKIES  1
+/*  #define UNUR_COOKIES  1 */
 
 
 /*---------------------------------------------------------------------------*/

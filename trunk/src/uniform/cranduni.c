@@ -65,6 +65,8 @@ double uniform()
   return(x*2.328306436538696e-10);
 }
 
+#if 0
+
 /* This function allows to start the uniform generator with  *
  * a certain seed. The seed must be of the form 4k+1,        *
  * otherwise it is changed                                   */
@@ -82,6 +84,7 @@ unsigned long int uget()
 { printf("uget0\n");
   return(x);
 }
+#endif
 /*------------------------------------------------------------------*/
 #endif
 /*------------------------------------------------------------------*/
@@ -101,6 +104,8 @@ double uniform()
   return(x*2.328306436538696e-10+1.164153218269348e-10);
 }
 
+#if 0
+
 /* This function allows to start the uniform generator with  */
 /* a certain seed                                            */
 
@@ -117,6 +122,7 @@ unsigned long int uget()
 { printf("uget1\n");
   return(x);
 }
+#endif
 /*------------------------------------------------------------------*/
 #endif
 /*------------------------------------------------------------------*/
@@ -149,6 +155,8 @@ double uniform()
   return (x*4.656612875245797e-10);
 }
 
+#if 0
+
 /* This function allows to start the uniform generator with  */
 /* a certain seed. The seed is ok if it is greater equal 1   */
 /* and lower equal  2^{31}-2 !!!                             */
@@ -168,10 +176,11 @@ unsigned long int uget()
 { printf("uget2\n");
   return(x);
 }
+#endif
 /*------------------------------------------------------------------*/
 #endif
 /*------------------------------------------------------------------*/
-#if UNIFORM == 3
+#if UNIFORM == 2
 /*------------------------------------------------------------------*/
 
 /*************************************************************
@@ -191,7 +200,7 @@ static unsigned long int xurn1=1, xurn2=69070, xurn3=475628535,
 #define A5HI (A5>>15)
 #define A5LO (A5&0x7FFF)
 
-double uniform()
+double uniform_aux()
 {
   unsigned long int h,xurnhi,xurnlo,mid;
 
@@ -218,6 +227,8 @@ double uniform()
 
   return ((double)xurn1*4.656612875245797e-10+1.32e-10);
 }
+
+#if 0
 
 /* This function allows to start the uniform generator with  */
 /* a single value to make it compatible with uinit of        */
@@ -271,6 +282,8 @@ unsigned long int uget()
 { printf("uget3\n");
   return(xurn1);
 }
+
+#endif
 
 /*------------------------------------------------------------------*/
 #endif

@@ -194,7 +194,7 @@ _unur_distr_cemp_free( struct unur_distr *distr )
 void
 _unur_distr_cemp_clear( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
-     /* frees all memory blocks in distribution object inside generator      */
+     /* frees all memory blocks in distribution object                       */
      /* object.                                                              */
      /*                                                                      */
      /* parameters:                                                          */

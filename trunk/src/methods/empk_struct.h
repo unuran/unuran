@@ -43,7 +43,10 @@
 struct unur_empk_par {
   /* the observed sample is stored in the distribution object */
 
-  const UNUR_GEN *kerngen;  /* random variate generator for kernel           */
+  const UNUR_GEN *kerngen;  /* random variate generator for kernel
+			     (given by user)                                */
+  UNUR_GEN *kernel;    /* random variate generator for kernel
+			  (provided by UNURAN)                              */
 
   double  alpha;       /* alpha is used to compute the optimal bandwidth from
 			  the point of view of minimizing the mean integrated

@@ -145,7 +145,9 @@ _unur_acg_FORTRAN_demo_urng( FILE *out )
   fprintf(out,"\n");
 
   /*************************************************************
-   * Park and Miller (1988):                                   *
+   * Park and Miller (1988).                                   *
+   * Random number generators: good ones are hard to find.     *
+   * Comm. ACM 31, pp. 1192--1201.                             *
    *************************************************************/
   
   fprintf(out,"      DOUBLE PRECISION FUNCTION urand()\n\n");

@@ -587,7 +587,7 @@ sub make_FORTRAN_code
     return "" if $?;
 
     # remove built-in uniform rng
-    $urng_pattern = "\\s+DOUBLE PRECISION FUNCTION urand\\s*\\(\\s*\\).*?END\\s*";
+    $urng_pattern = "\\s+DOUBLE PRECISION FUNCTION urand\\s*\\(\\s*\\).*?END.*?END\\s*";
     $generator =~ s/($urng_pattern)/\n/s;
 
     # Get name of distribution

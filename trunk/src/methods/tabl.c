@@ -1223,14 +1223,12 @@ _unur_tabl_free( struct unur_gen *gen )
     }
   }
 
-  /* free other memory */
-  _unur_free_genid(gen);
+  /* free table */
   if (GEN.guide)  free(GEN.guide);
 
-  /* free function trees (if there is any) */
-  if (DISTR.pdftree)  _unur_fstr_free(DISTR.pdftree);
-  if (DISTR.dpdftree) _unur_fstr_free(DISTR.dpdftree);
-  if (DISTR.cdftree)  _unur_fstr_free(DISTR.cdftree);
+  /* free other memory */
+  _unur_distr_cont_clear(gen);
+  _unur_free_genid(gen);
 
   free(gen);
 

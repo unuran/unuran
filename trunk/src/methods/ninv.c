@@ -1605,15 +1605,13 @@ _unur_ninv_free( struct unur_gen *gen )
   /* we cannot use this generator object any more */
   SAMPLE = NULL;   /* make sure to show up a programming error */
 
-  /* free memory */
-  _unur_free_genid(gen);
+  /* free tables */
   if (GEN.table)   free(GEN.table);
   if (GEN.f_table) free(GEN.f_table);
 
-  /* free function trees (if there is any) */
-  if (DISTR.pdftree)  _unur_fstr_free(DISTR.pdftree);
-  if (DISTR.dpdftree) _unur_fstr_free(DISTR.dpdftree);
-  if (DISTR.cdftree)  _unur_fstr_free(DISTR.cdftree);
+  /* free memory */
+  _unur_distr_cont_clear(gen);
+  _unur_free_genid(gen);
 
   free(gen);
 

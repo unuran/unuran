@@ -1229,12 +1229,8 @@ _unur_srou_free( struct unur_gen *gen )
   SAMPLE = NULL;   /* make sure to show up a programming error */
 
   /* free memory */
+  _unur_distr_cont_clear(gen);
   _unur_free_genid(gen);
-
-  /* free function trees (if there is any) */
-  if (DISTR.pdftree)  _unur_fstr_free(DISTR.pdftree);
-  if (DISTR.dpdftree) _unur_fstr_free(DISTR.dpdftree);
-  if (DISTR.cdftree)  _unur_fstr_free(DISTR.cdftree);
 
   free(gen);
 

@@ -616,14 +616,11 @@ _unur_cstd_free( struct unur_gen *gen )
   SAMPLE = NULL;   /* make sure to show up a programming error */
 
   /* free memory */
-  _unur_free_genid(gen);
   if (GEN.gen_param)  free(GEN.gen_param);
   if (gen->gen_aux)   _unur_free(gen->gen_aux);
 
-  /* free function trees (if there is any) */
-  if (DISTR.pdftree)  _unur_fstr_free(DISTR.pdftree);
-  if (DISTR.dpdftree) _unur_fstr_free(DISTR.dpdftree);
-  if (DISTR.cdftree)  _unur_fstr_free(DISTR.cdftree);
+  _unur_distr_cont_clear(gen);
+  _unur_free_genid(gen);
 
   free(gen);
 

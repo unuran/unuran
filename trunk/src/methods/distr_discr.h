@@ -197,7 +197,7 @@ int unur_distr_discr_set_pmfstr( UNUR_DISTR *distribution, const char *pmfstr );
 int unur_distr_discr_set_cdfstr( UNUR_DISTR *distribution, const char *cdfstr );
 /* 
    This function provides an alternative way to set a CDF; analogously
-   to the unur_distr_discr_set_pdfstr() call.
+   to the unur_distr_discr_set_pmfstr() call.
 */
 
 char *unur_distr_discr_get_pmfstr( struct unur_distr *distribution );

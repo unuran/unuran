@@ -53,8 +53,10 @@
 
 # Kommentare sind nun erlaubt 
 $CENABLE = 0;
-# $_ ist Kommentarzeile (bei $CENABLe = 1) 
+# $_ ist Kommentarzeile (bei $CENABLE = 1) 
 $KOMMENT = 0;
+# Kennzeichnet Kommentarbloecke (zur Unterscheidung von Kommentarzeilen)
+$BLOCK   = 0;
 
 # Deklarations/Beschreibungsbereich der Routinen gefunden
 $ROUTINES = 0;
@@ -96,7 +98,7 @@ while($_ = <>)
     }
 
     # Kommentare enden mit Leerzeile
-    if ($_ =~ /^\s+$/){
+    if ($_ =~ /^\s*$/){
         $KOMMENT = 0;
         $CENABLE = 0;
     }
@@ -151,15 +153,39 @@ while($_ = <>)
 
 
   # Ausgabe der Kommentare    
-  # extrahiere alles zw. /* und */ (falls /* oder */ vorhanden)
   if ($KOMMENT == 1){
-     m/^(\s*\/\*\s*|\s*)?(.*?)(\s*\*\/)?/;   
-     print OUTFILE $2;
-     # Ende eines Kommentarblocks -> Zeilenumbruch 
+
+     # einzelne Kommentarzeile  (beginnnen mit "/*" und enden mit "*/")
+     if ( $_ =~ /^(\s*\/\*\s*)(.*)?(\s*\*\/)/ ){
+        $BLOCK = 0;
+        print OUTFILE $2, "\n";
+      }
+     # Zeile beginnt mit Kommentarblock-Ende
+     elsif ($BLOCK == 1 && $_ =~ /\s*\*\// ){
+	 $BLOCK = 0;
+     }
+     # Kommentarzeile in einem Kommentarblock (nicht erste Zeile)
+     elsif( $BLOCK == 1 && $_ =~ /^(\s*)(.*)\s*(\*\/)?/ ){
+         print OUTFILE $2;
+         # Kommentarblocke enten mit "*/"
+	 if ($_ =~ /\*\//){
+	     $BLOCK = 0;
+	 }
+     }
+     # Beginn eines Kommentarblocks (Zeile beginnt mit "/*"
+     # und darf "*/" nicht enthalten)
+     elsif($_ =~ /^(\s*\/\*\s*)(.*)/ ){
+	print OUTFILE $2;
+        $BLOCK = 1;
+     }
+
+
+     # Ende einer Kommentarzeile/blocks -> Zeilenumbruch 
      if ($_ =~/\*\//){
          print OUTFILE "\@*\n";
      }
-  }
+
+ }
 
 }
 

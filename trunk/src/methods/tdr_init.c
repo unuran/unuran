@@ -272,7 +272,7 @@ _unur_tdr_create( struct unur_par *par )
 
 
 
-  par->variant &= ~TDR_VARFLAG_USEDARS;
+    par->variant &= ~TDR_VARFLAG_USEDARS;
 
 
   /* return pointer to (almost empty) generator object */
@@ -1080,7 +1080,7 @@ _unur_tdr_gw_dars( struct unur_par *par, struct unur_gen *gen )
 	fxsp = PDF(xsp);
 	
 	/* now split interval at given point */
-	splitted = _unur_tdr_ps_interval_split(gen, ((xsp<iv->ip)?iv->prev:iv), xsp, fxsp);
+	splitted = _unur_tdr_gw_interval_split(gen, iv, xsp, fxsp);
 
 	if (splitted > 0) {
 	  /* splitting successful */

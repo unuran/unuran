@@ -27,13 +27,27 @@ int main()
   UNUR_DISTR *distr;
   UNUR_PAR *par;
   UNUR_GEN *gen;
+  int i;
 
   double fpm[] = { 2., 3. };
 
   unur_set_default_debug(~0u);
   unur_set_stream(stdout);
 
-#if 1
+
+  distr = unur_distr_normal(NULL,0); 
+  par = unur_tdr_new(distr);
+  unur_tdr_set_cpoints(par,10,NULL);
+  unur_tdr_set_variant_gw(par);
+  unur_tdr_set_c(par,0.);
+  // unur_tdr_set_usedars(par,FALSE);
+  gen = unur_init(par);
+  if (gen)
+    for (i=1; i<10000; i++)
+      unur_sample_cont(gen);
+  unur_free(gen);
+
+#if 0
   fpm[0] = 0.;
   fpm[1] = 1e-5;
   //distr = unur_distr_normal(NULL,0);
@@ -47,7 +61,8 @@ int main()
   //unur_tdr_set_c(par,0.);
   gen = unur_init(par);
   unur_distr_free(distr);
-#else
+#endif
+#if 0
   distr = unur_distr_beta(fpm,2);
   par = unur_tdr_new( distr );
   unur_tdr_set_cpoints(par,10,NULL);

@@ -563,7 +563,7 @@ static int simplification(char *symb, int t, struct treenode *l,
      return TRUE; 
   } 
 
-  #if CALC_TEST
+#if CALC_TEST
 
   /* --- Ueberpruefen, ob beide Blaetter Konstanten => ausrechnen: --- */ 
   if( l_const && r_const ){ 
@@ -580,7 +580,7 @@ static int simplification(char *symb, int t, struct treenode *l,
      return TRUE; 
   } 
 
-  #endif
+#endif
 
   return FALSE; 
 } 

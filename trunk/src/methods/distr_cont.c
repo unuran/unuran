@@ -319,6 +319,18 @@ unur_distr_cont_set_strpdf( struct unur_distr *distr, const char *strpdf )
   /** TODO: **/
   /* DISTR.pdf = ...; */
 
+#if 0
+  {
+    struct treenode *functtree;
+    int errcodep, errposp;
+
+    /* initialize hash table for function parser */
+    _unur_fstr_init();    /** TODO **/
+
+    /* compute funtion tree from string */
+    functtree = _unur_fstr2tree( strpdf, &errcodep, &errposp );
+  }
+#endif
 
   return 0;
 

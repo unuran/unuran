@@ -37,15 +37,39 @@
  *****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
-/* Information for constructing the generator                                */
+/* ?????? */
+#define SYMBLENGTH 20 
 
-struct xyz { 
+/*---------------------------------------------------------------------------*/
+/* Structure for function tree                                               */
 
-  double  center;               /* approximate location of mode              */
+struct treenode { 
+  char            symb[SYMBLENGTH];  /* zeigt auf Symbol aus Symboltab. */ 
+  int             token;             /* Token des Symbols               */ 
+  int             symbkind;          /* Art des Symbols (REL_OP etc.)   */ 
+  float           val;               /* aktueller arithmetischer Wert   */ 
+  struct treenode *left;             /* Zeiger auf linken Sohn          */ 
+  struct treenode *right;            /* Zeiger auf rechten Sohn         */ 
 
 #ifdef UNUR_COOKIES
   unsigned cookie;              /* magic cookie                              */
 #endif
+}; 
+
+/*---------------------------------------------------------------------------*/
+/* Symbols used in function string                                           */
+
+struct symbols { 
+  char            name[SYMBLENGTH];  /* Name des Symbols (z. B. "SIN")  */ 
+  int             info;              /* Prioritaet bzw. Argumentanzahl  */ 
+  double           val;               /* Konstanten: numerischer Wert    */ 
+  double           (*vcalc)(int t, double l, double r);        
+                                     /* Zeiger auf Berechnungsfunktion  */ 
+  char            *(*dcalc)(char *par,struct treenode *w,
+                            char *l, char *r, char *dl, char *dr,char *s);
+                                     /* Zeiger auf Ableitungsfunktion   */ 
+  struct treenode *tree;             /* Bei UFUNCS: Zeiger auf Baum     */ 
+
 };
 
 /*---------------------------------------------------------------------------*/

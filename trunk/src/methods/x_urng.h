@@ -61,7 +61,7 @@
   defined in unuran_config.h at compile time. A pointer to
   this default URNG can be obtained via
   unur_get_default_urng(). Nevertheless it is also possible to
-  override this default URNG by another one by means of the
+  overwrite this default URNG by another one by means of the
   unur_set_default_urng() call. However this only takes effect for new
   parameter objects.
 
@@ -94,6 +94,17 @@
   It is possible to use other interfaces to URNGs without much
   troubles. If you need such a new interface please email the authors
   of the UNURAN library.
+
+  Some generating methods provide the possibility of correlation
+  induction. To use this feature a second auxilliary URNG is required.
+  It can be set and changed by the unur_set_urng_aux() and
+  unur_chg_urng_aux() call, respectively. Since the auxilliary
+  generator is by default the same as the main generator, the
+  auxilliary URNG must be set after any unur_set_urng() ot
+  unur_chg_urng() call! Since in special cases mixing of two URNG
+  might cause problems, we supply a default auxilliary generator that
+  can be used by the unur_use_urng_aux_default() call (after the main
+  URNG has been set).
 
 */
 
@@ -156,20 +167,54 @@ typedef struct prng UNUR_URNG;
 
 int unur_set_urng( UNUR_PAR *parameters, UNUR_URNG *urng );
 /*
-  Use the URNG @code{urng} for the new generator. This overrides the
-  default URNG.
+  Use the URNG @code{urng} for the new generator. This overwrite the
+  default URNG. It also sets the auxilliary URNG to @code{urng}.
 */
 
 UNUR_URNG *unur_chg_urng( UNUR_GEN *generator, UNUR_URNG *urng );
 /*
   Change the URNG for the given generator. It returns the pointer to
   the old URNG that has been used by the generator.
+  It also changes the auxilliary URNG to @code{urng} and thus
+  overwrite the last unur_chg_urng_aux() call.
 */
 
 UNUR_URNG *unur_get_urng( UNUR_GEN *generator );
 /*
   Get the pointer to the URNG that is used by the generator.
   This is usefull if two generators should share the same URNG.
+*/
+
+int unur_set_urng_aux( UNUR_PAR *parameters, UNUR_URNG *urng_aux );
+/*
+  Use the auxilliary URNG @code{urng_aux} for the new generator. 
+  (Default is the default URNG or the URNG from the last
+  unur_set_urng() call. Thus if the auxilliary generator should be
+  different to the main URNG, unur_set_urng_aux() must be called after
+  unur_set_urng(). 
+  The auxilliary URNG is used as second stream of uniform random
+  number for correlation induction.
+*/
+
+int unur_use_urng_aux_default( UNUR_PAR *parameters );
+/* 
+   Use the default auxilliary URNG.
+   (It must be set after unur_get_urng().)
+*/
+
+UNUR_URNG *unur_chg_urng_aux( UNUR_GEN *generator, UNUR_URNG *urng_aux );
+/*
+  Change the auxilliary URNG for the given generator. It returns the
+  pointer to the old auxilliary URNG that has been used by the
+  generator. It has to be called after each unur_chg_urng() when the 
+  auxilliary URNG should be different from the main URNG.
+*/
+
+UNUR_URNG *unur_get_urng_aux( UNUR_GEN *generator );
+/*
+  Get the pointer to the auxilliary URNG that is used by the
+  generator. This is usefull if two generators should share the same
+  URNG.
 */
 
 /*---------------------------------------------------------------------------*/

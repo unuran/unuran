@@ -124,9 +124,11 @@
 #if UNUR_URNG_TYPE == UNUR_URNG_POINTER
 /* valid name of a C routine                                                 */
 #define UNUR_URNG_DEFAULT uniform
+#define UNUR_URNG_AUX_DEFAULT uniform    /** TODO **/
 #elif UNUR_URNG_TYPE == UNUR_URNG_PRNG
 /* valid parameter (char) string for prng-2.2                                */
 #define UNUR_URNG_DEFAULT "LCG(2147483647,950706376,0,1)"
+#define UNUR_URNG_AUX_DEFAULT "LCG(2147483647,16807,0,1)"
 #else
 #error UNUR_URNG_TYPE not valid !!
 #endif  /* UNUR_URNG_TYPE */

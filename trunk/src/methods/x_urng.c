@@ -114,6 +114,48 @@ unur_set_default_urng( UNUR_URNG *urng_new )
 
 /*---------------------------------------------------------------------------*/
 
+int
+unur_use_urng_aux_default( UNUR_PAR *par )
+     /*----------------------------------------------------------------------*/
+     /* set auxilliary uniform random number generator to default            */
+     /* (initialize generator if necessary)                                  */
+     /*                                                                      */
+     /* parameters: none                                                     */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... on success                                                   */
+     /*   0 ... on error                                                     */
+     /*----------------------------------------------------------------------*/
+{
+  static UNUR_URNG *urng_aux_default = NULL;
+
+  /* default generator already running ? */
+  if( urng_aux_default == NULL ) {
+    /* have to initialize default generator first */
+#if UNUR_URNG_TYPE == UNUR_URNG_POINTER 
+    urng_aux_default = UNUR_URNG_AUX_DEFAULT;
+#elif UNUR_URNG_TYPE == UNUR_URNG_PRNG
+    urng_aux_default = prng_new(UNUR_URNG_AUX_DEFAULT);
+    if( urng_aux_default == NULL ) {
+      /* some parameters invalid! */
+      _unur_error("prng",UNUR_ERR_NULL,"Cannot set default aux URNG. EXIT !!!");
+      /* we cannot recover from this error */
+      return 0;
+    }
+#else
+#error UNUR_URNG_TYPE not valid !!
+#endif
+  }
+
+  /* set aux URNG */
+  par->urng_aux = urng_aux_default;
+
+  return 1;
+
+} /* end of unur_use_urng_aux_default() */
+
+/*---------------------------------------------------------------------------*/
+
 /*****************************************************************************/
 /**                                                                         **/
 /**  Set, get or change uniform RNG for generator                           **/
@@ -140,7 +182,11 @@ unur_set_urng( struct unur_par *par, UNUR_URNG *urng )
   _unur_check_NULL( NULL,par,0 );
   _unur_check_NULL("URNG",urng,0);
 
+  /* main generator */
   par->urng = urng;
+
+  /* overwrite auxilliary generator */
+  if (par->urng_aux) par->urng_aux = urng;
 
   return 1;
 } /* end of unur_set_urng() */
@@ -201,9 +247,106 @@ unur_chg_urng( struct unur_gen *gen, UNUR_URNG *urng )
   if (gen->gen_aux)   unur_chg_urng(gen->gen_aux,urng);
   if (gen->gen_aux_2) unur_chg_urng(gen->gen_aux_2,urng);
 
+  /* overwrite auxilliary URNG */
+  if (gen->urng_aux) gen->urng_aux = urng;
+
   return urng_old;
 } /* end of unur_chg_urng() */
 
+/*****************************************************************************/
+
+int
+unur_set_urng_aux( struct unur_par *par, UNUR_URNG *urng_aux )
+     /*----------------------------------------------------------------------*/
+     /* set auxilliary uniform random number generator                       */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par_aux ... pointer to parameter for building generator object     */
+     /*   urng    ... pointer to auxilliary uniform random number generator  */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... on success                                                   */
+     /*   0 ... on error                                                     */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( NULL,par,0 );
+  _unur_check_NULL("URNGaux",urng_aux,0);
+
+  if (par->urng_aux == NULL) {
+    /* no auxilliary generator is used */
+    _unur_warning("URNGaux",UNUR_ERR_PAR_SET,"no aux URNG required");
+    return 0;
+  }
+
+  par->urng_aux = urng_aux;
+
+  return 1;
+} /* end of unur_set_urng_aux() */
+
 /*---------------------------------------------------------------------------*/
 
+UNUR_URNG *
+unur_get_urng_aux( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* get auxilliary uniform random number generator                       */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen     ... pointer to generator object                            */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   Pointer to old auxilliary uniform RNG                              */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return NULL                                                        */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  CHECK_NULL(gen,NULL);
 
+  return gen->urng_aux;
+} /* end of unur_get_urng_aux() */
+
+/*---------------------------------------------------------------------------*/
+
+UNUR_URNG *
+unur_chg_urng_aux( struct unur_gen *gen, UNUR_URNG *urng_aux )
+     /*----------------------------------------------------------------------*/
+     /* set auxilliary uniform random number generator                       */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen      ... pointer to generator object                           */
+     /*   urng_aux ... pointer to auxilliary uniform random number generator */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   Pointer to old auxilliary uniform RNG                              */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return NULL                                                        */
+     /*----------------------------------------------------------------------*/
+{
+  UNUR_URNG *urng_aux_old;
+
+  /* check arguments */
+  CHECK_NULL(gen,NULL);
+  CHECK_NULL(urng_aux,NULL);
+
+  if (gen->urng_aux == NULL) {
+    /* no auxilliary generator is used */
+    _unur_warning(gen->genid,UNUR_ERR_PAR_SET,"no aux URNG required");
+    return NULL;
+  }
+
+  urng_aux_old = gen->urng_aux;
+
+  /* set pointer to main URNG */
+  gen->urng_aux = urng_aux;
+
+  /* also set pointer in auxilliary generator objects */
+  if (gen->gen_aux)   unur_chg_urng_aux(gen->gen_aux,urng_aux);
+  if (gen->gen_aux_2) unur_chg_urng_aux(gen->gen_aux_2,urng_aux);
+
+  return urng_aux_old;
+} /* end of unur_chg_urng_aux() */
+
+/*---------------------------------------------------------------------------*/

@@ -63,11 +63,11 @@ my \$q = new CGI;
 # ----------------------------------------------------------------
 # Get some data from query
 
-\$step = \$q->param('step');
+\$step = param('step');
 Delete('step');
 
-\$distr = \$q->param('distribution');
-\$Stdform = \$q->param('Stdform');
+\$distr = param('distribution');
+\$Stdform = param('Stdform');
 
 \$n_req = \$data_distr{\$distr}{'=N_REQ'};
 \$n_tot = \$data_distr{\$distr}{'=N_TOT'};
@@ -143,7 +143,7 @@ sub anuran_select_distribution
 	    # form
 	    blockquote( \$warning,
 			startform(-method=>'GET',
-				  -action=>\$q->url()),
+				  -action=>url()),
 			popup_menu(-name=>'distribution',
 				   -values=>\\\@menue_distributions,
 				   -labels=>\\\%labels_menue_distributions),
@@ -221,7 +221,7 @@ sub anuran_params_distribution
 
 	    \$n_param = \$n_req;
 	    for (my \$i=0; \$i < \$n_tot; \$i++) {
-		\$param[\$i] = \$q->param("Std_param_\$i");
+		\$param[\$i] = param("Std_param_\$i");
 	    }
 	}
 	else {
@@ -229,7 +229,7 @@ sub anuran_params_distribution
 
 	    \$n_param = \$n_tot;
 	    for (my \$i=0; \$i < \$n_tot; \$i++) {
-		\$param[\$i] = \$q->param("param_\$i");
+		\$param[\$i] = param("param_\$i");
 	    }
 	}
 
@@ -288,8 +288,8 @@ sub anuran_params_distribution
 	# start form
 	print 
 	    start_blockquote(),
-	    startform(-method=>'GET',
-		      -action=>\$q->url());
+	    startform(-method => 'GET',
+		      -action => url());
 
 	if (\$n_req < \$n_tot) {
 	    # Standardform exists
@@ -438,18 +438,96 @@ sub anuran_domain_distribution
 	}
     }
 
-    # Get inserted domain
-    \$left = \$std_left;
-    if (defined \$q->param('left') and \$std_left > \$q->param('left')) {
-	\$left = \$q->param('left');
+    # Get domain
+    if (!defined(param('left')) or param('left') < \$std_left) {
+	param('left',\$std_left);
     }
-    \$right = \$std_right;
-    if (defined \$q->param('right') and \$std_right > \$q->param('right')) {
-	\$right = \$q->param('right');
+    if (!defined(param('right')) or param('right') > \$std_right) {
+	param('right',\$std_right);
     }
 
+    # Transform string into number
+    param('left',param('left')+0);
+    param('right',param('right')+0);
 
+    # Truncated domain ?
+    if (param('truncated') ne 'yes' && \$step == 3) {
+	\$step = 4; # nothing to do --> skip
+    }
+    if (param('truncated' ne 'yes')) {
+	param('truncated','no');
+    }
 
+# ................................................................
+# CASE: Distribution selected, Parameters and Domain given
+# ................................................................
+
+    if (\$step > 3) {
+
+	# check domain
+	if (param('left') > param('right')) {
+	    \$step = 3;
+	    print
+		blockquote('<FONT COLOR="red"><BLINK>domain invalid</BLINK> (left > right)</FONT>');
+	}
+
+	else {
+	    # print domain
+	    print 
+		blockquote( ' domain = ( ',
+			    param('left'), 
+			    ',',
+			    param('right'),
+			    ')',
+			    '&nbsp;&nbsp;&nbsp;',
+			    ((param('truncated')eq'yes') ? '(truncated)' : '') );
+	}
+    }
+
+# ................................................................
+# CASE: Distribution selected and Parameters given, input domain
+# ................................................................
+
+    if (\$step == 3) {
+
+	print
+	    start_blockquote(),
+	    startform(-method => 'GET',
+		      -action => url()),
+	    
+	    'left = ',
+	    textfield(-name=>'left',
+		      -size=>10,
+		      -maxlength=>10),
+	    '&nbsp;&nbsp;&nbsp;',
+	    'right = ',
+	    textfield(-name=>'right',
+		      -size=>10,
+		      -maxlength=>10),
+	    p(),
+	    hidden('step','5'),'\n',
+	    hidden('distribution'),
+	    hidden('truncated'),
+	    hidden('Stdform');
+
+	if (\$Stdform ne 'no') {  # i.e. 'yes'
+	    for (my \$i = 0; \$i < \$n_tot; \$i++) {
+		print hidden("Std_param_\$i");
+	    }
+	}
+	if (\$Stdform ne 'yes') {  # i.e. 'no'
+	    for (my \$i = 0; \$i < \$n_tot; \$i++) {
+		print hidden("param_\$i");
+	    }
+	}
+	
+	print
+	    submit('Continue'),'\n',
+	    end_form(),
+	    end_blockquote();
+    }
+
+# ................................................................
 
     # ruler
     print p().hr().p();
@@ -464,15 +542,52 @@ sub anuran_domain_distribution
 sub anuran_properties_generator
 {
 
-    print
+# ................................................................
+# 
+# ................................................................
 
-	# heading
-	font({-color=>"$Gray"},
-	     'Step 4: '.b('Properties of generator')),
-	br(),
+    if (\$step < 4) {
+	print
 
-	# ruler
-	p().hr().p();
+	    # heading
+	    font({-color=>"$Gray"},
+		 'Step 4: '.b('Properties of generator')),
+	    br(),
+
+	    # ruler
+	    p().hr().p();
+
+	return;
+    }
+
+# ................................................................
+# 
+# ................................................................
+
+    print 
+	'Step 4: ',
+	b('Properties of generator for '.\$data_distr{\$distr}{'=NAME'}).br();
+
+# ................................................................
+# 
+# ................................................................
+
+    if (\$step > 4) {
+	;
+    }
+
+# ................................................................
+# 
+# ................................................................
+
+    if (\$step == 4) {
+	;
+    }
+
+# ................................................................
+
+    # ruler
+    print p().hr().p();
 
 } # end of anuran_properties_generator()
 
@@ -483,15 +598,73 @@ sub anuran_properties_generator
 sub anuran_language
 {
 
-    print
+# ................................................................
+# 
+# ................................................................
 
-	# heading
-	font({-color=>"$Gray"},
-	     'Step 5: '.b('Programming language')),
-	br(),
+    if (\$step < 5) {
+	print
+	    
+	    # heading
+	    font({-color=>"$Gray"},
+		 'Step 5: '.b('Programming language')),
+	    br(),
+	    
+	    # ruler
+	    p().hr().p();
 
-	# ruler
-	p().hr().p();
+	return;
+    }
+
+# ................................................................
+# 
+# ................................................................
+
+    if (\$step > 5) {
+	print 
+	    'Step 5: ',
+	    b('Programming language: '.param('language')).br();
+    }
+
+# ................................................................
+# 
+# ................................................................
+
+    if (\$step == 5) {
+	print 
+	    startform(-method => 'GET',
+		      -action => url()),
+	    'Step 5: ',
+	    b('Programming language: '),
+	    popup_menu(-name=>'language',
+		       -values=>['C','FORTRAN','JAVA']),
+	    hidden('step','6'),'\n',
+	    hidden('distribution'),
+	    hidden('left'),
+	    hidden('right'),
+	    hidden('truncated'),
+	    hidden('Stdform');
+
+	if (\$Stdform ne 'no') {  # i.e. 'yes'
+	    for (my \$i = 0; \$i < \$n_tot; \$i++) {
+		print hidden("Std_param_\$i");
+	    }
+	}
+	if (\$Stdform ne 'yes') {  # i.e. 'no'
+	    for (my \$i = 0; \$i < \$n_tot; \$i++) {
+		print hidden("param_\$i");
+	    }
+	}
+	
+	print
+	    submit('Continue'),'\n',
+	    endform();
+    }
+
+# ................................................................
+
+    # ruler
+    print p().hr().p();
 
 } # end of anuran_language()
 

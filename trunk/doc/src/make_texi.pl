@@ -1477,11 +1477,11 @@ sub next_tex_token {
 	    $$info .= " $1 ";
 	    return;
 	}
-	if ($value =~ /^\\(alpha|beta|gamma|delta|mu)\s*$/) {
+	if ($value =~ /^\\(alpha|beta|gamma|delta|mu|pi)(\s*)$/) {
 	    # greek letters
 	    $$tex .= $value;
-	    $$html .= " $1 ";
-	    $$info .= " $1 ";
+	    $$html .= " $1$2";
+	    $$info .= " $1$2";
 	    return;
 	}
 	if ($value =~ /^\\(limits)\s*$/) {

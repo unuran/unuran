@@ -45,8 +45,8 @@ do {
 /*-----------------------------------------------------------------*/
  /* Stringausgabe    */
 
- /*    Ntree2string(parsetree,input_string);
-       printf("\nParse-Baum als String:\n%s\n",input_string); */
+     Ntree2string(parsetree,input_string);
+     printf("\nParse-Baum als String:\n%s\n",input_string); 
 
  /*-----------------------------------------------------------------*/
  /*  Ableitung */

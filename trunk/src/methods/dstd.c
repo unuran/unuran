@@ -195,7 +195,7 @@ unur_dstd_set_variant( struct unur_par *par, unsigned variant )
   _unur_check_NULL( par->genid,par->distr,0 );
 
   /* check input */
-  _unur_check_par_object( DSTD );
+  _unur_check_par_object( par,DSTD );
 
   /* store date */
   old_variant = par->variant;
@@ -235,7 +235,7 @@ unur_dstd_chg_param( struct unur_gen *gen, double *params, int n_params )
 
   /* check arguments */
   CHECK_NULL(gen,0);
-  COOKIE_CHECK(gen,CK_DSTD_GEN,0);
+  _unur_check_gen_object( gen,DSTD );
   if (n_params>0) CHECK_NULL(params,0);
   
   /* check new parameter for generator */

@@ -232,7 +232,7 @@ unur_dis_set_variant( struct unur_par *par, unsigned variant )
   _unur_check_NULL( GENTYPE,par,0 );
 
   /* check input */
-  _unur_check_par_object( DIS );
+  _unur_check_par_object( par,DIS );
 
   /* check new parameter for generator */
   if (variant != DIS_VAR_ADD && variant != DIS_VAR_DIV) {
@@ -268,7 +268,7 @@ unur_dis_set_guidefactor( struct unur_par *par, double factor )
   _unur_check_NULL( GENTYPE,par,0 );
 
   /* check input */
-  _unur_check_par_object( DIS );
+  _unur_check_par_object( par,DIS );
 
   /* check new parameter for generator */
   if (factor < 0) {

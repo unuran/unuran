@@ -311,7 +311,7 @@ unur_tabl_set_nstp( struct unur_par *par, int n_stp )
   _unur_check_NULL( GENTYPE,par,0 );
 
   /* check input */
-  _unur_check_par_object( TABL );
+  _unur_check_par_object( par,TABL );
 
   /* check starting construction points */
   /* we always use the boundary points as additional starting points,
@@ -351,7 +351,7 @@ unur_tabl_set_max_sqhratio( struct unur_par *par, double max_ratio )
   _unur_check_NULL( GENTYPE,par,0 );
 
   /* check input */
-  _unur_check_par_object( TABL );
+  _unur_check_par_object( par,TABL );
 
   /* check new parameter for generator */
   if (max_ratio < 0. || max_ratio > 1. ) {
@@ -389,7 +389,7 @@ unur_tabl_set_max_intervals( struct unur_par *par, int max_ivs )
   _unur_check_NULL( GENTYPE,par,0 );
 
   /* check input */
-  _unur_check_par_object( TABL );
+  _unur_check_par_object( par,TABL );
 
   /* check new parameter for generator */
   if (max_ivs < 1 ) {
@@ -428,7 +428,7 @@ unur_tabl_set_areafraction( struct unur_par *par, double fraction )
   _unur_check_NULL( GENTYPE,par,0 );
 
   /* check input */
-  _unur_check_par_object( TABL );
+  _unur_check_par_object( par,TABL );
 
   /* check new parameter for generator */
   if (fraction < 0.) {
@@ -475,7 +475,7 @@ unur_tabl_set_slopes( struct unur_par *par, double *slopes, int n_slopes )
   _unur_check_NULL( GENTYPE,par,0 );
 
   /* check input */
-  _unur_check_par_object( TABL );
+  _unur_check_par_object( par,TABL );
 
   /* check new parameter for generator */
   if( n_slopes <= 0 ) {
@@ -531,7 +531,7 @@ unur_tabl_set_boundary( struct unur_par *par, double left, double right )
   _unur_check_NULL( GENTYPE,par,0 );
 
   /* check input */
-  _unur_check_par_object( TABL );
+  _unur_check_par_object( par,TABL );
 
   /* check new parameter for generator */
   if (left >= right) {
@@ -571,7 +571,7 @@ unur_tabl_set_variant( struct unur_par *par, unsigned variant )
   _unur_check_NULL( GENTYPE,par,0 );
 
   /* check input */
-  _unur_check_par_object( TABL );
+  _unur_check_par_object( par,TABL );
 
   /* store date */
   /** TODO: check variant ?? **/
@@ -604,7 +604,7 @@ unur_tabl_set_guidefactor( struct unur_par *par, double factor )
   _unur_check_NULL( GENTYPE,par,0 );
 
   /* check input */
-  _unur_check_par_object( TABL );
+  _unur_check_par_object( par,TABL );
 
   /* check new parameter for generator */
   if (factor < 0) {
@@ -645,7 +645,7 @@ unur_tabl_set_verify( struct unur_par *par, int verify )
   _unur_check_NULL( GENTYPE,par,0 );
 
   /* check input */
-  _unur_check_par_object( TABL );
+  _unur_check_par_object( par,TABL );
 
   /* we use a bit in variant */
   par->variant = (verify) ? (par->variant | TABL_VARFLAG_VERIFY) : (par->variant & (~TABL_VARFLAG_VERIFY));

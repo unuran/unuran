@@ -218,7 +218,7 @@ unur_stdr_set_Fmode( struct unur_par *par, double Fmode )
   _unur_check_NULL( GENTYPE,par,0 );
 
   /* check input */
-  _unur_check_par_object( STDR );
+  _unur_check_par_object( par,STDR );
 
   /* check new parameter for generator */
   if (Fmode < 0. || Fmode > 1.) {
@@ -259,7 +259,7 @@ unur_stdr_set_verify( struct unur_par *par, int verify )
   _unur_check_NULL( GENTYPE,par,0 );
 
   /* check input */
-  _unur_check_par_object( STDR );
+  _unur_check_par_object( par,STDR );
 
   /* we use a bit in variant */
   par->variant = (verify) ? (par->variant | STDR_VARFLAG_VERIFY) : (par->variant & (~STDR_VARFLAG_VERIFY));
@@ -292,7 +292,7 @@ unur_stdr_set_usesqueeze( struct unur_par *par, int usesqueeze )
   _unur_check_NULL( GENTYPE,par,0 );
 
   /* check input */
-  _unur_check_par_object( STDR );
+  _unur_check_par_object( par,STDR );
 
   /* we use a bit in variant */
   par->variant = (usesqueeze) ? (par->variant | STDR_VARFLAG_SQUEEZE) : (par->variant & (~STDR_VARFLAG_SQUEEZE));

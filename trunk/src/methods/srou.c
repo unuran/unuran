@@ -256,7 +256,7 @@ unur_srou_set_Fmode( struct unur_par *par, double Fmode )
   _unur_check_NULL( GENTYPE,par,0 );
 
   /* check input */
-  _unur_check_par_object( SROU );
+  _unur_check_par_object( par,SROU );
 
   /* check new parameter for generator */
   if (Fmode < 0. || Fmode > 1.) {
@@ -297,7 +297,7 @@ unur_srou_set_verify( struct unur_par *par, int verify )
   _unur_check_NULL( GENTYPE,par,0 );
 
   /* check input */
-  _unur_check_par_object( SROU );
+  _unur_check_par_object( par,SROU );
 
   /* we use a bit in variant */
   par->variant = (verify) ? (par->variant | SROU_VARFLAG_VERIFY) : (par->variant & (~SROU_VARFLAG_VERIFY));
@@ -330,7 +330,7 @@ unur_srou_set_usesqueeze( struct unur_par *par, int usesqueeze )
   _unur_check_NULL( GENTYPE,par,0 );
 
   /* check input */
-  _unur_check_par_object( SROU );
+  _unur_check_par_object( par,SROU );
 
   /* we use a bit in variant */
   par->variant = (usesqueeze) ? (par->variant | SROU_VARFLAG_SQUEEZE) : (par->variant & (~SROU_VARFLAG_SQUEEZE));
@@ -363,7 +363,7 @@ unur_srou_set_usemirror( struct unur_par *par, int usemirror )
   _unur_check_NULL( GENTYPE,par,0 );
 
   /* check input */
-  _unur_check_par_object( SROU );
+  _unur_check_par_object( par,SROU );
 
   /* we use a bit in variant */
   par->variant = (usemirror) ? (par->variant | SROU_VARFLAG_MIRROR) : (par->variant & (~SROU_VARFLAG_MIRROR));

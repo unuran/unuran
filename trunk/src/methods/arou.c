@@ -366,7 +366,7 @@ unur_arou_set_cpoints( struct unur_par *par, int n_stp, double *stp )
   _unur_check_NULL( GENTYPE,par,0 );
 
   /* check input */
-  _unur_check_par_object( AROU );
+  _unur_check_par_object( par,AROU );
 
   /* check starting construction points */
   /* we always use the boundary points as additional starting points,
@@ -416,7 +416,7 @@ unur_arou_set_guidefactor( struct unur_par *par, double factor )
   _unur_check_NULL( GENTYPE,par,0 );
 
   /* check input */
-  _unur_check_par_object( AROU );
+  _unur_check_par_object( par,AROU );
 
   /* check new parameter for generator */
   if (factor < 0) {
@@ -454,7 +454,7 @@ unur_arou_set_max_sqhratio( struct unur_par *par, double max_ratio )
   _unur_check_NULL( GENTYPE,par,0 );
 
   /* check input */
-  _unur_check_par_object( AROU );
+  _unur_check_par_object( par,AROU );
 
   /* check new parameter for generator */
   if (max_ratio < 0. || max_ratio > 1. ) {
@@ -492,7 +492,7 @@ unur_arou_set_max_segments( struct unur_par *par, int max_segs )
   _unur_check_NULL( GENTYPE,par,0 );
 
   /* check input */
-  _unur_check_par_object( AROU );
+  _unur_check_par_object( par,AROU );
 
   /* check new parameter for generator */
   if (max_segs < 1 ) {
@@ -530,7 +530,7 @@ unur_arou_set_center( struct unur_par *par, double center )
   _unur_check_NULL( GENTYPE,par,0 );
 
   /* check input */
-  _unur_check_par_object( AROU );
+  _unur_check_par_object( par,AROU );
 
   /* store data */
   PAR.center = center;
@@ -566,7 +566,7 @@ unur_arou_set_usecenter( struct unur_par *par, int usecenter )
   _unur_check_NULL( GENTYPE,par,0 );
 
   /* check input */
-  _unur_check_par_object( AROU );
+  _unur_check_par_object( par,AROU );
 
   /* we use a bit in variant */
   par->variant = (usecenter) ? (par->variant | AROU_VARFLAG_USECENTER) : (par->variant & (~AROU_VARFLAG_USECENTER));
@@ -599,7 +599,7 @@ unur_arou_set_verify( struct unur_par *par, int verify )
   _unur_check_NULL( GENTYPE,par,0 );
 
   /* check input */
-  _unur_check_par_object( AROU );
+  _unur_check_par_object( par,AROU );
 
   /* we use a bit in variant */
   par->variant = (verify) ? (par->variant | AROU_VARFLAG_VERIFY) : (par->variant & (~AROU_VARFLAG_VERIFY));

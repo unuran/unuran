@@ -195,7 +195,7 @@ unur_cstd_set_variant( struct unur_par *par, unsigned variant )
   _unur_check_NULL( par->genid, par->distr, 0 );
 
   /* check input */
-  _unur_check_par_object( CSTD );
+  _unur_check_par_object( par,CSTD );
 
   /* store date */
   old_variant = par->variant;
@@ -235,7 +235,7 @@ unur_cstd_chg_param( struct unur_gen *gen, double *params, int n_params )
 
   /* check arguments */
   CHECK_NULL(gen,0);
-  COOKIE_CHECK(gen,CK_CSTD_GEN,0);
+  _unur_check_gen_object( gen,CSTD );
   if (n_params>0) CHECK_NULL(params,0);
   
   /* check new parameter for generator */

@@ -35,20 +35,20 @@ pkginclude_HEADERS = \
  unuran_errno.h \
  unur_urng.h \
  unur_misc.h  \
- distr.h \
- arou.h \
- cstd.h \
- dau.h  \
- dis.h  \
- dstd.h \
- ninv.h  \
- rect.h \
- srou.h \
- stdr.h \
- tabl.h \
- tdr.h  \
- unif.h \
- utdr.h
+ unur_distr.h \
+ unur_arou.h \
+ unur_cstd.h \
+ unur_dau.h  \
+ unur_dis.h  \
+ unur_dstd.h \
+ unur_ninv.h  \
+ unur_rect.h \
+ unur_srou.h \
+ unur_stdr.h \
+ unur_tabl.h \
+ unur_tdr.h  \
+ unur_unif.h \
+ unur_utdr.h
 
 noinst_HEADERS = \
  source_unuran.h \

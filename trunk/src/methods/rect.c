@@ -156,7 +156,7 @@ unur_rect_set_domain_vec( struct unur_par *par, double **domain )
   _unur_check_NULL( GENTYPE,par,0 );
 
   /* check input */
-  _unur_check_par_object( RECT );
+  _unur_check_par_object( par,RECT );
 
   /* check new parameter for generator */
   /** TODO **/

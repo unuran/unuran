@@ -248,7 +248,7 @@ unur_dau_set_urnfactor( struct unur_par *par, double factor )
   _unur_check_NULL( GENTYPE,par,0 );
 
   /* check input */
-  _unur_check_par_object( DAU );
+  _unur_check_par_object( par,DAU );
   
   /* check new parameter for generator */
   if (factor < 1.) {

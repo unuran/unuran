@@ -214,7 +214,7 @@ int unur_ninv_use_newton( struct unur_par *par )
   _unur_check_NULL( GENTYPE,par,0 );
 
   /* check input */
-  _unur_check_par_object( NINV );
+  _unur_check_par_object( par,NINV );
 
   /* check new parameter for generator */
   if (! par->DISTR_IN.pdf) {
@@ -245,7 +245,7 @@ int unur_ninv_use_regula( struct unur_par *par )
   _unur_check_NULL( GENTYPE,par,0 );
 
   /* check input */
-  _unur_check_par_object( NINV );
+  _unur_check_par_object( par,NINV );
 
   /* store date */
   par->variant = NINV_VARFLAG_REGULA;
@@ -273,7 +273,7 @@ int unur_ninv_set_max_iter( struct unur_par *par, int max_iter )
   _unur_check_NULL( GENTYPE,par,0 );
 
   /* check input */
-  _unur_check_par_object( NINV );
+  _unur_check_par_object( par,NINV );
 
   /* check new parameter for generator */
   if (max_iter < 1) {
@@ -310,7 +310,7 @@ int unur_ninv_set_x_resolution( struct unur_par *par, double x_resolution)
   _unur_check_NULL( GENTYPE,par,0 );
 
   /* check input */
-  _unur_check_par_object( NINV );
+  _unur_check_par_object( par,NINV );
 
   /* check new parameter for generator */
   if (x_resolution < DBL_EPSILON) {
@@ -354,7 +354,7 @@ unur_ninv_set_start( struct unur_par *par, double s1, double s2, double s3 )
   _unur_check_NULL( GENTYPE,par,0 );
 
   /* check input */
-  _unur_check_par_object( NINV );
+  _unur_check_par_object( par,NINV );
 
   /* store date */
   PAR.s[0] = s1;

@@ -221,7 +221,7 @@ unur_utdr_set_cfactor( struct unur_par *par, double cfactor )
   _unur_check_NULL( GENTYPE,par,0 );
 
   /* check input */
-  _unur_check_par_object( UTDR );
+  _unur_check_par_object( par,UTDR );
 
   /* check new parameter for generator */
   /** TODO: welche werte fuer c sind zulaessig / sinnvoll ? **/
@@ -261,7 +261,7 @@ unur_utdr_set_delta( struct unur_par *par, double delta )
   _unur_check_NULL( GENTYPE,par,0 );
 
   /* check input */
-  _unur_check_par_object( UTDR );
+  _unur_check_par_object( par,UTDR );
 
   /* check new parameter for generator */
   /** TODO: welche werte fuer delta sind zulaessig / sinnvoll ? **/
@@ -303,7 +303,7 @@ unur_utdr_set_verify( struct unur_par *par, int verify )
   _unur_check_NULL( GENTYPE,par,0 );
 
   /* check input */
-  _unur_check_par_object( UTDR );
+  _unur_check_par_object( par,UTDR );
 
   /* we use a bit in variant */
   par->variant = (verify) ? (par->variant | UTDR_VARFLAG_VERIFY) : (par->variant & (~UTDR_VARFLAG_VERIFY));

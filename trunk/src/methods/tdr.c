@@ -554,7 +554,7 @@ unur_tdr_set_cpoints( struct unur_par *par, int n_stp, double *stp )
   _unur_check_NULL( GENTYPE,par,0 );
 
   /* check input */
-  _unur_check_par_object( TDR );
+  _unur_check_par_object( par,TDR );
 
   /* check starting construction points */
   /* we always use the boundary points as additional starting points,
@@ -603,7 +603,7 @@ unur_tdr_set_guidefactor( struct unur_par *par, double factor )
   _unur_check_NULL( GENTYPE,par,0 );
 
   /* check input */
-  _unur_check_par_object( TDR );
+  _unur_check_par_object( par,TDR );
 
   /* check new parameter for generator */
   if (factor < 0) {
@@ -641,7 +641,7 @@ unur_tdr_set_max_sqhratio( struct unur_par *par, double max_ratio )
   _unur_check_NULL( GENTYPE,par,0 );
 
   /* check input */
-  _unur_check_par_object( TDR );
+  _unur_check_par_object( par,TDR );
 
   /* check new parameter for generator */
   if (max_ratio < 0. || max_ratio > 1. ) {
@@ -679,7 +679,7 @@ unur_tdr_set_max_intervals( struct unur_par *par, int max_ivs )
   _unur_check_NULL( GENTYPE,par,0 );
 
   /* check input */
-  _unur_check_par_object( TDR );
+  _unur_check_par_object( par,TDR );
 
   /* check new parameter for generator */
   if (max_ivs < 1 ) {
@@ -718,7 +718,7 @@ unur_tabl_set_center( struct unur_par *par, double center )
   _unur_check_NULL( GENTYPE,par,0 );
 
   /* check input */
-  _unur_check_par_object( TDR );
+  _unur_check_par_object( par,TDR );
 
   /* store data */
   PAR.center = center;
@@ -754,7 +754,7 @@ unur_tdr_set_usecenter( struct unur_par *par, int usecenter )
   _unur_check_NULL( GENTYPE,par,0 );
 
   /* check input */
-  _unur_check_par_object( TDR );
+  _unur_check_par_object( par,TDR );
 
   /* we use a bit in variant */
   par->variant = (usecenter) ? (par->variant | TDR_VARFLAG_USECENTER) : (par->variant & (~TDR_VARFLAG_USECENTER));
@@ -788,7 +788,7 @@ unur_tdr_set_usemode( struct unur_par *par, int usemode )
   _unur_check_NULL( GENTYPE,par,0 );
 
   /* check input */
-  _unur_check_par_object( TDR );
+  _unur_check_par_object( par,TDR );
 
   /* we use a bit in variant */
   par->variant = (usemode) ? (par->variant | TDR_VARFLAG_USEMODE) : (par->variant & (~TDR_VARFLAG_USEMODE));
@@ -818,7 +818,7 @@ unur_tdr_set_c( struct unur_par *par, double c )
   _unur_check_NULL( GENTYPE,par,0 );
 
   /* check input */
-  _unur_check_par_object( TDR );
+  _unur_check_par_object( par,TDR );
 
   /* check new parameter for generator */
   if (c > 0.) {
@@ -868,7 +868,7 @@ unur_tdr_set_verify( struct unur_par *par, int verify )
   _unur_check_NULL( GENTYPE,par,0 );
 
   /* check input */
-  _unur_check_par_object( TDR );
+  _unur_check_par_object( par,TDR );
 
   /* we use a bit in variant */
   par->variant = (verify) ? (par->variant | TDR_VARFLAG_VERIFY) : (par->variant & (~TDR_VARFLAG_VERIFY));

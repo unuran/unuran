@@ -82,6 +82,12 @@ static struct unur_gen *_unur_ninv_create( struct unur_par *par );
 /* create new (almost empty) generator object.                               */
 /*---------------------------------------------------------------------------*/
 
+static double _unur_ninv_regula( struct unur_gen *gen, double u );
+/*---------------------------------------------------------------------------*/
+/* algorithm: regula falsi                                                   */
+/*---------------------------------------------------------------------------*/
+
+
 #ifdef UNUR_ENABLE_LOGGING
 /*---------------------------------------------------------------------------*/
 /* the following functions print debugging information on output stream,     */
@@ -406,12 +412,13 @@ unur_ninv_init( struct unur_par *par )
 
   /* free parameters */
   free(par);
-
+  
   return gen;
 
 } /* end of unur_ninv_init() */
 
 /*****************************************************************************/
+
 
 double
 unur_ninv_sample_regula( struct unur_gen *gen )
@@ -423,30 +430,47 @@ unur_ninv_sample_regula( struct unur_gen *gen )
      /*                                                                      */
      /* return:                                                              */
      /*   double (sample from random variate)                                */
-     /*                                                                      */
-     /* error:                                                               */
-     /*   return 0.                                                          */
      /*----------------------------------------------------------------------*/
+{
+  return _unur_ninv_regula(gen, _unur_call_urng(gen) ) ;
+}
+
+
+static double 
+_unur_ninv_regula( struct unur_gen *gen, double u )
+     /*---------------------------------------------------------------------*/
+     /*   algorithm: regula falsi                                           */
+     /*                                                                     */
+     /*   parameters:                                                       */
+     /*      gen ... pointer to generator object                            */
+     /*      u   ... random number (uniform distribution)                   */
+     /*   return:                                                           */
+     /*     double (sample from random variate)                             */
+     /*                                                                     */
+     /*   error:                                                            */
+     /*     return 0.                                                       */
+     /*---------------------------------------------------------------------*/
 { 
-  double x1, x2, a, xtmp;  /* points for RF        */
-  double x2abs;            /* absolute value of x2 */
-  double f1, f2, ftmp;     /* function values at x1, x2, xtmp */
-  double length;           /* (gerichtete) laenge des Intervalls mit ZW */ 
-  double lengthabs;        /* absolute length of interval */
-  int  lengthsgn;          /* "richtung" des Intervalls */
-  double step;             /* Vergr"o"sert Startinvervall bis ZW gefunden */
-  double dx;               /* RF-Schrittgr"o"se */
-  int count = 0;           /* Z"ahler f"ur "keine ZW" */
-  int i;                   /* Schleifenzahler */
     
-  double u;     /* uniform random number */
+  double x1, x2, a, xtmp;/* points for RF                                   */
+  double x2abs;          /* absolute value of x2                            */
+  double f1, f2, ftmp;   /* function values at x1, x2, xtmp                 */
+  double length;         /* oriented length of the interval with sign change*/
+  double lengthabs;      /* absolute length of interval                     */
+  int  lengthsgn;        /* orientation of the Intervalls                   */
+  double step;           /* enlarges interval til sign change found         */
+  double dx;             /* RF-stepsize                                     */
+  int count = 0;         /* counter for  "no sign change"                   */
+  int i;
+    
 
   /* check arguments */
   CHECK_NULL(gen,0.);  COOKIE_CHECK(gen,CK_NINV_GEN,0.);
 
   /* initialize starting interval */
-  x1 =  GEN.s[0];      /* left boudary of interval */
-  x2 =  GEN.s[1];      /* right boudary of interval */
+   x1 =  GEN.s[0];      /* left boudary of interval */
+   x2 =  GEN.s[1];      /* right boudary of interval*/
+
 
   if (x1>=x2) {
     _unur_error(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,""); return 0.; }
@@ -459,15 +483,15 @@ unur_ninv_sample_regula( struct unur_gen *gen )
   f2 = CDF(x2) - u;
 
   /* search for interval with changing signs */
-  step = 1.;  /* Startintervall zu klein -> um 2^n * gap vergr"o"sern */ 
+  step = 1.;     /* interval too small -> make it bigger ( + 2^n * gap ) */ 
   while ( f1*f2 > 0. ) {
-    if ( f1 > 0. ) {/* untere Grenze zu gross */    
+    if ( f1 > 0. ) { /* lower boundary too big */    
       x2  = x1;  
       f2  = f1;
       x1 -= step;   
       f1 = CDF(x1) - u;
     }
-    else {         /* obere Grenze zu klein */
+    else {         /* upper boundary too small */
       x1  = x2;
       f1  = f2;
       x2 += step;
@@ -552,6 +576,9 @@ unur_ninv_sample_regula( struct unur_gen *gen )
 } /* end of unur_ninv_sample_regula() */
 
 /*---------------------------------------------------------------------------*/
+
+
+
 
 double
 unur_ninv_sample_newton( struct unur_gen *gen )

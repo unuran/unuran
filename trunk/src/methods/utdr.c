@@ -88,7 +88,7 @@
 /*---------------------------------------------------------------------------*/
 /* Flags for logging set calls                                               */
 
-#define UTDR_SET_CFACTOR        0x001u
+#define UTDR_SET_CPFACTOR       0x001u
 #define UTDR_SET_DELTA          0x002u
 #define UTDR_SET_PDFMODE        0x004u   /* PDF at mode is set               */
 
@@ -305,13 +305,13 @@ unur_utdr_set_pdfatmode( UNUR_PAR *par, double fmode )
 /*---------------------------------------------------------------------------*/
 
 int
-unur_utdr_set_cfactor( struct unur_par *par, double cfactor )
+unur_utdr_set_cpfactor( struct unur_par *par, double cp_factor )
      /*----------------------------------------------------------------------*/
      /* set factor for position of left and right construction point         */
      /*                                                                      */
      /* parameters:                                                          */
-     /*   par     ... pointer to parameter for building generator object     */
-     /*   cfactor ... factor                                                 */
+     /*   par       ... pointer to parameter for building generator object   */
+     /*   cp_factor ... factor                                               */
      /*                                                                      */
      /* return:                                                              */
      /*   1 ... on success                                                   */
@@ -330,23 +330,23 @@ unur_utdr_set_cfactor( struct unur_par *par, double cfactor )
   Wenn area genau bekannt ist, ist ein c > 2 (2 ist der minimax approach) so weit
   ich weiss nie sinnvoll. Ich denke aber, das sollte man besser nicht prinzipiell
   verbieten, hoechstens eine warnung.**/
-  if (cfactor <= 0.) {
+  if (cp_factor <= 0.) {
     _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"c-factor <= 0");
     return 0;
   }
 
-  if (cfactor > 2.1)
+  if (cp_factor > 2.1)
     _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"c-factor > 2 not recommended. skip");
 
   /* store date */
-  PAR.c_factor = cfactor;
+  PAR.c_factor = cp_factor;
 
   /* changelog */
-  par->set |= UTDR_SET_CFACTOR;
+  par->set |= UTDR_SET_CPFACTOR;
 
   return 1;
 
-} /* end of unur_utdr_set_cfactor() */
+} /* end of unur_utdr_set_cpfactor() */
 
 /*---------------------------------------------------------------------------*/
 

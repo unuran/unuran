@@ -102,6 +102,15 @@
 
 #define GENTYPE "NROU"         /* type of generator                          */
 
+/* scaling factor of computed minimum boundary rectangle                     */
+/* after we have computed the boundary rectangle (0, vmax)x(umin[d], umax[d])*/
+/* we scale the obtained boundaries with this factor, i.e. :                 */
+/* vmax = vmax * ( 1+ NROU_RECT_SCALING)                                     */
+/* umin = umin - (umax-umin)*NROU_RECT_SCALING/2.                            */
+/* umax = umax + (umax-umin)*NROU_RECT_SCALING/2.                            */
+#define NROU_RECT_SCALING 1e-4
+
+
 /*---------------------------------------------------------------------------*/
 
 static struct unur_gen *_unur_nrou_init( struct unur_par *par );
@@ -492,7 +501,7 @@ _unur_aux_bound_vmax(double x, void *p) {
   struct unur_gen *gen;
   gen=p; /* typecast from void* to unur_gen* */
    
-  return sqrt( _unur_cont_PDF((x),(gen->distr)) ); 
+  return pow( _unur_cont_PDF((x),(gen->distr)), 1./(1.+GEN.r) ); 
 }
 
 /*---------------------------------------------------------------------------*/
@@ -505,7 +514,8 @@ _unur_aux_bound_umax(double x, void *p) {
   struct unur_gen *gen;
   gen=p; /* typecast from void* to unur_gen* */
   
-  return (x-GEN.center) * sqrt( _unur_cont_PDF((x),(gen->distr)) );
+  return (x-GEN.center) * pow( _unur_cont_PDF((x),(gen->distr)),
+                               GEN.r / (1.+ GEN.r) );
 }
 
 /*---------------------------------------------------------------------------*/
@@ -558,7 +568,9 @@ _unur_nrou_rectangle( struct unur_gen *gen )
 	  
   /* starting point in min/max algorithm */
   cx=GEN.center;  
-  
+ 
+  /* --------------------------------------------------------------------- */
+ 
   /* calculation of vmax */
   if (!(gen->set & NROU_SET_V)) {
     /* user has not provided any upper bound for v */
@@ -568,11 +580,11 @@ _unur_nrou_rectangle( struct unur_gen *gen )
          (DISTR.mode >= DISTR.BD_LEFT) &&
 	 (DISTR.mode <= DISTR.BD_RIGHT) ) {
 	 
-      /* setting vmax to be sqrt(f(mode)) */
-      GEN.vmax = sqrt(PDF(DISTR.mode));
+      /* setting vmax to be (f(mode))^(1/(1+r)) */
+      GEN.vmax = pow(PDF(DISTR.mode), 1./(1.+GEN.r));
     }
     else {
-      /* calculating vmax as maximum of sqrt(f(x)) in the domain */
+      /* calculating vmax as maximum of (f(x))^(1/(1+r)) in the domain */
       faux.f = (UNUR_FUNCT_GENERIC*) _unur_aux_bound_vmax;
       faux.params = gen; ;
   
@@ -583,8 +595,13 @@ _unur_nrou_rectangle( struct unur_gen *gen )
       }
       GEN.vmax = faux.f(x,faux.params);
     }
+
+    /* additional scaling of boundary rectangle */
+    GEN.vmax = GEN.vmax * ( 1+ NROU_RECT_SCALING);
   }
 
+  /* --------------------------------------------------------------------- */
+  
   /* calculation of umin and umax */
   if (!(gen->set & NROU_SET_U)) {
 
@@ -635,6 +652,10 @@ _unur_nrou_rectangle( struct unur_gen *gen )
        return UNUR_ERR_GENERIC;
     }
     GEN.umax = faux.f(x,faux.params);
+    
+    /* additional scaling of boundary rectangle */
+    GEN.umin = GEN.umin - (GEN.umax-GEN.umin)*NROU_RECT_SCALING/2.;
+    GEN.umax = GEN.umax + (GEN.umax-GEN.umin)*NROU_RECT_SCALING/2.;
   }
 
   /* o.k. */
@@ -754,14 +775,14 @@ _unur_nrou_sample( struct unur_gen *gen )
     U = GEN.umin + _unur_call_urng(gen->urng) * (GEN.umax - GEN.umin);
 
     /* compute X */
-    X = U/V + GEN.center;
+    X = U/pow(V,GEN.r) + GEN.center;
 
     /* inside domain ? */
     if ( (X < DISTR.BD_LEFT) || (X > DISTR.BD_RIGHT) )
       continue;
 
     /* accept or reject */
-    if (V*V <= PDF(X))
+    if (V <= pow(PDF(X), 1./(1.+GEN.r)) )
       return X;
   }
 
@@ -796,7 +817,7 @@ _unur_nrou_sample_check( struct unur_gen *gen )
     U = GEN.umin + _unur_call_urng(gen->urng) * (GEN.umax - GEN.umin);
     
     /* compute x */
-    X = U/V + GEN.center;
+    X = U/pow(V,GEN.r) + GEN.center;
     
     /* inside domain ? */
     if ( (X < DISTR.BD_LEFT) || (X > DISTR.BD_RIGHT) )
@@ -806,9 +827,9 @@ _unur_nrou_sample_check( struct unur_gen *gen )
     fx = PDF(X);
     
     /* a point on the boundary of the region of acceptance
-       has the coordinates ( (X-center) * sqrt(fx), sqrt(fx) ). */
-    sfx = sqrt(fx);
-    xfx = (X-GEN.center) * sfx;
+       has the coordinates ( (X-center) * (fx)^(r/(1+r)), (fx)^(1/(1+r)) ). */
+    sfx = pow(fx, 1./(1.+GEN.r));
+    xfx = (X-GEN.center) * pow(fx, GEN.r/(1.+GEN.r));
     
     /* check hat */
     if ( ( sfx > (1.+DBL_EPSILON) * GEN.vmax )   /* avoid roundoff error with FP registers */
@@ -817,7 +838,7 @@ _unur_nrou_sample_check( struct unur_gen *gen )
       _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"PDF(x) > hat(x)");
     
     /* accept or reject */
-    if (V*V <= PDF(X))
+    if (V <= pow(PDF(X), 1./(1.+GEN.r)) )
       return X;
   }
 
@@ -891,9 +912,16 @@ _unur_nrou_debug_init( const struct unur_gen *gen )
   if (gen->variant & NROU_VARFLAG_VERIFY) fprintf(log,"_check");
   fprintf(log,"()\n%s:\n",gen->genid);
 
+  /* parameters */
+  fprintf(log,"%s: r-parameter = %g",gen->genid, GEN.r);
+  _unur_print_if_default(gen,NROU_SET_R);
+  fprintf(log,"\n%s:\n",gen->genid);
+
+  /* center */
   fprintf(log,"%s: center = %g\n",gen->genid,GEN.center);
   fprintf(log,"%s:\n",gen->genid);
 
+  /* bounding rectangle */
   fprintf(log,"%s: Rectangle:\n",gen->genid);
   fprintf(log,"%s:    left  upper point = (%g,%g)\n",gen->genid,GEN.umin,GEN.vmax);
   fprintf(log,"%s:    right upper point = (%g,%g)\n",gen->genid,GEN.umax,GEN.vmax);

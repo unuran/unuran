@@ -4,9 +4,6 @@
  *                                                                      * 
  ************************************************************************/
 
-#include "scanpars.h"
-
-/************************************************************************/
 extern  void             _unur_fstr_init(void);                                          /* initialisiert hash table */
 extern  struct treenode *_unur_fstr2tree(char *function, int *errcodep, int *errposp);  /* berrechnet aus string einen tree */
 extern  double            _unur_fstr_eval_tree(struct treenode *E_root,double argument);     /* berechnet Funktionswert einer Funktion gegeben als tree */

@@ -2000,10 +2000,6 @@ struct treenode *_unur_fstr_make_derivative(struct treenode *root)
    parsetreeh=part_deriv(root,x,ret_str);
 
     printf("\nAbleitungxxxx:%s\n",ret_str);
-
-    show_tree(root);
-    show_symb_tab();
-
    return parsetreeh;
 }
 

@@ -4,7 +4,7 @@
 
 #include "pars.h"
 
-
+#define MAXLENGTH 50
 
 main()
 {

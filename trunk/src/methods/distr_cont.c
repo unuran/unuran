@@ -54,6 +54,10 @@ static const char unknown_distr_name[] = "unknown";
 
 /*---------------------------------------------------------------------------*/
 
+static void _unur_distr_cont_free( struct unur_distr *distr );
+
+/*---------------------------------------------------------------------------*/
+
 /*****************************************************************************/
 /**                                                                         **/
 /** univariate continuous distributions                                     **/
@@ -103,6 +107,9 @@ unur_distr_cont_new( void )
   /* this is not a derived distribution */
   distr->base = NULL;
 
+  /* destructor */
+  distr->destroy = _unur_distr_cont_free;
+
   /* set defaults                                                            */
   DISTR.pdf       = NULL;          /* pointer to p.d.f.                      */
   DISTR.dpdf      = NULL;          /* pointer to derivative of p.d.f.        */
@@ -133,6 +140,20 @@ unur_distr_cont_new( void )
   return distr;
 
 } /* end of unur_distr_cont_new() */
+
+/*---------------------------------------------------------------------------*/
+
+void
+_unur_distr_cont_free( struct unur_distr *distr )
+     /*----------------------------------------------------------------------*/
+     /* free distribution object                                             */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   distr ... pointer to distribution object                           */
+     /*----------------------------------------------------------------------*/
+{
+  if (distr) free( distr );
+} /* end of unur_distr_cont_free() */
 
 /*---------------------------------------------------------------------------*/
 

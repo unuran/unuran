@@ -140,6 +140,8 @@ struct unur_distr {
 				       derived distribution 
 				       (e.g. order statistics)               */
 
+  void (*destroy)(struct unur_distr *distr); /* pointer to destructor        */
+
 #ifdef UNUR_COOKIES
   unsigned cookie;                  /* magic cookie                          */
 #endif

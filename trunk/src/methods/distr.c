@@ -70,37 +70,7 @@ unur_distr_free( struct unur_distr *distr )
      /*   distr ... pointer to distribution object                           */
      /*----------------------------------------------------------------------*/
 {
-  /* check arguments */
-  if( distr == NULL ) /* nothing to do */
-    return;
-
-  switch (distr->type) {
-  case UNUR_DISTR_CONT:
-    COOKIE_CHECK(distr,CK_DISTR_CONT,/*void*/);
-    break;
-  case UNUR_DISTR_CVEC:
-    COOKIE_CHECK(distr,CK_DISTR_CVEC,/*void*/);
-    break;
-  case UNUR_DISTR_CEMP:
-    COOKIE_CHECK(distr,CK_DISTR_CEMP,/*void*/);
-    if (distr->data.cemp.sample) free( distr->data.cemp.sample );
-    break;
-  case UNUR_DISTR_DISCR:
-    COOKIE_CHECK(distr,CK_DISTR_DISCR,/*void*/);
-    break;
-  case UNUR_DISTR_DEMP:
-    COOKIE_CHECK(distr,CK_DISTR_DEMP,/*void*/);
-    if (distr->data.demp.prob) free( distr->data.demp.prob );
-    break;
-  default:
-    _unur_warning(NULL,UNUR_ERR_DISTR_UNKNOWN,"");
-  }
-
-  /* derived distribution ? */
-  free( distr->base );
-
-  free( distr );
-
+  if (distr) _unur_distr_free( distr );
 } /* end of unur_distr_free() */
 
 /*---------------------------------------------------------------------------*/

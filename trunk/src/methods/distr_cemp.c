@@ -51,6 +51,10 @@ static const char unknown_distr_name[] = "unknown";
 
 /*---------------------------------------------------------------------------*/
 
+static void _unur_distr_cemp_free( struct unur_distr *distr );
+
+/*---------------------------------------------------------------------------*/
+
 /*****************************************************************************/
 /**                                                                         **/
 /** empirical univariate continuous distributions                           **/
@@ -99,6 +103,9 @@ unur_distr_cemp_new( void )
   /* this is not a derived distribution */
   distr->base = NULL;
 
+  /* destructor */
+  distr->destroy = _unur_distr_cemp_free;
+
   /* set defaults                                                            */
 
   /* observed sample */
@@ -111,6 +118,28 @@ unur_distr_cemp_new( void )
   return distr;
 
 } /* end of unur_distr_cemp_new() */
+
+/*---------------------------------------------------------------------------*/
+
+void
+_unur_distr_cemp_free( struct unur_distr *distr )
+     /*----------------------------------------------------------------------*/
+     /* free distribution object                                             */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   distr ... pointer to distribution object                           */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  if( distr == NULL ) /* nothing to do */
+    return;
+
+  COOKIE_CHECK(distr,CK_DISTR_CEMP,/*void*/);
+
+  if (DISTR.sample) free( DISTR.sample );
+  free( distr );
+
+} /* end of unur_distr_cemp_free() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -224,5 +253,4 @@ _unur_distr_cemp_debug( struct unur_distr *distr, char *genid, int printvector )
 } /* end of _unur_distr_cemp_debug() */
 
 /*---------------------------------------------------------------------------*/
-#undef DISTR
-/*---------------------------------------------------------------------------*/
+

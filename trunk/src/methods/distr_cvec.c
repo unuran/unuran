@@ -50,6 +50,10 @@ static const char unknown_distr_name[] = "unknown";
 
 /*---------------------------------------------------------------------------*/
 
+static void _unur_distr_cvec_free( struct unur_distr *distr );
+
+/*---------------------------------------------------------------------------*/
+
 /*****************************************************************************/
 /**                                                                         **/
 /** mulitvariate continuous distributions                                   **/
@@ -105,6 +109,9 @@ unur_distr_cvec_new(  int dim )
   /* this is not a derived distribution */
   distr->base = NULL;
 
+  /* destructor */
+  distr->destroy = _unur_distr_cvec_free;
+
   /* set defaults                                                            */
   DISTR.pdf       = NULL;          /* pointer to p.d.f.                      */
   DISTR.dpdf      = NULL;          /* pointer to gradient of p.d.f.          */
@@ -132,6 +139,34 @@ unur_distr_cvec_new(  int dim )
   return distr;
 
 } /* end of unur_distr_cvec_new() */
+
+/*---------------------------------------------------------------------------*/
+
+void
+_unur_distr_cvec_free( struct unur_distr *distr )
+     /*----------------------------------------------------------------------*/
+     /* free distribution object                                             */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   distr ... pointer to distribution object                           */
+     /*----------------------------------------------------------------------*/
+{
+  int i;
+
+  /* check arguments */
+  if( distr == NULL ) /* nothing to do */
+    return;
+
+  COOKIE_CHECK(distr,CK_DISTR_CVEC,/*void*/);
+
+  for (i=0; i<UNUR_DISTR_MAXPARAMS; i++)
+    if (DISTR.params[i]) free( DISTR.params[i] );
+
+  if (DISTR.mode) free(DISTR.mode);
+
+  free( distr );
+
+} /* end of unur_distr_cvec_free() */
 
 /*---------------------------------------------------------------------------*/
 

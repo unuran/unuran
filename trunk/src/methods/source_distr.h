@@ -68,6 +68,10 @@
 #define _unur_cvec_dPDF(r,x,distr) ((*((distr)->data.cvec.dpdf)) ((r),(x),(distr)))
 
 /*---------------------------------------------------------------------------*/
+/* destroy distribution object                                               */
+#define _unur_distr_free(distr)    (distr)->destroy(distr)
+
+/*---------------------------------------------------------------------------*/
 /* debuging routines for distributions                                       */
 
 void _unur_distr_cont_debug( UNUR_DISTR *distribution, char *genid );

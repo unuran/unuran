@@ -50,6 +50,10 @@ static const char unknown_distr_name[] = "unknown";
 
 /*---------------------------------------------------------------------------*/
 
+static void _unur_distr_discr_free( struct unur_distr *distr );
+
+/*---------------------------------------------------------------------------*/
+
 /*****************************************************************************/
 /**                                                                         **/
 /** univariate discrete distributions                                       **/
@@ -99,6 +103,9 @@ unur_distr_discr_new( void )
   /* this is not a derived distribution */
   distr->base = NULL;
 
+  /* destructor */
+  distr->destroy = _unur_distr_discr_free;
+
   /* set defaults                                                            */
 
   /* probability mass function */
@@ -130,6 +137,20 @@ unur_distr_discr_new( void )
   return distr;
 
 } /* end of unur_distr_discr_new() */
+
+/*---------------------------------------------------------------------------*/
+
+void
+_unur_distr_discr_free( struct unur_distr *distr )
+     /*----------------------------------------------------------------------*/
+     /* free distribution object                                             */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   distr ... pointer to distribution object                           */
+     /*----------------------------------------------------------------------*/
+{
+  if (distr) free( distr );
+} /* end of unur_distr_discr_free() */
 
 /*---------------------------------------------------------------------------*/
 

@@ -58,6 +58,8 @@ static double _unur_dpdf_corder( double x, UNUR_DISTR *os );
 static double _unur_cdf_corder( double x, UNUR_DISTR *os );
 static int _unur_upd_area_corder( UNUR_DISTR *os );
 
+static void _unur_distr_corder_free( struct unur_distr *os );
+
 /*---------------------------------------------------------------------------*/
 
 /*****************************************************************************/
@@ -122,6 +124,9 @@ unur_distr_corder_new( struct unur_distr *distr, int n, int k )
   /* name of distribution */
   os->name = distr_name;
 
+  /* destructor */
+  os->destroy = _unur_distr_corder_free;
+
   /* this is a derived distribution */
   /* allocate memory ... */
   os->base = _unur_malloc( sizeof(struct unur_distr) );
@@ -174,6 +179,29 @@ unur_distr_corder_new( struct unur_distr *distr, int n, int k )
   return os;
 
 } /* end of unur_distr_corder_new() */
+
+/*---------------------------------------------------------------------------*/
+
+void
+_unur_distr_corder_free( struct unur_distr *os )
+     /*----------------------------------------------------------------------*/
+     /* free distribution object                                             */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   distr ... pointer to distribution object                           */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  if( os == NULL ) /* nothing to do */
+    return;
+
+  COOKIE_CHECK(os,CK_DISTR_CONT,/*void*/);
+
+  if (os->base) _unur_distr_free(os->base);
+
+  free( os );
+
+} /* end of unur_distr_corder_free() */
 
 /*---------------------------------------------------------------------------*/
 

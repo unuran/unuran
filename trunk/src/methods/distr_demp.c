@@ -50,6 +50,10 @@ static const char unknown_distr_name[] = "unknown";
 
 /*---------------------------------------------------------------------------*/
 
+static void _unur_distr_demp_free( struct unur_distr *distr );
+
+/*---------------------------------------------------------------------------*/
+
 /*****************************************************************************/
 /**                                                                         **/
 /** empirical univariate discrete distributions                             **/
@@ -98,6 +102,9 @@ unur_distr_demp_new( void )
   /* this is not a derived distribution */
   distr->base = NULL;
 
+  /* destructor */
+  distr->destroy = _unur_distr_demp_free;
+
   /* set defaults                                                            */
 
   /* finite probability vector */
@@ -110,6 +117,28 @@ unur_distr_demp_new( void )
   return distr;
 
 } /* end of unur_distr_demp_new() */
+
+/*---------------------------------------------------------------------------*/
+
+void
+_unur_distr_demp_free( struct unur_distr *distr )
+     /*----------------------------------------------------------------------*/
+     /* free distribution object                                             */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   distr ... pointer to distribution object                           */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  if( distr == NULL ) /* nothing to do */
+    return;
+
+  COOKIE_CHECK(distr,CK_DISTR_DEMP,/*void*/);
+
+  if (DISTR.prob) free( DISTR.prob );
+  free( distr );
+
+} /* end of unur_distr_demp_free() */
 
 /*---------------------------------------------------------------------------*/
 

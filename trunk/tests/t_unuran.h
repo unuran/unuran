@@ -79,6 +79,13 @@ extern int n_distr;                 /* number of distributions               */
 #endif
 
 /*---------------------------------------------------------------------------*/
+/* open log files for testing */
+void open_log_files( const char *file );
+
+/* close log files */
+void close_log_files( void );
+
+/*---------------------------------------------------------------------------*/
 /* make list of distributions                                                */
 void make_list_of_distributions( void );
 

@@ -11,6 +11,51 @@
 /*---------------------------------------------------------------------------*/
 
 #include "t_unuran.h"
+#include <time.h>
+
+/*---------------------------------------------------------------------------*/
+
+static FILE *UNURANLOG;      /* unuran log file */
+
+/* open log files for testing */
+void open_log_files( const char *file )
+{
+  char filename[128];
+  time_t started;  
+
+  /* open test log file */
+  sprintf(filename,"%s_test.log",file);
+  TESTLOG = fopen(filename,"w");
+  if (TESTLOG == NULL) exit (-1);
+
+  /* write header into log file */
+  fprintf(TESTLOG,"\nUNURAN - Universal Non-Uniform RANdom number generator\n\n");
+  if (time( &started ) != -1)
+    fprintf(TESTLOG,"%s",ctime(&started));
+  fprintf(TESTLOG,"\n====================================================\n\n");
+
+  /* set output stream for unuran messages */
+  sprintf(filename,"%s_unuran.log",file);
+  UNURANLOG = fopen(filename,"w");
+  if (UNURANLOG == NULL) exit (-1);
+  unur_set_stream( UNURANLOG );
+
+} /* end of open_log_files() */
+
+/*---------------------------------------------------------------------------*/
+
+/* close log files */
+void close_log_files( void )
+{
+  fprintf(TESTLOG,"\n====================================================\n\n");
+  if (test_ok)
+    fprintf(TESTLOG,"All tests PASSED.\n");
+  else
+    fprintf(TESTLOG,"Test(s) FAILED.\n");
+
+  fclose(UNURANLOG);
+  fclose(TESTLOG);
+} /* end of close_log_files() */
 
 /*---------------------------------------------------------------------------*/
 

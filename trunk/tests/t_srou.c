@@ -23,8 +23,6 @@ int test_ok = TRUE;               /* all tests ok (boolean)                  */
 int test_failed = 0;              /* failed tests                            */
 FILE *TESTLOG = NULL;             /* test log file                           */
 
-static FILE *UNURANLOG = NULL;    /* unuran log file                         */
-
 static struct prng *urng;         /* uniform random number generator         */
 
 #define FAILED_LIMIT 1            /* maximal number of single failed 
@@ -55,18 +53,8 @@ double pdf( double x, UNUR_DISTR *distr );
 
 int main()
 { 
-  char filename[128];
-
-  /* open test log file */
-  sprintf(filename,"%s_test.log",__FILE__);
-  TESTLOG = fopen(filename,"w");
-  if (TESTLOG == NULL) exit (-1);
-
-  /* set output stream for unuran messages */
-  sprintf(filename,"%s_unuran.log",__FILE__);
-  UNURANLOG = fopen(filename,"w");
-  if (UNURANLOG == NULL) exit (-1);
-  unur_set_stream( UNURANLOG );
+  /* open log files for testing */
+  open_log_files(__FILE__);
 
   /* make a list of distributions */
   make_list_of_distributions();
@@ -94,8 +82,7 @@ int main()
   printf("\n");  fflush(stdout);
 
   /* close log files and exit */
-  fclose(TESTLOG);
-  fclose(UNURANLOG);
+  close_log_files();
   exit( (test_ok) ? 0 : -1 );
 }
 

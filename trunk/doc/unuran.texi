@@ -32,7 +32,7 @@
 
 @copying
 @noindent
-Copyright @copyright{} 2000, 2001, 2002, 2003 Institut fuer Statistik, WU Wien.
+Copyright @copyright{} 2000--2003 Institut fuer Statistik, WU Wien.
 
 @noindent
 Permission is granted to make and distribute verbatim

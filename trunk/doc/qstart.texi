@@ -144,6 +144,7 @@ changed with the code itself.
 here are some exmples to showing how to obtain random numbers.
 Beginning with the basics of using unuran we evolve to examples
 using  more advanced features of UNURAN.
+After the example itself the relevant code will be explained.
 @*call the compiler with:
 @* @file{gcc -Wall  -L../src/methods  -L../src/distributions  -L../src/tests  -L../src/uniform -g -O2  -o test1  test1.o -lunuran_tests -lunuran_distributions -lunuran -luniform -lm -lprng}
 
@@ -163,9 +164,9 @@ int main()
   int    i;
   double x;
 
-  struct unur_distr *distr;  /* distribution */
-  struct unur_par *par;      /* parameter */
-  struct unur_gen *gen;      /* generator */
+  UNUR_DISTR *distr;    /* distribution */
+  UNUR_PAR   *par;      /* parameter */
+  UNUR_GEN   *gen;      /* generator */
 
   /* choose a implemented distribution: Gaussian */
   distr = unur_distr_normal(NULL, 0);
@@ -197,9 +198,9 @@ These headers provide all functions/features for generating random numbers.
 @*
 The following three structures: 
 @smallexample
-struct unur_distr *distr;  /* distribution */ 
-struct unur_par *par;      /* parameter */
-struct unur_gen *gen;      /* generator */
+UNUR_DISTR *distr;  /* distribution */ 
+UNUR_PAR   *par;    /* parameter */
+UNUR_GEN   *gen;    /* generator */
 @end smallexample
 @*
 are necesssary to store the used parameters. It is not necessary to
@@ -233,55 +234,102 @@ The following line shows how actual sampling works:
 @node Ex2
 @section Ex2: Arbitrary distributions
 
-If you know the c.d.f you can genarate +random numbers in the following way
-The important lines are in bold face.
+If you want to sample from a not implementet distribution,
+UNURAN is probably the method of choice.
+You only have to provide a function calculating e.g. the cdf
+(see @ref{Arbitrary} for everything the user can provide).
+What you have to provide depends on the method used for sampling
+(see @ref{Requirements}).
 
+@page
 @smallexample
 /* my second UNURAN program test2.c */ 
 
 #include <unuran.h>
 #include <unuran_distributions.h>
 #include <unuran_tests.h>
-@b{
-double trig (double x)
-@{  return ( (x<0.) ? 0. : (x>1.) ?1. : x ); @}  
-}
+
+/* desired cdf  -- piecewise parabolic */
+double mycdf (double x)
+@{
+   if (x <= 0.0)
+     return ( 0.0 );
+   else if (x <= 1.0)
+     return ( x*x/3.0 );
+   else if (x <= 3.0)
+     return( ((-x+6.0)*x-3.0)/6.0 );
+   else
+     return ( 1.0 );
+@}  
+
 int main()
 @{
   double x;
   int    i;
 
-  struct unur_distr *distr,*distr1;  /* distribution */ 
-  struct unur_par *par,*par1;      /* parameter */
-  struct unur_gen *gen,*gen1;      /* generator */
+  UNUR_DISTR *distr;  /* distribution */ 
+  UNUR_PAR   *par;    /* parameter    */
+  UNUR_GEN   *gen;    /* generator    */
  
-  /* make distr. object: truncated Gaussian */
-@b{  distr1 = unur_distr_cont_new();
-  unur_distr_cont_set_cdf(distr1, trig );
-}
+  /* make distribution object and assign desired cdf (trig defined above) */
+  distr = unur_distr_cont_new();
+  unur_distr_cont_set_cdf(distr, mycdf);
 
-  /* choose method and set parameters */
-  par1 = unur_ninv_new(distr1);
+  /* choose method and set parameters (Numerical INVersion) */
+  par = unur_ninv_new(distr);
  
   /* make generator object */
-  gen1 = unur_init(par1);
+  gen = unur_init(par);
 
-
-  /* sample */
+  /* print 100 random numbers */
   for (i=0;i<100;i++) @{
-  x = unur_sample_cont(gen1);
+  x = unur_sample_cont(gen);
   printf("%f\n",x);
   @}
- 
-
 
   /* destroy generator object */
-  // unur_free(gen);
-  unur_free(gen1);
+  unur_free(gen);
 
   exit (0);
 @}
 @end smallexample
+@*
+The following lines represent a subroutine providing the
+code for calculating the cdf of uniform distributed random
+numbers. The cdf mycdf is piecewise parabolic (the pdf would
+be a triangle over [0,3] with maximum at 1).
+@smallexample
+double mycdf (double x)
+@{
+   if (x <= 0.0)
+     return ( 0.0 );
+   else if (x <= 1.0)
+     return ( x*x/3.0 );
+   else if (x <= 3.0)
+     return( ((-x+6.0)*x-3.0)/6.0 );
+   else
+     return ( 1.0 );
+@}  
+@end smallexample
+@*
+This two lines generate a distribution object and
+set the cdf (which is needed by the choosen method
+for generating random numbers (numerical inversion with
+the regula falsi) to the disired function
+(@code{mycdf()} defined above):
+@smallexample
+distr = unur_distr_cont_new();
+unur_distr_cont_set_cdf(distr, mycdf);
+@end smallexample
+@*
+As in the previous example the line 
+@smallexample
+par = unur_ninv_new(distr);
+@end smallexample
+@*
+chooses the method for generating random numbers
+(in this case numerical inversion).
+
 
 @node Ex3
 @section Ex3: Changing Parameters

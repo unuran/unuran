@@ -41,6 +41,11 @@
 
 /*---------------------------------------------------------------------------*/
 
+int _unur_acg_C_header (UNUR_DISTR *distr, FILE *out, const char *pdf);
+/*---------------------------------------------------------------------------*/
+/* Code generator for file header.                                           */
+/*---------------------------------------------------------------------------*/
+
 int _unur_acg_C_PDF (UNUR_DISTR *distr, FILE *out, const char *pdf);
 int _unur_acg_FORTRAN_PDF (UNUR_DISTR *distr, FILE *out, const char *pdf);
 int _unur_acg_JAVA_PDF (UNUR_DISTR *distr, FILE *out, const char *pdf);

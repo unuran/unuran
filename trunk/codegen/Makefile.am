@@ -15,6 +15,7 @@ include_HEADERS = \
 
 libunuracg_a_SOURCES = \
  PDFgen.c \
+ headergen.c \
  codegen_C.c \
  codegen_FORTRAN.c \
  codegen_JAVA.c \
@@ -42,6 +43,7 @@ noinst_HEADERS =
 EXTRA_DIST = \
  read_PDF.pl \
  make_PDFgen.pl \
+ make_headergen.pl \
  make_test_PDFgen.pl \
  make_test_PDFgen.c \
  make_test_codegen.pl \
@@ -50,6 +52,9 @@ EXTRA_DIST = \
 
 PDFgen.c: make_PDFgen.pl read_PDF.pl
 	./make_PDFgen.pl
+
+headergen.c: make_headergen.pl read_PDF.pl
+	./make_headergen.pl
 
 make_test_PDFgen.c: $(top_srcdir)/codegen/test.conf make_test_PDFgen.pl read_PDF.pl
 	./make_test_PDFgen.pl $(top_srcdir)/codegen/test.conf
@@ -90,6 +95,7 @@ CLEANFILES = \
 # clean generated files
 MAINTAINERCLEANFILES = \
  PDFgen.c \
+ headergen.c \
  make_test_PDFgen.c \
  test_PDFgen.c \
  make_test_codegen.c \

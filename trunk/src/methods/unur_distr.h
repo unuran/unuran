@@ -67,40 +67,40 @@ const char *unur_distr_get_name( UNUR_DISTR *distribution );
 UNUR_DISTR *unur_distr_cont_new( void );
 /* create a new distribution object                                          */
 
-int unur_distr_cont_set_pdf( UNUR_DISTR *distribution, void *pdf );
+int unur_distr_cont_set_pdf(UNUR_DISTR *distribution, void *pdf);
 /* set p.d.f. of distribution                                                */
 
-double unur_distr_cont_pdf( UNUR_DISTR *distribution, double x );
+double unur_distr_cont_pdf(UNUR_DISTR *distribution, double x);
 /* evaluate p.d.f. of distribution at x                                      */
 
-int unur_distr_cont_set_dpdf( UNUR_DISTR *distribution, void *dpdf );
+int unur_distr_cont_set_dpdf(UNUR_DISTR *distribution, void *dpdf);
 /* set derivative of p.d.f. of distribution                                  */
 
-double unur_distr_cont_dpdf( UNUR_DISTR *distribution, double x );
+double unur_distr_cont_dpdf(UNUR_DISTR *distribution, double x);
 /* evaluate derivative of p.d.f. of distribution at x                        */
 
-int unur_distr_cont_set_cdf( UNUR_DISTR *distribution, void *cdf );
+int unur_distr_cont_set_cdf(UNUR_DISTR *distribution, void *cdf);
 /* set c.d.f. of distribution                                                */
 
-double unur_distr_cont_cdf( UNUR_DISTR *distribution, double x );
+double unur_distr_cont_cdf(UNUR_DISTR *distribution, double x);
 /* evaluate c.d.f. of distribution at x                                      */
 
-int unur_distr_cont_set_pdfparams( UNUR_DISTR *distribution, double *params, int n_params );
+int unur_distr_cont_set_pdfparams(UNUR_DISTR *distribution,double *params,int n_params);
 /* set array of parameters for distribution                                  */
 
-int unur_distr_cont_set_mode( UNUR_DISTR *distribution, double mode );
+int unur_distr_cont_set_mode(UNUR_DISTR *distribution, double mode);
 /* set mode of distribution                                                  */
 
-double unur_distr_cont_get_mode( UNUR_DISTR *distribution );
+double unur_distr_cont_get_mode(UNUR_DISTR *distribution);
 /* get mode of distribution                                                  */
 
-int unur_distr_cont_set_pdfarea( UNUR_DISTR *distribution, double area );
+int unur_distr_cont_set_pdfarea(UNUR_DISTR *distribution, double area);
 /* set area below p.d.f.                                                     */
 
-int unur_distr_cont_set_domain( UNUR_DISTR *distribution, double left, double right );
+int unur_distr_cont_set_domain(UNUR_DISTR *distribution, double left, double right);
 /* set the left and right borders of the domain of the distribution          */
 
-void _unur_distr_cont_debug( UNUR_DISTR *distribution, char *genid );
+void _unur_distr_cont_debug(UNUR_DISTR *distribution, char *genid);
 /* write info about distribution into logfile                                */
 
 /*---------------------------------------------------------------------------*/
@@ -109,10 +109,13 @@ void _unur_distr_cont_debug( UNUR_DISTR *distribution, char *genid );
 UNUR_DISTR *unur_distr_discr_new( void );
 /* create a new distribution object                                          */
 
-int unur_distr_discr_set_prob( UNUR_DISTR *distribution, double *prob, int n_prob );
+int unur_distr_discr_set_prob(UNUR_DISTR *distribution, double *prob, int n_prob);
 /* set probability vector for distribution                                   */
 
-void _unur_distr_discr_debug( UNUR_DISTR *distribution, char *genid, int printvector );
+void _unur_distr_discr_debug(UNUR_DISTR *distribution, char *genid, int printvector);
 /* write info about distribution into logfile                                */
 
 /*---------------------------------------------------------------------------*/
+
+
+

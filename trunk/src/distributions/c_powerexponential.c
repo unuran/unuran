@@ -258,18 +258,18 @@ unur_distr_powerexponential( double *params, int n_params )
 #endif
 		 UNUR_DISTR_SET_MODE );
 
+  /* set parameters for distribution */
+  if (!_unur_set_params_powerexponential(distr,params,n_params)) {
+    free(distr);
+    return NULL;
+  }
+
   /* log of normalization constant */
 #ifdef HAVE_AREA
   LOGNORMCONSTANT = _unur_sf_ln_gamma(1. + 1./DISTR.tau) + M_LN2;
 #else
   LOGNORMCONSTANT = 0.;
 #endif
-
-  /* set parameters for distribution */
-  if (!_unur_set_params_powerexponential(distr,params,n_params)) {
-    free(distr);
-    return NULL;
-  }
 
   /* mode and area below p.d.f. */
   DISTR.mode = 0;

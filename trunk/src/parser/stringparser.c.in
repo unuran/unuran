@@ -1885,10 +1885,7 @@ _unur_str2urng( char *str_urng )
 	}
       }
       else {
-#ifndef WITH_DMALLOC
-	/* PRNG does not work with dmalloc */
 	if (urng) prng_free (urng);
-#endif
 	_unur_error(GENTYPE,UNUR_ERR_STR_SYNTAX,"urng must be first key"); 
 	return NULL;
       }
@@ -1897,10 +1894,7 @@ _unur_str2urng( char *str_urng )
     /* there are no other parameters */
     else {
       /* error: unknown parameter */
-#ifndef WITH_DMALLOC
-      /* PRNG does not work with dmalloc */
       if (urng) prng_free (urng);
-#endif
       _unur_error_unknown(key,"parameter for uniform RNG");
       return NULL;
     }

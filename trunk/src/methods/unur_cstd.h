@@ -60,6 +60,8 @@ struct unur_cstd_gen {
 
   double  umin;           /* cdf at left boundary of domain                  */
   double  umax;           /* cdf at right boundary of domain                 */
+
+  int  is_inversion;      /* indicate whether method is inversion method     */     
 };
 
 /*---------------------------------------------------------------------------*/
@@ -84,6 +86,9 @@ void unur_cstd_free( struct unur_gen *generator);
 
 int unur_cstd_set_variant( struct unur_par *par, unsigned variant );
 /* set variant of method                                                     */
+
+int unur_cstd_chg_param( struct unur_gen *gen, double *params, int n_params );
+/* change array of parameters for distribution                               */
 
 #define unur_cstd_set_debug(par,debugflags)  unur_set_debug((par),(debugflags))
 /* set debuging flags                                                        */

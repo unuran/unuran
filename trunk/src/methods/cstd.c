@@ -207,6 +207,68 @@ unur_cstd_set_variant( struct unur_par *par, unsigned variant )
 
 } /* end if unur_cstd_set_variant() */
 
+/*---------------------------------------------------------------------------*/
+
+int 
+unur_cstd_chg_param( struct unur_gen *gen, double *params, int n_params )
+     /*----------------------------------------------------------------------*/
+     /* change array of parameters for distribution                          */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen      ... pointer to generator object                           */
+     /*   params   ... list of arguments                                     */
+     /*   n_params ... number of arguments                                   */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... on success                                                   */
+     /*   0 ... on error                                                     */
+     /*----------------------------------------------------------------------*/
+{
+  register int i;
+
+  /* check arguments */
+  CHECK_NULL(gen,0);
+  COOKIE_CHECK(gen,CK_CSTD_GEN,0);
+  if (n_params>0) CHECK_NULL(params,0);
+  
+  /* check new parameter for generator */
+  if (n_params > UNUR_DISTR_MAXPARAMS ) {
+    _unur_error(NULL,UNUR_ERR_DISTR_NPARAMS,"");
+    return 0;
+  }
+
+  /* copy parameters */
+  DISTR.n_params = n_params;
+  for (i=0; i < n_params; i++)
+    DISTR.params[i] = params[i];
+
+  /* changelog */
+  gen->distr.set |= UNUR_DISTR_SET_PARAMS;
+  /* mode and area might be wrong now! */
+  gen->distr.set |= ~(UNUR_DISTR_SET_MODE | UNUR_DISTR_SET_PDFAREA );
+
+  /* run special init routine for generator */
+  if ( !DISTR.init(NULL,gen) ) {
+    /* init failed --> could not find a sampling routine */
+    _unur_warning(gen->genid,UNUR_ERR_GEN_DATA,"parameters");
+    return 0;
+  }
+
+  if ( GEN.is_inversion )
+    if (!(gen->distr.set & UNUR_DISTR_SET_STDDOMAIN)) {
+      /* domain has been modified */
+      if (DISTR.cdf == NULL) {
+	_unur_error(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,""); return 0; }
+      /* compute umin and umax */
+      GEN.umin = (DISTR.BD_LEFT > -INFINITY) ? CDF(DISTR.BD_LEFT)  : 0.;
+      GEN.umax = (DISTR.BD_RIGHT < INFINITY) ? CDF(DISTR.BD_RIGHT) : 1.;
+    }
+
+  /* o.k. */
+  return 1;
+
+} /* end of unur_cstd_chg_param() */
+
 /*****************************************************************************/
 
 struct unur_gen *
@@ -251,16 +313,19 @@ unur_cstd_init( struct unur_par *par )
     free(par); unur_dstd_free(gen); return NULL; 
   }
 
+  /* copy information about type of special generator */
+  GEN.is_inversion = PAR.is_inversion;
+
   /* domain valid for special generator ?? */
-  if (!(par->distr->set & UNUR_DISTR_SET_STDDOMAIN)) {
+  if (!(gen->distr.set & UNUR_DISTR_SET_STDDOMAIN)) {
     /* domain has been modified */
-    if ( ! PAR.is_inversion ) { 
+    if ( ! GEN.is_inversion ) { 
       /* this is not the inversion method */
-      _unur_error(par->genid,UNUR_ERR_GEN_DATA,"domain changed for non inversion method");
+      _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"domain changed for non inversion method");
       free(par); unur_cstd_free(gen); return NULL; 
     }
     else if (DISTR.cdf == NULL) {
-      _unur_error(par->genid,UNUR_ERR_GEN_DATA,"domain changed, c.d.f. required");
+      _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"domain changed, c.d.f. required");
       free(par); unur_cstd_free(gen); return NULL; 
     }
     /* compute umin and umax */
@@ -367,17 +432,19 @@ _unur_cstd_create( struct unur_par *par )
   gen->destroy = unur_cstd_free;
 
   /* defaults */
-  GEN.gen_param = NULL;  /* parameters for the generator      */
-  GEN.n_gen_param = 0;   /* (computed in special GEN.init()   */
+  GEN.gen_param = NULL;  /* parameters for the generator                     */
+  GEN.n_gen_param = 0;   /* (computed in special GEN.init()                  */
 
   /* copy some parameters into generator object */
-  GEN.umin        = 0;    /* cdf at left boundary of domain   */
-  GEN.umax        = 1;    /* cdf at right boundary of domain  */
+  GEN.umin        = 0;    /* cdf at left boundary of domain                  */
+  GEN.umax        = 1;    /* cdf at right boundary of domain                 */
 
-  gen->method = par->method;        /* indicates used method  */
-  gen->variant = par->variant;      /* indicates variant      */
-  gen->debug = par->debug;          /* debuging flags         */
-  gen->urng = par->urng;            /* pointer to urng        */
+  /* GEN.is_inversion is set in unur_cstd_init() */
+
+  gen->method = par->method;        /* indicates used method                 */
+  gen->variant = par->variant;      /* indicates variant                     */
+  gen->debug = par->debug;          /* debuging flags                        */
+  gen->urng = par->urng;            /* pointer to urng                       */
 
   gen->urng_aux = NULL;             /* no auxilliary URNG required           */
   gen->gen_aux = NULL;              /* no auxilliary generator objects       */

@@ -162,8 +162,8 @@ negativebinomial_nbp_init( struct unur_gen *gen )
     /* need same uniform random number generator as negative binomial generator */
     GAMMA->urng = gen->urng;
   }
-  //  else  /* re-init mode --> change shape parameter */
-  // unur_dstd_chg_param(GAMMA,&gamma_param,1);
+  else  /* re-init mode --> change shape parameter */
+    unur_cstd_chg_param(GAMMA,&gamma_param,1);
 
   /* make a poisson variate generator (use default special generator) */
   if (POISSON==NULL) {

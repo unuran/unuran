@@ -692,10 +692,6 @@ sub scan_special {
 
 void test_$section (void)
 {
-	/* start test */
-	printf("[$section "); fflush(stdout);
-	fprintf(TESTLOG,"\\n[$section]\\n");
-
 	/* set boolean to FALSE */
 	int FAILED = 0;
   
@@ -707,7 +703,15 @@ EOM
     foreach my $subs (@{$DATA{$section}}) {
 	my $title = ${$subs}{"title"};
 	my $body = ${$subs}{"body"};
-	if ($title eq "start") {
+	if ($title eq "decl") {
+	    $body =~ s/(^|\n)\d+\:/\n/g;   # remove line info
+	    print $body;
+	    print 
+		"/* start test */\n".
+		"printf(\"[$section \"); fflush(stdout);\n".
+		"fprintf(TESTLOG,\"\\n[$section]\\n\");";
+	}
+	elsif ($title eq "start") {
 	    $body =~ s/(^|\n)\d+\:/\n/g;   # remove line info
 	    print $body;
 	}

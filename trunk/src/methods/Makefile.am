@@ -32,6 +32,7 @@ libmethods_a_SOURCES = \
  dari.c \
  dau.c  \
  dgt.c  \
+ dsrou.c \
  dstd.c \
  ninv.c \
  srou.c \
@@ -65,6 +66,7 @@ noinst_HEADERS = \
  dari.h  dari_struct.h \
  dau.h   dau_struct.h \
  dgt.h   dgt_struct.h \
+ dsrou.h dsrou_struct.h \
  dstd.h  dstd_struct.h \
  ninv.h  ninv_struct.h \
  srou.h  srou_struct.h \

@@ -56,6 +56,8 @@
 #define CK_DAU_GEN       0x00000021u
 #define CK_DGT_PAR       0x00000030u
 #define CK_DGT_GEN       0x00000031u
+#define CK_DSROU_PAR     0x00000040u
+#define CK_DSROU_GEN     0x00000041u
 
 /* generators continuous distributions */
 #define CK_AROU_PAR      0x00100010u

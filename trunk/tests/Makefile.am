@@ -14,6 +14,7 @@ check_PROGRAMS = \
  t_cstd \
  t_dau \
  t_dgt \
+ t_dstd \
  t_srou \
  t_ssr \
  t_tabl \
@@ -28,6 +29,7 @@ TESTS = \
  t_cstd \
  t_dau \
  t_dgt \
+ t_dstd \
  t_srou \
  t_ssr \
  t_tabl \
@@ -50,6 +52,7 @@ EXTRA_DIST = \
  cstd.conf \
  dau.conf \
  dgt.conf \
+ dstd.conf \
  srou.conf \
  ssr.conf \
  tabl.conf \
@@ -78,6 +81,9 @@ t_dau_LDADD = $(top_builddir)/src/libunuran.a
 
 t_dgt_SOURCES = t_dgt.c testroutines.c
 t_dgt_LDADD = $(top_builddir)/src/libunuran.a
+
+t_dstd_SOURCES = t_dstd.c testroutines.c
+t_dstd_LDADD = $(top_builddir)/src/libunuran.a
 
 t_srou_SOURCES = t_srou.c testroutines.c
 t_srou_LDADD = $(top_builddir)/src/libunuran.a
@@ -118,6 +124,9 @@ t_dau.c: dau.conf make_test_files.pl
 
 t_dgt.c: dgt.conf make_test_files.pl
 	./make_test_files.pl dgt.conf
+
+t_dstd.c: dstd.conf make_test_files.pl
+	./make_test_files.pl dstd.conf
 
 t_srou.c: srou.conf make_test_files.pl
 	./make_test_files.pl srou.conf

@@ -285,7 +285,7 @@ unur_dstd_chg_pdfparams( struct unur_gen *gen, double *params, int n_params )
   if (n_params>0) CHECK_NULL(params,0);
   
   /* check new parameter for generator */
-  if (n_params > UNUR_DISTR_MAXPARAMS ) {
+  if (n_params < 0 || n_params > UNUR_DISTR_MAXPARAMS ) {
     _unur_error(NULL,UNUR_ERR_DISTR_NPARAMS,"");
     return 0;
   }

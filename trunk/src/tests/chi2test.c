@@ -49,11 +49,6 @@
 #define CHI2_CLASSMIN_DEFAULT  20  /* minimum number of observations in class */
 #define CHI2_INTERVALS_DEFAULT 50  /* number of intervals for chi^2 test     */
 
-/* constant */
-#define CHI2_SIZE_PMF_VECTOR   100 /* size of probability vector when 
-					only PMF is given.  */
-/** TODO: make more flexible **/
-
 /*---------------------------------------------------------------------------*/
 static char test_name[] = "Chi^2-Test";
 /*---------------------------------------------------------------------------*/
@@ -162,32 +157,16 @@ _unur_test_chi2_discr( struct unur_gen *gen,
     return -1.;
   }
 
-  /* pointer to distribution object */
-  prob = DISTR.prob;
-  n_prob = DISTR.n_prob;
-
-#if 0
-  /* check argument: need probability vector */
-  if (prob == NULL) {
-    /* no probability vector  -->  PMF required */
-    if (DISTR.pmf == NULL) {
-      _unur_error(test_name,UNUR_ERR_GENERIC,"probability vector or PMF required");
+  /* probability vector */
+  if (DISTR.prob == NULL)
+    /* no PV given --> try to compute PV */
+    if (!unur_distr_discr_make_prob(&(gen->distr)) ) {
+      /* not successful */
       return -1.;
     }
-    /* have to make own probability vector */
-    n_prob = CHI2_SIZE_PMF_VECTOR;
-    prob = _unur_malloc( n_prob * sizeof(double) );
-    if (!prob) return -1.;
-    for (i=0; i<n_prob; i++) {
-      /** TODO: here we assume domain [0,infinity] */
-      /** furthermore we cut domain at CHI2_SIZE_PMF_VECTOR */
-      prob[i] = _unur_discr_PMF( i, &(gen->distr) );
-    }
-  }
-#endif
-  /* check argument: need probability vector */
-  if (prob == NULL)
-    return -1.;
+  /* pointer to PV */
+  prob = DISTR.prob;
+  n_prob = DISTR.n_prob;
 
   /* allocate memory for observations */
   observed = _unur_malloc( n_prob * sizeof(int));

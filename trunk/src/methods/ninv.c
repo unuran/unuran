@@ -773,6 +773,13 @@ unur_ninv_chg_pdfparams( struct unur_gen *gen, double *params, int n_params )
     /* this is really bad. but we only can make this error message */
   }
 
+  /* compute normalization constant for standard distribution */
+  if (DISTR.upd_area != NULL)
+    if (!((DISTR.upd_area)(&(gen->distr)))) {
+      _unur_error(gen->genid,UNUR_ERR_GEN_INVALID,"cannot compute normalization constant");
+      return 0;
+    }
+
   /* regenerate table */
   if (GEN.table != NULL)
     ok = _unur_ninv_create_table(gen);

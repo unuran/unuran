@@ -159,9 +159,6 @@ struct unur_par {
 #if UNUR_DEBUG & UNUR_DB_INFO     /* print data about generators */
   unsigned long   debug;      /* debugging flags                             */
 #endif
-#if UNUR_DEBUG > 0                /* debugging compiled into generators */
-  char           *genid;      /* identifier for generator                    */
-#endif
 };
 
 /* generators */

@@ -129,7 +129,6 @@ unur_cstd_new( struct unur_distr *distr )
   par->urng     = unur_get_default_urng(); /* use default urng               */
 
   _unur_set_debugflag_default(par); /* set default debugging flags           */
-  _unur_set_genid(par,GENTYPE);     /* set generator identifier              */
   
   /* routine for starting generator */
   par->init = unur_cstd_init;
@@ -272,6 +271,9 @@ _unur_cstd_create( struct unur_par *par )
   /* magic cookies */
   COOKIE_SET(gen,CK_CSTD_GEN);
 
+  /* set generator identifier */
+  _unur_set_genid(gen,GENTYPE);
+
   /* copy distribution object */
   gen->distr = _unur_malloc( sizeof(struct unur_distr) );
   unur_distr_copy( gen->distr, par->distr );
@@ -289,7 +291,6 @@ _unur_cstd_create( struct unur_par *par )
 
   _unur_copy_urng_pointer(par,gen);  /* pointer to urng into generator object*/
   _unur_copy_debugflag(par,gen);     /* copy debugging flags into generator object */
-  _unur_copy_genid(par,gen);         /* copy generator identifier            */
 
   /* return pointer to (almost empty) generator object */
   return(gen);

@@ -51,19 +51,19 @@
 
 #define _unur_warning_notrequired(par,param) \
    do { \
-      _unur_stream_printf((par)->genid,__FILE__,__LINE__,"warning: %s - %s", \
+      _unur_stream_printf(NULL,__FILE__,__LINE__,"warning: %s - %s", \
                           unur_get_strerror(UNUR_ERR_SET_NOTREQU),(param) ); \
    } while (0)
 
 #define _unur_warning_invalid(par,param) \
    do { \
-      _unur_stream_printf((par)->genid,__FILE__,__LINE__,"warning: %s - %s", \
+      _unur_stream_printf(NULL,__FILE__,__LINE__,"warning: %s - %s", \
                           unur_get_strerror(UNUR_ERR_SET_INVALID),(param) ); \
    } while (0)
 
 #define _unur_warning_set(par,param) \
    do { \
-      _unur_stream_printf((par)->genid,__FILE__,__LINE__,"warning: %s %s", \
+      _unur_stream_printf(NULL,__FILE__,__LINE__,"warning: %s %s", \
                           unur_get_strerror(UNUR_ERR_SET),(param) ); \
    } while (0)
 

@@ -128,7 +128,6 @@ const char *unur_get_strerror ( const int unur_errno );
 
 /* set generator id */
 #define _unur_set_genid(par,gentype)  (par)->genid = _unur_make_genid(gentype)
-#define _unur_copy_genid(par,gen)     (gen)->genid = (par)->genid
 #define _unur_free_genid(gen)         free((gen)->genid)
 
 /*---------------------------------------------------------------------------*/
@@ -159,7 +158,6 @@ const char *unur_get_strerror ( const int unur_errno );
 #define _unur_warning(genid,errortype,str)    do { } while(0)
 
 #define _unur_set_genid(gen,gentype)
-#define _unur_copy_genid(par,gen)
 #define _unur_free_genid(gen)
 
 #define _unur_set_debugflag_default(par)

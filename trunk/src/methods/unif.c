@@ -103,7 +103,6 @@ unur_unif_new( int start, int skip )
   par->urng        = unur_get_default_urng(); /* use default urng            */
 
   _unur_set_debugflag_default(par);   /* set default debugging flags         */
-  _unur_set_genid(par,GENTYPE);    /* set generator identifier               */
 
   /* routine for starting generator */
   par->init = unur_unif_init;
@@ -244,6 +243,9 @@ _unur_unif_create( struct unur_par *par )
   /* magic cookies */
   COOKIE_SET(gen,CK_UNIF_GEN);
 
+  /* set generator identifier */
+  _unur_set_genid(gen,GENTYPE);
+
   /* routines for sampling and destroying generator */
   SAMPLE = unur_unif_sample;
   gen->destroy = unur_unif_free;
@@ -252,7 +254,6 @@ _unur_unif_create( struct unur_par *par )
   gen->method = par->method;         /* indicates method and variant */
   _unur_copy_urng_pointer(par,gen);  /* pointer to urng into generator object*/
   _unur_copy_debugflag(par,gen);     /* copy debugging flags into generator object */
-  _unur_copy_genid(par,gen);         /* copy generator identifier            */
 
   GEN.start = PAR.start;    /* starting point for subsequence */
   GEN.skip = PAR.skip;      /* skip for subsequence */

@@ -301,7 +301,6 @@ unur_arou_new( struct unur_distr *distr )
   par->urng               = unur_get_default_urng(); /* use default urng     */
 
   _unur_set_debugflag_default(par); /* set default debugging flags           */
-  _unur_set_genid(par,GENTYPE);     /* set generator identifier              */
 
   /* we use the mode (if known) as center of the distribution */
   if (distr->set & UNUR_DISTR_SET_MODE) {
@@ -673,6 +672,9 @@ _unur_arou_create( struct unur_par *par )
   /* magic cookies */
   COOKIE_SET(gen,CK_AROU_GEN);
 
+  /* set generator identifier */
+  _unur_set_genid(gen,GENTYPE);
+
   /* copy distribution object */
   gen->distr = _unur_malloc( sizeof(struct unur_distr) );
   unur_distr_copy( gen->distr, par->distr );
@@ -707,7 +709,6 @@ _unur_arou_create( struct unur_par *par )
   GEN.guide_factor = PAR.guide_factor; /* relative size of guide tables      */
 
   /* bounds for adding construction points  */
-
   GEN.max_segs = PAR.max_segs;      /* maximum number of segments            */
   GEN.max_ratio = PAR.max_ratio;    
   GEN.bound_for_adding = PAR.bound_for_adding;
@@ -715,7 +716,6 @@ _unur_arou_create( struct unur_par *par )
   gen->method = par->method;        /* indicates method and variant          */
   _unur_copy_urng_pointer(par,gen); /* copy pointer to urng into generator object */
   _unur_copy_debugflag(par,gen);    /* copy debugging flags into generator object */
-  _unur_copy_genid(par,gen);        /* copy generator identifier             */
 
   /* return pointer to (almost empty) generator object */
   return(gen);

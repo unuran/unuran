@@ -196,7 +196,6 @@ unur_dau_new( double *prob, int len )
   par->urng      = unur_get_default_urng(); /* use default urng              */
 
   _unur_set_debugflag_default(par); /* set default debugging flags           */
-  _unur_set_genid(par,GENTYPE);     /* set generator identifier              */
 
   /* routine for starting generator */
   par->init = unur_dau_init;
@@ -443,13 +442,15 @@ _unur_dau_create( struct unur_par *par)
   /* magic cookies */
   COOKIE_SET(gen,CK_DAU_GEN);
 
+  /* set generator identifier */
+  _unur_set_genid(gen,GENTYPE);
+
   /* copy some parameters into generator object */
   GEN.len = PAR.len;                /* length of probability vector               */
   GEN.prob = NULL;                  /* copy probability vector on demand          */
   gen->method = par->method;        /* indicates used method                      */
   _unur_copy_urng_pointer(par,gen); /* copy pointer to urng into generator object */
   _unur_copy_debugflag(par,gen);    /* copy debugging flags into generator object */
-  _unur_copy_genid(par,gen);        /* copy generator identifier                  */
 
   /* routines for sampling and destroying generator */
   SAMPLE = unur_dau_sample;

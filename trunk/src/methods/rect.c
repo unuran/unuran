@@ -115,7 +115,6 @@ unur_rect_new( int dim )
   par->urng        = unur_get_default_urng(); /* use default urng            */
 
   _unur_set_debugflag_default(par);   /* set default debugging flags         */
-  _unur_set_genid(par,GENTYPE);       /* set generator identifier            */
 
   /* routine for starting generator */
   par->init = unur_rect_init;
@@ -249,6 +248,9 @@ _unur_rect_create( struct unur_par *par )
   /* magic cookies */
   COOKIE_SET(gen,CK_RECT_GEN);
 
+  /* set generator identifier */
+  _unur_set_genid(gen,GENTYPE);
+
   /* routines for sampling and destroying generator */
   SAMPLE = unur_rect_sample_vec;
   gen->destroy = unur_rect_free;
@@ -260,7 +262,6 @@ _unur_rect_create( struct unur_par *par )
   GEN.dim = PAR.dim;
   _unur_copy_urng_pointer(par,gen);  /* pointer to urng into generator object*/
   _unur_copy_debugflag(par,gen);     /* copy debugging flags into generator object */
-  _unur_copy_genid(par,gen);         /* copy generator identifier            */
 
   gen->method = par->method;   /* indicates method and variant */
 

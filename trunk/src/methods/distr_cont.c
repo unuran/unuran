@@ -910,7 +910,7 @@ _unur_distr_cont_debug( struct unur_distr *distr, char *genid )
 /*---------------------------------------------------------------------------*/
 
 int 
-_unur_distr_cont_find_mode( struct unur_distr *distr )
+_unur_distr_cont_find_mode(struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
      /* find mode of univariate continuous distribution numerically          */
      /*                                                                      */
@@ -922,12 +922,71 @@ _unur_distr_cont_find_mode( struct unur_distr *distr )
      /*   0 ... on error                                                     */
      /*----------------------------------------------------------------------*/
 {
+
+  double x[3];  /* mode (and x[2]) should be between x[0] and  x[2] ...*/   
+  double fx[3]; /* ... and the respective funtion values */
+  double step = 1.0;
+
+  int unbound_left  = 0; 
+  int unbound_right = 0; 
+
   /* check arguments */
   _unur_check_NULL( NULL, distr, 0 );
   _unur_check_distr_object( distr, CONT, 0 );
 
   /* changelog */
   distr->set |= UNUR_DISTR_SET_MODE;
+
+
+  if ( _unur_FP_is_minus_infinity(DISTR.domain[0]) ){
+    x[0] = -10.0;    /* arbitrary starting point */
+    unbound_left = 1;
+  }
+  else{
+    x[0] = DISTR.domain[0];
+  }
+  if ( _unur_FP_is_infinity(DISTR.domain[1]) ){
+    x[2] = 10.0;    /* arbitrary starting point */
+    unbound_right = 1;
+  }
+  else{
+    x[2] = DISTR.domain[1];
+  }
+  x[1] = (x[0] + x[2])/2.0;
+
+  fx[0] = DISTR.pdf(x[0], distr);
+  fx[1] = DISTR.pdf(x[1], distr);
+  fx[2] = DISTR.pdf(x[2], distr);
+
+
+  if ( _unur_FP_same(fx[0], fx[1]) && _unur_FP_same(fx[1], fx[2])){
+    // TODO error -- flat region ;
+  } 
+
+
+  if ( unbound_right ){
+    while(fx[0] <= fx[1] && fx[1] <= fx[2]){ /* on the left side of the mode */
+      step *= 2.0;
+      x[0]  = x[1]; fx[0] = fx[1];
+      x[1]  = x[2]; fx[1] = fx[2];
+      x[2] += step; fx[2] = DISTR.pdf(x[2], distr);   
+    }
+  }
+
+  if ( unbound_left ){
+    while(fx[0] >= fx[1] && fx[1] >= fx[2]){ /* on the right side of the mode */
+      step *= 2.0;
+      x[2]  = x[1]; fx[2] = fx[1];
+      x[1]  = x[0]; fx[1] = fx[0];
+      x[0] -= step; fx[0] = DISTR.pdf(x[0], distr);
+    }
+  }
+  /* now: the mode is between x[0] and x[2]   */
+
+
+
+  // TODO: invoke optimization
+
 
   /* o.k. */
   return 1;
@@ -1164,6 +1223,15 @@ find_bracket( UNUR_FUNCT_CONT *f_invest, UNUR_DISTR *distr, double *a, double *b
 #undef f
 } /* end of find_bracket() */
 
+
 /*---------------------------------------------------------------------------*/
 #undef DISTR
 /*---------------------------------------------------------------------------*/
+
+
+
+
+
+
+
+

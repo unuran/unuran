@@ -25,7 +25,7 @@ my $make_test_codegen = "make_test_codegen.c";
 my $test_codegen = "test_codegen.c";
 
 # Sample size for test
-my $SAMPLE_SIZE = 10000;
+my $SAMPLE_SIZE = 100000;
 
 # ----------------------------------------------------------------
 # List of distributions

@@ -55,7 +55,6 @@ sub make_PDFgen_files
     my $PDFgen_static_prototypes;
     my $PDFgen_global_prototypes;
     
-
     my $empty_line = "\tfprintf (out,\"\\n\");\n\n";
 
 # ................................................................

@@ -485,6 +485,9 @@ unur_distr_cont_set_domain( struct unur_distr *distr, double left, double right 
   /* changelog */
   distr->set |= UNUR_DISTR_SET_DOMAIN;
 
+  /* other parameters might be wrong now */
+  distr->set &= ~UNUR_DISTR_SET_PDFAREA;
+  
   /* if distr is an object for a standard distribution, */
   /* we might have truncated the distribution!          */
   distr->set &= ~UNUR_DISTR_SET_STDDOMAIN;
@@ -492,10 +495,12 @@ unur_distr_cont_set_domain( struct unur_distr *distr, double left, double right 
   /* derived parameters like mode, area, etc. might be wrong now! */
   distr->set &= ~UNUR_DISTR_SET_MASK_DERIVED;
 
-  if (distr->base)
+  if (distr->base) {
     /* for derived distributions (e.g. order statistics)
        we also set the domain for the underlying distribution */
-    unur_distr_cont_set_domain(distr->base, left, right);
+    BASE.domain[0] = left;
+    BASE.domain[1] = right;
+  }
 
   /* o.k. */
   return 1;
@@ -668,7 +673,12 @@ unur_distr_cont_set_pdfarea( struct unur_distr *distr, double area )
   if (distr->base)
     /* for derived distributions (e.g. order statistics)
        we also set the area for the underlying distribution */
-    unur_distr_cont_set_pdfarea(distr->base, area);
+    /* we assume that the area below the p.d.f. of the derived 
+       distribution is the same as for the underlying distribution.
+       However, this does not hold when the rank or the domain of
+       the order statistics has been changed without 
+       unur_distr_cont_upd_pdfarea() call. */
+    BASE.area = area;
 
   /* o.k. */
   return 1;
@@ -694,25 +704,22 @@ unur_distr_cont_upd_pdfarea( struct unur_distr *distr )
   _unur_check_NULL( NULL, distr, 0 );
   _unur_check_distr_object( distr, CONT, 0 );
 
+  if (DISTR.upd_area == NULL) {
+    /* no function to compute mode available */
+    _unur_error(distr->name,UNUR_ERR_DISTR_DATA,"");
+    return 0;
+  }
+
+  /* compute mode */
+  DISTR.area = (DISTR.upd_area)(distr);
+
   if (distr->base) {
     /* for derived distributions (e.g. order statistics)
-       we use the update routine of the underlying distribution */
+       we also use the update routine of the underlying distribution */
     if (!unur_distr_cont_upd_pdfarea(distr->base))
       return 0;
     else
-      DISTR.area = BASE.area;
-  }
-
-  else { /* this is not a derived distribution */
-
-    if (DISTR.upd_area == NULL) {
-      /* no function to compute mode available */
-      _unur_error(distr->name,UNUR_ERR_DISTR_DATA,"");
-      return 0;
-    }
-
-    /* compute mode */
-    DISTR.area = (DISTR.upd_area)(distr);
+      DISTR.area *= BASE.area;
   }
 
   /* changelog */

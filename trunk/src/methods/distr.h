@@ -169,6 +169,17 @@ int unur_distr_cont_set_cdf( UNUR_DISTR *distribution, UNUR_FUNCT_CONT *cdf );
    cumulative distribution function (cdf) of the distribution.
    The type of each of these functions must be of type
    double funct(double x, UNUR_DISTR *distr).
+
+   It is not necessary that the given p.d.f. is normalized, i.e. the
+   integral need not be 1. Nevertheless it can be provided by a 
+   unur_distr_cont_set_pdfarea() call.
+   The given derivative must be the derivative of the given pdf of
+   course.
+   On the other hand the given c.d.f. must not be a multiple of the
+   real c.d.f., i.e. lim_{x->infinity} cdf(x) = 1.
+*/
+
+/*
    (If no parameters are used for the function use the NULL pointer
    for the second argument.)
 */
@@ -316,6 +327,8 @@ UNUR_DISTR *unur_distr_corder_new( UNUR_DISTR *distr, int n, int k );
    Create an object for order statistics of for a sample size
    @var{n} and rank @var{k}.
    @var{distr} must be a pointer to a univariate continuous distribution.
+   The area below the p.d.f. is set to the (possibly unknown) area
+   given for the underlying distribution.
 
    The result is of the same type as of unur_distr_cont_new() calls.
    (Except it cannot be used to for making the order statistics of the
@@ -329,8 +342,10 @@ UNUR_DISTR *unur_distr_corder_new( UNUR_DISTR *distr, int n, int k );
    unur_distr_cont_... calls with the following exceptions:
 
    the p.d.f.s and c.d.f. cannot be set or changed.
+
    unur_distr_cont_set_pdfparams() changes the parameters of the
       underlying distribution.
+
    unur_distr_cont_upd_mode() does not work.
 
    Additionally the following routines can be used.
@@ -347,6 +362,8 @@ int unur_distr_corder_set_rank( UNUR_DISTR *distribution, int n, int k );
    Change sample size $var{n} and rank @var{k} of order statistics.
    In case of invalid data, no parameters are changed and @code{0} is
    returned.
+   The area below the p.d.f. can be set to that of the underlying
+   distribution by a unur_distr_upd_pdfarea() call.
 */
 
 int unur_distr_corder_get_rank( UNUR_DISTR *distribution, int *n, int *k );

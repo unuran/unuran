@@ -138,7 +138,7 @@ unur_distr_student( double *params, int n_params )
   /* number of arguments */
   DISTR.n_params = n_params;
 
-  /* log of normalization constant */
+  /* normalization constant */
   NORMCONSTANT = _unur_normconstant_student(DISTR.params,DISTR.n_params);
 
   /* mode and area below p.d.f. */

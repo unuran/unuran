@@ -83,8 +83,8 @@ static const char distr_name[] = "normal";
 static double _unur_pdf_normal( double x, UNUR_DISTR *distr );
 static double _unur_dpdf_normal( double x, UNUR_DISTR *distr );
 static double _unur_cdf_normal( double x, UNUR_DISTR *distr );
-inline static int _unur_upd_mode( UNUR_DISTR *distr );
-inline static int _unur_upd_area( UNUR_DISTR *distr );
+static int _unur_upd_mode_normal( UNUR_DISTR *distr );
+static int _unur_upd_area( UNUR_DISTR *distr );
 
 /*---------------------------------------------------------------------------*/
 
@@ -139,22 +139,25 @@ _unur_cdf_normal( double x, UNUR_DISTR *distr )
 /*---------------------------------------------------------------------------*/
 
 int
-_unur_upd_mode( UNUR_DISTR *distr )
+_unur_upd_mode_normal( UNUR_DISTR *distr )
 {
   DISTR.mode = DISTR.mu;
   return 1;
-} /* end of _unur_upd_mode() */
+} /* end of _unur_upd_mode_normal() */
 
 /*---------------------------------------------------------------------------*/
 
 int
-_unur_upd_area( UNUR_DISTR *distr )
+_unur_upd_area_normal( UNUR_DISTR *distr )
 {
   /* log of normalization constant */
   LOGNORMCONSTANT = log(M_SQRTPI * M_SQRT2 * DISTR.sigma);
   DISTR.area = 1.;
+
+  /** TODO: truncated distributions!! **/
+
   return 1;
-} /* end of _unur_upd_area() */
+} /* end of _unur_upd_area_normal() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -231,8 +234,8 @@ unur_distr_normal( double *params, int n_params )
   DISTR.domain[1] = INFINITY;    /* right boundary */
 
   /* function for updating derived parameters */
-  DISTR.upd_mode  = _unur_upd_mode; /* funct for computing mode */
-  DISTR.upd_area  = _unur_upd_area; /* funct for computing area */
+  DISTR.upd_mode  = _unur_upd_mode_normal; /* funct for computing mode */
+  DISTR.upd_area  = _unur_upd_area_normal; /* funct for computing area */
 
   /* indicate which parameters are set */
   distr->set = ( UNUR_DISTR_SET_DOMAIN |

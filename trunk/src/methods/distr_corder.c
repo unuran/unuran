@@ -48,6 +48,7 @@ static const char distr_name[] = "order statistics";
 
 #define DISTR distr->data.cont    /* underlying (base) distribution          */
 #define OS    os->data.cont       /* order statistics                        */
+#define LOGNORMCONSTANT (os->data.cont.norm_constant)
 
 /*---------------------------------------------------------------------------*/
 
@@ -55,6 +56,7 @@ static const char distr_name[] = "order statistics";
 static double _unur_pdf_corder( double x, UNUR_DISTR *os );
 static double _unur_dpdf_corder( double x, UNUR_DISTR *os );
 static double _unur_cdf_corder( double x, UNUR_DISTR *os );
+static int _unur_upd_area_corder( UNUR_DISTR *os );
 
 /*---------------------------------------------------------------------------*/
 
@@ -157,7 +159,10 @@ unur_distr_corder_new( struct unur_distr *distr, int n, int k )
   OS.upd_mode  = NULL;
 
   /* there is no necessity for a function that computes the area below pdf   */
-  OS.upd_area  = NULL;
+  OS.upd_area  = _unur_upd_area_corder;
+
+  /* log of normalization constant */
+  _unur_upd_area_corder(os);
 
   /* parameters set */
   os->set = distr->set & ~UNUR_DISTR_SET_MODE; /* mode not derived from distr */
@@ -295,8 +300,6 @@ _unur_pdf_corder( double x, struct unur_distr *os )
   double fx;    /* pdf of underlying distribution at x */
   double p,q;   /* shape parameters for beta distribution */
 
-  double x_LOGNORMCONSTANT;
-
   /* check arguments */
   _unur_check_NULL( NULL, os, INFINITY );
   CHECK_NULL( os->base, INFINITY );
@@ -309,10 +312,8 @@ _unur_pdf_corder( double x, struct unur_distr *os )
   p = OS.params[1];                       /* k     */
   q = OS.params[0] - OS.params[1] + 1.;   /* n-k+1 */
 
-  x_LOGNORMCONSTANT = _unur_gammaln(p) + _unur_gammaln(q) - _unur_gammaln(p+q);
-
   /* pdf(x) = b(F(x)) * f(x) */
-  return exp(log(fx) + (p-1.)*log(Fx) + (q-1.)*log(1.-Fx) - x_LOGNORMCONSTANT);
+  return exp(log(fx) + (p-1.)*log(Fx) + (q-1.)*log(1.-Fx) - LOGNORMCONSTANT);
 
 } /* end of _unur_pdf_corder() */
 
@@ -335,8 +336,6 @@ _unur_dpdf_corder( double x, struct unur_distr *os )
   double dpdf;  /* derivative of pdf of order statistics */
   double lFx, lFy;
 
-  double x_LOGNORMCONSTANT;
-
   /* check arguments */
   _unur_check_NULL( NULL, os, INFINITY );
   CHECK_NULL( os->base, INFINITY );
@@ -350,15 +349,13 @@ _unur_dpdf_corder( double x, struct unur_distr *os )
   p = OS.params[1];                       /* k     */
   q = OS.params[0] - OS.params[1] + 1.;   /* n-k+1 */
 
-  x_LOGNORMCONSTANT = _unur_gammaln(p) + _unur_gammaln(q) - _unur_gammaln(p+q);
-
   lFx = log(Fx);
   lFy = log(1.-Fx);
 
   /* pdf'(x) = b'(F(x)) * f(x)^2 + b(F(x)) * f'(x) */
-  dpdf = ( exp(2.*log(fx) + (p-2.)*lFx + (q-2.)*lFy - x_LOGNORMCONSTANT)
+  dpdf = ( exp(2.*log(fx) + (p-2.)*lFx + (q-2.)*lFy - LOGNORMCONSTANT)
 	   * ( (p-1.)*(1.-Fx) - (q-1.)*Fx ));
-  dpdf += exp((p-1.)*lFx + (q-1.)*lFy - x_LOGNORMCONSTANT) * dfx;
+  dpdf += exp((p-1.)*lFx + (q-1.)*lFy - LOGNORMCONSTANT) * dfx;
 
   return dpdf;
 } /* end of _unur_dpdf_corder() */
@@ -392,6 +389,30 @@ _unur_cdf_corder( double x, struct unur_distr *os )
   return _unur_incbeta(Fx,p,q);
 
 } /* end of _unur_cdf_corder() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+_unur_upd_area_corder( UNUR_DISTR *os )
+{
+  double Ftrunc;   /* cdf(right) - cdf(left) for Ftruncated distribution */
+
+  /* log of normalization constant */
+  /* LOGNORMCONSTANT = _unur_gammaln(k) + _unur_gammaln(n-k+1) - _unur_gammaln(n+1); */
+  LOGNORMCONSTANT = ( _unur_gammaln(OS.params[1]) 
+		      + _unur_gammaln(OS.params[0] - OS.params[1] + 1.) 
+		      - _unur_gammaln(OS.params[0] + 1.) );
+
+  /* truncated distributions */
+  if (!os->base->set & UNUR_DISTR_SET_STDDOMAIN) {
+    /* not a standard domain */
+    Ftrunc  = (OS.domain[1] < INFINITY)  ? _unur_cdf_corder(OS.domain[1],os) : 1.;
+    Ftrunc -= (OS.domain[0] > -INFINITY) ? _unur_cdf_corder(OS.domain[0],os) : 0.;
+    LOGNORMCONSTANT += log(Ftrunc);
+  }
+
+  return 1;
+} /* end of _unur_upd_area_corder() */
 
 /*---------------------------------------------------------------------------*/
 

@@ -168,8 +168,8 @@ inline static void
 normal_bm_init( struct unur_gen *gen )
 {
   if (GEN.gen_param == NULL) {
-    GEN.gen_param = _unur_malloc(sizeof(double));
     GEN.n_gen_param = 1;
+    GEN.gen_param = _unur_malloc(GEN.n_gen_param * sizeof(double));
   }
 
   /* -X- setup code -X- */
@@ -236,8 +236,8 @@ inline static void
 normal_pol_init( struct unur_gen *gen )
 {
   if (GEN.gen_param == NULL) {
-    GEN.gen_param = _unur_malloc(1 * sizeof(double));
     GEN.n_gen_param = 1;
+    GEN.gen_param = _unur_malloc(GEN.n_gen_param * sizeof(double));
   }
 
   /* -X- setup code -X- */

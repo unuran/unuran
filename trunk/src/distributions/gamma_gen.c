@@ -135,8 +135,8 @@ inline static void
 gamma_gll_init( struct unur_gen *gen )
 {
   if (GEN.gen_param == NULL) {
-    GEN.gen_param = _unur_malloc(3 * sizeof(double));
     GEN.n_gen_param = 3;
+    GEN.gen_param = _unur_malloc(GEN.n_gen_param * sizeof(double));
   }
 
   /* -X- setup code -X- */

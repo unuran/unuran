@@ -215,7 +215,7 @@ EOX
 	# Body of make test routine
 	my $make_test_body = 
 	    "$distribution\n".                       # the distribution object
-	    "\t_unurgen_C_PDF(distr,out,\"$PDFroutine\");\n".  # make code 
+	    "\t_unur_acg_C_PDF(distr,out,\"$PDFroutine\");\n".  # make code 
 	    "\tunur_distr_free(distr);\n\n";         # free distribution object
 
 	# write test file

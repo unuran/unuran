@@ -70,7 +70,7 @@ _unur_tdr_ps_codegen( struct unur_gen *gen, FILE *out, const char *distr_name )
   char *pdf, *rand;
 
   /* check arguments */
-  _unur_check_NULL("unurgen",gen, 0);
+  _unur_check_NULL("ACG",gen, 0);
   COOKIE_CHECK(gen,CK_TDR_GEN,0);
 
   /* name of PDF function and sampling routine */
@@ -83,7 +83,7 @@ _unur_tdr_ps_codegen( struct unur_gen *gen, FILE *out, const char *distr_name )
 
   /* PDF */
   fprintf(out,hline,"PDF");
-  if (! _unurgen_C_PDF(&(gen->distr),out,pdf)) {
+  if (! _unur_acg_C_PDF(&(gen->distr),out,pdf)) {
     _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"Cannot make PDF");
     free(pdf); free(rand);
     return 0;

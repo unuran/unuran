@@ -64,7 +64,7 @@ sub make_PDFgen_C
     $PDFgen .= make_bar_C("Main");
 
     # Function name
-    my $function = "int \_unurgen\_C\_PDF (UNUR_DISTR *distr, FILE *out, const char *pdf)";
+    my $function = "int \_unur_acg\_C\_PDF (UNUR_DISTR *distr, FILE *out, const char *pdf)";
     
     # Function prototype
     $PDFgen_global_prototypes .= "$function;\n";
@@ -73,14 +73,14 @@ sub make_PDFgen_C
     $PDFgen .= "$function\n{\n";
 
     # Check for invalid NULL pointer
-    $PDFgen .= "\t_unur_check_NULL(\"unurgen\", distr, 0 );\n\n";
+    $PDFgen .= "\t_unur_check_NULL(\"ACG\", distr, 0 );\n\n";
 
     # Switch
     $PDFgen .= "\tswitch (distr->id) {\n";
     foreach my $d (sort keys %{$DISTR}) {
 	next unless $DISTR->{$d}->{"=TYPE"} eq "CONT";
 	$PDFgen .= "\tcase ".$DISTR->{$d}->{"=ID"}.":\n";
-	$PDFgen .= "\t\treturn \_unurgen\_C\_PDF_$d (distr,out,pdf);\n";
+	$PDFgen .= "\t\treturn \_unur_acg\_C\_PDF_$d (distr,out,pdf);\n";
     }
     $PDFgen .= "\tdefault:\n";
     $PDFgen .= "\t\treturn 0;\n";
@@ -99,7 +99,7 @@ sub make_PDFgen_C
 	$PDFgen .= make_bar_C("$d: ".$DISTR->{$d}->{"=NAME"});
 
 	# Function name
-	my $function = "int \_unurgen\_C\_PDF\_$d (UNUR_DISTR *distr, FILE *out, const char *pdf)";
+	my $function = "int \_unur_acg\_C\_PDF\_$d (UNUR_DISTR *distr, FILE *out, const char *pdf)";
 
 	# Function prototype
 	$PDFgen_static_prototypes .= "static $function;\n";
@@ -131,6 +131,7 @@ sub make_PDFgen_C
 
 	# Write PDF
 	$PDFgen .= 
+	    make_section_C($DISTR,$d).
 	    $empty_line.
 	    $PDFname.
 	    $PDFconst.
@@ -178,24 +179,14 @@ sub make_PDF_params
     # whether we have variable number of parameters
     my $have_n_params = ($DISTR->{$d}->{"=PDF"}->{"=BODY"} =~ /n_params/);
 
-
-    #   (total) number of parameters
-#    if ($have_n_params) { 
-#	$params .= 
-#	    "\tfprintf (out,\"\\tconst int n_params = %d;\\n\",".
-#		$DISTR->{$d}->{"=PDF"}->{"=DISTR"}.".n_params);\n";
-#    }
-
-
+    # parameter list
     my $params;
-
-    #   parameter list
 
     my $n_in_params = $DISTR->{$d}->{"=PDF"}->{"=N_PARAMS"};
     my $in_params = $DISTR->{$d}->{"=PDF"}->{"=PARAMS"};
 
-
     foreach my $i (0 .. $n_in_params - 1) {
+
 	if ($have_n_params) {
 	    $params .=
 		"\tif (".$DISTR->{$d}->{"=PDF"}->{"=DISTR"}.".n_params > $i)\n".
@@ -204,6 +195,7 @@ sub make_PDF_params
 		" = %.20e;\\n\",".
 		$DISTR->{$d}->{"=PDF"}->{"=DISTR"}.".params[$i]);\n";
 	}
+
 	else {
 	    $params .= 
 		"\tfprintf (out,\"\\tconst double ".
@@ -293,3 +285,38 @@ sub make_bar_C
 } # end of make_bar_C()
 
 # ----------------------------------------------------------------
+# Make section header for PDF code
+
+sub make_section_C
+{
+    my $DISTR = $_[0];    # data for distributions
+    my $d = $_[1];        # name of distribution
+
+    # make a hrule
+    my $hline = "/* ";
+    for (1..64) { $hline .= "-"; }
+    $hline .= " */";
+    $hline = "\tfprintf (out,\"$hline\\n\");\n";
+
+    # make an empty line
+    my $empty_line = "\tfprintf (out,\"\\n\");\n";
+
+    # print name of distribution
+    my $distr_name = "\tfprintf (out,\"/* %-64s */\\n\",\"".
+	$DISTR->{$d}->{"=NAME"}."\");\n";
+
+    my $distr = "\tfprintf (out,\"/* PDF for %-56s */\\n\",\"\\\"$d\\\"\");\n";
+
+    my $string = 
+	$empty_line.
+	$hline.
+	$distr_name.
+	$distr.
+        $hline;
+
+    return $string;
+
+} # end of make_section_C()
+
+# ----------------------------------------------------------------
+

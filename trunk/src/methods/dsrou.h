@@ -55,25 +55,25 @@
       
       It requires the PMF, the (exact) location of the mode and the
       sum over the given PDF. The rejection constant is 4 for all
-      T-concave distributions. Optionally the CDF at mode-1 can
+      T-concave distributions. Optionally the CDF at mode can
       be given to increase the performance of the algorithm by means
-      of the unur_dsrou_set_cdfbeforemode() call. Then the rejection
+      of the unur_dsrou_set_cdfatmode() call. Then the rejection
       constant is reduced to 2.
       
       If the (exact) sum over the PMF is not known, then an upper
       bound can be used instead (which of course increases the
-      rejection constant). But then unur_dsrou_set_cdfbeforemode()
+      rejection constant). But then unur_dsrou_set_cdfatmode()
       must not be called.
       
       It is possible to change the parameters and the domain of the
       chosen distribution without building a new generator object
       using the unur_dsrou_chg_pmfparams() and unur_dsrou_chg_domain()
       call, respectively. But then unur_dsrou_chg_pmfsum(),
-      unur_dsrou_chg_mode() and unur_dsrou_chg_cdfbeforemode() have to
+      unur_dsrou_chg_mode() and unur_dsrou_chg_cdfatmode() have to
       be used to reset the corresponding figures whenever they have
       changed. 
 
-      If any of mode, CDF at mode-1, or the sum over the PMF has been
+      If any of mode, CDF at mode, or the sum over the PMF has been
       changed, then unur_dsrou_reinit() must be executed. 
       (Otherwise the generator produces garbage).
 
@@ -109,12 +109,15 @@ int unur_dsrou_reinit( UNUR_GEN *generator );
    in case of a failure @code{0} is returned.
 */
 
-int unur_dsrou_set_cdfbeforemode( UNUR_PAR *parameters, double Fbmode );
+int unur_dsrou_set_cdfatmode( UNUR_PAR *parameters, double Fmode );
 /* 
-   Set CDF at mode-1. 
+   Set CDF at mode. 
    When set, the performance of the algorithm is increased by factor 2.
    However, when the parameters of the distribution are changed
-   unur_dsrou_chg_cdfbeforemode() has to be used to update this value.
+   unur_dsrou_chg_cdfatmode() has to be used to update this value.
+   Notice that the algorithm detects a mode at the left boundary of
+   the domain automatically and it is not necessary to use this call
+   for a monotonically decreasing PMF. 
 
    Default: not set.
 */
@@ -181,9 +184,9 @@ int unur_dsrou_upd_mode( UNUR_GEN *generator );
    generator again.
 */
 
-int unur_dsrou_chg_cdfbeforemode( UNUR_GEN *generator, double Fbmode );
+int unur_dsrou_chg_cdfatmode( UNUR_GEN *generator, double Fmode );
 /* 
-   Change CDF at mode-1 of distribution.
+   Change CDF at mode of distribution.
    unur_dsrou_reinit() must be executed before sampling from the 
    generator again.
 */

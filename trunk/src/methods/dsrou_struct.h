@@ -41,7 +41,7 @@
 /* Information for constructing the generator                                */
 
 struct unur_dsrou_par { 
-  double  Fbmode;            /* cdf at mode-1                                */
+  double  Fmode;             /* cdf at mode                                  */
 };
 
 /*---------------------------------------------------------------------------*/
@@ -49,8 +49,8 @@ struct unur_dsrou_par {
 
 struct unur_dsrou_gen { 
   double  ul, ur;            /* height of rectangles                         */
-  double  al, ar;            /* left and right boundary of rectangle         */
-  double  Fbmode;            /* cdf at mode-1                                */
+  double  al, ar;            /* area of rectangles                           */
+  double  Fmode;             /* cdf at mode                                  */
 };
 
 /*---------------------------------------------------------------------------*/

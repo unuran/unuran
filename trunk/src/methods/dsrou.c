@@ -6,17 +6,18 @@
  *                                                                           *
  *   FILE:      dsrou.c                                                      *
  *                                                                           *
- *   TYPE:      continuous univariate random variate                         *
+ *   TYPE:      discrete univariate random variate                           *
  *   METHOD:    discrete simple universal method (ratio-of-uniforms method)  *
  *                                                                           *
  *   DESCRIPTION:                                                            *
- *      Given PDF and mode of a T_{-1/2}-concave distribution                *
- *      produce a value x consistent with its density                        *
+ *      Given PMF and mode of a T_{-1/2}-concave distribution                *
+ *      produce a value X consistent with its PMF                            *
  *                                                                           *
  *   REQUIRED:                                                               *
- *      pointer to the density function                                      *
- *      mode of the density                                                  *
- *      area below PDF                                                       *
+ *      pointer to the mass function                                         *
+ *      mode of distribution                                                 *
+ *      sum over PMF                                                         *
+ *                                                                           *
  *   OPTIONAL:                                                               *
  *      CDF at mode                                                          *
  *                                                                           *
@@ -70,31 +71,30 @@
  * Generating point (V,U) uniformly distributed in A is done by rejection    *
  * from an enveloping region, usually from the minimal bounding rectangle.   *
  *                                                                           *
- * The implemented algorithm uses the fact, that for many distribtions,      *
- * A is convex. Then we easily can construct an enveloping rectangle.        *
+ * For discrete random variates the continuous PDF                           *
+ *    PDF(x) = PMF(floor(x))                                                 *
+ * is used.                                                                  *
+ *                                                                           *
+ * The implemented algorithm uses the fact, that for many distributions,     *
+ * the polygon having the "spikes" of A as its verticeds is convex.          *
+ * Then we can find the follow bounding rectangles:                          *
+ * (For simplicity we have assumed that the sum over the PMF is 1)           *
+ *                                                                           *
  * Define                                                                    *
- *    R = {(v,u):  v_l <= v <= v_r, 0 <= u <= u_m},                          *
- *    Q = {(v,u): -v_m <= v <= v_m, 0 <= u <= u_m},                          *
+ *    R = {(v,u):  -1/u_l <= v <= 0, 0 <= u <= u_l} \cup                     *
+ *        {(v,u):  0 <= v <= 1/u_r, 0 <= u <= u_r}                           *
+ *    Q = {(v,u):  v_l <= v <= 0, 0 <= u <= u_l} \cup                        *
+ *        {(v,u):  0 <= v <= v_r, 0 <= u <= u_r}                             *
  * where                                                                     *
- *    u_m = sqrt(f(mode)), v_m = (\int f dx) / u_m                           *
- *    v_l = -F(\mode) v_m, v_r = (1-F(mode)) v_m                             *
+ *    u_l = sqrt(PMF(mode-1)), u_r = sqrt(PMF(mode)),                        *
+ *    v_l = -F(mode-1)/u_l, v_r = (1-F(mode-1))/u_r                          *
  * Then                                                                      *
  *    A subset R subset Q                                                    *
  *                                                                           *
- * Thus we can use R to generate whenever the CDF F(mode) at the mode        *
+ * Thus we can use R to generate whenever the CDF F(mode-1) at the mode      *
  * is known, and Q otherwise.                                                *
  * Notice, that the rection constant is 2 in the first case and 4 and the    *
  * latter.                                                                   *
- *                                                                           *
- * If F(mode) it known, it is even possible to get an universal squeeze      *
- * (see [1] for details). However its usage is only recommended when         *
- * the PDF is (very) expensive.                                              *
- *                                                                           *
- * When F(mode) is not known the mirror principle can be used. i.e., make    *
- * an enveloping rectangle for f(x)+f(-x). It reduces the rejection constant *
- * to 2 * sqrt(2) at the expense of more evaluations of the PDF.             *
- * Its usage is only recommended when the generation time for the underlying *
- * uniform prng is extreme large.                                            *
  *                                                                           *
  * Distributions with a convex set A are characterized by the following      *
  * theorem that shows a connection to transformed density rejection TDR.     *
@@ -126,7 +126,7 @@
 /*---------------------------------------------------------------------------*/
 /* Flags for logging set calls                                               */
 
-#define DSROU_SET_CDFBMODE    0x001u   /* CDF at mode-1 is known             */
+#define DSROU_SET_CDFMODE     0x001u   /* CDF at mode is known               */
 
 /*---------------------------------------------------------------------------*/
 
@@ -251,7 +251,7 @@ unur_dsrou_new( struct unur_distr *distr )
   par->distr    = distr;      /* pointer to distribution object              */
 
   /* set default values */
-  PAR.Fbmode    = -1.;                /* CDF at mode-1 (unknown yet)         */
+  PAR.Fmode     = -1.;                /* CDF at mode (unknown yet)           */
 
   par->method   = UNUR_METH_DSROU;    /* method and default variant          */
   par->variant  = 0u;                 /* default variant                     */
@@ -271,13 +271,13 @@ unur_dsrou_new( struct unur_distr *distr )
 /*****************************************************************************/
 
 int 
-unur_dsrou_set_cdfbeforemode( struct unur_par *par, double Fbmode )
+unur_dsrou_set_cdfatmode( struct unur_par *par, double Fmode )
      /*----------------------------------------------------------------------*/
-     /* set value of cdf at mode-1                                           */
+     /* set value of cdf at mode                                             */
      /*                                                                      */
      /* parameters:                                                          */
      /*   par    ... pointer to parameter for building generator object      */
-     /*   Fbmode ... cdf at mode-1                                           */
+     /*   Fmode  ... CDF at mode                                             */
      /*                                                                      */
      /* return:                                                              */
      /*   1 ... on success                                                   */
@@ -291,20 +291,20 @@ unur_dsrou_set_cdfbeforemode( struct unur_par *par, double Fbmode )
   _unur_check_par_object( par,DSROU );
 
   /* check new parameter for generator */
-  if (Fbmode < 0. || Fbmode > 1.) {
-    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"CDF(mode-1)");
+  if (Fmode < 0. || Fmode > 1.) {
+    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"CDF(mode)");
     return 0;
    }
  
   /* store date */
-  PAR.Fbmode = Fbmode;
+  PAR.Fmode = Fmode;
 
   /* changelog */
-  par->set |= DSROU_SET_CDFBMODE;
+  par->set |= DSROU_SET_CDFMODE;
 
   return 1;
  
-} /* end of unur_dsrou_set_cdfbeforemode() */
+} /* end of unur_dsrou_set_cdfatmode() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -463,13 +463,13 @@ unur_dsrou_upd_mode( struct unur_gen *gen )
 /*---------------------------------------------------------------------------*/
 
 int
-unur_dsrou_chg_cdfbeforemode( struct unur_gen *gen, double Fbmode )
+unur_dsrou_chg_cdfatmode( struct unur_gen *gen, double Fmode )
      /*----------------------------------------------------------------------*/
-     /* change value of cdf at mode-1                                        */
+     /* change value of cdf at mode                                          */
      /*                                                                      */
      /* parameters:                                                          */
      /*   gen    ... pointer to generator object                             */
-     /*   Fbmode ... cdf at mode-1                                           */
+     /*   Fmode  ... CDF at mode                                             */
      /*                                                                      */
      /* return:                                                              */
      /*   1 ... on success                                                   */
@@ -481,20 +481,20 @@ unur_dsrou_chg_cdfbeforemode( struct unur_gen *gen, double Fbmode )
   _unur_check_gen_object( gen,DSROU );
 
   /* check new parameter for generator */
-  if (Fbmode < 0. || Fbmode > 1.) {
-    _unur_warning(gen->genid,UNUR_ERR_PAR_SET,"CDF(mode-1)");
+  if (Fmode < 0. || Fmode > 1.) {
+    _unur_warning(gen->genid,UNUR_ERR_PAR_SET,"CDF(mode)");
     return 0;
   }
   
   /* copy parameters */
-  GEN.Fbmode = Fbmode;
+  GEN.Fmode = Fmode;
 
   /* changelog */
-  gen->set |= DSROU_SET_CDFBMODE;
+  gen->set |= DSROU_SET_CDFMODE;
 
   /* o.k. */
   return 1;
-} /* end of unur_dsrou_chg_cdfbeforemode() */
+} /* end of unur_dsrou_chg_cdfatmode() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -683,9 +683,9 @@ _unur_dsrou_rectangle( struct unur_gen *gen )
   GEN.ur = sqrt(pm);
 
   /* areas of rectangle */
-  if (gen->set & DSROU_SET_CDFBMODE) {
-    /* cdf at mode-1 known */
-    GEN.al = -GEN.Fbmode * DISTR.sum;
+  if (gen->set & DSROU_SET_CDFMODE) {
+    /* CDF at mode known */
+    GEN.al = -(GEN.Fmode * DISTR.sum)+pm;
     GEN.ar = DISTR.sum + GEN.al;
   }
   else if (GEN.ul == 0.) {
@@ -753,7 +753,7 @@ _unur_dsrou_create( struct unur_par *par )
   }
 
   /* copy some parameters into generator object */
-  GEN.Fbmode = PAR.Fbmode;          /* CDF at mode                           */
+  GEN.Fmode = PAR.Fmode;            /* CDF at mode                           */
 
   gen->method = par->method;        /* indicates method                      */
   gen->variant = par->variant;      /* indicates variant                     */
@@ -865,6 +865,7 @@ _unur_dsrou_sample_check( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
 { 
   double U,V,pI,VI;
+  double ur2, vl, vr;
   int I;
 
   /* check arguments */
@@ -889,10 +890,16 @@ _unur_dsrou_sample_check( struct unur_gen *gen )
     pI = PMF(I);
     VI = V/U * sqrt(pI);
 
+    /* values of boundary of rectangle          */
+    /* (avoid roundoff error with FP registers) */
+    ur2 = (2.+4.*DBL_EPSILON) * GEN.ur*GEN.ur;
+    vl = (GEN.ul>0.) ? (1.+UNUR_EPSILON) * GEN.al/GEN.ul : 0.;
+    vr = (1.+UNUR_EPSILON) * GEN.ar/GEN.ur;
+
     /* check hat */
-    if ( ((2.+4.*DBL_EPSILON) * GEN.ur*GEN.ur < pI)    /* avoid roundoff error with FP registers */
-	 || ( VI < (1.+UNUR_EPSILON) * GEN.al/GEN.ul) 
-	 || ( VI > (1.+UNUR_EPSILON) * GEN.ar/GEN.ur) ) { 
+    if ( pI > ur2 || VI < vl || VI > vr ) {
+      /*        printf("pI = %g < %g     VI = %g < %g < %g\n", */
+      /*  	     pI, ur2, vl, VI, vr); */
       _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"PMF(x) > hat(x)");
     }
 
@@ -979,10 +986,10 @@ _unur_dsrou_debug_init( struct unur_gen *gen, int is_reinit )
     fprintf(log,"_check");
   fprintf(log,"()\n%s:\n",gen->genid);
  
-  if (gen->set & DSROU_SET_CDFBMODE)
-    fprintf(log,"%s: CDF(mode-1) = %g\n",gen->genid,GEN.Fbmode);
+  if (gen->set & DSROU_SET_CDFMODE)
+    fprintf(log,"%s: CDF(mode) = %g\n",gen->genid,GEN.Fmode);
   else
-    fprintf(log,"%s: CDF(mode-1) unknown\n",gen->genid);
+    fprintf(log,"%s: CDF(mode) unknown\n",gen->genid);
 
   fprintf(log,"%s: no (universal) squeeze\n",gen->genid);
   fprintf(log,"%s: no mirror principle\n",gen->genid);

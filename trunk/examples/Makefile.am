@@ -19,7 +19,8 @@ EXAMPLES = \
  example_vemp  \
  example_FuncStr \
  example_mcorr \
- example_vmt
+ example_vmt_0 \
+ example_vmt_1
 
 check_PROGRAMS = $(EXAMPLES)
 

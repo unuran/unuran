@@ -367,6 +367,8 @@ sub scan_validate {
     print "\tdouble *darray;\n";
     print "\tdouble fpm[10];\n";
 
+    print "\n\trcode = 0;\n";
+
     print "\n\t/* start test */\n";
     print "\tprintf(\"[validate \"); fflush(stdout);\n";
     print "\tfprintf(TESTLOG,\"\\n[validate]\\n\");\n\n";

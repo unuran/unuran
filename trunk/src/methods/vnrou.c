@@ -901,6 +901,7 @@ _unur_vnrou_debug_init( const struct unur_gen *gen )
   fprintf(log,"%s:\n",gen->genid);
   fprintf(log,"%s: type    = continuous multivariate random variates\n",gen->genid);
   fprintf(log,"%s: method  = vnrou (naive ratio-of-uniforms)\n",gen->genid);
+  fprintf(log,"%s: r-parameter = %g\n",gen->genid, GEN.r);
   fprintf(log,"%s:\n",gen->genid);
   
   _unur_distr_cvec_debug( gen->distr, gen->genid );
@@ -909,8 +910,6 @@ _unur_vnrou_debug_init( const struct unur_gen *gen )
   if (gen->variant & VNROU_VARFLAG_VERIFY) fprintf(log,"_check");
   fprintf(log,"()\n%s:\n",gen->genid);
 
-  fprintf(log,"%s: r-parameter = %g\n",gen->genid, GEN.r);
-  
   /* write center[] */
   fprintf(log,"%s: center = (", gen->genid);
   for (d=0; d<dim; d++) {

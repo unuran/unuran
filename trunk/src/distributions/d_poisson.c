@@ -69,7 +69,7 @@ static double _unur_pmf_poisson(int k, double *params, int n_params);
 double
 _unur_pmf_poisson(int k, double *params, int n_params)
 { 
-  return ((k<0) ? 0. : exp( -theta + k * log(theta) - _unur_factln(k) ));
+  return ((k<0) ? 0. : exp( -theta + k * log(theta) - _unur_factorialln(k) ));
 } /* end of _unur_pmf_poisson() */
 
 /*---------------------------------------------------------------------------*/

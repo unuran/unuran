@@ -199,7 +199,6 @@ struct unur_gen {
   char *genid;                /* identifier for generator                    */
 
   struct unur_gen *gen_aux;   /* pointer to auxilliary generator object      */
-  struct unur_gen *gen_aux_2; /* pointer to second aux. generator object     */
 
   unsigned debug;             /* debugging flags                             */
 

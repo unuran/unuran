@@ -573,7 +573,6 @@ _unur_cstd_create( struct unur_par *par )
 
   gen->urng_aux = NULL;             /* no auxilliary URNG required           */
   gen->gen_aux = NULL;              /* no auxilliary generator objects       */
-  gen->gen_aux_2 = NULL;
 
   /* return pointer to (almost empty) generator object */
   return(gen);
@@ -620,7 +619,6 @@ _unur_cstd_free( struct unur_gen *gen )
   _unur_free_genid(gen);
   if (GEN.gen_param)  free(GEN.gen_param);
   if (gen->gen_aux)   _unur_free(gen->gen_aux);
-  if (gen->gen_aux_2) _unur_free(gen->gen_aux_2);
   free(gen);
 
 } /* end of _unur_cstd_free() */

@@ -711,7 +711,6 @@ _unur_dari_create( struct unur_par *par )
 
   gen->urng_aux = NULL;             /* no auxilliary URNG required           */
   gen->gen_aux = NULL;              /* no auxilliary generator objects       */
-  gen->gen_aux_2 = NULL;
 
   /* allocate */
   GEN.hp = (GEN.size > 0) ? _unur_malloc( GEN.size * sizeof(double) ) : NULL;

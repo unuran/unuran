@@ -249,7 +249,6 @@ unur_chg_urng( struct unur_gen *gen, UNUR_URNG *urng )
 
   /* also set pointer in auxilliary generator objects */
   if (gen->gen_aux)   unur_chg_urng(gen->gen_aux,urng);
-  if (gen->gen_aux_2) unur_chg_urng(gen->gen_aux_2,urng);
 
   /* overwrite auxilliary URNG */
   if (gen->urng_aux) gen->urng_aux = urng;
@@ -344,7 +343,6 @@ unur_chg_urng_aux( struct unur_gen *gen, UNUR_URNG *urng_aux )
 
   /* also set pointer in auxilliary generator objects */
   if (gen->gen_aux)   unur_chg_urng_aux(gen->gen_aux,urng_aux);
-  if (gen->gen_aux_2) unur_chg_urng_aux(gen->gen_aux_2,urng_aux);
 
   return urng_aux_old;
 } /* end of unur_chg_urng_aux() */

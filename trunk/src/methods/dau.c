@@ -502,7 +502,6 @@ _unur_dau_create( struct unur_par *par)
 
   gen->urng_aux = NULL;             /* no auxilliary URNG required           */
   gen->gen_aux = NULL;              /* no auxilliary generator objects       */
-  gen->gen_aux_2 = NULL;
 
   /* size of table */
   GEN.urn_size = (int)(GEN.len * PAR.urn_factor);

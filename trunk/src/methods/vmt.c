@@ -368,7 +368,6 @@ _unur_vmt_create( struct unur_par *par )
 
   gen->urng_aux = NULL;             /* no auxilliary URNG required           */
   gen->gen_aux = NULL;              /* no auxilliary generator objects       */
-  gen->gen_aux_2 = NULL;
 
   /* mean vector for generator */
   GEN.mean = DISTR.mean;

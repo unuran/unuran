@@ -898,7 +898,6 @@ _unur_ssr_create( struct unur_par *par )
 
   gen->urng_aux = NULL;             /* no auxilliary URNG required           */
   gen->gen_aux = NULL;              /* no auxilliary generator objects       */
-  gen->gen_aux_2 = NULL;
 
   /* initialize parameters */
 

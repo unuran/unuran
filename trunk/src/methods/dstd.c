@@ -410,7 +410,6 @@ _unur_dstd_free( struct unur_gen *gen )
   if (GEN.gen_param)   free(GEN.gen_param);
   if (GEN.gen_iparam)  free(GEN.gen_iparam);
   if (gen->gen_aux)   _unur_free(gen->gen_aux);
-  if (gen->gen_aux_2) _unur_free(gen->gen_aux_2);
   free(gen);
 
 } /* end of _unur_dstd_free() */
@@ -473,7 +472,6 @@ _unur_dstd_create( struct unur_par *par )
 
   gen->urng_aux = NULL;             /* no auxilliary URNG required           */
   gen->gen_aux = NULL;              /* no auxilliary generator objects       */
-  gen->gen_aux_2 = NULL;
 
   /* return pointer to (almost empty) generator object */
   return(gen);

@@ -855,7 +855,6 @@ _unur_arou_create( struct unur_par *par )
   gen->urng_aux = par->urng_aux;    /* pointer to auxilliary URNG            */
 
   gen->gen_aux = NULL;              /* no auxilliary generator objects       */
-  gen->gen_aux_2 = NULL;
 
   /* center known ?? */
   if (!(par->set & AROU_SET_CENTER))

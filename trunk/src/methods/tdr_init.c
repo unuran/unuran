@@ -208,7 +208,6 @@ _unur_tdr_create( struct unur_par *par )
   gen->urng_aux = par->urng_aux;    /* pointer to auxilliary URNG            */
 
   gen->gen_aux = NULL;              /* no auxilliary generator objects       */
-  gen->gen_aux_2 = NULL;
 
   /* mode known and in given domain ?? */
   if ( !(par->distr->set & UNUR_DISTR_SET_MODE)

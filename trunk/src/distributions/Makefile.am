@@ -37,7 +37,7 @@ libdistributions_a_SOURCES = \
  d_geometric.c   d_geometric_gen.c \
  d_hypergeometric.c d_hypergeometric_gen.c \
  d_logarithmic.c d_logarithmic_gen.c \
- d_negativebinomial.c d_negativebinomial_gen.c \
+ d_negativebinomial.c \
  d_poisson.c     d_poisson_gen.c \
  d_zipf.c        d_zipf_gen.c \
  vc_multinormal.c 

@@ -2007,6 +2007,7 @@ trap 'rm -fr `echo "\
 	src/tests/Makefile \
 	src/uniform/Makefile \
 	doc/Makefile \
+        tests/Makefile \
 	examples/Makefile  config.h" | sed "s/:[^ ]*//g"` conftest*; exit 1' 1 2 15
 EOF
 cat >> $CONFIG_STATUS <<EOF
@@ -2114,6 +2115,7 @@ CONFIG_FILES=\${CONFIG_FILES-"\
 	src/tests/Makefile \
 	src/uniform/Makefile \
 	doc/Makefile \
+        tests/Makefile \
 	examples/Makefile "}
 EOF
 cat >> $CONFIG_STATUS <<\EOF

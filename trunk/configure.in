@@ -44,6 +44,7 @@ AC_OUTPUT( \
 	src/tests/Makefile \
 	src/uniform/Makefile \
 	doc/Makefile \
+        tests/Makefile \
 	examples/Makefile )
 
 dnl -----------------------------------------

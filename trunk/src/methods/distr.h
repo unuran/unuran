@@ -49,10 +49,10 @@
   filled with the appropriate set calls.
 
   Notice that there are essential data about a distribution, eg. the
-  p.d.f., a list of (shape, scale, location) parameters for the
+  PDF, a list of (shape, scale, location) parameters for the
   distribution, and the domain of (truncated) distributions.
   And there exist parameters that are/can be derived from these,
-  eg. the mode of the distribution or the area below the given p.d.f.
+  eg. the mode of the distribution or the area below the given PDF
   (which need not be normalized for may methods).
   UNURAN keeps track of parameters which are known. Thus if one of the
   essential parameters is changed all derived parameters are marked as
@@ -163,7 +163,9 @@ UNUR_DISTR *unur_distr_cont_new( void );
    Create a new (empty) object for univariate continuous distribution.
 */
 
-/* Essential parameters. */
+/* 
+   Essential parameters.
+*/
 
 int unur_distr_cont_set_pdf( UNUR_DISTR *distribution, UNUR_FUNCT_CONT *pdf );
 /* See @code{unur_distr_cont_set_cdf}           */
@@ -180,7 +182,7 @@ int unur_distr_cont_set_cdf( UNUR_DISTR *distribution, UNUR_FUNCT_CONT *cdf );
    double funct(double x, UNUR_DISTR *distr).
 
    Due to the fact that some of the methods do not require a
-   normalized p.d.f. the following is important:
+   normalized PDF the following is important:
 
    (*) the given CDF must be the cumulative distribution function of
    the (non-truncated) distribution. If a distribution from the 
@@ -203,11 +205,11 @@ int unur_distr_cont_set_cdf( UNUR_DISTR *distribution, UNUR_FUNCT_CONT *cdf );
 
    It is important to note that all these functions must return a
    result for all floats @var{x}. Eg., if the domain of a given
-   p.d.f. is the interval [-1,1], than the given function must return
+   PDF is the interval [-1,1], than the given function must return
    @code{0.0} for all points outside this interval.
 
-   It is not possible to change such a function. Once the p.d.f. or
-   c.d.f. is set it cannot be overwritten. A new distribution object
+   It is not possible to change such a function. Once the PDF or
+   CDF is set it cannot be overwritten. A new distribution object
    has to be used instead.
 */
 
@@ -219,8 +221,8 @@ UNUR_FUNCT_CONT *unur_distr_cont_get_dpdf( UNUR_DISTR *distribution );
 
 UNUR_FUNCT_CONT *unur_distr_cont_get_cdf( UNUR_DISTR *distribution );
 /* 
-   Get the respective pointer to the p.d.f., the derivative of the 
-   p.d.f. and the c.d.f. of the distribution. The pointer is of type
+   Get the respective pointer to the PDF, the derivative of the 
+   PDF and the CDF of the distribution. The pointer is of type
    double funct(double x, UNUR_DISTR *distr).
    If the corresponding function is not available for the distribution,
    the NULL pointer is returned.
@@ -234,8 +236,8 @@ double unur_distr_cont_eval_dpdf( double x, UNUR_DISTR *distribution );
 
 double unur_distr_cont_eval_cdf( double x, UNUR_DISTR *distribution );
 /* 
-   Evaluate the p.d.f., derivative of the p.d.f. and the c.d.f.,
-   respectively, at x.
+   Evaluate the PDF, derivative of the PDF and the CDF, respectively,
+   at x. 
    Notice that @code{distribution} must not be the NULL pointer.
    If the corresponding function is not available for the distribution,
    @code{UNUR_INFINITY} is returned and @code{unur_errno} is set to
@@ -256,7 +258,7 @@ int unur_distr_cont_set_pdfparams(UNUR_DISTR *distribution,double *params,int n_
 
 int unur_distr_cont_get_pdfparams( UNUR_DISTR *distribution, double **params );
 /* 
-   Get number of parameters of the p.d.f. and set pointer
+   Get number of parameters of the PDF and set pointer
    @code{params} to array of parameters. If no parameters are stored
    in the object, @code{0} is returned and @code{params} is set to
    NULL.
@@ -330,7 +332,7 @@ double unur_distr_cont_get_mode( UNUR_DISTR *distribution );
 
 int unur_distr_cont_set_pdfarea( UNUR_DISTR *distribution, double area );
 /* 
-   Set the area below the p.d.f. If @code{area} is non-positive, no
+   Set the area below the PDF. If @code{area} is non-positive, no
    area is set and @code{unur_errno} is set to @*
    @code{UNUR_ERR_DISTR_SET}. 
    
@@ -342,20 +344,20 @@ int unur_distr_cont_set_pdfarea( UNUR_DISTR *distribution, double area );
 
 int unur_distr_cont_upd_pdfarea( UNUR_DISTR *distribution );
 /*
-   Recompute the area below the p.d.f. of the distribution. 
+   Recompute the area below the PDF of the distribution. 
    It only works for distribution objects from the
    (=>) UNURAN library of standard distributions when the
    corresponding function is available. Otherwise @code{unur_errno} is
    set to @code{UNUR_ERR_DISTR_DATA}. 
 
    This call sets the normalization constant such that the given
-   p.d.f. is the derivative of a given c.f.d., i.e. the area is 1.
+   PDF is the derivative of a given c.f.d., i.e. the area is 1.
    However for truncated distribution the area smaller than 1.
 */
 
 double unur_distr_cont_get_pdfarea( UNUR_DISTR *distribution );
 /* 
-   Get the area below the p.d.f of the distribution. If this area is
+   Get the area below the PDF of the distribution. If this area is
    not known,@* unur_distr_cont_upd_pdfarea() is called to compute
    it. If this is not successful @code{UNUR_INFINITY} is returned and
    @code{unur_errno} is set to @code{UNUR_ERR_DISTR_GET}.
@@ -386,31 +388,16 @@ UNUR_DISTR *unur_distr_corder_new( UNUR_DISTR *distr, int n, int k );
    of the order statistics is wrong.
 */
 
-/* Essential parameters. */
-
-/* 
-   The result of unur_distr_corder_new() can be handled with
-   unur_distr_cont_... calls with the following exceptions:
-
-   the p.d.f.s and c.d.f. cannot be set or changed.
-
-   unur_distr_cont_set_pdfparams() changes the parameters of the
-      underlying distribution.
-
-   unur_disr_cont_upd_pdfares() assumes that the PDF of the underlying
-      distribution is normalized, i.e. it is the derivative its CDF.
-      Otherwise the computed area is wrong and there is NO warning
-      about this failure.
-
-   unur_distr_cont_upd_mode() does not work.
-
-   Additionally the following routines can be used.
-*/
-  
 
 UNUR_DISTR *unur_distr_corder_get_distribution( UNUR_DISTR *distribution );
 /* 
    Get pointer to distribution object for underlying distribution.
+*/
+
+
+
+/* 
+   Essential parameters.
 */
 
 int unur_distr_corder_set_rank( UNUR_DISTR *distribution, int n, int k );
@@ -418,7 +405,7 @@ int unur_distr_corder_set_rank( UNUR_DISTR *distribution, int n, int k );
    Change sample size $var{n} and rank @var{k} of order statistics.
    In case of invalid data, no parameters are changed and @code{0} is
    returned.
-   The area below the p.d.f. can be set to that of the underlying
+   The area below the PDF can be set to that of the underlying
    distribution by a unur_distr_upd_pdfarea() call.
 */
 
@@ -427,6 +414,172 @@ int unur_distr_corder_get_rank( UNUR_DISTR *distribution, int *n, int *k );
    Get sample size $var{n} and rank @var{k} of order statistics.
    In case of error @code{0} is returned.
 */
+
+/* 
+   Additionally most of the set and get calls for continuous
+   univariate distributions work. The most important exceptions are
+   that the PDF and CDF cannot be changed and
+   unur_distr_cont_upd_mode() uses in any way a (slow) numerical
+   method that might fail.
+*/
+
+
+#define unur_distr_corder_get_pdf(distr)   unur_distr_cont_get_pdf((distr))
+/*  UNUR_FUNCT_CONT *unur_distr_corder_get_pdf( UNUR_DISTR *distribution ); */
+
+#define unur_distr_corder_get_dpdf(distr)  unur_distr_cont_get_dpdf((distr))
+/*  UNUR_FUNCT_CONT *unur_distr_corder_get_dpdf( UNUR_DISTR *distribution ); */
+
+#define unur_distr_corder_get_cdf(distr)   unur_distr_cont_get_cdf((distr))
+/*  UNUR_FUNCT_CONT *unur_distr_corder_get_cdf( UNUR_DISTR *distribution ); */
+/* 
+   Get the respective pointer to the PDF, the derivative of the 
+   PDF and the CDF of the distribution, respectively. The pointer is of type
+   double funct(double x, UNUR_DISTR *distr).
+   If the corresponding function is not available for the distribution,
+   the NULL pointer is returned.
+   See also unur_distr_cont_get_pdf().
+   (Macro)
+*/
+
+#define unur_distr_corder_eval_pdf(x,distr)  unur_distr_cont_eval_pdf((x),(distr))
+/*  double unur_distr_corder_eval_pdf( double x, UNUR_DISTR *distribution ); */
+
+#define unur_distr_corder_eval_dpdf(x,distr) unur_distr_cont_eval_dpdf((x),(distr))
+/*  double unur_distr_corder_eval_dpdf( double x, UNUR_DISTR *distribution ); */
+
+#define unur_distr_corder_eval_cdf(x,distr)  unur_distr_cont_eval_cdf((x),(distr))
+/*  double unur_distr_corder_eval_cdf( double x, UNUR_DISTR *distribution ); */
+/* 
+   Evaluate the PDF, derivative of the PDF. and the CDF,
+   respectively, at x.
+   Notice that @code{distribution} must not be the NULL pointer.
+   If the corresponding function is not available for the distribution,
+   @code{UNUR_INFINITY} is returned and @code{unur_errno} is set to
+   @code{UNUR_ERR_DISTR_DATA}.
+   See also unur_distr_cont_eval_pdf().
+   (Macro)
+*/
+
+
+#define unur_distr_corder_set_pdfparams(distr,params,n)  \
+  unur_distr_cont_set_pdfparams((distr),(params),(n))
+/*  int unur_distr_corder_set_pdfparams(UNUR_DISTR *distribution,double *params,int n_params); */
+/* 
+   Set array of parameters for underlying distribution.
+   See unur_distr_cont_set_pdfparams() for details.
+   (Macro)
+*/
+
+#define unur_distr_corder_get_pdfparams(distr,params) \
+   unur_distr_cont_get_pdfparams((distr),(params))
+/*  int unur_distr_corder_get_pdfparams( UNUR_DISTR *distribution, double **params ); */
+/* 
+   Get number of parameters of the PDF of the underlying distribution
+   and set pointer @code{params} to array of parameters. 
+   See unur_distr_cont_get_pdfparams() for details.
+   (Macro)
+*/
+
+
+#define unur_distr_corder_set_domain(distr,left,right) \
+   unur_distr_cont_set_domain((distr),(left),(right))
+/*  int unur_distr_corder_set_domain( UNUR_DISTR *distribution, double left, double right ); */
+/* 
+   Set the left and right borders of the domain of the
+   distribution. 
+   See unur_distr_cont_set_domain() for details.
+   (Macro)
+*/
+
+#define unur_distr_corder_get_domain(distr,left,right) \
+   unur_distr_cont_get_domain((distr),(left),(right))
+/*  int unur_distr_corder_get_domain( UNUR_DISTR *distribution, double *left, double *right ); */
+/* 
+   Get the left and right borders of the domain of the
+   distribution. 
+   See unur_distr_cont_get_domain() for details.
+   (Macro)
+*/
+
+
+#define unur_distr_corder_get_truncated(distr,left,right) \
+   unur_distr_cont_get_truncated((distr),(left),(right))
+/*  int unur_distr_corder_get_truncated( UNUR_DISTR *distribution, double *left, double *right ); */
+/* 
+   Get the left and right borders of the (truncated) domain of the
+   distribution.
+   See unur_distr_cont_get_truncated() for details.
+   (Macro)
+*/
+
+/* 
+   Derived parameters.
+*/   
+/*   
+   The following paramters MUST be set whenever one of the essential
+   parameters have been set or changed (and the parameter is required
+   for the chosen method).
+*/
+
+#define unur_distr_corder_set_mode(distr,mode)   unur_distr_cont_set_mode((distr),(mode))
+/*  int unur_distr_corder_set_mode( UNUR_DISTR *distribution, double mode ); */
+/* 
+   Set mode of distribution. 
+   See also unur_distr_corder_set_mode().
+   (Macro)
+*/
+
+#define unur_distr_corder_upd_mode(distr)   unur_distr_cont_upd_mode((distr))
+/*  double unur_distr_corder_upd_mode( UNUR_DISTR *distribution ); */
+/* 
+   Recompute the mode of the distribution numerically. Notice that
+   this routine is slow might not work properly in every case.
+   See also unur_distr_cont_upd_mode() for further details.
+   (Macro)
+*/
+
+#define unur_distr_corder_get_mode(distr)   unur_distr_cont_get_mode((distr))
+/*  double unur_distr_corder_get_mode( UNUR_DISTR *distribution ); */
+/* 
+   Get mode of distribution.
+   See unur_distr_cont_get_mode() for details.
+   (Macro)
+*/
+
+
+#define unur_distr_corder_set_pdfarea(distr,area)   unur_distr_cont_set_pdfarea((distr),(area))
+/*  int unur_distr_corder_set_pdfarea( UNUR_DISTR *distribution, double area ); */
+/* 
+   Set the area below the PDF.
+   See unur_distr_cont_set_pdfarea() for details.
+   (Macro)
+*/
+
+
+#define unur_distr_corder_upd_pdfarea(distr)   unur_distr_cont_upd_pdfarea((distr))
+/*  double unur_distr_corder_upd_pdfarea( UNUR_DISTR *distribution ); */
+/*
+   Recompute the area below the PDF of the distribution. 
+   It only works for order statistics for distribution objects from
+   the (=>) UNURAN library of standard distributions when the
+   corresponding function is available.
+   unur_disr_cont_upd_pdfares() assumes that the PDF of the underlying
+   distribution is normalized, i.e. it is the derivative its CDF.
+   Otherwise the computed area is wrong and there is NO warning
+   about this failure.
+   See unur_distr_cont_upd_pdfarea() for further details.
+   (Macro)
+*/
+
+#define unur_distr_corder_get_pdfarea(distr)   unur_distr_cont_get_pdfarea((distr))
+/*  double unur_distr_corder_get_pdfarea( UNUR_DISTR *distribution ); */
+/* 
+   Get the area below the PDF of the distribution.
+   See unur_distr_cont_get_pdfarea() for details.
+   (Macro)
+*/
+
 
 /*---------------------------------------------------------------------------*/
 
@@ -454,8 +607,8 @@ int unur_distr_cvec_set_pdf( UNUR_DISTR *distribution, UNUR_FUNCT_CVEC *pdf );
    size (i.e. of the same size as given to the unur_distr_cvec_new()
    call).
 
-   It is not necessary that the given p.d.f. is normalized and can be
-   any (positive) multiple of the p.d.f., i.e. the integral need not
+   It is not necessary that the given PDF is normalized and can be
+   any (positive) multiple of the PDF, i.e. the integral need not
    be 1. Nevertheless it can be provided by a
    unur_distr_cvec_set_pdfarea() call.
 */
@@ -468,7 +621,7 @@ int unur_distr_cvec_set_dpdf( UNUR_DISTR *distribution, UNUR_VFUNCT_CVEC *dpdf )
    where @var{result} and @var{x} must be pointer to double arrays of
    appropriate size (i.e. of the same size as given to the
    unur_distr_cvec_new() call).
-   The gradiant of the p.d.f. is stored in the array @var{result}.
+   The gradiant of the PDF is stored in the array @var{result}.
    The function should return @code{0} in case of an error and must
    return a non-zero value otherwise.
 
@@ -478,7 +631,7 @@ int unur_distr_cvec_set_dpdf( UNUR_DISTR *distribution, UNUR_VFUNCT_CVEC *dpdf )
 
 UNUR_FUNCT_CVEC *unur_distr_cvec_get_pdf( UNUR_DISTR *distribution );
 /* 
-   Get the respective pointer to the p.d.f. of the distribution. The
+   Get the respective pointer to the PDF of the distribution. The
    pointer is of type 
    double funct(double *x, UNUR_DISTR *distr).
    If the corresponding function is not available for the distribution,
@@ -487,7 +640,7 @@ UNUR_FUNCT_CVEC *unur_distr_cvec_get_pdf( UNUR_DISTR *distribution );
 
 UNUR_VFUNCT_CVEC *unur_distr_cvec_get_dpdf( UNUR_DISTR *distribution );
 /* 
-   Get the respective pointer to the gradiant of the p.d.f. of the
+   Get the respective pointer to the gradiant of the PDF of the
    distribution. The pointer is of type 
    int double funct(double *result, double *x, UNUR_DISTR *distr).
    If the corresponding function is not available for the distribution,
@@ -496,7 +649,7 @@ UNUR_VFUNCT_CVEC *unur_distr_cvec_get_dpdf( UNUR_DISTR *distribution );
 
 double unur_distr_cvec_eval_pdf( double *x, UNUR_DISTR *distribution );
 /* 
-   Evaluate the p.d.f. of the distribution at @var{x}.
+   Evaluate the PDF of the distribution at @var{x}.
    @var{x} must be a pointer to a double arrays of appropriate size
    (i.e. of the same size as given to the unur_distr_cvec_new() call)
    that contains the vector for which the function has to be evaluated.
@@ -509,7 +662,7 @@ double unur_distr_cvec_eval_pdf( double *x, UNUR_DISTR *distribution );
 
 int unur_distr_cvec_eval_dpdf( double *result, double *x, UNUR_DISTR *distribution );
 /* 
-   Evaluate the gradiant of the p.d.f. of the distribution at @var{x}.
+   Evaluate the gradiant of the PDF of the distribution at @var{x}.
    The result is stored in the double array @var{result}.
    Both @var{result} and @var{x} must be pointer to double arrays of
    appropriate size (i.e. of the same size as given to the
@@ -612,7 +765,7 @@ int unur_distr_cvec_set_pdfparams( UNUR_DISTR *distribution, int par, double *pa
 
 int unur_distr_cvec_get_pdfparams( UNUR_DISTR *distribution, int par, double **params );
 /* 
-   Get parameter of the p.d.f. with number @var{par}.
+   Get parameter of the PDF with number @var{par}.
    The pointer to the parameter array is stored in @var{params}, its
    size is returned by the function.
    If the requested parameter is not set, then @code{0} is returned
@@ -653,14 +806,14 @@ double *unur_distr_cvec_get_mode( UNUR_DISTR *distribution );
 
 int unur_distr_cvec_set_pdfvol( UNUR_DISTR *distribution, double volume );
 /* 
-   Set the volume below the p.d.f. If @var{vol} is non-positive, no
+   Set the volume below the PDF. If @var{vol} is non-positive, no
    volume is set and @code{unur_errno} is set to @*
    @code{UNUR_ERR_DISTR_SET}. 
 */
 
 double unur_distr_cvec_get_pdfvol( UNUR_DISTR *distribution );
 /* 
-   Get the volume below the p.d.f of the distribution. If this volume is
+   Get the volume below the PDF of the distribution. If this volume is
    not known,@* unur_distr_cont_upd_pdfarea() is called to compute
    it. If this is not successful @code{UNUR_INFINITY} is returned and
    @code{unur_errno} is set to @code{UNUR_ERR_DISTR_GET}.
@@ -792,7 +945,7 @@ int unur_distr_discr_set_cdf( UNUR_DISTR *distribution, UNUR_FUNCT_DISCR *cdf );
    must return @code{0.0} for all points outside this interval.
 
    It is not possible to change such a function. Once the p.m.f. or
-   c.d.f. is set it cannot be overwritten. A new distribution object
+   CDF is set it cannot be overwritten. A new distribution object
    has to be used instead.
 
 */
@@ -802,7 +955,7 @@ UNUR_FUNCT_DISCR *unur_distr_discr_get_pmf( UNUR_DISTR *distribution );
 
 UNUR_FUNCT_DISCR *unur_distr_discr_get_cdf( UNUR_DISTR *distribution );
 /* 
-   Get the respective pointer to the p.m.f. and the c.d.f. of the 
+   Get the respective pointer to the p.m.f. and the CDF of the 
    distribution. The pointer is of type
    double funct(int k, UNUR_DISTR *distr).
    If the corresponding function is not available for the distribution,
@@ -814,7 +967,7 @@ double unur_distr_discr_eval_pmf( int k, UNUR_DISTR *distribution );
 
 double unur_distr_discr_eval_cdf( int k, UNUR_DISTR *distribution );
 /* 
-   Evaluate the p.m.f., and the c.d.f., respectively, at k.
+   Evaluate the p.m.f., and the CDF, respectively, at k.
    Notice that @code{distribution} must not be the NULL pointer.
    If the corresponding function is not available for the distribution,
    @code{UNUR_INFINITY} is returned and @code{unur_errno} is set to

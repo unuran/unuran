@@ -70,9 +70,6 @@
 #define CHI2_MAX_SAMPLESIZE 1000000   
 /* maximal sample size to prevent extremely long run times */
 
-#define CHI2_MAX_DIMENSIONS 40 
-/* max number of dimensions for chi^2 tests for multivariate distributions */
-
 #define CHI2_MAX_TOTALINTERVALS 1000000   
 /* maximal product of intervals used in chi2vec test */
 
@@ -588,11 +585,6 @@ _unur_test_chi2_vec ( struct unur_gen *gen,
   dim = gen->distr->dim;
   if (dim < 2) {
     _unur_error(test_name,UNUR_ERR_GENERIC,"distribution dimension < 2 ?");
-    return -1.; 
-  }
-
-  if (dim > CHI2_MAX_DIMENSIONS) {
-    _unur_error(test_name,UNUR_ERR_GENERIC,"distribution dimension too large");
     return -1.; 
   }
 

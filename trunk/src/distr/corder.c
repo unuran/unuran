@@ -42,6 +42,7 @@
 #include <specfunct/unur_specfunct_source.h>
 #include <distributions/unur_stddistr.h>
 #include "distr.h"
+#include "cont.h"
 #include "distr_source.h"
 
 /*---------------------------------------------------------------------------*/
@@ -138,34 +139,18 @@ unur_distr_corder_new( const struct unur_distr *distr, int n, int k )
     return NULL;
   }
 
-  /* allocate structure */
-  os = _unur_xmalloc( sizeof(struct unur_distr) );
+  /* get distribution object for generic continuous univariate distribution */
+  os = unur_distr_cont_new();
   if (!os) return NULL;
 
-  /* set magic cookie */
-  COOKIE_SET(os,CK_DISTR_CONT);
-
-  /* set type of distribution */
-  os->type = UNUR_DISTR_CONT;
-
-  /* set id to generic distribution */
+  /* set id to distribution of order statistics */
   os->id = UNUR_DISTR_CORDER;
-
-  /* dimension of random vector */
-  os->dim = 1;   /* univariant */
 
   /* name of distribution */
   os->name = distr_name;
-  os->name_str = NULL;
-
-  /* destructor */
-  os->destroy = _unur_distr_cont_free;
-
-  /* clone */
-  os->clone = _unur_distr_cont_clone;
 
   /* this is a derived distribution */
-  /* allocate memory ... */
+  /* clone base distribution ... */
   os->base = _unur_distr_cont_clone( distr );
   if (!os->base) { free(os); return NULL; }
 
@@ -173,21 +158,13 @@ unur_distr_corder_new( const struct unur_distr *distr, int n, int k )
   OS.n_params = 2;                 /* two parameters: n and k                */
   OS.params[0] = (double) n;
   OS.params[1] = (double) k;
-  /* there is no need (?) to set the other parameters to 0 */
 
   /* copy data */
   OS.area = DISTR.area;               /* area below PDF (same as for distr)  */
   OS.trunc[0] = OS.domain[0] = DISTR.domain[0];  /* left boundary of domain  */
   OS.trunc[0] = OS.domain[1] = DISTR.domain[1];  /* right boundary of domain */
   
-  /* pointer to PDF, its derivative, CDF, and hazard rate */
-  OS.pdf     = NULL;
-  OS.dpdf    = NULL;
-  OS.logpdf  = NULL;
-  OS.dlogpdf = NULL;
-  OS.cdf     = NULL;
-  OS.hr      = NULL;
-
+  /* pointer to PDF, its derivative, and CDF */
   if (DISTR.cdf) {
 #ifdef HAVE_CDF
     OS.cdf = _unur_cdf_corder;        /* pointer to CDF    */
@@ -198,21 +175,6 @@ unur_distr_corder_new( const struct unur_distr *distr, int n, int k )
 	OS.dpdf = _unur_dpdf_corder;  /* derivative of PDF */
     }
   }
-
-  OS.pdftree     = NULL;            /* pointer to function tree for PDF      */
-  OS.dpdftree    = NULL;            /* pointer to function tree for dPDF     */
-  OS.logpdftree  = NULL;            /* pointer to function tree for PDF      */
-  OS.dlogpdftree = NULL;            /* pointer to function tree for dPDF     */
-  OS.cdftree     = NULL;            /* pointer to function tree for CDF      */
-  OS.hrtree      = NULL;            /* pointer to function tree for HR       */
-
-  /* set defaults                                                            */
-  OS.mode        = INFINITY;         /* location of mode (default: not known)*/
-
-  OS.init        = NULL;             /* pointer to special init routine      */
-
-  /* there is no function for computing the mode of the order statistics     */
-  OS.upd_mode    = NULL;
 
   /* there is no necessity for a function that computes the area below PDF   */
 #ifdef HAVE_AREA

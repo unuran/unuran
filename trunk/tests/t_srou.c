@@ -19,20 +19,15 @@
 /*---------------------------------------------------------------------------*/
 /* global variables                                                          */
 
-int test_ok = TRUE;               /* all tests ok (boolean)                  */
-int test_failed = 0;              /* failed tests                            */
-FILE *TESTLOG = NULL;             /* test log file                           */
-
 static struct prng *urng;         /* uniform random number generator         */
 
 #define FAILED_LIMIT 1            /* maximal number of single failed 
 				     statistical tests (if there are more 
 				     the generator has failed the test.)     */
 
-double *list_pvals = NULL;        /* list of collected p-values              */
-int size_pvals = 0;               /* size of list                            */
-int n_pvals = 0;                  /* number of collected p-values            */
-
+static double *list_pvals = NULL; /* list of collected p-values              */
+static int size_pvals = 0;        /* size of list                            */
+static int n_pvals = 0;           /* number of collected p-values            */
 
 /*---------------------------------------------------------------------------*/
 

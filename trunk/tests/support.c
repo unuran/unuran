@@ -14,6 +14,13 @@
 #include <time.h>
 
 /*---------------------------------------------------------------------------*/
+/* global variables                                                          */
+
+int test_ok = TRUE;               /* all tests ok (boolean)                  */
+int test_failed = 0;              /* failed tests                            */
+FILE *TESTLOG = NULL;             /* test log file                           */
+
+/*---------------------------------------------------------------------------*/
 
 static FILE *UNURANLOG;      /* unuran log file */
 

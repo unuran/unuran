@@ -32,6 +32,7 @@
 
 /* methods                                                                   */
 #define T_SROU
+#define T_STDR
 
 /* distributions                                                             */
 #define D_BETA

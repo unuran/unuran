@@ -376,7 +376,7 @@ UNUR_GEN *make_gen_obj (char *str){
   /* generate generator object */
   gen = unur_init(par);
   if ( gen == NULL ){
-     fprintf(stderr, "ERROR: cannot create generator object\n");
+     fprintf(stderr, "ERROR: Can't create generator object.\n");
   }
 
   /* return generator object to calling routine */

@@ -93,7 +93,7 @@ sub distr_info{
     }
 
     # Error -- in case of unknown distribution
-    print Outfile "{\n\t\t\tprintf(\"Error: Unknown distribution!\\n\");\n";
+    print Outfile "{\n\t\t\tfprintf(stderr,\"ERROR: Unknown distribution: %s\\n\",value);\n";
     print Outfile "\t\t\tbreak;\n\t\t}\n\t}\n";
 
     print Outfile "\t/* ------------------------------------------- */\n";
@@ -104,7 +104,7 @@ sub distr_info{
     print Outfile "\telse if ( !strcmp( key , \"domain\") ){\n";
     print Outfile "\t  /* list must contain exactly two entries */\n";
     print Outfile "\t  if ( no_of_elem != 2 ){\n";
-    print Outfile "\t    fprintf(stderr, \"Error: Wrong number of arguments for setting domain.\\n\");\n";
+    print Outfile "\t    fprintf(stderr, \"SYNTAX ERROR: To set the domain use a list with exactly 2 entries -- Standard domain is used instead.\\n\");\n";
     print Outfile "\t  }\n";
     print Outfile "\t  else if ( unur_distr_is_cont(distr) ){\n";
     print Outfile "\t    unur_distr_cont_set_domain( distr, list[0], list[1]);\n";
@@ -113,12 +113,12 @@ sub distr_info{
     print Outfile "\t    unur_distr_discr_set_domain( distr, list[0], list[1]);\n";
     print Outfile "\t  }\n";
     print Outfile "\t  else{\n";
-    print Outfile "\t    fprintf(stderr, \"Error: Wrong type of distribution while parsing domain!\\n\");\n";
+    print Outfile "\t    fprintf(stderr, \"ERROR: Can't set domain for this type of distribution\\n\");\n";
     print Outfile "\t    break;\n";
     print Outfile "\t  }\n";
     print Outfile "\t}\n";
     print Outfile "\telse {\n";
-    print Outfile "\t  fprintf(stderr, \"Unknown key: %s\\n\", key);\n";
+    print Outfile "\t  fprintf(stderr, \"SYNTAX ERROR?: Unknown key will be ignored: %s\\n\", key);\n";
     print Outfile "\t}\n";
 
 
@@ -148,7 +148,7 @@ sub method_info{
     print Outfile "\t/* ************************ */\n";
     print Outfile "\tif ( !strcmp( key, \"method\") ){\n";
     print Outfile "\t\tif ( no_of_elem != 0 ){\n";
-    print Outfile "\t\t\tfprintf(stderr, \"Warning: List with method provided.\\n\");\n";
+    print Outfile "\t\t\tfprintf(stderr, \"SYNTAX ERROR: No list expected when setting method.\\n\");\n";
     print Outfile "\t\t}\n\t\t";
     foreach $hfile (@all_h_files){
 
@@ -171,7 +171,7 @@ sub method_info{
 		    $_ =~ /^\s*=UP\s+Methods_for_(\w+)/;
                     # Method and distribution must be related to common type
 		    print Outfile "\t\t\tif ( ! unur_distr_is_\L$1(distr) ){\n";
-		    print Outfile "\t\t\t\tfprintf(stderr, \"Error: Method and distribution don't match up. \\n\");\n";
+		    print Outfile "\t\t\t\tfprintf(stderr, \"ERROR: Method and distribution don't match up.\\n\");\n";
 		    print Outfile "\t\t\t}\n";
 
 		}
@@ -273,7 +273,7 @@ sub method_info{
 
     # case of unknown method
     print Outfile "if ( !strcmp(key, \"method\") && method == UNDEF){\n";
-    print Outfile "\t\tfprintf(stderr, \"Error: No or unknown method defined.\\n\");\n\t}\n";
+    print Outfile "\t\tfprintf(stderr, \"ERROR: No or unknown method defined.\\n\");\n\t}\n";
 
     close INFILE;
 }

@@ -61,6 +61,9 @@ unur_test_moments( UNUR_GEN *gen, double *moments, int n_moments, int samplesize
      /* parameters:                                                          */
      /*   gen        ... pointer to generator object                         */
      /*   moments    ... array for storing moments                           */
+     /*                  for multivariate distributions the moments are      */
+     /*                  stored consecutively for each dimension.            */
+     /*                  arraylength = (n_moments+1) * dim                   */ 
      /*   n_moments  ... number of moments to be calculated (at most 4)      */
      /*   samplesize ... sample size                                         */
      /*   verbosity  ... verbosity level, 0 = no output, 1 = output          */
@@ -71,16 +74,19 @@ unur_test_moments( UNUR_GEN *gen, double *moments, int n_moments, int samplesize
      /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
-  double x = 0.;
+#define idx(d,n) ((d)*n_moments+(n))
+
   double an, an1, dx, dx2;
-  int n, mom;
+  int n, mom, d, dim;
+  double *x;
 
   /* check parameter */
   _unur_check_NULL(test_name, gen, UNUR_ERR_NULL);
 
   /* type of distribution */
   if (! ( ((gen->method & UNUR_MASK_TYPE) == UNUR_METH_DISCR) ||
-	  ((gen->method & UNUR_MASK_TYPE) == UNUR_METH_CONT) )) {
+	  ((gen->method & UNUR_MASK_TYPE) == UNUR_METH_CONT)  ||
+	  ((gen->method & UNUR_MASK_TYPE) == UNUR_METH_VEC) )) {
     _unur_error(test_name,UNUR_ERR_GENERIC,"dont know how to compute moments for distribution");
     return UNUR_ERR_GENERIC;
   }
@@ -95,11 +101,20 @@ unur_test_moments( UNUR_GEN *gen, double *moments, int n_moments, int samplesize
   if (samplesize < 10) 
     samplesize = 10;
 
+  /* number of dimensions can only be > 1 for multivariate case  */  
+  dim = 1;
+  if ((gen->method & UNUR_MASK_TYPE) == UNUR_METH_VEC) dim = gen->distr->dim;
+  
+  /* allocating memory for sampling "vector" */
+  x = _unur_xmalloc(dim * sizeof(double));
+    
   /* clear array of moments */
-  moments[0] = 1.;  /* dummy field */
-  for (mom = 1; mom <= n_moments; mom++ )
-    moments[mom] = 0.;
-
+  for (d=0; d<dim; d++) {
+    moments[idx(d,0)] = 1.; /* dummy field */
+    for (mom = 1; mom <= n_moments; mom++ )
+      moments[idx(d,mom)] = 0.;
+  }
+   
   /* sampling */
   /* compute moments: we use a recurrence relation by Spicer [1]. */
   
@@ -108,43 +123,54 @@ unur_test_moments( UNUR_GEN *gen, double *moments, int n_moments, int samplesize
     /* which type of distribution */
     switch (gen->method & UNUR_MASK_TYPE) {
     case UNUR_METH_DISCR:
-      x = (double)(_unur_sample_discr(gen)); break;
+      x[0] = (double)(_unur_sample_discr(gen)); break;
     case UNUR_METH_CONT:
-      x = _unur_sample_cont(gen); break;
+      x[0] = _unur_sample_cont(gen); break;
+    case UNUR_METH_VEC:
+      _unur_sample_vec(gen, x); break;
     }
 
-    an = (double)n;
-    an1 = an-1.;
-    dx = (x - moments[1]) / an;
-    dx2 = dx * dx;
+    for (d=0; d<dim; d++) {
+      an = (double)n;
+      an1 = an-1.;
+      dx = (x[d] - moments[idx(d,1)]) / an;
+      dx2 = dx * dx;
    
-    switch (n_moments) {
-    case 4:
-      moments[4] -= dx * (4.*moments[3] - dx * (6.*moments[2] + an1*(1. + an1*an1*an1)*dx2));
-    case 3:
-      moments[3] -= dx * (3.*moments[2] - an*an1*(an-2.)*dx2);
-    case 2:
-      moments[2] += an * an1 * dx2;
-    case 1:
-      moments[1] += dx;
+      switch (n_moments) {
+      case 4:
+        moments[idx(d,4)] -= dx * (4.*moments[idx(d,3)] - dx * (6.*moments[idx(d,2)] + an1*(1. + an1*an1*an1)*dx2));
+      case 3:
+        moments[idx(d,3)] -= dx * (3.*moments[idx(d,2)] - an*an1*(an-2.)*dx2);
+      case 2:
+        moments[idx(d,2)] += an * an1 * dx2;
+      case 1:
+        moments[idx(d,1)] += dx;
+      }
     }
   }
 
   /* compute moments */
   /* moments[1] is already the first moment. no division necessary. */
-  for (mom = 2; mom <= n_moments; mom++ )
-    moments[mom] /= samplesize;
-
-  /* now print results */
-  if (verbosity) {
-    fprintf(out,"\nCentral MOMENTS:\n");
-    for (mom = 1; mom <= n_moments; mom++ )
-      fprintf(out,"\t[%d] =\t%g\n",mom,moments[mom]);
-    fprintf(out,"\n");
+  for (d=0; d<dim; d++) {
+    for (mom = 2; mom <= n_moments; mom++ )
+      moments[idx(d,mom)] /= samplesize;
+  
+    /* now print results */
+    if (verbosity) {
+      if (dim==1) fprintf(out,"\nCentral MOMENTS:\n");
+      else        fprintf(out,"\nCentral MOMENTS for dimension #%d:\n", d);
+      for (mom = 1; mom <= n_moments; mom++ )
+        fprintf(out,"\t[%d] =\t%g\n",mom,moments[idx(d,mom)]);
+      fprintf(out,"\n");
+    }
   }
 
+  /* release memory */
+  free(x);
+  
   return UNUR_SUCCESS;
 
+#undef idx  
 } /* end of unur_test_moments() */
 
 /*---------------------------------------------------------------------------*/

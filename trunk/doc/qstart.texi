@@ -8,7 +8,6 @@
 
 
 
-
 @c %**start of header
 @setfilename qstart.info
 @settitle    UNURAN User Manual
@@ -62,7 +61,7 @@
 @section Overview
 @section Getting start
 Beginning example
-
+Code:
 
 @c ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 @c

@@ -280,8 +280,11 @@ _unur_generic_clone( const struct unur_gen *gen, const char *type )
   /* copy distribution object into generator object */
   if (gen->distr) clone->distr = _unur_distr_clone(gen->distr);
 
-  /* auxiliary generator */
-  if (gen->gen_aux) clone->gen_aux = _unur_gen_clone( gen->gen_aux );
+  /* auxiliary generators */
+  if (gen->gen_aux)
+    clone->gen_aux = _unur_gen_clone( gen->gen_aux );
+  if (gen->gen_aux_list && gen->distr) 
+    clone->gen_aux_list = _unur_gen_list_clone( gen->gen_aux_list, gen->distr->dim );
 
   /* finished clone */
   return clone;
@@ -300,6 +303,7 @@ _unur_generic_free( struct unur_gen *gen )
 { 
   if (gen->distr) _unur_distr_free( gen->distr );
   if (gen->gen_aux) _unur_free(gen->gen_aux);
+  if (gen->gen_aux_list && gen->distr) _unur_gen_list_free( gen->gen_aux_list, gen->distr->dim );
   _unur_free_genid(gen);
   COOKIE_CLEAR(gen);
   free(gen);
@@ -358,7 +362,7 @@ _unur_gen_list_set( const struct unur_gen *gen, int n_gen_list )
 /*---------------------------------------------------------------------------*/
 
 struct unur_gen ** 
-_unur_gen_list_clone( const struct unur_gen **gen_list, int n_gen_list )
+_unur_gen_list_clone( struct unur_gen **gen_list, int n_gen_list )
      /*----------------------------------------------------------------------*/
      /* clone list of generator objects                                      */
      /*                                                                      */
@@ -389,11 +393,26 @@ _unur_gen_list_clone( const struct unur_gen **gen_list, int n_gen_list )
 
   /* allocate memory for array */
   clone_list = _unur_malloc (n_gen_list * sizeof(struct unur_gen *));
-    
-  /* make copy of marginal distribution object */
-  for (i=0; i<n_gen_list; i++)
-    clone_list[i] = _unur_gen_clone( gen_list[i] );
 
+  /* make copy of generator objects */
+  /* There are (should be) only two possibilities: 
+     either all entries in the array point to the same generator object;
+       (set by _unur_gen_list_set() call)
+     or each entry has its own copy of some generation object.
+       (set by _unur_gen_list_clone() call)
+  */
+
+  if (gen_list[0] == gen_list[1]) {
+      clone_list[0] = _unur_gen_clone( gen_list[0] );
+      for (i=0; i<n_gen_list; i++)
+	clone_list[i] = clone_list[0];
+  }
+
+  else {
+    for (i=0; i<n_gen_list; i++)
+      clone_list[i] = _unur_gen_clone( gen_list[i] );
+  }
+  
   return clone_list;
 
 } /* end of _unur_gen_list_clone() */

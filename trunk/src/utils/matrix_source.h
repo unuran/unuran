@@ -51,6 +51,9 @@ int _unur_matrix_invert_matrix (int dim, double *A, double detmin, double *Ainv,
 /* where ||A|| denotes the L_1 norm of A.                                    */
 /* As a side effect det(A) is computed.                                      */
 
+int _unur_matrix_determinant ( int dim, double *A, double *det);
+/* Calculates the determinant of the matrix A                                */
+
 double _unur_matrix_qf(int dim, double *x, double *A);
 /* Compute quadratic form x'Ax.                                              */
 

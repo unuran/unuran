@@ -209,6 +209,7 @@ unur_hitrou_new( const struct unur_distr *distr )
   PAR.vmax      = 0.;         /* v-boundary of bounding rectangle (unknown)  */
   PAR.umin  = NULL;       /* u-boundary of bounding rectangle (unknown)  */
   PAR.umax  = NULL;       /* u-boundary of bounding rectangle (unknown)  */
+  PAR.u_planes  = 0;      /* do not calculate the bounding u-planes      */
   par->method   = UNUR_METH_HITROU;   /* method and default variant          */
   par->variant  = 0u;                 /* default variant                     */
   par->set      = 0u;                 /* inidicate default parameters        */
@@ -371,7 +372,41 @@ unur_hitrou_set_skip( struct unur_par *par, long skip )
   /* o.k. */
   return UNUR_SUCCESS;
 
-} /* end of unur_hitrou_set_r() */
+} /* end of unur_hitrou_set_skip() */
+
+
+/*****************************************************************************/
+
+int
+unur_hitrou_set_u_planes( struct unur_par *par, int u_planes )
+     /*----------------------------------------------------------------------*/
+     /* Set the flag for the calculating and using the u-planes              */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   u_planes ... 1:use u-planes, 0:don't use u-planes                  */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( GENTYPE, par, UNUR_ERR_NULL );
+  _unur_check_par_object( par, HITROU );
+
+  /* check new parameter for generator */
+  if (u_planes != 0 && u_planes != 1) {
+    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"invalid flag for u_planes");
+    return UNUR_ERR_PAR_SET;
+  }
+  
+  /* store data */
+  PAR.u_planes = u_planes;
+
+  /* o.k. */
+  return UNUR_SUCCESS;
+
+} /* end of unur_hitrou_set_u_planes() */
 
 
 /*****************************************************************************/
@@ -486,6 +521,7 @@ _unur_hitrou_rectangle( struct unur_gen *gen )
   rr->umax   = GEN.umax;
   rr->r      = GEN.r;
   rr->center = GEN.center;
+  rr->u_planes = GEN.u_planes;
   rr->genid  = gen->genid;
 
   /* calculate bounding rectangle */
@@ -572,6 +608,7 @@ _unur_hitrou_create( struct unur_par *par )
   GEN.r     = PAR.r;                /* r-parameter of the hitrou method */
   GEN.vmax  = PAR.vmax;             /* upper v-boundary of bounding rectangle */
   GEN.skip  = PAR.skip;             /* number of skipped poins in chain */
+  GEN.u_planes = PAR.u_planes;      /* flag to calculate and use u-planes */
 
   if (PAR.umin != NULL) memcpy(GEN.umin, PAR.umin, GEN.dim * sizeof(double));
   if (PAR.umax != NULL) memcpy(GEN.umax, PAR.umax, GEN.dim * sizeof(double));
@@ -634,6 +671,8 @@ _unur_hitrou_clone( const struct unur_gen *gen )
   CLONE.skip = GEN.skip;
   CLONE.r = GEN.r;
   CLONE.vmax = GEN.vmax;
+  CLONE.u_planes = GEN.u_planes;
+  
   memcpy(CLONE.umin, GEN.umin, GEN.dim * sizeof(double));
   memcpy(CLONE.umax, GEN.umax, GEN.dim * sizeof(double));
   memcpy(CLONE.point_current, GEN.point_current, (GEN.dim+1) * sizeof(double));
@@ -690,15 +729,17 @@ _unur_hitrou_sample_cvec( struct unur_gen *gen, double *vec )
     if (lambda>0) lmax = lambda;
     if (lambda<0) lmin = lambda;
 
-    /* calculate the intersections alont all other coordinate directions */
-    for (d=0; d<dim; d++) {
-      lambda = (GEN.umin[d] - GEN.point_current[d]) / GEN.direction[d];
-      if (lambda>0 && lambda<lmax) lmax = lambda;
-      if (lambda<0 && lambda>lmin) lmin = lambda;
+    if (GEN.u_planes==1) {
+      /* calculate the intersections alont all other coordinate directions */
+      for (d=0; d<dim; d++) {
+        lambda = (GEN.umin[d] - GEN.point_current[d]) / GEN.direction[d];
+        if (lambda>0 && lambda<lmax) lmax = lambda;
+        if (lambda<0 && lambda>lmin) lmin = lambda;
 
-      lambda = (GEN.umax[d] - GEN.point_current[d]) / GEN.direction[d];
-      if (lambda>0 && lambda<lmax) lmax = lambda;
-      if (lambda<0 && lambda>lmin) lmin = lambda;
+        lambda = (GEN.umax[d] - GEN.point_current[d]) / GEN.direction[d];
+        if (lambda>0 && lambda<lmax) lmax = lambda;
+        if (lambda<0 && lambda>lmin) lmin = lambda;
+      }
     }
 
     while (1) {
@@ -795,7 +836,9 @@ _unur_hitrou_random_direction( struct unur_gen *gen,
   int d;
 
   for (d=0; d<dim; d++) {
-    direction[d] = unur_sample_cont(NORMAL);
+    do {    
+      direction[d] = unur_sample_cont(NORMAL);
+    } while (direction[d]==0.); /* extremely seldom case */
   }
 
 }
@@ -983,13 +1026,20 @@ _unur_hitrou_debug_init( const struct unur_gen *gen )
 
   vol = GEN.vmax;
   fprintf(log,"%s:\tvmax = %g\n",gen->genid, GEN.vmax);
-  for (d=0; d<dim; d++) {
-    vol *= (GEN.umax[d]-GEN.umin[d]);
-    fprintf(log,"%s:\tumin[%d],umax[%d] = (%g,%g)\n",gen->genid,
-      d, d, GEN.umin[d], GEN.umax[d]);
+
+  if (GEN.u_planes==1) {
+    for (d=0; d<dim; d++) {
+      vol *= (GEN.umax[d]-GEN.umin[d]);
+      fprintf(log,"%s:\tumin[%d],umax[%d] = (%g,%g)\n",gen->genid,
+        d, d, GEN.umin[d], GEN.umax[d]);
+    }
+    fprintf(log,"%s:\n",gen->genid);
+    fprintf(log,"%s:\tvolume = %g\t(hat = %g)\n",gen->genid, vol, vol*(GEN.r*GEN.dim+1));
   }
-  fprintf(log,"%s:\n",gen->genid);
-  fprintf(log,"%s:\tvolume = %g\t(hat = %g)\n",gen->genid, vol, vol*(GEN.r*GEN.dim+1));
+  else {
+    fprintf(log,"%s:\tumin[],umax[] are not used\n" ,gen->genid);
+  }
+  
   fprintf(log,"%s:\n",gen->genid);
 
 } /* end of _unur_hitrou_debug_init() */

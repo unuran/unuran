@@ -44,6 +44,7 @@ struct unur_hitrou_par {
   int    dim;               /* dimension of distribution                     */
   double r;                 /* r-parameter of the hitrou method              */
   long skip;                /* skip-parameter of the hitrou method           */
+  int u_planes;             /* if we calculate and use the bounding u-planes */
   double *umin, *umax;      /* boundary rectangle u-coordinates              */
   double vmax;              /* boundary rectangle v-coordinate               */
 };
@@ -55,6 +56,7 @@ struct unur_hitrou_gen {
   int    dim;               /* dimension of distribution                     */
   double r;                 /* r-parameter of the hitrou method              */
   long skip;                /* skip-parameter of the hitrou method           */
+  int u_planes;             /* if we calculate and use the bounding u-planes */
   double *umin, *umax;      /* boundary rectangle u-coordinates              */
   double vmax;              /* boundary rectangle v-coordinate               */
   const double *center;     /* center of distribution                        */

@@ -146,6 +146,7 @@ _unur_mrou_rectangle_new( void )
   rr->umin   = NULL;
   rr->umax   = NULL;
   rr->r      = 1;
+  rr->u_planes = 1;
   rr->center = NULL;
   rr->genid  = "";
   
@@ -211,8 +212,8 @@ _unur_mrou_rectangle_compute( struct MROU_RECTANGLE *rr )
     }
   }
 
+  if (rr->u_planes==1) {
   /* calculation of umin and umax */
-  
   for (d=0; d<dim; d++) {
     
     /* setting coordinate dimension to be used by the auxiliary functions */
@@ -286,12 +287,15 @@ _unur_mrou_rectangle_compute( struct MROU_RECTANGLE *rr )
     
     /*-----------------------------------------------------------------------------*/
     /* additional scaling of boundary rectangle */
-    rr->vmax = rr->vmax * ( 1+ MROU_RECT_SCALING);
     rr->umin[d] = rr->umin[d] - (rr->umax[d]-rr->umin[d])*MROU_RECT_SCALING/2.;
     rr->umax[d] = rr->umax[d] + (rr->umax[d]-rr->umin[d])*MROU_RECT_SCALING/2.;
     
   }
-  
+  }
+
+  /* additional scaling of boundary rectangle */
+  rr->vmax = rr->vmax * ( 1+ MROU_RECT_SCALING);
+   
   free(xstart); free(xend); free(xumin); free(xumax);
   
   /* o.k. */

@@ -179,6 +179,18 @@ int unur_hitrou_set_skip( UNUR_PAR *parameters, long skip );
    Default: @code{10}.
 */
 
+int unur_hitrou_set_u_planes( UNUR_PAR *parameters, int u_planes );
+/*
+   Sets the @var{u_planes} flag i.e. if we should calculate
+   and use all the u-planes of the bounding rectangle.
+   In case, that this flag is set to 0, we will only calculate
+   and use the planes perpendicular to the v-coordinate - hence
+   in that case, our bounding shape is not a finite rectangle 
+   but an infinite strip.
+
+   Default: @code{0}.
+*/
+
 /* =END */
 /*---------------------------------------------------------------------------*/
 

@@ -54,6 +54,7 @@ int check_errorcode( FILE *LOG, int line, unsigned errno )
   else
     fprintf(LOG," ok\n");
 
+  fflush(LOG);
   return failed;
 
 } /* end of check_errorcode() */
@@ -73,6 +74,7 @@ int check_expected_NULL( FILE *LOG, int line, void *ptr )
   else
     fprintf(LOG," ok\n");
 
+  fflush(LOG);
   return failed;
 
 } /* end of check_expected_NULL() */
@@ -92,6 +94,7 @@ int check_expected_setfailed( FILE *LOG, int line, int ok )
   else
     fprintf(LOG," ok\n");
 
+  fflush(LOG);
   return failed;
 
 } /* end of check_expected_setfailed() */
@@ -111,6 +114,7 @@ int check_expected_INFINITY( FILE *LOG, int line, double x )
   else
     fprintf(LOG," ok\n");
 
+  fflush(LOG);
   return failed;
 
 } /* end of check_expected_INFINITY() */
@@ -130,6 +134,7 @@ int check_expected_reinit( FILE *LOG, int line, int ok )
   else
     fprintf(LOG," ok\n");
 
+  fflush(LOG);
   return failed;
 
 } /* end of check_expected_reinit() */
@@ -149,6 +154,7 @@ int check_expected_no_reinit( FILE *LOG, int line, int ok )
   else
     fprintf(LOG," ok\n");
 
+  fflush(LOG);
   return failed;
 
 } /* end of check_expected_no_reinit() */
@@ -244,6 +250,7 @@ int compare_double_sequence_par( FILE *LOG, int line, struct prng *urng, UNUR_PA
   else
     fprintf(LOG," ok\n");
   
+  fflush(LOG);
   return failed;
 
 } /* end of compare_double_sequence_par() */
@@ -311,6 +318,7 @@ int compare_int_sequence_par( FILE *LOG, int line, struct prng *urng, UNUR_PAR *
   else
     fprintf(LOG," ok\n");
   
+  fflush(LOG);
   return failed;
 
 } /* end of compare_int_sequence_par() */
@@ -391,6 +399,7 @@ int print_pval( FILE *LOG, double pval, int trial )
   }
   fflush(stdout);
 
+  fflush(LOG);
   return failed;
   
 } /* end of print_pval() */
@@ -410,6 +419,7 @@ int check_pval( FILE *LOG, int line, UNUR_GEN *gen, double pval, int trial )
   print_distr_name( LOG,unur_get_distr(gen), unur_get_genid(gen) );
   fprintf(LOG,"\n");
 
+  fflush(LOG);
   return failed;
 
 } /* end of check_pval() */
@@ -456,6 +466,7 @@ int run_level2( FILE *LOG, int line, double *pvals, int n_pvals )
   /* clear */
   free(classes);
 
+  fflush(LOG);
   return failed;
 
 } /* end of run_level2() */
@@ -481,6 +492,7 @@ int run_chi2( FILE *LOG, int line, int type, UNUR_PAR *par, UNUR_DISTR *distr,
     print_distr_name( LOG,distr,"");
     fprintf(LOG,"\n");
     printf("0");
+    fflush(LOG);
     return 2;
   }
 
@@ -518,10 +530,10 @@ int run_chi2( FILE *LOG, int line, int type, UNUR_PAR *par, UNUR_DISTR *distr,
 
   unur_free(gen);
 
+  fflush(LOG);
   return failed;
 
 } /* end of run_chi2() */
 
 /*---------------------------------------------------------------------------*/
-
 

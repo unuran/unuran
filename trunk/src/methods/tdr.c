@@ -301,7 +301,7 @@
 #define TDR_VAR_T_POW          0x003u   /* T(x) = -x^c                      */
 
 #define TDR_VARMASK_VARIANT    0x0f0u   /* indicates which variant          */
-#define TDR_VARIANT_GW         0x010u   /* original version (Gilks&Wild)    */
+#define TDR_VARIANT_GW         0x010u   /* original variant (Gilks&Wild)    */
 #define TDR_VARIANT_PS         0x020u   /* use proportional squeeze         */
 #define TDR_VARIANT_IA         0x030u   /* use immediate acceptance
 					   (requires prop. squeeze)         */

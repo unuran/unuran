@@ -96,7 +96,7 @@ unur_tdr_new( struct unur_distr* distr )
   par->method   = UNUR_METH_TDR;                 /* method                   */
   par->variant  = ( TDR_VARFLAG_USECENTER |      /* default variant          */
 		    TDR_VARFLAG_USEMODE   |
-                    TDR_VAR_VERSION_GW );
+                    TDR_VARIANT_GW );
 
   par->set      = 0u;               /* inidicate default parameters          */    
   par->urng     = unur_get_default_urng(); /* use default urng               */
@@ -391,9 +391,9 @@ unur_tdr_set_usemode( struct unur_par *par, int usemode )
 /*---------------------------------------------------------------------------*/
 
 int
-unur_tdr_set_version_gw( struct unur_par *par )
+unur_tdr_set_variant_gw( struct unur_par *par )
      /*----------------------------------------------------------------------*/
-     /* use original version with squeezes as proposed by Gilks & Wild       */
+     /* use original variant with squeezes as proposed by Gilks & Wild       */
      /*                                                                      */
      /* parameters:                                                          */
      /*   par       ... pointer to parameter for building generator object   */
@@ -410,17 +410,17 @@ unur_tdr_set_version_gw( struct unur_par *par )
   _unur_check_par_object( par,TDR );
 
   /* we use a bit in variant */
-  par->variant = (par->variant & ~TDR_VARMASK_VERSION) | TDR_VAR_VERSION_GW;
+  par->variant = (par->variant & ~TDR_VARMASK_VARIANT) | TDR_VARIANT_GW;
 
   /* o.k. */
   return 1;
 
-} /* end of unur_tdr_set_version_gw() */
+} /* end of unur_tdr_set_variant_gw() */
 
 /*---------------------------------------------------------------------------*/
 
 int
-unur_tdr_set_version_ps( struct unur_par *par )
+unur_tdr_set_variant_ps( struct unur_par *par )
      /*----------------------------------------------------------------------*/
      /* Use squeezes proportional to the hat function                        */
      /*                                                                      */
@@ -439,17 +439,17 @@ unur_tdr_set_version_ps( struct unur_par *par )
   _unur_check_par_object( par,TDR );
 
   /* we use a bit in variant */
-  par->variant = (par->variant & ~TDR_VARMASK_VERSION) | TDR_VAR_VERSION_PS;
+  par->variant = (par->variant & ~TDR_VARMASK_VARIANT) | TDR_VARIANT_PS;
 
   /* o.k. */
   return 1;
 
-} /* end of unur_tdr_set_version_ps() */
+} /* end of unur_tdr_set_variant_ps() */
 
 /*---------------------------------------------------------------------------*/
 
 int
-unur_tdr_set_version_ia( struct unur_par *par )
+unur_tdr_set_variant_ia( struct unur_par *par )
      /*----------------------------------------------------------------------*/
      /* Use squeezes proportional to the hat function together with a        */
      /* composition method that required less uniform random numbers.        */
@@ -469,12 +469,12 @@ unur_tdr_set_version_ia( struct unur_par *par )
   _unur_check_par_object( par,TDR );
 
   /* we use a bit in variant */
-  par->variant = (par->variant & ~TDR_VARMASK_VERSION) | TDR_VAR_VERSION_IA;
+  par->variant = (par->variant & ~TDR_VARMASK_VARIANT) | TDR_VARIANT_IA;
 
   /* o.k. */
   return 1;
 
-} /* end of unur_tdr_set_version_ia() */
+} /* end of unur_tdr_set_variant_ia() */
 
 /*---------------------------------------------------------------------------*/
 

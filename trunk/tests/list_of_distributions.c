@@ -95,8 +95,8 @@ int make_list_of_distributions( struct list_distr **return_list )
   list->c_max = 0.;
   ++n_distr; ++list;
 
-  fpar[0] = 1000.;
-  fpar[1] = 1000.;
+  fpar[0] = 500.;
+  fpar[1] = 300.;
   list->distr = unur_distr_beta(fpar,2);
   list->type  = T_Tconcave;
   list->c_max = 0.;
@@ -160,7 +160,7 @@ int make_list_of_distributions( struct list_distr **return_list )
   ++n_distr; ++list;
 
   fpar[0] = 5.;
-  fpar[1] = 1.e+10;
+  fpar[1] = 1000.;
   list->distr = unur_distr_gamma(fpar,2);
   list->type  = T_Tconcave;
   list->c_max = 0.;
@@ -197,7 +197,7 @@ int make_list_of_distributions( struct list_distr **return_list )
   ++n_distr; ++list;
 
   fpar[0] = 0.;
-  fpar[1] = 1.e+10;
+  fpar[1] = 1.e+5;
   list->distr = unur_distr_normal(fpar,2);
   list->type  = T_Tconcave;
   list->c_max = 0.;

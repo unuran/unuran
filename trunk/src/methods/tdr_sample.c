@@ -46,7 +46,7 @@
 double
 _unur_tdr_gw_sample( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
-     /* sample from generator (original version by Gilks & Wild)             */
+     /* sample from generator (original variant by Gilks & Wild)             */
      /*                                                                      */
      /* parameters:                                                          */
      /*   gen ... pointer to generator object                                */

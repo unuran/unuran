@@ -164,14 +164,14 @@ _unur_tdr_create( struct unur_par *par )
   gen->reinit = _unur_reinit_error;
 
   /* sampling routines */
-  switch (par->variant & TDR_VARMASK_VERSION) {
-  case TDR_VAR_VERSION_GW:    /* original version (Gilks&Wild) */
+  switch (par->variant & TDR_VARMASK_VARIANT) {
+  case TDR_VARIANT_GW:    /* original variant (Gilks&Wild) */
     SAMPLE = (par->variant & TDR_VARFLAG_VERIFY) ? _unur_tdr_gw_sample_check : _unur_tdr_gw_sample;
     break;
-  case TDR_VAR_VERSION_PS:    /* proportional squeeze */
+  case TDR_VARIANT_PS:    /* proportional squeeze */
     SAMPLE = (par->variant & TDR_VARFLAG_VERIFY) ? _unur_tdr_ps_sample_check : _unur_tdr_ps_sample;
     break;
-  case TDR_VAR_VERSION_IA:    /* immediate acceptance */
+  case TDR_VARIANT_IA:    /* immediate acceptance */
     SAMPLE = (par->variant & TDR_VARFLAG_VERIFY) ? _unur_tdr_ia_sample_check : _unur_tdr_ia_sample;
     break;
   default:
@@ -484,11 +484,11 @@ _unur_tdr_starting_intervals( struct unur_par *par, struct unur_gen *gen )
      /*   0 ... error                                                        */
      /*----------------------------------------------------------------------*/
 {
-  switch (gen->variant & TDR_VARMASK_VERSION) {
-  case TDR_VAR_VERSION_GW:    /* original version (Gilks&Wild) */
+  switch (gen->variant & TDR_VARMASK_VARIANT) {
+  case TDR_VARIANT_GW:    /* original variant (Gilks&Wild) */
     return _unur_tdr_gw_starting_intervals(par,gen);
-  case TDR_VAR_VERSION_PS:    /* proportional squeeze */
-  case TDR_VAR_VERSION_IA:    /* immediate acceptance */
+  case TDR_VARIANT_PS:    /* proportional squeeze */
+  case TDR_VARIANT_IA:    /* immediate acceptance */
     return _unur_tdr_ps_starting_intervals(par,gen);
   default:
     _unur_error(GENTYPE,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
@@ -620,8 +620,8 @@ _unur_tdr_ps_starting_intervals( struct unur_par *par, struct unur_gen *gen )
   flb = iv->fx;
 
   /* there is no use for a point iv->x that is not used as a 
-     construction point in versions PS and IA.
-     (In version GW it is used to store the left boundary of the domain
+     construction point in variants PS and IA.
+     (In variant GW it is used to store the left boundary of the domain
      of the p.d.f.)
      Thus we remove it from the list. At such points the slope of the
      tangents to the transformed density is set to INFINITY. */
@@ -644,7 +644,7 @@ _unur_tdr_ps_starting_intervals( struct unur_par *par, struct unur_gen *gen )
     if (iv->next == NULL) {
       /* the last interval in the list*/
 
-      /* analogously to version GW we want to have a last virtual 
+      /* analogously to variant GW we want to have a last virtual 
 	 (stopping) interval, that simply stores the right boundary
 	 point and guaranties that the loop in indexed search stops
 	 on an existing interval.
@@ -827,7 +827,7 @@ static int
 _unur_tdr_gw_interval_parameter( struct unur_gen *gen, struct unur_tdr_interval *iv )
      /*----------------------------------------------------------------------*/
      /* compute intersection point of tangents and                           */
-     /* the area below the hat  (Gilks & Wild version)                       */
+     /* the area below the hat  (Gilks & Wild variant)                       */
      /*                                                                      */
      /* parameters:                                                          */
      /*   gen  ... pointer to generator object                               */

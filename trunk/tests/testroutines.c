@@ -489,12 +489,19 @@ int run_validate_chi2( FILE *LOG, int line, UNUR_GEN *gen, char todo )
       printf("0");  fflush(stdout);
       return 0;
     }
+    else if (todo == '/') {
+      printf("/");  fflush(stdout);
+      return 0;
+    }
     else {
       /* initialization failed --> cannot run test */
       printf("(!+)");  fflush(stdout);
       return 2;
     }
   }
+
+  /* init successful */
+  if ( todo == '/' ) todo = '+';
 
   /* get name of distribution */
   distr_name = unur_distr_get_name( unur_get_distr(gen) );

@@ -1406,7 +1406,7 @@ _unur_arou_get_starting_segments( struct unur_par *par, struct unur_gen *gen )
       return 0;
     }
     seg_new = _unur_arou_segment_new( gen, x, fx );
-    CHECK_NULL(seg_new,0);     /* case of internal error */
+    if (seg_new == NULL) return 0;  /* case of error */
 
     /* insert into linked list */
     seg_new->next = seg->next;
@@ -1453,6 +1453,11 @@ _unur_arou_segment_new( struct unur_gen *gen, double x, double fx )
   /* first check fx */
   if (fx<0.) {
     _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"PDF(x) < 0.");
+    return NULL;
+  }
+  if (_unur_FP_is_infinity(fx)) {
+    /* over flow */
+    _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"PDF(x) overflow");
     return NULL;
   }
 
@@ -1793,9 +1798,9 @@ _unur_arou_segment_split( struct unur_gen *gen, struct unur_arou_segment *seg_ol
 
     /* need new segment */
     seg_newr = _unur_arou_segment_new(gen,x,fx);
-    CHECK_NULL(seg_newr,0);     /* case of internal error */
+    if (seg_newr == NULL) return 0;  /* case of error */
     
-  /* link into list */
+    /* link into list */
     seg_newr->next = seg_oldl->next;
     seg_oldl->next = seg_newr;
     

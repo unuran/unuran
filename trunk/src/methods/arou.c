@@ -749,7 +749,9 @@ _unur_arou_init( struct unur_par *par )
 
   /* get starting points */
   if (!_unur_arou_get_starting_cpoints(par,gen) ) {
+#ifdef UNUR_ENABLE_LOGGING
     _unur_arou_debug_init(par,gen);
+#endif
     free(par); _unur_arou_free(gen);
     return NULL;
   }
@@ -757,7 +759,9 @@ _unur_arou_init( struct unur_par *par )
   /* compute segments for given starting points */
   if ( !_unur_arou_get_starting_segments(par,gen) ) {
     _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"PDF not T-concave");
+#ifdef UNUR_ENABLE_LOGGING
     _unur_arou_debug_init(par,gen);
+#endif
     free(par); _unur_arou_free(gen);
     return NULL;
   }
@@ -783,7 +787,6 @@ _unur_arou_init( struct unur_par *par )
   /* is there any envelope at all ? */
   if (GEN.Atotal <= 0.) {
     _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"bad construction points");
-    _unur_arou_debug_init(par,gen);
     _unur_arou_free(gen);
     return NULL;
   }

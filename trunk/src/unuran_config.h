@@ -100,7 +100,7 @@
 /*                                                                           */
 /* If no log file should be used at all, #undef this macro.                  */
 
-#define UNUR_ENABLE_LOGGING 1
+/*  #define UNUR_ENABLE_LOGGING 1 */
 
 
 /*---------------------------------------------------------------------------*/

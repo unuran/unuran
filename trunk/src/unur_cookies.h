@@ -98,8 +98,14 @@
 /* generators multivariate continuous distributions */
 #define CK_VMT_PAR       0x00200010u
 #define CK_VMT_GEN       0x00200011u
-#define CK_VEMPK_PAR     0x00100020u
-#define CK_VEMPK_GEN     0x00100021u
+#define CK_VEMPK_PAR     0x00200020u
+#define CK_VEMPK_GEN     0x00200021u
+
+/* generators random matrices */
+
+#define CK_MCORR_PAR     0x00400010u
+#define CK_MCORR_GEN     0x00400011u
+
 
 #define CK_CSTD_PAR      0x10000010u
 #define CK_CSTD_GEN      0x10000011u

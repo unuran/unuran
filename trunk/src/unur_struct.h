@@ -129,6 +129,9 @@ typedef void _UNUR_SAMPLING_ROUTINE_VEC(struct unur_gen *gen, double *vec);
 #include <methods/vempk_struct.h>
 #include <methods/vmt_struct.h>
 
+/* random matrices */
+#include <methods/mcorr_struct.h>
+
 /* wrappers for special generators for standard distributions */
 #include <methods/cstd_struct.h>     /* continuous */
 #include <methods/dstd_struct.h>     /* discrete   */
@@ -153,6 +156,7 @@ struct unur_par {
     struct unur_hrb_par   hrb;
     struct unur_hrd_par   hrd;
     struct unur_hri_par   hri;
+    struct unur_mcorr_par mcorr;
     struct unur_ninv_par  ninv;
     struct unur_srou_par  srou;
     struct unur_ssr_par   ssr;
@@ -201,6 +205,7 @@ struct unur_gen {
     struct unur_hrb_gen   hrb;
     struct unur_hrd_gen   hrd;
     struct unur_hri_gen   hri;
+    struct unur_mcorr_gen mcorr;
     struct unur_ninv_gen  ninv;
     struct unur_srou_gen  srou;
     struct unur_ssr_gen   ssr;
@@ -220,6 +225,7 @@ struct unur_gen {
     _UNUR_SAMPLING_ROUTINE_CONT  *cont;
     _UNUR_SAMPLING_ROUTINE_DISCR *discr;
     _UNUR_SAMPLING_ROUTINE_VEC   *cvec;
+    _UNUR_SAMPLING_ROUTINE_VEC   *cmat;
   }               sample;     /* pointer to sampling routine                 */
   
   unsigned method;            /* indicates method and generator to be used   */

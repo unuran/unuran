@@ -363,16 +363,26 @@ UNUR_DISTR *unur_distr_rayleigh(double *params, int n_params);
 /* Snedecor's F distribution                                                 */
 /* not implemented */
 
-
-/*---------------------------------------------------------------------------*/
-/* Student's t distribution  [3; ch. 28; p. 362]                             */
-UNUR_DISTR *unur_distr_student(double *params, int n_params);
-/** CDF not implemented !!!!!! */
-/** TODO: STDGEN **/
-
 /*---------------------------------------------------------------------------*/
 /* Slash distribution  [2; ch.12, p.63]                                      */
 UNUR_DISTR *unur_distr_slash(double *params, int n_params);
+/** TODO: STDGEN **/
+
+/*---------------------------------------------------------------------------*/
+/* Student's t distribution  [3; ch. 28; p. 362]                             */
+/* 
+   =DISTR    student  Student's t distribution
+   =UP       Stddist_CONT
+   =REF      [JKBc95]   ch.28, p.362
+   =PDF      (1+\frac{t^2}{nu})^{-(nu+1)/2}
+   =CONST    \frac{1}{sqrt{nu}*B(1/2,nu/2)}
+   =CDF      @text{not implemented!}
+   =DOMAIN   -infinity < x < infinity 
+   =FPARAM   0 : nu : > 0 : : shape :
+   =EON
+*/
+UNUR_DISTR *unur_distr_student(double *params, int n_params);
+/** CDF not implemented !!!!!! */
 /** TODO: STDGEN **/
 
 /*---------------------------------------------------------------------------*/

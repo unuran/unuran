@@ -45,5 +45,10 @@ double _unur_function_min( struct UNUR_FUNCT_GENERIC fs, double a, double b, dou
 double _unur_function_max( struct UNUR_FUNCT_GENERIC fs, double a, double b, double c, double tol );
 /* calculate the position of the maximum of a continuous function in an interval */
 
+double
+_unur_function_find_mode( struct UNUR_FUNCT_GENERIC fs,
+                          double interval_min, double interval_max );
+			  
+
 /*---------------------------------------------------------------------------*/
 

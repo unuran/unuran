@@ -71,6 +71,249 @@ _unur_function_min(fs, a, b, c, tol)  /* An estimate to the min location   */
 
 /*---------------------------------------------------------------------------*/
 
+double
+_unur_function_find_mode( struct UNUR_FUNCT_GENERIC fs, 
+                          double interval_min, double interval_max )
+     /*----------------------------------------------------------------------*/
+     /* find mode of univariate continuous distribution numerically          */
+     /*                                                                      */
+     /* This is achieved by the following steps:                             */
+     /* -- Determine a interval containing the mode and a third              */
+     /*    point within ( x0< x1 < x2 )                                      */
+     /*    ++ Determine a region where to search the mode; this will be the  */
+     /*       interval [mode-100, mode+100] if this is no contrdiction to    */
+     /*       the given interval;`mode' is the best known approx to the mode */
+     /*    ++ Find a point in the interval with a positve pdf                */
+     /*       This is done by two geometric sequences of MAX_SRCH elements   */
+     /*       and find two other points within the given domain              */
+     /*    ++ Unbounded domains: refine x0, x1, x2 until:                    */
+     /*       f(x0) < f(x1) > f(x2)                                          */
+     /* -- invoke a maximization-routine to determine the mode               */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   fs           ... function structure                                */
+     /*   interval_min ... left boundary of function definition interval     */
+     /*   interval_max ... right boundary of function definition interval    */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   x        ... approximate position of mode on success                      */
+     /*   INFINITY ... on error                                              */
+     /*----------------------------------------------------------------------*/
+{
+#define MAX_SRCH (100)
+ 
+  int i;
+
+  double x[3];   /* mode (and x[2]) should be between x[0] and  x[2] ...*/   
+  double fx[3];  /* ... and the respective funtion values */
+  double mode;   /* (approximative) mode of the distribution  */
+  double mode_l; /* lower bound for mode search */
+  double mode_u; /* upper bound for mode search */
+  double step;
+
+  int unbound_left; 
+  int unbound_right; 
+
+  /* first guess for mode */
+  mode =  0.;
+
+  /* determine where to look for the mode */
+  
+  /* unbounded domain */
+  if ( _unur_FP_is_minus_infinity(interval_min) &&
+       _unur_FP_is_infinity(interval_max) ){
+
+    unbound_left = 1;
+    unbound_right = 1;
+
+    x[1]  = mode;
+    fx[1] = fs.f(x[1], fs.params);    
+    mode_l = mode - 100.0;
+    mode_u = mode + 100.0;
+
+  }
+  /* domain unbounded on the right */
+  else if ( ! _unur_FP_is_minus_infinity(interval_min) &&
+              _unur_FP_is_infinity(interval_max) ){
+
+    unbound_left = 0;
+    unbound_right = 1;
+
+    if ( mode >= interval_min ){
+      x[1]  = mode;
+      fx[1] = fs.f(x[1], fs.params);
+      mode_l = interval_min;
+      mode_u = 2 * mode - interval_min;
+    }
+    else{
+      x[1] = interval_min + 100.0;
+      fx[1] = fs.f(x[1], fs.params);
+      mode_l = interval_min;
+      mode_u = x[1] + 100.0;
+    }
+
+  }
+  /* domain unbounded on the left */
+  else if ( _unur_FP_is_minus_infinity(interval_min) &&
+          ! _unur_FP_is_infinity(interval_max) ){
+
+    unbound_left = 1;
+    unbound_right = 0;
+
+    if ( mode <= interval_max ){
+      x[1]  = mode;
+      fx[1] = fs.f(x[1], fs.params);
+      mode_l = interval_max - 2 * mode;
+      mode_u = interval_max;
+    }
+    else{
+      x[1] = interval_max - 100.0;
+      fx[1] = fs.f(x[1], fs.params);
+      mode_l = x[1] - 100.0;
+      mode_u = interval_max;      
+    }
+
+  }
+  /* domain is bounded */
+  else {  
+
+    unbound_left = 0;
+    unbound_right = 0;
+
+    if ( mode >= interval_min && mode <= interval_max ){
+      x[1]  = mode;
+      fx[1] = fs.f(x[1], fs.params);
+    }
+    else{
+      x[1] = interval_min/2.0 + interval_max/2.0;
+      fx[1] = fs.f(x[1], fs.params);
+    }
+    mode_l = interval_min;
+    mode_u = interval_max;
+
+  }
+
+  mode = x[1];  /* not exact mode -- best guess */
+
+
+  /* find point with pdf > 0.0 -- max MAX_SRCH trials */
+
+  /* search on the left side */
+  step = pow(x[1]-mode_l, 1.0/MAX_SRCH);
+  i = 0;  
+  while (i <= MAX_SRCH && _unur_FP_same(0.0, fx[1]) ){
+    x[1]  = mode - pow(step, i);
+    fx[1] = fs.f(x[1], fs.params);
+    i++;
+  }
+	 
+  /* search on the right side */
+  if( _unur_FP_same(0.0, fx[1]) ){
+    step = pow(mode_u-x[1], 1.0/MAX_SRCH);
+    i = 0;
+    while (i <= MAX_SRCH && _unur_FP_same(0.0, fx[1]) ){
+      x[1]  = mode + pow(step, i);
+      fx[1] = fs.f(x[1], fs.params);
+      i++;
+    }
+  }
+  
+  /* no success -- exit routine  */   
+  if( _unur_FP_same(fx[1], 0.0) )
+     return INFINITY; /* UNUR_ERR_DISTR_DATA; */ /* can't find mode in flat region  */
+
+  /* x[1] has f > 0 or routines already terminated */ 
+
+
+
+  /* determine 3 points in the given domain --
+     at least one with pdf > 0                  */
+  if ( unbound_left ){
+
+    x[2] = x[1];       fx[2] = fx[1];
+    x[1] = x[2] - 1.0; fx[1] = fs.f(x[1], fs.params);
+    x[0] = x[2] - 2.0; fx[0] = fs.f(x[0], fs.params);
+
+  }
+  else if ( unbound_right ){
+
+    x[0] = x[1];       fx[0] = fx[1];
+    x[1] = x[0] + 1.0; fx[1] = fs.f(x[1], fs.params);
+    x[2] = x[0] + 2.0; fx[2] = fs.f(x[2], fs.params);
+
+  }
+  else{      /* bounded */
+
+    x[0] = interval_min;  fx[0] = fs.f(x[0], fs.params);
+    x[2] = interval_max;  fx[2] = fs.f(x[2], fs.params);
+
+    if ( _unur_FP_same(x[1], interval_min)  ||
+         _unur_FP_same(x[1], interval_max) ){
+      x[1]  = interval_min/2.0 + interval_max/2.0; 
+      fx[1] = fs.f(x[1], fs.params);
+    }
+    
+  }
+  /* points x[i] with their function values determined */
+
+
+  /* find interval containing the mode */
+
+
+  step = 1.0;
+  if ( unbound_right ){
+    while(fx[0] <= fx[1] && fx[1] <= fx[2]){ /* on the left side of the mode */
+
+      step *= 2.0;
+      x[0]  = x[1]; fx[0] = fx[1];
+      x[1]  = x[2]; fx[1] = fx[2];
+      x[2] += step; fx[2] = fs.f(x[2], fs.params);   
+    }
+  }
+
+  step = 1.0;  /* reset step size */
+  if ( unbound_left ){
+    while(fx[0] >= fx[1] && fx[1] >= fx[2]){ /* on the right side of the mode */
+
+      step *= 2.0;
+      x[2]  = x[1]; fx[2] = fx[1];
+      x[1]  = x[0]; fx[1] = fx[0];
+      x[0] -= step; fx[0] = fs.f(x[0], fs.params);
+
+    }
+  }
+
+  /* now: the mode is between x[0] and x[2]   */
+
+/*    printf("x0: %f, fx0: %e\n", x[0], fx[0]); */
+/*    printf("x1: %f, fx1: %e\n", x[1], fx[1]); */
+/*    printf("x2: %f, fx2: %e\n", x[2], fx[2]); */
+
+  /** TODO: FLT_MIN must be much larger than DBL_MIN **/
+
+  mode = _unur_function_max( fs, x[0], x[2], x[1], FLT_MIN );
+  if (!(_unur_FP_is_infinity( mode )) ){
+    /* mode successfully computed */
+
+  }
+  else {
+    /* computing mode did not work */
+    /* (we do not change mode entry in distribution object) */
+    return INFINITY; /*UNUR_ERR_DISTR_DATA;*/
+  }
+
+  /* o.k. */
+  return mode; /*UNUR_SUCCESS;*/
+
+#undef MAX_SRCH
+} /* end of _unur_function_find_mode() */
+
+/*---------------------------------------------------------------------------*/
+
+
+
+
+
 /*
  *****************************************************************************
  *	    		    C math library                                   *

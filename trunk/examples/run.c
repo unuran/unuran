@@ -20,31 +20,6 @@
 
 /*---------------------------------------------------------------------------*/
 
-/* pdf with piecewise linear function as transformed density with T = -1/sqrt */
-double pdf_sqrtlin( double x, UNUR_DISTR *distr )
-{ 
-  double y;
-  x -= 5.;
-  y = 1./(fabs(x)+1.);
-  return y*y;
-}
-double dpdf_sqrtlin( double x, UNUR_DISTR *distr )
-{ 
-  double y;
-  x -= 5.;
-  y = 1./(fabs(x)+1.);
-  y = 2.*y*y*y;
-  return ((x<0.) ? y : - y);
-}
-double cdf_sqrtlin( double x, UNUR_DISTR *distr )
-{ 
-  x -= 5.;
-  if (x<=0.)
-    return 0.5/(1.-x);
-  else
-    return (1.-0.5/(1.+x));
-}
-
 /*---------------------------------------------------------------------------*/
 
 int main()
@@ -64,14 +39,11 @@ int main()
 
   unur_set_default_urng(urng);
 
-  distr = unur_distr_cont_new();
-  unur_distr_cont_set_pdf(distr,pdf_sqrtlin);
-  unur_distr_cont_set_dpdf(distr,dpdf_sqrtlin);
-  unur_distr_cont_set_cdf(distr,cdf_sqrtlin);
-  unur_distr_set_name(distr,"sqrtlin");
+  fpm[0] = 0.001;
+  distr = unur_distr_geometric(fpm,1);
+  //  unur_distr_discr_set_domain(distr, 0, 100);
 
-  unur_errno = 0;
-  par = unur_arou_new(distr);
+  par = unur_dgt_new(distr);
 
   unur_run_tests( par, RUN_TESTS) ;
 

@@ -143,10 +143,12 @@
 /*---------------------------------------------------------------------------*/
 
 /** TODO: we have to find a better place for these macros                    */
-#define UNUR_MALLOC_SIZE   10
 #define HAVE_GETTIMEOFDAY
 
 #define UNUR_DISTR_MAXPARAMS  5 /* maximal number of parameters for distribution */
+
+/* maximal size of automatically created probability vectors */
+#define UNUR_MAX_AUTO_PV    100000
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

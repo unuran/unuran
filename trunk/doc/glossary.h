@@ -10,6 +10,9 @@
 @item CDF
 cumulative distribution function
 
+@item HR
+hazard rate (or failure rate)
+
 @item PDF
 probability density function
 

@@ -120,6 +120,11 @@ unur_distr_corder_new( struct unur_distr *distr, int n, int k )
     _unur_error(distr_name,UNUR_ERR_DISTR_INVALID,""); return NULL; }
   COOKIE_CHECK(distr,CK_DISTR_CONT,NULL);
 
+  if (distr->id == UNUR_DISTR_CORDER) {
+    _unur_warning(distr_name,UNUR_ERR_DISTR_INVALID,"No order statistics of order statistics allowed");
+    return NULL; 
+  }
+
   /* check parameters n and k */
   if (n < 2 || k < 1 || k > n) {
     _unur_error(distr_name,UNUR_ERR_DISTR_INVALID,"n < 2 or k < 1 or k > n");
@@ -259,7 +264,7 @@ unur_distr_corder_get_distribution( struct unur_distr *os )
   _unur_check_distr_object( os, CONT, NULL );
 
   /* check distribution */
-  if (os->type != UNUR_DISTR_CORDER) {
+  if (os->id != UNUR_DISTR_CORDER) {
     _unur_warning(distr_name,UNUR_ERR_DISTR_INVALID,"");
     return NULL; 
   }
@@ -289,7 +294,7 @@ unur_distr_corder_set_rank( struct unur_distr *os, int n, int k )
   _unur_check_distr_object( os, CONT, 0 );
 
   /* check distribution */
-  if (os->type != UNUR_DISTR_CONT) {
+  if (os->id != UNUR_DISTR_CORDER) {
     _unur_error(distr_name,UNUR_ERR_DISTR_INVALID,""); return 0; }
   COOKIE_CHECK(os,CK_DISTR_CONT,0);
 
@@ -332,7 +337,7 @@ unur_distr_corder_get_rank( struct unur_distr *os, int *n, int *k )
   _unur_check_distr_object( os, CONT, 0 );
 
   /* check distribution */
-  if (os->type != UNUR_DISTR_CONT) {
+  if (os->id != UNUR_DISTR_CORDER) {
     _unur_error(distr_name,UNUR_ERR_DISTR_INVALID,""); return 0; }
   COOKIE_CHECK(os,CK_DISTR_CONT,0);
 

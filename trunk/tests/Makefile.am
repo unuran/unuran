@@ -7,9 +7,10 @@ INCLUDES = \
  -I$(top_srcdir)/src/tests
 
 check_PROGRAMS = \
+ t_distr \
+ t_corder \
  t_arou \
  t_cstd \
- t_distr \
  t_dau \
  t_dgt \
  t_srou \
@@ -20,9 +21,10 @@ check_PROGRAMS = \
  t_utdr
 
 TESTS = \
+ t_distr \
+ t_corder \
  t_arou \
  t_cstd \
- t_distr \
  t_dau \
  t_dgt \
  t_srou \
@@ -38,6 +40,7 @@ EXTRA_DIST = \
  make_test_files.pl \
  README.conf \
  distr.conf \
+ corder.conf \
  arou.conf \
  cstd.conf \
  dau.conf \
@@ -52,6 +55,9 @@ EXTRA_DIST = \
 
 t_distr_SOURCES = t_distr.c testroutines.c
 t_distr_LDADD = $(top_builddir)/src/libunuran.a
+
+t_corder_SOURCES = t_corder.c testroutines.c
+t_corder_LDADD = $(top_builddir)/src/libunuran.a
 
 t_arou_SOURCES = t_arou.c testroutines.c
 t_arou_LDADD = $(top_builddir)/src/libunuran.a
@@ -86,6 +92,9 @@ t_utdr_LDADD = $(top_builddir)/src/libunuran.a
 
 t_distr.c: distr.conf make_test_files.pl
 	./make_test_files.pl distr.conf
+
+t_corder.c: corder.conf make_test_files.pl
+	./make_test_files.pl corder.conf
 
 t_arou.c: arou.conf make_test_files.pl
 	./make_test_files.pl arou.conf

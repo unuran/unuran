@@ -38,6 +38,7 @@ libdistributions_la_SOURCES = \
  d_zipf.c        d_zipf_gen.c \
  m_correlation.c \
  vc_copula.c \
+ vc_multicauchy.c \
  vc_multinormal.c
 
 noinst_HEADERS = \

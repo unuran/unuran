@@ -73,6 +73,12 @@ typedef int _UNUR_SAMPLING_ROUTINE_DISCR(struct unur_gen *gen);
 typedef void _UNUR_SAMPLING_ROUTINE_VEC(struct unur_gen *gen, double *vec);
 
 /*****************************************************************************/
+/**  Declaration for parser                                                 **/
+/*****************************************************************************/
+
+#include <functparser_struct.h>
+
+/*****************************************************************************/
 /**  Declarations for uniform random number generators                      **/
 /*****************************************************************************/
 

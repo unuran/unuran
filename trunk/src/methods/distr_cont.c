@@ -285,6 +285,47 @@ unur_distr_cont_set_cdf( struct unur_distr *distr, UNUR_FUNCT_CONT *cdf )
 
 /*---------------------------------------------------------------------------*/
 
+int
+unur_distr_cont_set_strpdf( struct unur_distr *distr, const char *strpdf )
+     /*----------------------------------------------------------------------*/
+     /* set p.d.f. of distribution via a string interface                    */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   distr  ... pointer to distribution object                          */
+     /*   strpdf ... string that describes function term of PDF              */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... on success                                                   */
+     /*   0 ... on error                                                     */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( NULL,distr,0 );
+  _unur_check_distr_object( distr, CONT, 0 );
+
+  /* we do not allow overwriting a pdf */
+  if (DISTR.pdf != NULL) {
+    _unur_warning(distr->name,UNUR_ERR_DISTR_SET,"Overwriting of pdf not allowed");
+    return 0;
+  }
+
+  /* for derived distributions (e.g. order statistics) not possible */
+  if (distr->base) return 0;
+
+  /* changelog */
+  distr->set &= ~UNUR_DISTR_SET_MASK_DERIVED;
+  /* derived parameters like mode, area, etc. might be wrong now! */
+
+  /** TODO: **/
+  /* DISTR.pdf = ...; */
+
+
+  return 0;
+
+} /* end of unur_distr_cont_set_strpdf() */
+
+/*---------------------------------------------------------------------------*/
+
 UNUR_FUNCT_CONT *
 unur_distr_cont_get_pdf( struct unur_distr *distr )
      /*----------------------------------------------------------------------*/

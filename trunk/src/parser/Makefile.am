@@ -10,11 +10,15 @@ INCLUDES = \
 
 noinst_LIBRARIES = libparser.a
 
-libparser_a_SOURCES = stringparser.c
+libparser_a_SOURCES = \
+ functparser.c \
+ stringparser.c
 
 include_HEADERS =
 
 noinst_HEADERS = \
+ functparser_source.h \
+ functparser_struct.h \
  parser.h
 
 EXTRA_DIST = \

@@ -4,14 +4,13 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   FILE: source_unuran.h                                                   *
+ *   FILE: functparser_struct.h                                              *
  *                                                                           *
  *   PURPOSE:                                                                *
- *         defines macros and declares structures and function prototypes    *
- *         for all UNURAN source files                                       *
+ *         declares structures for function parser                           *
  *                                                                           *
  *   USAGE:                                                                  *
- *         only included in source files.                                    *
+ *         only included in source_struct.h                                  *
  *                                                                           *
  *****************************************************************************
      $Id$
@@ -38,52 +37,15 @@
  *****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
-#ifndef __UNURAN_SOURCE_H_SEEN
-#define __UNURAN_SOURCE_H_SEEN
-/*---------------------------------------------------------------------------*/
+/* Information for constructing the generator                                */
 
-/*---------------------------------------------------------------------------*/
-/* include main header files                                                 */
+struct xyz { 
 
-#include <float.h>
-#include <math.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+  double  center;               /* approximate location of mode              */
 
-#ifdef HAVE_CONFIG_H
-#  include <config.h>
-#else
-#  error "config.h" required
+#ifdef UNUR_COOKIES
+  unsigned cookie;              /* magic cookie                              */
 #endif
-
-#ifdef HAVE_LIMITS_H
-#  include <limits.h>
-#endif
-
-#include <in_unuran.h>
-
-#include <functparser_source.h>
-
-#include <source_struct.h>
-#include <source_cookies.h>
-#include <source_fp.h>
-#include <source_methods.h>
-
-#include <distr_source.h>
-#include <x_debug_source.h>
-#include <x_gen_source.h>
-#include <x_math_source.h>
-#include <x_misc_source.h>
-#include <x_umalloc_source.h>
-
-#ifdef WITH_DMALLOC
-#  include <dmalloc.h>
-#endif
+};
 
 /*---------------------------------------------------------------------------*/
-#endif  /* end __UNURAN_SOURCE_H_SEEN */
-/*---------------------------------------------------------------------------*/
-
-
-

@@ -4,14 +4,17 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   FILE: source_unuran.h                                                   *
+ *   FILE:      functparser.c                                                *
  *                                                                           *
- *   PURPOSE:                                                                *
- *         defines macros and declares structures and function prototypes    *
- *         for all UNURAN source files                                       *
+ *   Parser function string, evaluate function, print programm code.         *
  *                                                                           *
- *   USAGE:                                                                  *
- *         only included in source files.                                    *
+ *   DESCRIPTION:                                                            *
+ *      Given a string for a function.                                       *
+ *         The string is parser.                                             *
+ *         A tree representing the function term is generated.               *
+ *         A tree for the derivative of the function is generated.           *
+ *         The tree is used to evalute the corresponding function for an x.  *
+ *         The source code for a program is produced.                        *
  *                                                                           *
  *****************************************************************************
      $Id$
@@ -35,55 +38,30 @@
  *   Free Software Foundation, Inc.,                                         *
  *   59 Temple Place, Suite 330, Boston, MA 02111-1307, USA                  *
  *                                                                           *
+ *****************************************************************************
+ *                                                                           *
+ *   REFERENCES:                                                             *
+ *   [1] XXXXXXX (1995): YYYYYYYYYYYYYYYYYYYYY                               *
+ *                                                                           *
  *****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
-#ifndef __UNURAN_SOURCE_H_SEEN
-#define __UNURAN_SOURCE_H_SEEN
-/*---------------------------------------------------------------------------*/
+
+#include <source_unuran.h>
 
 /*---------------------------------------------------------------------------*/
-/* include main header files                                                 */
 
-#include <float.h>
-#include <math.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+/*  static struct unur_gen *_unur_fstr_init( struct unur_par *par ); */
+/*---------------------------------------------------------------------------*/
+/* Initialize new generator.                                                 */
+/*---------------------------------------------------------------------------*/
 
-#ifdef HAVE_CONFIG_H
-#  include <config.h>
-#else
-#  error "config.h" required
-#endif
+#ifdef UNUR_ENABLE_LOGGING
+/*---------------------------------------------------------------------------*/
+/* the following functions print debugging information on output stream,     */
+/* i.e., into the log file if not specified otherwise.                       */
+/*---------------------------------------------------------------------------*/
 
-#ifdef HAVE_LIMITS_H
-#  include <limits.h>
-#endif
-
-#include <in_unuran.h>
-
-#include <functparser_source.h>
-
-#include <source_struct.h>
-#include <source_cookies.h>
-#include <source_fp.h>
-#include <source_methods.h>
-
-#include <distr_source.h>
-#include <x_debug_source.h>
-#include <x_gen_source.h>
-#include <x_math_source.h>
-#include <x_misc_source.h>
-#include <x_umalloc_source.h>
-
-#ifdef WITH_DMALLOC
-#  include <dmalloc.h>
 #endif
 
 /*---------------------------------------------------------------------------*/
-#endif  /* end __UNURAN_SOURCE_H_SEEN */
-/*---------------------------------------------------------------------------*/
-
-
-

@@ -4,14 +4,13 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   FILE: source_unuran.h                                                   *
+ *   FILE: functparser_source.h                                              *
  *                                                                           *
  *   PURPOSE:                                                                *
- *         defines macros and declares structures and function prototypes    *
- *         for all UNURAN source files                                       *
+ *         declares prototypes for function parser                           *
  *                                                                           *
  *   USAGE:                                                                  *
- *         only included in source files.                                    *
+ *         only included in source_struct.h                                  *
  *                                                                           *
  *****************************************************************************
      $Id$
@@ -38,52 +37,21 @@
  *****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
-#ifndef __UNURAN_SOURCE_H_SEEN
-#define __UNURAN_SOURCE_H_SEEN
+#ifndef __FSTR_SOURCE_H_SEEN
+#define __FSTR_SOURCE_H_SEEN
+
+/*---------------------------------------------------------------------------*/
+
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*/
-/* include main header files                                                 */
-
-#include <float.h>
-#include <math.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
-#ifdef HAVE_CONFIG_H
-#  include <config.h>
-#else
-#  error "config.h" required
-#endif
-
-#ifdef HAVE_LIMITS_H
-#  include <limits.h>
-#endif
-
-#include <in_unuran.h>
-
-#include <functparser_source.h>
-
-#include <source_struct.h>
-#include <source_cookies.h>
-#include <source_fp.h>
-#include <source_methods.h>
-
-#include <distr_source.h>
-#include <x_debug_source.h>
-#include <x_gen_source.h>
-#include <x_math_source.h>
-#include <x_misc_source.h>
-#include <x_umalloc_source.h>
-
-#ifdef WITH_DMALLOC
-#  include <dmalloc.h>
-#endif
-
+#endif   /* __FSTR_SOURCE_H_SEEN */
 /*---------------------------------------------------------------------------*/
-#endif  /* end __UNURAN_SOURCE_H_SEEN */
-/*---------------------------------------------------------------------------*/
+
+
+
+
+
 
 
 

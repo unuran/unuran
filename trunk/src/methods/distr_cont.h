@@ -114,9 +114,21 @@ int unur_distr_cont_set_cdf( UNUR_DISTR *distribution, UNUR_FUNCT_CONT *cdf );
    @code{UNUR_INFINITY}.
 
    It is not possible to change such a function. Once the PDF or
-   CDF is set it cannot be overwritten. A new distribution object
-   has to be used instead.
+   CDF is set it cannot be overwritten. This also holds when the PDF
+   is given by the unur_distr_cont_set_strpdf() call.
+   A new distribution object has to be used instead.
+*/
 
+int unur_distr_cont_set_strpdf( UNUR_DISTR *distribution, const char *strpdf );
+/* 
+   This function provides an alternative way to set a PDF and its
+   derivative of the @var{distribution}.
+   @var{strpdf} is a character string that contains the formula
+   for the PDF, see ..... for details.
+   See also the remarks for the unur_distr_cont_set_pdf() call.
+
+   It is not possible to call this funtion twice. Furthermore your
+   cannot call this function after a unur_distr_cont_set_pdf() call.
 */
 
 UNUR_FUNCT_CONT *unur_distr_cont_get_pdf( UNUR_DISTR *distribution );

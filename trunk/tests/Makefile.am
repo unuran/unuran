@@ -8,6 +8,7 @@ INCLUDES = \
 
 check_PROGRAMS = \
  t_arou \
+ t_cstd \
  t_distr \
  t_dau \
  t_dgt \
@@ -19,6 +20,7 @@ check_PROGRAMS = \
 
 TESTS = \
  t_arou \
+ t_cstd \
  t_distr \
  t_dau \
  t_dgt \
@@ -35,6 +37,7 @@ EXTRA_DIST = \
  README.conf \
  distr.conf \
  arou.conf \
+ cstd.conf \
  dau.conf \
  dgt.conf \
  srou.conf \
@@ -49,6 +52,9 @@ t_distr_LDADD = $(top_builddir)/src/libunuran.a
 
 t_arou_SOURCES = t_arou.c testroutines.c
 t_arou_LDADD = $(top_builddir)/src/libunuran.a
+
+t_cstd_SOURCES = t_cstd.c testroutines.c
+t_cstd_LDADD = $(top_builddir)/src/libunuran.a
 
 t_dau_SOURCES = t_dau.c testroutines.c
 t_dau_LDADD = $(top_builddir)/src/libunuran.a
@@ -77,6 +83,9 @@ t_distr.c: distr.conf make_test_files.pl
 
 t_arou.c: arou.conf make_test_files.pl
 	./make_test_files.pl arou.conf
+
+t_cstd.c: cstd.conf make_test_files.pl
+	./make_test_files.pl cstd.conf
 
 t_dau.c: dau.conf make_test_files.pl
 	./make_test_files.pl dau.conf

@@ -292,8 +292,14 @@ _unur_test_chi2_cont(struct unur_gen *gen,
     samplesize = (INT_MAX/intervals > intervals) ? intervals*intervals : INT_MAX;
 
   /* compute Fl and Fr */
-  Fl = (DISTR.domain[0] <= -INFINITY) ? 0. : cdf(DISTR.domain[0],&(gen->distr));
-  Fr = (DISTR.domain[1] >=  INFINITY) ? 1. : cdf(DISTR.domain[1],&(gen->distr));
+  if (gen->distr.set & UNUR_DISTR_SET_TRUNCATED) {
+    Fl = (DISTR.trunc[0] <= -INFINITY) ? 0. : cdf(DISTR.trunc[0],&(gen->distr));
+    Fr = (DISTR.trunc[1] >=  INFINITY) ? 1. : cdf(DISTR.trunc[1],&(gen->distr));
+  }
+  else {
+    Fl = (DISTR.domain[0] <= -INFINITY) ? 0. : cdf(DISTR.domain[0],&(gen->distr));
+    Fr = (DISTR.domain[1] >=  INFINITY) ? 1. : cdf(DISTR.domain[1],&(gen->distr));
+  }
   Fdelta = Fr - Fl;
 
   /* Fr - Fl <= 0. is a fatal error */
@@ -389,6 +395,12 @@ _unur_test_chi2test( double *prob,
   if (chisquare_distr == NULL) {
     df = 1.;  /* dummy value for degrees of freedom (will be set later) */
     chisquare_distr = unur_distr_chisquare( &df, 1 );
+  }
+
+  /* do we have a CDF for the chi^2 distribution ? */
+  if (chisquare_distr->data.cont.cdf == NULL) {
+    _unur_error(test_name,UNUR_ERR_GENERIC,"c.d.f. for CHI^2 distribution required");
+    return -1.;
   }
 
   /* minimum number of occurrences in a class */

@@ -34,31 +34,18 @@ int main()
 
   unur_set_default_urng(urng);
 
-  fpar[0] = 1.;
-  fpar[1] = 2.;
+  fpar[0] = 5.;
+  fpar[1] = 7.;
   distr = unur_distr_beta(fpar,2);
-  unur_distr_cont_set_domain(distr,0.5,1.);
-  unur_distr_cont_upd_mode(distr);
-  unur_distr_cont_upd_pdfarea(distr);
 
+  par = unur_cstd_new(distr);
+  if (!unur_cstd_set_variant(par,UNUR_STDGEN_INVERSION)) { par = NULL; }
+  unur_run_tests(par, RUN_TESTS);
 
-  par = unur_srou_new(distr);
-  gen = unur_init(par);
+  par = unur_cstd_new(distr);
+  if (!unur_cstd_set_variant(par,1)) { par = NULL; }
+  unur_run_tests(par, RUN_TESTS);
 
-  unur_test_printsample( gen, 3, 10 );
-  unur_test_count_urn( gen, 100000 );
-  unur_test_chi2( gen, 100, 0, 20, 1 );
-
-  unur_srou_chg_domain(gen,0.9,0.91);
-  unur_srou_upd_mode(gen);
-  unur_srou_upd_pdfarea(gen);
-  unur_srou_reinit(gen);	
-
-  unur_test_printsample( gen, 3, 10 );
-  unur_test_count_urn( gen, 100000 );
-  unur_test_chi2( gen, 100, 0, 20, 1 );
-
-  unur_free(gen);
   unur_distr_free(distr);
 
   exit (0);

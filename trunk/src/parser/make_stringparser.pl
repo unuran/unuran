@@ -31,6 +31,19 @@ EOM
 }
 
 ##############################################################################
+
+# ----------------------------------------------------------------
+# Directory with sources
+
+my $top_srcdir = $ENV{'srcdir'} ? $ENV{'srcdir'} : '.';
+$top_srcdir .= "/../..";
+
+# ----------------------------------------------------------------
+# Load routines for reading data about PDF from UNURAN files
+  
+require "$top_srcdir/codegen/read_PDF.pl";
+
+##############################################################################
 # Methods not supported by string input
 #
 our @No_String_Methods = ("UNIF");
@@ -76,6 +89,9 @@ while ( <STDIN> ){
 	if ( $type eq "distrinfo" ){
 	    distr_info();
 	}
+	elsif ( $type eq "list_of_distributions" ){
+	    print make_list_of_distributions();
+	}
 	elsif ( $type eq "list_of_methods" ){
 	    print make_list_of_methods();
 	}
@@ -106,6 +122,72 @@ exit (0);
 # Subroutines                                                                #
 #                                                                            #
 ##############################################################################
+
+##############################################################################
+#
+# Make subroutine for getting parameter object for method
+#
+sub make_list_of_distributions {
+
+    my $code;
+
+    # Get list of all methods
+    my @method_list;
+
+    # Read all header files
+    foreach my $hfile (@methods_h_files) {
+
+	# Read content of header file
+	open H, "< $methods_dir/$hfile" or  die ("can't open file: $methods_dir/$hfile");
+	my $content = '';
+	while (<H>) { $content .= $_; } 
+	close H;
+
+	# We skip over all header files that do not correspond
+	# to a method.
+	next unless $content =~ /[^\n]\s*=METHOD\s+(\w+)/;
+
+	# save ID for method
+	push @method_list, "\L$1";
+    }
+
+    # sort list of methods
+    @method_list = sort @method_list;
+
+    # make code 
+    $code .= "\t par = NULL;\n\n";
+
+    # make switch for first letter of method name
+    $code .= "\t switch (*method) {\n";
+
+    my $last_char;
+
+    foreach my $method (@method_list) {
+
+	my $char = substr $method,0,1;
+
+	if ($char ne $last_char) {
+	    $code .= "\t\t break;\n" if $last_char;
+	    $code .= "\t case '$char':\n";
+	    $last_char = $char;
+	}
+
+	# print code
+	$code .= "\t\t if ( !strcmp( method, \"$method\") ) {\n";
+	$code .= "\t\t\t par = unur_$method\_new(distr);\n";
+	$code .= "\t\t\t break;\n";
+	$code .= "\t\t }\n";
+    }
+
+    # end of switch for first letter
+    $code .= "\t }\n";
+
+    # Return result
+#    return $code;
+    
+    return "";
+
+} # end of make_list_of_distributions()
 
 ##############################################################################
 #

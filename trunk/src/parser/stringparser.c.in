@@ -129,6 +129,8 @@ static void _unur_str_debug_string( int level, const char *key, const char *valu
 
 static void _unur_str_debug_par_set( int level, const char *key, const char *type, ... );
 
+static void _unur_str_debug_distr( int level, const char *name, double *params, int n_params );
+
 
 #endif
 
@@ -155,7 +157,10 @@ static int          _unur_str2urng         (UNUR_PAR *, char *);
 static UNUR_PAR   * _unur_str2par ( char *strmethod, UNUR_DISTR *distr );
 
 
-static UNUR_PAR *_unur_str_par_new( const char *method, UNUR_DISTR *distr );
+static UNUR_DISTR *_unur_str_distr_new( char *distribution );
+
+
+static UNUR_PAR *_unur_str_par_new( const char *str_method, UNUR_DISTR *distr );
 static int _unur_str_par_set( UNUR_PAR *par, const char *key, char *value );
 
 
@@ -248,7 +253,7 @@ _unur_str2par( char *str_method, UNUR_DISTR *distr )
       }
     }
 
-    /* set parameters */
+    /* set parameters for method */
     else {
       if (par != NULL) {
 	if ( !_unur_str_par_set(par, key, value) ) {
@@ -914,15 +919,70 @@ _unur_str2distr(char *str_distr)
 {
   struct unur_distr *distr = NULL;
 
+  char *token;             /* pointer to token in string */
+  char *next;              /* pointer to next token in string */
+  char *key, *value;       /* the key and its value */
 
 
-  double list[MAX_ELEM]; /* value contains a list of numbers */
-  int no_of_elem=0;        /* size of that list */
+  char nix[2048];
 
-  char * tmpstr;     /* temporary pointer to string */
 
-  char * token;      /* char pointer to tokenize the string */
-  char *key, *value; /* the key and its value */
+  /* */ double list[MAX_ELEM]; /* value contains a list of numbers */
+  /* */ int no_of_elem=0;        /* size of that list */
+  /* */ char * tmpstr;     /* temporary pointer to string */
+
+
+
+  strcpy(nix,str_distr);
+
+
+  /* tokenize the string using ';' as separator and handle the tokens */
+  for ( token = next = str_distr;
+	next != NULL && *token != '\0';
+	token = next ) {
+
+    /* find end of token (i.e. the pointer to next token) */
+    next = strchr(token,';');
+    if (next != NULL) {
+      /* next separator found */
+      *next = '\0';     /* terminate token string    */
+      next++;           /* set pointer to next token */
+    }
+
+    /* token points to a key */
+    key = token;
+
+    /* get the value from the pair key=value and terminate key string */
+    value = strchr(key, '=');
+    if (value != NULL) {
+      *value = '\0';    /* terminate key string        */
+      value++;          /* set pointer to value string */
+    }
+
+    /* the first key is treated differently */
+    if (key == str_distr) {
+      /* the keyword "distr" is optional */
+      if (value == NULL) {
+	/* no "distribution" keyword given, so the key points to the value */
+	value = key;
+      }
+
+      /* get new distribution object */
+      distr = _unur_str_distr_new(value);
+    }
+
+    /* set parameters for distribution */
+    else {
+      ;
+    }
+
+  }
+
+
+  /**************************************/
+
+  strcpy(str_distr,nix);
+
 
   /* tokenize the string -- split at ';' */
   for ( token  = strtok(str_distr, ";"); 
@@ -933,6 +993,7 @@ _unur_str2distr(char *str_distr)
     key = token;
     value = strchr(key, '=');
 
+  /* */
     /* none ore more '=' seperates key from value */
     if ( value != NULL ){
        for ( *value='\0',value++  ;  *value=='='  ;  value++ ); 
@@ -980,6 +1041,64 @@ _unur_str2distr(char *str_distr)
 
 /*---------------------------------------------------------------------------*/
 
+struct unur_distr *
+_unur_str_distr_new( char *distribution )
+     /*----------------------------------------------------------------------*/
+     /* get new distribution object for method                               */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   distribution ... string that contains distribution name            */
+     /*   params       ... string that contains list of parameters           */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   distribution object (pointer to structure)                         */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return NULL                                                        */
+     /*----------------------------------------------------------------------*/
+{
+  struct unur_distr *distr = NULL;    /* pointer to distribution object      */
+
+  char *name;                         /* pointer to name of distribution     */
+  char *params;                       /* pointer to parameter list of distr  */
+
+  double *darray = NULL;              /* array of arguments for distribution */
+  int n_darray = 0;                   /* size of array of parameters         */
+
+  /* name of distribution */
+  name = distribution;
+
+  /* get parameter list */
+  params = strchr(distribution,'(');
+  if (params != NULL) {
+    *params = '\0';                   /* terminate key string        */
+    ++params;                         /* set pointer to value string */
+  }
+
+  /* get parameter list */
+  n_darray = _unur_parse_dlist(params, &darray );
+
+#ifdef UNUR_ENABLE_LOGGING
+  /* write info into log file */
+  _unur_str_debug_distr(1,name,darray,n_darray);
+#endif
+
+  /* get parameters */
+
+
+=INPUT list_of_distributions
+
+   if (distr == NULL) {
+     unur_errno = UNUR_ERR_GENERIC;
+     _unur_stream_printf ( GENTYPE,__FILE__,__LINE__,
+			   "error: %s: unknown distribution or invalid data: %s",
+			   unur_get_strerror(unur_errno), distribution );
+   }
+
+   return distr;
+} /* end of _unur_str_distr_new() */
+
+/*---------------------------------------------------------------------------*/
 
 
 
@@ -1322,6 +1441,12 @@ _unur_parse_dlist( char *liststr, double **darray )
   int n_alloc = 0;      /* number allocated elements */
   char *tailstr;        /* pointer to the remaining string in strtod() */
 
+  /* return 0 if no list is given */
+  if (liststr == NULL) {
+    *darray = darr;
+    return 0;
+  }
+
   /* extract doubles from string and write them to array of doubles   */
   /* end of list is indicated by right bracket ')' or '\0' */  
   while ( *liststr != ')' && *liststr != '\0' ) {
@@ -1470,7 +1595,7 @@ _unur_atod ( const char *str )
 #ifdef UNUR_ENABLE_LOGGING
 /*---------------------------------------------------------------------------*/
 
-static void 
+void 
 _unur_str_debug_string( int level, const char *key, const char *value  )
      /*----------------------------------------------------------------------*/
      /* write info about generator into logfile                              */
@@ -1497,6 +1622,39 @@ _unur_str_debug_string( int level, const char *key, const char *value  )
 /*    fprintf(log,"%s:\n",GENTYPE); */
 
 } /* end of _unur_str_debug_string() */
+
+/*---------------------------------------------------------------------------*/
+
+void 
+_unur_str_debug_distr( int level, const char *name, double *params, int n_params )
+     /*----------------------------------------------------------------------*/
+     /* write info about distribution into logfile                           */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   level    ... level of indentation                                  */
+     /*   name     ... name of distribution                                  */
+     /*   params   ... array of parameters                                   */
+     /*   n_params ... number of parameters                                  */
+     /*----------------------------------------------------------------------*/
+{
+  FILE *log;
+  int i;
+  
+  log = unur_get_stream();
+
+  fprintf(log,"%s: ",GENTYPE);
+  for (; level>0; level--) 
+    fprintf(log,"\t");
+
+  fprintf(log,"distribution = %s (",name);
+  if (n_params >0) {
+    fprintf(log,"%g",params[0]);
+    for (i=1; i<n_params; i++)
+      fprintf(log,", %g",params[i]);
+  }
+  fprintf(log,")\n");
+
+} /* end of _unur_str_debug_distr() */
 
 /*---------------------------------------------------------------------------*/
 

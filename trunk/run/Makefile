@@ -16,7 +16,8 @@ getopttst: getopttst.c ../src/unuran.h ../src/libunuran.a
 
 acg: acg.c ../src/unuran.h ../src/libunuran.a
 	gcc -I. -I.. -I../src -I../src/tests -L../src -Wall -g -O2 -o acg acg.c -lunuracg -lunuran -lm -lprng 
-parsetest: parsetest.c
+
+parsetest: parsetest.c ../src/unuran.h ../src/libunuran.a
 	gcc -I. -I.. -I../src -I../src/tests -L../src -Wall -g -O2 -o parsetest parsetest.c -lunuran -lm -lprng
 
 clean:

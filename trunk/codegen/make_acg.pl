@@ -181,6 +181,11 @@ int main (int argc, char *argv[]){
   }
 
   /* ------------------------------------------------------------------------*/
+  /* switch off logging */
+
+  unur_set_default_debug(UNUR_DEBUG_OFF); 
+
+  /* ------------------------------------------------------------------------*/
   /* create distribution object */
 
   distr = distrfunc(fpar, n_params); 

@@ -67,6 +67,20 @@ enum {
   UNUR_DISTR_TRIANGULAR,          /*    X     X     X     X     X     .      */
   UNUR_DISTR_UNIFORM,             /*    X     X     X     X     .     .      */
   UNUR_DISTR_WEIBULL,             /*    X     X     X     X     X     .      */
+
+  UNUR_DISTR_BURR_I,              /*    .     X     .     .     X     .      */
+  UNUR_DISTR_BURR_II,             /*    .     X     .     .     X     .      */
+  UNUR_DISTR_BURR_III,            /*    .     X     .     .     X     .      */
+  UNUR_DISTR_BURR_IV,             /*    .     X     .     .     X     .      */
+  UNUR_DISTR_BURR_V,              /*    .     X     .     .     X     .      */
+  UNUR_DISTR_BURR_VI,             /*    .     X     .     .     X     .      */
+  UNUR_DISTR_BURR_VII,            /*    .     X     .     .     X     .      */
+  UNUR_DISTR_BURR_VIII,           /*    .     X     .     .     X     .      */
+  UNUR_DISTR_BURR_IX,             /*    .     X     .     .     X     .      */
+  UNUR_DISTR_BURR_X,              /*    .     X     .     .     X     .      */
+  UNUR_DISTR_BURR_XI,             /*    .     X     .     .     .     .      */
+  UNUR_DISTR_BURR_XII,            /*    .     X     .     .     X     .      */
+
 };
 
 /*---------------------------------------------------------------------------*/

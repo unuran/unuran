@@ -320,12 +320,21 @@ int main()
   unur_run_tests(par,RUN_TESTS);
 #endif
 
-#if 1
+#if 0
   fpar[0] = 5.;
   fpar[1] = 1.;
   distr_xxx = unur_distr_gamma(fpar,2);
   par = unur_cstd_new(distr_xxx);
   unur_cstd_set_variant(par,2);
+  unur_run_tests(par,RUN_TESTS);
+#endif
+
+#if 1
+  fpar[0] = 11.;
+  fpar[1] = 5.;
+  fpar[2] = 1.;
+  distr_xxx = unur_distr_burr(fpar,3);
+  par = unur_cstd_new(distr_xxx);
   unur_run_tests(par,RUN_TESTS);
 #endif
 

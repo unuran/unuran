@@ -11,6 +11,7 @@ lib_LIBRARIES = libunuran_distributions.a
 
 libunuran_distributions_a_SOURCES = \
  beta.c        beta_gen.c \
+ burr.c        burr_gen.c \
  cauchy.c      cauchy_gen.c \
  chi.c         chi_gen.c \
  chisquare.c \

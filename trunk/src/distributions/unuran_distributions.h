@@ -118,8 +118,14 @@ double unur_stdgen_sample_beta_b1prs( struct unur_gen *gen );
 /* Stratified Rejection/Patchwork Rejection                                  */
 
 /*---------------------------------------------------------------------------*/
-/* Burr ?? distribution                                                      */
-/** TODO **/
+/* Burr family of distributions  [2; ch.12, p.54]                            */
+struct unur_distr *unur_distr_burr(double *params, int n_params);
+
+/* special generators */
+int _unur_stdgen_burr_init( struct unur_par *par, struct unur_gen *gen );
+/* initialize new generator                                                  */
+double unur_stdgen_sample_burr_inv( struct unur_gen *gen );
+/* Inversion method                                                          */
 
 /*---------------------------------------------------------------------------*/
 /*  Cauchy distribution  [2; ch.16, p.299]                                   */

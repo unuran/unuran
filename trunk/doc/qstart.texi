@@ -627,11 +627,12 @@ For information about the Methods themselfes, see @ref{Description}.
   \fi
 @end tex
 
+
 @ifhtml
 @anchor{Contents}
 @end ifhtml
-
 @contents
+
 
 @bye
 

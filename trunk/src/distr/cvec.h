@@ -217,6 +217,47 @@ const double *unur_distr_cvec_get_covar_inv( UNUR_DISTR *distribution );
    if it is not already stored.
 */
 
+int unur_distr_cvec_set_marginals( UNUR_DISTR *distribution, UNUR_DISTR *marginal);
+/* 
+   Sets marginal distribution for all marginals of the given
+   @var{distribution}. The @var{marginal} distribution must be an
+   instance of a continuous univariate distribution object.
+   In conjunction with unur_distr_cvec_set_covar()
+   and unur_distr_cvec_set_mean() the given @var{marginal}
+   distribution should be standardized, i.e., it should have mean 0
+   and standard deviation 1 (if both exist for the given marginal
+   distribution).
+   Notice that the marginal distribution is copied in the
+   @var{distribution} object.
+*/
+
+int unur_distr_cvec_set_marginal_array( UNUR_DISTR *distribution, UNUR_DISTR **marginals);
+/* 
+   Analogously to the above unnur_distr_cvec_set_marginals() call.
+   However, now an array @var{marginals} of the pointers to each of
+   the marginal distributions must be given. It @strong{must} be an
+   array of size @code{dim}, where @code{dim} is the dimension
+   returned by unur_distr_get_dim(). 
+
+   @emph{Notice}: Local copies for each of the entries are stored in
+   the @var{distribution} object. If some of these entries are
+   identical (i.e. contain the same pointer), then for each of these a
+   new copy is made.
+*/
+
+const UNUR_DISTR *unur_distr_cvec_get_marginal( const UNUR_DISTR *distribution, int n );
+/* 
+   Get pointer to the @var{n}-th marginal distribution object from the
+   multivariate @var{distribution}. If this does not exist, NULL is
+   returned. The marginal distributions are enumerated from @code{1}
+   to @code{dim}, where @code{dim} is the dimension
+   returned by unur_distr_get_dim(). 
+
+   Notice of the marginal distribution is set via a
+   unur_distr_cvec_set_marginals() call then the same pointer is
+   returned for all all @var{n}.
+*/
+
 int unur_distr_cvec_set_pdfparams( UNUR_DISTR *distribution, int par, const double *params, int n_params );
 /* 
    This function provides an interface for additional parameters for a

@@ -146,7 +146,8 @@ _unur_upd_area_multinormal( UNUR_DISTR *distr )
 struct unur_distr *
 unur_distr_multinormal( int dim, const double *mean, const double *covar )
 {
-  register struct unur_distr *distr;
+  struct unur_distr *distr;
+  struct unur_distr *marginal;
 
   /* get new (empty) distribution object */
   distr = unur_distr_cvec_new(dim);
@@ -176,6 +177,11 @@ unur_distr_multinormal( int dim, const double *mean, const double *covar )
     unur_distr_free( distr );
     return NULL;
   }
+
+  /* set marginal distributions */
+  marginal = unur_distr_normal(NULL,0);
+  unur_distr_cvec_set_marginals(distr,marginal);
+  unur_distr_free(marginal);
 
   /* copy other parameters of distribution */
   /* none */

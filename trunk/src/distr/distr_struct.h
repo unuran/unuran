@@ -86,6 +86,8 @@ struct unur_distr_cvec {
   double *cholesky;             /* cholesky factor of covariance matrix      */
   double *covar_inv;            /* inverse of covariance matrix              */
 
+  struct unur_distr **marginals; /* array of pointers to marginal distributions */
+
   double *params[UNUR_DISTR_MAXPARAMS];  /* parameters of the PDF            */
   int    n_params[UNUR_DISTR_MAXPARAMS]; /* length of parameter arrays       */
 

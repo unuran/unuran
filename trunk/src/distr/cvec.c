@@ -135,6 +135,7 @@ unur_distr_cvec_new( int dim )
   DISTR.cholesky  = NULL;   /* pointer to cholesky factor (default: not computed) */
   DISTR.covar_inv = NULL;   /* pointer to inverse covariance matrix 
 			       (default: not computed ) */
+  DISTR.marginals = NULL;   /* array of pointers to marginal distributions   */
 
   /* initialize parameters of the PDF                                        */
   for (i=0; i<UNUR_DISTR_MAXPARAMS; i++) {
@@ -212,6 +213,25 @@ _unur_distr_cvec_clone( const struct unur_distr *distr )
     memcpy( CLONE.mode, DISTR.mode, distr->dim * sizeof(double) );
   }
 
+  if (DISTR.marginals) {
+    CLONE.marginals = _unur_malloc (distr->dim * sizeof(struct unur_distr *));
+    /* There are (should be) only two possibilities: 
+       either all entries in the array point to the same distribution object;
+          (set be unur_distr_cvec_set_marginals() call)
+       or each entry has its own copy of some distribution object.
+          (set be unur_distr_cvec_set_marginal_array() call)
+    */
+    if (DISTR.marginals[0] == DISTR.marginals[1]) {
+      CLONE.marginals[0] = _unur_distr_clone( DISTR.marginals[0] );
+      for (i=1; i<distr->dim; i++)
+	CLONE.marginals[i] = CLONE.marginals[0];
+    }
+    else {
+      for (i=0; i<distr->dim; i++) 
+	CLONE.marginals[i] = _unur_distr_clone( DISTR.marginals[i] );
+    }
+  }
+  
   for (i=0; i<UNUR_DISTR_MAXPARAMS; i++) {
     if (DISTR.params[i]) {
       CLONE.params[i] = _unur_malloc( DISTR.n_params[i] * sizeof(double) );
@@ -260,6 +280,23 @@ _unur_distr_cvec_free( struct unur_distr *distr )
   if (DISTR.cholesky)  free(DISTR.cholesky);
 
   if (DISTR.mode)  free(DISTR.mode);
+
+  if (DISTR.marginals) {
+    /* There are (should be) only two possibilities: 
+       either all entries in the array point to the same distribution object;
+          (set be unur_distr_cvec_set_marginals() call)
+       or each entry has its own copy of some distribution object.
+          (set be unur_distr_cvec_set_marginal_array() call)
+    */
+    if (DISTR.marginals[0] == DISTR.marginals[1]) {
+      _unur_distr_free(DISTR.marginals[0]);
+    }
+    else {
+      for (i=0; i<distr->dim; i++) 
+	_unur_distr_free(DISTR.marginals[i]);
+    }
+    free (DISTR.marginals);
+  }
 
   /* user name for distribution */
   if (distr->name_str) free(distr->name_str);
@@ -659,7 +696,7 @@ unur_distr_cvec_get_cholesky( const struct unur_distr *distr )
 /*---------------------------------------------------------------------------*/
 
 const double *
-unur_distr_cvec_get_covar_inv( struct unur_distr *distr )
+unur_distr_cvec_get_covar_inv ( struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
      /* get inverse covariance matrix of distribution                        */
      /*                                                                      */
@@ -702,6 +739,132 @@ unur_distr_cvec_get_covar_inv( struct unur_distr *distr )
   return DISTR.covar_inv;
 
 } /* end of unur_distr_cvec_get_covar_inv() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+unur_distr_cvec_set_marginals ( struct unur_distr *distr, struct unur_distr *marginal)
+     /*----------------------------------------------------------------------*/
+     /* Copy marinal distribution into distribution object.                  */
+     /* Only one local copy is made.                                         */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   distr    ... pointer to distribution object                        */
+     /*   marginal ... pointer to marginal object                            */
+     /*                                                                      */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+  struct unur_distr *clone;
+  int i;
+
+  /* check arguments */
+  _unur_check_NULL( NULL, distr, UNUR_ERR_NULL );
+  _unur_check_distr_object( distr, CVEC, UNUR_ERR_DISTR_INVALID );
+  _unur_check_NULL( distr->name, marginal, UNUR_ERR_NULL );
+  _unur_check_distr_object( marginal, CONT, UNUR_ERR_DISTR_INVALID );
+
+  /* make copy of marginal distribution object */
+  clone = _unur_distr_clone( marginal );
+
+  /* allocate memory for array */
+  DISTR.marginals = _unur_malloc (distr->dim * sizeof(struct unur_distr *));
+
+  /* copy pointer */
+  for (i=0; i<distr->dim; i++)
+    DISTR.marginals[i] = clone;
+
+  /* changelog */
+  distr->set |= UNUR_DISTR_SET_MARGINAL;
+
+  return UNUR_SUCCESS;
+} /* end of unur_distr_cvec_set_marginals() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+unur_distr_cvec_set_marginal_array ( struct unur_distr *distr, struct unur_distr **marginals)
+     /*----------------------------------------------------------------------*/
+     /* Copy marinal distributions into distribution object.                 */
+     /* For each dimension a new copy is made even if the pointer in         */
+     /* the array marginals coincide.                                        */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   distr     ... pointer to distribution object                       */
+     /*   marginals ... pointer to array of marginal objects                 */
+     /*                                                                      */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+  int i;
+
+  /* check arguments */
+  _unur_check_NULL( NULL, distr, UNUR_ERR_NULL );
+  _unur_check_distr_object( distr, CVEC, UNUR_ERR_DISTR_INVALID );
+  _unur_check_NULL( distr->name, marginals, UNUR_ERR_NULL );
+
+  for (i=0; i<distr->dim; i++) {
+    _unur_check_NULL( distr->name, *(marginals+i), UNUR_ERR_NULL );
+    _unur_check_distr_object( *(marginals+i), CONT, UNUR_ERR_DISTR_INVALID );
+  }
+    
+  /* allocate memory for array */
+  DISTR.marginals = _unur_malloc (distr->dim * sizeof(struct unur_distr *));
+
+  /* make copy of marginal distribution object */
+  for (i=0; i<distr->dim; i++) 
+    DISTR.marginals[i] = _unur_distr_clone( *(marginals+i) );
+
+  /* changelog */
+  distr->set |= UNUR_DISTR_SET_MARGINAL;
+
+  return UNUR_SUCCESS;
+} /* end of unur_distr_cvec_set_marginal_array() */
+
+/*---------------------------------------------------------------------------*/
+
+const struct unur_distr *
+unur_distr_cvec_get_marginal( const struct unur_distr *distr, int n )
+     /*----------------------------------------------------------------------*/
+     /* Copy marinal distribution into distribution object.                  */
+     /* Only one local copy is made.                                         */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   distr    ... pointer to distribution object                        */
+     /*   marginal ... pointer to marginal object                            */
+     /*                                                                      */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( NULL, distr, NULL );
+  _unur_check_distr_object( distr, CVEC, NULL );
+
+  if (n<=0 || n > distr->dim) {
+    _unur_error(NULL,UNUR_ERR_DISTR_GET,"n not in 1 .. dim");
+    return NULL;
+  }
+
+  /* mean vector known ? */
+  if ( !(distr->set & UNUR_DISTR_SET_MARGINAL) ) {
+    _unur_warning(distr->name,UNUR_ERR_DISTR_GET,"marginals");
+    return NULL;
+  }
+
+  _unur_check_NULL( distr->name, DISTR.marginals, NULL );
+
+  /* return marginal distribution */
+  return (DISTR.marginals[n-1]);
+} /* end of unur_distr_cvec_get_marginal() */
 
 /*---------------------------------------------------------------------------*/
 

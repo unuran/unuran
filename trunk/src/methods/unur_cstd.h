@@ -64,6 +64,9 @@ int unur_cstd_set_variant( UNUR_PAR *parameters, unsigned variant );
 int unur_cstd_chg_param( UNUR_GEN *gen, double *params, int n_params );
 /* change array of parameters for distribution                               */
 
+int unur_cstd_chg_domain( struct unur_gen *gen, double left, double right );
+/* change the left and right borders of the domain of the distribution       */
+
 #define unur_cstd_set_debug(parameters,debugflags)  unur_set_debug((parameters),(debugflags))
 /* set debuging flags                                                        */
 

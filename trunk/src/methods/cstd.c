@@ -87,6 +87,11 @@ static void _unur_cstd_debug_chg_param( struct unur_gen *gen );
 /* print new (changed) parameters of distribution                            */
 /*---------------------------------------------------------------------------*/
 
+static void _unur_cstd_debug_chg_domain( struct unur_gen *gen );
+/*---------------------------------------------------------------------------*/
+/* print new (changed) domain of (truncated) distribution                    */
+/*---------------------------------------------------------------------------*/
+
 #endif
 
 /*---------------------------------------------------------------------------*/
@@ -252,10 +257,10 @@ unur_cstd_chg_param( struct unur_gen *gen, double *params, int n_params )
   /* changelog */
   gen->distr.set |= UNUR_DISTR_SET_PARAMS;
   /* mode and area might be wrong now! */
-  gen->distr.set |= ~(UNUR_DISTR_SET_MODE | UNUR_DISTR_SET_PDFAREA );
+  gen->distr.set &= ~(UNUR_DISTR_SET_MODE | UNUR_DISTR_SET_PDFAREA );
 
   /* run special init routine for generator */
-  if ( !DISTR.init(NULL,gen) ) {
+  if ( !(DISTR.init(NULL,gen)) ) {
     /* init failed --> could not find a sampling routine */
     _unur_warning(gen->genid,UNUR_ERR_GEN_DATA,"parameters");
     return 0;
@@ -281,6 +286,71 @@ unur_cstd_chg_param( struct unur_gen *gen, double *params, int n_params )
   return 1;
 
 } /* end of unur_cstd_chg_param() */
+
+/*---------------------------------------------------------------------------*/
+
+int 
+unur_cstd_chg_domain( struct unur_gen *gen, double left, double right )
+     /*----------------------------------------------------------------------*/
+     /* change the left and right borders of the domain of the distribution  */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen      ... pointer to generator object                           */
+     /*   left  ... left boundary point                                      */
+     /*   right ... right boundary point                                     */
+     /*                                                                      */
+     /* comment:                                                             */
+     /*   the new boundary points may be +/- INFINITY                        */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  CHECK_NULL(gen,0);
+  _unur_check_gen_object( gen,CSTD );
+
+  /* domain can only be changed for inversion method! */
+  if ( ! GEN.is_inversion ) { 
+    /* this is not the inversion method */
+    _unur_warning(gen->genid,UNUR_ERR_GEN_DATA,"domain changed for non inversion method");
+    return 0;
+  }
+
+  /* c.d.f. required ! */
+  if (DISTR.cdf == NULL) {
+    _unur_warning(gen->genid,UNUR_ERR_GEN_DATA,"domain changed, c.d.f. required");
+    return 0;
+  }
+
+  /* check new parameter for generator */
+  if (left >= right) {
+    _unur_warning(NULL,UNUR_ERR_DISTR_SET,"domain, left >= right");
+    return 0;
+  }
+
+  /* copy new boundaries into generator object */
+  DISTR.BD_LEFT = left;
+  DISTR.BD_RIGHT = right;
+
+  /* changelog */
+  gen->distr.set |= UNUR_DISTR_SET_DOMAIN;
+
+  /* indicate that we have a truncated distribution.
+     (do not have the standard domain any more) */
+  gen->distr.set &= ~UNUR_DISTR_SET_STDDOMAIN;
+
+  /* compute umin and umax */
+  GEN.umin = (DISTR.BD_LEFT > -INFINITY) ? CDF(DISTR.BD_LEFT)  : 0.;
+  GEN.umax = (DISTR.BD_RIGHT < INFINITY) ? CDF(DISTR.BD_RIGHT) : 1.;
+
+#ifdef UNUR_ENABLE_LOGGING
+  /* write info into log file */
+  if (gen->debug & CSTD_DEBUG_CHG) 
+    _unur_cstd_debug_chg_domain( gen );
+#endif
+  
+  /* o.k. */
+  return 1;
+  
+} /* end of unur_cstd_chg_domain() */
 
 /*****************************************************************************/
 
@@ -311,24 +381,24 @@ unur_cstd_init( struct unur_par *par )
     return NULL;
   }
   COOKIE_CHECK(par,CK_CSTD_PAR,NULL);
-
+  
   /* create a new empty generator object */
   gen = _unur_cstd_create(par);
   if (!gen) { free(par); return NULL; }
-
+  
   /* check for initializing routine for special generator */
   _unur_check_NULL( gen->genid, DISTR.init, (free(par),NULL) );
-
+  
   /* run special init routine for generator */
   if ( !DISTR.init(par,gen) ) {
     /* init failed --> could not find a sampling routine */
     _unur_error(par->genid,UNUR_ERR_GEN_DATA,"variant for special generator");
     free(par); unur_dstd_free(gen); return NULL; 
   }
-
+  
   /* copy information about type of special generator */
   GEN.is_inversion = PAR.is_inversion;
-
+  
   /* domain valid for special generator ?? */
   if (!(gen->distr.set & UNUR_DISTR_SET_STDDOMAIN)) {
     /* domain has been modified */
@@ -538,12 +608,40 @@ _unur_cstd_debug_chg_param( struct unur_gen *gen )
 
   log = unur_get_stream();
 
-  fprintf(log,"%s:parameters of distribution changed:\n",gen->genid);
+  fprintf(log,"%s: parameters of distribution changed:\n",gen->genid);
   for( i=0; i<DISTR.n_params; i++ )
       fprintf(log,"%s:\tparam[%d] = %g\n",gen->genid,i,DISTR.params[i]);
+  if (!(gen->distr.set & UNUR_DISTR_SET_STDDOMAIN))
+    fprintf(log,"%s:\tU in (%g,%g)\n",gen->genid,GEN.umin,GEN.umax);
 
 } /* end of _unur_cstd_debug_chg_param() */
 
 /*---------------------------------------------------------------------------*/
+
+static void 
+_unur_cstd_debug_chg_domain( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* print new (changed) domain of (truncated) distribution               */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*----------------------------------------------------------------------*/
+{
+  FILE *log;
+
+  /* check arguments */
+  CHECK_NULL(gen,/*void*/);  COOKIE_CHECK(gen,CK_CSTD_GEN,/*void*/);
+
+  log = unur_get_stream();
+
+  fprintf(log,"%s: domain of (truncated) distribution changed:\n",gen->genid);
+  fprintf(log,"%s:\tdomain = (%g, %g)\n",gen->genid, DISTR.BD_LEFT, DISTR.BD_RIGHT);
+  if (!(gen->distr.set & UNUR_DISTR_SET_STDDOMAIN))
+    fprintf(log,"%s:\tU in (%g,%g)\n",gen->genid,GEN.umin,GEN.umax);
+
+} /* end of _unur_cstd_debug_chg_domain() */
+
+/*---------------------------------------------------------------------------*/
 #endif   /* end UNUR_ENABLE_LOGGING */
 /*---------------------------------------------------------------------------*/
+

@@ -6,12 +6,15 @@
 # 
 # 
 # Aufruf:  ./unuran.perl ../src/methods/*.h
+#      (unuran.perl liegt im Verzeichnis /unuran/doc/
 # Input:  
 # Output:
 # 
 # E.JANKA und G.TIRLER  August 2000
 # $Id$
+#
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#
 # Das Perl-skrip durchsucht nach folgenden Schluesselworten      
 # und und erzeugt Output wiefolgt:
 # Folgende Schluesselwoerter beginnen mit '=...'
@@ -20,10 +23,10 @@
 #
 #
 # =METHOD  name [Langtext]
-#          allg. Beschreibung der Methode in Header file
+#          allgem. Beschreibung der Methode in Header file
 #
-#          name      ... Name der Methode, Nur ein Wort!
-#          [Langtext]... optional, Lange Beschreibung
+#          name       ... Name der Methode, Nur ein Wort!
+#          [Langtext] ... optional, Lange Beschreibung
 #          Beispiel:
 #             =METHODS NINV Numerical inversion 
 #                     
@@ -32,7 +35,7 @@
 #          
 # =ROUTINES
 #          sucht C function zwischen =ROUTINES und =END 
-#          beginnend mit 'unur_' und mit '()' abgeschlossen
+#          beginnend mit 'unur_' und endend mit '()'
 #
 #          Der Nachfolgende Kommentarblock/Zeilen werden mit
 #          einer Leerzeile abgeschlossen.
@@ -43,7 +46,7 @@
 # (=>)     diese Zeichenfolge in Kommentarzeile wird in TEXINFO 
 #          nicht ausgegegben (dient zur spaeteren Verwendung)
 #
-# =[A-Z,0-9] Unbekannte '=...' Zeichenfolgen wereden mit FEhler 
+# =[A-Z,0-9] Unbekannte '=...' Zeichenfolgen wereden mit Fehler 
 #            erkannt 
 #
 # =ERRORCODE derzeit ohne Funktion
@@ -199,18 +202,3 @@ while($_ = <>)
  }
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -301,7 +301,7 @@ unur_distr_corder_set_rank( struct unur_distr *os, int n, int k )
 
   /* check parameters n and k */
   if (n < 2 || k < 1 || k > n) {
-    _unur_warning(distr_name,UNUR_ERR_DISTR_INVALID,"n < 2 or k < 1 or k > n");
+    _unur_warning(distr_name,UNUR_ERR_DISTR_SET,"n < 2 or k < 1 or k > n");
     return 0;
   }
 

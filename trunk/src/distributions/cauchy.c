@@ -109,11 +109,12 @@ unur_distr_cauchy( double *params, int n_params )
   register struct unur_distr *distr;
 
   /* check new parameter for generator */
-  CHECK_NULL(params,RETURN_NULL);
-  if (n_params != 2) {
+  if (n_params < 0 || n_params > 2) {
     _unur_error(distr_name,UNUR_ERR_DISTR_NPARAMS,"");
     return NULL;
   }
+  if (n_params > 0)
+    CHECK_NULL(params,RETURN_NULL);
 
   /* get new (empty) distribution object */
   distr = unur_distr_cont_new();
@@ -125,16 +126,26 @@ unur_distr_cauchy( double *params, int n_params )
   distr->name = distr_name;
                 
   /* how to get special generators */
-  DISTR.init = NULL;           /* _unur_stdgen_cauchy_init */;
+  DISTR.init = _unur_stdgen_cauchy_init;
 
   /* functions */
   DISTR.pdf  = _unur_pdf_cauchy;   /* pointer to p.d.f.            */
   DISTR.dpdf = _unur_dpdf_cauchy;  /* pointer to derivative of p.d.f. */
   DISTR.cdf  = _unur_cdf_cauchy;   /* pointer to c.d.f.            */
 
+  /* default parameters */
+  DISTR.theta  = 0.;
+  DISTR.lambda = 1.;
+
   /* copy parameters */
-  DISTR.theta  = theta;
-  DISTR.lambda = lambda;
+  switch (n_params) {
+  case 2:
+    DISTR.lambda = lambda;
+  case 1:
+    DISTR.theta  = theta;
+    n_params = 2;           /* number of parameters for non-standard form */
+  default:
+  }
 
   /* check parameter lambda */
   if (DISTR.lambda <= 0.) {

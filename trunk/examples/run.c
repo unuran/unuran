@@ -34,19 +34,19 @@
 #define RUN_DIS           0
 
 #define RUN_NINV          0
-#define RUN_UTDR          0
-#define RUN_AROU          0
+#define RUN_UTDR          1
+#define RUN_AROU          1
 #define RUN_SROU          0
 #define RUN_STDR          0
-#define RUN_TDRSQRT       0
+#define RUN_TDRSQRT       1
 #define RUN_TDRLOG        0
 #define RUN_TABL          0
 
-#define RUN_NORMAL        1
-#define RUN_GAMMA         1
-#define RUN_BETA          1
+#define RUN_NORMAL        0
+#define RUN_GAMMA         0
+#define RUN_BETA          0
 #define RUN_CAUCHY        1
-#define RUN_UNIFORM       1
+#define RUN_UNIFORM       0
 
 #define RUN_RECT          0
 
@@ -94,8 +94,8 @@ int main()
 /*    fpar[1] = 790.; */
   distr_beta = unur_distr_beta(fpar,2);
 
-  fpar[0] = 0.;
-  fpar[1] = 1.;
+  fpar[0] = -1.;
+  fpar[1] = 10.;
   distr_cauchy = unur_distr_cauchy(fpar,2);
 
   distr_uniform = unur_distr_uniform(NULL,0);
@@ -243,6 +243,7 @@ int main()
 
 #endif
 
+#if 0
   fpar[0] = 5.;
   distr_xxx = unur_distr_student(fpar,1);
   par = unur_cstd_new(distr_xxx);
@@ -255,6 +256,10 @@ int main()
   unur_test_moments(gen,2,moments,10000);
   printf("mean =\t%g\nstddev =\t%g\n\n",moments[1],sqrt(moments[2]-moments[1]*moments[1]));
   unur_free(gen);
+#endif
+
+  par = unur_cstd_new(distr_cauchy);
+  unur_run_tests(par,RUN_TESTS);
 
 #endif
 

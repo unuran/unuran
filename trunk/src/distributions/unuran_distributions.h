@@ -125,6 +125,12 @@ double unur_stdgen_sample_beta_b1prs( struct unur_gen *gen );
 /*  Cauchy distribution [2; ch.16, p.299]                                    */
 struct unur_distr *unur_distr_cauchy(double *params, int n_params);
 
+/* special generators */
+int _unur_stdgen_cauchy_init( struct unur_par *par, struct unur_gen *gen );
+/* initialize new generator                                                  */
+double unur_stdgen_sample_cauchy_inv( struct unur_gen *gen );
+/* Inversion method                                                          */
+
 /*---------------------------------------------------------------------------*/
 /*  Chi distribution [2; ch.18, p.417]                                 */
 struct unur_distr *unur_distr_chi(double *params, int n_params);

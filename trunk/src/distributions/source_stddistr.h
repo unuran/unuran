@@ -48,7 +48,7 @@ enum {
   UNUR_DISTR_GENERIC  = 0x0u,
   /**                                  pdf   cdf   mode  area  gen   doc     */
   UNUR_DISTR_BETA,                /*    X     X     X     X     X     .      */
-  UNUR_DISTR_CAUCHY,              /*    X     X     X     X     .     .      */
+  UNUR_DISTR_CAUCHY,              /*    X     X     X     X     X     .      */
   UNUR_DISTR_CHI,                 /*    X     X     X     X     X     .      */
   UNUR_DISTR_CHISQUARE,           /*    X     X     X     X     .     .      */
   UNUR_DISTR_EXPONENTIAL,         /*    X     X     X     X     ?     .      */

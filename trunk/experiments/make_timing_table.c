@@ -229,7 +229,7 @@ read_config_file ( const char *filename,
 		   struct unur_slist *distr_str_list, struct unur_slist *meth_str_list )
      /* read config file */
 {
-#define LINELENGTH  1024      /* max length of lines allowed    */
+#define LINELENGTH  10240      /* max length of lines allowed    */
 
   char line[LINELENGTH];      /* input buffer */
   char *str;                  /* pointer to working string */

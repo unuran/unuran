@@ -32,6 +32,14 @@ EOM
 }
 
 ##############################################################################
+# Unsupported Distribution types
+#
+my %UNSUPPORTED_DISTR_TYPES =
+    ( 'corder' => 1,
+      'cvec'   => 1,
+      'cvemp'  => 1 );
+
+##############################################################################
 
 # ----------------------------------------------------------------
 # Directory with sources
@@ -63,11 +71,6 @@ my $methods_dir = "$top_srcdir/src/methods";
 opendir (METHDIR, "$methods_dir") or die "can't open directory $methods_dir";
 my @methods_h_files = grep {/[.]h/ } readdir METHDIR;
 closedir METHDIR;
-
-# Get all header files in distributions directory
-#
-my $distr_dir = "$top_srcdir/src/distributions";
-my $distr_h_file = "$distr_dir/unuran_distributions.h";
 
 ##############################################################################
 # Global variables
@@ -167,8 +170,44 @@ sub make_list_of_distributions {
     }
 
     # end of switch for first letter
-    $code .= "\t }\n";
+    $code .= "\t }\n\n";
 
+    print STDERR "\n\n";
+
+    # Make list of generic distribution objects
+    print STDERR "Generic distributions:\n";
+
+    $code .= "\t /* get pointer to generic distribution object */\n";
+    $code .= "\t if (distr == NULL) {\n";
+    $code .= "\t\t do {\n";
+
+    foreach my $hfile (sort @methods_h_files) {
+	# We skip over all header files with names other than distr_*.h
+	next unless $hfile =~ /^distr\_/;
+	# Read content of header file
+	open H, "< $methods_dir/$hfile" or  die ("can't open file: $methods_dir/$hfile");
+	my $content = '';
+	while (<H>) { $content .= $_; } 
+	close H;
+	# there must be a unur_distr_...._new call
+	next unless $content =~ /[^\n]\s*unur\_distr\_(\w+)\_new/;
+	# ID for method
+	my $distr_type = "\L$1";
+	# not all generic distributions are supported yet
+	next if $UNSUPPORTED_DISTR_TYPES{$distr_type};
+
+	# make code
+	print STDERR "  \U$distr_type" if $VERBOSE;
+	$code .= "\t\t\t if ( !strcmp( distribution, \"$distr_type\") ) {\n";
+	$code .= "\t\t\t\t distr = unur\_distr\_$distr_type\_new();\n";
+	$code .= "\t\t\t\t break;\n";
+	$code .= "\t\t\t }\n";
+    }
+
+    $code .= "\t\t } while (0);\n";
+    $code .= "\t }\n\n";
+
+    # end
     print STDERR "\n\n";
 
     # Return result
@@ -189,12 +228,11 @@ sub make_list_of_distr_sets {
     # print info on screen
     print STDERR "Set commands for Distributions:\n" if $VERBOSE;
 
-
-
-
-
     # Read all header files 
-    foreach my $hfile (@methods_h_files) {
+    foreach my $hfile (sort @methods_h_files) {
+
+	# We skip over all header files with names other than distr_*.h
+	next unless $hfile =~ /^distr\_/;
 
 	# Read content of header file
 	open H, "< $methods_dir/$hfile" or  die ("can't open file: $methods_dir/$hfile");
@@ -202,13 +240,15 @@ sub make_list_of_distr_sets {
 	while (<H>) { $content .= $_; } 
 	close H;
 
-	# We skip over all header files that do not correspond
-	# to a method.
-	next unless $content =~ /[^\n]\s*=METHOD\s+(\w+)/;
+	# there must be a unur_distr_...._new call
+	next unless $content =~ /[^\n]\s*unur\_distr\_(\w+)\_new/;
 
 	# ID for method
-	print STDERR "  $1: " if $VERBOSE;
-	my $method = "\L$1";
+	my $distr_type = "\L$1";
+
+	# not all generic distributions are supported yet
+	next if $UNSUPPORTED_DISTR_TYPES{$distr_type};
+	print STDERR "  \U$distr_type: " if $VERBOSE;
 
 	# Remove all comments and empty lines ...
 	$content =~ s {/\*.*?\*/} []gsx;
@@ -219,7 +259,7 @@ sub make_list_of_distr_sets {
 
 	# Get all set calls
 	foreach my $l (@lines) {
-	    next unless $l =~ /^\s*(\w*\s+)unur_$method\_set_(\w+)\s*\((.+)([^\s])\s*$/; 
+	    next unless $l =~ /^\s*(\w*\s+)unur\_distr\_$distr_type\_set_(\w+)\s*\((.+)([^\s])\s*$/; 
 
 	    # name of set command
 	    my $command = $2;
@@ -248,10 +288,10 @@ sub make_list_of_distr_sets {
 	    $args =~ s/\)\s*$//;             # remove closing parenthesis
 	    my @args_list = split /\,/, $args;
 
-	    # first argument must be of type UNUR_PAR
+	    # first argument must be of type UNUR_DISTR
 	    my $a = shift @args_list;
-	    unless ($a =~ /UNUR_PAR/) {
-		die "Unknown syntax (first argument not of type UNUR_PAR) in $hfile:\n$l\n";
+	    unless ($a =~ /UNUR_DISTR/) {
+		die "Unknown syntax (first argument not of type UNUR_DISTR) in $hfile:\n$l\n";
 	    }
 
 	    # number of arguments
@@ -278,16 +318,15 @@ sub make_list_of_distr_sets {
 
 	    # make set calls
 	    my $set;
-	    my $args_comment;
 
 	    # beginning of case
-	    $args_comment = "\t /* n = $n_args; type = $type_args: $args*/\n";
-	    $set .= "\t\t\t $args_comment";
+	    $set = "\t\t\t\t /* n = $n_args; type = $type_args: $args*/\n";
 
 	    # use keyword "void" when no argument is required
 	    $type_args = "void" if $type_args eq "";
 
 	    # we support the following cases:
+### ????
 	    #   void   ... no argument required
 	    #   "i"    ... one argument of type int required
 	    #   "u"    ... one argument of type unsigned required
@@ -298,19 +337,18 @@ sub make_list_of_distr_sets {
 	    #   "Di"   ... a list of doubles and one argument of type int required
 	    if ($type_args =~ /^(void|i|u|d|dd|iD|Di)$/) {
 		my $type = $1;
-		$set .= "\t\t\t\t result = _unur_str_par_set_$type(par,key,type_args,args,unur_$method\_set_$command);\n";
-		$set_commands->{$method}->{$command} = $set;
-
+		$set .= "\t\t\t\t result = _unur_str_distr_set_$type(distr,key,type_args,args,unur_distr_$distr_type\_set_$command);\n";
+		$set_commands->{$distr_type}->{$command} = $set;
 	    }
 
 	    else {
 		# cannot handle this set command
-		$code_unsupported .= $args_comment;
-		$unsupported .= "  unur_$method\_set_$command()\n"
+		$code_unsupported .= "\t /* $l\n\t\t n = $n_args; type = $type_args\t */\n";
+		$unsupported .= "  unur_distr_$distr_type\_set_$command()\n"
 	    }
 	}
 
-	# end of method
+	# end of distribution type
 	print STDERR "\n" if $VERBOSE;
     }
 
@@ -318,22 +356,22 @@ sub make_list_of_distr_sets {
     print STDERR "\n" if $VERBOSE;
 
 
-    # get list of all methods 
-    my @method_list = sort (keys %{$set_commands});
+    # get list of all distribution types
+    my @distr_type_list = sort (keys %{$set_commands});
 
     # set result indicator
     $code .= "\t result = FALSE;\n\n";
 
     # make switch for methods
-    $code .= "\t switch (par->method) {\n";
+    $code .= "\t switch (distr->type) {\n";
 
-    foreach my $m (@method_list) {
+    foreach my $dt (@distr_type_list) {
 
-	# make list of set commands for method 
-	my @command_list = sort (keys %{$set_commands->{$m}});
+	# make list of set commands for distributions
+	my @command_list = sort (keys %{$set_commands->{$dt}});
 
 	# make label for method
-	$code .= "\t case UNUR_METH_\U$m:\n";
+	$code .= "\t case UNUR_DISTR_\U$dt:\n";
 	
 	# make switch for first letter of key name
 	$code .= "\t\t switch (*key) {\n";
@@ -351,7 +389,7 @@ sub make_list_of_distr_sets {
 	    }
 
 	    $code .= "\t\t\t if ( !strcmp(key, \"$c\") ) {\n";
-	    $code .= $set_commands->{$m}->{$c};
+	    $code .= $set_commands->{$dt}->{$c};
 	    $code .= "\t\t\t\t break;\n";
 	    $code .= "\t\t\t }\n";
 	}
@@ -361,18 +399,11 @@ sub make_list_of_distr_sets {
 
     }
 
-    # end of switch for methods
+    # end of switch for distribution types
     $code .= "\t }\n";
-
 
     # add comment on unsupported code into C file
     $code .= "\n\t /* Unsupported set commands: */\n $code_unsupported\n";
-
-
-
-	
-    $code = "";
-
 
     # Return result
     return $code;
@@ -391,7 +422,7 @@ sub make_list_of_methods {
     my @method_list;
 
     # Read all header files
-    foreach my $hfile (@methods_h_files) {
+    foreach my $hfile (sort @methods_h_files) {
 
 	# Read content of header file
 	open H, "< $methods_dir/$hfile" or  die ("can't open file: $methods_dir/$hfile");
@@ -457,7 +488,7 @@ sub make_list_of_par_sets {
     print STDERR "Set commands for Methods:\n" if $VERBOSE;
 
     # Read all header files 
-    foreach my $hfile (@methods_h_files) {
+    foreach my $hfile (sort @methods_h_files) {
 
 	# Read content of header file
 	open H, "< $methods_dir/$hfile" or  die ("can't open file: $methods_dir/$hfile");
@@ -541,11 +572,9 @@ sub make_list_of_par_sets {
 
 	    # make set calls
 	    my $set;
-	    my $args_comment;
 
 	    # beginning of case
-	    $args_comment = "\t /* n = $n_args; type = $type_args: $args*/\n";
-	    $set .= "\t\t\t $args_comment";
+	    $set .= "\t\t\t\t /* n = $n_args; type = $type_args: $args*/\n";
 
 	    # use keyword "void" when no argument is required
 	    $type_args = "void" if $type_args eq "";
@@ -563,12 +592,11 @@ sub make_list_of_par_sets {
 		my $type = $1;
 		$set .= "\t\t\t\t result = _unur_str_par_set_$type(par,key,type_args,args,unur_$method\_set_$command);\n";
 		$set_commands->{$method}->{$command} = $set;
-
 	    }
 
 	    else {
 		# cannot handle this set command
-		$code_unsupported .= $args_comment;
+		$code_unsupported .= "\t /* $l\n\t\t n = $n_args; type = $type_args\t */\n";
 		$unsupported .= "  unur_$method\_set_$command()\n"
 	    }
 	}
@@ -585,7 +613,7 @@ sub make_list_of_par_sets {
     my @method_list = sort (keys %{$set_commands});
 
     # set result indicator
-    $code .= "\t result = FALSE;\n\n";
+    $code = "\t result = FALSE;\n\n";
 
     # make switch for methods
     $code .= "\t switch (par->method) {\n";
@@ -664,27 +692,6 @@ sub unmatched_parenthesis {
 #
 # ###########################################################################
 sub distr_info{
-
-    print "\t/* ------------------------------------------- */\n";
-    print "\t/*                                             */\n";
-    print "\t/* key = \"distribution\"                        */\n";
-    print "\t/*                                             */\n";
-    print "\t/* ------------------------------------------- */\n";
-    print "\tif ( !strcmp(key, \"distr\") ){ \n\t\t";
-    open INFILE, "< $distr_h_file" or  die ("can't open file: $distr_h_file");
-
-    while ( <INFILE> ){
-
-	# search for standard distribution
-	if ( $_ =~ /^\s*=DISTR\s+(\w+)/ ){
-	    print "if ( !strcmp(value, \"$1\") ){\n";
-	    print "\t\t\tdistr = unur_distr_$1(list, no_of_elem);\n\t\t}\n\t\telse ";
-	}
-    }
-
-    # Error -- in case of unknown distribution
-    print "{\n\t\t\tfprintf(stderr,\"ERROR: Unknown distribution: %s\\n\",value);\n";
-    print "\t\t\tbreak;\n\t\t}\n\t}\n";
 
     print "\t/* ------------------------------------------- */\n";
     print "\t/*                                             */\n";

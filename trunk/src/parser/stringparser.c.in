@@ -127,7 +127,7 @@ static void _unur_str_debug_string( int level, const char *key, const char *valu
 /* print string into log file.                                               */
 /*---------------------------------------------------------------------------*/
 
-static void _unur_str_debug_par_set( int level, const char *key, const char *type, ... );
+static void _unur_str_debug_set( int level, const char *key, const char *type, ... );
 
 static void _unur_str_debug_distr( int level, const char *name, double *params, int n_params );
 
@@ -173,21 +173,32 @@ static unsigned _unur_atou ( const char *str );
 static double _unur_atod ( const char *str );
 
 /* ... */
-typedef int void_set( UNUR_PAR *par );
-typedef int i_set( UNUR_PAR *par, int i );
-typedef int u_set( UNUR_PAR *par, unsigned u );
-typedef int d_set( UNUR_PAR *par, double d );
-typedef int dd_set( UNUR_PAR *par, double d1, double d2 );
-typedef int iD_set( UNUR_PAR *par, int size, double *array );
-typedef int Di_set( UNUR_PAR *par, double *array, int size );
+typedef int par_set_void( UNUR_PAR *par );
+typedef int par_set_i( UNUR_PAR *par, int i );
+typedef int par_set_u( UNUR_PAR *par, unsigned u );
+typedef int par_set_d( UNUR_PAR *par, double d );
+typedef int par_set_dd( UNUR_PAR *par, double d1, double d2 );
+typedef int par_set_iD( UNUR_PAR *par, int size, double *array );
+typedef int par_set_Di( UNUR_PAR *par, double *array, int size );
 
-static int _unur_str_par_set_void (UNUR_PAR *par, const char *key, char *type_args, char **args, void_set set);
-static int _unur_str_par_set_i (UNUR_PAR *par, const char *key, char *type_args, char **args, i_set set);
-static int _unur_str_par_set_u (UNUR_PAR *par, const char *key, char *type_args, char **args, u_set set);
-static int _unur_str_par_set_d (UNUR_PAR *par, const char *key, char *type_args, char **args, d_set set);
-static int _unur_str_par_set_dd (UNUR_PAR *par, const char *key, char *type_args, char **args, dd_set set);
-static int _unur_str_par_set_iD (UNUR_PAR *par, const char *key, char *type_args, char **args, iD_set set);
-static int _unur_str_par_set_Di (UNUR_PAR *par, const char *key, char *type_args, char **args, Di_set set);
+static int _unur_str_par_set_void (UNUR_PAR *par, const char *key, char *type_args, char **args, par_set_void set);
+static int _unur_str_par_set_i (UNUR_PAR *par, const char *key, char *type_args, char **args, par_set_i set);
+static int _unur_str_par_set_u (UNUR_PAR *par, const char *key, char *type_args, char **args, par_set_u set);
+static int _unur_str_par_set_d (UNUR_PAR *par, const char *key, char *type_args, char **args, par_set_d set);
+static int _unur_str_par_set_dd (UNUR_PAR *par, const char *key, char *type_args, char **args, par_set_dd set);
+static int _unur_str_par_set_iD (UNUR_PAR *par, const char *key, char *type_args, char **args, par_set_iD set);
+static int _unur_str_par_set_Di (UNUR_PAR *par, const char *key, char *type_args, char **args, par_set_Di set);
+
+/* ... */
+typedef int distr_set_i( UNUR_DISTR *distr, int i );
+typedef int distr_set_d( UNUR_DISTR *distr, double d );
+typedef int distr_set_dd( UNUR_DISTR *distr, double d1, double d2 );
+typedef int distr_set_Di( UNUR_DISTR *distr, double *array, int size );
+
+static int _unur_str_distr_set_i (UNUR_DISTR *distr, const char *key, char *type_args, char **args, distr_set_i set);
+static int _unur_str_distr_set_d (UNUR_DISTR *distr, const char *key, char *type_args, char **args, distr_set_d set);
+static int _unur_str_distr_set_dd (UNUR_DISTR *distr, const char *key, char *type_args, char **args, distr_set_dd set);
+static int _unur_str_distr_set_Di (UNUR_DISTR *distr, const char *key, char *type_args, char **args, distr_set_Di set);
  
 
 
@@ -435,7 +446,7 @@ _unur_str_par_set( UNUR_PAR *par, const char *key, char *value )
 /*---------------------------------------------------------------------------*/
 
 int
-_unur_str_par_set_void (UNUR_PAR *par, const char *key, char *type_args, char **args, void_set set)
+_unur_str_par_set_void (UNUR_PAR *par, const char *key, char *type_args, char **args, par_set_void set)
      /*----------------------------------------------------------------------*/
      /* Set parameter in given parameter object.                             */
      /* The list of arguments and their types are given as string.           */
@@ -469,7 +480,7 @@ _unur_str_par_set_void (UNUR_PAR *par, const char *key, char *type_args, char **
 
 #ifdef UNUR_ENABLE_LOGGING
   /* write info into log file */
-  _unur_str_debug_par_set(2,key,"v");
+  _unur_str_debug_set(2,key,"v");
 #endif
 
   if (*type_args != '\0')
@@ -482,7 +493,7 @@ _unur_str_par_set_void (UNUR_PAR *par, const char *key, char *type_args, char **
 /*---------------------------------------------------------------------------*/
 
 int
-_unur_str_par_set_i (UNUR_PAR *par, const char *key, char *type_args, char **args, i_set set)
+_unur_str_par_set_i (UNUR_PAR *par, const char *key, char *type_args, char **args, par_set_i set)
      /*----------------------------------------------------------------------*/
      /* Set parameter in given parameter object.                             */
      /* The list of arguments and their types are given as string.           */
@@ -520,7 +531,7 @@ _unur_str_par_set_i (UNUR_PAR *par, const char *key, char *type_args, char **arg
     _unur_error(GENTYPE,UNUR_ERR_GENERIC,"invalid argument(s)");
 #ifdef UNUR_ENABLE_LOGGING
     /* write info into log file */
-    _unur_str_debug_par_set(2,key,"!");
+    _unur_str_debug_set(2,key,"!");
 #endif
     return 0;
   }
@@ -529,7 +540,7 @@ _unur_str_par_set_i (UNUR_PAR *par, const char *key, char *type_args, char **arg
 
 #ifdef UNUR_ENABLE_LOGGING
   /* write info into log file */
-  _unur_str_debug_par_set(2,key,"i",iarg);
+  _unur_str_debug_set(2,key,"i",iarg);
 #endif
 
   return set(par,iarg);
@@ -539,7 +550,7 @@ _unur_str_par_set_i (UNUR_PAR *par, const char *key, char *type_args, char **arg
 /*---------------------------------------------------------------------------*/
 
 int
-_unur_str_par_set_u (UNUR_PAR *par, const char *key, char *type_args, char **args, u_set set)
+_unur_str_par_set_u (UNUR_PAR *par, const char *key, char *type_args, char **args, par_set_u set)
      /*----------------------------------------------------------------------*/
      /* Set parameter in given parameter object.                             */
      /* The list of arguments and their types are given as string.           */
@@ -577,7 +588,7 @@ _unur_str_par_set_u (UNUR_PAR *par, const char *key, char *type_args, char **arg
     _unur_error(GENTYPE,UNUR_ERR_GENERIC,"invalid argument(s)");
 #ifdef UNUR_ENABLE_LOGGING
     /* write info into log file */
-    _unur_str_debug_par_set(2,key,"!");
+    _unur_str_debug_set(2,key,"!");
 #endif
     return 0;
   }
@@ -586,7 +597,7 @@ _unur_str_par_set_u (UNUR_PAR *par, const char *key, char *type_args, char **arg
 
 #ifdef UNUR_ENABLE_LOGGING
   /* write info into log file */
-  _unur_str_debug_par_set(2,key,"u",uarg);
+  _unur_str_debug_set(2,key,"u",uarg);
 #endif
 
   return set(par,uarg);
@@ -596,7 +607,7 @@ _unur_str_par_set_u (UNUR_PAR *par, const char *key, char *type_args, char **arg
 /*---------------------------------------------------------------------------*/
 
 int
-_unur_str_par_set_d (UNUR_PAR *par, const char *key, char *type_args, char **args, d_set set)
+_unur_str_par_set_d (UNUR_PAR *par, const char *key, char *type_args, char **args, par_set_d set)
      /*----------------------------------------------------------------------*/
      /* Set parameter in given parameter object.                             */
      /* The list of arguments and their types are given as string.           */
@@ -634,7 +645,7 @@ _unur_str_par_set_d (UNUR_PAR *par, const char *key, char *type_args, char **arg
     _unur_error(GENTYPE,UNUR_ERR_GENERIC,"invalid argument(s)");
 #ifdef UNUR_ENABLE_LOGGING
     /* write info into log file */
-    _unur_str_debug_par_set(2,key,"!");
+    _unur_str_debug_set(2,key,"!");
 #endif
     return 0;
   }
@@ -643,7 +654,7 @@ _unur_str_par_set_d (UNUR_PAR *par, const char *key, char *type_args, char **arg
 
 #ifdef UNUR_ENABLE_LOGGING
   /* write info into log file */
-  _unur_str_debug_par_set(2,key,"d",darg);
+  _unur_str_debug_set(2,key,"d",darg);
 #endif
 
   return set(par,darg);
@@ -653,7 +664,7 @@ _unur_str_par_set_d (UNUR_PAR *par, const char *key, char *type_args, char **arg
 /*---------------------------------------------------------------------------*/
 
 int
-_unur_str_par_set_dd (UNUR_PAR *par, const char *key, char *type_args, char **args, dd_set set)
+_unur_str_par_set_dd (UNUR_PAR *par, const char *key, char *type_args, char **args, par_set_dd set)
      /*----------------------------------------------------------------------*/
      /* Set parameter in given parameter object.                             */
      /* The list of arguments and their types are given as string.           */
@@ -700,7 +711,7 @@ _unur_str_par_set_dd (UNUR_PAR *par, const char *key, char *type_args, char **ar
 
 #ifdef UNUR_ENABLE_LOGGING
     /* write info into log file */
-    _unur_str_debug_par_set(2,key,"dd",darg[0],darg[1]);
+    _unur_str_debug_set(2,key,"dd",darg[0],darg[1]);
 #endif
 
     return set( par,darg[0],darg[1] );
@@ -713,7 +724,7 @@ _unur_str_par_set_dd (UNUR_PAR *par, const char *key, char *type_args, char **ar
       free (darray);
 #ifdef UNUR_ENABLE_LOGGING
       /* write info into log file */
-      _unur_str_debug_par_set(2,key,"!");
+      _unur_str_debug_set(2,key,"!");
 #endif
       return 0;
     }
@@ -721,7 +732,7 @@ _unur_str_par_set_dd (UNUR_PAR *par, const char *key, char *type_args, char **ar
 
 #ifdef UNUR_ENABLE_LOGGING
     /* write info into log file */
-    _unur_str_debug_par_set(2,key,"dd",darray[0],darray[1] );
+    _unur_str_debug_set(2,key,"dd",darray[0],darray[1] );
 #endif
 
     free (darray);
@@ -732,7 +743,7 @@ _unur_str_par_set_dd (UNUR_PAR *par, const char *key, char *type_args, char **ar
     _unur_error(GENTYPE,UNUR_ERR_GENERIC,"invalid argument(s)");
 #ifdef UNUR_ENABLE_LOGGING
     /* write info into log file */
-    _unur_str_debug_par_set(2,key,"!");
+    _unur_str_debug_set(2,key,"!");
 #endif
     return 0;
   }
@@ -742,7 +753,7 @@ _unur_str_par_set_dd (UNUR_PAR *par, const char *key, char *type_args, char **ar
 /*---------------------------------------------------------------------------*/
 
 int
-_unur_str_par_set_iD (UNUR_PAR *par, const char *key, char *type_args, char **args, iD_set set)
+_unur_str_par_set_iD (UNUR_PAR *par, const char *key, char *type_args, char **args, par_set_iD set)
      /*----------------------------------------------------------------------*/
      /* Set parameter in given parameter object.                             */
      /* The list of arguments and their types are given as string.           */
@@ -818,7 +829,7 @@ _unur_str_par_set_iD (UNUR_PAR *par, const char *key, char *type_args, char **ar
     _unur_error(GENTYPE,UNUR_ERR_GENERIC,"invalid argument(s)");
 #ifdef UNUR_ENABLE_LOGGING
     /* write info into log file */
-    _unur_str_debug_par_set(2,key,"!");
+    _unur_str_debug_set(2,key,"!");
 #endif
     return 0;
   }
@@ -828,7 +839,7 @@ _unur_str_par_set_iD (UNUR_PAR *par, const char *key, char *type_args, char **ar
 
 #ifdef UNUR_ENABLE_LOGGING
   /* write info into log file */
-  _unur_str_debug_par_set(2,key,"iD",size,darray,size);
+  _unur_str_debug_set(2,key,"iD",size,darray,size);
 #endif
 
   if (darray) free (darray);
@@ -840,7 +851,7 @@ _unur_str_par_set_iD (UNUR_PAR *par, const char *key, char *type_args, char **ar
 /*---------------------------------------------------------------------------*/
 
 int
-_unur_str_par_set_Di (UNUR_PAR *par, const char *key, char *type_args, char **args, Di_set set)
+_unur_str_par_set_Di (UNUR_PAR *par, const char *key, char *type_args, char **args, par_set_Di set)
      /*----------------------------------------------------------------------*/
      /* Set parameter in given parameter object.                             */
      /* The list of arguments and their types are given as string.           */
@@ -883,7 +894,7 @@ _unur_str_par_set_Di (UNUR_PAR *par, const char *key, char *type_args, char **ar
       result = set( par,darray,size );
 #ifdef UNUR_ENABLE_LOGGING
       /* write info into log file */
-      _unur_str_debug_par_set(2,key,"v");
+      _unur_str_debug_set(2,key,"v");
 #endif
       if (darray) free (darray);
 
@@ -895,7 +906,7 @@ _unur_str_par_set_Di (UNUR_PAR *par, const char *key, char *type_args, char **ar
   _unur_error(GENTYPE,UNUR_ERR_GENERIC,"invalid argument(s)");
 #ifdef UNUR_ENABLE_LOGGING
   /* write info into log file */
-  _unur_str_debug_par_set(2,key,"!");
+  _unur_str_debug_set(2,key,"!");
 #endif
 
   return 0;
@@ -1027,30 +1038,6 @@ _unur_str_distr_new( char *distribution )
   /* get distribution object for standard distribution */
 
 =INPUT list_of_distributions
-
-   /* get pointer to generic distribution object */
-   if (distr == NULL) {
-     do {
-       if ( !strcmp( distribution, "cemp") ) {
-	 distr = unur_distr_cemp_new();
-	 break;
-       }
-       if ( !strcmp( distribution, "cont") ) {
-	 distr = unur_distr_cemp_new();
-	 break;
-       }
-       if ( !strcmp( distribution, "discr") ) {
-	 distr = unur_distr_cemp_new();
-	 break;
-       }
-
-       /* unsupported generic distribution objects: */
-       /*   unur_distr_corder_new()                 */
-       /*   unur_distr_cvec_new()                   */
-       /*   unur_distr_cvemp_new()                  */
-
-     } while (0);
-   }
 
   /* check whether we have been succuessful */
    if (distr == NULL) {
@@ -1188,6 +1175,273 @@ _unur_str_distr_set( UNUR_DISTR *distr, const char *key, char *value )
    return result;
 
 } /* end of _unur_str_distr_set() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+_unur_str_distr_set_i (UNUR_DISTR *distr, const char *key, char *type_args, char **args, distr_set_i set)
+     /*----------------------------------------------------------------------*/
+     /* Set parameter in given parameter object.                             */
+     /* The list of arguments and their types are given as string.           */
+     /*                                                                      */
+     /* type: "i"   (int)                                                    */
+     /*                                                                      */
+     /* input: "t"  (exactly one single token)                               */
+     /*                                                                      */
+     /* action:                                                              */
+     /*    convert token to int.                                             */
+     /*    execute set call.                                                 */
+     /*    error if input != "t"                                             */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   distr     ... pointer to parameter object                          */
+     /*   key       ... name of parameter to be set                          */
+     /*   type_args ... contains types of arguments. Possible values:        */
+     /*                   't'   for single token                             */
+     /*                   'L'   for a list                                   */
+     /*   args      ... array of pointers to argument strings                */
+     /*   set       ... pointer to UNURAN function for set call              */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   return code from set call, i.e.                                    */
+     /*      1 ... on success                                                */
+     /*      0 ... on error                                                  */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return 0                                                           */
+     /*----------------------------------------------------------------------*/
+{
+  int iarg;
+
+  if ( strcmp(type_args, "t") ) {
+    _unur_error(GENTYPE,UNUR_ERR_GENERIC,"invalid argument(s)");
+#ifdef UNUR_ENABLE_LOGGING
+    /* write info into log file */
+    _unur_str_debug_set(2,key,"!");
+#endif
+    return 0;
+  }
+  
+  iarg = _unur_atoi( args[0] );
+
+#ifdef UNUR_ENABLE_LOGGING
+  /* write info into log file */
+  _unur_str_debug_set(2,key,"i",iarg);
+#endif
+
+  return set(distr,iarg);
+
+} /* end of _unur_str_distr_set_i() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+_unur_str_distr_set_d (UNUR_DISTR *distr, const char *key, char *type_args, char **args, distr_set_d set)
+     /*----------------------------------------------------------------------*/
+     /* Set parameter in given parameter object.                             */
+     /* The list of arguments and their types are given as string.           */
+     /*                                                                      */
+     /* type: "d"   (double)                                                 */
+     /*                                                                      */
+     /* input: "t"  (exactly one single token)                               */
+     /*                                                                      */
+     /* action:                                                              */
+     /*    convert token to double.                                          */
+     /*    execute set call.                                                 */
+     /*    error if input != "t"                                             */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   distr     ... pointer to parameter object                          */
+     /*   key       ... name of parameter to be set                          */
+     /*   type_args ... contains types of arguments. Possible values:        */
+     /*                   't'   for single token                             */
+     /*                   'L'   for a list                                   */
+     /*   args      ... array of pointers to argument strings                */
+     /*   set       ... pointer to UNURAN function for set call              */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   return code from set call, i.e.                                    */
+     /*      1 ... on success                                                */
+     /*      0 ... on error                                                  */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return 0                                                           */
+     /*----------------------------------------------------------------------*/
+{
+  double darg;
+
+  if ( strcmp(type_args, "t") ) {
+    _unur_error(GENTYPE,UNUR_ERR_GENERIC,"invalid argument(s)");
+#ifdef UNUR_ENABLE_LOGGING
+    /* write info into log file */
+    _unur_str_debug_set(2,key,"!");
+#endif
+    return 0;
+  }
+  
+  darg = _unur_atod( args[0] );
+
+#ifdef UNUR_ENABLE_LOGGING
+  /* write info into log file */
+  _unur_str_debug_set(2,key,"d",darg);
+#endif
+
+  return set(distr,darg);
+
+} /* end of _unur_str_distr_set_d() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+_unur_str_distr_set_dd (UNUR_DISTR *distr, const char *key, char *type_args, char **args, distr_set_dd set)
+     /*----------------------------------------------------------------------*/
+     /* Set parameter in given parameter object.                             */
+     /* The list of arguments and their types are given as string.           */
+     /*                                                                      */
+     /* type: "dd"   (double,double)                                         */
+     /*                                                                      */
+     /* input: "tt"  (exactly two single tokens)                             */
+     /*        "L"   (exactly one list)                                      */
+     /*                                                                      */
+     /* action:                                                              */
+     /*    if "tt": convert both to double.                                  */
+     /*             execute set call.                                        */
+     /*    if "L":  convert list entries to double.                          */
+     /*             execute set call with first two entries.                 */
+     /*                (error if list has less than two entries)             */
+     /*    otherwise: error                                                  */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   distr     ... pointer to parameter object                          */
+     /*   key       ... name of parameter to be set                          */
+     /*   type_args ... contains types of arguments. Possible values:        */
+     /*                   't'   for single token                             */
+     /*                   'L'   for a list                                   */
+     /*   args      ... array of pointers to argument strings                */
+     /*   set       ... pointer to UNURAN function for set call              */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   return code from set call, i.e.                                    */
+     /*      1 ... on success                                                */
+     /*      0 ... on error                                                  */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return 0                                                           */
+     /*----------------------------------------------------------------------*/
+{
+  double *darray = NULL;
+  double darg[2];
+  int result;
+
+  /* either exactly two arguments are given */
+  if ( !strcmp(type_args, "tt") ) {
+    darg[0] = _unur_atod( args[0] );
+    darg[1] = _unur_atod( args[1] );
+
+#ifdef UNUR_ENABLE_LOGGING
+    /* write info into log file */
+    _unur_str_debug_set(2,key,"dd",darg[0],darg[1]);
+#endif
+
+    return set( distr,darg[0],darg[1] );
+  }
+
+  /* or one list with 2 entries is given */
+  else if ( !strcmp(type_args, "L") ) {
+    if ( _unur_parse_dlist( args[0], &darray ) < 2 ) {
+      _unur_error(GENTYPE,UNUR_ERR_GENERIC,"invalid argument(s)");
+      free (darray);
+#ifdef UNUR_ENABLE_LOGGING
+      /* write info into log file */
+      _unur_str_debug_set(2,key,"!");
+#endif
+      return 0;
+    }
+    result = set( distr,darray[0],darray[1] );
+
+#ifdef UNUR_ENABLE_LOGGING
+    /* write info into log file */
+    _unur_str_debug_set(2,key,"dd",darray[0],darray[1] );
+#endif
+
+    free (darray);
+    return result;
+  }
+  
+  else {
+    _unur_error(GENTYPE,UNUR_ERR_GENERIC,"invalid argument(s)");
+#ifdef UNUR_ENABLE_LOGGING
+    /* write info into log file */
+    _unur_str_debug_set(2,key,"!");
+#endif
+    return 0;
+  }
+
+} /* end of _unur_str_distr_set_dd() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+_unur_str_distr_set_Di (UNUR_DISTR *distr, const char *key, char *type_args, char **args, distr_set_Di set)
+     /*----------------------------------------------------------------------*/
+     /* Set parameter in given parameter object.                             */
+     /* The list of arguments and their types are given as string.           */
+     /*                                                                      */
+     /* type: "Di"   (array of doubles, int)                                 */
+     /*                                                                      */
+     /* input: "Lt"  (list & single token & list)                            */
+     /*                                                                      */
+     /* action:                                                              */
+     /*    convert list to array of doubles.                                 */
+     /*    convert token to int.                                             */
+     /*    execute set call with array and int.                              */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   distr     ... pointer to parameter object                          */
+     /*   key       ... name of parameter to be set                          */
+     /*   type_args ... contains types of arguments. Possible values:        */
+     /*                   't'   for single token                             */
+     /*                   'L'   for a list                                   */
+     /*   args      ... array of pointers to argument strings                */
+     /*   set       ... pointer to UNURAN function for set call              */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   return code from set call, i.e.                                    */
+     /*      1 ... on success                                                */
+     /*      0 ... on error                                                  */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return 0                                                           */
+     /*----------------------------------------------------------------------*/
+{
+  int result;
+  int size;
+  double *darray = NULL;
+
+  if ( !strcmp(type_args, "Lt") ) {
+    size = _unur_atoi( args[1] );
+    size = _unur_parse_dlist( args[0], &darray );
+    if (size > 0) {
+      result = set( distr,darray,size );
+#ifdef UNUR_ENABLE_LOGGING
+      /* write info into log file */
+      _unur_str_debug_set(2,key,"v");
+#endif
+      if (darray) free (darray);
+
+      return result;
+    }
+  }
+
+  /* there is a syntax error */
+  _unur_error(GENTYPE,UNUR_ERR_GENERIC,"invalid argument(s)");
+#ifdef UNUR_ENABLE_LOGGING
+  /* write info into log file */
+  _unur_str_debug_set(2,key,"!");
+#endif
+
+  return 0;
+} /* end of _unur_str_distr_set_Di() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -1617,9 +1871,9 @@ _unur_str_debug_distr( int level, const char *name, double *params, int n_params
 /*---------------------------------------------------------------------------*/
 
 void
-_unur_str_debug_par_set( int level, const char *key, const char *type, ... )
+_unur_str_debug_set( int level, const char *key, const char *type, ... )
      /*----------------------------------------------------------------------*/
-     /* write info about generator into logfile                              */
+     /* write info about set command into logfile                            */
      /*                                                                      */
      /* parameters:                                                          */
      /*   level ... level of indentation                                     */
@@ -1691,7 +1945,7 @@ _unur_str_debug_par_set( int level, const char *key, const char *type, ... )
 
   va_end(ap);
 
-} /* end of _unur_str_debug_par_set() */
+} /* end of _unur_str_debug_set() */
 
 /*---------------------------------------------------------------------------*/
 #endif   /* end UNUR_ENABLE_LOGGING */

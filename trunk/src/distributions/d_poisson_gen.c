@@ -41,7 +41,10 @@
 
 inline static int poisson_pdtabl_init( struct unur_gen *gen );
 inline static int poisson_pdac_init( struct unur_gen *gen );
+#ifdef HAVE_UNUR_SF_LN_FACTORIAL
+/* this method requires factorials */
 inline static int poisson_pprsc_init( struct unur_gen *gen );
+#endif
 
 /*---------------------------------------------------------------------------*/
 /* abbreviations */
@@ -107,11 +110,16 @@ _unur_stdgen_poisson_init( struct unur_par *par, struct unur_gen *gen )
       _unur_dstd_set_sampling_routine( par,gen,_unur_stdgen_sample_poisson_pdtabl );
       return poisson_pdtabl_init( gen );
     }
+#ifdef HAVE_UNUR_SF_LN_FACTORIAL
     else { /* theta >= 10. */
       /* CASE: Patchwork Rejection */
       _unur_dstd_set_sampling_routine( par,gen,_unur_stdgen_sample_poisson_pprsc );
       return poisson_pprsc_init( gen );
     }
+#else
+    else
+      return 0;
+#endif
 
     /** WinRand routine `pruec' (Ratio of Uniforms/Inversion) not implemented **/
 
@@ -490,6 +498,8 @@ _unur_stdgen_sample_poisson_pdac( struct unur_gen *gen )
  *    WinRand (c) 1995 Ernst Stadlober, Institut fuer Statistitk, TU Graz    *
  *****************************************************************************/
 
+#ifdef HAVE_UNUR_SF_LN_FACTORIAL
+
 /*---------------------------------------------------------------------------*/
 
 inline static double f(int k, double l_nu, double c_pm)
@@ -731,4 +741,6 @@ _unur_stdgen_sample_poisson_pprsc( struct unur_gen *gen )
 #undef p4
 #undef p5
 #undef p6
+/*---------------------------------------------------------------------------*/
+#endif  /* HAVE_UNUR_SF_LN_FACTORIAL */
 /*---------------------------------------------------------------------------*/

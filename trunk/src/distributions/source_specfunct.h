@@ -47,14 +47,17 @@
  *   Prototypes for special functions like erf(), gamma(), beta(), etc.      *
  *   which are imported from other packages.                                 *
  *                                                                           *
- *   We use the package CEPHES/LDOUBLE for computing these functions         *
+ *   We use the package CEPHES/DOUBLE for computing these functions          *
  *   (available from NETLIB, http://www.netlib.org/cephes/                   *
  *   Copyright 1984 - 1994 by Stephen L. Moshier                             *
  *                                                                           *
  *****************************************************************************/
 
+#ifdef HAVE_LIBMD
+
 /*---------------------------------------------------------------------------*/
 /* CEPHES library                                                            */
+/*---------------------------------------------------------------------------*/
 
 /** functions related to beta distribution **/
 
@@ -71,10 +74,8 @@ double lgam(double x);
 #define HAVE_UNUR_SF_LN_GAMMA
 
 /* logarithm of factorial */
-#ifdef _HAVE_UNUR_SF_LN_GAMMA
-#  define _unur_sf_ln_factorial(x)   _unur_sf_ln_gamma((x)+1.)
-#  define HAVE_UNUR_SF_LN_FACTORIAL
-#endif
+#define _unur_sf_ln_factorial(x)   _unur_sf_ln_gamma((x)+1.)
+#define HAVE_UNUR_SF_LN_FACTORIAL
 
 /* incomplete gamma function */
 double igam(double a, double x);
@@ -89,5 +90,46 @@ double ndtr(double x);
 #define HAVE_UNUR_SF_CDFNORMAL
 
 /*---------------------------------------------------------------------------*/
+/* end: CEPHES library                                                       */
+/*---------------------------------------------------------------------------*/
+
+#else 
+
+/*---------------------------------------------------------------------------*/
+/* Use build in functions (if available)                                     */
+/*---------------------------------------------------------------------------*/
+
+/** functions related to beta distribution **/
+
+/* NO incomplete beta integral */
+#undef HAVE_UNUR_SF_INCOMPLETE_BETA
+
+/** functions related to gamma distribution **/
+
+/* NO logarithm of gamma function */
+#undef HAVE_UNUR_SF_LN_GAMMA
+
+/* NO logarithm of factorial */
+#undef HAVE_UNUR_SF_LN_FACTORIAL
+
+/* incomplete gamma function */
+#undef HAVE_UNUR_SF_INCOMPLETE_GAMMA
+
+/** functions related to normal distribution **/
+
+/* cdf of normal distribution */
+#undef HAVE_UNUR_SF_CDFNORMAL
+
+#endif
+
+/*---------------------------------------------------------------------------*/
 #endif  /* __SOURCE_SPECFUNCT_H_SEEN */
 /*---------------------------------------------------------------------------*/
+
+
+
+
+
+
+
+

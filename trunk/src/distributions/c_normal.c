@@ -72,17 +72,31 @@
 
 static const char distr_name[] = "normal";
 
+/*---------------------------------------------------------------------------*/
 /* parameters */
 #define mu    params[0]
 #define sigma params[1]
 
+/*---------------------------------------------------------------------------*/
+
 #define DISTR distr->data.cont
 #define LOGNORMCONSTANT (distr->data.cont.norm_constant)
 
+/*---------------------------------------------------------------------------*/
+/* do we have the cdf of the distribution ? */
+#ifdef HAVE_UNUR_SF_CDFNORMAL
+#  define HAVE_CDF
+#else
+#  undef  HAVE_CDF
+#endif
+
+/*---------------------------------------------------------------------------*/
 /* function prototypes                                                       */
 static double _unur_pdf_normal( double x, UNUR_DISTR *distr );
 static double _unur_dpdf_normal( double x, UNUR_DISTR *distr );
+#ifdef HAVE_CDF
 static double _unur_cdf_normal( double x, UNUR_DISTR *distr );
+#endif
 static int _unur_upd_mode_normal( UNUR_DISTR *distr );
 static int _unur_upd_area_normal( UNUR_DISTR *distr );
 
@@ -122,6 +136,8 @@ _unur_dpdf_normal( double x, UNUR_DISTR *distr )
 
 /*---------------------------------------------------------------------------*/
 
+#ifdef HAVE_CDF
+
 double
 _unur_cdf_normal( double x, UNUR_DISTR *distr ) 
 {
@@ -135,6 +151,8 @@ _unur_cdf_normal( double x, UNUR_DISTR *distr )
     return _unur_sf_cdfnormal(x);
   }
 } /* end of _unur_cdf_normal() */
+
+#endif
 
 /*---------------------------------------------------------------------------*/
 
@@ -197,7 +215,9 @@ unur_distr_normal( double *params, int n_params )
   /* functions */
   DISTR.pdf  = _unur_pdf_normal;   /* pointer to p.d.f.            */
   DISTR.dpdf = _unur_dpdf_normal;  /* pointer to derivative of p.d.f. */
+#ifdef HAVE_CDF
   DISTR.cdf  = _unur_cdf_normal;   /* pointer to c.d.f.            */
+#endif
 
   /* default parameters */
   DISTR.mu    = 0.;

@@ -57,16 +57,37 @@
 
 static const char distr_name[] = "chisquare";
 
+/*---------------------------------------------------------------------------*/
 /* parameters */
 #define nu  params[0]
+
+/*---------------------------------------------------------------------------*/
 
 #define DISTR distr->data.cont
 #define LOGNORMCONSTANT (distr->data.cont.norm_constant)
 
+/*---------------------------------------------------------------------------*/
+/* do we have the cdf of the distribution ? */
+#ifdef HAVE_UNUR_SF_INCOMPLETE_GAMMA
+#  define HAVE_CDF
+#else
+#  undef  HAVE_CDF
+#endif
+
+/* can we compute the area below the pdf ? */
+#ifdef HAVE_UNUR_SF_LN_GAMMA
+#  define HAVE_AREA
+#else
+#  undef  HAVE_AREA
+#endif
+
+/*---------------------------------------------------------------------------*/
 /* function prototypes                                                       */
 static double _unur_pdf_chisquare(double x, UNUR_DISTR *distr);
 static double _unur_dpdf_chisquare(double x, UNUR_DISTR *distr);
+#ifdef HAVE_CDF
 static double _unur_cdf_chisquare(double x, UNUR_DISTR *distr);
+#endif
 
 /*---------------------------------------------------------------------------*/
 
@@ -105,6 +126,8 @@ _unur_dpdf_chisquare(double x, UNUR_DISTR *distr)
 
 /*---------------------------------------------------------------------------*/
 
+#ifdef HAVE_CDF
+
 double
 _unur_cdf_chisquare(double x, UNUR_DISTR *distr)
 { 
@@ -116,6 +139,8 @@ _unur_cdf_chisquare(double x, UNUR_DISTR *distr)
 
   return _unur_sf_incomplete_gamma(x/2.,nu/2.);
 } /* end of _unur_cdf_chisquare() */
+
+#endif
 
 /*---------------------------------------------------------------------------*/
 
@@ -147,7 +172,9 @@ unur_distr_chisquare( double *params, int n_params )
   /* functions */
   DISTR.pdf  = _unur_pdf_chisquare;   /* pointer to p.d.f.            */
   DISTR.dpdf = _unur_dpdf_chisquare;  /* pointer to derivative of p.d.f. */
+#ifdef HAVE_CDF
   DISTR.cdf  = _unur_cdf_chisquare;   /* pointer to c.d.f.            */
+#endif
 
   /* copy parameters */
   DISTR.nu = nu;
@@ -162,7 +189,11 @@ unur_distr_chisquare( double *params, int n_params )
   DISTR.n_params = n_params;
 
   /* log of normalization constant */
+#ifdef HAVE_AREA
   LOGNORMCONSTANT = _unur_sf_ln_gamma(nu/2.) - M_LN2 * (nu/2.);
+#else
+  LOGNORMCONSTANT = 0.;
+#endif
 
   /* mode and area below p.d.f. */
   DISTR.mode = (nu >= 2.) ? (nu - 2.) : 0.;
@@ -175,8 +206,10 @@ unur_distr_chisquare( double *params, int n_params )
   /* indicate which parameters are set */
   distr->set = ( UNUR_DISTR_SET_DOMAIN |
 		 UNUR_DISTR_SET_STDDOMAIN |
-  		 UNUR_DISTR_SET_MODE   | 
-  		 UNUR_DISTR_SET_PDFAREA );
+#ifdef HAVE_AREA
+		 UNUR_DISTR_SET_PDFAREA |
+#endif
+		 UNUR_DISTR_SET_MODE );
                 
   /* return pointer to object */
   return distr;

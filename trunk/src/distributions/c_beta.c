@@ -75,21 +75,46 @@
 
 static const char distr_name[] = "beta";
 
+/*---------------------------------------------------------------------------*/
 /* parameters */
 #define p  params[0]
 #define q  params[1]
 #define a  params[2]
 #define b  params[3]
 
+/*---------------------------------------------------------------------------*/
+
 #define DISTR distr->data.cont
 #define LOGNORMCONSTANT (distr->data.cont.norm_constant)
+
+/*---------------------------------------------------------------------------*/
+/* do we have the cdf of the distribution ? */
+#ifdef HAVE_UNUR_SF_INCOMPLETE_BETA
+#  define HAVE_CDF
+#else
+#  undef  HAVE_CDF
+#endif
+
+/* can we compute the area below the pdf ? */
+#ifdef HAVE_UNUR_SF_LN_GAMMA
+#  define HAVE_AREA
+#else
+#  undef  HAVE_AREA
+#endif
+
+/*---------------------------------------------------------------------------*/
 
 /* function prototypes                                                       */
 static double _unur_pdf_beta(double x, UNUR_DISTR *distr);
 static double _unur_dpdf_beta(double x, UNUR_DISTR *distr);
+#ifdef HAVE_CDF
 static double _unur_cdf_beta(double x, UNUR_DISTR *distr);
+#endif
+
 inline static double _unur_mode_beta(double *params, int n_params);
+#ifdef HAVE_AREA
 inline static double _unur_lognormconstant_beta(double *params, int n_params);
+#endif
 
 /*---------------------------------------------------------------------------*/
 
@@ -144,6 +169,8 @@ _unur_dpdf_beta(double x, UNUR_DISTR *distr)
 
 /*---------------------------------------------------------------------------*/
 
+#ifdef HAVE_CDF
+
 double
 _unur_cdf_beta(double x, UNUR_DISTR *distr)
 {
@@ -160,6 +187,8 @@ _unur_cdf_beta(double x, UNUR_DISTR *distr)
     return _unur_sf_incomplete_beta(x,p,q);
   }
 } /* end of _unur_cdf_beta() */
+
+#endif
 
 /*---------------------------------------------------------------------------*/
 
@@ -184,6 +213,8 @@ _unur_mode_beta(double *params, int n_params)
 
 /*---------------------------------------------------------------------------*/
 
+#ifdef HAVE_AREA
+
 double
 _unur_lognormconstant_beta(double *params, int n_params)
 { 
@@ -196,6 +227,8 @@ _unur_lognormconstant_beta(double *params, int n_params)
     return (_unur_sf_ln_gamma(p) + _unur_sf_ln_gamma(q) - _unur_sf_ln_gamma(p+q));
   }
 } /* end of _unur_lognormconstant_beta() */
+
+#endif
 
 /*---------------------------------------------------------------------------*/
 
@@ -230,7 +263,9 @@ unur_distr_beta( double *params, int n_params )
   /* functions */
   DISTR.pdf  = _unur_pdf_beta;    /* pointer to p.d.f.               */
   DISTR.dpdf = _unur_dpdf_beta;   /* pointer to derivative of p.d.f. */
+#ifdef HAVE_CDF
   DISTR.cdf  = _unur_cdf_beta;    /* pointer to c.d.f.               */
+#endif
 
   /* default parameters */
   DISTR.a = 0.;           /* default for a */
@@ -259,7 +294,11 @@ unur_distr_beta( double *params, int n_params )
   DISTR.n_params = n_params;
 
   /* log of normalization constant */
+#ifdef HAVE_AREA
   LOGNORMCONSTANT = _unur_lognormconstant_beta(DISTR.params,DISTR.n_params);
+#else
+  LOGNORMCONSTANT = 0.;
+#endif
 
   /* mode and area below p.d.f. */
   DISTR.mode = _unur_mode_beta(DISTR.params,DISTR.n_params);
@@ -272,8 +311,10 @@ unur_distr_beta( double *params, int n_params )
   /* indicate which parameters are set */
   distr->set = ( UNUR_DISTR_SET_DOMAIN |
 		 UNUR_DISTR_SET_STDDOMAIN |
-		 UNUR_DISTR_SET_MODE   |
-		 UNUR_DISTR_SET_PDFAREA );
+#ifdef HAVE_AREA
+		 UNUR_DISTR_SET_PDFAREA |
+#endif
+		 UNUR_DISTR_SET_MODE );
 
   /* return pointer to object */
   return distr;

@@ -50,7 +50,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include <config.h>
+#ifdef HAVE_CONFIG_H
+#  include <config.h>
+#else
+#  error "config.h" required
+#endif
+
 #include <in_unuran.h>
 
 #include <source_struct.h>

@@ -55,18 +55,35 @@
 #include <source_distributions.h>
 
 /*---------------------------------------------------------------------------*/
+
 static const char distr_name[] = "student";
 
+/*---------------------------------------------------------------------------*/
 /* parameters */
 #define nu  params[0]
+
+/*---------------------------------------------------------------------------*/
 
 #define DISTR distr->data.cont
 #define NORMCONSTANT (distr->data.cont.norm_constant)
 
+/*---------------------------------------------------------------------------*/
+/* do we have the cdf of the distribution ? */
+
+/* can we compute the area below the pdf ? */
+#ifdef HAVE_UNUR_SF_LN_GAMMA
+#  define HAVE_AREA
+#else
+#  undef  HAVE_AREA
+#endif
+
+/*---------------------------------------------------------------------------*/
 /* function prototypes                                                       */
 static double _unur_pdf_student(double x, UNUR_DISTR *distr);
 static double _unur_dpdf_student(double x, UNUR_DISTR *distr);
+#ifdef HAVE_AREA
 static double _unur_normconstant_student(double *params, int n_params);
+#endif
 
 /*---------------------------------------------------------------------------*/
 
@@ -88,11 +105,15 @@ _unur_dpdf_student( double x, UNUR_DISTR *distr )
 
 /*---------------------------------------------------------------------------*/
 
+#ifdef HAVE_AREA
+
 double
 _unur_normconstant_student( double *params, int n_params )
 {
   return( sqrt(M_PI * nu) * exp(_unur_sf_ln_gamma(0.5*nu) - _unur_sf_ln_gamma(0.5*(nu+1.))) );
 } /* end of _unur_normconstant_student() */
+
+#endif
 
 /*---------------------------------------------------------------------------*/
 
@@ -139,7 +160,11 @@ unur_distr_student( double *params, int n_params )
   DISTR.n_params = n_params;
 
   /* normalization constant */
+#ifdef HAVE_AREA
   NORMCONSTANT = _unur_normconstant_student(DISTR.params,DISTR.n_params);
+#else
+  NORMCONSTANT = 1.;
+#endif
 
   /* mode and area below p.d.f. */
   DISTR.mode = 0.;
@@ -152,8 +177,10 @@ unur_distr_student( double *params, int n_params )
   /* indicate which parameters are set */
   distr->set = ( UNUR_DISTR_SET_DOMAIN |
 		 UNUR_DISTR_SET_STDDOMAIN |
-  		 UNUR_DISTR_SET_MODE   |
-  		 UNUR_DISTR_SET_PDFAREA );
+#ifdef HAVE_AREA
+		 UNUR_DISTR_SET_PDFAREA |
+#endif
+		 UNUR_DISTR_SET_MODE );
 
   /* return pointer to object */
   return distr;

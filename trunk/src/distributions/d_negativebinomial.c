@@ -58,18 +58,34 @@
 
 static const char distr_name[] = "negativebinomial";
 
+/*---------------------------------------------------------------------------*/
 /* parameters */
 #define p  params[0]
 #define r  params[1]
 
+/*---------------------------------------------------------------------------*/
+
 #define DISTR distr->data.discr
 /* #define NORMCONSTANT (distr->data.discr.norm_constant) */
 
+/*---------------------------------------------------------------------------*/
+/* do we have the pmf of the distribution ? */
+#ifdef HAVE_UNUR_SF_LN_GAMMA
+#  define HAVE_PMF
+#else
+#  undef  HAVE_PMF
+#endif
+
+/*---------------------------------------------------------------------------*/
 /* function prototypes                                                       */
+#ifdef HAVE_PMF
 static double _unur_pmf_negativebinomial(int k, UNUR_DISTR *distr);
+#endif
 /*  static double _unur_cdf_negativebinomial(int k, UNUR_DISTR *distr);  */
 
 /*---------------------------------------------------------------------------*/
+
+#ifdef HAVE_PMF
 
 double
 _unur_pmf_negativebinomial(int k, UNUR_DISTR *distr)
@@ -82,6 +98,8 @@ _unur_pmf_negativebinomial(int k, UNUR_DISTR *distr)
     return (pow( p, (double)k ) * pow( 1.-p, r ) 
 	    * exp( _unur_sf_ln_gamma(k+r) - _unur_sf_ln_gamma(r) - _unur_sf_ln_gamma(k+1.) ) );
 } /* end of _unur_pmf_negativebinomial() */
+
+#endif
 
 /*---------------------------------------------------------------------------*/
 
@@ -111,7 +129,9 @@ unur_distr_negativebinomial( double *params, int n_params )
   DISTR.init = _unur_stdgen_negativebinomial_init;
    
   /* functions */
+#ifdef HAVE_PMF
   DISTR.pmf  = _unur_pmf_negativebinomial;   /* pointer to p.m.f.            */
+#endif
   /* DISTR.cdf  = _unur_cdf_negativebinomial;   pointer to c.d.f.            */
 
   /* copy parameters */

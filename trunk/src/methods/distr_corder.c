@@ -52,11 +52,32 @@ static const char distr_name[] = "order statistics";
 
 /*---------------------------------------------------------------------------*/
 
+/* do we have the cdf of the distribution ? */
+#ifdef HAVE_UNUR_SF_INCOMPLETE_BETA
+#  define HAVE_CDF
+#else
+#  undef  HAVE_CDF
+#endif
+
+/* can we compute the area below the pdf ? */
+#if defined( HAVE_UNUR_SF_LN_GAMMA ) && defined( HAVE_UNUR_SF_INCOMPLETE_BETA )
+#  define HAVE_AREA
+#else
+#  undef  HAVE_AREA
+#endif
+
+/*---------------------------------------------------------------------------*/
+
 /* function prototypes                                                       */
 static double _unur_pdf_corder( double x, UNUR_DISTR *os );
 static double _unur_dpdf_corder( double x, UNUR_DISTR *os );
+
+#ifdef HAVE_CDF
 static double _unur_cdf_corder( double x, UNUR_DISTR *os );
+#endif
+#ifdef HAVE_AREA
 static int _unur_upd_area_corder( UNUR_DISTR *os );
+#endif
 
 static void _unur_distr_corder_free( struct unur_distr *os );
 
@@ -149,8 +170,11 @@ unur_distr_corder_new( struct unur_distr *distr, int n, int k )
   OS.pdf  = NULL;
   OS.dpdf = NULL;
   OS.cdf  = NULL;
+
   if (DISTR.cdf) {
+#ifdef HAVE_CDF
     OS.cdf = _unur_cdf_corder;        /* pointer to c.d.f.   */
+#endif
     if (DISTR.pdf) {
       OS.pdf = _unur_pdf_corder;      /* pointer to p.d.f.   */
       if (DISTR.dpdf)
@@ -167,13 +191,26 @@ unur_distr_corder_new( struct unur_distr *distr, int n, int k )
   OS.upd_mode  = NULL;
 
   /* there is no necessity for a function that computes the area below pdf   */
+#ifdef HAVE_AREA
   OS.upd_area  = _unur_upd_area_corder;
+#else
+  OS.upd_area  = NULL;
+#endif
 
   /* log of normalization constant */
+#ifdef HAVE_AREA
   _unur_upd_area_corder(os);
+#else
+  LOGNORMCONSTANT = 0.;
+#endif
 
   /* parameters set */
+#ifdef HAVE_CDF
   os->set = distr->set & ~UNUR_DISTR_SET_MODE; /* mode not derived from distr */
+#else
+  /* cannot compute area below pdf */
+  os->set = distr->set & ~(UNUR_DISTR_SET_MODE | UNUR_DISTR_SET_PDFAREA);
+#endif
 
   /* return pointer to object */
   return os;
@@ -393,6 +430,8 @@ _unur_dpdf_corder( double x, struct unur_distr *os )
 
 /*---------------------------------------------------------------------------*/
 
+#ifdef HAVE_CDF
+
 double
 _unur_cdf_corder( double x, struct unur_distr *os ) 
      /* 
@@ -421,7 +460,11 @@ _unur_cdf_corder( double x, struct unur_distr *os )
 
 } /* end of _unur_cdf_corder() */
 
+#endif
+
 /*---------------------------------------------------------------------------*/
+
+#ifdef HAVE_AREA
 
 int
 _unur_upd_area_corder( UNUR_DISTR *os )
@@ -444,6 +487,8 @@ _unur_upd_area_corder( UNUR_DISTR *os )
 
   return 1;
 } /* end of _unur_upd_area_corder() */
+
+#endif
 
 /*---------------------------------------------------------------------------*/
 

@@ -259,17 +259,14 @@ unur_distr_multistudent( int dim, const int m, const double *mean, const double 
   DISTR.dpdf    = _unur_distr_cvec_eval_dpdf_from_dlogpdf;  /* pointer to derivative of PDF */
   DISTR.dlogpdf = _unur_dlogpdf_multistudent;    /* pointer to derivative of logPDF */
 
+  par = m; /* degrees of freedom */
+  
   /* set standardized marginal distributions */
-  /* TODO : correct stdmarginals */
-  stdmarginal = unur_distr_normal(NULL,0);
+  stdmarginal = unur_distr_student(&par,1);
   unur_distr_cvec_set_stdmarginals(distr,stdmarginal);
   unur_distr_free(stdmarginal);
 
-  /* function for setting parameters : not implemented */
-  /* DISTR.set_params = _unur_set_params_multistudent; */
-  
   /* set parameters for distribution */
-  par = m; /* degrees of freedom */
   if (_unur_set_params_multistudent(distr, &par, 1)!=UNUR_SUCCESS) {
     free(distr);
     return NULL;

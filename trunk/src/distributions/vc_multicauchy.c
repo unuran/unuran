@@ -231,8 +231,7 @@ unur_distr_multicauchy( int dim, const double *mean, const double *covar )
   DISTR.dlogpdf = _unur_dlogpdf_multicauchy;    /* pointer to derivative of logPDF */
 
   /* set standardized marginal distributions */
-  /* TODO : correct stdmarginals */
-  stdmarginal = unur_distr_normal(NULL,0);
+  stdmarginal = unur_distr_cauchy(NULL,0);
   unur_distr_cvec_set_stdmarginals(distr,stdmarginal);
   unur_distr_free(stdmarginal);
 

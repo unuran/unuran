@@ -89,7 +89,9 @@ while($_ = <>)
 
     # Region with description of the routines begins with =ROUTINES
     if ($_ =~/(^\s*\/\*\s*|^\s*)=ROUTINES/){
-     $ROUTINES = 1;  
+	$ROUTINES = 1;
+        # begin of itemize environment -- a funtion - an item
+	print OUTFILE "\@itemize \@minus\{\}\n";
     }
 
     # Region with description of the routines ends with =END
@@ -99,12 +101,11 @@ while($_ = <>)
            print "\n\nERROR: =END before =ROUTINES\n\n";
        }
        $ROUTINES = 0;
-       # last itemize environment must be finished 
+       # last itemize environment must be finished
        print OUTFILE "\@end itemize\n";
     }
 
-
-    # comments start with `/*' (in case of$CENABLE=1)
+    # comments start with `/*' (in case of $CENABLE=1)
     if ($CENABLE == 1 && $_ =~/^\s*\/\*/){    
 	$KOMMENT = 1;
     }
@@ -127,7 +128,6 @@ while($_ = <>)
 	    print "WARNING: unknown command: ", $2, "\n";
 	}
     }
-
    
     # name and description of a method (=METHOD)
     if ($_ =~/^(\s*\/\*\s*|\s*)=METHOD\s*(\w+)\s*(.*)/){
@@ -135,9 +135,9 @@ while($_ = <>)
         $CENABLE = 1;
         # already within a comment
 	$KOMMENT = 1;
+        # formatting the output -- Header, node for new method
         print OUTFILE "\n\n\@node ", $2, "\n";
         print OUTFILE "\@subsection ", $2, " ", $3, "\n\n";
-        print OUTFILE "\@itemize \@minus\{\}\n";
 	$BLOCK=1;
     }
 
@@ -199,6 +199,6 @@ while($_ = <>)
          $BLOCK = 0;
      }
 
- }  # --- if (KOMMENT = 1) ende ---
+ }  # --- if (KOMMENT == 1) ende ---
 
 }

@@ -13,6 +13,7 @@ libutils_la_SOURCES = \
  umath.c  umath.h umath_source.h \
  slist.c  slist.h slist_struct.h \
  stream.c         stream_source.h \
+ string.c         string_source.h string_struct.h \
  umalloc.c        umalloc_source.h
 
 noinst_HEADERS = \

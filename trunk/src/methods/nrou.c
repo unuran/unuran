@@ -112,7 +112,7 @@
 
 #define NROU_SET_U       0x001u     /* set u values of bounding rectangle    */
 #define NROU_SET_V       0x002u     /* set v values of bounding rectangle    */
-#define NROU_SET_CENTER  0x004u     /* set approximate mode of distribution  */
+#define NROU_SET_CENTER  0x004u     /* set center of distribution            */
 #define NROU_SET_R       0x008u     /* set r-parameter                       */
 
 /*---------------------------------------------------------------------------*/

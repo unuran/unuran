@@ -37,7 +37,6 @@
 /*---------------------------------------------------------------------------*/
 
 #include <unur_source.h>
-#include "unur_uniform.h"
 #include "urng.h"
 
 /*---------------------------------------------------------------------------*/
@@ -56,8 +55,15 @@ unur_urng_rngstreamptr_new( RngStream rngstream )
      /*----------------------------------------------------------------------*/
 {
   UNUR_URNG *urng = unur_urng_new( (double(*)(void*)) RngStream_RandU01, rngstream );
-  unur_urng_set_reset(urng, (void(*)(void*)) RngStream_ResetStartStream);
-  unur_urng_set_delete(urng, (void(*)(void*)) RngStream_DeleteStream);
+  unur_urng_set_reset    (urng, (void(*)(void*)) RngStream_ResetStartStream);
+  unur_urng_set_delete   (urng, (void(*)(void*)) RngStream_DeleteStream);
+  unur_urng_set_anti     (urng, (void(*)(void*,int)) RngStream_SetAntithetic);
+  unur_urng_set_nextsub  (urng, (void(*)(void*)) RngStream_ResetNextSubstream);
+  unur_urng_set_resetsub (urng, (void(*)(void*)) RngStream_ResetStartSubstream);
+
+  /* There only a function for seeding the RngStreams package, but no  */
+  /* function for seeding an individual random stream.                 */
+
   return urng;
 } /* end of unur_urng_rngstreamptr_new() */
 

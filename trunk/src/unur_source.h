@@ -94,6 +94,9 @@
 #include <utils/umath_source.h>
 #include <utils/unur_math_source.h>
 
+/* vectors */
+#include <utils/vector_source.h>
+
 /* strings */
 #include <utils/string_source.h>
 

@@ -134,13 +134,6 @@ static void _unur_vnrou_debug_init( const struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 #endif
 
-/* Copy of the generator object used in the bounding rectangle calculations  */
-/* Our auxiliary functions need to access the pdf() function which is set in */
-/* the distribution object.                                                  */
-/* In this manner the auxiliary functions _unur_vnrou_aux_umin() etc. are    */
-/* able to calculate values of the pdf() using calls to                      */
-/* _unur_cvec_PDF((x),(_gen->distr))                                         */
-struct unur_gen *_gen;
 
 /* The following parameter is used to define the coordinate dimension        */
 /* along which the min/max of the bounding rectangle is calculated           */
@@ -469,32 +462,36 @@ _unur_vnrou_init( struct unur_par *par )
 /*---------------------------------------------------------------------------*/
 
 double 
-_unur_vnrou_aux_vmax(double *x, double *p ) 
+_unur_vnrou_aux_vmax(double *x, void *p ) 
      /*----------------------------------------------------------------------*/
      /* Auxiliary function used in the computation of the bounding rectangle */
      /*----------------------------------------------------------------------*/
 {
-/* TODO : remove _gen object ... */
-  return -pow( _unur_cvec_PDF((x),(_gen->distr)) , 1./(1.+_gen->data.vnrou.dim) ); 
+  struct unur_gen *g;
+  
+  g = p; /* typecast from void* to unur_gen* */
+  return -pow( _unur_cvec_PDF((x),(g->distr)) , 1./(1.+ g->data.vnrou.dim) ); 
 }
 
 /*---------------------------------------------------------------------------*/
 
 double
-_unur_vnrou_aux_umin(double *x, double *p) 
+_unur_vnrou_aux_umin(double *x, void *p) 
      /*----------------------------------------------------------------------*/
      /* Auxiliary function used in the computation of the bounding rectangle */
      /*----------------------------------------------------------------------*/	
 {
-/* TODO : remove _gen object ... */
-  return (x[vnrou_aux_dimension]) * pow( _unur_cvec_PDF((x),(_gen->distr)), 
-                                         1./(1.+_gen->data.vnrou.dim) );
+  struct unur_gen *g;
+  
+  g = p; /* typecast from void* to unur_gen* */
+  return (x[vnrou_aux_dimension]) * pow( _unur_cvec_PDF((x),(g->distr)), 
+                                         1./(1.+ g->data.vnrou.dim) );
 }
 
 /*---------------------------------------------------------------------------*/
 
 double
-_unur_vnrou_aux_umax(double *x, double *p) 
+_unur_vnrou_aux_umax(double *x, void *p) 
      /*----------------------------------------------------------------------*/
      /* Auxiliary function used in the computation of the bounding rectangle */
      /*----------------------------------------------------------------------*/	
@@ -519,7 +516,6 @@ _unur_vnrou_rectangle( struct unur_gen *gen )
 { 
 
   struct unur_funct_vgeneric faux; /* function to be minimized/maximized    */
-  double p[2]; /* parameters for auxiliary functions */
   double *xstart, *xend; /* coordinate arrays used in maximum/minimum calculations */
   int d, dim; /* index used in dimension loops (0 <= d < dim) */
   long hooke_iters; /* actual number of min/max iterations = return value of hooke()*/
@@ -546,9 +542,6 @@ _unur_vnrou_rectangle( struct unur_gen *gen )
     memcpy(GEN.center, DISTR.mode, dim * sizeof(double)); 
   }  
 
-  /* copy of generator to be used in auxiliary functions */
-  _gen = gen;
-
   /* allocate memory for the coordinate vectors */
   xstart = _unur_xmalloc(dim * sizeof(double));
   xend   = _unur_xmalloc(dim * sizeof(double));
@@ -558,10 +551,10 @@ _unur_vnrou_rectangle( struct unur_gen *gen )
     /* user has not provided any upper bound for v */
     /* calculating vmax as maximum of sqrt(f(x)) in the domain */
       faux.f = (UNUR_FUNCT_VGENERIC*) _unur_vnrou_aux_vmax;
-      faux.params = NULL;
+      faux.params = gen;
 
       memcpy(xstart, GEN.center, dim * sizeof(double)); 
-      hooke_iters = hooke( _unur_vnrou_aux_vmax, dim, xstart, xend, 
+      hooke_iters = hooke( faux, dim, xstart, xend, 
                            VNROU_HOOKE_RHO, VNROU_HOOKE_EPSILON, VNROU_HOOKE_MAXITER);
 
 #if 0 /* should we implement this ? */
@@ -572,7 +565,7 @@ _unur_vnrou_rectangle( struct unur_gen *gen )
       }
 #endif
 
-      GEN.vmax = -faux.f(xend,p);
+      GEN.vmax = -faux.f(xend, faux.params);
   }
 
   /* calculation of umin and umax */
@@ -586,9 +579,9 @@ _unur_vnrou_rectangle( struct unur_gen *gen )
       /* calculation for umin */
       
       faux.f = (UNUR_FUNCT_VGENERIC*) _unur_vnrou_aux_umin;
-      faux.params = p;
+      faux.params = gen;
 
-      hooke_iters = hooke( _unur_vnrou_aux_umin, dim, xstart, xend, 
+      hooke_iters = hooke( faux, dim, xstart, xend, 
                            VNROU_HOOKE_RHO, VNROU_HOOKE_EPSILON, VNROU_HOOKE_MAXITER);
 
 #if 0 /* should we implement this ? */
@@ -599,14 +592,14 @@ _unur_vnrou_rectangle( struct unur_gen *gen )
       }
 #endif
 
-      GEN.umin[d] = faux.f(xend,p);
+      GEN.umin[d] = faux.f(xend, faux.params);
 
       /* and now, an analogue calculation for umax */
 
       faux.f = (UNUR_FUNCT_VGENERIC*) _unur_vnrou_aux_umax;
-      faux.params = p;
+      faux.params = gen;
 
-      hooke_iters = hooke( _unur_vnrou_aux_umax, dim, xstart, xend, 
+      hooke_iters = hooke( faux, dim, xstart, xend, 
                            VNROU_HOOKE_RHO, VNROU_HOOKE_EPSILON, VNROU_HOOKE_MAXITER);
     
 #if 0 /* should we implement this ? */
@@ -617,7 +610,7 @@ _unur_vnrou_rectangle( struct unur_gen *gen )
       }
 #endif
 
-      GEN.umax[d] = -faux.f(xend,p);
+      GEN.umax[d] = -faux.f(xend, faux.params);
     
     }
   }

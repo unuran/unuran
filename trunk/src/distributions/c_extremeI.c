@@ -128,7 +128,7 @@ _unur_dpdf_extremeI( double x, UNUR_DISTR *distr )
   /* standard form */
 
   expx = exp(-x);
-  return ( exp( -expx + x ) * (expx - 1.) * factor );
+  return ( exp( -expx - x ) * (expx - 1.) * factor );
 
 } /* end of unur_dpdf_extremeI() */
 

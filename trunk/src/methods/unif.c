@@ -114,7 +114,8 @@ unur_unif_new( const struct unur_distr *dummy )
   par = _unur_malloc(sizeof(struct unur_par));
   COOKIE_SET(par,CK_UNIF_PAR);
 
-  /* copy input */
+  /* there is no need for a distribution object */
+  par->distr = NULL;
 
   /* set default values */
   par->method   = UNUR_METH_UNIF;  /* method and default variant             */
@@ -194,8 +195,8 @@ _unur_unif_create( struct unur_par *par )
   CHECK_NULL(par,NULL);
   COOKIE_CHECK(par,CK_UNIF_PAR,NULL);
 
-  /* allocate memory for generator object */
-  gen = _unur_malloc( sizeof(struct unur_gen) );
+  /* allocate memory for new generator object */
+  gen = _unur_malloc_gen( par );
 
   /* magic cookies */
   COOKIE_SET(gen,CK_UNIF_GEN);
@@ -208,18 +209,8 @@ _unur_unif_create( struct unur_par *par )
   gen->destroy = _unur_unif_free;
   gen->clone = _unur_unif_clone;
 
-  /* copy some parameters into generator object */
-  gen->method = par->method;        /* indicates method                      */
-  gen->variant = par->variant;      /* indicates variant                     */
-  gen->set = par->set;              /* indicates parameter settings          */
-  gen->debug = par->debug;          /* debuging flags                        */
-  gen->urng = par->urng;            /* pointer to urng                       */
-
-  gen->urng_aux = NULL;             /* no auxilliary URNG required           */
-  gen->gen_aux = NULL;              /* no auxilliary generator objects       */
-
   /* return pointer to (almost empty) generator object */
-  return(gen);
+  return gen;
   
 } /* end of _unur_unif_create() */
 

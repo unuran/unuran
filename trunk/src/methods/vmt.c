@@ -323,14 +323,11 @@ _unur_vmt_create( struct unur_par *par )
   /* check arguments */
   CHECK_NULL(par,NULL);  COOKIE_CHECK(par,CK_VMT_PAR,NULL);
 
-  /* allocate memory for generator object */
-  gen = _unur_malloc( sizeof(struct unur_gen) );
+  /* allocate memory for new generator object */
+  gen = _unur_malloc_gen( par );
 
   /* magic cookies */
   COOKIE_SET(gen,CK_VMT_GEN);
-
-  /* copy distribution object into generator object */
-  gen->distr = _unur_distr_clone( par->distr );
 
   /* dimension of distribution */
   GEN.dim = gen->distr->dim; 
@@ -342,17 +339,6 @@ _unur_vmt_create( struct unur_par *par )
   SAMPLE = _unur_vmt_sample_cvec;
   gen->destroy = _unur_vmt_free;
   gen->clone = _unur_vmt_clone;
-
-  /* copy some parameters into generator object */
-  gen->method = par->method;        /* indicates method                      */
-  gen->variant = par->variant;      /* indicates variant                     */
-  gen->set = par->set;              /* indicates parameter settings          */
-  gen->debug = par->debug;          /* debuging flags                        */
-  gen->urng = par->urng;            /* pointer to urng                       */
-
-  gen->urng_aux = NULL;             /* no auxilliary URNG required           */
-  gen->gen_aux = NULL;              /* no auxilliary generator objects       */
-
 
   /* generator for univariate distribution */
   GEN.uvgen = (PAR.uvgen) ? _unur_gen_clone(PAR.uvgen) : NULL;

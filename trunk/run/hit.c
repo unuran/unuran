@@ -1,25 +1,13 @@
 #include <unuran.h>
 #include <unur_struct.h>
-#include <math.h>
-#include <stdio.h>
-#include <string.h>
+#include <unur_source.h>
 #include <unistd.h>
-#include <utils/vector_source.h>
-#include <utils/matrix_source.h>
-#include <specfunct/unur_specfunct_source.h>
-#include "../tests/testunuran.h"
 #include "../experiments/expect_source.h"
-#include <utils/unur_error_source.h>
-#include <utils/debug_source.h>
-#include <utils/stream_source.h>
-#include <utils/umalloc_source.h>
 #include <experimental/hitrou.h>
 
 double _unur_test_chi2test( double *prob, int *observed, int len, int classmin,
            int verbose, FILE *out );
 
-	   
-	   
 /* global structure to hold all parameters given */
 struct {
   int dim;
@@ -42,7 +30,6 @@ struct {
 } p;
 
 #include "../experiments/expect.c"
-
 
 
 void hit_set_dim(int *x)          {p.dim=x[0];}

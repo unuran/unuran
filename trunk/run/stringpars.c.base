@@ -54,9 +54,6 @@ UNUR_GEN   * make_gen_obj (char *);
 /* which is terminited via a ')' and a pointer to a double array      */
 /* and extracts the doubles from the list to the array                */
 /*                                                                    */
-/* !!!ATTENTION!!!                                                    */
-/* there is no white space allowed within the list                    */
-/*                                                                    */
 /**********************************************************************/
 int parselist( char *liststr, double *ptr_to_list ){
 

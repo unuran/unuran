@@ -105,6 +105,7 @@ unur_distr_cvec_new( int dim )
 
   /* name of distribution */
   distr->name = unknown_distr_name;
+  distr->name_str = NULL;
 
   /* this is not a derived distribution */
   distr->base = NULL;
@@ -143,6 +144,48 @@ unur_distr_cvec_new( int dim )
 
 /*---------------------------------------------------------------------------*/
 
+int
+_unur_distr_cvec_copy( struct unur_distr *to, struct unur_distr *from )
+     /*----------------------------------------------------------------------*/
+     /* copy distribution object 'from' into distribution object 'to'.       */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   to   ... pointer to target distribution object                     */
+     /*   from ... pointer to source distribution object                     */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... on success                                                   */
+     /*   0 ... on error                                                     */
+     /*----------------------------------------------------------------------*/
+{
+#define FROM from->data.cont
+#define TO   to->data.cont
+
+  int len;
+
+  /* check arguments */
+  _unur_check_NULL( NULL,from,0 );
+  _unur_check_distr_object( from, CVEC, 0 );
+
+  /* copy distribution object into generator object */
+  memcpy( to, from, sizeof( struct unur_distr ) );
+
+  /* copy user name for distribution */
+  if (from->name_str) {
+    len = strlen(from->name_str) + 1;
+    to->name_str = _unur_malloc(len);
+    memcpy( to->name_str, from->name_str, len );
+    to->name = to->name_str;
+  }
+
+  return 1;
+
+#undef FROM
+#undef TO
+} /* end of _unur_distr_cvec_copy() */
+
+/*---------------------------------------------------------------------------*/
+
 void
 _unur_distr_cvec_free( struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
@@ -170,9 +213,34 @@ _unur_distr_cvec_free( struct unur_distr *distr )
     /* only free mode if it does not point to the mean vector */
     free(DISTR.mode);
 
+  /* user name for distribution */
+  if (distr->name_str) free(distr->name_str);
+
   free( distr );
 
 } /* end of unur_distr_cvec_free() */
+
+/*---------------------------------------------------------------------------*/
+
+void
+_unur_distr_cvec_clear( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* frees all memory blocks in distribution object inside generator      */
+     /* object.                                                              */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*----------------------------------------------------------------------*/
+{
+  struct unur_distr *distr = &(gen->distr);
+
+  /* check arguments */
+  COOKIE_CHECK(distr,CK_DISTR_CVEC,/*void*/);
+
+  /* user name for distribution */
+  if (distr->name_str) free(distr->name_str);
+
+} /* end of unur_distr_cvec_clear() */
 
 /*---------------------------------------------------------------------------*/
 

@@ -531,7 +531,7 @@ _unur_vempk_create( struct unur_par *par )
   COOKIE_SET(gen,CK_VEMPK_GEN);
 
   /* copy distribution object into generator object */
-  memcpy( &(gen->distr), par->distr, sizeof( struct unur_distr ) );
+  _unur_distr_cvemp_copy( &(gen->distr), par->distr );
 
   /* dimension of distribution */
   GEN.dim = gen->distr.dim; 
@@ -640,6 +640,8 @@ _unur_vempk_free( struct unur_gen *gen )
   if (GEN.observ) free( GEN.observ );
   if (GEN.xbar)   free( GEN.xbar );
   unur_free( GEN.kerngen );
+
+  _unur_distr_cvemp_clear(gen);
   _unur_free_genid(gen);
   free(gen);
 

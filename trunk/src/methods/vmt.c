@@ -323,7 +323,7 @@ _unur_vmt_create( struct unur_par *par )
   COOKIE_SET(gen,CK_VMT_GEN);
 
   /* copy distribution object into generator object */
-  memcpy( &(gen->distr), par->distr, sizeof( struct unur_distr ) );
+  _unur_distr_cvec_copy( &(gen->distr), par->distr );
 
   /* dimension of distribution */
   GEN.dim = gen->distr.dim; 
@@ -481,6 +481,8 @@ _unur_vmt_free( struct unur_gen *gen )
   if (DISTR.mean)   free(DISTR.mean);
   if (DISTR.covar)  free(DISTR.covar);
   if (GEN.cholesky) free(GEN.cholesky);
+
+  _unur_distr_cvec_clear(gen);
   _unur_free_genid(gen);
   free(gen);
 

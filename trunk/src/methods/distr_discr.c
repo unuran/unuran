@@ -123,6 +123,7 @@ unur_distr_discr_new( void )
 
   /* name of distribution */
   distr->name = unknown_distr_name;
+  distr->name_str = NULL;
 
   /* this is not a derived distribution */
   distr->base = NULL;
@@ -191,6 +192,8 @@ _unur_distr_discr_copy( struct unur_distr *to, struct unur_distr *from )
 #define FROM from->data.discr
 #define TO   to->data.discr
 
+  int len;
+
   /* check arguments */
   _unur_check_NULL( NULL,from,0 );
   _unur_check_distr_object( from, DISCR, 0 );
@@ -206,6 +209,14 @@ _unur_distr_discr_copy( struct unur_distr *to, struct unur_distr *from )
   if (FROM.pv) {
     TO.pv = _unur_malloc( FROM.n_pv * sizeof(double) );
     memcpy( TO.pv, FROM.pv, FROM.n_pv * sizeof(double) );
+  }
+
+  /* copy user name for distribution */
+  if (from->name_str) {
+    len = strlen(from->name_str) + 1;
+    to->name_str = _unur_malloc(len);
+    memcpy( to->name_str, from->name_str, len );
+    to->name = to->name_str;
   }
 
   return 1;
@@ -235,6 +246,9 @@ _unur_distr_discr_free( struct unur_distr *distr )
 
   if (DISTR.pv) free( DISTR.pv );
 
+  /* user name for distribution */
+  if (distr->name_str) free(distr->name_str);
+
   free( distr );
 
 } /* end of unur_distr_discr_free() */
@@ -259,6 +273,10 @@ _unur_distr_discr_clear( struct unur_gen *gen )
   if (DISTR.pmftree)  _unur_fstr_free(DISTR.pmftree);
   if (DISTR.cdftree)  _unur_fstr_free(DISTR.cdftree);
   if (DISTR.pv) free( DISTR.pv );
+
+  /* user name for distribution */
+  if (distr->name_str) free(distr->name_str);
+
 } /* end of unur_distr_discr_clear() */
 
 /*---------------------------------------------------------------------------*/

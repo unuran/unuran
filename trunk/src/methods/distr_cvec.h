@@ -4,7 +4,7 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   FILE: distr.h                                                           *
+ *   FILE: distr_cvec.h                                                      *
  *                                                                           *
  *   PURPOSE:                                                                *
  *         function prototypes for manipulating distribution objects of      *

@@ -149,6 +149,7 @@ unur_distr_corder_new( struct unur_distr *distr, int n, int k )
 
   /* name of distribution */
   os->name = distr_name;
+  os->name_str = NULL;
 
   /* destructor */
   os->destroy = _unur_distr_corder_free;
@@ -246,8 +247,10 @@ _unur_distr_corder_free( struct unur_distr *os )
 
   if (os->base) _unur_distr_free(os->base);
 
-  free( os );
+  /* user name for distribution */
+  if (os->name_str) free(os->name_str);
 
+  free( os );
 } /* end of unur_distr_corder_free() */
 
 /*---------------------------------------------------------------------------*/

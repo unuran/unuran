@@ -158,6 +158,7 @@ struct unur_distr {
   unsigned type;                    /* type of distribution                  */
   unsigned id;                      /* identifier for distribution           */
   const char *name;                 /* name of distribution                  */
+  char *name_str;                   /* string for storing user name of distr */
   int dim;                          /* number of components of random vector */
 
   unsigned set;                     /* indicate changed parameters           */

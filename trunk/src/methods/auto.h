@@ -59,6 +59,8 @@
       IMPORTANT: This is an experimental version and the method chosen
       may change in future releases of UNURAN.
 
+      For an example see @ref{Example_0,As short as possible,Example: As short as possible}.
+
    =END
 */
 

@@ -81,10 +81,23 @@ unur_distr_set_name( struct unur_distr *distr, const char *name )
      /*   0 ... on error                                                     */
      /*----------------------------------------------------------------------*/
 {
+  int len;
+  char *name_str;
+
   /* check arguments */
   _unur_check_NULL( NULL,distr,0 );
 
-  distr->name = name;
+  /* allocate memory for storing string */
+  len = strlen(name) + 1;
+  name_str = _unur_realloc(distr->name_str,len);
+
+  /* copy string */
+  memcpy( name_str, name, len );
+
+  /* store string in distribution object */
+  distr->name_str = name_str;
+  distr->name = name_str;
+
   return 1;
 } /* end of unur_distr_set_name() */
 

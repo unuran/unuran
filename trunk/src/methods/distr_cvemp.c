@@ -101,6 +101,7 @@ unur_distr_cvemp_new( int dim )
 
   /* name for distribution */
   distr->name = "(empirical)";
+  distr->name_str = NULL;
 
   /* destructor */
   distr->destroy = _unur_distr_cvemp_free;
@@ -120,6 +121,48 @@ unur_distr_cvemp_new( int dim )
 
 /*---------------------------------------------------------------------------*/
 
+int
+_unur_distr_cvemp_copy( struct unur_distr *to, struct unur_distr *from )
+     /*----------------------------------------------------------------------*/
+     /* copy distribution object 'from' into distribution object 'to'.       */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   to   ... pointer to target distribution object                     */
+     /*   from ... pointer to source distribution object                     */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... on success                                                   */
+     /*   0 ... on error                                                     */
+     /*----------------------------------------------------------------------*/
+{
+#define FROM from->data.cont
+#define TO   to->data.cont
+
+  int len;
+
+  /* check arguments */
+  _unur_check_NULL( NULL,from,0 );
+  _unur_check_distr_object( from, CVEMP, 0 );
+
+  /* copy distribution object into generator object */
+  memcpy( to, from, sizeof( struct unur_distr ) );
+
+  /* copy user name for distribution */
+  if (from->name_str) {
+    len = strlen(from->name_str) + 1;
+    to->name_str = _unur_malloc(len);
+    memcpy( to->name_str, from->name_str, len );
+    to->name = to->name_str;
+  }
+
+  return 1;
+
+#undef FROM
+#undef TO
+} /* end of _unur_distr_cvemp_copy() */
+
+/*---------------------------------------------------------------------------*/
+
 void
 _unur_distr_cvemp_free( struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
@@ -136,9 +179,35 @@ _unur_distr_cvemp_free( struct unur_distr *distr )
   COOKIE_CHECK(distr,CK_DISTR_CVEMP,/*void*/);
 
   if (DISTR.sample) free( DISTR.sample );
+
+  /* user name for distribution */
+  if (distr->name_str) free(distr->name_str);
+
   free( distr );
 
 } /* end of unur_distr_cvemp_free() */
+
+/*---------------------------------------------------------------------------*/
+
+void
+_unur_distr_cvemp_clear( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* frees all memory blocks in distribution object inside generator      */
+     /* object.                                                              */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*----------------------------------------------------------------------*/
+{
+  struct unur_distr *distr = &(gen->distr);
+
+  /* check arguments */
+  COOKIE_CHECK(distr,CK_DISTR_CVEMP,/*void*/);
+
+  /* user name for distribution */
+  if (distr->name_str) free(distr->name_str);
+
+} /* end of unur_distr_cvemp_clear() */
 
 /*---------------------------------------------------------------------------*/
 

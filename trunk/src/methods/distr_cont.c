@@ -129,6 +129,7 @@ unur_distr_cont_new( void )
 
   /* name of distribution */
   distr->name = unknown_distr_name;
+  distr->name_str = NULL;
 
   /* this is not a derived distribution */
   distr->base = NULL;
@@ -192,6 +193,8 @@ _unur_distr_cont_copy( struct unur_distr *to, struct unur_distr *from )
 #define FROM from->data.cont
 #define TO   to->data.cont
 
+  int len;
+
   /* check arguments */
   _unur_check_NULL( NULL,from,0 );
   _unur_check_distr_object( from, CONT, 0 );
@@ -203,6 +206,14 @@ _unur_distr_cont_copy( struct unur_distr *to, struct unur_distr *from )
   TO.pdftree  = (FROM.pdftree)  ? _unur_fstr_dup_tree(FROM.pdftree)  : NULL;
   TO.dpdftree = (FROM.dpdftree) ? _unur_fstr_dup_tree(FROM.dpdftree) : NULL;
   TO.cdftree  = (FROM.cdftree)  ? _unur_fstr_dup_tree(FROM.cdftree)  : NULL;
+
+  /* copy user name for distribution */
+  if (from->name_str) {
+    len = strlen(from->name_str) + 1;
+    to->name_str = _unur_malloc(len);
+    memcpy( to->name_str, from->name_str, len );
+    to->name = to->name_str;
+  }
 
   return 1;
 
@@ -234,6 +245,9 @@ _unur_distr_cont_free( struct unur_distr *distr )
   /* derived distribution */
   if (distr->base) _unur_distr_cont_free(distr->base);
 
+  /* user name for distribution */
+  if (distr->name_str) free(distr->name_str);
+
   free( distr );
 } /* end of _unur_distr_cont_free() */
 
@@ -257,6 +271,10 @@ _unur_distr_cont_clear( struct unur_gen *gen )
   if (DISTR.pdftree)  _unur_fstr_free(DISTR.pdftree);
   if (DISTR.dpdftree) _unur_fstr_free(DISTR.dpdftree);
   if (DISTR.cdftree)  _unur_fstr_free(DISTR.cdftree);
+
+  /* user name for distribution */
+  if (distr->name_str) free(distr->name_str);
+
 } /* end of unur_distr_cont_clear() */
 
 /*---------------------------------------------------------------------------*/

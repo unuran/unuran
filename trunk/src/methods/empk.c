@@ -869,7 +869,7 @@ _unur_empk_create( struct unur_par *par )
   COOKIE_SET(gen,CK_EMPK_GEN);
 
   /* copy distribution object into generator object */
-  memcpy( &(gen->distr), par->distr, sizeof( struct unur_distr ) );
+  _unur_distr_cemp_copy( &(gen->distr), par->distr );
 
   /* set generator identifier */
   gen->genid = _unur_set_genid(GENTYPE);
@@ -985,6 +985,7 @@ _unur_empk_free( struct unur_gen *gen )
        delete automatically created generation object. */
     unur_free( GEN.kerngen );
 
+  _unur_distr_cemp_clear(gen);
   _unur_free_genid(gen);
   free(gen);
 

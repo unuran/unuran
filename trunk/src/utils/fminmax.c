@@ -6,7 +6,7 @@
  *                                                                           *
  *   FILE:      fminmax.c                                                    *
  *                                                                           *
- *   Find maximum or minimum of a function using Brent's algorithm.          *
+ *   Find maximum of a function using Brent's algorithm.                     *
  *                                                                           *
  *****************************************************************************
  *****************************************************************************
@@ -469,6 +469,5 @@ _unur_util_brent(            /* An estimate to the min or max location */
 #undef MAXIT
 #undef SQRT_EPSILON
 } /* end of _unur_util_find_minmax() */
-
 
 /*---------------------------------------------------------------------------*/

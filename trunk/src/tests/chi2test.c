@@ -199,7 +199,7 @@ _unur_test_chi2_discr( struct unur_gen *gen,
 
   /* now run generator */
   for( i=0; i<samplesize; i++ ) {
-    j = unur_sample_discr(gen);
+    j = _unur_sample_discr(gen);
     if (j >= n_prob)   /* check range of random variates !! */
       j = n_prob - 1;  /* put into the last bin */
     ++observed[j];
@@ -301,7 +301,7 @@ _unur_test_chi2_cont(struct unur_gen *gen,
 
   /* now run generator */
   for( i=0; i<samplesize; i++ ) {
-    F = cdf( unur_sample_cont(gen), DISTR.params, DISTR.n_params );
+    F = cdf( _unur_sample_cont(gen), DISTR.params, DISTR.n_params );
     F = (F-Fl)/Fdelta;
     j = (int)(intervals * F);
     if (j > intervals) {   

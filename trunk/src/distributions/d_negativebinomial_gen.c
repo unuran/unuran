@@ -198,11 +198,11 @@ unur_stdgen_sample_negativebinomial_nbp( struct unur_gen *gen )
   CHECK_NULL(gen,0);  COOKIE_CHECK(gen,CK_DSTD_GEN,0);
 
   /* sample from gamma distribution */
-  y = x * unur_sample_cont(GAMMA);
+  y = x * _unur_sample_cont(GAMMA);
 
   /* sample from poisson distribution */
   unur_dstd_chg_param(POISSON,&y,1);
-  return unur_sample_discr(POISSON);
+  return _unur_sample_discr(POISSON);
 
   /* -X- end of generator code -X- */
 

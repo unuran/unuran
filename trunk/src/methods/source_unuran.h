@@ -63,6 +63,17 @@
 #include <source_methods.h>
 
 /*---------------------------------------------------------------------------*/
+/* Invoke generators (macros to avoid function calls)                        */  
+
+#define _unur_init(par)               (par)->init(par)
+
+#define _unur_sample_discr(gen)       (gen)->sample.discr(gen)
+#define _unur_sample_cont(gen)        (gen)->sample.cont(gen)
+#define _unur_sample_vec(gen,vector)  (gen)->sample.vec(gen,vector)
+
+#define _unur_free(gen)               (gen)->destroy(gen)
+
+/*---------------------------------------------------------------------------*/
 /* set generator id                                                          */
 #ifdef UNUR_ENABLE_GENID
 char *_unur_make_genid( const char *gentype );

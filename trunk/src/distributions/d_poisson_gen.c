@@ -338,7 +338,7 @@ unur_stdgen_sample_poisson_pdac( struct unur_gen *gen )
 
 
   /* Step N. Normal sample */
-  t = unur_sample_cont(NORMAL);
+  t = _unur_sample_cont(NORMAL);
   g = theta + s * t;
 
   if (g >= 0.) {

@@ -84,7 +84,7 @@ unur_test_moments( struct unur_gen *gen, int n_moments, double *moments, int sam
 
   case UNUR_METH_DISCR:
     for (i=0; i<samplesize; i++) {
-      xm = x = (double) unur_sample_discr(gen);
+      xm = x = (double) _unur_sample_discr(gen);
       for (mom = 1; mom <= n_moments; mom++ ) {
 	moments[mom] += xm;
 	xm *= x;
@@ -94,7 +94,7 @@ unur_test_moments( struct unur_gen *gen, int n_moments, double *moments, int sam
 
   case UNUR_METH_CONT:
     for (i=0; i<samplesize; i++) {
-      xm = x = unur_sample_cont(gen);
+      xm = x = _unur_sample_cont(gen);
       for (mom = 1; mom <= n_moments; mom++ ) {
 	moments[mom] += xm;
 	xm *= x;

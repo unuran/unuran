@@ -80,11 +80,6 @@ unur_test_timing( struct unur_par *par, int log_samplesize )
   double time_start, time_setup, time_marg, *time_gen;
   long samples, samplesize, log_samples;
 
-  /* pointer to sampling routines */
-  _UNUR_SAMPLING_ROUTINE_DISCR *sample_discr = NULL;
-  _UNUR_SAMPLING_ROUTINE_CONT  *sample_cont  = NULL;
-  _UNUR_SAMPLING_ROUTINE_VEC   *sample_vec   = NULL;
-
   /* check parameter */
   _unur_check_NULL(test_name,par,NULL);
   if (log_samplesize < 2) log_samplesize = 2;
@@ -103,18 +98,6 @@ unur_test_timing( struct unur_par *par, int log_samplesize )
   /* init successful ? */
   if (!gen) return NULL;
 
-  /* get sampling routines */
-  switch (gen->method & UNUR_MASK_TYPE) {
-  case UNUR_METH_DISCR:
-    sample_discr = gen->sample.discr; break;
-  case UNUR_METH_CONT:
-    sample_cont  = gen->sample.cont;  break;
-  case UNUR_METH_VEC:
-    sample_vec   = gen->sample.vec;   break;
-  default: /* unknown ! */
-    _unur_error(test_name,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
-  }
-
   /* we need an array for the vector */
   if (unur_is_vec(par)) {
     dim = unur_get_dimension(gen);
@@ -129,18 +112,15 @@ unur_test_timing( struct unur_par *par, int log_samplesize )
     switch (gen->method & UNUR_MASK_TYPE) {
     case UNUR_METH_DISCR:
       for( ; samples < samplesize; samples++ )
-	//	unur_sample_discr(gen);
-	sample_discr(gen);
+	_unur_sample_discr(gen);
       break;
     case UNUR_METH_CONT:
       for( ; samples < samplesize; samples++ )
-	// unur_sample_cont(gen);
-	sample_cont(gen);
+	_unur_sample_cont(gen);
       break;
     case UNUR_METH_VEC:
       for( ; samples < samplesize; samples++ )
-	// unur_sample_vec(gen,vec);
-	sample_vec(gen,vec);
+	_unur_sample_vec(gen,vec);
       break;
     default: /* unknown ! */
       _unur_error(test_name,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
@@ -221,7 +201,7 @@ _unur_test_timing_uniform( struct unur_par *par, int log_samplesize )
     /* evaluate marginal generation time */
     fastest_time = _unur_get_time();
     for( j=0; j<samplesize; j++ )
-      unur_sample_cont(gen_urng);
+      _unur_sample_cont(gen_urng);
 
     fastest_time = (_unur_get_time() - fastest_time)/samplesize;
 

@@ -386,7 +386,7 @@ unur_stdgen_sample_gamma_gd( struct unur_gen *gen )
   do {
 
     /* Step 2. Normal deviate */
-    t = unur_sample_cont(NORMAL);
+    t = _unur_sample_cont(NORMAL);
     x = s + 0.5 * t;
     X = x * x;
     if (t >= 0.)

@@ -127,11 +127,11 @@ unur_test_count_urn( struct unur_gen *gen, int samplesize )
   switch (gen->method & UNUR_MASK_TYPE) {
   case UNUR_METH_DISCR:
     for( j=0; j<samplesize; j++ )
-      unur_sample_discr(gen);
+      _unur_sample_discr(gen);
     break;
   case UNUR_METH_CONT:
     for( j=0; j<samplesize; j++ )
-      unur_sample_cont(gen);
+      _unur_sample_cont(gen);
     break;
   case UNUR_METH_VEC: 
     { /* we need an array for the vector */
@@ -140,7 +140,7 @@ unur_test_count_urn( struct unur_gen *gen, int samplesize )
       dim = unur_get_dimension(gen);
       vec = _unur_malloc( dim * sizeof(double) );
       for( j=0; j<samplesize; j++ )
-	unur_sample_vec(gen,vec);
+	_unur_sample_vec(gen,vec);
       free(vec);
     }
     break;

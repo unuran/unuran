@@ -67,7 +67,7 @@ unur_test_printsample( struct unur_gen *gen, int n_rows, int n_cols )
   case UNUR_METH_DISCR:
     for( j=0; j<n_rows; j++ ) {
       for(i=0; i<n_cols; i++)
-	printf("%04d ",unur_sample_discr(gen));
+	printf("%04d ",_unur_sample_discr(gen));
       printf("\n        "); 
     }
     break;
@@ -75,7 +75,7 @@ unur_test_printsample( struct unur_gen *gen, int n_rows, int n_cols )
   case UNUR_METH_CONT:
     for( j=0; j<n_rows; j++ ) {
       for(i=0; i<n_cols; i++)
-	printf("%8.5f ",unur_sample_cont(gen));
+	printf("%8.5f ",_unur_sample_cont(gen));
       printf("\n        "); 
     }
     break;
@@ -88,7 +88,7 @@ unur_test_printsample( struct unur_gen *gen, int n_rows, int n_cols )
       vec = _unur_malloc( dim * sizeof(double) );
 	
       for( j=0; j<n_rows; j++ ) {
-	unur_sample_vec(gen,vec);
+	_unur_sample_vec(gen,vec);
 	printf("( %8.5f",vec[0]);
 	for (k=1; k<dim; k++)
 	  printf(", %8.5f",vec[k]);

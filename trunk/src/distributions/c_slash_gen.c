@@ -151,7 +151,7 @@ unur_stdgen_sample_slash_slash( struct unur_gen *gen )
   CHECK_NULL(gen,0.); COOKIE_CHECK(gen,CK_CSTD_GEN,0.);
 
   /* -X- generator code -X- */
-  return (unur_sample_cont(NORMAL) / uniform());
+  return (_unur_sample_cont(NORMAL) / uniform());
   /* -X- end of generator code -X- */
   
 } /* end of unur_stdgen_sample_slash_slash() */

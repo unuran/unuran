@@ -1516,6 +1516,15 @@ sub next_tex_token {
 	    $$info .= $value;
 	    return;
 	}
+	if ($value =~ /^\\(pm|infty)\s*$/) {
+	    # +/-, infinity
+	    $$tex .= $value;
+	    $value =~ s/^\\(pm)\s*/ +\/- /g;
+	    $value =~ s/^\\(infty)\s*/ infinity /g;
+	    $$html .= $value;
+	    $$info .= $value;
+	    return;
+	}
 	if ($value =~ /^\\(inf|sup|min|max)\s*$/) {
 	    # macros that are printed as is in non-TeX formats
 	    $$tex .= $value;

@@ -171,6 +171,9 @@ int _unur_stdgen_gamma_init( struct unur_par *par, struct unur_gen *gen );
 /* initialize new generator                                                  */
 double unur_stdgen_sample_gamma_gll( struct unur_gen *gen );
 /* Rejection with log-logistic envelopes                                     */
+double unur_stdgen_sample_gamma_gs( struct unur_gen *gen );
+double unur_stdgen_sample_gamma_gd( struct unur_gen *gen );
+/* Acceptance Rejection combined with Acceptance Complement */
 
 /*---------------------------------------------------------------------------*/
 /* Generalized inverse Gaussian distribution  [2; ch.15, p.284]              */

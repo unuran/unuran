@@ -75,9 +75,9 @@
 static const char distr_name[] = "gamma";
 
 /* parameters */
-#define alpha  params[0]
-#define beta   params[1]
-#define gamma  params[2]
+#define alpha  params[0]   /* shape */
+#define beta   params[1]   /* scale */
+#define gamma  params[2]   /* location */
 
 /* function prototypes                                                       */
 static double _unur_pdf_gamma(double x, double *params, int n_params);

@@ -132,7 +132,8 @@ int unur_test_count_urn( UNUR_GEN *generator, int samplesize, int verbosity);
    @code{stdout}.
 */
 
-double unur_test_chi2( UNUR_GEN *generator, int intervals, int samplesize, int classmin, int verbosity );
+double unur_test_chi2( UNUR_GEN *generator, int intervals, int samplesize, int classmin,
+		       int verbosity, FILE *out );
 /* 
    Run a Chi^2 test with the @var{generator}. 
    The resulting p-value is returned.
@@ -149,10 +150,12 @@ double unur_test_chi2( UNUR_GEN *generator, int intervals, int samplesize, int c
    @var{classmin} is the minimum number of expected entries per
    class. If a class has to few entries then some classes are joined.
 
-   @var{verbosity} controlls the output of the routine. If it is set
-   to @code{1} then the result is printed in the @code{stdout}. If it
+   @var{verbosity} controls the output of the routine. If it is set
+   to @code{1} then the result is printed to @var{out}. If it
    is set to @code{2} additionally the list of expected and observed
    data is printed. There is no output when it is set to @code{0}.
+
+   @var{out} is the output stream to which all results are written.
 */
 
 int unur_test_moments( UNUR_GEN *generator, double *moments, int n_moments, 

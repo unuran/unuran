@@ -56,9 +56,12 @@
 static char test_name[] = "Chi^2-Test";
 /*---------------------------------------------------------------------------*/
 
-static double _unur_test_chi2_discr( struct unur_gen *gen, int samplesize, int classmin, int verbose );
-static double _unur_test_chi2_cont( struct unur_gen *gen, int intervals, int samplesize, int classmin, int verbose );
-static double _unur_test_chi2test( double *prob, int *observed, int len, int classmin, int verbose );
+static double _unur_test_chi2_discr( struct unur_gen *gen, int samplesize, int classmin,
+				     int verbose, FILE *out );
+static double _unur_test_chi2_cont( struct unur_gen *gen, int intervals, int samplesize, int classmin,
+				    int verbose, FILE *out );
+static double _unur_test_chi2test( double *prob, int *observed, int len, int classmin,
+				   int verbose, FILE *out );
 
 /*---------------------------------------------------------------------------*/
 
@@ -67,7 +70,8 @@ unur_test_chi2( struct unur_gen *gen,
 		int intervals,
 		int samplesize, 
 		int classmin,
-		int verbose )
+		int verbose,
+		FILE *out )
      /*----------------------------------------------------------------------*/
      /* Chi^2 test for univariate distributions                              */
      /*                                                                      */
@@ -80,10 +84,12 @@ unur_test_chi2( struct unur_gen *gen,
      /*                  (if <= 0, (#classes)^2 is used as default.)         */
      /*   classmin   ... minimum number of expected occurrences for each class */
      /*                  (if <= 0, a default value is used.)                 */
-     /*   verbose  ... verbosity level                                       */
-     /*                  0 = no output on stdout                             */
+     /*   verbose    ... verbosity level                                     */
+     /*                  0 = no output on out                                */
      /*                  1 = print summary                                   */
      /*                  2 = print classes and summary                       */
+     /*   out        ... output stream                                       */
+     /*                                                                      */
      /*                                                                      */
      /* return:                                                              */
      /*   p-value of test statistics under H_0                               */
@@ -97,15 +103,15 @@ unur_test_chi2( struct unur_gen *gen,
   _unur_check_NULL(test_name,gen,-1.);
 
   if (verbose >= 1)
-    printf("\nGOODNESS-OF-FIT TESTS:\n");
+    fprintf(out,"\nGOODNESS-OF-FIT TESTS:\n");
 
   switch (gen->method & UNUR_MASK_TYPE) {
 
   case UNUR_METH_DISCR:
-    return _unur_test_chi2_discr(gen, samplesize, classmin, verbose);
+    return _unur_test_chi2_discr(gen, samplesize, classmin, verbose, out);
 
   case UNUR_METH_CONT:
-    return _unur_test_chi2_cont(gen, intervals, samplesize, classmin, verbose);
+    return _unur_test_chi2_cont(gen, intervals, samplesize, classmin, verbose, out);
 
   case UNUR_METH_VEC:
     _unur_error(test_name,UNUR_ERR_GENERIC,"Not implemented for multivariate distributions!");
@@ -122,7 +128,8 @@ static double
 _unur_test_chi2_discr( struct unur_gen *gen, 
 		       int samplesize, 
 		       int classmin, 
-		       int verbose )
+		       int verbose,
+		       FILE *out)
      /*----------------------------------------------------------------------*/
      /* Chi^2 test for univariate discrete distributions                     */
      /* with given probability vector.                                       */
@@ -137,6 +144,7 @@ _unur_test_chi2_discr( struct unur_gen *gen,
      /*                  0 = no output on stdout                             */
      /*                  1 = print summary                                   */
      /*                  2 = print classes and summary                       */
+     /*   out        ... output stream                                       */
      /*                                                                      */
      /* return:                                                              */
      /*   p-value of test statistics under H_0                               */
@@ -207,12 +215,12 @@ _unur_test_chi2_discr( struct unur_gen *gen,
   }
 
   if (verbose >= 1) {
-    printf("\nChi^2-Test for discrete distribution with given probability vector:");
-    printf("\n  length     = %d\n",n_pv);
+    fprintf(out,"\nChi^2-Test for discrete distribution with given probability vector:");
+    fprintf(out,"\n  length     = %d\n",n_pv);
   }
 
   /* and now make chi^2 test */
-  pval = _unur_test_chi2test(pv, observed, n_pv, classmin, verbose);
+  pval = _unur_test_chi2test(pv, observed, n_pv, classmin, verbose, out);
 
   /* free memory */
   free(observed);
@@ -231,11 +239,12 @@ _unur_test_chi2_discr( struct unur_gen *gen,
 /*---------------------------------------------------------------------------*/
 
 static double
-_unur_test_chi2_cont(struct unur_gen *gen, 
-		     int intervals, 
-		     int samplesize, 
-		     int classmin,
-		     int verbose )
+_unur_test_chi2_cont( struct unur_gen *gen, 
+		      int intervals, 
+		      int samplesize, 
+		      int classmin,
+		      int verbose,
+		      FILE *out )
      /*----------------------------------------------------------------------*/
      /* Chi^2 test for univariate continuous distributions.                  */
      /*                                                                      */
@@ -250,6 +259,7 @@ _unur_test_chi2_cont(struct unur_gen *gen,
      /*                  0 = no output on stdout                             */
      /*                  1 = print summary                                   */
      /*                  2 = print classes and summary                       */
+     /*   out        ... output stream                                       */
      /*                                                                      */
      /* return:                                                              */
      /*   p-value of test statistics under H_0                               */
@@ -332,12 +342,12 @@ _unur_test_chi2_cont(struct unur_gen *gen,
   }
 
   if (verbose >= 1) {
-    printf("\nChi^2-Test for continuous distribution:");
-    printf("\n  intervals  = %d\n",intervals);
+    fprintf(out,"\nChi^2-Test for continuous distribution:");
+    fprintf(out,"\n  intervals  = %d\n",intervals);
   }
 
   /* and now make chi^2 test */
-  pval = _unur_test_chi2test(NULL, observed, intervals, classmin, verbose );
+  pval = _unur_test_chi2test(NULL, observed, intervals, classmin, verbose, out );
 
   /* free memory */
   free(observed);
@@ -353,7 +363,10 @@ _unur_test_chi2_cont(struct unur_gen *gen,
 double
 _unur_test_chi2test( double *prob, 
 		     int *observed, 
-		     int len, int classmin, int verbose )
+		     int len,
+		     int classmin,
+		     int verbose,
+		     FILE *out )
      /*----------------------------------------------------------------------*/
      /* Chi^2 test for discrete distributions.                               */
      /*                                                                      */
@@ -368,6 +381,7 @@ _unur_test_chi2test( double *prob,
      /*                  0 = no output on stdout                             */
      /*                  1 = print summary                                   */
      /*                  2 = print classes and summary                       */
+     /*   out      ... output stream                                         */
      /*                                                                      */
      /* return:                                                              */
      /*   p-value of test statistics under H_0                               */
@@ -434,7 +448,7 @@ _unur_test_chi2test( double *prob,
       /* number of expected occurrences is large enough or end of array */
       chi2 += (clobsd-clexpd)*(clobsd-clexpd)/clexpd;
       if (verbose >= 2)
-	printf("Class #%d:\tobserved %d\texpected %.2f\n",classes,clobsd,clexpd);
+	fprintf(out,"Class #%d:\tobserved %d\texpected %.2f\n",classes,clobsd,clexpd);
       clexpd = 0.;
       clobsd = 0;
       classes++;
@@ -445,7 +459,7 @@ _unur_test_chi2test( double *prob,
   if (classes < 2) {
     _unur_error(test_name,UNUR_ERR_GENERIC,"too few classes!");
     if (verbose >= 1)
-      printf("\nCannot run chi^2-Test: too few classes\n");
+      fprintf(out,"\nCannot run chi^2-Test: too few classes\n");
     return -1.;
   }
 
@@ -458,9 +472,9 @@ _unur_test_chi2test( double *prob,
 
   /* print result (if requested) */
   if (verbose >= 1) {
-    printf("\nResult of chi^2-Test:\n  samplesize = %d\n",samplesize);
-    printf("  classes    = %d\t (minimum per class = %d)\n", classes, classmin);
-    printf("  chi2-value = %g\n  p-value    = %g\n\n", chi2, pval);
+    fprintf(out,"\nResult of chi^2-Test:\n  samplesize = %d\n",samplesize);
+    fprintf(out,"  classes    = %d\t (minimum per class = %d)\n", classes, classmin);
+    fprintf(out,"  chi2-value = %g\n  p-value    = %g\n\n", chi2, pval);
   }
 
   /* return result of test */

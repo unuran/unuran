@@ -104,7 +104,7 @@ unur_run_tests( struct unur_par *par, unsigned tests)
 
   /* run chi2-test*/
   if (tests & UNUR_TEST_CHI2)
-    unur_test_chi2(gen,TEST_CHI2_INTERVALS,0,0,TEST_CHI2_VERBOSE);
+    unur_test_chi2(gen,TEST_CHI2_INTERVALS,0,0,TEST_CHI2_VERBOSE,stdout);
 
   /* make scatterplot */
 /*    if (tests & UNUR_TEST_SCATTER) */

@@ -13,8 +13,8 @@
 #include <stdio.h>
 
 #include <unuran.h>
-#include <unur_distribution.h>
-#include <unur_tests.h>
+#include <unuran_distributions.h>
+#include <unuran_tests.h>
 
 /*---------------------------------------------------------------------------*/
 

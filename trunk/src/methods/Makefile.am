@@ -49,9 +49,10 @@ pkginclude_HEADERS = \
 noinst_HEADERS = \
  source_unuran.h \
  source_cookies.h \
+ source_distr.h \
  source_errno.h \
- source_masks.h \
- source_math.h
+ source_math.h \
+ source_methods.h
 
 # clean backup files too
 clean-local:

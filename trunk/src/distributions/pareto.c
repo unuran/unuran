@@ -53,9 +53,7 @@
 /*---------------------------------------------------------------------------*/
 
 #include <source_unuran.h>
-
-#include <unur_distribution.h>
-#include <unur_distribution_lib.h>
+#include <source_distributions.h>
 
 /*---------------------------------------------------------------------------*/
 static const char distr_name[] = "pareto";

@@ -72,7 +72,9 @@
 #include <source_unuran.h>
 
 /*---------------------------------------------------------------------------*/
-/* Variants: none                                                            */
+/* Variants                                                                  */
+
+#define UTDR_VARFLAG_VERIFY     0x01u   /* flag for verifying mode           */
 
 /*---------------------------------------------------------------------------*/
 /* Debugging flags (do not use first 8 bits)                                 */
@@ -276,6 +278,39 @@ unur_utdr_set_delta( struct unur_par *par, double delta )
   return 1;
 
 } /* end of unur_utdr_set_delta() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+unur_utdr_set_verify( struct unur_par *par, int verify )
+     /*----------------------------------------------------------------------*/
+     /* turn verifying of algorithm while sampling on/off                    */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par    ... pointer to parameter for building generator object      */
+     /*   verify ... 0 = no verifying,  !0 = verifying                       */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... on success                                                   */
+     /*   0 ... on error                                                     */
+     /*                                                                      */
+     /* comment:                                                             */
+     /*   no verifying is the default                                        */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  CHECK_NULL(par,0);
+
+  /* check input */
+  _unur_check_par_object( UTDR );
+
+  /* we use a bit in variant */
+  par->variant = (verify) ? (par->variant | UTDR_VARFLAG_VERIFY) : (par->variant & (~UTDR_VARFLAG_VERIFY));
+
+  /* o.k. */
+  return 1;
+
+} /* end of unur_utdr_set_verify() */
 
 /*****************************************************************************/
 
@@ -696,7 +731,7 @@ _unur_utdr_debug_init( struct unur_par *par, struct unur_gen *gen,
 
 #if 0
   /** TODO **/
-  if (par->variant & UNUR_MASK_SCHECK)
+  if (par->variant & UTDR_VARFLAG_VERIFY)
     fprintf(log,"_check()\n");
   else
 #endif

@@ -4,15 +4,14 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   FILE: source_masks.h                                                    *
+ *   FILE: source_distribution.h                                             *
  *                                                                           *
  *   PURPOSE:                                                                *
- *         defines bitmasks to identify used method in generator objects     *
+ *         defines macros, typedefs and constants and for p.d.f., c.d.f.,    *
+ *         etc. of distribtions.                                             *
  *                                                                           *
  *   USAGE:                                                                  *
- *         only included in source_masks.h                                   *
- *                                                                           *
- *                                                                           *
+ *         only included in distribution source files.                       *
  *                                                                           *
  *****************************************************************************
      $Id$
@@ -39,68 +38,47 @@
  *****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
-#ifndef __SOURCE_MASKS_H_SEEN
-#define __SOURCE_MASKS_H_SEEN
+#ifndef __SOURCE_DISTRIBUTIONS_LIB_H_SEEN
+#define __SOURCE_DISTRIBUTIONS_LIB_H_SEEN
 /*---------------------------------------------------------------------------*/
 
-/*****************************************************************************/
-/**  Bitmask to indicate methods                                            **/
-/*****************************************************************************/
+#include <unuran_config.h>
+#include <source_stddistr.h>
+#include <source_specfunct.h>
+#include <unuran_distributions.h>
 
 /*---------------------------------------------------------------------------*/
-/* bitmasks                                                                  */
-
-/** TODO: UNUR_MASK_VARIANT is obsolet **/
-#define UNUR_MASK_VARIANT  0x00000fffu   /* indicate variant (see the corresponding .c files) */
-#define UNUR_MASK_METHOD   0xfff00000u   /* indicate method                   */
-#define UNUR_MASK_TYPE     0xf0000000u   /* indicate type of method           */
-
-/** TODO: UNUR_MASK_SCHECK is obsolet: still used in utdr.c !!! **/
-/* bits 13-20 are used for flags common to all generators */
-#define UNUR_MASK_SCHECK   0x00000001u   /* turns check sampling on/off       */
-
-/* discrete distributions */
-#define UNUR_METH_DISCR    0x10000000u
-
-#define UNUR_METH_DAU      0x10100000u
-#define UNUR_METH_DIS      0x10200000u
-
-/* continuous distributions */
-#define UNUR_METH_CONT     0x20000000u
-
-#define UNUR_METH_AROU     0x20300000u
-#define UNUR_METH_SROU     0x20800000u
-#define UNUR_METH_STDR     0x20900000u
-#define UNUR_METH_TABL     0x20400000u
-#define UNUR_METH_TDR      0x20500000u
-#define UNUR_METH_UNIF     0x20600000u
-#define UNUR_METH_UTDR     0x20700000u
-
-/* multivariate continuous distributions */
-#define UNUR_METH_VEC      0x40000000u
-
-#define UNUR_METH_RECT     0x40700000u
-
-/* generators for standard distributions                                     */
-#define UNUR_METH_CSTD     0x2f000000u   /* is of type UNUR_METH_CONT !! */
-
-/* to indicate unkown type */
-#define UNUR_METH_UNKNOWN  0xf0000000u
-
-
-/*****************************************************************************/
-/**  Macros                                                                 **/
-/*****************************************************************************/
+/* Macros                                                                    */
 
 /*---------------------------------------------------------------------------*/
-/* check if parameter object is of correct type, return 0 otherwise       */
+/** TODO **/
+#define NOT_UNIMODAL  0
+#define RETURN_NULL   0
+/*---------------------------------------------------------------------------*/
 
-#define _unur_check_par_object( type ) \
-  if ( par->method != UNUR_METH_##type ) { \
-    _unur_warning(GENTYPE,UNUR_ERR_PAR_INVALID,""); \
-    return 0; } \
-  COOKIE_CHECK(par,CK_##type##_PAR,0)
+/* (log of) normalization constant for p.d.f */
+#define LOGNORMCONSTANT  params[UNUR_DISTR_MAXPARAMS]
+#define NORMCONSTANT     params[UNUR_DISTR_MAXPARAMS]
+
+
+/* set routine for sampling                                                  */
+#ifdef UNUR_ENABLE_LOGGING
+#define _unur_cstd_set_sampling_routine(par,gen,routine) \
+   do { \
+     if ((gen)==NULL) return 1;                       /* test existence only */ \
+     (gen)->sample.cont = (routine);                  /* set pointer */ \
+     (par)->data.cstd.sample_routine_name = #routine; /* set routine name */ \
+   } while (0)
+#else
+#define _unur_cstd_set_sampling_routine(par,gen,routine) \
+   do { \
+     if ((gen)==NULL) return 1;                       /* test existence only */ \
+     (gen)->sample.cont = (routine);                  /* set pointer */ \
+   } while (0)
+#endif
 
 /*---------------------------------------------------------------------------*/
-#endif  /* end __SOURCE_MASKS_H_SEEN */
+
+/*---------------------------------------------------------------------------*/
+#endif  /* __SOURCE_DISTRIBUTIONS_LIB_H_SEEN */
 /*---------------------------------------------------------------------------*/

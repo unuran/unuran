@@ -18,6 +18,7 @@
  *         Normalization constants may be OMITTED!                           *
  *                                                                           *
  *   NAMING SCHEME:                                                          *
+ *         Includes all distribution source files.                           *
  *         (Not all of these function exist for every distribution!)         *
  *                                                                           *
  *      double _unur_pdf_<distr>(double x, double *params, int n_params)     *
@@ -32,13 +33,19 @@
  *          ... normalization constant of p.d.f.                             *
  *      double _unur_lognormconstant_<distr>(double *params, int n_params)   *
  *          ... log of normalization constant of p.d.f.                      *
+ *      int    _unur_stdgen_<distr>_init(                                    *
+ *                             struct unur_par *par, struct unur_gen *gen)   *
+ *          ... initialize new (special) generator for distribution          *
+ *      double unur_stdgen_sample_<distr>_<xx>(struct unur_gen *gen)         *
+ *          ... call (special) generator <xx> for distribution               *
  *                                                                           *
  *      double  x        ... argument of p.d.f.                              *
  *      double* params   ... parameter list for p.d.f.                       *
  *      int     n_params ... number of parameters (length of parameter array)*
  *                                                                           *
+ *      struct unur_par *par ... pointer to paraters of generator            *
+ *      struct unur_gen *gen ... pointer to generator object                 *
  *                                                                           *
- *   In case of error INIFINITY is returned and _unur_errno is set.          *
  *                                                                           *
  *   REFERENCES:                                                             *
  *                                                                           *
@@ -87,26 +94,13 @@
  *****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
-#ifndef __UNUR_DISTR_H_SEEN
-#define __UNUR_DISTR_H_SEEN
+#ifndef __UNURAN_DISTRIBUTIONS_H_SEEN
+#define __UNURAN_DISTRIBUTIONS_H_SEEN
 /*---------------------------------------------------------------------------*/
 
-#include <unur_defs.h>
-#include <unur_distr.h>
+#include <unuran.h>
 
 /*---------------------------------------------------------------------------*/
-
-/** TODO **/
-#define NOT_UNIMODAL  0
-#define RETURN_NULL   0
-
-/*---------------------------------------------------------------------------*/
-
-/*****************************************************************************
- *                                                                           *
- *   Function prototypes                                                     *
- *                                                                           *
- *****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
 /*  Beta distribution [3; ch.25, p.210]                                      */
@@ -130,6 +124,7 @@ struct unur_distr *unur_distr_cauchy(double *params, int n_params);
 /*---------------------------------------------------------------------------*/
 /*  Chisquare distribution [2; ch.18, p.416]                                 */
 struct unur_distr *unur_distr_chisquare(double *params, int n_params);
+
 double _unur_cdf_chisquare(double x, double *params, int n_params);
 /* required for chi^2 tests */
 
@@ -140,6 +135,7 @@ double _unur_cdf_chisquare(double x, double *params, int n_params);
 /*---------------------------------------------------------------------------*/
 /*  Exponential distribution [2; ch.19, p.494]                               */
 struct unur_distr *unur_distr_exponential(double *params, int n_params);
+
 /* special generators */
 int _unur_stdgen_exponential_init( struct unur_par *par, struct unur_gen *gen );
 /* initialize new generator                                                  */
@@ -149,6 +145,7 @@ double unur_stdgen_sample_exponential_inv( struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 /*  Gamma distribution [2; ch.17, p.337]                                     */
 struct unur_distr *unur_distr_gamma(double *params, int n_params);
+
 /* special generators */
 int _unur_stdgen_gamma_init( struct unur_par *par, struct unur_gen *gen );
 /* initialize new generator                                                  */
@@ -242,7 +239,5 @@ struct unur_distr *unur_distr_uniform(double *params, int n_params);
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*/
-#endif  /* __UNUR_DISTR_H_SEEN */
+#endif  /* __UNURAN_DISTRIBUTIONS_H_SEEN */
 /*---------------------------------------------------------------------------*/
-
-

@@ -50,9 +50,10 @@
 
 
 #include <source_cookies.h>
+#include <source_distr.h>
 #include <source_errno.h>
-#include <source_masks.h>
 #include <source_math.h>
+#include <source_methods.h>
 
 /*---------------------------------------------------------------------------*/
 /* Function prototypes for allocating memory blocks                          */
@@ -60,12 +61,6 @@
 void *_unur_malloc(size_t size);
 void  _unur_add_mblocks( struct unur_mblock **mblocks, void *ptr );
 void  _unur_free_mblocks( struct unur_mblock *mblocks );
-
-
-/*---------------------------------------------------------------------------*/
-#ifndef __UNUR_UTILS_H_SEEN
-#define __UNUR_UTILS_H_SEEN
-/*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*/
 
@@ -100,31 +95,22 @@ void  _unur_free_mblocks( struct unur_mblock *mblocks );
 #endif
 
 /*---------------------------------------------------------------------------*/
+/* write infos into log file                                                 */
+
+/* an abbreviation */
+#define _unur_print_if_default(par,flag)   if(!((par)->set & (flag))) fprintf(log,"  [default]")
+
+
+/*---------------------------------------------------------------------------*/
 
 double _unur_arcmean( double x0, double x1 );
-
-/*---------------------------------------------------------------------------*/
-#endif  /* __UNUR_UTILS_H_SEEN */
-/*---------------------------------------------------------------------------*/
-
-
-
-
-
-
-
-
+char *_unur_make_genid( const char *gentype );
 
 /*---------------------------------------------------------------------------*/
 /* Macros                                                                    */
 
 #define min(x,y)   (((x)<(y)) ? (x) : (y))
 #define max(x,y)   (((x)>(y)) ? (x) : (y))
-
-
-
-
-
 
 
 /*---------------------------------------------------------------------------*/

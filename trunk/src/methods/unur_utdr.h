@@ -82,6 +82,9 @@ int unur_utdr_set_cfactor( struct unur_par *par, double cfactor );
 int unur_utdr_set_delta( struct unur_par *par, double delta );
 /* set factor for replacing tangents by secants                              */
 
+int unur_utdr_set_verify( struct unur_par *par, int verify );
+/* turn verifying of algorithm while sampling on/off                         */
+
 #define unur_utdr_set_debug(par,debugflags)  unur_set_debug((par),(debugflags))
 /* set debuging flags                                                        */
 

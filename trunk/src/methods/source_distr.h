@@ -4,11 +4,15 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   file:      printsample.c                                                *
+ *   FILE: source_distr.h                                                    *
  *                                                                           *
- *   print a sample of random numbers                                        *
+ *   PURPOSE:                                                                *
+ *         defines distribution object and                                   *
+ *         declares function prototypes for manipulating such an object      *
  *                                                                           *
- *****************************************************************************
+ *   USAGE:                                                                  *
+ *         only included in source_unuran.h                                  *
+ *                                                                           *
  *****************************************************************************
      $Id$
  *****************************************************************************
@@ -34,77 +38,32 @@
  *****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
-
-#include <unuran_tests.h>
-#include <source_unuran.h>
-
+#ifndef __SOURCE_DISTR_H_SEEN
+#define __SOURCE_DISTR_H_SEEN
 /*---------------------------------------------------------------------------*/
 
-void
-unur_test_printsample( struct unur_gen *gen, int n_rows, int n_cols )
-     /*----------------------------------------------------------------------*/
-     /* print a sample of generator output in small (n_rows x n_cols) table  */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   gen    ... pointer to generator object                             */
-     /*   n_rows ... number of rows                                          */
-     /*   n_cols ... number of columns (for univariate case only)            */
-     /*----------------------------------------------------------------------*/
-{
-  int i,j,k;
+/*---------------------------------------------------------------------------*/
+/* types of distribtuions                                                    */
 
-  /* check arguments */
-  CHECK_NULL(gen,/*void*/);
-
-  printf("\nSAMPLE: ");              
-
-  switch (gen->method & UNUR_MASK_TYPE) {
-  
-  case UNUR_METH_DISCR:
-    for( j=0; j<n_rows; j++ ) {
-      for(i=0; i<n_cols; i++)
-	printf("%04d ",unur_sample_discr(gen));
-      printf("\n        "); 
-    }
-    break;
-
-  case UNUR_METH_CONT:
-    for( j=0; j<n_rows; j++ ) {
-      for(i=0; i<n_cols; i++)
-	printf("%8.5f ",unur_sample_cont(gen));
-      printf("\n        "); 
-    }
-    break;
-
-  case UNUR_METH_VEC:
-    { /* we need an array for the vector */
-      double *vec;
-      int dim;
-      dim = unur_get_dimension(gen);
-      vec = _unur_malloc( dim * sizeof(double) );
-	
-      for( j=0; j<n_rows; j++ ) {
-	unur_sample_vec(gen,vec);
-	printf("( %8.5f",vec[0]);
-	for (k=1; k<dim; k++)
-	  printf(", %8.5f",vec[k]);
-	printf(" )\n        ");
-      }
-      free(vec);
-    }
-    break;
-  default: /* unknown ! */
-    _unur_warning("Tests",UNUR_ERR_GENERIC,"method unknown!");
-    return;
-  }
-
-  printf("\n");
-
-} /* end of unur_test_printsample() */
+enum {
+  UNUR_DISTR_CONT  = 0x001u,        /* univariate continuous distribution    */ 
+  UNUR_DISTR_DISCR = 0x002u,        /* univariate discrete distribution      */ 
+};
 
 /*---------------------------------------------------------------------------*/
+/* indicate changed parameters                                               */
 
+enum {
+  UNUR_DISTR_SET_PARAMS     = 0x001u,
+  UNUR_DISTR_SET_DOMAIN     = 0x002u,
+  UNUR_DISTR_SET_STDDOMAIN  = 0x004u,   /* domain not truncated (for standard distributions) */
+  UNUR_DISTR_SET_MODE       = 0x008u,
+  UNUR_DISTR_SET_PDFAREA    = 0x010u,
+}; 
 
+/*---------------------------------------------------------------------------*/
+#endif  /* __SOURCE_DISTR_H_SEEN */
+/*---------------------------------------------------------------------------*/
 
 
 

@@ -18,7 +18,8 @@ libtests_a_SOURCES = \
  tests.c \
  timing.c
 
-pkginclude_HEADERS = unur_tests.h
+pkginclude_HEADERS = \
+ unuran_tests.h
 
 # clean backup files too
 clean-local:

@@ -45,14 +45,7 @@
 /*---------------------------------------------------------------------------*/
 
 #include <unuran_config.h>
-
 #include <stdio.h>
-
-/*---------------------------------------------------------------------------*/
-/* Function prototypes                                                       */
-
-void _unur_stream_printf( const char *genid, char *filename, int line, const char *format, ... );
-char *_unur_make_genid( const char *gentype );
 
 /*---------------------------------------------------------------------------*/
 /* error types                                                               */
@@ -111,8 +104,12 @@ enum {
 /*---------------------------------------------------------------------------*/
 /* warnings and error messages                                               */
 
+/* Function prototypes                                                       */
+void _unur_stream_printf( const char *genid, char *filename, int line, const char *format, ... );
+
 /*---------------------------------------------------------------------------*/
 #ifdef UNUR_WARNINGS_ON    /* warnings enabled */
+/*---------------------------------------------------------------------------*/
 
 #define _unur_error(genid,errortype,str) \
    do { \
@@ -126,18 +123,16 @@ enum {
                           unur_get_strerror(errortype), (str) ); \
    } while (0)
 
+/*---------------------------------------------------------------------------*/
 #else   /* warnings disabled */
+/*---------------------------------------------------------------------------*/
 
 #define _unur_error(genid,errortype,str)      do { } while(0)
 #define _unur_warning(genid,errortype,str)    do { } while(0)
 
-#endif   /* end UNUR_WARNINGS_ON */
-
 /*---------------------------------------------------------------------------*/
-/* write infos into log file                                                 */
-
-/* an abbreviation */
-#define _unur_print_if_default(par,flag)   if(!((par)->set & (flag))) fprintf(log,"  [default]")
+#endif   /* end UNUR_WARNINGS_ON */
+/*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*/
 #endif  /* __UNUR_ERRNO_H_SEEN */

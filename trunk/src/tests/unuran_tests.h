@@ -4,10 +4,14 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   FILE:      unur_defs.h                                                  *
+ *   FILE: unuran_tests.h                                                    *
  *                                                                           *
- *   include file for compiling library                                      *
+ *   PURPOSE:                                                                *
+ *         defines macros and function prototypes for testing routines.      *
  *                                                                           *
+ *   USAGE:                                                                  *
+ *         included in all test source files.                                *
+ *         required for every application of UNURAN test routines.           *
  *                                                                           *
  *****************************************************************************
      $Id$
@@ -34,21 +38,44 @@
  *****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
-#ifndef __UNUR_DEFS_H_SEEN
-#define __UNUR_DEFS__H_SEEN
+#ifndef __UNURAN_TESTS_H_SEEN
+#define __UNURAN_TESTS_H_SEEN
 /*---------------------------------------------------------------------------*/
 
-/*---------------------------------------------------------------------------*/
-/* include library compilation switches and defaults                         */
-#include <unuran_config.h>
+#include <unuran.h>
 
 /*---------------------------------------------------------------------------*/
-/* structures                                                                */
-struct unur_distr;    /* distribution object      */
-struct unur_par;      /* parameters for generator */
-struct unur_gen;      /* generator object         */
+/* possible tests                                                            */
+#define UNUR_TEST_ALL      (~0u)     /* make all possible tests */
+#define UNUR_TEST_TIME     0x001u    /* estimate time */
+#define UNUR_TEST_N_URNG   0x002u    /* count number of urng (needs compiler switch) */
+#define UNUR_TEST_CHI2     0x004u    /* run chi^2 test for goodness of fit */
+#define UNUR_TEST_SAMPLE   0x008u    /* print a sample file */
+#define UNUR_TEST_SCATTER  0x010u    /* make a scatter plot */
 
 /*---------------------------------------------------------------------------*/
-#endif  /* __UNUR_DEFS_H_SEEN */
+/* run battery of tests                                                      */
+void unur_run_tests( struct unur_par *par, unsigned tests);
+
+/*---------------------------------------------------------------------------*/
+/* particular tests                                                          */
+
+/* print a sample                                                            */
+void unur_test_printsample( struct unur_gen *gen, int n_rows, int n_cols );
+
+/* timing                                                                    */
+struct unur_gen *unur_test_timing( struct unur_par *par, int log_samplesize );
+
+/* count used uniform random numbers                                         */
+int unur_test_count_urn( struct unur_gen *gen, int samplesize );
+
+/* Chi^2 tests                                                               */
+double unur_test_chi2( struct unur_gen *gen, int intervals, int samplesize, int classmin, int output );
+
+/* make scatterplot of generated numbers                                     */
+int unur_make_scatterplot( struct unur_gen *gen );
+
+/*---------------------------------------------------------------------------*/
+#endif  /* __UNURAN_TESTS_H_SEEN */
 /*---------------------------------------------------------------------------*/
 

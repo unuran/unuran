@@ -4,11 +4,14 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   file:      printsample.c                                                *
+ *   FILE: source_stddistr.h                                                 *
  *                                                                           *
- *   print a sample of random numbers                                        *
+ *   PURPOSE:                                                                *
+ *         defines identifiers for standard distributions                    *
  *                                                                           *
- *****************************************************************************
+ *   USAGE:                                                                  *
+ *         only included in ../methods/distr.c and source_distributions.h    *
+ *                                                                           *
  *****************************************************************************
      $Id$
  *****************************************************************************
@@ -34,78 +37,32 @@
  *****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
-
-#include <unuran_tests.h>
-#include <source_unuran.h>
-
+#ifndef __SOURCE_STDDISTR_H_SEEN
+#define __SOURCE_STDDISTR_H_SEEN
 /*---------------------------------------------------------------------------*/
 
-void
-unur_test_printsample( struct unur_gen *gen, int n_rows, int n_cols )
-     /*----------------------------------------------------------------------*/
-     /* print a sample of generator output in small (n_rows x n_cols) table  */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   gen    ... pointer to generator object                             */
-     /*   n_rows ... number of rows                                          */
-     /*   n_cols ... number of columns (for univariate case only)            */
-     /*----------------------------------------------------------------------*/
-{
-  int i,j,k;
+/*---------------------------------------------------------------------------*/
+/* indentifiers for standard distributions                                   */
 
-  /* check arguments */
-  CHECK_NULL(gen,/*void*/);
+enum {
+  UNUR_DISTR_GENERIC  = 0x0u,
 
-  printf("\nSAMPLE: ");              
-
-  switch (gen->method & UNUR_MASK_TYPE) {
-  
-  case UNUR_METH_DISCR:
-    for( j=0; j<n_rows; j++ ) {
-      for(i=0; i<n_cols; i++)
-	printf("%04d ",unur_sample_discr(gen));
-      printf("\n        "); 
-    }
-    break;
-
-  case UNUR_METH_CONT:
-    for( j=0; j<n_rows; j++ ) {
-      for(i=0; i<n_cols; i++)
-	printf("%8.5f ",unur_sample_cont(gen));
-      printf("\n        "); 
-    }
-    break;
-
-  case UNUR_METH_VEC:
-    { /* we need an array for the vector */
-      double *vec;
-      int dim;
-      dim = unur_get_dimension(gen);
-      vec = _unur_malloc( dim * sizeof(double) );
-	
-      for( j=0; j<n_rows; j++ ) {
-	unur_sample_vec(gen,vec);
-	printf("( %8.5f",vec[0]);
-	for (k=1; k<dim; k++)
-	  printf(", %8.5f",vec[k]);
-	printf(" )\n        ");
-      }
-      free(vec);
-    }
-    break;
-  default: /* unknown ! */
-    _unur_warning("Tests",UNUR_ERR_GENERIC,"method unknown!");
-    return;
-  }
-
-  printf("\n");
-
-} /* end of unur_test_printsample() */
+  UNUR_DISTR_BETA,
+  UNUR_DISTR_CAUCHY,
+  UNUR_DISTR_CHISQUARE,
+  UNUR_DISTR_EXPONENTIAL,
+  UNUR_DISTR_GAMMA,
+  UNUR_DISTR_LAPLACE,
+  UNUR_DISTR_LOGNORMAL,
+  UNUR_DISTR_LOMAX,
+  UNUR_DISTR_NORMAL,
+  UNUR_DISTR_PARETO,
+  UNUR_DISTR_POWEREXPONENTIAL,
+  UNUR_DISTR_RAYLEIGH,
+  UNUR_DISTR_STUDENT,
+  UNUR_DISTR_UNIFORM,
+};
 
 /*---------------------------------------------------------------------------*/
-
-
-
-
-
-
+#endif  /* __SOURCE_STDDISTR_H_SEEN */
+/*---------------------------------------------------------------------------*/

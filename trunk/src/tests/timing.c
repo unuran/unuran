@@ -38,7 +38,7 @@
 #include <sys/time.h>
 
 #include <source_unuran.h>
-#include <unur_tests.h>
+#include <unuran_tests.h>
 
 /*---------------------------------------------------------------------------*/
 

@@ -4,14 +4,14 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   FILE: unur_tests.h                                                      *
+ *   FILE: source_specfunct.h                                                *
  *                                                                           *
  *   PURPOSE:                                                                *
- *         defines macros and function prototypes for testing routines.      *
+ *         prototypes and macros for using special functions like erf(),     *
+ *         gamma(), beta(), etc., which are imported from other packages.    *
  *                                                                           *
  *   USAGE:                                                                  *
- *         included in all test source files.                                *
- *         required for every application of UNURAN test routines.           *
+ *         only included in source_distributions.h                           *
  *                                                                           *
  *****************************************************************************
      $Id$
@@ -38,43 +38,45 @@
  *****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
-#ifndef __UNUR_TESTS_H_SEEN
-#define __UNUR_TESTS_H_SEEN
+#ifndef __SOURCE_SPECFUNCT_H_SEEN
+#define __SOURCE_SPECFUNCT_H_SEEN
 /*---------------------------------------------------------------------------*/
 
-#include <unur_defs.h>
+/*****************************************************************************
+ *                                                                           *
+ *   Prototypes for special functions like erf(), gamma(), beta(), etc.      *
+ *   which are imported from other packages.                                 *
+ *                                                                           *
+ *   We use the package CEPHES/LDOUBLE for computing these functions         *
+ *   (available from NETLIB, http://www.netlib.org/cephes/                   *
+ *   Copyright 1984 - 1994 by Stephen L. Moshier                             *
+ *                                                                           *
+ *****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
-/* run battery of tests                                                      */
-void unur_run_tests( struct unur_par *par, unsigned tests);
+/* CEPHES library                                                            */
+
+/* cdf of beta(a,b) distribution */
+extern long double incbetl(long double a, long double b, long double x);
+#define _unur_cdf_beta_ext(x,a,b) ((double)incbetl((long double)(a),(long double)(b),(long double)(x)))
+
+/* cdf of chi^2 distribution with nu degrees of freedom */
+extern long double chdtrl(long double df, long double x);
+#define _unur_cdf_chisquare_ext(x,nu)  ((double)chdtrl((long double)(nu),(long double)(x)))
+
+/* logarithm of gamma function */
+extern long double lgaml(long double x);
+#define _unur_gammaln_ext(x)  ((double)(lgaml((long double)(x))))
+#define _unur_gammaln(x)      _unur_gammaln_ext(x)
+
+/* cdf of gamma(a,b) distribution */
+extern long double gdtrl(long double a, long double b, long double x);
+#define _unur_cdf_gamma_ext(x,a,b)    ((double)(gdtrl((long double)(b),(long double)(a),(long double)(x))))
+
+/* cdf of normal distribution */
+extern long double ndtrl(long double x);
+#define _unur_cdf_normal_ext(x) ((double)(ndtrl((long double)(x))))
 
 /*---------------------------------------------------------------------------*/
-/* particular tests                                                          */
-
-/* print a sample                                                            */
-void unur_test_printsample( struct unur_gen *gen, int n_rows, int n_cols );
-
-/* timing                                                                    */
-struct unur_gen *unur_test_timing( struct unur_par *par, int log_samplesize );
-
-/* count used uniform random numbers                                         */
-int unur_test_count_urn( struct unur_gen *gen, int samplesize );
-
-/* Chi^2 tests                                                               */
-double unur_test_chi2( struct unur_gen *gen, int intervals, int samplesize, int classmin, int output );
-
-/* make scatterplot of generated numbers                                     */
-int unur_make_scatterplot( struct unur_gen *gen );
-
-/* possible tests                                                            */
-#define UNUR_TEST_ALL      (~0u)     /* make all possible tests */
-#define UNUR_TEST_TIME     0x001u    /* estimate time */
-#define UNUR_TEST_N_URNG   0x002u    /* count number of urng (needs compiler switch) */
-#define UNUR_TEST_CHI2     0x004u    /* run chi^2 test for goodness of fit */
-#define UNUR_TEST_SAMPLE   0x008u    /* print a sample file */
-#define UNUR_TEST_SCATTER  0x010u    /* make a scatter plot */
-
+#endif  /* __SOURCE_SPECFUNCT_H_SEEN */
 /*---------------------------------------------------------------------------*/
-#endif  /* end of #ifdef __UNUR_TESTS_H_SEEN */
-/*---------------------------------------------------------------------------*/
-

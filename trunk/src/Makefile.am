@@ -16,7 +16,6 @@ libunuran_a_LIBADD = \
  uniform/*.o
 
 pkginclude_HEADERS = \
- unur_defs.h \
  unuran_config.h
 
 # clean backup files too

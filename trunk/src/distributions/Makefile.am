@@ -25,9 +25,13 @@ libdistr_a_SOURCES = \
  student.c \
  uniform.c
 
-pkginclude_HEADERS = unur_distribution.h
+pkginclude_HEADERS = \
+ unuran_distributions.h
 
-noinst_HEADERS = unur_distribution_lib.h
+noinst_HEADERS = \
+ source_distributions.h \
+ source_specfunct.h \
+ source_stddistr.h
 
 # clean backup files too
 clean-local:

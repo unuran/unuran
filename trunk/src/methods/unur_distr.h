@@ -38,8 +38,8 @@
  *****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
-#ifndef __UNUR_DISTRIBUTION_H_SEEN
-#define __UNUR_DISTRIBUTION_H_SEEN
+#ifndef __UNUR_DISTR_H_SEEN
+#define __UNUR_DISTR_H_SEEN
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*/
@@ -88,47 +88,6 @@ struct unur_distr {
 #ifdef UNUR_COOKIES
   unsigned cookie;                  /* magic cookie                          */
 #endif
-};
-
-/*---------------------------------------------------------------------------*/
-/* types of distribtuions                                                    */
-
-enum {
-  UNUR_DISTR_CONT  = 0x001u,        /* univariate continuous distribution    */ 
-  UNUR_DISTR_DISCR = 0x002u,        /* univariate discrete distribution      */ 
-};
-
-/*---------------------------------------------------------------------------*/
-/* indicate changed parameters                                               */
-
-enum {
-  UNUR_DISTR_SET_PARAMS     = 0x001u,
-  UNUR_DISTR_SET_DOMAIN     = 0x002u,
-  UNUR_DISTR_SET_STDDOMAIN  = 0x004u,   /* domain not truncated (for standard distributions) */
-  UNUR_DISTR_SET_MODE       = 0x008u,
-  UNUR_DISTR_SET_PDFAREA    = 0x010u,
-}; 
-
-/*---------------------------------------------------------------------------*/
-/* indentifiers for standard distributions                                   */
-
-enum {
-  UNUR_DISTR_GENERIC  = 0x0u,
-
-  UNUR_DISTR_BETA,
-  UNUR_DISTR_CAUCHY,
-  UNUR_DISTR_CHISQUARE,
-  UNUR_DISTR_EXPONENTIAL,
-  UNUR_DISTR_GAMMA,
-  UNUR_DISTR_LAPLACE,
-  UNUR_DISTR_LOGNORMAL,
-  UNUR_DISTR_LOMAX,
-  UNUR_DISTR_NORMAL,
-  UNUR_DISTR_PARETO,
-  UNUR_DISTR_POWEREXPONENTIAL,
-  UNUR_DISTR_RAYLEIGH,
-  UNUR_DISTR_STUDENT,
-  UNUR_DISTR_UNIFORM,
 };
 
 /*---------------------------------------------------------------------------*/
@@ -206,9 +165,5 @@ void _unur_distr_discr_debug( struct unur_distr *distr, char *genid, int printve
 /* write info about distribution into logfile                                */
 
 /*---------------------------------------------------------------------------*/
-#endif  /* __UNUR_DISTRIBUTION_H_SEEN */
+#endif  /* __UNUR_DISTR_H_SEEN */
 /*---------------------------------------------------------------------------*/
-
-
-
-

@@ -18,6 +18,7 @@ EXAMPLES = \
  example_emp   example_emp_str \
  example_vemp  \
  example_FuncStr \
+ example_mcorr \
  example_vmt
 
 check_PROGRAMS = $(EXAMPLES)

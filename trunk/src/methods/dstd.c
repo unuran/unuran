@@ -322,7 +322,7 @@ _unur_dstd_init( struct unur_par *par )
   struct unur_gen *gen;
 
   /* check arguments */
-  _unur_check_NULL( GENTYPE,par,NULL );
+  CHECK_NULL(par,NULL);
   _unur_check_NULL( GENTYPE,par->DISTR_IN.init,NULL );
 
   /* check input */

@@ -688,7 +688,7 @@ _unur_srou_init( struct unur_par *par )
   struct unur_gen *gen;
 
   /* check arguments */
-  _unur_check_NULL( GENTYPE,par,NULL );
+  CHECK_NULL(par,NULL);
 
   /* check input */
   if ( par->method != UNUR_METH_SROU ) {

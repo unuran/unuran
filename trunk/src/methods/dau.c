@@ -312,7 +312,7 @@ _unur_dau_init( struct unur_par *par )
   int i;                        /* aux variable */
 
   /* check arguments */
-  _unur_check_NULL( GENTYPE,par,NULL );
+  CHECK_NULL(par,NULL);
 
   /* check input */
   if ( par->method != UNUR_METH_DAU ) {

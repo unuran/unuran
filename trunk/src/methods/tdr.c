@@ -914,7 +914,7 @@ _unur_tdr_init( struct unur_par *par )
   struct unur_gen *gen;
 
   /* check arguments */
-  _unur_check_NULL( GENTYPE,par,0 );
+  CHECK_NULL(par,NULL);
 
   /* check input */
   if ( par->method != UNUR_METH_TDR ) {

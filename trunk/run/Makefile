@@ -16,13 +16,13 @@ test: test.c ../src/unuran.h ../src/libunuran.la
 	../libtool gcc -I. -I.. -I../src -I../src/tests -Wall -g -O2 -o test test.c ../src/libunuran.la -lm -lprng 
 
 something: something.c ../src/unuran.h ../src/libunuran.la
-	../libtool gcc -I. -I.. -I../src -I../src/tests -Wall -DHAVE_CONFIG_H -g -O2 -o something something.c ../src/experimental/libunurexperimental.la ../src/libunuran.la -lm 
+	../libtool gcc -I. -I.. -I../src -I../src/tests -Wall -DHAVE_CONFIG_H -g -O2 -m32 -o something something.c ../src/experimental/libunurexperimental.la ../src/libunuran.la -lm 
 
 hit-shared: hit.c ../src/unuran.h ../src/libunuran.la
 	../libtool gcc -I. -I.. -I../src -I../src/tests -Wall -g -O2 -shared hit.c -o hit.so ../src/.libs/libunuran.so -lm 
 
 hit: hit.c ../src/unuran.h ../src/libunuran.la
-	../libtool gcc -I. -I.. -I../src -I../src/tests -Wall -DHAVE_CONFIG_H -g -O2 -o hit hit.c ../src/experimental/libunurexperimental.la ../src/libunuran.la -lm 
+	../libtool gcc -I. -I.. -I../src -I../src/tests -Wall -DHAVE_CONFIG_H -g -O2 -m32 -o hit hit.c ../src/experimental/libunurexperimental.la ../src/libunuran.la -lm 
 
 f: ../src/utils/fminmax.c fmain.c ../src/unuran.h ../src/libunuran.la
 	../libtool gcc -I. -I.. -I../src -I../src/tests -ansi -pedantic -o f fmain.c ../src/libunuran.la -lm -lprng 

@@ -31,20 +31,20 @@
 
 /* define which tests should run (1) or not (0) */
 #define RUN_DAU           0
-#define RUN_DGT           0
+#define RUN_DGT           1
 
 #define RUN_NINV          0
 #define RUN_UTDR          0
 #define RUN_AROU          0
-#define RUN_SROU          1
+#define RUN_SROU          0
 #define RUN_STDR          0
 #define RUN_TDRSQRT       0
 #define RUN_TDRLOG        0
 #define RUN_TABL          0
 
 #define RUN_NORMAL        0
-#define RUN_GAMMA         1
-#define RUN_BETA          0
+#define RUN_GAMMA         0
+#define RUN_BETA          1
 #define RUN_CAUCHY        0
 #define RUN_UNIFORM       0
 
@@ -79,6 +79,8 @@ int main()
 
   UNUR_DISTR *distr_xxx;
 
+  unur_set_default_debug(0);
+
   /* ------------------------- */
 
   distr_normal = unur_distr_normal(NULL,0);
@@ -92,9 +94,14 @@ int main()
 
   fpar[0] = 5.2;
   fpar[1] = 7.9;
+
+  fpar[0] = 5.;
+  fpar[1] = 10.;
+  fpar[2] = -3.;
+  fpar[3] = 15.;
 /*    fpar[0] = 500.; */
 /*    fpar[1] = 790.; */
-  distr_beta = unur_distr_beta(fpar,2);
+  distr_beta = unur_distr_beta(fpar,4);
 
   fpar[0] = -1.;
   fpar[1] = 10.;

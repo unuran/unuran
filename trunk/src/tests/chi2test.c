@@ -152,6 +152,7 @@ _unur_test_chi2_discr( struct unur_gen *gen,
 
   int *observed;        /* vector for observed occurrences */
   double pval;          /* p-value */
+  int had_PV;           /* whether we had a PV for test or not */
   int i,j;
 
   /* check arguments */
@@ -164,12 +165,16 @@ _unur_test_chi2_discr( struct unur_gen *gen,
   }
 
   /* probability vector */
-  if (DISTR.pv == NULL)
+  if (DISTR.pv == NULL) {
+    had_PV = FALSE;
     /* no PV given --> try to compute PV */
     if (!unur_distr_discr_make_pv(&(gen->distr)) ) {
       /* not successful */
       return -2.;
     }
+  }
+  else 
+    had_PV = TRUE;
   /* pointer to PV */
   pv = DISTR.pv;
   n_pv = DISTR.n_pv;
@@ -211,7 +216,11 @@ _unur_test_chi2_discr( struct unur_gen *gen,
 
   /* free memory */
   free(observed);
-  if (DISTR.pv == NULL) free(pv);
+  if (!had_PV) {
+    free (DISTR.pv);
+    DISTR.pv = NULL;
+    DISTR.n_pv = 0;
+  }
 
   /* return result of test */
   return pval;

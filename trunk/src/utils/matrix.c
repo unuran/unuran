@@ -587,7 +587,7 @@ _unur_matrix_cholesky_decomposition (int dim, const double *S, double *L )
 
 /*--------------------------------------------------------------------------*/
 
-void 
+int 
 _unur_matrix_debug ( int dim, const double *M, const char *info, const char *genid )
      /*----------------------------------------------------------------------*/
      /* The elemets of the rectangular dim x dim matrix M                    */
@@ -605,28 +605,25 @@ _unur_matrix_debug ( int dim, const double *M, const char *info, const char *gen
   FILE *log;
   int i,j;
  
+  CHECK_NULL(M, UNUR_ERR_NULL);
+
   log = unur_get_stream();
 
   fprintf(log,"%s: %s\n", genid, info); 
 
-  if (M==NULL) {
-    fprintf(log,"%s: NULL pointer\n", genid);
-  }
-
-  else {
-    for (i=0; i<dim; i++) {
-      fprintf(log, "%s: ", genid); 
-      for (j=0; j<dim; j++) {
-        M[idx(i,j)]<0 ? 
-        fprintf(log, " %e",  M[idx(i,j)]): 
-        fprintf(log, "  %e", M[idx(i,j)]); 
-      }
-      fprintf(log, "\n");
+  for (i=0; i<dim; i++) {
+    fprintf(log, "%s: ", genid); 
+    for (j=0; j<dim; j++) {
+      M[idx(i,j)]<0 ? 
+      fprintf(log, " %e",  M[idx(i,j)]): 
+      fprintf(log, "  %e", M[idx(i,j)]); 
     }
+    fprintf(log, "\n");
   }
 
   fprintf(log,"%s:\n", genid); 
 
+  return UNUR_SUCCESS;
 #undef idx
 } /* end of _unur_matrix_debug() */  
 

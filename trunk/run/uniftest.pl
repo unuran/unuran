@@ -238,11 +238,11 @@ public class Urand {
 
     /* class variables */
 
-    static int xn = $seed;
+    private static int xn = $seed;
 
     /* member functions */
 
-    static public double myrandom() 
+    public static double myrandom() 
     {
 
         private double retval;
@@ -252,14 +252,15 @@ public class Urand {
 
         retval = 2.32830643653869628906e-10 * retval + 1.16415321826934814453e-10;
 
-        if ( retval  < 0 )
+	if ( retval  < 0 ) {
            retval += 1.0;
+        }
 
         return (retval);
     }
 
 
-    static public void useed(int seed) 
+    public static void useed(int seed) 
     {
 	xn = seed;
     }
@@ -275,8 +276,9 @@ public class Uniftest {
       /* set new seed */
       Urand.useed($seed);
 
-      for (private int i = 0; i<$sample_size;i++)
+      for (private int i = 0; i<$sample_size;i++) {
         System.out.println( Urand.myrandom() );
+      }
    }
 
 }  /* end of class Test */

@@ -456,34 +456,32 @@ sub texi_node {
 
     # print PDF, domain, etc. distribution 
     if ($IN->{$node}->{"=NODE_TYPE"} eq "=DISTR") {
-	if ($IN->{$node}->{"=PDF"} or $IN->{$node}->{"=PMF"}) {
-	    $TEXI .= "\@table \@i\n";
-	    if ($IN->{$node}->{"=PDF"}) {
-		$TEXI .= "\@item PDF:\n".$IN->{$node}->{"=PDF"}."\n";
-	    }
-	    if ($IN->{$node}->{"=PMF"}) {
-		$TEXI .= "\@item PMF:\n".$IN->{$node}->{"=PMF"}."\n";
-	    }
-	    if ($IN->{$node}->{"=CONST"}) {
-		$TEXI .= "\@item constant:\n".$IN->{$node}->{"=CONST"}."\n";
-	    }
-	    if ($IN->{$node}->{"=CDF"}) {
-		$TEXI .= "\@item CDF:\n".$IN->{$node}->{"=CDF"}."\n";
-	    }
-	    if ($IN->{$node}->{"=DOMAIN"}) {
-		$TEXI .= "\@item domain:\n".$IN->{$node}->{"=DOMAIN"}."\n";
-	    }
-	    if ($IN->{$node}->{"=FPARAM"}) {
-		$TEXI .= $IN->{$node}->{"=FPARAM"};
-	    }
-	    if ($IN->{$node}->{"=REF"}) {
-		$TEXI .= "\@item reference:\n".$IN->{$node}->{"=REF"}."\n";
-	    }
-	    if ($IN->{$node}->{"=STDGEN"}) {
-		$TEXI .= "\@item special generators:\n".$IN->{$node}->{"=STDGEN"}."\n";
-	    }
-	    $TEXI .= "\@end table\n\n";
+	$TEXI .= "\@table \@i\n";
+	if ($IN->{$node}->{"=PDF"}) {
+	    $TEXI .= "\@item PDF:\n".$IN->{$node}->{"=PDF"}."\n";
 	}
+	if ($IN->{$node}->{"=PMF"}) {
+	    $TEXI .= "\@item PMF:\n".$IN->{$node}->{"=PMF"}."\n";
+	}
+	if ($IN->{$node}->{"=CONST"}) {
+	    $TEXI .= "\@item constant:\n".$IN->{$node}->{"=CONST"}."\n";
+	}
+	if ($IN->{$node}->{"=CDF"}) {
+	    $TEXI .= "\@item CDF:\n".$IN->{$node}->{"=CDF"}."\n";
+	}
+	if ($IN->{$node}->{"=DOMAIN"}) {
+	    $TEXI .= "\@item domain:\n".$IN->{$node}->{"=DOMAIN"}."\n";
+	}
+	if ($IN->{$node}->{"=FPARAM"}) {
+	    $TEXI .= $IN->{$node}->{"=FPARAM"};
+	}
+	if ($IN->{$node}->{"=REF"}) {
+	    $TEXI .= "\@item reference:\n".$IN->{$node}->{"=REF"}."\n";
+	}
+	if ($IN->{$node}->{"=STDGEN"}) {
+	    $TEXI .= "\@item special generators:\n".$IN->{$node}->{"=STDGEN"}."\n";
+	}
+	$TEXI .= "\@end table\n\n";
     }
 	
     # print description

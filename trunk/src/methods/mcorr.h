@@ -40,7 +40,7 @@
 /* 
    =METHOD  MCORR   Random Correlation matrix
 
-   =UP  Methods_for_CMAT
+   =UP  Methods_for_MATR
 
    =REQUIRED  Distribution object for random correlation matrix
 

@@ -52,7 +52,7 @@ static const char distr_name[] = "correlation";
 
 /*---------------------------------------------------------------------------*/
 
-#define DISTR distr->data.cmat
+#define DISTR distr->data.matr
 
 /*---------------------------------------------------------------------------*/
 /* function prototypes                                                       */
@@ -73,7 +73,7 @@ unur_distr_correlation( int n )
   struct unur_distr *distr;
 
   /* get new (empty) distribution object */
-  distr = unur_distr_cmat_new(n,n);
+  distr = unur_distr_matr_new(n,n);
 
   /* check new parameter for generator */
   if (distr == NULL) {

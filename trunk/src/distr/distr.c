@@ -228,23 +228,23 @@ unur_distr_is_cvemp( const struct unur_distr *distr )
 /*---------------------------------------------------------------------------*/
 
 int 
-unur_distr_is_cmat( const struct unur_distr *distr )
+unur_distr_is_matr( const struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
-     /* TRUE if distribution is continuous matrix distribution.              */
+     /* TRUE if distribution is matrix distribution.                         */
      /*                                                                      */
      /* parameters:                                                          */
      /*   distr ... pointer to distribution object                           */
      /*                                                                      */
      /* return:                                                              */
-     /*   TRUE  ... if continuous matrix                                     */
+     /*   TRUE  ... if matrix distribution                                   */
      /*   FALSE ... otherwise (and in case of an error)                      */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
   _unur_check_NULL( NULL, distr, FALSE );
 
-  return ((distr->type == UNUR_DISTR_CMAT) ? TRUE : FALSE);
-} /* end of unur_distr_is_cvec() */
+  return ((distr->type == UNUR_DISTR_MATR) ? TRUE : FALSE);
+} /* end of unur_distr_is_matr() */
 
 /*---------------------------------------------------------------------------*/
 

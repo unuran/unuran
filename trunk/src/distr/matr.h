@@ -4,11 +4,11 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   FILE: cmat.h                                                            *
+ *   FILE: matr.h                                                            *
  *                                                                           *
  *   PURPOSE:                                                                *
  *         function prototypes for manipulating distribution objects of      *
- *         type  CMAT  (continuous matrix distribution)                      *
+ *         type  MATR  (matrix distribution)                                 *
  *                                                                           *
  *   USAGE:                                                                  *
  *         only included in unuran.h                                         *
@@ -40,7 +40,7 @@
 /*---------------------------------------------------------------------------*/
 
 /* 
-   =NODE   CMAT   Continuous MATrix distributions
+   =NODE   MATR   MATRix distributions
 
    =UP Distribution_objects [45]
 
@@ -55,27 +55,26 @@
 /*---------------------------------------------------------------------------*/
 
 /* 
-   Routines for handling continuous matrix distributions (CMAT).
+   Routines for handling matrix distributions (MATR).
 */
 
 /* =ROUTINES */
 
-UNUR_DISTR *unur_distr_cmat_new( int n_rows, int n_cols );
+UNUR_DISTR *unur_distr_matr_new( int n_rows, int n_cols );
 /* 
-   Create a new (empty) object for a continuous matrix
-   distribution. @var{n_rows} and @var{n_cols} are the respective
-   numbers of rows and columns of the random matrix (i.e. its
-   dimensions). Each must be at least 2; otherwise
-   unur_distr_cont_new() or unur_distr_cvec_new() should be used to
-   create an object for a univariate distribution and a multivariate
-   (vector) distribution.
+   Create a new (empty) object for a matrix distribution. @var{n_rows}
+   and @var{n_cols} are the respective numbers of rows and columns of
+   the random matrix (i.e. its dimensions). Each must be at least 2;
+   otherwise unur_distr_cont_new() or unur_distr_cvec_new() should be
+   used to create an object for a univariate distribution and a
+   multivariate (vector) distribution.
 */
 
 /* ==DOC
    @subsubheading Essential parameters
 */
 
-int unur_distr_cmat_get_dim( const UNUR_DISTR *distribution, int *n_rows, int *n_cols );
+int unur_distr_matr_get_dim( const UNUR_DISTR *distribution, int *n_rows, int *n_cols );
 /* 
    Get number of rows and columns of random matrix (its dimension).
    It returns the total number of components. In case of an error

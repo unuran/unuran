@@ -225,7 +225,7 @@ struct unur_gen {
     _UNUR_SAMPLING_ROUTINE_CONT  *cont;
     _UNUR_SAMPLING_ROUTINE_DISCR *discr;
     _UNUR_SAMPLING_ROUTINE_VEC   *cvec;
-    _UNUR_SAMPLING_ROUTINE_VEC   *cmat;
+    _UNUR_SAMPLING_ROUTINE_VEC   *matr;
   }               sample;     /* pointer to sampling routine                 */
   
   unsigned method;            /* indicates method and generator to be used   */

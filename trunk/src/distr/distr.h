@@ -120,7 +120,7 @@ enum {
   UNUR_DISTR_CEMP  = 0x011u,     /* empirical univ. cont. distr. (a sample)  */ 
   UNUR_DISTR_CVEC  = 0x110u,     /* mulitvariate continuous distribution     */ 
   UNUR_DISTR_CVEMP = 0x111u,     /* empirical multiv. cont. distr. (sample)  */ 
-  UNUR_DISTR_CMAT  = 0x210u,     /* continuous matrix distribution           */ 
+  UNUR_DISTR_MATR  = 0x210u,     /* matrix distribution                      */ 
   UNUR_DISTR_DISCR = 0x020u      /* univariate discrete distribution         */ 
 };
 
@@ -154,7 +154,7 @@ int unur_distr_get_dim( const UNUR_DISTR *distribution );
 
    For matrix distributions it returns the number of components.
    When the respective numbers of rows and columns are needed use
-   unur_distr_cmat_get_dim() instead.
+   unur_distr_matr_get_dim() instead.
 */
 
 
@@ -171,10 +171,10 @@ unsigned int unur_distr_get_type( const UNUR_DISTR *distribution );
    continuous mulitvariate distributions
    @item UNUR_DISTR_CVEMP
    empirical continuous multivariate distributions (i.e. samples)
-   @item UNUR_DISTR_CMAT
-   continuous matrix distributions
    @item UNUR_DISTR_DISCR
    discrete univariate distributions
+   @item UNUR_DISTR_MATR
+   matrix distributions
    @end table
 
    Alternatively the @command{unur_distr_is_<TYPE>}
@@ -203,14 +203,14 @@ int unur_distr_is_cvemp( const UNUR_DISTR *distribution );
    distribution.
 */
 
-int unur_distr_is_cmat( const UNUR_DISTR *distribution );
-/* 
-   TRUE if @var{distribution} is a continuous matrix distribution.
-*/
-
 int unur_distr_is_discr( const UNUR_DISTR *distribution );
 /* 
    TRUE if @var{distribution} is a discrete univariate distribution.
+*/
+
+int unur_distr_is_matr( const UNUR_DISTR *distribution );
+/* 
+   TRUE if @var{distribution} is a matrix distribution.
 */
 
 /* =END */

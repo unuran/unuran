@@ -6,7 +6,7 @@
  *                                                                           *
  *   FILE:      mcorr.c                                                      *
  *                                                                           *
- *   TYPE:      continuous random matrix                                     *
+ *   TYPE:      random matrix                                                *
  *   METHOD:    Matrix -- COORelation matrix                                 *
  *                                                                           *
  *   DESCRIPTION:                                                            *
@@ -93,7 +93,7 @@ static struct unur_gen *_unur_mcorr_create( struct unur_par *par );
 /* create new (almost empty) generator object.                               */
 /*---------------------------------------------------------------------------*/
 
-static void _unur_mcorr_sample_cmat( struct unur_gen *gen, double *mat );
+static void _unur_mcorr_sample_matr( struct unur_gen *gen, double *mat );
 /*---------------------------------------------------------------------------*/
 /* sample from generator                                                     */
 /*---------------------------------------------------------------------------*/
@@ -118,13 +118,13 @@ static void _unur_mcorr_debug_init( const struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 /* abbreviations */
 
-#define DISTR_IN  distr->data.cmat      /* data for distribution object      */
+#define DISTR_IN  distr->data.matr      /* data for distribution object      */
 
 #define PAR       par->data.mcorr       /* data for parameter object         */
 #define GEN       gen->data.mcorr       /* data for generator object         */
-#define DISTR     gen->distr->data.cmat /* data for distribution in generator object */
+#define DISTR     gen->distr->data.matr /* data for distribution in generator object */
 
-#define SAMPLE    gen->sample.cmat      /* pointer to sampling routine       */     
+#define SAMPLE    gen->sample.matr      /* pointer to sampling routine       */     
 
 /*---------------------------------------------------------------------------*/
 #define NORMAL  gen->gen_aux        /* pointer to normal variate generator   */
@@ -155,10 +155,10 @@ unur_mcorr_new( const struct unur_distr *distr )
   _unur_check_NULL( GENTYPE,distr,NULL );
 
   /* check distribution */
-  if ( !(distr->type == UNUR_DISTR_CMAT &&
+  if ( !(distr->type == UNUR_DISTR_MATR &&
 	 distr->id == UNUR_DISTR_MCORRELATION) ) {
     _unur_error(GENTYPE,UNUR_ERR_DISTR_INVALID,""); return NULL; }
-  COOKIE_CHECK(distr,CK_DISTR_CMAT,NULL);
+  COOKIE_CHECK(distr,CK_DISTR_MATR,NULL);
 
   /* allocate structure */
   par = _unur_malloc(sizeof(struct unur_par));
@@ -283,7 +283,7 @@ _unur_mcorr_create( struct unur_par *par )
   gen->genid = _unur_set_genid(GENTYPE);
 
   /* routines for sampling and destroying generator */
-  SAMPLE = _unur_mcorr_sample_cmat;
+  SAMPLE = _unur_mcorr_sample_matr;
   gen->destroy = _unur_mcorr_free;
   gen->clone = _unur_mcorr_clone;
 
@@ -355,7 +355,7 @@ _unur_mcorr_clone( const struct unur_gen *gen )
 /*****************************************************************************/
 
 void
-_unur_mcorr_sample_cmat( struct unur_gen *gen, double *mat )
+_unur_mcorr_sample_matr( struct unur_gen *gen, double *mat )
      /*----------------------------------------------------------------------*/
      /* sample from generator                                                */
      /*                                                                      */
@@ -400,7 +400,7 @@ _unur_mcorr_sample_cmat( struct unur_gen *gen, double *mat )
     }
 
 #undef idx
-} /* end of _unur_mcorr_sample_cmat() */
+} /* end of _unur_mcorr_sample_matr() */
 
 /*****************************************************************************/
 
@@ -462,15 +462,15 @@ _unur_mcorr_debug_init( const struct unur_gen *gen )
   log = unur_get_stream();
 
   fprintf(log,"%s:\n",gen->genid);
-  fprintf(log,"%s: type    = continuous random matrix\n",gen->genid);
+  fprintf(log,"%s: type    = random matrix\n",gen->genid);
   fprintf(log,"%s: method  = MCORR (Matrix - CORRELATION matrix)\n",gen->genid);
   fprintf(log,"%s:\n",gen->genid);
 
-  _unur_distr_cmat_debug( gen->distr, gen->genid );
+  _unur_distr_matr_debug( gen->distr, gen->genid );
 
   fprintf(log,"%s:\n",gen->genid);
 
-  fprintf(log,"%s: sampling routine = _unur_mcorr_sample_cmat()\n",gen->genid);
+  fprintf(log,"%s: sampling routine = _unur_mcorr_sample_matr()\n",gen->genid);
   fprintf(log,"%s:\n",gen->genid);
 
 } /* end of _unur_mcorr_debug_init() */

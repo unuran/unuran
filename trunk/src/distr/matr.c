@@ -4,9 +4,9 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   FILE: cmat.c                                                            *
+ *   FILE: matr.c                                                            *
  *                                                                           *
- *   manipulate continuous matrix distribution objects                       *
+ *   manipulate matrix distribution objects                                  *
  *                                                                           *
  *   return:                                                                 *
  *     UNUR_SUCCESS ... on success                                           *
@@ -51,27 +51,27 @@ static const char unknown_distr_name[] = "unknown";
 
 /*---------------------------------------------------------------------------*/
 
-#define DISTR distr->data.cmat
+#define DISTR distr->data.matr
 
 /*---------------------------------------------------------------------------*/
 
-static void _unur_distr_cmat_free( struct unur_distr *distr );
+static void _unur_distr_matr_free( struct unur_distr *distr );
 
 /*---------------------------------------------------------------------------*/
 
 /*****************************************************************************/
 /**                                                                         **/
-/** continuous matrix distributions                                         **/
+/** matrix distributions                                                    **/
 /**                                                                         **/
 /*****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
 
 struct unur_distr *
-unur_distr_cmat_new( int n_rows, int n_cols )
+unur_distr_matr_new( int n_rows, int n_cols )
      /*----------------------------------------------------------------------*/
      /* create a new (empty) distribution object                             */
-     /* type: continuous matrix                                              */
+     /* type: matrix distribution                                            */
      /*                                                                      */
      /* parameters:                                                          */
      /*   n_rows ... number of rows of matrix                                */
@@ -97,10 +97,10 @@ unur_distr_cmat_new( int n_rows, int n_cols )
   if (!distr) return NULL;
 
   /* set magic cookie */
-  COOKIE_SET(distr,CK_DISTR_CMAT);
+  COOKIE_SET(distr,CK_DISTR_MATR);
 
   /* set type of distribution */
-  distr->type = UNUR_DISTR_CMAT;
+  distr->type = UNUR_DISTR_MATR;
 
   /* set id to generic distribution */
   distr->id = UNUR_DISTR_GENERIC;
@@ -118,10 +118,10 @@ unur_distr_cmat_new( int n_rows, int n_cols )
   distr->base = NULL;
 
   /* destructor */
-  distr->destroy = _unur_distr_cmat_free;
+  distr->destroy = _unur_distr_matr_free;
 
   /* clone */
-  distr->clone = _unur_distr_cmat_clone;
+  distr->clone = _unur_distr_matr_clone;
 
   /* set defaults                                                            */
   DISTR.init      = NULL;   /* pointer to special init routine (default: none) */
@@ -131,12 +131,12 @@ unur_distr_cmat_new( int n_rows, int n_cols )
   /* return pointer to object */
   return distr;
 
-} /* end of unur_distr_cmat_new() */
+} /* end of unur_distr_matr_new() */
 
 /*---------------------------------------------------------------------------*/
 
 struct unur_distr *
-_unur_distr_cmat_clone( const struct unur_distr *distr )
+_unur_distr_matr_clone( const struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
      /* copy (clone) distribution object                                     */
      /*                                                                      */
@@ -147,14 +147,14 @@ _unur_distr_cmat_clone( const struct unur_distr *distr )
      /*   pointer to clone of distribution object                            */
      /*----------------------------------------------------------------------*/
 {
-#define CLONE clone->data.cmat
+#define CLONE clone->data.matr
 
   struct unur_distr *clone;
   int len;
 
   /* check arguments */
   _unur_check_NULL( NULL, distr, NULL );
-  _unur_check_distr_object( distr, CMAT, NULL );
+  _unur_check_distr_object( distr, MATR, NULL );
 
   /* allocate memory */
   clone = _unur_malloc( sizeof(struct unur_distr) );
@@ -175,12 +175,12 @@ _unur_distr_cmat_clone( const struct unur_distr *distr )
   return clone;
 
 #undef CLONE
-} /* end of _unur_distr_cmat_clone() */
+} /* end of _unur_distr_matr_clone() */
 
 /*---------------------------------------------------------------------------*/
 
 void
-_unur_distr_cmat_free( struct unur_distr *distr )
+_unur_distr_matr_free( struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
      /* free distribution object                                             */
      /*                                                                      */
@@ -192,7 +192,7 @@ _unur_distr_cmat_free( struct unur_distr *distr )
   if( distr == NULL ) /* nothing to do */
     return;
 
-  COOKIE_CHECK(distr,CK_DISTR_CMAT,RETURN_VOID);
+  COOKIE_CHECK(distr,CK_DISTR_MATR,RETURN_VOID);
 
   /* user name for distribution */
   if (distr->name_str) free(distr->name_str);
@@ -200,12 +200,12 @@ _unur_distr_cmat_free( struct unur_distr *distr )
   COOKIE_CLEAR(distr);
   free( distr );
 
-} /* end of unur_distr_cmat_free() */
+} /* end of unur_distr_matr_free() */
 
 /*---------------------------------------------------------------------------*/
 
 int
-unur_distr_cmat_get_dim( const struct unur_distr *distr, int *n_rows, int *n_cols )
+unur_distr_matr_get_dim( const struct unur_distr *distr, int *n_rows, int *n_cols )
      /*----------------------------------------------------------------------*/
      /* get number of rows and columns of matrix                             */
      /* return total number of entries                                       */
@@ -224,7 +224,7 @@ unur_distr_cmat_get_dim( const struct unur_distr *distr, int *n_rows, int *n_col
 {
   /* check arguments */
   _unur_check_NULL( NULL, distr, 0 );
-  _unur_check_distr_object( distr, CMAT, 0 );
+  _unur_check_distr_object( distr, MATR, 0 );
   CHECK_NULL( n_rows, 0 );
   CHECK_NULL( n_cols, 0 );
 
@@ -233,7 +233,7 @@ unur_distr_cmat_get_dim( const struct unur_distr *distr, int *n_rows, int *n_col
 
   return distr->dim;
 
-} /* end of unur_distr_cmat_get_dim() */
+} /* end of unur_distr_matr_get_dim() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -243,7 +243,7 @@ unur_distr_cmat_get_dim( const struct unur_distr *distr, int *n_rows, int *n_col
 /*---------------------------------------------------------------------------*/
 
 void
-_unur_distr_cmat_debug( const struct unur_distr *distr, const char *genid )
+_unur_distr_matr_debug( const struct unur_distr *distr, const char *genid )
      /*----------------------------------------------------------------------*/
      /* write info about distribution into logfile                           */
      /*                                                                      */
@@ -256,19 +256,19 @@ _unur_distr_cmat_debug( const struct unur_distr *distr, const char *genid )
 
   /* check arguments */
   CHECK_NULL(distr,RETURN_VOID);
-  COOKIE_CHECK(distr,CK_DISTR_CMAT,RETURN_VOID);
+  COOKIE_CHECK(distr,CK_DISTR_MATR,RETURN_VOID);
 
   log = unur_get_stream();
 
   fprintf(log,"%s: distribution:\n",genid);
-  fprintf(log,"%s:\ttype = continuous matrix distribution\n",genid);
+  fprintf(log,"%s:\ttype = matrix distribution\n",genid);
   fprintf(log,"%s:\tname = %s\n",genid,distr->name);
 
   fprintf(log,"%s:\tdimension = %d x %d   (= %d)\n",genid,DISTR.n_rows,DISTR.n_cols,distr->dim);
 
   fprintf(log,"%s:\n",genid);
 
-} /* end of _unur_distr_cmat_debug() */
+} /* end of _unur_distr_matr_debug() */
 
 /*---------------------------------------------------------------------------*/
 #endif    /* end UNUR_ENABLE_LOGGING */

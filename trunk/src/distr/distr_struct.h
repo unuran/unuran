@@ -73,18 +73,6 @@ struct unur_distr_cont {
 };
 
 /*---------------------------------------------------------------------------*/
-/* define object for matrix distribution with continuous entries             */
-
-struct unur_distr_cmat {
-
-  int n_rows;                   /* number of rows                            */
-  int n_cols;                   /* number of columns                         */
-
-  int  (*init)(struct unur_par *par,struct unur_gen *gen);
-                                /* pointer to special init routine           */
-};
-
-/*---------------------------------------------------------------------------*/
 /* define object for multivariate continuous distribution                    */
 
 struct unur_distr_cvec {
@@ -169,12 +157,24 @@ struct unur_distr_cvemp {
 };
 
 /*---------------------------------------------------------------------------*/
+/* define object for matrix distribution                                     */
+
+struct unur_distr_matr {
+
+  int n_rows;                   /* number of rows                            */
+  int n_cols;                   /* number of columns                         */
+
+  int  (*init)(struct unur_par *par,struct unur_gen *gen);
+                                /* pointer to special init routine           */
+};
+
+/*---------------------------------------------------------------------------*/
 /* define distribution object                                                */
 
 struct unur_distr {
   union {             
     struct unur_distr_cont  cont;   /* univariate continuous distribution    */
-    struct unur_distr_cmat  cmat;   /* matrix distribution with continuous entries */
+    struct unur_distr_matr  matr;   /* matrix distribution                   */
     struct unur_distr_cvec  cvec;   /* multivariate continuous distribution  */
     struct unur_distr_discr discr;  /* univariate discrete distribution      */
     struct unur_distr_cemp  cemp;   /* empirical univ. cont. distr. (sample) */

@@ -510,26 +510,16 @@ int _unur_mcorr_eigen (int dim, double *values, double *M )
   int i,j,k;
   double *E, *P;
   double *x, *y, *z, *w, *r; /* misc vectors used in the marsaglia-olkin method */
-  double a, b, c, e, e2, sumval;
+  double a, b, c, e, e2;
   int s; /* random sign +-1 */
 
   /* check parameters */
   CHECK_NULL(values, UNUR_ERR_NULL);
   CHECK_NULL(M, UNUR_ERR_NULL);
   if (dim<1) {
-    _unur_error("matrix",UNUR_ERR_GENERIC,"dimension < 1");
+    _unur_error("MCORR",UNUR_ERR_GENERIC,"dimension < 1");
     return UNUR_ERR_GENERIC;
   }
-
-#if 1
-  /* TODO : checks for values<0 and warnings ... */
-  /* calculating sum of eigenvalues */
-  sumval=0;
-  for (i=0; i<dim; i++) {
-    sumval += values[i];
-  }
-
-#endif
 
   /* initialization steps */
   x=_unur_xmalloc(dim*sizeof(double));
@@ -563,6 +553,18 @@ int _unur_mcorr_eigen (int dim, double *values, double *M )
     a=0;
     for (i=0; i<dim; i++)
       a += (1-values[i])*x[i]*x[i];
+
+    /* check if all eigenvalues are ~1 */
+    if (fabs(a)<DBL_EPSILON) {
+      /* return identity matrix */
+      for (i=0; i<dim; i++) {
+      for (j=0; j<dim; j++) {
+        M[idx(i,j)] = (i==j) ? 1: 0;
+      }}
+      _unur_warning("MCORR", UNUR_ERR_GENERIC,"all eigenvalues are ~1 -> identity matrix");
+      
+      return UNUR_SUCCESS;
+    }
 
     do {
 

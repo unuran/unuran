@@ -18,12 +18,7 @@ $FORTRAN_src = "$FORTRAN_exec.f";
 
 $JAVA_urand_src = "./Urand.java";
 $JAVA_src = "./run_test_urand_JAVA.java";
-
 $JAVA_exec = "./run_test_urand_JAVA";
-
-##$JAVA_src = "./urand_java.java";
-##$JAVA_exec = "./Urandtest";
-
 
 ####################################################
 

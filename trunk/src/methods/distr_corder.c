@@ -202,19 +202,20 @@ unur_distr_corder_new( struct unur_distr *distr, int n, int k )
   OS.upd_area  = NULL;
 #endif
 
-  /* log of normalization constant */
-#ifdef HAVE_AREA
-  _unur_upd_area_corder(os);
-#else
-  LOGNORMCONSTANT = 0.;
-#endif
-
   /* parameters set */
 #ifdef HAVE_CDF
   os->set = distr->set & ~UNUR_DISTR_SET_MODE; /* mode not derived from distr */
 #else
   /* cannot compute area below pdf */
   os->set = distr->set & ~(UNUR_DISTR_SET_MODE | UNUR_DISTR_SET_PDFAREA);
+#endif
+
+  /* log of normalization constant */
+#ifdef HAVE_AREA
+  if (_unur_upd_area_corder(os))
+    os->set |= UNUR_DISTR_SET_PDFAREA;
+#else
+  LOGNORMCONSTANT = 0.;
 #endif
 
   /* return pointer to object */
@@ -311,6 +312,11 @@ unur_distr_corder_set_rank( struct unur_distr *os, int n, int k )
   OS.params[0] = (double) n;
   OS.params[1] = (double) k;
 
+  /* log of normalization constant */
+#ifdef HAVE_AREA
+  _unur_upd_area_corder(os);
+#endif
+
   /* o.k. */
   return 1;
 } /* end of unur_distr_corder_set_rank() */
@@ -386,7 +392,10 @@ _unur_pdf_corder( double x, struct unur_distr *os )
   q = OS.params[0] - OS.params[1] + 1.;   /* n-k+1 */
 
   /* pdf(x) = b(F(x)) * f(x) */
-  return exp(log(fx) + (p-1.)*log(Fx) + (q-1.)*log(1.-Fx) - LOGNORMCONSTANT);
+  if (fx <= 0. || Fx <= 0. || Fx >= 1.)
+    return 0.;
+  else
+    return exp(log(fx) + (p-1.)*log(Fx) + (q-1.)*log(1.-Fx) - LOGNORMCONSTANT);
 
 } /* end of _unur_pdf_corder() */
 
@@ -421,6 +430,11 @@ _unur_dpdf_corder( double x, struct unur_distr *os )
 
   p = OS.params[1];                       /* k     */
   q = OS.params[0] - OS.params[1] + 1.;   /* n-k+1 */
+
+  if (fx <= 0. || Fx <= 0. || Fx >= 1.)
+    return 0.;
+
+  /* else */
 
   lFx = log(Fx);
   lFy = log(1.-Fx);
@@ -474,7 +488,6 @@ _unur_cdf_corder( double x, struct unur_distr *os )
 int
 _unur_upd_area_corder( UNUR_DISTR *os )
 {
-  double Ftrunc;   /* cdf(right) - cdf(left) for Ftruncated distribution */
 
   /* log of normalization constant */
   /* LOGNORMCONSTANT = _unur_sf_ln_gamma(k) + _unur_sf_ln_gamma(n-k+1) - _unur_sf_ln_gamma(n+1); */
@@ -482,15 +495,22 @@ _unur_upd_area_corder( UNUR_DISTR *os )
 		      + _unur_sf_ln_gamma(OS.params[0] - OS.params[1] + 1.) 
 		      - _unur_sf_ln_gamma(OS.params[0] + 1.) );
 
-  /* truncated distributions */
-  if (!(os->base->set & UNUR_DISTR_SET_STDDOMAIN)) {
-    /* not a standard domain */
-    Ftrunc  = (OS.domain[1] < INFINITY)  ? _unur_cdf_corder(OS.domain[1],os) : 1.;
-    Ftrunc -= (OS.domain[0] > -INFINITY) ? _unur_cdf_corder(OS.domain[0],os) : 0.;
-    LOGNORMCONSTANT += log(Ftrunc);
+  /* we assume that the PDF is the derivative of the given CDF ! */
+
+  /* standard distribution --> nothing to do */
+
+  if (!(os->set & UNUR_DISTR_SET_STDDOMAIN)) {
+    /* truncated distributions */
+    if (OS.cdf == NULL)
+      /* no CDF */
+      return 0;
+
+    OS.area  = (OS.domain[1] < INFINITY)  ? _unur_cdf_corder(OS.domain[1],os) : 1.;
+    OS.area -= (OS.domain[0] > -INFINITY) ? _unur_cdf_corder(OS.domain[0],os) : 0.;
   }
 
-  return 1;
+  return (OS.area > 0.) ? 1 : 0;
+
 } /* end of _unur_upd_area_corder() */
 
 #endif

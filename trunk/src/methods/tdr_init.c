@@ -817,7 +817,6 @@ _unur_tdr_interval_new( struct unur_gen *gen, double x, double fx, int is_mode )
   ++(GEN.n_ivs);   /* increment counter for intervals */
   COOKIE_SET(iv,CK_TDR_IV);
 
-
   /* make left construction point in interval */
   iv->x = x;              /* point x */
   iv->fx = fx;            /* value of p.d.f. at x */

@@ -224,6 +224,9 @@ open FORTRAN, "$FORTRAN_exec |";
 
 open JAVA, "java $JAVA_class |";
 $HAVE_JAVA = ($?) ? 0 : 1;
+unless ($HAVE_JAVA) {
+    print_log("Cannot run JAVA tests!\n\n");
+}
 
 # Run generatores and compare output
 my $data_mode = 0;

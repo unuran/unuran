@@ -47,7 +47,9 @@
 
    =DESCRIPTION
       Full conditional distribution for a given continuous
-      multivariate distributiion.
+      multivariate distributiion. The condition is a position vector
+      and either a variable that is variated or a vector that
+      indicates the direction on which the random vector can variate.
 
       This is a special case of a continuous univariate distribution
       and thus they have most of these parameters (with the exception
@@ -57,13 +59,14 @@
       @item there is a call to extract the underlying multivariate
             distribution,
 
-      @item and a call to handle the variables that are fixed.
+      @item and a call to handle the variables that are fixed and the
+            direction for changing the random vector.
 
       @end itemize
 
       This distibution type is primarily used for evaluation the
       conditional distribution and its derivative (as required for,
-      e.g., the Gibbs sampler). The density is not normalized (does
+      e.g., the Gibbs sampler). The density is not normalized (i.e. does
       not integrate to one). Mode and area are not available and it
       does not make sense to use any call to set or change parameters
       except the ones given below.
@@ -80,42 +83,48 @@
 
 /* =ROUTINES */
 
-UNUR_DISTR *unur_distr_condi_new( const UNUR_DISTR *distribution, const double *pos, int k );
+UNUR_DISTR *unur_distr_condi_new( const UNUR_DISTR *distribution, const double *pos, const double *dir, int k );
 /* 
    Create an object for full conditional distribution for the given
-   @var{distribution} for the @var{k}-th variable and the other
-   variables fixed to @var{pos}.
+   @var{distribution}. The condition is given by a position vector
+   @var{pos} and either the @var{k}-th variable that is variated or
+   the vector @var{dir} that contains the direction on which the
+   random vector can variate.
 
    @var{distribution} must be a pointer to a multivariate continuous
    distribution. 
    @var{pos} must be a pointer to an array of size @code{dim}, where
    @code{dim} is the dimension of the underlying distribution object.
+   @var{dir} must be a pointer to an array if size @code{dim} or NULL.
    @var{k} must be in the range @code{0, @dots{}, dim-1}.
+   If the @var{k}-th variable is used, @var{dir} must be set to NULL. 
 
    The resulting generator object is of the same type as of a
    unur_distr_cont_new() call.
 */
 
-int unur_distr_condi_set_condition( struct unur_distr *distribution, const double *pos, int k );
+int unur_distr_condi_set_condition( struct unur_distr *distribution, const double *pos, const double *dir, int k );
 /* 
    Set/change condition for conditional @var{distribution}. 
-   Change values of fixed variables to @var{pos} and use @var{k}-th
-   variable of conditional @var{distribution}.
+   Change values of fixed variables to @var{pos} and use direction
+   @var{dir} or @var{k}-th variable of conditional @var{distribution}.
 
    @var{pos} must be a pointer to an array of size @code{dim}, where
    @code{dim} is the dimension of the underlying distribution object.
+   @var{dir} must be a pointer to an array if size @code{dim} or NULL.
    @var{k} must be in the range @code{0, @dots{}, dim-1}.
+   If the @var{k}-th variable is used, @var{dir} must be set to NULL. 
 */
 
-int unur_distr_condi_get_condition( struct unur_distr *distribution, const double **pos );
+int unur_distr_condi_get_condition( struct unur_distr *distribution, const double **pos, const double **dir, int *k );
 /* 
    Get condition for conditional @var{distribution}. 
    The values for the fixed variables are stored in @var{pos}, which
    must be a pointer to an array of size @code{dim}.
-   The function returns the number of the variable for which the 
-   conditional distribution is computed.
+   The condition is stored in @var{dir} and @var{k}, respectively.
 
-   @emph{Important:} Do @strong{not} change the entries in @var{pos}!
+   @emph{Important:} Do @strong{not} change the entries in @var{pos}
+   and @var{dir}!
 */
 
 const UNUR_DISTR *unur_distr_condi_get_distribution( const UNUR_DISTR *distribution );

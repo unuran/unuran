@@ -54,6 +54,19 @@ static const char distr_name[] = "conditional";
 #define DISTR distr->data.cvec    /* underlying (base) distribution          */
 #define CONDI condi->data.cont    /* conditional distribution                */
 
+#define iK           0            /* index of variable to be variated        */
+#define K            (condi->data.cont.params[iK])
+
+#define iPOSITION    0            /* condition (position of point)           */
+#define iDIRECTION   1            /* direction of variation                  */
+#define iXARG        2            /* working array for storing point x       */
+#define iGRADF       3            /* working array for storing grad of PDF   */
+
+#define POSITION     (condi->data.cont.param_vecs[iPOSITION])
+#define DIRECTION    (condi->data.cont.param_vecs[iDIRECTION])
+#define XARG         (condi->data.cont.param_vecs[iXARG])
+#define GRADF        (condi->data.cont.param_vecs[iGRADF])
+
 /*---------------------------------------------------------------------------*/
 
 /* function prototypes                                                       */
@@ -71,15 +84,18 @@ static double _unur_dpdf_condi( double x, const struct unur_distr *condi );
 /*---------------------------------------------------------------------------*/
 
 struct unur_distr *
-unur_distr_condi_new( const struct unur_distr *distr, const double *pos, int k )
+unur_distr_condi_new( const struct unur_distr *distr, const double *pos, const double *dir, int k )
      /*----------------------------------------------------------------------*/
-     /* Create an object for full conditional distribution for the k-th      */
-     /* variable and the other variables fixed to pos.                       */
+     /* Create an object for full conditional distribution .                 */
+     /*   either for k-th variable and the other variables fixed to pos;     */
+     /*   or     for pos + t*dir.                                            */
+     /* The first one is chosen when dir == NULL.                            */
      /* `distr' must be a pointer to a multivariate continuous distribution. */
      /*                                                                      */
      /* parameters:                                                          */
      /*   distr ... pointer to multivariate continuous distribution.         */
      /*   pos   ... values for constant variables                            */
+     /*   dir   ... direction (or NULL)                                      */
      /*   k     ... variable (must be in range 0 ... dim-1)                  */
      /*                                                                      */
      /* return:                                                              */
@@ -94,7 +110,6 @@ unur_distr_condi_new( const struct unur_distr *distr, const double *pos, int k )
 
   /* check arguments */
   _unur_check_NULL( distr_name, distr, NULL );
-  CHECK_NULL( pos, NULL );
 
   /* check distribution */
   if (distr->type != UNUR_DISTR_CVEC) {
@@ -102,8 +117,8 @@ unur_distr_condi_new( const struct unur_distr *distr, const double *pos, int k )
   COOKIE_CHECK(distr,CK_DISTR_CVEC,NULL);
 
   /* check parameters pos and k */
-  CHECK_NULL( pos, NULL );
-  if (k<0 || k>=distr->dim) {
+  _unur_check_NULL( distr_name, pos, NULL );
+  if ( dir==NULL && (k<0 || k>=distr->dim)) {
     _unur_error(distr_name,UNUR_ERR_DISTR_INVALID,"k < 0 or k >= dim");
     return NULL;
   }
@@ -125,17 +140,21 @@ unur_distr_condi_new( const struct unur_distr *distr, const double *pos, int k )
 
   /* set parameters for conditional distribution */
   CONDI.n_params = 1;                 /* one parameters: k */
-  CONDI.params[0] = (double) k;
-  if ( unur_distr_cont_set_pdfparams_vec( condi, 0, pos, distr->dim ) != UNUR_SUCCESS ) {
+  K = (double) k;
+  if ( unur_distr_cont_set_pdfparams_vec( condi, iPOSITION, pos, distr->dim ) != UNUR_SUCCESS ) {
     _unur_distr_free(condi); return NULL; 
   }
+  if ( dir != NULL )
+    if (unur_distr_cont_set_pdfparams_vec( condi, iDIRECTION, dir, distr->dim ) != UNUR_SUCCESS ) {
+      _unur_distr_free(condi); return NULL; 
+    }
 
   /* we need two working arrays for computing PDF and dPDF */
   /* we abuse parameter vectors for this purpose */
   ar = _unur_xmalloc( distr->dim * sizeof(double) );
   memset( ar, 0, distr->dim * sizeof(double) );
-  if ( (unur_distr_cont_set_pdfparams_vec( condi, 1, ar, distr->dim ) != UNUR_SUCCESS) ||
-       (unur_distr_cont_set_pdfparams_vec( condi, 2, ar, distr->dim ) != UNUR_SUCCESS) ) {
+  if ( (unur_distr_cont_set_pdfparams_vec( condi, iXARG, ar, distr->dim ) != UNUR_SUCCESS) ||
+       (unur_distr_cont_set_pdfparams_vec( condi, iGRADF, ar, distr->dim ) != UNUR_SUCCESS) ) {
     _unur_distr_free(condi); return NULL; 
   }
   free(ar);
@@ -155,13 +174,15 @@ unur_distr_condi_new( const struct unur_distr *distr, const double *pos, int k )
 /*---------------------------------------------------------------------------*/
 
 int
-unur_distr_condi_set_condition( struct unur_distr *condi, const double *pos, int k )
+unur_distr_condi_set_condition( struct unur_distr *condi, const double *pos, const double *dir, int k )
      /*----------------------------------------------------------------------*/
-     /* Change values of fixed variables to pos and use k-th variable.       */
+     /* Change values of fixed variables to pos and use k-th variable /      */
+     /* direction dir.                                                       */
      /*                                                                      */
      /* parameters:                                                          */
      /*   condi ... pointer to conditional distribution                      */
      /*   pos   ... values for constant variables                            */
+     /*   dir   ... direction (or NULL)                                      */
      /*   k     ... variable (must be in range 0 ... dim-1)                  */
      /*                                                                      */
      /* return:                                                              */
@@ -185,16 +206,20 @@ unur_distr_condi_set_condition( struct unur_distr *condi, const double *pos, int
   dim = condi->base->dim;
 
   /* check parameters pos and k */
-  CHECK_NULL( pos, UNUR_ERR_NULL );
-  if (k<0 || k>=dim) {
-    _unur_error(distr_name,UNUR_ERR_DISTR_INVALID,"k < 0 or k >= dim");
+  _unur_check_NULL( condi->name, pos, UNUR_ERR_NULL );
+  if ( dir== NULL && (k<0 || k>=dim)) {
+    _unur_error(condi->name,UNUR_ERR_DISTR_INVALID,"k < 0 or k >= dim");
     return UNUR_ERR_DISTR_INVALID;
   }
 
   /* set parameters for conditional distribution */
-  CONDI.params[0] = (double) k;
-  if ( unur_distr_cont_set_pdfparams_vec( condi, 0, pos, dim ) != UNUR_SUCCESS ) {
+  K = (double) k;
+  if ( unur_distr_cont_set_pdfparams_vec( condi, iPOSITION, pos, dim ) != UNUR_SUCCESS ) {
     return UNUR_ERR_DISTR_INVALID;
+  }
+
+  if (unur_distr_cont_set_pdfparams_vec( condi, iDIRECTION, dir, dim ) != UNUR_SUCCESS ) {
+    return UNUR_ERR_DISTR_INVALID; 
   }
 
   /* changelog */
@@ -207,9 +232,22 @@ unur_distr_condi_set_condition( struct unur_distr *condi, const double *pos, int
 /*---------------------------------------------------------------------------*/
 
 int
-unur_distr_condi_get_condition( struct unur_distr *condi, const double **pos )
+unur_distr_condi_get_condition( struct unur_distr *condi, const double **pos, const double **dir, int *k )
+     /*----------------------------------------------------------------------*/
+     /* Read values of fixed variables, variable k / direction dir.          */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   condi ... pointer to conditional distribution                      */
+     /*   pos   ... pointer to array to store constant variables             */
+     /*   dir   ... pointer to array to store direction                      */
+     /*   k     ... pointer to store variable                                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
 {
-  int dim, k;
+  int dim;
 
   /* check arguments */
   _unur_check_NULL( distr_name, condi, UNUR_ERR_NULL );
@@ -225,13 +263,16 @@ unur_distr_condi_get_condition( struct unur_distr *condi, const double **pos )
   dim = condi->base->dim;
 
   /* position in vector */
-  k = (int) CONDI.params[0];
+  *k = (int) K;
 
   /* store pointer to values */
-  *pos = CONDI.param_vecs[0];
+  *pos = POSITION;
+
+  /* store pointer to direction */
+  *dir = DIRECTION;
 
   /* return position */
-  return k;
+  return UNUR_SUCCESS;
 } /* end of unur_distr_condi_get_condition() */
 
 /*---------------------------------------------------------------------------*/
@@ -280,16 +321,22 @@ _unur_pdf_condi( double x, const struct unur_distr *condi )
 	p(x)     ... vector with x in k-th position and pos in all others
      */
 { 
-  int dim = condi->base->dim;         /* dimension of underlying distribution */
-  int k = (int) CONDI.params[0];      /* position in vector */
-  double *xarg = CONDI.param_vecs[1]; /* argument for multivariate PDF */
+  int dim = condi->base->dim;   /* dimension of underlying distribution */
+  int k = (int) K;              /* position in vector */
+  int i;
 
   /* set point for multivariate PDF */
-  memcpy(xarg, CONDI.param_vecs[0], dim * sizeof(double) );
-  xarg[k] = x;  
+  if (DIRECTION==NULL) {  /* use k-th variable */
+    memcpy(XARG, POSITION, dim * sizeof(double) );
+    XARG[k] = x;  
+  }
+  else {   /* use direction vector */
+    memcpy(XARG, POSITION, dim * sizeof(double) );
+    for (i=0; i<dim; i++)
+      XARG[i] = x*DIRECTION[i];
+  }
 
-  /* return result */
-  return _unur_cvec_PDF(CONDI.param_vecs[1],condi->base);
+  return _unur_cvec_PDF(XARG,condi->base);
 
 } /* end of _unur_pdf_condi() */
 
@@ -304,20 +351,30 @@ _unur_dpdf_condi( double x, const struct unur_distr *condi )
 	p(x)     ... vector with x in k-th position and pos in all others
      */
 {
-  int dim = condi->base->dim;         /* dimension of underlying distribution */
-  int k = (int) CONDI.params[0];      /* position in vector */
-  double *xarg = CONDI.param_vecs[1]; /* argument for multivariate PDF */
-  double *df = CONDI.param_vecs[2];   /* grad of multivariate PDF */
+  int dim = condi->base->dim;    /* dimension of underlying distribution */
+  int k = (int) K;               /* position in vector */
+  int i;
+  double df;
 
-  /* set point for multivariate PDF */
-  memcpy(xarg, CONDI.param_vecs[0], dim * sizeof(double) );
-  xarg[k] = x;  
+  if (DIRECTION==NULL) {  /* use k-th variable */
+    /* set point for multivariate PDF */
+    memcpy(XARG, POSITION, dim * sizeof(double) );
+    XARG[k] = x;  
+    /* compute gradiant */
+    _unur_cvec_dPDF(GRADF, XARG, condi->base);
+    /* return k-th component */
+    df = GRADF[k];
+  }
+  else {   /* use direction vector */
+    memcpy(XARG, POSITION, dim * sizeof(double) );
+    for (i=0; i<dim; i++)
+      XARG[i] = x*DIRECTION[i];
+    _unur_cvec_dPDF(GRADF, XARG, condi->base);
+    for (df=0.,i=0; i<dim; i++)
+      df += GRADF[i]*DIRECTION[i];
+  }  
 
-  /* compute gradiant */
-  _unur_cvec_dPDF(df,xarg,condi->base);
-
-  /* return k-th component */
-  return df[k];
+  return df;
 
 } /* end of _unur_dpdf_condi() */
 
@@ -361,8 +418,14 @@ _unur_distr_condi_debug( const struct unur_distr *condi, const char *genid )
   /* number of the variable for which the conditional distribution 
      is to be shown */
   fprintf(log,"%s:\tcondition (at time of creation):\n",genid);
-  fprintf(log,"%s:\tvariable = %d\n",genid,(int)(CONDI.params[0]));
-  _unur_matrix_print_vector( condi->base->dim, CONDI.param_vecs[0], "\tvalues =", log, genid, "\t   ");
+  if (DIRECTION==NULL) {
+    fprintf(log,"%s:\tvariable = %d\n",genid,(int)(K));
+    _unur_matrix_print_vector( condi->base->dim, POSITION, "\tvalues =", log, genid, "\t   ");
+  }
+  else {
+    _unur_matrix_print_vector( condi->base->dim, DIRECTION, "\tdirection =", log, genid, "\t   ");
+    _unur_matrix_print_vector( condi->base->dim, POSITION, "\tvalues =", log, genid, "\t   ");
+  }
   fprintf(log,"%s:\n",genid);
 
   /* print data about underlying distribution */

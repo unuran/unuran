@@ -91,7 +91,7 @@ The following example will illustrate how to change parameters.
 To generate special uniformly distributed random numbers,
 the PRNG-package can be used (it must be installed seperately).
 This can be done by changing two lines in the file
-@code{unuran_config.c}. Find the following lines in the file
+@file{unuran_config.h}. Find the following lines in the file
 and modify them as shown below:
 @smallexample
   /* set type of uniform generator             */
@@ -105,6 +105,57 @@ and modify them as shown below:
 @end smallexample
 
 =EON
+
+/*---------------------------------------------------------------------------*/
+
+=NODE  ExCont  ExCont: 
+=UP Examples [50]
+
+=DESCRIPTION
+
+@smallexample
+@include ref_example_cont.texi
+@end smallexample
+
+=EON
+
+/*---------------------------------------------------------------------------*/
+
+=NODE  ExDiscr  ExDiscr:
+=UP Examples [60]
+
+=DESCRIPTION
+
+@smallexample
+@include ref_example_discr.texi
+@end smallexample
+
+=EON
+
+/*---------------------------------------------------------------------------*/
+
+=NODE  ExEmp  ExEmp:
+=UP Examples [70]
+
+=DESCRIPTION
+
+@smallexample
+@include ref_example_emp.texi
+@end smallexample
+
+=EON
+
+/*---------------------------------------------------------------------------*/
+
+=NODE  ExVemp  ExVemp:
+=UP Examples [80]
+
+=DESCRIPTION
+
+@smallexample
+ ref_example_vemp.texi
+@end smallexample
+
 
 /*---------------------------------------------------------------------------*/
 

@@ -10,7 +10,11 @@ unuran_examples = \
  ref_example1.texi \
  ref_example2.texi \
  ref_example3.texi \
- ref_example4.texi
+ ref_example4.texi \
+ ref_example_cont.texi \
+ ref_example_discr.texi \
+ ref_example_emp.texi \
+ ref_example_vemp.texi
 
 unuran_TEXINFOS = \
  unuran.texi \
@@ -84,30 +88,3 @@ MAINTAINERCLEANFILES = \
  $(unuran_examples) \
  unuran_src.texi
 
-
-
-
-# to DELETE
-
-# paths ...
-#method_dir   = $(top_srcdir)/src/methods
-#distr_dir    = $(top_srcdir)/src/distributions
-#example_dir  = $(top_srcdir)/examples
-
-#ref_distr.texi: $(method_dir)/distr.h
-#	./distr.perl $(method_dir)/distr.h        > ref_distr.texi
-
-#ref_distr_discr.texi: $(distr_dir)/d_*.c
-#	./distr_discr.perl $(distr_dir)/d_*.c     > ref_distr_discr.texi
-
-#ref_distr_cont.texi: $(distr_dir)/c_*.c
-#	./distr_cont.perl $(distr_dir)/c_*.c      > ref_distr_cont.texi
-
-#ref_distr_lib.texi: $(distr_dir)/unuran_distributions.h
-#	./distr_lib.perl $(distr_dir)/unuran_distributions.h > ref_distr_lib.texi
-
-#texi_generated = \
-# ref_distr.texi \
-# ref_distr_discr.texi \
-# ref_distr_cont.texi \
-# ref_distr_lib.texi \

@@ -140,11 +140,11 @@ int unur_srou_set_r( UNUR_PAR *parameters, double r );
    since the given density must be T_c-concave for 
    @i{c = -r/(r+1)}.
 
-   Notice: If @var{r} is set to @code{1.} then this equivalent to
-   method SROU but @emph{much slower}.
-
-   TODO!!!!
-
+   @emph{Notice:} For @var{r} is set to @code{1} a simpler and much
+   faster algorithm is used as for @var{r} greater than one.
+   
+   For computational reasons values of @var{r} that are greater than
+   @code{1} but less than @code{1.01} are always set to @code{1.01}.
 
    Default is @code{1}.
 */

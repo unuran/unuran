@@ -324,12 +324,18 @@ unur_srou_set_r( struct unur_par *par, double r )
     _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"r < 1");
     return 0;
   }
-    
-  /* store date */
-  PAR.r = r;
-
-  /* changelog */
-  par->set |= SROU_SET_R;
+  
+  if (r == 1 ) {
+    /* simple version, same as R is not set */ 
+    PAR.r = r;
+    par->set &= ~SROU_SET_R;
+  }
+  else {
+    /* for computational reasons r should be at least 1.01 */
+    if (r<1.01) r = 1.01;
+    PAR.r = r;
+    par->set |= SROU_SET_R;
+  }
 
   /* we have to reset the marker for the PDF at the mode */
   par->set &= ~SROU_SET_PDFMODE;
@@ -1430,12 +1436,13 @@ _unur_gsrou_sample_check( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
 { 
   double U,Ur,V,W,X,x,Z;
-  double fx,rfx,xfx;
+  double fx,uf,vf,vhl,vhr;
 
   /* check arguments */
   CHECK_NULL(gen,0.);  COOKIE_CHECK(gen,CK_SROU_GEN,0.);
 
   while (1) {
+
     W = GEN.log_ab *_unur_call_urng(gen->urng);
     Z = GEN.vl + _unur_call_urng(gen->urng) * (GEN.vr - GEN.vl);
     U = (exp(-W)-1.) * GEN.a/GEN.b;
@@ -1455,18 +1462,21 @@ _unur_gsrou_sample_check( struct unur_gen *gen )
 
     /* the point on the boundary of the region of acceptance
        in direction X = V/U^r has the coordinates
-       ( X * (fx)^(r/(r+1)), sqrt[r+1](fx) ). */
-    xfx = X * pow(fx,GEN.r/(GEN.r+1));
-    rfx = pow(fx,1./(GEN.r+1));
+       ( (x-mode) * (fx)^(r/(r+1)), sqrt[r+1](fx) ). */
+    uf = pow(fx,1./(GEN.r+1));
+    vf = X * pow(fx,GEN.r/(GEN.r+1.));
+
+    /* the corresponding point on boundary of the enveloping region */
+    /* with same u-coordinate.                                      */
+    vhl = - GEN.vl /(GEN.a + GEN.b*(uf/GEN.um));
+    vhr = - GEN.vr /(GEN.a + GEN.b*(uf/GEN.um));
 
     /* check hat */
-    if ( ( rfx > (1.+DBL_EPSILON) * GEN.um )   /* avoid roundoff error with FP registers */
-	 || (xfx < (1.+UNUR_EPSILON) * GEN.vl * (-1./(GEN.a+GEN.b*U/GEN.um))) 
-	 || (xfx > (1.+UNUR_EPSILON) * GEN.vr * (-1./(GEN.a+GEN.b*U/GEN.um))) 
-	 || 0)
+    if ( ( uf > (1.+DBL_EPSILON) * GEN.um )   /* avoid roundoff error with FP registers */
+	 || (vf < (1.+UNUR_EPSILON) * vhl )
+	 || (vf > (1.+UNUR_EPSILON) * vhr ) )
       {
 	_unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"PDF(x) > hat(x)");
-/*        printf("pdf = %g, hat = %g, diff = %g\n",(-1./(GEN.a+GEN.b*U/GEN.um)),xfx,xfx-(-1./(GEN.a+GEN.b*U/GEN.um))); */
       }
 
     /* accept or reject */

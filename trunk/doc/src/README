@@ -17,6 +17,8 @@ some capital letters.
 The body of the documentation uses texinfo with some additional macros
 (see below).
 
+There is a switch $PAGEBREAKS in ./doc/src/make_texi.pl. When set to 1
+(non-nil) it inserts a pagebreak before each =METHOD and =NODEX tag.
 
 
 (*) Nodes
@@ -32,6 +34,7 @@ Valid node TAGs are
 	=METHOD         for generation methods
 	=APPENDIX       for nodes in the appendix
 	=NODE           generic node
+	=NODEX          generic node, starts new page
 
 A header file that has no such TAG or with a different first TAG is
 ignored and not included into the documentation.

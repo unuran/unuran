@@ -370,7 +370,7 @@ print_timing_legend ( int samplesize )
 {
   printf("<Timing results>\n"); 
   printf("Average generation times (including setup) for sample of size %d.\n",samplesize);
-  printf("Timings are relative to generation of expontential random variate\n");
+  printf("Timings are relative to generation of exponential random variate\n");
   printf("using inversion within UNU.RAN environment\n");
   printf("(timing unit = %g microseconds)\n\n",get_timing_unit());
   return 1;

@@ -168,7 +168,7 @@ int unur_hinv_set_cpoints( UNUR_PAR *parameters, const double *stp, int n_stp );
 int unur_hinv_set_boundary( UNUR_PAR *parameters, double left, double right );
 /* 
    Set the left and right boundary of the computation interval.
-   The piecewise hat is only constructed inside this interval. The
+   The approximate CDF is only constructed inside this interval. The
    probability outside of this region must not be of
    computational relevance.
    Of course @code{+/- UNUR_INFINITY} is not allowed.

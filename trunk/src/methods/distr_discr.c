@@ -128,8 +128,8 @@ unur_distr_discr_new( void )
 
   /* DISTR.mode      = 0.;            location of mode                       */
 
-  DISTR.area      = 1.;            /* area below p.m.f.                      */
-  DISTR.upd_area  = NULL;          /* funct for computing area               */
+  DISTR.sum     = 1.;              /* sum over p.m.f.                        */
+  DISTR.upd_sum = NULL;            /* funct for computing sum                */
 
   distr->set = 0u;                 /* no parameters set                      */
   
@@ -173,7 +173,7 @@ unur_distr_discr_set_pmf( struct unur_distr *distr, UNUR_FUNCT_DISCR *pmf )
   _unur_check_NULL( distr->name,pmf,0 );
   _unur_check_distr_object( distr, DISCR, 0 );
 
-  /* we do not allow overwriting a pdf */
+  /* we do not allow overwriting a pmf */
   if (DISTR.pmf != NULL) {
     _unur_warning(distr->name,UNUR_ERR_DISTR_SET,"Overwriting of pmf not allowed");
     return 0;
@@ -181,7 +181,7 @@ unur_distr_discr_set_pmf( struct unur_distr *distr, UNUR_FUNCT_DISCR *pmf )
 
   /* changelog */
   distr->set &= ~UNUR_DISTR_SET_MASK_DERIVED;
-  /* derived parameters like mode, area, etc. might be wrong now! */
+  /* derived parameters like mode, sum, etc. might be wrong now! */
 
   DISTR.pmf = pmf;
   return 1;
@@ -217,7 +217,7 @@ unur_distr_discr_set_cdf( struct unur_distr *distr, UNUR_FUNCT_DISCR *cdf )
 
   /* changelog */
   distr->set &= ~UNUR_DISTR_SET_MASK_DERIVED;
-  /* derived parameters like mode, area, etc. might be wrong now! */
+  /* derived parameters like mode, sum, etc. might be wrong now! */
 
   DISTR.cdf = cdf;
   return 1;
@@ -290,7 +290,7 @@ unur_distr_discr_eval_pmf( int k, struct unur_distr *distr )
   }
 
   return _unur_discr_PMF(k,distr);
-} /* end of unur_distr_discr_eval_pdf() */
+} /* end of unur_distr_discr_eval_pmf() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -349,7 +349,7 @@ unur_distr_discr_set_pmfparams( struct unur_distr *distr, double *params, int n_
 
   /* changelog */
   distr->set &= ~UNUR_DISTR_SET_MASK_DERIVED;
-  /* derived parameters like mode, area, etc. might be wrong now! */
+  /* derived parameters like mode, sum, etc. might be wrong now! */
 
   /* copy parameters */
   DISTR.n_params = n_params;
@@ -364,7 +364,7 @@ unur_distr_discr_set_pmfparams( struct unur_distr *distr, double *params, int n_
 int
 unur_distr_discr_get_pmfparams( struct unur_distr *distr, double **params )
      /*----------------------------------------------------------------------*/
-     /* get number of pdf parameters and sets pointer to array params[] of   */
+     /* get number of pmf parameters and sets pointer to array params[] of   */
      /* parameters                                                           */
      /*                                                                      */
      /* parameters:                                                          */
@@ -372,7 +372,7 @@ unur_distr_discr_get_pmfparams( struct unur_distr *distr, double **params )
      /*   params   ... pointer to list of arguments                          */
      /*                                                                      */
      /* return:                                                              */
-     /*   number of pdf parameters                                           */
+     /*   number of pmf parameters                                           */
      /*                                                                      */
      /* error:                                                               */
      /*   return 0                                                           */
@@ -390,13 +390,13 @@ unur_distr_discr_get_pmfparams( struct unur_distr *distr, double **params )
 /*---------------------------------------------------------------------------*/
 
 int
-unur_distr_discr_set_pmfarea( struct unur_distr *distr, double area )
+unur_distr_discr_set_pmfsum( struct unur_distr *distr, double sum )
      /*----------------------------------------------------------------------*/
-     /* set area below p.m.f.                                                */
+     /* set sum over p.m.f.                                                  */
      /*                                                                      */
      /* parameters:                                                          */
      /*   distr ... pointer to distribution object                           */
-     /*   area  ... area below p.d.f.                                        */
+     /*   sum   ... sum over p.d.f.                                          */
      /*                                                                      */
      /* return:                                                              */
      /*   1 ... on success                                                   */
@@ -408,27 +408,27 @@ unur_distr_discr_set_pmfarea( struct unur_distr *distr, double area )
   _unur_check_distr_object( distr, DISCR, 0 );
 
   /* check new parameter for distribution */
-  if (area <= 0.) {
-    _unur_error(NULL,UNUR_ERR_DISTR_SET,"pmf area <= 0");
+  if (sum <= 0.) {
+    _unur_error(NULL,UNUR_ERR_DISTR_SET,"pmf sum <= 0");
     return 0;
   }
 
-  DISTR.area = area;
+  DISTR.sum = sum;
 
   /* changelog */
-  distr->set |= UNUR_DISTR_SET_PDFAREA;
+  distr->set |= UNUR_DISTR_SET_PMFSUM;
 
   /* o.k. */
   return 1;
 
-} /* end of unur_distr_discr_set_pmfarea() */
+} /* end of unur_distr_discr_set_pmfsum() */
 
 /*---------------------------------------------------------------------------*/
 
 int 
-unur_distr_discr_upd_pmfarea( struct unur_distr *distr )
+unur_distr_discr_upd_pmfsum( struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
-     /* (re-) compute area below p.m.f. of distribution (if possible)        */
+     /* (re-) compute sum over p.m.f. of distribution (if possible)          */
      /*                                                                      */
      /* parameters:                                                          */
      /*   distr ... pointer to distribution object                           */
@@ -442,33 +442,33 @@ unur_distr_discr_upd_pmfarea( struct unur_distr *distr )
   _unur_check_NULL( NULL, distr, 0 );
   _unur_check_distr_object( distr, DISCR, 0 );
 
-  if (DISTR.upd_area == NULL) {
-    /* no function to compute mode available */
+  if (DISTR.upd_sum == NULL) {
+    /* no function to compute sum available */
     _unur_error(distr->name,UNUR_ERR_DISTR_DATA,"");
     return 0;
   }
 
-  /* compute mode */
-  DISTR.area = (DISTR.upd_area)(distr);
+  /* compute sum */
+  DISTR.sum = (DISTR.upd_sum)(distr);
 
   /* changelog */
-  distr->set |= UNUR_DISTR_SET_PDFAREA;
+  distr->set |= UNUR_DISTR_SET_PMFSUM;
 
   return 1;
-} /* end of unur_distr_discr_upd_pmfarea() */
+} /* end of unur_distr_discr_upd_pmfsum() */
   
 /*---------------------------------------------------------------------------*/
 
 double
-unur_distr_discr_get_pmfarea( struct unur_distr *distr )
+unur_distr_discr_get_pmfsum( struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
-     /* get area below p.m.f. of distribution                                */
+     /* get sum over p.m.f. of distribution                                  */
      /*                                                                      */
      /* parameters:                                                          */
      /*   distr ... pointer to distribution object                           */
      /*                                                                      */
      /* return:                                                              */
-     /*   area below p.m.f. of distribution                                  */
+     /*   sum over p.m.f. of distribution                                    */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
@@ -476,24 +476,24 @@ unur_distr_discr_get_pmfarea( struct unur_distr *distr )
   _unur_check_distr_object( distr, DISCR, INFINITY );
 
   /* mode known ? */
-  if ( !(distr->set & UNUR_DISTR_SET_PDFAREA) ) {
-    /* try to compute area */
-    if (DISTR.upd_area == NULL) {
-      /* no function to compute area available */
-      _unur_error(distr->name,UNUR_ERR_DISTR_GET,"area");
+  if ( !(distr->set & UNUR_DISTR_SET_PMFSUM) ) {
+    /* try to compute sum */
+    if (DISTR.upd_sum == NULL) {
+      /* no function to compute sum available */
+      _unur_error(distr->name,UNUR_ERR_DISTR_GET,"sum");
       return INFINITY;
     }
     else {
-      /* compute mode */
-      DISTR.area = (DISTR.upd_area)(distr);
+      /* compute sum */
+      DISTR.sum = (DISTR.upd_sum)(distr);
       /* changelog */
-      distr->set |= UNUR_DISTR_SET_PDFAREA;
+      distr->set |= UNUR_DISTR_SET_PMFSUM;
     }
   }
 
-  return DISTR.area;
+  return DISTR.sum;
 
-} /* end of unur_distr_discr_get_pmfarea() */
+} /* end of unur_distr_discr_get_pmfsum() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -534,8 +534,8 @@ _unur_distr_discr_debug( struct unur_distr *distr, char *genid )
   /*    fprintf(log,"%s:\tdomain = (%g, %g)",genid,DISTR.domain[0],DISTR.domain[1]); */
   /*    _unur_print_if_default(distr,UNUR_DISTR_SET_DOMAIN); */
   
-  /*      fprintf(log,"\n%s:\tarea below p.d.f. = %g",genid,DISTR.area); */
-  /*      _unur_print_if_default(distr,UNUR_DISTR_SET_PDFAREA); */
+  /*      fprintf(log,"\n%s:\tsum over p.m.f. = %g",genid,DISTR.sum); */
+  /*      _unur_print_if_default(distr,UNUR_DISTR_SET_PMFSUM); */
   
   fprintf(log,"%s:\n",genid);
 

@@ -96,8 +96,8 @@ struct unur_distr_discr {
   double norm_constant;         /* (log of) normalization constant for p.m.f.*/
 
   int domain[2];                /* boundary of domain                        */
-  double area;                  /* area below p.m.f.                         */
-  int (*upd_area)(struct unur_distr *distr);   /* funct for computing area   */
+  double sum;                   /* sum over p.m.f.                           */
+  int (*upd_sum)(struct unur_distr *distr);  /* funct for computing sum      */
 
   int  (*init)(struct unur_par *par,struct unur_gen *gen);
                                 /* pointer to special init routine           */

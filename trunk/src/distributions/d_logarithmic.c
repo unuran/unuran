@@ -122,9 +122,9 @@ unur_distr_logarithmic( double *params, int n_params )
   /* log of normalization constant */
   NORMCONSTANT = -1. / log( 1.-DISTR.theta);
 
-  /* mode and area below p.d.f. */
+  /* mode and sum over p.m.f. */
   /*    DISTR.mode = 0.; */
-  DISTR.area = 1.;
+  DISTR.sum = 1.;
 
   /* domain */
   DISTR.domain[0] = 1.;          /* left boundary  */
@@ -134,7 +134,7 @@ unur_distr_logarithmic( double *params, int n_params )
   distr->set = ( UNUR_DISTR_SET_DOMAIN |
 		 UNUR_DISTR_SET_STDDOMAIN |
                  /* UNUR_DISTR_SET_MODE   |  */
-		 UNUR_DISTR_SET_PDFAREA );
+		 UNUR_DISTR_SET_PMFSUM );
                 
   /* return pointer to object */
   return distr;

@@ -827,32 +827,32 @@ int unur_distr_discr_get_pmfparams(UNUR_DISTR *distribution,double **params);
    for the chosen method).
 */
 
-int unur_distr_discr_set_pmfarea(UNUR_DISTR *distribution, double area);
+int unur_distr_discr_set_pmfsum(UNUR_DISTR *distribution, double sum);
 /* 
-   Set the area below the p.m.f. If @code{area} is non-positive, no
-   area is set and @code{unur_errno} is set to
+   Set the sum over the p.m.f. If @code{sum} is non-positive, no
+   sum is set and @code{unur_errno} is set to
    @code{UNUR_ERR_DISTR_SET}. 
 
    For a distribution object created by the 
    (=>) UNURAN library of standard distributions you always should use
-   the unur_distr_discr_upd_pmfarea(). Otherwise there might be
+   the unur_distr_discr_upd_pmfsum(). Otherwise there might be
    ambiguous side-effects.
 */
 
-int unur_distr_discr_upd_pmfarea( UNUR_DISTR *distribution);
+int unur_distr_discr_upd_pmfsum( UNUR_DISTR *distribution);
 /*
-   Recompute the area below the p.m.f. of the distribution. 
+   Recompute the sum over the p.m.f. of the distribution. 
    In most cases the normalization constant is recompute and thus the
-   area is 1. This call only works for distribution objects from the
+   sum is 1. This call only works for distribution objects from the
    (=>) UNURAN library of standard distributions when the
    corresponding function is available. Otherwise @code{unur_errno} is
    set to @code{UNUR_ERR_DISTR_DATA}. 
 */
 
-double unur_distr_discr_get_pmfarea(UNUR_DISTR *distribution);
+double unur_distr_discr_get_pmfsum(UNUR_DISTR *distribution);
 /* 
-   Get the area below the p.m.f of the distribution. If this area is
-   not known, @* unur_distr_cont_upd_pdfarea() is called to compute
+   Get the sum over the p.m.f of the distribution. If this sum is
+   not known, unur_distr_cont_upd_pdfarea() is called to compute
    it. If this is not successful @code{UNUR_INFINITY} is returned and
    @code{unur_errno} is set to @code{UNUR_ERR_DISTR_GET}.
 */

@@ -331,7 +331,7 @@ unur_distr_cont_dpdf( struct unur_distr *distr, double x )
      /*                                                                      */
      /* parameters:                                                          */
      /*   distr ... pointer to distribution object                           */
-     /*   x     ... argument for pdf                                         */
+     /*   x     ... argument for dpdf                                        */
      /*                                                                      */
      /* return:                                                              */
      /*   (pdf(x))'                                                          */

@@ -63,16 +63,6 @@ Newton's method and the regula falsi.
 UNUR_PAR *unur_ninv_new( UNUR_DISTR *distribution );
 /* get default parameters for generator                                      */
 
-UNUR_GEN *_unur_ninv_init( UNUR_PAR *parameters );
-/* initialize new generator                                                  */
-
-double _unur_ninv_sample_regula( UNUR_GEN *generator );
-double _unur_ninv_sample_newton( UNUR_GEN *generator );
-/* sample from generator                                                     */
-
-void _unur_ninv_free( UNUR_GEN *generator);
-/* destroy generator object                                                  */
-
 /*...........................................................................*/
 
 int unur_ninv_use_newton( UNUR_PAR *parameters );

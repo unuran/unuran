@@ -120,9 +120,25 @@
 
 /*---------------------------------------------------------------------------*/
 
+static struct unur_gen *_unur_ninv_init( struct unur_par *par );
+/*---------------------------------------------------------------------------*/
+/* Initialize new generator.                                                 */
+/*---------------------------------------------------------------------------*/
+
 static struct unur_gen *_unur_ninv_create( struct unur_par *par );
 /*---------------------------------------------------------------------------*/
 /* create new (almost empty) generator object.                               */
+/*---------------------------------------------------------------------------*/
+
+static double _unur_ninv_sample_regula( struct unur_gen *gen );
+static double _unur_ninv_sample_newton( struct unur_gen *gen );
+/*---------------------------------------------------------------------------*/
+/* sample from generator                                                     */
+/*---------------------------------------------------------------------------*/
+
+static void _unur_ninv_free( struct unur_gen *gen );
+/*---------------------------------------------------------------------------*/
+/* destroy generator object.                                                 */
 /*---------------------------------------------------------------------------*/
 
 static double _unur_ninv_regula( struct unur_gen *gen, double u );
@@ -135,14 +151,12 @@ static double _unur_ninv_newton( struct unur_gen *gen, double u);
 /* algorithm: newton method                                                  */
 /*---------------------------------------------------------------------------*/
 
-
-
-
 #ifdef UNUR_ENABLE_LOGGING
 /*---------------------------------------------------------------------------*/
 /* the following functions print debugging information on output stream,     */
 /* i.e., into the log file if not specified otherwise.                       */
 /*---------------------------------------------------------------------------*/
+
 static void _unur_ninv_debug_init( struct unur_par *par, struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 /* print after generator has been initialized has completed.                 */
@@ -164,8 +178,6 @@ static void _unur_ninv_debug_chg_domain(UNUR_GEN *gen);
 /*---------------------------------------------------------------------------*/
 /*  track changes of the domain                                              */
 /*---------------------------------------------------------------------------*/
-
-
 #endif
 
 /*---------------------------------------------------------------------------*/

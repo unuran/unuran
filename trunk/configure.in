@@ -27,7 +27,7 @@ AC_PROG_AWK
 
 dnl Checks for libraries.
 dnl cephes: Stephen L. Moshier's library of mathematical functions 
-AC_CHECK_LIB(md, lgam)
+dnl AC_CHECK_LIB(md, lgam)
 dnl prng: Otmar Lendl's library for pseudo random number generators
 AC_CHECK_LIB(prng, prng_new)
 AC_CHECK_HEADERS(prng.h)
@@ -60,6 +60,7 @@ AC_OUTPUT( \
 	src/Makefile \
 	src/methods/Makefile \
 	src/distributions/Makefile \
+	src/specfunct/Makefile \
 	src/tests/Makefile \
 	src/uniform/Makefile \
 	doc/Makefile \

@@ -17,7 +17,7 @@
 RunFileName = "run_test_with_Mathematica.c";
 
 (* sample size for tests *)
-RunSampleSize = 1000;   
+RunSampleSize = 10000;   
 
 (* constants *)
 isCONT = 1;

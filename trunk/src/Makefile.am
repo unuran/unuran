@@ -1,7 +1,7 @@
 ## Process this file with automake to produce Makefile.in
 ## $Id$
 
-SUBDIRS = distributions methods tests uniform
+SUBDIRS = distributions methods specfunct tests uniform
 
 AM_CFLAGS = -Wall
 
@@ -12,15 +12,14 @@ libunuran_a_SOURCES =
 libunuran_a_LIBADD = \
  methods/*.o \
  distributions/*.o \
+ specfunct/*.o \
  tests/*.o \
  uniform/*.o
+
 
 include_HEADERS = \
  unuran.h \
  unuran_config.h
-
-EXTRA_DIST = \
- unuran.h 
 
 unuran.h: $(top_srcdir)/src/methods/*.h $(top_srcdir)/src/distributions/*.h 
 	$(top_srcdir)/scripts/merge_h.pl $(top_srcdir)/src/methods/in_unuran.h > unuran.h

@@ -243,8 +243,6 @@ unur_ninv_new( struct unur_distr *distr )
   PAR.table_on = 0;            /* =DEF NINV table_on If equal to 1 a table
                                    containing potential starting points
                                    is generated  */
-  PAR.TABLE_POINTS = 100;      /* =DEF NINV no_of_table_points is the
-                                   number of points used for the table.*/
   PAR.s[0]      = 0.0;              /* =DEF NINV s1  Left boundary of
                                       starting  interval for regula falsi
                                       and newton starting point.             */
@@ -588,7 +586,7 @@ int unur_ninv_use_table(UNUR_PAR *par, int tbl_pnts)
 
   /* check input */
   _unur_check_par_object( par,NINV );
-  PAR.TABLE_POINTS = (tbl_pnts > 10) ? tbl_pnts : 10;
+  PAR.TABLE_POINTS = (tbl_pnts >= 10) ? tbl_pnts : 10;
   PAR.table_on = 1;
 
   return 1;
@@ -618,7 +616,7 @@ int unur_ninv_chg_table(UNUR_GEN *gen, int tbl_pnts)
   CHECK_NULL(gen, 0);
 
   free(GEN.table);   
-  GEN.TABLE_POINTS = (tbl_pnts > 10) ? tbl_pnts : 10;
+  GEN.TABLE_POINTS = (tbl_pnts >= 10) ? tbl_pnts : 10;
   GEN.table = (double *) malloc(GEN.TABLE_POINTS*sizeof(double));
 
       GEN.s[0] = - 10.;  /* arbitrary starting values                        */
@@ -1003,7 +1001,7 @@ _unur_ninv_regula( struct unur_gen *gen, double u )
       x1 = 2.*GEN.table[0] - GEN.table[1];
       x2 = GEN.table[0];
     }
-    else if ( i == 50){
+    else if ( i == GEN.TABLE_POINTS){
       x1 = GEN.table[GEN.TABLE_POINTS-1];
       x2 = 2.*GEN.table[GEN.TABLE_POINTS-1] - GEN.table[GEN.TABLE_POINTS-2];
     }

@@ -6,6 +6,7 @@ INCLUDES = -I$(top_srcdir)/src -I$(top_srcdir)/src/methods
 lib_LTLIBRARIES = libunurexperimental.la
 
 libunurexperimental_la_SOURCES = \
+ expect.c          expect_source.h \
  hitrou.c hitrou.h hitrou_struct.h \
  varou.c  varou.h  varou_struct.h 
 

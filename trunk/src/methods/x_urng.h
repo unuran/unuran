@@ -238,6 +238,14 @@ int unur_use_urng_aux_default( UNUR_PAR *parameters );
    not use one (i.e. the call returns 0).
 */
 
+int unur_chgto_urng_aux_default( UNUR_GEN *generator );
+/*
+   Switch to default auxilliary URNG.
+   (It must be set after unur_get_urng().)
+   It is not possible to set an auxilliary URNG for a method that does
+   not use one (i.e. the call returns 0).
+*/
+
 UNUR_URNG *unur_chg_urng_aux( UNUR_GEN *generator, UNUR_URNG *urng_aux );
 /*
   Change the auxilliary URNG for the given generator. It returns the

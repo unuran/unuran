@@ -48,6 +48,7 @@
 /* pointer to default uniform random number generator */
 
 static UNUR_URNG *urng_default = NULL;
+static UNUR_URNG *urng_aux_default = NULL;
 
 /*---------------------------------------------------------------------------*/
 
@@ -120,15 +121,14 @@ unur_use_urng_aux_default( UNUR_PAR *par )
      /* set auxilliary uniform random number generator to default            */
      /* (initialize generator if necessary)                                  */
      /*                                                                      */
-     /* parameters: none                                                     */
+     /* parameters:                                                          */
+     /*   par     ... pointer to parameter for building generator object     */
      /*                                                                      */
      /* return:                                                              */
      /*   1 ... on success                                                   */
      /*   0 ... on error                                                     */
      /*----------------------------------------------------------------------*/
 {
-  static UNUR_URNG *urng_aux_default = NULL;
-
   if (par->urng_aux == NULL)
     /* no auxilliary generator is required */
     return 0;
@@ -157,6 +157,51 @@ unur_use_urng_aux_default( UNUR_PAR *par )
   return 1;
 
 } /* end of unur_use_urng_aux_default() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+unur_chgto_urng_aux_default( UNUR_GEN *gen )
+     /*----------------------------------------------------------------------*/
+     /* set auxilliary uniform random number generator to default            */
+     /* (initialize generator if necessary)                                  */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen     ... pointer to generator object                            */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... on success                                                   */
+     /*   0 ... on error                                                     */
+     /*----------------------------------------------------------------------*/
+{
+  if (gen->urng_aux == NULL)
+    /* no auxilliary generator is required */
+    return 0;
+
+  /* default generator already running ? */
+  if( urng_aux_default == NULL ) {
+    /* have to initialize default generator first */
+#if UNUR_URNG_TYPE == UNUR_URNG_POINTER 
+    urng_aux_default = UNUR_URNG_AUX_DEFAULT;
+#elif UNUR_URNG_TYPE == UNUR_URNG_PRNG
+    urng_aux_default = prng_new(UNUR_URNG_AUX_DEFAULT);
+    if( urng_aux_default == NULL ) {
+      /* some parameters invalid! */
+      _unur_error("prng",UNUR_ERR_NULL,"Cannot set default aux URNG. EXIT !!!");
+      /* we cannot recover from this error */
+      return 0;
+    }
+#else
+#error UNUR_URNG_TYPE not valid !!
+#endif
+  }
+
+  /* set aux URNG */
+  gen->urng_aux = urng_aux_default;
+
+  return 1;
+
+} /* end of unur_chgto_urng_aux_default() */
 
 /*---------------------------------------------------------------------------*/
 

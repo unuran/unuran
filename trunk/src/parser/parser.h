@@ -342,7 +342,14 @@ UNUR_DISTR *unur_str2distr( const char *string );
    However it only works when using the PRNG library is enabled, 
    see @ref{Installation} for details. There are no other keys.
 
-   If this block is omitted the UNURAN default generator is used.
+   IMPORTANT: UNURAN creates a new uniform random number generator for
+   the generator object. The pointer to this uniform generator 
+   has to be read and saved via a unur_get_urng() call in order to
+   clear the memory @emph{before} the UNURAN generator object is
+   destroyed.
+
+   If this block is omitted the UNURAN default generator is used
+   (which @emph{must not} be destroyed). 
 
 =EON
 */

@@ -4,7 +4,7 @@
 all: run rungen test something
 
 run: run.c ../src/unuran.h ../src/libunuran.la
-	../libtool gcc -I. -I.. -I../src -I../src/tests -Wall -g -O3 -o run run.c ../src/libunuran.la -lm 
+	../libtool gcc -I. -I.. -I../src -I../src/tests -Wall -g -O3 -o run run.c ../src/experimental/libunurexperimental.la ../src/libunuran.la -lm 
 
 mcrun: mcrun.c ../src/unuran.h ../src/libunuran.la
 	../libtool gcc -I. -I.. -I../src -I../src/tests -Wall -g -O3 -o mcrun mcrun.c ../src/libunuran.la -lm -lprng
@@ -16,7 +16,7 @@ test: test.c ../src/unuran.h ../src/libunuran.la
 	../libtool gcc -I. -I.. -I../src -I../src/tests -Wall -g -O2 -o test test.c ../src/libunuran.la -lm -lprng 
 
 something: something.c ../src/unuran.h ../src/libunuran.la
-	../libtool gcc -I. -I.. -I../src -I../src/tests -Wall -g -O2 -o something something.c ../src/libunuran.la -lm 
+	../libtool gcc -I. -I.. -I../src -I../src/tests -Wall -g -O2 -o something something.c ../src/experimental/libunurexperimental.la ../src/libunuran.la -lm 
 
 hit-shared: hit.c ../src/unuran.h ../src/libunuran.la
 	../libtool gcc -I. -I.. -I../src -I../src/tests -Wall -g -O2 -shared hit.c -o hit.so ../src/.libs/libunuran.so -lm 

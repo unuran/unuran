@@ -8,7 +8,11 @@
 #include <utils/matrix_source.h>
 #include <specfunct/unur_specfunct_source.h>
 #include "../tests/testunuran.h"
-#include <experimental/expect_source.h>
+#include "../experiments/expect_source.h"
+#include <utils/unur_error_source.h>
+#include <utils/debug_source.h>
+#include <utils/stream_source.h>
+#include <utils/umalloc_source.h>
 #include <experimental/hitrou.h>
 
 double _unur_test_chi2test( double *prob, int *observed, int len, int classmin,
@@ -36,6 +40,10 @@ struct {
   UNUR_GEN *gen;
   UNUR_DISTR *distr_normal;
 } p;
+
+#include "../experiments/expect.c"
+
+
 
 void hit_set_dim(int *x)          {p.dim=x[0];}
 void hit_set_nsamples(long *x)    {p.nsamples=x[0];}
@@ -266,7 +274,7 @@ void hit_run() {
   //unur_sample_matr(covar_gen, covar);
 
   /* multinormal distribution */
-//  distr = unur_distr_multinormal( p.dim, mean, covar );
+  //distr = unur_distr_multinormal( p.dim, mean, covar );
   
   p.distr_normal = unur_distr_multinormal( p.dim, NULL, NULL );
   
@@ -354,6 +362,8 @@ void hit_run() {
   //_unur_hitrou_set_mixture_parameter(p.gen, p.mixture);
 
   hit_showparameters();
+
+  printf("pdf(0)=%g\n", unur_distr_cvec_eval_pdf(x, unur_get_distr(p.gen)));
 
   /* resetting histogram for the 2. level test */
   memset(hist_p, 0, (p.dim+1)*p.nhist_p*sizeof(int));
@@ -538,11 +548,12 @@ void hit_run() {
   unur_urng_reset(NULL);
   _unur_hitrou_set_point(p.gen, uv);
   faux.f = f_norm;
+#if 1 
   for (loop=1; loop<=p.nloops; loop++) {
     _unur_expect_evaluate_single(p.dim, &faux, p.gen, p.nsamples, &integral);
 //    printf("Integral = %g\n", integral);
   }      
-  
+
   unur_urng_reset(NULL);
   _unur_hitrou_set_point(p.gen, uv);
   
@@ -554,6 +565,7 @@ void hit_run() {
   printf("Mean     = %g\n", integral_mean);
   printf("Variance = %g\n", integral_variance);
   printf("RMSE     = %g\n", integral_rmse);
+#endif  
    
   if (p.nloops>1 && p.shape>0 && p.melt==0) {
     printf("2.level test : \n");

@@ -90,6 +90,79 @@ extern char *d_sec(), *d_par   ();
 extern char *d_sqr(), *d_ufuncs();
 extern char *d_abs();
 
+
+#include <math.h>
+#include <time.h>
+#include <stdlib.h>
+
+/*long _STKSIZ = 500000; grosser Stack f. Rekursion in derive_expression*/
+
+/************************************************************************/
+
+/* --- Importe aus scanner.c und parser.c: --- */
+
+extern struct symbols symbol[];
+extern int            ros, roe, aos, aoe, mos, moe, hos, hoe, oss, ose; 
+extern int            scs, sce, ucs, uce, uis, uie, ufs, ufe, sfs, sfe; 
+extern char           *errorstrings[]; 
+extern struct treenode *string2tree(char *function, int *errcodep, 
+                                                    int *errposp);
+extern int  nxt_symbol  (char function[], int *scanposp,  char symb[],
+                             int *tokenp, int *symbkindp, int *errposp);
+extern void init_scanner(void), show_symb_tab(void); 
+extern void pt_error    (char *function, int errcode, int errpos);
+extern void show_tree   (struct treenode *root);
+extern void _unur_fstr_free (struct treenode *root);                                
+extern char *readln     (char *s);
+
+/************************************************************************/ 
+
+/* --- Prototypen: --- */
+
+char *tree2string(struct treenode *tree_root, char *ret_str);
+char *tree2Cstring(struct treenode *tree_root, char *ret_str);
+char *strcpy3    (char *s1, char *s2, char *s3, char *s4); 
+char *strcpy5    (char *s1, char *s2, char *s3, char *s4, char *s5, char *s6); 
+double tree2float (struct treenode *E_root); 
+double v_dummy  (int t, double l, double r);
+double v_less   (int t, double l, double r);
+double v_equal  (int t, double l, double r);
+double v_greater(int t, double l, double r);
+double v_less_or(int t, double l, double r);
+double v_unequal(int t, double l, double r);
+double v_grtr_or(int t, double l, double r);
+double v_or     (int t, double l, double r);
+double v_xor    (int t, double l, double r);
+double v_plus   (int t, double l, double r); 
+double v_minus  (int t, double l, double r); 
+double v_mul    (int t, double l, double r);
+double v_and    (int t, double l, double r);
+double v_div    (int t, double l, double r);
+double v_mod    (int t, double l, double r);
+double v_power  (int t, double l, double r);
+double v_not    (int t, double l, double r);
+double v_sconst (int t, double l, double r);
+double v_uconst (int t, double l, double r);
+double v_uident (int t, double l, double r);
+double v_ufuncs (int t, double l, double r);
+double v_exp    (int t, double l, double r);
+double v_ln     (int t, double l, double r);
+double v_log    (int t, double l, double r);
+double v_sin    (int t, double l, double r); 
+double v_cos    (int t, double l, double r);
+double v_tan    (int t, double l, double r);
+double v_sec    (int t, double l, double r); 
+double v_sqr    (int t, double l, double r);
+double v_abs    (int t, double l, double r);
+void gradient(struct treenode *root);
+void nxt_part_derivation(struct treenode *DP_root,struct treenode *root);
+struct treenode *part_deriv(struct treenode *root,char *par,char *ret_str); 
+char *derive_expression(struct treenode *E_root,char *par,char *ret_str);
+char *strcpy6(char *s1, char *s2, char *s3,
+	      char *s4, char *s5, char *s6, char *s7);
+void str_upr(char *s);
+
+
 /************************************************************************/
 /* --- SYMBOLTABELLE, mit Funktionsadressen --- */
 
@@ -370,8 +443,8 @@ static int get_id_symbol(char *function, int *scanposp, char *id)
  */
 
 {
-  while ( (*id = function[(*scanposp)]) >= 'A' && *id <= 'Z'
-     || *id == '_' ||               *id >= '0' && *id <= '9') {
+  while ( ((*id = function[(*scanposp)]) >= 'A' && *id <= 'Z')
+     || *id == '_' ||              ( *id >= '0' && *id <= '9')) {
      id++;
      (*scanposp)++;
   }
@@ -496,27 +569,27 @@ extern int  find_index(char *symb, int start, int end, int nxt_c);
 
 /* --- Prototypen: --- */ 
 struct treenode *string2tree(char *function, int *errcodep, int *errposp);
-struct treenode *FuncDefinition   (char *f, int *spp, int *ecp, int *epp);
-struct treenode *DefFuncDesignator(char *f, int *spp, int *ecp, int *epp, 
+static struct treenode *FuncDefinition   (char *f, int *spp, int *ecp, int *epp);
+static struct treenode *DefFuncDesignator(char *f, int *spp, int *ecp, int *epp, 
                                                                 int *ftp);
-struct treenode *DefParameterlist (char *f, int *spp, int *ecp, int *epp, 
+static struct treenode *DefParameterlist (char *f, int *spp, int *ecp, int *epp, 
                                                             int *paranzp);
-struct treenode *Expression       (char *f, int *spp, int *ecp, int *epp);
-struct treenode *SimpleExpression (char *f, int *spp, int *ecp, int *epp);
-struct treenode *VTerm            (char *f, int *spp, int *ecp, int *epp);
-struct treenode *Term             (char *f, int *spp, int *ecp, int *epp);
-struct treenode *Factor           (char *f, int *spp, int *ecp, int *epp);
-struct treenode *bas_exp          (char *f, int *spp, int *ecp, int *epp);
-struct treenode *FuncDesignator   (char *f, int *spp, int *ecp, int *epp);
-struct treenode *ActualParameterlist(char *f, int *spp, int *ecp, 
+static struct treenode *Expression       (char *f, int *spp, int *ecp, int *epp);
+static struct treenode *SimpleExpression (char *f, int *spp, int *ecp, int *epp);
+static struct treenode *VTerm            (char *f, int *spp, int *ecp, int *epp);
+static struct treenode *Term             (char *f, int *spp, int *ecp, int *epp);
+static struct treenode *Factor           (char *f, int *spp, int *ecp, int *epp);
+static struct treenode *bas_exp          (char *f, int *spp, int *ecp, int *epp);
+static struct treenode *FuncDesignator   (char *f, int *spp, int *ecp, int *epp);
+static struct treenode *ActualParameterlist(char *f, int *spp, int *ecp, 
                                                  int *epp, int corr_panz);
-struct treenode *create_node(char *symb, int token, int symbkind,
+static struct treenode *create_node(char *symb, int token, int symbkind,
                 double val, struct treenode *left, struct treenode *right);
-struct treenode *tnalloc (void);
-struct treenode *set_err (int err_nr, int *errcodep);
+static struct treenode *tnalloc (void);
+static struct treenode *set_err (int err_nr, int *errcodep);
 char            *readln  (char *s);
-char            *erase_back_blancs (char *s); 
-int             simplification(char *symb, int t, struct treenode *l, 
+static char            *erase_back_blancs (char *s); 
+static int             simplification(char *symb, int t, struct treenode *l, 
                                                       struct treenode *r);
 void            check_reorg (struct treenode *root);
 void            show_tree   (struct treenode *root);
@@ -1004,7 +1077,7 @@ static int simplification(char *symb, int t, struct treenode *l,
 
   if (l_const && l_0) l_const = FALSE; /* 0-Blatt muss bleiben */ 
   /* --- Ueberpruefen, ob x/x, x^0 oder 1^x => Blatt = 1: --- */ 
-  if( quotient && eq_leaves || power && (r_0 || l_1) ){ 
+  if( (quotient && eq_leaves) || (power && (r_0 || l_1)) ){ 
      strcpy(l->symb,"1"); 
      l->token    = scs + 2; 
      l->symbkind = SCONST; 
@@ -1015,7 +1088,7 @@ static int simplification(char *symb, int t, struct treenode *l,
   } 
 
   /*-- Ueberpruefen, ob 0*x,x*0,0ANDx,xAND0,0/x,0^x,0MODx => Blatt=0: --*/ 
-  if( (product||and) && (l_0||r_0) || l_0 && (quotient||power||mod) ){ 
+  if( ((product||and) && (l_0||r_0)) || (l_0 && (quotient||power||mod)) ){ 
      strcpy(l->symb,"0"); 
      l->token    = scs + 1; 
      l->symbkind = SCONST; 
@@ -1026,12 +1099,12 @@ static int simplification(char *symb, int t, struct treenode *l,
   } 
 
   /*- Ueberpruefen, ob x+0,x-0,x*1,x/1,x MOD 1,x^1 => l. Baum zurueck:- */ 
-  if( r_0 && (plus||minus) || r_1 && (product||quotient||mod||power) ){ 
+  if( (r_0 && (plus||minus)) || (r_1 && (product||quotient||mod||power)) ){ 
      return TRUE; 
   } 
 
   /* --- Ueberpruefen, ob 0+x, 1*x => rechten Baum zurueck: --- */ 
-  if( l_0 && plus || l_1 && product ){ 
+  if( (l_0 && plus ) || (l_1 && product) ){ 
      strcpy(l->symb,r->symb); 
      l->token    = r->token; 
      l->symbkind = r->symbkind; 
@@ -1951,13 +2024,13 @@ struct treenode *_unur_fstr2tree(char *function, int *errcodep, int *errposp)
 
 /***************************************************************************************/
 double  _unur_fstr_eval_tree(struct treenode *E_root, double argument)
-{
-  double           result;
+{  
+  double          result;
   struct treenode *froot;
   int             ftok,xtok;
 
-  xtok=find_index("X",uis,ufe,"");
-  ftok=find_index("F",uis,ufe,"");
+  xtok=find_index("X",uis,ufe,0);
+  ftok=find_index("F",uis,ufe,0);
   froot=(*symbol[ftok].tree).right;             /* Achtung Fehler in Beschreibung !!! */
   symbol[xtok].val= argument;
   result=tree2float(froot);
@@ -1970,11 +2043,10 @@ double  _unur_fstr_eval_tree(struct treenode *E_root, double argument)
 char *Ntree2string(struct treenode *tree_root, char *ret_str)
 
 {
-  double           result;
   struct treenode  *froot;
   int              ftok;
 
-  ftok=find_index("F",uis,ufe,"");
+  ftok=find_index("F",uis,ufe,0);
   froot=(*symbol[ftok].tree).right;          
 
   tree2Cstring(froot,ret_str); 
@@ -1985,21 +2057,13 @@ char *Ntree2string(struct treenode *tree_root, char *ret_str)
 struct treenode *_unur_fstr_make_derivative(struct treenode *root)
 
 { 
-  struct treenode *E_root  =root->right;    /*zeigt auf Expression      */
-   struct treenode *parsetreeh,*parsetree;
-   char            temp_str[MAXLENGTH];
-   int             errcode, errpos;
+   struct treenode *parsetreeh;
   
    char            x[MAXLENGTH];
    char            ret_str[MAXLENGTH];
-   char            *par;
-  
-
   
    strcpy(x,"X"); 
    parsetreeh=part_deriv(root,x,ret_str);
-
-    printf("\nAbleitungxxxx:%s\n",ret_str);
    return parsetreeh;
 }
 
@@ -2010,8 +2074,8 @@ double  _unur_fstr_dev_eval_tree(struct treenode *E_root, double argument)
   struct treenode *froot;
   int             ftok,xtok;
 
-  xtok=find_index("X",uis,ufe,"");
-  ftok=find_index("F_X",uis,ufe,"");
+  xtok=find_index("X",uis,ufe,0);
+  ftok=find_index("F_X",uis,ufe,0);
   froot=(*symbol[ftok].tree).right;             /* Achtung Fehler in Beschreibung !!! */
   symbol[xtok].val= argument;
   result=tree2float(froot);

@@ -4,11 +4,11 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   FILE: sinv_struct.h                                                     *
+ *   FILE: hinv_struct.h                                                     *
  *                                                                           *
  *   PURPOSE:                                                                *
- *         declares structures for method SINV                               *
- *         (Spline approximation for INVerse of CDF)                         *
+ *         declares structures for method HINV                               *
+ *         (Hermite interpolation based INVersion of CDF)                    *
  *                                                                           *
  *   USAGE:                                                                  *
  *         only included in source_struct.h                                  *
@@ -40,8 +40,8 @@
 /*---------------------------------------------------------------------------*/
 /* Information for constructing the generator                                */
 
-struct unur_sinv_par { 
-  int order;               /* order of interpolation polynomial              */
+struct unur_hinv_par { 
+  int order;               /* order of interpolating polynomial              */
   double u_resolution;     /* maximal error in u                             */
   double  guide_factor;    /* relative size of guide table                   */
   double  bleft;           /* left border of the computational domain        */
@@ -51,16 +51,16 @@ struct unur_sinv_par {
 /*---------------------------------------------------------------------------*/
 /* store information about splines                                           */
 
-#define UNUR_SINV_MAX_ORDER   (5)
+#define UNUR_HINV_MAX_ORDER   (5)
 
-struct unur_sinv_interval {
-  double spline[UNUR_SINV_MAX_ORDER+1];   /* coefficients of spline           */
+struct unur_hinv_interval {
+  double spline[UNUR_HINV_MAX_ORDER+1];   /* coefficients of spline           */
   double p;                /* left design point (node) in interval            */  
   double u;                /* CDF at node p (u=CDF(p))                        */
   double f;                /* PDF at node p (u=CDF(p))                        */
   double df;               /* derivative of PDF at node p (u=CDF(p))          */
 
-  struct unur_sinv_interval *next;  /* pointer to next element in list        */
+  struct unur_hinv_interval *next;  /* pointer to next element in list        */
 
 #ifdef UNUR_COOKIES
   unsigned cookie;         /* magic cookie                                    */
@@ -70,8 +70,8 @@ struct unur_sinv_interval {
 /*---------------------------------------------------------------------------*/
 /* The generator object                                                      */
 
-struct unur_sinv_gen { 
-  int order;               /* order of interpolation polynomial              */
+struct unur_hinv_gen { 
+  int order;               /* order of interpolating polynomial              */
 
   int N;                   /* total number of division points = #intervals+1 */
   double *intervals;       /* pointer to array for storing data for intervals 
@@ -92,7 +92,7 @@ struct unur_sinv_gen {
   double  bleft;           /* left border of the computational domain        */
   double  bright;          /* right border of the computational domain       */
 
-  struct unur_sinv_interval *iv; /* linked list of splines (only used in setup) */
+  struct unur_hinv_interval *iv; /* linked list of splines (only used in setup) */
 };
 
 /*---------------------------------------------------------------------------*/

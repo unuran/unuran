@@ -117,8 +117,8 @@ struct unur_slist;         /* Structure for simple list.                     */
 
 /* methods for continuous distributions */
 #include <arou.h>
+#include <hinv.h>
 #include <ninv.h>
-#include <sinv.h>
 #include <srou.h>
 #include <ssr.h>
 #include <tabl.h>

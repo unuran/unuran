@@ -31,8 +31,8 @@ check_PROGRAMS = \
  t_dsrou \
  t_dstd \
  t_empk \
+ t_hinv \
  t_ninv \
- t_sinv \
  t_srou \
  t_ssr \
  t_tabl \
@@ -56,8 +56,8 @@ TESTS = \
  t_dsrou \
  t_dstd \
  t_empk \
+ t_hinv \
  t_ninv \
- t_sinv \
  t_srou \
  t_ssr \
  t_tabl \
@@ -87,8 +87,8 @@ EXTRA_DIST = \
  dsrou.conf \
  dstd.conf \
  empk.conf \
+ hinv.conf \
  ninv.conf \
- sinv.conf \
  srou.conf \
  ssr.conf \
  tabl.conf \
@@ -161,11 +161,11 @@ t_dstd_LDADD = $(top_builddir)/src/libunuran.a
 t_empk_SOURCES = t_empk.c testroutines.c
 t_empk_LDADD = $(top_builddir)/src/libunuran.a
 
+t_hinv_SOURCES = t_hinv.c testroutines.c
+t_hinv_LDADD = $(top_builddir)/src/libunuran.a
+
 t_ninv_SOURCES = t_ninv.c testroutines.c
 t_ninv_LDADD = $(top_builddir)/src/libunuran.a
-
-t_sinv_SOURCES = t_sinv.c testroutines.c
-t_sinv_LDADD = $(top_builddir)/src/libunuran.a
 
 t_srou_SOURCES = t_srou.c testroutines.c
 t_srou_LDADD = $(top_builddir)/src/libunuran.a
@@ -228,11 +228,11 @@ t_dstd.c: dstd.conf make_test_files.pl
 t_empk.c: empk.conf make_test_files.pl
 	./make_test_files.pl empk.conf           > t_empk.c
 
+t_hinv.c: hinv.conf make_test_files.pl
+	./make_test_files.pl hinv.conf           > t_hinv.c
+
 t_ninv.c: ninv.conf make_test_files.pl
 	./make_test_files.pl ninv.conf           > t_ninv.c
-
-t_sinv.c: sinv.conf make_test_files.pl
-	./make_test_files.pl sinv.conf           > t_sinv.c
 
 t_srou.c: srou.conf make_test_files.pl
 	./make_test_files.pl srou.conf           > t_srou.c

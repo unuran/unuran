@@ -4,10 +4,10 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   FILE:      sinv.c                                                       *
+ *   FILE:      hinv.c                                                       *
  *                                                                           *
  *   TYPE:      continuous univariate random variate                         *
- *   METHOD:    Spline approximation for INVerse of CDF                      *
+ *   METHOD:    Hermite interpolation based INVersion of CDF                 *
  *                                                                           *
  *   DESCRIPTION:                                                            *
  *                                                                           *
@@ -57,23 +57,8 @@
  *     Starting with uniformly distributed random variables U,               *
  *     the F^(-1)(U) have F(x) as CDF.                                       *
  *                                                                           *
- *  Starting with an U, the task is to find a X fulfilling:                  *
- *    F(X) - U = 0.                                                          *
  *                                                                           *
- *  Numerical algorithms to find zeros that are used in SINV are variants of * 
- *  newton's method (damped newton to guarantee improvement) and             *
- *  the regula falsi ( stabilized regula falsi preserving sign change; at    *
- *  first an interval with sign change is determined).                       *
- *                                                                           *
- *  In both cases it is possible to specify the maximal number of            *
- *  iterations, a desired accuracy in X and starting values for the          *
- *  algorithms.                                                              *
- *  Instead of starting values it is also possible to use a table            *
- *  containing suitable starting values.                                     *
- *  If neither the table nor explicit starting values are used,              *
- *  SINV chooses as starting values:                                         *
- *     newton's method:  x:     CDF(x) = 0.5                                 *
- *     regula falsi:     x1,x2: CDF(x1) = 1 - CDF(x2) = 0.05                 *
+ *  ..............                                                           *
  *                                                                           *
  *****************************************************************************/
 
@@ -84,11 +69,11 @@
 /*---------------------------------------------------------------------------*/
 /* Constants                                                                 */
 
-#define SINV_MAX_U_LENGTH  (0.05)   /* maximal value for |u_i - u_{i-1}|     */
-#define SINV_TAILCUTOFF    (1.e-10) /* Tail is cut off as max(TAILCUTOFF,e_u/0.1)*/
+#define HINV_MAX_U_LENGTH  (0.05)   /* maximal value for |u_i - u_{i-1}|     */
+#define HINV_TAILCUTOFF    (1.e-10) /* Tail is cut off as max(TAILCUTOFF,e_u/0.1)*/
 /** TODO: maschinenabhaengige konstante !!!! **/
 
-#define SINV_XDEVIATION    (0.05)
+#define HINV_XDEVIATION    (0.05)
 /** TODO: beschreibung: how many percent may the approximation be away from the center of the 
 interval that it is still accepted as splitting point (for the sake
 of saves of CDF-evaluations.
@@ -111,80 +96,80 @@ Approximative in u-richtung besser zu sein*/
 /*    bits 13-24 ... adaptive steps                                          */
 /*    bits 25-32 ... trace sampling                                          */
 
-#define SINV_DEBUG_TABLE        0x00000010u   /* print table                 */
-#define SINV_DEBUG_CHG          0x00001000u   /* print changed parameters    */
-#define SINV_DEBUG_SAMPLE       0x01000000u   /* trace sampling              */
+#define HINV_DEBUG_TABLE        0x00000010u   /* print table                 */
+#define HINV_DEBUG_CHG          0x00001000u   /* print changed parameters    */
+#define HINV_DEBUG_SAMPLE       0x01000000u   /* trace sampling              */
 
 /*---------------------------------------------------------------------------*/
 /* Flags for logging set calls                                               */
 
-#define SINV_SET_ORDER          0x001u  /* order of polynomial               */
-#define SINV_SET_U_RESOLUTION   0x002u  /* maximal error in u                */
-#define SINV_SET_GUIDEFACTOR    0x004u  /* relative size of guide table      */
+#define HINV_SET_ORDER          0x001u  /* order of polynomial               */
+#define HINV_SET_U_RESOLUTION   0x002u  /* maximal error in u                */
+#define HINV_SET_GUIDEFACTOR    0x004u  /* relative size of guide table      */
 
 /*---------------------------------------------------------------------------*/
 
-#define GENTYPE "SINV"         /* type of generator                          */
+#define GENTYPE "HINV"         /* type of generator                          */
 
 /*---------------------------------------------------------------------------*/
 
-static struct unur_gen *_unur_sinv_init( struct unur_par *par );
+static struct unur_gen *_unur_hinv_init( struct unur_par *par );
 /*---------------------------------------------------------------------------*/
 /* Initialize new generator.                                                 */
 /*---------------------------------------------------------------------------*/
 
-static struct unur_gen *_unur_sinv_create( struct unur_par *par );
+static struct unur_gen *_unur_hinv_create( struct unur_par *par );
 /*---------------------------------------------------------------------------*/
 /* create new (almost empty) generator object.                               */
 /*---------------------------------------------------------------------------*/
 
-static double _unur_sinv_sample( struct unur_gen *gen );
+static double _unur_hinv_sample( struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 /* sample from generator                                                     */
 /*---------------------------------------------------------------------------*/
 
-static void _unur_sinv_free( struct unur_gen *gen );
+static void _unur_hinv_free( struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 /* destroy generator object.                                                 */
 /*---------------------------------------------------------------------------*/
 
-static int _unur_sinv_create_table( struct unur_gen *gen );
+static int _unur_hinv_create_table( struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 /* create the table with splines                                             */
 /*---------------------------------------------------------------------------*/
 
-static struct unur_sinv_interval *_unur_sinv_interval_new( struct unur_gen *gen, double p, double u );
+static struct unur_hinv_interval *_unur_hinv_interval_new( struct unur_gen *gen, double p, double u );
 /*---------------------------------------------------------------------------*/
 /* make a new interval with node (u=F(p),p).                                 */
 /*---------------------------------------------------------------------------*/
 
-static struct unur_sinv_interval *_unur_sinv_interval_adapt( struct unur_gen *gen, 
-							     struct unur_sinv_interval *iv );
+static struct unur_hinv_interval *_unur_hinv_interval_adapt( struct unur_gen *gen, 
+							     struct unur_hinv_interval *iv );
 /*---------------------------------------------------------------------------*/
 /* check parameters in interval and split or truncate where necessary.       */
 /*---------------------------------------------------------------------------*/
 
-static int _unur_sinv_interval_is_monotone( struct unur_gen *gen, struct unur_sinv_interval *iv );
+static int _unur_hinv_interval_is_monotone( struct unur_gen *gen, struct unur_hinv_interval *iv );
 /*---------------------------------------------------------------------------*/
 /* check whether the given interval is monotone.                             */
 /*---------------------------------------------------------------------------*/
 
-static int _unur_sinv_interval_parameter( struct unur_gen *gen, struct unur_sinv_interval *iv );
+static int _unur_hinv_interval_parameter( struct unur_gen *gen, struct unur_hinv_interval *iv );
 /*---------------------------------------------------------------------------*/
 /* compute all parameter for interval (spline coefficients).                 */
 /*---------------------------------------------------------------------------*/
 
-static double _unur_sinv_eval_polynomial( double x, double *coeff, int order );
+static double _unur_hinv_eval_polynomial( double x, double *coeff, int order );
 /*---------------------------------------------------------------------------*/
 /* evaluate polynomial.                                                      */
 /*---------------------------------------------------------------------------*/
 
-static int _unur_sinv_list_to_array( struct unur_gen *gen );
+static int _unur_hinv_list_to_array( struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 /* copy list of intervals into double array.                                 */
 /*---------------------------------------------------------------------------*/
 
-static int _unur_sinv_make_guide_table( struct unur_gen *gen );
+static int _unur_hinv_make_guide_table( struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 /* make a guide table for indexed search.                                    */
 /*---------------------------------------------------------------------------*/
@@ -195,17 +180,17 @@ static int _unur_sinv_make_guide_table( struct unur_gen *gen );
 /* i.e., into the log file if not specified otherwise.                       */
 /*---------------------------------------------------------------------------*/
 
-static void _unur_sinv_debug_init( const struct unur_gen *gen );
+static void _unur_hinv_debug_init( const struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 /* print after generator has been initialized has completed.                 */
 /*---------------------------------------------------------------------------*/
 
-static void _unur_sinv_debug_intervals( const struct unur_gen *gen );
+static void _unur_hinv_debug_intervals( const struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 /* print starting points or table for algorithms into logfile.               */
 /*---------------------------------------------------------------------------*/
 
-static void _unur_sinv_debug_chg_truncated( const struct unur_gen *gen);
+static void _unur_hinv_debug_chg_truncated( const struct unur_gen *gen);
 /*---------------------------------------------------------------------------*/
 /* trace changes of the truncated domain.                                    */
 /*---------------------------------------------------------------------------*/
@@ -216,8 +201,8 @@ static void _unur_sinv_debug_chg_truncated( const struct unur_gen *gen);
 
 #define DISTR_IN  distr->data.cont      /* data for distribution object      */
 
-#define PAR       par->data.sinv        /* data for parameter object         */
-#define GEN       gen->data.sinv        /* data for generator object         */
+#define PAR       par->data.hinv        /* data for parameter object         */
+#define GEN       gen->data.hinv        /* data for generator object         */
 #define DISTR     gen->distr->data.cont /* data for distribution in generator object */
 
 #define SAMPLE    gen->sample.cont      /* pointer to sampling routine       */
@@ -231,7 +216,7 @@ static void _unur_sinv_debug_chg_truncated( const struct unur_gen *gen);
 /*****************************************************************************/
 
 struct unur_par *
-unur_sinv_new( const struct unur_distr *distr )
+unur_hinv_new( const struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
      /* get default parameters                                               */
      /*                                                                      */
@@ -262,7 +247,7 @@ unur_sinv_new( const struct unur_distr *distr )
 
   /* allocate structure */
   par = _unur_malloc(sizeof(struct unur_par));
-  COOKIE_SET(par,CK_SINV_PAR);
+  COOKIE_SET(par,CK_HINV_PAR);
 
   /* copy input */
   par->distr   = distr;         /* pointer to distribution object            */
@@ -274,7 +259,7 @@ unur_sinv_new( const struct unur_distr *distr )
   PAR.bleft = -1.e20;           /* left border of the computational domain   */
   PAR.bright = 1.e20;           /* right border of the computational domain  */
 
-  par->method   = UNUR_METH_SINV; /* method                                  */
+  par->method   = UNUR_METH_HINV; /* method                                  */
   par->variant  = 0u;             /* default variant                         */
 
   par->set      = 0u;                      /* inidicate default parameters   */
@@ -284,16 +269,16 @@ unur_sinv_new( const struct unur_distr *distr )
   par->debug    = _unur_default_debugflag; /* set default debugging flags    */
 
   /* routine for starting generator */
-  par->init = _unur_sinv_init;
+  par->init = _unur_hinv_init;
 
   return par;
 
-} /* end of unur_sinv_new() */
+} /* end of unur_hinv_new() */
 
 /*****************************************************************************/
 
 int
-unur_sinv_set_order( struct unur_par *par, int order)
+unur_hinv_set_order( struct unur_par *par, int order)
      /*----------------------------------------------------------------------*/
      /* Set order of Hermite interpolation.                                  */
      /*                                                                      */
@@ -310,7 +295,7 @@ unur_sinv_set_order( struct unur_par *par, int order)
   _unur_check_NULL( GENTYPE,par,0 );
 
   /* check input */
-  _unur_check_par_object( par,SINV );
+  _unur_check_par_object( par,HINV );
 
   /* check new parameter for generator */
   if (order!=1 && order!=3 && order!=5) {
@@ -332,16 +317,16 @@ unur_sinv_set_order( struct unur_par *par, int order)
   PAR.order = order;
 
   /* changelog */
-  par->set |= SINV_SET_ORDER;
+  par->set |= HINV_SET_ORDER;
 
   return 1;
 
-} /* end of unur_sinv_set_order() */
+} /* end of unur_hinv_set_order() */
 
 /*---------------------------------------------------------------------------*/
 
 int
-unur_sinv_set_u_resolution( struct unur_par *par, double u_resolution )
+unur_hinv_set_u_resolution( struct unur_par *par, double u_resolution )
      /*----------------------------------------------------------------------*/
      /* set maximal relative error in x                                      */
      /*                                                                      */
@@ -358,7 +343,7 @@ unur_sinv_set_u_resolution( struct unur_par *par, double u_resolution )
   _unur_check_NULL( GENTYPE,par,0 );
 
   /* check input */
-  _unur_check_par_object( par,SINV );
+  _unur_check_par_object( par,HINV );
 
   /* check new parameter for generator */
   if (u_resolution < DBL_EPSILON) {
@@ -370,16 +355,16 @@ unur_sinv_set_u_resolution( struct unur_par *par, double u_resolution )
   PAR.u_resolution = u_resolution;
 
   /* changelog */
-  par->set |= SINV_SET_U_RESOLUTION;
+  par->set |= HINV_SET_U_RESOLUTION;
 
   return 1;
 
-} /* end of unur_sinv_set_u_resolutuion() */
+} /* end of unur_hinv_set_u_resolutuion() */
 
 /*---------------------------------------------------------------------------*/
 
 int
-unur_sinv_set_guidefactor( struct unur_par *par, double factor )
+unur_hinv_set_guidefactor( struct unur_par *par, double factor )
      /*----------------------------------------------------------------------*/
      /* set factor for relative size of guide table                          */
      /*                                                                      */
@@ -396,7 +381,7 @@ unur_sinv_set_guidefactor( struct unur_par *par, double factor )
   _unur_check_NULL( GENTYPE,par,0 );
 
   /* check input */
-  _unur_check_par_object( par,SINV );
+  _unur_check_par_object( par,HINV );
 
   /* check new parameter for generator */
   if (factor < 0) {
@@ -408,16 +393,16 @@ unur_sinv_set_guidefactor( struct unur_par *par, double factor )
   PAR.guide_factor = factor;
 
   /* changelog */
-  par->set |= SINV_SET_GUIDEFACTOR;
+  par->set |= HINV_SET_GUIDEFACTOR;
 
   return 1;
 
-} /* end of unur_sinv_set_guidefactor() */
+} /* end of unur_hinv_set_guidefactor() */
 
 /*---------------------------------------------------------------------------*/
 
 int 
-unur_sinv_chg_truncated( struct unur_gen *gen, double left, double right )
+unur_hinv_chg_truncated( struct unur_gen *gen, double left, double right )
      /*----------------------------------------------------------------------*/
      /* change the left and right borders of the domain of the distribution  */
      /* the new domain should not exceed the original domain given by        */
@@ -436,7 +421,7 @@ unur_sinv_chg_truncated( struct unur_gen *gen, double left, double right )
 
   /* check arguments */
   CHECK_NULL(gen, 0);
-  _unur_check_gen_object(gen, SINV);
+  _unur_check_gen_object(gen, HINV);
 
   /* check new parameter for generator */
   /* (the truncated domain must be a subset of the domain) */
@@ -486,21 +471,21 @@ unur_sinv_chg_truncated( struct unur_gen *gen, double left, double right )
 
 #ifdef UNUR_ENABLE_LOGGING
   /* write info into log file */
-  if (gen->debug & SINV_DEBUG_CHG) 
-    _unur_sinv_debug_chg_truncated( gen );
+  if (gen->debug & HINV_DEBUG_CHG) 
+    _unur_hinv_debug_chg_truncated( gen );
 #endif
   
   /* o.k. */
   return 1;
   
-} /* end of unur_sinv_chg_truncated() */
+} /* end of unur_hinv_chg_truncated() */
 
 /*---------------------------------------------------------------------------*/
 
 /*****************************************************************************/
 
 struct unur_gen *
-_unur_sinv_init( struct unur_par *par )
+_unur_hinv_init( struct unur_par *par )
      /*----------------------------------------------------------------------*/
      /* initialize new generator                                             */
      /*                                                                      */
@@ -520,13 +505,13 @@ _unur_sinv_init( struct unur_par *par )
   _unur_check_NULL( GENTYPE,par,NULL );
 
   /* check input */
-  if ( par->method != UNUR_METH_SINV ) {
+  if ( par->method != UNUR_METH_HINV ) {
     _unur_error(GENTYPE,UNUR_ERR_PAR_INVALID,"");
     return NULL; }
-  COOKIE_CHECK(par,CK_SINV_PAR,NULL);
+  COOKIE_CHECK(par,CK_HINV_PAR,NULL);
 
   /* create a new empty generator object */    
-  gen = _unur_sinv_create(par);
+  gen = _unur_hinv_create(par);
   if (!gen) { free(par); return NULL; }
 
   /* free parameters */
@@ -542,34 +527,34 @@ _unur_sinv_init( struct unur_par *par )
 
   if (GEN.CDFmin > GEN.CDFmax) {
     _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"CDF not increasing");
-    _unur_sinv_free(gen); return NULL;
+    _unur_hinv_free(gen); return NULL;
   }
 
   /* compute splines */
-  if (!_unur_sinv_create_table(gen)) {
-    _unur_sinv_free(gen);
+  if (!_unur_hinv_create_table(gen)) {
+    _unur_hinv_free(gen);
     return NULL;
   }
 
   /* copy linked list into array */
-  _unur_sinv_list_to_array( gen );
+  _unur_hinv_list_to_array( gen );
 
   /* make initial guide table */
-  _unur_sinv_make_guide_table(gen);
+  _unur_hinv_make_guide_table(gen);
 
 #ifdef UNUR_ENABLE_LOGGING
   /* write info into log file */
-  if (gen->debug) _unur_sinv_debug_init(gen);
+  if (gen->debug) _unur_hinv_debug_init(gen);
 #endif
 
   return gen;
 
-} /* end of _unur_sinv_init() */
+} /* end of _unur_hinv_init() */
 
 /*---------------------------------------------------------------------------*/
 
 static struct unur_gen *
-_unur_sinv_create( struct unur_par *par )
+_unur_hinv_create( struct unur_par *par )
      /*----------------------------------------------------------------------*/
      /* allocate memory for generator                                        */
      /*                                                                      */
@@ -586,13 +571,13 @@ _unur_sinv_create( struct unur_par *par )
   struct unur_gen *gen;
 
   /* check arguments */
-  CHECK_NULL(par,NULL);  COOKIE_CHECK(par,CK_SINV_PAR,NULL);
+  CHECK_NULL(par,NULL);  COOKIE_CHECK(par,CK_HINV_PAR,NULL);
 
   /* allocate memory for generator object */
   gen = _unur_malloc( sizeof(struct unur_gen) );
 
   /* magic cookies */
-  COOKIE_SET(gen,CK_SINV_GEN);
+  COOKIE_SET(gen,CK_HINV_GEN);
 
   /* copy distribution object into generator object */
   gen->distr = _unur_distr_cont_clone( par->distr );
@@ -601,10 +586,10 @@ _unur_sinv_create( struct unur_par *par )
   gen->genid = _unur_set_genid(GENTYPE);
 
   /* routines for sampling and destroying generator */
-  SAMPLE = _unur_sinv_sample;
+  SAMPLE = _unur_hinv_sample;
 
-  gen->destroy = _unur_sinv_free;
-  gen->clone = _unur_sinv_clone;
+  gen->destroy = _unur_hinv_free;
+  gen->clone = _unur_hinv_clone;
 
   /* copy parameters into generator object */
   GEN.order = PAR.order;            /* order of polynomial                   */
@@ -632,12 +617,12 @@ _unur_sinv_create( struct unur_par *par )
   /* return pointer to (almost empty) generator object */
   return(gen);
 
-} /* end of _unur_sinv_create() */
+} /* end of _unur_hinv_create() */
 
 /*---------------------------------------------------------------------------*/
 
 int
-_unur_sinv_create_table( struct unur_gen *gen )
+_unur_hinv_create_table( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* create a table of splines                                            */
      /*                                                                      */
@@ -649,20 +634,20 @@ _unur_sinv_create_table( struct unur_gen *gen )
      /*   0 ... on error                                                     */
      /*----------------------------------------------------------------------*/
 {
-  struct unur_sinv_interval *iv;
+  struct unur_hinv_interval *iv;
 
   /* check arguments */
-  CHECK_NULL(gen,0);  COOKIE_CHECK(gen,CK_SINV_GEN,0);
+  CHECK_NULL(gen,0);  COOKIE_CHECK(gen,CK_HINV_GEN,0);
   
   /* first and terminating interval */
-  GEN.iv = _unur_sinv_interval_new(gen,GEN.bleft,CDF(GEN.bleft));
+  GEN.iv = _unur_hinv_interval_new(gen,GEN.bleft,CDF(GEN.bleft));
   if (GEN.iv == NULL) return 0;
-  GEN.iv->next = _unur_sinv_interval_new(gen,GEN.bright,CDF(GEN.bright));
+  GEN.iv->next = _unur_hinv_interval_new(gen,GEN.bright,CDF(GEN.bright));
   if (GEN.iv->next == NULL) return 0;
 
   for (iv=GEN.iv; iv->next!=NULL; ) {
-    COOKIE_CHECK(iv,CK_SINV_IV,0);
-    iv = _unur_sinv_interval_adapt(gen,iv);
+    COOKIE_CHECK(iv,CK_HINV_IV,0);
+    iv = _unur_hinv_interval_adapt(gen,iv);
   }
 
   /* last interval is only used to store right boundary */
@@ -670,12 +655,12 @@ _unur_sinv_create_table( struct unur_gen *gen )
 
   /* o.k. */
   return 1;
-}  /* end of _unur_sinv_create_table() */
+}  /* end of _unur_hinv_create_table() */
 
 /*---------------------------------------------------------------------------*/
 
-static struct unur_sinv_interval *
-_unur_sinv_interval_adapt( struct unur_gen *gen, struct unur_sinv_interval *iv )
+static struct unur_hinv_interval *
+_unur_hinv_interval_adapt( struct unur_gen *gen, struct unur_hinv_interval *iv )
      /*----------------------------------------------------------------------*/
      /* check parameters in interval and split or truncate where necessary.  */
      /*                                                                      */
@@ -689,14 +674,14 @@ _unur_sinv_interval_adapt( struct unur_gen *gen, struct unur_sinv_interval *iv )
      /*----------------------------------------------------------------------*/
 {
   double p_new;   /* new design point */
-  struct unur_sinv_interval *iv_new, *iv_tmp;
+  struct unur_hinv_interval *iv_new, *iv_tmp;
   double x, Fx;
 
   /* 1st check: right most interval (of at least 2)
      with CDF greater than 1.- TAILCUTOFF */
 
   iv_tmp = iv->next->next;
-  if(iv_tmp && iv->next->u > 1. - min(SINV_TAILCUTOFF, 0.1*GEN.u_resolution)) {
+  if(iv_tmp && iv->next->u > 1. - min(HINV_TAILCUTOFF, 0.1*GEN.u_resolution)) {
     /* chop off right hand tail */
     free (iv_tmp);
     iv->next->next = NULL;
@@ -709,7 +694,7 @@ _unur_sinv_interval_adapt( struct unur_gen *gen, struct unur_sinv_interval *iv )
   /* 2nd check: is the left most interval (of at least 2) 
      with CDF less than TAILCUTOFF */
 
-  if (iv==GEN.iv && iv->next->next && iv->next->u < min(SINV_TAILCUTOFF, 0.1*GEN.u_resolution)) {
+  if (iv==GEN.iv && iv->next->next && iv->next->u < min(HINV_TAILCUTOFF, 0.1*GEN.u_resolution)) {
     /* chop off left hand tail */
     iv_tmp = GEN.iv;
     GEN.iv = iv->next;
@@ -723,34 +708,34 @@ _unur_sinv_interval_adapt( struct unur_gen *gen, struct unur_sinv_interval *iv )
   /* 3rd check: |u_i - u_{i-1}| must not exceed threshold value */
   /* 4th check: monotonicity                                    */
 
-  if ( (iv->next->u - iv->u > SINV_MAX_U_LENGTH) ||
-       (! _unur_sinv_interval_is_monotone(gen,iv)) ) {
+  if ( (iv->next->u - iv->u > HINV_MAX_U_LENGTH) ||
+       (! _unur_hinv_interval_is_monotone(gen,iv)) ) {
     /* mean of x-interval as splitting point */
     p_new = 0.5 * (iv->next->p + iv->p);
     /* insert new interval into linked list */
-    iv_new = _unur_sinv_interval_new(gen,p_new,CDF(p_new));
+    iv_new = _unur_hinv_interval_new(gen,p_new,CDF(p_new));
     iv_new->next = iv->next;
     iv->next = iv_new;
     return iv;
   }
 
   /* compute coefficients for spline (only necessary if monotone) */
-  _unur_sinv_interval_parameter(gen,iv);
+  _unur_hinv_interval_parameter(gen,iv);
 
   /* 5th check: error in u-direction */
 
   /* compute approximate value for inverse CDF in center of interval */
-  x = _unur_sinv_eval_polynomial( 0.5, iv->spline, GEN.order );
+  x = _unur_hinv_eval_polynomial( 0.5, iv->spline, GEN.order );
   Fx = CDF(x);
 
   if (fabs(Fx - 0.5*(iv->next->u + iv->u)) > GEN.u_resolution) {
     /* error in u-direction too large */
     p_new = 0.5 * (iv->next->p + iv->p);
     /* if possible we use the point x instead of p_new */
-    if(fabs(p_new-x)< SINV_XDEVIATION * (iv->next->p - iv->p))
-      iv_new = _unur_sinv_interval_new(gen,x,Fx);
+    if(fabs(p_new-x)< HINV_XDEVIATION * (iv->next->p - iv->p))
+      iv_new = _unur_hinv_interval_new(gen,x,Fx);
     else
-      iv_new = _unur_sinv_interval_new(gen,p_new,CDF(p_new));
+      iv_new = _unur_hinv_interval_new(gen,p_new,CDF(p_new));
     iv_new->next = iv->next;
     iv->next = iv_new;
     return iv;
@@ -759,12 +744,12 @@ _unur_sinv_interval_adapt( struct unur_gen *gen, struct unur_sinv_interval *iv )
   /* interval o.k. */
   return iv->next;
 
-} /* end of _unur_sinv_interval_adapt() */
+} /* end of _unur_hinv_interval_adapt() */
 
 /*---------------------------------------------------------------------------*/
 
-static struct unur_sinv_interval *
-_unur_sinv_interval_new( struct unur_gen *gen, double p, double u )
+static struct unur_hinv_interval *
+_unur_hinv_interval_new( struct unur_gen *gen, double p, double u )
      /*----------------------------------------------------------------------*/
      /* make a new interval with node (u=F(p),p).                            */
      /*                                                                      */
@@ -780,10 +765,10 @@ _unur_sinv_interval_new( struct unur_gen *gen, double p, double u )
      /*   return NULL                                                        */
      /*----------------------------------------------------------------------*/
 {
-  struct unur_sinv_interval *iv;
+  struct unur_hinv_interval *iv;
 
   /* check arguments */
-  CHECK_NULL(gen,NULL);  COOKIE_CHECK(gen,CK_SINV_GEN,NULL);
+  CHECK_NULL(gen,NULL);  COOKIE_CHECK(gen,CK_HINV_GEN,NULL);
 
   /* first check u */
   if (u<0.) {
@@ -792,8 +777,8 @@ _unur_sinv_interval_new( struct unur_gen *gen, double p, double u )
   }
 
   /* we need new interval */
-  iv = _unur_malloc( sizeof(struct unur_sinv_interval) );
-  COOKIE_SET(iv,CK_SINV_IV);
+  iv = _unur_malloc( sizeof(struct unur_hinv_interval) );
+  COOKIE_SET(iv,CK_HINV_IV);
 
   /* compute and store data */
   switch (GEN.order) {
@@ -817,12 +802,12 @@ _unur_sinv_interval_new( struct unur_gen *gen, double p, double u )
   /* o.k. */
   return iv;
 
-} /* end of _unur_sinv_interval_new() */
+} /* end of _unur_hinv_interval_new() */
 
 /*---------------------------------------------------------------------------*/
 
 int 
-_unur_sinv_interval_is_monotone( struct unur_gen *gen, struct unur_sinv_interval *iv )
+_unur_hinv_interval_is_monotone( struct unur_gen *gen, struct unur_hinv_interval *iv )
      /*----------------------------------------------------------------------*/
      /* check whether the given interval is monotone.                        */
      /*                                                                      */
@@ -852,12 +837,12 @@ _unur_sinv_interval_is_monotone( struct unur_gen *gen, struct unur_sinv_interval
     return 1;
   }
 
-} /* end of _unur_sinv_interval_is_monotone() */
+} /* end of _unur_hinv_interval_is_monotone() */
 
 /*---------------------------------------------------------------------------*/
 
 int
-_unur_sinv_interval_parameter( struct unur_gen *gen, struct unur_sinv_interval *iv )
+_unur_hinv_interval_parameter( struct unur_gen *gen, struct unur_hinv_interval *iv )
      /*----------------------------------------------------------------------*/
      /* compute all parameter for interval (spline coefficients).            */
      /*                                                                      */
@@ -910,12 +895,12 @@ _unur_sinv_interval_parameter( struct unur_gen *gen, struct unur_sinv_interval *
     return 0;
   }
 
-} /* end of _unur_sinv_interval_parameter() */
+} /* end of _unur_hinv_interval_parameter() */
 
 /*---------------------------------------------------------------------------*/
 
 double
-_unur_sinv_eval_polynomial( double x, double *coeff, int order )
+_unur_hinv_eval_polynomial( double x, double *coeff, int order )
      /*----------------------------------------------------------------------*/
      /* evaluate polynomial using Horner scheme.                             */
      /*                                                                      */
@@ -936,12 +921,12 @@ _unur_sinv_eval_polynomial( double x, double *coeff, int order )
     poly = x*poly + coeff[i];
 
   return poly;
-} /* end of _unur_sinv_eval_polynomial() */
+} /* end of _unur_hinv_eval_polynomial() */
 
 /*---------------------------------------------------------------------------*/
 
 int
-_unur_sinv_list_to_array( struct unur_gen *gen )
+_unur_hinv_list_to_array( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* copy list of intervals into double array.                            */
      /* the linked list is freed.                                            */
@@ -955,10 +940,10 @@ _unur_sinv_list_to_array( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
 {
   int i; 
-  struct unur_sinv_interval *iv, *next;
+  struct unur_hinv_interval *iv, *next;
 
   /* check arguments */
-  CHECK_NULL(gen,0);  COOKIE_CHECK(gen,CK_SINV_GEN,0);
+  CHECK_NULL(gen,0);  COOKIE_CHECK(gen,CK_HINV_GEN,0);
 
   /* allocate memory */
   GEN.intervals = malloc( GEN.N*(GEN.order+2) * sizeof(double) );
@@ -979,11 +964,11 @@ _unur_sinv_list_to_array( struct unur_gen *gen )
 
   /* o.k. */
   return 1;
-} /* end of _unur_sinv_list_to_array() */
+} /* end of _unur_hinv_list_to_array() */
 
 /*---------------------------------------------------------------------------*/
 static int
-_unur_sinv_make_guide_table( struct unur_gen *gen )
+_unur_hinv_make_guide_table( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* make a guide table for indexed search                                */
      /*                                                                      */
@@ -999,7 +984,7 @@ _unur_sinv_make_guide_table( struct unur_gen *gen )
   double delta_U;
 
   /* check arguments */
-  CHECK_NULL(gen,0);  COOKIE_CHECK(gen,CK_SINV_GEN,0);
+  CHECK_NULL(gen,0);  COOKIE_CHECK(gen,CK_HINV_GEN,0);
 
   /* allocate blocks for guide table (if necessary).
      (we allocate blocks for maximal guide table.) */
@@ -1035,12 +1020,12 @@ _unur_sinv_make_guide_table( struct unur_gen *gen )
 
   /* o.k. */
   return 1;
-} /* end of _unur_sinv_make_guide_table() */
+} /* end of _unur_hinv_make_guide_table() */
 
 /*---------------------------------------------------------------------------*/
 
 struct unur_gen *
-_unur_sinv_clone( const struct unur_gen *gen )
+_unur_hinv_clone( const struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* copy (clone) generator object                                        */
      /*                                                                      */
@@ -1054,12 +1039,12 @@ _unur_sinv_clone( const struct unur_gen *gen )
      /*   return NULL                                                        */
      /*----------------------------------------------------------------------*/
 { 
-#define CLONE clone->data.sinv
+#define CLONE clone->data.hinv
 
   struct unur_gen *clone;
 
   /* check arguments */
-  CHECK_NULL(gen,NULL);  COOKIE_CHECK(gen,CK_SINV_GEN,NULL);
+  CHECK_NULL(gen,NULL);  COOKIE_CHECK(gen,CK_HINV_GEN,NULL);
 
   /* allocate memory for generator object */
   clone = _unur_malloc( sizeof(struct unur_gen) );
@@ -1085,12 +1070,12 @@ _unur_sinv_clone( const struct unur_gen *gen )
   return clone;
 
 #undef CLONE
-} /* end of _unur_sinv_clone() */
+} /* end of _unur_hinv_clone() */
 
 /*****************************************************************************/
 
 void
-_unur_sinv_free( struct unur_gen *gen )
+_unur_hinv_free( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* deallocate generator object                                          */
      /*                                                                      */
@@ -1104,17 +1089,17 @@ _unur_sinv_free( struct unur_gen *gen )
     return;
 
   /* check input */
-  if ( gen->method != UNUR_METH_SINV ) {
+  if ( gen->method != UNUR_METH_HINV ) {
     _unur_warning(gen->genid,UNUR_ERR_GEN_INVALID,"");
     return; }
-  COOKIE_CHECK(gen,CK_SINV_GEN,/*void*/);
+  COOKIE_CHECK(gen,CK_HINV_GEN,/*void*/);
 
   /* we cannot use this generator object any more */
   SAMPLE = NULL;   /* make sure to show up a programming error */
 
   /* free linked list of intervals */
   if (GEN.iv) {
-    struct unur_sinv_interval *iv,*next;
+    struct unur_hinv_interval *iv,*next;
     for (iv = GEN.iv; iv != NULL; iv = next) {
       next = iv->next;
       free(iv);
@@ -1132,12 +1117,12 @@ _unur_sinv_free( struct unur_gen *gen )
   COOKIE_CLEAR(gen);
   free(gen);
 
-} /* end of _unur_sinv_free() */
+} /* end of _unur_hinv_free() */
 
 /*****************************************************************************/
 
 double
-_unur_sinv_sample( struct unur_gen *gen )
+_unur_hinv_sample( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* sample from generator                                                */
      /*                                                                      */
@@ -1155,7 +1140,7 @@ _unur_sinv_sample( struct unur_gen *gen )
   int i;
 
   /* check arguments */
-  CHECK_NULL(gen,0.);  COOKIE_CHECK(gen,CK_SINV_GEN,0.);
+  CHECK_NULL(gen,0.);  COOKIE_CHECK(gen,CK_HINV_GEN,0.);
 
   /* sample from U( Umin, Umax ) */
   U = GEN.Umin + _unur_call_urng(gen->urng) * (GEN.Umax - GEN.Umin);
@@ -1169,9 +1154,9 @@ _unur_sinv_sample( struct unur_gen *gen )
   U = (U-GEN.intervals[i])/(GEN.intervals[i+GEN.order+2] - GEN.intervals[i]);
 
   /* evaluate polynome */
-  return _unur_sinv_eval_polynomial( U, GEN.intervals+i+1, GEN.order );
+  return _unur_hinv_eval_polynomial( U, GEN.intervals+i+1, GEN.order );
 
-} /* end of _unur_sinv_sample() */
+} /* end of _unur_hinv_sample() */
 
 /*****************************************************************************/
 /**  Auxilliary Routines                                                    **/
@@ -1187,7 +1172,7 @@ _unur_sinv_sample( struct unur_gen *gen )
 /*---------------------------------------------------------------------------*/
 
 void
-_unur_sinv_debug_init( const struct unur_gen *gen )
+_unur_hinv_debug_init( const struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* write info about generator into logfile                              */
      /*                                                                      */
@@ -1198,43 +1183,43 @@ _unur_sinv_debug_init( const struct unur_gen *gen )
   FILE *log;
 
   /* check arguments */
-  CHECK_NULL(gen,/*void*/);  COOKIE_CHECK(gen,CK_SINV_GEN,/*void*/);
+  CHECK_NULL(gen,/*void*/);  COOKIE_CHECK(gen,CK_HINV_GEN,/*void*/);
 
   log = unur_get_stream();
 
   fprintf(log,"%s:\n",gen->genid);
   fprintf(log,"%s: type    = continuous univariate random variates\n",gen->genid);
-  fprintf(log,"%s: method  = SINV (Spline approximation of INVerse CDF)\n",gen->genid);
+  fprintf(log,"%s: method  = HINV (Spline approximation of INVerse CDF)\n",gen->genid);
   fprintf(log,"%s:\n",gen->genid);
 
   _unur_distr_cont_debug( gen->distr, gen->genid );
 
-  fprintf(log,"%s: sampling routine = _unur_sinv_sample\n",gen->genid);
+  fprintf(log,"%s: sampling routine = _unur_hinv_sample\n",gen->genid);
   fprintf(log,"%s:\n",gen->genid);
 
   fprintf(log,"%s: order of polynomial = %d",gen->genid,GEN.order);
-  _unur_print_if_default(gen,SINV_SET_ORDER);
+  _unur_print_if_default(gen,HINV_SET_ORDER);
   fprintf(log,"\n%s: u-resolution = %g",gen->genid,GEN.u_resolution);
-  _unur_print_if_default(gen,SINV_SET_U_RESOLUTION);
+  _unur_print_if_default(gen,HINV_SET_U_RESOLUTION);
   fprintf(log,"\n%s: domain of computation = [%g,%g]\n",gen->genid,GEN.bleft,GEN.bright);
   fprintf(log,"%s:\tU in (%g,%g)\n",gen->genid,GEN.Umin,GEN.Umax);
   fprintf(log,"%s:\n",gen->genid);
 
   fprintf(log,"%s: sampling from list of intervals: indexed search (guide table method)\n",gen->genid);
   fprintf(log,"%s:    relative guide table size = %g%%",gen->genid,100.*GEN.guide_factor);
-  _unur_print_if_default(gen,SINV_SET_GUIDEFACTOR);
+  _unur_print_if_default(gen,HINV_SET_GUIDEFACTOR);
   fprintf(log,"\n%s:\n",gen->genid);
 
-  _unur_sinv_debug_intervals(gen);
+  _unur_hinv_debug_intervals(gen);
 
   fflush(stdout);
 
-} /* end of _unur_sinv_debug_init() */
+} /* end of _unur_hinv_debug_init() */
 
 /*---------------------------------------------------------------------------*/
 
 void
-_unur_sinv_debug_intervals( const struct unur_gen *gen )
+_unur_hinv_debug_intervals( const struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* print table of intervals into logfile                                */
      /*                                                                      */
@@ -1246,13 +1231,13 @@ _unur_sinv_debug_intervals( const struct unur_gen *gen )
   FILE *log;
 
   /* check arguments */
-  CHECK_NULL(gen,/*void*/);  COOKIE_CHECK(gen,CK_SINV_GEN,/*void*/);
+  CHECK_NULL(gen,/*void*/);  COOKIE_CHECK(gen,CK_HINV_GEN,/*void*/);
 
   log = unur_get_stream();
 
   fprintf(log,"%s: Intervals: %d\n",gen->genid,GEN.N-1);
 
-  if (gen->debug & SINV_DEBUG_TABLE) {
+  if (gen->debug & HINV_DEBUG_TABLE) {
     fprintf(log,"%s:   Nr.      u=CDF(p)     p=spline[0]   spline[1]    ...\n",gen->genid);
     for (n=0; n<GEN.N-1; n++) {
       i = n*(GEN.order+2);
@@ -1271,12 +1256,12 @@ _unur_sinv_debug_intervals( const struct unur_gen *gen )
 
   fprintf(log,"%s:\n",gen->genid);
 
-} /* end of _unur_sinv_debug_intervals() */
+} /* end of _unur_hinv_debug_intervals() */
 
 /*---------------------------------------------------------------------------*/
 
 void 
-_unur_sinv_debug_chg_truncated( const struct unur_gen *gen )
+_unur_hinv_debug_chg_truncated( const struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* print new (changed) domain of (truncated) distribution               */
      /*                                                                      */
@@ -1287,7 +1272,7 @@ _unur_sinv_debug_chg_truncated( const struct unur_gen *gen )
   FILE *log;
 
   /* check arguments */
-  CHECK_NULL(gen,/*void*/);  COOKIE_CHECK(gen,CK_SINV_GEN,/*void*/);
+  CHECK_NULL(gen,/*void*/);  COOKIE_CHECK(gen,CK_HINV_GEN,/*void*/);
 
   log = unur_get_stream();
 
@@ -1295,7 +1280,7 @@ _unur_sinv_debug_chg_truncated( const struct unur_gen *gen )
   fprintf(log,"%s:\tdomain = (%g, %g)\n",gen->genid, DISTR.trunc[0], DISTR.trunc[1]);
   fprintf(log,"%s:\tU in (%g,%g)\n",gen->genid,GEN.Umin,GEN.Umax);
 
-} /* end of _unur_sinv_debug_chg_truncated() */
+} /* end of _unur_hinv_debug_chg_truncated() */
 
 /*---------------------------------------------------------------------------*/
 #endif   /* end UNUR_ENABLE_LOGGING */

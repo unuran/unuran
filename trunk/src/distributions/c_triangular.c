@@ -60,16 +60,20 @@ static const char distr_name[] = "triangular";
 /* parameters */
 #define H   params[0]    /* shape */
 
+#define DISTR distr->data.cont
+
 /* function prototypes                                                       */
-static double _unur_pdf_triangular(double x, double *params, int n_params);
-static double _unur_dpdf_triangular(double x, double *params, int n_params);
-static double _unur_cdf_triangular(double x, double *params, int n_params);
+static double _unur_pdf_triangular(double x, UNUR_DISTR *distr);
+static double _unur_dpdf_triangular(double x, UNUR_DISTR *distr);
+static double _unur_cdf_triangular(double x, UNUR_DISTR *distr);
 
 /*---------------------------------------------------------------------------*/
 
 double
-_unur_pdf_triangular( double x, double *params, int n_params )
+_unur_pdf_triangular( double x, UNUR_DISTR *distr )
 { 
+  register double *params = DISTR.params;
+
   if (x <= 0.)    return 0.;
   if (x <= H)     return (2.*x/H);
   if (x <= 1.)    return (2.*(1.-x)/(1.-H));
@@ -79,8 +83,10 @@ _unur_pdf_triangular( double x, double *params, int n_params )
 /*---------------------------------------------------------------------------*/
 
 double
-_unur_dpdf_triangular( double x, double *params, int n_params )
+_unur_dpdf_triangular( double x, UNUR_DISTR *distr )
 { 
+  register double *params = DISTR.params;
+
   if (x <= 0.)    return 0.;
   if (x <= H)     return (2./H);
   if (x <= 1.)    return (-2./(1.-H));
@@ -90,8 +96,10 @@ _unur_dpdf_triangular( double x, double *params, int n_params )
 /*---------------------------------------------------------------------------*/
 
 double
-_unur_cdf_triangular( double x, double *params, int n_params )
+_unur_cdf_triangular( double x, UNUR_DISTR *distr )
 { 
+  register double *params = DISTR.params;
+
   if (x <= 0.)    return 0.;
   if (x <= H)     return (x*x/H);
   if (x <= 1.)    return ((H + x * (x-2.))/(H-1.));
@@ -103,7 +111,6 @@ _unur_cdf_triangular( double x, double *params, int n_params )
 struct unur_distr *
 unur_distr_triangular( double *params, int n_params )
 {
-#define DISTR distr->data.cont
   register struct unur_distr *distr;
 
   /* check new parameter for generator */
@@ -168,10 +175,10 @@ unur_distr_triangular( double *params, int n_params )
   /* return pointer to object */
   return distr;
 
-#undef DISTR
 } /* end of unur_distr_triangular() */
 
 /*---------------------------------------------------------------------------*/
 #undef theta
 #undef phi  
+#undef DISTR
 /*---------------------------------------------------------------------------*/

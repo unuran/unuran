@@ -218,16 +218,20 @@ static const char distr_name[] = "burr";
 #define k          params[1]
 #define c          params[2]
 
+#define DISTR distr->data.cont
+
 /* function prototypes                                                       */
-/*  static double _unur_pdf_burr(double x, double *params, int n_params);    */
-/*  static double _unur_dpdf_burr(double x, double *params, int n_params);   */
-static double _unur_cdf_burr(double x, double *params, int n_params);
+/*  static double _unur_pdf_burr(double x, UNUR_DISTR *distr);    */
+/*  static double _unur_dpdf_burr(double x, UNUR_DISTR *distr);   */
+static double _unur_cdf_burr(double x, UNUR_DISTR *distr);
 
 /*---------------------------------------------------------------------------*/
 
 double
-_unur_cdf_burr( double x, double *params, int n_params )
+_unur_cdf_burr( double x, UNUR_DISTR *distr )
 {
+  register double *params = DISTR.params;
+
   switch ((int) (burr_type + 0.5)) {
 
   case  1: /* Type I:   F(x) = x                                             */
@@ -297,7 +301,6 @@ _unur_cdf_burr( double x, double *params, int n_params )
 struct unur_distr *
 unur_distr_burr( double *params, int n_params )
 {
-#define DISTR distr->data.cont
   register struct unur_distr *distr;
 
   /* check new parameter for generator */
@@ -423,11 +426,11 @@ unur_distr_burr( double *params, int n_params )
   /* return pointer to object */
   return distr;
 
-#undef DISTR
 } /* end of unur_distr_burr() */
 
 /*---------------------------------------------------------------------------*/
 #undef burr_type
 #undef k
 #undef c
+#undef DISTR
 /*---------------------------------------------------------------------------*/

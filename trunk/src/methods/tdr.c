@@ -444,8 +444,8 @@ static void _unur_tdr_debug_split_stop( struct unur_gen *gen,
 
 #define SAMPLE    gen->sample.cont      /* pointer to sampling routine       */     
 
-#define PDF(x) ((*(DISTR.pdf))((x),DISTR.params,DISTR.n_params))    /* call to p.d.f. */
-#define dPDF(x) ((*(DISTR.dpdf))((x),DISTR.params,DISTR.n_params))  /* call to derivative of p.d.f. */
+#define PDF(x)    _unur_cont_PDF((x),&(gen->distr))   /* call to p.d.f.      */
+#define dPDF(x)   _unur_cont_dPDF((x),&(gen->distr))  /* call to derivative of p.d.f. */
 
 /*---------------------------------------------------------------------------*/
 

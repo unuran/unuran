@@ -21,11 +21,11 @@
  *         Includes all distribution source files.                           *
  *         (Not all of these function exist for every distribution!)         *
  *                                                                           *
- *      double _unur_pdf_<distr>(double x, double *params, int n_params)     *
+ *      double _unur_pdf_<distr>(double x, UNUR_DISTR *distr)                *
  *          ... value of p.d.f. at x                                         *
- *      double _unur_dpdf_<distr>(double x, double *params, int n_params)    *
+ *      double _unur_dpdf_<distr>(double x, UNUR_DISTR *distr)               *
  *          ... value of derivative of p.d.f. at x                           *
- *      double _unur_cdf_<distr>(double x, double *params, int n_params)     *
+ *      double _unur_cdf_<distr>(double x, UNUR_DISTR *distr)                *
  *          ... value of c.d.f. at x                                         *
  *      double _unur_mode_<distr>(double *params, int n_params)              *
  *          ... mode of distribution                                         *
@@ -39,12 +39,13 @@
  *      double unur_stdgen_sample_<distr>_<xx>(UNUR_GEN *generator)          *
  *          ... call (special) generator <xx> for distribution               *
  *                                                                           *
- *      double  x        ... argument of p.d.f.                              *
- *      double* params   ... parameter list for p.d.f.                       *
- *      int     n_params ... number of parameters (length of parameter array)*
+ *      double      x          ... argument of p.d.f.                        *
+ *      double*     params     ... parameter list for p.d.f.                 *
+ *      int         n_params   ... number of parameters (length of array)    *                       
  *                                                                           *
- *      UNUR_PAR *parameters ... pointer to paraters of generator            *
- *      UNUR_GEN *generator ... pointer to generator object                  *
+ *      UNUR_DISTR* distr      ... pointer to distribution object            *
+ *      UNUR_PAR*   parameters ... pointer to paraters of generator          *
+ *      UNUR_GEN*   generator  ... pointer to generator object               *
  *                                                                           *
  *                                                                           *
  *   REFERENCES:                                                             *
@@ -156,9 +157,6 @@ double _unur_stdgen_sample_chi_chru( UNUR_GEN *generator );
 /*---------------------------------------------------------------------------*/
 /*  Chisquare distribution  [2; ch.18, p.416]                                */
 UNUR_DISTR *unur_distr_chisquare(double *params, int n_params);
-
-double _unur_cdf_chisquare(double x, double *parametersams, int n_params);
-/* required for chi^2 tests */
 
 /*---------------------------------------------------------------------------*/
 /* Erlang distribution                                                       */

@@ -89,16 +89,20 @@ static const char distr_name[] = "gig";
 #define omega  params[1]    /* scale */
 #define eta    params[2]    /* shape */
 
+#define DISTR distr->data.cont
+
 /* function prototypes                                                       */
-static double _unur_pdf_gig(double x, double *params, int n_params);
-static double _unur_dpdf_gig(double x, double *params, int n_params);
-/*  static double _unur_cdf_gig(double x, double *params, int n_params); */
+static double _unur_pdf_gig(double x, UNUR_DISTR *distr);
+static double _unur_dpdf_gig(double x, UNUR_DISTR *distr);
+/*  static double _unur_cdf_gig(double x, UNUR_DISTR *distr); */
 
 /*---------------------------------------------------------------------------*/
 
 double
-_unur_pdf_gig(double x, double *params, int n_params)
+_unur_pdf_gig(double x, UNUR_DISTR *distr)
 { 
+  register double *params = DISTR.params;
+
   if (x <= 0.)
     /* out of support */
     return 0.;
@@ -110,8 +114,10 @@ _unur_pdf_gig(double x, double *params, int n_params)
 /*---------------------------------------------------------------------------*/
 
 double
-_unur_dpdf_gig(double x, double *params, int n_params)
+_unur_dpdf_gig(double x, UNUR_DISTR *distr)
 { 
+  register double *params = DISTR.params;
+
   if (x <= 0.)
     /* out of support */
     return 0.;
@@ -126,7 +132,6 @@ _unur_dpdf_gig(double x, double *params, int n_params)
 struct unur_distr *
 unur_distr_gig( double *params, int n_params )
 {
-#define DISTR distr->data.cont
   register struct unur_distr *distr;
 
   /* check new parameter for generator */
@@ -196,10 +201,9 @@ unur_distr_gig( double *params, int n_params )
   /* return pointer to object */
   return distr;
 
-#undef DISTR
 } /* end of unur_distr_gig() */
 
 /*---------------------------------------------------------------------------*/
 #undef nu
+#undef DISTR
 /*---------------------------------------------------------------------------*/
-

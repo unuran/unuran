@@ -63,25 +63,29 @@ static const char distr_name[] = "powerexponential";
 /* parameters */
 #define tau  params[0]
 
+#define DISTR distr->data.cont
+
 /* function prototypes                                                       */
-static double _unur_pdf_powerexponential(double x, double *params, int n_params);
-static double _unur_dpdf_powerexponential(double x, double *params, int n_params);
-static double _unur_cdf_powerexponential(double x, double *params, int n_params);
+static double _unur_pdf_powerexponential(double x, UNUR_DISTR *distr);
+static double _unur_dpdf_powerexponential(double x, UNUR_DISTR *distr);
+static double _unur_cdf_powerexponential(double x, UNUR_DISTR *distr);
 inline static double _unur_lognormconstant_powerexponential(double *params, int n_params);
 
 /*---------------------------------------------------------------------------*/
 
 double
-_unur_pdf_powerexponential( double x, double *params, int n_params )
+_unur_pdf_powerexponential( double x, UNUR_DISTR *distr )
 { 
+  register double *params = DISTR.params;
   return exp( - pow(fabs(x), tau) - LOGNORMCONSTANT);
 } /* end of _unur_pdf_powerexponential() */
 
 /*---------------------------------------------------------------------------*/
 
 double
-_unur_dpdf_powerexponential( double x, double *params, int n_params )
+_unur_dpdf_powerexponential( double x, UNUR_DISTR *distr )
 {
+  register double *params = DISTR.params;
   register double tmp;
 
   if (x == 0.)    /* derivative is not defined, but ...        */
@@ -96,8 +100,9 @@ _unur_dpdf_powerexponential( double x, double *params, int n_params )
 /*---------------------------------------------------------------------------*/
 
 double
-_unur_cdf_powerexponential( double x, double *params, int n_params )
+_unur_cdf_powerexponential( double x, UNUR_DISTR *distr )
 { 
+  register double *params = DISTR.params;
   register double cdf;
 
   /* compute cdf(abs(x)) - cdf(0) */
@@ -119,7 +124,6 @@ _unur_lognormconstant_powerexponential(double *params, int n_params)
 struct unur_distr *
 unur_distr_powerexponential( double *params, int n_params )
 {
-#define DISTR distr->data.cont
   register struct unur_distr *distr;
 
   /* check new parameter for generator */
@@ -179,9 +183,9 @@ unur_distr_powerexponential( double *params, int n_params )
   /* return pointer to object */
   return distr;
 
-#undef DISTR
 } /* end of unur_distr_powerexponential() */
 
 /*---------------------------------------------------------------------------*/
 #undef tau
+#undef DISTR
 /*---------------------------------------------------------------------------*/

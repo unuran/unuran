@@ -60,16 +60,20 @@ static const char distr_name[] = "slash";
 /* parameters */
 /* none */
 
+#define DISTR distr->data.cont
+
 /* function prototypes                                                       */
-static double _unur_pdf_slash(double x, double *params, int n_params);
-static double _unur_dpdf_slash(double x, double *params, int n_params);
-/*  static double _unur_cdf_slash(double x, double *params, int n_params); */
+static double _unur_pdf_slash(double x, UNUR_DISTR *distr);
+static double _unur_dpdf_slash(double x, UNUR_DISTR *distr);
+/*  static double _unur_cdf_slash(double x, UNUR_DISTR *distr); */
 
 /*---------------------------------------------------------------------------*/
 
 double
-_unur_pdf_slash(double x, double *params, int n_params)
+_unur_pdf_slash(double x, UNUR_DISTR *distr)
 {
+  register double *params = DISTR.params;
+
   if (x == 0.)
     return (0.5 * NORMCONSTANT);
   else
@@ -79,7 +83,7 @@ _unur_pdf_slash(double x, double *params, int n_params)
 /*---------------------------------------------------------------------------*/
 
 double
-_unur_dpdf_slash(double x, double *params, int n_params)
+_unur_dpdf_slash(double x, UNUR_DISTR *distr)
 { 
   register double xsq = x * x;
 
@@ -88,6 +92,8 @@ _unur_dpdf_slash(double x, double *params, int n_params)
   else
     return ((-2. + exp(-xsq/2.) * (2. + xsq)) / (xsq * x));
 
+  /** TODO: NORMCONSTANT ?? **/
+
 } /* end of _unur_dpdf_slash() */
 
 /*---------------------------------------------------------------------------*/
@@ -95,7 +101,6 @@ _unur_dpdf_slash(double x, double *params, int n_params)
 struct unur_distr *
 unur_distr_slash( double *params, int n_params )
 {
-#define DISTR distr->data.cont
   register struct unur_distr *distr;
 
   /* check new parameter for generator */
@@ -147,9 +152,9 @@ unur_distr_slash( double *params, int n_params )
   /* return pointer to object */
   return distr;
 
-#undef DISTR
 } /* end of unur_distr_slash() */
 
 /*---------------------------------------------------------------------------*/
 #undef nu
+#undef DISTR
 /*---------------------------------------------------------------------------*/

@@ -76,19 +76,22 @@ static const char distr_name[] = "logistic";
 #define beta   params[0]
 #define alpha  params[1]
 
+#define DISTR distr->data.cont
+
 /* function prototypes                                                       */
-static double _unur_pdf_logistic(double x, double *params, int n_params);
-static double _unur_dpdf_logistic(double x, double *params, int n_params);
-static double _unur_cdf_logistic(double x, double *params, int n_params);
+static double _unur_pdf_logistic(double x, UNUR_DISTR *distr);
+static double _unur_dpdf_logistic(double x, UNUR_DISTR *distr);
+static double _unur_cdf_logistic(double x, UNUR_DISTR *distr);
 
 /*---------------------------------------------------------------------------*/
 
 double
-_unur_pdf_logistic( double x, double *params, int n_params )
+_unur_pdf_logistic( double x, UNUR_DISTR *distr )
 { 
+  register double *params = DISTR.params;
   register double ex;
 
-  switch (n_params) {
+  switch (DISTR.n_params) {
   case 2:  /* non standard */
     /* standardize */
     x = (x - alpha) / beta;
@@ -101,12 +104,13 @@ _unur_pdf_logistic( double x, double *params, int n_params )
 /*---------------------------------------------------------------------------*/
 
 double
-_unur_dpdf_logistic( double x, double *params, int n_params )
+_unur_dpdf_logistic( double x, UNUR_DISTR *distr )
 { 
+  register double *params = DISTR.params;
   register double factor = 1.;
   register double ex;
 
-  switch (n_params) {
+  switch (DISTR.n_params) {
   case 2:  /* non standard */
     /* standardize */
     factor = 1. / beta;
@@ -120,9 +124,11 @@ _unur_dpdf_logistic( double x, double *params, int n_params )
 /*---------------------------------------------------------------------------*/
 
 double
-_unur_cdf_logistic( double x, double *params, int n_params )
+_unur_cdf_logistic( double x, UNUR_DISTR *distr )
 { 
-  switch (n_params) {
+  register double *params = DISTR.params;
+
+  switch (DISTR.n_params) {
   case 2:  /* non standard */
     /* standardize */
     x = (x - alpha) / beta;
@@ -136,7 +142,6 @@ _unur_cdf_logistic( double x, double *params, int n_params )
 struct unur_distr *
 unur_distr_logistic( double *params, int n_params )
 {
-#define DISTR distr->data.cont
   register struct unur_distr *distr;
 
   /* check new parameter for generator */
@@ -207,10 +212,10 @@ unur_distr_logistic( double *params, int n_params )
   /* return pointer to object */
   return distr;
 
-#undef DISTR
 } /* end of unur_distr_logistic() */
 
 /*---------------------------------------------------------------------------*/
 #undef alpha
 #undef beta 
+#undef DISTR
 /*---------------------------------------------------------------------------*/

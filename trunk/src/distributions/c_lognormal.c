@@ -63,15 +63,18 @@ static const char distr_name[] = "lognormal";
 #define sigma  params[1]
 #define theta  params[2]
 
+#define DISTR distr->data.cont
+
 /* function prototypes                                                       */
-static double _unur_pdf_lognormal(double x, double *params, int n_params);
-static double _unur_dpdf_lognormal(double x, double *params, int n_params);
+static double _unur_pdf_lognormal(double x, UNUR_DISTR *distr);
+static double _unur_dpdf_lognormal(double x, UNUR_DISTR *distr);
 
 /*---------------------------------------------------------------------------*/
 
 double
-_unur_pdf_lognormal( double x, double *params, int n_params )
+_unur_pdf_lognormal( double x, UNUR_DISTR *distr )
 { 
+  register double *params = DISTR.params;
   register double z;
 
   if (x <= theta)
@@ -85,8 +88,9 @@ _unur_pdf_lognormal( double x, double *params, int n_params )
 /*---------------------------------------------------------------------------*/
 
 double
-_unur_dpdf_lognormal( double x, double *params, int n_params )
+_unur_dpdf_lognormal( double x, UNUR_DISTR *distr )
 { 
+  register double *params = DISTR.params;
   register double z, sigmasqu;
 
   if (x <= theta)
@@ -103,7 +107,6 @@ _unur_dpdf_lognormal( double x, double *params, int n_params )
 struct unur_distr *
 unur_distr_lognormal( double *params, int n_params )
 {
-#define DISTR distr->data.cont
   register struct unur_distr *distr;
 
   /* check new parameter for generator */
@@ -173,11 +176,11 @@ unur_distr_lognormal( double *params, int n_params )
   /* return pointer to object */
   return distr;
 
-#undef DISTR
 } /* end of unur_distr_lognormal() */
 
 /*---------------------------------------------------------------------------*/
 #undef zeta 
 #undef sigma
 #undef theta
+#undef DISTR
 /*---------------------------------------------------------------------------*/

@@ -170,7 +170,7 @@ static void _unur_cstd_debug_chg_domain( struct unur_gen *gen );
 
 #define SAMPLE    gen->sample.cont      /* pointer to sampling routine       */
 
-#define CDF(x) ((*(DISTR.cdf))((x),DISTR.params,DISTR.n_params))  /* call to c.d.f. */
+#define CDF(x)    _unur_cont_CDF((x),&(gen->distr))   /* call to c.d.f.            */
 
 /*---------------------------------------------------------------------------*/
 

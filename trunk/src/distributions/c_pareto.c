@@ -61,32 +61,37 @@ static const char distr_name[] = "pareto";
 #define k  params[0]
 #define a  params[1]
 
+#define DISTR distr->data.cont
+
 /* function prototypes                                                       */
-static double _unur_pdf_pareto(double x, double *params, int n_params);
-static double _unur_dpdf_pareto(double x, double *params, int n_params);
-static double _unur_cdf_pareto(double x, double *params, int n_params);
+static double _unur_pdf_pareto(double x, UNUR_DISTR *distr);
+static double _unur_dpdf_pareto(double x, UNUR_DISTR *distr);
+static double _unur_cdf_pareto(double x, UNUR_DISTR *distr);
 
 /*---------------------------------------------------------------------------*/
 
 double
-_unur_pdf_pareto( double x, double *params, int n_params )
+_unur_pdf_pareto( double x, UNUR_DISTR *distr )
 { 
+  register double *params = DISTR.params;
   return ( (x<k) ? 0. : pow(x,-(a+1.))/NORMCONSTANT );
 } /* end of _unur_pdf_pareto() */
 
 /*---------------------------------------------------------------------------*/
 
 double
-_unur_dpdf_pareto( double x, double *params, int n_params )
+_unur_dpdf_pareto( double x, UNUR_DISTR *distr )
 { 
+  register double *params = DISTR.params;
   return ( (x<k) ? 0. : (1.-a) * pow(x,-(a+2.))/NORMCONSTANT );
 } /* end of _unur_dpdf_pareto() */
 
 /*---------------------------------------------------------------------------*/
 
 double
-_unur_cdf_pareto( double x, double *params, int n_params )
+_unur_cdf_pareto( double x, UNUR_DISTR *distr )
 { 
+  register double *params = DISTR.params;
   return ( (x<k) ? 0. : (1. - pow(k/x,a)) );
 } /* end of _unur_cdf_pareto() */
 
@@ -95,7 +100,6 @@ _unur_cdf_pareto( double x, double *params, int n_params )
 struct unur_distr *
 unur_distr_pareto( double *params, int n_params )
 {
-#define DISTR distr->data.cont
   register struct unur_distr *distr;
 
   /* check new parameter for generator */
@@ -156,10 +160,10 @@ unur_distr_pareto( double *params, int n_params )
   /* return pointer to object */
   return distr;
 
-#undef DISTR
 } /* end of unur_distr_pareto() */
 
 /*---------------------------------------------------------------------------*/
 #undef k
 #undef a
+#undef DISTR
 /*---------------------------------------------------------------------------*/

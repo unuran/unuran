@@ -43,7 +43,7 @@
 #define SCATTER_UNIFORM "uniform.scatterplot"
 
 /*---------------------------------------------------------------------------*/
-static char test_name[] = "Satter";
+static char test_name[] = "Scatter";
 /*---------------------------------------------------------------------------*/
 
 static int _unur_make_uniform_scatter( int start, int skip );
@@ -119,8 +119,8 @@ unur_make_scatterplot( struct unur_gen *gen )
     return 0;
 
   /* compute Fl and Fr */
-  Fl = (DISTR.domain[0] <= -INFINITY) ? 0. : cdf(DISTR.domain[0],DISTR.params,DISTR.n_params);
-  Fr = (DISTR.domain[1] >=  INFINITY) ? 1. : cdf(DISTR.domain[1],DISTR.params,DISTR.n_params);
+  Fl = (DISTR.domain[0] <= -INFINITY) ? 0. : cdf(DISTR.domain[0],&(gen->distr));
+  Fr = (DISTR.domain[1] >=  INFINITY) ? 1. : cdf(DISTR.domain[1],&(gen->distr));
   Fdelta = Fr - Fl;
 
   /* Fr - Fl <= 0. is a fatal error */
@@ -170,13 +170,13 @@ unur_make_scatterplot( struct unur_gen *gen )
   if (scatter == NULL) return 0;
 
   /* set starting value */
-  store = cdf( unur_sample_cont(gen), DISTR.params, DISTR.n_params );
+  store = cdf( unur_sample_cont(gen), &(gen->distr));
 
   /* sampling */
   for (n_urn = 0; n_urn < UNUR_BABYGEN_PERIOD; ++n_urn ) {
 
     /* invoke generator and scale sample according to cdf */
-    new = cdf( unur_sample_cont(gen), DISTR.params, DISTR.n_params );
+    new = cdf( unur_sample_cont(gen), &(gen->distr));
 
     /* write pair samples into scatter file */  
     fprintf(scatter,"%f %f\n",store, new); 

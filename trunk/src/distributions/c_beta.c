@@ -81,19 +81,23 @@ static const char distr_name[] = "beta";
 #define a  params[2]
 #define b  params[3]
 
+#define DISTR distr->data.cont
+
 /* function prototypes                                                       */
-static double _unur_pdf_beta(double x, double *params, int n_params);
-static double _unur_dpdf_beta(double x, double *params, int n_params);
-static double _unur_cdf_beta(double x, double *params, int n_params);
+static double _unur_pdf_beta(double x, UNUR_DISTR *distr);
+static double _unur_dpdf_beta(double x, UNUR_DISTR *distr);
+static double _unur_cdf_beta(double x, UNUR_DISTR *distr);
 inline static double _unur_mode_beta(double *params, int n_params);
 inline static double _unur_lognormconstant_beta(double *params, int n_params);
 
 /*---------------------------------------------------------------------------*/
 
 double
-_unur_pdf_beta(double x, double *params, int n_params)
+_unur_pdf_beta(double x, UNUR_DISTR *distr)
 { 
-  switch (n_params) {
+  register double *params = DISTR.params;
+
+  switch (DISTR.n_params) {
   case 4:                /* non standard */
     x = (x-a) / (b-a);   /* -> standardize */
   case 2: default:       /* standard */
@@ -106,11 +110,12 @@ _unur_pdf_beta(double x, double *params, int n_params)
 /*---------------------------------------------------------------------------*/
 
 double
-_unur_dpdf_beta(double x, double *params, int n_params)
+_unur_dpdf_beta(double x, UNUR_DISTR *distr)
 { 
   register double factor = 1.;
+  register double *params = DISTR.params;
 
-  switch (n_params) {
+  switch (DISTR.n_params) {
   case 4:                /* non standard */
     x = (x-a) / (b-a);   /* -> standardize */
     factor = 1./(b-a);
@@ -125,9 +130,11 @@ _unur_dpdf_beta(double x, double *params, int n_params)
 /*---------------------------------------------------------------------------*/
 
 double
-_unur_cdf_beta(double x, double *params, int n_params)
+_unur_cdf_beta(double x, UNUR_DISTR *distr)
 {
-  switch (n_params) {
+  register double *params = DISTR.params;
+
+  switch (DISTR.n_params) {
   case 4:                /* non standard */
     x = (x-a) / (b-a);   /* -> standardize */
   case 2: default:       /* standard */
@@ -182,7 +189,6 @@ _unur_lognormconstant_beta(double *params, int n_params)
 struct unur_distr *
 unur_distr_beta( double *params, int n_params )
 {
-#define DISTR distr->data.cont
   register struct unur_distr *distr;
 
   /* check new parameter for generator */
@@ -258,7 +264,6 @@ unur_distr_beta( double *params, int n_params )
   /* return pointer to object */
   return distr;
 
-#undef DISTR
 } /* end of unur_distr_beta() */
 
 /*---------------------------------------------------------------------------*/
@@ -266,4 +271,5 @@ unur_distr_beta( double *params, int n_params )
 #undef q
 #undef a
 #undef b
+#undef DISTR
 /*---------------------------------------------------------------------------*/

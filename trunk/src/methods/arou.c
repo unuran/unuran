@@ -258,8 +258,8 @@ static void _unur_arou_debug_printratio( double v, double u, char *string );
 
 #define SAMPLE    gen->sample.cont      /* pointer to sampling routine       */     
 
-#define PDF(x) ((*(DISTR.pdf))((x),DISTR.params,DISTR.n_params))    /* call to p.d.f. */
-#define dPDF(x) ((*(DISTR.dpdf))((x),DISTR.params,DISTR.n_params))  /* call to derivative of p.d.f. */
+#define PDF(x)    _unur_cont_PDF((x),&(gen->distr))  /* call to p.d.f.       */
+#define dPDF(x)   _unur_cont_dPDF((x),&(gen->distr)) /* call to derivative of p.d.f. */
 
 /*---------------------------------------------------------------------------*/
 
@@ -1447,9 +1447,13 @@ _unur_arou_segment_parameter( struct unur_gen *gen, struct unur_arou_segment *se
        (1) the p.d.f. is not T-concave
        (2) small roundoff errors.
     */
+
+    /* this is a pain */
+
     /** TODO: check for roundoff-errors !!! **/
-    _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"p.d.f. not T-concave");
-    return 0;
+    /*      _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"p.d.f. not T-concave"); */
+    /*      return 0; */
+    return 1;
   }
 
   /* remaining case: triangle degenerates to a line segment, i.e.

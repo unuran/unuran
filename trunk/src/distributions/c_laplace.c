@@ -61,17 +61,21 @@ static const char distr_name[] = "laplace";
 #define theta  params[0]
 #define phi    params[1]
 
+#define DISTR distr->data.cont
+
 /* function prototypes                                                       */
-static double _unur_pdf_laplace(double x, double *params, int n_params);
-static double _unur_dpdf_laplace(double x, double *params, int n_params);
-static double _unur_cdf_laplace(double x, double *params, int n_params);
+static double _unur_pdf_laplace(double x, UNUR_DISTR *distr);
+static double _unur_dpdf_laplace(double x, UNUR_DISTR *distr);
+static double _unur_cdf_laplace(double x, UNUR_DISTR *distr);
 
 /*---------------------------------------------------------------------------*/
 
 double
-_unur_pdf_laplace( double x, double *params, int n_params )
+_unur_pdf_laplace( double x, UNUR_DISTR *distr )
 { 
+  register double *params = DISTR.params;
   register double z;
+
   z = (x>theta) ? (x-theta)/phi : (theta-x)/phi;
   return exp(-z) / (2.*phi); 
 } /* end of _unur_pdf_laplace() */
@@ -79,9 +83,11 @@ _unur_pdf_laplace( double x, double *params, int n_params )
 /*---------------------------------------------------------------------------*/
 
 double
-_unur_dpdf_laplace( double x, double *params, int n_params )
+_unur_dpdf_laplace( double x, UNUR_DISTR *distr )
 { 
+  register double *params = DISTR.params;
   register double z;
+
   z = (x>theta) ? (x-theta)/phi : (theta-x)/phi;
 
   if (z == 0.)   /* derivative is not defined, but ...                      */
@@ -93,9 +99,11 @@ _unur_dpdf_laplace( double x, double *params, int n_params )
 /*---------------------------------------------------------------------------*/
 
 double
-_unur_cdf_laplace( double x, double *params, int n_params )
+_unur_cdf_laplace( double x, UNUR_DISTR *distr )
 { 
+  register double *params = DISTR.params;
   register double z;
+
   z = (x-theta)/phi;
   return ( (x>theta) ? 1.-0.5 * exp(-z) : 0.5*exp(z) );
 } /* end of _unur_cdf_laplace() */
@@ -105,7 +113,6 @@ _unur_cdf_laplace( double x, double *params, int n_params )
 struct unur_distr *
 unur_distr_laplace( double *params, int n_params )
 {
-#define DISTR distr->data.cont
   register struct unur_distr *distr;
 
   /* check new parameter for generator */
@@ -173,10 +180,10 @@ unur_distr_laplace( double *params, int n_params )
   /* return pointer to object */
   return distr;
 
-#undef DISTR
 } /* end of unur_distr_laplace() */
 
 /*---------------------------------------------------------------------------*/
 #undef theta
 #undef phi  
+#undef DISTR
 /*---------------------------------------------------------------------------*/

@@ -62,15 +62,19 @@ static const char distr_name[] = "negativebinomial";
 #define p  params[0]
 #define r  params[1]
 
+#define DISTR distr->data.discr
+
 /* function prototypes                                                       */
-static double _unur_pmf_negativebinomial(int k, double *params, int n_params);
-/*  static double _unur_cdf_negativebinomial(int k, double *params, int n_params);  */
+static double _unur_pmf_negativebinomial(int k, UNUR_DISTR *distr);
+/*  static double _unur_cdf_negativebinomial(int k, UNUR_DISTR *distr);  */
 
 /*---------------------------------------------------------------------------*/
 
 double
-_unur_pmf_negativebinomial(int k, double *params, int n_params)
+_unur_pmf_negativebinomial(int k, UNUR_DISTR *distr)
 { 
+  register double *params = DISTR.params;
+
   if (k<0) return 0.;
 
   else
@@ -83,7 +87,6 @@ _unur_pmf_negativebinomial(int k, double *params, int n_params)
 struct unur_distr *
 unur_distr_negativebinomial( double *params, int n_params )
 {
-#define DISTR distr->data.discr
   register struct unur_distr *distr;
 
   /* check new parameter for generator */
@@ -142,9 +145,9 @@ unur_distr_negativebinomial( double *params, int n_params )
   /* return pointer to object */
   return distr;
 
-#undef DISTR
 } /* end of unur_distr_negativebinomial() */
 
 /*---------------------------------------------------------------------------*/
 #undef nu
+#undef DISTR
 /*---------------------------------------------------------------------------*/

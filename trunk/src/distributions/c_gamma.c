@@ -78,19 +78,23 @@ static const char distr_name[] = "gamma";
 #define beta   params[1]   /* scale */
 #define gamma  params[2]   /* location */
 
+#define DISTR distr->data.cont
+
 /* function prototypes                                                       */
-static double _unur_pdf_gamma(double x, double *params, int n_params);
-static double _unur_dpdf_gamma(double x, double *params, int n_params);
-static double _unur_cdf_gamma(double x, double *params, int n_params);
+static double _unur_pdf_gamma(double x, UNUR_DISTR *distr);
+static double _unur_dpdf_gamma(double x, UNUR_DISTR *distr);
+static double _unur_cdf_gamma(double x, UNUR_DISTR *distr);
 static double _unur_mode_gamma(double *params, int n_params);
 static double _unur_lognormconstant_gamma(double *params, int n_params);
 
 /*---------------------------------------------------------------------------*/
 
 double
-_unur_pdf_gamma( double x, double *params, int n_params )
+_unur_pdf_gamma( double x, UNUR_DISTR *distr )
 { 
-  switch (n_params) {
+  register double *params = DISTR.params;
+
+  switch (DISTR.n_params) {
   case 3:  /* non standard */
     x = (x-gamma) / beta;     /* standardize */
   case 1: default: /* standard */
@@ -106,11 +110,12 @@ _unur_pdf_gamma( double x, double *params, int n_params )
 /*---------------------------------------------------------------------------*/
 
 double
-_unur_dpdf_gamma( double x, double *params, int n_params )
+_unur_dpdf_gamma( double x, UNUR_DISTR *distr )
 {
   register double factor = 1.;
+  register double *params = DISTR.params;
 
-  switch (n_params) {
+  switch (DISTR.n_params) {
   case 3:  /* non standard */
     factor = 1./beta;
     x = (x-gamma) / beta;     /* standardize */
@@ -126,9 +131,11 @@ _unur_dpdf_gamma( double x, double *params, int n_params )
 /*---------------------------------------------------------------------------*/
 
 double
-_unur_cdf_gamma( double x, double *params, int n_params )
+_unur_cdf_gamma( double x, UNUR_DISTR *distr )
 { 
-  switch (n_params) {
+  register double *params = DISTR.params;
+
+  switch (DISTR.n_params) {
   case 3:  /* non standard */
     x = (x-gamma) / beta;     /* standardize */
   case 1: default: /* standard */
@@ -182,7 +189,6 @@ _unur_lognormconstant_gamma( double *params, int n_params )
 struct unur_distr *
 unur_distr_gamma( double *params, int n_params )
 {
-#define DISTR distr->data.cont
   register struct unur_distr *distr;
 
   /* check new parameter for generator */
@@ -258,11 +264,11 @@ unur_distr_gamma( double *params, int n_params )
   /* return pointer to object */
   return distr;
 
-#undef DISTR
 } /* end of unur_distr_gamma() */
 
 /*---------------------------------------------------------------------------*/
 #undef alpha
 #undef beta 
 #undef gamma
+#undef DISTR
 /*---------------------------------------------------------------------------*/

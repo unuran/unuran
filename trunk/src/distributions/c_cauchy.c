@@ -62,17 +62,21 @@ static const char distr_name[] = "cauchy";
 #define theta  params[0]
 #define lambda params[1]
 
+#define DISTR distr->data.cont
+
 /* function prototypes                                                       */
-static double _unur_pdf_cauchy(double x, double *params, int n_params);
-static double _unur_dpdf_cauchy(double x, double *params, int n_params);
-static double _unur_cdf_cauchy(double x, double *params, int n_params);
+static double _unur_pdf_cauchy(double x, UNUR_DISTR *distr);
+static double _unur_dpdf_cauchy(double x, UNUR_DISTR *distr);
+static double _unur_cdf_cauchy(double x, UNUR_DISTR *distr);
 
 /*---------------------------------------------------------------------------*/
 
 double
-_unur_pdf_cauchy(double x, double *params, int n_params)
+_unur_pdf_cauchy(double x, UNUR_DISTR *distr)
 { 
-  switch (n_params) {
+  register double *params = DISTR.params;
+
+  switch (DISTR.n_params) {
   case 2:                      /* non standard */
     x = (x - theta) / lambda;  /* -> standardize */
   case 0: default:             /* standard */
@@ -83,8 +87,10 @@ _unur_pdf_cauchy(double x, double *params, int n_params)
 /*---------------------------------------------------------------------------*/
 
 double
-_unur_dpdf_cauchy(double x, double *params, int n_params)
+_unur_dpdf_cauchy(double x, UNUR_DISTR *distr)
 {
+  register double *params = DISTR.params;
+
   /* standardize */
   x = (x - theta) / lambda;
 
@@ -95,9 +101,11 @@ _unur_dpdf_cauchy(double x, double *params, int n_params)
 /*---------------------------------------------------------------------------*/
 
 double
-_unur_cdf_cauchy(double x, double *params, int n_params)
+_unur_cdf_cauchy(double x, UNUR_DISTR *distr)
 {
-  switch (n_params) {
+  register double *params = DISTR.params;
+
+  switch (DISTR.n_params) {
   case 2:                      /* non standard */
     x = (x - theta) / lambda;  /* -> standardize */
   case 0: default:             /* standard */
@@ -110,7 +118,6 @@ _unur_cdf_cauchy(double x, double *params, int n_params)
 struct unur_distr *
 unur_distr_cauchy( double *params, int n_params )
 {
-#define DISTR distr->data.cont
   register struct unur_distr *distr;
 
   /* check new parameter for generator */
@@ -181,10 +188,10 @@ unur_distr_cauchy( double *params, int n_params )
   /* return pointer to object */
   return distr;
 
-#undef DISTR
 } /* end of unur_distr_cauchy() */
 
 /*---------------------------------------------------------------------------*/
 #undef theta 
 #undef lambda
+#undef DISTR
 /*---------------------------------------------------------------------------*/

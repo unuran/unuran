@@ -182,7 +182,7 @@ _unur_test_chi2_discr( struct unur_gen *gen,
     for (i=0; i<n_prob; i++) {
       /** TODO: here we assume domain [0,infinity] */
       /** furthermore we cut domain at CHI2_SIZE_PMF_VECTOR */
-      prob[i] = DISTR.pmf( i, DISTR.params, DISTR.n_params );
+      prob[i] = _unur_discr_PMF( i, &(gen->distr) );
     }
   }
 
@@ -268,7 +268,7 @@ _unur_test_chi2_cont(struct unur_gen *gen,
 
   /* c.d.f. required */
   cdf = DISTR.cdf;
-  if (cdf == NULL) {
+  if (DISTR.cdf == NULL) {
     _unur_error(test_name,UNUR_ERR_GENERIC,"c.d.f. required for continuous random variates!");
     return -1.;
   }
@@ -289,8 +289,8 @@ _unur_test_chi2_cont(struct unur_gen *gen,
     samplesize = (INT_MAX/intervals > intervals) ? intervals*intervals : INT_MAX;
 
   /* compute Fl and Fr */
-  Fl = (DISTR.domain[0] <= -INFINITY) ? 0. : cdf(DISTR.domain[0],DISTR.params,DISTR.n_params);
-  Fr = (DISTR.domain[1] >=  INFINITY) ? 1. : cdf(DISTR.domain[1],DISTR.params,DISTR.n_params);
+  Fl = (DISTR.domain[0] <= -INFINITY) ? 0. : cdf(DISTR.domain[0],&(gen->distr));
+  Fr = (DISTR.domain[1] >=  INFINITY) ? 1. : cdf(DISTR.domain[1],&(gen->distr));
   Fdelta = Fr - Fl;
 
   /* Fr - Fl <= 0. is a fatal error */
@@ -301,7 +301,7 @@ _unur_test_chi2_cont(struct unur_gen *gen,
 
   /* now run generator */
   for( i=0; i<samplesize; i++ ) {
-    F = cdf( _unur_sample_cont(gen), DISTR.params, DISTR.n_params );
+    F = cdf( _unur_sample_cont(gen), &(gen->distr) );
     F = (F-Fl)/Fdelta;
     j = (int)(intervals * F);
     if (j > intervals) {   
@@ -377,8 +377,16 @@ _unur_test_chi2test( double *prob,
   double factor;        /* factor for calculating expected number of occurrences */
   int i;
 
+  static UNUR_DISTR *chisquare_distr = NULL; /* distribution object to chi^2 distribution */
+
   /* check arguments */
   CHECK_NULL(observed,-1.);
+
+  /* make distribution object for chi^2 distribution */
+  if (chisquare_distr == NULL) {
+    df = 1.;  /* dummy value for degrees of freedom (will be set later) */
+    chisquare_distr = unur_distr_chisquare( &df, 1 );
+  }
 
   /* minimum number of occurrences in a class */
   classmin = (classmin > 0) ? classmin : CHI2_CLASSMIN_DEFAULT;
@@ -421,8 +429,11 @@ _unur_test_chi2test( double *prob,
   }
 
   /* evaluate test statistics */
-  df = (double)(classes-1);                    /* degrees of freedom */
-  pval = 1. - _unur_cdf_chisquare(chi2,&df,1); /* p-value            */
+  /* set degrees of freedom */
+  df = (double)(classes-1);
+  unur_distr_cont_set_pdfparams( chisquare_distr, &df, 1 );
+  /* p-value */
+  pval = 1. - _unur_cont_CDF( chi2, chisquare_distr );
 
   /* print result (if requested) */
   if (verbose >= 1) {

@@ -74,17 +74,21 @@ static const char distr_name[] = "exponential";
 #define sigma  params[0]
 #define theta  params[1]
 
+#define DISTR distr->data.cont
+
 /* function prototypes                                                       */
-static double _unur_pdf_exponential(double x, double *params, int n_params);
-static double _unur_dpdf_exponential(double x, double *params, int n_params);
-static double _unur_cdf_exponential(double x, double *params, int n_params);
+static double _unur_pdf_exponential(double x, UNUR_DISTR *distr);
+static double _unur_dpdf_exponential(double x, UNUR_DISTR *distr);
+static double _unur_cdf_exponential(double x, UNUR_DISTR *distr);
 
 /*---------------------------------------------------------------------------*/
 
 double
-_unur_pdf_exponential( double x, double *params, int n_params )
+_unur_pdf_exponential( double x, UNUR_DISTR *distr )
 {
-  switch (n_params) {
+  register double *params = DISTR.params;
+
+  switch (DISTR.n_params) {
   case 2:                  /* non standard */
     x = (x-theta) / sigma; /* -> standardize */
   case 0: default:         /* standard */
@@ -95,9 +99,11 @@ _unur_pdf_exponential( double x, double *params, int n_params )
 /*---------------------------------------------------------------------------*/
   
 double
-_unur_dpdf_exponential( double x, double *params, int n_params )
+_unur_dpdf_exponential( double x, UNUR_DISTR *distr )
 {
-  switch (n_params) {
+  register double *params = DISTR.params;
+
+  switch (DISTR.n_params) {
   case 2:                  /* non standard */
     return ( (x<theta) ? 0. : -exp( -(x-theta)/sigma ) / (sigma*sigma));
   case 0: default:         /* standard */
@@ -108,9 +114,11 @@ _unur_dpdf_exponential( double x, double *params, int n_params )
 /*---------------------------------------------------------------------------*/
 
 double
-_unur_cdf_exponential( double x, double *params, int n_params )
+_unur_cdf_exponential( double x, UNUR_DISTR *distr )
 {
-  switch (n_params) {
+  register double *params = DISTR.params;
+
+  switch (DISTR.n_params) {
   case 2:                  /* non standard */
     x = (x-theta) / sigma; /* -> standardize */
   case 0: default:         /* standard */
@@ -131,7 +139,6 @@ _unur_cdf_exponential( double x, double *params, int n_params )
 struct unur_distr *
 unur_distr_exponential( double *params, int n_params )
 {
-#define DISTR distr->data.cont
   register struct unur_distr *distr;
 
   /* check new parameter for generator */
@@ -199,10 +206,10 @@ unur_distr_exponential( double *params, int n_params )
   /* return pointer to object */
   return distr;
 
-#undef DISTR
 } /* end of unur_distr_exponential() */
 
 /*---------------------------------------------------------------------------*/
 #undef sigma 
 #undef theta 
+#undef DISTR
 /*---------------------------------------------------------------------------*/

@@ -276,7 +276,7 @@ unur_distr_cont_set_pdf( struct unur_distr *distr, void *pdf )
 /*---------------------------------------------------------------------------*/
 
 double
-unur_distr_cont_pdf( struct unur_distr *distr, double x )
+unur_distr_cont_pdf( double x, struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
      /* evaluate p.d.f. of distribution at x                                 */
      /*                                                                      */
@@ -293,7 +293,7 @@ unur_distr_cont_pdf( struct unur_distr *distr, double x )
   COOKIE_CHECK(distr,CK_DISTR_CONT,-1.);
   _unur_check_NULL( distr->name,DISTR.pdf,-1.);
 
-  return ((*(DISTR.pdf))(x,DISTR.params,DISTR.n_params));
+  return _unur_cont_PDF(x,distr);
 } /* end of unur_distr_cont_pdf() */
 
 /*---------------------------------------------------------------------------*/
@@ -325,7 +325,7 @@ unur_distr_cont_set_dpdf( struct unur_distr *distr, void *dpdf )
 /*---------------------------------------------------------------------------*/
 
 double
-unur_distr_cont_dpdf( struct unur_distr *distr, double x )
+unur_distr_cont_dpdf( double x, struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
      /* evaluate derivative of p.d.f. of distribution at x                   */
      /*                                                                      */
@@ -342,7 +342,7 @@ unur_distr_cont_dpdf( struct unur_distr *distr, double x )
   COOKIE_CHECK(distr,CK_DISTR_CONT,INFINITY);
   _unur_check_NULL( distr->name,DISTR.dpdf,INFINITY);
 
-  return ((*(DISTR.dpdf))(x,DISTR.params,DISTR.n_params));
+  return _unur_cont_dPDF(x,distr);
 } /* end of unur_distr_cont_dpdf() */
 
 /*---------------------------------------------------------------------------*/
@@ -373,7 +373,7 @@ unur_distr_cont_set_cdf( struct unur_distr *distr, void *cdf )
 /*---------------------------------------------------------------------------*/
 
 double
-unur_distr_cont_cdf( struct unur_distr *distr, double x )
+unur_distr_cont_cdf( double x, struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
      /* evaluate c.d.f. of distribution at x                                 */
      /*                                                                      */
@@ -390,7 +390,7 @@ unur_distr_cont_cdf( struct unur_distr *distr, double x )
   COOKIE_CHECK(distr,CK_DISTR_CONT,-1.);
   _unur_check_NULL( distr->name,DISTR.cdf,-1.);
 
-  return ((*(DISTR.cdf))(x,DISTR.params,DISTR.n_params));
+  return _unur_cont_CDF(x,distr);
 } /* end of unur_distr_cont_cdf() */
 
 /*---------------------------------------------------------------------------*/
@@ -434,6 +434,34 @@ unur_distr_cont_set_pdfparams( struct unur_distr *distr, double *params, int n_p
   /* o.k. */
   return 1;
 } /* end of unur_distr_cont_set_pdfparams() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+unur_distr_cont_get_pdfparams( struct unur_distr *distr, double **params )
+     /*----------------------------------------------------------------------*/
+     /* get number of pdf parameters and sets pointer to array params[] of   */
+     /* parameters                                                           */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   distr    ... pointer to distribution object                        */
+     /*   params   ... pointer to list of arguments                          */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   number if pdf parameters                                           */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return -1                                                          */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( NULL,distr,-1);
+  COOKIE_CHECK(distr,CK_DISTR_CONT,-1);
+
+  *params = DISTR.params;
+  return DISTR.n_params;
+
+} /* end of unur_distr_cont_get_pdfparams() */
 
 /*---------------------------------------------------------------------------*/
 

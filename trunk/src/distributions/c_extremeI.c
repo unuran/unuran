@@ -81,17 +81,21 @@ static const char distr_name[] = "extremeI";
 #define zeta   params[0]    /* location */
 #define theta  params[1]    /* scale */
 
+#define DISTR distr->data.cont
+
 /* function prototypes                                                       */
-static double _unur_pdf_extremeI(double x, double *params, int n_params);
-static double _unur_dpdf_extremeI(double x, double *params, int n_params);
-static double _unur_cdf_extremeI(double x, double *params, int n_params);
+static double _unur_pdf_extremeI(double x, UNUR_DISTR *distr);
+static double _unur_dpdf_extremeI(double x, UNUR_DISTR *distr);
+static double _unur_cdf_extremeI(double x, UNUR_DISTR *distr);
 
 /*---------------------------------------------------------------------------*/
 
 double
-_unur_pdf_extremeI( double x, double *params, int n_params )
+_unur_pdf_extremeI( double x, UNUR_DISTR *distr )
 { 
-  switch (n_params) {
+  register double *params = DISTR.params;
+
+  switch (DISTR.n_params) {
   case 2:  /* non standard */
     /* standardize */
     x = (x - zeta) / theta;
@@ -103,12 +107,13 @@ _unur_pdf_extremeI( double x, double *params, int n_params )
 /*---------------------------------------------------------------------------*/
 
 double
-_unur_dpdf_extremeI( double x, double *params, int n_params )
+_unur_dpdf_extremeI( double x, UNUR_DISTR *distr )
 { 
   register double factor = 1.;
   register double expx;
+  register double *params = DISTR.params;
 
-  switch (n_params) {
+  switch (DISTR.n_params) {
   case 2:  /* non standard */
     /* standardize */
     factor = 1. / (theta * theta);
@@ -122,9 +127,11 @@ _unur_dpdf_extremeI( double x, double *params, int n_params )
 /*---------------------------------------------------------------------------*/
 
 double
-_unur_cdf_extremeI( double x, double *params, int n_params )
+_unur_cdf_extremeI( double x, UNUR_DISTR *distr )
 { 
-  switch (n_params) {
+  register double *params = DISTR.params;
+
+  switch (DISTR.n_params) {
   case 2:  /* non standard */
     /* standardize */
     x = (x - zeta) / theta;
@@ -138,7 +145,6 @@ _unur_cdf_extremeI( double x, double *params, int n_params )
 struct unur_distr *
 unur_distr_extremeI( double *params, int n_params )
 {
-#define DISTR distr->data.cont
   register struct unur_distr *distr;
 
   /* check new parameter for generator */
@@ -208,11 +214,11 @@ unur_distr_extremeI( double *params, int n_params )
   /* return pointer to object */
   return distr;
 
-#undef DISTR
 } /* end of unur_distr_extremeI() */
 
 /*---------------------------------------------------------------------------*/
 #undef c    
 #undef alpha
 #undef zeta 
+#undef DISTR
 /*---------------------------------------------------------------------------*/

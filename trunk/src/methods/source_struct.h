@@ -62,8 +62,8 @@ struct unur_gen;      /* generator object         */
 
 /*---------------------------------------------------------------------------*/
 /* a function for continuous univariate c.d.f., p.d.f. and its derivative    */
-typedef double _UNUR_FUNCTION_CONT(double x, double *params, int n_params);
-typedef double _UNUR_FUNCTION_DISCR(int x, double *params, int n_params);
+typedef double _UNUR_FUNCTION_CONT(double x, struct unur_distr *distr);
+typedef double _UNUR_FUNCTION_DISCR(int x, struct unur_distr *distr);
 
 /*---------------------------------------------------------------------------*/
 /* sampling routines                                                         */

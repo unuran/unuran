@@ -60,24 +60,28 @@ static const char distr_name[] = "student";
 /* parameters */
 #define nu  params[0]
 
+#define DISTR distr->data.cont
+
 /* function prototypes                                                       */
-static double _unur_pdf_student(double x, double *params, int n_params);
-static double _unur_dpdf_student(double x, double *params, int n_params);
+static double _unur_pdf_student(double x, UNUR_DISTR *distr);
+static double _unur_dpdf_student(double x, UNUR_DISTR *distr);
 static double _unur_normconstant_student(double *params, int n_params);
 
 /*---------------------------------------------------------------------------*/
 
 double
-_unur_pdf_student( double x, double *params, int n_params )
+_unur_pdf_student( double x, UNUR_DISTR *distr )
 {
+  register double *params = DISTR.params;
   return pow( (1. + x*x/nu), (-nu-1.)*0.5 ) / NORMCONSTANT;
 }  /* end of _unur_pdf_student() */
 
 /*---------------------------------------------------------------------------*/
 
 double
-_unur_dpdf_student( double x, double *params, int n_params )
+_unur_dpdf_student( double x, UNUR_DISTR *distr )
 {
+  register double *params = DISTR.params;
   return ( (-nu-1.)*x/nu * pow( (1. + x*x/nu), (-nu-3.)*0.5 ) / NORMCONSTANT );
 } /* end of _unur_dpdf_student() */
 
@@ -94,7 +98,6 @@ _unur_normconstant_student( double *params, int n_params )
 struct unur_distr *
 unur_distr_student( double *params, int n_params )
 {
-#define DISTR distr->data.cont
   register struct unur_distr *distr;
 
   /* check new parameter for generator */
@@ -154,9 +157,9 @@ unur_distr_student( double *params, int n_params )
   /* return pointer to object */
   return distr;
 
-#undef DISTR
 } /* end of unur_distr_student() */
 
 /*---------------------------------------------------------------------------*/
 #undef nu
+#undef DISTR
 /*---------------------------------------------------------------------------*/

@@ -137,8 +137,6 @@ static void _unur_dstd_debug_chg_pdfparams( struct unur_gen *gen );
 
 #define SAMPLE    gen->sample.discr     /* pointer to sampling routine       */
 
-#define CDF(x) ((*(DISTR.cdf))((x),DISTR.params,DISTR.n_params))  /* call to c.d.f. */
-
 /*---------------------------------------------------------------------------*/
 
 /*****************************************************************************/

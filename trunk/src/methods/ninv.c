@@ -174,9 +174,8 @@ static void _unur_ninv_debug_sample_newton( struct unur_gen *gen,
 
 #define SAMPLE    gen->sample.cont      /* pointer to sampling routine       */
 
-#define CDF(x) ((*(DISTR.cdf))((x),DISTR.params,DISTR.n_params))    /* call to p.d.f. */
-#define PDF(x) ((*(DISTR.pdf))((x),DISTR.params,DISTR.n_params))    /* call to p.d.f. */
-
+#define PDF(x)    _unur_cont_PDF((x),&(gen->distr))   /* call to p.d.f.      */
+#define CDF(x)    _unur_cont_CDF((x),&(gen->distr))   /* call to c.d.f.      */
 
 /*****************************************************************************/
 /**  User Interface                                                         **/

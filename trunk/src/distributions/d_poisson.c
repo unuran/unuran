@@ -60,15 +60,18 @@ static const char distr_name[] = "poisson";
 /* parameters */
 #define theta  params[0]
 
+#define DISTR distr->data.discr
+
 /* function prototypes                                                       */
-static double _unur_pmf_poisson(int k, double *params, int n_params);
-/*  static double _unur_cdf_poisson(int k, double *params, int n_params);       */
+static double _unur_pmf_poisson(int k, UNUR_DISTR *distr);
+/*  static double _unur_cdf_poisson(int k, UNUR_DISTR *distr);       */
 
 /*---------------------------------------------------------------------------*/
 
 double
-_unur_pmf_poisson(int k, double *params, int n_params)
+_unur_pmf_poisson(int k, UNUR_DISTR *distr)
 { 
+  register double *params = DISTR.params;
   return ((k<0) ? 0. : exp( -theta + k * log(theta) - _unur_factorialln(k) ));
 } /* end of _unur_pmf_poisson() */
 
@@ -77,7 +80,6 @@ _unur_pmf_poisson(int k, double *params, int n_params)
 struct unur_distr *
 unur_distr_poisson( double *params, int n_params )
 {
-#define DISTR distr->data.discr
   register struct unur_distr *distr;
 
   /* check new parameter for generator */
@@ -135,9 +137,9 @@ unur_distr_poisson( double *params, int n_params )
   /* return pointer to object */
   return distr;
 
-#undef DISTR
 } /* end of unur_distr_poisson() */
 
 /*---------------------------------------------------------------------------*/
 #undef nu
+#undef DISTR
 /*---------------------------------------------------------------------------*/

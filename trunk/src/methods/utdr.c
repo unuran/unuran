@@ -153,7 +153,7 @@ static void _unur_utdr_debug_init( struct unur_gen *gen,
 
 #define SAMPLE    gen->sample.cont      /* pointer to sampling routine       */     
 
-#define PDF(x) ((*(DISTR.pdf))((x),DISTR.params,DISTR.n_params))    /* call to p.d.f. */
+#define PDF(x)    _unur_cont_PDF((x),&(gen->distr))   /* call to p.d.f.      */
 
 /*---------------------------------------------------------------------------*/
 

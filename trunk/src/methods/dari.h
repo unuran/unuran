@@ -111,7 +111,7 @@ int unur_dari_reinit( UNUR_GEN *generator );
    in case of a failure @code{0} is returned.
 */
 
-int unur_dari_set_squeeze( UNUR_PAR *parameters, char squeeze );
+int unur_dari_set_squeeze( UNUR_PAR *parameters, int squeeze );
 /* 
    Turn utilization of the squeeze of the algorithm on/off.
    This squeeze does not resamble the squeeze of the continuous TDR
@@ -126,7 +126,7 @@ int unur_dari_set_squeeze( UNUR_PAR *parameters, char squeeze );
    Default: no squeeze.
 */
 
-int unur_dari_set_size( UNUR_PAR *parameters, int size );
+int unur_dari_set_tablesize( UNUR_PAR *parameters, int size );
 /* 
    Set the size for the auxiliary table, that stores constants
    computed during generation. 

@@ -76,7 +76,7 @@
 /* Flags for logging set calls                                               */
 
 #define DARI_SET_CFACTOR        0x001u
-#define DARI_SET_SIZE           0x002u
+#define DARI_SET_TABLESIZE      0x002u
 
 /*---------------------------------------------------------------------------*/
 
@@ -232,7 +232,7 @@ unur_dari_new( struct unur_distr *distr )
 /*---------------------------------------------------------------------------*/
 
 int
-unur_dari_set_cfactor( struct unur_par *par, double cfactor )
+unur_dari_set_cpfactor( struct unur_par *par, double cpfactor )
      /*----------------------------------------------------------------------*/
      /* set factor for position of left and right construction point         */
      /*                                                                      */
@@ -257,28 +257,28 @@ unur_dari_set_cfactor( struct unur_par *par, double cfactor )
   Wenn sum genau bekannt ist, ist ein c > 2 (2 ist der minimax approach) so weit
   ich weiss nie sinnvoll. Ich denke aber, das sollte man besser nicht prinzipiell
   verbieten, hoechstens eine warnung.**/
-  if (cfactor <= 0.) {
-    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"c-factor <= 0");
+  if (cpfactor <= 0.) {
+    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"cp-factor <= 0");
     return 0;
   }
 
-  if (cfactor > 2.1)
-    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"c-factor > 2 not recommended. skip");
+  if (cpfactor > 2.1)
+    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"cp-factor > 2 not recommended. skip");
 
   /* store date */
-  PAR.c_factor = cfactor;
+  PAR.c_factor = cpfactor;
 
   /* changelog */
   par->set |= DARI_SET_CFACTOR;
 
   return 1;
 
-} /* end of unur_dari_set_cfactor() */
+} /* end of unur_dari_set_cpfactor() */
 
 /*---------------------------------------------------------------------------*/
 
 int
-unur_dari_set_squeeze( struct unur_par *par, char squeeze )
+unur_dari_set_squeeze( struct unur_par *par, int squeeze )
      /*----------------------------------------------------------------------*/
      /* turn on/off using squeezes                                           */
      /*                                                                      */
@@ -308,7 +308,7 @@ unur_dari_set_squeeze( struct unur_par *par, char squeeze )
 /*---------------------------------------------------------------------------*/
 
 int
-unur_dari_set_size( struct unur_par *par, int size )
+unur_dari_set_tablesize( struct unur_par *par, int size )
      /*----------------------------------------------------------------------*/
      /* set size of table                                                    */
      /*                                                                      */
@@ -340,11 +340,11 @@ unur_dari_set_size( struct unur_par *par, int size )
   PAR.size = size;
 
   /* changelog */
-  par->set |= DARI_SET_SIZE;
+  par->set |= DARI_SET_TABLESIZE;
 
   /* o.k. */
   return 1;
-} /* end of unur_dari_set_size() */
+} /* end of unur_dari_set_tablesize() */
   
 /*---------------------------------------------------------------------------*/
 

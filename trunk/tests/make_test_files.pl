@@ -856,6 +856,9 @@ sub scan_validate {
 		# read what we have to test
 		$todo = shift @gentest;
 
+		# replace '+' by '~'
+		$todo =~ s/\+/\~/;
+
 		# nothing to do
 		if ( $todo eq '.' ) {
 		    print OUT "\tprintf(\".\"); fflush(stdout);\n\n";

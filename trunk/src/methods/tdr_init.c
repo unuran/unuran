@@ -195,7 +195,7 @@ _unur_tdr_create( struct unur_par *par )
   gen->genid = _unur_set_genid(GENTYPE);
 
   /* copy distribution object into generator object */
-  _unur_distr_cont_copy( &(gen->distr), par->distr );
+  gen->distr = _unur_distr_cont_clone( par->distr );
 
   /* which transformation */
   if (PAR.c_T == 0.)
@@ -208,6 +208,7 @@ _unur_tdr_create( struct unur_par *par )
   /** TODO: remove this **/
   if ((par->variant & TDR_VARMASK_T) == TDR_VAR_T_POW) {
     _unur_error(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"c != 0. and c != -0.5 not implemented!");
+    _unur_distr_free(gen->distr); free(gen);
     return NULL;
   }
 
@@ -228,7 +229,8 @@ _unur_tdr_create( struct unur_par *par )
     break;
   default:
     _unur_error(GENTYPE,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
-    free (gen); return NULL;
+    _unur_distr_free(gen->distr); free(gen);
+    return NULL;
   }
   
   /* set all pointers to NULL */
@@ -321,7 +323,7 @@ _unur_tdr_clone( const struct unur_gen *gen )
   clone->genid = _unur_set_genid(GENTYPE);
 
   /* copy distribution object into generator object */
-  _unur_distr_cont_copy( &(clone->distr), &(gen->distr) );
+  clone->distr = _unur_distr_cont_clone( gen->distr );
 
   /* auxiliary generator */
   if (gen->gen_aux) clone->gen_aux = unur_gen_clone( gen->gen_aux );
@@ -402,7 +404,7 @@ _unur_tdr_free( struct unur_gen *gen )
   if (GEN.guide)  free(GEN.guide);
 
   /* free other memory not stored in list */
-  _unur_distr_cont_clear(gen);
+  _unur_distr_free(gen->distr);
   _unur_free_genid(gen);
 
   COOKIE_CLEAR(gen);

@@ -123,7 +123,7 @@ static void _unur_vmt_debug_init( const struct unur_gen *gen );
 
 #define PAR       par->data.vmt         /* data for parameter object         */
 #define GEN       gen->data.vmt         /* data for generator object         */
-#define DISTR     gen->distr.data.cvec  /* data for distribution in generator object */
+#define DISTR     gen->distr->data.cvec /* data for distribution in generator object */
 
 #define SAMPLE    gen->sample.cvec      /* pointer to sampling routine       */     
 
@@ -323,10 +323,10 @@ _unur_vmt_create( struct unur_par *par )
   COOKIE_SET(gen,CK_VMT_GEN);
 
   /* copy distribution object into generator object */
-  _unur_distr_cvec_copy( &(gen->distr), par->distr );
+  gen->distr = _unur_distr_cvec_clone( par->distr );
 
   /* dimension of distribution */
-  GEN.dim = gen->distr.dim; 
+  GEN.dim = gen->distr->dim; 
 
   /* copy mean vector */
   if (DISTR.mean) {
@@ -335,7 +335,7 @@ _unur_vmt_create( struct unur_par *par )
   }
   else {
     _unur_error(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
-    free (gen);
+    _unur_distr_free(gen->distr); free(gen);
     return NULL;
   }
 
@@ -346,7 +346,7 @@ _unur_vmt_create( struct unur_par *par )
   }
   else {
     _unur_error(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
-    free (DISTR.mean); free (gen);
+    _unur_distr_free(gen->distr); free (DISTR.mean); free(gen);
     return NULL;
   }
 
@@ -445,7 +445,7 @@ _unur_vmt_clone( const struct unur_gen *gen )
   clone->genid = _unur_set_genid(GENTYPE);
 
   /* copy distribution object into generator object */
-  _unur_distr_cont_copy( &(clone->distr), &(gen->distr) );
+  clone->distr = _unur_distr_cont_clone( gen->distr );
 
 #if 0
 
@@ -540,7 +540,7 @@ _unur_vmt_free( struct unur_gen *gen )
   if (DISTR.covar)  free(DISTR.covar);
   if (GEN.cholesky) free(GEN.cholesky);
 
-  _unur_distr_cvec_clear(gen);
+  _unur_distr_free(gen->distr);
   _unur_free_genid(gen);
 
   COOKIE_CLEAR(gen);
@@ -644,7 +644,7 @@ _unur_vmt_debug_init( const struct unur_gen *gen )
   fprintf(log,"%s: method  = VMT (Vector Matrix Transformation)\n",gen->genid);
   fprintf(log,"%s:\n",gen->genid);
 
-  _unur_distr_cvec_debug( &(gen->distr), gen->genid );
+  _unur_distr_cvec_debug( gen->distr, gen->genid );
 
   fprintf(log,"%s:\tcholesky factor = ",gen->genid);
   if (DISTR.covar && !GEN.cholesky) {
@@ -661,7 +661,7 @@ _unur_vmt_debug_init( const struct unur_gen *gen )
   }
   fprintf(log,"%s:\n",gen->genid);
 
-  fprintf(log,"%s: marginal distribution = %s    [genid = %s]\n",gen->genid,GEN.uvgen->distr.name,GEN.uvgen->genid);
+  fprintf(log,"%s: marginal distribution = %s    [genid = %s]\n",gen->genid,GEN.uvgen->distr->name,GEN.uvgen->genid);
   fprintf(log,"%s:\n",gen->genid);
 
   fprintf(log,"%s: sampling routine = _unur_vmt_sample()\n",gen->genid);

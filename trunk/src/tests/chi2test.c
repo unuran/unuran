@@ -154,7 +154,7 @@ _unur_test_chi2_discr( struct unur_gen *gen,
      /*   -1. ... other errors                                               */
      /*----------------------------------------------------------------------*/
 {
-#define DISTR   gen->distr.data.discr
+#define DISTR   gen->distr->data.discr
   double *pv;           /* pointer to probability vectors */
   int n_pv;             /* length of probability vector   */
 
@@ -176,7 +176,7 @@ _unur_test_chi2_discr( struct unur_gen *gen,
   if (DISTR.pv == NULL) {
     had_PV = FALSE;
     /* no PV given --> try to compute PV */
-    if (!unur_distr_discr_make_pv(&(gen->distr)) ) {
+    if (!unur_distr_discr_make_pv( gen->distr )) {
       /* not successful */
       return -2.;
     }
@@ -269,7 +269,7 @@ _unur_test_chi2_cont( struct unur_gen *gen,
      /*   -1. ... other errors                                               */
      /*----------------------------------------------------------------------*/
 {
-#define DISTR   gen->distr.data.cont
+#define DISTR   gen->distr->data.cont
 
   double F, Fl, Fr, Fdelta;  /* value of CDF (at left and right boundary point) */
   UNUR_FUNCT_CONT *cdf;      /* pointer to CDF */
@@ -306,13 +306,13 @@ _unur_test_chi2_cont( struct unur_gen *gen,
   samplesize = min( samplesize, CHI2_MAX_SAMPLESIZE );
 
   /* compute Fl and Fr */
-  if (gen->distr.set & UNUR_DISTR_SET_TRUNCATED) {
-    Fl = (DISTR.trunc[0] <= -INFINITY) ? 0. : cdf(DISTR.trunc[0],&(gen->distr));
-    Fr = (DISTR.trunc[1] >=  INFINITY) ? 1. : cdf(DISTR.trunc[1],&(gen->distr));
+  if (gen->distr->set & UNUR_DISTR_SET_TRUNCATED) {
+    Fl = (DISTR.trunc[0] <= -INFINITY) ? 0. : cdf(DISTR.trunc[0], gen->distr);
+    Fr = (DISTR.trunc[1] >=  INFINITY) ? 1. : cdf(DISTR.trunc[1], gen->distr);
   }
   else {
-    Fl = (DISTR.domain[0] <= -INFINITY) ? 0. : cdf(DISTR.domain[0],&(gen->distr));
-    Fr = (DISTR.domain[1] >=  INFINITY) ? 1. : cdf(DISTR.domain[1],&(gen->distr));
+    Fl = (DISTR.domain[0] <= -INFINITY) ? 0. : cdf(DISTR.domain[0], gen->distr);
+    Fr = (DISTR.domain[1] >=  INFINITY) ? 1. : cdf(DISTR.domain[1], gen->distr);
   }
   Fdelta = Fr - Fl;
 
@@ -325,7 +325,7 @@ _unur_test_chi2_cont( struct unur_gen *gen,
 
   /* now run generator */
   for( i=0; i<samplesize; i++ ) {
-    F = cdf( _unur_sample_cont(gen), &(gen->distr) );
+    F = cdf( _unur_sample_cont(gen), gen->distr );
     F = (F-Fl)/Fdelta;
     j = (int)(intervals * F);
     if (j > intervals) {   

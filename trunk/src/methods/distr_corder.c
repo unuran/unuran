@@ -79,7 +79,10 @@ static double _unur_cdf_corder( double x, const struct unur_distr *os );
 static int _unur_upd_area_corder( struct unur_distr *os );
 #endif
 
-static void _unur_distr_corder_free( struct unur_distr *os );
+extern void _unur_distr_cont_free( struct unur_distr *distr );
+/*---------------------------------------------------------------------------*/
+/* destroy continuous distribution object (from distr_cont.c)                */
+/*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*/
 
@@ -152,14 +155,12 @@ unur_distr_corder_new( const struct unur_distr *distr, int n, int k )
   os->name_str = NULL;
 
   /* destructor */
-  os->destroy = _unur_distr_corder_free;
+  os->destroy = _unur_distr_cont_free;
 
   /* this is a derived distribution */
   /* allocate memory ... */
-  os->base = _unur_malloc( sizeof(struct unur_distr) );
+  os->base = _unur_distr_cont_clone( distr );
   if (!os->base) { free(os); return NULL; }
-  /* ... and copy distribution object */
-  _unur_distr_cont_copy( os->base, distr );
 
   /* set parameters for order statistics */
   OS.n_params = 2;                 /* two parameters: n and k                */
@@ -227,31 +228,6 @@ unur_distr_corder_new( const struct unur_distr *distr, int n, int k )
   return os;
 
 } /* end of unur_distr_corder_new() */
-
-/*---------------------------------------------------------------------------*/
-
-void
-_unur_distr_corder_free( struct unur_distr *os )
-     /*----------------------------------------------------------------------*/
-     /* free distribution object                                             */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   distr ... pointer to distribution object                           */
-     /*----------------------------------------------------------------------*/
-{
-  /* check arguments */
-  if( os == NULL ) /* nothing to do */
-    return;
-
-  COOKIE_CHECK(os,CK_DISTR_CONT,/*void*/);
-
-  if (os->base) _unur_distr_free(os->base);
-
-  /* user name for distribution */
-  if (os->name_str) free(os->name_str);
-
-  free( os );
-} /* end of unur_distr_corder_free() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -391,6 +367,7 @@ _unur_pdf_corder( double x, const struct unur_distr *os )
   _unur_check_distr_object( os, CONT, INFINITY );
   CHECK_NULL( os->base, INFINITY );
   _unur_check_distr_object( os->base, CONT, INFINITY );
+  CHECK_NULL( os->base->data.cont.cdf, INFINITY );
   CHECK_NULL( os->base->data.cont.pdf, INFINITY );
 
   Fx = (*(os->base->data.cont.cdf)) (x, os->base);
@@ -431,6 +408,8 @@ _unur_dpdf_corder( double x, const struct unur_distr *os )
   _unur_check_distr_object( os, CONT, INFINITY );
   CHECK_NULL( os->base, INFINITY );
   _unur_check_distr_object( os->base, CONT, INFINITY );
+  CHECK_NULL( os->base->data.cont.cdf, INFINITY );
+  CHECK_NULL( os->base->data.cont.pdf, INFINITY );
   CHECK_NULL( os->base->data.cont.dpdf, INFINITY );
 
   Fx = (*(os->base->data.cont.cdf)) (x, os->base);

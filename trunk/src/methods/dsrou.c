@@ -179,14 +179,14 @@ static void _unur_dsrou_debug_init( const struct unur_gen *gen, int is_reinit );
 
 #define PAR       par->data.dsrou       /* data for parameter object         */
 #define GEN       gen->data.dsrou       /* data for generator object         */
-#define DISTR     gen->distr.data.discr /* data for distribution in generator object */
+#define DISTR     gen->distr->data.discr /* data for distribution in generator object */
 
 #define BD_LEFT   domain[0]             /* left boundary of domain of distribution */
 #define BD_RIGHT  domain[1]             /* right boundary of domain of distribution */
 
 #define SAMPLE    gen->sample.discr     /* pointer to sampling routine       */     
 
-#define PMF(x)    _unur_discr_PMF((x),&(gen->distr))  /* call to PMF         */
+#define PMF(x)    _unur_discr_PMF((x),(gen->distr))   /* call to PMF         */
 
 /*---------------------------------------------------------------------------*/
 /* constants                                                                 */
@@ -391,7 +391,7 @@ unur_dsrou_chg_pmfparams( struct unur_gen *gen, double *params, int n_params )
   _unur_check_gen_object( gen,DSROU );
   
   /* set new parameters in distribution object */
-  return unur_distr_discr_set_pmfparams(&(gen->distr),params,n_params);
+  return unur_distr_discr_set_pmfparams(gen->distr,params,n_params);
 
 } /* end of unur_dsrou_chg_pmfparams() */
 
@@ -443,7 +443,7 @@ unur_dsrou_upd_mode( struct unur_gen *gen )
   CHECK_NULL(gen,0);
   _unur_check_gen_object( gen,DSROU );
 
-  return unur_distr_discr_upd_mode( &(gen->distr) );
+  return unur_distr_discr_upd_mode( gen->distr );
 } /* end of unur_dsrou_upd_mode() */
 
 /*---------------------------------------------------------------------------*/
@@ -510,8 +510,8 @@ unur_dsrou_chg_domain( struct unur_gen *gen, int left, int right )
   DISTR.BD_RIGHT = right;
   
   /* changelog */
-  gen->distr.set &= ~(UNUR_DISTR_SET_STDDOMAIN | UNUR_DISTR_SET_MASK_DERIVED );
-  gen->distr.set |= UNUR_DISTR_SET_DOMAIN;
+  gen->distr->set &= ~(UNUR_DISTR_SET_STDDOMAIN | UNUR_DISTR_SET_MASK_DERIVED );
+  gen->distr->set |= UNUR_DISTR_SET_DOMAIN;
 
 #ifdef UNUR_ENABLE_LOGGING
   /* write info into log file */
@@ -576,7 +576,7 @@ unur_dsrou_upd_pmfsum( struct unur_gen *gen )
   CHECK_NULL(gen,0);
   _unur_check_gen_object( gen,DSROU );
 
-  return unur_distr_discr_upd_pmfsum( &(gen->distr) );
+  return unur_distr_discr_upd_pmfsum( gen->distr );
 } /* end of unur_dsrou_upd_pmfsum() */
 
 /*****************************************************************************/
@@ -718,23 +718,23 @@ _unur_dsrou_create( struct unur_par *par )
   COOKIE_SET(gen,CK_DSROU_GEN);
 
   /* copy distribution object into generator object */
-  _unur_distr_discr_copy( &(gen->distr), par->distr );
+  gen->distr = _unur_distr_discr_clone( par->distr );
 
   /* check for required data: mode */
-  if (!(gen->distr.set & UNUR_DISTR_SET_MODE)) {
+  if (!(gen->distr->set & UNUR_DISTR_SET_MODE)) {
     _unur_warning(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"mode: try finding it (numerically)"); 
-    if (!unur_distr_discr_upd_mode(&(gen->distr))) {
+    if (!unur_distr_discr_upd_mode( gen->distr )) {
       _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"mode"); 
-      free(gen);
+      _unur_distr_free(gen->distr); free(gen);
       return NULL; 
     }
   }
 
   /* check for required data: sum over PMF */
-  if (!(gen->distr.set & UNUR_DISTR_SET_PMFSUM))
-    if (!unur_distr_discr_upd_pmfsum(&(gen->distr))) {
+  if (!(gen->distr->set & UNUR_DISTR_SET_PMFSUM))
+    if (!unur_distr_discr_upd_pmfsum( gen->distr )) {
       _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"sum over PMF");
-      free(gen);
+      _unur_distr_free(gen->distr); free(gen);
       return NULL; 
     }
 
@@ -842,7 +842,7 @@ _unur_dsrou_clone( const struct unur_gen *gen )
   clone->genid = _unur_set_genid(GENTYPE);
 
   /* copy distribution object into generator object */
-  _unur_distr_discr_copy( &(clone->distr), &(gen->distr) );
+  clone->distr = _unur_distr_discr_clone( gen->distr );
 
   /* auxiliary generator */
   if (gen->gen_aux) clone->gen_aux = unur_gen_clone( gen->gen_aux );
@@ -983,7 +983,7 @@ _unur_dsrou_free( struct unur_gen *gen )
   SAMPLE = NULL;   /* make sure to show up a programming error */
 
   /* free memory */
-  _unur_distr_discr_clear(gen);
+  _unur_distr_free(gen->distr);
   _unur_free_genid(gen);
 
   COOKIE_CLEAR(gen);
@@ -1029,7 +1029,7 @@ _unur_dsrou_debug_init( const struct unur_gen *gen, int is_reinit )
     fprintf(log,"%s: reinit!\n",gen->genid);
   fprintf(log,"%s:\n",gen->genid);
  
-  _unur_distr_discr_debug( &(gen->distr), gen->genid, FALSE );
+  _unur_distr_discr_debug( gen->distr, gen->genid, FALSE );
   
   fprintf(log,"%s: sampling routine = _unur_dsrou_sample",gen->genid);
   if (gen->variant & DSROU_VARFLAG_VERIFY)

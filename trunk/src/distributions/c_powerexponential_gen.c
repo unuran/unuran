@@ -46,7 +46,7 @@ inline static int powerexponential_epd_init( struct unur_gen *gen );
 
 #define PAR       par->data.cstd        /* data for parameter object         */
 #define GEN       gen->data.cstd        /* data for generator object         */
-#define DISTR     gen->distr.data.cont  /* data for distribution in generator object */
+#define DISTR     gen->distr->data.cont /* data for distribution in generator object */
 
 #define MAX_gen_params  2      /* maximal number of parameters for generator */
 

@@ -49,7 +49,7 @@ static int _unur_stdgen_sample_binomial_bruec( struct unur_gen *gen );
 
 #define PAR       par->data.dstd        /* data for parameter object         */
 #define GEN       gen->data.dstd        /* data for generator object         */
-#define DISTR     gen->distr.data.discr /* data for distribution in generator object */
+#define DISTR     gen->distr->data.discr /* data for distribution in generator object */
 
 #define uniform()  _unur_call_urng(gen->urng) /* call for uniform prng       */
 /*TODO max number of param */

@@ -129,14 +129,14 @@ static void _unur_dari_debug_init( struct unur_gen *gen );
 
 #define PAR       par->data.dari        /* data for parameter object         */
 #define GEN       gen->data.dari        /* data for generator object         */
-#define DISTR     gen->distr.data.discr /* data for distribution in generator object */
+#define DISTR     gen->distr->data.discr /* data for distribution in generator object */
 
 #define BD_LEFT   domain[0]             /* left boundary of domain of distribution */
 #define BD_RIGHT  domain[1]             /* right boundary of domain of distribution */
 
 #define SAMPLE    gen->sample.discr     /* pointer to sampling routine       */     
 
-#define PMF(x)    _unur_discr_PMF((x),&(gen->distr))   /* call to PMF        */
+#define PMF(x)    _unur_discr_PMF((x),(gen->distr))    /* call to PMF        */
 
 /*---------------------------------------------------------------------------*/
 
@@ -164,15 +164,15 @@ unur_dari_new( const struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
 { 
   struct unur_par *par;
-
+  
   /* check arguments */
   _unur_check_NULL( GENTYPE,distr,NULL );
-
+  
   /* check distribution */
   if (distr->type != UNUR_DISTR_DISCR) {
     _unur_error(GENTYPE,UNUR_ERR_DISTR_INVALID,""); return NULL; }
   COOKIE_CHECK(distr,CK_DISTR_DISCR,NULL);
-
+  
   if (DISTR_IN.pmf == NULL) {
     _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"PMF"); 
     return NULL;
@@ -388,7 +388,7 @@ unur_dari_chg_verify( struct unur_gen *gen, int verify )
 {
   /* check arguments */
   CHECK_NULL( gen,0 );
-
+  
   /* check input */
   _unur_check_gen_object( gen,DARI );
 
@@ -434,7 +434,7 @@ unur_dari_chg_pmfparams( struct unur_gen *gen, double *params, int n_params )
   _unur_check_gen_object( gen,DARI );
 
   /* set new parameters in distribution object */
-  return unur_distr_discr_set_pmfparams(&(gen->distr),params,n_params);
+  return unur_distr_discr_set_pmfparams(gen->distr,params,n_params);
 
 } /* end of unur_dari_chg_pmfparams() */
 
@@ -469,7 +469,7 @@ unur_dari_chg_domain( struct unur_gen *gen, int left, int right )
   DISTR.BD_RIGHT = right;
 
   /* changelog */
-  gen->distr.set |= UNUR_DISTR_SET_DOMAIN;
+  gen->distr->set |= UNUR_DISTR_SET_DOMAIN;
 
 #ifdef UNUR_ENABLE_LOGGING
   /* write info into log file */
@@ -502,9 +502,9 @@ unur_dari_chg_mode( struct unur_gen *gen, int mode )
   
   /* copy parameters */
   DISTR.mode = mode;
-
+  
   /* changelog */
-  gen->distr.set |= UNUR_DISTR_SET_MODE;
+  gen->distr->set |= UNUR_DISTR_SET_MODE;
 
   /* o.k. */
   return 1;
@@ -529,7 +529,7 @@ unur_dari_upd_mode( struct unur_gen *gen )
   CHECK_NULL(gen,0);
   _unur_check_gen_object( gen,DARI );
 
-  return unur_distr_discr_upd_mode( &(gen->distr) );
+  return unur_distr_discr_upd_mode( gen->distr );
 } /* end of unur_dari_upd_mode() */
 
 /*---------------------------------------------------------------------------*/
@@ -586,7 +586,7 @@ unur_dari_upd_pmfsum( struct unur_gen *gen )
   CHECK_NULL(gen,0);
   _unur_check_gen_object( gen,DARI );
 
-  return unur_distr_discr_upd_pmfsum( &(gen->distr) );
+  return unur_distr_discr_upd_pmfsum( gen->distr );
 } /* end of unur_dari_upd_pmfsum() */
 
 /*****************************************************************************/
@@ -660,10 +660,10 @@ _unur_dari_create( struct unur_par *par )
      /*----------------------------------------------------------------------*/
 {
   struct unur_gen *gen;
-
+  
   /* check arguments */
   CHECK_NULL(par,NULL);  COOKIE_CHECK(par,CK_DARI_PAR,NULL);
-
+  
   /* allocate memory for generator object */
   gen = _unur_malloc( sizeof(struct unur_gen) );
 
@@ -671,21 +671,21 @@ _unur_dari_create( struct unur_par *par )
   COOKIE_SET(gen,CK_DARI_GEN);
 
   /* copy distribution object into generator object */
-  _unur_distr_discr_copy( &(gen->distr), par->distr );
+  gen->distr = _unur_distr_discr_clone( par->distr );
 
   /* check for required data: mode */
-  if (!(gen->distr.set & UNUR_DISTR_SET_MODE)) {
+  if (!(gen->distr->set & UNUR_DISTR_SET_MODE)) {
     _unur_warning(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"mode: try finding it (numerically)"); 
-    if (!unur_distr_discr_upd_mode(&(gen->distr))) {
+    if (!unur_distr_discr_upd_mode( gen->distr )) {
       _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"mode"); 
-      free(gen);
+      _unur_distr_free(gen->distr); free(gen);
       return NULL; 
     }
   }
 
   /* check for required data: sum over PMF */
-  if (!(gen->distr.set & UNUR_DISTR_SET_PMFSUM))
-    if (!unur_distr_discr_upd_pmfsum(&(gen->distr)))
+  if (!(gen->distr->set & UNUR_DISTR_SET_PMFSUM))
+    if (!unur_distr_discr_upd_pmfsum( gen->distr ))
       _unur_warning(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"sum over PMF; use default");
 
   /* set generator identifier */
@@ -788,11 +788,11 @@ _unur_dari_hat( struct unur_gen *gen )
   double t0 = 1.;
   char setup = 1;
   char rep = 1;
-
+  
   /* check arguments */
   CHECK_NULL( gen, 0 );
   COOKIE_CHECK( gen,CK_DARI_GEN, 0 );
-
+  
   /* check mode. we assume unimodality 
      since otherwise the PMF would not be T-concave! */
   if (DISTR.BD_LEFT > DISTR.mode)
@@ -914,7 +914,7 @@ unur_dari_reinit( struct unur_gen *gen )
   /* check arguments */
   CHECK_NULL(gen,0);
   _unur_check_gen_object( gen,DARI );
-
+  
   /* compute hat  */
   return _unur_dari_hat( gen );
 } /* end of unur_dari_reinit() */
@@ -953,7 +953,7 @@ _unur_dari_clone( const struct unur_gen *gen )
   clone->genid = _unur_set_genid(GENTYPE);
 
   /* copy distribution object into generator object */
-  _unur_distr_discr_copy( &(clone->distr), &(gen->distr) );
+  clone->distr = _unur_distr_discr_clone( gen->distr );
 
   /* auxiliary generator */
   if (gen->gen_aux) clone->gen_aux = unur_gen_clone( gen->gen_aux );
@@ -965,7 +965,7 @@ _unur_dari_clone( const struct unur_gen *gen )
     CLONE.hb = _unur_malloc( GEN.size * sizeof(char) );
     memcpy( CLONE.hb, GEN.hb, GEN.size * sizeof(char) );
   }
-
+  
   return clone;
 
 #undef CLONE
@@ -1080,10 +1080,10 @@ _unur_dari_sample_check( struct unur_gen *gen )
   double hkm05;
   int k,i;
   int sign[2] = {-1,1};
-
+  
   /* check arguments */
   CHECK_NULL(gen,0.);  COOKIE_CHECK(gen,CK_DARI_GEN,0.);
-
+  
   /* step 1.0 */
   while (1) {
     U = _unur_call_urng(gen->urng) * GEN.vt;
@@ -1191,45 +1191,42 @@ _unur_dari_sample_check( struct unur_gen *gen )
 	return k;
     }
   }
-
-
-
-
-
+  
+  
+  
 #if 0
-      if (sign[i]*k <= sign[i]*GEN.n[i]) {
-	if(!GEN.hb[k-N0]) {
-	  GEN.hp[k-N0] = sign[i] * F(GEN.y[i]+GEN.ys[i]*(k+sign[i]*0.5-GEN.x[i])) / GEN.ys[i] - PMF(k); 
-
-	  /* CHECKING HAT:
-	     tests if Hat too low i.e.: (H(k+0.5)-p_k < H(k-1/2)) */
-	  if (GEN.hp[k-N0]+UNUR_EPSILON 
-	      < sign[i] * F(GEN.y[i]+GEN.ys[i]*(k-sign[i]*0.5-GEN.x[i])) / GEN.ys[i]) {
-	    _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,
-			"PMF(i) > hat(i) for tailpart");
-	    _unur_stream_printf(gen->genid,__FILE__,__LINE__,
-				"i %d PMF(x) %e ", k,PMF(k) ); 
-          }
-	  GEN.hb[k-N0] = 1;
-	}
-	h = GEN.hp[k-N0];
+  if (sign[i]*k <= sign[i]*GEN.n[i]) {
+    if(!GEN.hb[k-N0]) {
+      GEN.hp[k-N0] = sign[i] * F(GEN.y[i]+GEN.ys[i]*(k+sign[i]*0.5-GEN.x[i])) / GEN.ys[i] - PMF(k); 
+      
+      /* CHECKING HAT:
+	 tests if Hat too low i.e.: (H(k+0.5)-p_k < H(k-1/2)) */
+      if (GEN.hp[k-N0]+UNUR_EPSILON 
+	  < sign[i] * F(GEN.y[i]+GEN.ys[i]*(k-sign[i]*0.5-GEN.x[i])) / GEN.ys[i]) {
+	_unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,
+		    "PMF(i) > hat(i) for tailpart");
+	_unur_stream_printf(gen->genid,__FILE__,__LINE__,
+			    "i %d PMF(x) %e ", k,PMF(k) ); 
       }
-      else {
-	h = sign[i] * F(GEN.y[i]+GEN.ys[i]*(k+sign[i]*0.5-GEN.x[i])) / GEN.ys[i] - PMF(k);
-	/* CHECKING HAT:
-	   tests if Hat too low i.e.: (H(k+0.5)-p_k < H(k-1/2)) */
-	if (h+UNUR_EPSILON
-	    < sign[i] * F(GEN.y[i]+GEN.ys[i]*(k-sign[i]*0.5-GEN.x[i]))/GEN.ys[i]) {
-	  _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,
-		      "PMF(i) > hat(i) for tailpart");
-	  _unur_stream_printf(gen->genid,__FILE__,__LINE__,
-			      "i %d PMF(x) %e ", k,PMF(k) );
-	}
-      }
-      if (sign[i]*U >= h)
-	return k;
+      GEN.hb[k-N0] = 1;
+    }
+    h = GEN.hp[k-N0];
+  }
+  else {
+    h = sign[i] * F(GEN.y[i]+GEN.ys[i]*(k+sign[i]*0.5-GEN.x[i])) / GEN.ys[i] - PMF(k);
+    /* CHECKING HAT:
+       tests if Hat too low i.e.: (H(k+0.5)-p_k < H(k-1/2)) */
+    if (h+UNUR_EPSILON
+	< sign[i] * F(GEN.y[i]+GEN.ys[i]*(k-sign[i]*0.5-GEN.x[i]))/GEN.ys[i]) {
+      _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,
+		  "PMF(i) > hat(i) for tailpart");
+      _unur_stream_printf(gen->genid,__FILE__,__LINE__,
+			  "i %d PMF(x) %e ", k,PMF(k) );
     }
   }
+  if (sign[i]*U >= h)
+    return k;
+  
 #endif
 
 } /* end of _unur_dari_sample_check() */
@@ -1250,26 +1247,26 @@ _unur_dari_free( struct unur_gen *gen )
      /*   gen ... pointer to generator object                                */
      /*----------------------------------------------------------------------*/
 { 
-
+  
   /* check arguments */
   if( !gen ) /* nothing to do */
     return;
-
+  
   /* check input */
   if ( gen->method != UNUR_METH_DARI ) {
     _unur_warning(gen->genid,UNUR_ERR_GEN_INVALID,"");
     return; }
   COOKIE_CHECK(gen,CK_DARI_GEN,/*void*/);
-
+  
   /* we cannot use this generator object any more */
   SAMPLE = NULL;   /* make sure to show up a programming error */
-
+  
   /* free two auxiliary tables */
   if (GEN.hp)   free(GEN.hp);
   if (GEN.hb)   free(GEN.hb);
-
+  
   /* free memory */
-  _unur_distr_discr_clear(gen);
+  _unur_distr_free(gen->distr);
   _unur_free_genid(gen);
 
   COOKIE_CLEAR(gen);
@@ -1312,7 +1309,7 @@ _unur_dari_debug_init( struct unur_gen *gen )
   fprintf(log,"%s: method  = dari (discrete automatic rejection inversion)\n",gen->genid);
   fprintf(log,"%s:\n",gen->genid);
 
-  _unur_distr_discr_debug( &(gen->distr), gen->genid, FALSE );
+  _unur_distr_discr_debug( gen->distr, gen->genid, FALSE );
 
   fprintf(log,"%s: sampling routine = _unur_dari_sample",gen->genid);
   if (gen->variant & DARI_VARFLAG_VERIFY)

@@ -85,7 +85,7 @@ _unur_acg_JAVA_tdr_ps( FILE *out,
   /* make section header for code file */
   fprintf(out,"\n");
   _unur_acg_JAVA_print_section_rule(out);
-  _unur_acg_JAVA_print_section_line(out,"Sampling from %.35s distribution.",gen->distr.name);
+  _unur_acg_JAVA_print_section_line(out,"Sampling from %.35s distribution.",gen->distr->name);
   _unur_acg_JAVA_print_section_line(out,"Method: TDR - PS (Transformed Density Rejection / prop. squeeze)");
   switch( gen->variant & TDR_VARMASK_T ) {
   case TDR_VAR_T_LOG:

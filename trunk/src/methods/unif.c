@@ -249,7 +249,7 @@ _unur_unif_clone( const struct unur_gen *gen )
   memcpy( clone, gen, sizeof(struct unur_gen) );
 
   /* set generator identifier */
-  clone->genid = _unur_set_genid(GENTYPE);
+  clone->genid = GENTYPE;
 
   return clone;
 } /* end of _unur_unif_clone() */

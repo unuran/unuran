@@ -90,7 +90,7 @@ _unur_tdr_debug_init( const struct unur_par *par, const struct unur_gen *gen )
   _unur_print_if_default(par,TDR_SET_C);
   fprintf(log,"\n%s:\n",gen->genid);
 
-  _unur_distr_cont_debug( &(gen->distr), gen->genid );
+  _unur_distr_cont_debug( gen->distr, gen->genid );
 
   fprintf(log,"%s: sampling routine = _unur_tdr_",gen->genid);
   switch (par->variant & TDR_VARMASK_VARIANT) {

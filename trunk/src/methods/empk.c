@@ -249,7 +249,7 @@ static void _unur_empk_debug_init( const struct unur_par *par, const struct unur
 
 #define PAR       par->data.empk        /* data for parameter object         */
 #define GEN       gen->data.empk        /* data for generator object         */
-#define DISTR     gen->distr.data.cemp  /* data for distribution in generator object */
+#define DISTR     gen->distr->data.cemp /* data for distribution in generator object */
 
 #define SAMPLE    gen->sample.cont      /* pointer to sampling routine       */     
 
@@ -859,7 +859,7 @@ _unur_empk_create( struct unur_par *par )
   COOKIE_SET(gen,CK_EMPK_GEN);
 
   /* copy distribution object into generator object */
-  _unur_distr_cemp_copy( &(gen->distr), par->distr );
+  gen->distr = _unur_distr_cemp_clone( par->distr );
 
   /* set generator identifier */
   gen->genid = _unur_set_genid(GENTYPE);
@@ -883,6 +883,7 @@ _unur_empk_create( struct unur_par *par )
   gen->urng = par->urng;            /* pointer to urng                       */
 
   gen->urng_aux = NULL;             /* no auxilliary URNG required           */
+  gen->gen_aux  = NULL;             /* aux generator object set below        */
 
   /* copy kernel generator into generator object */
   if (PAR.kerngen) {
@@ -944,12 +945,10 @@ _unur_empk_clone( const struct unur_gen *gen )
   clone->genid = _unur_set_genid(GENTYPE);
 
   /* copy distribution object into generator object */
-  _unur_distr_cemp_copy( &(clone->distr), &(gen->distr) );
+  clone->distr = _unur_distr_cemp_clone( gen->distr );
 
-  /* copy additional data for generator object */
-  CLONE.observ = _unur_malloc( GEN.n_observ * sizeof(double) );
-  memcpy( CLONE.observ, GEN.observ, GEN.n_observ * sizeof(double) );
-  clone->distr.data.cemp.sample = CLONE.observ;
+  /* copy observed data into generator object */
+  CLONE.observ = clone->distr->data.cemp.sample;   /* observations in distribution object */
 
   CLONE.kerngen = unur_gen_clone( GEN.kerngen );
   clone->gen_aux = CLONE.kerngen;
@@ -1035,7 +1034,7 @@ _unur_empk_free( struct unur_gen *gen )
 
   /* free memory */
   unur_free( GEN.kerngen );
-  _unur_distr_cemp_clear(gen);
+  _unur_distr_free( gen->distr );
   _unur_free_genid(gen);
 
   COOKIE_CLEAR(gen);
@@ -1161,7 +1160,7 @@ _unur_empk_debug_init( const struct unur_par *par, const struct unur_gen *gen )
   fprintf(log,"%s: method  = EMPK (EMPirical distribution with Kernel smoothing)\n",gen->genid);
   fprintf(log,"%s:\n",gen->genid);
 
-  _unur_distr_cemp_debug( &(gen->distr), gen->genid, (gen->debug & EMPK_DEBUG_PRINTDATA));
+  _unur_distr_cemp_debug( gen->distr, gen->genid, (gen->debug & EMPK_DEBUG_PRINTDATA));
 
   fprintf(log,"%s: sampling routine = _unur_empk_sample()\n",gen->genid);
   fprintf(log,"%s:\n",gen->genid);
@@ -1179,7 +1178,7 @@ _unur_empk_debug_init( const struct unur_par *par, const struct unur_gen *gen )
   fprintf(log,"%s:\n",gen->genid);
   fprintf(log,"%s: Kernel:\n",gen->genid);
 
-  fprintf(log,"%s:    type = %s  ",gen->genid,GEN.kerngen->distr.name);
+  fprintf(log,"%s:    type = %s  ",gen->genid,GEN.kerngen->distr->name);
   if (gen->set & EMPK_SET_KERNGEN)
     fprintf(log,"[kernel generator set]\n");
   else if (gen->set & EMPK_SET_KERNEL)

@@ -164,16 +164,17 @@ _unur_slist_free( struct unur_slist *slist )
 
   /* check arguments */
   COOKIE_CHECK(slist,CK_SLIST,/*void*/);
-  if (slist == NULL || slist->ptr == NULL || slist->n_ptr == 0)
-    return;
+  if (slist == NULL) return;  /* nothing to do */
 
-  /* free memory blocks */
-  for (i=0; i < slist->n_ptr; i++)
-    if (slist->ptr[i]) free(slist->ptr[i]); 
-  free(slist->ptr);
+  if ( slist->ptr != NULL ) {
+    /* free memory blocks */
+    for (i=0; i < slist->n_ptr; i++)
+      if (slist->ptr[i]) free(slist->ptr[i]); 
+    free(slist->ptr);
+    slist->ptr = NULL;
+  }
 
   /* free list */
-  slist->ptr = NULL;
   free (slist);
 
 } /* end of _unur_slist_free() */

@@ -70,7 +70,7 @@ unur_acg_C( const UNUR_GEN *gen, FILE *out, const char *distr_name, int with_mai
 
   /* make name of PDF function and sampling routine */
   if (distr_name == NULL) 
-    distr_name = unur_distr_get_name( &(gen->distr) );
+    distr_name = unur_distr_get_name( gen->distr );
 
   pdf_name = _unur_malloc((5+strlen(distr_name)) * sizeof(char));
   sprintf(pdf_name,"pdf_%s",distr_name);
@@ -82,9 +82,9 @@ unur_acg_C( const UNUR_GEN *gen, FILE *out, const char *distr_name, int with_mai
   switch (gen->method) {
   case UNUR_METH_TDR:
     return_code =
-      _unur_acg_C_header    ( out, &(gen->distr), rand_name ) &&
+      _unur_acg_C_header    ( out, gen->distr, rand_name ) &&
       _unur_acg_C_demo_urng ( out ) &&
-      _unur_acg_C_PDF       ( out, &(gen->distr), pdf_name ) &&
+      _unur_acg_C_PDF       ( out, gen->distr, pdf_name ) &&
       _unur_acg_C_tdr_ps    ( out, gen, rand_name, pdf_name ) &&
       _unur_acg_C_print_section_title( out, "End of Generator" );
     if (with_main && return_code)

@@ -69,7 +69,7 @@ static double _unur_distr_cont_eval_cdf_tree( double x, const struct unur_distr 
 /* evaluate function tree for CDF.                                           */
 /*---------------------------------------------------------------------------*/
 
-static void _unur_distr_cont_free( struct unur_distr *distr );
+void _unur_distr_cont_free( struct unur_distr *distr );
 /*---------------------------------------------------------------------------*/
 /* destroy distribution object.                                              */
 /*---------------------------------------------------------------------------*/
@@ -176,57 +176,59 @@ unur_distr_cont_new( void )
 
 /*---------------------------------------------------------------------------*/
 
-int
-_unur_distr_cont_copy( struct unur_distr *to, const struct unur_distr *from )
+struct unur_distr *
+_unur_distr_cont_clone( const struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
-     /* copy distribution object 'from' into distribution object 'to'.       */
+     /* copy (clone) distribution object                                     */
      /*                                                                      */
      /* parameters:                                                          */
-     /*   to   ... pointer to target distribution object                     */
-     /*   from ... pointer to source distribution object                     */
+     /*   distr ... pointer to source distribution object                    */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   pointer to clone of distribution object                            */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return NULL                                                        */
      /*----------------------------------------------------------------------*/
 {
-#define FROM from->data.cont
-#define TO   to->data.cont
+#define CLONE clone->data.cont
 
+  struct unur_distr *clone;
   int len;
 
   /* check arguments */
-  _unur_check_NULL( NULL,from,0 );
-  _unur_check_distr_object( from, CONT, 0 );
+  _unur_check_NULL( NULL, distr, NULL );
+  _unur_check_distr_object( distr, CONT, NULL );
 
-  /* copy distribution object into generator object */
-  memcpy( to, from, sizeof( struct unur_distr ) );
+  /* allocate memory */
+  clone = _unur_malloc( sizeof(struct unur_distr) );
+  
+  /* copy distribution object into clone */
+  memcpy( clone, distr, sizeof( struct unur_distr ) );
 
   /* copy function trees into generator object (when there is one) */
-  TO.pdftree  = (FROM.pdftree)  ? _unur_fstr_dup_tree(FROM.pdftree)  : NULL;
-  TO.dpdftree = (FROM.dpdftree) ? _unur_fstr_dup_tree(FROM.dpdftree) : NULL;
-  TO.cdftree  = (FROM.cdftree)  ? _unur_fstr_dup_tree(FROM.cdftree)  : NULL;
+  CLONE.pdftree  = (DISTR.pdftree)  ? _unur_fstr_dup_tree(DISTR.pdftree)  : NULL;
+  CLONE.dpdftree = (DISTR.dpdftree) ? _unur_fstr_dup_tree(DISTR.dpdftree) : NULL;
+  CLONE.cdftree  = (DISTR.cdftree)  ? _unur_fstr_dup_tree(DISTR.cdftree)  : NULL;
 
   /* copy user name for distribution */
-  if (from->name_str) {
-    len = strlen(from->name_str) + 1;
-    to->name_str = _unur_malloc(len);
-    memcpy( to->name_str, from->name_str, len );
-    to->name = to->name_str;
+  if (distr->name_str) {
+    len = strlen(distr->name_str) + 1;
+    clone->name_str = _unur_malloc(len);
+    memcpy( clone->name_str, distr->name_str, len );
+    clone->name = clone->name_str;
   }
 
   /* for a derived distribution we also have to copy the underlying */
   /* distribution object                                            */
-  if (from->base != NULL) {
-    to->base = _unur_malloc( sizeof(struct unur_distr) );
-    return _unur_distr_cont_copy( to->base, from->base );
+  if (distr->base != NULL) {
+    clone->base = _unur_distr_cont_clone( distr->base);
   }
 
-  return 1;
+  return clone;
 
-#undef FROM
-#undef TO
-} /* end of _unur_distr_cont_copy() */
+#undef CLONE
+} /* end of _unur_distr_cont_clone() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -250,7 +252,7 @@ _unur_distr_cont_free( struct unur_distr *distr )
   if (DISTR.cdftree)  _unur_fstr_free(DISTR.cdftree);
 
   /* derived distribution */
-  if (distr->base) _unur_distr_cont_free(distr->base);
+  if (distr->base) _unur_distr_free(distr->base);
 
   /* user name for distribution */
   if (distr->name_str) free(distr->name_str);
@@ -258,32 +260,6 @@ _unur_distr_cont_free( struct unur_distr *distr )
   COOKIE_CLEAR(distr);
   free( distr );
 } /* end of _unur_distr_cont_free() */
-
-/*---------------------------------------------------------------------------*/
-
-void
-_unur_distr_cont_clear( struct unur_gen *gen )
-     /*----------------------------------------------------------------------*/
-     /* frees all memory blocks in distribution object inside generator      */
-     /* object.                                                              */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   gen ... pointer to generator object                                */
-     /*----------------------------------------------------------------------*/
-{
-  struct unur_distr *distr = &(gen->distr);
-
-  /* check arguments */
-  COOKIE_CHECK(distr,CK_DISTR_CONT,/*void*/);
-
-  if (DISTR.pdftree)  _unur_fstr_free(DISTR.pdftree);
-  if (DISTR.dpdftree) _unur_fstr_free(DISTR.dpdftree);
-  if (DISTR.cdftree)  _unur_fstr_free(DISTR.cdftree);
-
-  /* user name for distribution */
-  if (distr->name_str) free(distr->name_str);
-
-} /* end of unur_distr_cont_clear() */
 
 /*---------------------------------------------------------------------------*/
 

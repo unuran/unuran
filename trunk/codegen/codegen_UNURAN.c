@@ -89,7 +89,7 @@ unur_acg_UNURAN( const UNUR_GEN *gen, FILE *out, const char *distr_name, int wit
 
   /* make name of PDF function and sampling routine */
   if (distr_name == NULL) 
-    distr_name = unur_distr_get_name( &(gen->distr) );
+    distr_name = unur_distr_get_name( gen->distr );
 
   pdf_name = _unur_malloc((5+strlen(distr_name)) * sizeof(char));
   sprintf(pdf_name,"pdf_%s",distr_name);
@@ -101,8 +101,8 @@ unur_acg_UNURAN( const UNUR_GEN *gen, FILE *out, const char *distr_name, int wit
   switch (gen->method) {
   case UNUR_METH_TDR:
     return_code =
-      _unur_acg_UNURAN_header ( out, &(gen->distr), rand_name ) &&
-      _unur_acg_UNURAN_PDF    ( out, &(gen->distr), pdf_name ) &&
+      _unur_acg_UNURAN_header ( out, gen->distr, rand_name ) &&
+      _unur_acg_UNURAN_PDF    ( out, gen->distr, pdf_name ) &&
       _unur_acg_UNURAN_tdr_ps ( out, gen, rand_name, pdf_name, n_cpoints );
     break;
   default:

@@ -196,7 +196,7 @@ static void _unur_vempk_debug_init( const struct unur_par *par, const struct unu
 
 #define PAR       par->data.vempk        /* data for parameter object         */
 #define GEN       gen->data.vempk        /* data for generator object         */
-#define DISTR     gen->distr.data.cvemp  /* data for distribution in generator object */
+#define DISTR     gen->distr->data.cvemp /* data for distribution in generator object */
 
 #define SAMPLE    gen->sample.cvec      /* pointer to sampling routine       */     
 
@@ -531,19 +531,14 @@ _unur_vempk_create( struct unur_par *par )
   COOKIE_SET(gen,CK_VEMPK_GEN);
 
   /* copy distribution object into generator object */
-  _unur_distr_cvemp_copy( &(gen->distr), par->distr );
+  gen->distr = _unur_distr_cvemp_clone( par->distr );
 
   /* dimension of distribution */
-  GEN.dim = gen->distr.dim; 
+  GEN.dim = gen->distr->dim; 
 
-  /* observed sample */
-  GEN.n_observ = par->distr->data.cvemp.n_sample;     /* sample size */
-  GEN.observ = _unur_malloc( GEN.dim * GEN.n_observ * sizeof(double) );
-  memcpy( GEN.observ, DISTR.sample, GEN.dim * GEN.n_observ * sizeof(double) );
-  DISTR.sample = GEN.observ;  /* update pointer in local distribution object */
-
-  /* update pointer in build in distribution object to new array */
-  DISTR.sample = GEN.observ;
+  /* copy observed data into generator object */
+  GEN.observ   = DISTR.sample;          /* observations in distribution object */
+  GEN.n_observ = DISTR.n_sample;        /* sample size */
 
   /* set generator identifier */
   gen->genid = _unur_set_genid(GENTYPE);
@@ -608,12 +603,10 @@ _unur_vempk_clone( const struct unur_gen *gen )
   clone->genid = _unur_set_genid(GENTYPE);
 
   /* copy distribution object into generator object */
-  _unur_distr_cont_copy( &(clone->distr), &(gen->distr) );
+  clone->distr = _unur_distr_cont_clone( gen->distr );
 
   /* copy additional data for generator object */
-  CLONE.observ = _unur_malloc( GEN.dim * GEN.n_observ * sizeof(double) );
-  memcpy( CLONE.observ, GEN.observ, GEN.dim * GEN.n_observ * sizeof(double) );
-  clone->distr.data.cvemp.sample = CLONE.observ;
+  CLONE.observ = clone->distr->data.cvemp.sample;   /* observations in distribution object */
 
   CLONE.xbar = _unur_malloc( GEN.dim * sizeof(double) );
   memcpy( CLONE.xbar, GEN.xbar, GEN.dim * sizeof(double) );
@@ -695,7 +688,7 @@ _unur_vempk_free( struct unur_gen *gen )
   if (GEN.xbar)   free( GEN.xbar );
   unur_free( GEN.kerngen );
 
-  _unur_distr_cvemp_clear(gen);
+  _unur_distr_free(gen->distr);
   _unur_free_genid(gen);
 
   COOKIE_CLEAR(gen);
@@ -808,7 +801,7 @@ _unur_vempk_debug_init( const struct unur_par *par, const struct unur_gen *gen )
   fprintf(log,"%s:\n",gen->genid);
 
   fprintf(log,"%s:\n",gen->genid);
-  _unur_distr_cvemp_debug( &(gen->distr), gen->genid, (gen->debug & VEMPK_DEBUG_PRINTDATA));
+  _unur_distr_cvemp_debug( gen->distr, gen->genid, (gen->debug & VEMPK_DEBUG_PRINTDATA));
 
   fprintf(log,"%s:\tmean vector =\n",gen->genid);
   fprintf(log,"%s:\t   ( %g",gen->genid,GEN.xbar[0]);

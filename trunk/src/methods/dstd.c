@@ -145,7 +145,7 @@ static void _unur_dstd_debug_chg_pmfparams( const struct unur_gen *gen );
 
 #define PAR       par->data.dstd        /* data for parameter object         */
 #define GEN       gen->data.dstd        /* data for generator object         */
-#define DISTR     gen->distr.data.discr /* data for distribution in generator object */
+#define DISTR     gen->distr->data.discr /* data for distribution in generator object */
 
 #define BD_LEFT   domain[0]             /* left boundary of domain of distribution */
 #define BD_RIGHT  domain[1]             /* right boundary of domain of distribution */
@@ -283,7 +283,7 @@ unur_dstd_chg_pmfparams( struct unur_gen *gen, double *params, int n_params )
   if (n_params>0) CHECK_NULL(params,0);
   
   /* set new parameters in distribution object */
-  if (!unur_distr_discr_set_pmfparams(&(gen->distr),params,n_params))
+  if (!unur_distr_discr_set_pmfparams(gen->distr,params,n_params))
     return 0;
 
   /* run special init routine for generator */
@@ -349,7 +349,7 @@ _unur_dstd_init( struct unur_par *par )
   }
 
   /* domain must not be changed */
-  if (!(gen->distr.set & UNUR_DISTR_SET_STDDOMAIN)) {
+  if (!(gen->distr->set & UNUR_DISTR_SET_STDDOMAIN)) {
     /* domain has been modified --> not allowed */
     _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"domain changed");
     free(par); _unur_dstd_free(gen); return NULL; 
@@ -402,7 +402,7 @@ _unur_dstd_clone( const struct unur_gen *gen )
   clone->genid = _unur_set_genid(GENTYPE);
 
   /* copy distribution object into generator object */
-  _unur_distr_discr_copy( &(clone->distr), &(gen->distr) );
+  clone->distr = _unur_distr_discr_clone( gen->distr );
 
   /* auxiliary generator */
   if (gen->gen_aux) clone->gen_aux = unur_gen_clone( gen->gen_aux );
@@ -459,7 +459,7 @@ _unur_dstd_free( struct unur_gen *gen )
   SAMPLE = NULL;   /* make sure to show up a programming error */
 
   /* free memory */
-  _unur_distr_discr_clear(gen);
+  _unur_distr_free(gen->distr);
   _unur_free_genid(gen);
   if (GEN.gen_param)   free(GEN.gen_param);
   if (GEN.gen_iparam)  free(GEN.gen_iparam);
@@ -501,7 +501,7 @@ _unur_dstd_create( struct unur_par *par )
   COOKIE_SET(gen,CK_DSTD_GEN);
 
   /* copy distribution object into generator object */
-  _unur_distr_discr_copy( &(gen->distr), par->distr );
+  gen->distr = _unur_distr_discr_clone( par->distr );
 
   /* set generator identifier */
   gen->genid = _unur_set_genid(GENTYPE);
@@ -567,7 +567,7 @@ _unur_dstd_debug_init( const struct unur_par *par, const struct unur_gen *gen )
   fprintf(log,"%s:\n",gen->genid);
 
   /* distribution */
-  _unur_distr_discr_debug( &(gen->distr), gen->genid, FALSE );
+  _unur_distr_discr_debug( gen->distr, gen->genid, FALSE );
 
   /* sampling routine */
   fprintf(log,"%s: sampling routine = ",gen->genid);

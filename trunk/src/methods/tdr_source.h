@@ -96,15 +96,15 @@
 
 #define PAR       par->data.tdr         /* data for parameter object         */
 #define GEN       gen->data.tdr         /* data for generator object         */
-#define DISTR     gen->distr.data.cont  /* data for distribution in generator object */
+#define DISTR     gen->distr->data.cont /* data for distribution in generator object */
 
 #define BD_LEFT   domain[0]             /* left boundary of domain of distribution */
 #define BD_RIGHT  domain[1]             /* right boundary of domain of distribution */
 
 #define SAMPLE    gen->sample.cont      /* pointer to sampling routine       */     
 
-#define PDF(x)    _unur_cont_PDF((x),&(gen->distr))   /* call to PDF         */
-#define dPDF(x)   _unur_cont_dPDF((x),&(gen->distr))  /* call to derivative of PDF */
+#define PDF(x)    _unur_cont_PDF((x),(gen->distr))   /* call to PDF          */
+#define dPDF(x)   _unur_cont_dPDF((x),(gen->distr))  /* call to derivative of PDF */
 
 /*---------------------------------------------------------------------------*/
 #endif   /* TDR_SOURCE_H_SEEN */

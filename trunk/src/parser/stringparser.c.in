@@ -444,11 +444,11 @@ unur_str2gen (const char *string)
 
   struct unur_slist *mlist;       /* list of allocated memory blocks */
 
-  /* (empty) list of allocated memory blocks */ 
-  mlist = _unur_slist_new();
-
   /* check arguments */
   _unur_check_NULL( GENTYPE,string,NULL );
+
+  /* (empty) list of allocated memory blocks */ 
+  mlist = _unur_slist_new();
 
   /* Prepare string for processing:            */
   /*   Remove all white spaces,                */
@@ -471,7 +471,7 @@ unur_str2gen (const char *string)
   for ( token  = strtok(NULL, "&"); 
         token != NULL;     
         token  = strtok(NULL, "&") ) {
-
+    
     /* get type of block */
     if (!strncmp(token,"method=",7)) {
       str_method = token;
@@ -480,16 +480,18 @@ unur_str2gen (const char *string)
       str_urng = token;
     }
     else {
-     _unur_error_unknown(token,"category");
+      _unur_error_unknown(token,"category");
+      _unur_slist_free( mlist );
       if (str) free(str);
-     return NULL;
+      return NULL;
     }
   }
-
+  
   /* make distribution object */
   distr = _unur_str_distr(str_distr);
   if ( distr == NULL ) {
     /* error */
+    _unur_slist_free( mlist );
     if (str) free(str);
     return NULL;
   }

@@ -175,55 +175,55 @@ unur_distr_discr_new( void )
 
 /*---------------------------------------------------------------------------*/
 
-int
-_unur_distr_discr_copy( struct unur_distr *to, const struct unur_distr *from )
+struct unur_distr *
+_unur_distr_discr_clone( const struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
-     /* copy distribution object 'from' into distribution object 'to'.       */
+     /* copy (clone) distribution object                                     */
      /*                                                                      */
      /* parameters:                                                          */
-     /*   to   ... pointer to target distribution object                     */
-     /*   from ... pointer to source distribution object                     */
+     /*   distr ... pointer to source distribution object                    */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   pointer to clone of distribution object                            */
      /*----------------------------------------------------------------------*/
 {
-#define FROM from->data.discr
-#define TO   to->data.discr
+#define CLONE clone->data.discr
 
+  struct unur_distr *clone;
   int len;
 
   /* check arguments */
-  _unur_check_NULL( NULL,from,0 );
-  _unur_check_distr_object( from, DISCR, 0 );
+  _unur_check_NULL( NULL, distr, NULL );
+  _unur_check_distr_object( distr, DISCR, NULL );
 
-  /* copy distribution object into generator object */
-  memcpy( to, from, sizeof( struct unur_distr ) );
+  /* allocate memory */
+  clone = _unur_malloc( sizeof(struct unur_distr) );
+  
+  /* copy distribution object into clone */
+  memcpy( clone, distr, sizeof( struct unur_distr ) );
 
   /* copy function trees into generator object (when there is one) */
-  TO.pmftree  = (FROM.pmftree) ? _unur_fstr_dup_tree(FROM.pmftree) : NULL;
-  TO.cdftree  = (FROM.cdftree) ? _unur_fstr_dup_tree(FROM.cdftree) : NULL;
+  CLONE.pmftree  = (DISTR.pmftree) ? _unur_fstr_dup_tree(DISTR.pmftree) : NULL;
+  CLONE.cdftree  = (DISTR.cdftree) ? _unur_fstr_dup_tree(DISTR.cdftree) : NULL;
 
   /* copy probability vector into generator object (when there is one) */
-  if (FROM.pv) {
-    TO.pv = _unur_malloc( FROM.n_pv * sizeof(double) );
-    memcpy( TO.pv, FROM.pv, FROM.n_pv * sizeof(double) );
+  if (DISTR.pv) {
+    CLONE.pv = _unur_malloc( DISTR.n_pv * sizeof(double) );
+    memcpy( CLONE.pv, DISTR.pv, DISTR.n_pv * sizeof(double) );
   }
 
   /* copy user name for distribution */
-  if (from->name_str) {
-    len = strlen(from->name_str) + 1;
-    to->name_str = _unur_malloc(len);
-    memcpy( to->name_str, from->name_str, len );
-    to->name = to->name_str;
+  if (distr->name_str) {
+    len = strlen(distr->name_str) + 1;
+    clone->name_str = _unur_malloc(len);
+    memcpy( clone->name_str, distr->name_str, len );
+    clone->name = clone->name_str;
   }
 
-  return 1;
+  return clone;
 
-#undef FROM
-#undef TO
-} /* end of _unur_distr_discr_copy() */
+#undef CLONE
+} /* end of _unur_distr_discr_clone() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -253,32 +253,6 @@ _unur_distr_discr_free( struct unur_distr *distr )
   free( distr );
 
 } /* end of unur_distr_discr_free() */
-
-/*---------------------------------------------------------------------------*/
-
-void
-_unur_distr_discr_clear( struct unur_gen *gen )
-     /*----------------------------------------------------------------------*/
-     /* frees all memory blocks in distribution object inside generator      */
-     /* object.                                                              */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   gen ... pointer to generator object                                */
-     /*----------------------------------------------------------------------*/
-{
-  struct unur_distr *distr = &(gen->distr);
-
-  /* check arguments */
-  COOKIE_CHECK(distr,CK_DISTR_DISCR,/*void*/);
-
-  if (DISTR.pmftree)  _unur_fstr_free(DISTR.pmftree);
-  if (DISTR.cdftree)  _unur_fstr_free(DISTR.cdftree);
-  if (DISTR.pv) free( DISTR.pv );
-
-  /* user name for distribution */
-  if (distr->name_str) free(distr->name_str);
-
-} /* end of unur_distr_discr_clear() */
 
 /*---------------------------------------------------------------------------*/
 

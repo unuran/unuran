@@ -144,14 +144,14 @@ static void _unur_ssr_debug_init( const struct unur_gen *gen, int is_reinit );
 
 #define PAR       par->data.ssr         /* data for parameter object         */
 #define GEN       gen->data.ssr         /* data for generator object         */
-#define DISTR     gen->distr.data.cont  /* data for distribution in generator object */
+#define DISTR     gen->distr->data.cont /* data for distribution in generator object */
 
 #define BD_LEFT   domain[0]             /* left boundary of domain of distribution */
 #define BD_RIGHT  domain[1]             /* right boundary of domain of distribution */
 
 #define SAMPLE    gen->sample.cont      /* pointer to sampling routine       */     
 
-#define PDF(x)    _unur_cont_PDF((x),&(gen->distr))   /* call to PDF         */
+#define PDF(x)    _unur_cont_PDF((x),(gen->distr))    /* call to PDF         */
 
 /*---------------------------------------------------------------------------*/
 /* constants                                                                 */
@@ -435,7 +435,7 @@ unur_ssr_chg_pdfparams( struct unur_gen *gen, double *params, int n_params )
   _unur_check_gen_object( gen,SSR );
   
   /* set new parameters in distribution object */
-  return unur_distr_cont_set_pdfparams(&(gen->distr),params,n_params);
+  return unur_distr_cont_set_pdfparams( gen->distr, params,n_params );
 
 } /* end of unur_ssr_chg_pdfparams() */
 
@@ -487,7 +487,7 @@ unur_ssr_upd_mode( struct unur_gen *gen )
   CHECK_NULL(gen,0);
   _unur_check_gen_object( gen,SSR );
 
-  return unur_distr_cont_upd_mode( &(gen->distr) );
+  return unur_distr_cont_upd_mode( gen->distr );
 } /* end of unur_ssr_upd_mode() */
 
 /*---------------------------------------------------------------------------*/
@@ -598,8 +598,8 @@ unur_ssr_chg_domain( struct unur_gen *gen, double left, double right )
   DISTR.BD_RIGHT = right;
 
   /* changelog */
-  gen->distr.set &= ~(UNUR_DISTR_SET_STDDOMAIN | UNUR_DISTR_SET_MASK_DERIVED );
-  gen->distr.set |= UNUR_DISTR_SET_DOMAIN;
+  gen->distr->set &= ~(UNUR_DISTR_SET_STDDOMAIN | UNUR_DISTR_SET_MASK_DERIVED );
+  gen->distr->set |= UNUR_DISTR_SET_DOMAIN;
 
 #ifdef UNUR_ENABLE_LOGGING
   /* write info into log file */
@@ -664,7 +664,7 @@ unur_ssr_upd_pdfarea( struct unur_gen *gen )
   CHECK_NULL(gen,0);
   _unur_check_gen_object( gen,SSR );
 
-  return unur_distr_cont_upd_pdfarea( &(gen->distr) );
+  return unur_distr_cont_upd_pdfarea( gen->distr );
 } /* end of unur_ssr_upd_pdfarea() */
 
 /*****************************************************************************/
@@ -852,23 +852,23 @@ _unur_ssr_create( struct unur_par *par )
   COOKIE_SET(gen,CK_SSR_GEN);
 
   /* copy distribution object into generator object */
-  _unur_distr_cont_copy( &(gen->distr), par->distr );
+  gen->distr = _unur_distr_cont_clone( par->distr );
 
   /* check for required data: mode */
-  if (!(gen->distr.set & UNUR_DISTR_SET_MODE)) {
+  if (!(gen->distr->set & UNUR_DISTR_SET_MODE)) {
     _unur_warning(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"mode: try finding it (numerically)"); 
-    if (!unur_distr_cont_upd_mode(&(gen->distr))) {
+    if (!unur_distr_cont_upd_mode( gen->distr )) {
       _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"mode"); 
-      free(gen);
+      _unur_distr_free(gen->distr); free(gen);
       return NULL; 
     }
   }
 
   /* check for required data: area */
-  if (!(gen->distr.set & UNUR_DISTR_SET_PDFAREA))
-    if (!unur_distr_cont_upd_pdfarea(&(gen->distr))) {
+  if (!(gen->distr->set & UNUR_DISTR_SET_PDFAREA))
+    if (!unur_distr_cont_upd_pdfarea( gen->distr )) {
       _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"area below PDF");
-      free(gen);
+      _unur_distr_free(gen->distr); free(gen);
       return NULL; 
     }
 
@@ -979,7 +979,7 @@ _unur_ssr_clone( const struct unur_gen *gen )
   clone->genid = _unur_set_genid(GENTYPE);
 
   /* copy distribution object into generator object */
-  _unur_distr_cont_copy( &(clone->distr), &(gen->distr) );
+  clone->distr = _unur_distr_cont_clone( gen->distr );
 
   /* auxiliary generator */
   if (gen->gen_aux) clone->gen_aux = unur_gen_clone( gen->gen_aux );
@@ -1152,7 +1152,7 @@ _unur_ssr_free( struct unur_gen *gen )
   SAMPLE = NULL;   /* make sure to show up a programming error */
 
   /* free memory */
-  _unur_distr_cont_clear(gen);
+  _unur_distr_free(gen->distr);
   _unur_free_genid(gen);
 
   COOKIE_CLEAR(gen);
@@ -1198,7 +1198,7 @@ _unur_ssr_debug_init( const struct unur_gen *gen, int is_reinit )
     fprintf(log,"%s: reinit!\n",gen->genid);
   fprintf(log,"%s:\n",gen->genid);
 
-  _unur_distr_cont_debug( &(gen->distr), gen->genid );
+  _unur_distr_cont_debug( gen->distr, gen->genid );
 
   fprintf(log,"%s: sampling routine = _unur_ssr_sample",gen->genid);
   if (gen->variant & SSR_VARFLAG_VERIFY)

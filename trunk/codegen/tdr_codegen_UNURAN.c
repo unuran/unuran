@@ -83,7 +83,7 @@ _unur_acg_UNURAN_tdr_ps( FILE *out,
   /* make section header for code file */
   fprintf(out,"\n");
   _unur_acg_C_print_section_rule(out);
-  _unur_acg_C_print_section_line(out,"Sampling from %.35s distribution.",gen->distr.name);
+  _unur_acg_C_print_section_line(out,"Sampling from %.35s distribution.",gen->distr->name);
   _unur_acg_C_print_section_line(out,"Method: TDR - PS (Transformed Density Rejection / prop. squeeze)");
   switch( gen->variant & TDR_VARMASK_T ) {
   case TDR_VAR_T_LOG:
@@ -113,20 +113,20 @@ _unur_acg_UNURAN_tdr_ps( FILE *out,
   fprintf(out,"\tif (gen == NULL) {\n\n"); 
 
   /* make distribution object */
-  if (!_unur_acg_UNURAN_PDFbody(out,&(gen->distr)))
+  if (!_unur_acg_UNURAN_PDFbody(out,gen->distr))
     return 0;
 
   /* set domain (if changed) */
-  if( !(gen->distr.set & UNUR_DISTR_SET_STDDOMAIN) ) {
+  if( !(gen->distr->set & UNUR_DISTR_SET_STDDOMAIN) ) {
     fprintf(out,"\t\tunur_distr_cont_set_domain(distr, ");
-    if (gen->distr.data.cont.domain[0] <= -UNUR_INFINITY) 
+    if (gen->distr->data.cont.domain[0] <= -UNUR_INFINITY) 
       fprintf(out,"-UNUR_INFINITY, ");
     else
-      fprintf(out,"%.20e, ", gen->distr.data.cont.domain[0] );
-    if (gen->distr.data.cont.domain[1] >= UNUR_INFINITY) 
+      fprintf(out,"%.20e, ", gen->distr->data.cont.domain[0] );
+    if (gen->distr->data.cont.domain[1] >= UNUR_INFINITY) 
       fprintf(out,"UNUR_INFINITY );\n");
     else
-      fprintf(out,"%.20e );\n", gen->distr.data.cont.domain[1] );
+      fprintf(out,"%.20e );\n", gen->distr->data.cont.domain[1] );
   }
   fprintf(out,"\n");
 

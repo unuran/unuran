@@ -78,23 +78,16 @@
 /*---------------------------------------------------------------------------*/
 /* copy distribution objects                                                 */
 
-int _unur_distr_cemp_copy( struct unur_distr *to, const struct unur_distr *from );
-int _unur_distr_cont_copy( struct unur_distr *to, const struct unur_distr *from );
-int _unur_distr_cvec_copy( struct unur_distr *to, const struct unur_distr *from );
-int _unur_distr_cvemp_copy( struct unur_distr *to, const struct unur_distr *from );
-int _unur_distr_discr_copy( struct unur_distr *to, const struct unur_distr *from );
+struct unur_distr *_unur_distr_cemp_clone ( const struct unur_distr *distr );
+struct unur_distr *_unur_distr_cont_clone ( const struct unur_distr *distr );
+struct unur_distr *_unur_distr_cvec_clone ( const struct unur_distr *distr );
+struct unur_distr *_unur_distr_cvemp_clone( const struct unur_distr *distr );
+struct unur_distr *_unur_distr_discr_clone( const struct unur_distr *distr );
 /* copy distribution object 'from' into distribution object 'to'.            */
 
 /*---------------------------------------------------------------------------*/
 /* destroy distribution object                                               */
 #define _unur_distr_free(distr)    do {if (distr) (distr)->destroy(distr);} while(0)
-
-void _unur_distr_cemp_clear( struct unur_gen *generator );
-void _unur_distr_cont_clear( struct unur_gen *generator );
-void _unur_distr_cvec_clear( struct unur_gen *generator );
-void _unur_distr_cvemp_clear( struct unur_gen *generator );
-void _unur_distr_discr_clear( struct unur_gen *generator );
-/* frees all memory blocks in distribution object inside generator object.   */
 
 /*---------------------------------------------------------------------------*/
 /* debuging routines for distributions                                       */

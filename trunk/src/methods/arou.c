@@ -265,15 +265,15 @@ static void _unur_arou_debug_printratio( double v, double u, char *string );
 
 #define PAR       par->data.arou        /* data for parameter object         */
 #define GEN       gen->data.arou        /* data for generator object         */
-#define DISTR     gen->distr.data.cont  /* data for distribution in generator object */
+#define DISTR     gen->distr->data.cont /* data for distribution in generator object */
 
 #define BD_LEFT   domain[0]             /* left boundary of domain of distribution */
 #define BD_RIGHT  domain[1]             /* right boundary of domain of distribution */
 
 #define SAMPLE    gen->sample.cont      /* pointer to sampling routine       */     
 
-#define PDF(x)    _unur_cont_PDF((x),&(gen->distr))  /* call to PDF          */
-#define dPDF(x)   _unur_cont_dPDF((x),&(gen->distr)) /* call to derivative of PDF */
+#define PDF(x)    _unur_cont_PDF((x),(gen->distr))  /* call to PDF           */
+#define dPDF(x)   _unur_cont_dPDF((x),(gen->distr)) /* call to derivative of PDF */
 
 /*---------------------------------------------------------------------------*/
 
@@ -872,7 +872,7 @@ _unur_arou_create( struct unur_par *par )
   COOKIE_SET(gen,CK_AROU_GEN);
 
   /* copy distribution object into generator object */
-  _unur_distr_cont_copy( &(gen->distr), par->distr );
+  gen->distr = _unur_distr_cont_clone( par->distr );
 
   /* set generator identifier */
   gen->genid = _unur_set_genid(GENTYPE);
@@ -957,7 +957,7 @@ _unur_arou_clone( const struct unur_gen *gen )
   clone->genid = _unur_set_genid(GENTYPE);
 
   /* copy distribution object into generator object */
-  _unur_distr_cont_copy( &(clone->distr), &(gen->distr) );
+  clone->distr = _unur_distr_cont_clone( gen->distr );
 
   /* auxiliary generator */
   if (gen->gen_aux) clone->gen_aux = unur_gen_clone( gen->gen_aux );
@@ -1261,7 +1261,7 @@ _unur_arou_free( struct unur_gen *gen )
   }
 
   /* free other memory not stored in list */
-  _unur_distr_cont_clear(gen);
+  _unur_distr_free( gen->distr );
   _unur_free_genid(gen);
   if (GEN.guide) free(GEN.guide);
 
@@ -2116,7 +2116,7 @@ _unur_arou_debug_init( const struct unur_par *par, const struct unur_gen *gen )
   fprintf(log,"%s: method  = ratio-of-uniforms method with enveloping polygon\n",gen->genid);
   fprintf(log,"%s:\n",gen->genid);
 
-  _unur_distr_cont_debug( &(gen->distr), gen->genid );
+  _unur_distr_cont_debug( gen->distr, gen->genid );
 
   fprintf(log,"%s: sampling routine = _unur_arou_sample",gen->genid);
   if (par->variant & AROU_VARFLAG_VERIFY)

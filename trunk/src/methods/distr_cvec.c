@@ -144,45 +144,51 @@ unur_distr_cvec_new( int dim )
 
 /*---------------------------------------------------------------------------*/
 
-int
-_unur_distr_cvec_copy( struct unur_distr *to, const struct unur_distr *from )
+struct unur_distr *
+_unur_distr_cvec_clone( const struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
-     /* copy distribution object 'from' into distribution object 'to'.       */
+     /* copy (clone) distribution object                                     */
      /*                                                                      */
      /* parameters:                                                          */
-     /*   to   ... pointer to target distribution object                     */
-     /*   from ... pointer to source distribution object                     */
+     /*   distr ... pointer to source distribution object                    */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   pointer to clone of distribution object                            */
      /*----------------------------------------------------------------------*/
 {
-#define FROM from->data.cont
-#define TO   to->data.cont
+#define CLONE clone->data.cvec
 
+  struct unur_distr *clone;
   int len;
 
   /* check arguments */
-  _unur_check_NULL( NULL,from,0 );
-  _unur_check_distr_object( from, CVEC, 0 );
+  _unur_check_NULL( NULL, distr, NULL );
+  _unur_check_distr_object( distr, CVEC, NULL );
 
-  /* copy distribution object into generator object */
-  memcpy( to, from, sizeof( struct unur_distr ) );
+  /* allocate memory */
+  clone = _unur_malloc( sizeof(struct unur_distr) );
+  
+  /* copy distribution object into clone */
+  memcpy( clone, distr, sizeof( struct unur_distr ) );
+
+  /* copy data about sample into generator object (when there is one) */
+/*    if (DISTR.sample) { */
+/*      CLONE.sample = _unur_malloc( DISTR.n_sample * sizeof(double) ); */
+/*      memcpy( CLONE.sample, DISTR.sample, DISTR.n_sample * sizeof(double) ); */
+/*    } */
 
   /* copy user name for distribution */
-  if (from->name_str) {
-    len = strlen(from->name_str) + 1;
-    to->name_str = _unur_malloc(len);
-    memcpy( to->name_str, from->name_str, len );
-    to->name = to->name_str;
+  if (distr->name_str) {
+    len = strlen(distr->name_str) + 1;
+    clone->name_str = _unur_malloc(len);
+    memcpy( clone->name_str, distr->name_str, len );
+    clone->name = clone->name_str;
   }
 
-  return 1;
+  return clone;
 
-#undef FROM
-#undef TO
-} /* end of _unur_distr_cvec_copy() */
+#undef CLONE
+} /* end of _unur_distr_cvec_clone() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -220,28 +226,6 @@ _unur_distr_cvec_free( struct unur_distr *distr )
   free( distr );
 
 } /* end of unur_distr_cvec_free() */
-
-/*---------------------------------------------------------------------------*/
-
-void
-_unur_distr_cvec_clear( struct unur_gen *gen )
-     /*----------------------------------------------------------------------*/
-     /* frees all memory blocks in distribution object inside generator      */
-     /* object.                                                              */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   gen ... pointer to generator object                                */
-     /*----------------------------------------------------------------------*/
-{
-  struct unur_distr *distr = &(gen->distr);
-
-  /* check arguments */
-  COOKIE_CHECK(distr,CK_DISTR_CVEC,/*void*/);
-
-  /* user name for distribution */
-  if (distr->name_str) free(distr->name_str);
-
-} /* end of unur_distr_cvec_clear() */
 
 /*---------------------------------------------------------------------------*/
 

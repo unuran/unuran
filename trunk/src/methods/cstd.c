@@ -160,11 +160,11 @@ static void _unur_cstd_debug_chg_truncated( struct unur_gen *gen );
 
 #define PAR       par->data.cstd        /* data for parameter object         */
 #define GEN       gen->data.cstd        /* data for generator object         */
-#define DISTR     gen->distr.data.cont  /* data for distribution in generator object */
+#define DISTR     gen->distr->data.cont /* data for distribution in generator object */
 
 #define SAMPLE    gen->sample.cont      /* pointer to sampling routine       */
 
-#define CDF(x)    _unur_cont_CDF((x),&(gen->distr))   /* call to CDF         */
+#define CDF(x)    _unur_cont_CDF((x),(gen->distr))    /* call to CDF         */
 
 /*---------------------------------------------------------------------------*/
 
@@ -301,7 +301,7 @@ unur_cstd_chg_pdfparams( struct unur_gen *gen, double *params, int n_params )
   if (n_params>0) CHECK_NULL(params,0);
 
   /* set new parameters in distribution object */
-  if (!unur_distr_cont_set_pdfparams(&(gen->distr),params,n_params))
+  if (!unur_distr_cont_set_pdfparams(gen->distr, params,n_params))
     return 0;
 
   /* run special init routine for generator */
@@ -312,7 +312,7 @@ unur_cstd_chg_pdfparams( struct unur_gen *gen, double *params, int n_params )
   }
 
   if ( GEN.is_inversion )
-    if (!(gen->distr.set & UNUR_DISTR_SET_STDDOMAIN)) {
+    if (!(gen->distr->set & UNUR_DISTR_SET_STDDOMAIN)) {
       /* truncated domain */
       if (DISTR.cdf == NULL) {
 	_unur_error(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,""); return 0; }
@@ -413,11 +413,11 @@ unur_cstd_chg_truncated( struct unur_gen *gen, double left, double right )
   GEN.umax = Umax;
 
   /* changelog */
-  gen->distr.set |= UNUR_DISTR_SET_TRUNCATED;
+  gen->distr->set |= UNUR_DISTR_SET_TRUNCATED;
 
   /* indicate that we have a truncated distribution.
      (do not have the standard domain any more) */
-  gen->distr.set &= ~UNUR_DISTR_SET_STDDOMAIN;
+  gen->distr->set &= ~UNUR_DISTR_SET_STDDOMAIN;
 
 #ifdef UNUR_ENABLE_LOGGING
   /* write info into log file */
@@ -481,9 +481,9 @@ _unur_cstd_init( struct unur_par *par )
   GEN.is_inversion = PAR.is_inversion;
   
   /* domain valid for special generator ?? */
-  if (!(gen->distr.set & UNUR_DISTR_SET_STDDOMAIN)) {
+  if (!(gen->distr->set & UNUR_DISTR_SET_STDDOMAIN)) {
     /* domain has been modified */
-    gen->distr.set &= UNUR_DISTR_SET_TRUNCATED;
+    gen->distr->set &= UNUR_DISTR_SET_TRUNCATED;
     DISTR.trunc[0] = DISTR.domain[0];
     DISTR.trunc[1] = DISTR.domain[1];
 
@@ -546,7 +546,7 @@ _unur_cstd_create( struct unur_par *par )
   COOKIE_SET(gen,CK_CSTD_GEN);
 
   /* copy distribution object into generator object */
-  _unur_distr_cont_copy( &(gen->distr), par->distr );
+  gen->distr = _unur_distr_cont_clone( par->distr );
 
   /* set generator identifier */
   gen->genid = _unur_set_genid(GENTYPE);
@@ -615,7 +615,7 @@ _unur_cstd_clone( const struct unur_gen *gen )
   clone->genid = _unur_set_genid(GENTYPE);
 
   /* copy distribution object into generator object */
-  _unur_distr_cont_copy( &(clone->distr), &(gen->distr) );
+  clone->distr = _unur_distr_cont_clone( gen->distr );
 
   /* auxiliary generator */
   if (gen->gen_aux) clone->gen_aux = unur_gen_clone( gen->gen_aux );
@@ -669,7 +669,7 @@ _unur_cstd_free( struct unur_gen *gen )
   if (GEN.gen_param)  free(GEN.gen_param);
   if (gen->gen_aux)   _unur_free(gen->gen_aux);
 
-  _unur_distr_cont_clear(gen);
+  _unur_distr_free( gen->distr );
   _unur_free_genid(gen);
 
   COOKIE_CLEAR(gen);
@@ -714,7 +714,7 @@ _unur_cstd_debug_init( struct unur_par *par, struct unur_gen *gen )
   fprintf(log,"%s:\n",gen->genid);
 
   /* distribution */
-  _unur_distr_cont_debug( &(gen->distr), gen->genid );
+  _unur_distr_cont_debug( gen->distr, gen->genid );
 
   /* sampling routine */
   fprintf(log,"%s: sampling routine = ",gen->genid);
@@ -755,7 +755,7 @@ _unur_cstd_debug_chg_pdfparams( struct unur_gen *gen )
   fprintf(log,"%s: parameters of distribution changed:\n",gen->genid);
   for( i=0; i<DISTR.n_params; i++ )
       fprintf(log,"%s:\tparam[%d] = %g\n",gen->genid,i,DISTR.params[i]);
-  if (gen->distr.set & UNUR_DISTR_SET_TRUNCATED)
+  if (gen->distr->set & UNUR_DISTR_SET_TRUNCATED)
     fprintf(log,"%s:\tU in (%g,%g)\n",gen->genid,GEN.umin,GEN.umax);
 
 } /* end of _unur_cstd_debug_chg_pdfparams() */

@@ -225,6 +225,9 @@ int main()
 	fclose(UNURANLOG);
 	fclose(TESTLOG);
 
+	/* free memory */
+        compare_free_memory();
+
 	/* exit */
 	exit( (test_ok) ? 0 : -1 );
 

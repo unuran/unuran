@@ -207,14 +207,14 @@ static void _unur_tabl_debug_intervals( const struct unur_gen *gen, int print_ar
 
 #define PAR       par->data.tabl        /* data for parameter object         */
 #define GEN       gen->data.tabl        /* data for generator object         */
-#define DISTR     gen->distr.data.cont  /* data for distribution in generator object */
+#define DISTR     gen->distr->data.cont /* data for distribution in generator object */
 
 #define BD_LEFT   domain[0]             /* left boundary of domain of distribution */
 #define BD_RIGHT  domain[1]             /* right boundary of domain of distribution */
 
 #define SAMPLE    gen->sample.cont      /* pointer to sampling routine       */     
 
-#define PDF(x)    _unur_cont_PDF((x),&(gen->distr))   /* call to PDF         */
+#define PDF(x)    _unur_cont_PDF((x),(gen->distr))    /* call to PDF         */
 
 /*---------------------------------------------------------------------------*/
 
@@ -925,11 +925,11 @@ _unur_tabl_create( struct unur_par *par )
   COOKIE_SET(gen,CK_TABL_GEN);
 
   /* copy distribution object into generator object */
-  _unur_distr_cont_copy( &(gen->distr), par->distr );
+  gen->distr = _unur_distr_cont_clone( par->distr );
 
   /* check for required data: area */
-  if (!(gen->distr.set & UNUR_DISTR_SET_PDFAREA))
-    if (!unur_distr_cont_upd_pdfarea(&(gen->distr)))
+  if (!(gen->distr->set & UNUR_DISTR_SET_PDFAREA))
+    if (!unur_distr_cont_upd_pdfarea( gen->distr ))
       _unur_warning(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"area below PDF, use default instead");
 
   /* set generator identifier */
@@ -1049,7 +1049,7 @@ _unur_tabl_clone( const struct unur_gen *gen )
   clone->genid = _unur_set_genid(GENTYPE);
 
   /* copy distribution object into generator object */
-  _unur_distr_cont_copy( &(clone->distr), &(gen->distr) );
+  clone->distr = _unur_distr_cont_clone( gen->distr );
 
   /* auxiliary generator */
   if (gen->gen_aux) clone->gen_aux = unur_gen_clone( gen->gen_aux );
@@ -1301,7 +1301,7 @@ _unur_tabl_free( struct unur_gen *gen )
   if (GEN.guide)  free(GEN.guide);
 
   /* free other memory */
-  _unur_distr_cont_clear(gen);
+  _unur_distr_free(gen->distr);
   _unur_free_genid(gen);
 
   COOKIE_CLEAR(gen);
@@ -1458,8 +1458,8 @@ _unur_tabl_get_starting_intervals_from_slopes( struct unur_par *par, struct unur
   DISTR.trunc[1] = DISTR.BD_RIGHT = GEN.bright;
 
   /* reset area below distribution */
-  gen->distr.set &= ~UNUR_DISTR_SET_PDFAREA;
-  unur_distr_cont_upd_pdfarea(&(gen->distr));
+  gen->distr->set &= ~UNUR_DISTR_SET_PDFAREA;
+  unur_distr_cont_upd_pdfarea( gen->distr );
 
   /* o.k. */
   return 1;
@@ -1980,7 +1980,7 @@ _unur_tabl_debug_init( const struct unur_par *par, const struct unur_gen *gen )
   fprintf(log,"%s: method  = rejection from piecewise constant hat\n",gen->genid);
   empty_line();
 
-  _unur_distr_cont_debug( &(gen->distr), gen->genid );
+  _unur_distr_cont_debug( gen->distr, gen->genid );
 
   fprintf(log,"%s: sampling routine = _unur_tabl_sample",gen->genid);
   if (par->variant & TABL_VARFLAG_VERIFY)

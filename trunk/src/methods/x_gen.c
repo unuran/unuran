@@ -115,7 +115,7 @@ unur_get_dimension( const struct unur_gen *gen )
   /* check arguments */
   CHECK_NULL(gen,0);
 
-  return (gen->distr.dim);
+  return (gen->distr->dim);
 } /* end of unur_get_dimension() */
 
 /*---------------------------------------------------------------------------*/
@@ -161,7 +161,7 @@ unur_get_distr( const struct unur_gen *gen )
   /* check arguments */
   CHECK_NULL(gen,0);
 
-  return &(gen->distr);
+  return gen->distr;
 } /* end of unur_get_distr() */
 
 /*---------------------------------------------------------------------------*/

@@ -212,12 +212,12 @@ static void _unur_ninv_debug_chg_truncated( const struct unur_gen *gen);
 
 #define PAR       par->data.ninv        /* data for parameter object         */
 #define GEN       gen->data.ninv        /* data for generator object         */
-#define DISTR     gen->distr.data.cont  /* data for distribution in generator object */
+#define DISTR     gen->distr->data.cont /* data for distribution in generator object */
 
 #define SAMPLE    gen->sample.cont      /* pointer to sampling routine       */
 
-#define PDF(x)    _unur_cont_PDF((x),&(gen->distr))   /* call to PDF         */
-#define CDF(x)    _unur_cont_CDF((x),&(gen->distr))   /* call to CDF         */
+#define PDF(x)    _unur_cont_PDF((x),(gen->distr))    /* call to PDF         */
+#define CDF(x)    _unur_cont_CDF((x),(gen->distr))    /* call to CDF         */
 
 /*****************************************************************************/
 /**  User Interface                                                         **/
@@ -728,7 +728,7 @@ unur_ninv_chg_truncated( struct unur_gen *gen, double left, double right )
   GEN.Umax = Umax;
 
   /* changelog */
-  gen->distr.set |= UNUR_DISTR_SET_TRUNCATED;
+  gen->distr->set |= UNUR_DISTR_SET_TRUNCATED;
 
 #ifdef UNUR_ENABLE_LOGGING
   /* write info into log file */
@@ -766,7 +766,7 @@ unur_ninv_chg_pdfparams( struct unur_gen *gen, double *params, int n_params )
   if (n_params>0) CHECK_NULL(params, 0);
   
   /* set new parameters in distribution object */
-  if (!unur_distr_cont_set_pdfparams(&(gen->distr),params,n_params))
+  if (!unur_distr_cont_set_pdfparams(gen->distr,params,n_params))
     return 0;
 
   /* set boundary of truncated domain */
@@ -784,7 +784,7 @@ unur_ninv_chg_pdfparams( struct unur_gen *gen, double *params, int n_params )
 
   /* compute normalization constant for standard distribution */
   if (DISTR.upd_area != NULL)
-    if (!((DISTR.upd_area)(&(gen->distr)))) {
+    if (!((DISTR.upd_area)( gen->distr ))) {
       _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"cannot compute normalization constant");
       return 0;
     }
@@ -799,7 +799,7 @@ unur_ninv_chg_pdfparams( struct unur_gen *gen, double *params, int n_params )
 #ifdef UNUR_ENABLE_LOGGING
   /* write info into log file */
   if (gen->debug & NINV_DEBUG_CHG) {
-    _unur_distr_cont_debug( &(gen->distr), gen->genid );
+    _unur_distr_cont_debug( gen->distr, gen->genid );
     if (ok) _unur_ninv_debug_start( gen );
   }
 #endif
@@ -914,7 +914,7 @@ _unur_ninv_create( struct unur_par *par )
   COOKIE_SET(gen,CK_NINV_GEN);
 
   /* copy distribution object into generator object */
-  _unur_distr_cont_copy( &(gen->distr), par->distr );
+  gen->distr = _unur_distr_cont_clone( par->distr );
 
   /* set generator identifier */
   gen->genid = _unur_set_genid(GENTYPE);
@@ -1161,7 +1161,7 @@ _unur_ninv_clone( const struct unur_gen *gen )
   clone->genid = _unur_set_genid(GENTYPE);
 
   /* copy distribution object into generator object */
-  _unur_distr_cont_copy( &(clone->distr), &(gen->distr) );
+  clone->distr = _unur_distr_cont_clone( gen->distr );
 
   /* auxiliary generator */
   if (gen->gen_aux) clone->gen_aux = unur_gen_clone( gen->gen_aux );
@@ -1661,7 +1661,7 @@ _unur_ninv_free( struct unur_gen *gen )
   if (GEN.f_table) free(GEN.f_table);
 
   /* free memory */
-  _unur_distr_cont_clear(gen);
+  _unur_distr_free(gen->distr);
   _unur_free_genid(gen);
 
   COOKIE_CLEAR(gen);
@@ -1703,7 +1703,7 @@ _unur_ninv_debug_init( const struct unur_gen *gen )
   fprintf(log,"%s: method  = ninv (numerical inversion of CDF)\n",gen->genid);
   fprintf(log,"%s:\n",gen->genid);
 
-  _unur_distr_cont_debug( &(gen->distr), gen->genid );
+  _unur_distr_cont_debug( gen->distr, gen->genid );
 
   fprintf(log,"%s: sampling routine = _unur_ninv_sample",gen->genid);
   switch (gen->variant) {

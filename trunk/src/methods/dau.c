@@ -178,7 +178,7 @@ static void _unur_dau_debug_table( struct unur_gen *gen );
 
 #define PAR       par->data.dau         /* data for parameter object         */
 #define GEN       gen->data.dau         /* data for generator object         */
-#define DISTR     gen->distr.data.discr  /* data for distribution in generator object */
+#define DISTR     gen->distr->data.discr /* data for distribution in generator object */
 
 #define SAMPLE    gen->sample.discr     /* pointer to sampling routine       */
 
@@ -467,16 +467,16 @@ _unur_dau_create( struct unur_par *par)
   COOKIE_SET(gen,CK_DAU_GEN);
 
   /* copy distribution object into generator object */
-  _unur_distr_discr_copy( &(gen->distr), par->distr );
+  gen->distr = _unur_distr_discr_clone( par->distr );
 
   /* we need a PV */
   if (DISTR.pv == NULL) {
     /* try to compute PV */
-    if (unur_distr_discr_make_pv(&(gen->distr)) <= 0) {
+    if (unur_distr_discr_make_pv( gen->distr ) <= 0) {
       /* not successful */
       _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"PV"); 
       if (DISTR.pv) free(DISTR.pv);
-      free(gen);
+      _unur_distr_free(gen->distr); free(gen);
       return NULL;
     }
   }
@@ -549,7 +549,7 @@ _unur_dau_clone( const struct unur_gen *gen )
   clone->genid = _unur_set_genid(GENTYPE);
 
   /* copy distribution object into generator object */
-  _unur_distr_discr_copy( &(clone->distr), &(gen->distr) );
+  clone->distr = _unur_distr_discr_clone( gen->distr );
 
   /* auxiliary generator */
   if (gen->gen_aux) clone->gen_aux = unur_gen_clone( gen->gen_aux );
@@ -632,7 +632,7 @@ _unur_dau_free( struct unur_gen *gen )
   if (GEN.qx) free(GEN.qx);
 
   /* free memory */
-  _unur_distr_discr_clear(gen);
+  _unur_distr_free(gen->distr);
   _unur_free_genid(gen);
 
   COOKIE_CLEAR(gen);
@@ -676,7 +676,7 @@ _unur_dau_debug_init( struct unur_par *par, struct unur_gen *gen )
   fprintf(log,"%s: method  = alias and alias-urn method\n",gen->genid);
   fprintf(log,"%s:\n",gen->genid);
 
-  _unur_distr_discr_debug( &(gen->distr),gen->genid,(gen->debug & DAU_DEBUG_PRINTVECTOR));
+  _unur_distr_discr_debug( gen->distr,gen->genid,(gen->debug & DAU_DEBUG_PRINTVECTOR));
 
   fprintf(log,"%s: sampling routine = _unur_dau_sample()\n",gen->genid);
   fprintf(log,"%s:\n",gen->genid);

@@ -87,6 +87,9 @@ int compare_int_sequence_par( FILE *LOG, int line, UNUR_PAR *par, int sample_siz
 int compare_int_sequence_gen_start( FILE *LOG, int line, UNUR_GEN *gen, int sample_size );
 int compare_int_sequence_gen( FILE *LOG, int line, UNUR_GEN *gen, int sample_size );
 
+/* free memory used for comparing sequences */
+void compare_free_memory( void );
+
 /* print name of distribution */
 void print_distr_name( FILE *LOG, const UNUR_DISTR *distr, const char *genid );
 

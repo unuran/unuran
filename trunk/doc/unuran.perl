@@ -3,7 +3,8 @@
 # $ON = 1, wenn der "Dokumentations-Bereich" gefunden ist
 $ON = 0;
 
-@TYPES = ("void", "int", "double", "struct", "float", "long", "char", "short", "unsigned", "signed");
+# struct herausgenommen
+@TYPES = ("void", "int", "double", "float", "long", "char", "short", "unsigned", "signed");
 
 
 # file fuer  output:
@@ -18,11 +19,19 @@ while($_ = <>)
     if ($ON == 1 && $_ =~/\/\*-------------------/){
 	$ON = 0;}
 # Suche Function und DEfinitionszeilen
+
+   if ( $ON == 1 && $_ =~/^\s*struct\s*unur.*(unur_[a-zA-z_]*)\(/ ){
+       print OUTFILE $1, "\n";
+       print OUTFILE $_, "\n";
+   }
+
+
   foreach $type (@TYPES){
- 
-      if ( $ON == 1 && $_=~/^($type)/){    # suche Funktionszeile
-        
-       print OUTFILE;
+     # suche Funktionszeile
+      
+      if ( $ON == 1 && $_ =~/^\s*($type)\s*(unur_[a-zA-Z_]*)/){
+       print OUTFILE $2 , "\n";
+       print OUTFILE $_ , "\n";
       }
 
   }

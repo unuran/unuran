@@ -89,9 +89,7 @@ double v_power  (double l, double r) { CHECK_INFS(l,r); return pow(l,r); }
 
 double v_mod    (double l, double r) { CHECK_INFS(l,r); return (double)((int)l % (int)r); }
 double v_exp    (double l, double r) { CHECK_INF(r);    return exp(r); }
-double v_ln     (double l, double r) { CHECK_INF(r);    if(r<=0.) return INFINITY; return log(r); }
-double v_log    (double l, double r) { CHECK_INFS(l,r); if(r<=0.||l<=0.||l==1.) return INFINITY;
-                                                        return log(r)/log(l); }
+double v_log    (double l, double r) { CHECK_INF(r);    if(r<=0.) return INFINITY; return log(r); }
 double v_sin    (double l, double r) { CHECK_INF(r);    return sin(r); }
 double v_cos    (double l, double r) { CHECK_INF(r);    return cos(r); }
 double v_tan    (double l, double r) { CHECK_INF(r);    return tan(r); }

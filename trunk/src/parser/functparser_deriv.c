@@ -259,18 +259,18 @@ d_power (const struct ftreenode *node, int *error)
      /*                             X    (Y-1)                               */
      /*                                                                      */
      /* case: l constant                                                     */
-     /* (l^r)' = r' * l^r * ln(l)                                            */
+     /* (l^r)' = r' * l^r * log(l)                                           */
      /*                                                                      */
      /*        '^'                '*'                                        */
      /*       /   \     ==>      /   \                                       */
      /*      X     Y            Y'   _'*'_                                   */
      /*     / \                     /     \                                  */
-     /*  NULL  NULL              "ln"     '^'                                */
+     /*  NULL  NULL              "log"    '^'                                */
      /*                          /  \    /   \                               */
      /*                       NULL   X  X     Y                              */
      /*                                                                      */
      /* otherwise:                                                           */
-     /* (l^r)' = l^(r-1) * ( r * l' + l * ln(l) * r' )                       */
+     /* (l^r)' = l^(r-1) * ( r * l' + l * log(l) * r' )                      */
      /*                                                                      */
      /*    '^'                  ______'*'_____                               */
      /*   /   \       ==>      /              \                              */
@@ -280,7 +280,7 @@ d_power (const struct ftreenode *node, int *error)
      /*                        /   \    /   \     /   \                      */
      /*                       Y     1  Y     X'  X    '*'                    */
      /*                                              /   \                   */
-     /*                                             Y'   "ln"                */
+     /*                                             Y'   "log"               */
      /*                                                 /    \               */
      /*                                             NULL      X              */
      /*                                                                      */
@@ -323,12 +323,12 @@ d_power (const struct ftreenode *node, int *error)
      /*       /   \     ==>      /   \                                       */
      /*      X     Y            Y'   _'*'_                                   */
      /*     / \                     /     \                                  */
-     /*  NULL  NULL              "ln"     '^'                                */
+     /*  NULL  NULL              "log"    '^'                                */
      /*                          /  \    /   \                               */
      /*                       NULL   X  X     Y                              */
      /*                                                                      */
-    /* find symbol "ln" */
-    int s_ln = _unur_fstr_find_symbol("ln",_ans_start,_ans_end);
+    /* find symbol "log" */
+    int s_log = _unur_fstr_find_symbol("log",_ans_start,_ans_end);
 
     /* derivative of right branch */
     d_right = (right) ? (*symbol[right->token].dcalc) (right,error)  : NULL;
@@ -336,7 +336,7 @@ d_power (const struct ftreenode *node, int *error)
     left = _unur_fstr_dup_tree(node->left);
     dup_node = _unur_fstr_dup_tree(node);
     /* make right branch */
-    tmp1     = _unur_fstr_create_node("ln",0.,s_ln,NULL,left);
+    tmp1     = _unur_fstr_create_node("log",0.,s_log,NULL,left);
     br_right = _unur_fstr_create_node("*",0.,s_mul,tmp1,dup_node);
     /* subtree */
     return _unur_fstr_create_node("*",0.,s_mul,d_right,br_right);
@@ -351,7 +351,7 @@ d_power (const struct ftreenode *node, int *error)
      /*                        /   \    /   \     /   \                      */
      /*                       Y     1  Y     X'  X    '*'                    */
      /*                                              /   \                   */
-     /*                                             Y'   "ln"                */
+     /*                                             Y'   "log"               */
      /*                                                 /    \               */
      /*                                             NULL      X              */
      /*                                                                      */
@@ -397,12 +397,12 @@ d_exp (const struct ftreenode *node, int *error)
 /*---------------------------------------------------------------------------*/
 
 struct ftreenode *
-d_ln (const struct ftreenode *node, int *error)
-     /* (ln(r))' = r'/r                                                      */
+d_log (const struct ftreenode *node, int *error)
+     /* (log(r))' = r'/r                                                     */
      /*                                                                      */
-     /*     "ln"            '/'                                              */
-     /*     /  \    ==>    /   \                                             */
-     /*  NULL   X         X'    X                                            */
+     /*     "log"            '/'                                             */
+     /*     /   \    ==>    /   \                                            */
+     /*  NULL    X         X'    X                                           */
 {
   struct ftreenode *right;
   struct ftreenode *d_right;
@@ -418,58 +418,6 @@ d_ln (const struct ftreenode *node, int *error)
 
   /* subtree */
   return _unur_fstr_create_node("/",0.,s_div,d_right,right);
-} /* end of d_ln() */
-
-/*---------------------------------------------------------------------------*/
-
-struct ftreenode *
-d_log (const struct ftreenode *node, int *error)
-     /* case: l = const                                                      */
-     /* (log(l,r))' = r' / (r * ln(l))                                       */
-     /*                                                                      */
-     /*     "log"            '/'                                             */
-     /*     /   \    ==>    /   \                                            */
-     /*    X     Y         Y'   '*'                                          */
-     /*                        /   \                                         */
-     /*                       Y    "ln"                                      */
-     /*                            /  \                                      */
-     /*                         NULL   X                                     */
-     /*                                                                      */
-     /* otherwise:                                                           */
-     /*  (TODO)                                                              */
-{
-  struct ftreenode *left, *right;
-  struct ftreenode *d_right;
-  struct ftreenode *br_right, *sub_right;
-
-  /* check arguments */
-  CHECK_NULL(node,NULL);  COOKIE_CHECK(node,CK_FSTR_TNODE,NULL);
-
-  /* left and right node */
-  left = node->left;
-  right = node->right;
-
-  if (left && (left->type == S_UCONST || left->type == S_SCONST) ) {
-    /* find symbol "ln" */
-    int s_ln = _unur_fstr_find_symbol("ln",_ans_start,_ans_end);
-    /* derivative of right branch */
-    d_right = (right) ? (*symbol[right->token].dcalc)(right,error) : NULL;
-    /* make a copies of both branches of node */
-    left  = _unur_fstr_dup_tree(node->left);
-    right = _unur_fstr_dup_tree(node->right);
-    /* right branch of new tree */
-    sub_right = _unur_fstr_create_node("ln",0.,s_ln,NULL,left);
-    br_right = _unur_fstr_create_node("*",0.,s_mul,right,sub_right);
-    /* subtree */
-    return _unur_fstr_create_node("/",0.,s_div,d_right,br_right);
-  }
-
-  else {
-    /** TODO **/
-    _unur_fstr_error_deriv(node);
-    *error = TRUE;
-    return NULL;
-  }
 } /* end of d_log() */
 
 /*---------------------------------------------------------------------------*/

@@ -63,7 +63,6 @@ static double v_mod    (double l, double r);
 static double v_power  (double l, double r);
 static double v_const  (double l, double r);
 static double v_exp    (double l, double r);
-static double v_ln     (double l, double r);
 static double v_log    (double l, double r);
 static double v_sin    (double l, double r); 
 static double v_cos    (double l, double r);
@@ -85,7 +84,6 @@ static struct ftreenode *d_mul   ( const struct ftreenode *node, int *error );
 static struct ftreenode *d_div   ( const struct ftreenode *node, int *error );
 static struct ftreenode *d_power ( const struct ftreenode *node, int *error );
 static struct ftreenode *d_exp   ( const struct ftreenode *node, int *error );
-static struct ftreenode *d_ln    ( const struct ftreenode *node, int *error );
 static struct ftreenode *d_log   ( const struct ftreenode *node, int *error );
 static struct ftreenode *d_sin   ( const struct ftreenode *node, int *error );
 static struct ftreenode *d_cos   ( const struct ftreenode *node, int *error );
@@ -226,8 +224,7 @@ static struct symbols symbol[] = {
   /* system functions */
   {"mod" , S_SFUNCT  , 2, 0.0 , v_mod    , d_const, "%", "xxxx" },
   {"exp" , S_SFUNCT  , 1, 0.0 , v_exp    , d_exp  , "@exp", "xxxx" },
-  {"ln"  , S_SFUNCT  , 1, 0.0 , v_ln     , d_ln   , "@log", "xxxx" },
-  {"log" , S_SFUNCT  , 2, 0.0 , v_log    , d_log  , "xxxx", "xxxx" },
+  {"log" , S_SFUNCT  , 1, 0.0 , v_log    , d_log  , "@log", "xxxx" },
   {"sin" , S_SFUNCT  , 1, 0.0 , v_sin    , d_sin  , "@sin", "xxxx" },
   {"cos" , S_SFUNCT  , 1, 0.0 , v_cos    , d_cos  , "@cos", "xxxx" },
   {"tan" , S_SFUNCT  , 1, 0.0 , v_tan    , d_tan  , "xxxx", "xxxx" },

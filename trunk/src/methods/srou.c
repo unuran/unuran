@@ -1429,15 +1429,51 @@ _unur_gsrou_sample_check( struct unur_gen *gen )
      /*   return 0.                                                          */
      /*----------------------------------------------------------------------*/
 { 
-  /*    double U,V,X,x,fx,fnx,uu; */
-  
+  double U,Ur,V,W,X,x,Z;
+  double fx,rfx,xfx;
+
   /* check arguments */
   CHECK_NULL(gen,0.);  COOKIE_CHECK(gen,CK_SROU_GEN,0.);
 
+  while (1) {
+    W = GEN.log_ab *_unur_call_urng(gen->urng);
+    Z = GEN.vl + _unur_call_urng(gen->urng) * (GEN.vr - GEN.vl);
+    U = (exp(-W)-1.) * GEN.a/GEN.b;
+    V = -Z/(GEN.a + GEN.b*U);
+    U *= GEN.um;
+    Ur = pow(U,GEN.r);
+    X = V/Ur;
+    
+    /* compute x */
+    x = X + DISTR.mode;
+    /* inside domain ? */
+    if ( (x < DISTR.BD_LEFT) || (x > DISTR.BD_RIGHT) )
+      continue;
 
-  return _unur_gsrou_sample( gen );
+    /* evaluate density */
+    fx = PDF(x);
 
-  return 0.;
+    /* the point on the boundary of the region of acceptance
+       in direction X = V/U^r has the coordinates
+       ( X * (fx)^(r/(r+1)), sqrt[r+1](fx) ). */
+    xfx = X * pow(fx,GEN.r/(GEN.r+1));
+    rfx = pow(fx,1./(GEN.r+1));
+
+    /* check hat */
+    if ( ( rfx > (1.+DBL_EPSILON) * GEN.um )   /* avoid roundoff error with FP registers */
+	 || (xfx < (1.+UNUR_EPSILON) * GEN.vl * (-1./(GEN.a+GEN.b*U/GEN.um))) 
+	 || (xfx > (1.+UNUR_EPSILON) * GEN.vr * (-1./(GEN.a+GEN.b*U/GEN.um))) 
+	 || 0)
+      {
+	_unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"PDF(x) > hat(x)");
+/*        printf("pdf = %g, hat = %g, diff = %g\n",(-1./(GEN.a+GEN.b*U/GEN.um)),xfx,xfx-(-1./(GEN.a+GEN.b*U/GEN.um))); */
+      }
+
+    /* accept or reject */
+    if (Ur*U <= fx)
+      return x;
+  }
+
 } /* end of _unur_gsrou_sample_check() */
 
 /*****************************************************************************/

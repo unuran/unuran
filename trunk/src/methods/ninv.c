@@ -698,7 +698,6 @@ unur_ninv_chg_truncated( struct unur_gen *gen, double left, double right )
     }
   }
 
-
   /* copy new boundaries into generator object */
   DISTR.trunc[0] = left;
   DISTR.trunc[1] = right;
@@ -952,13 +951,15 @@ _unur_ninv_compute_start( struct unur_gen *gen )
     /* get arbitrary points */
     GEN.s[0] = max( DISTR.domain[0], -10.);
     GEN.s[1] = min( DISTR.domain[1], GEN.s[0]+20. );
-    
+    GEN.CDFs[0] = CDF(GEN.s[0]);
+    GEN.CDFs[1] = CDF(GEN.s[1]);    
+
     /* left percentile */
     u = GEN.CDFmin + 0.5*(1.-INTERVAL_COVERS)*(GEN.CDFmax-GEN.CDFmin);
     GEN.s[0] = _unur_ninv_regula(gen,u);
-    
+
     /* right percentile */
-    GEN.s[1] = min( DISTR.domain[1], GEN.s[0]+20. );
+    //    GEN.s[1] = min( DISTR.domain[1], GEN.s[0]+20. );
     u = GEN.CDFmin + 0.5*(1.+INTERVAL_COVERS)*(GEN.CDFmax-GEN.CDFmin);
     GEN.s[1] = _unur_ninv_regula(gen,u);
     
@@ -966,17 +967,21 @@ _unur_ninv_compute_start( struct unur_gen *gen )
     GEN.CDFs[0] = CDF(GEN.s[0]);
     GEN.CDFs[1] = CDF(GEN.s[1]);
 
+
     break;    /* case REGULA end */
 
   case NINV_VARFLAG_NEWTON:
 
     /* get arbitrary points */
-    GEN.s[0] = max( DISTR.domain[0], -9.987655 ); 
+    GEN.s[0] = max( DISTR.domain[0], -9.987655 );
     GEN.s[1] = min( DISTR.domain[1], GEN.s[0]+20. );
+ 
+    GEN.CDFs[0] = CDF(GEN.s[0]); 
+    GEN.CDFs[1] = CDF(GEN.s[1]);
 
     /* median */
     u = 0.5 * (GEN.CDFmin + GEN.CDFmax);
-    GEN.s[0] = _unur_ninv_newton(gen, u);
+    GEN.s[0] = _unur_ninv_regula(gen, u); /* reglua more stable */
     GEN.CDFs[0] = CDF(GEN.s[0]);
 
     break;    /* case NEWTON end */
@@ -1123,16 +1128,19 @@ _unur_ninv_regula( struct unur_gen *gen, double u )
   double dx;             /* RF-stepsize                                     */
   int count = 0;         /* counter for  "no sign change"                   */
   int i;                 /* loop variable, index                            */
-    
+  int step_count;        /* counts number of steps finding sign change      */
 
+  /* max number of steps to find sgn chg */
+  const int MAX_STEPS = 40;
+  
   /* check arguments */
-  CHECK_NULL(gen,0.);  COOKIE_CHECK(gen,CK_NINV_GEN,0.);
+  CHECK_NULL(gen, 0.);  COOKIE_CHECK(gen, CK_NINV_GEN, 0.);
   
   /* initialize starting interval */
   if (GEN.table_on) {
 
     /* 0 <= i <= table_size-2  */
-    if ( _unur_FP_same(GEN.CDFmin,GEN.CDFmax) ) {
+    if ( _unur_FP_same(GEN.CDFmin, GEN.CDFmax) ) {
       /* CDF values in table too close, so we use median point since 
 	 there is no difference between CDF values.  */
       i = GEN.table_size/2;
@@ -1164,7 +1172,6 @@ _unur_ninv_regula( struct unur_gen *gen, double u )
   }
 
   else { /* no table    */
-
    x1 =  GEN.s[0];      /* left boudary of interval */
    f1 =  GEN.CDFs[0];
    x2 =  GEN.s[1];      /* right boudary of interval*/   
@@ -1178,6 +1185,17 @@ _unur_ninv_regula( struct unur_gen *gen, double u )
     f2 = CDF(x2); 
   }
 
+  /* in case of truncated domain there might be better starting points */
+  /* ! no problems with INFINITY !  */
+  if ( x1 < DISTR.trunc[0] || x1 >= DISTR.trunc[1] ){
+    x1 = DISTR.trunc[0];
+    f1 = CDF(x1);
+  }
+  if ( x2 > DISTR.trunc[1] || x2 <= DISTR.trunc[0] ){
+    x2 = DISTR.trunc[1];
+    f2 = CDF(x2);
+  }
+
   /* compute function value at interval boundaries */
   f1 -= u;
   f2 -= u;
@@ -1185,6 +1203,7 @@ _unur_ninv_regula( struct unur_gen *gen, double u )
 
   /* search for interval with changing signs */
   step = 1.;     /* interval too small -> make it bigger ( + 2^n * gap ) */ 
+  step_count = 0;
   while ( f1*f2 > 0. ) {
     if ( f1 > 0. ) { /* lower boundary too big */    
       x2  = x1;  
@@ -1200,7 +1219,13 @@ _unur_ninv_regula( struct unur_gen *gen, double u )
     }
 
     /* increase step width */
-    step *= 2.;
+    if (step_count < MAX_STEPS)
+      step *= 2.;
+    else{
+ 	_unur_error(GENTYPE,UNUR_ERR_DISTR_INVALID,
+         "Regula Falsi can't find interval with sign change");
+      return INFINITY;
+    }
   }  /* while end -- interval found */ 
 
 
@@ -1323,6 +1348,10 @@ _unur_ninv_newton( struct unur_gen *gen, double U )
   double damp;        /* damping factor                               */
   double step;        /* helps to escape from flat regions of the cdf */
   int i;              /* counter for for-loop, index                  */
+  int flat_count;     /* counter of steps in flat region              */
+
+  /* maximal number of steps to leave flat region */
+  const int MAX_FLAT_COUNT = 40;
     
   /* check arguments */
   CHECK_NULL(gen,0.);  COOKIE_CHECK(gen,CK_NINV_GEN,0.);
@@ -1330,7 +1359,7 @@ _unur_ninv_newton( struct unur_gen *gen, double U )
   /* initialize starting point */
   if (GEN.table_on) {
 
-#if 0
+#if 1
     /* 0 <= i <= table_size-2  */
     if ( _unur_FP_same(GEN.CDFmin,GEN.CDFmax) ) {
       /* CDF values in table too close, so we use median point since 
@@ -1343,16 +1372,21 @@ _unur_ninv_newton( struct unur_gen *gen, double U )
       else if (i > GEN.table_size - 2) i = GEN.table_size - 2;
     }
 
-    x  = GEN.table[i+1];
-    fx = GEN.f_table[i+1];
+    if (GEN.table[i+1] == INFINITY){
+      x  = GEN.table[i];
+      fx = GEN.f_table[i];
+    }
+    else{
+      x  = GEN.table[i+1];
+      fx = GEN.f_table[i+1];
+    }
 
     /** TODO !!! **/
 
 
-
 #else
   if ( _unur_FP_same( GEN.Umin, GEN.Umax) ){
-    _unur_warning(gen->genid, UNUR_ERR_GEN_CONDITION,"CDF constant");
+    _unur_warning(gen->genid, UNUR_ERR_GEN_CONDITION, "CDF constant");
     return INFINITY;     /** TODO: warum INFINITY ? **/
   }
 
@@ -1365,8 +1399,14 @@ _unur_ninv_newton( struct unur_gen *gen, double U )
     /* neccessary if domain is expanded -> start with extreme tblpts */
     i = (i < 0) ? 0 : i;
     i = (i > GEN.table_size - 1) ? GEN.table_size -1 : i;
-    x  = GEN.table[i+1];
-    fx = GEN.f_table[i+1];
+    if (GEN.table[i+1] == INFINITY){
+      x  = GEN.table[i];
+      fx = GEN.f_table[i];
+    }
+    else{
+      x  = GEN.table[i+1];
+      fx = GEN.f_table[i+1];
+    }
     /*  fx = GEN.CDFmin + 
              (i+1)*((GEN.CDFmax-GEN.CDFmin)/(GEN.table_size-1.0));  */
 #endif
@@ -1377,6 +1417,16 @@ _unur_ninv_newton( struct unur_gen *gen, double U )
     fx    = GEN.CDFs[0];
   }
 
+  /* in case of truncated domain there might be a better starting point */
+  /* ! no problem with INFINITY ! */
+  if ( x < DISTR.trunc[0] ){
+    x  = DISTR.trunc[0];
+    fx = CDF(x);
+  }
+  if ( x > DISTR.trunc[1] ){
+    x  = DISTR.trunc[1];
+    fx = CDF(x);
+  }
 
   fx   -= U;
   dfx   = PDF(x);
@@ -1390,8 +1440,11 @@ _unur_ninv_newton( struct unur_gen *gen, double U )
   /* begin for-loop:  newton-iteration  */
   for (i=0; i < GEN.max_iter; i++) {
 
+    flat_count = 0;
     while (dfx == 0.) {   /* function flat at x */
-      if (fx == 0.)  /* exact hit -> leave while-loopt */
+      //printf("step: %g, x: %g, fx: %g, dfx: %g\n",step, x, fx, dfx);
+
+      if (fx == 0.)  /* exact hit -> leave while-loop */
 	break; 
 
       if (fx > 0.)         /* try another x */
@@ -1403,11 +1456,12 @@ _unur_ninv_newton( struct unur_gen *gen, double U )
       fxtmpabs = fabs(fxtmp);
 
       if ( fxtmpabs < fxabs ){        /* improvement, update x            */
+	//printf("fxabs: %g tmpabs: %g\n", fxabs, fxtmpabs);
         step = 1.;     /* set back stepsize */
         x     = xtmp;
         fx    = fxtmp;
       }
-      else if ( fxtmpabs*fxabs < 0. ){/*step was too large, dont update x */
+      else if ( fxtmp*fx < 0. ){/*step was too large, dont update x */
         step /= 2.;                      
       } 
       else{                           /* step was too short, update x     */
@@ -1417,9 +1471,17 @@ _unur_ninv_newton( struct unur_gen *gen, double U )
       }  
 
       dfx   = PDF(x);
-      fxabs = fabs(fx);     
-    }   /* end of while-loop, (leaving flat region) */
+      fxabs = fabs(fx);
+     
+      if (flat_count < MAX_FLAT_COUNT)
+	flat_count++;
+      else{
+	_unur_error(GENTYPE,UNUR_ERR_DISTR_INVALID,
+         "Newton's method can't leave flat region");
+	return INFINITY;
+      }
 
+    }   /* end of while-loop, (leaving flat region) */
 
    step = 1.;   /* set back stepsize */
 
@@ -1428,13 +1490,12 @@ _unur_ninv_newton( struct unur_gen *gen, double U )
 
 
     do{    /* newton-step  (damped if nececcary) */
-
         damp /= 2.;
         xtmp = x - damp * fx/dfx;
         fxtmp = CDF(xtmp) - U;
+    }while ( fabs(fxtmp)-fxabs >= fxabs * GEN.rel_x_resolution );  /* no improvement */
+//while (fabs(fxtmp) > fxabs);   /* no improvement */
 
-    }while (fabs(fxtmp) > fxabs);   /* no improvement */
-    // while ( fabs(fxtmp)-fxabs >= fxabs * GEN.rel_x_resolution );  /* no improvement */
 
 
     
@@ -1637,3 +1698,18 @@ _unur_ninv_debug_chg_truncated( struct unur_gen *gen )
 /*---------------------------------------------------------------------------*/
 #endif   /* end UNUR_ENABLE_LOGGING */
 /*---------------------------------------------------------------------------*/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

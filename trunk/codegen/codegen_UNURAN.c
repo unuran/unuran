@@ -173,7 +173,7 @@ _unur_acg_UNURAN_PDF (UNUR_DISTR *distr, FILE *out, const char *pdf_name)
   fprintf(out,"\t}\n\n");
 
   /* evaluate PDF */
-  fprintf(out,"\treturn unur_distr_cont_eval_PDF( x, distr );\n");
+  fprintf(out,"\treturn unur_distr_cont_eval_pdf( x, distr );\n");
 
   fprintf(out,"}\n\n");
 

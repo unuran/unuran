@@ -19,7 +19,7 @@ my $ACG = "../acg";
 # ----------------------------------------------------------------
 # Constants
 
-$sample_size = 10;
+$sample_size = 10000;
 $accuracy = 1.0e-7;
 
 # ----------------------------------------------------------------
@@ -145,13 +145,17 @@ foreach my $d (sort keys %{$list_distr}) {
 
     # Get random variate generators
 
-    # C version
-    my $C_code = make_C_code($C_log,$distr,$fparam,$seed);
-    unless ($C_code) {
+    # UNURAN version
+    my $UNURAN_code = make_UNURAN_code($UNURAN_log,$distr,$fparam,$seed);
+    unless ($UNURAN_code) {
 	print "  .........  cannot create generator.\n";
 	print LOG "  .........  cannot create generator.\n";
 	next;
     }
+    make_UNURAN_exec($UNURAN_code,$UNURAN_src,$UNURAN_exec);
+
+    # C version
+    my $C_code = make_C_code($C_log,$distr,$fparam,$seed);
     make_C_exec($C_code,$C_src,$C_exec);
 
     # FORTRAN version
@@ -161,10 +165,6 @@ foreach my $d (sort keys %{$list_distr}) {
     # JAVA version
     my $JAVA_code = make_JAVA_code($JAVA_log,$distr,$fparam,$seed);
     make_JAVA_exec($JAVA_code,$JAVA_src,$JAVA_exec);
-
-    # UNURAN version
-    my $UNURAN_code = make_UNURAN_code($UNURAN_log,$distr,$fparam,$seed);
-    make_UNURAN_exec($UNURAN_code,$UNURAN_src,$UNURAN_exec);
 
     # Start generators
     open UNURAN, "$UNURAN_exec |" or die "cannot run $UNURAN_exec"; 
@@ -269,8 +269,15 @@ sub make_UNURAN_code
     my $fparam = $_[2];
     my $seed = $_[3];
 
+    my $acg_query = "$ACG -l UNURAN -d $distr -L $logfile";
+    $acg_query .= " -p \"$fparam\"" if $fparam; 
+
+    my $generator = `$acg_query`;
+
+    return "" if $?;
+
     my $urng = make_UNURAN_urng($seed);
-    my $main = make_UNURAN_main($logfile,$distr,$fparam,$seed);
+    my $main = make_UNURAN_main($distr,$seed);
 
     return $urng.$generator.$main;
 
@@ -326,50 +333,24 @@ EOS
 
 sub make_UNURAN_main
 {
-    my $logfile = $_[0];
-    my $distr = $_[1];
-    my $fparam = $_[2];
-    my $seed = $_[3];
-
-    my $fpar;
-    my $n_fpar;
-    
-    if ($fparam) {
-	$fparam =~ s/\s+$//g;
-	$n_fpar = 1 + ($fparam =~ s/\s+/,/g);
-	$fpar = "double fpar[] = {$fparam}";
-    }
-    else {
-	$fpar = "double *fpar = NULL";
-	$n_fpar = 0;
-    }
+    my $distr = $_[0];
+    my $seed = $_[1];
 
     my $code = <<EOS
 
+#include <stdio.h>
+#include <stdlib.h>
+
 int main()
 {
-    FILE *logstream = NULL;
     int i;
     double x, fx;
-    UNUR_DISTR *distr;
-    UNUR_PAR *par;
-    UNUR_GEN *gen;
-    $fpar;
 
     useed($seed);
 
-    logstream = fopen("$logfile","w");
-    unur_set_stream(logstream);
-
-    distr = unur\_distr\_$distr(fpar,$n_fpar);
-    par = unur_tdr_new(distr);
-    /* unur_tdr_set_cpoints(par,n_cpoints,NULL); */
-    unur_tdr_set_max_sqhratio(par,0.);
-    gen = unur_init( par );
-
     for (i=0; i<$sample_size; i++) {
-	x = unur_sample_cont(gen);
-	fx = unur_distr_cont_eval_pdf (x,distr);
+	x = rand\_$distr();
+	fx = pdf\_$distr(x);
 	printf("%.17e\\t%.17e\\n",x,fx);
     }
 

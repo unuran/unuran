@@ -94,18 +94,16 @@ int unur_vnrou_set_v( UNUR_PAR *parameters, double vmax );
    Default: not set (i.e. computed automatically)
 */
 
-int unur_vnrou_set_r( UNUR_PAR *parameters, double rparameter );
+int unur_vnrou_set_r( UNUR_PAR *parameters, double r );
 /* 
-   Sets the parameter r of the generalized multivariate 
+   Sets the parameter @var{r} of the generalized multivariate 
    ratio-of-uniforms method.
 
-   If no value is given, the dafault value r=1 is assumed.
+   @emph{Notice}: This parameter must satisfy @unurmath{r>0}. 
+   Setting to a nonpositive value is ignored and in this case the
+   default value value is used instead.
 
-   @emph{Notice} This parameter must satisfy r>=0. 
-   Setting a negative value is ignored and in this case r=1 
-   is chosen instead.
-
-   Default: not set (i.e. r=1)
+   Default: @code{1}.
 */
 
 int unur_vnrou_set_center( UNUR_PAR *parameters, double *center );

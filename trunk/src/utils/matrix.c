@@ -636,48 +636,77 @@ _unur_matrix_cholesky_decomposition (int dim, const double *S, double *L )
 #undef idx
 } /* end of _unur_matrix_cholesky_decomposition() */
 
-
 /*--------------------------------------------------------------------------*/
-int 
-_unur_matrix_debug ( int dim, const double *M, const char *info, const char *genid )
+
+void
+_unur_matrix_print_vector ( int dim, const double *vec, const char *info,
+			    FILE *log, const char *genid, const char *indent )
      /*----------------------------------------------------------------------*/
-     /* The elemets of the rectangular dim x dim matrix M                    */
-     /* are written row-wise into the logfile.                               */
+     /* Print elements of vector in a single row enclosed by parenthesis     */
+     /* into logfile.                                                        */
      /*                                                                      */
      /* parameters:                                                          */
-     /*   dim   ... dimension                                                */
-     /*   M     ... rectangular matrix with dim rows and columns             */
-     /*   info  ... additional info-string to be printed                     */
-     /*   genid ... id string                                                */
+     /*   dim    ... dimension                                               */
+     /*   vec    ... vector with <dim> entries                               */
+     /*   info   ... additional info-string to be printed as first line      */
+     /*   log    ... output stream                                           */
+     /*   genid  ... id string                                               */
+     /*   indent ... left margin of printed vector                           */
      /*----------------------------------------------------------------------*/
 {
-#define idx(a,b) ((a)*dim+b)
+  int i;
 
-  FILE *log;
-  int i,j;
- 
-  CHECK_NULL(M, UNUR_ERR_NULL);
-
-  log = unur_get_stream();
-
-  fprintf(log,"%s: %s\n", genid, info); 
-
-  for (i=0; i<dim; i++) {
-    fprintf(log, "%s: ", genid); 
-    for (j=0; j<dim; j++) {
-      M[idx(i,j)]<0 ? 
-      fprintf(log, " %e",  M[idx(i,j)]): 
-      fprintf(log, "  %e", M[idx(i,j)]); 
-    }
-    fprintf(log, "\n");
+  if (vec) {
+    fprintf(log,"%s: %s\n", genid, info );
+    fprintf(log,"%s: %s( %g", genid, indent, vec[0]);
+    for (i=1; i<dim; i++) 
+      fprintf(log,", %g", vec[i]);
+    fprintf(log," )\n");
+  }
+  else {
+    fprintf(log,"%s: %s [unknown]\n", genid, info );
   }
 
-  fprintf(log,"%s:\n", genid); 
+  fprintf(log,"%s:\n",genid);
+} /* end of _unur_matrix_print_vector() */
 
-  return UNUR_SUCCESS;
+/*--------------------------------------------------------------------------*/
+
+void
+_unur_matrix_print_matrix ( int dim, const double *mat, const char *info,
+			   FILE *log, const char *genid, const char *indent )
+     /*----------------------------------------------------------------------*/
+     /* Print elements of the given <dim>x<dim> square matrix into log file. */
+     /* The matrix is stored row-wise in <mat>.                              */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   dim    ... dimension                                               */
+     /*   mat    ... square matrix with <dim> rows and columns               */
+     /*   info   ... additional info-string to be printed as first line      */
+     /*   log    ... output stream                                           */
+     /*   genid  ... id string                                               */
+     /*   indent ... left margin of printed vector                           */
+     /*----------------------------------------------------------------------*/
+{
+#define idx(a,b) ((a)*dim+(b))
+  int i,j;
+
+  if (mat) {
+    fprintf(log,"%s: %s\n", genid, info); 
+    for (i=0; i<dim; i++) {
+      fprintf(log,"%s: %s(% e", genid, indent, mat[idx(i,0)]);
+      for (j=1; j<dim; j++)
+	fprintf(log,",% e",mat[idx(i,j)]);
+      fprintf(log," )\n");
+    }
+  }
+  else {
+    fprintf(log,"%s: %s [unknown]\n", genid, info );
+  }
+
+  fprintf(log,"%s:\n",genid);
+
 #undef idx
-} /* end of _unur_matrix_debug() */  
+} /* end of _unur_matrix_print_matrix() */
 
-/*---------------------------------------------------------------------------*/
-
-
+/*--------------------------------------------------------------------------*/

@@ -33,7 +33,7 @@
 /*--------------------------------------------------------------------------*/
 
 
-void _unur_hist (double *v, int length, int number_of_bins, const char *info, const char *genid);
+int _unur_histogram (double *v, int length, int number_of_bins, const char *info, const char *genid);
 /* Shows a histogram of v[length] in the log file */
 
 /*--------------------------------------------------------------------------*/

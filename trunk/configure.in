@@ -43,10 +43,11 @@ AC_OUTPUT( \
 	src/distributions/Makefile \
 	src/tests/Makefile \
 	src/uniform/Makefile \
-	examples/Makefile \
-	doc/Makefile )
+dnl	doc/Makefile \
+	examples/Makefile )
 
 dnl -----------------------------------------
+
 
 
 

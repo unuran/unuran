@@ -107,10 +107,26 @@
 
 /*---------------------------------------------------------------------------*/
 
-static struct unur_gen *dis_create( struct unur_par *par );
+static struct unur_gen *_unur_dis_create( struct unur_par *par );
+/*---------------------------------------------------------------------------*/
+/* create new (almost empty) generator object.                               */
+/*---------------------------------------------------------------------------*/
+
 #if UNUR_DEBUG & UNUR_DB_INFO
-static void dis_info_init( struct unur_par *par, struct unur_gen *gen );
-static void dis_info_table( struct unur_gen *gen );
+/*---------------------------------------------------------------------------*/
+/* the following functions print debugging information on output stream,     */
+/* i.e., into the log file if not specified otherwise.                       */
+/*---------------------------------------------------------------------------*/
+
+static void _unur_dis_debug_init( struct unur_par *par, struct unur_gen *gen );
+/*---------------------------------------------------------------------------*/
+/* print after generator has been initialized has completed.                 */
+/*---------------------------------------------------------------------------*/
+
+static void _unur_dis_debug_table( struct unur_gen *gen );
+/*---------------------------------------------------------------------------*/
+/* print data for guide table.                                               */
+/*---------------------------------------------------------------------------*/
 #endif
 
 /*---------------------------------------------------------------------------*/
@@ -122,7 +138,7 @@ static void dis_info_table( struct unur_gen *gen );
 
 /*---------------------------------------------------------------------------*/
 /* Special debugging flags (do not use the first 3 bits) */
-#define DIS_DB_TABLE   0x010UL
+#define DIS_DEBUG_TABLE   0x010UL
 
 /*---------------------------------------------------------------------------*/
 
@@ -131,20 +147,20 @@ static void dis_info_table( struct unur_gen *gen );
 /*****************************************************************************/
 
 struct unur_par *
- unur_dis_new( double *prob, int len )
-/*---------------------------------------------------------------------------*/
-/* get default parameters                                                    */
-/*                                                                           */
-/* parameters:                                                               */
-/*   prob ... pointer to probability vector                                  */
-/*   len  ... length of probability vector                                   */
-/*                                                                           */
-/* return:                                                                   */
-/*   default parameters (pointer to structure)                               */
-/*                                                                           */
-/* error:                                                                    */
-/*   return NULL                                                             */
-/*---------------------------------------------------------------------------*/
+unur_dis_new( double *prob, int len )
+     /*---------------------------------------------------------------------------*/
+     /* get default parameters                                                    */
+     /*                                                                           */
+     /* parameters:                                                               */
+     /*   prob ... pointer to probability vector                                  */
+     /*   len  ... length of probability vector                                   */
+     /*                                                                           */
+     /* return:                                                                   */
+     /*   default parameters (pointer to structure)                               */
+     /*                                                                           */
+     /* error:                                                                    */
+     /*   return NULL                                                             */
+     /*---------------------------------------------------------------------------*/
 { 
   struct unur_par *par;
 
@@ -176,19 +192,19 @@ struct unur_par *
 /*****************************************************************************/
 
 struct unur_gen *
- unur_dis_init( struct unur_par *par )
-/*---------------------------------------------------------------------------*/
-/* initialize new generator                                                  */
-/*                                                                           */
-/* parameters:                                                               */
-/*   par ... pointer to parameter for building generator object              */
-/*                                                                           */
-/* return:                                                                   */
-/*   pointer to generator object                                             */
-/*                                                                           */
-/* error:                                                                    */
-/*   return NULL                                                             */
-/*---------------------------------------------------------------------------*/
+unur_dis_init( struct unur_par *par )
+     /*----------------------------------------------------------------------*/
+     /* initialize new generator                                             */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par ... pointer to parameter for building generator object         */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to generator object                                        */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return NULL                                                        */
+     /*----------------------------------------------------------------------*/
 { 
   struct unur_gen *gen;
   double probh, gstep;
@@ -199,7 +215,7 @@ struct unur_gen *
   COOKIE_CHECK(par,CK_DIS_PAR,NULL);
 
   /* create a new empty generator object */
-  gen = dis_create(par);
+  gen = _unur_dis_create(par);
   if (!gen) { free(par); return NULL; }
 
   /* computation of cumulated probabilities */
@@ -253,7 +269,7 @@ struct unur_gen *
   /* write info into log file */
 #if UNUR_DEBUG & UNUR_DB_INFO
   /* write info into log file */
-  if (gen->debug) dis_info_init(par,gen);
+  if (gen->debug) _unur_dis_debug_init(par,gen);
 #endif
 
   /* free parameters */
@@ -265,19 +281,19 @@ struct unur_gen *
 /*****************************************************************************/
 
 int
- unur_dis_sample( struct unur_gen *gen )
-/*---------------------------------------------------------------------------*/
-/* sample from generator                                                     */
-/*                                                                           */
-/* parameters:                                                               */
-/*   gen ... pointer to generator object                                     */
-/*                                                                           */
-/* return:                                                                   */
-/*   integer (sample from random variate)                                    */
-/*                                                                           */
-/* error:                                                                    */
-/*   return 0                                                                */
-/*---------------------------------------------------------------------------*/
+unur_dis_sample( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* sample from generator                                                */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   integer (sample from random variate)                               */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return 0                                                           */
+     /*----------------------------------------------------------------------*/
 { 
   int j;
   double u;
@@ -302,13 +318,13 @@ int
 /*****************************************************************************/
 
 void
- unur_dis_free( struct unur_gen *gen )
-/*---------------------------------------------------------------------------*/
-/* deallocate generator object                                               */
-/*                                                                           */
-/* parameters:                                                               */
-/*   gen ... pointer to generator object                                     */
-/*---------------------------------------------------------------------------*/
+unur_dis_free( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* deallocate generator object                                          */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*----------------------------------------------------------------------*/
 { 
 
   /* check arguments */
@@ -334,19 +350,19 @@ void
 /*****************************************************************************/
 
 static struct unur_gen *
- dis_create( struct unur_par *par )
-/*---------------------------------------------------------------------------*/
-/* allocate memory for generator                                             */
-/*                                                                           */
-/* parameters:                                                               */
-/*   par ... pointer to parameter for building generator object              */
-/*                                                                           */
-/* return:                                                                   */
-/*   pointer to (empty) generator object with default settings               */
-/*                                                                           */
-/* error:                                                                    */
-/*   return NULL                                                             */
-/*---------------------------------------------------------------------------*/
+_unur_dis_create( struct unur_par *par )
+     /*----------------------------------------------------------------------*/
+     /* allocate memory for generator                                        */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par ... pointer to parameter for building generator object         */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to (empty) generator object with default settings          */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return NULL                                                        */
+     /*----------------------------------------------------------------------*/
 {
   struct unur_gen *gen;
   unsigned long variant;
@@ -412,7 +428,7 @@ static struct unur_gen *
   /* return pointer to (almost empty) generator object */
   return gen;
 
-} /* end of dis_create() */
+} /* end of _unur_dis_create() */
 
 /*****************************************************************************/
 /**  Debugging utilities                                                    **/
@@ -423,14 +439,14 @@ static struct unur_gen *
 /*---------------------------------------------------------------------------*/
 
 static void
- dis_info_init( struct unur_par *par, struct unur_gen *gen )
-/*---------------------------------------------------------------------------*/
-/* write info about generator into logfile                                   */
-/*                                                                           */
-/* parameters:                                                               */
-/*   par ... pointer to parameter for building generator object              */
-/*   gen ... pointer to generator object                                     */
-/*---------------------------------------------------------------------------*/
+_unur_dis_debug_init( struct unur_par *par, struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* write info about generator into logfile                              */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par ... pointer to parameter for building generator object         */
+     /*   gen ... pointer to generator object                                */
+     /*----------------------------------------------------------------------*/
 {
   FILE *log;
 
@@ -454,24 +470,23 @@ static void
     fprintf(log,") \t (-->sequential search");
   fprintf(log,")\n%s:\n",gen->genid);
 
-  if (gen->debug & DIS_DB_TABLE) {
-    dis_info_table(gen);
+  if (gen->debug & DIS_DEBUG_TABLE) {
+    _unur_dis_debug_table(gen);
     fprintf(log,"%s:\n",gen->genid);
   }
 
-} /* end of dis_info_init() */
+} /* end of _unur_dis_debug_init() */
 
 /*---------------------------------------------------------------------------*/
 
 static void
- dis_info_table( struct unur_gen *gen )
-/*---------------------------------------------------------------------------*/
-/* write guide table into logfile                                            */
-/*                                                                           */
-/* parameters:                                                               */
-/*   gen ... pointer to generator object                                     */
-/*---------------------------------------------------------------------------*/
-  
+_unur_dis_debug_table( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* write guide table into logfile                                       */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*----------------------------------------------------------------------*/
 {   
   FILE *log;
  
@@ -508,7 +523,7 @@ static void
           ((double)n_asts)/GEN.guide_size);
   fprintf(log,"%s:\n", gen->genid);
 
-} /*  end of dis_info_table() */
+} /*  end of _unur_dis_debug_table() */
 
 /*---------------------------------------------------------------------------*/
 #endif

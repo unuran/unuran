@@ -1,3 +1,10 @@
+Version 0.6.0: ???? 200?
+
+	- continuous distribution objects have a slot for the center
+	  of the distribution. It is now set for the distribution
+	  directly. This mechanism replaces the _set_ calls for 
+	  all methods that make use of the center.
+
 Version 0.5.0: August 2004
 
 	- UNU.RAN now makes use of IEEE 754 compliant floating point

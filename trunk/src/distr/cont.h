@@ -358,6 +358,22 @@ double unur_distr_cont_get_mode( UNUR_DISTR *distribution );
    for the distribution at all.)
 */
 
+int unur_distr_cont_set_center( UNUR_DISTR *distribution, double center );
+/* 
+   Set center of the @var{distribution}. The center is used by some
+   methods to shift the distribution in order to decrease numerical
+   round-off error. If not given explicitly a default is used.
+
+   Default: The mode, if set by a unur_distr_cont_set_mode() or 
+   unur_distr_cont_upd_mode() call; otherwise @code{0}.
+*/
+
+double unur_distr_cont_get_center( UNUR_DISTR *distribution );
+/* 
+   Get center of the @var{distribution}. It always returns some point
+   as there always exists a default for the center, see
+   unur_distr_cont_set_center().
+*/
 
 int unur_distr_cont_set_pdfarea( UNUR_DISTR *distribution, double area );
 /* 

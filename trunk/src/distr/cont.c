@@ -168,6 +168,7 @@ unur_distr_cont_new( void )
 				      point exception                        */
 
   DISTR.mode       = INFINITY;     /* location of mode (default: not known)  */
+  DISTR.center     = 0.;           /* location of center (default: not given)*/
   DISTR.area       = 1.;           /* area below PDF (default: not known)    */
 
   DISTR.trunc[0] = DISTR.domain[0] = -INFINITY; /* left boundary of domain   */
@@ -1295,6 +1296,66 @@ unur_distr_cont_get_mode( struct unur_distr *distr )
   return DISTR.mode;
 
 } /* end of unur_distr_cont_get_mode() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+unur_distr_cont_set_center( struct unur_distr *distr, double center )
+     /*----------------------------------------------------------------------*/
+     /* set center of distribution                                           */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   distr  ... pointer to distribution object                          */
+     /*   center ... center of PDF                                           */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( NULL, distr, UNUR_ERR_NULL );
+  _unur_check_distr_object( distr, CONT, UNUR_ERR_DISTR_INVALID );
+
+  DISTR.center = center;
+
+  /* changelog */
+  distr->set |= UNUR_DISTR_SET_CENTER;
+
+  /* o.k. */
+  return UNUR_SUCCESS;
+} /* end of unur_distr_cont_set_center() */
+
+/*---------------------------------------------------------------------------*/
+
+double
+unur_distr_cont_get_center( struct unur_distr *distr )
+     /*----------------------------------------------------------------------*/
+     /* get center of distribution                                           */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   distr ... pointer to distribution object                           */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   center of distribution                                             */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( NULL, distr, 0. );
+  _unur_check_distr_object( distr, CONT, 0. );
+
+  /* center given */
+  if ( distr->set & UNUR_DISTR_SET_CENTER )
+    return DISTR.center;
+
+  /* else try mode */
+  if ( distr->set & UNUR_DISTR_SET_MODE ) 
+    return DISTR.mode;
+
+  /* otherwise use 0 */
+  return 0.;
+
+} /* end of unur_distr_cont_get_center() */
 
 /*---------------------------------------------------------------------------*/
 

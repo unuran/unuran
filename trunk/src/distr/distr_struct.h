@@ -52,6 +52,7 @@ struct unur_distr_cont {
   double norm_constant;         /* (log of) normalization constant for PDF   */
 
   double mode;                  /* location of mode                          */
+  double center;                /* location of center                        */
   double area;                  /* area below PDF                            */
   double domain[2];             /* boundary of domain                        */
   double trunc[2];              /* boundary of truncated domain              */

@@ -138,6 +138,7 @@
 
 /* prototype for uniform rng  */
 double UNUR_URNG_DEFAULT(void);
+double UNUR_URNG_AUX_DEFAULT(void);
 
 /* type of uniform random number generator                                   */
 typedef double (UNUR_URNG)(void);

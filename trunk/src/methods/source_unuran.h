@@ -43,7 +43,7 @@
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*/
-/* include main header files                                                  */
+/* include main header files                                                 */
 
 #include <float.h>
 #include <math.h>
@@ -55,6 +55,10 @@
 #  include <config.h>
 #else
 #  error "config.h" required
+#endif
+
+#ifdef HAVE_LIMITS_H
+#  include <limits.h>
 #endif
 
 #include <in_unuran.h>

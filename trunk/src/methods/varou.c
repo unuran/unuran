@@ -64,6 +64,7 @@
 #include <utils/fmax_source.h>
 #include <utils/hooke_source.h> 
 #include <utils/matrix_source.h>
+#include <utils/vector_source.h>
 #include <utils/unur_fp_source.h>
 #include "unur_methods_source.h"
 #include "x_gen_source.h"
@@ -121,7 +122,24 @@ static void _unur_varou_debug_init( const struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 #endif
 
+
 /*---------------------------------------------------------------------------*/
+/*   Auxilliary Routines                                                     */
+/*---------------------------------------------------------------------------*/
+
+static double _unur_varou_f( struct unur_gen *gen, UNUR_VECTOR *u, double v);
+/*---------------------------------------------------------------------------*/
+/* return calculated value of PDF(u_1/v, u_2/v, ..., u_dim/v)                */
+/*---------------------------------------------------------------------------*/
+
+static double _unur_varou_F( struct unur_gen *gen, UNUR_VECTOR *u, double v);
+/*---------------------------------------------------------------------------*/
+/* return calculated value of v^(1+dim) - PDF(u_1/v, u_2/v, ..., u_dim/v)    */
+/*---------------------------------------------------------------------------*/
+
+
+/*---------------------------------------------------------------------------*/
+
 /* abbreviations */
 
 #define DISTR_IN  distr->data.cvec      /* data for distribution object      */
@@ -491,6 +509,48 @@ _unur_varou_free( struct unur_gen *gen )
 /*****************************************************************************/
 /**  Auxilliary Routines                                                    **/
 /*****************************************************************************/
+
+double _unur_varou_f( struct unur_gen *gen, UNUR_VECTOR *u, double v) 
+/*                                                            */
+/* return calculated value of PDF(u_1/v, u_2/v, ..., u_dim/v) */
+/*                                                            */
+/* UNUR_INFINITY is returned when |v|<UNUR_EPSILON            */
+/*                                                            */
+{
+  int i;
+  double *uv; /* u/v vector     */
+  double f;   /* function value */
+
+  if (fabs(v) <= UNUR_EPSILON) return UNUR_INFINITY;
+  
+  uv = _unur_xmalloc(u->dim*sizeof(double));
+  for (i=0; i<u->dim; i++) {
+    uv[i] = u->x[i] / v;
+  }
+
+  f = PDF(uv);
+
+  return f;
+}
+
+/*****************************************************************************/
+
+double _unur_varou_F( struct unur_gen *gen, UNUR_VECTOR *u, double v) 
+/*                                                                        */
+/* return calculated value of v^(1+dim) - PDF(u_1/v, u_2/v, ..., u_dim/v) */
+/*                                                                        */
+/* UNUR_INFINITY is returned when |v|<UNUR_EPSILON                        */
+/*                                                                        */
+{
+  double F;   /* function value */
+ 
+  if (fabs(v) <= UNUR_EPSILON) return UNUR_INFINITY;
+  
+  F = pow(v, 1.+ u->dim ) - _unur_varou_f( gen, u, v);
+
+  return F;
+}
+
 
 /*****************************************************************************/
 /**  Debugging utilities                                                    **/

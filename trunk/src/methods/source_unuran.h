@@ -70,6 +70,10 @@
 #include <x_math_source.h>
 #include <x_umalloc_source.h>
 
+#ifdef WITH_DMALLOC
+#  include <dmalloc.h>
+#endif
+
 /*---------------------------------------------------------------------------*/
 #endif  /* end __UNURAN_SOURCE_H_SEEN */
 /*---------------------------------------------------------------------------*/

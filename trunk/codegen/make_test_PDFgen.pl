@@ -13,8 +13,9 @@ require "readPDF.pl";
 
 # ----------------------------------------------------------------
 
-# Configuration file for tests
-my $test_conf_file = "test.conf";
+# Read configuration file name for tests from argument list ...
+my $test_conf_file = shift
+    or die "no argument given";
 
 # C file for making code generator tests
 my $make_test_PDFgen = "make_test_PDFgen.c";

@@ -13,8 +13,9 @@ require "readPDF.pl";
 
 # ----------------------------------------------------------------
 
-# Configuration file for tests
-my $test_conf_file = "test.conf";
+# Read configuration file name for tests from argument list ...
+my $test_conf_file = shift
+    or die "no argument given";
 
 # C file for making code generator tests
 my $make_test_PDFgen = "make_test_codegen.c";
@@ -23,7 +24,7 @@ my $make_test_PDFgen = "make_test_codegen.c";
 my $test_PDFgen = "test_codegen.c";
 
 # Sample size for test
-my $SAMPLE_SIZE = 10;
+my $SAMPLE_SIZE = 10000;
 
 # ----------------------------------------------------------------
 # List of distributions
@@ -205,14 +206,13 @@ EOX
 \tfor (i=0; i<$SAMPLE_SIZE; i++) {
 \t\tx1 = unur_sample_cont(gen);
 \t\tx2 = rand_$distr_name();
-   /* \t\tif (!FP_equal(x1,x2)) { */
+\t\tif (!FP_equal(x1,x2)) {
 \t\t\tfprintf(stderr,\\\"error! %%g, %%g, diff = %%g\\\\n\\\",x1,x2,x1-x2);
-   /* \t\t\t++n_failed; */
-   /* \t\t} */
+\t\t\t++n_failed;
+\t\t}
 \t}
 
 EOX
-
 
         # End of test routine
 	$test_test_body .= "\tunur_distr_free(distr);\n";

@@ -180,6 +180,7 @@ _unur_tdr_ps_codegen( struct unur_gen *gen, FILE *out, const char *distr_name )
   fprintf(out,"\t\tU -= iv[I].Acum - iv[I].Ahatr;\n");
   /* result: U in (-A_hatl, A_hatr) */
 
+
   /* generate from hat distribution */
   switch (gen->variant & TDR_VARMASK_T) {
   case TDR_VAR_T_LOG:
@@ -190,9 +191,10 @@ _unur_tdr_ps_codegen( struct unur_gen *gen, FILE *out, const char *distr_name )
     fprintf(out,"\t\t\tX = iv[I].x + U / iv[I].fx * (1 - t/2.);\n");
     break;
   case TDR_VAR_T_SQRT:
-    fprintf(out,"\t\tX = iv[I].x + U / iv[I].fx;\n");
-    fprintf(out,"\t\tif (iv[I].dTfx != 0.)\n");
-    fprintf(out,"\t\t\tX /= (1. - iv[I].Tfx * iv[I].dTfx * U);\n");
+    fprintf(out,"\t\tif (iv[I].dTfx == 0.)\n");
+    fprintf(out,"\t\t\tX = iv[I].x + U / iv[I].fx;\n");
+    fprintf(out,"\t\telse\n");
+    fprintf(out,"\t\t\tX = iv[I].x + (U / iv[I].fx) / (1.-iv[I].Tfx*iv[I].dTfx*U);\n");
     break;
   } /* end switch */
 

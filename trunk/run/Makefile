@@ -19,7 +19,9 @@ something: something.c ../src/unuran.h ../src/libunuran.la
 	../libtool gcc -I. -I.. -I../src -I../src/tests -Wall -g -O2 -o something something.c ../src/libunuran.la -lm -lprng 
 
 f: ../src/utils/fminmax.c fmain.c ../src/unuran.h ../src/libunuran.la
-	../libtool gcc -I. -I.. -I../src -I../src/tests -ffinite-math-only -fno-trapping-math -fno-signaling-nans -o f fmain.c ../src/libunuran.la -lm -lprng 
+# the flags -ftrapping-math ... etc seem to have no influence on our tests ?
+#	../libtool gcc -I. -I.. -I../src -I../src/tests -ftrapping-math -fsignaling-nans -o f fmain.c ../src/libunuran.la -lm -lprng 
+	../libtool gcc -I. -I.. -I../src -I../src/tests -o f fmain.c ../src/libunuran.la -lm -lprng 
 
 clean:
 	rm -f *~ *.o run rungen mcrun test something unuran.log

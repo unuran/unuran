@@ -82,7 +82,7 @@ print_usage(void)
 
 #ifdef HAVE_GETOPT
 
-  fprintf(stderr,"\n%s [-n samplesize] conffile\n",progname);
+  fprintf(stderr,"\n%s [-n size] [-d time] conffile\n",progname);
   fprintf(stderr,"\n");
   fprintf(stderr,"Compute average generation time (including setup) for a sampling.\n");
   fprintf(stderr,"\n");

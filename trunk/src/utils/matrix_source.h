@@ -62,10 +62,6 @@ int _unur_matrix_eigensystem (int dim, const double *M, double *values, double *
 /* The eigenvectors are normalized and (almost) orthognal.                   */
 /* The eigenvectors are stored consecutively in the array vectors.           */
 
-int _unur_matrix_random_correlation_from_eigenvalues (int dim, double *values, double *M );
-/* Calculates a random correlation matrix M with given eigenvalues           */
-/* using the Marsaglia-Olkin method                                          */
-
 void _unur_matrix_print_vector ( int dim, const double *vec, const char *info,
 				 FILE *log, const char *genid, const char *indent );
 /* Print elements of vector in a single row enclosed by parenthesis into     */

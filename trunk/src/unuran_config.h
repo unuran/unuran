@@ -76,7 +76,7 @@
 #elif UNUR_URNG_TYPE == UNUR_URNG_PRNG
 
 /* valid parameter (char) string for prng-2.2                                */
-#define UNUR_URNG_DEFAULT "mt19332(19863)"
+#define UNUR_URNG_DEFAULT "mt19937(19863)"
 #define UNUR_URNG_AUX_DEFAULT "LCG(2147483647,16807,0,1)"
 
 #else

@@ -84,9 +84,6 @@
 
 /* =ROUTINES */
 
-/*---------------------------------------------------------------------------*/
-/* Routines for user interface                                               */
-
 UNUR_PAR *unur_utdr_new( UNUR_DISTR *distribution );
 /* Get default parameters for generator.                                     */
 

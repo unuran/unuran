@@ -38,7 +38,7 @@
  *****************************************************************************/
 
 /* 
-   =METHOD  SSR   Simple Setup Rection
+   =METHOD  SSR   Simple Setup Rejection
 
    =TYPE
       CONT  continuous univariate

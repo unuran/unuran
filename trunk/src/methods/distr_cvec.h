@@ -40,8 +40,19 @@
 /*---------------------------------------------------------------------------*/
 
 /* 
+   =DISTRIBUTION  CVEC  [3]  continuous multivariate distribution
+
+
+   =END
+*/
+
+/*---------------------------------------------------------------------------*/
+
+/* 
    Routines for handling multivariate continuous distributions (CVEC).
 */
+
+/* =ROUTINES */
 
 UNUR_DISTR *unur_distr_cvec_new( int dim );
 /* 
@@ -274,5 +285,7 @@ double unur_distr_cvec_get_pdfvol( UNUR_DISTR *distribution );
    it. If this is not successful @code{UNUR_INFINITY} is returned and
    @code{unur_errno} is set to @code{UNUR_ERR_DISTR_GET}.
 */
+
+/* =END */
 
 /*---------------------------------------------------------------------------*/

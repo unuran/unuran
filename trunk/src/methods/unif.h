@@ -57,7 +57,7 @@
 
 /* =ROUTINES */
 
-UNUR_PAR *unur_unif_new( );
+UNUR_PAR *unur_unif_new( void );
 /* 
    Get default parameters for generator.                                     
    UNIF does not need a distribution object.

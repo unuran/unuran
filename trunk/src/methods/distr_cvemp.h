@@ -40,8 +40,19 @@
 /*---------------------------------------------------------------------------*/
 
 /* 
+   =DISTRIBUTION  CVEMP  [4]  continuous empirical multivariate distribution
+
+
+   =END
+*/
+
+/*---------------------------------------------------------------------------*/
+
+/* 
    Routines for handling empirical multivariate continuous distributions (VCEMP).
 */
+
+/* =ROUTINES */
 
 UNUR_DISTR *unur_distr_cvemp_new( int dim ); 
 /* 
@@ -76,5 +87,7 @@ int unur_distr_cvemp_get_data( UNUR_DISTR *distribution, double **sample );
    unur_distr_get_dim() and @code{n_sample} the return value of the
    function.
 */
+
+/* =END */
 
 /*---------------------------------------------------------------------------*/

@@ -72,7 +72,7 @@
 /* =ROUTINES */
 
 UNUR_PAR *unur_arou_new( UNUR_DISTR *distribution );
-/* Get default parameters for generator.                                     */
+/*    Get default parameters for generator. */
 
 /*...........................................................................*/
 
@@ -95,12 +95,14 @@ double unur_arou_get_sqhratio( UNUR_GEN *generator );
    for the generator. (In case of error 0 is returned.)
 */
 
+
 int unur_arou_set_max_segments( UNUR_PAR *parameters, int max_segs );
 /* 
    Set maximum number of segements (default is ??).
    No construction points are added after the setup when the number of
    intervals suceeds @code{max_segs}.
 */
+
 
 int unur_arou_set_cpoints( UNUR_PAR *parameters, int n_stp, double *stp );
 /* 
@@ -110,6 +112,7 @@ int unur_arou_set_cpoints( UNUR_PAR *parameters, int n_stp, double *stp );
    number of construction points is ??.
 */
 
+
 int unur_arou_set_center( UNUR_PAR *parameters, double center );
 /* 
    Set the center (approximate mode) of the p.d.f.
@@ -118,10 +121,12 @@ int unur_arou_set_center( UNUR_PAR *parameters, double center );
    mode.
 */
 
+
 int unur_arou_set_usecenter( UNUR_PAR *parameters, int usecenter );
 /* 
    Use the center as construction point. Default is TRUE.
 */
+
 
 int unur_arou_set_guidefactor( UNUR_PAR *parameters, double factor );
 /* 
@@ -130,6 +135,7 @@ int unur_arou_set_guidefactor( UNUR_PAR *parameters, double factor );
    If it is set to 0, then sequential search is used.
    Default is ??.
 */
+
 
 int unur_arou_set_verify( UNUR_PAR *parameters, int verify );
 /* 
@@ -140,6 +146,7 @@ int unur_arou_chg_verify( UNUR_GEN *generator, int verify );
 /* 
    Turn verifying of algorithm while sampling on/off.
 */
+
 
 int unur_arou_set_pedantic( UNUR_PAR *parameters, int pedantic );
 /* 

@@ -276,7 +276,7 @@ _unur_make_uniform_scatter( int start, int skip )
   if (scatter == NULL)  return 0;
 
   /* make generator object for uniform baby generator */
-  gen = unur_init( unur_unif_new(NULL) );
+  gen = unur_init( unur_unif_new() );
   _unur_check_NULL(test_name,gen,0 );
 
   /* get pointer to baby generator */

@@ -40,8 +40,18 @@
 /*---------------------------------------------------------------------------*/
 
 /* 
+   =DISTRIBUTION  CONT  [1]  continuous univariate distribution
+
+
+   =END
+*/
+
+/*---------------------------------------------------------------------------*/
+/* 
    Routines for handling univariate continuous distributions (CONT).
 */
+
+/* =ROUTINES */
 
 UNUR_DISTR *unur_distr_cont_new( void );
 /* 
@@ -247,6 +257,8 @@ double unur_distr_cont_get_pdfarea( UNUR_DISTR *distribution );
    it. If this is not successful @code{UNUR_INFINITY} is returned and
    @code{unur_errno} is set to @code{UNUR_ERR_DISTR_GET}.
 */
+
+/* =END */
 
 /*---------------------------------------------------------------------------*/
 

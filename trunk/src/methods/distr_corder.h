@@ -41,8 +41,19 @@
 /*---------------------------------------------------------------------------*/
 
 /* 
+   =DISTRIBUTION  CORDER  [-1]  continuous univariate order statistics
+
+
+   =END
+*/
+
+/*---------------------------------------------------------------------------*/
+
+/* 
    Routines for handling univariate continuous order statistics (CORDER).
 */
+
+/* =ROUTINES */
 
 UNUR_DISTR *unur_distr_corder_new( UNUR_DISTR *distr, int n, int k );
 /* 
@@ -254,5 +265,7 @@ int unur_distr_corder_get_rank( UNUR_DISTR *distribution, int *n, int *k );
    See unur_distr_cont_get_pdfarea() for details.
    (Macro)
 */
+
+/* =END */
 
 /*---------------------------------------------------------------------------*/

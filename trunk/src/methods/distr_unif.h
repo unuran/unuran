@@ -4,14 +4,14 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   FILE: distr_cemp.h                                                      *
+ *   FILE: distr_unif.h                                                      *
  *                                                                           *
  *   PURPOSE:                                                                *
  *         function prototypes for manipulating distribution objects of      *
- *         type  CEMP  (continuous empirical univariate distribution)        *
+ *         type  UNIF  (uniform univariate distribution)                     *
  *                                                                           *
  *   USAGE:                                                                  *
- *         only included in unuran.h                                         *
+ *         just for documentation (only included in unuran.h)                *
  *                                                                           *
  *****************************************************************************
      $Id$
@@ -40,41 +40,10 @@
 /*---------------------------------------------------------------------------*/
 
 /* 
-   =DISTRIBUTION  CEMP  [2]  continuous empirical univariate distribution
+   =DISTRIBUTION  UNIF  [6]  (uniform univariate distribution)
 
 
    =END
 */
 
 /*---------------------------------------------------------------------------*/
-
-/* 
-   Routines for handling empirical univariate continuous distributions (CEMP).
-*/
-
-/* =ROUTINES */
-
-UNUR_DISTR *unur_distr_cemp_new( void );
-/* 
-   Create a new (empty) object for empirical univariate continuous distribution.
-*/
-
-/* Essential parameters */
-
-int unur_distr_cemp_set_data( UNUR_DISTR *distribution, double *sample, int n_sample );
-/* 
-   Set observed sample for empirical distribution.
-*/
-
-
-int unur_distr_cemp_get_data( UNUR_DISTR *distribution, double **sample );
-/* 
-   Get number of samples and set pointer @var{sample} to array of
-   observations. If no sample has been given,
-   @code{0} is returned and @code{sample} is set to NULL.
-*/
-
-/* =END */
-
-/*---------------------------------------------------------------------------*/
-

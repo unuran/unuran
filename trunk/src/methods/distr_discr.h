@@ -40,8 +40,19 @@
 /*---------------------------------------------------------------------------*/
 
 /* 
+   =DISTRIBUTION  DISCR  [5]  discrete univariate distribution
+
+
+   =END
+*/
+
+/*---------------------------------------------------------------------------*/
+
+/* 
    Routines for handling univariate discrete distributions (DISCR).
 */
+
+/* =ROUTINES */
 
 UNUR_DISTR *unur_distr_discr_new( void );
 /* 
@@ -211,5 +222,7 @@ double unur_distr_discr_get_pmfsum(UNUR_DISTR *distribution);
    it. If this is not successful @code{UNUR_INFINITY} is returned and
    @code{unur_errno} is set to @code{UNUR_ERR_DISTR_GET}.
 */
+
+/* =END */
 
 /*---------------------------------------------------------------------------*/

@@ -38,7 +38,7 @@
  *****************************************************************************/
 
 /* 
-   =METHOD  TDR   Transformed Density Rection
+   =METHOD  TDR   Transformed Density Rejection
 
    =TYPE
       CONT  continuous univariate

@@ -65,7 +65,7 @@ struct unur_distr_cont {
 /*---------------------------------------------------------------------------*/
 /* define object for univariate discrete distribution                        */
 struct unur_distr_discr {
-  _UNUR_FUNCTION_DISCR *pv;     /* pointer to probability vector             */
+  _UNUR_FUNCTION_DISCR *pmf;    /* pointer to probability mass function      */
   _UNUR_FUNCTION_DISCR *cdf;    /* pointer to c.d.f.                         */
 
   double params[UNUR_DISTR_MAXPARAMS + 1];  /* parameters of the p.d.f.      */
@@ -75,7 +75,8 @@ struct unur_distr_discr {
   double *prob;                 /* pointer to probability vector             */
   int     n_prob;               /* length of probability vector              */
 
-  int domain[2];                /* boundary of domain                        */
+  double domain[2];             /* boundary of domain                        */
+  double area;                  /* area below p.d.f.                         */
 
   int  (*init)(struct unur_par *par,struct unur_gen *gen);
                                 /* pointer to special init routine           */

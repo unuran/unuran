@@ -629,6 +629,7 @@ unur_distr_discr_new( void )
      /*----------------------------------------------------------------------*/
 {
   register struct unur_distr *distr;
+  register int i;
 
   /* allocate structure */
   distr = _unur_malloc( sizeof(struct unur_distr) );
@@ -647,8 +648,26 @@ unur_distr_discr_new( void )
   distr->name = unknown_distr_name;
 
   /* set defaults                                                            */
+
+  /* finite probability vector */
   DISTR.prob      = NULL;          /* probability vector                     */
   DISTR.n_prob    = 0;             /* length of probability vector           */
+
+  /* probability mass function */
+  DISTR.pmf       = NULL;          /* pointer to p.d.f.                      */
+  DISTR.cdf       = NULL;          /* pointer to c.d.f.                      */
+
+  DISTR.init      = NULL;          /* pointer to special init routine        */
+
+  DISTR.n_params  = 0;             /* number of parameters of the pmf        */
+  /* initialize parameters of the p.m.f.                                     */
+  for (i=0; i<UNUR_DISTR_MAXPARAMS+1; i++)
+    DISTR.params[i] = 0.;
+
+  /* DISTR.mode      = 0.;            location of mode                       */
+  DISTR.area      = 1.;            /* area below p.m.f.                      */
+  DISTR.domain[0] = 1.;            /* left boundary of domain                */
+  DISTR.domain[1] = INFINITY;      /* right boundary of domain               */
 
   distr->set = 0u;                 /* no parameters set                      */
   
@@ -694,9 +713,12 @@ unur_distr_discr_set_prob( struct unur_distr *distr, double *prob, int n_prob )
   memcpy( DISTR.prob, prob, n_prob * sizeof(double) );
   DISTR.n_prob = n_prob;
 
+  /* set name for distribution */
+  distr->name = "(empiric)";
+
   /* o.k. */
   return 1;
-} /* end of unur_distr_discr_set_param() */
+} /* end of unur_distr_discr_set_prob() */
 
 /*****************************************************************************/
 
@@ -722,20 +744,45 @@ _unur_distr_discr_debug( struct unur_distr *distr, char *genid, int printvector 
 
   fprintf(log,"%s: distribution:\n",genid);
   fprintf(log,"%s:\ttype = discrete univariate distribution\n",genid);
-  fprintf(log,"%s:\tname = (empiric)\n",genid);
+  fprintf(log,"%s:\tname = %s\n",genid,distr->name);
 
-  fprintf(log,"%s:\tprobability vector of length %d",genid,DISTR.n_prob);
-  if (printvector) {
-    for (i=0; i<DISTR.n_prob; i++) {
-      if (i%10 == 0)
-	fprintf(log,"\n%s:\t",genid);
-      fprintf(log,"  %.5f",DISTR.prob[i]);
+  if (DISTR.n_prob>0) {
+    /* probability vector given */
+    fprintf(log,"%s:\tprobability vector of length %d",genid,DISTR.n_prob);
+    if (printvector) {
+      for (i=0; i<DISTR.n_prob; i++) {
+	if (i%10 == 0)
+	  fprintf(log,"\n%s:\t",genid);
+	fprintf(log,"  %.5f",DISTR.prob[i]);
+      }
     }
+    fprintf(log,"\n%s:\n",genid);
   }
-  fprintf(log,"\n%s:\n",genid);
+  else if (DISTR.pmf) {
+    /* probability mass function given */
+    fprintf(log,"%s:\tp.m.f with %d argument(s)\n",genid,DISTR.n_params);
+    for( i=0; i<DISTR.n_params; i++ )
+      fprintf(log,"%s:\t\tparam[%d] = %g\n",genid,i,DISTR.params[i]);
+
+    /*      if (distr->set & UNUR_DISTR_SET_MODE) */
+    /*        fprintf(log,"%s:\tmode = %g\n",genid,DISTR.mode); */
+    /*      else */
+    /*        fprintf(log,"%s:\tmode unknown\n",genid); */
+
+    /*    fprintf(log,"%s:\tdomain = (%g, %g)",genid,DISTR.domain[0],DISTR.domain[1]); */
+    /*    _unur_print_if_default(distr,UNUR_DISTR_SET_DOMAIN); */
+
+    /*      fprintf(log,"\n%s:\tarea below p.d.f. = %g",genid,DISTR.area); */
+    /*      _unur_print_if_default(distr,UNUR_DISTR_SET_PDFAREA); */
+
+    fprintf(log,"%s:\n",genid);
+  }
 
 } /* end of _unur_distr_discr_debug() */
 
 /*---------------------------------------------------------------------------*/
 #undef DISTR
 /*---------------------------------------------------------------------------*/
+
+
+

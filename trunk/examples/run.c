@@ -346,12 +346,20 @@ int main()
   unur_run_tests(par,RUN_TESTS);
 #endif
 
-#if 1
+#if 0
   fpar[0] = 2.;
   fpar[1] = 5.;
   fpar[2] = 10.;
   distr_xxx = unur_distr_extremeII(fpar,3);
   par = unur_cstd_new(distr_xxx);
+  unur_run_tests(par,RUN_TESTS);
+#endif
+
+#if 1
+  fpar[0] = 10.;
+  fpar[1] = 10.;
+  distr_xxx = unur_distr_zipf(fpar,2);
+  par = unur_dstd_new(distr_xxx);
   unur_run_tests(par,RUN_TESTS);
 #endif
 

@@ -408,12 +408,12 @@ _unur_dstd_debug_init( struct unur_par *par, struct unur_gen *gen )
   log = unur_get_stream();
 
   fprintf(log,"%s:\n",gen->genid);
-  fprintf(log,"%s: type    = continuous univariate random variates\n",gen->genid);
+  fprintf(log,"%s: type    = discrete univariate random variates\n",gen->genid);
   fprintf(log,"%s: method  = generator for standard distribution\n",gen->genid);
   fprintf(log,"%s:\n",gen->genid);
 
   /* distribution */
-  _unur_distr_cont_debug( &(gen->distr), gen->genid );
+  _unur_distr_discr_debug( &(gen->distr), gen->genid, 0 );
 
   /* sampling routine */
   fprintf(log,"%s: sampling routine = ",gen->genid);

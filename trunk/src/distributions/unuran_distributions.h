@@ -102,6 +102,12 @@
 
 /*---------------------------------------------------------------------------*/
 
+/*****************************************************************************
+ *                                                                           *
+ *                    Continuous univariate distributions                    *
+ *                                                                           *
+ *****************************************************************************/
+
 /*---------------------------------------------------------------------------*/
 /*  Beta distribution  [3; ch.25, p.210]                                     */
 struct unur_distr *unur_distr_beta(double *params, int n_params);
@@ -349,6 +355,22 @@ double unur_stdgen_sample_weibull_inv( struct unur_gen *gen );
 /* Inversion method                                                          */
 
 /*---------------------------------------------------------------------------*/
+
+/*****************************************************************************
+ *                                                                           *
+ *                     Discrete univariate distributions                     *
+ *                                                                           *
+ *****************************************************************************/
+
+/*---------------------------------------------------------------------------*/
+/* Zipf (or Zeta) distribution  [1; ch.11.20, p.465]                         */
+struct unur_distr *unur_distr_zipf(double *params, int n_params);
+
+/* special generators */
+int _unur_stdgen_zipf_init( struct unur_par *par, struct unur_gen *gen );
+/* initialize new generator                                                  */
+int unur_stdgen_sample_zipf_zet( struct unur_gen *gen );
+/* Acceptance Rejection                                                      */
 
 /*---------------------------------------------------------------------------*/
 #endif  /* __UNURAN_DISTRIBUTIONS_H_SEEN */

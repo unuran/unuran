@@ -155,6 +155,7 @@ _unur_print_method( struct unur_par *par )
 
   /* print method description */
   switch (par->method) {
+
     /* discrete, univariate */
   case UNUR_METH_DAU:
     COOKIE_CHECK(par,CK_DAU_PAR,0);
@@ -164,6 +165,11 @@ _unur_print_method( struct unur_par *par )
     COOKIE_CHECK(par,CK_DIS_PAR,0);
     printf("METHOD:\t\tindexed search (DIS)\n");
     break;
+  case UNUR_METH_DSTD:
+    COOKIE_CHECK(par,CK_DSTD_PAR,0);
+    printf("METHOD:\t\tspecial (DSTD)\n");
+    break;
+
     /* continuous, univariate */
   case UNUR_METH_AROU:
     COOKIE_CHECK(par,CK_AROU_PAR,0);

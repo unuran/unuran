@@ -48,7 +48,7 @@ _unur_vector_new(int dim)
   v = _unur_xmalloc(dim*sizeof(double));
 
   /* setting all coordinates to 0 */
-  for (i=0; i<dim; i++) v[i]=0.;
+  for (i=0; i<dim; i++) v[i] = 0.;
 
   return v;
 } /* end of _unur_vector_new() */
@@ -59,42 +59,44 @@ _unur_vector_new(int dim)
 void 
 _unur_vector_free(double *v)
 {
-  if (v) {
-     free(v);
-     v=NULL;
-  }
+  if (v) free(v);
 } /* end of _unur_vector_free() */
 
 /*--------------------------------------------------------------------------*/
 
-/* calculation of vector norm */
+/* calculation of euclidean (L2) norm of vector */
+/* avoid overflow by using                      */
+/*   ||v|| = max(|v_i|) * sqrt(sum v_i*v_i)     */
 double 
 _unur_vector_norm(int dim, double *v)
 {
   int i;
-  double norm=0.;
-  double vmax=0;
+  double vsum;
+  double vmax;
   double p;
 
   /* checking if v is NULL */
-  /* TODO: warning ? */
-  if (v==NULL) return 0; 
+  if (v==NULL) return 0.; 
 
   /* determining the largest element (absolute values) */
+  vmax = 0.;
   for (i=0; i<dim; i++) {
     if (vmax < fabs(v[i])) vmax = fabs(v[i]); 
   }
   
-  if (vmax<=UNUR_EPSILON) return 0;
-  
+  /* case: null vector */
+  if (vmax <= 0) return 0.;
+
   /* it's nummerically more stable to calculate the norm this way */
+  vsum = 0.;
   for (i=0; i<dim; i++) {
     p=v[i]/vmax;
-    norm += p*p;
+    vsum += p*p;
   }
-  norm = vmax * sqrt(norm);
 
-  return norm;
+  /* return L2 norm */
+  return vmax * sqrt(vsum);
+
 } /* end of _unur_vector_norm() */
 
 /*--------------------------------------------------------------------------*/
@@ -104,11 +106,12 @@ double
 _unur_vector_scalar_product(int dim, double *v1, double *v2)
 {
   int i;
-  double scalar_product=0.;
+  double scalar_product;
   
   /* checking if v1 or v2 are NULL */
-  /* TODO: warning ? */
+  if (v1==NULL || v2==NULL) return 0.; 
   
+  scalar_product = 0.;
   for (i=0; i<dim; i++) {
     scalar_product += v1[i]*v2[i];
   }

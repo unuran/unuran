@@ -18,10 +18,19 @@ libparser_a_SOURCES = \
 include_HEADERS =
 
 noinst_HEADERS = \
+ parser.h \
  parser_source.h \
  functparser_source.h \
  functparser_struct.h \
- parser.h
+ functparser_symbols.h \
+ functparser_codegen.c \
+ functparser_debug.c \
+ functparser_deriv.c \
+ functparser_eval.c \
+ functparser_init.c \
+ functparser_parser.c \
+ functparser_scanner.c
+
 
 EXTRA_DIST = \
  make_stringparser.pl \

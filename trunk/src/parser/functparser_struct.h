@@ -44,7 +44,7 @@
 /* Structure for function tree                                               */
 
 struct treenode { 
-  char            symb[SYMBLENGTH];  /* zeigt auf Symbol aus Symboltab. */ 
+  char            *symb;  /* zeigt auf Symbol aus Symboltab. */ 
   int             token;             /* Token des Symbols               */ 
   int             symbkind;          /* Art des Symbols (REL_OP etc.)   */ 
   float           val;               /* aktueller arithmetischer Wert   */ 

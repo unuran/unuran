@@ -19,7 +19,8 @@ libspecfunct_a_SOURCES = \
  ndtri.c \
  polevl.c
 
-noinst_HEADERS = 
+noinst_HEADERS = \
+ source_mconf.h 
 
 # clean backup files
 CLEANFILES = *~

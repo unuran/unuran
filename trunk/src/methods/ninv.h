@@ -87,14 +87,14 @@ int unur_ninv_set_max_iter( UNUR_PAR *parameters, int max_iter );
 int unur_ninv_set_x_resolution( UNUR_PAR *parameters, double x_resolution);
 /* Set maximal relative error in x                                           */
 
-int unur_ninv_set_start( UNUR_PAR *parameters, double s1, double s2 );
+int unur_ninv_set_start( UNUR_PAR *parameters, double left, double right);
 /*  Set starting points.
     If not set, suitable values are chosen automatically.                   */
-/*   Newton:        s1:           starting point                            */
-/*   Regula falsi: s1, s2:       boundary of starting interval              */
-/*   If s1 == s2, UNURAN sets starting values as follows:                   */
-/*   Newton: CDF(s1) = 0.5                                                  */
-/*   Regula falsi: CDF(s1) = 0.1, CDF(s2) = 0.9                             */
+/*   Newton:        left:           starting point                          */
+/*   Regula falsi: left, right:       boundary of starting interval         */
+/*   If left == right, UNURAN sets starting values as follows:              */
+/*   Newton: left: CDF(left) = 0.5                                          */
+/*   Regula falsi: left, right: CDF(left) = 0.1, CDF(right) = 0.9           */
 
 int unur_ninv_use_table(UNUR_PAR *parameters);
 /* Generates a table (of size TABLE_POINTS) with suitable starting values

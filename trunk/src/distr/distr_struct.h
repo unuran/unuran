@@ -95,9 +95,13 @@ struct unur_distr_cvec {
   struct unur_distr **marginals; /* array of pointers to marginal distributions */
   struct unur_distr **stdmarginals; /* array of pointers to standardized marginal distributions */
 
-  double *params[UNUR_DISTR_MAXPARAMS];  /* parameters of the PDF            */
-  int    n_params[UNUR_DISTR_MAXPARAMS]; /* length of parameter arrays       */
-
+  double params[UNUR_DISTR_MAXPARAMS];  /* parameters of the PDF             */
+  int    n_params;              /* number of parameters of the PDF           */
+  
+  double *param_vecs[UNUR_DISTR_MAXPARAMS];  /* parameter vectors            */
+  int    n_param_vec[UNUR_DISTR_MAXPARAMS]; /* lengths of the parameter vecs */
+  
+  
   double norm_constant;         /* (log of) normalization constant for PDF   */
 
   double *mode;                 /* location of mode                          */

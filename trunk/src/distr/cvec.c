@@ -148,10 +148,10 @@ unur_distr_cvec_new( int dim )
   DISTR.marginals = NULL;   /* array of pointers to marginal distributions */
   DISTR.stdmarginals = NULL;  /* array of pointers to standardized marginal distributions */
 
-  /* initialize parameters of the PDF                                        */
+  /* initialize parameter vectors of the PDF                                 */
   for (i=0; i<UNUR_DISTR_MAXPARAMS; i++) {
-    DISTR.n_params[i] = 0;
-    DISTR.params[i] = NULL;
+    DISTR.n_param_vec[i] = 0;
+    DISTR.param_vecs[i] = NULL;
   }
 
   DISTR.norm_constant = 1.;        /* (log of) normalization constant for PDF
@@ -247,9 +247,9 @@ _unur_distr_cvec_clone( const struct unur_distr *distr )
     CLONE.stdmarginals = _unur_distr_cvec_marginals_clone( DISTR.stdmarginals, distr->dim );
   
   for (i=0; i<UNUR_DISTR_MAXPARAMS; i++) {
-    if (DISTR.params[i]) {
-      CLONE.params[i] = _unur_xmalloc( DISTR.n_params[i] * sizeof(double) );
-      memcpy( CLONE.params[i], DISTR.params[i], DISTR.n_params[i] * sizeof(double) );
+    if (DISTR.param_vecs[i]) {
+      CLONE.param_vecs[i] = _unur_xmalloc( DISTR.n_param_vec[i] * sizeof(double) );
+      memcpy( CLONE.param_vecs[i], DISTR.param_vecs[i], DISTR.n_param_vec[i] * sizeof(double) );
     }
   }
 
@@ -286,7 +286,7 @@ _unur_distr_cvec_free( struct unur_distr *distr )
   COOKIE_CHECK(distr,CK_DISTR_CVEC,RETURN_VOID);
 
   for (i=0; i<UNUR_DISTR_MAXPARAMS; i++)
-    if (DISTR.params[i]) free( DISTR.params[i] );
+    if (DISTR.param_vecs[i]) free( DISTR.param_vecs[i] );
 
   if (DISTR.mean)        free(DISTR.mean); 
   if (DISTR.covar)       free(DISTR.covar);
@@ -1661,13 +1661,13 @@ unur_distr_cvec_set_pdfparams( struct unur_distr *distr, int par, const double *
   }
 
   /* allocate memory */
-  _unur_xrealloc( DISTR.params[par], n_params * sizeof(double) );
+  _unur_xrealloc( DISTR.param_vecs[par], n_params * sizeof(double) );
 
   /* copy parameters */
-  memcpy( DISTR.params[par], params, n_params*sizeof(double) );
+  memcpy( DISTR.param_vecs[par], params, n_params*sizeof(double) );
 
   /* set length of array */
-  DISTR.n_params[par] = n_params;
+  DISTR.n_param_vec[par] = n_params;
 
   /* changelog */
   distr->set &= ~UNUR_DISTR_SET_MASK_DERIVED;
@@ -1708,9 +1708,9 @@ unur_distr_cvec_get_pdfparams( const struct unur_distr *distr, int par, const do
     return 0;
   }
   
-  *params = DISTR.params[par];
+  *params = DISTR.param_vecs[par];
 
-  return (*params) ? DISTR.n_params[par] : 0;
+  return (*params) ? DISTR.n_param_vec[par] : 0;
 } /* end of unur_distr_cvec_get_pdfparams() */
 
 /*---------------------------------------------------------------------------*/

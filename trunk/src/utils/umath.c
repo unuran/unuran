@@ -38,6 +38,14 @@
 
 /*---------------------------------------------------------------------------*/
 
+/* If the macro INFINITY is not already defined we store infinity in the     */
+/* global variable INFINITY.                                                 */
+#ifndef INFINITY
+const double INFINITY = 1.0 / 0.0;
+#endif
+
+/*---------------------------------------------------------------------------*/
+
 #define ARCMEAN_HARMONIC 1.e3  /* use harmonic mean when abs larger than this value */
 
 double

@@ -68,11 +68,29 @@
 */
 
 /*---------------------------------------------------------------------------*/
-/* Defining infinity                                                         */
+/* Define INFINITY                                                           */
 /* (we use the largest possible value to indicate infinity)                  */
 #include <math.h>
 
-#define UNUR_INFINITY      HUGE_VAL     
+#ifndef INFINITY
+#  ifdef HUGE_VAL
+#    define INFINITY  (HUGE_VAL)
+#  else
+
+/* use a global variable to store infinity */
+/* (definition in umath.c)                 */
+extern const double INFINITY;
+
+/* #    error */
+/* #    error +--------------------------------------------------+ */
+/* #    error ! Sorry, Cannot define INFINITY correctly! ....... ! */
+/* #    error ! Please contact <unuran@statistik.wu-wien.ac.at>. ! */
+/* #    error +--------------------------------------------------+ */
+/* #    error */
+#  endif
+#endif
+
+#define UNUR_INFINITY  (INFINITY)
 
 /*---------------------------------------------------------------------------*/
 /* True and false                                                            */

@@ -45,12 +45,15 @@
 #include <distr/discr.h>
 #include <distr/distr_source.h>
 #include <distributions/unur_distributions.h>
+#include <specfunct/unur_specfunct_source.h>
 #include "unuran_tests.h"
 
 /*---------------------------------------------------------------------------*/
 
 /* defaults */
-#define CHI2_CLASSMIN_DEFAULT  20  /* minimum number of observations in class */
+#define CHI2_CLASSMIN_DEFAULT  20 /* minimum number of observations in class */
+#define CHI2_SAMPLEFAC  40  
+         /* if samplesize<=0 use samplesize = CHI2_SAMPLEFAC * intervals^dim */
 #define CHI2_INTERVALS_DEFAULT 50  /* number of intervals for chi^2 test     */
 
 /* constants */
@@ -68,6 +71,9 @@ static double _unur_test_chi2_cont( struct unur_gen *gen, int intervals, int sam
 
 static double _unur_test_chi2_cemp( struct unur_gen *gen, int intervals, int samplesize, int classmin,
 				    int verbose, FILE *out );
+
+static double _unur_test_chi2_vec( struct unur_gen *gen, int intervals, int samplesize, int classmin,
+                                    int verbose, FILE *out );
 
 static double _unur_test_chi2test( double *prob, int *observed, int len, int classmin,
 				   int verbose, FILE *out );
@@ -126,8 +132,11 @@ unur_test_chi2( struct unur_gen *gen,
     return _unur_test_chi2_cemp(gen, intervals, samplesize, classmin, verbose, out);
 
   case UNUR_METH_VEC:
+    /* TODO : testing for other than normal distributions */
+    return _unur_test_chi2_vec(gen, intervals, samplesize, classmin, verbose, out);
+
   default:
-    _unur_error(test_name,UNUR_ERR_GENERIC,"Not implemented for multivariate distributions!");
+    _unur_error(test_name,UNUR_ERR_GENERIC,"Not implemented for such distributions!");
     return -1.;
   }
 
@@ -478,6 +487,175 @@ _unur_test_chi2_cemp( struct unur_gen *gen,
   return pval;
 
 } /* end of _unur_test_chi2_cemp() */
+
+/*---------------------------------------------------------------------------*/
+
+static double
+_unur_test_chi2_vec ( struct unur_gen *gen, 
+		      int intervals, 
+		      int samplesize, 
+		      int classmin,
+		      int verbose,
+		      FILE *out )
+     /*----------------------------------------------------------------------*/
+     /* Chi^2 test for multivariate (NORMAL) continuous distributions.       */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen        ... pointer to generator object                         */
+     /*   intervals  ... number of intervals in which (0,1) is partitioned   */
+     /*                  (each dimension is partitioned in #intervals)       */
+     /*   samplesize ... samplesize for test                                 */
+     /*                  (if <= 0, CHI2_SAMPLEFAC * intervals^dim is used)   */
+     /*   classmin   ... minimum number of expected occurrences for each class */
+     /*                  (if <= 0, a default value is used.)                 */
+     /*   verbose    ... verbosity level                                     */
+     /*                  0 = no output on stdout                             */
+     /*                  1 = print summary                                   */
+     /*                  2 = print classes and summary                       */
+     /*   out        ... output stream                                       */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   p-value of test statistics under H_0                               */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   -2. ... missing data                                               */
+     /*   -1. ... other errors                                               */
+     /*----------------------------------------------------------------------*/
+{
+
+  int dim;         /* dimension of multivariate distribution */
+  double *z;       /* sampling vector */
+  int *b, *bg;     /* vectors for observed occurrences */
+  double pval;     /* p-value */
+  int i,j, offset;
+  int *idx;	   /* index array */
+  int idim;        /* intervals ^ dim */
+  int ipow;	   /* powers of intervals : intervals^x */
+  
+  /* check arguments */
+  CHECK_NULL(gen,-1.);
+  /* we do not check magic cookies here */
+
+  /* check given number of intervals */
+  if (intervals <= 2)
+    intervals = CHI2_INTERVALS_DEFAULT;
+
+  dim = gen->distr->dim;
+  if (dim < 2) {
+    _unur_error(test_name,UNUR_ERR_GENERIC,"Distribution dimension < 2 ?");
+    return -1; 
+  }
+
+  /* idim = intervals^dim */
+  /* we avoid using the pow function here */
+  idim = intervals;
+  for (i=2; i<=dim; i++) {
+    idim = (INT_MAX/intervals > idim) ? idim*intervals : INT_MAX;
+  }
+
+
+  if (idim == INT_MAX) {
+    _unur_error(test_name,UNUR_ERR_GENERIC,"too many intervals for this dimension");
+    return -1;
+  }
+  
+  /* allocate memory */
+  idx = _unur_malloc( dim * sizeof(int));
+  if (idx==NULL) {
+      _unur_error(test_name,UNUR_ERR_GENERIC,"malloc error : idx");
+      return -1;
+  }
+
+  z = _unur_malloc( dim * sizeof(double));
+  if (z==NULL) {
+     _unur_error(test_name,UNUR_ERR_GENERIC,"malloc error : z");
+     free(idx);
+     return -1;
+  }
+  
+  b = _unur_malloc( dim * intervals * sizeof(int));
+  if (b==NULL) {
+     _unur_error(test_name,UNUR_ERR_GENERIC,"malloc error : b");
+     free(idx);
+     free(z);
+     return -1;
+  }
+	     
+  bg = _unur_malloc( idim * sizeof(int));
+  if (bg==NULL) {
+     _unur_error(test_name,UNUR_ERR_GENERIC,"malloc error : bg");
+     free(idx);
+     free(z);
+     free(b);
+     return -1;
+  }
+
+  /* clear arrays */
+
+  (void) memset(b  , 0, dim * intervals * sizeof(int));
+  (void) memset(bg , 0, idim * sizeof(int));
+  (void) memset(idx, 0, dim * sizeof(int));
+
+  /* samplesize */
+  if( samplesize <= 0 ) {
+    /* samplesize = CHI2_SAMPLEFAC * intervals^dim */
+    samplesize = (INT_MAX/CHI2_SAMPLEFAC > idim) ? idim*CHI2_SAMPLEFAC : INT_MAX;
+  }
+  samplesize = min( samplesize, CHI2_MAX_SAMPLESIZE );
+
+  /* now run generator */
+  for( i=0; i<samplesize; i++ ) {
+    _unur_sample_vec(gen, z);
+    for (j=0; j<dim; j++) {
+      idx[j] = (int)( intervals * _unur_sf_cdfnormal(z[j]) );
+      if (idx[j]==intervals) idx[j]--; /* cdf can return 1 ? */
+      offset=j*intervals+idx[j];
+      ++b[offset];
+    }
+    /* calculate dim-tuple offset */
+    offset=0;
+    ipow = 1;
+    for (j=0; j<dim; j++) {
+      offset += ipow * idx[j];
+      ipow *= intervals;
+    }    
+    ++bg[offset];
+  }
+
+  for (j=0; j<dim; j++) {
+    if (verbose >= 1) {
+      fprintf(out,"\nChi^2-Test for multivariate continuous distribution\n");
+      fprintf(out,"  intervals  = %d\n",intervals);
+      fprintf(out,"  marginal   = %d\n",j);
+    }
+
+
+    /* and now make chi^2 test (marginal) */
+    pval = _unur_test_chi2test(NULL, &b[j*intervals] , intervals, classmin, verbose, out );
+    
+  }
+
+
+  if (verbose >= 1) {
+    fprintf(out,"\nChi^2-Test for multivariate continuous distribution\n");
+    fprintf(out,"  intervals  = %d\n",idim);
+  }
+
+  /* make chi^2 test for bg */
+  pval = _unur_test_chi2test(NULL, bg , idim, classmin, verbose, out );
+
+  /* free memory */
+  free(idx);
+  free(z);
+  free(b);
+  free(bg);
+
+  /* return result of test */
+
+  /* TODO : what should we return here ? */
+  return pval;
+
+} /* end of _unur_test_chi2_vec() */
 
 /*---------------------------------------------------------------------------*/
 

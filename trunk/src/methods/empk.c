@@ -262,10 +262,13 @@ static void _unur_empk_debug_init( struct unur_par *par, struct unur_gen *gen );
 
 /*---------------------------------------------------------------------------*/
 
-inline static int
+/* compare two doubles (needed for sorting) */
+inline static int 
 compare_doubles (const void *a, const void *b)
-{
-  return (int) (*((double*)a) - *((double*)b));
+{ 
+  const double *da = (const double *) a;
+  const double *db = (const double *) b;
+  return (*da > *db) - (*da < *db);
 }
 
 /*---------------------------------------------------------------------------*/

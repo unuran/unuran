@@ -6,7 +6,7 @@ int main()
 {
   int    i;
   double x;
-  double params[2] = {0.0, 1.0};
+  double params[2] = {145.1, 1.0};
 
   UNUR_DISTR *distr;    /* distribution */
   UNUR_PAR   *par;      /* parameter */
@@ -18,7 +18,11 @@ int main()
 
   /* choose a implemented distribution: Gaussian */
   distr = unur_distr_normal(params, 2);
-  unur_distr_cont_set_domain(distr, -2, 2);
+  //unur_distr_cont_set_domain(distr, -2, 2);
+  unur_distr_cont_set_mode(distr, 1.0);
+  _unur_distr_cont_find_mode(distr);
+  printf("mode: %f\n",unur_distr_cont_get_mode(distr) );
+
 
   /* choose method */
   par = unur_ninv_new(distr);

@@ -27,6 +27,7 @@ print acg_distribution();
 print acg_fparams();
 print acg_domain();
 print acg_n_cpoints();
+print acg_tdr_c();
 print acg_language();
 print acg_logfile();
 
@@ -89,6 +90,9 @@ int get_domain(char *domain, double fdomain[]);
 /* Get number of construction points.                                        */
 int get_n_cpoints(char *n_cpoints);
 
+/* Get parameter c for TDR.                                                  */
+double get_tdr_c(char *tdr_c);
+
 /* Get name of log file                                                      */
 const char *get_logfile(const char *logfile);
 
@@ -136,24 +140,26 @@ int main (int argc, char *argv[]){
   int (*langfunc)() = unur_acg_C;
 
   /* distribution, parameter and generator object */
-  UNUR_DISTR *distr;  /* distribution object */
-  UNUR_PAR *par;      /* parameter object    */
-  UNUR_GEN *gen;      /* generator object    */
+  UNUR_DISTR *distr;   /* distribution object */
+  UNUR_PAR *par;       /* parameter object    */
+  UNUR_GEN *gen;       /* generator object    */
   
   /* parameters for distribution */
   double fpar[UNUR_DISTR_MAXPARAMS];
-  double domain[2];   /* domain for distribution */
+  double domain[2];    /* domain for distribution */
 
-  int domainset = 0;  /* checks if domain is set */
-  int n_params = 0;   /* number of parameters */
-  int n_cpoints = 30; /* number of construction points (default value) */
+  int domainset = 0;   /* checks if domain is set */
+  int n_params = 0;    /* number of parameters */
+  int n_cpoints = 30;  /* number of construction points (default value) */
+
+  double tdr_c = -0.5; /* parameter c for TDR */
 
   char c;
 
   /* ------------------------------------------------------------------------*/
   /* read options                                                            */
 
-  while ((c = getopt(argc, argv, "d:p:D:n:l:L:")) != -1) {
+  while ((c = getopt(argc, argv, "d:p:D:n:c:l:L:")) != -1) {
     switch (c) {
     case 'd':     /* distribution */
       distrfunc = get_distribution(optarg);
@@ -167,6 +173,9 @@ int main (int argc, char *argv[]){
       break;
     case 'n':     /* number of construction points */
       n_cpoints = get_n_cpoints(optarg);
+      break;
+    case 'c':     /* parameter c for TDR */
+      tdr_c = get_tdr_c(optarg);
       break;
     case 'l':     /* progamming language */
       langfunc = get_language(optarg);
@@ -225,7 +234,13 @@ int main (int argc, char *argv[]){
     fatal("Cannot create parameter object.\\n");
     exit (ACG_EXIT_FAIL_INPUT);
   }
-  
+
+  /* set parameter c */
+  if (!unur_tdr_set_c(par,tdr_c)) {
+    fatal("Cannot create parameter object.\\n");
+    exit (ACG_EXIT_FAIL_INPUT);
+  }
+
   /* test version only */
   unur_tdr_set_cpoints(par,n_cpoints,NULL);
 
@@ -296,6 +311,7 @@ usage (void)
   fprintf(stderr," [-p PDF parameters]");
   fprintf(stderr," [-D Domain]");
   fprintf(stderr," [-n number of construction points]");
+  fprintf(stderr," [-c parameter of TDR]");
   fprintf(stderr," [-l Language]");
   fprintf(stderr," [-L log file]");
   fprintf(stderr,"\\n\\n");
@@ -511,6 +527,54 @@ EOS
 
     return $n_cpoints;
 } # end of acg_n_cpoints()
+
+
+# ----------------------------------------------------------------
+# parameter c for TDR
+# ----------------------------------------------------------------
+
+sub acg_tdr_c {
+
+    my $tdr_c = <<EOS;
+
+double
+get_tdr_c(char *tdr_c)
+     /*----------------------------------------------------------------------*/
+     /* Get parameter c for TDR.                                             */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*    tdr_c ... pointer to string with parameter c                      */
+     /*                                                                      */
+     /* return:                                                              */
+     /*    parameter c                                                       */
+     /*                                                                      */
+     /* error:                                                               */
+     /*    abort program                                                     */
+     /*----------------------------------------------------------------------*/
+{
+  char *toopts;    /* pointer to charakter array */
+  char *chktoopts; /* dito, checks correctness   */
+  double c;
+
+  chktoopts = toopts = tdr_c;
+  c = strtod(toopts, &toopts);
+
+  if (chktoopts == toopts) {
+    fatal("Passed parameter c for TDR, use default instead.\\n");
+    c = -0.5;
+  }
+
+  /* o.k. */
+  return c;
+
+} /* end of get_tdr_c() */
+
+/* --------------------------------------------------------------------------*/
+
+EOS
+
+    return $tdr_c;
+} # end of acg_tdr_c()
 
 # ----------------------------------------------------------------
 # parse language

@@ -218,7 +218,9 @@ _unur_mcorr_init( struct unur_par *par )
   /* we need a generator for standard normal distributons */
   if (NORMAL==NULL) {
     struct unur_distr *normaldistr = unur_distr_normal(NULL,0);
-    NORMAL = unur_init( unur_arou_new( normaldistr ) );
+    struct unur_par   *normalpar = unur_arou_new( normaldistr );
+    unur_arou_set_usedars( normalpar, TRUE );
+    NORMAL = unur_init( normalpar );
     _unur_distr_free( normaldistr );
     if (NORMAL == NULL) {
       _unur_error(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"Cannot create aux Gaussian generator");

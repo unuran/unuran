@@ -807,7 +807,7 @@ public class $test {
       for (private int i = 0; i<$sample_size;i++) {
 	x = $gen.sample();
 	pdfx = $gen.pdf(x);
-        System.out.println( x );
+        System.out.println( x + pdfx);
       }
    }
 

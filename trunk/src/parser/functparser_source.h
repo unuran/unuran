@@ -67,17 +67,7 @@ char *_unur_fstr_tree2string ( const struct ftreenode *functtree_root,
 /* it is not used any more.                                                  */
 /*---------------------------------------------------------------------------*/
 
-
-
-
-
-
-char *Ntree2string( struct ftreenode *functtree_root, char *ret_str );
-/*---------------------------------------------------------------------------*/
-/* Creates string for program code.                                          */
-/*---------------------------------------------------------------------------*/
-
-struct ftreenode *_unur_fstr_make_derivative( struct ftreenode *functtree_root );
+struct ftreenode *_unur_fstr_make_derivative ( const struct ftreenode *functtree_root );
 /*---------------------------------------------------------------------------*/
 /* Make function tree for derivate of given function (tree).                 */ 
 /*---------------------------------------------------------------------------*/

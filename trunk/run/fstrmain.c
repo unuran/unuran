@@ -10,7 +10,7 @@ void  show_symb_tab      (void);
 int main()
 {
   struct ftreenode *parsetree;
-/*    struct treenode *dev_tree; */
+  struct ftreenode *dev_tree;
 /*    char            input_string[MAXLENGTH]; */
 /*    int             errcode, errpos; */
 /*    double          argument; */
@@ -36,6 +36,11 @@ int main()
         exit (EXIT_FAILURE);
   };
 
+
+  printf("%s\n",_unur_fstr_tree2string(parsetree,"y","F"));
+  
+
+
 /*      _unur_fstr_debug_tree(parsetree); */
   fflush(stdout);
 
@@ -50,6 +55,9 @@ int main()
   value = _unur_fstr_eval_tree(parsetree,3.);
   printf("\n Wert: %f \n",value);
 
+
+  dev_tree = _unur_fstr_make_derivative(parsetree);
+
   /* if (value==nan) {
      printf("Fehler\n");
      break; }
@@ -60,7 +68,6 @@ int main()
 
 /*    Ntree2string(parsetree,input_string); */
 /*    printf("\nParse-Baum als String:\n%s\n",input_string);  */
-
   /*-----------------------------------------------------------------*/
   /*  Ableitung */
 
@@ -72,7 +79,8 @@ int main()
 
    
   /* Speicher fuer tree freigeben */
-/*    _unur_fstr_free(parsetree); */
+  _unur_fstr_free(parsetree);
+  _unur_fstr_free(dev_tree);
 
   
   exit(EXIT_SUCCESS);

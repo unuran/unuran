@@ -37,7 +37,7 @@
 #include <unur_source.h>
 #include <distr/distr_source.h>
 #include <distr/distr.h>
-#include <distr/cmat.h>
+#include <distr/matr.h>
 #include <specfunct/unur_specfunct_source.h>
 #include "unur_distributions.h"
 #include "unur_distributions_source.h"

@@ -10,10 +10,10 @@ libdistr_la_SOURCES = \
  cont.c   cont.h \
  corder.c corder.h \
  cemp.c   cemp.h \
- cmat.c	  cmat.h \
  cvec.c   cvec.h \
  cvemp.c  cvemp.h\
- discr.c  discr.h
+ discr.c  discr.h \
+ matr.c	  matr.h
 
 # clean backup files
 CLEANFILES = *~

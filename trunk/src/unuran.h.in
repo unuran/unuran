@@ -72,12 +72,12 @@
 
 #include <distr/distr.h>
 #include <distr/cemp.h>
-#include <distr/cmat.h>
 #include <distr/cont.h>
 #include <distr/corder.h>
 #include <distr/cvec.h>
 #include <distr/cvemp.h>
 #include <distr/discr.h>
+#include <distr/matr.h>
 
 /*****************************************************************************/
 /**  Function prototypes for manipulating generator objects                 **/

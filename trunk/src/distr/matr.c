@@ -39,11 +39,11 @@
 /*---------------------------------------------------------------------------*/
 
 #include <unur_source.h>
+#include <utils/matrix_source.h>
 #include <distributions/unur_stddistr.h>
 #include "distr_source.h"
 #include "distr.h"
-#include "cmat.h"
-#include <utils/matrix_source.h>
+#include "matr.h"
 
 /*---------------------------------------------------------------------------*/
 

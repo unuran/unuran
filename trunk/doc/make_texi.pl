@@ -1145,12 +1145,12 @@ sub transform_bibref {
     # which is separated by a colon
     (my $anchor, my $remark) = split /[\:\,]\s*/, $entry, 2;
     if ($remark) { 
-	$remark =~ s/\,/\;/g;
+	$remark =~ s/\,/\;/g;   # we cannot use a comma here
 	$remark = ": $remark"; 
     }
     
     # output 
-    my $entrywithlink = "\@ref{bib:$anchor, [$anchor$remark]}";
+    my $entrywithlink = "\@ref{bib:$anchor,, [$anchor$remark]}";
     $entry = "[$anchor$remark]";
 
     # output

@@ -84,6 +84,8 @@
 #define CK_UTDR_GEN      0x00100091u
 #define CK_EMPK_PAR      0x001000a0u
 #define CK_EMPK_GEN      0x001000a1u
+#define CK_EMPL_PAR      0x001000b0u
+#define CK_EMPL_GEN      0x001000b1u
 
 /* generators multivariate continuous distributions */
 #define CK_VMT_PAR       0x00200010u

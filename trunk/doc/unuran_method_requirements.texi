@@ -30,6 +30,7 @@ sample with @command{unur_sample_cont}
 @sp 1
 @noindent
 EMPK:  Requires an observed sample.
+EMPL:  Requires an observed sample.
 @end cartouche
 
 @sp 1

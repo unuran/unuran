@@ -23,6 +23,7 @@ sample with @command{unur_sample_cont}
 @item method @tab PDF @tab dPDF @tab mode @tab area @tab other
 @item AROU   @tab  x  @tab  x   @tab  [x] @tab      @tab T-concave
 @item CSTD   @tab     @tab      @tab      @tab      @tab build-in standard distribution
+@item HINV   @tab [x] @tab [x]  @tab      @tab      @tab CDF 
 @item NINV   @tab [x] @tab      @tab      @tab      @tab CDF 
 @item SROU   @tab  x  @tab      @tab   x  @tab   x  @tab T-concave
 @item SSR    @tab  x  @tab      @tab   x  @tab   x  @tab T-concave
@@ -61,6 +62,7 @@ sample with @command{unur_sample_cont}
 @sp 1
 @noindent
 EMPK:  Requires an observed sample.
+EMPL:  Requires an observed sample.
 @end cartouche
 
 @subheading Example

@@ -4,14 +4,14 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   FILE: x_gen_source.h                                                    *
+ *   FILE: empl.h                                                            *
  *                                                                           *
  *   PURPOSE:                                                                *
- *         defines macros and function prototypes for handling               *
- *         generator objects.                                                *
+ *         function prototypes for method EMPD                               *
+ *         (EMPirical distribution with Linear interpolation)                *
  *                                                                           *
  *   USAGE:                                                                  *
- *         only included in source_unuran.h                                  *
+ *         only included in unuran.h                                         *
  *                                                                           *
  *****************************************************************************
      $Id$
@@ -37,55 +37,56 @@
  *                                                                           *
  *****************************************************************************/
 
+/* 
+   =METHOD  EMPL   EMPirical distribution with Linear interpolation
+
+   =UP  Methods_for_CEMP
+
+   =REQUIRED observed sample
+
+   =SPEED Set-up: slow (as sample is sorted),
+          Sampling: very fast (inversion) 
+
+   =REF  [HLa00]
+
+   =DESCRIPTION
+      EMPD generates random variates from an empirical distribution
+      that is given by an observed sample. This is done by linear
+      interpolation of the empirical CDF. Although this
+      method is suggested in the books of Law and Keltn (2000) and
+      Bratly, Fox, and Schrage (1987) we do discourage this method at
+      all since it has many theoretical drawbacks:
+      The mean and variance of empirical distribution function do not
+      coincide with mean and variance of the given sample. Moreover,
+      when the sample increases the empirical density function
+      does not converge to the density of the underlying random
+      variate. Notice that the range of the generated point set is
+      always given by the range of the given sample. 
+
+      This method is provided in UNURAN for the sake of
+      completeness. We always recommend to use method EMPK
+      (@pxref{EMPK,,EMPirical distribution with Kernel smoothing}).
+
+      If the data seem to be far away from having a bell shaped
+      histogram, then we think that naive resampling is still better
+      than linear interpolation.
+
+      @noindent
+      @emph{Important}: Using this method is not recommended!
+
+   =END
+*/
+
 /*---------------------------------------------------------------------------*/
-/* Invoke generators (macros to avoid function calls)                        */  
+/* Routines for user interface                                               */
 
-#define _unur_init(par)               (par)->init(par)
+/* =ROUTINES */
 
-#define _unur_sample_discr(gen)       (gen)->sample.discr(gen)
-#define _unur_sample_cont(gen)        (gen)->sample.cont(gen)
-#define _unur_sample_vec(gen,vector)  (gen)->sample.cvec(gen,vector)
+UNUR_PAR *unur_empl_new( const UNUR_DISTR *distribution );
+/* 
+   Get default parameters for generator.
+*/
 
-#define _unur_free(gen)               do {if(gen) (gen)->destroy(gen);} while(0)
-
-/*---------------------------------------------------------------------------*/
-/* get type of transformation method                                         */
-
-#define _unur_gen_is_discr(gen) ( (((gen)->method & UNUR_MASK_TYPE) == UNUR_METH_DISCR) ? 1 : 0 )
-#define _unur_gen_is_cont(gen)  ( (((gen)->method & UNUR_MASK_TYPE) == UNUR_METH_CONT)  ? 1 : 0 )
-#define _unur_gen_is_vec(gen)   ( (((gen)->method & UNUR_MASK_TYPE) == UNUR_METH_VEC)   ? 1 : 0 )
-
-/*---------------------------------------------------------------------------*/
-/* aux routine when no sampling routine is available                         */
-
-double _unur_sample_cont_error( UNUR_GEN *gen );
-
-/*---------------------------------------------------------------------------*/
-/* copy (clone) generator objects                                            */
-
-UNUR_GEN *_unur_arou_clone( const UNUR_GEN *gen );
-UNUR_GEN *_unur_cstd_clone( const UNUR_GEN *gen );
-UNUR_GEN *_unur_dari_clone( const UNUR_GEN *gen );
-UNUR_GEN *_unur_dau_clone( const UNUR_GEN *gen );
-UNUR_GEN *_unur_dgt_clone( const UNUR_GEN *gen );
-UNUR_GEN *_unur_dsrou_clone( const UNUR_GEN *gen );
-UNUR_GEN *_unur_dstd_clone ( const UNUR_GEN *gen );
-UNUR_GEN *_unur_empk_clone( const UNUR_GEN *gen );
-UNUR_GEN *_unur_empl_clone( const UNUR_GEN *gen );
-UNUR_GEN *_unur_hinv_clone( const UNUR_GEN *gen );
-UNUR_GEN *_unur_ninv_clone( const UNUR_GEN *gen );
-UNUR_GEN *_unur_srou_clone( const UNUR_GEN *gen );
-UNUR_GEN *_unur_ssr_clone( const UNUR_GEN *gen );
-UNUR_GEN *_unur_tabl_clone( const UNUR_GEN *gen );
-UNUR_GEN *_unur_tdr_clone( const UNUR_GEN *gen );
-UNUR_GEN *_unur_unif_clone( const UNUR_GEN *gen );
-UNUR_GEN *_unur_utdr_clone( const UNUR_GEN *gen );
-UNUR_GEN *_unur_vempk_clone( const UNUR_GEN *gen );
-UNUR_GEN *_unur_vmt_clone( const UNUR_GEN *gen );
-
-/* no such routines:                                                         */
-/* UNUR_GEN *_unur_auto_clone( const UNUR_GEN *gen );                        */
-
-#define _unur_gen_clone(gen)    ((gen)->clone(gen))
+/* =END */
 
 /*---------------------------------------------------------------------------*/

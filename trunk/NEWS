@@ -1,7 +1,9 @@
 Version 0.4.0: ????
 	
-	- build shared libraries (libtools, new versions of autoconf and
-	  automake)
+	- added method EMPL (empirical CDF with linear interpolation)
+	  (for sake of completeness; method not recommended)
+
+	- now build shared libraries
 
 	- reorganization of source tree
 

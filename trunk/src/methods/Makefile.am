@@ -13,13 +13,14 @@ libmethods_la_SOURCES = \
 \
  auto.c  auto.h  auto_struct.h \
  arou.c  arou.h  arou_struct.h \
- empk.c  empk.h  empk_struct.h \
  cstd.c  cstd.h  cstd_struct.h \
  dari.c  dari.h  dari_struct.h \
  dau.c   dau.h   dau_struct.h \
  dgt.c   dgt.h   dgt_struct.h \
  dsrou.c dsrou.h dsrou_struct.h \
  dstd.c  dstd.h  dstd_struct.h \
+ empk.c  empk.h  empk_struct.h \
+ empl.c  empl.h  empl_struct.h \
  hinv.c  hinv.h  hinv_struct.h \
  ninv.c  ninv.h  ninv_struct.h \
  srou.c  srou.h  srou_struct.h \

@@ -100,6 +100,7 @@
 #include <methods/tdr.h>
 #include <methods/utdr.h>
 #include <methods/empk.h>
+#include <methods/empl.h>
 
 /* methods for continuous multivariate distributions */
 #include <methods/vmt.h>

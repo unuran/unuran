@@ -73,9 +73,7 @@ unur_get_default_urng( void )
   /* default generator already running ? */
   if( urng_default == NULL ) {
     /* have to initialize default generator first */
-#if UNUR_URNG_INVOKE == UNUR_URNG_LINKED
-    ;    /* this function is not required for this compiler switch. */
-#elif UNUR_URNG_INVOKE == UNUR_URNG_POINTER 
+#if UNUR_URNG_INVOKE == UNUR_URNG_POINTER 
     urng_default = UNUR_URNG_DEFAULT;
 #elif UNUR_URNG_INVOKE == UNUR_URNG_PRNG
     urng_default = prng_new(UNUR_URNG_DEFAULT);

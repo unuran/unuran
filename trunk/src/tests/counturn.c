@@ -81,6 +81,10 @@ _urng_with_counter_next( struct prng *gen )
 } /* end of urng_with_counter() */
 
 /*---------------------------------------------------------------------------*/
+#else
+/*---------------------------------------------------------------------------*/
+#error UNUR_URNG_INVOKE not valid !!
+/*---------------------------------------------------------------------------*/
 #endif  /* UNUR_URNG_INVOKE */
 /*---------------------------------------------------------------------------*/
 
@@ -100,10 +104,6 @@ unur_test_count_urn( struct unur_gen *gen, int samplesize )
      /* error:                                                               */
      /*   return -1                                                          */
      /*----------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-#if ( (UNUR_URNG_INVOKE == UNUR_URNG_POINTER) || \
-      (UNUR_URNG_INVOKE == UNUR_URNG_PRNG) )
-/*---------------------------------------------------------------------------*/
 {
   long j;
 
@@ -161,14 +161,4 @@ unur_test_count_urn( struct unur_gen *gen, int samplesize )
 
   /* return total number of used uniform random numbers */
   return urng_counter;
-}
-/*---------------------------------------------------------------------------*/
-#else
-/*---------------------------------------------------------------------------*/
-{
-  _unur_warning("Count",UNUR_ERR_GENERIC,"Cannot count uniform random numbers. Recompile with different UNUR_URNG_INVOKE!");
-  return -1;
 } /* end of unur_test_count_urn() */
-/*---------------------------------------------------------------------------*/
-#endif  /* UNUR_URNG_INVOKE */
-/*---------------------------------------------------------------------------*/

@@ -293,9 +293,9 @@ unur_distr_cont_pdf( struct unur_distr *distr, double x )
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  CHECK_NULL(distr,0.);
-  COOKIE_CHECK(distr,CK_DISTR_CONT,0);
-  CHECK_NULL(DISTR.pdf,0.);
+  CHECK_NULL(distr,-1.);
+  COOKIE_CHECK(distr,CK_DISTR_CONT,-1.);
+  CHECK_NULL(DISTR.pdf,-1.);
 
   return ((*(DISTR.pdf))(x,DISTR.params,DISTR.n_params));
 } /* end of unur_distr_cont_pdf() */
@@ -367,9 +367,9 @@ unur_distr_cont_cdf( struct unur_distr *distr, double x )
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  CHECK_NULL(distr,0.);
-  COOKIE_CHECK(distr,CK_DISTR_CONT,0);
-  CHECK_NULL(DISTR.cdf,0.);
+  CHECK_NULL(distr,-1.);
+  COOKIE_CHECK(distr,CK_DISTR_CONT,-1.);
+  CHECK_NULL(DISTR.cdf,-1.);
 
   return ((*(DISTR.cdf))(x,DISTR.params,DISTR.n_params));
 } /* end of unur_distr_cont_cdf() */

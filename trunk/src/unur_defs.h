@@ -46,7 +46,6 @@
 /*---------------------------------------------------------------------------*/
 /* invoke uniform random number generator                                    */
 
-#define UNUR_URNG_LINKED   1     /* link routine at compilation              */
 #define UNUR_URNG_POINTER  2     /* use a pointer to a routine               */
 #define UNUR_URNG_PRNG     3     /* use a pointer to gen. from prng-2.2      */
 

@@ -65,26 +65,7 @@
 */
 
 /*---------------------------------------------------------------------------*/
-#if UNUR_URNG_INVOKE == UNUR_URNG_LINKED
-/*---------------------------------------------------------------------------*/
-
-/* prototype for uniform rng  */
-double UNUR_URNG_DEFAULT(void);
-
-/* function call to uniform rng */
-#define _unur_call_urng(gen)                 (UNUR_URNG_DEFAULT())
-#define _unur_call_urng_prt(urng)            (UNUR_URNG_DEFAULT())
-
-/* since the urn generator is hard linked, this macros only has to avoid
-   an uninitialized pointer                                                  */
-#define _unur_copy_urng_pointer(param,gen)   (gen)->urng = NULL
-
-/* type of uniform random number generator
-   (we do not need such a pointer in this case but makes programming easier) */
-typedef void *UNUR_URNG_TYPE;
-
-/*---------------------------------------------------------------------------*/
-#elif UNUR_URNG_INVOKE == UNUR_URNG_POINTER 
+#if UNUR_URNG_INVOKE == UNUR_URNG_POINTER
 /*---------------------------------------------------------------------------*/
 
 /* prototype for uniform rng  */

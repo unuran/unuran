@@ -90,10 +90,6 @@
 /*                                                                           */
 /* There are several ways to use a uniform pseudo random number generator:   */
 /*                                                                           */
-/* UNUR_URNG_LINKED:                                                         */
-/*     Link a routine without an argument with a given name                  */
-/*     (e.g.: "rand(void)")                                                  */
-/*                                                                           */
 /* UNUR_URNG_POINTER:                                                        */
 /*     Use a pointer to the routine without an argment                       */
 /*     (e.g.: "double (*urng)(void)")                                        */
@@ -103,24 +99,27 @@
 /*     (see http://random.mat.sbg.ac.at/ftp/pub/software/gen/)               */
 /*                                                                           */
 
-/*  #define UNUR_URNG_INVOKE UNUR_URNG_LINKED */
 #define UNUR_URNG_INVOKE UNUR_URNG_POINTER
 /*  #define UNUR_URNG_INVOKE UNUR_URNG_PRNG */
 
 /*---------------------------------------------------------------------------*/
 /* Default name of uniform random number generator.                          */
 
-#if UNUR_URNG_INVOKE != UNUR_URNG_PRNG
-/* valid name of a C routine (case LINKED and POINTER)                       */
+#if UNUR_URNG_INVOKE == UNUR_URNG_POINTER
 
+/* valid name of a C routine                                                 */
 #define UNUR_URNG_DEFAULT uniform
 
-#else
-/* valid parameter (char) string for prng-2.2 (case PRNG)                    */
+#elif UNUR_URNG_INVOKE == UNUR_URNG_PRNG
 
+/* valid parameter (char) string for prng-2.2                                */
 #define UNUR_URNG_DEFAULT "LCG(2147483647,950706376,0,1)"
 
-#endif
+#else
+
+#error UNUR_URNG_INVOKE not valid !!
+
+#endif  /* UNUR_URNG_INVOKE */
 
 /*---------------------------------------------------------------------------*/
 

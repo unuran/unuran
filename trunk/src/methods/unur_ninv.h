@@ -70,23 +70,24 @@ void _unur_ninv_free( UNUR_GEN *generator);
 /*...........................................................................*/
 
 int unur_ninv_use_newton( UNUR_PAR *parameters );
-/* use Newton's method                                                       */
+/* Use Newton's method                                                       */
 
 int unur_ninv_use_regula( UNUR_PAR *parameters );
-/* use regula falsi                                                          */
+/* Use regula falsi                                                          */
 
 int unur_ninv_set_max_iter( UNUR_PAR *parameters, int max_iter );
-/* set number of maximal iterations                                          */
+/* Set number of maximal iterations                                          */
 
 int unur_ninv_set_x_resolution( UNUR_PAR *parameters, double x_resolution);
-/* set maximal relative error in x                                           */
+/* Set maximal relative error in x                                           */
 
 int unur_ninv_set_start( UNUR_PAR *parameters, double s1, double s2, double s3 );
-/* set starting points.                                                      */
-/*   Newton:        s1:           starting point                             */
-/*   regular falsi: s1, s2:       boundary of starting interval              */
-/*   Muller/Brent:  s1. s2, s3:   starting points                            */
-/* arguments that are not used by method are ignored.                        */
+/*  Set starting points.
+    If not set, suitable values are chosen automatically.                   */
+/*   Newton:        s1:           starting point                            */
+/*   regula falsi: s1, s2:       boundary of starting interval              */
+/*   Muller:  s1, s2, s3:   starting points (yet not implemented)           */
+/* arguments that are not used by method are ignored.                       */
 
 /* =END */
 /*---------------------------------------------------------------------------*/

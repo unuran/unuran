@@ -279,7 +279,7 @@ UNUR_DISTR *make_distr_obj(char *str){
       }
     }
     else {
-      fprintf(stderr, "Unknown key provided: %s\n", key);
+      fprintf(stderr, "Unknown key: %s\n", key);
     }
 
 
@@ -412,7 +412,7 @@ UNUR_PAR *make_par_obj(UNUR_DISTR *distr, char *methstr){
       }
       else {
 	method = UNKNOWN;
-	fprintf(stderr, "Unknown method\n");
+	fprintf(stderr, "Please report: Unknown method!\n");
 	break;
       }
     }
@@ -451,7 +451,7 @@ UNUR_PAR *make_par_obj(UNUR_DISTR *distr, char *methstr){
 	unur_arou_set_pedantic(par, (int) dblvalue);
       }
       else {
-	fprintf (stderr, "Unknown option for method AROU\n");
+	fprintf (stderr, "Unknown option for method AROU: %s\n", key);
       }
     }
     /* ****************************************** */
@@ -462,7 +462,7 @@ UNUR_PAR *make_par_obj(UNUR_DISTR *distr, char *methstr){
 	unur_cstd_set_variant(par, (unsigned) dblvalue );
       }
       else {
-	fprintf (stderr, "Unknown option for method CSTD\n");
+	fprintf (stderr, "Unknown option for method CSTD: %s\n", key);
       }
     }
     /* ****************************************** */
@@ -488,7 +488,7 @@ UNUR_PAR *make_par_obj(UNUR_DISTR *distr, char *methstr){
 	unur_ninv_set_table(par, (int) dblvalue );
       }
       else {
-	fprintf (stderr, "Unknown option for method NINV\n");
+	fprintf (stderr, "Unknown option for method NINV: %s\n", key);
       }
     }
     /* ****************************************** */
@@ -511,7 +511,7 @@ UNUR_PAR *make_par_obj(UNUR_DISTR *distr, char *methstr){
 	unur_srou_set_verify(par, (int) dblvalue );
       }
       else {
-	fprintf (stderr, "Unknown option for method SROU\n");
+	fprintf (stderr, "Unknown option for method SROU: %s\n", key);
       }
     }
     /* ****************************************** */
@@ -531,7 +531,7 @@ UNUR_PAR *make_par_obj(UNUR_DISTR *distr, char *methstr){
 	unur_ssr_set_verify(par, (int) dblvalue );
       }
       else {
-	fprintf (stderr, "Unknown option for method SSR\n");
+	fprintf (stderr, "Unknown option for method SSR: %s\n", key);
       }
     }
     /* ****************************************** */
@@ -569,7 +569,7 @@ UNUR_PAR *make_par_obj(UNUR_DISTR *distr, char *methstr){
 	unur_tabl_set_verify(par, (int) dblvalue );
       }
       else {
-	fprintf (stderr, "Unknown option for method TABL\n");
+	fprintf (stderr, "Unknown option for method TABL: %s\n", key);
       }
     }
     /* ****************************************** */
@@ -616,7 +616,7 @@ UNUR_PAR *make_par_obj(UNUR_DISTR *distr, char *methstr){
 	unur_tdr_set_pedantic(par, (int) dblvalue );
       }
       else {
-	fprintf (stderr, "Unknown option for method TDR\n");
+	fprintf (stderr, "Unknown option for method TDR: %s\n", key);
       }
     }
     /* ****************************************** */
@@ -636,7 +636,7 @@ UNUR_PAR *make_par_obj(UNUR_DISTR *distr, char *methstr){
 	unur_utdr_set_verify(par, (int) dblvalue );
       }
       else {
-	fprintf (stderr, "Unknown option for method UTDR\n");
+	fprintf (stderr, "Unknown option for method UTDR: %s\n", key);
       }
     }
     /* ****************************************** */
@@ -656,7 +656,7 @@ UNUR_PAR *make_par_obj(UNUR_DISTR *distr, char *methstr){
 	unur_dari_set_verify(par, (int) dblvalue );
       }
       else {
-	fprintf (stderr, "Unknown option for method DARI\n");
+	fprintf (stderr, "Unknown option for method DARI: %s\n", key);
       }
     }
     /* ****************************************** */
@@ -667,7 +667,7 @@ UNUR_PAR *make_par_obj(UNUR_DISTR *distr, char *methstr){
 	unur_dau_set_urnfactor(par, dblvalue );
       }
       else {
-	fprintf (stderr, "Unknown option for method DAU\n");
+	fprintf (stderr, "Unknown option for method DAU: %s\n", key);
       }
     }
     /* ****************************************** */
@@ -681,7 +681,7 @@ UNUR_PAR *make_par_obj(UNUR_DISTR *distr, char *methstr){
 	unur_dgt_set_variant(par,  (unsigned) dblvalue );
       }
       else {
-	fprintf (stderr, "Unknown option for method DGT\n");
+	fprintf (stderr, "Unknown option for method DGT: %s\n",key);
       }
     }
     /* ****************************************** */
@@ -692,7 +692,7 @@ UNUR_PAR *make_par_obj(UNUR_DISTR *distr, char *methstr){
 	unur_dstd_set_variant(par, (unsigned) dblvalue  );
       }
       else {
-	fprintf (stderr, "Unknown option for method DSTD\n");
+	fprintf (stderr, "Unknown option for method DSTD:s \n", key);
       }
     }
     /* no method defined -> error */

@@ -61,7 +61,7 @@ int main()
 { 
   double     *prob;    /* probability vector */
   struct unur_par *par;
-  struct unur_gen *gen;
+/*    struct unur_gen *gen; */
   double fpar[2];
 /*    double stp[10]; */
   double slopes[10];

@@ -44,10 +44,10 @@
 #define __UNUR_ERRNO_H_SEEN
 /*---------------------------------------------------------------------------*/
 
+#include <unur_defs.h>
+
 #include <errno.h>
 #include <stdio.h>
-
-#include <unur_defs.h>
 
 /*---------------------------------------------------------------------------*/
 /* Function prototypes                                                       */
@@ -135,12 +135,6 @@ const char *unur_get_strerror ( const int unur_errno );
    } while (0)
 
 /*---------------------------------------------------------------------------*/
-/* write infos into log file                                                 */
-
-/* an abbreviation */
-#define _unur_print_if_default(par,flag)   if(!((par)->set & (flag))) fprintf(log,"  [default]")
-
-/*---------------------------------------------------------------------------*/
 #else    /* no debugging */
 /*---------------------------------------------------------------------------*/
 
@@ -150,6 +144,13 @@ const char *unur_get_strerror ( const int unur_errno );
 /*---------------------------------------------------------------------------*/
 #endif   /* UNUR_DEBUG */
 /*---------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------*/
+/* write infos into log file                                                 */
+
+/* an abbreviation */
+#define _unur_print_if_default(par,flag)   if(!((par)->set & (flag))) fprintf(log,"  [default]")
+
 
 
 /*---------------------------------------------------------------------------*/

@@ -58,10 +58,6 @@
 
    _unur_call_urng(gen)
       ... function call to urng (via struct unur_gen)
-   _unur_call_urng_ptr(urng)
-      ... function call to urng (via pointer to uniform rng generator)
-   _unur_copy_urng_pointer(param,gen)
-      ... copy pointer to urng from parameter list into generator object
 */
 
 /*---------------------------------------------------------------------------*/
@@ -76,7 +72,6 @@ typedef double (*UNUR_URNG_TYPE)(void);
 
 /* function call to uniform rng */
 #define _unur_call_urng(gen)        ((*(gen->urng))())
-#define _unur_call_urng_prt(urng)   (urng())
 
 /*---------------------------------------------------------------------------*/
 #elif UNUR_URNG_INVOKE == UNUR_URNG_PRNG
@@ -90,7 +85,6 @@ typedef struct prng *UNUR_URNG_TYPE;
 
 /* function call to uniform rng */
 #define _unur_call_urng(gen)        (prng_get_next(gen->urng))
-#define _unur_call_urng_prt(urng)   (prng_get_next(urng))
 
 /*---------------------------------------------------------------------------*/
 #else

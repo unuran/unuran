@@ -43,13 +43,12 @@
 #define __UNUR_METHODS_H_SEEN
 /*---------------------------------------------------------------------------*/
 
+#include <unur_defs.h>
+
+
 /** TODO **/
 #include <unur_methods_lib.h>
 
-#include <float.h>
-#include <stdlib.h>
-
-#include <unur_defs.h>
 
 #include <unur_umalloc.h>
 #include <unur_urng.h>
@@ -195,13 +194,13 @@ struct unur_gen {
 
 #else
 
-#define unur_init(par)                par->init(par)
+#define unur_init(par)                (par)->init(par)
 
 #define unur_sample_discr(gen)        (gen)->sample.discr(gen)
 #define unur_sample_cont(gen)         (gen)->sample.cont(gen)
 #define unur_sample_vec(gen,vector)   (gen)->sample.vec(gen,vector)
 
-#define unur_free(gen)                gen->destroy(gen)
+#define unur_free(gen)                (gen)->destroy(gen)
 
 #endif  /* UNUR_DB_CHECKNULL */
 

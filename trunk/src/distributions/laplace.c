@@ -52,8 +52,7 @@
 
 /*---------------------------------------------------------------------------*/
 
-#include <float.h>
-#include <stdlib.h>
+#include <unur_defs.h>
 
 #include <unur_methods.h>
 #include <unur_distribution.h>

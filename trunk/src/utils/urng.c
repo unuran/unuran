@@ -34,6 +34,7 @@
 
 /*---------------------------------------------------------------------------*/
 
+#include <unur_defs.h>
 #include <unur_methods.h>
 
 #include <unur_cookies.h>

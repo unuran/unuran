@@ -17,9 +17,8 @@ libunuran_a_LIBADD = \
  uniform/*.o
 
 pkginclude_HEADERS = \
- unuran_config.h \
- unur_defs.h
-
+ unur_defs.h \
+ unuran_config.h
 
 # clean backup files too
 clean-local:

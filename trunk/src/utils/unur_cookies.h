@@ -49,11 +49,13 @@
 /*---------------------------------------------------------------------------*/
 /* name of cookies                                                           */
 
+/* generators discrete distributions */
 #define CK_DIS_PAR       0x00000010u
 #define CK_DIS_GEN       0x00000011u
 #define CK_DAU_PAR       0x00000020u
 #define CK_DAU_GEN       0x00000021u
 
+/* generators continuous distributions */
 #define CK_AROU_PAR      0x00100010u
 #define CK_AROU_GEN      0x00100011u
 #define CK_AROU_SEG      0x00100012u
@@ -72,6 +74,7 @@
 #define CK_UTDR_PAR      0x00100050u
 #define CK_UTDR_GEN      0x00100051u
 
+/* generators multivariate continuous distributions */
 #define CK_RECT_PAR      0x00200010u
 #define CK_RECT_GEN      0x00200011u
 
@@ -80,7 +83,7 @@
 
 #define CK_MBLOCK        0xf0000001u
 
-/* distribution objects                                                      */
+/* distribution objects */
 #define CK_DISTR         0xe0000000u
 #define CK_DISTR_CONT    0xe0000001u
 #define CK_DISTR_DISCR   0xe0000002u

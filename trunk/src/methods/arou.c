@@ -321,7 +321,7 @@ unur_arou_new( struct unur_distr *distr )
 
   PAR.starting_cpoints    = NULL;   /* pointer to array of starting points   */
   PAR.n_starting_cpoints  = 30;     /* number of starting points             */
-  PAR.max_segs            = 50;     /* maximum number of segments            */
+  PAR.max_segs            = 100;    /* maximum number of segments            */
   PAR.max_ratio           = 0.95;   /* do not add construction points if
 				       ratio r_n = |P^s| / |P^e| > max_ratio */
   PAR.bound_for_adding    = 0.5;    /* do not add a new construction point in a segment, 
@@ -1193,9 +1193,6 @@ _unur_arou_get_starting_cpoints( struct unur_par *par, struct unur_gen *gen )
     else
       is_center = FALSE;
 
-    /** TODO: check if two construction points are too close ??
-	check if a point is too close to center ??  */
-
     /* value of p.d.f. at starting point */
     fx = (x >= INFINITY) ? 0. : PDF(x);
 
@@ -1329,6 +1326,10 @@ _unur_arou_get_starting_segments( struct unur_par *par, struct unur_gen *gen )
 
     /* value of p.d.f. at x */
     fx = PDF(x);
+    if (fx < 0.) {
+      _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"p.d.f. < 0");
+      return 0;
+    }
 
     /* add a new segment, but check if we had to used too many segments */
     if (GEN.n_segs >= GEN.max_segs) {
@@ -1472,6 +1473,7 @@ _unur_arou_segment_parameter( struct unur_gen *gen, struct unur_arou_segment *se
   double coeff_det, cramer_det[2];
   double norm_vertex;
   double det_bound;
+  double tmp_a, tmp_b;
 
   /* check arguments */
   CHECK_NULL(gen,0);  COOKIE_CHECK(gen,CK_AROU_GEN,0);
@@ -1538,6 +1540,7 @@ _unur_arou_segment_parameter( struct unur_gen *gen, struct unur_arou_segment *se
     /* area outside the squeeze */
     seg->Aout = ( (seg->ltp[0] - seg->mid[0]) * (seg->rtp[1] - seg->mid[1])
 		  - (seg->ltp[1] - seg->mid[1]) * (seg->rtp[0] - seg->mid[0])) / 2.;
+
     /* due to our ordering of construction points, seg->Aout must be >= 0
        for a regular triangle.
        Thus if seg->Aout < 0, then the intersection point of tangents is on
@@ -1561,11 +1564,16 @@ _unur_arou_segment_parameter( struct unur_gen *gen, struct unur_arou_segment *se
          (*) seg->Aout > 0
          (*) intersection point right of left construction point
          (*) intersection point left of right construction point */
-    if ( seg->Aout > 0. &&
-	 ! _unur_FP_less( seg->mid[0] * seg->ltp[1], seg->ltp[0] * seg->mid[1] ) &&
-	 ! _unur_FP_greater( seg->mid[0] * seg->rtp[1], seg->rtp[0] * seg->mid[1] ) ) {
-      /* everything o.k. */
-      return 1;
+    if ( seg->Aout > 0. ) {
+      tmp_a = seg->mid[0] * seg->ltp[1];
+      tmp_b = seg->ltp[0] * seg->mid[1];
+      if ( ! _unur_FP_less(tmp_a, tmp_b) ) {
+	tmp_a = seg->mid[0] * seg->rtp[1];
+	tmp_b = seg->rtp[0] * seg->mid[1];
+	if ( ! _unur_FP_greater(tmp_a, tmp_b) )
+	  /* everything o.k. */
+	  return 1;
+      }
     }
 
     /* there are two cases why the above check failed:
@@ -1573,10 +1581,25 @@ _unur_arou_segment_parameter( struct unur_gen *gen, struct unur_arou_segment *se
        (2) small roundoff errors.
     */
 
-    /** TODO: check for roundoff-errors !!! **/
+    if (seg->ltp[1] != 0. && seg->rtp[1] != 0.) {
+      tmp_a = seg->ltp[0] * seg->rtp[1];
+      tmp_b = seg->rtp[0] * seg->ltp[1];
+      if ( _unur_FP_equal(tmp_a, tmp_b) ) {
+	/* we assume that left construction point = right construction point */
+	/* (construction points are too close) */
+	seg->Ain = seg->Aout = 0.;
+	return 0;
+      }
+    }
 
-    _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"p.d.f. not T-concave");
-    return 0;
+    /* _unur_warning(gen->genid,UNUR_ERR_GEN_CONDITION,"p.d.f. not T-concave"); */
+
+    /* The outer area is unbounded (this might happen if the given p.d.f.
+       is not T-concave or due to round off errors.
+       We assume round off errors. If the p.d.f. is not T-concave we
+       will exceed any bound for the number of segments.    */
+    seg->Aout = INFINITY;
+    return -1;
   }
 
   /* remaining case: triangle degenerates to a line segment, i.e.

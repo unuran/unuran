@@ -188,8 +188,8 @@ _unur_lognormconstant_beta(double *params, int n_params)
 { 
   switch (n_params) {
   case 4:                /* non standard */
-    /* log( Beta(p,q) * (b-a)^(p+q-1) ) */
-    return (_unur_gammaln(p) + _unur_gammaln(q) - _unur_gammaln(p+q) + (b-a)*(p+q-1.) );
+    /* log( Beta(p,q) * (b-a) ) */
+    return (_unur_gammaln(p) + _unur_gammaln(q) - _unur_gammaln(p+q) + log(b-a) );
   case 2: default:       /* standard */
     /* log( Beta(p,q) ) */
     return (_unur_gammaln(p) + _unur_gammaln(q) - _unur_gammaln(p+q));

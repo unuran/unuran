@@ -599,6 +599,8 @@ _unur_nrou_rectangle( struct unur_gen *gen )
   }
 
 
+  /* TODO : check if umin or umax is NaN */
+
   /* o.k. */
   return UNUR_SUCCESS;
 

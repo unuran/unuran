@@ -1,3 +1,9 @@
+Version 0.4.3: June 2003
+
+	- fixed problem with prepocessor for MacOS X
+
+	- fixed bug in Kinderman-Ramage Gaussian variate generator
+
 Version 0.4.2: March 2003
 
 	- new interface for unur_tdr_eval_invcdfhat()

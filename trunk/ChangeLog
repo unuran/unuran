@@ -1,3 +1,88 @@
+2003-06-19  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/configure.ac, /home/staff/CVSROOT/unuran/run/run.c:
+	release 0.4.3
+
+	* /home/staff/CVSROOT/unuran/experiments/timing2tex.pl: changes
+
+	* /home/staff/CVSROOT/unuran/experiments/make_timing_table.c:
+	fixed problems with automake and autoconf
+
+	* /home/staff/CVSROOT/unuran/src/methods/dstd.c, /home/staff/CVSROOT/unuran/src/methods/empk.c, /home/staff/CVSROOT/unuran/src/methods/empl.c, /home/staff/CVSROOT/unuran/src/methods/hinv.c, /home/staff/CVSROOT/unuran/src/methods/hrb.c, /home/staff/CVSROOT/unuran/src/methods/hrd.c, /home/staff/CVSROOT/unuran/src/methods/hri.c, /home/staff/CVSROOT/unuran/src/methods/ninv.c, /home/staff/CVSROOT/unuran/src/methods/srou.c, /home/staff/CVSROOT/unuran/src/methods/ssr.c, /home/staff/CVSROOT/unuran/src/methods/tabl.c, /home/staff/CVSROOT/unuran/src/methods/tdr_debug.ch, /home/staff/CVSROOT/unuran/src/methods/tdr_init.ch, /home/staff/CVSROOT/unuran/src/methods/unif.c, /home/staff/CVSROOT/unuran/src/methods/utdr.c, /home/staff/CVSROOT/unuran/src/methods/vempk.c, /home/staff/CVSROOT/unuran/src/methods/vmt.c, /home/staff/CVSROOT/unuran/src/methods/x_gen.c, /home/staff/CVSROOT/unuran/src/parser/functparser_debug.ch, /home/staff/CVSROOT/unuran/src/parser/functparser_deriv.ch, /home/staff/CVSROOT/unuran/src/parser/functparser_init.ch, /home/staff/CVSROOT/unuran/src/parser/functparser_scanner.ch, /home/staff/CVSROOT/unuran/src/tests/printsample.c, /home/staff/CVSROOT/unuran/src/tests/tests.c, /home/staff/CVSROOT/unuran/src/utils/debug_source.h, /home/staff/CVSROOT/unuran/src/utils/slist.c, /home/staff/CVSROOT/unuran/src/distr/cemp.c, /home/staff/CVSROOT/unuran/src/distr/cont.c, /home/staff/CVSROOT/unuran/src/distr/corder.c, /home/staff/CVSROOT/unuran/src/distr/cvec.c, /home/staff/CVSROOT/unuran/src/distr/cvemp.c, /home/staff/CVSROOT/unuran/src/distr/discr.c, /home/staff/CVSROOT/unuran/src/methods/arou.c, /home/staff/CVSROOT/unuran/src/methods/cstd.c, /home/staff/CVSROOT/unuran/src/methods/dari.c, /home/staff/CVSROOT/unuran/src/methods/dau.c, /home/staff/CVSROOT/unuran/src/methods/dgt.c, /home/staff/CVSROOT/unuran/src/methods/dsrou.c:
+	fixed problem with prepocessor for MacOS X; replaced /*void*/ in macros by RETURN_VOID
+
+	* /home/staff/CVSROOT/unuran/src/utils/string.c, /home/staff/CVSROOT/unuran/configure.ac, /home/staff/CVSROOT/unuran/examples/Makefile.am, /home/staff/CVSROOT/unuran/experiments/Makefile.am, /home/staff/CVSROOT/unuran/scripts/Makefile.am, /home/staff/CVSROOT/unuran/src/distributions/Makefile.am, /home/staff/CVSROOT/unuran/src/distr/Makefile.am, /home/staff/CVSROOT/unuran/src/Makefile.am, /home/staff/CVSROOT/unuran/src/methods/Makefile.am, /home/staff/CVSROOT/unuran/src/parser/Makefile.am, /home/staff/CVSROOT/unuran/src/specfunct/Makefile.am, /home/staff/CVSROOT/unuran/src/tests/Makefile.am, /home/staff/CVSROOT/unuran/src/uniform/Makefile.am, /home/staff/CVSROOT/unuran/src/utils/Makefile.am, /home/staff/CVSROOT/unuran/tests/Makefile.am:
+	fixed problems with automake and autoconf; option -Wall only for gcc
+
+2003-06-18  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/experiments/make_timing_table.c:
+	changed usage msg
+
+2003-06-07  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/experiments/timing2tex.pl:
+	perl skript for making tex tables from make_timing_table output
+
+	* /home/staff/CVSROOT/unuran/experiments/make_timing_table.c:
+	imrpoved interface for program
+
+	* /home/staff/CVSROOT/unuran/src/tests/timing.c, /home/staff/CVSROOT/unuran/src/tests/unuran_tests.h:
+	modified routine for total generation time
+
+2003-06-04  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/src/distributions/c_normal_gen.c:
+	fixed bug in Kinderman-Ramage generator
+
+2003-06-03  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/experiments/make_timing_table.c:
+	added support for getopt
+
+	* /home/staff/CVSROOT/unuran/src/tests/chi2test.c, /home/staff/CVSROOT/unuran/src/tests/unuran_tests.h:
+	added verbosity level 3 for chi2test
+
+	* /home/staff/CVSROOT/unuran/configure.ac: added test for getopt
+
+2003-04-25  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/TODO: updated
+
+2003-04-24  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/src/methods/arou.c:
+	readded printratio function
+
+2003-04-23  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/run/Makefile, /home/staff/CVSROOT/unuran/run/mcrun.c:
+	*** empty log message ***
+
+2003-03-18  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/TODO: updated
+
+2003-03-12  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/configure.ac: released version 0.4.2
+
+	* /home/staff/CVSROOT/unuran/NEWS, /home/staff/CVSROOT/unuran/ChangeLog:
+	updated file
+
+	* /home/staff/CVSROOT/unuran/doc/Makefile.am: fixed variable name
+
+	* /home/staff/CVSROOT/unuran/src/methods/tdr_newset.ch, /home/staff/CVSROOT/unuran/src/methods/tdr.c:
+	export _unur_tdr_eval_cdfhat()
+
+2003-02-23  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/run/mcrun.c, /home/staff/CVSROOT/unuran/run/Makefile, /home/staff/CVSROOT/unuran/run/run.c:
+	*** empty log message ***
+
+	* /home/staff/CVSROOT/unuran/tests/t_tdr.conf, /home/staff/CVSROOT/unuran/src/methods/tdr_sample.ch, /home/staff/CVSROOT/unuran/src/methods/tdr.c, /home/staff/CVSROOT/unuran/src/methods/tdr.h:
+	new interface for unur_tdr_eval_invcdfhat
+
 2003-02-23  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
 
 	* /home/staff/CVSROOT/unuran/run/mcrun.c, /home/staff/CVSROOT/unuran/run/Makefile, /home/staff/CVSROOT/unuran/run/run.c:

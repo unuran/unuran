@@ -42,6 +42,22 @@
 
 /*---------------------------------------------------------------------------*/
 
+static int _unur_acg_UNURAN_stdPDF(FILE *out, UNUR_DISTR *distr);
+/*---------------------------------------------------------------------------*/
+/* Code generator for PDFs of UNURAN build-in standard distributions.        */
+/*---------------------------------------------------------------------------*/
+
+static int _unur_acg_UNURAN_genericPDF(FILE *out, UNUR_DISTR *distr);
+/*---------------------------------------------------------------------------*/
+/* Code generator for PDFs of UNURAN generic distributions.                  */
+/*---------------------------------------------------------------------------*/
+
+/*****************************************************************************/
+/** API                                                                     **/
+/*****************************************************************************/
+
+/*---------------------------------------------------------------------------*/
+
 int
 unur_acg_UNURAN( struct unur_gen *gen, FILE *out, const char *distr_name, int with_main )
      /*----------------------------------------------------------------------*/
@@ -87,7 +103,7 @@ unur_acg_UNURAN( struct unur_gen *gen, FILE *out, const char *distr_name, int wi
     return_code =
       _unur_acg_UNURAN_header ( out, &(gen->distr), rand_name ) &&
       _unur_acg_UNURAN_PDF    ( out, &(gen->distr), pdf_name ) &&
-      _unur_acg_UNURAN_tdr_ps ( out, gen, rand_name, n_cpoints );
+      _unur_acg_UNURAN_tdr_ps ( out, gen, rand_name, pdf_name, n_cpoints );
     break;
   default:
     _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"Cannot make generator code");
@@ -114,7 +130,7 @@ unur_acg_UNURAN( struct unur_gen *gen, FILE *out, const char *distr_name, int wi
 int 
 _unur_acg_UNURAN_PDF (FILE *out, UNUR_DISTR *distr, const char *pdf_name)
      /*----------------------------------------------------------------------*/
-     /* Code generator for PDFs of UNURAN build-in standard distributions.   */
+     /* Code generator for PDFs of continuous distributions.                 */
      /*                                                                      */
      /* parameters:                                                          */
      /*   distr      ... pointer to distribution object                      */
@@ -129,9 +145,9 @@ _unur_acg_UNURAN_PDF (FILE *out, UNUR_DISTR *distr, const char *pdf_name)
      /*   return 0                                                           */
      /*----------------------------------------------------------------------*/
 {
-  double *fpar;
-  int n_fpar;
-  int i;
+  /* check arguments */
+  _unur_check_NULL("unur_acg",distr,0);
+  COOKIE_CHECK(distr,CK_DISTR_CONT, 0);
 
   /* make section header for code file */
   fprintf(out,"\n");
@@ -144,7 +160,7 @@ _unur_acg_UNURAN_PDF (FILE *out, UNUR_DISTR *distr, const char *pdf_name)
   fprintf(out,"#include <unuran.h>\n\n");
 
   /* PDF routine */
-  fprintf(out,"double %s (double x)\n{\n",pdf_name);
+  fprintf(out,"static double %s (double x)\n{\n",pdf_name);
 
   /* declare variables */
   fprintf(out,"\tstatic UNUR_DISTR *distr = NULL;\n"); 
@@ -154,17 +170,8 @@ _unur_acg_UNURAN_PDF (FILE *out, UNUR_DISTR *distr, const char *pdf_name)
   fprintf(out,"\tif (distr == NULL) {\n"); 
 
   /* make distribution object */
-  n_fpar = unur_distr_cont_get_pdfparams(distr,&fpar);
-  if (n_fpar == 0)
-    fprintf(out,"\t\tdouble *fpar = NULL;\n");
-  else {
-    fprintf(out,"\t\tdouble fpar[] = {\n");
-    for (i=0; i<n_fpar-1; i++)
-      fprintf(out,"\t\t\t%.20e,\n",fpar[i]);
-    fprintf(out,"\t\t\t%.20e };\n",fpar[n_fpar-1]);
-  }
-
-  fprintf(out,"\t\tdistr = unur_distr_%s(fpar,%d);\n",distr->name,n_fpar);
+  if (!_unur_acg_UNURAN_PDFbody(out,distr))
+    return 0;
 
   /* emergency exit */
   fprintf(out,"\t\tif (distr == NULL) {\n");
@@ -183,3 +190,105 @@ _unur_acg_UNURAN_PDF (FILE *out, UNUR_DISTR *distr, const char *pdf_name)
 } /* end of _unur_acg_UNURAN_PDF() */
 
 /*---------------------------------------------------------------------------*/
+
+int 
+_unur_acg_UNURAN_PDFbody (FILE *out, UNUR_DISTR *distr)
+     /*----------------------------------------------------------------------*/
+     /* Code generator for body of PDFs of continuous distributions.         */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   distr      ... pointer to distribution object                      */
+     /*   out        ... output stream                                       */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... on success                                                   */
+     /*   0 ... on error                                                     */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return 0                                                           */
+     /*----------------------------------------------------------------------*/
+{
+  if (distr->id == UNUR_DISTR_GENERIC)
+    return _unur_acg_UNURAN_genericPDF(out,distr);
+  else
+    return _unur_acg_UNURAN_stdPDF(out,distr);
+
+} /* end of _unur_acg_UNURAN_PDFbody() */
+
+/*---------------------------------------------------------------------------*/
+
+int 
+_unur_acg_UNURAN_stdPDF (FILE *out, UNUR_DISTR *distr)
+     /*----------------------------------------------------------------------*/
+     /* Code generator for PDFs of UNURAN build-in standard distributions.   */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   distr      ... pointer to distribution object                      */
+     /*   out        ... output stream                                       */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... on success                                                   */
+     /*   0 ... on error                                                     */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return 0                                                           */
+     /*----------------------------------------------------------------------*/
+{
+  double *fpar;
+  int n_fpar;
+  int i;
+
+  /* make distribution object */
+  n_fpar = unur_distr_cont_get_pdfparams(distr,&fpar);
+  if (n_fpar == 0)
+    fprintf(out,"\t\tdouble *fpar = NULL;\n");
+  else {
+    fprintf(out,"\t\tdouble fpar[] = {\n");
+    for (i=0; i<n_fpar-1; i++)
+      fprintf(out,"\t\t\t%.20e,\n",fpar[i]);
+    fprintf(out,"\t\t\t%.20e };\n",fpar[n_fpar-1]);
+  }
+
+  fprintf(out,"\t\tdistr = unur_distr_%s(fpar,%d);\n",distr->name,n_fpar);
+
+  return 1;
+} /* end of _unur_acg_UNURAN_stdPDF() */
+
+/*---------------------------------------------------------------------------*/
+
+int 
+_unur_acg_UNURAN_genericPDF (FILE *out, UNUR_DISTR *distr)
+     /*----------------------------------------------------------------------*/
+     /* Code generator for PDFs of UNURAN generic distributions.             */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   distr      ... pointer to distribution object                      */
+     /*   out        ... output stream                                       */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... on success                                                   */
+     /*   0 ... on error                                                     */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return 0                                                           */
+     /*----------------------------------------------------------------------*/
+{
+  char *pdfstr;
+
+  /* get string from string interface */
+  pdfstr = unur_distr_cont_get_pdfstr(distr);
+  if (pdfstr == NULL) return 0;
+  
+  /* make new distribution object */
+  fprintf(out,"\t\tdistr = unur_distr_cont_new();\n");
+
+  /* set pdf */
+  fprintf(out,"\t\tunur_distr_cont_set_pdfstr(distr,\"%s\");\n",pdfstr);
+
+  free(pdfstr);
+
+  return 1;
+} /* end of _unur_acg_UNURAN_genericPDF() */
+
+/*---------------------------------------------------------------------------*/
+

@@ -96,9 +96,9 @@ print_log("sample size = $Conf::sample_size\n");
 print_log("accuracy = $Conf::accuracy\n");
 
 print_log("languages = ");
-print_log("C")       if $use_C; 
-print_log("FORTRAN") if $use_FORTRAN; 
-print_log("JAVA")    if $use_JAVA; 
+print_log("C  ")       if $use_C; 
+print_log("FORTRAN  ") if $use_FORTRAN; 
+print_log("JAVA  ")    if $use_JAVA; 
 print_log("\n\n");
 
 # ----------------------------------------------------------------
@@ -106,7 +106,7 @@ print_log("\n\n");
 
 my %distr_names;
 foreach my $distr (@Conf::distr_list) {
-    die unless $distr =~ /^(\w+)\s*\(/;
+    die "unkown distribution: $distr\n" unless $distr =~ /^(\w+)\s*[\(;]/;
     $distr_names{$1} = 1;
 }
 
@@ -702,7 +702,7 @@ sub make_UNURAN_gen
     my $Log = "$file_prefix.log.$test_key.$l";
 
     # Get name of distribution
-    die unless $distr =~ /^(\w+)\s*\(/;
+    die unless $distr =~ /^(\w+)\s*[\(;]/;
     my $distr_name = $1."\_$test_key";
 
     # Get code for generator
@@ -715,9 +715,6 @@ sub make_UNURAN_gen
     # Name of generator and pdf
     my $gen_name = "rand\_$distr_name";
     my $pdf_name = "pdf\_$distr_name";
-
-    # We have to mask "
-    $distr =~ s/\"/\\\"/g;
 
     # Make code for test routine
     my $testcode = "int $test_name (void)\n{\n";
@@ -780,7 +777,7 @@ sub make_C_gen
     my $Log = "$file_prefix.log.$test_key.$l";
 
     # Get name of distribution
-    die unless $distr =~ /^(\w+)\s*\(/;
+    die unless $distr =~ /^(\w+)\s*[\(;]/;
     my $distr_name = $1."\_$test_key";
 
     # Get code for generator
@@ -793,9 +790,6 @@ sub make_C_gen
     # Name of generator and pdf
     my $gen_name = "rand\_$distr_name";
     my $pdf_name = "pdf\_$distr_name";
-
-    # We have to mask "
-    $distr =~ s/\"/\\\"/g;
 
     # Make code for test routine
     my $testcode = "int $test_name (void)\n{\n";
@@ -812,7 +806,7 @@ sub make_C_gen
 
 \tuseed($seed);
 
-\tprintf("[$test_key] $distr\\n");
+\tprintf("[$test_key] $distr & $method\\n");
 \tprintf("start\\n");
 
 \tfor (i=0; i<$Conf::sample_size; i++) {
@@ -859,7 +853,7 @@ sub make_FORTRAN_gen
     my $Log = "$file_prefix.log.$test_key.$l";
     
     # Get name of distribution
-    die unless $distr =~ /^(\w+)\s*\(/;
+    die unless $distr =~ /^(\w+)\s*[\(;]/;
     my $distr_name = substr($1,0,1)."$test_key";
     
     # Get code for generator
@@ -942,15 +936,12 @@ sub make_JAVA_gen
     my $Log = "$file_prefix.log.$test_key.$l";
 
     # Get name of distribution
-    die unless $distr =~ /^(\w+)\s*\(/;
+    die unless $distr =~ /^(\w+)\s*[\(;]/;
     my $distr_name = $1."\_$test_key";
 
     # Get code for generator
     my $gencode = `$ACG -l $l -L $Log -N $distr_name \"$distr & $method\"`;
     my $failed = $?;
-
-    # We have to mask "
-    $distr =~ s/\"/\\\"/g;
 
     # We have nothing to do when ACG did not work
     if ($failed) {

@@ -45,6 +45,7 @@ int
 _unur_acg_UNURAN_tdr_ps( FILE *out, 
 			 struct unur_gen *gen, 
 			 const char *rand_name,
+			 const char *pdf_name,
 			 int n_cpoints ) 
      /*----------------------------------------------------------------------*/
      /* code generator for method TDR variant PS (proportional squeeze)      */
@@ -53,6 +54,7 @@ _unur_acg_UNURAN_tdr_ps( FILE *out,
      /*   out       ... output stream                                        */
      /*   gen       ... pointer to generator object                          */
      /*   rand_name ... name of sampling routine                             */
+     /*   pdf_name  ... name of PDF                                          */
      /*   n_cpoints ... number of construction points                        */
      /*                                                                      */
      /* return:                                                              */
@@ -63,10 +65,6 @@ _unur_acg_UNURAN_tdr_ps( FILE *out,
      /*   return 0                                                           */
      /*----------------------------------------------------------------------*/
 {
-  double *fpar;
-  int n_fpar;
-  int i;
-
   /* check arguments */
   _unur_check_NULL("ACG",gen, 0);
   COOKIE_CHECK(gen,CK_TDR_GEN,0);
@@ -112,22 +110,11 @@ _unur_acg_UNURAN_tdr_ps( FILE *out,
   fprintf(out,"\n");
 
   /* set up */
-
-  /* copy PDF parameters */
   fprintf(out,"\tif (gen == NULL) {\n\n"); 
-  n_fpar = unur_distr_cont_get_pdfparams(unur_get_distr(gen),&fpar);
-  if (n_fpar == 0)
-    fprintf(out,"\t\tdouble *fpar = NULL;\n");
-  else {
-    fprintf(out,"\t\tdouble fpar[] = {\n");
-    for (i=0; i<n_fpar-1; i++)
-      fprintf(out,"\t\t\t%.20e,\n",fpar[i]);
-    fprintf(out,"\t\t\t%.20e };\n",fpar[n_fpar-1]);
-  }
 
   /* make distribution object */
-  fprintf(out,"\t\tdistr = unur_distr_%s(fpar,%d);\n",
-	  unur_distr_get_name(unur_get_distr(gen)),n_fpar );
+  if (!_unur_acg_UNURAN_PDFbody(out,&(gen->distr)))
+    return 0;
 
   /* set domain (if changed) */
   if( !(gen->distr.set & UNUR_DISTR_SET_STDDOMAIN) ) {

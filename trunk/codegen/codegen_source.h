@@ -1,4 +1,4 @@
-#/*****************************************************************************
+/*****************************************************************************
  *                                                                           *
  *          UNURAN -- Universal Non-Uniform Random number generator          *
  *                                                                           *
@@ -55,6 +55,7 @@ int _unur_acg_C_PDF       ( FILE *out, UNUR_DISTR *distr, const char *pdf );
 int _unur_acg_FORTRAN_PDF ( FILE *out, UNUR_DISTR *distr, const char *pdf );
 int _unur_acg_JAVA_PDF    ( FILE *out, UNUR_DISTR *distr, const char *pdf );
 int _unur_acg_UNURAN_PDF  ( FILE *out, UNUR_DISTR *distr, const char *pdf );
+int _unur_acg_UNURAN_PDFbody ( FILE *out, UNUR_DISTR *distr );
 /*---------------------------------------------------------------------------*/
 /* Code generator for PDFs of UNURAN build-in standard distributions.        */
 /*---------------------------------------------------------------------------*/
@@ -66,7 +67,8 @@ int _unur_acg_FORTRAN_tdr_ps ( FILE *out, struct unur_gen *gen,
 int _unur_acg_JAVA_tdr_ps    ( FILE *out, struct unur_gen *gen,
 			       const char *rand_name, const char *pdf_name );
 int _unur_acg_UNURAN_tdr_ps  ( FILE *out, struct unur_gen *gen,
-			       const char *rand_name, int n_cpoints );
+			       const char *rand_name, const char *pdf_name,
+			       int n_cpoints );
 /*---------------------------------------------------------------------------*/
 /* Code generator for method TDR variant PS (proportional squeeze).          */
 /*---------------------------------------------------------------------------*/

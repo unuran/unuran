@@ -35,6 +35,10 @@ our @method_list =
 
 our @distr_list = 
     ( 
+#      'cont; pdf=\"exp(-x^2)\"',
+#      'cont; pdf=\"exp(-x^2)\"; domain=(0,inf)',
+#      'cont; pdf=\"exp(-x^2)\"; domain=(-1,1)',
+
       'beta (1 .. 10, 1 .. 10)',
       'beta (10 .. 1000, 10 .. 1000)',
       'beta (0.1 .. 1, 0.1 .. 1)',

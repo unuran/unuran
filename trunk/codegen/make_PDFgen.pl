@@ -291,7 +291,7 @@ sub make_PDF_distr_FORTRAN
 
     # print PDF function name
     $gencode .= 
-	"\tfprintf (out,\"      DOUBLE PRECISION FUNCTION %.6s(x)\\n\\n\", pdf_name);\n";
+	"\tfprintf (out,\"      DOUBLE PRECISION FUNCTION %.6s(xin)\\n\\n\", pdf_name);\n";
 	
     # Declarations
     $gencode .= 
@@ -537,6 +537,14 @@ sub make_PDF_body_FORTRAN
 	"\tfprintf (out,\"C     compute PDF\\n\");\n".
 	"\tfprintf (out,\"C\\n\");\n";
 
+    # Make a copy of the argument
+    $body .=
+	"\tfprintf (out,\"      x = xin\\n\\n\");\n";
+
+    # translate C -> FORTRAN
+    my $is_if_block = 0;
+    my $next_is_if_block = 0;
+
     foreach my $l (split /\n/, $in_body) {
 	if ($l =~ /if\s*\(\s*n_params\s*[<>=!]+\s*\d+\s*\)/) {
 	    $l =~ s/n_params/$DISTR->{$d}->{"=PDF"}->{"=DISTR"}.n_params/;
@@ -545,11 +553,61 @@ sub make_PDF_body_FORTRAN
 	    next;
 	}
 
+	my $indent = ($is_if_block) ? "        " : "     ";
+
+	# rename normalization constant
 	$l =~ s/LOGNORMCONSTANT/lncnst/g;
 	$l =~ s/NORMCONSTANT/const/g;
-	$l =~ s/  /\\t/g;
 
-	$body .= "\tfprintf (out,\"$l\\n\");\n";
+	# double constants
+	$l =~ s/([\d\.]+)/$1d0 /g;
+
+	# FORTRAN commands
+	$l =~ s/<=/.LE./g;
+	$l =~ s/>=/.GE./g;
+	$l =~ s/</.LT./g;
+	$l =~ s/>/.GT./g;
+
+	$l =~ s/==/.EQ./g;
+	$l =~ s/!=/.NE./g;
+
+	$l =~ s/\&\&/.AND./g;
+	$l =~ s/\|\|/.OR./g;
+
+	# return statement
+	if ($l =~ /return\s+(.*);/) {
+	    my $val = $1;
+	    $val =~ s/^\s*/$indent %.6s = /g;
+	    $body .= "\tfprintf (out,\"$val\\n\", pdf_name);\n";
+	    $body .= "\tfprintf (out,\"$indent RETURN\\n\");\n";
+	}
+
+	else {
+	    # remove `;' at and of line
+	    $l =~ s/;\s*$//;
+
+	    # `if' statement ?
+	    if ($l =~ /^\s*if\W/) {
+		$l =~ s/^\s*if/IF/;
+		$l .= " THEN";
+		$next_is_if_block = 1;
+	    }
+
+	    # change beginning of line
+	    $l =~ s/^\s*/$indent /g;
+
+	    # print
+	    $body .= "\tfprintf (out,\"$l\\n\");\n";
+	}
+
+	# we assume that each if block consists of one line
+	if ($is_if_block) {
+	    $body .= "\tfprintf (out,\"      ENDIF\\n\");\n";
+	}
+
+	$is_if_block = $next_is_if_block;
+	$next_is_if_block = 0;
+
     }
 
     return $body;

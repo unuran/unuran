@@ -163,6 +163,7 @@ int unur_empk_set_varcor( UNUR_PAR *parameters, int varcor );
 int unur_empk_chg_varcor( UNUR_GEN *generator, int varcor );
 /* 
    Switch variance correction in generator on/off.
+   Default is FALSE.
 */
 
 int unur_empk_set_kernelvar( UNUR_PAR *parameters, double kernvar );

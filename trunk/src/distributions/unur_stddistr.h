@@ -51,6 +51,7 @@ enum {
   UNUR_DISTR_CAUCHY,              /*    X     X     X     X     X     .      */
   UNUR_DISTR_CHI,                 /*    X     X     X     X     X     .      */
   UNUR_DISTR_CHISQUARE,           /*    X     X     X     X     .     .      */
+  UNUR_DISTR_EPANECHNIKOV,        /*    .     .     .     .     .     .      */
   UNUR_DISTR_EXPONENTIAL,         /*    X     X     X     X     X     .      */
   UNUR_DISTR_EXTREME_I,           /*    X     X     X     X     X     .      */
   UNUR_DISTR_EXTREME_II,          /*    X     X     X     X     X     .      */

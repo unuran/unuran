@@ -326,8 +326,8 @@ unur_empk_new( struct unur_distr *distr )
   /* kernel */
   PAR.kerngen   = NULL;          /* random variate generator for kernel      */
 
-  par->method   = UNUR_METH_EMPK;     /* method and default variant          */
-  par->variant  = ( EMPK_VARFLAG_VARCOR );       /* default variant          */
+  par->method   = UNUR_METH_EMPK; /* method and default variant              */
+  par->variant  = 0u;           /* default variant                           */
 
   par->set      = 0u;                 /* inidicate default parameters        */    
   par->urng     = unur_get_default_urng(); /* use default urng               */
@@ -358,7 +358,8 @@ unur_empk_set_kernel( struct unur_par *par, unsigned kernel)
      /*   0 ... on error                                                     */
      /*----------------------------------------------------------------------*/
 {
-  double fpar[2];
+  UNUR_DISTR *kerndist;
+  double fpar[4];
 
   /* check arguments */
   _unur_check_NULL( GENTYPE,par,0 );
@@ -374,34 +375,56 @@ unur_empk_set_kernel( struct unur_par *par, unsigned kernel)
 
   /* check for standard distribution and set data */
   switch (kernel) {
-    /** TODO: Epanechnikov-Kernel **/
+  case UNUR_DISTR_EPANECHNIKOV:
+    /* Epanechnikov (or Bartlett) kernel. efficiency 1.000
+       minimizes asymptotic MISE.
+       p.d.f.: f(x)=3/4 (1-x^2) for -1<x<1
+       (Beta distribution with p=2, q=2, a=-1, b=1) */
+    fpar[0]     = 2.;
+    fpar[1]     = 2.;
+    fpar[2]     = -1.;
+    fpar[3]     = 1.;
+    kerndist    = unur_distr_beta( fpar, 4 );
+    PAR.kerngen = unur_init( unur_arou_new ( kerndist ) );
+    PAR.alpha   = 1.718771928;
+    PAR.kernvar = 0.2;
+    unur_distr_free( kerndist );
+    break;
   case UNUR_DISTR_GAUSSIAN:
     /* Gaussian (normal) kernel. efficiency = 0.951 */
+    kerndist    = unur_distr_normal( NULL, 0 );
+    PAR.kerngen = unur_init( unur_cstd_new ( kerndist ) );
     PAR.alpha   = 0.7763884;
     PAR.kernvar = 1.;
-    PAR.kerngen = unur_init( unur_cstd_new ( unur_distr_normal( NULL, 0 )));
+    unur_distr_free( kerndist );
     break;
   case UNUR_DISTR_BOXCAR:
     /* Boxcar (uniform, rectangular) kernel. efficiency = 0.930 */
+    fpar[0]     = -1.;
+    fpar[1]     = 1.;
+    kerndist    = unur_distr_uniform( fpar, 2 );
+    PAR.kerngen = unur_init( unur_cstd_new ( kerndist ) );
     PAR.alpha   = 1.351;
     PAR.kernvar = 1./3.;
-    fpar[0] = -1.;
-    fpar[1] = 1.;
-    PAR.kerngen = unur_init( unur_cstd_new ( unur_distr_uniform( fpar, 2 )));
+    unur_distr_free( kerndist );
     break;
-  case UNUR_DISTR_STUDENT:
+    case UNUR_DISTR_STUDENT:
     /* t3 kernel (Student's distribution with 3 degrees of freedom).
        efficiency = 0.679 */
+    fpar[0] = 3.;
+    kerndist    = unur_distr_student( fpar, 1 );
+    PAR.kerngen = unur_init( unur_cstd_new ( kerndist ) );
     PAR.alpha   = 0.48263;
     PAR.kernvar = 3.;
-    fpar[0] = 3.;
-    PAR.kerngen = unur_init( unur_cstd_new ( unur_distr_student( fpar, 1 )));
+    unur_distr_free( kerndist );
     break;
   case UNUR_DISTR_LOGISTIC:
     /* logistic kernel. efficiency = efficiency = 0.887 */
+    kerndist    = unur_distr_logistic( NULL, 0 );
+    PAR.kerngen = unur_init( unur_cstd_new ( kerndist ) );
     PAR.alpha   = 0.434;
     PAR.kernvar = 3.289868133696; /* Pi^2/3 */
-    PAR.kerngen = unur_init( unur_cstd_new ( unur_distr_logistic( NULL, 0 )));
+    unur_distr_free( kerndist );
     break;
   default:
     _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"Unknown kernel. make it manually");
@@ -792,6 +815,17 @@ _unur_empk_init( struct unur_par *par )
     _unur_error(GENTYPE,UNUR_ERR_PAR_INVALID,"");
     return NULL; }
   COOKIE_CHECK(par,CK_EMPK_PAR,NULL);
+
+  /* if a generator for the kernel is given, it is also necessary that
+     the alpha factor and (in case of variance correction) the variance
+     of the kernel is given. */
+  if (par->set & EMPK_SET_KERNGEN) {
+    if ( !(par->set & EMPK_SET_ALPHA ) )
+      _unur_warning(GENTYPE,UNUR_ERR_GEN_DATA,"alpha factor not set");
+    if ( (par->variant & EMPK_VARFLAG_VARCOR) &&
+	 !(par->set & EMPK_SET_KERNELVAR ) )
+      _unur_warning(GENTYPE,UNUR_ERR_GEN_DATA,"kernel variance not set");
+  }
 
   /* the kernel */
 

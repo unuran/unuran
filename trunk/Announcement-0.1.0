@@ -8,7 +8,8 @@ We proudly announce the first public release of UNU.RAN
 UNU.RAN  is an ANSI C library licensed under GPL. 
 It contains universal (also called automatic or black-box) algorithms
 that can generate random numbers from large classes of continuous or
-discrete distributions. 
+discrete distributions, and also from practically all standard
+distributions.
 
 The library and an extensive online documentation are available at:
 
@@ -50,7 +51,7 @@ The main part
 		   (given by a vector sample)
 
    The choice of the method depends on the information available for
-   the distribution and on the desired charateristics of the algorithm
+   the distribution and on the desired characteristics of the algorithm
    (fast initialisation and slow sampling, slow initialisation and
    fast sampling).
 
@@ -81,14 +82,14 @@ the pLab team from the University of Salzburg (Austria),
 available at http://random.mat.ac.at/ or from
 http://statistik.wu-wien.ac.at/prng/.
 It is also no problem to include any other uniform random number
-generators.
+generator.
 
 
 ---------------------------------------------------------
 ADVANTAGES OF UNUNRAN
 ---------------------------------------------------------
 
-Why can it be worth the to download UNURAN and to understand the
+Why can it be worth the time to download UNURAN and to understand the
 concept of its interface? Isn't it much faster to implement a simple
 standard method for the distribution I am interested in?
 
@@ -108,11 +109,12 @@ standard method for the distribution I am interested in?
   difficult at all to start your simulation with the normal
   distribution, and switch to an empirical distribution later.
 
-- The library contains reliable and fast generation algorithms some of
-  which are only slightly influenced by the chosen distribution.
-  (However numerical inversion is included as a (very slow) brute
-  force algorithm for the rare cases where the more sophisticated
-  methods do work.)
+- The library contains reliable and fast generation algorithms. The
+  characteristics of some these algorithms (like speed, expected
+  number of uniforms required etc, ...) are only slightly influenced
+  by the chosen distribution. (However numerical inversion is included
+  as a (very slow) brute force algorithm for the rare cases where the
+  more sophisticated methods do not work.)
 
 - Correlation induction facilities are included. 
 

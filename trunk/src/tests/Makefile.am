@@ -8,7 +8,7 @@ INCLUDES = \
  -I$(top_srcdir)/src/distributions \
  -I$(top_srcdir)/src/methods
 
-lib_LIBRARIES = libtests.a
+noinst_LIBRARIES = libtests.a
 
 libtests_a_SOURCES = \
  chi2test.c \
@@ -21,7 +21,7 @@ libtests_a_SOURCES = \
  tests.c \
  timing.c
 
-pkginclude_HEADERS = \
+include_HEADERS = \
  unuran_tests.h
 
 # clean backup files too

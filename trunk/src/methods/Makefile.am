@@ -7,7 +7,7 @@ INCLUDES = \
  -I$(top_srcdir)/src \
  -I$(top_srcdir)/src/distributions
 
-lib_LIBRARIES = libmethods.a
+noinst_LIBRARIES = libmethods.a
 
 libmethods_a_SOURCES = \
  distr.c \

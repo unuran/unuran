@@ -1,7 +1,6 @@
 /* my first UNURAN program */ 
 
 #include <unuran.h>
-#include <unuran_distributions.h>
 #include <unuran_tests.h>
 
 

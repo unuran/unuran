@@ -42,8 +42,6 @@
 #define __UNURAN_TESTS_H_SEEN
 /*---------------------------------------------------------------------------*/
 
-#include <in_unuran.h>
-
 /*---------------------------------------------------------------------------*/
 /* possible tests                                                            */
 #define UNUR_TEST_ALL      (~0u)     /* make all possible tests */

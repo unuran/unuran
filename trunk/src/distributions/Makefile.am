@@ -7,7 +7,7 @@ INCLUDES = \
  -I$(top_srcdir)/src \
  -I$(top_srcdir)/src/methods
 
-lib_LIBRARIES = libdistributions.a
+noinst_LIBRARIES = libdistributions.a
 
 libdistributions_a_SOURCES = \
  c_beta.c        c_beta_gen.c \
@@ -39,10 +39,8 @@ libdistributions_a_SOURCES = \
  d_poisson.c     d_poisson_gen.c \
  d_zipf.c        d_zipf_gen.c
 
-pkginclude_HEADERS = \
- unuran_distributions.h
-
 noinst_HEADERS = \
+ unuran_distributions.h \
  source_distributions.h \
  source_specfunct.h \
  source_stddistr.h

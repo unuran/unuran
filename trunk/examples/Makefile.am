@@ -5,9 +5,6 @@ AM_CFLAGS = -Wall\
 
 INCLUDES = \
  -I$(top_srcdir)/src \
- -I$(top_srcdir)/src/distributions \
- -I$(top_srcdir)/src/methods \
- -I$(top_srcdir)/src/uniform \
  -I$(top_srcdir)/src/tests
 
 noinst_PROGRAMS = run test

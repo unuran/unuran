@@ -3,11 +3,11 @@
 
 AM_CFLAGS = -Wall
 
-lib_LIBRARIES = libuniform.a
+noinst_LIBRARIES = libuniform.a
 
 libuniform_a_SOURCES = cranduni.c
 
-pkginclude_HEADERS =
+include_HEADERS =
 
 # clean backup files too
 clean-local:

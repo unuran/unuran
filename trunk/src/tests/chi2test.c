@@ -40,9 +40,8 @@
 
 #include <limits.h>
 
-#include <unuran_tests.h>
 #include <source_unuran.h>
-#include <unuran_distributions.h>
+#include <unuran_tests.h>
 
 /*---------------------------------------------------------------------------*/
 

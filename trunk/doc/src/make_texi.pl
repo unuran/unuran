@@ -4,7 +4,7 @@
 use strict;
 
 # set to 0 to disable output of nodes to stderr
-my $VERBOSE = 1;
+my $VERBOSE = 0;
 
 # set to 0 if no additinal page breaks should be included
 my $PAGEBREAKS = 1;
@@ -1181,7 +1181,7 @@ sub process_unur_macros {
     my $lineptr = $_[1];
     my $line = $$lineptr;
 
-    while ((my $macroidx = index $line, "\@unur")>=0) {
+    while ((my $macroidx = index $line, "\@unur") > -1) {
 	# start of macrobody
 	my $bodyidx = 1 + index $line, "{", $macroidx;
 	die "Cannot find opening brace for \@unur macro" unless $bodyidx > $macroidx;
@@ -1202,17 +1202,22 @@ sub process_unur_macros {
 
 	# evaluate macro
 	my $replacement = "";
+
       MACRO: {
 	  if ($macro =~ /\@unurbibref\s*$/) {
 	      $replacement = transform_bibref($body);
-	      substr($line, 0, $macroidx) =~ s/[\s\n]+$/\n/s;
-	      substr($line, $bodyendidx) =~ s/^[\s]+//s;
+	      substr($line, $bodyendidx) =~ s/^[ \t]*\n?[ \t]*//;
 	      last MACRO;
 	  }
 
 	  if ($macro =~ /\@unurmath\s*$/) {
-	      $replacement = transform_tex($iftype,$body);
-	      substr($line, 0, $macroidx) =~ s/[\s\n]+$/\n/s;
+	      $replacement .= transform_tex($iftype,$body,0);
+	      substr($line, $bodyendidx) =~ s/^[ \t]*\n?[ \t]*//;
+	      last MACRO;
+	  }
+
+	  if ($macro =~ /\@unurmathdisplay\s*$/) {
+	      $replacement .= transform_tex($iftype,$body,1);
 	      substr($line, $bodyendidx) =~ s/^[\s]+//s;
 	      last MACRO;
 	  }
@@ -1229,6 +1234,9 @@ sub process_unur_macros {
 	
 	# replace macro
 	substr $line, $macroidx, $bodyendidx-$macroidx, $replacement;
+
+	# trim white space
+	substr($line, 0, $macroidx) =~ s/[\s\n]+$/\n/s;
     }
 
     $$lineptr = $line;
@@ -1278,6 +1286,7 @@ sub transform_bibref {
 sub transform_tex {
     my $iftype = $_[0];
     my $entry = $_[1];   # entry to be transformed
+    my $display = $_[2];    # whether this is a display or not
 
     my $tex;            
     my $html;
@@ -1288,17 +1297,26 @@ sub transform_tex {
     my $output;
 
     if ($iftype =~ /tex/) {
-	$output .= ($iftype =~ /have_tex/) ? 
-	    "\@math{$tex}\n" : "\@iftex\n\@math{$tex}\n\@end iftex\n";
+	my $tmp = "\@math{$tex}\n";
+	if ($display) { $tmp = "\n\@quotation\n".$tmp."\@end quotation\n\n"; }
+	unless ($iftype =~ /have_tex/) { $tmp = "\@iftex\n".$tmp."\@end iftex\n"; }
+	$output .= $tmp;
     }
     if ($iftype =~ /html/) {
-	$output .= ($iftype =~ /have_html/) ? 
-	    "\@html\n$html\@end html\n" : "\@ifhtml\n\@html\n$html\n\@end html\n\@end ifhtml\n";
+	my $tmp = "\@html\n$html\n\@end html\n";
+	if ($display) { $tmp = "\@quotation\n".$tmp."\@end quotation\n"; }
+	unless ($iftype =~ /have_html/) { $tmp = "\@ifhtml\n".$tmp."\@end ifhtml\n"; }
+	$output .= $tmp;
     }
     if ($iftype =~ /info/) {
-	$output .= ($iftype =~ /have_info/) ? 
-	    "\@math{$info}\n" : "\@ifinfo\n\@math{$info}\n\@end ifinfo\n";
+	my $tmp = "\@math{$info}\n";
+	if ($display) { $tmp = "\@quotation\n".$tmp."\@end quotation\n"; }
+	unless ($iftype =~ /have_info/) { $tmp = "\@ifinfo\n".$tmp."\@end ifinfo\n"; }
+	if ($display) { $tmp .= "\n"; }
+	$output .= $tmp;
     }
+
+    if ($display) { $output .= "\@noindent\n"; }
 
     return $output;
 
@@ -1342,11 +1360,11 @@ sub parse_tex {
 	if ($entry =~ s/^\\([a-zA-Z]+)(\s*)//) {
 	    # macro
 	    push @token, {type=>"macro", value=>"\\$1$2"}; next; }
-	if ($entry =~ s/^\\(\,|\;|{|})(\s*)//) {
+	if ($entry =~ s/^\\(\\|\,|\;|{|})(\s*)//) {
 	    # macro with special charcter 
 	    push @token, {type=>"macro", value=>"\\$1$2"}; next; }
 
-	if ($entry =~ s/^(\_|\^)//) {
+	if ($entry =~ s/^(\_|\^|\.|\,|\!)//) {
 	    # special characters
 	    push @token, {type=>"special", value=>"$1"}; next; }
 
@@ -1446,6 +1464,13 @@ sub next_tex_token {
 	    $$html .= $value;
 	    return;
 	}
+	if ($value =~ /^\\\\\s*$/) {
+	    # new line
+	    $$tex .= "\\hfil\\break ";
+	    $$info .= "\@*";
+	    $$html .= "\@*";
+	    return;
+	}
 	if ($value =~ /^\\(colon|leq|geq|mapsto|times|rbrace|lbrace|ldots)\s*$/) {
 	    # :, <=, >=, ->, x, {, }
 	    $$tex .= $value;
@@ -1512,6 +1537,12 @@ sub next_tex_token {
 	    $$html .= ($value =~ /^(\_)$/) ? "<SUB>" : "<SUP>";
 	    next_tex_token($token,$tex,$html,$info);
 	    $$html .= ($value =~ /^(\_)$/) ? "</SUB>" : "</SUP>";
+	return;
+	}
+	if ($value =~ /^(\.|\,|\!)$/) {
+	    $$tex .= $value;
+	    $$info .= $value;
+	    $$html .= $value;
 	return;
 	}
     }

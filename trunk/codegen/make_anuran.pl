@@ -50,51 +50,50 @@ my $data_distr = make_data_distributions($DISTR);
 # Bar with links
 # ----------------------------------------------------------------
 
-my $linkbar = <<EOX;
-"<TABLE WIDTH='100%' BORDER='0' CELLSPACING='2'>
+my $logo = <<EOX;
+"<TABLE BORDER='0' CELLSPACING='1'>
+<TR>
+    <TD ALIGN=LEFT><IMG SRC='../arvag/images/logo_arvag_40.png' ALT='' ALIGN=LEFT>
+    <TD ALIGN=LEFT>&nbsp;&nbsp;&nbsp;
+    <FONT FACE='Arial, Helvetica, sans-serif' SIZE='4' COLOR='#1E426E'>
+    ANURAN - Automatic Non-Uniform RANdom number generators
+    </FONT></TD>
+</TR></TABLE>"
+EOX
+
+my $links = <<EOX;
+<TABLE WIDTH='100%' BORDER='0' CELLSPACING='2'>
   <TR> 
-    <TD WIDTH='14%' BGCOLOR='#1E426E'> 
+    <TD WIDTH='20%' BGCOLOR='#BCD2EE'> 
       <DIV ALIGN='CENTER'>
-      <A HREF='./home.html'>
-      <FONT FACE='Arial, Helvetica, sans-serif' SIZE='2' COLOR='#FFFFFF'>
-      <B>Home</B></FONT></A></DIV>
+      <FONT FACE='Arial, Helvetica, sans-serif' SIZE='2' COLOR='#1E426E'>
+      <B>ANURAN</B></FONT></DIV>
     </TD>
-    <TD WIDTH='14%' BGCOLOR='#1E426E'> 
+    <TD WIDTH='20%' BGCOLOR='#1E426E'> 
       <DIV ALIGN='CENTER'>
-      <A HREF='./team.html'>
+      <A HREF='./cgi-bin/anuran.pl'>
       <FONT FACE='Arial, Helvetica, sans-serif' SIZE='2' COLOR='#FFFFFF'>
-      <B>Team</B></FONT></A></DIV>
+      <B>Code Generator</B></FONT></A></DIV>
     </TD>
-    <TD WIDTH='14%' BGCOLOR='#1E426E'> 
+    <TD WIDTH='20%' BGCOLOR='#1E426E'> 
       <DIV ALIGN='CENTER'>
       <A HREF='./project.html'>
       <FONT FACE='Arial, Helvetica, sans-serif' SIZE='2' COLOR='#FFFFFF'>
       <B>Project</B></FONT></A></DIV>
     </TD>
-    <TD WIDTH='14%' BGCOLOR='#1E426E'> 
+    <TD WIDTH='20%' BGCOLOR='#1E426E'> 
       <DIV ALIGN='CENTER'>
-      <A HREF='./links.html'>
+      <A HREF='../arvag/software.html'>
       <FONT FACE='Arial, Helvetica, sans-serif' SIZE='2' COLOR='#FFFFFF'>
-      <B>Links</B></FONT></A></DIV>
+      <B>Other Software</B></FONT></A></DIV>
     </TD>
-    <TD WIDTH='14%' BGCOLOR='#1E426E'> 
+    <TD WIDTH='20%' BGCOLOR='#1E426E'> 
       <DIV ALIGN='CENTER'>
-      <A HREF='./literature.html'>
+      <A HREF='../arvag/index.html'>
       <FONT FACE='Arial, Helvetica, sans-serif' SIZE='2' COLOR='#FFFFFF'>
-      <B>Literature</B></FONT></A></DIV>
+      <B>ARVAG</B></FONT></A></DIV>
     </TD>
-    <TD WIDTH='14%' BGCOLOR='#1E426E'> 
-      <DIV ALIGN='CENTER'>
-      <A HREF='./news.html'>
-      <FONT FACE='Arial, Helvetica, sans-serif' SIZE='2' COLOR='#FFFFFF'>
-      <B>News</B></FONT></A></DIV>
-    </TD>
-    <TD WIDTH='14%' BGCOLOR='#BCD2EE'>
-      <DIV ALIGN='CENTER'>
-      <FONT FACE='Arial, Helvetica, sans-serif' SIZE='2' COLOR='#1E426E'>
-      <B>Software</B></FONT></DIV>
-    </TD>
-    <TD WIDTH='2%'>&nbsp;</TD>
+    <TD WIDTH='1%'>&nbsp;</TD>
   </TR>
 </TABLE>"
 EOX
@@ -217,7 +216,8 @@ sub anuran_start
 		   -TOPMARGIN   =>'5'),
 
         # Make bar with links
-	$linkbar,
+	$logo,
+	$links,
 
 	# Heading
 	h1('Automatic Code Generator'),

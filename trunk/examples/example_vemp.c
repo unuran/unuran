@@ -1,47 +1,75 @@
-/* UNURAN program example_vemp.c                                   */
+/* ------------------------------------------------------------- */
+/* File: example_cont.c                                          */
+/* ------------------------------------------------------------- */
 
+/* Include UNURAN header file.                                   */
 #include <unuran.h>
+
+/* ------------------------------------------------------------- */
+
+/* Example how to sample from an empirial continuous             */
+/* multivariate distribution.                                    */
+
+/* ------------------------------------------------------------- */
 
 int main()
 {
   int    i;
-  double data[15][2] = { {1.,1.}, {-1.,1.}, {1.,-1.}, {-1.,-1.} };       
+
+  /* 4 data points of dimension 2                                */
+  double data[] = { 1. ,1.,       /* 1st data point              */
+		    -1.,1.,       /* 2nd data point              */
+		    1.,-1.,       /* 3rd data point              */
+		    -1.,-1. };    /* 4th data point              */
 
   double result[2];
 
-  UNUR_DISTR *distr;  /* distribution                              */
-  UNUR_PAR   *par;    /* parameter                                 */
-  UNUR_GEN   *gen;    /* generator                                 */
+  /* Declare the three UNURAN objects.                           */
+  UNUR_DISTR *distr;    /* distribution object                   */
+  UNUR_PAR   *par;      /* parameter object                      */
+  UNUR_GEN   *gen;      /* generator object                      */
 
-  /* create distribution object and set empirical sample           */
-  distr = unur_distr_cvemp_new(2);
-  unur_distr_cvemp_set_data(distr, &data[0][0], 4); 
+  /* Create a distribution object with dimension 2.              */
+  distr = unur_distr_cvemp_new( 2 );
 
+  /* Set empirical sample.                                       */
+  unur_distr_cvemp_set_data(distr, data, 4); 
+
+  /* Choose a method: VEMPK.                                     */
   par = unur_vempk_new(distr);
-  /* resample from the four given points                           */
-  unur_vempk_set_smoothing(par, 0.);
 
-  /* create generator object to enable sampling                    */
+  /* Use variance correction.                                    */
+  unur_vempk_set_varcor( par, 1 );
+
+  /* Create the generator object.                                */
   gen = unur_init(par);
-  /* Always perform this check                                     */
-  if ( gen == NULL ){
-     fprintf(stderr, "Error creating generation object\n");
-     return (1);
+
+  /* It is important to check if the creation of the generator   */
+  /* object was successful. Otherwise `gen' is the NULL pointer  */ 
+  /* and would cause a segmentation fault if used for sampling.  */
+  if (gen == NULL) {
+     fprintf(stderr, "ERROR: cannot create generator object\n");
+     exit (EXIT_FAILURE);
   }
 
-  for (i=0; i<10; i++){
-    unur_sample_vec(gen, &result[0]);
+  /* It is possible to reuse the distribution object to create   */
+  /* another generator object. If you do not need it any more,   */
+  /* it should be destroyed to free memory.                      */
+  unur_distr_free(distr);
+
+  /* Now you can use the generator object `gen' to sample from   */
+  /* the distribution. Eg.:                                      */
+  for (i=0; i<10; i++) {
+    unur_sample_vec(gen, result);
     printf("(%f,%f)\n", result[0], result[1]);
   }
  
-  /* destroy distribution object and generator object              */
-  unur_distr_free(distr);
+  /* When you do not need the generator object any more, you     */
+  /* can destroy it.                                             */
   unur_free(gen);
 
-  return (0);
-}
+  exit (EXIT_SUCCESS);
 
+} /* end of main() */
 
-
-
-
+/* ------------------------------------------------------------- */

@@ -1,47 +1,86 @@
-/* my third UNURAN program example3.c                         */
+/* ------------------------------------------------------------- */
+/* File: example3.c                                              */
+/* ------------------------------------------------------------- */
 
+/* Include UNURAN header file.                                   */
 #include <unuran.h>
+
+/* ------------------------------------------------------------- */
 
 int main()
 {
-  int    i;
-  double x;
-  double params[2] = {10.0, 0.5};
+  int    i;          /* loop variable                            */
+  double x;          /* will hold the random number              */
 
-  UNUR_DISTR *distr;    /* distribution object                */
-  UNUR_PAR   *par;      /* parameter object                   */
-  UNUR_GEN   *gen;      /* generator object                   */
+  double fparams[2]; /* array for parameters for distribution    */
 
-  /* choose Gaussian distribution with the 2 parmeters
-     stored in the array params  -> N(10,5)                   */
-  distr = unur_distr_normal(params, 2);
+  /* Declare the three UNURAN objects.                           */
+  UNUR_DISTR *distr;    /* distribution object                   */
+  UNUR_PAR   *par;      /* parameter object                      */
+  UNUR_GEN   *gen;      /* generator object                      */
 
-  /* choose method: TABL -- an acceptance/rejection method
-     using piecewise constant hats and sqeezes                */
-  par = unur_tabl_new(distr);
+  /* Use a predefined standard distribution:                     */
+  /*   Gaussian with mean 2. and standard deviation 0.5.         */
+  fparams[0] = 2.;
+  fparams[1] = 0.5;
+  distr = unur_distr_normal( fparams, 2 );
 
-  /* change a parameter of the used method:
-     set upper bound allowed for the ratio of the areas
-     below sqeeze and hat                                     */
-  unur_tabl_set_max_sqhratio(par, 0.8);
+  /* Choose a method: TDR.                                       */
+  par = unur_tdr_new(distr);
 
-  /* create generator object -- destroy parameter object      */
+  /* Change some of the default parameters.                      */
+
+  /* We want to use T(x)=log(x) for the transformation.          */
+  unur_tdr_set_c( par, 0. );
+
+  /* We want to have the variant with immediate acceptance.      */
+  unur_tdr_set_variant_ia( par );
+
+  /* We want to use 10 construction points for the setup         */
+  unur_tdr_set_cpoints ( par, 10, NULL );
+
+  /* Create the generator object.                                */
   gen = unur_init(par);
-  if (gen == NULL){
-     fprintf(stderr, "Error creating generator object\n");
-     return 1;     
+
+  /* Notice that this call has also destroyed the parameter      */
+  /* object `par' as a side effect.                              */
+
+  /* It is important to check if the creation of the generator   */
+  /* object was successful. Otherwise `gen' is the NULL pointer  */ 
+  /* and would cause a segmentation fault if used for sampling.  */
+  if (gen == NULL) {
+     fprintf(stderr, "ERROR: cannot create generator object\n");
+     exit (EXIT_FAILURE);
   }
 
-  /* sample: print mean of 100 random numbers                 */
-  for (i=0, x=0; i<100; i++) 
-     x += unur_sample_cont(gen);
-
-  printf("Mean value of 100 random numbers: %f\n",x/100);
-
-
-  /* destroy distribution- and generator object               */
+  /* It is possible to reuse the distribution object to create   */
+  /* another generator object. If you do not need it any more,   */
+  /* it should be destroyed to free memory.                      */
   unur_distr_free(distr);
+
+  /* Now you can use the generator object `gen' to sample from   */
+  /* the distribution. Eg.:                                      */
+  for (i=0; i<10; i++) {
+    x = unur_sample_cont(gen);
+    printf("%f\n",x);
+  }
+
+  /* It is possible with method TDR to truncate the distribution */
+  /* for an existing generator object ...                        */
+  unur_tdr_chg_truncated( gen, -1., 0. );
+
+  /* ... and sample again.                                       */
+  for (i=0; i<10; i++) {
+    x = unur_sample_cont(gen);
+    printf("%f\n",x);
+  }
+
+  /* When you do not need the generator object any more, you     */
+  /* can destroy it.                                             */
   unur_free(gen);
 
-  return 0;
-}
+  exit (EXIT_SUCCESS);
+
+} /* end of main() */
+
+/* ------------------------------------------------------------- */

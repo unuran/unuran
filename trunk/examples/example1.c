@@ -1,53 +1,70 @@
-/* my first UNURAN program: example1.c                      */
+/* ------------------------------------------------------------- */
+/* File: example1.c                                              */
+/* ------------------------------------------------------------- */
 
-/* load the UNURAN library                                  */
+/* Include UNURAN header file.                                   */
 #include <unuran.h>
+
+/* ------------------------------------------------------------- */
 
 int main()
 {
-  int    i;   /* loop variable                              */
-  double x;   /* will hold the random number                */
+  int    i;     /* loop variable                                 */
+  double x;     /* will hold the random number                   */
 
-  /* defining the three UNURAN objects                      */
-  UNUR_DISTR *distr;    /* distribution object              */
-  UNUR_PAR   *par;      /* parameter object                 */
-  UNUR_GEN   *gen;      /* generator object                 */
+  /* Declare the three UNURAN objects.                           */
+  UNUR_DISTR *distr;    /* distribution object                   */
+  UNUR_PAR   *par;      /* parameter object                      */
+  UNUR_GEN   *gen;      /* generator object                      */
 
-  /* choose a implemented distribution: Gaussian            */
-  /* 0 Parameters, therefore N(0,1)                         */
+  /* Use a predefined standard distribution:                     */
+  /*   Gaussian with mean zero and standard deviation 1.         */
+  /*   Since this is the standard form of the distribution,      */
+  /*   we need not give these parameters.                        */
   distr = unur_distr_normal(NULL, 0);
 
-  /* choose a method: AROU                                  */
-  /* for other methods just replace "arou"  with            */
-  /* the respective name (in lower case letters)            */
+  /* Choose a method: AROU.                                      */
+  /* For other (suitable) methods replace "arou" with the        */
+  /* respective name (in lower case letters).                    */
   par = unur_arou_new(distr);
 
-  /* the distribution object shouldn't be changed here      */
+  /* Now you can change some of the default settings for the     */
+  /* parameters of the chosen method. We don't do it here.       */
 
-  /* create generator object                                */
-  /* destroys the parameter object                          */
+  /* Create the generator object.                                */
   gen = unur_init(par);
 
-  /* it is important to check if creation of                */
-  /* the generator object was successfull                   */ 
-  if (gen == NULL){
-     fprintf(stderr, "Error creating generator object\n");
-     return 1;     
+  /* Notice that this call has also destroyed the parameter      */
+  /* object `par' as a side effect.                              */
+
+  /* It is important to check if the creation of the generator   */
+  /* object was successful. Otherwise `gen' is the NULL pointer  */ 
+  /* and would cause a segmentation fault if used for sampling.  */
+  if (gen == NULL) {
+     fprintf(stderr, "ERROR: cannot create generator object\n");
+     exit (EXIT_FAILURE);
   }
 
-  /* It is possible to reuse the distribution object        */
-  /* to create parameter and generator objects but          */
-  /* if not, it can be destroyed.                           */     
+  /* It is possible to reuse the distribution object to create   */
+  /* another generator object. If you do not need it any more,   */
+  /* it should be destroyed to free memory.                      */
   unur_distr_free(distr);
 
-  /* sampling: print 100 random numbers                     */
-  for (i=0; i<100; i++) {
-     x = unur_sample_cont(gen);
-     printf("%f\n",x);
+  /* Now you can use the generator object `gen' to sample from   */
+  /* the standard Gaussian distribution.                         */
+  /* Eg.:                                                        */
+  for (i=0; i<10; i++) {
+    x = unur_sample_cont(gen);
+    printf("%f\n",x);
   }
 
-  /* destroy generator object                               */
+  /* When you do not need the generator object any more, you     */
+  /* can destroy it.                                             */
   unur_free(gen);
 
-  return 0;
-}
+  exit (EXIT_SUCCESS);
+
+} /* end of main() */
+
+/* ------------------------------------------------------------- */
+

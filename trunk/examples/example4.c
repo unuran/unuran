@@ -1,54 +1,113 @@
-/* my fourth UNURAN program: example4.c                    */
+/* ------------------------------------------------------------- */
+/* File: example4.c                                              */
+/* ------------------------------------------------------------- */
 
-/* Invoking the PRNG-library to generate uniformly
-   distributed random numbers                              */
-
+/* Include UNURAN header file.                                   */
 #include <unuran.h>
+
+/* ------------------------------------------------------------- */
+
+/* This example makes use of the PRNG library (see               */
+/* http://statistik.wu-wien.ac.at/prng/) for generating          */
+/* uniform random numbers.                                       */
+/* To compile this example you must have set                     */
+/* #define  UNUR_URNG_TYPE  UNUR_URNG_POINTER                    */
+/* in `src/unuran_config.h'.                                     */
+
+/* It also works with necessary modifications with other uniform */
+/* random number generators.                                     */
+
+/* ------------------------------------------------------------- */
 
 int main()
 {
-  int i;
-  double params[2] = {1.0, 2.0};
+#if UNUR_URNG_TYPE == UNUR_URNG_PRNG
 
-  UNUR_DISTR *distr;    /* distribution object             */
-  UNUR_PAR   *par;      /* parameter object                */
-  UNUR_GEN   *gen;      /* generator object                */
-  /* another UNURAN structure containig information
-     about the uniform generator                           */
-  UNUR_URNG  *ug;       /* uniform generator object        */
+  int    i;          /* loop variable                            */
+  double x;          /* will hold the random number              */
+  double fparams[2]; /* array for parameters for distribution    */
 
+  /* Declare the three UNURAN objects.                           */
+  UNUR_DISTR *distr;    /* distribution object                   */
+  UNUR_PAR   *par;      /* parameter object                      */
+  UNUR_GEN   *gen;      /* generator object                      */
 
-  /* Choose kind of uniform generator: Mersenne Twister
-     For others see documentation of PRNG                  */
-  ug =  prng_new("mt19937(1237)");
+  /* Declare object for uniform random number generator.         */
+  UNUR_URNG  *urng1, *urng2;    /* uniform generator objects     */
 
-  /* choose a (standard) distribution: Beta(1,2)
-     the 2 parameters are stored in params                 */
-  distr = unur_distr_beta(params, 2);
+  /* PRNG only:                                                  */
+  /* Make a object for uniform random number generator.          */
+  /* For details see http://statistik.wu-wien.ac.at/prng/        */
+  /* We use the Mersenne Twister.                                */
+  urng1 =  prng_new("mt19937(1237)");
+  if (urng1 == NULL) exit (EXIT_FAILURE);
 
-  /* choos method AROU for sampling                        */
-  par = unur_arou_new(distr);
+  /* Use a predefined standard distribution:                     */
+  /*   Beta with parameters 2 and 3.                             */
+  fparams[0] = 2.;
+  fparams[1] = 3.;
+  distr = unur_distr_beta( fparams, 2 );
 
-  /* Set uniform generator in parameter object             */
-  unur_set_urng(par, ug);
+  /* Choose a method: TDR.                                       */
+  par = unur_tdr_new(distr);
 
-  /* make generator object                                 */
+  /* Set uniform generator in parameter object                   */
+  unur_set_urng( par, urng1 );
+
+  /* Create the generator object.                                */
   gen = unur_init(par);
 
-  if (gen == NULL){
-     fprintf(stderr, "Error creating generator object\n");
-     return 1;     
+  /* Notice that this call has also destroyed the parameter      */
+  /* object `par' as a side effect.                              */
+
+  /* It is important to check if the creation of the generator   */
+  /* object was successful. Otherwise `gen' is the NULL pointer  */ 
+  /* and would cause a segmentation fault if used for sampling.  */
+  if (gen == NULL) {
+     fprintf(stderr, "ERROR: cannot create generator object\n");
+     exit (EXIT_FAILURE);
   }
 
-  /* destroy distribution object                           */
+  /* It is possible to reuse the distribution object to create   */
+  /* another generator object. If you do not need it any more,   */
+  /* it should be destroyed to free memory.                      */
   unur_distr_free(distr);
 
-  /* sample: print 100 random numbers                      */
-  for (i=0; i<100; i++) 
-    printf( "%f\n", unur_sample_cont(gen) );
+  /* Now you can use the generator object `gen' to sample from   */
+  /* the distribution. Eg.:                                      */
+  for (i=0; i<10; i++) {
+    x = unur_sample_cont(gen);
+    printf("%f\n",x);
+  }
 
-  /* destroy generator object                              */
+  /* Now we want to switch to a different uniform random number  */
+  /* generator.                                                  */
+  /* Now we use an ICG (Inversive Congruental Generator).        */
+  urng2 = prng_new("icg(2147483647,1,1,0)");
+  if (urng1 == NULL) exit (EXIT_FAILURE);
+  unur_chg_urng( gen, urng2 );
+
+  /* ... and sample again.                                       */
+  for (i=0; i<10; i++) {
+    x = unur_sample_cont(gen);
+    printf("%f\n",x);
+  }
+
+  /* When you do not need the generator object any more, you     */
+  /* can destroy it.                                             */
   unur_free(gen);
 
-  return 0;
-}
+  /* We also should destroy the uniform random number generators.*/
+  prng_free(urng1);
+  prng_free(urng2);
+
+  exit (EXIT_SUCCESS);
+
+#else
+  printf("You must use the PRNG library to run this example!\n\n");
+#endif
+
+} /* end of main() */
+
+/* ------------------------------------------------------------- */
+

@@ -35,7 +35,6 @@
  *****************************************************************************/
 					 
 #include <unur_source.h>
-#include "eigensystem_source.h"
 
 /* ---------------------------------------------------------------------------- */
 
@@ -125,7 +124,7 @@ _unur_eigensystem_house(int dim, double *A, double *d, double *e, double *e2)
   return UNUR_SUCCESS;
 
 #undef idx1
-}
+} /* end of _unur_eigensystem_house() */
 
 /* ---------------------------------------------------------------------------- */
 
@@ -148,10 +147,8 @@ int _unur_eigensystem_newqr(int dim, double *a, double *b, double *b2, double *g
 	/* Note : the values of a[], b2[] and b[dim-1] are overwritten		*/
 	/*									*/
 	/* Return value								*/
-	/*      0   : normal case (UNUR_SUCCESS)	 			*/
-	/*      index 	: qr algorithm did not converge within MAXIT steps	*/
-	/*		: in this case index contains the index of the 		*/
-	/*		: corresponding eigenvalue				*/
+	/*      UNUR_SUCCESS : normal case 					*/
+	/*      UNUR_FAILURE : qr algorithm did not converge within MAXIT steps	*/
 	/*----------------------------------------------------------------------*/
 {
 #define ZERO 0.
@@ -174,7 +171,8 @@ int _unur_eigensystem_newqr(int dim, double *a, double *b, double *b2, double *g
   
   shift = ZERO; 
   crit = ZERO;
-  
+  sec = ZERO;
+
   for (ll=1; ll<dim; ll++) {
     l = dim+1-ll;
     crit = max(crit, EPS*(a[l-1]+fabs(b[l-2])) );
@@ -258,12 +256,11 @@ label_9:
       } /* next iteration */
 
       /* here the maximum number of iterations is exceeded */
-      /* returning the index of the eigenvalue */
-      return ll;
+      /* ll contain the actual index of the eigenvalue */
+      return UNUR_FAILURE;
     }
     
-next_eigenvalue:
-    ll=ll;
+next_eigenvalue: ;
   }
   
   g[dim-1] = xnull + a[0];
@@ -274,7 +271,7 @@ next_eigenvalue:
 #undef ONE
 #undef TWO
 #undef MAXIT
-}
+} /* end of _unur_eigensystem_newqr() */
 
 /* ---------------------------------------------------------------------------- */
 
@@ -302,7 +299,7 @@ _unur_eigensystem_trinv(int dim, double *a, double *b, double *g, double *c,
 	/*----------------------------------------------------------------------*/
 {
 #define idx1(a,b) ((a-1)*dim+(b-1))
-  int i,j,k,l;
+  int i,j,k,l=0;
   int close;
   
   double epsc = 1e-5;
@@ -398,7 +395,7 @@ _unur_eigensystem_trinv(int dim, double *a, double *b, double *g, double *c,
   return UNUR_SUCCESS;
 
 #undef idx1  
-}
+} /* end of _unur_eigensystem_trinv() */
 
 /* ---------------------------------------------------------------------------- */
 
@@ -421,7 +418,7 @@ int _unur_eigensystem_back(int dim, double *a, double *e, double *c)
 #define idx1(a,b) ((a-1)*dim+(b-1))
 
   int i,j,k,k1;
-  double h, s;
+  double h, s, s2;
 
   for (k=dim-2; k>=1; k--) {
     if(e[k-1] != 0.) {
@@ -436,10 +433,16 @@ int _unur_eigensystem_back(int dim, double *a, double *e, double *c)
         /* non-negative sum of eigenvector components */ 
         s=0.;
         for (i=1; i<=dim; i++) s += c[idx1(j,i)];
-
         if (s < 0.) {
           for (i=1; i<=dim; i++) c[idx1(j,i)] = -c[idx1(j,i)];
         }			   
+
+        /* eigenvector normalization */ 
+        s2=0.;
+        for (i=1; i<=dim; i++) s2 += c[idx1(j,i)]*c[idx1(j,i)] ;
+        s2 = sqrt(s2);
+        for (i=1; i<=dim; i++) c[idx1(j,i)] /= s2 ;
+
       }
     }
   }
@@ -447,11 +450,11 @@ int _unur_eigensystem_back(int dim, double *a, double *e, double *c)
   return UNUR_SUCCESS;
 
 #undef idx1  
-}
+} /* end of _unur_eigensystem_back() */
 
 /* ---------------------------------------------------------------------------- */
 
-int _unur_eigensystem(int dim, const double *M, double *values, double *vectors)
+int _unur_matrix_eigensystem(int dim, const double *M, double *values, double *vectors)
 {
 	/*----------------------------------------------------------------------*/
         /* Computes the eigenvalues and the corresponding eigenvectors		*/
@@ -466,13 +469,11 @@ int _unur_eigensystem(int dim, const double *M, double *values, double *vectors)
 	/*   dim     : dimension						*/
 	/*   M	     : real symmetric dim x dim matrix				*/
 	/*   values  : eigenvalues of M in ascending order			*/
-	/*   vectors : eigenvectors of M stored row-wise			*/
+	/*   vectors : (normalized) eigenvectors of M stored row-wise	 	*/
 	/*									*/
 	/* Return value								*/
-	/*   0     : normal case (UNUR_SUCCESS)	 				*/
-	/*   index : qr algorithm did not converge				*/
-	/*	   : in this case index contains the index of the 		*/
-	/*	   : corresponding eigenvalue					*/
+	/*   UNUR_SUCCESS : normal case 	 				*/
+	/*   UNUR_FAILURE : qr algorithm did not converge			*/
 	/*----------------------------------------------------------------------*/
   double *A; /* local copy of M (elements of A will be overwritten) */
   double *diag; 
@@ -525,64 +526,6 @@ free_memory:
   if (in) free(in);
 
   return ret; 
-}
+} /* end of _unur_matrix_eigensystem() */
 
 /* ---------------------------------------------------------------------------- */
-
-/* simple testroutine used in the implementation */
-/*
-int main()
-{
-#define idx1(a,b) ((a-1)*dim+(b-1))
-
-  int i, j, k, dim, ret;
-
-  double *M;
-  double *values;
-  double *vectors;
-
-  double p;
-
-  dim=5; 
-  M=malloc(dim*dim*sizeof(double));
-  values=malloc(dim*sizeof(double));
-  vectors=malloc(dim*dim*sizeof(double));
-
-  // original derflinger test-matrix 
-  p=3.141592653589793/(dim+1);
-  for (i=1; i<=dim; i++) {
-  for (k=1; k<=i; k++) {
-    M[idx1(i,k)]=0.;
-    for (j=1; j<=dim; j++) {
-      M[idx1(i,k)] += sin(p*i*j)*j*sin(p*j*k);
-    }
-    M[idx1(k,i)] = M[idx1(i,k)]; 
-  }}
-
-  // another test-matrix 
-  for (i=1; i<=dim; i++) {
-  for (k=1; k<=i; k++) {
-    M[idx1(i,k)]=0.;
-    for (j=1; j<=dim; j++) {
-      M[idx1(i,k)] = 1./(i+k);
-    }
-    M[idx1(k,i)] = M[idx1(i,k)]; 
-  }}
-  
-  ret = _unur_eigensystem(dim, M, values, vectors);
-
-  if (ret == 0) ret=dim;
-  for (i=0; i<ret; i++) {
-    printf("#%d %e : ",i+1, values[i]);
-    for (j=0; j<dim; j++) {
-      printf(" %f", vectors[idx1(i+1,j+1)]);
-    }
-    printf("\n");
-  }
-  
-  return 0;
-
-#undef idx1
-}
-
-*/

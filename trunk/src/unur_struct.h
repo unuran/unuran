@@ -137,6 +137,9 @@ typedef void _UNUR_SAMPLING_ROUTINE_VEC(struct unur_gen *gen, double *vec);
 #include <methods/cstd_struct.h>     /* continuous */
 #include <methods/dstd_struct.h>     /* discrete   */
 
+/* structure for generic functions */
+#include <utils/fminmax_struct.h>
+
 /*****************************************************************************/
 /**  Main structure for all UNURAN generators                               **/  
 /*****************************************************************************/

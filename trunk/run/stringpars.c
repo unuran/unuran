@@ -46,6 +46,8 @@ UNUR_GEN   * make_gen_obj (char *);
 
 
 
+
+
 /**********************************************************************/
 /*                                                                    */
 /* function: parselist()                                              */
@@ -254,7 +256,7 @@ UNUR_DISTR *make_distr_obj(char *str){
 	distr = unur_distr_poisson(list, no_of_elem);
       }
       else{
-	printf("Unknown distribution!\n");
+	printf("Unknown distribution: %s\n", value);
 	break;
       }
     }
@@ -272,12 +274,12 @@ UNUR_DISTR *make_distr_obj(char *str){
 	unur_distr_discr_set_domain( distr, list[0], list[1]);
       }
       else{
-	fprintf(stderr, "Unknown type of distribution or domain not supported!");
+	fprintf(stderr, "Unkown type of distribution while parsing domain!\n");
 	break;
       }
     }
     else {
-      fprintf(stderr, "Unknown key provided");
+      fprintf(stderr, "Unknown key provided: %s\n", key);
     }
 
 

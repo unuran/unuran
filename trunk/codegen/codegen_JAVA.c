@@ -81,8 +81,8 @@ unur_acg_JAVA( struct unur_gen *gen, FILE *out, const char *distr_name )
   switch (gen->method) {
   case UNUR_METH_TDR:
     return_code =
-      _unur_acg_JAVA_tdr_class_IV ( gen, out ) &&
       _unur_acg_JAVA_begin_class ( gen, out ) &&
+      _unur_acg_JAVA_tdr_class_IV( gen, out ) &&
       _unur_acg_JAVA_PDF ( &(gen->distr), out, pdf_name ) &&
       _unur_acg_JAVA_tdr_ps( gen, out, rand_name, pdf_name ) &&
       _unur_acg_JAVA_end_class ( gen, out );

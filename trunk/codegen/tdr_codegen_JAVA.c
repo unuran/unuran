@@ -275,32 +275,32 @@ _unur_acg_JAVA_tdr_class_IV( struct unur_gen *gen, FILE *out )
   }
 
   /* class IV */
-  fprintf(out,"\n\npublic class IV {\n");
-  fprintf(out,"\tpublic double x, fx, Tfx, dTfx, sq, Acum, Ahatr;\n\n");
+  fprintf(out,"\n\n\tprivate class IV {\n");
+  fprintf(out,"\t\tprivate double x, fx, Tfx, dTfx, sq, Acum, Ahatr;\n\n");
 
-  fprintf(out, "\t/* Constructor */\n");
-  fprintf(out, "\tpublic IV(double x, double fx_or_Tfx, double dTfx,\n");
+  fprintf(out, "\t\t/* Constructor */\n");
+  fprintf(out, "\t\tpublic IV(double x, double fx_or_Tfx, double dTfx,\n");
 
-  fprintf(out, "\t\tdouble sq, double Acum, double Ahatr){\n");
+  fprintf(out, "\t\t\tdouble sq, double Acum, double Ahatr){\n");
 
-  fprintf(out,"\t\tthis.x\t\t= x;\n");
+  fprintf(out,"\t\t\tthis.x\t\t= x;\n");
   switch (gen->variant & TDR_VARMASK_T) {
   case TDR_VAR_T_LOG:
-    fprintf(out,"\t\tthis.fx\t= fx_or_Tfx;\n");
+    fprintf(out,"\t\t\tthis.fx\t= fx_or_Tfx;\n");
     break;
   case TDR_VAR_T_SQRT:
-    fprintf(out,"\t\tthis.Tfx\t= fx_or_Tfx;\n");
+    fprintf(out,"\t\t\tthis.Tfx\t= fx_or_Tfx;\n");
     break;
   default:
     _unur_error(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
     return 0;
   }
-  fprintf(out,"\t\tthis.dTfx\t= dTfx;\n");
-  fprintf(out,"\t\tthis.sq\t\t= sq;\n");
-  fprintf(out,"\t\tthis.Acum\t= Acum;\n");
-  fprintf(out,"\t\tthis.Ahatr\t= Ahatr;\n");
+  fprintf(out,"\t\t\tthis.dTfx\t= dTfx;\n");
+  fprintf(out,"\t\t\tthis.sq\t\t= sq;\n");
+  fprintf(out,"\t\t\tthis.Acum\t= Acum;\n");
+  fprintf(out,"\t\t\tthis.Ahatr\t= Ahatr;\n");
 
-  fprintf(out, "\t}\n}\n\n\n");
+  fprintf(out, "\t\t}\n\t}\n\n\n");
 
   /* o.k. */
   return 1;

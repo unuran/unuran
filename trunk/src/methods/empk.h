@@ -40,9 +40,8 @@
 /* 
    =METHOD  EMPK   EMPirical distribution with Kernel smoothing
 
-   =TYPE
-      CEMP  continuous empirical univariate
-   
+   =UP  Methods_for_CEMP
+
    =DESCRIPTION
       EMPK generates random variates from an empirical distribution that is
       given by an observed sample. The idea is that simply choosing a random

@@ -41,9 +41,8 @@
 /* 
    =METHOD  CSTD   Continuous STandarD distributions
 
-   =TYPE
-      CONT  continuous univariate
-   
+   =UP  Methods_for_CONT
+
    =DESCRIPTION
       CSTD is a wrapper for special generators for continuous univariate standard
       distributions. It only works for distributions in the 

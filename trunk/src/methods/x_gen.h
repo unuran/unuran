@@ -38,11 +38,10 @@
  *****************************************************************************/
 
 /* 
-   =METHOD  GENERAL
+   =NODE  Methods_all  Routines for all generator objects
 
-   =TYPE
-      general
-   
+   =UP Methods [0]
+
    =DESCRIPTION
       Routines for all generator objects
 

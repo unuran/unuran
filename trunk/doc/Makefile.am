@@ -20,11 +20,7 @@ unuran_TEXINFOS = \
 noinst_DATA = 
 
 scripts = \
- make_texi.pl \
- DISTRIBUTION_to_texi.pl \
- ERROR_to_texi.pl \
- METHOD_to_texi.pl \
- URNG_to_texi.pl
+ make_texi.pl
 
 EXTRA_DIST = \
  unuran.html \
@@ -37,7 +33,7 @@ EXTRA_DIST = \
 
 # generated texi files ...
 unuran_src.texi: $(sripts)
-	./make_texi.pl $(top_srcdir)/src/ > unuran_src.texi
+	./make_texi.pl $(top_srcdir) > unuran_src.texi
 
 example_dir  = $(top_srcdir)/examples
 $(unuran_examples): $(example_dir)/example*.c

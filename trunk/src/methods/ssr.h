@@ -40,8 +40,7 @@
 /* 
    =METHOD  SSR   Simple Setup Rejection
 
-   =TYPE
-      CONT  continuous univariate
+   =UP  Methods_for_CONT
 
    =DESCRIPTION
       SSR is an acceptance/rejection method that uses universal

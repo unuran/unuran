@@ -43,20 +43,23 @@
 /*---------------------------------------------------------------------------*/
 
 /* 
-   =ERROR ERRNO Error handling
+   =NODE  ERRNO  Error handling
+
+   =UP TOP [60]
 
    =DESCRIPTION
       This chapter describes the way that UNURAN routines report
       errors. 
 
-      @menu
-      * Error reporting::             
-      * Output streams::              
-      @end menu
-      
-      @node Error reporting
-      @subsection Error reporting
-      
+   =EON
+*/
+
+/*
+   =NODE  Error_reporting  Error reporting
+
+   =UP ERRNO
+
+   =DESCRIPTION
       UNURAN routines report an error whenever they cannot perform the
       task requested of them. 
       For example, apply transformed density rejection to a distribution
@@ -192,13 +195,17 @@ enum {
 
 };
 
+/* =EON */
+  
+
 /*---------------------------------------------------------------------------*/
 
 /* 
-   =DESCRIPTION  (cont.)
+   =NODE  Output_streams Output streams
 
-      @node Output streams
-      @subsection Output streams
+   =UP ERRNO
+
+   =DESCRIPTION
       @cindex Error handlers
       @cindex Output streams
 

@@ -40,8 +40,7 @@
 /* 
    =METHOD NINV Numerical INVersion
 
-   =TYPE
-      CONT  continuous univariate
+   =UP  Methods_for_CONT
 
    =DESCRIPTION
       NINV is the implementation of numerical inversion.

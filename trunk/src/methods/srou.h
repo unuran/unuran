@@ -40,9 +40,8 @@
 /* 
    =METHOD  SROU   Simple Ratio-Of-Uniforms method
 
-   =TYPE
-      CONT  continuous univariate
-   
+   =UP  Methods_for_CONT
+
    =DESCRIPTION
       SROU is based on the ratio-of-uniforms method but uses universal 
       inequalities for constructing a (universal) bounding rectangle.

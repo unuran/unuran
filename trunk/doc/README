@@ -1,0 +1,133 @@
+
+(*) Simple Markups and TAGs
+    =======================
+
+Great parts of the UNURAN User Manual are generated automatically from
+the library header files.
+
+Simple markups (TAGs) are used to indicate relevant parts.
+A TAG has the regular expression  /^\s+=[A-Z]+/, i.e. `=' followed by
+some capital letters.
+(C comment strings `/*' are ignored.)
+
+(*) Nodes
+    =====
+
+Nodes start with a node TAG and contain everything until the next 
+=EON TAG (`End-Of-Node') or end of file.
+
+Valid node TAGs are
+
+	=TOP		for the top node
+	=DISTR          for handling distribution objects
+	=METHOD         for generation methods
+	=APPENDIX       for nodes in the appendix
+	=NODE           generic node
+
+A header file that has no such TAG or with a different first TAG is
+ignored and not included into the documentation.
+
+Node TAGs must have two arguments:
+The first word is the name of the node and must be unique in the
+entire documentation.
+The remaining part of the line is treated as the node title,
+used for the texinfo sectioning commands.
+
+(*) Section TAGs
+    ============
+
+TAGs are used to scan the node and partition it into sections. A
+node section starts with a TAG and ends with the line before the next
+TAG (or end of file). It depends on the TAG how the read text is
+processed further.
+
+The following TAGs are valid:
+
+=END 	The corresponding node section is simply ignored. Thus it can
+	be used as end markup of a subsection (thus its name).
+
+=UP	Required!
+	the first word is the super node, i.e. the node to which it is
+	a subnode. 
+	It might be followed (optionally) by anything with the regular
+	expression /\[\w+\]/, e.g. [14a].
+	It is used to sort subnodes (lexicographically ordering of the
+	string between the brachets is used).
+	If it is omitted the node name is used instead.
+
+=REQUIRED	List of required parameters.
+	Contains a list of parameter that are required for the method.
+	(not implemented yet)
+
+=OPTIONAL	List of optional parameters.
+	Contains a list of parameters that are optional for the
+	method.
+	(not implemented yet)
+
+=SEEALSO	Similar methods.
+	List of methods that work similar as this method.	
+	(not implemented yet)
+
+=ABSTRACT	Abstract.
+	A very short description of method. Used in an overview.
+	(not implemented yet)
+
+=DESCRIPTION	Discription of method. Can be used to print any text.
+
+=ROUTINES	Function reference.
+	List of all subroutines.
+	The text is formated in the following way:
+
+	lines starting with `#' are ignored.
+
+	The text consists of blocks which are separated by one or more
+	blank lines outside of C comments (everything within a C
+	comment is treated as a single line).
+	In particular blocks end at a `*/' followed by an empty line.
+
+	IMPORTANT:
+	A function with no description should be immediately followed
+	by `/* */' (on the next line).
+
+	All C comment markers `/*' and `*/' are removed.
+
+	A block that started with a C type declaration is treated as a
+	function prototype. Anything below the `;' till the end of the
+	block is interpreted as the function description.
+
+	An anchor will be made for each function using the key:
+	funct.<fn_name>, 
+	e.g. `funct.unur_set_urng' for function unur_set_urng.
+
+	If there is a function prototype with additional lines, it is
+	assumed that it has the same description as the following
+	function. (This is done recursively until a function prototype
+	with description is found.)
+
+	A "function prototype" without any arguments (with or without 
+	braces `( )' )is treated as a variable.
+
+	A block that starts with a `==DOC' is copied verbatim into the
+	texi file. (Notice that `==DOC' is not a TAG as described
+	above).
+
+
+(*) common transformation rules
+    ---------------------------
+
+To avoid spoiling the header file with to many texinfo tags, the following
+transformations are made during file procession:
+
+NULL        --> @code{NULL}
+TRUE        --> @code{TRUE}
+FALSE       --> @code{FALSE}
+
+(\w+)\(\)   --> @command($1)
+		eg.: unur_set_urng()  --> @command{unur_set_urng}.
+		additionally hyperlinks are made automatically to
+		its definition in HTML output
+		(and in TeX and info with some restrictions).
+		NOTICE: there must not be blanks between the 
+		function name and `(' or the braces!
+
+

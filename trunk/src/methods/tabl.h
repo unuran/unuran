@@ -40,8 +40,7 @@
 /* 
    =METHOD  TABL   a TABLe method with piecewise constant hats
 
-   =TYPE
-      CONT  continuous univariate
+   =UP  Methods_for_CONT
 
    =DESCRIPTION
       TABL is an acceptance/rejection method that uses piecewise

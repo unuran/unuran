@@ -40,8 +40,7 @@
 /* 
    =METHOD  DAU  (Discrete) Alias-Urn method
 
-   =TYPE
-      DISCR  discrete univariate
+   =UP  Methods_for_DISCR
 
    =DESCRIPTION
       DAU samples from arbitrary but finite probability vectors of length

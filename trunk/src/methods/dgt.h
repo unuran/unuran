@@ -40,8 +40,7 @@
 /* 
    =METHOD  DGT  (Discrete) Guide Table method (indexed search)
 
-   =TYPE
-      DISCR  discrete univariate
+   =UP  Methods_for_DISCR
 
    =DESCRIPTION
       DGT samples from arbitrary but finite probability vectors. Random

@@ -39,7 +39,9 @@
 /*---------------------------------------------------------------------------*/
 
 /* 
-   =ERROR DEBUG Debugging
+   =NODE  DEBUG  Debugging
+
+   =UP TOP [70]
 
    =DESCRIPTION
       The UNURAN library has several debugging levels which can be
@@ -62,39 +64,31 @@
       in the corresponding source files of the method.
       Nevertheless the following flags can be used with all methods.
 
-   =END
-*/
 
-/* 
-   =DESCRIPTION  (cont.)
-     Common debug flags:
+      Common debug flags:
 
-     @table @code
-     @item UNUR_DEBUG_OFF
-     @findex UNUR_DEBUG_OFF
-     switch off all debuging information
-     @item UNUR_DEBUG_ALL
-     @findex UNUR_DEBUG_ALL
-     all avaivable information
-     @item UNUR_DEBUG_INIT
-     @findex UNUR_DEBUG_INIT
-     parameters of generator object after initialization
-     @item UNUR_DEBUG_SETUP
-     @findex UNUR_DEBUG_SETUP
-     data created at setup
-     @item UNUR_DEBUG_ADAPT
-     @findex UNUR_DEBUG_ADAPT
-     data created during adaptive steps 
-     @item UNUR_DEBUG_SAMPLE
-     @findex UNUR_DEBUG_SAMPLE
-     trace sampling   
-     @end table
+      @table @code
+      @item UNUR_DEBUG_OFF
+      @findex UNUR_DEBUG_OFF
+      switch off all debuging information
+      @item UNUR_DEBUG_ALL
+      @findex UNUR_DEBUG_ALL
+      all avaivable information
+      @item UNUR_DEBUG_INIT
+      @findex UNUR_DEBUG_INIT
+      parameters of generator object after initialization
+      @item UNUR_DEBUG_SETUP
+      @findex UNUR_DEBUG_SETUP
+      data created at setup
+      @item UNUR_DEBUG_ADAPT
+      @findex UNUR_DEBUG_ADAPT
+      data created during adaptive steps 
+      @item UNUR_DEBUG_SAMPLE
+      @findex UNUR_DEBUG_SAMPLE
+      trace sampling   
+      @end table
 
-   =END
-*/
 
-/*
-   =DESCRIPTION  (cont.)
       Almost all routines check a given pointer they read from or write
       to the given adress. This does not hold for time-critical routines
       like all sampling routines. Then your are responsible for checking a

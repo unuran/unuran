@@ -40,9 +40,8 @@
 /* 
    =METHOD  VMT   Vector Matrix Transformation
 
-   =TYPE
-      CVEC  continuous multivariate
-   
+   =UP  Methods_for_CVEC
+
    =DESCRIPTION
       VMT generates random vectors for distributions with given mean
       vector mu and covariance matrix Sigma. It produces random vectors

@@ -40,8 +40,7 @@
 /* 
    =METHOD   DARI   discrete automatic rejection inversion
 
-   =TYPE
-      DISCR discrete univariate (with PMF)
+   =UP  Methods_for_DISCR
 
    =DESCRIPTION
       DARI is based on rejection inversion, which can be seen as an adaption

@@ -40,8 +40,9 @@
 /*---------------------------------------------------------------------------*/
 
 /* 
-   =DISTR  CVEC  [30]  continuous multivariate distribution
+   =DISTR   CVEC   Continuous multivariate distributions
 
+   =UP Distribution_objects [30]
 
    =END
 */

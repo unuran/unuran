@@ -45,7 +45,9 @@
 #include <unuran_config.h>
 
 /* 
-   =URNG  URNG  Using uniform random number generators
+   =NODE  URNG  Using uniform random number generators
+
+   =UP TOP [50]
 
    =DESCRIPTION
       Each generator has a pointer to a uniform (pseudo-) random number

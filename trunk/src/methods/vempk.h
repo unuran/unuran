@@ -40,9 +40,8 @@
 /* 
    =METHOD  VEMPK   (Vector) EMPirical distribution with Kernel smoothing
 
-   =TYPE
-      CVEMP  continuous empirical multivariate
-   
+   =UP  Methods_for_CVEMP
+
    =DESCRIPTION
       blah
 

@@ -20,241 +20,93 @@
 @c Version ...
 @include version.texi
 
+@c ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+@c 
 @c Titlepage ...
-@include unuran_title.texi
+@c 
+
+@c
+@c Copyright
+@c
+
+@ifinfo
+UNURAN User Manual.
+  
+Version @value{VERSION}, @value{UPDATED}
+   
+Copyright @copyright{} 2001 Institut fuer Statistik, WU Wien
+
+Permission is granted to make and distribute verbatim
+copies of this manual provided the copyright notice and
+this permission notice are preserved on all copies.
+     
+Permission is granted to copy and distribute modified
+versions of this manual under the conditions for
+verbatim copying, provided also that the section 
+entitled ``Copying'' and ``GNU General Public License''
+are included exactly as in the original, and provided
+that the entire resulting derived work is distributed
+under the terms of a permission notice identical to this
+one.
+     
+Permission is granted to copy and distribute
+translations of this manual into another language,
+under the above conditions for modified versions,
+except that this permission notice may be stated in a
+translation approved by the Free Software Foundation.
+@end ifinfo
+
+@c
+@c Titlepage and Copyright
+@c
+
+@titlepage
+@title{UNURAN User Manual}
+@subtitle Generating non-uniform random numbers
+@subtitle Version @value{VERSION}, @value{UPDATED}
+
+@author Josef Leydold
+@author Wolfgang H@"ormann
+@author Erich Janka
+@author G@"unter Tirler
+
+@page
+@vskip 0pt plus 1filll
+Copyright @copyright{} 2001 Institut f@"ur Statistik, WU Wien
+
+Permission is granted to make and distribute verbatim
+copies of this manual provided the copyright notice and
+this permission notice are preserved on all copies.
+     
+Permission is granted to copy and distribute modified
+versions of this manual under the conditions for
+verbatim copying, provided also that the sections
+entitled ``Copying'' and ``GNU General Public License''
+are included exactly as in the original, and provided
+that the entire resulting derived work is distributed
+under the terms of a permission notice identical to this
+one.
+     
+Permission is granted to copy and distribute
+translations of this manual into another language,
+under the above conditions for modified versions,
+except that this permission notice may be stated in a
+translation approved by the Free Software Foundation.
+@end titlepage
 
 @c ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+@c 
+@c Table of contents
+@c 
 
 @contents
 
 @c ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
-@c
-@c `Top' Node and Master Menu
-@c
-
-@node Top,        Intro,         ,  (dir)     
-@c    node-name,  next,  previous,   up
-@top UNURAN -- Universal Non-Uniform RANdom number generators
-
-This is the online-documentation of UNURAN.@*
-Version: @value{VERSION}@*
-Date: @value{UPDATED}
-
-@menu
-* Intro::                  Introduction
-* Examples::               Examples
-* Methods::                How should the random numbers be created
-* Distributions::          Distributions
-* URNG::                   Using uniform random number generators
-* Error and Debuging::     Error messages and debuging
-* FIndex::                 Function index
-@end menu
-
-@c --------------------------------------------------------------------
-@node Intro
-@chapter Introduction
-
-@menu
-* Overview::  Overview
-* Install::   Installing the thing
-* Contact::   Contact the authors
-@end menu
-
-@c ....................................................................
-@node Overview
-@section Overview
-
-@menu
-* Explain:: What is UNURAN
-* Document:: Usage of this document
-@end menu
-
-@node Explain
-@subsection What is UNURAN
-
-UNURAN (Universal Non-Uniform RAndom Number generator) is
-designed for applications using non-standard distributions
-where no seperate generator is yet available.
-UNURAN is also useful if the parameters of a standard distribution
-should be changed frequently.
-Additionaly there are lots of predefined distributions available
-(see @ref{Distributions}).
-
-UNURAN implements several methods for generating random numbers.
-The choice depents primary on what information about the
-distribution can be provided and---if the user is familar with
-the different methods---on the preferences of the user.
-
-
-@node Document
-@subsection Usage of this document
-
-We tried do design this document in a way one can
-use UNURAN with reading as little as possible.
-On basis of the available information about the density,
-one should choose a suitable method.
-@c ------------ (see @ref{Requirements}).
-Then the Examples @ref{Ex1} and @ref{Ex2} in addition
-with a short look at section 
-@c ----------- @ref{Do_it_yourself}
-should be enough.
-
-The function for changing the parameters while sampling can be
-found in 
-@c ------------ @ref{Function Reference}.
-
-To use predefined distributions take a look on the list of
-availabe Distributions @ref{Distributions}, Examples @ref{Ex1}
-and @ref{Ex1} and if required also on 
-@c ------------- @ref{Readymade}.   
-
-The greatest deal of this document is for users with knowledge about
-the methods who want to change method-specific parameters and can
-be ignored by all others.
-
-@c ....................................................................
-@node Install
-@section Install
-
-@noindent
-First unzip and untar the package. Then change to the directory
-@file{/unuran} and execute the following commands:
-@smallexample
-configure --prefix=HOMEDIRECTORY
-make
-make install
-@end smallexample
-@c
-@noindent This installs the following files:
-@c
-@smallexample
-$(prefix)/include/unuran_tests.h
-$(prefix)/include/unuran.h
-$(prefix)/include/unuran_config.h
-$(prefix)/lib/libunuran.a
-@end smallexample
-
-@noindent If you set the follwing systemvariables:
-@smallexample
-LIBRARY_PATH="HOMEDIRECTORY/lib"
-C_INCLURE_PATH="HOMEDIRECTORY/include"
-@end smallexample
-@noindent
-the relevant files are where the C-compiler can find them.
-If every user on your machine should be able to use UNURAN,
-you omit @file{--prefix=HOMEDIRECTORY} when calling @file{configure}
-(as usual the standard value of @file{$(prefix)} is @file{/usr/local}.
-Of course you can do this only if you have the right permissions.
-
-@c ....................................................................
-@node Contact
-@section Contact the authors
-
-If you have any problems with UNURAN, suggestions how to improve
-the program or find a bug, please contact us via the UNURAN-homepage:
-@uref{http://statistik.wu-wien.ac.at}
-or via email:
-@email{leydold@@statistik.wu-wien.ac.at}
-
-@c --------------------------------------------------------------------
-
-@node Examples
-@chapter Examples
-@menu
-* Ex1:: As short as possible
-* Ex2:: Use of arbitrary pdf
-* Ex3:: Change function parameters
-* Ex4:: Change the uniform random generator
-@end menu
-
-Assuming UNURAN has been installed successfully, here are some examples
-showing how to obtain random numbers. Beginning with the basics of using
-UNURAN we evolve to examples using more advanced features.@*
-Call the compiler with:
-@smallexample
-  gcc -Wall -O2 example.c -lunuran -lprng -lm -lmd -o outfile
-@end smallexample 
-@*
-If the PRNG-library is not installed, @code{-lprng} must be
-omitted and of course can't be used.
-@*
-The internals of UNURAN are hidden behind three basic structures:
-The @emph{distribution object},
-the @emph{parameter object}
-and the @emph{generator object}.
-It is not important to understand the details of these objects but
-to observe the order of creating them which is the order given above.
-The actual sampling is done with the @emph{generator object} while
-the other two objects are mainly aids for creating it. 
-(The @emph{paramter object} is destroyed during the creation of
-the @emph{generator object} and can't be reused.)
-It is also recommended not to change the @emph{distribution object}
-between the creation of the other two objects.
-
-
-@node Ex1
-@section Ex1: As short as possible
-
-@smallexample
-@include ref_example1.texi
-@end smallexample
-
-@node Ex2
-@section Ex2: Arbitrary distributions
-
-If you want to sample from a non-standard distribution,
-UNURAN might be exactly what you need. 
-Depending on the information is available, a method
-must be choosen for sampling.
---> REFERENCE to table!!!
-
-@smallexample
-@include ref_example2.texi
-@end smallexample
-
-@node Ex3
-@section Ex3: Changing Parameters of the method
-
-Each method for generating random numbers allows several
-parameters to be modified. If you don't wand UNURAN to choose
-default values, it is possible to change them.
---> REFERENCE to Methods
-The following example will illustrate how to change parameters.
-
-@smallexample
-@include ref_example3.texi
-@end smallexample
-
-@node Ex4
-@section Ex4: Changing the uniform random generator
-
-To generate special uniformly distributed random numbers,
-the PRNG-package can be used (it must be installed seperately).
-This can be done by changing two lines in the file
-@code{unuran_config.c}. Find the following lines in the file
-and modify them as shown below:
-@smallexample
-  /* set type of uniform generator             */
-  /* #define UNUR_URNG_TYPE UNUR_URNG_POINTER  */
-  #DEFINE UNUR_URNG_TYPE UNUR_URNG_PRGN
-@end smallexample
-@* (Just comment one line and uncomment the next) 
-
-@smallexample
-@include ref_example4.texi
-@end smallexample
-
-@c --------------------------------------------------------------------
+@c 
+@c insert automatically generated documentation ...
+@c 
 
 @include unuran_src.texi
-
-@c --------------------------------------------------------------------
-@c Index
-
-@node FIndex
-@unnumbered Function Index
-
-@printindex fn
 
 @c --------------------------------------------------------------------
 @bye

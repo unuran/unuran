@@ -37,7 +37,9 @@
  *****************************************************************************/
 
 /* 
-   =DISTR  general  [0]  Handling distribution objects
+   =DISTR  Distribution_objects  Handling distribution objects
+
+   =UP TOP [30]
 
    =DESCRIPTION
       For handling distributions objects of type @code{UNUR_DISTR} are

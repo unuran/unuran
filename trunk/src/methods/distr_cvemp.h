@@ -40,8 +40,9 @@
 /*---------------------------------------------------------------------------*/
 
 /* 
-   =DISTR  CVEMP  [40]  continuous empirical multivariate distribution
+   =DISTR   CVEMP   Continuous empirical multivariate distributions
 
+   =UP Distribution_objects [40]
 
    =END
 */

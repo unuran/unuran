@@ -40,8 +40,7 @@
 /* 
    =METHOD  TDR   Transformed Density Rejection
 
-   =TYPE
-      CONT  continuous univariate
+   =UP  Methods_for_CONT
 
    =DESCRIPTION
       TDR is an acceptance/rejection method that uses the concavity of a

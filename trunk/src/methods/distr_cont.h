@@ -40,8 +40,9 @@
 /*---------------------------------------------------------------------------*/
 
 /* 
-   =DISTR  CONT  [10]  continuous univariate distribution
+   =DISTR   CONT   Continuous univariate distributions
 
+   =UP Distribution_objects [10]
 
    =END
 */

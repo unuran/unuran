@@ -41,8 +41,7 @@
 /* 
    =METHOD  DSTD    Discrete STandarD distributions
   
-   =TYPE
-      DISCR  discrete univariate
+   =UP  Methods_for_DISCR
 
    =DESCRIPTION
       DSTD is a wrapper for special generator for discrete univariate standard

@@ -40,9 +40,8 @@
 /* 
    =METHOD  AROU   Automatic Ratio-Of-Uniforms method
 
-   =TYPE
-      CONT  continuous univariate
-   
+   =UP  Methods_for_CONT
+
    =DESCRIPTION
       AROU is a variant of the ratio-of-uniforms method that uses the
       fact that the transformed region is convex for many distributions.

@@ -40,8 +40,7 @@
 /* 
    =METHOD  UTDR   Universal Transformed Density Rejection
 
-   =TYPE
-      CONT  continuous univariate
+   =UP  Methods_for_CONT
 
    =DESCRIPTION
       UTDR is based on the transformed density rejection and uses three almost

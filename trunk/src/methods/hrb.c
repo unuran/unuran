@@ -44,6 +44,15 @@
  *                                                                           *
  *   REFERENCES:                                                             *
  *                                                                           *
+ *   Evrim Ozgul (2002): The generation of random variates with a given      *
+ *      hazard rate, M.Sc. thesis, Department of Industrial Engineering,     *
+ *      Bogazici University, Istanbul.                                       *
+ *                                                                           *
+ *****************************************************************************
+ *                                                                           *
+ *   Rejection from majorizing constant hazard rate (exponential             *
+ *   distribution); constant thinning.                                       *
+ *                                                                           *
  *****************************************************************************/
 
 /*---------------------------------------------------------------------------*/

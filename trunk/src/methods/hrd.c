@@ -42,6 +42,17 @@
  *                                                                           *
  *   REFERENCES:                                                             *
  *                                                                           *
+ *   Evrim Ozgul (2002): The generation of random variates with a given      *
+ *      hazard rate, M.Sc. thesis, Department of Industrial Engineering,     *
+ *      Bogazici University, Istanbul.                                       *
+ *                                                                           *
+ *****************************************************************************
+ *                                                                           *
+ *   Rejection from majorizing hazard rate using dynamic thinning.           *
+ *   This means that rejection from a constant hazard rate is used.          *
+ *   When a point Xi is generated but rejected a new constant majorizing     *
+ *   hazard rate with value HR(Xi) starting at Xi is used.                   *
+ *                                                                           *
  *****************************************************************************/
 
 /*---------------------------------------------------------------------------*/

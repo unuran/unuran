@@ -315,20 +315,39 @@ Use the following program xyz.c which produce afile with randoom numbers. Read t
 
 @node Reference
 @chapter Function reference
+@menu
+* DistrRef:: Functions for distributions
+* General::       General functions
+* MethodsRef::       Functions for Methods
+@end menu
 Notation:
 
 
-
+@node DistrRef
 @section distributions
+
+@node General
 @section general
+
+@node MethodsRef
 @section methods
+@menu
+* arou:: Adaptive Ratio Of Uniforms
+* cstd:: Interface for extern generators
+* dau::  (Discrete) Alias-Urn
+* dis::  (Discrete) Alias-Urn
+* dstd:: ???
+* ninv:: Numerical INVersion
+* rect:: experimental multivariate Method
+* srou:: Simple Ratio Of Uniforms
+* stdr:: Transformed Density Rejection (with universal bounds)
+* tabl:: Ahren
+* tdr::  Trandformed Density Rejection
+* unif:: ???
+* utdr:: Universal Transformed Density Rejection (3-point method)
+@end menu
 
 @include qstart_function_reference.texi
-
-
-@c @unnumberedsubsubsec  unur_arou_new
-@c @indent @code{struct unur_par *@b{unur_arou_new}( struct unur_distr *@i{distr} )}
-@c @* @indent get default parameters for generator                                      
 
 
 @node Distributions

@@ -95,6 +95,13 @@ UNUR_PAR *unur_varou_new( const UNUR_DISTR *distribution );
 
 /*...........................................................................*/
 
+int unur_varou_set_cones( UNUR_PAR *parameters, long ncones  );
+/* 
+   Sets the number of cones to be used in the setup.
+
+   Default is 10000.
+*/
+
 int unur_varou_set_verify( UNUR_PAR *parameters, int verify );
 /* 
    Turn verifying of algorithm while sampling on/off.

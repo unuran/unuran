@@ -47,6 +47,59 @@ my $label_menue_distributions = make_label_menue_distribution($DISTR);
 my $data_distr = make_data_distributions($DISTR);
 
 # ----------------------------------------------------------------
+# Bar with links
+# ----------------------------------------------------------------
+
+my $linkbar = <<EOX;
+"<TABLE WIDTH='100%' BORDER='0' CELLSPACING='2'>
+  <TR> 
+    <TD WIDTH='14%' BGCOLOR='#1E426E'> 
+      <DIV ALIGN='CENTER'>
+      <A HREF='./home.html'>
+      <FONT FACE='Arial, Helvetica, sans-serif' SIZE='2' COLOR='#FFFFFF'>
+      <B>Home</B></FONT></A></DIV>
+    </TD>
+    <TD WIDTH='14%' BGCOLOR='#1E426E'> 
+      <DIV ALIGN='CENTER'>
+      <A HREF='./team.html'>
+      <FONT FACE='Arial, Helvetica, sans-serif' SIZE='2' COLOR='#FFFFFF'>
+      <B>Team</B></FONT></A></DIV>
+    </TD>
+    <TD WIDTH='14%' BGCOLOR='#1E426E'> 
+      <DIV ALIGN='CENTER'>
+      <A HREF='./project.html'>
+      <FONT FACE='Arial, Helvetica, sans-serif' SIZE='2' COLOR='#FFFFFF'>
+      <B>Project</B></FONT></A></DIV>
+    </TD>
+    <TD WIDTH='14%' BGCOLOR='#1E426E'> 
+      <DIV ALIGN='CENTER'>
+      <A HREF='./links.html'>
+      <FONT FACE='Arial, Helvetica, sans-serif' SIZE='2' COLOR='#FFFFFF'>
+      <B>Links</B></FONT></A></DIV>
+    </TD>
+    <TD WIDTH='14%' BGCOLOR='#1E426E'> 
+      <DIV ALIGN='CENTER'>
+      <A HREF='./literature.html'>
+      <FONT FACE='Arial, Helvetica, sans-serif' SIZE='2' COLOR='#FFFFFF'>
+      <B>Literature</B></FONT></A></DIV>
+    </TD>
+    <TD WIDTH='14%' BGCOLOR='#1E426E'> 
+      <DIV ALIGN='CENTER'>
+      <A HREF='./news.html'>
+      <FONT FACE='Arial, Helvetica, sans-serif' SIZE='2' COLOR='#FFFFFF'>
+      <B>News</B></FONT></A></DIV>
+    </TD>
+    <TD WIDTH='14%' BGCOLOR='#BCD2EE'>
+      <DIV ALIGN='CENTER'>
+      <FONT FACE='Arial, Helvetica, sans-serif' SIZE='2' COLOR='#1E426E'>
+      <B>Software</B></FONT></DIV>
+    </TD>
+    <TD WIDTH='2%'>&nbsp;</TD>
+  </TR>
+</TABLE>"
+EOX
+
+# ----------------------------------------------------------------
 # Print main part of CGI script
 # ----------------------------------------------------------------
 
@@ -149,11 +202,22 @@ sub anuran_start
 	header(),
 
 	# HTML header and title
-	start_html(-title=>'ANURAN Test Page',
-		   -author=>'unuran\@statistik.wu-wien.ac.at',
-		   -meta=>{'keywords'=>'nonuniform random number generator',
-			   'copyright'=>'copyright 2001 Institut fuer Statistik, WU Wien'},
-		   -BGCOLOR=>'#FFFFF5'),
+	start_html(-title  =>'ANURAN Test Page',
+		   -author =>'unuran\@statistik.wu-wien.ac.at',
+		   -meta   =>{'keywords'=>'nonuniform random number generator',
+			      'copyright'=>'copyright 2001 Institut fuer Statistik, WU Wien'},
+		   -BGCOLOR=>'#FFFFF5', 
+		   -TEXT   =>'#000000',
+		   -LINK   =>'#000000',
+		   -VLINK  =>'#000000',
+		   -ALINK  =>'#000000',
+		   -MARGINWIDTH =>'5',
+		   -MARGINHEIGHT=>'5',
+		   -LEFTMARGIN  =>'5',
+		   -TOPMARGIN   =>'5'),
+
+        # Make bar with links
+	$linkbar,
 
 	# Heading
 	h1('Automatic Code Generator'),

@@ -5,81 +5,89 @@ SUBDIRS = src .
 
 info_TEXINFOS = unuran.texi
 
-# these example files are generated from the corresponding
+# Location of same source files 
+TEXINFO_TEX = ./src/texinfo.tex
+AM_MAKEINFOFLAGS = -I $(top_srcdir)/doc/src
+
+# Automatically created part of manual
+unuran_src = ./src/unuran_src.texi
+
+# Files with examples.
+# These example files are generated from the corresponding
 # files $(top_srcdir)/examples/example?.c
 unuran_examples = \
- ref_example0.texi ref_example0_str.texi \
- ref_example1.texi ref_example1_str.texi \
- ref_example2.texi ref_example2_str.texi \
- ref_example3.texi ref_example3_str.texi \
- ref_example4.texi ref_example4_str.texi \
- ref_example_anti.texi  ref_example_anti_str.texi \
- ref_example_cont.texi  ref_example_cont_str.texi \
- ref_example_discr.texi ref_example_discr_str.texi \
- ref_example_emp.texi   ref_example_emp_str.texi \
- ref_example_vemp.texi  ref_example_FuncStr.texi
+ ./src/ref_example0.texi	./src/ref_example0_str.texi \
+ ./src/ref_example1.texi	./src/ref_example1_str.texi \
+ ./src/ref_example2.texi	./src/ref_example2_str.texi \
+ ./src/ref_example3.texi	./src/ref_example3_str.texi \
+ ./src/ref_example4.texi	./src/ref_example4_str.texi \
+ ./src/ref_example_anti.texi	./src/ref_example_anti_str.texi \
+ ./src/ref_example_cont.texi	./src/ref_example_cont_str.texi \
+ ./src/ref_example_discr.texi	./src/ref_example_discr_str.texi \
+ ./src/ref_example_emp.texi	./src/ref_example_emp_str.texi \
+ ./src/ref_example_vemp.texi	./src/ref_example_FuncStr.texi
 
-
+# Sources of texinfo file
 unuran_TEXINFOS = \
  unuran.texi \
- unuran_src.texi \
- unuran_method_requirements.texi \
+ ./src/unuran_method_requirements.texi \
+ $(unuran_src) \
  $(unuran_examples) \
  version.texi
 
 noinst_DATA = 
 
-scripts = \
- make_texi.pl
-
 EXTRA_DIST = \
+ $(unuran_src) \
+ $(unuran_examples) \
  unuran.html \
  unuran.txt \
  unuran.dvi \
  unuran.ps \
- unuran.pdf \
- $(scripts)
-
-# location of same source files 
-TEXINFO_TEX = ./src/texinfo.tex
-
-# generated texi files ...
-unuran_src.texi: $(scripts) unuran.texi $(top_srcdir)/src/unuran.h  
-	./make_texi.pl $(top_srcdir) > unuran_src.texi
-
-example_dir  = $(top_srcdir)/examples
-$(unuran_examples): $(example_dir)/example*.c
-	sed 's/{/@{/g;s/}/@}/g' < $(example_dir)/`echo $* | sed 's/ref_//'`.c > $@
+ unuran.pdf
 
 
-# rules for creating info, dvi, ps, and pdf files are provided by automake.
-# add new rules for html and txt.
+# Generated texi files ...
+sinclude ./src/.dep-unuran_src_texi
+$(unuran_src): $(top_srcdir)/doc/src/make_texi.pl
+	$(top_srcdir)/doc/src/make_texi.pl $(top_srcdir) > $(unuran_src)
+
+# Generated texi files for examples ...
+$(unuran_examples): $(top_srcdir)/examples/example*.c
+	sed 's/{/@{/g;s/}/@}/g' < $(top_srcdir)/examples/`echo $* | sed 's/src\/ref_//'`.c > $@
+
+# Rules for creating info, dvi, ps, and pdf files are provided by automake.
+# Add new rules for html and txt.
 SUFFIXES = .html .txt
 
-.texi.html:	unuran.info
-	$(MAKEINFO) --html --no-split $< -o $@
+.texi.html:
+	$(MAKEINFO) $(AM_MAKEINFOFLAGS) --html --no-split $< -o tmp-$@
+	sed -e 's/\&OUML\;/\&Ouml\;/g' tmp-$@ > $@
+	rm -f tmp-$@
 
 .texi.txt:
-	$(MAKEINFO) --fill-column=80 --no-headers --number-sections $< -o $@
+	$(MAKEINFO) $(AM_MAKEINFOFLAGS) --fill-column=80 --no-headers --number-sections $< -o $@
 
-# dependencies
+# Dependencies
 unuran.html: unuran.texi version.texi $(unuran_TEXINFOS)
 unuran.txt: unuran.texi version.texi $(unuran_TEXINFOS)
 
-# abbreviations
+# Abbreviations
 .PHONY: html txt
 html: unuran.html
 txt: unuran.txt
 
-# clean backup files
-CLEANFILES = *~
+# Clean backup and temp files
+CLEANFILES = \
+ *~ \
+ tmp-unuran.html
 
-# clean generated files
+# Clean generated files
 MAINTAINERCLEANFILES = \
  Makefile.in \
- unuran.html \
- unuran.txt \
- unuran.pdf \
+ mdate-sh \
  $(unuran_examples) \
- unuran_src.texi
+ $(unuran_src) \
+ unuran.html \
+ unuran.txt
 

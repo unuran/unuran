@@ -114,7 +114,6 @@ int
 unur_distr_demp_set_prob( struct unur_distr *distr, double *prob, int n_prob )
      /*----------------------------------------------------------------------*/
      /* set probability vector for distribution                              */
-     /* set array of parameters for distribution                             */
      /*                                                                      */
      /* parameters:                                                          */
      /*   distr   ... pointer to distribution object                         */
@@ -158,8 +157,8 @@ unur_distr_demp_set_prob( struct unur_distr *distr, double *prob, int n_prob )
 int 
 unur_distr_demp_get_prob( struct unur_distr *distr, double **prob )
      /*----------------------------------------------------------------------*/
-     /* get number of pdf parameters and sets pointer to array params[] of   */
-     /* parameters                                                           */
+     /* get length of probability vector and set pointer to probability      */
+     /* vector.                                                              */
      /*                                                                      */
      /* parameters:                                                          */
      /*   distr    ... pointer to distribution object                        */

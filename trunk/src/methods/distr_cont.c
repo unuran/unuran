@@ -226,9 +226,13 @@ _unur_distr_cont_free( struct unur_distr *distr )
     return;
   _unur_check_distr_object( distr, CONT, /*void*/ );
 
+  /* function trees */
   if (DISTR.pdftree)  _unur_fstr_free(DISTR.pdftree);
   if (DISTR.dpdftree) _unur_fstr_free(DISTR.dpdftree);
   if (DISTR.cdftree)  _unur_fstr_free(DISTR.cdftree);
+
+  /* derived distribution */
+  if (distr->base) _unur_distr_cont_free(distr->base);
 
   free( distr );
 } /* end of _unur_distr_cont_free() */

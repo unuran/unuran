@@ -156,9 +156,9 @@ unur_distr_corder_new( struct unur_distr *distr, int n, int k )
   /* this is a derived distribution */
   /* allocate memory ... */
   os->base = _unur_malloc( sizeof(struct unur_distr) );
-  if (!os->base) return NULL;
+  if (!os->base) { free(os); return NULL; }
   /* ... and copy distribution object */
-  memcpy( os->base, distr, sizeof(struct unur_distr) );
+  _unur_distr_cont_copy( os->base, distr );
 
   /* set parameters for order statistics */
   OS.n_params = 2;                 /* two parameters: n and k                */
@@ -186,7 +186,11 @@ unur_distr_corder_new( struct unur_distr *distr, int n, int k )
 	OS.dpdf = _unur_dpdf_corder;  /* derivative of PDF */
     }
   }
-  
+
+  OS.pdftree    = NULL;            /* pointer to function tree for PDF       */
+  OS.dpdftree   = NULL;            /* pointer to function tree for dPDF      */
+  OS.cdftree    = NULL;            /* pointer to function tree for CDF       */
+
   /* set defaults                                                            */
   OS.mode      = INFINITY;         /* location of mode (default: not known)  */
 

@@ -5,6 +5,9 @@ AC_INIT(src/unuran_config.h)
 AM_INIT_AUTOMAKE(unuran, 0.0.16)
 AM_CONFIG_HEADER(config.h)
 
+dnl add dmalloc support
+AM_WITH_DMALLOC
+
 dnl things required by automake
 AC_ARG_PROGRAM
 AC_PROG_MAKE_SET

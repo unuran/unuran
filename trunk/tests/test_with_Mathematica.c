@@ -56,13 +56,38 @@ int test_cont_cdf_pdf( UNUR_DISTR *distr, char *datafile, double max_diff )
 
   double CDF_md, PDF_md, dPDF_md;  /* maximal difference (absolute) */
 
+  int have_CDF, have_PDF, have_dPDF, have_upd_pdfarea;
   int i;
 
   /* initialize */
   CDF_md = PDF_md = dPDF_md = 0.;
 
+  /* check existence of CDF, PDF and dPDF */
+  have_CDF  = (unur_distr_cont_get_cdf(distr))  ? 1 : 0;
+  have_PDF  = (unur_distr_cont_get_pdf(distr))  ? 1 : 0;
+  have_dPDF = (unur_distr_cont_get_dpdf(distr)) ? 1 : 0;
+
+  /* check whether unur_distr_cont_upd_pdfarea() works */
+  have_upd_pdfarea = unur_distr_cont_upd_pdfarea(distr); 
+
+  if (!have_upd_pdfarea) {
+    /* if we cannot update the area below the PDF, then the
+       given PDF is not a "real" PDF, i.e. not normalized */
+    have_PDF = 0;
+    have_dPDF = 0;
+  }
+
   /* print info on screen */
   printf("%s ...\n",datafile);
+
+#ifdef DEBUG
+  if (!have_CDF)
+    printf("no CDF!\n");
+  if (!have_PDF)
+    printf("no PDF!\n");
+  if (!have_dPDF)
+    printf("no dPDF!\n");
+#endif
 
   /* open file for reading */
   if ( (fp = fopen(datafile,"r")) == NULL ) {
@@ -120,12 +145,12 @@ int test_cont_cdf_pdf( UNUR_DISTR *distr, char *datafile, double max_diff )
 
     /* set parameters for distribution */
     unur_distr_cont_set_pdfparams(distr,fparams,n_fparams);
-    unur_distr_cont_upd_pdfarea(distr); 
+    if (have_upd_pdfarea) unur_distr_cont_upd_pdfarea(distr); 
 
     /* compute CDF, PDF and derivative of PDF at x */
-    CDF_o = unur_distr_cont_eval_cdf(x, distr);
-    PDF_o = unur_distr_cont_eval_pdf(x, distr);
-    dPDF_o = unur_distr_cont_eval_dpdf(x, distr);
+    CDF_o = (have_CDF) ? unur_distr_cont_eval_cdf(x, distr) : 0.;
+    PDF_o = (have_PDF) ? unur_distr_cont_eval_pdf(x, distr) : 0.;
+    dPDF_o = (have_dPDF) ? unur_distr_cont_eval_dpdf(x, distr) : 0.;
 
     /* compute differnces */
     CDF_d = CDF_o - CDF_e;
@@ -161,9 +186,15 @@ int test_cont_cdf_pdf( UNUR_DISTR *distr, char *datafile, double max_diff )
 
   /* print info on screen */
   printf("\tmaximal difference:\n");
-  printf("\t\tCDF  = %g\n",CDF_md);
-  printf("\t\tPDF  = %g\n",PDF_md);
-  printf("\t\tdPDF = %g\n",dPDF_md);
+
+  if (have_CDF)  printf("\t\tCDF  = %g\n",CDF_md);
+  else           printf("\t\tCDF  = not available\n");
+      
+  if (have_PDF)  printf("\t\tPDF  = %g\n",PDF_md);
+  else           printf("\t\tPDF  = not available\n");
+
+  if (have_dPDF) printf("\t\tdPDF = %g\n",dPDF_md);
+  else           printf("\t\tdPDF = not available\n");
 
   return 0;
 

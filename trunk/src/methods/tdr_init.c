@@ -355,7 +355,7 @@ _unur_tdr_starting_cpoints( struct unur_par *par, struct unur_gen *gen )
     
   fx = fx_last = _unur_FP_is_minus_infinity(x) ? 0. : PDF(x);
   iv = GEN.iv = _unur_tdr_interval_new( gen, x, fx, is_mode );
-  if (iv == NULL) return 0;  /* PDF(x) < 0 !! */
+  if (iv == NULL) return 0;  /* PDF(x) < 0 or overflow !! */
 
   /* terminate beginning of list */
   iv->prev = NULL;
@@ -442,7 +442,7 @@ _unur_tdr_starting_cpoints( struct unur_par *par, struct unur_gen *gen )
     
     /* need a new interval */
     iv->next = _unur_tdr_interval_new( gen, x, fx, is_mode );
-    if (iv->next == NULL) return 0;  /* PDF(x) < 0 !! */
+    if (iv->next == NULL) return 0;  /* PDF(x) < 0 or overflow !! */
     
     /* link into list and skip pointer to current interval */
     iv->next->prev = iv;
@@ -575,7 +575,7 @@ _unur_tdr_gw_starting_intervals( struct unur_par *par, struct unur_gen *gen )
       return 0;
     }
     iv_new = _unur_tdr_interval_new( gen, x, fx, FALSE );
-    if (iv_new == NULL) return 0; /* PDF(x) < 0. */
+    if (iv_new == NULL) return 0;  /* PDF(x) < 0 or overflow !! */
 
 
     /* if fx is 0, then we can cut off the tail of the distribution
@@ -687,6 +687,7 @@ _unur_tdr_ps_starting_intervals( struct unur_par *par, struct unur_gen *gen )
       if (!_unur_FP_is_infinity(iv->dTfx)) {
 	/* get interval */
 	iv->next = iv_new = _unur_tdr_interval_new( gen, iv->x, 0., FALSE );
+	if (iv_new == NULL) return 0;  /* PDF(x) < 0 or overflow !! */
 	/* link into list */
 	iv_new->prev = iv;
 	/* copy right boundary of domain */
@@ -763,7 +764,7 @@ _unur_tdr_ps_starting_intervals( struct unur_par *par, struct unur_gen *gen )
       fx = PDF(x);
 
       iv_new = _unur_tdr_interval_new( gen, x, fx, FALSE );
-      if (iv_new == NULL) return 0; /* PDF(x) < 0. */
+      if (iv_new == NULL) return 0;  /* PDF(x) < 0 or overflow !! */
 
       /* if fx is 0, then we can cut off the tail of the distribution
 	 (since it must be T-concave)  */
@@ -799,7 +800,7 @@ _unur_tdr_ps_starting_intervals( struct unur_par *par, struct unur_gen *gen )
       fx = PDF(x);
 
       iv_new = _unur_tdr_interval_new( gen, x, fx, FALSE );
-      if (iv_new == NULL) return 0; /* PDF(x) < 0. */
+      if (iv_new == NULL) return 0;  /* PDF(x) < 0 or overflow !! */
 
       /* if fx is 0, then we can cut off the tail of the distribution
 	 (since it must be T-concave)  */
@@ -887,6 +888,11 @@ _unur_tdr_interval_new( struct unur_gen *gen, double x, double fx, int is_mode )
   /* first check fx */
   if (fx<0.) {
     _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"PDF(x) < 0.!");
+    return NULL;
+  }
+  if (_unur_FP_is_infinity(fx)) {
+    /* over flow */
+    _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"PDF(x) overflow");
     return NULL;
   }
 
@@ -1488,6 +1494,7 @@ _unur_tdr_gw_interval_split( struct unur_gen *gen, struct unur_tdr_interval *iv_
     /* we need a new interval */
     iv_newr = _unur_tdr_interval_new( gen, x, fx, FALSE );
     if (iv_newr == NULL) {
+      /* PDF(x) < 0 or overflow !! */
       _unur_error(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
       return 0;
     }
@@ -1637,6 +1644,7 @@ _unur_tdr_ps_interval_split( struct unur_gen *gen, struct unur_tdr_interval *iv,
     /* we need a new interval */
     iv_new = _unur_tdr_interval_new( gen, x, fx, FALSE );
     if (iv_new == NULL) {
+      /* PDF(x) < 0 or overflow !! */
       _unur_error(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
       return 0;
     }

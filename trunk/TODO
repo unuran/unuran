@@ -78,11 +78,11 @@ LG Wolfgang
 
 -----------------------------------------------------------------------------
 
-(*) unur_sample_vec() auch fuer univariate.
+(*) unur_sample_array() fuer univariate.
 
 -----------------------------------------------------------------------------
 
-(*) erklaere Phrase: ... in case of failsure an error code is returned.
+(*) DOCU: erklaere Phrase: ... in case of failure an error code is returned.
 
 -----------------------------------------------------------------------------
 
@@ -104,12 +104,10 @@ Und dann funktioniert die correlation induction ueberhaupt nicht.
 dabei die synchronisierung zerstoert wird????
 
 2. UTDR (oder distribution objects): Ich vermisse (fuer die
-hypergeometric Verteilung) eine Moeglichkeit, die unegfaehre A_f (oder
+hyperbolische Verteilung) eine Moeglichkeit, die unegfaehre A_f (oder
 einen bound fuer A_f) einzugeben. Natuerlich kann ich die ungefaehre A_f
 einfache als exakte eingeben, aber das kann doch leicht zu
 missverstaendnissen fuehren.
-
-
 
 
 
@@ -184,7 +182,6 @@ Beta
 -----------------------------------------------------------------------------
 
 (*) TABL: 
-	(.) ist eine baustelle!!
 	(.) ueberpruefe ob area unter hut zu gross (wie??)
 	(.) make_guide_table nicht jedesmal aufrufen
 	(.) ueberpruefe ob PDF(x) NaN liefert
@@ -251,14 +248,19 @@ Beta
 (*) Generator for multimodal distributions 
     (partly realized with TABL)
 
+extremwerte ? keine slopes.
+
+------------------------------------------------------------------------
+
+Ahrens equal area methode ?
+
+------------------------------------------------------------------------
+
+lipschitzconstante
+
 ------------------------------------------------------------------------
 
 (*) generator for (bi- and) multivariate T-concave distributions
 
-------------------------------------------------------------------------
-
-(*) URNG: make compiler switch. distinguish between uniform RNG that may 
-          return 0. and those that do not.
- 
 ------------------------------------------------------------------------
 

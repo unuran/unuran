@@ -90,17 +90,24 @@ UNUR_DISTR *unur_str2distr( const char *string );
    allowed.
 */
 
-UNUR_PAR *unur_str2par( UNUR_DISTR *distribution, const char *string );
+/*
+=EON
+*/
+
+UNUR_PAR *_unur_str2par( UNUR_DISTR *distribution, const char *string, struct unur_slist **mlist );
 /*
    Get a parameter object for the givne distribution object and for the 
    method described in @var{string}. 
    See @ref{StringSyntax,,Syntax of String Interface},
    and @ref{StringMethod,,Method String},
    for details. However, only the block for the method is allowed.
-*/
 
-/*
-=EON
+   @var{mlist} is used to store memory blocks that have been allocated
+   while parsing and making the parameter object. These blocks
+   should (must) be free using _unur_slist_free() after initializing
+   the generator object to avoid a memory leak.
+
+   (Not part of manual!!)
 */
 
 /*---------------------------------------------------------------------------*/

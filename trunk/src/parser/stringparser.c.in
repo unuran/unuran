@@ -523,13 +523,14 @@ unur_str2gen (const char *string)
 /*---------------------------------------------------------------------------*/
 
 struct unur_par *
-unur_str2par (struct unur_distr *distr, const char *string)
+_unur_str2par (struct unur_distr *distr, const char *string, struct unur_slist **mlist )
      /*----------------------------------------------------------------------*/
      /* get parameter object for distribution and method                     */
      /*                                                                      */
      /* parameters:                                                          */
      /*   distr  ... pointer to distribution object                          */
      /*   string ... string that contains description of method              */
+     /*   mlist  ... pointer to simple list for allocated memory blocks      */
      /*                                                                      */
      /* return:                                                              */
      /*   parameter object                                                   */
@@ -540,14 +541,13 @@ unur_str2par (struct unur_distr *distr, const char *string)
 {
   UNUR_PAR *par = NULL;           /* parameter object */
   char *str = NULL;               /* pointer to working string */
-  struct unur_slist *mlist;       /* list of allocated memory blocks */
 
   /* check arguments */
   _unur_check_NULL( GENTYPE,distr,NULL );
   _unur_check_NULL( GENTYPE,string,NULL );
 
   /* (empty) list of allocated memory blocks */ 
-  mlist = _unur_slist_new();
+  *mlist = _unur_slist_new();
 
   /* Prepare string for processing:            */
   /*   Remove all white spaces,                */
@@ -562,11 +562,9 @@ unur_str2par (struct unur_distr *distr, const char *string)
 #endif
 
   /* get parameter object */
-  par = _unur_str_par(str, distr, mlist);
+  par = _unur_str_par(str, distr, *mlist);
 
   /* free allocated memory blocks */
-/*    _unur_free_malloc_list(&slist); */
-  /** TODO: fix this memory leak !!!!!! **/
   if (str) free(str);
 
 #ifdef UNUR_ENABLE_LOGGING

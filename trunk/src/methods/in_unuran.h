@@ -78,6 +78,11 @@ typedef double UNUR_FUNCT_DISCR(int x, struct unur_distr *distr);
 typedef double UNUR_FUNCT_CVEC(double *x, struct unur_distr *distr);
 typedef int UNUR_VFUNCT_CVEC(double *result, double *x, struct unur_distr *distr);
 
+/*---------------------------------------------------------------------------*/
+/* structures for auxiliary tools                                            */
+
+struct unur_slist;         /* Structure for simple list.                     */
+
 /*****************************************************************************/
 /**  Declarations for uniform random number generators                      **/
 /*****************************************************************************/

@@ -37,7 +37,7 @@
 /* (use bits in integer)                                                     */
 
 enum {
-  F_FUNCT_ERROR = 0x80000000u,      /* error                                 */
+  F_FUNCT_ERROR = 0x10000000u,      /* error                                 */
 
   F_FUNCT_SGN   = 0x00000001u,      /* sign function                         */
   F_FUNCT_SEC   = 0x00000002u,      /* secant function                       */
@@ -47,7 +47,7 @@ enum {
   F_FUNCT_GT    = 0x00000040u,      /* '>'  function                         */
   F_FUNCT_GE    = 0x00000080u,      /* '>=' function                         */
   F_FUNCT_EQ    = 0x00000100u,      /* '==' function                         */
-  F_FUNCT_NE    = 0x00000200u,      /* '!=' function                         */
+  F_FUNCT_NE    = 0x00000200u       /* '!=' function                         */
 };
 
 /*---------------------------------------------------------------------------*/

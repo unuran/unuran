@@ -1,3 +1,1389 @@
+2002-06-12  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/codegen/anuran.pl.in: minor change
+
+2002-06-05  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/codegen/anuran.pl.in: minor fixes
+
+2002-06-04  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/codegen/anuran.pl.in:
+	minor fix in anuran.pl
+
+	* /home/staff/CVSROOT/unuran/experiments/convergence.pl: minor changes
+
+2002-06-04  tirler  <tirler@alekto>
+
+	* /home/staff/CVSROOT/unuran/doc/Str_API.texi:
+	*** empty log message ***
+
+2002-05-02  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/experiments/convergence.pl:
+	first version finished
+
+	* /home/staff/CVSROOT/unuran/src/methods/tdr.h, /home/staff/CVSROOT/unuran/src/methods/tdr_init.c, /home/staff/CVSROOT/unuran/src/methods/tdr_sample.c:
+	added ARS for to avoid deadlock in DARS
+
+2002-05-01  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/src/methods/tdr.h, /home/staff/CVSROOT/unuran/src/methods/tdr_newset.c:
+	added internal call for experiments
+
+	* /home/staff/CVSROOT/unuran/experiments/convergence.pl, /home/staff/CVSROOT/unuran/experiments/Makefile, /home/staff/CVSROOT/unuran/experiments/rungen.c:
+	added experiments
+
+	* /home/staff/CVSROOT/unuran/src/methods/distr_cont.c, /home/staff/CVSROOT/unuran/src/methods/distr_cont.h:
+	changed behavior of unur_distr_cont_set_domain(). now mode is updated
+
+2002-04-21  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/run/fstr.c, /home/staff/CVSROOT/unuran/run/fstrmain.c, /home/staff/CVSROOT/unuran/run/uniftest.pl:
+	removed obsolet files
+
+	* /home/staff/CVSROOT/unuran/tests/stringparser.conf:
+	added new tests for method SROU
+
+	* /home/staff/CVSROOT/unuran/src/methods/gsrou.h, /home/staff/CVSROOT/unuran/src/methods/srou.h:
+	added GSROU to docu
+
+2002-04-15  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/tests/srou.conf, /home/staff/CVSROOT/unuran/run/run.c, /home/staff/CVSROOT/unuran/src/methods/srou.c, /home/staff/CVSROOT/unuran/src/methods/srou.h:
+	bug fix in verify mode in GSROU
+
+2002-04-12  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/src/methods/srou.c, /home/staff/CVSROOT/unuran/tests/srou.conf:
+	added verify mode to (G)SROU
+
+	* /home/staff/CVSROOT/unuran/src/methods/srou.c, /home/staff/CVSROOT/unuran/tests/srou.conf, /home/staff/CVSROOT/unuran/run/run.c, /home/staff/CVSROOT/unuran/src/methods/distr_cont.h, /home/staff/CVSROOT/unuran/src/methods/distr_corder.h, /home/staff/CVSROOT/unuran/src/methods/distr_discr.h:
+	fixed bug in reinit() for method (G)SROU
+
+	* /home/staff/CVSROOT/unuran/src/methods/distr_cont.h, /home/staff/CVSROOT/unuran/src/methods/distr_corder.h, /home/staff/CVSROOT/unuran/src/methods/distr_discr.h, /home/staff/CVSROOT/unuran/tests/srou.conf:
+	added important comment for unur_distr_..._eval_cdf() to docu
+
+	* /home/staff/CVSROOT/unuran/src/methods/gsrou.c, /home/staff/CVSROOT/unuran/src/methods/gsrou_struct.h, /home/staff/CVSROOT/unuran/src/methods/in_unuran.h, /home/staff/CVSROOT/unuran/src/methods/Makefile.am, /home/staff/CVSROOT/unuran/src/methods/source_cookies.h, /home/staff/CVSROOT/unuran/src/methods/source_methods.h, /home/staff/CVSROOT/unuran/src/methods/source_struct.h, /home/staff/CVSROOT/unuran/src/methods/srou.c, /home/staff/CVSROOT/unuran/src/methods/srou.h, /home/staff/CVSROOT/unuran/src/methods/srou_struct.h, /home/staff/CVSROOT/unuran/src/tests/tests.c, /home/staff/CVSROOT/unuran/tests/gsrou.conf, /home/staff/CVSROOT/unuran/tests/Makefile.am, /home/staff/CVSROOT/unuran/tests/make_test_files.pl, /home/staff/CVSROOT/unuran/tests/srou.conf, /home/staff/CVSROOT/unuran/tests/testunuran.h, /home/staff/CVSROOT/unuran/run/run.c:
+	remove method GSROU, now part of SROU
+
+2002-04-10  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/tests/gsrou.conf, /home/staff/CVSROOT/unuran/src/methods/gsrou.c, /home/staff/CVSROOT/unuran/src/methods/gsrou.h, /home/staff/CVSROOT/unuran/src/methods/gsrou_struct.h, /home/staff/CVSROOT/unuran/doc/references.h, /home/staff/CVSROOT/unuran/run/run.c, /home/staff/CVSROOT/unuran/src/methods/in_unuran.h, /home/staff/CVSROOT/unuran/src/methods/Makefile.am, /home/staff/CVSROOT/unuran/src/methods/source_cookies.h, /home/staff/CVSROOT/unuran/src/methods/source_methods.h, /home/staff/CVSROOT/unuran/src/methods/source_struct.h, /home/staff/CVSROOT/unuran/src/tests/tests.c, /home/staff/CVSROOT/unuran/tests/Makefile.am, /home/staff/CVSROOT/unuran/tests/testunuran.h:
+	added new method GSROU
+
+	* /home/staff/CVSROOT/unuran/src/methods/srou.h: fixed type in docu
+
+2002-04-10  tirler  <tirler@alekto>
+
+	* /home/staff/CVSROOT/unuran/examples/example_FuncStr.c:
+	*** empty log message ***
+
+2002-04-10  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/doc/ref_example_FuncStr.texi: deleted file
+
+2002-04-10  tirler  <tirler@alekto>
+
+	* /home/staff/CVSROOT/unuran/examples/Makefile.am, /home/staff/CVSROOT/unuran/doc/Makefile.am, /home/staff/CVSROOT/unuran/doc/FuncString.texi, /home/staff/CVSROOT/unuran/doc/ref_example_FuncStr.texi:
+	*** empty log message ***
+
+2002-04-09  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/codegen/anuran.pl.in:
+	added help function to web interface
+
+2002-04-08  tirler  <tirler@alekto>
+
+	* /home/staff/CVSROOT/unuran/doc/FuncString.texi:
+	*** empty log message ***
+
+2002-04-05  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/codegen/anuran.pl.in, /home/staff/CVSROOT/unuran/codegen/make_anuran.pl, /home/staff/CVSROOT/unuran/codegen/Makefile.am, /home/staff/CVSROOT/unuran/codegen/make_PDFgen.pl:
+	finished anuran.pl
+
+	* /home/staff/CVSROOT/unuran/codegen/tests/test_acg_conf.pl, /home/staff/CVSROOT/unuran/codegen/tests/test_acg.pl, /home/staff/CVSROOT/unuran/src/parser/functparser.c, /home/staff/CVSROOT/unuran/src/parser/functparser_codegen_C.c, /home/staff/CVSROOT/unuran/src/parser/functparser_codegen_FORTRAN.c, /home/staff/CVSROOT/unuran/src/parser/functparser_codegen_JAVA.c, /home/staff/CVSROOT/unuran/src/parser/functparser_symbols.h:
+	added function secant to functparser
+
+	* /home/staff/CVSROOT/unuran/codegen/make_PDFgen.pl, /home/staff/CVSROOT/unuran/codegen/PDFgen.c.in, /home/staff/CVSROOT/unuran/codegen/tests/test_acg_conf.pl, /home/staff/CVSROOT/unuran/src/parser/functparser.c, /home/staff/CVSROOT/unuran/src/parser/functparser_codegen_C.c, /home/staff/CVSROOT/unuran/src/parser/functparser_codegen_FORTRAN.c, /home/staff/CVSROOT/unuran/src/parser/functparser_codegen_JAVA.c, /home/staff/CVSROOT/unuran/src/parser/functparser_source.h, /home/staff/CVSROOT/unuran/src/parser/functparser_symbols.h, /home/staff/CVSROOT/unuran/src/parser/Makefile.am:
+	added JAVA codegenerator for functparser
+
+2002-04-04  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/codegen/PDFgen.c.in, /home/staff/CVSROOT/unuran/codegen/tests/test_acg_conf.pl, /home/staff/CVSROOT/unuran/src/parser/functparser.c, /home/staff/CVSROOT/unuran/src/parser/functparser_codegen_C.c, /home/staff/CVSROOT/unuran/src/parser/functparser_codegen_FORTRAN.c, /home/staff/CVSROOT/unuran/src/parser/functparser_source.h, /home/staff/CVSROOT/unuran/src/parser/functparser_symbols.h:
+	added codegenerator for FORTRAN
+
+	* /home/staff/CVSROOT/unuran/src/parser/functparser.c, /home/staff/CVSROOT/unuran/src/parser/functparser_codegen_C.c, /home/staff/CVSROOT/unuran/src/parser/functparser_codegen_FORTRAN.c, /home/staff/CVSROOT/unuran/src/parser/functparser_stringgen.c:
+	change in output routine for codegen
+
+	* /home/staff/CVSROOT/unuran/codegen/codegen_source.h, /home/staff/CVSROOT/unuran/codegen/codegen_UNURAN.c, /home/staff/CVSROOT/unuran/codegen/tdr_codegen_UNURAN.c, /home/staff/CVSROOT/unuran/codegen/tests/test_acg_conf.pl, /home/staff/CVSROOT/unuran/codegen/tests/test_acg.pl:
+	added tests for functionparser
+
+	* /home/staff/CVSROOT/unuran/src/parser/functparser.c, /home/staff/CVSROOT/unuran/src/parser/functparser_codegen_C.c, /home/staff/CVSROOT/unuran/src/parser/functparser_codegen_FORTRAN.c, /home/staff/CVSROOT/unuran/src/parser/functparser_symbols.h, /home/staff/CVSROOT/unuran/src/parser/Makefile.am:
+	added file for FORTRAN code generator; bug fixes
+
+	* /home/staff/CVSROOT/unuran/src/methods/distr_cont.h, /home/staff/CVSROOT/unuran/src/methods/distr_discr.h:
+	change in docu
+
+2002-04-03  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/codegen/tests/test_acg_conf.pl, /home/staff/CVSROOT/unuran/codegen/tests/test_acg.pl:
+	select programming language for tests
+
+	* /home/staff/CVSROOT/unuran/codegen/codegen_C.c, /home/staff/CVSROOT/unuran/codegen/PDFgen.c.in, /home/staff/CVSROOT/unuran/src/parser/functparser.c, /home/staff/CVSROOT/unuran/src/parser/functparser_codegen_C.c, /home/staff/CVSROOT/unuran/src/parser/functparser_init.c, /home/staff/CVSROOT/unuran/src/parser/functparser_stringgen.c, /home/staff/CVSROOT/unuran/src/parser/functparser_symbols.h:
+	finished first version of C code generator for functionparser
+
+	* /home/staff/CVSROOT/unuran/codegen/PDFgen.c.in, /home/staff/CVSROOT/unuran/src/parser/functparser.c, /home/staff/CVSROOT/unuran/src/parser/functparser_codegen_C.c, /home/staff/CVSROOT/unuran/src/parser/functparser_init.c, /home/staff/CVSROOT/unuran/src/parser/functparser_symbols.h:
+	new version for C codegenerator
+
+2002-04-02  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/src/parser/functparser_deriv.c, /home/staff/CVSROOT/unuran/src/parser/functparser_eval.c, /home/staff/CVSROOT/unuran/src/parser/functparser_symbols.h, /home/staff/CVSROOT/unuran/tests/test_functionparser.m:
+	removed log and renamed ln to log in functparser
+
+	* /home/staff/CVSROOT/unuran/src/parser/functparser_codegen_C.c, /home/staff/CVSROOT/unuran/src/parser/functparser_eval.c, /home/staff/CVSROOT/unuran/src/parser/functparser_symbols.h, /home/staff/CVSROOT/unuran/tests/test_functionparser.m:
+	removed logical operators from function parser
+
+	* /home/staff/CVSROOT/unuran/codegen/PDFgen.c.in, /home/staff/CVSROOT/unuran/src/parser/functparser_codegen_C.c, /home/staff/CVSROOT/unuran/src/parser/functparser_symbols.h:
+	added generator for C code for function trees
+
+	* /home/staff/CVSROOT/unuran/codegen/make_PDFgen.pl, /home/staff/CVSROOT/unuran/codegen/PDFgen.c.in:
+	unified ordering of parameters
+
+	* /home/staff/CVSROOT/unuran/src/parser/functparser.c, /home/staff/CVSROOT/unuran/src/parser/functparser_codegen.c, /home/staff/CVSROOT/unuran/src/parser/functparser_stringgen.c, /home/staff/CVSROOT/unuran/src/parser/Makefile.am:
+	renamed file
+
+	* /home/staff/CVSROOT/unuran/doc/Makefile.am: added missing source file
+
+	* /home/staff/CVSROOT/unuran/codegen/tests/test_acg_conf.pl, /home/staff/CVSROOT/unuran/codegen/tests/test_acg.pl:
+	included module strict
+
+	* /home/staff/CVSROOT/unuran/codegen/codegen_source.h:
+	unified ordering of parameters in function calls
+
+	* /home/staff/CVSROOT/unuran/codegen/PDFgen.c.in, /home/staff/CVSROOT/unuran/codegen/make_PDFgen.pl, /home/staff/CVSROOT/unuran/codegen/Makefile.am:
+	new version of make_PDFgen.pl
+
+	* /home/staff/CVSROOT/unuran/codegen/make_headergen.pl: minor change
+
+	* /home/staff/CVSROOT/unuran/codegen/headergen.c.in, /home/staff/CVSROOT/unuran/codegen/tdr_codegen_C.c, /home/staff/CVSROOT/unuran/codegen/tdr_codegen_FORTRAN.c, /home/staff/CVSROOT/unuran/codegen/tdr_codegen_JAVA.c, /home/staff/CVSROOT/unuran/codegen/tdr_codegen_UNURAN.c, /home/staff/CVSROOT/unuran/codegen/codegen_C.c, /home/staff/CVSROOT/unuran/codegen/codegen_FORTRAN.c, /home/staff/CVSROOT/unuran/codegen/codegen_JAVA.c, /home/staff/CVSROOT/unuran/codegen/codegen_UNURAN.c:
+	unified ordering of parameters in function calls
+
+	* /home/staff/CVSROOT/unuran/src/parser/functparser.c, /home/staff/CVSROOT/unuran/src/parser/functparser_codegen.c, /home/staff/CVSROOT/unuran/src/parser/functparser_codegen_C.c, /home/staff/CVSROOT/unuran/src/parser/functparser_debug.c, /home/staff/CVSROOT/unuran/src/parser/functparser_source.h, /home/staff/CVSROOT/unuran/src/parser/functparser_struct.h, /home/staff/CVSROOT/unuran/src/parser/functparser_symbols.h, /home/staff/CVSROOT/unuran/src/parser/Makefile.am:
+	first changes for code generator for C and FORTRAN
+
+	* /home/staff/CVSROOT/unuran/src/methods/distr_cont.c, /home/staff/CVSROOT/unuran/src/methods/distr_discr.c:
+	added possibility to suppress spaces around operators in _unur_fstr_tree2string
+
+2002-03-22  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/codegen/headergen.c.in, /home/staff/CVSROOT/unuran/codegen/acg.c, /home/staff/CVSROOT/unuran/codegen/anuran.pl.in, /home/staff/CVSROOT/unuran/codegen/Makefile.am, /home/staff/CVSROOT/unuran/codegen/make_headergen.pl, /home/staff/CVSROOT/unuran/codegen/make_PDFgen.pl:
+	new version of headergen
+
+2002-03-22  tirler  <tirler@alekto>
+
+	* /home/staff/CVSROOT/unuran/src/parser/parser.h, /home/staff/CVSROOT/unuran/doc/FuncString.texi:
+	*** empty log message ***
+
+2002-03-21  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/codegen/anuran.pl.in: new web interface
+
+	* /home/staff/CVSROOT/unuran/codegen/tests/test_acg.pl:
+	added module strict
+
+2002-03-18  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/codegen/make_acg.pl, /home/staff/CVSROOT/unuran/codegen/acg.c, /home/staff/CVSROOT/unuran/codegen/codegen_UNURAN.c, /home/staff/CVSROOT/unuran/codegen/Makefile.am, /home/staff/CVSROOT/unuran/codegen/tests/test_acg_conf.pl, /home/staff/CVSROOT/unuran/codegen/tests/test_acg.pl, /home/staff/CVSROOT/unuran/codegen/tests/test_urand.pl:
+	new interface for ACG
+
+	* /home/staff/CVSROOT/unuran/tests/stringparser.conf:
+	added keyword name for distribution
+
+	* /home/staff/CVSROOT/unuran/doc/examples.h, /home/staff/CVSROOT/unuran/doc/Makefile.am, /home/staff/CVSROOT/unuran/doc/methods.h:
+	added more examples; changes for string API
+
+	* /home/staff/CVSROOT/unuran/src/parser/make_stringparser.pl, /home/staff/CVSROOT/unuran/src/parser/parser.h, /home/staff/CVSROOT/unuran/src/parser/stringparser.c.in:
+	added keyword name for distribution
+
+	* /home/staff/CVSROOT/unuran/src/methods/auto.h, /home/staff/CVSROOT/unuran/src/methods/distr.c, /home/staff/CVSROOT/unuran/src/methods/distr_cemp.c, /home/staff/CVSROOT/unuran/src/methods/distr_cont.c, /home/staff/CVSROOT/unuran/src/methods/distr_corder.c, /home/staff/CVSROOT/unuran/src/methods/distr_cvec.c, /home/staff/CVSROOT/unuran/src/methods/distr_cvec.h, /home/staff/CVSROOT/unuran/src/methods/distr_cvemp.c, /home/staff/CVSROOT/unuran/src/methods/distr_discr.c, /home/staff/CVSROOT/unuran/src/methods/distr_source.h, /home/staff/CVSROOT/unuran/src/methods/distr_struct.h, /home/staff/CVSROOT/unuran/src/methods/empk.c, /home/staff/CVSROOT/unuran/src/methods/vempk.c, /home/staff/CVSROOT/unuran/src/methods/vmt.c:
+	fixed error with name for distribution given by user
+
+	* /home/staff/CVSROOT/unuran/examples/example4.c, /home/staff/CVSROOT/unuran/examples/example4_str.c, /home/staff/CVSROOT/unuran/examples/example_anti.c, /home/staff/CVSROOT/unuran/examples/example_anti_str.c:
+	fixed typos
+
+2002-03-05  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/examples/example0.c:
+	added example for method AUTO
+
+	* /home/staff/CVSROOT/unuran/src/methods/x_urng.c, /home/staff/CVSROOT/unuran/src/methods/x_urng.h, /home/staff/CVSROOT/unuran/src/parser/parser.h, /home/staff/CVSROOT/unuran/src/parser/stringparser.c.in, /home/staff/CVSROOT/unuran/tests/stringparser.conf:
+	minor fixes
+
+	* /home/staff/CVSROOT/unuran/examples/example1_str.c, /home/staff/CVSROOT/unuran/examples/example2_str.c, /home/staff/CVSROOT/unuran/examples/example3_str.c, /home/staff/CVSROOT/unuran/examples/example4_str.c, /home/staff/CVSROOT/unuran/examples/example_anti_str.c, /home/staff/CVSROOT/unuran/examples/example_cont_str.c, /home/staff/CVSROOT/unuran/examples/example_discr_str.c, /home/staff/CVSROOT/unuran/examples/example_emp_str.c, /home/staff/CVSROOT/unuran/examples/example0_str.c:
+	added examples with string API
+
+	* /home/staff/CVSROOT/unuran/examples/example4.c, /home/staff/CVSROOT/unuran/examples/example_anti.c, /home/staff/CVSROOT/unuran/examples/example_discr.c, /home/staff/CVSROOT/unuran/examples/example_vemp.c:
+	fixed typos
+
+	* /home/staff/CVSROOT/unuran/examples/Makefile.am:
+	added examples with string API
+
+2002-02-27  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/src/methods/auto.c, /home/staff/CVSROOT/unuran/src/methods/auto.h, /home/staff/CVSROOT/unuran/src/parser/stringparser.c.in, /home/staff/CVSROOT/unuran/tests/stringparser.conf:
+	added tests for AUTO; bug fix
+
+2002-02-26  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/tests/auto.conf, /home/staff/CVSROOT/unuran/src/methods/auto.c, /home/staff/CVSROOT/unuran/src/methods/auto.h, /home/staff/CVSROOT/unuran/src/methods/auto_struct.h, /home/staff/CVSROOT/unuran/tests/Makefile.am, /home/staff/CVSROOT/unuran/tests/testunuran.h:
+	added tests for AUTO
+
+2002-02-25  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/src/methods/auto.c, /home/staff/CVSROOT/unuran/src/methods/auto.h, /home/staff/CVSROOT/unuran/src/methods/auto_struct.h, /home/staff/CVSROOT/unuran/src/methods/in_unuran.h, /home/staff/CVSROOT/unuran/src/methods/Makefile.am, /home/staff/CVSROOT/unuran/src/methods/source_cookies.h, /home/staff/CVSROOT/unuran/src/methods/source_methods.h, /home/staff/CVSROOT/unuran/src/methods/source_struct.h:
+	added method AUTO
+
+2002-02-11  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/doc/make_texi.pl, /home/staff/CVSROOT/unuran/doc/stddist.h, /home/staff/CVSROOT/unuran/scripts/read_PDF.pl, /home/staff/CVSROOT/unuran/tests/test_StdDistr.m:
+	added CDF keyword to docu for std distributions
+
+	* /home/staff/CVSROOT/unuran/src/distributions/unuran_distributions.h:
+	added student distribution
+
+2002-02-06  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/configure.in, /home/staff/CVSROOT/unuran/doc/examples.h, /home/staff/CVSROOT/unuran/doc/intro.h, /home/staff/CVSROOT/unuran/doc/unuran_method_requirements.texi, /home/staff/CVSROOT/unuran/src/methods/cstd.h, /home/staff/CVSROOT/unuran/src/methods/dari.h, /home/staff/CVSROOT/unuran/src/methods/distr_cont.h, /home/staff/CVSROOT/unuran/src/methods/distr_discr.h, /home/staff/CVSROOT/unuran/src/methods/distr.h, /home/staff/CVSROOT/unuran/src/methods/dsrou.h, /home/staff/CVSROOT/unuran/src/methods/dstd.h, /home/staff/CVSROOT/unuran/src/methods/srou.h, /home/staff/CVSROOT/unuran/src/methods/ssr.h, /home/staff/CVSROOT/unuran/src/methods/utdr.h, /home/staff/CVSROOT/unuran/src/parser/parser.h:
+	fixed errors with @ref in docu
+
+	* /home/staff/CVSROOT/unuran/tests/dsrou.conf: fixed typo
+
+	* /home/staff/CVSROOT/unuran/src/methods/dsrou.c:
+	improved sample_check()
+
+2002-02-05  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/src/methods/dsrou.c, /home/staff/CVSROOT/unuran/src/methods/dsrou.h, /home/staff/CVSROOT/unuran/src/methods/dsrou_struct.h, /home/staff/CVSROOT/unuran/tests/dsrou.conf, /home/staff/CVSROOT/unuran/tests/timing_dsrou.conf:
+	changes in docu of DSROU
+
+	* /home/staff/CVSROOT/unuran/codegen/tests/test_acg_conf.pl:
+	reduced sample size
+
+	* /home/staff/CVSROOT/unuran/tests/dsrou.conf, /home/staff/CVSROOT/unuran/tests/timing.conf, /home/staff/CVSROOT/unuran/tests/timing_dsrou.conf, /home/staff/CVSROOT/unuran/tests/timing_ninv.conf:
+	changes with timing tests
+
+	* /home/staff/CVSROOT/unuran/tests/testunuran.h, /home/staff/CVSROOT/unuran/tests/Makefile.am, /home/staff/CVSROOT/unuran/tests/make_test_files.pl, /home/staff/CVSROOT/unuran/tests/testroutines.c:
+	changes in tests
+
+2002-01-22  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/src/methods/distr_cont.h, /home/staff/CVSROOT/unuran/src/methods/distr_discr.h, /home/staff/CVSROOT/unuran/src/parser/make_stringparser.pl, /home/staff/CVSROOT/unuran/src/parser/parser.h, /home/staff/CVSROOT/unuran/src/parser/stringparser.c.in:
+	updated docu
+
+	* /home/staff/CVSROOT/unuran/tests/test_functionparser.m, /home/staff/CVSROOT/unuran/tests/test_StdDistr.m:
+	fixed error with Mathematica 3.0
+
+	* /home/staff/CVSROOT/unuran/src/methods/distr_cont.c, /home/staff/CVSROOT/unuran/src/methods/distr_corder.c, /home/staff/CVSROOT/unuran/tests/corder.conf:
+	fixed segfault for CORDER
+
+2002-01-21  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/src/methods/distr_cont.c, /home/staff/CVSROOT/unuran/src/methods/distr_discr.c, /home/staff/CVSROOT/unuran/src/parser/functparser_init.c, /home/staff/CVSROOT/unuran/src/parser/functparser_parser.c, /home/staff/CVSROOT/unuran/src/parser/functparser_scanner.c, /home/staff/CVSROOT/unuran/tests/distr.conf:
+	fixed segfault
+
+	* /home/staff/CVSROOT/unuran/tests/timing.conf, /home/staff/CVSROOT/unuran/tests/stringparser.conf:
+	fixed memory leak
+
+	* /home/staff/CVSROOT/unuran/tests/cstd.conf, /home/staff/CVSROOT/unuran/src/methods/empk.c, /home/staff/CVSROOT/unuran/tests/empk.conf:
+	fixed error with NULL pointer
+
+2002-01-18  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/src/parser/make_stringparser.pl, /home/staff/CVSROOT/unuran/src/parser/parser.h, /home/staff/CVSROOT/unuran/src/parser/stringparser.c.in, /home/staff/CVSROOT/unuran/tests/stringparser.conf:
+	updated stringparser
+
+2002-01-17  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/doc/references.h, /home/staff/CVSROOT/unuran/src/methods/dsrou.c, /home/staff/CVSROOT/unuran/src/methods/dsrou.h, /home/staff/CVSROOT/unuran/src/methods/srou.c, /home/staff/CVSROOT/unuran/src/methods/ssr.c:
+	updated docu
+
+2002-01-16  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/tests/dsrou.conf, /home/staff/CVSROOT/unuran/run/run.c, /home/staff/CVSROOT/unuran/src/distributions/d_geometric.c, /home/staff/CVSROOT/unuran/src/distributions/d_poisson.c, /home/staff/CVSROOT/unuran/src/methods/dsrou.c, /home/staff/CVSROOT/unuran/src/tests/tests.c, /home/staff/CVSROOT/unuran/tests/dari.conf, /home/staff/CVSROOT/unuran/tests/Makefile.am, /home/staff/CVSROOT/unuran/tests/testunuran.h:
+	added tests for DSROU. bug fixes
+
+2002-01-15  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/src/methods/dsrou.c, /home/staff/CVSROOT/unuran/src/methods/dsrou.h, /home/staff/CVSROOT/unuran/src/methods/dsrou_struct.h, /home/staff/CVSROOT/unuran/src/methods/in_unuran.h, /home/staff/CVSROOT/unuran/src/methods/Makefile.am, /home/staff/CVSROOT/unuran/src/methods/source_cookies.h, /home/staff/CVSROOT/unuran/src/methods/source_methods.h, /home/staff/CVSROOT/unuran/src/methods/source_struct.h:
+	added new method DSROU
+
+	* /home/staff/CVSROOT/unuran/src/parser/make_stringparser.pl:
+	update stringparser
+
+	* /home/staff/CVSROOT/unuran/src/methods/srou.c: minor change
+
+2002-01-14  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/src/methods/cstd.c, /home/staff/CVSROOT/unuran/src/methods/distr_discr.h, /home/staff/CVSROOT/unuran/src/methods/ninv.c, /home/staff/CVSROOT/unuran/src/methods/srou.c, /home/staff/CVSROOT/unuran/src/methods/ssr.c, /home/staff/CVSROOT/unuran/src/methods/tabl.c, /home/staff/CVSROOT/unuran/src/methods/utdr.c, /home/staff/CVSROOT/unuran/tests/tdr.conf, /home/staff/CVSROOT/unuran/src/methods/arou.c:
+	added unur_distr_cont_clean(). bug fix
+
+	* /home/staff/CVSROOT/unuran/src/methods/tdr_init.c:
+	added _unur_distr_cont_clear(). bug fix
+
+	* /home/staff/CVSROOT/unuran/src/methods/dari.c, /home/staff/CVSROOT/unuran/src/methods/dau.c, /home/staff/CVSROOT/unuran/src/methods/dgt.c, /home/staff/CVSROOT/unuran/src/methods/distr_discr.c, /home/staff/CVSROOT/unuran/src/methods/distr_discr.h, /home/staff/CVSROOT/unuran/src/methods/distr_source.h, /home/staff/CVSROOT/unuran/src/methods/distr_struct.h, /home/staff/CVSROOT/unuran/src/methods/dstd.c:
+	added function tree to discrete distributions
+
+	* /home/staff/CVSROOT/unuran/src/methods/distr_cont.h, /home/staff/CVSROOT/unuran/src/methods/distr_cont.c:
+	added _unur_distr_cont_clear()
+
+2002-01-12  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/src/parser/Makefile.am, /home/staff/CVSROOT/unuran/src/parser/make_stringparser.pl:
+	improved documentation for function parser
+
+2002-01-11  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/src/parser/make_stringparser.pl:
+	added list of keys for String API to docu
+
+2002-01-09  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/src/parser/functparser.c, /home/staff/CVSROOT/unuran/src/parser/functparser_deriv.c, /home/staff/CVSROOT/unuran/src/parser/functparser_init.c, /home/staff/CVSROOT/unuran/src/parser/functparser_source.h, /home/staff/CVSROOT/unuran/tests/stringparser.conf, /home/staff/CVSROOT/unuran/tests/testroutines.c, /home/staff/CVSROOT/unuran/src/methods/arou.c, /home/staff/CVSROOT/unuran/src/methods/cstd.c, /home/staff/CVSROOT/unuran/src/methods/distr_cont.c, /home/staff/CVSROOT/unuran/src/methods/distr_source.h, /home/staff/CVSROOT/unuran/src/methods/ninv.c, /home/staff/CVSROOT/unuran/src/methods/srou.c, /home/staff/CVSROOT/unuran/src/methods/ssr.c, /home/staff/CVSROOT/unuran/src/methods/tabl.c, /home/staff/CVSROOT/unuran/src/methods/tdr_init.c, /home/staff/CVSROOT/unuran/src/methods/utdr.c, /home/staff/CVSROOT/unuran/src/unuran_config.h:
+	major bug fix with function trees
+
+	* /home/staff/CVSROOT/unuran/src/methods/source_cookies.h, /home/staff/CVSROOT/unuran/src/parser/functparser.c, /home/staff/CVSROOT/unuran/src/parser/functparser_debug.c, /home/staff/CVSROOT/unuran/src/parser/functparser_deriv.c, /home/staff/CVSROOT/unuran/src/parser/functparser_eval.c, /home/staff/CVSROOT/unuran/src/parser/functparser_init.c, /home/staff/CVSROOT/unuran/src/parser/functparser_parser.c, /home/staff/CVSROOT/unuran/src/parser/functparser_scanner.c, /home/staff/CVSROOT/unuran/src/parser/stringparser.c.in, /home/staff/CVSROOT/unuran/src/unuran_config.h:
+	included cookies in function parser; bug fixes
+
+2002-01-07  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/src/methods/distr_cont.c, /home/staff/CVSROOT/unuran/src/parser/functparser_parser.c, /home/staff/CVSROOT/unuran/src/parser/make_stringparser.pl, /home/staff/CVSROOT/unuran/src/parser/stringparser.c.in, /home/staff/CVSROOT/unuran/tests/stringparser.conf, /home/staff/CVSROOT/unuran/tests/test_functionparser.c, /home/staff/CVSROOT/unuran/tests/test_StdDistr.c:
+	added tests and some bug fixes for function parser
+
+2002-01-02  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/tests/test_functionparser.c, /home/staff/CVSROOT/unuran/tests/test_StdDistr.c, /home/staff/CVSROOT/unuran/tests/test_StdDistr.h, /home/staff/CVSROOT/unuran/tests/test_StdDistr.m, /home/staff/CVSROOT/unuran/tests/Makefile.am:
+	new version for tests for StdDistr with Mathematica
+
+2002-01-02  tirler  <tirler@alekto>
+
+	* /home/staff/CVSROOT/unuran/tests/test_functionparser.m:
+	*** empty log message ***
+
+2002-01-02  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/src/parser/parser.h, /home/staff/CVSROOT/unuran/src/parser/stringparser.c.in:
+	added unur_str2distr()
+
+	* /home/staff/CVSROOT/unuran/src/parser/functparser_eval.c, /home/staff/CVSROOT/unuran/src/parser/functparser_symbols.h, /home/staff/CVSROOT/unuran/tests/test_functionparser.m:
+	removed xor from function parser
+
+	* /home/staff/CVSROOT/unuran/src/parser/functparser_eval.c, /home/staff/CVSROOT/unuran/tests/test_functionparser.m:
+	added some error checking with function tree evaluation
+
+	* /home/staff/CVSROOT/unuran/tests/test_functionparser.c, /home/staff/CVSROOT/unuran/tests/test_functionparser.m, /home/staff/CVSROOT/unuran/src/parser/functparser_scanner.c, /home/staff/CVSROOT/unuran/src/parser/functparser_symbols.h, /home/staff/CVSROOT/unuran/tests/Makefile.am, /home/staff/CVSROOT/unuran/tests/ninv.conf:
+	changes with tests
+
+2001-12-21  tirler  <tirler@alekto>
+
+	* /home/staff/CVSROOT/unuran/tests/test_functionparser.m:
+	*** empty log message ***
+
+2001-12-19  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/src/methods/ninv.c, /home/staff/CVSROOT/unuran/src/methods/ninv.h:
+	changes for regula falsi
+
+2001-12-19  tirler  <tirler@alekto>
+
+	* /home/staff/CVSROOT/unuran/tests/test_functionparser.m:
+	*** empty log message ***
+
+2001-12-14  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/src/methods/x_errno.h, /home/staff/CVSROOT/unuran/src/methods/x_error.c, /home/staff/CVSROOT/unuran/src/parser/functparser.c, /home/staff/CVSROOT/unuran/src/parser/functparser_codegen.c, /home/staff/CVSROOT/unuran/src/parser/functparser_debug.c, /home/staff/CVSROOT/unuran/src/parser/functparser_deriv.c, /home/staff/CVSROOT/unuran/src/parser/functparser_symbols.h:
+	added error tracking for making derivates from function trees
+
+	* /home/staff/CVSROOT/unuran/src/parser/functparser_codegen.c, /home/staff/CVSROOT/unuran/src/parser/functparser_deriv.c, /home/staff/CVSROOT/unuran/src/parser/functparser_parser.c, /home/staff/CVSROOT/unuran/tests/test_functionparser.c, /home/staff/CVSROOT/unuran/src/parser/functparser.c:
+	bug fixes in function parser
+
+2001-12-13  tirler  <tirler@alekto>
+
+	* /home/staff/CVSROOT/unuran/tests/test_functionparser.m:
+	*** empty log message ***
+
+2001-12-13  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/tests/Makefile.am, /home/staff/CVSROOT/unuran/tests/test_StdDistr.m:
+	changes with tests
+
+	* /home/staff/CVSROOT/unuran/src/methods/distr_cont.h, /home/staff/CVSROOT/unuran/tests/test_functionparser.c:
+	added tests for function parser
+
+	* /home/staff/CVSROOT/unuran/tests/Makefile.am, /home/staff/CVSROOT/unuran/tests/test_functionparser.m:
+	tests for function parser
+
+2001-12-12  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/tests/test_functionparser.m, /home/staff/CVSROOT/unuran/tests/t_functionparser.m:
+	changed file name
+
+	* /home/staff/CVSROOT/unuran/tests/test_StdDistr.c, /home/staff/CVSROOT/unuran/tests/test_StdDistr.h, /home/staff/CVSROOT/unuran/tests/test_StdDistr.m:
+	renamed test files for testing standard distributions with Mathematica
+
+	* /home/staff/CVSROOT/unuran/configure.in, /home/staff/CVSROOT/unuran/tests/Makefile.am, /home/staff/CVSROOT/unuran/tests/test_with_Mathematica.c, /home/staff/CVSROOT/unuran/tests/test_with_Mathematica.h, /home/staff/CVSROOT/unuran/tests/test_with_Mathematica.m:
+	use autoconfig conditional for tests with Mathematica
+
+2001-12-12  tirler  <tirler@alekto>
+
+	* /home/staff/CVSROOT/unuran/tests/t_functionparser.m:
+	*** empty log message ***
+
+2001-12-12  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/tests/test_functionparser.c:
+	added tests for function parser
+
+	* /home/staff/CVSROOT/unuran/src/parser/parser.c, /home/staff/CVSROOT/unuran/src/parser/parser_source.h:
+	added file file common parse routines
+
+	* /home/staff/CVSROOT/unuran/src/parser/functparser_codegen.c, /home/staff/CVSROOT/unuran/src/parser/functparser_debug.c, /home/staff/CVSROOT/unuran/src/parser/functparser_deriv.c, /home/staff/CVSROOT/unuran/src/parser/functparser_eval.c, /home/staff/CVSROOT/unuran/src/parser/functparser_init.c, /home/staff/CVSROOT/unuran/src/parser/functparser_parser.c, /home/staff/CVSROOT/unuran/src/parser/functparser_scanner.c, /home/staff/CVSROOT/unuran/src/parser/functparser_symbols.h, /home/staff/CVSROOT/unuran/src/parser/functparser.c, /home/staff/CVSROOT/unuran/src/parser/Makefile.am:
+	split function parser source into several files
+
+2001-12-11  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/src/methods/distr_cont.c, /home/staff/CVSROOT/unuran/src/parser/functparser.c, /home/staff/CVSROOT/unuran/run/fstr.c, /home/staff/CVSROOT/unuran/run/fstrmain.c, /home/staff/CVSROOT/unuran/src/methods/distr_cont.h, /home/staff/CVSROOT/unuran/src/methods/distr_struct.h, /home/staff/CVSROOT/unuran/src/methods/x_errno.h, /home/staff/CVSROOT/unuran/src/methods/x_error.c, /home/staff/CVSROOT/unuran/src/parser/functparser_source.h, /home/staff/CVSROOT/unuran/tests/Makefile.am, /home/staff/CVSROOT/unuran/tests/test_with_Mathematica.m, /home/staff/CVSROOT/unuran/run/Makefile:
+	changes with function parser
+
+2001-12-10  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/run/fstr.c: changes for function parser
+
+2001-12-07  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/run/fstr.c, /home/staff/CVSROOT/unuran/run/fstrmain.c, /home/staff/CVSROOT/unuran/src/parser/functparser_source.h:
+	changes for function parser
+
+	* /home/staff/CVSROOT/unuran/src/parser/functparser_source.h, /home/staff/CVSROOT/unuran/run/fstr.c:
+	changes in function parser
+
+2001-12-06  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/run/fstr.c, /home/staff/CVSROOT/unuran/run/fstrmain.c, /home/staff/CVSROOT/unuran/run/Makefile, /home/staff/CVSROOT/unuran/src/parser/functparser_source.h, /home/staff/CVSROOT/unuran/src/parser/functparser_struct.h:
+	changes for function parser
+
+2001-12-05  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/run/fstr.c, /home/staff/CVSROOT/unuran/run/fstrmain.c:
+	changes for function parser
+
+2001-12-04  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/run/fstr.c, /home/staff/CVSROOT/unuran/run/fstrmain.c, /home/staff/CVSROOT/unuran/src/methods/source_unuran.h, /home/staff/CVSROOT/unuran/src/methods/x_debug_source.h, /home/staff/CVSROOT/unuran/src/methods/x_stream.c, /home/staff/CVSROOT/unuran/src/parser/functparser_source.h, /home/staff/CVSROOT/unuran/src/parser/functparser_struct.h, /home/staff/CVSROOT/unuran/src/parser/Makefile.am, /home/staff/CVSROOT/unuran/src/parser/stringparser.c.in:
+	changes for function parser
+
+2001-11-29  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/run/fstr.c, /home/staff/CVSROOT/unuran/run/fstrmain.c, /home/staff/CVSROOT/unuran/src/parser/functparser_struct.h:
+	changes for function parser
+
+2001-11-28  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/run/fstr.c, /home/staff/CVSROOT/unuran/run/fstrmain.c:
+	changes for functparser
+
+	* /home/staff/CVSROOT/unuran/src/parser/functparser_struct.h, /home/staff/CVSROOT/unuran/run/fstr.c, /home/staff/CVSROOT/unuran/src/parser/functparser_source.h:
+	changes
+
+2001-11-27  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/run/fstr.c, /home/staff/CVSROOT/unuran/run/fstrmain.c:
+	changes
+
+	* /home/staff/CVSROOT/unuran/src/parser/functparser_source.h, /home/staff/CVSROOT/unuran/run/fstr.c, /home/staff/CVSROOT/unuran/run/fstrmain.c, /home/staff/CVSROOT/unuran/run/Makefile:
+	changes for functionparser
+
+2001-11-26  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/run/fstr.c, /home/staff/CVSROOT/unuran/run/fstrmain.c, /home/staff/CVSROOT/unuran/run/Makefile, /home/staff/CVSROOT/unuran/run/pars.h, /home/staff/CVSROOT/unuran/src/methods/x_math.h, /home/staff/CVSROOT/unuran/src/parser/functparser_source.h, /home/staff/CVSROOT/unuran/src/parser/functparser_struct.h:
+	add function parser
+
+2001-11-26  tirler  <tirler@alekto>
+
+	* /home/staff/CVSROOT/unuran/run/fstr.c, /home/staff/CVSROOT/unuran/run/fstrmain.c:
+	*** empty log message ***
+
+2001-11-23  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/src/parser/parser.h: minor change
+
+2001-11-23  tirler  <tirler@alekto>
+
+	* /home/staff/CVSROOT/unuran/run/fstr.c, /home/staff/CVSROOT/unuran/run/fstrmain.c:
+	*** empty log message ***
+
+2001-11-23  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/src/methods/ninv.c, /home/staff/CVSROOT/unuran/tests/ninv.conf:
+	bug fix in NINV
+
+	* /home/staff/CVSROOT/unuran/tests/ninv.conf: added some tests
+
+2001-11-23  tirler  <tirler@alekto>
+
+	* /home/staff/CVSROOT/unuran/run/fstrmain.c, /home/staff/CVSROOT/unuran/run/fstr.c:
+	*** empty log message ***
+
+2001-11-23  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/run/fstr.c, /home/staff/CVSROOT/unuran/run/fstrmain.c, /home/staff/CVSROOT/unuran/run/Makefile:
+	minor changes
+
+2001-11-23  tirler  <tirler@alekto>
+
+	* /home/staff/CVSROOT/unuran/run/pars.h: *** empty log message ***
+
+	* /home/staff/CVSROOT/unuran/run/fstr.c, /home/staff/CVSROOT/unuran/run/fstrmain.c, /home/staff/CVSROOT/unuran/run/pars.h:
+	fstrmain.c
+
+2001-11-22  tirler  <tirler@alekto>
+
+	* /home/staff/CVSROOT/unuran/run/pars.h, /home/staff/CVSROOT/unuran/run/fstr.c, /home/staff/CVSROOT/unuran/run/fstrmain.c, /home/staff/CVSROOT/unuran/run/main.c, /home/staff/CVSROOT/unuran/run/pars.c, /home/staff/CVSROOT/unuran/run/parser.c, /home/staff/CVSROOT/unuran/run/scanner.c, /home/staff/CVSROOT/unuran/run/scanpars.h:
+	*** empty log message ***
+
+2001-11-22  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/src/methods/distr_cont.c, /home/staff/CVSROOT/unuran/src/parser/functparser.c, /home/staff/CVSROOT/unuran/src/parser/functparser_source.h, /home/staff/CVSROOT/unuran/src/parser/functparser_struct.h:
+	added function parser
+
+	* /home/staff/CVSROOT/unuran/src/methods/ninv.c: minor change
+
+2001-11-22  janka  <janka@alekto>
+
+	* /home/staff/CVSROOT/unuran/run/run.c, /home/staff/CVSROOT/unuran/src/methods/ninv.c:
+	fixed serious bug in compute_start()
+
+2001-11-22  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/run/parser.c, /home/staff/CVSROOT/unuran/run/run.c:
+	run.c
+
+2001-11-20  tirler  <tirler@alekto>
+
+	* /home/staff/CVSROOT/unuran/run/parser.c, /home/staff/CVSROOT/unuran/run/scanner.c, /home/staff/CVSROOT/unuran/run/pars.c, /home/staff/CVSROOT/unuran/run/pars.h, /home/staff/CVSROOT/unuran/run/scanpars.h, /home/staff/CVSROOT/unuran/run/main.c:
+	*** empty log message ***
+
+2001-11-20  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/codegen/make_acg.pl, /home/staff/CVSROOT/unuran/codegen/tdr_codegen_UNURAN.c:
+	bug fix with ACG test
+
+2001-11-19  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/src/methods/tdr.h, /home/staff/CVSROOT/unuran/src/methods/tdr_newset.c, /home/staff/CVSROOT/unuran/tests/arou.conf, /home/staff/CVSROOT/unuran/tests/tabl.conf, /home/staff/CVSROOT/unuran/tests/tdr.conf, /home/staff/CVSROOT/unuran/src/methods/arou.c, /home/staff/CVSROOT/unuran/src/methods/arou.h, /home/staff/CVSROOT/unuran/src/methods/tabl.c, /home/staff/CVSROOT/unuran/src/methods/tabl.h:
+	added .._get_hatarea() ..._get_squeezearea()
+
+	* /home/staff/CVSROOT/unuran/src/methods/tdr_init.c, /home/staff/CVSROOT/unuran/tests/tdr.conf, /home/staff/CVSROOT/unuran/run/run.c:
+	added more tests for TDR
+
+2001-11-16  tirler  <tirler@alekto>
+
+	* /home/staff/CVSROOT/unuran/run/main.c, /home/staff/CVSROOT/unuran/run/scanner.c, /home/staff/CVSROOT/unuran/run/parser.c, /home/staff/CVSROOT/unuran/run/pars.c, /home/staff/CVSROOT/unuran/run/scanpars.h:
+	*** empty log message ***
+
+	* /home/staff/CVSROOT/unuran/run/pars.h: ø
+
+2001-11-16  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/src/parser/functparser.c, /home/staff/CVSROOT/unuran/src/parser/functparser_source.h, /home/staff/CVSROOT/unuran/src/parser/functparser_struct.h, /home/staff/CVSROOT/unuran/src/methods/distr_cont.c, /home/staff/CVSROOT/unuran/src/methods/distr_cont.h, /home/staff/CVSROOT/unuran/src/methods/source_struct.h, /home/staff/CVSROOT/unuran/src/methods/source_unuran.h, /home/staff/CVSROOT/unuran/src/parser/Makefile.am:
+	added new (empty) files for function parser
+
+	* /home/staff/CVSROOT/unuran/src/parser/stringparser.c.in: minor fix
+
+	* /home/staff/CVSROOT/unuran/run/acg.c, /home/staff/CVSROOT/unuran/run/parsetest.c, /home/staff/CVSROOT/unuran/run/description.txt, /home/staff/CVSROOT/unuran/run/gen_stringpars.pl, /home/staff/CVSROOT/unuran/run/getopttst.c, /home/staff/CVSROOT/unuran/run/stringpars.c.base:
+	removed old files
+
+	* /home/staff/CVSROOT/unuran/tests/tdr.conf: minor changes
+
+2001-11-14  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/src/methods/tdr_init.c, /home/staff/CVSROOT/unuran/tests/tdr.conf:
+	active DARS for TDR
+
+	* /home/staff/CVSROOT/unuran/run/run.c, /home/staff/CVSROOT/unuran/src/methods/tdr_init.c, /home/staff/CVSROOT/unuran/tests/tdr.conf:
+	bug fix in DARS
+
+2001-11-13  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/run/run.c: minor changes
+
+	* /home/staff/CVSROOT/unuran/src/methods/tdr_debug.c, /home/staff/CVSROOT/unuran/src/methods/tdr.h, /home/staff/CVSROOT/unuran/src/methods/tdr_init.c, /home/staff/CVSROOT/unuran/src/methods/tdr_sample.c:
+	fixed a bug with GEN.max_ivs; _unur_tdr_..._interval_split() now returns -1 if error occur and 0 if not successful
+
+	* /home/staff/CVSROOT/unuran/tests/tdr.conf: added tests for DARS
+
+	* /home/staff/CVSROOT/unuran/src/parser/parser.h, /home/staff/CVSROOT/unuran/src/parser/stringparser.c.in, /home/staff/CVSROOT/unuran/tests/stringparser.conf:
+	changed separator for blocks in stringparser
+
+	* /home/staff/CVSROOT/unuran/doc/intro.h: fixed typo
+
+	* /home/staff/CVSROOT/unuran/run/run.c, /home/staff/CVSROOT/unuran/src/methods/tdr_debug.c, /home/staff/CVSROOT/unuran/src/methods/tdr.h, /home/staff/CVSROOT/unuran/src/methods/tdr_init.c, /home/staff/CVSROOT/unuran/src/methods/tdr_newset.c, /home/staff/CVSROOT/unuran/src/methods/tdr_sample.c, /home/staff/CVSROOT/unuran/src/methods/tdr_struct.h:
+	added DARS to TDR
+
+2001-11-12  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/src/methods/tdr_source.h, /home/staff/CVSROOT/unuran/run/run.c, /home/staff/CVSROOT/unuran/src/methods/tdr.c, /home/staff/CVSROOT/unuran/src/methods/tdr_debug.c, /home/staff/CVSROOT/unuran/src/methods/tdr_init.c:
+	added DARS to TDR
+
+2001-11-09  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/run/run.c, /home/staff/CVSROOT/unuran/src/methods/tdr.c, /home/staff/CVSROOT/unuran/src/methods/tdr_debug.c, /home/staff/CVSROOT/unuran/src/methods/tdr.h, /home/staff/CVSROOT/unuran/src/methods/tdr_init.c, /home/staff/CVSROOT/unuran/src/methods/tdr_newset.c, /home/staff/CVSROOT/unuran/src/methods/tdr_source.h, /home/staff/CVSROOT/unuran/src/methods/tdr_struct.h:
+	added DARS
+
+2001-11-07  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/run/run.c: minor changes
+
+	* /home/staff/CVSROOT/unuran/src/parser/stringparser.c.in:
+	minor change with dmalloc
+
+2001-11-06  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/src/parser/make_stringparser.pl, /home/staff/CVSROOT/unuran/tests/empk.conf, /home/staff/CVSROOT/unuran/tests/Makefile.am, /home/staff/CVSROOT/unuran/tests/stringparser.conf, /home/staff/CVSROOT/unuran/tests/testunuran.h:
+	added tests
+
+	* /home/staff/CVSROOT/unuran/src/methods/empk.c, /home/staff/CVSROOT/unuran/src/methods/empk_struct.h:
+	bug fixes
+
+	* /home/staff/CVSROOT/unuran/src/methods/empk.c:
+	fixed serious bug in _unur_empk_comp_stddev()
+
+2001-10-31  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/src/parser/parser.h, /home/staff/CVSROOT/unuran/src/parser/stringparser.c.in, /home/staff/CVSROOT/unuran/tests/stringparser.conf, /home/staff/CVSROOT/unuran/tests/testroutines.c:
+	added tests for stringparser; bug fixes
+
+2001-10-30  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/KNOWN-PROBLEMS, /home/staff/CVSROOT/unuran/src/parser/make_stringparser.pl, /home/staff/CVSROOT/unuran/tests/make_test_files.pl, /home/staff/CVSROOT/unuran/tests/stringparser.conf, /home/staff/CVSROOT/unuran/tests/testroutines.c, /home/staff/CVSROOT/unuran/tests/testunuran.h, /home/staff/CVSROOT/unuran/TODO:
+	added tests for stringparser
+
+2001-10-29  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/tests/stringparser.conf: minor change
+
+	* /home/staff/CVSROOT/unuran/tests/stringparser.conf:
+	added tests for stringparser
+
+	* /home/staff/CVSROOT/unuran/tests/testroutines.c, /home/staff/CVSROOT/unuran/tests/testunuran.h, /home/staff/CVSROOT/unuran/doc/intro.h, /home/staff/CVSROOT/unuran/src/parser/make_stringparser.pl, /home/staff/CVSROOT/unuran/src/parser/parser.h, /home/staff/CVSROOT/unuran/src/parser/stringparser.c.in, /home/staff/CVSROOT/unuran/tests/Makefile.am, /home/staff/CVSROOT/unuran/tests/make_test_files.pl:
+	added tests for stringparser; bug fixes
+
+2001-10-25  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/src/parser/parser.h: added docu
+
+2001-10-20  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/src/parser/parser.h, /home/staff/CVSROOT/unuran/src/parser/stringparser.c.in:
+	added default methods
+
+2001-10-19  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/src/parser/Makefile.am, /home/staff/CVSROOT/unuran/src/parser/parser.h, /home/staff/CVSROOT/unuran/src/parser/stringparser.c.in:
+	added docu for stringparser
+
+2001-10-17  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/codegen/Makefile.am, /home/staff/CVSROOT/unuran/run/parsetest.c, /home/staff/CVSROOT/unuran/src/parser/stringparser.c.in:
+	minor changes
+
+	* /home/staff/CVSROOT/unuran/src/parser/stringparser.c.in:
+	added docu for source of stringparser
+
+	* /home/staff/CVSROOT/unuran/src/parser/make_stringparser.pl, /home/staff/CVSROOT/unuran/src/parser/stringparser.c.in:
+	minor fix
+
+2001-10-16  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/codegen/Makefile.am, /home/staff/CVSROOT/unuran/run/parsetest.c, /home/staff/CVSROOT/unuran/src/distributions/Makefile.am, /home/staff/CVSROOT/unuran/src/methods/in_unuran.h, /home/staff/CVSROOT/unuran/src/methods/Makefile.am, /home/staff/CVSROOT/unuran/src/parser/parser.h, /home/staff/CVSROOT/unuran/src/parser/stringparser.c.in, /home/staff/CVSROOT/unuran/src/tests/Makefile.am:
+	added parser.h into unuran.h
+
+	* /home/staff/CVSROOT/unuran/src/parser/make_stringparser.pl, /home/staff/CVSROOT/unuran/src/parser/stringparser.c.in:
+	new version of stringparser completed (alpha)
+
+	* /home/staff/CVSROOT/unuran/run/parsetest.c, /home/staff/CVSROOT/unuran/src/parser/stringparser.c.in, /home/staff/CVSROOT/unuran/src/methods/x_errno.h, /home/staff/CVSROOT/unuran/src/methods/x_error.c, /home/staff/CVSROOT/unuran/src/parser/make_stringparser.pl, /home/staff/CVSROOT/unuran/tests/Makefile.am:
+	new version of stringparser
+
+2001-10-15  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/run/parsetest.c, /home/staff/CVSROOT/unuran/src/parser/make_stringparser.pl, /home/staff/CVSROOT/unuran/src/parser/stringparser.c.in:
+	new version of stringparser
+
+	* /home/staff/CVSROOT/unuran/codegen/make_anuran.pl, /home/staff/CVSROOT/unuran/codegen/Makefile.am:
+	minor fix
+
+2001-10-13  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/run/parsetest.c, /home/staff/CVSROOT/unuran/src/parser/make_stringparser.pl, /home/staff/CVSROOT/unuran/src/parser/stringparser.c.in:
+	new version of stringparser
+
+	* /home/staff/CVSROOT/unuran/codegen/Makefile.am, /home/staff/CVSROOT/unuran/scripts/codegrep.pl, /home/staff/CVSROOT/unuran/scripts/Makefile.am:
+	cleared directory
+
+	* /home/staff/CVSROOT/unuran/src/parser/parser.h:
+	added header file for parser
+
+	* /home/staff/CVSROOT/unuran/doc/stddist.h: fixed typo
+
+	* /home/staff/CVSROOT/unuran/codegen/tests/test_urand.pl:
+	revert to older version
+
+	* /home/staff/CVSROOT/unuran/codegen/make_acg.pl, /home/staff/CVSROOT/unuran/codegen/make_anuran.pl, /home/staff/CVSROOT/unuran/codegen/make_headergen.pl, /home/staff/CVSROOT/unuran/codegen/make_PDFgen.pl, /home/staff/CVSROOT/unuran/codegen/tests/test_acg.pl, /home/staff/CVSROOT/unuran/src/parser/make_stringparser.pl:
+	minor fix
+
+	* /home/staff/CVSROOT/unuran/codegen/make_acg.pl, /home/staff/CVSROOT/unuran/codegen/make_anuran.pl, /home/staff/CVSROOT/unuran/codegen/make_headergen.pl, /home/staff/CVSROOT/unuran/codegen/tests/test_acg.pl, /home/staff/CVSROOT/unuran/codegen/tests/test_urand.pl, /home/staff/CVSROOT/unuran/doc/make_texi.pl, /home/staff/CVSROOT/unuran/scripts/codegrep.pl, /home/staff/CVSROOT/unuran/scripts/merge_h.pl, /home/staff/CVSROOT/unuran/scripts/read_PDF.pl, /home/staff/CVSROOT/unuran/src/parser/make_stringparser.pl, /home/staff/CVSROOT/unuran/tests/make_test_files.pl, /home/staff/CVSROOT/unuran/codegen/make_PDFgen.pl:
+	use strict pragma in perl scripts
+
+	* /home/staff/CVSROOT/unuran/codegen/read_test_conf.pl, /home/staff/CVSROOT/unuran/codegen/Makefile.am, /home/staff/CVSROOT/unuran/codegen/make_php.pl, /home/staff/CVSROOT/unuran/codegen/tests/test_acg.pl:
+	cleared directory
+
+	* /home/staff/CVSROOT/unuran/codegen/make_acg.pl, /home/staff/CVSROOT/unuran/codegen/make_anuran.pl, /home/staff/CVSROOT/unuran/codegen/Makefile.am, /home/staff/CVSROOT/unuran/codegen/make_headergen.pl, /home/staff/CVSROOT/unuran/codegen/make_PDFgen.pl, /home/staff/CVSROOT/unuran/codegen/read_PDF.pl, /home/staff/CVSROOT/unuran/scripts/read_PDF.pl, /home/staff/CVSROOT/unuran/src/parser/make_stringparser.pl:
+	moved read_PDF.pl from codegen/ to scripts/
+
+	* /home/staff/CVSROOT/unuran/run/Makefile, /home/staff/CVSROOT/unuran/src/parser/make_stringparser.pl, /home/staff/CVSROOT/unuran/src/parser/stringparser.c.in:
+	new version of stringparser
+
+2001-10-12  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/run/parsetest.c, /home/staff/CVSROOT/unuran/src/parser/make_stringparser.pl, /home/staff/CVSROOT/unuran/src/parser/stringparser.c.in:
+	new version for stringparser
+
+2001-10-11  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/src/parser/make_stringparser.pl, /home/staff/CVSROOT/unuran/src/parser/stringparser.c.in:
+	new version of stringparser
+
+2001-10-10  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/src/Makefile.am, /home/staff/CVSROOT/unuran/src/parser/make_stringparser.pl, /home/staff/CVSROOT/unuran/src/parser/stringparser.c.in, /home/staff/CVSROOT/unuran/codegen/tests/test_acg.pl, /home/staff/CVSROOT/unuran/src/parser/Makefile.am, /home/staff/CVSROOT/unuran/src/tests/scatter.c, /home/staff/CVSROOT/unuran/src/tests/timing.c, /home/staff/CVSROOT/unuran/tests/unif.conf:
+	new version of stringparser
+
+2001-10-09  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/src/methods/ssr.c: ssr.c
+
+	* /home/staff/CVSROOT/unuran/src/methods/unif.c, /home/staff/CVSROOT/unuran/src/methods/unif.h:
+	made API for method UNIF consistent with other methods
+
+2001-10-08  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/src/parser/make_stringparser.pl, /home/staff/CVSROOT/unuran/src/parser/stringparser.c.in, /home/staff/CVSROOT/unuran/codegen/tests/test_acg.pl, /home/staff/CVSROOT/unuran/run/Makefile, /home/staff/CVSROOT/unuran/run/parsetest.c, /home/staff/CVSROOT/unuran/src/Makefile.am, /home/staff/CVSROOT/unuran/src/parser/Makefile.am, /home/staff/CVSROOT/unuran/tests/Makefile.am:
+	added files for string parser; some minor fixes
+
+2001-10-04  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/configure.in, /home/staff/CVSROOT/unuran/src/Makefile.am, /home/staff/CVSROOT/unuran/src/parser/Makefile.am:
+	added directory for parser
+
+2001-10-03  janka  <janka@alekto>
+
+	* /home/staff/CVSROOT/unuran/run/parsetest.c: *** empty log message ***
+
+2001-10-02  janka  <janka@alekto>
+
+	* /home/staff/CVSROOT/unuran/run/gen_stringpars.pl:
+	check size of list added
+
+	* /home/staff/CVSROOT/unuran/run/stringpars.c.base:
+	method-set-commands verstehen als value nun TRUE, FALSE, ON, OFF,
+
+	* /home/staff/CVSROOT/unuran/run/stringpars.c.base:
+	value: zwischen value und list nun Komma moeglich
+
+	* /home/staff/CVSROOT/unuran/run/gen_stringpars.pl: forgotten )
+
+	* /home/staff/CVSROOT/unuran/run/gen_stringpars.pl:
+	set commands with number and list as arg modified, syntax check added
+
+2001-10-01  janka  <janka@alekto>
+
+	* /home/staff/CVSROOT/unuran/run/description.txt:
+	*** empty log message ***
+
+	* /home/staff/CVSROOT/unuran/run/stringpars.c.base: comments changed
+
+	* /home/staff/CVSROOT/unuran/run/description.txt:
+	*** empty log message ***
+
+	* /home/staff/CVSROOT/unuran/run/description.txt:
+	Description of the string interface
+
+	* /home/staff/CVSROOT/unuran/run/stringpars.c.base: comments changed
+
+2001-09-25  janka  <janka@alekto>
+
+	* /home/staff/CVSROOT/unuran/run/gen_stringpars.pl:
+	*** empty log message ***
+
+	* /home/staff/CVSROOT/unuran/run/stringpars.c.base: comments added
+
+2001-09-24  janka  <janka@alekto>
+
+	* /home/staff/CVSROOT/unuran/run/gen_stringpars.pl:
+	Pragmatic module added: use strict
+
+	* /home/staff/CVSROOT/unuran/run/parsetest.c, /home/staff/CVSROOT/unuran/run/stringpars.c.base:
+	names adapted for naming scheme
+
+	* /home/staff/CVSROOT/unuran/run/parsetest.c, /home/staff/CVSROOT/unuran/run/stringpars.c.base:
+	*** empty log message ***
+
+	* /home/staff/CVSROOT/unuran/run/gen_stringpars.pl:
+	Error messages removed; array holding methods not supported via string interface added
+
+2001-09-21  janka  <janka@alekto>
+
+	* /home/staff/CVSROOT/unuran/run/stringpars.c.base:
+	*** empty log message ***
+
+	* /home/staff/CVSROOT/unuran/run/stringpars.c.base:
+	check for successfully creation of parameter object added
+
+	* /home/staff/CVSROOT/unuran/run/gen_stringpars.pl:
+	par->method is set automatically
+
+	* /home/staff/CVSROOT/unuran/run/gen_stringpars.pl, /home/staff/CVSROOT/unuran/run/stringpars.c.base:
+	variable method replaced by par->method
+
+2001-09-20  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/run/Makefile, /home/staff/CVSROOT/unuran/run/parstest.c, /home/staff/CVSROOT/unuran/run/run_acg.c:
+	minor fixes
+
+	* /home/staff/CVSROOT/unuran/codegen/make_anuran.pl: minor change
+
+2001-09-20  janka  <janka@alekto>
+
+	* /home/staff/CVSROOT/unuran/run/gen_stringpars.pl, /home/staff/CVSROOT/unuran/run/parsetest.c, /home/staff/CVSROOT/unuran/run/stringpars.c.base, /home/staff/CVSROOT/unuran/run/Makefile:
+	prng and method info interchangable -- defines for methods removed (#define AROU ...)
+
+2001-09-17  janka  <janka@alekto>
+
+	* /home/staff/CVSROOT/unuran/run/gen_stringpars.pl, /home/staff/CVSROOT/unuran/run/stringpars.c.base:
+	Description added
+
+2001-09-13  janka  <janka@alekto>
+
+	* /home/staff/CVSROOT/unuran/run/stringpars.c.base:
+	*** empty log message ***
+
+2001-09-11  janka  <janka@alekto>
+
+	* /home/staff/CVSROOT/unuran/run/parsetest.c: *** empty log message ***
+
+	* /home/staff/CVSROOT/unuran/run/stringpars.c.base:
+	support for PRNG-strings added.
+
+2001-09-10  janka  <janka@alekto>
+
+	* /home/staff/CVSROOT/unuran/run/gen_stringpars.pl: error msgs modified
+
+	* /home/staff/CVSROOT/unuran/run/parsetest.c:
+	test program for string parser
+
+	* /home/staff/CVSROOT/unuran/run/stringpars.c.base, /home/staff/CVSROOT/unuran/run/gen_stringpars.pl:
+	error messages modified
+
+	* /home/staff/CVSROOT/unuran/run/gen_stringpars.pl, /home/staff/CVSROOT/unuran/run/stringpars.c.base:
+	additional error handling added
+
+2001-09-06  janka  <janka@alekto>
+
+	* /home/staff/CVSROOT/unuran/run/gen_stringpars.pl:
+	added: check if method and distribution match up
+
+	* /home/staff/CVSROOT/unuran/run/gen_stringpars.pl, /home/staff/CVSROOT/unuran/run/stringpars.c.base:
+	Setting domain moved from .base to perl script;
+
+	* /home/staff/CVSROOT/unuran/run/gen_stringpars.pl, /home/staff/CVSROOT/unuran/run/Makefile, /home/staff/CVSROOT/unuran/run/stringpars.c.base:
+	*** empty log message ***
+
+2001-09-05  janka  <janka@alekto>
+
+	* /home/staff/CVSROOT/unuran/run/Makefile: target: parsetest added
+
+	* /home/staff/CVSROOT/unuran/run/parstest.c, /home/staff/CVSROOT/unuran/run/stringpars.c.base:
+	program for testing string parser extracted
+
+	* /home/staff/CVSROOT/unuran/run/stringpars.c.base, /home/staff/CVSROOT/unuran/run/stringpars.c, /home/staff/CVSROOT/unuran/run/gen_stringpars.pl:
+	*** empty log message ***
+
+2001-08-17  janka  <janka@alekto>
+
+	* /home/staff/CVSROOT/unuran/run/stringpars.c:
+	error messages modified -- error corrected
+
+	* /home/staff/CVSROOT/unuran/run/stringpars.c: error messages modified
+
+	* /home/staff/CVSROOT/unuran/run/stringpars.c:
+	*** empty log message ***
+
+2001-08-13  janka  <janka@alekto>
+
+	* /home/staff/CVSROOT/unuran/run/stringpars.c:
+	strinparser for unuran input
+
+2001-08-01  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/codegen/make_anuran.pl: changed log entry
+
+2001-07-30  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/codegen/make_anuran.pl:
+	minor change in putput
+
+	* /home/staff/CVSROOT/unuran/codegen/make_anuran.pl:
+	added frogs to web interface
+
+	* /home/staff/CVSROOT/unuran/codegen/tests/test_acg.pl, /home/staff/CVSROOT/unuran/codegen/unuran_acg.h, /home/staff/CVSROOT/unuran/codegen/codegen_C.c, /home/staff/CVSROOT/unuran/codegen/codegen_FORTRAN.c, /home/staff/CVSROOT/unuran/codegen/codegen_JAVA.c, /home/staff/CVSROOT/unuran/codegen/codegen_source.h, /home/staff/CVSROOT/unuran/codegen/make_acg.pl, /home/staff/CVSROOT/unuran/codegen/make_anuran.pl, /home/staff/CVSROOT/unuran/codegen/tdr_codegen_JAVA.c:
+	added main to ACG
+
+2001-07-27  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/configure.in:
+	use automake for codegen/tests directory
+
+	* /home/staff/CVSROOT/unuran/codegen/test.conf: removed somes test file
+
+	* /home/staff/CVSROOT/unuran/codegen/make_anuran.pl, /home/staff/CVSROOT/unuran/codegen/make_test_codegen.pl, /home/staff/CVSROOT/unuran/codegen/make_test_PDFgen.pl, /home/staff/CVSROOT/unuran/codegen/test.conf:
+	use acg for anuran.pl
+
+	* /home/staff/CVSROOT/unuran/codegen/Makefile.am:
+	use automake for tests directory, removed some tests
+
+	* /home/staff/CVSROOT/unuran/codegen/tests/Makefile, /home/staff/CVSROOT/unuran/codegen/tests/Makefile.am:
+	use automake
+
+	* /home/staff/CVSROOT/unuran/codegen/tests/test_acg.pl:
+	minor change in output
+
+	* /home/staff/CVSROOT/unuran/codegen/tests/test_acg_conf.pl:
+	added more tests
+
+2001-07-26  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/src/distributions/c_chisquare.c, /home/staff/CVSROOT/unuran/src/distributions/c_logistic.c, /home/staff/CVSROOT/unuran/src/distributions/c_rayleigh.c, /home/staff/CVSROOT/unuran/src/distributions/c_weibull.c, /home/staff/CVSROOT/unuran/tests/test_with_Mathematica.m:
+	fixed numerically unstable code
+
+2001-07-25  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/codegen/tests/test_acg.pl:
+	minor change in output
+
+	* /home/staff/CVSROOT/unuran/codegen/codegen_JAVA.c, /home/staff/CVSROOT/unuran/codegen/make_PDFgen.pl, /home/staff/CVSROOT/unuran/codegen/tdr_codegen_JAVA.c, /home/staff/CVSROOT/unuran/codegen/tests/test_acg_conf.pl, /home/staff/CVSROOT/unuran/codegen/tests/test_acg.pl, /home/staff/CVSROOT/unuran/src/distributions/c_chi.c, /home/staff/CVSROOT/unuran/src/distributions/c_powerexponential.c:
+	fixed JAVA code for ACG
+
+	* /home/staff/CVSROOT/unuran/codegen/tests/test_urand.pl:
+	fixed JAVA code
+
+	* /home/staff/CVSROOT/unuran/codegen/tests/test_acg.pl: minor changes
+
+	* /home/staff/CVSROOT/unuran/codegen/tests/test_acg_conf.pl, /home/staff/CVSROOT/unuran/codegen/tests/test_acg.pl:
+	improved config file for tests
+
+2001-07-24  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/codegen/tests/test_acg.pl: minor change
+
+	* /home/staff/CVSROOT/unuran/codegen/codegen_JAVA.c, /home/staff/CVSROOT/unuran/codegen/tests/test_acg_conf.pl, /home/staff/CVSROOT/unuran/codegen/tests/test_acg.pl:
+	new design for ACG test routine
+
+2001-07-23  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/codegen/make_acg.pl:
+	added name of distribution to ./acg
+
+	* /home/staff/CVSROOT/unuran/codegen/make_acg.pl:
+	added name of distribution
+
+2001-07-20  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/codegen/tests/test_acg.pl:
+	added tests for JAVA version of ACG
+
+	* /home/staff/CVSROOT/unuran/codegen/tdr_codegen_UNURAN.c, /home/staff/CVSROOT/unuran/codegen/tests/test_acg.pl:
+	some murx with CVS
+
+	* /home/staff/CVSROOT/unuran/codegen/codegen_C.c, /home/staff/CVSROOT/unuran/codegen/codegen_FORTRAN.c, /home/staff/CVSROOT/unuran/codegen/tests/test_acg.pl, /home/staff/CVSROOT/unuran/run/run_acg.c:
+	bug fix
+
+	* /home/staff/CVSROOT/unuran/codegen/tests/test.conf:
+	removed old style config file
+
+	* /home/staff/CVSROOT/unuran/codegen/codegen_C.c, /home/staff/CVSROOT/unuran/codegen/codegen_FORTRAN.c:
+	new default URNG (minimal standard)
+
+	* /home/staff/CVSROOT/unuran/codegen/tdr_codegen_FORTRAN.c: bug fix
+
+	* /home/staff/CVSROOT/unuran/codegen/tdr_codegen_JAVA.c: minor change
+
+	* /home/staff/CVSROOT/unuran/codegen/make_acg.pl, /home/staff/CVSROOT/unuran/codegen/tdr_codegen_UNURAN.c:
+	added UNURAN version to ./acg
+
+	* /home/staff/CVSROOT/unuran/codegen/tests/Makefile, /home/staff/CVSROOT/unuran/codegen/tests/read_test_conf.pl, /home/staff/CVSROOT/unuran/codegen/tests/test_acg_conf.pl, /home/staff/CVSROOT/unuran/codegen/tests/test_acg.pl, /home/staff/CVSROOT/unuran/codegen/tests/test_urand.pl:
+	new format for test_conf file
+
+2001-07-19  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/codegen/codegen_UNURAN.c, /home/staff/CVSROOT/unuran/codegen/tests/test_acg.pl:
+	tests ACG completely uses ./acg
+
+	* /home/staff/CVSROOT/unuran/codegen/codegen_source.h, /home/staff/CVSROOT/unuran/codegen/codegen_UNURAN.c, /home/staff/CVSROOT/unuran/codegen/make_acg.pl, /home/staff/CVSROOT/unuran/codegen/Makefile.am, /home/staff/CVSROOT/unuran/codegen/tdr_codegen_UNURAN.c, /home/staff/CVSROOT/unuran/codegen/unuran_acg.h:
+	added new UNURAN version of acg
+
+2001-07-16  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/codegen/codegen_JAVA.c, /home/staff/CVSROOT/unuran/codegen/tests/test_acg.pl:
+	minor fix
+
+	* /home/staff/CVSROOT/unuran/codegen/codegen_JAVA.c, /home/staff/CVSROOT/unuran/codegen/make_acg.pl:
+	bug fix
+
+	* /home/staff/CVSROOT/unuran/codegen/tests/test_acg.pl:
+	added test for acg for Java version
+
+2001-07-14  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/codegen/tests/test_acg.pl:
+	added tests for FORTRAN version of ACG
+
+	* /home/staff/CVSROOT/unuran/src/distributions/d_negativebinomial.c, /home/staff/CVSROOT/unuran/src/distributions/c_burr.c, /home/staff/CVSROOT/unuran/src/distributions/c_extremeII.c, /home/staff/CVSROOT/unuran/src/distributions/c_triangular.c, /home/staff/CVSROOT/unuran/src/distributions/c_uniform.c, /home/staff/CVSROOT/unuran/src/distributions/d_binomial.c:
+	fixed code to work with ACG
+
+2001-07-13  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/codegen/make_headergen.pl, /home/staff/CVSROOT/unuran/codegen/tests/test_acg.pl:
+	added tests for FORTRAN version
+
+	* /home/staff/CVSROOT/unuran/codegen/tdr_codegen_FORTRAN.c:
+	fixed fatal bug
+
+	* /home/staff/CVSROOT/unuran/codegen/codegen_source.h, /home/staff/CVSROOT/unuran/codegen/codegen_UNURAN.c, /home/staff/CVSROOT/unuran/codegen/make_acg.pl, /home/staff/CVSROOT/unuran/codegen/Makefile.am, /home/staff/CVSROOT/unuran/codegen/tdr_codegen_UNURAN.c, /home/staff/CVSROOT/unuran/codegen/tests/Makefile, /home/staff/CVSROOT/unuran/codegen/tests/test_acg.pl:
+	fixed test for acg
+
+	* /home/staff/CVSROOT/unuran/codegen/tests/test_acg.pl:
+	*** empty log message ***
+
+	* /home/staff/CVSROOT/unuran/codegen/tests/Makefile: rm unuran.log
+
+	* /home/staff/CVSROOT/unuran/codegen/tests/test_urand.pl:
+	removed deleted code
+
+2001-07-12  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/run/run.c: *** empty log message ***
+
+2001-07-11  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/codegen/make_acg.pl: switched off logging
+
+	* /home/staff/CVSROOT/unuran/codegen/tests/test_acg.pl, /home/staff/CVSROOT/unuran/codegen/tests/xxx.pl, /home/staff/CVSROOT/unuran/codegen/tests/Makefile, /home/staff/CVSROOT/unuran/codegen/tests/test_urand.pl:
+	changed names
+
+	* /home/staff/CVSROOT/unuran/codegen/tests/test_urand.pl, /home/staff/CVSROOT/unuran/codegen/tests/urand.pl:
+	renamed files
+
+	* /home/staff/CVSROOT/unuran/codegen/make_acg.pl, /home/staff/CVSROOT/unuran/codegen/make_PDFgen.pl, /home/staff/CVSROOT/unuran/codegen/tdr_codegen_UNURAN.c, /home/staff/CVSROOT/unuran/codegen/tests/Makefile, /home/staff/CVSROOT/unuran/codegen/tests/read_test_conf.pl, /home/staff/CVSROOT/unuran/codegen/tests/xxx.pl:
+	added new versions of tests for acg
+
+2001-07-10  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/codegen/tests/read_test_conf.pl, /home/staff/CVSROOT/unuran/codegen/tests/test.conf, /home/staff/CVSROOT/unuran/codegen/tests/xxx.pl, /home/staff/CVSROOT/unuran/codegen/make_acg.pl, /home/staff/CVSROOT/unuran/codegen/make_anuran.pl, /home/staff/CVSROOT/unuran/codegen/make_headergen.pl, /home/staff/CVSROOT/unuran/codegen/make_PDFgen.pl, /home/staff/CVSROOT/unuran/codegen/make_test_codegen.pl, /home/staff/CVSROOT/unuran/codegen/make_test_PDFgen.pl, /home/staff/CVSROOT/unuran/codegen/read_PDF.pl, /home/staff/CVSROOT/unuran/codegen/tests/Makefile, /home/staff/CVSROOT/unuran/codegen/tests/test_urand.pl, /home/staff/CVSROOT/unuran/codegen/tests/urand.pl:
+	rewrite tests for acg
+
+	* /home/staff/CVSROOT/unuran/codegen/tests/Makefile, /home/staff/CVSROOT/unuran/codegen/tests/test_urand.pl:
+	added test for urng
+
+	* /home/staff/CVSROOT/unuran/codegen/codegen_UNURAN.c, /home/staff/CVSROOT/unuran/codegen/tdr_codegen_UNURAN.c, /home/staff/CVSROOT/unuran/codegen/codegen_source.h, /home/staff/CVSROOT/unuran/codegen/make_acg.pl, /home/staff/CVSROOT/unuran/codegen/make_headergen.pl, /home/staff/CVSROOT/unuran/codegen/unuran_acg.h, /home/staff/CVSROOT/unuran/run/run_acg.c, /home/staff/CVSROOT/unuran/codegen/Makefile.am:
+	added acg for UNURAN code
+
+2001-07-06  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/run/Makefile, /home/staff/CVSROOT/unuran/run/uniftest.pl:
+	added PRNG generator to uniftest
+
+	* /home/staff/CVSROOT/unuran/run/uniftest.pl:
+	switched to mininal standard generator
+
+	* /home/staff/CVSROOT/unuran/codegen/make_acg.pl, /home/staff/CVSROOT/unuran/codegen/Makefile.am:
+	added program for acg
+
+	* /home/staff/CVSROOT/unuran/run/acg.c, /home/staff/CVSROOT/unuran/run/Makefile, /home/staff/CVSROOT/unuran/run/uniftest.pl:
+	*** empty log message ***
+
+2001-07-03  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/run/acg.c, /home/staff/CVSROOT/unuran/run/Makefile:
+	first version of ACG
+
+2001-07-02  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/codegen/codegen_C.c, /home/staff/CVSROOT/unuran/codegen/codegen_FORTRAN.c, /home/staff/CVSROOT/unuran/codegen/codegen_JAVA.c, /home/staff/CVSROOT/unuran/codegen/codegen_source.h, /home/staff/CVSROOT/unuran/codegen/make_PDFgen.pl, /home/staff/CVSROOT/unuran/codegen/tdr_codegen_C.c, /home/staff/CVSROOT/unuran/codegen/tdr_codegen_FORTRAN.c, /home/staff/CVSROOT/unuran/codegen/tdr_codegen_JAVA.c, /home/staff/CVSROOT/unuran/codegen/test.conf, /home/staff/CVSROOT/unuran/run/run_acg.c:
+	new section headers in generated code
+
+2001-06-22  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/codegen/make_anuran.pl: changed layout
+
+2001-06-21  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/run/Makefile, /home/staff/CVSROOT/unuran/run/uniftest.pl:
+	finished test for URNG
+
+	* /home/staff/CVSROOT/unuran/run/uniftest.pl: minor change
+
+	* /home/staff/CVSROOT/unuran/run/Makefile, /home/staff/CVSROOT/unuran/run/run_acg.c, /home/staff/CVSROOT/unuran/run/uniftest.pl:
+	added file for comparing implementations of URNG in different languages
+
+2001-06-19  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/codegen/codegen_JAVA.c, /home/staff/CVSROOT/unuran/codegen/codegen_source.h, /home/staff/CVSROOT/unuran/codegen/make_headergen.pl, /home/staff/CVSROOT/unuran/codegen/tdr_codegen_JAVA.c, /home/staff/CVSROOT/unuran/run/Makefile:
+	prepare JAVA version for own URNG
+
+	* /home/staff/CVSROOT/unuran/codegen/make_anuran.pl: minor changes
+
+	* /home/staff/CVSROOT/unuran/codegen/codegen_FORTRAN.c, /home/staff/CVSROOT/unuran/codegen/codegen_JAVA.c, /home/staff/CVSROOT/unuran/codegen/codegen_source.h, /home/staff/CVSROOT/unuran/codegen/make_anuran.pl, /home/staff/CVSROOT/unuran/codegen/make_headergen.pl, /home/staff/CVSROOT/unuran/codegen/make_PDFgen.pl, /home/staff/CVSROOT/unuran/codegen/tdr_codegen_JAVA.c, /home/staff/CVSROOT/unuran/run/Makefile, /home/staff/CVSROOT/unuran/run/run_acg.c:
+	completed FORTRAN and JAVA version of ACG
+
+2001-06-18  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/codegen/codegen_FORTRAN.c, /home/staff/CVSROOT/unuran/codegen/make_headergen.pl:
+	added ACG header for FORTRAN and JAVA
+
+	* /home/staff/CVSROOT/unuran/codegen/codegen_C.c, /home/staff/CVSROOT/unuran/codegen/codegen_source.h, /home/staff/CVSROOT/unuran/codegen/make_headergen.pl, /home/staff/CVSROOT/unuran/run/run_acg.c:
+	completed first C version of ACG
+
+2001-06-16  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/codegen/make_headergen.pl, /home/staff/CVSROOT/unuran/run/run_acg.c:
+	added copyright notice to ACG output
+
+2001-06-15  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/run/run_acg.c:
+	added generator for file header
+
+2001-05-30  janka  <janka@alekto>
+
+	* /home/staff/CVSROOT/unuran/codegen/tests/test_acg.pl:
+	*** empty log message ***
+
+2001-05-29  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/codegen/codegen_C.c, /home/staff/CVSROOT/unuran/codegen/codegen_source.h, /home/staff/CVSROOT/unuran/codegen/Makefile.am, /home/staff/CVSROOT/unuran/codegen/make_headergen.pl:
+	added empty version of header generator
+
+	* /home/staff/CVSROOT/unuran/codegen/tdr_codegen_FORTRAN.c:
+	fixed bug with DO statement
+
+2001-05-18  janka  <janka@alekto>
+
+	* /home/staff/CVSROOT/unuran/codegen/tests/test_acg.pl:
+	*** empty log message ***
+
+2001-05-17  janka  <janka@alekto>
+
+	* /home/staff/CVSROOT/unuran/codegen/tests/test_acg.pl:
+	Perl script testing the acg
+
+2001-05-08  janka  <janka@alekto>
+
+	* /home/staff/CVSROOT/unuran/run/getopttst.c:
+	function with arguments to generate code
+
+2001-05-05  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/codegen/make_anuran.pl:
+	work on web interface
+
+2001-05-04  janka  <janka@alekto>
+
+	* /home/staff/CVSROOT/unuran/codegen/tdr_codegen_JAVA.c:
+	formatierung des outputs verbessert
+
+	* /home/staff/CVSROOT/unuran/codegen/codegen_JAVA.c, /home/staff/CVSROOT/unuran/codegen/tdr_codegen_JAVA.c:
+	class IV now within other class
+
+2001-05-04  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/codegen/make_anuran.pl:
+	work on web interface
+
+2001-05-03  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/codegen/make_anuran.pl: changes
+
+2001-05-02  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/codegen/make_anuran.pl:
+	included domain and language selection into CGI
+
+	* /home/staff/CVSROOT/unuran/codegen/codegen.c, /home/staff/CVSROOT/unuran/codegen/codegen_C.c, /home/staff/CVSROOT/unuran/codegen/codegen_FORTRAN.c, /home/staff/CVSROOT/unuran/codegen/codegen_JAVA.c, /home/staff/CVSROOT/unuran/codegen/codegen_source.h, /home/staff/CVSROOT/unuran/codegen/Makefile.am, /home/staff/CVSROOT/unuran/codegen/tdr_codegen.c, /home/staff/CVSROOT/unuran/codegen/tdr_codegen_C.c, /home/staff/CVSROOT/unuran/codegen/tdr_codegen_FORTRAN.c, /home/staff/CVSROOT/unuran/codegen/tdr_codegen_JAVA.c:
+	split codegen files for different languages
+
+2001-05-02  janka  <janka@alekto>
+
+	* /home/staff/CVSROOT/unuran/codegen/codegen.c, /home/staff/CVSROOT/unuran/codegen/codegen_source.h, /home/staff/CVSROOT/unuran/codegen/make_PDFgen.pl, /home/staff/CVSROOT/unuran/codegen/tdr_codegen.c, /home/staff/CVSROOT/unuran/codegen/unuran_acg.h:
+	codegen.c
+
+2001-05-02  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/codegen/make_anuran.pl, /home/staff/CVSROOT/unuran/codegen/make_php.pl, /home/staff/CVSROOT/unuran/codegen/make_web.pl:
+	added CGI version for web interface
+
+2001-04-30  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/codegen/make_PDFgen.pl, /home/staff/CVSROOT/unuran/codegen/make_test_PDFgen.pl, /home/staff/CVSROOT/unuran/src/distributions/c_exponential.c, /home/staff/CVSROOT/unuran/src/distributions/c_laplace.c, /home/staff/CVSROOT/unuran/src/distributions/c_lomax.c, /home/staff/CVSROOT/unuran/src/distributions/c_pareto.c, /home/staff/CVSROOT/unuran/src/distributions/c_rayleigh.c, /home/staff/CVSROOT/unuran/src/distributions/c_uniform.c, /home/staff/CVSROOT/unuran/src/distributions/README:
+	added support for FORTRAN codegen
+
+	* /home/staff/CVSROOT/unuran/tests/make_test_files.pl: bug fix
+
+	* /home/staff/CVSROOT/unuran/codegen/make_test_PDFgen.pl, /home/staff/CVSROOT/unuran/codegen/make_PDFgen.pl:
+	added support for FORTRAN
+
+2001-04-23  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/codegen/tdr_codegen.c, /home/staff/CVSROOT/unuran/codegen/make_PDFgen.pl:
+	added support for FORTRAN
+
+	* /home/staff/CVSROOT/unuran/src/distributions/Makefile.am, /home/staff/CVSROOT/unuran/src/distributions/README:
+	added README
+
+2001-04-20  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/codegen/codegen.c, /home/staff/CVSROOT/unuran/codegen/codegen_source.h, /home/staff/CVSROOT/unuran/codegen/make_PDFgen.pl, /home/staff/CVSROOT/unuran/codegen/tdr_codegen.c, /home/staff/CVSROOT/unuran/run/run_acg.c:
+	added codegen support for FORTRAN
+
+	* /home/staff/CVSROOT/unuran/codegen/make_web.pl: minor change
+
+	* /home/staff/CVSROOT/unuran/codegen/make_PDFgen.pl:
+	added FORTRAN support
+
+	* /home/staff/CVSROOT/unuran/src/distributions/c_logistic.c:
+	bug fix with parameter check
+
+2001-04-19  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/codegen/codegen.c, /home/staff/CVSROOT/unuran/codegen/codegen_source.h, /home/staff/CVSROOT/unuran/codegen/make_PDFgen.pl, /home/staff/CVSROOT/unuran/codegen/tdr_codegen.c, /home/staff/CVSROOT/unuran/codegen/unuran_acg.h, /home/staff/CVSROOT/unuran/run/run_acg.c:
+	added support for FORTRAN in code generator
+
+	* /home/staff/CVSROOT/unuran/codegen/make_web.pl: work on web interface
+
+2001-04-18  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/codegen/make_web.pl: work on web interface
+
+	* /home/staff/CVSROOT/unuran/codegen/tdr_codegen.c, /home/staff/CVSROOT/unuran/run/run_acg.c, /home/staff/CVSROOT/unuran/src/methods/tdr_sample.c:
+	minor changes to TDR sample routines
+
+	* /home/staff/CVSROOT/unuran/codegen/make_web.pl: work on web interface
+
+2001-04-17  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/codegen/make_web.pl: added file
+
+	* /home/staff/CVSROOT/unuran/codegen/codegen.c, /home/staff/CVSROOT/unuran/codegen/codegen_source.h, /home/staff/CVSROOT/unuran/codegen/Makefile.am, /home/staff/CVSROOT/unuran/codegen/make_PDFgen.pl, /home/staff/CVSROOT/unuran/codegen/make_test_codegen.pl, /home/staff/CVSROOT/unuran/codegen/make_test_PDFgen.pl, /home/staff/CVSROOT/unuran/codegen/unuran_acg.h, /home/staff/CVSROOT/unuran/run/Makefile, /home/staff/CVSROOT/unuran/run/run_acg.c:
+	changed some function names
+
+2001-04-14  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/codegen/codegen.c, /home/staff/CVSROOT/unuran/codegen/codegen_source.h, /home/staff/CVSROOT/unuran/codegen/Makefile.am, /home/staff/CVSROOT/unuran/codegen/tdr_codegen.c, /home/staff/CVSROOT/unuran/codegen/unuran_acg.h, /home/staff/CVSROOT/unuran/run/Makefile, /home/staff/CVSROOT/unuran/run/run_acg.c:
+	added default URNG for codegen
+
+	* /home/staff/CVSROOT/unuran/codegen/codegen.c, /home/staff/CVSROOT/unuran/codegen/make_test_codegen.pl, /home/staff/CVSROOT/unuran/codegen/tdr_codegen.c, /home/staff/CVSROOT/unuran/src/methods/Makefile.am, /home/staff/CVSROOT/unuran/src/methods/tdr.c, /home/staff/CVSROOT/unuran/src/methods/tdr_source.h:
+	reorganized TDR for tdr_codegen.h
+
+	* /home/staff/CVSROOT/unuran/codegen/codegen.c, /home/staff/CVSROOT/unuran/codegen/make_PDFgen.pl, /home/staff/CVSROOT/unuran/codegen/make_test_codegen.pl, /home/staff/CVSROOT/unuran/codegen/make_test_PDFgen.pl, /home/staff/CVSROOT/unuran/codegen/tdr_codegen.c, /home/staff/CVSROOT/unuran/codegen/test.conf:
+	work on codegen
+
+	* /home/staff/CVSROOT/unuran/codegen/codegen.c, /home/staff/CVSROOT/unuran/codegen/codegen_source.h, /home/staff/CVSROOT/unuran/codegen/make_PDFgen.pl, /home/staff/CVSROOT/unuran/codegen/tdr_codegen.c, /home/staff/CVSROOT/unuran/run/Makefile, /home/staff/CVSROOT/unuran/run/run.c:
+	reorganized codegen
+
+	* /home/staff/CVSROOT/unuran/src/distributions/c_powerexponential.c:
+	fixed stupid bug with LOGNORMCONSTANT
+
+2001-04-13  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/codegen/codegen.c, /home/staff/CVSROOT/unuran/codegen/codegen_source.h, /home/staff/CVSROOT/unuran/codegen/Makefile.am, /home/staff/CVSROOT/unuran/codegen/make_test_codegen.pl, /home/staff/CVSROOT/unuran/codegen/tdr_codegen.c, /home/staff/CVSROOT/unuran/codegen/unuran_acg.h, /home/staff/CVSROOT/unuran/codegen/unurgen.c, /home/staff/CVSROOT/unuran/codegen/unurgen.h:
+	changed (file) name
+
+	* /home/staff/CVSROOT/unuran/src/methods/tdr_init.c: fixed warning
+
+	* /home/staff/CVSROOT/unuran/codegen/make_PDFgen.pl, /home/staff/CVSROOT/unuran/codegen/make_test_PDFgen.pl, /home/staff/CVSROOT/unuran/codegen/tdr_codegen.c, /home/staff/CVSROOT/unuran/codegen/test.conf:
+	finished first version of PDFgen
+
+	* /home/staff/CVSROOT/unuran/codegen/make_PDFgen.pl, /home/staff/CVSROOT/unuran/src/distributions/c_exponential.c, /home/staff/CVSROOT/unuran/src/distributions/c_extremeI.c, /home/staff/CVSROOT/unuran/src/distributions/c_extremeII.c:
+	added normalization constants
+
+	* /home/staff/CVSROOT/unuran/codegen/make_PDFgen.pl, /home/staff/CVSROOT/unuran/codegen/make_test_codegen.pl, /home/staff/CVSROOT/unuran/codegen/read_PDF.pl, /home/staff/CVSROOT/unuran/codegen/test.conf:
+	work on codegen
+
+2001-04-12  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/codegen/make_PDFgen.pl, /home/staff/CVSROOT/unuran/codegen/make_test_codegen.pl, /home/staff/CVSROOT/unuran/codegen/make_test_PDFgen.pl, /home/staff/CVSROOT/unuran/codegen/test.conf:
+	added tests
+
+	* /home/staff/CVSROOT/unuran/src/methods/tdr_init.c:
+	fixed bug with n_ivs in TDR-PS
+
+	* /home/staff/CVSROOT/unuran/src/distributions/c_logistic.c:
+	bug fix for logistic distribution
+
+	* /home/staff/CVSROOT/unuran/codegen/make_test_codegen.pl, /home/staff/CVSROOT/unuran/codegen/make_test_PDFgen.pl, /home/staff/CVSROOT/unuran/codegen/test.conf:
+	minor changes
+
+	* /home/staff/CVSROOT/unuran/codegen/make_test_codegen.pl, /home/staff/CVSROOT/unuran/codegen/make_test_PDFgen.pl:
+	bug fixes
+
+	* /home/staff/CVSROOT/unuran/codegen/readPDF.pl: removed file
+
+	* /home/staff/CVSROOT/unuran/codegen/read_PDF.pl, /home/staff/CVSROOT/unuran/codegen/read_test_conf.pl, /home/staff/CVSROOT/unuran/codegen/Makefile.am, /home/staff/CVSROOT/unuran/codegen/make_PDFgen.pl, /home/staff/CVSROOT/unuran/codegen/make_test_codegen.pl, /home/staff/CVSROOT/unuran/codegen/make_test_PDFgen.pl, /home/staff/CVSROOT/unuran/codegen/test.conf:
+	work on test files
+
+2001-04-11  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/codegen/make_test_codegen.pl, /home/staff/CVSROOT/unuran/codegen/make_test_PDFgen.pl, /home/staff/CVSROOT/unuran/codegen/test.conf:
+	added different generator methods
+
+	* /home/staff/CVSROOT/unuran/codegen/make_test_codegen.pl, /home/staff/CVSROOT/unuran/codegen/tdr_codegen.c, /home/staff/CVSROOT/unuran/codegen/Makefile.am, /home/staff/CVSROOT/unuran/codegen/make_test_PDFgen.pl:
+	bug fixes
+
+2001-04-10  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/codegen/codegen.c, /home/staff/CVSROOT/unuran/codegen/make_codegen.pl, /home/staff/CVSROOT/unuran/codegen/Makefile.am, /home/staff/CVSROOT/unuran/codegen/make_test_codegen.pl, /home/staff/CVSROOT/unuran/codegen/tdr_codegen.c, /home/staff/CVSROOT/unuran/codegen/test.c, /home/staff/CVSROOT/unuran/codegen/test.conf, /home/staff/CVSROOT/unuran/codegen/unurgen.c, /home/staff/CVSROOT/unuran/codegen/unurgen.h, /home/staff/CVSROOT/unuran/configure.in, /home/staff/CVSROOT/unuran/Makefile.am, /home/staff/CVSROOT/unuran/run/run.c:
+	work on codegen
+
+2001-04-09  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/examples/Makefile.am:
+	added examples to test suite
+
+	* /home/staff/CVSROOT/unuran/codegen/codegen.c, /home/staff/CVSROOT/unuran/codegen/make_codegen.pl, /home/staff/CVSROOT/unuran/codegen/Makefile.am, /home/staff/CVSROOT/unuran/codegen/make_PDFgen.pl, /home/staff/CVSROOT/unuran/codegen/make_test_codegen.pl, /home/staff/CVSROOT/unuran/codegen/make_test_PDFgen.pl, /home/staff/CVSROOT/unuran/codegen/readPDF.pl, /home/staff/CVSROOT/unuran/codegen/tdr_codegen.c, /home/staff/CVSROOT/unuran/codegen/test.c, /home/staff/CVSROOT/unuran/codegen/test.conf:
+	added files
+
+	* /home/staff/CVSROOT/unuran/ChangeLog:
+	bug fix with default URNG unuran_config.h
+
+	* /home/staff/CVSROOT/unuran/examples/Makefile.am:
+	added examples to test suite
+
+	* /home/staff/CVSROOT/unuran/src/methods/tdr_sample.c:
+	minor change in sampling routine for PS
+
+	* /home/staff/CVSROOT/unuran/src/unuran_config.h:
+	bug fix with default URNG
+
 2001-04-08  Josef Leydold  <leydold@alekto.wu-wien.ac.at>
 
 	* Fixed bug with default URNG. Added examples to test suite to

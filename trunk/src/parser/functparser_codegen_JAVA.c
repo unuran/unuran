@@ -37,7 +37,7 @@
 /* (use bits in integer)                                                     */
 
 enum {
-  J_FUNCT_ERROR = 0x80000000u,      /* error                                 */
+  J_FUNCT_ERROR = 0x10000000u,      /* error                                 */
 
   J_FUNCT_SGN   = 0x00000001u,      /* sign function                         */
   J_FUNCT_SEC   = 0x00000002u,      /* secant function                       */
@@ -47,7 +47,7 @@ enum {
   J_FUNCT_GT    = 0x00000040u,      /* '>'  function                         */
   J_FUNCT_GE    = 0x00000080u,      /* '>=' function                         */
   J_FUNCT_EQ    = 0x00000100u,      /* '==' function                         */
-  J_FUNCT_NE    = 0x00000200u,      /* '!=' function                         */
+  J_FUNCT_NE    = 0x00000200u       /* '!=' function                         */
 };
 
 /*---------------------------------------------------------------------------*/

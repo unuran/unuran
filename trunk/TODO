@@ -97,19 +97,3 @@
 
 ------------------------------------------------------------------------
 
-(*) "String" user-interface for generator initialization
-
-    eg: gen=init("normaldistribution, 2,5;tdr, N=100");
-
-------------------------------------------------------------------------
-
-(*) mathematical formula for density, with  computation of derivative.
-   
-    eg: gen=init("pdf= Exp[x^3-x],lb=0,rb=10;tdr");
-
-------------------------------------------------------------------------
-
-(*) code-generator
-
-------------------------------------------------------------------------
-

@@ -37,10 +37,10 @@
 /* (use bits in integer)                                                     */
 
 enum {
-  C_FUNCT_ERROR = 0x80000000u,      /* error                                 */
+  C_FUNCT_ERROR = 0x10000000u,      /* error                                 */
 
   C_FUNCT_SGN   = 0x00000001u,      /* sign function                         */
-  C_FUNCT_SEC   = 0x00000002u,      /* secant function                       */
+  C_FUNCT_SEC   = 0x00000002u       /* secant function                       */
 };
 
 /*---------------------------------------------------------------------------*/

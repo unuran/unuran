@@ -63,7 +63,7 @@ SUFFIXES = .html .txt .pdf
 
 # make html file ...
 .texi.html:
-	$(MAKEINFO) --html $< -o $@
+	$(MAKEINFO) --html --no-split $< -o $@
 
 # make plain text file ...
 .texi.txt:

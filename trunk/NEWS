@@ -1,3 +1,14 @@
+Version 0.2.0: June 2002
+
+	- added new simple API (String interface)
+
+	- added method AUTO (automatic)
+
+	- added method DSROU (discrete simple ratio of uniforms)
+
+	- improved method for finding construction points in methods TDR and AROU
+	  (Derandomized adaptive rejection sampling)
+
 Version 0.1.0: March 2001
 
         - First public release.

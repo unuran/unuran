@@ -57,15 +57,11 @@ AC_CHECK_FUNCS(strtod strtol)
 AC_CHECK_FUNCS(gettimeofday)
 
 dnl We need Mathematica(R) for some tests
+AC_CHECK_PROG(have_mathematica,math,true,false)
+AM_CONDITIONAL(HAVE_MATHEMATICA, test x$have_mathematica = xtrue)
 dnl AM_CONDITIONAL(HAVE_MATHEMATICA,true)
-AM_CONDITIONAL(HAVE_MATHEMATICA,false)
+dnl AM_CONDITIONAL(HAVE_MATHEMATICA,false)
 
-dnl versuch
-dnl AC_ARG_WITH(xxx, \
-dnl	[  --with-prng             use prng library for uniform random number generation], \
-dnl	 AC_DEFINE(junk) \
-dnl	echo ${withval}, \
-dnl	 cal)
 
 AC_OUTPUT( \
 	Makefile \

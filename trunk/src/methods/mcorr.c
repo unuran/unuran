@@ -41,10 +41,23 @@
  *   [1] Devroye, L. (1986): Non-Uniform Random Variate Generation,          *
  *       New-York, Sect.6.1, p.605.                                          *
  *                                                                           *
+ *   [2] Marsaglia, G. and I. Olkin (1984):                                  *
+ *       Generating Correlation Matrices.                                    *
+ *       SIAM J. Sci. Stat. Comput 5, 470-475.                               *
+ *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   Generate matrix H where all rows are independent and uniformly          *
- *   distributed on the sphere and return HH'.                               *
+ * Methods MCORR generates random correlation matrices.                      *
+ * It implements two algorithms:                                             *
+ *                                                                           *
+ * (1) HH: Generate a random matrix H where all rows are independent and     *
+ *     uniformly distributed on the sphere and returns HH'; see ref. [1].    *
+ *                                                                           *
+ * (2) eigen: The algorithm by Marsaglia and Olkin [2] generates a           *
+ *     correlation at random with a given set of eigenvalues.                *
+ *                                                                           *
+ * MCORR uses Algorithm (2) when the set of eigenvalues is given; and        *
+ * Algorithm (1) otherwise.
  *                                                                           *
  *****************************************************************************/
 
@@ -64,7 +77,6 @@
 #include "mcorr.h"
 
 #include <utils/matrix_source.h>
-
 
 /*---------------------------------------------------------------------------*/
 /* Variants                                                                  */
@@ -88,6 +100,8 @@
 /*---------------------------------------------------------------------------*/
 
 static struct unur_gen *_unur_mcorr_init( struct unur_par *par );
+static int _unur_mcorr_init_HH( struct unur_gen *gen );
+static int _unur_mcorr_init_eigen( struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 /* Initialize new generator.                                                 */
 /*---------------------------------------------------------------------------*/
@@ -97,10 +111,13 @@ static struct unur_gen *_unur_mcorr_create( struct unur_par *par );
 /* create new (almost empty) generator object.                               */
 /*---------------------------------------------------------------------------*/
 
-static void _unur_mcorr_sample_matr( struct unur_gen *gen, double *mat );
-static void _unur_mcorr_sample_matr_eigen( struct unur_gen *gen, double *mat );
 /*---------------------------------------------------------------------------*/
 /* sample from generator                                                     */
+/*---------------------------------------------------------------------------*/
+static void _unur_mcorr_sample_matr_HH( struct unur_gen *gen, double *mat );
+/* Algorithm (1) */
+static void _unur_mcorr_sample_matr_eigen( struct unur_gen *gen, double *mat );
+/* Algorithm (2) */
 /*---------------------------------------------------------------------------*/
 
 static void _unur_mcorr_free( struct unur_gen *gen);
@@ -133,7 +150,7 @@ static void _unur_mcorr_debug_init( const struct unur_gen *gen );
 #define SAMPLE    gen->sample.matr      /* pointer to sampling routine       */
 
 /*---------------------------------------------------------------------------*/
-#define NORMAL  gen->gen_aux        /* pointer to normal variate generator   */
+#define NORMAL    gen->gen_aux        /* pointer to normal variate generator */
 /*---------------------------------------------------------------------------*/
 
 /*****************************************************************************/
@@ -205,48 +222,27 @@ unur_mcorr_set_eigenvalues( UNUR_PAR *par, double *eigenvalues )
      /*----------------------------------------------------------------------*/
 {
   int i;
-  double sum_eigenvalues = 0;
 
   /* check arguments */
   _unur_check_NULL( GENTYPE, par, UNUR_ERR_NULL );
   _unur_check_par_object( par, MCORR );
   CHECK_NULL( eigenvalues, UNUR_ERR_NULL );
 
-  /* allocate memory if needed */
-  if (PAR.eigenvalues==NULL)
-    PAR.eigenvalues=_unur_xmalloc(PAR.dim * sizeof(double));
-
-  /* set given eigenvalues */
-  for (i=0; i<PAR.dim; i++) {
-    PAR.eigenvalues[i] = eigenvalues[i];
-    
-    /* check for negative eigenvalues */
-    if (PAR.eigenvalues[i]<0) {
-      PAR.eigenvalues[i] = -PAR.eigenvalues[i];
-      _unur_warning(GENTYPE, UNUR_ERR_GENERIC,"negative eigenvalue -> positive");
+  /* check for eigenvalues */
+  for (i=0; i<PAR.dim; i++)
+    if (eigenvalues[i] <= 0.) {
+      _unur_error(GENTYPE, UNUR_ERR_PAR_SET,"eigenvalue <= 0");
+      return UNUR_ERR_PAR_SET;
     }
-    sum_eigenvalues += PAR.eigenvalues[i];
-  }
-  
-  /* check if all eigenvalues = 0 ? */
-  if (sum_eigenvalues==0) {
-    _unur_error(GENTYPE, UNUR_ERR_GENERIC,"sum(eigenvalues)=0");
-    return UNUR_ERR_GENERIC;
-  }
 
-  /* scaling values */
-  if (!_unur_FP_same(sum_eigenvalues, (double) PAR.dim)) {
-    _unur_warning(GENTYPE, UNUR_ERR_GENERIC,"scaling sum(eigenvalues) -> dim");
-    for (i=0; i<PAR.dim; i++) {
-      PAR.eigenvalues[i] = PAR.dim * PAR.eigenvalues[i]/sum_eigenvalues;
-    }
-  }
+  /* store date */
+  PAR.eigenvalues = eigenvalues;
 
   /* changelog */
   par->set |= MCORR_SET_EIGENVALUES;
 
   return UNUR_SUCCESS;
-}
+} /* unur_mcorr_set_eigenvalues() */
 
 /*****************************************************************************/
 
@@ -279,27 +275,22 @@ _unur_mcorr_init( struct unur_par *par )
   /* create a new empty generator object */
   gen = _unur_mcorr_create(par);
   if (!gen) { 
-    if (PAR.eigenvalues) free(PAR.eigenvalues);
     free(par); 
     return NULL; 
   }
 
-  /* we need a generator for standard normal distributons */
-  if (NORMAL==NULL) {
-    struct unur_distr *normaldistr = unur_distr_normal(NULL,0);
-    struct unur_par   *normalpar = unur_arou_new( normaldistr );
-    unur_arou_set_usedars( normalpar, TRUE );
-    NORMAL = unur_init( normalpar );
-    _unur_distr_free( normaldistr );
-    if (NORMAL == NULL) {
-      _unur_error(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"Cannot create aux Gaussian generator");
-      if (PAR.eigenvalues) free(PAR.eigenvalues);
+  /* run special initialize routines */
+  if (gen->set && MCORR_SET_EIGENVALUES) {
+    if (_unur_mcorr_init_eigen(gen) != UNUR_SUCCESS) {
       _unur_free(gen); free (par);
       return NULL;
     }
-    /* need same uniform random number generator and debugging flags */
-    NORMAL->urng = gen->urng;
-    NORMAL->debug = gen->debug;
+  }
+  else {
+    if (_unur_mcorr_init_HH(gen) != UNUR_SUCCESS) {
+      _unur_free(gen); free (par);
+      return NULL;
+    }
   }
 
 #ifdef UNUR_ENABLE_LOGGING
@@ -308,13 +299,92 @@ _unur_mcorr_init( struct unur_par *par )
 #endif
 
   /* free parameters */
-  if (PAR.eigenvalues) free(PAR.eigenvalues);
   free(par);
 
   /* o.k. */
   return gen;
 
 } /* end of _unur_mcorr_init() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+_unur_mcorr_init_HH( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* initialize generator for Algorithm (1)                               */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+  /* we need a generator for standard normal distributons */
+
+  if (NORMAL==NULL) {
+    struct unur_distr *normaldistr = unur_distr_normal(NULL,0);
+    struct unur_par   *normalpar = unur_arou_new( normaldistr );
+
+    unur_arou_set_usedars( normalpar, TRUE );
+    NORMAL = unur_init( normalpar );
+    _unur_distr_free( normaldistr );
+    if (NORMAL == NULL) {
+      _unur_error(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"Cannot create aux Gaussian generator");
+      _unur_free(gen);
+      return UNUR_FAILURE;
+    }
+    /* need same uniform random number generator and debugging flags */
+    NORMAL->urng = gen->urng;
+    NORMAL->debug = gen->debug;
+  }
+
+  return UNUR_SUCCESS;
+
+} /* end of _unur_mcorr_init_HH() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+_unur_mcorr_init_eigen( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* initialize generator for Algorithm (2)                               */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+  int i;
+  double sum_eigenvalues = 0.;
+
+  /* we have to normalize the eigenvalues:    */
+  /*   sum(eigenvalues) == dim                */
+
+  /* check for eigenvalues */
+  for (i=0; i<GEN.dim; i++) {
+    if (GEN.eigenvalues[i] <= 0.) {
+      _unur_error(GENTYPE, UNUR_ERR_SHOULD_NOT_HAPPEN,"eigenvalue <= 0");
+      return UNUR_FAILURE;
+    }
+    sum_eigenvalues += GEN.eigenvalues[i];
+  }
+  
+  /* scaling values */
+  if (!_unur_FP_same(sum_eigenvalues, (double) GEN.dim)) {
+    _unur_warning(GENTYPE, UNUR_ERR_GENERIC,"scaling sum(eigenvalues) -> dim");
+    for (i=0; i<GEN.dim; i++) {
+      GEN.eigenvalues[i] *= GEN.dim / sum_eigenvalues;
+    }
+  }
+
+  return UNUR_SUCCESS;
+
+} /* end of _unur_mcorr_init_eigen() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -356,7 +426,7 @@ _unur_mcorr_create( struct unur_par *par )
   if (gen->set && MCORR_SET_EIGENVALUES)
     SAMPLE = _unur_mcorr_sample_matr_eigen;
   else
-    SAMPLE = _unur_mcorr_sample_matr;
+    SAMPLE = _unur_mcorr_sample_matr_HH;
 
   gen->destroy = _unur_mcorr_free;
   gen->clone = _unur_mcorr_clone;
@@ -373,7 +443,7 @@ _unur_mcorr_create( struct unur_par *par )
 
   /* copy optional eigenvalues of the correlation matrix */
   GEN.eigenvalues = NULL;
-  if (PAR.eigenvalues != NULL) {
+  if (gen->set && MCORR_SET_EIGENVALUES) {
     GEN.eigenvalues = _unur_xmalloc(GEN.dim * sizeof(double));
     memcpy(GEN.eigenvalues, PAR.eigenvalues, GEN.dim * sizeof(double));
   }
@@ -435,9 +505,9 @@ _unur_mcorr_clone( const struct unur_gen *gen )
 /*****************************************************************************/
 
 void
-_unur_mcorr_sample_matr( struct unur_gen *gen, double *mat )
+_unur_mcorr_sample_matr_HH( struct unur_gen *gen, double *mat )
      /*----------------------------------------------------------------------*/
-     /* sample from generator                                                */
+     /* sample from generator - Algorithm (1)                                */
      /*                                                                      */
      /* parameters:                                                          */
      /*   gen ... pointer to generator object                                */
@@ -454,6 +524,8 @@ _unur_mcorr_sample_matr( struct unur_gen *gen, double *mat )
   CHECK_NULL(mat,RETURN_VOID);
 
   /* generate rows vectors of matrix H uniformly distributed in the unit sphere */
+  /** TODO: sum != 0 and all columns must be independent **/
+
   for (i=0; i<GEN.dim; i++) {
     sum=0.;
     for (j=0; j<GEN.dim; j++) {
@@ -481,14 +553,15 @@ _unur_mcorr_sample_matr( struct unur_gen *gen, double *mat )
     }
 
 #undef idx
-} /* end of _unur_mcorr_sample_matr() */
+} /* end of _unur_mcorr_sample_matr_HH() */
 
 /*--------------------------------------------------------------------------*/
 
 void
 _unur_mcorr_sample_matr_eigen( struct unur_gen *gen, double *mat )
      /*----------------------------------------------------------------------*/
-     /* sample from generator (eigenvalues given, Marsaglia-Olkin method     */
+     /* sample from generator - Algorithm (2)                                */
+     /* (eigenvalues given, Marsaglia-Olkin method)                          */
      /*                                                                      */
      /* parameters:                                                          */
      /*   gen ... pointer to generator object                                */
@@ -504,29 +577,30 @@ _unur_mcorr_sample_matr_eigen( struct unur_gen *gen, double *mat )
 
   /* check parameters */
   CHECK_NULL(gen, RETURN_VOID);
+  COOKIE_CHECK(gen,CK_MCORR_GEN,RETURN_VOID);
   CHECK_NULL(mat, RETURN_VOID);
 
   dim = GEN.dim; 
   
   if (dim<1) {
-    _unur_error(gen->genid,UNUR_ERR_GENERIC,"dimension < 1");
+    _unur_error(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"dimension < 1");
     return;
   }
 
   /* initialization steps */
   /* setting working arrays */
-  x=&GEN.M[0*dim];
-  y=&GEN.M[1*dim];
-  z=&GEN.M[2*dim];
-  w=&GEN.M[3*dim];
-  r=&GEN.M[4*dim];
-  E=&GEN.M[5*dim];
-  P=&GEN.M[5*dim+dim*dim];
+  x = GEN.M + (0*dim);
+  y = GEN.M + (1*dim);
+  z = GEN.M + (2*dim);
+  w = GEN.M + (3*dim);
+  r = GEN.M + (4*dim);
+  E = GEN.M + (5*dim);
+  P = GEN.M + (5*dim+dim*dim);
 
   /* initially E is an identity matrix */
   for (i=0; i<dim; i++)
     for (j=0; j<dim; j++)
-      E[idx(i,j)] = (i==j) ? 1: 0;
+      E[idx(i,j)] = (i==j) ? 1 : 0;
 
   for (k=0; k<dim-1; k++) {
     /* w is a random vector */
@@ -548,10 +622,10 @@ _unur_mcorr_sample_matr_eigen( struct unur_gen *gen, double *mat )
     if (fabs(a)<DBL_EPSILON) {
       /* return identity matrix */
       for (i=0; i<dim; i++) {
-      for (j=0; j<dim; j++) {
-        mat[idx(i,j)] = (i==j) ? 1: 0;
-      }}
-      _unur_warning(gen->genid, UNUR_ERR_GENERIC,"all eigenvalues are ~1 -> identity matrix");
+	for (j=0; j<dim; j++) {
+	  mat[idx(i,j)] = (i==j) ? 1: 0;
+	}}
+      _unur_warning(gen->genid, UNUR_ERR_GEN_CONDITION,"all eigenvalues are ~1 -> identity matrix");
       
       return;
     }
@@ -644,7 +718,7 @@ _unur_mcorr_sample_matr_eigen( struct unur_gen *gen, double *mat )
   }  
 
 #undef idx
-} /* end of _unur_mcorr_eigen() */
+} /* end of _unur_mcorr_sample_eigen() */
 
 /*****************************************************************************/
 
@@ -680,10 +754,6 @@ _unur_mcorr_free( struct unur_gen *gen )
 } /* end of _unur_mcorr_free() */
 
 /*--------------------------------------------------------------------------*/
-
-
-
-
 
 /*****************************************************************************/
 /**  Debugging utilities                                                    **/
@@ -721,7 +791,7 @@ _unur_mcorr_debug_init( const struct unur_gen *gen )
   if (gen->set && MCORR_SET_EIGENVALUES)
     fprintf(log,"%s: sampling routine = _unur_mcorr_sample_matr_eigen()\n",gen->genid);
   else
-    fprintf(log,"%s: sampling routine = _unur_mcorr_sample_matr()\n",gen->genid);
+    fprintf(log,"%s: sampling routine = _unur_mcorr_sample_matr_HH()\n",gen->genid);
   fprintf(log,"%s:\n",gen->genid);
 
 } /* end of _unur_mcorr_debug_init() */

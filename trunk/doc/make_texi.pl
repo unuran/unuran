@@ -64,6 +64,13 @@ use FileHandle;
      
      "=ABSTRACT"    => { "scan" => \&scan_do_nothing },
      
+     "=REF"         => { "scan" => \&scan_REF },
+
+     "=PDF"         => { "scan" => \&scan_PDF },
+     "=CONST"       => { "scan" => \&scan_PDF },
+     "=DOMAIN"      => { "scan" => \&scan_DOMAIN },
+     "=FPARAM"      => { "scan" => \&scan_FPARAM },
+
      "=END"         => { "scan" => \&scan_do_nothing },
      );
 
@@ -374,6 +381,10 @@ sub texi_node {
     if ($IN->{$node}->{"=NODE_TYPE"} eq "=METHOD") {
 	$title = "$node  --  ".$IN->{$node}->{"=TITLE"};
     }
+    if ($IN->{$node}->{"=NODE_TYPE"} eq "=DISTR") {
+	$title = "\@code{$node}  --  ".$IN->{$node}->{"=TITLE"}."\n";
+	$title .= "\@findex unur_distr_$node\n";
+    }
 
     # make menu
     my $menu;
@@ -397,21 +408,47 @@ sub texi_node {
     # print menu
     $TEXI .= $menu;
 
-    # print REQUIRED, OPTIONAL, etc.
-    if ($IN->{$node}->{"=REQUIRED"}) {
-	$TEXI .= "\@table \@emph\n";
+    # print REQUIRED, OPTIONAL, etc. of method
+    if ($IN->{$node}->{"=NODE_TYPE"} eq "=METHOD") {
 	if ($IN->{$node}->{"=REQUIRED"}) {
-	    $TEXI .= "\@item Required:\n".$IN->{$node}->{"=REQUIRED"}."\n";
+	    $TEXI .= "\@table \@i\n";
+	    if ($IN->{$node}->{"=REQUIRED"}) {
+		$TEXI .= "\@item Required:\n".$IN->{$node}->{"=REQUIRED"}."\n";
+	    }
+	    if ($IN->{$node}->{"=OPTIONAL"}) {
+		$TEXI .= "\@item Optional:\n".$IN->{$node}->{"=OPTIONAL"}."\n";
+	    }
+	    if ($IN->{$node}->{"=SPEED"}) {
+		$TEXI .= "\@item Speed:\n".$IN->{$node}->{"=SPEED"}."\n";
+	    }
+	    $TEXI .= "\@end table\n\@sp 1\n\n";
 	}
-	if ($IN->{$node}->{"=OPTIONAL"}) {
-	    $TEXI .= "\@item Optional:\n".$IN->{$node}->{"=OPTIONAL"}."\n";
-	}
-	if ($IN->{$node}->{"=SPEED"}) {
-	    $TEXI .= "\@item Speed:\n".$IN->{$node}->{"=SPEED"}."\n";
-	}
-	$TEXI .= "\@end table\n\@sp 1\n\n";
     }
 
+    # print PDF, domain, etc. distribution 
+    if ($IN->{$node}->{"=NODE_TYPE"} eq "=DISTR") {
+	if ($IN->{$node}->{"=PDF"}) {
+	    $TEXI .= "\@table \@i\n";
+	    if ($IN->{$node}->{"=PDF"}) {
+		$TEXI .= "\@item PDF:\n".$IN->{$node}->{"=PDF"}."\n";
+	    }
+	    if ($IN->{$node}->{"=CONST"}) {
+		$TEXI .= "\@item constant:\n".$IN->{$node}->{"=CONST"}."\n";
+	    }
+	    if ($IN->{$node}->{"=DOMAIN"}) {
+		$TEXI .= "\@item domain:\n".$IN->{$node}->{"=DOMAIN"}."\n";
+	    }
+	    if ($IN->{$node}->{"=FPARAM"}) {
+		$TEXI .= $IN->{$node}->{"=FPARAM"};
+	    }
+	    if ($IN->{$node}->{"=REF"}) {
+		$TEXI .= "\@item reference:\n".$IN->{$node}->{"=REF"}."\n";
+	    }
+	    $TEXI .= "\@end table\n\n";
+	}
+    }
+
+	
     # print description
     $TEXI .= $IN->{$node}->{"=DESCRIPTION"};
 
@@ -435,6 +472,229 @@ sub texi_node {
     }
 
 } # end of texi_node() 
+
+#############################################################
+# scan reference
+#
+
+sub scan_REF {
+    my $node_name = $_[0];   # name of node
+    my $tag = $_[1];         # TAG (node section)
+
+    # content of node
+    my $entry = $IN->{$node_name}->{$tag};
+
+    # empty ? 
+    return unless $entry;
+
+    # trim heading blanks
+    $entry =~ s/^\s*//;
+
+    # chop off trailing blanks
+    $entry =~ s/\s+$//;
+
+    # remove newlines
+    $entry =~ s/\n+/ /g;
+
+    # make a copy for HTML output
+    (my $anchor, my $text) = split /\s+/, $entry, 2;
+    $anchor =~ s/\s*\[(\w+)\]\s*/$1/;
+    my $htmlentry = "\@ref{bib:$anchor, [$anchor]}  $text\n";
+
+    $IN->{$node_name}->{$tag} = "\@ifhtml\n$htmlentry\n\@end ifhtml\n";
+
+    # make other output
+    $IN->{$node_name}->{$tag} .= "\@ifnothtml\n$entry\n\@end ifnothtml\n";
+
+} # end of scan_REF()
+
+#############################################################
+# scan domain for distribution
+#
+
+sub scan_DOMAIN {
+    my $node_name = $_[0];   # name of node
+    my $tag = $_[1];         # TAG (node section)
+
+    # content of node
+    my $entry = $IN->{$node_name}->{$tag};
+
+    # empty ? 
+    return unless $entry;
+
+    # trim heading blanks
+    $entry =~ s/^\s*//;
+
+    # chop off trailing blanks
+    $entry =~ s/\s+$//;
+
+    # remove newlines
+    $entry =~ s/\n+/ /g;
+
+    # make a copy for TeX output
+    my $texentry = $entry;
+
+    # format tex output
+    $texentry =~ s/(infinity)/\\infty/g;
+    $texentry =~ s/<=/\\leq/g;
+    $texentry =~ s/\*/\\, /g;
+    $texentry =~ s/(gamma|Gamma)/\\$1/g;
+
+    # return result
+    $IN->{$node_name}->{$tag} = "\@iftex\n\@tex\n\$$texentry\$\n\@end tex\n\@end iftex\n";
+    $IN->{$node_name}->{$tag} .= "\@ifnottex\n$entry\n\@end ifnottex\n";
+
+} # end of scan_DOMAIN()
+
+#############################################################
+# scan PDF for distribution
+#
+
+sub scan_PDF {
+    my $node_name = $_[0];   # name of node
+    my $tag = $_[1];         # TAG (node section)
+
+    # content of node
+    my $entry = $IN->{$node_name}->{$tag};
+
+    # empty ? 
+    return unless $entry;
+
+    # trim heading blanks
+    $entry =~ s/^\s*//;
+
+    # chop off trailing blanks
+    $entry =~ s/\s+$//;
+
+    # remove newlines
+    $entry =~ s/\n+/ /g;
+
+    # make a copy for TeX output
+    my $texentry = $entry;
+
+    # format tex output
+    $texentry =~ s/(infinity)/\\infty/g;
+    $texentry =~ s/\*/\\, /g;
+    $texentry =~ s/(exp|sqrt)/\\$1/g;
+    $texentry =~ s/(alpha|beta|gamma|mu|pi|sigma)/\\$1/g;
+    $texentry =~ s/(Gamma)/\\$1/g;
+    $texentry =~ s/\\frac\{([^\}]+)\}\{([^\}]+)\}/\{$1\\over $2\}/g;
+
+    # format other output
+    $entry =~ s/\\over\s+/\//g;
+
+    $entry =~ s/\\frac\{([^\}]+[\s\+\-]+[^\}]+)\}\{([^\}]+[\s\+\-]+[^\}]+)\}/\($1\)\/\($2\)/g;
+    $entry =~ s/\\frac\{([^\}]+)\}\{([^\}]+[\s\+\-]+[^\}]+)\}/$1\/\($2\)/g;
+    $entry =~ s/\\frac\{([^\}]+[\s\+\-]+[^\}]+)\}\{([^\}]+)\}/\($1\)\/$2/g;
+    $entry =~ s/\\frac\{([^\}]+)\}\{([^\}]+)\}/$1\/$2/g;
+
+    $entry =~ s/\{/\(/g;
+    $entry =~ s/\}/\)/g;
+
+    # return result
+    $IN->{$node_name}->{$tag} = "\@iftex\n\@tex\n\$$texentry\$\n\@end tex\n\@end iftex\n";
+    $IN->{$node_name}->{$tag} .= "\@ifnottex\n$entry\n\@end ifnottex\n";
+
+} # end of scan_PDF()
+
+#############################################################
+# scan list of parameters for distribution
+#
+
+sub scan_FPARAM {
+    my $node_name = $_[0];   # name of node
+    my $tag = $_[1];         # TAG (node section)
+
+    # content of node
+    my $entry = $IN->{$node_name}->{$tag};
+
+    # empty ? 
+    return unless $entry;
+
+    # trim heading blanks
+    $entry =~ s/^\s*//;
+
+    # chop off trailing blanks
+    $entry =~ s/\s+$//;
+
+    # remove blanks around `:'
+    $entry =~ s/[ \t]*\:[ \t]*/\:/g;
+
+    # split into lines
+    my @lines = split /\n+/, $entry;
+
+    # process lines
+    my $out;
+    my $texout; 
+    my $flist;
+    my $n_total = 0;
+    my $n_optional = 0;
+    my $opt_level;
+    my $last_opt_level;
+
+    foreach $l (@lines) {
+	# each line must start with a [\d+]
+	next unless $l =~ /\[*\d+/;
+	# split into columns
+	my @cols = split /\:/, $l;
+	die "\nwrong number of columns for =FPARAM: $#cols" if $#cols != 4;
+
+	# get entries
+	my $number  = $cols[0];
+	$number     =~ s/(.*)(\d+).*/\[$2\]/;
+	$opt_level  = $1;
+
+	my $name    = $cols[1];
+	my $cond    = $cols[2];
+	my $default = $cols[3];
+	my $type    = $cols[4];
+
+	# append list of parameters
+	if ($opt_level ne $last_opt_level) {
+	    $last_opt_level = $opt_level;
+	    $flist .= "[ ";
+	}
+	$flist .= "$name, ";
+
+	# process
+	$out    .= "\@item \@code{$number} \@tab $name \@tab $cond \@tab $default \@tab \@i{($type)}\n";
+
+	$texout .= "\@item \@code{$number}\n";
+	$texout .= "\@tab\@tex\$$name \$\@end tex\n";
+	$texout .= "\@tab\@tex\$$cond \$\@end tex\n";
+	$texout .= "\@tab $default\n";
+	$texout .= "\@tab (\@i{$type})\n";
+	
+	++$n_total;
+	++$n_optional if length $default;
+    }
+    my $n_required = $n_total - $n_optional;
+
+    $last_opt_level =~ s/\[/\]/g;
+    $flist .= $last_opt_level;
+    $flist =~ s/\,\s*\]/ \]/;
+
+    # make TeX output
+    $texout =~ s/<=/\\leq/g;
+    $texout =~ s/>=/\\geq/g;
+    $texout =~ s/(alpha|beta|gamma|mu|pi|sigma)(\W)/\\$1$2/g;
+
+    $texout_header  = "\@iftex\n";
+    $texout_header .= "\@item parameters $n_required ($n_total): \@r{$flist}\n\@sp 1\n";
+    $texout_header .= "\@multitable {No.} {namex} {99999} {defaultx} {xxxxxxxxxxxxxxxxxxxxxxxx}\n";
+    $texout_header .= "\@item No. \@tab name \@tab \@tab default\n";
+
+    $IN->{$node_name}->{$tag} = $texout_header.$texout."\@end multitable\n\@end iftex\n";
+
+    # make other output
+    $out_header  = "\@ifnottex\n";
+    $out_header .= "\@item parameters $n_required ($n_total): $flist\n";
+    $out_header .= "\@multitable {No.xx} {namexxx} {99999} {defaultx} {xxxxxxxxxxxxxxxxxxxxxxxx}\n";
+    $out_header .= "\@item No. \@tab name \@tab \@tab default\n";
+
+    $IN->{$node_name}->{$tag} .= $out_header.$out."\@end multitable\n\@end ifnottex\n";
+
+} # end of scan_FPARAM()
 
 #############################################################
 # chop off trailing blanks
@@ -714,6 +974,11 @@ sub transform_special_strings {
 
     # trim blanks
     $$line =~ s/[ \t\r\f]+\n/\n/g;
+
+    # @cc_start --> /*
+    # @cc_stop  --> */
+    $$line =~ s/\@cc_start/\/*/g;
+    $$line =~ s/\@cc_stop/*\//g;
 
     # NULL --> @code{NULL}
     # TRUE --> @code{TRUE}

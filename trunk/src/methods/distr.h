@@ -37,7 +37,7 @@
  *****************************************************************************/
 
 /* 
-   =DISTR  Distribution_objects  Handling distribution objects
+   =NODE  Distribution_objects  Handling distribution objects
 
    =UP TOP [30]
 
@@ -105,7 +105,7 @@
 
 /*
 
-   =DISTR   AllDistr   Functions for all kinds of distribution objects
+   =NODE   AllDistr   Functions for all kinds of distribution objects
 
    =UP Distribution_objects [05]
 

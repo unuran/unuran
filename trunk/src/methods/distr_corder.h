@@ -41,7 +41,7 @@
 /*---------------------------------------------------------------------------*/
 
 /* 
-   =DISTR   CORDER   Continuous univariate order statistics
+   =NODE   CORDER   Continuous univariate order statistics
 
    =UP Distribution_objects [15]
 

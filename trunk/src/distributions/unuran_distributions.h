@@ -120,7 +120,18 @@ UNUR_DISTR *unur_distr_extremeI(double *params, int n_params);
 UNUR_DISTR *unur_distr_extremeII(double *params, int n_params);
 
 /*---------------------------------------------------------------------------*/
-/*  Gamma distribution  [2; ch.17, p.337]                                    */
+/* gamma [2; ch.17, p.337]        
+   =DISTR    gamma  Gamma distribution
+   =UP       Stddist_CONT
+   =REF      [JKBb94]   ch.17, p.337
+   =PDF      (\frac{x-gamma}{beta})^{alpha-1} * exp( -\frac{x-gamma}{beta} )
+   =CONST    beta * Gamma(alpha)
+   =DOMAIN   gamma < x < infinity 
+   =FPARAM     0    : alpha : > 0 :   : shape    :
+              [1]   : beta  : > 0 : 1 : scale    :
+	     [[2]]  : gamma :     : 0 : location :
+   =EON
+*/
 UNUR_DISTR *unur_distr_gamma(double *params, int n_params);
 
 /*---------------------------------------------------------------------------*/
@@ -145,7 +156,17 @@ UNUR_DISTR *unur_distr_lomax(double *params, int n_params);
 
 
 /*---------------------------------------------------------------------------*/
-/*  Normal distribution  [2; ch.13, p.80]                                    */
+/* [2; ch.13, p.80]
+   =DISTR    normal  Normal distribution
+   =UP       Stddist_CONT
+   =REF      [JKBb94]   ch.13, p.80
+   =PDF      exp( -\frac{1}{2} * (\frac{x-mu}{sigma})^2 )
+   =CONST    sigma * sqrt{2 pi}
+   =DOMAIN   -infinity < x < infinity 
+   =FPARAM    [0]   : mu    :     : 0 : location :
+             [[1]]  : sigma : > 0 : 1 : scale    :
+   =EON
+*/
 UNUR_DISTR *unur_distr_normal( double *params, int n_params );
 
 /*---------------------------------------------------------------------------*/

@@ -40,7 +40,7 @@
 /*---------------------------------------------------------------------------*/
 
 /* 
-   =DISTR   DISCR   Discrete univariate distributions
+   =NODE   DISCR   Discrete univariate distributions
 
    =UP Distribution_objects [50]
 

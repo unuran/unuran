@@ -113,6 +113,8 @@ The following TAGs are valid:
 	texi file. (Notice that `==DOC' is not a TAG as described
 	above).
 
+=REF	Reference for method or distribution.
+
 
 (*) common transformation rules
     ---------------------------
@@ -131,5 +133,9 @@ FALSE       --> @code{FALSE}
 		(and in TeX and info with some restrictions).
 		NOTICE: there must not be blanks between the 
 		function name and `(' or the braces!
+
+to insert C comment sign into a header file use
+@cc_start   -->   /*
+@cc_stop    -->   */
 
 

@@ -40,7 +40,7 @@
 /*---------------------------------------------------------------------------*/
 
 /* 
-   =DISTR   CVEC   Continuous multivariate distributions
+   =NODE   CVEC   Continuous multivariate distributions
 
    =UP Distribution_objects [30]
 

@@ -30,6 +30,7 @@ EXTRA_DIST = \
  intro.h \
  methods.h \
  misc.h \
+ references.h \
  stddist.h \
  top.h \
  unuran.html \

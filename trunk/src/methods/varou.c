@@ -148,6 +148,12 @@ static void _unur_varou_debug_init( const struct unur_gen *gen );
 /*   Auxilliary Routines                                                     */
 /*---------------------------------------------------------------------------*/
 
+double *_unur_varou_sample_simplex(struct unur_gen *gen, double *vertices);
+/*---------------------------------------------------------------------------*/
+/* Generate random vector uniformly distributed in simplex                   */
+/*---------------------------------------------------------------------------*/
+
+
 double _unur_varou_aux_vmax(double *x, void *p );
 double _unur_varou_aux_umin(double *x, void *p );
 double _unur_varou_aux_umax(double *x, void *p );
@@ -564,6 +570,67 @@ _unur_varou_free( struct unur_gen *gen )
 } /* end of _unur_varou_free() */
 
 /*****************************************************************************/
+
+double *
+_unur_varou_sample_simplex( struct unur_gen *gen, double *vertices)
+    /*----------------------------------------------------------------------*/
+    /* Generate random vector uniformply distributed in simplex             */
+    /* having (dim+1) vertices (v_0, ... , v_dim)                           */
+    /* The coordinates of the (dim+1) vertices are stored sequentially in   */
+    /* the vertices[] array of size (dim+1)*dim                             */
+    /*----------------------------------------------------------------------*/
+{
+#define idx(a,b) ((a)*dim+(b))
+
+  double *X; /* random sample vector */
+  double  U; /* uniform variate */
+  double *E; /* exponential variates */
+  double *S; /* uniform spacings */
+  double  E_sum; /* sum of all e[] */
+  long i,j; /* index variables used in for loops */
+  long dim;
+  
+  dim = GEN.dim; 
+  
+  X=_unur_xmalloc(dim*sizeof(double));
+  S=_unur_xmalloc((dim+1)*sizeof(double));
+  E=_unur_xmalloc((dim+1)*sizeof(double));
+  
+  /* calculating exponential variates */
+  E_sum = 0; 
+  for (i=0; i<=dim; i++) {
+     /* sample from U(0,1) */
+     while ( (U = _unur_call_urng(gen->urng)) == 0.);
+     /* sample from exponential distribution */
+     E[i] = -log(1.-U);
+     E_sum += E[i];	 
+  }
+  
+  /* calculating uniform spacing */
+  for (i=0; i<=dim; i++) {
+     S[i]=E[i]/E_sum;
+  }
+
+  /* calculating uniform vector in simplex */
+  for (j=0; j<dim; j++) {
+    X[j] = 0;
+    for (i=0; i<=dim; i++) {
+      X[j] += S[i] * vertices[idx(i,j)];
+    }
+  }
+
+  free(S); free(E);
+
+  return X;
+
+#undef idx
+} /* end of _unur_varou_sample_simplex() */
+
+/*****************************************************************************/
+
+
+
+/*****************************************************************************/
 /**  Auxilliary Routines                                                    **/
 /*****************************************************************************/
  
@@ -775,6 +842,8 @@ _unur_varou_rectangle( struct unur_gen *gen )
          }
       }
 
+      /* (u,v)-coordinates are (0,...,0,vmax) */
+
 
   /* calculation of umin and umax */
     
@@ -833,6 +902,10 @@ _unur_varou_rectangle( struct unur_gen *gen )
          if (hooke_iters_umin >= VAROU_HOOKE_MAXITER) {
            _unur_warning(gen->genid , UNUR_ERR_GENERIC, "Bounding rect uncertain (umin)");  
          }
+
+         /* storing actual endpoint */
+         memcpy(xumin, xend, dim * sizeof(double));
+
       }
 
       /* checking if we need to recalculate umax */
@@ -851,6 +924,13 @@ _unur_varou_rectangle( struct unur_gen *gen )
          if (hooke_iters_umax >= VAROU_HOOKE_MAXITER) {
            _unur_warning(gen->genid , UNUR_ERR_GENERIC, "Bounding rect uncertain (umax)");  
          }
+         
+	 /* storing actual endpoint */
+         memcpy(xumax, xend, dim * sizeof(double));
+
+         /* TODO: calculation of (u_i,v)-coordinates for u_i <> u_d */
+
+
       }
     
       /*-----------------------------------------------------------------------------*/

@@ -90,6 +90,9 @@ unur_distr_cemp_new( void )
   /* set id to generic distribution */
   distr->id = UNUR_DISTR_GENERIC;
 
+  /* dimension of random vector */
+  distr->dim = 1;   /* univariant */
+
   /* name of distribution */
   distr->name = unknown_distr_name;
 

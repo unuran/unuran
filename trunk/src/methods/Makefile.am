@@ -14,6 +14,7 @@ libmethods_a_SOURCES = \
  distr_cont.c \
  distr_corder.c \
  distr_cemp.c \
+ distr_cvec.c \
  distr_demp.c \
  distr_discr.c \
  x_debug.c \

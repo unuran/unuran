@@ -128,6 +128,8 @@ unur_get_dimension( struct unur_gen *gen )
      /*   return 0                                                           */
      /*----------------------------------------------------------------------*/
 {
+  /** TODO !! **/
+
   /* check arguments */
   CHECK_NULL(gen,0);
 

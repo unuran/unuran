@@ -116,6 +116,9 @@ unur_distr_corder_new( struct unur_distr *distr, int n, int k )
   /* set id to generic distribution */
   os->id = UNUR_DISTR_CORDER;
 
+  /* dimension of random vector */
+  os->dim = 1;   /* univariant */
+
   /* name of distribution */
   os->name = distr_name;
 

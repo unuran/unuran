@@ -111,16 +111,19 @@ unur_distr_free( struct unur_distr *distr )
   case UNUR_DISTR_CONT:
     COOKIE_CHECK(distr,CK_DISTR_CONT,/*void*/);
     break;
+  case UNUR_DISTR_CVEC:
+    COOKIE_CHECK(distr,CK_DISTR_CVEC,/*void*/);
+    break;
+  case UNUR_DISTR_CEMP:
+    COOKIE_CHECK(distr,CK_DISTR_CEMP,/*void*/);
+    if (distr->data.cemp.sample) free( distr->data.cemp.sample );
+    break;
   case UNUR_DISTR_DISCR:
     COOKIE_CHECK(distr,CK_DISTR_DISCR,/*void*/);
     break;
   case UNUR_DISTR_DEMP:
     COOKIE_CHECK(distr,CK_DISTR_DEMP,/*void*/);
     if (distr->data.demp.prob) free( distr->data.demp.prob );
-    break;
-  case UNUR_DISTR_CEMP:
-    COOKIE_CHECK(distr,CK_DISTR_CEMP,/*void*/);
-    if (distr->data.cemp.sample) free( distr->data.cemp.sample );
     break;
   default:
     _unur_warning(NULL,UNUR_ERR_DISTR_UNKNOWN,"");
@@ -178,6 +181,26 @@ unur_distr_get_name( struct unur_distr *distr )
 
 /*---------------------------------------------------------------------------*/
 
+int
+unur_distr_get_dim( struct unur_distr *distr )
+     /*----------------------------------------------------------------------*/
+     /* get number of components of random vector (i.e. its dimension)       */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   distr ... pointer to distribution object                           */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   dimension                                                          */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( NULL,distr,0 );
+
+  return distr->dim;
+} /* end of unur_distr_get_dim() */
+
+/*---------------------------------------------------------------------------*/
+
 unsigned int unur_distr_get_type( struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
      /* get type of distribution                                             */
@@ -215,6 +238,27 @@ unur_distr_is_cont( struct unur_distr *distr )
 
   return ((distr->type == UNUR_DISTR_CONT) ? 1 : 0);
 } /* end of unur_distr_is_cont() */
+
+/*---------------------------------------------------------------------------*/
+
+int 
+unur_distr_is_cvec( struct unur_distr *distr )
+     /*----------------------------------------------------------------------*/
+     /* TRUE if distribution is mulitvariate continuous.                     */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   distr ... pointer to distribution object                           */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... if univariate continuous                                     */
+     /*   0 ... otherwise                                                    */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( NULL,distr,0 );
+
+  return ((distr->type == UNUR_DISTR_CVEC) ? 1 : 0);
+} /* end of unur_distr_is_cvec() */
 
 /*---------------------------------------------------------------------------*/
 

@@ -76,6 +76,7 @@
 enum {
   UNUR_DISTR_CONT  = 0x010u,     /* univariate continuous distribution       */ 
   UNUR_DISTR_CEMP  = 0x011u,     /* empirical univ. cont. distr. (a sample)  */ 
+  UNUR_DISTR_CVEC  = 0x110u,     /* mulitvariate continuous distribution     */ 
   UNUR_DISTR_DISCR = 0x020u,     /* univariate discrete distribution         */ 
   UNUR_DISTR_DEMP  = 0x021u,     /* empirical univariate discr. distribution */ 
 };
@@ -112,6 +113,11 @@ const char *unur_distr_get_name( UNUR_DISTR *distribution );
 */
 
 
+int unur_distr_get_dim( UNUR_DISTR *distribution );
+/* 
+   Get number of components of random vector (its dimension).
+*/
+
 unsigned int unur_distr_get_type( UNUR_DISTR *distribution );
 /*
   Get type of distribution. See description of unur_distr_new() for
@@ -124,6 +130,17 @@ int unur_distr_is_cont( UNUR_DISTR *distribution );
    Test if distribution is a univariate continuous distribution.
 */
 
+int unur_distr_is_cvec( UNUR_DISTR *distribution );
+/* 
+   Test if distribution is a multivariate continuous distribution.
+*/
+
+int unur_distr_is_cemp( UNUR_DISTR *distribution );
+/* 
+   Test if distribution is an empirical univariate continuous distribution,
+   i.e. a sample.
+*/
+
 int unur_distr_is_discr( UNUR_DISTR *distribution );
 /* 
    Test if distribution is a univariate discrete distribution.
@@ -132,12 +149,6 @@ int unur_distr_is_discr( UNUR_DISTR *distribution );
 int unur_distr_is_demp( UNUR_DISTR *distribution );
 /* 
    Test if distribution is an empirical univariate discrete distribution.
-*/
-
-int unur_distr_is_cemp( UNUR_DISTR *distribution );
-/* 
-   Test if distribution is an empirical univariate continuous distribution,
-   i.e. a sample.
 */
 
 
@@ -314,11 +325,14 @@ int unur_distr_cont_set_pdfarea( UNUR_DISTR *distribution, double area );
 int unur_distr_cont_upd_pdfarea( UNUR_DISTR *distribution );
 /*
    Recompute the area below the p.d.f. of the distribution. 
-   In most cases the normalization constant is recompute and thus the
-   area is 1. This call only works for distribution objects from the
+   It only works for distribution objects from the
    (=>) UNURAN library of standard distributions when the
    corresponding function is available. Otherwise @code{unur_errno} is
    set to @code{UNUR_ERR_DISTR_DATA}. 
+
+   This call sets the normalization constant such that the given
+   p.d.f. is the derivative of a given c.f.d., i.e. the area is 1.
+   However for truncated distribution the area smaller than 1.
 */
 
 double unur_distr_cont_get_pdfarea( UNUR_DISTR *distribution );
@@ -383,6 +397,202 @@ int unur_distr_corder_get_rank( UNUR_DISTR *distribution, int *n, int *k );
 /* 
    Get sample size $var{n} and rank @var{k} of order statistics.
    In case of error @code{0} is returned.
+*/
+
+/*---------------------------------------------------------------------------*/
+
+/* 
+   Routines for handling multivariate continuous distributions (CVEC).
+*/
+
+UNUR_DISTR *unur_distr_cvec_new( int dim );
+/* 
+   Create a new (empty) object for multivariate continuous
+   distribution. @var{dim} is the number of components of the random
+   vector (i.e. its dimension). It must be at least 2; otherwise
+   unur_distr_cont_new() should be used to create an object for a
+   univariate distribution.
+*/
+
+/* Essential parameters. */
+
+int unur_distr_cvec_set_pdf( UNUR_DISTR *distribution, UNUR_FUNCT_CVEC *pdf );
+/* 
+   Set respective pointer to the probability density function (pdf) of
+   the distribution. The type of this function must be of type
+   double funct(double *x, UNUR_DISTR *distr),
+   where @var{x} must be a pointer to a double array of appropriate
+   size (i.e. of the same size as given to the unur_distr_cvec_new()
+   call).
+
+   It is not necessary that the given p.d.f. is normalized and can be
+   any (positive) multiple of the p.d.f., i.e. the integral need not
+   be 1. Nevertheless it can be provided by a
+   unur_distr_cvec_set_pdfarea() call.
+*/
+
+int unur_distr_cvec_set_dpdf( UNUR_DISTR *distribution, UNUR_VFUNCT_CVEC *dpdf );
+/* 
+   Set pointer to the gradiant of the probability density function
+   (pdf). The type of this function must be
+   int funct(double *result, double *x, UNUR_DISTR *distr),
+   where @var{result} and @var{x} must be pointer to double arrays of
+   appropriate size (i.e. of the same size as given to the
+   unur_distr_cvec_new() call).
+   The gradiant of the p.d.f. is stored in the array @var{result}.
+   The function should return @code{0} in case of an error and must
+   return a non-zero value otherwise.
+
+   The given function must be proved the gradiant of the function
+   given by a unur_distr_cvec_set_pdf() call.
+*/
+
+UNUR_FUNCT_CVEC *unur_distr_cvec_get_pdf( UNUR_DISTR *distribution );
+/* 
+   Get the respective pointer to the p.d.f. of the distribution. The
+   pointer is of type 
+   double funct(double *x, UNUR_DISTR *distr).
+   If the corresponding function is not available for the distribution,
+   the NULL pointer is returned.
+*/
+
+UNUR_VFUNCT_CVEC *unur_distr_cvec_get_dpdf( UNUR_DISTR *distribution );
+/* 
+   Get the respective pointer to the gradiant of the p.d.f. of the
+   distribution. The pointer is of type 
+   int double funct(double *result, double *x, UNUR_DISTR *distr).
+   If the corresponding function is not available for the distribution,
+   the NULL pointer is returned.
+*/
+
+double unur_distr_cvec_eval_pdf( double *x, UNUR_DISTR *distribution );
+/* 
+   Evaluate the p.d.f. of the distribution at @var{x}.
+   @var{x} must be a pointer to a double arrays of appropriate size
+   (i.e. of the same size as given to the unur_distr_cvec_new() call)
+   that contains the vector for which the function has to be evaluated.
+
+   Notice that @var{distribution} must not be the NULL pointer.
+   If the corresponding function is not available for the distribution,
+   @code{UNUR_INFINITY} is returned and @code{unur_errno} is set to
+   @code{UNUR_ERR_DISTR_DATA}.
+*/
+
+int unur_distr_cvec_eval_dpdf( double *result, double *x, UNUR_DISTR *distribution );
+/* 
+   Evaluate the gradiant of the p.d.f. of the distribution at @var{x}.
+   The result is stored in the double array @var{result}.
+   Both @var{result} and @var{x} must be pointer to double arrays of
+   appropriate size (i.e. of the same size as given to the
+   unur_distr_cvec_new() call).
+
+   Notice that @var{distribution} must not be the NULL pointer.
+   If the corresponding function is not available for the
+   distribution, @code{0} is returned and @code{unur_errno} is set to
+   @code{UNUR_ERR_DISTR_DATA} (@var{result} is left unmodified).
+*/
+
+int unur_distr_cvec_set_pdfparams( UNUR_DISTR *distribution, int par, double *params, int n_params );
+/* 
+   Set parameter with number @var{par}. 
+   @var{par} indicates directly which of the parameters is set and
+   must be a number between @code{0} and @code{UNUR_DISTR_MAXPARAMS}-1
+   (the upper limit of possible parameters defined in
+   unuran_config.h; it is set to 5 but can be changed to any 
+   appropriate nonnegative number.)
+
+   All parameters are given by the array @var{params} of size
+   @var{n_params}. Thus for a single parameter an array of size 1 and
+   @var{n_params} has to be used. 
+   For a vector @var{n_params} has to be set to the size of the array.
+   An (n x m)-matrix has to be stored in an array of length
+   @var{n_params} = n m; where the rows of the matrix are stored
+   consecutively in this array.
+
+   When more than one type of parameters are used (e.g. the mean
+   vector and the covariance matrix) then there for each of these 
+   unur_distr_cvec_set_pdfparams() are required.
+
+   Due to great variety of possible parameters for a multivariate
+   distribution there is no simpler interface.
+
+   If an error occurs no parameters are copied into the parameter
+   object @code{unur_errno} is set to @code{UNUR_ERR_DISTR_DATA}.
+*/
+
+int unur_distr_cvec_get_pdfparams( UNUR_DISTR *distribution, int par, double **params );
+/* 
+   Get parameter of the p.d.f. with number @var{par}.
+   The pointer to the parameter array is stored in @var{params}, its
+   size is returned by the function.
+   If the requested parameter is not set, then @code{0} is returned
+   and @code{params} is set to NULL.
+
+   Warning: Do not change the entries in @var{params}!
+*/
+
+/* 
+   Derived parameters.
+*/   
+/*   
+   The following paramters MUST be set whenever one of the essential
+   parameters have been set or changed (and the parameter is required
+   for the chosen method).
+*/
+
+int unur_distr_cvec_set_mode( UNUR_DISTR *distribution, double *mode );
+/* 
+   Set mode of distribution.
+*/
+
+int unur_distr_cvec_upd_mode( UNUR_DISTR *distribution );
+/* 
+   Recompute the mode of the distribution. This call only works for
+   distribution objects from the (=>) UNURAN library of standard
+   distributions when the corresponding function is available.
+   Otherwise @code{unur_errno} is set to @code{UNUR_ERR_DISTR_DATA}.
+*/
+
+double *unur_distr_cvec_get_mode( UNUR_DISTR *distribution );
+/* 
+   Get mode of distribution. The function return a pointer to an array
+   of the size returned by unur_distr_get_dim().
+   If the mode is not marked as known, 
+   unur_distr_cvec_upd_mode() is called to compute the mode. If this
+   is not successful NULL is returned and @code{unur_errno} is set to
+   @code{UNUR_ERR_DISTR_GET}. 
+   (There is no difference between the case where no routine for
+   computing the mode is available and the case where no mode exists
+   for the distribution at all.)
+
+   Warning: Do not modify the array that holds the mode!
+*/
+
+int unur_distr_cvec_set_pdfvol( UNUR_DISTR *distribution, double volume );
+/* 
+   Set the volume below the p.d.f. If @var{vol} is non-positive, no
+   volume is set and @code{unur_errno} is set to @*
+   @code{UNUR_ERR_DISTR_SET}. 
+*/
+
+int unur_distr_cvec_upd_pdfvol( UNUR_DISTR *distribution );
+/*
+   Recompute the volume below the p.d.f. of the distribution. 
+   It only works for distribution objects from the
+   (=>) UNURAN library of standard distributions when the
+   corresponding function is available. Otherwise @code{unur_errno} is
+   set to @code{UNUR_ERR_DISTR_DATA}. 
+   
+   This call sets the normalization constant such that the volume is
+   1.
+*/
+
+double unur_distr_cvec_get_pdfvol( UNUR_DISTR *distribution );
+/* 
+   Get the volume below the p.d.f of the distribution. If this volume is
+   not known,@* unur_distr_cont_upd_pdfarea() is called to compute
+   it. If this is not successful @code{UNUR_INFINITY} is returned and
+   @code{unur_errno} is set to @code{UNUR_ERR_DISTR_GET}.
 */
 
 /*---------------------------------------------------------------------------*/

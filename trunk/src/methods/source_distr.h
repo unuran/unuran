@@ -51,17 +51,21 @@
 
 #define UNUR_DISTR_SET_MODE           0x00000001
 #define UNUR_DISTR_SET_PDFAREA        0x00000002
+#define UNUR_DISTR_SET_PDFVOLUME      0x00000004
 
 /*---------------------------------------------------------------------------*/
 /* call pdf's and cdf's                                                      */
 /* (no checking for NULL pointer !)                                          */
 
-#define _unur_cont_PDF(x,distr)   ((*((distr)->data.cont.pdf)) ((x),(distr)))
-#define _unur_cont_dPDF(x,distr)  ((*((distr)->data.cont.dpdf))((x),(distr)))
-#define _unur_cont_CDF(x,distr)   ((*((distr)->data.cont.cdf)) ((x),(distr)))
+#define _unur_cont_PDF(x,distr)    ((*((distr)->data.cont.pdf)) ((x),(distr)))
+#define _unur_cont_dPDF(x,distr)   ((*((distr)->data.cont.dpdf))((x),(distr)))
+#define _unur_cont_CDF(x,distr)    ((*((distr)->data.cont.cdf)) ((x),(distr)))
 
-#define _unur_discr_PMF(x,distr)  ((*((distr)->data.discr.pmf))((x),(distr)))
-#define _unur_discr_CDF(x,distr)  ((*((distr)->data.discr.cdf))((x),(distr)))
+#define _unur_discr_PMF(x,distr)   ((*((distr)->data.discr.pmf))((x),(distr)))
+#define _unur_discr_CDF(x,distr)   ((*((distr)->data.discr.cdf))((x),(distr)))
+
+#define _unur_cvec_PDF(x,distr)    ((*((distr)->data.cvec.pdf)) ((x),(distr)))
+#define _unur_cvec_dPDF(r,x,distr) ((*((distr)->data.cvec.dpdf)) ((r),(x),(distr)))
 
 /*---------------------------------------------------------------------------*/
 /* debuging routines for distributions                                       */

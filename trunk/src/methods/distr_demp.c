@@ -89,6 +89,9 @@ unur_distr_demp_new( void )
   /* set id to generic distribution */
   distr->id = UNUR_DISTR_GENERIC;
 
+  /* dimension of random vector */
+  distr->dim = 1;   /* univariant */
+
   /* name of distribution */
   distr->name = unknown_distr_name;
 
@@ -129,7 +132,7 @@ unur_distr_demp_set_prob( struct unur_distr *distr, double *prob, int n_prob )
   _unur_check_NULL( NULL, distr, 0 );
   _unur_check_distr_object( distr, DEMP, 0 );
 
-  /* check new parameter for generator */
+  /* check new parameter for distribution */
   if (n_prob < 0) {
     _unur_error(NULL,UNUR_ERR_DISTR_SET,"length of p.v.");
     return 0;

@@ -67,6 +67,12 @@ typedef struct unur_gen   UNUR_GEN;      /* generator object                 */
 typedef double UNUR_FUNCT_CONT(double x, struct unur_distr *distr);
 typedef double UNUR_FUNCT_DISCR(int x, struct unur_distr *distr);
 
+/*---------------------------------------------------------------------------*/
+/* functions for continuous multivariate c.d.f., p.d.f. and their gradiants  */
+
+typedef double UNUR_FUNCT_CVEC(double *x, struct unur_distr *distr);
+typedef int UNUR_VFUNCT_CVEC(double *result, double *x, struct unur_distr *distr);
+
 /*****************************************************************************/
 /**  Declarations for uniform random number generators                      **/
 /*****************************************************************************/

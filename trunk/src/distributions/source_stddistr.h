@@ -63,6 +63,7 @@ enum {
   UNUR_DISTR_POWEREXPONENTIAL,    /*    X     .     .     X     X     .      */
   UNUR_DISTR_RAYLEIGH,            /*    X     X     X     X     .     .      */
   UNUR_DISTR_STUDENT,             /*    X     .     X     X     X     .      */
+  UNUR_DISTR_TRIANGULAR,          /*    X     X     X     X     X     .      */
   UNUR_DISTR_UNIFORM,             /*    X     X     X     X     .     .      */
   UNUR_DISTR_WEIBULL,             /*    X     X     X     X     X     .      */
 };

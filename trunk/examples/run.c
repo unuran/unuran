@@ -296,10 +296,18 @@ int main()
   unur_run_tests(par,RUN_TESTS);
 #endif
 
-#if 1
+#if 0
   fpar[0] = 5.;
   fpar[1] = 2.;
   distr_xxx = unur_distr_gig(fpar,2);
+  par = unur_cstd_new(distr_xxx);
+  unur_cstd_set_variant(par,0);
+  unur_run_tests(par,RUN_TESTS);
+#endif
+
+#if 1
+  fpar[0] = 0.6;
+  distr_xxx = unur_distr_triangular(fpar,1);
   par = unur_cstd_new(distr_xxx);
   unur_cstd_set_variant(par,0);
   unur_run_tests(par,RUN_TESTS);

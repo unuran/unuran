@@ -278,6 +278,15 @@ double unur_stdgen_sample_student_tpol( struct unur_gen *gen );
 double unur_stdgen_sample_student_trouo( struct unur_gen *gen );
 /* Ratio of Uniforms                                                         */
 
+/*---------------------------------------------------------------------------*/
+/*  Triangular distribution  [3; ch.26, p.297]                               */
+struct unur_distr *unur_distr_triangular(double *params, int n_params);
+
+/* special generators */
+int _unur_stdgen_triangular_init( struct unur_par *par, struct unur_gen *gen );
+/* initialize new generator                                                  */
+double unur_stdgen_sample_triangular_inv( struct unur_gen *gen );
+/* Inversion method                                                          */
 
 /*---------------------------------------------------------------------------*/
 /* Uniform distribution                                                      */

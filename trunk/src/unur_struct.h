@@ -4,14 +4,11 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   FILE: source_struct.h                                                   *
+ *   FILE: unur_struct.h                                                     *
  *                                                                           *
  *   PURPOSE:                                                                *
  *         declares structures for distribution, parameter, and generator    *
  *         objects.                                                          *
- *                                                                           *
- *   USAGE:                                                                  *
- *         only included in source_unuran.h                                  *
  *                                                                           *
  *****************************************************************************
      $Id$
@@ -38,8 +35,8 @@
  *****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
-#ifndef SOURCE_STRUCT_H_SEEN
-#define SOURCE_STRUCT_H_SEEN
+#ifndef UNUR_STRUCT_H_SEEN
+#define UNUR_STRUCT_H_SEEN
 /*---------------------------------------------------------------------------*/
 
 /*****************************************************************************/
@@ -76,59 +73,59 @@ typedef void _UNUR_SAMPLING_ROUTINE_VEC(struct unur_gen *gen, double *vec);
 /**  Auxiliary tools                                                        **/
 /*****************************************************************************/
 
-#include <x_slist_struct.h>
+#include <utils/slist_struct.h>
 
 /*****************************************************************************/
 /**  Declaration for parser                                                 **/
 /*****************************************************************************/
 
-#include <functparser_struct.h>
+#include <parser/functparser_struct.h>
 
 /*****************************************************************************/
 /**  Declarations for uniform random number generators                      **/
 /*****************************************************************************/
 
-#include <x_urng.h>
+#include <methods/x_urng.h>
 
 /*****************************************************************************/
 /**  Distribution objects                                                   **/
 /*****************************************************************************/
 
-#include <distr_struct.h>
+#include <distr/distr_struct.h>
 
 /*****************************************************************************/
 /**  structures for generators                                              **/
 /*****************************************************************************/
 
 /* automatically selected method */
-#include <auto_struct.h>
+#include <methods/auto_struct.h>
 
 /* discrete distributions */
-#include <dari_struct.h>
-#include <dau_struct.h>
-#include <dgt_struct.h>
-#include <dsrou_struct.h>
+#include <methods/dari_struct.h>
+#include <methods/dau_struct.h>
+#include <methods/dgt_struct.h>
+#include <methods/dsrou_struct.h>
 
 /* continuous distributions */
-#include <arou_struct.h>
-#include <hinv_struct.h>
-#include <ninv_struct.h>
-#include <srou_struct.h>
-#include <ssr_struct.h>
-#include <tabl_struct.h>
-#include <tdr_struct.h>
-#include <unif_struct.h>
-#include <utdr_struct.h>
+#include <methods/arou_struct.h>
+#include <methods/hinv_struct.h>
+#include <methods/ninv_struct.h>
+#include <methods/srou_struct.h>
+#include <methods/ssr_struct.h>
+#include <methods/tabl_struct.h>
+#include <methods/tdr_struct.h>
+#include <methods/unif_struct.h>
+#include <methods/utdr_struct.h>
 
-#include <empk_struct.h>
+#include <methods/empk_struct.h>
 
 /* continuous multivariate distributions */
-#include <vempk_struct.h>
-#include <vmt_struct.h>
+#include <methods/vempk_struct.h>
+#include <methods/vmt_struct.h>
 
 /* wrappers for special generators for standard distributions */
-#include <cstd_struct.h>     /* continuous */
-#include <dstd_struct.h>     /* discrete   */
+#include <methods/cstd_struct.h>     /* continuous */
+#include <methods/dstd_struct.h>     /* discrete   */
 
 /*****************************************************************************/
 /**  Main structure for all UNURAN generators                               **/  
@@ -232,5 +229,5 @@ struct unur_gen {
 };
 
 /*---------------------------------------------------------------------------*/
-#endif  /* SOURCE_STRUCT_H_SEEN */
+#endif  /* UNUR_STRUCT_H_SEEN */
 /*---------------------------------------------------------------------------*/

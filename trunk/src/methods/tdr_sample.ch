@@ -296,18 +296,15 @@ _unur_tdr_gw_sample_check( struct unur_gen *gen )
     switch( gen->variant & TDR_VARMASK_T ) {
     case TDR_VAR_T_LOG:
       Tfx = (fx>0.) ? log(fx) : -INFINITY;
-      // hx = pt->fx * exp(pt->dTfx*(X - pt->x));    /* value of hat at X */   
       sqx = (iv->Asqueeze > 0.) ? iv->fx * exp(iv->sq*(X - iv->x)) : 0.;     /* value of squeeze at X */
       break;
     case TDR_VAR_T_SQRT:
       Tfx = (fx>0.) ? -1./sqrt(fx) : -INFINITY;
-      // hx = 1./(Thx*Thx);
       sqx = (iv->Asqueeze > 0.) ? 1./(Tsqx*Tsqx) : 0.;
       break;
     case TDR_VAR_T_POW:
       /** TODO **/
       Tfx = 0.;
-      // hx = 0.;
       sqx = 0.;
       break;
     default:  /* this should not happen */

@@ -4,13 +4,10 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   FILE: x_umalloc_source.h                                                *
+ *   FILE: unur_source.h                                                     *
  *                                                                           *
  *   PURPOSE:                                                                *
- *         prototypes for allocating memory blocks                           *
- *                                                                           *
- *   USAGE:                                                                  *
- *         only included in source_unuran.h                                  *
+ *         To be included as first header file in all sources.               *
  *                                                                           *
  *****************************************************************************
      $Id$
@@ -37,26 +34,77 @@
  *****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
-/* Function prototypes for allocating memory blocks                          */
+#ifndef UNUR_SOURCE_H_SEEN
+#define UNUR_SOURCE_H_SEEN
+/*---------------------------------------------------------------------------*/
 
+/*---------------------------------------------------------------------------*/
+/* compiler switches and defaults                                            */
+#include <unuran_config.h>
 
 /*---------------------------------------------------------------------------*/
-#ifdef WITH_DMALLOC
-/*---------------------------------------------------------------------------*/
-#define _unur_malloc(size)        xmalloc((size))
-#define _unur_realloc(ptr,size)   xrealloc((ptr),(size))
-/*---------------------------------------------------------------------------*/
+/* config file generated be autoconf                                         */
+
+#ifdef HAVE_CONFIG_H
+#  include <config.h>
 #else
-/*---------------------------------------------------------------------------*/
-void *_unur_malloc(size_t size);
-void *_unur_realloc(void *ptr, size_t size);
-/*---------------------------------------------------------------------------*/
-#endif   /* WITH_DMALLOC */
-/*---------------------------------------------------------------------------*/
+#  error "config.h" required
+#endif
 
 /*---------------------------------------------------------------------------*/
+/* include standard header files                                             */
 
+#include <float.h>
+#include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
+#ifdef HAVE_LIMITS_H
+#  include <limits.h>
+#endif
 
+/*---------------------------------------------------------------------------*/
+/* globally used types                                                       */
 
+#include <unur_typedefs.h>
+#include <unur_struct.h>
 
+/*---------------------------------------------------------------------------*/
+/* Utilities used by almost all sources                                      */
+
+/* magic cookies */
+#include <unur_cookies.h>
+
+/* debuging, warnings and error messages */
+#include <utils/debug.h>
+#include <utils/debug_source.h>
+#include <utils/stream_source.h>
+#include <utils/unur_errno.h>
+#include <utils/unur_error_source.h>
+
+/* floating point arithmetic */
+#include <utils/unur_fp_source.h>
+#include <utils/unur_fp_const_source.h>
+
+/* mathematics */
+#include <utils/umath.h>
+#include <utils/umath_source.h>
+#include <utils/unur_math_source.h>
+
+/* allocate memory */
+#include <utils/umalloc_source.h>
+
+/* simple lists */
+#include <utils/slist.h>
+
+/*---------------------------------------------------------------------------*/
+/* support for dmalloc                                                       */
+
+#ifdef WITH_DMALLOC
+#  include <dmalloc.h>
+#endif
+
+/*---------------------------------------------------------------------------*/
+#endif  /* UNUR_SOURCE_H_SEEN */
+/*---------------------------------------------------------------------------*/

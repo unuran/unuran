@@ -3,34 +3,12 @@
 
 AM_CFLAGS = -Wall
 
-INCLUDES = \
- -I$(top_srcdir)/src \
- -I$(top_srcdir)/src/distributions \
- -I$(top_srcdir)/src/parser \
- -I$(top_srcdir)/src/uniform
+INCLUDES = -I$(top_srcdir)/src
 
 noinst_LIBRARIES = libmethods.a
 
 libmethods_a_SOURCES = \
- in_unuran.h \
- source_unuran.h source_cookies.h source_fp.h source_methods.h source_struct.h \
-\
- distr.c        distr.h  distr_struct.h distr_source.h \
- distr_cont.c   distr_cont.h \
- distr_corder.c distr_corder.h \
- distr_cemp.c   distr_cemp.h \
- distr_cvec.c   distr_cvec.h \
- distr_cvemp.c  distr_cvemp.h\
- distr_discr.c  distr_discr.h\
-\
- x_debug.c  x_debug.h x_debug_source.h \
- x_error.c  x_errno.h \
  x_gen.c    x_gen.h   x_gen_source.h \
- x_math.c   x_math.h  x_math_source.h \
- x_misc.c             x_misc_source.h \
- x_slist.c  x_slist.h x_slist_struct.h \
- x_stream.c \
- x_umalloc.c          x_umalloc_source.h \
  x_urng.c   x_urng.h \
 \
  auto.c  auto.h  auto_struct.h \
@@ -53,10 +31,11 @@ libmethods_a_SOURCES = \
  vempk.c vempk.h vempk_struct.h \
  vmt.c   vmt.h   vmt_struct.h
 
+noinst_HEADERS = \
+ unur_methods_source.h
+
 # clean backup files
-CLEANFILES = \
- *~ \
- source_fp_const.h
+CLEANFILES = *~
 
 # clean generated files
 MAINTAINERCLEANFILES = \

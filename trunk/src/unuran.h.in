@@ -10,9 +10,6 @@
  *         defines macros and declares structures and function prototypes    *
  *         for all UNURAN methods                                            *
  *                                                                           *
- *   USAGE:                                                                  *
- *         required for every application of UNURAN.                         *
- *                                                                           *
  *****************************************************************************
      $Id$
  *****************************************************************************
@@ -38,8 +35,8 @@
  *****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
-#ifndef IN_UNURAN_H_SEEN
-#define IN_UNURAN_H_SEEN
+#ifndef UNURAN_H_IN_SEEN
+#define UNURAN_H_IN_SEEN
 /*---------------------------------------------------------------------------*/
 
 /*****************************************************************************/
@@ -59,115 +56,93 @@
 /**  Typedefs                                                               **/
 /*****************************************************************************/
 
-/*---------------------------------------------------------------------------*/
-/* objects                                                                   */
-
-typedef struct unur_distr UNUR_DISTR;    /* distribution object              */
-typedef struct unur_par   UNUR_PAR;      /* parameters for generator         */
-typedef struct unur_gen   UNUR_GEN;      /* generator object                 */
-
-/*---------------------------------------------------------------------------*/
-/* functions for continuous univariate PDF, CDF, and their derivatives       */
-
-typedef double UNUR_FUNCT_CONT(double x, const struct unur_distr *distr);
-typedef double UNUR_FUNCT_DISCR(int x, const struct unur_distr *distr);
-
-/*---------------------------------------------------------------------------*/
-/* functions for continuous multivariate PDF, CDF, and their gradients       */
-
-typedef double UNUR_FUNCT_CVEC(const double *x, const struct unur_distr *distr);
-typedef int UNUR_VFUNCT_CVEC(double *result, const double *x, const struct unur_distr *distr);
-
-/*---------------------------------------------------------------------------*/
-/* structures for auxiliary tools                                            */
-
-struct unur_slist;         /* Structure for simple list.                     */
+#include <unur_typedefs.h>
 
 /*****************************************************************************/
 /**  Declarations for uniform random number generators                      **/
 /*****************************************************************************/
 
-#include <uniform.h>
-#include <x_urng.h>
+#include <uniform/unur_uniform.h>
+#include <methods/x_urng.h>
 
 /*****************************************************************************/
 /**  Function prototypes for manipulating distribution objects              **/
 /*****************************************************************************/
 
-#include <distr.h>
-#include <distr_cemp.h>
-#include <distr_cont.h>
-#include <distr_corder.h>
-#include <distr_cvec.h>
-#include <distr_cvemp.h>
-#include <distr_discr.h>
+#include <distr/distr.h>
+#include <distr/cemp.h>
+#include <distr/cont.h>
+#include <distr/corder.h>
+#include <distr/cvec.h>
+#include <distr/cvemp.h>
+#include <distr/discr.h>
 
 /*****************************************************************************/
 /**  Function prototypes for manipulating generator objects                 **/
 /*****************************************************************************/
 
 /* automatically selected method */
-#include <auto.h>
+#include <methods/auto.h>
 
 /* methods for discrete distributions */
-#include <dari.h>
-#include <dau.h>
-#include <dgt.h>
-#include <dsrou.h>
+#include <methods/dari.h>
+#include <methods/dau.h>
+#include <methods/dgt.h>
+#include <methods/dsrou.h>
 
 /* methods for continuous distributions */
-#include <arou.h>
-#include <hinv.h>
-#include <ninv.h>
-#include <srou.h>
-#include <ssr.h>
-#include <tabl.h>
-#include <tdr.h>
-#include <utdr.h>
-#include <empk.h>
+#include <methods/arou.h>
+#include <methods/hinv.h>
+#include <methods/ninv.h>
+#include <methods/srou.h>
+#include <methods/ssr.h>
+#include <methods/tabl.h>
+#include <methods/tdr.h>
+#include <methods/utdr.h>
+#include <methods/empk.h>
 
 /* methods for continuous multivariate distributions */
-#include <vmt.h>
-#include <vempk.h>
+#include <methods/vmt.h>
+#include <methods/vempk.h>
 
 /* wrapper for special generators for standard distributions */
-#include <cstd.h>     /* continuous */
-#include <dstd.h>     /* discrete   */
+#include <methods/cstd.h>     /* continuous */
+#include <methods/dstd.h>     /* discrete   */
 
 /* wrapper for uniform random number generator */
-#include <unif.h>
+#include <methods/unif.h>
 
 /*****************************************************************************/
 /**  String parser                                                          **/
 /*****************************************************************************/
 
-#include <parser.h>
+#include <parser/parser.h>
 
 /*****************************************************************************/
 /**  Invoke generators                                                      **/  
 /*****************************************************************************/
 
-#include <x_gen.h>
+#include <methods/x_gen.h>
 
 /*****************************************************************************/
 /**  Distributions                                                          **/
 /*****************************************************************************/
 
-#include <unuran_distributions.h>
+#include <distributions/unur_distributions.h>
 
 /*****************************************************************************/
 /**  Debugging and Error messages                                           **/
 /*****************************************************************************/
 
-#include <x_errno.h>
-#include <x_debug.h>
+#include <utils/unur_errno.h>
+#include <utils/debug.h>
 
 /*****************************************************************************/
 /**  Additional header files for further function prototypes                **/
 /*****************************************************************************/
 
-#include <x_math.h>
-#include <x_slist.h>
+#include <utils/umath.h>
+#include <utils/slist.h>
 
 
 #ifndef TRUE
@@ -179,7 +154,7 @@ struct unur_slist;         /* Structure for simple list.                     */
 #endif
 
 /*---------------------------------------------------------------------------*/
-#endif  /* IN_UNURAN_H_SEEN */
+#endif  /* UNURAN_H_IN_SEEN */
 /*---------------------------------------------------------------------------*/
 
 

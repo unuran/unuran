@@ -4,13 +4,11 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   FILE: x_misc_source.h                                                   *
+ *   FILE: unur_typedefs.h                                                   *
  *                                                                           *
  *   PURPOSE:                                                                *
- *         prototypes for miscellaneous routines                             *
- *                                                                           *
- *   USAGE:                                                                  *
- *         only included in source_unuran.h                                  *
+ *         typedefs and names of globally used structures                    *
+ *         (not already defined in unuran_config.h)                          *
  *                                                                           *
  *****************************************************************************
      $Id$
@@ -37,13 +35,40 @@
  *****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
+#ifndef UNUR_TYPEDEFS_H_SEEN
+#define UNUR_TYPEDEFS_H_SEEN
+/*---------------------------------------------------------------------------*/
+/* UNURAN objects                                                            */
 
-int _unur_read_data( const char *file, int no_of_entries, double **array );
-/* Read data from file into double array.                                    */
+struct unur_distr;                       /* distribution object              */
+typedef struct unur_distr UNUR_DISTR;
+
+struct unur_par;                         /* parameters for generator */
+typedef struct unur_par   UNUR_PAR;
+
+struct unur_gen;                         /* generator object         */
+typedef struct unur_gen   UNUR_GEN;
 
 /*---------------------------------------------------------------------------*/
+/* functions for continuous univariate PDF, CDF, and their derivatives       */
 
+typedef double UNUR_FUNCT_CONT(double x, const struct unur_distr *distr);
+typedef double UNUR_FUNCT_DISCR(int x, const struct unur_distr *distr);
 
+/*---------------------------------------------------------------------------*/
+/* functions for continuous multivariate PDF, CDF, and their gradients       */
+
+typedef double UNUR_FUNCT_CVEC(const double *x, const struct unur_distr *distr);
+typedef int UNUR_VFUNCT_CVEC(double *result, const double *x, const struct unur_distr *distr);
+
+/*---------------------------------------------------------------------------*/
+/* structures for auxiliary tools                                            */
+
+struct unur_slist;         /* structure for simple list                      */
+
+/*---------------------------------------------------------------------------*/
+#endif  /* UNUR_TYPEDEFS_H_SEEN */
+/*---------------------------------------------------------------------------*/
 
 
 

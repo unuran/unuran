@@ -4,15 +4,10 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   FILE: x_math_source.h                                                   *
+ *   FILE: unur_methods_source.h                                             *
  *                                                                           *
  *   PURPOSE:                                                                *
- *         declares macros, constants, structures, function prototypes, etc. *
- *         for using mathematics in UNURAN.                                  *
- *                                                                           *
- *   USAGE:                                                                  *
- *         internal header file.                                             *
- *         only included in source_unuran.h                                  *
+ *         defines bitmasks to identify used method in generator objects     *
  *                                                                           *
  *****************************************************************************
      $Id$
@@ -39,79 +34,83 @@
  *****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
-#ifndef X_MATH_SOURCE_H_SEEN
-#define X_MATH_SOURCE_H_SEEN
+#ifndef UNUR_METHODS_SOURCE_H_SEEN
+#define UNUR_METHODS_SOURCE_H_SEEN
 /*---------------------------------------------------------------------------*/
 
-/*---------------------------------------------------------------------------*/
-/* mathematical constants                                                    */
-
-#ifndef M_E
-#define M_E        2.71828182845904523536028747135      /* e */
-#endif
-
-#ifndef M_SQRT2
-#define M_SQRT2    1.41421356237309504880168872421      /* sqrt(2) */
-#endif
-
-#ifndef M_SQRT3
-#define M_SQRT3    1.73205080756887729352744634151      /* sqrt(3) */
-#endif
-
-#ifndef M_SQRTH
-#define M_SQRTH    0.707106781186547524400844362105     /* sqrt(1/2) */
-#endif
-
-#ifndef M_PI
-#define M_PI       3.14159265358979323846264338328      /* pi */
-#endif
-
-#ifndef M_PI_4
-#define M_PI_4     0.78539816339744830966156608458      /* pi/4 */
-#endif
-
-#ifndef M_SQRTPI
-#define M_SQRTPI   1.77245385090551602729816748334      /* sqrt(pi) */
-#endif
-
-#ifndef M_SQRT2PI
-#define M_SQRT2PI  2.50662827463100050241576528481      /* sqrt(2*pi) */
-#endif
-
-#ifndef M_LN10
-#define M_LN10     2.30258509299404568401799145468      /* ln(10) */
-#endif
-
-#ifndef M_LN2
-#define M_LN2      0.69314718055994530941723212146      /* ln(2) */
-#endif
-
-#ifndef M_LNPI
-#define M_LNPI     1.14472988584940017414342735135      /* ln(pi) */
-#endif
-
-#ifndef M_EULER
-#define M_EULER    0.57721566490153286060651209008      /* Euler constant */
-#endif
+/*****************************************************************************/
+/**  Bitmask to indicate methods                                            **/
+/*****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
-/* Prototypes for various functions used in library                          */  
+/* bitmasks                                                                  */
 
-/* Compute a "mean" defined as combibation of arithmetic and harmonic mean   */
-double _unur_arcmean( double x0, double x1 );
+#define UNUR_MASK_TYPE     0xff000000u   /* indicate type of method           */
+
+/* discrete distributions */
+#define UNUR_METH_DISCR    0x10000000u
+
+#define UNUR_METH_DARI     0x10000001u
+#define UNUR_METH_DAU      0x10000002u
+#define UNUR_METH_DGT      0x10000003u
+#define UNUR_METH_DSROU    0x10000004u
+
+/* continuous distributions */
+#define UNUR_METH_CONT     0x20000000u
+
+#define UNUR_METH_AROU     0x20000100u
+#define UNUR_METH_HINV     0x20000200u
+#define UNUR_METH_NINV     0x20000300u
+#define UNUR_METH_SROU     0x20000400u
+#define UNUR_METH_SSR      0x20000500u
+#define UNUR_METH_TABL     0x20000600u
+#define UNUR_METH_TDR      0x20000700u
+#define UNUR_METH_UNIF     0x20000800u
+#define UNUR_METH_UTDR     0x20000900u
+
+/* univariate continuous empirical distributions */
+#define UNUR_METH_CEMP     0x40000000u
+
+#define UNUR_METH_EMPK     0x40001100u
+
+/* multivariate continuous distributions */
+#define UNUR_METH_VEC      0x80000000u
+
+#define UNUR_METH_VMT      0x80010000u
+#define UNUR_METH_VEMPK    0x80020000u
+
+/* generators for standard distributions */
+#define UNUR_METH_CSTD     0x2000f100u   /* is of type UNUR_METH_CONT !!  */
+#define UNUR_METH_DSTD     0x1000f200u   /* is of type UNUR_METH_DISCR !! */
+
+/* automatically selected generator */
+#define UNUR_METH_AUTO     0x00a00000u   /* can be any type of distribution */
+
+/* to indicate unkown type */
+#define UNUR_METH_UNKNOWN  0xff000000u
+
+/*****************************************************************************/
+/**  Macros                                                                 **/
+/*****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
-/* Macros                                                                    */
+/* check if parameter object is of correct type, return 0 otherwise       */
 
-#define min(x,y)   (((x)<(y)) ? (x) : (y))
-#define max(x,y)   (((x)>(y)) ? (x) : (y))
+#define _unur_check_par_object( par,type ) \
+  if ( (par)->method != UNUR_METH_##type ) { \
+    _unur_warning(#type,UNUR_ERR_PAR_INVALID,""); \
+    return 0; } \
+  COOKIE_CHECK((par),CK_##type##_PAR,0)
 
 /*---------------------------------------------------------------------------*/
-#endif  /* X_MATH_SOURCE_H_SEEN */
+/* check if generator object is of correct type, return 0 otherwise          */
+
+#define _unur_check_gen_object( gen,type ) \
+  if ( (gen)->method != UNUR_METH_##type ) { \
+    _unur_warning((gen)->genid,UNUR_ERR_GEN_INVALID,""); \
+    return 0; } \
+  COOKIE_CHECK((gen),CK_##type##_GEN,0)
+
 /*---------------------------------------------------------------------------*/
-
-
-
-
-
-
+#endif  /* UNUR_METHODS_SOURCE_H_SEEN */
+/*---------------------------------------------------------------------------*/

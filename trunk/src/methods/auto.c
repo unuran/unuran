@@ -35,7 +35,9 @@
 
 /*---------------------------------------------------------------------------*/
 
-#include <source_unuran.h>
+#include <unur_source.h>
+#include <unuran.h.in>
+#include "unur_methods_source.h"
 
 /*---------------------------------------------------------------------------*/
 /* Variants: none                                                            */

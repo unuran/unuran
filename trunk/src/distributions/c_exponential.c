@@ -16,15 +16,15 @@
  *****************************************************************************
  *****************************************************************************
  *                                                                           *
- *  Exponential distribution [2; ch.19, p.494]                               *
+ *  distr: Exponential distribution [2; ch.19, p.494]                        *
  *                                                                           *
  *  pdf:       f(x) = exp( - (x-theta)/sigma )                               *
  *  domain:    x >= theta                                                    *
  *  constant:  sigma                                                         *
  *                                                                           *
  *  parameters:                                                              *
- *     0:  sigma > 0  ... scale                                              *
- *     1:  theta      ... location                                           *
+ *     0:  sigma > 0  (1)  ... scale                                         *
+ *     1:  theta      (0)  ... location                                      *
  *                                                                           *
  *****************************************************************************
  *                                                                           *

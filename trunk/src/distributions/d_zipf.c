@@ -16,11 +16,11 @@
  *****************************************************************************
  *****************************************************************************
  *                                                                           *
- *  Zipf distribution (or Zeta distribution)  [1; ch.11.20, p.465]           *
+ *  distr: Zipf distribution (or Zeta distribution)  [1; ch.11.20, p.465]    *
  *                                                                           *
  *  pmf:       p(k) = (k + tau)^(-(rho+1))                                   *
  *  domain:    1 <= k < infinity                                             *
- *  constant:  1 / sum_{k=1}^infinity  (k+tau)^(rho+1)                       *
+ *  constant:  1 / sum_k=1^infinity  (k+tau)^(rho+1)                       *
  *             [ zeta(a) = sum_1^infinity (x^a) ... Riemann zeta function ]  *
  *                                                                           *
  *  parameters:                                                              *

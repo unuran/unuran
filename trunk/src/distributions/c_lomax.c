@@ -16,7 +16,7 @@
  *****************************************************************************
  *****************************************************************************
  *                                                                           *
- *  Lomax distribution (Pareto distr. of second kind) [2; ch.20, p.575]      *
+ * distr: Lomax distribution (Pareto distr. of second kind) [2; ch.20, p.575]*
  *                                                                           *
  *  pdf:       f(x) = (x+C)^(-(a+1))                                         *
  *  domain:    x >= 0                                                        *

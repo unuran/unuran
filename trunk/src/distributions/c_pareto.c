@@ -16,10 +16,10 @@
  *****************************************************************************
  *****************************************************************************
  *                                                                           *
- *  Pareto distribution (of first kind) [2; ch.20, p.574]                    *
+ *  distr: Pareto distribution (of first kind) [2; ch.20, p.574]             *
  *                                                                           *
- *  pdf:       f(x) = x^(-(a+1))                                              *
- *  domain:    x >= k                                                         *
+ *  pdf:       f(x) = x^(-(a+1))                                             *
+ *  domain:    x >= k                                                        *
  *  constant:  a * k^a                                                       *
  *                                                                           *
  *  parameters:                                                              *

@@ -16,10 +16,9 @@
  *****************************************************************************
  *****************************************************************************
  *                                                                           *
- *  Extreme value type I distribution  [3; ch.22, p.2]                       *
+ *  distr: Extreme value type I distribution  [3; ch.22, p.2]                *
  *  (also Gumbel-type distribution)                                          *
  *                                                                           *
- *...........................................................................*
  *                                                                           *
  *  Type I (also Gumbel-type distribution)                                   *
  *                                                                           *
@@ -29,8 +28,8 @@
  *  constant:  1/theta                                                       *
  *                                                                           *
  *  parameters: 2                                                            *
- *     0:  zeta        ... location                                          *
- *     1:  theta >0    ... scale                                             *
+ *     0:  zeta      (0)  ... location                                       *
+ *     1:  theta >0  (1)  ... scale                                          *
  *                                                                           *
  *...........................................................................*
  *                                                                           *

@@ -16,14 +16,14 @@
  *****************************************************************************
  *****************************************************************************
  *                                                                           *
- *  Student distribution or t-distribution [3; ch. 28; p. 362]               *
+ *  distr: Student distribution or t-distribution [3; ch. 28; p. 362]        *
  *                                                                           *
  *  pdf:       f(x) = ( 1 + (x^2)/nu )^(-(nu+1)/2)                           *
  *  domain:    -infinity < x < infintiy                                      *
  *  constant:  sqrt(nu) * Beta(1/2,nu/2)                                     *
  *             = sqrt(pi*nu) * Gamma(nu/2) / Gamma((nu+1)/2)                 *
  *                                                                           *
- *  parameters:                                                              *
+ *  parameters:  1                                                           *
  *     0: nu > 0  ... shape                                                  *
  *                                                                           *
  *****************************************************************************

@@ -16,7 +16,9 @@
  *****************************************************************************
  *****************************************************************************
  *                                                                           *
- *  Power-exponential distribution                                           *
+ *  distr: power-exponential distribution                                    *
+ *    (also called Subbotin distribution)                                    *
+ *                                                                           *
  *  (see also [3; ch.24, p.195] for a different definition;                  *
  *  also called Subbotin distribution)                                       *
  *                                                                           *

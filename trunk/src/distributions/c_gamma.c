@@ -16,16 +16,16 @@
  *****************************************************************************
  *****************************************************************************
  *                                                                           *  
- *  Gamma distribution [2; ch.17, p.337]                                     *
+ *  distr: Gamma distribution [2; ch.17, p.337]                              *
  *                                                                           *
  *  pdf:       f(x) = (x-gamma)^(alpha-1) * exp( -(x-gamma)/beta )           *
  *  domain:    x > gamma                                                     *
  *  constant:  beta^alpha * Gamma(alpha)                                     *
  *                                                                           *
  *  parameters:                                                              *
- *     0:  alpha > 0  ... shape                                              *
- *     1:  beta > 0   ... scale                                              *
- *     2:  gamma      ... location                                           *
+ *     0:  alpha > 0       ... shape                                         *
+ *     1:  beta > 0   (1)  ... scale                                         *
+ *     2:  gamma      (0)  ... location                                      *
  *                                                                           *
  *****************************************************************************
  *                                                                           *

@@ -16,16 +16,16 @@
  *****************************************************************************
  *****************************************************************************
  *                                                                           *
- *  Weibull distribution [2; ch.21, p.628]                                   *
+ *  distr: Weibull distribution [2; ch.21, p.628]                            *
  *                                                                           *
  *  pdf:       f(x) = ((x-zeta)/alpha)^(c-1) * exp(-((x-zeta)/alpha)^c)      *
  *  domain:    zeta < x < infinity                                           *
  *  constant:  c / alpha                                                     *
  *                                                                           *
  *  parameters: 3                                                            *
- *     0:  c     >0    ... shape                                             *
- *     1:  alpha >0    ... scale                                             *
- *     2:  zeta        ... location                                          *
+ *     0:  c     > 0         ... shape                                       *
+ *     1:  alpha > 0   (1)   ... scale                                       *
+ *     2:  zeta        (0)   ... location                                    *
  *                                                                           *
  *****************************************************************************
  *                                                                           *

@@ -16,10 +16,9 @@
  *****************************************************************************
  *****************************************************************************
  *                                                                           *
- *  Extreme value type II distribution  [3; ch.22, p.2]                      *
+ *  distr: Extreme value type II distribution  [3; ch.22, p.2]               *
  *  (also Frechet-type distribution)                                         *
  *                                                                           *
- *...........................................................................*
  *                                                                           *
  *  Type II (also Frechet-type distribution)                                 *
  *                                                                           *
@@ -29,9 +28,9 @@
  *  constant:  k/theta                                                       *
  *                                                                           *
  *  parameters: 3                                                            *
- *     0:  k     > 0   ... shape                                             *
- *     1:  zeta        ... location                                          *
- *     2:  theta > 0   ... scale                                             *
+ *     0:  k     > 0        ... shape                                        *
+ *     1:  zeta        (0)  ... location                                     *
+ *     2:  theta > 0   (1)  ... scale                                        *
  *                                                                           *
  *...........................................................................*
  *                                                                           *

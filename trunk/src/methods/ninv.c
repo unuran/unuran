@@ -1049,7 +1049,7 @@ _unur_ninv_regula( struct unur_gen *gen, double u )
     
   double x1, x2, a, xtmp;/* points for RF                                   */
   double x2abs;          /* absolute value of x2                            */
-  double f1, f2, ftmp;   /* function values at x1, x2, xtmp                 */
+  double f1, f2,fa, ftmp;/* function values at x1, x2, xtmp                 */
   double length;         /* oriented length of the interval with sign change*/
   double lengthabs;      /* absolute length of interval                     */
   int  lengthsgn;        /* orientation of the Intervalls                   */
@@ -1141,7 +1141,8 @@ _unur_ninv_regula( struct unur_gen *gen, double u )
   }  /* while end -- interval found */ 
 
 
-  a = x1;       /* always sign change between a and x2 */
+  a  = x1;       /* always sign change between a and x2 */
+  fa = f1;
 
   /* secant step, preserve sign change */
   for (i=0; i < GEN.max_iter; i++) {
@@ -1156,14 +1157,16 @@ _unur_ninv_regula( struct unur_gen *gen, double u )
 
     x2abs = fabs(x2);   /* absolute value of x2 */
 
+    if ( f1*f2 < 0.) {  /* sign change found             */
+      count = 0;   /* reset bisection counter  */
+      a  = x1;     /* sign change within [a, x2]               */
+      fa = f1;
+    }
     /* exact hit   || flat region  */    
-    if ( f2 == 0. || _unur_FP_same(f1, f2) )
+    if ( f2 == 0. || _unur_FP_same(fa, f2) )
       break; /* -> finished */
 
-    if ( f1*f2 <= 0) {  /* sign change found             */
-      count = 0;   /* reset bisection counter  */
-      a = x1;      /* sign change within [a, x2]               */
-    }
+
     
     length = x2 - a;  /* oriented length  */
     lengthabs = fabs(length);
@@ -1172,7 +1175,6 @@ _unur_ninv_regula( struct unur_gen *gen, double u )
     if ( lengthabs <= GEN.rel_x_resolution * x2abs  )
       /* relative x-genauigkeit erreicht -> finished */
       break; /* -> finished */
-
   
     /* secant or bisection step   */
     dx = ( f1-f2==0. ) ? length/2. : f2*(x2-x1)/(f2-f1) ;  
@@ -1207,6 +1209,7 @@ _unur_ninv_regula( struct unur_gen *gen, double u )
     if (gen->debug & NINV_DEBUG_SAMPLE)
       _unur_ninv_debug_sample_regula( gen,u,x2,f2,i );
 #endif
+
    return x2;
 
 } /* end of _unur_ninv_sample_regula()  */

@@ -6,7 +6,7 @@
  *                                                                           *
  *   FILE:      cauchy_gen.c                                                 *
  *                                                                           *
- *   Special generators for Exponential distribution                         *
+ *   Special generators for Cauchy distribution                              *
  *                                                                           *
  *****************************************************************************
      $Id$

@@ -424,7 +424,7 @@ _unur_matrix_invert_matrix (int dim, double *A, double detmin, double *Ainv, dou
   LU = _unur_malloc(dim*dim*sizeof(double));
 
   /* compute LU decomposition */
-  memcpy(LU,A,dim*dim);
+  memcpy(LU, A, dim*dim*sizeof(double));
   _unur_matrix_LU_decomp(dim, LU, p, &s);
 
   /* compute determinat */

@@ -83,6 +83,8 @@
 /*    bits 13-24 ... adaptive steps                                          */
 /*    bits 25-32 ... trace sampling                                          */
 
+#define UTDR_DEBUG_REINIT    0x00000010u   /* print parameters after reinit  */
+
 /*---------------------------------------------------------------------------*/
 /* Flags for logging set calls                                               */
 
@@ -554,6 +556,28 @@ unur_utdr_chg_mode( struct unur_gen *gen, double mode )
 /*---------------------------------------------------------------------------*/
 
 int
+unur_utdr_upd_mode( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* recompute mode of distribution                                       */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen   ... pointer to generator object                              */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... on success                                                   */
+     /*   0 ... on error                                                     */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  CHECK_NULL(gen,0);
+  _unur_check_gen_object( gen,UTDR );
+
+  return unur_distr_cont_upd_mode( &(gen->distr) );
+} /* end of unur_utdr_upd_mode() */
+
+/*---------------------------------------------------------------------------*/
+
+int
 unur_utdr_chg_pdfatmode( struct unur_gen *gen, double fmode )
      /*----------------------------------------------------------------------*/
      /* change value of pdf at mode                                          */
@@ -622,6 +646,28 @@ unur_utdr_chg_pdfarea( struct unur_gen *gen, double area )
   /* o.k. */
   return 1;
 } /* end of unur_utdr_chg_pdfarea() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+unur_utdr_upd_pdfarea( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* recompute area below p.d.f. of distribution                          */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen   ... pointer to generator object                              */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... on success                                                   */
+     /*   0 ... on error                                                     */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  CHECK_NULL(gen,0);
+  _unur_check_gen_object( gen,UTDR );
+
+  return unur_distr_cont_upd_pdfarea( &(gen->distr) );
+} /* end of unur_utdr_upd_pdfarea() */
 
 /*****************************************************************************/
 

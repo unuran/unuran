@@ -88,7 +88,7 @@ TESTS = $(check_PROGRAMS)
 
 # This is necessary until we fix the bug in method AROU
 ##XFAIL_TESTS = t_arou 
-XFAIL_TESTS = $(EXPERIMENTAL_XFAIL)
+##XFAIL_TESTS = $(EXPERIMENTAL_XFAIL)
 
 noinst_HEADERS = \
  testunuran.h

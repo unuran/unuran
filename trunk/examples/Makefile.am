@@ -35,6 +35,7 @@ example_vemp_LDADD  = -lunuran
 
 # clean backup files
 CLEANFILES = \
+ unuran.log \
  *~
 
 # clean generated files

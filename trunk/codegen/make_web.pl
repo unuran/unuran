@@ -189,8 +189,8 @@ EOX
 <?php
  # Step 2
 
+# CASE: no distribution selected till now    
  if (\$step < 1) {
-\t # no distribution selected till now    
 \t echo "<FONT COLOR=\\"$Gray\\">\\n";
 \t echo "Step 2: <STRONG>Parameters for distribution</STRONG><BR>\\n";
 \t echo "</FONT>\\n";
@@ -200,10 +200,78 @@ EOX
 
 $get_distr_PDFparams
 
-\t if (\$step == 1) {
-\t\t # Insert parameters
+\t echo "Step 2: <STRONG>Parameters for \$distr_name</STRONG><BR>\\n";
 
-\t\t echo "Step 2: <STRONG>Parameters for \$distr_name</STRONG><BR>\\n";
+# CASE: Distribution selected and Parameters given
+\t if (\$step > 1) {
+
+\t\t # Store parameters
+\t\t \$distr_param = array();
+
+\t\t if (\$Stdform == "yes") {
+\t\t\t # Standardform
+
+\t\t\t # Number of parameters for PDF
+\t\t\t \$distr_n_params = \$distr_n_requir;
+
+\t\t\t # Read parameters for distribution
+\t\t\t unset(\$distr_param_FORM_list);
+\t\t\t while (list (\$key, \$val) = each(\$HTTP_GET_VARS)) {
+\t\t\t\t if ( preg_match ("/^Std_param_(\\d+)/", \$key, \$matches ) ) {
+\t\t\t\t\t \$distr_param[\$matches[1]] = \$val;
+\t\t\t\t\t \$distr_param_FORM_list .= 
+\t\t\t\t\t\t "echo \\"    <INPUT type=\\\\\\"hidden\\\\\\" name=\\\\\\"\$key\\\\\\" value=\\\\\\"\$val\\\\\\">\\n";
+\t\t\t\t }
+\t\t\t }
+\t\t\t # Read optional parameters for distribution (use defaults)
+\t\t\t for (\$i = \$distr_n_requir; \$i < \$distr_n_total; \$i++) {
+\t\t\t\t \$distr_param[\$i] = \$distr_param_default[\$i];
+\t\t\t }
+\t\t }
+\t\t else {
+\t\t\t # Non-standardform
+
+\t\t\t # Number of parameters for PDF
+\t\t\t \$distr_n_params = \$distr_n_total;
+
+\t\t\t # Read parameters for distribution
+\t\t\t while (list (\$key, \$val) = each(\$HTTP_GET_VARS)) {
+\t\t\t\t if ( preg_match ("/^param_(\\d+)/", \$key, \$matches ) ) {
+\t\t\t\t\t \$distr_param[\$matches[1]] = \$val;
+\t\t\t\t }
+\t\t\t }
+\t\t }
+
+
+\t\t # Check parameters
+\t\t for (\$i = 0; \$i < \$distr_n_total; \$i++) {
+\t\t\t if ( !preg_match ("/\\d+/", \$distr_param[\$i]) ) {
+\t\t\t\t \$step = 1;
+\t\t\t\t \$distr_param[\$i] = "<FONT COLOR=\\"red\\"><BLINK>missing</BLINK></FONT>";
+\t\t\t }
+\t\t }
+
+
+\t\t # Print parameters into web page
+\t\t echo "<BLOCKQUOTE>\\n";
+\t\t\t for (\$i = 0; \$i < \$distr_n_params; \$i++) {
+\t\t\t\t echo "    \$distr_param_name[\$i] = \$distr_param[\$i]&nbsp;&nbsp;&nbsp;\\n";
+\t\t\t }
+\t\t\t if (\$distr_n_total > \$distr_n_params) {
+\t\t\t\t echo "    <FONT COLOR=\\"$Gray\\">(&nbsp;&nbsp;&nbsp;\\n";
+\t\t\t\t for (\$i = \$distr_n_requir; \$i < \$distr_n_total; \$i++) {
+\t\t\t\t\t echo "    \$distr_param_name[\$i] = \$distr_param[\$i]&nbsp;&nbsp;&nbsp;\\n";
+\t\t\t\t }
+\t\t\t\t echo ")</FONT>\\n";
+\t\t\t }
+\t\t echo "</BLOCKQUOTE>\\n";
+
+\t }
+
+
+# CASE: Distribution selected, input Parameters
+\t if (\$step == 1) {
+
 \t\t echo "<BLOCKQUOTE>\\n";
 \t\t echo "  <FORM method=\\"GET\\" action=\\"anuran.php\\">\\n";
 
@@ -260,47 +328,62 @@ $get_distr_PDFparams
 \t\t echo "</BLOCKQUOTE>\\n";
 \t }
 
-\t else {
-\t\t # Parameters given
-
-\t\t \$distr_param = array();
-\t\t if (\$Stdform == "yes") {
-\t\t\t \$distr_n_params = \$distr_n_requir;
-\t\t\t while (list (\$key, \$val) = each(\$HTTP_GET_VARS)) {
-\t\t\t\t if ( preg_match ("/^Std_param_(\\d+)/", \$key, \$matches ) ) {
-\t\t\t\t\t \$distr_param[\$matches[1]] = \$val;
-\t\t\t\t }
-\t\t\t }
-\t\t\t for (\$i = \$distr_n_requir; \$i < \$distr_n_total; \$i++) {
-\t\t\t\t \$distr_param[\$i] = \$distr_param_default[\$i];
-\t\t\t }
-\t\t }
-\t\t else {
-\t\t\t \$distr_n_params = \$distr_n_total;
-\t\t\t while (list (\$key, \$val) = each(\$HTTP_GET_VARS)) {
-\t\t\t\t if ( preg_match ("/^param_(\\d+)/", \$key, \$matches ) ) {
-\t\t\t\t\t \$distr_param[\$matches[1]] = \$val;
-\t\t\t\t }
-\t\t\t }
-\t\t }
-
-\t\t echo "Step 2: <STRONG>Parameters for \$distr_name</STRONG><BR>\\n";
-\t\t echo "<BLOCKQUOTE>\\n";
-\t\t\t for (\$i = 0; \$i < \$distr_n_params; \$i++) {
-\t\t\t\t echo "    \$distr_param_name[\$i] = \$distr_param[\$i]&nbsp;&nbsp;&nbsp;\\n";
-\t\t\t }
-\t\t\t if (\$distr_n_total > \$distr_n_params) {
-\t\t\t\t echo "    <FONT COLOR=\\"$Gray\\">(&nbsp;&nbsp;&nbsp;\\n";
-\t\t\t\t for (\$i = \$distr_n_requir; \$i < \$distr_n_total; \$i++) {
-\t\t\t\t\t echo "    \$distr_param_name[\$i] = \$distr_param[\$i]&nbsp;&nbsp;&nbsp;\\n";
-\t\t\t\t }
-\t\t\t\t echo ")</FONT>\\n";
-\t\t\t }
-\t\t echo "</BLOCKQUOTE>\\n";
-
-\t }
  }
 
+?>
+
+<P><HR><P>
+
+EOX
+
+# ................................................................
+# Step 3: Insert domain
+
+    $PHP .= <<EOX;
+<?php
+ # Step 3
+
+# CASE: no distribution or no parameters selected till now    
+ if (\$step < 2) {
+\t echo "<FONT COLOR=\\"$Gray\\">\\n";
+\t echo "Step 3: <STRONG>Domain for ";
+\t echo ((\$step < 1) ? "distribution" : \$distr_name);
+\t echo "</STRONG></FONT><BR>\\n";
+ }
+
+ else {
+
+\t echo "Step 3: <STRONG>Domain for \$distr_name</STRONG><BR>\\n";
+
+# CASE: Distribution selected, Parameters and Domain given
+\t if (\$step > 2) {
+
+\t }
+
+# CASE: Distribution selected and Parameters given, input domain
+\t if (\$step == 2) {
+
+\t\t echo "<BLOCKQUOTE>\\n";
+\t\t echo "  <FORM method=\\"GET\\" action=\\"anuran.php\\">\\n";
+
+\t\t echo "    <INPUT TYPE=\\"radio\\" NAME=\\"Stddomain\\" VALUE=\\"yes\\" checked> Standarddomain\\n";
+\t\t echo "    <BR>\\n";
+
+
+\t\t echo "    <INPUT TYPE=\\"radio\\" NAME=\\"Stddomain\\" VALUE=\\"no\\"> Truncated\\n";
+\t\t echo "    <BR>\\n";
+
+\t\t echo "    <P>\\n";
+\t\t echo "    <INPUT type=\\"hidden\\" name=\\"step\\" value=\\"3\\">\\n";
+\t\t echo "    <INPUT type=\\"hidden\\" name=\\"distribution\\" value=\\"\$distribution\\">\\n";
+\t\t echo "    <INPUT type=\\"hidden\\" name=\\"Stdform\\" value=\\"\$Stdform\\">\\n";
+\t\t \$distr_param_FORM_list;
+\t\t echo "    <INPUT type=\\"submit\\" value=\\"Continue\\">\\n";
+\t\t echo "  </FORM>\\n";
+\t\t echo "</BLOCKQUOTE>\\n";
+\t }
+
+ }
 
 ?>
 

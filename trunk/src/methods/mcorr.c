@@ -405,6 +405,13 @@ _unur_mcorr_clone( const struct unur_gen *gen )
   /* allocate new working array */
   CLONE.H = _unur_xmalloc(GEN.dim * GEN.dim * sizeof(double));
 
+  /* copy optional eigenvalues */
+  CLONE.eigenvalues = NULL;
+  if (GEN.eigenvalues) {
+    CLONE.eigenvalues = _unur_xmalloc(GEN.dim * sizeof(double));
+    memcpy(CLONE.eigenvalues, GEN.eigenvalues, GEN.dim * sizeof(double));
+  }
+  
   return clone;
 
 #undef CLONE

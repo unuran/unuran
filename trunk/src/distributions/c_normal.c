@@ -32,7 +32,7 @@
  *                                                                           *
  *  pdf:       f(x) = exp( - x^2 / 2)                                        *
  *  domain:    -infinity < x < infinity                                      *
- *  constant:  sqrt(2 pi)                                                    *
+ *  constant:  1/sqrt(2 pi)                                                  *
  *                                                                           *
  *  parameters:                                                              *
  *     none                                                                  *
@@ -121,7 +121,7 @@ _unur_pdf_normal( double x, const UNUR_DISTR *distr )
 
   /* standard form */
 
-  return exp(-x*x/2. - LOGNORMCONSTANT); 
+  return exp(-x*x/2. + LOGNORMCONSTANT); 
 
 } /* end of _unur_pdf_normal() */
 
@@ -141,7 +141,7 @@ _unur_dpdf_normal( double x, const UNUR_DISTR *distr )
 
   /* standard form */
 
-  return ( -x * exp(-x*x/2. - LOGNORMCONSTANT) * factor );
+  return ( -x * exp(-x*x/2. + LOGNORMCONSTANT) * factor );
 
 } /* end of _unur_dpdf_normal() */
 
@@ -188,7 +188,7 @@ int
 _unur_upd_area_normal( UNUR_DISTR *distr )
 {
   /* log of normalization constant */
-  LOGNORMCONSTANT = log(M_SQRTPI * M_SQRT2 * DISTR.sigma);
+  LOGNORMCONSTANT = - log(M_SQRTPI * M_SQRT2 * DISTR.sigma);
 
   if (distr->set & UNUR_DISTR_SET_STDDOMAIN) {
     DISTR.area = 1.;
@@ -300,7 +300,7 @@ unur_distr_normal( const double *params, int n_params )
   }
 
   /* log of normalization constant */
-  LOGNORMCONSTANT = log(M_SQRTPI * M_SQRT2 * DISTR.sigma);
+  LOGNORMCONSTANT = - log(M_SQRTPI * M_SQRT2 * DISTR.sigma);
 
   /* mode and area below p.d.f. */
   DISTR.mode = DISTR.mu;

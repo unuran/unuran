@@ -18,7 +18,7 @@
  *                                                                           *
  *  pdf:       f(x) = 1 / ( 1 + (x-mu)^t . Sigma^-1 . (x-mu) )^(dim+1)/2     * 
  *  domain:    Reals^(dim)                                                   *
- *  constant:  pi^((dim+1)/2) * sqrt(det(Sigma)) / Gamma((dim+1)/2           *
+ *  constant:  Gamma((dim+1)/2) / ( pi^((dim+1)/2) * sqrt(det(Sigma)) )      *
  *                                                                           *
  *  parameters:                                                              *
  *     0:  mean    ... mu      (default : 0-vector)                          *
@@ -30,9 +30,8 @@
  *                                                                           *
  *  pdf:       f(x) = 1 / ( 1 + x^t . x )^(dim+1)/2                          *
  *  domain:    Reals^(dim)                                                   *
- *  constant:  (pi)^(dim/2)*c[p)                                             *
- *             with c(p)=c(p-1)/p for odd dim=2p+1, and c(0)=sqrt(pi)        *
- *             and  c(p)=c(p-1)*2/(2p-1) for even dim=2p, and c(1)=2         *
+ *  constant:  Gamma((dim+1)/2) / pi^((dim+1)/2)                             *
+ *                                                                           *
  *  parameters:                                                              *
  *     none                                                                  *
  *                                                                           *
@@ -122,7 +121,7 @@ _unur_logpdf_multicauchy( const double *x, UNUR_DISTR *distr )
     /* standard form */
     xx=0.;
     for (i=0; i<dim; i++) { xx += x[i]*x[i]; }
-    return ( - (dim+1)/2. * log(1+xx) - LOGNORMCONSTANT);  
+    return ( - (dim+1)/2. * log(1+xx) + LOGNORMCONSTANT);  
   }
 
   mean = DISTR.mean;
@@ -143,7 +142,7 @@ _unur_logpdf_multicauchy( const double *x, UNUR_DISTR *distr )
     xx += (x[i]-mean[i])*cx;
   }
   
-  return (- (dim+1)/2. * log(1+xx) - LOGNORMCONSTANT);
+  return (- (dim+1)/2. * log(1+xx) + LOGNORMCONSTANT);
 
 #undef idx
 } /* end of _unur_logpdf_multicauchy() */
@@ -199,8 +198,6 @@ unur_distr_multicauchy( int dim, const double *mean, const double *covar )
   struct unur_distr *distr;
   struct unur_distr *stdmarginal;
   double det_covar; /* determinant of covariance matrix */
-  double logc; /* used for LOGNORMCONSTANT calculations */
-  int p;
   
   /* get new (empty) distribution object */
   distr = unur_distr_cvec_new(dim);
@@ -248,18 +245,10 @@ unur_distr_multicauchy( int dim, const double *mean, const double *covar )
   /* domain */
 
   /* log of normalization constant */
-  if (_unur_FP_equal(distr->dim/2, distr->dim/2.)) {
-  /* even dimension */
-    logc=log(2); /* for dim=2p=2 i.e. p=1 */
-    for (p=2; p<=distr->dim/2; p++) logc += log(2)-log(2*p-1);
-  }
-  else {
-  /* odd dimension */
-    logc=log(M_PI)/2; /* for dim=2p+1=1 i.e. p=0 */
-    for (p=1; p<=(distr->dim-1)/2; p++) logc -= log(p);
-  }
+  /* constant:  Gamma((dim+1)/2) / ( pi^((dim+1)/2) * sqrt(det(Sigma)) )  */
   det_covar = (DISTR.covar == NULL) ? 1. : _unur_matrix_determinant(dim, DISTR.covar);
-  LOGNORMCONSTANT = logc + ( distr->dim * log(M_PI) + log(det_covar) ) / 2.;
+  LOGNORMCONSTANT = _unur_sf_ln_gamma((distr->dim+1)/2.) 
+                  - ( (distr->dim+1) * log(M_PI) + log(det_covar) ) / 2.;
 
   /* mode */
   DISTR.mode = _unur_xmalloc( distr->dim * sizeof(double) );

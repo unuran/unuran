@@ -20,7 +20,7 @@
  *                                                                           *
  *  pdf:       f(x) = exp( -1/2 * (x-mu)^t . Sigma^(-1) . (x-mu) )           * 
  *  domain:    Reals^(dim)                                                   *
- *  constant:  (2 pi)^(dim/2) * sqrt(det(Sigma))                             *
+ *  constant:  1 / ( (2 pi)^(dim/2) * sqrt(det(Sigma)) )                     *
  *                                                                           *
  *  parameters:                                                              *
  *     0:  mean  ... mu      (0-vector)                                      *
@@ -32,7 +32,7 @@
  *                                                                           *
  *  pdf:       f(x) = exp( -1/2 * x^t . x )                                  *
  *  domain:    Reals^(dim)                                                   *
- *  constant:  (2 pi)^(dim/2)                                                *
+ *  constant:  1/(2 pi)^(dim/2)                                              *
  *                                                                           *
  *  parameters:                                                              *
  *     none                                                                  *
@@ -127,7 +127,7 @@ _unur_logpdf_multinormal( const double *x, UNUR_DISTR *distr )
     /* standard form */
     xx=0.;
     for (i=0; i<dim; i++) { xx += x[i]*x[i]; }
-    return (-xx/2. - LOGNORMCONSTANT);  
+    return (-xx/2. + LOGNORMCONSTANT);  
   }
 
   mean = DISTR.mean;
@@ -148,7 +148,7 @@ _unur_logpdf_multinormal( const double *x, UNUR_DISTR *distr )
     xx += (x[i]-mean[i])*cx;
   }
   
-  return (-xx/2. - LOGNORMCONSTANT);
+  return (-xx/2. + LOGNORMCONSTANT);
 
 #undef idx
 } /* end of _unur_logpdf_multinormal() */
@@ -269,7 +269,7 @@ unur_distr_multinormal( int dim, const double *mean, const double *covar )
 
   /* log of normalization constant */
   det_covar = (DISTR.covar == NULL) ? 1. : _unur_matrix_determinant(dim, DISTR.covar);
-  LOGNORMCONSTANT = ( distr->dim * log(2 * M_PI) + log(det_covar) ) / 2.;
+  LOGNORMCONSTANT = - ( distr->dim * log(2 * M_PI) + log(det_covar) ) / 2.;
 
   /* mode */
   DISTR.mode = _unur_xmalloc( distr->dim * sizeof(double) );

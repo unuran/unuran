@@ -130,7 +130,7 @@
 /* changes are made in the library.)                                         */
 
 /* use magic cookies to validate type of pointer */
-#define UNUR_COOKIES  1
+/* #define UNUR_COOKIES  1 */
 
 /*****************************************************************************
  *  Compile time parameters for generators.                                  *
@@ -199,10 +199,10 @@
 
 /* Set type of uniform random number generator.                              */
 #define UNUR_URNG_TYPE UNUR_URNG_FVOID
-/*  #define UNUR_URNG_TYPE UNUR_URNG_PRNG */
-/*  #define UNUR_URNG_TYPE UNUR_URNG_RNGSTREAM */
-/*  #define UNUR_URNG_TYPE UNUR_URNG_GSL */
-/*  #define UNUR_URNG_TYPE UNUR_URNG_GENERIC */
+/* #define UNUR_URNG_TYPE UNUR_URNG_PRNG */
+/* #define UNUR_URNG_TYPE UNUR_URNG_RNGSTREAM */
+/* #define UNUR_URNG_TYPE UNUR_URNG_GSL */
+/* #define UNUR_URNG_TYPE UNUR_URNG_GENERIC */
 
 /*---------------------------------------------------------------------------*/
 #if UNUR_URNG_TYPE == UNUR_URNG_FVOID

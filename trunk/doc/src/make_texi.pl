@@ -3,7 +3,11 @@
 
 use strict;
 
+# set to 0 to disable output of nodes to stderr
 my $VERBOSE = 1;
+
+# set to 0 if no additinal page breaks should be included
+my $PAGEBREAKS = 1;
 
 ############################################################
 # constants
@@ -39,15 +43,11 @@ use FileHandle;
 my %node_TAGs = 
     (
      "=TOP"      => { "format" => \&texi_NODE },
-
      "=NODE"     => { "format" => \&texi_NODE },
-
+     "=NODEX"    => { "format" => \&texi_NODE },
      "=DISTR"    => { "format" => \&texi_NODE },
-
      "=METHOD"   => { "format" => \&texi_NODE },
-
      "=APPENDIX" => { "format" => \&texi_NODE },
-
      );
 
 #...........................................................
@@ -56,25 +56,15 @@ my %TAGs =
     (
      
      "=UP"          => { "scan" => \&scan_UP },
-     
      "=DESCRIPTION" => { "scan" => \&scan_do_nothing },
-     
      "=HOWTOUSE"    => { "scan" => \&scan_do_nothing },
-
      "=ROUTINES"    => { "scan" => \&scan_ROUTINES },
-     
      "=REQUIRED"    => { "scan" => \&scan_chop_blanks },
-
      "=OPTIONAL"    => { "scan" => \&scan_chop_blanks },
-
      "=SPEED"       => { "scan" => \&scan_chop_blanks },
-     
      "=SEEALSO"     => { "scan" => \&scan_do_nothing },
-     
      "=ABSTRACT"    => { "scan" => \&scan_do_nothing },
-     
      "=REF"         => { "scan" => \&scan_REF },
-
      "=PDF"         => { "scan" => \&scan_PDF },
      "=PMF"         => { "scan" => \&scan_PDF },
      "=CONST"       => { "scan" => \&scan_PDF },
@@ -433,6 +423,13 @@ sub texi_node {
     $TEXI .= "\@c ".$IN->{$node}->{"=FILE"}."\n";
     $TEXI .= "\@c\n\n";
 
+    # page break (?)
+    if ($PAGEBREAKS) {
+	if (($IN->{$node}->{"=NODE_TYPE"} eq "=METHOD") or
+	    ($IN->{$node}->{"=NODE_TYPE"} eq "=NODEX")) {
+	    $TEXI .= "\@page\n"; }
+    }
+
     # print node and section
     $TEXI .= "\@node $node\n";
     $TEXI .= "$section  $title\n\n";
@@ -454,7 +451,7 @@ sub texi_node {
 		$TEXI .= "\@item Speed:\n".$IN->{$node}->{"=SPEED"}."\n";
 	    }
 	    if ($IN->{$node}->{"=REF"}) {
-		$TEXI .= "\@item reference:\n".$IN->{$node}->{"=REF"}."\n";
+		$TEXI .= "\@item Reference:\n".$IN->{$node}->{"=REF"}."\n";
 	    }
 	    $TEXI .= "\@end table\n\@sp 1\n\n";
 	}

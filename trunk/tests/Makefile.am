@@ -57,6 +57,7 @@ check_PROGRAMS = \
  t_vempk \
  t_vmt \
  t_stringparser \
+ test_special_matrix \
  $(MATHEMATICA_PROGS)
 
 ## Troubles with dmalloc:

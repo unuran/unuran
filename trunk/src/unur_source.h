@@ -45,11 +45,13 @@
 /*---------------------------------------------------------------------------*/
 /* config file generated be autoconf                                         */
 
+
 #ifdef HAVE_CONFIG_H
 #  include <config.h>
 #else
 #  error "config.h" required
 #endif
+
 
 /*---------------------------------------------------------------------------*/
 /* include standard header files                                             */

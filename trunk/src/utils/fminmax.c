@@ -96,7 +96,7 @@ _unur_function_find_mode( struct UNUR_FUNCT_GENERIC fs,
      /*   interval_max ... right boundary of function definition interval    */
      /*                                                                      */
      /* return:                                                              */
-     /*   x        ... approximate position of mode on success                      */
+     /*   x        ... approximate position of mode on success               */
      /*   INFINITY ... on error                                              */
      /*----------------------------------------------------------------------*/
 {

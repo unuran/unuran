@@ -266,15 +266,6 @@ _unur_tdr_create( struct unur_par *par )
        --> enable derandomized ARS      */
     par->variant |= TDR_VARFLAG_USEDARS;
 
-
-
-
-
-
-
-    par->variant &= ~TDR_VARFLAG_USEDARS;
-
-
   /* return pointer to (almost empty) generator object */
   return(gen);
 

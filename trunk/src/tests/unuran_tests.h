@@ -72,8 +72,8 @@ int unur_test_count_urn( UNUR_GEN *generator, int samplesize );
 /* Chi^2 tests                                                               */
 double unur_test_chi2( UNUR_GEN *generator, int intervals, int samplesize, int classmin, int output );
 
-/* moments                                                                   */
-int unur_test_moments( UNUR_GEN *generator, int n_moments, double *moments, int samplesize );
+/* central moments                                                           */
+int unur_test_moments( UNUR_GEN *generator, double *moments, int n_moments, int samplesize );
 
 /* make scatterplot of generated numbers                                     */
 int unur_make_scatterplot( UNUR_GEN *generator );

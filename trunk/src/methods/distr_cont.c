@@ -1142,6 +1142,8 @@ _unur_distr_cont_find_mode(struct unur_distr *distr )
 /*    printf("x1: %f, fx1: %e\n", x[1], fx[1]); */
 /*    printf("x2: %f, fx2: %e\n", x[2], fx[2]); */
 
+  /** TODO: FLT_MIN must be much larger than DBL_MIN **/
+
   mode = fmaxbr( DISTR.pdf, distr, x[0], x[2], x[1], FLT_MIN );
   if (!(_unur_FP_is_infinity( mode )) ){
     /* mode successfully computed */

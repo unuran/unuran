@@ -58,7 +58,7 @@
 /* a is approximately equal to b */
 #define _unur_FP_approx(a,b) \
  ((a)==(b) || \
- fabs((a)-(b)) <= ((fabs(a)<fabs(b))?fabs(a):fabs(b)) * FLT_EPSILON)
+ fabs((a)-(b)) <= ((fabs(a)<fabs(b))?fabs(a):fabs(b)) * UNUR_SQRT_DBL_EPSILON)
 
 /* a < b */
 #define _unur_FP_less(a,b) \

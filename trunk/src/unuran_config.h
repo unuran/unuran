@@ -139,6 +139,9 @@
 /* epsilon */
 #define UNUR_EPSILON  1e-14    /* should be about 100 * DBL_EPSILON          */
 
+/* square root of machine epsilon */
+#define UNUR_SQRT_DBL_EPSILON  FLT_EPSILON  /* should be about sqrt(DBL_EPS) */
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 

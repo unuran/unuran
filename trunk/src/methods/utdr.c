@@ -885,12 +885,9 @@ _unur_utdr_hat( struct unur_gen *gen )
        delta1 = fabs(GEN.tlx);
        delta = GEN.delta_factor * ((delta1<=delta2) ? delta2 : delta1);
        if (delta > c * 0.01) {
-	 delta = FLT_EPSILON * ((delta1<=delta2) ? delta2 : delta1);
-	 /** Using sqrt(DBL_EPSILON) as delta_factor guarantees that not more than
-	    half of the precision will be lost when computing the slope GEN.al 
-	    TODO: JL: zumindest auf einem pentium ist sqrt(DBL_EPSILON) = FLT_EPSILON.
-	    kann man das nehmen?
-	 */
+	 delta = UNUR_SQRT_DBL_EPSILON * ((delta1<=delta2) ? delta2 : delta1);
+	 /* Using sqrt(DBL_EPSILON) as delta_factor guarantees that not more than
+	    half of the precision will be lost when computing the slope GEN.al */
 	 if (delta > c * 0.01) {
 	   delta = c * 0.01;
 	   /* delta is forced to be c * 0.01 although this can 
@@ -959,10 +956,9 @@ _unur_utdr_hat( struct unur_gen *gen )
 	  delta1 = fabs(GEN.trx);
 	  delta = GEN.delta_factor * ((delta1<=delta2) ? delta2 : delta1);
 	  if (delta > c*0.01) { 
-	    delta = FLT_EPSILON * ((delta1<=delta2) ? delta2 : delta1);
-	    /** Using sqrt(DBL_EPSILON) as delta_factor guarantees that not more than
-		have of the precision will be lost when computing the slope GEN.al 
-		TODO: wie oben **/
+	    delta = UNUR_SQRT_DBL_EPSILON * ((delta1<=delta2) ? delta2 : delta1);
+	    /* Using sqrt(DBL_EPSILON) as delta_factor guarantees that not more than
+	       have of the precision will be lost when computing the slope GEN.al */
 	    if (delta > c*0.01) {
 	      delta=c*0.01;
 	      /* delta is forced to be c*0.01 allthough this can result in numerical

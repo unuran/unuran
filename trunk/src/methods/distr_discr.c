@@ -1053,7 +1053,7 @@ _unur_distr_discr_find_mode(struct unur_distr *distr )
   int x[3], xnew;                 /* mode between x[0] and x[1]             */
   double fx[3], fxnew;            /* ... and the respective function values */
   int xtmp = INT_MAX;
-  double fxtmp = FLT_MAX;
+  double fxtmp = FLT_MAX;    /** TODO: FLT_MAX must be much smaller than DBL_MAX **/
 
   const double r = (3.-sqrt(5.))/2.;       /* sectio aurea                  */
 

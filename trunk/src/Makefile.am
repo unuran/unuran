@@ -34,6 +34,7 @@ noinst_HEADERS = \
 sinclude .dep-unuran_h
 unuran.h: unuran.h.in 
 	$(top_srcdir)/scripts/merge_h.pl $(top_srcdir)/src/unuran.h.in > unuran.h
+	sed -e "s#^unuran\.h\:#stringparser\.c\:#" .dep-unuran_h | sed -e "s#\./#\.\./#g" > ./parser/.dep-stringparser_c
 
 # clean backup files
 CLEANFILES = *~

@@ -31,6 +31,8 @@ EXTRA_DIST = \
 
 parser_srcdir = $(top_srcdir)/src/parser
 
+# make stringparser.c (process file stringparser.c.in)
+sinclude .dep-stringparser_c
 stringparser.c: make_stringparser.pl stringparser.c.in
 	$(parser_srcdir)/make_stringparser.pl < $(parser_srcdir)/stringparser.c.in > $(parser_srcdir)/stringparser.c
 
@@ -42,4 +44,5 @@ CLEANFILES = *~
 MAINTAINERCLEANFILES = \
  stringparser.c \
  stringparser_doc.dh \
+ .dep-stringparser_c \
  Makefile.in

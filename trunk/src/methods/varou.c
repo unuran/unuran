@@ -421,7 +421,7 @@ unur_varou_chg_verify( struct unur_gen *gen, int verify )
   _unur_check_gen_object( gen, VAROU, UNUR_ERR_GEN_INVALID );
 
   if (verify) {
-    /* turn verify bounding rectangle on */
+    /* turn verify on */
     gen->variant |= VAROU_VARFLAG_VERIFY;
     SAMPLE = _unur_varou_sample_check;
   }
@@ -680,21 +680,24 @@ _unur_varou_sample_cvec( struct unur_gen *gen, double *vec )
   while(1) {
     /* vol is a uniformly distributed variable < sum of all cone volumes */
     vol = GEN.cone_list[GEN.n_cone-1]->sum_volume * _unur_call_urng(gen->urng);
- 
+/*
+    printf("sum_vol=%12.7f vol=%12.7f vol/sum_vol=%12.7f ", GEN.cone_list[GEN.n_cone-1]->sum_volume, 
+                                             vol, vol/GEN.cone_list[GEN.n_cone-1]->sum_volume);
+*/  
     /* obtain cone index of cone in which we should sample */
     for (ic=0; ic<GEN.n_cone; ic++) {  
-      if ( GEN.cone_list[ic]->sum_volume > vol ) { 
+      if ( GEN.cone_list[ic]->sum_volume >= vol ) { 
         ic_sample=ic; 
-	break; 
+        break; 
       }
     }
-    
+  
     /* sampling in cone #ic_sample */
     _unur_varou_sample_cone(gen, GEN.cone_list[ic_sample], UV);
 
     /* obtaining the (u/v)-coordinates */ 
     for (d=0; d<dim; d++) {  
-      vec[d] = UV[d]/UV[dim]+GEN.center[d] ;
+      vec[d] = UV[d]/UV[dim] + GEN.center[d] ;
     }
   
     /* check if sample point is inside the potato volume */
@@ -739,7 +742,7 @@ _unur_varou_sample_check( struct unur_gen *gen, double *vec )
   
     /* obtain cone index of cone in which we should sample */
     for (ic=0; ic<GEN.n_cone; ic++) {  
-      if ( GEN.cone_list[ic]->sum_volume > vol ) {
+      if ( GEN.cone_list[ic]->sum_volume >= vol ) {
         ic_sample=ic;
 	break;
       }
@@ -748,11 +751,13 @@ _unur_varou_sample_check( struct unur_gen *gen, double *vec )
     /* sampling in cone #ic_sample */
     _unur_varou_sample_cone(gen, GEN.cone_list[ic_sample], UV);
 
-    /* check if UV is inside the potato volume */
-    if ( pow(UV[dim], 1.+dim) <= _unur_varou_f(gen, UV) ) {
-       for (d=0; d<dim; d++) {  
-         vec[d] = UV[d]/UV[dim]+GEN.center[d] ;
-       }
+    /* obtaining the (u/v)-coordinates */ 
+    for (d=0; d<dim; d++) {  
+      vec[d] = UV[d]/UV[dim] + GEN.center[d] ;
+    }
+
+    /* check if sample point is inside the potato volume */
+    if ( pow(UV[dim], 1.+dim) <= PDF(vec) ) {
 
        /* check hat */
        norm_factor = _unur_vector_scalar_product( dim+1, 
@@ -762,9 +767,10 @@ _unur_varou_sample_check( struct unur_gen *gen, double *vec )
                             GEN.cone_list[ic_sample]->normal, 
                             UV  ) ; 
 	   
-       if (norm_factor<1) 
-          _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"PDF(x) > hat(x)");
-	   
+       if (norm_factor<1) { 
+         _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"PDF(x) > hat(x)");
+       }
+       
        free(UV);
        return;
       
@@ -943,7 +949,7 @@ _unur_varou_cones_init( struct unur_gen *gen )
     GEN.cone_list[ic]->index[0]=0; /* initial cones contain the north-pole */
     GEN.cone_list[ic]->length[0]=GEN.vmax; 
 
-    GEN.cone_list[ic]->unit_volume=1.; /* 1/dim! is calculated below */
+    GEN.cone_list[ic]->unit_volume=1.; /* 1/(dim+1)! is calculated below */
     for (i=0; i<dim; i++) {
       /* obtain vertex indices of the ic'th cone */
       GEN.cone_list[ic]->index[i+1]=((GEN.n_cone-ic-1)>>i & 1)?(1+2*i):(2+2*i); 
@@ -1015,6 +1021,39 @@ _unur_varou_minimize_volume(struct unur_gen *gen, struct unur_varou_cone *c)
 
   return;
 } /* end of _unur_varou_minimize_volume() */
+
+/*---------------------------------------------------------------------------*/
+
+double 
+_unur_varou_calculate_unit_volume(struct unur_gen *gen, struct unur_varou_cone *c )
+     /* calculation of the unit volume using determinant calculation */
+     /* currently this is only implemented for dim=2 */
+
+{
+  int dim;
+  double x11,x12,x13, x21,x22,x23, x31,x32,x33;
+  double det;
+  
+  dim = GEN.dim;
+  
+  x11=GEN.vertex_list[ c->index[0] ][0];
+  x12=GEN.vertex_list[ c->index[0] ][1];
+  x13=GEN.vertex_list[ c->index[0] ][2];
+
+  x21=GEN.vertex_list[ c->index[1] ][0];
+  x22=GEN.vertex_list[ c->index[1] ][1];
+  x23=GEN.vertex_list[ c->index[1] ][2];
+
+  x31=GEN.vertex_list[ c->index[2] ][0];
+  x32=GEN.vertex_list[ c->index[2] ][1];
+  x33=GEN.vertex_list[ c->index[2] ][2];
+
+  det = fabs( x11*x22*x33 + x12*x23*x31 + x13*x21*x32
+        - x31*x22*x13 - x32*x23*x11 - x33*x21*x12 ) / 6.;
+
+  return det;
+  
+}
 
 /*---------------------------------------------------------------------------*/
 
@@ -1136,6 +1175,9 @@ printf("%8ld; %8ld; %e; %e; %e\n",
         /* adjust first cone */
         c1->index[iv1] = nv;      
         c1->unit_volume /= 2.*norm; 
+/*
+printf("vol_err=%g \n", c1->unit_volume / _unur_varou_calculate_unit_volume(gen,c1) -1);
+*/
 
         /* adjust second cone */
         c2->index[iv2] = nv;      
@@ -1366,7 +1408,7 @@ _unur_varou_sample_cone( struct unur_gen *gen, struct unur_varou_cone *c, double
   
   /* calculating exponential variates */
   E_sum = 0; 
-  for (i=0; i<=dim+1; i++) {
+  for (i=0; i<dim+2; i++) {
     /* sample from U(0,1) */
     while ( (U = _unur_call_urng(gen->urng)) == 0.);
     /* sample from exponential distribution */
@@ -1375,7 +1417,7 @@ _unur_varou_sample_cone( struct unur_gen *gen, struct unur_varou_cone *c, double
   }
   
   /* calculating uniform spacing */
-  for (i=0; i<=dim+1; i++) {
+  for (i=0; i<dim+2; i++) {
     S[i]=E[i]/E_sum;
   }
 
@@ -1387,7 +1429,7 @@ _unur_varou_sample_cone( struct unur_gen *gen, struct unur_varou_cone *c, double
       /* but, since all cones have the origin (0,0,...0) in common,  */
       /* a multiplication with its coordinates is not necessary      */
       /* and our sum run over the remaining (dim+1) verteces         */
-      UV[j] += S[i] * GEN.vertex_list[c->index[i]][j] ;
+      UV[j] += S[i] * GEN.vertex_list[c->index[i]][j] * c->length[i];
     }
   }
 
@@ -1824,7 +1866,7 @@ _unur_varou_debug_init( const struct unur_gen *gen )
 
   /* cone volumes */
   for (ic=0; ic<GEN.n_cone; ic++) {
-    fprintf(log,"%s:\t%6ld : \tvolume = %g  \tsum = %g\n", gen->genid, ic, 
+    fprintf(log,"%s:\t%6ld : volume = %g  \tsum = %g\n", gen->genid, ic, 
             GEN.cone_list[ic]->volume, GEN.cone_list[ic]->sum_volume);
   }
   fprintf(log,"%s:\n",gen->genid);
@@ -1833,6 +1875,26 @@ _unur_varou_debug_init( const struct unur_gen *gen )
   for (ic=0; ic<GEN.n_cone; ic++) {
     fprintf(log,"%s:\t%6ld : unit_volume = %g\n", gen->genid, ic, 
                                                   GEN.cone_list[ic]->unit_volume);
+  }
+  fprintf(log,"%s:\n",gen->genid);
+
+  /* touching point of surface and tangential plane */
+  for (ic=0; ic<GEN.n_cone; ic++) {
+    fprintf(log,"%s:\t%6ld : spoint = {", gen->genid, ic);
+    for (d=0; d<dim; d++) {
+       fprintf(log,"%g, ", GEN.cone_list[ic]->spoint[d]);
+    }   
+    fprintf(log,"%g}\n", GEN.cone_list[ic]->spoint[dim]);
+  }
+  fprintf(log,"%s:\n",gen->genid);
+
+  /* normal vector to tangential plane */
+  for (ic=0; ic<GEN.n_cone; ic++) {
+    fprintf(log,"%s:\t%6ld : normal = {", gen->genid, ic);
+    for (d=0; d<dim; d++) {
+       fprintf(log,"%g, ", GEN.cone_list[ic]->normal[d]);
+    }   
+    fprintf(log,"%g}\n", GEN.cone_list[ic]->normal[dim]);
   }
   fprintf(log,"%s:\n",gen->genid);
 

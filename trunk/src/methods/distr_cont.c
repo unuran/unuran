@@ -148,6 +148,12 @@ unur_distr_cont_set_pdf( struct unur_distr *distr, UNUR_FUNCT_CONT *pdf )
   _unur_check_NULL( distr->name,pdf,0 );
   _unur_check_distr_object( distr, CONT, 0 );
 
+  /* we do not allow overwriting a pdf */
+  if (DISTR.pdf != NULL) {
+    _unur_warning(distr->name,UNUR_ERR_DISTR_SET,"Overwriting of pdf not allowed");
+    return 0;
+  }
+
   /* for derived distributions (e.g. order statistics) not possible */
   if (distr->base) return 0;
 
@@ -181,6 +187,12 @@ unur_distr_cont_set_dpdf( struct unur_distr *distr, UNUR_FUNCT_CONT *dpdf )
   _unur_check_NULL( distr->name,dpdf,0 );
   _unur_check_distr_object( distr, CONT, 0 );
   
+  /* we do not allow overwriting a dpdf */
+  if (DISTR.dpdf != NULL) {
+    _unur_warning(distr->name,UNUR_ERR_DISTR_SET,"Overwriting of dpdf not allowed");
+    return 0;
+  }
+
   /* for derived distributions (e.g. order statistics) not possible */
   if (distr->base) return 0;
 
@@ -213,6 +225,12 @@ unur_distr_cont_set_cdf( struct unur_distr *distr, UNUR_FUNCT_CONT *cdf )
   _unur_check_NULL( distr->name,cdf,0 );
   _unur_check_distr_object( distr, CONT, 0 );
   
+  /* we do not allow overwriting a cdf */
+  if (DISTR.cdf != NULL) {
+    _unur_warning(distr->name,UNUR_ERR_DISTR_SET,"Overwriting of cdf not allowed");
+    return 0;
+  }
+
   /* for derived distributions (e.g. order statistics) not possible */
   if (distr->base) return 0;
 

@@ -145,6 +145,12 @@ unur_distr_discr_set_pmf( struct unur_distr *distr, UNUR_FUNCT_DISCR *pmf )
   _unur_check_NULL( distr->name,pmf,0 );
   _unur_check_distr_object( distr, DISCR, 0 );
 
+  /* we do not allow overwriting a pdf */
+  if (DISTR.pmf != NULL) {
+    _unur_warning(distr->name,UNUR_ERR_DISTR_SET,"Overwriting of pmf not allowed");
+    return 0;
+  }
+
   /* changelog */
   distr->set &= ~UNUR_DISTR_SET_MASK_DERIVED;
   /* derived parameters like mode, area, etc. might be wrong now! */
@@ -175,6 +181,12 @@ unur_distr_discr_set_cdf( struct unur_distr *distr, UNUR_FUNCT_DISCR *cdf )
   _unur_check_NULL( distr->name,cdf,0 );
   _unur_check_distr_object( distr, DISCR, 0 );
   
+  /* we do not allow overwriting a cdf */
+  if (DISTR.cdf != NULL) {
+    _unur_warning(distr->name,UNUR_ERR_DISTR_SET,"Overwriting of cdf not allowed");
+    return 0;
+  }
+
   /* changelog */
   distr->set &= ~UNUR_DISTR_SET_MASK_DERIVED;
   /* derived parameters like mode, area, etc. might be wrong now! */

@@ -43,7 +43,7 @@
   distributions ((=>) UNURAN library of standard distributions).
   It is then possible to change this distribution object by various
   set calls. Moreover it is possible to build a distribution object
-  entirely by yourself. For this purpose unur_distr_new() returna an
+  entirely by yourself. For this purpose unur_distr_new() returns an
   empty object of a given type (eg. univariate contiuous) which can be
   filled with the appropriate set calls.
 
@@ -51,7 +51,8 @@
   p.d.f., a list of (shape, scale, location) parameters for the
   distribution, and the domain of (truncated) distributions.
   And there exist parameters that are/can be derived from these,
-  eg. the mode of the distribution or the normalization constant.
+  eg. the mode of the distribution or the area below the given p.d.f.
+  (which need not be normalized for may methods).
   UNURAN keeps track of parameters which are known. Thus if one of the
   essential parameters is changed all derived parameters are marked as
   unknown and must be set again if these are required for a the
@@ -62,13 +63,10 @@
   parameters are required for all generator methods).
 
   All the following calls only handle distribution object. Since every
-  generator object has its own copy of a distribution object, there is
-  no need for calls that change parameters of such distributions. So
-  it is there exist such calls on a per method basis. Each if the
-  domain of the distribution of a generator object (eg. of method
-  NINV) should be changed then use (in this example)
-  unur_ninv_chg_domain(). NEVER extract the distribution object out of
-  the generator object and run unur_distr_cont_set_domain() instead!
+  generator object has its own copy of a distribution object, there are 
+  calls for a chosen method that change this copy of distribution object.
+  NEVER extract the distribution object out of the generator object and 
+  run one of the below set calls on it.
   (How should the poor generator object know what you have done?)
 */
 
@@ -171,12 +169,22 @@ int unur_distr_cont_set_cdf( UNUR_DISTR *distribution, UNUR_FUNCT_CONT *cdf );
    double funct(double x, UNUR_DISTR *distr).
 
    It is not necessary that the given p.d.f. is normalized, i.e. the
-   integral need not be 1. Nevertheless it can be provided by a 
+   integral need not be 1 (but see below).
+   Nevertheless the area below the given p.d.f. can be provided by a 
    unur_distr_cont_set_pdfarea() call.
    The given derivative must be the derivative of the given pdf of
    course.
    On the other hand the given c.d.f. must not be a multiple of the
    real c.d.f., i.e. lim_{x->infinity} cdf(x) = 1.
+
+   It is important to note that all these functions must return a
+   result for all floats @var{x}. Eg., if the domain of a given
+   p.d.f. is the interval [-1,1], than the given function must return
+   @code{0.0} for all points outside this interval.
+
+   It is not possible to change such a function. Once the p.d.f. or
+   c.d.f. is set it cannot be overwritten. A new distribution object
+   has to be used instead.
 */
 
 /*
@@ -296,6 +304,11 @@ int unur_distr_cont_set_pdfarea( UNUR_DISTR *distribution, double area );
    Set the area below the p.d.f. If @code{area} is non-positive, no
    area is set and @code{unur_errno} is set to @*
    @code{UNUR_ERR_DISTR_SET}. 
+   
+   For a distribution object created by the 
+   (=>) UNURAN library of standard distributions you always should use
+   the unur_distr_cont_upd_pdfarea(). Otherwise there might be
+   ambiguous side-effects.
 */
 
 int unur_distr_cont_upd_pdfarea( UNUR_DISTR *distribution );
@@ -421,8 +434,16 @@ int unur_distr_discr_set_cdf( UNUR_DISTR *distribution, UNUR_FUNCT_DISCR *cdf );
    cumulative distribution function (cdf) of the distribution.
    The type of each of these functions must be of type
    double funct(int k, UNUR_DISTR *distr).
-   (If no parameters are used for the function use the NULL pointer
-   for the second argument.)
+
+   It is important to note that all these functions must return a
+   result for all integers @var{k}. Eg., if the domain of a given
+   p.m.f. is the interval @{1,2,3,...,100@}, than the given function
+   must return @code{0.0} for all points outside this interval.
+
+   It is not possible to change such a function. Once the p.m.f. or
+   c.d.f. is set it cannot be overwritten. A new distribution object
+   has to be used instead.
+
 */
 
 UNUR_FUNCT_DISCR *unur_distr_discr_get_pmf( UNUR_DISTR *distribution );
@@ -483,6 +504,11 @@ int unur_distr_discr_set_pmfarea(UNUR_DISTR *distribution, double area);
    Set the area below the p.m.f. If @code{area} is non-positive, no
    area is set and @code{unur_errno} is set to
    @code{UNUR_ERR_DISTR_SET}. 
+
+   For a distribution object created by the 
+   (=>) UNURAN library of standard distributions you always should use
+   the unur_distr_discr_upd_pmfarea(). Otherwise there might be
+   ambiguous side-effects.
 */
 
 int unur_distr_discr_upd_pmfarea( UNUR_DISTR *distribution);

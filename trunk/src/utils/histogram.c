@@ -56,8 +56,9 @@ _unur_histogram ( double *v , int length, int number_of_bins, const char *info, 
   int i,j;
   
   double vmin, vmax; /* minimum and maximum of the data-vactor v */
-  long *hist; /* histogram data */
-  long histmax; /* maximum entry in histogram */
+  long *hist;        /* histogram data */
+  long histmax;      /* maximum entry in histogram */
+  int binmax;        /* in which bin do we have the (first) maximum ? */
   int scale_factor = 52; /* character-length of histogram */
   
   /* validate input values */
@@ -99,7 +100,6 @@ _unur_histogram ( double *v , int length, int number_of_bins, const char *info, 
   }
 
   /* calculate hist_max */
-  int binmax; /* in which bin do we have the (first) maximum ? */
   histmax=0;
   for (j=0; j<=number_of_bins; j++) {
     if (histmax<hist[j]) {

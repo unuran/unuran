@@ -438,6 +438,10 @@ _unur_dgt_create( struct unur_par *par )
   DISTR.prob = _unur_malloc( DISTR.n_prob * sizeof(double) );
   memcpy( DISTR.prob, par->distr->data.discr.prob, DISTR.n_prob * sizeof(double) );
 
+  /* no domain given --> left boundary is 0 */
+  if (!(gen->distr.set & UNUR_DISTR_SET_DOMAIN))
+      DISTR.domain[0] = 0;
+
   /* routines for sampling and destroying generator */
   SAMPLE = _unur_dgt_sample;
   gen->destroy = _unur_dgt_free;

@@ -44,6 +44,10 @@
    N. The algorithmus is based on an ingeneous method by A.J. Walker
    and requires a table of size (at least) N and needs only one
    comparison for each generated random variate.
+
+   By default the probability vector is indexed starting at
+   @code{0}. However this can be changed in the distribution object by
+   a unur_distr_ciscr_set_domain() call.
 */
 
 /*---------------------------------------------------------------------------*/

@@ -35,19 +35,19 @@
 
 /* methods                                                                   */
 #define T_DISTR
-/*  #define T_CORDER */
-/*  #define T_TIMING */
+#define T_CORDER
+#define T_TIMING
 
-/*  #define T_AROU */
-/*  #define T_CSTD */
-/*  #define T_DAU */
-/*  #define T_DGT */
-/*  #define T_SROU */
-/*  #define T_SSR */
-/*  #define T_TABL */
-/*  #define T_TDR */
-/*  #define T_UNIF */
-/*  #define T_UTDR */
+#define T_AROU
+#define T_CSTD
+#define T_DAU
+#define T_DGT
+#define T_SROU
+#define T_SSR
+#define T_TABL
+#define T_TDR
+#define T_UNIF
+#define T_UTDR
 
 /*---------------------------------------------------------------------------*/
 /* global variables                                                          */

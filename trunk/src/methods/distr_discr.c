@@ -127,7 +127,7 @@ unur_distr_discr_new( void )
 				      (initialized to avoid accidently floating
 				      point exception                        */
 
-  DISTR.trunc[0] = DISTR.domain[0] = 0;         /* left boundary of domain   */
+  DISTR.trunc[0] = DISTR.domain[0] = INT_MIN;   /* left boundary of domain   */
   DISTR.trunc[1] = DISTR.domain[1] = INT_MAX;   /* right boundary of domain  */
 
   /* DISTR.mode      = 0.;            location of mode                       */
@@ -494,7 +494,12 @@ unur_distr_discr_set_domain( struct unur_distr *distr, int left, int right )
     _unur_error(NULL,UNUR_ERR_DISTR_SET,"domain, left >= right");
     return 0;
   }
+  if (left < DISTR.domain[0] || right > DISTR.domain[1]) {
+    _unur_error(NULL,UNUR_ERR_DISTR_SET,"domain exceeds old domain, not allowed");
+    return 0;
+  }
 
+  /* store data */
   DISTR.trunc[0] = DISTR.domain[0] = left;
   DISTR.trunc[1] = DISTR.domain[1] = right;
 
@@ -529,11 +534,11 @@ unur_distr_discr_get_domain( struct unur_distr *distr, int *left, int *right )
      /*                                                                      */
      /* comment:                                                             */
      /*   INT_MIN and INT_MAX are interpreted as (minus) infinity            */
-     /*   if no boundaries have been set [0,INT_MAX] is returned.            */
+     /*   if no boundaries have been set [INT_MIN, INT_MAX] is returned.     */
      /*----------------------------------------------------------------------*/
 {
   /* in case of error the boundaries are set to +/- INFINITY */
-  *left = 0;
+  *left = INT_MIN;
   *right = INT_MAX;
 
   /* check arguments */

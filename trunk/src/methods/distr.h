@@ -1008,14 +1008,15 @@ int unur_distr_discr_set_domain( UNUR_DISTR *distribution, int left, int right )
    left + size of PV - 1).
    Notice that @code{INT_MAX} and @code{INT_MIN} are interpreted as
    (minus) infinity.
-   Default is [0,INT_MAX].
+   Default is [INT_MIN, INT_MAX] when a PMF is used for generation,
+   and [0, size of PV - 1] when a probability vector is used.
 */
 
 int unur_distr_discr_get_domain( UNUR_DISTR *distribution, int *left, int *right );
 /* 
    Get the left and right borders of the domain of the
    distribution. If the domain is not set explicitly 
-   the interval [0,INT_MAX] is assumed and returned.
+   the interval [INT_MIN, INT_MAX] is assumed and returned.
    There is no error reported in this case.
 */
 

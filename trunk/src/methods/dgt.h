@@ -69,6 +69,10 @@
    Variant 2 is faster but more sensitive to roundoff errors when the
    guide table is large. By default variant 2 is used for short
    probability vectors (N<1000) and variant 1 otherwise.
+
+   By default the probability vector is indexed starting at
+   @code{0}. However this can be changed in the distribution object by
+   a unur_distr_ciscr_set_domain() call.
 */
 
 /*---------------------------------------------------------------------------*/

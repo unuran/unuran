@@ -17,6 +17,11 @@
 #include <unuran.h>
 #include <unuran_tests.h>
 
+/* ------------------------------------------------------------------------- */
+
+/* Program name                                                              */
+static char *progname;
+
 /*---------------------------------------------------------------------------*/
 
 extern char *_unur_parser_prepare_string( const char *str );
@@ -49,24 +54,41 @@ double *compute_timings ( struct unur_slist *distr_str_list, struct unur_slist *
 /* print timings table */
 int print_timings ( double *timings,
 		    struct unur_slist *distr_str_list, struct unur_slist *meth_str_list,
-		    int samplesize, int rowentry ); 
+		    int samplesize, int rowentry );
 
 #define ROW_DISTRIBUTION   1  /* print distributions on row, methods in columns */
 #define ROW_METHOD         2  /* print distributions on columns, methods in rows*/
 
+/* print usage */
+void print_usage(void);
+
 /*---------------------------------------------------------------------------*/
 
-int main()
+int main (int argc, char *argv[])
 {
-  const int samplesize = 10000;
-  const double duration = 0.1;
+  /* defaults */
+  int samplesize = 1000;    /* size of samples */
+  double duration = 0.1;    /* duration in seconds for timing generation of a sample */
 
   struct unur_slist *distr_str_list; /* list of strings for distributions */
   struct unur_slist *meth_str_list;  /* list of strings for methods */
+  char *conffile;                    /* name of configuration file */
 
   double *time_0;
 
-  char fileconf[] = "t.conf";
+
+  /* read parameters */
+  progname = argv[0];
+  if (argc<2) {
+    print_usage();
+    exit (EXIT_FAILURE);
+  }
+  /* name of configuration file */
+  conffile = argv[1];
+  
+  /* sample size */
+  if (argc >= 3)
+    samplesize = atoi(argv[2]);
 
   /* switch off all debugging and logging information*/
   unur_set_default_debug(0u);
@@ -76,7 +98,7 @@ int main()
   meth_str_list  = _unur_slist_new();
 
   /* read config file */
-  read_config_file(fileconf, distr_str_list, meth_str_list);
+  read_config_file(conffile, distr_str_list, meth_str_list);
 
   /* print legend */
   print_legend(distr_str_list,meth_str_list);
@@ -264,14 +286,14 @@ print_label ( int n, char ltype )
 {
   switch(ltype) {
   case 'a':
-    printf("[%c]", 'a'+n);
+    printf(" [%c]", 'a'+n);
     break;
   case 'A':
-    printf("[%c]", 'A'+n);
+    printf(" [%c]", 'A'+n);
     break;
   case '1':
   default:
-    printf("[%d]", 1+n);
+    printf("[%02d]", 1+n);
     break;
   }
 
@@ -345,7 +367,7 @@ print_timings ( double *timings,
   int n_row, n_col;             /* number of elements in rows and columns */
   char rltype, cltype;          /* label types for rows and columns */
   int row, col;                 /* indices for row and columns */
-  int i_time;                   /* position in timing table */
+  int idx_time;                 /* position in timing table */
 
   /* get number of distributions and methods */
   n_distr = _unur_slist_length(distr_str_list);
@@ -370,12 +392,15 @@ print_timings ( double *timings,
     break;
   }
 
-  /* print table header */
-  printf("Timings relative to generation of expontential random variate\n");
+  printf("Average generation times (including setup) for sample of size %d.\n",samplesize);
+  printf("Timings are relative to generation of expontential random variate\n");
   printf("using inversion within UNU.RAN environment\n");
   printf("(timing unit = %g microseconds)\n\n",get_timing_unit());
+
+  /* print table header */
+  printf("    ");
   for (row=0; row<n_row; row++) {
-    printf("\t");
+    printf("      ");
     print_label(row,rltype);
   }
   printf("\n");
@@ -387,15 +412,20 @@ print_timings ( double *timings,
       switch (rowentry) {
       case ROW_DISTRIBUTION:   
 	/* print distributions on row, methods in columns */
-	i_time = row*n_col+col;
+	idx_time = row*n_col+col;
 	break;
       case ROW_METHOD:
       default:
 	/* print distributions on columns, methods in rows*/
-	i_time = col*n_row+row;
+	idx_time = col*n_row+row;
 	break;
       }
-      printf("\t%g",timings[i_time]);
+      if (timings[idx_time] > 0.) {
+	printf("%10.4g",timings[idx_time]);
+      }
+      else {
+	printf("%10s","--");
+      }
     }
     printf("\n");
   }
@@ -404,5 +434,22 @@ print_timings ( double *timings,
   /* o.k. */
   return 1;
 } /* end of print_timings() */
+
+/*---------------------------------------------------------------------------*/
+
+void
+print_usage(void)
+     /* print usage */
+{
+  fprintf(stderr,"\n%s conffile [samplesize]\n",progname);
+  fprintf(stderr,"\n");
+  fprintf(stderr,"Compute average generation time (including setup) for a sampling.\n");
+  fprintf(stderr,"\n");
+  fprintf(stderr,"Arguments:\n");
+  fprintf(stderr,"\tconffile   ... file with list of distributions and methods\n");
+  fprintf(stderr,"\tsamplesize ... size of sample\n");
+  fprintf(stderr,"\n");
+
+} /* end of print_usage() */
 
 /*---------------------------------------------------------------------------*/

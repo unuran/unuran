@@ -81,7 +81,8 @@ AC_OUTPUT( \
 	codegen/Makefile \
 	codegen/tests/Makefile \
         tests/Makefile \
-	examples/Makefile )
+	examples/Makefile \
+	experiments/Makefile )
 
 dnl -----------------------------------------
 

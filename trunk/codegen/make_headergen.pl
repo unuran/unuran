@@ -446,7 +446,7 @@ const static char synopsis_FORTRAN[] = "*\\n* %s\\n*\\n";
 /* JAVA version */
 const static char *hrule_JAVA = hrule_C;
 const static char *sformat_JAVA = sformat_C;
-const static char synopsis_JAVA[] = "\\n// FEHLT\\n\\n";
+const static char synopsis_JAVA[] = "//\\n// double %s.sample ()\\n//\\n";
 
 /* switch */
 const static char *hrule;

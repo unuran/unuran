@@ -311,7 +311,7 @@ _unur_acg_JAVA_tdr_class_IV( struct unur_gen *gen, FILE *out )
 /*---------------------------------------------------------------------------*/
 
 int
-_unur_acg_JAVA_begin_class( struct unur_gen *gen, FILE *out )
+_unur_acg_JAVA_begin_class( struct unur_gen *gen, FILE *out, const char *class_name )
      /*----------------------------------------------------------------------*/
      /* begin of class containing PDF (as member fuction) and the tdr method */
      /*                                                                      */
@@ -329,7 +329,7 @@ _unur_acg_JAVA_begin_class( struct unur_gen *gen, FILE *out )
 {
 
   _unur_acg_JAVA_print_sectionheader(out, 1, "Class for generator.");
-  fprintf(out,"public class Generator implements Math {\n");
+  fprintf(out,"public class %s implements Math {\n", class_name);
 
   /* o.k. */
   return 1;

@@ -61,28 +61,28 @@ unur_acg_JAVA( struct unur_gen *gen, FILE *out, const char *distr_name )
      /*   return 0                                                           */
      /*----------------------------------------------------------------------*/
 {
-  char *pdf_name, *rand_name;     /* names for function */
+  char pdf_name[] = "pdf";        /* name for pdf function */
+  char rand_name[] = "sample";    /* name for sampling routine */
+  char *class_name;               /* name for generator class */
   int return_code;                /* exit status of routine */
 
   /* check arguments */
   _unur_check_NULL("unur_acg", gen, 0 );
 
-  /* make name of PDF function and sampling routine */
+  /* make name for generator class */
   if (distr_name == NULL) 
     distr_name = unur_distr_get_name( &(gen->distr) );
 
-  pdf_name = _unur_malloc((5+strlen(distr_name)) * sizeof(char));
-  sprintf(pdf_name,"pdf_%s",distr_name);
-
-  rand_name = _unur_malloc((6+strlen(distr_name)) * sizeof(char));
-  sprintf(rand_name,"rand_%s",distr_name);
+  class_name = _unur_malloc((10+strlen(distr_name)) * sizeof(char));
+  sprintf(class_name,"Generator_%s",distr_name);
 
   /* make code */
   switch (gen->method) {
   case UNUR_METH_TDR:
     return_code =
-      _unur_acg_JAVA_header( &(gen->distr), out, rand_name ) &&
-      _unur_acg_JAVA_begin_class ( gen, out ) &&
+      _unur_acg_JAVA_header( &(gen->distr), out, class_name ) &&
+      _unur_acg_JAVA_begin_class ( gen, out, class_name ) &&
+      _unur_acg_JAVA_urng( out ) &&
       _unur_acg_JAVA_tdr_class_IV( gen, out ) &&
       _unur_acg_JAVA_PDF ( &(gen->distr), out, pdf_name ) &&
       _unur_acg_JAVA_tdr_ps( gen, out, rand_name, pdf_name ) &&
@@ -94,8 +94,7 @@ unur_acg_JAVA( struct unur_gen *gen, FILE *out, const char *distr_name )
   }
 
   /* clear memory */
-  free(pdf_name);
-  free(rand_name);
+  free(class_name);
 
   /* make error message in source file if generation failed */
   if (return_code == 0)
@@ -107,6 +106,46 @@ unur_acg_JAVA( struct unur_gen *gen, FILE *out, const char *distr_name )
   return return_code;
 
 } /* end of unur_acg_JAVA() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+_unur_acg_JAVA_urng( FILE *out )
+     /*----------------------------------------------------------------------*/
+     /* uniform random number generator                                      */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   out       ... output stream                                        */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... on success                                                   */
+     /*   0 ... on error                                                     */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return 0                                                           */
+     /*----------------------------------------------------------------------*/
+{
+  _unur_acg_C_print_sectionheader
+    ( out, 1, 
+      "Uniform (pseudo-)random number generator"
+      );
+      
+  fprintf(out,"\t// Define the uniform (pseudo-)random number generator\n");
+  fprintf(out,"\t// of your choice here by operator overload.\n");
+  fprintf(out,"\t//\n");
+  fprintf(out,"\t// Otherwise the built-in generator is used which might\n");
+  fprintf(out,"\t// NOT be state-of-the-art. A good choice is e.g. the\n");
+  fprintf(out,"\t// Mersenne Twister by Makoto Matsumoto and Takuji Nishimura,\n");
+  fprintf(out,"\t// see http://www.math.keio.ac.jp/~matumoto/emt.html.\n");
+  fprintf(out,"\t//\n");
+  fprintf(out,"\t// static double Random ()\n");
+  fprintf(out,"\t// {\n");
+  fprintf(out,"\t//\t...\n");
+  fprintf(out,"\t//\treturn U;\n");
+  fprintf(out,"\t// }\n");
+
+  return 1;
+} /* end of _unur_acg_JAVA_urng() */
 
 /*---------------------------------------------------------------------------*/
 

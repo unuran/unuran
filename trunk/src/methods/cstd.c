@@ -294,7 +294,6 @@ unur_cstd_chg_pdfparams( struct unur_gen *gen, double *params, int n_params )
      /*            errors (in opposition to the unur_<distr>_new() call).    */
      /*                                                                      */
      /*----------------------------------------------------------------------*/
-
 {
   /* check arguments */
   CHECK_NULL(gen,0);

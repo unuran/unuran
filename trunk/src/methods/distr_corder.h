@@ -122,7 +122,7 @@ int unur_distr_corder_get_rank( UNUR_DISTR *distribution, int *n, int *k );
 /* 
    Get the respective pointer to the PDF, the derivative of the 
    PDF and the CDF of the distribution, respectively. The pointer is of type
-   double funct(double x, UNUR_DISTR *distr).
+   @code{double funct(double x, UNUR_DISTR *distr)}.
    If the corresponding function is not available for the distribution,
    the NULL pointer is returned.
    See also unur_distr_cont_get_pdf().
@@ -139,8 +139,8 @@ int unur_distr_corder_get_rank( UNUR_DISTR *distribution, int *n, int *k );
 /*  double unur_distr_corder_eval_cdf( double x, UNUR_DISTR *distribution ); */
 /* 
    Evaluate the PDF, derivative of the PDF. and the CDF,
-   respectively, at x.
-   Notice that @code{distribution} must not be the NULL pointer.
+   respectively, at @var{x}.
+   Notice that @var{distribution} must not be the NULL pointer.
    If the corresponding function is not available for the distribution,
    @code{UNUR_INFINITY} is returned and @code{unur_errno} is set to
    @code{UNUR_ERR_DISTR_DATA}.
@@ -163,7 +163,7 @@ int unur_distr_corder_get_rank( UNUR_DISTR *distribution, int *n, int *k );
 /*  int unur_distr_corder_get_pdfparams( UNUR_DISTR *distribution, double **params ); */
 /* 
    Get number of parameters of the PDF of the underlying distribution
-   and set pointer @code{params} to array of parameters. 
+   and set pointer @var{params} to array of parameters. 
    See unur_distr_cont_get_pdfparams() for details.
    (Macro)
 */
@@ -248,7 +248,7 @@ int unur_distr_corder_get_rank( UNUR_DISTR *distribution, int *n, int *k );
 /*
    Recompute the area below the PDF of the distribution. 
    It only works for order statistics for distribution objects from
-   the (=>) UNURAN library of standard distributions when the
+   the UNURAN library of standard distributions when the
    corresponding function is available.
    unur_distr_cont_upd_pdfarea() assumes that the PDF of the underlying
    distribution is normalized, i.e. it is the derivative its CDF.

@@ -80,9 +80,9 @@ UNUR_DISTR *unur_distr_discr_new( void );
 int unur_distr_discr_set_pv( UNUR_DISTR *distribution, double *pv, int n_pv );
 /* 
    Set finite probability vector (PV) for a distribution. It is not
-   necessary that the entries in the given PV sum to
-   1. @code{n_pv} must be positive. However there is no testing
-   whether all entries in @code{pv} are non-negative. 
+   necessary that the entries in the given PV sum to 1.
+   @var{n_pv} must be positive. However there is no testing
+   whether all entries in @var{pv} are non-negative. 
 
    If no domain has not been set, then the left boundary is set to
    @code{0}, by default. If @var{n_pv} is too large, e.g. because
@@ -91,7 +91,7 @@ int unur_distr_discr_set_pv( UNUR_DISTR *distribution, double *pv, int n_pv );
 
    Notice it not possible to set both a PV and a PMF.
    (I.e., it is not possible to set a PV for a distribution from
-   (=>) UNURAN library of standard distributions.)
+   UNURAN library of standard distributions.)
 */
 
 int unur_distr_discr_make_pv( UNUR_DISTR *distribution );
@@ -125,8 +125,8 @@ int unur_distr_discr_make_pv( UNUR_DISTR *distribution );
 int unur_distr_discr_get_pv( UNUR_DISTR *distribution, double **pv );
 /* 
    Get length of PV of the distribution and set pointer
-   @code{pv} to array of probabilities. If no PV is given,
-   @code{0} is returned and @code{pv} is set to NULL.
+   @var{pv} to array of probabilities. If no PV is given,
+   @code{0} is returned and @var{pv} is set to NULL.
    (It does not call unur_distr_discr_make_pv()!)
 */
 
@@ -138,7 +138,7 @@ int unur_distr_discr_set_cdf( UNUR_DISTR *distribution, UNUR_FUNCT_DISCR *cdf );
    Set respective pointer to the probability mass function (PMF) and the
    cumulative distribution function (CDF) of the distribution.
    The type of each of these functions must be of type
-   double funct(int k, UNUR_DISTR *distr).
+   @code{double funct(int k, UNUR_DISTR *distr)}.
 
    It is important to note that all these functions must return a
    result for all integers @var{k}. Eg., if the domain of a given
@@ -160,7 +160,7 @@ UNUR_FUNCT_DISCR *unur_distr_discr_get_cdf( UNUR_DISTR *distribution );
 /* 
    Get the respective pointer to the PMF and the CDF of the 
    distribution. The pointer is of type
-   double funct(int k, UNUR_DISTR *distr).
+   @code{double funct(int k, UNUR_DISTR *distr)}.
    If the corresponding function is not available for the distribution,
    the NULL pointer is returned.
 */
@@ -187,10 +187,10 @@ double unur_distr_discr_eval_cdf( int k, UNUR_DISTR *distribution );
 int unur_distr_discr_set_pmfparams( UNUR_DISTR *distribution, double *params, int n_params );
 /* 
    Set array of parameters for distribution. There is an upper limit
-   for the number of parameters @code{n_params}. It is given by the
+   for the number of parameters @var{n_params}. It is given by the
    macro @code{UNUR_DISTR_MAXPARAMS} in unuran_config.h. (It is set to
    5 but can be changed to any appropriate nonnegative number.)
-   If @code{n_params} is negative or exceeds this limit no parameters
+   If @var{n_params} is negative or exceeds this limit no parameters
    are copied into the distribution object and @code{unur_errno} is set to
    @code{UNUR_ERR_DISTR_NPARAMS}. There is no way to use parameters of type int.
 */
@@ -198,7 +198,7 @@ int unur_distr_discr_set_pmfparams( UNUR_DISTR *distribution, double *params, in
 int unur_distr_discr_get_pmfparams(UNUR_DISTR *distribution,double **params);
 /* 
    Get number of parameters of the PMF and set pointer
-   @code{params} to array of parameters. If no parameters are stored
+   @var{params} to array of parameters. If no parameters are stored
    in the object, @code{0} is returned and @code{params} is set to
    NULL.
 */
@@ -209,15 +209,15 @@ int unur_distr_discr_set_domain( UNUR_DISTR *distribution, int left, int right )
    distribution. This can also be used truncate an existing
    distribution. For setting the boundary to +/- infinity use
    @code{INT_MAX} and @code{INT_MIN}, respectively.
-   If @code{right} is not strictly greater than @code{left} no domain
+   If @var{right} is not strictly greater than @var{left} no domain
    is set and @code{unur_errno} is set to @code{UNUR_ERR_DISTR_SET}.
    It is allowed to use this call to increase the domain.
    If the PV of the discrete distribution is used,
    than the right boudary is ignored (and internally set to 
-   left + size of PV - 1).
+   @var{left} + size of PV - 1).
    Notice that @code{INT_MAX} and @code{INT_MIN} are interpreted as
    (minus) infinity.
-   Default is [INT_MIN, INT_MAX] when a PMF is used for generation,
+   Default is [@code{INT_MIN}, @code{INT_MAX}] when a PMF is used for generation,
    and [0, size of PV - 1] when a PV is used.
 */
 
@@ -225,7 +225,7 @@ int unur_distr_discr_get_domain( UNUR_DISTR *distribution, int *left, int *right
 /* 
    Get the left and right borders of the domain of the
    distribution. If the domain is not set explicitly 
-   the interval [INT_MIN, INT_MAX] is assumed and returned.
+   the interval [@code{INT_MIN}, @code{INT_MAX}] is assumed and returned.
    There is no error reported in this case.
 */
 
@@ -247,7 +247,7 @@ int unur_distr_discr_upd_mode( UNUR_DISTR *distribution );
 /* 
    Recompute the mode of the distribution. This call works properly
    for distribution objects from the 
-   (=>) UNURAN library of standard distributions 
+   UNURAN library of standard distributions 
    when the corresponding function is available.
    Otherwise a (slow) numerical mode finder is used. If it failes
    @code{unur_errno} is set to @code{UNUR_ERR_DISTR_DATA}.
@@ -272,7 +272,7 @@ int unur_distr_discr_set_pmfsum(UNUR_DISTR *distribution, double sum);
    @code{UNUR_ERR_DISTR_SET}. 
 
    For a distribution object created by the 
-   (=>) UNURAN library of standard distributions you always should use
+   UNURAN library of standard distributions you always should use
    the unur_distr_discr_upd_pmfsum(). Otherwise there might be
    ambiguous side-effects.
 */
@@ -282,12 +282,12 @@ int unur_distr_discr_upd_pmfsum( UNUR_DISTR *distribution);
    Recompute the sum over the PMF of the distribution. 
    In most cases the normalization constant is recompute and thus the
    sum is 1. This call only works for distribution objects from the
-   (=>) UNURAN library of standard distributions when the
+   UNURAN library of standard distributions when the
    corresponding function is available. Otherwise @code{unur_errno} is
    set to @code{UNUR_ERR_DISTR_DATA}. 
 
    The call does not work for distributions from the 
-   (=>) UNURAN library of standard distributions whith truncated
+   UNURAN library of standard distributions whith truncated
    domain when the CDF is not available.
 */
 

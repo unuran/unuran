@@ -66,7 +66,7 @@
       area below each interval is equal to a given fraction of the total
       area below the given PDF. This fraction can be set by a
       unur_tabl_set_areafraction() call. Additionally these intervals are
-      split by until the maximum number of intervals is reached or the
+      split until the maximum number of intervals is reached or the
       ration between the area below squeeze and the area below the hat is
       exceeded. 
       
@@ -74,9 +74,11 @@
       rejection sampling is used to split these intervals. There are
       three variants for adaptive rejection sampling. These differ in the
       way how an interval is split: 
-      (1) use the generated point to split the interval;
-      (2) use the mean point of the interval; or
-      (3) use the arcmean point.
+      @enumerate
+      @item use the generated point to split the interval;
+      @item use the mean point of the interval; or
+      @item use the arcmean point.
+      @end enumerate
 
       There exists a test mode that verifies whether the conditions for
       the method are satisfied or not. It can be switched on by calling 
@@ -92,18 +94,24 @@
 /* =ROUTINES */
 
 UNUR_PAR *unur_tabl_new( UNUR_DISTR* distribution );
-/* Get default parameters for generator.                                     */
+/* 
+   Get default parameters for generator.
+*/
 
 /*...........................................................................*/
 
 int unur_tabl_set_variant_setup( UNUR_PAR *parameters, unsigned variant );
 /* 
    Set variant for setup. Two modes are possible for @var{variant}:
-   @code{1}: only use the equal area rule to construct hat.
-   @code{2}: additionally split the intervals created by the equal
+   @table @code
+   @item 1
+   only use the equal area rule to construct hat.
+   @item 2
+   additionally split the intervals created by the equal
    area rule until the maximum number of intervals is reached or the
    ration between the area below squeeze and the area below the hat is
    exceeded.
+   @end table
    Default is variant @code{2}.
 */
 
@@ -111,9 +119,14 @@ int unur_tabl_set_variant_splitmode( UNUR_PAR *parameters, unsigned splitmode );
 /* 
    There are three variants for adaptive rejection sampling. These
    differ in the way how an interval is split:
-   splitmode @code{1}: use the generated point to split the interval.
-   splitmode @code{2}: use the mean point of the interval.
-   splitmode @code{3}: use the arcmean point.
+   @table @r
+   @item splitmode @code{1}
+   use the generated point to split the interval.
+   @item splitmode @code{2}
+   use the mean point of the interval.
+   @item splitmode @code{3}
+   use the arcmean point.
+   @end table
    Default is splitmode @code{3}.
 */
 
@@ -127,20 +140,23 @@ int unur_tabl_set_max_sqhratio( UNUR_PAR *parameters, double max_ratio );
    Use 0 if no construction points should be added after the setup.
    Use 1 if added new construction points should not be stopped until
    the maximum number of construction points is reached.
+
    Default is ??.
 */
 
 double unur_tabl_get_sqhratio( UNUR_GEN *generator );
 /* 
    Get the current ratio (area below squeeze) / (area below hat)
-   for the generator. (In case of an error 0 is returned.)
+   for the generator. (In case of an error @code{0} is returned.)
 */
 
 int unur_tabl_set_max_intervals( UNUR_PAR *parameters, int max_ivs );
 /* 
-   Set maximum number of intervals (default is ??).
+   Set maximum number of intervals.
    No construction points are added after the setup when the number of
-   intervals suceeds @code{max_ivs}.
+   intervals suceeds @var{max_ivs}.
+
+   Default is ??.
 */
 
 int unur_tabl_set_areafraction( UNUR_PAR *parameters, double fraction );
@@ -150,6 +166,7 @@ int unur_tabl_set_areafraction( UNUR_PAR *parameters, double fraction );
    pieces (strips) is the same and equal to the (given) area below the
    distribution times @var{fraction} (which must be greater than
    zero).
+
    Default is @code{0.25}.
 */
 
@@ -160,6 +177,7 @@ int unur_tabl_set_nstp( UNUR_PAR *parameters, int n_stp );
    @var{n_stp} construction points. However it might be larger when a
    small fraction is given by the unur_tabl_set_areafraction() call.
    It also might be smaller for some variants.
+
    Default is @code{30}.
 */
 
@@ -177,18 +195,20 @@ int unur_tabl_set_slopes( UNUR_PAR *parameters, double *slopes, int n_slopes );
    and must not overlapping. Otherwise no slopes are set and
    @var{unur_errno} is set to @code{UNUR_ERR_PAR_SET}.
 
-   Notice: @var{n_slopes} is the number of slopes (and not the length
-   of the array @var{slopes}).
+   @emph{Notice:} @var{n_slopes} is the number of slopes (and not the
+   length of the array @var{slopes}).
 
-   Notice that setting slopes resets the given domain for the
+   @emph{Notice} that setting slopes resets the given domain for the
    distribution.
 */
 
 int unur_tabl_set_guidefactor( UNUR_PAR *parameters, double factor );
 /* 
    Set factor for relative size of the guide table for indexed search
-   (see also method DGT). It must be greater than or equal to 0.
-   If it is set to 0, then sequential search is used.
+   (see also method DGT @ref{DGT}). It must be greater than or equal
+   to @code{0}. 
+   When set to @code{0}, then sequential search is used.
+
    Default is ??.
 */
 
@@ -198,14 +218,13 @@ int unur_tabl_set_boundary( UNUR_PAR *parameters, double left, double right );
    The piecewise hat is only constructed inside this interval. The
    region outside of this region must/should not be should be of
    computational importance.
-   Of course +/- @code{UNUR_INFINITY} is not allowed.
+   Of course @code{+/- UNUR_INFINITY} is not allowed.
+
    Default is ??.
 */
 
 int unur_tabl_set_verify( UNUR_PAR *parameters, int verify );
-/* 
-   Turn verifying of algorithm while sampling on/off.
-*/
+/* */
 
 int unur_tabl_chg_verify( UNUR_GEN *generator, int verify );
 /* 

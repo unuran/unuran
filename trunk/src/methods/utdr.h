@@ -84,7 +84,9 @@
 /* =ROUTINES */
 
 UNUR_PAR *unur_utdr_new( UNUR_DISTR *distribution );
-/* Get default parameters for generator.                                     */
+/* 
+   Get default parameters for generator.
+*/
 
 /*...........................................................................*/
 
@@ -100,9 +102,7 @@ int unur_utdr_reinit( UNUR_GEN *generator );
 */
 
 int unur_utdr_set_verify( UNUR_PAR *parameters, int verify );
-/* 
-   Turn verifying of algorithm while sampling on/off.
-*/
+/* */
 
 int unur_utdr_chg_verify( UNUR_GEN *generator, int verify );
 /* 
@@ -142,8 +142,10 @@ int unur_utdr_chg_pdfparams( UNUR_GEN *generator, double *params, int n_params )
    Notice that it is not possible to change the number of parameters.
    This function only copies the given arguments into the array of 
    distribution parameters.
-   IMPORTANT: The given parameters are not checked against domain errors;
-   in opposition to the (=>) unur_<distr>_new() call.
+
+   @emph{IMPORTANT:} The given parameters are not checked against
+   domain errors; in opposition to the 
+   @command{unur_<distr>_new} calls.
 */
 
 int unur_utdr_chg_domain( UNUR_GEN *generator, double left, double right );
@@ -164,12 +166,10 @@ int unur_utdr_chg_mode( UNUR_GEN *generator, double mode );
 
 int unur_utdr_upd_mode( UNUR_GEN *generator );
 /* 
-   Recompute the mode of the distribution. This call only works when
-   a distribution object from the (=>) UNURAN library of standard
-   distributions is used.
-   Otherwise @code{unur_errno} is set to @code{UNUR_ERR_DISTR_DATA}.
+   Recompute the mode of the distribution. 
+   See unur_distr_cont_upd_mode() for more details.
 
-   unur_utdr_reinit() must be executed before sampling from the 
+   unur_srou_reinit() must be executed before sampling from the 
    generator again.
 */
 
@@ -191,10 +191,11 @@ int unur_utdr_upd_pdfarea( UNUR_GEN *generator );
 /*
    Recompute the area below the PDF of the distribution. 
    It only works when a distribution objects from the
-   (=>) UNURAN library of standard distributions is used. 
+   UNURAN library of standard distributions is used. 
+   @pxref{Stddist,Standard distributions,Standard distributions}.
    Otherwise @code{unur_errno} is set to @code{UNUR_ERR_DISTR_DATA}. 
 
-   unur_utdr_reinit() must be executed before sampling from the 
+   unur_srou_reinit() must be executed before sampling from the 
    generator again.
 */
 

@@ -72,7 +72,7 @@ int unur_distr_cvec_set_pdf( UNUR_DISTR *distribution, UNUR_FUNCT_CVEC *pdf );
 /* 
    Set respective pointer to the probability density function (pdf) of
    the distribution. The type of this function must be of type
-   double funct(double *x, UNUR_DISTR *distr),
+   @code{double funct(double *x, UNUR_DISTR *distr)},
    where @var{x} must be a pointer to a double array of appropriate
    size (i.e. of the same size as given to the unur_distr_cvec_new()
    call).
@@ -87,7 +87,7 @@ int unur_distr_cvec_set_dpdf( UNUR_DISTR *distribution, UNUR_VFUNCT_CVEC *dpdf )
 /* 
    Set pointer to the gradiant of the probability density function
    (pdf). The type of this function must be
-   int funct(double *result, double *x, UNUR_DISTR *distr),
+   @code{int funct(double *result, double *x, UNUR_DISTR *distr)},
    where @var{result} and @var{x} must be pointer to double arrays of
    appropriate size (i.e. of the same size as given to the
    unur_distr_cvec_new() call).
@@ -103,7 +103,7 @@ UNUR_FUNCT_CVEC *unur_distr_cvec_get_pdf( UNUR_DISTR *distribution );
 /* 
    Get the respective pointer to the PDF of the distribution. The
    pointer is of type 
-   double funct(double *x, UNUR_DISTR *distr).
+   @code{double funct(double *x, UNUR_DISTR *distr)}.
    If the corresponding function is not available for the distribution,
    the NULL pointer is returned.
 */
@@ -112,7 +112,7 @@ UNUR_VFUNCT_CVEC *unur_distr_cvec_get_dpdf( UNUR_DISTR *distribution );
 /* 
    Get the respective pointer to the gradiant of the PDF of the
    distribution. The pointer is of type 
-   int double funct(double *result, double *x, UNUR_DISTR *distr).
+   @code{int double funct(double *result, double *x, UNUR_DISTR *distr)}.
    If the corresponding function is not available for the distribution,
    the NULL pointer is returned.
 */
@@ -289,3 +289,5 @@ double unur_distr_cvec_get_pdfvol( UNUR_DISTR *distribution );
 /* =END */
 
 /*---------------------------------------------------------------------------*/
+
+

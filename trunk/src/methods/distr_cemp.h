@@ -80,4 +80,3 @@ int unur_distr_cemp_get_data( UNUR_DISTR *distribution, double **sample );
 /* =END */
 
 /*---------------------------------------------------------------------------*/
-

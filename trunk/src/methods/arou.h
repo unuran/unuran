@@ -148,6 +148,7 @@ int unur_arou_set_guidefactor( UNUR_PAR *parameters, double factor );
    (see also method DGT @ref{DGT}). It must be greater than or equal
    to @code{0}. 
    When set to @code{0}, then sequential search is used.
+
    Default is ??.
 */
 

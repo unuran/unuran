@@ -73,40 +73,39 @@
 /* =ROUTINES */
 
 UNUR_PAR *unur_vempk_new( UNUR_DISTR *distribution );
-/* Get default parameters for generator                                      */
+/* 
+   Get default parameters for generator.
+*/
 
 /*...........................................................................*/
 
 int unur_vempk_set_smoothing( UNUR_PAR *parameters, double smoothing );
-/*
-  The smoothing factor controlles how "smooth" the resulting density
-  estimation will be. A smoothing factor equal to 0 results in naive
-  resampling. A very large smoothing factor (together with
-  variance correction) results in a density which is approximately
-  equal to the kernel.
-  Default is 1 which results in a smoothing parameter minimising
-  the MISE (mean integrated squared error) if the data are not too
-  far away from normal.
-*/
+/* */
 
 int unur_vempk_chg_smoothing( UNUR_GEN *generator, double smoothing );
 /* 
-   Change smoothing factor in generator.
+   Set and change the smoothing factor.
+   The smoothing factor controlles how ``smooth'' the resulting density
+   estimation will be. A smoothing factor equal to 0 results in naive
+   resampling. A very large smoothing factor (together with the
+   variance correction) results in a density which is approximately
+   equal to the kernel.
+   Default is 1 which results in a smoothing parameter minimising
+   the MISE (mean integrated squared error) if the data are not too
+   far away from normal.
 */
 
 int unur_vempk_set_varcor( UNUR_PAR *parameters, int varcor );
-/*
-  Set whether the variance corrected version of the density estimation
-  is used. If @code{varcor} is TRUE then the variance of the used
-  density estimation is the same as the sample variance. However this 
-  increases the MISE of the estimation a little bit.
-  Default is TRUE.
-*/
+/* */
 
 int unur_vempk_chg_varcor( UNUR_GEN *generator, int varcor );
-/* 
+/*
    Switch variance correction in generator on/off.
-   Default is FALSE.
+   If @var{varcor} is TRUE then the variance of the used
+   density estimation is the same as the sample variance. However this 
+   increases the MISE of the estimation a little bit.
+
+   Default is TRUE.
 */
 
 /* =END */

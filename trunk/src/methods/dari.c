@@ -1138,9 +1138,9 @@ _unur_dari_sample_check( struct unur_gen *gen )
 } /* end of _unur_dari_sample_check() */
 
 #undef N0
-#undef T(x)     /* #define T(x) (-1./sqrt(x))           */
-#undef F(x)     /* #define F(x) (-1./(x))               */
-#undef FM(x)    /* #define FM(x) (-1./(x))              */
+#undef T
+#undef F
+#undef FM
 
 /*****************************************************************************/
 

@@ -179,7 +179,7 @@ unur_distr_is_cvec( struct unur_distr *distr )
      /*   distr ... pointer to distribution object                           */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... if univariate continuous                                     */
+     /*   1 ... if multivariate continuous                                   */
      /*   0 ... otherwise                                                    */
      /*----------------------------------------------------------------------*/
 {
@@ -188,6 +188,27 @@ unur_distr_is_cvec( struct unur_distr *distr )
 
   return ((distr->type == UNUR_DISTR_CVEC) ? 1 : 0);
 } /* end of unur_distr_is_cvec() */
+
+/*---------------------------------------------------------------------------*/
+
+int 
+unur_distr_is_cvemp( struct unur_distr *distr )
+     /*----------------------------------------------------------------------*/
+     /* TRUE if distribution is empirical mulitvariate continuous.           */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   distr ... pointer to distribution object                           */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... if empirical multivariate continuous                         */
+     /*   0 ... otherwise                                                    */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( NULL,distr,0 );
+
+  return ((distr->type == UNUR_DISTR_CVEMP) ? 1 : 0);
+} /* end of unur_distr_is_cvemp() */
 
 /*---------------------------------------------------------------------------*/
 

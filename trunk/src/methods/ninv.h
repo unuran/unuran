@@ -64,7 +64,7 @@
       
       It is also possible to change the parameters of the given distribution
       by a unur_ninv_chg_pdfparams() call. If a table exists, it will be
-      computed immediately.
+      recomputed immediately.
 
    =END
 */
@@ -85,47 +85,59 @@
 
 
 UNUR_PAR *unur_ninv_new( UNUR_DISTR *distribution );
-/* Get default parameters for generator.                                     */
+/* 
+   Get default parameters for generator.
+*/
 
 /*...........................................................................*/
 
 int unur_ninv_set_usenewton( UNUR_PAR *parameters );
-/* Use Newton's method                                                       */
+/* 
+   Switch Newton's method.
+*/
 
 int unur_ninv_set_useregula( UNUR_PAR *parameters );
-/* Use regula falsi                                                          */
+/* 
+   Switch regula falsi. (This the default.)
+*/
 
 int unur_ninv_set_max_iter( UNUR_PAR *parameters, int max_iter );
-/* Set number of maximal iterations                                          */
+/* 
+   Set number of maximal iterations.
+*/
 
 int unur_ninv_set_x_resolution( UNUR_PAR *parameters, double x_resolution);
-/* Set maximal relative error in x                                           */
+/* 
+   Set maximal relative error in x.
+*/
 
 int unur_ninv_set_start( UNUR_PAR *parameters, double left, double right);
-/*
-  Set starting points.
-  If not set, suitable values are chosen automatically.
+/* 
+   Set starting points.
+   If not set, suitable values are chosen automatically.
 
-  Newton:        left:           starting point
-  Regula falsi:  left, right:    boundary of starting interval
+   @multitable @columnfractions 0.2 0.2 0.6
+   @item Newton:       @tab @var{left}:              @tab starting point
+   @item Regula falsi: @tab @var{left}, @var{right}: @tab boundary of starting interval
+   @end multitable
 
-  If the starting points are not set then the follwing points are used by
-  default:
-  Newton:       left:  CDF(left) = 0.5
-  Regula falsi: left:  CDF(left) = 0.1
-                right: CDF(right) = 0.9
+   If the starting points are not set then the follwing points are used by
+   default:
+   @multitable @columnfractions 0.2 0.2 0.6
+   @item Newton:       @tab @var{left}:  @tab CDF(@var{left}) = 0.5
+   @item Regula falsi: @tab @var{left}:  @tab CDF(@var{left}) = 0.1
+   @item               @tab @var{right}: @tab CDF(@var{right}) = 0.9
+   @end multitable
+
+   If @var{left} == @var{right}, then  UNURAN always uses the default
+   starting points!
 */
     
-/* 
-   Internal:
-   If left == right, UNURAN always uses the default starting points!
-*/
-
 int unur_ninv_set_table(UNUR_PAR *parameters, int no_of_points);
 /* 
-   Generates a table with @code{no_of_points} points containing
+   Generates a table with @var{no_of_points} points containing
    suitable starting values for the iteration. The value of
-   @code{no_of_points} must be at least 10 (otherwise it will be set
+   @var{no_of_points} must be at least 10 (otherwise it will be set
    to 10 automatically).
 
    The table points are chosen such that the CDF at these points
@@ -177,8 +189,9 @@ int unur_ninv_chg_pdfparams(UNUR_GEN *generator, double *params, int n_params);
    distribution parameters. If a table is used, it will be computed
    immediately.
 
-   IMPORTANT: The given parameters are not checked against domain errors;
-   in opposition to the (=>) unur_<distr>_new() call.
+   @emph{IMPORTANT:} The given parameters are not checked against
+   domain errors; in opposition to the 
+   @command{unur_<distr>_new} calls.
 */ 
 
 

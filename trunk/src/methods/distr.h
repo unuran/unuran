@@ -45,17 +45,18 @@
       For handling distributions objects of type @code{UNUR_DISTR} are
       used. All data about a distribution are stored on this object. 
       UNURAN provides functions that return such objects for standard
-      distributions ((=>) UNURAN library of standard distributions).
+      distributions 
+      (@pxref{Stddist,Standard distributions,Standard distributions}).
       It is then possible to change this distribution object by various
       set calls. Moreover it is possible to build a distribution object
       entirely from scratch. For this purpose there exists an
-      unur_distr_<type>_new() call for each object type that returns an
-      empty object of this type (eg. univariate contiuous) which can be
-      filled with the appropriate set calls.
+      @command{unur_distr_<type>_new} call for each object type that
+      returns an empty object of this type (eg. univariate contiuous)
+      which can be filled with the appropriate set calls.
       
       Notice that there are essential data about a distribution, eg. the
       PDF, a list of (shape, scale, location) parameters for the
-      distribution, and the domain of (truncated) distributions.
+      distribution, and the domain of (truncated) distribution.
       And there exist parameters that are/can be derived from these,
       eg. the mode of the distribution or the area below the given PDF
       (which need not be normalized for may methods).
@@ -69,20 +70,21 @@
       restrict its domain to a subset. There is a subtle difference
       between changing the domain by a unur_distr_cont_set_domain() call
       and changing the (truncated) domain for an existing generator object
-      by a unur_<method>_chg_truncated() call (if available).
+      by a @command{unur_<method>_chg_truncated} call (if available).
       The domain of the given distribuiton is used to create the generator
       object. This is always handled as the domain of a non-truncated
-      distribution (although it really was derived from one UNURAN
+      distribution (although it really may be derived from one UNURAN
       standard distributions by resetting the domain). This domain can
       then be restricted to a subset for the generator object. 
       Generator methods that require a recreation of the generator object
-      Notice: when the domain is changed have a unur_<method>_chg_domain()
-      instead. For this call there are of course no restrictions on the
+      when the domain is changed have a
+      @command{unur_<method>_chg_domain} call instead. 
+      For this call there are of course no restrictions on the
       given domain (i.e., it is possible to increase the domain of the
       distribution).
       
-      For the objects provided by the ((=>) UNURAN library of standard
-      distributions calls for updating these parameters exist (one for
+      For the objects provided by the UNURAN library of standard
+      distributions, calls for updating these parameters exist (one for
       each parameter to avoid computational overhead since not all
       parameters are required for all generator methods).
       
@@ -137,30 +139,50 @@ int unur_distr_get_dim( UNUR_DISTR *distribution );
 
 unsigned int unur_distr_get_type( UNUR_DISTR *distribution );
 /* 
-   Get type of distribution. See ... for
-   possible types. Alternatively the unur_distr_is_<TYPE>() calls can
-   be used.
+   Get type of @var{distribution}. 
+   Possible types are
+   @table @code
+   @item UNUR_DISTR_CONT
+   univariate continuous distributions
+   @item UNUR_DISTR_CEMP
+   empirical continuous univariate distributions (ie. samples)
+   @item UNUR_DISTR_CVEC
+   continuous mulitvariate distributions
+   @item UNUR_DISTR_CVEMP
+   empirical continuous multivaraiate distributions (ie. samples)
+   @item UNUR_DISTR_DISCR
+   discrete univariate distributions
+   @end table
+
+   Alternatively the @command{unur_distr_is_<TYPE>}
+   calls can be used.
 */
 
 int unur_distr_is_cont( UNUR_DISTR *distribution );
 /* 
-   TRUE if distribution is a univariate continuous distribution.
+   TRUE if @var{distribution} is a continuous univariate distribution.
 */
 
 int unur_distr_is_cvec( UNUR_DISTR *distribution );
 /* 
-   TRUE if distribution is a multivariate continuous distribution.
+   TRUE if @var{distribution} is a continuous multivariate distribution.
 */
 
 int unur_distr_is_cemp( UNUR_DISTR *distribution );
 /* 
-   TRUE if distribution is an empirical univariate continuous distribution,
+   TRUE if @var{distribution} is an empirical continuous univariate distribution,
    i.e. a sample.
+*/
+
+int unur_distr_is_cvemp( UNUR_DISTR *distribution );
+/* 
+   TRUE if @var{distribution} is an empirical continuous multivariate
+   distribution.
 */
 
 int unur_distr_is_discr( UNUR_DISTR *distribution );
 /* 
-   TRUE if distribution is a univariate discrete distribution.
+   TRUE if @var{distribution} is a discrete univariate distribution.
 */
 
 /* =END */

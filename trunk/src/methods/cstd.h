@@ -53,7 +53,7 @@
       provided, the NULL pointer is returned.
 
       For some distributions more than one special generator
-      (@emph{variants}) are possible. These can be choosen by a
+      (@emph{variants}) is possible. These can be choosen by a
       unur_cstd_set_variant() call. For possible variants 
       @pxref{Stddist,Standard distributions,Standard distributions}.
       However the following are common to all distributions:

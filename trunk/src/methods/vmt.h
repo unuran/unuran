@@ -71,7 +71,9 @@
 /* =ROUTINES */
 
 UNUR_PAR *unur_vmt_new( UNUR_DISTR *distribution );
-/* Get default parameters for generator.                                     */
+/* 
+   Get default parameters for generator.
+*/
 
 /*...........................................................................*/
 

@@ -48,21 +48,27 @@
       point from the sample and to return it with some added noise results
       in a method that has very nice properties, as it can be seen as sampling
       from a kernel density estimate.
+
       Clearly we have to decide about the density of the noise (called kernel)
       and about the standard deviation of the noise.
       The mathematical theory of kernel density estimation shows us that we
       are comparatively free in choosing the kernel. It also supplies us with
       a simple formula to compute the optimal standarddeviation of the noise,
       called bandwidth (or window width) of the kernel.
+
       For most applications it is perfectly ok to use the default values offered.
       Unless you have some knowledge on density estimation we do not recommend
       to change anything. Only exception is the case that you are especially
       interested in a fast sampling algorithm. Then use the call
-      
-      unur_empk_set_kernel( par, UNUR_DISTR_BOXCAR);
-      
+
+      @smallexample
+      unur_empk_set_kernel(par, UNUR_DISTR_BOXCAR);
+      @end smallexample
+
       to change the used noise distribution from the default Gaussian
       distribution to the uniform distribution.
+      For other possible kernels see unur_empk_set_kernel()
+      and unur_empk_set_kernelgen() below.
       
       All other parameters are only necessary for people knowing the theory
       of kernel density estimation.
@@ -76,7 +82,9 @@
 /* =ROUTINES */
 
 UNUR_PAR *unur_empk_new( UNUR_DISTR *distribution );
-/* Get default parameters for generator                                      */
+/* 
+   Get default parameters for generator.
+*/
 
 /*...........................................................................*/
 
@@ -85,11 +93,18 @@ int unur_empk_set_kernel( UNUR_PAR *parameters, unsigned kernel);
    Select one of the supported kernel distributions. Currently the following 
    kernels are supported:
 
-     UNUR_DISTR_GAUSSIAN     ... Gaussian (normal) kernel
-     UNUR_DISTR_EPANECHNIKOV ... Epanechnikov kernel
-     UNUR_DISTR_BOXCAR       ... Boxcar (uniform, rectangular) kernel
-     UNUR_DISTR_STUDENT      ... t3 kernel (Student's distribution with 3 degrees of freedom)
-     UNUR_DISTR_LOGISTIC     ... logistic kernel
+   @table @code
+   @item UNUR_DISTR_GAUSSIAN
+   Gaussian (normal) kernel
+   @item UNUR_DISTR_EPANECHNIKOV
+   Epanechnikov kernel
+   @item UNUR_DISTR_BOXCAR
+   Boxcar (uniform, rectangular) kernel
+   @item UNUR_DISTR_STUDENT
+   t3 kernel (Student's distribution with 3 degrees of freedom)
+   @item UNUR_DISTR_LOGISTIC
+   logistic kernel
+   @end table
 
    For other kernels (including kernels with Student's distribution other with
    3 degrees of freedom) use the unur_empk_set_kernelgen() call.
@@ -105,15 +120,18 @@ int unur_empk_set_kernelgen( UNUR_PAR *parameters, UNUR_GEN *kernelgen, double a
 
    @var{alpha} is used to compute the optimal bandwidth from the point of
    view of minimizing the mean integrated square error (MISE).
-   It depends on the kernel K and is given by 
+   It depends on the kernel K and is given by
+   @smallexample
      alpha(K) = Var(K)^(-2/5)@{ \int K(t)^2 dt@}^(1/5)
+   @end smallexample
    For standard kernels (see above) alpha is computed by the algorithm.
 
    @var{kernvar} is the variance of the used kernel. It is only required 
    for the variance reduced version of the density estimation (which is 
    used by default); otherwise it is ignored.
    If @var{kernelvar} is nonpositive, variance correction is disabled.
-   For standard kernels (see above) kernvar is computed by the algorithm.
+   For standard kernels (see above) @var{kernvar} is computed by the
+   algorithm.
 
    It is not possible to call unur_empk_set_kernelgen() after a standard kernel
    has been selected by a unur_empk_set_kernel() call.
@@ -127,52 +145,50 @@ int unur_empk_set_kernelgen( UNUR_PAR *parameters, UNUR_GEN *kernelgen, double a
 */
 
 int unur_empk_set_beta( UNUR_PAR *parameters, double beta );
-/*
-  beta is used to compute the optimal bandwidth from the point of
-  view of minimizing the mean integrated square error (MISE).
-  beta depends on the (unknown) distribution of the sampled data
-  points. Thus its value contains some guess on this distribution.
-  By default Gaussian distribution is assumed for the sample
-  (beta = 1.3637439). There is no requirement to set beta.
+/* 
+   @var{beta} is used to compute the optimal bandwidth from the point
+   of view of minimizing the mean integrated square error (MISE).
+   @var{beta} depends on the (unknown) distribution of the sampled data
+   points. Thus its value contains some guess on this distribution.
+   By default Gaussian distribution is assumed for the sample
+   (@var{beta} = 1.3637439). There is no requirement to set @var{beta}.
 */
 
 int unur_empk_set_smoothing( UNUR_PAR *parameters, double smoothing );
-/*
-  The smoothing factor controlles how "smooth" the resulting density
-  estimation will be. A smoothing factor equal to 0 results in naive
-  resampling. A very large smoothing factor (together with the
-  variance correction) results in a density which is approximately
-  equal to the kernel.
-  Default is 1 which results in a smoothing parameter minimising
-  the MISE (mean integrated squared error) if the data are not too
-  far away from normal.
-*/
+/* */
 
 int unur_empk_chg_smoothing( UNUR_GEN *generator, double smoothing );
 /* 
-   Change smoothing factor in generator.
+   Set and change the smoothing factor.
+   The smoothing factor controlles how ``smooth'' the resulting density
+   estimation will be. A smoothing factor equal to 0 results in naive
+   resampling. A very large smoothing factor (together with the
+   variance correction) results in a density which is approximately
+   equal to the kernel.
+   Default is 1 which results in a smoothing parameter minimising
+   the MISE (mean integrated squared error) if the data are not too
+   far away from normal.
 */
 
 int unur_empk_set_varcor( UNUR_PAR *parameters, int varcor );
-/*
-  Set whether the variance corrected version of the density estimation
-  is used. If @code{varcor} is TRUE then the variance of the used
-  density estimation is the same as the sample variance. However this 
-  increases the MISE of the estimation a little bit.
-  Default is TRUE.
-*/
+/* */
 
 int unur_empk_chg_varcor( UNUR_GEN *generator, int varcor );
 /* 
    Switch variance correction in generator on/off.
-   Default is FALSE.
+   If @var{varcor} is TRUE then the variance of the used
+   density estimation is the same as the sample variance. However this 
+   increases the MISE of the estimation a little bit.
+
+   Default is TRUE.
 */
 
 int unur_empk_set_positive( UNUR_PAR *parameters, int positive );
-/*
-  If @code{positive} is TRUE then only nonnegative random variates are
-  generated. This is done by means of mirroring technique.
-  Default is FALSE.
+/* 
+   If @var{positive} is TRUE then only nonnegative random variates are
+   generated. This is done by means of mirroring technique.
+   
+   Default is FALSE.
 */
 
 /* =END */

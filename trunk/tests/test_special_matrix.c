@@ -17,16 +17,15 @@ void _unur_test_set_matrix_1(int dim, double *M);
 void _unur_test_set_matrix_2(int dim, double *M);
 
 /* dimension of test matrix */
-static int dim = 50;
+const static int dim = 50;
 
 /* max tolerable absolute error */
-static double error_absolute_max = 1e-12;
+const static double error_absolute_max = 1.e-12;
 
 /* number of failed tests */
 static int n_failed = 0;
 
 /* file handles */
-static FILE *UNURANLOG;       /* unuran log file   */
 static FILE *TESTLOG;         /* test log file     */
 
 /*-------------------------------------------------------------------------*/
@@ -37,7 +36,7 @@ void _unur_test_set_matrix_1(int dim, double *M) {
   double p;
   
   /* original derflinger test-matrix */
-  p=3.141592653589793/(dim+1);
+  p = M_PI/(dim+1);
   for (i=1; i<=dim; i++) {
   for (k=1; k<=i; k++) {
     M[idx1(i,k)]=0.;
@@ -48,7 +47,7 @@ void _unur_test_set_matrix_1(int dim, double *M) {
   }}
 
 #undef idx1
-}
+} /* end of _unur_test_set_matrix_1() */
 
 /*-------------------------------------------------------------------------*/
 
@@ -67,7 +66,7 @@ void _unur_test_set_matrix_2(int dim, double *M) {
   }}
 
 #undef idx1
-}
+} /* end of _unur_test_set_matrix_2() */
 
 /*-------------------------------------------------------------------------*/
 
@@ -129,22 +128,15 @@ void _unur_test_matrix() {
   n_failed = error_counter;
 
 #undef idx1
-}
-
+} /* end of _unur_test_matrix() */
 
 /*-------------------------------------------------------------------------*/
-
 
 int main()
 {
 
-  /* open log file for unuran and set output stream for unuran messages */
-  if ( (UNURANLOG = fopen( "t_special_matrix_unuran.log","w" )) == NULL )
-    exit (EXIT_FAILURE);
-  unur_set_stream( UNURANLOG );
-                                                                                                           
   /* open log file for testing */
-  if ( (TESTLOG = fopen( "t_special_matrix.log","w" )) == NULL )
+  if ( (TESTLOG = fopen( "t_special_matrix_test.log","w" )) == NULL )
     exit (EXIT_FAILURE);
                                                                                                            
   /* write header into log file */
@@ -172,10 +164,11 @@ int main()
   }
 
   /* close files */
-  fclose (UNURANLOG);
   fclose (TESTLOG);
-  
-  /* end */
-  return 0;
-}
 
+  /* exit */
+  exit( (n_failed == 0) ? EXIT_SUCCESS : EXIT_FAILURE );
+
+} /* end of main() */
+
+/*-------------------------------------------------------------------------*/

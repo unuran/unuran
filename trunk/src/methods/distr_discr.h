@@ -181,9 +181,8 @@ double unur_distr_discr_eval_cdf( int k, UNUR_DISTR *distribution );
    @code{UNUR_ERR_DISTR_DATA}.
 
    @emph{IMPORTANT:}
-   In the case of a truncated standard distribution,
-   unur_distr_discr_eval_cdf() always returns the CDF of the
-   @emph{untruncated} distribution!
+   In the case of a truncated standard distribution these calls always
+   return the respective values of the @emph{untruncated} distribution!
 */
 
 

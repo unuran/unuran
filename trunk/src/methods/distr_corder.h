@@ -149,9 +149,8 @@ int unur_distr_corder_get_rank( UNUR_DISTR *distribution, int *n, int *k );
    (Macro)
 
    @emph{IMPORTANT:}
-   In the case of a truncated standard distribution,
-   unur_distr_corder_eval_cdf() always returns the CDF of the
-   @emph{untruncated} distribution!
+   In the case of a truncated standard distribution these calls always
+   return the respective values of the @emph{untruncated} distribution!
 */
 
 

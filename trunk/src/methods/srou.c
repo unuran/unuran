@@ -280,7 +280,7 @@ unur_srou_new( struct unur_distr *distr )
   /* set default values */
   PAR.r         = 1.;                 /* parameter for power transformation  */
   PAR.Fmode     = -1.;                /* CDF at mode (unknown yet   )        */
-  PAR.um        = -1.;                /* square root of PDF at mode (unknown)*/
+  PAR.um        = -1.;                /* (square) root of PDF at mode (unknown)*/
 
   par->method   = UNUR_METH_SROU;     /* method and default variant          */
   par->variant  = 0u;                 /* default variant                     */
@@ -409,7 +409,7 @@ unur_srou_set_pdfatmode( UNUR_PAR *par, double fmode )
   }
 
   /* store date ((square) root of fmode) */
-  PAR.um = (PAR.r == 1.) ? sqrt(fmode) : pow(fmode,1./(PAR.r+1.));
+  PAR.um = (par->set & SROU_SET_R) ? pow(fmode,1./(PAR.r+1.)) : sqrt(fmode);
 
   /* changelog */
   par->set |= SROU_SET_PDFMODE;
@@ -709,7 +709,7 @@ unur_srou_chg_pdfatmode( struct unur_gen *gen, double fmode )
   }
 
   /* store date ((square) root of fmode) */
-  GEN.um = (GEN.r == 1.) ? sqrt(fmode) : pow(fmode,1./(GEN.r+1.));
+  GEN.um = (gen->set & SROU_SET_R) ? pow(fmode,1./(GEN.r+1.)) : sqrt(fmode);
 
   /* changelog */
   gen->set |= SROU_SET_PDFMODE;
@@ -866,7 +866,7 @@ _unur_srou_init( struct unur_par *par )
   gen = _unur_srou_create(par);
   if (!gen) { free(par); return NULL; }
 
-  /* compute universal bounding rectangle */
+  /* compute universal bounding envelope */
   if (par->set & SROU_SET_R)
     rcode = _unur_gsrou_envelope( gen );
   else
@@ -1120,14 +1120,17 @@ unur_srou_reinit( struct unur_gen *gen )
      /*   0 ... on error                                                     */
      /*----------------------------------------------------------------------*/
 {
-  int result;
+  int rcode;
 
   /* check arguments */
   CHECK_NULL(gen,0);
   _unur_check_gen_object( gen,SROU );
 
-  /* compute universal bounding rectangle */
-  result = _unur_srou_rectangle( gen );
+  /* compute universal bounding envelope */
+  if (gen->set & SROU_SET_R)
+    rcode = _unur_gsrou_envelope( gen );
+  else
+    rcode = _unur_srou_rectangle( gen );
 
 #ifdef UNUR_ENABLE_LOGGING
     /* write info into log file */
@@ -1135,7 +1138,7 @@ unur_srou_reinit( struct unur_gen *gen )
     if (gen->debug) _unur_srou_debug_init(gen,TRUE);
 #endif
 
-  return result;
+  return rcode;
 } /* end of unur_srou_reinit() */
 
 /*****************************************************************************/
@@ -1397,6 +1400,11 @@ _unur_gsrou_sample( struct unur_gen *gen )
     U *= GEN.um;
     Ur = pow(U,GEN.r);
     X = V/Ur + DISTR.mode;
+
+    /* inside domain ? */
+    if ( (X < DISTR.BD_LEFT) || (X > DISTR.BD_RIGHT) )
+      continue;
+
     /* accept or reject */
     if (Ur*U <= PDF(X))
       return X;

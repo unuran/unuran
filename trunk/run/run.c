@@ -29,27 +29,31 @@ int main()
   UNUR_GEN *gen;
   int i;
 
-  double fpm[10];
+  double fpm[] = {10};
 
   unur_set_default_debug(~0u);
   unur_set_stream(stdout);
 
-  distr = unur_distr_normal(NULL,0);
+  distr = unur_distr_cauchy(NULL,0);
   unur_distr_cont_set_domain(distr,0.1,1.);
   unur_distr_cont_upd_mode(distr);
   unur_distr_cont_upd_pdfarea(distr);
 
-  {
-    double cdfatmode = unur_distr_cont_eval_cdf( unur_distr_cont_get_mode(distr), distr );
-    par = unur_srou_new(distr);
-    unur_srou_set_cdfatmode(par,cdfatmode);
-/*      unur_srou_set_usesqueeze(par,1);  */
-  }
+  par = unur_srou_new(distr);
+  unur_srou_set_r(par,2.);
+
 
 /*    par = unur_srou_new(distr); */
-/*    gen = unur_init(par); */
+  gen = unur_init(par);
+  unur_srou_chg_domain(gen,0.9,0.95);
+  unur_srou_upd_pdfarea(gen);
+  unur_srou_upd_mode(gen);
+  unur_srou_reinit(gen);  
+
+  unur_test_chi2(gen, 10, 100, 5, 1, stdout);
+
   
-  unur_run_tests(par,RUN_TESTS);
+/*    unur_run_tests(par,RUN_TESTS); */
 
   return 0;
 

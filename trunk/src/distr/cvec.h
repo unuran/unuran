@@ -176,12 +176,21 @@ int unur_distr_cvec_set_covar( UNUR_DISTR *distribution, const double *covar );
    @var{covar} must be a variance-covariance matrix of the
    @var{distribution}, i.e. it must be symmetric and positive definite and
    its diagonal entries (i.e. the variance of the components of the
-   random vector) must be positive.
-   The cholesky factor is computed (and stored) to verify the positive
+   random vector) must be strictly positive.
+   The Cholesky factor is computed (and stored) to verify the positive
    definiteness condition.
 
    A NULL pointer for @var{covar} is interpreted as the
    identity matrix.
+
+   @emph{Important:} In case of an error (e.g. because @var{covar} is
+   not a valid covariance matrix) an error code is returned.
+   Moreover, the covariance matrix is not set and is marked as
+   unknown. A previously set covariance matrix is then no longer
+   available.
+
+   @emph{Remark:} It might happen that a covariance matrix can be set
+   but the inverse if the given matrix cannot be computed.
 */
 
 const double *unur_distr_cvec_get_covar( const UNUR_DISTR *distribution );

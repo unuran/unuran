@@ -34,6 +34,13 @@ void make_list_of_distributions( void )
   n_distr = 0;
   list = list_of_distr;
 
+  fpar[0] = 2.;
+  list->distr = unur_distr_student(fpar,1);
+  list->type  = T_TYPE_TDR;
+  list->c_max = -0.5;
+  ++n_distr; ++list;
+
+
 #ifdef D_GAMMA
   /** Gamma distributions **/
   fpar[0] = 1.;

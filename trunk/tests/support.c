@@ -165,3 +165,41 @@ void print_pval( double pval, int trial )
 } /* end of print_pval() */
   
 /*---------------------------------------------------------------------------*/
+
+/* run level 2 test on collected p-values */
+void run_level2( int line, double *pvals, int n_pvals )
+{
+  int i;
+  int *classes;
+  int n_classes;
+  double pval2;
+
+  /* number classes */
+  n_classes = (int) (sqrt(n_pvals)+0.5);
+  if (n_pvals/n_classes < 6)
+    /* classes would have too few entries */
+    n_classes = n_pvals / 6;
+
+  /* allocate memory for classes */
+  classes = calloc( n_classes+1, sizeof(int) );
+
+  /* count bins */
+  for (i=0; i<n_pvals; i++)
+    ++(classes[ (int)(pvals[i] * n_classes) ]);
+
+  /* run test */
+  pval2 = _unur_test_chi2test( NULL, classes, n_classes, 5, 0 );
+
+  /* print result */
+  printf(" Level-2-test(%d)",n_pvals);
+  fprintf(TESTLOG,"line %4d: ",__LINE__);
+  print_pval(pval2,100);
+  fprintf(TESTLOG,"\tLevel 2 Test (n=%d)\n",n_pvals);
+
+  /* clear */
+  free(classes);
+
+} /* end of run_level2() */
+
+/*---------------------------------------------------------------------------*/
+

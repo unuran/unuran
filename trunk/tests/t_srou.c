@@ -48,7 +48,6 @@ void test_srou_sample( void );
 void test_srou_validate( void );
 void test_srou_validate_chi2( UNUR_DISTR *distr );
 void run_chi2( UNUR_PAR *par, int line );
-void run_level2( void );
 
 double pdf( double x, UNUR_DISTR *distr );
 
@@ -498,7 +497,7 @@ void test_srou_validate(void)
   }
 
   /* run level 2 test on collected p-values */
-  run_level2();
+  run_level2(__LINE__, list_pvals, n_pvals);
     
   /* test finished */
   test_ok &= (test_failed > FAILED_LIMIT) ? 0 : 1;
@@ -511,6 +510,7 @@ void test_srou_validate(void)
 void test_srou_validate_chi2( UNUR_DISTR *distr )
 {
   UNUR_PAR *par;
+  double cdfatmode;
 
   /* basic algorithm */
   par = unur_srou_new(distr);
@@ -521,11 +521,17 @@ void test_srou_validate_chi2( UNUR_DISTR *distr )
   unur_srou_set_usemirror(par,1);
   run_chi2(par,__LINE__); 
 
-  /* use cdf at mode */
+  /* get cdf at mode */
+  cdfatmode = unur_distr_cont_cdf( unur_distr_cont_get_mode(distr), distr );
+  if (cdfatmode < 0.)
+    /* cdf not available */
+    return;
 
   /* use cdf at mode and squeeze */
-
-
+  par = unur_srou_new(distr);
+  unur_srou_set_cdfatmode(par,cdfatmode);
+  unur_srou_set_usesqueeze(par,1);
+  run_chi2(par,__LINE__); 
 
 } /* end of test_srou_validate_chi2() */  
 
@@ -567,42 +573,6 @@ void run_chi2( UNUR_PAR *par, int line )
   unur_free(gen);
 
 } /* end of run_chi2() */
-
-/*...........................................................................*/
-
-void run_level2( void )
-{
-  int i;
-  int *classes;
-  int n_classes;
-  double pval2;
-
-  /* number classes */
-  n_classes = (int) (sqrt(n_pvals)+0.5);
-  if (n_pvals/n_classes < 6)
-    /* classes would have too few entries */
-    n_classes = n_pvals / 6;
-
-  /* allocate memory for classes */
-  classes = calloc( n_classes+1, sizeof(int) );
-
-  /* count bins */
-  for (i=0; i<n_pvals; i++)
-    ++(classes[ (int)(list_pvals[i] * n_classes) ]);
-
-  /* run test */
-  pval2 = _unur_test_chi2test( NULL, classes, n_classes, 5, 0 );
-
-  /* print result */
-  printf(" Level-2-test");
-  fprintf(TESTLOG,"line %4d: ",__LINE__);
-  print_pval(pval2,100);
-  fprintf(TESTLOG,"\tLevel 2 Test\n");
-
-  /* clear */
-  free(classes);
-
-} /* end of run_level2() */
 
 /*---------------------------------------------------------------------------*/
 

@@ -110,4 +110,7 @@ void do_check_pval( int line, UNUR_GEN *gen, double pval, int trial );
 /* print p-value of statistical test */
 void print_pval( double pval, int trial );
 
+/* run level 2 test on collected p-values */
+void run_level2( int line, double *pvals, int n_pvals );
+
 /*---------------------------------------------------------------------------*/

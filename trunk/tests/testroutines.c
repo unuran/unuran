@@ -379,6 +379,60 @@ int compare_int_sequence_par( FILE *LOG, int line, struct prng *urng, UNUR_PAR *
 
 } /* end of compare_int_sequence_par() */
 
+/*...........................................................................*/
+
+int compare_int_sequence_gen_start( FILE *LOG, int line, struct prng *urng, UNUR_GEN *gen, int sample_size )
+{
+  int i;
+
+  if (int_sequence_A == NULL) {
+    int_sequence_A = malloc( sample_size * sizeof(int) );
+    abort_if_NULL(LOG, line, int_sequence_A);
+  }
+  
+  /* generate sequence */
+  prng_reset(urng);
+
+  for (i=0; i<sample_size; i++)
+    int_sequence_A[i] = unur_sample_discr(gen);
+
+  /* there cannot be a failure */
+  return 0;
+
+} /* end of compare_int_sequence_gen_start() */
+
+/*...........................................................................*/
+
+int compare_int_sequence_gen( FILE *LOG, int line, struct prng *urng, UNUR_GEN *gen, int sample_size )
+{
+  int i;
+  int ok = TRUE;
+  int failed = 0;
+
+  /* init generator */
+  prng_reset(urng);
+  
+  /* compare sequence */
+  for (i=0; i<sample_size; i++)
+    if (int_sequence_A[i] != unur_sample_discr(gen)) {
+      ok = FALSE;
+      break;
+    }
+  
+  /* print result */
+  fprintf(LOG,"line %4d: random seqences ...\t\t",line);
+  if (!ok) {
+    failed = 1;
+    fprintf(LOG," Failed\n");
+  }
+  else
+    fprintf(LOG," ok\n");
+  
+  fflush(LOG);
+  return failed;
+
+} /* end of compare_int_sequence_gen() */
+
 /*---------------------------------------------------------------------------*/
 /* print name of distribution */
 

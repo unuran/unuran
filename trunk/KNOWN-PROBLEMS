@@ -1,0 +1,5 @@
+
+Using unur_sample_cont(), unur_sample_discr(), or unur_distr_vec() with a 
+generator object of the wrong type causes a segmentation fault.
+
+

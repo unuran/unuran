@@ -34,6 +34,11 @@ EOM
 ##############################################################################
 # Unsupported Distribution types
 #
+my %SUPPORTED_DISTR_TYPES =
+    ( 'cont'  => 1,
+      'cemp'  => 1,
+      'discr' => 1 );
+
 my %UNSUPPORTED_DISTR_TYPES =
     ( 'corder' => 1,
       'cvec'   => 1,
@@ -170,7 +175,7 @@ sub make_list_of_distributions {
     print STDERR "Generic distributions:\n";
 
     $code .= "\t /* get pointer to generic distribution object */\n";
-    $code .= "\t if (distr == NULL) {\n";
+    $code .= "\t if (distr == (struct unur_distr *) &distr_unknown) { \n";
     $code .= "\t\t do {\n";
 
     foreach my $hfile (sort @methods_h_files) {
@@ -186,7 +191,7 @@ sub make_list_of_distributions {
 	# ID for method
 	my $distr_type = "\L$1";
 	# not all generic distributions are supported yet
-	next if $UNSUPPORTED_DISTR_TYPES{$distr_type};
+	next unless $SUPPORTED_DISTR_TYPES{$distr_type};
 
 	# make code
 	print STDERR "  \U$distr_type" if $VERBOSE;
@@ -239,7 +244,7 @@ sub make_list_of_distr_sets {
 	my $distr_type = "\L$1";
 
 	# not all generic distributions are supported yet
-	next if $UNSUPPORTED_DISTR_TYPES{$distr_type};
+	next unless $SUPPORTED_DISTR_TYPES{$distr_type};
 	print STDERR "  \U$distr_type: " if $VERBOSE;
 
 	# Remove all comments and empty lines ...

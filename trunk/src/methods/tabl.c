@@ -124,7 +124,7 @@ _unur_tabl_split_b_starting_intervals( struct unur_par *par, struct unur_gen *ge
 /* SPLIT B, but instead of the iteration in [1] use "arcmean".               */
 /*---------------------------------------------------------------------------*/
 
-static struct unur_tabl_interval *
+static int
 _unur_tabl_split_interval( struct unur_gen *gen, struct unur_tabl_interval *iv, 
 			   double x, double fx, unsigned int split_mode );
 /*---------------------------------------------------------------------------*/
@@ -141,12 +141,10 @@ static struct unur_tabl_interval *_unur_tabl_iv_stack_pop( struct unur_gen *gen 
 /* pop an interval from the stack of free intervals.                         */
 /*---------------------------------------------------------------------------*/
 
-#if 0 /* we do not need this subroutine yet */
 static void _unur_tabl_iv_stack_push( struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 /* push the last popped interval back onto the stack.                         */
 /*---------------------------------------------------------------------------*/
-#endif
 
 #if UNUR_DEBUG & UNUR_DB_INFO
 /*---------------------------------------------------------------------------*/
@@ -339,9 +337,12 @@ unur_tabl_init( struct unur_par *par )
 
   /* split according to [1], run SPLIT B */
   if (PAR.variant & TABL_STP_SPLIT_B)
-    while (GEN.n_ivs < PAR.n_starting_cpoints)
-      if (!_unur_tabl_split_b_starting_intervals(par,gen))
+    while ( (GEN.n_ivs < PAR.n_starting_cpoints)
+	    && (GEN.max_ratio * GEN.Atotal > GEN.Asqueeze) )
+      if (!_unur_tabl_split_b_starting_intervals(par,gen)) {
+	free(par); unur_tabl_free(gen);
 	return NULL;
+      }
   
   /* we have to update the maximal number of intervals,
      if the user wants more starting points. */
@@ -498,7 +499,7 @@ unur_tabl_sample( struct unur_gen *gen )
        (generation of squeeze should be inversion) */
     u = (iv->slope<0) ? (iv->Acum - u) : (iv->Ahat + u - iv->Acum);
 
-    if( u <= iv->Asqueeze ) {
+    if( u < iv->Asqueeze ) {
       /* below squeeze */
       return( iv->xmax + (iv->Asqueeze-u) * (iv->xmin - iv->xmax)/iv->Asqueeze ); 
       /** TODO: possible overflow/underflow ?? **/
@@ -792,6 +793,8 @@ _unur_tabl_get_starting_intervals_from_slopes( struct unur_par *par, struct unur
      /*   pdf(a) >= pdf(b)                                                   */
      /*----------------------------------------------------------------------*/
 {
+  /** TODO: check for slopes out of support !! **/
+
   struct unur_tabl_interval *iv;
   int i;
 
@@ -876,6 +879,8 @@ _unur_tabl_get_starting_intervals_from_mode( struct unur_par *par, struct unur_g
      /*   0 ... error                                                        */
      /*----------------------------------------------------------------------*/
 {
+  /** TODO: check for slopes out of support !! **/
+
   struct unur_tabl_interval *iv;
 
   /* check arguments */
@@ -970,7 +975,7 @@ _unur_tabl_split_a_starting_intervals( struct unur_par *par,
      /*   NULL on error                                                      */
      /*----------------------------------------------------------------------*/
 {
-  struct unur_tabl_interval *iv, *iv_last, *iv_new;
+  struct unur_tabl_interval *iv, *iv_last;
   double bar_area, x;
   
   /* check arguments */
@@ -987,22 +992,38 @@ _unur_tabl_split_a_starting_intervals( struct unur_par *par,
   /* (maximal) area of bar (= hat in one interval) */
   bar_area = PAR.pdf_area * PAR.area_fract;
 
-  while (iv->Ahat > bar_area) {
-
-    switch (iv->slope) {
-    case +1:
-      /* move from right to left */
+  switch (iv->slope) {
+  case +1:
+    /* move from right to left */
+    while (iv->Ahat > bar_area) {
       x = iv->xmax - bar_area / iv->fmax;
-      iv_new = _unur_tabl_split_interval( gen, iv, x, PDF(x), TABL_SPLIT_POINT );
-      if (iv_last == iv_slope)
-	iv_last = iv_new;
-      break;
-    case -1:
-      /* move from left to right */
-      x = iv->xmax + bar_area / iv->fmax;
-      iv = _unur_tabl_split_interval( gen, iv, x, PDF(x), TABL_SPLIT_POINT );
-      break;
+      switch (_unur_tabl_split_interval( gen, iv, x, PDF(x), TABL_SPLIT_POINT )) {
+      case 1:  /* splitting succesful */
+	if (iv_last == iv_slope)
+	  iv_last = iv->next;
+	break;
+      case -1: /* interval chopped */
+	break; /* nothing to do */
+      case 0:  /* error (slope not monotonically increasing) */
+	return NULL;
+      }
     }
+    break;
+
+  case -1:
+    /* move from left to right */
+    while (iv->Ahat > bar_area) {
+      x = iv->xmax + bar_area / iv->fmax;
+      switch (_unur_tabl_split_interval( gen, iv, x, PDF(x), TABL_SPLIT_POINT )) {
+      case 1:  /* splitting succesful */
+	iv = iv->next; break;
+      case -1: /* interval chopped */
+	break; /* nothing to do */
+      case 0:  /* error (slope not monotonically decreasing) */
+	return NULL;
+      }
+    }
+    break;
   }
 
   /* pointer to last interval */
@@ -1048,7 +1069,13 @@ _unur_tabl_split_b_starting_intervals( struct unur_par *par,
     COOKIE_CHECK(iv,CK_TABL_IV,0);
     if ((iv->Ahat - iv->Asqueeze) >= Amean) {
       /* new point instead of the interation of [1] we use "arcmean" */
-      iv = _unur_tabl_split_interval( gen, iv, 0., 0., TABL_SPLIT_ARC );
+      switch (_unur_tabl_split_interval( gen, iv, 0., 0., TABL_SPLIT_ARC )) {
+      case 1:  /* splitting succesful */
+      case -1: /* interval chopped */
+	break; /* nothing to do */
+      case 0:  /* error (slope not monotonically decreasing) */
+	return 0;
+      }
       if (GEN.n_ivs >= PAR.n_starting_cpoints)
 	/* no more intervals, yet */
 	break;
@@ -1062,7 +1089,8 @@ _unur_tabl_split_b_starting_intervals( struct unur_par *par,
 
 /*****************************************************************************/
 
-static struct unur_tabl_interval *
+/*  static struct unur_tabl_interval * */
+static int
 _unur_tabl_split_interval( struct unur_gen *gen,
 				struct unur_tabl_interval *iv_old, 
 				double x, double fx, 
@@ -1078,15 +1106,16 @@ _unur_tabl_split_interval( struct unur_gen *gen,
      /*   fx  ... value of p.d.f. at splitting point                         */
      /*                                                                      */
      /* return:                                                              */
-     /*   pointer to new (right) interval                                    */
-     /*   NULL on error                                                      */
+     /*   1 ... splitting successful                                         */
+     /*  -1 ... interval chopped off domain (not part of support of p.d.f.)  */
+     /*   0 ... error: p.d.f. not monoton in interval                        */
      /*----------------------------------------------------------------------*/
 {
   struct unur_tabl_interval *iv_new;
 
   /* check arguments */
-  COOKIE_CHECK(gen,CK_TABL_GEN,NULL);
-  COOKIE_CHECK(iv_old,CK_TABL_IV,NULL);
+  COOKIE_CHECK(gen,CK_TABL_GEN,0);
+  COOKIE_CHECK(iv_old,CK_TABL_IV,0);
 
   /* There are three possibilities for the splitting point:
      (1) use x and avoid computation of pdf(x). 
@@ -1109,6 +1138,26 @@ _unur_tabl_split_interval( struct unur_gen *gen,
     /* this should not happen */
     _unur_warning(gen->genid,UNUR_ERR_SAMPLE,"Invalid variant, use default");
     break;
+  }
+
+  /* check if the new interval is completely outside the support of p.d.f. */
+  if (fx <= 0.) {
+    /* check montonicity */
+    if (iv_old->fmin > 0.) {
+      _unur_error(gen->genid,UNUR_ERR_INIT,"p.d.f. not monoton in slope");
+      return 0;
+    }
+
+    /* chop off part out of support */
+    iv_old->xmin = x;
+
+    /* compute new area in interval */
+    /** TODO: possible overflow/underflow ?? **/
+    iv_old->Ahat = iv_old->slope * (iv_old->xmax - iv_old->xmin) * iv_old->fmax;
+    /* iv_old->Asqueeze remains 0 */
+
+    /* interval chopped but not split */
+    return -1;
   }
 
   /* we need a new interval */
@@ -1147,30 +1196,24 @@ _unur_tabl_split_interval( struct unur_gen *gen,
     break;
   default: 
     /* this should not happen */
-    _unur_warning(gen->genid,UNUR_ERR_SAMPLE,"Invalid slope. Cannot split interval.");
+    _unur_error(gen->genid,UNUR_ERR_SAMPLE,"Invalid slope. Cannot split interval.");
     return 0;
   }
 
   /* compute the areas in both intervals */
-  iv_old->Acum -= iv_old->Ahat;
-
   /** TODO: possible overflow/underflow ?? **/
   iv_new->Ahat     = iv_new->slope * (iv_new->xmax - iv_new->xmin) * iv_new->fmax;
   iv_new->Asqueeze = iv_new->slope * (iv_new->xmax - iv_new->xmin) * iv_new->fmin;
   iv_old->Ahat     = iv_old->slope * (iv_old->xmax - iv_old->xmin) * iv_old->fmax;
   iv_old->Asqueeze = iv_old->slope * (iv_old->xmax - iv_old->xmin) * iv_old->fmin;
 
-  /* update cumulated areas */
-  iv_old->Acum += iv_old->Ahat;
-  iv_new->Acum = iv_old->Acum + iv_new->Ahat;
-
-
   /* insert iv_new into linked list of intervals.
      iv_old is stored on the left hand side of iv_new. */
   iv_new->next = iv_old->next;
   iv_old->next = iv_new;
 
-  return iv_new;
+  /* splitting successful */
+  return 1;
 
 } /* end of _unur_tabl_split_interval() */
 
@@ -1291,7 +1334,6 @@ _unur_tabl_iv_stack_pop( struct unur_gen *gen )
 
 /*---------------------------------------------------------------------------*/
 
-#if 0 /* we do not need this subroutine yet */
 static void
 _unur_tabl_iv_stack_push( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
@@ -1308,7 +1350,6 @@ _unur_tabl_iv_stack_push( struct unur_gen *gen )
   --(GEN.n_ivs);
   ++(GEN.iv_free);
 } /* end of _unur_tabl_iv_stack_push() */
-#endif
 
 /*-----------------------------------------------------------------*/
 

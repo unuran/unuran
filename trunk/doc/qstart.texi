@@ -353,6 +353,11 @@ To change any parameter you habe to use the according function call.
 @* @code{  unur_ninv_use_newton(par); );
 }
 
+Default settings of parameters:
+
+@include qstart_paramdefaults.texi
+
+
 @c --------------------------------------------------------------------
 
 

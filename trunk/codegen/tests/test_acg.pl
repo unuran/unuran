@@ -153,6 +153,10 @@ my $UNURAN_gen;
 my $UNURAN_main;
 my $C_gen;
 my $C_main;
+my $FORTRAN_gen;
+my $FORTRAN_main;
+my $JAVA_gen;
+my $JAVA_main;
 
 my $test_nr = 0;
 my $test_runs = 0;
@@ -241,7 +245,7 @@ open C, "$C_exec |";
 open FORTRAN, "$FORTRAN_exec |";
 
 open JAVA, "java $JAVA_class |";
-$HAVE_JAVA = ($?) ? 0 : 1;
+my $HAVE_JAVA = ($?) ? 0 : 1;
 unless ($HAVE_JAVA) {
     print_log("Cannot run JAVA tests!\n\n");
 }
@@ -275,9 +279,7 @@ while (my $UNURAN_out = <UNURAN>) {
 	    $C_n_diffs = 0;
  	    $FORTRAN_n_diffs = 0;
 	    $JAVA_n_diffs = 0;
-	    
 	    $data_mode = 1;
-	    $errors = 0;
 	}
 	else {
 	    print_log("$UNURAN_out\n");

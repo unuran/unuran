@@ -30,6 +30,8 @@ int main()
   int i;
   double stp[]={-2,-1,0,1,2,3};
 
+  double x;
+
 /*    double fpm[]={0.3,5.,-1.,0}; */
   double fpm[]={5.,0.3,-1.,0};
 
@@ -58,6 +60,12 @@ int main()
 
   unur_distr_free(distr);
   unur_free(gen);
+
+
+  x = atof("");
+
+  printf("atof = %g\n",x);
+
 
 /*    unur_run_tests(par,RUN_TESTS); */
 

@@ -238,9 +238,17 @@ int main (int argc, char *argv[]){
   /* ------------------------------------------------------------------------*/
   /* generate code                                                           */
 
-  if (!langfunc( gen, stdout, NULL )) {
-    fatal("Cannot generate program code.\\n");
-    exit (ACG_EXIT_FAIL_CODE);
+  if (langfunc == unur_acg_UNURAN) {
+      if (!unur_acg_UNURAN( gen, stdout, NULL, n_cpoints )) {
+	  fatal("Cannot generate program code.\\n");
+	  exit (ACG_EXIT_FAIL_CODE);
+      }
+  }
+  else {
+      if (!langfunc( gen, stdout, NULL )) {
+	  fatal("Cannot generate program code.\\n");
+	  exit (ACG_EXIT_FAIL_CODE);
+      }
   }
 
   /* ------------------------------------------------------------------------*/

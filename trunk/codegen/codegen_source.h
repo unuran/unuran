@@ -53,6 +53,7 @@ int _unur_acg_UNURAN_header (UNUR_DISTR *distr, FILE *out, const char *rand);
 int _unur_acg_C_PDF (UNUR_DISTR *distr, FILE *out, const char *pdf);
 int _unur_acg_FORTRAN_PDF (UNUR_DISTR *distr, FILE *out, const char *pdf);
 int _unur_acg_JAVA_PDF (UNUR_DISTR *distr, FILE *out, const char *pdf);
+int _unur_acg_UNURAN_PDF (UNUR_DISTR *distr, FILE *out, const char *pdf);
 /*---------------------------------------------------------------------------*/
 /* Code generator for PDFs of UNURAN build-in standard distributions.        */
 /*---------------------------------------------------------------------------*/
@@ -63,6 +64,8 @@ int _unur_acg_FORTRAN_tdr_ps( struct unur_gen *gen, FILE *out,
 			      const char *rand_name, const char *pdf_name );
 int _unur_acg_JAVA_tdr_ps( struct unur_gen *gen, FILE *out, 
 			   const char *rand_name, const char *pdf_name );
+int _unur_acg_UNURAN_tdr_ps( struct unur_gen *gen, FILE *out, 
+			     const char *rand_name, int n_cpoints );
 /*---------------------------------------------------------------------------*/
 /* Code generator for method TDR variant PS (proportional squeeze).          */
 /*---------------------------------------------------------------------------*/

@@ -1,16 +1,4 @@
-/************************************************************************
- * MODUL PARSER.C                     (c) c't 2/95 & Friedemann Seebass *
- *                                                                      *
- * Syntaktische Analyse von Funktionsdefinitionen.                      * 
- *                                                                      * 
- * Exportiert werden die Funktionen struct treenode *string2tree(),     * 
- *            char *readln(), void pt_error(), void show_tree() und     * 
- *            void delete_tree() sowie das Feld char *errorstrings[].   * 
- * Importiert werden aus SCANNER.C die unten angegeben Daten und        * 
- *            Funktionen.                                               * 
- *                                                                      * 
- * Entwickelt mit Sozobon C/Pure C auf Atari TT von Friedemann Seebass. * 
- ************************************************************************/ 
+
 
 #include "scanpars.h" 
 #define CALC_TEST   TRUE
@@ -45,7 +33,7 @@ struct treenode *FuncDesignator   (char *f, int *spp, int *ecp, int *epp);
 struct treenode *ActualParameterlist(char *f, int *spp, int *ecp, 
                                                  int *epp, int corr_panz);
 struct treenode *create_node(char *symb, int token, int symbkind,
-                float val, struct treenode *left, struct treenode *right);
+                double val, struct treenode *left, struct treenode *right);
 struct treenode *tnalloc (void);
 struct treenode *set_err (int err_nr, int *errcodep);
 char            *readln  (char *s);
@@ -128,7 +116,7 @@ static struct treenode *FuncDefinition(char *f,int *spp,int *ecp,int *epp)
   struct treenode *root, *l, *r; 
   char            symb[SYMBLENGTH]; 
   int             sk, t, ft; 
-  float           v = 0.0; 
+  double           v = 0.0; 
 
   l = DefFuncDesignator(f,spp,ecp,epp,&ft); if (*ecp) return NULL; 
   *ecp = nxt_symbol(f,spp,symb,&t,&sk,epp); 
@@ -154,14 +142,14 @@ static struct treenode *DefFuncDesignator(char *f, int *spp, int *ecp,
   struct treenode *root, *r; 
   char            symb[SYMBLENGTH], fsymb[SYMBLENGTH]; 
   int             t, sk, fsk, paranz; 
-  float           fv = 0.0; 
+  double           fv = 0.0; 
 
   *ecp = nxt_symbol(f,spp,fsymb,ftp,&fsk,epp); 
   if (fsk != UFUNCS) return set_err(13,ecp); 
-  IF symbol[*ftp].info != 0 THEN 
+  if( symbol[*ftp].info != 0 ){ 
      /* --- Funktion war schon vorhanden => alten Baum loeschen: --- */ 
      _unur_fstr_free(symbol[*ftp].tree); 
-  ENDIF 
+  } 
   *ecp = nxt_symbol(f,spp,symb,&t,&sk,epp); 
   if (strcmp(symb,"(") != 0) return set_err(14,ecp); 
   r = DefParameterlist(f,spp,ecp,epp,&paranz); if (*ecp) return NULL; 
@@ -189,7 +177,7 @@ static struct treenode *DefParameterlist(char *f, int *spp, int *ecp,
   struct treenode *root, *l, *r; 
   char            symb[SYMBLENGTH]; 
   int             t, ct, sk, scanpos; 
-  float           v = 0.0; 
+  double           v = 0.0; 
 
   *ecp = nxt_symbol(f,spp,symb,&t,&sk,epp); 
   if (sk != UIDENT) return set_err(16,ecp); 
@@ -236,17 +224,17 @@ static struct treenode *Expression(char *f, int *spp, int *ecp, int *epp)
   struct treenode *root, *l, *r; 
   char            symb[SYMBLENGTH]; 
   int             sk, t, scanpos; 
-  float           v = 0.0; 
+  double           v = 0.0; 
 
   l = SimpleExpression(f,spp,ecp,epp); if (*ecp) return NULL; 
   scanpos = *spp; 
   *ecp = nxt_symbol(f,spp,symb,&t,&sk,epp); 
-  IF sk == REL_OP 
-     THEN r = SimpleExpression(f,spp,ecp,epp); if (*ecp) return NULL; 
+  if( sk == REL_OP 
+     ){ r = SimpleExpression(f,spp,ecp,epp); if (*ecp) return NULL; 
           root = create_node(symb,t,sk,v,l,r); 
-     ELSE *spp = scanpos; 
+     }else{ *spp = scanpos; 
           root = l; 
-  ENDIF 
+  } 
   return root; 
 } 
 /**************** ****************** ****************** *****************/ 
@@ -265,7 +253,7 @@ static struct treenode *SimpleExpression(char *f, int *spp,
   struct treenode *root, *l, *r; 
   char            symb[SYMBLENGTH]; 
   int             sk, t, scanpos; 
-  float           v = 0.0; 
+  double           v = 0.0; 
 
   root = VTerm(f,spp,ecp,epp); if (*ecp) return NULL; 
   scanpos = *spp; 
@@ -297,19 +285,19 @@ static struct treenode *VTerm(char *f, int *spp, int *ecp, int *epp)
   struct treenode *root, *l, *r; 
   char            symb[SYMBLENGTH]; 
   int             sk, t, scanpos = *spp; 
-  float           v = 0.0; 
+  double           v = 0.0; 
 
   *ecp = nxt_symbol(f,spp,symb,&t,&sk,epp); 
-  IF strcmp(symb,"-") == 0 
-     THEN /* --- Term hat neg. Vorzeichen =>     --- */ 
+  if( strcmp(symb,"-") == 0 
+     ){ /* --- Term hat neg. Vorzeichen =>     --- */ 
           /* --- Vorzeichen in Operator wandeln: --- */ 
           l = create_node("0",scs+1,SCONST,0.0,NULL,NULL); 
           r = Term(f,spp,ecp,epp); if (*ecp) return NULL; 
           root = create_node(symb,t,sk,v,l,r); 
-     ELSE /* --- Term hat pos. oder kein Vorzeichen: --- */ 
+     }else{ /* --- Term hat pos. oder kein Vorzeichen: --- */ 
           if (strcmp(symb,"+") != 0) *spp = scanpos;  /* "+" ignorieren */ 
           root = Term(f,spp,ecp,epp); if (*ecp) return NULL; 
-  ENDIF 
+  } 
   return root; 
 } 
 /********** *********** ************ ************ *********** ***********/ 
@@ -327,7 +315,7 @@ static struct treenode *Term(char *f, int *spp, int *ecp, int *epp)
   struct treenode *root, *l, *r; 
   char            symb[SYMBLENGTH]; 
   int             sk, t, scanpos; 
-  float           v = 0.0; 
+  double           v = 0.0; 
 
   root = Factor(f,spp,ecp,epp); if (*ecp) return NULL; 
   scanpos = *spp; 
@@ -357,17 +345,17 @@ static struct treenode *Factor(char *f, int *spp, int *ecp, int *epp)
   struct treenode *root, *l, *r; 
   char            symb[SYMBLENGTH]; 
   int             sk, t, scanpos; 
-  float           v = 0.0; 
+  double           v = 0.0; 
 
   l = bas_exp(f,spp,ecp,epp); if (*ecp) return NULL; 
   scanpos = *spp; 
   *ecp = nxt_symbol(f,spp,symb,&t,&sk,epp); 
-  IF strcmp(symb,"^") == 0 
-     THEN r = bas_exp(f,spp,ecp,epp); if (*ecp) return NULL; 
+  if( strcmp(symb,"^") == 0 
+     ){ r = bas_exp(f,spp,ecp,epp); if (*ecp) return NULL; 
           root = create_node(symb,t,sk,v,l,r); 
-     ELSE *spp = scanpos; 
+     }else{ *spp = scanpos; 
           root = l; 
-  ENDIF 
+  } 
   return root; 
 } 
 /******* ******** ******** ********* ********* ******** ******** ********/ 
@@ -391,31 +379,31 @@ static struct treenode *bas_exp(char *f, int *spp, int *ecp, int *epp)
   struct treenode *bas_exp(); 
   char            symb[SYMBLENGTH]; 
   int             sk, t, scanpos = *spp; 
-  float           v = 0.0; 
+  double           v = 0.0; 
 
   *ecp = nxt_symbol(f,spp,symb,&t,&sk,epp); 
-  IF sk==SCONST || sk==UCONST || sk==UIDENT || strcmp(symb,"NOT")==0 
-     THEN /* --- neuen Knoten bilden: --- */ 
-          IF strcmp(symb,"NOT") == 0 
-             THEN r = bas_exp(f,spp,ecp,epp); if (*ecp) return NULL; 
-             ELSE r = NULL; 
-          ENDIF 
+  if( sk==SCONST || sk==UCONST || sk==UIDENT || strcmp(symb,"NOT")==0 
+     ){ /* --- neuen Knoten bilden: --- */ 
+          if( strcmp(symb,"NOT") == 0 
+             ){ r = bas_exp(f,spp,ecp,epp); if (*ecp) return NULL; 
+             }else{ r = NULL; 
+          } 
           root = create_node(symb,t,sk,v,NULL,r); 
-     ELSE /* --- neuer Knoten nicht noetig: --- */ 
-          IF sk == UFUNCS || sk == SFUNCS 
-             THEN *spp = scanpos; 
+     }else{ /* --- neuer Knoten nicht noetig: --- */ 
+          if( sk == UFUNCS || sk == SFUNCS 
+             ){ *spp = scanpos; 
                   root = FuncDesignator(f,spp,ecp,epp); 
                   if (*ecp) return NULL; 
-             ELSE IF strcmp(symb,"(") == 0 
-                     THEN root = Expression(f,spp,ecp,epp); 
+             }else{ if( strcmp(symb,"(") == 0 
+                     ){ root = Expression(f,spp,ecp,epp); 
                           if (*ecp) return NULL; 
                           *ecp = nxt_symbol(f,spp,symb,&t,&sk,epp); 
                           if (strcmp(symb,")")!=0) return set_err(18,ecp); 
-                     ELSE *spp = scanpos; 
+                     }else{ *spp = scanpos; 
                           return set_err(19,ecp); 
-                  ENDIF 
-          ENDIF 
-  ENDIF 
+                  } 
+          } 
+  } 
   return root; 
 } 
 /******* ******* ******* ******* ******* ******* ******* ******* ********/ 
@@ -433,7 +421,7 @@ static struct treenode *FuncDesignator(char *f, int *spp,
   struct treenode *root, *r; 
   char            symb[SYMBLENGTH], fsymb[SYMBLENGTH]; 
   int             sk, fsk, t, ft, corr_panz; 
-  float           fv = 0.0; 
+  double           fv = 0.0; 
 
   *ecp = nxt_symbol(f,spp,fsymb,&ft,&fsk,epp); 
   /*if (fsk != SFUNCS && fsk != UFUNCS) return set_err(20,ecp);*/ 
@@ -462,7 +450,7 @@ static struct treenode *ActualParameterlist(char *f, int *spp, int *ecp,
   struct treenode *root, *l, *r; 
   char            symb[SYMBLENGTH]; 
   int             sk, ct, scanpos, panz; 
-  float           v = 0.0; 
+  double           v = 0.0; 
 
   root = Expression(f,spp,ecp,epp); if (*ecp) return NULL; 
   panz = 1; 
@@ -484,7 +472,7 @@ static struct treenode *ActualParameterlist(char *f, int *spp, int *ecp,
 /*********************** *********************** ************************/ 
 
 static struct treenode *create_node(char *symb, int token, int symbkind,
-                 float val, struct treenode *left, struct treenode *right) 
+                 double val, struct treenode *left, struct treenode *right) 
 
 /*  Setzt im Knoten mit der Wurzel root den String, das Token und die Art 
  *  des Symbols (REL_OP, ADD_OP etc.), 
@@ -494,17 +482,17 @@ static struct treenode *create_node(char *symb, int token, int symbkind,
   struct treenode *root; 
   int             sum, prod; 
 
-  IF left != 0 && right != 0 && simplification(symb,token,left,right) 
-     THEN root = left; 
+  if( left != 0 && right != 0 && simplification(symb,token,left,right) 
+     ){ root = left; 
           free((char*)right);   /* Speicher fuer Blatt wieder freigeben */ 
-     ELSE root = tnalloc(); 
+     }else{ root = tnalloc(); 
           strcpy(root->symb,symb); 
           root->token    = token; 
           root->symbkind = symbkind; 
           root->val      = val; 
           root->left     = left; 
           root->right    = right; 
-  ENDIF 
+  } 
   sum  = strcmp(root->symb,"+")==0 || strcmp(root->symb,"-")==0; 
   prod = strcmp(root->symb,"*")==0 || strcmp(root->symb,"/")==0; 
   if (sum || prod) check_reorg(root); 
@@ -538,7 +526,7 @@ static int simplification(char *symb, int t, struct treenode *l,
 
   if (l_const && l_0) l_const = FALSE; /* 0-Blatt muss bleiben */ 
   /* --- Ueberpruefen, ob x/x, x^0 oder 1^x => Blatt = 1: --- */ 
-  IF quotient && eq_leaves || power && (r_0 || l_1) THEN 
+  if( quotient && eq_leaves || power && (r_0 || l_1) ){ 
      strcpy(l->symb,"1"); 
      l->token    = scs + 2; 
      l->symbkind = SCONST; 
@@ -546,10 +534,10 @@ static int simplification(char *symb, int t, struct treenode *l,
      l->left     = NULL; 
      l->right    = NULL; 
      return TRUE; 
-  ENDIF 
+  } 
 
   /*-- Ueberpruefen, ob 0*x,x*0,0ANDx,xAND0,0/x,0^x,0MODx => Blatt=0: --*/ 
-  IF (product||and) && (l_0||r_0) || l_0 && (quotient||power||mod) THEN 
+  if( (product||and) && (l_0||r_0) || l_0 && (quotient||power||mod) ){ 
      strcpy(l->symb,"0"); 
      l->token    = scs + 1; 
      l->symbkind = SCONST; 
@@ -557,15 +545,15 @@ static int simplification(char *symb, int t, struct treenode *l,
      l->left     = NULL; 
      l->right    = NULL; 
      return TRUE; 
-  ENDIF 
+  } 
 
   /*- Ueberpruefen, ob x+0,x-0,x*1,x/1,x MOD 1,x^1 => l. Baum zurueck:- */ 
-  IF r_0 && (plus||minus) || r_1 && (product||quotient||mod||power) THEN 
+  if( r_0 && (plus||minus) || r_1 && (product||quotient||mod||power) ){ 
      return TRUE; 
-  ENDIF 
+  } 
 
   /* --- Ueberpruefen, ob 0+x, 1*x => rechten Baum zurueck: --- */ 
-  IF l_0 && plus || l_1 && product THEN 
+  if( l_0 && plus || l_1 && product ){ 
      strcpy(l->symb,r->symb); 
      l->token    = r->token; 
      l->symbkind = r->symbkind; 
@@ -573,24 +561,24 @@ static int simplification(char *symb, int t, struct treenode *l,
      l->left     = r->left; 
      l->right    = r->right; 
      return TRUE; 
-  ENDIF 
+  } 
 
   #if CALC_TEST
 
   /* --- Ueberpruefen, ob beide Blaetter Konstanten => ausrechnen: --- */ 
-  IF l_const && r_const THEN 
+  if( l_const && r_const ){ 
      l->val = (*symbol[t].vcalc)(t,
                               symbol[l->token].val,symbol[r->token].val); 
-     IF l->symbkind == SCONST && r->symbkind == SCONST && !quotient 
-        THEN sprintf(l->symb,"%d",(int)l->val);/* Wert ist int         */ 
-        ELSE sprintf(l->symb,"%g",l->val);     /* Wert ist evtl. float */ 
-     ENDIF 
+     if( l->symbkind == SCONST && r->symbkind == SCONST && !quotient 
+        ){ sprintf(l->symb,"%d",(int)l->val);/* Wert ist int         */ 
+        }else{ sprintf(l->symb,"%g",l->val);     /* Wert ist evtl. double */ 
+     } 
      l->token    = find_index(l->symb,scs,uce,'0'); 
      l->symbkind = find_kind(l->token); 
      l->left     = NULL; 
      l->right    = NULL; 
      return TRUE; 
-  ENDIF 
+  } 
 
   #endif
 
@@ -624,7 +612,7 @@ void check_reorg(struct treenode *root)
   int             r_minus = strcmp(root->right->symb,"-") == 0; 
   int             r_plus  = strcmp(root->right->symb,"+") == 0; 
 
-  IF (plus||minus) && r_minus&&strcmp(root->right->left->symb,"0")==0 THEN 
+  if( (plus||minus) && r_minus&&strcmp(root->right->left->symb,"0")==0 ){ 
      /*  Baum1+(-Baum2) => Baum1-Baum2   | Baum1-(-Baum2) => Baum1+Baum2 
       *                                  | 
       *        +                 -       |       -                 + 
@@ -633,18 +621,18 @@ void check_reorg(struct treenode *root)
       *         / \                      |        / \ 
       *        0   Baum2                 |       0   Baum2 
       */ 
-     IF plus 
-        THEN strcpy(root->symb,"-"); 
-        ELSE strcpy(root->symb,"+"); 
-     ENDIF 
+     if( plus 
+        ){ strcpy(root->symb,"-"); 
+        }else{ strcpy(root->symb,"+"); 
+     } 
      free((char*)root->right->left);/* Speicher f."0"-Blatt wieder frei */ 
      temp        = root->right; 
      root->right = root->right->right; 
      free((char*)temp);         /* Speicher fuer "-"-Knoten wieder frei */ 
      goto cr_lbl; 
-  ENDIF 
+  } 
 
-  IF plus && l_minus && strcmp(root->left->left->symb,"0") == 0 THEN 
+  if( plus && l_minus && strcmp(root->left->left->symb,"0") == 0 ){ 
      /* ---   -Baum1+Baum2 => Baum2-Baum1: ---
       * 
       *      +                  -
@@ -660,9 +648,9 @@ void check_reorg(struct treenode *root)
      root->left  = root->right; 
      root->right = temp; 
      goto cr_lbl; 
-  ENDIF 
+  } 
 
-  IF minus && (r_minus || r_plus) THEN 
+  if( minus && (r_minus || r_plus) ){ 
      /*  B1-(B2-B3) => B1-B2+B3  |  B1-(B2+B3) => B1-B2-B3 
       *                          | 
       *     -              +     |     -               -
@@ -671,21 +659,21 @@ void check_reorg(struct treenode *root)
       *      / \        / \      |      / \         / \ 
       *    B2   B3    B1   B2    |    B2   B3     B1   B2 
       */ 
-     IF r_minus 
-        THEN strcpy(root->symb,"+"); 
-        ELSE strcpy(root->right->symb,"-"); 
+     if( r_minus 
+        ){ strcpy(root->symb,"+"); 
+        }else{ strcpy(root->right->symb,"-"); 
              root->right->token    = find_index("-",aos,aoe,'0'); 
              root->right->symbkind = find_kind(root->right->token); 
-     ENDIF 
+     } 
      temp = root->right->right;              /* temp  = Baum3 */ 
      root->right->right = root->right->left; /* Baum3 = Baum2 */ 
      root->right->left  = root->left;        /* Baum2 = Baum1 */ 
      root->left         = root->right;       /* Baum1 = mBaum */ 
      root->right        = temp;              /* mBaum = Baum3 */ 
      goto cr_lbl; 
-  ENDIF 
+  } 
 
-  IF (mul || div) && r_minus THEN 
+  if( (mul || div) && r_minus ){ 
      /*  B1*(-B2) => -B1*B2       |       B1/(-B2) => -B1/B2 
       * 
       *     *             -
@@ -694,10 +682,10 @@ void check_reorg(struct treenode *root)
       *      / \           / \ 
       *     0   B2       B1   B2 
       */ 
-     IF mul 
-        THEN strcpy(root->right->symb,"*"); 
-        ELSE strcpy(root->right->symb,"/"); 
-     ENDIF 
+     if( mul 
+        ){ strcpy(root->right->symb,"*"); 
+        }else{ strcpy(root->right->symb,"/"); 
+     } 
      root->right->token    = find_index(root->right->symb,mos,moe,'0'); 
      root->right->symbkind = find_kind(root->right->token); 
      strcpy(root->symb,"-"); 
@@ -705,7 +693,7 @@ void check_reorg(struct treenode *root)
      root->left        = root->right->left;  /* Baum1 = 0     */ 
      root->right->left = temp;               /*     0 = Baum1 */ 
      goto cr_lbl; 
-  ENDIF 
+  } 
 
   cr_lbl: 
   root->token    = find_index(root->symb,aos,moe,'0'); 
@@ -733,13 +721,13 @@ void pt_error(char *function, int errcode, int errpos)
 { 
   int i = 0; 
 
-  IF errcode != 0 THEN 
+  if( errcode != 0 ){ 
      printf("\n%s",function); 
      function[0] = '\0'; 
      while (i++ < errpos) strcat(function,"-"); 
      strcat(function,"^"); 
      printf("\n%s",function); 
-  ENDIF 
+  } 
   printf("\nErrcode %d: %-46.46s",errcode,errorstrings[errcode]); 
   if (errcode !=0) printf("at pos. %d.",errpos); 
 } 
@@ -754,25 +742,25 @@ void show_tree(struct treenode *root)
   printf("\n"); 
   count++; 
   for (i = 1; i < count; i++) printf("   "); 
-  IF root != NULL 
-     THEN printf("%s|root=%p|token=%d|sk=%d|val=%g|left=%p|right=%p",
+  if( root != NULL 
+     ){ printf("%s|root=%p|token=%d|sk=%d|val=%g|left=%p|right=%p",
           root->symb, root, root->token, root->symbkind, root->val,
           root->left, root->right); 
           show_tree(root->right); 
           show_tree(root->left); 
-     ELSE printf("NULL"); 
-  ENDIF 
+     }else{ printf("NULL"); 
+  } 
   count--; 
 } 
 /************************************************************************/ 
 
-void _unur_fstr_freeXS(struct treenode *root)  
+void _unur_fstr_free(struct treenode *root)  
                           /* Gibt Speicher fuer schon exist. Baum frei. */ 
 { 
-  IF root != NULL THEN 
+  if( root != NULL ){ 
      _unur_fstr_free(root->right); 
      _unur_fstr_free(root->left); 
      free((char*)root); 
-  ENDIF 
+  } 
 } 
 /************************************************************************/ 

@@ -26,15 +26,15 @@ int ucs, uce, uis, uie, ufs, ufe, sfs, sfe;
 
 
 /* --- forward-declarations aus Modul CALC.C; Bewertungsfunktionen: --- */
-extern float v_exp(), v_dummy  (), v_or   (), v_mul(), v_sconst();
-extern float v_ln (), v_less   (), v_xor  (), v_and(), v_uconst();
-extern float v_log(), v_equal  (), v_plus (), v_div(), v_uident();
-extern float v_sin(), v_greater(), v_minus(), v_mod();
-extern float v_cos(), v_less_or();
-extern float v_tan(), v_unequal(), v_power(), v_ufuncs();
-extern float v_sec(), v_grtr_or(), v_not  ();
-extern float v_sqr();
-extern float v_abs();
+extern double v_exp(), v_dummy  (), v_or   (), v_mul(), v_sconst();
+extern double v_ln (), v_less   (), v_xor  (), v_and(), v_uconst();
+extern double v_log(), v_equal  (), v_plus (), v_div(), v_uident();
+extern double v_sin(), v_greater(), v_minus(), v_mod();
+extern double v_cos(), v_less_or();
+extern double v_tan(), v_unequal(), v_power(), v_ufuncs();
+extern double v_sec(), v_grtr_or(), v_not  ();
+extern double v_sqr();
+extern double v_abs();
 
 /* --- forward-declarations aus Modul CALC.C; Ableitungsfunktionen: --- */
 extern char *d_exp(), *d_dummy ();
@@ -263,22 +263,22 @@ static int get_uc_symbol(char *function, int *scanposp, char *uc)
 
   strcpy(uc,get_ds(function,scanposp,s));
   c = function[*scanposp];
-  IF c == 'E' THEN /* wenn "E" folgt, wird noch ein ScaleFactor gelesen */
+  if( c == 'E' ){ /* wenn "E" folgt, wird noch ein ScaleFactor gelesen */
      strcat(uc,"E");
      (*scanposp)++;
      strcat(uc,get_sf(function,scanposp,s));
-  ENDIF
-  IF c == '.' THEN       /* wenn "." folgt, koennen noch Ziffern kommen */
+  }
+  if( c == '.' ){       /* wenn "." folgt, koennen noch Ziffern kommen */
      strcat(uc,".");
      (*scanposp)++;
      strcat(uc,get_ds(function,scanposp,s));
      c = function[*scanposp];
-     IF c == 'E' THEN  /* wenn "E" folgt, wird noch ScaleFactor gelesen */
+     if( c == 'E' ){  /* wenn "E" folgt, wird noch ScaleFactor gelesen */
 	strcat(uc,"E");
 	(*scanposp)++;
 	strcat(uc,get_sf(function,scanposp,s));
-     ENDIF
-  ENDIF
+     }
+  }
   return 0;
 }
 /*********************** *********************** ************************/
@@ -311,10 +311,10 @@ static char *get_sf(char *function, int *scanposp, char *sf)
   char ds[SYMBLENGTH], c;
 
   sf[0] = sf[1] = '\0';
-  IF (c=function[*scanposp]) == '+' || c == '-' THEN
+  if( (c=function[*scanposp]) == '+' || c == '-' ){
      sf[0] = c;
      (*scanposp)++;
-  ENDIF
+  }
   return strcat(sf,get_ds(function,scanposp,ds));
 }
 /*********************************** ************************************/
@@ -395,42 +395,43 @@ int find_index(char *symb, int start, int end, int nxt_c)
 if (i < end ) return i;
 
   /*  symb ist noch nicht in Symboltabelle => eintragen, wenn Platz: */
-  IF start == scs THEN
+  if( start == scs ){
      /* --- Symbol ist Userdefined Constant: --- */
      nxt_free_place = ucs + symbol[ucs].info + 1;
-     IF nxt_free_place >= uce
-	THEN /* --- kein Platz mehr: --- */
+     if( nxt_free_place >= uce
+	){ /* --- kein Platz mehr: --- */
 	     return 0;
-	ELSE strcpy(symbol[nxt_free_place].name,symb);
+	}else{ strcpy(symbol[nxt_free_place].name,symb);
 	     symbol[nxt_free_place].val = atof(symb);
 	     symbol[ucs].info++;     /* hier Zeiger auf letzten Eintrag */
 	     return nxt_free_place;
-     ENDIF
-  ENDIF
-  IF start == aos THEN
+     }
+  }
+  if( start == aos ){
      /* --- Symbol ist Identifier: --- */
-     IF nxt_c == '('
-	THEN /* --- Symbol ist Userdefined Function --- */
+     if( nxt_c == '('
+	){ /* --- Symbol ist Userdefined Function --- */
 	     nxt_free_place = ufs + symbol[ufs].info + 1;
-	     IF nxt_free_place >= ufe
-		THEN /* --- kein Platz mehr: --- */
+	     if( nxt_free_place >= ufe
+		){ /* --- kein Platz mehr: --- */
 		     return 0;
-		ELSE strcpy(symbol[nxt_free_place].name,symb);
+		}else{ strcpy(symbol[nxt_free_place].name,symb);
 		     symbol[nxt_free_place].info = 0;
 		     symbol[ufs].info++;
 		     return nxt_free_place;
-	     ENDIF
-	ELSE /* --- Symbol ist Userdefined Identifier --- */
+	     }
+	}else{ /* --- Symbol ist Userdefined Identifier --- */
 	     nxt_free_place = uis + symbol[uis].info + 1;
-	     IF nxt_free_place >= uie
-		THEN /*** kein Platz mehr: ***/
+	     if( nxt_free_place >= uie
+		){ /*** kein Platz mehr: ***/
 		     return 0;
-		ELSE strcpy(symbol[nxt_free_place].name,symb);
+		}else{ strcpy(symbol[nxt_free_place].name,symb);
 		     symbol[nxt_free_place].val = 0.0;
 		     symbol[uis].info++;
 		     return nxt_free_place;
-	     ENDIF
-     ENDIF
-  ENDIF
+	     }
+     }
+  }
   return 0;
 }
+

@@ -3,10 +3,6 @@
 #include <stdlib.h>
 #include <string.h> 
 
-#define IF if(          /* als alter BASIC-Freund kann ich mich mit     */
-#define THEN ){         /* dieser unuebersichtlichen If-Verschachtelung */
-#define ELSE }else{     /* von C einfach nicht anfreunden...            */
-#define ENDIF }         /* Sorry, Ihr C-Puristen in der Welt draussen!  */
 
 #define SYMBLENGTH 20 
 #define MAXLENGTH  256 
@@ -39,13 +35,30 @@ struct treenode {
 struct symbols { 
   char            name[SYMBLENGTH];  /* Name des Symbols (z. B. "SIN")  */ 
   int             info;              /* Prioritaet bzw. Argumentanzahl  */ 
-  float           val;               /* Konstanten: numerischer Wert    */ 
-  float           (*vcalc)(int t, float l, float r);        
+  double           val;               /* Konstanten: numerischer Wert    */ 
+  double           (*vcalc)(int t, double l, double r);        
                                      /* Zeiger auf Berechnungsfunktion  */ 
   char            *(*dcalc)(char *par,struct treenode *w,
                             char *l, char *r, char *dl, char *dr,char *s);
                                      /* Zeiger auf Ableitungsfunktion   */ 
   struct treenode *tree;             /* Bei UFUNCS: Zeiger auf Baum     */ 
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 

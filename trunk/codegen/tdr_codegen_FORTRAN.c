@@ -211,7 +211,7 @@ _unur_acg_FORTRAN_tdr_ps( struct unur_gen *gen,
   fprintf(out,"1     CONTINUE\n");
 
   /* sample from U(0,1) */
-  fprintf(out,"         U = unif()\n");
+  fprintf(out,"         U = urand()\n");
   fprintf(out,"         W = U * Atotal\n");
 
   /* look up in guide table and search for interval */
@@ -230,7 +230,7 @@ _unur_acg_FORTRAN_tdr_ps( struct unur_gen *gen,
     fprintf(out,"         IF (DABS(t) > 1.d-8) THEN\n");
     fprintf(out,"            %s = x(I) + DLOG(t+1.d0) * W / (fx(I) * t) \n",rand_name);
     fprintf(out,"         ELSE\n");
-    fprintf(out,"            %s = x(I) + W / (fx(I) * (1.d0 - t/2.d0) \n",rand_name);
+    fprintf(out,"            %s = x(I) + W / (fx(I) * (1.d0 - t/2.d0)) \n",rand_name);
     fprintf(out,"         ENDIF\n");
     break;
   case TDR_VAR_T_SQRT:
@@ -239,7 +239,7 @@ _unur_acg_FORTRAN_tdr_ps( struct unur_gen *gen,
   } /* end switch */
 
   /* accept or reject */
-  fprintf(out,"         V = unif()\n");
+  fprintf(out,"         V = urand()\n");
 
   /* squeeze acceptance */
   fprintf(out,"         IF (V .LE. sq(I)) RETURN\n");

@@ -361,7 +361,7 @@ unur_distr_discr_make_pv( struct unur_distr *distr )
   if ((unsigned)DISTR.domain[1] - (unsigned)DISTR.domain[0] < UNUR_MAX_AUTO_PV ) {
 
     /* first case: bounded domain */
-    n_pv = DISTR.domain[1] - DISTR.domain[0];
+    n_pv = DISTR.domain[1] - DISTR.domain[0] + 1;
     pv = _unur_xmalloc( n_pv * sizeof(double) );
     if (DISTR.pmf) {
       for (i=0; i<n_pv; i++)

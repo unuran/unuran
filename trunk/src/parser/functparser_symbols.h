@@ -56,7 +56,6 @@ static double v_less_or(double l, double r);
 static double v_unequal(double l, double r);
 static double v_grtr_or(double l, double r);
 static double v_or     (double l, double r);
-static double v_xor    (double l, double r);
 static double v_plus   (double l, double r); 
 static double v_minus  (double l, double r); 
 static double v_mul    (double l, double r);
@@ -205,7 +204,6 @@ static struct symbols symbol[] = {
   /* logical operators */
   {"and" , S_MUL_OP  , 2, 0.0 , v_and    , d_const },
   {"or"  , S_ADD_OP  , 4, 0.0 , v_or     , d_const },
-  {"xor" , S_ADD_OP  , 4, 0.0 , v_xor    , d_const },
   {"not" , S_SFUNCT  , 1, 0.0 , v_not    , d_const },
 
   /* system constants */

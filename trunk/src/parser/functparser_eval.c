@@ -78,7 +78,6 @@ double v_unequal(double l, double r) { CHECK_INFS(l,r); return (double)(l != r);
 double v_grtr_or(double l, double r) { CHECK_INFS(l,r); return (double)(l >= r); }
 
 double v_or     (double l, double r) { CHECK_INFS(l,r); return (double)((int)l || (int)r);  }
-double v_xor    (double l, double r) { return (double)((l==0 && r!=0) || (l!=0 && r== 0)); }
 double v_and    (double l, double r) { CHECK_INFS(l,r); return (double)((int)l && (int)r); }
 double v_not    (double l, double r) { CHECK_INF(r);    return (double)(!((int)r)); }
 

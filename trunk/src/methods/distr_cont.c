@@ -54,17 +54,17 @@ static const char unknown_distr_name[] = "unknown";
 
 /*---------------------------------------------------------------------------*/
 
-static double _unur_distr_cont_pdf_tree( double x, struct unur_distr *distr );
+static double _unur_distr_cont_eval_pdf_tree( double x, struct unur_distr *distr );
 /*---------------------------------------------------------------------------*/
 /* evaluate function tree for PDF.                                           */
 /*---------------------------------------------------------------------------*/
 
-static double _unur_distr_cont_dpdf_tree( double x, struct unur_distr *distr );
+static double _unur_distr_cont_eval_dpdf_tree( double x, struct unur_distr *distr );
 /*---------------------------------------------------------------------------*/
 /* evaluate function tree for dPDF.                                          */
 /*---------------------------------------------------------------------------*/
 
-static double _unur_distr_cont_cdf_tree( double x, struct unur_distr *distr );
+static double _unur_distr_cont_eval_cdf_tree( double x, struct unur_distr *distr );
 /*---------------------------------------------------------------------------*/
 /* evaluate function tree for CDF.                                           */
 /*---------------------------------------------------------------------------*/
@@ -184,6 +184,10 @@ _unur_distr_cont_free( struct unur_distr *distr )
      /*   distr ... pointer to distribution object                           */
      /*----------------------------------------------------------------------*/
 {
+  if (DISTR.pdftree)  free(DISTR.pdftree);
+  if (DISTR.dpdftree) free(DISTR.dpdftree);
+  if (DISTR.cdftree)  free(DISTR.cdftree);
+
   if (distr) free( distr );
 } /* end of unur_distr_cont_free() */
 
@@ -321,6 +325,7 @@ unur_distr_cont_set_pdfstr( struct unur_distr *distr, const char *pdfstr )
   /* check arguments */
   _unur_check_NULL( NULL,distr,0 );
   _unur_check_distr_object( distr, CONT, 0 );
+  _unur_check_NULL( NULL,pdfstr,0 );
 
   /* we do not allow overwriting a pdf */
   if (DISTR.pdf != NULL) {
@@ -335,20 +340,15 @@ unur_distr_cont_set_pdfstr( struct unur_distr *distr, const char *pdfstr )
   distr->set &= ~UNUR_DISTR_SET_MASK_DERIVED;
   /* derived parameters like mode, area, etc. might be wrong now! */
 
-  /* parse string */
+  /* parse PDF string */
   if ( (DISTR.pdftree = _unur_fstr2tree(pdfstr)) == NULL )
     return 0;
+  DISTR.pdf  = _unur_distr_cont_eval_pdf_tree;
 
   /* make derivative */
-  if ( (DISTR.dpdftree = _unur_fstr_make_derivative(DISTR.pdftree)) == NULL ) {
-    _unur_fstr_free(DISTR.pdftree);
-    DISTR.pdftree = NULL;
+  if ( (DISTR.dpdftree = _unur_fstr_make_derivative(DISTR.pdftree)) == NULL )
     return 0;
-  }  
-
-  /* set evaluation functions */
-  DISTR.pdf  = _unur_distr_cont_pdf_tree;
-  DISTR.dpdf = _unur_distr_cont_dpdf_tree;
+  DISTR.dpdf = _unur_distr_cont_eval_dpdf_tree;
 
   return 1;
 } /* end of unur_distr_cont_set_pdfstr() */
@@ -391,7 +391,7 @@ unur_distr_cont_set_cdfstr( struct unur_distr *distr, const char *cdfstr )
     return 0;
 
   /* set evaluation function */
-  DISTR.cdf  = _unur_distr_cont_cdf_tree;
+  DISTR.cdf  = _unur_distr_cont_eval_cdf_tree;
 
   return 1;
 } /* end of unur_distr_cont_set_cdfstr() */
@@ -399,7 +399,7 @@ unur_distr_cont_set_cdfstr( struct unur_distr *distr, const char *cdfstr )
 /*---------------------------------------------------------------------------*/
 
 double
-_unur_distr_cont_pdf_tree( double x, struct unur_distr *distr )
+_unur_distr_cont_eval_pdf_tree( double x, struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
      /* evaluate function tree for PDF.                                      */
      /*                                                                      */
@@ -412,12 +412,12 @@ _unur_distr_cont_pdf_tree( double x, struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
 {
   return ((DISTR.pdftree) ? _unur_fstr_eval_tree(DISTR.pdftree,x) : 0.);
-} /* end of _unur_distr_cont_pdf_tree() */
+} /* end of _unur_distr_cont_eval_pdf_tree() */
 
 /*---------------------------------------------------------------------------*/
 
 double
-_unur_distr_cont_dpdf_tree( double x, struct unur_distr *distr )
+_unur_distr_cont_eval_dpdf_tree( double x, struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
      /* evaluate function tree for derivative of PDF.                        */
      /*                                                                      */
@@ -430,12 +430,12 @@ _unur_distr_cont_dpdf_tree( double x, struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
 {
   return ((DISTR.dpdftree) ? _unur_fstr_eval_tree(DISTR.dpdftree,x) : 0.);
-} /* end of _unur_distr_cont_dpdf_tree() */
+} /* end of _unur_distr_cont_eval_dpdf_tree() */
 
 /*---------------------------------------------------------------------------*/
 
 double
-_unur_distr_cont_cdf_tree( double x, struct unur_distr *distr )
+_unur_distr_cont_eval_cdf_tree( double x, struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
      /* evaluate function tree for CDF.                                      */
      /*                                                                      */
@@ -448,7 +448,85 @@ _unur_distr_cont_cdf_tree( double x, struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
 {
   return ((DISTR.cdftree) ? _unur_fstr_eval_tree(DISTR.cdftree,x) : 0.);
-} /* end of _unur_distr_cont_cdf_tree() */
+} /* end of _unur_distr_cont_eval_cdf_tree() */
+
+/*---------------------------------------------------------------------------*/
+
+char *
+unur_distr_cont_get_pdfstr( struct unur_distr *distr )
+     /*----------------------------------------------------------------------*/
+     /* get PDF string that is given via the string interface                */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   distr  ... pointer to distribution object                          */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to resulting string.                                       */
+     /*                                                                      */
+     /* comment:                                                             */
+     /*   This string should be freed when it is not used any more.          */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( NULL,distr,NULL );
+  _unur_check_distr_object( distr, CONT, NULL );
+  _unur_check_NULL( NULL,DISTR.pdftree,NULL );
+
+  /* make and return string */
+  return _unur_fstr_tree2string(DISTR.pdftree,"x","PDF");
+} /* end of unur_distr_cont_get_pdfstr() */
+
+/*---------------------------------------------------------------------------*/
+
+char *
+unur_distr_cont_get_dpdfstr( struct unur_distr *distr )
+     /*----------------------------------------------------------------------*/
+     /* get string for derivative of PDF that is given via string interface  */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   distr  ... pointer to distribution object                          */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to resulting string.                                       */
+     /*                                                                      */
+     /* comment:                                                             */
+     /*   This string should be freed when it is not used any more.          */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( NULL,distr,NULL );
+  _unur_check_distr_object( distr, CONT, NULL );
+  _unur_check_NULL( NULL,DISTR.dpdftree,NULL );
+
+  /* make and return string */
+  return _unur_fstr_tree2string(DISTR.dpdftree,"x","dPDF");
+} /* end of unur_distr_cont_get_dpdfstr() */
+
+/*---------------------------------------------------------------------------*/
+
+char *
+unur_distr_cont_get_cdfstr( struct unur_distr *distr )
+     /*----------------------------------------------------------------------*/
+     /* get CDF string that is given via the string interface                */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   distr  ... pointer to distribution object                          */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to resulting string.                                       */
+     /*                                                                      */
+     /* comment:                                                             */
+     /*   This string should be freed when it is not used any more.          */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( NULL,distr,NULL );
+  _unur_check_distr_object( distr, CONT, NULL );
+  _unur_check_NULL( NULL,DISTR.cdftree,NULL );
+
+  /* make and return string */
+  return _unur_fstr_tree2string(DISTR.cdftree,"x","CDF");
+} /* end of unur_distr_cont_get_cdfstr() */
 
 /*---------------------------------------------------------------------------*/
 

@@ -3093,9 +3093,8 @@ _unur_fstr_node2string ( struct concat *output, const struct ftreenode *node,
       if (left->type == S_SCONST || left->type == S_UCONST || 
 	  left->type == S_SFUNCT || left->type == S_UFUNCT || 
 	  ( left->type == S_UIDENT && left->val >= 0. ) ||
-	  priority < symbol[left->token].info ||
-	  ( priority == symbol[left->token].info && 
-	    (type == S_ADD_OP) ) )
+	  ( priority < symbol[left->token].info && !isalpha(node->symbol[0]) ) ||
+	  ( priority == symbol[left->token].info && (type == S_ADD_OP ) ) )
 	parenthesis = 0;
       if (parenthesis) _unur_fstr_print( output, "(", 0. );
       _unur_fstr_node2string(output,left,variable,function);
@@ -3115,7 +3114,7 @@ _unur_fstr_node2string ( struct concat *output, const struct ftreenode *node,
       if (right->type == S_SCONST || right->type == S_UCONST ||
 	  right->type == S_SFUNCT || right->type == S_UFUNCT || 
 	  ( right->type == S_UIDENT && right->val >= 0. ) ||
-	  priority < symbol[right->token].info )
+	  ( priority < symbol[right->token].info && !isalpha(node->symbol[0]) ) )
 	parenthesis = 0;
       if (parenthesis) _unur_fstr_print( output, "(", 0. );
       _unur_fstr_node2string(output,right,variable,function);

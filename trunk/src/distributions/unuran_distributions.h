@@ -173,8 +173,14 @@ double unur_stdgen_sample_gamma_gll( struct unur_gen *gen );
 /* Rejection with log-logistic envelopes                                     */
 
 /*---------------------------------------------------------------------------*/
-/* Generalized inverse Gaussian distribution                                 */
-/** TODO **/
+/* Generalized inverse Gaussian distribution  [2; ch.15, p.284]              */
+struct unur_distr *unur_distr_gig(double *params, int n_params);
+
+/* special generators */
+int _unur_stdgen_gig_init( struct unur_par *par, struct unur_gen *gen );
+/* initialize new generator                                                  */
+double unur_stdgen_sample_gig_gigru( struct unur_gen *gen );
+/* Ratio of Uniforms                                                         */
 
 /*---------------------------------------------------------------------------*/
 /*  Laplace distribution  [3; ch.24, p.164]                                  */

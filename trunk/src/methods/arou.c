@@ -947,16 +947,22 @@ _unur_arou_sample( struct unur_gen *gen )
       fx = PDF(x);
 
       /* being outside the squeeze is bad. improve the situation! */
-      if (GEN.n_segs < GEN.max_segs && GEN.max_ratio * GEN.Atotal > GEN.Asqueeze)
-	if ( !_unur_arou_segment_split(gen,seg,x,fx) ) {
-	  /* condition for PDF is violated! */
-	  _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"");
-	  if (gen->variant & AROU_VARFLAG_PEDANTIC) {
-	    /* replace sampling routine by dummy routine that just returns INFINITY */
-	    SAMPLE = _unur_sample_cont_error;
-	    return INFINITY;
+      if (GEN.n_segs < GEN.max_segs) {
+	if (GEN.max_ratio * GEN.Atotal > GEN.Asqueeze) {
+	  if ( !_unur_arou_segment_split(gen,seg,x,fx) ) {
+	    /* condition for PDF is violated! */
+	    _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"");
+	    if (gen->variant & AROU_VARFLAG_PEDANTIC) {
+	      /* replace sampling routine by dummy routine that just returns INFINITY */
+	      SAMPLE = _unur_sample_cont_error;
+	      return INFINITY;
+	    }
 	  }
 	}
+	else 
+	  /* no more construction points (avoid to many second if statement above */
+	  GEN.max_segs = GEN.n_segs;
+      }
 
       /* if inside region of acceptance, return ratio x */
       if (u*u <= fx) 
@@ -1066,16 +1072,22 @@ _unur_arou_sample_check( struct unur_gen *gen )
 	_unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"PDF not T-concave.");
 
       /* being outside the squeeze is bad. improve the situation! */
-      if (GEN.n_segs < GEN.max_segs && GEN.max_ratio * GEN.Atotal > GEN.Asqueeze)
-	if ( !_unur_arou_segment_split(gen,seg,x,fx) ) {
-	  /* condition for PDF is violated! */
-	  _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"");
-	  if (gen->variant & AROU_VARFLAG_PEDANTIC) {
-	    /* replace sampling routine by dummy routine that just returns INFINITY */
-	    SAMPLE = _unur_sample_cont_error;
-	    return INFINITY;
+      if (GEN.n_segs < GEN.max_segs) {
+	if (GEN.max_ratio * GEN.Atotal > GEN.Asqueeze) {
+	  if ( !_unur_arou_segment_split(gen,seg,x,fx) ) {
+	    /* condition for PDF is violated! */
+	    _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"");
+	    if (gen->variant & AROU_VARFLAG_PEDANTIC) {
+	      /* replace sampling routine by dummy routine that just returns INFINITY */
+	      SAMPLE = _unur_sample_cont_error;
+	      return INFINITY;
+	    }
 	  }
 	}
+	else 
+	  /* no more construction points (avoid to many second if statement above */
+	  GEN.max_segs = GEN.n_segs;
+      }
 
       /* if inside region of acceptance, return ratio x */
       if (u*u <= fx) 

@@ -171,13 +171,13 @@ sub method_info{
 	    if ( $_ =~ /^\s*=METHOD\s+(\w+)/ ){
 
 		print Outfile "if ( !strcmp( value, \"\L$1\") ){\n";
-		print Outfile "\t\t\tmethod = UNUR_METH_$1;\n";
 		if ( "\U$1" eq "UNIF"){
 		    # print Outfile "\t\t\tpar = unur_\L$1_new();\n";
 		    print Outfile "\t\t\tfprintf(stderr, \"Method UNIF not intended for usage within this string content.\\n\");\n";
 		}
 		else{
 		    print Outfile "\t\t\tpar = unur_\L$1_new(distr);\n";
+		    print Outfile "\t\t\tpar->method = UNUR_METH_$1;\n";
 		    while ( $_ !~ /^\s*=UP\s+Methods_for_\w+/ ){
 			$_ = <INFILE>;
 		    }
@@ -194,7 +194,7 @@ sub method_info{
 	close INFILE;
     } # end of foreach-loop
 
-    print Outfile "{\n\t\t\tmethod = UNKNOWN;\n";
+    print Outfile "{\n\t\t\tpar->method = UNUR_METH_UNKNOWN;\n";
     print Outfile "\t\t\tfprintf(stderr, \"ERROR: Unknown method: %s\\n\",value);\n";
     print Outfile "\t\t\tbreak;\n\t\t}\n\t}\n";
 
@@ -219,7 +219,7 @@ sub method_info{
 		$METHOD = "\U$method";
 
 		# key is "method"
-		print Outfile "if ( method == UNUR_METH_$METHOD && strcmp(key, \"method\") ){\n\t\t";
+		print Outfile "if ( par->method == UNUR_METH_$METHOD && strcmp(key, \"method\") ){\n\t\t";
 	    }
 
 	    # only parameter object passed
@@ -285,7 +285,7 @@ sub method_info{
     } # end of foreach loop
 
     # case of unknown method
-    print Outfile "if ( !strcmp(key, \"method\") && method == UNDEF){\n";
+    print Outfile "if ( !strcmp(key, \"method\") && par->method == UNUR_METH_UNKNOWN){\n";
     print Outfile "\t\tfprintf(stderr, \"ERROR: No or unknown method defined.\\n\");\n\t}\n";
 
     close INFILE;

@@ -90,9 +90,6 @@
 /* Maximal entries of any list allowed */
 #define MAX_ELEM (1024)
 
-#define UNKNOWN (-2)
-#define UNDEF (-1)
-
 
     /* ********************************************************** */ 
     /* ********************************************************** */ 
@@ -258,9 +255,6 @@ UNUR_DISTR *make_distr_obj(char *str){
 UNUR_PAR *make_par_obj(UNUR_DISTR *distr, char *methstr){
 
   UNUR_PAR *par;
-
-
-  int method = UNDEF; /* method to generate random numbers */
 
   int check;          /* variable used to check for errors */
 

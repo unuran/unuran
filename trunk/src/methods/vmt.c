@@ -108,12 +108,6 @@ static void _unur_vmt_free( struct unur_gen *gen);
 /* destroy generator object.                                                 */
 /*---------------------------------------------------------------------------*/
 
-/** wg damit!!!!!**/
-static double *cholesky_decomposition( double *S, int dim );
-/*---------------------------------------------------------------------------*/
-/* the Colesky factor of a covariance matrix S is computed and returned      */
-/*---------------------------------------------------------------------------*/
-
 #ifdef UNUR_ENABLE_LOGGING
 /*---------------------------------------------------------------------------*/
 /* the following functions print debugging information on output stream,     */
@@ -283,9 +277,8 @@ _unur_vmt_init( struct unur_par *par )
   gen->gen_aux = GEN.uvgen;
 
   /* cholesky factor of covariance matrix */
-  if (DISTR.covar)
-  /*  GEN.cholesky = cholesky_decomposition( DISTR.covar, GEN.dim ); */
-    GEN.cholesky =  unur_distr_cvec_get_cholesky(gen->distr); 
+  if (DISTR.covar) /* always true since default is identity matrix */
+    GEN.cholesky =  DISTR.cholesky;  
       
 #ifdef UNUR_ENABLE_LOGGING
   /* write info into log file */
@@ -528,71 +521,6 @@ _unur_vmt_free( struct unur_gen *gen )
   free(gen);
 
 } /* end of _unur_vmt_free() */
-
-/*****************************************************************************/
-/**  Auxilliary Routines                                                    **/
-/*****************************************************************************/
-
-double *
-cholesky_decomposition( double *S, int dim )
-     /*----------------------------------------------------------------------*/
-     /* the Colesky factor L of a variance-covariance matrix S is computed   */
-     /* (the necessary array is allocated)                                   */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   S   ... variance-covariance matrix                                 */
-     /*   dim ... dimension (S is a dim x dim matrixes)                      */
-     /*                                                                      */
-     /* return:                                                              */
-     /*   pointer to chokesky factor                                         */
-     /*                                                                      */
-     /* error:                                                               */
-     /*   return NULL                                                        */
-     /*----------------------------------------------------------------------*/
-{ 
-#define idx(a,b) (a*dim+b)
-
-  double *L;
-  int i,j,k;
-  double sum1,sum2;
-
-  /* allocate memory for cholesky factor */
-  L = _unur_malloc( dim * dim * sizeof(double) );
-
-  /* run cholesky decomposition */
-  L[idx(0,0)] = sqrt( S[idx(0,0)] );
-
-  for(j=1; j<dim; j++) {
-    L[idx(j,0)] = S[idx(j,0)] / L[idx(0,0)];
-
-    sum1 = L[idx(j,0)] * L[idx(j,0)];
-    for(k=1; k<j; k++) {
-      sum2 = 0.;
-      for(i=0; i<k; i++)
-	sum2 += L[idx(j,i)] * L[idx(k,i)];
-      
-      L[idx(j,k)] = (S[idx(j,k)] - sum2) / L[idx(k,k)];
-      sum1 += L[idx(j,k)] * L[idx(j,k)];
-    }
-
-    if (S[idx(j,j)] <= sum1) {
-      /* covariance matrix not positive definite */
-      free(L); return NULL;
-    }
-
-    L[idx(j,j)] = sqrt( S[idx(j,j)] - sum1 );
-  }
-
-  /* although not necessary upper triangular of L - matrix is set to 0 */
-  for(j=0; j<dim; j++)
-    for(k=j+1; k<dim; k++)
-      L[idx(j,k)]=0.;
-
-  /* return (pointer to) cholesky factor */
-  return L;
-
-#undef idx
-} /* end of cholesky_decomposition() */
 
 /*****************************************************************************/
 /**  Debugging utilities                                                    **/

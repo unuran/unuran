@@ -37,13 +37,20 @@
  *                                                                           *
  *****************************************************************************/
 
+#define TABLE_POINTS 50     /* number of points  in table
+                               containiing possible starting points          */
+
+
+
 /*---------------------------------------------------------------------------*/
 /* Information for constructing the generator                                */
 
 struct unur_ninv_par { 
   int max_iter;              /* maximal number of iterations                 */
   double rel_x_resolution;   /* maximal relative error in x                  */
-  double s[3];               /* interval boundaries at start (left/right)    */
+  double s[2];               /* interval boundaries at start (left/right)    */
+  int  table_on;             /* = 1 if table should be used                  */
+
 };
 
 /*---------------------------------------------------------------------------*/
@@ -52,7 +59,34 @@ struct unur_ninv_par {
 struct unur_ninv_gen { 
   int max_iter;              /* maximal number of iterations                 */
   double rel_x_resolution;   /* maximal relative error in x                  */
-  double s[3];               /* interval boundaries at start (left/right)    */
+  double s[2];               /* interval boundaries at start (left/right)    */
+  double table[TABLE_POINTS];/* table with possible starting values for NINV */
+  int  table_on;             /* = 1 if table should be used                  */
+
 };
 
 /*---------------------------------------------------------------------------*/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

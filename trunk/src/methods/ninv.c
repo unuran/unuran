@@ -187,11 +187,11 @@ unur_ninv_new( struct unur_distr *distr )
   /* set default values */
   PAR.max_iter  = 40;              /* maximal number of iterations           */
   PAR.rel_x_resolution = 1.0e-8 ;  /* maximal relative error in x            */
+  PAR.table_on = 0;            /* usage of table with better starting points */
   /*  all starting points set to same value                                  */
-  PAR.s[0]      = 0.1123456789;    /* left boundary of interval              *
+  PAR.s[0]      = 0.;              /* left boundary of interval              *
                                       and newton starting point              */
-  PAR.s[1]      = 0.1123456789;    /* right boundary of interval             */
-  PAR.s[2]      = 0.1123456789;    /* 3rd point for muller                   */
+  PAR.s[1]      = 0.;              /* right boundary of interval             */
   /* regula falsi:                                                           */
   /* if the PAR.s[i] are identical, the PAR.s[i] are set in _unur_ninv_init  */
   /* such that INTERVAL_COVERS *100 Percent of the used univariate random    */
@@ -348,12 +348,11 @@ int unur_ninv_set_x_resolution( struct unur_par *par, double x_resolution)
 /*---------------------------------------------------------------------------*/
 
 int
-unur_ninv_set_start( struct unur_par *par, double s1, double s2, double s3 )
+unur_ninv_set_start( struct unur_par *par, double s1, double s2)
      /*----------------------------------------------------------------------*/
      /* set starting points.                                                 */
      /*   Newton:        s1           starting point                         */
      /*   regular falsi: s1, s2       boundary of starting interval          */
-     /*   Muller:        s1, s2, s3   starting points                        */
      /* arguments that are used by method are ignored.                       */
      /*                                                                      */
      /*                                                                      */
@@ -376,7 +375,6 @@ unur_ninv_set_start( struct unur_par *par, double s1, double s2, double s3 )
   /* store date */
   PAR.s[0] = s1;
   PAR.s[1] = s2;
-  PAR.s[2] = s3;
 
   /* changelog */
   par->set |= NINV_SET_START;
@@ -386,6 +384,37 @@ unur_ninv_set_start( struct unur_par *par, double s1, double s2, double s3 )
 } /* end of unur_ninv_set_start() */
 
 /*---------------------------------------------------------------------------*/
+
+
+
+
+int
+unur_ninv_use_table( struct unur_par *par )
+     /*----------------------------------------------------------------------*/
+     /* if used, a table is generated to find better startig points          */
+     /* the function unur_ninv_set_start() is overruled                      */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par   ... pointer to parameter for building generator object       */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... on success                                                   */
+     /*   0 ... on error                                                     */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( GENTYPE,par,0 );
+
+  /* check input */
+  _unur_check_par_object( par,NINV );
+ 
+  PAR.table_on = 1;
+
+  return 1;
+
+} /* end of unur_ninv_use_table() */
+
+
 
 /*****************************************************************************/
 
@@ -405,6 +434,8 @@ _unur_ninv_init( struct unur_par *par )
      /*----------------------------------------------------------------------*/
 { 
   struct unur_gen *gen;
+  int i;
+  double tmp; 
 
   /* check arguments */
   _unur_check_NULL( GENTYPE,par,NULL );
@@ -425,31 +456,67 @@ _unur_ninv_init( struct unur_par *par )
 
   case NINV_VARFLAG_REGULA:
     if (GEN.s[0] > GEN.s[1]) {
-      /* swap interval boundaries */
-      double tmp;
-      tmp = GEN.s[0]; GEN.s[0] = GEN.s[1]; GEN.s[1] = tmp;
+      /* swap interval boundaries                                            */
+       tmp = GEN.s[0]; GEN.s[0] = GEN.s[1]; GEN.s[1] = tmp;
     }
 
-    if (GEN.s[0] == GEN.s[1]) {
-      /* length of interval == 0 -> choose bounderies with            */
-      /*  INTERVAL_COVERS *100 % chance for sign change in interval   */
-      GEN.s[0] = -10.;      /* arbitrary starting value               */
-      GEN.s[1] =  10.;      /* arbitrary starting value               */
+    if (GEN.s[0] == GEN.s[1] && GEN.table_on == 0) {
+      /* length of interval == 0 -> choose bounderies with                   */
+      /*  INTERVAL_COVERS *100 % chance for sign change in interval          */
+      GEN.s[0] = -10.;      /* arbitrary starting value                      */
+      GEN.s[1] =  10.;      /* arbitrary starting value                      */
       GEN.s[0] = _unur_ninv_regula(gen, (1.-INTERVAL_COVERS)/2. );
-      GEN.s[1] = GEN.s[0] + 10.;   /* arbitrary interval length       */
+      GEN.s[1] = GEN.s[0] + 10.;   /* arbitrary interval length              */
       GEN.s[1] = _unur_ninv_regula(gen, (1.+INTERVAL_COVERS)/2. );
     }
-    break;
+
+    break;    /* case REGULA end */
 
   case NINV_VARFLAG_NEWTON:
-    /* starting value = .1123456789 -> startig value set to value      */
-    /* such that CDF(value) = .5                                       */
-    if (GEN.s[0] == 0.1123456789){
-      GEN.s[0] = 0.;          /* arbitrary starting value */
+   if (GEN.s[0] > GEN.s[1]) {
+      /* swap interval boundaries                                            */
+       tmp = GEN.s[0]; GEN.s[0] = GEN.s[1]; GEN.s[1] = tmp;
+    }
+
+    if (GEN.s[0] == GEN.s[1] && GEN.table_on == 0) {
+    /* s0 == s1  -> starting value set to value                              */
+    /* such that CDF(value) = .5                                             */
+      GEN.s[0] = -9.987655;                /* arbitrary starting values      */
+      GEN.s[1] =  9.987655;
       GEN.s[0] = _unur_ninv_regula(gen, 0.5);
     }
-    break;
-  }
+
+    break;    /* case NEWTON end */
+
+  }  /* end of switch  */
+
+
+  /* generating the table with potential starting values                     */
+  if (GEN.table_on == 1){
+
+      GEN.s[0] = - 10.;  /* arbitrary starting values                        */
+      GEN.s[1] =   10.;
+      GEN.table_on = 0;   /* table can't be used to calculate itself         */
+
+      for (i=0; i<TABLE_POINTS/2; i++){
+	GEN.table[i] =
+           _unur_ninv_regula(gen, (i+1.)/(TABLE_POINTS+1.) );
+        GEN.table[TABLE_POINTS-1-i] = 
+           _unur_ninv_regula(gen, ((TABLE_POINTS-1.-i)+1.)/(TABLE_POINTS+1.) );
+         
+        GEN.s[0] = GEN.table[i];
+        GEN.s[1] = GEN.table[TABLE_POINTS-1-i];
+ 
+      }  /* end of for()                                                     */
+
+      if (TABLE_POINTS/2 != TABLE_POINTS/2.){  /*  TABLE_POINTS is odd ?     */
+         GEN.table[TABLE_POINTS/2] =  
+           _unur_ninv_regula(gen, ((TABLE_POINTS/2)+1.)/(TABLE_POINTS+1.) );
+      }
+
+      GEN.table_on = 1;
+
+  }   /* end of if(GEN.table...)                                             */
 
 
 #ifdef UNUR_ENABLE_LOGGING
@@ -508,15 +575,35 @@ _unur_ninv_regula( struct unur_gen *gen, double u )
   double step;           /* enlarges interval til sign change found         */
   double dx;             /* RF-stepsize                                     */
   int count = 0;         /* counter for  "no sign change"                   */
-  int i;
+  int i;                 /* loop variable, index                            */
     
 
   /* check arguments */
   CHECK_NULL(gen,0.);  COOKIE_CHECK(gen,CK_NINV_GEN,0.);
 
+
   /* initialize starting interval */
+  if (GEN.table_on == 1){
+    i = (int) floor(u*(TABLE_POINTS+1));  /* i is between 0 and TABLE_POINTS */
+
+    if ( i == 0){
+      x1 = 2.*GEN.table[0] - GEN.table[1];
+      x2 = GEN.table[0];
+    }
+    else if ( i == 50){
+      x1 = GEN.table[TABLE_POINTS-1];
+      x2 = 2.*GEN.table[TABLE_POINTS-1] - GEN.table[TABLE_POINTS-2];
+    }
+    else{
+    x1 = GEN.table[i-1];
+    x2 = GEN.table[i];
+    }
+
+  }
+  else{
    x1 =  GEN.s[0];      /* left boudary of interval */
    x2 =  GEN.s[1];      /* right boudary of interval*/
+  }   /* end of if(GEN.table_on = ...)  */
 
 
   if (x1>=x2) {
@@ -662,7 +749,7 @@ _unur_ninv_newton( struct unur_gen *gen, double U )
   double fxtmpabs;    /* fabs of fxtmp                                */
   double damp;        /* damping factor                               */
   double step;        /* helps to escape from flat regions of the cdf */
-  int i;              /* counter for for-loop                         */
+  int i;              /* counter for for-loop, index                  */
     
   /* check arguments */
   CHECK_NULL(gen,0.);  COOKIE_CHECK(gen,CK_NINV_GEN,0.);
@@ -672,7 +759,14 @@ _unur_ninv_newton( struct unur_gen *gen, double U )
 
 
   /* initialize starting point */
-  x     = GEN.s[0];
+  if (GEN.table_on == 1){
+    i = (int) floor(U*TABLE_POINTS);  /* i is between 0 and TABLE_POINTS-1 */
+    x = GEN.table[i];
+  }
+  else{
+    x     = GEN.s[0];
+  }
+
   fx    = CDF(x) - U;
   dfx   = PDF(x);
   fxabs = fabs(fx);
@@ -837,9 +931,9 @@ _unur_ninv_create( struct unur_par *par )
   /* copy parameters into generator object */
   GEN.max_iter = PAR.max_iter;  /* maximal number of iterations              */
   GEN.rel_x_resolution = PAR.rel_x_resolution; /* maximal relative error in x*/
+  GEN.table_on = PAR.table_on;  /* useage of table for starting points       */
   GEN.s[0] = PAR.s[0];     /* staring points                                 */
   GEN.s[1] = PAR.s[1];
-  GEN.s[2] = PAR.s[2];
 
   gen->method = par->method;        /* indicates method                      */
   gen->variant = par->variant;      /* indicates variant                     */

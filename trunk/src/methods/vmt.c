@@ -7,7 +7,7 @@
  *   FILE:      vmt.h                                                        *
  *                                                                           *
  *   TYPE:      continuous multivariate random variate                       *
- *   METHOD:    generated random vecto with independent components with      *
+ *   METHOD:    generated random vector with independent components with     *
  *              given marginal distribution and use linear transformation    *
  *              of vector.                                                   *
  *                                                                           *
@@ -54,6 +54,7 @@
 #include <unur_source.h>
 #include <distr/distr.h>
 #include <distr/distr_source.h>
+#include <distr/cvec.h>
 #include <distributions/unur_distributions.h>
 #include "unur_methods_source.h"
 #include "x_gen.h"
@@ -107,6 +108,7 @@ static void _unur_vmt_free( struct unur_gen *gen);
 /* destroy generator object.                                                 */
 /*---------------------------------------------------------------------------*/
 
+/** wg damit!!!!!**/
 static double *cholesky_decomposition( double *S, int dim );
 /*---------------------------------------------------------------------------*/
 /* the Colesky factor of a covariance matrix S is computed and returned      */
@@ -282,7 +284,8 @@ _unur_vmt_init( struct unur_par *par )
 
   /* cholesky factor of covariance matrix */
   if (DISTR.covar)
-    GEN.cholesky = cholesky_decomposition( DISTR.covar, GEN.dim );
+  /*  GEN.cholesky = cholesky_decomposition( DISTR.covar, GEN.dim ); */
+    GEN.cholesky =  unur_distr_cvec_get_cholesky(gen->distr); 
       
 #ifdef UNUR_ENABLE_LOGGING
   /* write info into log file */
@@ -516,7 +519,7 @@ _unur_vmt_free( struct unur_gen *gen )
 
   /* free memory */
   if (GEN.uvgen)    _unur_free(GEN.uvgen);
-  if (GEN.cholesky) free(GEN.cholesky);
+  /* if (GEN.cholesky) free(GEN.cholesky); (cholesky is now freed from distr-object) */
 
   _unur_distr_free(gen->distr);
   _unur_free_genid(gen);
@@ -538,7 +541,7 @@ cholesky_decomposition( double *S, int dim )
      /*                                                                      */
      /* parameters:                                                          */
      /*   S   ... variance-covariance matrix                                 */
-     /*   dim ... dimension (S is a dim x dim matrixes)                      */ 
+     /*   dim ... dimension (S is a dim x dim matrixes)                      */
      /*                                                                      */
      /* return:                                                              */
      /*   pointer to chokesky factor                                         */

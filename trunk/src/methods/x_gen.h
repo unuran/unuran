@@ -4,14 +4,14 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   FILE: source_unuran.h                                                   *
+ *   FILE: x_gen.h                                                           *
  *                                                                           *
  *   PURPOSE:                                                                *
- *         defines macros and declares structures and function prototypes    *
- *         for all UNURAN source files                                       *
+ *         defines macros and function prototypes for handling               *
+ *         generator objects.                                                *
  *                                                                           *
  *   USAGE:                                                                  *
- *         only included in source files.                                    *
+ *         only included in unuran.h                                         *
  *                                                                           *
  *****************************************************************************
      $Id$
@@ -38,31 +38,26 @@
  *****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
-#ifndef __UNURAN_SOURCE_H_SEEN
-#define __UNURAN_SOURCE_H_SEEN
-/*---------------------------------------------------------------------------*/
+/* (Re-) Initialize generators                                               */
+
+UNUR_GEN *unur_init( UNUR_PAR *parameters );
+int    unur_reinit( UNUR_GEN *generator );
 
 /*---------------------------------------------------------------------------*/
-/* include main header files                                                  */
+/* Sample from generator                                                     */
 
-#include <float.h>
-#include <math.h>
-#include <stdio.h>
-#include <stdlib.h>
-
-#include <config.h>
-#include <in_unuran.h>
-
-#include <source_struct.h>
-#include <source_gen.h>
-#include <source_cookies.h>
-#include <source_debug.h>
-#include <source_math.h>
-#include <source_methods.h>
+int    unur_sample_discr(UNUR_GEN *generator);
+double unur_sample_cont(UNUR_GEN *generator);
+void   unur_sample_vec(UNUR_GEN *generator, double *vector);
 
 /*---------------------------------------------------------------------------*/
-#endif  /* end __UNURAN_SOURCE_H_SEEN */
+/* Destroy (free) generator object                                           */
+
+void   unur_free( UNUR_GEN *gen );
+
 /*---------------------------------------------------------------------------*/
+/* Get dimension of generator for (multivariate) distribution                */
 
+int unur_get_dimension( UNUR_GEN *generator );
 
-
+/*---------------------------------------------------------------------------*/

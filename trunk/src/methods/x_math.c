@@ -4,14 +4,9 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   FILE: source_unuran.h                                                   *
+ *   FILE: x_math.c                                                          *
  *                                                                           *
- *   PURPOSE:                                                                *
- *         defines macros and declares structures and function prototypes    *
- *         for all UNURAN source files                                       *
- *                                                                           *
- *   USAGE:                                                                  *
- *         only included in source files.                                    *
+ *   miscelleanous mathematical routines                                     *
  *                                                                           *
  *****************************************************************************
      $Id$
@@ -38,31 +33,46 @@
  *****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
-#ifndef __UNURAN_SOURCE_H_SEEN
-#define __UNURAN_SOURCE_H_SEEN
-/*---------------------------------------------------------------------------*/
+
+#include <source_unuran.h>
 
 /*---------------------------------------------------------------------------*/
-/* include main header files                                                  */
 
-#include <float.h>
-#include <math.h>
-#include <stdio.h>
-#include <stdlib.h>
+#define ARCMEAN_HARMONIC 1.e5  /* use harmonic mean when abs larger than this value */
 
-#include <config.h>
-#include <in_unuran.h>
+double
+_unur_arcmean( double x0, double x1 )
+     /*----------------------------------------------------------------------*/
+     /* compute "arctan mean" of two numbers.                                */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   x0, x1 ... two numbers                                             */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   mean                                                               */
+     /*                                                                      */
+     /* comment:                                                             */
+     /*   "arctan mean" = tan(0.5*(arctan(x0)+arctan(x1)))                   */
+     /*                                                                      */
+     /*   a combination of arithmetical mean (for x0 and x1 close to 0)      */
+     /*   and the harmonic mean (for |x0| and |x1| large).                   */
+     /*----------------------------------------------------------------------*/
+{
+  /** TODO: possible over/underflow (?) **/
 
-#include <source_struct.h>
-#include <source_gen.h>
-#include <source_cookies.h>
-#include <source_debug.h>
-#include <source_math.h>
-#include <source_methods.h>
+  /* we need x0 < x1 */
+  if (x0>x1) {double tmp = x0; x0=x1; x1=tmp;}
+
+  if (x1 < -ARCMEAN_HARMONIC || x0 > ARCMEAN_HARMONIC)
+    /* use harmonic mean */
+    return 2./(1./x0 + 1./x1);
+  
+  return tan( (((x0<=-INFINITY) ? -M_PI/2. : atan(x0)) + ((x1>=INFINITY) ? M_PI/2. : atan(x1))) / 2. );
+
+} /* end of _unur_arcmean() */
 
 /*---------------------------------------------------------------------------*/
-#endif  /* end __UNURAN_SOURCE_H_SEEN */
-/*---------------------------------------------------------------------------*/
+
 
 
 

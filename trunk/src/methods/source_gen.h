@@ -4,14 +4,14 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   FILE: source_unuran.h                                                   *
+ *   FILE: source_gen.h                                                      *
  *                                                                           *
  *   PURPOSE:                                                                *
- *         defines macros and declares structures and function prototypes    *
- *         for all UNURAN source files                                       *
+ *         defines macros and function prototypes for handling               *
+ *         generator objects.                                                *
  *                                                                           *
  *   USAGE:                                                                  *
- *         only included in source files.                                    *
+ *         only included in source_unuran.h                                  *
  *                                                                           *
  *****************************************************************************
      $Id$
@@ -38,31 +38,27 @@
  *****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
-#ifndef __UNURAN_SOURCE_H_SEEN
-#define __UNURAN_SOURCE_H_SEEN
-/*---------------------------------------------------------------------------*/
+/* Invoke generators (macros to avoid function calls)                        */  
+
+#define _unur_init(par)               (par)->init(par)
+#define _unur_reinit(par)             (par)->reinit(par)
+
+#define _unur_sample_discr(gen)       (gen)->sample.discr(gen)
+#define _unur_sample_cont(gen)        (gen)->sample.cont(gen)
+#define _unur_sample_vec(gen,vector)  (gen)->sample.vec(gen,vector)
+
+#define _unur_free(gen)               (gen)->destroy(gen)
 
 /*---------------------------------------------------------------------------*/
-/* include main header files                                                  */
+/* get type of transformation method                                         */
 
-#include <float.h>
-#include <math.h>
-#include <stdio.h>
-#include <stdlib.h>
-
-#include <config.h>
-#include <in_unuran.h>
-
-#include <source_struct.h>
-#include <source_gen.h>
-#include <source_cookies.h>
-#include <source_debug.h>
-#include <source_math.h>
-#include <source_methods.h>
+#define _unur_gen_is_discr(gen) ( (((gen)->method & UNUR_MASK_TYPE) == UNUR_METH_DISCR) ? 1 : 0 )
+#define _unur_gen_is_cont(gen)  ( (((gen)->method & UNUR_MASK_TYPE) == UNUR_METH_CONT)  ? 1 : 0 )
+#define _unur_gen_is_vec(gen)   ( (((gen)->method & UNUR_MASK_TYPE) == UNUR_METH_VEC)   ? 1 : 0 )
 
 /*---------------------------------------------------------------------------*/
-#endif  /* end __UNURAN_SOURCE_H_SEEN */
+/* aux routine when no re-initialization routine is available                */
+
+int _unur_reinit_error( UNUR_GEN *gen ); 
+
 /*---------------------------------------------------------------------------*/
-
-
-

@@ -4,14 +4,13 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   FILE: source_unuran.h                                                   *
+ *   FILE: x_debug.h                                                         *
  *                                                                           *
  *   PURPOSE:                                                                *
- *         defines macros and declares structures and function prototypes    *
- *         for all UNURAN source files                                       *
+ *         defines macros and function prototypes for debugging routines.    *
  *                                                                           *
  *   USAGE:                                                                  *
- *         only included in source files.                                    *
+ *         only included in unuran.h                                         *
  *                                                                           *
  *****************************************************************************
      $Id$
@@ -38,31 +37,45 @@
  *****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
-#ifndef __UNURAN_SOURCE_H_SEEN
-#define __UNURAN_SOURCE_H_SEEN
-/*---------------------------------------------------------------------------*/
 
-/*---------------------------------------------------------------------------*/
-/* include main header files                                                  */
-
-#include <float.h>
-#include <math.h>
 #include <stdio.h>
-#include <stdlib.h>
-
-#include <config.h>
-#include <in_unuran.h>
-
-#include <source_struct.h>
-#include <source_gen.h>
-#include <source_cookies.h>
-#include <source_debug.h>
-#include <source_math.h>
-#include <source_methods.h>
 
 /*---------------------------------------------------------------------------*/
-#endif  /* end __UNURAN_SOURCE_H_SEEN */
+/* set debugging flag for generator                                          */
+/*
+ =INT
+ */
+int unur_set_debug( UNUR_PAR *parameters, unsigned debug );
+int unur_chg_debug( UNUR_GEN *generator, unsigned debug );
+int unur_set_default_debug( unsigned debug );
+/*
+ =END
+ */
+
+/* common debug flags                                                        */
+#define UNUR_DEBUG_INIT    0x00000001u    /* bit  01 ... pameters of generator */
+#define UNUR_DEBUG_SETUP   0x00000fffu    /* bits 02-12 ... setup            */
+#define UNUR_DEBUG_ADAPT   0x00fff000u    /* bits 13-24 ... adaptive steps   */
+#define UNUR_DEBUG_SAMPLE  0xff000000u    /* bits 25-32 ... trace sampling   */
+
+#define UNUR_DEBUG_OFF     (0u)       /* switch off debugging information    */    
+#define UNUR_DEBUG_ALL     (~0u)      /* write all avaivable information     */
+
 /*---------------------------------------------------------------------------*/
+/* global variable used to record errors                                     */
+extern unsigned unur_errno;
+
+/*---------------------------------------------------------------------------*/
+/* manipulate output stream                                                  */
+FILE *unur_set_stream( FILE *new_stream );
+FILE *unur_get_stream( void );
+
+/*---------------------------------------------------------------------------*/
+/* warnings and error messages for given error number                        */
+const char *unur_get_strerror ( const int unur_errno );
+
+/*---------------------------------------------------------------------------*/
+
 
 
 

@@ -4,11 +4,11 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   FILE: unur_misc.h                                                       *
+ *   FILE: x_urng.h                                                          *
  *                                                                           *
  *   PURPOSE:                                                                *
- *         defines function prototypes for miscelleanous routines            *
- *         parameters in generator objects.                                  *
+ *         declares macros and function prototypes for using uniform         *
+ *         random number generators inside UNURAN.                           *
  *                                                                           *
  *   USAGE:                                                                  *
  *         only included in unuran.h                                         *
@@ -38,55 +38,58 @@
  *****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
-#ifndef __UNUR_MISC_H_SEEN
-#define __UNUR_MISC_H_SEEN
+#ifndef __X_URNG_H_SEEN
+#define __X_URNG_H_SEEN
 /*---------------------------------------------------------------------------*/
 
-#include <stdio.h>
+#include <unuran_config.h>
 
 /*---------------------------------------------------------------------------*/
-/* Defining infinity                                                         */
-/* (we use the largest possible value to indicate infinity)                  */
-#include <math.h>
-#define UNUR_INFINITY  HUGE_VAL     
+/* uniform random number generator                                           */
+
+/* We have to define the following macros:
+
+   UNUR_URNG_DEFAULT
+      ... name|pointer of default urng (depends on UNUR_URNG_INVOKE)
+          to be set in unuran_config.h
+
+   _unur_call_urng(gen)
+      ... function call to urng (via UNUR_GEN)
+*/
 
 /*---------------------------------------------------------------------------*/
-/* set debugging flag for generator                                          */
-/*
- =INT
- */
-int unur_set_debug( UNUR_PAR *parameters, unsigned debug );
-int unur_chg_debug( UNUR_GEN *generator, unsigned debug );
-int unur_set_default_debug( unsigned debug );
-extern unsigned _unur_default_debugflag;     /* default debugging flags      */
-/*
- =END
- */
+#if UNUR_URNG_INVOKE == UNUR_URNG_POINTER
+/*---------------------------------------------------------------------------*/
 
-/* common debug flags                                                        */
-#define UNUR_DEBUG_INIT    0x00000001u    /* bit  01 ... pameters of generator */
-#define UNUR_DEBUG_SETUP   0x00000fffu    /* bits 02-12 ... setup            */
-#define UNUR_DEBUG_ADAPT   0x00fff000u    /* bits 13-24 ... adaptive steps   */
-#define UNUR_DEBUG_SAMPLE  0xff000000u    /* bits 25-32 ... trace sampling   */
+/* prototype for uniform rng  */
+double UNUR_URNG_DEFAULT(void);
 
-#define UNUR_DEBUG_OFF     (0u)       /* switch off debugging information    */    
-#define UNUR_DEBUG_ALL     (~0u)      /* write all avaivable information     */
+/* type of uniform random number generator                                   */
+typedef double (UNUR_URNG)(void);
+
+/* function call to uniform rng */
+#define _unur_call_urng(gen)        ((*(gen->urng))())
 
 /*---------------------------------------------------------------------------*/
-/* manipulate output stream                                                  */
-FILE *unur_set_stream( FILE *new_stream );
-FILE *unur_get_stream( void );
+#elif UNUR_URNG_INVOKE == UNUR_URNG_PRNG
+/*---------------------------------------------------------------------------*/
+
+/* header file from prng library */
+#include <prng.h>
+
+/* type of uniform random number generator                                   */
+typedef struct prng UNUR_URNG;
+
+/* function call to uniform rng */
+#define _unur_call_urng(gen)        (prng_get_next(gen->urng))
 
 /*---------------------------------------------------------------------------*/
-/* warnings and error messages for given error number                        */
-const char *unur_get_strerror ( const int unur_errno );
-
+#else
 /*---------------------------------------------------------------------------*/
-/* set, get or change uniform RNG for generator                              */
-
-int unur_set_urng( UNUR_PAR *parameters, UNUR_URNG *urng );
-UNUR_URNG *unur_chg_urng( UNUR_GEN *generator, UNUR_URNG *urng );
-UNUR_URNG *unur_get_urng( UNUR_GEN *generator );
+#error UNUR_URNG_INVOKE not valid !!
+/*---------------------------------------------------------------------------*/
+#endif  /* UNUR_URNG_INVOKE */
+/*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*/
 /* get and set default uniform RNG                                           */
@@ -96,25 +99,14 @@ UNUR_URNG *unur_get_default_urng( void );
 UNUR_URNG *unur_set_default_urng( UNUR_URNG *urng_new );
 
 /*---------------------------------------------------------------------------*/
-/* get dimension of generator for (multivariate) distribution                */
+/* set, get or change uniform RNG for generator                              */
 
-int unur_get_dimension( UNUR_GEN *generator );
-
-/*---------------------------------------------------------------------------*/
-/* get type of transformation method                                         */
-
-#define unur_is_discr(gen) ( (((gen)->method & UNUR_MASK_TYPE) == UNUR_METH_DISCR) ? 1 : 0 )
-#define unur_is_cont(gen)  ( (((gen)->method & UNUR_MASK_TYPE) == UNUR_METH_CONT)  ? 1 : 0 )
-#define unur_is_vec(gen)   ( (((gen)->method & UNUR_MASK_TYPE) == UNUR_METH_VEC)   ? 1 : 0 )
+int unur_set_urng( UNUR_PAR *parameters, UNUR_URNG *urng );
+UNUR_URNG *unur_chg_urng( UNUR_GEN *generator, UNUR_URNG *urng );
+UNUR_URNG *unur_get_urng( UNUR_GEN *generator );
 
 /*---------------------------------------------------------------------------*/
-#endif  /* __UNUR_MISC_H_SEEN */
+
 /*---------------------------------------------------------------------------*/
-
-
-
-
-
-
-
-
+#endif  /* __X_URNG_H_SEEN */
+/*---------------------------------------------------------------------------*/

@@ -134,6 +134,8 @@ sub scan_file {
 	    print STDERR "already included ... skip\n";
 	    next;
 	}
+
+	$header_included{$include_file} .= 1;
 	
 	# we do not include header files out of the subtree ...
 	unless (defined( $header_files{$include_file} ) ) {
@@ -144,7 +146,6 @@ sub scan_file {
 	    
 	# have found header file ...
 	print STDERR "to be inserted\n";
-	$header_included{$include_file} .= 1;
 	print "/*-----*/\n";
 	print "/* `$include_file' */\n";
 

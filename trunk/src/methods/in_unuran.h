@@ -62,10 +62,10 @@ typedef struct unur_par   UNUR_PAR;      /* parameters for generator         */
 typedef struct unur_gen   UNUR_GEN;      /* generator object                 */
 
 /*****************************************************************************/
-/**  Declarations for uniform random bumber generators                      **/
+/**  Declarations for uniform random number generators                      **/
 /*****************************************************************************/
 
-#include <unur_urng.h>
+#include <x_urng.h>
 
 /*****************************************************************************/
 /**  Function prototypes for manipulating distribution objects              **/
@@ -105,22 +105,30 @@ typedef struct unur_gen   UNUR_GEN;      /* generator object                 */
 /**  Invoke generators                                                      **/  
 /*****************************************************************************/
 
-UNUR_GEN *unur_init( UNUR_PAR *parameters );
-int    unur_reinit( UNUR_GEN *generator );
+#include <x_gen.h>
 
-int    unur_sample_discr(UNUR_GEN *generator);
-double unur_sample_cont(UNUR_GEN *generator);
-void   unur_sample_vec(UNUR_GEN *generator, double *vector);
+/*****************************************************************************/
+/**  Distributions                                                          **/
+/*****************************************************************************/
 
-void   unur_free( UNUR_GEN *gen );
+#include <unuran_distributions.h>
+
+/*****************************************************************************/
+/**  Debugging and Error messages                                           **/
+/*****************************************************************************/
+
+#include <x_errno.h>
+#include <x_debug.h>
 
 /*****************************************************************************/
 /**  Additional header files for further function prototypes                **/
 /*****************************************************************************/
 
-
-#include <unur_misc.h>
+#include <x_math.h>
 
 /*---------------------------------------------------------------------------*/
 #endif  /* __UNURAN_H_SEEN */
 /*---------------------------------------------------------------------------*/
+
+
+

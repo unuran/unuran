@@ -92,6 +92,33 @@
 #endif
 
 /*---------------------------------------------------------------------------*/
+/* Prototypes for various functions used in library                          */  
+
+/* Compute a "mean" defined as combibation of arithmetic and harmonic mean   */
+double _unur_arcmean( double x0, double x1 );
+
+/*---------------------------------------------------------------------------*/
+/* Macros                                                                    */
+
+#define min(x,y)   (((x)<(y)) ? (x) : (y))
+#define max(x,y)   (((x)>(y)) ? (x) : (y))
+
+/*---------------------------------------------------------------------------*/
+/* True and false                                                            */
+
+#ifndef TRUE
+#define TRUE   (1)
+#endif
+
+#ifndef FALSE
+#define FALSE  (0)
+#endif
+
+/*---------------------------------------------------------------------------*/
+/** TODO: Provisorium !!!!                                                  **/
+#define TOLERANCE 1.e-10  
+
+/*---------------------------------------------------------------------------*/
 #endif  /* __SOURCE_MATH_H_SEEN */
 /*---------------------------------------------------------------------------*/
 

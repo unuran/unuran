@@ -99,7 +99,7 @@ unur_test_timing( struct unur_par *par, int log_samplesize )
   if (!gen) return NULL;
 
   /* we need an array for the vector */
-  if (unur_is_vec(par)) {
+  if (_unur_gen_is_vec(par)) {
     dim = unur_get_dimension(gen);
     vec = _unur_malloc( dim * sizeof(double) );
   }

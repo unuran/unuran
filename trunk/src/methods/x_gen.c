@@ -4,9 +4,9 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   FILE: x_misc.c                                                          *
+ *   FILE: x_gen.c                                                           *
  *                                                                           *
- *   miscelleanous routines                                                  *
+ *   miscelleanous routines for manipulation generator objects               *
  *                                                                           *
  *****************************************************************************
      $Id$
@@ -99,86 +99,6 @@ void unur_free( UNUR_GEN *gen )
 
 /*****************************************************************************/
 /**                                                                         **/
-/**  Set debuging flags                                                     **/
-/**                                                                         **/
-/*****************************************************************************/
-
-/*---------------------------------------------------------------------------*/
-
-/* global variable for default debugging flags */
-unsigned _unur_default_debugflag = UNUR_DEBUGFLAG_DEFAULT;
-
-/*---------------------------------------------------------------------------*/
-
-int
-unur_set_debug( struct unur_par *par, unsigned debug )
-     /*----------------------------------------------------------------------*/
-     /* set debugging flag for generator                                     */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   par   ... pointer to parameter for building generator object       */
-     /*   debug ... debugging flag                                           */
-     /*----------------------------------------------------------------------*/
-{
-  /* check arguments */
-  _unur_check_NULL( NULL,par,0 );
-
-#ifdef UNUR_ENABLE_LOGGING
-  par->debug = debug;
-  return 1;
-#else
-  _unur_warning("DEBUG",UNUR_ERR_COMPILE,"debugging, #define UNUR_ENABLE_LOGGING");
-  return 0;
-#endif
-
-} /* end of unur_set_debug() */
-  
-/*---------------------------------------------------------------------------*/
-
-int
-unur_chg_debug( struct unur_gen *gen, unsigned debug )
-     /*----------------------------------------------------------------------*/
-     /* change debugging flag for generator                                  */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   gen   ... pointer to generator object                              */
-     /*   debug ... debugging flag                                           */
-     /*----------------------------------------------------------------------*/
-{
-  /* check arguments */
-  CHECK_NULL( gen,0 );
-
-#ifdef UNUR_ENABLE_LOGGING
-  gen->debug = debug;
-  return 1;
-#else
-  _unur_warning("DEBUG",UNUR_ERR_COMPILE,"debugging, #define UNUR_ENABLE_LOGGING");
-  return 0;
-#endif
-
-} /* end of unur_chg_debug() */
-  
-/*---------------------------------------------------------------------------*/
-
-int
-unur_set_default_debug( unsigned debug )
-     /*----------------------------------------------------------------------*/
-     /* set default debugging flag for generator                             */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   par   ... pointer to parameter for building generator object       */
-     /*   debug ... debugging flag                                           */
-     /*----------------------------------------------------------------------*/
-{
-  _unur_default_debugflag = debug;
-  return 1;
-} /* end of unur_set_default_debug() */
-  
-/*---------------------------------------------------------------------------*/
-
-
-/*****************************************************************************/
-/**                                                                         **/
 /**  Get data about generator object                                        **/
 /**                                                                         **/
 /*****************************************************************************/
@@ -216,50 +136,4 @@ unur_get_dimension( struct unur_gen *gen )
 } /* end of unur_get_dimension() */
 
 /*---------------------------------------------------------------------------*/
-
-/*****************************************************************************/
-/**                                                                         **/
-/**  misc                                                                   **/
-/**                                                                         **/
-/*****************************************************************************/
-
-/*---------------------------------------------------------------------------*/
-
-#define ARCMEAN_HARMONIC 1.e5  /* use harmonic mean when abs larger than this value */
-
-double
-_unur_arcmean( double x0, double x1 )
-     /*----------------------------------------------------------------------*/
-     /* compute "arctan mean" of two numbers.                                */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   x0, x1 ... two numbers                                             */
-     /*                                                                      */
-     /* return:                                                              */
-     /*   mean                                                               */
-     /*                                                                      */
-     /* comment:                                                             */
-     /*   "arctan mean" = tan(0.5*(arctan(x0)+arctan(x1)))                   */
-     /*                                                                      */
-     /*   a combination of arithmetical mean (for x0 and x1 close to 0)      */
-     /*   and the harmonic mean (for |x0| and |x1| large).                   */
-     /*----------------------------------------------------------------------*/
-{
-  /** TODO: possible over/underflow (?) **/
-
-  /* we need x0 < x1 */
-  if (x0>x1) {double tmp = x0; x0=x1; x1=tmp;}
-
-  if (x1 < -ARCMEAN_HARMONIC || x0 > ARCMEAN_HARMONIC)
-    /* use harmonic mean */
-    return 2./(1./x0 + 1./x1);
-  
-  return tan( (((x0<=-INFINITY) ? -M_PI/2. : atan(x0)) + ((x1>=INFINITY) ? M_PI/2. : atan(x1))) / 2. );
-
-} /* end of _unur_arcmean() */
-
-/*---------------------------------------------------------------------------*/
-
-
-
 

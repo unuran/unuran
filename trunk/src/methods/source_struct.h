@@ -84,8 +84,11 @@ typedef void _UNUR_SAMPLING_ROUTINE_VEC(struct unur_gen *gen, double *vec);
 /* structures for blocked memory allocation */
 #include <x_umalloc_struct.h>
 
-/* typedefs and prototypes for uniform random number generators */
-#include <unur_urng.h>
+/*****************************************************************************/
+/**  Declarations for uniform random number generators                      **/
+/*****************************************************************************/
+
+#include <x_urng.h>
 
 /*****************************************************************************/
 /**  Distribution objects                                                   **/

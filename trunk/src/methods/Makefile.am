@@ -11,8 +11,10 @@ lib_LIBRARIES = libmethods.a
 
 libmethods_a_SOURCES = \
  distr.c \
+ x_debug.c \
  x_error.c \
- x_misc.c \
+ x_gen.c \
+ x_math.c \
  x_stream.c \
  x_umalloc.c \
  x_urng.c \
@@ -30,19 +32,21 @@ libmethods_a_SOURCES = \
  unif.c \
  utdr.c
 
-pkginclude_HEADERS = \
- unuran_errno.h \
- unur_urng.h \
- unur_misc.h
-
 noinst_HEADERS = \
  in_unuran.h \
  source_unuran.h \
  source_cookies.h \
+ source_debug.h \
+ source_gen.h \
  source_math.h \
  source_methods.h \
  source_struct.h \
  x_umalloc_struct.h \
+ x_debug.h \
+ x_errno.h \
+ x_gen.h \
+ x_math.h \
+ x_urng.h \
  distr.h \
  distr_struct.h \
  arou.h \

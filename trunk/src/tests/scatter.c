@@ -108,7 +108,7 @@ unur_make_scatterplot( struct unur_gen *gen )
     return 0;
   }
 
-  if (!unur_is_cont(gen)) {
+  if (!_unur_gen_is_cont(gen)) {
     /* cannot make scatter plot */
     _unur_error(test_name,UNUR_ERR_GENERIC,"Not implemented for this type of generator");
     return 0;

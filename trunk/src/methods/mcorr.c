@@ -788,8 +788,11 @@ _unur_mcorr_debug_init( const struct unur_gen *gen )
 
   fprintf(log,"%s:\n",gen->genid);
 
-  if (gen->set && MCORR_SET_EIGENVALUES)
+  if (gen->set && MCORR_SET_EIGENVALUES) {
     fprintf(log,"%s: sampling routine = _unur_mcorr_sample_matr_eigen()\n",gen->genid);
+    _unur_matrix_print_vector(GEN.dim, GEN.eigenvalues, "Eigenvalues :",
+                              log, gen->genid,"     ");
+  }
   else
     fprintf(log,"%s: sampling routine = _unur_mcorr_sample_matr_HH()\n",gen->genid);
   fprintf(log,"%s:\n",gen->genid);

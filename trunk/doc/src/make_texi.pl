@@ -2,6 +2,7 @@
 ############################################################
 
 use strict;
+
 my $VERBOSE = 1;
 
 ############################################################
@@ -128,12 +129,6 @@ check_node_structure();
 # format texinfo output
 texi_node("TOP",0);
 
-# make some modifications
-transform_special_strings(\($TEXI));
-
-# process special @unur macros 
-process_unur_macros(\($TEXI));
-
 # write all output on STDOUT
 print $TEXI;
 
@@ -144,6 +139,7 @@ close DEP;
 
 # end of job
 exit 0;
+
 
 #############################################################
 # get all header files in all sub directories ...
@@ -165,6 +161,7 @@ sub scan_dir {
     }
     close FILES;
 } # end of scan_dir()
+
 
 #############################################################
 # scan given file ...
@@ -244,7 +241,10 @@ sub scan_file {
 
 } # end of scan_file() 
 
+
 #############################################################
+# scan mode ...
+# 
 
 sub scan_node {
     my $node_text = $_[0];
@@ -294,6 +294,8 @@ sub scan_node {
     # scan and format all node sections
     foreach my $tag (keys %TAGs) {
 	&{$TAGs{$tag}{"scan"}} ($node_name,$tag);
+	# make some modifications
+	transform_special_strings(\($IN->{$node_name}->{$tag}));
     }
 
     # close line on screen
@@ -303,6 +305,7 @@ sub scan_node {
     die "UP missing for node $node_name" unless $IN->{$node_name}->{"=UP"};
     
 } # end of scan_node()
+
 
 #############################################################
 # check node structure
@@ -345,6 +348,7 @@ sub print_node {
 
 } # end if print_node() 
 
+
 #############################################################
 # compare two nodes by their order TAG (lexicographically)
 #
@@ -352,6 +356,7 @@ sub print_node {
 sub nodes_by_order_tag {
     $IN->{$a}->{"=ORDERING"} cmp $IN->{$b}->{"=ORDERING"};
 }
+
 
 #############################################################
 # make texinfo output
@@ -515,8 +520,9 @@ sub texi_node {
 
 } # end of texi_node() 
 
+
 #############################################################
-# scan reference
+# scan bibligraphic references
 #
 
 sub scan_REF {
@@ -540,6 +546,7 @@ sub scan_REF {
     }
 
 } # end of scan_REF()
+
 
 #############################################################
 # texify string
@@ -608,6 +615,7 @@ sub scan_DOMAIN {
 
 } # end of scan_DOMAIN()
 
+
 #############################################################
 # scan PDF for distribution
 #
@@ -662,6 +670,7 @@ sub scan_PDF {
     $IN->{$node_name}->{$tag} .= "\@ifnottex\n$entry\n\@end ifnottex\n";
 	
 } # end of scan_PDF()
+
 
 #############################################################
 # scan list of parameters for distribution
@@ -766,6 +775,7 @@ sub scan_FPARAM {
 
 } # end of scan_FPARAM()
 
+
 #############################################################
 # scan list of parameters for distribution
 #
@@ -851,6 +861,7 @@ sub scan_STDGEN {
 
 } # end of scan_STDGEN()
 
+
 #############################################################
 # chop off trailing blanks
 #
@@ -876,6 +887,7 @@ sub scan_chop_blanks {
 
 } # end of scan_chop_blanks()
 
+
 #############################################################
 # dummy routine
 #
@@ -884,9 +896,13 @@ sub scan_do_nothing {
     my $node_name = $_[0];   # name of node
     my $tag = $_[1];         # TAG (node section)
 
-    # nothing to do
+    # we have to process @unur macros
+    process_unur_macros("tex|html|info",\($IN->{$node_name}->{$tag}));
+
+    # nothing else to do
     return;
 } # end of scan_do_nothing()
+
 
 #############################################################
 # scan TAG (node section) =UP
@@ -917,6 +933,7 @@ sub scan_UP {
     }
 	
 } # end if scan_UP()
+
 
 #############################################################
 # scan TAG (node section) =ROUTINES
@@ -971,7 +988,7 @@ sub scan_ROUTINES {
 
     # if there are blocks of comments, separated by empty lines
     # then delete all but the first block of comments
-##  $entry =~ s/\*\/\s*\n\s*\n\s*\/\*[.\n]*\*\//\*\//g;
+    ##  $entry =~ s/\*\/\s*\n\s*\n\s*\/\*[.\n]*\*\//\*\//g;
 
     # split into blocks
     my @blocks = split /\*\/\s*\n\s*\n/, $entry ;
@@ -1088,10 +1105,12 @@ sub scan_ROUTINES {
 	    $defblock_open = 0;
 	    # for info file
 	    my $fkt_string = $fkt_block;
+	    process_unur_macros("have_info",\$fkt_string);
 	    $fkt_string =~ s/%%%Function%%%/Function/g;
 	    $proc .= "\@ifinfo\n$fkt_string\@end ifinfo\n";
 	    # for other output formats
 	    $fkt_string = $fkt_block;
+	    process_unur_macros("tex|html",\$fkt_string);
 	    $fkt_string =~ s/%%%Function%%%/--/g;
 	    $proc .= "\@ifnotinfo\n$fkt_string\@end ifnotinfo\n\n";
 	    # clear block
@@ -1111,6 +1130,7 @@ sub scan_ROUTINES {
 
 } # end of scan_ROUTINES()
 
+
 #############################################################
 # format texinfo output for =NODE
 #
@@ -1121,6 +1141,7 @@ sub texi_NODE {
     # node string is used AS IS.
     return $node;
 } # end of texi_TOP()
+
 
 #############################################################
 # transform special strings
@@ -1153,12 +1174,14 @@ sub transform_special_strings {
 
 } # end of transform_special_strings()
 
+
 #############################################################
 # transform special strings
 #
 
 sub process_unur_macros {
-    my $lineptr = $_[0];
+    my $iftype = $_[0];
+    my $lineptr = $_[1];
     my $line = $$lineptr;
 
     while ((my $macroidx = index $line, "\@unur")>=0) {
@@ -1191,7 +1214,9 @@ sub process_unur_macros {
 	  }
 
 	  if ($macro =~ /\@unurmath\s*$/) {
-	      $replacement = "\@math{$body}";
+	      $replacement = transform_tex($iftype,$body);
+	      substr($line, 0, $macroidx) =~ s/[\s\n]+$/\n/s;
+	      substr($line, $bodyendidx) =~ s/^[\s]+//s;
 	      last MACRO;
 	  }
 
@@ -1211,6 +1236,7 @@ sub process_unur_macros {
 
     $$lineptr = $line;
 } # end of process_unur_macros() 
+
 
 #############################################################
 
@@ -1243,8 +1269,8 @@ sub transform_bibref {
 
     # output
     my $output = 
-	"\@ifhtml\n$entrywithlink\n\@end ifhtml\n"
-	."\@ifnothtml\n$entry\n\@end ifnothtml\n";
+	"\@ifhtml\n$entrywithlink\n\@end ifhtml\n".
+	"\@ifnothtml\n$entry\n\@end ifnothtml\n";
 
     return $output;
 
@@ -1252,3 +1278,249 @@ sub transform_bibref {
 
 #############################################################
 
+sub transform_tex {
+    my $iftype = $_[0];
+    my $entry = $_[1];   # entry to be transformed
+
+    my $tex;            
+    my $html;
+    my $info;
+
+    parse_tex($entry,\$tex,\$html,\$info);
+
+    my $output;
+
+    if ($iftype =~ /tex/) {
+	$output .= ($iftype =~ /have_tex/) ? 
+	    "\@math{$tex}\n" : "\@iftex\n\@math{$tex}\n\@end iftex\n";
+    }
+    if ($iftype =~ /html/) {
+	$output .= ($iftype =~ /have_html/) ? 
+	    "\@html\n$html\@end html\n" : "\@ifhtml\n\@html\n$html\n\@end html\n\@end ifhtml\n";
+    }
+    if ($iftype =~ /info/) {
+	$output .= ($iftype =~ /have_info/) ? 
+	    "\@math{$info}\n" : "\@ifinfo\n\@math{$info}\n\@end ifinfo\n";
+    }
+
+    return $output;
+
+} # end of transform_tex()
+
+#############################################################
+
+sub parse_tex {
+    my $entry = $_[0];   # entry to be parsed
+    
+    my $tex = $_[1];     # pointer to output string for all formats
+    my $html = $_[2];
+    my $info = $_[3];
+
+
+    # replace special characters
+    $entry =~ s/[\s\n]+/ /g;                # trim blanks
+    $entry =~ s/\s*:\s*/\\colon /g;         # :
+    $entry =~ s/\s*<=\s*/\\leq /g;          # <=
+    $entry =~ s/\s*>=\s*/\\geq /g;          # >=
+    $entry =~ s/\s*\\{\s*/\\lbrace /g;      # {
+    $entry =~ s/\s*\\}\s*/\\rbrace /g;      # }
+
+    # scan TeX
+    my @token;
+
+    until ($entry eq "") {
+	if ($entry =~ s/^(\s|\n)+//) {
+	    # white space
+	    push @token, {type=>"blank", value=>" "}; next; }
+	if ($entry =~ s/^([a-zA-Z]+)//) {
+	    # text
+	    push @token, {type=>"letter", value=>"$1"}; next; }
+	if ($entry =~ s/^([0-9]+)//) {
+	    # number
+	    push @token, {type=>"number", value=>"$1"}; next; }
+	if ($entry =~ s/^(\[|\]|\(|\)|\'|\,|\;|\.|\=|\/|\+|\-|\<|\>)//) {
+	    # other printable symbols
+	    push @token, {type=>"symbol", value=>"$1"}; next; }
+
+	if ($entry =~ s/^\\([a-zA-Z]+)(\s*)//) {
+	    # macro
+	    push @token, {type=>"macro", value=>"\\$1$2"}; next; }
+	if ($entry =~ s/^\\(\,|\;|{|})(\s*)//) {
+	    # macro with special charcter 
+	    push @token, {type=>"macro", value=>"\\$1$2"}; next; }
+
+	if ($entry =~ s/^(\_|\^)//) {
+	    # special characters
+	    push @token, {type=>"special", value=>"$1"}; next; }
+
+	if ($entry =~ /^\{/) {
+	    # block --> find end of block
+	    my $idx = 1;
+	    my $open = 1;
+	    while ($open) {
+		++$open if substr($entry, $idx, 1) eq "{";
+		--$open if substr($entry, $idx, 1) eq "}";
+		++$idx;
+		die "Cannot find closing brace for \@unur macro" if $idx > length($entry);
+	    }
+
+	    # store block
+	    my $block = substr $entry, 1, $idx-2; 
+	    push @token, {type=>"block", value=>"$block"}; 
+
+	    # update $entry
+	    $entry = substr $entry, $idx;
+	    next;
+	}
+
+	# else: unknown character:
+	print STDERR "\n\@unurmath: $entry\n";
+	die "Unknown Character: '".substr($entry,0,1)."' ";
+    }
+
+    # write text
+    while ( @token ) {
+	next_tex_token(\@token,$tex,$html,$info);
+    }
+
+    # trim blanks
+    $$html =~ s/[\s\n]+/ /g;
+    $$html =~ s/^[\s\n]+//g;
+    $$html =~ s/[\s\n]+$//g;
+    $$info =~ s/[\s\n]+/ /g;
+    $$info =~ s/^[\s\n]+//g;
+    $$info =~ s/[\s\n]+$//g;
+
+} # end of parse_tex()
+
+#############################################################
+
+sub next_tex_token {
+    my $token = $_[0];   # pointer to token list
+    
+    my $tex = $_[1];     # pointer to output string for all formats
+    my $html = $_[2];
+    my $info = $_[3];
+
+    # get next token
+    my $tok = shift @$token;
+
+    # check token
+    die "token missing" unless $tok;
+
+    my $type = $tok->{type};
+    my $value = $tok->{value};
+
+    ##	print STDERR "{type = $type\t value = $value}\n";
+
+    if ($type eq "block") {
+	$$tex .= "{";
+	$$html .= "";
+	$$info .= "(";
+	parse_tex($value,$tex,$html,$info);
+	$$tex .= "}";
+	$$html .= "";
+	$$info .= ")";
+	return;
+    }
+
+    # letters
+    if ($type =~ /^(letter)$/ ) {
+	$$tex .= $value;
+	$$html .= "<I>$value</I>";
+	$$info .= $value;
+	return;
+    }
+    # numbers and symbols
+    if ($type =~ /^(blank|number|symbol)$/ ) {
+	$$tex .= $value;
+	$$html .= $value;
+	$$info .= $value;
+	return;
+    }
+
+    # macros
+    if ($type eq "macro") {
+	if ($value =~ /^(\\;|\\,)\s*$/) {
+	    # white spaces
+	    $$tex .= $value;
+	    $value =~ s/^(\\;|\\,)$/ /;
+	    $$info .= $value;
+	    $$html .= $value;
+	    return;
+	}
+	if ($value =~ /^\\(colon|leq|geq|mapsto|times|rbrace|lbrace)\s*$/) {
+	    # :, <=, >=, ->, x, {, }
+	    $$tex .= $value;
+	    $value =~ s/^\\(colon)\s*/ : /g;
+	    $value =~ s/^\\(leq)\s*/ <= /g;
+	    $value =~ s/^\\(geq)\s*/ >= /g;
+	    $value =~ s/^\\(mapsto)\s*/ -> /g;
+	    $value =~ s/^\\(times)\s*/x/g;
+	    $value =~ s/^\\(rbrace)\s*/ \@} /g;
+	    $value =~ s/^\\(lbrace)\s*/ \@{ /g;
+	    $$html .= $value;
+	    $$info .= $value;
+	    return;
+	}
+	if ($value =~ /^\\(inf|sup|min|max)\s*$/) {
+	    # macros that are printed as is in non-TeX formats
+	    $$tex .= $value;
+	    $$html .= " $1";
+	    $$info .= " $1";
+	    return;
+	}
+	if ($value =~ /^\\(in|subset)\s*$/) {
+	    # macros that are printed as is in non-TeX formats
+	    $$tex .= $value;
+	    $$html .= " $1 ";
+	    $$info .= " $1 ";
+	    return;
+	}
+	if ($value =~ /^\\(alpha|beta|gamma|delta|mu)\s*$/) {
+	    # greek letters
+	    $$tex .= $value;
+	    $$html .= " $1 ";
+	    $$info .= " $1 ";
+	    return;
+	}
+	if ($value =~ /^\\(limits)\s*$/) {
+	    # macros that are ignored in non-TeX formats
+	    $$tex .= $value;
+	    return;
+	}
+	if ($value =~ /^\\(sqrt)\s*$/) {
+	    # sqrt
+	    $$tex .= $value;
+	    $value =~ s/^\\(sqrt)\s*/sqrt/g;
+	    $$html .= "$value(";
+	    $$info .= $value;
+	    next_tex_token($token,$tex,$html,$info);
+	    $$html .= ")";
+	    $$info .= "";
+	    return;
+	}
+#	$$tex .= $value;
+#	$$html .= $value;
+#	$$info .= $value;
+#	return;
+    }
+
+    # special characters
+    if ($type eq "special") {
+	if ($value =~ /^(\_|\^)$/) {
+	    $$tex .= $value;
+	    $$info .= $value;
+	    $$html .= ($value =~ /^(\_)$/) ? "<SUB>" : "<SUP>";
+	    next_tex_token($token,$tex,$html,$info);
+	    $$html .= ($value =~ /^(\_)$/) ? "</SUB>" : "</SUP>";
+	return;
+	}
+    }
+
+    # else --> error
+    die "\nPanic: don't know what to do with type '$type', value = '$value'\n";
+
+} # end of next_tex_token()
+
+#############################################################

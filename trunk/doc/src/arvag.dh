@@ -45,7 +45,7 @@
    number @unurmath{U} and return 
 
    @display
-   @unurmath{X=F^{-1}(U)}. 
+   @unurmath{X=F^{-1}(U).} 
    @end display
 
    The following figure shows how the inversion method works for
@@ -209,7 +209,7 @@
    methods is easy to compute. It is useful as its reciprocal is an
    upper bound for the expected number of trials of the rejection
    algoritm. The expected number of evaluations of the density is
-   bounded by @unurmath{(1/@code{sqhratio})-1}.
+   bounded by @unurmath{(1/sqhratio)-1}.
    @end itemize
 
 =EON

@@ -61,6 +61,7 @@ static const char distr_name[] = "chisquare";
 #define nu  params[0]
 
 #define DISTR distr->data.cont
+#define LOGNORMCONSTANT (distr->data.cont.norm_constant)
 
 /* function prototypes                                                       */
 static double _unur_pdf_chisquare(double x, UNUR_DISTR *distr);
@@ -161,7 +162,7 @@ unur_distr_chisquare( double *params, int n_params )
   DISTR.n_params = n_params;
 
   /* log of normalization constant */
-  DISTR.LOGNORMCONSTANT = _unur_gammaln(nu/2.) - M_LN2 * (nu/2.);
+  LOGNORMCONSTANT = _unur_gammaln(nu/2.) - M_LN2 * (nu/2.);
 
   /* mode and area below p.d.f. */
   DISTR.mode = (nu >= 2.) ? (nu - 2.) : 0.;

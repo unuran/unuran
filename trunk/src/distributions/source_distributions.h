@@ -55,11 +55,6 @@
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*/
-/* (log of) normalization constant for p.d.f */
-#define LOGNORMCONSTANT  params[UNUR_DISTR_MAXPARAMS]
-#define NORMCONSTANT     params[UNUR_DISTR_MAXPARAMS]
-
-/*---------------------------------------------------------------------------*/
 /* set routine for sampling                                                  */
 #define _unur_cstd_set_sampling_routine(par,gen,routine) \
    do { \

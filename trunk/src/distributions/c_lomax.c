@@ -62,6 +62,7 @@ static const char distr_name[] = "lomax";
 #define C params[1]
 
 #define DISTR distr->data.cont
+#define NORMCONSTANT (distr->data.cont.norm_constant)
 
 /* function prototypes                                                       */
 static double _unur_pdf_lomax(double x, UNUR_DISTR *distr);
@@ -149,7 +150,7 @@ unur_distr_lomax( double *params, int n_params )
   DISTR.n_params = n_params;
 
   /* normalization constant */
-  DISTR.NORMCONSTANT = DISTR.a * pow(DISTR.C,DISTR.a);
+  NORMCONSTANT = DISTR.a * pow(DISTR.C,DISTR.a);
 
   /* mode and area below p.d.f. */
   DISTR.mode = 0.;

@@ -61,6 +61,7 @@ static const char distr_name[] = "geometric";
 #define p  params[0]
 
 #define DISTR distr->data.discr
+/* #define NORMCONSTANT (distr->data.discr.norm_constant) */
 
 /* function prototypes                                                       */
 static double _unur_pmf_geometric(int k, UNUR_DISTR *distr);

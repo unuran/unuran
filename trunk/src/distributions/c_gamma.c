@@ -79,6 +79,7 @@ static const char distr_name[] = "gamma";
 #define gamma  params[2]   /* location */
 
 #define DISTR distr->data.cont
+#define LOGNORMCONSTANT (distr->data.cont.norm_constant)
 
 /* function prototypes                                                       */
 static double _unur_pdf_gamma(double x, UNUR_DISTR *distr);
@@ -246,7 +247,7 @@ unur_distr_gamma( double *params, int n_params )
   DISTR.n_params = n_params;
 
   /* log of normalization constant */
-  DISTR.LOGNORMCONSTANT = _unur_lognormconstant_gamma(DISTR.params,DISTR.n_params);
+  LOGNORMCONSTANT = _unur_lognormconstant_gamma(DISTR.params,DISTR.n_params);
 
   /* mode and area below p.d.f. */
   DISTR.mode = _unur_mode_gamma(DISTR.params,DISTR.n_params);

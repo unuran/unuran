@@ -61,6 +61,7 @@ static const char distr_name[] = "poisson";
 #define theta  params[0]
 
 #define DISTR distr->data.discr
+/* #define NORMCONSTANT (distr->data.discr.norm_constant) */
 
 /* function prototypes                                                       */
 static double _unur_pmf_poisson(int k, UNUR_DISTR *distr);

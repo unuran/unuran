@@ -61,6 +61,7 @@ static const char distr_name[] = "student";
 #define nu  params[0]
 
 #define DISTR distr->data.cont
+#define NORMCONSTANT (distr->data.cont.norm_constant)
 
 /* function prototypes                                                       */
 static double _unur_pdf_student(double x, UNUR_DISTR *distr);
@@ -138,7 +139,7 @@ unur_distr_student( double *params, int n_params )
   DISTR.n_params = n_params;
 
   /* log of normalization constant */
-  DISTR.NORMCONSTANT = _unur_normconstant_student(DISTR.params,DISTR.n_params);
+  NORMCONSTANT = _unur_normconstant_student(DISTR.params,DISTR.n_params);
 
   /* mode and area below p.d.f. */
   DISTR.mode = 0.;

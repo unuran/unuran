@@ -63,6 +63,7 @@ static const char distr_name[] = "cauchy";
 #define lambda params[1]
 
 #define DISTR distr->data.cont
+#define NORMCONSTANT (distr->data.cont.norm_constant)
 
 /* function prototypes                                                       */
 static double _unur_pdf_cauchy(double x, UNUR_DISTR *distr);
@@ -169,7 +170,7 @@ unur_distr_cauchy( double *params, int n_params )
   DISTR.n_params = n_params;
 
   /* normalization constant */
-  DISTR.NORMCONSTANT = M_PI * DISTR.lambda;
+  NORMCONSTANT = M_PI * DISTR.lambda;
 
   /* mode and area below p.d.f. */
   DISTR.mode = DISTR.theta; 

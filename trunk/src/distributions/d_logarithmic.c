@@ -61,6 +61,7 @@ static const char distr_name[] = "logarithmic";
 #define theta  params[0]
 
 #define DISTR distr->data.discr
+#define NORMCONSTANT (distr->data.discr.norm_constant)
 
 /* function prototypes                                                       */
 static double _unur_pmf_logarithmic(int k, UNUR_DISTR *distr);
@@ -119,7 +120,7 @@ unur_distr_logarithmic( double *params, int n_params )
   DISTR.n_params = n_params;
 
   /* log of normalization constant */
-  DISTR.NORMCONSTANT = -1. / log( 1.-DISTR.theta);
+  NORMCONSTANT = -1. / log( 1.-DISTR.theta);
 
   /* mode and area below p.d.f. */
   /*    DISTR.mode = 0.; */

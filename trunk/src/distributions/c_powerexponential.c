@@ -64,6 +64,7 @@ static const char distr_name[] = "powerexponential";
 #define tau  params[0]
 
 #define DISTR distr->data.cont
+#define LOGNORMCONSTANT (distr->data.cont.norm_constant)
 
 /* function prototypes                                                       */
 static double _unur_pdf_powerexponential(double x, UNUR_DISTR *distr);
@@ -164,7 +165,7 @@ unur_distr_powerexponential( double *params, int n_params )
   DISTR.n_params = n_params;
 
   /* log of normalization constant */
-  DISTR.LOGNORMCONSTANT = _unur_lognormconstant_powerexponential(DISTR.params,DISTR.n_params);
+  LOGNORMCONSTANT = _unur_lognormconstant_powerexponential(DISTR.params,DISTR.n_params);
 
   /* mode and area below p.d.f. */
   DISTR.mode = 0;

@@ -106,7 +106,7 @@ unur_distr_discr_new( void )
 
   DISTR.n_params  = 0;             /* number of parameters of the pmf        */
   /* initialize parameters of the p.m.f.                                     */
-  for (i=0; i<UNUR_DISTR_MAXPARAMS+1; i++)
+  for (i=0; i<UNUR_DISTR_MAXPARAMS; i++)
     DISTR.params[i] = 0.;
 
   /* DISTR.domain[0] = ?;             left boundary of domain                */

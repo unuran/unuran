@@ -62,6 +62,7 @@ static const char distr_name[] = "chi";
 #define nu  params[0]
 
 #define DISTR distr->data.cont
+#define LOGNORMCONSTANT (distr->data.cont.norm_constant)
 
 /* function prototypes                                                       */
 static double _unur_pdf_chi(double x, UNUR_DISTR *distr);
@@ -156,7 +157,7 @@ unur_distr_chi( double *params, int n_params )
   DISTR.n_params = n_params;
 
   /* log of normalization constant */
-  DISTR.LOGNORMCONSTANT = _unur_gammaln(nu/2.) - M_LN2 * (nu/2. - 1.);
+  LOGNORMCONSTANT = _unur_gammaln(nu/2.) - M_LN2 * (nu/2. - 1.);
 
   /* mode and area below p.d.f. */
   DISTR.mode = (nu >= 1.) ? sqrt(nu - 1.) : 0.;

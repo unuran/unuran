@@ -61,6 +61,7 @@ static const char distr_name[] = "slash";
 /* none */
 
 #define DISTR distr->data.cont
+#define NORMCONSTANT (distr->data.cont.norm_constant)
 
 /* function prototypes                                                       */
 static double _unur_pdf_slash(double x, UNUR_DISTR *distr);
@@ -132,7 +133,7 @@ unur_distr_slash( double *params, int n_params )
   DISTR.n_params = 0;
 
   /* normalization constant */
-  DISTR.NORMCONSTANT = 1. / (M_SQRT2 * M_SQRTPI);
+  NORMCONSTANT = 1. / (M_SQRT2 * M_SQRTPI);
 
   /* mode and area below p.d.f. */
   DISTR.mode = 0.;

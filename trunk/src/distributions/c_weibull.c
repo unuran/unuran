@@ -79,6 +79,7 @@ static const char distr_name[] = "weibull";
 #define zeta   params[2]
 
 #define DISTR distr->data.cont
+#define NORMCONSTANT (distr->data.cont.norm_constant)
 
 /* function prototypes                                                       */
 static double _unur_pdf_weibull(double x, UNUR_DISTR *distr);
@@ -210,7 +211,7 @@ unur_distr_weibull( double *params, int n_params )
   DISTR.n_params = n_params;
 
   /* normalization constant */
-  DISTR.NORMCONSTANT = DISTR.c / DISTR.alpha;
+  NORMCONSTANT = DISTR.c / DISTR.alpha;
 
   /* mode and area below p.d.f. */
   DISTR.mode = (DISTR.c<=1.) ? 0. : DISTR.alpha * pow((DISTR.c - 1.)/DISTR.c, 1./DISTR.c) + DISTR.zeta;

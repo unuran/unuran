@@ -62,6 +62,7 @@ static const char distr_name[] = "pareto";
 #define a  params[1]
 
 #define DISTR distr->data.cont
+#define NORMCONSTANT (distr->data.cont.norm_constant)
 
 /* function prototypes                                                       */
 static double _unur_pdf_pareto(double x, UNUR_DISTR *distr);
@@ -141,7 +142,7 @@ unur_distr_pareto( double *params, int n_params )
   DISTR.n_params = n_params;
 
   /* log of normalization constant */
-  DISTR.NORMCONSTANT = DISTR.a * pow(DISTR.k,DISTR.a);
+  NORMCONSTANT = DISTR.a * pow(DISTR.k,DISTR.a);
 
   /* mode and area below p.d.f. */
   DISTR.mode = DISTR.k;

@@ -90,6 +90,7 @@ static const char distr_name[] = "gig";
 #define eta    params[2]    /* shape */
 
 #define DISTR distr->data.cont
+/* #define NORMCONSTANT (distr->data.cont.norm_constant) */
 
 /* function prototypes                                                       */
 static double _unur_pdf_gig(double x, UNUR_DISTR *distr);

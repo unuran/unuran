@@ -82,6 +82,7 @@ static const char distr_name[] = "beta";
 #define b  params[3]
 
 #define DISTR distr->data.cont
+#define LOGNORMCONSTANT (distr->data.cont.norm_constant)
 
 /* function prototypes                                                       */
 static double _unur_pdf_beta(double x, UNUR_DISTR *distr);
@@ -258,7 +259,7 @@ unur_distr_beta( double *params, int n_params )
   DISTR.n_params = n_params;
 
   /* log of normalization constant */
-  DISTR.LOGNORMCONSTANT = _unur_lognormconstant_beta(DISTR.params,DISTR.n_params);
+  LOGNORMCONSTANT = _unur_lognormconstant_beta(DISTR.params,DISTR.n_params);
 
   /* mode and area below p.d.f. */
   DISTR.mode = _unur_mode_beta(DISTR.params,DISTR.n_params);

@@ -60,6 +60,7 @@ static const char distr_name[] =  "rayleigh";
 #define sigma  params[0]
 
 #define DISTR distr->data.cont
+#define LOGNORMCONSTANT (distr->data.cont.norm_constant)
 
 /* function prototypes                                                       */
 static double _unur_pdf_rayleigh(double x, UNUR_DISTR *distr);
@@ -141,7 +142,7 @@ unur_distr_rayleigh( double *params, int n_params )
   DISTR.n_params = n_params;
 
   /* log of normalization constant */
-  DISTR.LOGNORMCONSTANT =   2. * log(DISTR.sigma);
+  LOGNORMCONSTANT =   2. * log(DISTR.sigma);
 
   /* mode and area below p.d.f. */
   DISTR.mode = DISTR.sigma;

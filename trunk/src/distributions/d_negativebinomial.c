@@ -63,6 +63,7 @@ static const char distr_name[] = "negativebinomial";
 #define r  params[1]
 
 #define DISTR distr->data.discr
+/* #define NORMCONSTANT (distr->data.discr.norm_constant) */
 
 /* function prototypes                                                       */
 static double _unur_pmf_negativebinomial(int k, UNUR_DISTR *distr);

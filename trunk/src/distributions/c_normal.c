@@ -77,6 +77,7 @@ static const char distr_name[] = "normal";
 #define sigma params[1]
 
 #define DISTR distr->data.cont
+#define LOGNORMCONSTANT (distr->data.cont.norm_constant)
 
 /* function prototypes                                                       */
 static double _unur_pdf_normal( double x, UNUR_DISTR *distr );
@@ -150,7 +151,7 @@ int
 _unur_upd_area( UNUR_DISTR *distr )
 {
   /* log of normalization constant */
-  DISTR.LOGNORMCONSTANT = log(M_SQRTPI * M_SQRT2 * DISTR.sigma);
+  LOGNORMCONSTANT = log(M_SQRTPI * M_SQRT2 * DISTR.sigma);
   DISTR.area = 1.;
   return 1;
 } /* end of _unur_upd_area() */
@@ -219,7 +220,7 @@ unur_distr_normal( double *params, int n_params )
   DISTR.n_params = n_params;
 
   /* log of normalization constant */
-  DISTR.LOGNORMCONSTANT = log(M_SQRTPI * M_SQRT2 * DISTR.sigma);
+  LOGNORMCONSTANT = log(M_SQRTPI * M_SQRT2 * DISTR.sigma);
 
   /* mode and area below p.d.f. */
   DISTR.mode = DISTR.mu;

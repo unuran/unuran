@@ -64,6 +64,7 @@ static const char distr_name[] = "zipf";
 #define tau  params[1]
 
 #define DISTR distr->data.discr
+/* #define NORMCONSTANT (distr->data.discr.norm_constant) */
 
 /* function prototypes                                                       */
 static double _unur_pmf_zipf(int k, UNUR_DISTR *distr);

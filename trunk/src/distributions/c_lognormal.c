@@ -64,6 +64,7 @@ static const char distr_name[] = "lognormal";
 #define theta  params[2]
 
 #define DISTR distr->data.cont
+#define NORMCONSTANT (distr->data.cont.norm_constant)
 
 /* function prototypes                                                       */
 static double _unur_pdf_lognormal(double x, UNUR_DISTR *distr);
@@ -157,7 +158,7 @@ unur_distr_lognormal( double *params, int n_params )
   DISTR.n_params = n_params;
 
   /* normalization constant */
-  DISTR.NORMCONSTANT = DISTR.sigma * sqrt(2.*M_PI);
+  NORMCONSTANT = DISTR.sigma * sqrt(2.*M_PI);
 
   /* mode and area below p.d.f. */
   /* DISTR.mode = unur_mode_lognormal(DISTR.params,DISTR.n_params); */

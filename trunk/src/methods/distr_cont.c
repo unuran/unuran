@@ -109,7 +109,7 @@ unur_distr_cont_new( void )
 
   DISTR.n_params  = 0;             /* number of parameters of the pdf        */
   /* initialize parameters of the p.d.f.                                     */
-  for (i=0; i<UNUR_DISTR_MAXPARAMS+1; i++)
+  for (i=0; i<UNUR_DISTR_MAXPARAMS; i++)
     DISTR.params[i] = 0.;
 
   DISTR.mode      = INFINITY;      /* location of mode (default: not known)  */

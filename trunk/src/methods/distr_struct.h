@@ -44,9 +44,10 @@ struct unur_distr_cont {
   UNUR_FUNCT_CONT *dpdf;        /* pointer to derivative of p.d.f.           */
   UNUR_FUNCT_CONT *cdf;         /* pointer to c.d.f.                         */
 
-  double params[UNUR_DISTR_MAXPARAMS + 1];  /* parameters of the p.d.f.      */
-  /* params[UNUR_DISTR_MAXPARAMS] is used to store normalization constants!! */
+  double params[UNUR_DISTR_MAXPARAMS];  /* parameters of the p.d.f.          */
   int    n_params;              /* number of parameters of the pdf           */
+
+  double norm_constant;         /* (log of) normalization constant for p.d.f.*/
 
   double mode;                  /* location of mode                          */
   double area;                  /* area below p.d.f.                         */
@@ -65,9 +66,11 @@ struct unur_distr_discr {
   UNUR_FUNCT_DISCR *pmf;        /* pointer to probability mass function      */
   UNUR_FUNCT_DISCR *cdf;        /* pointer to c.d.f.                         */
 
-  double params[UNUR_DISTR_MAXPARAMS + 1];  /* parameters of the p.d.f.      */
+  double params[UNUR_DISTR_MAXPARAMS];  /* parameters of the p.m.f.          */
   /* params[UNUR_DISTR_MAXPARAMS] is used to store normalization constants!! */
   int    n_params;              /* number of parameters of the pdf           */
+
+  double norm_constant;         /* (log of) normalization constant for p.d.f.*/
 
   int domain[2];                /* boundary of domain                        */
   double area;                  /* area below p.m.f.                         */

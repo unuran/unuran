@@ -85,6 +85,7 @@ static const char distr_name[] = "extremeII";
 #define theta  params[2]    /* scale */
 
 #define DISTR distr->data.cont
+/* #define NORMCONSTANT (distr->data.cont.norm_constant) */
 
 /* function prototypes                                                       */
 static double _unur_pdf_extremeII(double x, UNUR_DISTR *distr);

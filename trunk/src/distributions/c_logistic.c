@@ -77,6 +77,7 @@ static const char distr_name[] = "logistic";
 #define alpha  params[1]
 
 #define DISTR distr->data.cont
+#define NORMCONSTANT (distr->data.cont.norm_constant)
 
 /* function prototypes                                                       */
 static double _unur_pdf_logistic(double x, UNUR_DISTR *distr);
@@ -193,7 +194,7 @@ unur_distr_logistic( double *params, int n_params )
   DISTR.n_params = n_params;
 
   /* normalization constant */
-  DISTR.NORMCONSTANT = 1. / DISTR.beta;
+  NORMCONSTANT = 1. / DISTR.beta;
 
   /* mode and area below p.d.f. */
 /*    DISTR.mode = 0.; */

@@ -66,7 +66,7 @@ static const char distr_name[] = "binomial";
 /*---------------------------------------------------------------------------*/
 
 #define DISTR distr->data.discr
-#define LOGNORMCONSTANT (distr->data.discr.norm_constant)
+/* #define LOGNORMCONSTANT (distr->data.discr.norm_constant) */
 
 /*---------------------------------------------------------------------------*/
 /* do we have the PMF of the distribution ? */
@@ -112,7 +112,7 @@ _unur_pmf_binomial(int k, UNUR_DISTR *distr)
 
   else
     return exp( k * log(p) + (n-k) * log(1.-p) +
-                 LOGNORMCONSTANT - _unur_sf_ln_factorial(k) - _unur_sf_ln_factorial(n-k) ) ;
+		_unur_sf_ln_factorial(n) - _unur_sf_ln_factorial(k) - _unur_sf_ln_factorial(n-k) ) ;
 
 } /* end of _unur_pmf_binomial() */
 
@@ -161,9 +161,7 @@ _unur_upd_mode_binomial( UNUR_DISTR *distr )
 int
 _unur_upd_sum_binomial( UNUR_DISTR *distr )
 {
-  register double *params = DISTR.params;
   /* log of normalization constant: none */
-  LOGNORMCONSTANT = _unur_sf_ln_factorial(n);
 
   if (distr->set & UNUR_DISTR_SET_STDDOMAIN) {
     DISTR.sum = 1.;
@@ -269,12 +267,7 @@ unur_distr_binomial( double *params, int n_params )
     return NULL;
   }
 
-  /* log of normalization constant */
-#ifdef HAVE_SUM
-  LOGNORMCONSTANT = _unur_sf_ln_factorial(DISTR.n);
-#else
-  LOGNORMCONSTANT = 0.;
-#endif
+  /* log of normalization constant: none */
 
   /* mode and sum over PMF */
   DISTR.mode = (int) ((DISTR.n + 1) * DISTR.p);

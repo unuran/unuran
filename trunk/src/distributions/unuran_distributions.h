@@ -469,6 +469,7 @@ UNUR_DISTR *unur_distr_multinormal(int dim, double *mean, double *covar);
    =DOMAIN   0 <= k <= n
    =FPARAM   0 : n : >= 1      :  : no. of elements  :
              1 : p : 0 < p < 1 :  : shape            :
+   =STDGEN   DEF  Ratio of Uniforms/Inversion [STa89]
    =EON
 */
 UNUR_DISTR *unur_distr_binomial(double *params, int n_params);

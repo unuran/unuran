@@ -13,6 +13,7 @@
  *                                                                           *
  *   REQUIRED:                                                               *
  *      pointer to the c.d.f.                                                *
+ *      newton's method: additional pointer to the p.d.f.                    *
  *                                                                           *
  *   OPTIONAL:                                                               *
  *      c.d.f. at mode                                                       *
@@ -120,6 +121,13 @@ static void _unur_ninv_debug_sample_regula( struct unur_gen *gen,
 /* trace sampling (regula falsi).                                            */
 /*---------------------------------------------------------------------------*/
 
+static void _unur_ninv_debug_sample_newton( struct unur_gen *gen, 
+					    double u, double x, double fx, int iter );
+/*---------------------------------------------------------------------------*/
+/* trace sampling (newton's method).                                         */
+/*---------------------------------------------------------------------------*/
+
+
 #endif
 
 /*---------------------------------------------------------------------------*/
@@ -179,8 +187,12 @@ unur_ninv_new( struct unur_distr *distr )
   /* set default values */
   PAR.max_iter  = 40;              /* maximal number of iterations           */
   PAR.rel_x_resolution = 1.0e-8 ;  /* maximal relative error in x            */
-  PAR.s[0]      = 0.;              /* left boundary of interval              */
-  PAR.s[1]      = 0.;              /* right boundary of interval             */
+  /*  all starting points set to same value                                  */
+  PAR.s[0]      = 0.1123456789;    /* left boundary of interval              *
+                                      and newton starting point              */
+  PAR.s[1]      = 0.1123456789;    /* right boundary of interval             */
+  PAR.s[2]      = 0.1123456789;    /* 3rd point for muller                   */
+  /* regula falsi:                                                           */
   /* if the PAR.s[i] are identical, the PAR.s[i] are set in _unur_ninv_init  */
   /* such that INTERVAL_COVERS *100 Percent of the used univariate random    */
   /* numbers will be in that interval                                        */
@@ -341,7 +353,7 @@ unur_ninv_set_start( struct unur_par *par, double s1, double s2, double s3 )
      /* set starting points.                                                 */
      /*   Newton:        s1           starting point                         */
      /*   regular falsi: s1, s2       boundary of starting interval          */
-     /*   Muller/Brent:  s1. s2, s3   starting points                        */
+     /*   Muller:        s1, s2, s3   starting points                        */
      /* arguments that are used by method are ignored.                       */
      /*                                                                      */
      /*                                                                      */
@@ -430,7 +442,12 @@ _unur_ninv_init( struct unur_par *par )
     break;
 
   case NINV_VARFLAG_NEWTON:
-    /* nothing to do */
+    /* starting value = .1123456789 -> startig value set to value      */
+    /* such that CDF(value) = .5                                       */
+    if (GEN.s[0] == 0.1123456789){
+      GEN.s[0] = 0.;          /* arbitrary starting value */
+      GEN.s[0] = _unur_ninv_regula(gen, 0.5);
+    }
     break;
   }
 
@@ -655,7 +672,7 @@ _unur_ninv_newton( struct unur_gen *gen, double U )
 
 
   /* initialize starting point */
-  x     = 1.;    /** TODO: durch s[0] ersetzen ?? **/
+  x     = GEN.s[0];
   fx    = CDF(x) - U;
   dfx   = PDF(x);
   fxabs = fabs(fx);
@@ -724,6 +741,13 @@ _unur_ninv_newton( struct unur_gen *gen, double U )
       break;   /* no improvement with newton-step -> finished */
 
   }  /* end of for-loop  (MAXITER reached -> finished) */
+
+#ifdef UNUR_ENABLE_LOGGING
+    /* write info into log file (in case error) */
+    if (gen->debug & NINV_DEBUG_SAMPLE)
+      _unur_ninv_debug_sample_newton( gen,U,x,fx,i );
+#endif
+
 
   return x;
 
@@ -902,6 +926,31 @@ _unur_ninv_debug_sample_regula( struct unur_gen *gen, double u, double x, double
 } /* end of _unur_ninv_debug_sample_regula() */
 
 /*---------------------------------------------------------------------------*/
+
+
+static void
+_unur_ninv_debug_sample_newton( struct unur_gen *gen, double u, double x, double fx, int iter )
+     /*----------------------------------------------------------------------*/
+     /* trace sampling (newton's method)                                     */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*----------------------------------------------------------------------*/
+{
+  FILE *log;
+
+  /* check arguments */
+  CHECK_NULL(gen,/*void*/);  COOKIE_CHECK(gen,CK_NINV_GEN,/*void*/);
+
+  log = unur_get_stream();
+
+  fprintf(log,"%s: u = %8.6f,\t x = %8.6g\t(cdf(x)-u = %8.2g)\t -- %2d interations [%d]\n",
+	  gen->genid,u,x,fx,iter,GEN.max_iter);
+
+} /* end of _unur_ninv_debug_sample_newton() */
+
+/*---------------------------------------------------------------------------*/
+
 
 /*---------------------------------------------------------------------------*/
 #endif   /* end UNUR_ENABLE_LOGGING */

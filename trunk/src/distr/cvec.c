@@ -965,7 +965,6 @@ unur_distr_cvec_get_marginal( const struct unur_distr *distr, int n )
      /*   distr    ... pointer to distribution object                        */
      /*   marginal ... pointer to marginal object                            */
      /*                                                                      */
-     /*                                                                      */
      /* return:                                                              */
      /*   UNUR_SUCCESS ... on success                                        */
      /*   error code   ... on error                                          */

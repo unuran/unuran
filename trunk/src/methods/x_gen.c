@@ -75,6 +75,12 @@ void unur_sample_vec(UNUR_GEN *gen, double *vector)
   gen->sample.cvec(gen,vector);
 } /* end of unur_sample_vec() */
 
+void unur_sample_mat(UNUR_GEN *gen, double *matrix)
+{
+  CHECK_NULL(gen,RETURN_VOID);
+  gen->sample.cmat(gen,matrix);
+} /* end of unur_sample_mat() */
+
 /*---------------------------------------------------------------------------*/
 /* aux routines when no sampling routine is available                         */
 

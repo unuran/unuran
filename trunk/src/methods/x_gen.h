@@ -78,6 +78,9 @@ double unur_sample_cont(UNUR_GEN *generator);
 /* */
 
 void   unur_sample_vec(UNUR_GEN *generator, double *vector);
+/* */
+
+void   unur_sample_mat(UNUR_GEN *generator, double *matrix);
 /*
   Sample from generator object. The three routines depend on the type
   of the generator object (discrete or continuous univariate

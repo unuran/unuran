@@ -189,6 +189,10 @@ double unur_test_chi2( UNUR_GEN *generator, int intervals, int samplesize, int c
    expected and observed data is printed.
    If it is set to @code{3} then all generated numbers are printed.
    There is no output when it is set to @code{0}.
+
+   @emph{Notice}, for multivariate distributions also tests on the
+   marginal distributions are performed. Then the minimal p-value 
+   of all these tests is returned.
 */
 
 int unur_test_moments( UNUR_GEN *generator, double *moments, int n_moments, int samplesize,

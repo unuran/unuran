@@ -403,23 +403,12 @@ _unur_gibbs_sample_cvec( struct unur_gen *gen, double *vec )
     /* moving "candidate" point along each coordinate */
     for (d=0; d<dim; d++) {
 
-      //distr_conditional = unur_distr_cont_new();
-      /* set the current coordinate direction as scalar parameter */
-
-      for (i=0; i<dim; i++) {
-        printf("GEN->point_current[%d]=%f\n", i, GEN->point_current[i]);
-      }
-      
       distr_conditional = unur_distr_condi_new(gen->distr, GEN->point_current, d);
-      if (distr_conditional) printf("--- distr\n");
       par_conditional = unur_tdr_new(distr_conditional);
-      if (par_conditional) printf("--- par\n");
       gen_conditional = unur_init(par_conditional);
-      if (gen_conditional) printf("--- gen\n");
       
       if (gen_conditional==NULL) {
-        /* stopping ? */
-	printf("no generator ...\n");
+        /* TODO : stopping ? */
       }
       else {
         GEN->point_current[d] = unur_sample_cont(gen_conditional);

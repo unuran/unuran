@@ -51,12 +51,13 @@ This is the online-documentation of UNURAN.@*
 Version: @value{VERSION}@*
 Date: @value{DATE}
 @menu
-* Intro::         Introduction
-* Methods::       How should the random numbers be created
-* FAQ::           Frequently asked questions
-* Reference::     Function Reference
-* Distributions:: Distributions
-* Internal::     Internal remarks
+* Intro::                  Introduction
+* Examples::               Examples
+* Methods::                How should the random numbers be created
+* FAQ::                    Frequently asked questions
+* Function Reference::     Function Reference
+* Distributions::          Distributions
+* Internal::               Internal remarks
 @end menu
 @end ifnottex     
 
@@ -68,9 +69,8 @@ Table of @ref{Contents}
 @node Intro
 @chapter Introduction
 @menu
-* Overview:: Overview
+* Overview::  Overview
 * Install::   Installing the thing
-* Start::    Getting Started
 @end menu
 
 
@@ -80,27 +80,36 @@ Table of @ref{Contents}
 @node Install
 @section Install
 @menu
-* Now
+* Now::
 @end menu
 
-
-node Now
-@subsection now
+@node Now
+@subsection Now
 cvs update @*
 @* 'make' in UNURAN to compile UNURAN
 @* Makefile.am in /examples modify in regard to testprogram 
 @* make in /examples
 
-@node Start
-@section Getting start
-@*Beginning example
+@node Examples
+@chapter Examples
+@menu
+* Ex1:: As short as possible
+* Ex2:: Use of arbitrary pdf
+* Ex3:: Change function parameters
+@end menu
+
+@*Here are some exmples to show you what to do. Beginning with the basics
+of using unuran we evolve to examples using  more advanced features of
+unuran.
 @*call the compiler with:
 @*gcc -Wall  -L../src/methods  -L../src/distributions  -L../src/tests  -L../src/uniform -g -O2  -o test1  test1.o -lunuran_tests -lunuran_distributions -lunuran -luniform -lprng -lm
 
-Code:
+@node Ex1
+@section Ex1: As short as possible
+Code: test1.c
 
 @smallexample
-/* my first UNURAN program */ 
+/* my first UNURAN program: test1.c*/
 
 #include <unuran.h>
 #include <unuran_distributions.h>
@@ -108,42 +117,41 @@ Code:
 
 int main()
 @{
-  double x;
   int    i;
+  double x;
 
-  struct unur_distr *distr;  /* distribution */ 
+  struct unur_distr *distr;  /* distribution */
   struct unur_par *par;      /* parameter */
   struct unur_gen *gen;      /* generator */
-/* mache neues Verteilungsobjekt unur_distr_cont_new (methods.distr.c)   */
-/*     setze pointer auf pdf und cdf  */
- 
-  /* make distr. object: truncated Gaussian */
-  distr = unur_distr_normal(NULL,0);
-  unur_distr_cont_set_domain(distr, -2.,2.);
 
-  /* choose method and set parameters */
+
+  /* choose a implemented distribution: Gaussian */
+  distr = unur_distr_normal(NULL, 0);
+
+  /* choose method */
   par = unur_arou_new(distr);
-  unur_arou_set_max_sqhratio(par,0.99);
 
   /* make generator object */
   gen = unur_init(par);
 
-  /* sample */
-  for (i=0;i<100;i++) @{
-  x = unur_sample_cont(gen);
-  printf("%f\n",x);
+  /* sample: print 100 random numbers */
+  for (i=0; i<100; i++) @{
+    x = unur_sample_cont(gen);
+    printf("%f\n",x);
   @}
-@} 
+
+  return 0;
+@}    
 @end smallexample
 
-First you have to include the libraries @code{unuran.h} and @code{unuran_distributions.h} with the commands:
-
+First you have to include the libraries @code{unuran.h} 
+and @code{unuran_distributions.h} with the commands:
 @smallexample
 #include <unuran.h>
 #include <unuran_distributions.h> 
 @end smallexample 
 This headers provide all functions/features for generating random numbers.
-Three structures 
+These three structures 
 @smallexample
 struct unur_distr *distr;  /* distribution */ 
   struct unur_par *par;    /* parameter */
@@ -153,26 +161,26 @@ are necesssary to store the used parameters. It is not necessary to understand t
 @*
 With
 @smallexample
- distr = unur_distr_normal(NULL,0);
+ distr = unur_distr_normal(NULL, 0);
 @end smallexample
-we generate an distribution,
+we choose that the random numbers will be standard normal distributed,
 and with
 @smallexample
  par = unur_arou_new(distr);
 @end smallexample
-we have genarate the parameters of the method 'arou'
-Now its possible to change default parameters of the method with @code{
- unur_arou_set_max_sqhratio(par,0.99);}
-@*
-
+we choose the method 'arou' for sampling.@*
+For actual sampling it's necessary to build a generator object:
 @smallexample
 gen = unur_init(par)
 @end smallexample
-we generate an genarator objekt (and destroy the the objects distr.(?) and par)
-which is necessary to genarate an non uniform random number with
+(Now the objects distr and par have no further use and will be destroyed).@*
+The following line shows how actual sampling works:
 @smallexample
  x = unur_sample_cont(gen);
 @end smallexample
+
+@node Ex2
+@section Ex2: Arbitrary CDF
 
 If you know the c.d.f you can genarate +random numbers in the following way
 The important lines are in bold face.
@@ -224,12 +232,19 @@ int main()
 @}
 @end smallexample
 
-If want to change the parameters of a method:
+@node Ex3
+@section Ex3: Changing Parameters
+
+@* Each method for generating random numbers allows several
+parameters to modify.
+If you don't want UNURAN to choose default values,
+it's possible to change a specific parameters (see @ref{Function Reference});
+ the following example shows you how to do. 
 The important lines are in bold face.
 
 @smallexample
 
-/* my second UNURAN program test2.c */ 
+/* my third UNURAN program test2.c */ 
 
 #include <unuran.h>
 #include <unuran_distributions.h>
@@ -327,7 +342,7 @@ library.
 
 Use the following program xyz.c which produce afile with randoom numbers. Read this random numbers ... 
 
-@node Reference
+@node Function Reference
 @chapter Function reference
 @menu
 * DistrRef:: Functions for distributions
@@ -346,19 +361,19 @@ Notation:
 @node MethodsRef
 @section methods
 @menu
-* arou:: Adaptive Ratio Of Uniforms
-* cstd:: Interface for extern generators
-* dau::  (Discrete) Alias-Urn
-* dis::  (Discrete) Alias-Urn
-* dstd:: ???
-* ninv:: Numerical INVersion
-* rect:: experimental multivariate Method
-* srou:: Simple Ratio Of Uniforms
-* stdr:: Transformed Density Rejection (with universal bounds)
-* tabl:: Ahren
-* tdr::  Trandformed Density Rejection
-* unif:: ???
-* utdr:: Universal Transformed Density Rejection (3-point method)
+@c * AROU:: Adaptive Ratio Of Uniforms
+* CSTD:: Interface for extern generators
+@c * DAU::  (Discrete) Alias-Urn
+@c * DIS::  (Discrete) Alias-Urn
+* DSTD:: ???
+* NINV:: Numerical INVersion
+@c * RECT:: experimental multivariate Method
+@c * SROU:: Simple Ratio Of Uniforms
+@c * STDR:: Transformed Density Rejection (with universal bounds)
+@c * TABL:: Ahren
+@c * TDR::  Trandformed Density Rejection
+@c * UNIF:: ???
+@c * UTDR:: Universal Transformed Density Rejection (3-point method)
 @end menu
 
 @include qstart_function_reference.texi

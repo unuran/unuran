@@ -202,14 +202,18 @@ static void _unur_tabl_debug_intervals( struct unur_gen *gen, int print_areas );
 /*---------------------------------------------------------------------------*/
 /* abbreviations */
 
-#define DISTR_IN  distr->data.cont
+#define DISTR_IN  distr->data.cont      /* data for distribution object      */
 
-#define PAR       par->data.tabl
-#define GEN       gen->data.tabl
-#define DISTR     gen->distr.data.cont
-#define SAMPLE    gen->sample.cont
+#define PAR       par->data.tabl        /* data for parameter object         */
+#define GEN       gen->data.tabl        /* data for generator object         */
+#define DISTR     gen->distr.data.cont  /* data for distribution in generator object */
 
-#define PDF(x) ((*(GEN.pdf))((x),GEN.pdf_param,GEN.n_pdf_param))
+#define BD_LEFT   domain[0]             /* left boundary of domain of distribution */
+#define BD_RIGHT  domain[1]             /* right boundary of domain of distribution */
+
+#define SAMPLE    gen->sample.cont      /* pointer to sampling routine       */     
+
+#define PDF(x) ((*(DISTR.pdf))((x),DISTR.params,DISTR.n_params))    /* call to p.d.f. */
 
 /*---------------------------------------------------------------------------*/
 
@@ -1054,8 +1058,6 @@ _unur_tabl_create( struct unur_par *par )
   gen->destroy = unur_tabl_free;
 
   /* set all pointers to NULL */
-  GEN.pdf_param   = NULL;
-  GEN.n_pdf_param = 0;
   GEN.Atotal      = 0.;
   GEN.Asqueeze    = 0.;
   GEN.guide       = NULL;
@@ -1066,17 +1068,11 @@ _unur_tabl_create( struct unur_par *par )
   GEN.iv_free     = 0;
   GEN.mblocks     = NULL;
 
-  /* copy some parameters into generator object */
-  GEN.pdf = DISTR.pdf;           /* p.d.f. of distribution              */
-
-  GEN.pdf_param   = DISTR.params;
-  GEN.n_pdf_param = DISTR.n_params;
-
   /* the boundaries for our computation limits are intersection of the       */
   /* domain of the distribution and the given computation boundaries.        */
   if (par->distr->set & UNUR_DISTR_SET_DOMAIN) {
-    PAR.bleft = max(PAR.bleft,par->DISTR_IN.domain[0]);
-    PAR.bright = min(PAR.bright,par->DISTR_IN.domain[1]);
+    PAR.bleft  = max(PAR.bleft, DISTR.BD_LEFT);
+    PAR.bright = min(PAR.bright,DISTR.BD_RIGHT);
   }
   GEN.bleft       = PAR.bleft;         /* left boundary of domain            */
   GEN.bright      = PAR.bright;        /* right boundary of domain           */
@@ -1251,14 +1247,10 @@ _unur_tabl_get_starting_intervals_from_mode( struct unur_par *par, struct unur_g
   /** TODO: check for slopes out of support !! **/
 
   struct unur_tabl_interval *iv;
-  double mode;   /* (exact!) location of mode of p.d.f. */
 
   /* check arguments */
   COOKIE_CHECK(par,CK_TABL_PAR,0);
   COOKIE_CHECK(gen,CK_TABL_GEN,0);
-
-  /* compute mode */
-  mode = par->DISTR_IN.mode;   /* (exact!) location of mode of p.d.f. */
 
   /* init linked list of intervals */
   GEN.n_ivs = 0;
@@ -1269,14 +1261,14 @@ _unur_tabl_get_starting_intervals_from_mode( struct unur_par *par, struct unur_g
     iv = GEN.iv = _unur_tabl_iv_stack_pop(gen);
     COOKIE_CHECK(iv,CK_TABL_IV,0);
 
-    if (mode <= GEN.bleft) {
+    if (DISTR.mode <= GEN.bleft) {
       /* only one ascending interval <a,b> = [a,b] */
       iv->xmax = GEN.bleft;
       iv->xmin = GEN.bright;
       break;
     }
 
-    if (mode >= GEN.bright) {
+    if (DISTR.mode >= GEN.bright) {
       /* only one descending interval <a,b> = [b,a] */
       iv->xmax = GEN.bright;
       iv->xmin = GEN.bleft;
@@ -1284,13 +1276,13 @@ _unur_tabl_get_starting_intervals_from_mode( struct unur_par *par, struct unur_g
     }
 
     /* one descending and one ascending interval */
-    iv->xmax = mode;
+    iv->xmax = DISTR.mode;
     iv->xmin = GEN.bleft;
 
     /* the second interval */
     iv = iv->next = _unur_tabl_iv_stack_pop(gen);  /* all the other intervals */
     COOKIE_CHECK(iv,CK_TABL_IV,0);
-    iv->xmax = mode;
+    iv->xmax = DISTR.mode;
     iv->xmin = GEN.bright;
     break;
   }
@@ -1363,7 +1355,7 @@ _unur_tabl_split_a_starting_intervals( struct unur_par *par,
   iv = iv_slope;        /* pointer to actual interval */
   iv_last = iv_slope;   /* pointer to last interval in list */
   /* (maximal) area of bar (= hat in one interval) */
-  bar_area = par->DISTR_IN.area * PAR.area_fract;
+  bar_area = DISTR.area * PAR.area_fract;
 
   switch (iv->slope) {
   case +1:

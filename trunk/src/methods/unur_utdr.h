@@ -50,12 +50,9 @@ struct unur_utdr_par {
 
 struct unur_utdr_gen { 
 
-  _UNUR_FUNCTION_CONT *pdf;     /* pointer to p.d.f.                         */
-  double  mode;                 /* location of mode                          */
   double  il;                   /* left border of the domain                 */
   double  ir;                   /* right border of the domain                */
-  double *pdf_param;            /* parameters of the pdf                     */
-  int     n_pdf_param;          /* number of parameters of the pdf           */
+
   double  vollc,volcompl,voll,fm,hm,
     al,ar,col,cor,sal,sar,bl,br,tlx,trx,
     brblvolc,drar,dlal,ooar2,ooal2;/* constants of the hat and for generation*/

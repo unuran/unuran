@@ -85,14 +85,18 @@ static void _unur_cstd_debug_init( struct unur_par *par, struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 /* abbreviations */
 
-#define DISTR_IN  distr->data.cont
+#define DISTR_IN  distr->data.cont      /* data for distribution object      */
 
-#define PAR       par->data.cstd
-#define GEN       gen->data.cstd
-#define DISTR     gen->distr.data.cont
-#define SAMPLE    gen->sample.cont
+#define PAR       par->data.cstd        /* data for parameter object         */
+#define GEN       gen->data.cstd        /* data for generator object         */
+#define DISTR     gen->distr.data.cont  /* data for distribution in generator object */
 
-#define CDF(x) ((*(DISTR.cdf))((x),GEN.pdf_param,GEN.n_pdf_param))
+#define BD_LEFT   domain[0]             /* left boundary of domain of distribution */
+#define BD_RIGHT  domain[1]             /* right boundary of domain of distribution */
+
+#define SAMPLE    gen->sample.cont      /* pointer to sampling routine       */
+
+#define CDF(x) ((*(DISTR.cdf))((x),DISTR.params,DISTR.n_params))  /* call to c.d.f. */
 
 /*---------------------------------------------------------------------------*/
 
@@ -237,8 +241,8 @@ unur_cstd_init( struct unur_par *par )
   if (!gen) { free(par); return NULL; }
 
   /* run special init routine for generator */
-  if (par->DISTR_IN.init != NULL)
-    par->DISTR_IN.init(par,gen);
+  if (DISTR.init != NULL)
+    DISTR.init(par,gen);
 
   /* init successful ?? */
   if (SAMPLE == NULL) {
@@ -255,13 +259,13 @@ unur_cstd_init( struct unur_par *par )
       _unur_error(GENTYPE,UNUR_ERR_INIT,"domain changed for non inversion method");
       free(par); unur_cstd_free(gen); return NULL; 
     }
-    else if (par->DISTR_IN.cdf == NULL) {
+    else if (DISTR.cdf == NULL) {
       _unur_error(GENTYPE,UNUR_ERR_INIT,"domain changed, c.d.f. required");
       free(par); unur_cstd_free(gen); return NULL; 
     }
     /* compute umin and umax */
-    GEN.umin = (par->DISTR_IN.domain[0] > -INFINITY) ? CDF(par->DISTR_IN.domain[0]) : 0.;
-    GEN.umax = (par->DISTR_IN.domain[1] < INFINITY)  ? CDF(par->DISTR_IN.domain[1]) : 1.;
+    GEN.umin = (DISTR.BD_LEFT > -INFINITY) ? CDF(DISTR.BD_LEFT)  : 0.;
+    GEN.umax = (DISTR.BD_RIGHT < INFINITY) ? CDF(DISTR.BD_RIGHT) : 1.;
   }
 
 #if UNUR_DEBUG & UNUR_DB_INFO
@@ -366,8 +370,6 @@ _unur_cstd_create( struct unur_par *par )
   GEN.n_gen_param = 0;   /* (computed in special GEN.init()  */
 
   /* copy some parameters into generator object */
-  GEN.pdf_param   = DISTR.params;
-  GEN.n_pdf_param = DISTR.n_params;
   GEN.umin        = 0;    /* cdf at left boundary of domain  */
   GEN.umax        = 1;    /* cdf at right boundary of domain */
 

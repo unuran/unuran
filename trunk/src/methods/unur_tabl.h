@@ -86,9 +86,6 @@ struct unur_tabl_gen {
   double  Atotal;               /* total area below hat                      */
   double  Asqueeze;             /* area of squeeze polygon                   */
 
-  _UNUR_FUNCTION_CONT *pdf;     /* pointer to p.d.f.                         */
-  double *pdf_param;            /* parameters of the pdf                     */
-  int     n_pdf_param;          /* number of parameters of the pdf           */
   double  bleft;                /* left boundary of domain                   */
   double  bright;               /* right boundary of domain                  */
 

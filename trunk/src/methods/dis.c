@@ -144,12 +144,13 @@ static void _unur_dis_debug_table( struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 /* abbreviations */
 
-#define DISTR_IN  distr->data.discr
+#define DISTR_IN  distr->data.discr     /* data for distribution object      */
 
-#define PAR       par->data.dis
-#define GEN       gen->data.dis
-#define DISTR     gen->distr.data.discr
-#define SAMPLE    gen->sample.discr
+#define PAR       par->data.dis         /* data for parameter object         */
+#define GEN       gen->data.dis         /* data for generator object         */
+#define DISTR     gen->distr.data.discr /* data for distribution in generator object */
+
+#define SAMPLE    gen->sample.discr     /* pointer to sampling routine       */
 
 /*---------------------------------------------------------------------------*/
 
@@ -324,8 +325,8 @@ unur_dis_init( struct unur_par *par )
   if (!gen) { free(par); return NULL; }
 
   /* probability vector */
-  prob = par->DISTR_IN.prob;
-  n_prob = par->DISTR_IN.n_prob;
+  prob = DISTR.prob;
+  n_prob = DISTR.n_prob;
 
   /* computation of cumulated probabilities */
   for( i=0, probh=0.; i<n_prob; i++ ) {
@@ -506,7 +507,7 @@ _unur_dis_create( struct unur_par *par )
   _unur_copy_debugflag(par,gen);    /* copy debugging flags into generator object */
 
   /* length of probability vector */
-  n_prob = par->DISTR_IN.n_prob;
+  n_prob = DISTR.n_prob;
 
   /* store method in generator structure */
   gen->method = par->method;
@@ -569,7 +570,7 @@ _unur_dis_debug_init( struct unur_par *par, struct unur_gen *gen )
   fprintf(log,"%s: sampling routine = unur_dis_sample()\n",gen->genid);
   fprintf(log,"%s:\n",gen->genid);
 
-  fprintf(log,"%s: length of probability vector = %d\n",gen->genid,par->DISTR_IN.n_prob);
+  fprintf(log,"%s: length of probability vector = %d\n",gen->genid,DISTR.n_prob);
   fprintf(log,"%s: length of guide table = %d   (rel. = %g%%",
 	  gen->genid,GEN.guide_size,100.*PAR.guide_factor);
   _unur_print_if_default(par,DIS_SET_GUIDEFACTOR);

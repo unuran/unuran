@@ -53,9 +53,6 @@ struct unur_cstd_par {
 /* The generator object                                                      */
 
 struct unur_cstd_gen { 
-  double *pdf_param;      /* parameters for standard distribution            */
-  int     n_pdf_param;    /* number of parameters for distribution           */
-
   double *gen_param;      /* parameters for the generator                    */
   int     n_gen_param;    /* number of parameters for the generator          */
 

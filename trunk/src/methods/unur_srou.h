@@ -48,11 +48,6 @@ struct unur_srou_par {
 /* The generator object                                                      */
 
 struct unur_srou_gen { 
-  _UNUR_FUNCTION_CONT *pdf;  /* pointer to p.d.f.                            */
-  double  mode;              /* location of mode                             */
-  double *pdf_param;         /* parameters of the pdf                        */
-  int     n_pdf_param;       /* number of parameters of the pdf              */
-
   double  um;                /* height of rectangle: square root of f(mode)  */
   double  vl, vr;            /* left and right boundary of rectangle         */
   double  xl, xr;            /* ratios vl/um and vr/um                       */

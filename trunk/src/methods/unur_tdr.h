@@ -86,13 +86,6 @@ struct unur_tdr_gen {
   double  Atotal;               /* area below hat                            */
   double  Asqueeze;             /* area below squeeze                        */
 
-  _UNUR_FUNCTION_CONT *pdf;     /* pointer to p.d.f.                         */
-  _UNUR_FUNCTION_CONT *dpdf;    /* pointer to derivative of p.d.f.           */
-  double *pdf_param;            /* parameters of the pdf                     */
-  int     n_pdf_param;          /* number of parameters of the pdf           */
-  double  bleft;                /* left boundary of domain                   */
-  double  bright;               /* right boundary of domain                  */
-
   double  c_T;                  /* parameter c for transformation T_c        */           
 
   struct unur_tdr_interval *iv; /* pointer to linked list of intervals       */

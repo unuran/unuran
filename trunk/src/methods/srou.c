@@ -154,14 +154,18 @@ static void _unur_srou_debug_init( struct unur_par *par, struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 /* abbreviations */
 
-#define DISTR_IN  distr->data.cont
+#define DISTR_IN  distr->data.cont      /* data for distribution object      */
 
-#define PAR       par->data.srou
-#define GEN       gen->data.srou
-#define DISTR     gen->distr.data.cont
-#define SAMPLE    gen->sample.cont
+#define PAR       par->data.srou        /* data for parameter object         */
+#define GEN       gen->data.srou        /* data for generator object         */
+#define DISTR     gen->distr.data.cont  /* data for distribution in generator object */
 
-#define PDF(x) ((*(GEN.pdf))((x),GEN.pdf_param,GEN.n_pdf_param))
+#define BD_LEFT   domain[0]             /* left boundary of domain of distribution */
+#define BD_RIGHT  domain[1]             /* right boundary of domain of distribution */
+
+#define SAMPLE    gen->sample.cont      /* pointer to sampling routine       */     
+
+#define PDF(x) ((*(DISTR.pdf))((x),DISTR.params,DISTR.n_params))    /* call to p.d.f. */
 
 /*---------------------------------------------------------------------------*/
 /* constants                                                                 */
@@ -408,7 +412,7 @@ unur_srou_init( struct unur_par *par )
   if (!gen) { free(par); return NULL; }
 
   /* compute pdf at mode */
-  fm = PDF(GEN.mode);
+  fm = PDF(DISTR.mode);
 
   /* fm must be positive */
   if (fm <= 0.) {
@@ -493,11 +497,11 @@ unur_srou_sample( struct unur_gen *gen )
 	 (u < GEN.um) ) {
       xx = v / (GEN.um - u);
       if ( (xx >= GEN.xl) && (xx <= GEN.xr ) )
-	return (x + GEN.mode);
+	return (x + DISTR.mode);
     }
 
     /* compute X */
-    x += GEN.mode;
+    x += DISTR.mode;
 
     /* accept or reject */
     if (u*u <= PDF(x))
@@ -539,16 +543,16 @@ unur_srou_sample_mirror( struct unur_gen *gen )
     x = v/u;
 
     /* evaluate p.d.f. */
-    fx = PDF(x + GEN.mode);
+    fx = PDF(x + DISTR.mode);
     uu = u * u;
 
     /* accept or reject */
     if (uu <= fx)
-      return (x + GEN.mode);
+      return (x + DISTR.mode);
 
     /* try mirrored p.d.f */
-    if (uu <= fx + PDF(-x + GEN.mode))
-      return (-x + GEN.mode);
+    if (uu <= fx + PDF(-x + DISTR.mode))
+      return (-x + DISTR.mode);
   }
 
 } /* end of unur_srou_sample_mirror() */
@@ -589,8 +593,8 @@ unur_srou_sample_check( struct unur_gen *gen )
       x = v/u;
 
       /* evaluate p.d.f. */
-      fx = PDF(x + GEN.mode);
-      fnx = PDF(-x + GEN.mode);
+      fx = PDF(x + DISTR.mode);
+      fnx = PDF(-x + DISTR.mode);
       uu = u * u;
 
       /* check hat */
@@ -603,11 +607,11 @@ unur_srou_sample_check( struct unur_gen *gen )
 
       /* accept or reject */
       if (uu <= fx)
-	return (x + GEN.mode);
+	return (x + DISTR.mode);
       
       /* try mirrored p.d.f */
       if (uu <= fx + fnx)
-	return (-x + GEN.mode);
+	return (-x + DISTR.mode);
     }
   }
 
@@ -623,7 +627,7 @@ unur_srou_sample_check( struct unur_gen *gen )
       x = v/u;
 
       /* evaluate p.d.f. */
-      fx = PDF(x + GEN.mode);
+      fx = PDF(x + DISTR.mode);
       
       /* check hat */
       xfx = x * sqrt(fx);
@@ -637,11 +641,11 @@ unur_srou_sample_check( struct unur_gen *gen )
 	   (u < GEN.um) ) {
 	xx = v / (GEN.um - u);
 	if ( (xx >= GEN.xl) && (xx <= GEN.xr ) )
-	  return (x + GEN.mode);
+	  return (x + DISTR.mode);
       }
       
       /* compute X */
-      x += GEN.mode;
+      x += DISTR.mode;
       
     /* accept or reject */
       if (u*u <= fx)
@@ -727,23 +731,15 @@ _unur_srou_create( struct unur_par *par )
 
   gen->destroy = unur_srou_free;
 
-  /* copy some parameters into generator object */
-  GEN.pdf = DISTR.pdf;               /* p.d.f. of distribution          */
-  GEN.pdf_param   = DISTR.params;    /* parameters of p.d.f.            */
-  GEN.n_pdf_param = DISTR.n_params;  /* number of parameters            */
-
-  /* get mode */
-  GEN.mode = DISTR.mode;             /* mode of p.d.f.                  */
-
   /* mode must be in domain */
-  if ( (GEN.mode < DISTR.domain[0]) ||
-       (GEN.mode > DISTR.domain[1]) ) {
+  if ( (DISTR.mode < DISTR.BD_LEFT) ||
+       (DISTR.mode > DISTR.BD_RIGHT) ) {
     /* there is something wrong.
        assume: user has change domain without changing mode.
        but then, she probably has not updated area and is to large */
     _unur_warning(GENTYPE,UNUR_ERR_INIT,"area and cdf at mode might be wrong");
-    GEN.mode = max(GEN.mode,DISTR.domain[0]);
-    GEN.mode = min(GEN.mode,DISTR.domain[1]);
+    DISTR.mode = max(DISTR.mode,DISTR.BD_LEFT);
+    DISTR.mode = min(DISTR.mode,DISTR.BD_RIGHT);
   }
 
   gen->method = par->method;         /* indicates method                     */

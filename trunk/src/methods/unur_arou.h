@@ -82,13 +82,6 @@ struct unur_arou_gen {
   double  Atotal;               /* area of enveloping polygon                */
   double  Asqueeze;             /* area of squeeze polygon                   */
 
-  _UNUR_FUNCTION_CONT *pdf;     /* pointer to p.d.f.                         */
-  _UNUR_FUNCTION_CONT *dpdf;    /* pointer to derivative of p.d.f.           */
-  double *pdf_param;            /* parameters of the pdf                     */
-  int     n_pdf_param;          /* number of parameters of the pdf           */
-  double  bleft;                /* left boundary of domain                   */
-  double  bright;               /* right boundary of domain                  */
-
   double  max_ratio;            /* limit for ratio r_n = |P^s| / |P^e|       */
 
   struct unur_arou_segment **guide;  /* pointer to guide table               */

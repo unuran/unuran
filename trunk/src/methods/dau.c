@@ -160,12 +160,13 @@ static void _unur_dau_debug_table( struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 /* abbreviations */
 
-#define DISTR_IN  distr->data.discr
+#define DISTR_IN  distr->data.discr     /* data for distribution object      */
 
-#define PAR       par->data.dau
-#define GEN       gen->data.dau
-#define DISTR     gen->distr.data.discr
-#define SAMPLE    gen->sample.discr
+#define PAR       par->data.dau         /* data for parameter object         */
+#define GEN       gen->data.dau         /* data for generator object         */
+#define DISTR     gen->distr.data.discr /* data for distribution in generator object */
+
+#define SAMPLE    gen->sample.discr     /* pointer to sampling routine       */
 
 /*---------------------------------------------------------------------------*/
 
@@ -305,8 +306,8 @@ unur_dau_init( struct unur_par *par )
   if (!gen) { free(par); return NULL; }
 
   /* probability vector */
-  prob = par->DISTR_IN.prob;
-  n_prob = par->DISTR_IN.n_prob;
+  prob = DISTR.prob;
+  n_prob = DISTR.n_prob;
 
   /* compute sum of all probabilities */
   for( sum=0, i=0; i<n_prob; i++ ) {
@@ -526,7 +527,7 @@ _unur_dau_create( struct unur_par *par)
   gen->destroy = unur_dau_free;
 
   /* copy some parameters into generator object */
-  GEN.len = par->DISTR_IN.n_prob;      /* length of probability vector               */
+  GEN.len = DISTR.n_prob;           /* length of probability vector               */
   gen->method = par->method;        /* indicates used method                      */
   gen->variant = 0u;                /* only the default variant is possible       */
   _unur_copy_urng_pointer(par,gen); /* copy pointer to urng into generator object */

@@ -51,13 +51,15 @@ inline static void gamma_gll_init( struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 /* abbreviations */
 
-#define GEN        gen->data.cstd
-#define PAR        par->data.cstd
-#define uniform()  _unur_call_urng(gen)
+#define PAR       par->data.cstd        /* data for parameter object         */
+#define GEN       gen->data.cstd        /* data for generator object         */
+#define DISTR     gen->distr.data.cont  /* data for distribution in generator object */
 
-#define alpha (GEN.pdf_param[0])
-#define beta  (GEN.pdf_param[1])
-#define gamma (GEN.pdf_param[2])
+#define uniform()  _unur_call_urng(gen) /* call for uniform prng             */
+
+#define alpha (DISTR.params[0])
+#define beta  (DISTR.params[1])
+#define gamma (DISTR.params[2])
 
 /*---------------------------------------------------------------------------*/
 

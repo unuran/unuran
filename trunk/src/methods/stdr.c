@@ -116,14 +116,18 @@ static void _unur_stdr_debug_init( struct unur_par *par, struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 /* abbreviations */
 
-#define DISTR_IN  distr->data.cont
+#define DISTR_IN  distr->data.cont      /* data for distribution object      */
 
-#define PAR       par->data.stdr
-#define GEN       gen->data.stdr
-#define DISTR     gen->distr.data.cont
-#define SAMPLE    gen->sample.cont
+#define PAR       par->data.stdr        /* data for parameter object         */
+#define GEN       gen->data.stdr        /* data for generator object         */
+#define DISTR     gen->distr.data.cont  /* data for distribution in generator object */
 
-#define PDF(x) ((*(GEN.pdf))((x),GEN.pdf_param,GEN.n_pdf_param))
+#define BD_LEFT   domain[0]             /* left boundary of domain of distribution */
+#define BD_RIGHT  domain[1]             /* right boundary of domain of distribution */
+
+#define SAMPLE    gen->sample.cont      /* pointer to sampling routine       */     
+
+#define PDF(x) ((*(DISTR.pdf))((x),DISTR.params,DISTR.n_params))    /* call to p.d.f. */
 
 /*---------------------------------------------------------------------------*/
 /* constants                                                                 */
@@ -338,7 +342,7 @@ unur_stdr_init( struct unur_par *par )
   if (!gen) { free(par); return NULL; }
 
   /* compute pdf at mode */
-  GEN.fm = PDF(GEN.mode);
+  GEN.fm = PDF(DISTR.mode);
 
   /* fm must be positive */
   if (GEN.fm <= 0.) {
@@ -358,18 +362,18 @@ unur_stdr_init( struct unur_par *par )
     GEN.xl = GEN.vl/GEN.um;
     GEN.xr = GEN.vr/GEN.um;
     GEN.A  = 2 * DISTR.area;
-    GEN.al = (par->DISTR_IN.domain[0] < GEN.mode) ? (PAR.Fmode * DISTR.area) : 0.;
-    GEN.ar = (par->DISTR_IN.domain[1] > GEN.mode) ? (GEN.al + DISTR.area) : GEN.A;
+    GEN.al = (DISTR.BD_LEFT  < DISTR.mode) ? (PAR.Fmode * DISTR.area) : 0.;
+    GEN.ar = (DISTR.BD_RIGHT > DISTR.mode) ? (GEN.al + DISTR.area) : GEN.A;
     /* Compute areas below hat in left tails and inside domain of pdf */
-    if ( (par->DISTR_IN.domain[0] > -INFINITY) &&
-	 (par->DISTR_IN.domain[0] < GEN.mode) )
-      GEN.Aleft = GEN.vl * GEN.vl / (GEN.mode - par->DISTR_IN.domain[0]);
+    if ( (DISTR.BD_LEFT > -INFINITY) &&
+	 (DISTR.BD_LEFT < DISTR.mode) )
+      GEN.Aleft = GEN.vl * GEN.vl / (DISTR.mode - DISTR.BD_LEFT);
     else
       GEN.Aleft = 0.;
     
-    if ( (par->DISTR_IN.domain[1] < INFINITY) &&
-	 (par->DISTR_IN.domain[1] > GEN.mode) )
-      GEN.Ain = GEN.A - GEN.vr * GEN.vr / (par->DISTR_IN.domain[1] - GEN.mode);
+    if ( (DISTR.BD_RIGHT < INFINITY) &&
+	 (DISTR.BD_RIGHT > DISTR.mode) )
+      GEN.Ain = GEN.A - GEN.vr * GEN.vr / (DISTR.BD_RIGHT - DISTR.mode);
     else
       GEN.Ain = GEN.A;
     GEN.Ain -= GEN.Aleft;
@@ -388,8 +392,8 @@ unur_stdr_init( struct unur_par *par )
     GEN.al = DISTR.area;
     GEN.ar = 3 * DISTR.area;
     /* Compute areas below hat in left tails and inside domain of pdf */
-    if (par->DISTR_IN.domain[0] > -INFINITY) {
-      left = par->DISTR_IN.domain[0] - GEN.mode;
+    if (DISTR.BD_LEFT > -INFINITY) {
+      left = DISTR.BD_LEFT - DISTR.mode;
       GEN.Aleft = (GEN.xl > left) 
 	? (GEN.vl * GEN.vl / (-left)) 
 	: (GEN.al + GEN.fm * (left - GEN.xl));
@@ -397,8 +401,8 @@ unur_stdr_init( struct unur_par *par )
     else 
       GEN.Aleft = 0.;
     
-    if (par->DISTR_IN.domain[1] < INFINITY) {
-      right = par->DISTR_IN.domain[1] - GEN.mode;
+    if (DISTR.BD_RIGHT < INFINITY) {
+      right = DISTR.BD_RIGHT - DISTR.mode;
       GEN.Ain = (GEN.xr < right) 
 	? (GEN.A - GEN.vr * GEN.vr / right)
 	: (GEN.ar - GEN.fm * (GEN.xr - right));
@@ -474,11 +478,11 @@ unur_stdr_sample( struct unur_gen *gen )
     if (gen->variant & STDR_VARFLAG_SQUEEZE) {
       xx = 2 * x;
       if ( x >= GEN.xl && x <= GEN.xr && y <= GEN.fm/4. )
-	return (x + GEN.mode);
+	return (x + DISTR.mode);
     }
 
     /* Compute X */
-    x += GEN.mode;
+    x += DISTR.mode;
 
     /* evaluate p.d.f. */
     if (y <= PDF(x))
@@ -531,7 +535,7 @@ unur_stdr_sample_check( struct unur_gen *gen )
     }
 
     /* compute pdf at x */
-    fx = PDF(x+GEN.mode);
+    fx = PDF(x + DISTR.mode);
 
     /* verify hat function */
     if (fx > y)
@@ -545,11 +549,11 @@ unur_stdr_sample_check( struct unur_gen *gen )
     if (gen->variant & STDR_VARFLAG_SQUEEZE) {
       xx = 2 * x;
       if ( x >= GEN.xl && x <= GEN.xr && y <= GEN.fm/4. )
-	return (x + GEN.mode);
+	return (x + DISTR.mode);
     }
 
     /* Compute X */
-    x += GEN.mode;
+    x += DISTR.mode;
 
     /* evaluate p.d.f. */
     if (y <= fx)
@@ -630,23 +634,15 @@ _unur_stdr_create( struct unur_par *par )
   SAMPLE = (par->variant & STDR_VARFLAG_VERIFY) ? unur_stdr_sample_check : unur_stdr_sample;
   gen->destroy = unur_stdr_free;
 
-  /* copy some parameters into generator object */
-  GEN.pdf = DISTR.pdf;               /* p.d.f. of distribution          */
-  GEN.pdf_param   = DISTR.params;    /* parameters of p.d.f.            */
-  GEN.n_pdf_param = DISTR.n_params;  /* number of parameters            */
-
-  /* get mode */
-  GEN.mode = DISTR.mode;             /* mode of p.d.f.                  */
-
   /* mode must be in domain */
-  if ( (GEN.mode < DISTR.domain[0]) ||
-       (GEN.mode > DISTR.domain[1]) ) {
+  if ( (DISTR.mode < DISTR.BD_LEFT) ||
+       (DISTR.mode > DISTR.BD_RIGHT) ) {
     /* there is something wrong.
        assume: user has change domain without changing mode.
        but then, she probably has not updated area and is to large */
     _unur_warning(GENTYPE,UNUR_ERR_INIT,"area and cdf at mode might be wrong");
-    GEN.mode = max(GEN.mode,DISTR.domain[0]);
-    GEN.mode = min(GEN.mode,DISTR.domain[1]);
+    DISTR.mode = max(DISTR.mode,DISTR.BD_LEFT);
+    DISTR.mode = min(DISTR.mode,DISTR.BD_RIGHT);
   }
 
   gen->method = par->method;         /* indicates method                     */

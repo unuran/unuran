@@ -52,16 +52,18 @@ inline static void beta_bb_init( struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 /* abbreviations */
 
-#define GEN        gen->data.cstd
-#define PAR        par->data.cstd
-#define uniform()  _unur_call_urng(gen)
+#define PAR       par->data.cstd        /* data for parameter object         */
+#define GEN       gen->data.cstd        /* data for generator object         */
+#define DISTR     gen->distr.data.cont  /* data for distribution in generator object */
 
-#define a     (GEN.pdf_param[0])
-#define b     (GEN.pdf_param[1])
+#define uniform()  _unur_call_urng(gen) /* call for uniform prng             */
+
+#define a     (DISTR.params[0])
+#define b     (DISTR.params[1])
 #define a_par (par->distr->data.cont.params[0])
 #define b_par (par->distr->data.cont.params[1])
-#define boundary_left  (GEN.pdf_param[2])
-#define boundary_right (GEN.pdf_param[3])
+#define boundary_left  (DISTR.params[2])
+#define boundary_right (DISTR.params[3])
 
 /*---------------------------------------------------------------------------*/
 

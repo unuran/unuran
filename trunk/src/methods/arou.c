@@ -247,16 +247,19 @@ static void _unur_arou_debug_printratio( double v, double u, char *string );
 /*---------------------------------------------------------------------------*/
 /* abbreviations */
 
+#define DISTR_IN  distr->data.cont      /* data for distribution object      */
 
-#define DISTR_IN  distr->data.cont
+#define PAR       par->data.arou        /* data for parameter object         */
+#define GEN       gen->data.arou        /* data for generator object         */
+#define DISTR     gen->distr.data.cont  /* data for distribution in generator object */
 
-#define PAR       par->data.arou
-#define GEN       gen->data.arou
-#define DISTR     gen->distr.data.cont
-#define SAMPLE    gen->sample.cont
+#define BD_LEFT   domain[0]             /* left boundary of domain of distribution */
+#define BD_RIGHT  domain[1]             /* right boundary of domain of distribution */
 
-#define PDF(x) ((*(GEN.pdf))((x),GEN.pdf_param,GEN.n_pdf_param))
-#define dPDF(x) ((*(GEN.dpdf))((x),GEN.pdf_param,GEN.n_pdf_param))
+#define SAMPLE    gen->sample.cont      /* pointer to sampling routine       */     
+
+#define PDF(x) ((*(DISTR.pdf))((x),DISTR.params,DISTR.n_params))    /* call to p.d.f. */
+#define dPDF(x) ((*(DISTR.dpdf))((x),DISTR.params,DISTR.n_params))  /* call to derivative of p.d.f. */
 
 /*---------------------------------------------------------------------------*/
 
@@ -957,15 +960,6 @@ _unur_arou_create( struct unur_par *par )
   GEN.Asqueeze    = 0.;
 
   /* copy some parameters into generator object */
-  GEN.pdf = DISTR.pdf;                /* p.d.f. of distribution              */
-  GEN.dpdf = DISTR.dpdf;              /* derivative of p.d.f.                */
-
-  GEN.pdf_param   = DISTR.params;
-  GEN.n_pdf_param = DISTR.n_params;
-
-  GEN.bleft = DISTR.domain[0];       /* left boundary of domain             */
-  GEN.bright = DISTR.domain[1];      /* right boundary of domain            */
-
   GEN.guide_factor = PAR.guide_factor; /* relative size of guide tables      */
 
   /* bounds for adding construction points  */
@@ -984,8 +978,8 @@ _unur_arou_create( struct unur_par *par )
     par->variant = par->variant & (~AROU_VARFLAG_USECENTER);
   else {
     /* center must be in domain */
-    PAR.center = max(PAR.center,GEN.bleft);
-    PAR.center = min(PAR.center,GEN.bright);
+    PAR.center = max(PAR.center,DISTR.BD_LEFT);
+    PAR.center = min(PAR.center,DISTR.BD_RIGHT);
   }
 
   /* return pointer to (almost empty) generator object */
@@ -1033,8 +1027,8 @@ _unur_arou_get_starting_cpoints( struct unur_par *par, struct unur_gen *gen )
   if (!PAR.starting_cpoints) {
     /* move center into  x = 0 */
     /* angles of boundary of domain */
-    left_angle =  ( GEN.bleft <= -INFINITY ) ? -M_PI/2. : atan(GEN.bleft - PAR.center);  
-    right_angle = ( GEN.bright >= INFINITY )  ? M_PI/2.  : atan(GEN.bright - PAR.center);
+    left_angle =  ( DISTR.BD_LEFT  <= -INFINITY ) ? -M_PI/2. : atan(DISTR.BD_LEFT  - PAR.center);  
+    right_angle = ( DISTR.BD_RIGHT >= INFINITY )  ? M_PI/2.  : atan(DISTR.BD_RIGHT - PAR.center);
     /* we use equal distances between the angles of the cpoints   */
     /* and the boundary points                                    */
     diff_angle = (right_angle-left_angle) / (PAR.n_starting_cpoints + 1);
@@ -1044,7 +1038,7 @@ _unur_arou_get_starting_cpoints( struct unur_par *par, struct unur_gen *gen )
     diff_angle = angle = 0.;   /* we do not need these variables in this case */
 
   /* the left boundary point */
-  x = x_last = GEN.bleft;
+  x = x_last = DISTR.BD_LEFT;
   fx = fx_last = (x <= -INFINITY) ? 0. : PDF(x);
   seg = GEN.seg = _unur_arou_segment_new( gen, x, fx );
   CHECK_NULL(seg,0);       /* case of error */
@@ -1060,7 +1054,7 @@ _unur_arou_get_starting_cpoints( struct unur_par *par, struct unur_gen *gen )
 	/* construction points provided by user */
 	x = PAR.starting_cpoints[i];
 	/* check starting point */
-	if (x <= GEN.bleft || x >= GEN.bright) {
+	if (x <= DISTR.BD_LEFT || x >= DISTR.BD_RIGHT) {
 	  _unur_warning(gen->genid,UNUR_ERR_INIT,"starting point out of domain!");
 	  continue;
 	}
@@ -1078,7 +1072,7 @@ _unur_arou_get_starting_cpoints( struct unur_par *par, struct unur_gen *gen )
     else {
       /* the very last segment. it is rather a "virtual" segment to store 
 	 the right vertex of the last segment, i.e., the right boundary point. */
-      x = GEN.bright;
+      x = DISTR.BD_RIGHT;
     }
 
     /* insert center ? */

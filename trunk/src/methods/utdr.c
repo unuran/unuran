@@ -114,14 +114,18 @@ static void _unur_utdr_debug_init( struct unur_par *par, struct unur_gen *gen,
 /*---------------------------------------------------------------------------*/
 /* abbreviations */
 
-#define DISTR_IN  distr->data.cont
+#define DISTR_IN  distr->data.cont      /* data for distribution object      */
 
-#define PAR       par->data.utdr
-#define GEN       gen->data.utdr
-#define DISTR     gen->distr.data.cont
-#define SAMPLE    gen->sample.cont
+#define PAR       par->data.utdr        /* data for parameter object         */
+#define GEN       gen->data.utdr        /* data for generator object         */
+#define DISTR     gen->distr.data.cont  /* data for distribution in generator object */
 
-#define PDF(x) ((*(GEN.pdf))((x),GEN.pdf_param,GEN.n_pdf_param))
+#define BD_LEFT   domain[0]             /* left boundary of domain of distribution */
+#define BD_RIGHT  domain[1]             /* right boundary of domain of distribution */
+
+#define SAMPLE    gen->sample.cont      /* pointer to sampling routine       */     
+
+#define PDF(x) ((*(DISTR.pdf))((x),DISTR.params,DISTR.n_params))    /* call to p.d.f. */
 
 /*---------------------------------------------------------------------------*/
 
@@ -300,8 +304,6 @@ unur_utdr_init( struct unur_par *par )
   int setupok=1;
   double c,cfac,volc,volr,tly,tlys,try,trys,dl,dr,delta,delta1;
 
-  double pdf_area = par->DISTR_IN.area;      /* (approximate) area below p.d.f. */
-
   /* check arguments */
   CHECK_NULL(par,NULL);
 
@@ -328,27 +330,27 @@ unur_utdr_init( struct unur_par *par )
   /* start of the set-up procedure */
 
   /* step 1.0 of algorithm UTDR */
-  GEN.fm = PDF(GEN.mode);       /* p.d.f. at mode of distribution */
+  GEN.fm = PDF(DISTR.mode);       /* p.d.f. at mode of distribution */
   GEN.hm = -1./sqrt(GEN.fm);    /* transformed p.d.f. at mode     */
 
   do {
 
     /* 1.1 */
     cfac = (setupok) ? PAR.c_factor : 2.;     /* gibt es hier nur zwei varianten ?? ja*/
-    c = cfac * pdf_area/GEN.fm;
+    c = cfac * DISTR.area/GEN.fm;
     setupok=1;         
 
-    GEN.tlx = GEN.mode - c;
-    GEN.trx = GEN.mode + c;
+    GEN.tlx = DISTR.mode - c;
+    GEN.trx = DISTR.mode + c;
 
     /* 1.2 */
     if (GEN.il > -INFINITY && GEN.tlx < GEN.il) { 
       GEN.bl = GEN.il;
       GEN.al = 0.;
       GEN.voll = 0.;
-      if (GEN.il < GEN.mode) {
-        GEN.tlx = GEN.mode + (GEN.il - GEN.mode) * 0.6;
-        GEN.sal = (GEN.hm + 1./sqrt(PDF(GEN.tlx))) / (GEN.mode - GEN.tlx);
+      if (GEN.il < DISTR.mode) {
+        GEN.tlx = DISTR.mode + (GEN.il - DISTR.mode) * 0.6;
+        GEN.sal = (GEN.hm + 1./sqrt(PDF(GEN.tlx))) / (DISTR.mode - GEN.tlx);
       }  
     }
     else {
@@ -360,7 +362,7 @@ unur_utdr_init( struct unur_par *par )
 	goto error;
       }
 
-      GEN.sal =  (GEN.hm - tlys) / (GEN.mode - GEN.tlx);
+      GEN.sal =  (GEN.hm - tlys) / (DISTR.mode - GEN.tlx);
 
       /* da kenn ich mich nicht aus! delta1 > 0; aber was ist mit delta, das is < 0. */
       /* Nein delta1> 0 da -tlys>0 und sal >0; im Fall sal==0 habe ich mich geirrt, da gehoert -tlys */
@@ -398,9 +400,9 @@ unur_utdr_init( struct unur_par *par )
         GEN.br = GEN.ir;
         GEN.ar = 0.;
         volr = 0.;
-        if (GEN.ir > GEN.mode) {
-          GEN.trx = GEN.mode + (GEN.ir - GEN.mode) * 0.6;
-          GEN.sar = (GEN.hm + 1./sqrt(PDF(GEN.trx))) / (GEN.mode - GEN.trx);
+        if (GEN.ir > DISTR.mode) {
+          GEN.trx = DISTR.mode + (GEN.ir - DISTR.mode) * 0.6;
+          GEN.sar = (GEN.hm + 1./sqrt(PDF(GEN.trx))) / (DISTR.mode - GEN.trx);
         } 
       }
       else {
@@ -413,7 +415,7 @@ unur_utdr_init( struct unur_par *par )
         }
   
         /* siehe 1.2. !! */
-        GEN.sar = (GEN.hm - trys) / (GEN.mode - GEN.trx);
+        GEN.sar = (GEN.hm - trys) / (DISTR.mode - GEN.trx);
 /*delta ist positiv, da trys<0 und sar <0 */
         delta = (GEN.sar<0.) ? trys/GEN.sar : -trys;
         delta1 = fabs(GEN.trx);
@@ -456,11 +458,11 @@ unur_utdr_init( struct unur_par *par )
 
     if (cfac!=2.) {
       if(setupok)
-        if (GEN.volcompl > 4. * pdf_area || GEN.volcompl < 0.5 * pdf_area)
+        if (GEN.volcompl > 4. * DISTR.area || GEN.volcompl < 0.5 * DISTR.area)
         setupok=0;
     }
     else { 
-      if (setupok==0 || GEN.volcompl > 8. * pdf_area || GEN.volcompl < 0.5 * pdf_area) {
+      if (setupok==0 || GEN.volcompl > 8. * DISTR.area || GEN.volcompl < 0.5 * DISTR.area) {
         _unur_warning(gen->genid,UNUR_ERR_INIT,"Area below hat too large! Perhaps pdf or mode wrong\n");
 	goto error;
       }
@@ -531,15 +533,15 @@ unur_utdr_sample( struct unur_gen *gen )
     /*2.2*/
     v = _unur_call_urng(gen) * linx;
     /*2.3*/
-    if (x<GEN.mode) {
+    if (x<DISTR.mode) {
       if (x >= GEN.tlx) {
-	help = GEN.hm - (GEN.mode - x) * GEN.sal;
+	help = GEN.hm - (DISTR.mode - x) * GEN.sal;
 	if (v * help * help <= 1.) return x;
       } 
     }
     else {
       if (x <= GEN.trx) {
-	help = GEN.hm - (GEN.mode - x) * GEN.sar;
+	help = GEN.hm - (DISTR.mode - x) * GEN.sar;
 	if (v * help * help <= 1.) return x; 
       }
     }
@@ -621,17 +623,12 @@ _unur_utdr_create( struct unur_par *par )
   gen->destroy = unur_utdr_free;
 
   /* copy some parameters into generator object */
-  GEN.pdf = DISTR.pdf;               /* p.d.f. of distribution          */
-  GEN.pdf_param   = DISTR.params;    /* parameters of p.d.f.            */
-  GEN.n_pdf_param = DISTR.n_params;  /* number of parameters            */
-  GEN.il = DISTR.domain[0];          /* left boundary of domain         */
-  GEN.ir = DISTR.domain[1];          /* right boundary of domain        */
+  GEN.il = DISTR.BD_LEFT;           /* left boundary of domain         */
+  GEN.ir = DISTR.BD_RIGHT;          /* right boundary of domain        */
 
-  /* get mode */
-  GEN.mode = DISTR.mode;             /* mode of p.d.f.                  */
   /* mode must be in domain */
-  GEN.mode = max(GEN.mode,GEN.il);
-  GEN.mode = min(GEN.mode,GEN.ir);
+  DISTR.mode = max(DISTR.mode,GEN.il);
+  DISTR.mode = min(DISTR.mode,GEN.ir);
 
   gen->method = par->method;         /* indicates method                     */
   gen->variant = par->variant;       /* indicates variant                    */
@@ -709,9 +706,9 @@ _unur_utdr_debug_init( struct unur_par *par, struct unur_gen *gen,
     fprintf(log,"()\n");
   fprintf(log,"%s:\n",gen->genid);
 
-  fprintf(log,"%s: tlx %e bl %e mode %e br %e trx %e\n",gen->genid,GEN.tlx,GEN.bl,GEN.mode,GEN.br,GEN.trx);
+  fprintf(log,"%s: tlx %e bl %e mode %e br %e trx %e\n",gen->genid,GEN.tlx,GEN.bl,DISTR.mode,GEN.br,GEN.trx);
   fprintf(log,"%s: try %e trys %e ar %e \n",gen->genid,try,trys,GEN.ar);
-  fprintf(log,"%s: cfac %e setupok %d volcompl %e pdf_area %e\n",gen->genid,cfac,setupok,GEN.volcompl,par->DISTR_IN.area);
+  fprintf(log,"%s: cfac %e setupok %d volcompl %e pdf_area %e\n",gen->genid,cfac,setupok,GEN.volcompl,DISTR.area);
   fprintf(log,"%s:\n",gen->genid);
 
 } /* end of _unur_utdr_debug_init() */

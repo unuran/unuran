@@ -181,6 +181,8 @@
       condition for method violated.
       @item UNUR_ERR_GEN_INVALID
       invalid generator object.
+      @item UNUR_ERR_GEN_SAMPLING
+      sampling error.
       @end ftable
 
       @item Other run time errors.
@@ -246,6 +248,7 @@ enum {
   UNUR_ERR_GEN_DATA       = 0x32u,    /* (possible) invalid data             */
   UNUR_ERR_GEN_CONDITION  = 0x33u,    /* condition for method violated       */
   UNUR_ERR_GEN_INVALID    = 0x34u,    /* invalid generator object            */
+  UNUR_ERR_GEN_SAMPLING   = 0x35u,    /* sampling error                      */
 
   /** misc **/
   /*

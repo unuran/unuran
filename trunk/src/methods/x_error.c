@@ -123,6 +123,8 @@ unur_get_strerror ( const int unur_errno )
     return "(generator) condition for method violated";
   case UNUR_ERR_GEN_INVALID:
     return "(parameter) invalid generator object";
+  case UNUR_ERR_GEN_SAMPLING:
+    return "(generator) sampling error";
     
     /** misc **/
   case UNUR_ERR_ROUNDOFF:

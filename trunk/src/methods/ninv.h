@@ -92,6 +92,11 @@
       Default algorithm is regula falsi. It is slightly slower but
       numerically much more stable than Newton's algorithm.
 
+      It might happen that NINV aborts unur_sample_cont() without
+      computing the correct value. Then @code{UNUR_INFINITY} is
+      returned and @code{unur_error} is set to
+      @code{UNUR_ERR_GEN_SAMPLING}.
+
    =END
 */
 
@@ -122,7 +127,7 @@ int unur_ninv_set_usenewton( UNUR_PAR *parameters );
    It it is not possible to invert the CDF for a particular random
    number U when calling unur_sample_cont(), @code{unur_error} is set
    to @code{UNUR_ERR_} and @code{UNUR_INFINITY} is returned.
-   Thus it is recommended to check @code{unur_error_.....} before
+   Thus it is recommended to check @code{unur_error} before
    using the result of the sampling routine.
 */
 

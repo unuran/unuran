@@ -776,7 +776,7 @@ unur_ninv_chg_pdfparams( struct unur_gen *gen, double *params, int n_params )
   /* compute normalization constant for standard distribution */
   if (DISTR.upd_area != NULL)
     if (!((DISTR.upd_area)(&(gen->distr)))) {
-      _unur_error(gen->genid,UNUR_ERR_GEN_INVALID,"cannot compute normalization constant");
+      _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"cannot compute normalization constant");
       return 0;
     }
 
@@ -990,16 +990,14 @@ _unur_ninv_compute_start( struct unur_gen *gen )
     /* left percentile */
     u = GEN.CDFmin + 0.5*(1.-INTERVAL_COVERS)*(GEN.CDFmax-GEN.CDFmin);
     GEN.s[0] = _unur_ninv_regula(gen,u);
+    GEN.CDFs[0] = CDF(GEN.s[0]);
 
     /* right percentile */
     GEN.s[1] = min( DISTR.domain[1], GEN.s[0]+20. );
     u = GEN.CDFmin + 0.5*(1.+INTERVAL_COVERS)*(GEN.CDFmax-GEN.CDFmin);
     GEN.s[1] = _unur_ninv_regula(gen,u);
-    
-    /* compute CDF at starting points */
-    GEN.CDFs[0] = CDF(GEN.s[0]);
     GEN.CDFs[1] = CDF(GEN.s[1]);
-
+    
     break;    /* case REGULA end */
 
   case NINV_VARFLAG_NEWTON:
@@ -1148,7 +1146,6 @@ _unur_ninv_regula( struct unur_gen *gen, double u )
      /*     return 0.                                                       */
      /*---------------------------------------------------------------------*/
 { 
-    
   double x1, x2, a, xtmp;/* points for RF                                   */
   double x2abs;          /* absolute value of x2                            */
   double f1, f2,fa, ftmp;/* function values at x1, x2, xtmp                 */
@@ -1250,10 +1247,12 @@ _unur_ninv_regula( struct unur_gen *gen, double u )
     }
 
     /* increase step width */
-    if (step_count < MAX_STEPS)
+    if (step_count < MAX_STEPS) {
+      ++step_count;
       step *= 2.;
+    }
     else {
-      _unur_error(GENTYPE,UNUR_ERR_DISTR_INVALID,
+      _unur_error(GENTYPE,UNUR_ERR_GEN_SAMPLING,
 		  "Regula Falsi can't find interval with sign change");
       return INFINITY;
     }
@@ -1447,24 +1446,28 @@ _unur_ninv_newton( struct unur_gen *gen, double U )
       if (fx == 0.)  /* exact hit -> leave while-loop */
 	break; 
 
-      if (fx > 0.)         /* try another x */
-        xtmp  = x - step;   
-      else 
+      if (fx > 0.) {         /* try another x */
+        xtmp = x - step; 
+	xtmp = max( xtmp, DISTR.domain[0] );
+      }
+      else {
         xtmp  = x + step;
-         
+	xtmp = min( xtmp, DISTR.domain[1] );
+      }
+
       fxtmp    = CDF(xtmp) - U;
       fxtmpabs = fabs(fxtmp);
 
-      if ( fxtmpabs < fxabs ) {       /* improvement, update x            */
+      if ( fxtmpabs < fxabs ) {       /* improvement, update x               */
 	/* printf("fxabs: %g tmpabs: %g\n", fxabs, fxtmpabs); */
         step = 1.;     /* set back stepsize */
         x     = xtmp;
         fx    = fxtmp;
       }
-      else if ( fxtmp*fx < 0. ) { /*step was too large, dont update x */
+      else if ( fxtmp*fx < 0. ) {     /* step was too large, don't update x  */
         step /= 2.;                      
       } 
-      else{                           /* step was too short, update x     */
+      else {                          /* step was too short, update x        */
         step *= 2.;    
         x     = xtmp;
         fx    = fxtmp;
@@ -1472,11 +1475,11 @@ _unur_ninv_newton( struct unur_gen *gen, double U )
 
       dfx   = PDF(x);
       fxabs = fabs(fx);
-     
+
       if (flat_count < MAX_FLAT_COUNT)
 	flat_count++;
       else {
-	_unur_error(GENTYPE,UNUR_ERR_DISTR_INVALID,
+	_unur_error(GENTYPE,UNUR_ERR_GEN_SAMPLING,
 		    "Newton's method can't leave flat region");
 	return INFINITY;
       }

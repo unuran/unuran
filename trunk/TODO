@@ -2,6 +2,10 @@
 
 -----------------------------------------------------------------------------
 
+(*) add unur_copy(gen) und unur_distr_copy(distr)
+
+-----------------------------------------------------------------------------
+
 (*) CSTD, DSTD: alle Varianten sollten fuer alle Parameter funktionieren.
 
 -----------------------------------------------------------------------------
@@ -52,8 +56,9 @@
 
 ----------------------------------------------------------------------
 
-(*) testing UNRUAN on different platforms (including wimdows?)
+(*) testing UNRUAN on different platforms (including windows?)
 
+----------------------------------------------------------------------
 
 
 

@@ -9,8 +9,11 @@ use strict;
 # ---------------------------------------------------------------------------
 # Constants
 
+# src directory
+my $src_dir = "../src";
+
 # unuran header file
-my $unuran_h_file = "../src/unuran.h";
+my $unuran_h_file = "$src_dir/unuran.h";
 
 # seed for uniform random number generator.
 my $seed = int(rand 1000000) + 1;
@@ -30,6 +33,7 @@ my $METHOD;           #                   (upper case letters)
 my $gen_type;         # type of generation method
 my $distr_type;       # type of distribution
 my $C_header_aux;     # part to be added to C header 
+my @header_files;     # additional header file included in *.conf
 
 my @othersections = ("new", "set", "get", "chg", "init", "reinit", "sample");
 
@@ -76,6 +80,9 @@ $file_name =~ s/\.conf$//;
 my $file_testlog = "$file_name\_test\.log";
 my $file_unuranlog = "$file_name\_unuran\.log";
 
+# add unuran header file
+push @header_files, $unuran_h_file;
+
 # read data
 read_data($file_in);
 
@@ -119,6 +126,11 @@ sub read_data {
 	s/(?<!\\)\#.*$//;
 	# transform \# --> #
 	s/\\\#/\#/g;
+
+	# search for included header files
+	if (/^\s*\#\s*include\s+[\"\<](.*)[\"\>]/) {
+	    push @header_files, "$src_dir/$1";
+	}
 
 	if (/^\s*\[/) {
 	    # new (sub)section starts here
@@ -1161,9 +1173,12 @@ sub add_unur_set_verify_routine {
     my $verify = "unur_$method\_set_verify";
     undef my $have_found;
 
-    open (H,"$unuran_h_file") or die "Cannot open file $unuran_h_file for reading";
-    while (<H>) {
-	$have_found = 1 if /$verify/;
+    foreach my $h (@header_files) {
+	open (H, $h) or die "Cannot open file $h for reading";
+	while (<H>) {
+	    $have_found = 1 if /$verify/;
+	}
+	close (H);
     }
 
     unless ($have_found) {

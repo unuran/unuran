@@ -460,6 +460,7 @@ unur_empk_set_kernelgen( struct unur_par *par, struct unur_gen *kernelgen,
 {
   /* check arguments */
   _unur_check_NULL( GENTYPE,par,0 );
+  _unur_check_NULL( GENTYPE,kernelgen,0 );
 
   /* check input */
   _unur_check_par_object( par,EMPK );
@@ -500,7 +501,6 @@ unur_empk_set_kernelgen( struct unur_par *par, struct unur_gen *kernelgen,
 
   /* o.k. */
   return 1;
-
 } /* end of unur_empk_set_kernelgen() */
 
 /*---------------------------------------------------------------------------*/

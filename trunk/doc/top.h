@@ -4,11 +4,12 @@
 =UP (dir)
 
 =DESCRIPTION
-   @ifnottex
+   @ifinfo
+   @noindent
    This is the online-documentation of UNURAN.@*
    Version: @value{VERSION}@*
    Date: @value{UPDATED}
-   @end ifnottex
+   @end ifinfo
 
 
    UNURAN (Universal Non-Uniform RAndom Number generator) is

@@ -85,6 +85,29 @@ UNUR_PAR *unur_sinv_new( const UNUR_DISTR *distribution );
 
 /*...........................................................................*/
 
+int unur_sinv_set_order( UNUR_PAR *parameters, int order);
+/* 
+   Set order of Hermite interpolation. Valid orders are
+   @code{1}, @code{3}, and @code{5}.
+   Default is @code{3}.
+*/
+
+int unur_sinv_set_u_resolution( UNUR_PAR *parameters, double u_resolution);
+/* 
+   Set maximal error in u-direction.
+   Default is @code{10^-8}.
+*/
+
+int unur_sinv_set_guidefactor( UNUR_PAR *parameters, double factor );
+/* 
+   Set factor for relative size of the guide table for indexed search
+   (see also method DGT @ref{DGT}). It must be greater than or equal
+   to @code{0}. 
+   When set to @code{0}, then sequential search is used.
+
+   Default is @code{1}.
+*/
+
 int unur_sinv_set_boundary( UNUR_PAR *parameters, double left, double right );
 /* 
    Set the left and right boundary of the computation interval.
@@ -92,13 +115,8 @@ int unur_sinv_set_boundary( UNUR_PAR *parameters, double left, double right );
    computational relevance.
    Of course @code{+/- UNUR_INFINITY} is not allowed.
 
-   Default is @code{1.e20}.
-*/
-
-int unur_sinv_set_u_resolution( UNUR_PAR *parameters, double u_resolution);
-/* 
-   Set maximal error in .... direction.
-   Default is @code{10^-8}.
+   If no such boundary is given, the CDF and the u-resolution is
+   used in a search procedure to find appropriate points.
 */
 
 int unur_sinv_chg_truncated(UNUR_GEN *gen, double left, double right);

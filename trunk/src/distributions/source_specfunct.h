@@ -98,7 +98,6 @@ double ndtri(double x);
 /* there is no CDF for non-integer degrees of freedom */
 #undef HAVE_UNUR_SF_CDFSTUDENT
 
-
 /*---------------------------------------------------------------------------*/
 /* end: CEPHES library                                                       */
 /*---------------------------------------------------------------------------*/

@@ -29,24 +29,24 @@ int main()
   UNUR_GEN *gen;
   int i;
 
-  double *data;
-
   unur_set_default_debug(~0u);
 
-  data = malloc(10000*sizeof(double));
-  gen = unur_str2gen("normal & method=cstd");
-  for (i=0;i<10000;i++)
-    data[i] = unur_sample_cont(gen);
+  distr = unur_distr_normal(NULL,0);
+  unur_distr_cont_set_domain(distr,0,1000);
+
+  par = unur_sinv_new(distr);
+  unur_sinv_set_u_resolution(par,1.e-8);
+  unur_sinv_set_order(par,3);
+
+  gen = unur_init(par);
+
+  for (i=0;i<10;i++)
+    printf("%g\n",unur_sample_cont(gen));
+
+  unur_distr_free(distr);
   unur_free(gen);
 
-  unur_set_default_debug(~0u);
-  distr = unur_distr_cemp_new();
-  unur_distr_cemp_set_data(distr,data,10000);
-  free(data);
-
-  par = unur_empk_new(distr);
-  
-  unur_run_tests(par,RUN_TESTS);
+/*    unur_run_tests(par,RUN_TESTS); */
 
   return 0;
 

@@ -67,6 +67,7 @@
 #define CK_NINV_GEN      0x00100021u
 #define CK_SINV_PAR      0x00100030u
 #define CK_SINV_GEN      0x00100031u
+#define CK_SINV_IV       0x00100032u
 #define CK_SROU_PAR      0x00100040u
 #define CK_SROU_GEN      0x00100041u
 #define CK_SSR_PAR       0x00100050u

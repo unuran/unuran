@@ -41,25 +41,29 @@
 /* Information for constructing the generator                                */
 
 struct unur_sinv_par { 
-  double  u_resolution;      /* maximal error in u                           */
-  double  bleft;             /* left border of the domain                    */
-  double  bright;            /* right border of the domain                   */
+  int order;               /* order of interpolation polynomial              */
+  double u_resolution;     /* maximal error in u                             */
+  double  guide_factor;    /* relative size of guide table                   */
+  double  bleft;           /* left border of the computational domain        */
+  double  bright;          /* right border of the computational domain       */
 };
 
 /*---------------------------------------------------------------------------*/
 /* store information about splines                                           */
 
-#define UNUR_SINV_SPLINE_ORDER   (3)
+#define UNUR_SINV_MAX_ORDER   (5)
 
 struct unur_sinv_interval {
+  double spline[UNUR_SINV_MAX_ORDER+1];   /* coefficients of spline           */
+  double p;                /* left design point (node) in interval            */  
+  double u;                /* CDF at node p (u=CDF(p))                        */
+  double f;                /* PDF at node p (u=CDF(p))                        */
+  double df;               /* derivative of PDF at node p (u=CDF(p))          */
 
-  double spline[UNUR_SINV_SPLINE_ORDER+1];   /* coefficients of spline       */
-  double  bl, br;                   /* boundary of spline interval           */
-
-  struct unur_sinv_interval *next;  /* pointer to next element in list       */
+  struct unur_sinv_interval *next;  /* pointer to next element in list        */
 
 #ifdef UNUR_COOKIES
-  unsigned cookie;      /* magic cookie                                      */
+  unsigned cookie;         /* magic cookie                                    */
 #endif
 };
 
@@ -67,15 +71,28 @@ struct unur_sinv_interval {
 /* The generator object                                                      */
 
 struct unur_sinv_gen { 
-  double  u_resolution;      /* maximal error in u                           */
-  double  bleft;             /* left border of the domain                    */
-  double  bright;            /* right border of the domain                   */
+  int order;               /* order of interpolation polynomial              */
 
-  struct unur_sinv_interval *splines; /* pointer to splines                  */
+  int N;                   /* total number of division points = #intervals+1 */
+  double *intervals;       /* pointer to array for storing data for intervals 
+			      in blocks of size order+2:
+			      [0] ... u_{i-1} = CDF at left design point
+			      [1] ... p_{i-1} = left design point = spline[0]
+			      [2]-[order+1] ... spline[1] - spline[order] 
+			      size of the array = N * (2+order)              */
 
-  double  Umin, Umax;        /* bounds for iid random variable in respect to
-                                the given (truncated) domain of the distr.   */
-  double  CDFmin, CDFmax;    /* CDF-bounds of domain                         */
+  int    *guide;           /* pointer to guide table                         */ 
+  int     guide_size;      /* size of guide table                            */
+  double  guide_factor;    /* relative size of guide table                   */
+
+  double  Umin, Umax;      /* bounds for iid random variable in respect to
+			      the given (truncated) domain of the distr.     */
+  double  CDFmin, CDFmax;  /* CDF-bounds of domain                           */
+  double  u_resolution;    /* maximal error in u                             */
+  double  bleft;           /* left border of the computational domain        */
+  double  bright;          /* right border of the computational domain       */
+
+  struct unur_sinv_interval *iv; /* linked list of splines (only used in setup) */
 };
 
 /*---------------------------------------------------------------------------*/

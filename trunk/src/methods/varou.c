@@ -103,7 +103,7 @@
 /* during the triangulation of the upper half-unit-sphere, this parameter    */
 /* define the maximal number of verteces that will be created during the     */
 /* adaptive process.                                                         */
-#define UNUR_VAROU_MAX_VERTECES 1000
+#define UNUR_VAROU_MAX_VERTECES 10000
 
 /*---------------------------------------------------------------------------*/
 
@@ -182,10 +182,18 @@ static void _unur_varou_cones_split( struct unur_gen *gen );
 /* split cones with volume=inf or volume >= mean_volume                      */
 /*---------------------------------------------------------------------------*/
 
-static void _unur_varou_cone_parameters( struct unur_gen *gen, struct unur_varou_cone *c, double alpha);
+static void _unur_varou_cone_parameters( struct unur_gen *gen, 
+            struct unur_varou_cone *c, double alpha);
 /*---------------------------------------------------------------------------*/
 /* adjust cone parameters of cone (norms, volume, etc)                       */
 /*---------------------------------------------------------------------------*/
+
+static void _unur_varou_cone_set(struct unur_gen *gen, struct unur_varou_cone *c, 
+            double *spoint, double *normal); 
+/*---------------------------------------------------------------------------*/
+/* sets the spoint and normal vectors in cone c                              */
+/*---------------------------------------------------------------------------*/
+
 
 static double *_unur_varou_sample_simplex(struct unur_gen *gen, double *verteces);
 /*---------------------------------------------------------------------------*/
@@ -766,6 +774,7 @@ _unur_varou_cones_init( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
 {
   int i, ic, iv, dim;
+  double alpha;
 
   dim = GEN.dim;
 
@@ -805,6 +814,16 @@ _unur_varou_cones_init( struct unur_gen *gen )
        touching point */
     _unur_varou_cone_parameters(gen, GEN.cone_list[ic], 1.);
 
+#if 1 
+        /* looping while volume is infinite */
+        for (i=0; i<100 && _unur_isinf(GEN.cone_list[ic]->volume); i++){
+
+         alpha = _unur_call_urng(gen->urng);
+ 
+        _unur_varou_cone_parameters(gen, GEN.cone_list[ic], alpha );
+
+        }
+#endif
 
   }
 
@@ -844,14 +863,13 @@ _unur_varou_cones_split( struct unur_gen *gen )
   double norm;
   long i;
 
-  int n_trial;
   double alpha;
   struct unur_varou_cone *c1; 
   struct unur_varou_cone *c2;
 
   dim = GEN.dim;
 
-printf("n_cone; n_infinite; mean; sum\n"); 
+printf("n_cone; n_infinite; volume; volume-1\n"); 
 
   while (GEN.n_cone <= UNUR_VAROU_MAX_CONES) {
 
@@ -880,7 +898,7 @@ printf("n_cone; n_infinite; mean; sum\n");
 printf("***************************************************************\n");
 */
 printf("%8ld; %8ld; %e; %e\n", 
-        GEN.n_cone, GEN.n_cone - n_bounded, mean_volume, sum_volume);
+        GEN.n_cone, GEN.n_cone - n_bounded, sum_volume, sum_volume-1.);
 /*
 printf("***************************************************************\n");
 */
@@ -898,7 +916,9 @@ printf("***************************************************************\n");
         /*------------------------------------------------------------*/
         /* create new vertex */
         nv=GEN.n_vertex;
-        if (nv>=UNUR_VAROU_MAX_VERTECES) return; /* TODO: realloc() */
+        if (nv>=UNUR_VAROU_MAX_VERTECES) { 
+          return; /* TODO: realloc() */
+        }
         GEN.vertex_list[nv] = _unur_vector_new(dim+1);
 
         /* vertex coordinates are mean values of the iv1 and iv2 coordinates */
@@ -935,8 +955,9 @@ __printf_vector(dim+1, GEN.vertex_list[nv]);
         
 	/*------------------------------------------------------------*/
         
-	if (GEN.n_cone>=UNUR_VAROU_MAX_CONES) return; /* TODO: realloc() */
-     
+	if (GEN.n_cone>=UNUR_VAROU_MAX_CONES) {
+          return; /* TODO?: realloc() */
+        }
         /* create two new cones c1 and c2 */
         c1=_unur_varou_cone_new(dim);
         c2=_unur_varou_cone_new(dim);
@@ -956,45 +977,49 @@ __printf_vector(dim+1, GEN.vertex_list[nv]);
      
         
 	/* adjust additional cone parameters like norms, volume, etc */
-        n_trial=0;
-
-new_trial:
-         alpha = _unur_call_urng(gen->urng);
+        alpha = 1.;
         _unur_varou_cone_parameters(gen, c1, alpha); 
         _unur_varou_cone_parameters(gen, c2, alpha); 
- 
-        /* should we accept this splitting ? */
-
-        if (_unur_isinf(GEN.cone_list[ic]->volume) &&
-	    _unur_isinf(c1->volume + c2->volume)) {
-	   /* try again with new alpha value */
-	   if (n_trial < 10) {
-	     n_trial++; 
-             goto new_trial;
-	   }  
+        
+        /* */
+        for (i=0; i<100 && _unur_isinf(c1->volume + c2->volume) ; i++) { 
+          alpha = _unur_call_urng(gen->urng);
+          _unur_varou_cone_parameters(gen, c1, alpha); 
+          _unur_varou_cone_parameters(gen, c2, alpha); 
         }
-	
 	
 	if (!_unur_isinf(GEN.cone_list[ic]->volume) &&
 	    GEN.cone_list[ic]->volume < ( c1->volume + c2->volume ) ) {
            /* we have split a bounded cone -> obtaining something bigger  */
 	  
-	   
+#if 1 
+	   /* re-use the hat of the original cone */ 
+           _unur_varou_cone_set(gen, c1, GEN.cone_list[ic]->spoint,
+                                         GEN.cone_list[ic]->normal);  
+           _unur_varou_cone_set(gen, c2, GEN.cone_list[ic]->spoint,
+                                         GEN.cone_list[ic]->normal);  
+          
+          /* ok ... we do split */
+          _unur_varou_cone_copy(dim, GEN.cone_list[ic], c1);        
+          GEN.cone_list[GEN.n_cone]= c2;        
+          free(c1); /* not c2 !!! */
+          GEN.n_cone++; /* adjust current number of cones */
+#endif
+
+#if 0 
 	   /* do not accept this splitting */
-           
            GEN.n_vertex=nv; /* restore original number of verteces */ 
 	   free(GEN.vertex_list[nv]);
 	   
            free(c1); free(c2);
+#endif
 	}
 	else {
 	
           /* ok ... we do split */
           _unur_varou_cone_copy(dim, GEN.cone_list[ic], c1);        
           GEN.cone_list[GEN.n_cone]= c2;        
-          
           free(c1); /* not c2 !!! */
-	
           GEN.n_cone++; /* adjust current number of cones */
         }
 
@@ -1018,9 +1043,10 @@ _unur_varou_cone_parameters( struct unur_gen *gen, struct unur_varou_cone *c, do
   double v,vmax;
   double *p; /* position vector to surface */
   double *t; /* top vertex vector */
+  double *r; /* random vertex vector */
   double *b; /* barycenter vector */
-  double normp, normb, normt, normn, norm;
-  long i, im, imax, iv;
+  double normp, normb, normt, normn;
+  long i, im, imax, ir, iv;
 
   dim = GEN.dim;
   
@@ -1078,9 +1104,23 @@ _unur_varou_cone_parameters( struct unur_gen *gen, struct unur_varou_cone *c, do
  
   /*------------------------------------------------------------*/
   
+  /* random vertex vector */
+  r=_unur_vector_new(dim+1); 
+
+  i=(int) ( (dim+1)* _unur_call_urng(gen->urng) );
+  ir =  c->index[i];
+  for (i=0; i<=dim; i++) {
+    r[i]=GEN.vertex_list[ir][i];
+  }
+
+  /*------------------------------------------------------------*/
+  
   p=_unur_vector_new(dim+1); /* position vector to surface */
 
+  alpha = 0.01 + 0.99 * alpha; 
   for (i=0; i<=dim; i++) {
+ 
+//    p[i] = r[i] + alpha * (b[i]-r[i]);
     p[i] = t[i] + alpha * (b[i]-t[i]);
   }
 
@@ -1101,28 +1141,14 @@ _unur_varou_cone_parameters( struct unur_gen *gen, struct unur_varou_cone *c, do
 
   /*------------------------------------------------------------*/
 
-  /* calculate normal vector to surface through point p[] */
+  /* setting normal vector to tangent plane through p[]  */
   _unur_varou_dF(gen, p, c->normal);
   normn=_unur_vector_norm(dim+1, c->normal);    
   for (i=0; i<=dim; i++) c->normal[i] /= normn;
 
-  /* calculate lengths of all rays */
-  for (i=0; i<=dim; i++) {
-    norm = _unur_vector_scalar_product( dim+1, 
-        c->normal, 
-        p )  
-         / _unur_vector_scalar_product( dim+1, 
-        c->normal, 
-        GEN.vertex_list[ c->index[i] ] ) ; 
-      
-    c->length[i] = (norm>0) ? norm: UNUR_INFINITY;
-  }
-
-  /* calculate total volume */
-  c->volume = c->unit_volume;
-  for (i=0; i<=dim; i++) {
-    c->volume *= c->length[i];
-  }
+  /*------------------------------------------------------------*/
+  
+  _unur_varou_cone_set(gen, c, p, c->normal);
 
 /* quick and dirty debugging */
 #if VAROU_DEBUG 
@@ -1137,8 +1163,50 @@ _unur_varou_cone_parameters( struct unur_gen *gen, struct unur_varou_cone *c, do
   }
 #endif
 
-    free(b); free(t); free(p);
+    free(b); free(t); free(r); free(p);
 } /* end of _unur_varou_cone_parameters */
+
+/*---------------------------------------------------------------------------*/
+
+void
+_unur_varou_cone_set(struct unur_gen *gen, struct unur_varou_cone *c, 
+                     double *spoint, double *normal) 
+     /*----------------------------------------------*/
+     /* sets the spoint and normal vectors in cone c */
+     /*----------------------------------------------*/
+{
+  int i, dim;
+  double norm;
+
+  dim = GEN.dim;
+
+  /* setting spoint and normal vectors */
+  for (i=0; i<=dim; i++) {
+    c->spoint[i]=spoint[i];
+    c->normal[i]=normal[i];
+  }
+
+  /* calculate lengths of all rays */
+  for (i=0; i<=dim; i++) {
+    norm = _unur_vector_scalar_product( dim+1, 
+        c->normal, 
+        c->spoint )  
+         / _unur_vector_scalar_product( dim+1, 
+        c->normal, 
+        GEN.vertex_list[ c->index[i] ] ) ; 
+      
+    c->length[i] = (norm>0) ? norm: UNUR_INFINITY;
+  }
+
+  /* calculate total volume */
+  c->volume = c->unit_volume;
+  for (i=0; i<=dim; i++) {
+    c->volume *= c->length[i];
+  }
+
+  return;
+
+}
 
 /*---------------------------------------------------------------------------*/
 
@@ -1641,7 +1709,6 @@ _unur_varou_debug_init( const struct unur_gen *gen )
                                                   GEN.cone_list[ic]->unit_volume);
   }
   fprintf(log,"%s:\n",gen->genid);
-
 
   fprintf(log,"%s:\n",gen->genid);
 

@@ -494,6 +494,7 @@ _unur_dgt_create( struct unur_par *par )
   /* routines for sampling and destroying generator */
   SAMPLE = _unur_dgt_sample;
   gen->destroy = _unur_dgt_free;
+  gen->reinit = _unur_reinit_error;
 
   /* set all pointers to NULL */
   GEN.cumprob = NULL;

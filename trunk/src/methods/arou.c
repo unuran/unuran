@@ -943,6 +943,7 @@ _unur_arou_create( struct unur_par *par )
   /* routines for sampling and destroying generator */
   SAMPLE = (par->variant & AROU_VARFLAG_VERIFY) ? _unur_arou_sample_check : _unur_arou_sample;
   gen->destroy = _unur_arou_free;
+  gen->reinit = _unur_reinit_error;
 
   /* set all pointers to NULL */
   GEN.seg         = NULL;

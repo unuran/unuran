@@ -265,6 +265,7 @@ _unur_unif_create( struct unur_par *par )
   /* routines for sampling and destroying generator */
   SAMPLE = _unur_unif_sample;
   gen->destroy = _unur_unif_free;
+  gen->reinit = _unur_reinit_error;
 
   /* copy some parameters into generator object */
   gen->method = par->method;        /* indicates method                      */

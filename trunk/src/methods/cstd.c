@@ -107,9 +107,25 @@
 
 /*---------------------------------------------------------------------------*/
 
+static struct unur_gen *_unur_cstd_init( struct unur_par *par );
+/*---------------------------------------------------------------------------*/
+/* Initialize new generator.                                                 */
+/*---------------------------------------------------------------------------*/
+
 static struct unur_gen *_unur_cstd_create( struct unur_par *par );
 /*---------------------------------------------------------------------------*/
 /* create new (almost empty) generator object.                               */
+/*---------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------*/
+/* There are sampling routines, since every distribution has its own.        */
+/* Sampling routines are defined in ../distributions/ for each distributions.*/
+/* Thus double _unur_cstd_sample( UNUR_GEN *gen ); does not exist!           */
+/*---------------------------------------------------------------------------*/
+
+static void _unur_cstd_free( struct unur_gen *gen);
+/*---------------------------------------------------------------------------*/
+/* destroy generator object.                                                 */
 /*---------------------------------------------------------------------------*/
 
 #ifdef UNUR_ENABLE_LOGGING
@@ -473,6 +489,69 @@ _unur_cstd_init( struct unur_par *par )
 
 } /* end of _unur_cstd_init() */
 
+/*---------------------------------------------------------------------------*/
+
+static struct unur_gen *
+_unur_cstd_create( struct unur_par *par )
+     /*----------------------------------------------------------------------*/
+     /* allocate memory for generator                                        */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par ... pointer to parameter for building generator object         */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to (empty) generator object with default settings          */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return NULL                                                        */
+     /*----------------------------------------------------------------------*/
+{
+  struct unur_gen *gen;
+
+  /* check arguments */
+  CHECK_NULL(par,NULL);  COOKIE_CHECK(par,CK_CSTD_PAR,NULL);
+
+  /* allocate memory for generator object */
+  gen = _unur_malloc( sizeof(struct unur_gen) );
+
+  /* magic cookies */
+  COOKIE_SET(gen,CK_CSTD_GEN);
+
+  /* copy generator identifier */
+  gen->genid = par->genid;
+
+  /* copy distribution object into generator object */
+  memcpy( &(gen->distr), par->distr, sizeof( struct unur_distr ) );
+
+  /* routines for sampling and destroying generator */
+  SAMPLE = NULL;    /* will be set in _unur_cstd_init() */
+  gen->destroy = _unur_cstd_free;
+  gen->reinit = _unur_reinit_error;
+
+  /* defaults */
+  GEN.gen_param = NULL;  /* parameters for the generator                     */
+  GEN.n_gen_param = 0;   /* (computed in special GEN.init()                  */
+
+  /* copy some parameters into generator object */
+  GEN.umin        = 0;    /* cdf at left boundary of domain                  */
+  GEN.umax        = 1;    /* cdf at right boundary of domain                 */
+
+  /* GEN.is_inversion is set in _unur_cstd_init() */
+
+  gen->method = par->method;        /* indicates used method                 */
+  gen->variant = par->variant;      /* indicates variant                     */
+  gen->debug = par->debug;          /* debuging flags                        */
+  gen->urng = par->urng;            /* pointer to urng                       */
+
+  gen->urng_aux = NULL;             /* no auxilliary URNG required           */
+  gen->gen_aux = NULL;              /* no auxilliary generator objects       */
+  gen->gen_aux_2 = NULL;
+
+  /* return pointer to (almost empty) generator object */
+  return(gen);
+  
+} /* end of _unur_cstd_create() */
+
 /*****************************************************************************/
 
 /** 
@@ -522,65 +601,6 @@ _unur_cstd_free( struct unur_gen *gen )
 /**  Auxilliary Routines                                                    **/
 /*****************************************************************************/
 
-static struct unur_gen *
-_unur_cstd_create( struct unur_par *par )
-     /*----------------------------------------------------------------------*/
-     /* allocate memory for generator                                        */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   par ... pointer to parameter for building generator object         */
-     /*                                                                      */
-     /* return:                                                              */
-     /*   pointer to (empty) generator object with default settings          */
-     /*                                                                      */
-     /* error:                                                               */
-     /*   return NULL                                                        */
-     /*----------------------------------------------------------------------*/
-{
-  struct unur_gen *gen;
-
-  /* check arguments */
-  CHECK_NULL(par,NULL);  COOKIE_CHECK(par,CK_CSTD_PAR,NULL);
-
-  /* allocate memory for generator object */
-  gen = _unur_malloc( sizeof(struct unur_gen) );
-
-  /* magic cookies */
-  COOKIE_SET(gen,CK_CSTD_GEN);
-
-  /* copy generator identifier */
-  gen->genid = par->genid;
-
-  /* copy distribution object into generator object */
-  memcpy( &(gen->distr), par->distr, sizeof( struct unur_distr ) );
-
-  /* routines for sampling and destroying generator */
-  SAMPLE = NULL;    /* will be set in _unur_cstd_init() */
-  gen->destroy = _unur_cstd_free;
-
-  /* defaults */
-  GEN.gen_param = NULL;  /* parameters for the generator                     */
-  GEN.n_gen_param = 0;   /* (computed in special GEN.init()                  */
-
-  /* copy some parameters into generator object */
-  GEN.umin        = 0;    /* cdf at left boundary of domain                  */
-  GEN.umax        = 1;    /* cdf at right boundary of domain                 */
-
-  /* GEN.is_inversion is set in _unur_cstd_init() */
-
-  gen->method = par->method;        /* indicates used method                 */
-  gen->variant = par->variant;      /* indicates variant                     */
-  gen->debug = par->debug;          /* debuging flags                        */
-  gen->urng = par->urng;            /* pointer to urng                       */
-
-  gen->urng_aux = NULL;             /* no auxilliary URNG required           */
-  gen->gen_aux = NULL;              /* no auxilliary generator objects       */
-  gen->gen_aux_2 = NULL;
-
-  /* return pointer to (almost empty) generator object */
-  return(gen);
-  
-} /* end of _unur_cstd_create() */
 
 /*****************************************************************************/
 /**  Debugging utilities                                                    **/

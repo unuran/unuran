@@ -624,8 +624,9 @@ _unur_srou_sample_check( struct unur_gen *gen )
       /* check hat */
       sfx = sqrt(fx);
       xfx = x * sfx;
-      /** printf("um = %g\n",GEN.um); TODO!! **/
-      if ( (GEN.um < sfx) || (xfx < GEN.vl) || (xfx > GEN.vr) )
+      if ( ( sfx > (1.+DBL_EPSILON) * GEN.um )   /* avoid roundoff error with FP registers */
+	     || (xfx < (1.-DBL_EPSILON) * GEN.vl) 
+	   || (xfx > (1.+DBL_EPSILON) * GEN.vr) )
 	_unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"pdf(x) > hat(x)");
 
       /* evaluate squeeze */
@@ -722,6 +723,7 @@ _unur_srou_create( struct unur_par *par )
     SAMPLE = (par->variant & SROU_VARFLAG_MIRROR) ? _unur_srou_sample_mirror : _unur_srou_sample;
 
   gen->destroy = _unur_srou_free;
+  gen->reinit = _unur_reinit_error;
 
   /* mode must be in domain */
   if ( (DISTR.mode < DISTR.BD_LEFT) ||

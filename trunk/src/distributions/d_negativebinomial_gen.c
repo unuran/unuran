@@ -157,7 +157,8 @@ negativebinomial_nbp_init( struct unur_gen *gen )
   /* make a gamma variate generator (use default special generator) */
   gamma_param = r;   /* shape parameter for gamma distribution */
   if (GAMMA==NULL) {
-    GAMMA = _unur_cstd_init( unur_cstd_new( unur_distr_gamma(&gamma_param,1) ) );
+    struct unur_par *par = unur_cstd_new( unur_distr_gamma(&gamma_param,1) );
+    GAMMA = (par) ? _unur_init(par) : NULL;
     _unur_check_NULL( NULL,GAMMA,0 );
     /* need same uniform random number generator as negative binomial generator */
     GAMMA->urng = gen->urng;

@@ -82,18 +82,6 @@ UNUR_PAR *unur_cstd_new( UNUR_DISTR *distribution );
    after creating the parameter object.
 */
 
-/* Initialize new generator.                                                 */
-UNUR_GEN *_unur_cstd_init( UNUR_PAR *parameters );
-
-/** 
-    double _unur_cstd_sample( UNUR_GEN *gen );
-    Does not exists !!!
-    Sampling routines are defined in ../distributions/ for each distributions.
-**/
-
-/* Destroy generator object.                                                 */
-void _unur_cstd_free( UNUR_GEN *generator);
-
 /*...........................................................................*/
 
 int unur_cstd_set_variant( UNUR_PAR *parameters, unsigned variant );

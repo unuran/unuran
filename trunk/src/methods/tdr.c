@@ -1423,6 +1423,8 @@ _unur_tdr_create( struct unur_par *par )
 
   /* routines for sampling and destroying generator */
   gen->destroy = _unur_tdr_free;
+  gen->reinit = _unur_reinit_error;
+
   if (par->variant & TDR_VARFLAG_VERIFY)
     SAMPLE = _unur_tdr_sample_check;
   else

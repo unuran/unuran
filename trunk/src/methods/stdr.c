@@ -625,6 +625,7 @@ _unur_stdr_create( struct unur_par *par )
   /* routines for sampling and destroying generator */
   SAMPLE = (par->variant & STDR_VARFLAG_VERIFY) ? _unur_stdr_sample_check : _unur_stdr_sample;
   gen->destroy = _unur_stdr_free;
+  gen->reinit = _unur_reinit_error;
 
   /* mode must be in domain */
   if ( (DISTR.mode < DISTR.BD_LEFT) ||

@@ -106,12 +106,13 @@ typedef struct unur_gen   UNUR_GEN;      /* generator object                 */
 /*****************************************************************************/
 
 UNUR_GEN *unur_init( UNUR_PAR *parameters );
+int    unur_reinit( UNUR_GEN *generator );
 
 int    unur_sample_discr(UNUR_GEN *generator);
 double unur_sample_cont(UNUR_GEN *generator);
 void   unur_sample_vec(UNUR_GEN *generator, double *vector);
 
-void unur_free( UNUR_GEN *gen );
+void   unur_free( UNUR_GEN *gen );
 
 /*****************************************************************************/
 /**  Additional header files for further function prototypes                **/

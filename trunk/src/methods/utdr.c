@@ -646,6 +646,7 @@ _unur_utdr_create( struct unur_par *par )
   /* routines for sampling and destroying generator */
   SAMPLE = _unur_utdr_sample;
   gen->destroy = _unur_utdr_free;
+  gen->reinit = _unur_reinit_error;
 
   /* copy some parameters into generator object */
   GEN.il = DISTR.BD_LEFT;           /* left boundary of domain         */

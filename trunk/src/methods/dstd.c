@@ -353,7 +353,7 @@ _unur_dstd_init( struct unur_par *par )
   if (!(gen->distr.set & UNUR_DISTR_SET_STDDOMAIN)) {
     /* domain has been modified --> not allowed */
     _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"domain changed");
-    free(par); _unur_cstd_free(gen); return NULL; 
+    free(par); _unur_dstd_free(gen); return NULL; 
   }
 
 #ifdef UNUR_ENABLE_LOGGING
@@ -454,6 +454,7 @@ _unur_dstd_create( struct unur_par *par )
   /* routines for sampling and destroying generator */
   SAMPLE = NULL;    /* will be set in _unur_dstd_init() */
   gen->destroy = _unur_dstd_free;
+  gen->reinit = _unur_reinit_error;
 
   /* defaults */
   GEN.gen_param = NULL;  /* parameters for the generator      */

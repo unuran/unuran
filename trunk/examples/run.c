@@ -118,6 +118,22 @@ int main()
 #if RUN_CSTD == 1
 
 #if 1
+  fpar[0] = 5.;
+  distr_xxx = unur_distr_powerexponential(fpar,1);
+  //distr_xxx = unur_distr_laplace(fpar,1);
+
+  par = unur_srou_new(distr_xxx);
+  unur_srou_set_Fmode(par,0.5);
+  unur_srou_set_verify(par,1);
+  unur_run_tests(par,RUN_TESTS);
+  
+  par = unur_cstd_new(distr_xxx);
+  unur_cstd_set_variant(par,2);
+  unur_run_tests(par,RUN_TESTS);
+
+  unur_distr_free(distr_xxx);
+
+
   distr_xxx = unur_distr_normal(NULL,0);
   // unur_distr_cont_set_domain(distr_xxx,3,UNUR_INFINITY);
   par = unur_cstd_new(distr_xxx);

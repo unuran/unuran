@@ -1051,6 +1051,7 @@ _unur_tabl_create( struct unur_par *par )
   /* routines for sampling and destroying generator */
   SAMPLE = (par->variant & TABL_VARFLAG_VERIFY) ? _unur_tabl_sample_check : _unur_tabl_sample;
   gen->destroy = _unur_tabl_free;
+  gen->reinit = _unur_reinit_error;
 
   /* set all pointers to NULL */
   GEN.Atotal      = 0.;

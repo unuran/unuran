@@ -54,6 +54,21 @@ UNUR_GEN *unur_init( UNUR_PAR *par )
 
 /*---------------------------------------------------------------------------*/
 
+int unur_reinit( UNUR_GEN *gen )
+{               
+  /* if gen->reinit == NULL   --> nothing to do */
+  return (gen ? gen->reinit(gen) : 1 );
+} /* end of unur_reinit() */
+
+int _unur_reinit_error( UNUR_GEN *gen )
+{
+  /* no re-initialization routine available */
+  _unur_warning(gen->genid,UNUR_ERR_GENERIC,"no re-initialization routine available");
+  return 0;
+} /* end of _unur_reinit_error() */
+
+/*---------------------------------------------------------------------------*/
+
 int unur_sample_discr(UNUR_GEN *gen)
 {
   CHECK_NULL(gen,0);
@@ -112,7 +127,7 @@ unur_set_debug( struct unur_par *par, unsigned debug )
   par->debug = debug;
   return 1;
 #else
-  _unur_warning("DEBUG",_UNUR_ERR_COMPILE,"debugging, #define UNUR_ENABLE_LOGGING");
+  _unur_warning("DEBUG",UNUR_ERR_COMPILE,"debugging, #define UNUR_ENABLE_LOGGING");
   return 0;
 #endif
 
@@ -137,7 +152,7 @@ unur_chg_debug( struct unur_gen *gen, unsigned debug )
   gen->debug = debug;
   return 1;
 #else
-  _unur_warning("DEBUG",_UNUR_ERR_COMPILE,"debugging, #define UNUR_ENABLE_LOGGING");
+  _unur_warning("DEBUG",UNUR_ERR_COMPILE,"debugging, #define UNUR_ENABLE_LOGGING");
   return 0;
 #endif
 

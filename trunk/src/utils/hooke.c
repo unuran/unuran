@@ -145,6 +145,8 @@
 /*								   */
 /*-----------------------------------------------------------------*/
 
+#include <unur_source.h>
+#include "hooke_source.h"
 
 /*-----------------------------------------------------------------*/
 
@@ -154,10 +156,6 @@
 static double best_nearby(struct unur_funct_vgeneric faux,
                           double *delta, double *point, 
                           double prevbest, int dim);
-/* direct search minimization algorithm */
-long hooke(struct unur_funct_vgeneric faux, 
-           int dim, double *startpt, double *endpt, 
-           double rho, double epsilon, long itermax);
 
 /*-----------------------------------------------------------------*/
 
@@ -203,7 +201,7 @@ static double best_nearby(struct unur_funct_vgeneric faux,
 
 /*-----------------------------------------------------------------*/
 
-long hooke(struct unur_funct_vgeneric faux, 
+int _unur_hooke(struct unur_funct_vgeneric faux, 
            int dim, double *startpt, double *endpt, 
            double rho, double epsilon, long itermax)
 /*

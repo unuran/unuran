@@ -10,6 +10,7 @@ libutils_la_SOURCES = \
  eigensystem.c \
  error.c  \
  fmax.c 	  fmax_source.h \
+ hooke.c 	  hooke_source.h \
  matrix.c 	  matrix_source.h \
  slist.c  slist.h slist_struct.h \
  stream.c         stream_source.h \

@@ -305,6 +305,7 @@ unur_distr_discr_set_pv( struct unur_distr *distr, const double *pv, int n_pv )
     _unur_error(distr->name,UNUR_ERR_DISTR_SET,"length of PV too large, overflow");
     return 0;
   }
+  DISTR.domain[1] = DISTR.domain[0] + n_pv - 1;
 
   /* we do not check non-negativity of p.v.
      (it is cheaper to do it when unur_init() is called */
@@ -355,9 +356,11 @@ unur_distr_discr_make_pv( struct unur_distr *distr )
     return 0;
   }
 
-  /* no domain given --> set left boundary to 0 */
-  if (!(distr->set & UNUR_DISTR_SET_DOMAIN))
-    DISTR.domain[0] = 0;
+  /* left boundary of domain must be set */
+  if (!(distr->set & UNUR_DISTR_SET_DOMAIN)) {
+    _unur_error(distr->name,UNUR_ERR_DISTR_GET,"domain missing");
+    return 0;
+  }
 
   /* if there exists a PV, it has to be removed */
   if (DISTR.pv != NULL)
@@ -432,6 +435,7 @@ unur_distr_discr_make_pv( struct unur_distr *distr )
   /* store vector */
   DISTR.pv = pv;
   DISTR.n_pv = n_pv;
+  DISTR.domain[1] = DISTR.domain[0] + n_pv - 1;
 
   /* o.k. */
   return (valid) ? n_pv : -n_pv;
@@ -487,7 +491,7 @@ unur_distr_discr_eval_pv( int k, const struct unur_distr *distr )
 
   if (DISTR.pv != NULL)
     /* use probability vector */
-    return (DISTR.pv[k]);
+    return (DISTR.pv[k-DISTR.domain[0]]);
 
   if (DISTR.pmf != NULL)
     /* use PMF */
@@ -782,6 +786,10 @@ _unur_distr_discr_eval_pmf_tree( int k, const struct unur_distr *distr )
      /*   PMF at k                                                           */
      /*----------------------------------------------------------------------*/
 {
+  /* check arguments */
+  _unur_check_NULL( NULL, distr, INFINITY );
+  _unur_check_distr_object( distr, DISCR, INFINITY );
+
   return ((DISTR.pmftree) ? _unur_fstr_eval_tree(DISTR.pmftree,(double)k) : 0.);
 } /* end of _unur_distr_discr_eval_pmf_tree() */
 
@@ -800,6 +808,10 @@ _unur_distr_discr_eval_cdf_tree( int k, const struct unur_distr *distr )
      /*   CDF at k                                                           */
      /*----------------------------------------------------------------------*/
 {
+  /* check arguments */
+  _unur_check_NULL( NULL, distr, INFINITY );
+  _unur_check_distr_object( distr, DISCR, INFINITY );
+
   return ((DISTR.cdftree) ? _unur_fstr_eval_tree(DISTR.cdftree,(double)k) : 0.);
 } /* end of _unur_distr_discr_eval_cdf_tree() */
 
@@ -962,7 +974,7 @@ unur_distr_discr_set_domain( struct unur_distr *distr, int left, int right )
 
   /* store data */
   DISTR.trunc[0] = DISTR.domain[0] = left;
-  DISTR.trunc[1] = DISTR.domain[1] = right;
+  DISTR.trunc[1] = DISTR.domain[1] = (DISTR.pv == NULL) ? right : left+DISTR.n_pv-1;
 
   /* changelog */
   distr->set |= UNUR_DISTR_SET_DOMAIN;
@@ -1302,9 +1314,11 @@ _unur_distr_discr_debug( const struct unur_distr *distr, const char *genid, int 
   else
     fprintf(log,"%s:\tmode unknown\n",genid);
   
-  fprintf(log,"%s:\tsum over PMF = %g",genid,DISTR.sum);
-  _unur_print_if_default(distr,UNUR_DISTR_SET_PMFSUM);
-  fprintf(log,"\n%s:\n",genid);
+  if (distr->set & UNUR_DISTR_SET_PMFSUM)
+    fprintf(log,"%s:\tsum over PMF = %g\n",genid,DISTR.sum);
+  else
+    fprintf(log,"%s:\tsum over PMF unknown\n",genid);
+  fprintf(log,"%s:\n",genid);
   
 } /* end of _unur_distr_discr_debug() */
 
@@ -1354,17 +1368,7 @@ _unur_distr_discr_find_mode(struct unur_distr *distr )
  
   /* derive three distinct points */
   x[0] = DISTR.domain[0];
-  if (DISTR.pv == NULL)
-    x[1] =DISTR.domain[1];
-  else {
-    /* n_pv must not be too large */
-    if ( (DISTR.domain[0] > 0) && ((unsigned)DISTR.domain[0] + (unsigned)DISTR.n_pv > INT_MAX) ) {
-      /* n_pv too large, causes overflow */
-      _unur_error(distr->name,UNUR_ERR_DISTR_SET,"length of PV too large, overflow");
-      return 0;
-    }
-    x[1] = DISTR.domain[0] + DISTR.n_pv - 1;
-  }
+  x[1] =DISTR.domain[1];
   fx[0] = unur_distr_discr_eval_pv(x[0], distr);
   fx[1] = unur_distr_discr_eval_pv(x[1], distr);
 

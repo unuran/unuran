@@ -70,8 +70,8 @@ UNUR_DISTR *unur_distr_discr_new( void );
    case there are also a couple of derived parameters that are not
    required when a PV is given.
 
-   It is not possible to set both a PMF and a PV directly. However a
-   PV can be computed from PMF by means of a
+   It is not possible to set both a PMF and a PV directly. However, a
+   PV can be computed from a PMF by means of a
    unur_distr_discr_make_pv() call.
    If both a PV and a PMF are given in the distribution object it
    depends on the generation method which of these is used.
@@ -81,7 +81,7 @@ int unur_distr_discr_set_pv( UNUR_DISTR *distribution, const double *pv, int n_p
 /* 
    Set finite probability vector (PV) for a @var{distribution}. It is not
    necessary that the entries in the given PV sum to 1.
-   @var{n_pv} must be positive. However there is no testing
+   @var{n_pv} must be positive. However, there is no testing
    whether all entries in @var{pv} are non-negative. 
 
    If no domain has been set, then the left boundary is set to
@@ -89,17 +89,17 @@ int unur_distr_discr_set_pv( UNUR_DISTR *distribution, const double *pv, int n_p
    left boundary + @var{n_pv} exceeds the range of integers, 
    then the call fails. 
 
-   Notice it not possible to set both a PV and a PMF.
+   Notice it is not possible to set both a PV and a PMF.
    (E.g., it is not possible to set a PV for a @var{distribution} from
    UNURAN library of standard distributions.)
 */
 
 int unur_distr_discr_make_pv( UNUR_DISTR *distribution );
 /* 
-   Compute a PV when a PMF is given. However when the
+   Compute a PV when a PMF is given. However, when the
    domain is not given or is too large and the sum over the PMF is given
    then the (right) tail of the @var{distribution} is chopped off such that
-   the probability for the tail region is less than 10^-8.
+   the probability for the tail region is less than 1.e-8.
    If the sum over the PMF is not given a PV of maximal length is
    computed.
 
@@ -108,7 +108,7 @@ int unur_distr_discr_make_pv( UNUR_DISTR *distribution );
 
    If successful, the length of the generated PV is returned.
    If the sum over the PMF on the chopped tail is not neglible small
-   (i.e. greater than 10^-8 or unknown) than the 
+   (i.e. greater than 1.e-8 or unknown) than the 
    negative of the length of the PV is returned and
    @code{unur_errno} is set to @code{UNUR_ERR_DISTR_SET}.
 
@@ -138,7 +138,7 @@ int unur_distr_discr_set_cdf( UNUR_DISTR *distribution, UNUR_FUNCT_DISCR *cdf );
    @code{double funct(int k, const UNUR_DISTR *distr)}.
 
    It is important to note that all these functions must return a
-   result for all integers @var{k}. Eg., if the domain of a given
+   result for all integers @var{k}. E.g., if the domain of a given
    PMF is the interval @{1,2,3,@dots{},100@}, than the given function
    must return @code{0.0} for all points outside this interval.
 
@@ -146,7 +146,7 @@ int unur_distr_discr_set_cdf( UNUR_DISTR *distribution, UNUR_FUNCT_DISCR *cdf );
    CDF is set it cannot be overwritten. A new distribution object
    has to be used instead.
 
-   Notice it not possible to set both a PV and a PMF, i.e. it is not
+   Notice that it not possible to set both a PV and a PMF, i.e. it is not
    possible to use this call after a unur_distr_discr_set_pv() call.
 */
 

@@ -4,11 +4,11 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   FILE: dis.h                                                             *
+ *   FILE: dgt.h                                                             *
  *                                                                           *
  *   PURPOSE:                                                                *
- *         function prototypes for method DIS                                *
- *         ((Discrete) Indexed Search (guide table))                         *
+ *         function prototypes for method DGT                                *
+ *         ((Discrete) Guide Table method (indexed search))                  *
  *                                                                           *
  *   USAGE:                                                                  *
  *         only included in unuran.h                                         *
@@ -61,17 +61,18 @@
 
       Step (2) is the crucial step. Using sequential search requires
       @i{O(E(X))} comparisons, where @i{E(X)} is the expectation of
-      the distribution. Indexed search however uses a guide table to
+      the distribution. Indexed search, however, uses a guide table to
       jump to some @i{I'} <= @i{I} near @i{I} to find @i{X} in constant
-      time. Indeed the expected 
-      number of comparisons is reduced to 2, when the guide table has the
-      same size as the probability vector (this is the default). For
-      larger guide tables this number becomes smaller (but is always
-      larger than 1), for smaller tables it becomes larger. For the limit
-      case of table size 1 the algorithm simply does sequential
-      search. On the other hand the setup time for guide table is
-      @i{O(N)} (for size 1 no preprocessing is required).
-      Moreover for very large guide tables memory effects might
+      time. Indeed the expected number of comparisons is reduced to 2,
+      when the guide table has the same size as the probability vector
+      (this is the default). For larger guide tables this number
+      becomes smaller (but is always larger than 1), for smaller
+      tables it becomes larger. For the limit case of table size 1 the
+      algorithm simply does sequential search (but uses a more expensive
+      setup then method DSS (@pxref{DSS}). On the other hand the
+      setup time for guide table is @i{O(N)}, where @i{N} denotes the
+      length of the probability vector (for size 1 no preprocessing is
+      required). Moreover, for very large guide tables memory effects might 
       even reduce the speed of the algorithm. So we do not recommend to
       use guide tables that are more than three times larger than the
       given probability vector. If only a few random numbers have to be
@@ -90,8 +91,9 @@
       a unur_distr_discr_set_domain() call.
 
       The method also works when no probability vector but a PMF is
-      given. However then additionally a bounded (not too large) domain
-      must be given or the sum over the PMF (see
+      given. However, then additionally a bounded (not too large) domain
+      must be given or the sum over the PMF. In the latter case the
+      domain of the distribution is trucated (see
       unur_distr_discr_make_pv() for details).
 
    =END
@@ -115,6 +117,9 @@ int unur_dgt_set_guidefactor( UNUR_PAR *parameters, double factor );
    Larger guide tables result in faster generation time but require a
    more expensive setup. Sizes larger than 3 are not recommended.
    If the relative size is set to 0, sequential search is used.
+   However, this is not recommended, except in exceptional cases, since 
+   method DSS (@pxref{DSS}) is has almost no setup and is thus faster
+   (but requires the sum over the PV as input parameter).
 
    Default is @code{1}. 
 */
@@ -132,8 +137,3 @@ int unur_dgt_set_variant( UNUR_PAR *parameters, unsigned variant );
 /* =END */
 
 /*---------------------------------------------------------------------------*/
-
-
-
-
-

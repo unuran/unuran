@@ -55,8 +55,9 @@
 /* discrete distributions */
 #define UNUR_METH_DISCR    0x10000000u
 
-#define UNUR_METH_DAU      0x10000001u
-#define UNUR_METH_DGT      0x10000002u
+#define UNUR_METH_DARI     0x10000001u
+#define UNUR_METH_DAU      0x10000002u
+#define UNUR_METH_DGT      0x10000003u
 
 /* continuous distributions */
 #define UNUR_METH_CONT     0x20000000u

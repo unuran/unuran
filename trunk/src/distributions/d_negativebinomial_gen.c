@@ -178,7 +178,7 @@ negativebinomial_nbp_init( struct unur_gen *gen )
     poisson_param = 1.;   /* shape parameter for poisson distribution (use a dummy value yet) */
     distr = unur_distr_poisson(&poisson_param,1);
     par = unur_dstd_new( distr );
-    POISSON = (par) ? _unur_dstd_init( par ) : NULL;
+    POISSON = (par) ? _unur_init( par ) : NULL;
     _unur_check_NULL( NULL,POISSON,0 );
     /* need same uniform random number generator as negative binomial generator */
     POISSON->urng = gen->urng;

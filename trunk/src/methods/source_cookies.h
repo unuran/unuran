@@ -50,10 +50,12 @@
 /* name of cookies                                                           */
 
 /* generators discrete distributions */
-#define CK_DAU_PAR       0x00000010u
-#define CK_DAU_GEN       0x00000011u
-#define CK_DGT_PAR       0x00000020u
-#define CK_DGT_GEN       0x00000021u
+#define CK_DARI_PAR      0x00000010u
+#define CK_DARI_GEN      0x00000011u
+#define CK_DAU_PAR       0x00000020u
+#define CK_DAU_GEN       0x00000021u
+#define CK_DGT_PAR       0x00000030u
+#define CK_DGT_GEN       0x00000031u
 
 /* generators continuous distributions */
 #define CK_AROU_PAR      0x00100010u

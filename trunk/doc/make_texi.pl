@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 ############################################################
 
-$VERBOSE = 0;
+$VERBOSE = 1;
 
 ############################################################
 # $Id$
@@ -72,7 +72,7 @@ foreach $file (sort keys %header_files) {
 
 # format all sections
 foreach my $section (keys %section_TAGs) {
-    print STDERR "format $section\n" if $VERBOSE;
+    print STDERR "format $section\n" if $VERBOSE > 1;
     &{$section_TAGs{$section}{"format"}}();
 }
 

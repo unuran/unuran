@@ -144,13 +144,13 @@ sub format_METHOD {
     # check distribution types
     foreach my $method (keys %$in_METHODs) {
 	my $type_ok = 0;
-	print STDERR "\t$method -> ".$in_METHODs->{$method}->{"=TYPE"}." ... " if $VERBOSE;
+	print STDERR "\t$method -> ".$in_METHODs->{$method}->{"=TYPE"}." ... " if $VERBOSE > 1;
 	foreach my $type (keys %$in_DISTRs) {
 	    if ($in_METHODs->{$method}->{"=TYPE"} eq $type) {
 		$type_ok = 1;
 	    }
 	}
-	print STDERR (($type_ok) ? "ok\n" : "invalid\n")  if $VERBOSE;
+	print STDERR (($type_ok) ? "ok\n" : "invalid\n")  if $VERBOSE > 1;
 	die "invalid distribution type for method $method" unless $type_ok;
     }
 

@@ -27,6 +27,7 @@ libmethods_a_SOURCES = \
  arou.c \
  empk.c \
  cstd.c \
+ dari.c \
  dau.c  \
  dgt.c  \
  dstd.c \
@@ -58,6 +59,7 @@ noinst_HEADERS = \
  arou.h  arou_struct.h \
  empk.h  empk_struct.h \
  cstd.h  cstd_struct.h \
+ dari.h  dari_struct.h \
  dau.h   dau_struct.h \
  dgt.h   dgt_struct.h \
  dstd.h  dstd_struct.h \

@@ -18,6 +18,12 @@
 
 /*---------------------------------------------------------------------------*/
 
+/** TODO:
+#define MAXLGM 2.556348e305
+**/
+
+/*---------------------------------------------------------------------------*/
+
 int main()
 {
 
@@ -44,6 +50,10 @@ int main()
 
   printf("/* smallest argument for exp() without underflow */\n");
   printf("#define MINLOG  %.30g\n\n",log(DBL_MIN)); 
+
+  printf("/* the maximal number that pow(x,x-0.5) has no overflow */\n");
+  printf("/* we use a (very) conservative portable bound          */\n");
+  printf("#define MAXSTIR  %.30g\n\n", log(DBL_MAX) / log(log(DBL_MAX)) );
 
   printf("/*---------------------------------------------------------------------------*/\n");
   printf("#endif  /* __SOURCE_FP_CONST_H_SEEN */\n");

@@ -185,11 +185,10 @@ w = 1.0/x;
 w = 1.0 + w * polevl( w, STIR, 4 );
 y = exp(x);
 
-/*#define MAXSTIR 143.01608.. old definition*/
-/* the maximal number that pow(x,x-0.5) has no overflow */
-#define MAXSTIR MAXLOG/log(MAXLOG)
-/* this should be a (very)conservative portable version*/
-/* For Linux on PC the value for MAXSTIR is 107.93*/
+/* #define MAXSTIR 143.01608 ... old definition             */
+/* the maximal number that pow(x,x-0.5) has no overflow.    */
+/* replaced by very conservative portable bound:            */
+/*   #define MAXSTIR MAXLOG/log(MAXLOG)                     */
 
 if( x > MAXSTIR )
 	{ /* Avoid overflow in pow() */
@@ -354,8 +353,10 @@ static double C[] = {
 -2.53252307177582951285E6,
 -2.01889141433532773231E6
 };
+
 /* log( sqrt( 2*pi ) ) */
 static double LS2PI  =  0.91893853320467274178;
+
 #define MAXLGM 2.556348e305
 #endif
 

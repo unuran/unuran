@@ -61,10 +61,11 @@ Copyright 1984, 1995, 2000 by Stephen L. Moshier
 
 #include "source_mconf.h"
 
-/*#define MAXGAM 171.624376956302725*/
-#define MAXGAM (MAXLOG/log(MAXLOG))
-/* this should be a (very)conservative portable version*/
-/* For Linux on PC the value for MAXSTIR is 107.93*/
+/* #define MAXGAM  171.624376956302725 ... old definition   */
+/* use a very conservative portable bound instead:          */
+/*   #define MAXSTIR MAXLOG/log(MAXLOG)                     */
+/* (same as MAXSTIR)                                        */
+#define MAXGAM  MAXSTIR
 
 
 /*extern double MACHEP, MINLOG, MAXLOG;

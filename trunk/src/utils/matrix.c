@@ -176,7 +176,7 @@ _unur_matrix_LU_decomp (int dim, double *A, int *p, int *signum)
      /*   error code      otherwise                                          */
      /*----------------------------------------------------------------------*/
 {
-#define idx(a,b) (a*dim+b)
+#define idx(a,b) ((a)*dim+b)
   int i, j, k;
 
   /* check arguments */
@@ -245,7 +245,7 @@ _unur_matrix_backsubstitution_dtrsv(int dim, double *LU, double *X)
      /*   error code      otherwise                                          */
      /*----------------------------------------------------------------------*/
 {
-#define idx(a,b) (a*dim+b)
+#define idx(a,b) ((a)*dim+b)
 
   int ix,jx,i,j;
 
@@ -295,7 +295,7 @@ _unur_matrix_forwardsubstitution_dtrsv(int dim, double *LU, double *X)
      /*   error code      otherwise                                          */
      /*----------------------------------------------------------------------*/
 { 
-#define idx(a,b) (a*dim+b)
+#define idx(a,b) ((a)*dim+b)
 
   int ix,jx,i,j;
 
@@ -344,7 +344,7 @@ _unur_matrix_LU_invert (int dim, double *LU, int *p, double *inverse)
      /*   error code      otherwise                                          */
      /*----------------------------------------------------------------------*/
 { 
-#define idx(a,b) (a*dim+b)
+#define idx(a,b) ((a)*dim+b)
 
   double *vector;
   int i,j;
@@ -408,7 +408,7 @@ _unur_matrix_invert_matrix(int dim, double *A, double detmin, double *Ainv, doub
      /*   other error code, otherwise                                           */
      /*-------------------------------------------------------------------------*/
 { 
-#define idx(a,b) (a*dim+b)
+#define idx(a,b) ((a)*dim+b)
 
   int *p, s, i, j;
   double *LU;
@@ -493,7 +493,7 @@ _unur_matrix_qf (int dim, double *x, double *A)
      /*   return INFINITY                                                    */
      /*----------------------------------------------------------------------*/
 {
-#define idx(a,b) (a*dim+b)
+#define idx(a,b) ((a)*dim+b)
 
   int i,j;
   double sum,outersum;
@@ -538,7 +538,7 @@ _unur_matrix_cholesky_decomposition (int dim, const double *S, double *L )
      /*   other error code, otherwise                                        */
      /*----------------------------------------------------------------------*/
 { 
-#define idx(a,b) (a*dim+b)
+#define idx(a,b) ((a)*dim+b)
 
   int i,j,k;
   double sum1,sum2;
@@ -600,7 +600,7 @@ _unur_matrix_debug ( int dim, const double *M, const char *info, const char *gen
      /*   genid ... id string                                                */
      /*----------------------------------------------------------------------*/
 {
-#define idx(a,b) (a*dim+b)
+#define idx(a,b) ((a)*dim+b)
 
   FILE *log;
   int i,j;

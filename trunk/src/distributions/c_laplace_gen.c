@@ -76,10 +76,8 @@ _unur_stdgen_laplace_init( struct unur_par *par, struct unur_gen *gen )
      /*   0 ... on error                                                     */
      /*----------------------------------------------------------------------*/
 {
-  /* check arguments */
-  CHECK_NULL(par,0);  COOKIE_CHECK(par,CK_CSTD_PAR,0);
-
-  switch (par->variant) {
+  /* one of par and gen must not be the NULL pointer */
+  switch ((par) ? par->variant : gen->variant) {
 
   case 0:  /* DEFAULT */
   case UNUR_STDGEN_INVERSION:   /* inversion method */
@@ -88,7 +86,7 @@ _unur_stdgen_laplace_init( struct unur_par *par, struct unur_gen *gen )
     return 1;
 
   default: /* no such generator */
-    if (gen) _unur_warning(par->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
+    if (gen) _unur_warning(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
     return 0;
   }
   

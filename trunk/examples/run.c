@@ -405,7 +405,7 @@ int main()
 #endif
 
 
-#if 1
+#if 0
   distr_xxx = unur_distr_normal(NULL,0);
   par = unur_cstd_new(distr_xxx);
   unur_cstd_set_variant(par,7);

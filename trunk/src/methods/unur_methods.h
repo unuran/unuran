@@ -43,6 +43,10 @@
 #define __UNUR_METHODS_H_SEEN
 /*---------------------------------------------------------------------------*/
 
+/** TODO **/
+#include <unur_methods_lib.h>
+
+
 #include <float.h>
 #include <stdlib.h>
 
@@ -50,6 +54,24 @@
 
 #include <unur_umalloc.h>
 #include <unur_urng.h>
+
+/*---------------------------------------------------------------------------*/
+/* Typedefs                                                                  */
+
+struct unur_gen;
+
+typedef double _UNUR_FUNCTION_CONT(double x, double *params, int n_params);
+/* a function for continuous univariate c.d.f., p.d.f. and its derivative    */
+
+/* sampling routines                                                         */
+typedef double _UNUR_SAMPLING_ROUTINE_CONT(struct unur_gen *gen);
+/* for univariate continuous distribution                                    */
+
+typedef int _UNUR_SAMPLING_ROUTINE_DISCR(struct unur_gen *gen);
+/* for univariate discrete distribution                                      */
+
+typedef void _UNUR_SAMPLING_ROUTINE_VEC(struct unur_gen *gen, double *vec);
+/* for multivariate continuous distribution                                  */
 
 /*---------------------------------------------------------------------------*/
 /* include header file for distribtion object                                */
@@ -76,49 +98,6 @@
 #include <unur_cstd.h>
 
 /*---------------------------------------------------------------------------*/
-/* List of methods                                                           */
-
-#define UNUR_MASK_VARIANT  0x00000fffu   /* indicate variant (see the corresponding .c files) */
-#define UNUR_MASK_METHOD   0xfff00000u   /* indicate method                   */
-#define UNUR_MASK_TYPE     0xf0000000u   /* indicate type of method           */
-
-/* bits 13-20 are used for flags common to all generators */
-#define UNUR_MASK_SCHECK   0x00000001u   /* turns check sampling on/off       */
-
-
-#define UNUR_MASK_MODE     0x00002000u   /* use mode                          */
-
-/* discrete, univariate */
-#define UNUR_METH_DISCR    0x10000000u
-
-#define UNUR_METH_DAU      0x10100000u
-#define UNUR_METH_DIS      0x10200000u
-
-/* continuous, univariate */
-#define UNUR_METH_CONT     0x20000000u
-
-#define UNUR_METH_AROU     0x20300000u
-#define UNUR_METH_TABL     0x20400000u
-#define UNUR_METH_TDR      0x20500000u
-#define UNUR_METH_UNIF     0x20600000u
-#define UNUR_METH_UTDR     0x20700000u
-
-/* continuous, multivariate */
-#define UNUR_METH_VEC      0x40000000u
-
-#define UNUR_METH_RECT     0x40700000u
-
-/* generators for standard distributions                                     */
-/* for definitions of methods for standard distributions see "stand.c"       */
-#define UNUR_MASK_DISTR    0x000ffff0u   /* indicate distribution           */
-
-#define UNUR_METH_CSTD     0x2f000000u   /* is of type UNUR_METH_CONT !! */
-
-/* to indicate unkown type */
-#define UNUR_METH_UNKNOWN  0xf0000000u
-
-
-/*---------------------------------------------------------------------------*/
 /* get type of transformation method                                         */
 
 #define unur_is_discr(gen) ( (((gen)->method & UNUR_MASK_TYPE) == UNUR_METH_DISCR) ? 1 : 0 )
@@ -130,12 +109,6 @@
 
 /* parameters */
 struct unur_par {
-  struct unur_junk {
-    int nix;
-    int karl;
-  } junk;
-
-
   union {             
     struct unur_dau_par   dau;
     struct unur_dis_par   dis;
@@ -168,9 +141,6 @@ struct unur_par {
 
 /* generators */
 struct unur_gen { 
-
-  struct unur_junk junk;
-
   union {   
     struct unur_dau_gen   dau;
     struct unur_dis_gen   dis;
@@ -184,12 +154,12 @@ struct unur_gen {
   }               data;       /* data for method                             */
   
   union {
-    int    (*discr)(struct unur_gen *gen);
-    double (*cont) (struct unur_gen *gen);
-    void   (*vec)  (struct unur_gen *gen, double *vec);
+    _UNUR_SAMPLING_ROUTINE_CONT  *cont;
+    _UNUR_SAMPLING_ROUTINE_DISCR *discr;
+    _UNUR_SAMPLING_ROUTINE_VEC   *vec;
   }               sample;     /* pointer to sampling routine                 */
   
-  void            (*destroy)(struct unur_gen *gen); /* pointer to destructor */ 
+  void (*destroy)(struct unur_gen *gen); /* pointer to destructor            */ 
   
   unsigned method;            /* indicates method and generator to be used   */
   unsigned variant;           /* indicates variant of method                 */
@@ -234,19 +204,6 @@ struct unur_gen {
 #define unur_free(gen)                gen->destroy(gen)
 
 #endif  /* UNUR_DB_CHECKNULL */
-
-/*---------------------------------------------------------------------------*/
-/* check object                                                              */
-
-/* check if parameter object is of correct type, return 0 otherwise       */
-#define _unur_check_par_object( type ) \
-  if ( par->method != UNUR_METH_##type ) { \
-    _unur_warning(GENTYPE,UNUR_ERR_PAR_INVALID,""); \
-    return 0; } \
-  COOKIE_CHECK(par,CK_##type##_PAR,0)
-
-/*---------------------------------------------------------------------------*/
-/* we cannot load the next files until all definitions are done              */
 
 /*---------------------------------------------------------------------------*/
 /* misc prototype                                                            */

@@ -37,6 +37,8 @@ pkginclude_HEADERS = \
  unur_unif.h \
  unur_utdr.h
 
+noinst_HEADERS =  unur_methods_lib.h 
+
 # clean backup files too
 clean-local:
 	rm -f *~

@@ -72,7 +72,9 @@
 #include <float.h>
 #include <stdlib.h>
 
+#include <unur_methods.h>
 #include <unur_distr.h>
+#include <unur_distribution_lib.h>
 
 #include <unur_cookies.h>
 #include <unur_errno.h>

@@ -35,6 +35,8 @@
 /*---------------------------------------------------------------------------*/
 
 #include <unur_methods.h>
+#include <unur_distr.h>
+#include <unur_distribution_lib.h>
 
 #include <unur_cookies.h>
 #include <unur_errno.h>
@@ -75,13 +77,93 @@ inline static double nacr(UNUR_URNG_TYPE urng);
 
 /*****************************************************************************/
 /**                                                                         **/
-/**  Wrapper for special generators (WinRand)                               **/
+/**  get special sampling routine for distribution                          **/
+/**                                                                         **/
+/*****************************************************************************/
+
+_UNUR_SAMPLING_ROUTINE_CONT *
+_unur_stdgen_normal_get_routine(unsigned variant)
+     /*----------------------------------------------------------------------*/
+     /* get pointer to sampling routine                                      */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   variant ... variant of special generator                           */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to sampling routine                                        */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return NULL                                                        */
+     /*----------------------------------------------------------------------*/
+{
+  switch (variant) {
+  case 0: /* Default */
+    return unur_stdgen_sample_normal_bm;    /* Box-Muller method */
+  case 1:
+    return unur_stdgen_sample_normal_pol;   /* Polarmethod with rejection */
+  case 2:
+    return unur_stdgen_sample_normal_nquo;  /* "Naive" ratio-of-uniforms */
+  case 3:
+    return unur_stdgen_sample_normal_quo;   /* Ratio-of-uniforms with squeeze */
+  case 4:
+    return unur_stdgen_sample_normal_leva;  /* Ratio-of-uniforms with quadratic bounding curves */
+  case 5:
+    return unur_stdgen_sample_normal_kr;    /* Kindermann-Ramage method */
+  case 6:
+    return unur_stdgen_sample_normal_acr;   /* Acceptance-complement ratio */
+  case UNUR_STDGEN_INVERSION:
+  default:
+    return NULL;
+  }
+
+} /* end of _unur_stdgen_normal_get_routine() */
+
+/*---------------------------------------------------------------------------*/
+
+#if UNUR_DEBUG & UNUR_DB_INFO
+
+const char *
+_unur_stdgen_normal_routinename(void *routine)
+     /*----------------------------------------------------------------------*/
+     /* get name of sampling routine                                         */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   routine ... pointer to sampling routine                            */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to name of sampling routine                                */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return NULL                                                        */
+     /*----------------------------------------------------------------------*/
+{
+#define routinename(rn) if (routine==(rn)) return #rn
+
+  routinename( unur_stdgen_sample_normal_bm );
+  routinename( unur_stdgen_sample_normal_pol );
+  routinename( unur_stdgen_sample_normal_nquo );
+  routinename( unur_stdgen_sample_normal_quo );
+  routinename( unur_stdgen_sample_normal_leva );
+  routinename( unur_stdgen_sample_normal_kr );
+  routinename( unur_stdgen_sample_normal_acr );
+
+  return NULL;
+
+} /* end of _unur_stdgen_normal_routinename() */
+
+#endif
+
+/*---------------------------------------------------------------------------*/
+
+/*****************************************************************************/
+/**                                                                         **/
+/**  Wrapper for special generators                                         **/
 /**                                                                         **/
 /*****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
 
-double unur_cstd_sample_normal_bm( struct unur_gen *gen )
+double unur_stdgen_sample_normal_bm( struct unur_gen *gen )
      /* Box-Muller method                                                    */
 {
   /* check arguments */
@@ -90,11 +172,11 @@ double unur_cstd_sample_normal_bm( struct unur_gen *gen )
 
   return (GEN.pdf_param[0] + GEN.pdf_param[1] * nbm(gen->urng));
 
-} /* end of unur_cstd_sample_normal_bm() */
+} /* end of unur_stdgen_sample_normal_bm() */
 
 /*---------------------------------------------------------------------------*/
 
-double unur_cstd_sample_normal_pol( struct unur_gen *gen )
+double unur_stdgen_sample_normal_pol( struct unur_gen *gen )
      /* Polarmethod with rejection                                           */
 {
   /* check arguments */
@@ -103,11 +185,11 @@ double unur_cstd_sample_normal_pol( struct unur_gen *gen )
 
   return (GEN.pdf_param[0] + GEN.pdf_param[1] * npol(gen->urng));
 
-} /* end of unur_cstd_sample_normal_pol() */
+} /* end of unur_stdgen_sample_normal_pol() */
 
 /*---------------------------------------------------------------------------*/
 
-double unur_cstd_sample_normal_nquo( struct unur_gen *gen )
+double unur_stdgen_sample_normal_nquo( struct unur_gen *gen )
      /* "Naive" ratio-of-uniforms method                                     */
 {
   /* check arguments */
@@ -116,11 +198,11 @@ double unur_cstd_sample_normal_nquo( struct unur_gen *gen )
 
   return (GEN.pdf_param[0] + GEN.pdf_param[1] * nnquo(gen->urng));
 
-} /* end of unur_cstd_sample_normal_nquo() */
+} /* end of unur_stdgen_sample_normal_nquo() */
 
 /*---------------------------------------------------------------------------*/
 
-double unur_cstd_sample_normal_quo( struct unur_gen *gen )
+double unur_stdgen_sample_normal_quo( struct unur_gen *gen )
      /* Ratio-of-uniforms method with squeeze                                */
 {
   /* check arguments */
@@ -129,11 +211,11 @@ double unur_cstd_sample_normal_quo( struct unur_gen *gen )
 
   return (GEN.pdf_param[0] + GEN.pdf_param[1] * nquo(gen->urng));
 
-} /* end of unur_cstd_sample_normal_quo() */
+} /* end of unur_stdgen_sample_normal_quo() */
 
 /*---------------------------------------------------------------------------*/
 
-double unur_cstd_sample_normal_leva( struct unur_gen *gen )
+double unur_stdgen_sample_normal_leva( struct unur_gen *gen )
      /* Ratio-of-uniforms method  with quadratic bounding curves             */
 {
   /* check arguments */
@@ -142,11 +224,11 @@ double unur_cstd_sample_normal_leva( struct unur_gen *gen )
 
   return (GEN.pdf_param[0] + GEN.pdf_param[1] * nleva(gen->urng));
 
-} /* end of unur_cstd_sample_normal_leva() */
+} /* end of unur_stdgen_sample_normal_leva() */
 
 /*---------------------------------------------------------------------------*/
 
-double unur_cstd_sample_normal_kr( struct unur_gen *gen )
+double unur_stdgen_sample_normal_kr( struct unur_gen *gen )
      /* Kindermann-Ramage method                                             */
 {
   /* check arguments */
@@ -155,11 +237,11 @@ double unur_cstd_sample_normal_kr( struct unur_gen *gen )
 
   return (GEN.pdf_param[0] + GEN.pdf_param[1] * nkr(gen->urng));
 
-} /* end of unur_cstd_sample_normal_kr() */
+} /* end of unur_stdgen_sample_normal_kr() */
 
 /*---------------------------------------------------------------------------*/
 
-double unur_cstd_sample_normal_acr( struct unur_gen *gen )
+double unur_stdgen_sample_normal_acr( struct unur_gen *gen )
      /* Acceptance-complement ratio                                          */
 {
   /* check arguments */
@@ -168,41 +250,42 @@ double unur_cstd_sample_normal_acr( struct unur_gen *gen )
 
   return (GEN.pdf_param[0] + GEN.pdf_param[1] * nacr(gen->urng));
 
-} /* end of unur_cstd_sample_normal_acr() */
+} /* end of unur_stdgen_sample_normal_acr() */
 
 /*---------------------------------------------------------------------------*/
 
 /*****************************************************************************/
 /**                                                                         **/
-/**  Special generators (WinRand)                                           **/
+/**  Special generators                                                     **/
 /**                                                                         **/
 /*****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
-
-/******************************************************************
- *                                                                *
- *    Normal Distribution - Sinus-Cosinus or Box/Muller Method    *
- *                                                                *
- ******************************************************************
- *                                                                *
- * This method is based on the transformation                     *
- * x=sqrt(-2lnu)cos(2pi*v), y=sqrt(-2lnu)sin(2pi*v)               *
- * which converts two independent (0,1)-Uniforms u and v to two   *
- * independent standard Normal variates x and y.                  *
- *                                                                *
- * FUNCTION:   - samples a random number from the standard        *
- *               Normal distribution  N(0,1).                     *
- *                                                                *
- * REFERENCE:  - G.E.P. Box, M.E. Muller (1958): A note on the    *
- *               generation of random normal deviates,            *
- *               Annals Math. Statist. 29, 610-611.               *
- *                                                                *
- * Implemented by W. Hoermann, April 1992                         *
- ******************************************************************/
 
 inline static double
 nbm(UNUR_URNG_TYPE urng)
+/*****************************************************************************
+ *                                                                           *
+ * Normal Distribution: Sinus-Cosinus or Box/Muller Method                   *
+ *                                                                           *
+ *****************************************************************************
+ *                                                                           *
+ * This method is based on the transformation                                *
+ * x = sqrt(-2 ln(u)) cos(2pi*v), y = sqrt(-2 ln(u)) sin(2pi*v)              *
+ * which converts two independent (0,1)-Uniforms u and v to two              *
+ * independent standard Normal variates x and y.                             *
+ *                                                                           *
+ * FUNCTION:   - samples a random number from the                            *
+ *               standard Normal distribution  N(0,1).                       *
+ *                                                                           *
+ * REFERENCE:  - G.E.P. Box, M.E. Muller (1958):                             *
+ *               A note on the generation of random normal deviates,         *
+ *               Annals Math. Statist. 29, 610-611.                          *
+ *                                                                           *
+ * Implemented by W. Hoermann, April 1992                                    *
+ *****************************************************************************
+ *    WinRand (c) 1995 Ernst Stadlober, Institut fuer Statistitk, TU Graz    *
+ *****************************************************************************/
 {
   double u,v,s;
   static double x2;
@@ -218,26 +301,27 @@ nbm(UNUR_URNG_TYPE urng)
   return(s * cos(two_pi * v));
 } /* end of nbm() */
 
-/*------------------------------------------------------------------*/
-
-/******************************************************************
- *                                                                *
- *    Normal Distribution - Polarmethod with rejection            *
- *                                                                *
- ******************************************************************
- *                                                                *
- * FUNCTION:   - samples a random number from the standard        *
- *               Normal distribution  N(0,1).                     *
- *                                                                *
- * REFERENCE:  - G. Marsaglia (1962): Improving the Polar Method  *
- *               for Generating a Pair of Random Variables,       *
- *               Boeing Sci. Res. Lab., Seattle, Washington.      *
- *                                                                *
- * Implemented by W. Hoermann, April 1992                         *
- ******************************************************************/
+/*---------------------------------------------------------------------------*/
 
 inline static double
 npol(UNUR_URNG_TYPE urng)
+/*****************************************************************************
+ *                                                                           *
+ * Normal Distribution: Polarmethod with rejection                           *
+ *                                                                           *
+ *****************************************************************************
+ *                                                                           *
+ * FUNCTION:   - samples a random number from the standard                   *
+ *               Normal distribution  N(0,1).                                *
+ *                                                                           *
+ * REFERENCE:  - G. Marsaglia (1962): Improving the Polar Method for         *
+ *               Generating a Pair of Random Variables,                      *
+ *               Boeing Sci. Res. Lab., Seattle, Washington.                 *
+ *                                                                           *
+ * Implemented by W. Hoermann, April 1992                                    *
+ *****************************************************************************
+ *    WinRand (c) 1995 Ernst Stadlober, Institut fuer Statistitk, TU Graz    *
+ *****************************************************************************/
 {
   double s,x,y,tmp;
   static double store;
@@ -258,27 +342,26 @@ npol(UNUR_URNG_TYPE urng)
   }
 } /* end of npol() */
 
-/*------------------------------------------------------------------*/
-
-/******************************************************************
- *                                                                *
- *    Normal Distribution - Naive Ratio of uniforms               *
- *                                                                *
- ******************************************************************
- *                                                                *
- * FUNCTION:   - samples a random number from the standard        *
- *               Normal distribution  N(0,1).                     *
- *                                                                *
- * REFERENCE:  - A.J. Kindermann, F.J.Monahan (1977):             *
- *               Computing generation of random variables         *
- *               using the ratio of uniform deviates,             *
- *               ACM TOMS 3(3), 257-260                           *
- *                                                                *
- * Implemented by J. Leydold, April 1999                          *
- ******************************************************************/
+/*---------------------------------------------------------------------------*/
 
 inline static double
 nnquo(UNUR_URNG_TYPE urng)
+/*****************************************************************************
+ *                                                                           *
+ * Normal Distribution: "Naive" Ratio of uniforms                            *
+ *                                                                           *
+ *****************************************************************************
+ *                                                                           *
+ * FUNCTION:   - samples a random number from the                            *
+ *               standard Normal distribution  N(0,1).                       *
+ *                                                                           *
+ * REFERENCE:  - A.J. Kindermann, F.J.Monahan (1977): Computing generation   *
+ *               of random variables using the ratio of uniform deviates,    *
+ *               ACM TOMS 3(3), 257-260                                      *
+ *                                                                           *
+ *****************************************************************************
+ * UNURAN (c) 2000  W. Hoermann & J. Leydold, Institut f. Statistik, WU Wien *
+ *****************************************************************************/
 {
   double u,v,x;
 
@@ -294,23 +377,23 @@ nnquo(UNUR_URNG_TYPE urng)
 
 /*------------------------------------------------------------------*/
 
-/******************************************************************
- *                                                                *
- *    Normal Distribution - Ratio of uniforms with squeeze        *
- *                                                                *
- ******************************************************************
- *                                                                *
- * FUNCTION:   - samples a random number from the standard        *
- *               Normal distribution  N(0,1).                     *
- *                                                                *
- * REFERENCE:  - L. Barabesi (1993): Random variate generation    *
- *               by using the ratio-of-uniforms method, p. 133    *
- *                                                                *
- * Implemented by J. Leydold, April 1999                          *
- ******************************************************************/
-
 inline static double
 nquo(UNUR_URNG_TYPE urng)
+/*****************************************************************************
+ *                                                                           *
+ * Normal Distribution: Ratio of uniforms with squeeze                       *
+ *                                                                           *
+ *****************************************************************************
+ *                                                                           *
+ * FUNCTION:   - samples a random number from the                            *
+ *               standard Normal distribution  N(0,1).                       *
+ *                                                                           *
+ * REFERENCE:  - L. Barabesi (1993): Random variate generation               *
+ *               by using the ratio-of-uniforms method, p. 133               *
+ *                                                                           *
+ *****************************************************************************
+ * UNURAN (c) 2000  W. Hoermann & J. Leydold, Institut f. Statistik, WU Wien *
+ *****************************************************************************/
 {
   double r,rnormal,w;
 
@@ -330,25 +413,24 @@ nquo(UNUR_URNG_TYPE urng)
 
 /*------------------------------------------------------------------*/
 
-/******************************************************************
- *                                                                *
- *    Normal Distribution - Ratio of uniforms                     *
- *                          with quadratic bounding curves        *
- *                                                                *
- ******************************************************************
- *                                                                *
- * FUNCTION:   - samples a random number from the standard        *
- *               Normal distribution  N(0,1).                     *
- *                                                                *
- * REFERENCE:  - J.L. Leva (1992):                                *
- *               Algorithm 712; a normal random number generator, *
- *               ACM TOMS 18(4), 454-455                          *
- *                                                                *
- * Implemented by J. Leydold, April 1999                          *
- ******************************************************************/
-
 inline static double
 nleva(UNUR_URNG_TYPE urng)
+/*****************************************************************************
+ *                                                                           *
+ * Normal Distribution: Ratio of uniforms with quadratic bounding curves     *
+ *                                                                           *
+ *****************************************************************************
+ *                                                                           *
+ * FUNCTION:   - samples a random number from the                            *
+ *               standard Normal distribution  N(0,1).                       *
+ *                                                                           *
+ * REFERENCE:  - J.L. Leva (1992):                                           *
+ *               Algorithm 712; a normal random number generator,            *
+ *               ACM TOMS 18(4), 454-455                                     *
+ *                                                                           *
+ *****************************************************************************
+ * UNURAN (c) 2000  W. Hoermann & J. Leydold, Institut f. Statistik, WU Wien *
+ *****************************************************************************/
 {
 #define S    0.449871
 #define T   -0.386595
@@ -382,24 +464,25 @@ nleva(UNUR_URNG_TYPE urng)
 
 /*------------------------------------------------------------------*/
 
-/******************************************************************
- *                                                                *
- *    Normal Distribution - Kindermann-Ramage method              *
- *                                                                *
- ******************************************************************
- *                                                                *
- * FUNCTION:   - samples a random number from the standard        *
- *               Normal distribution  N(0,1).                     *
- *                                                                *
- * REFERENCE:  - Kinderman A.J., Ramage J.G. (1976)               *
- *               Computer Generation of Normal Random Variables,  *
- *               JASA 71(356), 893 - 898.                         *
- *                                                                *
- * Implemented by:  M. Lehner April 1992                          *
- ******************************************************************/
-
 inline static double
 nkr(UNUR_URNG_TYPE urng)
+/*****************************************************************************
+ *                                                                           *
+ * Normal Distribution: Kindermann-Ramage (patchwork) method                 *
+ *                                                                           *
+ *****************************************************************************
+ *                                                                           *
+ * FUNCTION:   - samples a random number from the                            *
+ *               standard Normal distribution  N(0,1).                       *
+ *                                                                           *
+ * REFERENCE:  - Kinderman A.J., Ramage J.G. (1976):                         *
+ *               Computer Generation of Normal Random Variables,             *
+ *               J. Am. Stat. Assoc. 71(356), 893 - 898.                     *
+ *                                                                           *
+ * Implemented by:  M. Lehner April 1992                                     *
+ *****************************************************************************
+ * UNURAN (c) 2000  W. Hoermann & J. Leydold, Institut f. Statistik, WU Wien *
+ *****************************************************************************/
 {
 #define XI 2.216035867166471
 #define PIhochK 0.3989422804
@@ -469,24 +552,25 @@ nkr(UNUR_URNG_TYPE urng)
 
 /*------------------------------------------------------------------*/
 
-/******************************************************************
- *                                                                *
- *    Normal Distribution - Acceptance-complement ratio           *
- *                                                                *
- ******************************************************************
- *                                                                *
- * FUNCTION:   - samples a random number from the standard        *
- *               Normal distribution  N(0,1).                     *
- *                                                                *
- * REFERENCE:  - W. Hoermann and G. Derflinger (1990):            *
- *               The ACR Methodfor generating normal random       *
- *               variables, OR Spektrum 12 (1990), 181-185.       *
- *                                                                *
- * Implemented by:  M. Lehner April 1992                          *
- ******************************************************************/
-
 inline static double
 nacr(UNUR_URNG_TYPE urng)
+/*****************************************************************************
+ *                                                                           *
+ * Normal Distribution: Acceptance-complement ratio                          *
+ *                                                                           *
+ *****************************************************************************
+ *                                                                           *
+ * FUNCTION:   - samples a random number from the                            *
+ *               standard Normal distribution  N(0,1).                       *
+ *                                                                           *
+ * REFERENCE:  - W. Hoermann and G. Derflinger (1990):                       *
+ *               The ACR Methodfor generating normal random variables,       *
+ *               OR Spektrum 12 (1990), 181-185.                             *
+ *                                                                           *
+ * Implemented by:  M. Lehner April 1992                                     *
+ *****************************************************************************
+ * UNURAN (c) 2000  W. Hoermann & J. Leydold, Institut f. Statistik, WU Wien *
+ *****************************************************************************/
 {
   double  rn,x,y,z;
 

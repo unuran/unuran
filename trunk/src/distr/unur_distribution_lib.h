@@ -4,14 +4,14 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   FILE: unur_utdr.h                                                       *
+ *   FILE: unur_distribution_lib.h                                           *
  *                                                                           *
  *   PURPOSE:                                                                *
- *         declares structures and function prototypes for method UTDR       *
- *         (Universal Transformed Density Rejection; 3-point method)         *
+ *         defines macros, typedefs and constants and for p.d.f., c.d.f.,    *
+ *         etc. of distribtions.                                             *
  *                                                                           *
  *   USAGE:                                                                  *
- *         only used in unur_methods.h                                       *
+ *         only included in distribution source files.                       *
  *                                                                           *
  *****************************************************************************
      $Id$
@@ -38,54 +38,49 @@
  *****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
-/* Information for constructing the generator                                */
-
-struct unur_utdr_par { 
-  double  c_factor;     /* constant for choosing the design points           */
-  double  delta_factor; /* constant for choosing delta to replace the tangent*/
-};
+#ifndef __UNUR_DISTRIBUTION_LIB_H_SEEN
+#define __UNUR_DISTRIBUTION_LIB_H_SEEN
+/*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*/
-/* The generator object                                                      */
 
-struct unur_utdr_gen { 
-
-  _UNUR_FUNCTION_CONT *pdf;     /* pointer to p.d.f.                         */
-  double  mode;                 /* location of mode                          */
-  double  il;                   /* left border of the domain                 */
-  double  ir;                   /* right border of the domain                */
-  double *pdf_param;            /* parameters of the pdf                     */
-  int     n_pdf_param;          /* number of parameters of the pdf           */
-  double  vollc,volcompl,voll,fm,hm,
-    al,ar,col,cor,sal,sar,bl,br,tlx,trx,
-    brblvolc,drar,dlal,ooar2,ooal2;/* constants of the hat and for generation*/
-};
+/*****************************************************************************
+ *                                                                           *
+ *   Prototypes for special functions like erf(), gamma(), beta(), etc.      *
+ *   which are imported from other packages.                                 *
+ *                                                                           *
+ *   We use the package CEPHES/LDOUBLE for computing these functions         *
+ *   (available from NETLIB, http://www.netlib.org/cephes/                   *
+ *   Copyright 1984 - 1994 by Stephen L. Moshier                             *
+ *                                                                           *
+ *****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
-/* Routines for user interface                                               */
+/* CEPHES library                                                            */
 
-struct unur_par *unur_utdr_new( struct unur_distr *distr );
-/* get default parameters for generator                                      */
+/* cdf of beta(a,b) distribution */
+extern long double incbetl(long double a, long double b, long double x);
+#define _unur_cdf_beta_ext(x,a,b) ((double)incbetl((long double)(a),(long double)(b),(long double)(x)))
 
-struct unur_gen *unur_utdr_init( struct unur_par *parameters );
-/* initialize new generator                                                  */
+/* cdf of chi^2 distribution with nu degrees of freedom */
+extern long double chdtrl(long double df, long double x);
+#define _unur_cdf_chisquare_ext(x,nu)  ((double)chdtrl((long double)(nu),(long double)(x)))
 
-double unur_utdr_sample( struct unur_gen *generator );
-double unur_utdr_sample_check( struct unur_gen *generator );  /** TODO **/
-/* sample from generator                                                     */
+/* logarithm of gamma function */
+extern long double lgaml(long double x);
+#define _unur_gammaln_ext(x)  ((double)(lgaml((long double)(x))))
+#define _unur_gammaln(x)      _unur_gammaln_ext(x)
 
-void unur_utdr_free( struct unur_gen *generator);
-/* destroy generator object                                                  */
+/* cdf of gamma(a,b) distribution */
+extern long double gdtrl(long double a, long double b, long double x);
+#define _unur_cdf_gamma_ext(x,a,b)    ((double)(gdtrl((long double)(b),(long double)(a),(long double)(x))))
 
-/*...........................................................................*/
-
-int unur_utdr_set_cfactor( struct unur_par *par, double cfactor );
-/* set factor for position of left and right construction point              */
-
-int unur_utdr_set_delta( struct unur_par *par, double delta );
-/* set factor for replacing tangents by secants                              */
-
-#define unur_dis_set_debug(par,debugflags)  unur_set_debug((par),(debugflags))
-/* set debuging flags                                                        */
+/* cdf of normal distribution */
+extern long double ndtrl(long double x);
+#define _unur_cdf_normal_ext(x) ((double)(ndtrl((long double)(x))))
 
 /*---------------------------------------------------------------------------*/
+#endif  /* __UNUR_DISTRIBUTION_LIB_H_SEEN */
+/*---------------------------------------------------------------------------*/
+
+

@@ -7,7 +7,7 @@
  *   FILE:      cstd.c                                                       *
  *                                                                           *
  *   TYPE:      continuous univariate random variate                         *
- *   METHOD:    generators for standard distribution (from CRAND)            *
+ *   METHOD:    generators for standard distribution                         *
  *                                                                           *
  *****************************************************************************
      $Id$
@@ -126,6 +126,10 @@ unur_cstd_new( struct unur_distr *distr )
     _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"standard distribution");
     return NULL;
   }
+  if (DISTR.get_sampling_routine == NULL) {
+    _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"special generators");
+    return NULL;
+  }
 
   /* allocate structure */
   par = _unur_malloc(sizeof(struct unur_par));
@@ -169,7 +173,11 @@ unur_cstd_set_variant( struct unur_par *par, unsigned variant )
   _unur_check_par_object( CSTD );
 
   /* check new parameter for generator */
-  if (par->variant >= par->distr->n_specialgen) {
+  if (par->DISTR.get_sampling_routine == NULL)
+    /* this should not happen, since we have made this check in unur_cstd_new() */
+    return 0;
+
+  if ((par->DISTR.get_sampling_routine)(par->variant) == NULL) {
     _unur_warning(GENTYPE,UNUR_ERR_SET,"unknown variant for special generator");
     return 0;
   }
@@ -218,11 +226,10 @@ unur_cstd_init( struct unur_par *par )
   if (!gen) { free(par); return NULL; }
 
   /* routines for sampling from generator */
-  if (par->variant < par->distr->n_specialgen) {
-    COOKIE_CHECK(par->distr->specialgen + par->variant, CK_SPECIALGEN_CONT,NULL);
-    SAMPLE = (par->distr->specialgen)[par->variant].data.cont.sample;
+  if (par->DISTR.get_sampling_routine != NULL) {
+    SAMPLE = (par->DISTR.get_sampling_routine)(par->variant);
   }
-  else {
+  if (SAMPLE == NULL) {
     _unur_warning(GENTYPE,UNUR_ERR_SET,"unknown variant for special generator");
     free(par); unur_cstd_free(gen); return NULL; 
   }
@@ -356,6 +363,7 @@ _unur_cstd_debug_init( struct unur_par *par, struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
 {
   FILE *log;
+  const char *sampling_name;
 
   /* check arguments */
   CHECK_NULL(par,/*void*/);
@@ -372,9 +380,13 @@ _unur_cstd_debug_init( struct unur_par *par, struct unur_gen *gen )
   _unur_distr_cont_debug( gen->distr, gen->genid );
 
   /* sampling routine */
+  sampling_name = NULL;
+  if (par->DISTR.get_sampling_name != NULL) {
+    sampling_name = (par->DISTR.get_sampling_name)(SAMPLE);
+  }
   fprintf(log,"%s: sampling routine = ",gen->genid);
-  if (par->variant < par->distr->n_specialgen)
-    fprintf(log,"%s()\n", (par->distr->specialgen)[par->variant].routine_name);
+  if (sampling_name)
+    fprintf(log,"%s()\n",sampling_name);
   else
     fprintf(log,"(Unknown)\n");
   fprintf(log,"%s:\n",gen->genid);

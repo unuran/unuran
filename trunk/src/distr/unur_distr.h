@@ -97,6 +97,13 @@
 
 /*---------------------------------------------------------------------------*/
 
+/*---------------------------------------------------------------------------*/
+/* Common variants for all special generators                                */
+
+#define UNUR_STDGEN_INVERSION (~0u)
+
+/*---------------------------------------------------------------------------*/
+
 /*****************************************************************************
  *                                                                           *
  *   Function prototypes                                                     *
@@ -112,9 +119,11 @@ double unur_cdf_beta(double x, double *params, int n_params);
 double unur_mode_beta(double *params, int n_params);
 double unur_area_beta(double *params, int n_params);
 
+
 /*---------------------------------------------------------------------------*/
 /* Burr ?? distribution                                                      */
 /** TODO **/
+
 
 /*---------------------------------------------------------------------------*/
 /*  Cauchy distribution [2; ch.16, p.299]                                    */
@@ -125,6 +134,7 @@ double unur_cdf_cauchy(double x, double *params, int n_params);
 double unur_mode_cauchy(double *params, int n_params);
 double unur_area_cauchy(double *params, int n_params);
 
+
 /*---------------------------------------------------------------------------*/
 /*  Chisquare distribution [2; ch.18, p.416]                                 */
 struct unur_distr *unur_distr_chisquare(double *params, int n_params);
@@ -132,9 +142,11 @@ double unur_pdf_chisquare(double x, double *params, int n_params);
 double unur_dpdf_chisquare(double x, double *params, int n_params);
 double unur_cdf_chisquare(double x, double *params, int n_params);
 
+
 /*---------------------------------------------------------------------------*/
 /* Erlang distribution                                                       */
 /** TODO **/
+
 
 /*---------------------------------------------------------------------------*/
 /*  Exponential distribution [2; ch.19, p.494]                               */
@@ -145,8 +157,15 @@ double unur_cdf_exponential(double x, double *params, int n_params);
 double unur_area_exponential(double *params, int n_params);
 double unur_mode_exponential(double *params, int n_params);
 /* special generators */
-double unur_cstd_sample_exponential_inv( struct unur_gen *gen );
+double unur_stdgen_sample_exponential_inv( struct unur_gen *gen );
    /* Inversion method */
+_UNUR_SAMPLING_ROUTINE_CONT *_unur_stdgen_exponential_get_routine(unsigned variant);
+/* get pointer to sampling routine                                           */
+#if UNUR_DEBUG & UNUR_DB_INFO
+const char *_unur_stdgen_exponential_routinename(void *routine);
+/* get name of sampling routine                                              */
+#endif
+
 
 /*---------------------------------------------------------------------------*/
 /*  Gamma distribution [2; ch.17, p.337]                                     */
@@ -157,12 +176,20 @@ double unur_cdf_gamma(double x, double *params, int n_params);
 double unur_mode_gamma(double *params, int n_params);
 double unur_area_gamma(double *params, int n_params);
 /* special generators */
-double unur_cstd_sample_gamma_gll( struct unur_gen *gen );
+double unur_stdgen_sample_gamma_gll( struct unur_gen *gen );
    /* Rejection with log-logistic envelopes */
+_UNUR_SAMPLING_ROUTINE_CONT *_unur_stdgen_gamma_get_routine(unsigned variant);
+/* get pointer to sampling routine                                           */
+#if UNUR_DEBUG & UNUR_DB_INFO
+const char *_unur_stdgen_gamma_routinename(void *routine);
+/* get name of sampling routine                                              */
+#endif
+
 
 /*---------------------------------------------------------------------------*/
 /* Generalized inverse Gaussian distribution                                 */
 /** TODO **/
+
 
 /*---------------------------------------------------------------------------*/
 /*  Laplace distribution [3; ch.24, p.164]                                   */
@@ -170,9 +197,11 @@ struct unur_distr *unur_distr_laplace(double *params, int n_params);
 double unur_pdf_laplace(double x, double *params, int n_params);
 double unur_dpdf_laplace(double x, double *params, int n_params);
 
+
 /*---------------------------------------------------------------------------*/
 /* Logistic distribution                                                     */
 /** TODO **/
+
 
 /*---------------------------------------------------------------------------*/
 /*  Lognormal distribution [2; ch.14, p.208]                                 */
@@ -180,11 +209,13 @@ struct unur_distr *unur_distr_lognormal(double *params, int n_params);
 double unur_pdf_lognormal(double x, double *params, int n_params);
 double unur_dpdf_lognormal(double x, double *params, int n_params);
 
+
 /*---------------------------------------------------------------------------*/
 /*  Lomax distribution (Pareto distr. of second kind) [2; ch.20, p.575]      */
 struct unur_distr *unur_distr_lomax(double *params, int n_params);
 double unur_pdf_lomax(double x, double *params, int n_params);
 double unur_dpdf_lomax(double x, double *params, int n_params);
+
 
 /*---------------------------------------------------------------------------*/
 /*  Normal distribution [2; ch.13, p.80]                                     */
@@ -195,20 +226,27 @@ double unur_cdf_normal(double x, double *params, int n_params);
 double unur_mode_normal(double *params, int n_params);
 double unur_area_normal(double *params, int n_params);
 /* special generators */
-double unur_cstd_sample_normal_bm( struct unur_gen *gen );
+double unur_stdgen_sample_normal_bm( struct unur_gen *gen );
    /* Box-Muller method                                                      */
-double unur_cstd_sample_normal_pol( struct unur_gen *gen );
+double unur_stdgen_sample_normal_pol( struct unur_gen *gen );
    /* Polarmethod with rejection                                             */
-double unur_cstd_sample_normal_quo( struct unur_gen *gen );
+double unur_stdgen_sample_normal_quo( struct unur_gen *gen );
    /* Ratio-of-uniforms method with squeeze                                  */
-double unur_cstd_sample_normal_nquo( struct unur_gen *gen );
+double unur_stdgen_sample_normal_nquo( struct unur_gen *gen );
    /* "Naive" ratio-of-uniforms method                                       */
-double unur_cstd_sample_normal_leva( struct unur_gen *gen );
+double unur_stdgen_sample_normal_leva( struct unur_gen *gen );
    /* Ratio-of-uniforms method  with quadratic bounding curves               */
-double unur_cstd_sample_normal_kr( struct unur_gen *gen );
+double unur_stdgen_sample_normal_kr( struct unur_gen *gen );
    /* Kindermann-Ramage method                                               */
-double unur_cstd_sample_normal_acr( struct unur_gen *gen );
+double unur_stdgen_sample_normal_acr( struct unur_gen *gen );
    /* Acceptance-complement ratio                                            */
+_UNUR_SAMPLING_ROUTINE_CONT *_unur_stdgen_normal_get_routine(unsigned variant);
+/* get pointer to sampling routine                                           */
+#if UNUR_DEBUG & UNUR_DB_INFO
+const char *_unur_stdgen_normal_routinename(void *routine);
+/* get name of sampling routine                                              */
+#endif
+
 
 /*---------------------------------------------------------------------------*/
 /*  Pareto distribution (of first kind) [2; ch.20, p.574]                    */
@@ -216,17 +254,21 @@ struct unur_distr *unur_distr_pareto( double *params, int n_params );
 double unur_pdf_pareto(double x, double *params, int n_params);
 double unur_dpdf_pareto(double x, double *params, int n_params);
 
+
 /*---------------------------------------------------------------------------*/
 /* Pearson VI distribution                                                   */
 /** TODO **/
+
 
 /*---------------------------------------------------------------------------*/
 /* Perks distribution                                                        */
 /** TODO **/
 
+
 /*---------------------------------------------------------------------------*/
 /* Planck distribution                                                       */
 /** TODO **/
+
 
 /*---------------------------------------------------------------------------*/
 /*  Power-exponential (Subbotin) distribution [3; ch.24, p.195]              */
@@ -234,21 +276,25 @@ struct unur_distr *unur_distr_powerexponential(double *params, int n_params);
 double unur_pdf_powerexponential(double x, double *params, int n_params);
 double unur_dpdf_powerexponential(double x, double *params, int n_params);
 
+
 /*---------------------------------------------------------------------------*/
 /*  Rayleigh distribution [2; ch.18, p.456]                                  */
 struct unur_distr *unur_distr_rayleigh(double *params, int n_params);
 double unur_pdf_rayleigh(double x, double *params, int n_params);
 double unur_dpdf_rayleigh(double x, double *params, int n_params);
 
+
 /*---------------------------------------------------------------------------*/
 /* Snedecor's F distribution                                                 */
 /** TODO **/
+
 
 /*---------------------------------------------------------------------------*/
 /* Student's t distribution                                                  */
 struct unur_distr *unur_distr_student(double *params, int n_params);
 double unur_pdf_student(double x, double *params, int n_params);
 double unur_dpdf_student(double x, double *params, int n_params);
+
 
 /*---------------------------------------------------------------------------*/
 /* Uniform distribution                                                      */
@@ -259,46 +305,13 @@ double unur_cdf_uniform(double x, double *params, int n_params);
 double unur_mode_uniform(double *params, int n_params);
 double unur_area_uniform(double *params, int n_params);
 
+
 /*---------------------------------------------------------------------------*/
 /* Weibull distribution                                                      */
 /** TODO **/
 
-/*---------------------------------------------------------------------------*/
-
-/*****************************************************************************
- *                                                                           *
- *   Prototypes for special functions like erf(), gamma(), beta(), etc.      *
- *   which are imported from other packages.                                 *
- *                                                                           *
- *   We use the package CEPHES/LDOUBLE for computing these functions         *
- *   (available from NETLIB, http://www.netlib.org/cephes/                   *
- *   Copyright 1984 - 1994 by Stephen L. Moshier                             *
- *                                                                           *
- *****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
-/* CEPHES library                                                            */
-
-/* cdf of beta(a,b) distribution */
-extern long double incbetl(long double a, long double b, long double x);
-#define _unur_cdf_beta_ext(x,a,b) ((double)incbetl((long double)(a),(long double)(b),(long double)(x)))
-
-/* cdf of chi^2 distribution with nu degrees of freedom */
-extern long double chdtrl(long double df, long double x);
-#define _unur_cdf_chisquare_ext(x,nu)  ((double)chdtrl((long double)(nu),(long double)(x)))
-
-/* logarithm of gamma function */
-extern long double lgaml(long double x);
-#define _unur_gammaln_ext(x)  ((double)(lgaml((long double)(x))))
-#define _unur_gammaln(x)      _unur_gammaln_ext(x)
-
-/* cdf of gamma(a,b) distribution */
-extern long double gdtrl(long double a, long double b, long double x);
-#define _unur_cdf_gamma_ext(x,a,b)    ((double)(gdtrl((long double)(b),(long double)(a),(long double)(x))))
-
-/* cdf of normal distribution */
-extern long double ndtrl(long double x);
-#define _unur_cdf_normal_ext(x) ((double)(ndtrl((long double)(x))))
 
 /*---------------------------------------------------------------------------*/
 #endif  /* __UNUR_DISTR_H_SEEN */

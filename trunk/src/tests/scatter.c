@@ -87,7 +87,7 @@ unur_make_scatterplot( struct unur_gen *gen )
   static int can_run_plotting_program = 1;  /* store failure */
 
   double Fl, Fr, Fdelta;  /* value of cdf (at left and right boundary point) */
-  unur_function_cont *cdf;                  /* pointer to c.d.f. */
+  _UNUR_FUNCTION_CONT *cdf;                 /* pointer to c.d.f. */
   char *scatter_filename;                   /* name of scatter files */
   FILE *scatter;                            /* file handle for scatter files */
   char *call_graph;                         /* string for system call        */

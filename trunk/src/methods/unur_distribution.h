@@ -43,44 +43,22 @@
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*/
-/* declare a function for continuous p.d.f.s                                 */
-typedef double (unur_function_cont)(double x, double *params, int n_params);
+/* Typedefs                                                                  */
 
-/*---------------------------------------------------------------------------*/
-/* define object for special generators for continuous distribution          */
+/* function that return pointer to sampling routine                          */
+typedef _UNUR_SAMPLING_ROUTINE_CONT *_UNUR_GET_SAMPLING_ROUTINE_CONT(unsigned);
+/* for univariate continuous distribution                                    */
 
-struct unur_gen;                    /* we must declare this structure later! */
-
-struct unur_specialgen_cont {
-
-  double (*sample) (struct unur_gen *gen); /* pointer to sampling routine    */
-  unsigned is_inversion;        /* != 0 when inversion method                */
-};
-
-/*---------------------------------------------------------------------------*/
-/* define object for special generators                                      */
-
-struct unur_specialgen {             
-  union {             
-    struct unur_specialgen_cont cont;  /* univariate continuous distribution */
-  } data;                           /* data for distribution                 */
-
-#if UNUR_DEBUG & UNUR_DB_INFO   /* print data about generators */
-  char *routine_name;           /* pointer to name of sampling routine       */
-#endif
-
-#if UNUR_DEBUG & UNUR_DB_COOKIES    /* use magic cookies */
-  unsigned cookie;                  /* magic cookie                          */
-#endif
-};
+/* function that returns name of sampling routine                            */
+typedef const char *_UNUR_GET_SAMPLING_NAME(void *);
 
 /*---------------------------------------------------------------------------*/
 /* define object for univariate continuous distribution                      */
 struct unur_distr_cont {
 
-  unur_function_cont *pdf;      /* pointer to p.d.f.                         */
-  unur_function_cont *dpdf;     /* pointer to derivative of p.d.f.           */
-  unur_function_cont *cdf;      /* pointer to c.d.f.                         */
+  _UNUR_FUNCTION_CONT *pdf;     /* pointer to p.d.f.                         */
+  _UNUR_FUNCTION_CONT *dpdf;    /* pointer to derivative of p.d.f.           */
+  _UNUR_FUNCTION_CONT *cdf;     /* pointer to c.d.f.                         */
 
   double params[UNUR_DISTR_MAXPARAMS];  /* parameters of the p.d.f.          */
   int    n_params;              /* number of parameters of the pdf           */
@@ -88,6 +66,11 @@ struct unur_distr_cont {
   double mode;                  /* location of mode                          */
   double area;                  /* area below p.d.f.                         */
   double domain[2];             /* boundary of domain                        */
+
+  _UNUR_GET_SAMPLING_ROUTINE_CONT *get_sampling_routine;  /* get pointer to sampling routine */
+#if UNUR_DEBUG & UNUR_DB_INFO
+  _UNUR_GET_SAMPLING_NAME         *get_sampling_name;     /* get name of sampling routine */
+#endif
 };
 
 /*---------------------------------------------------------------------------*/
@@ -112,9 +95,6 @@ struct unur_distr {
   const char *name;                 /* name of distribution                  */
 
   unsigned set;                     /* indicate changed parameters           */
-
-  int n_specialgen;                 /* number of special generators          */
-  struct unur_specialgen *specialgen; /* pointer to list of special generators */
 
 #if UNUR_DEBUG & UNUR_DB_COOKIES    /* use magic cookies */
   unsigned cookie;                  /* magic cookie                          */

@@ -28,6 +28,8 @@ libdistr_a_SOURCES = \
 
 pkginclude_HEADERS = unur_distr.h
 
+noinst_HEADERS = unur_distribution_lib.h
+
 # clean backup files too
 clean-local:
 	rm -f *~

@@ -208,10 +208,6 @@ unur_distr_cont_new( void )
   /* name of distribution */
   distr->name = unknown_distr_name;
 
-  /* list of special generators for distribution                             */
-  distr->n_specialgen = 0;
-  distr->specialgen   = NULL;      /* pointer to list of special generators  */
-
   /* set defaults                                                            */
   DISTR.pdf       = NULL;          /* pointer to p.d.f.                      */
   DISTR.dpdf      = NULL;          /* pointer to derivative of p.d.f.        */
@@ -226,6 +222,11 @@ unur_distr_cont_new( void )
   DISTR.area      = 1.;            /* area below p.d.f.                      */
   DISTR.domain[0] = -INFINITY;     /* left boundary of domain                */
   DISTR.domain[1] = INFINITY;      /* right boundary of domain               */
+
+  DISTR.get_sampling_routine = NULL;   /* get pointer to sampling routine    */
+#if UNUR_DEBUG & UNUR_DB_INFO
+  DISTR.get_sampling_name    = NULL;   /* get name of sampling routine       */
+#endif
 
   distr->set = 0u;                 /* no parameters set                      */
   

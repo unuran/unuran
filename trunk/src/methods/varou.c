@@ -41,14 +41,9 @@
  *****************************************************************************
  *                                                                           *
  *   REFERENCES:                                                             *
- *   [1] Wakefield J.C., Gelfand A.E., Smith A.F.M.                          *
- *       Efficient generation of random variates via the ratio-of-uniforms   *
- *       method.                                                             *
- *       Statistics and Computing (1991) 1, pp (129-133)                     *
  *                                                                           *
- *   [2] Hoermann, W., Leydold J., and Derflinger, G. (2004):                *
+ *   [1] Hoermann, W., Leydold J., and Derflinger, G. (2004):                *
  *       Automatic non-uniform random variate generation, Springer, Berlin.  *
- *       Section 2.4, Algorithm 2.9 (RoU), p.35                              *
  *                                                                           *
  *****************************************************************************
  *                                                                           *
@@ -86,13 +81,12 @@
 /*---------------------------------------------------------------------------*/
 
 /* convergence parameters for the hooke optimization algorithm */
-
 #define VAROU_HOOKE_RHO 0.5 
 #define VAROU_HOOKE_EPSILON 1e-7 
 #define VAROU_HOOKE_MAXITER 10000
 
-/* scaling factor of computed minimum boundary rectangle */
-/* after we have computed the boundary rectangle (0, vmax)x(umin[d], umax[d])*/
+/* scaling factor of computed minimum boundary rectangle                     */
+/* after we have computed the boundary rectangle,                            */
 /* we scale the obtained boundaries with this factor, i.e. :                 */
 /* vmax = vmax * ( 1+ VAROU_RECT_SCALING)                                    */
 /* umin[d] = umin[d] - (umax[d]-umin[d])*VAROU_RECT_SCALING/2.               */
@@ -101,6 +95,25 @@
 
 /*---------------------------------------------------------------------------*/
 
+/* during the triangulation of the upper half-unit-sphere, this parameter    */
+/* define the maximal number of verteces that will be created during the     */
+/* adaptive process.                                                         */
+#define UNUR_VAROU_MAX_VERTECES 1000
+
+/*---------------------------------------------------------------------------*/
+
+/* this parameter define the maximal number of cones that will be created.   */
+/* initial triangulation create v0=2*dim+1 verteces and c0=2^dim cones.      */
+/* each subsequently added vertex lead to a cone-splitting and thus to one   */
+/* additional cone structure.                                                */
+/* if we thus have v verteces (v>=v0) then the number of cones c is given by */
+/*   c = c0 + (v-v0)                                                         */
+/*     = 2^dim + (v - (2*dim+1))                                             */
+/* i.e.                                                                      */
+/*   c_max = 2^dim + (v_max - (2*dim+1))                                     */
+/*                                                                           */
+/* we set this number to this value in _unur_varou_create()                  */
+long UNUR_VAROU_MAX_CONES; 
 
 /*---------------------------------------------------------------------------*/
 
@@ -118,11 +131,6 @@ static void  _unur_varou_sample_cvec( struct unur_gen *gen, double *vec );
 static void  _unur_varou_sample_check( struct unur_gen *gen, double *vec );
 /*---------------------------------------------------------------------------*/
 /* sample from generator.                                                    */
-/*---------------------------------------------------------------------------*/
-
-static int _unur_varou_rectangle( struct unur_gen *gen );
-/*---------------------------------------------------------------------------*/
-/* compute (minimal) bounding rectangle.                                     */
 /*---------------------------------------------------------------------------*/
 
 static void _unur_varou_free( struct unur_gen *gen);
@@ -148,27 +156,41 @@ static void _unur_varou_debug_init( const struct unur_gen *gen );
 /*   Auxilliary Routines                                                     */
 /*---------------------------------------------------------------------------*/
 
-double *_unur_varou_sample_simplex(struct unur_gen *gen, double *vertices);
+static struct unur_varou_cone *_unur_varou_cone_new(int dim);
 /*---------------------------------------------------------------------------*/
-/* Generate random vector uniformly distributed in simplex                   */
+/* allocate memory for cone structure and data                               */
 /*---------------------------------------------------------------------------*/
 
+static void _unur_varou_cones_init( struct unur_gen *gen );
+/*---------------------------------------------------------------------------*/
+/* compute initial (2*dim+1) verteces on (half) unit sphere and 2^dim cones  */
+/*---------------------------------------------------------------------------*/
 
-double _unur_varou_aux_vmax(double *x, void *p );
-double _unur_varou_aux_umin(double *x, void *p );
-double _unur_varou_aux_umax(double *x, void *p );
+static double *_unur_varou_sample_simplex(struct unur_gen *gen, double *verteces);
+/*---------------------------------------------------------------------------*/
+/* generate random vector uniformly distributed in simplex                   */
+/*---------------------------------------------------------------------------*/
+
+static int _unur_varou_rectangle( struct unur_gen *gen );
+/*---------------------------------------------------------------------------*/
+/* compute (minimal) bounding rectangle.                                     */
+/*---------------------------------------------------------------------------*/
+
+static double _unur_varou_aux_vmax(double *x, void *p );
+static double _unur_varou_aux_umin(double *x, void *p );
+static double _unur_varou_aux_umax(double *x, void *p );
 /*---------------------------------------------------------------------------*/
 /* Auxiliary functions used in the computation of the bounding rectangle     */
 /*---------------------------------------------------------------------------*/
 
 static double _unur_varou_f( struct unur_gen *gen, double *u, double v);
 /*---------------------------------------------------------------------------*/
-/* return calculated value of PDF(u_1/v, u_2/v, ..., u_dim/v)                */
+/* return value of PDF(u_0/v+c_0, u_1/v+c_1, ..., u_{dim-1}/v+c_{dim-1})     */
 /*---------------------------------------------------------------------------*/
 
 static double _unur_varou_F( struct unur_gen *gen, double *u, double v);
 /*---------------------------------------------------------------------------*/
-/* return calculated value of v^(1+dim) - PDF(u_1/v, u_2/v, ..., u_dim/v)    */
+/* return value of v^(1+dim) - PDF(u_0/v+c_0, u_1/v+c_1, ...)                */
 /*---------------------------------------------------------------------------*/
 
 static double *_unur_varou_dF( struct unur_gen *gen, double *u, double v);
@@ -220,8 +242,15 @@ unur_varou_new( const struct unur_distr *distr )
     _unur_error(GENTYPE,UNUR_ERR_DISTR_INVALID,""); return NULL; }
   COOKIE_CHECK(distr,CK_DISTR_CVEC,NULL);
 
+  /* check PDF */
   if (DISTR_IN.pdf == NULL) {
     _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"PDF"); 
+    return NULL;
+  }
+  
+  /* check dPDF */
+  if (DISTR_IN.dpdf == NULL) {
+    _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"dPDF"); 
     return NULL;
   }
 
@@ -249,8 +278,6 @@ unur_varou_new( const struct unur_distr *distr )
   return par;
 
 } /* end of unur_varou_new() */
-
-/*****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
 
@@ -323,7 +350,7 @@ unur_varou_chg_verify( struct unur_gen *gen, int verify )
 
 } /* end of unur_varou_chg_verify() */
 
-/*****************************************************************************/
+/*---------------------------------------------------------------------------*/
 
 struct unur_gen *
 _unur_varou_init( struct unur_par *par )
@@ -364,14 +391,12 @@ _unur_varou_init( struct unur_par *par )
     return NULL;
   }
 
-
   /* compute initial triangulation ... etc  */
-  /* ...  */
-
-
+  _unur_varou_cones_init(gen);
+  
 #ifdef UNUR_ENABLE_LOGGING
-    /* write info into log file */
-    if (gen->debug) _unur_varou_debug_init(gen);
+  /* write info into log file */
+  if (gen->debug) _unur_varou_debug_init(gen);
 #endif
 
   /* free parameters */
@@ -424,12 +449,26 @@ _unur_varou_create( struct unur_par *par )
   GEN.umax = _unur_xmalloc( PAR.dim * sizeof(double)); /* bounding rectangle */
 
   /* copy parameters into generator object */
-  GEN.dim   = PAR.dim;              /* dimension */
+  GEN.dim   = PAR.dim;  /* dimension */
   
   /* get center of the distribution */
   GEN.center = unur_distr_cvec_get_center(gen->distr);
 
-  /* initialize parameters */
+  /* allocate memory for the list of the verteces on the half-unit-sphere */
+  GEN.vertex_list = (double **) _unur_xmalloc(UNUR_VAROU_MAX_VERTECES*sizeof(long));
+  GEN.n_vertex = 0;
+
+  /* calculate the maximal number of cones needed */
+  UNUR_VAROU_MAX_CONES = pow(2, GEN.dim) 
+                       + UNUR_VAROU_MAX_VERTECES - (2*GEN.dim+1);
+
+  /* allocate memory for the list of the verteces on the half-unit-sphere */
+  GEN.cone_list = (struct unur_varou_cone **) 
+                  _unur_xmalloc(UNUR_VAROU_MAX_CONES*sizeof(long));
+  GEN.n_cone = 0;
+
+  /* TODO : checking if everything could be allocated ... */
+
 
   /* return pointer to (almost empty) generator object */
   return gen;
@@ -453,9 +492,11 @@ _unur_varou_clone( const struct unur_gen *gen )
      /*   return NULL                                                        */
      /*----------------------------------------------------------------------*/
 { 
-#define CLONE clone->data.vnrou
+#define CLONE clone->data.varou
 
   struct unur_gen *clone;
+  long i;
+  int sizeof_cone_block; /* struct size + data size */
 
   /* check arguments */
   CHECK_NULL(gen,NULL);  COOKIE_CHECK(gen,CK_VAROU_GEN,NULL);
@@ -463,23 +504,45 @@ _unur_varou_clone( const struct unur_gen *gen )
   /* create generic clone */
   clone = _unur_generic_clone( gen, GENTYPE );
 
-  /* allocate memory for u-arrays and center */
+  /* allocate memory and copy data for u-arrays */
   CLONE.umin = _unur_xmalloc( GEN.dim * sizeof(double));
   CLONE.umax = _unur_xmalloc( GEN.dim * sizeof(double));
-  
-  /* copy parameters into clone object */
   memcpy(CLONE.umin, GEN.umin, GEN.dim * sizeof(double));
   memcpy(CLONE.umax, GEN.umax, GEN.dim * sizeof(double));
 
-  /* copy data */
-  CLONE.center = unur_distr_cvec_get_center(clone->distr);
+  /* allocate memory and copy data for the vertex list */
+  CLONE.vertex_list = (double **) _unur_xmalloc(UNUR_VAROU_MAX_VERTECES*sizeof(long));
+  for (i=0; i<GEN.n_vertex; i++) {
+    CLONE.vertex_list[i] = _unur_xmalloc((GEN.dim+1)*sizeof(double));
+    memcpy(CLONE.vertex_list[i], GEN.vertex_list[i], (GEN.dim+1)*sizeof(double));
+  }
+
+  /* calculete the total size of cone structure and parameter data */
+  sizeof_cone_block = sizeof(struct unur_varou_cone)
+                    + sizeof(long)*(GEN.dim+1)     /* vertex index */
+                    + sizeof(double)*(GEN.dim+1);  /* norm         */
   
+  /* allocate memory and copy data for the cone list */
+  CLONE.cone_list = (struct unur_varou_cone **) 
+                    _unur_xmalloc(UNUR_VAROU_MAX_CONES*sizeof(long));
+  for (i=0; i<GEN.n_cone; i++) {
+    CLONE.cone_list[i] = _unur_varou_cone_new(GEN.dim);
+    memcpy(CLONE.cone_list[i], GEN.cone_list[i], sizeof_cone_block );
+  }
+
+  /* copy other data */
+  CLONE.dim = GEN.dim;
+  CLONE.vmax = GEN.vmax;
+  CLONE.aux_dim = GEN.aux_dim;
+  CLONE.center = unur_distr_cvec_get_center(clone->distr);
+  CLONE.n_vertex = GEN.n_vertex;
+
   return clone;
 
 #undef CLONE
 } /* end of _unur_varou_clone() */
 
-/*****************************************************************************/
+/*---------------------------------------------------------------------------*/
 
 void
 _unur_varou_sample_cvec( struct unur_gen *gen, double *vec )
@@ -500,9 +563,9 @@ _unur_varou_sample_cvec( struct unur_gen *gen, double *vec )
   dim = GEN.dim;
  
   /* TODO : CHANGE THIS !!!!!!! These are only dummy random values */  
-    for (d=0; d<dim; d++) {
-      vec[d] = _unur_call_urng(gen->urng) ;
-    }
+  for (d=0; d<dim; d++) {
+    vec[d] = _unur_call_urng(gen->urng) ;
+  }
     
   return; 
    
@@ -529,15 +592,15 @@ _unur_varou_sample_check( struct unur_gen *gen, double *vec )
   dim = GEN.dim;
   
   /* TODO : CHANGE THIS !!!!!!! These are only dummy random values */  
-    for (d=0; d<dim; d++) {
-      vec[d] = _unur_call_urng(gen->urng) ;
-    }
+  for (d=0; d<dim; d++) {
+    vec[d] = _unur_call_urng(gen->urng) ;
+  }
  
   return;
 
 } /* end of _unur_varou_sample_check() */
 
-/*****************************************************************************/
+/*---------------------------------------------------------------------------*/
 
 void
 _unur_varou_free( struct unur_gen *gen )
@@ -548,6 +611,8 @@ _unur_varou_free( struct unur_gen *gen )
      /*   gen ... pointer to generator object                                */
      /*----------------------------------------------------------------------*/
 { 
+  long i;
+
   /* check arguments */
   if( !gen ) /* nothing to do */
     return;
@@ -565,20 +630,120 @@ _unur_varou_free( struct unur_gen *gen )
   if (GEN.umin) free(GEN.umin); 
   if (GEN.umax) free(GEN.umax);
 
+  /* verteces */
+  if (GEN.vertex_list) {
+    for (i=0; i<GEN.n_vertex; i++) {
+      if (GEN.vertex_list[i]) free(GEN.vertex_list[i]);
+    }
+    free(GEN.vertex_list);
+  }
+
+  /* cones */
+  if (GEN.cone_list) {
+    for (i=0; i<GEN.n_cone; i++) {
+      if (GEN.cone_list[i]) free(GEN.cone_list[i]);
+    }
+    free(GEN.cone_list);
+  }
+
+
   _unur_generic_free(gen);
 
 } /* end of _unur_varou_free() */
 
+/*---------------------------------------------------------------------------*/
+
+
+
+/*****************************************************************************/
+/**  Auxilliary Routines                                                    **/
 /*****************************************************************************/
 
+struct unur_varou_cone *
+_unur_varou_cone_new(int dim)
+     /*----------------------------------------------------------------------*/
+     /* allocate memory for cone structure and data                          */
+     /*----------------------------------------------------------------------*/
+{
+  struct unur_varou_cone *s;   
+  char *b;
+
+  /* allocate memory block for struct + data */
+  s = (struct unur_varou_cone *) 
+      _unur_xmalloc(sizeof(struct unur_varou_cone)
+                   +sizeof(long)*(dim+1)      /* vertex index */
+                   +sizeof(double)*(dim+1));  /* norm         */
+
+  /* we need a char * to get the following pointer arithmetic right */
+  b = (char *) s; 
+  s->index = (long *)   (b + sizeof(struct unur_varou_cone));
+  s->norm  = (double *) (b + sizeof(struct unur_varou_cone)
+                           + sizeof(long)*(dim+1) );
+
+  return s;
+} /* end of _unur_varou_cone_new() */
+
+/*---------------------------------------------------------------------------*/
+
+void
+_unur_varou_cones_init( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* compute initial (2*dim+1) verteces on the upper half-unit-sphere.    */
+     /* for each u-coordinate dimension, d, two verteces are initialized     */
+     /* having u_d=-1 and u_d=+1 (i.e. along the -/+ d-coordinate direction) */
+     /* for the v-coordinate we have a vertex at the north-pole.             */
+     /* calculate the 2^dim initial cones spanned by these verteces.         */
+     /*----------------------------------------------------------------------*/
+{
+  int i, ic, iv, dim;
+
+  dim = GEN.dim;
+
+  /* The first vertex is at the north-pole, i.e. v=1, u_i=0 for 0<=i<dim */
+  GEN.vertex_list[0] = _unur_vector_new(dim+1);
+  GEN.vertex_list[0][dim]=1.;
+     
+  /* 2*dim verteces along the positive and negative coordinate directions */
+  for (i=0; i<dim; i++) {
+    iv=1+2*i; /* current running vertex number */
+    GEN.vertex_list[iv] = _unur_vector_new(dim+1);
+    GEN.vertex_list[iv][i] = -1.;
+    GEN.vertex_list[iv+1] = _unur_vector_new(dim+1);
+    GEN.vertex_list[iv+1][i] = +1.;
+  }
+
+  /* updating the current number of allocated unit verteces */
+  GEN.n_vertex  = 2*dim + 1;
+
+  /* updating (initial) number of cones */
+  GEN.n_cone = pow(2, dim);
+
+  /* setting parameters for the 2^dim initial cones */
+  for (ic=0; ic<GEN.n_cone; ic++) {
+    GEN.cone_list[ic] = _unur_varou_cone_new(dim);
+    GEN.cone_list[ic]->index[0]=0; /* all cones contain the north-pole vertex */
+    GEN.cone_list[ic]->norm[0]=GEN.vmax; 
+    
+    for (i=0; i<dim; i++) {
+      /* obtain vertex indices of the ic'th cone */
+      GEN.cone_list[ic]->index[i+1]=((GEN.n_cone-ic-1)>>i & 1)?(1+2*i):(2+2*i); 
+      GEN.cone_list[ic]->norm[i+1]=UNUR_INFINITY; 
+    }
+    GEN.cone_list[ic]->volume = UNUR_INFINITY; /* initial cones are unbounded */
+  }
+
+} /* end of _unur_varou_cones_init() */
+ 
+/*---------------------------------------------------------------------------*/
+
 double *
-_unur_varou_sample_simplex( struct unur_gen *gen, double *vertices)
-    /*----------------------------------------------------------------------*/
-    /* Generate random vector uniformply distributed in simplex             */
-    /* having (dim+1) vertices (v_0, ... , v_dim)                           */
-    /* The coordinates of the (dim+1) vertices are stored sequentially in   */
-    /* the vertices[] array of size (dim+1)*dim                             */
-    /*----------------------------------------------------------------------*/
+_unur_varou_sample_simplex( struct unur_gen *gen, double *verteces)
+     /*----------------------------------------------------------------------*/
+     /* generate random vector uniformply distributed in simplex             */
+     /* having (dim+1) vertices (v_0, ... , v_dim)                           */
+     /* the coordinates of the (dim+1) vertices are stored sequentially in   */
+     /* the verteces[] array of size (dim+1)*dim                             */
+     /*----------------------------------------------------------------------*/
 {
 #define idx(a,b) ((a)*dim+(b))
 
@@ -599,23 +764,23 @@ _unur_varou_sample_simplex( struct unur_gen *gen, double *vertices)
   /* calculating exponential variates */
   E_sum = 0; 
   for (i=0; i<=dim; i++) {
-     /* sample from U(0,1) */
-     while ( (U = _unur_call_urng(gen->urng)) == 0.);
-     /* sample from exponential distribution */
-     E[i] = -log(1.-U);
-     E_sum += E[i];	 
+    /* sample from U(0,1) */
+    while ( (U = _unur_call_urng(gen->urng)) == 0.);
+    /* sample from exponential distribution */
+    E[i] = -log(1.-U);
+    E_sum += E[i];	 
   }
   
   /* calculating uniform spacing */
   for (i=0; i<=dim; i++) {
-     S[i]=E[i]/E_sum;
+    S[i]=E[i]/E_sum;
   }
 
   /* calculating uniform vector in simplex */
   for (j=0; j<dim; j++) {
     X[j] = 0;
     for (i=0; i<=dim; i++) {
-      X[j] += S[i] * vertices[idx(i,j)];
+      X[j] += S[i] * verteces[idx(i,j)];
     }
   }
 
@@ -626,26 +791,20 @@ _unur_varou_sample_simplex( struct unur_gen *gen, double *vertices)
 #undef idx
 } /* end of _unur_varou_sample_simplex() */
 
-/*****************************************************************************/
+/*---------------------------------------------------------------------------*/
 
-
-
-/*****************************************************************************/
-/**  Auxilliary Routines                                                    **/
-/*****************************************************************************/
- 
 double
 _unur_varou_aux_vmax(double *x, void *p )
-    /*----------------------------------------------------------------------*/
-    /* Auxiliary function used in the computation of the bounding rectangle */
-    /*----------------------------------------------------------------------*/
+     /*----------------------------------------------------------------------*/
+     /* auxiliary function used in the computation of the bounding rectangle */
+     /*----------------------------------------------------------------------*/
 {
 
-    struct unur_gen *gen;
-    gen = p; /* typecast from void* to unur_gen* */
+  struct unur_gen *gen;
+  gen = p; /* typecast from void* to unur_gen* */
 
-    return -pow( _unur_cvec_PDF((x),(gen->distr)) ,
-                         1./(1.+ GEN.dim) );
+  return -pow( _unur_cvec_PDF((x),(gen->distr)) ,
+                       1./(1.+ GEN.dim) );
 
 } /* end of _unur_varou_aux_vmax() */
 		   
@@ -653,17 +812,17 @@ _unur_varou_aux_vmax(double *x, void *p )
 
 double
 _unur_varou_aux_umin(double *x, void *p)
-    /*----------------------------------------------------------------------*/
-    /* Auxiliary function used in the computation of the bounding rectangle */
-    /*----------------------------------------------------------------------*/
+     /*----------------------------------------------------------------------*/
+     /* auxiliary function used in the computation of the bounding rectangle */
+     /*----------------------------------------------------------------------*/
 {
-    struct unur_gen *gen;
+  struct unur_gen *gen;
 
-    gen = p; /* typecast from void* to unur_gen* */
+  gen = p; /* typecast from void* to unur_gen* */
 
-    return (x[GEN.aux_dim] - GEN.center[GEN.aux_dim])
-	              * pow( _unur_cvec_PDF((x),(gen->distr)),
-		                1. / (1.+ GEN.dim) );
+  return (x[GEN.aux_dim] - GEN.center[GEN.aux_dim])
+          * pow( _unur_cvec_PDF((x),(gen->distr)),
+	    1. / (1.+ GEN.dim) );
 
 } /* end of _unur_varou_aux_umin() */
 					      
@@ -671,11 +830,11 @@ _unur_varou_aux_umin(double *x, void *p)
 
 double
 _unur_varou_aux_umax(double *x, void *p)
-    /*----------------------------------------------------------------------*/
-    /* Auxiliary function used in the computation of the bounding rectangle */
-    /*----------------------------------------------------------------------*/
+     /*----------------------------------------------------------------------*/
+     /* auxiliary function used in the computation of the bounding rectangle */
+     /*----------------------------------------------------------------------*/
 {
-    return (- _unur_varou_aux_umin(x,p)) ;
+  return (- _unur_varou_aux_umin(x,p)) ;
 
 } /* end of _unur_varou_aux_umin() */
 
@@ -683,11 +842,13 @@ _unur_varou_aux_umax(double *x, void *p)
 
 
 double _unur_varou_f( struct unur_gen *gen, double *u, double v) 
-    /*                                                            */
-    /* return calculated value of PDF(u_1/v, u_2/v, ..., u_dim/v) */
-    /*                                                            */
-    /* UNUR_INFINITY is returned when |v|<UNUR_EPSILON            */
-    /*                                                            */
+     /*----------------------------------------------------------------------*/
+     /* return calculated value of                                           */
+     /* PDF(u_0/v+c_0, u_1/v+c_1, ..., u_{dim-1}/v+c_{dim-1})                */
+     /* where (c_0, c_1, ...) is the center.                                 */
+     /*                                                                      */
+     /* UNUR_INFINITY is returned when |v|<UNUR_EPSILON                      */
+     /*----------------------------------------------------------------------*/
 {
   int d, dim; /* index used in dimension loops (0 <= d < dim) */
   double *uv; /* u/v vector     */
@@ -699,7 +860,7 @@ double _unur_varou_f( struct unur_gen *gen, double *u, double v)
 
   uv = _unur_vector_new(dim);
   for (d=0; d<dim; d++) {
-    uv[d] = u[d] / v;
+    uv[d] = u[d] / v + GEN.center[d];
   }
 
   f = PDF(uv);
@@ -713,11 +874,11 @@ double _unur_varou_f( struct unur_gen *gen, double *u, double v)
 
 double 
 _unur_varou_F( struct unur_gen *gen, double *u, double v) 
-    /*                                                                        */
-    /* return calculated value of v^(1+dim) - PDF(u_1/v, u_2/v, ..., u_dim/v) */
-    /*                                                                        */
-    /* UNUR_INFINITY is returned when |v|<UNUR_EPSILON                        */
-    /*                                                                        */
+     /*----------------------------------------------------------------------*/
+     /* return value of v^(1+dim) - PDF(u_0/v+c_0, u_1/v+c_1, ...)           */
+     /*                                                                      */
+     /* UNUR_INFINITY is returned when |v|<UNUR_EPSILON                      */
+     /*----------------------------------------------------------------------*/
 {
   double F;   /* function value */
  
@@ -732,11 +893,11 @@ _unur_varou_F( struct unur_gen *gen, double *u, double v)
 
 double * 
 _unur_varou_dF( struct unur_gen *gen, double *u, double v )
-    /*                                                                        */
-    /* return the calculated value of the gradient of F() at the point (u,v)  */
-    /*                                                                        */
-    /* NULL is returned when |v|<UNUR_EPSILON                                 */
-    /*                                                                        */
+     /*----------------------------------------------------------------------*/
+     /* return the value of the gradient of F() at the point (u,v)           */
+     /*                                                                      */
+     /* NULL is returned when |v|<UNUR_EPSILON                               */
+     /*----------------------------------------------------------------------*/
 {
   int d, dim; /* index used in dimension loops (0 <= d < dim) */
   double *uv; /* u/v vector     */
@@ -811,41 +972,44 @@ _unur_varou_rectangle( struct unur_gen *gen )
   xumin  = _unur_xmalloc(dim * sizeof(double));
   xumax  = _unur_xmalloc(dim * sizeof(double));
   
+  /*-----------------------------------------------------------------------------*/
   /* calculation of vmax */
-    /* calculating vmax as maximum of sqrt(f(x)) in the domain */
-      faux.f = (UNUR_FUNCT_VGENERIC*) _unur_varou_aux_vmax;
-      faux.params = gen;
 
-      if (gen->distr->set & UNUR_DISTR_SET_MODE)
-          /* starting point at mode */
-          memcpy(xstart, DISTR.mode, dim * sizeof(double)); 
-      else
-          /* starting point at center */
-          memcpy(xstart, GEN.center, dim * sizeof(double)); 
+  /* calculating vmax as maximum of sqrt(f(x)) in the domain */
+    faux.f = (UNUR_FUNCT_VGENERIC*) _unur_varou_aux_vmax;
+    faux.params = gen;
+
+    if (gen->distr->set & UNUR_DISTR_SET_MODE)
+        /* starting point at mode */
+        memcpy(xstart, DISTR.mode, dim * sizeof(double)); 
+    else
+        /* starting point at center */
+        memcpy(xstart, GEN.center, dim * sizeof(double)); 
      
-      hooke_iters_vmax = _unur_hooke( faux, dim, xstart, xend, 
-				      VAROU_HOOKE_RHO, VAROU_HOOKE_EPSILON, VAROU_HOOKE_MAXITER);
+    hooke_iters_vmax = _unur_hooke( faux, dim, xstart, xend, 
+		      VAROU_HOOKE_RHO, VAROU_HOOKE_EPSILON, VAROU_HOOKE_MAXITER);
 
-      GEN.vmax = -faux.f(xend, faux.params);
+    GEN.vmax = -faux.f(xend, faux.params);
       
+    if (hooke_iters_vmax >= VAROU_HOOKE_MAXITER) {
+      scaled_epsilon = VAROU_HOOKE_EPSILON * GEN.vmax;
+      if (scaled_epsilon>VAROU_HOOKE_EPSILON) scaled_epsilon=VAROU_HOOKE_EPSILON;
+
+      /* recalculating extremum with scaled_epsilon and new starting point */
+      memcpy(xstart, xend, dim * sizeof(double)); 
+      hooke_iters_vmax = _unur_hooke( faux, dim, xstart, xend, 
+                           VAROU_HOOKE_RHO, scaled_epsilon , VAROU_HOOKE_MAXITER);
+      GEN.vmax = -faux.f(xend, faux.params);
       if (hooke_iters_vmax >= VAROU_HOOKE_MAXITER) {
-	 scaled_epsilon = VAROU_HOOKE_EPSILON * GEN.vmax;
-	 if (scaled_epsilon>VAROU_HOOKE_EPSILON) scaled_epsilon=VAROU_HOOKE_EPSILON;
-
-         /* recalculating extremum with scaled_epsilon and new starting point */
-         memcpy(xstart, xend, dim * sizeof(double)); 
-         hooke_iters_vmax = _unur_hooke( faux, dim, xstart, xend, 
-                              VAROU_HOOKE_RHO, scaled_epsilon , VAROU_HOOKE_MAXITER);
-         GEN.vmax = -faux.f(xend, faux.params);
-         if (hooke_iters_vmax >= VAROU_HOOKE_MAXITER) {
-           _unur_warning(gen->genid , UNUR_ERR_GENERIC, "Bounding rect uncertain (vmax)");  
-         }
+        _unur_warning(gen->genid , UNUR_ERR_GENERIC, "Bounding rect uncertain (vmax)");  
       }
+    }
 
-      /* (u,v)-coordinates are (0,...,0,vmax) */
+    /* (u,v)-coordinates are (0,...,0,vmax) */
 
 
-  /* calculation of umin and umax */
+    /*-----------------------------------------------------------------------------*/
+    /* calculation of umin and umax */
     
     for (d=0; d<dim; d++) {
 
@@ -928,8 +1092,8 @@ _unur_varou_rectangle( struct unur_gen *gen )
 	 /* storing actual endpoint */
          memcpy(xumax, xend, dim * sizeof(double));
 
-         /* TODO: calculation of (u_i,v)-coordinates for u_i <> u_d */
-
+         /* calculation of (u_i,v)-coordinates for u_i <> u_d could be performed */
+         /* here if needed some day. */
 
       }
     
@@ -939,7 +1103,7 @@ _unur_varou_rectangle( struct unur_gen *gen )
       GEN.umin[d] = GEN.umin[d] - (GEN.umax[d]-GEN.umin[d])*VAROU_RECT_SCALING/2.;
       GEN.umax[d] = GEN.umax[d] + (GEN.umax[d]-GEN.umin[d])*VAROU_RECT_SCALING/2.;        
     
-    }
+  }
  
   free(xstart); free(xend); free(xumin); free(xumax);
 
@@ -973,6 +1137,7 @@ _unur_varou_debug_init( const struct unur_gen *gen )
 {
   FILE *log;
   int d, dim; /* index used in dimension loops (0 <= d < dim) */
+  long ic, iv; /* indices for cones and verteces */
   double vol;
 
   /* check arguments */
@@ -994,7 +1159,6 @@ _unur_varou_debug_init( const struct unur_gen *gen )
 
   /* parameters */
 
-
   /* print center */
   _unur_matrix_print_vector( GEN.dim, GEN.center, "center =", log, gen->genid, "\t   ");
 
@@ -1007,10 +1171,55 @@ _unur_varou_debug_init( const struct unur_gen *gen )
   for (d=0; d<dim; d++) {
     vol *= (GEN.umax[d]-GEN.umin[d]);
     fprintf(log,"%s:\tumin[%d],umax[%d] = (%g,%g)\n",gen->genid, 
-	    d, d, GEN.umin[d], GEN.umax[d]);
+                d, d, GEN.umin[d], GEN.umax[d]);
   }
   fprintf(log,"%s:\n",gen->genid);
   fprintf(log,"%s:\tvolume = %g\t(hat = %g)\n",gen->genid, vol, vol*(GEN.dim+1));
+  fprintf(log,"%s:\n",gen->genid);
+
+  fprintf(log,"%s:\n",gen->genid);
+
+  /* vertex list on upper unit-half-sphere */
+  fprintf(log,"%s: Number of unit verteces = %ld\n",gen->genid, GEN.n_vertex);
+  fprintf(log,"%s: Vertex list:\n",gen->genid);
+     
+  for (iv=0; iv<GEN.n_vertex; iv++) {
+    fprintf(log,"%s:\t%6ld : (", gen->genid, iv);
+    for (d=0; d<dim; d++) {
+       fprintf(log,"% f,", GEN.vertex_list[iv][d]);
+    }   
+    fprintf(log,"% f)\n", GEN.vertex_list[iv][dim]);
+  }
+  fprintf(log,"%s:\n",gen->genid);
+  
+  /* cone list and parameters */
+  fprintf(log,"%s: Number of cones = %ld\n",gen->genid, GEN.n_cone);
+  fprintf(log,"%s: Cone list:\n",gen->genid);
+  
+  /* vertex indices of the cones */
+  for (ic=0; ic<GEN.n_cone; ic++) {
+    fprintf(log,"%s:\t%6ld : verteces = {", gen->genid, ic);
+    for (d=0; d<dim; d++) {
+       fprintf(log,"%ld, ", GEN.cone_list[ic]->index[d]);
+    }   
+    fprintf(log,"%ld}\n", GEN.cone_list[ic]->index[dim]);
+  }
+  fprintf(log,"%s:\n",gen->genid);
+
+  /* vertex norms of the cones */
+  for (ic=0; ic<GEN.n_cone; ic++) {
+    fprintf(log,"%s:\t%6ld : norms = {", gen->genid, ic);
+    for (d=0; d<dim; d++) {
+       fprintf(log,"%f, ", GEN.cone_list[ic]->norm[d]);
+    }   
+    fprintf(log,"%f}\n", GEN.cone_list[ic]->norm[dim]);
+  }
+  fprintf(log,"%s:\n",gen->genid);
+
+  /* cone volumes */
+  for (ic=0; ic<GEN.n_cone; ic++) {
+    fprintf(log,"%s:\t%6ld : volume = %f\n", gen->genid, ic, GEN.cone_list[ic]->volume);
+  }
   fprintf(log,"%s:\n",gen->genid);
 
 

@@ -747,6 +747,58 @@ unur_ninv_chg_domain(UNUR_GEN *gen, double left, double right )
 
 /*****************************************************************************/
 
+int
+unur_ninv_chg_pdfparams( struct unur_gen *gen, double *params, int n_params )
+     /*----------------------------------------------------------------------*/
+     /* change array of parameters for distribution                          */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen      ... pointer to generator object                           */
+     /*   params   ... list of arguments                                     */
+     /*   n_params ... number of arguments                                   */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... on success                                                   */
+     /*   0 ... on error                                                     */
+     /*                                                                      */
+     /* IMPORTANT: The given parameters are not checked against domain       */
+     /*            errors (in opposition to the unur_<distr>_new() call).    */
+     /*                                                                      */
+     /*----------------------------------------------------------------------*/
+{
+  register int i;
+
+  /* check arguments */
+  CHECK_NULL(gen,0);
+  _unur_check_gen_object(gen, NINV);
+  if (n_params>0) CHECK_NULL(params, 0);
+  
+  /* check new parameter for generator */
+  if (n_params > UNUR_DISTR_MAXPARAMS || n_params < 0 ) {
+    _unur_error(NULL,UNUR_ERR_DISTR_NPARAMS,"");
+    return 0;
+  }
+
+  /* copy parameters */
+  DISTR.n_params = n_params;
+  for (i=0; i < n_params; i++)
+    DISTR.params[i] = params[i];
+
+  /* changelog */
+  /* mode and area might be wrong now! 
+     but the user is responsible to change it.
+     so we dont say:
+     gen->distr.set &= ~(UNUR_DISTR_SET_MODE | UNUR_DISTR_SET_PDFAREA );
+     gen->set &= ~NINV_SET_CDFMODE;
+  */
+
+  /* o.k. */
+  return 1;
+} /* end of unur_ninv_chg_pdfparams() */
+
+
+/*****************************************************************************/
+
 
 struct unur_gen *
 _unur_ninv_init( struct unur_par *par )
@@ -768,7 +820,7 @@ _unur_ninv_init( struct unur_par *par )
   double tmp; 
 
   /* check arguments */
-  CHECK_NULL(par,NULL);
+  _unur_check_NULL( GENTYPE,par,NULL );
 
   /* check input */
   if ( par->method != UNUR_METH_NINV ) {

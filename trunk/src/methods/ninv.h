@@ -137,18 +137,16 @@ int unur_ninv_chg_domain(UNUR_GEN *gen, double left, double right);
    neither the starting point(s) nor the table will be changed!
 */
 
+int unur_ninv_chg_pdfparams(UNUR_GEN *generator, double *params, int n_params);
+/*
+   Change array of parameters of distribution in given generator object.
+   Notice that it is not possible to change the number of parameters.
+   This function only copies the given arguments into the array of
+   distribution parameters.
+   IMPORTANT: The given parameters are not checked against domain errors;
+   in opposition to the (=>) unur_<distr>_new() call.
+*/ 
 
 
 /* =END */
 /*---------------------------------------------------------------------------*/
-
-
-
-
-
-
-
-
-
-
-

@@ -43,24 +43,25 @@
    =UP  Methods_for_DISCR
 
    =DESCRIPTION
-      DARI is based on rejection inversion, which can be seen as an adaption
-      of transformed density rejection to discrete distributions. The used
-      transformation is  -1/sqrt(x). DARI uses three almost optimal points
-      for constructing the (continuous) hat. Rejection is then done in
-      horizontal direction. Rejection inversion uses only one uniform random
-      variate per trial.
-      DARI has moderate set-up times (the probability mass function is evaluated
-      nine times), and good marginal speed, especially if an auxilliary array
-      is used to store values during generation.
+      DARI is based on rejection inversion, which can be seen as an
+      adaptation of transformed density rejection to discrete
+      distributions. The used transformation is  -1/sqrt(x).
+
+      DARI uses three almost optimal points for constructing the
+      (continuous) hat. Rejection is then done in horizontal
+      direction. Rejection inversion uses only one uniform random
+      variate per trial. 
+
+      DARI has moderate set-up times (the PMF is evaluated nine
+      times), and good marginal speed, especially if an auxilliary
+      array is used to store values during generation.
       
       DARI works for all T-(-1/2)-concave distributions. It requires the PMF
       and the location of the mode. Moreover the approximate sum over the PMF
-      is used. 
-      (If no sum is given for the distribution the algorithm assumes that it
-      is approximately 1.)
+      is used. (If no sum is given for the distribution the algorithm
+      assumes that it is approximately 1.)
       The rejection constant is bounded from above by 4 for all T-concave
       distributions.
-
 
       It is possible to change the parameters and the domain of the chosen 
       distribution without building a new generator object by using the
@@ -73,7 +74,7 @@
       There exists a test mode that verifies whether the conditions for
       the method are satisfied or not. It can be switched on by calling 
       unur_dari_set_verify() and unur_dari_chg_verify(), respectively.
-      Notice however that sampling is slower then.
+      Notice however that sampling is (much) slower then.
 
    =END
 */
@@ -87,7 +88,9 @@
 /* Routines for user interface                                               */
 
 UNUR_PAR *unur_dari_new( UNUR_DISTR *distribution );
-/* Get default parameters for generator.                                     */
+/* 
+   Get default parameters for generator.
+*/
 
 /*...........................................................................*/
 
@@ -103,9 +106,7 @@ int unur_dari_reinit( UNUR_GEN *generator );
 */
 
 int unur_dari_set_verify( UNUR_PAR *parameters, int verify );
-/* 
-   Turn verifying of algorithm while sampling on/off.
-*/
+/* */
 
 int unur_dari_chg_verify( UNUR_GEN *generator, int verify );
 /* 
@@ -115,30 +116,39 @@ int unur_dari_chg_verify( UNUR_GEN *generator, int verify );
 int unur_dari_set_squeeze( UNUR_PAR *parameters, char squeeze );
 /* 
    Turn utilization of the squeeze of the algorithm on/off.
-   As the squeeze is not necessary if the size
-   of the auxiliary table is big enough (for the used distribution).
-   The squeeze is good for speed if the domain of the distribution
-   is very big or if we want to produce small samples. 
-   This squeeze does not resamble the squeeze of continuous tdr!
-   It was especially designed for rejection inversion.
+   This squeeze does not resamble the squeeze of the continuous TDR
+   method. It was especially designed for rejection inversion.
+
+   The squeeze is not necessary if the size of the auxiliary table is
+   big enough (for the given distribution). 
+   Using a squeeze is suggested to speed up the algorithm if the
+   domain of the distribution is very big or if only small samples are
+   produced.  
+
    Default is off.
 */
 
 int unur_dari_set_size( UNUR_PAR *parameters, int size );
 /* 
-   Sets the size for the auxiliary table, that stores constants computed
-   during generation. Default is 100. If tablesize is set to 0 no table
-   is used. The speed-up can be impressive if the PMF is expensive to
-   evaluate and the "main part of the distribution" is concentrated
+   Set the size for the auxiliary table, that stores constants
+   computed during generation. 
+   If @var{size} is set to @code{0} no table is used.
+   The speed-up can be impressive if the PMF is expensive to
+   evaluate and the ``main part of the distribution'' is concentrated
    in an interval shorter than the size of the table.
+
+   Default is 100.
 */
 
 int unur_dari_set_cfactor( UNUR_PAR *parameters, double cfactor );
 /* 
-   Set factor for position of left and right construction point.
-   The c_factor is used to find almost optimal construction points for the
-   hat function.
-   There is no need to change this factor it almost all situations.
+   Set factor for position of the left and right construction point,
+   resp. 
+   The c_factor is used to find almost optimal construction points for
+   the hat function.
+   There is no need to change this factor in almost all situations.
+
+   Default is ??.
 */
 
 /*...........................................................................*/
@@ -149,18 +159,19 @@ int unur_dari_chg_pmfparams( UNUR_GEN *generator, double *params, int n_params )
    Notice that it is not possible to change the number of parameters.
    This function only copies the given arguments into the array of 
    distribution parameters.
-   IMPORTANT: The given parameters are not checked against domain errors;
-   in opposition to the (=>) unur_<distr>_new() call.
+
+   @emph{IMPORTANT:} The given parameters are not checked against
+   domain errors; in opposition to the @command{unur_<distr>_new} calls.
 */
 
 int unur_dari_chg_domain( UNUR_GEN *generator, int left, int right );
 /* 
-   Change left and right border of the domain of the 
+   Change the left and right border of the domain of the 
    (truncated) distribution.  
    If the mode changes when the domain of the (truncated) distribution is 
-   changed, then a correspondig unur_dari_chg_mode() is required.
+   changed, then a correspondig unur_dari_chg_mode() call is required.
    (There is no domain checking as in the unur_init() call.)
-   Use INT_MIN and INT_MAX for (minus) infinity.
+   Use @code{INT_MIN} and @code{INT_MAX} for (minus) infinity.
 */
 
 int unur_dari_chg_mode( UNUR_GEN *generator, int mode );
@@ -173,10 +184,13 @@ int unur_dari_chg_mode( UNUR_GEN *generator, int mode );
 
 int unur_dari_upd_mode( UNUR_GEN *generator );
 /* 
-   Recompute the mode of the distribution. This call only works when
-   a distribution object from the (=>) UNURAN library of standard
-   distributions is used.
-   Otherwise @code{unur_errno} is set to @code{UNUR_ERR_DISTR_DATA}.
+   Recompute the mode of the distribution. This call only works well
+   for a distribution object from the UNURAN library of standard
+   distributions is used
+   (@pxref{Stddist,Standard distributions,Standard distributions}).
+   Otherwise a (slow) numerical mode finder is used.
+   If no mode can be found, then @code{0} is returnded and
+   @code{unur_errno} is set to @code{UNUR_ERR_DISTR_DATA}.
 
    unur_dari_reinit() must be executed before sampling from the 
    generator again.
@@ -193,8 +207,10 @@ int unur_dari_upd_pmfsum( UNUR_GEN *generator );
 /* 
    Recompute sum over the PMF of the distribution. 
    It only works when a distribution objects from the
-   (=>) UNURAN library of standard distributions is used. 
-   Otherwise @code{unur_errno} is set to @code{UNUR_ERR_DISTR_DATA}. 
+   UNURAN library of standard distributions is used
+   (@pxref{Stddist,Standard distributions,Standard distributions}).
+   Otherwise @code{0} is returned and @code{unur_errno} is set to
+   @code{UNUR_ERR_DISTR_DATA}.
 
    unur_dari_reinit() must be executed before sampling from the 
    generator again.

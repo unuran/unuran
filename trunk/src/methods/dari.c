@@ -187,10 +187,8 @@ unur_dari_new( struct unur_distr *distr )
   }
 
   if (!(distr->set & UNUR_DISTR_SET_PMFSUM))
-    if (!unur_distr_discr_upd_pmfsum(distr)) {
-      _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"sum over PMF");
-      return NULL; 
-    }
+    if (!unur_distr_discr_upd_pmfsum(distr))
+      _unur_warning(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"sum over PMF; use default");
 
   /* allocate structure */
   par = _unur_malloc(sizeof(struct unur_par));

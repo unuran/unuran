@@ -43,9 +43,10 @@
    =UP  Methods_for_DISCR
 
    =DESCRIPTION
-      DAU samples from arbitrary but finite probability vectors of length
-      N. The algorithmus is based on an ingeneous method by A.J. Walker
-      and requires a table of size (at least) N and needs only one
+      DAU samples from distributions with arbitrary but finite
+      probability vectors (PV) of length @i{N}.
+      The algorithmus is based on an ingeneous method by A.J. Walker
+      and requires a table of size (at least) @i{N} and needs only one
       comparison for each generated random variate.
       
       By default the probability vector is indexed starting at
@@ -55,7 +56,7 @@
       The method also works when no probability vector but a PMF is
       given. However then additionally a bounded (not too large) domain
       must be given or the sum over the PMF (see
-      unur_distr_discr_make_prob() for details).
+      unur_distr_discr_make_pv() for details).
 
    =END
 */
@@ -66,16 +67,19 @@
 /* =ROUTINES */
 
 UNUR_PAR *unur_dau_new( UNUR_DISTR *distribution );
-/* Get default parameters for generator.                                     */
+/* 
+   Get default parameters for generator.
+*/
 
 /*...........................................................................*/
 
 int unur_dau_set_urnfactor( UNUR_PAR *parameters, double factor );
 /* 
-   Set size of urn table relative to length of probability vector.  It
-   must not be less than 1. Larger tables result in (slightly) faster
-   generation times but require a more expensive setup. However sizes
-   larger than 2 are not recommended; default is 1.
+   Set size of urn table relative to length of the probability
+   vector. It must not be less than 1. Larger tables result in
+   (slightly) faster generation times but require a more expensive
+   setup. However sizes larger than 2 are not recommended.
+   Default is 1.
 */
 
 /* =END */

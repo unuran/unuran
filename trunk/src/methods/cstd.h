@@ -44,32 +44,37 @@
    =UP  Methods_for_CONT
 
    =DESCRIPTION
-      CSTD is a wrapper for special generators for continuous univariate standard
-      distributions. It only works for distributions in the 
-      (=>) UNURAN library of standard distributions.
-      
-      If any other distribution is provided, or no special generator for the
-      given standard distribution is provided, the NULL pointer is returned.
-      
-      For a distribution more than one special generators (`variants') are possible.
-      These are selected by a number. For possible variants see
-      (=>) UNURAN library of standard distributions.
+      CSTD is a wrapper for special generators for continuous
+      univariate standard distributions. It only works for
+      distributions in the UNURAN library of standard distributions
+      (@pxref{Stddist,Standard distributions,Standard distributions}).
+      If a distribution object is provided that is build from scratch,
+      or no special generator for the given standard distribution is
+      provided, the NULL pointer is returned.
+
+      For some distributions more than one special generator
+      (@emph{variants}) are possible. These can be choosen by a
+      unur_cstd_set_variant() call. For possible variants 
+      @pxref{Stddist,Standard distributions,Standard distributions}.
       However the following are common to all distributions:
+
+      @table @code
+      @item UNUR_STDGEN_DEFAULT
+      the default generator.                      
+      @item UNUR_STDGEN_FAST
+      the fasted available special generator.
+      @item UNUR_STDGEN_INVERSION
+      the inversion method (if available).
+      @end table
       
-      @code{UNUR_STDGEN_DEFAULT}   ... the default generator                      
-      @code{UNUR_STDGEN_FAST}      ... the fasted available special generator
-      @code{UNUR_STDGEN_INVERSION} ... the inversion method (if available)         
-      
-      (Notice that the variant @code{UNUR_STDGEN_FAST} for a special
-      generator might be slower than one of the universal algorithms!)
-      
-      Additionally variants may exist for particular distributions
-      (see (=>) UNURAN library of standard distributions).
+      Notice that the variant @code{UNUR_STDGEN_FAST} for a special
+      generator might be slower than one of the universal algorithms!
+      Additional variants may exist for particular distributions.
       
       Sampling from truncated distributions (which can be constructed by 
-      changing the default domain of a distribution by means of an
-      (=>) unur_distr_cont_set_domain() call) is possible but requires the 
-      inversion method.
+      changing the default domain of a distribution by means of
+      unur_distr_cont_set_domain() or unur_cstd_chg_truncated() calls)
+      is possible but requires the inversion method.
    
       It is possible to change the parameters and the domain of the chosen 
       distribution without building a new generator object.
@@ -93,7 +98,8 @@ UNUR_PAR *unur_cstd_new( UNUR_DISTR *distribution );
 /* 
    Get default parameters for new generator. It requires a distribution object 
    for a continuous univariant distribution from the 
-   (=>) UNURAN library of standard distributions. 
+   UNURAN library of standard distributions 
+   (@pxref{Stddist,Standard distributions,Standard distributions}).
 
    Using a truncated distribution is allowed only if the inversion method
    is available and selected by the unur_cstd_set_variant() call immediately 
@@ -107,8 +113,10 @@ UNUR_PAR *unur_cstd_new( UNUR_DISTR *distribution );
 
 int unur_cstd_set_variant( UNUR_PAR *parameters, unsigned variant );
 /*
-   Set variant (special algorithm) for sampling from given distribution.
-   For possible variants see (=>) UNURAN library of standard distributions.
+   Set variant (special generator) for sampling from a given distribution.
+   For possible variants 
+   @pxref{Stddist,Standard distributions,Standard distributions}.
+
    Common variants are @code{UNUR_STDGEN_DEFAULT} for the default generator,
    @code{UNUR_STDGEN_FAST} for (one of the) fastest implemented
    special generators, and @code{UNUR_STDGEN_INVERSION} for the
@@ -120,19 +128,19 @@ int unur_cstd_set_variant( UNUR_PAR *parameters, unsigned variant );
 
 int unur_cstd_chg_pdfparams( UNUR_GEN *generator, double *params, int n_params );
 /* 
-   Change array of parameters of distribution in given generator object.
+   Change array of parameters of the distribution in a given generator object.
    Notice that it is not possible to change the number of parameters.
    This function only copies the given arguments into the array of 
    distribution parameters.
 
-   IMPORTANT: The given parameters are not checked against domain errors;
-   in opposition to the (=>) unur_<distr>_new() call.
+   @emph{IMPORTANT:} The given parameters are not checked against domain errors;
+   in opposition to the @command{unur_<distr>_new} calls.
 */
 
 int unur_cstd_chg_truncated( UNUR_GEN *generator, double left, double right );
 /* 
    Change left and right border of the domain of the (truncated) distribution.
-   This is only possible of the inversion method is used.
+   This is only possible if the inversion method is used.
    Otherwise this call has no effect.
 
    Notice that the given truncated domain must be a subset of the

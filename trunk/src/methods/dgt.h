@@ -80,7 +80,7 @@
       The method also works when no probability vector but a PMF is
       given. However then additionally a bounded (not too large) domain
       must be given or the sum over the PMF (see
-      unur_distr_discr_make_prob() for details).
+      unur_distr_discr_make_pv() for details).
 
    =END
 */

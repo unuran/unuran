@@ -109,7 +109,7 @@ unur_unif_new( int start, int skip )
   par->urng     = unur_get_default_urng(); /* use default urng               */
   par->urng_aux = NULL;                    /* no auxilliary URNG required    */
 
-  par->genid    = _unur_set_genid(GENTYPE);/* set generator id               */
+  par->genid    = GENTYPE;         /* set generator id                       */
   par->debug    = _unur_default_debugflag; /* set default debugging flags    */
 
   /* routine for starting generator */
@@ -224,7 +224,6 @@ unur_unif_free( struct unur_gen *gen )
   SAMPLE = NULL;   /* make sure to show up a programming error */
 
   /* free memory */
-  _unur_free_genid(gen);
   free(gen);
 
 } /* end of unur_unif_free() */

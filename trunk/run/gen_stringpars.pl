@@ -212,25 +212,45 @@ sub method_info{
 	    # only parameter object passed
 	    if ( $_ =~ /unur_($method)_set_(.*?)\s*\(\s*UNUR_PAR\s+\*parameters\s*\)/ ){
 		print Outfile "if ( !strcmp(key, \"$2\") ){\n";
-		print Outfile "\t\t\tunur_$method\_set_$2(par);\n";
+		# set parameter
+                print Outfile "\t\t\tcheck = unur_$method\_set_$2(par);\n";
+                # check for error
+		print Outfile "\t\t\tif ( ! check ){\n";
+		print Outfile "\t\t\t\tfprintf(stderr, \"ERROR: while trying to set $2\\n\");\n";
+		print Outfile "\t\t\t}\n";
 		print Outfile "\t\t}\n\t\telse ";
 	    }
 	    # parameter object and a single value passed
 	    elsif ( $_ =~ /unur_($method)_set_(.*?)\s*\(\s*UNUR_PAR\s+\*parameters\s*,\s*(\w+)\s+(\w+)\s*\)/ ){
 		print Outfile "if ( !strcmp(key, \"$2\") ){\n";
-		print Outfile "\t\t\tunur_$method\_set_$2(par, ($3) dblvalue);\n";
+		# set parameter
+		print Outfile "\t\t\tcheck = unur_$method\_set_$2(par, ($3) dblvalue);\n";
+                # check for error
+		print Outfile "\t\t\tif ( ! check ){\n";
+		print Outfile "\t\t\t\tfprintf(stderr, \"ERROR: while trying to set $2\\n\");\n";
+		print Outfile "\t\t\t}\n";
 		print Outfile "\t\t}\n\t\telse ";
 	    }
 	    # parameter object and two doubles passed
 	    elsif ( $_ =~ /unur_($method)_set_(.*?)\s*\(\s*UNUR_PAR\s+\*parameters\s*,\s*double\s+\w+\s*,\s*double\s+\w+\s*\)/ ){
 		print Outfile "if ( !strcmp(key, \"$2\") ){\n";
-		print Outfile "\t\t\tunur_$method\_set_$2(par, list[0], list[1]);\n";
+		# set parameter
+		print Outfile "\t\t\tcheck = unur_$method\_set_$2(par, list[0], list[1]);\n";
+                # check for error
+		print Outfile "\t\t\tif ( ! check ){\n";
+		print Outfile "\t\t\t\tfprintf(stderr, \"ERROR: while trying to set $2\\n\");\n";
+		print Outfile "\t\t\t}\n";
 		print Outfile "\t\t}\n\t\telse ";
 	    }
 	    # parameter object, size_of_list and double list passed
 	    elsif ( $_ =~ /unur_($method)_set_(.*?)\s*\(\s*UNUR_PAR\s+\*parameters\s*,\s*int\s+\w+\s*,\s*double\s+\*\w+\s*\)/ ){
 		print Outfile "if ( !strcmp(key, \"$2\") ){\n";
-		print Outfile "\t\t\tunur_$method\_set_$2(par, no_of_elem, list);\n";    
+		# set parameter
+		print Outfile "\t\t\tcheck = unur_$method\_set_$2(par, no_of_elem, list);\n";    
+                # check for error
+		print Outfile "\t\t\tif ( ! check ){\n";
+		print Outfile "\t\t\t\tfprintf(stderr, \"ERROR: while trying to set $2\\n\");\n";
+		print Outfile "\t\t\t}\n";
 		print Outfile "\t\t}\n\t\telse ";
 	    }
 	    elsif ( $_ =~ /unur_($method)_set_(.*?)\s*\(\s*UNUR_PAR\s+\*parameters(.*)\)/ ){

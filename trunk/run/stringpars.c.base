@@ -110,9 +110,9 @@ UNUR_DISTR *make_distr_obj(char *str){
     /* determine key and value */
     key = token;
     /* one ore more '=' seperates key from value */
-    value = strchr(key, '=');
-    for ( *value='\0', value++; *value=='='; value++ ); 
 
+    value = strchr(key, '=');
+    for ( *value='\0',value++  ;  *value=='='  ;  value++ ); 
 
     /* split value into value and list (one of them must exist) */
     no_of_elem = 0;
@@ -176,6 +176,8 @@ UNUR_PAR *make_par_obj(UNUR_DISTR *distr, char *methstr){
 
   int method = UNDEF; /* method to generate random numbers */
 
+  int check;          /* variable used to check for errors */
+
   char * token;  /* char pointer to tokenize the string */
   char *key, *value; /* the key and its value */
   char *tmpstr;  /* temporary pointer to char */
@@ -194,26 +196,29 @@ UNUR_PAR *make_par_obj(UNUR_DISTR *distr, char *methstr){
 
     /* determine key and value */
     key = token;
-    /* one ore more '=' seperates key from value */
+    /* none or several '=' seperates key from value */
     value = strchr(key, '=');
-    for ( *value='\0', value++; *value=='='; value++ ); 
+    if (value != NULL ){
+       for ( *value='\0', value++; *value=='='; value++ );
 
 
-    /* split key into key and list (if possible) */
-    no_of_elem = 0;
-    if (NULL != strchr(value, '(') ){
+       /* split value into leading value and list (if possible) */
+       no_of_elem = 0;
+       if (NULL != strchr(value, '(') ){
 
-      tmpstr = strchr(value, '(');
-      *tmpstr = '\0'; /* terminate value */
-      tmpstr++;
+         tmpstr = strchr(value, '(');
+         *tmpstr = '\0'; /* terminate value */
+         tmpstr++;
 
-      /* extract list of doubles from string  */
-      no_of_elem = parselist(tmpstr ,list);
+         /* extract list of doubles from string  */
+         no_of_elem = parselist(tmpstr ,list);
 
+       }
+
+
+       /* extract double value from string value */
+       dblvalue = atof(value);
     }
-
-    /* extract double value from string value */
-    dblvalue = atof(value);
 
     /* Now: key, value, dblvalue and list are set           */
 
@@ -370,6 +375,9 @@ UNUR_GEN *make_gen_obj (char *str){
 
   /* generate generator object */
   gen = unur_init(par);
+  if ( gen == NULL ){
+     fprintf(stderr, "ERROR: cannot create generator object\n");
+  }
 
   /* return generator object to calling routine */
   return (gen);

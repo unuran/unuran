@@ -82,11 +82,12 @@ print_usage(void)
 
 #if HAVE_DECL_GETOPT
 
-  fprintf(stderr,"\n%s [-n size] [-d time] conffile\n",progname);
+  fprintf(stderr,"\n%s [-D] [-n size] [-d time] conffile\n",progname);
   fprintf(stderr,"\n");
   fprintf(stderr,"Compute average generation time (including setup) for a sampling.\n");
   fprintf(stderr,"\n");
   fprintf(stderr,"Arguments:\n");
+  fprintf(stderr,"\t-D          ... debug mode\n");
   fprintf(stderr,"\t-n size     ... size of sample (default: 1000)\n");
   fprintf(stderr,"\t-d time     ... duration for each test in sec. (default: 0.1)\n");
   fprintf(stderr,"\t   conffile ... file with list of distributions and methods\n");
@@ -112,6 +113,7 @@ print_usage(void)
 int main (int argc, char *argv[])
 {
   /* defaults */
+  int debug = 0;            /* debug mode (on/off) */
   int samplesize = 1000;    /* size of samples */
   double duration = 0.1;    /* duration in seconds for timing generation of a sample */
   char *conffile;           /* name of configuration file */
@@ -129,8 +131,11 @@ int main (int argc, char *argv[])
 
   int c;
 
-  while ((c = getopt(argc, argv, "d:n:")) != -1) {
+  while ((c = getopt(argc, argv, "Dd:n:")) != -1) {
     switch (c) {
+    case 'D':     /* debug */
+      debug = 1;
+      break;
     case 'd':     /* duration */
       duration = atof(optarg);
       break;
@@ -162,8 +167,11 @@ int main (int argc, char *argv[])
 
   /* ------------------------------------------------------------------------*/
 
-  /* switch off all debugging and logging information*/
-  unur_set_default_debug(0u);
+  /* debugging and logging information */
+  if (debug) 
+    unur_set_default_debug(~0u);  /* on */
+  else
+    unur_set_default_debug(0u);   /* off */
 
   /* create lists for distributions and methods */
   distr_str_list = _unur_slist_new();
@@ -434,7 +442,7 @@ compute_timings ( struct unur_slist *distr_str_list, struct unur_slist *meth_str
 	_unur_slist_free(mlist);
       }
       else {
-	timing[i*n_distr+k] = -1.;  /* no timing result */
+	timing[i*n_meth+k] = -1.;  /* no timing result */
       }
     }  
   }

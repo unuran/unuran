@@ -569,6 +569,8 @@ _unur_dgt_free( struct unur_gen *gen )
   /* free memory */
   _unur_free_genid(gen);
   _unur_distr_discr_clear(gen);
+
+  COOKIE_CLEAR(gen);
   free(gen);
 
 } /* end of _unur_dgt_free() */

@@ -388,9 +388,10 @@ _unur_pdf_corder( double x, struct unur_distr *os )
 
   /* check arguments */
   _unur_check_NULL( NULL, os, INFINITY );
-  CHECK_NULL( os->base, INFINITY );
-  CHECK_NULL( os->base->data.cont.pdf, INFINITY );
   _unur_check_distr_object( os, CONT, INFINITY );
+  CHECK_NULL( os->base, INFINITY );
+  _unur_check_distr_object( os->base, CONT, INFINITY );
+  CHECK_NULL( os->base->data.cont.pdf, INFINITY );
 
   Fx = (*(os->base->data.cont.cdf)) (x, os->base);
   fx = (*(os->base->data.cont.pdf)) (x, os->base);
@@ -427,9 +428,10 @@ _unur_dpdf_corder( double x, struct unur_distr *os )
 
   /* check arguments */
   _unur_check_NULL( NULL, os, INFINITY );
-  CHECK_NULL( os->base, INFINITY );
-  CHECK_NULL( os->base->data.cont.dpdf, INFINITY );
   _unur_check_distr_object( os, CONT, INFINITY );
+  CHECK_NULL( os->base, INFINITY );
+  _unur_check_distr_object( os->base, CONT, INFINITY );
+  CHECK_NULL( os->base->data.cont.dpdf, INFINITY );
 
   Fx = (*(os->base->data.cont.cdf)) (x, os->base);
   fx = (*(os->base->data.cont.pdf)) (x, os->base);
@@ -472,9 +474,10 @@ _unur_cdf_corder( double x, struct unur_distr *os )
 
   /* check arguments */
   _unur_check_NULL( NULL, os, INFINITY );
-  CHECK_NULL( os->base, INFINITY );
-  CHECK_NULL( os->base->data.cont.cdf, INFINITY );
   _unur_check_distr_object( os, CONT, INFINITY );
+  CHECK_NULL( os->base, INFINITY );
+  _unur_check_distr_object( os->base, CONT, INFINITY );
+  CHECK_NULL( os->base->data.cont.cdf, INFINITY );
 
   Fx = (*(os->base->data.cont.cdf)) (x, os->base);
 
@@ -549,6 +552,7 @@ _unur_distr_corder_debug( struct unur_distr *os, char *genid )
   /* check arguments */
   CHECK_NULL(os,/*void*/);
   COOKIE_CHECK(os,CK_DISTR_CONT,/*void*/);
+  CHECK_NULL(os->base,/*void*/);
 
   log = unur_get_stream();
 

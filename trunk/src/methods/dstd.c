@@ -410,6 +410,8 @@ _unur_dstd_free( struct unur_gen *gen )
   if (GEN.gen_param)   free(GEN.gen_param);
   if (GEN.gen_iparam)  free(GEN.gen_iparam);
   if (gen->gen_aux)   _unur_free(gen->gen_aux);
+
+  COOKIE_CLEAR(gen);
   free(gen);
 
 } /* end of _unur_dstd_free() */

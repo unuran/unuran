@@ -118,6 +118,7 @@
 /*---------------------------------------------------------------------------*/
 /* macros for dealing with magic cookies                                     */
 
+/* set magic cookies */
 #define COOKIE_SET(ptr,ck)           (ptr)->cookie=(ck)
 
 #define COOKIE_SET_ARRAY(ptr,ck,n)   {                                          \
@@ -126,6 +127,7 @@
     ((ptr)+(i))->cookie=(ck);                                                   \
 }
 
+/* check magic cookies */
 #define COOKIE_CHECK(ptr,ck,rval)                                               \
   if((ptr)->cookie!=(ck)) {                                                     \
     _unur_stream_printf(NULL,__FILE__,__LINE__,                                 \
@@ -135,6 +137,10 @@
     return rval;                                                                \
   }
 
+/* clear magic cookies (set to 0u). To be used in connection with free() to  */
+/* to detect access to freed object.                                         */                     
+#define COOKIE_CLEAR(ptr)           (ptr)->cookie=0u
+
 /*---------------------------------------------------------------------------*/
 #else                               /* do not use magic cookies              */
 /*---------------------------------------------------------------------------*/
@@ -142,6 +148,7 @@
 #define COOKIE_SET(ptr,ck) 
 #define COOKIE_SET_ARRAY(ptr,ck,n)
 #define COOKIE_CHECK(ptr,ck,rval) 
+#define COOKIE_CLEAR(ptr)
 
 /*---------------------------------------------------------------------------*/
 #endif 

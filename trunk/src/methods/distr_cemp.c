@@ -178,6 +178,7 @@ _unur_distr_cemp_free( struct unur_distr *distr )
   if (DISTR.sample) free( DISTR.sample );
   if (distr->name_str) free(distr->name_str);
 
+  COOKIE_CLEAR(distr);
   free( distr );
 
 } /* end of unur_distr_cemp_free() */

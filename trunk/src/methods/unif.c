@@ -271,6 +271,7 @@ _unur_unif_free( struct unur_gen *gen )
   SAMPLE = NULL;   /* make sure to show up a programming error */
 
   /* free memory */
+  COOKIE_CLEAR(gen);
   free(gen);
 
 } /* end of _unur_unif_free() */

@@ -643,6 +643,8 @@ _unur_vempk_free( struct unur_gen *gen )
 
   _unur_distr_cvemp_clear(gen);
   _unur_free_genid(gen);
+
+  COOKIE_CLEAR(gen);
   free(gen);
 
 } /* end of _unur_vempk_free() */

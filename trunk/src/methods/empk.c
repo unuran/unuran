@@ -990,6 +990,8 @@ _unur_empk_free( struct unur_gen *gen )
 
   _unur_distr_cemp_clear(gen);
   _unur_free_genid(gen);
+
+  COOKIE_CLEAR(gen);
   free(gen);
 
 } /* end of _unur_empk_free() */

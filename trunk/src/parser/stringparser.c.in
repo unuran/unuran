@@ -929,8 +929,10 @@ _unur_str_distr_set( UNUR_DISTR **ptr_distr, const char *key, char *value )
   char *args[MAX_SET_ARGS+1];      /* pointers to argument strings */
 
   /* no set calls for order statistics allowed !! */
-  if (distr->id == UNUR_DISTR_CORDER)
+  if (distr->id == UNUR_DISTR_CORDER) {
+    _unur_error(GENTYPE,UNUR_ERR_STR_SYNTAX,"orderstatistics must be last keyword"); 
     return 0;
+  }
 
   /* tokenize argument string */
   if (_unur_str_set_args( value, type_args, args, MAX_SET_ARGS ) < 0) {

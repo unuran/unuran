@@ -1514,6 +1514,7 @@ _unur_srou_free( struct unur_gen *gen )
   _unur_distr_cont_clear(gen);
   _unur_free_genid(gen);
 
+  COOKIE_CLEAR(gen);
   free(gen);
 
 } /* end of _unur_srou_free() */

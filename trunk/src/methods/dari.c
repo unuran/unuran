@@ -1215,6 +1215,8 @@ _unur_dari_free( struct unur_gen *gen )
   /* free memory */
   _unur_distr_discr_clear(gen);
   _unur_free_genid(gen);
+
+  COOKIE_CLEAR(gen);
   free(gen);
 
 } /* end of _unur_dari_free() */

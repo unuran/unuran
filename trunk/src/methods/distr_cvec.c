@@ -216,6 +216,7 @@ _unur_distr_cvec_free( struct unur_distr *distr )
   /* user name for distribution */
   if (distr->name_str) free(distr->name_str);
 
+  COOKIE_CLEAR(distr);
   free( distr );
 
 } /* end of unur_distr_cvec_free() */

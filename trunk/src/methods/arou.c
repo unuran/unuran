@@ -1187,6 +1187,7 @@ _unur_arou_free( struct unur_gen *gen )
   _unur_free_genid(gen);
   if (GEN.guide) free(GEN.guide);
 
+  COOKIE_CLEAR(gen);
   free(gen);
 
 } /* end of _unur_arou_free() */

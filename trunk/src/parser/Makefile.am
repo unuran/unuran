@@ -47,5 +47,5 @@ CLEANFILES = *~
 # clean generated files
 MAINTAINERCLEANFILES = \
  stringparser.c \
- parser_doc.h \
+ stringparser_doc.h \
  Makefile.in

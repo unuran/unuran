@@ -67,6 +67,9 @@ inline static double nkr(UNUR_URNG_TYPE urng);
 inline static double nacr(UNUR_URNG_TYPE urng);
 /* Acceptance-complement ratio                                               */
 
+inline static double nsum(UNUR_URNG_TYPE urng);
+/* infamous sum-of-12-uniforms method. NEVER use it!!                        */
+
 /*---------------------------------------------------------------------------*/
 /* abbreviations */
 
@@ -111,6 +114,8 @@ _unur_stdgen_normal_get_routine(unsigned variant)
     return unur_stdgen_sample_normal_kr;    /* Kindermann-Ramage method */
   case 6:
     return unur_stdgen_sample_normal_acr;   /* Acceptance-complement ratio */
+  case 99:
+    return unur_stdgen_sample_normal_sum;  /* infamous sum-of-12-uniforms method. */
   case UNUR_STDGEN_INVERSION:
   default:
     return NULL;
@@ -146,6 +151,7 @@ _unur_stdgen_normal_routinename(void *routine)
   routinename( unur_stdgen_sample_normal_leva );
   routinename( unur_stdgen_sample_normal_kr );
   routinename( unur_stdgen_sample_normal_acr );
+  routinename( unur_stdgen_sample_normal_sum );
 
   return NULL;
 
@@ -251,6 +257,19 @@ double unur_stdgen_sample_normal_acr( struct unur_gen *gen )
   return (GEN.pdf_param[0] + GEN.pdf_param[1] * nacr(gen->urng));
 
 } /* end of unur_stdgen_sample_normal_acr() */
+
+/*---------------------------------------------------------------------------*/
+
+double unur_stdgen_sample_normal_sum( struct unur_gen *gen )
+     /* infamous sum-of-12-uniforms method. NEVER use it!!                   */
+{
+  /* check arguments */
+  CHECK_NULL(gen,0.);
+  COOKIE_CHECK(gen,CK_CSTD_GEN,0.);
+
+  return (GEN.pdf_param[0] + GEN.pdf_param[1] * nsum(gen->urng));
+
+} /* end of unur_stdgen_sample_normal_sum() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -629,4 +648,34 @@ nacr(UNUR_URNG_TYPE urng)
 } /* end of nacr() */
 
 /*---------------------------------------------------------------------------*/
+
+
+inline static double 
+nsum(UNUR_URNG_TYPE urng)
+/*****************************************************************************
+ *                                                                           *
+ * Normal Distribution: infamous sum-of-12-uniforms method.                  *
+ *                                                                           *
+ *                    NEVER use this method!!                                *
+ *                                                                           *
+ *****************************************************************************
+ *                                                                           *
+ * FUNCTION:   - samples a random number from the                            *
+ *               standard Normal distribution  N(0,1).                       *
+ *                                                                           *
+ * REFERENCE:  - W. Hoermann and G. Derflinger (1990):                       *
+ *               The ACR Methodfor generating normal random variables,       *
+ *               OR Spektrum 12 (1990), 181-185.                             *
+ *                                                                           *
+ * Implemented by:  M. Lehner April 1992                                     *
+ *****************************************************************************
+ * UNURAN (c) 2000  W. Hoermann & J. Leydold, Institut f. Statistik, WU Wien *
+ *****************************************************************************/
+{
+  return ( uniform() + uniform() + uniform() + uniform() + uniform() + uniform() +
+	   uniform() + uniform() + uniform() + uniform() + uniform() + uniform()
+	   - 6 );
+} /* end of nsum() */
+
+/*------------------------------------------------------------------*/
 

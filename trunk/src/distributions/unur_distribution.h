@@ -233,6 +233,8 @@ double unur_stdgen_sample_normal_kr( struct unur_gen *gen );
    /* Kindermann-Ramage method                                               */
 double unur_stdgen_sample_normal_acr( struct unur_gen *gen );
    /* Acceptance-complement ratio                                            */
+double unur_stdgen_sample_normal_sum( struct unur_gen *gen );
+   /* infamous sum-of-12-uniforms method. NEVER use it!!                     */
 _UNUR_SAMPLING_ROUTINE_CONT *_unur_stdgen_normal_get_routine(unsigned variant);
 /* get pointer to sampling routine                                           */
 #if UNUR_DEBUG & UNUR_DB_INFO

@@ -5,7 +5,7 @@
 # $Id$
 # ----------------------------------------------------------------
 
-## use strict;
+use strict;
 
 my $DEBUG = 0;
 
@@ -88,15 +88,15 @@ if ($DEBUG) {
 # ................................................................
 
 # Print Test data
-print_log("sample size = $sample_size\n");
-print_log("accuracy = $accuracy\n");
+print_log("sample size = $Conf::sample_size\n");
+print_log("accuracy = $Conf::accuracy\n");
 print_log("languages = C, FORTRAN, JAVA\n\n");
 
 # ----------------------------------------------------------------
 # Check for missing CONTinuous distributions
 
 my %distr_names;
-foreach my $distr (@distr_list) {
+foreach my $distr (@Conf::distr_list) {
     die unless $distr =~ /^(\w+)\s*\(/;
     $distr_names{$1} = 1;
 }
@@ -111,7 +111,7 @@ foreach my $d (sort keys %{$DISTR}) {
 # ----------------------------------------------------------------
 # Fill in parameters for PDF at random
 
-foreach my $distr (@distr_list) {
+foreach my $distr (@Conf::distr_list) {
     while ($distr =~ /([\d\+\-\.]+)\s*\.\.\s*([\d\+\-\.]+)/) {
 	my $param = ($1>0) ? exp(log($1)+rand()*(log($2)-log($1))) : $1+rand()*($2-$1);
 	$distr =~ s/([\d\+\-\.]+)\s*\.\.\s*([\d\+\-\.]+)/$param/;
@@ -121,7 +121,7 @@ foreach my $distr (@distr_list) {
 # ----------------------------------------------------------------
 # File names
 
-print_log("Make sources for tests (".(($#distr_list+1)*($#method_list+1)).") ...\n\n");
+print_log("Make sources for tests (".(($#Conf::distr_list+1)*($#Conf::method_list+1)).") ...\n\n");
 
 my $UNURAN_exec = "$file_prefix\_UNURAN";
 my $UNURAN_src = "$UNURAN_exec.c";
@@ -161,8 +161,8 @@ my $JAVA_main;
 my $test_nr = 0;
 my $test_runs = 0;
 
-foreach my $distr (@distr_list) {
-    foreach my $method (@method_list) {
+foreach my $distr (@Conf::distr_list) {
+    foreach my $method (@Conf::method_list) {
 	
 	# Increment counter
 	++$test_nr;
@@ -398,7 +398,7 @@ sub FP_equal
     my $a = $_[0];
     my $b = $_[1];
 
-    if ($a==$b || abs($a-$b) <= ((abs($a)<abs($b)) ? abs($a) : abs($b)) * $accuracy) {
+    if ($a==$b || abs($a-$b) <= ((abs($a)<abs($b)) ? abs($a) : abs($b)) * $Conf::accuracy) {
 	return 1;
     }
     else {
@@ -714,7 +714,7 @@ sub make_UNURAN_gen
 \tprintf("[$test_key] $distr & $method\\n");
 \tprintf("start\\n");
 
-\tfor (i=0; i<$sample_size; i++) {
+\tfor (i=0; i<$Conf::sample_size; i++) {
 \t\tx = $gen_name ();
 \t\tfx = $pdf_name (x);
 \t\tprintf("%.17e  %.17e\\n",x,fx);
@@ -791,7 +791,7 @@ sub make_C_gen
 \tprintf("[$test_key] $distr\\n");
 \tprintf("start\\n");
 
-\tfor (i=0; i<$sample_size; i++) {
+\tfor (i=0; i<$Conf::sample_size; i++) {
 \t\tx = $gen_name ();
 \t\tfx = $pdf_name (x);
 \t\tprintf("%.17e  %.17e\\n",x,fx);
@@ -878,7 +878,7 @@ sub make_FORTRAN_gen
 
         $testcode .= "      CALL useed($seed) \n";
 
-	$testcode .= "      DO 1 i=1,$sample_size \n";
+	$testcode .= "      DO 1 i=1,$Conf::sample_size \n";
 	$testcode .= "         x = $gen_name() \n";
 	$testcode .= "         fx = $pdf_name(x) \n";
 	$testcode .= "         WRITE (*,'(d24.18, 1x, d24.18)') x, fx \n";
@@ -958,7 +958,7 @@ EOS
 \t\tSystem.out.println("[$test_key] $distr");
 \t\tUrand.useed($seed);
 \t\tSystem.out.println("start");
-\t\tfor (int i = 0; i<$sample_size;i++) {
+\t\tfor (int i = 0; i<$Conf::sample_size;i++) {
 \t\t\tx = $gen_name.sample();
 \t\t\tpdfx = $gen_name.pdf(x);
 \t\t\tSystem.out.println( x +" "+ pdfx);

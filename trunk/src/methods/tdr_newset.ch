@@ -918,7 +918,7 @@ unur_tdr_chg_truncated( struct unur_gen *gen, double left, double right )
 
 /*---------------------------------------------------------------------------*/
 
-static double
+double
 _unur_tdr_eval_cdfhat( struct unur_gen *gen, double x )
      /*----------------------------------------------------------------------*/
      /* evaluate CDF of hat at x (i.e. \int_{-\infty}^x hat(t) dt)           */

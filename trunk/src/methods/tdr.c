@@ -433,7 +433,7 @@ static double _unur_tdr_eval_intervalhat( struct unur_gen *gen,
 /* evaluate hat at x in interval.                                            */
 /*---------------------------------------------------------------------------*/
 
-static double _unur_tdr_eval_cdfhat( struct unur_gen *gen, double x );
+double _unur_tdr_eval_cdfhat( struct unur_gen *gen, double x );
 /*---------------------------------------------------------------------------*/
 /* evaluate CDF of hat at x.                                                 */
 /*---------------------------------------------------------------------------*/

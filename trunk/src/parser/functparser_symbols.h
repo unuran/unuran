@@ -208,7 +208,7 @@ static struct symbols symbol[] = {
   /* special symbols */
   {"("   , S_OTHERS  , 0, 0.0 , v_dummy  , d_error, "", "" },
   {")"   , S_OTHERS  , 0, 0.0 , v_dummy  , d_error, "", "" },
-  {","   , S_OTHERS  , 0, 0.0 , v_dummy  , d_error, "", "" },
+  {","   , S_OTHERS  , 0, 0.0 , v_dummy  , d_error, ",", "," },
 
   /* arithmetic operators */
   {"+"   , S_ADD_OP  , 2, 0.0 , v_plus   , d_add  , "+"   , "+"  },
@@ -226,8 +226,8 @@ static struct symbols symbol[] = {
   {"not" , S_SFUNCT  , 1, 0.0 , v_not    , d_const, "@!", ".NOT." },
 
   /* system constants */
-  {"pi"  , S_SCONST  , 9, M_PI, v_const  , d_const, "M_PI", "xxxx" },
-  {"e"   , S_SCONST  , 9, M_E , v_const  , d_const, "M_E ", "xxxx" },
+  {"pi"  , S_SCONST  , 9, M_PI, v_const  , d_const, "", "" },
+  {"e"   , S_SCONST  , 9, M_E , v_const  , d_const, "", "" },
 
   /* system functions */
   {"mod" , S_SFUNCT  , 2, 0.0 , v_mod    , d_const, "%", "xxxx" },

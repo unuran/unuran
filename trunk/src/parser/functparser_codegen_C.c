@@ -90,28 +90,52 @@ _unur_fstr_node2C ( FILE *out, const struct ftreenode *node,
      /*   1 on success                                                       */
      /*----------------------------------------------------------------------*/
 {
+  /* operator types */
+# define NONE   0       /* no operator (constant, variable, ... )            */
+# define PREFIX 1       /* prefix operator (eg. exp(x) )                     */
+# define INFIX  2       /* infix operator (eg. (x + y) )                     */
+
   struct ftreenode *left  = node->left;    /* left branch of node            */
   struct ftreenode *right = node->right;   /* right branch of node           */
-  const char *symb;                /* symbol for node (or NULL for constant) */           
-  int type = node->type;                   /* type of symbol                 */
+
+  const char *symb;           /* symbol for node (or NULL for constant)      */
+  int type, op_type;               /* type of symbol and operator            */
   int priority = symbol[node->token].info; /* priority of symbol             */
   int operator, parenthesis;               /* booleans                       */
 
-  /* get symbol for node */
-  switch (type) {
+  /* type and name of symbol */
+  switch (node->type) {
   case S_UIDENT:    /* variable */
-    symb = variable;  break;
-  case S_UFUNCT:    /* function */
-    symb = function;  break;
+    symb = variable;
+    type = S_UIDENT;
+    op_type = NONE;
+    break;
+  case S_UFUNCT:    /* user defined function */
+    symb = function;
+    type = S_UFUNCT;
+    op_type = PREFIX;
+    break;
   case S_UCONST:    /* node contains constant */
-    /* use value in node instead of symbol */
-    symb = NULL;      break;  
   case S_SCONST:
+    /* use value in node instead of symbol */
+    symb = NULL;
+    type = S_UCONST;
+    op_type = NONE;
+    break;  
   default:
-    symb = node->symbol;
+    symb = symbol[node->token].name_C;
+    type = node->type;
+    if (symb[0] == '@') {
+      symb++;
+      op_type = PREFIX;
+    }
+    else {
+      op_type = INFIX;
+    }
   }
 
-  if (type == S_SFUNCT || type == S_UFUNCT) {
+  /* prefix operators (functions) */
+  if (op_type == PREFIX) {
     /* node '(' left ',' right ')' */
     _unur_fstr_print_C( out, symb, 0 );
     _unur_fstr_print_C( out, "(", 0. );
@@ -125,7 +149,8 @@ _unur_fstr_node2C ( FILE *out, const struct ftreenode *node,
     _unur_fstr_print_C( out, ")", 0. );
   }
 
-  else if (symb && symb[0] == ',') {
+  /* comma operator (for argument lists) */
+  else if (symb && node->symbol[0] == ',') {
     /* left ',' right */
     _unur_fstr_print_C( out, ",", 0. );
     if (left) {
@@ -137,53 +162,39 @@ _unur_fstr_node2C ( FILE *out, const struct ftreenode *node,
     }
   }    
 
+  /* infix operator or variable or constant */
   else {
-    /* check whether enclosing blanks are required for typography  */
-    operator = (type==S_REL_OP || type==S_ADD_OP || type==S_MUL_OP);
+
+    /* enclosing parenthesis for infix operators */
+    if (op_type == INFIX) _unur_fstr_print_C( out, "(", 0. );
 
     /* left branch */
     if (left) {
-      /* always use parenthesis ... */
-      parenthesis = 1;
-      /* ... except ... */
-      if (left->type == S_SCONST || left->type == S_UCONST || 
-	  left->type == S_SFUNCT || left->type == S_UFUNCT || 
-	  ( left->type == S_UIDENT && left->val >= 0. ) ||
-	  ( priority < symbol[left->token].info && !isalpha(node->symbol[0]) ) ||
-	  ( priority == symbol[left->token].info && (type == S_ADD_OP ) ) )
-	parenthesis = 0;
-      if (parenthesis) _unur_fstr_print_C( out, "(", 0. );
-
       if (left->type == S_UCONST && left->val == 0. && node->symbol[0] == '-')
 	/* there is no need to print "0 - ..." */ ;
       else
 	_unur_fstr_node2C(out,left,variable,function);
-
-      if (parenthesis) _unur_fstr_print_C( out, ")", 0. );
     }
 
     /* symbol for node */
-    if (operator) _unur_fstr_print_C( out, " ", 0. );
     _unur_fstr_print_C( out, symb, node->val );
-    if (operator) _unur_fstr_print_C( out, " ", 0. );
 
     /* right branch */
     if (right) {
-      /* always use parenthesis ... */
-      parenthesis = 1;
-      /* ... except ... */
-      if (right->type == S_SCONST || right->type == S_UCONST ||
-	  right->type == S_SFUNCT || right->type == S_UFUNCT || 
-	  ( right->type == S_UIDENT && right->val >= 0. ) ||
-	  ( priority < symbol[right->token].info && !isalpha(node->symbol[0]) ) )
-	parenthesis = 0;
-      if (parenthesis) _unur_fstr_print_C( out, "(", 0. );
       _unur_fstr_node2C(out,right,variable,function);
-      if (parenthesis) _unur_fstr_print_C( out, ")", 0. );
     }
+
+    /* enclosing parenthesis for infix operators */
+    if (op_type == INFIX) _unur_fstr_print_C( out, ")", 0. );
+
   }
 
   return 1;
+
+#undef NONE
+#undef PREFIX
+#undef INFIX
+
 } /* end of _unur_fstr_node2C() */
 
 /*---------------------------------------------------------------------------*/

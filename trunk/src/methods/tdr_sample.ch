@@ -215,6 +215,10 @@ _unur_tdr_gw_sample( struct unur_gen *gen )
     /* value of PDF at x */
     fx = PDF(X);
 
+    /** TODO: for the changing parameter case it would be better
+        not to added the new construction point when we accept
+        the generated point! **/
+
     /* being above squeeze is bad. improve the situation! */
     if (GEN.n_ivs < GEN.max_ivs) {
       if (GEN.max_ratio * GEN.Atotal > GEN.Asqueeze) {

@@ -208,7 +208,7 @@ int unur_hinv_get_n_intervals( const UNUR_GEN *generator );
    It returns @code{0} in case of an error.
 */
 
-double unur_hinv_eval_approxinvcdf( UNUR_GEN *generator, double u );
+double unur_hinv_eval_approxinvcdf( const UNUR_GEN *generator, double u );
 /*
    Evaluate Hermite interpolation of inverse CDF at @var{u}.
    If @var{u} is out of the domain [0,1] then @code{unur_errno} is set

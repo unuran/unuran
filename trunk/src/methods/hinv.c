@@ -143,7 +143,7 @@ static double _unur_hinv_sample( struct unur_gen *gen );
 /* sample from generator                                                     */
 /*---------------------------------------------------------------------------*/
 
-static double _unur_hinv_eval_approxinvcdf( struct unur_gen *gen, double u );
+static double _unur_hinv_eval_approxinvcdf( const struct unur_gen *gen, double u );
 /*---------------------------------------------------------------------------*/
 /* evaluate Hermite interpolation of inverse CDF at u.                       */
 /*---------------------------------------------------------------------------*/
@@ -1446,10 +1446,6 @@ _unur_hinv_sample( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
 { 
   double U,X;
-/*    int i; */
-
-  /* check arguments */
-  CHECK_NULL(gen,0.);  COOKIE_CHECK(gen,CK_HINV_GEN,0.);
 
   /* sample from U( Umin, Umax ) */
   U = GEN.Umin + _unur_call_urng(gen->urng) * (GEN.Umax - GEN.Umin);
@@ -1467,7 +1463,7 @@ _unur_hinv_sample( struct unur_gen *gen )
 /*---------------------------------------------------------------------------*/
 
 double
-_unur_hinv_eval_approxinvcdf( struct unur_gen *gen, double u )
+_unur_hinv_eval_approxinvcdf( const struct unur_gen *gen, double u )
      /*----------------------------------------------------------------------*/
      /* evaluate Hermite interpolation of inverse CDF at u                   */
      /* (internal call)                                                      */
@@ -1501,7 +1497,7 @@ _unur_hinv_eval_approxinvcdf( struct unur_gen *gen, double u )
 /*---------------------------------------------------------------------------*/
 
 double
-unur_hinv_eval_approxinvcdf( struct unur_gen *gen, double u )
+unur_hinv_eval_approxinvcdf( const struct unur_gen *gen, double u )
      /*----------------------------------------------------------------------*/
      /* evaluate Hermite interpolation of inverse CDF at u                   */
      /* (user call)                                                          */
@@ -1566,7 +1562,7 @@ unur_hinv_estimate_error( const UNUR_GEN *gen, int samplesize, double *max_error
 { 
   double U, ualt, X;
   double max=0., average=0., uerror, errorat=0.;
-  int i, j, outside_interval=0;
+  int j, outside_interval=0;
 
   /* check arguments */
   CHECK_NULL(gen,0.);  COOKIE_CHECK(gen,CK_HINV_GEN,0.);

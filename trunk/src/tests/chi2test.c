@@ -54,11 +54,11 @@
 /*---------------------------------------------------------------------------*/
 /* constants */
 
-#define CHI2_SAMPLEFAC  40  
+#define CHI2_SAMPLEFAC  40
          /* if samplesize<=0 use samplesize = CHI2_SAMPLEFAC * intervals^dim */
 
 
-#define CHI2_CLASSMIN_DEFAULT  20 
+#define CHI2_CLASSMIN_DEFAULT  20
 /* default number of observations in class */
 
 #define CHI2_INTERVALS_DEFAULT 50
@@ -67,10 +67,10 @@
 #define CHI2_DEFAULT_SAMPLESIZE 10000
 /* default sample size used when the given size is <= 0 */
 
-#define CHI2_MAX_SAMPLESIZE 1000000   
+#define CHI2_MAX_SAMPLESIZE 1000000
 /* maximal sample size to prevent extremely long run times */
 
-#define CHI2_MAX_TOTALINTERVALS 1000000   
+#define CHI2_MAX_TOTALINTERVALS 1000000
 /* maximal product of intervals used in chi2vec test */
 
 /*---------------------------------------------------------------------------*/
@@ -78,29 +78,29 @@ static char test_name[] = "Chi^2-Test";
 /*---------------------------------------------------------------------------*/
 
 static double _unur_test_chi2_discr( struct unur_gen *gen, int samplesize, int classmin,
-				     int verbose, FILE *out );
+             int verbose, FILE *out );
 
 static double _unur_test_chi2_cont( struct unur_gen *gen, int intervals, int samplesize, int classmin,
-				    int verbose, FILE *out );
+            int verbose, FILE *out );
 
 static double _unur_test_chi2_cemp( struct unur_gen *gen, int intervals, int samplesize, int classmin,
-				    int verbose, FILE *out );
+            int verbose, FILE *out );
 
 static double _unur_test_chi2_vec( struct unur_gen *gen, int intervals, int samplesize, int classmin,
                                     int verbose, FILE *out );
 
-static double _unur_test_chi2test( double *prob, int *observed, int len, int classmin,
-				   int verbose, FILE *out );
+double _unur_test_chi2test( double *prob, int *observed, int len, int classmin,
+           int verbose, FILE *out );
 
 /*---------------------------------------------------------------------------*/
 
 double
-unur_test_chi2( struct unur_gen *gen, 
-		int intervals,
-		int samplesize, 
-		int classmin,
-		int verbose,
-		FILE *out )
+unur_test_chi2( struct unur_gen *gen,
+    int intervals,
+    int samplesize,
+    int classmin,
+    int verbose,
+    FILE *out )
      /*----------------------------------------------------------------------*/
      /* Chi^2 test for univariate distributions                              */
      /*                                                                      */
@@ -160,11 +160,11 @@ unur_test_chi2( struct unur_gen *gen,
 /*---------------------------------------------------------------------------*/
 
 static double
-_unur_test_chi2_discr( struct unur_gen *gen, 
-		       int samplesize, 
-		       int classmin, 
-		       int verbose,
-		       FILE *out)
+_unur_test_chi2_discr( struct unur_gen *gen,
+           int samplesize,
+           int classmin,
+           int verbose,
+           FILE *out)
      /*----------------------------------------------------------------------*/
      /* Chi^2 test for univariate discrete distributions                     */
      /* with given probability vector.                                       */
@@ -216,7 +216,7 @@ _unur_test_chi2_discr( struct unur_gen *gen,
       return -2.;
     }
   }
-  else 
+  else
     had_PV = TRUE;
   /* pointer to PV */
   pv = DISTR.pv;
@@ -275,12 +275,12 @@ _unur_test_chi2_discr( struct unur_gen *gen,
 /*---------------------------------------------------------------------------*/
 
 static double
-_unur_test_chi2_cont( struct unur_gen *gen, 
-		      int intervals, 
-		      int samplesize, 
-		      int classmin,
-		      int verbose,
-		      FILE *out )
+_unur_test_chi2_cont( struct unur_gen *gen,
+          int intervals,
+          int samplesize,
+          int classmin,
+          int verbose,
+          FILE *out )
      /*----------------------------------------------------------------------*/
      /* Chi^2 test for univariate continuous distributions.                  */
      /*                                                                      */
@@ -371,7 +371,7 @@ _unur_test_chi2_cont( struct unur_gen *gen,
     }
     F = (F-Fl)/Fdelta;
     j = (int)(intervals * F);
-    if (j > intervals) {   
+    if (j > intervals) {
       _unur_warning(test_name,UNUR_ERR_GENERIC,"F(x) > Fmax (out of domain).");
       j = intervals-1;
     }
@@ -404,12 +404,12 @@ _unur_test_chi2_cont( struct unur_gen *gen,
 /*---------------------------------------------------------------------------*/
 
 static double
-_unur_test_chi2_cemp( struct unur_gen *gen, 
-		      int intervals, 
-		      int samplesize, 
-		      int classmin,
-		      int verbose,
-		      FILE *out )
+_unur_test_chi2_cemp( struct unur_gen *gen,
+          int intervals,
+          int samplesize,
+          int classmin,
+          int verbose,
+          FILE *out )
      /*----------------------------------------------------------------------*/
      /* Chi^2 test for continuous empirical distributions.                   */
      /* Tests for standard normal distribution only!                         */
@@ -470,7 +470,7 @@ _unur_test_chi2_cemp( struct unur_gen *gen,
   for( i=0; i<samplesize; i++ ) {
     F = cdf( _unur_sample_cont(gen), distr_normal );
     j = (int)(intervals * F);
-    if (j > intervals) {   
+    if (j > intervals) {
       _unur_warning(test_name,UNUR_ERR_GENERIC,"F(x) > Fmax (out of domain).");
       j = intervals-1;
     }
@@ -504,12 +504,12 @@ _unur_test_chi2_cemp( struct unur_gen *gen,
 /*---------------------------------------------------------------------------*/
 
 static double
-_unur_test_chi2_vec ( struct unur_gen *gen, 
-		      int n_intervals, 
-		      int samplesize, 
-		      int classmin,
-		      int verbose,
-		      FILE *out )
+_unur_test_chi2_vec ( struct unur_gen *gen,
+          int n_intervals,
+          int samplesize,
+          int classmin,
+          int verbose,
+          FILE *out )
      /*----------------------------------------------------------------------*/
      /* Chi^2 test for multivariate (NORMAL) continuous distributions.       */
      /* It runs a chi^2 test on all marginal distributions and on the        */
@@ -550,7 +550,7 @@ _unur_test_chi2_vec ( struct unur_gen *gen,
   UNUR_DISTR **marginals;  /* pointer to marginal distributions */
   UNUR_FUNCT_CONT **marginal_cdf;  /* pointer to CDFs of marginal distributions */
 
-  int *n_intervals_marginal; /* number of intervals for each dimension */ 
+  int *n_intervals_marginal; /* number of intervals for each dimension */
   int n_intervals_total;  /* product of all dimintervals[] */
 
   const double *L;       /* pointer to Cholesky factor */
@@ -585,7 +585,7 @@ _unur_test_chi2_vec ( struct unur_gen *gen,
   dim = gen->distr->dim;
   if (dim < 1) {
     _unur_error(test_name,UNUR_ERR_GENERIC,"distribution dimension < 1 ?");
-    return -1.; 
+    return -1.;
   }
 
   /* we need mean vector and covariance matrix */
@@ -625,17 +625,17 @@ _unur_test_chi2_vec ( struct unur_gen *gen,
       itmp = 2;
     if (itmp > CHI2_MAX_TOTALINTERVALS / n_intervals_total) {
       itmp = CHI2_MAX_TOTALINTERVALS/n_intervals_total;
-      if (itmp < 1) itmp = 1; 
+      if (itmp < 1) itmp = 1;
     }
   }
 
-  /* allocate working space memory */  
+  /* allocate working space memory */
   X   = _unur_xmalloc( dim * sizeof(double));
   U   = _unur_xmalloc( dim * sizeof(double));
   Linv  = _unur_xmalloc( dim * dim * sizeof(double));
   bm  = _unur_xmalloc( dim * n_intervals * sizeof(int)); /* bins for marginal tests */
   b  = _unur_xmalloc( n_intervals_total * sizeof(int)); /* bins for chi2 test */
-  
+
   /* check if memory could be allocated */
   if ( !(n_intervals_marginal && X && U && bm && Linv && b) )  {
     _unur_error(test_name,UNUR_ERR_MALLOC,"cannot run chi2 test");
@@ -650,8 +650,8 @@ _unur_test_chi2_vec ( struct unur_gen *gen,
   if (_unur_matrix_invert_matrix (dim, L, 0 , Linv, &Linv_det) != UNUR_SUCCESS) {
     _unur_error(test_name,UNUR_ERR_DISTR_DATA,"cannot compute inverse of Cholesky factor");
     pval_min = -2.; goto free_memory;
-  }    
- 
+  }
+
   /* now run generator */
   for( i=0; i<samplesize; i++ ) {
 
@@ -667,7 +667,7 @@ _unur_test_chi2_vec ( struct unur_gen *gen,
       }
       U[j] = marginal_cdf[j](Z,marginals[j]);
     }
-    
+
     /* increase bins for tests for marginal distributions */
     for (j=0; j<dim; j++) {
       int iv;
@@ -676,7 +676,7 @@ _unur_test_chi2_vec ( struct unur_gen *gen,
       if (iv < 0) iv = 0;
       bm[j*n_intervals + iv] += 1;
     }
-    
+
     /* increase bins for total chi^2 test */
     offset=0;
     prodintervals=1; /* cumulative products of n_intervals_marginal[] */
@@ -685,12 +685,12 @@ _unur_test_chi2_vec ( struct unur_gen *gen,
       iv = (int)( n_intervals_marginal[j] * U[j] );
       if (iv==n_intervals_marginal[j]) iv = n_intervals_marginal[j]-1;
       if (iv < 0) iv = 0;
-      
+
       offset += prodintervals * iv;
       prodintervals *= n_intervals_marginal[j];
     }
     b[offset] += 1;
-  } 
+  }
 
   /* ----------------------------------------------------------------------------*/
 
@@ -703,7 +703,7 @@ _unur_test_chi2_vec ( struct unur_gen *gen,
 
     pval = _unur_test_chi2test(NULL, bm+(j*n_intervals), n_intervals, classmin, verbose, out );
     pval_min = min(pval_min,pval);
-  } 
+  }
 
   /* ----------------------------------------------------------------------------*/
 
@@ -743,12 +743,12 @@ free_memory:
 /*---------------------------------------------------------------------------*/
 
 double
-_unur_test_chi2test( double *prob, 
-		     int *observed, 
-		     int len,
-		     int classmin,
-		     int verbose,
-		     FILE *out )
+_unur_test_chi2test( double *prob,
+         int *observed,
+         int len,
+         int classmin,
+         int verbose,
+         FILE *out )
      /*----------------------------------------------------------------------*/
      /* Chi^2 test for discrete distributions.                               */
      /*                                                                      */
@@ -797,9 +797,9 @@ _unur_test_chi2test( double *prob,
   classmin = (classmin > 0) ? classmin : CHI2_CLASSMIN_DEFAULT;
 
   /* compute sample size */
-  for( i=0; i<len; i++ )
+  for( i=0; i<len; i++) 
     samplesize += observed[i];
-
+  
   /* sum of probabilities (if not uniform distribution) */
   if (prob != NULL) {
     for( i=0; i<len; i++ )
@@ -813,12 +813,12 @@ _unur_test_chi2test( double *prob,
   for( i=0; i<len; i++ ) {
     clexpd += (prob) ? prob[i]*factor : factor;  /* expected occurrences in this class */
     clobsd += observed[i];                       /* observed occurrences in this class */
-    
+
     if (clexpd >= classmin || i == len-1) {
       /* number of expected occurrences is large enough or end of array */
       chi2 += (clobsd-clexpd)*(clobsd-clexpd)/clexpd;
       if (verbose >= 2)
-	fprintf(out,"Class #%d:\tobserved %d\texpected %.2f\n",classes,clobsd,clexpd);
+  fprintf(out,"Class #%d:\tobserved %d\texpected %.2f\n",classes,clobsd,clexpd);
       clexpd = 0.;
       clobsd = 0;
       classes++;

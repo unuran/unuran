@@ -361,7 +361,8 @@ static int _unur_tdr_interval_division_point( struct unur_gen *gen,
 /* compute cutting point of interval into left and right part.               */
 /*---------------------------------------------------------------------------*/
 
-static double area( struct unur_gen *gen, struct unur_tdr_interval *iv, double slope, double x );
+static double _unur_tdr_interval_area( struct unur_gen *gen, struct unur_tdr_interval *iv,
+				       double slope, double x );
 /*---------------------------------------------------------------------------*/
 /* compute area below piece of hat or slope in                               */
 /*---------------------------------------------------------------------------*/
@@ -485,6 +486,9 @@ unur_tdr_new( double (*pdf)(double x,double *pdf_param, int n_pdf_params),
   PAR.n_starting_cpoints  = 10;     /* number of starting points             */
   PAR.max_ivs             = 50;     /* maximum number of intervals           */
   PAR.max_ratio           = 0.95;   /* bound for ratio  Atotal / Asqueeze    */
+  PAR.bound_for_adding    = 0.5;    /* do not add a new construction point in an interval,
+				       where ambigous region is too small, i.e. if 
+				       area / ((A_hat - A_squeeze)/number of segments) < bound_for_adding */
  
   par->method             = UNUR_METH_TDR;  /* method and default variant    */
   par->set                = 0UL;    /* inidicate default parameters          */    
@@ -1076,6 +1080,7 @@ _unur_tdr_create( struct unur_par *par )
   /* bounds for adding construction points  */
   GEN.max_ivs = PAR.max_ivs;        /* maximum number of segments            */
   GEN.max_ratio = PAR.max_ratio;    /* bound for ratio  Atotal / Asqueeze    */
+  GEN.bound_for_adding = PAR.bound_for_adding;
 
   gen->method = par->method;        /* indicates method and variant          */
   _unur_copy_urng_pointer(par,gen); /* pointer to urng into generator object */
@@ -1304,13 +1309,13 @@ _unur_tdr_get_starting_intervals( struct unur_par *par, struct unur_gen *gen )
     case 0:     /* p.d.f. not T-concave */
       return 0;
     case 1:     /* computation of parameters for interval successful */
-      if (iv->Ahatl < INFINITY && iv->Ahatr < INFINITY) {
-	/* area below hat finite. skip to next interval. */
-	iv = iv->next;
-	  continue;
-      }
+      /* skip to next interval */
+      iv = iv->next;
+      continue;
+    case -1:    /* interval unbounded */
+      /* split interval */
       break;
-    case -1:    /* construction points too close */
+    case -2:    /* construction points too close */
       /* we have to remove this last interval from list */
       /* (the last construction point in the list is a boundary point.
 	 thus we might change the domain of the distribution.
@@ -1436,9 +1441,10 @@ _unur_tdr_interval_parameter( struct unur_gen *gen, struct unur_tdr_interval *iv
      /*   iv   ... pointer to interval                                       */
      /*                                                                      */
      /* return:                                                              */
-     /*   1  ... if successful (includes area = INFINITY)                    */
-     /*  -1 ... construction points too close                                */
-     /*   0 ... error                                                        */
+     /*   1 ... if successful                                                */
+     /*  -1 ... area = INFINITY                                              */
+     /*  -2 ... construction points too close                                */
+     /*   0 ... error (not p.d.f. T-concave)                                 */
      /*----------------------------------------------------------------------*/
 {
   double ipt;   /* point at which the interval iv is divided into two parts */
@@ -1460,7 +1466,7 @@ _unur_tdr_interval_parameter( struct unur_gen *gen, struct unur_tdr_interval *iv
   if (iv->Tfx > -INFINITY && iv->next->Tfx > -INFINITY) {
     /* slope of transformed squeeze */
     if (iv->x == iv->next->x)    /** TODO **/
-      return -1;   /* construction points too close */
+      return -2;   /* construction points too close */
     iv->sq = (iv->next->Tfx - iv->Tfx) / (iv->next->x - iv->x);   /** TODO: possible over/underflow **/
     /* check squeeze */
     if ( (iv->sq > iv->dTfx      && iv->dTfx       > -INFINITY) ||
@@ -1472,8 +1478,8 @@ _unur_tdr_interval_parameter( struct unur_gen *gen, struct unur_tdr_interval *iv
     /* always integrate from point with greater value of transformed density
        to the other point */
     iv->Asqueeze = (iv->Tfx > iv->next->Tfx) ?
-      area( gen, iv, iv->sq, iv->next->x) :
-      area( gen, iv->next, iv->sq, iv->x);
+      _unur_tdr_interval_area( gen, iv, iv->sq, iv->next->x)
+      : _unur_tdr_interval_area( gen, iv->next, iv->sq, iv->x);
   }
   else {  /* no squeeze */
     iv->sq = 0.;
@@ -1483,14 +1489,20 @@ _unur_tdr_interval_parameter( struct unur_gen *gen, struct unur_tdr_interval *iv
   /* volume below hat */
   /** TODO: it is not always a good idea to integrate from construction point
       to division point when the hat is increasing in this direction. **/
-  iv->Ahatl = area( gen, iv, iv->dTfx, ipt);
-  iv->Ahatr = area( gen, iv->next, iv->next->dTfx, ipt);
+  iv->Ahatl = _unur_tdr_interval_area( gen, iv, iv->dTfx, ipt);
+  iv->Ahatr = _unur_tdr_interval_area( gen, iv->next, iv->next->dTfx, ipt);
+
+  /* areas below head unbounded ? */
+  if (iv->Ahatl >= INFINITY || iv->Ahatr >= INFINITY)
+    return -1;
 
   /* check area */
-  if (iv->Asqueeze > iv->Ahatl+iv->Ahatr + 2 * DBL_MIN) {      /** TODO: possible over/underflow ( ?? ) **/
-      _unur_warning(gen->genid,UNUR_ERR_INIT,"A(squeeze) > A(hat). p.d.f. not T-concave!");
-      return 0; /** TODO: skip over roundoff errors **/
-    }
+  if ( (iv->Asqueeze - iv->Ahatl - iv->Ahatr)/(iv->Ahatl + iv->Ahatr) > DBL_EPSILON) {
+    /** TODO: is this o.k. to distiguish between roundoff errors and violated condition ?? **/
+    /** TODO: possible over/underflow ( ?? ) **/
+    _unur_warning(gen->genid,UNUR_ERR_INIT,"A(squeeze) > A(hat). p.d.f. not T-concave!");
+    return 0; 
+  }
 
   /* o.k. */
   return 1;
@@ -1575,7 +1587,7 @@ _unur_tdr_interval_division_point( struct unur_gen *gen, struct unur_tdr_interva
 /*---------------------------------------------------------------------------*/
 
 static double
-area( struct unur_gen *gen, struct unur_tdr_interval *iv, double slope, double x )
+_unur_tdr_interval_area( struct unur_gen *gen, struct unur_tdr_interval *iv, double slope, double x )
      /*---------------------------------------------------------------------------*/
      /* compute area below piece of hat or slope in                               */
      /* interval [iv->x,x] or [x,iv->x]                                           */
@@ -1665,7 +1677,7 @@ area( struct unur_gen *gen, struct unur_tdr_interval *iv, double slope, double x
 
   return ( (area<0.) ? -area : area );
 
-} /* end of area */
+} /* end of _unur_tdr_interval_area() */
 
 /*****************************************************************************/
 
@@ -1694,12 +1706,16 @@ _unur_tdr_interval_split( struct unur_gen *gen, struct unur_tdr_interval *iv_old
   COOKIE_CHECK(iv_oldl,CK_TDR_IV,0);
 
 #if UNUR_DEBUG & UNUR_DB_INFO
-    /* write info into log file */
-    if (gen->debug & TDR_DB_SPLIT) 
-      _unur_tdr_debug_split_start( gen,iv_oldl,x,fx );
+  /* write info into log file */
+  if (gen->debug & TDR_DB_SPLIT) 
+    _unur_tdr_debug_split_start( gen,iv_oldl,x,fx );
 #endif
 
-#if 1
+  /* we only add a new construction point, if the relative area is large enough */
+  if ( (GEN.n_ivs * (iv_oldl->Ahatl + iv_oldl->Ahatr - iv_oldl->Asqueeze) / (GEN.Atotal - GEN.Asqueeze))
+       < GEN.bound_for_adding)
+    return 0;
+
   /* check if the new interval is completely outside the support of p.d.f. */
   if (fx <= 0.) {
 
@@ -1719,56 +1735,54 @@ _unur_tdr_interval_split( struct unur_gen *gen, struct unur_tdr_interval *iv_old
 
     /* compute parameters for chopped interval */
     _unur_tdr_interval_parameter(gen,iv_oldl);
+    /** TODO: check for errors! **/
 
     /* for _unur_tdr_debug_split_stop only */
     iv_newr = iv_oldl;
 
   }
   else {
-#endif
 
+    /* we need a new interval */
+    iv_newr = _unur_tdr_interval_new( gen, x, fx, FALSE );
+    CHECK_NULL(iv_newr,0);     /* case of error */
+    
+    /* link into list */
+    iv_newr->next = iv_oldl->next;
+    iv_oldl->next = iv_newr;
+    
+    /* compute parameters for interval */
+    if ( _unur_tdr_interval_parameter(gen, iv_oldl) <= 0 ||
+	 _unur_tdr_interval_parameter(gen, iv_newr) <= 0 ) {
+      
+      /* p.d.f. not T-concave, or new interval to narrow, 
+	 or area below hat not bounded */
 
-  /* we need a new interval */
-  iv_newr = _unur_tdr_interval_new( gen, x, fx, FALSE );
-  CHECK_NULL(iv_newr,0);     /* case of error */
-
-  /* link into list */
-  iv_newr->next = iv_oldl->next;
-  iv_oldl->next = iv_newr;
-
-  /* compute parameters for interval */
-  if ( _unur_tdr_interval_parameter(gen, iv_oldl) <= 0 ||      /* p.d.f. not T-concave ...       */
-       _unur_tdr_interval_parameter(gen, iv_newr) <= 0 ||      /* ... or new interval to narrow  */
-       iv_oldl->Ahatl >= INFINITY                      ||      /* area below hat not bounded     */
-       iv_oldl->Ahatr >= INFINITY                      ||
-       iv_newr->Ahatl >= INFINITY                      ||
-       iv_newr->Ahatr >= INFINITY          ) {
-
-    /* new construction point not suitable --> do not add */
-    _unur_warning(gen->genid,UNUR_ERR_SAMPLE,"Cannot split interval at given point.");
+      /* new construction point not suitable --> do not add */
+      _unur_warning(gen->genid,UNUR_ERR_SAMPLE,"Cannot split interval at given point.");
 #if UNUR_DEBUG & UNUR_DB_INFO
-    /* write info into log file */
-    if (gen->debug & TDR_DB_SPLIT) 
-      _unur_tdr_debug_split_stop( gen,iv_oldl,iv_newr );
+      /* write info into log file */
+      if (gen->debug & TDR_DB_SPLIT) 
+	_unur_tdr_debug_split_stop( gen,iv_oldl,iv_newr );
 #endif
-
-    /* remove from linked list */
-    iv_oldl->next = iv_newr->next;
-    _unur_tdr_iv_stack_push(gen);
-    /* we have to restore the old interval.
-       (this case should not happen, so it is faster not to make a 
-       backup of the old interval) */
-    if ( !_unur_tdr_interval_parameter(gen, iv_oldl) ) {
-      _unur_error(gen->genid,UNUR_ERR_SAMPLE,"Cannot restore interval. PANIK.");
-      exit (-1);
+      
+      /* remove from linked list */
+      iv_oldl->next = iv_newr->next;
+      _unur_tdr_iv_stack_push(gen);
+      /* we have to restore the old interval.
+	 (this case should not happen, so it is faster not to make a 
+	 backup of the old interval) */
+      if ( !_unur_tdr_interval_parameter(gen, iv_oldl) ) {
+	_unur_error(gen->genid,UNUR_ERR_SAMPLE,"Cannot restore interval. PANIK.");
+	exit (-1);
+      }
+      return 0;
     }
-    return 0;
   }
-  }
-
+  
   /* update guide table */ 
   _unur_tdr_make_guide_table(gen);
-
+  
 #if UNUR_DEBUG & UNUR_DB_INFO
   /* write info into log file */
   if (gen->debug & TDR_DB_SPLIT) 

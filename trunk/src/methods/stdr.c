@@ -173,18 +173,18 @@ unur_stdr_new( struct unur_distr *distr )
   COOKIE_SET(par,CK_STDR_PAR);
 
   /* copy input */
-  par->distr       = distr;   /* pointer to distribution object              */
+  par->distr    = distr;      /* pointer to distribution object              */
 
   /* set default values */
-  PAR.Fmode        = -1.;     /* c.d.f. at mode (unknown yet)                */
+  PAR.Fmode     = -1.;        /* c.d.f. at mode (unknown yet)                */
 
-  par->method      = UNUR_METH_STDR;  /* method and default variant          */
-  par->variant     = 0u;              /* default variant                     */
-  par->set         = 0u;              /* inidicate default parameters        */    
-  par->urng        = unur_get_default_urng(); /* use default urng            */
+  par->method   = UNUR_METH_STDR;     /* method and default variant          */
+  par->variant  = 0u;                 /* default variant                     */
+  par->set      = 0u;                 /* inidicate default parameters        */    
+  par->urng     = unur_get_default_urng(); /* use default urng               */
 
-  par->genid       = _unur_set_genid(GENTYPE);/* set generator id            */
-  par->debug       = UNUR_DEBUGFLAG_DEFAULT;  /* set default debugging flags */
+  par->genid    = _unur_set_genid(GENTYPE);/* set generator id               */
+  par->debug    = _unur_default_debugflag; /* set default debugging flags    */
 
   /* routine for starting generator */
   par->init = unur_stdr_init;

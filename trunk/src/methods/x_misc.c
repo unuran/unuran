@@ -38,6 +38,11 @@
 
 /*---------------------------------------------------------------------------*/
 
+/* global variable for default debugging flags */
+unsigned _unur_default_debugflag = UNUR_DEBUGFLAG_DEFAULT;
+
+/*---------------------------------------------------------------------------*/
+
 /*****************************************************************************/
 /**                                                                         **/
 /**  Set debuging flags                                                     **/
@@ -67,6 +72,24 @@ unur_set_debug( struct unur_par *par, unsigned debug )
 #endif
 
 } /* end of unur_set_debug() */
+  
+/*---------------------------------------------------------------------------*/
+
+int
+unur_set_default_debug( struct unur_par *par, unsigned debug )
+     /*----------------------------------------------------------------------*/
+     /* set default debugging flag for generator                             */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par   ... pointer to parameter for building generator object       */
+     /*   debug ... debugging flag                                           */
+     /*----------------------------------------------------------------------*/
+{
+  CHECK_NULL(par,0);
+
+  _unur_default_debugflag = debug;
+  return 1;
+} /* end of unur_set_default_debug() */
   
 /*---------------------------------------------------------------------------*/
 

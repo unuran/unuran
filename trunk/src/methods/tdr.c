@@ -507,7 +507,7 @@ unur_tdr_new( struct unur_distr* distr )
   par->urng     = unur_get_default_urng(); /* use default urng               */
 
   par->genid    = _unur_set_genid(GENTYPE);/* set generator id               */
-  par->debug    = UNUR_DEBUGFLAG_DEFAULT;  /* set default debugging flags    */
+  par->debug    = _unur_default_debugflag; /* set default debugging flags    */
 
   /* we use the mode (if known) as center of the distribution */
   if (distr->set & UNUR_DISTR_SET_MODE) {

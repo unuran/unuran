@@ -161,21 +161,21 @@ unur_ninv_new( struct unur_distr *distr )
   COOKIE_SET(par,CK_NINV_PAR);
 
   /* copy input */
-  par->distr       = distr;   /* pointer to distribution object              */
+  par->distr       = distr;        /* pointer to distribution object         */
 
   /* set default values */
-  PAR.max_iter    = 40;         /* maximal number of iterations              */
-  PAR.rel_x_resolution = 1.0e-16;   /* maximal relative error in x           */
-  PAR.s[0]        = -10.;      /* left boundary of interval                 */
-  PAR.s[1]        = 10.;       /* right boundary of interval                */
+  PAR.max_iter  = 40;              /* maximal number of iterations           */
+  PAR.rel_x_resolution = 1.0e-16;  /* maximal relative error in x            */
+  PAR.s[0]      = -10.;            /* left boundary of interval              */
+  PAR.s[1]      = 10.;             /* right boundary of interval             */
 
-  par->method      = UNUR_METH_NINV;  /* method and default variant          */
-  par->variant     = NINV_VARFLAG_REGULA;  /* default variant                */
-  par->set         = 0u;              /* inidicate default parameters        */    
-  par->urng        = unur_get_default_urng(); /* use default urng            */
+  par->method   = UNUR_METH_NINV;          /* method and default variant     */
+  par->variant  = NINV_VARFLAG_REGULA;     /* default variant                */
+  par->set      = 0u;                      /* inidicate default parameters   */    
+  par->urng     = unur_get_default_urng(); /* use default urng               */
 
-  par->genid       = _unur_set_genid(GENTYPE);/* set generator id            */
-  par->debug       = UNUR_DEBUGFLAG_DEFAULT;  /* set default debugging flags */
+  par->genid    = _unur_set_genid(GENTYPE);/* set generator id               */
+  par->debug    = _unur_default_debugflag; /* set default debugging flags    */
 
   /* routine for starting generator */
   par->init = unur_ninv_init;

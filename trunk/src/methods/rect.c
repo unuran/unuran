@@ -122,7 +122,7 @@ unur_rect_new( int dim )
   par->urng     = unur_get_default_urng(); /* use default urng               */
 
   par->genid    = _unur_set_genid(GENTYPE);/* set generator id               */
-  par->debug    = UNUR_DEBUGFLAG_DEFAULT;  /* set default debugging flags    */
+  par->debug    = _unur_default_debugflag; /* set default debugging flags    */
 
   /* routine for starting generator */
   par->init = unur_rect_init;

@@ -76,11 +76,6 @@
 #include "hitrou.h"
 
 /*---------------------------------------------------------------------------*/
-/* Variants:                                                                 */
-
-#define HITROU_VARFLAG_VERIFY   0x002u   /* run verify mode                   */
-
-/*---------------------------------------------------------------------------*/
 /* Flags for logging set calls                                               */
 
 #define HITROU_SET_U       0x001u     /* set u values of bounding rectangle   */
@@ -110,7 +105,6 @@ static struct unur_gen *_unur_hitrou_create( struct unur_par *par );
 /*---------------------------------------------------------------------------*/
 
 static void  _unur_hitrou_sample_cvec( struct unur_gen *gen, double *vec );
-static void  _unur_hitrou_sample_check( struct unur_gen *gen, double *vec );
 /*---------------------------------------------------------------------------*/
 /* sample from generator.                                                    */
 /*---------------------------------------------------------------------------*/
@@ -373,75 +367,6 @@ unur_hitrou_set_skip( struct unur_par *par, long skip )
 
 } /* end of unur_hitrou_set_r() */
 
-/*---------------------------------------------------------------------------*/
-
-int
-unur_hitrou_set_verify( struct unur_par *par, int verify )
-     /*----------------------------------------------------------------------*/
-     /* turn verifying of algorithm while sampling on/off                    */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   par    ... pointer to parameter for building generator object      */
-     /*   verify ... 0 = no verifying,  !0 = verifying                       */
-     /*                                                                      */
-     /* return:                                                              */
-     /*   UNUR_SUCCESS ... on success                                        */
-     /*   error code   ... on error                                          */
-     /*                                                                      */
-     /* comment:                                                             */
-     /*   no verifying is the default                                        */
-     /*----------------------------------------------------------------------*/
-{
-  /* check arguments */
-  _unur_check_NULL( GENTYPE, par, UNUR_ERR_NULL );
-  _unur_check_par_object( par, HITROU );
-
-  /* we use a bit in variant */
-  par->variant = (verify) ? (par->variant | HITROU_VARFLAG_VERIFY) : (par->variant & (~HITROU_VARFLAG_VERIFY));
-
-  /* o.k. */
-  return UNUR_SUCCESS;
-
-} /* end of unur_hitrou_set_verify() */
-
-/*---------------------------------------------------------------------------*/
-
-int
-unur_hitrou_chg_verify( struct unur_gen *gen, int verify )
-     /*----------------------------------------------------------------------*/
-     /* turn verifying of algorithm while sampling on/off                    */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   gen    ... pointer to generator object                             */
-     /*   verify ... 0 = no verifying,  !0 = verifying                       */
-     /*                                                                      */
-     /* return:                                                              */
-     /*   UNUR_SUCCESS ... on success                                        */
-     /*   error code   ... on error                                          */
-     /*                                                                      */
-     /* comment:                                                             */
-     /*   no verifying is the default                                        */
-     /*----------------------------------------------------------------------*/
-{
-  /* check input */
-  _unur_check_NULL( GENTYPE, gen, UNUR_ERR_NULL );
-  _unur_check_gen_object( gen, HITROU, UNUR_ERR_GEN_INVALID );
-
-  if (verify) {
-    /* turn verify bounding rectangle on */
-    gen->variant |= HITROU_VARFLAG_VERIFY;
-    SAMPLE = _unur_hitrou_sample_check;
-  }
-  else {
-    /* turn verify bounding rectangle off */
-    gen->variant &= ~HITROU_VARFLAG_VERIFY;
-    SAMPLE = _unur_hitrou_sample_cvec;
-  }
-
-  /* o.k. */
-  return UNUR_SUCCESS;
-
-} /* end of unur_hitrou_chg_verify() */
 
 /*****************************************************************************/
 
@@ -614,7 +539,7 @@ _unur_hitrou_create( struct unur_par *par )
   gen->genid = _unur_set_genid(GENTYPE);
 
   /* routines for sampling and destroying generator */
-  SAMPLE = (par->variant & HITROU_VARFLAG_VERIFY) ? _unur_hitrou_sample_check : _unur_hitrou_sample_cvec;
+  SAMPLE = _unur_hitrou_sample_cvec;
 
   gen->destroy = _unur_hitrou_free;
   gen->clone = _unur_hitrou_clone;
@@ -780,21 +705,6 @@ _unur_hitrou_sample_cvec( struct unur_gen *gen, double *vec )
   return;
 } /* end of _unur_hitrou_sample() */
 
-/*---------------------------------------------------------------------------*/
-
-void
-_unur_hitrou_sample_check( struct unur_gen *gen, double *vec )
-     /*----------------------------------------------------------------------*/
-     /* sample from generator and verify that method can be used             */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   gen ... pointer to generator object                                */
-     /*   vec ... random sample vector (return)                              */
-     /*----------------------------------------------------------------------*/
-{ 
-  _unur_hitrou_sample_cvec(gen, vec);
-
-} /* end of _unur_hitrou_sample_check() */
 
 /*****************************************************************************/
 
@@ -883,7 +793,7 @@ _unur_hitrou_debug_init( const struct unur_gen *gen )
   _unur_distr_cvec_debug( gen->distr, gen->genid );
 
   fprintf(log,"%s: sampling routine = _unur_hitrou_sample",gen->genid);
-  if (gen->variant & HITROU_VARFLAG_VERIFY) fprintf(log,"_check");
+
   fprintf(log,"()\n%s:\n",gen->genid);
 
   /* parameters */

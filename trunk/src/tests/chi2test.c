@@ -628,7 +628,7 @@ _unur_test_chi2_vec ( struct unur_gen *gen,
         Linv[idx(j,i)] = 0.; /* Linv is a lover triangular matrix */
       }
   }
-  _unur_matrix_debug (dim, Linv, "Inverse Cholesky factor", "CHI2VEC" );
+  _unur_matrix_debug (dim, Linv, "Inverse Cholesky factor (1. method)", "CHI2VEC" );
 
   /* calculation of inverse Cholesky factor (2. method) */
   L = unur_distr_cvec_get_cholesky(gen->distr);
@@ -644,7 +644,7 @@ _unur_test_chi2_vec ( struct unur_gen *gen,
       }
     }
   }}
-  _unur_matrix_debug (dim, Linv, "Inverse Cholesky factor", "CHI2VEC" );
+  _unur_matrix_debug (dim, Linv, "Inverse Cholesky factor (2. method)", "CHI2VEC" );
   
   mean = unur_distr_cvec_get_mean(gen->distr);
 

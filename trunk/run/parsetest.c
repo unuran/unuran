@@ -40,7 +40,7 @@ int main(){
     printf("rand num: %f\n", unur_sample_cont(gen));
   }
   /* test4 */
-  strcpy(str, "distr=beta,  (1, 1): method=NINV; c=-0.5; variant_ia:prng=MT19937(454)");
+  strcpy(str, "distr=beta (1, 1): method=NINV; c=-0.5; variant_ia:prng=MT19937(454)");
   printf("%s\n", str);
   gen = unur_str2gen(str);
   for ( i=0; i<5; i++){

@@ -1083,11 +1083,35 @@ _unur_str_distr_new( char *distribution )
   _unur_str_debug_distr(1,name,darray,n_darray);
 #endif
 
-  /* get parameters */
-
+  /* get distribution object for standard distribution */
 
 =INPUT list_of_distributions
 
+   /* get pointer to generic distribution object */
+   if (distr == NULL) {
+     do {
+       if ( !strcmp( distribution, "cemp") ) {
+	 distr = unur_distr_cemp_new();
+	 break;
+       }
+       if ( !strcmp( distribution, "cont") ) {
+	 distr = unur_distr_cemp_new();
+	 break;
+       }
+       if ( !strcmp( distribution, "discr") ) {
+	 distr = unur_distr_cemp_new();
+	 break;
+       }
+
+       /* unsupported generic distribution objects: */
+       /*   unur_distr_corder_new()                 */
+       /*   unur_distr_cvec_new()                   */
+       /*   unur_distr_cvemp_new()                  */
+
+     } while (0);
+   }
+
+  /* check whether we have been succuessful */
    if (distr == NULL) {
      unur_errno = UNUR_ERR_GENERIC;
      _unur_stream_printf ( GENTYPE,__FILE__,__LINE__,
@@ -1095,7 +1119,12 @@ _unur_str_distr_new( char *distribution )
 			   unur_get_strerror(unur_errno), distribution );
    }
 
+   /* clear memory */
+   if (darray) free(darray);
+
+   /* return result */
    return distr;
+
 } /* end of _unur_str_distr_new() */
 
 /*---------------------------------------------------------------------------*/

@@ -117,6 +117,8 @@ _unur_stdgen_poisson_init( struct unur_par *par, struct unur_gen *gen )
     }
     return 1;
 
+    /** WinRand routine `pruec' (Ratio of Uniforms/Inversion) not implemented **/
+
   case UNUR_STDGEN_INVERSION:   /* inversion method */
   default: /* no such generator */
     if (gen) _unur_warning(par->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"");

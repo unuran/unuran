@@ -55,6 +55,7 @@
 #define CHI2_SAMPLEFAC  40  
          /* if samplesize<=0 use samplesize = CHI2_SAMPLEFAC * intervals^dim */
 #define CHI2_INTERVALS_DEFAULT 50  /* number of intervals for chi^2 test     */
+#define CHI2_MAX_DIMENSIONS 40 /* max number of dimensions for CHI2 tests  */
 
 /* constants */
 #define CHI2_MAX_SAMPLESIZE 1000000
@@ -525,12 +526,12 @@ _unur_test_chi2_vec ( struct unur_gen *gen,
 
   int dim;         /* dimension of multivariate distribution */
   double *z;       /* sampling vector */
-  int *b, *bg;     /* vectors for observed occurrences */
+  int *bg[CHI2_MAX_DIMENSIONS]; /* vectors for observed occurrences */
   double pval;     /* p-value */
-  int i,j, offset;
+  int i,j, offset, sumintervals;
   int *idx;	   /* index array */
-  int idim;        /* intervals ^ dim */
-  int ipow;	   /* powers of intervals : intervals^x */
+  int dimintervals[CHI2_MAX_DIMENSIONS]; /* for marginal chi2 tests */ 
+  int totalintervals; /* sum of the dimintervals[] */
   
   /* check arguments */
   CHECK_NULL(gen,-1.);
@@ -546,109 +547,86 @@ _unur_test_chi2_vec ( struct unur_gen *gen,
     return -1; 
   }
 
-  /* idim = intervals^dim */
-  /* we avoid using the pow function here */
-  idim = intervals;
-  for (i=2; i<=dim; i++) {
-    idim = (INT_MAX/intervals > idim) ? idim*intervals : INT_MAX;
+  if (dim > CHI2_MAX_DIMENSIONS) {
+    _unur_error(test_name,UNUR_ERR_GENERIC,"Distribution dimension too large");
+    return -1; 
   }
 
-
-  if (idim == INT_MAX) {
-    _unur_error(test_name,UNUR_ERR_GENERIC,"too many intervals for this dimension");
-    return -1;
+  /* setup of intervals for each dimension */
+  totalintervals=0;
+  for (i=0; i<dim; i++) {
+    dimintervals[i] = (int) ( intervals * (1.+UNUR_EPSILON)/(1+i) ) ;  
+    if (dimintervals[i]>intervals) dimintervals[i] = intervals; /* in case we wish to make changes in previous line */
+    if (dimintervals[i]<2) dimintervals[i]=2; /* 1 would be safer, but makes no sense in this context */
+    totalintervals += dimintervals[i];
   }
-  
+
+  totalintervals += 0 ; /* maybe we'll need this parameter someday */
+
   /* allocate memory */
   idx = _unur_malloc( dim * sizeof(int));
   if (idx==NULL) {
       _unur_error(test_name,UNUR_ERR_GENERIC,"malloc error : idx");
-      return -1;
+      pval=-1; goto free_memory;
   }
 
   z = _unur_malloc( dim * sizeof(double));
   if (z==NULL) {
      _unur_error(test_name,UNUR_ERR_GENERIC,"malloc error : z");
-     free(idx);
-     return -1;
+     pval=-1; goto free_memory;
   }
   
-  b = _unur_malloc( dim * intervals * sizeof(int));
-  if (b==NULL) {
-     _unur_error(test_name,UNUR_ERR_GENERIC,"malloc error : b");
-     free(idx);
-     free(z);
-     return -1;
-  }
-	     
-  bg = _unur_malloc( idim * sizeof(int));
-  if (bg==NULL) {
+  for (i=0; i<dim; i++) {
+  bg[i] = _unur_malloc( dimintervals[i] * sizeof(int));
+  if (bg[i]==NULL) {
      _unur_error(test_name,UNUR_ERR_GENERIC,"malloc error : bg");
-     free(idx);
-     free(z);
-     free(b);
-     return -1;
-  }
+     pval=-1; goto free_memory;
+  }}   
 
   /* clear arrays */
 
-  (void) memset(b  , 0, dim * intervals * sizeof(int));
-  (void) memset(bg , 0, idim * sizeof(int));
+  for (i=0; i<dim; i++) (void) memset(bg[i] , 0, dimintervals[i] * sizeof(int));
   (void) memset(idx, 0, dim * sizeof(int));
 
   /* samplesize */
   if( samplesize <= 0 ) {
-    /* samplesize = CHI2_SAMPLEFAC * intervals^dim */
-    samplesize = (INT_MAX/CHI2_SAMPLEFAC > idim) ? idim*CHI2_SAMPLEFAC : INT_MAX;
+    samplesize = abs(samplesize);
   }
   samplesize = min( samplesize, CHI2_MAX_SAMPLESIZE );
 
   /* now run generator */
   for( i=0; i<samplesize; i++ ) {
     _unur_sample_vec(gen, z);
+    sumintervals=0;
     for (j=0; j<dim; j++) {
-      idx[j] = (int)( intervals * _unur_sf_cdfnormal(z[j]) );
-      if (idx[j]==intervals) idx[j]--; /* cdf can return 1 ? */
-      offset=j*intervals+idx[j];
-      ++b[offset];
+      idx[j] = (int)( dimintervals[j] * _unur_sf_cdfnormal(z[j]) );
+      if (idx[j]==dimintervals[j]) idx[j]--; /* cdf can return 1 ? */
+      offset=sumintervals+idx[j];
+      ++bg[offset][i];
+      sumintervals += dimintervals[j];
     }
-    /* calculate dim-tuple offset */
-    offset=0;
-    ipow = 1;
-    for (j=0; j<dim; j++) {
-      offset += ipow * idx[j];
-      ipow *= intervals;
-    }    
-    ++bg[offset];
   }
 
+  /* and now make chi^2 test (marginal) */
+  sumintervals = 0;
   for (j=0; j<dim; j++) {
     if (verbose >= 1) {
       fprintf(out,"\nChi^2-Test for multivariate continuous distribution\n");
-      fprintf(out,"  intervals  = %d\n",intervals);
+      fprintf(out,"  intervals  = %d\n",dimintervals[j]);
       fprintf(out,"  marginal   = %d\n",j);
     }
 
-
-    /* and now make chi^2 test (marginal) */
-    pval = _unur_test_chi2test(NULL, &b[j*intervals] , intervals, classmin, verbose, out );
+    pval = _unur_test_chi2test(NULL, &bg[sumintervals][j] , dimintervals[j], classmin, verbose, out );
+    sumintervals += dimintervals[j];
     
   }
 
 
-  if (verbose >= 1) {
-    fprintf(out,"\nChi^2-Test for multivariate continuous distribution\n");
-    fprintf(out,"  intervals  = %d\n",idim);
-  }
-
-  /* make chi^2 test for bg */
-  pval = _unur_test_chi2test(NULL, bg , idim, classmin, verbose, out );
-
+free_memory:
   /* free memory */
   free(idx);
   free(z);
-  free(b);
-  free(bg);
+  for (i=0; i<dim; i++) free(bg[i]);
 
   /* return result of test */
 

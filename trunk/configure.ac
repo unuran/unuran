@@ -78,6 +78,11 @@ AM_CONDITIONAL(HAVE_MATHEMATICA, test x$have_mathematica = xtrue)
 dnl AM_CONDITIONAL(HAVE_MATHEMATICA,true)
 dnl AM_CONDITIONAL(HAVE_MATHEMATICA,false)
 
+dnl check for Valgrind
+dnl (Valgrind is a GPL'd system for debugging and profiling x86-Linux programs)
+AC_CHECK_PROG(have_valgrind,valgrind,true,false) 
+AM_CONDITIONAL(HAVE_VALGRIND, test x$have_valgrind = xtrue)
+
 dnl Set flags for compiler
 if test X"$GCC" = Xyes ; then
 	AC_SUBST(AM_CFLAGS,-Wall)

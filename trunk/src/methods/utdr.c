@@ -865,7 +865,6 @@ _unur_utdr_create( struct unur_par *par )
   GEN.ir = DISTR.BD_RIGHT;          /* right boundary of domain        */
   GEN.fm = PAR.fm;                  /* pdf at mode                           */
   GEN.hm = PAR.hm;                  /* square root of pdf at mode            */
-
   GEN.c_factor = PAR.c_factor;
   GEN.delta_factor = PAR.delta_factor;
 
@@ -889,8 +888,6 @@ _unur_utdr_create( struct unur_par *par )
   GEN.vollc = 0.; 
   GEN.volcompl = 0.; 
   GEN.voll = 0.; 
-  GEN.fm = 0.; 
-  GEN.hm = 0.; 
   GEN.al = 0.; 
   GEN.ar = 0.; 
   GEN.col = 0.; 

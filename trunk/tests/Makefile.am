@@ -47,6 +47,7 @@ check_PROGRAMS = \
  t_hrd \
  t_hri \
  t_ninv \
+ t_nrou \
  t_srou \
  t_ssr \
  t_tabl \

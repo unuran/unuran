@@ -55,11 +55,6 @@ static struct timeval tv;
 static char test_name[] = "Timing";
 /*---------------------------------------------------------------------------*/
 
-#define TIME_BOUND   1000000
-/*---------------------------------------------------------------------------*/
-/*  approximate time for running timing test unur_test_timing_total_run()    */
-/*---------------------------------------------------------------------------*/
-
 double unur_test_timing_total_run( const struct unur_par *par, int samplesize, int repeat );
 /*---------------------------------------------------------------------------*/
 /*  estimate average time (in micro seconds) for sampling 1 random variate   */
@@ -232,38 +227,81 @@ unur_test_timing_total( const UNUR_PAR *par, int samplesize, double max_duration
      /*   return -1.                                                         */
      /*----------------------------------------------------------------------*/
 {
-#define REPEAT_0_PILOT 11         /* size of pilot study */
-
-  double time_pilot;
-  int repeat;
+  double time_pilot, time_result;
+  int size_pilot, size_result;
+  int repeat_pilot, repeat_result;
+  double time_2nd, d, k;
 
   /* check parameter */
   _unur_check_NULL(test_name,par,-1.);
   if (samplesize < 0) return -1.;
-  if (max_duration < 1.e-3) max_duration = 1.e-3; 
+
+  /* rescale maximal duration from seconds to micro seconds */
+  max_duration = (max_duration < 1.e-3) ? 1000. : 1.e6 * max_duration;
 
   /* pilot study */
-  time_pilot = unur_test_timing_total_run(par,1,REPEAT_0_PILOT);
-  if (time_pilot < 0)
-    return -1.;
+  repeat_pilot = 11 - log(samplesize)/M_LN2;
+  if (repeat_pilot<1) repeat_pilot = 1;
 
-  /* now run timing test */
-  repeat = (int) (TIME_BOUND / time_pilot);
-  if (repeat <= 11) {
-    /* there is no need to run this test again */
-    return time_pilot;
+  size_pilot = samplesize;
+  if (samplesize >= 1000) size_pilot = 500;
+
+  time_pilot = unur_test_timing_total_run(par, size_pilot, repeat_pilot);
+  if (time_pilot < 0) return -1.;
+
+  if (samplesize >= 1000) {
+    /* make second pilot study with double sample size */
+    time_2nd = unur_test_timing_total_run(par, 2*size_pilot, repeat_pilot);
+    if (time_2nd < 0) return -1.;
+
+    /* estimate time for given sample size */
+    d = 2*time_pilot - time_2nd;
+    if (d<0.) d=0.;
+    k = (time_2nd - time_pilot)/size_pilot;
+    if (k<=0.) k = time_pilot/size_pilot;
+    time_pilot = d + samplesize * k;
   }
   else {
-    if (repeat > 1000) 
-      /* there is no need for more than 1000 repetitions */
-      repeat = 1000;
-    return unur_test_timing_total_run(par,1,repeat);
+    /* this is not required, but it prevents an error in case of a programming bug */
+    d = 0;
+    k = time_pilot / size_pilot;
+  }
+  
+  /* now run timing test */
+
+  repeat_result = (int) (max_duration / time_pilot);
+  if (repeat_result > 1000) repeat_result = 1000;
+  /* there is no need for more than 1000 repetitions */
+
+  size_result = samplesize;
+
+  if (repeat_result <= repeat_pilot && size_result == size_pilot) {
+    /* there is no need to run this test again */
+    time_result = time_pilot;
+  }
+  else {
+    if (repeat_result >= 2) {
+      time_result =  unur_test_timing_total_run(par,size_result,repeat_result);
+    }
+    else {
+      /* do not generate the full sample */
+      repeat_result = 2;
+      size_result = (int) ((max_duration - d)/k);
+      size_result /= 4;
+      time_result =  unur_test_timing_total_run(par,size_result,repeat_result);
+      time_2nd =  unur_test_timing_total_run(par,2*size_result,repeat_result);
+      /* estimate time from shorter sample sizes */
+      d = 2*time_result - time_2nd;
+      if (d<0.) d=0.;
+      k = (time_2nd - time_result)/size_result;
+      if (k<=0.) k = time_result/size_result;
+      time_result = d + samplesize * k;
+    }      
   }
 
-  /* this should not happen */
-  return -1.;
+  /* o.k. */
+  return time_result;
 
-#undef SIZE_0_PILOT
 } /* end of unur_test_timing_total() */
 
 /*---------------------------------------------------------------------------*/
@@ -318,20 +356,24 @@ double unur_test_timing_total_run( const struct unur_par *par, int samplesize, i
 
     /* make generator object (init) */
     gen_tmp = _unur_init(par_tmp);
-    if (!gen_tmp) return -1.;
+    if (!gen_tmp) {
+      if (vec) free(vec);
+      free(time);
+      return -1.;
+    }
 
     /* run generator */
     switch (gen_tmp->method & UNUR_MASK_TYPE) {
     case UNUR_METH_DISCR:
-      for( n=1; n<samplesize; n++ )
+      for( n=0; n<samplesize; n++ )
 	k = unur_sample_discr(gen_tmp);
       break;
     case UNUR_METH_CONT:
-      for( n=1; n<samplesize; n++ )
+      for( n=0; n<samplesize; n++ )
 	x = unur_sample_cont(gen_tmp);
       break;
     case UNUR_METH_VEC:
-      for( n=1; n<samplesize; n++ )
+      for( n=0; n<samplesize; n++ )
 	unur_sample_vec(gen_tmp,vec);
       break;
     default: /* unknown ! */

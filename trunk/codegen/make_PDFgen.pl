@@ -127,7 +127,7 @@ sub make_list_of_distributions
 	next unless $DISTR->{$d}->{"=TYPE"} eq "CONT";
 
 	$gencode .= "\tcase ".$DISTR->{$d}->{"=ID"}.":\n";
-	$gencode .= "\t\treturn _unur_acg_$language\_PDF_$d (distr,out,pdf);\n";
+	$gencode .= "\t\treturn _unur_acg_$language\_PDF_$d (out,distr,pdf);\n";
     }
 
     return $gencode;
@@ -165,7 +165,7 @@ sub get_PDFgen_funct
     my $d = $_[0];       # distribution
     my $l = $_[1];       # chosen programming language
 
-    return "int _unur_acg_$l\_PDF_$d (UNUR_DISTR *distr, FILE *out, const char *pdf)";
+    return "int _unur_acg_$l\_PDF_$d (FILE *out, UNUR_DISTR *distr, const char *pdf)";
 } # end of get_PDFgen_funct()
 
 

@@ -646,7 +646,8 @@ unur_ninv_chg_table( struct unur_gen *gen, int tbl_pnts )
   /* check arguments */
   CHECK_NULL(gen, 0);
 
-  /*  free(GEN.table); not freed, because realloc() is uses */ 
+  /*  free(GEN.table);   not freed, because realloc() is used */ 
+  /*  free(GEN.f_table); not freed, because realloc() is used */
   GEN.table_size = (tbl_pnts >= 10) ? tbl_pnts : 10;
   
   _unur_ninv_create_table(gen);  
@@ -941,6 +942,7 @@ _unur_ninv_create( struct unur_par *par )
 
   /* init pointer */
   GEN.table = NULL;
+  GEN.f_table = NULL;
 
   /* return pointer to (almost empty) generator object */
   return(gen);
@@ -1105,7 +1107,7 @@ _unur_ninv_regula( struct unur_gen *gen, double u )
     }
     if( ! _unur_FP_is_infinity(GEN.table[i+1]) ){
       x2 = GEN.table[i+1];
-      f2 = GEN.f_table[i+i];
+      f2 = GEN.f_table[i+1];
       /*  f2 = GEN.CDFmin + 
                (i+1)*((GEN.CDFmax-GEN.CDFmin)/(GEN.table_size-1.0));  */
     }
@@ -1430,6 +1432,7 @@ _unur_ninv_free( struct unur_gen *gen )
   /* free memory */
   _unur_free_genid(gen);
   free(GEN.table);
+  free(GEN.f_table);
   free(gen);
 
 } /* end of _unur_ninv_free() */

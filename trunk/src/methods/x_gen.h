@@ -41,7 +41,22 @@
 /* (Re-) Initialize generators                                               */
 
 UNUR_GEN *unur_init( UNUR_PAR *parameters );
-int    unur_reinit( UNUR_GEN *generator );
+/*
+  Initialize a generator object. All necessary information must be
+  stored in the parameter object.
+  Warning: If an error has occurred a NULL pointer is return. This
+  must not be used for the sampling routines (this causes a
+  segmentation fault). Thus always check if the call was successful.
+*/
+
+int unur_reinit( UNUR_GEN *generator );
+/*
+  Update an existing generator object after the distribution has been
+  changed. It is faster than destroying the existing object and build
+  a new one from scratch.
+  However it is not implemented all methods yet.
+  (was passiert wenn ein fehler auftritt??) return value = 0 ??
+*/
 
 /*---------------------------------------------------------------------------*/
 /* Sample from generator                                                     */
@@ -49,15 +64,30 @@ int    unur_reinit( UNUR_GEN *generator );
 int    unur_sample_discr(UNUR_GEN *generator);
 double unur_sample_cont(UNUR_GEN *generator);
 void   unur_sample_vec(UNUR_GEN *generator, double *vector);
+/*
+  Sample from generator object. The three routines depend on the type
+  of the generator object (discrete or continuous univariate
+  distribution, or multivariate distribution).
+  Warning: These routines do not check if generator is an invalid NULL
+  pointer.
+*/
+
 
 /*---------------------------------------------------------------------------*/
 /* Destroy (free) generator object                                           */
 
 void   unur_free( UNUR_GEN *gen );
+/*
+  Destroy (free) the given generator object.
+*/
 
 /*---------------------------------------------------------------------------*/
 /* Get dimension of generator for (multivariate) distribution                */
 
 int unur_get_dimension( UNUR_GEN *generator );
+/*
+  Get the number of dimension of a (multivariate) distribution.
+  For a univariate distribution 1 is return.
+*/
 
 /*---------------------------------------------------------------------------*/

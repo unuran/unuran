@@ -51,7 +51,7 @@
    =DESCRIPTION
       NINV is the implementation of numerical inversion.
       For finding the root it is possible to choose between
-      Newton's method and the regula falsi. The regalua falsi requires
+      Newton's method and the regula falsi. The regula falsi requires
       only the CDF while Newton's method also requires the PDF.
       
       It is possible to use this method for generating from truncated
@@ -72,21 +72,25 @@
   
       The standard number of iterations of NINV should be enough for all
       reasonable cases. Nevertheless it is possible to adjust the maximal
-      number of iterations with the command unur_ninv_[set|chg]_max_iter().
+      number of iterations with the command 
+      @command{unur_ninv_[set|chg]_max_iter}.
 
       To speed up this method (at the expense of the accuracy)
       it is possible to change the maximum error allowed in x with 
-      unur_ninv_[set|chg]_x_resolution().
+      @command{unur_ninv_[set|chg]_x_resolution}.
       
       NINV tries to use proper starting values for both the regala falsi
       and Newton's method. Of course the user might have more knowledge
       about the properties of the underlying distribution and is able
       to share his wisdom with NINV using the command
-      unur_ninv_[set|chg]_start().
+      @command{unur_ninv_[set|chg]_start}.
       
       It is also possible to change the parameters of the given distribution
       by a unur_ninv_chg_pdfparams() call. If a table exists, it will be
       recomputed immediately.
+
+      Default algorithm is regula falsi. It is slightly slower but
+      numerically much more stable than Newton's algorithm.
 
    =END
 */
@@ -106,14 +110,20 @@ UNUR_PAR *unur_ninv_new( UNUR_DISTR *distribution );
 
 /*...........................................................................*/
 
-int unur_ninv_set_usenewton( UNUR_PAR *parameters );
-/* 
-   Switch to Newton's method.
-*/
-
 int unur_ninv_set_useregula( UNUR_PAR *parameters );
 /* 
    Switch to regula falsi. (This the default.)
+*/
+
+int unur_ninv_set_usenewton( UNUR_PAR *parameters );
+/* 
+   Switch to Newton's method.
+   Notice that it is numerically less stable than regula falsi.
+   It it is not possible to invert the CDF for a particular random
+   number U when calling unur_sample_cont(), @code{unur_error} is set
+   to @code{UNUR_ERR_} and @code{UNUR_INFINITY} is returned.
+   Thus it is recommended to check @code{unur_error_.....} before
+   using the result of the sampling routine.
 */
 
 int unur_ninv_set_max_iter( UNUR_PAR *parameters, int max_iter );

@@ -152,7 +152,6 @@ struct unur_par {
   UNUR_URNG_TYPE  urng_aux;   /* pointer to second (auxilliary) uniform RNG  */
 
   struct unur_distr *distr;   /* pointer to distribution object              */
-  char *genid;                /* identifier for generator                    */
 
   unsigned debug;             /* debugging flags                             */
 #ifdef UNUR_COOKIES

@@ -511,7 +511,6 @@ unur_tdr_new( struct unur_distr* distr )
   par->urng     = unur_get_default_urng(); /* use default urng               */
   par->urng_aux = NULL;                    /* no auxilliary URNG required    */
 
-  par->genid    = _unur_set_genid(GENTYPE);/* set generator id               */
   par->debug    = _unur_default_debugflag; /* set default debugging flags    */
 
   /* we use the mode (if known) as center of the distribution */
@@ -560,7 +559,7 @@ unur_tdr_set_cpoints( struct unur_par *par, int n_stp, double *stp )
   /* we always use the boundary points as additional starting points,
      so we do not count these here! */
   if (n_stp < 0 ) {
-    _unur_warning(par->genid,UNUR_ERR_PAR_SET,"number of starting points < 0");
+    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"number of starting points < 0");
     return 0;
   }
 
@@ -568,7 +567,7 @@ unur_tdr_set_cpoints( struct unur_par *par, int n_stp, double *stp )
     /* starting points must be strictly monontonically increasing */
     for( i=1; i<n_stp; i++ )
       if (stp[i] <= stp[i-1]) {
-	_unur_warning(par->genid,UNUR_ERR_PAR_SET,"starting points not strictly monotonically increasing");
+	_unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"starting points not strictly monotonically increasing");
 	return 0;
       }
 
@@ -607,7 +606,7 @@ unur_tdr_set_guidefactor( struct unur_par *par, double factor )
 
   /* check new parameter for generator */
   if (factor < 0) {
-    _unur_warning(par->genid,UNUR_ERR_PAR_SET,"guide table size < 0");
+    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"guide table size < 0");
     return 0;
   }
 
@@ -645,7 +644,7 @@ unur_tdr_set_max_sqhratio( struct unur_par *par, double max_ratio )
 
   /* check new parameter for generator */
   if (max_ratio < 0. || max_ratio > 1. ) {
-    _unur_warning(par->genid,UNUR_ERR_PAR_SET,"ratio A(squeeze)/A(hat) not in [0,1]");
+    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"ratio A(squeeze)/A(hat) not in [0,1]");
     return 0;
   }
 
@@ -683,7 +682,7 @@ unur_tdr_set_max_intervals( struct unur_par *par, int max_ivs )
 
   /* check new parameter for generator */
   if (max_ivs < 1 ) {
-    _unur_warning(par->genid,UNUR_ERR_PAR_SET,"maximum number of intervals < 1");
+    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"maximum number of intervals < 1");
     return 0;
   }
 
@@ -822,16 +821,16 @@ unur_tdr_set_c( struct unur_par *par, double c )
 
   /* check new parameter for generator */
   if (c > 0.) {
-    _unur_warning(par->genid,UNUR_ERR_PAR_SET,"c > 0");
+    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"c > 0");
     return 0;
   }
   /** TODO: ... **/
 /*    if (c <= -1.) { */
-/*      _unur_warning(par->genid,UNUR_ERR_PAR_SET,"c <= -1 only if domain is bounded. Use `TABL' method then."); */
+/*      _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"c <= -1 only if domain is bounded. Use `TABL' method then."); */
 /*      return 0; */
 /*    } */
   if (c != 0 && c > -0.5) {
-    _unur_warning(par->genid,UNUR_ERR_PAR_SET,"-0.5 < c < 0 not recommended. using c = -0.5 instead.");
+    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"-0.5 < c < 0 not recommended. using c = -0.5 instead.");
     c = -0.5;
   }
     
@@ -902,7 +901,7 @@ _unur_tdr_init( struct unur_par *par )
 
   /* check input */
   if ( par->method != UNUR_METH_TDR ) {
-    _unur_error(par->genid,UNUR_ERR_PAR_INVALID,"");
+    _unur_error(GENTYPE,UNUR_ERR_PAR_INVALID,"");
     return NULL; }
   COOKIE_CHECK(par,CK_TDR_PAR,NULL);
 
@@ -1403,8 +1402,8 @@ _unur_tdr_create( struct unur_par *par )
   /* magic cookies */
   COOKIE_SET(gen,CK_TDR_GEN);
 
-  /* copy generator identifier */
-  gen->genid = par->genid;
+  /* set generator identifier */
+  gen->genid = _unur_set_genid(GENTYPE);
 
   /* copy distribution object into generator object */
   memcpy( &(gen->distr), par->distr, sizeof( struct unur_distr ) );
@@ -2295,7 +2294,6 @@ _unur_tdr_iv_stack_pop( struct unur_gen *gen )
 
     /* add to list of allocated blocks */
     _unur_add_mblocks( &(GEN.mblocks), GEN.iv_stack);
-
   }
 
   /* update ....                                   */

@@ -218,7 +218,6 @@ unur_dau_new( struct unur_distr *distr )
   par->urng      = unur_get_default_urng(); /* use default urng              */
   par->urng_aux  = NULL;                    /* no auxilliary URNG required   */
 
-  par->genid     = _unur_set_genid(GENTYPE);/* set generator id              */
   par->debug     = _unur_default_debugflag; /* set default debugging flags   */
 
   /* routine for starting generator */
@@ -252,7 +251,7 @@ unur_dau_set_urnfactor( struct unur_par *par, double factor )
   
   /* check new parameter for generator */
   if (factor < 1.) {
-    _unur_warning(par->genid,UNUR_ERR_PAR_SET,"relative urn size < 1.");
+    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"relative urn size < 1.");
     return 0;
   }
 
@@ -296,7 +295,7 @@ _unur_dau_init( struct unur_par *par )
 
   /* check input */
   if ( par->method != UNUR_METH_DAU ) {
-    _unur_error(par->genid,UNUR_ERR_PAR_INVALID,"");
+    _unur_error(GENTYPE,UNUR_ERR_PAR_INVALID,"");
     return NULL; }
   COOKIE_CHECK(par,CK_DAU_PAR,NULL);
   
@@ -513,8 +512,8 @@ _unur_dau_create( struct unur_par *par)
   /* magic cookies */
   COOKIE_SET(gen,CK_DAU_GEN);
 
-  /* copy generator identifier */
-  gen->genid = par->genid;
+  /* set generator identifier */
+  gen->genid = _unur_set_genid(GENTYPE);
 
   /* copy distribution object into generator object */
   memcpy( &(gen->distr), par->distr, sizeof( struct unur_distr ) );

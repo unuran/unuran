@@ -196,7 +196,6 @@ unur_dstd_new( struct unur_distr *distr )
   par->urng     = unur_get_default_urng(); /* use default urng               */
   par->urng_aux = NULL;                    /* no auxilliary URNG required    */
 
-  par->genid    = _unur_set_genid(GENTYPE);/* set generator id               */
   par->debug    = _unur_default_debugflag; /* set default debugging flags    */
 
   /* routine for initializing generator */
@@ -226,7 +225,7 @@ unur_dstd_set_variant( struct unur_par *par, unsigned variant )
 
   /* check arguments */
   _unur_check_NULL( GENTYPE,par,0 );
-  _unur_check_NULL( par->genid,par->distr,0 );
+  _unur_check_NULL( GENTYPE,par->distr,0 );
 
   /* check input */
   _unur_check_par_object( par,DSTD );
@@ -242,7 +241,7 @@ unur_dstd_set_variant( struct unur_par *par, unsigned variant )
   }
 
   /* variant not valid */
-  _unur_warning(par->genid,UNUR_ERR_PAR_VARIANT,"");
+  _unur_warning(GENTYPE,UNUR_ERR_PAR_VARIANT,"");
   par->variant = old_variant;
   return 0;
 
@@ -326,11 +325,11 @@ _unur_dstd_init( struct unur_par *par )
 
   /* check arguments */
   _unur_check_NULL( GENTYPE,par,NULL );
-  _unur_check_NULL( par->genid,par->DISTR_IN.init,NULL );
+  _unur_check_NULL( GENTYPE,par->DISTR_IN.init,NULL );
 
   /* check input */
   if ( par->method != UNUR_METH_DSTD ) {
-    _unur_error(par->genid,UNUR_ERR_PAR_INVALID,"");
+    _unur_error(GENTYPE,UNUR_ERR_PAR_INVALID,"");
     return NULL;
   }
   COOKIE_CHECK(par,CK_DSTD_PAR,NULL);
@@ -345,7 +344,7 @@ _unur_dstd_init( struct unur_par *par )
   /* run special init routine for generator */
   if ( !DISTR.init(par,gen) ) {
     /* init failed --> could not find a sampling routine */
-    _unur_error(par->genid,UNUR_ERR_GEN_DATA,"variant for special generator");
+    _unur_error(GENTYPE,UNUR_ERR_GEN_DATA,"variant for special generator");
     free(par); _unur_dstd_free(gen); return NULL; 
   }
 
@@ -445,8 +444,8 @@ _unur_dstd_create( struct unur_par *par )
   /* magic cookies */
   COOKIE_SET(gen,CK_DSTD_GEN);
 
-  /* copy generator identifier */
-  gen->genid = par->genid;
+  /* set generator identifier */
+  gen->genid = _unur_set_genid(GENTYPE);
 
   /* copy distribution object into generator object */
   memcpy( &(gen->distr), par->distr, sizeof( struct unur_distr ) );

@@ -217,7 +217,6 @@ unur_stdr_new( struct unur_distr *distr )
   par->urng     = unur_get_default_urng(); /* use default urng               */
   par->urng_aux = NULL;                    /* no auxilliary URNG required    */
 
-  par->genid    = _unur_set_genid(GENTYPE);/* set generator id               */
   par->debug    = _unur_default_debugflag; /* set default debugging flags    */
 
   /* routine for starting generator */
@@ -251,7 +250,7 @@ unur_stdr_set_cdfatmode( struct unur_par *par, double Fmode )
 
   /* check new parameter for generator */
   if (Fmode < 0. || Fmode > 1.) {
-    _unur_warning(par->genid,UNUR_ERR_PAR_SET,"cdf(mode)");
+    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"cdf(mode)");
     return 0;
   }
 
@@ -289,7 +288,7 @@ unur_stdr_set_pdfatmode( UNUR_PAR *par, double fmode )
 
   /* check new parameter for generator */
   if (fmode <= 0.) {
-    _unur_warning(par->genid,UNUR_ERR_PAR_SET,"pdf(mode)");
+    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"pdf(mode)");
     return 0;
   }
 
@@ -624,7 +623,7 @@ _unur_stdr_init( struct unur_par *par )
 
   /* check input */
   if ( par->method != UNUR_METH_STDR ) {
-    _unur_error(par->genid,UNUR_ERR_PAR_INVALID,"");
+    _unur_error(GENTYPE,UNUR_ERR_PAR_INVALID,"");
     return NULL; }
   COOKIE_CHECK(par,CK_STDR_PAR,NULL);
 
@@ -783,8 +782,8 @@ _unur_stdr_create( struct unur_par *par )
   /* copy distribution object into generator object */
   memcpy( &(gen->distr), par->distr, sizeof( struct unur_distr ) );
 
-  /* copy generator identifier */
-  gen->genid = par->genid;
+  /* set generator identifier */
+  gen->genid = _unur_set_genid(GENTYPE);
 
   /* routines for sampling and destroying generator */
   SAMPLE = (par->variant & STDR_VARFLAG_VERIFY) ? _unur_stdr_sample_check : _unur_stdr_sample;
@@ -797,7 +796,7 @@ _unur_stdr_create( struct unur_par *par )
     /* there is something wrong.
        assume: user has change domain without changing mode.
        but then, she probably has not updated area and is to large */
-    _unur_warning(par->genid,UNUR_ERR_GEN_DATA,"area and/or cdf at mode");
+    _unur_warning(GENTYPE,UNUR_ERR_GEN_DATA,"area and/or cdf at mode");
     DISTR.mode = max(DISTR.mode,DISTR.BD_LEFT);
     DISTR.mode = min(DISTR.mode,DISTR.BD_RIGHT);
   }

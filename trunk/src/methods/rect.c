@@ -126,7 +126,6 @@ unur_rect_new( int dim )
   par->urng     = unur_get_default_urng(); /* use default urng               */
   par->urng_aux = NULL;                    /* no auxilliary URNG required    */
 
-  par->genid    = _unur_set_genid(GENTYPE);/* set generator id               */
   par->debug    = _unur_default_debugflag; /* set default debugging flags    */
 
   /* routine for starting generator */
@@ -196,7 +195,7 @@ _unur_rect_init( struct unur_par *par )
 
   /* check input */
   if ( par->method != UNUR_METH_RECT ) {
-    _unur_error(par->genid,UNUR_ERR_PAR_INVALID,"");
+    _unur_error(GENTYPE,UNUR_ERR_PAR_INVALID,"");
     return NULL; }
   COOKIE_CHECK(par,CK_RECT_PAR,NULL);
 
@@ -304,8 +303,8 @@ _unur_rect_create( struct unur_par *par )
   /* magic cookies */
   COOKIE_SET(gen,CK_RECT_GEN);
 
-  /* copy generator identifier */
-  gen->genid = par->genid;
+  /* set generator identifier */
+  gen->genid = _unur_set_genid(GENTYPE);
 
   /* routines for sampling and destroying generator */
   SAMPLE = _unur_rect_sample_vec;

@@ -221,7 +221,6 @@ unur_utdr_new( struct unur_distr *distr )
   par->urng     = unur_get_default_urng(); /* use default urng               */
   par->urng_aux = NULL;                    /* no auxilliary URNG required    */
 
-  par->genid    = _unur_set_genid(GENTYPE);  /* set generator id             */
   par->debug    = _unur_default_debugflag; /* set default debugging flags    */
 
   /* routine for starting generator */
@@ -255,7 +254,7 @@ unur_utdr_set_pdfatmode( UNUR_PAR *par, double fmode )
 
   /* check new parameter for generator */
   if (fmode <= 0.) {
-    _unur_warning(par->genid,UNUR_ERR_PAR_SET,"pdf(mode)");
+    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"pdf(mode)");
     return 0;
   }
 
@@ -295,7 +294,7 @@ unur_utdr_set_cfactor( struct unur_par *par, double cfactor )
   /* check new parameter for generator */
   /** TODO: welche werte fuer c sind zulaessig / sinnvoll ? **/
   if (cfactor < 0) {
-    _unur_warning(par->genid,UNUR_ERR_PAR_SET,"c-factor < 0");
+    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"c-factor < 0");
     return 0;
   }
 
@@ -335,7 +334,7 @@ unur_utdr_set_delta( struct unur_par *par, double delta )
   /* check new parameter for generator */
   /** TODO: welche werte fuer delta sind zulaessig / sinnvoll ? **/
   if (delta < 0) {
-    _unur_warning(par->genid,UNUR_ERR_PAR_SET,"delta < 0");
+    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"delta < 0");
     return 0;
   }
 
@@ -602,7 +601,7 @@ _unur_utdr_init( struct unur_par *par )
 
   /* check input */
   if ( par->method != UNUR_METH_UTDR ) {
-    _unur_error(par->genid,UNUR_ERR_PAR_INVALID,"");
+    _unur_error(GENTYPE,UNUR_ERR_PAR_INVALID,"");
     return NULL; }
   COOKIE_CHECK(par,CK_UTDR_PAR,NULL);
 
@@ -849,11 +848,11 @@ _unur_utdr_create( struct unur_par *par )
   /* magic cookies */
   COOKIE_SET(gen,CK_UTDR_GEN);
 
-  /* copy generator identifier */
-  gen->genid = par->genid;
-
   /* copy distribution object into generator object */
   memcpy( &(gen->distr), par->distr, sizeof( struct unur_distr ) );
+
+  /* set generator identifier */
+  gen->genid = _unur_set_genid(GENTYPE);
 
   /* routines for sampling and destroying generator */
   SAMPLE = _unur_utdr_sample;

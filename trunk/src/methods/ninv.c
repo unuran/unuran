@@ -238,7 +238,6 @@ unur_ninv_new( struct unur_distr *distr )
   par->urng     = unur_get_default_urng(); /* use default urng               */
   par->urng_aux = NULL;                    /* no auxilliary URNG required    */
 
-  par->genid    = _unur_set_genid(GENTYPE);/* set generator id               */
   par->debug    = _unur_default_debugflag; /* set default debugging flags    */
 
   /* routine for starting generator */
@@ -270,7 +269,7 @@ int unur_ninv_use_newton( struct unur_par *par )
 
   /* check new parameter for generator */
   if (! par->DISTR_IN.pdf) {
-    _unur_error(par->genid,UNUR_ERR_DISTR_REQUIRED,"p.d.f.");
+    _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"p.d.f.");
     par->variant = NINV_VARFLAG_REGULA;   /* use regula falsi instead  */
     return 0;
  }
@@ -332,7 +331,7 @@ int unur_ninv_set_max_iter( struct unur_par *par, int max_iter )
 
   /* check new parameter for generator */
   if (max_iter < 1) {
-    _unur_warning(par->genid,UNUR_ERR_PAR_SET,"maximal iterations");
+    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"maximal iterations");
     return 0;
   }
 
@@ -369,7 +368,7 @@ int unur_ninv_set_x_resolution( struct unur_par *par, double x_resolution)
 
   /* check new parameter for generator */
   if (x_resolution < DBL_EPSILON) {
-    _unur_warning(par->genid,UNUR_ERR_PAR_SET,"x resolution");
+    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"x resolution");
     return 0;
   }
 
@@ -480,7 +479,7 @@ _unur_ninv_init( struct unur_par *par )
 
   /* check input */
   if ( par->method != UNUR_METH_NINV ) {
-    _unur_error(par->genid,UNUR_ERR_PAR_INVALID,"");
+    _unur_error(GENTYPE,UNUR_ERR_PAR_INVALID,"");
     return NULL; }
   COOKIE_CHECK(par,CK_NINV_PAR,NULL);
 
@@ -951,8 +950,8 @@ _unur_ninv_create( struct unur_par *par )
   /* copy distribution object into generator object */
   memcpy( &(gen->distr), par->distr, sizeof( struct unur_distr ) );
 
-  /* copy generator identifier */
-  gen->genid = par->genid;
+  /* set generator identifier */
+  gen->genid = _unur_set_genid(GENTYPE);
 
   /* routines for sampling and destroying generator */
   switch (par->variant) {

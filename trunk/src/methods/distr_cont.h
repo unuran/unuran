@@ -162,9 +162,12 @@ int unur_distr_cont_set_pdfparams(UNUR_DISTR *distribution, double *params, int 
    @code{UNUR_ERR_DISTR_NPARAMS}.
 
    For standard distributions from the UNURAN library the parameters
-   are checked. It these are invalid, then @code{0} is
-   returned. Moreover the domain is updated automatically unless it
+   are checked. Moreover the domain is updated automatically unless it
    has been changed before by a unur_distr_cont_set_domain() call.
+   It these parameters are invalid, then no parameters are set and @code{0} 
+   is returned.
+   Notice that optional parameters are (re-)set to their default values if 
+   not given for UNURAN standard distributions.
 */
 
 int unur_distr_cont_get_pdfparams( UNUR_DISTR *distribution, double **params );

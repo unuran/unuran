@@ -746,22 +746,9 @@ unur_ninv_chg_pdfparams( struct unur_gen *gen, double *params, int n_params )
   _unur_check_gen_object(gen, NINV);
   if (n_params>0) CHECK_NULL(params, 0);
   
-  /* check new parameter for generator */
-  if (n_params > UNUR_DISTR_MAXPARAMS || n_params <= 0 ) {
-    _unur_error(NULL,UNUR_ERR_DISTR_NPARAMS,"");
+  /* set new parameters in distribution object */
+  if (!unur_distr_cont_set_pdfparams(&(gen->distr),params,n_params))
     return 0;
-  }
-
-  /* copy parameters */
-  memcpy(DISTR.params, params, n_params * sizeof(double));
-
-  /* we only enlarge the number of parameters */
-  if (n_params > DISTR.n_params)
-    DISTR.n_params = n_params;
-
-  /* changelog */
-  gen->distr.set &= ~UNUR_DISTR_SET_MASK_DERIVED;
-  /* derived parameters like mode, area, etc. might be wrong now! */
 
   /* set bounds of U -- in respect to given bounds                */
   GEN.Umin = (DISTR.trunc[0] > -INFINITY) ? CDF(DISTR.trunc[0]) : 0.;

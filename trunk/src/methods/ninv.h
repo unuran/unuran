@@ -202,13 +202,20 @@ int unur_ninv_chg_truncated(UNUR_GEN *gen, double left, double right);
 int unur_ninv_chg_pdfparams(UNUR_GEN *generator, double *params, int n_params);
 /*
    Change array of parameters of the distribution in a given generator
-   object. Notice that this call simply copies the parameters into
-   the generator object. Thus if fewer parameters are provided then
-   the remaining parameters are left unchanged.
+   object. 
 
-   @emph{Important:} The given parameters are not checked against
-   domain errors; in opposition to the 
-   @command{unur_<distr>_new} calls.
+   For standard distributions from the UNURAN library the parameters
+   are checked. It these are invalid, then @code{0} is
+   returned. Moreover the domain is updated automatically unless it
+   has been changed before by a unur_distr_discr_set_domain() call.
+   Notice that optional parameters are (re-)set to their default
+   values if not given for UNURAN standard distributions.
+
+   For other distributions @var{params} is simply copied into to
+   distribution object. It is only checked that @var{n_params} does
+   not exceed the maximum number of parameters allowed.
+   Then @code is returned and @code{unur_errno} is set to
+   @code{UNUR_ERR_DISTR_NPARAMS}.
 */ 
 
 

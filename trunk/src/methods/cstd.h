@@ -137,6 +137,8 @@ int unur_cstd_chg_pdfparams( UNUR_GEN *generator, double *params, int n_params )
    Change array of parameters of the distribution in a given generator
    object. If the given parameters are invalid for the distribution,
    no parameters are set.
+   Notice that optional parameters are (re-)set to their default values if 
+   not given for UNURAN standard distributions.
 */
 
 int unur_cstd_chg_truncated( UNUR_GEN *generator, double left, double right );

@@ -193,9 +193,12 @@ int unur_distr_discr_set_pmfparams( UNUR_DISTR *distribution, double *params, in
    is set to @code{UNUR_ERR_DISTR_NPARAMS}. 
 
    For standard distributions from the UNURAN library the parameters
-   are checked. It these are invalid, then @code{0} is
-   returned. Moreover the domain is updated automatically unless it
-   has been changed before by a unur_distr_discr_set_domain() call.
+   are checked. Moreover the domain is updated automatically unless it
+   has been changed before by a unur_distr_cont_set_domain() call.
+   It these parameters are invalid, then no parameters are set and @code{0} 
+   is returned.
+   Notice that optional parameters are (re-)set to their default values if 
+   not given for UNURAN standard distributions.
 
    @emph{Important:} Integer parameter must be given as doubles.
 */

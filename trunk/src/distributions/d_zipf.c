@@ -134,7 +134,7 @@ unur_distr_zipf( double *params, int n_params )
   DISTR.area = 1.;
 
   /* domain */
-  DISTR.domain[0] = 0.;          /* left boundary  */
+  DISTR.domain[0] = 1.;          /* left boundary  */
   DISTR.domain[1] = INFINITY;    /* right boundary */
 
   /* indicate which parameters are set */

@@ -73,6 +73,18 @@
 
    There are lots of parameters for this methods, see below.
 
+   It is possible to use this method for correlation induction by
+   setting an auxilliary uniform random number generator via the
+   unur_set_urng_aux() call. (Notice that this must be done after a
+   possible unur_set_urng() call.)
+   When an auxilliary generator is used then the number of used
+   uniform random numbers that is used up for one generated random
+   variate is constant and given in the following table:
+
+      GW ... 2
+      PS ... 2
+      IA ... 1
+
 */
 
 /*---------------------------------------------------------------------------*/

@@ -235,6 +235,10 @@ _unur_tdr_gw_sample( struct unur_gen *gen )
 
     /* else reject and try again */
 
+    /* use the auxilliary generator the next time
+       (it can be the same as the main generator) */
+    urng = gen->urng_aux;
+
   }
 } /* end of _unur_tdr_gw_sample() */
 
@@ -404,6 +408,10 @@ _unur_tdr_gw_sample_check( struct unur_gen *gen )
 	}
       }
     /* reject and try again */
+
+    /* use the auxilliary generator the next time
+       (it can be the same as the main generator) */
+    urng = gen->urng_aux;
 
   }
 } /* end of _unur_tdr_gw_sample_check() */
@@ -737,6 +745,11 @@ _unur_tdr_ps_sample_check( struct unur_gen *gen )
       }
 
     /* else reject and try again */
+
+    /* use the auxilliary generator the next time
+       (it can be the same as the main generator) */
+    urng = gen->urng_aux;
+
   }
 } /* end of _unur_tdr_ps_sample_check() */
 
@@ -888,6 +901,10 @@ _unur_tdr_ia_sample( struct unur_gen *gen )
       /** TODO **/
       return 1.;
     } /* end switch */
+
+    /* from now on we use the auxilliary generator
+       (it can be the same as the main generator) */
+    urng = gen->urng_aux;
 
     /* rejection from region between hat and (proportional) squeeze */
     V = _unur_call_urng(urng);
@@ -1064,6 +1081,10 @@ _unur_tdr_ia_sample_check( struct unur_gen *gen )
     /* immedate acceptance */
     if (use_ia)
       return X;
+
+    /* from now on we use the auxilliary generator
+       (it can be the same as the main generator) */
+    urng = gen->urng_aux;
 
     /* rejection from region between hat and (proportional) squeeze */
     V = _unur_call_urng(urng);

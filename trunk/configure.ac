@@ -98,6 +98,7 @@ AC_CONFIG_FILES([\
 	src/utils/Makefile \
 	doc/Makefile \
 	doc/src/Makefile \
+	doc/figures/Makefile \
         tests/Makefile \
 	examples/Makefile \
 	experiments/Makefile ])

@@ -109,7 +109,7 @@
 #include <source_unuran.h>
 
 /*---------------------------------------------------------------------------*/
-/* Variants: none                                                            */
+/* Variants:                                                                 */
 
 #define SROU_VARFLAG_VERIFY   0x002u   /* run verify mode                    */
 #define SROU_VARFLAG_SQUEEZE  0x004u   /* use universal squeeze if possible  */
@@ -154,9 +154,9 @@ static int _unur_srou_reinit( struct unur_gen *gen );
 /* Re-initialize (existing) generator.                                       */
 /*---------------------------------------------------------------------------*/
 
-static double _unur_srou_sample( UNUR_GEN *generator );
 static double _unur_srou_sample_mirror( UNUR_GEN *generator );
 static double _unur_srou_sample_check( UNUR_GEN *generator );
+static double _unur_srou_sample( UNUR_GEN *generator );
 /*---------------------------------------------------------------------------*/
 /* sample from generator                                                     */
 /*---------------------------------------------------------------------------*/

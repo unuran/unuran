@@ -9,6 +9,7 @@ cd $srcdir
 PROJECT=unuran
 TEST_TYPE=-f
 FILE=src/unuran_config.h          # a file that should exist in the source dir
+export WANT_AUTOMAKE=1.7
 
 DIE=0
 

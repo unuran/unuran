@@ -70,6 +70,8 @@
 #define UNUR_METH_UNIF     0x20000700u
 #define UNUR_METH_UTDR     0x20000800u
 
+#define UNUR_METH_EMPK     0x20000900u
+
 /* multivariate continuous distributions */
 #define UNUR_METH_VEC      0x40000000u
 

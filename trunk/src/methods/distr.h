@@ -95,9 +95,9 @@ UNUR_DISTR *unur_distr_new( unsigned int type );
    following types are available:
 */
 /*   UNUR_DISTR_CONT  ... univariate continuous distribution */
+/*   UNUR_DISTR_CEMP  ... empirical univariate continuous distribution, i.e. a sample */
 /*   UNUR_DISTR_DISCR ... univariate discrete distribution */
 /*   UNUR_DISTR_DEMP  ... empirical univariate discrete distribution */
-/*   UNUR_DISTR_CEMP  ... empirical univariate continuous distribution, i.e. a sample */
 
 
 
@@ -327,7 +327,7 @@ int unur_distr_demp_get_prob( UNUR_DISTR *distribution, double **prob );
 /*---------------------------------------------------------------------------*/
 
 /* 
-   Routines for handling empirical univariate discrete distributions (CEMP).
+   Routines for handling empirical univariate continuous distributions (CEMP).
 */
 
 /* Essential parameters */
@@ -338,7 +338,7 @@ int unur_distr_cemp_set_sample( UNUR_DISTR *distribution, double *sample, int n_
 */
 
 
-int unur_distr_demp_get_sample( UNUR_DISTR *distribution, double **sample );
+int unur_distr_cemp_get_sample( UNUR_DISTR *distribution, double **sample );
 /* 
    Get number of samples and set pointer @code{sample} to array of
    observations. If no sample has beeb given,

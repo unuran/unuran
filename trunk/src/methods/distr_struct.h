@@ -86,7 +86,7 @@ struct unur_distr_demp {
 };
 
 /*---------------------------------------------------------------------------*/
-/* define object for empirical empirical univariate constinuous distribution */
+/* define object for empirical univariate constinuous distribution           */
 /* (given by empirical sample)                                               */
 struct unur_distr_cemp {
   double *sample;               /* pointer to sample                         */

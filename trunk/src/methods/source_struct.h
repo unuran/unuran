@@ -114,6 +114,8 @@ typedef void _UNUR_SAMPLING_ROUTINE_VEC(struct unur_gen *gen, double *vec);
 #include <unif_struct.h>
 #include <utdr_struct.h>
 
+#include <empk_struct.h>
+
 /* continuous multivariate distributions */
 #include <rect_struct.h>
 
@@ -140,6 +142,7 @@ struct unur_par {
     struct unur_tdr_par   tdr;
     struct unur_unif_par  unif;
     struct unur_utdr_par  utdr;
+    struct unur_empk_par  empk;
     struct unur_rect_par  rect;
     struct unur_cstd_par  cstd;
     struct unur_dstd_par  dstd;
@@ -177,6 +180,7 @@ struct unur_gen {
     struct unur_tdr_gen   tdr;
     struct unur_unif_gen  unif;
     struct unur_utdr_gen  utdr;
+    struct unur_empk_gen  empk;
     struct unur_rect_gen  rect;
     struct unur_cstd_gen  cstd;
     struct unur_dstd_gen  dstd;

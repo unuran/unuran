@@ -56,46 +56,71 @@ UNUR_PAR *unur_empk_new( UNUR_DISTR *distribution );
 
 int unur_empk_set_kernel( UNUR_PAR *parameters, UNUR_DISTR *kernel);
 /* 
-   Set generator for the kernel used the density estimation.
-   Default is gaussian distribution.
+   Set kernel distribution.
+   Default is a Gaussian kernel.
 */
 
-int unur_empk_set_positive(  UNUR_PAR *parameters, int positive );
+int unur_empk_set_kernelgen( UNUR_PAR *parameters, UNUR_GEN *kernelgen);
+/* 
+   Set generator for the kernel used the density estimation.
+   Default is a Gaussian kernel.
+*/
+
+int unur_empk_set_alpha( UNUR_PAR *parameters, double alpha );
+/*
+  alpha is used to compute the optimal bandwidth from the point of
+  view of minimizing the mean integrated square error (MISE).
+  alpha depends on the type of kernel K being used and is given by 
+     alpha(K) = Var(K)^(-2/5){ \int K(t)^2 dt}^(1/5)
+  For standard kernels (see ????) alpha is computed by the algorithm.
+  For all other kernels, it must be given. 
+*/
+/*
+  Otherwise the default (Gaussian) kernel is used.
+*/
+
+int unur_empk_set_beta( UNUR_PAR *parameters, double beta );
+/*
+  beta is used to compute the optimal bandwidth from the point of
+  view of minimizing the mean integrated square error (MISE).
+  beta depends on the (unknown) distribution of the sampled data
+  points. Thus its value contains some guess on this distribution.
+  By default Gaussian distribution is assumed for the sample
+  (beta = 1.3637439). There is no requirement to set beta.
+*/
+
+int unur_empk_set_smoothing( UNUR_PAR *parameters, double smoothing );
+/*
+  The smoothing factor controlles how "smooth" the resulting density
+  estimation will be. A smoothing factor equal to 0 results in naive
+  resampling. A very large smoothing factor (together with the
+  variance correction) results in a density which is approximately
+  equal to the kernel.
+  Default is 1.
+*/
+
+int unur_empk_set_varcor( UNUR_PAR *parameters, int varcor );
+/*
+  Set whether the variance corrected version of the density estimation
+  is used. If @code{varcor} is TRUE then the variance of the used
+  density estimation is the same as the sample variance. However this 
+  increases the efficiency of the estimation a little bit.
+  Default is TRUE.
+*/
+
+int unur_empk_set_kernelvar( UNUR_PAR *parameters, double kernvar );
+/*
+  Variance of the used kernel. It is only required for the variance
+  reduced version of the density estimation (which is used by default).
+  For standard kernels (see ????) kernvar is computed by the algorithm.
+  Default is 1.
+*/
+
+int unur_empk_set_positive( UNUR_PAR *parameters, int positive );
 /*
   If @code{positive} is TRUE then only nonnegative random variates are
   generated. This is done by means of mirroring technique.
   Default is FALSE.
 */
 
-int unur_empk_set_varcor(  UNUR_PAR *parameters, int varcor );
-/*
-  Set whether the variance corrected version of the density estimation
-  is used. If @code{varcor} is TRUE then the variance of the used
-  density estimation is the same as the sample variance. However this 
-  increases the efficiency of the estimation a little bit.
-  Default is FALSE.
-*/
-
-int unur_empk_set_kernvar(  UNUR_PAR *parameters, double kernvar );
-/*
-  Variance of the used kernel. It is only required for the variance
-  reduced version of the density estimation.
-  Default is 1.
-*/
-
-int unur_empk_set_alfa(  UNUR_PAR *parameters, double alfa );
-/*
-  alfa is used to compute the optimal bandwidth from
-  the point of view of minimizing the mean integrated
-  square error (MISE).
-  alfa depends on the type of kernel being used.     
-  DEFAULT is ??.
-
-
-  kannst du hier noch ein paar hinweise geben, was der benutzer
-  eingeben soll??
-
-  oder reicht ein 
-  There is no need to change this factor it almost all situations.
-*/
-
+/*---------------------------------------------------------------------------*/

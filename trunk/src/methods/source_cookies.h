@@ -75,6 +75,8 @@
 #define CK_UNIF_GEN      0x00100041u
 #define CK_UTDR_PAR      0x00100050u
 #define CK_UTDR_GEN      0x00100051u
+#define CK_EMPK_PAR      0x00100080u
+#define CK_EMPK_GEN      0x00100081u
 
 /* generators multivariate continuous distributions */
 #define CK_RECT_PAR      0x00200010u

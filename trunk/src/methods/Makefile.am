@@ -23,6 +23,7 @@ libmethods_a_SOURCES = \
  x_umalloc.c \
  x_urng.c \
  arou.c \
+ empk.c \
  cstd.c \
  dau.c  \
  dgt.c  \
@@ -53,38 +54,21 @@ noinst_HEADERS = \
  x_gen.h \
  x_math.h \
  x_urng.h \
- distr.h \
- distr_struct.h \
- arou.h \
- arou_struct.h \
- cstd.h \
- cstd_struct.h \
- dau.h \
- dau_struct.h \
- dgt.h \
- dgt_struct.h \
- dstd.h \
- dstd_struct.h \
- ninv.h \
- ninv_struct.h \
- rect.h \
- rect_struct.h \
- srou.h \
- srou_struct.h \
- ssr.h \
- ssr_struct.h \
- tabl.h \
- tabl_struct.h \
- tdr.h \
- tdr_newset.c \
- tdr_init.c \
- tdr_sample.c \
- tdr_debug.c \
- tdr_struct.h  \
- unif.h \
- unif_struct.h \
- utdr.h \
- utdr_struct.h
+ distr.h distr_struct.h \
+ arou.h  arou_struct.h \
+ empk.h  empk_struct.h \
+ cstd.h  cstd_struct.h \
+ dau.h   dau_struct.h \
+ dgt.h   dgt_struct.h \
+ dstd.h  dstd_struct.h \
+ ninv.h  ninv_struct.h \
+ rect.h  rect_struct.h \
+ srou.h  srou_struct.h \
+ ssr.h   ssr_struct.h \
+ tabl.h  tabl_struct.h \
+ tdr.h   tdr_struct.h tdr_newset.c tdr_init.c tdr_sample.c tdr_debug.c \
+ unif.h  unif_struct.h \
+ utdr.h  utdr_struct.h
 
 # clean backup files too
 clean-local:

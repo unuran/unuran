@@ -37,30 +37,28 @@
  *                                                                           *
  *****************************************************************************/
 
-
-/*
-  n -- > n_observ
-
-*/
-
-
 /*---------------------------------------------------------------------------*/
 /* Information for constructing the generator                                */
 
 struct unur_empk_par {
   /* the observed sample is stored in the distribution object */
 
-  int     positive;    /* 1 ... only positive variates (mirroring)
-			  0 ... negative variates possible                   */
-  int     varcor;      /* 1 ... use variance correction
-			  0 ... no variance correction                       */
+  UNUR_DISTR *kern;    /* kernel distribution                                */
+  UNUR_GEN *kerngen;   /* random variate generator for kernel                */
 
-  double (*kernrvg)(UNUR_GEN *gen);  /* random variate generator for kernel  */
-
-  double  alfa;        /* alfa is used to compute the optimal bandwidth from
+  double  alpha;       /* alpha is used to compute the optimal bandwidth from
 			  the point of view of minimizing the mean integrated
 			  square error (MISE).
 			  alfa depends on the type of kernel being used.     */
+
+  double  beta;        /* beta is used to compute the optimal bandwidth from
+			  the point of view of minimizing the mean integrated
+			  square error (MISE).
+			  beta depends on the (unknown) distribution of the
+			  sampled data points. Thus its value contains some
+			  guess on this distribution.                        */
+
+  double  smoothing;   /* determines how "smooth" the estimated density will be */
 
   double  kernvar;     /* variance of used kernel, only used if varcor == 1  */
 
@@ -73,12 +71,7 @@ struct unur_empk_gen {
   double *observ;      /* pointer to the array of the observations           */
   int     n_observ;    /* number of observations                             */
 
-  int     positive;    /* 1 ... only positive variates (mirroring)
-			  0 ... negative variates possible                   */
-  int     varcor;      /* 1 ... use variance correction
-			  0 ... no variance correction                       */
-
-  double (*kernrvg)(UNUR_GEN *gen);  /* random variate generator for kernel  */
+  UNUR_GEN *kerngen;   /* random variate generator for kernel                */
 
   double  bwidth;      /* bandwidth for kernel density estimation            */
   double  xbar;        /* sample mean                                        */
@@ -88,3 +81,5 @@ struct unur_empk_gen {
 };
 
 /*---------------------------------------------------------------------------*/
+
+

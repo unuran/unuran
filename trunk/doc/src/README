@@ -217,3 +217,5 @@ makeinfo.
 @unurimage	same as @image. But it will be easier to add vertical 
 	spaces later.
 
+@unurmath	same as @math. But we can use a more sophisticated 
+	typesetting (once upon a time in the future).

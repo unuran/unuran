@@ -1191,8 +1191,14 @@ sub process_unur_macros {
 	      last MACRO;
 	  }
 
+	  if ($macro =~ /\@unurmath\s*$/) {
+	      $replacement = "\@math{$body}";
+	      last MACRO;
+	  }
+
 	  if ($macro =~ /\@unurimage\s*$/) {
 	      $replacement = "\@image{$body}";
+	      last MACRO;
 	  }
 
 	  else {

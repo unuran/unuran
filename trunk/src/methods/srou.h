@@ -46,24 +46,41 @@
 
    =SPEED Set-up: fast, Sampling: slow
 
-   =REF  [LJa01]
+   =REF  [LJa01] [LJa02]
 
    =DESCRIPTION
       SROU is based on the ratio-of-uniforms method but uses universal 
       inequalities for constructing a (universal) bounding rectangle.
-      It works for all T-concave distributions with T(x) = -1/sqrt(x).
+      It works for all T-concave distributions (including log-concave
+      and T-concave distributions with T(x) = -1/sqrt(x)).
       
       It requires the PDF, the (exact) location of the mode and the
-      area below the given PDF. The rejection constant is 4 for all
-      T-concave distributions. Optionally the CDF at the mode can
-      be given to increase the performance of the algorithm by means
-      of the unur_srou_set_cdfatmode() call. Then the rejection
-      constant is reduced to 2 and even a universal squeeze can (but
-      need not be) used. 
+      area below the given PDF. Moreover an (optional) parameter
+      @code{r} can be given, to adjust the generator to the given
+      distribution. This parameter is strongly related parameter
+      @code{c} for transformed density rejection via the formula
+      @i{c = -r/(r+1)}. @code{r} should be set as small as
+      possible but the given density must be T_c-concave for the
+      corresponding @i{c}.
+      The default setting for @code{r} is 1.
+
+      The parameter @code{r} can be any value larger than or equal to
+      1. The rejection constant depends on the chosen parameter
+      @code{r} but not on the particular distribution. It is 4 for
+      @code{r} equal to 1 and higher for higher values of @code{r}.
+      It is important to note that different algorithms for different
+      values of @code{r}: If @code{r} equal to 1 this is much faster
+      than the algorithm for @code{r} greater than 1.
+
+      Optionally the CDF at the mode can be given to increase the
+      performance of the algorithm by means of the
+      unur_srou_set_cdfatmode() call. Then the rejection constant is
+      reduced by 1/2 and (if @code{r=1}) even a universal squeeze can
+      (but need not be) used. 
       A way to increase the performance of the algorithm when the
       CDF at the mode is not provided is the usage of the mirror
-      principle. However using squeezes and using the mirror principle
-      is not recommended in general (see below).
+      principle (only if @code{r=1}). However using squeezes and using
+      the mirror principle is not recommended in general (see below).
       
       If the exact location of the mode is not known, then use the
       approximate location and provide the (exact) value of the
@@ -140,8 +157,8 @@ int unur_srou_set_r( UNUR_PAR *parameters, double r );
    since the given density must be T_c-concave for 
    @i{c = -r/(r+1)}.
 
-   @emph{Notice:} For @var{r} is set to @code{1} a simpler and much
-   faster algorithm is used as for @var{r} greater than one.
+   @emph{Notice:} If @var{r} is set to @code{1} a simpler and much
+   faster algorithm is used then for @var{r} greater than one.
    
    For computational reasons values of @var{r} that are greater than
    @code{1} but less than @code{1.01} are always set to @code{1.01}.
@@ -167,6 +184,10 @@ int unur_srou_set_pdfatmode( UNUR_PAR *parameters, double fmode );
    change when parameters of the distributions vary. 
    It is only useful when the PDF at the mode does not change with
    changing parameters of the distribution.
+
+   @emph{IMPORTANT:}
+   This call has to be executed after a possible call of 
+   unur_srou_set_r().
 
    Default: not set.
 */

@@ -91,8 +91,8 @@
 /*---------------------------------------------------------------------------*/
 /* Variants                                                                  */
 
-#define DGT_VAR_DIV         0x01u     /* compute guide table by division n/k */
-#define DGT_VAR_ADD         0x02u     /* compute guide table by adding       */
+#define DGT_VARFLAG_DIV     0x01u     /* compute guide table by division n/k */
+#define DGT_VARFLAG_ADD     0x02u     /* compute guide table by adding       */
 
 #define DGT_VAR_THRESHOLD   1000      /* above this value: use variant 1, else 2 */
 
@@ -118,9 +118,30 @@
 
 /*---------------------------------------------------------------------------*/
 
+static struct unur_gen *_unur_dgt_init( struct unur_par *par );
+/*---------------------------------------------------------------------------*/
+/* Initialize new generator.                                                 */
+/*---------------------------------------------------------------------------*/
+
 static struct unur_gen *_unur_dgt_create( struct unur_par *par );
 /*---------------------------------------------------------------------------*/
 /* create new (almost empty) generator object.                               */
+/*---------------------------------------------------------------------------*/
+
+/* No reinit() cal                                                           */
+/*  static int _unur_srou_reinit( struct unur_gen *gen );                    */
+/*---------------------------------------------------------------------------*/
+/* Re-initialize (existing) generator.                                       */
+/*---------------------------------------------------------------------------*/
+
+static int _unur_dgt_sample( UNUR_GEN *generator );
+/*---------------------------------------------------------------------------*/
+/* sample from generator                                                     */
+/*---------------------------------------------------------------------------*/
+
+static void _unur_dgt_free( struct unur_gen *gen);
+/*---------------------------------------------------------------------------*/
+/* destroy generator object.                                                 */
 /*---------------------------------------------------------------------------*/
 
 #ifdef UNUR_ENABLE_LOGGING
@@ -234,7 +255,7 @@ unur_dgt_set_variant( struct unur_par *par, unsigned variant )
   _unur_check_par_object( par,DGT );
 
   /* check new parameter for generator */
-  if (variant != DGT_VAR_ADD && variant != DGT_VAR_DIV) {
+  if (variant != DGT_VARFLAG_ADD && variant != DGT_VARFLAG_DIV) {
     _unur_warning(GENTYPE,UNUR_ERR_PAR_VARIANT,"");
     return 0;
   }
@@ -340,7 +361,7 @@ _unur_dgt_init( struct unur_par *par )
 
   /* computation of guide-table */
   
-  if (gen->variant == DGT_VAR_DIV) {
+  if (gen->variant == DGT_VARFLAG_DIV) {
     GEN.guide_table[0] = 0;
     for( j=1, i=0; j<GEN.guide_size ;j++ ) {
       while( GEN.cumprob[i]/GEN.sum < ((double)j)/GEN.guide_size ) 
@@ -353,7 +374,7 @@ _unur_dgt_init( struct unur_par *par )
     }
   }
 
-  else { /* gen->variant == DGT_VAR_ADD */
+  else { /* gen->variant == DGT_VARFLAG_ADD */
     gstep = GEN.sum / GEN.guide_size;
     probh = 0.;
     for( j=0, i=0; j<GEN.guide_size ;j++ ) {
@@ -383,6 +404,88 @@ _unur_dgt_init( struct unur_par *par )
 
   return gen;
 } /* end of _unur_dgt_init() */
+
+/*---------------------------------------------------------------------------*/
+
+static struct unur_gen *
+_unur_dgt_create( struct unur_par *par )
+     /*----------------------------------------------------------------------*/
+     /* allocate memory for generator                                        */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par ... pointer to parameter for building generator object         */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to (empty) generator object with default settings          */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return NULL                                                        */
+     /*----------------------------------------------------------------------*/
+{
+  struct unur_gen *gen;       /* pointer to generator object */
+  int n_prob;                 /* length of probability vector */
+
+  /* check arguments */
+  CHECK_NULL(par,NULL);  COOKIE_CHECK(par,CK_DGT_PAR,NULL);
+
+  /* allocate memory for generator object */
+  gen = _unur_malloc( sizeof(struct unur_gen) );
+
+  /* magic cookies */
+  COOKIE_SET(gen,CK_DGT_GEN);
+
+  /* set generator identifier */
+  gen->genid = _unur_set_genid(GENTYPE);
+
+  /* copy distribution object into generator object */
+  memcpy( &(gen->distr), par->distr, sizeof( struct unur_distr ) );
+
+  /* routines for sampling and destroying generator */
+  SAMPLE = _unur_dgt_sample;
+  gen->destroy = _unur_dgt_free;
+  gen->reinit = _unur_reinit_error;
+
+  /* set all pointers to NULL */
+  GEN.cumprob = NULL;
+  GEN.guide_table = NULL;
+
+  /* copy some parameters into generator object */
+  gen->debug = par->debug;          /* debuging flags                        */
+  gen->urng = par->urng;            /* pointer to urng                       */
+
+  gen->urng_aux = NULL;             /* no auxilliary URNG required           */
+  gen->gen_aux = NULL;              /* no auxilliary generator objects       */
+  gen->gen_aux_2 = NULL;
+
+  /* length of probability vector */
+  n_prob = DISTR.n_prob;
+
+  /* store method in generator structure */
+  gen->method = par->method;
+  gen->set = par->set;              /* indicates parameter settings          */
+
+  /* which variant? */
+  if (par->variant == 0)   /* default variant */
+    par->variant = (n_prob > DGT_VAR_THRESHOLD) ? DGT_VARFLAG_DIV : DGT_VARFLAG_ADD;
+  /* store variant in generator structure */
+  gen->variant = par->variant;
+
+  /* allocation for cummulated probabilities */
+  GEN.cumprob = _unur_malloc( n_prob * sizeof(double) );
+
+  /* size of guide table */
+  GEN.guide_size = (int)( n_prob * PAR.guide_factor);
+  if (GEN.guide_size <= 0)
+    /* do not use a guide table whenever params->guide_factor is 0 or less */
+    GEN.guide_size = 1;
+
+  /* allocate memory for the guide table */
+  GEN.guide_table = _unur_malloc( GEN.guide_size * sizeof(int) );
+
+  /* return pointer to (almost empty) generator object */
+  return gen;
+
+} /* end of _unur_dgt_create() */
 
 /*****************************************************************************/
 
@@ -456,86 +559,6 @@ _unur_dgt_free( struct unur_gen *gen )
 /*****************************************************************************/
 /**  Auxilliary Routines                                                    **/
 /*****************************************************************************/
-
-static struct unur_gen *
-_unur_dgt_create( struct unur_par *par )
-     /*----------------------------------------------------------------------*/
-     /* allocate memory for generator                                        */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   par ... pointer to parameter for building generator object         */
-     /*                                                                      */
-     /* return:                                                              */
-     /*   pointer to (empty) generator object with default settings          */
-     /*                                                                      */
-     /* error:                                                               */
-     /*   return NULL                                                        */
-     /*----------------------------------------------------------------------*/
-{
-  struct unur_gen *gen;       /* pointer to generator object */
-  int n_prob;                 /* length of probability vector */
-
-  /* check arguments */
-  CHECK_NULL(par,NULL);  COOKIE_CHECK(par,CK_DGT_PAR,NULL);
-
-  /* allocate memory for generator object */
-  gen = _unur_malloc( sizeof(struct unur_gen) );
-
-  /* magic cookies */
-  COOKIE_SET(gen,CK_DGT_GEN);
-
-  /* set generator identifier */
-  gen->genid = _unur_set_genid(GENTYPE);
-
-  /* copy distribution object into generator object */
-  memcpy( &(gen->distr), par->distr, sizeof( struct unur_distr ) );
-
-  /* routines for sampling and destroying generator */
-  SAMPLE = _unur_dgt_sample;
-  gen->destroy = _unur_dgt_free;
-  gen->reinit = _unur_reinit_error;
-
-  /* set all pointers to NULL */
-  GEN.cumprob = NULL;
-  GEN.guide_table = NULL;
-
-  /* copy some parameters into generator object */
-  gen->debug = par->debug;          /* debuging flags                        */
-  gen->urng = par->urng;            /* pointer to urng                       */
-
-  gen->urng_aux = NULL;             /* no auxilliary URNG required           */
-  gen->gen_aux = NULL;              /* no auxilliary generator objects       */
-  gen->gen_aux_2 = NULL;
-
-  /* length of probability vector */
-  n_prob = DISTR.n_prob;
-
-  /* store method in generator structure */
-  gen->method = par->method;
-  gen->set = par->set;              /* indicates parameter settings          */
-
-  /* which variant? */
-  if (par->variant == 0)   /* default variant */
-    par->variant = (n_prob > DGT_VAR_THRESHOLD) ? DGT_VAR_DIV : DGT_VAR_ADD;
-  /* store variant in generator structure */
-  gen->variant = par->variant;
-
-  /* allocation for cummulated probabilities */
-  GEN.cumprob = _unur_malloc( n_prob * sizeof(double) );
-
-  /* size of guide table */
-  GEN.guide_size = (int)( n_prob * PAR.guide_factor);
-  if (GEN.guide_size <= 0)
-    /* do not use a guide table whenever params->guide_factor is 0 or less */
-    GEN.guide_size = 1;
-
-  /* allocate memory for the guide table */
-  GEN.guide_table = _unur_malloc( GEN.guide_size * sizeof(int) );
-
-  /* return pointer to (almost empty) generator object */
-  return gen;
-
-} /* end of _unur_dgt_create() */
 
 /*****************************************************************************/
 /**  Debugging utilities                                                    **/

@@ -837,7 +837,7 @@ _unur_hitrou_inside_shape( UNUR_GEN *gen )
     GEN.pdfcount++;
     /* checking V coordinate */
     V=GEN.point_random[GEN.dim];
-    if (fabs(V-GEN.vmax)>GEN.vmax*GEN.test_rectangle[GEN.dim]) inside=0;
+    if (V>GEN.vmax*GEN.test_rectangle[GEN.dim]) inside=0;
 
     /* checking U coordinates */
     for (d=0; d<GEN.dim; d++) {

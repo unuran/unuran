@@ -69,6 +69,7 @@ int unur_test_count_urn( UNUR_GEN *generator, int samplesize );
 
 /* Chi^2 tests                                                               */
 double unur_test_chi2( UNUR_GEN *generator, int intervals, int samplesize, int classmin, int output );
+double _unur_test_chi2test( double *prob, int *observed, int len, int classmin, int verbose );
 
 /* central moments                                                           */
 int unur_test_moments( UNUR_GEN *generator, double *moments, int n_moments, int samplesize );

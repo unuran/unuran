@@ -753,7 +753,7 @@ _unur_srou_rectangle( struct unur_gen *gen )
     fm = PDF(DISTR.mode);
     /* fm must be positive */
     if (fm <= 0.) {
-      _unur_warning(gen->genid,UNUR_ERR_GEN_DATA,"pdf(mode) <= 0.");
+      _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"pdf(mode) <= 0.");
       return 0;
     }
     GEN.um = sqrt(fm);    /* height of rectangle */

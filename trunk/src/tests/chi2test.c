@@ -60,7 +60,6 @@ static char test_name[] = "Chi^2-Test";
 
 static double _unur_test_chi2_discr( struct unur_gen *gen, int samplesize, int classmin, int verbose );
 static double _unur_test_chi2_cont( struct unur_gen *gen, int intervals, int samplesize, int classmin, int verbose );
-static double _unur_test_chi2test( double *prob, int *observed, int len, int classmin, int verbose );
 
 /*---------------------------------------------------------------------------*/
 
@@ -336,7 +335,7 @@ _unur_test_chi2_cont(struct unur_gen *gen,
 
 /*---------------------------------------------------------------------------*/
 
-static double
+double
 _unur_test_chi2test( double *prob, 
 		     int *observed, 
 		     int len, int classmin, int verbose )

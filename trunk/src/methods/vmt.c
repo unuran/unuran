@@ -239,8 +239,10 @@ _unur_vmt_init( struct unur_par *par )
 	failed=TRUE; break; 
       }
     }
-    if (failed)
-      for (j=0; j<i; j++) _unur_free(marginalgens[i]);
+    if (failed) {
+      for (j=0; j<i; j++) _unur_free(marginalgens[j]);
+      free (marginalgens);
+    }
     else
       gen->gen_aux_list = marginalgens;
   }
@@ -252,6 +254,7 @@ _unur_vmt_init( struct unur_par *par )
   if (GEN.marginalgen_list == NULL) {
     _unur_error(gen->genid,UNUR_ERR_GENERIC,"init of marginal generators failed");
     _unur_vmt_free(gen);
+    free(par);
     return NULL;
   }
 

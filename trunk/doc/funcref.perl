@@ -160,7 +160,7 @@ while($_ = <>)
         # formatting the output -- Header, node for new method
         print OUTFILE "\n\n\@node ", $2, "ref", "\n";
         print OUTFILE "\@subsection ", $2, " ", $3, "\n\n";
-	$BLOCK=1;
+	$BLOCK=0; 
     }
 
    # Screening for function declarations

@@ -162,7 +162,9 @@ else {
     \$frog = sprintf("%02d",int(rand $n_frogs) + 1);
 }
 
-\$img_frog = "<img SRC=\\"$frog_dir/frog\$frog.jpg\\"".
+\$img_frog = 
+    "&nbsp;&nbsp;&nbsp;".
+    "<img SRC=\\"$frog_dir/frog\$frog.jpg\\"".
     "ALT=\\"[Miran: 'A Frog']\\"".
     "ALIGN = top>";
 

@@ -76,9 +76,17 @@ sub make_codegen_tests
 #.................................................................
 # Check for missing CONTinuous distributions
 
+    # list of names of distributions without distribution number
+    my $list_distr_short;
+    foreach my $d (sort keys %{$list_distr}) {
+	my $distr_short = $d;
+	$distr_short =~ s/\_[^\_]+$//;
+	$list_distr_short->{$distr_short} = $d;
+    }
+
     foreach my $d (sort keys %{$DISTR}) {
 	next unless $DISTR->{$d}->{"=TYPE"} eq "CONT";
-	unless ($list_distr->{$d}) {
+	unless ($list_distr_short->{$d}) {
 	    print STDERR "test missing for distribution \"$d\"\n";
 	}
     }
@@ -193,7 +201,7 @@ EOX
 \t\tx1 = unur_sample_cont(gen);
 \t\tx2 = rand_$distr();
 \t\tif (!FP_equal(x1,x2)) {
-\t\t\tfprintf(stderr,\"error! %%g, %%g, diff = %%g\\\\n\",x1,x2,x1-x2);
+\t\t\tfprintf(stderr,\"error! %%g, %%g, diff = %%g\\n\",x1,x2,x1-x2);
 \t\t\t++n_failed;
 \t\t}
 \t}
@@ -252,7 +260,8 @@ EOX
 	    # write test file
 	    foreach $l (split /\n/, $test_test) { 
 		$l =~ s/\t/\\t/g;
-		$l =~ s/\"/\\"/g;
+		$l =~ s/\\n/\\\\n/g;
+		$l =~ s/\"/\\\"/g;
 		$make_test_body .= "\tfprintf(out,\"$l\\n\");\n";
 	    }
 
@@ -321,7 +330,7 @@ EOX
     $test_main_body .= "\n";
 
     # End of main()
-    $test_main_body .= "\tprintf(\"\\\\n\");\n\n";
+    $test_main_body .= "\tprintf(\"\\n\");\n\n";
     $test_main_body .= "\tfclose(LOG);\n\n";
     $test_main_body .= "\texit ((n_failed) ? 1 : 0);\n";
     $test_main_body .= "}\n\n";
@@ -355,7 +364,8 @@ EOX
     # Write the header for the test file
     foreach my $l (split /\n/, $test_header) {
 	$l =~ s/\t/\\t/g;
-	$l =~ s/\"/\\"/g;
+	$l =~ s/\\n/\\\\n/g;
+	$l =~ s/\"/\\\"/g;
 	$make_main_body .= "\tfprintf(out,\"$l\\n\");\n";
     }
     $make_main_body .= "\n";
@@ -369,7 +379,8 @@ EOX
     # Write main for test file
     foreach my $l (split /\n/, $test_main) {
 	$l =~ s/\t/\\t/g;
-	$l =~ s/\"/\\"/g;
+	$l =~ s/\\n/\\\\n/g;
+	$l =~ s/\"/\\\"/g;
 	$make_main_body .= "\tfprintf(out,\"$l\\n\");\n";
     }
     $make_main_body .= "\n";

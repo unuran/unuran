@@ -7,6 +7,10 @@
 static FILE *TESTLOG;               /* test log file                         */
 static FILE *UNURANLOG;             /* unuran log file                       */
 
+#ifndef M_PI
+#define M_PI       3.14159265358979323846264338328      /* pi */
+#endif
+
 /*****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
@@ -255,11 +259,11 @@ int main()
   UNUR_GEN   *gen;      /* generator object                      */
 
   /* open log file for unuran and set output stream for unuran messages */
-  UNURANLOG = fopen( "test_special_hinv_unuran.log","w" );
+  UNURANLOG = fopen( "t_special_hinv_unuran.log","w" );
   unur_set_stream( UNURANLOG );
 
   /* open log file for testing */
-  TESTLOG = fopen( "test_special_hinv_testlog.log","w" );
+  TESTLOG = fopen( "t_special_hinv_testlog.log","w" );
 
   /* write header into log file */
   fprintf(TESTLOG,"\nUNURAN - Universal Non-Uniform RANdom number generator\n\n");

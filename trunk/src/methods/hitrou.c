@@ -210,6 +210,7 @@ unur_hitrou_new( const struct unur_distr *distr )
   PAR.umin  = NULL;       /* u-boundary of bounding rectangle (unknown)  */
   PAR.umax  = NULL;       /* u-boundary of bounding rectangle (unknown)  */
   PAR.u_planes  = 0;      /* do not calculate the bounding u-planes      */
+  PAR.recursion = 1;      /* reusing outside points as new line-segment ends */
   par->method   = UNUR_METH_HITROU;   /* method and default variant          */
   par->variant  = 0u;                 /* default variant                     */
   par->set      = 0u;                 /* inidicate default parameters        */
@@ -399,7 +400,7 @@ unur_hitrou_set_u_planes( struct unur_par *par, int u_planes )
     _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"invalid flag for u_planes");
     return UNUR_ERR_PAR_SET;
   }
-  
+
   /* store data */
   PAR.u_planes = u_planes;
 
@@ -408,6 +409,28 @@ unur_hitrou_set_u_planes( struct unur_par *par, int u_planes )
 
 } /* end of unur_hitrou_set_u_planes() */
 
+/*****************************************************************************/
+
+int 
+unur_hitrou_set_recursion( struct unur_par *par, int recursion_flag )
+{
+  /* check arguments */
+  _unur_check_NULL( GENTYPE, par, UNUR_ERR_NULL );
+  _unur_check_par_object( par, HITROU );
+
+  /* check new parameter for generator */
+  if (recursion_flag!=0 && recursion_flag!=1) {
+    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"recursion_flag must be 0 or 1");
+    return UNUR_ERR_PAR_SET;
+  }
+
+  /* store data */
+  PAR.recursion = recursion_flag;
+
+  /* o.k. */
+  return UNUR_SUCCESS;
+
+}
 
 /*****************************************************************************/
 
@@ -609,7 +632,8 @@ _unur_hitrou_create( struct unur_par *par )
   GEN.vmax  = PAR.vmax;             /* upper v-boundary of bounding rectangle */
   GEN.skip  = PAR.skip;             /* number of skipped poins in chain */
   GEN.u_planes = PAR.u_planes;      /* flag to calculate and use u-planes */
-
+  GEN.recursion = PAR.recursion;    /* reusing outside points for line-segment */
+  
   if (PAR.umin != NULL) memcpy(GEN.umin, PAR.umin, GEN.dim * sizeof(double));
   if (PAR.umax != NULL) memcpy(GEN.umax, PAR.umax, GEN.dim * sizeof(double));
 
@@ -618,6 +642,7 @@ _unur_hitrou_create( struct unur_par *par )
 
   /* initialize parameters */
   GEN.pdfcount = 0;
+  GEN.simplex_jumps = 0;
   GEN.shape_flag = 0;
   for (d=0; d<GEN.dim+1; d++) {
     GEN.point_current[d]=0.;
@@ -672,7 +697,7 @@ _unur_hitrou_clone( const struct unur_gen *gen )
   CLONE.r = GEN.r;
   CLONE.vmax = GEN.vmax;
   CLONE.u_planes = GEN.u_planes;
-  
+
   memcpy(CLONE.umin, GEN.umin, GEN.dim * sizeof(double));
   memcpy(CLONE.umax, GEN.umax, GEN.dim * sizeof(double));
   memcpy(CLONE.point_current, GEN.point_current, (GEN.dim+1) * sizeof(double));
@@ -745,9 +770,11 @@ _unur_hitrou_sample_cvec( struct unur_gen *gen, double *vec )
     while (1) {
 
       lambda = lmin + (lmax-lmin) * _unur_call_urng(gen->urng);
-      if (lambda>0) lmax=lambda;
-      if (lambda<0) lmin=lambda;
-
+      if (GEN.recursion==1) {
+        if (lambda>0) lmax=lambda;
+        if (lambda<0) lmin=lambda;
+      }
+      
       /* calculate the "candidate" point along the given random direction */
       for (d=0; d<=dim; d++)
         GEN.point_random[d] = GEN.point_current[d] + lambda * GEN.direction[d];
@@ -775,7 +802,7 @@ _unur_hitrou_sample_cvec( struct unur_gen *gen, double *vec )
     else
       vec[d] = U/pow(V,GEN.r) + GEN.center[d];
   }
-  
+
   return;
 } /* end of _unur_hitrou_sample() */
 
@@ -836,7 +863,7 @@ _unur_hitrou_random_direction( struct unur_gen *gen,
   int d;
 
   for (d=0; d<dim; d++) {
-    do {    
+    do {
       direction[d] = unur_sample_cont(NORMAL);
     } while (direction[d]==0.); /* extremely seldom case */
   }
@@ -850,8 +877,10 @@ _unur_hitrou_inside_shape( UNUR_GEN *gen )
      /* check if GEN.random_point is inside shape */
 {
   double U, V;
+  double W=0;
   int d;
   int inside=0;
+  double sum=0;
 
   if (GEN.shape_flag==0) {
     /* normal RoU shape*/
@@ -873,6 +902,7 @@ _unur_hitrou_inside_shape( UNUR_GEN *gen )
       inside=0;
   }
 
+  
   if (GEN.shape_flag==1) {
     /* testshape : rectangle */
     inside=1;
@@ -890,6 +920,99 @@ _unur_hitrou_inside_shape( UNUR_GEN *gen )
     }
 
   }
+
+  
+  if (GEN.shape_flag==2) {
+    /* testshape : single simplex */
+    inside=1;
+    sum=0;
+
+    GEN.pdfcount++;
+    /* V coordinate */
+    V=GEN.point_random[GEN.dim]/GEN.vmax;
+    if (V<0) inside=0;
+    sum = V;
+
+    /* checking U coordinates */
+    for (d=0; d<GEN.dim; d++) {
+      U = GEN.point_random[d]/GEN.umax[d];
+      if (U<0) inside=0;
+      sum += U;
+    }
+
+    if (sum>1) inside=0;
+  }
+
+
+  if (GEN.shape_flag==3) {
+    /* testshape : two copies of simplex above eachother along the v-direction */
+    inside=1;
+    sum=0;
+
+    GEN.pdfcount++;
+    
+    /* V coordinate */
+    V=GEN.point_random[GEN.dim]/(GEN.vmax/2.);
+    if (V<0) inside=0;
+       
+    sum = (V>1) ? V-1: V;
+
+    /* checking U coordinates */
+    for (d=0; d<GEN.dim; d++) {
+      U = GEN.point_random[d]/GEN.umax[d];
+      if (U<0) inside=0;
+      sum += U;
+    }
+
+    if (sum>1) inside=0;
+
+    if (inside==1) {    
+      /* see if we have made a jump between the two simplices */
+      W=GEN.point_current[GEN.dim]/(GEN.vmax/2.);
+      if ((V<0.5 && W>=0.5) || (W<0.5 && V>=0.5)) GEN.simplex_jumps++;
+    }
+    
+  }
+
+
+  if (GEN.shape_flag==4) {
+    /* testshape : two copies of simplex above eachother along the u[0]-direction */
+    inside=1;
+    sum=0;
+
+    GEN.pdfcount++;
+    
+    /* V coordinate */
+    V=GEN.point_random[GEN.dim]/GEN.vmax;
+    if (V<0) inside=0;
+       
+    sum = V;
+
+    /* checking U coordinates */
+    for (d=0; d<GEN.dim; d++) {
+      if (d==0) {
+        U = GEN.point_random[d]/(GEN.umax[d]/2.);
+        sum += (U>1) ? U-1: U;    
+      }
+      else {
+        U = GEN.point_random[d]/GEN.umax[d];
+        sum += U;
+      }
+      if (U<0) inside=0;
+    }
+
+    if (sum>1) inside=0;
+
+    if (inside==1) {    
+      /* see if we have made a jump between the two simplices */
+      U=GEN.point_random[0]/(GEN.umax[0]/2.);
+      W=GEN.point_current[0]/(GEN.umax[0]/2.);
+      if ((U<0.5 && W>=0.5) || (W<0.5 && U>=0.5)) GEN.simplex_jumps++;
+    }
+    
+  }
+  
+  
 
   return inside;
 }
@@ -919,7 +1042,7 @@ _unur_hitrou_reset_pdfcount( UNUR_GEN *gen)
 /*---------------------------------------------------------------------------*/
 
 void _unur_hitrou_set_shape( UNUR_GEN *gen, int shape_flag)
-     /* shape_flag : 0=normal, 1=rectangle */
+     /* shape_flag : 0=normal, 1=rectangle, 2=single simplex, 3=stacked simplex */
 {
   GEN.shape_flag = shape_flag;
 }
@@ -970,6 +1093,19 @@ void _unur_hitrou_get_point( UNUR_GEN *gen, double *uv)
 
 /*---------------------------------------------------------------------------*/
 
+long _unur_hitrou_get_simplex_jumps( UNUR_GEN *gen)
+     /* Return the number of simplex jumps for double-simplex shape  */
+{
+  return GEN.simplex_jumps;
+}
+
+void _unur_hitrou_reset_simplex_jumps( UNUR_GEN *gen)
+     /* Reset the number of simplex jumps to 0 */
+{
+  GEN.simplex_jumps=0;
+}
+
+
 /*****************************************************************************/
 /**  Debugging utilities                                                    **/
 /*****************************************************************************/
@@ -1016,6 +1152,14 @@ _unur_hitrou_debug_init( const struct unur_gen *gen )
   /* print center */
   _unur_matrix_print_vector( GEN.dim, GEN.center, "center =", log, gen->genid, "\t   ");
 
+  /* print recursion flag */
+  fprintf(log,"%s: Recursion:", gen->genid);  
+  if (GEN.recursion==0)
+    fprintf(log,"\tno (direction line segment is kept constant)");  
+  else
+    fprintf(log,"\tyes (direction line segment is adapted by each step)");
+  fprintf(log,"\n");
+
   /* print bounding rectangle */
   fprintf(log,"%s: Rectangle:",gen->genid);
   if (!((gen->set & HITROU_SET_U) && (gen->set & HITROU_SET_V)))
@@ -1039,7 +1183,7 @@ _unur_hitrou_debug_init( const struct unur_gen *gen )
   else {
     fprintf(log,"%s:\tumin[],umax[] are not used\n" ,gen->genid);
   }
-  
+
   fprintf(log,"%s:\n",gen->genid);
 
 } /* end of _unur_hitrou_debug_init() */
@@ -1069,6 +1213,12 @@ _unur_hitrou_debug_shape( const struct unur_gen *gen )
     _unur_matrix_print_vector( GEN.dim+1, GEN.test_rectangle, "relative size =",
                                log, gen->genid, "\t   ");
   }
+  if (GEN.shape_flag==2)
+    fprintf(log,"%s: Sampling shape : single simplex\n",gen->genid);
+  if (GEN.shape_flag==3)
+    fprintf(log,"%s: Sampling shape : two stacked simplex (along v-direction)\n",gen->genid); 
+  if (GEN.shape_flag==4)
+    fprintf(log,"%s: Sampling shape : two stacked simplex (along u[0]-direction)\n",gen->genid);
 } /* end of _unur_hitrou_debug_shape() */
 
 

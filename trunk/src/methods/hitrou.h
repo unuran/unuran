@@ -185,11 +185,26 @@ int unur_hitrou_set_u_planes( UNUR_PAR *parameters, int u_planes );
    and use all the u-planes of the bounding rectangle.
    In case, that this flag is set to 0, we will only calculate
    and use the planes perpendicular to the v-coordinate - hence
-   in that case, our bounding shape is not a finite rectangle 
+   in that case, our bounding shape is not a finite rectangle
    but an infinite strip.
 
    Default: @code{0}.
 */
+
+int unur_hitrou_set_recursion( UNUR_PAR *parameters, int recursion_flag );
+/*
+   When calculating a random point along the given direction,
+   this recursion flag controls how to proceed, when the random
+   point is located outside the shape.
+   In case, that the recursion_flag is set to 0, we sample again
+   without changing the ends of the direction-line-segment.
+   In case, that the recursion_flag is set to 1, we sample again
+   reusing the previous outside point as new end of the direction-
+   line-segment.
+
+   Default: @code{1}.
+*/
+
 
 /* =END */
 /*---------------------------------------------------------------------------*/
@@ -201,7 +216,7 @@ void _unur_hitrou_reset_pdfcount( UNUR_GEN *gen);
 /* Reset the number of PDF calls to 0 */
 
 void _unur_hitrou_set_shape( UNUR_GEN *gen, int shape_flag);
-/* shape_flag : 0=normal, 1=rectangle */
+/* shape_flag : 0=normal, 1=rectangle, 2=single simplex, 3=stacked simplex */
 
 void _unur_hitrou_set_testrectangle( UNUR_GEN *gen, double *relative_size);
 /* set the relative size of the test rectangle (relative to bounding rect) */
@@ -211,4 +226,10 @@ void _unur_hitrou_set_point( UNUR_GEN *gen, double *uv);
 
 void _unur_hitrou_get_point( UNUR_GEN *gen, double *uv);
 /* get the current point (dimension=dim+1) inside the testrectangle */
-     
+
+long _unur_hitrou_get_simplex_jumps( UNUR_GEN *gen);
+/* Return the number of simplex jumps for double-simplex shape  */
+
+void _unur_hitrou_reset_simplex_jumps( UNUR_GEN *gen);
+/* Reset the number of simplex jumps to 0 */
+

@@ -216,7 +216,6 @@ _unur_stdgen_sample_beta_bc(  struct unur_gen *gen )
   CHECK_NULL(gen,0.); COOKIE_CHECK(gen,CK_CSTD_GEN,0.);
 
   while (1) {
-
     /* Step 1 */
     u1 = uniform();
     u2 = uniform();
@@ -231,56 +230,59 @@ _unur_stdgen_sample_beta_bc(  struct unur_gen *gen )
 
       /* Step 5 */
       v = be * log(u1 / (1.0 - u1));
-      if (v > 80.) {
-	if (alnam < log(z)) continue;
-	X = _unur_FP_same(am,p) ? 1. : 0.;
+      if (v > 80.0) {
+	if (alnam < log(z))
+	  continue;
+	X = (_unur_FP_same(am,p)) ? 1.0 : 0.0;
 	break;
       }
       else {
 	w = am * exp(v);
-	if ((al * (log(al / (bm + w)) + v) - 1.386294361) < log(z)) 
+	if ((al * (log(al / (bm + w)) + v) - 1.386294361) < log(z))
 	  continue;  /* goto 1 */
 
 	/* Step 6_a */
-	X = (am != p) ? bm / (bm + w) : w / (bm + w);
+	X = (!_unur_FP_same(am,p)) ? bm / (bm + w) : w / (bm + w);
 	break;
       }
     }
+    
     else {
       /* Step 3 */
       z = u1 * u1 * u2;
       if (z < 0.25) {
 	/* Step 5 */
 	v = be * log(u1 / (1.0 - u1));
-	if (v > 80.) {
-	  X = _unur_FP_same(am,p) ? 1.0 : 0.0;
+	if (v > 80.0) {
+	  X = (_unur_FP_same(am,p)) ? 1.0 : 0.0;
 	  break;
 	}
 
 	w = am * exp(v);
-	X = (am != p) ? bm / (bm + w) : w / (bm + w);
+	X = (!_unur_FP_same(am,p)) ? bm / (bm + w) : w / (bm + w);
 	break;
       }
       else {
-	if (z >= rk2) continue;
-
+	if (z >= rk2)
+	  continue;
 	v = be * log(u1 / (1.0 - u1));
-	if ( v > 80.) {
-	  if (alnam < log(z)) continue;
-	  X = _unur_FP_same(am,p) ? 1. : 0.;
+	if ( v > 80.0) {
+	  if (alnam < log(z))
+	    continue;
+	  X = (_unur_FP_same(am,p)) ? 1.0 : 0.0;
 	  break;
 	}
-
 	w = am * exp(v);
-	if ((al * (log(al / (bm + w)) + v) - 1.386294361) < log(z)) 
+	if ((al * (log(al / (bm + w)) + v) - 1.386294361) < log(z))
 	  continue;  /* goto 1 */
-	      
+
 	/* Step 6_b */
-	X = (am != p) ? bm / (bm + w) : w / (bm + w);
+	X = (!_unur_FP_same(am,p))? bm / (bm + w) : w / (bm + w);
 	break;
       }
     }
   }
+
   /* -X- end of generator code -X- */
 
   return ((DISTR.n_params==2) ? X : a + (b-a) * X);

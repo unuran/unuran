@@ -357,7 +357,7 @@ unur_distr_beta( double *params, int n_params )
   distr->name = distr_name;
 
   /* how to get special generators */
-  DISTR.init = _unur_stdgen_beta_init;
+/*    DISTR.init = _unur_stdgen_beta_init; */
 
   /* functions */
   DISTR.pdf  = _unur_pdf_beta;    /* pointer to PDF                  */

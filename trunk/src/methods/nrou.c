@@ -162,9 +162,13 @@ struct unur_gen *_gen; /* generator object for bounding rect calculations */
 #define BD_LEFT   domain[0]             /* left boundary of domain of distribution */
 #define BD_RIGHT  domain[1]             /* right boundary of domain of distribution */
 
+#define BD_MAX    (DBL_MAX / 100.)      /* constant used for bounding rectangles */
+
+
 #define SAMPLE    gen->sample.cont      /* pointer to sampling routine       */     
 
 #define PDF(x)    _unur_cont_PDF((x),(gen->distr))    /* call to PDF         */
+
 
 /*---------------------------------------------------------------------------*/
 
@@ -557,17 +561,42 @@ _unur_nrou_rectangle( struct unur_gen *gen )
     faux.params = p;
 
     x = _unur_util_find_max(faux, DISTR.BD_LEFT, p[0], p[0]);
+    if (isinf(x) && isinf(DISTR.BD_LEFT) ) {
+	 
+      /* checking if a minimum could be expected 'near' DISTR.BD_LEFT */
+      if ( faux.f(-2*BD_MAX,p) <= faux.f(-BD_MAX,p) )  x = -BD_MAX;
+      else {
+        /* this would be a rare case, but maybe increasing the number 
+	   of iterations in the Brent algorithm would help ? */
+        _unur_warning(gen->genid ,UNUR_ERR_SHOULD_NOT_HAPPEN, 
+                      "Boundary rectangle not computed");
+        return UNUR_ERR_SHOULD_NOT_HAPPEN;
+      }
+      
+    }
+    
     GEN.umin = -faux.f(x,p);
 
     faux.f = (UNUR_FUNCT_GENERIC*) _unur_aux_bound_umax;
     faux.params = p;
 
     x = _unur_util_find_max(faux, p[0], DISTR.BD_RIGHT, p[0]);
+    if (isinf(x) && isinf(DISTR.BD_RIGHT)) {
+	 
+      /* checking if a maximum could be expected 'near' DISTR.BD_RIGHT */
+        if ( faux.f(BD_MAX,p) <= faux.f(2*BD_MAX,p) )  x = BD_MAX;
+        else {
+	  /* this would be a rare case, but maybe increasing the number 
+	     of iterations in the Brent algorithm would help ? */
+	  _unur_warning(gen->genid ,UNUR_ERR_SHOULD_NOT_HAPPEN, 
+   	                "Boundary rectangle not computed");
+          return UNUR_ERR_SHOULD_NOT_HAPPEN;
+	}
+
+    }
+
     GEN.umax = faux.f(x,p);
   }
-
-  /* TODO : check for (umin,umax) sanity 
-            e.g. cauchy-like distributions */
 
 
   /* o.k. */

@@ -80,7 +80,7 @@
 /*---------------------------------------------------------------------------*/
 /* True and false                                                            */
 
-#ifdef TRUE
+#ifndef TRUE
 #define TRUE   (1)
 #endif
 

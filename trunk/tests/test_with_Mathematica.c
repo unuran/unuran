@@ -19,12 +19,22 @@
 
 #include "test_with_Mathematica.h"
 
-/* maximal difference allowed (relative to maximal value) */
-#define MAX_REL_DIFF 1e-10
+/* PDF test: maximal difference allowed (relative to maximal value) */
+#define MAX_REL_DIFF 1.e-10
+
+/* mode test: */
+#define EPSX 1.e-11    /* stepsize */
+#define EPSY 1.e-13    /* maximal allowed relative error */
 
 /*---------------------------------------------------------------------------*/
 
-int test_cdf_pdf( FILE *LOG, UNUR_DISTR *distr, char *datafile )
+#define MAX(a,b) ( ((a) < (b)) ? (b) : (a))
+#define MIN(a,b) ( ((a) > (b)) ? (b) : (a))
+
+/*---------------------------------------------------------------------------*/
+
+int
+test_cdf_pdf( FILE *LOG, UNUR_DISTR *distr, char *datafile )
      /*----------------------------------------------------------------------*/
      /* test CDF, PDF and derivative of PDF by comparing to data             */
      /* read from file created by Mathematica.                               */
@@ -239,6 +249,16 @@ int test_cdf_pdf( FILE *LOG, UNUR_DISTR *distr, char *datafile )
     if (PDF_e > PDF_me)   PDF_me = PDF_e;
     if (dPDF_e > dPDF_me) dPDF_me = dPDF_e;
 
+    /* test mode of distribution */
+    if (is_DISCR) {
+      if (modetest_discr(LOG,distr) == 0)
+	++n_failed;
+    }
+    else { /* is_CONT */
+      if (modetest_cont(LOG,distr) == 0)
+	++n_failed;
+    }
+
   }
 
   /* close file handle */
@@ -295,3 +315,167 @@ int test_cdf_pdf( FILE *LOG, UNUR_DISTR *distr, char *datafile )
 } /* end of test_cdf_pdf() */
 
 /*---------------------------------------------------------------------------*/
+
+int modetest_cont( FILE *LOG, UNUR_DISTR *distr)
+     /*----------------------------------------------------------------------*/
+     /* Tests whether the mode of continuous distribution is correct.        */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   LOG      ... file handle for log file                              */
+     /*   distr    ... pointer to distribution object                        */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... if test was successful                                       */
+     /*   0 ... failed (difference too large)                                */
+     /*  -1 ... could not run test                                           */
+     /*----------------------------------------------------------------------*/
+{
+  double m, fm;           /* mode and value of PDF at mode                   */
+  double x, fx;           /* argument x and value of PDF at x                */
+  double domain[2];       /* boundaries of the domain of distribution        */
+  const char *dname;      /* name of distribution                            */
+  int n_failed = 0;       /* number of failed tests                          */
+  int i;                  /* loop variable                                   */
+
+  /* name of distribution */
+  dname = unur_distr_get_name(distr);
+
+  /* get mode */
+  if (!unur_distr_cont_upd_mode(distr) ) {
+    /* cannot read mode */
+    printf("%s: ERROR: cannot get mode\n", dname);
+    fprintf(LOG,"%s: ERROR: cannot get mode\n", dname);
+    return -1;
+  }    
+  m = unur_distr_cont_get_mode(distr); 
+
+  /* Correct possible problems if the mode m is on the boundary of domain */
+  unur_distr_cont_get_domain(distr,domain, domain+1); 
+  if(domain[1] - m < 1.e-11) 
+    m = MIN( m-EPSX/2., m*(m<0?(1.+EPSX/2.):1.-EPSX/2.) );
+  if(m - domain[0] < 1.e-11)
+    m = MAX( m+EPSX/2., m*(m>0?(1.+EPSX/2.):1.-EPSX/2.) );
+
+  /* evaluate PDF at mode */
+  fm = unur_distr_cont_eval_pdf(m, distr);
+
+#ifdef DEBUG
+  fprintf(LOG,"%s: mode: m = %.20g, f(m) = %.20g\n", dname,m,fm);
+#endif
+
+  /* test PDF left and right of mode */
+  for (i=0; i<2; i++) {
+
+    if (i==0)
+      /* right of mode */
+      x = MAX( m+EPSX, m*(m>0?(1.+EPSX):1.-EPSX) );
+
+    else
+      /* left of mode */
+      x = MIN( m-EPSX, m*(m<0?(1.+EPSX):1.-EPSX) );
+
+    /* evaluate PDF */
+    fx = unur_distr_cont_eval_pdf(x, distr);
+
+#ifdef DEBUG
+    fprintf(LOG,"%s:       x = %.20g, f(x) = %.20g", dname,x,fx);
+#endif
+
+    if(fm * (1.+EPSY) < fx) {
+#ifdef DEBUG
+      fprintf(LOG," ... failed! f(mode) not maximal!");
+#endif
+      ++n_failed;
+    }
+
+#ifdef DEBUG
+    fprintf(LOG,"\n");
+#endif
+  }
+
+#ifdef DEBUG
+    fprintf(LOG,"%s:\n",dname);
+#endif
+
+  /* end */
+  return ((n_failed > 0) ? 0 : 1);
+
+} /* end of modetest_cont() */
+
+/*---------------------------------------------------------------------------*/
+
+int modetest_discr( FILE *LOG, UNUR_DISTR *distr)
+     /*----------------------------------------------------------------------*/
+     /* Tests whether the mode of discr distribution is correct.             */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   LOG      ... file handle for log file                              */
+     /*   distr    ... pointer to distribution object                        */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... if test was successful                                       */
+     /*   0 ... failed (difference too large)                                */
+     /*  -1 ... could not run test                                           */
+     /*----------------------------------------------------------------------*/
+{
+  int m, x;               /* mode and other argument for PDF                 */
+  double fm, fx;          /* value of PDF at m and x                         */
+  const char *dname;      /* name of distribution                            */
+  int n_failed = 0;       /* number of failed tests                          */
+  int i;                  /* loop variable                                   */
+
+  /* name of distribution */
+  dname = unur_distr_get_name(distr);
+
+  /* get mode */
+  if (!unur_distr_discr_upd_mode(distr) ) {
+    /* cannot read mode */
+    printf("%s: ERROR: cannot get mode\n", dname);
+    fprintf(LOG,"%s: ERROR: cannot get mode\n", dname);
+    return -1;
+  }    
+  m = unur_distr_discr_get_mode(distr); 
+
+  /* evaluate PMF at mode */
+  fm = unur_distr_discr_eval_pmf(m, distr);
+
+#ifdef DEBUG
+  fprintf(LOG,"%s: mode: m = %d, f(m) = %.20g\n", dname,m,fm);
+#endif
+
+  /* test PMF left and right of mode */
+  for (i=-1; i<2; i+=2 ) {
+    
+    /* left and right of mode */
+    x = m + i;
+
+    /* evaluate PMF */
+    fx = unur_distr_discr_eval_pmf(x, distr);
+
+#ifdef DEBUG
+    fprintf(LOG,"%s:       x = %d, f(x) = %.20g", dname,x,fx);
+#endif
+
+    if(fm * (1.+EPSY) < fx) {
+#ifdef DEBUG
+      fprintf(LOG," ... failed! f(mode) not maximal!");
+#endif
+      ++n_failed;
+    }
+
+#ifdef DEBUG
+    fprintf(LOG,"\n");
+#endif
+  }
+
+#ifdef DEBUG
+    fprintf(LOG,"%s:\n",dname);
+#endif
+
+  /* end */
+  return ((n_failed > 0) ? 0 : 1);
+
+} /* end of modetest_cont() */
+
+/*---------------------------------------------------------------------------*/
+

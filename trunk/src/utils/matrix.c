@@ -386,7 +386,7 @@ _unur_matrix_invert_matrix(int dim, double *A, double detmin, double *Ainv, doub
      /* Calculates the inverse matrix (by means of LU decomposition)         	*/
      /* If |det(A)| <= detmin a message is printed 				*/
      /* the array Ainv is computed whenever |det(A)|/dim >= UNUR_EPSILON        */
-     /*	or whenever norm(A)*dim/|det(A)| <= HUGE_VAL/2	 			*/
+     /*	or whenever norm(A)*dim/|det(A)| <= DBL_MAX/2	 			*/
      /*										*/
      /* input:                                                                  */
      /*   dim    ... dimension of the square matrix A                        	*/
@@ -403,7 +403,7 @@ _unur_matrix_invert_matrix(int dim, double *A, double detmin, double *Ainv, doub
      /*   UNUR_SUCCESS on success                                            	*/
      /*   UNUR_FAILURE when matrix is ill-conditioned, i.e. when		*/
      /*                |det(A)|/dim >= UNUR_EPSILON  or                         */
-     /*		       norm(A)*dim/|det(A)| <= HUGE_VL/2			*/
+     /*		       norm(A)*dim/|det(A)| <= DBL_MAX/2			*/
      /*                (array Ainv remains unchanged in this case)              */
      /*   other error code, otherwise                                           */
      /*-------------------------------------------------------------------------*/
@@ -438,7 +438,7 @@ _unur_matrix_invert_matrix(int dim, double *A, double detmin, double *Ainv, doub
 
   /* check for small determinant */
   if (fabs(*det) <= detmin) {
-    _unur_error("matrix",UNUR_FAILURE,"matrix determinant is near zero");
+    _unur_warning("matrix",UNUR_ERR_GENERIC,"det(A) < detmin");
   }
 
   /* calculate matrix norm */
@@ -452,13 +452,13 @@ _unur_matrix_invert_matrix(int dim, double *A, double detmin, double *Ainv, doub
   }
 
   if ( fabs(*det)/dim < UNUR_EPSILON ) {
-    _unur_error("matrix",UNUR_FAILURE,"matrix not computationally stable");  
+    _unur_error("matrix",UNUR_ERR_GENERIC,"|det(A)| < dim*UNUR_EPSILON"); 
     return UNUR_FAILURE; 
   }
  
   /* check for ill-conditioned matrix */
-  if ( norm * dim / fabs(*det) > HUGE_VAL / 2 ) { 
-    _unur_error("matrix",UNUR_FAILURE,"matrix not computationally stable");  
+  if ( norm * dim / fabs(*det) > DBL_MAX / 2 ) { 
+    _unur_error("matrix",UNUR_ERR_GENERIC,"matrix not computationally stable");  
     return UNUR_FAILURE; 
   } 
   

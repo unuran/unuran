@@ -110,15 +110,16 @@ double unur_stdgen_sample_laplace_inv( struct unur_gen *gen )
      /* Inversion method */
 {
   /* -X- generator code -X- */
-  double U, X;
+  double U,X;
 
   /* check arguments */
   CHECK_NULL(gen,0.);
   COOKIE_CHECK(gen,CK_CSTD_GEN,0.);
 
-  /* sample a uniform random number != 0 */
-  while ((U = 2. * uniform()) == 0. ) ;
+  /* sample from uniform random number generator */
+  while ((U = 2. * (GEN.umin + uniform() * (GEN.umax-GEN.umin))) == 0.);
 
+  /* transform to random variate */
   X = (U>1.) ? -log(2.-U) : log(U);
 
   /* -X- end of generator code -X- */

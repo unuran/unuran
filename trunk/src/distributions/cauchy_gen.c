@@ -110,18 +110,28 @@ double unur_stdgen_sample_cauchy_inv( struct unur_gen *gen )
      /* Inversion method */
 {
   /* -X- generator code -X- */
-  double X;
+  double U,X;
 
   /* check arguments */
   CHECK_NULL(gen,0.);
   COOKIE_CHECK(gen,CK_CSTD_GEN,0.);
 
-  X = tan( M_PI * (uniform() - 0.5) );
-  /* -X- end of generator code -X- */
+  /* sample from uniform random number generator */
+  U = GEN.umin + uniform() * (GEN.umax-GEN.umin);
 
+  /* transform to random variate */
+  X = tan( M_PI * (U - 0.5) );
+
+  /* -X- end of generator code -X- */
 
   return ((DISTR.n_params==0) ? X : theta + lambda * X );
 
 } /* end of unur_stdgen_sample_cauchy_inv() */
 
 /*---------------------------------------------------------------------------*/
+
+
+
+
+
+

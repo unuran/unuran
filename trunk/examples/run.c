@@ -260,12 +260,15 @@ int main()
 
 #if 0
   par = unur_cstd_new(distr_cauchy);
+  //  unur_distr_cont_set_domain(distr_cauchy,0.,10.);
   unur_run_tests(par,RUN_TESTS);
 #endif
 
 #if 1
   fpar[0] = 5.;
+  fpar[1] = 2.;
   distr_xxx = unur_distr_laplace(fpar,1);
+  unur_distr_cont_set_domain(distr_xxx,0.,10.);
   par = unur_cstd_new(distr_xxx);
   unur_cstd_set_variant(par,0);
   unur_run_tests(par,RUN_TESTS);

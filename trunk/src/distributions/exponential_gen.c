@@ -49,8 +49,8 @@
 
 #define uniform()  _unur_call_urng(gen) /* call for uniform prng             */
 
-#define sigma (DISTR.params[0])
-#define theta (DISTR.params[1])
+#define sigma (DISTR.params[0])     /* scale */
+#define theta (DISTR.params[1])     /* location */
 
 /*---------------------------------------------------------------------------*/
 
@@ -110,16 +110,21 @@ double unur_stdgen_sample_exponential_inv( struct unur_gen *gen )
      /* Inversion method                                                     */
 {
   /* -X- generator code -X- */
+  double U,X;
 
   /* check arguments */
   CHECK_NULL(gen,0.);
   COOKIE_CHECK(gen,CK_CSTD_GEN,0.);
 
+  /* sample from uniform random number generator */
+  U = GEN.umin + uniform() * (GEN.umax-GEN.umin);
+
+  /* transform to random variate */
+  X = log( 1. - U );
+
   /* -X- end of generator code -X- */
 
-  /** TODO: da stimmt was nicht!! warum nur ein parameter ?? **/
-
-  return ( theta - sigma * log(1. - (GEN.umin + uniform() * (GEN.umax-GEN.umin))) );
+  return ((DISTR.n_params==0) ? X : theta + sigma * X);
 
 } /* end of unur_stdgen_sample_exponential_inv() */
 

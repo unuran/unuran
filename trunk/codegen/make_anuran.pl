@@ -970,7 +970,7 @@ sub anuran_code
 	\$log .= "date = ".(scalar localtime)."\\n";
 
 	# client
-	\$log .= "client = ".remote_addr()."\\n";
+        \$log .= "client = ".remote_host()."  (".remote_addr().")\\n";
 
 	# name of distribution
 	\$log .= "distribution = \$distr\\n";
@@ -1153,7 +1153,6 @@ sub format_PDF
 
 sub scan_FPARAM {
     my $DOC_params = $_[0];
-    my $params;
 
     # empty ? 
     return "" unless $DOC_params;

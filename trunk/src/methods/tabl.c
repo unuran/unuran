@@ -330,20 +330,18 @@ unur_tabl_set_variant_setup( struct unur_par *par, unsigned variant )
 } /* end if unur_tabl_set_variant_setup() */
 
 /*---------------------------------------------------------------------------*/
-int unur_tabl_set_variant_splitmode( UNUR_PAR *parameters, unsigned splitmode );
-/* 
-   There are three variants for adaptive rejection sampling. These
-   differ in the way how an interval is split:
-   splitmode @code{1}: use the generated point to split the interval.
-   splitmode @code{2}: use the mean point of the interval.
-   splitmode @code{3}: use the arcmean point.
-   Default is splitmode @code{3}.
-*/
 
 int 
 unur_tabl_set_variant_splitmode( struct unur_par *par, unsigned splitmode )
      /*----------------------------------------------------------------------*/
      /* set setup variant for adaptive rejection sampling                    */
+     /*                                                                      */
+     /* There are three variants for adaptive rejection sampling. These      */
+     /* differ in the way how an interval is split:                          */
+     /*    splitmode 1: use the generated point to split the interval.       */
+     /*    splitmode 2: use the mean point of the interval.                  */
+     /*    splitmode 3: use the arcmean point.                               */
+     /* Default is splitmode 3.                                              */
      /*                                                                      */
      /* parameters:                                                          */
      /*   par       ... pointer to parameter for building generator object   */
@@ -795,6 +793,7 @@ _unur_tabl_init( struct unur_par *par )
      /*----------------------------------------------------------------------*/
 { 
   struct unur_gen *gen;
+  struct unur_tabl_interval *iv;
 
   /* check arguments */
   CHECK_NULL(par,NULL);
@@ -822,6 +821,15 @@ _unur_tabl_init( struct unur_par *par )
   if (gen->debug & TABL_DEBUG_A_IV)
     _unur_tabl_debug_intervals(gen,FALSE);
 #endif
+
+  /* we need the total area below the hat and below the squeeze */
+  GEN.Atotal = 0.;
+  GEN.Asqueeze = 0.;
+  for (iv = GEN.iv; iv != NULL; iv = iv->next ) {
+    COOKIE_CHECK(iv,CK_TABL_IV,0);
+    GEN.Atotal += iv->Ahat;
+    GEN.Asqueeze += iv->Asqueeze;
+  }
 
   /* split according to [1], run SPLIT B */
   if (par->variant & TABL_VARFLAG_STP_B)
@@ -1565,6 +1573,7 @@ _unur_tabl_split_b_starting_intervals( struct unur_par *par,
     COOKIE_CHECK(iv,CK_TABL_IV,0);
     if ((iv->Ahat - iv->Asqueeze) >= Amean) {
       /* new point instead of the interation of [1] we use "arcmean" */
+
       switch (_unur_tabl_split_interval( gen, iv, 0., 0., TABL_VARFLAG_SPLIT_ARC )) {
       case 1:  /* splitting succesful */
       case -1: /* interval chopped */
@@ -1572,6 +1581,7 @@ _unur_tabl_split_b_starting_intervals( struct unur_par *par,
       case 0:  /* error (slope not monotonically decreasing) */
 	return 0;
       }
+      
       if (GEN.n_ivs >= PAR.n_starting_cpoints)
 	/* no more intervals, yet */
 	break;
@@ -1611,7 +1621,8 @@ _unur_tabl_split_interval( struct unur_gen *gen,
      /*----------------------------------------------------------------------*/
 {
   struct unur_tabl_interval *iv_new;
-
+  double A_hat_old, A_squ_old;
+      
   /* check arguments */
   CHECK_NULL(gen,0);     COOKIE_CHECK(gen,CK_TABL_GEN,0);
   CHECK_NULL(iv_old,0);  COOKIE_CHECK(iv_old,CK_TABL_IV,0);
@@ -1647,6 +1658,10 @@ _unur_tabl_split_interval( struct unur_gen *gen,
     return 0;
   }
 
+  /* store areas of old interval */
+  A_hat_old = iv_old->Ahat;
+  A_squ_old = iv_old->Asqueeze;
+
   /* check if the new interval is completely outside the support of PDF */
   if (fx <= 0.) {
     /* check montonicity */
@@ -1662,6 +1677,10 @@ _unur_tabl_split_interval( struct unur_gen *gen,
     /** TODO: possible overflow/underflow ?? **/
     iv_old->Ahat = iv_old->slope * (iv_old->xmax - iv_old->xmin) * iv_old->fmax;
     /* iv_old->Asqueeze remains 0 */
+
+    /* update total area */
+    GEN.Atotal += iv_old->Ahat - A_hat_old;
+    /* GEN.Asqueeze remains unchanged */
 
     /* interval chopped but not split */
     return -1;
@@ -1715,6 +1734,10 @@ _unur_tabl_split_interval( struct unur_gen *gen,
   iv_new->Asqueeze = iv_new->slope * (iv_new->xmax - iv_new->xmin) * iv_new->fmin;
   iv_old->Ahat     = iv_old->slope * (iv_old->xmax - iv_old->xmin) * iv_old->fmax;
   iv_old->Asqueeze = iv_old->slope * (iv_old->xmax - iv_old->xmin) * iv_old->fmin;
+
+  /* update total areas */
+  GEN.Atotal += iv_old->Ahat + iv_new->Ahat - A_hat_old;
+  GEN.Asqueeze += iv_old->Asqueeze + iv_new->Asqueeze - A_squ_old;
 
   /* insert iv_new into linked list of intervals.
      iv_old is stored on the left hand side of iv_new. */

@@ -782,26 +782,29 @@ EOM
 
 	# parse header
 	my @lines = split /\n/, $header;
+	my $decl;   # contains declarations
+	my $code;   # contains code
 	foreach my $line (@lines) {
-	    $line .= "\n";
 	    $line =~ s/^(\d+)\://;
 	    my $lineno = $1  or die "internal error";
 	    if ($line =~ /\s+gen\s+=/) { 
-		$line = "UNUR_GEN   *gen = NULL\;\n".$line;
+		$decl .= "UNUR_GEN   *gen = NULL\;\n";
+#		$line = "UNUR_GEN   *gen = NULL\;\n".$line;
 		$subsection_closing .= "unur_free(gen)\;\n";
 	    }
 	    if ($line =~ /\s+par\s+=/) {
-		$line = "UNUR_PAR   *par = NULL\;\n".$line; 
+		$decl .= "UNUR_PAR   *par = NULL\;\n"; 
 	    }
 	    if ($line =~ /\s+distr\s+=/) {
-		$line = "UNUR_DISTR *distr = NULL\;\n".$line; 
+		$decl .= "UNUR_DISTR *distr = NULL\;\n"; 
+#		$line = "UNUR_DISTR *distr = NULL\;\n".$line; 
 		$subsection_closing .= "unur_distr_free(distr)\;\n";
 	    }
+	    $code .= "$line\n";
 	    # lines indicated with "<-- ! NULL" must not produce a NULL pointer 
-	    $line =~ s/^(.*)=(.*)<--\s+!\s*NULL\s*\n/$1=$2\nabort_if_NULL\(TESTLOG, $lineno, $1\)\;\n/mg;
-	    print $line;
+	    $code =~ s/^(.*)=(.*)<--\s+!\s*NULL\s*\n/$1=$2\nabort_if_NULL\(TESTLOG, $lineno, $1\)\;\n/mg;
 	}
-	print "\n";
+	print $decl, $code, "\n";
 
 	# parse body
 	my @blocks = get_blocks( $section, $body, 1 );
@@ -1066,7 +1069,7 @@ int main()
 	unur_set_default_urng(prng_new("mt19937($seed)"));
 #elif UNUR_URNG_TYPE == UNUR_URNG_RNGSTREAM
 	{
-	    unsigned long seed[6] = {$seed,$seed+1,$seed+2,$seed+3,$seed+4,$seed+5};
+	    unsigned long seed[6] = {$seed,$seed,$seed,$seed,$seed,$seed};
 	    RngStream_SetPackageSeed(seed);
 	}
 #endif  /* UNUR_URNG_TYPE */

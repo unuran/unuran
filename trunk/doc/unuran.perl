@@ -75,8 +75,12 @@ while($_ = <>)
           }
        }
 
-       # suche Funktionszeile
-       if ( $ON == 1 && $_ =~/^\s*($type.*)\s*\((.*\))\s*;/){
+       # suche Funktionszeile, funktion darf nicht
+       # _unur enthalten (underscore!!)
+       if ($_ =~ /_unur/ ){
+	   $KOMMENT = 0;
+       }
+       elsif ( $ON == 1 && $_ =~/^\s*($type.*)\s*\((.*\))\s*;/){
            #Kommentar zur funktion moeglich wenn $KOMMENT = 1
            $KOMMENT = 1;
            $DECL = $1;   # vor der oeffnenden Funktionsklammer

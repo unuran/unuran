@@ -82,6 +82,22 @@ Table of @ref{Contents}
 
 @node Overview
 @section Overview
+@menu
+* target:: Target group
+@end menu
+
+@node target
+@subsection Target group
+
+UNURAN is designed for applications using non-standard distributions
+where no seperate generator is yet available.
+UNURAN is also useful if the parameters of a standard distribution
+should be changed frequently.
+@*
+For applications depending on a standard distribution
+without changing the paramters a lot,
+it will be better to look for a specific tool for that distribution. 
+
 
 @node Install
 @section Install

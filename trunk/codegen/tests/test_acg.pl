@@ -3,9 +3,14 @@
 # Generates the code generators
 # ----------------------------------------------------------------
 
+# make dir for results
+system ("mkdir results");
+
 
 # program lanugates to test
 @LANGUAGES = ("C", "FORTRAN", "JAVA");
+
+$no_of_numbers = 15;
 
 # Array of Hashes (Hash-entries: prog_language, distr, parameters)
 @Test = (
@@ -19,18 +24,19 @@
    },
    {
      name => "normal",
-     params => [10, 2]
+     params => [0, 0.2]
    }
 );
 
-
-
+#
+# Perform all Tests
+#
 for ($i=0; $i<scalar(@Test); $i++){
 
     foreach $PROG_LANG (@LANGUAGES){
 	$DISTR     = $Test[$i]{name};
 	@PARAMS    = @{$Test[$i]{params}};
-	$no_of_params = scalar(@PARAMS);
+ 	$no_of_params = scalar(@PARAMS);
 
         # write acg generator
 	open(OUT, ">./acg.c") or die "Can't open outfile: $!";
@@ -39,23 +45,27 @@ for ($i=0; $i<scalar(@Test); $i++){
 
         # generate acg
 	system( "gcc -I. -I.. -I../.. -I../../src -I../../src/tests  -L../../src -Wall -g -O3 -o ./acg acg.c -lunuracg -lunuran -lm -lprng" );
-        # remove acg.c
-	system("rm ./acg.c");
+        
 
         # create random number generator
 	if ( $PROG_LANG eq "C" ){
 	    $suffix = ".c";
+
 	    write_c_main();
 
             # random number generator uses math.h 
             # o.k. maybe using Perl filehandles would be nicer
             system ("echo '#include <math.h>' > ./gen.c");
+
         }
         elsif ( $PROG_LANG eq "FORTRAN" ){
-             $suffix = ".f";
+	    $suffix = ".f";
+            system ("echo '' > ./gen.f");
+	    write_fortran_main();
         }
         elsif ( $PROG_LANG eq "JAVA" ){
  	   $suffix = ".java";
+	   write_java_main();
         }
         else{
 	    die "Can't determine desired programming language!";
@@ -63,25 +73,33 @@ for ($i=0; $i<scalar(@Test); $i++){
        system( "./acg >> ./gen$suffix");
        # remove acg
        system ("rm ./acg");
+       # remove acg.c
+       system("rm ./acg.c");
 
+
+       $file = join "_", $DISTR, @PARAMS , $PROG_LANG;
        # compile and execute random number - test
        if ( $PROG_LANG eq "C" ){
 	   system ("gcc -Wall -lm *.c");
-	   system ("./a.out");
+	   system ("./a.out > ./results/$file");
 
 	   #clean up
-	   #system ("rm *.c");
+	   system ("rm *.c a.out");
 
        }
        elsif ( $PROG_LANG eq "FORTRAN" ){
+	   system ("g77  *.f");
+	   system ("./a.out > ./results/$file");
 
 	   #clean up
-	   #system ("rm *.f");
+	   system ("rm *.f a.out");
        }
        elsif ( $PROG_LANG eq "JAVA" ){
+	   system ("javac *.java");
+	   system ("java test > ./results/$file");
 
 	   #clean up
-	   system ("rm *.java");
+	   system ("rm *.java *.class");
        }
        else{
 	   die "Can't determine desired programming language!";
@@ -158,6 +176,8 @@ sub write_c_main{
     open ( MAIN_C_OUT, ">testc.c") or die "Can't open outfile $!";
 
     print MAIN_C_OUT "#include <stdio.h>\n";
+    print MAIN_C_OUT "#include <stddef.h>\n";
+    print MAIN_C_OUT "#include <stdlib.h>\n";
     print MAIN_C_OUT "#include <math.h>\n";
 
     print MAIN_C_OUT "\nextern double rand_$DISTR();\n";
@@ -165,16 +185,67 @@ sub write_c_main{
     print MAIN_C_OUT "\nint main()\n";
     print MAIN_C_OUT "{\n";
     print MAIN_C_OUT "\n\tint i;\n";
-    print MAIN_C_OUT "\n\tfor (i=0; i<10; i++)\n";
+    print MAIN_C_OUT "\n\tfor (i=0; i<$no_of_numbers; i++)\n";
     print MAIN_C_OUT "\t\tprintf(\"%1.10e\\n\", rand_$DISTR());\n";
 
 
     print MAIN_C_OUT "\n\treturn (0);\n";
     print MAIN_C_OUT "}\n";
 
-close (MAINOUT);
+    close (MAIN_C_OUT);
 }
 
 
 
+
+# *****************************************************************
+#
+#   subroutine write_java_main
+#
+#   writes a routint to test the random number generator
+#
+# *****************************************************************
+sub write_java_main{
+
+   open ( MAIN_JAVA_OUT, ">testjava.java") or die "Can't open outfile $!";
+
+
+   print MAIN_JAVA_OUT "public class test implements Generator{\n";
+
+   print MAIN_JAVA_OUT "\n\tpublic static void main(String[] args){\n";
+   print MAIN_JAVA_OUT	"\n\t\tfor (int i=0; i<$no_of_numbers; i++){\n";
+   print MAIN_JAVA_OUT "\t\t\tSystem.out.println( rand_$DISTR() );\n";
+   print MAIN_JAVA_OUT "\t\t}\n";
+
+   print MAIN_JAVA_OUT     "\n\t}\n";
+   print MAIN_JAVA_OUT "}";
+
+   close (MAIN_JAVA_OUT);
+}
+
+
+
+# *****************************************************************
+#
+#   subroutine write_fortran_main
+#
+#   writes a routine to test the random number generator
+#
+# *****************************************************************
+sub write_fortran_main{
+
+    $shortDISTR = substr($DISTR,0,5);
+
+   open ( MAIN_FORTRAN_OUT, ">gen.f") or die "Can't open outfile $!";
+
+   print MAIN_FORTRAN_OUT  "C Begin of testprogram\n";
+   print MAIN_FORTRAN_OUT  "      PROGRAM TESTF\n";
+   print MAIN_FORTRAN_OUT  "        IMPLICIT DOUBLE PRECISION (A-Z)\n";      
+   print MAIN_FORTRAN_OUT  "        DO 10 I=1,$no_of_numbers\n"; 
+   print MAIN_FORTRAN_OUT  "10        PRINT *,r$shortDISTR()\n";
+   print MAIN_FORTRAN_OUT  "      END\n\n\n";
+
+   close (MAIN_FORTRAN_OUT);
+
+}
 

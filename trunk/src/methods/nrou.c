@@ -229,7 +229,7 @@ unur_nrou_new( const struct unur_distr *distr )
 /*****************************************************************************/
 
 int
-unur_nrou_set_rect_u( struct unur_par *par, double umin, double umax )
+unur_nrou_set_u( struct unur_par *par, double umin, double umax )
      /*----------------------------------------------------------------------*/
      /* Sets left and right u-boundary of bounding rectangle.                */
      /*                                                                      */
@@ -266,7 +266,7 @@ unur_nrou_set_rect_u( struct unur_par *par, double umin, double umax )
 /*---------------------------------------------------------------------------*/
 
 int
-unur_nrou_set_rect_v( struct unur_par *par, double vmax )
+unur_nrou_set_v( struct unur_par *par, double vmax )
      /*----------------------------------------------------------------------*/
      /* Sets upper v-boundary of bounding rectangle.                         */
      /*                                                                      */

@@ -734,8 +734,7 @@ _unur_hitrou_sample_cvec( struct unur_gen *gen, double *vec )
     else
       vec[d] = U/pow(V,GEN.r) + GEN.center[d];
   }
-
-
+  
   return;
 } /* end of _unur_hitrou_sample() */
 
@@ -889,7 +888,6 @@ void _unur_hitrou_set_testrectangle( UNUR_GEN *gen, double *relative_size)
      /* set the relative size of the test rectangle (relative to bound rect) */
      /* the array relative_size[] has dimension (dim+1) and contain the      */
      /* relative sizes (numbers between 0 and 1) of the test-rectangle       */
-     /* the test_rectangle is centred at the point (0,0,...,0,vmax/2)        */
 {
   int d;
 
@@ -905,7 +903,29 @@ void _unur_hitrou_set_testrectangle( UNUR_GEN *gen, double *relative_size)
 
 /*---------------------------------------------------------------------------*/
 
+void _unur_hitrou_set_point( UNUR_GEN *gen, double *uv)
+     /* set the current point (dimension=dim+1) inside the testrectangle */
+{
+  int d;
 
+  for (d=0; d<=GEN.dim; d++) {
+    GEN.point_current[d]=uv[d];
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+
+void _unur_hitrou_get_point( UNUR_GEN *gen, double *uv)
+     /* get the current point (dimension=dim+1) inside the testrectangle */
+{
+  int d;
+
+  for (d=0; d<=GEN.dim; d++) {
+    uv[d]=GEN.point_current[d];
+  }
+}
+
+/*---------------------------------------------------------------------------*/
 
 /*****************************************************************************/
 /**  Debugging utilities                                                    **/

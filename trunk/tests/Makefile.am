@@ -20,6 +20,7 @@ endif
 
 check_PROGRAMS = \
  t_distr \
+ t_distr_cemp \
  t_distr_cont \
  t_distr_corder \
  t_distr_cvec \
@@ -50,6 +51,7 @@ check_PROGRAMS = \
 
 TESTS = \
  t_distr \
+ t_distr_cemp \
  t_distr_cont \
  t_distr_corder \
  t_distr_cvec \
@@ -86,6 +88,12 @@ EXTRA_DIST = \
  make_test_files.pl \
  README.conf \
  distr.conf \
+ distr_cemp.conf \
+ distr_cont.conf \
+ distr_corder.conf \
+ distr_cvec.conf \
+ distr_cvemp.conf \
+ distr_discr.conf \
  stringparser.conf \
  corder.conf \
  auto.conf \
@@ -137,6 +145,9 @@ endif
 
 t_distr_SOURCES = t_distr.c testroutines.c
 t_distr_LDADD = $(top_builddir)/src/libunuran.a
+
+t_distr_cemp_SOURCES = t_distr_cemp.c testroutines.c
+t_distr_cemp_LDADD = $(top_builddir)/src/libunuran.a
 
 t_distr_cont_SOURCES = t_distr_cont.c testroutines.c
 t_distr_cont_LDADD = $(top_builddir)/src/libunuran.a
@@ -219,6 +230,9 @@ t_timing_ninv_LDADD = $(top_builddir)/src/libunuran.a
 
 t_distr.c: distr.conf make_test_files.pl
 	./make_test_files.pl distr.conf          > t_distr.c
+
+t_distr_cemp.c: distr_cemp.conf make_test_files.pl
+	./make_test_files.pl distr_cemp.conf     > t_distr_cemp.c
 
 t_distr_cont.c: distr_cont.conf make_test_files.pl
 	./make_test_files.pl distr_cont.conf     > t_distr_cont.c

@@ -656,15 +656,11 @@ _unur_dsrou_rectangle( struct unur_gen *gen )
 
   /* compute PMF at mode and mode-1 */
   pm = PMF(DISTR.mode);
-  pbm = (DISTR.mode-1 < DISTR.BD_LEFT) ? 0 : PMF(DISTR.mode-1);
+  pbm = (DISTR.mode-1 < DISTR.BD_LEFT) ? 0. : PMF(DISTR.mode-1);
 
   /* pm and pbm must be positive */
   if (pm <= 0. || pbm < 0.) {
     _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"PMF(mode) <= 0.");
-    return 0;
-  }
-  if (pm >= INT_MAX || pbm >= INT_MAX) { 
-    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"PDF(mode) overflow");
     return 0;
   }
 
@@ -673,15 +669,15 @@ _unur_dsrou_rectangle( struct unur_gen *gen )
   GEN.ur = sqrt(pm);
 
   /* areas of rectangle */
-  if (gen->set & DSROU_SET_CDFMODE) {
-    /* CDF at mode known */
-    GEN.al = -(GEN.Fmode * DISTR.sum)+pm;
-    GEN.ar = DISTR.sum + GEN.al;
-  }
-  else if (GEN.ul == 0.) {
+  if (GEN.ul == 0.) {
     /* PMF monotonically decreasing */
     GEN.al = 0.;
     GEN.ar = DISTR.sum;
+  }
+  else if (gen->set & DSROU_SET_CDFMODE) {
+    /* CDF at mode known */
+    GEN.al = -(GEN.Fmode * DISTR.sum)+pm;
+    GEN.ar = DISTR.sum + GEN.al;
   }
   else {
     GEN.al = -(DISTR.sum - pm);
@@ -1060,6 +1056,8 @@ _unur_dsrou_debug_init( const struct unur_gen *gen, int is_reinit )
 	  gen->genid,GEN.ar/GEN.ur,GEN.ur,GEN.ar,100.*GEN.ar/(-GEN.al+GEN.ar));
 
   fprintf(log,"%s:\n",gen->genid);
+
+  fflush(log);
 
 } /* end of _unur_dsrou_debug_init() */
 

@@ -145,6 +145,7 @@ struct unur_funct_vgeneric {
 #include <methods/empl_struct.h>
 
 /* continuous multivariate distributions */
+#include <methods/hitrou_struct.h>
 #include <methods/vempk_struct.h>
 #include <methods/vmt_struct.h>
 #include <methods/vnrou_struct.h>
@@ -174,6 +175,7 @@ struct unur_par {
     struct unur_dss_par   dss;
     struct unur_arou_par  arou;
     struct unur_hinv_par  hinv;
+    struct unur_hitrou_par hitrou;
     struct unur_hrb_par   hrb;
     struct unur_hrd_par   hrd;
     struct unur_hri_par   hri;
@@ -226,6 +228,7 @@ struct unur_gen {
     struct unur_dss_gen   dss;
     struct unur_arou_gen  arou;
     struct unur_hinv_gen  hinv;
+    struct unur_hitrou_gen  hitrou;
     struct unur_hrb_gen   hrb;
     struct unur_hrd_gen   hrd;
     struct unur_hri_gen   hri;

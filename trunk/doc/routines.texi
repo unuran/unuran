@@ -7,8 +7,282 @@
 
 @c cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 
-@node    Function Calls , Methods , Distribution Library,      Top
-@comment node-name,       next,     previous,                  up
+@node    Structures , Input String , Distribution Library, Top
+@comment node-name,   next,          previous,             up
+
+@menu
+* Input String::           A string provided by the user sets
+                            distribution and generation method.
+* Distribution::           The distribution object determines
+                            the basic distribution.
+* Parameter::              The parameter object sets the parameters for
+                            the generator.
+* Generator::              The generator object initializes and invokes
+                            the generator.
+@end menu
+
+@chapter Structures
+There are 3 different structures, whose hierarchie is described in the
+flow chart in the chapter introduction @ref{Structure Overview}.
+
+@c cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
+@node    Input String , Distribution, Structures, Structures
+@comment node-name,     next,         previous,   up
+
+@section Input String
+Description of the input string that enables the user to choose
+different parameters, describing the objects we have designed.
+
+@*
+@deftp{the object}
+@@<objectname> -> <object_description>; @*
+In case of default of the object name a standard object is invoked.
+@end deftp
+
+@deftp{object_description}
+<parameterlist> @*
+Description of parameters is not obligatory, on default standard
+parameters will be used for generating the object.
+@end deftp
+
+@deftp{parameterlist}
+<keyword> <operator> <variable> @*
+operators can be the following:
+<= , < , > , >= , : , =  @*
+datatypes of variables can be the following:
+double, float, int, pointer, range, string, unsigned long @*
+@end deftp
+@deftp{additionally spacing operators can be defined}
+%<n>
+@end deftp
+
+@*
+@deftp{Here is a practical example}
+In this example we describe definition of the distribution object.
+
+char choose[ ] =  @@distribution -> normal, parameters = (5,2), mode = 1, area = 1, domain = [-2:2];
+@end deftp
+
+@enumerate
+@deftp{objects}
+@item distribution
+@item generator
+@item urng 
+@item sample
+@end deftp
+@end enumerate
+
+
+
+@enumerate
+@deftp{object distribution - object_names}
+@item Beta
+@item Chisquare
+@item Exponential
+@item Gamma
+@item Laplace
+@item Lognormal
+@item Lomax
+@item Normal
+@item Pareto
+@item Powerexponential
+@item Rayleigh
+@item Student
+@item Uniform
+@end deftp
+@end enumerate
+
+@deftp{Parameters for distribution object}
+parameters = (x,y), mode = x, area = x, domain = [x:y]
+@end deftp
+
+@enumerate
+@deftp{object generator - object_names}
+@item Arou
+@item Cstd
+@item Dau
+@item Dis
+@item Tabl
+@item Tdr
+@item Rect
+@item Unif
+@item Utdr
+@end deftp
+@end enumerate
+
+@deftp{Parameters for generator object}
+domain = [x:y], domain_vec = x, mode = x, usemode = x, factor = x,
+cpoints = x, shratio <= x, intervals <= x, tdr_c = x, tabl_c = x, slopes
+= x, variant = x (0,1,2), check = x (0,1), copy = x (0,1), debug = x (0,1)
+@end deftp
+
+
+@sp 2
+@deftp{Function}
+unur_make_gen(str @var{*choose})
+@end deftp
+
+This function contains all function calls necessary to run the
+generator and integrates the chosen parameters into them:
+
+@center distr = unur_distr_distribution( double @var{fpar}, int @var{n_fpar} )
+
+@center par = unur_method_new( struct unur_distr @var{*distr} )
+
+@center gen = unur_init( struct unur_par @var{*par} )
+
+These 3 functions have to be called obligatory but additionally, one can
+call different set functions to determine certain parameters in each object.
+
+
+Here are some examples:
+
+unur_distr_set_domain( struct unur_distr @var{*distr}, double
+@var{left}, double @var{right} )   
+@* @dots{} in this case a parameter of the distribution object is set
+
+unur_set_urng( struct unur_par @var{*par}, UNUR_URNG_TYPE @var{urng} )
+@* @dots{} in this case a parameter of the distribution object is set
+
+Alternatively,for some disributions there exist functions that generate a distribution object automatically @ref{Distribution}
+    
+@c cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
+@node    Distribution, Parameter, Input String, Structures
+@comment node-name,     next,      previous,     up
+
+@section Distribution
+Description of the distribution object.
+
+@*
+@deftp{This is what a function for continuous p.d.f.s looks like}
+typedef double (unur_function_cont)(double x, double *params, int
+n_params)
+@end deftp
+
+@deftp{The sturcture}
+First of all we have implemented a structure called `struct
+unur_distr_cont´. It is defined for univariate continuous distribution
+and contains pointers to the p.d.f, to the derivative of the p.d.f and to
+the c.d.f.:        
+
+@center unur_function_cont *pdf
+@center unur_function_cont *dpdf 
+@center unur_function_cont *cdf 
+                    
+Further, parameters and the number of the parameters of the
+p.d.f. are declared here. Finally also the location of the mode, the
+area below the p.d.f and the domain boundaries are defined here.
+@end deftp
+
+@deftp{The Object}
+Now we define the distribution object: `struct unur_distr´.
+It contains the structure unur_distr_cont, described above as well as
+information about the type (int `type´) of distribution, the number of
+parameters changed (int`set´) and a magic cookie.
+@end deftp
+
+@deftp{Generate distribution object automatically}
+In order to provide a possibility to easily run the desired generator,
+we have implemented a function that automatically generates a
+distribution object:
+
+@center struct unur_distr *unur_distr_distribution(double @var{*params},
+@center int @var{n_params} )
+@sp 1
+Unfortunately, the list is only available for the following
+distributions:
+@end deftp
+@itemize
+@item  beta - distribution
+@item cauchy - distribution
+@item gamma - distribution
+@item normal - distribution
+@item uniform - distribution
+@end itemize
+
+@sp 2
+In order to have the object as modular as possible, we have
+defined several function prototypes for manipulating distribution
+object
+@sp 1
+
+@deftypefn {Library Function} struct unur_distr *unur_distr_new_cont(
+                              void )
+
+A new distribution object is created and the type of distribution is
+set. The function returns a pointer to the object (`distr´).
+@end deftypefn
+
+@deftypefn {Library Function} int unur_distr_set_pdf( struct unur_distr @var{*distr}, void @var{*pdf} )
+The function uses the pointers to the distribution object and the p.d.f to set
+the p.d.f. of the distribution and returns 1 if successful.
+@end deftypefn
+
+@deftypefn {Library Function} int unur_distr_set_dpdf( struct unur_distr @var{*distr}, void @var{*dpdf} )
+The function uses the pointers to the distribution object and the d.p.d.f to set
+the derivate of p.d.f. of the distribution and returns 1 if successful.
+@end deftypefn
+
+@deftypefn {Library Function} int unur_distr_set_cdf( struct unur_distr @var{*distr}, void @var{*cdf} )
+The function uses the pointers to the distribution object and the c.d.f to set
+the c.d.f. of the distribution and returns 1 if successful.
+@end deftypefn
+
+@deftypefn {Library Function} int unur_distr_set_params( struct unur_distr @var{*distr}, double @var{*params}, int @var{n_params} )
+This function sets an array of parameters where all the data needed for
+the distribution are stored.
+@end deftypefn
+
+@deftypefn {Library Function} int unur_distr_set_mode( struct unur_distr @var{*distr}, double @var{mode} )
+The mode of the distribution is being set here. If successful, 1 is returned.
+@end deftypefn
+
+@deftypefn {Library Function} int unur_distr_set_pdfarea( struct unur_distr @var{*distr}, double @var{area} )
+The area below p.d.f. is being set here. If successful, 1 is returned.
+@end deftypefn
+
+@deftypefn {Library Function} int unur_distr_set_domain( struct unur_distr @var{*distr}, double
+@var{left}, double @var{right} )
+This function needs the parameters for the right and left border as well
+as the distribution function to set the new borders of the domain of the distribution.
+@end deftypefn
+
+@deftypefn {Library Function} void unur_distr_copy( struct unur_distr @var{*distr1}, struct unur_distr @var{*distr2} )
+Here we copy distribution object distr2 into distr1. This is necessary
+not to loose the set parameters of the object.
+@end deftypefn
+
+@deftypefn {Library Function} void unur_distr_free( struct unur_distr @var{*distr} );
+This function is necessary to free the allocated memory space of the distribution object.
+@end deftypefn
+
+
+
+
+@c cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
+@node    Parameter, Generator , Distribution, Structures
+@comment node-name, next,       previous,     up
+
+@section Parameter
+Description of the parameter object.
+
+
+@c cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
+@node    Generator, Function Calls, Parameter, Structures
+@comment node-name, next,           previous,  up
+
+@section Generator
+Description of the generator object.
+
+
+@c cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
+@node    Function Calls , Methods , Generator, Top
+@comment node-name,       next,     previous,  up
 
     
 The chapter Function calls  contains documentation of 

@@ -4,8 +4,8 @@
 @c
 @c ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 
-@node    Distribution Library, Function Calls , Example,      Top
-@comment node-name,            next,            previous,     up
+@node    Distribution Library, Structures , Example,      Top
+@comment node-name,            next,        previous,     up
 
 @menu
 * Continuous Distribution:: This section contains only continuous 

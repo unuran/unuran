@@ -49,7 +49,8 @@
 @menu
 @c  * Copying::          Your rights and freedoms.
 * Introduction::         This chapter contains the file unuran-ref2.texi.
-* Distribution Library:: This chapter contains a library of 
+* Distribution Library:: This chapter contains a library of different distributions.
+* Structures::           Here we discribe the different structure objects.
 * Function Calls::       The implemented functions are described here.
 * Concept Index::        This index has two entries.
 @end menu
@@ -62,11 +63,13 @@
 @c
 
 
-@node    Introduction, Routines for User , Top,      Top
-@comment node-name,    next,               previous, up
+@node    Introduction, Structure Overview , Top,      Top
+@comment node-name,    next,                previous, up
      
 @menu
 @c  * Copying::             Your rights and freedoms.
+* Structure Overview::      Here we show a flow chart in order to elucidate the
+                             structure of the diffenrent objects.
 * Routines for User::       The function syntax used in the user
                             interface is described here.
 * Example::                 This chaper provides a short demo program.

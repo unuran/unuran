@@ -1086,9 +1086,9 @@ _unur_tabl_sample_check( struct unur_gen *gen )
       x = iv->xmax + (iv->Asqueeze-u) * (iv->xmin - iv->xmax)/iv->Asqueeze;
       /* test whether PDF is monotone */
       fx = PDF(x);
-      if (fx > iv->fmax)
+      if (_unur_FP_greater(fx,iv->fmax))
 	_unur_warning(gen->genid,UNUR_ERR_GEN_CONDITION,"PDF > hat. PDF not monotone in interval");
-      if (fx < iv->fmin)
+      if (_unur_FP_less(fx,iv->fmin))
 	_unur_warning(gen->genid,UNUR_ERR_GEN_CONDITION,"PDF < squeeze. PDF not monotone in interval");
       /* at last return number */
       return x;
@@ -1100,9 +1100,9 @@ _unur_tabl_sample_check( struct unur_gen *gen )
       fx = PDF(x);
 
       /* test whether PDF is monotone */
-      if (fx > iv->fmax)
+      if (_unur_FP_greater(fx,iv->fmax))
 	_unur_warning(gen->genid,UNUR_ERR_GEN_CONDITION,"PDF > hat. PDF not monotone in interval");
-      if (fx < iv->fmin)
+      if (_unur_FP_less(fx,iv->fmin))
 	_unur_warning(gen->genid,UNUR_ERR_GEN_CONDITION,"PDF < squeeze. PDF not monotone in interval");
 
       /* being above squeeze is bad. split interval. */

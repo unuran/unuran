@@ -7,6 +7,7 @@ INCLUDES = \
  -I$(top_srcdir)/src/tests
 
 check_PROGRAMS = \
+ run_test_with_Mathematica \
  t_distr \
  t_corder \
  t_timing \
@@ -24,6 +25,7 @@ check_PROGRAMS = \
  t_utdr
 
 TESTS = \
+ run_test_with_Mathematica \
  t_distr \
  t_corder \
  t_arou \
@@ -42,9 +44,19 @@ TESTS = \
 # commented out
 # t_timing
 
-noinst_HEADERS = testunuran.h
+noinst_HEADERS = \
+ testunuran.h \
+ test_with_Mathematica.h
+
+distr_data_files = \
+ t_distr_beta.data \
+ t_distr_gamma.data \
+ t_distr_normal.data
+
 
 EXTRA_DIST = \
+ test_with_Mathematica.m \
+ $(distr_data_files) \
  make_test_files.pl \
  README.conf \
  distr.conf \
@@ -61,8 +73,18 @@ EXTRA_DIST = \
  tabl.conf \
  tdr.conf \
  unif.conf \
- utdr.conf
+ utdr.conf \
+ t_distr_beta.data \
+ t_distr_gamma.data \
+ t_distr_normal.data
 
+
+$(distr_data_files): test_with_Mathematica.m
+	math -initfile test_with_Mathematica.m
+
+
+run_test_with_Mathematica_SOURCES = run_test_with_Mathematica.c test_with_Mathematica.c $(distr_data_files)
+run_test_with_Mathematica_LDADD = $(top_builddir)/src/libunuran.a
 
 t_distr_SOURCES = t_distr.c testroutines.c
 t_distr_LDADD = $(top_builddir)/src/libunuran.a

@@ -313,6 +313,50 @@ int unur_distr_cont_get_pdfparams( const UNUR_DISTR *distribution, const double 
    @emph{Important:} Do @strong{not} change the entries in @var{params}!
 */
 
+int unur_distr_cont_set_pdfparams_vec( UNUR_DISTR *distribution, int par, const double *param_vec, int n_param_vec );
+/* 
+   This function provides an interface for additional vector parameters for a
+   continuous @var{distribution}.
+
+   It sets the parameter with number @var{par}. 
+   @var{par} indicates directly which of the parameters is set and
+   must be a number between @code{0} and @code{UNUR_DISTR_MAXPARAMS}-1
+   (the upper limit of possible parameters defined in
+   @file{unuran_config.h}; it is set to 5 but can be changed to any 
+   appropriate nonnegative number.)
+
+   The entries of a this parameter are given by the array @var{param_vec}
+   of size @var{n_params}. Notice that using this interface an
+   An (@i{n} x @i{m})-matrix has to be stored in an array of length
+   @var{n_params} = @i{n} times @i{m}; where the rows of the matrix
+   are stored consecutively in this array.
+
+   If an error occurs no parameters are copied into the parameter
+   object @code{unur_errno} is set to @code{UNUR_ERR_DISTR_DATA}.
+*/
+
+int unur_distr_cont_get_pdfparams_vec( const UNUR_DISTR *distribution, int par, const double **param_vecs );
+/* 
+   Get parameter of the PDF with number @var{par}.
+   The pointer to the parameter array is stored in @var{param_vecs}, its
+   size is returned by the function.
+   If the requested parameter is not set, then an error code is returned
+   and @code{params} is set to NULL.
+
+   @emph{Important:} Do @strong{not} change the entries in @var{param_vecs}!
+*/
+
+
+/* ==DOC
+   @subsubheading Derived parameters
+
+   The following paramters @strong{must} be set whenever one of the
+   essential parameters has been set or changed (and the parameter is
+   required for the chosen method).
+*/
+
+
+
 
 int unur_distr_cont_set_logpdfstr( UNUR_DISTR *distribution, const char *logpdfstr );
 /* */

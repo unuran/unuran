@@ -164,11 +164,17 @@ unur_distr_cont_new( void )
 
   DISTR.init      = NULL;          /* pointer to special init routine        */
 
-  DISTR.n_params  = 0;             /* number of parameters of the pdf        */
   /* initialize parameters of the p.d.f.                                     */
+  DISTR.n_params  = 0;             /* number of parameters of the pdf        */  
   for (i=0; i<UNUR_DISTR_MAXPARAMS; i++)
     DISTR.params[i] = 0.;
 
+  /* initialize parameter vectors of the PDF                                 */
+  for (i=0; i<UNUR_DISTR_MAXPARAMS; i++) {
+    DISTR.n_param_vec[i] = 0;
+    DISTR.param_vecs[i] = NULL;
+  }  
+    
   DISTR.norm_constant = 1.;        /* (log of) normalization constant for p.d.f.
 				      (initialized to avoid accidently floating
 				      point exception                        */
@@ -218,7 +224,7 @@ _unur_distr_cont_clone( const struct unur_distr *distr )
 #define CLONE clone->data.cont
 
   struct unur_distr *clone;
-  int len;
+  int i, len;
 
   /* check arguments */
   _unur_check_NULL( NULL, distr, NULL );
@@ -237,7 +243,16 @@ _unur_distr_cont_clone( const struct unur_distr *distr )
   CLONE.dlogpdftree = (DISTR.dlogpdftree) ? _unur_fstr_dup_tree(DISTR.dlogpdftree) : NULL;
   CLONE.cdftree  = (DISTR.cdftree)  ? _unur_fstr_dup_tree(DISTR.cdftree)  : NULL;
   CLONE.hrtree   = (DISTR.hrtree)   ? _unur_fstr_dup_tree(DISTR.hrtree)   : NULL;
-
+ 
+  /* clone of parameter arrays */  
+  for (i=0; i<UNUR_DISTR_MAXPARAMS; i++) {
+    CLONE.n_param_vec[i] = DISTR.n_param_vec[i];
+    if (DISTR.param_vecs[i]) {
+      CLONE.param_vecs[i] = _unur_xmalloc( DISTR.n_param_vec[i] * sizeof(double) );
+      memcpy( CLONE.param_vecs[i], DISTR.param_vecs[i], DISTR.n_param_vec[i] * sizeof(double) );
+    }
+  }  
+  
   /* copy user name for distribution */
   if (distr->name_str) {
     len = strlen(distr->name_str) + 1;
@@ -245,7 +260,7 @@ _unur_distr_cont_clone( const struct unur_distr *distr )
     memcpy( clone->name_str, distr->name_str, len );
     clone->name = clone->name_str;
   }
-
+  
   /* for a derived distribution we also have to copy the underlying */
   /* distribution object                                            */
   if (distr->base != NULL) {
@@ -268,11 +283,17 @@ _unur_distr_cont_free( struct unur_distr *distr )
      /*   distr ... pointer to distribution object                           */
      /*----------------------------------------------------------------------*/
 {
+  int i;
+
   /* check arguments */
   if( distr == NULL ) /* nothing to do */
     return;
   _unur_check_distr_object( distr, CONT, RETURN_VOID );
 
+  /* parameter arrays */
+  for (i=0; i<UNUR_DISTR_MAXPARAMS; i++)
+    if (DISTR.param_vecs[i]) free( DISTR.param_vecs[i] );
+  
   /* function trees */
   if (DISTR.pdftree)  _unur_fstr_free(DISTR.pdftree);
   if (DISTR.dpdftree) _unur_fstr_free(DISTR.dpdftree);
@@ -1415,6 +1436,89 @@ unur_distr_cont_get_pdfparams( const struct unur_distr *distr, const double **pa
   }
 
 } /* end of unur_distr_cont_get_pdfparams() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+unur_distr_cont_set_pdfparams_vec( struct unur_distr *distr, int par, const double *param_vec, int n_param_vec )
+     /*----------------------------------------------------------------------*/
+     /* set vector array parameters for distribution                         */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   distr    ... pointer to distribution object                        */
+     /*   par      ... which parameter is set                                */
+     /*   param_vec   ... parameter array with number `par'                  */
+     /*   n_param_vec ... length of parameter array                          */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( NULL, distr, UNUR_ERR_NULL );
+  _unur_check_NULL( NULL, param_vec, UNUR_ERR_NULL );
+  _unur_check_distr_object( distr, CONT, UNUR_ERR_DISTR_INVALID );
+
+  /* check new parameter for distribution */
+  if (par < 0 || par >= UNUR_DISTR_MAXPARAMS ) {
+    _unur_error(NULL,UNUR_ERR_DISTR_NPARAMS,"");
+    return UNUR_ERR_DISTR_NPARAMS;
+  }
+
+  /* allocate memory */
+  _unur_xrealloc( DISTR.param_vecs[par], n_param_vec * sizeof(double) );
+
+  /* copy parameters */
+  memcpy( DISTR.param_vecs[par], param_vec, n_param_vec*sizeof(double) );
+
+  /* set length of array */
+  DISTR.n_param_vec[par] = n_param_vec;
+
+  /* changelog */
+  distr->set &= ~UNUR_DISTR_SET_MASK_DERIVED;
+  /* derived parameters like mode, area, etc. might be wrong now! */
+
+  /* o.k. */
+  return UNUR_SUCCESS;
+} /* end of unur_distr_cont_set_pdfparams_vec() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+unur_distr_cont_get_pdfparams_vec( const struct unur_distr *distr, int par, const double **param_vecs )
+     /*----------------------------------------------------------------------*/
+     /* get number of PDF parameters and sets pointer to array params[] of   */
+     /* parameters                                                           */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   distr    ... pointer to distribution object                        */
+     /*   par      ... which parameter is read                               */
+     /*   params   ... pointer to parameter array with number `par'          */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   length of parameter array with number `par'                        */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return 0                                                           */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( NULL, distr, 0 );
+  _unur_check_distr_object( distr, CONT, 0 );
+
+  /* check new parameter for distribution */
+  if (par < 0 || par >= UNUR_DISTR_MAXPARAMS ) {
+    _unur_error(NULL,UNUR_ERR_DISTR_NPARAMS,"");
+    *param_vecs = NULL;
+    return 0;
+  }
+  
+  *param_vecs = DISTR.param_vecs[par];
+
+  return (*param_vecs) ? DISTR.n_param_vec[par] : 0;
+} /* end of unur_distr_cont_get_pdfparams_vec() */
+
 
 /*---------------------------------------------------------------------------*/
 

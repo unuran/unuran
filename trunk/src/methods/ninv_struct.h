@@ -37,7 +37,7 @@
  *                                                                           *
  *****************************************************************************/
 
-#define TABLE_POINTS 50     /* number of points  in table
+#define TABLE_POINTS 100     /* number of points  in table
                                containiing possible starting points          */
 
 

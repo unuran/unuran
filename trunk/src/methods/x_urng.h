@@ -117,57 +117,6 @@
 */
 
 /*---------------------------------------------------------------------------*/
-/* uniform random number generator                                           */
-
-/* We have to define the following macros:
-
-   UNUR_URNG_DEFAULT
-      ... name|pointer of default urng (depends on UNUR_URNG_TYPE)
-          to be set in @file{unuran_config.h}.
-
-   _unur_call_urng(urng)
-      ... function call to urng 
-*/
-/* Remark: UNUR_URNG_DEFAULT and _unur_call_urng() should be defined in      */
-/*         source_urng.h. However this would be a confusing splitting of     */
-/*         this few lines of code.                                           */
-
-/*---------------------------------------------------------------------------*/
-#if UNUR_URNG_TYPE == UNUR_URNG_SIMPLE
-/*---------------------------------------------------------------------------*/
-
-/* prototype for uniform rng  */
-double UNUR_URNG_DEFAULT(void);
-double UNUR_URNG_AUX_DEFAULT(void);
-
-/* type of uniform random number generator                                   */
-typedef double (UNUR_URNG)(void);
-
-/* function call to uniform rng */
-#define _unur_call_urng(urng)        ((*(urng))())
-
-/*---------------------------------------------------------------------------*/
-#elif UNUR_URNG_TYPE == UNUR_URNG_PRNG
-/*---------------------------------------------------------------------------*/
-
-/* header file from prng library */
-#include <prng.h>
-
-/* type of uniform random number generator                                   */
-typedef struct prng UNUR_URNG;
-
-/* function call to uniform rng */
-#define _unur_call_urng(urng)        (prng_get_next(urng))
-
-/*---------------------------------------------------------------------------*/
-#else
-/*---------------------------------------------------------------------------*/
-#error UNUR_URNG_TYPE not valid !!
-/*---------------------------------------------------------------------------*/
-#endif  /* UNUR_URNG_TYPE */
-/*---------------------------------------------------------------------------*/
-
-/*---------------------------------------------------------------------------*/
 /* set, get or change uniform RNG for generator                              */
 
 /* =ROUTINES */

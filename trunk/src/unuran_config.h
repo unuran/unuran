@@ -74,30 +74,63 @@
 /* You must *not* use UNUR_URNG_PRNG if the prng library is not installed!   */
 
 /*---------------------------------------------------------------------------*/
-/* Default name of uniform random number generator.                          */
-
 #if UNUR_URNG_TYPE == UNUR_URNG_SIMPLE
+/*---------------------------------------------------------------------------*/
 
+/* Default name of uniform random number generator.                          */
 /* valid name of a C routine of type `double urng(void)'                     */
 #define UNUR_URNG_DEFAULT     unur_urng_MRG31k3p
 #define UNUR_URNG_AUX_DEFAULT unur_urng_fish
 
+/* ......................................................................... */
+
+/* prototype for uniform rng                  (don't touch these two lines!) */
+double UNUR_URNG_DEFAULT(void);
+double UNUR_URNG_AUX_DEFAULT(void);
+
+/* type of uniform random number generator          (don't touch this line!) */
+typedef double (UNUR_URNG)(void);
+
+/* function call to uniform rng                     (don't touch this line!) */
+#define _unur_call_urng(urng)        ((*(urng))())
+
+/*---------------------------------------------------------------------------*/
 #elif UNUR_URNG_TYPE == UNUR_URNG_GENERIC
+/*---------------------------------------------------------------------------*/
 
 /* valid pointer to a C routine of type `double urng(void *status)'          */
 #define UNUR_URNG_DEFAULT     NULL
 #define UNUR_URNG_AUX_DEFAULT NULL
 
-#elif UNUR_URNG_TYPE == UNUR_URNG_PRNG
+/* ......................................................................... */
 
-/* valid parameter (char) string for prng-2.2                                */
+/*---------------------------------------------------------------------------*/
+#elif UNUR_URNG_TYPE == UNUR_URNG_PRNG
+/*---------------------------------------------------------------------------*/
+
+/* Default name of uniform random number generator.                          */
+/* valid parameter (char) string for prng-3.x                                */
 #define UNUR_URNG_DEFAULT     "mt19937(19863)"
 #define UNUR_URNG_AUX_DEFAULT "LCG(2147483647,16807,0,1)"
 
-#else
-#error UNUR_URNG_TYPE not valid !!
-#endif  /* UNUR_URNG_TYPE */
+/* ......................................................................... */
 
+/* header file from prng library                   (don't remove this line!) */
+#include <prng.h>
+
+/* type of uniform random number generator          (don't touch this line!) */
+typedef struct prng UNUR_URNG;
+
+/* function call to uniform rng                     (don't touch this line!) */
+#define _unur_call_urng(urng)        (prng_get_next(urng))
+
+/*---------------------------------------------------------------------------*/
+#else
+/*---------------------------------------------------------------------------*/
+#error UNUR_URNG_TYPE not valid !!
+/*---------------------------------------------------------------------------*/
+#endif  /* UNUR_URNG_TYPE */
+/*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*/
 /* Default name of log file.                                                 */

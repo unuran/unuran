@@ -1411,17 +1411,17 @@ _unur_tdr_interval_new( struct unur_gen *gen, double x, double fx, int is_mode )
   iv->next = NULL; /* add eol marker */
   ++(GEN.n_ivs);   /* increment counter for intervals */
   COOKIE_SET(iv,CK_TDR_IV);
-
+  
   /* make left construction point in interval */
   iv->x = x;              /* point x */
   iv->fx = fx;            /* value of PDF at x */
-
+  
   if (fx<=0.) {           /* --> -INFINITY */
     iv->Tfx = -INFINITY;  /* transformed density */
     iv->dTfx = INFINITY;  /* derivative of transformed density */
     return iv;
   }
-
+  
   switch( gen->variant & TDR_VARMASK_T ) {
   case TDR_VAR_T_LOG:
     iv->Tfx = log(fx);
@@ -1429,12 +1429,8 @@ _unur_tdr_interval_new( struct unur_gen *gen, double x, double fx, int is_mode )
     /* we can set dPDF(x) = 0. for the mode */
     if (is_mode || dfx==0.)
       iv->dTfx = 0.;
-    else {
-      if (fx > DBL_EPSILON)
-	iv->dTfx = (1./fx * dfx);
-      else
-	iv->dTfx = (dfx<0.) ? -exp(log(-dfx) - log(fx)) : exp(log(dfx) - log(fx));
-    }
+    else
+      iv->dTfx = (1./fx * dfx);   /* possible overflow ? */
     break;
   case TDR_VAR_T_SQRT:
     iv->Tfx = -1./sqrt(fx);
@@ -1710,6 +1706,8 @@ _unur_tdr_tangent_intersection_point( struct unur_gen *gen, struct unur_tdr_inte
       return 1; 
     }
     else {
+/*        fprintf(stdout,"\ndTfx0 = %g < %g = dTfx1 (x0 = %g, x1 = %g)\n", */
+/*  	      iv->dTfx,iv->next->dTfx,iv->x,iv->next->x); */
       _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"dTfx0 < dTfx1 (x0<x1). PDF not T-concave!");
       return 0;
     }

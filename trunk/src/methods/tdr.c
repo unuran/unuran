@@ -1805,6 +1805,7 @@ _unur_tdr_interval_new( struct unur_gen *gen, double x, double fx, int is_mode )
      /*----------------------------------------------------------------------*/
 {
   struct unur_tdr_interval *iv;
+  double dfx;
 
   /* check arguments */
   CHECK_NULL(gen,NULL);  COOKIE_CHECK(gen,CK_TDR_GEN,NULL);
@@ -1835,28 +1836,32 @@ _unur_tdr_interval_new( struct unur_gen *gen, double x, double fx, int is_mode )
   switch( gen->variant & TDR_VARMASK_T ) {
   case TDR_VAR_T_LOG:
     iv->Tfx = log(fx);
-    iv->dTfx = (is_mode) ? 0. : (1./fx * dPDF(x));
+    dfx = dPDF(x);
     /* we can set dPDF(x) = 0. for the mode */
+    if (is_mode || dfx==0.)
+      iv->dTfx = 0.;
+    else {
+      if (fx > DBL_EPSILON)
+	iv->dTfx = (1./fx * dfx);
+      else
+	iv->dTfx = (dfx<0.) ? -exp(log(-dfx) - log(fx)) : exp(log(dfx) - log(fx));
+    }
     break;
   case TDR_VAR_T_SQRT:
-    {
-      double tmp = pow(fx,1.5);
-      if (tmp == 0.) {
-	iv->Tfx = -INFINITY;
-	iv->dTfx = INFINITY;
-      }
-      else {
-	iv->Tfx = -1./sqrt(fx);
-	/* we can set dPDF(x) = 0. for the mode */
-	iv->dTfx = (is_mode) ? 0. : (0.5/tmp * dPDF(x));
-      }	
-    }
+    iv->Tfx = -1./sqrt(fx);
+    dfx = dPDF(x);
+    /* we can set dPDF(x) = 0. for the mode */
+    if (is_mode || dfx==0.)
+      iv->dTfx = 0.;
+    else
+      iv->dTfx = (dfx<0.) ? -exp( -M_LN2 - 1.5*log(fx) + log(-dfx))
+	: exp( -M_LN2 - 1.5*log(fx) + log(dfx));
     break;
   case TDR_VAR_T_POW:
     /** TODO **/
-    iv->Tfx = -pow(fx,GEN.c_T);
-    iv->dTfx = (is_mode) ? 0. : (GEN.c_T*pow(fx,GEN.c_T-1.) * dPDF(x)); /** TODO: possible over/underflow **/
-    /* we can set dPDF(x) = 0. for the mode */
+    /*      iv->Tfx = -pow(fx,GEN.c_T); */
+    /*      iv->dTfx = 0.; */
+    break;
   }
   
   /* the program requires dTfx > -INFINITY */
@@ -1944,11 +1949,12 @@ _unur_tdr_interval_parameter( struct unur_gen *gen, struct unur_tdr_interval *iv
     return -1;
 
   /* check area */
-  if ( (iv->Asqueeze - iv->Ahatl - iv->Ahatr)/(iv->Ahatl + iv->Ahatr) > DBL_EPSILON) {
-    /** TODO: is this o.k. to distiguish between roundoff errors and violated condition ?? **/
-    /** TODO: possible over/underflow ( ?? ) **/
-    _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"A(squeeze) > A(hat). p.d.f. not T-concave!");
-    return 0; 
+  { 
+    double Ahat = iv->Ahatl + iv->Ahatr;
+    if (_FP_greater(iv->Asqueeze, Ahat)) {
+      _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"A(squeeze) > A(hat). p.d.f. not T-concave!");
+      return 0; 
+    }
   }
 
   /* o.k. */
@@ -2101,11 +2107,16 @@ _unur_tdr_interval_area( struct unur_gen *gen, struct unur_tdr_interval *iv, dou
   case TDR_VAR_T_LOG:
     /* T(x) = log(x) */
     if (slope != 0.) {                         
-      /** TODO: cannot use this case if slope is `very small' **/
       if (x<=-INFINITY || x>= INFINITY)
-	area = iv->fx / slope;                                     /** TODO: possible over/underflow **/
-      else
-	area = iv->fx / slope * ( exp(slope*(x - iv->x)) - 1. );   /** TODO: possible over/underflow **/
+	area = iv->fx / slope;
+      else {
+	double t = slope * (x - iv->x);
+	if (fabs(t) < 1.e-8)
+	  /* use Taylor series */
+	  area = iv->fx * (x - iv->x) * (1. + t/2. + t*t/6.);
+	else
+	  area = iv->fx / slope * ( exp(slope*(x - iv->x)) - 1. );
+      }
     }
     else { /* hat/squeeze almost constant */
       if (x<=-INFINITY || x>= INFINITY)
@@ -2118,17 +2129,19 @@ _unur_tdr_interval_area( struct unur_gen *gen, struct unur_tdr_interval *iv, dou
     /* T(x) = -1./sqrt(x) */
     if (slope != 0.) {
       /** TODO: cannot use this case if slope is `very small' **/
-      double z;
       if (x<=-INFINITY || x>= INFINITY)
 	area = 1. / ( iv->Tfx * slope );
       else {
-	z = iv->Tfx + slope*(x - iv->x);
-	if (z>=0.)      /* the hat must not cut the x-axis */
+	/* compute value of transformed hat at integration boundary */
+	double hx = iv->Tfx + slope*(x - iv->x);
+	/* the transformed hat must always be below the x-axis.
+	   otherwise the area below the hat in unbounded. */
+	if (hx>=0.)
 	  /** TODO: this is very sensitive to roundoff errors, when Tfx und slope are 
 	      large numbers. see get_division_point, case (3) **/
 	  return INFINITY; 
 	else
-	  area = (x - iv->x) / ( iv->Tfx * z );
+	  area = (x - iv->x) / ( iv->Tfx * hx );
       }
     }
     else { /* hat/squeeze almost constant */

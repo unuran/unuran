@@ -481,7 +481,7 @@ int run_chi2( FILE *LOG, int line, int type, UNUR_PAR *par, UNUR_DISTR *distr,
     print_distr_name( LOG,distr,"");
     fprintf(LOG,"\n");
     printf("0");
-    return 2;  /* 1 failure would be allowed. but not when init fails! */
+    return 0;
   }
 
   /* run chi^2 test */

@@ -120,10 +120,10 @@ _unur_dpdf_gamma( double x, UNUR_DISTR *distr )
     factor = 1./beta;
     x = (x-gamma) / beta;     /* standardize */
   case 1: default: /* standard */
+    if (alpha == 1. && x >= 0.)
+      return( -exp(-x) * factor );
     if (x <= 0.)
       return 0.;
-    if (alpha == 1.)
-      return( -exp(-x) * factor );
 
     return ( exp( log(x) * (alpha-2.) - x - LOGNORMCONSTANT) *  ((alpha-1.) -x) * factor ); 
   }

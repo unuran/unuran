@@ -47,20 +47,15 @@
 
 /* a == b */
 #define _FP_equal(a,b) \
-  ( ((a)==0. && (a)==(b)) || \
-    (fabs((a)-(b)) < fabs(b)*DBL_EPSILON) )
+  (fabs((a)-(b)) <= fabs(b)*UNUR_EPSILON)
 
 /* a < b */
 #define _FP_less(a,b) \
-  ( ((a)==0. && (a)<(b)) || \
-    ((a)>0. && (a)<(b)*(1.+DBL_EPSILON)) || \
-    ((a)<0. && (a)<(b)*(1.-DBL_EPSILON)) )
+  ( (fabs((a)-(b)) > fabs(b)*UNUR_EPSILON) && ((a) < (b)) )
 
 /* a > b */
 #define _FP_greater(a,b) \
-  ( ((a)==0. && (a)>(b)) || \
-    ((a)>0. && (a)>(b)*(1.-DBL_EPSILON)) || \
-    ((a)<0. && (a)>(b)*(1.+DBL_EPSILON)) )
+  ( (fabs((a)-(b)) > fabs(b)*UNUR_EPSILON) && ((a) > (b)) )
 
 /*---------------------------------------------------------------------------*/
 #endif  /* __SOURCE_FP_H_SEEN */

@@ -48,6 +48,11 @@ int _unur_tdr_ps_codegen( struct unur_gen *gen, FILE *out,
 /* Code generator for method TDR variant PS (proportional squeeze).          */
 /*---------------------------------------------------------------------------*/
 
+int _unur_acg_C_demo_urng( FILE *out );
+/*---------------------------------------------------------------------------*/
+/* Uniform random number generator (for demo mode only).                     */
+/*---------------------------------------------------------------------------*/
+
 void _unur_acg_print_sectionheader( FILE *out, int n_lines, ... );
 /*---------------------------------------------------------------------------*/
 /* Print a section header with n_lines lines to output stream.               */

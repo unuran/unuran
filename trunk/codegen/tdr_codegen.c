@@ -39,25 +39,6 @@
 #include <tdr_source.h>
 
 /*---------------------------------------------------------------------------*/
-#if 0
-/*---------------------------------------------------------------------------*/
-/* Variants                                                                  */
-
-#define TDR_VARMASK_T          0x000fu   /* indicates transformation         */
-#define TDR_VAR_T_SQRT         0x0001u   /* T(x) = -1/sqrt(x)                */
-#define TDR_VAR_T_LOG          0x0002u   /* T(x) = log(x)                    */
-#define TDR_VAR_T_POW          0x0003u   /* T(x) = -x^c                      */
-
-/*---------------------------------------------------------------------------*/
-/* abbreviations */
-
-#define GEN       gen->data.tdr         /* data for generator object         */
-#define DISTR     gen->distr.data.cont  /* data for distribution in generator object */
-
-/*---------------------------------------------------------------------------*/
-#endif
-
-/*****************************************************************************/
 
 int
 _unur_tdr_ps_codegen( struct unur_gen *gen, FILE *out, const char *rand_name, const char *pdf_name )

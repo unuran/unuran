@@ -8,12 +8,12 @@ INCLUDES = \
  -I$(top_srcdir)/src/methods \
  -I$(top_srcdir)/src/distributions
 
-lib_LIBRARIES = libunurgen.a
+lib_LIBRARIES = libunuracg.a
 
 include_HEADERS = \
  unuran_acg.h
 
-libunurgen_a_SOURCES = \
+libunuracg_a_SOURCES = \
  PDFgen_source.h \
  PDFgen.c \
  codegen.c \
@@ -56,26 +56,26 @@ make_test_PDFgen.c: $(top_srcdir)/codegen/test.conf make_test_PDFgen.pl read_PDF
 	./make_test_PDFgen.pl $(top_srcdir)/codegen/test.conf
 
 make_test_PDFgen_SOURCES = make_test_PDFgen.c
-make_test_PDFgen_LDADD = libunurgen.a $(top_builddir)/src/libunuran.a
+make_test_PDFgen_LDADD = libunuracg.a $(top_builddir)/src/libunuran.a
 
 test_PDFgen.c: make_test_PDFgen
 	./make_test_PDFgen
 
-test_PDFgen_SOURCES = test_PDFgen.c 
-test_PDFgen_LDADD = libunurgen.a  $(top_builddir)/src/libunuran.a
+test_PDFgen_SOURCES = test_PDFgen.c
+test_PDFgen_LDADD = $(top_builddir)/src/libunuran.a
 
 
 make_test_codegen.c: $(top_srcdir)/codegen/test.conf make_test_codegen.pl read_PDF.pl
 	./make_test_codegen.pl $(top_srcdir)/codegen/test.conf
 
 make_test_codegen_SOURCES = make_test_codegen.c
-make_test_codegen_LDADD = libunurgen.a  $(top_builddir)/src/libunuran.a
+make_test_codegen_LDADD = libunuracg.a  $(top_builddir)/src/libunuran.a
 
 test_codegen.c: make_test_codegen
 	./make_test_codegen
 
 test_codegen_SOURCES = test_codegen.c
-test_codegen_LDADD = libunurgen.a  $(top_builddir)/src/libunuran.a
+test_codegen_LDADD = $(top_builddir)/src/libunuran.a
 
 
 # clean backup files

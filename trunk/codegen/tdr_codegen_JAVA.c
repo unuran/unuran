@@ -100,7 +100,7 @@ _unur_acg_JAVA_tdr_ps( struct unur_gen *gen,
   fprintf(out,"\n");
 
   /* sampling routine */
-  fprintf(out, "\tstatic public double %s ()\n\t{\n",rand_name);
+  fprintf(out, "\tstatic double %s ()\n\t{\n",rand_name);
 
   /* constants */
   fprintf(out, "\t\t/* data */\n");
@@ -195,7 +195,7 @@ _unur_acg_JAVA_tdr_ps( struct unur_gen *gen,
   switch (gen->variant & TDR_VARMASK_T) {
   case TDR_VAR_T_LOG:
     fprintf(out, "\t\t\tt = iv[I].dTfx * U / iv[I].fx;\n");
-    fprintf(out, "\t\t\tif (fabs(t) > 1.e-8)\n");
+    fprintf(out, "\t\t\tif (abs(t) > 1.e-8)\n");
     fprintf(out, "\t\t\t\tX = iv[I].x + log(t + 1.) * U / (iv[I].fx * t);\n");
     fprintf(out, "\t\t\telse\n");
     fprintf(out, "\t\t\t\tX = iv[I].x + U / iv[I].fx * (1 - t/2.);\n");

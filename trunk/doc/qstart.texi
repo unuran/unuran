@@ -348,13 +348,15 @@ implementation (e.g: Neton- regula falsi)
 To change any parameter you habe to use the according function call.
  All parameters have default settings:
 
-@*e.g.:  
+@* e.g.:  
 @* Numerical inversion with Netwon
 @* @code{  unur_ninv_use_newton(par); );
 }
 
-Default settings of parameters:
+@* Requirements of the methods:
+@include qstart_required.texi
 
+@* Default settings of parameters:
 @include qstart_paramdefaults.texi
 
 

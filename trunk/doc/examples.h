@@ -84,7 +84,7 @@ For details @pxref{Methods}.
 
 /*---------------------------------------------------------------------------*/
 
-=NODE  Example_4 Change uniform random generator
+=NODE  Example_4  Change uniform random generator
 =UP Examples [40]
 
 =DESCRIPTION
@@ -110,53 +110,17 @@ modified accordingly.
 
 /*---------------------------------------------------------------------------*/
 
-=NODE  ExCont  ExCont: 
+=NODE  Example_More  More examples
 =UP Examples [50]
-
 =DESCRIPTION
 
-@smallexample
-@include ref_example_cont.texi
-@end smallexample
+@xref{Methods_for_CONT,Methods for continuous univariate distributions,Methods for continuous univariate distributions}.
 
-=EON
+@xref{Methods_for_CEMP,Methods for continuous empirical univariate distributions,Methods for continuous empirical univariate distributions}.
 
-/*---------------------------------------------------------------------------*/
+@xref{Methods_for_CVEMP,Methods for continuous empirical multivariate distributions,Methods for continuous empirical multivariate distributions}.
 
-=NODE  ExDiscr  ExDiscr:
-=UP Examples [60]
-
-=DESCRIPTION
-
-@smallexample
-@include ref_example_discr.texi
-@end smallexample
-
-=EON
-
-/*---------------------------------------------------------------------------*/
-
-=NODE  ExEmp  ExEmp:
-=UP Examples [70]
-
-=DESCRIPTION
-
-@smallexample
-@include ref_example_emp.texi
-@end smallexample
-
-=EON
-
-/*---------------------------------------------------------------------------*/
-
-=NODE  ExVemp  ExVemp:
-=UP Examples [80]
-
-=DESCRIPTION
-
-@smallexample
-@include ref_example_vemp.texi
-@end smallexample
+@xref{Methods_for_DISCR,Methods for discrete univariate distributions,Methods for discrete univariate distributions}.
 
 =EON
 

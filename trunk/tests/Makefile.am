@@ -50,6 +50,7 @@ check_PROGRAMS = \
  t_hri \
  t_mcorr \
  t_ninv \
+ t_norta \
  t_nrou \
  t_srou \
  t_ssr \
@@ -86,7 +87,8 @@ EXTRA_DIST = \
  test_functionparser.m \
  make_test_files.pl \
  README.conf \
- t_urng \
+ t_stringparser.conf \
+ t_urng.conf \
  t_distr.conf \
  t_distr_cemp.conf \
  t_distr_cont.conf \
@@ -95,10 +97,9 @@ EXTRA_DIST = \
  t_distr_cvemp.conf \
  t_distr_discr.conf \
  t_distr_matr.conf \
- t_stringparser.conf \
- t_corder.conf \
  t_auto.conf \
  t_arou.conf \
+ t_corder.conf \
  t_cstd.conf \
  t_dari.conf \
  t_dau.conf \
@@ -109,11 +110,14 @@ EXTRA_DIST = \
  t_empk.conf \
  t_empl.conf \
  t_hinv.conf \
+ t_hitrou \
  t_hrb.conf \
  t_hrd.conf \
  t_hri.conf \
  t_mcorr.conf \
  t_ninv.conf \
+ t_norta.conf \
+ t_nrou \
  t_srou.conf \
  t_ssr.conf \
  t_tabl.conf \

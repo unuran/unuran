@@ -1449,7 +1449,7 @@ sub next_tex_token {
 	    $$html .= $value;
 	    return;
 	}
-	if ($value =~ /^\\(colon|leq|geq|mapsto|times|rbrace|lbrace)\s*$/) {
+	if ($value =~ /^\\(colon|leq|geq|mapsto|times|rbrace|lbrace|ldots)\s*$/) {
 	    # :, <=, >=, ->, x, {, }
 	    $$tex .= $value;
 	    $value =~ s/^\\(colon)\s*/ : /g;
@@ -1459,6 +1459,7 @@ sub next_tex_token {
 	    $value =~ s/^\\(times)\s*/x/g;
 	    $value =~ s/^\\(rbrace)\s*/ \@} /g;
 	    $value =~ s/^\\(lbrace)\s*/ \@{ /g;
+	    $value =~ s/^\\(ldots)\s*/.../g;
 	    $$html .= $value;
 	    $$info .= $value;
 	    return;

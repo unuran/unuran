@@ -197,7 +197,7 @@ _unur_set_params_logistic( UNUR_DISTR *distr, double *params, int n_params )
     CHECK_NULL(params,0);
 
   /* check parameter sigma */
-  if (n_params > 0 && beta <= 0.) {
+  if (n_params > 1 && beta <= 0.) {
     _unur_error(distr_name,UNUR_ERR_DISTR_DOMAIN,"beta <= 0");
     return 0;
   }

@@ -119,6 +119,7 @@ static void useed(unsigned int seed)
 /* ---------------------------------------------------------------- */
 
 #include <stdio.h>
+#include <stdlib.h>
 
 int main ()
 {

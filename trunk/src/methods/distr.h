@@ -135,7 +135,7 @@ int unur_distr_get_dim( UNUR_DISTR *distribution );
 
 unsigned int unur_distr_get_type( UNUR_DISTR *distribution );
 /* 
-   Get type of distribution. See description of unur_distr_new() for
+   Get type of distribution. See ... for
    possible types. Alternatively the unur_distr_is_<TYPE>() calls can
    be used.
 */

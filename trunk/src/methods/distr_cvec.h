@@ -79,7 +79,7 @@ int unur_distr_cvec_set_pdf( UNUR_DISTR *distribution, UNUR_FUNCT_CVEC *pdf );
    It is not necessary that the given PDF is normalized and can be
    any (positive) multiple of the PDF, i.e. the integral need not
    be 1. Nevertheless it can be provided by a
-   unur_distr_cvec_set_pdfarea() call.
+   unur_distr_cvec_set_pdfvol() call.
 */
 
 int unur_distr_cvec_set_dpdf( UNUR_DISTR *distribution, UNUR_VFUNCT_CVEC *dpdf );
@@ -261,10 +261,8 @@ double *unur_distr_cvec_get_mode( UNUR_DISTR *distribution );
 /* 
    Get mode of distribution. The function returns a pointer to an array
    of the size returned by unur_distr_get_dim().
-   If the mode is not marked as known, 
-   unur_distr_cvec_upd_mode() is called to compute the mode. If this
-   is not successful NULL is returned and @code{unur_errno} is set to
-   @code{UNUR_ERR_DISTR_GET}. 
+   If the mode is not marked as known the NULL pointer is returned and
+   @code{unur_errno} is set to @code{UNUR_ERR_DISTR_GET}. 
    (There is no difference between the case where no routine for
    computing the mode is available and the case where no mode exists
    for the distribution at all.)

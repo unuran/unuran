@@ -51,7 +51,7 @@
       
       By default the probability vector is indexed starting at
       @code{0}. However this can be changed in the distribution object by
-      a unur_distr_ciscr_set_domain() call.
+      a unur_distr_discr_set_domain() call.
 
    =END
 */

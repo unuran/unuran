@@ -481,6 +481,9 @@ sub scan_do_nothing {
 sub transform_special_strings {
     my $line = $_[0];
 
+    # trim blanks
+    $$line =~ s/[ \t\r\f]+\n/\n/g;
+
     # NULL --> @code{NULL}
     # TRUE --> @code{TRUE}
     # FALSE --> @code{FALSE}
@@ -488,8 +491,12 @@ sub transform_special_strings {
     $$line =~ s/^(NULL|TRUE|FALSE)/\@code\{$1\}/g;
 
     # transform (\w+)\(\)   --> @command($1)
-    $$line =~ s/(\w+)\(\)/\@command\{$1\}/g;
-##    $$line =~ s/(\w+)\(\)/\@ref\{funct\:$1\,\@command\{$1\}\}/g;
+    my $first = "\n\@ifhtml\n\@ref\{funct:";
+    my $middle = "\}\n\@end ifhtml\n\@ifnothtml\n";
+    my $last = "\n\@end ifnothtml\n";
+
+    $$line =~ s/\s+(\w+)\(\)([\.\,\;\:])\s*/$first$1,\@command\{$1\}$2$middle\@command\{$1\}$2$last/g;
+    $$line =~ s/\s+(\w+)\(\)(\n|\s*)/$first$1,\@command\{$1\}$middle\@command\{$1\}$last/g;
 
     return;
 } # end of transform_special_strings()

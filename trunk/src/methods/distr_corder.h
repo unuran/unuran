@@ -92,7 +92,7 @@ int unur_distr_corder_set_rank( UNUR_DISTR *distribution, int n, int k );
    In case of invalid data, no parameters are changed and @code{0} is
    returned.
    The area below the PDF can be set to that of the underlying
-   distribution by a unur_distr_upd_pdfarea() call.
+   distribution by a unur_distr_corder_upd_pdfarea() call.
 */
 
 int unur_distr_corder_get_rank( UNUR_DISTR *distribution, int *n, int *k );
@@ -249,7 +249,7 @@ int unur_distr_corder_get_rank( UNUR_DISTR *distribution, int *n, int *k );
    It only works for order statistics for distribution objects from
    the (=>) UNURAN library of standard distributions when the
    corresponding function is available.
-   unur_disr_cont_upd_pdfares() assumes that the PDF of the underlying
+   unur_distr_cont_upd_pdfarea() assumes that the PDF of the underlying
    distribution is normalized, i.e. it is the derivative its CDF.
    Otherwise the computed area is wrong and there is NO warning
    about this failure.

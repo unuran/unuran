@@ -213,7 +213,7 @@ int unur_distr_discr_upd_mode( UNUR_DISTR *distribution );
 int unur_distr_discr_get_mode( UNUR_DISTR *distribution );
 /* 
    Get mode of distribution. If the mode is not marked as known, 
-   unur_distr_cont_upd_mode() is called to compute the mode. If this
+   unur_distr_discr_upd_mode() is called to compute the mode. If this
    is not successful @code{INT_MAX} is returned and 
    @code{unur_errno} is set to @code{UNUR_ERR_DISTR_GET}.
    (There is no difference between the case where no routine for
@@ -247,7 +247,7 @@ int unur_distr_discr_upd_pmfsum( UNUR_DISTR *distribution);
 double unur_distr_discr_get_pmfsum(UNUR_DISTR *distribution);
 /* 
    Get the sum over the PMF of the distribution. If this sum is
-   not known, unur_distr_cont_upd_pmfsum() is called to compute
+   not known, unur_distr_discr_upd_pmfsum() is called to compute
    it. If this is not successful @code{UNUR_INFINITY} is returned and
    @code{unur_errno} is set to @code{UNUR_ERR_DISTR_GET}.
 */

@@ -84,6 +84,9 @@
 #define UNUR_METH_CSTD     0x2000f100u   /* is of type UNUR_METH_CONT !!  */
 #define UNUR_METH_DSTD     0x1000f200u   /* is of type UNUR_METH_DISCR !! */
 
+/* automatically selected generator */
+#define UNUR_METH_AUTO     0x00a00000u   /* can be any type of distribution */
+
 /* to indicate unkown type */
 #define UNUR_METH_UNKNOWN  0xff000000u
 

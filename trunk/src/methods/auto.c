@@ -1,0 +1,341 @@
+/*****************************************************************************
+ *                                                                           *
+ *          UNURAN -- Universal Non-Uniform Random number generator          *
+ *                                                                           *
+ *****************************************************************************
+ *                                                                           *
+ *   FILE:      auto.c                                                       *
+ *                                                                           *
+ *   selects a method for a given distribution object AUTOmatically          *
+ *                                                                           *
+ *****************************************************************************
+     $Id$
+ *****************************************************************************
+ *                                                                           *
+ *   Copyright (c) 2000 Wolfgang Hoermann and Josef Leydold                  *
+ *   Dept. for Statistics, University of Economics, Vienna, Austria          *
+ *                                                                           *
+ *   This program is free software; you can redistribute it and/or modify    *
+ *   it under the terms of the GNU General Public License as published by    *
+ *   the Free Software Foundation; either version 2 of the License, or       *
+ *   (at your option) any later version.                                     *
+ *                                                                           *
+ *   This program is distributed in the hope that it will be useful,         *
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of          *
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the           *
+ *   GNU General Public License for more details.                            *
+ *                                                                           *
+ *   You should have received a copy of the GNU General Public License       *
+ *   along with this program; if not, write to the                           *
+ *   Free Software Foundation, Inc.,                                         *
+ *   59 Temple Place, Suite 330, Boston, MA 02111-1307, USA                  *
+ *                                                                           *
+ *****************************************************************************
+ *****************************************************************************/
+
+/*---------------------------------------------------------------------------*/
+
+#include <source_unuran.h>
+
+/*---------------------------------------------------------------------------*/
+/* Variants: none                                                            */
+
+/*---------------------------------------------------------------------------*/
+/* Debugging flags                                                           */
+/*    bit  01    ... pameters and structure of generator (do not use here)   */
+/*    bits 02-12 ... setup                                                   */
+/*    bits 13-24 ... adaptive steps                                          */
+/*    bits 25-32 ... trace sampling                                          */
+
+/*---------------------------------------------------------------------------*/
+
+#define GENTYPE "AUTO"         /* type of generator                          */
+
+/*---------------------------------------------------------------------------*/
+
+static struct unur_gen *_unur_auto_init( struct unur_par *par );
+/*---------------------------------------------------------------------------*/
+/* Initialize new generator.                                                 */
+/*---------------------------------------------------------------------------*/
+
+static struct unur_gen *_unur_init_cont( struct unur_par *par );
+static struct unur_gen *_unur_init_cvec( struct unur_par *par );
+static struct unur_gen *_unur_init_discr( struct unur_par *par );
+static struct unur_gen *_unur_init_cemp( struct unur_par *par );
+static struct unur_gen *_unur_init_cvemp( struct unur_par *par );
+/*---------------------------------------------------------------------------*/
+/* Initialize generator object for detected distribution type.               */
+/*---------------------------------------------------------------------------*/
+
+/* static struct unur_gen *_unur_auto_create( struct unur_par *par );        */
+/* static double _unur_auto_sample( struct unur_gen *gen );                  */
+/* static void _unur_auto_free( struct unur_gen *gen);                       */
+/*---------------------------------------------------------------------------*/
+/* no such functions!                                                        */
+/*---------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------*/
+/* abbreviations */
+
+#define PAR     par->data.mauto
+
+/*---------------------------------------------------------------------------*/
+
+/*****************************************************************************/
+/**  User Interface                                                         **/
+/*****************************************************************************/
+
+struct unur_par *
+unur_auto_new( struct unur_distr *distr )
+     /*----------------------------------------------------------------------*/
+     /* get default parameters                                               */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   distr ... dummy pointer to distribution object                     */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   default parameters (pointer to structure)                          */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return NULL                                                        */
+     /*                                                                      */
+     /* comment:                                                             */
+     /*   for testing.                                                       */
+     /*----------------------------------------------------------------------*/
+{ 
+  struct unur_par *par;
+
+  /* check arguments */
+  _unur_check_NULL(GENTYPE,distr,NULL);
+
+  /* allocate structure */
+  par = _unur_malloc(sizeof(struct unur_par));
+  COOKIE_SET(par,CK_AUTO_PAR);
+
+  /* copy input */
+
+  /* set default values */
+  par->method   = UNUR_METH_AUTO;  /* method and default variant             */
+  par->variant  = 0u;              /* default variant                        */
+  par->set      = 0u;              /* inidicate default parameters           */    
+  par->urng     = unur_get_default_urng(); /* use default urng               */
+  par->urng_aux = NULL;                    /* no auxilliary URNG required    */
+
+  par->debug    = _unur_default_debugflag; /* set default debugging flags    */
+
+  /* routine for starting generator */
+  par->init = _unur_auto_init;
+
+  return par;
+
+} /* end of unur_auto_new() */
+
+/*****************************************************************************/
+
+struct unur_gen *
+_unur_auto_init( struct unur_par *par )
+     /*----------------------------------------------------------------------*/
+     /* initialize new generator                                             */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par ... pointer to paramters for building generator object         */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to generator object                                        */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return NULL                                                        */
+     /*----------------------------------------------------------------------*/
+{ 
+  struct unur_gen *gen;
+
+  /* check arguments */
+  CHECK_NULL(par,NULL);
+
+  /* check input */
+  if ( par->method != UNUR_METH_AUTO ) {
+    _unur_error(GENTYPE,UNUR_ERR_PAR_INVALID,"");
+    return NULL; }
+  COOKIE_CHECK(par,CK_AUTO_PAR,NULL);
+
+  /* get distribution type */
+  switch (par->distr->type) {
+  case UNUR_DISTR_CONT:
+    gen = _unur_init_cont( par );
+    break;
+  case UNUR_DISTR_CVEC:
+    gen = _unur_init_cvec( par );
+    break;
+  case UNUR_DISTR_DISCR:
+    gen = _unur_init_discr( par );
+    break;
+  case UNUR_DISTR_CEMP:
+    gen = _unur_init_cemp( par );
+    break;
+  case UNUR_DISTR_CVEMP:
+    gen = _unur_init_cvemp( par );
+    break;
+  default:
+    _unur_error(GENTYPE,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
+    gen = NULL;
+    break;
+  }
+
+  /* free parameters */
+  free(par);
+
+  return gen;
+
+} /* end of _unur_auto_init() */
+
+/*---------------------------------------------------------------------------*/
+
+/*****************************************************************************/
+/**  Initialize generator object for detected distribution type             **/
+/*****************************************************************************/
+
+/*---------------------------------------------------------------------------*/
+
+static struct unur_gen *
+_unur_init_cont( struct unur_par *par_auto )
+     /*----------------------------------------------------------------------*/
+     /* initialize new generator for distribution type CONT                  */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par_auto ... pointer to paramters for building generator object    */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to generator object                                        */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return NULL                                                        */
+     /*----------------------------------------------------------------------*/
+{
+  struct unur_par *par;
+  struct unur_gen *gen;
+  
+  par = NULL;
+  gen = NULL;
+
+  return gen;
+} /* end of _unur_init_cont() */
+  
+/*---------------------------------------------------------------------------*/
+
+static struct unur_gen *
+_unur_init_cvec( struct unur_par *par_auto )
+     /*----------------------------------------------------------------------*/
+     /* initialize new generator for distribution type CVEC                  */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par_auto ... pointer to paramters for building generator object    */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to generator object                                        */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return NULL                                                        */
+     /*----------------------------------------------------------------------*/
+{
+  struct unur_par *par;
+  struct unur_gen *gen;
+  
+  par = NULL;
+  gen = NULL;
+
+  return gen;
+} /* end of _unur_init_cvec() */
+  
+/*---------------------------------------------------------------------------*/
+
+static struct unur_gen *
+_unur_init_discr( struct unur_par *par_auto )
+     /*----------------------------------------------------------------------*/
+     /* initialize new generator for distribution type DISCR                 */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par_auto ... pointer to paramters for building generator object    */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to generator object                                        */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return NULL                                                        */
+     /*----------------------------------------------------------------------*/
+{
+  struct unur_par *par;
+  struct unur_gen *gen;
+  
+  par = NULL;
+  gen = NULL;
+
+  return gen;
+} /* end of _unur_init_discr() */
+  
+/*---------------------------------------------------------------------------*/
+
+static struct unur_gen *
+_unur_init_cemp( struct unur_par *par_auto )
+     /*----------------------------------------------------------------------*/
+     /* initialize new generator for distribution type CEMP                  */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par_auto ... pointer to paramters for building generator object    */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to generator object                                        */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return NULL                                                        */
+     /*----------------------------------------------------------------------*/
+{
+  struct unur_par *par;
+  struct unur_gen *gen;
+  
+  par = NULL;
+  gen = NULL;
+
+  return gen;
+} /* end of _unur_init_cemp() */
+  
+/*---------------------------------------------------------------------------*/
+
+static struct unur_gen *
+_unur_init_cvemp( struct unur_par *par_auto )
+     /*----------------------------------------------------------------------*/
+     /* initialize new generator for distribution type CVEMP                  */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par_auto ... pointer to paramters for building generator object    */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to generator object                                        */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return NULL                                                        */
+     /*----------------------------------------------------------------------*/
+{
+  struct unur_par *par;
+  struct unur_gen *gen;
+  
+  par = NULL;
+  gen = NULL;
+
+  return gen;
+} /* end of _unur_init_cvemp() */
+  
+/*---------------------------------------------------------------------------*/
+
+/*****************************************************************************/
+/**  Debugging utilities                                                    **/
+/*****************************************************************************/
+
+/*---------------------------------------------------------------------------*/
+#ifdef UNUR_ENABLE_LOGGING
+/*---------------------------------------------------------------------------*/
+
+/** None **/
+
+/*---------------------------------------------------------------------------*/
+#endif   /* end UNUR_ENABLE_LOGGING */
+/*---------------------------------------------------------------------------*/

@@ -100,6 +100,9 @@ typedef int UNUR_VFUNCT_CVEC(double *result, double *x, struct unur_distr *distr
 /**  Function prototypes for manipulating generator objects                 **/
 /*****************************************************************************/
 
+/* automatically selected method */
+#include <auto.h>
+
 /* methods for discrete distributions */
 #include <dari.h>
 #include <dau.h>

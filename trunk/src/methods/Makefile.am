@@ -26,6 +26,7 @@ libmethods_a_SOURCES = \
  x_stream.c \
  x_umalloc.c \
  x_urng.c \
+ auto.c \
  arou.c \
  empk.c \
  cstd.c \
@@ -60,6 +61,7 @@ noinst_HEADERS = \
  x_urng.h \
  distr.h distr_cemp.h distr_cont.h distr_corder.h distr_cvec.h distr_cvemp.h \
    distr_discr.h distr_struct.h distr_source.h \
+ auto.h  auto_struct.h \
  arou.h  arou_struct.h \
  empk.h  empk_struct.h \
  cstd.h  cstd_struct.h \

@@ -94,6 +94,9 @@ typedef void _UNUR_SAMPLING_ROUTINE_VEC(struct unur_gen *gen, double *vec);
 /**  structures for generators                                              **/
 /*****************************************************************************/
 
+/* automatically selected method */
+#include <auto_struct.h>
+
 /* discrete distributions */
 #include <dari_struct.h>
 #include <dau_struct.h>
@@ -129,6 +132,7 @@ typedef void _UNUR_SAMPLING_ROUTINE_VEC(struct unur_gen *gen, double *vec);
 
 struct unur_par {
   union {             
+    struct unur_auto_par  mauto;
     struct unur_dari_par  dari;
     struct unur_dau_par   dau;
     struct unur_dgt_par   dgt;
@@ -170,6 +174,7 @@ struct unur_par {
 
 struct unur_gen { 
   union {   
+    struct unur_auto_gen  mauto;
     struct unur_dari_gen  dari;
     struct unur_dau_gen   dau;
     struct unur_dgt_gen   dgt;

@@ -95,6 +95,9 @@
 
 #define CK_MBLOCK        0xf0000001u
 
+/* misc methods */
+#define CK_AUTO_PAR      0xa0000010u
+
 /* distribution objects */
 #define CK_DISTR         0xe0000000u
 #define CK_DISTR_CONT    0xe0000001u

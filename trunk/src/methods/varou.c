@@ -498,6 +498,12 @@ _unur_varou_init( struct unur_par *par )
   if (gen->debug) _unur_varou_debug_init(gen);
 #endif
 
+  /* do we have an infinite hut ? */
+  if (_unur_isinf(GEN.cone_list[GEN.n_cone-1]->sum_volume) ) {
+    free(par); _unur_varou_free(gen);
+    return NULL;
+  }
+
   /* free parameters */
   free(par);
 
@@ -985,12 +991,17 @@ _unur_varou_minimize_volume(struct unur_gen *gen, struct unur_varou_cone *c)
   }
   
   /* minimization step */
-  alpha=_unur_util_brent(fs, alpha_start, alpha_end, (alpha_start+alpha_end)/2., 
-                         VAROU_BRENT_EPSILON);
+  if (alpha_start == alpha_end) { 
+    alpha_min=alpha_start;
+  }
+  else {
+    alpha=_unur_util_brent(fs, alpha_start, alpha_end, (alpha_start+alpha_end)/2., 
+                           VAROU_BRENT_EPSILON);
 
-  /* just to be sure, that we have obtained a good value for alpha */
-  alpha_min=alpha_start;
-  if (alpha_start <= alpha && alpha <= alpha_end)  alpha_min=alpha;
+    /* just to be sure, that we have obtained a good value for alpha */
+    alpha_min=alpha_start;
+    if (alpha_start <= alpha && alpha <= alpha_end)  alpha_min=alpha;
+  }
   
   _unur_varou_cone_parameters(gen, c, alpha_min); 
 
@@ -1171,7 +1182,7 @@ _unur_varou_cone_parameters( struct unur_gen *gen, struct unur_varou_cone *c, do
   double v,vt;
   double *p; /* position vector to surface */
   double *t; /* top vertex vector */
-  double *f; /* centre vector of face opposite to top vertex */
+  double *ft; /* centre vector of face opposite to top vertex */
   double normp, normn;
   long i, it, itop, iv;
 
@@ -1198,22 +1209,22 @@ _unur_varou_cone_parameters( struct unur_gen *gen, struct unur_varou_cone *c, do
   /*------------------------------------------------------------*/
   
   /* calculating centre of face opposite of the top vector */
-  f=_unur_vector_new(dim+1); 
+  ft=_unur_vector_new(dim+1); 
   for (iv=0; iv<=dim; iv++) {
     if (iv != it) {
       for (i=0; i<=dim; i++) {
-        f[i] += GEN.vertex_list[ c->index[iv] ][i] / dim; 
+        ft[i] += GEN.vertex_list[ c->index[iv] ][i] / dim; 
       }
     }
   }
    
   /*------------------------------------------------------------*/
-  
+
   p=_unur_vector_new(dim+1); /* position vector to surface */
 
   /* setting p[] to be on the line connecting t[] and f[] */
   for (i=0; i<=dim; i++) {
-    p[i] = t[i] + alpha * (f[i]-t[i]);
+    p[i] = t[i] + alpha * (ft[i]-t[i]);
   }
 
   /* scaling p[] to be unit vector */
@@ -1243,7 +1254,7 @@ _unur_varou_cone_parameters( struct unur_gen *gen, struct unur_varou_cone *c, do
   
   _unur_varou_cone_set(gen, c, p, c->normal);
 
-   free(t); free(p); free(f);
+   free(t); free(p); free(ft); 
 
    return;
 } /* end of _unur_varou_cone_parameters */

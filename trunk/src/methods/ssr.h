@@ -60,7 +60,6 @@
       constant is reduced by one half and even a universal squeeze can
       (but need not be) used. However using squeezes is not
       recommended unless the evaluation of the PDF is rather expensive.
-      
       (The mirror principle is not implemented.)
       
       If the exact location of the mode is not known, then use the
@@ -77,14 +76,14 @@
       It is even possible to give an upper bound for the PDF only.
       However then the (upper bound for the) area below the PDF has to be
       multiplied by the ratio between the upper bound and the lower bound of
-      the PDF at the mode.  Again seting the squeeze flag and using
+      the PDF at the mode.  Again setting the squeeze flag and using
       unur_ssr_set_cdfatmode() is not allowed.
       
       It is possible to change the parameters and the domain of the chosen 
       distribution without building a new generator object using the
       unur_ssr_chg_pdfparams() and unur_ssr_chg_domain() call, respectively.
       But then unur_ssr_chg_pdfarea(), unur_ssr_chg_mode() and 
-      unur_ssr_chg_cdfatmode() have to used to reset the corresponding figures 
+      unur_ssr_chg_cdfatmode() have to be used to reset the corresponding figures 
       whenever they have changed.
       If the PDF at the mode has been provided by a 
       unur_ssr_set_pdfatmode() call, additionally unur_ssr_chg_pdfatmode() must 
@@ -95,8 +94,9 @@
       (Otherwise the generator produces garbage).
 
       There exists a test mode that verifies whether the conditions for
-      the method are satisfied or not. It can be switched on by calling 
-      unur_ssr_set_verify() and unur_ssr_chg_verify(), respectively.
+      the method are satisfied or not while sampling. It can be
+      switched on by calling unur_ssr_set_verify() and
+      unur_ssr_chg_verify(), respectively.
       Notice however that sampling is (a little bit) slower then.
 
    =END
@@ -128,14 +128,15 @@ int unur_ssr_reinit( UNUR_GEN *generator );
 int unur_ssr_set_cdfatmode( UNUR_PAR *parameters, double Fmode );
 /* 
    Set CDF at mode. 
-   When set the performance of the algorithm is increased by factor 2.
+   When set, the performance of the algorithm is increased by factor 2.
    However, when the parameters of the distribution are changed
    unur_ssr_chg_cdfatmode() has to be used to update this value.
 */
 
 int unur_ssr_set_pdfatmode( UNUR_PAR *parameters, double fmode );
 /* 
-   Set pdf at mode. if set the PDF at the mode is never changed.          
+   Set pdf at mode.
+   When set, the PDF at the mode is never changed.          
    This is to avoid additional computations, when the PDF does not
    change when parameters of the distributions vary. 
    It is only useful when the PDF at the mode does not change with
@@ -153,7 +154,7 @@ int unur_ssr_chg_verify( UNUR_GEN *generator, int verify );
 int unur_ssr_set_usesqueeze( UNUR_PAR *parameters, int usesqueeze );
 /* 
    Set flag for using universal squeeze (default: off).
-   using squeezes is only useful when the evaluation of the PDF is 
+   Using squeezes is only useful when the evaluation of the PDF is 
    (extremely) expensive.
    Using squeezes is automatically disabled when the CDF at the mode
    is not given (then no universal squeezes exist).
@@ -168,7 +169,7 @@ int unur_ssr_chg_pdfparams( UNUR_GEN *generator, double *params, int n_params );
    This function only copies the given arguments into the array of 
    distribution parameters.
 
-   @emph{IMPORTANT:} The given parameters are not checked against
+   @emph{Important:} The given parameters are not checked against
    domain errors; in opposition to the 
    @command{unur_<distr>_new} calls.
 */
@@ -222,8 +223,8 @@ int unur_ssr_upd_pdfarea( UNUR_GEN *generator );
 /*
    Recompute the area below the PDF of the distribution. 
    It only works when a distribution objects from the
-   UNURAN library of standard distributions is used. 
-   @pxref{Stddist,Standard distributions,Standard distributions}.
+   UNURAN library of standard distributions is used
+   (@pxref{Stddist,Standard distributions,Standard distributions}).
    Otherwise @code{unur_errno} is set to @code{UNUR_ERR_DISTR_DATA}. 
 
    unur_srou_reinit() must be executed before sampling from the 

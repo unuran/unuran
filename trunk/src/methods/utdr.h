@@ -52,12 +52,12 @@
       It works for all T-concave distributions with T(x) = -1/sqrt(x).
       
       It requires the PDF and the (exact) location of the mode.
-      Notice if no mode is given at all, a (slow) numerical mode finder will be 
-      used. 
+      Notice that if no mode is given at all, a (slow) numerical mode
+      finder will be used. 
       Moreover the approximate area below the given PDF is used.
       (If no area is given for the distribution the algorithm assumes that it
       is approximately 1.)
-      The rejection constant is bounded from above by <W??>
+      The rejection constant is bounded from above by 4
       for all T-concave distributions.
       
       It is possible to change the parameters and the domain of the chosen 
@@ -99,35 +99,28 @@ int unur_utdr_reinit( UNUR_GEN *generator );
    Update an existing generator object after the distribution has been
    modified. It must be executed whenever the parameters or the domain
    of the distributions has been changed (see below).
-   It is faster than destroying the existing object and build
+   It is faster than destroying the existing object and building
    a new one from scratch.
    If reinitialization has been successful @code{1} is returned,
    in case of a failure @code{0} is returned.
 */
 
-int unur_utdr_set_verify( UNUR_PAR *parameters, int verify );
-/* */
-
-int unur_utdr_chg_verify( UNUR_GEN *generator, int verify );
-/* 
-   Turn verifying of algorithm while sampling on/off.
-*/
-
 int unur_utdr_set_pdfatmode( UNUR_PAR *parameters, double fmode );
 /* 
-   Set pdf at mode. if set the PDF at the mode is never changed.          
+   Set pdf at mode. 
+   When set, the PDF at the mode is never changed.          
    This is to avoid additional computations, when the PDF does not
    change when parameters of the distributions vary. 
    It is only useful when the PDF at the mode does not change with
    changing parameters for the distribution.
 */
 
-int unur_utdr_set_cfactor( UNUR_PAR *parameters, double cfactor );
+int unur_utdr_set_cpfactor( UNUR_PAR *parameters, double cp_factor );
 /* 
    Set factor for position of left and right construction point.
-   The c_factor is used to find almost optimal construction points for the
-   hat function.
-   There is no need to change this factor it almost all situations.
+   The @var{cp_factor} is used to find almost optimal construction
+   points for the hat function.
+   There is no need to change this factor in almost all situations.
 */
 
 int unur_utdr_set_deltafactor( UNUR_PAR *parameters, double delta );
@@ -136,6 +129,14 @@ int unur_utdr_set_deltafactor( UNUR_PAR *parameters, double delta );
    higher factors increase the rejection constant but reduces the risk of
    serious round-off errors.
    There is no need to change this factor it almost all situations.
+*/
+
+int unur_utdr_set_verify( UNUR_PAR *parameters, int verify );
+/* */
+
+int unur_utdr_chg_verify( UNUR_GEN *generator, int verify );
+/* 
+   Turn verifying of algorithm while sampling on/off.
 */
 
 /*...........................................................................*/
@@ -147,7 +148,7 @@ int unur_utdr_chg_pdfparams( UNUR_GEN *generator, double *params, int n_params )
    This function only copies the given arguments into the array of 
    distribution parameters.
 
-   @emph{IMPORTANT:} The given parameters are not checked against
+   @emph{Important:} The given parameters are not checked against
    domain errors; in opposition to the 
    @command{unur_<distr>_new} calls.
 */
@@ -195,8 +196,8 @@ int unur_utdr_upd_pdfarea( UNUR_GEN *generator );
 /*
    Recompute the area below the PDF of the distribution. 
    It only works when a distribution objects from the
-   UNURAN library of standard distributions is used. 
-   @pxref{Stddist,Standard distributions,Standard distributions}.
+   UNURAN library of standard distributions is used
+   (@pxref{Stddist,Standard distributions,Standard distributions}).
    Otherwise @code{unur_errno} is set to @code{UNUR_ERR_DISTR_DATA}. 
 
    unur_srou_reinit() must be executed before sampling from the 

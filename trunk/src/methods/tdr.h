@@ -72,7 +72,7 @@
       unbounded. But in the case of a bounded domain using method TABL is
       preferred to a TDR with c < -1 (except in a few special cases).
       
-      We offer three variant of the algorithm. 
+      We offer three variants of the algorithm. 
 
       @table @code
       @item GW
@@ -87,17 +87,17 @@
       @code{GW} has a slightly faster setup but higher marginal generation
       times.
       @code{PS} is faster than @code{GW}. @code{IA} uses less uniform
-      random numbers is faster than @code{PS}.
+      random numbers and is therefore faster than @code{PS}.
       
-      There are lots of parameters for this methods, see below.
+      There are lots of parameters for these methods, see below.
       
       It is possible to use this method for correlation induction by
       setting an auxilliary uniform random number generator via the
       unur_set_urng_aux() call. (Notice that this must be done after a
       possible unur_set_urng() call.)
-      When an auxilliary generator is used then the number of used
-      uniform random numbers that is used up for one generated random
-      variate is constant and given in the following table:
+      When an auxilliary generator is used then the number of
+      uniform random numbers from the first URNG that are used for one
+      generated random variate is constant and given in the following table:
 
       @table @code
       @item GW ... 2
@@ -118,11 +118,13 @@
       It is possible to use this method for generating from truncated
       distributions. It even can be changed for an existing generator
       object by an unur_tdr_chg_truncated() call.
+
       @emph{Important:} The ratio between the area below the hat and
       the area below the squeeze changes when the sampling region is
       restricted. Especially it becomes (very) small when sampling
       from the (far) tail of the distribution. Then it is better to
-      create a generator object for the tail of distribution only. 
+      create a new generator object for the tail of the distribution
+      only.
 
    =END
 */
@@ -202,7 +204,7 @@ int unur_tdr_set_max_sqhratio( UNUR_PAR *parameters, double max_ratio );
    Set upper bound for the
    ratio (area below squeeze) / (area below hat).
    It must be a number between 0 and 1.
-   When the ratio exceed the given number no further construction
+   When the ratio exceeds the given number no further construction
    points are inserted via adaptive rejection sampling.
    Use 0 if no construction points should be added after the setup.
    Use 1 if added new construction points should not be stopped until
@@ -229,7 +231,7 @@ int unur_tdr_set_max_intervals( UNUR_PAR *parameters, int max_ivs );
 int unur_tdr_set_cpoints( UNUR_PAR *parameters, int n_stp, double *stp );
 /* 
    Set construction points for the hat function. If @var{stp} is NULL
-   than a heuristical rule of thumb is used to get @var{n_stp}
+   than a heuristic rule of thumb is used to get @var{n_stp}
    construction points. This is the default behavior. 
 
    The default number of construction points is ??.
@@ -296,8 +298,8 @@ int unur_tdr_set_pedantic( UNUR_PAR *parameters, int pedantic );
    list of construction points. At least the hat function remains
    T-concave.
 
-   Setting @code{pedantic} to FALSE allows sampling from a
-   distribution which is "almost" T-concave and small errors are
+   Setting @var{pedantic} to FALSE allows sampling from a
+   distribution which is ``almost'' T-concave and small errors are
    tolerated. However it might happen that the hat function cannot be
    improved significantly. When the hat functions that has been
    constructed by the unur_init() call is extremely large then it

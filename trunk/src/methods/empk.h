@@ -74,7 +74,7 @@
       For other possible kernels see unur_empk_set_kernel()
       and unur_empk_set_kernelgen() below.
       
-      All other parameters are only necessary for people knowing the theory
+      All other parameters are only useful for people knowing the theory
       of kernel density estimation.
 
    =END
@@ -110,8 +110,9 @@ int unur_empk_set_kernel( UNUR_PAR *parameters, unsigned kernel);
    logistic kernel
    @end table
 
-   For other kernels (including kernels with Student's distribution other with
-   3 degrees of freedom) use the unur_empk_set_kernelgen() call.
+   For other kernels (including kernels with Student's distribution
+   with other than 3 degrees of freedom) use the
+   unur_empk_set_kernelgen() call.
 
    It is not possible to call unur_empk_set_kernel() twice.
 
@@ -131,7 +132,7 @@ int unur_empk_set_kernelgen( UNUR_PAR *parameters, UNUR_GEN *kernelgen, double a
    For standard kernels (see above) alpha is computed by the algorithm.
 
    @var{kernvar} is the variance of the used kernel. It is only required 
-   for the variance reduced version of the density estimation (which is 
+   for the variance corrected version of density estimation (which is 
    used by default); otherwise it is ignored.
    If @var{kernelvar} is nonpositive, variance correction is disabled.
    For standard kernels (see above) @var{kernvar} is computed by the
@@ -153,9 +154,10 @@ int unur_empk_set_beta( UNUR_PAR *parameters, double beta );
    @var{beta} is used to compute the optimal bandwidth from the point
    of view of minimizing the mean integrated square error (MISE).
    @var{beta} depends on the (unknown) distribution of the sampled data
-   points. Thus its value contains some guess on this distribution.
+   points. 
    By default Gaussian distribution is assumed for the sample
-   (@var{beta} = 1.3637439). There is no requirement to set @var{beta}.
+   (@var{beta} = 1.3637439). There is no requirement to change
+   @var{beta}.
 */
 
 int unur_empk_set_smoothing( UNUR_PAR *parameters, double smoothing );
@@ -190,7 +192,7 @@ int unur_empk_chg_varcor( UNUR_GEN *generator, int varcor );
 int unur_empk_set_positive( UNUR_PAR *parameters, int positive );
 /* 
    If @var{positive} is TRUE then only nonnegative random variates are
-   generated. This is done by means of mirroring technique.
+   generated. This is done by means of a mirroring technique.
    
    Default is FALSE.
 */

@@ -49,7 +49,7 @@
       distributions in the UNURAN library of standard distributions
       (@pxref{Stddist,Standard distributions,Standard distributions}).
       If a distribution object is provided that is build from scratch,
-      or no special generator for the given standard distribution is
+      or if no special generator for the given standard distribution is
       provided, the NULL pointer is returned.
 
       For some distributions more than one special generator
@@ -62,13 +62,13 @@
       @item UNUR_STDGEN_DEFAULT
       the default generator.                      
       @item UNUR_STDGEN_FAST
-      the fasted available special generator.
+      the fastest available special generator.
       @item UNUR_STDGEN_INVERSION
       the inversion method (if available).
       @end table
       
       Notice that the variant @code{UNUR_STDGEN_FAST} for a special
-      generator might be slower than one of the universal algorithms!
+      generator may be slower than one of the universal algorithms!
       Additional variants may exist for particular distributions.
       
       Sampling from truncated distributions (which can be constructed by 
@@ -105,7 +105,7 @@ UNUR_PAR *unur_cstd_new( UNUR_DISTR *distribution );
    is available and selected by the unur_cstd_set_variant() call immediately 
    after creating the parameter object.
    Use a unur_distr_cont_set_domain() call to get a truncated distribution.
-   To change the domain of a (truncated) distribution use the
+   To change the domain of a (truncated) distribution of a generator use the
    unur_cstd_chg_truncated() call.
 */
 
@@ -121,7 +121,8 @@ int unur_cstd_set_variant( UNUR_PAR *parameters, unsigned variant );
    @code{UNUR_STDGEN_FAST} for (one of the) fastest implemented
    special generators, and @code{UNUR_STDGEN_INVERSION} for the
    inversion method (if available). 
-   If the selected variant number is not implemented, this call has no effect.
+   If the selected variant number is not implemented, then @code{0} is
+   returned and the variant is not changed.
 */
 
 /*...........................................................................*/
@@ -133,7 +134,7 @@ int unur_cstd_chg_pdfparams( UNUR_GEN *generator, double *params, int n_params )
    This function only copies the given arguments into the array of 
    distribution parameters.
 
-   @emph{IMPORTANT:} The given parameters are not checked against domain errors;
+   @emph{Important:} The given parameters are not checked against domain errors;
    in opposition to the @command{unur_<distr>_new} calls.
 */
 
@@ -141,7 +142,7 @@ int unur_cstd_chg_truncated( UNUR_GEN *generator, double left, double right );
 /* 
    Change left and right border of the domain of the (truncated) distribution.
    This is only possible if the inversion method is used.
-   Otherwise this call has no effect.
+   Otherwise this call has no effect and @code{0} is returned.
 
    Notice that the given truncated domain must be a subset of the
    domain of the given distribution. The generator always uses the

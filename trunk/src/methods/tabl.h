@@ -57,7 +57,7 @@
       The method only works for distributions with bounded domain. Thus
       for unbounded domains the left and right tails are cut off
       (the cutting points can be set by a unur_tabl_set_boundary() call).
-      This no problem when the probability of falling into these tail
+      This is no problem when the probability of falling into these tail
       regions is beyond computational relevance.
       
       The method works for all probability density functions where the
@@ -73,7 +73,7 @@
       area below the given PDF. This fraction can be set by a
       unur_tabl_set_areafraction() call. Additionally these intervals are
       split until the maximum number of intervals is reached or the
-      ration between the area below squeeze and the area below the hat is
+      ratio between the area below squeeze and the area below the hat is
       exceeded. 
       
       It is possible to switch off this second setup step. Then adaptive
@@ -115,7 +115,7 @@ int unur_tabl_set_variant_setup( UNUR_PAR *parameters, unsigned variant );
    @item 2
    additionally split the intervals created by the equal
    area rule until the maximum number of intervals is reached or the
-   ration between the area below squeeze and the area below the hat is
+   ratio between the area below the squeeze and the area below the hat is
    exceeded.
    @end table
    Default is variant @code{2}.
@@ -141,7 +141,7 @@ int unur_tabl_set_max_sqhratio( UNUR_PAR *parameters, double max_ratio );
    Set upper bound for the
    ratio (area below squeeze) / (area below hat).
    It must be a number between 0 and 1.
-   When the ratio exceed the given number no further construction
+   When the ratio exceeds the given number no further construction
    points are inserted via adaptive rejection sampling.
    Use 0 if no construction points should be added after the setup.
    Use 1 if added new construction points should not be stopped until
@@ -193,7 +193,7 @@ int unur_tabl_set_slopes( UNUR_PAR *parameters, double *slopes, int n_slopes );
    A slope <a,b> is an interval [a,b] or [b,a] where the PDF is
    monotone and PDF(a) >= PDF(b). 
    The list of slopes are given by an array @var{slopes} where each
-   consecutive duples (i.e. @code{(slopes[0], slopes[1])}, 
+   consecutive tuples (i.e. @code{(slopes[0], slopes[1])}, 
    @code{(slopes[2], slopes[3])}, etc.) is one slopes.
    Slopes must be sorted (i.e. both @code{slopes[0]} and
    @code{slopes[1]} must not be greater than any entry of the slope
@@ -222,8 +222,8 @@ int unur_tabl_set_boundary( UNUR_PAR *parameters, double left, double right );
 /* 
    Set the left and right boundary of the computation interval.
    The piecewise hat is only constructed inside this interval. The
-   region outside of this region must/should not be should be of
-   computational importance.
+   probability outside of this region must not be of
+   computational relevance.
    Of course @code{+/- UNUR_INFINITY} is not allowed.
 
    Default is ??.

@@ -63,7 +63,7 @@
       domain of the given distribution. (It is not possible to enlarge
       this domain.)
       
-      As a rule of thumb using such a table is approriate when the number of
+      As a rule of thumb using such a table is appropriate when the number of
       generated points exceeds the table size by a factor of 100.
       
       It is also possible to change the parameters of the given distribution
@@ -72,13 +72,6 @@
 
    =END
 */
-
-/*
- =REQUIRED NINV
-
- cdf, (in addition pdf only in case of Newton's method) 
-*/
-
 
 /*---------------------------------------------------------------------------*/
 /* Routines for user interface                                               */
@@ -97,12 +90,12 @@ UNUR_PAR *unur_ninv_new( UNUR_DISTR *distribution );
 
 int unur_ninv_set_usenewton( UNUR_PAR *parameters );
 /* 
-   Switch Newton's method.
+   Switch to Newton's method.
 */
 
 int unur_ninv_set_useregula( UNUR_PAR *parameters );
 /* 
-   Switch regula falsi. (This the default.)
+   Switch to regula falsi. (This the default.)
 */
 
 int unur_ninv_set_max_iter( UNUR_PAR *parameters, int max_iter );
@@ -153,7 +146,7 @@ int unur_ninv_set_table(UNUR_PAR *parameters, int no_of_points);
 
 int unur_ninv_chg_max_iter(UNUR_GEN *generator, int max_iter);
 /* 
-   Change the maximum number of iterations of an inversion step.
+   Change the maximum number of iterations.
 */
 
 int unur_ninv_chg_x_resolution(UNUR_GEN *generator, double x_resolution);
@@ -164,7 +157,6 @@ int unur_ninv_chg_x_resolution(UNUR_GEN *generator, double x_resolution);
 int unur_ninv_chg_start(UNUR_GEN *gen, double left, double right);
 /* 
    Change the starting points for numerical inversion. 
-
    If left==right, then UNURAN uses the default starting points 
    (see unur_ninv_set_start()).
 */
@@ -176,7 +168,7 @@ int unur_ninv_chg_table(UNUR_GEN *gen, int no_of_points);
 
 int unur_ninv_chg_truncated(UNUR_GEN *gen, double left, double right);
 /*
-   Change the borders of the domain of the (truncated) distribution. 
+   Changes the borders of the domain of the (truncated) distribution. 
 
    Notice that the given truncated domain must be a subset of the
    domain of the given distribution. The generator always uses the
@@ -193,7 +185,7 @@ int unur_ninv_chg_pdfparams(UNUR_GEN *generator, double *params, int n_params);
    distribution parameters. If a table is used, it will be computed
    immediately.
 
-   @emph{IMPORTANT:} The given parameters are not checked against
+   @emph{Important:} The given parameters are not checked against
    domain errors; in opposition to the 
    @command{unur_<distr>_new} calls.
 */ 

@@ -692,7 +692,7 @@ UNUR_PAR *make_par_obj(UNUR_DISTR *distr, char *methstr){
 	unur_dstd_set_variant(par, (unsigned) dblvalue  );
       }
       else {
-	fprintf (stderr, "Unknown option for method DSTD:s \n", key);
+	fprintf (stderr, "Unknown option for method DSTD: %s\n", key);
       }
     }
     /* no method defined -> error */

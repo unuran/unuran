@@ -191,7 +191,7 @@ int main()
 	unur_set_default_urng(prng_new("mt19937($seed)"));
 #elif UNUR_URNG_TYPE == UNUR_URNG_RNGSTREAM
 	{
-	    long seed[] = {$seed,$seed+1,$seed+2,$seed+3,$seed+4,$seed+5};
+	    unsigned long seed[6] = {$seed,$seed+1,$seed+2,$seed+3,$seed+4,$seed+5};
 	    RngStream_SetPackageSeed(seed);
 	}
 #endif  /* UNUR_URNG_TYPE */

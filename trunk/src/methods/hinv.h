@@ -87,6 +87,11 @@
       If the mode for a unimodal distribution is set in the distribution
       object this mode is automatically used as design-point if the
       unur_hinv_set_cpoints() call is not used.
+
+      As already mentioned the maximal error of this approximation is 
+      only estimated. If this error is crucial for an application we
+      recommend to compute this error using unur_hinv_estimate_error()
+      especially when a non-standard distribution is used.
       
    =END
 */

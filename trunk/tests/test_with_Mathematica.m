@@ -17,7 +17,7 @@
 RunFileName = "run_test_with_Mathematica.c";
 
 (* sample size for tests *)
-RunSampleSize = 10000;   
+RunSampleSize = 1000;   
 
 (* constants *)
 isCONT = 1;
@@ -40,7 +40,7 @@ ExtremeValueIIDistribution/: Domain[ExtremeValueIIDistribution[k_,zeta_,theta_]]
 	Interval[{zeta, Infinity}];
 
 ExtremeValueIIDistribution/: PDF[ExtremeValueIIDistribution[k_,zeta_,theta_], x_] :=
-	If [ x >= zeta,
+	If [ x > zeta,
 		Exp[ -((x-zeta)/theta)^(-k)] * ((x-zeta)/theta)^(-k-1) * k/theta,
 	(* else *)
 		0

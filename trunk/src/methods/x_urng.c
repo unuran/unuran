@@ -70,7 +70,7 @@ unur_get_default_urng( void )
   /* default generator already running ? */
   if( urng_default == NULL ) {
     /* have to initialize default generator first */
-#if UNUR_URNG_TYPE == UNUR_URNG_POINTER 
+#if UNUR_URNG_TYPE == UNUR_URNG_SIMPLE 
     urng_default = UNUR_URNG_DEFAULT;
 #elif UNUR_URNG_TYPE == UNUR_URNG_PRNG
     urng_default = prng_new(UNUR_URNG_DEFAULT);
@@ -136,7 +136,7 @@ unur_use_urng_aux_default( UNUR_PAR *par )
   /* default generator already running ? */
   if( urng_aux_default == NULL ) {
     /* have to initialize default generator first */
-#if UNUR_URNG_TYPE == UNUR_URNG_POINTER 
+#if UNUR_URNG_TYPE == UNUR_URNG_SIMPLE 
     urng_aux_default = UNUR_URNG_AUX_DEFAULT;
 #elif UNUR_URNG_TYPE == UNUR_URNG_PRNG
     urng_aux_default = prng_new(UNUR_URNG_AUX_DEFAULT);
@@ -181,7 +181,7 @@ unur_chgto_urng_aux_default( UNUR_GEN *gen )
   /* default generator already running ? */
   if( urng_aux_default == NULL ) {
     /* have to initialize default generator first */
-#if UNUR_URNG_TYPE == UNUR_URNG_POINTER 
+#if UNUR_URNG_TYPE == UNUR_URNG_SIMPLE 
     urng_aux_default = UNUR_URNG_AUX_DEFAULT;
 #elif UNUR_URNG_TYPE == UNUR_URNG_PRNG
     urng_aux_default = prng_new(UNUR_URNG_AUX_DEFAULT);

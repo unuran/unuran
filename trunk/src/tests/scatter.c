@@ -61,7 +61,7 @@ static int _unur_make_uniform_scatter( int start, int skip );
 
 #define UNUR_BABYGEN_PERIOD  1024 
 
-#if UNUR_URNG_TYPE == UNUR_URNG_POINTER 
+#if UNUR_URNG_TYPE == UNUR_URNG_SIMPLE 
 static double _unur_babygen( void );
 #endif
 static UNUR_URNG *_unur_get_babygen( void );
@@ -83,7 +83,7 @@ unur_make_scatterplot( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*/
-#if ( ( (UNUR_URNG_TYPE == UNUR_URNG_POINTER) || \
+#if ( ( (UNUR_URNG_TYPE == UNUR_URNG_SIMPLE) || \
         (UNUR_URNG_TYPE == UNUR_URNG_PRNG) )  && \
         defined( UNUR_ENABLE_LOGGING ) )
 /*---------------------------------------------------------------------------*/
@@ -323,7 +323,7 @@ _unur_make_uniform_scatter( int start, int skip )
  *****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
-#if UNUR_URNG_TYPE == UNUR_URNG_POINTER 
+#if UNUR_URNG_TYPE == UNUR_URNG_SIMPLE 
 /*---------------------------------------------------------------------------*/
 
 static int u = 0;   /* state variable of baby generator                      */

@@ -42,9 +42,16 @@
 /*                                                                           */
 /* There are several ways to use a uniform pseudo random number generator:   */
 /*                                                                           */
-/* UNUR_URNG_POINTER:                                                        */
+/* UNUR_URNG_SIMPLE:                                                         */
 /*     Use a pointer to the routine without an argment, i.e.                 */
-/*        double (*urng)(void);                                              */
+/*        double urng(void);                                                 */
+/*     E.g., the uniform generator included in UNURAN.                       */ 
+/*                                                                           */
+/* UNUR_URNG_GENERIC:                                                        */
+/*     Use a pointer to the routine with a void pointer as argment, i.e.     */
+/*        double urng(void *status);                                         */
+/*     Notice that you MUST call the unur_set_default_urng() to set a        */
+/*     default uniform generators!                                           */
 /*                                                                           */
 /* UNUR_URNG_PRNG:                                                           */
 /*     Use a pointer to a routine from the plab library                      */
@@ -53,12 +60,14 @@
 /*                                                                           */
 /*---------------------------------------------------------------------------*/
 /* define the possible compiler switches                                     */
-#define UNUR_URNG_POINTER  2     /* use a pointer to a routine               */
-#define UNUR_URNG_PRNG     3     /* use a pointer to gen. from prng-3.0      */
+#define UNUR_URNG_SIMPLE   1     /* use type `double urng(void)'             */
+#define UNUR_URNG_GENERIC  2     /* use type `double urng(void *status)'     */
+#define UNUR_URNG_PRNG     3     /* use prng-3.0                             */
 /*---------------------------------------------------------------------------*/
 
 /* set type of uniform generator                                             */
-/*  #define UNUR_URNG_TYPE UNUR_URNG_POINTER */
+/*  #define UNUR_URNG_TYPE UNUR_URNG_SIMPLE */
+/*  #define UNUR_URNG_TYPE UNUR_URNG_GENERIC */
 #define UNUR_URNG_TYPE UNUR_URNG_PRNG
 
 /* IMPORTANT:                                                                */
@@ -67,16 +76,22 @@
 /*---------------------------------------------------------------------------*/
 /* Default name of uniform random number generator.                          */
 
-#if UNUR_URNG_TYPE == UNUR_URNG_POINTER
+#if UNUR_URNG_TYPE == UNUR_URNG_SIMPLE
 
-/* valid name of a C routine                                                 */
-#define UNUR_URNG_DEFAULT uniform
-#define UNUR_URNG_AUX_DEFAULT uniform_aux
+/* valid name of a C routine of type `double urng(void)'                     */
+#define UNUR_URNG_DEFAULT     unur_urng_MRG31k3p
+#define UNUR_URNG_AUX_DEFAULT unur_urng_fish
+
+#elif UNUR_URNG_TYPE == UNUR_URNG_GENERIC
+
+/* valid pointer to a C routine of type `double urng(void *status)'          */
+#define UNUR_URNG_DEFAULT     NULL
+#define UNUR_URNG_AUX_DEFAULT NULL
 
 #elif UNUR_URNG_TYPE == UNUR_URNG_PRNG
 
 /* valid parameter (char) string for prng-2.2                                */
-#define UNUR_URNG_DEFAULT "mt19937(19863)"
+#define UNUR_URNG_DEFAULT     "mt19937(19863)"
 #define UNUR_URNG_AUX_DEFAULT "LCG(2147483647,16807,0,1)"
 
 #else

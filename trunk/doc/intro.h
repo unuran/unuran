@@ -77,7 +77,7 @@
 	 @emph{Important:} If the prng library is not installed you
 	 must not use @code{UNUR_URNG_PRNG}.
 
-	 @emph{Warning:} If @code{UNUR_URNG_POINTER} is used then the
+	 @emph{Warning:} If @code{UNUR_URNG_SIMPLE} is used then the
 	 build-in default uniform random number generators should be
 	 used only for small sample sizes or for demonstration. They
 	 are not state of the art any more.

@@ -5,7 +5,7 @@ AM_CFLAGS = -Wall
 
 noinst_LIBRARIES = libuniform.a
 
-libuniform_a_SOURCES = cranduni.c
+libuniform_a_SOURCES = mrg31k3p.c fish.c
 
 include_HEADERS =
 

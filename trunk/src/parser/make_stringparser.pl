@@ -53,11 +53,6 @@ $top_srcdir .= "/../..";
 require "$top_srcdir/scripts/read_PDF.pl";
 
 ##############################################################################
-# Methods not supported by string input
-#
-our @No_String_Methods = ("UNIF");
-
-##############################################################################
 # top source directory
 #
 

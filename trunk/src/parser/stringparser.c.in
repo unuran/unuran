@@ -9,11 +9,9 @@
  *                                                                           *
  *   DESCRIPTION:                                                            *
  *                                                                           *
- *   The file stringpars.c.base contains the base of the stringparser.       *
- *   The perl script <name-it> replaces the                                  *
- *        =INPUT keyword                                                     *
- *   tags with information found within the source-code and writes it to     *
- *   'stringpars.c'.                                                         *
+ *                                                                           *
+
+
  *   The string to parse contains information about the standard             *
  *   distribution, the choosen method and (optional) the uniform number      *
  *   generator -- The distribution block must be first.                      *
@@ -61,6 +59,19 @@
  *   string which is passed as it is to the PRNG package                     *
  *   For information see the PRNG manual                                     *
  *   If this block is omitted, UNURAN sets a uniform random number generator *
+ *                                                                           *
+ *****************************************************************************
+ *                                                                           *
+ *   REMARK:                                                                 *
+ *   This file stringpars.c.in contains the main part of the stringparser.   *
+ *   The perl script make_stringparser.pl replaces the                       *
+ *        =INPUT keyword                                                     *
+ *   tags with search lists created from the information found within the    *
+ *   header files of the source code.                                        *
+ *   These lists (implemented via 'if' rules together with switch lists to   *
+ *   with the first letter of the set calls as simple hash function) are     *
+ *   used to call the corresponding ..._set and ..._new calls for the        *
+ *   the keywords found in the string.                                       *
  *                                                                           *
  *****************************************************************************
      $Id$
@@ -113,9 +124,6 @@
 /*---------------------------------------------------------------------------*/
 
 #define GENTYPE "STRING"       /* (pseudo) type of generator                 */
-
-/*---------------------------------------------------------------------------*/
-
 
 /*---------------------------------------------------------------------------*/
 

@@ -142,7 +142,14 @@ EOX
 	# short name for distribution
 	my $distr_short = $distr;
 	$distr_short =~ s/\_[^\_]+$//;
-	my $distr_print_name = "\tprintf(\"$distr_short \");\n";
+	my $distr_print_name;
+	if ($last_distr_short ne $distr_short) {
+	    $distr_print_name = "\tprintf(\" $distr_short \");\n";
+	    $last_distr_short = $distr_short;
+	}
+	else {
+	    $distr_print_name = "";
+	}
 
 	# Each generation method
 	foreach my $g (keys %{$list_gen}) {
@@ -192,7 +199,7 @@ EOX
 	    $test_test_body .= "\tunur_chg_urng(gen,urng1);\n\n";
 
 	    # Print info on screen
-	    $test_test_body .= $distr_print_name; # "\tprintf(\"$distr_short \");\n";
+	    $test_test_body .= $distr_print_name; 
 	    $test_test_body .= "\tfflush(stdout);\n\n";
 
 	    # Compare generator output
@@ -209,10 +216,13 @@ EOX
 EOX
 
             # End of test routine
-            $test_test_body .= "\tunur_distr_free(distr);\n";
-	    $test_test_body .= "\tunur_free(gen);\n";
-	    $test_test_body .= "\treturn n_failed;\n";
-	    $test_test_body .= "\}\n\n";
+            $test_test_body .= 
+		"\tunur_distr_free(distr);\n".
+		"\tunur_free(gen);\n".
+		"\t(n_failed > 0) ? printf(\"!\") : printf(\"+\");\n".
+                "\tfflush(stdout);\n\n".
+		"\treturn n_failed;\n".
+	        "\}\n\n";
 	    
 	    # The test routine
 	    my $test_test = 
@@ -221,12 +231,13 @@ EOX
 		$test_test_body;
 
 	    # Test routine when init of generator object failed
-	    $test_test_routine =~ s/\n/\\n/g;
 	    my $test_test_failed = 
 		$test_test_routine.
-		"\\tprintf(\\\".\\\");\\n".
-		"\\treturn 0;\\n".
-		"\}\\n";
+		$distr_print_name. 
+		"\tprintf(\".\");\n".
+                "\tfflush(stdout);\n\n".
+		"\treturn 0;\n".
+		"\}\n";
 
 # The make test routine
 	    # Begin of make test routines 
@@ -246,8 +257,14 @@ EOX
 	    # Init of generator failed
 	    $make_test_body .=
 		"\tif (gen == NULL) {\n".
-		"\t\tunur_distr_free(distr);\n".
-		"\t\tfprintf(out,\"$test_test_failed\\n\");\n".
+		"\t\tunur_distr_free(distr);\n";
+	    foreach my $l (split /\n/, $test_test_failed) { 
+		$l =~ s/\t/\\t/g;
+		$l =~ s/\\n/\\\\n/g;
+		$l =~ s/\"/\\\"/g;
+		$make_test_body .= "\t\tfprintf(out,\"$l\\n\");\n";
+	    }
+	    $make_test_body .=
 		"\t\treturn;\n".
 		"\t}\n\n";
 
@@ -258,7 +275,7 @@ EOX
 		"\tunur_free(gen);\n\n";                 # free generator object
 
 	    # write test file
-	    foreach $l (split /\n/, $test_test) { 
+	    foreach my $l (split /\n/, $test_test) { 
 		$l =~ s/\t/\\t/g;
 		$l =~ s/\\n/\\\\n/g;
 		$l =~ s/\"/\\\"/g;

@@ -124,6 +124,18 @@ EOX
 	# use local copy
 	my $distr = $d;
 
+	# short name for distribution
+	my $distr_short = $distr;
+	$distr_short =~ s/\_[^\_]+$//;
+	my $distr_print_name;
+	if ($last_distr_short ne $distr_short) {
+	    $distr_print_name = "\tprintf(\" $distr_short \");\n";
+	    $last_distr_short = $distr_short;
+	}
+	else {
+	    $distr_print_name = "";
+	}
+
 	# Name of test routine
 	my $testroutine = "test\_$distr";
 
@@ -152,7 +164,7 @@ EOX
 	    "$distribution\n";         # the distribution object
 
 	# Print info on screen
-	$test_test_body .= "\tprintf(\"$distr \");\n";
+	$test_test_body .= $distr_print_name; # "\tprintf(\"$distr \");\n";
 	$test_test_body .= "\tfflush(stdout);\n\n";
 
 	# We need a generator for importance sampling
@@ -173,10 +185,13 @@ EOX
 EOX
 
         # End of test routine
-        $test_test_body .= "\tunur_distr_free(distr);\n";
-	$test_test_body .= "\tunur_free(gen);\n";
-	$test_test_body .= "\treturn n_failed;\n";
-	$test_test_body .= "\}\n\n";
+        $test_test_body .= 
+	    "\tunur_distr_free(distr);\n".
+	    "\tunur_free(gen);\n".
+	    "\t(n_failed > 0) ? printf(\"!\") : printf(\"+\");\n".
+            "\tfflush(stdout);\n\n".
+	    "\treturn n_failed;\n".
+            "\}\n\n";
 	    
 	# The test routine
 	my $test_test = 

@@ -241,8 +241,6 @@ _unur_test_chi2_cont(struct unur_gen *gen,
   double pval;               /* p-value */
   int i,j;
 
-  double x;
-
   /* check arguments */
   CHECK_NULL(gen,-1.);
   /* we do not check magic cookies here */

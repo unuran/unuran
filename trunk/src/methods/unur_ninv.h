@@ -43,7 +43,7 @@
 struct unur_ninv_par { 
   int max_iter;              /* maximal number of iterations                 */
   double rel_x_resolution;   /* maximal relative error in x                  */
-  double sl, sr;             /* interval boundaries at start (left/right)    */
+  double s[3];               /* interval boundaries at start (left/right)    */
 };
 
 /*---------------------------------------------------------------------------*/
@@ -52,7 +52,7 @@ struct unur_ninv_par {
 struct unur_ninv_gen { 
   int max_iter;              /* maximal number of iterations                 */
   double rel_x_resolution;   /* maximal relative error in x                  */
-  double sl, sr;             /* interval boundaries at start (left/right)    */
+  double s[3];               /* interval boundaries at start (left/right)    */
 };
 
 /*---------------------------------------------------------------------------*/
@@ -85,8 +85,13 @@ int unur_ninv_set_max_iter( struct unur_par *par, int max_iter );
 int unur_ninv_set_x_resolution( struct unur_par *par, double x_resolution);
 /* set maximal relative error in x                                           */
 
-int unur_ninv_set_start( struct unur_par *par, double sl, double sr );
-/* set intervals at start (left/right)                                       */
+int unur_ninv_set_start( struct unur_par *par, double s1, double s2, double s3 );
+/*---------------------------------------------------------------------------*/
+/* set starting points.                                                      */
+/*   Newton:        s1           starting point                              */
+/*   regular falsi: s1, s2       boundary of starting interval               */
+/*   Muller/Brent:  s1. s2, s3   starting points                             */
+/* arguments that are used by method are ignored.                            */
 
 #define unur_ninv_set_debug(par,debugflags)  unur_set_debug((par),(debugflags))
 /* set debuging flags                                                        */

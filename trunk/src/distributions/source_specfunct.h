@@ -56,12 +56,6 @@
 /*---------------------------------------------------------------------------*/
 /* CEPHES library                                                            */
 
-#if 0
-/* cdf of beta(a,b) distribution */
-extern long double incbetl(long double a, long double b, long double x);
-#define _unur_cdf_beta_ext(x,a,b) ((double)incbetl((long double)(a),(long double)(b),(long double)(x)))
-#endif
-
 /* incomplete beta integral */
 extern long double incbetl(long double a, long double b, long double x);
 #define _unur_incbeta(x,a,b) ((double)incbetl((long double)(a),(long double)(b),(long double)(x)))

@@ -33,7 +33,7 @@
 #define RUN_DAU           0
 #define RUN_DIS           0
 
-#define RUN_NINV          0
+#define RUN_NINV          1
 #define RUN_UTDR          0
 #define RUN_AROU          0
 #define RUN_SROU          0
@@ -50,7 +50,7 @@
 
 #define RUN_RECT          0
 
-#define RUN_CSTD          1
+#define RUN_CSTD          0
 
 /*---------------------------------------------------------------------------*/
 
@@ -328,6 +328,8 @@ int main()
 
   /* get default parameters for new generator */
   par = unur_ninv_new(distr_normal);
+  //unur_ninv_use_newton(par);
+  unur_ninv_use_regula(par);
   unur_set_debug(par,0x1u);
   //   unur_ninv_set_x_resolution(par,1.e-5);
 
@@ -692,6 +694,7 @@ int main()
 
   /* get default parameters for new generator */
   par = unur_ninv_new(distr_cauchy);
+  //  unur_ninv_use_newton(par);
   unur_set_debug(par,0x1u);
   //   unur_ninv_set_x_resolution(par,1.e-5);
 

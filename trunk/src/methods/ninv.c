@@ -112,6 +112,7 @@ static void _unur_ninv_debug_sample_regula( struct unur_gen *gen,
 #define SAMPLE    gen->sample.cont      /* pointer to sampling routine       */     
 
 #define CDF(x) ((*(DISTR.cdf))((x),DISTR.params,DISTR.n_params))    /* call to p.d.f. */
+#define PDF(x) ((*(DISTR.pdf))((x),DISTR.params,DISTR.n_params))    /* call to p.d.f. */
 
 /*---------------------------------------------------------------------------*/
 /* macros                                                                    */
@@ -165,8 +166,8 @@ unur_ninv_new( struct unur_distr *distr )
   /* set default values */
   PAR.max_iter    = 40;         /* maximal number of iterations              */
   PAR.rel_x_resolution = 1.0e-16;   /* maximal relative error in x           */
-  PAR.sl           = -10.;      /* left boundary of interval                 */
-  PAR.sr           = 10.;       /* right boundary of interval                */
+  PAR.s[0]        = -10.;      /* left boundary of interval                 */
+  PAR.s[1]        = 10.;       /* right boundary of interval                */
 
   par->method      = UNUR_METH_NINV;  /* method and default variant          */
   par->variant     = NINV_VARFLAG_REGULA;  /* default variant                */
@@ -321,14 +322,20 @@ int unur_ninv_set_x_resolution( struct unur_par *par, double x_resolution)
 
 /*---------------------------------------------------------------------------*/
 
-int unur_ninv_set_start( struct unur_par *par, double sl, double sr )
+int
+unur_ninv_set_start( struct unur_par *par, double s1, double s2, double s3 )
      /*----------------------------------------------------------------------*/
-     /* set intervals at start (left/right)                                  */
+     /* set starting points.                                                 */
+     /*   Newton:        s1           starting point                         */
+     /*   regular falsi: s1, s2       boundary of starting interval          */
+     /*   Muller/Brent:  s1. s2, s3   starting points                        */
+     /* arguments that are used by method are ignored.                       */
+     /*                                                                      */
      /*                                                                      */
      /* parameters:                                                          */
      /*   par   ... pointer to parameter for building generator object       */
-     /*   sl    ... left boundary of interfval                               */
-     /*   sr    ... right boundary of interfval                              */
+     /*                                                                      */
+     /*                                                                      */
      /*                                                                      */
      /* return:                                                              */
      /*   1 ... on success                                                   */
@@ -342,15 +349,10 @@ int unur_ninv_set_start( struct unur_par *par, double sl, double sr )
   /* check input */
   _unur_check_par_object( NINV );
 
-  /* check new parameter for generator */
-  if (sl >= sr) {
-    _unur_warning(par->genid,UNUR_ERR_PAR_SET,"sl >= sr");
-    return 0;
-  }
-
   /* store date */
-  PAR.sl = sl;
-  PAR.sr = sr;
+  PAR.s[0] = s1;
+  PAR.s[1] = s2;
+  PAR.s[2] = s3;
 
   /* changelog */
   par->set |= NINV_SET_START;
@@ -391,6 +393,24 @@ unur_ninv_init( struct unur_par *par )
     _unur_error(par->genid,UNUR_ERR_PAR_INVALID,"");
     return NULL; }
   COOKIE_CHECK(par,CK_NINV_PAR,NULL);
+
+  /* check arguments */
+  switch (par->variant) {
+  case NINV_VARFLAG_REGULA:
+    if (PAR.s[0] == PAR.s[1]) {
+      _unur_error(par->genid,UNUR_ERR_GEN_DATA,"interval length = 0");
+      return NULL;
+    }
+    if (PAR.s[0] > PAR.s[1]) {
+      /* swap interval boundaries */
+      double tmp;
+      tmp = PAR.s[0]; PAR.s[0] = PAR.s[1]; PAR.s[1] = tmp;
+    }
+    break;
+  case NINV_VARFLAG_NEWTON:
+    /* nothing to do */
+    break;
+  }
 
   /* create a new empty generator object */
   gen = _unur_ninv_create(par);
@@ -443,8 +463,8 @@ unur_ninv_sample_regula( struct unur_gen *gen )
   COOKIE_CHECK(gen,CK_NINV_GEN,0.);
 
   /* initialize starting interval */
-  x1 =  GEN.sl;      /* left boudary of interval */
-  x2 =  GEN.sr;      /* right boudary of interval */
+  x1 =  GEN.s[0];      /* left boudary of interval */
+  x2 =  GEN.s[1];      /* right boudary of interval */
   if (x1>=x2) {
     _unur_error(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,""); return 0.; }
 
@@ -547,11 +567,101 @@ unur_ninv_sample_newton( struct unur_gen *gen )
      /*   return 0.                                                          */
      /*----------------------------------------------------------------------*/
 { 
+  double x;           /* point for netwon-iteration                   */
+  double U;           /* sampled uniform random number                */
+  double fx;          /* cdf at x                                     */
+  double dfx;         /* pdf at x                                     */
+  double fxabs;       /* absolute valuo of fx                         */
+  double xtmp, fxtmp; /* temprary variables for x and fx              */
+  double xold, fxold; /* remember last values for stopping criterion  */
+  double fxtmpabs;    /* fabs of fxtmp                                */
+  double damp;        /* damping factor                               */
+  double step;        /* helps to escape from flat regions of the cdf */
+  int i;              /* counter for for-loop                         */
+    
   /* check arguments */
   CHECK_NULL(gen,0.);
   COOKIE_CHECK(gen,CK_NINV_GEN,0.);
 
-  return 0.;
+  
+  damp = 2.;        /* to be halved at least once */  
+  step = 1.;
+
+  /* sample from uniform pseudorandom number generator */
+  U = _unur_call_urng(gen);
+
+  /* initialize starting point */
+  x     = 1.;    /** TODO: durch s[0] ersetzen ?? **/
+  fx    = CDF(x) - U;
+  dfx   = PDF(x);
+  fxabs = fabs(fx);
+  xold  = x;    /* there is no old value yet */
+  fxold = fx;   /* there is no old value yet */ 
+  
+  /* begin for-loop:  newton-iteration  */
+  for (i=0; i < GEN.max_iter; i++) {
+
+    while (dfx == 0.) {   /* function flat at x */
+      
+      if (fx == 0.)  /* exact hit -> leave while-loopt */
+	break; 
+
+      if (fx > 0.)         /* try another x */
+        xtmp  = x - step;   
+      else 
+        xtmp  = x + step;
+         
+      fxtmp    = CDF(xtmp) - U;
+      fxtmpabs = fabs(fxtmp);
+
+      if ( fxtmpabs < fxabs ){        /* improvement, update x            */
+        step = 1.;     /* set back stepsize */
+        x     = xtmp;
+        fx    = fxtmp;
+      }
+      else if ( fxtmpabs*fxabs < 0. ){/*step was too large, dont update x */
+        step /= 2.;                      
+      } 
+      else{                           /* step was too short, update x     */
+        step *= 2.;    
+        x     = xtmp;
+        fx    = fxtmp;
+      }  
+
+      dfx   = PDF(x);
+      fxabs = fabs(fx);     
+    }   /* end of while-loop, (flat region left) */
+
+   step = 1.;   /* set back stepsize */
+
+   if (fx == 0.)  /* exact hit -> finished */
+     break;
+
+
+    do{    /* newton-step  (damped if nececcary) */
+        damp /= 2.;
+        xtmp = x - damp * fx/dfx;
+        fxtmp = CDF(xtmp) - U;
+    } while ( fabs(fxtmp)-fxabs >= fxabs * GEN.rel_x_resolution ); /* no improvement */
+
+    
+    /* updation variables according to newton-step      */
+    damp  = 2.;       /* set back factor for damping    */
+    xold  = x;        /* remember last value of x       */
+    fxold = fx;       /* remember last value of fx      */
+    x     = xtmp;     /* update x                       */
+    fx    = fxtmp;    /* update function value at x     */
+    dfx   = PDF(x);   /* update derivative sof fx at x  */
+    fxabs = fabs(fx); /* update absolute value of fx    */
+ 
+
+    /* stopping criterion */
+    if ( fabs(x-xold) <= fabs(x) * GEN.rel_x_resolution )        
+      break;   /* no improvement with newton-step -> finished */
+
+  }  /* end of for-loop  (MAXITER reached -> finished) */
+
+  return x;
 
 } /* end of unur_ninv_sample_newton() */
 
@@ -640,8 +750,9 @@ _unur_ninv_create( struct unur_par *par )
   /* copy parameters into generator object */
   GEN.max_iter = PAR.max_iter;  /* maximal number of iterations              */
   GEN.rel_x_resolution = PAR.rel_x_resolution; /* maximal relative error in x*/
-  GEN.sl = PAR.sl;         /* left boundary of interval boundaries at start  */
-  GEN.sr = PAR.sr;         /* right boundary of interval boundaries at start */
+  GEN.s[0] = PAR.s[0];     /* staring points                                 */
+  GEN.s[1] = PAR.s[1];
+  GEN.s[2] = PAR.s[2];
 
   gen->method = par->method;        /* indicates method                      */
   gen->variant = par->variant;      /* indicates variant                     */

@@ -5,41 +5,6 @@
 
 /*---------------------------------------------------------------------------*/
 
-=NODE  Explain  What is UNURAN?
-=UP  Intro [10]
-
-=DESCRIPTION
-   UNURAN (Universal Non-Uniform RAndom Number generator) is
-   especially designed for such situations where 
-
-   @itemize @minus
-   @item a non-standard distribution or a truncated distribution is
-	 needed.
-
-   @item experiments with different types of distributions are made.
-
-   @item random variates for variance reduction techniques are used.
-
-   @item fast generators of predictable quality are necessary.
-
-   @end itemize
-
-   Of course it is also well suited for standard distributions. 
-   However due to its more sophisticated programming interface it
-   might not be as easy to use if you only look for a generator for
-   the standard normal distribution. (Although UNURAN provides
-   generators that are superior in many aspects to those found in
-   quite a number of other libraries.)
-
-   UNURAN implements several methods for generating random numbers.
-   The choice depends primary on the information about the
-   distribution can be provided and -- if the user is familar with
-   the different methods -- on the preferences of the user.
-
-=EON 
-
-/*---------------------------------------------------------------------------*/
-
 =NODE  Usage  Usage of this document
 =UP  Intro [20]
 
@@ -113,7 +78,7 @@
 	 must not use @code{UNUR_URNG_PRNG}.
 
 	 @emph{Warning:} If @code{UNUR_URNG_POINTER} is used then the
-	 buildin default uniform random number generators should be
+	 build-in default uniform random number generators should be
 	 used only for small sample sizes or for demonstration. They
 	 are not state of the art any more.
 	 

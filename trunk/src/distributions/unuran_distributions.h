@@ -379,7 +379,16 @@ double _unur_stdgen_sample_weibull_inv( UNUR_GEN *generator );
 /* Multinormal distribution  [5; ch.45, p.107]                               */
 UNUR_DISTR *unur_distr_multinormal(int dim, double *mean, double *covar);
 /* 
-   For standard form of distribution use @code{NULL} for @var{mean} and 
+   Creates a distribution object for the multinormal distribution with
+   @var{dim} components. @var{mean} is an array of size @var{dim}
+   A NULL pointer for @var{mean} is interpreted as the zero
+   vector (0,@dots{},0).
+   @var{covar} is an array of size @var{dim}x@var{dim} and holds the
+   covariance matrix, where the rows of the matrix are stored
+   consecutively in this array. The NULL pointer can be used
+   instead the identity matrix.
+
+   For standard form of the distribution use NULL for @var{mean} and 
    @var{covar}.
 */
 

@@ -84,6 +84,9 @@
 void _unur_distr_cont_debug( UNUR_DISTR *distribution, char *genid );
 /* write info about distribution into logfile                                */
 
+void _unur_distr_cvec_debug( UNUR_DISTR *distribution, char *genid );
+/* write info about distribution into logfile                                */
+
 void _unur_distr_corder_debug( UNUR_DISTR *order_statistics, char *genid );
 /* write info about distribution into logfile                                */
 

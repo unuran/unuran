@@ -366,7 +366,7 @@ unur_distr_cvec_set_mean( struct unur_distr *distr, double *mean )
   if (mean) {
     if (DISTR.mean == NULL)
       /* we have to allocate memory first */
-      DISTR.mean = _unur_malloc( distr->dim );
+      DISTR.mean = _unur_malloc( distr->dim * sizeof(double) );
     /* copy data */
     memcpy( DISTR.mean, mean, distr->dim * sizeof(double) );
   }
@@ -432,7 +432,7 @@ unur_distr_cvec_set_covar( struct unur_distr *distr, double *covar )
      /*   0 ... on error                                                     */
      /*----------------------------------------------------------------------*/
 {
-  int i;
+  int i,j;
   int dim;
 
   /* check arguments */
@@ -450,10 +450,21 @@ unur_distr_cvec_set_covar( struct unur_distr *distr, double *covar )
       }
   }
 
+  /* check for symmetry */
+  for (i=0; i<dim; i++)
+    for (j=i+1; j<dim; j++)
+      if (!_unur_FP_equal(covar[i*dim+j],covar[j*dim+i])) {
+	_unur_error(distr->name ,UNUR_ERR_DISTR_DOMAIN,"covariance matrix not symmetric");
+	return 0;
+      }
+	
+  /* there is no check for positive definitness yet.        */
+  /* this can be done easily during cholesky decomposition. */
+
   if (covar) {
     if (DISTR.covar == NULL)
       /* we have to allocate memory first */
-      DISTR.covar = _unur_malloc( dim * dim );
+      DISTR.covar = _unur_malloc( dim * dim * sizeof(double) );
     /* copy data */
     memcpy( DISTR.covar, covar, dim * dim * sizeof(double) );
   }
@@ -710,10 +721,6 @@ unur_distr_cvec_get_pdfvol( struct unur_distr *distr )
 
 /*---------------------------------------------------------------------------*/
 
-#if 0
-
-/** TODO **/
-
 /*****************************************************************************/
 
 void
@@ -727,7 +734,7 @@ _unur_distr_cvec_debug( struct unur_distr *distr, char *genid )
      /*----------------------------------------------------------------------*/
 {
   FILE *log;
-  int i;
+  int i,j;
 
   /* check arguments */
   CHECK_NULL(distr,/*void*/);
@@ -735,41 +742,32 @@ _unur_distr_cvec_debug( struct unur_distr *distr, char *genid )
 
   log = unur_get_stream();
 
-  /* is this a derived distribution */
-  if (distr->base) {
-    switch (distr->id) {
-    case UNUR_DISTR_CORDER:
-      _unur_distr_corder_debug(distr,genid);
-      return;
-    default:
-      _unur_warning(distr->name,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
-      return;
-    }
-  }
-
   fprintf(log,"%s: distribution:\n",genid);
-  fprintf(log,"%s:\ttype = continuous univariate distribution\n",genid);
+  fprintf(log,"%s:\ttype = continuous multivariate distribution\n",genid);
   fprintf(log,"%s:\tname = %s\n",genid,distr->name);
 
-  fprintf(log,"%s:\tp.d.f with %d argument(s)\n",genid,DISTR.n_params);
-  for( i=0; i<DISTR.n_params; i++ )
-      fprintf(log,"%s:\t\tparam[%d] = %g\n",genid,i,DISTR.params[i]);
+  fprintf(log,"%s:\tdimension = %d\n",genid,distr->dim);
+  fprintf(log,"%s:\n",genid);
 
-  if (distr->set & UNUR_DISTR_SET_MODE)
-    fprintf(log,"%s:\tmode = %g\n",genid,DISTR.mode);
-  else
-    fprintf(log,"%s:\tmode unknown\n",genid);
-
-  fprintf(log,"%s:\tdomain = (%g, %g)",genid,DISTR.domain[0],DISTR.domain[1]);
-  _unur_print_if_default(distr,UNUR_DISTR_SET_DOMAIN);
-
-  fprintf(log,"\n%s:\tarea below p.d.f. = %g",genid,DISTR.area);
-  _unur_print_if_default(distr,UNUR_DISTR_SET_PDFAREA);
-  fprintf(log,"\n%s:\n",genid);
+  fprintf(log,"%s:\tmean vector =\n",genid);
+  fprintf(log,"%s:\t   ( %g",genid,(DISTR.mean ? DISTR.mean[0] : 0.));
+  for (i=1; i<distr->dim; i++) 
+    fprintf(log,", %g",(DISTR.mean ? DISTR.mean[i] : 0.));
+  fprintf(log,")\t%s\n",(DISTR.mean ? "" : "[NULL]"));
+  fprintf(log,"%s:\n",genid);
+  
+  fprintf(log,"%s:\tcovariance matrix = %s\n",genid,(DISTR.covar ? "" : "[NULL]"));
+  for (j=0; j<distr->dim; j++) {
+    fprintf(log,"%s:\t   (%7.4f",genid,(DISTR.covar ? DISTR.covar[distr->dim*j] : (j==0?1.:0.)));
+    for (i=1; i<distr->dim; i++) 
+      fprintf(log,",%7.4f",(DISTR.covar ? DISTR.covar[distr->dim*j+i] : (i==j?1.:0.)));
+    fprintf(log,")\n");
+  }
+    
+  fprintf(log,"%s:\n",genid);
 
 } /* end of _unur_distr_cvec_debug() */
 
-#endif 
 /*---------------------------------------------------------------------------*/
 #undef DISTR
 /*---------------------------------------------------------------------------*/

@@ -105,6 +105,7 @@ typedef void _UNUR_SAMPLING_ROUTINE_VEC(struct unur_gen *gen, double *vec);
 #include <empk_struct.h>
 
 /* continuous multivariate distributions */
+#include <vmt_struct.h>
 #include <rect_struct.h>
 
 /* wrappers for special generators for standard distributions */
@@ -131,6 +132,7 @@ struct unur_par {
     struct unur_unif_par  unif;
     struct unur_utdr_par  utdr;
     struct unur_empk_par  empk;
+    struct unur_vmt_par   vmt;
     struct unur_rect_par  rect;
     struct unur_cstd_par  cstd;
     struct unur_dstd_par  dstd;
@@ -169,6 +171,7 @@ struct unur_gen {
     struct unur_unif_gen  unif;
     struct unur_utdr_gen  utdr;
     struct unur_empk_gen  empk;
+    struct unur_vmt_gen   vmt;
     struct unur_rect_gen  rect;
     struct unur_cstd_gen  cstd;
     struct unur_dstd_gen  dstd;
@@ -177,7 +180,7 @@ struct unur_gen {
   union {
     _UNUR_SAMPLING_ROUTINE_CONT  *cont;
     _UNUR_SAMPLING_ROUTINE_DISCR *discr;
-    _UNUR_SAMPLING_ROUTINE_VEC   *vec;
+    _UNUR_SAMPLING_ROUTINE_VEC   *cvec;
   }               sample;     /* pointer to sampling routine                 */
   
   void (*destroy)(struct unur_gen *gen); /* pointer to destructor            */ 

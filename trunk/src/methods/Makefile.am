@@ -37,7 +37,8 @@ libmethods_a_SOURCES = \
  tabl.c \
  tdr.c  \
  unif.c \
- utdr.c
+ utdr.c \
+ vmt.c
 
 noinst_HEADERS = \
  in_unuran.h \
@@ -70,7 +71,8 @@ noinst_HEADERS = \
  tabl.h  tabl_struct.h \
  tdr.h   tdr_struct.h tdr_newset.c tdr_init.c tdr_sample.c tdr_debug.c \
  unif.h  unif_struct.h \
- utdr.h  utdr_struct.h
+ utdr.h  utdr_struct.h \
+ vmt.h   vmt_struct.h
 
 # clean backup files
 CLEANFILES = *~

@@ -22,27 +22,47 @@
 
 int main()
 {
+  int i,j;
+  double vec[3];
 
-  UNUR_DISTR *distr, *os;    /* distribution */
+  UNUR_DISTR *distr;    /* distribution */
   UNUR_PAR   *par;      /* parameter */
   UNUR_GEN   *gen;      /* generator */
   UNUR_URNG *urng;      
-  double fpar[10];
+
+  UNUR_DISTR *uv;
+  UNUR_GEN *uvgen;
+
+  double mean[5] = { 1.,2.,3.};
+
+  double covar[25] = {  1.0, 0.5, 0.6,
+		        0.5, 2.0, 0.7,
+		        0.6, 0.7, 3.0};
+
 
   urng = prng_new("mt19937(2345)");
   if (!urng) exit(-1);
 
   unur_set_default_urng(urng);
 
-  fpar[0] = 1.;
-  fpar[1] = 1.e-5;
-  distr = unur_distr_normal(fpar,2);
+/*    uv = unur_distr_cauchy(NULL,0); */
+/*    uvgen = unur_init( unur_tdr_new( uv )); */
+/*    unur_distr_free(uv); */
 
-  par = unur_ninv_new(distr);
-  //  unur_ninv_set_usenewton(par);
-  unur_ninv_set_table(par, 100);
-  gen = unur_test_timing(par,5,fpar+8,fpar+9,1);
+  distr = unur_distr_multinormal(3,mean,covar);
+  par = unur_vmt_new(distr);
+/*    unur_vmt_set_marginalgen( par, uvgen ); */
+/*    unur_run_tests(par,RUN_TESTS); */
+  gen = unur_init(par);
+
+  for (i=0; i<20; i++) {
+    unur_sample_vec(gen,vec);
+    printf("%g, %g, %g\n",vec[0],vec[1],vec[2]);
+  }
+
+  unur_distr_free(distr);
   unur_free(gen);
+/*    unur_free(uvgen); */
 
   exit (0);
 }

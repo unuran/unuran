@@ -4,11 +4,11 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   FILE: rect.h                                                            *
+ *   FILE: vmt.h                                                             *
  *                                                                           *
  *   PURPOSE:                                                                *
- *         function prototypes for method RECT                               *
- *         (uniformly distributed in (multidimensional) RECTangle)           *
+ *         function prototypes for method VMT                                *
+ *         (Vector Matrix Transformation)                                    *
  *                                                                           *
  *   USAGE:                                                                  *
  *         only included in unuran.h                                         *
@@ -37,25 +37,49 @@
  *                                                                           *
  *****************************************************************************/
 
+/* 
+   =METHOD  VMT   Vector Matrix Transformation
+
+   VMT generates random vectors for distributions with given mean
+   vector mu and covariance matrix Sigma. It produces random vectors
+   of the form X = L Y + mu, where L is the Cholesky factor of Sigma,
+   i.e. L L^t = Sigma, and Y has independent components of the same
+   distribution with mean 0 and standard deviation 1.
+
+   By default this a the standard normal distribution and thus VMT
+   produces multinormal random vectors.
+
+   The method VMT has been implemented especially to sample from a
+   multinormal distribution. Nevertheless it can also be used (or
+   abused) for other distributions. However notice that the univariate
+   distribution provided by a unur_vmt_set_marginalgen() call should
+   have mean 0 and standard deviation 1. Otherwise mu and Sigma are
+   not the mean vector and covariance matrix, respectively, of the
+   resulting distribution. Moreover notice that except of the
+   multinormal distribution the given univariate distribution is the
+   marginal distribution of the resulting distribution.
+*/
+
 /*---------------------------------------------------------------------------*/
 /* Routines for user interface                                               */
 
-UNUR_PAR *unur_rect_new( int dim );
-/* get default parameters for generator                                      */
+/* =ROUTINES */
 
-UNUR_GEN *_unur_rect_init( UNUR_PAR *parameters );
-/* initialize new generator                                                  */
+/*---------------------------------------------------------------------------*/
+/* Routines for user interface                                               */
 
-void _unur_rect_sample_cvec( UNUR_GEN *gen, double *vec );
-/* sample from generator                                                     */
-
-void _unur_rect_free( UNUR_GEN *generator);
-/* destroy generator object                                                  */
+UNUR_PAR *unur_vmt_new( UNUR_DISTR *distribution );
+/* Get default parameters for generator.                                     */
 
 /*...........................................................................*/
 
-int unur_rect_set_domain_vec( UNUR_PAR *parameters, double **domain );
-/* set coordinates for domain boundary                                       */
+int unur_vmt_set_marginalgen( UNUR_PAR *parameters, UNUR_GEN *uvgen );
+/* 
+   Set generator for (univariate) marginal distribution.
+   Default: Generator for (univariate) standard normal distribution.
+*/
 
+/* =END */
 /*---------------------------------------------------------------------------*/
+
 

@@ -558,8 +558,11 @@ int unur_distr_cvec_set_covar( UNUR_DISTR *distribution, double *covar );
    by unur_distr_get_dim(). The rows of the matrix have to be stored
    consecutively in this array.
 
-   The diagonal entries of the given matrix (i.e. the variance of the
-   components of the random vector) must be positive.
+   @var{covar} must be a variance-covariance matrix of the
+   distribution, i.e. it must be symmetric and positive definite and
+   its diagonal entries (i.e. the variance of the components of the
+   random vector) must be positive.
+   There is no check for the positive definitness yet.
 
    A @code{NULL} pointer for @var{covar} is interpreted as the
    identity matrix.

@@ -4,14 +4,14 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   FILE: rect.h                                                            *
+ *   FILE: vmt_struct.h                                                      *
  *                                                                           *
  *   PURPOSE:                                                                *
- *         function prototypes for method RECT                               *
- *         (uniformly distributed in (multidimensional) RECTangle)           *
+ *         declares structures for method VMT                                *
+ *         (Vector Matrix Transformation)                                    *
  *                                                                           *
  *   USAGE:                                                                  *
- *         only included in unuran.h                                         *
+ *         only included in source_struct.h                                  *
  *                                                                           *
  *****************************************************************************
      $Id$
@@ -38,24 +38,21 @@
  *****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
-/* Routines for user interface                                               */
+/* Information for constructing the generator                                */
 
-UNUR_PAR *unur_rect_new( int dim );
-/* get default parameters for generator                                      */
+struct unur_vmt_par { 
+  struct unur_gen *uvgen;   /* univariate generator                          */
+};
 
-UNUR_GEN *_unur_rect_init( UNUR_PAR *parameters );
-/* initialize new generator                                                  */
+/*---------------------------------------------------------------------------*/
+/* The generator object                                                      */
 
-void _unur_rect_sample_cvec( UNUR_GEN *gen, double *vec );
-/* sample from generator                                                     */
-
-void _unur_rect_free( UNUR_GEN *generator);
-/* destroy generator object                                                  */
-
-/*...........................................................................*/
-
-int unur_rect_set_domain_vec( UNUR_PAR *parameters, double **domain );
-/* set coordinates for domain boundary                                       */
+struct unur_vmt_gen { 
+  struct unur_gen *uvgen;   /* univariate generator                          */
+  double *mean;             /* mean vector of distribution                   */
+  double *cholesky;         /* cholesky factor of covariance matrix          */
+  int    dim;               /* dimension of distribution                     */
+};
 
 /*---------------------------------------------------------------------------*/
 

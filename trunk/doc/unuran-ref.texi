@@ -421,6 +421,7 @@ All parameters have default settings documented in @ref{Defaults}.
 * TDR::  Trandformed Density Rejection
 * UNIF:: ???
 * UTDR:: Universal Transformed Density Rejection (3-point method)
+* VMT:: Vector Matrix Transformation
 @end menu
 
 @include ref_methods.texi
@@ -542,6 +543,7 @@ For information about the following distributions see
 * TDRref::  Trandformed Density Rejection
 * UNIFref:: ???
 * UTDRref:: Universal Transformed Density Rejection (3-point method)
+* VMTref:: Vector Matrix Transformation
 @end menu
 
 As explained above, the parameter object is destroyed when the
@@ -574,16 +576,5 @@ For information about the Methods themselfes, see @ref{Description}.
 @enumerate
 @item
 @end enumerate
-
-@tex
-  \newcount \tempcounter
-  \tempcounter = \thispage
-  \divide   \tempcounter 2
-  \multiply \tempcounter 2
-  \ifnum \tempcounter < \thispage
-     @c \page \phantom{Hut}
-  \fi
-@end tex
-
 
 @bye

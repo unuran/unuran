@@ -70,7 +70,7 @@ double unur_sample_cont(UNUR_GEN *gen)
 void unur_sample_vec(UNUR_GEN *gen, double *vector)
 {
   CHECK_NULL(gen,/*void*/);
-  gen->sample.vec(gen,vector);
+  gen->sample.cvec(gen,vector);
 } /* end of unur_sample_vec() */
 
 /*---------------------------------------------------------------------------*/

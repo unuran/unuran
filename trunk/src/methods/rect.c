@@ -85,7 +85,7 @@ static void _unur_rect_debug_init( struct unur_par *par, struct unur_gen *gen );
 
 #define PAR     par->data.rect
 #define GEN     gen->data.rect
-#define SAMPLE  gen->sample.vec
+#define SAMPLE  gen->sample.cvec
 
 /*---------------------------------------------------------------------------*/
 
@@ -218,7 +218,7 @@ _unur_rect_init( struct unur_par *par )
 /*****************************************************************************/
 
 void
-_unur_rect_sample_vec( struct unur_gen *gen, double *vec )
+_unur_rect_sample_cvec( struct unur_gen *gen, double *vec )
      /*---------------------------------------------------------------------------*/
      /* sample from generator                                                     */
      /*                                                                           */
@@ -239,7 +239,7 @@ _unur_rect_sample_vec( struct unur_gen *gen, double *vec )
   else ;
   /* not implemented yet */
 
-} /* end of _unur_rect_sample() */
+} /* end of _unur_rect_sample_cvec() */
 
 /*****************************************************************************/
 
@@ -307,7 +307,7 @@ _unur_rect_create( struct unur_par *par )
   gen->genid = _unur_set_genid(GENTYPE);
 
   /* routines for sampling and destroying generator */
-  SAMPLE = _unur_rect_sample_vec;
+  SAMPLE = _unur_rect_sample_cvec;
   gen->destroy = _unur_rect_free;
 
   /* set all pointers to NULL */
@@ -361,7 +361,7 @@ _unur_rect_debug_init( struct unur_par *par, struct unur_gen *gen )
   fprintf(log,"%s: method  = uniformly distributed in hypercube (RECT)\n",gen->genid);
   fprintf(log,"%s:\n",gen->genid);
 
-  fprintf(log,"%s: sampling routine = _unur_rect_sample_vec()\n",gen->genid);
+  fprintf(log,"%s: sampling routine = _unur_rect_sample_cvec()\n",gen->genid);
   fprintf(log,"%s:\n",gen->genid);
 
   fprintf(log,"%s: dimension = %d\n",gen->genid,GEN.dim);

@@ -44,7 +44,7 @@
 
 #define _unur_sample_discr(gen)       (gen)->sample.discr(gen)
 #define _unur_sample_cont(gen)        (gen)->sample.cont(gen)
-#define _unur_sample_vec(gen,vector)  (gen)->sample.vec(gen,vector)
+#define _unur_sample_vec(gen,vector)  (gen)->sample.cvec(gen,vector)
 
 #define _unur_free(gen)               (gen)->destroy(gen)
 

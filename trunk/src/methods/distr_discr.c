@@ -187,6 +187,12 @@ unur_distr_discr_set_prob( struct unur_distr *distr, double *prob, int n_prob )
   _unur_check_NULL( NULL, distr, 0 );
   _unur_check_distr_object( distr, DISCR, 0 );
 
+  /* it is not possible to set a PV when a PMF is given. */
+  if (DISTR.pmf != NULL) {
+    _unur_error(NULL,UNUR_ERR_DISTR_SET,"PMF given, cannot set PV");
+    return 0;
+  }
+
   /* check new parameter for distribution */
   if (n_prob < 0) {
     _unur_error(NULL,UNUR_ERR_DISTR_SET,"length of p.v.");
@@ -255,6 +261,12 @@ unur_distr_discr_set_pmf( struct unur_distr *distr, UNUR_FUNCT_DISCR *pmf )
   _unur_check_NULL( NULL,distr,0 );
   _unur_check_NULL( distr->name,pmf,0 );
   _unur_check_distr_object( distr, DISCR, 0 );
+
+  /* it is not possible to set a PMF when a PV is given. */
+  if (DISTR.prob != NULL) {
+    _unur_error(NULL,UNUR_ERR_DISTR_SET,"PV given, cannot set PMF");
+    return 0;
+  }
 
   /* we do not allow overwriting a pmf */
   if (DISTR.pmf != NULL) {

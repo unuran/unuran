@@ -249,6 +249,10 @@ int unur_distr_cont_upd_pdfarea( UNUR_DISTR *distribution );
    This call sets the normalization constant such that the given
    PDF is the derivative of a given c.f.d., i.e. the area is 1.
    However for truncated distribution the area smaller than 1.
+
+   The call does not work for distributions from the 
+   (=>) UNURAN library of standard distributions whith truncated
+   domain when the CDF is not available.
 */
 
 double unur_distr_cont_get_pdfarea( UNUR_DISTR *distribution );

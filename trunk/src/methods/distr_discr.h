@@ -83,6 +83,10 @@ int unur_distr_discr_set_prob( UNUR_DISTR *distribution, double *prob, int n_pro
    necessary that the entries in the given probability vector sum to
    1. @code{n_prob} must be positive. However there is no testing
    whether all entries in @code{prob} are non-negative. 
+
+   Notice it not possible to set both a PV and a PMF.
+   (I.e., it is not possible to set a PV for a distribution from
+   (=>) UNURAN library of standard distributions.)
 */
 
 
@@ -113,6 +117,7 @@ int unur_distr_discr_set_cdf( UNUR_DISTR *distribution, UNUR_FUNCT_DISCR *cdf );
    CDF is set it cannot be overwritten. A new distribution object
    has to be used instead.
 
+   Notice it not possible to set both a PMF and a PV.
 */
 
 
@@ -243,6 +248,10 @@ int unur_distr_discr_upd_pmfsum( UNUR_DISTR *distribution);
    (=>) UNURAN library of standard distributions when the
    corresponding function is available. Otherwise @code{unur_errno} is
    set to @code{UNUR_ERR_DISTR_DATA}. 
+
+   The call does not work for distributions from the 
+   (=>) UNURAN library of standard distributions whith truncated
+   domain when the CDF is not available.
 */
 
 double unur_distr_discr_get_pmfsum(UNUR_DISTR *distribution);

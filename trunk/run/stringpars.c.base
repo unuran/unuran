@@ -17,7 +17,7 @@
  *   The string to parse contains information about the standard             *
  *   distribution, the choosen method and (optional) the uniform number      *
  *   generator (in this order!).                                             *
- *   These three blocks must be separeted with colons ':'                    *
+ *   These three blocks must be separeted with colons `:'                    *
  *                                                                           *
  *   The information about the distribution and the method must be provided  *
  *   using a <key>=<value> scheme but the (optional) information about the   *
@@ -25,29 +25,29 @@
  *   therefore the according syntax must be used---see the PRNG manual for   *
  *   details.                                                                *
  *   If more then one <key>=<value> pair is needed, they must be separeted   *
- *   with semicolons ';'.                                                    *
+ *   with semicolons `;'.                                                    *
  *   The <key> is a keyword explained below.                                 *
  *   The value can be a string, a number or a list of numbers or a string    *
  *   followed by a list of numbers (examples will be given below), which     *
- *   depends on the <key>. A list is bounded with parentheses '(' and ')'    *
- *   and the separator is a komma ','.                                       *
+ *   depends on the <key>. A list is bounded with parentheses `(' and `)'    *
+ *   and the separator is a komma `,'.                                       *
  *   If the value is a string and a list in beetween only white space        *
  *   is allowed.                                                             *
  *                                                                           *
  *   Distribution:                                                           *
- *   The key 'distr' is obligatory to be the first  and the corresponding    *
+ *   The key `distr' is obligatory to be the first  and the corresponding    *
  *   value must be one  of the implemented standard distributions---with     *
  *   the parameters.  e.g.: distr=normal(0,1)                                *
  *   Furthermore it's possible to set the domain via the key 'domain'        *
  *                                                                           *
  *   Method:                                                                 *
- *   The key 'method' is obligatory to be first and the value must be the    *
+ *   The key `method' is obligatory to be first and the value must be the    *
  *   name of a method suitable for the choosen standard distribution.        *
  *   e.g.: method=arou                                                       *
  *   Of course the keys are dependent on the choosen method. All             *
  *   corresponding _set_ commands of UNURAN are available and the key is     *
- *   the string after the 'unur_<methodname>_set_' part of the command.      *
- *   e.g.: UNURAN provedes the command 'unur_arou_set_max_sqhratio' to       *
+ *   the string after the `unur_<methodname>_set_' part of the command.      *
+ *   e.g.: UNURAN provedes the command `unur_arou_set_max_sqhratio' to       *
  *   set a parameter. To call this function via the string-interface, the    *
  *   key 'max_sqhratio' can be used.                                         *
  *                                                                           *
@@ -103,13 +103,13 @@
 
 /* function prototypes */
 
-void         subst_whitespace(char *, char);
-char       * elim_whitespace(char *);
-int          parselist(char *, double *);
-UNUR_DISTR * make_distr_obj(char *);
-UNUR_PAR   * make_par_obj(UNUR_DISTR *, char *);
-UNUR_GEN   * make_gen_obj (char *);
-int          make_urng_obj(UNUR_PAR *, char *);
+void         _unur_subst_whitespace (char *, char);
+char       * _unur_elim_whitespace  (char *);
+int          _unur_parselist        (char *, double *);
+UNUR_DISTR * _unur_str2distr        (char *);
+UNUR_PAR   * _unur_str2par          (UNUR_DISTR *, char *);
+UNUR_GEN   * unur_str2gen           (char *);
+int          _unur_str2urng         (UNUR_PAR *, char *);
 
 
 
@@ -117,18 +117,18 @@ int          make_urng_obj(UNUR_PAR *, char *);
 
 /**********************************************************************/
 /*                                                                    */
-/* function: parselist()                                              */
+/* function: _unur_parselist()                                        */
 /*                                                                    */
-/* called by: make_distr_obj()                                        */
-/*            make_par_obj()                                          */
+/* called by: _unur_str2distr()                                       */
+/*            _unur_str2par()                                         */
 /*                                                                    */
 /* gets a string containing a list of comma separated doubles         */
-/* which is terminited with ')'                                       */
+/* which is terminited with `)'                                       */
 /* and a pointer to a double array                                    */
 /* and extracts the doubles from the list to the array                */
 /*                                                                    */
 /**********************************************************************/
-int parselist( char *liststr, double *ptr_to_list ){
+int _unur_parselist( char *liststr, double *ptr_to_list ){
 
   int no_of_elem = 0; /* number of elements in passed list */
 
@@ -148,20 +148,20 @@ int parselist( char *liststr, double *ptr_to_list ){
 
   return (no_of_elem);
 
-} /* end of parselist() */
+} /* end of _unur_parselist() */
 
 
 
 /**********************************************************************/
 /*                                                                    */
-/* function: make_distr_obj()                                         */
+/* function: _unur_str2distr()                                        */
 /*                                                                    */
-/* called by: make_gen_obj()                                          */
+/* called by: unur_str2gen()                                          */
 /*                                                                    */
 /* gets a string with information about the distribution,             */
 /* generates the corresponding distribution object and returns it     */
 /*                                                                    */
-/* The string consists of key=value entries separeted by ';'          */
+/* The string consists of key=value entries separeted by `;'          */
 /*                                                                    */
 /* three possibilities:                                               */
 /* key=value                                                          */
@@ -169,7 +169,7 @@ int parselist( char *liststr, double *ptr_to_list ){
 /* key=value(komma separated list of numbers)                         */
 /*                                                                    */
 /**********************************************************************/
-UNUR_DISTR *make_distr_obj(char *str){
+UNUR_DISTR *_unur_str2distr(char *str){
 
   UNUR_DISTR *distr;
 
@@ -204,7 +204,7 @@ UNUR_DISTR *make_distr_obj(char *str){
          tmpstr++;       /* points to begin of list (if available) */
    
          /* extract list of doubles from string  */
-         no_of_elem = parselist(tmpstr ,list);
+         no_of_elem = _unur_parselist(tmpstr ,list);
        }
     }
 
@@ -227,21 +227,21 @@ UNUR_DISTR *make_distr_obj(char *str){
   return ( distr );
 
 }
-/* end of make_distr_obj()                                            */
+/* end of _unur_str2distr()                                            */
 
 
 
 /**********************************************************************/
 /*                                                                    */
-/* function: make_par_obj()                                           */
+/* function: _unur_str2par()                                          */
 /*                                                                    */
-/* called by: make_gen_obj()                                          */
+/* called by: unur_str2gen()                                          */
 /*                                                                    */
 /* gets a pointer to a distribution object and a string with          */
 /* information about the distribution,                                */
 /* generates the corresponding parameter object and returns it        */
 /*                                                                    */
-/* The string consists of key=value entries separeted by ';'          */
+/* The string consists of key=value entries separeted by `;'          */
 /*                                                                    */
 /* four possibilities:                                                */
 /* key                                                                */
@@ -252,7 +252,7 @@ UNUR_DISTR *make_distr_obj(char *str){
 /* for each key the corresponding unur_<name>_set command is executed */
 /*                                                                    */
 /**********************************************************************/
-UNUR_PAR *make_par_obj(UNUR_DISTR *distr, char *methstr){
+UNUR_PAR *_unur_str2par(UNUR_DISTR *distr, char *methstr){
 
   UNUR_PAR *par;
 
@@ -292,7 +292,7 @@ UNUR_PAR *make_par_obj(UNUR_DISTR *distr, char *methstr){
          tmpstr++;
 
          /* extract list of doubles from string  */
-         no_of_elem = parselist(tmpstr ,list);
+         no_of_elem = _unur_parselist(tmpstr ,list);
 
        }
 
@@ -320,14 +320,14 @@ UNUR_PAR *make_par_obj(UNUR_DISTR *distr, char *methstr){
   return ( par );
 
 }
-/* end of make_par_obj()                                              */
+/* end of _unur_str2par()                                              */
 
 
 /**********************************************************************/
 /*                                                                    */
-/* function: make_urng_obj()                                          */
+/* function: _unur_str2urng()                                         */
 /*                                                                    */
-/* called by: make_gen_obj()                                          */
+/* called by: unur_str2gen()                                          */
 /*                                                                    */
 /* gets a pointer to a parameter object and a string with             */
 /* information about the uniform random number generator (urng)       */
@@ -336,7 +336,7 @@ UNUR_PAR *make_par_obj(UNUR_DISTR *distr, char *methstr){
 /* The string must be as specified within the PRNG package            */
 /*                                                                    */
 /**********************************************************************/
-int make_urng_obj(UNUR_PAR *par, char *urngstr){
+int _unur_str2urng(UNUR_PAR *par, char *urngstr){
 
    char *tmpchar;
    UNUR_URNG *urng;
@@ -366,18 +366,18 @@ int make_urng_obj(UNUR_PAR *par, char *urngstr){
    else{                /* success */
       return (0);
    }
-} /* end fo make_urng_obj() */
+} /* end fo _unur_str2urng() */
 
 
 /**********************************************************************/
 /*                                                                    */
-/* function: subst_whitespce()                                        */
+/* function: _unur_subst_whitespace()                                 */
 /*                                                                    */
 /* finds all occurences of sep_char in str and replaces the           */
 /* surrounding whitespace with the separation character sep_char      */
 /*                                                                    */
 /**********************************************************************/
-void subst_whitespace(char *str, char sep_char){
+void _unur_subst_whitespace(char *str, char sep_char){
 
   char *tmpstr;
 
@@ -391,7 +391,7 @@ void subst_whitespace(char *str, char sep_char){
   }
 
 }
-/* end of subst_whitespace()                                          */
+/* end of _unur_subst_whitespace()                                    */
 
 
 /**********************************************************************/
@@ -405,7 +405,7 @@ void subst_whitespace(char *str, char sep_char){
 /* returns pointer to the string                                      */
 /*                                                                    */
 /**********************************************************************/
-char *elim_whitespace(char *str){
+char *_unur_elim_whitespace(char *str){
 
   char * tmpstr;
 
@@ -422,16 +422,16 @@ char *elim_whitespace(char *str){
 
 
   /* substitute whitespace whith nearby characters*/
-  subst_whitespace(str, ':');
-  subst_whitespace(str, ';');
-  subst_whitespace(str, ',');
-  subst_whitespace(str, '=');
-  subst_whitespace(str, ')');
-  subst_whitespace(str, '(');
+  _unur_subst_whitespace(str, ':');
+  _unur_subst_whitespace(str, ';');
+  _unur_subst_whitespace(str, ',');
+  _unur_subst_whitespace(str, '=');
+  _unur_subst_whitespace(str, ')');
+  _unur_subst_whitespace(str, '(');
 
   return ( str );
 }
-/* end of elim_whitespace()                                           */
+/* end of _unur_elim_whitespace()                                           */
 
 
 
@@ -439,19 +439,19 @@ char *elim_whitespace(char *str){
 
 /**********************************************************************/
 /*                                                                    */
-/* function: make_gen_obj                                             */
+/* function: unur_str2gen()                                           */
 /*                                                                    */
 /* gets a string with information about the distribution and          */
 /* the desired method and                                             */
 /* generates the corresponding generator object invoking              */
 /* the funktions                                                      */
 /*   make_dist_obj() and                                              */
-/*   make_par_obj()                                                   */
+/*   _unur_str2par()                                                  */
 /*                                                                    */
-/* The string consists of two substrings (separated by ':')           */
+/* The string consists of two substrings (separated by `:')           */
 /* (distributio info, method info )                                   */
 /* and each of this strings consists of key=value                     */
-/*  entries separeted by ';'                                          */
+/*  entries separeted by `;'                                          */
 /*                                                                    */
 /* three possibilities:                                               */
 /* key=value                                                          */
@@ -459,7 +459,7 @@ char *elim_whitespace(char *str){
 /* key=value(komma separated list of numbers)                         */
 /*                                                                    */
 /**********************************************************************/
-UNUR_GEN *make_gen_obj (char *str){
+UNUR_GEN *unur_str2gen (char *str){
 
   UNUR_DISTR *distr;       /* distribution object */
   UNUR_PAR *par;           /* parameter object */
@@ -481,7 +481,7 @@ UNUR_GEN *make_gen_obj (char *str){
   /* remove initial and terminating white space and
      substitute other whitespace within string with nearby
      separation characters                                 */
-  tmpchar = elim_whitespace( str );
+  tmpchar = _unur_elim_whitespace( str );
 
   /* split info about distribution, method und uniform generator */
   diststr = strtok(tmpchar, ":");
@@ -504,14 +504,14 @@ UNUR_GEN *make_gen_obj (char *str){
 
 
   /* generate distribution object */
-  distr = make_distr_obj(diststr);
+  distr = _unur_str2distr(diststr);
   if ( distr == NULL ){
      fprintf(stderr, "ERROR: Can't create parameter object.\n");
   }
 
   /* generate parameter object */
   if ( methstr != NULL ){ /* method info is provided */
-    par = make_par_obj(distr, methstr);
+    par = _unur_str2par(distr, methstr);
   }
   else{ /* no info about method provided -> standard method */
     par = unur_cstd_new(distr);
@@ -524,7 +524,7 @@ UNUR_GEN *make_gen_obj (char *str){
 
   /* set uniform random number generator -- if provided */
   if ( urngstr != NULL ){
-     make_urng_obj(par, urngstr);
+     _unur_str2urng(par, urngstr);
   }
 
   /* generate generator object */
@@ -536,4 +536,4 @@ UNUR_GEN *make_gen_obj (char *str){
   /* return generator object to calling routine */
   return (gen);
 
-} /* end of make_gen_obj() */
+} /* end of unur_str2gen() */

@@ -217,7 +217,7 @@ unur_test_timing( struct unur_par *par,
 /*---------------------------------------------------------------------------*/
 
 double 
-unur_test_timing_total( const UNUR_PAR *par, int samplesize, double max_duration )
+unur_test_timing_total( const UNUR_PAR *par, int samplesize, double avg_duration )
      /*----------------------------------------------------------------------*/
      /*  estimate average time (in micro seconds) for generating a sample    */
      /*  of size `samplesize' (including setup) are estimated.               */
@@ -225,8 +225,7 @@ unur_test_timing_total( const UNUR_PAR *par, int samplesize, double max_duration
      /* parameters:                                                          */
      /*   par          ... pointer to parameters for generator object        */
      /*   samplesize   ... sample size                                       */
-     /*   max_duration ... upper bound for total time (in seconds) for       */
-     /*                    running test                                      */
+     /*   avg_duration ... average total time (in seconds) for running test  */
      /*                                                                      */
      /* return:                                                              */
      /*   median of several runs for generating sample (in micro seconds)    */
@@ -245,19 +244,18 @@ unur_test_timing_total( const UNUR_PAR *par, int samplesize, double max_duration
   if (samplesize < 0) return -1.;
 
   /* rescale maximal duration from seconds to micro seconds */
-  max_duration = (max_duration < 1.e-3) ? 1000. : 1.e6 * max_duration;
+  avg_duration = (avg_duration < 1.e-3) ? 1000. : 1.e6 * avg_duration;
 
   /* pilot study */
   repeat_pilot = 11 - log(samplesize)/M_LN2;
   if (repeat_pilot<1) repeat_pilot = 1;
 
-  size_pilot = samplesize;
-  if (samplesize >= 1000) size_pilot = 500;
+  size_pilot = min(samplesize,1000);
 
   time_pilot = unur_test_timing_total_run(par, size_pilot, repeat_pilot);
-  if (time_pilot < 0) return -1.;
+  if (time_pilot < 0) return -1.;   /* init failed */
 
-  if (samplesize >= 1000) {
+  if (samplesize > 1000) {
     /* make second pilot study with double sample size */
     time_2nd = unur_test_timing_total_run(par, 2*size_pilot, repeat_pilot);
     if (time_2nd < 0) return -1.;
@@ -277,35 +275,36 @@ unur_test_timing_total( const UNUR_PAR *par, int samplesize, double max_duration
   
   /* now run timing test */
 
-  repeat_result = (int) (max_duration / time_pilot);
+  repeat_result = (int) (avg_duration / time_pilot);
   if (repeat_result > 1000) repeat_result = 1000;
   /* there is no need for more than 1000 repetitions */
 
   size_result = samplesize;
 
-  if (repeat_result <= repeat_pilot && size_result == size_pilot) {
-    /* there is no need to run this test again */
-    time_result = time_pilot;
-  }
-  else {
-    if (repeat_result >= 3) {
-      time_result =  unur_test_timing_total_run(par,size_result,repeat_result);
+  if (repeat_result >= 1) {
+    repeat_result = max(4,repeat_result);
+    if (repeat_result <= repeat_pilot && size_result == size_pilot) {
+      /* there is no need to run this test again */
+      time_result = time_pilot;
     }
     else {
-      /* do not generate the full sample */
-      repeat_result = 3;
-      size_result = (int) ((max_duration - d)/k);
-      size_result /= 6;
       time_result =  unur_test_timing_total_run(par,size_result,repeat_result);
-      time_2nd =  unur_test_timing_total_run(par,2*size_result,repeat_result);
-      /* estimate time from shorter sample sizes */
-      d = 2*time_result - time_2nd;
-      if (d<0.) d=0.;
-      k = (time_2nd - time_result)/size_result;
-      if (k<=0.) k = time_result/size_result;
-      time_result = d + samplesize * k;
-    }      
+    }
   }
+  else {
+    /* do not generate the full sample */
+    repeat_result = 4;
+    size_result = (int) ((avg_duration - d)/k);
+    size_result /= 2;
+    time_result =  unur_test_timing_total_run(par,size_result,repeat_result);
+    time_2nd =  unur_test_timing_total_run(par,2*size_result,repeat_result);
+    /* estimate time from shorter sample sizes */
+    d = 2*time_result - time_2nd;
+    if (d<0.) d=0.;
+    k = (time_2nd - time_result)/size_result;
+    if (k<=0.) k = time_result/size_result;
+    time_result = d + samplesize * k;
+  }      
 
   /* o.k. */
   return time_result;
@@ -314,14 +313,14 @@ unur_test_timing_total( const UNUR_PAR *par, int samplesize, double max_duration
 
 /*---------------------------------------------------------------------------*/
 
-double unur_test_timing_total_run( const struct unur_par *par, int samplesize, int repeat )
+double unur_test_timing_total_run( const struct unur_par *par, int samplesize, int n_repeat )
      /*----------------------------------------------------------------------*/
      /*  estimate average time (in micro seconds) for sampling               */
      /*                                                                      */
      /* parameters:                                                          */
      /*   par        ... pointer to parameters for generator object          */
      /*   samplesize ... sample size                                         */
-     /*   repeat     ... number of samples (repetitions of sampling)         */
+     /*   n_repeat   ... number of samples (repetitions of sampling)         */
      /*                                                                      */
      /* return:                                                              */
      /*   total time in micro seconds                                        */
@@ -336,24 +335,24 @@ double unur_test_timing_total_run( const struct unur_par *par, int samplesize, i
   int n, rep;
   double time_total;           /* total time for sampling                    */
   double time_start;
-  int k;
+  int i,k;
   double x;
   double *vec = NULL;
 
   /* check parameter */
   _unur_check_NULL(test_name,par,-1.);
-  if (samplesize < 0 || repeat < 1) 
+  if (samplesize < 0 || n_repeat < 1) 
     return -1.;
 
   /* we need an array for storing timing results */
-  time = _unur_malloc( repeat * sizeof(double) );
+  time = _unur_malloc( n_repeat * sizeof(double) );
 
-  /* we need an array for an random vector */
+  /* we need an array for a random vector */
   if (_unur_gen_is_vec(par))
     vec = _unur_malloc( par->distr->dim * sizeof(double) );
 
   /* make samples */
-  for (rep = 0; rep < repeat; rep++) {
+  for (rep = 0; rep < n_repeat; rep++) {
 
     /* make a working copy of parameter object */
     par_tmp = _unur_malloc(sizeof(struct unur_par));
@@ -364,9 +363,11 @@ double unur_test_timing_total_run( const struct unur_par *par, int samplesize, i
 
     /* make generator object (init) */
     gen_tmp = _unur_init(par_tmp);
-    if (!gen_tmp) {
+    if (!gen_tmp) {  /* init failed */
       if (vec) free(vec);
       free(time);
+      /* wait a little bit till writing log entry is completed */
+      for (x=0,i=0; i<100000; i++) x+=i;  
       return -1.;
     }
 
@@ -396,8 +397,8 @@ double unur_test_timing_total_run( const struct unur_par *par, int samplesize, i
   }
 
   /* compute median */
-  qsort( time, repeat, sizeof(double), compare_doubles);
-  time_total = time[repeat/2];
+  qsort( time, n_repeat, sizeof(double), compare_doubles);
+  time_total = time[n_repeat/2];
 
   /* free memory */
   if (vec) free(vec);

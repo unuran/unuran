@@ -135,15 +135,17 @@ double unur_test_timing_exponential( const UNUR_PAR *parameters, int log_samples
    unur_test_timing() to compute the relative timings results.
 */
 
-double unur_test_timing_total( const UNUR_PAR *parameters, int samplesize, double max_duration );
+double unur_test_timing_total( const UNUR_PAR *parameters, int samplesize, double avg_duration );
 /* 
    Timing. @var{parameters} is an parameter object for which average
    times a sample of size @var{samplesize} (including setup) are
    estimated. Thus sampling is repeated and the median of these timings 
    is returned (in micro seconds). The number of iterations is computed
    automatically such that the total amount of time necessary for the
-   test does not exceed @var{max_duration} (given in seconds).
-   
+   test ist approximately @var{avg_duration} (given in seconds).
+   However, for very slow generator with expensive setup time the time
+   necessary for this test may be (much) larger.
+
    If an error occurs then @code{-1} is returned.
 
    Notice: All timing results are subject to heavy changes. Reruning

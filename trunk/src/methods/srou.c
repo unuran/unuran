@@ -568,45 +568,83 @@ unur_srou_sample_check( struct unur_gen *gen )
      /*   return 0.                                                          */
      /*----------------------------------------------------------------------*/
 { 
-  double u,v,x,fx,xfx,xx;
+  double u,uu,v,x,fx,fnx,xfx,xfnx,xx;
 
   /* check arguments */
   CHECK_NULL(gen,0.);
   COOKIE_CHECK(gen,CK_SROU_GEN,0.);
 
-  while (1) {
-    /* generate point uniformly on rectangle */
-    u = _unur_call_urng(gen) * GEN.um;
-    if (u==0.) continue;
-    v = GEN.vl + _unur_call_urng(gen) * (GEN.vr - GEN.vl);
+  if (gen->variant & SROU_VARFLAG_MIRROR) {
+    /* use mirror principle */
 
-    /* ratio */
-    x = v/u;
+    while (1) {
+      /* generate point uniformly on rectangle */
+      u = _unur_call_urng(gen) * GEN.um * SQRT2;
+      if (u==0.) continue;
+      v = GEN.vl + _unur_call_urng(gen) * (GEN.vr - GEN.vl);
 
-    /* evaluate p.d.f. */
-    fx = PDF(x + GEN.mode);
+      /* ratio */
+      x = v/u;
 
-    /* check hat */
-    xfx = x * sqrt(fx);
-    if ( (GEN.um*GEN.um < fx) || (xfx < GEN.vl) || (xfx > GEN.vr) )
-      _unur_error(GENTYPE,UNUR_ERR_SAMPLE,"pdf(x) > hat(x)");
+      /* evaluate p.d.f. */
+      fx = PDF(x + GEN.mode);
+      fnx = PDF(-x + GEN.mode);
+      uu = u * u;
 
-    /* evaluate squeeze */
-    if ( (gen->variant & SROU_VARFLAG_SQUEEZE) &&
-	 (x >= GEN.xl) && 
-	 (x <= GEN.xr ) && 
-	 (u < GEN.um) ) {
-      xx = v / (GEN.um - u);
-      if ( (xx >= GEN.xl) && (xx <= GEN.xr ) )
+      /* check hat */
+      xfx = x * sqrt(fx);
+      xfnx = -x * sqrt(fnx);
+      if ( (2 * GEN.um*GEN.um < fx + fnx) 
+	   || (xfx < GEN.vl) || (xfx > GEN.vr)
+	   || (xfnx < GEN.vl) || (xfnx > GEN.vr) )
+	_unur_error(GENTYPE,UNUR_ERR_SAMPLE,"pdf(x) > hat(x)");
+
+      /* accept or reject */
+      if (uu <= fx)
 	return (x + GEN.mode);
+      
+      /* try mirrored p.d.f */
+      if (uu <= fx + fnx)
+	return (-x + GEN.mode);
     }
+  }
 
-    /* compute X */
-    x += GEN.mode;
+  else { /* do not use mirror principle */
 
+    while (1) {
+      /* generate point uniformly on rectangle */
+      u = _unur_call_urng(gen) * GEN.um;
+      if (u==0.) continue;
+      v = GEN.vl + _unur_call_urng(gen) * (GEN.vr - GEN.vl);
+      
+      /* ratio */
+      x = v/u;
+
+      /* evaluate p.d.f. */
+      fx = PDF(x + GEN.mode);
+      
+      /* check hat */
+      xfx = x * sqrt(fx);
+      if ( (GEN.um*GEN.um < fx) || (xfx < GEN.vl) || (xfx > GEN.vr) )
+	_unur_error(GENTYPE,UNUR_ERR_SAMPLE,"pdf(x) > hat(x)");
+      
+      /* evaluate squeeze */
+      if ( (gen->variant & SROU_VARFLAG_SQUEEZE) &&
+	   (x >= GEN.xl) && 
+	   (x <= GEN.xr ) && 
+	   (u < GEN.um) ) {
+	xx = v / (GEN.um - u);
+	if ( (xx >= GEN.xl) && (xx <= GEN.xr ) )
+	  return (x + GEN.mode);
+      }
+      
+      /* compute X */
+      x += GEN.mode;
+      
     /* accept or reject */
-    if (u*u <= fx)
-      return x;
+      if (u*u <= fx)
+	return x;
+    }
   }
 
 } /* end of unur_srou_sample_check() */

@@ -530,11 +530,13 @@ unur_distr_cvec_set_covar( struct unur_distr *distr, const double *covar )
 #define idx(a,b) (a*dim+b)
 
   int i,j;
-  int dim = distr->dim;
+  int dim;
 
   /* check arguments */
   _unur_check_NULL( NULL, distr, UNUR_ERR_NULL );
   _unur_check_distr_object( distr, CVEC, UNUR_ERR_DISTR_INVALID );
+
+  dim = distr->dim;
 
   /* mark as unknown */
   distr->set &= ~(UNUR_DISTR_SET_COVAR | UNUR_DISTR_SET_CHOLESKY | UNUR_DISTR_SET_COVAR_INV);
@@ -669,11 +671,13 @@ unur_distr_cvec_get_covar_inv( struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
 {
   double det; /* determinant of covariance matrix */
-  int dim = distr->dim;
+  int dim;
 
   /* check arguments */
   _unur_check_NULL( NULL, distr, NULL );
   _unur_check_distr_object( distr, CVEC, NULL );
+
+  dim = distr->dim;
 
   /* covariance matrix known ? */
   if ( !(distr->set & UNUR_DISTR_SET_COVAR) ) {

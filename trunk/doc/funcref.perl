@@ -26,7 +26,7 @@
 #          Beispiel:
 #             =METHODS NINV Numerical INVersion 
 #                     
-#          IMMEDIATLY following comments (up to the first
+#          IMMEDIATLY following lines of comment (up to the first
 #          non-comment-blank line) will be used as description
 #          of the method and written to the output file. 
 #          
@@ -35,7 +35,7 @@
 #          with `unur_' and endingd with `(...)' will be 
 #          documented in the output file.
 #
-#          IMMEDIATLY following comments (up to the first
+#          IMMEDIATLY following lines of comment (up to the first
 #          non-comment-blank line) will be used as description
 #          of the method and written to the output file. 
 #          Comments bevore the function declaration or after
@@ -50,12 +50,36 @@
 #
 # =[A-Z,0-9]* Unknown `=...' key words will produce warnings  
 #
-# =ERRORCODE not in use
+# =ERRORCODE this key word is not in use
 #
-# keywords used by other scripts (no warnings):
-#    =DEF
-#    =REQUIRED
-# 
+# -----------------------------------------------------------------------
+#
+# keywords used by other scripts:
+#
+# =DEF
+#    usage: 
+#      XXX.kkk = 44.444  /* =DEF METHOD value some words of description
+#                            maybe some lines                   */
+#      this will produce following output:
+#      "wert = 44.444   some words of description maybe some lines"
+#      "METHOD" is the method using the parameter
+#    The begin of the comment ("\*") has to be in the same line as
+#    the 
+#    The same holds for `METHOD' and `value'. The description may
+#    begin in the following line. There also are consecutive blocks
+#    of comment allowed (no blank line in between).
+#  
+#
+# =REQUIRED
+#    usage: =REQUIRED Method
+#          (e.g =REQUIRED NINV)
+#
+#          IMMEDIATLY following comments (up to the first
+#          non-comment-blank line) will be used as description
+#          of the method and written to the output file. 
+#          Comments bevore the function declaration or after
+#          a blank line will be handled as internal information
+#    
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 

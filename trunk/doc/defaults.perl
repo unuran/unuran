@@ -9,12 +9,12 @@
 # Input:   c-files
 # Output:  $OUTFILE contains docomentation in texinfo format
 # 
-# E. JANKA und G. TIRLER
+# E. JANKA
 # $Id$
 #
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #
-# This script searches for the followin key word:
+# This script searches for the following key word:
 #
 # =DEF
 #
@@ -114,10 +114,13 @@ while($_ = <>)
 
     # output
     if ($PRINT !~ /^\s*$/){
-	print OUTFILE $PRINT;
+	print OUTFILE join '', split /\(=>\)/, $PRINT;
     }
 
 }
+
+
+
 
 
 

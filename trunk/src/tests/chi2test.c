@@ -535,7 +535,7 @@ _unur_test_chi2_vec ( struct unur_gen *gen,
      /*   out        ... output stream                                       */
      /*                                                                      */
      /* return:                                                              */
-     /*   minimal p-value of all test statistics under H_0                   */
+     /*   minimal p-value * number_of_tests of all test statistics under H_0 */
      /*                                                                      */
      /* error:                                                               */
      /*   -2. ... missing data                                               */
@@ -719,7 +719,7 @@ _unur_test_chi2_vec ( struct unur_gen *gen,
 
   if (verbose >= 1) {
     fprintf(out,"\nSummary:\n");
-    fprintf(out,"  Minimal p-value = %g:\n\n",pval_min);
+    fprintf(out,"  Minimal p-value * number_of_tests = %g:\n\n",pval_min*(dim+1));
   }
 
 free_memory:
@@ -734,7 +734,7 @@ free_memory:
   if (marginal_cdf)  free (marginal_cdf);
 
   /* return result of test */
-  return pval_min;
+  return pval_min*(dim+1);
 
 #undef idx
 #undef DISTR

@@ -29,5 +29,6 @@ DISTCLEANFILES = \
  unur_fp_const_source.h
 
 MAINTAINERCLEANFILES = \
- Makefile.in
+ Makefile.in \
+ unur_fp_const_source.h
 

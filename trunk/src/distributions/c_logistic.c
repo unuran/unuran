@@ -103,6 +103,7 @@ _unur_pdf_logistic( double x, UNUR_DISTR *distr )
   /* standard form */
 
   ex = exp(-x);
+
   return (NORMCONSTANT * ex / ((1. + ex) * (1. + ex)));
 
 } /* end of _unur_pdf_logistic() */
@@ -204,16 +205,16 @@ _unur_set_params_logistic( UNUR_DISTR *distr, double *params, int n_params )
   /* copy parameters for standard form: none */
 
   /* default parameters */
-  DISTR.beta  = 1.;
   DISTR.alpha = 0.;
+  DISTR.beta  = 1.;
 
   /* copy optional parameters */
   /* copy parameters */
   switch (n_params) {
   case 2:
-    DISTR.alpha = alpha;
-  case 1:
     DISTR.beta = beta;
+  case 1:
+    DISTR.alpha = alpha;
     n_params = 2;           /* number of parameters for non-standard form */
   default:
     break;

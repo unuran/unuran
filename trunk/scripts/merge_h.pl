@@ -1,5 +1,7 @@
 #!/usr/bin/perl
 
+$DEBUG = 0;
+
 ############################################################
 # $Id$
 
@@ -128,11 +130,11 @@ sub scan_file {
 
 	# have found a file to be included ...
 	my $include_file = $1;
-	print STDERR "$include_file  ";
+	print STDERR "$include_file  " if $DEBUG;
 
 	# we include header files only once ...
 	if (defined( $header_included{$include_file} ) ) {
-	    print STDERR "already included ... skip\n";
+	    print STDERR "already included ... skip\n" if $DEBUG;
 	    next;
 	}
 
@@ -140,13 +142,13 @@ sub scan_file {
 	
 	# we do not include header files out of the subtree ...
 	unless (defined( $header_files{$include_file} ) ) {
-	    print STDERR "file not found in subtree ... #include\n";
+	    print STDERR "file not found in subtree ... #include\n" if $DEBUG;
 	    print "\n$line\n\n";
 	    next;
 	}
 	    
 	# have found header file ...
-	print STDERR "to be inserted\n";
+	print STDERR "to be inserted\n" if $DEBUG;
 	print "/*-----*/\n";
 	print "/* `$include_file' */\n";
 

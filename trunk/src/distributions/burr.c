@@ -290,12 +290,12 @@ unur_distr_burr( double *params, int n_params )
   register struct unur_distr *distr;
 
   /* check new parameter for generator */
-  CHECK_NULL(params,RETURN_NULL);
-  if (n_params < 2 || n_params > 3) {
-    _unur_error(distr_name,UNUR_ERR_DISTR_NPARAMS,"");
-    return NULL;
-  }
-  
+  if (n_params < 2) {
+    _unur_error(distr_name,UNUR_ERR_DISTR_NPARAMS,"too few"); return NULL; }
+  if (n_params > 3)
+    _unur_warning(distr_name,UNUR_ERR_DISTR_NPARAMS,"too many");
+  CHECK_NULL(params,NULL);
+
   /* get new (empty) distribution object */
   distr = unur_distr_cont_new();
 
@@ -339,10 +339,12 @@ unur_distr_burr( double *params, int n_params )
   case UNUR_DISTR_BURR_IX:
   case UNUR_DISTR_BURR_XII:
     if (n_params < 3) {
-      _unur_error(distr_name,UNUR_ERR_DISTR_NPARAMS,"");
+      _unur_error(distr_name,UNUR_ERR_DISTR_NPARAMS,"too few");
       free( distr ); return NULL;
     }
-  default: /* o.k. */
+  default: /* all other cases */
+    if (n_params == 3)
+      _unur_warning(distr_name,UNUR_ERR_DISTR_NPARAMS,"too many");
   }
 
   /* copy parameters */

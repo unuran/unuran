@@ -102,9 +102,8 @@ unur_distr_slash( double *params, int n_params )
   register struct unur_distr *distr;
 
   /* check new parameter for generator */
-  if (n_params > 0) {
-    _unur_warning(distr_name,UNUR_ERR_DISTR_NPARAMS,"");
-  }
+  if (n_params > 0)
+    _unur_warning(distr_name,UNUR_ERR_DISTR_NPARAMS,"too many");
 
   /* get new (empty) distribution object */
   distr = unur_distr_cont_new();
@@ -157,4 +156,3 @@ unur_distr_slash( double *params, int n_params )
 /*---------------------------------------------------------------------------*/
 #undef nu
 /*---------------------------------------------------------------------------*/
-

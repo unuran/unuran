@@ -146,12 +146,11 @@ unur_distr_normal( double *params, int n_params )
   register struct unur_distr *distr;
 
   /* check new parameter for generator */
-  if (n_params < 0 || n_params > 2) {
-    _unur_error(distr_name,UNUR_ERR_DISTR_NPARAMS,"");
-    return NULL;
-  }
+  if (n_params < 0) n_params = 0;
+  if (n_params > 2)
+    _unur_warning(distr_name,UNUR_ERR_DISTR_NPARAMS,"too many");
   if (n_params > 0)
-    CHECK_NULL(params,RETURN_NULL);
+    CHECK_NULL(params,NULL);
 
   /* get new (empty) distribution object */
   distr = unur_distr_cont_new();

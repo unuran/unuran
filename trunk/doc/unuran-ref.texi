@@ -421,11 +421,11 @@ All parameters have default settings documented in @ref{Defaults}.
 * TDR::  Trandformed Density Rejection
 * UNIF:: ???
 * UTDR:: Universal Transformed Density Rejection (3-point method)
-* VMT:: Vector Matrix Transformation
 * VEMPK:: (Vector) EMPirical distribution with Kernel smoothing
+* VMT:: Vector Matrix Transformation
 @end menu
 
-@include ref_methods.texi
+@include ref_method_all.texi
 
 @node Requirements
 @section Requirements of the methods
@@ -560,8 +560,10 @@ the generator object exists. Oters can change parameters during sampling.
 It is quite easy to identify the kind of a specific function
 when looking at the passed arguments.
 
-For information about the Methods themselfes, see @ref{Description}.
-@include ref_method_functions.texi
+The functions will be explained after the description of the methods:
+@ref{Description}.
+
+@c @include ref_method_functions.texi
 
 @c --------------------------------------------------------------------
 

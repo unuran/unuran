@@ -56,8 +56,10 @@ inline static void beta_bb_init( struct unur_gen *gen );
 #define PAR        par->data.cstd
 #define uniform()  _unur_call_urng(gen)
 
-#define a (GEN.pdf_param[0])
-#define b (GEN.pdf_param[1])
+#define a     (GEN.pdf_param[0])
+#define b     (GEN.pdf_param[1])
+#define a_par (par->distr->data.cont.params[0])
+#define b_par (par->distr->data.cont.params[1])
 #define boundary_left  (GEN.pdf_param[2])
 #define boundary_right (GEN.pdf_param[3])
 
@@ -91,7 +93,7 @@ _unur_stdgen_beta_init( struct unur_par *par, struct unur_gen *gen )
 
   switch (par->variant) {
   case 0:  /* Rejection with log-logistic envelopes */  /* DEFAULT */
-    if( (a > 1.) && (b > 1.) ) {
+    if( (a_par > 1.) && (b_par > 1.) ) {
       _unur_cstd_set_sampling_routine( par,gen,unur_stdgen_sample_beta_bb );
       beta_bb_init( gen );
     }
@@ -633,6 +635,8 @@ double bsprc(unsigned long *seed, double a, double b)
 /*---------------------------------------------------------------------------*/
 #undef a
 #undef b
+#undef a_par
+#undef b_par
 #undef boundary_left
 #undef boundary_right
 /*---------------------------------------------------------------------------*/

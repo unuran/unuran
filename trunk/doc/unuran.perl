@@ -7,10 +7,10 @@
 # 
 # Aufruf:  ./unuran.perl ../src/methods/*.h
 #      (unuran.perl liegt im Verzeichnis /unuran/doc/
-# Input:  
-# Output:
+# Input:   header-files
+# Output:  $OUTFILE enthaelt texinfo-format
 # 
-# E.JANKA und G.TIRLER  August 2000
+# E. JANKA und G. TIRLER
 # $Id$
 #
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -28,10 +28,10 @@
 #          name       ... Name der Methode, Nur ein Wort!
 #          [Langtext] ... optional, Lange Beschreibung
 #          Beispiel:
-#             =METHODS NINV Numerical inversion 
+#             =METHODS NINV Numerical INVersion 
 #                     
 #          folgende Kommentarzeilen/Block (bis zur ersten
-#          Leerzeile) wird in TEXInfoformat ausgegeben
+#          Leerzeile) wird in TEXInfo-format ausgegeben
 #          
 # =ROUTINES
 #          sucht C function zwischen =ROUTINES und =END 
@@ -163,25 +163,15 @@ while($_ = <>)
   if ($KOMMENT == 1){
 
      # einzelne Kommentarzeile  (beginnnen mit "/*" und enden mit "*/")
-     if ( $_ =~ /^(\s*\/\*\s*)(.*)?(\s*\*\/)/ ){
-        $BLOCK = 0;
+     if ( $_ =~ /^(\s*\/\*\s*)(.*?)(\s*\*\/)/ ){
 	$PRINT = join  '',$2,"\n";
-      }
-     # Zeile beginnt mit Kommentarblock-Ende
-     elsif ($BLOCK == 1 && $_ =~ /\s*\*\// ){
-	 $BLOCK = 0;
-         $PRINT = "";
      }
      # Kommentarzeile in einem Kommentarblock (nicht erste Zeile)
-     elsif( $BLOCK == 1 && $_ =~ /^(\s*)(.*)\s*(\*\/)?/ ){
+     elsif( $BLOCK == 1 && $_ =~ /^\s*(\*\/)?(.*?)\s*(\*\/)?$/ ){
 	 $PRINT = join '', $2, " ";
-         # Kommentarblocke enten mit "*/"
-	 if ($_ =~ /\*\//){
-	     $BLOCK = 0;
-	 }
      }
      # Beginn eines Kommentarblocks (Zeile beginnt mit "/*"
-     # und darf "*/" nicht enthalten)
+     # und darf "*/" nicht enthalten (->bereits oben behandelt))
      elsif($_ =~ /^(\s*\/\*\s*)(.*)/ ){
        $PRINT = join '', $2, " ";
        $BLOCK = 1;
@@ -194,11 +184,12 @@ while($_ = <>)
         print OUTFILE join ' ', split /\(=>\)/, $PRINT;
      }
 
-     # Ende einer Kommentarzeile/blocks -> Zeilenumbruch 
+     # Kommentarteil ende ("*/") -> Zeilenumbruch, $BLOCK=0 
      if ($_ =~/\*\//){
          print OUTFILE "\@*\n";
+         $BLOCK = 0;
      }
 
- }
+ }  # --- if (KOMMENT = 1) ende ---
 
 }

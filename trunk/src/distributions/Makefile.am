@@ -41,9 +41,9 @@ libdistributions_a_SOURCES = \
 
 noinst_HEADERS = \
  unuran_distributions.h \
+ unur_stddistr.h \
  source_distributions.h \
- source_specfunct.h \
- source_stddistr.h
+ source_specfunct.h
 
 # clean backup files too
 clean-local:

@@ -43,7 +43,6 @@
 struct unur_empk_par {
   /* the observed sample is stored in the distribution object */
 
-  UNUR_DISTR *kern;    /* kernel distribution                                */
   UNUR_GEN *kerngen;   /* random variate generator for kernel                */
 
   double  alpha;       /* alpha is used to compute the optimal bandwidth from
@@ -72,6 +71,9 @@ struct unur_empk_gen {
   int     n_observ;    /* number of observations                             */
 
   UNUR_GEN *kerngen;   /* random variate generator for kernel                */
+
+  double  smoothing;   /* determines how "smooth" the estimated density will be */
+  double  kernvar;     /* variance of used kernel, only used if varcor == 1  */
 
   double  bwidth;      /* bandwidth for kernel density estimation            */
   double  mean_observ; /* mean of observed data                              */

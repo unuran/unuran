@@ -4,13 +4,13 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   FILE: source_stddistr.h                                                 *
+ *   FILE: unur_stddistr.h                                                   *
  *                                                                           *
  *   PURPOSE:                                                                *
  *         defines identifiers for standard distributions                    *
  *                                                                           *
  *   USAGE:                                                                  *
- *         only included in ../methods/distr.c and source_distributions.h    *
+ *         only included in unuran_distributions.h                           *
  *                                                                           *
  *****************************************************************************
      $Id$
@@ -37,8 +37,8 @@
  *****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
-#ifndef __SOURCE_STDDISTR_H_SEEN
-#define __SOURCE_STDDISTR_H_SEEN
+#ifndef __UNUR_STDDISTR_H_SEEN
+#define __UNUR_STDDISTR_H_SEEN
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*/
@@ -60,14 +60,16 @@ enum {
   UNUR_DISTR_LOGISTIC,            /*    X     X     .     X     X     .      */
   UNUR_DISTR_LOGNORMAL,           /*    X     .     .     X     .     .      */
   UNUR_DISTR_LOMAX,               /*    X     X     X     X     .     .      */
-  UNUR_DISTR_NORMAL,              /*    X     X     X     X     X     .      */
+  UNUR_DISTR_NORMAL   = 0x0100u,  /*    X     X     X     X     X     .      */
+   UNUR_DISTR_GAUSSIAN = 0x0100u, /*    same as NORMAL                       */
   UNUR_DISTR_PARETO,              /*    X     X     X     X     .     .      */
   UNUR_DISTR_POWEREXPONENTIAL,    /*    X     .     .     X     X     .      */
   UNUR_DISTR_RAYLEIGH,            /*    X     X     X     X     .     .      */
   UNUR_DISTR_SLASH,               /*    X     .     X     X     X     .      */
   UNUR_DISTR_STUDENT,             /*    X     .     X     X     X     .      */
   UNUR_DISTR_TRIANGULAR,          /*    X     X     X     X     X     .      */
-  UNUR_DISTR_UNIFORM,             /*    X     X     X     X     .     .      */
+  UNUR_DISTR_UNIFORM = 0x0200u,   /*    X     X     X     X     .     .      */
+   UNUR_DISTR_BOXCAR = 0x0200u,   /*    same as UNIFORM                      */
   UNUR_DISTR_WEIBULL,             /*    X     X     X     X     X     .      */
 
   UNUR_DISTR_BURR_I,              /*    .     X     .     .     X     .      */
@@ -94,7 +96,7 @@ enum {
 };
 
 /*---------------------------------------------------------------------------*/
-#endif  /* __SOURCE_STDDISTR_H_SEEN */
+#endif  /* __UNUR_STDDISTR_H_SEEN */
 /*---------------------------------------------------------------------------*/
 
 

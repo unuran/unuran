@@ -37,6 +37,8 @@ int main()
   unur_distr_cemp_set_data( distr, data, 13 );
 
   par = unur_empk_new( distr );
+  unur_empk_set_kernel(par, UNUR_DISTR_GAUSSIAN);
+
   gen = unur_init( par );
 
   unur_test_printsample(gen,10,8);

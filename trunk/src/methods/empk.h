@@ -54,20 +54,31 @@ UNUR_PAR *unur_empk_new( UNUR_DISTR *distribution );
 
 /*...........................................................................*/
 
-int unur_empk_set_kernel( UNUR_PAR *parameters, UNUR_DISTR *kernel);
+int unur_empk_set_kernel( UNUR_PAR *parameters, unsigned kernel);
 /* 
-   Set kernel distribution.
+   Select one of the supported kernel distributions. Currently the following 
+   kernels are supported:
+
+     UNUR_DISTR_GAUSSIAN  ... Gaussian (normal) kernel
+     UNUR_DISTR_BOXCAR    ... Boxcar (uniform, rectangular) kernel
+     UNUR_DISTR_STUDENT   ... t3 kernel (Student's distribution with 3 degrees of freedom)
+     UNUR_DISTR_LOGISTIC  ... logistic kernel
+
+   For other kernels (including kernels with Student's distribution other with
+   3 degrees of freedom) use the unur_empk_set_kernelgen() call.
+   However then unur_empk_set_alpha() and (if variance correction is used)
+   unur_empk_set_kernelvar() has to be called.
+
+   It is not possible to call unur_empk_set_kernel() twice.
+
    Default is a Gaussian kernel.
 */
 
 int unur_empk_set_kernelgen( UNUR_PAR *parameters, UNUR_GEN *kernelgen);
 /* 
    Set generator for the kernel used the density estimation.
-   It is not necessary to set both the kernel and the kernel generator.
-   If no kernel generator is provided one is automatically created
-   from the distribution object given by the unur_empk_set_kernel()
-   call. On the other hand the unur_empk_set_kernelgen() overwrites
-   the unur_empk_set_kernel() call.
+   It is not possible to call unur_empk_set_kernelgen() after a standard kernel
+   has been selected by a unur_empk_set_kernel() call.
    Notice that the uniform random number generator of the kernel
    generator is overwritten during the unur_init() and at each
    unur_chg_urng() call with generator for the empirical
@@ -81,7 +92,7 @@ int unur_empk_set_alpha( UNUR_PAR *parameters, double alpha );
   view of minimizing the mean integrated square error (MISE).
   alpha depends on the type of kernel K being used and is given by 
      alpha(K) = Var(K)^(-2/5){ \int K(t)^2 dt}^(1/5)
-  For standard kernels (see ????) alpha is computed by the algorithm.
+  For standard kernels (see above) alpha is computed by the algorithm.
   For all other kernels, it must be given. 
 */
 /*
@@ -108,6 +119,11 @@ int unur_empk_set_smoothing( UNUR_PAR *parameters, double smoothing );
   Default is 1.
 */
 
+int unur_empk_chg_smoothing( UNUR_GEN *generator, double smoothing );
+/* 
+   Change smoothing factor.
+*/
+
 int unur_empk_set_varcor( UNUR_PAR *parameters, int varcor );
 /*
   Set whether the variance corrected version of the density estimation
@@ -117,11 +133,16 @@ int unur_empk_set_varcor( UNUR_PAR *parameters, int varcor );
   Default is TRUE.
 */
 
+int unur_empk_chg_varcor( UNUR_GEN *generator, int varcor );
+/* 
+   Switch variance correction in generator on/off.
+*/
+
 int unur_empk_set_kernelvar( UNUR_PAR *parameters, double kernvar );
 /*
   Variance of the used kernel. It is only required for the variance
   reduced version of the density estimation (which is used by default).
-  For standard kernels (see ????) kernvar is computed by the algorithm.
+  For standard kernels (see above) kernvar is computed by the algorithm.
   Default is 1.
 */
 

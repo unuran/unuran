@@ -77,7 +77,7 @@ void   unur_sample_vec(UNUR_GEN *generator, double *vector);
 /*---------------------------------------------------------------------------*/
 /* Destroy (free) generator object                                           */
 
-void   unur_free( UNUR_GEN *gen );
+void  unur_free( UNUR_GEN *gen );
 /*
   Destroy (free) the given generator object.
 */
@@ -111,6 +111,11 @@ UNUR_DISTR *unur_get_distr( UNUR_GEN *generator );
 */
 
 /*---------------------------------------------------------------------------*/
+
+
+
+
+
 
 
 

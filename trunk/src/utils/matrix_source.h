@@ -60,4 +60,8 @@ double _unur_matrix_qf (int dim, double *x, double *A );
 int _unur_matrix_debug (int dim, const double *M, const char *info, const char *genid );
 /* Writes the matrix-elements to the log file */
 
+int _unur_matrix_eigensystem (int dim, const double *M, double *values, double *vectors );
+/* Calculates eigenvalues and eigenvectors of real symmetric matrix M */
+
+
 /*--------------------------------------------------------------------------*/

@@ -425,7 +425,7 @@ _unur_matrix_invert_matrix(int dim, const double *A, double detmin, double *Ainv
   CHECK_NULL(det,UNUR_ERR_NULL);
 	  if (dim<2) {
 	    _unur_error("matrix",UNUR_ERR_GENERIC,"dimension < 2");
-	//    return UNUR_ERR_GENERIC;
+	    return UNUR_ERR_GENERIC;
 	  }
 
 	  /* allocate working space */
@@ -599,7 +599,7 @@ _unur_matrix_invert_matrix(int dim, const double *A, double detmin, double *Ainv
 	  CHECK_NULL(S,UNUR_ERR_NULL);
 	  if (dim<2) {
 	    _unur_error("matrix",UNUR_ERR_GENERIC,"dimension < 2");
-	//    return UNUR_ERR_GENERIC;
+	    return UNUR_ERR_GENERIC;
   }
 
   L[idx(0,0)] = sqrt( S[idx(0,0)] );

@@ -70,10 +70,10 @@ UNUR_DISTR *unur_distr_discr_new( void );
    case there are also a couple of derived parameters that are not
    required when a PV is given.
 
-   It is not possible to set both a PMF and a PV directly. However, a
-   PV can be computed from a PMF by means of a
-   unur_distr_discr_make_pv() call.
-   If both a PV and a PMF are given in the distribution object it
+   It is not possible to set both a PMF and a PV directly. However, the
+   PV can be computed from the PMF (or the CDF if no PMF is available)
+   by means of a unur_distr_discr_make_pv() call.
+   If both the PV and the PMF are given in the distribution object it
    depends on the generation method which of these is used.
 */
 
@@ -141,6 +141,9 @@ int unur_distr_discr_set_cdf( UNUR_DISTR *distribution, UNUR_FUNCT_DISCR *cdf );
    result for all integers @var{k}. E.g., if the domain of a given
    PMF is the interval @{1,2,3,@dots{},100@}, than the given function
    must return @code{0.0} for all points outside this interval.
+
+   The default domain for the PMF or CDF is [@code{0}, @code{INT_MAX}].
+   The domain can be changed using a unur_distr_discr_set_domain() call.
 
    It is not possible to change such a function. Once the PMF or
    CDF is set it cannot be overwritten. A new distribution object
@@ -258,8 +261,8 @@ int unur_distr_discr_set_domain( UNUR_DISTR *distribution, int left, int right )
    @var{left} + size of PV - 1).
    Notice that @code{INT_MAX} and @code{INT_MIN} are interpreted as
    (minus) infinity.
-   Default is [@code{INT_MIN}, @code{INT_MAX}] when a PMF is used for generation,
-   and [0, size of PV - 1] when a PV is used.
+
+   Default is [@code{0}, @code{INT_MAX}].
 */
 
 int unur_distr_discr_get_domain( const UNUR_DISTR *distribution, int *left, int *right );

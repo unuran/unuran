@@ -162,7 +162,7 @@ unur_distr_discr_new( void )
 				      (initialized to avoid accidently floating
 				      point exception                        */
 
-  DISTR.trunc[0] = DISTR.domain[0] = INT_MIN;   /* left boundary of domain   */
+  DISTR.trunc[0] = DISTR.domain[0] = 0;         /* left boundary of domain   */
   DISTR.trunc[1] = DISTR.domain[1] = INT_MAX;   /* right boundary of domain  */
 
   DISTR.mode     = 0;              /* location of mode                       */
@@ -295,10 +295,6 @@ unur_distr_discr_set_pv( struct unur_distr *distr, const double *pv, int n_pv )
     return 0;
   }
 
-  /* no domain given --> set left boundary to 0 */
-  if (!(distr->set & UNUR_DISTR_SET_DOMAIN))
-    DISTR.domain[0] = 0;
-
   /* n_pv must not be too large */
   if ( (DISTR.domain[0] > 0) && ((unsigned)DISTR.domain[0] + (unsigned)n_pv > INT_MAX) ) {
     /* n_pv too large, causes overflow */
@@ -350,15 +346,9 @@ unur_distr_discr_make_pv( struct unur_distr *distr )
   _unur_check_NULL( NULL, distr, 0 );
   _unur_check_distr_object( distr, DISCR, 0 );
 
-  /* PMF required */
-  if ( DISTR.pmf == NULL ) {
-    _unur_error(distr->name,UNUR_ERR_DISTR_GET,"PMF");
-    return 0;
-  }
-
-  /* left boundary of domain must be set */
-  if (!(distr->set & UNUR_DISTR_SET_DOMAIN)) {
-    _unur_error(distr->name,UNUR_ERR_DISTR_GET,"domain missing");
+  /* PMF or CDF required */
+  if ( DISTR.pmf == NULL && DISTR.cdf == NULL) {
+    _unur_error(distr->name,UNUR_ERR_DISTR_GET,"PMF or CDF");
     return 0;
   }
 
@@ -373,9 +363,19 @@ unur_distr_discr_make_pv( struct unur_distr *distr )
     /* first case: bounded domain */
     n_pv = DISTR.domain[1] - DISTR.domain[0];
     pv = _unur_malloc( n_pv * sizeof(double) );
-    for (i=0; i<n_pv; i++)
-      pv[i] = _unur_discr_PMF(DISTR.domain[0]+i,distr);
-
+    if (DISTR.pmf) {
+      for (i=0; i<n_pv; i++)
+	pv[i] = _unur_discr_PMF(DISTR.domain[0]+i,distr);
+    }
+    else if (DISTR.pmf) {
+      int cdf_old = 0.;
+      int cdf;
+      for (i=0; i<n_pv; i++) {
+	cdf = _unur_discr_CDF(DISTR.domain[0]+i,distr);
+	pv[i] = cdf - cdf_old;
+	cdf_old = cdf;
+      }
+    }
     valid = TRUE;
   }
 
@@ -409,11 +409,25 @@ unur_distr_discr_make_pv( struct unur_distr *distr )
     /* compute PV */
     for (n_alloc = size_alloc; n_alloc <= max_alloc; n_alloc += size_alloc) {
       pv = _unur_realloc( pv, n_alloc * sizeof(double) );
-      for (i=0; i<size_alloc; i++) {
-	cdf += pv[n_pv] = _unur_discr_PMF(DISTR.domain[0]+n_pv,distr);
-	n_pv++;
-	if (cdf > thresh_cdf) { valid = TRUE; break; }
+
+      if (DISTR.pmf) {
+	for (i=0; i<size_alloc; i++) {
+	  cdf += pv[n_pv] = _unur_discr_PMF(DISTR.domain[0]+n_pv,distr);
+	  n_pv++;
+	  if (cdf > thresh_cdf) { valid = TRUE; break; }
+	}
       }
+      else if (DISTR.cdf) {
+	int cdf_old = 0.;
+	for (i=0; i<size_alloc; i++) {
+	  cdf = _unur_discr_CDF(DISTR.domain[0]+i,distr);
+	  pv[n_pv] = cdf - cdf_old;
+	  cdf_old = cdf;
+	  n_pv++;
+	  if (cdf > thresh_cdf) { valid = TRUE; break; }
+	}
+      }	  
+      if (cdf > thresh_cdf) break;
     }
 
     if (distr->set & UNUR_DISTR_SET_PMFSUM) {

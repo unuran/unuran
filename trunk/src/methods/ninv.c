@@ -98,6 +98,11 @@ static double _unur_ninv_regula( struct unur_gen *gen, double u );
 /* algorithm: regula falsi                                                   */
 /*---------------------------------------------------------------------------*/
 
+static double _unur_ninv_newton( struct unur_gen *gen, double u);
+/*---------------------------------------------------------------------------*/
+/* algorithm: newton method                                                  */
+/*---------------------------------------------------------------------------*/
+
 
 #ifdef UNUR_ENABLE_LOGGING
 /*---------------------------------------------------------------------------*/
@@ -596,20 +601,33 @@ _unur_ninv_regula( struct unur_gen *gen, double u )
 #endif
    return x2;
 
-} /* end of _unur_ninv_sample_regula() */
+} /* end of _unur_ninv_sample_regula()  */
 
 /*---------------------------------------------------------------------------*/
 
 
-
+double _unur_ninv_sample_newton(struct unur_gen *gen)
+     /*----------------------------------------------------------------------*/
+     /* sample from generator (use newtons method)                           */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   double (sample from random variate)                                */
+     /*----------------------------------------------------------------------*/
+{
+  return _unur_ninv_newton(gen, _unur_call_urng(gen) ) ;
+}
 
 double
-_unur_ninv_sample_newton( struct unur_gen *gen )
+_unur_ninv_newton( struct unur_gen *gen, double U )
      /*----------------------------------------------------------------------*/
      /* sample from generator (use Newton's method)                          */
      /*                                                                      */
      /* parameters:                                                          */
-     /*   gen ... pointer to generator object                                */
+     /*   gen   ... pointer to generator object                              */
+     /*     U   ... random number (uniform distribution)                     */
      /*                                                                      */
      /* return:                                                              */
      /*   double (sample from random variate)                                */
@@ -619,7 +637,6 @@ _unur_ninv_sample_newton( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
 { 
   double x;           /* point for netwon-iteration                   */
-  double U;           /* sampled uniform random number                */
   double fx;          /* cdf at x                                     */
   double dfx;         /* pdf at x                                     */
   double fxabs;       /* absolute valuo of fx                         */
@@ -636,8 +653,6 @@ _unur_ninv_sample_newton( struct unur_gen *gen )
   damp = 2.;        /* to be halved at least once */  
   step = 1.;
 
-  /* sample from uniform pseudorandom number generator */
-  U = _unur_call_urng(gen);
 
   /* initialize starting point */
   x     = 1.;    /** TODO: durch s[0] ersetzen ?? **/

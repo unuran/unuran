@@ -42,7 +42,7 @@
 /*---------------------------------------------------------------------------*/
 
 int
-unur_acg_JAVA( struct unur_gen *gen, FILE *out, const char *distr_name )
+unur_acg_JAVA( struct unur_gen *gen, FILE *out, const char *distr_name, int with_main )
      /*----------------------------------------------------------------------*/
      /* Automatic code generator (JAVA version)                              */
      /*                                                                      */
@@ -52,6 +52,7 @@ unur_acg_JAVA( struct unur_gen *gen, FILE *out, const char *distr_name )
      /*   distr_name ... name of distribution                                */
      /*                  (used to name routines, if NULL the UNURAN          */
      /*                   build-in name is used.)                            */
+     /*   with_main  ... whether to include main into source                 */
      /*                                                                      */
      /* return:                                                              */
      /*   1 ... on success                                                   */
@@ -86,7 +87,10 @@ unur_acg_JAVA( struct unur_gen *gen, FILE *out, const char *distr_name )
       _unur_acg_JAVA_tdr_class_IV( gen, out ) &&
       _unur_acg_JAVA_PDF ( &(gen->distr), out, pdf_name ) &&
       _unur_acg_JAVA_tdr_ps( gen, out, rand_name, pdf_name ) &&
-      _unur_acg_JAVA_end_class ( gen, out );
+      _unur_acg_JAVA_end_class ( gen, out ) &&
+      _unur_acg_JAVA_print_section_title( out, "End of Generator" );
+    if (with_main && return_code)
+      _unur_acg_JAVA_main( out, class_name );
     break;
   default:
     _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"Cannot make generator code");
@@ -99,9 +103,6 @@ unur_acg_JAVA( struct unur_gen *gen, FILE *out, const char *distr_name )
   /* make error message in source file if generation failed */
   if (return_code == 0)
     fprintf(out,"\n#error Sorry. Could not make generator code!!\n\n");
-
-  /* end */
-  _unur_acg_JAVA_print_section_title( out, "End of Generator" );
 
   return return_code;
 
@@ -146,7 +147,7 @@ _unur_acg_JAVA_urng( FILE *out )
 
 /*---------------------------------------------------------------------------*/
 
-void
+int
 _unur_acg_JAVA_print_section_title( FILE *out, const char *title )
      /*----------------------------------------------------------------------*/
      /* print a section header with title to output stream                   */
@@ -162,11 +163,12 @@ _unur_acg_JAVA_print_section_title( FILE *out, const char *title )
   _unur_acg_JAVA_print_section_rule(out);
   fprintf(out,"\n");
 
+  return 1;
 } /* end of _unur_acg_JAVA_print_section_title() */
 
 /*---------------------------------------------------------------------------*/
 
-void
+int
 _unur_acg_JAVA_print_section_rule( FILE *out )
      /*----------------------------------------------------------------------*/
      /* print a rule for section header                                      */
@@ -177,11 +179,13 @@ _unur_acg_JAVA_print_section_rule( FILE *out )
 {
   const char hrule[] = "/* ---------------------------------------------------------------- */\n";
   fprintf (out, hrule);
+
+  return 1;
 } /* end of _unur_acg_JAVA_print_section_rule() */
 
 /*---------------------------------------------------------------------------*/
 
-void
+int
 _unur_acg_JAVA_print_section_line( FILE *out, const char *format, ... )
      /*----------------------------------------------------------------------*/
      /* print a section header with n_lines lines to output stream           */
@@ -205,6 +209,45 @@ _unur_acg_JAVA_print_section_line( FILE *out, const char *format, ... )
   /* end of variable parameter list */
   va_end(ap);
 
+  return 1;
 } /* end of _unur_acg_JAVA_print_section_line() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+_unur_acg_JAVA_main( FILE *out, const char *class_name )
+     /*----------------------------------------------------------------------*/
+     /* Print main (JAVA version)                                            */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   out        ... output stream                                       */
+     /*   class_name ... name of generator class                             */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... on success                                                   */
+     /*   0 ... on error                                                     */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return 0                                                           */
+     /*----------------------------------------------------------------------*/
+{
+  _unur_acg_JAVA_print_section_title( out, "Main");
+
+  fprintf(out,"public class %s_demo {\n",class_name);
+  fprintf(out,"\tpublic static void main(String[] args) throws Exception {\n\n");
+  fprintf(out,"\t\tdouble x;\n\n");
+  fprintf(out,"\t\tfor (int i=0; i<10; i++) {\n");
+  fprintf(out,"\t\t\tx = %s.sample();\n",class_name);
+  fprintf(out,"\t\t\tSystem.out.println(x);\n");
+  fprintf(out,"\t\t}\n");
+  fprintf(out,"\t}\n");
+  fprintf(out,"}\n\n");
+
+
+  _unur_acg_JAVA_print_section_rule(out);
+  fprintf(out,"\n");
+
+  return 1;
+} /* end of _unur_acg_JAVA_main() */
 
 /*---------------------------------------------------------------------------*/

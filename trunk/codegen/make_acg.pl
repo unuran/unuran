@@ -133,6 +133,9 @@ sub acg_main {
 
 int main (int argc, char *argv[]){
 
+  /* whether to include main into source */
+  int with_main = 0;
+
   /* pointer to logfile */
   const char *logfile = NULL;
   FILE *logstream = NULL;
@@ -166,7 +169,7 @@ int main (int argc, char *argv[]){
   /* ------------------------------------------------------------------------*/
   /* read options                                                            */
 
-  while ((c = getopt(argc, argv, "d:p:D:N:n:c:l:L:")) != -1) {
+  while ((c = getopt(argc, argv, "d:p:D:N:n:c:l:L:M")) != -1) {
     switch (c) {
     case 'd':     /* distribution */
       distrfunc = get_distribution(optarg);
@@ -178,7 +181,7 @@ int main (int argc, char *argv[]){
       get_domain(optarg,domain);
       domainset = 1;
       break;
-    case 'N':
+    case 'N':     /* name of distribution */
       distrname = get_distrname(optarg);
       break;
     case 'n':     /* number of construction points */
@@ -190,10 +193,13 @@ int main (int argc, char *argv[]){
     case 'l':     /* progamming language */
       langfunc = get_language(optarg);
       break;
-    case 'L':
+    case 'L':     /* name of log file */
       logfile = get_logfile(optarg);
       break;
-    case '?':    /* Help Message  */
+    case 'M':     /* include main */
+      with_main = 1;
+      break;
+    case '?':     /* Help Message  */
     default:
       usage();
       exit (ACG_EXIT_FAIL_INPUT);
@@ -270,7 +276,7 @@ int main (int argc, char *argv[]){
       }
   }
   else {
-      if (!langfunc( gen, stdout, distrname )) {
+      if (!langfunc( gen, stdout, distrname, with_main )) {
 	  fatal("Cannot generate program code.\\n");
 	  exit (ACG_EXIT_FAIL_CODE);
       }
@@ -325,6 +331,7 @@ usage (void)
   fprintf(stderr," [-c parameter of TDR]");
   fprintf(stderr," [-l Language]");
   fprintf(stderr," [-L log file]");
+  fprintf(stderr," [-M]");
   fprintf(stderr,"\\n\\n");
   fprintf(stderr,"Default for language: C\\n");
   fprintf(stderr,"PDF parameters are required for some distributions.\\n");

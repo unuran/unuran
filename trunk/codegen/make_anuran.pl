@@ -480,7 +480,7 @@ sub anuran_params_distribution
 	
 	else {
 	    # No special standard form
-	    print hidden('Stdform','no'),"\\n";
+	    print hidden('Stdform','yes'),"\\n";
 	    for (my \$i = 0; \$i < \$n_tot; \$i++) {
 		print 
 		    \$data_distr{\$distr}{'=FPARAMS'}[\$i]{'=NAME'},
@@ -786,9 +786,19 @@ sub anuran_language
 	    }
 	}
 	
-	print
-	    submit('Continue'),"\\n",
-	    endform();
+	print submit('Continue'),br(),"\\n";
+
+	print start_blockquote();
+	print radio_group(-name => 'codetype',
+			  -values=>['generator','demo'],
+			  -default=>'generator',
+			  -rows=>2,
+			  -columns=>1,
+			  -labels=>{'generator'=>' Generator only',
+				    'demo'=>' Make complete demo version'});
+	print end_blockquote();
+
+	print endform();
     }
 
 # ................................................................
@@ -830,7 +840,10 @@ sub anuran_code
 
     print 
 	'Step 6: ',
-	b('Generator for '.\$data_distr{\$distr}{'=NAME'}).br();
+	b('Generator for '.\$data_distr{\$distr}{'=NAME'});
+
+    print '(Complete demo version)' if param('codetype') eq 'demo';
+    print br();
 
 # ................................................................
 # 
@@ -872,6 +885,9 @@ sub anuran_code
 	# Programming language
 	\$acg_query .= ' -l '.param('language');
 	\$command_ok = 0 if param('language') =~ /[^a-zA-Z]/;
+	
+	# Make complete demo version ?
+	\$acg_query .= ' -M' if param('codetype') eq 'demo';
 
 # ................................................................
 # Print result

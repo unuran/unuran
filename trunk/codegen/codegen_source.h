@@ -1,4 +1,4 @@
-/*****************************************************************************
+#/*****************************************************************************
  *                                                                           *
  *          UNURAN -- Universal Non-Uniform Random number generator          *
  *                                                                           *
@@ -38,6 +38,7 @@
 /*---------------------------------------------------------------------------*/
 
 #include <source_unuran.h>
+#include <unuran_acg.h>
 #include <time.h>
 
 /*---------------------------------------------------------------------------*/
@@ -77,22 +78,29 @@ int _unur_acg_JAVA_urng( FILE *out );
 /* Uniform random number generator (for demo mode only).                     */
 /*---------------------------------------------------------------------------*/
 
-void _unur_acg_C_print_section_rule( FILE *out );
-void _unur_acg_C_print_section_line( FILE *out, const char *format, ... );
-void _unur_acg_C_print_section_title( FILE *out, const char *title );
+int _unur_acg_C_main( FILE *out, const char *rand_name );
+int _unur_acg_FORTRAN_main( FILE *out, const char *rand_name );
+int _unur_acg_JAVA_main( FILE *out, const char *class_name );
+/*---------------------------------------------------------------------------*/
+/* Print main                                                                */
+/*---------------------------------------------------------------------------*/
 
-void _unur_acg_FORTRAN_print_section_rule( FILE *out );
-void _unur_acg_FORTRAN_print_section_line( FILE *out, const char *format, ... );
-void _unur_acg_FORTRAN_print_section_title( FILE *out, const char *title );
+int _unur_acg_C_print_section_rule( FILE *out );
+int _unur_acg_C_print_section_line( FILE *out, const char *format, ... );
+int _unur_acg_C_print_section_title( FILE *out, const char *title );
 
-void _unur_acg_JAVA_print_section_rule( FILE *out );
-void _unur_acg_JAVA_print_section_line( FILE *out, const char *format, ... );
-void _unur_acg_JAVA_print_section_title( FILE *out, const char *title );
+int _unur_acg_FORTRAN_print_section_rule( FILE *out );
+int _unur_acg_FORTRAN_print_section_line( FILE *out, const char *format, ... );
+int _unur_acg_FORTRAN_print_section_title( FILE *out, const char *title );
+
+int _unur_acg_JAVA_print_section_rule( FILE *out );
+int _unur_acg_JAVA_print_section_line( FILE *out, const char *format, ... );
+int _unur_acg_JAVA_print_section_title( FILE *out, const char *title );
 /*---------------------------------------------------------------------------*/
 /* Print a section header with n_lines lines to output stream.               */
 /*---------------------------------------------------------------------------*/
 
-void _unur_acg_FORTRAN_print_double( FILE *out, double x );
+int _unur_acg_FORTRAN_print_double( FILE *out, double x );
 /*---------------------------------------------------------------------------*/
 /* Print a double number in FORTRAN format.                                  */
 /*---------------------------------------------------------------------------*/

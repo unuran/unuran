@@ -180,7 +180,7 @@ _unur_acg_JAVA_tdr_ps( struct unur_gen *gen,
   fprintf(out, "\t\twhile (1==1) {\n");
 
   /* sample from U(0,1) */
-  fprintf(out, "\t\t\tU = random();\n");
+  fprintf(out, "\t\t\tU = Math.random();\n");
 
   /* look up in guide table and search for interval */
   fprintf(out, "\t\t\tI =  guide[(int) (U * guide_size)];\n");
@@ -206,7 +206,7 @@ _unur_acg_JAVA_tdr_ps( struct unur_gen *gen,
   } /* end switch */
 
   /* accept or reject */
-  fprintf(out, "\t\t\tV = random();\n");
+  fprintf(out, "\t\t\tV = Math.random();\n");
 
   /* squeeze acceptance */
   fprintf(out, "\t\t\tif (V <= iv[I].sq) { return X; }\n");

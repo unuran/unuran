@@ -42,7 +42,7 @@
 /*---------------------------------------------------------------------------*/
 
 int
-unur_acg_C( struct unur_gen *gen, FILE *out, const char *distr_name )
+unur_acg_C( struct unur_gen *gen, FILE *out, const char *distr_name, int with_main )
      /*----------------------------------------------------------------------*/
      /* Automatic code generator (C version)                                 */
      /*                                                                      */
@@ -52,6 +52,7 @@ unur_acg_C( struct unur_gen *gen, FILE *out, const char *distr_name )
      /*   distr_name ... name of distribution                                */
      /*                  (used to name routines, if NULL the UNURAN          */
      /*                   build-in name is used.)                            */
+     /*   with_main  ... whether to include main into source                 */
      /*                                                                      */
      /* return:                                                              */
      /*   1 ... on success                                                   */
@@ -84,7 +85,10 @@ unur_acg_C( struct unur_gen *gen, FILE *out, const char *distr_name )
       _unur_acg_C_header( &(gen->distr), out, rand_name ) &&
       _unur_acg_C_demo_urng( out ) &&
       _unur_acg_C_PDF( &(gen->distr), out, pdf_name ) &&
-      _unur_acg_C_tdr_ps( gen, out, rand_name, pdf_name );
+      _unur_acg_C_tdr_ps( gen, out, rand_name, pdf_name ) &&
+      _unur_acg_C_print_section_title( out, "End of Generator" );
+    if (with_main && return_code)
+      _unur_acg_C_main( out, rand_name );
     break;
   default:
     _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"Cannot make generator code");
@@ -98,9 +102,6 @@ unur_acg_C( struct unur_gen *gen, FILE *out, const char *distr_name )
   /* make error message in source file if generation failed */
   if (return_code == 0)
     fprintf(out,"\n#error Sorry. Could not make generator code!!\n\n");
-
-  /* end */
-  _unur_acg_C_print_section_title( out, "End of Generator" );
 
   return return_code;
 
@@ -182,7 +183,7 @@ _unur_acg_C_demo_urng( FILE *out )
 
 /*---------------------------------------------------------------------------*/
 
-void
+int
 _unur_acg_C_print_section_title( FILE *out, const char *title )
      /*----------------------------------------------------------------------*/
      /* print a section header with title to output stream                   */
@@ -198,11 +199,12 @@ _unur_acg_C_print_section_title( FILE *out, const char *title )
   _unur_acg_C_print_section_rule(out);
   fprintf(out,"\n");
 
+  return 1;
 } /* end of _unur_acg_C_print_section_title() */
 
 /*---------------------------------------------------------------------------*/
 
-void
+int
 _unur_acg_C_print_section_rule( FILE *out )
      /*----------------------------------------------------------------------*/
      /* print a rule for section header                                      */
@@ -213,11 +215,13 @@ _unur_acg_C_print_section_rule( FILE *out )
 {
   const char hrule[] = "/* ---------------------------------------------------------------- */\n";
   fprintf (out, hrule);
+
+  return 1;
 } /* end of _unur_acg_C_print_section_rule() */
 
 /*---------------------------------------------------------------------------*/
 
-void
+int
 _unur_acg_C_print_section_line( FILE *out, const char *format, ... )
      /*----------------------------------------------------------------------*/
      /* print a section header with n_lines lines to output stream           */
@@ -241,8 +245,49 @@ _unur_acg_C_print_section_line( FILE *out, const char *format, ... )
   /* end of variable parameter list */
   va_end(ap);
 
+  return 1;
 } /* end of _unur_acg_C_print_section_line() */
 
 /*---------------------------------------------------------------------------*/
 
+int
+_unur_acg_C_main( FILE *out, const char *rand_name )
+     /*----------------------------------------------------------------------*/
+     /* Print main (C version)                                               */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   out       ... output stream                                        */
+     /*   rand_name ... name of sampling routine                             */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... on success                                                   */
+     /*   0 ... on error                                                     */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return 0                                                           */
+     /*----------------------------------------------------------------------*/
+{
+  _unur_acg_C_print_section_title( out, "Main");
+
+  fprintf(out,"\n");
+  fprintf(out,"#include<stdio.h>\n");
+  fprintf(out,"\n");
+      
+  fprintf(out,"int main()\n{\n");
+  fprintf(out,"\tint i;\n");
+  fprintf(out,"\tdouble x;\n\n");
+  fprintf(out,"\tfor (i=0; i<10; i++) {\n");
+  fprintf(out,"\t\tx = %s();\n",rand_name);
+  fprintf(out,"\t\tprintf(\"%%g\\n\",x);\n");
+  fprintf(out,"\t}\n");
+  fprintf(out,"\treturn 1;\n");
+  fprintf(out,"}\n");
+
+  _unur_acg_C_print_section_rule(out);
+  fprintf(out,"\n");
+
+  return 1;
+} /* end of _unur_acg_C_main() */
+
+/*---------------------------------------------------------------------------*/
 

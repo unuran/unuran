@@ -920,7 +920,7 @@ EOS
     }
 
     # Replace Java URNG
-    $gencode =~ s/random\s*\(\s*\)\s*\;/Urand.random\(\)\;/g;
+    $gencode =~ s/Math.random\s*\(\s*\)\s*\;/Urand.random\(\)\;/g;
 
     # Make class for generator
     my $gen_src = "Generator_$distr_name.java";

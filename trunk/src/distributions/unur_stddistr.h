@@ -89,13 +89,15 @@ enum {
   UNUR_DISTR_BURR_XI,             /*    .     X     .     .     .     .      */
   UNUR_DISTR_BURR_XII,            /*    .     X     .     .     X     .      */
 
-
   /**                                  pmf   cdf   mode  area  gen   doc     */
   UNUR_DISTR_GEOMETRIC,           /*    X     .     .     X     X     .      */
   UNUR_DISTR_LOGARITHMIC,         /*    X     .     .     X     X     .      */
   UNUR_DISTR_NEGATIVEBINOMIAL,    /*    X     .     .     X     X     .      */
   UNUR_DISTR_POISSON,             /*    X     .     .     X     X     .      */
   UNUR_DISTR_ZIPF,                /*    X     .     .     .     X     .      */
+
+  /**                                  pdf                           doc     */
+  UNUR_DISTR_MNORMAL,             /*    .                             .      */
 
 };
 

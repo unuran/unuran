@@ -50,22 +50,31 @@
  *                                                                           *
  *   REFERENCES:                                                             *
  *                                                                           *
- *   [1] N.L. Johnson, S. Kotz and A.W. Kemp                                 *
+ *   [1] N.L. Johnson, S. Kotz, and A.W. Kemp                                *
  *       Univariate Discrete Distributions,                                  *
  *       2nd edition                                                         *
  *       John Wiley & Sons, Inc., New York, 1992                             *
  *                                                                           *
- *   [2] N.L. Johnson, S. Kotz and N. Balakrishnan                           *
+ *   [2] N.L. Johnson, S. Kotz, and N. Balakrishnan                          *
  *       Continuous Univariate Distributions,                                *
  *       Volume 1, 2nd edition                                               *
  *       John Wiley & Sons, Inc., New York, 1994                             *
  *                                                                           *
- *   [3] N.L. Johnson, S. Kotz and N. Balakrishnan                           *
+ *   [3] N.L. Johnson, S. Kotz, and N. Balakrishnan                          *
  *       Continuous Univariate Distributions,                                *
  *       Volume 2, 2nd edition                                               *
  *       John Wiley & Sons, Inc., New York, 1995                             *
  *                                                                           *
- *   [4] S. Kotz and N.L. Johnson                                            *
+ *   [4] N.L. Johnson, S. Kotz, and N. Balakrishnan                          *
+ *       Discrete Multivariate Distributions,                                *
+ *       John Wiley & Sons, Inc., New York, 1997                             *
+ *                                                                           *
+ *   [5] S. Kotz, N. Balakrishnan, and N.L. Johnson                          *
+ *       Continuous Multivariate Distributions,                              *
+ *       Volume 1: Models and Applications                                   *
+ *       John Wiley & Sons, Inc., New York, 2000                             *
+ *                                                                           *
+ *   [0] S. Kotz and N.L. Johnson                                            *
  *       Encyclopedia of Statistical Sciences                                *
  *       Volumes 1-9                                                         *
  *       John Wiley & Sons, Inc., New York, 1982-1988                        *
@@ -359,6 +368,21 @@ double _unur_stdgen_sample_weibull_inv( UNUR_GEN *generator );
 /* Inversion method                                                          */
 
 /*---------------------------------------------------------------------------*/
+
+/*****************************************************************************
+ *                                                                           *
+ *                   Continuous multivariate distributions                   *
+ *                                                                           *
+ *****************************************************************************/
+
+/*---------------------------------------------------------------------------*/
+/* Multinormal distribution  [5; ch.45, p.107]                               */
+UNUR_DISTR *unur_distr_multinormal(int dim, double *mean, double *covar);
+/* 
+   For standard form of distribution use @code{NULL} for @var{mean} and 
+   @var{covar}.
+*/
+
 
 /*****************************************************************************
  *                                                                           *

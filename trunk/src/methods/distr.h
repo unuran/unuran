@@ -558,6 +558,9 @@ int unur_distr_cvec_set_covar( UNUR_DISTR *distribution, double *covar );
    by unur_distr_get_dim(). The rows of the matrix have to be stored
    consecutively in this array.
 
+   The diagonal entries of the given matrix (i.e. the variance of the
+   components of the random vector) must be positive.
+
    A @code{NULL} pointer for @var{covar} is interpreted as the
    identity matrix.
 */
@@ -636,14 +639,6 @@ int unur_distr_cvec_set_mode( UNUR_DISTR *distribution, double *mode );
    of the size returned by unur_distr_get_dim().
 */
 
-int unur_distr_cvec_upd_mode( UNUR_DISTR *distribution );
-/* 
-   Recompute the mode of the distribution. This call only works for
-   distribution objects from the (=>) UNURAN library of standard
-   distributions when the corresponding function is available.
-   Otherwise @code{unur_errno} is set to @code{UNUR_ERR_DISTR_DATA}.
-*/
-
 double *unur_distr_cvec_get_mode( UNUR_DISTR *distribution );
 /* 
    Get mode of distribution. The function returns a pointer to an array
@@ -664,18 +659,6 @@ int unur_distr_cvec_set_pdfvol( UNUR_DISTR *distribution, double volume );
    Set the volume below the p.d.f. If @var{vol} is non-positive, no
    volume is set and @code{unur_errno} is set to @*
    @code{UNUR_ERR_DISTR_SET}. 
-*/
-
-int unur_distr_cvec_upd_pdfvol( UNUR_DISTR *distribution );
-/*
-   Recompute the volume below the p.d.f. of the distribution. 
-   It only works for distribution objects from the
-   (=>) UNURAN library of standard distributions when the
-   corresponding function is available. Otherwise @code{unur_errno} is
-   set to @code{UNUR_ERR_DISTR_DATA}. 
-   
-   This call sets the normalization constant such that the volume is
-   1.
 */
 
 double unur_distr_cvec_get_pdfvol( UNUR_DISTR *distribution );

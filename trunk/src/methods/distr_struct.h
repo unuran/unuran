@@ -79,9 +79,6 @@ struct unur_distr_cvec {
   double *mode;                 /* location of mode                          */
   double volume;                /* volume below p.d.f.                       */
 
-  int (*upd_mode)(struct unur_distr *distr);   /* funct for computing mode   */
-  int (*upd_volume)(struct unur_distr *distr); /* funct for computing volume */
-
   int  (*init)(struct unur_par *par,struct unur_gen *gen);
                                 /* pointer to special init routine           */
 };

@@ -37,7 +37,8 @@ libdistributions_a_SOURCES = \
  d_logarithmic.c d_logarithmic_gen.c \
  d_negativebinomial.c d_negativebinomial_gen.c \
  d_poisson.c     d_poisson_gen.c \
- d_zipf.c        d_zipf_gen.c
+ d_zipf.c        d_zipf_gen.c \
+ vc_multinormal.c 
 
 noinst_HEADERS = \
  unuran_distributions.h \

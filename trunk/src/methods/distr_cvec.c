@@ -63,7 +63,7 @@ static void _unur_distr_cvec_free( struct unur_distr *distr );
 /*---------------------------------------------------------------------------*/
 
 struct unur_distr *
-unur_distr_cvec_new(  int dim )
+unur_distr_cvec_new( int dim )
      /*----------------------------------------------------------------------*/
      /* create a new (empty) distribution object                             */
      /* type: multivariate continuous with given p.d.f.                      */
@@ -133,9 +133,6 @@ unur_distr_cvec_new(  int dim )
 
   DISTR.mode       = NULL;         /* location of mode (default: not known)  */
   DISTR.volume     = INFINITY;     /* area below p.d.f. (default: not known) */
-
-  DISTR.upd_mode   = NULL;         /* funct for computing mode               */
-  DISTR.upd_volume = NULL;         /* funct for computing area               */
 
   distr->set = 0u;                 /* no parameters set                      */
   
@@ -379,6 +376,11 @@ unur_distr_cvec_set_mean( struct unur_distr *distr, double *mean )
     if (DISTR.mean) free (DISTR.mean);
   }
 
+  if ( (distr->set & UNUR_DISTR_SET_MODE) &&
+       DISTR.mode == DISTR.mean) 
+    /* the mode is equal to the mean vector */
+    DISTR.mode = DISTR.mean;
+
   /* changelog */
   distr->set |= UNUR_DISTR_SET_MEAN;
 
@@ -405,7 +407,10 @@ unur_distr_cvec_get_mean( struct unur_distr *distr )
   _unur_check_distr_object( distr, CVEC, NULL );
 
   /* mean vector known ? */
-  if ( !(distr->set & UNUR_DISTR_SET_MEAN) )
+  if ( !(distr->set & UNUR_DISTR_SET_MEAN) ) {
+    _unur_warning(distr->name,UNUR_ERR_DISTR_GET,"mean");
+    return NULL;
+  }
 
   return DISTR.mean;
 
@@ -427,16 +432,30 @@ unur_distr_cvec_set_covar( struct unur_distr *distr, double *covar )
      /*   0 ... on error                                                     */
      /*----------------------------------------------------------------------*/
 {
+  int i;
+  int dim;
+
   /* check arguments */
   _unur_check_NULL( NULL, distr, 0 );
   _unur_check_distr_object( distr, CVEC, 0 );
 
+  dim = distr->dim;
+
+  /* check covariance matrix: diagonal entries > 0 */
+  if (covar) {
+    for (i=0; i<dim*dim; i+= dim+1)
+      if (covar[i] <= 0.) {
+	_unur_error(distr->name ,UNUR_ERR_DISTR_DOMAIN,"variance <= 0");
+	return 0;
+      }
+  }
+
   if (covar) {
     if (DISTR.covar == NULL)
       /* we have to allocate memory first */
-      DISTR.covar = _unur_malloc( distr->dim * distr->dim );
+      DISTR.covar = _unur_malloc( dim * dim );
     /* copy data */
-    memcpy( DISTR.covar, covar, distr->dim * distr->dim * sizeof(double) );
+    memcpy( DISTR.covar, covar, dim * dim * sizeof(double) );
   }
 
   else { /* covar == NULL */
@@ -470,7 +489,10 @@ unur_distr_cvec_get_covar( struct unur_distr *distr )
   _unur_check_distr_object( distr, CVEC, NULL );
 
   /* covariance matrix known ? */
-  if ( !(distr->set & UNUR_DISTR_SET_COVAR) )
+  if ( !(distr->set & UNUR_DISTR_SET_COVAR) ) {
+    _unur_warning(distr->name,UNUR_ERR_DISTR_GET,"covariance matrix");
+    return NULL;
+  }
 
   return DISTR.covar;
 
@@ -596,45 +618,6 @@ unur_distr_cvec_set_mode( struct unur_distr *distr, double *mode )
 
 /*---------------------------------------------------------------------------*/
 
-int 
-unur_distr_cvec_upd_mode( struct unur_distr *distr )
-     /*----------------------------------------------------------------------*/
-     /* (re-) compute mode of distribution (if possible)                     */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   distr ... pointer to distribution object                           */
-     /*                                                                      */
-     /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
-     /*----------------------------------------------------------------------*/
-{
-  /* check arguments */
-  _unur_check_NULL( NULL, distr, 0 );
-  _unur_check_distr_object( distr, CVEC, 0 );
-
-  if (DISTR.upd_mode == NULL) {
-    /* no function to compute mode available */
-    _unur_error(distr->name,UNUR_ERR_DISTR_DATA,"");
-    return 0;
-  }
-
-  /* compute mode */
-  if ((DISTR.upd_mode)(distr)) {
-    /* changelog */
-    distr->set |= UNUR_DISTR_SET_MODE;
-    return 1;
-  }
-  else {
-    /* computing of mode failed */
-    _unur_error(distr->name,UNUR_ERR_DISTR_SET,"");
-    return 0;
-  }
-
-} /* end of unur_distr_cvec_upd_mode() */
-  
-/*---------------------------------------------------------------------------*/
-
 double *
 unur_distr_cvec_get_mode( struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
@@ -653,16 +636,8 @@ unur_distr_cvec_get_mode( struct unur_distr *distr )
 
   /* mode known ? */
   if ( !(distr->set & UNUR_DISTR_SET_MODE) ) {
-    /* try to compute mode */
-    if (DISTR.upd_mode == NULL) {
-      /* no function to compute mode available */
-      _unur_error(distr->name,UNUR_ERR_DISTR_GET,"mode");
-      return NULL;
-    }
-    else {
-      /* compute mode */
-      unur_distr_cvec_upd_mode( distr );
-    }
+    _unur_error(distr->name,UNUR_ERR_DISTR_GET,"mode");
+    return NULL;
   }
 
   return DISTR.mode;
@@ -707,44 +682,6 @@ unur_distr_cvec_set_pdfvol( struct unur_distr *distr, double volume )
 
 /*---------------------------------------------------------------------------*/
 
-int 
-unur_distr_cvec_upd_pdfvol( struct unur_distr *distr )
-     /*----------------------------------------------------------------------*/
-     /* (re-) compute volume below p.d.f. of distribution (if possible)      */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   distr ... pointer to distribution object                           */
-     /*                                                                      */
-     /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
-     /*----------------------------------------------------------------------*/
-{
-  /* check arguments */
-  _unur_check_NULL( NULL, distr, 0 );
-  _unur_check_distr_object( distr, CVEC, 0 );
-
-  if (DISTR.upd_volume == NULL) {
-    /* no function to compute mode available */
-    _unur_error(distr->name,UNUR_ERR_DISTR_DATA,"");
-    return 0;
-  }
-
-  /* compute volume */
-  if (!(DISTR.upd_volume)(distr)) {
-    /* computing of volume failed */
-    _unur_error(distr->name,UNUR_ERR_DISTR_SET,"");
-    return 0;
-  }
-
-  /* changelog */
-  distr->set |= UNUR_DISTR_SET_PDFVOLUME;
-
-  return 1;
-} /* end of unur_distr_cvec_upd_pdfvol() */
-  
-/*---------------------------------------------------------------------------*/
-
 double
 unur_distr_cvec_get_pdfvol( struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
@@ -763,16 +700,8 @@ unur_distr_cvec_get_pdfvol( struct unur_distr *distr )
 
   /* volume known ? */
   if ( !(distr->set & UNUR_DISTR_SET_PDFVOLUME) ) {
-    /* try to compute volume */
-    if (DISTR.upd_volume == NULL) {
-      /* no function to compute volume available */
-      _unur_error(distr->name,UNUR_ERR_DISTR_GET,"volume");
-      return INFINITY;
-    }
-    else {
-      /* compute volume */
-      unur_distr_cvec_upd_pdfvol( distr );
-    }
+    _unur_error(distr->name,UNUR_ERR_DISTR_GET,"volume");
+    return INFINITY;
   }
 
   return DISTR.volume;

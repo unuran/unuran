@@ -3,7 +3,9 @@
 AM_CFLAGS = -Wall \
  -L$(top_builddir)/src
 
-INCLUDES = -I$(top_srcdir)/src
+INCLUDES = \
+ -I$(top_srcdir)/src \
+ -I$(top_srcdir)/src/tests
 
 LDADD = $(top_builddir)/src/libunuran.la
 

@@ -290,8 +290,9 @@ int unur_tdr_set_max_intervals( UNUR_PAR *parameters, int max_ivs );
 /* 
    Set maximum number of intervals.
    No construction points are added after the setup when the number of
-   intervals suceeds @var{max_ivs}. This is a soft limit which can be
-   exceeded by a factor of 2 (at most). 
+   intervals suceeds @var{max_ivs}. 
+   It is increased automatically to twice the number of construction
+   points if this is larger.
 
    Default is @code{100}.
 */

@@ -81,14 +81,11 @@ _unur_tdr_init( struct unur_par *par )
     return NULL;
   }
 
-  /* we have to update the maximal number of intervals,
-     if the user wants more starting points. */
+  /* update maximal number of intervals */
   if (GEN.n_ivs > GEN.max_ivs) {
-    _unur_warning(gen->genid,UNUR_ERR_GEN_DATA,"maximal number of intervals too small. increased.");
     GEN.max_ivs = GEN.n_ivs;
   }
-
-
+  
   /* set boundaries for U */
   GEN.Umin = 0.;
   GEN.Umax = 1.;
@@ -136,7 +133,7 @@ _unur_tdr_init( struct unur_par *par )
     if (gen->debug) _unur_tdr_debug_init(par,gen);
 #endif
   }
-  
+
   /* free parameters */
   free(par);
 
@@ -232,7 +229,7 @@ _unur_tdr_create( struct unur_par *par )
   GEN.c_T = PAR.c_T;                /* parameter for transformation          */
 
   /* bounds for adding construction points  */
-  GEN.max_ivs = PAR.max_ivs;        /* maximum number of segments            */
+  GEN.max_ivs = max(2*PAR.n_starting_cpoints,PAR.max_ivs);  /* maximum number of intervals */
   GEN.max_ratio = PAR.max_ratio;    /* bound for ratio  Atotal / Asqueeze    */
   GEN.bound_for_adding = PAR.bound_for_adding;
 
@@ -275,7 +272,7 @@ _unur_tdr_create( struct unur_par *par )
 
 
 
-   par->variant &= ~TDR_VARFLAG_USEDARS;
+  par->variant &= ~TDR_VARFLAG_USEDARS;
 
 
   /* return pointer to (almost empty) generator object */
@@ -987,6 +984,7 @@ _unur_tdr_gw_dars( struct unur_par *par, struct unur_gen *gen )
   double xAhatl, xAhatr, xAsqueeze;
   int rule;                    /* id for splitting rule that has been applied */
   int n_splitted;              /* count splitted intervals */
+  int splitted;                /* result of splitting routine */
 
   /* check arguments */
   CHECK_NULL(par,0);     COOKIE_CHECK(par,CK_TDR_PAR,0);
@@ -998,15 +996,23 @@ _unur_tdr_gw_dars( struct unur_par *par, struct unur_gen *gen )
 
     /* compute threshhold value. every interval with area between
        hat and squeeze greater than this value will be splitted.  */
-    Alimit = PAR.darsfactor * ( (GEN.Atotal - GEN.Asqueeze) / GEN.n_ivs );
+    if (GEN.n_ivs > 1)
+      Alimit = PAR.darsfactor * ( (GEN.Atotal - GEN.Asqueeze) / GEN.n_ivs );
+    else
+      /* we split every interval if there are only one interval */
+      Alimit = 0.; 
     
     /* reset counter for splitted intervals */
     n_splitted = 0;
-    
+
     /* for all intervals do ... */
     for (iv = GEN.iv; iv->next != NULL; iv = iv->next ) {
       COOKIE_CHECK(iv,CK_TDR_IV,0);
       
+      /* do not exceed the maximum number of intervals */
+      if (GEN.n_ivs >= GEN.max_ivs)
+	break;
+
       /* we skip over all intervals where the area between hat and
 	 squeeze does not exceed the threshhold value.             */
       if ((iv->Ahat - iv->Asqueeze) <= Alimit) 
@@ -1074,10 +1080,12 @@ _unur_tdr_gw_dars( struct unur_par *par, struct unur_gen *gen )
 	fxsp = PDF(xsp);
 	
 	/* now split interval at given point */
-	if ( _unur_tdr_gw_interval_split(gen, iv, xsp, fxsp) ) {
+	splitted = _unur_tdr_ps_interval_split(gen, ((xsp<iv->ip)?iv->prev:iv), xsp, fxsp);
+
+	if (splitted > 0) {
 	  /* splitting successful */
 	  ++n_splitted;
-	  
+
 	  /* now depending on the location of xps in the interval iv,
 	     iv points to the left of the two new intervals,
 	     or to the right of the two new intervals.
@@ -1092,26 +1100,30 @@ _unur_tdr_gw_dars( struct unur_par *par, struct unur_gen *gen )
 	  /* no more splitting points in this interval */
 	  break;
 	}
-	else {
+	else if (splitted < 0) {
 	  /* some serious error occurred */
 	  /* condition for PDF is violated! */
 	  _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"");
 	  return 0;
 	}
+	/* else: could not split construction points: too close (?) */
       }
     }
 
     if (n_splitted == 0) {
-      /* we are not successful. abort to avoid endless loop */
+      /* we are not successful in splitting any inteval.
+	 abort to avoid endless loop */
       _unur_warning(gen->genid,UNUR_ERR_GENERIC,"DARS aborted: no intervals could be splitted.");
       break;
     }
   }
 
   /* ratio between squeeze and hat o.k. ? */
-  if ( (GEN.max_ratio * GEN.Atotal > GEN.Asqueeze) &&
-       (GEN.n_ivs >= GEN.max_ivs) )
-    _unur_warning(gen->genid,UNUR_ERR_GENERIC,"DARS aborted: maximum number of intervals exceeded.");
+  if ( GEN.max_ratio * GEN.Atotal > GEN.Asqueeze ) {
+    if ( GEN.n_ivs >= GEN.max_ivs )
+      _unur_warning(gen->genid,UNUR_ERR_GENERIC,"DARS aborted: maximum number of intervals exceeded.");
+    _unur_warning(gen->genid,UNUR_ERR_GENERIC,"hat/squeeze ratio too small.");
+  }
   
   /* o.k. */
   return 1;
@@ -1145,6 +1157,7 @@ _unur_tdr_ps_dars( struct unur_par *par, struct unur_gen *gen )
   double xAhatl, xAhatr, xAsqueeze_gw;
   int rule;                    /* id for splitting rule that has been applied */
   int n_splitted;              /* count splitted intervals */
+  int splitted;                /* result of splitting routine */
   
   /* check arguments */
   CHECK_NULL(par,0);     COOKIE_CHECK(par,CK_TDR_PAR,0);
@@ -1156,14 +1169,22 @@ _unur_tdr_ps_dars( struct unur_par *par, struct unur_gen *gen )
 
     /* compute threshhold value. every interval with area between
        hat and squeeze greater than this value will be splitted.  */
-    Alimit = PAR.darsfactor * ( (GEN.Atotal - GEN.Asqueeze) / GEN.n_ivs );
+    if (GEN.n_ivs > 1)
+      Alimit = PAR.darsfactor * ( (GEN.Atotal - GEN.Asqueeze) / GEN.n_ivs );
+    else
+      /* we split every interval if there are only one interval */
+      Alimit = 0.; 
     
     /* reset counter for splitted intervals */
     n_splitted = 0;
-    
+
     /* for all intervals do ... */
     for (iv = GEN.iv; iv != NULL; iv = iv->next ) {
       COOKIE_CHECK(iv,CK_TDR_IV,0);
+
+      /* do not exceed the maximum number of intervals */
+      if (GEN.n_ivs >= GEN.max_ivs)
+	break;
 
       /* boundary of interval:
 	 in opposition to GW the construction point is in the middle of
@@ -1278,10 +1299,13 @@ _unur_tdr_ps_dars( struct unur_par *par, struct unur_gen *gen )
 	   we have to take care that xsp might be either in
 	   interval iv or in its preceeding interval, depending
 	   whether xsp is less than iv->ip or not. */
-	if ( _unur_tdr_ps_interval_split(gen, ((xsp<iv->ip)?iv->prev:iv), xsp, fxsp) ) {
+
+	splitted = _unur_tdr_ps_interval_split(gen, ((xsp<iv->ip)?iv->prev:iv), xsp, fxsp);
+
+	if (splitted > 0) {
 	  /* splitting successful */
 	  ++n_splitted;
-	  
+
 	  /* now depending on the location of xps in the interval iv,
 	     iv points to the left of the two new intervals,
 	     or to the right of the two new intervals.
@@ -1296,26 +1320,30 @@ _unur_tdr_ps_dars( struct unur_par *par, struct unur_gen *gen )
 	  /* no more splitting points in this interval */
 	  break;
 	}
-	else {
+	else if (splitted < 0) {
 	  /* some serious error occurred */
 	  /* condition for PDF is violated! */
 	  _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"");
 	  return 0;
 	}
+	/* else: could not split construction points: too close (?) */
       }
     }
 
     if (n_splitted == 0) {
-      /* we are not successful. abort to avoid endless loop */
+      /* we are not successful in splitting any inteval.
+	 abort to avoid endless loop */
       _unur_warning(gen->genid,UNUR_ERR_GENERIC,"DARS aborted: no intervals could be splitted.");
       break;
     }
   }
 
   /* ratio between squeeze and hat o.k. ? */
-  if ( (GEN.max_ratio * GEN.Atotal > GEN.Asqueeze) &&
-       (GEN.n_ivs >= GEN.max_ivs) )
-    _unur_warning(gen->genid,UNUR_ERR_GENERIC,"DARS aborted: maximum number of intervals exceeded.");
+  if ( GEN.max_ratio * GEN.Atotal > GEN.Asqueeze ) {
+    if ( GEN.n_ivs >= GEN.max_ivs )
+      _unur_warning(gen->genid,UNUR_ERR_GENERIC,"DARS aborted: maximum number of intervals exceeded.");
+    _unur_warning(gen->genid,UNUR_ERR_GENERIC,"hat/squeeze ratio too small.");
+  }
   
   /* o.k. */
   return 1;
@@ -2021,7 +2049,8 @@ _unur_tdr_gw_interval_split( struct unur_gen *gen, struct unur_tdr_interval *iv_
      /*                                                                      */
      /* return:                                                              */
      /*   1  ... if successful                                               */
-     /*   0  ... error                                                       */
+     /*   0  ... if no intervals are splitted                                */
+     /*  -1  ... error                                                       */
      /*----------------------------------------------------------------------*/
 {
   struct unur_tdr_interval *iv_newr;  /* pointer to new interval */
@@ -2029,8 +2058,8 @@ _unur_tdr_gw_interval_split( struct unur_gen *gen, struct unur_tdr_interval *iv_
   int success, success_r;
 
   /* check arguments */
-  CHECK_NULL(gen,0);      COOKIE_CHECK(gen,CK_TDR_GEN,0);
-  CHECK_NULL(iv_oldl,0);  COOKIE_CHECK(iv_oldl,CK_TDR_IV,0);
+  CHECK_NULL(gen,-1);      COOKIE_CHECK(gen,CK_TDR_GEN,-1);
+  CHECK_NULL(iv_oldl,-1);  COOKIE_CHECK(iv_oldl,CK_TDR_IV,-1);
 
 #ifdef UNUR_ENABLE_LOGGING
   /* write info into log file */
@@ -2041,18 +2070,18 @@ _unur_tdr_gw_interval_split( struct unur_gen *gen, struct unur_tdr_interval *iv_
   /* the splitting point must be inside the interval */
   if (x < iv_oldl->x || x > iv_oldl->next->x) {
     _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"splitting point not in interval!");
-    return 0;
+    return -1;
   }
 
   /* we only add a new construction point, if the relative area is large enough */
   if ( (GEN.n_ivs * (iv_oldl->Ahat - iv_oldl->Asqueeze) / (GEN.Atotal - GEN.Asqueeze))
        < GEN.bound_for_adding)
-    return 1;
+    return 0;
 
   /* check for data error */
   if (fx < 0.) {
     _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"PDF(x) < 0.!");
-    return 0;
+    return -1;
   }
 
   /* back up data */
@@ -2072,7 +2101,7 @@ _unur_tdr_gw_interval_split( struct unur_gen *gen, struct unur_tdr_interval *iv_
     }
     else {
       _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"PDF not T-concave");
-      return 0;
+      return -1;
     }
     
     /* compute parameters for chopped interval */
@@ -2089,7 +2118,7 @@ _unur_tdr_gw_interval_split( struct unur_gen *gen, struct unur_tdr_interval *iv_
     if (iv_newr == NULL) {
       /* PDF(x) < 0 or overflow !! */
       _unur_error(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
-      return 0;
+      return -1;
     }
     
     /* insert into linked list */
@@ -2129,7 +2158,7 @@ _unur_tdr_gw_interval_split( struct unur_gen *gen, struct unur_tdr_interval *iv_
       free( iv_newr );
     }
 
-  return ( (success <= -2) ? 0 : 1 );
+  return ( (success <= -2) ? -1 : 0 );
   }
 
   /* successful */
@@ -2168,7 +2197,8 @@ _unur_tdr_ps_interval_split( struct unur_gen *gen, struct unur_tdr_interval *iv,
      /*                                                                      */
      /* return:                                                              */
      /*   1  ... if successful                                               */
-     /*   0  ... error                                                       */
+     /*   0  ... if no intervals are splitted                                */
+     /*  -1  ... error                                                       */
      /*----------------------------------------------------------------------*/
 {
   struct unur_tdr_interval *oldl, *oldr;  /* pointer to old intervals (left, right) */
@@ -2177,24 +2207,24 @@ _unur_tdr_ps_interval_split( struct unur_gen *gen, struct unur_tdr_interval *iv,
   int success, success_r;
 
   /* check arguments */
-  CHECK_NULL(gen,0); COOKIE_CHECK(gen,CK_TDR_GEN,0);
-  CHECK_NULL(iv,0);  COOKIE_CHECK(iv,CK_TDR_IV,0);
+  CHECK_NULL(gen,-1); COOKIE_CHECK(gen,CK_TDR_GEN,-1);
+  CHECK_NULL(iv,-1);  COOKIE_CHECK(iv,CK_TDR_IV,-1);
 
   /* we only add a new construction point, if the relative area is large enough */
   if ( (GEN.n_ivs * (iv->Ahat - iv->Asqueeze) / (GEN.Atotal - GEN.Asqueeze))
        < GEN.bound_for_adding)
-    return 1;
+    return 0;
 
   /* the splitting point must be inside the interval */
   if (x < iv->ip || x > iv->next->ip) {
     _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"splitting point not in interval!");
-    return 0;
+    return -1;
   }
 
   /* check for data error */
   if (fx < 0.) {
     _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"PDF(x) < 0.!");
-    return 0;
+    return -1;
   }
 
   /* which side of construction point */
@@ -2236,7 +2266,7 @@ _unur_tdr_ps_interval_split( struct unur_gen *gen, struct unur_tdr_interval *iv,
     }
     else {
       _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"PDF not T-concave");
-      return 0;
+      return -1;
     }
 
     /* we do not add a new interval */
@@ -2250,7 +2280,7 @@ _unur_tdr_ps_interval_split( struct unur_gen *gen, struct unur_tdr_interval *iv,
     if (iv_new == NULL) {
       /* PDF(x) < 0 or overflow !! */
       _unur_error(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
-      return 0;
+      return -1;
     }
 
     /* insert into linked list */
@@ -2308,7 +2338,7 @@ _unur_tdr_ps_interval_split( struct unur_gen *gen, struct unur_tdr_interval *iv,
       free( iv_new );
     }
 
-  return ( (success <= -2) ? 0 : 1 );
+  return ( (success <= -2) ? -1 : 0 );
   }
 
   /* successful */

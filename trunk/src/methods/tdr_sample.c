@@ -220,7 +220,7 @@ _unur_tdr_gw_sample( struct unur_gen *gen )
     /* being above squeeze is bad. improve the situation! */
     if (GEN.n_ivs < GEN.max_ivs) {
       if (GEN.max_ratio * GEN.Atotal > GEN.Asqueeze) {
-	if ( !_unur_tdr_gw_interval_split(gen, iv, X, fx) ) {
+	if ( _unur_tdr_gw_interval_split(gen, iv, X, fx) < 0 ) {
 	  /* condition for PDF is violated! */
 	  _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"");
 	  if (gen->variant & TDR_VARFLAG_PEDANTIC) {
@@ -396,7 +396,7 @@ _unur_tdr_gw_sample_check( struct unur_gen *gen )
     /* being above squeeze is bad. improve the situation! */
     if (GEN.n_ivs < GEN.max_ivs) {
       if (GEN.max_ratio * GEN.Atotal > GEN.Asqueeze) {
-	if ( !_unur_tdr_gw_interval_split(gen, iv, X, fx) ) {
+	if ( _unur_tdr_gw_interval_split(gen, iv, X, fx) < 0 ) {
 	  /* condition for PDF is violated! */
 	  _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"");
 	  if (gen->variant & TDR_VARFLAG_PEDANTIC) {
@@ -577,7 +577,7 @@ _unur_tdr_ps_sample( struct unur_gen *gen )
     /* evaluation of PDF is expensive. improve the situation! */
     if (GEN.n_ivs < GEN.max_ivs) {
       if (GEN.max_ratio * GEN.Atotal > GEN.Asqueeze) {
-	if ( !_unur_tdr_ps_interval_split(gen, iv, X, fx) ) {
+	if ( _unur_tdr_ps_interval_split(gen, iv, X, fx) < 0 ) {
 	  /* condition for PDF is violated! */
 	  _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"");
 	  if (gen->variant & TDR_VARFLAG_PEDANTIC) {
@@ -759,7 +759,7 @@ _unur_tdr_ps_sample_check( struct unur_gen *gen )
     /* evaluation of PDF is expensive. improve the situation! */
     if (GEN.n_ivs < GEN.max_ivs) {
       if (GEN.max_ratio * GEN.Atotal > GEN.Asqueeze) {
-	if ( !_unur_tdr_ps_interval_split(gen, iv, X, fx) ) {
+	if ( _unur_tdr_ps_interval_split(gen, iv, X, fx) < 0 ) {
 	  /* condition for PDF is violated! */
 	  _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"");
 	  if (gen->variant & TDR_VARFLAG_PEDANTIC) {
@@ -958,7 +958,7 @@ _unur_tdr_ia_sample( struct unur_gen *gen )
     /* evaluation of PDF is expensive. improve the situation! */
     if (GEN.n_ivs < GEN.max_ivs) {
       if (GEN.max_ratio * GEN.Atotal > GEN.Asqueeze) {
-	if ( !_unur_tdr_ps_interval_split(gen, iv, X, fx) ) {
+	if ( _unur_tdr_ps_interval_split(gen, iv, X, fx) < 0 ) {
 	  /* condition for PDF is violated! */
 	  _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"");
 	  if (gen->variant & TDR_VARFLAG_PEDANTIC) {
@@ -1145,7 +1145,7 @@ _unur_tdr_ia_sample_check( struct unur_gen *gen )
     /* evaluation of PDF is expensive. improve the situation! */
     if (GEN.n_ivs < GEN.max_ivs) {
       if (GEN.max_ratio * GEN.Atotal > GEN.Asqueeze) {
-	if ( !_unur_tdr_ps_interval_split(gen, iv, X, fx) ) {
+	if ( _unur_tdr_ps_interval_split(gen, iv, X, fx) < 0 ) {
 	  /* condition for PDF is violated! */
 	  _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"");
 	  if (gen->variant & TDR_VARFLAG_PEDANTIC) {

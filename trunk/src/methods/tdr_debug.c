@@ -115,7 +115,7 @@ _unur_tdr_debug_init( struct unur_par *par, struct unur_gen *gen )
     fprintf(log,"\n%s: use center as construction point",gen->genid);
   fprintf(log,"\n%s:\n",gen->genid);
 
-  fprintf(log,"%s: maximum number of intervals        = %d",gen->genid,PAR.max_ivs);
+  fprintf(log,"%s: maximum number of intervals        = %d",gen->genid,GEN.max_ivs);
   _unur_print_if_default(par,TDR_SET_MAX_IVS);
   fprintf(log,"\n%s: bound for ratio  Atotal / Asqueeze = %g%%",gen->genid,PAR.max_ratio*100.);
   _unur_print_if_default(par,TDR_SET_MAX_SQHRATIO);

@@ -6,6 +6,9 @@ Version 0.5.0: ???? 2004
 	  Thus it is possible to return some non-zero error code in case 
 	  of an failure.
 
+	- added new disribution type CMAT for continuous matrix distributions.
+	  (Currently only used for creating random covariance matrices)
+
 	- multivariate distribution objects s now contain marginal distributions.
 
 	- unur_distr_cvec_set_covar() now checks for positive definiteness of

@@ -72,6 +72,7 @@
 
 #include <distr/distr.h>
 #include <distr/cemp.h>
+#include <distr/cmat.h>
 #include <distr/cont.h>
 #include <distr/corder.h>
 #include <distr/cvec.h>

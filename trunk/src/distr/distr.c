@@ -188,7 +188,7 @@ unur_distr_is_cont( const struct unur_distr *distr )
 int 
 unur_distr_is_cvec( const struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
-     /* TRUE if distribution is mulitvariate continuous.                     */
+     /* TRUE if distribution is multivariate continuous.                     */
      /*                                                                      */
      /* parameters:                                                          */
      /*   distr ... pointer to distribution object                           */
@@ -209,7 +209,7 @@ unur_distr_is_cvec( const struct unur_distr *distr )
 int 
 unur_distr_is_cvemp( const struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
-     /* TRUE if distribution is empirical mulitvariate continuous.           */
+     /* TRUE if distribution is empirical multivariate continuous.           */
      /*                                                                      */
      /* parameters:                                                          */
      /*   distr ... pointer to distribution object                           */
@@ -224,6 +224,27 @@ unur_distr_is_cvemp( const struct unur_distr *distr )
 
   return ((distr->type == UNUR_DISTR_CVEMP) ? TRUE : FALSE);
 } /* end of unur_distr_is_cvemp() */
+
+/*---------------------------------------------------------------------------*/
+
+int 
+unur_distr_is_cmat( const struct unur_distr *distr )
+     /*----------------------------------------------------------------------*/
+     /* TRUE if distribution is continuous matrix distribution.              */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   distr ... pointer to distribution object                           */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   TRUE  ... if continuous matrix                                     */
+     /*   FALSE ... otherwise (and in case of an error)                      */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( NULL, distr, FALSE );
+
+  return ((distr->type == UNUR_DISTR_CMAT) ? TRUE : FALSE);
+} /* end of unur_distr_is_cvec() */
 
 /*---------------------------------------------------------------------------*/
 

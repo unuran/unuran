@@ -39,7 +39,7 @@ usage: $progname <file.tex>
    -r <num> ... resolution for PNG and JPEG format [default: 150]
 
    -h <num> ... height and width for TXT format (in characters)
-   -w <num>       [defautl: -h 35 - w 77]
+   -w <num>       [defautl: -h 30 - w 77]
 
    Height and width in PS and PDF format are given by units in TeX file.
 
@@ -53,7 +53,7 @@ EOM
 
 my $resolution = 150;
 my $txt_isize = 77;
-my $txt_jsize = 35;
+my $txt_jsize = 30;
 
 ############################################################
 # Read arguments
@@ -109,7 +109,7 @@ my $tmp_epsi_file = "$tmp_base.epsi";   # result of ps2epsi (to be needed for ep
 ############################################################
 
 # Read TeX file and estimate TeX bounding box
-my $tex_bx0 = 0;
+my $tex_bx0 = "a";
 my $tex_by0 = 0;
 my $tex_bx1 = 0;
 my $tex_by1 = 0;
@@ -120,15 +120,15 @@ while (<TEX>) {
     # store tex code
     $tex_code .= $_;
 
-    if ( /\\begin\{pspicture\}\((-?[\d\.]+),\s*([-?\d\.]+)\)\((-?[\d\.]+),\s*([-?\d\.]+)\)/ ) {
-	# store bounding box
+    if ( /\\begin\{pspicture\}\((-?[\d\.]+),\s*(-?[\d\.]+)\)\((-?[\d\.]+),\s*(-?[\d\.]+)\)/ ) {
+	print STDERR "junk!!\n\n";
 	$tex_bx0 = $1; $tex_by0 = $2;
 	$tex_bx1 = $3; $tex_by1 = $4;
     }
 }
 close TEX;
 
-($tex_bx0) or die "Cannot find bounding box";
+if ($tex_bx0 eq "a") { die "Cannot find bounding box"; }
 
 print STDERR "TeX bounding box = ($tex_bx0,$tex_by0) x ($tex_bx1,$tex_by1)\n";
 print STDERR "----------------------\n";
@@ -241,11 +241,11 @@ while (1) {
     }
 	
     # lines 
-    if ($tex_code =~ /\\psline\s*(\[.*?\])?(.*?)([\n])/s) {
-	my $line = $2;
+    if ($tex_code =~ /\\psline\s*(\[.*?\])?(\{.*?\})?(.*?)([\n])/s) {
+	my $line = $3;
 	$line =~ s/^\s*\(//;
 	$line =~ s/\)\s*$//;
-	$tex_code =~ s/\\psline\s*(\[.*?\])?(.*?)([\n])/$3/s;
+	$tex_code =~ s/\\psline\s*(\[.*?\])?(\{.*?\})?(.*?)([\n])/$3/s;
 
 	my @points = split /\s*\)\s*\(\s*/, $line;
 	for my $n (0..$#points-1) {
@@ -273,6 +273,17 @@ while (1) {
 	print "plot [$x0:$x1] $code\n";
 	$tex_code =~ s/\\psplot\s*(\[.*?\])?\s*\{(.*?)\}\s*\{(.*?)\}\s*\{(.*?)\}\s*([\n])/$5/s;
 	txt_plot($x0,$x1,$code);
+	next;
+    }
+
+    # parametric plot
+    if ($tex_code =~ /\\parametricplot\s*(\[.*?\])?\s*\{(.*?)\}\s*\{(.*?)\}\s*\{(.*?)\}\s*([\n])/s) {
+	my $x0 = $2;
+	my $x1 = $3;
+	my $code = $4;
+	print "parametric plot [$x0:$x1] $code\n";
+	$tex_code =~ s/\\parametricplot\s*(\[.*?\])?\s*\{(.*?)\}\s*\{(.*?)\}\s*\{(.*?)\}\s*([\n])/$5/s;
+	txt_parametricplot($x0,$x1,$code);
 	next;
     }
   
@@ -391,10 +402,31 @@ sub txt_plot {
     # make plot
     for my $t (0..$steps) {
 	my $x = ($t * $x0 + ($steps-$t)*$x1)/$steps;
-	my $y = txt_plot_eval($x,$code);
+	my $y = (txt_plot_eval($x,$code))[0];
 	txt_draw_point($x,$y,"*");
     }
 }
+
+sub txt_parametricplot {
+    (my $t0, my $t1, my $code) = @_;
+
+    # trim blanks
+    $code =~ s/^\s+//;
+    $code =~ s/\s+$//;
+
+    # number of steps 
+    my $steps = 100;
+
+    # make plot
+    for my $s (0..$steps) {
+	my $t = ($s * $t0 + ($steps-$s)*$t1)/$steps;
+	my @x = txt_plot_eval($t,$code);
+	txt_draw_point($x[0],$x[1],"*");
+    }
+}
+
+#  \parametricplot[plotstyle=curve,linestyle=none,fillstyle=solid,fillcolor=gray]%
+#  {0}{180}{t cos t sin 0.75 mul}
 
 sub txt_plot_eval {
     (my $x, my $code) = @_;
@@ -407,7 +439,7 @@ sub txt_plot_eval {
 	  if ($cmd =~ /^\-?\d*\.?\d*$/) { 
 	      push @stack, $cmd;
 	      last CMD; }
-	  if ($cmd eq "x") { 
+	  if ($cmd eq "x" or $cmd eq "t") { 
 	      push @stack, $x;
 	      last CMD; }
 	  if ($cmd eq "neg") { 
@@ -433,12 +465,15 @@ sub txt_plot_eval {
 	      my $a = pop @stack;
 	      push @stack, sin($a/57.29578);
 	      last CMD; }
+	  if ($cmd eq "cos") { 
+	      my $a = pop @stack;
+	      push @stack, cos($a/57.29578);
+	      last CMD; }
 	  else {
 	      die "Unknown PS command: $cmd";
 	  }
       }
     }
 
-    my $result = pop @stack;
-    return $result;
+    return @stack;
 }

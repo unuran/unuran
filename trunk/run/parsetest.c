@@ -15,13 +15,37 @@ extern UNUR_GEN   * make_gen_obj (char *);
 /* main -- test program */
 int main(){
 
+  char str[1024];
   int i;
 
   UNUR_GEN *gen;
-  char str[] = "distr=normal(1, .5):prng = MT19937(13237): method=tdr; c=-0.5; variant_ia";
-  gen = make_gen_obj(str);
 
-  for ( i=0; i<15; i++){
+  /* test1 */
+  strcpy(str, "distr=normal(0, 1):prng = MT19937(123): method=tdr; c=-0.5; variant_ia");
+  printf("%s\n", str);
+  gen = make_gen_obj(str);
+  for ( i=0; i<5; i++){
+    printf("rand num: %f\n", unur_sample_cont(gen));
+  }
+  /* test2 */
+  strcpy(str, "distr=normal(0, 1): method=ninv;");
+  printf("%s\n", str);
+  gen = make_gen_obj(str);
+  for ( i=0; i<5; i++){
+    printf("rand num: %f\n", unur_sample_cont(gen));
+  }
+  /* test3 */
+  strcpy(str, "distr=normal(0, 1):prng = MT19937(6)");
+  printf("%s\n", str);
+  gen = make_gen_obj(str);
+  for ( i=0; i<5; i++){
+    printf("rand num: %f\n", unur_sample_cont(gen));
+  }
+  /* test4 */
+  strcpy(str, "distr=beta(1, 1): method=dau; c=-0.5; variant_ia:prng=MT19937(454)");
+  printf("%s\n", str);
+  gen = make_gen_obj(str);
+  for ( i=0; i<5; i++){
     printf("rand num: %f\n", unur_sample_cont(gen));
   }
 

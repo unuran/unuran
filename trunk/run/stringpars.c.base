@@ -502,8 +502,12 @@ UNUR_GEN *make_gen_obj (char *str){
      urngstr = tmpchar;
   }
 
+
   /* generate distribution object */
   distr = make_distr_obj(diststr);
+  if ( distr == NULL ){
+     fprintf(stderr, "ERROR: Can't create parameter object.\n");
+  }
 
   /* generate parameter object */
   if ( methstr != NULL ){ /* method info is provided */

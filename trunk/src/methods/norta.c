@@ -300,69 +300,37 @@ _unur_norta_init( struct unur_par *par )
     if (_unur_distr_cvec_marginals_are_equal(DISTR.marginals, GEN.dim)) {
       /* we can use the same generator object for all marginal distribuitons */
       struct unur_gen *marginalgen = _unur_norta_make_marginalgen( gen, DISTR.marginals[0] );
-
-      /* TODO !! */
       if (marginalgen)
-	gen->gen_aux_list = _unur_gen_list_set(marginalgen,GEN.dim);
+	GEN.marginalgen_list = _unur_gen_list_set(marginalgen,GEN.dim);
     }
+
     else {
-      abort();
+      /* we need different generator objects for all marginal distribuitons */
+      int i,j;
+      int failed = FALSE;
+      struct unur_gen **marginalgens = _unur_xmalloc( GEN.dim * sizeof(struct unur_gen*) );
+      for (i=0; i<GEN.dim; i++) {
+	marginalgens[i] = _unur_norta_make_marginalgen( gen, DISTR.marginals[i] );
+	if (marginalgens[i]==NULL) {
+	  failed=TRUE; break;
+	}
+      }
+      if (failed) {
+	for (j=0; j<i; j++) _unur_free(marginalgens[j]);
+	free (marginalgens);
+      }
+      else
+	GEN.marginalgen_list = marginalgens;
     }
 
-
-    /* TODO !! */
-    /* the marginal generator is an auxiliary generator for method NORTA, of course */
-    GEN.marginalgen_list = gen->gen_aux_list;
-
-
+    /* verify initialization of marginal generators */
+    if (GEN.marginalgen_list == NULL) {
+      _unur_error(gen->genid,UNUR_ERR_GENERIC,"init of marginal generators failed");
+      _unur_norta_free(gen);
+      free(par);
+      return NULL;
+    }
   }
-
-
-
-
-
-
-  /* TODO: initialize generator for "marginal" distributions */
-
-/*   /\* initialize generators for marginal distribution *\/ */
-/*   if (_unur_distr_cvec_marginals_are_equal(DISTR.stdmarginals, GEN.dim)) { */
-/*     /\* we can use the same generator object for all marginal distribuitons *\/ */
-/*     /\** TODO: CSTD vor HINV vor NINV; nicht AUTO !! **\/  */
-/*     struct unur_gen *marginalgen = unur_init( unur_auto_new( DISTR.stdmarginals[0] ) ); */
-/*     if (marginalgen) */
-/*       gen->gen_aux_list = _unur_gen_list_set(marginalgen,GEN.dim); */
-/*   } */
-
-/*   else { */
-/*     int i,j; */
-/*     int failed = FALSE; */
-/*     struct unur_gen **marginalgens = _unur_xmalloc( GEN.dim * sizeof(struct unur_gen*) ); */
-/*     for (i=0; i<GEN.dim; i++) { */
-/*       /\** TODO: CSTD vor HINV vor NINV; nicht AUTO !! **\/  */
-/*       marginalgens[i] = unur_init( unur_auto_new( DISTR.stdmarginals[i] ) ); */
-/*       if (marginalgens[i]==NULL) { */
-/*         failed=TRUE; break;  */
-/*       } */
-/*     } */
-/*     if (failed) { */
-/*       for (j=0; j<i; j++) _unur_free(marginalgens[j]); */
-/*       free (marginalgens); */
-/*     } */
-/*     else */
-/*       gen->gen_aux_list = marginalgens; */
-/*   } */
-
-/*   /\* the marginal generator is an auxiliary generator for method NORTA, of course *\/ */
-/*   GEN.marginalgen_list = gen->gen_aux_list; */
-  
-/*   /\* verify initialization of marginal generators *\/ */
-/*   if (GEN.marginalgen_list == NULL) { */
-/*     _unur_error(gen->genid,UNUR_ERR_GENERIC,"init of marginal generators failed"); */
-/*     _unur_norta_free(gen); */
-/*     free(par); */
-/*     return NULL; */
-/*   } */
-
 
   /* free parameters */
   free(par);
@@ -450,6 +418,9 @@ _unur_norta_clone( const struct unur_gen *gen )
   /* check arguments */
   CHECK_NULL(gen,NULL);  COOKIE_CHECK(gen,CK_NORTA_GEN,NULL);
 
+/*   /\* the marginal generator is an auxiliary generator for method NORTA, of course *\/ */
+/*   GEN.marginalgen_list = gen->gen_aux_list; */
+
   /* create generic clone */
   clone = _unur_generic_clone( gen, GENTYPE );
 
@@ -458,9 +429,6 @@ _unur_norta_clone( const struct unur_gen *gen )
 
   /* clone marginal distribution */
   CLONE.normaldistr = _unur_distr_clone(GEN.normaldistr);
-
-  /* TODO: marginal gen and others !! */
-  /* (normal generator) */
 
 /*   /\* marginal generators are (also) stored as auxiliary generator *\/ */
 /*   /\* which has already been cloned by generic_clone.              *\/ */
@@ -775,6 +743,10 @@ _unur_norta_free( struct unur_gen *gen )
 
   /* free urng wrapper */
   if (GEN.marginal_urng) unur_urng_free(GEN.marginal_urng);
+
+/*   /\* the marginal generator is an auxiliary generator for method NORTA, of course *\/ */
+/*   GEN.marginalgen_list = gen->gen_aux_list; */
+
 
   /* we cannot use this generator object any more */
   SAMPLE = NULL;   /* make sure to show up a programming error */

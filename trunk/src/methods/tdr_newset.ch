@@ -574,19 +574,19 @@ unur_tdr_set_variant_ia( struct unur_par *par )
 int
 unur_tdr_set_usedars( struct unur_par *par, int usedars )
      /*----------------------------------------------------------------------*/
-     /* set flag for using (exact) mode as construction point                */
-     /* (this overwrites "use_center"!)                                      */
+     /* set flag for using DARS (derandomized adaptive rejection sampling).  */
+     /* additionally the rule for splitting intervals can be set.            */
      /*                                                                      */
      /* parameters:                                                          */
      /*   par       ... pointer to parameter for building generator object   */
-     /*   usemode   ... 0 = do not use,  !0 = use                            */
+     /*   usedars   ... 0 = do not use,  1-3 = use DARS with given rule      */
      /*                                                                      */
      /* return:                                                              */
      /*   1 ... on success                                                   */
      /*   0 ... on error                                                     */
      /*                                                                      */
      /* comment:                                                             */
-     /*   using mode as construction point is the default                    */
+     /*   using not using DARS is the default                                */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */

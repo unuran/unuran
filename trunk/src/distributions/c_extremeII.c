@@ -85,7 +85,7 @@ static const char distr_name[] = "extremeII";
 #define theta  params[2]    /* scale */
 
 #define DISTR distr->data.cont
-/* #define NORMCONSTANT (distr->data.cont.norm_constant) */
+#define LOGNORMCONSTANT (distr->data.cont.norm_constant)
 
 /* function prototypes                                                       */
 static double _unur_pdf_extremeII( double x, UNUR_DISTR *distr );
@@ -113,7 +113,7 @@ _unur_pdf_extremeII( double x, UNUR_DISTR *distr )
   if (x<=0.) return 0.;
 
   xk = pow( x, -k - 1.);
-  return ( exp( -xk * x) * xk * k / theta );
+  return ( exp( -xk * x - LOGNORMCONSTANT) * xk * k );
 
 } /* end of _unur_pdf_extremeII() */
 
@@ -181,7 +181,9 @@ _unur_upd_mode_extremeII( UNUR_DISTR *distr )
 int
 _unur_upd_area_extremeII( UNUR_DISTR *distr )
 {
-  /* normalization constant: none */
+  /* log of normalization constant */
+  LOGNORMCONSTANT = log(DISTR.theta);
+
 
   if (distr->set & UNUR_DISTR_SET_STDDOMAIN) {
     DISTR.area = 1.;
@@ -287,7 +289,8 @@ unur_distr_extremeII( double *params, int n_params )
     return NULL;
   }
 
-  /* normalization constant: not required */
+  /* log of normalization constant */
+  LOGNORMCONSTANT = log(DISTR.theta);
 
   /* mode and area below p.d.f. */
   DISTR.mode = DISTR.zeta + pow( DISTR.k/(DISTR.k+1.), 1/DISTR.k ) * DISTR.theta;

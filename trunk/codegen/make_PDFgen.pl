@@ -198,7 +198,7 @@ sub make_PDF_params
     foreach my $i (0 .. $n_in_params - 1) {
 	if ($have_n_params) {
 	    $params .=
-#		"\tif (".$DISTR->{$d}->{"=PDF"}->{"=DISTR"}.".n_params > $i)\n".
+		"\tif (".$DISTR->{$d}->{"=PDF"}->{"=DISTR"}.".n_params > $i)\n".
 		"\t\tfprintf (out,\"\\tconst double ".
 		$in_params->[$i].
 		" = %.20e;\\n\",".

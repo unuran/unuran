@@ -75,7 +75,7 @@ static const char distr_name[] = "exponential";
 #define theta  params[1]
 
 #define DISTR distr->data.cont
-/* #define NORMCONSTANT (distr->data.cont.norm_constant) */
+#define LOGNORMCONSTANT (distr->data.cont.norm_constant)
 
 /* function prototypes                                                       */
 static double _unur_pdf_exponential( double x, UNUR_DISTR *distr );
@@ -99,7 +99,7 @@ _unur_pdf_exponential( double x, UNUR_DISTR *distr )
 
   /* standard form */
   
-  return ( (x<0.) ? 0. : exp(-x) / sigma );
+  return ( (x<0.) ? 0. : exp(-x - LOGNORMCONSTANT) );
 
 } /* end of _unur_pdf_exponential() */
 
@@ -158,7 +158,9 @@ _unur_upd_mode_exponential( UNUR_DISTR *distr )
 int
 _unur_upd_area_exponential( UNUR_DISTR *distr )
 {
-  /* normalization constant: none */
+  /* log of normalization constant */
+  LOGNORMCONSTANT = log(DISTR.sigma);
+
 
   if (distr->set & UNUR_DISTR_SET_STDDOMAIN) {
     DISTR.area = 1.;
@@ -257,6 +259,9 @@ unur_distr_exponential( double *params, int n_params )
     free(distr);
     return NULL;
   }
+
+  /* log of normalization constant */
+  LOGNORMCONSTANT = log(DISTR.sigma);
 
   /* mode and area below p.d.f. */
   DISTR.mode = DISTR.theta;   /* theta */

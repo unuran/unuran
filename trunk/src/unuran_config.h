@@ -168,7 +168,7 @@
 /*                                                                           */
 /* UNUR_URNG_RNGSTREAM:                                                      */
 /*     Use a pointer to a uniform RNG object from Pierre L'Ecuyer's          */
-/*     `RngStream' library for multiple multiple independent streams of      */
+/*     `RngStream' library for multiple independent streams of               */
 /*     pseudo-random numbers.                                                */
 /*     (see http://www.iro.umontreal.ca/~lecuyer/myftp/streams00/c/)         */
 /*                                                                           */
@@ -199,8 +199,8 @@
 
 /* Set type of uniform random number generator.                              */
 /*  #define UNUR_URNG_TYPE UNUR_URNG_FVOID */
-/*  #define UNUR_URNG_TYPE UNUR_URNG_PRNG */
-#define UNUR_URNG_TYPE UNUR_URNG_RNGSTREAM
+#define UNUR_URNG_TYPE UNUR_URNG_PRNG
+/*  #define UNUR_URNG_TYPE UNUR_URNG_RNGSTREAM */
 /*  #define UNUR_URNG_TYPE UNUR_URNG_GSL */
 /*  #define UNUR_URNG_TYPE UNUR_URNG_GENERIC */
 

@@ -73,7 +73,10 @@
       Currently we have two possible switches (other values would result
       in a compilation error):
       
-      1. UNUR_URNG_TYPE == UNUR_URNG_FVOID
+      @enumerate
+
+      @item
+      UNUR_URNG_TYPE == UNUR_URNG_FVOID
       
       This uses URNGs of type @code{double uniform(void)}.
       If independent versions of the same URNG should be used, a copy of
@@ -82,9 +85,10 @@
       UNURAN contains some build-in URNGs of this type in directory
       @file{src/uniform/}.
       
-      2. UNUR_URNG_TYPE == UNUR_URNG_PRNG
+      @item
+      UNUR_URNG_TYPE == UNUR_URNG_PRNG
       
-      This uses the URNGs from the prng library. It provides a very
+      This uses the URNGs from the @code{prng} library. It provides a very
       flexible way to sample form arbitrary URNGs by means of an object
       oriented programing paradigma. Similarly to the UNURAN library
       independent generator objects can be build and used.
@@ -98,9 +102,87 @@
       or from the pLab site at
       @uref{http://random.mat.sbg.ac.at/}.
       
+      @item
+      UNUR_URNG_TYPE == UNUR_URNG_RNGSTREAM
+
+      Use Pierre L'Ecuyer's @code{RngStream} library for multiple 
+      independent streams of pseudo-random numbers. 
+      It is available from
+      @uref{http://www.iro.umontreal.ca/~lecuyer/myftp/streams00/c/}.        
+
+      @item
+      UNUR_URNG_TYPE == UNUR_URNG_GSL
+
+      Use the URNG from the GNU Scientific Library (GSL).
+      It is available from
+      @uref{http://www.gnu.org/software/gsl/}.                               
+
+      @item
+      UNUR_URNG_TYPE == UNUR_URNG_GENERIC
+
+      This a generic interface with limited support.
+      It uses a structure to store both a function call of type
+      @code{double urng(void*)} and a void pointer to the parameter list.
+      Both pointers must be set directly using the structure
+      @code{struct unur_urng_generic}
+      (there are currently no calls that support this URNG type).
+      It is defined as
+
+      @smallexample
+      struct unur_urng_generic @{
+      @ @ @ double (*getrand)(void *params);
+      @ @ @ void *params;
+      @};
+      @end smallexample
+
+      All functions and parameters should be set at run time:
+        @enumerate
+
+	@item
+	Allocate variable of type @code{struct unur_urng_generic}
+	(or of type @code{UNUR_URNG}, which is the same):
+	@smallexample
+	UNUR_URNG *urng;                                                
+	urng = malloc(sizeof(UNUR_URNG));
+	@end smallexample
+
+	@item
+	Set function of type @code{double (*rand)(void *)} for
+	sampling from URNG:
+	@smallexample
+        urng->getrand = my_uniform_rng;                                 
+	@end smallexample
+
+	@item
+	Set pointer to parameters of for this function                    
+	(or NULL if no parameters are required):                          
+	@smallexample
+        urng->params = my_parameters;                                   
+	@end smallexample
+
+	@item
+	Use this URNG:
+	@smallexample
+        unur_urng_set_default(urng);             (set default generator)
+        unur_urng_set_default_aux(urng);    (set default aux. generator)
+	@end smallexample
+
+	Notice that this must be done before UNURAN generator object      
+	are created. Of course urng can also used just for a particular   
+	generator object. Use the following and similar calls:
+	@smallexample
+        unur_set_urng(par,urng);                                        
+        unur_chg_urng(gen,urng);                                        
+	@end smallexample
+
+        @end enumerate
+
+      @end enumerate
+
       It is possible to use other interfaces to URNGs without much
-      troubles. If you need such a new interface please email the authors
-      of the UNURAN library.
+      troubles. All changes have to be done in file 
+      @file{unuran_config.h}. If you need such a new interface 
+      please feel free to contact the authors of the UNURAN library.
       
       Some generating methods provide the possibility of correlation
       induction. To use this feature a second auxiliary URNG is required.

@@ -480,9 +480,9 @@ unur_stdgen_sample_poisson_pdac( struct unur_gen *gen )
 
 /*---------------------------------------------------------------------------*/
 
-static double f(long int k, double l_nu, double c_pm)
+inline static double f(int k, double l_nu, double c_pm)
 {
-        return  exp(k * l_nu - _unur_factorialln(k) - c_pm);
+  return  exp(k * l_nu - _unur_factorialln(k) - c_pm);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -584,8 +584,8 @@ unur_stdgen_sample_poisson_pprsc( struct unur_gen *gen )
      /* theta >= 10: Patchwork Rejection */
 {
   /* -X- generator code -X- */
-  long int             Dk, X, Y;
-  double               U, V, W;
+  int    Dk, X, Y;
+  double U, V, W;
 
   while (1) {
 

@@ -1,4 +1,12 @@
 -----------------------------------------------------------------------------
+
+wenn man ein eigenes build directory waehlt, kann man die docu nicht mehr 
+erstellen, da @image{figures/....} die datei nicht mehr finden kann.
+
+viellicht sollte man die abhaengigkeiten der doku von den header files 
+im release wieder abdrehen? (make maintainer-mode ???)
+
+-----------------------------------------------------------------------------
 UNURAN BESPRECHUNG vom 11.2.2004
 
 Konkrete Ziele in naechster Zeit:

@@ -148,6 +148,11 @@ unur_distr_cvec_new( int dim )
   DISTR.marginals = NULL;   /* array of pointers to marginal distributions */
   DISTR.stdmarginals = NULL;  /* array of pointers to standardized marginal distributions */
 
+  /* initialize parameters of the p.d.f.                                     */
+  DISTR.n_params  = 0;             /* number of parameters of the pdf        */
+  for (i=0; i<UNUR_DISTR_MAXPARAMS; i++)
+    DISTR.params[i] = 0.;
+  
   /* initialize parameter vectors of the PDF                                 */
   for (i=0; i<UNUR_DISTR_MAXPARAMS; i++) {
     DISTR.n_param_vec[i] = 0;
@@ -246,7 +251,15 @@ _unur_distr_cvec_clone( const struct unur_distr *distr )
   if (DISTR.stdmarginals)
     CLONE.stdmarginals = _unur_distr_cvec_marginals_clone( DISTR.stdmarginals, distr->dim );
   
+  /* clone of scalar parameters */
+  CLONE.n_params = DISTR.n_params;  
   for (i=0; i<UNUR_DISTR_MAXPARAMS; i++) {
+    CLONE.params[i] = DISTR.params[i];
+  }
+  
+  /* clone of parameter arrays */  
+  for (i=0; i<UNUR_DISTR_MAXPARAMS; i++) {
+    CLONE.n_param_vec[i] = DISTR.n_param_vec[i];
     if (DISTR.param_vecs[i]) {
       CLONE.param_vecs[i] = _unur_xmalloc( DISTR.n_param_vec[i] * sizeof(double) );
       memcpy( CLONE.param_vecs[i], DISTR.param_vecs[i], DISTR.n_param_vec[i] * sizeof(double) );

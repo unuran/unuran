@@ -25,6 +25,7 @@ do {
      readln(input_string);
      if (strcmp(input_string,"") == 0) break;
      parsetree = _unur_fstr2tree(input_string,&errcode,&errpos);
+     printf("\nAdresse:\n%d\n",parsetree);
      if  (errcode>0) break;
   /*-----------------------------------------------------------------*/
   /* Funktionsauswertung */
@@ -37,18 +38,17 @@ do {
     } while (0); 
  /*-----------------------------------------------------------------*/
  /* Stringausgabe    */
- 
      printf("\nAdresse:\n%d\n",parsetree);
-     printf("\nParse-Baum als String:\n%s\n",input_string);
+     Ntree2string(parsetree,input_string);
+      printf("\nParse-Baum als String:\n%s\n",input_string); 
  /*-----------------------------------------------------------------*/
  /*  Ableitung */
 
  do {
-     printf("\n Argument fur Ableitung: ");
-     readln(input_string);
+     printf("\nArgument fuer Ableitung:\n");readln(input_string);
      dev_tree=_unur_fstr_make_derivative(parsetree);
-
-     printf("\n Wert: %f \n", _unur_fstr_eval_tree(dev_tree,atof(input_string)));
+    
+     printf("\n Wert: %f \n", _unur_fstr_dev_eval_tree(dev_tree,atof(input_string)));
     } while (0); 
 
     

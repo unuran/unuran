@@ -16,7 +16,7 @@
 @c September 2000 Janka & Tirler                
 @c $Id$
 
-@set VERSION 0.01
+@set VERSION 0.02
 @set DATE September 2000
 
 @dircategory Scientific software
@@ -36,8 +36,29 @@ last updated @value{DATE}
 @subtitle Generating random numbers
 @subtitle Version: @value{VERSION}
 @subtitle Date: @value{DATE}
-@end titlepage
+@page
+@vskip 0pt plus 1filll
+Copyright 2000 Josef Leydold, Institut fuer Statistik, WU Wien
 
+Permission is granted to make and distribute verbatim
+copies of this manual provided the copyright notice and
+this permission notice are preserved on all copies.
+     
+Permission is granted to copy and distribute modified
+versions of this manual under the conditions for
+verbatim copying, provided also that the section 
+entitled ``Copying'' and ``GNU General Public License''
+are included exactly as in the original, and provided
+that the entire resulting derived work is distributed
+under the terms of a permission notice identical to this
+one.
+     
+Permission is granted to copy and distribute
+translations of this manual into another language,
+under the above conditions for modified versions,
+except that this permission notice may be stated in a
+translation approved by the Free Software Foundation.
+@end titlepage
 
 @c ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 @c
@@ -196,14 +217,14 @@ and @code{unuran_distributions.h} with the commands:
 @* 
 These headers provide all functions/features for generating random numbers.
 @*
-The following three structures: 
+The following three pointers to structures: 
 @smallexample
 UNUR_DISTR *distr;  /* distribution */ 
 UNUR_PAR   *par;    /* parameter */
 UNUR_GEN   *gen;    /* generator */
 @end smallexample
 @*
-are necesssary to store the used parameters. It is not necessary to
+are neccessary to store the used parameters. It is not neccessary to
 understand the structure in detail to get random numbers. 
 @*
 With
@@ -222,7 +243,8 @@ With
  par = unur_arou_new(distr);
 @end smallexample
 @*
-the method `AROU' is chosen for sampling.
+the method `AROU' is chosen for sampling and a parameter object `par'
+is generated.
 @*
 For actual sampling it's necessary to build a generator object:
 @smallexample
@@ -320,14 +342,18 @@ double mycdf (double x)
 This two lines generate a distribution object and
 set the cdf (which is needed by the choosen method
 for generating random numbers (numerical inversion with
-the regula falsi) to the disired function
+the regula falsi) to the desired function
 (@code{mycdf()} defined above):
 @smallexample
 distr = unur_distr_cont_new();
 unur_distr_cont_set_cdf(distr, mycdf);
 @end smallexample
 @*
-As in the previous example the line 
+What you have to provide for the method you chose
+is documented in @ref{Requirements} and how to provide
+it in @ref{Selfmade}.
+@*
+As in the previous example the following line: 
 @smallexample
 par = unur_ninv_new(distr);
 @end smallexample
@@ -395,6 +421,9 @@ change parameters of the choosen method with the following line:
 unur_ninv_use_newton(par);
 @end smallexample
 @*
+Because the parameter object is destroyed when generating
+the generator object, it is important to change the
+parameters in advance.
 The available parameters are documented in @ref{MethodsRef}.
 
 
@@ -584,6 +613,8 @@ better: one struct unur with unur.d, unur.p, unur.g
 standard configuration: Log outout to file
 @end enumerate
 
+@page
+i
 @ifhtml
 @anchor{Contents}
 @end ifhtml

@@ -13,8 +13,9 @@ dnl See the libtool manual for an explanation of the numbers
 dnl 
 dnl unuran-0.4.0   0:0:0
 dnl unuran-0.4.2   1:0:1
+dnl unuran-0.4.4   1:0:2
 
-UNURAN_LT_VERSION="1:0:1"
+UNURAN_LT_VERSION="1:0:2"
 AC_SUBST([UNURAN_LT_VERSION])
 
 dnl Add dmalloc support.

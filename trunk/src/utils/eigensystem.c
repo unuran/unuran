@@ -368,7 +368,7 @@ _unur_eigensystem_trinv(int dim, double *a, double *b, double *g, double *c,
 	/* Computes the eigenvectors to specified eigenvalues of a real 	*/
 	/* symmetric tri-diagonal matrix by the method of inverse iteration	*/
 	/* The routine is a modified version of the corresponding part of the   */
-	/* subroutine GIVHO of J. Ortega in Ralston Wilf. : MAthematical 	*/
+	/* subroutine GIVHO of J. Ortega in Ralston Wilf. : Mathematical 	*/
 	/* methods for digital computers, vol 2, Wiley 1967			*/
 	/*									*/
 	/* Parameters								*/
@@ -419,11 +419,11 @@ _unur_eigensystem_trinv(int dim, double *a, double *b, double *g, double *c,
     /* Gauss algorithm */
 
     for (j=1; j<dim; j++) {
-	  if(fabs(r[j-1]) >= fabs(b[j-1])) {
+      if(fabs(r[j-1]) >= fabs(b[j-1])) {
         if (r[j-1]==0.) r[j-1]=EPS2;
         in[j-1]=0;
         f=b[j-1]/r[j-1];
-	  }
+      }
       else {
         in[j-1]=1;
         f=r[j-1]/b[j-1];
@@ -441,22 +441,22 @@ _unur_eigensystem_trinv(int dim, double *a, double *b, double *g, double *c,
     }
     if (r[dim-1]==0.) r[dim-1]=EPS2;
 
-	/* two iterations */ 
+    /* two iterations */ 
     for (j=dim; j>=1; j--) {
       y[j-1]=(y[j-1]-y[j]*q[j-1]-y[j+1]*p[j-1])/r[j-1];
       c[idx1(1,j)]=y[j-1];
     }
     for (j=1; j<dim; j++) {
-	  if (in[j-1]==0) y[j] -= w[j-1]*y[j-1];
-	  else {
+      if (in[j-1]==0) y[j] -= w[j-1]*y[j-1];
+      else {
         t=y[j-1];
         y[j-1]=y[j];
         y[j]=t-w[j-1]*y[j];
       }
-	}
-	t=0.;
+    }
+    t=0.;
     for (j=dim; j>=1; j--) {
-		y[j-1]=(y[j-1]-y[j]*q[j-1]-y[j+1]*p[j-1])/r[j-1];
+	y[j-1]=(y[j-1]-y[j]*q[j-1]-y[j+1]*p[j-1])/r[j-1];
         t += y[j-1]*y[j-1];
     }
     /* Orthogonalize in case of close eigenvalues */
@@ -470,7 +470,7 @@ _unur_eigensystem_trinv(int dim, double *a, double *b, double *g, double *c,
       for (j=1; j<=dim; j++) t += y[j-1]*y[j-1];
     }
 
-	/* normalize and store eigenvector */ 
+    /* normalize and store eigenvector */ 
     t=sqrt(t);
     for (j=1; j<=dim; j++) {
       c[idx1(i,j)]=y[j-1]/t;

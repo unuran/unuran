@@ -4,13 +4,13 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   FILE: source_misc.h                                                     *
+ *   FILE: x_umalloc_source.h                                                *
  *                                                                           *
  *   PURPOSE:                                                                *
- *         prototypes for miscelleous functions                              *
+ *         prototypes for allocating memory blocks                           *
  *                                                                           *
  *   USAGE:                                                                  *
- *         only included in source_struct.h                                  *
+ *         only included in source_unuran.h                                  *
  *                                                                           *
  *****************************************************************************
      $Id$

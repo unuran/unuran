@@ -63,12 +63,12 @@
 #include <source_cookies.h>
 #include <source_fp.h>
 #include <source_methods.h>
-#include <source_misc.h>
 
 #include <distr_source.h>
 #include <x_debug_source.h>
 #include <x_gen_source.h>
 #include <x_math_source.h>
+#include <x_umalloc_source.h>
 
 /*---------------------------------------------------------------------------*/
 #endif  /* end __UNURAN_SOURCE_H_SEEN */

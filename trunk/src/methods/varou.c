@@ -183,19 +183,20 @@ static double _unur_varou_aux_umax(double *x, void *p );
 /* Auxiliary functions used in the computation of the bounding rectangle     */
 /*---------------------------------------------------------------------------*/
 
-static double _unur_varou_f( struct unur_gen *gen, double *u, double v);
+static double _unur_varou_f( struct unur_gen *gen, double *uv); 
 /*---------------------------------------------------------------------------*/
 /* return value of PDF(u_0/v+c_0, u_1/v+c_1, ..., u_{dim-1}/v+c_{dim-1})     */
+/* where (c_0, c_1, ...) is the center, u_i=uv[i] for i<dim and v=uv[dim]    */
 /*---------------------------------------------------------------------------*/
 
-static double _unur_varou_F( struct unur_gen *gen, double *u, double v);
+static double _unur_varou_F( struct unur_gen *gen, double *uv);
 /*---------------------------------------------------------------------------*/
 /* return value of v^(1+dim) - PDF(u_0/v+c_0, u_1/v+c_1, ...)                */
 /*---------------------------------------------------------------------------*/
 
-static double *_unur_varou_dF( struct unur_gen *gen, double *u, double v);
+static void _unur_varou_dF( struct unur_gen *gen, double *uv, double *dF);
 /*---------------------------------------------------------------------------*/
-/* return calculated value the gradient of F() at the point (u,v)            */
+/* calculate the value the gradient of F() at the point (u,v)                */
 /*---------------------------------------------------------------------------*/
 
 
@@ -724,10 +725,12 @@ _unur_varou_cones_init( struct unur_gen *gen )
     GEN.cone_list[ic]->index[0]=0; /* all cones contain the north-pole vertex */
     GEN.cone_list[ic]->norm[0]=GEN.vmax; 
     
+    GEN.cone_list[ic]->unit_volume=1.; /* 1/dim! is calculated below */
     for (i=0; i<dim; i++) {
       /* obtain vertex indices of the ic'th cone */
       GEN.cone_list[ic]->index[i+1]=((GEN.n_cone-ic-1)>>i & 1)?(1+2*i):(2+2*i); 
       GEN.cone_list[ic]->norm[i+1]=UNUR_INFINITY; 
+      GEN.cone_list[ic]->unit_volume *= 1./(1.+i);
     }
     GEN.cone_list[ic]->volume = UNUR_INFINITY; /* initial cones are unbounded */
   }
@@ -841,31 +844,34 @@ _unur_varou_aux_umax(double *x, void *p)
 /*---------------------------------------------------------------------------*/
 
 
-double _unur_varou_f( struct unur_gen *gen, double *u, double v) 
+double 
+_unur_varou_f( struct unur_gen *gen, double *uv) 
      /*----------------------------------------------------------------------*/
      /* return calculated value of                                           */
      /* PDF(u_0/v+c_0, u_1/v+c_1, ..., u_{dim-1}/v+c_{dim-1})                */
-     /* where (c_0, c_1, ...) is the center.                                 */
+     /* where (c_0, c_1, ...) is the center,                                 */
+     /* u_i=uv[i] for i<dim and v=uv[dim].                                   */
      /*                                                                      */
      /* UNUR_INFINITY is returned when |v|<UNUR_EPSILON                      */
      /*----------------------------------------------------------------------*/
 {
   int d, dim; /* index used in dimension loops (0 <= d < dim) */
-  double *uv; /* u/v vector     */
+  double *x;  /* u/v+c vector   */
+  double v;
   double f;   /* function value */
 
-  if (fabs(v) <= UNUR_EPSILON) return UNUR_INFINITY;
-  
   dim = GEN.dim;
+  v=uv[dim];
+  if (fabs(v) <= UNUR_EPSILON) return UNUR_INFINITY;
 
-  uv = _unur_vector_new(dim);
+  x = _unur_vector_new(dim);
   for (d=0; d<dim; d++) {
-    uv[d] = u[d] / v + GEN.center[d];
+    x[d] = uv[d] / v + GEN.center[d];
   }
 
-  f = PDF(uv);
+  f = PDF(x);
 
-  free(uv);
+  free(x);
   
   return f;
 }
@@ -873,66 +879,71 @@ double _unur_varou_f( struct unur_gen *gen, double *u, double v)
 /*---------------------------------------------------------------------------*/
 
 double 
-_unur_varou_F( struct unur_gen *gen, double *u, double v) 
+_unur_varou_F( struct unur_gen *gen, double *uv) 
      /*----------------------------------------------------------------------*/
      /* return value of v^(1+dim) - PDF(u_0/v+c_0, u_1/v+c_1, ...)           */
+     /* where (c_0, c_1, ...) is the center,                                 */
+     /* u_i=uv[i] for i<dim and v=uv[dim].                                   */
      /*                                                                      */
      /* UNUR_INFINITY is returned when |v|<UNUR_EPSILON                      */
      /*----------------------------------------------------------------------*/
 {
+  double v;
   double F;   /* function value */
+
+  v=uv[GEN.dim];
  
   if (fabs(v) <= UNUR_EPSILON) return UNUR_INFINITY;
   
-  F = pow(v, 1.+ GEN.dim ) - _unur_varou_f( gen, u, v);
+  F = pow(v, 1.+ GEN.dim ) - _unur_varou_f( gen, uv);
 
   return F;
 }
 
 /*---------------------------------------------------------------------------*/
 
-double * 
-_unur_varou_dF( struct unur_gen *gen, double *u, double v )
+void 
+_unur_varou_dF( struct unur_gen *gen, double *uv, double *dF )
      /*----------------------------------------------------------------------*/
-     /* return the value of the gradient of F() at the point (u,v)           */
+     /* calculate the value of the gradient of F() at the point (u,v)        */
+     /* the gradient is written into the (dim+1) double array dF[]           */
      /*                                                                      */
      /* NULL is returned when |v|<UNUR_EPSILON                               */
      /*----------------------------------------------------------------------*/
 {
   int d, dim; /* index used in dimension loops (0 <= d < dim) */
-  double *uv; /* u/v vector     */
-  double *dF;
+  double v;
+  double *x; /* u/v+c vector     */
   double *dPDF;
 
-  if (fabs(v) <= UNUR_EPSILON) return NULL;
-
   dim = GEN.dim;
+  v=uv[dim]; 
+  if (fabs(v) <= UNUR_EPSILON) return NULL;
    
   /* reserving memory for arrays */ 
-  uv = _unur_vector_new(dim);
+  x = _unur_vector_new(dim);
   dPDF = _unur_vector_new(dim);
-  dF = _unur_vector_new(dim+1);
   
-  /* calculating the rations uv[d] = u[d]/v */
+  /* calculating the ratios x[d] */
   for (d=0; d<dim; d++) {
-    uv[d] = u[d] / v;
+    x[d] = uv[d] / v + GEN.center[d];
   }
 
-  /* dPDF at the point uv[] */
-  _unur_cvec_dPDF(dPDF, uv, gen->distr);
+  /* dPDF at the point x[] */
+  _unur_cvec_dPDF(dPDF, x, gen->distr);
 
   /* gradient coordinates of F() */
+  dF[dim] = (1.+dim) * pow(v, dim);
   for (d=0; d<dim; d++) {
     dF[d] = - dPDF[d] / v;
+    dF[dim] += uv[d]*dPDF[d]/(v*v);
   }
-  /* and the last coordinate */
-  dF[dim] = (1.+dim) * pow(v, dim);
 
   /* freeing allocated memory */
-  _unur_vector_free(uv);
+  _unur_vector_free(x);
   _unur_vector_free(dPDF);
   
-  return dF;
+  return;
 }
 
 /*---------------------------------------------------------------------------*/

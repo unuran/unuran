@@ -20,6 +20,9 @@ Version 0.6.0: ???? 200?
 	  directly. This mechanism replaces the _set_ calls for 
 	  all methods that make use of the center.
 
+        - interface for setting and getting parameter-arrays for 
+          multivariate distributions has been renamed.
+
         - method MCORR is extended to cover generation of random
 	  correlation matrices with given eigenvalues.
 

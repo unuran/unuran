@@ -121,7 +121,7 @@ int unur_dari_set_squeeze( UNUR_PAR *parameters, char squeeze );
    domain of the distribution is very big or if only small samples are
    produced.  
 
-   Default is off.
+   Default: no squeeze.
 */
 
 int unur_dari_set_size( UNUR_PAR *parameters, int size );
@@ -133,7 +133,7 @@ int unur_dari_set_size( UNUR_PAR *parameters, int size );
    evaluate and the ``main part of the distribution'' is concentrated
    in an interval shorter than the size of the table.
 
-   Default is 100.
+   Default is @code{100}.
 */
 
 int unur_dari_set_cpfactor( UNUR_PAR *parameters, double cp_factor );
@@ -144,7 +144,7 @@ int unur_dari_set_cpfactor( UNUR_PAR *parameters, double cp_factor );
    points for the hat function.
    There is no need to change this factor in almost all situations.
 
-   Default is ??.
+   Default is @code{0.664}.
 */
 
 int unur_dari_set_verify( UNUR_PAR *parameters, int verify );

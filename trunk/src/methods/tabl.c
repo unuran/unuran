@@ -66,7 +66,7 @@
 /*---------------------------------------------------------------------------*/
 /* Constants                                                                 */
 
-#define TABL_DEFAULT_COMPUTATION_LIMIT  1.e50
+#define TABL_DEFAULT_COMPUTATION_LIMIT  1.e20
 
 /*---------------------------------------------------------------------------*/
 /* Variants                                                                  */
@@ -266,10 +266,10 @@ unur_tabl_new( struct unur_distr *distr )
   PAR.n_slopes      = 0;         /* number of slopes                         */
 
   PAR.n_starting_cpoints = 30;   /* number of starting points                */
-  PAR.area_fract    = 0.25;      /* parameter for equal area rule (default from [1] ) */
+  PAR.area_fract    = 0.1;       /* parameter for equal area rule (default from [1] ) */
 
-  PAR.max_ivs       = 100;       /* maximum number of intervals              */
-  PAR.max_ratio     = 0.95;      /* bound for ratio  Atotal / Asqueeze       */
+  PAR.max_ivs       = 500;       /* maximum number of intervals              */
+  PAR.max_ratio     = 0.90;      /* bound for ratio  Atotal / Asqueeze       */
 
   PAR.guide_factor  = 1.; /* guide table has same size as array of intervals */
 
@@ -278,8 +278,8 @@ unur_tabl_new( struct unur_distr *distr )
   PAR.bright    = TABL_DEFAULT_COMPUTATION_LIMIT;
 
   par->method   = UNUR_METH_TABL;              /* indicate method            */
-  par->variant  = (TABL_VARFLAG_SPLIT_ARC |    /* variant: split at arc_mean */
-		   TABL_VARFLAG_STP_A     |    /* run SPLIT A on slopes      */
+  par->variant  = (TABL_VARFLAG_SPLIT_MEAN |   /* variant: split at arc_mean */
+		   TABL_VARFLAG_STP_A      |   /* run SPLIT A on slopes      */
 		   TABL_VARFLAG_STP_B      );  /* run SPLIT B on slopes      */
 
 

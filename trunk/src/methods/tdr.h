@@ -59,7 +59,7 @@
       @item c = 0
       T(x) = log(x)
       @item c = -0.5
-      T(x) = -1/sqrt(x)
+      T(x) = -1/sqrt(x) @ @ @ @ @ (Default)
       @end table
    
       In future releases the transformations T(x) = -(x)^c will be
@@ -78,7 +78,7 @@
       @item GW
       squeezes between construction points
       @item PS
-      squeezes proportional to hat function
+      squeezes proportional to hat function  @ @ @ @ @ (Default)
       @item IA
       same as variant PS but uses a compositon method with
       ``immediate acceptance'' in the region below the squeeze.
@@ -147,7 +147,7 @@ int unur_tdr_set_c( UNUR_PAR *parameters, double c );
    Currently only values between 0 and -0.5 are allowed.
    If @code{c} is between 0 and -0.5 it is set to -0.5.
 
-   Default is -0.5.
+   Default is @code{-0.5}.
 */
 
 
@@ -155,13 +155,13 @@ int unur_tdr_set_variant_gw( UNUR_PAR *parameters );
 /* 
    Use original version with squeezes between construction points as
    proposed by Gilks & Wild  (1992).
-   This is the default.
 */
 
 int unur_tdr_set_variant_ps( UNUR_PAR *parameters );
 /* 
    Use squeezes proportional to the hat function. This is faster than
    the original version.
+   This is the default.
 */
 
 int unur_tdr_set_variant_ia( UNUR_PAR *parameters );
@@ -210,7 +210,7 @@ int unur_tdr_set_max_sqhratio( UNUR_PAR *parameters, double max_ratio );
    Use 1 if added new construction points should not be stopped until
    the maximum number of construction points is reached.
 
-   Default is @code{0.95}.
+   Default is @code{0.99}.
 */
 
 double unur_tdr_get_sqhratio( UNUR_GEN *generator );
@@ -234,7 +234,7 @@ int unur_tdr_set_cpoints( UNUR_PAR *parameters, int n_stp, double *stp );
    than a heuristic rule of thumb is used to get @var{n_stp}
    construction points. This is the default behavior. 
 
-   The default number of construction points is ??.
+   The default number of construction points is 30.
 */
 
 int unur_tdr_set_center( UNUR_PAR *parameters, double center );
@@ -246,6 +246,9 @@ int unur_tdr_set_center( UNUR_PAR *parameters, double center );
 
    It is suggested to use this call to provide some information about
    the main part of the PDF to avoid numerical problems.
+
+   By default the mode is used as center if available. 
+   Otherwise @code{0} is used.
 */
 
 int unur_tdr_set_usecenter( UNUR_PAR *parameters, int usecenter );
@@ -274,7 +277,7 @@ int unur_tdr_set_guidefactor( UNUR_PAR *parameters, double factor );
    to @code{0}. 
    When set to @code{0}, then sequential search is used.
 
-   Default is ??.
+   Default is 2.
 */
 
 int unur_tdr_set_verify( UNUR_PAR *parameters, int verify );
@@ -283,6 +286,7 @@ int unur_tdr_set_verify( UNUR_PAR *parameters, int verify );
 int unur_tdr_chg_verify( UNUR_GEN *generator, int verify );
 /* 
    Turn verifying of algorithm while sampling on/off.
+   Default is FALSE.
 */
 
 int unur_tdr_set_pedantic( UNUR_PAR *parameters, int pedantic );
@@ -306,7 +310,7 @@ int unur_tdr_set_pedantic( UNUR_PAR *parameters, int pedantic );
    might happen that the generation times are extremely high
    (even hours are possible in extremely rare cases).
 
-   Default is TRUE.
+   Default is FALSE.
 */
 
 /* =END */

@@ -85,7 +85,8 @@ int unur_dau_set_urnfactor( UNUR_PAR *parameters, double factor );
    vector. It must not be less than 1. Larger tables result in
    (slightly) faster generation times but require a more expensive
    setup. However sizes larger than 2 are not recommended.
-   Default is 1.
+
+   Default is @code{1}.
 */
 
 /* =END */

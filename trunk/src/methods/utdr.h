@@ -113,6 +113,8 @@ int unur_utdr_set_pdfatmode( UNUR_PAR *parameters, double fmode );
    change when parameters of the distributions vary. 
    It is only useful when the PDF at the mode does not change with
    changing parameters for the distribution.
+
+   Default: not set.
 */
 
 int unur_utdr_set_cpfactor( UNUR_PAR *parameters, double cp_factor );
@@ -121,6 +123,8 @@ int unur_utdr_set_cpfactor( UNUR_PAR *parameters, double cp_factor );
    The @var{cp_factor} is used to find almost optimal construction
    points for the hat function.
    There is no need to change this factor in almost all situations.
+
+   Default is @code{0.664}.
 */
 
 int unur_utdr_set_deltafactor( UNUR_PAR *parameters, double delta );
@@ -129,6 +133,8 @@ int unur_utdr_set_deltafactor( UNUR_PAR *parameters, double delta );
    higher factors increase the rejection constant but reduces the risk of
    serious round-off errors.
    There is no need to change this factor it almost all situations.
+
+   Default is @code{1.e-5}.
 */
 
 int unur_utdr_set_verify( UNUR_PAR *parameters, int verify );
@@ -137,6 +143,7 @@ int unur_utdr_set_verify( UNUR_PAR *parameters, int verify );
 int unur_utdr_chg_verify( UNUR_GEN *generator, int verify );
 /* 
    Turn verifying of algorithm while sampling on/off.
+   Default is FALSE.
 */
 
 /*...........................................................................*/

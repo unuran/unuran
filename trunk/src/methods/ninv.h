@@ -101,11 +101,13 @@ int unur_ninv_set_useregula( UNUR_PAR *parameters );
 int unur_ninv_set_max_iter( UNUR_PAR *parameters, int max_iter );
 /* 
    Set number of maximal iterations.
+   Default is @code{40}.
 */
 
 int unur_ninv_set_x_resolution( UNUR_PAR *parameters, double x_resolution);
 /* 
    Set maximal relative error in x.
+   Default is @code{10^-8}.
 */
 
 int unur_ninv_set_start( UNUR_PAR *parameters, double left, double right);
@@ -142,6 +144,8 @@ int unur_ninv_set_table(UNUR_PAR *parameters, int no_of_points);
 
    If a table is used, then the starting points given by
    unur_ninv_set_start() are ignored.
+
+   No table is used by default.
  */
 
 int unur_ninv_chg_max_iter(UNUR_GEN *generator, int max_iter);

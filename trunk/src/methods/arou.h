@@ -98,7 +98,8 @@ int unur_arou_set_max_sqhratio( UNUR_PAR *parameters, double max_ratio );
    setup.
    Use @code{1} if adding new construction points should not be
    stopped until the maximum number of construction points is reached.
-   Default is ??.
+
+   Default is @code{0.99}.
 */
 
 double unur_arou_get_sqhratio( UNUR_GEN *generator );
@@ -114,7 +115,8 @@ int unur_arou_set_max_segments( UNUR_PAR *parameters, int max_segs );
    Set maximum number of segements.
    No construction points are added @emph{after} the setup when the
    number of segments succeeds @var{max_segs}.
-   Default is ??.
+
+   Default is @code{100}.
 */
 
 
@@ -124,7 +126,7 @@ int unur_arou_set_cpoints( UNUR_PAR *parameters, int n_stp, double *stp );
    If @var{stp} is NULL, then a heuristical rule of thumb is used to
    get @var{n_stp} construction points. 
    This is the default behavior when this routine is not called.
-   The (default) number of construction points is ??, then.
+   The (default) number of construction points is 30, then.
 */
 
 
@@ -138,6 +140,9 @@ int unur_arou_set_center( UNUR_PAR *parameters, double center );
    It is suggested to use this call to provide some information about
    the main part of the PDF to avoid numerical problems, when the most
    important part of the PDF is not close to @code{0}.
+
+   By default the mode is used as center if available. 
+   Otherwise @code{0} is used.
 */
 
 
@@ -155,7 +160,7 @@ int unur_arou_set_guidefactor( UNUR_PAR *parameters, double factor );
    to @code{0}. 
    When set to @code{0}, then sequential search is used.
 
-   Default is ??.
+   Default is @code{2}.
 */
 
 
@@ -165,6 +170,7 @@ int unur_arou_set_verify( UNUR_PAR *parameters, int verify );
 int unur_arou_chg_verify( UNUR_GEN *generator, int verify );
 /* 
    Turn verifying of algorithm while sampling on/off.
+   Default is FALSE.
 */
 
 
@@ -189,7 +195,7 @@ int unur_arou_set_pedantic( UNUR_PAR *parameters, int pedantic );
    might happen that the generation times are extremely high
    (even hours are possible in extremely rare cases).
 
-   Default is TRUE.
+   Default is FALSE.
 */
 
 /* =END */

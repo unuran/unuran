@@ -135,6 +135,8 @@ int unur_srou_set_cdfatmode( UNUR_PAR *parameters, double Fmode );
    When set, the performance of the algorithm is increased by factor 2.
    However, when the parameters of the distribution are changed
    unur_srou_chg_cdfatmode() has to be used to update this value.
+
+   Default: not set.
 */
 
 int unur_srou_set_pdfatmode( UNUR_PAR *parameters, double fmode );
@@ -145,14 +147,8 @@ int unur_srou_set_pdfatmode( UNUR_PAR *parameters, double fmode );
    change when parameters of the distributions vary. 
    It is only useful when the PDF at the mode does not change with
    changing parameters of the distribution.
-*/
 
-int unur_srou_set_verify( UNUR_PAR *parameters, int verify );
-/* */
-
-int unur_srou_chg_verify( UNUR_GEN *generator, int verify );
-/* 
-   Turn verifying of algorithm while sampling on/off.
+   Default: not set.
 */
 
 int unur_srou_set_usesqueeze( UNUR_PAR *parameters, int usesqueeze );
@@ -162,6 +158,8 @@ int unur_srou_set_usesqueeze( UNUR_PAR *parameters, int usesqueeze );
    (extremely) expensive.
    Using squeezes is automatically disabled when the CDF at the mode
    is not given (then no universal squeezes exist).
+
+   Default is FALSE.
 */
 
 int unur_srou_set_usemirror( UNUR_PAR *parameters, int usemirror );
@@ -175,6 +173,17 @@ int unur_srou_set_usemirror( UNUR_PAR *parameters, int usemirror );
    (Then there is no necessity to use the mirror principle. However disabling
    is only done during the initialization step but not at a re-initialization
    step.)
+
+   Default is FALSE.
+*/
+
+int unur_srou_set_verify( UNUR_PAR *parameters, int verify );
+/* */
+
+int unur_srou_chg_verify( UNUR_GEN *generator, int verify );
+/* 
+   Turn verifying of algorithm while sampling on/off.
+   Default is FALSE.
 */
 
 /*...........................................................................*/

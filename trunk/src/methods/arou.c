@@ -317,20 +317,19 @@ unur_arou_new( struct unur_distr *distr )
   par->distr              = distr;  /* pointer to distribution object        */
 
   /* set default values */
-  PAR.guide_factor        = 3.;     /* size of guide table / number of intervals */
+  PAR.guide_factor        = 2.;     /* size of guide table / number of intervals */
 
   PAR.starting_cpoints    = NULL;   /* pointer to array of starting points   */
   PAR.n_starting_cpoints  = 30;     /* number of starting points             */
   PAR.max_segs            = 100;    /* maximum number of segments            */
-  PAR.max_ratio           = 0.95;   /* do not add construction points if
+  PAR.max_ratio           = 0.99;   /* do not add construction points if
 				       ratio r_n = |P^s| / |P^e| > max_ratio */
   PAR.bound_for_adding    = 0.5;    /* do not add a new construction point in a segment, 
 				       where abiguous region is too small, i.e. if 
 				       the area / (|S^e\S^s|/number of segments) < bound_for_adding */
 
   par->method   = UNUR_METH_AROU;             /* method                      */
-  par->variant  = ( AROU_VARFLAG_USECENTER |  /* default variant             */
-		    AROU_VARFLAG_PEDANTIC );
+  par->variant  = AROU_VARFLAG_USECENTER;     /* default variant             */
   par->set      = 0u;                      /* inidicate default parameters   */    
   par->urng     = unur_get_default_urng(); /* use default urng               */
   par->urng_aux = par->urng;               /* no special auxilliary URNG     */

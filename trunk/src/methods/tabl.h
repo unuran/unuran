@@ -131,9 +131,11 @@ int unur_tabl_set_variant_splitmode( UNUR_PAR *parameters, unsigned splitmode );
    @item splitmode @code{2}
    use the mean point of the interval.
    @item splitmode @code{3}
-   use the arcmean point.
+   use the arcmean point;
+   suggested for distributions with heavy tails.
+   
    @end table
-   Default is splitmode @code{3}.
+   Default is splitmode @code{2}.
 */
 
 int unur_tabl_set_max_sqhratio( UNUR_PAR *parameters, double max_ratio );
@@ -146,8 +148,9 @@ int unur_tabl_set_max_sqhratio( UNUR_PAR *parameters, double max_ratio );
    Use 0 if no construction points should be added after the setup.
    Use 1 if added new construction points should not be stopped until
    the maximum number of construction points is reached.
+   If @var{max_ratio} is close to one, many construction points are used.
 
-   Default is ??.
+   Default is @code{0.9}.
 */
 
 double unur_tabl_get_sqhratio( UNUR_GEN *generator );
@@ -162,7 +165,7 @@ int unur_tabl_set_max_intervals( UNUR_PAR *parameters, int max_ivs );
    No construction points are added after the setup when the number of
    intervals suceeds @var{max_ivs}.
 
-   Default is ??.
+   Default is @code{500}.
 */
 
 int unur_tabl_set_areafraction( UNUR_PAR *parameters, double fraction );
@@ -173,7 +176,10 @@ int unur_tabl_set_areafraction( UNUR_PAR *parameters, double fraction );
    distribution times @var{fraction} (which must be greater than
    zero).
 
-   Default is @code{0.25}.
+   @emph{Important:} It the area below the PDF is not set, then 1 is
+   assumed. 
+
+   Default is @code{0.1}.
 */
 
 int unur_tabl_set_nstp( UNUR_PAR *parameters, int n_stp );
@@ -215,7 +221,7 @@ int unur_tabl_set_guidefactor( UNUR_PAR *parameters, double factor );
    to @code{0}. 
    When set to @code{0}, then sequential search is used.
 
-   Default is ??.
+   Default is @code{1}.
 */
 
 int unur_tabl_set_boundary( UNUR_PAR *parameters, double left, double right );
@@ -226,7 +232,7 @@ int unur_tabl_set_boundary( UNUR_PAR *parameters, double left, double right );
    computational relevance.
    Of course @code{+/- UNUR_INFINITY} is not allowed.
 
-   Default is ??.
+   Default is @code{1.e20}.
 */
 
 int unur_tabl_set_verify( UNUR_PAR *parameters, int verify );
@@ -235,6 +241,7 @@ int unur_tabl_set_verify( UNUR_PAR *parameters, int verify );
 int unur_tabl_chg_verify( UNUR_GEN *generator, int verify );
 /* 
    Turn verifying of algorithm while sampling on/off.
+   Default is FALSE.
 */
 
 /* =END */

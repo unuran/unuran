@@ -10,7 +10,6 @@ $DEBUG = 0;
 # ----------------------------------------------------------------
 
 require "../read_PDF.pl";
-require "read_test_conf.pl";
 
 # ----------------------------------------------------------------
 
@@ -19,7 +18,7 @@ my $ACG = "../acg";
 # ----------------------------------------------------------------
 # Constants
 
-$sample_size = 10000;
+$sample_size = 10;
 $accuracy = 1.0e-7;
 
 # ----------------------------------------------------------------
@@ -67,35 +66,38 @@ my $DISTR = read_PDFdata('../..');
 # ................................................................
 
 # Print Test data
-print "sample size = $sample_size\n";
-print LOG "sample size = $sample_size\n";
-
-print "accuracy = $accuracy\n";
-print LOG "accuracy = $accuracy\n";
-
-print "languages = C, FORTRAN\n\n";
-print LOG "languages = C, FORTRAN\n\n";
+print_log("sample size = $sample_size\n");
+print_log("accuracy = $accuracy\n");
+print_log("languages = C, FORTRAN\n\n");
 
 # ----------------------------------------------------------------
 # Get list of distributions 
 
-my $list_distr = get_test_distributions( $test_conf_file, $DISTR );
+require $test_conf_file; 
 
-#.................................................................
+# ----------------------------------------------------------------
 # Check for missing CONTinuous distributions
 
-# list of names of distributions without distribution number
-my $list_distr_short;
-foreach my $d (sort keys %{$list_distr}) {
-    my $distr_short = $d;
-    $distr_short =~ s/\_[^\_]+$//;
-    $list_distr_short->{$distr_short} = $d;
+my %distr_names;
+foreach my $distr (@distr_list) {
+    die unless "$distr " =~ /-d\s+(\w+)\s+/;
+    $distr_names{$1} = 1;
 }
 
 foreach my $d (sort keys %{$DISTR}) {
     next unless $DISTR->{$d}->{"=TYPE"} eq "CONT";
-    unless ($list_distr_short->{$d}) {
-	print STDERR "test missing for distribution \"$d\"\n";
+    unless ($distr_names{$d}) {
+	print_log("test missing for distribution \"$d\"\n\n");
+    }
+}
+
+# ----------------------------------------------------------------
+# Fill in parameters for PDF at random
+
+foreach my $distr (@distr_list) {
+    while ($distr =~ /([\d\+\-\.]+)\s*\.\.\s*([\d\+\-\.]+)/) {
+	my $param = ($1>0) ? exp(log($1)+rand()*(log($2)-log($1))) : $1+rand()*($2-$1);
+	$distr =~ s/([\d\+\-\.]+)\s*\.\.\s*([\d\+\-\.]+)/$param/;
     }
 }
 
@@ -103,25 +105,52 @@ foreach my $d (sort keys %{$DISTR}) {
 # Process test for each distribution
 
 my $test_nr = 0;
+my $errorcode = 0;
 
-foreach my $d (sort keys %{$list_distr}) {
-    # number of test
-    ++$test_nr;
-    my $test_key = sprintf "%03d", $test_nr;
+foreach my $distr (@distr_list) {
+    foreach my $gen (@gen_list) {
+	$errorcode += run_test(++$test_nr,"$distr $gen");
+    }
+}
 
-    # get name of distribution
-    my $distr_key = $d;
-    my $distr = $d;
-    $distr =~ s/\_(.*)$//;
+# ----------------------------------------------------------------
+# End
 
-    # get parameter list
-    my $fparam = $list_distr->{$distr_key};
+if ($errorcode) {
+    $errorcode = 1;
+    print_log("\n\tTEST(S) FAILED\n");
+}
+else {
+    print_log("\n\tALL TESTS PASSED\n");
+}
+close LOG;
 
-    # print on screen
-    print "[$test_key] $distr($fparam)";
-    print LOG "[$test_key] $distr($fparam)";
+exit $errorcode;
 
-    # seed for uniform rng
+# ****************************************************************
+
+# ****************************************************************
+#
+# Run test
+#
+# ****************************************************************
+
+# ----------------------------------------------------------------
+# Run test for a particular distribution
+
+sub run_test
+{
+    $test = $_[0];
+    $distr = $_[1];
+
+    # Print on screen
+    my $test_key = sprintf "%03d", $test;
+    print_log("[$test_key] $distr");
+
+    # Remove commas
+    $distr =~ s/\,/ /g;
+
+    # Seed for uniform rng
     my $seed = int(rand 12345678) + 1;
 
     # Files
@@ -146,25 +175,25 @@ foreach my $d (sort keys %{$list_distr}) {
     # Get random variate generators
 
     # UNURAN version
-    my $UNURAN_code = make_UNURAN_code($UNURAN_log,$distr,$fparam,$seed);
+    my $UNURAN_code = make_UNURAN_code($UNURAN_log,$distr,$seed);
     unless ($UNURAN_code) {
-	print "  .........  cannot create generator.\n";
-	print LOG "  .........  cannot create generator.\n";
+	print_log("  .........  cannot create generator.\n");
 	next;
     }
+    print_log("\n");
     make_UNURAN_exec($UNURAN_code,$UNURAN_src,$UNURAN_exec);
 
     # C version
-    my $C_code = make_C_code($C_log,$distr,$fparam,$seed);
+    my $C_code = make_C_code($C_log,$distr,$seed);
     make_C_exec($C_code,$C_src,$C_exec);
 
     # FORTRAN version
-    my $FORTRAN_code = make_FORTRAN_code($FORTRAN_log,$distr,$fparam,$seed);
+    my $FORTRAN_code = make_FORTRAN_code($FORTRAN_log,$distr,$seed);
     make_FORTRAN_exec($FORTRAN_code,$FORTRAN_src,$FORTRAN_exec);
 
     # JAVA version
-    my $JAVA_code = make_JAVA_code($JAVA_log,$distr,$fparam,$seed);
-    make_JAVA_exec($JAVA_code,$JAVA_src,$JAVA_exec);
+    make_JAVA_gen($JAVA_log,$distr,$seed);
+    make_JAVA_exec($JAVA_exec,$distr,$seed);
 
     # Start generators
     open UNURAN, "$UNURAN_exec |" or die "cannot run $UNURAN_exec"; 
@@ -172,13 +201,13 @@ foreach my $d (sort keys %{$list_distr}) {
     open FORTRAN, "$FORTRAN_exec |" or die "cannot run $FORTRAN_exec"; 
 
     # Run generatores and compare output
-    $C_n_diffs = 0;
-    $FORTRAN_n_diffs = 0;
-    $n_sample = 0;
+    my $C_n_diffs = 0;
+    my $FORTRAN_n_diffs = 0;
+    my $n_sample = 0;
 
-    while ($UNURAN_out = <UNURAN>) {
-	$C_out = <C>;
-	$FORTRAN_out = <FORTRAN>;
+    while (my $UNURAN_out = <UNURAN>) {
+	my $C_out = <C>;
+	my $FORTRAN_out = <FORTRAN>;
 	
 	chomp $UNURAN_out;
 	chomp $C_out;
@@ -186,59 +215,53 @@ foreach my $d (sort keys %{$list_distr}) {
 	
 	++$n_sample;
 	
-	($UNURAN_x, $UNURAN_pdfx) = split /\s+/, $UNURAN_out, 2;
-	($C_x, $C_pdfx) = split /\s+/, $C_out, 2;
-	($FORTRAN_x, $FORTRAN_pdfx) = split /\s+/, $FORTRAN_out, 2;
+	(my $UNURAN_x,  my $UNURAN_pdfx)  = split /\s+/, $UNURAN_out, 2;
+	(my $C_x,       my $C_pdfx)       = split /\s+/, $C_out, 2;
+	(my $FORTRAN_x, my $FORTRAN_pdfx) = split /\s+/, $FORTRAN_out, 2;
 	
-	$C_x_diff = abs($UNURAN_x - $C_x);
-	$C_pdfx_diff = abs($UNURAN_pdfx - $C_pdfx);
-	$FORTRAN_x_diff = abs($UNURAN_x - $FORTRAN_x);
-	$FORTRAN_pdfx_diff = abs($UNURAN_pdfx - $FORTRAN_pdfx);
+	my $C_x_diff          = $UNURAN_x    - $C_x;
+	my $C_pdfx_diff       = $UNURAN_pdfx - $C_pdfx;
+	my $FORTRAN_x_diff    = $UNURAN_x    - $FORTRAN_x;
+	my $FORTRAN_pdfx_diff = $UNURAN_pdfx - $FORTRAN_pdfx;
 	
 	if ( !FP_equal($C_x,$UNURAN_x) or !FP_equal($C_pdfx,$UNURAN_pdfx) ) {
 	    ++$C_n_diffs;
-	    print LOG "\n  C: x    = $C_x\tdifference = $C_x_diff\n";
-	    print LOG "  C: pdfx = $C_pdfx\tdifference = $C_pdfx_diff";
+	    print LOG "  C: x    = $C_x\tdifference = $C_x_diff\n";
+	    print LOG "  C: pdfx = $C_pdfx\tdifference = $C_pdfx_diff\n";
 	}
 	if ( !FP_equal($FORTRAN_x,$UNURAN_x) or !FP_equal($FORTRAN_pdfx,$UNURAN_pdfx) ) {
 	    ++$FORTRAN_n_diffs;
-	    print LOG "\n  FORTRAN: x    = $FORTRAN_x\tdifference = $FORTRAN_x_diff\n";
-	    print LOG "  FORTRAN: pdfx = $FORTRAN_pdfx\tdifference = $FORTRAN_pdfx_diff";
+	    print LOG "  FORTRAN: x    = $FORTRAN_x\tdifference = $FORTRAN_x_diff\n";
+	    print LOG "  FORTRAN: pdfx = $FORTRAN_pdfx\tdifference = $FORTRAN_pdfx_diff\n";
 	}
 	
     }
-    
+
     # End
     close UNURAN;
     close C;
     
-    $errorcode = $n_sample ? 0 : 1;
+    my $errorcode = $n_sample ? 0 : 1;
     
     if ($C_n_diffs > 0) {
-	print "\n\t ...  C Test FAILED\n";
-	print LOG "\n\t ...  C Test FAILED\n";
+	print_log("\t...  C Test FAILED\n");
 	++$errorcode;
     }
     if ($FORTRAN_n_diffs > 0) {
-	print "\n\t ...  FORTRAN Test FAILED\n";
-	print LOG "\n\t ...  FORTRAN Test FAILED\n";
+	print_log("\t...  FORTRAN Test FAILED\n");
 	++$errorcode;
     }
     
     if ($errorcode == 0) {
-	print "  ...  PASSED\n";
-	print LOG "  ...  PASSED\n";
+	print_log("\t...  PASSED\n");
     }
-}
+
+    return $errorcode;
+
+} # run_test()
 
 # ----------------------------------------------------------------
-# End
-
-close LOG;
-
-exit 0;
-
-# ****************************************************************
+# When two floats are equal
 
 sub FP_equal
 {
@@ -253,6 +276,16 @@ sub FP_equal
     }
 } # end of FP_equal()
 
+# ----------------------------------------------------------------
+# Print on screen and log file
+
+sub print_log
+{
+    my $msg = $_[0];
+    print $msg;
+    print LOG $msg;
+} # end of print_log()
+
 # ****************************************************************
 #
 # UNURAN version
@@ -266,18 +299,21 @@ sub make_UNURAN_code
 {
     my $logfile = $_[0];
     my $distr = $_[1];
-    my $fparam = $_[2];
-    my $seed = $_[3];
+    my $seed = $_[2];
 
-    my $acg_query = "$ACG -l UNURAN -d $distr -L $logfile";
-    $acg_query .= " -p \"$fparam\"" if $fparam; 
+    my $acg_query = "$ACG $distr -l UNURAN -L $logfile";
 
     my $generator = `$acg_query`;
 
     return "" if $?;
 
+    # Get name of distribution
+    my $distr_name;
+    die unless "$distr " =~ /-d\s+(\w+)\s+/;
+    $distr_name = $1;
+
     my $urng = make_UNURAN_urng($seed);
-    my $main = make_UNURAN_main($distr,$seed);
+    my $main = make_UNURAN_main($distr_name,$seed);
 
     return $urng.$generator.$main;
 
@@ -336,7 +372,7 @@ sub make_UNURAN_main
     my $distr = $_[0];
     my $seed = $_[1];
 
-    my $code = <<EOS
+    my $code = <<EOS;
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -358,6 +394,8 @@ int main()
 }
 
 EOS
+
+    return $code;
 
 } # end of make_UNURAN_main()
 
@@ -395,18 +433,21 @@ sub make_C_code
 {
     my $logfile = $_[0];
     my $distr = $_[1];
-    my $fparam = $_[2];
-    my $seed = $_[3];
+    my $seed = $_[2];
 
-    my $acg_query = "$ACG -l C -d $distr -L $logfile";
-    $acg_query .= " -p \"$fparam\"" if $fparam; 
+    my $acg_query = "$ACG $distr -l C -L $logfile";
 
     my $generator = `$acg_query`;
 
     return "" if $?;
 
+    # Get name of distribution
+    my $distr_name;
+    die unless "$distr " =~ /-d\s+(\w+)\s+/;
+    $distr_name = $1;
+
     my $urng = make_C_urng($seed);
-    my $main = make_C_main($distr,$seed);
+    my $main = make_C_main($distr_name,$seed);
 
     return $urng.$generator.$main;
 
@@ -476,7 +517,7 @@ sub make_C_main
     my $distr = $_[0];
     my $seed = $_[1];
 
-    my $code = <<EOS
+    my $code = <<EOS;
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -498,6 +539,8 @@ int main()
 }
 
 EOS
+
+    return $code;
 
 } # end of make_C_main()
 
@@ -535,22 +578,25 @@ sub make_FORTRAN_code
 {
     my $logfile = $_[0];
     my $distr = $_[1];
-    my $fparam = $_[2];
-    my $seed = $_[3];
+    my $seed = $_[2];
 
-    my $acg_query = "$ACG -l FORTRAN -d $distr -L $logfile";
-    $acg_query .= " -p \"$fparam\"" if $fparam; 
+    my $acg_query = "$ACG $distr -l FORTRAN -L $logfile";
 
     my $generator = `$acg_query`;
 
     return "" if $?;
 
     # remove built-in uniform rng
-    $urng_pattern = "\\s+DOUBLE PRECISION FUNCTION unif\\s*\\(\\s*\\).*?END\\s*";
+    $urng_pattern = "\\s+DOUBLE PRECISION FUNCTION urand\\s*\\(\\s*\\).*?END\\s*";
     $generator =~ s/($urng_pattern)/\n/s;
 
+    # Get name of distribution
+    my $distr_name;
+    die unless "$distr " =~ /-d\s+(\w+)\s+/;
+    $distr_name = $1;
+
     my $urng = make_FORTRAN_urng($seed);
-    my $main = make_FORTRAN_main($distr,$seed);
+    my $main = make_FORTRAN_main($distr_name,$seed);
 
     return $urng.$generator.$main;
 
@@ -574,7 +620,7 @@ sub make_FORTRAN_urng
 *   x_(n+1) = 16807 * x_n mod 2^31 - 1    (Minimal Standard)         *
 * ------------------------------------------------------------------ *
 
-      DOUBLE PRECISION FUNCTION unif()
+      DOUBLE PRECISION FUNCTION urand()
 
       INTEGER a, m, q, r, xn, hi, lo, test
       PARAMETER (a = 16807)
@@ -597,7 +643,7 @@ C     state variable
           xn = test + m
       END IF
 
-      unif = xn * 4.656612875245796924105750827D-10
+      urand = xn * 4.656612875245796924105750827D-10
 
       END
 
@@ -633,7 +679,7 @@ sub make_FORTRAN_main
     my $rand_name = substr "r$distr", 0, 6;
     my $pdf_name = substr "f$distr", 0, 6;
 
-    my $code = <<EOS
+    my $code = <<EOS;
 
 * ------------------------------------------------------------------ *
 
@@ -653,6 +699,8 @@ sub make_FORTRAN_main
 * ------------------------------------------------------------------ *
 
 EOS
+
+    return $code;
 
 } # end of make_FORTRAN_main()
 
@@ -684,30 +732,6 @@ sub make_FORTRAN_exec
 # ****************************************************************
 
 # ----------------------------------------------------------------
-# Make generator code for test file (C version)
-
-sub make_JAVA_code
-{
-    my $logfile = $_[0];
-    my $distr = $_[1];
-    my $fparam = $_[2];
-    my $seed = $_[3];
-
-    my $acg_query = "$ACG -l JAVA -d $distr -L $logfile";
-    $acg_query .= " -p \"$fparam\"" if $fparam; 
-
-    my $generator = `$acg_query`;
-
-    return "" if $?;
-
-    my $main = "";
-##    my $main = make_JAVA_main($distr,$seed);
-
-    return $generator.$main;
-
-} # end of make_JAVA_code()
-
-# ----------------------------------------------------------------
 # uniform rng (Java version)
 
 #
@@ -715,46 +739,81 @@ sub make_JAVA_code
 #
 
 # ----------------------------------------------------------------
-# Make main for test file (Java version)
+# Make executable for Generator (Java version)
 
-sub make_JAVA_main
+sub make_JAVA_gen
 {
-    my $distr = $_[0];
-    my $seed = $_[1];
+    my $logfile = $_[0];
+    my $distr = $_[1];
+    my $seed = $_[2];
 
-    my $code = <<EOS
+    my $acg_query = "$ACG $distr -l JAVA -L $logfile";
 
-#include <stdio.h>
-#include <stdlib.h>
+    my $generator = `$acg_query`;
 
-int main()
-{
-    int i;
-    double x, fx;
+    return "" if $?;
 
-    useed($seed);
+    # Replace Java URNG
+    $generator =~ s/random\s*\(\s*\)\s*\;/Urand.random\(\)\;/g;
 
-    for (i=0; i<$sample_size; i++) {
-	x = rand\_$distr();
-	fx = pdf\_$distr(x);
-	printf("%.17e\\t%.17e\\n",x,fx);
-    }
+    # Get name of Generator class
+    die unless "$distr " =~ /-d\s+(\w+)\s+/;
+    my $distr_name = $1;
+    my $gen_src = "Generator_$distr_name.java";
 
-    exit (0);
-}
+    # make source file
+    open SRC, ">$gen_src" or die "cannot open $gen_src for writing";
+    print SRC $generator;
+    close SRC;
 
-EOS
+    # compile
+    system "$JAVAC $gen_src";
 
-} # end of make_JAVA_main()
+} # end of make_JAVA_gen()
 
 # ----------------------------------------------------------------
-# Make executable from test file (Java version)
+# Make executable for Generator test (Java version)
 
 sub make_JAVA_exec
 {
-    my $code = $_[0];
-    my $src = $_[1];
-    my $exec = $_[2];
+    my $test = $_[0];
+    my $distr = $_[1];
+    my $seed = $_[2];
+
+    my $src = "$test.java";
+
+    # remove leading "./"
+    $test =~ s/\.\///;
+
+    # Get name of Generator class
+    die unless "$distr " =~ /-d\s+(\w+)\s+/;
+    my $distr_name = $1;
+    my $gen = "Generator_$distr_name";
+
+    # Make code
+    my $code = <<EOS;
+
+/* ---------------------------------------------------------------- */
+
+public class $test {
+   public static void main(String[] args) throws Exception {
+
+      private double x;
+      private double pdfx;
+
+      /* set seed */
+      Urand.useed($seed);
+
+      for (private int i = 0; i<$sample_size;i++) {
+	x = $gen.sample();
+	pdfx = $gen.pdf(x);
+        System.out.println( x );
+      }
+   }
+
+}  /* end of class Test */
+
+EOS
 
     # make source file
     open SRC, ">$src" or die "cannot open $src for writing";

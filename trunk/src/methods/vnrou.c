@@ -764,7 +764,7 @@ _unur_vnrou_sample_cvec( struct unur_gen *gen, double *vec )
     V *= GEN.vmax;
     for (d=0; d<dim; d++) {
       U = GEN.umin[d] + _unur_call_urng(gen->urng) * (GEN.umax[d] - GEN.umin[d]);
-      vec[d] = U/V + GEN.center[d];
+      vec[d] = U/pow(V,GEN.r) + GEN.center[d];
     }
     
     /* X[] inside domain ? */
@@ -806,7 +806,7 @@ _unur_vnrou_sample_check( struct unur_gen *gen, double *vec )
     V *= GEN.vmax;
     for (d=0; d<dim; d++) {
       U = GEN.umin[d] + _unur_call_urng(gen->urng) * (GEN.umax[d] - GEN.umin[d]);
-      vec[d] = U/V + GEN.center[d];
+      vec[d] = U/pow(V,GEN.r) + GEN.center[d];
     }
     
     /* X[] inside domain ? */

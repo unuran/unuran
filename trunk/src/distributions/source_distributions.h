@@ -101,8 +101,8 @@
  *****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
-#ifndef __SOURCE_DISTRIBUTIONS_LIB_H_SEEN
-#define __SOURCE_DISTRIBUTIONS_LIB_H_SEEN
+#ifndef SOURCE_DISTRIBUTIONS_H_SEEN
+#define SOURCE_DISTRIBUTIONS_H_SEEN
 /*---------------------------------------------------------------------------*/
 
 #include <source_unuran.h>
@@ -504,5 +504,5 @@ int _unur_stdgen_sample_zipf_zet( UNUR_GEN *generator );
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*/
-#endif  /* __SOURCE_DISTRIBUTIONS_LIB_H_SEEN */
+#endif  /* SOURCE_DISTRIBUTIONS_H_SEEN */
 /*---------------------------------------------------------------------------*/

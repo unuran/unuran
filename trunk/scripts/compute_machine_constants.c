@@ -39,8 +39,8 @@ int main()
   printf("\n");
 
   printf("/*---------------------------------------------------------------------------*/\n");
-  printf("#ifndef __SOURCE_FP_CONST_H_SEEN\n");
-  printf("#define __SOURCE_FP_CONST_H_SEEN\n");
+  printf("#ifndef SOURCE_FP_CONST_H_SEEN\n");
+  printf("#define SOURCE_FP_CONST_H_SEEN\n");
   printf("/*---------------------------------------------------------------------------*/\n\n");
 
 
@@ -77,7 +77,7 @@ int main()
   printf("#define MAXSTIR  %.30g\n\n", log(DBL_MAX) / log(log(DBL_MAX)) );
 
   printf("/*---------------------------------------------------------------------------*/\n");
-  printf("#endif  /* __SOURCE_FP_CONST_H_SEEN */\n");
+  printf("#endif  /* SOURCE_FP_CONST_H_SEEN */\n");
   printf("/*---------------------------------------------------------------------------*/\n");
 
   exit (0);

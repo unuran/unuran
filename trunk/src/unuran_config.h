@@ -33,8 +33,8 @@
  *****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
-#ifndef __UNURAN_CONFIG_H_SEEN
-#define __UNURAN_CONFIG_H_SEEN
+#ifndef UNURAN_CONFIG_H_SEEN
+#define UNURAN_CONFIG_H_SEEN
 /*---------------------------------------------------------------------------*/
 
 /*****************************************************************************
@@ -199,8 +199,8 @@
 
 /* Set type of uniform random number generator.                              */
 /*  #define UNUR_URNG_TYPE UNUR_URNG_FVOID */
-#define UNUR_URNG_TYPE UNUR_URNG_PRNG
-/*  #define UNUR_URNG_TYPE UNUR_URNG_RNGSTREAM */
+/*  #define UNUR_URNG_TYPE UNUR_URNG_PRNG */
+#define UNUR_URNG_TYPE UNUR_URNG_RNGSTREAM
 /*  #define UNUR_URNG_TYPE UNUR_URNG_GSL */
 /*  #define UNUR_URNG_TYPE UNUR_URNG_GENERIC */
 
@@ -374,7 +374,7 @@ typedef double (_unur_urng_voidptr)(void*);      /* cast function pointer */
 
 
 /*---------------------------------------------------------------------------*/
-#endif  /* __UNURAN_CONFIG_H_SEEN */
+#endif  /* UNURAN_CONFIG_H_SEEN */
 /*---------------------------------------------------------------------------*/
 
 

@@ -69,8 +69,8 @@
  *****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
-#ifndef __UNURAN_DISTRIBUTIONS_H_SEEN
-#define __UNURAN_DISTRIBUTIONS_H_SEEN
+#ifndef UNURAN_DISTRIBUTIONS_H_SEEN
+#define UNURAN_DISTRIBUTIONS_H_SEEN
 /*---------------------------------------------------------------------------*/
 
 #include <unur_stddistr.h>
@@ -574,6 +574,6 @@ UNUR_DISTR *unur_distr_zipf(double *params, int n_params);
 /** TODO: STDGEN **/
 
 /*---------------------------------------------------------------------------*/
-#endif  /* __UNURAN_DISTRIBUTIONS_H_SEEN */
+#endif  /* UNURAN_DISTRIBUTIONS_H_SEEN */
 /*---------------------------------------------------------------------------*/
 

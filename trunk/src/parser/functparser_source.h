@@ -37,8 +37,8 @@
  *****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
-#ifndef __FSTR_SOURCE_H_SEEN
-#define __FSTR_SOURCE_H_SEEN
+#ifndef FUNCTPARSER_SOURCE_H_SEEN
+#define FUNCTPARSER_SOURCE_H_SEEN
 
 /*---------------------------------------------------------------------------*/
 /* Function prototypes for function string parser                            */
@@ -102,6 +102,6 @@ struct ftreenode *_unur_fstr_make_derivative ( const struct ftreenode *functtree
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*/
-#endif   /* __FSTR_SOURCE_H_SEEN */
+#endif   /* FUNCTPARSER_SOURCE_H_SEEN */
 /*---------------------------------------------------------------------------*/
 

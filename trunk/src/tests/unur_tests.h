@@ -47,7 +47,7 @@
 
 /*---------------------------------------------------------------------------*/
 /* run battery of tests                                                      */
-void unur_run_tests( struct unur_par *par, unsigned long tests,
+void unur_run_tests( struct unur_par *par, unsigned tests,
 		     double (*cdf)(double x, double *fparam, int n_fparam));
 
 /*---------------------------------------------------------------------------*/
@@ -69,12 +69,12 @@ double unur_test_chi2( struct unur_gen *gen, int intervals, int samplesize, int 
 int unur_make_scatterplot( struct unur_gen *gen );
 
 /* possible tests                                                            */
-#define UNUR_TEST_ALL      ~(0UL)     /* make all possible tests */
-#define UNUR_TEST_TIME     0x0001UL   /* estimate time */
-#define UNUR_TEST_N_URNG   0x0002UL   /* count number of urng (needs compiler switch) */
-#define UNUR_TEST_CHI2     0x0004UL   /* run chi^2 test for goodness of fit */
-#define UNUR_TEST_SAMPLE   0x0008UL   /* print a sample file */
-#define UNUR_TEST_SCATTER  0x0010UL   /* make a scatter plot */
+#define UNUR_TEST_ALL      (~0u)     /* make all possible tests */
+#define UNUR_TEST_TIME     0x001u    /* estimate time */
+#define UNUR_TEST_N_URNG   0x002u    /* count number of urng (needs compiler switch) */
+#define UNUR_TEST_CHI2     0x004u    /* run chi^2 test for goodness of fit */
+#define UNUR_TEST_SAMPLE   0x008u    /* print a sample file */
+#define UNUR_TEST_SCATTER  0x010u    /* make a scatter plot */
 
 /*---------------------------------------------------------------------------*/
 #endif  /* end of #ifdef __UNUR_TESTS_H_SEEN */

@@ -58,7 +58,7 @@
 /*---------------------------------------------------------------------------*/
 /* Flags for logging set calls                                               */
 
-#define CSTD_SET_VARIANT          0x01UL
+#define CSTD_SET_VARIANT          0x01u
 
 /*---------------------------------------------------------------------------*/
 
@@ -150,8 +150,8 @@ unur_cstd_new( struct unur_distr *distr )
   PAR.variant   = 0x0u;             /* use default generator                 */
 
   par->method   = UNUR_METH_CSTD;   /* method and default variant            */
-  par->variant  = 0UL;              /* default variant                       */
-  par->set      = 0UL;              /* inidicate default parameters          */    
+  par->variant  = 0u;               /* default variant                       */
+  par->set      = 0u;               /* inidicate default parameters          */    
   par->urng     = unur_get_default_urng(); /* use default urng               */
 
   _unur_set_debugflag_default(par); /* set default debugging flags           */
@@ -166,7 +166,7 @@ unur_cstd_new( struct unur_distr *distr )
 /*---------------------------------------------------------------------------*/
 
 int 
-unur_cstd_set_variant( struct unur_par *par, unsigned int variant )
+unur_cstd_set_variant( struct unur_par *par, unsigned variant )
      /*----------------------------------------------------------------------*/
      /* set variant of method                                                */
      /*                                                                      */

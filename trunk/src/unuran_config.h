@@ -73,7 +73,7 @@
 /*    ~0 ... show all available information.                                 */
 /* (Detailed discription of possible flags (besides 1) in generator files.)  */
 
-#define UNUR_DEBUGFLAG_DEFAULT   (~0UL)
+#define UNUR_DEBUGFLAG_DEFAULT   (~0u)
 
 /*---------------------------------------------------------------------------*/
 /* (Default) name of log file.                                               */

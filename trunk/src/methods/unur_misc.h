@@ -45,7 +45,7 @@
 
 /*---------------------------------------------------------------------------*/
 /* set debugging flag for generator                                          */
-int unur_set_debug( struct unur_par *parameter, unsigned long debug );
+int unur_set_debug( struct unur_par *parameter, unsigned debug );
 
 /*---------------------------------------------------------------------------*/
 /* set, get or change uniform RNG for generator                              */

@@ -85,8 +85,8 @@
 /*---------------------------------------------------------------------------*/
 /* Flags for logging set calls                                               */
 
-#define UTDR_SET_CFACTOR        0x001UL
-#define UTDR_SET_DELTA          0x002UL
+#define UTDR_SET_CFACTOR        0x001u
+#define UTDR_SET_DELTA          0x002u
 
 /*---------------------------------------------------------------------------*/
 
@@ -184,8 +184,8 @@ unur_utdr_new( struct unur_distr *distr )
 	     10 decimal digits precision. */
 
   par->method      = UNUR_METH_UTDR;  /* method and default variant          */
-  par->variant     = 0UL;             /* default variant                     */
-  par->set         = 0UL;             /* inidicate default parameters        */    
+  par->variant     = 0u;              /* default variant                     */
+  par->set         = 0u;              /* inidicate default parameters        */    
   par->urng        = unur_get_default_urng(); /* use default urng            */
 
   _unur_set_debugflag_default(par);  /* set default debugging flags          */

@@ -75,36 +75,36 @@
 /*---------------------------------------------------------------------------*/
 /* Variants                                                                  */
 
-#define TABL_VARFLAG_VERIFY       0x001UL   /* flag for verifying mode           */
+#define TABL_VARFLAG_VERIFY       0x001u   /* flag for verifying mode           */
 
 /* indicate how to split interval */
-#define TABL_VARMASK_SPLIT        0x0f0UL /* split at        computation     convergence of hat */
-#define TABL_VARFLAG_SPLIT_POINT  0x000UL /* sampled point    none            slowest          */
-#define TABL_VARFLAG_SPLIT_MEAN   0x010UL /* mean point       slower          better           */
-#define TABL_VARFLAG_SPLIT_ARC    0x020UL /* "arcmean"        very slow       very good for almost unbounded domain */
+#define TABL_VARMASK_SPLIT        0x0f0u  /* split at        computation     convergence of hat */
+#define TABL_VARFLAG_SPLIT_POINT  0x000u  /* sampled point    none            slowest          */
+#define TABL_VARFLAG_SPLIT_MEAN   0x010u  /* mean point       slower          better           */
+#define TABL_VARFLAG_SPLIT_ARC    0x020u  /* "arcmean"        very slow       very good for almost unbounded domain */
 
 /* indicate if starting intervals have to be split */
-#define TABL_VARMASK_STP          0xf00UL
-#define TABL_VARFLAG_STP_A        0x100UL /* use equal area rule (SPLIT A in [1])   */
-#define TABL_VARFLAG_STP_B        0x200UL /* use main subdivisions (SPLIT B in [1]) */
+#define TABL_VARMASK_STP          0xf00u
+#define TABL_VARFLAG_STP_A        0x100u  /* use equal area rule (SPLIT A in [1])   */
+#define TABL_VARFLAG_STP_B        0x200u  /* use main subdivisions (SPLIT B in [1]) */
 
 /*---------------------------------------------------------------------------*/
 /* Debugging flags (do not use first 8 bits)                                 */
 
-#define TABL_DEBUG_IV             0x010UL /* show intervals                        */
-#define TABL_DEBUG_A_IV           0x020UL /* show intervals after split A, before split B */
+#define TABL_DEBUG_IV             0x100u /* show intervals                        */
+#define TABL_DEBUG_A_IV           0x200u /* show intervals after split A, before split B */
 
 /*---------------------------------------------------------------------------*/
 /* Flags for logging set calls                                               */
 
-#define TABL_SET_GUIDEFACTOR      0x01UL
-#define TABL_SET_VARIANT          0x02UL
-#define TABL_SET_SLOPES           0x04UL
-#define TABL_SET_AREAFRACTION     0x08UL
-#define TABL_SET_MAX_IVS          0x10UL
-#define TABL_SET_MAX_SQHRATIO     0x20UL
-#define TABL_SET_N_STP            0x40UL
-#define TABL_SET_BOUNDARY         0x80UL
+#define TABL_SET_GUIDEFACTOR      0x01u
+#define TABL_SET_VARIANT          0x02u
+#define TABL_SET_SLOPES           0x04u
+#define TABL_SET_AREAFRACTION     0x08u
+#define TABL_SET_MAX_IVS          0x10u
+#define TABL_SET_MAX_SQHRATIO     0x20u
+#define TABL_SET_N_STP            0x40u
+#define TABL_SET_BOUNDARY         0x80u
 
 /*---------------------------------------------------------------------------*/
 
@@ -147,7 +147,7 @@ _unur_tabl_split_b_starting_intervals( struct unur_par *par, struct unur_gen *ge
 
 static int
 _unur_tabl_split_interval( struct unur_gen *gen, struct unur_tabl_interval *iv, 
-			   double x, double fx, unsigned int split_mode );
+			   double x, double fx, unsigned split_mode );
 /*---------------------------------------------------------------------------*/
 /* split interval (replace old one by two new ones in same place)            */
 /*---------------------------------------------------------------------------*/
@@ -266,7 +266,7 @@ unur_tabl_new( struct unur_distr *distr )
 		       TABL_VARFLAG_STP_B  );   /* run SPLIT B on slopes       */
 
 
-  par->set          = 0UL;       /* inidicate default parameters             */    
+  par->set          = 0u;        /* inidicate default parameters             */    
   par->urng         = unur_get_default_urng(); /* use default urng           */
 
   _unur_set_debugflag_default(par); /* set default debugging flags           */
@@ -559,7 +559,7 @@ unur_tabl_set_boundary( struct unur_par *par, double left, double right )
 /*---------------------------------------------------------------------------*/
 
 int 
-unur_tabl_set_variant( struct unur_par *par, unsigned int variant )
+unur_tabl_set_variant( struct unur_par *par, unsigned variant )
      /*----------------------------------------------------------------------*/
      /* set variant of method                                                */
      /*                                                                      */
@@ -1464,7 +1464,7 @@ static int
 _unur_tabl_split_interval( struct unur_gen *gen,
 				struct unur_tabl_interval *iv_old, 
 				double x, double fx, 
-				unsigned int split_mode )
+				unsigned split_mode )
      /*----------------------------------------------------------------------*/
      /* split interval (replace old one by two new ones in same place)       */
      /* new interval is inserted immedately after old one.                   */

@@ -75,7 +75,7 @@ struct unur_tdr_interval {
   struct unur_tdr_interval *next; /* pointer to next segment in list         */
 
 #if UNUR_DEBUG & UNUR_DB_COOKIES
-  unsigned long cookie;         /* magic cookie                              */
+  unsigned cookie;              /* magic cookie                              */
 #endif
 };
 

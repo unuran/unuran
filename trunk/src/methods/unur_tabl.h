@@ -75,7 +75,7 @@ struct unur_tabl_interval {
   struct unur_tabl_interval *next;  /* pointer to next element in list       */
 
 #if UNUR_DEBUG & UNUR_DB_COOKIES
-  unsigned long cookie; /* magic cookie                                      */
+  unsigned cookie;      /* magic cookie                                      */
 #endif
 };
 
@@ -142,7 +142,7 @@ int unur_tabl_set_slopes( struct unur_par *par, double *slopes, int n_slopes );
 int unur_tabl_set_boundary( struct unur_par *par, double left, double right );
 /* set left and right boundary of computation interval                       */
 
-int unur_tabl_set_variant( struct unur_par *parameters, unsigned int variant );
+int unur_tabl_set_variant( struct unur_par *parameters, unsigned variant );
 /* set variant for method                                                    */
 
 int unur_tabl_set_guidefactor( struct unur_par *par, double factor );

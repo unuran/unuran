@@ -45,16 +45,18 @@
 /* Information for constructing the generator                                */
 
 struct unur_cstd_par { 
-  unsigned int variant;   /* indicates generator to be used                  */
+  unsigned variant;       /* indicates generator to be used                  */
+  ;                       /* no special parameters for method                */
 };
 
 /*---------------------------------------------------------------------------*/
 /* The generator object                                                      */
 
 struct unur_cstd_gen { 
-  double *pdf_param;      /* parameters for standard distribution            */
-  int     n_pdf_param;    /* number of parameters for distribution           */
-  unsigned int variant;   /* indicates generator to be used                  */
+  /** TODO **/
+  unsigned variant;       /* indicates generator to be used                  */
+  double  *pdf_param;     /* parameters for standard distribution            */
+  int      n_pdf_param;   /* number of parameters for distribution           */
 };
 
 /*---------------------------------------------------------------------------*/
@@ -76,6 +78,9 @@ void unur_cstd_free( struct unur_gen *generator);
 /* destroy generator object                                                  */
 
 /*...........................................................................*/
+
+int unur_cstd_set_variant( struct unur_par *par, unsigned variant );
+/* set variant of method                                                     */
 
 #define unur_rect_set_debug(par,debugflags)  unur_set_debug((par),(debugflags))
 /* set debuging flags                                                        */

@@ -132,24 +132,24 @@
 /*---------------------------------------------------------------------------*/
 /* Variants                                                                  */
 
-#define AROU_VARFLAG_VERIFY     0x1UL   /* flag for verifying mode           */
-#define AROU_VARFLAG_USECENTER  0x2UL   /* flag whether center is used as cpoint or not */
+#define AROU_VARFLAG_VERIFY     0x01u   /* flag for verifying mode           */
+#define AROU_VARFLAG_USECENTER  0x02u   /* flag whether center is used as cpoint or not */
 
 /*---------------------------------------------------------------------------*/
 /* Debugging flags (do not use first 8 bits)                                 */
 
-#define AROU_DEBUG_SPLIT        0x100UL  /* trace splitting of segments      */
-#define AROU_DEBUG_SEGMENTS     0x200UL  /* print list of segments           */
+#define AROU_DEBUG_SPLIT        0x100u   /* trace splitting of segments      */
+#define AROU_DEBUG_SEGMENTS     0x200u   /* print list of segments           */
 
 /*---------------------------------------------------------------------------*/
 /* Flags for logging set calls                                               */
 
-#define AROU_SET_CENTER         0x001UL
-#define AROU_SET_STP            0x002UL
-#define AROU_SET_N_STP          0x004UL
-#define AROU_SET_GUIDEFACTOR    0x010UL
-#define AROU_SET_MAX_SQHRATIO   0x020UL
-#define AROU_SET_MAX_SEGS       0x040UL
+#define AROU_SET_CENTER         0x001u
+#define AROU_SET_STP            0x002u
+#define AROU_SET_N_STP          0x004u
+#define AROU_SET_GUIDEFACTOR    0x010u
+#define AROU_SET_MAX_SQHRATIO   0x020u
+#define AROU_SET_MAX_SEGS       0x040u
 
 /*---------------------------------------------------------------------------*/
 
@@ -317,7 +317,7 @@ unur_arou_new( struct unur_distr *distr )
 
   par->method   = UNUR_METH_AROU;          /* method                         */
   par->variant  = AROU_VARFLAG_USECENTER;  /* default variant                */
-  par->set      = 0UL;                     /* inidicate default parameters   */    
+  par->set      = 0u;                      /* inidicate default parameters   */    
   par->urng     = unur_get_default_urng(); /* use default urng               */
 
   _unur_set_debugflag_default(par); /* set default debugging flags           */

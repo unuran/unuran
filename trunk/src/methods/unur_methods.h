@@ -78,46 +78,44 @@
 /*---------------------------------------------------------------------------*/
 /* List of methods                                                           */
 
-#define UNUR_MASK_VARIANT  0x00000fffUL   /* indicate variant (see the corresponding .c files) */
-#define UNUR_MASK_METHOD   0xfff00000UL   /* indicate method                   */
-#define UNUR_MASK_TYPE     0xf0000000UL   /* indicate type of method           */
+#define UNUR_MASK_VARIANT  0x00000fffu   /* indicate variant (see the corresponding .c files) */
+#define UNUR_MASK_METHOD   0xfff00000u   /* indicate method                   */
+#define UNUR_MASK_TYPE     0xf0000000u   /* indicate type of method           */
 
 /* bits 13-20 are used for flags common to all generators */
-#define UNUR_MASK_SCHECK   0x00000001UL   /* turns check sampling on/off       */
-// #define UNUR_MASK_MODE     0x00000002UL   /* use mode                          */
+#define UNUR_MASK_SCHECK   0x00000001u   /* turns check sampling on/off       */
 
 
-// #define UNUR_MASK_SCHECK   0x00001000UL   /* turns check sampling on/off       */
-#define UNUR_MASK_MODE     0x00002000UL   /* use mode                          */
+#define UNUR_MASK_MODE     0x00002000u   /* use mode                          */
 
 /* discrete, univariate */
-#define UNUR_METH_DISCR    0x10000000UL
+#define UNUR_METH_DISCR    0x10000000u
 
-#define UNUR_METH_DAU      0x10100000UL
-#define UNUR_METH_DIS      0x10200000UL
+#define UNUR_METH_DAU      0x10100000u
+#define UNUR_METH_DIS      0x10200000u
 
 /* continuous, univariate */
-#define UNUR_METH_CONT     0x20000000UL
+#define UNUR_METH_CONT     0x20000000u
 
-#define UNUR_METH_AROU     0x20300000UL
-#define UNUR_METH_TABL     0x20400000UL
-#define UNUR_METH_TDR      0x20500000UL
-#define UNUR_METH_UNIF     0x20600000UL
-#define UNUR_METH_UTDR     0x20700000UL
+#define UNUR_METH_AROU     0x20300000u
+#define UNUR_METH_TABL     0x20400000u
+#define UNUR_METH_TDR      0x20500000u
+#define UNUR_METH_UNIF     0x20600000u
+#define UNUR_METH_UTDR     0x20700000u
 
 /* continuous, multivariate */
-#define UNUR_METH_VEC      0x40000000UL
+#define UNUR_METH_VEC      0x40000000u
 
-#define UNUR_METH_RECT     0x40700000UL
+#define UNUR_METH_RECT     0x40700000u
 
 /* generators for standard distributions                                     */
 /* for definitions of methods for standard distributions see "stand.c"       */
-#define UNUR_MASK_DISTR    0x000ffff0UL   /* indicate distribution           */
+#define UNUR_MASK_DISTR    0x000ffff0u   /* indicate distribution           */
 
-#define UNUR_METH_CSTD     0x2f000000UL   /* is of type UNUR_METH_CONT !! */
+#define UNUR_METH_CSTD     0x2f000000u   /* is of type UNUR_METH_CONT !! */
 
 /* to indicate unkown type */
-#define UNUR_METH_UNKNOWN  0xf0000000UL
+#define UNUR_METH_UNKNOWN  0xf0000000u
 
 
 /*---------------------------------------------------------------------------*/
@@ -146,19 +144,19 @@ struct unur_par {
 
   struct unur_gen* (*init)(struct unur_par *par);
 
-  unsigned long   method;     /* indicates method and generator to be used   */
-  unsigned long   variant;    /* indicates variant of method                 */
-  unsigned long   set;        /* stores which parameters have been changed   */
+  unsigned method;            /* indicates method and generator to be used   */
+  unsigned variant;           /* indicates variant of method                 */
+  unsigned set;               /* stores which parameters have been changed   */
 
   UNUR_URNG_TYPE  urng;       /* pointer to uniform random number generator  */
 
   struct unur_distr *distr;   /* pointer to distribution object              */
 
 #if UNUR_DEBUG & UNUR_DB_COOKIES  /* use magic cookies */
-  unsigned long   cookie;     /* magic cookie                                */
+  unsigned cookie;            /* magic cookie                                */
 #endif
 #if UNUR_DEBUG & UNUR_DB_INFO     /* print data about generators */
-  unsigned long   debug;      /* debugging flags                             */
+  unsigned debug;             /* debugging flags                             */
 #endif
 };
 
@@ -184,21 +182,21 @@ struct unur_gen {
   
   void            (*destroy)(struct unur_gen *gen); /* pointer to destructor */ 
   
-  unsigned long   method;     /* indicates method and generator to be used   */
-  unsigned long   variant;    /* indicates variant of method                 */
+  unsigned method;            /* indicates method and generator to be used   */
+  unsigned variant;           /* indicates variant of method                 */
   
   UNUR_URNG_TYPE  urng;       /* pointer to uniform random number generator  */
 
   struct unur_distr *distr;   /* pointer to distribution object              */
   
 #if UNUR_DEBUG & UNUR_DB_COOKIES  /* use magic cookies */
-  unsigned long   cookie;     /* magic cookie                                */
+  unsigned cookie;            /* magic cookie                                */
 #endif
-#if UNUR_DEBUG & UNUR_DB_INFO     /* print data about generators */
-  unsigned long   debug;      /* debugging flags                             */
+#if UNUR_DEBUG & UNUR_DB_INFO /* print data about generators */
+  unsigned debug;             /* debugging flags                             */
 #endif
-#if UNUR_DEBUG > 0                /* debugging compiled into generators */
-  char           *genid;      /* identifier for generator                    */
+#if UNUR_DEBUG > 0            /* debugging compiled into generators */
+  char *genid;                /* identifier for generator                    */
 #endif
 };
 

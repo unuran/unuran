@@ -56,7 +56,7 @@
 /*---------------------------------------------------------------------------*/
 /* Flags for logging set calls                                               */
 
-#define RECT_SET_DOMAIN           0x001UL
+#define RECT_SET_DOMAIN           0x01u
 
 /*---------------------------------------------------------------------------*/
 
@@ -122,8 +122,8 @@ unur_rect_new( int dim )
   PAR.domain  = NULL;            /* vertices of hypercube                    */
 
   par->method      = UNUR_METH_RECT;  /* method and default variant          */
-  par->variant     = 0UL;             /* default variant                     */
-  par->set         = 0UL;             /* inidicate default parameters        */    
+  par->variant     = 0u;              /* default variant                     */
+  par->set         = 0u;              /* inidicate default parameters        */    
   par->urng        = unur_get_default_urng(); /* use default urng            */
 
   _unur_set_debugflag_default(par);   /* set default debugging flags         */

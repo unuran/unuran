@@ -72,7 +72,7 @@ void unur_dis_free( struct unur_gen *generator );
 
 /*...........................................................................*/
 
-int unur_dis_set_variant( struct unur_par *par, unsigned long variant );
+int unur_dis_set_variant( struct unur_par *par, unsigned variant );
 /* set variant of method                                                     */
 
 int unur_dis_set_guidefactor( struct unur_par *par, double factor );

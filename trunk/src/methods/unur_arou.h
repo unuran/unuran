@@ -70,7 +70,7 @@ struct unur_arou_segment {
   struct unur_arou_segment *next; /* pointer to next segment in list         */
 
 #if UNUR_DEBUG & UNUR_DB_COOKIES
-  int cookie;                   /* magic cookie                              */
+  unsigned cookie;              /* magic cookie                              */
 #endif
 };
 

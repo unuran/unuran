@@ -300,33 +300,33 @@
 /*---------------------------------------------------------------------------*/
 /* Variants                                                                  */
 
-#define TDR_VARFLAG_VERIFY     0x100UL   /* flag for verifying mode          */
-#define TDR_VARFLAG_USECENTER  0x200UL   /* flag whether center is used as cpoint or not */
-#define TDR_VARFLAG_USEMODE    0x400UL   /* flag whether mode is used as cpoint or not */
+#define TDR_VARFLAG_VERIFY     0x100u   /* flag for verifying mode          */
+#define TDR_VARFLAG_USECENTER  0x200u   /* flag whether center is used as cpoint or not */
+#define TDR_VARFLAG_USEMODE    0x400u   /* flag whether mode is used as cpoint or not */
 
-#define TDR_VARMASK_T          0x003UL   /* indicates transformation         */
-#define TDR_VAR_T_SQRT         0x001UL   /* T(x) = -1/sqrt(x)                */
-#define TDR_VAR_T_LOG          0x002UL   /* T(x) = log(x)                    */
-#define TDR_VAR_T_POW          0x003UL   /* T(x) = -x^c                      */
+#define TDR_VARMASK_T          0x003u   /* indicates transformation         */
+#define TDR_VAR_T_SQRT         0x001u   /* T(x) = -1/sqrt(x)                */
+#define TDR_VAR_T_LOG          0x002u   /* T(x) = log(x)                    */
+#define TDR_VAR_T_POW          0x003u   /* T(x) = -x^c                      */
 
 /*---------------------------------------------------------------------------*/
 /* Debugging flags (do not use first 8 bits)                                 */
 
-#define TDR_DEBUG_SPLIT        0x010UL
-#define TDR_DEBUG_SAMPLE       0x020UL
-#define TDR_DEBUG_IV           0x040UL
+#define TDR_DEBUG_SPLIT        0x100u
+#define TDR_DEBUG_SAMPLE       0x200u
+#define TDR_DEBUG_IV           0x400u
 
 /*---------------------------------------------------------------------------*/
 /* Flags for logging set calls                                               */
 
-#define TDR_SET_MODE           0x001UL
-#define TDR_SET_CENTER         0x002UL
-#define TDR_SET_STP            0x004UL
-#define TDR_SET_N_STP          0x008UL
-#define TDR_SET_GUIDEFACTOR    0x010UL
-#define TDR_SET_C              0x020UL
-#define TDR_SET_MAX_SQHRATIO   0x040UL
-#define TDR_SET_MAX_IVS        0x080UL
+#define TDR_SET_MODE           0x001u
+#define TDR_SET_CENTER         0x002u
+#define TDR_SET_STP            0x004u
+#define TDR_SET_N_STP          0x008u
+#define TDR_SET_GUIDEFACTOR    0x010u
+#define TDR_SET_C              0x020u
+#define TDR_SET_MAX_SQHRATIO   0x040u
+#define TDR_SET_MAX_IVS        0x080u
 
 /*---------------------------------------------------------------------------*/
 
@@ -509,7 +509,7 @@ unur_tdr_new( struct unur_distr* distr )
   par->variant  = ( TDR_VARFLAG_USECENTER |     /* default variant          */
 		    TDR_VARFLAG_USEMODE );
 
-  par->set      = 0UL;              /* inidicate default parameters          */    
+  par->set      = 0u;               /* inidicate default parameters          */    
   par->urng     = unur_get_default_urng(); /* use default urng     */
 
   _unur_set_debugflag_default(par); /* set default debugging flags           */
@@ -1397,7 +1397,7 @@ _unur_tdr_create( struct unur_par *par )
      /*----------------------------------------------------------------------*/
 {
   struct unur_gen *gen;
-  unsigned long variant;
+  unsigned variant;
 
   /* check arguments */
   COOKIE_CHECK(par,CK_TDR_PAR,NULL);

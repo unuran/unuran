@@ -105,8 +105,8 @@ unur_unif_new( int start, int skip )
 
   /* set default values */
   par->method      = UNUR_METH_UNIF; /* method and default variant           */
-  par->variant     = 0UL;            /* default variant                      */
-  par->set         = 0UL;            /* inidicate default parameters         */    
+  par->variant     = 0u;             /* default variant                      */
+  par->set         = 0u;             /* inidicate default parameters         */    
   par->urng        = unur_get_default_urng(); /* use default urng            */
 
   _unur_set_debugflag_default(par);   /* set default debugging flags         */

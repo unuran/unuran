@@ -52,7 +52,7 @@ struct unur_mblock {
   void *memptr;                 /* store pointer to allocated block          */
   struct unur_mblock *next;     /* pointer to next entry in list             */
 #if UNUR_DEBUG & UNUR_DB_COOKIES
-  unsigned long cookie;         /* magic cookie                              */
+  unsigned cookie;              /* magic cookie                              */
 #endif
 };
 

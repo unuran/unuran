@@ -68,7 +68,7 @@ static int _unur_print_method( struct unur_par *par );
 /*---------------------------------------------------------------------------*/
 
 void 
-unur_run_tests( struct unur_par *par, unsigned long tests,
+unur_run_tests( struct unur_par *par, unsigned tests,
 		 double (*cdf)(double x, double *fparam, int n_fparam))
      /*----------------------------------------------------------------------*/
      /* test generator                                                       */

@@ -52,7 +52,7 @@
 /*---------------------------------------------------------------------------*/
 
 int
-unur_set_debug( struct unur_par *par, unsigned long debug )
+unur_set_debug( struct unur_par *par, unsigned debug )
      /*----------------------------------------------------------------------*/
      /* set debugging flag for generator                                     */
      /*                                                                      */

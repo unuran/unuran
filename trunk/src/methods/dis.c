@@ -96,22 +96,22 @@
 /*---------------------------------------------------------------------------*/
 /* Variants                                                                  */
 
-#define DIS_VAR_DIV         0x1UL     /* compute guide table by division n/k */
-#define DIS_VAR_ADD         0x2UL     /* compute guide table by adding       */
+#define DIS_VAR_DIV         0x01u     /* compute guide table by division n/k */
+#define DIS_VAR_ADD         0x02u     /* compute guide table by adding       */
 
 #define DIS_VAR_THRESHOLD   1000      /* above this value: use variant 1, else 2 */
 
 /*---------------------------------------------------------------------------*/
 /* Debugging flags (do not use first 8 bits)                                 */
 
-#define DIS_DEBUG_PRINTVECTOR   0x100UL
-#define DIS_DEBUG_TABLE         0x200UL
+#define DIS_DEBUG_PRINTVECTOR   0x100u
+#define DIS_DEBUG_TABLE         0x200u
 
 /*---------------------------------------------------------------------------*/
 /* Flags for logging set calls                                               */
 
-#define DIS_SET_GUIDEFACTOR    0x010UL
-#define DIS_SET_VARIANT        0x020UL
+#define DIS_SET_GUIDEFACTOR    0x010u
+#define DIS_SET_VARIANT        0x020u
 
 /*---------------------------------------------------------------------------*/
 
@@ -197,8 +197,8 @@ unur_dis_new( struct unur_distr *distr )
   PAR.guide_factor = 1.;             /* use same size for guide table        */
 
   par->method      = UNUR_METH_DIS;  /* method                               */
-  par->variant     = 0UL;            /* default variant                      */
-  par->set         = 0UL;            /* inidicate default parameters         */    
+  par->variant     = 0u;             /* default variant                      */
+  par->set         = 0u;             /* inidicate default parameters         */    
   par->urng        = unur_get_default_urng(); /* use default urng            */
 
   _unur_set_debugflag_default(par);  /* set default debugging flags          */
@@ -213,7 +213,7 @@ unur_dis_new( struct unur_distr *distr )
 /*---------------------------------------------------------------------------*/
 
 int
-unur_dis_set_variant( struct unur_par *par, unsigned long variant )
+unur_dis_set_variant( struct unur_par *par, unsigned variant )
      /*----------------------------------------------------------------------*/
      /* set variant of method                                                */
      /*                                                                      */
@@ -559,7 +559,7 @@ _unur_dis_debug_init( struct unur_par *par, struct unur_gen *gen )
   fprintf(log,"%s: type    = discrete univariate random variates\n",gen->genid);
   fprintf(log,"%s: method  = indexed search (guide table)\n",gen->genid);
 
-  fprintf(log,"%s: variant = %ld ",gen->genid,gen->variant);
+  fprintf(log,"%s: variant = %d ",gen->genid,gen->variant);
   _unur_print_if_default(par,DIS_SET_VARIANT);
   fprintf(log,"\n%s:\n",gen->genid);
 

@@ -79,14 +79,14 @@ struct unur_distr {
     struct unur_distr_discr discr;  /* univariate discrete distribution      */
   } data;                           /* data for distribution                 */
 
-  unsigned int type;                /* type of distribution                  */
-  unsigned int id;                  /* identifier for distribution           */
+  unsigned type;                    /* type of distribution                  */
+  unsigned id;                      /* identifier for distribution           */
   char *name;                       /* name of distribution                  */
 
-  unsigned int set;                 /* indicate changed parameters           */
+  unsigned set;                     /* indicate changed parameters           */
 
 #if UNUR_DEBUG & UNUR_DB_COOKIES    /* use magic cookies */
-  unsigned long   cookie;           /* magic cookie                          */
+  unsigned cookie;                  /* magic cookie                          */
 #endif
 };
 
@@ -94,18 +94,18 @@ struct unur_distr {
 /* types of distribtuions                                                    */
 
 enum {
-  UNUR_DISTR_CONT  = 0x0001u,       /* univariate continuous distribution    */ 
-  UNUR_DISTR_DISCR = 0x0002u,       /* univariate discrete distribution      */ 
+  UNUR_DISTR_CONT  = 0x001u,        /* univariate continuous distribution    */ 
+  UNUR_DISTR_DISCR = 0x002u,        /* univariate discrete distribution      */ 
 };
 
 /*---------------------------------------------------------------------------*/
 /* indicate changed parameters                                               */
 
 enum {
-  UNUR_DISTR_SET_PARAMS  = 0x0001u,
-  UNUR_DISTR_SET_DOMAIN  = 0x0002u,
-  UNUR_DISTR_SET_MODE    = 0x0004u,
-  UNUR_DISTR_SET_PDFAREA = 0x0008u,
+  UNUR_DISTR_SET_PARAMS  = 0x001u,
+  UNUR_DISTR_SET_DOMAIN  = 0x002u,
+  UNUR_DISTR_SET_MODE    = 0x004u,
+  UNUR_DISTR_SET_PDFAREA = 0x008u,
 }; 
 
 /*---------------------------------------------------------------------------*/

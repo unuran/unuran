@@ -121,13 +121,13 @@
 /*---------------------------------------------------------------------------*/
 /* Debugging flags (do not use first 8 bits)                                 */
 
-#define DAU_DEBUG_PRINTVECTOR   0x100UL
-#define DAU_DEBUG_TABLE         0x200UL
+#define DAU_DEBUG_PRINTVECTOR   0x100u
+#define DAU_DEBUG_TABLE         0x200u
 
 /*---------------------------------------------------------------------------*/
 /* Flags for logging set calls                                               */
 
-#define DAU_SET_URNFACTOR       0x010UL
+#define DAU_SET_URNFACTOR       0x01u
 
 /*---------------------------------------------------------------------------*/
 
@@ -213,8 +213,8 @@ unur_dau_new( struct unur_distr *distr )
   PAR.urn_factor = 1.;               /* use same size for table              */
 
   par->method    = UNUR_METH_DAU;    /* method                               */
-  par->variant   = 0UL;              /* default variant (no other variants)  */
-  par->set       = 0UL;              /* inidicate default parameters         */    
+  par->variant   = 0u;               /* default variant (no other variants)  */
+  par->set       = 0u;               /* inidicate default parameters         */    
   par->urng      = unur_get_default_urng(); /* use default urng              */
 
   _unur_set_debugflag_default(par);  /* set default debugging flags          */
@@ -527,7 +527,7 @@ _unur_dau_create( struct unur_par *par)
   /* copy some parameters into generator object */
   GEN.len = par->DISTR.n_prob;      /* length of probability vector               */
   gen->method = par->method;        /* indicates used method                      */
-  gen->variant = 0UL;               /* only the default variant is possible       */
+  gen->variant = 0u;                /* only the default variant is possible       */
   _unur_copy_urng_pointer(par,gen); /* copy pointer to urng into generator object */
   _unur_copy_debugflag(par,gen);    /* copy debugging flags into generator object */
 

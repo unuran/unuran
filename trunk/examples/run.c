@@ -24,10 +24,10 @@
 #define N_INTERVALS 1000
 
 
-/*  #define RUN_TESTS       (~0x0UL) */
-/*  #define RUN_TESTS       (~0x0UL & ~UNUR_TEST_CHI2) */
-/*  #define RUN_TESTS       (~0x0UL & ~UNUR_TEST_N_URNG) */
-#define RUN_TESTS       (~0x0UL & ~UNUR_TEST_SCATTER)
+/*  #define RUN_TESTS       (~0x0u) */
+/*  #define RUN_TESTS       (~0x0u & ~UNUR_TEST_CHI2) */
+/*  #define RUN_TESTS       (~0x0u & ~UNUR_TEST_N_URNG) */
+#define RUN_TESTS       (~0x0u & ~UNUR_TEST_SCATTER)
 
 
 /* define which tests should run (1) or not (0) */

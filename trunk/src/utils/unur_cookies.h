@@ -49,37 +49,37 @@
 /*---------------------------------------------------------------------------*/
 /* name of cookies                                                           */
 
-#define CK_DIS_PAR       0x00000010UL
-#define CK_DIS_GEN       0x00000011UL
-#define CK_DAU_PAR       0x00000020UL
-#define CK_DAU_GEN       0x00000021UL
+#define CK_DIS_PAR       0x00000010u
+#define CK_DIS_GEN       0x00000011u
+#define CK_DAU_PAR       0x00000020u
+#define CK_DAU_GEN       0x00000021u
 
-#define CK_AROU_PAR      0x00100010UL
-#define CK_AROU_GEN      0x00100011UL
-#define CK_AROU_SEG      0x00100012UL
-#define CK_TABL_PAR      0x00100020UL
-#define CK_TABL_GEN      0x00100021UL
-#define CK_TABL_IV       0x00100022UL
-#define CK_TDR_PAR       0x00100030UL
-#define CK_TDR_GEN       0x00100031UL
-#define CK_TDR_IV        0x00100032UL
-#define CK_UNIF_PAR      0x00100040UL
-#define CK_UNIF_GEN      0x00100041UL
-#define CK_UTDR_PAR      0x00100050UL
-#define CK_UTDR_GEN      0x00100051UL
+#define CK_AROU_PAR      0x00100010u
+#define CK_AROU_GEN      0x00100011u
+#define CK_AROU_SEG      0x00100012u
+#define CK_TABL_PAR      0x00100020u
+#define CK_TABL_GEN      0x00100021u
+#define CK_TABL_IV       0x00100022u
+#define CK_TDR_PAR       0x00100030u
+#define CK_TDR_GEN       0x00100031u
+#define CK_TDR_IV        0x00100032u
+#define CK_UNIF_PAR      0x00100040u
+#define CK_UNIF_GEN      0x00100041u
+#define CK_UTDR_PAR      0x00100050u
+#define CK_UTDR_GEN      0x00100051u
 
-#define CK_RECT_PAR      0x00200010UL
-#define CK_RECT_GEN      0x00200011UL
+#define CK_RECT_PAR      0x00200010u
+#define CK_RECT_GEN      0x00200011u
 
-#define CK_CSTD_PAR      0x10000010UL
-#define CK_CSTD_GEN      0x10000011UL
+#define CK_CSTD_PAR      0x10000010u
+#define CK_CSTD_GEN      0x10000011u
 
-#define CK_MBLOCK        0xf0000001UL
+#define CK_MBLOCK        0xf0000001u
 
 /* distribution objects                                                      */
-#define CK_DISTR         0xe0000000UL    
-#define CK_DISTR_CONT    0xe0000001UL    
-#define CK_DISTR_DISCR   0xe0000002UL    
+#define CK_DISTR         0xe0000000u
+#define CK_DISTR_CONT    0xe0000001u
+#define CK_DISTR_DISCR   0xe0000002u
 
 /*---------------------------------------------------------------------------*/
 /* macros for dealing with magic cookies                                     */

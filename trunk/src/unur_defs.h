@@ -53,12 +53,12 @@
 /*---------------------------------------------------------------------------*/
 /* debugging flags                                                           */
 
-#define UNUR_DB_STDERR     0x001UL  /* write warnings and errors on stderr   */
-#define UNUR_DB_LOG        0x002UL  /* write warnings and infos into logfile */
-#define UNUR_DB_COOKIES    0x004UL  /* use magic cookies                     */
-#define UNUR_DB_CHECKNULL  0x008UL  /* check for NULL pointer                */
-#define UNUR_DB_CHECKARGS  0x010UL  /* check arguments                       */
-#define UNUR_DB_INFO       0x020UL  /* write info about generator into logfile */
+#define UNUR_DB_STDERR     0x001u   /* write warnings and errors on stderr   */
+#define UNUR_DB_LOG        0x002u   /* write warnings and infos into logfile */
+#define UNUR_DB_COOKIES    0x004u   /* use magic cookies                     */
+#define UNUR_DB_CHECKNULL  0x008u   /* check for NULL pointer                */
+#define UNUR_DB_CHECKARGS  0x010u   /* check arguments                       */
+#define UNUR_DB_INFO       0x020u  /* write info about generator into logfile */
 
 /*---------------------------------------------------------------------------*/
 

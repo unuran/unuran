@@ -44,33 +44,52 @@
 
    =REQUIRED PDF
 
-   =OPTIONAL mode, bounding rectangle for acceptance region
+   =OPTIONAL mode, center, bounding rectangle for acceptance region
 
-   =SPEED Set-up: fast, Sampling: slow
+   =SPEED Set-up: slow or fast, Sampling: moderate
 
    =REF  [HLD04: Sect.2.4]
 
    =DESCRIPTION
       NROU is an implementation of the ratio-of-uniforms method
-      which uses (minimal) bounding rectangles.
+      which uses (minimal) bounding rectangles, see
+      @ref{Ratio-of-Uniforms}. The coordinates of this rectangles are
+      given by 
 
-      Given a quasi-density function @unurmath{f(x)} on the domain 
-      @unurmath{x \in [b_l, b_r],} the random variable 
-      @unurmath{X = U/V + \mu} has @unurmath{f(x)} as PDF whenever
-      @unurmath{(U,V)} is uniformly distributed in the set :
-      @unurmath{A_f = \lbrace (u,v): 0 < v <= \sqrt{f(u/v+\mu)},
-                                     b_l < u/v + \mu < b_r \rbrace. }
+      @display
+      @unurmath{v^+ = \sup\limits_{x}       \sqrt{f(x)},} @*
+      @unurmath{u^- = \inf\limits_{x} (x-c) \sqrt{f(x)},} @*
+      @unurmath{u^+ = \sup\limits_{x} (x-c) \sqrt{f(x)}.}
+      @end display
 
-      The minimum bounding rectangle @unurmath{R} is the smallest 
-      possible rectangle that contains 
-      @unurmath{A_f \subset R = \lbrace (u,v) : u_{min} <= u <= u_{max},
-                                                0 <= v <= v_{max} \rbrace.}
-      
-      The naive ratio-of-uniforms method NROU is thus an acceptance-rejection
-      method from the minimum bounding rectangle to obtain uniformly 
-      distributed points in @unurmath{A_f.}
-      
-      See the Appendix for more details on the ratio-of-uniforms method.
+      where @i{c} is the center of the distribution.
+      These bounds can either be given directly, or these are computed
+      automatically by means of an numerical routine.
+      Of course this can fail, especially when this rectangle is not
+      bounded. 
+
+      It is important to note that the algorithm works with 
+      @unurmath{PDF(x-center)} instead of 
+      @unurmath{PDF(x)}, i.e. the bounding rectangle that have to be
+      provided are for the @unurmath{PDF(x-center)}.
+      This is important as otherwise the acceptance region can become
+      a very long and skinny ellipsoid along a diagonal of the (huge)
+      bounding rectangle.
+
+   =HOWTOUSE
+      For using the NROU method UNURAN needs the PDF of the
+      distribution. 
+      The bounding rectangle can be given by the unur_vnrou_set_u()
+      and unur_vnrou_set_v() calls. If these are not called then the
+      minimal bounding rectangle is computed automatically. Using 
+      unur_vnrou_set_verify() and unur_vnrou_chg_verify() one can run
+      the sampling algorithm in a checking mode, i.e., in every cycle
+      of the rejection loop it is checked whether the used 
+      rectangle indeed enclosed the acceptance region of the
+      distribution. When in doubt (e.g., when it is not clear whether
+      the numerical routine has worked correctly) this can be used to
+      run a small Monte Carlo study.
+
    =END
 */
 
@@ -86,7 +105,7 @@ UNUR_PAR *unur_nrou_new( const UNUR_DISTR *distribution );
 
 /*...........................................................................*/
 
-int unur_nrou_set_rect_u( UNUR_PAR *parameters, double umin, double umax );
+int unur_nrou_set_u( UNUR_PAR *parameters, double umin, double umax );
 /* 
    Sets left and right boundary of bounding rectangle.
    If no values are given, the boundary of the minimal bounding
@@ -101,7 +120,7 @@ int unur_nrou_set_rect_u( UNUR_PAR *parameters, double umin, double umax );
    Default: not set.
 */
 
-int unur_nrou_set_rect_v( UNUR_PAR *parameters, double vmax );
+int unur_nrou_set_v( UNUR_PAR *parameters, double vmax );
 /* 
    Set upper boundary for bounding rectangle. If this value is not
    given then @unurmath{\sqrt{PDF(mode)}} is used instead.
@@ -122,18 +141,14 @@ int unur_nrou_set_center( UNUR_PAR *parameters, double center );
    distribution near the origin and thus makes the bounding box of the
    acception region smaller.
 
-   Default: Mode of the distribution if neither unur_nrou_set_rect_u()
-   nor unur_nrou_set_rect_v() are called (and the mode is available
-   for the distribution).
-   Otherwise (if at least one of these two calls has been
-   used @code{0} is used as center.
+   Default: Mode if known, else @code{0}.
 */
 
 int unur_nrou_set_verify( UNUR_PAR *parameters, int verify );
 /* 
    Turn verifying of algorithm while sampling on/off.
 
-   If the condition squeeze(@i{x}) <= PDF(@i{x}) <= hat(@i{x}) is
+   If the condition PDF(@i{x}) <= hat(@i{x}) is
    violated for some @i{x} then @code{unur_errno} is set to
    @code{UNUR_ERR_GEN_CONDITION}. However notice that this might
    happen due to round-off errors for a few values of

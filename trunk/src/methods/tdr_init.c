@@ -627,6 +627,7 @@ _unur_tdr_ps_starting_intervals( struct unur_par *par, struct unur_gen *gen )
      tangents to the transformed density is set to INFINITY. */
   if (_FP_is_infinity(iv->dTfx)) {
     GEN.iv = iv->next;
+    GEN.iv->prev = NULL;
     free (iv);
     --GEN.n_ivs;
     iv = GEN.iv;
@@ -640,7 +641,6 @@ _unur_tdr_ps_starting_intervals( struct unur_par *par, struct unur_gen *gen )
   /* compute paramters for all intervals */
   while (iv) {
 
-#if 1
     if (iv->next == NULL) {
       /* the last interval in the list*/
 
@@ -670,7 +670,6 @@ _unur_tdr_ps_starting_intervals( struct unur_par *par, struct unur_gen *gen )
 	break;
 	
     }
-#endif
 
     /* compute parameters for interval */
     switch (_unur_tdr_ps_interval_parameter(gen, iv)) {
@@ -1329,12 +1328,6 @@ _unur_tdr_gw_interval_split( struct unur_gen *gen, struct unur_tdr_interval *iv_
     /* compute parameters for chopped interval */
     success = _unur_tdr_gw_interval_parameter(gen, iv_oldl);
     
-#ifdef UNUR_ENABLE_LOGGING
-    /* write info into log file */
-    if (gen->debug & TDR_DEBUG_SPLIT) 
-      _unur_tdr_gw_debug_split_stop( gen,iv_oldl,iv_oldl );
-#endif
-
     /* we did not add a new interval */
     iv_newr = NULL;
   }
@@ -1361,12 +1354,6 @@ _unur_tdr_gw_interval_split( struct unur_gen *gen, struct unur_tdr_interval *iv_
     /* minimum of both */
     if (success_r < success) success = success_r;
     
-#ifdef UNUR_ENABLE_LOGGING
-    /* write info into log file */
-    if (gen->debug & TDR_DEBUG_SPLIT) 
-      _unur_tdr_gw_debug_split_stop( gen,iv_oldl,iv_newr );
-#endif
-
   }
   
   /* successfull ? */
@@ -1390,13 +1377,21 @@ _unur_tdr_gw_interval_split( struct unur_gen *gen, struct unur_tdr_interval *iv_
       --(GEN.n_ivs); 
       free( iv_newr );
     }
+
+  return ( (success <= -2) ? 0 : 1 );
   }
 
   /* update guide table */ 
   _unur_tdr_make_guide_table(gen);
 
-  /* o.k. ? */
-  return ( (success <= -2) ? 0 : 1 );
+#ifdef UNUR_ENABLE_LOGGING
+    /* write info into log file */
+    if (gen->debug & TDR_DEBUG_SPLIT)
+      _unur_tdr_gw_debug_split_stop( gen,iv_oldl,iv_newr );
+#endif
+
+  /* o.k. */
+  return 1;
 
 } /* end of _unur_tdr_gw_interval_split() */
 
@@ -1458,23 +1453,24 @@ _unur_tdr_ps_interval_split( struct unur_gen *gen, struct unur_tdr_interval *iv,
     _unur_tdr_ps_debug_split_start( gen,oldl,oldr,x,fx );
 #endif
 
-  return 0.;
-
   /* back up data */
-  memcpy(&oldl_bak, oldl, sizeof(struct unur_tdr_interval));
+  if (oldl) memcpy(&oldl_bak, oldl, sizeof(struct unur_tdr_interval));
   memcpy(&oldr_bak, oldr, sizeof(struct unur_tdr_interval));
 
   /* check if the new interval is completely outside the support of p.d.f. */
   if (fx <= 0.) {
 
     /* one of the two boundary points must be 0, too! */
-    if (oldl->fx <= 0.) {
+    if (oldr->fip <= 0. && oldl==NULL) {
       /* chop off left part (it's out of support) */
-      oldl->x = x;
+      oldr->ip = x;
+      oldr->fip = 0.;
     }
-    else if (oldr->fx <= 0.) {
+    else if (oldr->fip <= 0. && oldr->next==NULL) {
       /* chop off right part (it's out of support) */
       oldr->x = x;
+      oldr->ip = x;
+      oldr->fip = 0.;
     }
     else {
       _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"p.d.f. not T-concave");
@@ -1498,15 +1494,25 @@ _unur_tdr_ps_interval_split( struct unur_gen *gen, struct unur_tdr_interval *iv,
     iv_new->prev = oldl;
     iv_new->next = oldr;
     oldr->prev = iv_new;
-    oldl->next = iv_new;
+    if (oldl) oldl->next = iv_new;
     
   }
 
   /* compute parameters for intervals */
+  success = 1;
   /* left hand interval */
-  success = _unur_tdr_ps_interval_parameter(gen, oldl);
+  if (oldl) {
+    success_r = _unur_tdr_ps_interval_parameter(gen, oldl);
+    if (success_r < success) success = success_r;
+  }
   if( iv_new ) {
-    /* middle (newly created)n interval) */
+    /* middle (newly created) interval) */
+    if (!oldl) {
+      /* we have to copy the left intersection point from the 
+         right hand interval */
+      iv_new->ip = oldr->ip;
+      iv_new->fip = oldr->fip;
+    }
     success_r = _unur_tdr_ps_interval_parameter(gen, iv_new);
     if (success_r < success) success = success_r;
   }
@@ -1515,12 +1521,6 @@ _unur_tdr_ps_interval_split( struct unur_gen *gen, struct unur_tdr_interval *iv,
     success_r = _unur_tdr_ps_interval_parameter(gen, oldr);
     if (success_r < success) success = success_r;
   }
-
-#ifdef UNUR_ENABLE_LOGGING
-  /* write info into log file */
-/*    if (gen->debug & TDR_DEBUG_SPLIT)  */
-/*      _unur_tdr_ps_debug_split_stop( gen,oldl,iv_new,oldr ); */
-#endif
 
   /* successfull ? */
   if (success <= 0) {
@@ -1533,24 +1533,37 @@ _unur_tdr_ps_interval_split( struct unur_gen *gen, struct unur_tdr_interval *iv,
        very steep tangents. so we simply do not add this construction point. */
 
     /* restore old interval */
-    memcpy(oldl, &oldl_bak, sizeof(struct unur_tdr_interval));
+    if (oldl) memcpy(oldl, &oldl_bak, sizeof(struct unur_tdr_interval));
     memcpy(oldr, &oldr_bak, sizeof(struct unur_tdr_interval));
     /* remove from linked list; remaines to restore prev pointer in next interval */
     oldr->prev = oldl;
-    oldl->next = oldr;
+    if (oldl) oldl->next = oldr;
 
     /* decrement counter for intervals and free unused interval */
     if (iv_new) {
       --(GEN.n_ivs); 
       free( iv_new );
     }
+
+  return ( (success <= -2) ? 0 : 1 );
   }
+
+  /* we have update the pointer to the list */
+  if (oldl == NULL && iv_new)
+    /* new first entry */
+    GEN.iv = iv_new;
 
   /* update guide table */ 
   _unur_tdr_make_guide_table(gen);
 
-  /* o.k. ? */
-  return ( (success <= -2) ? 0 : 1 );
+#ifdef UNUR_ENABLE_LOGGING
+  /* write info into log file */
+  if (gen->debug & TDR_DEBUG_SPLIT) 
+    _unur_tdr_ps_debug_split_stop( gen,oldl,iv_new,oldr );
+#endif
+
+  /* o.k. */
+  return 1;
 
 } /* end of _unur_tdr_ps_interval_split() */
 

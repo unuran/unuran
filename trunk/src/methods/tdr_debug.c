@@ -303,7 +303,7 @@ _unur_tdr_ps_debug_intervals( struct unur_gen *gen )
 
   log = unur_get_stream();
 
-  fprintf(log,"%s:Intervals: %d\n",gen->genid,GEN.n_ivs-1);
+  fprintf(log,"%s:Intervals: %d\n",gen->genid,GEN.n_ivs);
   if (GEN.iv) {
     if (gen->debug & TDR_DEBUG_IV) {
       fprintf(log,"%s: Nr.       left ip           tp        f(tp)     T(f(tp))   d(T(f(tp)))       f(ip)   squ. ratio\n",gen->genid);
@@ -481,7 +481,8 @@ _unur_tdr_gw_debug_split_stop( struct unur_gen *gen,
   /* check arguments */
   CHECK_NULL(gen,/*void*/);       COOKIE_CHECK(gen,CK_TDR_GEN,/*void*/);
   CHECK_NULL(iv_left,/*void*/);   COOKIE_CHECK(iv_left,CK_TDR_IV,/*void*/);
-  CHECK_NULL(iv_right,/*void*/);  COOKIE_CHECK(iv_right,CK_TDR_IV,/*void*/);
+
+  if (iv_right == NULL) iv_right = iv_left;
 
   log = unur_get_stream();
 
@@ -557,25 +558,24 @@ _unur_tdr_ps_debug_split_start( struct unur_gen *gen,
 
   /* check arguments */
   CHECK_NULL(gen,/*void*/);      COOKIE_CHECK(gen,CK_TDR_GEN,/*void*/);
-  CHECK_NULL(iv_left,/*void*/);  COOKIE_CHECK(iv_left,CK_TDR_IV,/*void*/);
-  CHECK_NULL(iv_right,/*void*/); COOKIE_CHECK(iv_right,CK_TDR_IV,/*void*/);
 
   log = unur_get_stream();
 
   fprintf(log,"%s: split interval at x = %g \t\tf(x) = %g\n",gen->genid,x,fx);
   fprintf(log,"%s: old intervals:\n",gen->genid);
-  if (iv_left->prev)
-    fprintf(log,"%s:   left boundary point      = %-12.6g\tf(x) = %-12.6g\n",gen->genid,
-	    iv_left->prev->ip,iv_left->prev->fip);
-  fprintf(log,"%s:   left construction point  = %-12.6g\tf(x) = %-12.6g\n",gen->genid,iv_left->x,iv_left->fx);
-  fprintf(log,"%s:   middle boundary point    = %-12.6g\tf(x) = %-12.6g\n",gen->genid,iv_left->ip,iv_left->fip);
+  if (iv_left) {
+    fprintf(log,"%s:   left boundary point      = %-12.6g\tf(x) = %-12.6g\n",gen->genid,iv_left->ip,iv_left->fip);
+    fprintf(log,"%s:   left construction point  = %-12.6g\tf(x) = %-12.6g\n",gen->genid,iv_left->x,iv_left->fx);
+  }
+  fprintf(log,"%s:   middle boundary point    = %-12.6g\tf(x) = %-12.6g\n",gen->genid,iv_right->ip,iv_right->fip);
   if (iv_right->next) {
     fprintf(log,"%s:   right construction point = %-12.6g\tf(x) = %-12.6g\n",gen->genid,iv_right->x,iv_right->fx);
-    fprintf(log,"%s:   right boundary point     = %-12.6g\tf(x) = %-12.6g\n",gen->genid,iv_right->ip,iv_right->fip);
+    fprintf(log,"%s:   right boundary point     = %-12.6g\tf(x) = %-12.6g\n",gen->genid,
+	    iv_right->next->ip,iv_right->next->fip);
   }
 
   fprintf(log,"%s:   A(squeeze) =\n",gen->genid);
-  if (iv_left->prev)
+  if (iv_left)
     fprintf(log,"%s:\t%-12.6g\t(%6.3f%%)\n",gen->genid,
 	    iv_left->Asqueeze,iv_left->Asqueeze*100./GEN.Atotal);
   if (iv_right->next)
@@ -583,7 +583,7 @@ _unur_tdr_ps_debug_split_start( struct unur_gen *gen,
 	    iv_right->Asqueeze,iv_right->Asqueeze*100./GEN.Atotal);
 
   fprintf(log,"%s:   A(hat\\squeeze) =\n",gen->genid);
-  if (iv_left->prev)
+  if (iv_left)
     fprintf(log,"%s:\t%-12.6g\t(%6.3f%%)\n",gen->genid,
 	    (iv_left->Ahat - iv_left->Asqueeze),(iv_left->Ahat - iv_left->Asqueeze)*100./GEN.Atotal);
   if (iv_right->next)
@@ -591,7 +591,7 @@ _unur_tdr_ps_debug_split_start( struct unur_gen *gen,
 	  (iv_right->Ahat - iv_right->Asqueeze),(iv_right->Ahat - iv_right->Asqueeze)*100./GEN.Atotal);
 
   fprintf(log,"%s:   A(hat) =\n",gen->genid);
-  if (iv_left->prev)
+  if (iv_left)
     fprintf(log,"%s:\t%-12.6g\t(%6.3f%%)\n",gen->genid,
 	    iv_left->Ahat, iv_left->Ahat*100./GEN.Atotal);
   if (iv_right->next)
@@ -623,29 +623,28 @@ _unur_tdr_ps_debug_split_stop( struct unur_gen *gen,
 
   /* check arguments */
   CHECK_NULL(gen,/*void*/);       COOKIE_CHECK(gen,CK_TDR_GEN,/*void*/);
-  CHECK_NULL(iv_left,/*void*/);   COOKIE_CHECK(iv_left,CK_TDR_IV,/*void*/);
-  CHECK_NULL(iv_right,/*void*/);  COOKIE_CHECK(iv_right,CK_TDR_IV,/*void*/);
 
   log = unur_get_stream();
 
   fprintf(log,"%s: new intervals:\n",gen->genid);
 
-  if (iv_left->prev)
-    fprintf(log,"%s:   left boundary point      = %-12.6g\tf(x) = %-12.6g\n",gen->genid,
-	    iv_left->prev->ip,iv_left->prev->fip);
-  fprintf(log,"%s:   left construction point  = %-12.6g\tf(x) = %-12.6g\n",gen->genid,iv_left->x,iv_left->fx);
-  fprintf(log,"%s:   middle boundary point    = %-12.6g\tf(x) = %-12.6g\n",gen->genid,iv_left->ip,iv_left->fip);
-  if (iv_middle) {
-    fprintf(log,"%s:   middle construction point= %-12.6g\tf(x) = %-12.6g\n",gen->genid,iv_middle->x,iv_middle->fx);
-    fprintf(log,"%s:   middle boundary point    = %-12.6g\tf(x) = %-12.6g\n",gen->genid,iv_middle->ip,iv_middle->fip);
+  if (iv_left) {
+    fprintf(log,"%s:   left boundary point      = %-12.6g\tf(x) = %-12.6g\n",gen->genid,iv_left->ip,iv_left->fip);
+    fprintf(log,"%s:   left construction point  = %-12.6g\tf(x) = %-12.6g\n",gen->genid,iv_left->x,iv_left->fx);
   }
+  if (iv_middle) {
+    fprintf(log,"%s:   middle boundary point    = %-12.6g\tf(x) = %-12.6g\n",gen->genid,iv_middle->ip,iv_middle->fip);
+    fprintf(log,"%s:   middle construction point= %-12.6g\tf(x) = %-12.6g\n",gen->genid,iv_middle->x,iv_middle->fx);
+  }
+  fprintf(log,"%s:   middle boundary point    = %-12.6g\tf(x) = %-12.6g\n",gen->genid,iv_right->ip,iv_right->fip);
   if (iv_right->next) {
     fprintf(log,"%s:   right construction point = %-12.6g\tf(x) = %-12.6g\n",gen->genid,iv_right->x,iv_right->fx);
-    fprintf(log,"%s:   right boundary point     = %-12.6g\tf(x) = %-12.6g\n",gen->genid,iv_right->ip,iv_right->fip);
+    fprintf(log,"%s:   right boundary point     = %-12.6g\tf(x) = %-12.6g\n",gen->genid,
+	    iv_right->next->ip,iv_right->next->fip);
   }
 
   fprintf(log,"%s:   A(squeeze) =\n",gen->genid);
-  if (iv_left->prev)
+  if (iv_left)
     fprintf(log,"%s:\t%-12.6g\t(%6.3f%%)\n",gen->genid,
 	    iv_left->Asqueeze,iv_left->Asqueeze*100./GEN.Atotal);
   if (iv_middle)
@@ -656,7 +655,7 @@ _unur_tdr_ps_debug_split_stop( struct unur_gen *gen,
 	    iv_right->Asqueeze,iv_right->Asqueeze*100./GEN.Atotal);
 
   fprintf(log,"%s:   A(hat\\squeeze) =\n",gen->genid);
-  if (iv_left->prev)
+  if (iv_left)
     fprintf(log,"%s:\t%-12.6g\t(%6.3f%%)\n",gen->genid,
 	    (iv_left->Ahat - iv_left->Asqueeze),(iv_left->Ahat - iv_left->Asqueeze)*100./GEN.Atotal);
   if (iv_middle)
@@ -667,7 +666,7 @@ _unur_tdr_ps_debug_split_stop( struct unur_gen *gen,
 	  (iv_right->Ahat - iv_right->Asqueeze),(iv_right->Ahat - iv_right->Asqueeze)*100./GEN.Atotal);
 
   fprintf(log,"%s:   A(hat) =\n",gen->genid);
-  if (iv_left->prev)
+  if (iv_left)
     fprintf(log,"%s:\t%-12.6g\t(%6.3f%%)\n",gen->genid,
 	    iv_left->Ahat, iv_left->Ahat*100./GEN.Atotal);
   if (iv_middle)

@@ -300,10 +300,10 @@
 #define TDR_VAR_T_LOG          0x002u   /* T(x) = log(x)                    */
 #define TDR_VAR_T_POW          0x003u   /* T(x) = -x^c                      */
 
-#define TDR_VARMASK_VERSION    0x0f0u   /* indicates version                */
-#define TDR_VAR_VERSION_GW     0x010u   /* original version (Gilks&Wild)    */
-#define TDR_VAR_VERSION_PS     0x020u   /* use proportional squeeze         */
-#define TDR_VAR_VERSION_IA     0x030u   /* use immediate acceptance
+#define TDR_VARMASK_VARIANT    0x0f0u   /* indicates which variant          */
+#define TDR_VARIANT_GW         0x010u   /* original version (Gilks&Wild)    */
+#define TDR_VARIANT_PS         0x020u   /* use proportional squeeze         */
+#define TDR_VARIANT_IA         0x030u   /* use immediate acceptance
 					   (requires prop. squeeze)         */
 
 #define TDR_VARFLAG_VERIFY     0x100u   /* flag for verifying mode          */

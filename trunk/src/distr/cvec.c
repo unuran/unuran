@@ -57,6 +57,14 @@ static struct unur_distr **_unur_distr_cvec_marginals_clone ( struct unur_distr 
 static void _unur_distr_cvec_marginals_free ( struct unur_distr **marginals, int dim );
 
 /*---------------------------------------------------------------------------*/
+/* wrapper functions for PDF when only logPDF is given                       */
+
+static double
+_unur_distr_cvec_eval_pdf_from_logpdf( const double *x, const struct unur_distr *distr );
+static int 
+_unur_distr_cvec_eval_dpdf_from_dlogpdf( double *result, const double *x, const struct unur_distr *distr );
+
+/*---------------------------------------------------------------------------*/
 
 #define DISTR distr->data.cvec
 
@@ -136,6 +144,8 @@ unur_distr_cvec_new( int dim )
   /* set defaults                                                            */
   DISTR.pdf       = NULL;   /* pointer to PDF                                */
   DISTR.dpdf      = NULL;   /* pointer to gradient of PDF                    */
+  DISTR.logpdf    = NULL;   /* pointer to logPDF                             */
+  DISTR.dlogpdf   = NULL;   /* pointer to gradient of logPDF                 */
   DISTR.init      = NULL;   /* pointer to special init routine (default: none) */
   DISTR.mean      = NULL;   /* pointer to mean vector (default: not known)   */
   DISTR.covar     = NULL;   /* pointer to covariance matrix (default: not known) */
@@ -326,7 +336,7 @@ unur_distr_cvec_set_pdf( struct unur_distr *distr, UNUR_FUNCT_CVEC *pdf )
   _unur_check_distr_object( distr, CVEC, UNUR_ERR_DISTR_INVALID );
 
   /* we do not allow overwriting a PDF */
-  if (DISTR.pdf != NULL) {
+  if (DISTR.pdf != NULL || DISTR.logpdf != NULL) {
     _unur_warning(distr->name,UNUR_ERR_DISTR_SET,"Overwriting of PDF not allowed");
     return UNUR_ERR_DISTR_SET;
   }
@@ -362,7 +372,7 @@ unur_distr_cvec_set_dpdf( struct unur_distr *distr, UNUR_VFUNCT_CVEC *dpdf )
   _unur_check_distr_object( distr, CVEC, UNUR_ERR_DISTR_INVALID );
   
   /* we do not allow overwriting a dPDF */
-  if (DISTR.dpdf != NULL) {
+  if (DISTR.dpdf != NULL || DISTR.dlogpdf != NULL) {
     _unur_warning(distr->name,UNUR_ERR_DISTR_SET,"Overwriting of dPDF not allowed");
     return UNUR_ERR_DISTR_SET;
   }
@@ -472,6 +482,242 @@ unur_distr_cvec_eval_dpdf( double *result, const double *x, const struct unur_di
 
   return _unur_cvec_dPDF(result,x,distr);
 } /* end of unur_distr_cvec_eval_dpdf() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+unur_distr_cvec_set_logpdf( struct unur_distr *distr, UNUR_FUNCT_CVEC *logpdf )
+     /*----------------------------------------------------------------------*/
+     /* set logPDF of distribution                                           */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   distr  ... pointer to distribution object                          */
+     /*   logpdf ... pointer to PDF                                          */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( NULL, distr, UNUR_ERR_NULL );
+  _unur_check_NULL( distr->name, logpdf, UNUR_ERR_NULL);
+  _unur_check_distr_object( distr, CVEC, UNUR_ERR_DISTR_INVALID );
+
+  /* we do not allow overwriting a PDF */
+  if (DISTR.pdf != NULL || DISTR.logpdf != NULL) {
+    _unur_warning(distr->name,UNUR_ERR_DISTR_SET,"Overwriting of logPDF not allowed");
+    return UNUR_ERR_DISTR_SET;
+  }
+
+  /* changelog */
+  distr->set &= ~UNUR_DISTR_SET_MASK_DERIVED;
+  /* derived parameters like mode, area, etc. might be wrong now! */
+
+  DISTR.logpdf = logpdf;
+  DISTR.pdf = _unur_distr_cvec_eval_pdf_from_logpdf;
+
+  return UNUR_SUCCESS;
+
+} /* end of unur_distr_cvec_set_logpdf() */
+
+/*---------------------------------------------------------------------------*/
+
+double
+_unur_distr_cvec_eval_pdf_from_logpdf( const double *x, const struct unur_distr *distr )
+     /*----------------------------------------------------------------------*/
+     /* evaluate PDF of distribution at x                                    */
+     /* wrapper when only logPDF is given                                    */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   x     ... argument for pdf                                         */
+     /*   distr ... pointer to distribution object                           */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   PDF(x)                                                             */
+     /*----------------------------------------------------------------------*/
+{
+  if (DISTR.logpdf == NULL) {
+    _unur_warning(distr->name,UNUR_ERR_DISTR_DATA,"");
+    return INFINITY;
+  }
+
+  return exp(_unur_cvec_logPDF(x,distr));
+} /* end of unur_distr_cvec_eval_pdf_from_logpdf() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+unur_distr_cvec_set_dlogpdf( struct unur_distr *distr, UNUR_VFUNCT_CVEC *dlogpdf )
+     /*----------------------------------------------------------------------*/
+     /* set gradient of logPDF of distribution                               */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   distr   ... pointer to distribution object                         */
+     /*   dlogpdf ... pointer to gradient of logPDF                          */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( NULL, distr, UNUR_ERR_NULL );
+  _unur_check_NULL( distr->name, dlogpdf, UNUR_ERR_NULL );
+  _unur_check_distr_object( distr, CVEC, UNUR_ERR_DISTR_INVALID );
+  
+  /* we do not allow overwriting a dlogPDF */
+  if (DISTR.dpdf != NULL || DISTR.dlogpdf != NULL) {
+    _unur_warning(distr->name,UNUR_ERR_DISTR_SET,"Overwriting of dlogPDF not allowed");
+    return UNUR_ERR_DISTR_SET;
+  }
+
+  /* changelog */
+  distr->set &= ~UNUR_DISTR_SET_MASK_DERIVED;
+  /* derived parameters like mode, area, etc. might be wrong now! */
+
+  DISTR.dlogpdf = dlogpdf;
+  DISTR.dpdf = _unur_distr_cvec_eval_dpdf_from_dlogpdf;
+
+  return UNUR_SUCCESS;
+} /* end of unur_distr_cvec_set_dlogpdf() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+_unur_distr_cvec_eval_dpdf_from_dlogpdf( double *result, const double *x, const struct unur_distr *distr )
+     /*----------------------------------------------------------------------*/
+     /* evaluate gradient of PDF of distribution at x                        */
+     /* wrapper when only gradient of logPDF is given                        */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   result ... to store grad (PDF(x))                                  */
+     /*   x      ... argument for dPDF                                       */
+     /*   distr  ... pointer to distribution object                          */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+  int ret, i;
+  double f;
+
+  if (DISTR.logpdf == NULL || DISTR.dlogpdf == NULL) {
+    _unur_warning(distr->name,UNUR_ERR_DISTR_DATA,"");
+    return UNUR_ERR_DISTR_DATA;
+  }
+
+  f = unur_distr_cvec_eval_pdf( x, distr );
+  if (!_unur_isfinite(f)) return UNUR_ERR_DISTR_DATA;
+
+  ret = _unur_cvec_dlogPDF(result,x,distr);
+  for (i=0; i<distr->dim; i++)
+    result[i] *= f;
+
+  return ret;
+} /* end of unur_distr_cvec_eval_dpdf() */
+
+/*---------------------------------------------------------------------------*/
+
+
+/*---------------------------------------------------------------------------*/
+
+UNUR_FUNCT_CVEC *
+unur_distr_cvec_get_logpdf( const struct unur_distr *distr )
+     /*----------------------------------------------------------------------*/
+     /* get pointer to logPDF of distribution                                */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   distr ... pointer to distribution object                           */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to logPDF                                                  */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( NULL, distr, NULL );
+  _unur_check_distr_object( distr, CVEC, NULL );
+
+  return DISTR.logpdf;
+} /* end of unur_distr_cvec_get_logpdf() */
+
+/*---------------------------------------------------------------------------*/
+
+UNUR_VFUNCT_CVEC *
+unur_distr_cvec_get_dlogpdf( const struct unur_distr *distr )
+     /*----------------------------------------------------------------------*/
+     /* get pointer to gradient of logPDF of distribution                    */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   distr ... pointer to distribution object                           */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to gradient of logPDF                                      */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( NULL, distr, NULL );
+  _unur_check_distr_object( distr, CVEC, NULL );
+
+  return DISTR.dlogpdf;
+} /* end of unur_distr_cvec_get_dlogpdf() */
+
+/*---------------------------------------------------------------------------*/
+
+double
+unur_distr_cvec_eval_logpdf( const double *x, const struct unur_distr *distr )
+     /*----------------------------------------------------------------------*/
+     /* evaluate logPDF of distribution at x                                 */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   x     ... argument for logpdf                                      */
+     /*   distr ... pointer to distribution object                           */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   logPDF(x)                                                          */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( NULL, distr, INFINITY );
+  _unur_check_distr_object( distr, CVEC, INFINITY );
+
+  if (DISTR.logpdf == NULL) {
+    _unur_warning(distr->name,UNUR_ERR_DISTR_DATA,"");
+    return INFINITY;
+  }
+
+  return _unur_cvec_logPDF(x,distr);
+} /* end of unur_distr_cvec_eval_logpdf() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+unur_distr_cvec_eval_dlogpdf( double *result, const double *x, const struct unur_distr *distr )
+     /*----------------------------------------------------------------------*/
+     /* evaluate gradient of logPDF of distribution at x                     */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   result ... to store grad (logPDF(x))                               */
+     /*   x      ... argument for dlogPDF                                    */
+     /*   distr  ... pointer to distribution object                          */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( NULL, distr, UNUR_ERR_NULL );
+  _unur_check_distr_object( distr, CVEC, UNUR_ERR_DISTR_INVALID );
+
+  if (DISTR.dlogpdf == NULL) {
+    _unur_warning(distr->name,UNUR_ERR_DISTR_DATA,"");
+    return UNUR_ERR_DISTR_DATA;
+  }
+
+  return _unur_cvec_dlogPDF(result,x,distr);
+} /* end of unur_distr_cvec_eval_dlogpdf() */
 
 /*---------------------------------------------------------------------------*/
 

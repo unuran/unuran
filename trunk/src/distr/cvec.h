@@ -81,6 +81,13 @@
       as @command{pdf}.
       @end itemize
 
+      @item Handle and evaluate 
+      the logarithm of the probability density function (logPDF,
+      @command{logpdf}) and the gradient of the logarithm of the
+      density function (@command{dlogpdf}).
+
+      Some methods use the logarithm of the density if available.
+
       @item Set (and change) parameters (@command{pdfparams}) and the
       volume below the graph (@command{pdfvol}) of the given density.
 
@@ -140,6 +147,10 @@ int unur_distr_cvec_set_pdf( UNUR_DISTR *distribution, UNUR_FUNCT_CVEC *pdf );
    integral need not be 1. 
    Nevertheless the volume below the PDF can be provided by a
    unur_distr_cvec_set_pdfvol() call.
+
+   It is not possible to change the PDF. Once the PDF is set it cannot
+   be overwritten. This also holds when the logPDF is given.
+   A new distribution object has to be used instead.
 */
 
 int unur_distr_cvec_set_dpdf( UNUR_DISTR *distribution, UNUR_VFUNCT_CVEC *dpdf );
@@ -153,8 +164,13 @@ int unur_distr_cvec_set_dpdf( UNUR_DISTR *distribution, UNUR_VFUNCT_CVEC *dpdf )
    The function should return an error code in case of an error and must
    return @code{UNUR_SUCCESS} otherwise.
 
-   The given function must be proved the gradient of the function
+   The given function must be the gradient of the function
    given by a unur_distr_cvec_set_pdf() call.
+
+   It is not possible to change the gradient of the PDF. Once the dPDF
+   is set it cannot be overwritten. This also holds when the gradient
+   of the logPDF is given.
+   A new distribution object has to be used instead.
 */
 
 UNUR_FUNCT_CVEC *unur_distr_cvec_get_pdf( const UNUR_DISTR *distribution );
@@ -202,6 +218,27 @@ int unur_distr_cvec_eval_dpdf( double *result, const double *x, const UNUR_DISTR
    @var{distribution}, an error code is returned and @code{unur_errno}
    is set to @code{UNUR_ERR_DISTR_DATA} (@var{result} is left unmodified).
 */
+
+int unur_distr_cvec_set_logpdf( UNUR_DISTR *distribution, UNUR_FUNCT_CVEC *logpdf );
+/* */
+
+int unur_distr_cvec_set_dlogpdf( UNUR_DISTR *distribution, UNUR_VFUNCT_CVEC *dlogpdf );
+/* */
+
+UNUR_FUNCT_CVEC *unur_distr_cvec_get_logpdf( const UNUR_DISTR *distribution );
+/* */
+
+UNUR_VFUNCT_CVEC *unur_distr_cvec_get_dlogpdf( const UNUR_DISTR *distribution );
+/* */
+
+double unur_distr_cvec_eval_logpdf( const double *x, const UNUR_DISTR *distribution );
+/* */
+
+int unur_distr_cvec_eval_dlogpdf( double *result, const double *x, const UNUR_DISTR *distribution );
+/* 
+   Analogous calls for the logarithm of the density function.
+*/
+
 
 int unur_distr_cvec_set_mean( UNUR_DISTR *distribution, const double *mean );
 /* 

@@ -1,6 +1,8 @@
 /* Test for signalling FP exceptions */
 
-#define ALPHA 0 /* set to 1 on alpha machine */
+/* #define ALPHA 0 */ 
+/* set to 1 on alpha machine */
+/* (defined using compiler flag -D'ALPHA=n' with n=0 or n=1) */
 
 #include <stdio.h>
 #include <signal.h>
@@ -30,6 +32,10 @@ double f(double x, double y) {
   double fx;
   
   int jmpret;
+
+  if( signal( SIGFPE, fphandler ) == SIG_ERR ) {
+    fprintf( stderr, "Couldn't set SIGFPE\n" );
+  }
   
 #if !ALPHA  
   /* not available on alphas */ 
@@ -46,6 +52,8 @@ double f(double x, double y) {
 #endif  
   
   jmpret = setjmp( jump_mark );
+
+  fprintf(stderr, "jmpret=%d\n",jmpret);
 
   if( jmpret == 0 ) {
     fx=x/y ; fprintf(stderr, "%d/%d = %f\n", (int) x, (int) y, fx);
@@ -64,9 +72,6 @@ double f(double x, double y) {
 
 int main()
 {
-  if( signal( SIGFPE, fphandler ) == SIG_ERR ) {
-    fprintf( stderr, "Couldn't set SIGFPE\n" );
-  }
 
   printf("f(%d,%d)=%f\n", 0,0,f(0,0)); 
   printf("f(%d,%d)=%f\n", 0,1,f(0,1)); 

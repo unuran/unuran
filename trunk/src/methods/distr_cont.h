@@ -110,10 +110,13 @@ int unur_distr_cont_set_cdf( UNUR_DISTR *distribution, UNUR_FUNCT_CONT *cdf );
    result for all floats @var{x}. Eg., if the domain of a given
    PDF is the interval [-1,1], then the given function must return
    @code{0.0} for all points outside this interval.
+   In case of an overflow the PDF should return 
+   @code{UNUR_INFINITY}.
 
    It is not possible to change such a function. Once the PDF or
    CDF is set it cannot be overwritten. A new distribution object
    has to be used instead.
+
 */
 
 UNUR_FUNCT_CONT *unur_distr_cont_get_pdf( UNUR_DISTR *distribution );

@@ -299,6 +299,10 @@ unur_ssr_set_pdfatmode( UNUR_PAR *par, double fmode )
     _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"PDF(mode)");
     return 0;
   }
+  if (_unur_FP_is_infinity(fmode)) {
+    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"PDF(mode) overflow");
+    return 0;
+  }
 
   /* store date */
   PAR.fm = fmode;
@@ -577,6 +581,10 @@ unur_ssr_chg_pdfatmode( struct unur_gen *gen, double fmode )
     _unur_warning(gen->genid,UNUR_ERR_PAR_SET,"PDF(mode)");
     return 0;
   }
+  if (_unur_FP_is_infinity(fmode)) {
+    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"PDF(mode) overflow");
+    return 0;
+  }
 
   /* store date */
   GEN.fm = fmode;
@@ -771,6 +779,10 @@ _unur_ssr_hat( struct unur_gen *gen )
     /* fm must be positive */
     if (fm <= 0.) {
       _unur_warning(gen->genid,UNUR_ERR_GEN_DATA,"PDF(mode) <= 0.");
+      return 0;
+    }
+    if (_unur_FP_is_infinity(fm)) {
+      _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"PDF(mode) overflow");
       return 0;
     }
     GEN.fm = fm;        /* PDF at mode */

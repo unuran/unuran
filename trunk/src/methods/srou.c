@@ -337,6 +337,10 @@ unur_srou_set_pdfatmode( UNUR_PAR *par, double fmode )
     _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"PDF(mode)");
     return 0;
   }
+  if (_unur_FP_is_infinity(fmode)) {
+    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"PDF(mode) overflow");
+    return 0;
+  }
 
   /* store date (square root of fmode) */
   PAR.um = sqrt(fmode);
@@ -647,6 +651,10 @@ unur_srou_chg_pdfatmode( struct unur_gen *gen, double fmode )
     _unur_warning(gen->genid,UNUR_ERR_PAR_SET,"PDF(mode)");
     return 0;
   }
+  if (_unur_FP_is_infinity(fmode)) {
+    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"PDF(mode) overflow");
+    return 0;
+  }
 
   /* store date (square root of fmode) */
   GEN.um = sqrt(fmode);
@@ -844,6 +852,10 @@ _unur_srou_rectangle( struct unur_gen *gen )
     /* fm must be positive */
     if (fm <= 0.) {
       _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"PDF(mode) <= 0.");
+      return 0;
+    }
+    if (_unur_FP_is_infinity(fm)) {
+      _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"PDF(mode) overflow");
       return 0;
     }
     GEN.um = sqrt(fm);    /* height of rectangle */

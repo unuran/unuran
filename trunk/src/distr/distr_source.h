@@ -55,8 +55,10 @@
 						    restricted AFTER initializing
 						    the generator object */
 
-#define UNUR_DISTR_SET_MEAN           0x00100000 /* mean (vector for multivariate distr.) */
-#define UNUR_DISTR_SET_COVAR          0x00200000 /* covariance matrix (for multivar. distr.) */
+#define UNUR_DISTR_SET_MEAN           0x01000000 /* mean (vector for multivariate distr.) */
+#define UNUR_DISTR_SET_COVAR          0x02000000 /* covariance matrix (for multivar. distr.) */
+#define UNUR_DISTR_SET_COVAR_INV      0x04000000 /* inverse of covariance matrix (for multivar. distr.) */
+#define UNUR_DISTR_SET_CHOLESKY       0x08000000 /* cholesky factor of covariance matrix (for multivar. distr.) */
 
 /* derived parameters */
 #define UNUR_DISTR_SET_MASK_DERIVED   0x0000ffff

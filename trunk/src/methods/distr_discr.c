@@ -54,7 +54,7 @@ static void _unur_distr_discr_free( struct unur_distr *distr );
 
 /*---------------------------------------------------------------------------*/
 
-static int _unur_distr_discr_find_mode( struct unur_distr *distr );
+// static int _unur_distr_discr_find_mode( struct unur_distr *distr );
 /*---------------------------------------------------------------------------*/
 /* find mode of unimodal probability vector numerically by bisection         */
 /*---------------------------------------------------------------------------*/
@@ -665,7 +665,7 @@ unur_distr_discr_get_mode( struct unur_distr *distr )
     /* try to compute mode */
     if (DISTR.upd_mode == NULL) {
       /* no function to compute mode available */
-      _unur_error(distr->name,UNUR_ERR_DISTR_GET,"mode");
+            _unur_error(distr->name,UNUR_ERR_DISTR_GET,"mode");
       return INT_MAX;
     }
     else {
@@ -708,8 +708,8 @@ _unur_distr_discr_find_mode(struct unur_distr *distr )
   int mode;                       /* mode                                   */
   int x[3], xnew;                 /* mode between x[0] and x[1]             */
   double fx[3], fxnew;            /* ... and the respective function values */
-  int xtmp;
-  double fxtmp;
+  int xtmp = INT_MAX;
+  double fxtmp = FLT_MAX;
 
   const double r = (3.-sqrt(5.))/2.;       /* sectio aurea                  */
 
@@ -728,7 +728,10 @@ _unur_distr_discr_find_mode(struct unur_distr *distr )
   /* derive three distinct points */
 
   x[0] = DISTR.domain[0];
-  x[1] = DISTR.domain[1];
+  x[1] = DISTR.domain[0] + DISTR.n_prob - 1;
+  if (x[1] < x[0])
+    _unur_error(distr->name,UNUR_ERR_DISTR_DATA,
+		"Overflow: x[1] > INT_MAX");
   fx[0] = DISTR.prob[x[0]];
   fx[1] = DISTR.prob[x[1]];
   
@@ -740,7 +743,6 @@ _unur_distr_discr_find_mode(struct unur_distr *distr )
   }
   else{                           /* domain contains at least three points  */
 
- 
     x[2]  = (int) (r*x[0] + (1-r)*x[1]);
     if ( x[2] == x[0] )
       x[2]++;
@@ -853,28 +855,37 @@ _unur_distr_discr_find_mode(struct unur_distr *distr )
 
       }   /* flat region left */
 
-      
       /* regular bisection */
       bisect = -1; /* should be impossibe lwhen entering switch */
-      if ( fxnew > fx[0] && fxnew > fx[2] )
+      if ( fxnew > fx[0] && fxnew > fx[2] ){
 	bisect = X2_BORDER;
-      else if ( fxnew > fx[1] && fxnew > fx[2] )
+      }
+      else if ( fxnew > fx[1] && fxnew > fx[2] ){
 	bisect = XNEW_BORDER;
-      else if ( fx[0] > fxnew )
+      }
+      else if ( fx[2] > fxnew && fx[2] > fx[1])
+	bisect = XNEW_BORDER;
+      else if ( fx[0] > fxnew ){
 	bisect = X2_BORDER;
-      else if ( fx[1] > fx[2] )
+      }
+      else if ( fx[1] > fx[2] ){
 	bisect = XNEW_BORDER;
-      else if ( _unur_FP_same(fx[0], fxnew) && fxnew < fx[2] )
+      }
+      else if ( _unur_FP_same(fx[0], fxnew) && fxnew < fx[2] ){
 	bisect = XNEW_BORDER;
-      else if ( _unur_FP_same(fx[0], fxnew) && fxnew > fx[2] )
+      }
+      else if ( _unur_FP_same(fx[0], fxnew) && fxnew > fx[2] ){
 	bisect = X2_BORDER;
-      else if ( _unur_FP_same(fx[2], fx[1]) && fxnew < fx[2] )
+      }
+      else if ( _unur_FP_same(fx[2], fx[1]) && fxnew < fx[2] ){
 	bisect = XNEW_BORDER;
-      else if ( _unur_FP_same(fx[2], fx[1]) && fxnew < fx[2] )
+      }
+      else if ( _unur_FP_same(fx[2], fx[1]) && fxnew < fx[2] ){
 	bisect = X2_BORDER;
-      else
+      }
+      else{
        _unur_error(distr->name, UNUR_ERR_SHOULD_NOT_HAPPEN,"");
-
+      }
       
       switch ( bisect ){
       case XNEW_BORDER:

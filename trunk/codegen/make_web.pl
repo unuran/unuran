@@ -17,7 +17,7 @@ require "read_PDF.pl";
 my $PHP_file = "../../public_html/anuran.php";
 
 # Gray Color for disabled text
-my $Gray = "\#D0D0D0";
+my $Gray = "\#C0C0C0";
 
 # ----------------------------------------------------------------
 # List of distributions

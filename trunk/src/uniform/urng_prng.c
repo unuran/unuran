@@ -55,9 +55,9 @@ unur_urng_prngptr_new( struct prng *prng )
      /*   prng ... pointer to generator structure                            */
      /*----------------------------------------------------------------------*/
 {
-  UNUR_URNG *urng = unur_urng_new( (_unur_urng_doublevoidptr) prng->get_next, prng );
-  unur_urng_set_reset(urng, (_unur_urng_intvoidptr) prng->reset);
-  unur_urng_set_delete(urng, (_unur_urng_voidvoidptr) prng->destroy);
+  UNUR_URNG *urng = unur_urng_new( (double(*)(void*)) prng->get_next, prng );
+  unur_urng_set_reset(urng, (void(*)(void*)) prng->reset);
+  unur_urng_set_delete(urng, (void(*)(void*)) prng->destroy);
   return urng;
 } /* end of unur_urng_prngptr_new() */
 

@@ -55,9 +55,9 @@ unur_urng_rngstreamptr_new( RngStream rngstream )
      /*   urngstr ... pointer to generator structure                         */
      /*----------------------------------------------------------------------*/
 {
-  UNUR_URNG *urng = unur_urng_new( (_unur_urng_doublevoidptr) RngStream_RandU01, rngstream );
-  unur_urng_set_reset(urng, (_unur_urng_intvoidptr) RngStream_ResetStartStream);
-  unur_urng_set_delete(urng, (_unur_urng_voidvoidptr) RngStream_DeleteStream);
+  UNUR_URNG *urng = unur_urng_new( (double(*)(void*)) RngStream_RandU01, rngstream );
+  unur_urng_set_reset(urng, (void(*)(void*)) RngStream_ResetStartStream);
+  unur_urng_set_delete(urng, (void(*)(void*)) RngStream_DeleteStream);
   return urng;
 } /* end of unur_urng_rngstreamptr_new() */
 

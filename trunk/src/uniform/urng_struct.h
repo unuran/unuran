@@ -37,14 +37,28 @@
 /*---------------------------------------------------------------------------*/
 
 struct unur_urng_generic {
-  double (*sampleunif)(void *params); /* function for generating uniform RNG */
-  void *params;                       /* list of parameters                  */
-  int (*reset)(void *p);              /* reset object                        */
-  int (*nextsub)(void *p);            /* skip to next substream              */
-  int (*resetsub)(void *p);           /* reset current substream             */
-  int (*anti)(void *p, int a);        /* set antithetic flag                 */
-  void (*delete)(void *p);            /* function for destroying URNG        */
+  double (*sampleunif)(void *state);  /* function for generating uniform RNG */
+  void *state;                        /* state of the generator              */
+  unsigned long seed;                 /* initial seed of the generator       */
+  void (*setseed)(void *state, unsigned long seed);  /* set initial seed of the generator */
+  void (*reset)(void *state);         /* reset object                        */
+  void (*nextsub)(void *state);       /* skip to next substream              */
+  void (*resetsub)(void *state);      /* reset current substream             */
+  void (*anti)(void *state, int a);   /* set antithetic flag                 */
+  void (*delete)(void *state);        /* function for destroying URNG        */
 };
+
+/* Remark:                                                                   */
+/* The 'seed' is used to fill the state variable(s) of a generator with      */
+/* initial values. For some generators the size of the 'state' is larger     */
+/* than the size if the 'seed'. In such a case some function is used to      */
+/* expand the 'seed' to the appropriate size (often this is done with a      */
+/* LCG (linear congruental generator) with starting state 'seed'; e.g this   */
+/* happens for the Mersenne twister).                                        */
+/* Often the seed is not stored in the structure for the generator object    */
+/* (which is stored in 'state').                                             */
+/* Thus we have introduced an additional field 'seed' to store the           */
+/* starting value.                                                           */
 
 /*---------------------------------------------------------------------------*/
 #endif  /* #if UNUR_URNG_TYPE == UNUR_URNG_GENERIC */

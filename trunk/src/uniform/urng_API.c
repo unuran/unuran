@@ -94,17 +94,21 @@ unur_urng_reset (UNUR_URNG *urng)
 
 #if UNUR_URNG_TYPE == UNUR_URNG_GENERIC
 
-  /* check whether we can reset the URNG object */
-  if (urng->reset == NULL) {
-    _unur_error("URNG",UNUR_ERR_URNG_MISS,"reset");
-    return UNUR_ERR_URNG_MISS;
+  /* first we look for the reset function */
+  if (urng->reset != NULL) {
+    urng->reset (urng->state);
+    return UNUR_SUCCESS;
   }
 
-  /* reset object */
-  urng->reset (urng->params);
-  /** TODO: is there any chance to have an exitcode from this call? */
+  /* if no reset function exists, we look for an initial seed */
+  if (urng->setseed != NULL && urng->seed != ULONG_MAX) {
+    unur_urng_seed(urng,urng->seed);
+    return UNUR_SUCCESS;
+  }
 
-  return UNUR_SUCCESS;
+  /* neither works */
+  _unur_error("URNG",UNUR_ERR_URNG_MISS,"reset");
+  return UNUR_ERR_URNG_MISS;
 
 #else
 
@@ -136,7 +140,7 @@ unur_urng_reset (UNUR_URNG *urng)
 /*---------------------------------------------------------------------------*/
 
 UNUR_URNG *
-unur_urng_new( double (*sampleunif)(void *p), void *params )
+unur_urng_new( double (*sampleunif)(void *state), void *state )
      /*----------------------------------------------------------------------*/
      /* create a new URNG object for uniform random number generator.        */
      /*                                                                      */
@@ -160,14 +164,16 @@ unur_urng_new( double (*sampleunif)(void *p), void *params )
 
   /* copy parameters into object */
   urng->sampleunif = sampleunif;
-  urng->params  = params;
+  urng->state      = state;
 
   /* initialize optional functions (set to not available) */
-  urng->delete = NULL;
-  urng->reset = NULL;
-  urng->nextsub = NULL;
+  urng->seed     = ULONG_MAX;
+  urng->setseed  = NULL;
+  urng->delete   = NULL;
+  urng->reset    = NULL;
+  urng->nextsub  = NULL;
   urng->resetsub = NULL;
-  urng->anti = NULL;
+  urng->anti     = NULL;
 
   /* return object */
   return urng;
@@ -176,13 +182,13 @@ unur_urng_new( double (*sampleunif)(void *p), void *params )
 /*---------------------------------------------------------------------------*/
 
 int
-unur_urng_set_anti( UNUR_URNG *urng, int (*anti)(void *p, int anti) )
+unur_urng_set_seed( UNUR_URNG *urng, void (*setseed)(void *state, unsigned long seed) )
      /*----------------------------------------------------------------------*/
-     /* Set function to switch to antithetic random numbers.                 */
+     /* Set function to seed.                                                */
      /*                                                                      */
      /* parameters:                                                          */
-     /*   urng   ... pointer to URNG object                                  */
-     /*   anti   ... function for switching                                  */
+     /*   urng    ... pointer to URNG object                                 */
+     /*   setseed ... function for seeding generator                         */
      /*                                                                      */
      /* return:                                                              */
      /*   UNUR_SUCCESS ... on success                                        */
@@ -192,14 +198,37 @@ unur_urng_set_anti( UNUR_URNG *urng, int (*anti)(void *p, int anti) )
   /* check arguments */
   _unur_check_NULL( "URNG", urng, UNUR_ERR_NULL );
 
-  urng->anti = anti;
+  urng->setseed = setseed;
+  return UNUR_SUCCESS;
+} /* end of unur_urng_set_seed() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+unur_urng_set_anti( UNUR_URNG *urng, void (*setanti)(void *state, int anti) )
+     /*----------------------------------------------------------------------*/
+     /* Set function to switch to antithetic random numbers.                 */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   urng    ... pointer to URNG object                                 */
+     /*   setanti ... function for switching antithetic flag                 */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( "URNG", urng, UNUR_ERR_NULL );
+
+  urng->anti = setanti;
   return UNUR_SUCCESS;
 } /* end of unur_urng_set_anti() */
 
 /*---------------------------------------------------------------------------*/
 
 int
-unur_urng_set_reset( UNUR_URNG *urng, int (*reset)(void *p) )
+unur_urng_set_reset( UNUR_URNG *urng, void (*reset)(void *state) )
      /*----------------------------------------------------------------------*/
      /* Set function for reseting URNG.                                      */
      /*                                                                      */
@@ -222,7 +251,7 @@ unur_urng_set_reset( UNUR_URNG *urng, int (*reset)(void *p) )
 /*---------------------------------------------------------------------------*/
 
 int
-unur_urng_set_nextsub( UNUR_URNG *urng, int (*nextsub)(void *p) )
+unur_urng_set_nextsub( UNUR_URNG *urng, void (*nextsub)(void *state) )
      /*----------------------------------------------------------------------*/
      /* Set function for jumping to start of the next substream of URNG.     */
      /*                                                                      */
@@ -245,7 +274,7 @@ unur_urng_set_nextsub( UNUR_URNG *urng, int (*nextsub)(void *p) )
 /*---------------------------------------------------------------------------*/
 
 int
-unur_urng_set_resetsub( UNUR_URNG *urng, int (*resetsub)(void *p) )
+unur_urng_set_resetsub( UNUR_URNG *urng, void (*resetsub)(void *state) )
      /*----------------------------------------------------------------------*/
      /* Set function for jumping to start of the current substream of URNG.  */
      /*                                                                      */
@@ -268,7 +297,7 @@ unur_urng_set_resetsub( UNUR_URNG *urng, int (*resetsub)(void *p) )
 /*---------------------------------------------------------------------------*/
 
 int
-unur_urng_set_delete( UNUR_URNG *urng, void (*delete)(void *p) )
+unur_urng_set_delete( UNUR_URNG *urng, void (*delete)(void *state) )
      /*----------------------------------------------------------------------*/
      /* Set function for destroying URNG.                                    */
      /*                                                                      */
@@ -287,6 +316,42 @@ unur_urng_set_delete( UNUR_URNG *urng, void (*delete)(void *p) )
   urng->delete  = delete;
   return UNUR_SUCCESS;
 } /* end of unur_urng_set_delete() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+unur_urng_seed (UNUR_URNG *urng, unsigned long seed)
+     /*----------------------------------------------------------------------*/
+     /* (Re-)Seed URNG.                                                      */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   urng   ... pointer to URNG object                                  */
+     /*   seed   ... new seed for generator                                  */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+  /* check argument */
+  if (urng == NULL) 
+    /* use default generator */
+    urng = unur_get_default_urng();
+
+  /* check whether we can set the antithetic flag */
+  if (urng->setseed == NULL) {
+    _unur_error("URNG",UNUR_ERR_URNG_MISS,"seeding function");
+    return UNUR_ERR_URNG_MISS;
+  }
+
+  /* set flag */
+  urng->setseed (urng->state,seed);
+
+  /* store seed */
+  urng->seed = seed;
+
+  return UNUR_SUCCESS;
+} /* end of unur_urng_seed() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -316,8 +381,7 @@ unur_urng_anti (UNUR_URNG *urng, int anti)
   }
 
   /* set flag */
-  urng->anti (urng->params,anti);
-  /** TODO: is there any chance to have an exitcode from this call? */
+  urng->anti (urng->state,anti);
 
   return UNUR_SUCCESS;
 } /* end of unur_urng_anti() */ 
@@ -349,8 +413,7 @@ unur_urng_nextsub (UNUR_URNG *urng)
   }
 
   /* jump to next substream */
-  urng->nextsub (urng->params);
-  /** TODO: is there any chance to have an exitcode from this call? */
+  urng->nextsub (urng->state);
 
   return UNUR_SUCCESS;
 } /* end of unur_urng_nextsub() */ 
@@ -382,8 +445,7 @@ unur_urng_resetsub (UNUR_URNG *urng)
   }
 
   /* reset substream */
-  urng->resetsub (urng->params);
-  /** TODO: is there any chance to have an exitcode from this call? */
+  urng->resetsub (urng->state);
 
   return UNUR_SUCCESS;
 } /* end of unur_urng_resetsub() */ 
@@ -406,7 +468,7 @@ unur_urng_free (UNUR_URNG *urng)
   /* check argument */
   _unur_check_NULL( "URNG", urng, UNUR_ERR_NULL );
 
-  if (urng->delete != NULL) urng->delete (urng->params);
+  if (urng->delete != NULL) urng->delete (urng->state);
   free (urng);
   urng = NULL;
 
@@ -420,6 +482,28 @@ unur_urng_free (UNUR_URNG *urng)
 /**  Handle URNG object in a generator object                               **/
 /**                                                                         **/
 /*****************************************************************************/
+
+int
+unur_gen_seed (UNUR_GEN *gen, unsigned long seed)
+     /*----------------------------------------------------------------------*/
+     /* (Re-) Seed uniform generator in generator object.                    */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen  ... generator object                                          */
+     /*   seed ... new seed for generator                                    */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+  /* check argument */
+  _unur_check_NULL( "URNG", gen, UNUR_ERR_NULL );
+
+  return unur_urng_seed(gen->urng, seed);
+} /* end of unur_gen_seed() */ 
+
+/*---------------------------------------------------------------------------*/
 
 int
 unur_gen_anti (UNUR_GEN *gen, int anti)
@@ -439,7 +523,7 @@ unur_gen_anti (UNUR_GEN *gen, int anti)
   _unur_check_NULL( "URNG", gen, UNUR_ERR_NULL );
 
   return unur_urng_anti(gen->urng, anti);
-} /* end of unur_gen_reset() */ 
+} /* end of unur_gen_anti() */ 
 
 /*---------------------------------------------------------------------------*/
 

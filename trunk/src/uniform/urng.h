@@ -130,8 +130,8 @@
 
       @smallexample
       struct unur_urng_generic @{
-      @ @ @ double (*getrand)(void *params);
-      @ @ @ void *params;
+      @ @ @ double (*getrand)(void *state);
+      @ @ @ void *state;
       @};
       @end smallexample
 
@@ -157,7 +157,7 @@
 	Set pointer to parameters of for this function                    
 	(or NULL if no parameters are required):                          
 	@smallexample
-        urng->params = my_parameters;                                   
+        urng->state = my_parameters;                                   
 	@end smallexample
 
 	@item
@@ -338,8 +338,20 @@ double unur_urng_sample (UNUR_URNG *urng);
 
 int unur_urng_reset (UNUR_URNG *urng);
 /*
-   Reset @var{urng} object.
-   It returns an error code if reseting is not possible. 
+   Reset @var{urng} object. 
+   The routine tries two ways to reset the generator (in this order):
+
+   (1) It uses the reset function given by an unur_urng_set_reset()
+       call. 
+
+   (2) It uses the seed given by the last unur_urng_seed() call (which
+       requires a seeding function given by a unur_urng_set_seed()
+       call). If no seed was given explicitly (or implicitly for some
+       kinds of uniform random number generators) the generator cannot
+       be reset.
+
+   If neither of the two methods work resetting of the generator is
+   not possible and an error code is returned.
 
    If the NULL pointer is given, the default uniform generator is
    reset.
@@ -353,18 +365,19 @@ int unur_urng_reset (UNUR_URNG *urng);
 
 /* generic API to create a new URNG (uniform random number generator) object */
 
-UNUR_URNG *unur_urng_new( double (*sampleunif)(void *p), void *params );
+UNUR_URNG *unur_urng_new( double (*sampleunif)(void *state), void *state );
 /*
    Get a new URNG object. 
    @var{sampleunif} is a function to the uniform sampling routine,
-   @var{params} a pointer to its arguments.
+   @var{state} a pointer to its arguments which usually contains the
+   state variables of the generator.
 
    Functions @var{sampleunif} with a different type for @var{p} or
    without an argument at all also work. A typecast might be necessary
    to avoid compiler warnings.
 
    Functions @var{sampleunif} does not have any argument use NULL for
-   @var{params}.
+   @var{state}.
    
    @emph{Important:} @var{sampleunif} must not be the NULL pointer.
 
@@ -373,31 +386,36 @@ UNUR_URNG *unur_urng_new( double (*sampleunif)(void *p), void *params );
    generators.
 */
 
-int unur_urng_set_anti( UNUR_URNG *urng, int (*anti)(void *p, int anti) );
+int unur_urng_set_seed( UNUR_URNG *urng, void (*setseed)(void *state, unsigned long seed) );
 /*
-   Set function to switch to antithetic random numbers in @var{urng}
+   Set function to seed generator @var{urng} (if available).
+*/
+
+int unur_urng_set_anti( UNUR_URNG *urng, void (*setanti)(void *state, int anti) );
+/*
+   Set function to switch the antithetic flag of generator @var{urng}
    (if available).
 */
 
-int unur_urng_set_reset( UNUR_URNG *urng, int (*reset)(void *p) );
+int unur_urng_set_reset( UNUR_URNG *urng, void (*reset)(void *state) );
 /* 
    Set function for reseting the uniform random number generator
    @var{urng} (if available).
 */
 
-int unur_urng_set_nextsub( UNUR_URNG *urng, int (*nextsub)(void *p) );
+int unur_urng_set_nextsub( UNUR_URNG *urng, void (*nextsub)(void *state) );
 /*
    Set function that allows jumping to start of the next substream of
    @var{urng} (if available).
 */
 
-int unur_urng_set_resetsub( UNUR_URNG *urng, int (*resetsub)(void *p) );
+int unur_urng_set_resetsub( UNUR_URNG *urng, void (*resetsub)(void *state) );
 /*
    Set function that allows jumping to start of the current substream
    of @var{urng} (if available).
 */
 
-int unur_urng_set_delete( UNUR_URNG *urng, void (*delete)(void *p) );
+int unur_urng_set_delete( UNUR_URNG *urng, void (*delete)(void *state) );
 /*
    Set function for destroying @var{urng} (if available).
 */
@@ -406,6 +424,27 @@ int unur_urng_set_delete( UNUR_URNG *urng, void (*delete)(void *p) );
 
 /* generic API to handle URNG (uniform random number generator) object */
 
+int unur_urng_seed (UNUR_URNG *urng, unsigned long seed);
+/*
+   Set @var{seed} for generator @var{urng} (reseed)
+   (if available).
+   It returns an error code if this is not possible. 
+
+   If the NULL pointer is given, the default uniform generator is
+   seeded (if possible).
+
+   @emph{Notice}: Seeding should be done only once for a particular
+   generator (except for resetting it to the initial state).
+   Expertise is required when seeding is used to get independent
+   streams. Thus we recommend appropriate libraries for this task,
+   e.g. Pierre L'Ecuyer's @file{RngStreams} package. For this library
+   only a package seed can be set and thus the unur_urng_seed() call
+   will not have any effect to generators of this type. Use
+   unur_urng_reset() or unur_urng_rngstream_new() instead, depending
+   whether one wants to reset the stream or get a new stream that is
+   independent from the previous ones.
+*/
+
 int unur_urng_anti (UNUR_URNG *urng, int anti);
 /*
    Switch to antithetic random numbers in @var{urng}.
@@ -413,7 +452,7 @@ int unur_urng_anti (UNUR_URNG *urng, int anti);
    It returns an error code if this is not possible. 
 
    If the NULL pointer is given, the default uniform generator is
-   reset.
+   reset (if possible).
 */
 
 int unur_urng_nextsub (UNUR_URNG *urng);
@@ -422,7 +461,7 @@ int unur_urng_nextsub (UNUR_URNG *urng);
    It returns an error code if this is not possible. 
 
    If the NULL pointer is given, the default uniform generator is set
-   to the start of the next substream.
+   to the start of the next substream (if possible).
 */
 
 int unur_urng_resetsub (UNUR_URNG *urng);
@@ -431,7 +470,7 @@ int unur_urng_resetsub (UNUR_URNG *urng);
    It returns an error code if this is not possible. 
 
    If the NULL pointer is given, the default uniform generator is set
-   to the start of the current substream.
+   to the start of the current substream (if possible).
 */
 
 int unur_urng_free (UNUR_URNG *urng);
@@ -446,6 +485,9 @@ int unur_urng_free (UNUR_URNG *urng);
    object must not be used by any existing generator object!
 */
 
+int unur_gen_seed (UNUR_GEN *gen, unsigned long seed);
+/* */
+
 int unur_gen_anti (UNUR_GEN *gen, int anti);
 /* */
 
@@ -457,9 +499,10 @@ int unur_gen_nextsub (UNUR_GEN *gen);
 
 int unur_gen_resetsub (UNUR_GEN *gen);
 /* 
-   Analogous to unur_urng_anti(), unur_urng_reset(), unur_nextsub(), and
-   unur_urng_resetsub(). However, these act on the URNG object used by
-   generator object @var{gen}.
+   Analogous to unur_urng_seed(), unur_urng_anti(), unur_urng_reset(),
+   unur_nextsub(), and unur_urng_resetsub(). 
+   However, these act on the URNG object used by generator object
+   @var{gen}. 
 
    @emph{Warning:} These three calls should be used with care as it
    influences all generator objects that share the same URNG object!
@@ -468,14 +511,6 @@ int unur_gen_resetsub (UNUR_GEN *gen);
 /*---------------------------------------------------------------------------*/
 
 /* Interface to particular uniform RNG libraries */
-
-
-/* ugly hack */
-/* types for function pointer */
-typedef double (*_unur_urng_doublevoidptr)(void*);
-typedef int (*_unur_urng_intvoidptr)(void*);
-typedef void (*_unur_urng_voidvoidptr)(void*);
-
 
 
 UNUR_URNG *unur_urng_fvoid_new( double (*random)(void), int (*reset)(void) );
@@ -565,6 +600,13 @@ UNUR_URNG *unur_urng_gslptr_new( gsl_rng *urng );
    Similar to unur_urng_gsl_new() except it uses a pointer to a
    generator object as returned by @code{gsl_rng_alloc(rng_type)};
    see @file{GSL} manual for details.
+
+   @emph{Notice}: There is a subtle but important difference between
+   these two calls. When a generator object is created by a 
+   unur_urng_gsl_new() call, then resetting of the generator works.
+   When a generator object is created by a unur_urng_gslptr_new()
+   call, then resetting only works after a
+   @code{unur_urng_seed(urng,myseed)} call. 
 */
 
 #endif

@@ -54,8 +54,9 @@ unur_urng_gslptr_new( gsl_rng *gsl )
      /*   urng ... pointer to generator structure                            */
      /*----------------------------------------------------------------------*/
 {
-  UNUR_URNG *urng = unur_urng_new( (_unur_urng_doublevoidptr) gsl_rng_uniform_pos, gsl );
-  unur_urng_set_delete(urng, (_unur_urng_voidvoidptr) gsl_rng_free);
+  UNUR_URNG *urng = unur_urng_new( (double(*)(void*)) gsl_rng_uniform_pos, gsl );
+  unur_urng_set_delete(urng, (void(*)(void*)) gsl_rng_free);
+  unur_urng_set_seed(urng, (void(*)(void*,unsigned long)) gsl_rng_set);
   return urng;
 } /* end of unur_urng_gslptr_new() */
 
@@ -70,7 +71,9 @@ unur_urng_gsl_new( const gsl_rng_type *urngtype )
      /*   prngstr ... string that describes generator                        */
      /*----------------------------------------------------------------------*/
 {
-  return unur_urng_gslptr_new(gsl_rng_alloc(urngtype));
+  UNUR_URNG *urng = unur_urng_gslptr_new(gsl_rng_alloc(urngtype));
+  unur_urng_seed(urng,gsl_rng_default_seed);
+  return urng;
 } /* end of unur_urng_gsl_new() */
 
 /*---------------------------------------------------------------------------*/

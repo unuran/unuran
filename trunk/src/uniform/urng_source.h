@@ -37,7 +37,7 @@
 /*---------------------------------------------------------------------------*/
 
 /* function call to uniform RNG */
-#define _unur_call_urng(urng)    ((urng)->sampleunif((urng)->params))
+#define _unur_call_urng(urng)    ((urng)->sampleunif((urng)->state))
 
 /* reset uniform RNG */
 /* #define _unur_call_reset(urng) */

@@ -1,6 +1,6 @@
 Version 0.4.1: January 2003
 
-	- use build generator as default uniform random number generator
+	- use build-in generator as default uniform random number generator
 
 	- string API: fixed bug with string 'inf' in cygwin.
 	              parsing of numbers does not depend on locale any more

@@ -19,7 +19,8 @@ libutils_la_SOURCES = \
  string.c         string_source.h string_struct.h \
  umalloc.c        umalloc_source.h \
  umath.c  umath.h umath_source.h \
- unur_fp.c
+ unur_fp.c  \
+ vector.c 	  vector_source.h 
 
 noinst_HEADERS = \
  unur_fp_source.h unur_fp_const_source.h \

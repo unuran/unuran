@@ -75,6 +75,11 @@ sub known_methods{
 # #######################################################################################
 sub distr_info{
 
+    print Outfile "\t/* ------------------------------------------- */\n";
+    print Outfile "\t/*                                             */\n";
+    print Outfile "\t/* key = \"distribution\"                        */\n";
+    print Outfile "\t/*                                             */\n";
+    print Outfile "\t/* ------------------------------------------- */\n";
     print Outfile "\tif ( !strcmp(key, \"distr\") ){ \n\t\t";
     open INFILE, "< $Distinfofile" or  die ("can't open file: $!");
 
@@ -83,21 +88,38 @@ sub distr_info{
 	# search for standard distribution
 	if ( $_ =~ /^\s*=DISTR\s+(\w+)/ ){
 	    print Outfile "if ( !strcmp(value, \"$1\") ){\n";
-	    print Outfile "\t\t\tdistr = unur_distr_$1(list, no_of_elem);\n";
-
-	    # obtain type of distribution
-	    while ( $_ !~ /\s*=UP\s+/ ){
-		$_ = <INFILE>;
-	    }
-	    $_ =~ /\s*=UP\s+Stddist_(\w+)/;
-	    print Outfile "\t\t\ttype = UNUR_DISTR_$1;\n\t\t}\n\t\telse ";
+	    print Outfile "\t\t\tdistr = unur_distr_$1(list, no_of_elem);\n\t\t}\n\t\telse ";
 	}
     }
 
-    # Error -- in case of unknownd distribution
-    print Outfile "{\n\t\t\tprintf(\"Unknown distribution!\\n\");\n";
+    # Error -- in case of unknown distribution
+    print Outfile "{\n\t\t\tprintf(\"Error: Unknown distribution!\\n\");\n";
     print Outfile "\t\t\tbreak;\n\t\t}\n\t}\n";
 
+    print Outfile "\t/* ------------------------------------------- */\n";
+    print Outfile "\t/*                                             */\n";
+    print Outfile "\t/* key = \"domain\"                              */\n";
+    print Outfile "\t/*                                             */\n";
+    print Outfile "\t/* ------------------------------------------- */\n";
+    print Outfile "\telse if ( !strcmp( key , \"domain\") ){\n";
+    print Outfile "\t  /* list must contain exactly two entries */\n";
+    print Outfile "\t  if ( no_of_elem != 2 ){\n";
+    print Outfile "\t    fprintf(stderr, \"Error: Wrong number of arguments for setting domain.\\n\");\n";
+    print Outfile "\t  }\n";
+    print Outfile "\t  else if ( unur_distr_is_cont(distr) ){\n";
+    print Outfile "\t    unur_distr_cont_set_domain( distr, list[0], list[1]);\n";
+    print Outfile "\t  }\n";
+    print Outfile "\t  else if ( unur_distr_is_discr(distr) ){\n";
+    print Outfile "\t    unur_distr_discr_set_domain( distr, list[0], list[1]);\n";
+    print Outfile "\t  }\n";
+    print Outfile "\t  else{\n";
+    print Outfile "\t    fprintf(stderr, \"Error: Wrong type of distribution while parsing domain!\\n\");\n";
+    print Outfile "\t    break;\n";
+    print Outfile "\t  }\n";
+    print Outfile "\t}\n";
+    print Outfile "\telse {\n";
+    print Outfile "\t  fprintf(stderr, \"Unknown key: %s\\n\", key);\n";
+    print Outfile "\t}\n";
 
 
     close INFILE;

@@ -135,7 +135,7 @@ int unur_tdr_set_max_sqhratio( UNUR_PAR *parameters, double max_ratio );
    Use 0 if no construction points should be added after the setup.
    Use 1 if added new construction points should not be stopped until
    the maximum number of construction points is reached.
-   Default is ??.
+   Default is @code{0.95}.
 */
 
 double unur_tdr_get_sqhratio( UNUR_GEN *generator );
@@ -146,9 +146,10 @@ double unur_tdr_get_sqhratio( UNUR_GEN *generator );
 
 int unur_tdr_set_max_intervals( UNUR_PAR *parameters, int max_ivs );
 /* 
-   Set maximum number of intervals (default is ??).
+   Set maximum number of intervals.
    No construction points are added after the setup when the number of
    intervals suceeds @code{max_ivs}.
+   Default is @code{100}.
 */
 
 int unur_tdr_set_cpoints( UNUR_PAR *parameters, int n_stp, double *stp );

@@ -560,7 +560,7 @@ _unur_tdr_gw_starting_intervals( struct unur_par *par, struct unur_gen *gen )
     /* area below hat infinite.
        insert new construction point. */
     x = _unur_arcmean(iv->x,iv->next->x);  /* use mean point in interval */
-    
+
     /* value of p.d.f. at x */
     fx = PDF(x);
 
@@ -573,11 +573,42 @@ _unur_tdr_gw_starting_intervals( struct unur_par *par, struct unur_gen *gen )
     iv_new = _unur_tdr_interval_new( gen, x, fx, FALSE );
     if (iv_new == NULL) return 0; /* pdf(x) < 0. */
 
-    /* insert into linked list */
-    iv_new->prev = iv;
-    iv_new->next = iv->next;
-    iv->next->prev = iv_new;
-    iv->next = iv_new;
+
+    /* if fx is 0, then we can cut off the tail of the distribution
+       (since it must be T-concave)  */
+    if (fx <= 0.) {
+      if (iv->fx <= 0.) {
+	/* cut off left tail */
+	iv_new->next = iv->next;
+	free(iv); 
+	--(GEN.n_ivs);
+	GEN.iv = iv_new;
+	iv_new->prev = NULL;
+	/* compute the parameters for the new left part */
+	iv = iv_new;
+      }
+      else if (iv->next->fx <= 0.) {
+	/* cut off right tail */
+	free(iv->next);
+	--(GEN.n_ivs);	
+	iv->next = iv_new;
+	iv_new->prev = iv;
+	/* compute the paramters for the new part */
+	/* (nothing to do here) */
+      }
+      else {
+	_unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"p.d.f. not T-concave!");
+	return 0;
+      }
+    }
+
+    else {
+      /* insert new interval into linked list */
+      iv_new->prev = iv;
+      iv_new->next = iv->next;
+      iv->next->prev = iv_new;
+      iv->next = iv_new;
+    }
   }
 
   /* o.k. */
@@ -629,7 +660,7 @@ _unur_tdr_ps_starting_intervals( struct unur_par *par, struct unur_gen *gen )
     GEN.iv = iv->next;
     GEN.iv->prev = NULL;
     free (iv);
-    --GEN.n_ivs;
+    --(GEN.n_ivs);
     iv = GEN.iv;
   }
 
@@ -640,7 +671,6 @@ _unur_tdr_ps_starting_intervals( struct unur_par *par, struct unur_gen *gen )
 
   /* compute paramters for all intervals */
   while (iv) {
-
     if (iv->next == NULL) {
       /* the last interval in the list*/
 
@@ -716,9 +746,10 @@ _unur_tdr_ps_starting_intervals( struct unur_par *par, struct unur_gen *gen )
        We have to find out on which side of the construction point
        the area of the hat is unbounded. */
     if (iv->Ahatr >= INFINITY) {
-
       /* right hand side */
-      CHECK_NULL(iv->next,0);  /* this should never be the last (virtual) interval */
+
+      /* iv should never be the last (virtual) interval */
+      CHECK_NULL(iv->next,0);
 
       /* use mean point between the construction point and the right
 	 boundary of the interval.
@@ -730,13 +761,31 @@ _unur_tdr_ps_starting_intervals( struct unur_par *par, struct unur_gen *gen )
       iv_new = _unur_tdr_interval_new( gen, x, fx, FALSE );
       if (iv_new == NULL) return 0; /* pdf(x) < 0. */
 
-      /* insert the new interval after the old one. */
-      iv_new->prev = iv;
-      iv_new->next = iv->next;
-      iv->next->prev = iv_new;
-      iv->next = iv_new;
+      /* if fx is 0, then we can cut off the tail of the distribution
+	 (since it must be T-concave)  */
+      if (fx <= 0.) {
+	if (iv->next->fx > 0.) {
+	  _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"p.d.f. not T-concave!");
+	  return 0;
+	}
 
+	/* cut off right tail */
+	free(iv->next);
+	--(GEN.n_ivs);
+	iv->next = iv_new;
+	iv_new->prev = iv;
+
+      }
+
+      else {
+	/* insert the new interval into the linked list after the old one. */
+	iv_new->prev = iv;
+	iv_new->next = iv->next;
+	iv->next->prev = iv_new;
+	iv->next = iv_new;
+      }
       /* the old interval has to be recomputed. */
+
     }
 
     else {
@@ -748,30 +797,56 @@ _unur_tdr_ps_starting_intervals( struct unur_par *par, struct unur_gen *gen )
       iv_new = _unur_tdr_interval_new( gen, x, fx, FALSE );
       if (iv_new == NULL) return 0; /* pdf(x) < 0. */
 
-      if (iv->prev) {
-	/* insert new interval in just before the old unbounded one */
-	iv_new->prev = iv->prev;
-	iv_new->next = iv;
-	iv->prev = iv_new;
-	iv->prev->next = iv_new;
+      /* if fx is 0, then we can cut off the tail of the distribution
+	 (since it must be T-concave)  */
+      if (fx <= 0.) {
+	if (iv->fx > 0.) {
+	  _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"p.d.f. not T-concave!");
+	  return 0;
+	}
 
-	/* continue with the interval before the old one
-	   (neccessary since it will change too). */
-	iv = iv->prev;
-      }
-      else { /* iv->prev == NULL */
-	/* insert new interval as first entry in list */
+	/* cut off left tail */
+	iv_new->next = iv->next;
+	free(iv);
+	--(GEN.n_ivs);
+	GEN.iv = iv_new;
+	iv_new->prev = NULL;
 	iv_new->ip = iv->ip;
 	iv_new->fip = iv->fip;
-	iv_new->prev = NULL;
-	iv_new->next = iv;
-	iv->prev = iv_new;
-	GEN.iv = iv_new;
-
 	/* continue with this new interval */
 	iv = iv_new;
       }
-    }     
+
+      else {
+
+	if (iv->prev) {
+	  /* insert new interval in just before the old unbounded one */
+	  iv->prev->next = iv_new;
+	  iv_new->prev = iv->prev;
+	  iv_new->next = iv;
+	  iv->prev = iv_new;
+	  
+	  /* make sure that _unur_arcmean(iv->ip,iv->x) is never out of range */
+	  iv_new->ip = iv->ip;
+	  
+	  /* continue with the interval before the old one
+	     (neccessary since it will change too). */
+	  iv = iv->prev;
+	}
+	else { /* iv->prev == NULL */
+	  /* insert new interval as first entry in list */
+	  iv_new->ip = iv->ip;
+	  iv_new->fip = iv->fip;
+	  iv_new->prev = NULL;
+	  iv_new->next = iv;
+	  iv->prev = iv_new;
+	  GEN.iv = iv_new;
+	  
+	  /* continue with this new interval */
+	  iv = iv_new;
+	}
+      }
+    }
   }
 
   /* o.k. */
@@ -913,14 +988,16 @@ _unur_tdr_gw_interval_parameter( struct unur_gen *gen, struct unur_tdr_interval 
     iv->sq = (iv->next->Tfx - iv->Tfx) / (iv->next->x - iv->x);
 
     /* check squeeze */
-    /* iv->sq might become 0 because of round-off errors. we can ignore this.
-       for simplicity we accept all squeezes with zero slope. */
-    if ( iv->sq != 0. && 
-	 ( (_unur_FP_greater( iv->sq, iv->dTfx )) || 
-	   (_unur_FP_less( iv->sq, iv->next->dTfx ) && iv->next->dTfx < INFINITY) ) ) {
-      _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"Squeeze too steep/flat. p.d.f. not T-concave!");
-      return -2;
-    }
+    if ( (_unur_FP_greater( iv->sq, iv->dTfx )) || 
+	 (_unur_FP_less( iv->sq, iv->next->dTfx ) && iv->next->dTfx < INFINITY) )
+      /* There are big troubles when the density is extremely small. 
+	 Then round-off errors may cancel out all significant figures and
+	 0 remains. Thus we simply ignore all violations when the 
+	 slope of the squeeze or tangent is 0.  */
+      if ( iv->sq != 0. && iv->dTfx != 0. && iv->next->dTfx != 0. ) {
+	_unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"Squeeze too steep/flat. p.d.f. not T-concave!");
+	return -2;
+      }
 
     /* volume below squeeze */
     /* always integrate from point with greater value of transformed density
@@ -935,8 +1012,6 @@ _unur_tdr_gw_interval_parameter( struct unur_gen *gen, struct unur_tdr_interval 
   }
 
   /* volume below hat */
-  /** TODO: it is not always a good idea to integrate from construction point
-      to division point when the hat is increasing in this direction. **/
   Ahatl = _unur_tdr_interval_area( gen, iv, iv->dTfx, iv->ip);
   iv->Ahatr = _unur_tdr_interval_area( gen, iv->next, iv->next->dTfx, iv->ip);
 
@@ -993,8 +1068,6 @@ _unur_tdr_ps_interval_parameter( struct unur_gen *gen, struct unur_tdr_interval 
   iv->next->fip = _unur_FP_is_infinity(iv->next->ip) ? 0. : PDF(iv->next->ip);
 
   /* volume below hat */
-  /** TODO: it is not always a good idea to integrate from construction point
-      to division point when the hat is increasing in this direction. **/
   Ahatl = _unur_tdr_interval_area( gen, iv, iv->dTfx, iv->ip);
   iv->Ahatr = _unur_tdr_interval_area( gen, iv, iv->dTfx, iv->next->ip);
 
@@ -1061,15 +1134,21 @@ _unur_tdr_tangent_intersection_point( struct unur_gen *gen, struct unur_tdr_inte
   CHECK_NULL(gen,0);  COOKIE_CHECK(gen,CK_TDR_GEN,0);
   CHECK_NULL(iv,0);   COOKIE_CHECK(iv,CK_TDR_IV,0); 
 
-  /* case: there is no tangent at one of the boundary points of the interval */
-  if (_unur_FP_is_infinity(iv->dTfx)) {
+  /* 
+     case: there is no tangent at one of the boundary points of the interval
+           (then the slope is INFINITY)
+     or
+     case: the tangents are too steep  (--> case (3))
+  */
+  if ( iv->dTfx > 1.e+140 ) {
     *ipt = iv->x;        /* intersection point = left boundary of interval */
     return 1; 
   }
-  if (_unur_FP_is_infinity(iv->next->dTfx)) {
+  if ( iv->next->dTfx < -1.e+140 || _unur_FP_is_infinity(iv->next->dTfx)) {
     *ipt = iv->next->x;   /* intersection point = right boundary of interval */
     return 1; 
   }
+  /** TODO: 1.e+140 (= sqrt(DBL_MAX) / 1.e15) is arbitrary  **/
 
   /* test for T-concavity */
   if ( _unur_FP_less( iv->dTfx, iv->next->dTfx ) ) {
@@ -1092,15 +1171,13 @@ _unur_tdr_tangent_intersection_point( struct unur_gen *gen, struct unur_tdr_inte
       return 0;
     }
   }
+
   /** TODO: the following test is too sensitve to roundoff errors **/
   /*    if (iv->next->Tfx > iv->x + iv->dTfx*(iv->next->x - iv->x)) { */
   /*      _unur_warning(gen->genid,UNUR_ERR_INIT,"tangent below p.d.f.  not T-concave!"); */
   /*      return 0; */
   /*    } */
   
-  /* case (3) */
-  /** TODO: important to avoid some numerical errors **/
-
   /* case (2): computing intersection of tangents is unstable */
   if (_unur_FP_approx(iv->dTfx, iv->next->dTfx)) {
     /* use mean point */
@@ -1179,7 +1256,7 @@ _unur_tdr_interval_area( struct unur_gen *gen, struct unur_tdr_interval *iv, dou
        (_unur_FP_is_minus_infinity(x) && slope<=0.) ||
        (_unur_FP_is_infinity(x)       && slope>=0.)  )   /* we have set (Tf)'(x) = INFINITY, if f(x)=0 */
     return INFINITY;
-
+  
   switch( gen->variant & TDR_VARMASK_T ) {
 
   case TDR_VAR_T_LOG:
@@ -1212,12 +1289,10 @@ _unur_tdr_interval_area( struct unur_gen *gen, struct unur_tdr_interval *iv, dou
 	area = 1. / ( iv->Tfx * slope );
       else {
 	/* compute value of transformed hat at integration boundary */
-	double hx = iv->Tfx + slope*(x - iv->x);
+	double hx = iv->Tfx + slope * (x - iv->x);
 	/* the transformed hat must always be below the x-axis.
 	   otherwise the area below the hat in unbounded. */
 	if (hx>=0.)
-	  /** TODO: this is very sensitive to roundoff errors, when Tfx und slope are 
-	      large numbers. see get_division_point, case (3) **/
 	  return INFINITY; 
 	else
 	  area = (x - iv->x) / ( iv->Tfx * hx );
@@ -1231,7 +1306,7 @@ _unur_tdr_interval_area( struct unur_gen *gen, struct unur_tdr_interval *iv, dou
     break;
 
   case TDR_VAR_T_POW:
-    /* T(x) = -1./x^c */
+    /* T(x) = -x^c */
     /** TODO **/
     break;
   }
@@ -1271,7 +1346,7 @@ _unur_tdr_eval_hat( struct unur_gen *gen, struct unur_tdr_interval *iv, double x
   CHECK_NULL(gen,0);  COOKIE_CHECK(gen,CK_TDR_GEN,0);
   CHECK_NULL(iv,0);   COOKIE_CHECK(iv,CK_TDR_IV,0); 
 
-  /* we cannot compute the hat if any of the parameters is not finite */
+  /* we cannot compute the hat if any of the parameters are not finite */
   if ( _unur_FP_is_infinity(x) || _unur_FP_is_minus_infinity(x) ||
        _unur_FP_is_infinity(iv->x) || _unur_FP_is_minus_infinity(iv->x) ||
        _unur_FP_is_minus_infinity(iv->Tfx) || 

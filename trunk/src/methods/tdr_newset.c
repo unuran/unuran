@@ -87,7 +87,7 @@ unur_tdr_new( struct unur_distr* distr )
 
   PAR.starting_cpoints    = NULL;   /* pointer to array of starting points   */
   PAR.n_starting_cpoints  = 10;     /* number of starting points             */
-  PAR.max_ivs             = 50;     /* maximum number of intervals           */
+  PAR.max_ivs             = 100;    /* maximum number of intervals           */
   PAR.max_ratio           = 0.95;   /* bound for ratio  Atotal / Asqueeze    */
   PAR.bound_for_adding    = 0.5;    /* do not add a new construction point in an interval,
 				       where ambigous region is too small, i.e. if 

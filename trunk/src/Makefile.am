@@ -25,9 +25,10 @@ EXTRA_DIST = \
 unuran.h:
 	$(top_srcdir)/scripts/merge_h.pl $(top_srcdir)/src/methods/in_unuran.h > unuran.h
 
-# clean backup files too
-clean-local:
-	rm -f *~
+# clean backup files
+CLEANFILES = *~
 
-maintainer-clean-local:
-	rm -f unuran.h
+# clean generated files
+MAINTAINERCLEANFILES = \
+ Makefile.in \
+ unuran.h

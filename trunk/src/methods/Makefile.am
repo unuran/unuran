@@ -71,7 +71,9 @@ noinst_HEADERS = \
  unif.h  unif_struct.h \
  utdr.h  utdr_struct.h
 
-# clean backup files too
-clean-local:
-	rm -f *~
+# clean backup files
+CLEANFILES = *~
 
+# clean generated files
+MAINTAINERCLEANFILES = \
+ Makefile.in

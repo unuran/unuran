@@ -118,10 +118,11 @@ t_unif.c: unif.conf make_test_files.pl
 
 noinst_HEADERS = testunuran.h
 
-# clean backup files too
-clean-local:
-	rm -f *~
-	rm -f *.log
+# clean backup files
+CLEANFILES = *~ *.log
 
-maintainer-clean-local:
-	rm -f t_*
+# clean generated files
+MAINTAINERCLEANFILES = \
+ Makefile.in \
+ t_*
+

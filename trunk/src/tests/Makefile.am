@@ -26,6 +26,9 @@ libtests_a_SOURCES = \
 include_HEADERS = \
  unuran_tests.h
 
-# clean backup files too
-clean-local:
-	rm -f *~
+# clean backup files
+CLEANFILES = *~
+
+# clean generated files
+MAINTAINERCLEANFILES = \
+ Makefile.in

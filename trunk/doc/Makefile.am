@@ -98,9 +98,8 @@ CLEANFILES = *~
 
 # clean generated files
 MAINTAINERCLEANFILES = \
+ Makefile.in \
  unuran-ref.html \
  unuran-ref.txt \
  unuran-ref.pdf \
  $(texi_generated)
-
-

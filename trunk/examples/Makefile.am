@@ -21,11 +21,14 @@ example2_LDADD = -lunuran -lprng -lml -lm
 example3_LDADD = -lunuran -lprng -lml -lm
 example4_LDADD = -lunuran -lprng -lml -lm
 
-# clean backup files too
-clean-local:
-	rm -f *~
-	rm -f *.scatterplot
+# clean backup files
+CLEANFILES = \
+ *~ \
+ *.scatterplot
 
+# clean generated files
+MAINTAINERCLEANFILES = \
+ Makefile.in
 
 
 

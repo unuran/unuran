@@ -9,6 +9,9 @@ libuniform_a_SOURCES = cranduni.c
 
 include_HEADERS =
 
-# clean backup files too
-clean-local:
-	rm -f *~
+# clean backup files
+CLEANFILES = *~
+
+# clean generated files
+MAINTAINERCLEANFILES = \
+ Makefile.in

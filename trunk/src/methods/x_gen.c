@@ -301,9 +301,15 @@ _unur_generic_free( struct unur_gen *gen )
      /*   gen  ... pointer to generator object                               */
      /*----------------------------------------------------------------------*/
 { 
-  if (gen->distr) _unur_distr_free( gen->distr );
-  if (gen->gen_aux) _unur_free(gen->gen_aux);
-  if (gen->gen_aux_list && gen->distr) _unur_gen_list_free( gen->gen_aux_list, gen->distr->dim );
+  if (gen->gen_aux)
+    _unur_free(gen->gen_aux);
+
+  if (gen->gen_aux_list && gen->distr)
+    _unur_gen_list_free( gen->gen_aux_list, gen->distr->dim );
+
+  if (gen->distr)
+    _unur_distr_free( gen->distr );
+
   _unur_free_genid(gen);
   COOKIE_CLEAR(gen);
   free(gen);
@@ -344,7 +350,7 @@ _unur_gen_list_set( const struct unur_gen *gen, int n_gen_list )
     _unur_error("gen_list_set",UNUR_ERR_PAR_SET,"dimension < 1");
     return NULL;
   }
-
+  
   /* allocate memory for array */
   gen_list = _unur_malloc (n_gen_list * sizeof(struct unur_gen *));
   
@@ -451,7 +457,7 @@ _unur_gen_list_free( struct unur_gen **gen_list, int n_gen_list )
   i2 = (n_gen_list>1) ? 1 : 0; 
   imax = (gen_list[0] == gen_list[i2]) ? 1 : n_gen_list;
   for (i=0; i<imax; i++)
-    if (gen_list[i]) { _unur_free(gen_list[i]); gen_list[i]=NULL; }
+    if (gen_list[i]) _unur_free(gen_list[i]);
   free (gen_list);
 
 } /* end of _unur_gen_list_clone() */

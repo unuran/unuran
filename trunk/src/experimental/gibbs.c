@@ -403,22 +403,24 @@ _unur_gibbs_sample_cvec( struct unur_gen *gen, double *vec )
 
   dim = GEN->dim;
 
+  
   for (skip=0; skip<=GEN->skip; skip++) {
 
     /* moving "candidate" point along each coordinate */
     for (d=0; d<dim; d++) {
-      distr_conditional = unur_distr_cont_new();
 
+      distr_conditional = unur_distr_cont_new();
       /* set the current coordinate direction as scalar parameter */
       fpar[0] = dim;
       fpar[1] = d;
       unur_distr_cont_set_pdfparams( distr_conditional, fpar, 2 );	
 
-      /* set the current point as vector parameter */
       for (i=0; i<dim; i++) {
-      printf("GEN->point_current[%d]=%f\n", i, GEN->point_current[i]);
+        printf("GEN->point_current[%d]=%f\n", i, GEN->point_current[i]);
       }
       printf("---\n");
+      
+      /* set the current point as vector parameter */
       unur_distr_cont_set_pdfparams_vec( distr_conditional, 0, GEN->point_current, dim );
 
       /* setting pdf and dpdf */
@@ -436,6 +438,11 @@ _unur_gibbs_sample_cvec( struct unur_gen *gen, double *vec )
       else {
         GEN->point_current[d] = unur_sample_cont(gen_conditional);
       }
+    
+      /* free allocated memory */
+      unur_distr_free(distr_conditional);
+      unur_free(gen_conditional);
+    
     }
       
   }
@@ -443,9 +450,6 @@ _unur_gibbs_sample_cvec( struct unur_gen *gen, double *vec )
   /* copy current point coordinates */
   memcpy(vec, GEN->point_current, GEN->dim*sizeof(double)); 
 
-  /* free allocated memory */
-  unur_distr_free(distr_conditional);
-  unur_free(gen_conditional);
   
   return;
 } /* end of _unur_gibbs_sample() */

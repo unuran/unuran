@@ -37,7 +37,7 @@
  *****************************************************************************/
 
 /*
-   =METHOD  GIBBS   Implementation of the Gibbs sampler using the full-conditionals.
+   =TEST-METHOD  GIBBS   Implementation of the Gibbs sampler using the full-conditionals.
 
    =UP  Methods_for_CVEC
 

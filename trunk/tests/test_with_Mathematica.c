@@ -13,7 +13,7 @@
 
 /*---------------------------------------------------------------------------*/
 
-/*  #define DEBUG 1 */
+#define DEBUG 1
 
 /*---------------------------------------------------------------------------*/
 
@@ -49,7 +49,8 @@ int test_cdf_pdf( UNUR_DISTR *distr, char *datafile, double max_diff )
 
   int n_fparams;                /* number of parameters for distribution */
   double fparams[10];           /* array for parameters for distribution */
-  double x;                     /* argument */
+  double x;                     /* double argument */
+  int k = 0;                    /* integer argument */
   double CDF_e, PDF_e, dPDF_e;  /* expected values for CDF, PDF and derivative of PDF at x */
   double CDF_o, PDF_o, dPDF_o;  /* observed values for CDF, PDF and derivative of PDF at x */
   double CDF_d, PDF_d, dPDF_d;  /* differences between observed and expected values */
@@ -57,18 +58,34 @@ int test_cdf_pdf( UNUR_DISTR *distr, char *datafile, double max_diff )
   double CDF_md, PDF_md, dPDF_md;  /* maximal difference (absolute) */
 
   int have_CDF, have_PDF, have_dPDF, have_upd_pdfarea;
+
+  int is_DISCR;                 /* 1 if discrete distribution, 0 otherwise */
+
   int i;
+
+  /* discrete distribution ? */
+  is_DISCR = unur_distr_is_discr( distr );
 
   /* initialize */
   CDF_md = PDF_md = dPDF_md = 0.;
 
   /* check existence of CDF, PDF and dPDF */
-  have_CDF  = (unur_distr_cont_get_cdf(distr))  ? 1 : 0;
-  have_PDF  = (unur_distr_cont_get_pdf(distr))  ? 1 : 0;
-  have_dPDF = (unur_distr_cont_get_dpdf(distr)) ? 1 : 0;
+  if (is_DISCR) {
+    have_CDF  = (unur_distr_discr_get_cdf(distr)) ? 1 : 0;
+    have_PDF  = (unur_distr_discr_get_pmf(distr)) ? 1 : 0;
+    have_dPDF = 0;
+  }
+  else { /* is_CONT */
+    have_CDF  = (unur_distr_cont_get_cdf(distr))  ? 1 : 0;
+    have_PDF  = (unur_distr_cont_get_pdf(distr))  ? 1 : 0;
+    have_dPDF = (unur_distr_cont_get_dpdf(distr)) ? 1 : 0;
+  }
 
   /* check whether unur_distr_cont_upd_pdfarea() works */
-  have_upd_pdfarea = unur_distr_cont_upd_pdfarea(distr); 
+  if (is_DISCR)
+    have_upd_pdfarea = unur_distr_discr_upd_pmfsum(distr); 
+  else  /* is_CONT */
+    have_upd_pdfarea = unur_distr_cont_upd_pdfarea(distr); 
 
   if (!have_upd_pdfarea) {
     /* if we cannot update the area below the PDF, then the
@@ -117,6 +134,9 @@ int test_cdf_pdf( UNUR_DISTR *distr, char *datafile, double max_diff )
 
     /* read argument */
     x = strtod( ptr_buffer, &ptr_buffer );
+    if (is_DISCR) 
+      /* integer required, round */
+      k = (int)(x+0.5);
 
     /* read CDF */
     CDF_e = strtod( ptr_buffer, &ptr_buffer );
@@ -135,22 +155,38 @@ int test_cdf_pdf( UNUR_DISTR *distr, char *datafile, double max_diff )
     for (i=0; i<n_fparams; i++)
       printf("\t%d: %g\n",i,fparams[i]);
 
-    /* print argument x */
-    printf("expected x = %g:\t",x);
+    /* print argument x (or k) */
+    if (is_DISCR)
+      printf("expected k = %d:\t",k);
+    else  /* is_CONT */
+      printf("expected x = %g:\t",x);
 
     /* print CDF, PDF and derivative of PDF at x */
     printf("%g, %g, %g\n",CDF_e,PDF_e,dPDF_e);
 
 #endif
 
-    /* set parameters for distribution */
-    unur_distr_cont_set_pdfparams(distr,fparams,n_fparams);
-    if (have_upd_pdfarea) unur_distr_cont_upd_pdfarea(distr); 
+    if (is_DISCR) {
+      /* set parameters for distribution */
+      unur_distr_discr_set_pmfparams(distr,fparams,n_fparams);
+      if (have_upd_pdfarea) unur_distr_discr_upd_pmfsum(distr); 
+      
+      /* compute CDF, PDF and derivative of PDF at x */
+      CDF_o = (have_CDF) ? unur_distr_discr_eval_cdf(x, distr) : 0.;
+      PDF_o = (have_PDF) ? unur_distr_discr_eval_pmf(x, distr) : 0.;
+      dPDF_o = 0.;
+    }
 
-    /* compute CDF, PDF and derivative of PDF at x */
-    CDF_o = (have_CDF) ? unur_distr_cont_eval_cdf(x, distr) : 0.;
-    PDF_o = (have_PDF) ? unur_distr_cont_eval_pdf(x, distr) : 0.;
-    dPDF_o = (have_dPDF) ? unur_distr_cont_eval_dpdf(x, distr) : 0.;
+    else { /* is_CONT */
+      /* set parameters for distribution */
+      unur_distr_cont_set_pdfparams(distr,fparams,n_fparams);
+      if (have_upd_pdfarea) unur_distr_cont_upd_pdfarea(distr); 
+      
+      /* compute CDF, PDF and derivative of PDF at x */
+      CDF_o = (have_CDF) ? unur_distr_cont_eval_cdf(x, distr) : 0.;
+      PDF_o = (have_PDF) ? unur_distr_cont_eval_pdf(x, distr) : 0.;
+      dPDF_o = (have_dPDF) ? unur_distr_cont_eval_dpdf(x, distr) : 0.;
+    }
 
     /* compute differnces */
     CDF_d = CDF_o - CDF_e;
@@ -158,8 +194,11 @@ int test_cdf_pdf( UNUR_DISTR *distr, char *datafile, double max_diff )
     dPDF_d = dPDF_o - dPDF_e;
 
 #ifdef DEBUG
-    /* print argument x */
-    printf("observed x = %g:\t",x);
+    /* print argument x (or k) */
+    if (is_DISCR)
+      printf("observed k = %d:\t",k);
+    else  /* is_CONT */
+      printf("observed x = %g:\t",x);
 
     /* print CDF, PDF and derivative of PDF at x */
     printf("%g, %g, %g\n",CDF_o,PDF_o,dPDF_o);
@@ -188,13 +227,8 @@ int test_cdf_pdf( UNUR_DISTR *distr, char *datafile, double max_diff )
   printf("\tmaximal difference:\n");
 
   if (have_CDF)  printf("\t\tCDF  = %g\n",CDF_md);
-  else           printf("\t\tCDF  = not available\n");
-      
   if (have_PDF)  printf("\t\tPDF  = %g\n",PDF_md);
-  else           printf("\t\tPDF  = not available\n");
-
   if (have_dPDF) printf("\t\tdPDF = %g\n",dPDF_md);
-  else           printf("\t\tdPDF = not available\n");
 
   return 0;
 

@@ -20,6 +20,11 @@
 #include <unuran.h>
 #include <unuran_tests.h>
 
+#include <config.h>
+#ifdef WITH_DMALLOC
+#  include <dmalloc.h>
+#endif
+
 /*---------------------------------------------------------------------------*/
 
 #if UNUR_URNG_TYPE != UNUR_URNG_PRNG

@@ -42,10 +42,20 @@
 #define __UNUR_MISC_H_SEEN
 /*---------------------------------------------------------------------------*/
 
+#include <stdio.h>
 
 /*---------------------------------------------------------------------------*/
 /* set debugging flag for generator                                          */
 int unur_set_debug( struct unur_par *parameter, unsigned debug );
+
+/*---------------------------------------------------------------------------*/
+/* manipulate output stream                                                  */
+FILE *unur_set_stream( FILE *new_stream );
+FILE *unur_get_stream( void );
+
+/*---------------------------------------------------------------------------*/
+/* warnings and error messages for given error number                        */
+const char *unur_get_strerror ( const int unur_errno );
 
 /*---------------------------------------------------------------------------*/
 /* set, get or change uniform RNG for generator                              */
@@ -65,6 +75,13 @@ UNUR_URNG_TYPE unur_set_default_urng( UNUR_URNG_TYPE urng_new );
 /* get dimension of generator for (multivariate) distribution                */
 
 int unur_get_dimension( struct unur_gen *gen );
+
+/*---------------------------------------------------------------------------*/
+/* get type of transformation method                                         */
+
+#define unur_is_discr(gen) ( (((gen)->method & UNUR_MASK_TYPE) == UNUR_METH_DISCR) ? 1 : 0 )
+#define unur_is_cont(gen)  ( (((gen)->method & UNUR_MASK_TYPE) == UNUR_METH_CONT)  ? 1 : 0 )
+#define unur_is_vec(gen)   ( (((gen)->method & UNUR_MASK_TYPE) == UNUR_METH_VEC)   ? 1 : 0 )
 
 /*---------------------------------------------------------------------------*/
 #endif  /* __UNUR_MISC_H_SEEN */

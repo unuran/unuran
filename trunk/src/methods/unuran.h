@@ -42,51 +42,62 @@
 #define __UNURAN_H_SEEN
 /*---------------------------------------------------------------------------*/
 
+/*****************************************************************************/
+/**  Basic header files                                                     **/
+/*****************************************************************************/
+
+/*---------------------------------------------------------------------------*/
 /* compiler switches and defaults */
 #include <unuran_config.h>
 
-/** falscher platz !! **/
+/*****************************************************************************/
+/**  Typedefs                                                               **/
+/*****************************************************************************/
+
 /*---------------------------------------------------------------------------*/
 /* structures                                                                */
 struct unur_distr;    /* distribution object      */
 struct unur_par;      /* parameters for generator */
 struct unur_gen;      /* generator object         */
 
+/*---------------------------------------------------------------------------*/
+/* a function for continuous univariate c.d.f., p.d.f. and its derivative    */
+typedef double _UNUR_FUNCTION_CONT(double x, double *params, int n_params);
 
-/* tools for allocating memory */
+/*---------------------------------------------------------------------------*/
+/* sampling routines                                                         */
+
+/* for univariate continuous distribution */
+typedef double _UNUR_SAMPLING_ROUTINE_CONT(struct unur_gen *gen);
+
+/* for univariate discrete distribution */
+typedef int _UNUR_SAMPLING_ROUTINE_DISCR(struct unur_gen *gen);
+
+/* for multivariate continuous distribution */
+typedef void _UNUR_SAMPLING_ROUTINE_VEC(struct unur_gen *gen, double *vec);
+
+/*****************************************************************************/
+/**  More header files                                                      **/
+/*****************************************************************************/
+
+/* structures for blocked memory allocation */
 #include <unur_umalloc.h>
 
-/* uniform random number generators */
+/* typedefs and prototypes for uniform random number generators */
 #include <unur_urng.h>
 
-/*---------------------------------------------------------------------------*/
-/* Typedefs                                                                  */
-
-typedef double _UNUR_FUNCTION_CONT(double x, double *params, int n_params);
-/* a function for continuous univariate c.d.f., p.d.f. and its derivative    */
-
-/* sampling routines                                                         */
-typedef double _UNUR_SAMPLING_ROUTINE_CONT(struct unur_gen *gen);
-/* for univariate continuous distribution                                    */
-
-typedef int _UNUR_SAMPLING_ROUTINE_DISCR(struct unur_gen *gen);
-/* for univariate discrete distribution                                      */
-
-typedef void _UNUR_SAMPLING_ROUTINE_VEC(struct unur_gen *gen, double *vec);
-/* for multivariate continuous distribution                                  */
-
-/*---------------------------------------------------------------------------*/
-/* include header file for distribtion object                                */
+/* distribution objects */
 #include <unur_distr.h>
 
-/*---------------------------------------------------------------------------*/
-/* include header files for generators                                       */
+/*****************************************************************************/
+/**  Header files for generators                                            **/
+/*****************************************************************************/
 
-/* methods for discrete distributions                                        */
+/* methods for discrete distributions */
 #include <unur_dau.h>
 #include <unur_dis.h>
 
-/* methods for continuous distributions                                      */
+/* methods for continuous distributions */
 #include <unur_arou.h>
 #include <unur_srou.h>
 #include <unur_stdr.h>
@@ -95,16 +106,19 @@ typedef void _UNUR_SAMPLING_ROUTINE_VEC(struct unur_gen *gen, double *vec);
 #include <unur_unif.h>
 #include <unur_utdr.h>
 
-/* methods for continuous multivariate distributions                         */
+/* methods for continuous multivariate distributions */
 #include <unur_rect.h>
 
-/* generators for standard distributions                                     */
+/* generators for standard distributions */
 #include <unur_cstd.h>
 
-/*---------------------------------------------------------------------------*/
-/* Main structure for all UNURAN generators                                  */
+/*****************************************************************************/
+/**  Main structure for all UNURAN generators                               **/  
+/*****************************************************************************/
 
-/* parameters */
+/*---------------------------------------------------------------------------*/
+/* parameter objects                                                         */
+
 struct unur_par {
   union {             
     struct unur_dau_par   dau;
@@ -136,7 +150,9 @@ struct unur_par {
 #endif
 };
 
-/* generators */
+/*---------------------------------------------------------------------------*/
+/* generator objects                                                         */
+
 struct unur_gen { 
   union {   
     struct unur_dau_gen   dau;
@@ -175,10 +191,13 @@ struct unur_gen {
 #endif
 };
 
-/*---------------------------------------------------------------------------*/
-/* invoke generators                                                         */
+/*****************************************************************************/
+/**  Invoke generators                                                      **/  
+/*****************************************************************************/
 
+/*---------------------------------------------------------------------------*/
 #ifdef UNUR_CHECKNULL
+/*---------------------------------------------------------------------------*/
 /* check for (invalid) NULL pointer */
 
 #define unur_init(par)                ((par) ? (par)->init(par) : NULL)
@@ -189,7 +208,10 @@ struct unur_gen {
 
 #define unur_free(gen)                if (gen) (gen)->destroy(gen)
 
+/*---------------------------------------------------------------------------*/
 #else
+/*---------------------------------------------------------------------------*/
+/* do not check for (invalid) NULL pointer */
 
 #define unur_init(par)                (par)->init(par)
 
@@ -199,10 +221,14 @@ struct unur_gen {
 
 #define unur_free(gen)                (gen)->destroy(gen)
 
-#endif  /* UNUR_CHECKNULL */
-
 /*---------------------------------------------------------------------------*/
-/* misc prototype                                                            */
+#endif  /* UNUR_CHECKNULL */
+/*---------------------------------------------------------------------------*/
+
+/*****************************************************************************/
+/**  Additional header files for further function prototypes                **/
+/*****************************************************************************/
+
 #include <unur_misc.h>
 
 /*---------------------------------------------------------------------------*/

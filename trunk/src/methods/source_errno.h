@@ -46,14 +46,10 @@
 
 #include <unuran_config.h>
 
-#include <errno.h>
 #include <stdio.h>
 
 /*---------------------------------------------------------------------------*/
 /* Function prototypes                                                       */
-
-FILE *unur_set_stream( FILE *new_stream );
-FILE *unur_get_stream( void );
 
 void _unur_stream_printf( const char *genid, char *filename, int line, const char *format, ... );
 char *_unur_make_genid( const char *gentype );
@@ -114,9 +110,6 @@ enum {
 
 /*---------------------------------------------------------------------------*/
 /* warnings and error messages                                               */
-
-const char *unur_get_strerror ( const int unur_errno );
-/* return string that describes error                                        */
 
 /*---------------------------------------------------------------------------*/
 #ifdef UNUR_WARNINGS_ON    /* warnings enabled */

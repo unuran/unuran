@@ -50,6 +50,7 @@ noinst_HEADERS = \
  source_unuran.h \
  source_cookies.h \
  source_errno.h \
+ source_masks.h \
  source_math.h
 
 # clean backup files too

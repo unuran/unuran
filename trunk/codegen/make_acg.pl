@@ -30,6 +30,7 @@ print acg_n_cpoints();
 print acg_tdr_c();
 print acg_language();
 print acg_logfile();
+print acg_distrname();
 
 # ----------------------------------------------------------------
 exit 0;
@@ -80,6 +81,9 @@ int (*get_language(const char *language)) ();
 
 /* Get pointer to make given distribution.                                   */
 UNUR_DISTR *(*get_distribution(const char *distribution)) ();
+
+/* Get name of distribution                                                  */
+const char *get_distrname(const char *distname);
 
 /* Get parameters for PDF of distribution.                                   */
 int get_fparams(char *params, double fparam[]);
@@ -146,20 +150,23 @@ int main (int argc, char *argv[]){
   
   /* parameters for distribution */
   double fpar[UNUR_DISTR_MAXPARAMS];
-  double domain[2];    /* domain for distribution */
 
+  double domain[2];    /* domain for distribution */
   int domainset = 0;   /* checks if domain is set */
+
+  const char *distrname = NULL;
+
+  double tdr_c = -0.5; /* parameter c for TDR */
   int n_params = 0;    /* number of parameters */
   int n_cpoints = 30;  /* number of construction points (default value) */
 
-  double tdr_c = -0.5; /* parameter c for TDR */
 
   char c;
 
   /* ------------------------------------------------------------------------*/
   /* read options                                                            */
 
-  while ((c = getopt(argc, argv, "d:p:D:n:c:l:L:")) != -1) {
+  while ((c = getopt(argc, argv, "d:p:D:N:n:c:l:L:")) != -1) {
     switch (c) {
     case 'd':     /* distribution */
       distrfunc = get_distribution(optarg);
@@ -170,6 +177,9 @@ int main (int argc, char *argv[]){
     case 'D':     /* domain */
       get_domain(optarg,domain);
       domainset = 1;
+      break;
+    case 'N':
+      distrname = get_distrname(optarg);
       break;
     case 'n':     /* number of construction points */
       n_cpoints = get_n_cpoints(optarg);
@@ -643,7 +653,7 @@ get_logfile(const char *logfile)
      /*----------------------------------------------------------------------*/
 {
     return logfile;
-} /* end of get_language() */
+} /* end of get_logfile() */
 
 /* --------------------------------------------------------------------------*/
 
@@ -651,6 +661,36 @@ EOS
 
     return $logfile;
 } # end of acg_logfile()
+
+# ----------------------------------------------------------------
+# parse distribution name
+# ----------------------------------------------------------------
+
+sub acg_distrname {
+
+    my $distrname = <<EOS;
+
+const char *
+get_distrname(const char *distrname)
+     /*----------------------------------------------------------------------*/
+     /* get pointer to name of distribution                                  */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*    distrname ... pointer to string with name of distribution         */
+     /*                                                                      */
+     /* error:                                                               */
+     /*    abort program                                                     */
+     /*----------------------------------------------------------------------*/
+{
+    return distrname;
+} /* end of get_logfile() */
+
+/* --------------------------------------------------------------------------*/
+
+EOS
+
+    return $distrname;
+} # end of acg_distrname()
 
 # ----------------------------------------------------------------
 # end

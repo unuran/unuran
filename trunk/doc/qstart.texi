@@ -117,7 +117,7 @@ where no seperate generator is yet available.
 UNURAN is also useful if the parameters of a standard distribution
 should be changed frequently.
 
-Additionaly there are lots of predifined distributions available
+Additionaly there are lots of predefined distributions available
 (see @ref{Distributions}) but we recommend the usage of specific
 generators for applications depending on a standard distribution
 without changing the paramters a lot.
@@ -125,7 +125,7 @@ without changing the paramters a lot.
 UNURAN implements several methods for generating random numbers.
 The choice depents primary on what information about the
 distribution can be provided and---if the user is familar with
-the different methods---with the preferences of the user.
+the different methods---on the preferences of the user.
 
 
 @node Document
@@ -141,8 +141,13 @@ with a short look at section @ref{Selfmade} should be enough.
 The function for changing the parameters while sampling can be
 found in @ref{Function Reference}.
 
-The rest of this document is for users with knowledge about
-the methods who want to change method-specific parameters. 
+To use predefined distributions take a look on the list of
+availabe Distributions @ref{Distributions}, Examples @ref{Ex1}
+and @ref{Ex1} and if required also on @ref{Readymade}.   
+
+The greatest deal of this document is for users with knowledge about
+the methods who want to change method-specific parameters and can
+be ignored by all others.
 
 @node Install
 @section Install

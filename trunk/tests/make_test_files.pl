@@ -924,7 +924,7 @@ sub scan_validate {
 
     print "\n\t/* test finished */\n";
     print "\ttest_ok &= (n_tests_failed>2) ? 0 : 1;   /* we accept 2 failure */\n";
-    print "\t(n_tests_failed) ? printf(\" --> failed] \") : printf(\" --> ok] \");\n";
+    print "\t(n_tests_failed>2) ? printf(\" --> failed] \") : printf(\" --> ok] \");\n";
     print "\n} /* end of test_validate */\n\n";
 
     # return name of next section ...

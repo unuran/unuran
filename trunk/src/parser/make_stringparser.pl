@@ -72,9 +72,11 @@ my %IGNORED_COMMANDS =
 # (We cannot handle this distributions yet. Thus we will ignore them 
 # until we find some time to fix this.)
 my %IGNORED_DISTRIBUTIONS =
-    ( 'multinormal' => 1,   
-      'copula'      => 1,
-      'correlation' => 1
+    ( 'multinormal'  => 1,   
+      'multicauchy'  => 1,
+      'multistudent' => 1,
+      'copula'       => 1,
+      'correlation'  => 1
     );
 
 ##############################################################################

@@ -99,6 +99,7 @@
    =EON
 */
 UNUR_DISTR *unur_distr_beta(double *params, int n_params);
+/** TODO: STDGEN **/
 
 /*---------------------------------------------------------------------------*/
 /* Burr family of distributions  [2; ch.12, p.54]                            */
@@ -119,6 +120,7 @@ UNUR_DISTR *unur_distr_burr(double *params, int n_params);
    =EON
 */
 UNUR_DISTR *unur_distr_cauchy(double *params, int n_params);
+/** TODO: STDGEN **/
 
 /*---------------------------------------------------------------------------*/
 /* Chi distribution  [2; ch.18, p.417]                                       */
@@ -133,6 +135,7 @@ UNUR_DISTR *unur_distr_cauchy(double *params, int n_params);
    =EON
 */
 UNUR_DISTR *unur_distr_chi(double *params, int n_params);
+/** TODO: STDGEN **/
 
 /*---------------------------------------------------------------------------*/
 /* Chisquare distribution  [2; ch.18, p.416]                                 */
@@ -147,6 +150,7 @@ UNUR_DISTR *unur_distr_chi(double *params, int n_params);
    =EON
 */
 UNUR_DISTR *unur_distr_chisquare(double *params, int n_params);
+/** TODO: STDGEN **/
 
 /*---------------------------------------------------------------------------*/
 /* Erlang distribution                                                       */
@@ -166,6 +170,7 @@ UNUR_DISTR *unur_distr_chisquare(double *params, int n_params);
    =EON
 */
 UNUR_DISTR *unur_distr_exponential(double *params, int n_params);
+/** TODO: STDGEN **/
 
 /*---------------------------------------------------------------------------*/
 /*  Extreme value type I distribution  [3; ch.22, p.2]                       */
@@ -181,6 +186,7 @@ UNUR_DISTR *unur_distr_exponential(double *params, int n_params);
    =EON
 */
 UNUR_DISTR *unur_distr_extremeI(double *params, int n_params);
+/** TODO: STDGEN **/
 
 /*---------------------------------------------------------------------------*/
 /* Extreme value type II distribution  [3; ch.22, p.2]                      */
@@ -197,6 +203,7 @@ UNUR_DISTR *unur_distr_extremeI(double *params, int n_params);
    =EON
 */
 UNUR_DISTR *unur_distr_extremeII(double *params, int n_params);
+/** TODO: STDGEN **/
 
 /*---------------------------------------------------------------------------*/
 /* Gamma distribution  [2; ch.17, p.337]                                     */
@@ -213,10 +220,12 @@ UNUR_DISTR *unur_distr_extremeII(double *params, int n_params);
    =EON
 */
 UNUR_DISTR *unur_distr_gamma(double *params, int n_params);
+/** TODO: STDGEN **/
 
 /*---------------------------------------------------------------------------*/
 /* Generalized inverse Gaussian distribution  [2; ch.15, p.284]              */
 UNUR_DISTR *unur_distr_gig(double *params, int n_params);
+/** TODO: STDGEN **/
 
 /*---------------------------------------------------------------------------*/
 /*  Laplace distribution  [3; ch.24, p.164]                                  */
@@ -232,6 +241,7 @@ UNUR_DISTR *unur_distr_gig(double *params, int n_params);
    =EON
 */
 UNUR_DISTR *unur_distr_laplace(double *params, int n_params);
+/** TODO: STDGEN **/
 
 /*---------------------------------------------------------------------------*/
 /* Logistic distribution  [3; ch.23, p.115]                                  */
@@ -247,10 +257,12 @@ UNUR_DISTR *unur_distr_laplace(double *params, int n_params);
    =EON
 */
 UNUR_DISTR *unur_distr_logistic(double *params, int n_params);
+/** TODO: STDGEN **/
 
 /*---------------------------------------------------------------------------*/
 /*  Lognormal distribution  [2; ch.14, p.208]                                */
 UNUR_DISTR *unur_distr_lognormal(double *params, int n_params);
+/** TODO: STDGEN **/
 
 /*---------------------------------------------------------------------------*/
 /*  Lomax distribution (Pareto distr. of second kind)  [2; ch.20, p.575]     */
@@ -266,6 +278,7 @@ UNUR_DISTR *unur_distr_lognormal(double *params, int n_params);
    =EON
 */
 UNUR_DISTR *unur_distr_lomax(double *params, int n_params);
+/** TODO: STDGEN **/
 
 /*---------------------------------------------------------------------------*/
 /* Normal distribution  [2; ch.13, p.80]                                     */
@@ -278,9 +291,15 @@ UNUR_DISTR *unur_distr_lomax(double *params, int n_params);
    =DOMAIN   -infinity < x < infinity 
    =FPARAM    [0]   : mu    :     : 0 : location :
              [[1]]  : sigma : > 0 : 1 : scale    :
+   =STDGEN   DEF  ACR method (Acceptance-Complement Ratio) [HDa90]
+             1    Box-Muller method [BMa58]
+	     2    Polar method with rejection [MGa62]
+	     3    Kindermann-Ramage method [KRa76]
+             INV  Inversion method
    =EON
 */
 UNUR_DISTR *unur_distr_normal( double *params, int n_params );
+/** TODO: STDGEN **/
 
 /*---------------------------------------------------------------------------*/
 /* Pareto distribution (of first kind)  [2; ch.20, p.574]                    */
@@ -296,6 +315,7 @@ UNUR_DISTR *unur_distr_normal( double *params, int n_params );
    =EON
 */
 UNUR_DISTR *unur_distr_pareto( double *params, int n_params );
+/** TODO: STDGEN **/
 
 /*---------------------------------------------------------------------------*/
 /* Pearson VI distribution                                                   */
@@ -322,6 +342,7 @@ UNUR_DISTR *unur_distr_pareto( double *params, int n_params );
    =EON
 */
 UNUR_DISTR *unur_distr_powerexponential(double *params, int n_params);
+/** TODO: STDGEN **/
 
 /*---------------------------------------------------------------------------*/
 /* Rayleigh distribution  [2; ch.18, p.456]                                  */
@@ -336,6 +357,7 @@ UNUR_DISTR *unur_distr_powerexponential(double *params, int n_params);
    =EON
 */
 UNUR_DISTR *unur_distr_rayleigh(double *params, int n_params);
+/** TODO: STDGEN **/
 
 /*---------------------------------------------------------------------------*/
 /* Snedecor's F distribution                                                 */
@@ -346,10 +368,12 @@ UNUR_DISTR *unur_distr_rayleigh(double *params, int n_params);
 /* Student's t distribution  [3; ch. 28; p. 362]                             */
 UNUR_DISTR *unur_distr_student(double *params, int n_params);
 /** CDF not implemented !!!!!! */
+/** TODO: STDGEN **/
 
 /*---------------------------------------------------------------------------*/
 /* Slash distribution  [2; ch.12, p.63]                                      */
 UNUR_DISTR *unur_distr_slash(double *params, int n_params);
+/** TODO: STDGEN **/
 
 /*---------------------------------------------------------------------------*/
 /*  Triangular distribution  [3; ch.26, p.297]                               */
@@ -365,6 +389,7 @@ UNUR_DISTR *unur_distr_slash(double *params, int n_params);
    =EON
 */
 UNUR_DISTR *unur_distr_triangular(double *params, int n_params);
+/** TODO: STDGEN **/
 
 /*---------------------------------------------------------------------------*/
 /* Uniform distribution  [3; ch.26, p.276]                                   */
@@ -380,6 +405,7 @@ UNUR_DISTR *unur_distr_triangular(double *params, int n_params);
    =EON
 */
 UNUR_DISTR *unur_distr_uniform(double *params, int n_params);
+/** TODO: STDGEN **/
 
 /*---------------------------------------------------------------------------*/
 /* Weibull distribution  [2; ch.21, p.628]                                   */
@@ -396,6 +422,7 @@ UNUR_DISTR *unur_distr_uniform(double *params, int n_params);
    =EON
 */
 UNUR_DISTR *unur_distr_weibull(double *params, int n_params);
+/** TODO: STDGEN **/
 
 /*---------------------------------------------------------------------------*/
 
@@ -444,6 +471,7 @@ UNUR_DISTR *unur_distr_multinormal(int dim, double *mean, double *covar);
    =EON
 */
 UNUR_DISTR *unur_distr_binomial(double *params, int n_params);
+/** TODO: STDGEN **/
 
 /*---------------------------------------------------------------------------*/
 /* Geometric distribution  [1; ch.5.2, p.201]                                */
@@ -458,6 +486,7 @@ UNUR_DISTR *unur_distr_binomial(double *params, int n_params);
    =EON
 */
 UNUR_DISTR *unur_distr_geometric(double *params, int n_params);
+/** TODO: STDGEN **/
 
 /*---------------------------------------------------------------------------*/
 /* Hypergometric distribution  [1; ch.6, p.237]                              */
@@ -475,6 +504,7 @@ UNUR_DISTR *unur_distr_geometric(double *params, int n_params);
 */
 UNUR_DISTR *unur_distr_hypergeometric(double *params, int n_params);
 /** No CDF !!! **/
+/** TODO: STDGEN **/
 
 /*---------------------------------------------------------------------------*/
 /* Logarithmic distribution  [1; ch.7, p.285]                                */
@@ -490,6 +520,7 @@ UNUR_DISTR *unur_distr_hypergeometric(double *params, int n_params);
 */
 UNUR_DISTR *unur_distr_logarithmic(double *params, int n_params);
 /** No CDF !!! **/
+/** TODO: STDGEN **/
 
 /*---------------------------------------------------------------------------*/
 /* Negative Binomial distribution  [1; ch.5.1, p.200]                        */
@@ -506,6 +537,7 @@ UNUR_DISTR *unur_distr_logarithmic(double *params, int n_params);
 */
 UNUR_DISTR *unur_distr_negativebinomial(double *params, int n_params);
 /** No CDF !!! **/
+/** TODO: STDGEN **/
 
 /*---------------------------------------------------------------------------*/
 /* Poisson distribution  [1; ch.4, p.151]                                    */
@@ -521,14 +553,15 @@ UNUR_DISTR *unur_distr_negativebinomial(double *params, int n_params);
 */
 UNUR_DISTR *unur_distr_poisson(double *params, int n_params);
 /** No CDF !!! **/
+/** TODO: STDGEN **/
 
 /*---------------------------------------------------------------------------*/
 /* Zipf (or Zeta) distribution  [1; ch.11.20, p.465]                         */
 UNUR_DISTR *unur_distr_zipf(double *params, int n_params);
 /** No CDF !!! **/
+/** TODO: STDGEN **/
 
 /*---------------------------------------------------------------------------*/
 #endif  /* __UNURAN_DISTRIBUTIONS_H_SEEN */
 /*---------------------------------------------------------------------------*/
-
 

@@ -94,6 +94,16 @@ these are omitted.
 gives reference for distribution
 (@pxref{Bibliography}).
 
+@item special generators
+lists available special generators for the distribution.
+The first number is the variant that to be set by
+unur_cstd_set_variant() and unur_dstd_set_variant() call, respectively.
+If no variant is set the default variant @code{DEF} is used.
+In the table the respective abbreviations @code{DEF} and @code{INV}
+are used for @code{UNUR_STDGEN_DEFAULT} and
+@code{UNUR_STDGEN_INVERSION}.
+Also the references for these methods are given (@pxref{Bibliography}).
+
 @end table
 
 =EON

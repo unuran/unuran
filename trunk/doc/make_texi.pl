@@ -71,6 +71,7 @@ use FileHandle;
      "=CONST"       => { "scan" => \&scan_PDF },
      "=DOMAIN"      => { "scan" => \&scan_DOMAIN },
      "=FPARAM"      => { "scan" => \&scan_FPARAM },
+     "=STDGEN"      => { "scan" => \&scan_STDGEN },
 
      "=END"         => { "scan" => \&scan_do_nothing },
      );
@@ -448,10 +449,12 @@ sub texi_node {
 	    if ($IN->{$node}->{"=REF"}) {
 		$TEXI .= "\@item reference:\n".$IN->{$node}->{"=REF"}."\n";
 	    }
+	    if ($IN->{$node}->{"=STDGEN"}) {
+		$TEXI .= "\@item special generators:\n".$IN->{$node}->{"=STDGEN"}."\n";
+	    }
 	    $TEXI .= "\@end table\n\n";
 	}
     }
-
 	
     # print description
     $TEXI .= $IN->{$node}->{"=DESCRIPTION"};
@@ -503,7 +506,7 @@ sub scan_REF {
     # make a copy for HTML output
     (my $anchor, my $text) = split /\s+/, $entry, 2;
     $anchor =~ s/\s*\[(\w+)\]\s*/$1/;
-    my $htmlentry = "\@ref{bib:$anchor, [$anchor]}  $text\n";
+    my $htmlentry = "\@ref{bib:$anchor, [$anchor]}  $text";
 
     $IN->{$node_name}->{$tag} = "\@ifhtml\n$htmlentry\n\@end ifhtml\n";
 
@@ -727,6 +730,64 @@ sub scan_FPARAM {
     $IN->{$node_name}->{$tag} .= $out_header.$out."\@end multitable\n\@end ifnottex\n";
 
 } # end of scan_FPARAM()
+
+#############################################################
+# scan list of parameters for distribution
+#
+
+sub scan_STDGEN {
+    my $node_name = $_[0];   # name of node
+    my $tag = $_[1];         # TAG (node section)
+
+    # content of node
+    my $entry = $IN->{$node_name}->{$tag};
+
+    # empty ? 
+    return unless $entry;
+
+    # trim heading blanks
+    $entry =~ s/^\s*//;
+
+    # chop off trailing blanks
+    $entry =~ s/\s+$//;
+
+    # split into lines
+    my @lines = split /\n+/, $entry;
+
+    my $out = "\@table \@code\n";
+
+    # process lines
+    foreach my $l (@lines) {
+
+	# split into indicator and description
+	(my $id, my $body) = split /\s+/, $l, 2;
+	
+	if ($body =~ /\[(\w+)\]/) {
+	    # there a reference
+	    my $reference = $1;
+	    $body =~ s/\[.+$//;
+	    $out .= "\@item $id\n";
+	    $out .= "\@ifhtml\n";
+	    $out .= "$body \@ref{bib:$reference, [$reference]}\n";
+	    $out .= "\@end ifhtml\n";
+	    $out .= "\@ifnothtml\n";
+	    $out .= "$body [$reference]\n";
+	    $out .= "\@end ifnothtml\n";
+	}
+	
+	else {
+	    # there is no reference
+	    $out .= "\@item $id\n";
+	    $out .= "$body\n";
+	}
+    }
+
+    $out .= "\@end table\n";
+    
+    # make other output
+    $IN->{$node_name}->{$tag} = $out;
+
+} # end of scan_STDGEN()
 
 #############################################################
 # chop off trailing blanks

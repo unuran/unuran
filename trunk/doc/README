@@ -105,6 +105,15 @@ The following TAGs are valid:
 	that are used when these are omitted.
 
 	The last field is a short description of the parameter.
+
+=STDGEN List of special generator for (UNURAN) standard distributions.
+	Each special generator must be given in one line.
+	The first entry is the identy for the special generator as given for
+	the unur_cstd_set_variant() and unur_dstd_set_variant() call.
+	Use DEF and INV as abbreviations for UNUR_STDGEN_DEFAULT and
+	UNUR_STDGEN_INVERSION, respectively. References must be given
+	in square brackets [...] as the last entry. Anything after the
+	references is ignored.
 	
 =DESCRIPTION	Discription of method. Can be used to print any text.
 

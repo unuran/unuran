@@ -312,7 +312,7 @@ int unur_ninv_use_regula( struct unur_par *par )
 
 /*---------------------------------------------------------------------------*/
 
-int unur_ninv_set_max_iter( struct unur_par *par, int max_iter )
+int unur_ninv_set_max_iter(UNUR_PAR *par, int max_iter )
      /*----------------------------------------------------------------------*/
      /* set number of maximal iterations                                     */
      /*                                                                      */
@@ -346,6 +346,43 @@ int unur_ninv_set_max_iter( struct unur_par *par, int max_iter )
   return 1;
 
 } /* end of unur_ninv_set_max_iter() */
+
+/*---------------------------------------------------------------------------*/
+
+
+int unur_ninv_chg_max_iter(UNUR_GEN *gen, int max_iter )
+     /*----------------------------------------------------------------------*/
+     /* change number of maximal iterations                                  */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen      ... pointer to generator object                           */
+     /*   max_iter ...  number of maximal iterations                         */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... on success                                                   */
+     /*   0 ... on error                                                     */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  CHECK_NULL(gen, 0);
+
+  /* check new parameter for generator */
+  if (max_iter < 1) {
+    _unur_warning(gen->genid, UNUR_ERR_PAR_SET, "maximal iterations");
+    return 0;
+  }
+
+  /* store date */
+  GEN.max_iter = max_iter;
+
+  /* changelog */
+  gen->set |= NINV_SET_MAX_ITER;
+
+  /* o.k.  */
+  return 1;
+
+} /* end of unur_ninv_chg_max_iter() */
+
 
 /*---------------------------------------------------------------------------*/
 

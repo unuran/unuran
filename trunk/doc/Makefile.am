@@ -41,7 +41,7 @@ EXTRA_DIST = \
  fig-pdf-uniform.tex
 
 # make html files
-html:	version-ref.texi
+html:
 	texi2html -verbose -split_chapter $(info_TEXINFOS)
 
 # clean backup files

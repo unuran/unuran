@@ -5,6 +5,7 @@ EXTRA_DIST = \
  README \
  texinfo.tex \
  make_texi.pl \
+ arvag.dh \
  examples.dh \
  glossary.dh \
  index.dh \

@@ -273,223 +273,6 @@ unur_stdgen_sample_gamma_gs( struct unur_gen *gen )
 /*---------------------------------------------------------------------------*/
 #undef b
 /*---------------------------------------------------------------------------*/
-
-/*---------------------------------------------------------------------------*/
-#if 0
-#define ss   GEN.gen_param[0]
-#define s    GEN.gen_param[1]
-#define d    GEN.gen_param[2]
-#define r    GEN.gen_param[3]
-#define q0   GEN.gen_param[4]
-#define b    GEN.gen_param[5]
-#define c    GEN.gen_param[6]
-#define si   GEN.gen_param[7]
-
-#define q1   0.0416666664
-#define q2   0.0208333723
-#define q3   0.0079849875
-#define q4   0.0015746717
-#define q5  -0.0003349403
-#define q6   0.0003340332
-#define q7   0.0006053049
-#define q8  -0.0004701849
-#define q9   0.0001710320
-#define a1   0.333333333
-#define a2  -0.249999949
-#define a3   0.199999867
-#define a4  -0.166677482
-#define a5   0.142873973
-#define a6  -0.124385581
-#define a7   0.110368310
-#define a8  -0.112750886
-#define a9   0.104089866
-#define e1   1.000000000
-#define e2   0.499999994
-#define e3   0.166666848
-#define e4   0.041664508
-#define e5   0.008345522
-#define e6   0.001353826
-#define e7   0.000247453
-/*---------------------------------------------------------------------------*/
-#define NORMAL  GEN.gen_aux    /* pointer to normal variate generator        */
-/*---------------------------------------------------------------------------*/
-
-inline static void
-gamma_gd_init( struct unur_gen *gen )
-     /* CASE alpha >= 1: Acceptance complement algorithm gd */
-{
-  if (GEN.gen_param == NULL) {
-    GEN.n_gen_param = 8;
-    GEN.gen_param = _unur_malloc(GEN.n_gen_param * sizeof(double));
-  }
-
-  /* -X- setup code -X- */
-  /* Step 1. Preparations */
-  ss = alpha - 0.5;
-  s = sqrt(ss);
-  d = 5.656854249 - 12. * s;
-
-  /* Step 4. Set-up for hat case */
-  r = 1. / alpha;
-  q0 = ((((((((q9 * r + q8) * r + q7) * r + q6) * r + q5) * r + q4) *
-	  r + q3) * r + q2) * r + q1) * r;
-  if (alpha > 3.686) {
-    if (alpha > 13.022) {
-      b = 1.77;
-      si = 0.75;
-      c = 0.1515 / s;
-    }
-    else {
-      b = 1.654 + 0.0076 * ss;
-      si = 1.68 / s + 0.275;
-      c = 0.062 / s + 0.024;
-    }
-  }
-  else {
-    b = 0.463 + s - 0.178 * ss;
-    si = 1.235;
-    c = 0.195 / s - 0.079 + 0.016 * s;
-  }
-
-  /* make a normal variate generator (use default special generator) */
-  NORMAL = unur_init( unur_cstd_new( unur_distr_normal(NULL,0) ));
-  /* need same uniform random number generator as slash generator */
-  NORMAL->urng = gen->urng;
-
-  /* -X- end of setup code -X- */
-
-} /* end of gamma_gd_init() */
-
-double 
-unur_stdgen_sample_gamma_gd( struct unur_gen *gen )
-{
-  /* -X- generator code -X- */
-  double E,U,X;
-  double q,t,v,w,x,sign_U;
-
-  /* check arguments */
-  CHECK_NULL(gen,0.);
-  COOKIE_CHECK(gen,CK_CSTD_GEN,0.);
-
-  while (1) {
-    /* Step 2. Normal deviate */
-    t = unur_sample_cont(NORMAL);
-    x = s + 0.5 * t;
-    X = x * x;
-    if (t >= 0.)   /* Immediate acceptance */ 
-      break;
-    
-    /* Step 3. Uniform random number */
-    U = uniform();
-    if (d * U <= t * t * t)    /* Squeeze acceptance */
-      break;
-
-    /* Step 5. Calculation of q */
-    if (x > 0.) {
-      /* Step 6. */
-      v = t / (s + s);
-      if (abs(v) > 0.25) 
-	q = q0 - s * t + 0.25 * t * t + (ss + ss) * log(1.0 + v);
-      else
-	q = q0 + 0.5 * t * t * ((((((((a9 * v + a8) * v + a7) * v + a6) *
-				      v + a5) * v + a4) * v + a3) * v + a2) * v + a1) * v;
-      /* Step 7. Quotient acceptance */
-      if (log(1.0 - U) <= q) 
-	break;
-    }
-
-    while (1) {
-      /* Step 8. Double exponential deviate t */
-      do {
-	E = -log( uniform() );
-	U = uniform();
-	U = U + U - 1.;
-	sign_U = (U > 0) ? 1. : -1.;
-	t = b + (E * si) * sign_U;
-      } while (t <= -0.71874483771719);   /* Step 9. Rejection of t */
-
-      /* Step 10. New q(t) */
-      v = t / (s + s);
-      if (abs(v) > 0.25)
-	q = q0 - s * t + 0.25 * t * t + (ss + ss) * log(1. + v);
-      else
-	q = q0 + 0.5 * t * t * ((((((((a9 * v + a8) * v + a7) * v + a6) *
-				    v + a5) * v + a4) * v + a3) * v + a2) * v + a1) * v;
-      if (q <= 0.)            
-	/* Step 11. */
-	continue;
-
-      if (q > 0.5)
-	w = exp(q) - 1.;
-      else
-	/* Step 12. Hat acceptance */
-	w = ((((((e7 * q + e6) * q + e5) * q + e4) * q + e3) * q + e2) *
-	     q + e1) * q;
-                
-      if ( c * U * sign_U <= w * exp(E - 0.5 * t * t)) {
-	x = s + 0.5 * t;
-	X = x*x;
-	break;
-      }
-    }
-  }
-
-  /* -X- end of generator code -X- */
-
-  return ((DISTR.n_params==1) ? X : gamma + beta * X );
-
-} /* end of unur_stdgen_sample_gamma_gd() */
-
-/*---------------------------------------------------------------------------*/
-#undef ss
-#undef s 
-#undef d 
-#undef r 
-#undef q0
-#undef b 
-#undef c 
-#undef si
-
-#undef q1
-#undef q2
-#undef q3
-#undef q4
-#undef q5
-#undef q6
-#undef q7
-#undef q8
-#undef q9
-#undef a1
-#undef a2
-#undef a3
-#undef a4
-#undef a5
-#undef a6
-#undef a7
-#undef a8
-#undef a9
-#undef e1
-#undef e2
-#undef e3
-#undef e4
-#undef e5
-#undef e6
-#undef e7
-/*---------------------------------------------------------------------------*/
-#undef NORMAL
-/*---------------------------------------------------------------------------*/
-#endif
-
-
-
-
-
-
-
-
-
-
-/*---------------------------------------------------------------------------*/
 #define ss   GEN.gen_param[0]
 #define s    GEN.gen_param[1]
 #define d    GEN.gen_param[2]
@@ -657,7 +440,41 @@ unur_stdgen_sample_gamma_gd( struct unur_gen *gen )
 
 } /* end of unur_stdgen_sample_gamma_gd() */
 
+/*---------------------------------------------------------------------------*/
+#undef ss
+#undef s 
+#undef d 
+#undef r 
+#undef q0
+#undef b 
+#undef c 
+#undef si
 
-
-
-
+#undef q1
+#undef q2
+#undef q3
+#undef q4
+#undef q5
+#undef q6
+#undef q7
+#undef q8
+#undef q9
+#undef a1
+#undef a2
+#undef a3
+#undef a4
+#undef a5
+#undef a6
+#undef a7
+#undef a8
+#undef a9
+#undef e1
+#undef e2
+#undef e3
+#undef e4
+#undef e5
+#undef e6
+#undef e7
+/*---------------------------------------------------------------------------*/
+#undef NORMAL
+/*---------------------------------------------------------------------------*/

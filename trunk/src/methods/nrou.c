@@ -301,7 +301,7 @@ unur_nrou_set_rect_v( struct unur_par *par, double vmax )
 /*---------------------------------------------------------------------------*/
 
 int
-unur_nrou_set_rect_center( struct unur_par *par, double center )
+unur_nrou_set_center( struct unur_par *par, double center )
      /*----------------------------------------------------------------------*/
      /* Set the center (approximate mode) of the PDF.                        */
      /*                                                                      */

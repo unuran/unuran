@@ -9,13 +9,7 @@ AM_CFLAGS = -Wall
 # (there should be a better fix)
 CFLAGS = -O2
 
-INCLUDES = \
- -I$(top_srcdir)/src \
- -I$(top_srcdir)/src/distributions \
- -I$(top_srcdir)/src/methods \
- -I$(top_srcdir)/src/parser \
- -I$(top_srcdir)/src/uniform
-
+INCLUDES = -I$(top_srcdir)/src
 
 bin_PROGRAMS = acg
 acg_SOURCES = acg.c

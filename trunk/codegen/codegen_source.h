@@ -37,7 +37,11 @@
 #define CODEGEN_SOURCE_H_SEEN
 /*---------------------------------------------------------------------------*/
 
-#include <source_unuran.h>
+#include <unur_source.h>
+#include <distr/distr.h>
+#include <distr/distr_source.h>
+#include <distributions/unur_stddistr.h>
+#include <parser/functparser_source.h>
 #include <unuran_acg.h>
 #include <time.h>
 

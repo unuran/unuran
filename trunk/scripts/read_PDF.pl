@@ -11,7 +11,7 @@ use File::Find;
 # Global constants
 
 # Header file for UNURAN standard distributions
-my $h_stddistr = "unuran_distributions.h";
+my $h_stddistr = "unur_distributions.h";
 
 # List of distribution types
 my %distr_types =
@@ -47,7 +47,7 @@ my $DISTR;
 #   $DISTR->{"beta"}->{"=DOC"}->{"=DOMAIN"}    ... domain for PDF
 #   $DISTR->{"beta"}->{"=DOC"}->{"=FPARAM"}    ... list of parameters with constraints
 #      Remark: There exist other fields which are not relevant here
-#              (see src/distributions/unuran_distributions.h).
+#              (see src/distributions/unur_distributions.h).
 #
 #   $DISTR->{"beta"}->{"=PDF"}                 ... PDF of distribution
 #   $DISTR->{"beta"}->{"=PDF"}->{"=NAME"}      ... name of PDF

@@ -97,7 +97,7 @@ close FILES;
 h_file_header;
 
 # scan master file ...
-scan_file ($master_file);
+scan_file ($master_file,0);
 
 exit 0;
 
@@ -106,7 +106,10 @@ exit 0;
 # scan given file ...
 sub scan_file {
     my $file = $_[0];
+    my $level = $_[1]+1;
     my $handle = new FileHandle;
+
+    print STDERR "$file\n";
     
     # open file ...
     open  $handle, $file or die "cannot find file $file\n";
@@ -126,13 +129,14 @@ sub scan_file {
     my @lines = split /\n/, $content;
 
     foreach my $line (@lines) {
-	unless ($line =~ /^\#include\s+<(.*)>/) {
+	unless ($line =~ /^\#include\s+[<\"](.*)[>\"]/) {
 	    print "$line\n";
 	    next;
 	}
 
 	# have found a file to be included ...
-	my $include_file = $1;
+	my @tmp = split /\//, $1;
+	my $include_file = pop @tmp; 
 	print STDERR "$include_file  " if $DEBUG;
 
 	# we include header files only once ...
@@ -153,10 +157,10 @@ sub scan_file {
 	# have found header file ...
 	print STDERR "to be inserted\n" if $DEBUG;
 	print "/*-----*/\n";
-	print "/* `$include_file' */\n";
+	print "/* <$level> `$include_file' */";
 
 	# scan header file ...
-	scan_file ($header_files{$include_file});
+	scan_file ($header_files{$include_file},$level);
 
 	print "/* end of `$include_file' */\n";
 	print "/*-----*/\n";

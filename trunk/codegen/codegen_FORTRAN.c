@@ -38,6 +38,7 @@
 
 #include <stdarg.h>
 #include "codegen_source.h"
+#include <methods/unur_methods_source.h>
 
 /*---------------------------------------------------------------------------*/
 

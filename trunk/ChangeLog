@@ -1,3 +1,228 @@
+2003-01-17  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/NEWS: updated file
+
+2003-01-16  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/KNOWN-PROBLEMS: fixed typo
+
+	* /home/staff/CVSROOT/unuran/src/parser/functparser_doc.h:
+	added to symbol inf to docu
+
+2003-01-15  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/src/parser/functparser_doc.h: fixed typo
+
+2003-01-14  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/src/parser/functparser.c, /home/staff/CVSROOT/unuran/src/parser/functparser_codegen_C.ch, /home/staff/CVSROOT/unuran/src/parser/functparser_codegen_FORTRAN.ch, /home/staff/CVSROOT/unuran/src/parser/functparser_codegen_JAVA.ch, /home/staff/CVSROOT/unuran/src/parser/functparser_stringgen.ch, /home/staff/CVSROOT/unuran/src/parser/functparser_symbols.h, /home/staff/CVSROOT/unuran/src/unur_source.h, /home/staff/CVSROOT/unuran/src/unur_struct.h:
+	added support for dynamic strings
+
+	* /home/staff/CVSROOT/unuran/src/unuran.h.in: include limits.h
+
+	* /home/staff/CVSROOT/unuran/src/Makefile.am:
+	added dependencies for generationg unuran.h
+
+	* /home/staff/CVSROOT/unuran/src/methods/hri.c:
+	added error checking: unur_hri_sample_check; added sample debugging
+
+	* /home/staff/CVSROOT/unuran/src/methods/hri.h:
+	added comment for hazard rate
+
+	* /home/staff/CVSROOT/unuran/src/methods/hrb.c, /home/staff/CVSROOT/unuran/src/methods/hrd.c:
+	added error checking: left border
+
+	* /home/staff/CVSROOT/unuran/src/methods/x_urng.c:
+	included header files for function prototypes
+
+	* /home/staff/CVSROOT/unuran/src/distr/cont.h:
+	added comment for hazard rate
+
+	* /home/staff/CVSROOT/unuran/src/uniform/fish.c, /home/staff/CVSROOT/unuran/src/uniform/mrg31k3p.c, /home/staff/CVSROOT/unuran/src/uniform/mstd.c, /home/staff/CVSROOT/unuran/src/uniform/unur_uniform.h:
+	included header files for function prototypes
+
+	* /home/staff/CVSROOT/unuran/src/utils/Makefile.am, /home/staff/CVSROOT/unuran/src/utils/string.c, /home/staff/CVSROOT/unuran/src/utils/string_source.h, /home/staff/CVSROOT/unuran/src/utils/string_struct.h:
+	added support for dynamic strings
+
+	* /home/staff/CVSROOT/unuran/src/utils/stream.c: fixed typo
+
+	* /home/staff/CVSROOT/unuran/configure.ac: added autoconf tests
+
+	* /home/staff/CVSROOT/unuran/TODO: updated
+
+	* /home/staff/CVSROOT/unuran/NEWS:
+	added entry for new methods HRB, HRD, HRI
+
+	* /home/staff/CVSROOT/unuran/doc/unuran.texi: minor change
+
+	* /home/staff/CVSROOT/unuran/doc/Makefile.am:
+	added dependency for making unuran_src.texi
+
+	* /home/staff/CVSROOT/unuran/tests/t_hri.conf, /home/staff/CVSROOT/unuran/tests/t_hrb.conf, /home/staff/CVSROOT/unuran/tests/t_hrd.conf:
+	added test for invalid left border
+
+	* /home/staff/CVSROOT/unuran/tests/t_arou.conf, /home/staff/CVSROOT/unuran/tests/t_cstd.conf, /home/staff/CVSROOT/unuran/tests/t_dstd.conf:
+	disabled timinig tests
+
+2003-01-11  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/src/utils/Makefile.am, /home/staff/CVSROOT/unuran/src/utils/unur_fp_const_source.h:
+	file should not be stored in CVS repository
+
+	* /home/staff/CVSROOT/unuran/tests/Makefile.am, /home/staff/CVSROOT/unuran/tests/t_hri.conf:
+	added tests for new method HRI
+
+	* /home/staff/CVSROOT/unuran/tests/make_test_files.pl:
+	always report FAILED when verifying hat failed
+
+	* /home/staff/CVSROOT/unuran/doc/top.h, /home/staff/CVSROOT/unuran/doc/unuran.texi:
+	updated to new texinfo version
+
+	* /home/staff/CVSROOT/unuran/src/unuran.h.in, /home/staff/CVSROOT/unuran/src/unur_cookies.h, /home/staff/CVSROOT/unuran/src/unur_struct.h, /home/staff/CVSROOT/unuran/src/methods/hri.c, /home/staff/CVSROOT/unuran/src/methods/hri.h, /home/staff/CVSROOT/unuran/src/methods/hri_struct.h, /home/staff/CVSROOT/unuran/src/methods/Makefile.am, /home/staff/CVSROOT/unuran/src/methods/unur_methods_source.h, /home/staff/CVSROOT/unuran/src/methods/x_gen_source.h:
+	new method HRI added
+
+	* /home/staff/CVSROOT/unuran/src/methods/hrb.c, /home/staff/CVSROOT/unuran/src/methods/hrd.c:
+	description added
+
+2003-01-08  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/src/methods/empk.h, /home/staff/CVSROOT/unuran/src/methods/empl.h, /home/staff/CVSROOT/unuran/src/methods/hrb.h, /home/staff/CVSROOT/unuran/src/methods/hrd.h:
+	changes in docu
+
+	* /home/staff/CVSROOT/unuran/src/parser/functparser_doc.h: fixed typo
+
+2003-01-07  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/src/utils/Makefile.am, /home/staff/CVSROOT/unuran/tests/Makefile.am:
+	minor fix to avoid ERROR in make distcheck
+
+	* /home/staff/CVSROOT/unuran/src/unuran.h.in, /home/staff/CVSROOT/unuran/src/unur_cookies.h, /home/staff/CVSROOT/unuran/src/unur_struct.h, /home/staff/CVSROOT/unuran/src/methods/hrb.c, /home/staff/CVSROOT/unuran/src/methods/hrb.h, /home/staff/CVSROOT/unuran/src/methods/hrb_struct.h, /home/staff/CVSROOT/unuran/src/methods/hrd.c, /home/staff/CVSROOT/unuran/src/methods/hrd.h, /home/staff/CVSROOT/unuran/src/methods/hrd_struct.h, /home/staff/CVSROOT/unuran/src/methods/Makefile.am, /home/staff/CVSROOT/unuran/src/methods/unur_methods_source.h, /home/staff/CVSROOT/unuran/src/methods/x_gen_source.h:
+	added new methods HRB and HRD
+
+	* /home/staff/CVSROOT/unuran/src/parser/functparser_init.ch, /home/staff/CVSROOT/unuran/src/parser/functparser_scanner.ch:
+	fixed bug with empty string in parser
+
+	* /home/staff/CVSROOT/unuran/src/parser/make_stringparser.pl, /home/staff/CVSROOT/unuran/src/distr/cont.c, /home/staff/CVSROOT/unuran/src/distr/cont.h, /home/staff/CVSROOT/unuran/src/distr/corder.c, /home/staff/CVSROOT/unuran/src/distr/distr_source.h, /home/staff/CVSROOT/unuran/src/distr/distr_struct.h:
+	added support for hazard rate
+
+	* /home/staff/CVSROOT/unuran/doc/glossary.h:
+	added entry for hazard rate
+
+	* /home/staff/CVSROOT/unuran/tests/t_srou.conf, /home/staff/CVSROOT/unuran/tests/t_ssr.conf, /home/staff/CVSROOT/unuran/tests/t_stringparser.conf, /home/staff/CVSROOT/unuran/tests/t_tabl.conf, /home/staff/CVSROOT/unuran/tests/t_tdr.conf, /home/staff/CVSROOT/unuran/tests/t_unif.conf, /home/staff/CVSROOT/unuran/tests/t_utdr.conf, /home/staff/CVSROOT/unuran/tests/t_vempk.conf, /home/staff/CVSROOT/unuran/tests/t_vmt.conf, /home/staff/CVSROOT/unuran/tests/make_test_files.pl, /home/staff/CVSROOT/unuran/tests/t_arou.conf, /home/staff/CVSROOT/unuran/tests/t_auto.conf, /home/staff/CVSROOT/unuran/tests/t_corder.conf, /home/staff/CVSROOT/unuran/tests/t_cstd.conf, /home/staff/CVSROOT/unuran/tests/t_dari.conf, /home/staff/CVSROOT/unuran/tests/t_dau.conf, /home/staff/CVSROOT/unuran/tests/t_dgt.conf, /home/staff/CVSROOT/unuran/tests/t_distr_cemp.conf, /home/staff/CVSROOT/unuran/tests/t_distr_cont.conf, /home/staff/CVSROOT/unuran/tests/t_distr_corder.conf, /home/staff/CVSROOT/unuran/tests/t_distr_discr.conf, /home/staff/CVSROOT/unuran/tests/t_dsrou.conf, /home/staff/CVSROOT/unuran/tests/t_dstd.conf, /home/staff/CVSROOT/unuran/tests/t_empk.conf, /home/staff/CVSROOT/unuran/tests/t_empl.conf, /home/staff/CVSROOT/unuran/tests/t_hinv.conf, /home/staff/CVSROOT/unuran/tests/t_ninv.conf:
+	moved tests for stringparsers into testfiles for methods
+
+	* /home/staff/CVSROOT/unuran/tests/testroutines.c: minor fix
+
+	* /home/staff/CVSROOT/unuran/tests/Makefile.am, /home/staff/CVSROOT/unuran/tests/t_hrb.conf, /home/staff/CVSROOT/unuran/tests/t_hrd.conf:
+	added tests for new methods HRB and HRD
+
+2002-12-24  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/doc/methods.h, /home/staff/CVSROOT/unuran/doc/unuran_method_requirements.texi, /home/staff/CVSROOT/unuran/NEWS, /home/staff/CVSROOT/unuran/src/methods/empl.c, /home/staff/CVSROOT/unuran/src/methods/empl.h, /home/staff/CVSROOT/unuran/src/methods/empl_struct.h, /home/staff/CVSROOT/unuran/src/methods/Makefile.am, /home/staff/CVSROOT/unuran/src/methods/unur_methods_source.h, /home/staff/CVSROOT/unuran/src/methods/x_gen_source.h, /home/staff/CVSROOT/unuran/src/unuran.h.in, /home/staff/CVSROOT/unuran/src/unur_cookies.h, /home/staff/CVSROOT/unuran/src/unur_struct.h:
+	added new method EMPL
+
+	* /home/staff/CVSROOT/unuran/tests/Makefile.am, /home/staff/CVSROOT/unuran/tests/t_empl.conf:
+	added tests for new method EMPL
+
+	* /home/staff/CVSROOT/unuran/tests/t_empk.conf: fixed typo
+
+	* /home/staff/CVSROOT/unuran/tests/make_test_files.pl:
+	changed naming scheme of test files
+
+	* /home/staff/CVSROOT/unuran/src/methods/empk.h: update docu
+
+	* /home/staff/CVSROOT/unuran/scripts/merge_h.pl: added support for C++
+
+	* /home/staff/CVSROOT/unuran/config.guess, /home/staff/CVSROOT/unuran/config.sub, /home/staff/CVSROOT/unuran/install-sh, /home/staff/CVSROOT/unuran/mkinstalldirs:
+	updated to new version of autoconf
+
+	* /home/staff/CVSROOT/unuran/doc/intro.h: updated docu
+
+	* /home/staff/CVSROOT/unuran/run/Makefile, /home/staff/CVSROOT/unuran/run/run_acg.c:
+	moved acg into own project; used libtool
+
+2002-12-23  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/TODO, /home/staff/CVSROOT/unuran/src/methods/tdr.h:
+	update docu
+
+	* /home/staff/CVSROOT/unuran/NEWS, /home/staff/CVSROOT/unuran/TODO:
+	updated NEWS and TODO
+
+	* /home/staff/CVSROOT/unuran/configure.ac, /home/staff/CVSROOT/unuran/configure.in, /home/staff/CVSROOT/unuran/Makefile.am:
+	renamed configure.in to configure.ac
+
+	* /home/staff/CVSROOT/unuran/configure.in, /home/staff/CVSROOT/unuran/Makefile.am:
+	moved codegen into separate project
+
+	* /home/staff/CVSROOT/unuran/missing, /home/staff/CVSROOT/unuran/autogen.sh, /home/staff/CVSROOT/unuran/configure.in, /home/staff/CVSROOT/unuran/src/Makefile.am, /home/staff/CVSROOT/unuran/src/methods/Makefile.am, /home/staff/CVSROOT/unuran/src/parser/Makefile.am, /home/staff/CVSROOT/unuran/src/specfunct/Makefile.am, /home/staff/CVSROOT/unuran/src/tests/Makefile.am, /home/staff/CVSROOT/unuran/src/uniform/Makefile.am, /home/staff/CVSROOT/unuran/src/utils/Makefile.am, /home/staff/CVSROOT/unuran/src/distr/distr_source.h, /home/staff/CVSROOT/unuran/src/distr/Makefile.am, /home/staff/CVSROOT/unuran/src/distributions/Makefile.am, /home/staff/CVSROOT/unuran/scripts/Makefile.am, /home/staff/CVSROOT/unuran/experiments/Makefile.am, /home/staff/CVSROOT/unuran/examples/Makefile.am:
+	new version for autoconf and automake, use libtool
+
+	* /home/staff/CVSROOT/unuran/tests/distr_cont.conf, /home/staff/CVSROOT/unuran/tests/distr_corder.conf, /home/staff/CVSROOT/unuran/tests/distr_cvec.conf, /home/staff/CVSROOT/unuran/tests/distr_cvemp.conf, /home/staff/CVSROOT/unuran/tests/distr_discr.conf, /home/staff/CVSROOT/unuran/tests/dsrou.conf, /home/staff/CVSROOT/unuran/tests/dstd.conf, /home/staff/CVSROOT/unuran/tests/empk.conf, /home/staff/CVSROOT/unuran/tests/hinv.conf, /home/staff/CVSROOT/unuran/tests/ninv.conf, /home/staff/CVSROOT/unuran/tests/srou.conf, /home/staff/CVSROOT/unuran/tests/ssr.conf, /home/staff/CVSROOT/unuran/tests/stringparser.conf, /home/staff/CVSROOT/unuran/tests/tabl.conf, /home/staff/CVSROOT/unuran/tests/t_arou.conf, /home/staff/CVSROOT/unuran/tests/t_auto.conf, /home/staff/CVSROOT/unuran/tests/t_corder.conf, /home/staff/CVSROOT/unuran/tests/t_cstd.conf, /home/staff/CVSROOT/unuran/tests/t_dari.conf, /home/staff/CVSROOT/unuran/tests/t_dau.conf, /home/staff/CVSROOT/unuran/tests/t_dgt.conf, /home/staff/CVSROOT/unuran/tests/t_distr_cemp.conf, /home/staff/CVSROOT/unuran/tests/t_distr.conf, /home/staff/CVSROOT/unuran/tests/t_distr_cont.conf, /home/staff/CVSROOT/unuran/tests/t_distr_corder.conf, /home/staff/CVSROOT/unuran/tests/t_distr_cvec.conf, /home/staff/CVSROOT/unuran/tests/t_distr_cvemp.conf, /home/staff/CVSROOT/unuran/tests/t_distr_discr.conf, /home/staff/CVSROOT/unuran/tests/tdr.conf, /home/staff/CVSROOT/unuran/tests/t_dsrou.conf, /home/staff/CVSROOT/unuran/tests/t_dstd.conf, /home/staff/CVSROOT/unuran/tests/t_empk.conf, /home/staff/CVSROOT/unuran/tests/t_hinv.conf, /home/staff/CVSROOT/unuran/tests/timing_dsrou.conf, /home/staff/CVSROOT/unuran/tests/timing_ninv.conf, /home/staff/CVSROOT/unuran/tests/t_ninv.conf, /home/staff/CVSROOT/unuran/tests/t_srou.conf, /home/staff/CVSROOT/unuran/tests/t_ssr.conf, /home/staff/CVSROOT/unuran/tests/t_stringparser.conf, /home/staff/CVSROOT/unuran/tests/t_tabl.conf, /home/staff/CVSROOT/unuran/tests/t_tdr.conf, /home/staff/CVSROOT/unuran/tests/t_timing_dsrou.conf, /home/staff/CVSROOT/unuran/tests/t_timing_ninv.conf, /home/staff/CVSROOT/unuran/tests/t_unif.conf, /home/staff/CVSROOT/unuran/tests/t_utdr.conf, /home/staff/CVSROOT/unuran/tests/t_vempk.conf, /home/staff/CVSROOT/unuran/tests/t_vmt.conf, /home/staff/CVSROOT/unuran/tests/unif.conf, /home/staff/CVSROOT/unuran/tests/utdr.conf, /home/staff/CVSROOT/unuran/tests/vempk.conf, /home/staff/CVSROOT/unuran/tests/vmt.conf, /home/staff/CVSROOT/unuran/tests/arou.conf, /home/staff/CVSROOT/unuran/tests/auto.conf, /home/staff/CVSROOT/unuran/tests/corder.conf, /home/staff/CVSROOT/unuran/tests/cstd.conf, /home/staff/CVSROOT/unuran/tests/dari.conf, /home/staff/CVSROOT/unuran/tests/dau.conf, /home/staff/CVSROOT/unuran/tests/dgt.conf, /home/staff/CVSROOT/unuran/tests/distr_cemp.conf, /home/staff/CVSROOT/unuran/tests/distr.conf:
+	new naming scheme for test files
+
+	* /home/staff/CVSROOT/unuran/tests/Makefile.am:
+	new version for autoconf and automake, use libtool, new naming scheme for test files
+
+2002-12-16  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/TODO: TODO added
+
+2002-12-11  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/src/methods/x_slist_struct.h:
+	deleted old file
+
+2002-12-09  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/configure.in, /home/staff/CVSROOT/unuran/src/methods/unur_methods_source.h, /home/staff/CVSROOT/unuran/src/unuran.h.in, /home/staff/CVSROOT/unuran/src/unur_cookies.h, /home/staff/CVSROOT/unuran/src/unur_source.h, /home/staff/CVSROOT/unuran/src/unur_struct.h, /home/staff/CVSROOT/unuran/src/unur_typedefs.h, /home/staff/CVSROOT/unuran/src/Makefile.am, /home/staff/CVSROOT/unuran/src/README, /home/staff/CVSROOT/unuran/src/methods/x_misc_source.h, /home/staff/CVSROOT/unuran/src/methods/x_slist.c, /home/staff/CVSROOT/unuran/src/methods/x_slist.h, /home/staff/CVSROOT/unuran/src/methods/x_stream.c, /home/staff/CVSROOT/unuran/src/methods/x_umalloc.c, /home/staff/CVSROOT/unuran/src/methods/x_umalloc_source.h, /home/staff/CVSROOT/unuran/src/methods/x_urng.c, /home/staff/CVSROOT/unuran/src/methods/hinv.c, /home/staff/CVSROOT/unuran/src/methods/in_unuran.h, /home/staff/CVSROOT/unuran/src/methods/ninv.c, /home/staff/CVSROOT/unuran/src/methods/source_cookies.h, /home/staff/CVSROOT/unuran/src/methods/source_fp.h, /home/staff/CVSROOT/unuran/src/methods/source_methods.h, /home/staff/CVSROOT/unuran/src/methods/source_struct.h, /home/staff/CVSROOT/unuran/src/methods/source_unuran.h, /home/staff/CVSROOT/unuran/src/methods/srou.c, /home/staff/CVSROOT/unuran/src/methods/ssr.c, /home/staff/CVSROOT/unuran/src/methods/tabl.c, /home/staff/CVSROOT/unuran/src/methods/tdr.c, /home/staff/CVSROOT/unuran/src/methods/tdr_sample.ch, /home/staff/CVSROOT/unuran/src/methods/unif.c, /home/staff/CVSROOT/unuran/src/methods/utdr.c, /home/staff/CVSROOT/unuran/src/methods/vempk.c, /home/staff/CVSROOT/unuran/src/methods/vmt.c, /home/staff/CVSROOT/unuran/src/methods/x_debug.c, /home/staff/CVSROOT/unuran/src/methods/x_debug.h, /home/staff/CVSROOT/unuran/src/methods/x_debug_source.h, /home/staff/CVSROOT/unuran/src/methods/x_errno.h, /home/staff/CVSROOT/unuran/src/methods/x_error.c, /home/staff/CVSROOT/unuran/src/methods/x_gen.c, /home/staff/CVSROOT/unuran/src/methods/x_math.c, /home/staff/CVSROOT/unuran/src/methods/x_math.h, /home/staff/CVSROOT/unuran/src/methods/x_math_source.h, /home/staff/CVSROOT/unuran/src/methods/x_misc.c, /home/staff/CVSROOT/unuran/src/methods/auto.c, /home/staff/CVSROOT/unuran/src/methods/cstd.c, /home/staff/CVSROOT/unuran/src/methods/dari.c, /home/staff/CVSROOT/unuran/src/methods/dau.c, /home/staff/CVSROOT/unuran/src/methods/dgt.c, /home/staff/CVSROOT/unuran/src/methods/distr.c, /home/staff/CVSROOT/unuran/src/methods/distr_cemp.c, /home/staff/CVSROOT/unuran/src/methods/distr_cemp.h, /home/staff/CVSROOT/unuran/src/methods/distr_cont.c, /home/staff/CVSROOT/unuran/src/methods/distr_cont.h, /home/staff/CVSROOT/unuran/src/methods/distr_corder.c, /home/staff/CVSROOT/unuran/src/methods/distr_corder.h, /home/staff/CVSROOT/unuran/src/methods/distr_cvec.c, /home/staff/CVSROOT/unuran/src/methods/distr_cvec.h, /home/staff/CVSROOT/unuran/src/methods/distr_cvemp.c, /home/staff/CVSROOT/unuran/src/methods/distr_cvemp.h, /home/staff/CVSROOT/unuran/src/methods/distr_discr.c, /home/staff/CVSROOT/unuran/src/methods/distr_discr.h, /home/staff/CVSROOT/unuran/src/methods/distr.h, /home/staff/CVSROOT/unuran/src/methods/distr_source.h, /home/staff/CVSROOT/unuran/src/methods/distr_struct.h, /home/staff/CVSROOT/unuran/src/methods/dsrou.c, /home/staff/CVSROOT/unuran/src/methods/dstd.c, /home/staff/CVSROOT/unuran/src/methods/empk.c, /home/staff/CVSROOT/unuran/src/methods/arou.c, /home/staff/CVSROOT/unuran/src/methods/Makefile.am, /home/staff/CVSROOT/unuran/src/utils/debug.c, /home/staff/CVSROOT/unuran/src/utils/debug.h, /home/staff/CVSROOT/unuran/src/utils/debug_source.h, /home/staff/CVSROOT/unuran/src/utils/error.c, /home/staff/CVSROOT/unuran/src/utils/Makefile.am, /home/staff/CVSROOT/unuran/src/utils/slist.c, /home/staff/CVSROOT/unuran/src/utils/slist.h, /home/staff/CVSROOT/unuran/src/utils/slist_struct.h, /home/staff/CVSROOT/unuran/src/utils/stream.c, /home/staff/CVSROOT/unuran/src/utils/stream_source.h, /home/staff/CVSROOT/unuran/src/utils/umalloc.c, /home/staff/CVSROOT/unuran/src/utils/umalloc_source.h, /home/staff/CVSROOT/unuran/src/utils/umath.c, /home/staff/CVSROOT/unuran/src/utils/umath.h, /home/staff/CVSROOT/unuran/src/utils/umath_source.h, /home/staff/CVSROOT/unuran/src/utils/unur_errno.h, /home/staff/CVSROOT/unuran/src/utils/unur_error_source.h, /home/staff/CVSROOT/unuran/src/utils/unur_fp_const_source.h, /home/staff/CVSROOT/unuran/src/utils/unur_fp_source.h, /home/staff/CVSROOT/unuran/src/utils/unur_math_source.h, /home/staff/CVSROOT/unuran/src/uniform/fish.c, /home/staff/CVSROOT/unuran/src/uniform/Makefile.am, /home/staff/CVSROOT/unuran/src/uniform/mrg31k3p.c, /home/staff/CVSROOT/unuran/src/uniform/mstd.c, /home/staff/CVSROOT/unuran/src/uniform/uniform.h, /home/staff/CVSROOT/unuran/src/uniform/unur_uniform.h, /home/staff/CVSROOT/unuran/src/tests/moments.c, /home/staff/CVSROOT/unuran/src/tests/printsample.c, /home/staff/CVSROOT/unuran/src/tests/quantiles.c, /home/staff/CVSROOT/unuran/src/tests/tests.c, /home/staff/CVSROOT/unuran/src/tests/timing.c, /home/staff/CVSROOT/unuran/src/tests/unuran_tests.h, /home/staff/CVSROOT/unuran/src/tests/chi2test.c, /home/staff/CVSROOT/unuran/src/tests/correlation.c, /home/staff/CVSROOT/unuran/src/tests/counturn.c, /home/staff/CVSROOT/unuran/src/tests/Makefile.am, /home/staff/CVSROOT/unuran/src/specfunct/mconf_source.h, /home/staff/CVSROOT/unuran/src/specfunct/unur_specfunct_source.h, /home/staff/CVSROOT/unuran/src/specfunct/gamma.c, /home/staff/CVSROOT/unuran/src/specfunct/igam.c, /home/staff/CVSROOT/unuran/src/specfunct/incbet.c, /home/staff/CVSROOT/unuran/src/specfunct/Makefile.am, /home/staff/CVSROOT/unuran/src/specfunct/mtherr.c, /home/staff/CVSROOT/unuran/src/specfunct/ndtr.c, /home/staff/CVSROOT/unuran/src/specfunct/ndtri.c, /home/staff/CVSROOT/unuran/src/specfunct/source_mconf.h, /home/staff/CVSROOT/unuran/src/parser/parser.c, /home/staff/CVSROOT/unuran/src/parser/parser.h, /home/staff/CVSROOT/unuran/src/parser/parser_source.h, /home/staff/CVSROOT/unuran/src/parser/stringparser.c.in, /home/staff/CVSROOT/unuran/src/parser/functparser.c, /home/staff/CVSROOT/unuran/src/parser/functparser_source.h, /home/staff/CVSROOT/unuran/src/parser/functparser_struct.h, /home/staff/CVSROOT/unuran/src/parser/Makefile.am, /home/staff/CVSROOT/unuran/src/parser/make_stringparser.pl, /home/staff/CVSROOT/unuran/src/distributions/unur_distributions_source.h, /home/staff/CVSROOT/unuran/src/distributions/unur_distributions.h, /home/staff/CVSROOT/unuran/src/distributions/c_pareto.c, /home/staff/CVSROOT/unuran/src/distributions/c_pareto_gen.c, /home/staff/CVSROOT/unuran/src/distributions/c_powerexponential.c, /home/staff/CVSROOT/unuran/src/distributions/c_powerexponential_gen.c, /home/staff/CVSROOT/unuran/src/distributions/c_rayleigh.c, /home/staff/CVSROOT/unuran/src/distributions/c_slash.c, /home/staff/CVSROOT/unuran/src/distributions/c_slash_gen.c, /home/staff/CVSROOT/unuran/src/distributions/c_student.c, /home/staff/CVSROOT/unuran/src/distributions/c_student_gen.c, /home/staff/CVSROOT/unuran/src/distributions/c_triangular.c, /home/staff/CVSROOT/unuran/src/distributions/c_triangular_gen.c, /home/staff/CVSROOT/unuran/src/distributions/c_uniform.c, /home/staff/CVSROOT/unuran/src/distributions/c_uniform_gen.c, /home/staff/CVSROOT/unuran/src/distributions/c_weibull.c, /home/staff/CVSROOT/unuran/src/distributions/c_weibull_gen.c, /home/staff/CVSROOT/unuran/src/distributions/d_binomial.c, /home/staff/CVSROOT/unuran/src/distributions/d_binomial_gen.c, /home/staff/CVSROOT/unuran/src/distributions/d_geometric.c, /home/staff/CVSROOT/unuran/src/distributions/d_geometric_gen.c, /home/staff/CVSROOT/unuran/src/distributions/d_hypergeometric.c, /home/staff/CVSROOT/unuran/src/distributions/d_hypergeometric_gen.c, /home/staff/CVSROOT/unuran/src/distributions/d_logarithmic.c, /home/staff/CVSROOT/unuran/src/distributions/d_logarithmic_gen.c, /home/staff/CVSROOT/unuran/src/distributions/d_negativebinomial.c, /home/staff/CVSROOT/unuran/src/distributions/d_poisson.c, /home/staff/CVSROOT/unuran/src/distributions/d_poisson_gen.c, /home/staff/CVSROOT/unuran/src/distributions/d_zipf.c, /home/staff/CVSROOT/unuran/src/distributions/d_zipf_gen.c, /home/staff/CVSROOT/unuran/src/distributions/source_distributions.h, /home/staff/CVSROOT/unuran/src/distributions/source_specfunct.h, /home/staff/CVSROOT/unuran/src/distributions/unuran_distributions.h, /home/staff/CVSROOT/unuran/src/distributions/unur_stddistr.h, /home/staff/CVSROOT/unuran/src/distributions/vc_multinormal.c, /home/staff/CVSROOT/unuran/src/distributions/c_beta.c, /home/staff/CVSROOT/unuran/src/distributions/c_beta_gen.c, /home/staff/CVSROOT/unuran/src/distributions/c_burr.c, /home/staff/CVSROOT/unuran/src/distributions/c_burr_gen.c, /home/staff/CVSROOT/unuran/src/distributions/c_cauchy.c, /home/staff/CVSROOT/unuran/src/distributions/c_cauchy_gen.c, /home/staff/CVSROOT/unuran/src/distributions/c_chi.c, /home/staff/CVSROOT/unuran/src/distributions/c_chi_gen.c, /home/staff/CVSROOT/unuran/src/distributions/c_chisquare.c, /home/staff/CVSROOT/unuran/src/distributions/c_exponential.c, /home/staff/CVSROOT/unuran/src/distributions/c_exponential_gen.c, /home/staff/CVSROOT/unuran/src/distributions/c_extremeI.c, /home/staff/CVSROOT/unuran/src/distributions/c_extremeI_gen.c, /home/staff/CVSROOT/unuran/src/distributions/c_extremeII.c, /home/staff/CVSROOT/unuran/src/distributions/c_extremeII_gen.c, /home/staff/CVSROOT/unuran/src/distributions/c_gamma.c, /home/staff/CVSROOT/unuran/src/distributions/c_gamma_gen.c, /home/staff/CVSROOT/unuran/src/distributions/c_gig.c, /home/staff/CVSROOT/unuran/src/distributions/c_gig_gen.c, /home/staff/CVSROOT/unuran/src/distributions/c_laplace.c, /home/staff/CVSROOT/unuran/src/distributions/c_laplace_gen.c, /home/staff/CVSROOT/unuran/src/distributions/c_logistic.c, /home/staff/CVSROOT/unuran/src/distributions/c_logistic_gen.c, /home/staff/CVSROOT/unuran/src/distributions/c_lognormal.c, /home/staff/CVSROOT/unuran/src/distributions/c_lomax.c, /home/staff/CVSROOT/unuran/src/distributions/c_lomax_gen.c, /home/staff/CVSROOT/unuran/src/distributions/c_normal.c, /home/staff/CVSROOT/unuran/src/distributions/c_normal_gen.c, /home/staff/CVSROOT/unuran/src/distributions/Makefile.am, /home/staff/CVSROOT/unuran/src/distr/cvemp.h, /home/staff/CVSROOT/unuran/src/distr/discr.c, /home/staff/CVSROOT/unuran/src/distr/discr.h, /home/staff/CVSROOT/unuran/src/distr/distr.c, /home/staff/CVSROOT/unuran/src/distr/distr.h, /home/staff/CVSROOT/unuran/src/distr/distr_source.h, /home/staff/CVSROOT/unuran/src/distr/distr_struct.h, /home/staff/CVSROOT/unuran/src/distr/cemp.c, /home/staff/CVSROOT/unuran/src/distr/cemp.h, /home/staff/CVSROOT/unuran/src/distr/cont.c, /home/staff/CVSROOT/unuran/src/distr/cont.h, /home/staff/CVSROOT/unuran/src/distr/corder.c, /home/staff/CVSROOT/unuran/src/distr/corder.h, /home/staff/CVSROOT/unuran/src/distr/cvec.c, /home/staff/CVSROOT/unuran/src/distr/cvec.h, /home/staff/CVSROOT/unuran/src/distr/cvemp.c, /home/staff/CVSROOT/unuran/src/distr/Makefile.am, /home/staff/CVSROOT/unuran/scripts/Makefile.am, /home/staff/CVSROOT/unuran/scripts/compute_machine_constants.c, /home/staff/CVSROOT/unuran/scripts/merge_h.pl, /home/staff/CVSROOT/unuran/scripts/read_PDF.pl, /home/staff/CVSROOT/unuran/experiments/Makefile.am, /home/staff/CVSROOT/unuran/examples/Makefile.am:
+	reorganized directory structure. reduced file dependencies
+
+2002-11-12  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/src/methods/tdr.c, /home/staff/CVSROOT/unuran/src/methods/tdr.h, /home/staff/CVSROOT/unuran/src/methods/tdr_sample.ch, /home/staff/CVSROOT/unuran/tests/tdr.conf:
+	added unur_tdr_eval_invcdfhat() for method TDR
+
+2002-11-09  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/tests/tdr.conf, /home/staff/CVSROOT/unuran/src/methods/tdr.c, /home/staff/CVSROOT/unuran/src/methods/tdr_sample.ch:
+	added unur_tdr_eval_invcdfhat() call for method TDR
+
+	* /home/staff/CVSROOT/unuran/src/methods/hinv.c, /home/staff/CVSROOT/unuran/src/methods/hinv.h:
+	minor changes in method HINV
+
+	* /home/staff/CVSROOT/unuran/doc/unuran_method_requirements.texi:
+	added method HINV
+
+2002-11-08  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/src/methods/tdr.h, /home/staff/CVSROOT/unuran/src/methods/tdr_newset.ch:
+	minor changes for unur_tdr_chg_truncated() in method TDR
+
+	* /home/staff/CVSROOT/unuran/src/methods/hinv.h, /home/staff/CVSROOT/unuran/src/methods/x_errno.h, /home/staff/CVSROOT/unuran/src/methods/x_error.c, /home/staff/CVSROOT/unuran/tests/hinv.conf, /home/staff/CVSROOT/unuran/tests/make_test_files.pl, /home/staff/CVSROOT/unuran/tests/testroutines.c, /home/staff/CVSROOT/unuran/tests/test_special_hinv.c, /home/staff/CVSROOT/unuran/tests/testunuran.h, /home/staff/CVSROOT/unuran/src/methods/hinv.c:
+	added unur_hinv_eval_approxinvcdf() for method HINV
+
+2002-11-06  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/TODO: TODO eingefuegt
+
+	* /home/staff/CVSROOT/unuran/configure.in, /home/staff/CVSROOT/unuran/src/methods/dau.c, /home/staff/CVSROOT/unuran/src/methods/x_math_source.h:
+	replace fatal error due to round-off error by simple warning in method DAU
+
+2002-11-05  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/configure.in, /home/staff/CVSROOT/unuran/tests/hinv.conf, /home/staff/CVSROOT/unuran/tests/test_special_hinv.c:
+	fixed non ISO C macro
+
+	* /home/staff/CVSROOT/unuran/ChangeLog, /home/staff/CVSROOT/unuran/configure.in, /home/staff/CVSROOT/unuran/NEWS:
+	prepared for new relase
+
+	* /home/staff/CVSROOT/unuran/tests/test_special_hinv.c:
+	added special tests for method HINV
+
+	* /home/staff/CVSROOT/unuran/src/methods/hinv.c, /home/staff/CVSROOT/unuran/tests/hinv.conf, /home/staff/CVSROOT/unuran/tests/Makefile.am:
+	minor changes in method HINV
+
 2002-11-05  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
 
 	* /home/staff/CVSROOT/unuran/tests/test_special_hinv.c:

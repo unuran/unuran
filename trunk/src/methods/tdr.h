@@ -307,13 +307,6 @@ double unur_tdr_get_squeezearea( const UNUR_GEN *generator );
    (In case of an error @code{UNUR_INFINITY} is returned.)
 */
 
-int _unur_tdr_is_ARS_running( const UNUR_GEN *generator );
-/* 
-   Check whether more points will be added by adaptive rejection sampling.
-   (Internal call)
-*/
-
-
 int unur_tdr_set_max_intervals( UNUR_PAR *parameters, int max_ivs );
 /* 
    Set maximum number of intervals.
@@ -444,4 +437,13 @@ double unur_tdr_eval_invcdfhat( const UNUR_GEN *generator, double u,
 
 /* =END */
 /*---------------------------------------------------------------------------*/
+/* Internal routines                                                         */
+
+int _unur_tdr_is_ARS_running( const UNUR_GEN *generator );
+/* 
+   Check whether more points will be added by adaptive rejection sampling.
+*/
+
+/*---------------------------------------------------------------------------*/
+
 

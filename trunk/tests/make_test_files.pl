@@ -495,6 +495,7 @@ sub scan_validate {
     my @generators;
     my @distributions;
     my $chi2;
+    my $timing;
 
     # search for begin of next (sub) section ...
     $_ = <IN> until /^\[/;
@@ -578,17 +579,25 @@ sub scan_validate {
 		$chi2 .= $line;
 		next;
 	    }
+
+	    if ($subsection eq "timing") {
+		$timing .= $line;
+		next;
+	    }
+
 	}
     }
 
     # number of given distributions
     $n_distributions = $#distributions + 1;
 
-    # analyse tests
-    my @chi2tests = split /\n/, $chi2; 
-    die "wrong number of chi2 tests" unless ($#chi2tests <= $#distributions);
+    # number of generators
+    $n_generators = $#generators + 1;
 
     # print out ...
+
+    ## header ##
+
     print OUT "/*---------------------------------------------------------------------------*/\n\n";
     print OUT "void test_validate (void)\n{\n";
 
@@ -605,76 +614,190 @@ sub scan_validate {
     print OUT "\tfprintf(TESTLOG,\"\\n[validate]\\n\");\n\n";
     print OUT "\t/* reset counter */\n\tn_tests_failed = 0;\n\n";
 
-    print OUT "\tunur_set_default_debug(~UNUR_DEBUG_SAMPLE);\n";
+    ## list of distributions ##
 
     print OUT "\n/* distributions: $n_distributions */\n";
     foreach (@distributions) {
 	print OUT "$_\n\n";
     }
 
-    print OUT "\n/* tests: ".($#generators+1)*$n_distributions." */\n\n";
+    ## chi^2 test ##
 
-    foreach $test (@chi2tests) {
-	die "invalide test line" unless ($test =~ /<(\d+)>/);
-	my $n_distr = $1;
-	print OUT "/* distribution [$n_distr] */\n\n";
-	$test =~ s/\#.+$//;    # remove comments
-	$test =~ s/^\s+//;
-	$test =~ s/\s+$//;
-	my @gentest = split /\s+/, $test;
-	shift @gentest;
-	die "invalide number of test indicators" unless ($#gentest == $#generators);
-	foreach (@generators) {
-	    # get entry for generator
-	    my $genline = $_;
+    if ($chi2) {
 
-	    # remove [..] from par[..]
-	    # (it is just to number generators for convience)
-	    $genline =~ s/par\[(\d+)\]/par/g;
+	# analyse chi^2 tests
+	my @chi2tests = split /\n/, $chi2; 
+	die "wrong number of chi2 tests" unless ($#chi2tests <= $#distributions);
 
-	    # insert distribution object
-	    $genline =~ s/\@distr\@/distr\[$n_distr\]/g;
-
-	    # read what we have to test
-	    $todo = shift @gentest;
-
-	    # split into lines again
-	    my @lines = split /\n/, $genline;
-
-	    # print lines 
-	    print OUT "\tunur_errno = 0;\n";
-
-	    my $have_gen_lines = 0;
-	    foreach $l (@lines) {
-		if ($l =~ /gen/ and !$have_gen_lines) {
-		    $have_gen_lines = 1;
+	print OUT "\tprintf(\"\\n(chi^2) \"); fflush(stdout);\n";
+	print OUT "\n/* chi^2 tests: ".($#generators+1)*$n_distributions." */\n\n";
+	print OUT "\tunur_set_default_debug(~UNUR_DEBUG_SAMPLE);\n";
+	print OUT "\tfprintf( TESTLOG,\"\\nChi^2 Test:\\n\");";
+	
+	foreach $test (@chi2tests) {
+	    die "invalide test line" unless ($test =~ /<(\d+)>/);
+	    my $n_distr = $1;
+	    print OUT "/* distribution [$n_distr] */\n\n";
+	    $test =~ s/\#.+$//;    # remove comments
+	    $test =~ s/^\s+//;
+	    $test =~ s/\s+$//;
+	    my @gentest = split /\s+/, $test;
+	    shift @gentest;
+	    die "invalide number of test indicators" unless ($#gentest == $#generators);
+	    foreach (@generators) {
+		# get entry for generator
+		my $genline = $_;
+		
+		# remove [..] from par[..]
+		# (it is just to number generators for convience)
+		$genline =~ s/par\[(\d+)\]/par/g;
+		
+		# insert distribution object
+		$genline =~ s/\@distr\@/distr\[$n_distr\]/g;
+		
+		# read what we have to test
+		$todo = shift @gentest;
+		
+		# split into lines again
+		my @lines = split /\n/, $genline;
+		
+		# print lines 
+		print OUT "\tunur_errno = 0;\n";
+		
+		my $have_gen_lines = 0;
+		foreach $l (@lines) {
+		    if ($l =~ /gen/ and !$have_gen_lines) {
+			$have_gen_lines = 1;
+			if ( $todo eq '.' ) {
+			    # nothing to do
+			    print OUT "\tgen = NULL; if (0) {"; 
+			    last;
+			}
+			else {
+			    print OUT "\tgen = unur_init(par);\n\tif (gen) {\n";
+			}
+		    }
+		    
+		    print OUT "$l\n";
+		}
+		
+		if ($have_gen_lines) {
+		    print OUT "\t;}\n";
+		}
+		else {
 		    if ( $todo eq '.' ) {
 			# nothing to do
-			print OUT "\tgen = NULL; if (0) {"; 
-			last;
-		    }
+			print OUT "\tgen = NULL;\n"; }
 		    else {
-			print OUT "\tgen = unur_init(par);\n\tif (gen) {\n";
+			print OUT "\tgen = unur_init(par);\n"; }
+		}
+		print OUT "\tn_tests_failed += run_validate_chi2( TESTLOG, 0, gen, '$todo' );\n";
+		print OUT "\tunur_free(gen);\n\n";
+	    }	    
+	}
+    }
+
+    ## timing ##
+
+    if ($timing) {
+
+	# analyse chi^2 tests
+	my @timingtests = split /\n/, $timing; 
+	die "wrong number of timing tests" unless ($#timingtests <= $#distributions);
+
+
+	print OUT "\tprintf(\"\\n(timing) \"); fflush(stdout);\n";
+	print OUT "\n/* timing tests: ".($#generators+1)*$n_distributions." */\n\n";
+	print OUT "\tunur_set_default_debug(~1u);\n";
+
+	print OUT "{\n\tdouble time_setup, time_sample;\n";
+	print OUT "\tdouble timing_result[$n_generators];\n";
+	print OUT "\tint i;\n\n";
+
+	print OUT "\tfprintf( TESTLOG,\"\\nTimings (marginal generation times in micro seconds):\\n\");\n";
+	print OUT "\tfor (i=0; i<$n_generators; i++)\n";
+	print OUT "\t\tfprintf( TESTLOG, \"  [%2d]\", i);";
+	print OUT "\tfprintf( TESTLOG,\"\\n\");\n";
+	
+	foreach $test (@timingtests) {
+	    die "invalide test line" unless ($test =~ /<(\d+)>/);
+	    my $n_distr = $1;
+
+	    print OUT "/* distribution [$n_distr] */\n\n";
+	    print OUT "\tfor (i=0; i<$n_generators; i++) timing_result[i] = -1.;\n";
+
+	    $test =~ s/\#.+$//;    # remove comments
+	    $test =~ s/^\s+//;
+	    $test =~ s/\s+$//;
+	    my @gentest = split /\s+/, $test;
+	    shift @gentest;
+	    die "invalide number of test indicators" unless ($#gentest == $#generators);
+	    my $n_gen = 0;
+	    foreach (@generators) {
+		# get entry for generator
+		my $genline = $_;
+		
+		# remove [..] from par[..]
+		# (it is just to number generators for convience)
+		$genline =~ s/par\[(\d+)\]/par/g;
+		
+		# insert distribution object
+		$genline =~ s/\@distr\@/distr\[$n_distr\]/g;
+		
+		# read what we have to test
+		$todo = shift @gentest;
+		
+		# split into lines again
+		my @lines = split /\n/, $genline;
+		
+		# print lines 
+		print OUT "\tunur_errno = 0;\n";
+		
+		my $have_gen_lines = 0;
+		foreach $l (@lines) {
+		    if ($l =~ /gen/ and !$have_gen_lines) {
+			$have_gen_lines = 1;
+			if ( $todo eq '.' ) {
+			    # nothing to do
+			    print OUT "\tgen = NULL; if (0) {"; 
+			    last;
+			}
+			else {
+			    print OUT "\tgen = unur_test_timing(par,5,&time_setup,&time_sample,0);\n"; 
+			    print OUT "\tif (gen) {\n";
+			}
+		    }
+		    
+		    print OUT "$l\n";
+		}
+		
+		if ($have_gen_lines) {
+		    print OUT "\t;}\n";
+		}
+		else {
+		    if ( $todo eq '.' ) {
+			# nothing to do
+			print OUT "\tgen = NULL;\n"; }
+		    else {
+			print OUT "\tgen = unur_test_timing(par,5,&time_setup,&time_sample,0);\n"; 
+			print OUT "\ttiming_result[$n_gen] = time_sample;\n";
 		    }
 		}
+		print OUT "\tif (gen) timing_result[$n_gen] = time_sample;\n";
+		print OUT "\tunur_free(gen);\n\n";
 
-		print OUT "$l\n";
+		# increment counter for generator
+		++$n_gen;
 	    }
+	    # print result of timings 
+	    print OUT "\tprint_timing_results( TESTLOG, 0, distr\[$n_distr\], timing_result, $n_generators );\n\n";
+	}
+	
+	print OUT "}\n";
 
-	    if ($have_gen_lines) {
-		print OUT "\t;}\n";
-	    }
-	    else {
-		if ( $todo eq '.' ) {
-		    # nothing to do
-		    print OUT "\tgen = NULL;\n"; }
-		else {
-		    print OUT "\tgen = unur_init(par);\n"; }
-	    }
-	    print OUT "\tn_tests_failed += run_validate_chi2( TESTLOG, 0, gen, '$todo' );\n";
-	    print OUT "\tunur_free(gen);\n\n";
-	}	    
     }
+
+    ## end ##
 
     print OUT "\n\t/* test finished */\n";
     print OUT "\tif (n_tests_failed>0) n_tests_failed--;  /* we accept one failure */\n";

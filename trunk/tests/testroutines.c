@@ -331,7 +331,9 @@ void print_distr_name( FILE *LOG, UNUR_DISTR *distr, const char *genid )
   int i,n_fpar;
   double *fpar;
 
-  fprintf(LOG,"%s: %s ",genid,unur_distr_get_name(distr));
+  if (genid)
+    fprintf(LOG,"%s: ",genid);
+  fprintf(LOG,"%s ",unur_distr_get_name(distr));
 
   if ( unur_distr_is_cont(distr) ) {
     n_fpar = unur_distr_cont_get_pdfparams( distr, &fpar );
@@ -349,13 +351,12 @@ void print_distr_name( FILE *LOG, UNUR_DISTR *distr, const char *genid )
 /*---------------------------------------------------------------------------*/
 /* check p-value of statistical test and print result */
 
-int print_pval( FILE *LOG, const char *test, UNUR_GEN *gen, double pval, int trial, char todo )
+int print_pval( FILE *LOG, UNUR_GEN *gen, double pval, int trial, char todo )
 {
   int failed = 0;
   int l;
 
-  fprintf(LOG,"%6s: ",test);
-  fprintf(LOG,"pval = %8.6f   ",pval);
+  fprintf(LOG,"   pval = %8.6f   ",pval);
 
   l = -(int) ((pval > 1e-6) ? (log(pval) / M_LN10) : 6.);
 
@@ -495,7 +496,7 @@ int run_validate_chi2( FILE *LOG, int line, UNUR_GEN *gen, char todo )
       exit (-1);
     }
 
-    if ( print_pval(LOG,"chi2",gen,pval,i,todo) )
+    if ( print_pval(LOG,gen,pval,i,todo) )
       /* test failed */
       failed++;
     else
@@ -508,10 +509,36 @@ int run_validate_chi2( FILE *LOG, int line, UNUR_GEN *gen, char todo )
 } /* end of run_validate_chi2() */
 
 /*---------------------------------------------------------------------------*/
+/* print result of timings */
 
+void print_timing_results( FILE *LOG, int line, UNUR_DISTR *distr, double *timing_result, int n_results )
+{
+  const char *distr_name;
+  static const char *last_distr_name = "";
+  int i;
 
+  /* get name of distribution */
+  distr_name = unur_distr_get_name( distr );
 
+  if (strcmp(distr_name,last_distr_name) ) {
+    /* different distributions */
+    last_distr_name = distr_name;
+    printf(" %s",distr_name); fflush(stdout);
+  }
+  
+  /* print timings into log file */
+  for (i=0; i<n_results; i++)
+    if (timing_result[i] < 0.)
+      /* no test */
+      fprintf(LOG, "   .  ");
+    else
+      fprintf(LOG, "%6.2f", timing_result[i]);
 
+  /* print name of distribution into log file */
+  fprintf(LOG,"\t");
+  print_distr_name( LOG, distr, NULL );
+  fprintf(LOG,"\n");
 
+} /* end of print_timing_results() */
 
-
+/*---------------------------------------------------------------------------*/

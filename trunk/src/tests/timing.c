@@ -61,23 +61,35 @@ static double _unur_test_timing_uniform( struct unur_par *par, int log_samplesiz
 /*---------------------------------------------------------------------------*/
 
 struct unur_gen*
-unur_test_timing( struct unur_par *par, int log_samplesize )
+unur_test_timing( struct unur_par *par, 
+		  int log_samplesize, 
+		  double *time_setup,
+		  double *time_sample,
+		  int verbosity)
      /*----------------------------------------------------------------------*/
      /*  init generator and estimate setup and generation time.              */
      /*                                                                      */
      /* parameters:                                                          */
      /*   par            ... pointer to parameters for generator object      */
      /*   log_samplesize ... common log of maximal sample size               */
+     /*   time_setup     ... time for setup                                  */
+     /*   time_sample    ... marginal generation time (i.e. for one r.n.)    */
+     /*   verbosity      ... verbosity level, 0 = no output, 1 = output      */
      /*                                                                      */
      /* return:                                                              */
-     /*   pointer to generator object                                        */
+     /*   pointer to generator object.                                       */
+     /*   setup time and marginal generation time are stored in              */
+     /*   setup_time and marginal_time, respectively.                        */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return NULL                                                        */
      /*----------------------------------------------------------------------*/
 {
   struct unur_gen *gen;
   double *vec = NULL;
   int dim = 1;
   double fast;  
-  double time_start, time_setup, time_marg, *time_gen;
+  double time_start, *time_gen;
   long samples, samplesize, log_samples;
 
   /* check parameter */
@@ -93,7 +105,7 @@ unur_test_timing( struct unur_par *par, int log_samplesize )
   /* initialize generator (and estimate setup time) */
   time_start = _unur_get_time();
   gen = _unur_init(par);
-  time_setup = _unur_get_time();
+  *time_setup = _unur_get_time();
 
   /* init successful ? */
   if (!gen) return NULL;
@@ -133,7 +145,7 @@ unur_test_timing( struct unur_par *par, int log_samplesize )
   /* compute generation times */
 
   /* marginal generation time */
-  time_marg = (time_gen[log_samplesize] - time_gen[log_samplesize-1]) / (0.09 * samplesize);
+  *time_sample = (time_gen[log_samplesize] - time_gen[log_samplesize-1]) / (0.09 * samplesize);
   /* mean time per random number including setup */
   samplesize = 1;
   for( log_samples=1; log_samples<=log_samplesize; log_samples++ ) {
@@ -141,20 +153,23 @@ unur_test_timing( struct unur_par *par, int log_samplesize )
     time_gen[log_samples] = (time_gen[log_samples] - time_start) / samplesize;
   }
   /* setup time */
-  time_setup -= time_start;
+  *time_setup -= time_start;
   
   /* now print times */
-  printf("\nTIMING:\t\t    usec \t relative to \t relative to\n");
-  printf("\t\t\t\t uniform\t marginal\n\n");
-  /* setup time */
-  printf("   setup time:\t    %#g \t %#g \t %#g\n",time_setup,time_setup/fast,time_setup/time_marg);
-  /* marginal generation time */
-  printf("   generation time: %#g \t %#g \t %#g\n",time_marg,time_marg/fast,1.);
-  /* generation times */
-  printf("\n   average generation time for samplesize:\n");
-  for( log_samples=1; log_samples<=log_samplesize; log_samples++ )
-    printf("\t10^%ld:\t    %#g \t %#g \t %#g\n",log_samples,
-	   time_gen[log_samples],time_gen[log_samples]/fast,time_gen[log_samples]/time_marg);
+  if (verbosity) {
+    printf("\nTIMING:\t\t    usec \t relative to \t relative to\n");
+    printf("\t\t\t\t uniform\t marginal\n\n");
+    /* setup time */
+    printf("   setup time:\t    %#g \t %#g \t %#g\n",
+	   (*time_setup), (*time_setup)/fast, (*time_setup)/(*time_sample));
+    /* marginal generation time */
+    printf("   generation time: %#g \t %#g \t %#g\n",(*time_sample),(*time_sample)/fast,1.);
+    /* generation times */
+    printf("\n   average generation time for samplesize:\n");
+    for( log_samples=1; log_samples<=log_samplesize; log_samples++ )
+      printf("\t10^%ld:\t    %#g \t %#g \t %#g\n",log_samples,
+	     time_gen[log_samples],time_gen[log_samples]/fast,time_gen[log_samples]/(*time_sample));
+  }
 
   /* free memory */
   free(time_gen);

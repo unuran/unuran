@@ -36,6 +36,7 @@
 /* methods                                                                   */
 #define T_DISTR
 #define T_CORDER
+#define T_TIMING
 
 #define T_AROU
 #define T_CSTD
@@ -104,10 +105,12 @@ int compare_int_sequence_par( FILE *LOG, int line, struct prng *urng, UNUR_PAR *
 void print_distr_name( FILE *LOG, UNUR_DISTR *distr, const char *genid );
 
 /* check p-value of statistical test and print result */
-int print_pval( FILE *LOG, const char *test, UNUR_GEN *gen, double pval, int trial, char todo );
+int print_pval( FILE *LOG, UNUR_GEN *gen, double pval, int trial, char todo );
 
 /* run chi2 test */
 int run_validate_chi2( FILE *LOG, int line, UNUR_GEN *gen, char todo );
 
-/*---------------------------------------------------------------------------*/
+/* print result of timings */
+void print_timing_results( FILE *LOG, int line, UNUR_DISTR *distr, double *timing_result, int n_results );
 
+/*---------------------------------------------------------------------------*/

@@ -75,6 +75,7 @@ unur_run_tests( struct unur_par *par, unsigned tests)
      /*----------------------------------------------------------------------*/
 {
   struct unur_gen *gen = NULL;
+  double time_setup, time_sample;
 
   /* check arguments */
   _unur_check_NULL("Tests",par,/*void*/);
@@ -86,7 +87,7 @@ unur_run_tests( struct unur_par *par, unsigned tests)
   /* init generator object */
   if (tests & UNUR_TEST_TIME)
     /* evaluate setup time and generation time */
-    gen = unur_test_timing(par,TEST_TIMING_LOG_SAMPLESIZE);
+    gen = unur_test_timing(par,TEST_TIMING_LOG_SAMPLESIZE, &time_setup, &time_sample, TRUE);
   else
     gen = _unur_init(par);
 

@@ -501,20 +501,20 @@ To change any parameter you habe to use the according function call.
 @node Function Reference
 @chapter Function reference
 @menu
-* Readymade:: Ready-made distributions
 * Selfmade::  Include your own distributions
+* Readymade:: Ready-made distributions
 * MethodsRef::  Functions for Methods
 @end menu
 Notation:
 
+@node Selfmade
+@section Self-made distributions
+@include qstart_change_distr.texi
 
 @node Readymade
 @section Ready-made distributions
 @include qstart_distr_ref.texi
 
-@node Selfmade
-@section Self-made distributions
-@include qstart_change_distr.texi
 
 @node MethodsRef
 @section Methods

@@ -267,6 +267,9 @@ int main()
     printf("%f\n",x);
   @}
 
+  /* destroy generator object */
+  unur_free(gen);
+
   return 0;
 @}    
 @end smallexample
@@ -465,6 +468,9 @@ int main()
     printf("%f\n",x);
   @}
 
+  /* destroy generator object */
+  unur_free(gen);
+
   return 0;
 @}
 
@@ -534,6 +540,9 @@ int main()
     x = unur_sample_cont(gen);
     printf("%f\n",x);
   @}
+
+  /* destroy generator object */
+  unur_free(gen);
 
   return 0;
 @}    

@@ -7,7 +7,7 @@
     (
      
      "=TYPE"        => { "required" => "yes",
-			 "scan" => \&scan_METHOD_TYPE },
+			 "scan" => \&scan_TYPE },
 
      "=REQUIRED"    => { "required" => "no", 
 			 "scan" => \&scan_METHOD_REQUIRED },
@@ -30,10 +30,6 @@
      "=END"         => { "required" => "no",
 			 "scan" => \&scan_END },
      );
-
-# formated text
-$texi_METHODs;
-
 
 ############################################################
 
@@ -96,20 +92,6 @@ sub scan_METHOD {
     }
     
 } # end of scan_METHOD()
-
-############################################################
-
-sub scan_METHOD_TYPE {
-    my $entry = $_[0];    # pointer to TYPE entry
-
-    # we are interested in the very first word only ...
-    unless ( $$entry =~ /^\s*([A-Za-z]+)/ ) {
-	die "TYPE: missing type";
-    }
-    $$entry = $1;
-
-    return;
-}
 
 ############################################################
 

@@ -41,16 +41,39 @@ require "URNG_to_texi.pl";
      "=DISTR"   => { "scan"   => \&scan_DISTR,
 		     "format" => \&format_DISTR },
 
-     "=ERROR"   => { "scan"   => \&scan_ERROR,
+     "=ERROR"   => { "scan"   => \&scan_section,
 		     "format" => \&format_ERROR },
 
      "=METHOD"  => { "scan"   => \&scan_METHOD,
 		     "format" => \&format_METHOD },
 
-     "=URNG"    => { "scan"   => \&scan_URNG,
+     "=URNG"    => { "scan"   => \&scan_section,
 		     "format" => \&format_URNG },
 
      );
+
+#...........................................................
+
+%TAGs =
+    (
+     
+     "=TYPE"        => { "scan" => \&scan_TYPE },
+
+     "=REQUIRED"    => { "scan" => \&scan_do_nothing },
+     
+     "=OPTIONAL"    => { "scan" => \&scan_do_nothing },
+     
+     "=SEEALSO"     => { "scan" => \&scan_do_nothing },
+     
+     "=ABSTRACT"    => { "scan" => \&scan_do_nothing },
+     
+     "=DESCRIPTION" => { "scan" => \&scan_DESCRIPTION },
+     
+     "=ROUTINES"    => { "scan" => \&scan_ROUTINES },
+     
+     "=END"         => { "scan" => \&scan_END },
+     );
+
 
 ############################################################
 
@@ -157,10 +180,55 @@ sub scan_file {
 
 ############################################################
 
-sub scan_END {
-    # there is nothing to do here!
+sub scan_section {
+    my $file = $_[0];
+    my $handle = $_[1];
+    my $line = $_[2];
+
+    # get section TAG ($sect), short ($name) and long title ($title)
+    chomp $line;          # remove trailing `\n'
+    $line =~ s/^\s+//;    # trim blanks from beginning of line
+    $line =~ s/\s+$//;    # trim blanks from end of line
+    (my $sect, my $name, my $title) = split /\s+/, $line, 3;
+
+    # print section on screen
+    print STDERR "$sect: $name -- $title\n\t" if $VERBOSE;
+
+    # store section
+    $in->{$sect}->{$name}->{"=NAME"} = $title;
+
+    # store file name
+    $in->{$sect}->{$name}->{"=FILE"} = $file;
+
+    # scan all subsections 
+    my $this_TAG = "=END";  # add =END tag to section tag
+    my $in_line;            # store scanned line
+
+    while (my $next_TAG = scan_subsection($handle,\$lines)) {
+	if ($this_TAG ne "=END") {
+	    print STDERR "  $this_TAG" if $VERBOSE;
+	    if ($TAGs{$this_TAG}) {
+		# store subsection text
+		$in->{$sect}->{$name}->{$this_TAG} .= $lines;
+	    }
+	    else {
+		print STDERR "  invalid!!\n\n\t" if $VERBOSE;
+	    }
+	}
+	# anything between =END and next tag is ignored
+	$this_TAG = $next_TAG;
+    }
+
+    # close line on screen
+    print STDERR "\n" if $VERBOSE;
+  
+    # scan and format all sections
+    foreach $tag (keys %TAGs) {
+	&{$TAGs{$tag}{"scan"}}( \($in->{$sect}->{$name}->{$tag}) );
+    }
+
     return;
-}
+} # end of scan_section() 
 
 ############################################################
 
@@ -376,9 +444,31 @@ sub scan_ROUTINES {
 
 ############################################################
 
+sub scan_TYPE {
+    my $entry = $_[0];    # pointer to TYPE entry
+
+    # we are interested in the very first word only ...
+    if ( $$entry =~ /^\s*([A-Za-z]+)/ ) {
+	$$entry = $1;
+    }
+    else {   # the string does not start with a word --> clear string
+	$$entry = '';
+    }
+    return;
+} # end if scan_TYPE()
+
+############################################################
+
 sub scan_DESCRIPTION {
     return;
 } # end of scan_DESCRIPTION() 
+
+############################################################
+
+sub scan_END {
+    # there is nothing to do here!
+    return;
+}
 
 ############################################################
 

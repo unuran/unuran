@@ -32,12 +32,16 @@ VEMPK: Requires an observed sample
 
 @noindent Methods for discrete univariate distributions:
 @multitable {method} {PMF} {PV} {mode} {area} {implementded distribution}
-@item method @tab PMF @tab PV @tab mode @tab area @tab other
-@item DARI   @tab  x  @tab    @tab  x   @tab  ~   @tab T-concave
-@item DAU    @tab     @tab  x @tab      @tab      @tab 
-@item DGT    @tab     @tab  x @tab      @tab      @tab 
-@item DSTD   @tab     @tab    @tab      @tab      @tab implemented distribution  
+@item method@tab PMF @tab PV @tab mode @tab area @tab other
+@item DARI  @tab  x  @tab    @tab  x   @tab  ~   @tab T-concave
+@item DAU   @tab     @tab  x @tab      @tab      @tab 
+@item DGT   @tab     @tab  x @tab      @tab      @tab 
+@item DSTD  @tab     @tab    @tab      @tab      @tab implemented distribution
 @end multitable
+@sp1
+
+
+
 
 
 

@@ -6,7 +6,7 @@ INCLUDES = -I$(top_srcdir)/src
 noinst_LTLIBRARIES = libuniform.la
 
 libuniform_la_SOURCES = \
-  urng_default.c \
+  urng_default.c urng_set.c \
   mrg31k3p.c fish.c mstd.c
 
 noinst_HEADERS = \

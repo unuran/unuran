@@ -4,7 +4,7 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   FILE: x_urng.h                                                          *
+ *   FILE: urng.h                                                            *
  *                                                                           *
  *   PURPOSE:                                                                *
  *         declares macros and function prototypes for using uniform         *

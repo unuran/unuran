@@ -1043,6 +1043,7 @@ _unur_dari_sample_check( struct unur_gen *gen )
 {
   double U, h;
   double X = 0.;
+  double hkm05;
   int k,i;
   int sign[2] = {-1,1};
 
@@ -1070,22 +1071,24 @@ _unur_dari_sample_check( struct unur_gen *gen )
 	}
 	h = GEN.hp[k-N0];
 	/* CHECKING HAT */
-	if (_unur_FP_less(h,-0.5)) { 
+	if (h+UNUR_EPSILON*100.<-0.5) {
 	  _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,
 		      "PMF(i) > hat(i) for centerpart");
 	  _unur_stream_printf(gen->genid,__FILE__,__LINE__,
-			      "i %d PMF(x) %e hat(x) %e", k,PMF(k),GEN.pm ); 
+			      "i %d PMF(x) %.20e hat(x) %.20e", k,PMF(k),GEN.pm ); 
         }
 	/* end CHECKING HAT */
       }
       else {
 	h = 0.5 - PMF(k)/GEN.pm;
 	/* CHECKING HAT */
-	if (_unur_FP_less(h,-0.5)) {
+	/* here UNUR_EPSILON can be too small for distributions that 
+	   have two neighbouring hats. */
+	if (h+UNUR_EPSILON*100.<-0.5) {
 	  _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,
 		      "PMF(i) > hat(i) for centerpart");
 	  _unur_stream_printf(gen->genid,__FILE__,__LINE__,
-			      "i %d PMF(x) %e hat(x) %e", k,PMF(k),GEN.pm ); 
+			      "i %d PMF(x) %.20e hat(x) %.20e", k,PMF(k),GEN.pm ); 
         }
 	/* end CHECKING HAT */
       }
@@ -1107,10 +1110,59 @@ _unur_dari_sample_check( struct unur_gen *gen )
       U = GEN.Hat[i] + sign[i]*U; 
       X = GEN.x[i] + (FM(U*GEN.ys[i])-GEN.y[i]) / GEN.ys[i];
       k = (int)(X+0.5);
+      /* this is for a very rare case that for k of the tail closest to 
+	 the mode an x value farer away than 0.5 is geenrated. */
+      if(k==GEN.s[i]) 
+	k += sign[i];
 
       if (GEN.squeeze && (sign[i]*k <= sign[i]*GEN.x[i]+1) && (GEN.xsq[i] <= sign[i]*(X-k))) 
 	return k;
 
+      if (sign[i]*k <= sign[i]*GEN.n[i]) {
+	if(!GEN.hb[k-N0]) {
+	  GEN.hp[k-N0] = sign[i] * F(GEN.y[i]+GEN.ys[i]*(k+sign[i]*0.5-GEN.x[i])) / GEN.ys[i] - PMF(k); 
+
+	  /* CHECKING HAT: (only necessary if(k!=GEN.s+1) as for the border
+                            the hat is by construction correct)
+	     tests if Hat too low i.e.: (H(k+0.5)-  p_k < H(k-0.5)) */
+          if(k != GEN.s[i]+sign[i]) {
+            hkm05 = sign[i] * F(GEN.y[i]+GEN.ys[i]*(k-sign[i]*0.5-GEN.x[i])) / GEN.ys[i];
+	    if (GEN.hp[k-N0]+UNUR_EPSILON < hkm05) {
+	      _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,
+			  "for tailpart hat too low, ie hp[k] < H(k-0.5)");
+	      _unur_stream_printf(gen->genid,__FILE__,__LINE__,
+				  "k %d hp  %.20e H(k-0.5) %.20e ", k,GEN.hp[k-N0],hkm05 ); 
+            }
+	  }
+	  GEN.hb[k-N0] = 1;
+	}
+	h = GEN.hp[k-N0];
+      }
+      else {
+	h = sign[i] * F(GEN.y[i]+GEN.ys[i]*(k+sign[i]*0.5-GEN.x[i])) / GEN.ys[i] - PMF(k);
+	/* CHECKING HAT:(only necessary if(k!=GEN.s+1) as for the border
+                            the hat is by construction correct)
+	   tests if Hat too low i.e.: (H(k+0.5)-p_k < H(k-1/2)) */
+        hkm05 = sign[i] * F(GEN.y[i]+GEN.ys[i]*(k-sign[i]*0.5-GEN.x[i])) / GEN.ys[i];
+        if(k != GEN.s[i]+sign[i]) {
+	  if (h+UNUR_EPSILON < hkm05) {
+	    _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,
+			"PMF(i) > hat(i) for tailpart");
+	    _unur_stream_printf(gen->genid,__FILE__,__LINE__,
+				"k %d h  %.20e H(k-0.5) %.20e ", k,h,hkm05 ); 
+	  }
+        }
+      }
+      if (sign[i]*U >= h)
+	return k;
+    }
+  }
+
+
+
+
+
+#if 0
       if (sign[i]*k <= sign[i]*GEN.n[i]) {
 	if(!GEN.hb[k-N0]) {
 	  GEN.hp[k-N0] = sign[i] * F(GEN.y[i]+GEN.ys[i]*(k+sign[i]*0.5-GEN.x[i])) / GEN.ys[i] - PMF(k); 
@@ -1144,6 +1196,7 @@ _unur_dari_sample_check( struct unur_gen *gen )
 	return k;
     }
   }
+#endif
 
 } /* end of _unur_dari_sample_check() */
 

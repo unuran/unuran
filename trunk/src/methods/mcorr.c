@@ -201,6 +201,58 @@ unur_mcorr_new( const struct unur_distr *distr )
 
 } /* end of unur_mcorr_new() */
 
+/*---------------------------------------------------------------------------*/
+
+int
+unur_mcorr_set_eigenvalues( UNUR_PAR *par, double *eigenvalues )
+     /*----------------------------------------------------------------------*/
+     /* sets the (optional) eigenvalues of the correlation matrix            */
+     /*----------------------------------------------------------------------*/
+{
+  int i;
+  double sum_eigenvalues = 0;
+
+  /* check arguments */
+  _unur_check_NULL( GENTYPE, par, UNUR_ERR_NULL );
+  _unur_check_par_object( par, MCORR );
+  CHECK_NULL( eigenvalues, UNUR_ERR_NULL );
+
+  /* allocate memory if needed */
+  if (PAR.eigenvalues==NULL)
+    PAR.eigenvalues=_unur_xmalloc(PAR.dim * sizeof(double));
+
+  /* set given eigenvalues */
+  for (i=0; i<PAR.dim; i++) {
+    PAR.eigenvalues[i] = eigenvalues[i];
+    
+    /* check for negative eigenvalues */
+    if (PAR.eigenvalues[i]<0) {
+      PAR.eigenvalues[i] = -PAR.eigenvalues[i];
+      _unur_warning(GENTYPE, UNUR_ERR_GENERIC,"negative eigenvalue -> positive");
+    }
+    sum_eigenvalues += PAR.eigenvalues[i];
+  }
+  
+  /* check if all eigenvalues = 0 ? */
+  if (sum_eigenvalues==0) {
+    _unur_error(GENTYPE, UNUR_ERR_GENERIC,"sum(eigenvalues)=0");
+    return UNUR_ERR_GENERIC;
+  }
+
+  /* scaling values */
+  if (!_unur_FP_same(sum_eigenvalues, (double) PAR.dim)) {
+    _unur_warning(GENTYPE, UNUR_ERR_GENERIC,"scaling sum(eigenvalues) -> dim");
+    for (i=0; i<PAR.dim; i++) {
+      PAR.eigenvalues[i] = PAR.dim * PAR.eigenvalues[i]/sum_eigenvalues;
+    }
+  }
+
+  /* changelog */
+  par->set |= MCORR_SET_EIGENVALUES;
+
+  return UNUR_SUCCESS;
+}
+
 /*****************************************************************************/
 
 struct unur_gen *
@@ -266,61 +318,7 @@ _unur_mcorr_init( struct unur_par *par )
 
 /*---------------------------------------------------------------------------*/
 
-int
-unur_mcorr_set_eigenvalues( UNUR_PAR *par, double *eigenvalues  )
-     /*----------------------------------------------------------------------*/
-     /* sets the (optional) eigenvalues of the correlation matrix            */
-     /*----------------------------------------------------------------------*/
-{
-  int i;
-  double sum_eigenvalues = 0;
-
-  /* check arguments */
-  _unur_check_NULL( GENTYPE, par, UNUR_ERR_NULL );
-  _unur_check_par_object( par, MCORR );
-  CHECK_NULL( eigenvalues, UNUR_ERR_NULL );
-
-  /* allocate memory if needed */
-  if (PAR.eigenvalues==NULL)
-    PAR.eigenvalues=_unur_xmalloc(PAR.dim * sizeof(double));
-
-  /* set given eigenvalues */
-  for (i=0; i<PAR.dim; i++) {
-    PAR.eigenvalues[i] = eigenvalues[i];
-    
-    /* check for negative eigenvalues */
-    if (PAR.eigenvalues[i]<0) {
-      PAR.eigenvalues[i] = -PAR.eigenvalues[i];
-      _unur_warning("MCORR", UNUR_ERR_GENERIC,"negative eigenvalue -> positive");
-    }
-    sum_eigenvalues += PAR.eigenvalues[i];
-  }
-  
-  /* check if all eigenvalues = 0 ? */
-  if (sum_eigenvalues==0) {
-    _unur_error("MCORR", UNUR_ERR_GENERIC,"sum(eigenvalues)=0");
-    return UNUR_ERR_GENERIC;
-  }
-
-  /* scaling values */
-  if (!_unur_FP_same(sum_eigenvalues, (double) PAR.dim)) {
-    _unur_warning("MCORR", UNUR_ERR_GENERIC,"scaling sum(eigenvalues) -> dim");
-    for (i=0; i<PAR.dim; i++) {
-      PAR.eigenvalues[i] = PAR.dim * PAR.eigenvalues[i]/sum_eigenvalues;
-    }
-  }
-
-  /* changelog */
-  par->set |= MCORR_SET_EIGENVALUES;
-
-  return UNUR_SUCCESS;
-}
-
-
-/*---------------------------------------------------------------------------*/
-
-
-static struct unur_gen *
+struct unur_gen *
 _unur_mcorr_create( struct unur_par *par )
      /*----------------------------------------------------------------------*/
      /* allocate memory for generator                                        */
@@ -336,7 +334,6 @@ _unur_mcorr_create( struct unur_par *par )
      /*----------------------------------------------------------------------*/
 {
   struct unur_gen *gen;
-  int i;
 
   /* check arguments */
   CHECK_NULL(par,NULL);  COOKIE_CHECK(par,CK_MCORR_PAR,NULL);
@@ -365,9 +362,9 @@ _unur_mcorr_create( struct unur_par *par )
 
   /* copy optional eigenvalues of the correlation matrix */
   GEN.eigenvalues = NULL;
-  if (gen->set && MCORR_SET_EIGENVALUES) {
+  if (PAR.eigenvalues != NULL) {
     GEN.eigenvalues = _unur_xmalloc(GEN.dim * sizeof(double));
-    for (i=0; i<GEN.dim; i++) GEN.eigenvalues[i]=PAR.eigenvalues[i];
+    memcpy(GEN.eigenvalues, PAR.eigenvalues, GEN.dim * sizeof(double));
   }
 
   /* return pointer to (almost empty) generator object */
@@ -538,16 +535,13 @@ int _unur_mcorr_eigen (int dim, double *values, double *M )
   P=_unur_xmalloc(dim*dim*sizeof(double));
 
   /* initially E is an identity matrix */
-  for (i=0; i<dim; i++) {
-  for (j=0; j<dim; j++) {
-    E[idx(i,j)] = (i==j) ? 1: 0;
-  }}
-
+  for (i=0; i<dim; i++)
+    for (j=0; j<dim; j++)
+      E[idx(i,j)] = (i==j) ? 1: 0;
 
   for (k=0; k<dim-1; k++) {
     /* w is a random vector */
     for (i=0; i<dim; i++) w[i] = unur_urng_sample(NULL);
-
     /* x = E*w */
     for (i=0; i<dim; i++) {
       x[i]=0;

@@ -13,45 +13,53 @@
 # E. JANKA und G. TIRLER
 # $Id$
 #
-# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #
 # Das Perl-skrip durchsucht nach folgenden Schluesselworten      
 # und und erzeugt Output wiefolgt:
-# Folgende Schluesselwoerter beginnen mit '=...'
-# Schluesselwort darf nur von Leerzeichen oder '/*'
+# Folgende Schluesselwoerter beginnen mit `=...'
+# Schluesselwort darf nur von Leerzeichen oder `/*'
 # eingeleitet werden
 #
 #
 # =METHOD  name [Langtext]
 #          allgem. Beschreibung der Methode in Header file
 #
-#          name       ... Name der Methode, Nur ein Wort!
-#          [Langtext] ... optional, Lange Beschreibung
+#          name       ... Name der Methode, nur EIN Wort!
+#          [Langtext] ... optional, lange Beschreibung
 #          Beispiel:
 #             =METHODS NINV Numerical INVersion 
 #                     
-#          folgende Kommentarzeilen/Block (bis zur ersten
-#          Leerzeile) wird in TEXInfo-format ausgegeben
+#          nachfolgende Kommentarzeilen/Bloecke (bis zur ersten
+#          Nicht-Kommentar-Leerzeile) werden in TEXInfo-format ausgegeben
 #          
 # =ROUTINES
 #          sucht C function zwischen =ROUTINES und =END 
-#          beginnend mit 'unur_' und endend mit '()'
+#          beginnend mit `unur_' und endend mit `(...)'.
 #
-#          Der Nachfolgende Kommentarblock/Zeilen werden mit
-#          einer Leerzeile abgeschlossen.
+#          Die unmittelbar nachfolgenden Kommentarbloecke/Zeilen
+#          werden mit einer Nich-Kommentar-Leerzeile abgeschlossen.
 #          Kommentare direkt vor jeder Funktion gelten als
 #          interne Kommentare und werden nicht ausgegeben.
+#          
 # =END     schliesst =ROUTINES ab (notwendig)
+#
+# =OPTIONAL, =REQUIRED
+#          diese beiden Schluesselworte koennen ZWISCHEN
+#          =ROUTINES und =END stehen um die Unterprogramme
+#          genauer zu spezifizieren.
+#          Beide werden von diesem Script aber ignoriert,
+#          erzeugen also keine Warnung.
 #
 # (=>)     diese Zeichenfolge in Kommentarzeile wird in TEXINFO 
 #          nicht ausgegegben (dient zur spaeteren Verwendung)
 #
-# =[A-Z,0-9] Unbekannte '=...' Zeichenfolgen wereden mit Fehler 
-#            erkannt 
+# =[A-Z,0-9]* Unbekannte '=...' Zeichenfolgen fuehren zu einer  
+#             Warnung.
 #
 # =ERRORCODE derzeit ohne Funktion
 #
-#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 
 # Kommentare sind nun erlaubt 
@@ -67,11 +75,11 @@ $PRINT = "";
 # Deklarations/Beschreibungsbereich der Routinen gefunden
 $ROUTINES = 0;
 
-# erlaubte Datentypen 
+# bekannte Datentypen 
 @TYPES = ("UNUR_PAR", "UNUR_GEN", "struct", "void", "int", "double", "float", "long", "char", "short", "unsigned", "signed");
 
 # erlaubte Befehle
-@COMMAND =("=METHOD", "=ROUTINES", "=END");
+@COMMAND =("=METHOD", "=ROUTINES", "=REQUIRED", "=OPTIONAL", "=END");
 
 # output file:
 open(OUTFILE, ">qstart_function_reference.texi");
@@ -110,13 +118,20 @@ while($_ = <>)
     }
   
     # ueberpruefung ob falsches command (z.B.tippfehler?)
-    if ($_ =~/^(\s*\/\*\s*|\s*)(=.*)\s/){
+    if ($_ =~/^(\s*\/\*\s*|\s*)(=.*?)\W/){
+	$ERROR = 1;
 	foreach $command (@COMMAND){
-	    if ($2 != $command){
-		print "ERROR: unknown command: ", $2;
+	    if ($2 eq $command){
+		$ERROR = 0;
 	    }
 	}
+	if ($ERROR == 1){
+	    print "WARNING: unknown command: ", $2, "\n";
+	}
     }
+
+		
+
    
     # Suche Beschreibung der Methode (=METHOD)
     if ($_ =~/^(\s*\/\*\s*|\s*)=METHOD\s*(\w+)\s*(.*)/){

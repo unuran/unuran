@@ -94,44 +94,6 @@
    @pxref{URNG,Using uniform random number generators,Using uniform random number generators}.
 
 
-   @subsubheading Special mathematical functions
-
-   We used Stephen L. Moshier's @emph{Cephes} mathematical library for
-   special function (eg. Gamma function). So we recommend to install
-   this library too. It can be found at
-   @url{http://www.netlib.org/cephes/}. 
-
-   A local copy that we have used can be downloaded from
-   @url{ftp://statistik.wu-wien.ac.at/src/cephes-math-28.tar.gz}.
-   Unfortunately there is no comfortable installation script. So you
-   have 
-
-   @enumerate
-   @item Unpack the tar archiv:
-	 @smallexample
-	    tar zxvf cephes-math-28.tar.gz
-	 @end smallexample
-   @item Compile the double library:
-	 @smallexample
-	    cd cephes/double
-	    make
-	 @end smallexample
-   @item Copy the library to a place in the search path of your
-	 compiler (eg. @file{/usr/local/lib}):
-	 @smallexample
-	    cp libmd.a /usr/local/lib
-	    chmod 644 /usr/local/lib/libmd.a
-	 @end smallexample
-	 (You must be root when you want to install it into 
-	 @file{/usr/local/lib}).
-   @end enumerate
-
-   If you do not install the Cephes library then some of the predefined
-   distrubutions have some of the described features.
-   In future releases we plan to include such special functions in to
-   the library.
-
-   
    @subsubheading UNURAN
 
    @enumerate 
@@ -164,7 +126,7 @@
 
 	 Use @code{configure --help} to get a list of other options.
 
-	 @emph{Important:} You must install prng and Cephes
+	 @emph{Important:} You must install PRNG
 	 @emph{before} @code{configure} is executed.
 
    @item Compile and install the libray:
@@ -197,11 +159,9 @@
 	    make check
 	 @end smallexample
 	 However this test suite requires the usage of prng.
-	 Notice a number of these tests fail if you have not installed
-	 the Cephes library. Moreover it might happen that some of the
-	 tests might fail due to roundoff errors or the mysteries of
-	 floating point arithmetic, since we have used some extreme
-	 settings to test the library.
+         It might happen that some of the tests might fail due to 
+         roundoff errors or the mysteries of floating point arithmetic,
+         since we have used some extreme settings to test the library.
 
    @end enumerate
 

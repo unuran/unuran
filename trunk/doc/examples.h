@@ -6,17 +6,15 @@
 
    The examples in this chapter should compile cleanly and can be
    found in the directory @file{examples} of the source tree of
-   UNURAN. Assuming that UNURAN as well as the PRNG and Cephes
-   libraries have been installed properly (@pxref{Installation}) each
+   UNURAN. Assuming that UNURAN as well as the PRNG libraries 
+   have been installed properly (@pxref{Installation}) each
    of these can be compiled (using the GCC in this example) with
    @example
-      gcc -Wall -O2 -o example example.c -lunuran -lprng -lm -lmd
+      gcc -Wall -O2 -o example example.c -lunuran -lprng -lm
    @end example 
    @noindent
    @emph{Remark:} @code{-lprng} must be omitted when the PRNG library
-   is not installed. @code{-lmd} must be omitted when the Cephes
-   library is not installed. In both cases however some of the
-   examples might not work.
+   is not installed. Then however some of the examples might not work.
 
    The library uses three objects:
    @code{UNUR_DISTR}, @code{UNUR_PAR} and @code{UNUR_GEN}.

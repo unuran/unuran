@@ -47,7 +47,7 @@ ExtremeValueIIDistribution/: PDF[ExtremeValueIIDistribution[k_,zeta_,theta_], x_
 	];
 
 ExtremeValueIIDistribution/: CDF[ExtremeValueIIDistribution[k_,zeta_,theta_], x_] :=
-	If [ x >= zeta,
+	If [ x > zeta,
 		Exp[ -((x-zeta)/theta)^(-k)],
 	(* else *)
 		0

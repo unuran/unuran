@@ -53,12 +53,10 @@
  *                                                                           *
  *****************************************************************************/
 
-#if 1
-
 /*  #ifdef HAVE_LIBMD */
 
 /*---------------------------------------------------------------------------*/
-/* CEPHES library                                                            */
+/* Routines from the CEPHES library.                                         */
 /*---------------------------------------------------------------------------*/
 
 /** functions related to beta distribution **/
@@ -105,42 +103,7 @@ double ndtri(double x);
 /* end: CEPHES library                                                       */
 /*---------------------------------------------------------------------------*/
 
-#else 
-
-/*---------------------------------------------------------------------------*/
-/* Use build in functions (if available)                                     */
-/*---------------------------------------------------------------------------*/
-
-/** functions related to beta distribution **/
-
-/* NO incomplete beta integral */
-#undef HAVE_UNUR_SF_INCOMPLETE_BETA
-
-/** functions related to gamma distribution **/
-
-/* NO logarithm of gamma function */
-#undef HAVE_UNUR_SF_LN_GAMMA
-
-/* NO logarithm of factorial */
-#undef HAVE_UNUR_SF_LN_FACTORIAL
-
-/* NO incomplete gamma function */
-#undef HAVE_UNUR_SF_INCOMPLETE_GAMMA
-
-/** functions related to normal distribution **/
-
-/* NO normal distribution function */
-#undef HAVE_UNUR_SF_CDFNORMAL
-
-/* NO inverse of normal distribution function */
-#undef HAVE_UNUR_SF_INV_CDFNORMAL
-
-/** functions related to Student's t distribution **/
-
-/* NO CDF for Stundent's t */
-#undef HAVE_UNUR_SF_CDFSTUDENT
-
-#endif
+/* #endif */
 
 /*---------------------------------------------------------------------------*/
 #endif  /* __SOURCE_SPECFUNCT_H_SEEN */

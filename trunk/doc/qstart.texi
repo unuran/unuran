@@ -622,6 +622,16 @@ For information about the Methods themselfes, see @ref{Description}.
 @item
 @end enumerate
 
+@tex
+  \newcount \tempcounter
+  \tempcounter = \thispage
+  \divide   \tempcounter 2
+  \multiply \tempcounter 2
+  \ifnum \tempcounter < \thispage
+     \page \phantom{Hut}
+  \fi
+@end tex
+
 @ifhtml
 @anchor{Contents}
 @end ifhtml

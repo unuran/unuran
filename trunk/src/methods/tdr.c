@@ -355,6 +355,16 @@ static double _unur_tdr_ia_sample_check( struct unur_gen *generator );
 /* sample from generator                                                     */
 /*---------------------------------------------------------------------------*/
 
+static double _unur_tdr_gw_eval_invcdfhat( struct unur_gen *generator, double u,
+					   struct unur_tdr_interval **iv,
+					   struct unur_tdr_interval **cpt );
+static double _unur_tdr_ps_eval_invcdfhat( struct unur_gen *generator, double u,
+					   struct unur_tdr_interval **iv );
+static double _unur_tdr_ia_eval_invcdfhat( struct unur_gen *generator, double u );
+/*---------------------------------------------------------------------------*/
+/* auxiliary routines to evaluate the inverse of the hat CDF.                */
+/*---------------------------------------------------------------------------*/
+
 static void _unur_tdr_free( struct unur_gen *gen);
 /*---------------------------------------------------------------------------*/
 /* destroy generator object.                                                 */

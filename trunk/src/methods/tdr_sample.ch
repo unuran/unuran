@@ -108,7 +108,7 @@ _unur_tdr_gw_sample( struct unur_gen *gen )
   double Tsqx, Thx;
 
   /* check arguments */
-  CHECK_NULL(gen,0.);  COOKIE_CHECK(gen,CK_TDR_GEN,0.);
+  CHECK_NULL(gen,INFINITY);  COOKIE_CHECK(gen,CK_TDR_GEN,INFINITY);
 
   /* main URNG */
   urng = gen->urng;
@@ -204,13 +204,10 @@ _unur_tdr_gw_sample( struct unur_gen *gen )
 
     case TDR_VAR_T_POW:
       /** TODO **/
-      return 1.;
-
-      break;
 
     default:
       _unur_error(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
-      return 1.;
+      return INFINITY;
 
     } /* end switch */
 
@@ -251,9 +248,10 @@ _unur_tdr_gw_sample( struct unur_gen *gen )
     urng = gen->urng_aux;
 
   }
+
 } /* end of _unur_tdr_gw_sample() */
 
-/*****************************************************************************/
+/*---------------------------------------------------------------------------*/
 
 double
 _unur_tdr_gw_sample_check( struct unur_gen *gen )
@@ -278,7 +276,7 @@ _unur_tdr_gw_sample_check( struct unur_gen *gen )
   int error = 0;
 
   /* check arguments */
-  CHECK_NULL(gen,0.);  COOKIE_CHECK(gen,CK_TDR_GEN,0.);
+  CHECK_NULL(gen,INFINITY);  COOKIE_CHECK(gen,CK_TDR_GEN,INFINITY);
 
   /* main URNG */
   urng = gen->urng;
@@ -288,54 +286,8 @@ _unur_tdr_gw_sample_check( struct unur_gen *gen )
     /* sample from U( Umin, Umax ) */
     U = GEN.Umin + _unur_call_urng(urng) * (GEN.Umax - GEN.Umin);
 
-    /* look up in guide table and search for segment */
-    iv =  GEN.guide[(int) (U * GEN.guide_size)];
-    U *= GEN.Atotal;
-    while (iv->Acum < U) {
-      iv = iv->next;
-    }
-
-    /* reuse of uniform random number */
-    U -= iv->Acum;    /* result: U in (-A_hat, 0) */
-
-    /* left or right side of hat */
-    if (-U < iv->Ahatr) { /* right */
-      pt = iv->next;
-      /* U unchanged */
-    }
-    else {                /* left */
-      pt = iv;
-      U += iv->Ahat;
-    }
-
-    /* random variate */
-    if (pt->dTfx == 0.)
-      X = pt->x + U/pt->fx;
-    else
-      switch( gen->variant & TDR_VARMASK_T ) {
-      case TDR_VAR_T_LOG:
-	{
-	  double t = pt->dTfx * U / pt->fx;
-	  if (fabs(t) > 1.e-6)
-	    X = pt->x + log(t + 1.) * U / (pt->fx * t);
-	  else if (fabs(t) > 1.e-8)
-	    /* use Taylor series */
-	    X = pt->x + U / pt->fx * (1 - t/2. + t*t/3.);
-	  else
-	    X = pt->x + U / pt->fx * (1 - t/2.);
-	}
-	break;
-      case TDR_VAR_T_SQRT:
-	X = pt->x + (pt->Tfx*pt->Tfx*U) / (1.-pt->Tfx*pt->dTfx*U);  
-	/* It cannot happen, that the denominator becomes 0 (in theory!) */
-	break;
-      case TDR_VAR_T_POW:
-	/** TODO **/
-	X = 1.;
-	break;
-      default:  /* this should not happen */
-	X = 0.;
-      }
+    /* evaluate inverse of hat CDF */
+    X = _unur_tdr_gw_eval_invcdfhat( gen, U, &iv, &pt );
 
     fx = PDF(X);                                /* value of PDF at X */
     Thx = pt->Tfx + pt->dTfx * (X - pt->x);     /* transformed hat at X */ 
@@ -427,7 +379,103 @@ _unur_tdr_gw_sample_check( struct unur_gen *gen )
     urng = gen->urng_aux;
 
   }
+
 } /* end of _unur_tdr_gw_sample_check() */
+
+/*---------------------------------------------------------------------------*/
+
+double
+_unur_tdr_gw_eval_invcdfhat( struct unur_gen *gen, double U,
+			     struct unur_tdr_interval **ivl,
+			     struct unur_tdr_interval **cpt )
+     /*----------------------------------------------------------------------*/
+     /* evaluate the inverse of the hat CDF at u                             */
+     /* (original variant by Gilks & Wild)                                   */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*   U   ... argument for inverse CDF (0<=U<=1, no validation!)         */
+     /*   ivl ... pointer to interval for hat                                */
+     /*   cpt ... pointer to interval where hat construction point is stored */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   inverse hat CDF                                                    */
+     /*----------------------------------------------------------------------*/
+{ 
+  double t, X;
+  struct unur_tdr_interval *iv, *pt;
+
+  /* look up in guide table and search for interval */
+  iv =  GEN.guide[(int) (U * GEN.guide_size)];
+  U *= GEN.Atotal;
+  while (iv->Acum < U) {
+    iv = iv->next;
+  }
+
+  /* transform u such that u in (-A_hat, 0) */
+  /* (reuse of uniform random number)       */
+  U -= iv->Acum;
+
+  /* left or right hand side of hat */
+  if (-U < iv->Ahatr) { /* r.h.s. */
+    pt = iv->next;
+    /* U unchanged */
+  }
+  else {                /* l.h.s. */
+    pt = iv;
+    U += iv->Ahat;
+  }
+    
+  /* we have three different types of transformations */
+  switch (gen->variant & TDR_VARMASK_T) {
+    
+  case TDR_VAR_T_LOG:
+    /* inverse of CDF (random variate) */
+    if (pt->dTfx == 0.)
+      X = pt->x + U / pt->fx;
+    else {
+      t = pt->dTfx * U / pt->fx;
+      if (fabs(t) > 1.e-6)
+	X = pt->x + log(t + 1.) * U / (pt->fx * t);
+      /* x = pt->x + log(t + 1.) / pt->dTfx; is cheaper but numerical unstable */
+      else if (fabs(t) > 1.e-8)
+	/* use Taylor series */
+	X = pt->x + U / pt->fx * (1 - t/2. + t*t/3.);
+      else
+	X = pt->x + U / pt->fx * (1 - t/2.);
+    }
+    break;
+
+  case TDR_VAR_T_SQRT:
+    /* inverse of CDF (random variate) */
+    if (pt->dTfx == 0.)
+      X = pt->x + U / (pt->fx);
+    else {
+      /* it would be less expensive to use:
+	 X = pt->x + pt->Tfx/(pt->dTfx) * (1. - 1./(1. + pt->dTfx * pt->Tfx * U) )
+	 however, this is unstable for small pt->dTfx */
+      X = pt->x + (pt->Tfx*(pt->Tfx)*U) / (1.-(pt->Tfx)*(pt->dTfx)*U);  
+      /* It cannot happen, that the denominator becomes 0 ! */
+    }
+    break;
+
+  case TDR_VAR_T_POW:
+    /** TODO **/
+    
+  default:
+    _unur_error(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
+    X = INFINITY;
+    
+  } /* end switch */
+
+  /* store interval pointer */
+  *ivl = iv;
+  *cpt = pt;
+
+  /* o.k. */
+  return X;
+
+} /* end of _unur_tdr_gw_eval_invcdfhat() */
 
 /*****************************************************************************/
 /*****************************************************************************/
@@ -484,7 +532,7 @@ _unur_tdr_ps_sample( struct unur_gen *gen )
   double fx, Thx;
 
   /* check arguments */
-  CHECK_NULL(gen,0.);  COOKIE_CHECK(gen,CK_TDR_GEN,0.);
+  CHECK_NULL(gen,INFINITY);  COOKIE_CHECK(gen,CK_TDR_GEN,INFINITY);
 
   /* main URNG */
   urng = gen->urng;
@@ -537,13 +585,10 @@ _unur_tdr_ps_sample( struct unur_gen *gen )
 
     case TDR_VAR_T_POW:
       /** TODO **/
-      return 1.;
-
-      break;
 
     default:
       _unur_error(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
-      return 1.;
+      return INFINITY;
 
     } /* end switch */
 
@@ -564,7 +609,8 @@ _unur_tdr_ps_sample( struct unur_gen *gen )
       V *= 1./(Thx*Thx); break;
     case TDR_VAR_T_POW:
       /** TODO **/
-      return 1.;
+    default:
+      return INFINITY;
     } /* end switch */
 
     /* evaluate PDF at X */
@@ -607,7 +653,7 @@ _unur_tdr_ps_sample( struct unur_gen *gen )
 
 } /* end of _unur_tdr_ps_sample() */
 
-/*****************************************************************************/
+/*---------------------------------------------------------------------------*/
 
 double
 _unur_tdr_ps_sample_check( struct unur_gen *gen )
@@ -633,7 +679,7 @@ _unur_tdr_ps_sample_check( struct unur_gen *gen )
   int error = 0;
 
   /* check arguments */
-  CHECK_NULL(gen,0.);  COOKIE_CHECK(gen,CK_TDR_GEN,0.);
+  CHECK_NULL(gen,INFINITY);  COOKIE_CHECK(gen,CK_TDR_GEN,INFINITY);
 
   /* main URNG */
   urng = gen->urng;
@@ -643,58 +689,8 @@ _unur_tdr_ps_sample_check( struct unur_gen *gen )
     /* sample from U( Umin, Umax ) */
     U = GEN.Umin + _unur_call_urng(urng) * (GEN.Umax - GEN.Umin);
 
-    /* look up in guide table and search for segment */
-    iv =  GEN.guide[(int) (U * GEN.guide_size)];
-    U *= GEN.Atotal;
-    while (iv->Acum < U) {
-      iv = iv->next;
-    }
-
-    /* reuse of uniform random number */
-    U -= iv->Acum - iv->Ahatr;    /* result: U in (-A_hatl, A_hatr) */
-
-    /* generate from hat distribution */
-    switch (gen->variant & TDR_VARMASK_T) {
-
-    case TDR_VAR_T_LOG:
-      if (iv->dTfx == 0.)
-	X = iv->x + U / iv->fx;
-      else {
-	double t = iv->dTfx * U / iv->fx;
-	if (fabs(t) > 1.e-6)
-	  /* x = iv->x + log(t + 1.) / iv->dTfx; is cheaper but numerical unstable */
-	  X = iv->x + log(t + 1.) * U / (iv->fx * t);
-	else if (fabs(t) > 1.e-8)
-	  /* use Taylor series */
-	  X = iv->x + U / iv->fx * (1 - t/2. + t*t/3.);
-	else
-	  X = iv->x + U / iv->fx * (1 - t/2.);
-      }
-      break;
-
-    case TDR_VAR_T_SQRT:
-      if (iv->dTfx == 0.)
-	X = iv->x + U /iv->fx;
-      else {
-	/* it would be less expensive to use:
-	   X = iv->x + iv->Tfx/iv->dTfx * (1. - 1./(1. + iv->dTfx * iv->Tfx * U) )
-	   however, this is unstable for small iv->dTfx */
-	X = iv->x + (iv->Tfx*iv->Tfx*U) / (1.-iv->Tfx*iv->dTfx*U);
-	/* It cannot happen, that the denominator becomes 0 ! */
-      }
-      break;
-
-    case TDR_VAR_T_POW:
-      /** TODO **/
-      return 1.;
-
-      break;
-
-    default:
-      _unur_error(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
-      return 1.;
-
-    } /* end switch */
+    /* evaluate inverse of hat CDF */
+    X = _unur_tdr_ps_eval_invcdfhat( gen, U, &iv );
 
     /* accept or reject */
     V = _unur_call_urng(urng);
@@ -717,9 +713,8 @@ _unur_tdr_ps_sample_check( struct unur_gen *gen )
       break;
     case TDR_VAR_T_POW:
       /** TODO **/
-      return 1.;
     default:
-      return 0.;
+      return INFINITY;
     } /* end switch */
 
     /* evaluate PDF at X */
@@ -787,6 +782,84 @@ _unur_tdr_ps_sample_check( struct unur_gen *gen )
 
   }
 } /* end of _unur_tdr_ps_sample_check() */
+
+/*---------------------------------------------------------------------------*/
+
+double
+_unur_tdr_ps_eval_invcdfhat( struct unur_gen *gen, double U,
+			     struct unur_tdr_interval **ivl )
+     /*----------------------------------------------------------------------*/
+     /* evaluate the inverse of the hat CDF at u                             */
+     /* (original variant by Gilks & Wild)                                   */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*   U   ... argument for inverse CDF (0<=U<=1, no validation!)         */
+     /*   ivl ... pointer to interval for hat                                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   inverse hat CDF                                                    */
+     /*----------------------------------------------------------------------*/
+{
+  double t,X;
+  struct unur_tdr_interval *iv;
+
+  /* look up in guide table and search for segment */
+  iv =  GEN.guide[(int) (U * GEN.guide_size)];
+  U *= GEN.Atotal;
+  while (iv->Acum < U) {
+    iv = iv->next;
+  }
+
+  /* transform u such that u in (-A_hatl, A_hatr) */
+  /* (reuse of uniform random number)             */
+  U -= iv->Acum - iv->Ahatr;
+
+  /* inverse of CDF (random variate) */
+  switch (gen->variant & TDR_VARMASK_T) {
+
+  case TDR_VAR_T_LOG:
+    if (iv->dTfx == 0.)
+      X = iv->x + U / iv->fx;
+    else {
+      t = iv->dTfx * U / iv->fx;
+      if (fabs(t) > 1.e-6)
+	/* x = iv->x + log(t + 1.) / iv->dTfx; is cheaper but numerical unstable */
+	X = iv->x + log(t + 1.) * U / (iv->fx * t);
+      else if (fabs(t) > 1.e-8)
+	/* use Taylor series */
+	X = iv->x + U / iv->fx * (1 - t/2. + t*t/3.);
+      else
+	X = iv->x + U / iv->fx * (1 - t/2.);
+    }
+    break;
+
+  case TDR_VAR_T_SQRT:
+    if (iv->dTfx == 0.)
+      X = iv->x + U / iv->fx;
+    else {
+      /* it would be less expensive to use:
+	 X = iv->x + iv->Tfx/iv->dTfx * (1. - 1./(1. + iv->dTfx * iv->Tfx * U) )
+	 however, this is unstable for small iv->dTfx */
+      X = iv->x + (iv->Tfx*iv->Tfx*U) / (1.-iv->Tfx*iv->dTfx*U);  
+      /* It cannot happen, that the denominator becomes 0 ! */
+    }
+    break;
+    
+  case TDR_VAR_T_POW:
+    /** TODO **/
+
+  default:
+    _unur_error(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
+    return INFINITY;
+
+  } /* end switch */
+
+  /* store interval pointer */
+  *ivl = iv;
+
+  return X;
+} /* end of _unur_tdr_ps_eval_invcdfhat() */
 
 /*****************************************************************************/
 /*****************************************************************************/

@@ -15,6 +15,22 @@ require "read_PDF.pl";
 my $Gray = "\#C0C0C0";
 
 # ----------------------------------------------------------------
+# File names and pathes
+
+my $log_file = '/home/staff/leydold/public_html/anuran.log';
+
+my $tmp_dir = '/home/staff/leydold/public_html';
+my $tmp_anuran = "$tmp_dir/tmp_anuran_\$\$";
+
+# ----------------------------------------------------------------
+# C compiler
+
+my $C_inc_dir = '-I/home/staff/leydold/include';
+my $C_lib_dir = '-L/home/staff/leydold/lib';
+my $C_libs    = '-lunuracg -lunuran -lm -lprng';
+my $CC        = 'gcc';
+
+# ----------------------------------------------------------------
 # List of distributions
 my $DISTR = read_PDFdata();
 
@@ -50,6 +66,18 @@ use CGI::Pretty;
 # Create CGI object
 
 my \$q = new CGI;
+
+# ----------------------------------------------------------------
+# Files
+
+my \$tmp_acg = "$tmp_anuran\\_acg.c";
+my \$tmp_acg_exec = "$tmp_anuran\\_acg";
+
+my \%tmp_code = ( 'C'       => "$tmp_anuran\\_code.c",
+		  'FORTRAN' => "$tmp_anuran\\_code.f",
+		  'JAVA'    => "$tmp_anuran\\_code.java",
+		  );
+my \$tmp_code_exec = "$tmp_anuran\\_code";
 
 # ----------------------------------------------------------------
 # Data for distributions
@@ -464,8 +492,14 @@ sub anuran_domain_distribution
 
 
     # Compute standard domain
-    \$std_left = \$param[\$param_by_name{\$data_distr{\$distr}{'=LEFT'}}];
-    \$std_right = \$param[\$param_by_name{\$data_distr{\$distr}{'=RIGHT'}}];
+    \$std_left = \$data_distr{\$distr}{'=LEFT'};
+    if ( \$std_left !~ /\\d+/ and \$std_left ne '-infinity') {
+	\$std_left = \$param[\$param_by_name{\$data_distr{\$distr}{'=LEFT'}}];
+    }
+    \$std_right = \$data_distr{\$distr}{'=RIGHT'};
+    if ( \$std_right !~ /\\d+/ and \$std_right ne 'infinity') {
+	\$std_right = \$param[\$param_by_name{\$data_distr{\$distr}{'=RIGHT'}}];
+    }
 
     # Get domain
     if (!defined(param('left')) or param('left') < \$std_left) {
@@ -704,15 +738,151 @@ sub anuran_language
 sub anuran_code
 {
 
-    print
+# ................................................................
+# 
+# ................................................................
 
-	# heading
-	font({-color=>"$Gray"},
-	     'Step 6: '.b('Generator code for distribution')),
-	br(),
+    if (\$step < 6) {
+	print
 
-	# ruler
-	p().hr().p();
+	    # heading
+	    font({-color=>"$Gray"},
+		 'Step 6: '.b('Generator code for distribution')),
+	    br(),
+
+	    # ruler
+	    p().hr().p();
+
+	return;
+    }
+
+# ................................................................
+# 
+# ................................................................
+
+    print 
+	'Step 6: ',
+	b('Generator for '.\$data_distr{\$distr}{'=NAME'}).br();
+
+# ................................................................
+# 
+# ................................................................
+
+    if (\$step >= 6) {
+
+# ................................................................
+# Make unuran code for code generator
+# ................................................................
+
+	my \$unuran;
+
+	# List of parameters
+	my \$fpar;
+	if (\$n_param) {
+	    \$fpar = "double fpar[\$n_param] = { \$param[0]";
+	    for (my \$i=1; \$i < \$n_param; \$i++) {
+		\$fpar .= ", \$param[\$i]";
+	    }
+	    \$fpar .= " }";
+	}
+	else {
+	    \$fpar = "double *fpar = NULL";
+	}
+	
+	# Domain
+	my \$domain = '';
+	if (param('truncated')) {
+	    \$domain = "\\t unur_distr_cont_set_domain( distr, "
+		     . ((param('left') !~ /^\s*-inf/) ? param('left') : '-UNUR_INFINITY') 
+		     . ', '
+	             . ((param('right') !~ /^\s*inf/) ? param('right') : 'UNUR_INFINITY') 
+		     . " );\\n";
+	}
+
+	# Unuran code
+	\$unuran .= "#include <unuran.h>\\n";
+	\$unuran .= "#include <unuran_acg.h>\\n";
+	\$unuran .= "\\n";
+	\$unuran .= "int main()\\n";
+	\$unuran .= "{\\n";
+	\$unuran .= "\\t UNUR_DISTR *distr;\\n";
+	\$unuran .= "\\t UNUR_PAR *par;\\n";
+	\$unuran .= "\\t UNUR_GEN *gen;\\n";
+	\$unuran .= "\\t \$fpar;\\n";
+	\$unuran .= "\\n";
+	\$unuran .= "\\t unur_set_default_debug(0u);\\n";
+	\$unuran .= "\\n";
+	\$unuran .= "\\t distr = unur_distr_\$distr(fpar,\$n_param);\\n";
+	\$unuran .= \$domain;
+	\$unuran .= "\\n";
+	\$unuran .= "\\t par = unur_tdr_new( distr );\\n";
+	\$unuran .= "\\t gen = unur_init( par );\\n";
+	\$unuran .= "\\t unur_acg_".param('language')."( gen, stdout, NULL );\\n";
+	\$unuran .= "\\n";
+	\$unuran .= "\\t unur_distr_free(distr);\\n";
+	\$unuran .= "\\t unur_free(gen);\\n";
+	\$unuran .= "\\n";
+	\$unuran .= "\\t exit (0);\\n";
+	\$unuran .= "}\\n";
+
+	# Print into file
+	open ACG, ">\$tmp_acg" or die;
+	print ACG \$unuran;
+	close ACG;
+
+# ................................................................
+# Compile and run code generator 
+# ................................................................
+
+	system "$CC $C_inc_dir $C_lib_dir -O2 -o \$tmp_acg_exec \$tmp_acg $C_libs";
+
+	system "\$tmp_acg_exec > \$tmp_code{param('language')}";
+
+# ................................................................
+# Print result
+# ................................................................
+
+	\$code_file = \$tmp_code{param('language')};
+
+	print '<PRE>';
+	print `cat \$code_file`;
+	print '</PRE>';
+
+# ................................................................
+# Make Entry into log file
+# ................................................................
+
+	# name of distribution
+	my \$log = "distribution = \$distr\\n";
+
+	# list of parameters (defaults settings start with '('
+	for (my \$i=0; \$i < \$n_tot; \$i++) {
+	    \$log .= ((\$i >= \$n_param) ? '(' : '')
+		  .  "param[\$i] = "
+		  .  \$data_distr{\$distr}{'=FPARAMS'}[\$i]{'=NAME'}
+	          .  " = "
+		  .  \$print_param[\$i]."\\n";
+	}
+	
+	# Domain
+	\$log .= 'domain = [ '.param('left').', '.param('right')." ]\\n";
+
+	# Programming language
+	\$log .= 'language = '.param('language')."\\n";
+
+	# Use blank line as separator
+	\$log .= "\\n";
+
+	# Write into log file
+	# (This is not save !!)
+	system("echo \\"\$log\\" >> $log_file");
+
+    }
+
+# ................................................................
+
+    # ruler
+    print p().hr().p();
 
 } # end of anuran_code()
 

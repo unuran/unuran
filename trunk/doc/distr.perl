@@ -31,8 +31,48 @@ while($_ = <>)
 { 
     chomp;
 
+
+    # first key word is "distr:"
+    if ( ($distribution, $reference) =
+         $_ =~ /^\s*\*\s*distr:\s*([^\[]*)\s+\[?([^\]]*)\]?\s*\*\s*$/ ){
+        $DISTR = 1;
+        $distrcount++;
+	print OUTFILE "\@subsection ", $distribution, "\n";
+  
+        # print "distr:" explanation
+	$_ = <>;
+	chomp;
+	($cut) = $_ =~ /^\s*\*(.*)\*\s*$/;
+        while ($cut !~ /^\s*$/ && $cut !~ /^\s*\w+:/){
+	    if  ($cut !~ /^\s*$/ && $cut !~ /^\s*\w+:/){
+		print OUTFILE "\@\* ", $cut, "\n";
+	    }
+	    $_ = <>;
+	    chomp;
+	    ($cut) = $_ =~ /^\s*\*(.*)\*\s*$/;
+	}
+    }
+
+    # key words after "distr:"
+    while ( $cut !~ /^\s*parameters:/ && $cut !~ /\*{10,}/ 
+	    && $cut !~ /\.{10,}/){
+
+	if ($DISTR == 1 && $cut =~ /^\s*(\w+):(.*?)\s*$/){
+	    print OUTFILE "\@\*", $1, ": ", $2, "\n";
+	}
+        elsif($DISTR == 1 && $cut =~ /^\s*$/ ){
+	}
+	elsif($DISTR ==1) {
+	    print OUTFILE $cut, "\n";
+	}
+
+        $_ = <>;
+	chomp;
+        ($cut) = $_ =~ /^\s*\*\s*(.*?)\s*\*\s*$/;
+    }
+ 
     # lines with 10 or more starts end region with explanation
-    if ( $_ =~ /\*{10,}/){
+    if ( $_ =~ /\*{10,}/ || $_ =~ /\.{10,}/ ){
         # end multitable
 	if ($PARAM == 1){
 	    print OUTFILE "\@end multitable\n";
@@ -41,7 +81,7 @@ while($_ = <>)
 	$PARAM = 0;
     }
 
-    #
+
     if ($DISTR == 1 && $_ =~ /parameters:/){
 	$DISTR = 0;
 	$PARAM = 1;
@@ -52,10 +92,7 @@ while($_ = <>)
               "\@item Nr.\@tab Name \@tab Standard value \@tab Type\n";
    }   
 
-    # key words after "distr:"
-    if ($DISTR == 1 && $_ =~ /^\s*\*\s*(\w+:)(.*?)\s*\*\s*$/){
-	print OUTFILE "\@\*", $1, " ", $2, "\n";
-    }
+
     # parameters:
     if ( $PARAM == 1
 	 && ( ($nr, $def) = $_ =~ /^\s*\*\s*([0-9]+):\s*(.*?)\s+\*\s*$/) ){
@@ -68,12 +105,4 @@ while($_ = <>)
     }
 
 
-    # first key word is "distr:"
-    if ( ($distribution, $reference) =
-         $_ =~ /^\s*\*\s*distr:\s*([^\[]*)\s+\[?([^\]]*)\]?\s*\*\s*$/ ){
-        $DISTR = 1;
-        $distrcount++;
-	print OUTFILE "\@subsection ", $distribution, "\n";
-    }
-    
 }

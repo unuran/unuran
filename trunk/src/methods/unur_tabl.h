@@ -42,15 +42,10 @@
 
 struct unur_tabl_par { 
 
-  double (*pdf)(double x, double *pdf_param, int n_pdf_param);  /* pointer to pdf */
-  double *pdf_param;    /* parameters of the pdf                             */
-  int     n_pdf_param;  /* number of parameters of the pdf                   */
-  double  pdf_area;     /* approximate area below the pdf                    */
   double *slopes;       /* slopes <a_i,b_i>, i.e.\ f(a_i) >= f(b_i)          */
   int     n_slopes;     /* number of slopes                                  */
   double  bleft;        /* left border of the domain                         */
   double  bright;       /* right border of the domain                        */
-  double  mode;         /* location of mode                                  */
 
   int     max_ivs;      /* maximum number of intervals                       */
   double  max_ratio;    /* limit for ratio r_n = A(squeeze) / A(hat)         */
@@ -93,7 +88,7 @@ struct unur_tabl_gen {
   double  Atotal;               /* total area below hat                      */
   double  Asqueeze;             /* area of squeeze polygon                   */
 
-  double (*pdf)(double x, double *pdf_param, int n_pdf_param);  /* pointer to pdf */
+  unur_function_cont *pdf;      /* pointer to p.d.f.                         */
   double *pdf_param;            /* parameters of the pdf                     */
   int     n_pdf_param;          /* number of parameters of the pdf           */
   double  bleft;                /* left boundary of domain                   */
@@ -118,7 +113,7 @@ struct unur_tabl_gen {
 /*---------------------------------------------------------------------------*/
 /* Routines for user interface                                               */
 
-struct unur_par *unur_tabl_new( double (*pdf)(double x,double *pdf_param, int n_pdf_params) );
+struct unur_par *unur_tabl_new( struct unur_distr *distr );
 /* get default parameters for generator                                      */
 
 struct unur_gen *unur_tabl_init( struct unur_par *parameters );

@@ -74,44 +74,31 @@
 
 #include <unur_distr.h>
 
+#include <unur_cookies.h>
 #include <unur_errno.h>
 #include <unur_math.h>
+#include <unur_umalloc.h>
 #include <unur_utils.h>
 
 /*---------------------------------------------------------------------------*/
 
 static char distr_name[] = "Beta distribution";
 
-#define p (param[0])
-#define q (param[1])
-#define a (param[2])
-#define b (param[3])
+#define p (params[0])
+#define q (params[1])
+#define a (params[2])
+#define b (params[3])
 /*---------------------------------------------------------------------------*/
 
 double
-unur_pdf_beta(double x, double *param, int n_param)
+unur_pdf_beta(double x, double *params, int n_params)
 { 
-  CHECK_NULL(param,RETURN_NULL);
-
-  switch (n_param) {
-
+  switch (n_params) {
   case 4:  /* non standard */
-#if CHECKARGS
-    if (a >= b) {
-      _unur_error(distr_name,UNUR_ERR_DISTR,"invalid domain: a >= b!");
-      return 0.;
-    }
-#endif
     /* standardize */
     x = (x-a) / (b-a);
 
   case 2:  /* standard */
-#if CHECKARGS
-    if (p <= 0. || q <= 0.) {
-      _unur_error(distr_name,UNUR_ERR_DISTR,"p <= 0 or q <= 0.");
-      return 0.;
-    }
-#endif
     if (x <= 0. || x >= 1.)
       return 0.;
     
@@ -133,32 +120,17 @@ unur_pdf_beta(double x, double *param, int n_param)
 /*---------------------------------------------------------------------------*/
 
 double
-unur_dpdf_beta(double x, double *param, int n_param)
+unur_dpdf_beta(double x, double *params, int n_params)
 { 
   register double factor = 1.;
 
-  CHECK_NULL(param,RETURN_NULL);
-
-  switch (n_param) {
-
+  switch (n_params) {
   case 4:  /* non standard */
-#if CHECKARGS
-    if (a >= b) {
-      _unur_error(distr_name ,UNUR_ERR_DISTR,"invalid domain: a >= b!");
-      return 0.;
-    }
-#endif
     /* standardize */
     factor = 1./(b-a);
     x = (x-a) / (b-a);
 
   case 2:  /* standard */
-#if CHECKARGS
-    if (p <= 0. || q <= 0.) {
-      _unur_error(distr_name ,UNUR_ERR_DISTR,"p <= 0 or q <= 0.");
-      return 0.;
-    }
-#endif
     if (x <= 0. || x >= 1.)
       return 0.;
     
@@ -180,29 +152,14 @@ unur_dpdf_beta(double x, double *param, int n_param)
 /*---------------------------------------------------------------------------*/
 
 double
-unur_cdf_beta(double x, double *param, int n_param)
+unur_cdf_beta(double x, double *params, int n_params)
 {
-  CHECK_NULL(param,RETURN_NULL);
-
-  switch (n_param) {
-
+  switch (n_params) {
   case 4:  /* non standard */
-#if CHECKARGS
-    if (a >= b) {
-      _unur_error(distr_name ,UNUR_ERR_DISTR,"invalid domain: a >= b!");
-      return 0.;
-    }
-#endif
     /* standardize */
     x = (x-a) / (b-a);
 
   case 2:  /* standard */
-#if CHECKARGS
-    if (p <= 0. || q <= 0.) {
-      _unur_error(distr_name ,UNUR_ERR_DISTR,"p <= 0 or q <= 0.");
-      return 0.;
-    }
-#endif
     if (x <= 0.) return 0.;
     if (x >= 1.) return 1.;
 
@@ -218,18 +175,9 @@ unur_cdf_beta(double x, double *param, int n_param)
 /*---------------------------------------------------------------------------*/
 
 double
-unur_mode_beta(double *param, int n_param)
+unur_mode_beta(double *params, int n_params)
 { 
   double mode = NOT_UNIMODAL;
-
-  CHECK_NULL(param,RETURN_NULL);
-
-#if CHECKARGS
-  if (p <= 0. || q <= 0.) {
-    _unur_error(distr_name,UNUR_ERR_DISTR,"p <= 0 or q <= 0.");
-    return 0.;
-  }
-#endif
 
   if (p <= 1. && q > 1.)
     mode = 0.;              /* left limit of domain */
@@ -240,18 +188,12 @@ unur_mode_beta(double *param, int n_param)
   if (p > 1. && q > 1.)
     mode = (p - 1.) / (p + q - 2.);
 
-  switch (n_param) {
+  switch (n_params) {
 
   case 2:  /* standard */
     return mode;
 
   case 4:  /* non standard */
-#if CHECKARGS
-    if (a >= b) {
-      _unur_error(distr_name ,UNUR_ERR_DISTR,"invalid domain: a >= b!");
-      return 0.;
-    }
-#endif
     if (mode <= 1.) 
       mode = mode * (b-a) + a;
     /* else p.d.f. is not unimodal */
@@ -268,31 +210,14 @@ unur_mode_beta(double *param, int n_param)
 /*---------------------------------------------------------------------------*/
 
 double
-unur_area_beta(double *param, int n_param)
+unur_area_beta(double *params, int n_params)
 { 
-
-  CHECK_NULL(param,RETURN_NULL);
-
-#if CHECKARGS
-    if (p <= 0. || q <= 0.) {
-      _unur_error(distr_name ,UNUR_ERR_DISTR,"p <= 0 or q <= 0.");
-      return 0.;
-    }
-#endif
-
-  switch (n_param) {
-
+  switch (n_params) {
   case 2:  /* standard */
     /* Beta(p,q) */
     return exp(_unur_gammaln(p) + _unur_gammaln(q) - _unur_gammaln(p+q));
 
   case 4:  /* non standard */
-#if CHECKARGS
-    if (a >= b) {
-      _unur_error("Beta distribution",UNUR_ERR_DISTR,"invalid domain: a >= b!");
-      return 0.;
-    }
-#endif
     /* Beta(p,q) * (b-a)^(p+q-1) */
     return exp(_unur_gammaln(p) + _unur_gammaln(q) - _unur_gammaln(p+q) + (b-a)*(p+q-1.) );
 
@@ -302,6 +227,81 @@ unur_area_beta(double *param, int n_param)
   }
 
 } /* end of unur_area_beta() */
+
+/*---------------------------------------------------------------------------*/
+
+struct unur_distr *
+unur_distr_beta( double *params, int n_params )
+{
+  register struct unur_distr *distr;
+
+  /* check new parameter for generator */
+  CHECK_NULL(params,RETURN_NULL);
+  if (n_params != 2 && n_params != 4) {
+    _unur_warning(NULL,UNUR_ERR_GENERIC,"invalid number parameter");
+    return NULL;
+  }
+
+  /* allocate structure */
+  distr = _unur_malloc( sizeof(struct unur_distr) );
+
+  /* set magiv cookie */
+  COOKIE_SET(distr,CK_DISTR_CONT);
+
+  /* set type of distribution */
+  distr->type = UNUR_DISTR_CONT;
+
+  /* functions */
+  distr->data.cont.pdf  = unur_pdf_beta;     /* pointer to p.d.f.            */
+  distr->data.cont.dpdf = unur_dpdf_beta;    /* pointer to derivative of p.d.f. */
+  distr->data.cont.cdf  = unur_cdf_beta;     /* pointer to c.d.f.            */
+
+  /* copy parameters */
+  distr->data.cont.params[0] = params[0];    /* p */
+  distr->data.cont.params[1] = params[1];    /* q */
+  switch (n_params) {
+  case 2:
+    distr->data.cont.params[2] = 0.;         /* default for a */
+    distr->data.cont.params[3] = 1.;         /* default for b */
+    break;
+  case 4:
+    distr->data.cont.params[2] = params[2];  /* a */
+    distr->data.cont.params[3] = params[3];  /* b */
+    break;
+  }
+
+  /* check parameters p and q */
+  if (distr->data.cont.params[0] <= 0. || distr->data.cont.params[1] <= 0.) {
+    _unur_error(distr_name,UNUR_ERR_DISTR,"p <= 0 or q <= 0.");
+    free( distr ); return NULL;
+  }
+  /* check parameters a and b */
+  if (distr->data.cont.params[2] >= distr->data.cont.params[3]) {
+    _unur_error(distr_name ,UNUR_ERR_DISTR,"invalid domain: a >= b!");
+    free( distr ); return NULL;
+  }
+
+  /* number of arguments */
+  distr->data.cont.n_params = n_params;
+
+  /* mode and area below p.d.f. */
+  distr->data.cont.mode = unur_mode_beta(distr->data.cont.params,distr->data.cont.n_params);
+  distr->data.cont.area = unur_area_beta(distr->data.cont.params,distr->data.cont.n_params);
+
+  /* domain */
+  distr->data.cont.domain[0] = distr->data.cont.params[2]; /* left boundary  */
+  distr->data.cont.domain[1] = distr->data.cont.params[3]; /* right boundary */
+
+  /* indicate which parameters are set */
+  distr->set = ( UNUR_DISTR_SET_PARAMS | 
+		 UNUR_DISTR_SET_DOMAIN |
+		 UNUR_DISTR_SET_MODE   |
+		 UNUR_DISTR_SET_PDFAREA );
+                
+  /* return pointer to object */
+  return distr;
+
+} /* end of unur_distr_beta() */
 
 /*---------------------------------------------------------------------------*/
 #undef p

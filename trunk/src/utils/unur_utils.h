@@ -67,7 +67,8 @@
 
 #else               /* do not check (be carefull) */
 
-#define CHECK_NULL(ptr,rval)
+#define CHECK_NULL(ptr,rval)                 \
+        do {} while(0)
 
 #endif
 

@@ -71,37 +71,29 @@
 
 #include <unur_distr.h>
 
+#include <unur_cookies.h>
 #include <unur_errno.h>
 #include <unur_math.h>
+#include <unur_umalloc.h>
 #include <unur_utils.h>
 
 /*---------------------------------------------------------------------------*/
 
 static char distr_name[] = "Normal distribution";
 
-#define mu    (param[0])
-#define sigma (param[1])
+#define mu    (params[0])
+#define sigma (params[1])
 /*---------------------------------------------------------------------------*/
 
 double
-unur_pdf_normal( double x, double *param, int n_param )
+unur_pdf_normal( double x, double *params, int n_params )
 { 
-  switch (n_param) {
-
+  switch (n_params) {
   case 2:  /* non standard */
-    CHECK_NULL(param,RETURN_NULL);
-#if CHECKARGS
-    if (sigma <= 0.) {
-      _unur_error(distr_name ,UNUR_ERR_DISTR,"scale parameter sigma <= 0.");
-      return 0.;
-    }
-#endif
     /* standardize */
     x = (x - mu) / sigma;
-
   case 0:  /* standard */
     return exp(-x*x/2.); 
-
   default:
     _unur_error(distr_name ,UNUR_ERR_NPARAM,"");
     return 0.;
@@ -112,27 +104,17 @@ unur_pdf_normal( double x, double *param, int n_param )
 /*---------------------------------------------------------------------------*/
 
 double
-unur_dpdf_normal( double x, double *param, int n_param )
+unur_dpdf_normal( double x, double *params, int n_params )
 {
   register double factor = 1.;
 
-  switch (n_param) {
-
+  switch (n_params) {
   case 2:  /* non standard */
-    CHECK_NULL(param,RETURN_NULL);
-#if CHECKARGS
-    if (sigma <= 0.) {
-      _unur_error(distr_name ,UNUR_ERR_DISTR,"scale parameter sigma <= 0.");
-      return 0.;
-    }
-#endif
     /* standardize */
     factor = 1./sigma;
     x = (x - mu) / sigma;
-
   case 0:  /* standard */
     return ( -x * exp(-x*x/2.) * factor );
-
   default:
     _unur_error(distr_name ,UNUR_ERR_NPARAM,"");
     return 0.;
@@ -143,24 +125,14 @@ unur_dpdf_normal( double x, double *param, int n_param )
 /*---------------------------------------------------------------------------*/
 
 double
-unur_cdf_normal( double x, double *param, int n_param ) 
+unur_cdf_normal( double x, double *params, int n_params ) 
 {
-  switch (n_param) {
-
+  switch (n_params) {
   case 2:  /* non standard */
-    CHECK_NULL(param,RETURN_NULL);
-#if CHECKARGS
-    if (sigma <= 0.) {
-      _unur_error(distr_name ,UNUR_ERR_DISTR,"scale parameter sigma <= 0.");
-      return 0.;
-    }
-#endif
     /* standardize */
     x = (x - mu) / sigma;
-
   case 0:  /* standard */
     return _unur_cdf_normal_ext(x);
-
   default:
     _unur_error(distr_name ,UNUR_ERR_NPARAM,"");
     return 0.;
@@ -171,11 +143,11 @@ unur_cdf_normal( double x, double *param, int n_param )
 /*---------------------------------------------------------------------------*/
 
 double
-unur_mode_normal( double *param, int n_param )
+unur_mode_normal( double *params, int n_params )
 {
-  switch (n_param) {
+  switch (n_params) {
   case 2:  /* non standard */
-    CHECK_NULL(param,RETURN_NULL);
+    CHECK_NULL(params,RETURN_NULL);
     return mu;
   case 0:  /* standard */
     return 0.;
@@ -188,24 +160,14 @@ unur_mode_normal( double *param, int n_param )
 /*---------------------------------------------------------------------------*/
 
 double
-unur_area_normal( double *param, int n_param )
+unur_area_normal( double *params, int n_params )
 {
-  switch (n_param) {
+  switch (n_params) {
 
   case 2:  /* non standard */
-    CHECK_NULL(param,RETURN_NULL);
-#if CHECKARGS
-    if (sigma <= 0.) {
-      _unur_error(distr_name ,UNUR_ERR_DISTR,"scale parameter sigma <= 0.");
-      return 0.;
-    }
-#endif
-    /* standardize */
-    return 2.506628274631*sigma;
-
+    return M_SQRTPI * M_SQRT2 * sigma;
   case 0:  /* standard */
-    return 2.506628274631;
-
+    return M_SQRTPI * M_SQRT2;
   default:
     _unur_error(distr_name ,UNUR_ERR_NPARAM,"");
     return 0.;
@@ -214,14 +176,80 @@ unur_area_normal( double *param, int n_param )
 } /* end of unur_area_normal() */
 
 /*---------------------------------------------------------------------------*/
+
+struct unur_distr *
+unur_distr_normal( double *params, int n_params )
+{
+  register struct unur_distr *distr;
+
+  /* check new parameter for generator */
+  if (n_params < 0 || n_params > 2) {
+    _unur_warning(NULL,UNUR_ERR_GENERIC,"invalid number parameter");
+    return NULL;
+  }
+  if (n_params > 0)
+    CHECK_NULL(params,RETURN_NULL);
+
+  /* allocate structure */
+  distr = _unur_malloc( sizeof(struct unur_distr) );
+
+  /* set magiv cookie */
+  COOKIE_SET(distr,CK_DISTR_CONT);
+
+  /* set type of distribution */
+  distr->type = UNUR_DISTR_CONT;
+
+  /* functions */
+  distr->data.cont.pdf  = unur_pdf_normal;   /* pointer to p.d.f.            */
+  distr->data.cont.dpdf = unur_dpdf_normal;  /* pointer to derivative of p.d.f. */
+  distr->data.cont.cdf  = unur_cdf_normal;   /* pointer to c.d.f.            */
+
+  /* copy parameters */
+  switch (n_params) {
+  case 0:
+    distr->data.cont.params[0] = 0.;        /* default for mu */
+    distr->data.cont.params[1] = 1.;        /* default for sigma */
+    break;
+  case 1:
+    distr->data.cont.params[0] = params[0]; /* mu */
+    distr->data.cont.params[1] = 1.;        /* default for sigma */
+    n_params = 2;
+    break;
+  case 2:
+    distr->data.cont.params[0] = params[0];  /* mu */
+    distr->data.cont.params[1] = params[1];  /* sigma */
+    break;
+  }
+
+  /* check parameter sigma */
+  if (distr->data.cont.params[1] <= 0.) {
+    _unur_error(distr_name ,UNUR_ERR_DISTR,"scale parameter sigma <= 0.");
+    free( distr ); return NULL;
+  }
+
+  /* number of arguments */
+  distr->data.cont.n_params = n_params;
+
+  /* mode and area below p.d.f. */
+  distr->data.cont.mode = unur_mode_normal(distr->data.cont.params,distr->data.cont.n_params);
+  distr->data.cont.area = unur_area_normal(distr->data.cont.params,distr->data.cont.n_params);
+
+  /* domain */
+  distr->data.cont.domain[0] = -INFINITY;   /* left boundary  */
+  distr->data.cont.domain[1] = INFINITY;    /* right boundary */
+
+  /* indicate which parameters are set */
+  distr->set = ( UNUR_DISTR_SET_PARAMS | 
+		 UNUR_DISTR_SET_DOMAIN |
+		 UNUR_DISTR_SET_MODE   |
+		 UNUR_DISTR_SET_PDFAREA );
+                
+  /* return pointer to object */
+  return distr;
+
+} /* end of unur_distr_normal() */
+
+/*---------------------------------------------------------------------------*/
 #undef mu
 #undef sigma
 /*---------------------------------------------------------------------------*/
-
-
-
-
-
-
-
-

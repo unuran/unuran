@@ -52,6 +52,10 @@
 #include <unur_urng.h>
 
 /*---------------------------------------------------------------------------*/
+/* include header file for distribtion object                                */
+#include <unur_distribution.h>
+
+/*---------------------------------------------------------------------------*/
 /* include header files for generators                                       */
 
 /* methods for discrete distributions                                        */
@@ -147,6 +151,8 @@ struct unur_par {
 
   UNUR_URNG_TYPE  urng;       /* pointer to uniform random number generator  */
 
+  struct unur_distr *distr;   /* pointer to distribution object              */
+
 #if UNUR_DEBUG & UNUR_DB_COOKIES  /* use magic cookies */
   unsigned long   cookie;     /* magic cookie                                */
 #endif
@@ -183,6 +189,8 @@ struct unur_gen {
   unsigned long   method;     /* indicates method and generator to be used   */
   
   UNUR_URNG_TYPE  urng;       /* pointer to uniform random number generator  */
+
+  struct unur_distr *distr;   /* pointer to distribution object              */
   
 #if UNUR_DEBUG & UNUR_DB_COOKIES  /* use magic cookies */
   unsigned long   cookie;     /* magic cookie                                */
@@ -220,6 +228,10 @@ struct unur_gen {
 #define unur_free(gen)                gen->destroy(gen)
 
 #endif  /* UNUR_DB_CHECKNULL */
+
+/** TODO: besseren platz fuer diesen prototype **/
+void _unur_distr_debug_cont( struct unur_gen *gen );
+/* write info about distribution into logfile                                */
 
 /*---------------------------------------------------------------------------*/
 #endif  /* __UNUR_METHODS_H_SEEN */

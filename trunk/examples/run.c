@@ -24,21 +24,21 @@
 #define N_INTERVALS 1000
 
 
-#define RUN_TESTS       (~0x0UL)
+/*  #define RUN_TESTS       (~0x0UL) */
 /*  #define RUN_TESTS       (~0x0UL & ~UNUR_TEST_CHI2) */
 /*  #define RUN_TESTS       (~0x0UL & ~UNUR_TEST_N_URNG) */
-/*  #define RUN_TESTS       (~0x0UL & ~UNUR_TEST_SCATTER) */
+#define RUN_TESTS       (~0x0UL & ~UNUR_TEST_SCATTER)
 
 
 /* define which tests should run (1) or not (0) */
-#define RUN_DAU           0
-#define RUN_DIS           0
+#define RUN_DAU           1
+#define RUN_DIS           1
 
-#define RUN_UTDR          0
-#define RUN_AROU          0
-#define RUN_TDRSQRT       0
+#define RUN_UTDR          1
+#define RUN_AROU          1
+#define RUN_TDRSQRT       1
 #define RUN_TDRLOG        1
-#define RUN_TABL          0
+#define RUN_TABL          1
 
 #define RUN_NORMAL        1
 #define RUN_GAMMA         1
@@ -46,9 +46,9 @@
 #define RUN_CAUCHY        1
 #define RUN_UNIFORM       1
 
-#define RUN_RECT          0
+#define RUN_RECT          1
 
-#define RUN_CSTD          0
+#define RUN_CSTD          1
 
 /*---------------------------------------------------------------------------*/
 
@@ -64,6 +64,29 @@ int main()
 /*    double stp[10]; */
   double slopes[10];
 /*    UNUR_URNG_TYPE urng; */
+
+  struct unur_distr *distr_normal;
+  struct unur_distr *distr_gamma;
+  struct unur_distr *distr_beta;
+  struct unur_distr *distr_cauchy;
+  struct unur_distr *distr_uniform;
+
+  /* ------------------------- */
+
+  distr_normal = unur_distr_normal(NULL,0);
+
+  fpar[0] = 3.;
+  distr_gamma = unur_distr_gamma(fpar,1);
+
+  fpar[0] = 5.2;
+  fpar[1] = 7.9;
+  distr_beta = unur_distr_beta(fpar,2);
+
+  fpar[0] = 0.;
+  fpar[1] = 1.;
+  distr_cauchy = unur_distr_cauchy(fpar,2);
+
+  distr_uniform = unur_distr_uniform(NULL,0);
 
   /* ------------------------- */
 
@@ -161,12 +184,7 @@ int main()
 #if RUN_UTDR == 1
 
   /* get default parameters for new generator */
-  par = unur_utdr_new(unur_pdf_normal,0.);
-  unur_set_pdf_area(par,unur_area_normal(NULL,0));
-
-  unur_set_pdf_area(par,-3.);
-
-
+  par = unur_utdr_new(distr_normal);
   unur_set_factor(par,3.);
 
   /* run tests */
@@ -178,7 +196,7 @@ int main()
 
 #if RUN_AROU == 1
 
-  par = unur_arou_new(unur_pdf_normal,unur_dpdf_normal);
+  par = unur_arou_new(distr_normal);
   unur_set_cpoints(par,30,NULL);
   unur_set_max_shratio(par,1.);
 /*    unur_set_debug(par,1); */
@@ -192,7 +210,7 @@ int main()
 
 #if RUN_TDRSQRT == 1
 
-  par = unur_tdr_new(unur_pdf_normal,unur_dpdf_normal);
+  par = unur_tdr_new(distr_normal);
   unur_set_mode(par,0.);
   unur_set_tdr_c(par,-0.5);
   unur_set_cpoints(par,30,NULL);
@@ -208,7 +226,7 @@ int main()
 
 #if RUN_TDRLOG == 1
 
-  par = unur_tdr_new(unur_pdf_normal,unur_dpdf_normal);
+  par = unur_tdr_new(distr_normal);
   unur_set_mode(par,0.);
   unur_set_tdr_c(par,0.);
   unur_set_cpoints(par,30,NULL);
@@ -223,21 +241,17 @@ int main()
 
 #if RUN_TABL == 1
     
-  par = unur_tabl_new(unur_pdf_normal);
+  par = unur_tabl_new(distr_normal);
 
 /*    slopes[0] = slopes[2] = 0.; */
 /*    slopes[1] = -50.; */
 /*    slopes[3] = 50.; */
 /*    unur_set_slopes(par,slopes,2); */
 
-  unur_set_mode(par,0.);
   unur_set_domain(par,-50.,50.);
   unur_set_variant(par,1UL);
-
 /*    unur_set_max_intervals(par,1000); */
 /*    unur_set_max_shratio(par,1.); */
-
-  unur_set_pdf_area(par,unur_area_normal(NULL,0));
   unur_set_tabl_c(par,0.1);
 
   /* run tests */
@@ -260,12 +274,7 @@ int main()
 #if RUN_UTDR == 1
 
   /* get default parameters for new generator */
-  par = unur_utdr_new(unur_pdf_gamma,unur_mode_gamma(fpar,1));
-  unur_set_domain(par,0.,UNUR_INFINITY);
-  unur_set_pdf_param(par,fpar,1);
-
-/*    unur_set_pdf_area(par,area_gamma(fpar,1)); */
-  unur_set_pdf_area(par,ALPHA-1.);
+  par = unur_utdr_new(distr_gamma);
 
   /* run tests */
   unur_run_tests(par,RUN_TESTS,unur_cdf_gamma);
@@ -277,9 +286,7 @@ int main()
 #if RUN_AROU == 1
 
   /* get default parameters for new generator */
-  par = unur_arou_new(unur_pdf_gamma,unur_dpdf_gamma);
-  unur_set_domain(par,-1.,UNUR_INFINITY);
-  unur_set_pdf_param(par,fpar,1);
+  par = unur_arou_new(distr_gamma);
   unur_set_cpoints(par,30,NULL);
   unur_set_max_shratio(par,0.99);
 
@@ -293,9 +300,7 @@ int main()
 #if RUN_TDRSQRT == 1
 
   /* get default parameters for new generator */
-  par = unur_tdr_new(unur_pdf_gamma,unur_dpdf_gamma);
-  unur_set_domain(par,0.,UNUR_INFINITY);
-  unur_set_pdf_param(par,fpar,1);
+  par = unur_tdr_new(distr_gamma);
   unur_set_mode(par,unur_mode_gamma(fpar,1));
   unur_set_tdr_c(par,-0.5);
   unur_set_cpoints(par,30,NULL);
@@ -311,9 +316,7 @@ int main()
 #if RUN_TDRLOG == 1
 
   /* get default parameters for new generator */
-  par = unur_tdr_new(unur_pdf_gamma,unur_dpdf_gamma);
-  unur_set_domain(par,0.,UNUR_INFINITY);
-  unur_set_pdf_param(par,fpar,1);
+  par = unur_tdr_new(distr_gamma);
   unur_set_mode(par,unur_mode_gamma(fpar,1));
   unur_set_tdr_c(par,0.);
   unur_set_cpoints(par,30,NULL);
@@ -328,17 +331,13 @@ int main()
 
 #if RUN_TABL == 1
     
-  par = unur_tabl_new(unur_pdf_gamma);
-  unur_set_pdf_param(par,fpar,1);
+  par = unur_tabl_new(distr_gamma);
 /*    unur_set_domain(par,0.,50.); */
-/*    unur_set_mode(par,unur_mode_gamma(fpar,1)); */
 /*    unur_set_variant(par,1UL); */
   slopes[0] = slopes[2] = unur_mode_gamma(fpar,1);
   slopes[1] = 0.;
   slopes[3] = 50.;
   unur_set_slopes(par,slopes,2);
-/*    unur_set_pdf_area(par,unur_area_gamma(fpar,1)); */
-  unur_set_pdf_area(par,ALPHA-1.);
   unur_set_tabl_c(par,0.1);
 
   /* run tests */
@@ -363,12 +362,7 @@ int main()
 #if RUN_UTDR == 1
 
   /* get default parameters for new generator */
-  par = unur_utdr_new(unur_pdf_beta,unur_mode_beta(fpar,2));
-  unur_set_domain(par,0.,1.);
-  unur_set_pdf_param(par,fpar,2);
-
-/*    unur_set_pdf_area(par,unur_area_beta(fpar,2)); */
-  unur_set_pdf_area(par,0.000217719);
+  par = unur_utdr_new(distr_beta);
 
   /* run tests */
   unur_run_tests(par,RUN_TESTS,unur_cdf_beta);
@@ -380,9 +374,7 @@ int main()
 #if RUN_AROU == 1
 
   /* get default parameters for new generator */
-  par = unur_arou_new(unur_pdf_beta,unur_dpdf_beta);
-  unur_set_domain(par,0.,1.);
-  unur_set_pdf_param(par,fpar,2);
+  par = unur_arou_new(distr_beta);
   unur_set_cpoints(par,30,NULL);
   unur_set_max_shratio(par,0.);
 
@@ -396,9 +388,7 @@ int main()
 #if RUN_TDRSQRT == 1
 
   /* get default parameters for new generator */
-  par = unur_tdr_new(unur_pdf_beta,unur_dpdf_beta);
-  unur_set_domain(par,0.,1);
-  unur_set_pdf_param(par,fpar,2);
+  par = unur_tdr_new(distr_beta);
   unur_set_mode(par,unur_mode_beta(fpar,2));
   unur_set_tdr_c(par,-0.5);
   unur_set_cpoints(par,30,NULL);
@@ -414,9 +404,7 @@ int main()
 #if RUN_TDRLOG == 1
 
   /* get default parameters for new generator */
-  par = unur_tdr_new(unur_pdf_beta,unur_dpdf_beta);
-  unur_set_domain(par,0.,1);
-  unur_set_pdf_param(par,fpar,2);
+  par = unur_tdr_new(distr_beta);
   unur_set_mode(par,unur_mode_beta(fpar,2));
   unur_set_tdr_c(par,0.);
   unur_set_cpoints(par,30,NULL);
@@ -431,13 +419,9 @@ int main()
 
 #if RUN_TABL == 1
     
-  par = unur_tabl_new(unur_pdf_beta);
-  unur_set_pdf_param(par,fpar,2);
+  par = unur_tabl_new(distr_beta);
   unur_set_domain(par,0.,1.);
-  unur_set_mode(par,unur_mode_beta(fpar,2));
 /*    unur_set_variant(par,1UL); */
-/*    unur_set_pdf_area(par,unur_area_beta(fpar,2)); */
-  unur_set_pdf_area(par,0.000217719);
   unur_set_tabl_c(par,0.1);
 
   /* run tests */
@@ -463,9 +447,7 @@ int main()
 #if RUN_UTDR == 1
 
   /* get default parameters for new generator */
-  par = unur_utdr_new(unur_pdf_cauchy,unur_mode_cauchy(fpar,2));
-  unur_set_pdf_param(par,fpar,2);
-  unur_set_pdf_area(par,unur_area_cauchy(fpar,2));
+  par = unur_utdr_new(distr_cauchy);
 
   /* run tests */
   unur_run_tests(par,RUN_TESTS,unur_cdf_cauchy);
@@ -477,8 +459,7 @@ int main()
 #if RUN_AROU == 1
 
   /* get default parameters for new generator */
-  par = unur_arou_new(unur_pdf_cauchy,unur_dpdf_cauchy);
-  unur_set_pdf_param(par,fpar,2);
+  par = unur_arou_new(distr_cauchy);
   unur_set_cpoints(par,30,NULL);
   unur_set_max_shratio(par,0.);
 
@@ -492,8 +473,7 @@ int main()
 #if RUN_TDRSQRT == 1
 
   /* get default parameters for new generator */
-  par = unur_tdr_new(unur_pdf_cauchy,unur_dpdf_cauchy);
-  unur_set_pdf_param(par,fpar,2);
+  par = unur_tdr_new(distr_cauchy);
   unur_set_mode(par,unur_mode_cauchy(fpar,2));
   unur_set_tdr_c(par,-0.5);
   unur_set_cpoints(par,30,NULL);
@@ -509,8 +489,7 @@ int main()
 #if RUN_TDRLOG == 1
 
   /* get default parameters for new generator */
-  par = unur_tdr_new(unur_pdf_cauchy,unur_dpdf_cauchy);
-  unur_set_pdf_param(par,fpar,2);
+  par = unur_tdr_new(distr_cauchy);
   unur_set_mode(par,unur_mode_cauchy(fpar,2));
   unur_set_tdr_c(par,0.);
   unur_set_cpoints(par,30,NULL);
@@ -525,12 +504,9 @@ int main()
 
 #if RUN_TABL == 1
     
-  par = unur_tabl_new(unur_pdf_cauchy);
-  unur_set_pdf_param(par,fpar,2);
-  unur_set_mode(par,0.);
+  par = unur_tabl_new(distr_cauchy);
   unur_set_domain(par,-50.,50.);
 /*    unur_set_variant(par,1UL); */
-  unur_set_pdf_area(par,unur_area_cauchy(fpar,2));
   unur_set_tabl_c(par,0.1);
 
   /* run tests */
@@ -552,9 +528,7 @@ int main()
 #if RUN_UTDR == 1
 
   /* get default parameters for new generator */
-  par = unur_utdr_new(unur_pdf_uniform,0.5);
-  unur_set_pdf_area(par,1.);
-  unur_set_domain(par,0.,1.);
+  par = unur_utdr_new(distr_uniform);
 
   /* run tests */
   unur_run_tests(par,RUN_TESTS,unur_cdf_uniform);
@@ -565,8 +539,7 @@ int main()
 
 #if RUN_AROU == 1
 
-  par = unur_arou_new(unur_pdf_uniform,unur_dpdf_uniform);
-  unur_set_domain(par,0.,1.);
+  par = unur_arou_new(distr_uniform);
   unur_set_cpoints(par,30,NULL);
   unur_set_max_shratio(par,1.);
 
@@ -579,9 +552,8 @@ int main()
 
 #if RUN_TDRSQRT == 1
 
-  par = unur_tdr_new(unur_pdf_uniform,unur_dpdf_uniform);
+  par = unur_tdr_new(distr_uniform);
 /*    unur_set_mode(par,0.5); */
-  unur_set_domain(par,-0.5,1.5);
   unur_set_tdr_c(par,-0.5);
   unur_set_cpoints(par,30,NULL);
   unur_set_max_shratio(par,1.);
@@ -596,9 +568,8 @@ int main()
 
 #if RUN_TDRLOG == 1
 
-  par = unur_tdr_new(unur_pdf_uniform,unur_dpdf_uniform);
+  par = unur_tdr_new(distr_uniform);
   unur_set_mode(par,0.5);
-  unur_set_domain(par,0.,1.);
   unur_set_tdr_c(par,0.);
   unur_set_cpoints(par,30,NULL);
   unur_set_max_shratio(par,0.);
@@ -612,11 +583,9 @@ int main()
 
 #if RUN_TABL == 1
     
-  par = unur_tabl_new(unur_pdf_uniform);
-  unur_set_mode(par,0.5);
+  par = unur_tabl_new(distr_uniform);
   unur_set_domain(par,-1.5,2.5);
 /*    unur_set_variant(par,1UL); */
-  unur_set_pdf_area(par,1.);
   unur_set_tabl_c(par,0.25);
 
   unur_set_max_shratio(par,1.);

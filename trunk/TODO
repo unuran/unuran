@@ -30,6 +30,11 @@
 
 -----------------------------------------------------------------------------
 
+(*) einschraenkung des domain ohne generatorobject neu zu generieren sollte
+    moeglich sein (z.B. bei TABL, AROU, TDR).
+
+-----------------------------------------------------------------------------
+
 (*) TABL: 
 	(.) ist eine baustelle!!
 	(.) ueberpruefe ob area unter hut zu gross (wie??)

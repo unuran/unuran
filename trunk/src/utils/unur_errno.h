@@ -95,6 +95,8 @@ enum {
   UNUR_ERR_UNIMPLEMENTED = 999,  /* unimplemented feature                     */
   UNUR_ERR_UNKNOWN       = 1000, /* unknown error (report this!)              */
 
+  UNUR_ERR_UNKNOWNDISTR  = 2000, /* cannot handle this distribution */
+
   /** TODO ??? **/
   UNUR_ERR_DISTR         = 1111  /* invalid parameter for distribution        */
 };

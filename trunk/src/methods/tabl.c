@@ -128,7 +128,7 @@ static struct unur_tabl_interval *_unur_tabl_iv_stack_pop( struct unur_gen *gen 
 /* pop an interval from the stack of free intervals.                         */
 /*---------------------------------------------------------------------------*/
 
-static void _unur_tabl_iv_stack_push( struct unur_gen *gen );
+/*  static void _unur_tabl_iv_stack_push( struct unur_gen *gen ); */
 /*---------------------------------------------------------------------------*/
 /* push the last popped interval back onto the stack.                         */
 /*---------------------------------------------------------------------------*/
@@ -158,6 +158,7 @@ static void _unur_tabl_debug_intervals( struct unur_gen *gen, int print_areas );
 /*---------------------------------------------------------------------------*/
 /* abbreviations */
 
+#define DISTR   distr->data.cont
 #define PAR     par->data.tabl
 #define GEN     gen->data.tabl
 #define SAMPLE  gen->sample.cont
@@ -194,12 +195,12 @@ static void _unur_tabl_debug_intervals( struct unur_gen *gen, int print_areas );
 /*****************************************************************************/
 
 struct unur_par *
-unur_tabl_new( double (*pdf)(double x,double *pdf_param, int n_pdf_param) )
+unur_tabl_new( struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
      /* get default parameters                                               */
      /*                                                                      */
      /* parameters:                                                          */
-     /*   pdf  ... probability density function of the desired distribution  */
+     /*   distr ... pointer to distribution object                           */
      /*                                                                      */
      /* return:                                                              */
      /*   default parameters (pointer to structure)                          */
@@ -210,25 +211,29 @@ unur_tabl_new( double (*pdf)(double x,double *pdf_param, int n_pdf_param) )
 { 
   struct unur_par *par;
 
+  /* check arguments */
+  CHECK_NULL(distr,NULL);
+  COOKIE_CHECK(distr,CK_DISTR_CONT,NULL);
+
+  /* check input */
+  if (DISTR.pdf == NULL) {
+    _unur_error(GENTYPE,UNUR_ERR_GENERIC,"p.d.f. required");
+    return NULL;
+  }
+
   /* allocate structure */
   par = _unur_malloc( sizeof(struct unur_par) );
   COOKIE_SET(par,CK_TABL_PAR);
 
   /* copy input */
-  PAR.pdf           = pdf;
+  par->distr              = distr;  /* pointer to distribution object        */
 
   /* set default values */
-  PAR.pdf_param     = NULL;      /* no parameters for pdf                    */
-  PAR.n_pdf_param   = 0;         /* number of parameters                     */
-  PAR.pdf_area      = 1.;        /* area below p.d.f.                        */
-
   PAR.slopes        = NULL;      /* pointer to slopes of p.d.f.              */
   PAR.n_slopes      = 0;         /* number of slopes                         */
 
-  PAR.mode          = 0.;        /* mode of p.d.f.                           */
   PAR.bleft         = 0.;        /* left boundary of domain (no useful default) */
   PAR.bright        = 0.;        /* right boundary of domain (left = right --> cannot make hat) */
-  PAR.mode          = 0.;        /* (exact!) location of mode                */
 
   PAR.n_starting_cpoints = 30;   /* number of starting points                */
   PAR.area_fract    = 0.25;      /* parameter for equal area rule (default from [1] ) */
@@ -627,7 +632,7 @@ unur_tabl_free( struct unur_gen *gen )
 
   /* free other memory */
   _unur_free_genid(gen);
-  if (GEN.pdf_param) free(GEN.pdf_param);
+  free(gen->distr);
   free(GEN.guide);
   free(gen);
 
@@ -653,7 +658,6 @@ _unur_tabl_create( struct unur_par *par )
      /*----------------------------------------------------------------------*/
 {
   struct unur_gen *gen;
-  int i;
 
   /* check arguments */
   CHECK_NULL(par,NULL);
@@ -664,6 +668,10 @@ _unur_tabl_create( struct unur_par *par )
 
   /* magic cookies */
   COOKIE_SET(gen,CK_TABL_GEN);
+
+  /* copy distribution object */
+  gen->distr = _unur_malloc( sizeof(struct unur_distr) );
+  unur_distr_copy( gen->distr, par->distr );
 
   /* routines for sampling and destroying generator */
   SAMPLE = (par->method & UNUR_MASK_SCHECK) ? unur_tabl_sample_check : unur_tabl_sample;
@@ -683,7 +691,11 @@ _unur_tabl_create( struct unur_par *par )
   GEN.mblocks     = NULL;
 
   /* copy some parameters into generator object */
-  GEN.pdf         = PAR.pdf;           /* p.d.f. of distribution                */
+  GEN.pdf = gen->DISTR.pdf;           /* p.d.f. of distribution              */
+
+  GEN.pdf_param   = gen->DISTR.params;
+  GEN.n_pdf_param = gen->DISTR.n_params;
+
   GEN.bleft       = PAR.bleft;         /* left boundary of domain               */
   GEN.bright      = PAR.bright;        /* right boundary of domain              */
 
@@ -699,16 +711,6 @@ _unur_tabl_create( struct unur_par *par )
   _unur_copy_urng_pointer(par,gen);    /* pointer to urng into generator object */
   _unur_copy_debugflag(par,gen);       /* copy debugging flags into generator object */
   _unur_copy_genid(par,gen);           /* copy generator identifier             */
-
-  /* allocate memory for parameters of p.d.f. */
-  if( PAR.n_pdf_param > 0 )
-    GEN.pdf_param = _unur_malloc( PAR.n_pdf_param * sizeof(double) );
-
-  /* copy parameters of distribution */
-  GEN.n_pdf_param = PAR.n_pdf_param;
-  if (PAR.pdf_param != NULL)
-    for (i=0; i<PAR.n_pdf_param; i++)
-      GEN.pdf_param[i] = PAR.pdf_param[i];
 
   /* return pointer to (almost empty) generator object */
   return(gen);
@@ -748,7 +750,8 @@ _unur_tabl_get_starting_intervals( struct unur_par *par, struct unur_gen *gen )
     /* slopes are given */
     return _unur_tabl_get_starting_intervals_from_slopes(par,gen);
 
-  if ( (par->set & UNUR_SET_DOMAIN) && (par->set & UNUR_SET_MODE) )
+  //  if ( (par->set & UNUR_SET_DOMAIN) && (par->set & UNUR_SET_MODE) )
+  if ( (par->set & UNUR_SET_DOMAIN) && (par->distr->set & UNUR_DISTR_SET_MODE) )
     /* no slopes given. need domain and mode */
     /* compute slopes */
     return _unur_tabl_get_starting_intervals_from_mode(par,gen);
@@ -869,6 +872,8 @@ _unur_tabl_get_starting_intervals_from_mode( struct unur_par *par, struct unur_g
   /** TODO: check for slopes out of support !! **/
 
   struct unur_tabl_interval *iv;
+  
+  double mode = par->DISTR.mode;   /* (exact!) location of mode of p.d.f. */
 
   /* check arguments */
   COOKIE_CHECK(par,CK_TABL_PAR,0);
@@ -883,28 +888,28 @@ _unur_tabl_get_starting_intervals_from_mode( struct unur_par *par, struct unur_g
     iv = GEN.iv = _unur_tabl_iv_stack_pop(gen);
     COOKIE_CHECK(iv,CK_TABL_IV,0);
 
-    if (PAR.mode <= PAR.bleft) {
+    if (mode <= PAR.bleft) {
       /* only one ascending interval <a,b> = [a,b] */
-      iv->xmax = PAR.mode;
+      iv->xmax = mode;
       iv->xmin = PAR.bright;
       break;
     }
 
-    if (PAR.mode >= PAR.bright) {
+    if (mode >= PAR.bright) {
       /* only one descending interval <a,b> = [b,a] */
-      iv->xmax = PAR.mode;
+      iv->xmax = mode;
       iv->xmin = PAR.bleft;
       break;
     }
 
     /* one descending and one ascending interval */
-    iv->xmax = PAR.mode;
+    iv->xmax = mode;
     iv->xmin = PAR.bleft;
 
     /* the second interval */
     iv = iv->next = _unur_tabl_iv_stack_pop(gen);  /* all the other intervals */
     COOKIE_CHECK(iv,CK_TABL_IV,0);
-    iv->xmax = PAR.mode;
+    iv->xmax = mode;
     iv->xmin = PAR.bright;
     break;
   }
@@ -977,7 +982,7 @@ _unur_tabl_split_a_starting_intervals( struct unur_par *par,
   iv = iv_slope;        /* pointer to actual interval */
   iv_last = iv_slope;   /* pointer to last interval in list */
   /* (maximal) area of bar (= hat in one interval) */
-  bar_area = PAR.pdf_area * PAR.area_fract;
+  bar_area = par->DISTR.area * PAR.area_fract;
 
   switch (iv->slope) {
   case +1:
@@ -1321,6 +1326,7 @@ _unur_tabl_iv_stack_pop( struct unur_gen *gen )
 
 /*---------------------------------------------------------------------------*/
 
+#if THIS_IS_NOT_USED_YET & 0
 static void
 _unur_tabl_iv_stack_push( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
@@ -1337,6 +1343,7 @@ _unur_tabl_iv_stack_push( struct unur_gen *gen )
   --(GEN.n_ivs);
   ++(GEN.iv_free);
 } /* end of _unur_tabl_iv_stack_push() */
+#endif
 
 /*-----------------------------------------------------------------*/
 
@@ -1372,6 +1379,8 @@ _unur_tabl_debug_init( struct unur_par *par, struct unur_gen *gen )
   fprintf(log,"%s: method  = rejection from piecewise constant hat\n",gen->genid);
   empty_line();
 
+  _unur_distr_debug_cont( gen );
+
   fprintf(log,"%s: sampling routine = unur_tabl_sample",gen->genid);
   if (par->method & UNUR_MASK_SCHECK)
     fprintf(log,"_check()\n");
@@ -1379,27 +1388,13 @@ _unur_tabl_debug_init( struct unur_par *par, struct unur_gen *gen )
     fprintf(log,"()\n");
   empty_line();
 
-  fprintf(log,"%s: p.d.f with %d arguments\n",gen->genid,PAR.n_pdf_param);
-  if (PAR.n_pdf_param)
-    for( i=0; i<PAR.n_pdf_param; i++ )
-      fprintf(log,"%s:\tparam[%d] = %g\n",gen->genid,i,PAR.pdf_param[i]);
-  empty_line();
-
-  if (par->method & UNUR_MASK_MODE )
-    fprintf(log,"%s: mode = %g\n",gen->genid,PAR.mode);
-  else
-    fprintf(log,"%s: mode unknown\n",gen->genid);
+  /** TODO **/
   fprintf(log,"%s: domain = (%g, %g)",gen->genid,GEN.bleft,GEN.bright);
   if (!(par->set & UNUR_SET_DOMAIN))
       fprintf(log,"   (computed from given slopes)");
   fprintf(log,"\n");
   empty_line();
 
-  fprintf(log,"%s: area below p.d.f. ",gen->genid);
-  if (par->set & UNUR_SET_AREA)
-    fprintf(log,"= %g\n",PAR.pdf_area);
-  else
-    fprintf(log,"not given. assume 1.\n");
   fprintf(log,"%s: area fraction for equal area rule = %g ",gen->genid,PAR.area_fract);
   _unur_print_if_default(par,UNUR_SET_TABL_C);
   fprintf(log,"\n");

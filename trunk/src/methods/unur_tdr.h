@@ -42,12 +42,6 @@
 
 struct unur_tdr_par { 
 
-  double (*pdf)(double x, double *pdf_param, int n_pdf_param);  /* pointer to pdf */
-  double (*dpdf)(double x, double *pdf_param, int n_pdf_param);  /* derivative of pdf */
-  double *pdf_param;            /* parameters of the pdf                     */
-  int     n_pdf_param;          /* number of parameters of the pdf           */
-  double  bleft;                /* left boundary of domain                   */
-  double  bright;               /* right boundary of domain                  */
   double  mode;                 /* (approximate) location of mode            */
 
   double  guide_factor;         /* relative size of guide table              */
@@ -92,8 +86,8 @@ struct unur_tdr_gen {
   double  Atotal;               /* area below hat                            */
   double  Asqueeze;             /* area below squeeze                        */
 
-  double (*pdf)(double x, double *pdf_param, int n_pdf_param);  /* pointer to pdf */
-  double (*dpdf)(double x, double *pdf_param, int n_pdf_param);  /* derivative of pdf */
+  unur_function_cont *pdf;      /* pointer to p.d.f.                         */
+  unur_function_cont *dpdf;     /* pointer to derivative of p.d.f.           */
   double *pdf_param;            /* parameters of the pdf                     */
   int     n_pdf_param;          /* number of parameters of the pdf           */
   double  bleft;                /* left boundary of domain                   */
@@ -119,8 +113,7 @@ struct unur_tdr_gen {
 /*---------------------------------------------------------------------------*/
 /* Routines for user interface                                               */
 
-struct unur_par *unur_tdr_new( double (*pdf)(double x,double *pdf_param, int n_pdf_params), 
-			       double (*dpdf)(double x,double *pdf_param, int n_pdf_params) );
+struct unur_par *unur_tdr_new( struct unur_distr* distr );
 /* get default parameters for generator                                      */
 
 struct unur_gen *unur_tdr_init( struct unur_par *parameters );

@@ -87,6 +87,7 @@
 /*---------------------------------------------------------------------------*/
 
 #include <unur_defs.h>
+#include <unur_distribution.h>
 
 /*---------------------------------------------------------------------------*/
 
@@ -103,72 +104,76 @@
  *****************************************************************************/
 
 /*  Beta distribution [3; ch.25, p.210]                                      */
-double unur_pdf_beta(double x, double *param, int n_param);
-double unur_dpdf_beta(double x, double *param, int n_param);
-double unur_cdf_beta(double x, double *param, int n_param);
-double unur_mode_beta(double *param, int n_param);
-double unur_area_beta(double *param, int n_param);
+double unur_pdf_beta(double x, double *params, int n_params);
+double unur_dpdf_beta(double x, double *params, int n_params);
+double unur_cdf_beta(double x, double *params, int n_params);
+double unur_mode_beta(double *params, int n_params);
+double unur_area_beta(double *params, int n_params);
+struct unur_distr *unur_distr_beta(double *params, int n_params);
 
 /* Burr ?? distribution                                                      */
 /** TODO **/
 
 /*  Cauchy distribution [2; ch.16, p.299]                                    */
-double unur_pdf_cauchy(double x, double *param, int n_param);
-double unur_dpdf_cauchy(double x, double *param, int n_param);
-double unur_cdf_cauchy(double x, double *param, int n_param);
-double unur_mode_cauchy(double *param, int n_param);
-double unur_area_cauchy(double *param, int n_param);
+double unur_pdf_cauchy(double x, double *params, int n_params);
+double unur_dpdf_cauchy(double x, double *params, int n_params);
+double unur_cdf_cauchy(double x, double *params, int n_params);
+double unur_mode_cauchy(double *params, int n_params);
+double unur_area_cauchy(double *params, int n_params);
+struct unur_distr *unur_distr_cauchy(double *params, int n_params);
 
 /*  Chisquare distribution [2; ch.18, p.416]                                 */
-double unur_pdf_chisquare(double x, double *param, int n_param);
-double unur_dpdf_chisquare(double x, double *param, int n_param);
-double unur_cdf_chisquare(double x, double *param, int n_param);
+double unur_pdf_chisquare(double x, double *params, int n_params);
+double unur_dpdf_chisquare(double x, double *params, int n_params);
+double unur_cdf_chisquare(double x, double *params, int n_params);
 
 /* Erlang distribution                                                       */
 /** TODO **/
 
 /*  Exponential distribution [2; ch.19, p.494]                               */
-double unur_pdf_exponential(double x, double *param, int n_param);
-double unur_dpdf_exponential(double x, double *param, int n_param);
-double unur_cdf_exponential(double x, double *param, int n_param);
-double unur_area_exponential(double *param, int n_param);
-double unur_mode_exponential(double *param, int n_param);
+double unur_pdf_exponential(double x, double *params, int n_params);
+double unur_dpdf_exponential(double x, double *params, int n_params);
+double unur_cdf_exponential(double x, double *params, int n_params);
+double unur_area_exponential(double *params, int n_params);
+double unur_mode_exponential(double *params, int n_params);
 
 /*  Gamma distribution [2; ch.17, p.337]                                     */
-double unur_pdf_gamma(double x, double *param, int n_param);
-double unur_dpdf_gamma(double x, double *param, int n_param);
-double unur_cdf_gamma(double x, double *param, int n_param);
-double unur_mode_gamma(double *param, int n_param);
-double unur_area_gamma(double *param, int n_param);
+double unur_pdf_gamma(double x, double *params, int n_params);
+double unur_dpdf_gamma(double x, double *params, int n_params);
+double unur_cdf_gamma(double x, double *params, int n_params);
+double unur_mode_gamma(double *params, int n_params);
+double unur_area_gamma(double *params, int n_params);
+struct unur_distr *unur_distr_gamma(double *params, int n_params);
 
 /* Generalized inverse Gaussian distribution                                 */
 /** TODO **/
 
 /*  Laplace distribution [3; ch.24, p.164]                                   */
-double unur_pdf_laplace(double x, double *param, int n_param);
-double unur_dpdf_laplace(double x, double *param, int n_param);
+double unur_pdf_laplace(double x, double *params, int n_params);
+double unur_dpdf_laplace(double x, double *params, int n_params);
 
 /* Logistic distribution                                                     */
 /** TODO **/
 
 /*  Lognormal distribution [2; ch.14, p.208]                                 */
-double unur_pdf_lognormal(double x, double *param, int n_param);
-double unur_dpdf_lognormal(double x, double *param, int n_param);
+double unur_pdf_lognormal(double x, double *params, int n_params);
+double unur_dpdf_lognormal(double x, double *params, int n_params);
 
 /*  Lomax distribution (Pareto distr. of second kind) [2; ch.20, p.575]      */
-double unur_pdf_lomax(double x, double *param, int n_param);
-double unur_dpdf_lomax(double x, double *param, int n_param);
+double unur_pdf_lomax(double x, double *params, int n_params);
+double unur_dpdf_lomax(double x, double *params, int n_params);
 
 /*  Normal distribution [2; ch.13, p.80]                                     */
-double unur_pdf_normal(double x, double *param, int n_param);
-double unur_dpdf_normal(double x, double *param, int n_param);
-double unur_cdf_normal(double x, double *param, int n_param);
-double unur_mode_normal(double *param, int n_param);
-double unur_area_normal(double *param, int n_param);
+double unur_pdf_normal(double x, double *params, int n_params);
+double unur_dpdf_normal(double x, double *params, int n_params);
+double unur_cdf_normal(double x, double *params, int n_params);
+double unur_mode_normal(double *params, int n_params);
+double unur_area_normal(double *params, int n_params);
+struct unur_distr *unur_distr_normal( double *params, int n_params );
 
 /*  Pareto distribution (of first kind) [2; ch.20, p.574]                    */
-double unur_pdf_pareto(double x, double *param, int n_param);
-double unur_dpdf_pareto(double x, double *param, int n_param);
+double unur_pdf_pareto(double x, double *params, int n_params);
+double unur_dpdf_pareto(double x, double *params, int n_params);
 
 /* Pearson VI distribution                                                   */
 /** TODO **/
@@ -180,26 +185,27 @@ double unur_dpdf_pareto(double x, double *param, int n_param);
 /** TODO **/
 
 /*  Power-exponential (Subbotin) distribution [3; ch.24, p.195]              */
-double unur_pdf_powerexponential(double x, double *param, int n_param);
-double unur_dpdf_powerexponential(double x, double *param, int n_param);
+double unur_pdf_powerexponential(double x, double *params, int n_params);
+double unur_dpdf_powerexponential(double x, double *params, int n_params);
 
 /*  Rayleigh distribution [2; ch.18, p.456]                                  */
-double unur_pdf_rayleigh(double x, double *param, int n_param);
-double unur_dpdf_rayleigh(double x, double *param, int n_param);
+double unur_pdf_rayleigh(double x, double *params, int n_params);
+double unur_dpdf_rayleigh(double x, double *params, int n_params);
 
 /* Snedecor's F distribution                                                 */
 /** TODO **/
 
 /* Student's t distribution                                                  */
-double unur_pdf_student(double x, double *param, int n_param);
-double unur_dpdf_student(double x, double *param, int n_param);
+double unur_pdf_student(double x, double *params, int n_params);
+double unur_dpdf_student(double x, double *params, int n_params);
 
 /* Uniform distribution                                                      */
-double unur_pdf_uniform(double x, double *param, int n_param);
-double unur_dpdf_uniform(double x, double *param, int n_param);
-double unur_cdf_uniform(double x, double *param, int n_param);
-double unur_mode_uniform(double *param, int n_param);
-double unur_area_uniform(double *param, int n_param);
+double unur_pdf_uniform(double x, double *params, int n_params);
+double unur_dpdf_uniform(double x, double *params, int n_params);
+double unur_cdf_uniform(double x, double *params, int n_params);
+double unur_mode_uniform(double *params, int n_params);
+double unur_area_uniform(double *params, int n_params);
+struct unur_distr *unur_distr_uniform(double *params, int n_params);
 
 /* Weibull distribution                                                      */
 /** TODO **/

@@ -405,6 +405,7 @@ static void _unur_tdr_debug_split_stop( struct unur_gen *gen,
 /*---------------------------------------------------------------------------*/
 /* abbreviations */
 
+#define DISTR   distr->data.cont
 #define PAR     par->data.tdr
 #define GEN     gen->data.tdr
 #define SAMPLE  gen->sample.cont
@@ -433,14 +434,12 @@ static void _unur_tdr_debug_split_stop( struct unur_gen *gen,
 /*****************************************************************************/
 
 struct unur_par *
-unur_tdr_new( double (*pdf)(double x,double *pdf_param, int n_pdf_params), 
-	      double (*dpdf)(double x,double *pdf_param, int n_pdf_params) )
+unur_tdr_new( struct unur_distr* distr )
      /*----------------------------------------------------------------------*/
      /* get default parameters                                               */
      /*                                                                      */
      /* parameters:                                                          */
-     /*   pdf  ... probability density function of the desired distribution  */
-     /*   dpdf ... derivative of p.d.f.                                      */
+     /*   distr ... pointer to distribution object                           */
      /*                                                                      */
      /* return:                                                              */
      /*   default parameters (pointer to structure)                          */
@@ -451,19 +450,28 @@ unur_tdr_new( double (*pdf)(double x,double *pdf_param, int n_pdf_params),
 { 
   struct unur_par *par;
 
+  /* check arguments */
+  CHECK_NULL(distr,NULL);
+  COOKIE_CHECK(distr,CK_DISTR_CONT,NULL);
+
+  /* check input */
+  if (DISTR.pdf == NULL) {
+    _unur_error(GENTYPE,UNUR_ERR_GENERIC,"p.d.f. required");
+    return NULL;
+  }
+  if (DISTR.dpdf == NULL) {
+    _unur_error(GENTYPE,UNUR_ERR_GENERIC,"derivative of p.d.f. required");
+    return NULL;
+  }
+
   /* allocate structure */
   par = _unur_malloc( sizeof(struct unur_par) );
   COOKIE_SET(par,CK_TDR_PAR);
 
   /* copy input */
-  PAR.pdf                 = pdf;    /* pointer to p.d.f.                     */
-  PAR.dpdf                = dpdf;   /* pointer to derivative of p.d.f.       */
+  par->distr              = distr;  /* pointer to distribution object        */
 
   /* set default values */
-  PAR.pdf_param           = NULL;   /* no parameters for pdf                 */
-  PAR.n_pdf_param         = 0;      /* number of parameters                  */
-  PAR.bleft               = - INFINITY; /* left boundary of domain           */
-  PAR.bright              = INFINITY;   /* right boundary of domain          */
   PAR.mode                = 0.;     /* (exact!) location of mode             */
 
   PAR.guide_factor        = 3.;     /* size of guide table / number of intervals */
@@ -975,6 +983,7 @@ unur_tdr_free( struct unur_gen *gen )
   /* free other memory not stored in list */
   _unur_free_genid(gen);
   free(GEN.guide);
+  free(gen->distr);
   free(gen);
 
 } /* end of unur_tdr_free() */
@@ -1000,7 +1009,6 @@ _unur_tdr_create( struct unur_par *par )
 {
   struct unur_gen *gen;
   unsigned long variant;
-  int i;
 
   /* check arguments */
   COOKIE_CHECK(par,CK_TDR_PAR,NULL);
@@ -1010,6 +1018,10 @@ _unur_tdr_create( struct unur_par *par )
 
   /* magic cookies */
   COOKIE_SET(gen,CK_TDR_GEN);
+
+  /* copy distribution object */
+  gen->distr = _unur_malloc( sizeof(struct unur_distr) );
+  unur_distr_copy( gen->distr, par->distr );
 
   /* which transformation */
   if      (PAR.c_T == 0.)    variant = TDR_METH_LOG;
@@ -1045,8 +1057,6 @@ _unur_tdr_create( struct unur_par *par )
     }
 
   /* set all pointers to NULL */
-  GEN.pdf_param   = NULL;
-  GEN.n_pdf_param = 0;
   GEN.guide       = NULL;
   GEN.guide_size  = 0;
   GEN.iv          = NULL;
@@ -1058,10 +1068,14 @@ _unur_tdr_create( struct unur_par *par )
   GEN.Asqueeze    = 0.;
 
   /* copy some parameters into generator object */
-  GEN.pdf = PAR.pdf;                /* p.d.f. of distribution                */
-  GEN.dpdf = PAR.dpdf;              /* derivative of p.d.f.                  */
-  GEN.bleft = PAR.bleft;            /* left boundary of domain               */
-  GEN.bright = PAR.bright;          /* right boundary of domain              */
+  GEN.pdf = gen->DISTR.pdf;           /* p.d.f. of distribution              */
+  GEN.dpdf = gen->DISTR.dpdf;         /* derivative of p.d.f.                */
+
+  GEN.pdf_param   = gen->DISTR.params;
+  GEN.n_pdf_param = gen->DISTR.n_params;
+
+  GEN.bleft = gen->DISTR.domain[0];   /* left boundary of domain             */
+  GEN.bright = gen->DISTR.domain[1];  /* right boundary of domain            */
 
   GEN.guide_factor = PAR.guide_factor; /* relative size of guide tables      */
 
@@ -1077,15 +1091,6 @@ _unur_tdr_create( struct unur_par *par )
   _unur_copy_debugflag(par,gen);    /* copy debugging flags into generator object */
   _unur_copy_genid(par,gen);        /* copy generator identifier             */
 
-  /* copy parameters of distribution */
-  GEN.n_pdf_param = PAR.n_pdf_param;
-  if( PAR.n_pdf_param > 0 ) {
-    GEN.pdf_param = _unur_malloc( PAR.n_pdf_param * sizeof(double) );
-    _unur_add_mblocks( &(GEN.mblocks), GEN.pdf_param);
-    for (i=0; i<PAR.n_pdf_param; i++)
-      GEN.pdf_param[i] = PAR.pdf_param[i];
-  }
-    
   /* return pointer to (almost empty) generator object */
   return(gen);
 
@@ -1128,7 +1133,7 @@ _unur_tdr_get_starting_cpoints( struct unur_par *par, struct unur_gen *gen )
 
   /* check mode */
   if (use_mode &&
-      ( PAR.mode < PAR.bleft || PAR.mode > PAR.bright ) ) {
+      ( PAR.mode < GEN.bleft || PAR.mode > GEN.bright ) ) {
     _unur_warning(gen->genid,UNUR_ERR_INIT,"mode out of domain.");
     use_mode = 0;
   }
@@ -1141,8 +1146,8 @@ _unur_tdr_get_starting_cpoints( struct unur_par *par, struct unur_gen *gen )
     /* move mode into  x = 0 ? */
     mode_shift = use_mode ? PAR.mode : 0.;
     /* angles of boundary of domain */
-    left_angle =  ( PAR.bleft <= -INFINITY ) ? -M_PI/2. : atan(PAR.bleft - mode_shift);  
-    right_angle = ( PAR.bright >= INFINITY )  ? M_PI/2.  : atan(PAR.bright - mode_shift);
+    left_angle =  ( GEN.bleft <= -INFINITY ) ? -M_PI/2. : atan(GEN.bleft - mode_shift);  
+    right_angle = ( GEN.bright >= INFINITY )  ? M_PI/2.  : atan(GEN.bright - mode_shift);
     /* we use equal distances between the angles of the cpoints   */
     /* and the boundary points                                    */
     diff_angle = (right_angle-left_angle) / (PAR.n_starting_cpoints + 1);
@@ -1152,7 +1157,7 @@ _unur_tdr_get_starting_cpoints( struct unur_par *par, struct unur_gen *gen )
     diff_angle = angle = 0.;   /* we do not need these variables in this case */
 
   /* the left boundary point */
-  x = x_last = PAR.bleft;
+  x = x_last = GEN.bleft;
   fx = fx_last = (x <= -INFINITY) ? 0. : PDF(x);
   iv = GEN.iv = _unur_tdr_interval_new( gen, x, fx, FALSE );
   CHECK_NULL(iv,0);        /* case of error */
@@ -1168,7 +1173,7 @@ _unur_tdr_get_starting_cpoints( struct unur_par *par, struct unur_gen *gen )
 	/* construction points provided by user */
 	x = PAR.starting_cpoints[i];
 	/* check starting point */
-	if (x <= PAR.bleft || x >= PAR.bright) {
+	if (x <= GEN.bleft || x >= GEN.bright) {
 	  _unur_warning(gen->genid,UNUR_ERR_INIT,"starting point out of domain!");
 	  continue;
 	}
@@ -1186,7 +1191,7 @@ _unur_tdr_get_starting_cpoints( struct unur_par *par, struct unur_gen *gen )
     else {
       /* the very last interval. it is rather a "virtual" interval to store 
 	 the right vertex of the last interval, i.e., the right boundary point. */
-      x = PAR.bright;
+      x = GEN.bright;
     }
 
     /* insert mode ? */
@@ -1964,6 +1969,8 @@ _unur_tdr_debug_init( struct unur_par *par, struct unur_gen *gen )
   _unur_print_if_default(par,UNUR_SET_TDR_C);
   fprintf(log,"\n%s:\n",gen->genid);
 
+  _unur_distr_debug_cont( gen );
+
   fprintf(log,"%s: sampling routine = unur_tdr_sample_",gen->genid);
   if (par->method & UNUR_MASK_SCHECK)
     fprintf(log,"check()\n");
@@ -1977,20 +1984,6 @@ _unur_tdr_debug_init( struct unur_par *par, struct unur_gen *gen )
       fprintf(log,"pow()\n");   break;
     }
   fprintf(log,"%s:\n",gen->genid);
-
-  fprintf(log,"%s: p.d.f with %d arguments\n",gen->genid,PAR.n_pdf_param);
-  if (PAR.n_pdf_param)
-    for( i=0; i<PAR.n_pdf_param; i++ )
-      fprintf(log,"%s:\tparam[%d] = %g\n",gen->genid,i,PAR.pdf_param[i]);
-  fprintf(log,"%s:\n",gen->genid);
-
-  if (par->method & UNUR_MASK_MODE )
-    fprintf(log,"%s: mode = %g\n",gen->genid,PAR.mode);
-  else
-    fprintf(log,"%s: mode unknown\n",gen->genid);
-  fprintf(log,"%s: domain = (%g, %g)",gen->genid,GEN.bleft,GEN.bright);
-  _unur_print_if_default(par,UNUR_SET_DOMAIN);
-  fprintf(log,"\n%s:\n",gen->genid);
 
   fprintf(log,"%s: maximum number of intervals        = %d",gen->genid,PAR.max_ivs);
   _unur_print_if_default(par,UNUR_SET_MAX_IVS);

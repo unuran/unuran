@@ -41,14 +41,6 @@
 /* Information for constructing the generator                                */
 
 struct unur_utdr_par { 
-
-  double (*pdf)(double x, double *pdf_param, int n_pdf_param);  /* pointer to pdf */
-  double  pdf_area;     /* approximate area below the pdf                    */
-  double  mode;         /* location of mode                                  */
-  double  il;           /* left border of the domain                         */
-  double  ir;           /* right border of the domain                        */
-  double *pdf_param;    /* parameters of the pdf                             */
-  int     n_pdf_param;  /* number of parameters of the pdf                   */
   double  c_factor;     /* constant for choosing the design points           */
   double  delta_factor; /* constant for choosing delta to replace the tangent*/
 };
@@ -58,22 +50,21 @@ struct unur_utdr_par {
 
 struct unur_utdr_gen { 
 
-  double (*pdf)(double x, double *pdf_param, int n_pdf_param);  /* pointer to pdf */
-  double  pdf_area;     /* approximate area below the pdf                    */
-  double  mode;         /* location of mode                                  */
-  double  il;           /* left border of the domain                         */
-  double  ir;           /* right border of the domain                        */
-  double *pdf_param;    /* parameters of the pdf                             */
-  int     n_pdf_param;  /* number of parameters of the pdf                   */
+  unur_function_cont *pdf;      /* pointer to p.d.f.                         */
+  double  mode;                 /* location of mode                          */
+  double  il;                   /* left border of the domain                 */
+  double  ir;                   /* right border of the domain                */
+  double *pdf_param;            /* parameters of the pdf                     */
+  int     n_pdf_param;          /* number of parameters of the pdf           */
   double  vollc,volcompl,voll,fm,hm,
     al,ar,col,cor,sal,sar,bl,br,tlx,trx,
-    brblvolc,drar,dlal,ooar2,ooal2;/*constants of the hat and for generation*/
+    brblvolc,drar,dlal,ooar2,ooal2;/* constants of the hat and for generation*/
 };
 
 /*---------------------------------------------------------------------------*/
 /* Routines for user interface                                               */
 
-struct unur_par *unur_utdr_new( double (*pdf)(double x,double *pdf_param, int n_pdf_params), double mode );
+struct unur_par *unur_utdr_new( struct unur_distr *distr );
 /* get default parameters for generator                                      */
 
 struct unur_gen *unur_utdr_init( struct unur_par *parameters );
@@ -86,5 +77,13 @@ double unur_utdr_sample_check( struct unur_gen *generator );  /** TODO **/
 void unur_utdr_free( struct unur_gen *generator);
 /* destroy generator object                                                  */
 
-/*---------------------------------------------------------------------------*/
+/** TODO !!! **/
+int unur_utdr_set_c( struct unur_par *parameters );
+/* set constant for choosing design points                                   */
 
+/** TODO !!! **/
+int unur_utdr_set_delta( struct unur_par *parameters );
+/* set constant for numerical approximation of derivative                    */
+
+
+/*---------------------------------------------------------------------------*/

@@ -42,16 +42,8 @@
 
 struct unur_arou_par { 
 
-  double (*pdf)(double x, double *pdf_param, int n_pdf_param);  /* pointer to pdf */
-  double (*dpdf)(double x, double *pdf_param, int n_pdf_param);  /* derivative of pdf */
-  double *pdf_param;            /* parameters of the pdf                     */
-  int     n_pdf_param;          /* number of parameters of the pdf           */
-  double  bleft;                /* left boundary of domain                   */
-  double  bright;               /* right boundary of domain                  */
-  double  mode;                 /* (approximate) location of mode            */
-
+  double  center;               /* (approximate) location of mode            */
   double  guide_factor;         /* relative size of guide table              */
-
   double  bound_for_adding;     /* lower bound for relative area             */
   double  max_ratio;            /* limit for ratio r_n = |P^s| / |P^e|       */
   int     n_starting_cpoints;   /* number of construction points at start    */
@@ -90,13 +82,14 @@ struct unur_arou_gen {
   double  Atotal;               /* area of enveloping polygon                */
   double  Asqueeze;             /* area of squeeze polygon                   */
 
-  double (*pdf)(double x, double *pdf_param, int n_pdf_param);  /* pointer to pdf */
-  double (*dpdf)(double x, double *pdf_param, int n_pdf_param);  /* derivative of pdf */
+  unur_function_cont *pdf;      /* pointer to p.d.f.                         */
+  unur_function_cont *dpdf;     /* pointer to derivative of p.d.f.           */
   double *pdf_param;            /* parameters of the pdf                     */
   int     n_pdf_param;          /* number of parameters of the pdf           */
   double  bleft;                /* left boundary of domain                   */
   double  bright;               /* right boundary of domain                  */
 
+  double  center;               /* (approximate) location of mode            */
   double  max_ratio;            /* limit for ratio r_n = |P^s| / |P^e|       */
 
   struct unur_arou_segment **guide;  /* pointer to guide table               */
@@ -117,8 +110,7 @@ struct unur_arou_gen {
 /*---------------------------------------------------------------------------*/
 /* Routines for user interface                                               */
 
-struct unur_par *unur_arou_new( double (*pdf)(double x,double *pdf_param, int n_pdf_params), 
-			   double (*dpdf)(double x,double *pdf_param, int n_pdf_params) );
+struct unur_par *unur_arou_new( struct unur_distr *distr );
 /* get default parameters for generator                                      */
 
 struct unur_gen *unur_arou_init( struct unur_par *parameters );
@@ -130,5 +122,8 @@ double unur_arou_sample_check( struct unur_gen *generator );
 
 void unur_arou_free( struct unur_gen *generator);
 /* destroy generator object                                                  */
+
+int unur_arou_set_center( struct unur_par *par, double center );
+/* set center (approximate mode) of p.d.f.                                   */
 
 /*---------------------------------------------------------------------------*/

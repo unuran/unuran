@@ -125,6 +125,8 @@
 #define UNUR_MALLOC_SIZE   10
 #define HAVE_GETTIMEOFDAY
 
+#define UNUR_DISTR_MAXPARAMS  5 /* maximal number of parameters for distribution */
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 #endif  /* __UNURAN_CONFIG_H_SEEN */

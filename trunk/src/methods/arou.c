@@ -225,6 +225,7 @@ static void _unur_arou_debug_printratio( double v, double u, char *string );
 /*---------------------------------------------------------------------------*/
 /* abbreviations */
 
+#define DISTR   distr->data.cont
 #define PAR     par->data.arou
 #define GEN     gen->data.arou
 #define SAMPLE  gen->sample.cont
@@ -246,14 +247,12 @@ static void _unur_arou_debug_printratio( double v, double u, char *string );
 /*****************************************************************************/
 
 struct unur_par *
-unur_arou_new( double (*pdf)(double x,double *pdf_param, int n_pdf_params), 
-	       double (*dpdf)(double x,double *pdf_param, int n_pdf_params) )
+unur_arou_new( struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
      /* get default parameters                                               */
      /*                                                                      */
      /* parameters:                                                          */
-     /*   pdf  ... probability density function of the desired distribution  */
-     /*   dpdf  ... probability density function of the desired distribution */
+     /*   distr ... pointer to distribution object                           */
      /*                                                                      */
      /* return:                                                              */
      /*   default parameters (pointer to structure)                          */
@@ -264,21 +263,28 @@ unur_arou_new( double (*pdf)(double x,double *pdf_param, int n_pdf_params),
 { 
   struct unur_par *par;
 
+  /* check arguments */
+  CHECK_NULL(distr,NULL);
+  COOKIE_CHECK(distr,CK_DISTR_CONT,NULL);
+
+  /* check input */
+  if (DISTR.pdf == NULL) {
+    _unur_error(GENTYPE,UNUR_ERR_GENERIC,"p.d.f. required");
+    return NULL;
+  }
+  if (DISTR.dpdf == NULL) {
+    _unur_error(GENTYPE,UNUR_ERR_GENERIC,"derivative of p.d.f. required");
+    return NULL;
+  }
+
   /* allocate structure */
   par = _unur_malloc( sizeof(struct unur_par) );
   COOKIE_SET(par,CK_AROU_PAR);
 
   /* copy input */
-  PAR.pdf                 = pdf;    /* pointer to p.d.f.                     */
-  PAR.dpdf                = dpdf;   /* pointer to derivative of p.d.f.       */
+  par->distr              = distr;  /* pointer to distribution object        */
 
   /* set default values */
-  PAR.pdf_param           = NULL;   /* no parameters for pdf                 */
-  PAR.n_pdf_param         = 0;      /* number of parameters                  */
-  PAR.bleft               = -INFINITY;  /* left boundary of domain           */
-  PAR.bright              = INFINITY;   /* right boundary of domain          */
-  PAR.mode                = 0.;     /* (approximate) location of mode        */
-
   PAR.guide_factor        = 3.;     /* size of guide table / number of intervals */
 
   PAR.starting_cpoints    = NULL;   /* pointer to array of starting points   */
@@ -297,12 +303,55 @@ unur_arou_new( double (*pdf)(double x,double *pdf_param, int n_pdf_params),
   _unur_set_debugflag_default(par); /* set default debugging flags           */
   _unur_set_genid(par,GENTYPE);     /* set generator identifier              */
 
+  /* we use the mode (if known) as center of the distribution */
+  if (distr->set & UNUR_DISTR_SET_MODE) {
+    PAR.center = DISTR.mode;
+    par->set |= UNUR_SET_CENTER;
+  }
+  else
+    PAR.center = 0.;        /* the default */
+
   /* routine for starting generator */
   par->init = unur_arou_init;
 
   return par;
 
 } /* end of unur_arou_new() */
+
+/*****************************************************************************/
+
+int
+unur_arou_set_center( struct unur_par *par, double center )
+     /*----------------------------------------------------------------------*/
+     /* set center (approximate mode) of p.d.f.                              */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par    ... pointer to parameter for building generator object      */
+     /*   center ... center of p.d.f.                                        */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... on success                                                   */
+     /*   0 ... on error                                                     */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  CHECK_NULL(par,0);
+  COOKIE_CHECK(par,CK_AROU_PAR,0);
+
+  /* check method */
+  if ((par->method & UNUR_MASK_METHOD) != UNUR_METH_AROU) {
+    _unur_warning(GENTYPE,UNUR_ERR_GENERIC,"xxxx");
+    return 0;
+  }
+
+  /* store data */
+  par->data.arou.center = center;
+  par->set |= UNUR_SET_CENTER;
+
+  /* o.k. */
+  return 1;
+
+} /* end of unur_arou_set_center() */
 
 /*****************************************************************************/
 
@@ -588,6 +637,7 @@ unur_arou_free( struct unur_gen *gen )
   /* free other memory not stored in list */
   _unur_free_genid(gen);
   free(GEN.guide);
+  free(gen->distr);
   free(gen);
 
 } /* end of unur_arou_free() */
@@ -612,7 +662,6 @@ _unur_arou_create( struct unur_par *par )
      /*----------------------------------------------------------------------*/
 {
   struct unur_gen *gen;
-  int i;
 
   /* check arguments */
   CHECK_NULL(par,NULL);
@@ -624,13 +673,15 @@ _unur_arou_create( struct unur_par *par )
   /* magic cookies */
   COOKIE_SET(gen,CK_AROU_GEN);
 
+  /* copy distribution object */
+  gen->distr = _unur_malloc( sizeof(struct unur_distr) );
+  unur_distr_copy( gen->distr, par->distr );
+
   /* routines for sampling and destroying generator */
   SAMPLE = (par->method & UNUR_MASK_SCHECK) ? unur_arou_sample_check : unur_arou_sample;
   gen->destroy = unur_arou_free;
 
   /* set all pointers to NULL */
-  GEN.pdf_param   = NULL;
-  GEN.n_pdf_param = 0;
   GEN.seg         = NULL;
   GEN.n_segs      = 0;
   GEN.guide       = NULL;
@@ -642,10 +693,16 @@ _unur_arou_create( struct unur_par *par )
   GEN.Asqueeze    = 0.;
 
   /* copy some parameters into generator object */
-  GEN.pdf = PAR.pdf;                /* p.d.f. of distribution                */
-  GEN.dpdf = PAR.dpdf;              /* derivative of p.d.f.                  */
-  GEN.bleft = PAR.bleft;            /* left boundary of domain               */
-  GEN.bright = PAR.bright;          /* right boundary of domain              */
+  GEN.pdf = gen->DISTR.pdf;           /* p.d.f. of distribution              */
+  GEN.dpdf = gen->DISTR.dpdf;         /* derivative of p.d.f.                */
+
+  GEN.pdf_param   = gen->DISTR.params;
+  GEN.n_pdf_param = gen->DISTR.n_params;
+
+  GEN.bleft = gen->DISTR.domain[0];   /* left boundary of domain             */
+  GEN.bright = gen->DISTR.domain[1];  /* right boundary of domain            */
+
+  GEN.center = PAR.center;            /* center (approximate location of mode) */
 
   GEN.guide_factor = PAR.guide_factor; /* relative size of guide tables      */
 
@@ -660,15 +717,6 @@ _unur_arou_create( struct unur_par *par )
   _unur_copy_debugflag(par,gen);    /* copy debugging flags into generator object */
   _unur_copy_genid(par,gen);        /* copy generator identifier             */
 
-  /* copy parameters of distribution */
-  GEN.n_pdf_param = PAR.n_pdf_param;
-  if( PAR.n_pdf_param > 0 ) {
-    GEN.pdf_param = _unur_malloc( PAR.n_pdf_param * sizeof(double) );
-    _unur_add_mblocks( &(GEN.mblocks), GEN.pdf_param );
-    for (i=0; i<PAR.n_pdf_param; i++)
-      GEN.pdf_param[i] = PAR.pdf_param[i];
-  }
-    
   /* return pointer to (almost empty) generator object */
   return(gen);
 
@@ -695,22 +743,24 @@ _unur_arou_get_starting_cpoints( struct unur_par *par, struct unur_gen *gen )
   struct unur_arou_segment *seg, *seg_new;
   double left_angle, right_angle, diff_angle, angle;
   double x, x_last, fx, fx_last;
-  int i, use_mode, is_mode, was_mode, is_increasing;
-  double mode_shift = 0.;
+  int i, use_center, is_center, was_center, is_increasing;
 
   /* check arguments */
   COOKIE_CHECK(par,CK_AROU_PAR,0);
   COOKIE_CHECK(gen,CK_AROU_GEN,0);
 
-  /* use mode as construction point ? */
-  use_mode = (par->method & UNUR_MASK_MODE) ? TRUE : FALSE;
-  is_mode = was_mode = FALSE;    /* initialize boolean */
+  /* initialize boolean */
+  is_center = was_center = FALSE;
 
-  /* check mode */
-  if (use_mode &&
-      ( PAR.mode < PAR.bleft || PAR.mode > PAR.bright ) ) {
-    _unur_warning(gen->genid,UNUR_ERR_INIT,"mode out of domain.");
-    use_mode = 0;
+  /* use center as construction point ? */
+  /** TODO: UNUR_MASK_MODE does not exist yet !! */
+  use_center = (par->method & UNUR_MASK_MODE) ? TRUE : FALSE;
+
+  /* check center */
+  if (use_center &&
+      ( GEN.center < GEN.bleft || GEN.center > GEN.bright ) ) {
+    _unur_warning(gen->genid,UNUR_ERR_INIT,"center out of domain.");
+    use_center = 0;
   }
 
   /* reset counter of segments */
@@ -718,11 +768,10 @@ _unur_arou_get_starting_cpoints( struct unur_par *par, struct unur_gen *gen )
 
   /* prepare for computing construction points */
   if (!PAR.starting_cpoints) {
-    /* move mode into  x = 0 ? */
-    mode_shift = use_mode ? PAR.mode : 0.;
+    /* move center into  x = 0 */
     /* angles of boundary of domain */
-    left_angle =  ( PAR.bleft <= -INFINITY ) ? -M_PI/2. : atan(PAR.bleft - mode_shift);  
-    right_angle = ( PAR.bright >= INFINITY )  ? M_PI/2.  : atan(PAR.bright - mode_shift);
+    left_angle =  ( GEN.bleft <= -INFINITY ) ? -M_PI/2. : atan(GEN.bleft - GEN.center);  
+    right_angle = ( GEN.bright >= INFINITY )  ? M_PI/2.  : atan(GEN.bright - GEN.center);
     /* we use equal distances between the angles of the cpoints   */
     /* and the boundary points                                    */
     diff_angle = (right_angle-left_angle) / (PAR.n_starting_cpoints + 1);
@@ -732,7 +781,7 @@ _unur_arou_get_starting_cpoints( struct unur_par *par, struct unur_gen *gen )
     diff_angle = angle = 0.;   /* we do not need these variables in this case */
 
   /* the left boundary point */
-  x = x_last = PAR.bleft;
+  x = x_last = GEN.bleft;
   fx = fx_last = (x <= -INFINITY) ? 0. : PDF(x);
   seg = GEN.seg = _unur_arou_segment_new( gen, x, fx );
   CHECK_NULL(seg,0);        /* case of error */
@@ -740,7 +789,7 @@ _unur_arou_get_starting_cpoints( struct unur_par *par, struct unur_gen *gen )
 
   /* now all the other points */
   for( i=0; i<=PAR.n_starting_cpoints; i++ ) {
-    was_mode = is_mode;
+    was_center = is_center;
 
     /* starting point */
     if (i < PAR.n_starting_cpoints) {
@@ -748,7 +797,7 @@ _unur_arou_get_starting_cpoints( struct unur_par *par, struct unur_gen *gen )
 	/* construction points provided by user */
 	x = PAR.starting_cpoints[i];
 	/* check starting point */
-	if (x <= PAR.bleft || x >= PAR.bright) {
+	if (x <= GEN.bleft || x >= GEN.bright) {
 	  _unur_warning(gen->genid,UNUR_ERR_INIT,"starting point out of domain!");
 	  continue;
 	}
@@ -760,46 +809,38 @@ _unur_arou_get_starting_cpoints( struct unur_par *par, struct unur_gen *gen )
       else {
 	/* compute construction points by means of "equidistance" rule */
 	angle += diff_angle;                /** TODO: angle >= M_PI/2. !! **/
-	x = tan( angle ) + mode_shift;      /** TODO: possible over/underflow **/
+	x = tan( angle ) + GEN.center;      /** TODO: possible over/underflow **/
       }
     }
     else {
       /* the very last segment. it is rather a "virtual" segment to store 
 	 the right vertex of the last segment, i.e., the right boundary point. */
-      x = PAR.bright;
+      x = GEN.bright;
     }
 
-    /* insert mode ? */
-    if (use_mode && x >= PAR.mode) {
-      use_mode = FALSE;   /* we use the mode only once (of course) */
-      is_mode = TRUE;     /* the next construction point is the mode */
-      if (x>PAR.mode) {
-	x = PAR.mode;     /* use the mode now ... */
+    /* insert center ? */
+    if (use_center && x >= GEN.center) {
+      use_center = FALSE;   /* we use the center only once (of course) */
+      is_center = TRUE;     /* the next construction point is the center */
+      if (x>GEN.center) {
+	x = GEN.center;   /* use the center now ... */
 	--i;              /* and push the orignal starting point back on stack */
 	if (!PAR.starting_cpoints)
 	  angle -= diff_angle; /* we have to compute the starting point in this case */
       }
-      /* else: x==PAR.mode --> nothing to do */
+      /* else: x == GEN.center --> nothing to do */
     }
     else
-      is_mode = FALSE;
+      is_center = FALSE;
 
     /** TODO: check if two construction points are too close ??
-	check if a point is too close to mode ??  */
+	check if a point is too close to center ??  */
 
     /* value of p.d.f. at starting point */
     fx = (x >= INFINITY) ? 0. : PDF(x);
     /* check value of p.d.f. at starting point */
     if (!is_increasing && fx > fx_last) {
       _unur_error(gen->genid,UNUR_ERR_INIT_FAILED,"p.d.f. not unimodal!");
-      return 0;
-    }
-    if (is_mode && (fx < fx_last)) {
-      _unur_warning(gen->genid,UNUR_ERR_INIT,"wrong mode. ignore mode.");
-      continue;
-    }
-    if (was_mode && (fx > fx_last)) {
-      _unur_error(gen->genid,UNUR_ERR_INIT,"wrong mode.");
       return 0;
     }
 
@@ -1506,6 +1547,8 @@ _unur_arou_debug_init( struct unur_par *par, struct unur_gen *gen )
   fprintf(log,"%s: method  = ratio-of-uniforms method with enveloping polygon\n",gen->genid);
   fprintf(log,"%s:\n",gen->genid);
 
+  _unur_distr_debug_cont( gen );
+
   fprintf(log,"%s: sampling routine = unur_arou_sample",gen->genid);
   if (par->method & UNUR_MASK_SCHECK)
     fprintf(log,"_check()\n");
@@ -1513,18 +1556,8 @@ _unur_arou_debug_init( struct unur_par *par, struct unur_gen *gen )
     fprintf(log,"()\n");
   fprintf(log,"%s:\n",gen->genid);
 
-  fprintf(log,"%s: p.d.f with %d arguments\n",gen->genid,PAR.n_pdf_param);
-  if (PAR.n_pdf_param)
-    for( i=0; i<PAR.n_pdf_param; i++ )
-      fprintf(log,"%s:\tparam[%d] = %g\n",gen->genid,i,PAR.pdf_param[i]);
-  fprintf(log,"%s:\n",gen->genid);
-
-  if (par->method & UNUR_MASK_MODE )
-    fprintf(log,"%s: mode = %g\n",gen->genid,PAR.mode);
-  else
-    fprintf(log,"%s: mode unknown\n",gen->genid);
-  fprintf(log,"%s: domain = (%g, %g)",gen->genid,GEN.bleft,GEN.bright);
-  _unur_print_if_default(par,UNUR_SET_DOMAIN);
+  fprintf(log,"%s: center = %g",gen->genid,GEN.center);
+  _unur_print_if_default(par,UNUR_SET_CENTER);
   fprintf(log,"\n%s:\n",gen->genid);
 
   fprintf(log,"%s: maximum number of segments         = %d",gen->genid,PAR.max_segs);

@@ -51,6 +51,8 @@
 #define UNUR_SET_MODE        0x00000004UL
 #define UNUR_SET_AREA        0x00000008UL
 
+#define UNUR_SET_CENTER      0xf0000001UL
+
 #define UNUR_SET_VARIANT     0x00000010UL
 #define UNUR_SET_FACTOR      0x00000020UL
 
@@ -72,18 +74,11 @@ int unur_set_domain( struct unur_par *parameter, double left, double right );
 int unur_set_domain_vec( struct unur_par *par, double **domain );
 /* set coordinates for domain boundary                                       */
 
-int unur_set_pdf_param(  struct unur_par *parameter, double *pdf_params, int n_params );
-/* set array of parameters for p.d.f.                                        */
-
 int unur_set_mode( struct unur_par *parameter, double mode );
 /* set mode of p.d.f.                                                        */
 
 int unur_set_usemode( struct unur_par *par, int usemode );
 /* set flag for using mode of p.d.f.                                         */
-
-int unur_set_pdf_area( struct unur_par *parameter, double area );
-/* set the (approximate) area below the pdf (default value 1.)               */
-
 
 /*---------------------------------------------------------------------------*/
 /* Parameters for generators of univariate discrete distributions            */

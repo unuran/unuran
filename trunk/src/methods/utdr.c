@@ -102,6 +102,7 @@ static void _unur_utdr_debug_init( struct unur_par *par, struct unur_gen *gen,
 /*---------------------------------------------------------------------------*/
 /* abbreviations */
 
+#define DISTR   distr->data.cont
 #define PAR     par->data.utdr
 #define GEN     gen->data.utdr
 #define SAMPLE  gen->sample.cont
@@ -115,13 +116,12 @@ static void _unur_utdr_debug_init( struct unur_par *par, struct unur_gen *gen,
 /*****************************************************************************/
 
 struct unur_par *
-unur_utdr_new( double (*pdf)(double x,double *pdf_param, int n_pdf_param), double mode )
+unur_utdr_new( struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
      /* get default parameters                                               */
      /*                                                                      */
      /* parameters:                                                          */
-     /*   pdf  ... probability density function of the desired distribution  */
-     /*   mode ... location of the mode of the distribution                  */
+     /*   distr ... pointer to distribution object                           */
      /*                                                                      */
      /* return:                                                              */
      /*   default parameters (pointer to structure)                          */
@@ -136,20 +136,29 @@ unur_utdr_new( double (*pdf)(double x,double *pdf_param, int n_pdf_param), doubl
 { 
   struct unur_par *par;
 
+  /* check arguments */
+  CHECK_NULL(distr,NULL);
+  COOKIE_CHECK(distr,CK_DISTR_CONT,NULL);
+
+  /* check input */
+  if (DISTR.pdf == NULL) {
+    _unur_error(GENTYPE,UNUR_ERR_GENERIC,"p.d.f. required");
+    return NULL;
+  }
+  if (!(distr->set & UNUR_DISTR_SET_MODE)) {
+    _unur_error(GENTYPE,UNUR_ERR_GENERIC,"mode of p.d.f. required");
+    return NULL;
+  }
+
   /* allocate structure */
   par = _unur_malloc(sizeof(struct unur_par));
   COOKIE_SET(par,CK_UTDR_PAR);
 
   /* copy input */
-  PAR.pdf          = pdf;
-  PAR.mode         = mode;
+  par->distr              = distr;  /* pointer to distribution object        */
 
   /* set default values */
-  PAR.pdf_area     = 1.;         /* area below p.d.f.                        */
-  PAR.il           = -INFINITY;  /* set left boundary of domain              */
-  PAR.ir           = INFINITY;   /* set right boundary of domain             */
-  PAR.pdf_param    = NULL;       /* no parameters for pdf                    */
-  PAR.n_pdf_param  = 0;
+  //  PAR.pdf_area     = 1.;         /* area below p.d.f.                        */
   PAR.c_factor     = 0.664; 
           /* optimal value for the normal distribution, which is good for 
 	     all bell-shaped densities. The minimax approach for that 
@@ -195,6 +204,14 @@ unur_utdr_init( struct unur_par *par )
   int setupok=1;
   double c,cfac,volc,volr,tly,tlys,try,trys,dl,dr,delta,delta1;
 
+  double pdf_area = par->DISTR.area;      /* (approximate) area below p.d.f. */
+
+  /** TODO: inititialisieren notwendig ?? **/
+  try = 0.;
+  trys = 0.;
+  dl = 0.;
+  dr = 0.;
+
   /* check arguments */
   CHECK_NULL(par,NULL);
   COOKIE_CHECK(par,CK_UTDR_PAR,NULL);
@@ -213,7 +230,7 @@ unur_utdr_init( struct unur_par *par )
 
     /* 1.1 */
     cfac = (setupok) ? PAR.c_factor : 2.;     /* gibt es hier nur zwei varianten ?? ja*/
-    c = cfac * PAR.pdf_area/GEN.fm;
+    c = cfac * pdf_area/GEN.fm;
     setupok=1;         
 
     GEN.tlx = GEN.mode - c;
@@ -336,11 +353,11 @@ unur_utdr_init( struct unur_par *par )
 
     if (cfac!=2.) {
       if(setupok)
-        if (GEN.volcompl > 4. * PAR.pdf_area||GEN.volcompl<0.5*PAR.pdf_area)
+        if (GEN.volcompl > 4. * pdf_area || GEN.volcompl < 0.5 * pdf_area)
         setupok=0;
     }
     else { 
-      if (setupok==0 || GEN.volcompl > 8. * PAR.pdf_area||GEN.volcompl<0.5*PAR.pdf_area) {
+      if (setupok==0 || GEN.volcompl > 8. * pdf_area || GEN.volcompl < 0.5 * pdf_area) {
         _unur_warning(gen->genid,UNUR_ERR_INIT,"Area below hat too large! Perhaps pdf or mode wrong\n");
         free(par); unur_utdr_free(gen);
         return NULL; 
@@ -443,7 +460,7 @@ unur_utdr_free( struct unur_gen *gen )
 
   /* free memory */
   _unur_free_genid(gen);
-  if (GEN.pdf_param) free(GEN.pdf_param);
+  free(gen->distr);
   free(gen);
 
 } /* end of unur_utdr_free() */
@@ -468,7 +485,6 @@ _unur_utdr_create( struct unur_par *par )
      /*----------------------------------------------------------------------*/
 {
   struct unur_gen *gen;
-  int i;
 
   /* check arguments */
   CHECK_NULL(par,NULL);
@@ -480,34 +496,51 @@ _unur_utdr_create( struct unur_par *par )
   /* magic cookies */
   COOKIE_SET(gen,CK_UTDR_GEN);
 
+  /* copy distribution object */
+  gen->distr = _unur_malloc( sizeof(struct unur_distr) );
+  unur_distr_copy( gen->distr, par->distr );
+
   /* routines for sampling and destroying generator */
   SAMPLE = unur_utdr_sample;
   gen->destroy = unur_utdr_free;
 
-  /* set all pointers to NULL */
-  GEN.pdf_param = NULL;
-  GEN.n_pdf_param = 0;
-
   /* copy some parameters into generator object */
+  GEN.pdf = gen->DISTR.pdf;               /* p.d.f. of distribution          */
+  GEN.pdf_param   = gen->DISTR.params;    /* parameters of p.d.f.            */
+  GEN.n_pdf_param = gen->DISTR.n_params;  /* number of parameters            */
+  GEN.mode = gen->DISTR.mode;             /* mode of p.d.f.                  */
+  GEN.il = gen->DISTR.domain[0];          /* left boundary of domain         */
+  GEN.ir = gen->DISTR.domain[1];          /* right boundary of domain        */
+
+  gen->method = par->method;         /* indicates method and variant */
   _unur_copy_urng_pointer(par,gen);  /* pointer to urng into generator object*/
   _unur_copy_debugflag(par,gen);     /* copy debugging flags into generator object */
   _unur_copy_genid(par,gen);         /* copy generator identifier            */
 
-  GEN.mode = PAR.mode;         /* mode of distribution     */
-  GEN.il   = PAR.il;           /* left boundary of domain  */
-  GEN.ir   = PAR.ir;           /* left boundary of domain  */
-  GEN.pdf  = PAR.pdf;          /* p.d.f. of distribution   */
-  gen->method = par->method;   /* indicates method and variant */
-
-  /* allocation for array of pdf-parameters */
-  if( PAR.n_pdf_param > 0 )
-    GEN.pdf_param = _unur_malloc( PAR.n_pdf_param * sizeof(double) );
-  
-  /* copy parameters of distribution */
-  GEN.n_pdf_param = PAR.n_pdf_param;
-  if (PAR.pdf_param != NULL)
-    for (i=0; i<PAR.n_pdf_param; i++)
-      GEN.pdf_param[i] = PAR.pdf_param[i];
+  /* initialize parameters */
+  /** TODO !!! **/
+  /** ist das wirklich so noetig ?? **/
+  GEN.vollc = 0.; 
+  GEN.volcompl = 0.; 
+  GEN.voll = 0.; 
+  GEN.fm = 0.; 
+  GEN.hm = 0.; 
+  GEN.al = 0.; 
+  GEN.ar = 0.; 
+  GEN.col = 0.; 
+  GEN.cor = 0.; 
+  GEN.sal = 0.; 
+  GEN.sar = 0.; 
+  GEN.bl = 0.; 
+  GEN.br = 0.; 
+  GEN.tlx = 0.; 
+  GEN.trx = 0.; 
+  GEN.brblvolc = 0.; 
+  GEN.drar = 0.; 
+  GEN.dlal = 0.; 
+  GEN.ooar2 = 0.; 
+  GEN.ooal2 = 0.;
+  /* constants of the hat and for generation*/
 
   /* return pointer to (almost empty) generator object */
   return(gen);
@@ -540,6 +573,8 @@ _unur_utdr_debug_init( struct unur_par *par, struct unur_gen *gen,
   fprintf(log,"%s: method  = utdr (transformed density rejection with 3 points of contact)\n",gen->genid);
   fprintf(log,"%s:\n",gen->genid);
 
+  _unur_distr_debug_cont( gen );
+
   fprintf(log,"%s: sampling routine = unur_utdr_sample",gen->genid);
   if (par->method & UNUR_MASK_SCHECK)
     fprintf(log,"_check()\n");
@@ -549,7 +584,7 @@ _unur_utdr_debug_init( struct unur_par *par, struct unur_gen *gen,
 
   fprintf(log,"%s: tlx %e bl %e mode %e br %e trx %e\n",gen->genid,GEN.tlx,GEN.bl,GEN.mode,GEN.br,GEN.trx);
   fprintf(log,"%s: try %e trys %e ar %e \n",gen->genid,try,trys,GEN.ar);
-  fprintf(log,"%s: cfac %e setupok %d volcompl %e pdf_area %e\n",gen->genid,cfac,setupok,GEN.volcompl,PAR.pdf_area);
+  fprintf(log,"%s: cfac %e setupok %d volcompl %e pdf_area %e\n",gen->genid,cfac,setupok,GEN.volcompl,par->DISTR.area);
   fprintf(log,"%s:\n",gen->genid);
 
 } /* end of _unur_utdr_debug_init() */

@@ -4,7 +4,7 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   FILE:      set.h                                                        *
+ *   FILE:      set.c                                                        *
  *                                                                           *
  *   set parameters for (new) generators                                     *
  *                                                                           *
@@ -102,12 +102,6 @@ unur_set_domain( struct unur_par *par, double left, double right )
 
   switch (par->method & UNUR_MASK_METHOD) {
 
-  case UNUR_METH_AROU:
-    COOKIE_CHECK(par,CK_AROU_PAR,0);
-    par->data.arou.bleft = left;
-    par->data.arou.bright = right;
-    break;
-
   case UNUR_METH_TABL:
     COOKIE_CHECK(par,CK_TABL_PAR,0);
     if (left <= -INFINITY || right >= INFINITY) {
@@ -116,18 +110,6 @@ unur_set_domain( struct unur_par *par, double left, double right )
     }
     par->data.tabl.bleft = left;
     par->data.tabl.bright = right;
-    break;
-
-  case UNUR_METH_TDR:
-    COOKIE_CHECK(par,CK_TDR_PAR,0);
-    par->data.tdr.bleft = left;
-    par->data.tdr.bright = right;
-    break;
-
-  case UNUR_METH_UTDR:
-    COOKIE_CHECK(par,CK_UTDR_PAR,0);
-    par->data.utdr.il = left;
-    par->data.utdr.ir = right;
     break;
 
   default:
@@ -181,73 +163,6 @@ unur_set_domain_vec( struct unur_par *par, double **domain )
 /*---------------------------------------------------------------------------*/
 
 int
-unur_set_pdf_param(  struct unur_par *par, double *pdf_params, int n_params )
-/*---------------------------------------------------------------------------*/
-/* set array of parameters for p.d.f.                                        */
-/*                                                                           */
-/* parameters:                                                               */
-/*   par        ... pointer to parameter for building generator object       */
-/*   pdf_params ... list of arguments                                        */
-/*   n_params   ... number of arguments                                      */
-/*                                                                           */
-/* comment:                                                                  */
-/*   must be called unless p.d.f. has does not require parameters            */
-/*---------------------------------------------------------------------------*/
-{
-  /* check arguments */
-  CHECK_NULL(par,0);
-
-  /* check new parameter for generator */
-  if (pdf_params == NULL) {
-    _unur_warning_invalid(par,"p.d.f. params is NULL pointer");
-    return 0;
-  }
-  if (n_params < 0) {
-    _unur_warning_invalid(par,"number of p.d.f. params is negative");
-    return 0;
-  }
-
-  switch (par->method & UNUR_MASK_METHOD) {
-  case UNUR_METH_AROU:
-    COOKIE_CHECK(par,CK_AROU_PAR,0);
-    par->data.arou.pdf_param = pdf_params;
-    par->data.arou.n_pdf_param = n_params;
-    break;
-
-  case UNUR_METH_TABL:
-    COOKIE_CHECK(par,CK_TABL_PAR,0);
-    par->data.tabl.pdf_param = pdf_params;
-    par->data.tabl.n_pdf_param = n_params;
-    break;
-
-  case UNUR_METH_TDR:
-    COOKIE_CHECK(par,CK_TDR_PAR,0);
-    par->data.tdr.pdf_param = pdf_params;
-    par->data.tdr.n_pdf_param = n_params;
-    break;
-
-  case UNUR_METH_UTDR:
-    COOKIE_CHECK(par,CK_UTDR_PAR,0);
-    par->data.utdr.pdf_param = pdf_params;
-    par->data.utdr.n_pdf_param = n_params;
-    break;
-
-  default:
-    _unur_warning_notrequired(par,"p.d.f. parameters");
-    return 0;
-  }
-  
-  /* changelog */
-  par->set |= UNUR_SET_PDFPARAM;
-
-  /* o.k. */
-  return 1;
-
-} /* end of unur_set_pdf_param() */
-
-/*---------------------------------------------------------------------------*/
-
-int
 unur_set_mode( struct unur_par *par, double mode )
 /*---------------------------------------------------------------------------*/
 /* set mode of p.d.f.                                                        */
@@ -261,24 +176,10 @@ unur_set_mode( struct unur_par *par, double mode )
   CHECK_NULL(par,0);
 
   switch (par->method & UNUR_MASK_METHOD) {
-  case UNUR_METH_AROU:
-    COOKIE_CHECK(par,CK_AROU_PAR,0);
-    par->data.arou.mode = mode;
-    break;
-
-  case UNUR_METH_TABL:
-    COOKIE_CHECK(par,CK_TABL_PAR,0);
-    par->data.tabl.mode = mode;
-    break;
 
   case UNUR_METH_TDR:
     COOKIE_CHECK(par,CK_TDR_PAR,0);
     par->data.tdr.mode = mode;
-    break;
-
-  case UNUR_METH_UTDR:
-    COOKIE_CHECK(par,CK_UTDR_PAR,0);
-    par->data.utdr.mode = mode;
     break;
 
   default:
@@ -341,51 +242,6 @@ unur_set_usemode( struct unur_par *par, int usemode )
   return 1;
 
 } /* end of unur_set_usemode() */
-
-/*---------------------------------------------------------------------------*/
-
-int
-unur_set_pdf_area( struct unur_par *par, double area )
-/*---------------------------------------------------------------------------*/
-/* set the (approximate) area below p.d.f.                                   */
-/*                                                                           */
-/* parameters:                                                               */
-/*   par   ... pointer to parameter for building generator object            */
-/*   area  ... area                                                          */
-/*---------------------------------------------------------------------------*/
-{
-  /* check arguments */
-  CHECK_NULL(par,0);
-
-  /* check new parameter for generator */
-  if (area <= 0.) {
-    _unur_warning_invalid(par,"pdf area <= 0");
-    return 0;
-  }
-
-  switch (par->method & UNUR_MASK_METHOD) {
-  case UNUR_METH_TABL:
-    COOKIE_CHECK(par,CK_TABL_PAR,0);
-    par->data.tabl.pdf_area = area;
-    break;
-
-  case UNUR_METH_UTDR:
-    COOKIE_CHECK(par,CK_UTDR_PAR,0);
-    par->data.utdr.pdf_area = area;
-    break;
-
-  default:
-    _unur_warning_notrequired(par,"area below p.d.f.");
-    return 0;
-  }
-
-  /* changelog */
-  par->set |= UNUR_SET_AREA;
-
-  /* o.k. */
-  return 1;
-
-} /* end of unur_set_pdf_area() */
 
 /*---------------------------------------------------------------------------*/
 

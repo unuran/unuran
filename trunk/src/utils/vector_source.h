@@ -45,5 +45,7 @@ double _unur_vector_norm(int dim, double *v);
 double _unur_vector_scalar_product(int dim, double *v1, double *v2);
 /* calculation of scalar product */
 
+void _unur_vector_normalize(int dim, double *v);
+/* normalize a vector to have unit norm */
 
 /*---------------------------------------------------------------------------*/

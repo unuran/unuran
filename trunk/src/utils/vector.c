@@ -102,6 +102,25 @@ _unur_vector_norm(int dim, double *v)
 
 /*--------------------------------------------------------------------------*/
 
+/* normalize a vector to have unit norm */
+void 
+_unur_vector_normalize(int dim, double *v)
+{
+  int i;
+  double norm;
+  
+  /* checking if v is NULL */
+  if (v==NULL) return; 
+  
+  norm=_unur_vector_norm(dim, v);
+  
+  for (i=0; i<dim; i++)  v[i] /= norm;
+
+}
+
+
+/*--------------------------------------------------------------------------*/
+
 /* calculation of scalar product */
 double 
 _unur_vector_scalar_product(int dim, double *v1, double *v2)

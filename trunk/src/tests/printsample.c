@@ -74,6 +74,7 @@ unur_test_printsample( struct unur_gen *gen, int n_rows, int n_cols, FILE *out )
     break;
 
   case UNUR_METH_CONT:
+  case UNUR_METH_CEMP:
     for( j=0; j<n_rows; j++ ) {
       for(i=0; i<n_cols; i++)
 	fprintf(out,"%8.5f ",_unur_sample_cont(gen));

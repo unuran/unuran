@@ -58,8 +58,13 @@ static char test_name[] = "Chi^2-Test";
 
 static double _unur_test_chi2_discr( struct unur_gen *gen, int samplesize, int classmin,
 				     int verbose, FILE *out );
+
 static double _unur_test_chi2_cont( struct unur_gen *gen, int intervals, int samplesize, int classmin,
 				    int verbose, FILE *out );
+
+static double _unur_test_chi2_cemp( struct unur_gen *gen, int intervals, int samplesize, int classmin,
+				    int verbose, FILE *out );
+
 static double _unur_test_chi2test( double *prob, int *observed, int len, int classmin,
 				   int verbose, FILE *out );
 
@@ -113,7 +118,11 @@ unur_test_chi2( struct unur_gen *gen,
   case UNUR_METH_CONT:
     return _unur_test_chi2_cont(gen, intervals, samplesize, classmin, verbose, out);
 
+  case UNUR_METH_CEMP:
+    return _unur_test_chi2_cemp(gen, intervals, samplesize, classmin, verbose, out);
+
   case UNUR_METH_VEC:
+  default:
     _unur_error(test_name,UNUR_ERR_GENERIC,"Not implemented for multivariate distributions!");
     return -1.;
   }
@@ -360,6 +369,106 @@ _unur_test_chi2_cont( struct unur_gen *gen,
 
 /*---------------------------------------------------------------------------*/
 
+static double
+_unur_test_chi2_cemp( struct unur_gen *gen, 
+		      int intervals, 
+		      int samplesize, 
+		      int classmin,
+		      int verbose,
+		      FILE *out )
+     /*----------------------------------------------------------------------*/
+     /* Chi^2 test for continuous empirical distributions.                   */
+     /* Tests for standard normal distribution only!                         */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen        ... pointer to generator object                         */
+     /*   intervals  ... number of intervals in which (0,1) is partitioned   */
+     /*   samplesize ... samplesize for test                                 */
+     /*                  (if <= 0, intervals^2 is used as default.)          */
+     /*   classmin   ... minimum number of expected occurrences for each class */
+     /*                  (if <= 0, a default value is used.)                 */
+     /*   verbose    ... verbosity level                                     */
+     /*                  0 = no output on stdout                             */
+     /*                  1 = print summary                                   */
+     /*                  2 = print classes and summary                       */
+     /*   out        ... output stream                                       */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   p-value of test statistics under H_0                               */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   -2. ... missing data                                               */
+     /*   -1. ... other errors                                               */
+     /*----------------------------------------------------------------------*/
+{
+  UNUR_DISTR *distr_normal;  /* object for standard normal distribution */
+  UNUR_FUNCT_CONT *cdf;      /* pointer to CDF */
+  double F;                  /* value of CDF */
+  int *observed;             /* vector for observed occurrences */
+  double pval;               /* p-value */
+  int i,j;
+
+  /* check arguments */
+  CHECK_NULL(gen,-1.);
+  /* we do not check magic cookies here */
+
+  /* CDF for standard normal distribution */
+  distr_normal = unur_distr_normal( NULL, 0 );
+  cdf = distr_normal->data.cont.cdf;
+
+  /* check given number of intervals */
+  if (intervals <= 2)
+    intervals = CHI2_INTERVALS_DEFAULT;
+
+  /* allocate memory for observations */
+  observed = _unur_malloc( intervals * sizeof(int));
+
+  /* clear array */
+  for( i=0; i<intervals; i++ )
+    observed[i] = 0;
+
+  /* samplesize */
+  if( samplesize <= 0 )
+    samplesize = (INT_MAX/intervals > intervals) ? intervals*intervals : INT_MAX;
+  samplesize = min( samplesize, CHI2_MAX_SAMPLESIZE );
+
+  /* now run generator */
+  for( i=0; i<samplesize; i++ ) {
+    F = cdf( _unur_sample_cont(gen), distr_normal );
+    j = (int)(intervals * F);
+    if (j > intervals) {   
+      _unur_warning(test_name,UNUR_ERR_GENERIC,"F(x) > Fmax (out of domain).");
+      j = intervals-1;
+    }
+    if (j >= intervals)    /* cdf() might return 1. */
+      j = intervals-1;
+    if (j < 0 ) {           /* there is something wrong with the boundaries */
+      _unur_warning(test_name,UNUR_ERR_GENERIC,"F(x) < 0 (out of domain).");
+      j = 0;
+    }
+    ++observed[j];
+  }
+
+  if (verbose >= 1) {
+    fprintf(out,"\nChi^2-Test for continuous empirical distribution:");
+    fprintf(out,"\n(Assumes standard normal distribution!)");
+    fprintf(out,"\n  intervals  = %d\n",intervals);
+  }
+
+  /* and now make chi^2 test */
+  pval = _unur_test_chi2test(NULL, observed, intervals, classmin, verbose, out );
+
+  /* free memory */
+  _unur_distr_free(distr_normal);
+  free(observed);
+
+  /* return result of test */
+  return pval;
+
+} /* end of _unur_test_chi2_cemp() */
+
+/*---------------------------------------------------------------------------*/
+
 double
 _unur_test_chi2test( double *prob, 
 		     int *observed, 
@@ -406,22 +515,10 @@ _unur_test_chi2test( double *prob,
   double factor;        /* factor for calculating expected number of occurrences */
   int i;
 
-  static UNUR_DISTR *chisquare_distr = NULL; /* distribution object to chi^2 distribution */
+  UNUR_DISTR *distr_chisquare = NULL; /* distribution object to chi^2 distribution */
 
   /* check arguments */
   CHECK_NULL(observed,-1.);
-
-  /* make distribution object for chi^2 distribution */
-  if (chisquare_distr == NULL) {
-    df = 1.;  /* dummy value for degrees of freedom (will be set later) */
-    chisquare_distr = unur_distr_chisquare( &df, 1 );
-  }
-
-  /* do we have a CDF for the chi^2 distribution ? */
-  if (chisquare_distr->data.cont.cdf == NULL) {
-    _unur_error(test_name,UNUR_ERR_GENERIC,"CDF for CHI^2 distribution required");
-    return -2.;
-  }
 
   /* minimum number of occurrences in a class */
   classmin = (classmin > 0) ? classmin : CHI2_CLASSMIN_DEFAULT;
@@ -464,14 +561,21 @@ _unur_test_chi2test( double *prob,
   }
 
   /* evaluate test statistics */
-  /* set degrees of freedom */
+  /* chisquare distribution with df degrees of freedom */
   df = (double)(classes-1);
-  unur_distr_cont_set_pdfparams( chisquare_distr, &df, 1 );
+  distr_chisquare = unur_distr_chisquare( &df, 1 );
   /* p-value */
-  pval = 1. - _unur_cont_CDF( chi2, chisquare_distr );
+  if (distr_chisquare->data.cont.cdf) {
+    pval = 1. - _unur_cont_CDF( chi2, distr_chisquare );
+  }
+  else {
+    _unur_error(test_name,UNUR_ERR_GENERIC,"CDF for CHI^2 distribution required");
+    pval = -2.;
+  }
+  _unur_distr_free(distr_chisquare);
 
   /* print result (if requested) */
-  if (verbose >= 1) {
+  if (verbose >= 1 && pval >= 0.) {
     fprintf(out,"\nResult of chi^2-Test:\n  samplesize = %d\n",samplesize);
     fprintf(out,"  classes    = %d\t (minimum per class = %d)\n", classes, classmin);
     fprintf(out,"  chi2-value = %g\n  p-value    = %g\n\n", chi2, pval);

@@ -146,6 +146,7 @@ unur_test_timing( struct unur_par *par,
 	k = unur_sample_discr(gen);
       break;
     case UNUR_METH_CONT:
+    case UNUR_METH_CEMP:
       for( ; samples < samplesize; samples++ )
 	x = unur_sample_cont(gen);
       break;

@@ -769,17 +769,26 @@ _unur_empk_init( struct unur_par *par )
     return NULL; }
   COOKIE_CHECK(par,CK_EMPK_PAR,NULL);
 
-  /* if variance correction is used, the variance of the kernel
-     must be known and positive */
-  if( (par->variant & EMPK_VARFLAG_VARCOR) &&
-      !( (par->set & EMPK_SET_KERNELVAR) && PAR.kernvar > 0. )) {
-    _unur_warning(GENTYPE,UNUR_ERR_GEN_DATA,"variance correction disabled");
-    par->variant &= ~EMPK_SET_KERNELVAR;
+  /* check kernel generator */
+  if ( PAR.kerngen==NULL && PAR.kernel == NULL) {
+    /* no kernel given. use default kernel */
+    if ( !unur_empk_set_kernel( par, UNUR_DISTR_GAUSSIAN ) ) {
+      /* cannot make kernel generator (should not happen!) */
+      free(par); return NULL; 
+    }
   }
 
   /* create a new empty generator object */
   gen = _unur_empk_create(par);
   if (!gen) { free(par); return NULL; }
+
+  /* if variance correction is used, the variance of the kernel
+     must be known and positive */
+  if( (gen->variant & EMPK_VARFLAG_VARCOR) &&
+      !( (gen->set & EMPK_SET_KERNELVAR) && GEN.kernvar > 0. )) {
+    _unur_warning(GENTYPE,UNUR_ERR_GEN_DATA,"variance correction disabled");
+    gen->variant &= ~EMPK_SET_KERNELVAR;
+  }
 
   /* set uniform random number generator */
   GEN.kerngen->urng = par->urng;
@@ -813,10 +822,7 @@ _unur_empk_init( struct unur_par *par )
   GEN.bwidth = PAR.smoothing * GEN.bwidth_opt;
 
   /* compute constant for variance corrected version */
-  if( par->variant & EMPK_VARFLAG_VARCOR )
-    GEN.sconst = 1./sqrt(1. + PAR.kernvar * SQU( GEN.bwidth/GEN.stddev_observ ) );
-  else
-    GEN.sconst = 1.;
+  GEN.sconst = 1./sqrt(1. + PAR.kernvar * SQU( GEN.bwidth/GEN.stddev_observ ) );
 
 #ifdef UNUR_ENABLE_LOGGING
     /* write info into log file */
@@ -886,19 +892,12 @@ _unur_empk_create( struct unur_par *par )
   gen->gen_aux  = NULL;             /* aux generator object set below        */
 
   /* copy kernel generator into generator object */
-  if (PAR.kerngen) {
+  if (PAR.kerngen)
     /* kernel provided by user */
     GEN.kerngen = unur_gen_clone(PAR.kerngen);
-  }
-  else {
+  else
     /* kernel from UNURAN list of kernels */
-    if (PAR.kernel == NULL) {
-      /* use default kernel */
-      if ( !unur_empk_set_kernel( par, UNUR_DISTR_GAUSSIAN ) ) {
-	unur_free(gen); return NULL; }
-    }
     GEN.kerngen = PAR.kernel;
-  }
 
   /* variance of kernel */
   GEN.kernvar = PAR.kernvar;

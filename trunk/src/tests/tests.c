@@ -142,6 +142,9 @@ _unur_print_method( struct unur_par *par )
   case UNUR_METH_CONT:
     printf("\nTYPE:\t\tcontinuous univariate distribution\n");
     break;
+  case UNUR_METH_CEMP:
+    printf("\nTYPE:\t\tcontinuous univariate empirical distribution\n");
+    break;
   case UNUR_METH_VEC:
     printf("\nTYPE:\t\tcontinuous multivariate distribution\n");
     break;
@@ -174,27 +177,27 @@ _unur_print_method( struct unur_par *par )
     /* continuous, univariate */
   case UNUR_METH_AROU:
     COOKIE_CHECK(par,CK_AROU_PAR,0);
-    printf("METHOD:\t\tautomatic ratio-of-uniforms method\n");
+    printf("METHOD:\t\tautomatic ratio-of-uniforms method (NINV)\n");
     break;
   case UNUR_METH_NINV:
     COOKIE_CHECK(par,CK_NINV_PAR,0);
-    printf("METHOD:\t\tnumerical inversion of CDF\n");
+    printf("METHOD:\t\tnumerical inversion of CDF (NINV)\n");
     break;
   case UNUR_METH_SROU:
     COOKIE_CHECK(par,CK_SROU_PAR,0);
-    printf("METHOD:\t\tsimple universal ratio-of-uniforms method\n");
+    printf("METHOD:\t\tsimple universal ratio-of-uniforms method (SROU)\n");
     break;
   case UNUR_METH_SSR:
     COOKIE_CHECK(par,CK_SSR_PAR,0);
-    printf("METHOD:\t\tsimple transformed density rejection with universal bounds\n");
+    printf("METHOD:\t\tsimple transformed density rejection with universal bounds (SSR)\n");
     break;
   case UNUR_METH_TABL:
     COOKIE_CHECK(par,CK_TABL_PAR,0);
-    printf("METHOD:\t\trejection from piecewise constant hat\n");
+    printf("METHOD:\t\trejection from piecewise constant hat (TABL)\n");
     break;
   case UNUR_METH_TDR:
     COOKIE_CHECK(par,CK_TDR_PAR,0);
-    printf("METHOD:\t\ttransformed density rejection\n");
+    printf("METHOD:\t\ttransformed density rejection (TDR)\n");
     break;
   case UNUR_METH_UTDR:
     COOKIE_CHECK(par,CK_UTDR_PAR,0);
@@ -203,6 +206,12 @@ _unur_print_method( struct unur_par *par )
   case UNUR_METH_CSTD:
     COOKIE_CHECK(par,CK_CSTD_PAR,0);
     printf("METHOD:\t\tspecial (CSTD)\n");
+    break;
+
+    /* continuous, univariate */
+  case UNUR_METH_EMPK:
+    COOKIE_CHECK(par,CK_EMPK_PAR,0);
+    printf("METHOD:\t\tempirical distribution with kernel smoothing (EMPK)\n");
     break;
 
     /* misc */

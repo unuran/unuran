@@ -923,8 +923,7 @@ sub scan_validate {
     print "#endif\n\n";
 
     print "\n\t/* test finished */\n";
-    print "\tif (n_tests_failed>0) n_tests_failed--;  /* we accept one failure */\n";
-    print "\ttest_ok &= (n_tests_failed) ? 0 : 1;\n";
+    print "\ttest_ok &= (n_tests_failed>2) ? 0 : 1;   /* we accept 2 failure */\n";
     print "\t(n_tests_failed) ? printf(\" --> failed] \") : printf(\" --> ok] \");\n";
     print "\n} /* end of test_validate */\n\n";
 

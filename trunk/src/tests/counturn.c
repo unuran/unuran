@@ -160,10 +160,13 @@ unur_test_count_urn( struct unur_gen *gen, int samplesize, int verbosity, FILE *
     for( j=0; j<samplesize; j++ )
       _unur_sample_discr(gen);
     break;
+
   case UNUR_METH_CONT:
+  case UNUR_METH_CEMP:
     for( j=0; j<samplesize; j++ )
       _unur_sample_cont(gen);
     break;
+
   case UNUR_METH_VEC: 
     { /* we need an array for the vector */
       double *vec;
@@ -175,6 +178,7 @@ unur_test_count_urn( struct unur_gen *gen, int samplesize, int verbosity, FILE *
       free(vec);
     }
     break;
+
   default: /* unknown ! */
     _unur_error("Tests",UNUR_ERR_GENERIC,"method unknown!");
     return 0;

@@ -72,13 +72,16 @@
 #define UNUR_METH_UNIF     0x20000800u
 #define UNUR_METH_UTDR     0x20000900u
 
-#define UNUR_METH_EMPK     0x20001100u
+/* univariate continuous empirical distributions */
+#define UNUR_METH_CEMP     0x40000000u
+
+#define UNUR_METH_EMPK     0x40001100u
 
 /* multivariate continuous distributions */
-#define UNUR_METH_VEC      0x40000000u
+#define UNUR_METH_VEC      0x80000000u
 
-#define UNUR_METH_VMT      0x40010000u
-#define UNUR_METH_VEMPK    0x40020000u
+#define UNUR_METH_VMT      0x80010000u
+#define UNUR_METH_VEMPK    0x80020000u
 
 /* generators for standard distributions */
 #define UNUR_METH_CSTD     0x2000f100u   /* is of type UNUR_METH_CONT !!  */

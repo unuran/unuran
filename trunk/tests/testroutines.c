@@ -735,11 +735,12 @@ int run_validate_chi2( FILE *LOG, int line, UNUR_GEN *gen, char todo )
     /* we run the test twice when it fails the first time */
 
     switch (type) {
-    case UNUR_DISTR_CONT:
-      pval = unur_test_chi2( gen, CHI_TEST_INTERVALS, 0, 20, CHI_TEST_VERBOSITY, LOG);
-      break;
     case UNUR_DISTR_DISCR:
       pval = unur_test_chi2( gen, CHI_TEST_INTERVALS, 100000, 20, CHI_TEST_VERBOSITY, LOG);
+      break;
+    case UNUR_DISTR_CONT:
+    case UNUR_DISTR_CEMP:
+      pval = unur_test_chi2( gen, CHI_TEST_INTERVALS, 0, 20, CHI_TEST_VERBOSITY, LOG);
       break;
     default:
       fprintf(stderr,"this should not happen\n");
@@ -819,11 +820,12 @@ int run_validate_verifyhat( FILE *LOG, int line, UNUR_GEN *gen, char todo )
 
     unur_errno = 0;
     switch (type) {
-    case UNUR_DISTR_CONT:
-      unur_sample_cont(gen);
-      break;
     case UNUR_DISTR_DISCR:
       unur_sample_discr(gen);
+      break;
+    case UNUR_DISTR_CONT:
+    case UNUR_DISTR_CEMP:
+      unur_sample_cont(gen);
       break;
     default:
       fprintf(stderr,"this should not happen\n");

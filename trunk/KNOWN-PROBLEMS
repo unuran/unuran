@@ -3,8 +3,5 @@
     with a generator object of the wrong distribution type results in
     undefined behavior or causes a segmentation fault. 
 
-(*) The String API has a bug when "decimal point" is set to comma `,'
-    instead to a point `.'.
-
 (*) The String API does not provide the full functionality as the API
     using function calls. 

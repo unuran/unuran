@@ -1077,7 +1077,7 @@ _unur_fstr_error_parse ( struct parser_data *pdata, int errno )
     _unur_stream_printf_simple ( "%s ",pdata->tpos[i]);
 
   _unur_stream_printf_simple ( "\n%s:  -->   ",GENTYPE );
-  for (i=pdata->tno-1; i<pdata->n_tokens; i++)
+  for (; i<pdata->n_tokens; i++)
     _unur_stream_printf_simple ( "%s ",pdata->tpos[i]);
 
   _unur_stream_printf_simple ( "\n%s:\n",GENTYPE );

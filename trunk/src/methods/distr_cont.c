@@ -405,8 +405,10 @@ unur_distr_cont_set_pdfstr( struct unur_distr *distr, const char *pdfstr )
   /* derived parameters like mode, area, etc. might be wrong now! */
 
   /* parse PDF string */
-  if ( (DISTR.pdftree = _unur_fstr2tree(pdfstr)) == NULL )
+  if ( (DISTR.pdftree = _unur_fstr2tree(pdfstr)) == NULL ) {
+    _unur_error(distr->name,UNUR_ERR_DISTR_SET,"Syntax error in function string");
     return 0;
+  }
   DISTR.pdf  = _unur_distr_cont_eval_pdf_tree;
 
   /* make derivative */
@@ -436,6 +438,7 @@ unur_distr_cont_set_cdfstr( struct unur_distr *distr, const char *cdfstr )
   /* check arguments */
   _unur_check_NULL( NULL,distr,0 );
   _unur_check_distr_object( distr, CONT, 0 );
+  _unur_check_NULL( NULL,cdfstr,0 );
 
   /* we do not allow overwriting a CDF */
   if (DISTR.cdf != NULL) {
@@ -451,8 +454,10 @@ unur_distr_cont_set_cdfstr( struct unur_distr *distr, const char *cdfstr )
   /* derived parameters like mode, area, etc. might be wrong now! */
 
   /* parse string */
-  if ( (DISTR.cdftree = _unur_fstr2tree(cdfstr)) == NULL )
+  if ( (DISTR.cdftree = _unur_fstr2tree(cdfstr)) == NULL ) {
+    _unur_error(distr->name,UNUR_ERR_DISTR_SET,"Syntax error in function string");
     return 0;
+  }
 
   /* set evaluation function */
   DISTR.cdf  = _unur_distr_cont_eval_cdf_tree;

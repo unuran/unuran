@@ -705,8 +705,10 @@ unur_distr_discr_set_pmfstr( struct unur_distr *distr, const char *pmfstr )
   /* derived parameters like mode, area, etc. might be wrong now! */
 
   /* parse PMF string */
-  if ( (DISTR.pmftree = _unur_fstr2tree(pmfstr)) == NULL )
+  if ( (DISTR.pmftree = _unur_fstr2tree(pmfstr)) == NULL ) {
+    _unur_error(distr->name,UNUR_ERR_DISTR_SET,"Syntax error in function string");
     return 0;
+  }
   DISTR.pmf  = _unur_distr_discr_eval_pmf_tree;
 
   return 1;

@@ -4,7 +4,7 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   FILE: unuran_errno.h                                                    *
+ *   FILE: x_errno.h                                                         *
  *                                                                           *
  *   PURPOSE:                                                                *
  *         defines error codes.                                              *
@@ -112,14 +112,14 @@
       It is obvious from the example that this distinction between errors
       and warning is rather crude and sometimes arbitrary. 
       
-      UNURAN routines use the global variable @code{unuran_errno} to
+      UNURAN routines use the global variable @code{unur_errno} to
       report errors, completely analogously to C library's
       @code{errno}. (However this approach is not thread-safe. There can 
       be only one instance of a global variable per program. Different
-      threads of execution may overwrite @code{unuran_errno}
+      threads of execution may overwrite @code{unur_errno}
       simultaneously). 
       Thus when an error occurs the caller of the routine can examine the
-      error code in @code{unuran_errno} to get more details about the
+      error code in @code{unur_errno} to get more details about the
       reason why a routine failed. You get a short
       description of the error by a unur_get_strerror() call.
       All the error code numbers have prefix @code{UNUR_ERR_} and expand
@@ -335,7 +335,7 @@ extern unsigned unur_errno;
       @cindex Error handlers
       @cindex Output streams
 
-      In addition to reporting error via the @code{unuran_errno} mechanism
+      In addition to reporting error via the @code{unur_errno} mechanism
       the library also provides an (optional) error handler. The error
       handler is called by the library functions when they are about to
       report an error. Then a short error diagnostics is written via two

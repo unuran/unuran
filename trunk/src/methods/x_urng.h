@@ -194,12 +194,16 @@ int unur_set_urng_aux( UNUR_PAR *parameters, UNUR_URNG *urng_aux );
   unur_set_urng(). 
   The auxilliary URNG is used as second stream of uniform random
   number for correlation induction.
+  It is not possible to set an auxilliary URNG for a method that does
+  not use one (i.e. the call returns 0).
 */
 
 int unur_use_urng_aux_default( UNUR_PAR *parameters );
 /* 
    Use the default auxilliary URNG.
    (It must be set after unur_get_urng().)
+   It is not possible to set an auxilliary URNG for a method that does
+   not use one (i.e. the call returns 0).
 */
 
 UNUR_URNG *unur_chg_urng_aux( UNUR_GEN *generator, UNUR_URNG *urng_aux );
@@ -208,6 +212,8 @@ UNUR_URNG *unur_chg_urng_aux( UNUR_GEN *generator, UNUR_URNG *urng_aux );
   pointer to the old auxilliary URNG that has been used by the
   generator. It has to be called after each unur_chg_urng() when the 
   auxilliary URNG should be different from the main URNG.
+  It is not possible to change the auxilliary URNG for a method that
+  does not use one (i.e. the call NULL).
 */
 
 UNUR_URNG *unur_get_urng_aux( UNUR_GEN *generator );

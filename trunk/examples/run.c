@@ -30,22 +30,23 @@ int main()
   
   UNUR_URNG *urng;
 
-/*    urng = prng_new("mt19937(2345)"); */
-/*    unur_set_default_urng(urng); */
+  urng = prng_new("mt19937(2345)");
+  unur_set_default_urng(urng);
   
 
-  //distr = unur_distr_normal(NULL,0);
+  distr = unur_distr_normal(NULL,0);
   // unur_set_default_debug(1);
 
-  distr = unur_distr_beta(fpar,2);
-  unur_distr_cont_set_domain(distr,-UNUR_INFINITY,UNUR_INFINITY);
-  unur_distr_cont_set_mode(distr,0.5);
+/*    distr = unur_distr_beta(fpar,2); */
+/*    unur_distr_cont_set_domain(distr,-UNUR_INFINITY,UNUR_INFINITY); */
+/*    unur_distr_cont_set_mode(distr,0.5); */
   // distr = unur_distr_normal(fpar,2);
 
   par = unur_tdr_new(distr);
   unur_tdr_set_variant_ps(par);
 /*    unur_tdr_set_cpoints(par,5,cp); */
 /*    unur_tdr_set_max_sqhratio(par,0.); */
+  unur_tdr_set_verify(par,1);
   unur_tdr_set_c(par,0.);
   unur_run_tests(par,~0);
   

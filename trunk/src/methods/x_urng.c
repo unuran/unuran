@@ -129,6 +129,12 @@ unur_use_urng_aux_default( UNUR_PAR *par )
 {
   static UNUR_URNG *urng_aux_default = NULL;
 
+  if (par->urng_aux == NULL) {
+    /* no auxilliary generator is used */
+    _unur_warning("URNGaux",UNUR_ERR_PAR_SET,"no aux URNG required");
+    return 0;
+  }
+
   /* default generator already running ? */
   if( urng_aux_default == NULL ) {
     /* have to initialize default generator first */

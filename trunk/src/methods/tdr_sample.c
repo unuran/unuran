@@ -354,7 +354,7 @@ _unur_tdr_gw_sample_check( struct unur_gen *gen )
 #ifdef UNUR_ENABLE_LOGGING
     /* write info into log file (in case error) */
     if (error && (gen->debug & TDR_DEBUG_SAMPLE)) 
-      _unur_tdr_debug_sample( gen, iv, pt, X, fx, hx, sqx ); 
+      _unur_tdr_gw_debug_sample( gen, iv, pt, X, fx, hx, sqx ); 
 #endif
 
     /* accept or reject */
@@ -570,7 +570,145 @@ _unur_tdr_ps_sample_check( struct unur_gen *gen )
      /*                                                                      */
      /*----------------------------------------------------------------------*/
 {
-  return 0.;
+  struct unur_tdr_interval *iv;
+  double U, V, X;
+  double fx, hx, Thx, sqx;
+  int squeeze_rejection = FALSE;
+  int error = 0;
+
+  /* check arguments */
+  CHECK_NULL(gen,0.);  COOKIE_CHECK(gen,CK_TDR_GEN,0.);
+
+  while (1) {
+
+    /* sample from U(0,1) */
+    U = _unur_call_urng(gen->urng);
+
+    /* look up in guide table and search for segment */
+    iv =  GEN.guide[(int) (U * GEN.guide_size)];
+    U *= GEN.Atotal;
+    while (iv->Acum < U) {
+      iv = iv->next;
+    }
+
+    /* reuse of uniform random number */
+    U -= iv->Acum - iv->Ahatr;    /* result: U in (-A_hatl, A_hatr) */
+
+    /* generate from hat distribution */
+    switch (gen->variant & TDR_VARMASK_T) {
+
+    case TDR_VAR_T_LOG:
+      if (iv->dTfx == 0.)
+	X = iv->x + U / iv->fx;
+      else {
+	double t = iv->dTfx * U / iv->fx;
+	if (fabs(t) > 1.e-6)
+	  /* x = iv->x + log(t + 1.) / iv->dTfx; is cheaper but numerical unstable */
+	  X = iv->x + log(t + 1.) * U / (iv->fx * t);
+	else if (fabs(t) > 1.e-8)
+	  /* use Taylor series */
+	  X = iv->x + U / iv->fx * (1 - t/2. + t*t/3.);
+	else
+	  X = iv->x + U / iv->fx * (1 - t/2.);
+      }
+      break;
+
+    case TDR_VAR_T_SQRT:
+      if (iv->dTfx == 0.)
+	X = iv->x + U /iv->fx;
+      else {
+	/* it would be less expensive to use:
+	   X = iv->x + iv->Tfx/iv->dTfx * (1. - 1./(1. + iv->dTfx * iv->Tfx * U) )
+	   however, this is unstable for small iv->dTfx */
+	X = iv->x + (iv->Tfx*iv->Tfx*U) / (1.-iv->Tfx*iv->dTfx*U);  
+	/* It cannot happen, that the denominator becomes 0 ! */
+      }
+      break;
+
+    case TDR_VAR_T_POW:
+      /** TODO **/
+      return 1.;
+
+      break;
+
+    default:
+      _unur_error(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
+      return 1.;
+
+    } /* end switch */
+
+    /* accept or reject */
+    V = _unur_call_urng(gen->urng);
+
+    /* squeeze rejection */
+    if (V <= iv->sq)
+      squeeze_rejection = TRUE;
+
+    /* evaluate hat at X:
+       get uniform random number between 0 and hat(X) */
+    switch (gen->variant & TDR_VARMASK_T) {
+    case TDR_VAR_T_LOG:
+      hx = iv->fx * exp(iv->dTfx*(X - iv->x));
+      V *= iv->fx * exp(iv->dTfx*(X - iv->x));
+      break;
+    case TDR_VAR_T_SQRT:
+      Thx = iv->Tfx + iv->dTfx * (X - iv->x);     /* transformed hat at X */ 
+      hx = 1./(Thx*Thx);
+      V *= 1./(Thx*Thx);
+      break;
+    case TDR_VAR_T_POW:
+      /** TODO **/
+      return 1.;
+    default:
+      return 0.;
+    } /* end switch */
+
+    /* evaluate p.d.f. at X */
+    fx = PDF(X);
+
+    /* evaluate squeeze */
+    sqx = iv->sq*hx;
+
+    /* check result */
+    if (X < DISTR.BD_LEFT || X > DISTR.BD_RIGHT) {
+      _unur_warning(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"generated point out of domain");
+      error = 1;
+    }
+    if (_FP_greater(fx, hx)) {
+      _unur_warning(gen->genid,UNUR_ERR_GEN_CONDITION,"pdf > hat. Not T-concave!");
+      error = 1;
+    }
+    if (_FP_less(fx, sqx)) {
+      _unur_warning(gen->genid,UNUR_ERR_GEN_CONDITION,"pdf < squeeze. Not T-concave!");
+      error = 1;
+    }
+
+#ifdef UNUR_ENABLE_LOGGING
+    /* write info into log file (in case error) */
+/*      if (error && (gen->debug & TDR_DEBUG_SAMPLE))  */
+/*        _unur_tdr_gw_debug_sample( gen, iv, iv, X, fx, hx, sqx );  */
+#endif
+
+    /* squeeze rejection */
+    if (squeeze_rejection)
+      return X;
+
+    /* main rejection */
+    if (V <= fx)
+      return X;
+
+    /* evaluation of pdf is expensive. improve the situation! */
+    if (GEN.n_ivs < GEN.max_ivs && GEN.max_ratio * GEN.Atotal > GEN.Asqueeze)
+      if ( !_unur_tdr_ps_interval_split(gen, iv, X, fx) ) {
+	/* condition for pdf is violated! */
+	_unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"");
+	/* replace sampling routine by dummy routine that just returns INFINITY */
+	SAMPLE = _unur_sample_cont_error;
+	return INFINITY;
+      }
+
+    /* else reject and try again */
+  }
 } /* end of _unur_tdr_ps_sample_check() */
 
 /*****************************************************************************/
@@ -765,7 +903,153 @@ _unur_tdr_ia_sample_check( struct unur_gen *gen )
      /*                                                                      */
      /*----------------------------------------------------------------------*/
 {
-  return 0.;
+  struct unur_tdr_interval *iv;
+  int use_ia;
+  double U, V, X;
+  double fx, hx, Thx, sqx;
+  int error = 0;
+
+  /* check arguments */
+  CHECK_NULL(gen,0.);  COOKIE_CHECK(gen,CK_TDR_GEN,0.);
+
+  while (1) {
+
+    /* sample from U(0,1) */
+    U = _unur_call_urng(gen->urng);
+
+    /* look up in guide table and search for segment */
+    iv =  GEN.guide[(int) (U * GEN.guide_size)];
+    U *= GEN.Atotal;
+    while (iv->Acum < U) {
+      iv = iv->next;
+    }
+
+    /* reuse of uniform random number */
+    U -= iv->Acum;    /* result: U in (-A_hat,0) */
+
+    /* check for region of immediate acceptance */
+    if (U >= - iv->sq * iv->Ahat) {
+      /* region of immediate acceptance */
+      U /= iv->sq;
+      use_ia = 1;
+    }
+    else {
+      /* rejection from region between hat and squeeze */
+      U = (U + iv->sq * iv->Ahat) / (1. - iv->sq);
+      use_ia = 0;
+    }
+    /* result: U in (-A_hat,0) */
+
+    /* U in (-A_hatl, A_hatr) */
+    U += iv->Ahatr;
+
+    /* generate from hat distribution */
+    switch (gen->variant & TDR_VARMASK_T) {
+
+    case TDR_VAR_T_LOG:
+      if (iv->dTfx == 0.)
+	X = iv->x + U / iv->fx;
+      else {
+	double t = iv->dTfx * U / iv->fx;
+	if (fabs(t) > 1.e-6)
+	  /* x = iv->x + log(t + 1.) / iv->dTfx; is cheaper but numerical unstable */
+	  X = iv->x + log(t + 1.) * U / (iv->fx * t);
+	else if (fabs(t) > 1.e-8)
+	  /* use Taylor series */
+	  X = iv->x + U / iv->fx * (1 - t/2. + t*t/3.);
+	else
+	  X = iv->x + U / iv->fx * (1 - t/2.);
+      }
+      break;
+
+    case TDR_VAR_T_SQRT:
+      if (iv->dTfx == 0.)
+	X = iv->x + U /iv->fx;
+      else {
+	U *= iv->Tfx; /* avoid one multiplication */
+	X = iv->x + (iv->Tfx * U) / (1. - iv->dTfx * U);  
+	/* It cannot happen, that the denominator becomes 0 ! */
+      }
+      break;
+
+    case TDR_VAR_T_POW:
+      /** TODO **/
+      return 1.;
+      break;
+
+    default:
+      _unur_error(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
+      return 1.;
+
+    } /* end switch */
+
+    /* evaluate hat at X */
+    switch (gen->variant & TDR_VARMASK_T) {
+    case TDR_VAR_T_LOG:
+      hx = iv->fx * exp(iv->dTfx*(X - iv->x)); break;
+    case TDR_VAR_T_SQRT:
+      Thx = iv->Tfx + iv->dTfx * (X - iv->x);     /* transformed hat at X */ 
+      hx = 1./(Thx*Thx); break;
+    case TDR_VAR_T_POW:
+    default:
+      /** TODO **/
+      return 1.;
+    } /* end switch */
+
+    /* evaluate p.d.f. at X */
+    fx = PDF(X);
+
+    /* evaluate squeeze */
+    sqx = iv->sq*hx;
+
+    /* check result */
+    if (X < DISTR.BD_LEFT || X > DISTR.BD_RIGHT) {
+      _unur_warning(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"generated point out of domain");
+      error = 1;
+    }
+    if (_FP_greater(fx, hx)) {
+      _unur_warning(gen->genid,UNUR_ERR_GEN_CONDITION,"pdf > hat. Not T-concave!");
+      error = 1;
+    }
+    if (_FP_less(fx, sqx)) {
+      _unur_warning(gen->genid,UNUR_ERR_GEN_CONDITION,"pdf < squeeze. Not T-concave!");
+      error = 1;
+    }
+
+#ifdef UNUR_ENABLE_LOGGING
+    /* write info into log file (in case error) */
+/*      if (error && (gen->debug & TDR_DEBUG_SAMPLE))  */
+/*        _unur_tdr_gw_debug_sample( gen, iv, iv, X, fx, hx, sqx );  */
+#endif
+
+    /* immedate acceptance */
+    if (use_ia)
+      return X;
+
+    /* rejection from region between hat and (proportional) squeeze */
+    V = _unur_call_urng(gen->urng);
+
+    /* get uniform random number between squeeze(X) and hat(X) */
+    V = (iv->sq + (1 - iv->sq) * V) * hx;
+
+    /* main rejection */
+    if (V <= fx)
+      return X;
+
+
+    /* evaluation of pdf is expensive. improve the situation! */
+    if (GEN.n_ivs < GEN.max_ivs && GEN.max_ratio * GEN.Atotal > GEN.Asqueeze)
+      if ( !_unur_tdr_ps_interval_split(gen, iv, X, fx) ) {
+	/* condition for pdf is violated! */
+	_unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"");
+	/* replace sampling routine by dummy routine that just returns INFINITY */
+	SAMPLE = _unur_sample_cont_error;
+	return INFINITY;
+      }
+
+    /* else reject and try again */
+  }
+
 } /* end of _unur_tdr_ia_sample_check() */
 
 /*****************************************************************************/

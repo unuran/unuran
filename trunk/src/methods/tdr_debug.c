@@ -367,7 +367,7 @@ _unur_tdr_ps_debug_intervals( struct unur_gen *gen )
 /*****************************************************************************/
 
 static void
-_unur_tdr_debug_sample( struct unur_gen *gen, 
+_unur_tdr_gw_debug_sample( struct unur_gen *gen, 
 			struct unur_tdr_interval *iv, 
 			struct unur_tdr_interval *pt, 
 			double x, double fx, double hx, double sqx )

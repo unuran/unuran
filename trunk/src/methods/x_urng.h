@@ -61,7 +61,7 @@
       
       If no URNG is provided for a parameter or generator object a default
       generator is used which is the same for all generators. This URNG is
-      defined in unuran_config.h at compile time. A pointer to
+      defined in @file{unuran_config.h} at compile time. A pointer to
       this default URNG can be obtained via
       unur_get_default_urng(). Nevertheless it is also possible to
       overwrite this default URNG by another one by means of the
@@ -69,7 +69,8 @@
       parameter objects.
       
       The pointer to a URNG is of type @code{UNUR_URNG*}. Its definition 
-      depends on the compilation switch @code{UNUR_URNG_TYPE} in unuran_config.h. 
+      depends on the compilation switch @code{UNUR_URNG_TYPE} in @
+      @file{unuran_config.h}. 
       Currently we have two possible switches (other values would result
       in a compilation error):
       
@@ -122,7 +123,7 @@
 
    UNUR_URNG_DEFAULT
       ... name|pointer of default urng (depends on UNUR_URNG_TYPE)
-          to be set in unuran_config.h
+          to be set in @file{unuran_config.h}.
 
    _unur_call_urng(urng)
       ... function call to urng 

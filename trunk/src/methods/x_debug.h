@@ -46,7 +46,8 @@
    =DESCRIPTION
       The UNURAN library has several debugging levels which can be
       switched on/off by debugging flags. This debugging feature can be
-      enabled by defining the macro @code{UNUR_ENABLE_LOGGING} in unuran_config.h.
+      enabled by defining the macro @code{UNUR_ENABLE_LOGGING} in 
+      @file{unuran_config.h}.
       The debugging levels range from print a short description of the build
       generator object to a detailed description of hat functions til
       tracing the sampling routines. The output is print onto the output
@@ -54,7 +55,7 @@
       These flags can be set or changed by the respective calls
       unur_set_debug() and unur_chg_debug() independently for each generator. 
       The default debugging flags are given by the macro
-      @code{UNUR_DEBUGFLAG_DEFAULT} in unuran_config.h.
+      @code{UNUR_DEBUGFLAG_DEFAULT} in @file{unuran_config.h}.
       This default can be overwritten at run time by a
       unur_set_default_debug() call.
       
@@ -95,13 +96,13 @@
       pointer that is returned from a unur_init() call.
       However it is possible to turn on checking for invalid NULL pointers
       even in such time-critical routines by defining
-      @code{UNUR_ENABLE_CHECKNULL} in unuran_config.h.
+      @code{UNUR_ENABLE_CHECKNULL} in @file{unuran_config.h}.
 
       Another debugging tool used in the library are magic cookies that
       validate a given pointer. It produces an error whenever a given
       pointer points to an object that is invalid in the context.
       The usage of magic cookies can be switched on by defining
-      @code{UNUR_COOKIES} in unuran_config.h.
+      @code{UNUR_COOKIES} in @file{unuran_config.h}.
 
    =END
 */

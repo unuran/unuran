@@ -186,7 +186,7 @@ int unur_distr_discr_set_pmfparams( UNUR_DISTR *distribution, double *params, in
 /* 
    Set array of parameters for @var{distribution}. There is an upper limit
    for the number of parameters @var{n_params}. It is given by the
-   macro @code{UNUR_DISTR_MAXPARAMS} in unuran_config.h. (It is set to
+   macro @code{UNUR_DISTR_MAXPARAMS} in @file{unuran_config.h}. (It is set to
    5 but can be changed to any appropriate nonnegative number.)
    If @var{n_params} is negative or exceeds this limit no parameters
    are copied into the @var{distribution} object and @code{unur_errno} is set to

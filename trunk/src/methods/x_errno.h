@@ -85,8 +85,8 @@
       segmentation faults. Sampling routines usually do not check the
       given pointer to the generator object. However you can switch on
       checking for NULL pointer defining the compiler switch 
-      @code{UNUR_ENABLE_CHECKNULL} in unuran_config.h to avoid nasty
-      segmentation faults.)
+      @code{UNUR_ENABLE_CHECKNULL} in @file{unuran_config.h} to avoid 
+      nasty segmentation faults.)
       
       The library distinguishes between two major classes of error:
       
@@ -309,7 +309,7 @@ extern unsigned unur_errno;
       handler is called by the library functions when they are about to
       report an error. Then a short error diagnostics is written via two
       output streams. Both can be switched on/off by compiler flag
-      @code{UNUR_WARNINGS_ON} in unuran_config.h.
+      @code{UNUR_WARNINGS_ON} in @file{unuran_config.h}.
       
       The first stream is @code{stderr}. It can be enabled by defining 
       the macro @code{UNUR_ENABLE_STDERR} in @file{unuran_config.h}.
@@ -319,22 +319,22 @@ extern unsigned unur_errno;
       used by the library: all warnings and error messages are written
       into the file unuran.log in the current working directory.
       The name of this file defined by the macro @code{UNUR_LOG_FILE} in
-      unuran_config.h. If the stdout should be used, define this macro by 
-      @code{"stdout"}.
+      @file{unuran_config.h}. If the stdout should be used, define 
+      this macro by @code{"stdout"}.
       
       This output stream is also used to log descriptions of build generator
       objects and for writing debugging information.
       If you want to use this output stream for your own programs use 
       unur_get_stream() to get its file handler.
       This stream is enabled by the compiler switch
-      @code{UNUR_ENABLE_LOGFILE} in unuran_config.h. 
+      @code{UNUR_ENABLE_LOGFILE} in @file{unuran_config.h}. 
       
       All warnings, error messages and all debugging information
       are written onto the same output stream.
       To destinguish between the messages for different generators define
-      the macro @code{UNUR_ENABLE_GENID} in unuran_config.h. Then every
-      generator object has a unique identifier that is used for every
-      message.
+      the macro @code{UNUR_ENABLE_GENID} in @file{unuran_config.h}. 
+      Then every generator object has a unique identifier that is used 
+      for every message.
 
    =END      
 */

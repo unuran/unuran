@@ -34,21 +34,20 @@
 
 /*---------------------------------------------------------------------------*/
 
-#include <time.h>       /** TODO: only one of these two is necessary **/
-#include <sys/time.h>
-
 #include <source_unuran.h>
 #include <unuran_tests.h>
 
 /*---------------------------------------------------------------------------*/
-
 /* define timer */
-#ifdef HAVE_GETTIMEOFDAY
+
+#if defined(HAVE_GETTIMEOFDAY) && defined(HAVE_SYS_TIME_H)
 /* use gettimeofday() command. Not in ANSI C! */
+#include <sys/time.h>
 static struct timeval tv;
 #define _unur_get_time() ( gettimeofday(&tv, NULL), ((tv).tv_sec * 1.e6 + (tv).tv_usec) )
 #else
 /* use clock() command. ANSI C but less accurate */
+#include <time.h>
 #define _unur_get_time() ( (1.e6 * clock()) / CLOCKS_PER_SEC )
 #endif
 

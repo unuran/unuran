@@ -51,6 +51,8 @@ inline static void zipf_zet_init( struct unur_gen *gen );
 
 #define uniform()  _unur_call_urng(gen) /* call for uniform prng             */
 
+#define MAX_gen_params  2      /* maximal number of parameters for generator */
+
 /* parameters */
 #define rho  (DISTR.params[0])    /* shape */
 #define tau  (DISTR.params[1])
@@ -81,8 +83,7 @@ _unur_stdgen_zipf_init( struct unur_par *par, struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  CHECK_NULL(par,0.);
-  COOKIE_CHECK(par,CK_DSTD_PAR,0.);
+  CHECK_NULL(par,0);  COOKIE_CHECK(par,CK_DSTD_PAR,0);
 
   switch (par->variant) {
 
@@ -156,8 +157,11 @@ _unur_stdgen_zipf_init( struct unur_par *par, struct unur_gen *gen )
 inline static void
 zipf_zet_init( struct unur_gen *gen )
 {
+  /* check arguments */
+  CHECK_NULL(gen,/*void*/); COOKIE_CHECK(gen,CK_DSTD_GEN,/*void*/);
+
   if (GEN.gen_param == NULL) {
-    GEN.n_gen_param = 2;
+    GEN.n_gen_param = MAX_gen_params;
     GEN.gen_param = _unur_malloc(GEN.n_gen_param * sizeof(double));
   }
 
@@ -180,6 +184,9 @@ unur_stdgen_sample_zipf_zet( struct unur_gen *gen )
   /* -X- generator code -X- */
   double U, V, E, X;
   int K;
+
+  /* check arguments */
+  CHECK_NULL(gen,0.); COOKIE_CHECK(gen,CK_DSTD_GEN,0.);
 
   do {
     do {

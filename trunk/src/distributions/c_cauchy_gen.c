@@ -77,8 +77,7 @@ _unur_stdgen_cauchy_init( struct unur_par *par, struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  CHECK_NULL(par,0.);
-  COOKIE_CHECK(par,CK_CSTD_PAR,0.);
+  CHECK_NULL(par,0);  COOKIE_CHECK(par,CK_CSTD_PAR,0);
 
   switch (par->variant) {
 
@@ -112,8 +111,7 @@ double unur_stdgen_sample_cauchy_inv( struct unur_gen *gen )
   double U,X;
 
   /* check arguments */
-  CHECK_NULL(gen,0.);
-  COOKIE_CHECK(gen,CK_CSTD_GEN,0.);
+  CHECK_NULL(gen,0.);  COOKIE_CHECK(gen,CK_CSTD_GEN,0.);
 
   /* sample from uniform random number generator */
   U = GEN.umin + uniform() * (GEN.umax-GEN.umin);
@@ -128,9 +126,4 @@ double unur_stdgen_sample_cauchy_inv( struct unur_gen *gen )
 } /* end of unur_stdgen_sample_cauchy_inv() */
 
 /*---------------------------------------------------------------------------*/
-
-
-
-
-
 

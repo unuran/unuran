@@ -77,8 +77,7 @@ _unur_stdgen_geometric_init( struct unur_par *par, struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  CHECK_NULL(par,0.);
-  COOKIE_CHECK(par,CK_DSTD_PAR,0.);
+  CHECK_NULL(par,0);  COOKIE_CHECK(par,CK_DSTD_PAR,0);
 
   switch (par->variant) {
 
@@ -139,6 +138,9 @@ unur_stdgen_sample_geometric_inv( struct unur_gen *gen )
   /* -X- generator code -X- */
   double U;
   int K;
+
+  /* check arguments */
+  CHECK_NULL(gen,0.); COOKIE_CHECK(gen,CK_DSTD_GEN,0.);
 
   /* sample from uniform random number generator */
 /*    while ((U = GEN.umin + uniform() * (GEN.umax-GEN.umin)) == 0.); */

@@ -50,6 +50,8 @@ inline static void gamma_gd_init( struct unur_gen *gen );
 #define GEN       gen->data.cstd        /* data for generator object         */
 #define DISTR     gen->distr.data.cont  /* data for distribution in generator object */
 
+#define MAX_gen_params  8      /* maximal number of parameters for generator */
+
 #define uniform()  _unur_call_urng(gen) /* call for uniform prng             */
 
 #define alpha (DISTR.params[0])   /* shape */
@@ -82,8 +84,7 @@ _unur_stdgen_gamma_init( struct unur_par *par, struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  CHECK_NULL(par,0.);
-  COOKIE_CHECK(par,CK_CSTD_PAR,0.);
+  CHECK_NULL(par,0);  COOKIE_CHECK(par,CK_CSTD_PAR,0);
 
   switch (par->variant) {
 
@@ -151,8 +152,11 @@ _unur_stdgen_gamma_init( struct unur_par *par, struct unur_gen *gen )
 inline static void
 gamma_gll_init( struct unur_gen *gen )
 {
+  /* check arguments */
+  CHECK_NULL(gen,/*void*/); COOKIE_CHECK(gen,CK_CSTD_GEN,/*void*/);
+
   if (GEN.gen_param == NULL) {
-    GEN.n_gen_param = 3;
+    GEN.n_gen_param = MAX_gen_params;
     GEN.gen_param = _unur_malloc(GEN.n_gen_param * sizeof(double));
   }
 
@@ -172,8 +176,7 @@ unur_stdgen_sample_gamma_gll( struct unur_gen *gen )
   double u1,u2,v,r,z;
 
   /* check arguments */
-  CHECK_NULL(gen,0.);
-  COOKIE_CHECK(gen,CK_CSTD_GEN,0.);
+  CHECK_NULL(gen,0);  COOKIE_CHECK(gen,CK_CSTD_GEN,0);
 
   while (1) {
     u1 = uniform();
@@ -229,8 +232,11 @@ inline static void
 gamma_gs_init( struct unur_gen *gen )
      /* CASE alpha < 1: Acceptance rejection algorithm gs */
 {
+  /* check arguments */
+  CHECK_NULL(gen,/*void*/); COOKIE_CHECK(gen,CK_CSTD_GEN,/*void*/);
+
   if (GEN.gen_param == NULL) {
-    GEN.n_gen_param = 8;
+    GEN.n_gen_param = MAX_gen_params;
     GEN.gen_param = _unur_malloc(GEN.n_gen_param * sizeof(double));
   }
 
@@ -247,8 +253,7 @@ unur_stdgen_sample_gamma_gs( struct unur_gen *gen )
   double X, p;
 
   /* check arguments */
-  CHECK_NULL(gen,0.);
-  COOKIE_CHECK(gen,CK_CSTD_GEN,0.);
+  CHECK_NULL(gen,0.);  COOKIE_CHECK(gen,CK_CSTD_GEN,0.);
 
   while (1) {
     p = b * uniform();
@@ -314,8 +319,11 @@ inline static void
 gamma_gd_init( struct unur_gen *gen )
      /* CASE alpha >= 1: Acceptance complement algorithm gd */
 {
+  /* check arguments */
+  CHECK_NULL(gen,/*void*/); COOKIE_CHECK(gen,CK_CSTD_GEN,/*void*/);
+
   if (GEN.gen_param == NULL) {
-    GEN.n_gen_param = 8;
+    GEN.n_gen_param = MAX_gen_params;
     GEN.gen_param = _unur_malloc(GEN.n_gen_param * sizeof(double));
   }
 
@@ -364,8 +372,7 @@ unur_stdgen_sample_gamma_gd( struct unur_gen *gen )
   double q,sign_U,t,v,w,x;
 
   /* check arguments */
-  CHECK_NULL(gen,0.);
-  COOKIE_CHECK(gen,CK_CSTD_GEN,0.);
+  CHECK_NULL(gen,0.);  COOKIE_CHECK(gen,CK_CSTD_GEN,0.);
 
   do {
 

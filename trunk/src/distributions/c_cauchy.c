@@ -72,11 +72,12 @@ static double _unur_cdf_cauchy(double x, double *params, int n_params);
 double
 _unur_pdf_cauchy(double x, double *params, int n_params)
 { 
-  /* standardize */
-  x = (x - theta) / lambda;
-
-  return (1./((1+x*x)*NORMCONSTANT));
-
+  switch (n_params) {
+  case 2:                      /* non standard */
+    x = (x - theta) / lambda;  /* -> standardize */
+  case 0: default:             /* standard */
+    return (1./((1+x*x)*NORMCONSTANT));
+  }
 } /* end of _unur_pdf_cauchy() */
 
 /*---------------------------------------------------------------------------*/
@@ -96,7 +97,12 @@ _unur_dpdf_cauchy(double x, double *params, int n_params)
 double
 _unur_cdf_cauchy(double x, double *params, int n_params)
 {
-  return ( 0.5 + atan( (x-theta)/lambda )/M_PI );
+  switch (n_params) {
+  case 2:                      /* non standard */
+    x = (x - theta) / lambda;  /* -> standardize */
+  case 0: default:             /* standard */
+    return ( 0.5 + atan(x)/M_PI );
+  }
 } /* end of _unur_cdf_cauchy() */
 
 /*---------------------------------------------------------------------------*/

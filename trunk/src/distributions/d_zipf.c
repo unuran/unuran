@@ -65,7 +65,7 @@ static const char distr_name[] = "zipf";
 
 /* function prototypes                                                       */
 static double _unur_pmf_zipf(int k, double *params, int n_params);
-/*  static double _unur_cdf_zipf(int k, double *params, int n_params); */
+/*  static double _unur_cdf_zipf(int k, double *params, int n_params);       */
 
 /*---------------------------------------------------------------------------*/
 

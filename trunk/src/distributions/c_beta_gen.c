@@ -55,6 +55,8 @@ inline static void beta_b1prs_init( struct unur_gen *gen );
 
 #define uniform()  _unur_call_urng(gen) /* call for uniform prng             */
 
+#define MAX_gen_params 22      /* maximal number of parameters for generator */
+
 #define p     (DISTR.params[0])   /* shape parameter */
 #define q     (DISTR.params[1])   /* shape parameter */
 #define a     (DISTR.params[2])   /* left boundary */
@@ -86,8 +88,7 @@ _unur_stdgen_beta_init( struct unur_par *par, struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  CHECK_NULL(par,0.);
-  COOKIE_CHECK(par,CK_CSTD_PAR,0.);
+  CHECK_NULL(par,0); COOKIE_CHECK(par,CK_CSTD_PAR,0);
 
   switch (par->variant) {
 
@@ -184,8 +185,11 @@ inline static void
 beta_bc_init( struct unur_gen *gen )
      /* p <= 1. || q <= 1. */ 
 {
+  /* check arguments */
+  CHECK_NULL(gen,/*void*/); COOKIE_CHECK(gen,CK_CSTD_GEN,/*void*/);
+
   if (GEN.gen_param == NULL) {
-    GEN.n_gen_param = 22;
+    GEN.n_gen_param = MAX_gen_params;
     GEN.gen_param = _unur_malloc(GEN.n_gen_param * sizeof(double));
   }
 
@@ -210,8 +214,7 @@ unur_stdgen_sample_beta_bc(  struct unur_gen *gen )
   double u1,u2,v,w,y,z;
 
   /* check arguments */
-  CHECK_NULL(gen,0.);
-  COOKIE_CHECK(gen,CK_CSTD_GEN,0.);
+  CHECK_NULL(gen,0.); COOKIE_CHECK(gen,CK_CSTD_GEN,0.);
 
   while (1) {
 
@@ -291,8 +294,11 @@ inline static void
 beta_bb_init( struct unur_gen *gen )
      /* p > 1. && q > 1 */ 
 {
+  /* check arguments */
+  CHECK_NULL(gen,/*void*/); COOKIE_CHECK(gen,CK_CSTD_GEN,/*void*/);
+
   if (GEN.gen_param == NULL) {
-    GEN.n_gen_param = 22;
+    GEN.n_gen_param = MAX_gen_params;
     GEN.gen_param = _unur_malloc(GEN.n_gen_param * sizeof(double));
   }
 
@@ -314,8 +320,7 @@ unur_stdgen_sample_beta_bb(  struct unur_gen *gen )
   double u1,u2,v,w,z,r,s,t;
 
   /* check arguments */
-  CHECK_NULL(gen,0.);
-  COOKIE_CHECK(gen,CK_CSTD_GEN,0.);
+  CHECK_NULL(gen,0.); COOKIE_CHECK(gen,CK_CSTD_GEN,0.);
 
   while (1) {
     /* Step 1 */
@@ -416,8 +421,11 @@ inline static void
 beta_b00_init( struct unur_gen *gen )
      /* p < 1. && q < 1 */ 
 {
+  /* check arguments */
+  CHECK_NULL(gen,/*void*/); COOKIE_CHECK(gen,CK_CSTD_GEN,/*void*/);
+
   if (GEN.gen_param == NULL) {
-    GEN.n_gen_param = 22;
+    GEN.n_gen_param = MAX_gen_params;
     GEN.gen_param = _unur_malloc(GEN.n_gen_param * sizeof(double));
   }
 
@@ -441,6 +449,9 @@ unur_stdgen_sample_beta_b00(  struct unur_gen *gen )
 {
   /* -X- generator code -X- */
   double U, V, X, Z;
+
+  /* check arguments */
+  CHECK_NULL(gen,0.); COOKIE_CHECK(gen,CK_CSTD_GEN,0.);
 
   while (1) {
     U = uniform() * p2;
@@ -506,8 +517,11 @@ inline static void
 beta_b01_init( struct unur_gen *gen )
      /* p < 1. < q || p > 1. > q */ 
 {
+  /* check arguments */
+  CHECK_NULL(gen,/*void*/); COOKIE_CHECK(gen,CK_CSTD_GEN,/*void*/);
+
   if (GEN.gen_param == NULL) {
-    GEN.n_gen_param = 22;
+    GEN.n_gen_param = MAX_gen_params;
     GEN.gen_param = _unur_malloc(GEN.n_gen_param * sizeof(double));
   }
 
@@ -551,6 +565,9 @@ unur_stdgen_sample_beta_b01(  struct unur_gen *gen )
 {
   /* -X- generator code -X- */
   double U, V, X, Z;
+
+  /* check arguments */
+  CHECK_NULL(gen,0.); COOKIE_CHECK(gen,CK_CSTD_GEN,0.);
 
   while (1) {
     U = uniform() * p2;
@@ -631,8 +648,11 @@ inline static void
 beta_b1prs_init( struct unur_gen *gen )
      /* p > 1. && q > 1. */ 
 {
+  /* check arguments */
+  CHECK_NULL(gen,/*void*/); COOKIE_CHECK(gen,CK_CSTD_GEN,/*void*/);
+
   if (GEN.gen_param == NULL) {
-    GEN.n_gen_param = 22;
+    GEN.n_gen_param = MAX_gen_params;
     GEN.gen_param = _unur_malloc(GEN.n_gen_param * sizeof(double));
   }
 
@@ -699,6 +719,9 @@ unur_stdgen_sample_beta_b1prs(  struct unur_gen *gen )
 {
   /* -X- generator code -X- */
   double U, V, W, X, Y;
+
+  /* check arguments */
+  CHECK_NULL(gen,0.); COOKIE_CHECK(gen,CK_CSTD_GEN,0.);
 
   while (1) {
     U = uniform() * p4;

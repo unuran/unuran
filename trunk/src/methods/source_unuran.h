@@ -133,12 +133,12 @@ extern unsigned unur_errno;  /* global variable used to record errors        */
 /*---------------------------------------------------------------------------*/
 /* Check for NULL pointer                                                    */
 
-#ifdef UNUR_CHECKNULL
+#ifdef UNUR_ENABLE_CHECKNULL
 
-#define CHECK_NULL(ptr,rval)                 \
-  if (!(ptr)) {                              \
-    _unur_error(NULL,UNUR_ERR_NULL,"");      \
-    return rval;                             \
+#define CHECK_NULL(ptr,rval)             \
+  if (!(ptr)) {                          \
+    _unur_error(NULL,UNUR_ERR_NULL,"");  \
+    return rval;                         \
   }
 
 #else               /* do not check (be carefull) */
@@ -146,6 +146,14 @@ extern unsigned unur_errno;  /* global variable used to record errors        */
 #define CHECK_NULL(ptr,rval)  do {} while(0)
 
 #endif
+
+/* the second macro cannot be switched off by a compiler switch */
+#define _unur_check_NULL(gid,ptr,rval)    \
+  if (!(ptr)) {                           \
+    _unur_error((gid),UNUR_ERR_NULL,"");  \
+    return rval;                          \
+  }
+
 
 /*---------------------------------------------------------------------------*/
 /* write infos into log file                                                 */

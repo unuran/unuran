@@ -207,8 +207,8 @@ static const char distr_name[] = "burr";
 #define c          params[2]
 
 /* function prototypes                                                       */
-/*  static double _unur_pdf_burr(double x, double *params, int n_params); */
-/*  static double _unur_dpdf_burr(double x, double *params, int n_params); */
+/*  static double _unur_pdf_burr(double x, double *params, int n_params);    */
+/*  static double _unur_dpdf_burr(double x, double *params, int n_params);   */
 static double _unur_cdf_burr(double x, double *params, int n_params);
 
 /*---------------------------------------------------------------------------*/

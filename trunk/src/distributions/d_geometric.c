@@ -62,7 +62,7 @@ static const char distr_name[] = "geometric";
 
 /* function prototypes                                                       */
 static double _unur_pmf_geometric(int k, double *params, int n_params);
-/*  static double _unur_cdf_geometric(int k, double *params, int n_params); */
+/*  static double _unur_cdf_geometric(int k, double *params, int n_params);  */
 
 /*---------------------------------------------------------------------------*/
 

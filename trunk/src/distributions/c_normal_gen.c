@@ -51,6 +51,8 @@ inline static void normal_pol_init( struct unur_gen *gen );
 
 #define uniform()  _unur_call_urng(gen) /* call for uniform prng             */
 
+#define MAX_gen_params  1      /* maximal number of parameters for generator */
+
 #define mu    (DISTR.params[0])   /* location */
 #define sigma (DISTR.params[1])   /* scale    */
 
@@ -80,8 +82,7 @@ _unur_stdgen_normal_init( struct unur_par *par, struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  CHECK_NULL(par,0.);
-  COOKIE_CHECK(par,CK_CSTD_PAR,0.);
+  CHECK_NULL(par,0);  COOKIE_CHECK(par,CK_CSTD_PAR,0);
 
   switch (par->variant) {
 
@@ -167,8 +168,11 @@ _unur_stdgen_normal_init( struct unur_par *par, struct unur_gen *gen )
 inline static void
 normal_bm_init( struct unur_gen *gen )
 {
+  /* check arguments */
+  CHECK_NULL(gen,/*void*/); COOKIE_CHECK(gen,CK_CSTD_GEN,/*void*/);
+
   if (GEN.gen_param == NULL) {
-    GEN.n_gen_param = 1;
+    GEN.n_gen_param = MAX_gen_params;
     GEN.gen_param = _unur_malloc(GEN.n_gen_param * sizeof(double));
   }
 
@@ -187,8 +191,7 @@ unur_stdgen_sample_normal_bm( struct unur_gen *gen )
   double u,v,s;
 
   /* check arguments */
-  CHECK_NULL(gen,0.);
-  COOKIE_CHECK(gen,CK_CSTD_GEN,0.);
+  CHECK_NULL(gen,0.);  COOKIE_CHECK(gen,CK_CSTD_GEN,0.);
 
   do {
     flag = -flag;
@@ -235,8 +238,11 @@ unur_stdgen_sample_normal_bm( struct unur_gen *gen )
 inline static void
 normal_pol_init( struct unur_gen *gen )
 {
+  /* check arguments */
+  CHECK_NULL(gen,/*void*/); COOKIE_CHECK(gen,CK_CSTD_GEN,/*void*/);
+
   if (GEN.gen_param == NULL) {
-    GEN.n_gen_param = 1;
+    GEN.n_gen_param = MAX_gen_params;
     GEN.gen_param = _unur_malloc(GEN.n_gen_param * sizeof(double));
   }
 
@@ -255,8 +261,7 @@ unur_stdgen_sample_normal_pol( struct unur_gen *gen )
   double s,x,y,tmp;
 
   /* check arguments */
-  CHECK_NULL(gen,0.);
-  COOKIE_CHECK(gen,CK_CSTD_GEN,0.);
+  CHECK_NULL(gen,0.);  COOKIE_CHECK(gen,CK_CSTD_GEN,0.);
 
   do {
     flag = -flag;
@@ -310,8 +315,7 @@ unur_stdgen_sample_normal_nquo( struct unur_gen *gen )
   double u,v;
 
   /* check arguments */
-  CHECK_NULL(gen,0.);
-  COOKIE_CHECK(gen,CK_CSTD_GEN,0.);
+  CHECK_NULL(gen,0.);  COOKIE_CHECK(gen,CK_CSTD_GEN,0.);
 
   while (1) {
     u = uniform();
@@ -353,8 +357,7 @@ unur_stdgen_sample_normal_quo( struct unur_gen *gen )
   double r,w;
 
   /* check arguments */
-  CHECK_NULL(gen,0.);
-  COOKIE_CHECK(gen,CK_CSTD_GEN,0.);
+  CHECK_NULL(gen,0.);  COOKIE_CHECK(gen,CK_CSTD_GEN,0.);
 
   while (1) {
     r = uniform();
@@ -408,8 +411,8 @@ unur_stdgen_sample_normal_leva( struct unur_gen *gen )
   double u,v,x,y,q;
 
   /* check arguments */
-  CHECK_NULL(gen,0.);
-  COOKIE_CHECK(gen,CK_CSTD_GEN,0.);
+  CHECK_NULL(gen,0.);  COOKIE_CHECK(gen,CK_CSTD_GEN,0.);
+
   while (1) {
     u = uniform();
     v = uniform();
@@ -462,64 +465,63 @@ unur_stdgen_sample_normal_kr( struct unur_gen *gen )
   /* -X- generator code -X- */
 #define XI 2.216035867166471
 #define PIhochK 0.3989422804
-
-  double X;
-  double t, u, v, w, z;
-
+  
+  double U, V, W, X;
+  double t, z;
+  
   /* check arguments */
-  CHECK_NULL(gen,0.);
-  COOKIE_CHECK(gen,CK_CSTD_GEN,0.);
-
-     u = uniform();
-
-   if (u < 0.884070402298758) {
-     v = uniform();
-     X = XI * (1.131131635444180 * u + v - 1.);
-   }
-
-   else if (u >= 0.973310954173898) {
-     do {
-       v = uniform();
-       w = uniform();
-       if (w==0.) { t=0.; continue; }
-       t = XI * XI/2. - log(w);
-     } while ( (v*v*t) > (XI*XI/2.) );
-     X = (u < 0.986655477086949) ? pow(2*t,0.5) : -pow(2*t,0.5);
-   }
-
-   else if (u>=0.958720824790463) {
-     do {
-       v = uniform();
-       w = uniform();
-       z = v - w;
-       t = XI - 0.630834801921960 * min(v,w);
-     } while (max(v,w) > 0.755591531667601 &&
-	      0.034240503750111 * fabs(z) > (PIhochK * exp(t*t/(-2.)) - 0.180025191068563*(XI-fabs(t))) );
-     X = (z<0) ? t : -t;
-   }
-
-   else if (u>=0.911312780288703) {
-     do {
-       v = uniform();
-       w = uniform();
-       z = v - w;
-       t = 0.479727404222441 + 1.105473661022070 * min(v,w);
-     } while (max(v,w) > 0.872834976671790 &&
-	      0.049264496373128*fabs(z) > (PIhochK * exp(t*t/(-2)) -0.180025191068563*(XI-fabs(t))) );
-     X = (z<0) ? t : -t;
-   }
-
-   else {
-     do {
-       v = uniform();
-       w = uniform(); 
-       z = v - w;
-       t = 0.479727404222441 - 0.595507138015940 * min(v,w);
-     } while (max(v,w)>0.805777924423817 &&
-	      0.053377549506886*fabs(z) > (PIhochK * exp(t*t/(-2)) -0.180025191068563*(XI-fabs(t))) );
-     X = (z<0) ? t : -t;
-   }
-
+  CHECK_NULL(gen,0.);  COOKIE_CHECK(gen,CK_CSTD_GEN,0.);
+  
+  U = uniform();
+  
+  if (U < 0.884070402298758) {
+    V = uniform();
+    X = XI * (1.131131635444180 * U + V - 1.);
+  }
+  
+  else if (U >= 0.973310954173898) {
+    do {
+      V = uniform();
+      W = uniform();
+      if (W==0.) { t=0.; continue; }
+      t = XI * XI/2. - log(W);
+    } while ( (V*V*t) > (XI*XI/2.) );
+    X = (U < 0.986655477086949) ? pow(2*t,0.5) : -pow(2*t,0.5);
+  }
+  
+  else if (U>=0.958720824790463) {
+    do {
+      V = uniform();
+      W = uniform();
+      z = V - W;
+      t = XI - 0.630834801921960 * min(V,W);
+    } while (max(V,W) > 0.755591531667601 &&
+	     0.034240503750111 * fabs(z) > (PIhochK * exp(t*t/(-2.)) - 0.180025191068563*(XI-fabs(t))) );
+    X = (z<0) ? t : -t;
+  }
+  
+  else if (U>=0.911312780288703) {
+    do {
+      V = uniform();
+      W = uniform();
+      z = V - W;
+      t = 0.479727404222441 + 1.105473661022070 * min(V,W);
+    } while (max(V,W) > 0.872834976671790 &&
+	     0.049264496373128*fabs(z) > (PIhochK * exp(t*t/(-2)) -0.180025191068563*(XI-fabs(t))) );
+    X = (z<0) ? t : -t;
+  }
+  
+  else {
+    do {
+      V = uniform();
+      W = uniform(); 
+      z = V - W;
+      t = 0.479727404222441 - 0.595507138015940 * min(V,W);
+    } while (max(V,W)>0.805777924423817 &&
+	     0.053377549506886*fabs(z) > (PIhochK * exp(t*t/(-2)) -0.180025191068563*(XI-fabs(t))) );
+    X = (z<0) ? t : -t;
+  }
+  
 #undef XI
 #undef PIhochK 
 #undef min
@@ -527,7 +529,7 @@ unur_stdgen_sample_normal_kr( struct unur_gen *gen )
   /* -X- end of generator code -X- */
 
   return ((DISTR.n_params==0) ? X : mu + sigma * X );
-
+  
 } /* end of unur_stdgen_sample_normal_kr() */
 
 /*---------------------------------------------------------------------------*/
@@ -584,8 +586,7 @@ unur_stdgen_sample_normal_acr( struct unur_gen *gen )
   double rn,x,y,z;
 
   /* check arguments */
-  CHECK_NULL(gen,0.);
-  COOKIE_CHECK(gen,CK_CSTD_GEN,0.);
+  CHECK_NULL(gen,0.);  COOKIE_CHECK(gen,CK_CSTD_GEN,0.);
 
   do {
     y = uniform();
@@ -669,8 +670,7 @@ unur_stdgen_sample_normal_sum( struct unur_gen *gen )
   double X;
 
   /* check arguments */
-  CHECK_NULL(gen,0.);
-  COOKIE_CHECK(gen,CK_CSTD_GEN,0.);
+  CHECK_NULL(gen,0.);  COOKIE_CHECK(gen,CK_CSTD_GEN,0.);
 
   X = ( uniform() + uniform() + uniform() + uniform() + uniform() + uniform() +
 	uniform() + uniform() + uniform() + uniform() + uniform() + uniform()

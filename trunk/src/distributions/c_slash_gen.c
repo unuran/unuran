@@ -76,8 +76,7 @@ _unur_stdgen_slash_init( struct unur_par *par, struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  CHECK_NULL(par,0.);
-  COOKIE_CHECK(par,CK_CSTD_PAR,0.);
+  CHECK_NULL(par,0);  COOKIE_CHECK(par,CK_CSTD_PAR,0);
 
   switch (par->variant) {
 
@@ -125,6 +124,8 @@ _unur_stdgen_slash_init( struct unur_par *par, struct unur_gen *gen )
 inline static void
 slash_slash_init( struct unur_gen *gen )
 {
+  /* check arguments */
+  CHECK_NULL(gen,/*void*/); COOKIE_CHECK(gen,CK_CSTD_GEN,/*void*/);
 
   /* -X- setup code -X- */
 
@@ -139,6 +140,9 @@ slash_slash_init( struct unur_gen *gen )
 double
 unur_stdgen_sample_slash_slash( struct unur_gen *gen )
 {
+  /* check arguments */
+  CHECK_NULL(gen,0.); COOKIE_CHECK(gen,CK_CSTD_GEN,0.);
+
   /* -X- generator code -X- */
   return (unur_sample_cont(NORMAL) / uniform());
   /* -X- end of generator code -X- */
@@ -148,3 +152,7 @@ unur_stdgen_sample_slash_slash( struct unur_gen *gen )
 /*---------------------------------------------------------------------------*/
 #undef NORMAL
 /*---------------------------------------------------------------------------*/
+
+
+
+

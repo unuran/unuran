@@ -50,6 +50,8 @@ inline static void gig_gigru_init( struct unur_gen *gen );
 
 #define uniform()  _unur_call_urng(gen) /* call for uniform prng             */
 
+#define MAX_gen_params 10      /* maximal number of parameters for generator */
+
 #define theta  (DISTR.params[0])    /* shape */
 #define omega  (DISTR.params[1])    /* scale */
 #define eta    (DISTR.params[2])    /* shape */
@@ -80,8 +82,7 @@ _unur_stdgen_gig_init( struct unur_par *par, struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  CHECK_NULL(par,0.);
-  COOKIE_CHECK(par,CK_CSTD_PAR,0.);
+  CHECK_NULL(par,0);  COOKIE_CHECK(par,CK_CSTD_PAR,0);
 
   switch (par->variant) {
 
@@ -157,8 +158,11 @@ gig_gigru_init( struct unur_gen *gen )
 {
   double r,s,t,p,q,xeta,fi,fak,y1,y2,max,invy1,invy2,vplus,hm1,xm,ym;
 
+  /* check arguments */
+  CHECK_NULL(gen,/*void*/); COOKIE_CHECK(gen,CK_CSTD_GEN,/*void*/);
+
   if (GEN.gen_param == NULL) {
-    GEN.n_gen_param = 10;
+    GEN.n_gen_param = MAX_gen_params;
     GEN.gen_param = _unur_malloc(GEN.n_gen_param * sizeof(double));
   }
 
@@ -227,6 +231,10 @@ double
 unur_stdgen_sample_gig_gigru( struct unur_gen *gen )
 {
   double U,V,X,Z;
+
+  /* check arguments */
+  CHECK_NULL(gen,0.); COOKIE_CHECK(gen,CK_CSTD_GEN,0.);
+
   /* -X- generator code -X- */
   if (theta<=1. && omega<=1.) {
     /* NO SHIFT m */
@@ -268,115 +276,3 @@ unur_stdgen_sample_gig_gigru( struct unur_gen *gen )
 #undef e
 #undef c
 /*---------------------------------------------------------------------------*/
-
-
-
-
-
-#if 0
-double gigru(unsigned long *seed, double h, double b)
-
-{
- static double h_setup = -2.0;
- static double b_setup = -2.0;
- static double m,linvmax,vminus,vdiff,b2,hm12,a,d,e,c;
- double r,s,t,p,q,eta,fi,fak,y1,y2,max,invy1,invy2,vplus,hm1,xm,ym;
- double u,v,x,z;
-
- if ((h<=1.)&&(b<=1.))
-   {
-     /* NO SHIFT m */
-     
-     if ((h != h_setup) || (b != b_setup))
-       {
-	 /* Set-up */
-	 e = b*b;
-	 d = h + 1.0;
-	 ym = (-d + sqrt(d*d + e))/b;
-	 d = h - 1.0;
-	 xm = (d + sqrt(d*d + e))/b;
-	 d = 0.5*d;
-	 e = -0.25*b;
-	 r = xm + 1.0/xm;
-	 s = xm*ym;
-	 /* a = vplus/uplus */
-	 a = exp(-0.5*h*log(s) + 0.5*log(xm/ym) - e*(r - ym - 1.0/ym));
-	 /* c = 1/log{sqrt[hx(xm)]} */
-	 c = -d* log(xm) - e*r;
-	 /* vminus = 0 */
-	 
-	 h_setup = h;
-	 b_setup = b;
-       }                                                 /* End - Setup */
-     
-     /* Generator */
-     do
-       {
-	 u = drand(seed);                                        /* U(0/1) */
-	 v = drand(seed);                                        /* U(0/1) */
-	 x = a*(v/u);
-       }                                         /* Acceptance/Rejection */
-     while (((log(u)) > (d*log(x) + e*(x + 1.0/x) + c)));
-     
-   }                                                          /* End if */
- else
-   {
-     /* SHIFT BY m */
-     
-     if ((h != h_setup) || (b != b_setup))
-       {
-	 
-	 /* Set-up */
-	 hm1 = h - 1.0;
-	 hm12 =hm1*0.5;
-	 b2 = b*0.25;
-	 m = (hm1 + sqrt(hm1*hm1 + b*b))/b;                 /* Modus      */
-	 max = exp(hm12*log(m) - b2*(m + (1.0/m)));        /* sqrt[hx(m)] */
-	 linvmax = log(1.0/max);
-	 
-	 /* Find the points x1,x2 (-->invy1,invy2) where
-	    the hat function touches the density f(x)    */
-	 r = (6.0*m + 2.0*h*m - b*m*m + b)/(4.0*m*m);
-	 s = (1.0 + h - b*m)/(2.0*m*m);
-	 t = b/(-4.0*m*m);
-	 p = (3.0*s - r*r)*drittel;
-	 q = (2.0*r*r*r)*pdrittel - (r*s)*drittel + t;
-	 eta = sqrt(-(p*p*p)*pdrittel);
-	 fi = acos(-q/(2.0*eta));
-	 fak = 2.0*exp(log(eta)*drittel);
-	 y1 = fak*cos(fi*drittel) - r*drittel;
-	 y2 = fak*cos(fi*drittel + 2.0*drittel*M_PI) - r*drittel;
-	 invy1 = 1.0/y1;
-	 invy2 = 1.0/y2;
-	 
-	 vplus = exp(linvmax + log(invy1) + hm12*log(invy1 + m)
-		     -b2*(invy1 + m + 1.0/(invy1 + m)));
-	 vminus = -exp(linvmax + log(-invy2) + hm12*log(invy2 + m)
-		       -b2*(invy2 + m + 1.0/(invy2 + m)));
-	 vdiff = vplus - vminus;
-	 /* uplus = 1 */
-	 
-	 h_setup = h;
-	 b_setup = b;
-       }                                                 /* End - Setup */
-     
-     /* Generator */
-     do
-       {
-	 do
-	   {
-	     u = drand(seed);                                  /* U(0/1)   */
-	     v = vminus + drand(seed)*vdiff;                   /* U(v-/v+) */
-	     z =v/u;
-	   }
-	 while (z < (-m));
-	 x = z + m;
-       }                                        /* Acceptance/Rejection */
-     while ((log(u) > (linvmax + hm12*log(x) - b2*(x + 1.0/x))));
-     
-   }                                                        /* End else */
- return(x);
-}                                                          /* End - GIGRU */
-
-#endif
-

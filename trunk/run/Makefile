@@ -11,9 +11,12 @@ run_acg: run_acg.c ../src/unuran.h ../codegen/libunuracg.a ../src/libunuran.a
 test: test.c ../src/unuran.h ../src/libunuran.a
 	gcc -I. -I.. -I../src -I../src/tests -L../src -Wall -g -O2 -o test test.c -lunuran -lm -lprng 
 
-#getopttst: getopttst.c ../src/unuran.h ../src/libunuran.a
-#	gcc -I. -I.. -I../src -I../src/tests -L../src -Wall -g -O2 -o getopttst getopttst.c -lunuracg -lunuran -lm -lprng 
+getopttst: getopttst.c ../src/unuran.h ../src/libunuran.a
+	gcc -I. -I.. -I../src -I../src/tests -L../src -Wall -g -O2 -o getopttst getopttst.c -lunuracg -lunuran -lm -lprng 
+
+acg: acg.c ../src/unuran.h ../src/libunuran.a
+	gcc -I. -I.. -I../src -I../src/tests -L../src -Wall -g -O2 -o acg acg.c -lunuracg -lunuran -lm -lprng 
 
 clean:
-	rm -f *~ *.o run test run_acg getopttst unuran.log
+	rm -f *~ *.o run test run_acg getopttst unuran.log acg
 	rm -f uniftest.c uniftest_c uniftest.f uniftest_f uniftest.java Uniftest.class Urand.class

@@ -46,8 +46,8 @@ dnl prng: Otmar Lendl's library for pseudo random number generators
 AC_CHECK_LIB([prng], [prng_new])
 AC_CHECK_HEADERS([prng.h])
 dnl RngStream: Pierre L'Ecuyers multiple random stream generator
-AC_CHECK_LIB([rngstream], [RngStream_CreateStream])
-AC_CHECK_HEADERS([RngStream.h])
+AC_CHECK_LIB([rngstreams], [RngStream_CreateStream])
+AC_CHECK_HEADERS([RngStreams.h])
 dnl GSL: GNU Scientific Library
 dnl AC_CHECK_LIB([gslcblas], [gsl_blas_ddot])
 AC_CHECK_LIB([gslcblas], [main])

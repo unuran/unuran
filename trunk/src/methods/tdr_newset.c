@@ -96,6 +96,7 @@ unur_tdr_new( struct unur_distr* distr )
   par->method   = UNUR_METH_TDR;                 /* method                   */
   par->variant  = ( TDR_VARFLAG_USECENTER |      /* default variant          */
 		    TDR_VARFLAG_USEMODE   |
+		    TDR_VARFLAG_PEDANTIC  |
                     TDR_VARIANT_GW );
 
   par->set      = 0u;               /* inidicate default parameters          */    
@@ -560,6 +561,39 @@ unur_tdr_set_verify( struct unur_par *par, int verify )
   return 1;
 
 } /* end of unur_tdr_set_verify() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+unur_tdr_set_pedantic( struct unur_par *par, int pedantic )
+     /*----------------------------------------------------------------------*/
+     /* turn pedantic mode on/off                                            */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par      ... pointer to parameter for building generator object    */
+     /*   pedantic ... 0 = no pedantic mode, !0 = use pedantic mode          */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... on success                                                   */
+     /*   0 ... on error                                                     */
+     /*                                                                      */
+     /* comment:                                                             */
+     /*   pedantic is the default                                            */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( GENTYPE,par,0 );
+
+  /* check input */
+  _unur_check_par_object( par,TDR );
+
+  /* we use a bit in variant */
+  par->variant = (pedantic) ? (par->variant | TDR_VARFLAG_PEDANTIC) : (par->variant & (~TDR_VARFLAG_PEDANTIC));
+
+  /* o.k. */
+  return 1;
+
+} /* end of unur_tdr_set_pedantic() */
 
 /*****************************************************************************/
 

@@ -218,9 +218,11 @@ _unur_tdr_gw_sample( struct unur_gen *gen )
       if ( !_unur_tdr_gw_interval_split(gen, iv, X, fx) ) {
 	/* condition for pdf is violated! */
 	_unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"");
-	/* replace sampling routine by dummy routine that just returns INFINITY */
-	SAMPLE = _unur_sample_cont_error;
-	return INFINITY;
+	if (gen->variant & TDR_VARFLAG_PEDANTIC) {
+	  /* replace sampling routine by dummy routine that just returns INFINITY */
+	  SAMPLE = _unur_sample_cont_error;
+	  return INFINITY;
+	}
       }
 
     if (V <= fx)
@@ -387,9 +389,11 @@ _unur_tdr_gw_sample_check( struct unur_gen *gen )
       if ( !_unur_tdr_gw_interval_split(gen, iv, X, fx) ) {
 	/* condition for pdf is violated! */
 	_unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"");
-	/* replace sampling routine by dummy routine that just returns INFINITY */
-	SAMPLE = _unur_sample_cont_error;
-	return INFINITY;
+	if (gen->variant & TDR_VARFLAG_PEDANTIC) {
+	  /* replace sampling routine by dummy routine that just returns INFINITY */
+	  SAMPLE = _unur_sample_cont_error;
+	  return INFINITY;
+	}
       }
     /* reject and try again */
 
@@ -542,9 +546,11 @@ _unur_tdr_ps_sample( struct unur_gen *gen )
       if ( !_unur_tdr_ps_interval_split(gen, iv, X, fx) ) {
 	/* condition for pdf is violated! */
 	_unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"");
-	/* replace sampling routine by dummy routine that just returns INFINITY */
-	SAMPLE = _unur_sample_cont_error;
-	return INFINITY;
+	if (gen->variant & TDR_VARFLAG_PEDANTIC) {
+	  /* replace sampling routine by dummy routine that just returns INFINITY */
+	  SAMPLE = _unur_sample_cont_error;
+	  return INFINITY;
+	}
       }
 
     /* else reject and try again */
@@ -702,9 +708,11 @@ _unur_tdr_ps_sample_check( struct unur_gen *gen )
       if ( !_unur_tdr_ps_interval_split(gen, iv, X, fx) ) {
 	/* condition for pdf is violated! */
 	_unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"");
-	/* replace sampling routine by dummy routine that just returns INFINITY */
-	SAMPLE = _unur_sample_cont_error;
-	return INFINITY;
+	if (gen->variant & TDR_VARFLAG_PEDANTIC) {
+	  /* replace sampling routine by dummy routine that just returns INFINITY */
+	  SAMPLE = _unur_sample_cont_error;
+	  return INFINITY;
+	}
       }
 
     /* else reject and try again */
@@ -875,9 +883,11 @@ _unur_tdr_ia_sample( struct unur_gen *gen )
       if ( !_unur_tdr_ps_interval_split(gen, iv, X, fx) ) {
 	/* condition for pdf is violated! */
 	_unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"");
-	/* replace sampling routine by dummy routine that just returns INFINITY */
-	SAMPLE = _unur_sample_cont_error;
-	return INFINITY;
+	if (gen->variant & TDR_VARFLAG_PEDANTIC) {
+	  /* replace sampling routine by dummy routine that just returns INFINITY */
+	  SAMPLE = _unur_sample_cont_error;
+	  return INFINITY;
+	}
       }
 
     /* else reject and try again */
@@ -1042,9 +1052,11 @@ _unur_tdr_ia_sample_check( struct unur_gen *gen )
       if ( !_unur_tdr_ps_interval_split(gen, iv, X, fx) ) {
 	/* condition for pdf is violated! */
 	_unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"");
-	/* replace sampling routine by dummy routine that just returns INFINITY */
-	SAMPLE = _unur_sample_cont_error;
-	return INFINITY;
+	if (gen->variant & TDR_VARFLAG_PEDANTIC) {
+	  /* replace sampling routine by dummy routine that just returns INFINITY */
+	  SAMPLE = _unur_sample_cont_error;
+	  return INFINITY;
+	}
       }
 
     /* else reject and try again */

@@ -179,5 +179,24 @@ int unur_tdr_set_verify( UNUR_PAR *parameters, int verify );
    Turn verifying of algorithm while sampling on/off.
 */
 
+int unur_tdr_set_pedantic( UNUR_PAR *parameters, int pedantic );
+/* 
+   Sometimes it might happen that unur_init() has been executed
+   successfully. But when additional construction points are added by
+   adaptive rejection sampling, the algorithm detects that the
+   p.d.f. is not T-concave. With @code{pedantic} being TRUE, the
+   sampling routine is exchanged by a routine that simply returns
+   UNUR_INFINITY. Otherwise the new point is not added to the list of
+   construction points. At least the hat function remains T-concave.
+   Setting @code{pedantic} to FALSE allows sampling from a
+   distribution which is "almost" T-concave and small errors are
+   acceptable. However it might happen that the hat function cannot be
+   improved significantly. Then when the hat functions that has been
+   constructed by the unur_init() call is extremely large and the
+   generation times is extremely high (in theory even hours to get one
+   random number are possible).
+   Default is TRUE.
+*/
+
 /*---------------------------------------------------------------------------*/
 

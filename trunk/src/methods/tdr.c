@@ -335,20 +335,21 @@
 /*---------------------------------------------------------------------------*/
 /* Variants                                                                  */
 
-#define TDR_VARMASK_T          0x00fu   /* indicates transformation         */
-#define TDR_VAR_T_SQRT         0x001u   /* T(x) = -1/sqrt(x)                */
-#define TDR_VAR_T_LOG          0x002u   /* T(x) = log(x)                    */
-#define TDR_VAR_T_POW          0x003u   /* T(x) = -x^c                      */
+#define TDR_VARMASK_T          0x000fu   /* indicates transformation         */
+#define TDR_VAR_T_SQRT         0x0001u   /* T(x) = -1/sqrt(x)                */
+#define TDR_VAR_T_LOG          0x0002u   /* T(x) = log(x)                    */
+#define TDR_VAR_T_POW          0x0003u   /* T(x) = -x^c                      */
 
-#define TDR_VARMASK_VARIANT    0x0f0u   /* indicates which variant          */
-#define TDR_VARIANT_GW         0x010u   /* original variant (Gilks&Wild)    */
-#define TDR_VARIANT_PS         0x020u   /* use proportional squeeze         */
-#define TDR_VARIANT_IA         0x030u   /* use immediate acceptance
-					   (requires prop. squeeze)         */
+#define TDR_VARMASK_VARIANT    0x00f0u   /* indicates which variant          */
+#define TDR_VARIANT_GW         0x0010u   /* original variant (Gilks&Wild)    */
+#define TDR_VARIANT_PS         0x0020u   /* use proportional squeeze         */
+#define TDR_VARIANT_IA         0x0030u   /* use immediate acceptance
+					    (requires prop. squeeze)         */
 
-#define TDR_VARFLAG_VERIFY     0x100u   /* flag for verifying mode          */
-#define TDR_VARFLAG_USECENTER  0x200u   /* flag whether center is used as cpoint or not */
-#define TDR_VARFLAG_USEMODE    0x400u   /* flag whether mode is used as cpoint or not */
+#define TDR_VARFLAG_VERIFY     0x0100u   /* flag for verifying mode          */
+#define TDR_VARFLAG_USECENTER  0x0200u   /* whether center is used as cpoint or not */
+#define TDR_VARFLAG_USEMODE    0x0400u   /* whether mode is used as cpoint or not */
+#define TDR_VARFLAG_PEDANTIC   0x0800u   /* whether pedantic checking is used */
 
 /*---------------------------------------------------------------------------*/
 /* Debugging flags                                                           */

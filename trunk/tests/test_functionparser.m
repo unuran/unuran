@@ -35,6 +35,10 @@ Testsample = {
         {"3*(2==x)",{-2,2,5}},
         {"3*(x<>1)",{-2,2,5}},
         {"3*(2<>x)",{-2,2,5}},
+ 
+        {"3*not[2<>x]",{-2,2,5}},
+        {"3*(2<>x)and(x>2)",{-2,2,5}},
+        {"3*(2<x)or(x<-1)",{-2,2,5}},
     
 	{"exp[-4*X]", {-2, 2, 5}},               (*   system functions  *)
         
@@ -43,12 +47,12 @@ Testsample = {
         {"sqrt[x]",{1,6,6}},
         {"sin[x]",{1,6,6}},
         {"mod[x,3]",{1,6,6}},
-        {"sgn[x,3]",{-2,2,5}},
+        {"sgn[x]",{-2,2,5}},
         {"sec[x]",{-2,2,5}},
       	{"exp[-x^2]+Log[2,4]-Pi*Sin[x+x*2]", {-5, 2, 4}},
         {"Sin[x]*3*Ln[x]",   {2, 4, 2}  },
       	{"exp[x^2]*(cos[x]<1)", {-3, 8, 5}},
-	 {"abs[x]-3*x", {-2, 2, 5}},
+	{"abs[x]-3*x", {-2, 2, 5}},
 
         {"exp[x^2]*(sin[x*cos[x^2-1]]+1)*((x-3*pi*x)<1)", {-3148,789,5}} };
   
@@ -56,7 +60,7 @@ Testsample = {
 
 (* === Set Constants ========================================================*)
 
-(* name of datafile file for running tests *)test_f
+(* name of datafile file for running tests *)
 DataFile = "t_functionparser.data"; 
 
 
@@ -69,7 +73,7 @@ e  = E;
 
 (* --- Functions ----------------------------------------------------------- *)
 
-mod[x_,y_]  := Mod[x,y]
+mod[x_,y_]  := Mod[x,y];
 exp[x_]     := Exp[x];
 ln[x_]      := Log[x];
 log[x_, y_] := Log[x, y];
@@ -81,14 +85,18 @@ sqrt[x_]    := Sqrt[x];
 abs[x_]     := Abs[x];
 sgn[x_]     := Sign[x];    
 
+not[x_]     := Not[x];
 
 (* === Define derivatives for these functions (according to function parser) *)
 
 Unprotect[Derivative];
 
 (* --- Relation Operators -------------------------------------------------- *)
+(* Derivative[1][And][x_] := 0;
+ Derivative[1][Or][x_] := 0; *)
 
-(** TODO:  , <>, = **)
+Derivative[1][Not] [x_]  := 0;
+Derivative[1][Sign][x_] := 0;
 
 Derivative[1, 0][Unequal][x_, y_] := 0;
 Derivative[0, 1][Unequal][x_, y_] := 0;
@@ -193,12 +201,12 @@ UnurWriteLine[xarg_,funct_] := Module [
 	WriteString[DataFile, CForm[xval],"\t"];
 
 	(*  replace '<>' -> '!='   *)
-      
-        fstr = StringReplace[funct, {"<>" -> "!="}]; 
-    (* fstr = StringReplace[funct,{"="->"=="}]; 
-     WriteString["stdout",fstr,"\n"]; *)
+        fstr = StringReplace[funct, {"<>" -> "!="}];
+ 
+        (*  replace 'and' -> '&&', 'or' -> '||'   *)
+        fstr = StringReplace[fstr,{"and" -> "&&","or" -> "||"}]; 
 
-
+					(* WriteString["stdout",fstr,"\n"]; *)
 	(* function *)
 	fx = N[ToExpression[fstr]] /. x -> xval /. {True -> 1, False -> 0};
 	WriteString[DataFile, CForm[fx],"\t"];
@@ -221,4 +229,5 @@ Do [
 (* === Exit ================================================================ *)
 
 Quit[]
+
 

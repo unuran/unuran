@@ -84,11 +84,6 @@ static double _unur_cdf_corder( double x, const struct unur_distr *os );
 static int _unur_upd_area_corder( struct unur_distr *os );
 #endif
 
-extern void _unur_distr_cont_free( struct unur_distr *distr );
-/*---------------------------------------------------------------------------*/
-/* destroy continuous distribution object (from distr_cont.c)                */
-/*---------------------------------------------------------------------------*/
-
 /*---------------------------------------------------------------------------*/
 
 /*****************************************************************************/

@@ -118,7 +118,7 @@ unur_cstd_new( struct unur_distr *distr )
   struct unur_par *par;
 
   /* check arguments */
-  CHECK_NULL(distr,NULL);
+  _unur_check_NULL(GENTYPE,distr,NULL);
 
   /* check distribution */
   if (distr->type != UNUR_DISTR_CONT) {
@@ -179,8 +179,8 @@ unur_cstd_set_variant( struct unur_par *par, unsigned variant )
   unsigned old_variant;
 
   /* check arguments */
-  CHECK_NULL(par,0);
-  CHECK_NULL(par->distr,0);
+  _unur_check_NULL( par->genid, par, 0 );
+  _unur_check_NULL( par->genid, par->distr, 0 );
 
   /* check input */
   _unur_check_par_object( CSTD );
@@ -222,23 +222,23 @@ unur_cstd_init( struct unur_par *par )
   struct unur_gen *gen;
 
   /* check arguments */
-  CHECK_NULL(par,NULL);
-  COOKIE_CHECK(par,CK_CSTD_PAR,NULL);
-  CHECK_NULL(par->DISTR_IN.init,NULL);
+  _unur_check_NULL( par->genid, par, NULL );
+  _unur_check_NULL( par->genid, par->DISTR_IN.init, NULL );
 
   /* check input */
   if ( par->method != UNUR_METH_CSTD ) {
     _unur_error(par->genid,UNUR_ERR_PAR_INVALID,"");
     return NULL;
   }
+  COOKIE_CHECK(par,CK_CSTD_PAR,NULL);
 
   /* create a new empty generator object */
   gen = _unur_cstd_create(par);
   if (!gen) { free(par); return NULL; }
 
   /* run special init routine for generator */
-  if (DISTR.init != NULL)
-    DISTR.init(par,gen);
+  CHECK_NULL( DISTR.init, NULL);   /* case of internal error */
+  DISTR.init(par,gen);
 
   /* init successful ?? */
   if (SAMPLE == NULL) {
@@ -343,8 +343,7 @@ _unur_cstd_create( struct unur_par *par )
   struct unur_gen *gen;
 
   /* check arguments */
-  CHECK_NULL(par,NULL);
-  COOKIE_CHECK(par,CK_CSTD_PAR,NULL);
+  CHECK_NULL(par,NULL);  COOKIE_CHECK(par,CK_CSTD_PAR,NULL);
 
   /* allocate memory for generator object */
   gen = _unur_malloc( sizeof(struct unur_gen) );
@@ -402,8 +401,8 @@ _unur_cstd_debug_init( struct unur_par *par, struct unur_gen *gen )
   FILE *log;
 
   /* check arguments */
-  CHECK_NULL(par,/*void*/);
-  COOKIE_CHECK(par,CK_CSTD_PAR,/*void*/);
+  CHECK_NULL(par,/*void*/);  COOKIE_CHECK(par,CK_CSTD_PAR,/*void*/);
+  CHECK_NULL(gen,/*void*/);  COOKIE_CHECK(gen,CK_CSTD_GEN,/*void*/);
 
   log = unur_get_stream();
 

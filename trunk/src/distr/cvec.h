@@ -322,7 +322,8 @@ const double *unur_distr_cvec_get_covar_inv( UNUR_DISTR *distribution );
 
 int unur_distr_cvec_set_rankcorr( UNUR_DISTR *distribution, const double *rankcorr );
 /* 
-   Set rank-correlation matrix for multivariate @var{distribution}.
+   Set rank-correlation matrix (Spearman's correlation) for
+   multivariate @var{distribution}. 
    @var{rankcorr} must be a pointer to an array of size
    @code{dim} x @code{dim}, where @code{dim} is the dimension returned
    by unur_distr_get_dim(). The rows of the matrix have to be stored
@@ -332,7 +333,7 @@ int unur_distr_cvec_set_rankcorr( UNUR_DISTR *distribution, const double *rankco
    @var{distribution}, i.e. it must be symmetric and positive definite
    and its diagonal entries must be equal to @code{1}.
 
-   The Cholesky factor is computed (and but not stored) to verify the
+   The Cholesky factor is computed (and stored) to verify the
    positive definiteness condition.
 
    A NULL pointer for @var{rankcorr} is interpreted as the identity matrix.
@@ -349,8 +350,12 @@ int unur_distr_cvec_set_rankcorr( UNUR_DISTR *distribution, const double *rankco
 */
 
 const double *unur_distr_cvec_get_rankcorr( const UNUR_DISTR *distribution );
+/* */
+
+const double *unur_distr_cvec_get_rk_cholesky( const UNUR_DISTR *distribution );
 /*
-   Get rank-correlation matrix of @var{distribution}. The function
+   Get rank-correlation matrix and its cholesky factor, respectively,
+   of @var{distribution}. The function
    returns a pointer to an array of size @code{dim} x @code{dim}.
    The rows of the matrix are stored consecutively in this array.
    If the requested matrix is not marked as known the NULL

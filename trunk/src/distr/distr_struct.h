@@ -90,6 +90,7 @@ struct unur_distr_cvec {
   double *covar_inv;            /* inverse of covariance matrix              */
 
   double *rankcorr;             /* rank correlation matrix                   */
+  double *rk_cholesky;          /* cholesky factor of rank corr. matrix      */
 
   struct unur_distr **marginals; /* array of pointers to marginal distributions */
   struct unur_distr **stdmarginals; /* array of pointers to standardized marginal distributions */

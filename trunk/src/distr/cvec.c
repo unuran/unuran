@@ -133,18 +133,18 @@ unur_distr_cvec_new( int dim )
   /* clone */
   distr->clone = _unur_distr_cvec_clone;
 
-  /* set defaults                                                            */
-  DISTR.pdf       = NULL;   /* pointer to PDF                                */
-  DISTR.dpdf      = NULL;   /* pointer to gradient of PDF                    */
-  DISTR.logpdf    = NULL;   /* pointer to logPDF                             */
-  DISTR.dlogpdf   = NULL;   /* pointer to gradient of logPDF                 */
-  DISTR.init      = NULL;   /* pointer to special init routine (default: none) */
-  DISTR.mean      = NULL;   /* pointer to mean vector (default: not known)   */
-  DISTR.covar     = NULL;   /* pointer to covariance matrix (default: not known) */
-  DISTR.cholesky  = NULL;   /* pointer to cholesky factor (default: not computed) */
-  DISTR.covar_inv = NULL;   /* pointer to inverse covariance matrix 
-			       (default: not computed ) */
-  DISTR.rankcorr  = NULL;   /* rank correlation of distribution              */
+  /* set defaults                                                    */
+  DISTR.pdf       = NULL;   /* pointer to PDF                        */
+  DISTR.dpdf      = NULL;   /* pointer to gradient of PDF            */
+  DISTR.logpdf    = NULL;   /* pointer to logPDF                     */
+  DISTR.dlogpdf   = NULL;   /* pointer to gradient of logPDF         */
+  DISTR.init      = NULL;   /* pointer to special init routine       [default: none]         */
+  DISTR.mean      = NULL;   /* mean vector                           [default: not known]    */
+  DISTR.covar     = NULL;   /* covariance matrix                     [default: not known]    */
+  DISTR.cholesky  = NULL;   /* cholesky factor of cov. matrix        [default: not computed] */
+  DISTR.covar_inv = NULL;   /* inverse covariance matrix             [default: not computed] */
+  DISTR.rankcorr  = NULL;   /* rank correlation                      [default: not known]    */
+  DISTR.rk_cholesky = NULL; /* cholesky factor of rank correlation   [default: not computed] */
   DISTR.marginals = NULL;   /* array of pointers to marginal distributions */
   DISTR.stdmarginals = NULL;  /* array of pointers to standardized marginal distributions */
 
@@ -225,6 +225,11 @@ _unur_distr_cvec_clone( const struct unur_distr *distr )
     memcpy( CLONE.rankcorr, DISTR.rankcorr, distr->dim * distr->dim * sizeof(double) );
   }
 
+  if (DISTR.rk_cholesky) {
+    CLONE.rk_cholesky = _unur_xmalloc( distr->dim * distr->dim * sizeof(double) );
+    memcpy( CLONE.rk_cholesky, DISTR.rk_cholesky, distr->dim * distr->dim * sizeof(double) );
+  }
+
   if (DISTR.mode) {
     CLONE.mode = _unur_xmalloc( distr->dim * sizeof(double) );
     memcpy( CLONE.mode, DISTR.mode, distr->dim * sizeof(double) );
@@ -283,14 +288,15 @@ _unur_distr_cvec_free( struct unur_distr *distr )
   for (i=0; i<UNUR_DISTR_MAXPARAMS; i++)
     if (DISTR.params[i]) free( DISTR.params[i] );
 
-  if (DISTR.mean)      free(DISTR.mean); 
-  if (DISTR.covar)     free(DISTR.covar);
-  if (DISTR.covar_inv) free(DISTR.covar_inv);
-  if (DISTR.cholesky)  free(DISTR.cholesky);
-  if (DISTR.rankcorr)  free(DISTR.rankcorr);
+  if (DISTR.mean)        free(DISTR.mean); 
+  if (DISTR.covar)       free(DISTR.covar);
+  if (DISTR.covar_inv)   free(DISTR.covar_inv);
+  if (DISTR.cholesky)    free(DISTR.cholesky);
+  if (DISTR.rankcorr)    free(DISTR.rankcorr);
+  if (DISTR.rk_cholesky) free(DISTR.rk_cholesky);
 
-  if (DISTR.mode)      free(DISTR.mode);
-  if (DISTR.center)    free(DISTR.center);
+  if (DISTR.mode)        free(DISTR.mode);
+  if (DISTR.center)      free(DISTR.center);
 
   if (DISTR.marginals)
     _unur_distr_cvec_marginals_free(DISTR.marginals, distr->dim);
@@ -981,6 +987,7 @@ unur_distr_cvec_set_rankcorr( struct unur_distr *distr, const double *rankcorr )
      /* Set rank-correlation matrix of distribution.                         */
      /* The given matrix is checked for symmetry and positive definitness.   */
      /* The diagonal entries must be equal to 1.                             */
+     /* As a side effect it also computes its cholesky factor.               */ 
      /*                                                                      */
      /* parameters:                                                          */
      /*   distr    ... pointer to distribution object                        */
@@ -995,7 +1002,6 @@ unur_distr_cvec_set_rankcorr( struct unur_distr *distr, const double *rankcorr )
 
   int i,j;
   int dim;
-  double *cholesky;
 
   /* check arguments */
   _unur_check_NULL( NULL, distr, UNUR_ERR_NULL );
@@ -1004,17 +1010,21 @@ unur_distr_cvec_set_rankcorr( struct unur_distr *distr, const double *rankcorr )
   dim = distr->dim;
 
   /* mark as unknown */
-  distr->set &= ~(UNUR_DISTR_SET_RANKCORR);
+  distr->set &= ~(UNUR_DISTR_SET_RANKCORR | UNUR_DISTR_SET_RK_CHOLESKY);
 
   /* we have to allocate memory first */
   if (DISTR.rankcorr == NULL)
     DISTR.rankcorr = _unur_xmalloc( dim * dim * sizeof(double) );
+  if (DISTR.rk_cholesky == NULL)
+    DISTR.rk_cholesky = _unur_xmalloc( dim * dim * sizeof(double) );   
 
   /* if rankcorr == NULL --> use identity matrix */
   if (rankcorr==NULL) { 
     for (i=0; i<dim; i++)
-      for (j=0; j<dim; j++)
-         DISTR.rankcorr[idx(i,j)] = (i==j) ? 1. : 0.;
+      for (j=0; j<dim; j++) {
+	DISTR.rankcorr[idx(i,j)] = (i==j) ? 1. : 0.;
+	DISTR.rk_cholesky[idx(i,j)] = (i==j) ? 1. : 0.;
+      }
   } 
 
   /* rankcorriance matrix given --> copy data */
@@ -1041,19 +1051,16 @@ unur_distr_cvec_set_rankcorr( struct unur_distr *distr, const double *rankcorr )
     memcpy( DISTR.rankcorr, rankcorr, dim * dim * sizeof(double) );
 
     /* compute Cholesky decomposition and check for positive definitness */
-    cholesky = _unur_xmalloc( dim * dim * sizeof(double) );   
-    if (_unur_matrix_cholesky_decomposition(dim, rankcorr, cholesky) != UNUR_SUCCESS) {
+    if (_unur_matrix_cholesky_decomposition(dim, rankcorr, DISTR.rk_cholesky) != UNUR_SUCCESS) {
       _unur_error(distr->name, UNUR_ERR_DISTR_DOMAIN, 
 		  "rankcorriance matrix not positive definite");
-      free(cholesky);
       return UNUR_ERR_DISTR_DOMAIN;      
     }
-    free(cholesky);
-    
+
   }
 
   /* changelog */
-  distr->set |= UNUR_DISTR_SET_RANKCORR;
+  distr->set |= UNUR_DISTR_SET_RANKCORR | UNUR_DISTR_SET_RK_CHOLESKY;
 
   /* o.k. */
   return UNUR_SUCCESS;
@@ -1091,6 +1098,34 @@ unur_distr_cvec_get_rankcorr( const struct unur_distr *distr )
   return DISTR.rankcorr;
 
 } /* end of unur_distr_cvec_get_rankcorr() */
+
+/*---------------------------------------------------------------------------*/
+
+const double *
+unur_distr_cvec_get_rk_cholesky( const struct unur_distr *distr )
+     /*----------------------------------------------------------------------*/
+     /* get cholesky factor of the rank correlation matrix of distribution   */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   distr ... pointer to distribution object                           */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to cholesky factor                                         */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( NULL, distr, NULL );
+  _unur_check_distr_object( distr, CVEC, NULL );
+
+  /* covariance matrix known ? */
+  if ( !(distr->set & UNUR_DISTR_SET_RK_CHOLESKY) ) {
+    _unur_warning(distr->name,UNUR_ERR_DISTR_GET,"rank correlation matrix");
+    return NULL;
+  }
+
+  return DISTR.rk_cholesky;
+
+} /* end of unur_distr_cvec_get_rk_cholesky() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -1944,10 +1979,18 @@ _unur_distr_cvec_debug( const struct unur_distr *distr, const char *genid )
   mat = ((distr->set & UNUR_DISTR_SET_COVAR) && DISTR.covar) ? DISTR.covar : NULL;
   _unur_matrix_print_matrix( distr->dim, mat, "\tcovariance matrix =", log, genid, "\t   ");
 
-  /* cholesky matrix */
+  /* cholesky factor of covariance matrix */
   mat = ((distr->set & UNUR_DISTR_SET_CHOLESKY) && DISTR.cholesky) ? DISTR.cholesky : NULL;
-  _unur_matrix_print_matrix( distr->dim, mat, "\tcholesky factor (of covariance matrix) =", log, genid, "\t   ");
+  _unur_matrix_print_matrix( distr->dim, mat, "\tcholesky factor of covariance matrix =", log, genid, "\t   ");
   
+  /* rank correlation matrix */
+  mat = ((distr->set & UNUR_DISTR_SET_RANKCORR) && DISTR.rankcorr) ? DISTR.rankcorr : NULL;
+  _unur_matrix_print_matrix( distr->dim, mat, "\trank correlation matrix =", log, genid, "\t   ");
+
+  /* cholesky factor of rank correlation matrix */
+  mat = ((distr->set & UNUR_DISTR_SET_RK_CHOLESKY) && DISTR.rk_cholesky) ? DISTR.rk_cholesky : NULL;
+  _unur_matrix_print_matrix( distr->dim, mat, "\tcholesky factor of rank correlation matrix =", log, genid, "\t   ");
+
   /* marginal distributions */
   fprintf(log,"%s:\tmarginal distributions:   [see also standardized marginal distributions]\n",genid);
   if (distr->set & UNUR_DISTR_SET_MARGINAL) {

@@ -11,7 +11,7 @@
  *              T(x) = -1/sqrt(x)     (T_c with c= -1/2)                     *
  *                                                                           *
  *   DESCRIPTION:                                                            *
- *      Given p.d.f and mode of a T-concave distribution                     *
+ *      Given PDF and mode of a T-concave distribution                       *
  *      produce a value x consistent with its density                        *
  *                                                                           *
  *   REQUIRED:  pointer to the density, mode of the density                  *
@@ -19,11 +19,11 @@
  *   PARAMETERS:                                                             *
  *      double  il, ir       ... left and right boundary of domain           *
  *                               (default: +/- INFINITY)                     *
- *      double  pdf_area     ... area below p.d.f (need not be 1)            *
+ *      double  pdf_area     ... area below PDF (need not be 1)              *
  *                               (default: 1.)                               *
- *      double *pdf_param    ... parameters of p.d.f.                        *
+ *      double *pdf_param    ... parameters of PDF                           *
  *                               (default: NULL)                             *
- *      int     n_pdf_param  ... number of parameters of p.d.f.              *
+ *      int     n_pdf_param  ... number of parameters of PDF                 *
  *                               (default: 0)                                *
  *      double  c_factor     ... constant for choosing the constr. points    *
  *                               (default: 0.664)                            *
@@ -90,7 +90,7 @@
 
 #define UTDR_SET_CFACTOR        0x001u
 #define UTDR_SET_DELTA          0x002u
-#define UTDR_SET_PDFMODE        0x004u   /* pdf at mode is set               */
+#define UTDR_SET_PDFMODE        0x004u   /* PDF at mode is set               */
 
 /*---------------------------------------------------------------------------*/
 
@@ -151,7 +151,7 @@ static void _unur_utdr_debug_init(struct unur_gen *gen, double tly, double tlys,
 
 #define SAMPLE    gen->sample.cont      /* pointer to sampling routine       */     
 
-#define PDF(x)    _unur_cont_PDF((x),&(gen->distr))   /* call to p.d.f.      */
+#define PDF(x)    _unur_cont_PDF((x),&(gen->distr))   /* call to PDF         */
 
 /*---------------------------------------------------------------------------*/
 
@@ -174,7 +174,7 @@ unur_utdr_new( struct unur_distr *distr )
      /*   return NULL                                                        */
      /*                                                                      */
      /* comment:                                                             */
-     /*   if the area below the p.d.f. is not close to 1 it is necessary to  */
+     /*   if the area below the PDF is not close to 1 it is necessary to     */
      /*   set pdf_area to an approximate value of its area (+/- 30 % is ok). */
      /*----------------------------------------------------------------------*/
 { 
@@ -189,7 +189,7 @@ unur_utdr_new( struct unur_distr *distr )
   COOKIE_CHECK(distr,CK_DISTR_CONT,NULL);
 
   if (DISTR_IN.pdf == NULL) {
-    _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"p.d.f."); 
+    _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"PDF"); 
     return NULL;
   }
 
@@ -203,7 +203,7 @@ unur_utdr_new( struct unur_distr *distr )
 
   if (!(distr->set & UNUR_DISTR_SET_PDFAREA))
     if (!unur_distr_cont_upd_pdfarea(distr)) {
-      _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"area below p.d.f.");
+      _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"area below PDF");
       return NULL; 
     }
 
@@ -245,8 +245,8 @@ unur_utdr_new( struct unur_distr *distr )
 	     default should not be changed if used doubles have at least
 	     10 decimal digits precision. */
 
-  PAR.fm        = -1.;                /* p.d.f. at mode (unknown)            */
-  PAR.hm        = -1.;                /* square of p.d.f. at mode (unknown)  */
+  PAR.fm        = -1.;                /* PDF at mode (unknown)               */
+  PAR.hm        = -1.;                /* square of PDF at mode (unknown)     */
 
   par->method   = UNUR_METH_UTDR;     /* method                              */
   par->variant  = 0u;                 /* default variant                     */
@@ -268,11 +268,11 @@ unur_utdr_new( struct unur_distr *distr )
 int 
 unur_utdr_set_pdfatmode( UNUR_PAR *par, double fmode )
      /*----------------------------------------------------------------------*/
-     /* Set pdf at mode. if set the p.d.f. at the mode is never changed.     */
+     /* Set PDF at mode. if set the PDF at the mode is never changed.        */
      /*                                                                      */
      /* parameters:                                                          */
      /*   par   ... pointer to parameter for building generator object       */
-     /*   fmode ... pdf at mode                                              */
+     /*   fmode ... PDF at mode                                              */
      /*                                                                      */
      /* return:                                                              */
      /*   1 ... on success                                                   */
@@ -287,13 +287,13 @@ unur_utdr_set_pdfatmode( UNUR_PAR *par, double fmode )
 
   /* check new parameter for generator */
   if (fmode <= 0.) {
-    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"pdf(mode)");
+    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"PDF(mode)");
     return 0;
   }
 
   /* store date */
-  PAR.fm = fmode;             /* pdf at mode */
-  PAR.hm = -1./sqrt(fmode);   /* transformed pdf at mode */
+  PAR.fm = fmode;             /* PDF at mode */
+  PAR.hm = -1./sqrt(fmode);   /* transformed PDF at mode */
 
   /* changelog */
   par->set |= UTDR_SET_PDFMODE;
@@ -632,11 +632,11 @@ unur_utdr_upd_mode( struct unur_gen *gen )
 int
 unur_utdr_chg_pdfatmode( struct unur_gen *gen, double fmode )
      /*----------------------------------------------------------------------*/
-     /* change value of pdf at mode                                          */
+     /* change value of PDF at mode                                          */
      /*                                                                      */
      /* parameters:                                                          */
      /*   gen   ... pointer to generator object                              */
-     /*   fmode ... pdf at mode                                              */
+     /*   fmode ... PDF at mode                                              */
      /*                                                                      */
      /* return:                                                              */
      /*   1 ... on success                                                   */
@@ -649,13 +649,13 @@ unur_utdr_chg_pdfatmode( struct unur_gen *gen, double fmode )
 
   /* check new parameter for generator */
   if (fmode <= 0.) {
-    _unur_warning(gen->genid,UNUR_ERR_PAR_SET,"pdf(mode)");
+    _unur_warning(gen->genid,UNUR_ERR_PAR_SET,"PDF(mode)");
     return 0;
   }
 
   /* store date */
-  GEN.fm = fmode;             /* pdf at mode */
-  GEN.hm = -1./sqrt(fmode);   /* transformed pdf at mode */
+  GEN.fm = fmode;             /* PDF at mode */
+  GEN.hm = -1./sqrt(fmode);   /* transformed PDF at mode */
 
   /* changelog */
   gen->set |= UTDR_SET_PDFMODE;
@@ -669,7 +669,7 @@ unur_utdr_chg_pdfatmode( struct unur_gen *gen, double fmode )
 int
 unur_utdr_chg_pdfarea( struct unur_gen *gen, double area )
      /*----------------------------------------------------------------------*/
-     /* change area below p.d.f. of distribution                             */
+     /* change area below PDF of distribution                                */
      /*                                                                      */
      /* parameters:                                                          */
      /*   gen   ... pointer to generator object                              */
@@ -704,7 +704,7 @@ unur_utdr_chg_pdfarea( struct unur_gen *gen, double area )
 int
 unur_utdr_upd_pdfarea( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
-     /* recompute area below p.d.f. of distribution                          */
+     /* recompute area below PDF of distribution                             */
      /*                                                                      */
      /* parameters:                                                          */
      /*   gen   ... pointer to generator object                              */
@@ -800,17 +800,17 @@ _unur_utdr_hat( struct unur_gen *gen )
   CHECK_NULL( gen, 0 );
   COOKIE_CHECK( gen,CK_UTDR_GEN, 0 );
 
-  /* compute pdf at mode (if not given by user) */
+  /* compute PDF at mode (if not given by user) */
   if (!(gen->set & UTDR_SET_PDFMODE)) {
     fm = PDF(DISTR.mode);
     /* fm must be positive */
     if (fm <= 0.) {
-      _unur_warning(gen->genid,UNUR_ERR_GEN_DATA,"pdf(mode) <= 0.");
+      _unur_warning(gen->genid,UNUR_ERR_GEN_DATA,"PDF(mode) <= 0.");
       return 0;
     }
     /* step 1.0 of algorithm UTDR */
-    GEN.fm = fm;           /* pdf at mode  */
-    GEN.hm = -1/sqrt(fm);  /* transformed pdf at mode  */
+    GEN.fm = fm;           /* PDF at mode  */
+    GEN.hm = -1/sqrt(fm);  /* transformed PDF at mode  */
   }
 
   /** TODO: inititialisieren notwendig ?? **/
@@ -1020,7 +1020,7 @@ _unur_utdr_hat( struct unur_gen *gen )
     }
     else { 
       if (setupok==0 || GEN.volcompl > 8. * DISTR.area || GEN.volcompl < 0.5 * DISTR.area) {
-        _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"; Area below hat too large or zero!! possible reasons: pdf, mode or area below pdf wrong;  density not T-concave\n");
+        _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"; Area below hat too large or zero!! possible reasons: PDF, mode or area below PDF wrong;  density not T-concave\n");
         return 0;
       }
     }
@@ -1070,10 +1070,10 @@ _unur_utdr_create( struct unur_par *par )
   gen->destroy = _unur_utdr_free;
 
   /* copy some parameters into generator object */
-  GEN.il = DISTR.BD_LEFT;           /* left boundary of domain         */
-  GEN.ir = DISTR.BD_RIGHT;          /* right boundary of domain        */
-  GEN.fm = PAR.fm;                  /* pdf at mode                           */
-  GEN.hm = PAR.hm;                  /* square root of pdf at mode            */
+  GEN.il = DISTR.BD_LEFT;           /* left boundary of domain               */
+  GEN.ir = DISTR.BD_RIGHT;          /* right boundary of domain              */
+  GEN.fm = PAR.fm;                  /* PDF at mode                           */
+  GEN.hm = PAR.hm;                  /* square root of PDF at mode            */
   GEN.c_factor = PAR.c_factor;
   GEN.delta_factor = PAR.delta_factor;
 
@@ -1271,13 +1271,13 @@ _unur_utdr_sample_check( struct unur_gen *gen )
     
     /* verify hat function */
     if(_unur_FP_less(linx,pdfx))
-      { _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"pdf(x) > hat(x)");
+      { _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"PDF(x) > hat(x)");
       _unur_stream_printf(gen->genid,__FILE__,__LINE__,"x %e PDF(x) %e hat(x) %e squeeze(x) %e", \
                           x,pdfx,linx,squeezex ); 
       }
     /* verify squeeze function */
     if(_unur_FP_less(pdfx,squeezex))
-      { _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"pdf(x) < squeeze(x)");
+      { _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"PDF(x) < squeeze(x)");
       _unur_stream_printf(gen->genid,__FILE__,__LINE__,"x %e PDF(x) %e hat(x) %e squeeze(x) %e", \
                           x,pdfx,linx,squeezex ); 
       }

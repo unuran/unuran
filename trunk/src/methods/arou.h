@@ -115,7 +115,7 @@ int unur_arou_set_cpoints( UNUR_PAR *parameters, int n_stp, double *stp );
 
 int unur_arou_set_center( UNUR_PAR *parameters, double center );
 /* 
-   Set the center (approximate mode) of the p.d.f.
+   Set the center (approximate mode) of the PDF.
    It is used to find construction points by means of a heuristical
    rule of thumb. If the mode is given the center is set equal to the
    mode.
@@ -153,7 +153,7 @@ int unur_arou_set_pedantic( UNUR_PAR *parameters, int pedantic );
    Sometimes it might happen that unur_init() has been executed
    successfully. But when additional construction points are added by
    adaptive rejection sampling, the algorithm detects that the
-   p.d.f. is not T-concave. With @code{pedantic} being TRUE, the
+   PDF is not T-concave. With @code{pedantic} being TRUE, the
    sampling routine is exchanged by a routine that simply returns
    UNUR_INFINITY. Otherwise the new point is not added to the list of
    construction points. At least the hat function remains T-concave.

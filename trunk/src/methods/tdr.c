@@ -10,7 +10,7 @@
  *   METHOD:    transformed density rejection                                *
  *                                                                           *
  *   DESCRIPTION:                                                            *
- *      Given p.d.f and .... of a T-concave distribution                     *
+ *      Given PDF of a T-concave distribution                                *
  *      produce a value x consistent with its density                        *
  *                                                                           *
  *****************************************************************************
@@ -98,7 +98,7 @@
  *                                                                           *
  *           figure 1: transformed density with hat and squeeze              *
  *                     T(x)   = log(x)                                       *
- *                     pdf(x) = exp(-x^2)                                    *
+ *                     PDF(x) = exp(-x^2)                                    *
  *                                                                           *
  *                                .                                          *
  *     -3        -2        -1     ....0         1         2         3        *
@@ -118,7 +118,7 @@
  *                  . *                               *                      *
  *                 . *                                 *                     *
  *                .                                                          *
- *               .  * transformed p.d.f.                *                    *
+ *               .  * transformed PDF                   *                    *
  *  transformed .                                                            *
  *         hat .   *                                     *                   *
  *            .                                                              *
@@ -139,7 +139,7 @@
  *                                                                           *
  *                   figure 2: density with hat and squeeze                  *
  *                             T(x)   = log(x)                               *
- *                             pdf(x) = exp(-x^2)                            *
+ *                             PDF(x) = exp(-x^2)                            *
  *                                                                           *
  *                                ..                                         *
  *                                . .                                        *
@@ -170,7 +170,7 @@
  *                  . *     |             |           *                      *
  *           hat  .. *      |             |            *                     *
  *               .  *       |             |             *                    *
- *             ..  * p.d.f. |             |              *                   *
+ *             ..  * PDF    |             |              *                   *
  *          ...   *         |             |               *                  *
  *       ...    **          |             |                **                *
  *      .     **            |             |                  **              *
@@ -182,7 +182,7 @@
  *...........................................................................*
  *                                                                           *
  * To generate from the hat distribution we have to partition the domain     *
- * of the p.d.f. by means of the construction points of the tangents into    *
+ * of the PDF by means of the construction points of the tangents into       *
  * several intervals. Each interval has to be divided into two parts         *
  * according to the tangent line that defines the hat function.              *
  * Although the interval can be divided at any point in the interval,        *
@@ -216,7 +216,7 @@
  * Algorithm TDR                                                             *
  *                                                                           *
  * [Required]                                                                *
- * p.d.f. f(x), transformation T(x), construction points c_1,...,c_n         *
+ * PDF f(x), transformation T(x), construction points c_1,...,c_n            *
  *                                                                           *
  * [Setup]                                                                   *
  *  1: Construct hat h(x) and squeeze s(x).                                  *
@@ -225,7 +225,7 @@
  *                                                                           *
  * [Generate]                                                                *
  *  4: Generate I proportional to (A_l^1,A_r^1; ...).                        *
- *  5: Generate X with p.d.f. proportional to h|I.                           *
+ *  5: Generate X with PDF proportional to h|I.                              *
  *  6: Generate U ~ U(0,1).                                                  *
  *  7: If U * h(x) <= min(f(c_i),f(c_{i+1})) Return X.                       *
  *  8: If U * h(x) <= s(X) Return X.                                         *
@@ -237,9 +237,9 @@
  * There are several alternatives for the choice of the construction points  *
  *                                                                           *
  * (1) Adaptive rejection sampling:                                          *
- *     Use two points on both sides of the mode of the p.d.f. (provided      *
+ *     Use two points on both sides of the mode of the PDF (provided         *
  *     that the hat has finite area).                                        *
- *     Whenever the p.d.f. has to be evaluated in step 8, add a new          *
+ *     Whenever the PDF has to be evaluated in step 8, add a new             *
  *     construction point at X.                                              *
  *                                                                           *
  * (2) Optimal construction points:                                          *
@@ -309,7 +309,7 @@
  * construction point. Thus the right boundary point is stored in the        *
  * interval structure in the list of intervals.                              *
  * We also have added an empty interval structure in this list that just     *
- * marks the right boundary of the domain of the p.d.f.                      *
+ * marks the right boundary of the domain of the PDF.                        *
  *                                                                           *
  *****************************************************************************
 
@@ -524,8 +524,8 @@ static void _unur_tdr_ps_debug_split_stop( struct unur_gen *gen,
 
 #define SAMPLE    gen->sample.cont      /* pointer to sampling routine       */     
 
-#define PDF(x)    _unur_cont_PDF((x),&(gen->distr))   /* call to p.d.f.      */
-#define dPDF(x)   _unur_cont_dPDF((x),&(gen->distr))  /* call to derivative of p.d.f. */
+#define PDF(x)    _unur_cont_PDF((x),&(gen->distr))   /* call to PDF         */
+#define dPDF(x)   _unur_cont_dPDF((x),&(gen->distr))  /* call to derivative of PDF */
 
 /*---------------------------------------------------------------------------*/
 /* since there is only file scope or program code, we abuse the              */

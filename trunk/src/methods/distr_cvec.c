@@ -66,7 +66,7 @@ struct unur_distr *
 unur_distr_cvec_new( int dim )
      /*----------------------------------------------------------------------*/
      /* create a new (empty) distribution object                             */
-     /* type: multivariate continuous with given p.d.f.                      */
+     /* type: multivariate continuous with given PDF                         */
      /*                                                                      */
      /* parameters:                                                          */
      /*   dim ... number of components of random vector (dimension)          */
@@ -113,12 +113,12 @@ unur_distr_cvec_new( int dim )
   distr->destroy = _unur_distr_cvec_free;
 
   /* set defaults                                                            */
-  DISTR.pdf       = NULL;          /* pointer to p.d.f.                      */
-  DISTR.dpdf      = NULL;          /* pointer to gradient of p.d.f.          */
+  DISTR.pdf       = NULL;          /* pointer to PDF                         */
+  DISTR.dpdf      = NULL;          /* pointer to gradient of PDF             */
 
   DISTR.init      = NULL;          /* pointer to special init routine        */
 
-  /* initialize parameters of the p.d.f.                                     */
+  /* initialize parameters of the PDF                                        */
   DISTR.mean  = NULL;              /* default is zero vector                 */
   DISTR.covar = NULL;              /* default is identity matrix             */
 
@@ -127,12 +127,12 @@ unur_distr_cvec_new( int dim )
     DISTR.params[i] = NULL;
   }
 
-  DISTR.norm_constant = 1.;        /* (log of) normalization constant for p.d.f.
+  DISTR.norm_constant = 1.;        /* (log of) normalization constant for PDF
 				      (initialized to avoid accidently floating
 				      point exception                        */
 
   DISTR.mode       = NULL;         /* location of mode (default: not known)  */
-  DISTR.volume     = INFINITY;     /* area below p.d.f. (default: not known) */
+  DISTR.volume     = INFINITY;     /* area below PDF (default: not known)    */
 
   distr->set = 0u;                 /* no parameters set                      */
   
@@ -179,11 +179,11 @@ _unur_distr_cvec_free( struct unur_distr *distr )
 int
 unur_distr_cvec_set_pdf( struct unur_distr *distr, UNUR_FUNCT_CVEC *pdf )
      /*----------------------------------------------------------------------*/
-     /* set p.d.f. of distribution                                           */
+     /* set PDF of distribution                                              */
      /*                                                                      */
      /* parameters:                                                          */
      /*   distr ... pointer to distribution object                           */
-     /*   pdf   ... pointer to p.d.f.                                        */
+     /*   pdf   ... pointer to PDF                                           */
      /*                                                                      */
      /* return:                                                              */
      /*   1 ... on success                                                   */
@@ -195,9 +195,9 @@ unur_distr_cvec_set_pdf( struct unur_distr *distr, UNUR_FUNCT_CVEC *pdf )
   _unur_check_NULL( distr->name,pdf,0 );
   _unur_check_distr_object( distr, CVEC, 0 );
 
-  /* we do not allow overwriting a pdf */
+  /* we do not allow overwriting a PDF */
   if (DISTR.pdf != NULL) {
-    _unur_warning(distr->name,UNUR_ERR_DISTR_SET,"Overwriting of pdf not allowed");
+    _unur_warning(distr->name,UNUR_ERR_DISTR_SET,"Overwriting of PDF not allowed");
     return 0;
   }
 
@@ -215,11 +215,11 @@ unur_distr_cvec_set_pdf( struct unur_distr *distr, UNUR_FUNCT_CVEC *pdf )
 int
 unur_distr_cvec_set_dpdf( struct unur_distr *distr, UNUR_VFUNCT_CVEC *dpdf )
      /*----------------------------------------------------------------------*/
-     /* set gradient of p.d.f. of distribution                               */
+     /* set gradient of PDF of distribution                                  */
      /*                                                                      */
      /* parameters:                                                          */
      /*   distr ... pointer to distribution object                           */
-     /*   dpdf  ... pointer to gradient of p.d.f.                            */
+     /*   dpdf  ... pointer to gradient of PDF                               */
      /*                                                                      */
      /* return:                                                              */
      /*   1 ... on success                                                   */
@@ -231,9 +231,9 @@ unur_distr_cvec_set_dpdf( struct unur_distr *distr, UNUR_VFUNCT_CVEC *dpdf )
   _unur_check_NULL( distr->name,dpdf,0 );
   _unur_check_distr_object( distr, CVEC, 0 );
   
-  /* we do not allow overwriting a dpdf */
+  /* we do not allow overwriting a dPDF */
   if (DISTR.dpdf != NULL) {
-    _unur_warning(distr->name,UNUR_ERR_DISTR_SET,"Overwriting of dpdf not allowed");
+    _unur_warning(distr->name,UNUR_ERR_DISTR_SET,"Overwriting of dPDF not allowed");
     return 0;
   }
 
@@ -250,13 +250,13 @@ unur_distr_cvec_set_dpdf( struct unur_distr *distr, UNUR_VFUNCT_CVEC *dpdf )
 UNUR_FUNCT_CVEC *
 unur_distr_cvec_get_pdf( struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
-     /* get pointer to p.d.f. of distribution                                */
+     /* get pointer to PDF of distribution                                   */
      /*                                                                      */
      /* parameters:                                                          */
      /*   distr ... pointer to distribution object                           */
      /*                                                                      */
      /* return:                                                              */
-     /*   pointer to p.d.f.                                                  */
+     /*   pointer to PDF                                                     */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
@@ -271,13 +271,13 @@ unur_distr_cvec_get_pdf( struct unur_distr *distr )
 UNUR_VFUNCT_CVEC *
 unur_distr_cvec_get_dpdf( struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
-     /* get pointer to gradient of p.d.f. of distribution                    */
+     /* get pointer to gradient of PDF of distribution                       */
      /*                                                                      */
      /* parameters:                                                          */
      /*   distr ... pointer to distribution object                           */
      /*                                                                      */
      /* return:                                                              */
-     /*   pointer to gradient of p.d.f.                                      */
+     /*   pointer to gradient of PDF                                         */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
@@ -292,14 +292,14 @@ unur_distr_cvec_get_dpdf( struct unur_distr *distr )
 double
 unur_distr_cvec_eval_pdf( double *x, struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
-     /* evaluate p.d.f. of distribution at x                                 */
+     /* evaluate PDF of distribution at x                                    */
      /*                                                                      */
      /* parameters:                                                          */
      /*   x     ... argument for pdf                                         */
      /*   distr ... pointer to distribution object                           */
      /*                                                                      */
      /* return:                                                              */
-     /*   pdf(x)                                                             */
+     /*   PDF(x)                                                             */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
@@ -319,11 +319,11 @@ unur_distr_cvec_eval_pdf( double *x, struct unur_distr *distr )
 int
 unur_distr_cvec_eval_dpdf( double *result, double *x, struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
-     /* evaluate gradient of p.d.f. of distribution at x                     */
+     /* evaluate gradient of PDF of distribution at x                        */
      /*                                                                      */
      /* parameters:                                                          */
-     /*   result ... to store grad (pdf(x))                                  */
-     /*   x      ... argument for dpdf                                       */
+     /*   result ... to store grad (PDF(x))                                  */
+     /*   x      ... argument for dPDF                                       */
      /*   distr  ... pointer to distribution object                          */
      /*                                                                      */
      /* return:                                                              */
@@ -564,7 +564,7 @@ unur_distr_cvec_set_pdfparams( struct unur_distr *distr, int par, double *params
 int
 unur_distr_cvec_get_pdfparams( struct unur_distr *distr, int par, double **params )
      /*----------------------------------------------------------------------*/
-     /* get number of pdf parameters and sets pointer to array params[] of   */
+     /* get number of PDF parameters and sets pointer to array params[] of   */
      /* parameters                                                           */
      /*                                                                      */
      /* parameters:                                                          */
@@ -604,7 +604,7 @@ unur_distr_cvec_set_mode( struct unur_distr *distr, double *mode )
      /*                                                                      */
      /* parameters:                                                          */
      /*   distr ... pointer to distribution object                           */
-     /*   mode  ... mode of p.d.f.                                           */
+     /*   mode  ... mode of PDF                                           */
      /*                                                                      */
      /* return:                                                              */
      /*   1 ... on success                                                   */
@@ -664,11 +664,11 @@ unur_distr_cvec_get_mode( struct unur_distr *distr )
 int
 unur_distr_cvec_set_pdfvol( struct unur_distr *distr, double volume )
      /*----------------------------------------------------------------------*/
-     /* set volume below p.d.f.                                              */
+     /* set volume below PDF                                                 */
      /*                                                                      */
      /* parameters:                                                          */
      /*   distr  ... pointer to distribution object                          */
-     /*   volume ... volume below p.d.f.                                     */
+     /*   volume ... volume below PDF                                        */
      /*                                                                      */
      /* return:                                                              */
      /*   1 ... on success                                                   */
@@ -681,7 +681,7 @@ unur_distr_cvec_set_pdfvol( struct unur_distr *distr, double volume )
 
   /* check new parameter for distribution */
   if (volume <= 0.) {
-    _unur_error(NULL,UNUR_ERR_DISTR_SET,"pdf volume <= 0");
+    _unur_error(NULL,UNUR_ERR_DISTR_SET,"PDF volume <= 0");
     return 0;
   }
 
@@ -700,13 +700,13 @@ unur_distr_cvec_set_pdfvol( struct unur_distr *distr, double volume )
 double
 unur_distr_cvec_get_pdfvol( struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
-     /* get volume below p.d.f. of distribution                              */
+     /* get volume below PDF of distribution                                 */
      /*                                                                      */
      /* parameters:                                                          */
      /*   distr ... pointer to distribution object                           */
      /*                                                                      */
      /* return:                                                              */
-     /*   volume below p.d.f. of distribution                                */
+     /*   volume below PDF of distribution                                   */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */

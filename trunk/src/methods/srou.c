@@ -10,15 +10,15 @@
  *   METHOD:    simple universal method (ratio-of-uniforms method)           *
  *                                                                           *
  *   DESCRIPTION:                                                            *
- *      Given p.d.f and mode of a T_{-1/2}-concave distribution              *
+ *      Given PDF and mode of a T_{-1/2}-concave distribution                *
  *      produce a value x consistent with its density                        *
  *                                                                           *
  *   REQUIRED:                                                               *
  *      pointer to the density function                                      *
  *      mode of the density                                                  *
- *      area below p.d.f.                                                    *
+ *      area below PDF                                                       *
  *   OPTIONAL:                                                               *
- *      c.d.f. at mode                                                       *
+ *      CDF at mode                                                          *
  *                                                                           *
  *****************************************************************************
      $Id$
@@ -80,18 +80,18 @@
  * Then                                                                      *
  *    A subset R subset Q                                                    *
  *                                                                           *
- * Thus we can use R to generate whenever the c.d.f. F(mode) at the mode     *
+ * Thus we can use R to generate whenever the CDF F(mode) at the mode        *
  * is known, and Q otherwise.                                                *
  * Notice, that the rection constant is 2 in the first case and 4 and the    *
  * latter.                                                                   *
  *                                                                           *
  * If F(mode) it known, it is even possible to get an universal squeeze      *
  * (see [1] for details). However its usage is only recommended when         *
- * the p.d.f. is (very) expensive.                                           *
+ * the PDF is (very) expensive.                                              *
  *                                                                           *
  * When F(mode) is not known the mirror principle can be used. i.e., make    *
  * an enveloping rectangle for f(x)+f(-x). It reduces the rejection constant *
- * to 2 * sqrt(2) at the expense of more evaluations of the p.d.f.           *
+ * to 2 * sqrt(2) at the expense of more evaluations of the PDF.             *
  * Its usage is only recommended when the generation time for the underlying *
  * uniform prng is extreme large.                                            *
  *                                                                           *
@@ -127,8 +127,8 @@
 /*---------------------------------------------------------------------------*/
 /* Flags for logging set calls                                               */
 
-#define SROU_SET_CDFMODE      0x001u   /* cdf at mode is known               */
-#define SROU_SET_PDFMODE      0x002u   /* pdf at mode is set                 */
+#define SROU_SET_CDFMODE      0x001u   /* CDF at mode is known               */
+#define SROU_SET_PDFMODE      0x002u   /* PDF at mode is set                 */
 
 /*---------------------------------------------------------------------------*/
 
@@ -189,7 +189,7 @@ static void _unur_srou_debug_init( struct unur_gen *gen, int is_reinit );
 
 #define SAMPLE    gen->sample.cont      /* pointer to sampling routine       */     
 
-#define PDF(x)    _unur_cont_PDF((x),&(gen->distr))   /* call to p.d.f.      */
+#define PDF(x)    _unur_cont_PDF((x),&(gen->distr))   /* call to PDF         */
 
 /*---------------------------------------------------------------------------*/
 /* constants                                                                 */
@@ -228,7 +228,7 @@ unur_srou_new( struct unur_distr *distr )
   COOKIE_CHECK(distr,CK_DISTR_CONT,NULL);
 
   if (DISTR_IN.pdf == NULL) {
-    _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"p.d.f."); 
+    _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"PDF"); 
     return NULL;
   }
 
@@ -242,7 +242,7 @@ unur_srou_new( struct unur_distr *distr )
 
   if (!(distr->set & UNUR_DISTR_SET_PDFAREA))
     if (!unur_distr_cont_upd_pdfarea(distr)) {
-      _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"area below p.d.f.");
+      _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"area below PDF");
       return NULL; 
     }
 
@@ -254,8 +254,8 @@ unur_srou_new( struct unur_distr *distr )
   par->distr    = distr;      /* pointer to distribution object              */
 
   /* set default values */
-  PAR.Fmode     = -1.;                /* c.d.f. at mode (unknown yet)        */
-  PAR.um        = -1.;                /* square root of p.d.f. at mode (unknown)*/
+  PAR.Fmode     = -1.;                /* CDF at mode (unknown yet   )        */
+  PAR.um        = -1.;                /* square root of PDF at mode (unknown)*/
 
   par->method   = UNUR_METH_SROU;     /* method and default variant          */
   par->variant  = 0u;                 /* default variant                     */
@@ -296,7 +296,7 @@ unur_srou_set_cdfatmode( struct unur_par *par, double Fmode )
 
   /* check new parameter for generator */
   if (Fmode < 0. || Fmode > 1.) {
-    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"cdf(mode)");
+    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"CDF(mode)");
     return 0;
   }
 
@@ -315,11 +315,11 @@ unur_srou_set_cdfatmode( struct unur_par *par, double Fmode )
 int 
 unur_srou_set_pdfatmode( UNUR_PAR *par, double fmode )
      /*----------------------------------------------------------------------*/
-     /* Set pdf at mode. if set the p.d.f. at the mode is never changed.     */
+     /* Set pdf at mode. if set the PDF at the mode is never changed.        */
      /*                                                                      */
      /* parameters:                                                          */
      /*   par   ... pointer to parameter for building generator object       */
-     /*   fmode ... pdf at mode                                              */
+     /*   fmode ... PDF at mode                                              */
      /*                                                                      */
      /* return:                                                              */
      /*   1 ... on success                                                   */
@@ -334,7 +334,7 @@ unur_srou_set_pdfatmode( UNUR_PAR *par, double fmode )
 
   /* check new parameter for generator */
   if (fmode <= 0.) {
-    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"pdf(mode)");
+    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"PDF(mode)");
     return 0;
   }
 
@@ -608,7 +608,7 @@ unur_srou_chg_cdfatmode( struct unur_gen *gen, double Fmode )
 
   /* check new parameter for generator */
   if (Fmode < 0. || Fmode > 1.) {
-    _unur_warning(gen->genid,UNUR_ERR_PAR_SET,"cdf(mode)");
+    _unur_warning(gen->genid,UNUR_ERR_PAR_SET,"CDF(mode)");
     return 0;
   }
   
@@ -627,11 +627,11 @@ unur_srou_chg_cdfatmode( struct unur_gen *gen, double Fmode )
 int
 unur_srou_chg_pdfatmode( struct unur_gen *gen, double fmode )
      /*----------------------------------------------------------------------*/
-     /* change value of pdf at mode                                          */
+     /* change value of PDF at mode                                          */
      /*                                                                      */
      /* parameters:                                                          */
      /*   gen   ... pointer to generator object                              */
-     /*   fmode ... pdf at mode                                              */
+     /*   fmode ... PDF at mode                                              */
      /*                                                                      */
      /* return:                                                              */
      /*   1 ... on success                                                   */
@@ -644,7 +644,7 @@ unur_srou_chg_pdfatmode( struct unur_gen *gen, double fmode )
 
   /* check new parameter for generator */
   if (fmode <= 0.) {
-    _unur_warning(gen->genid,UNUR_ERR_PAR_SET,"pdf(mode)");
+    _unur_warning(gen->genid,UNUR_ERR_PAR_SET,"PDF(mode)");
     return 0;
   }
 
@@ -706,7 +706,7 @@ unur_srou_chg_domain( struct unur_gen *gen, double left, double right )
 int
 unur_srou_chg_pdfarea( struct unur_gen *gen, double area )
      /*----------------------------------------------------------------------*/
-     /* change area below p.d.f. of distribution                             */
+     /* change area below PDF of distribution                                */
      /*                                                                      */
      /* parameters:                                                          */
      /*   gen   ... pointer to generator object                              */
@@ -741,7 +741,7 @@ unur_srou_chg_pdfarea( struct unur_gen *gen, double area )
 int
 unur_srou_upd_pdfarea( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
-     /* recompute area below p.d.f. of distribution                          */
+     /* recompute area below PDF of distribution                             */
      /*                                                                      */
      /* parameters:                                                          */
      /*   gen   ... pointer to generator object                              */
@@ -832,18 +832,18 @@ _unur_srou_rectangle( struct unur_gen *gen )
      /*   0 ... on error                                                     */
      /*----------------------------------------------------------------------*/
 { 
-  double vm, fm;             /* width of rectangle, pdf at mode              */
+  double vm, fm;             /* width of rectangle, PDF at mode              */
 
   /* check arguments */
   CHECK_NULL( gen, 0 );
   COOKIE_CHECK( gen,CK_SROU_GEN, 0 );
 
-  /* compute pdf at mode (if not given by user) */
+  /* compute PDF at mode (if not given by user) */
   if (!(gen->set & SROU_SET_PDFMODE)) {
     fm = PDF(DISTR.mode);
     /* fm must be positive */
     if (fm <= 0.) {
-      _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"pdf(mode) <= 0.");
+      _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"PDF(mode) <= 0.");
       return 0;
     }
     GEN.um = sqrt(fm);    /* height of rectangle */
@@ -922,14 +922,14 @@ _unur_srou_create( struct unur_par *par )
     /* there is something wrong.
        assume: user has change domain without changing mode.
        but then, she probably has not updated area and is to large */
-    _unur_warning(GENTYPE,UNUR_ERR_GEN_DATA,"area and/or cdf at mode");
+    _unur_warning(GENTYPE,UNUR_ERR_GEN_DATA,"area and/or CDF at mode");
     DISTR.mode = max(DISTR.mode,DISTR.BD_LEFT);
     DISTR.mode = min(DISTR.mode,DISTR.BD_RIGHT);
   }
 
   /* copy some parameters into generator object */
-  GEN.Fmode = PAR.Fmode;            /* cdf at mode                           */
-  GEN.um    = PAR.um;               /* square root of pdf at mode            */
+  GEN.Fmode = PAR.Fmode;            /* CDF at mode                           */
+  GEN.um    = PAR.um;               /* square root of PDF at mode            */
 
   gen->method = par->method;        /* indicates method                      */
   gen->variant = par->variant;      /* indicates variant                     */
@@ -1068,7 +1068,7 @@ _unur_srou_sample_mirror( struct unur_gen *gen )
     /* ratio */
     X = V/U;
 
-    /* evaluate p.d.f. */
+    /* evaluate PDF */
     x = X + DISTR.mode;
     fx  = (x < DISTR.BD_LEFT || x > DISTR.BD_RIGHT) ? 0. : PDF(x);
     uu = U * U;
@@ -1077,7 +1077,7 @@ _unur_srou_sample_mirror( struct unur_gen *gen )
     if (uu <= fx)
       return x;
 
-    /* try mirrored p.d.f */
+    /* try mirrored PDF */
     x = -X + DISTR.mode;
     fnx  = (x < DISTR.BD_LEFT || x > DISTR.BD_RIGHT) ? 0. : PDF(x);
     if (uu <= fx + fnx)
@@ -1125,7 +1125,7 @@ _unur_srou_sample_check( struct unur_gen *gen )
       x = X + DISTR.mode;
       nx = -X + DISTR.mode;
 
-      /* evaluate p.d.f. */
+      /* evaluate PDF */
       fx  = (x  < DISTR.BD_LEFT || x  > DISTR.BD_RIGHT) ? 0. : PDF(x);
       fnx = (nx < DISTR.BD_LEFT || nx > DISTR.BD_RIGHT) ? 0. : PDF(nx);
       uu = U * U;
@@ -1139,13 +1139,13 @@ _unur_srou_sample_check( struct unur_gen *gen )
 	   || (xfx > (1.+DBL_EPSILON) * GEN.vr)
 	   || (xfnx < (1.+DBL_EPSILON) * GEN.vl) 
 	   || (xfnx > (1.+DBL_EPSILON) * GEN.vr) )
-	_unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"pdf(x) > hat(x)");
+	_unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"PDF(x) > hat(x)");
 
       /* accept or reject */
       if (uu <= fx)
 	return x;
       
-      /* try mirrored p.d.f */
+      /* try mirrored PDF */
       if (uu <= fx + fnx)
 	return nx;
     }
@@ -1169,7 +1169,7 @@ _unur_srou_sample_check( struct unur_gen *gen )
       if ( (x < DISTR.BD_LEFT) || (x > DISTR.BD_RIGHT) )
 	continue;
 
-      /* evaluate p.d.f. */
+      /* evaluate PDF */
       fx = PDF(x);
 
       /* the point on the boundary of the region of acceptance
@@ -1182,7 +1182,7 @@ _unur_srou_sample_check( struct unur_gen *gen )
       if ( ( sfx > (1.+DBL_EPSILON) * GEN.um )   /* avoid roundoff error with FP registers */
 	   || (xfx < (1.+DBL_EPSILON) * GEN.vl) 
 	   || (xfx > (1.+DBL_EPSILON) * GEN.vr) )
-	_unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"pdf(x) > hat(x)");
+	_unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"PDF(x) > hat(x)");
 
       /* evaluate and check squeeze */
       if ( (gen->variant & SROU_VARFLAG_SQUEEZE) &&
@@ -1194,7 +1194,7 @@ _unur_srou_sample_check( struct unur_gen *gen )
 	xx = xfx / (GEN.um - sfx);
 	if ( (xx > (1.+DBL_EPSILON) * GEN.xl) &&
 	     (xx < (1.+DBL_EPSILON) * GEN.xr) )
-	  _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"pdf(x) < squeeze(x)");
+	  _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"PDF(x) < squeeze(x)");
 
 	/* squeeze acceptance */
 	xx = V / (GEN.um - U);

@@ -10,7 +10,7 @@
  *   METHOD:    transformed density rejection                                *
  *                                                                           *
  *   DESCRIPTION:                                                            *
- *      Given p.d.f and .... of a T-concave distribution                     *
+ *      Given PDF of a T-concave distribution                                *
  *      produce a value x consistent with its density                        *
  *                                                                           *
  *****************************************************************************
@@ -69,9 +69,9 @@ unur_tdr_new( struct unur_distr* distr )
   COOKIE_CHECK(distr,CK_DISTR_CONT,NULL);
 
   if (DISTR_IN.pdf == NULL) {
-    _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"p.d.f."); return NULL; }
+    _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"PDF"); return NULL; }
   if (DISTR_IN.dpdf == NULL) {
-    _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"derivative of p.d.f."); return NULL; }
+    _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"derivative of PDF"); return NULL; }
 
   /* allocate structure */
   par = _unur_malloc( sizeof(struct unur_par) );
@@ -315,11 +315,11 @@ unur_tdr_set_max_intervals( struct unur_par *par, int max_ivs )
 int
 unur_tdr_set_center( struct unur_par *par, double center )
      /*----------------------------------------------------------------------*/
-     /* set center (approximate mode) of p.d.f.                              */
+     /* set center (approximate mode) of PDF                                 */
      /*                                                                      */
      /* parameters:                                                          */
      /*   par    ... pointer to parameter for building generator object      */
-     /*   center ... center of p.d.f.                                        */
+     /*   center ... center of PDF                                           */
      /*                                                                      */
      /* return:                                                              */
      /*   1 ... on success                                                   */

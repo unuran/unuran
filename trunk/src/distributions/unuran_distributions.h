@@ -7,7 +7,7 @@
  *   FILE: unur_distr.h                                                      *
  *                                                                           *
  *   PURPOSE:                                                                *
- *         defines macros and function prototypes for p.d.f., c.d.f., etc.   *
+ *         defines macros and function prototypes for PDF, CDF, etc.         *
  *         of distribtions.                                                  *
  *                                                                           *
  *   USAGE:                                                                  *
@@ -22,25 +22,25 @@
  *         (Not all of these function exist for every distribution!)         *
  *                                                                           *
  *      double _unur_pdf_<distr>(double x, UNUR_DISTR *distr)                *
- *          ... value of p.d.f. at x                                         *
+ *          ... value of PDF at x                                            *
  *      double _unur_dpdf_<distr>(double x, UNUR_DISTR *distr)               *
- *          ... value of derivative of p.d.f. at x                           *
+ *          ... value of derivative of PDF at x                              *
  *      double _unur_cdf_<distr>(double x, UNUR_DISTR *distr)                *
- *          ... value of c.d.f. at x                                         *
+ *          ... value of CDF at x                                            *
  *      double _unur_mode_<distr>(double *params, int n_params)              *
  *          ... mode of distribution                                         *
  *      double _unur_normconstant_<distr>(double *params, int n_params)      *
- *          ... normalization constant of p.d.f.                             *
+ *          ... normalization constant of PDF                                *
  *      double _unur_lognormconstant_<distr>(double *params, int n_params)   *
- *          ... log of normalization constant of p.d.f.                      *
+ *          ... log of normalization constant of PDF                         *
  *      int    _unur_stdgen_<distr>_init(                                    *
  *                             UNUR_PAR *parameters, UNUR_GEN *generator)    *
  *          ... initialize new (special) generator for distribution          *
  *      double unur_stdgen_sample_<distr>_<xx>(UNUR_GEN *generator)          *
  *          ... call (special) generator <xx> for distribution               *
  *                                                                           *
- *      double      x          ... argument of p.d.f.                        *
- *      double*     params     ... parameter list for p.d.f.                 *
+ *      double      x          ... argument of PDF                           *
+ *      double*     params     ... parameter list for PDF                    *
  *      int         n_params   ... number of parameters (length of array)    *                       
  *                                                                           *
  *      UNUR_DISTR* distr      ... pointer to distribution object            *

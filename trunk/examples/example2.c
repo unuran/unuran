@@ -10,7 +10,7 @@
 
 /* --------------------------------------------------------------- */
 
-/* c.d.f.  -- piecewise parabolic                                  */
+/* CDF  -- piecewise parabolic                                     */
 double mycdf(double x, UNUR_DISTR *dummy)
 {
    if ( x <= 0.0 )

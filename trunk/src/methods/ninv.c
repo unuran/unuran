@@ -12,11 +12,11 @@
  *   DESCRIPTION:                                                            *
  *                                                                           *
  *   REQUIRED:                                                               *
- *      pointer to the c.d.f.                                                *
- *      newton's method: additional pointer to the p.d.f.                    *
+ *      pointer to the CDF                                                   *
+ *      newton's method: additional pointer to the PDF                       *
  *                                                                           *
  *   OPTIONAL:                                                               *
- *      c.d.f. at mode                                                       *
+ *      CDF at mode                                                          *
  *                                                                           *
  *****************************************************************************
      $Id$
@@ -50,15 +50,15 @@
  *****************************************************************************
  *                                                                           *
  *  Numerical inversion is a method for generating random variables          *
- *  using the cdf (and in case of newton's method the pdf).                  *
+ *  using the CDF (and in case of newton's method the PDF).                  *
  *                                                                           *
  *  THEOREM:                                                                 *
- *     Let X be a random variable with cdf F(x).                             *
+ *     Let X be a random variable with CDF F(x).                             *
  *     Then the F(X) are  uniformly distributed.                             *
  *                                                                           *
  *  COROLLARY:                                                               *
  *     Starting with uniformly distributed random variables U,               *
- *     the F^(-1)(U) have F(x) as cdf.                                       *
+ *     the F^(-1)(U) have F(x) as CDF.                                       *
  *                                                                           *
  *  Starting with an U, the task is to find a X fulfilling:                  *
  *    F(X) - U = 0.                                                          *
@@ -75,8 +75,8 @@
  *  containing suitable starting values.                                     *
  *  If neither the table nor explicit starting values are used,              *
  *  NINV chooses as starting values:                                         *
- *     newton's method:  x:     cdf(x) = 0.5                                 *
- *     regula falsi:     x1,x2: cdf(x1) = 1 - cdf(x2) = 0.05                 *
+ *     newton's method:  x:     CDF(x) = 0.5                                 *
+ *     regula falsi:     x1,x2: CDF(x1) = 1 - CDF(x2) = 0.05                 *
  *                                                                           *
  *****************************************************************************/
 
@@ -196,8 +196,8 @@ static void _unur_ninv_debug_chg_truncated(UNUR_GEN *gen);
 
 #define SAMPLE    gen->sample.cont      /* pointer to sampling routine       */
 
-#define PDF(x)    _unur_cont_PDF((x),&(gen->distr))   /* call to p.d.f.      */
-#define CDF(x)    _unur_cont_CDF((x),&(gen->distr))   /* call to c.d.f.      */
+#define PDF(x)    _unur_cont_PDF((x),&(gen->distr))   /* call to PDF         */
+#define CDF(x)    _unur_cont_CDF((x),&(gen->distr))   /* call to CDF         */
 
 /*****************************************************************************/
 /**  User Interface                                                         **/
@@ -229,9 +229,9 @@ unur_ninv_new( struct unur_distr *distr )
   COOKIE_CHECK(distr,CK_DISTR_CONT,NULL);
 
   if (DISTR_IN.cdf == NULL) {
-    _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"c.d.f."); return NULL; }
+    _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"CDF"); return NULL; }
 
-  /* if default variant is Newton's method, then we also need the p.d.f. ! */
+  /* if default variant is Newton's method, then we also need the PDF ! */
 
   /* allocate structure */
   par = _unur_malloc(sizeof(struct unur_par));
@@ -294,7 +294,7 @@ unur_ninv_set_usenewton( struct unur_par *par )
 
   /* check new parameter for generator */
   if (! par->DISTR_IN.pdf) {
-    _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"p.d.f.");
+    _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"PDF");
     par->variant = NINV_VARFLAG_REGULA;   /* use regula falsi instead  */
     return 0;
  }
@@ -1470,7 +1470,7 @@ _unur_ninv_debug_init( struct unur_par *par, struct unur_gen *gen )
 
   fprintf(log,"%s:\n",gen->genid);
   fprintf(log,"%s: type    = continuous univariate random variates\n",gen->genid);
-  fprintf(log,"%s: method  = ninv (numerical inversion of c.d.f.)\n",gen->genid);
+  fprintf(log,"%s: method  = ninv (numerical inversion of CDF)\n",gen->genid);
   fprintf(log,"%s:\n",gen->genid);
 
   _unur_distr_cont_debug( &(gen->distr), gen->genid );

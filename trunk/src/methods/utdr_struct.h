@@ -41,8 +41,8 @@
 /* Information for constructing the generator                                */
 
 struct unur_utdr_par { 
-  double  fm;               /* p.d.f. at mode                                */
-  double  hm;               /* transformed p.d.f. at mode                    */
+  double  fm;               /* PDF at mode                                   */
+  double  hm;               /* transformed PDF at mode                       */
   double  c_factor;         /* constant for choosing the design points       */
   double  delta_factor;     /* delta to replace the tangent                  */
 };
@@ -53,8 +53,8 @@ struct unur_utdr_par {
 struct unur_utdr_gen { 
   double  il;               /* left border of the domain                     */
   double  ir;               /* right border of the domain                    */
-  double  fm;               /* p.d.f. at mode                                */
-  double  hm;               /* transformed p.d.f. at mode                    */
+  double  fm;               /* PDF at mode                                   */
+  double  hm;               /* transformed PDF at mode                       */
 
   double  vollc,volcompl,voll,
     al,ar,col,cor,sal,sar,bl,br,tlx,trx,

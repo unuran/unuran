@@ -58,14 +58,14 @@
       The method works for all probability density functions where the
       regions of monotonicity (called slopes) are given. This can be done
       explicitly by a unur_tabl_set_slopes() call. If (and only if) no
-      slopes are given, the domain and the mode of the p.d.f. are used to
+      slopes are given, the domain and the mode of the PDF are used to
       compute the slopes. If neither slopes nor the mode and the domain
       are given initializing of the generator fails.
       
       In the setup first the equal area rule is used to construct a hat
       function, i.e., the interval boundaries are chosen such that the
       area below each interval is equal to a given fraction of the total
-      area below the given p.d.f. This fraction can be set by a
+      area below the given PDF. This fraction can be set by a
       unur_tabl_set_areafraction() call. Additionally these intervals are
       split by until the maximum number of intervals is reached or the
       ration between the area below squeeze and the area below the hat is

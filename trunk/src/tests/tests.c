@@ -178,7 +178,7 @@ _unur_print_method( struct unur_par *par )
     break;
   case UNUR_METH_NINV:
     COOKIE_CHECK(par,CK_NINV_PAR,0);
-    printf("METHOD:\t\tnumerical inversion of c.d.f.\n");
+    printf("METHOD:\t\tnumerical inversion of CDF\n");
     break;
   case UNUR_METH_SROU:
     COOKIE_CHECK(par,CK_SROU_PAR,0);

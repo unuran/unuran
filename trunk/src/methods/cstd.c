@@ -164,7 +164,7 @@ static void _unur_cstd_debug_chg_truncated( struct unur_gen *gen );
 
 #define SAMPLE    gen->sample.cont      /* pointer to sampling routine       */
 
-#define CDF(x)    _unur_cont_CDF((x),&(gen->distr))   /* call to c.d.f.            */
+#define CDF(x)    _unur_cont_CDF((x),&(gen->distr))   /* call to CDF         */
 
 /*---------------------------------------------------------------------------*/
 
@@ -372,9 +372,9 @@ unur_cstd_chg_truncated( struct unur_gen *gen, double left, double right )
     return 0;
   }
 
-  /* c.d.f. required ! */
+  /* CDF required ! */
   if (DISTR.cdf == NULL) {
-    _unur_warning(gen->genid,UNUR_ERR_GEN_DATA,"truncated domain, c.d.f. required");
+    _unur_warning(gen->genid,UNUR_ERR_GEN_DATA,"truncated domain, CDF required");
     return 0;
   }
 
@@ -487,7 +487,7 @@ _unur_cstd_init( struct unur_par *par )
 
     if (DISTR.cdf == NULL) {
       /* using a truncated distribution requires a CDF */
-      _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"domain changed, c.d.f. required");
+      _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"domain changed, CDF required");
       free(par); _unur_cstd_free(gen); return NULL; 
     }
 

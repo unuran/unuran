@@ -10,7 +10,7 @@
  *   METHOD:    ratio-of-uniforms with enveloping polygon                    *
  *                                                                           *
  *   DESCRIPTION:                                                            *
- *      Given p.d.f of a T-concave distribution;                             *
+ *      Given PDF of a T-concave distribution;                               *
  *      produce a value x consistent with its density                        *
  *                                                                           *
  *****************************************************************************
@@ -101,7 +101,7 @@
  * Algorithm AROU                                                            *
  *                                                                           *
  * [Required]                                                                *
- * p.d.f. f(x), construction points c_1,...,c_n                              *
+ * PDF f(x), construction points c_1,...,c_n                                 *
  *                                                                           *
  * [Setup]                                                                   *
  *  1: Construct inner triangles S_i^s and outer triangles S_i^o             *
@@ -203,7 +203,7 @@ static int _unur_arou_segment_parameter( struct unur_gen *gen, struct unur_arou_
 /*   1 ... if successful                                                     */
 /*   0 ... do not add this construction point                                */
 /*  -1 ... area = INFINITY                                                   */
-/*  -2 ... error (not p.d.f. T-concave)                                      */
+/*  -2 ... error (PDF not T-concave)                                         */
 /*---------------------------------------------------------------------------*/
 
 static int _unur_arou_segment_split( struct unur_gen *gen, struct unur_arou_segment *seg_old, double x, double fx );
@@ -269,8 +269,8 @@ static void _unur_arou_debug_printratio( double v, double u, char *string );
 
 #define SAMPLE    gen->sample.cont      /* pointer to sampling routine       */     
 
-#define PDF(x)    _unur_cont_PDF((x),&(gen->distr))  /* call to p.d.f.       */
-#define dPDF(x)   _unur_cont_dPDF((x),&(gen->distr)) /* call to derivative of p.d.f. */
+#define PDF(x)    _unur_cont_PDF((x),&(gen->distr))  /* call to PDF          */
+#define dPDF(x)   _unur_cont_dPDF((x),&(gen->distr)) /* call to derivative of PDF */
 
 /*---------------------------------------------------------------------------*/
 
@@ -304,10 +304,10 @@ unur_arou_new( struct unur_distr *distr )
   COOKIE_CHECK(distr,CK_DISTR_CONT,NULL);
 
   if (DISTR_IN.pdf == NULL) {
-    _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"p.d.f."); return NULL;
+    _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"PDF"); return NULL;
   }
   if (DISTR_IN.dpdf == NULL) {
-    _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"derivative of p.d.f."); return NULL; }
+    _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"derivative of PDF"); return NULL; }
 
   /* allocate structure */
   par = _unur_malloc( sizeof(struct unur_par) );
@@ -548,11 +548,11 @@ unur_arou_set_max_segments( struct unur_par *par, int max_segs )
 int
 unur_arou_set_center( struct unur_par *par, double center )
      /*----------------------------------------------------------------------*/
-     /* set center (approximate mode) of p.d.f.                              */
+     /* set center (approximate mode) of PDF                                 */
      /*                                                                      */
      /* parameters:                                                          */
      /*   par    ... pointer to parameter for building generator object      */
-     /*   center ... center of p.d.f.                                        */
+     /*   center ... center of PDF                                           */
      /*                                                                      */
      /* return:                                                              */
      /*   1 ... on success                                                   */
@@ -948,7 +948,7 @@ _unur_arou_sample( struct unur_gen *gen )
       /* being outside the squeeze is bad. improve the situation! */
       if (GEN.n_segs < GEN.max_segs && GEN.max_ratio * GEN.Atotal > GEN.Asqueeze)
 	if ( !_unur_arou_segment_split(gen,seg,x,fx) ) {
-	  /* condition for pdf is violated! */
+	  /* condition for PDF is violated! */
 	  _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"");
 	  if (gen->variant & AROU_VARFLAG_PEDANTIC) {
 	    /* replace sampling routine by dummy routine that just returns INFINITY */
@@ -1028,7 +1028,7 @@ _unur_arou_sample_check( struct unur_gen *gen )
 
       /* test for T-concavity */
       if (sqx*sqx > fx)
-	_unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"p.d.f. not T-concave.");
+	_unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"PDF not T-concave.");
 
       return x;
     }
@@ -1062,12 +1062,12 @@ _unur_arou_sample_check( struct unur_gen *gen )
 
       /* test for T-concavity */
       if (sqx*sqx > fx)
-	_unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"p.d.f. not T-concave.");
+	_unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"PDF not T-concave.");
 
       /* being outside the squeeze is bad. improve the situation! */
       if (GEN.n_segs < GEN.max_segs && GEN.max_ratio * GEN.Atotal > GEN.Asqueeze)
 	if ( !_unur_arou_segment_split(gen,seg,x,fx) ) {
-	  /* condition for pdf is violated! */
+	  /* condition for PDF is violated! */
 	  _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"");
 	  if (gen->variant & AROU_VARFLAG_PEDANTIC) {
 	    /* replace sampling routine by dummy routine that just returns INFINITY */
@@ -1186,7 +1186,7 @@ _unur_arou_get_starting_cpoints( struct unur_par *par, struct unur_gen *gen )
   fx = fx_last = (x <= -INFINITY) ? 0. : PDF(x);
   seg = GEN.seg = _unur_arou_segment_new( gen, x, fx );
   if (seg == NULL) return 0;  /* case of error */
-  is_increasing = 1; /* assume pdf(x) is increasing for the first construction points */
+  is_increasing = 1; /* assume PDF(x) is increasing for the first construction points */
 
   /* now all the other points */
   for( i=0; i<=PAR.n_starting_cpoints; i++ ) {
@@ -1234,22 +1234,22 @@ _unur_arou_get_starting_cpoints( struct unur_par *par, struct unur_gen *gen )
     else
       is_center = FALSE;
 
-    /* value of p.d.f. at starting point */
+    /* value of PDF at starting point */
     fx = (x >= INFINITY) ? 0. : PDF(x);
 
-    /* check value of p.d.f. at starting point */
+    /* check value of PDF at starting point */
     if (!is_increasing && fx > fx_last) {
-      _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"p.d.f. not unimodal");
+      _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"PDF not unimodal");
       return 0;
     }
 
     if (fx <= 0. && fx_last <= 0.) {
       /* we do not need two such points */
       if (is_increasing) {
-	/* p.d.f. is still increasing, i.e., constant 0 til now */
+	/* PDF is still increasing, i.e., constant 0 til now */
 	if (i<PAR.n_starting_cpoints) {
 	  /* and it is not the right boundary.
-	     otherwise the p.d.f. is constant 0 on all construction points.
+	     otherwise the PDF is constant 0 on all construction points.
 	     then we need both boundary points. */
 	  /* we only have to change tangent line v/u = x,
 	     everything else remains unchanged */
@@ -1261,7 +1261,7 @@ _unur_arou_get_starting_cpoints( struct unur_par *par, struct unur_gen *gen )
 	}
       }
       else
-	/* there should be no more points with pdf(x) > 0 */
+	/* there should be no more points with PDF(x) > 0 */
 	break;
     }
 
@@ -1281,7 +1281,7 @@ _unur_arou_get_starting_cpoints( struct unur_par *par, struct unur_gen *gen )
     /* next step */
     seg = seg_new;
 
-    /* p.d.f. still increasing ? */
+    /* PDF still increasing ? */
     if (is_increasing && fx < fx_last)
       is_increasing = 0;
 
@@ -1290,7 +1290,7 @@ _unur_arou_get_starting_cpoints( struct unur_par *par, struct unur_gen *gen )
     fx_last = fx;
   }
 
-  /* we have left the loop with the right boundary of the support of p.d.f.
+  /* we have left the loop with the right boundary of the support of PDF
      make shure that we will never use seg for sampling. */
   seg->Ain = seg->Aout = 0.;
   seg->Acum = INFINITY;
@@ -1319,7 +1319,7 @@ _unur_arou_get_starting_segments( struct unur_par *par, struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
 {
   struct unur_arou_segment *seg, *seg_new, *seg_tmp; 
-  double x,fx;              /* construction point, value of p.d.f. at x */
+  double x,fx;              /* construction point, value of PDF at x */
 
   /* check arguments */
   CHECK_NULL(par,0);  COOKIE_CHECK(par,CK_AROU_PAR,0);
@@ -1334,7 +1334,7 @@ _unur_arou_get_starting_segments( struct unur_par *par, struct unur_gen *gen )
       /* skip to next segment. */
       seg = seg->next;
       continue;
-    case -2:     /* p.d.f. not T-concave */
+    case -2:     /* PDF not T-concave */
       return 0;
     case -1:    /* segment unbounded */
       /* split segment */
@@ -1365,10 +1365,10 @@ _unur_arou_get_starting_segments( struct unur_par *par, struct unur_gen *gen )
     /* area in segment infinite. insert new construction point. */
     x = _unur_arou_segment_arcmean(seg);  /* use mean point in segment */
 
-    /* value of p.d.f. at x */
+    /* value of PDF at x */
     fx = PDF(x);
     if (fx < 0.) {
-      _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"p.d.f. < 0");
+      _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"PDF < 0");
       return 0;
     }
 
@@ -1408,7 +1408,7 @@ _unur_arou_segment_new( struct unur_gen *gen, double x, double fx )
      /* parameters:                                                          */
      /*   gen ... pointer to generator object                                */
      /*   x   ... left point of new segment                                  */
-     /*   fx  ... value of p.d.f. at x                                       */
+     /*   fx  ... value of PDF at x                                          */
      /*                                                                      */
      /* return:                                                              */
      /*   pointer to new segment                                             */
@@ -1425,7 +1425,7 @@ _unur_arou_segment_new( struct unur_gen *gen, double x, double fx )
 
   /* first check fx */
   if (fx<0.) {
-    _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"pdf(x) < 0.");
+    _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"PDF(x) < 0.");
     return NULL;
   }
 
@@ -1465,7 +1465,7 @@ _unur_arou_segment_new( struct unur_gen *gen, double x, double fx )
 
   /* tangent line at tp */
 
-  /* compute derivative of p.d.f. at tp x */
+  /* compute derivative of PDF at tp x */
   dfx = dPDF(x);
 
   /* subcase: derivative bounded 
@@ -1508,7 +1508,7 @@ _unur_arou_segment_parameter( struct unur_gen *gen, struct unur_arou_segment *se
      /*   1 ... if successful                                                */
      /*   0 ... do not add this construction point                           */
      /*  -1 ... area = INFINITY                                              */
-     /*  -2 ... error (not p.d.f. T-concave)                                 */
+     /*  -2 ... error (PDF not T-concave)                                    */
      /*----------------------------------------------------------------------*/
 {
   double coeff_det, cramer_det[2];
@@ -1593,7 +1593,7 @@ _unur_arou_segment_parameter( struct unur_gen *gen, struct unur_arou_segment *se
        We can distinguish between these two case by means of the u-coordinate
        of the intersection point. If it is on the wrong side of the secant,
        then we have seg->mid[1] < 0 (Otherwise we have either a round-off error
-       or the p.d.f. is not T-concave.) */
+       or the PDF is not T-concave.) */
     if( seg->mid[1] < 0. ) {
       /* _unur_warning(gen->genid,UNUR_ERR_GENERIC,"outer triangle unbounded  2"); */
       seg->Aout = INFINITY;
@@ -1618,7 +1618,7 @@ _unur_arou_segment_parameter( struct unur_gen *gen, struct unur_arou_segment *se
     }
 
     /* there are two cases why the above check failed:
-       (1) the p.d.f. is not T-concave
+       (1) the PDF is not T-concave
        (2) small roundoff errors.
     */
 
@@ -1633,11 +1633,11 @@ _unur_arou_segment_parameter( struct unur_gen *gen, struct unur_arou_segment *se
       }
     }
 
-    /* _unur_warning(gen->genid,UNUR_ERR_GEN_CONDITION,"p.d.f. not T-concave"); */
+    /* _unur_warning(gen->genid,UNUR_ERR_GEN_CONDITION,"PDF not T-concave"); */
 
-    /* The outer area is unbounded (this might happen if the given p.d.f.
+    /* The outer area is unbounded (this might happen if the given PDF
        is not T-concave or due to round off errors.
-       We assume round off errors. If the p.d.f. is not T-concave we
+       We assume round off errors. If the PDF is not T-concave we
        will exceed any bound for the number of segments.    */
     seg->Aout = INFINITY;
     return -1;
@@ -1678,7 +1678,7 @@ _unur_arou_segment_split( struct unur_gen *gen, struct unur_arou_segment *seg_ol
      /*   gen      ... pointer to generator object                           */
      /*   seg_oldl ... pointer to segment                                    */
      /*   x        ... left point of new segment                             */
-     /*   fx       ... value of p.d.f. at x                                  */
+     /*   fx       ... value of PDF at x                                     */
      /*                                                                      */
      /* return:                                                              */
      /*   1  ... if successful                                               */
@@ -1705,14 +1705,14 @@ _unur_arou_segment_split( struct unur_gen *gen, struct unur_arou_segment *seg_ol
 
   /* check for data error */
   if (fx < 0.) {
-    _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"pdf(x) < 0.!");
+    _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"PDF(x) < 0.!");
     return 0;
   }
 
   /* back up data */
   memcpy(&seg_bak, seg_oldl, sizeof(struct unur_arou_segment));
 
-  /* p.d.f. at x is 0. */
+  /* PDF at x is 0. */
   if (fx <= 0.) {
     if (seg_oldl->rtp[1] <= 0. && seg_oldl->rtp[0] <= 0. ) {
       /* just chop off the right part of segment */
@@ -1735,7 +1735,7 @@ _unur_arou_segment_split( struct unur_gen *gen, struct unur_arou_segment *seg_ol
     
     /* parameters of new segment */
     if( _unur_arou_segment_parameter(gen,seg_oldl) <= 0 ) {
-      /* p.d.f. not T-concave or area in segment not bounded */
+      /* PDF not T-concave or area in segment not bounded */
 
       /* error, restore */
       _unur_warning(gen->genid,UNUR_ERR_GEN_DATA,"Cannot chop segment at given point");
@@ -1770,7 +1770,7 @@ _unur_arou_segment_split( struct unur_gen *gen, struct unur_arou_segment *seg_ol
     seg_oldl->drtp = seg_newr->dltp;
     
     /* parameters of new segments */
-    if( _unur_arou_segment_parameter(gen,seg_oldl) <= 0 ||       /* p.d.f. not T-concave or */
+    if( _unur_arou_segment_parameter(gen,seg_oldl) <= 0 ||       /* PDF not T-concave or */
 	_unur_arou_segment_parameter(gen,seg_newr) <= 0  ) {     /* area in segment not bounded */
     
       /* new construction point not suitable --> do not add */
@@ -2115,7 +2115,7 @@ _unur_arou_debug_split_start( struct unur_gen *gen,
      /*   gen ... pointer to generator object                                */
      /*   seg ... pointer to segment                                         */
      /*   x   ... split at this point                                        */
-     /*   fx  ... value of p.d.f. at x                                       */
+     /*   fx  ... value of PDF at x                                          */
      /*----------------------------------------------------------------------*/
 {
   FILE *log;

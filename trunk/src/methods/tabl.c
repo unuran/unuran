@@ -11,7 +11,7 @@
  *              (Ahren's table method)                                       *
  *                                                                           *
  *   DESCRIPTION:                                                            *
- *      Given p.d.f of a unimodal distribution                               *
+ *      Given PDF of a unimodal distribution                                 *
  *      produce random variate X with its density                            *
  *                                                                           *
  *****************************************************************************
@@ -214,7 +214,7 @@ static void _unur_tabl_debug_intervals( struct unur_gen *gen, int print_areas );
 
 #define SAMPLE    gen->sample.cont      /* pointer to sampling routine       */     
 
-#define PDF(x)    _unur_cont_PDF((x),&(gen->distr))   /* call to p.d.f.      */
+#define PDF(x)    _unur_cont_PDF((x),&(gen->distr))   /* call to PDF         */
 
 /*---------------------------------------------------------------------------*/
 
@@ -248,11 +248,11 @@ unur_tabl_new( struct unur_distr *distr )
   COOKIE_CHECK(distr,CK_DISTR_CONT,NULL);
 
   if (DISTR_IN.pdf == NULL) {
-    _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"p.d.f."); return NULL; }
+    _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"PDF"); return NULL; }
 
   if (!(distr->set & UNUR_DISTR_SET_PDFAREA))
     if (!unur_distr_cont_upd_pdfarea(distr))
-      _unur_warning(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"area below p.d.f., use default instead");
+      _unur_warning(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"area below PDF, use default instead");
 
   /* allocate structure */
   par = _unur_malloc( sizeof(struct unur_par) );
@@ -262,7 +262,7 @@ unur_tabl_new( struct unur_distr *distr )
   par->distr        = distr;     /* pointer to distribution object           */
 
   /* set default values */
-  PAR.slopes        = NULL;      /* pointer to slopes of p.d.f.              */
+  PAR.slopes        = NULL;      /* pointer to slopes of PDF                 */
   PAR.n_slopes      = 0;         /* number of slopes                         */
 
   PAR.n_starting_cpoints = 30;   /* number of starting points                */
@@ -478,7 +478,7 @@ int
 unur_tabl_set_areafraction( struct unur_par *par, double fraction )
      /*----------------------------------------------------------------------*/
      /* set parameter for equal area rule                                    */
-     /* (each bar has size fraction * area(pdf))                             */           
+     /* (each bar has size fraction * area below PDF)                        */           
      /*                                                                      */
      /* parameters:                                                          */
      /*   par       ... pointer to parameter for building generator object   */
@@ -556,7 +556,7 @@ unur_tabl_set_nstp( struct unur_par *par, int n_stp )
 int
 unur_tabl_set_slopes( struct unur_par *par, double *slopes, int n_slopes )
      /*----------------------------------------------------------------------*/
-     /* set slopes of p.d.f.                                                 */
+     /* set slopes of PDF                                                    */
      /*                                                                      */
      /* parameters:                                                          */
      /*   par      ... pointer to parameter for building generator object    */
@@ -569,7 +569,7 @@ unur_tabl_set_slopes( struct unur_par *par, double *slopes, int n_slopes )
      /*                                                                      */
      /* comment:                                                             */
      /*   a slope <a,b> is an interval [a,b] or [b,a]                        */
-     /*   such that pdf(a) >= pdf(b).                                        */
+     /*   such that PDF(a) >= PDF(b).                                        */
      /*   slopes must be decreasing, non-overlapping and sorted              */
      /*----------------------------------------------------------------------*/
 {
@@ -1014,7 +1014,7 @@ _unur_tabl_sample( struct unur_gen *gen )
       return( iv->xmax + (iv->Asqueeze-u) * (iv->xmin - iv->xmax)/iv->Asqueeze ); 
     }
     else {
-      /* between spueeze and hat --> have to valuate p.d.f. */
+      /* between spueeze and hat --> have to valuate PDF */
       x = iv->xmax + (u-iv->Asqueeze) * (iv->xmin - iv->xmax)/(iv->Ahat - iv->Asqueeze);
       fx = PDF(x);
       /* split interval */
@@ -1077,24 +1077,24 @@ _unur_tabl_sample_check( struct unur_gen *gen )
     if( u <= iv->Asqueeze ) {
       /* below squeeze */
       x = iv->xmax + (iv->Asqueeze-u) * (iv->xmin - iv->xmax)/iv->Asqueeze;
-      /* test whether p.d.f. is monotone */
+      /* test whether PDF is monotone */
       fx = PDF(x);
       if (fx > iv->fmax)
-	_unur_warning(gen->genid,UNUR_ERR_GEN_CONDITION,"pdf > hat. pdf not monotone in interval");
+	_unur_warning(gen->genid,UNUR_ERR_GEN_CONDITION,"PDF > hat. PDF not monotone in interval");
       if (fx < iv->fmin)
-	_unur_warning(gen->genid,UNUR_ERR_GEN_CONDITION,"pdf < squeeze. pdf not monotone in interval");
+	_unur_warning(gen->genid,UNUR_ERR_GEN_CONDITION,"PDF < squeeze. PDF not monotone in interval");
       /* at last return number */
       return x;
     }
     else {
-      /* between spueeze and hat --> have to valuate p.d.f. */
+      /* between spueeze and hat --> have to valuate PDF */
       x = iv->xmax + (u-iv->Asqueeze) * (iv->xmin - iv->xmax)/(iv->Ahat - iv->Asqueeze);
       fx = PDF(x);
-      /* test whether p.d.f. is monotone */
+      /* test whether PDF is monotone */
       if (fx > iv->fmax)
-	_unur_warning(gen->genid,UNUR_ERR_GEN_CONDITION,"pdf > hat. pdf not monotone in interval");
+	_unur_warning(gen->genid,UNUR_ERR_GEN_CONDITION,"PDF > hat. PDF not monotone in interval");
       if (fx < iv->fmin)
-	_unur_warning(gen->genid,UNUR_ERR_GEN_CONDITION,"pdf < squeeze. pdf not monotone in interval");
+	_unur_warning(gen->genid,UNUR_ERR_GEN_CONDITION,"PDF < squeeze. PDF not monotone in interval");
       /* split interval */
       if (GEN.n_ivs < GEN.max_ivs && GEN.max_ratio * GEN.Atotal > GEN.Asqueeze) {
       	_unur_tabl_split_interval( gen, iv, x, fx, (gen->variant & TABL_VARMASK_SPLIT) );
@@ -1165,7 +1165,7 @@ _unur_tabl_get_starting_intervals( struct unur_par *par, struct unur_gen *gen )
      /*                                                                      */
      /* comment:                                                             */
      /*   a slope <a,b> is an interval [a,b] or [b,a] such that              */
-     /*   pdf(a) >= pdf(b)                                                   */
+     /*   PDF(a) >= PDF(b)                                                   */
      /*----------------------------------------------------------------------*/
 {
 
@@ -1210,7 +1210,7 @@ _unur_tabl_get_starting_intervals_from_slopes( struct unur_par *par, struct unur
      /*                                                                      */
      /* comment:                                                             */
      /*   a slope <a,b> is an interval [a,b] or [b,a] such that              */
-     /*   pdf(a) >= pdf(b)                                                   */
+     /*   PDF(a) >= PDF(b)                                                   */
      /*----------------------------------------------------------------------*/
 {
   /** TODO: check for slopes out of support !! **/
@@ -1240,7 +1240,7 @@ _unur_tabl_get_starting_intervals_from_slopes( struct unur_par *par, struct unur
     ++(GEN.n_ivs);
     COOKIE_SET(iv,CK_TABL_IV);
 
-    /* max and min of p.d.f. in interval */
+    /* max and min of PDF in interval */
     iv->xmax = PAR.slopes[i];      
     iv->fmax = PDF(iv->xmax);
     iv->xmin = PAR.slopes[i+1];    
@@ -1360,7 +1360,7 @@ _unur_tabl_get_starting_intervals_from_mode( struct unur_par *par, struct unur_g
   for (iv = GEN.iv; iv != NULL; iv = iv->next ) {
     COOKIE_CHECK(iv,CK_TABL_IV,0);
 
-    /* max and min of p.d.f. in interval */
+    /* max and min of PDF in interval */
     iv->fmax = PDF(iv->xmax);
     iv->fmin = PDF(iv->xmin);
 
@@ -1537,7 +1537,7 @@ _unur_tabl_split_interval( struct unur_gen *gen,
      /*   gen        ... pointer to generator object                         */
      /*   iv_old     ... pointer to interval that has to be split            */
      /*   x          ... splitting point                                     */
-     /*   fx         ... value of p.d.f. at splitting point                  */
+     /*   fx         ... value of PDF at splitting point                     */
      /*   split_mode ... how to split interval                               */
      /*                  TABL_VARFLAG_SPLIT_POINT: split at given point x    */
      /*                  TABL_VARFLAG_SPLIT_MEAN:  at mean point of interval */
@@ -1545,8 +1545,8 @@ _unur_tabl_split_interval( struct unur_gen *gen,
      /*                                                                      */
      /* return:                                                              */
      /*   1 ... splitting successful                                         */
-     /*  -1 ... interval chopped off domain (not part of support of p.d.f.)  */
-     /*   0 ... error: p.d.f. not monoton in interval                        */
+     /*  -1 ... interval chopped off domain (not part of support of PDF)     */
+     /*   0 ... error: PDF not monoton in interval                           */
      /*----------------------------------------------------------------------*/
 {
   struct unur_tabl_interval *iv_new;
@@ -1556,7 +1556,7 @@ _unur_tabl_split_interval( struct unur_gen *gen,
   CHECK_NULL(iv_old,0);  COOKIE_CHECK(iv_old,CK_TABL_IV,0);
 
   /* There are three possibilities for the splitting point:
-     (1) use x and avoid computation of pdf(x). 
+     (1) use x and avoid computation of PDF(x). 
      (2) use middle of interval. converges faster in many cases.
      (3) use "arc_mean" of interval. 
          converges faster when domain is almost unbounded. */
@@ -1579,11 +1579,11 @@ _unur_tabl_split_interval( struct unur_gen *gen,
     break;
   }
 
-  /* check if the new interval is completely outside the support of p.d.f. */
+  /* check if the new interval is completely outside the support of PDF */
   if (fx <= 0.) {
     /* check montonicity */
     if (iv_old->fmin > 0.) {
-      _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"p.d.f. not monotone in slope");
+      _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"PDF not monotone in slope");
       return 0;
     }
 
@@ -1608,8 +1608,8 @@ _unur_tabl_split_interval( struct unur_gen *gen,
   iv_new->slope = iv_old->slope;
 
   /* we have to distinguish between two cases:
-     pdf is increasing (slope = +1) or
-     pdf is decreasing (slope = -1). */
+     PDF is increasing (slope = +1) or
+     PDF is decreasing (slope = -1). */
 
   switch (iv_old->slope) {
   case -1:

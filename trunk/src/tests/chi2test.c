@@ -263,8 +263,8 @@ _unur_test_chi2_cont(struct unur_gen *gen,
 {
 #define DISTR   gen->distr.data.cont
 
-  double F, Fl, Fr, Fdelta;  /* value of cdf (at left and right boundary point) */
-  UNUR_FUNCT_CONT *cdf;      /* pointer to c.d.f. */
+  double F, Fl, Fr, Fdelta;  /* value of CDF (at left and right boundary point) */
+  UNUR_FUNCT_CONT *cdf;      /* pointer to CDF */
   int *observed;             /* vector for observed occurrences */
   double pval;               /* p-value */
   int i,j;
@@ -273,10 +273,10 @@ _unur_test_chi2_cont(struct unur_gen *gen,
   CHECK_NULL(gen,-1.);
   /* we do not check magic cookies here */
 
-  /* c.d.f. required */
+  /* CDF required */
   cdf = DISTR.cdf;
   if (DISTR.cdf == NULL) {
-    _unur_error(test_name,UNUR_ERR_GENERIC,"c.d.f. required for continuous random variates!");
+    _unur_error(test_name,UNUR_ERR_GENERIC,"CDF required for continuous random variates!");
     return -1.;
   }
 
@@ -403,7 +403,7 @@ _unur_test_chi2test( double *prob,
 
   /* do we have a CDF for the chi^2 distribution ? */
   if (chisquare_distr->data.cont.cdf == NULL) {
-    _unur_error(test_name,UNUR_ERR_GENERIC,"c.d.f. for CHI^2 distribution required");
+    _unur_error(test_name,UNUR_ERR_GENERIC,"CDF for CHI^2 distribution required");
     return -1.;
   }
 

@@ -61,13 +61,12 @@ struct unur_tdr_par {
 struct unur_tdr_interval {
 
   double  x;                    /* (left) construction point (cp)            */
-  double  fx;                   /* value of p.d.f. at cp                     */ 
-  double  Tfx;                  /* value of transformed p.d.f. at cp         */ 
-  double  dTfx;                 /* derivative of transformed p.d.f. at cp    */
+  double  fx;                   /* value of PDF at cp                        */ 
+  double  Tfx;                  /* value of transformed PDF at cp            */ 
+  double  dTfx;                 /* derivative of transformed PDF at cp       */
   double  sq;                   /* slope of transformed squeeze in interval  */
   double  ip;                   /* intersection point between two tangents   */
-  double  fip;                  /* value of p.d.f. at ip
-				     (for PS and IA only)                    */
+  double  fip;                  /* value of PDF at ip (for PS and IA only)   */
                                  
   double  Acum;                 /* cumulated area of intervals               */
   double  Ahat;                 /* area below hat                            */

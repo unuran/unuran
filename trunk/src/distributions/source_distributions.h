@@ -7,8 +7,8 @@
  *   FILE: source_distribution.h                                             *
  *                                                                           *
  *   PURPOSE:                                                                *
- *         defines macros, typedefs and constants and for p.d.f., c.d.f.,    *
- *         etc. of distribtions.                                             *
+ *         defines macros, typedefs and constants and for PDF, CDF, etc.     *
+ *         of distribtions.                                                  *
  *                                                                           *
  *   USAGE:                                                                  *
  *         only included in distribution source files.                       *

@@ -40,17 +40,17 @@
 /* define object for univariate continuous distribution                      */
 struct unur_distr_cont {
 
-  UNUR_FUNCT_CONT *pdf;         /* pointer to p.d.f.                         */
-  UNUR_FUNCT_CONT *dpdf;        /* pointer to derivative of p.d.f.           */
-  UNUR_FUNCT_CONT *cdf;         /* pointer to c.d.f.                         */
+  UNUR_FUNCT_CONT *pdf;         /* pointer to PDF                            */
+  UNUR_FUNCT_CONT *dpdf;        /* pointer to derivative of PDF              */
+  UNUR_FUNCT_CONT *cdf;         /* pointer to CDF                            */
 
-  double params[UNUR_DISTR_MAXPARAMS];  /* parameters of the p.d.f.          */
-  int    n_params;              /* number of parameters of the pdf           */
+  double params[UNUR_DISTR_MAXPARAMS];  /* parameters of the PDF             */
+  int    n_params;              /* number of parameters of the PDF           */
 
-  double norm_constant;         /* (log of) normalization constant for p.d.f.*/
+  double norm_constant;         /* (log of) normalization constant for PDF   */
 
   double mode;                  /* location of mode                          */
-  double area;                  /* area below p.d.f.                         */
+  double area;                  /* area below PDF                            */
   double domain[2];             /* boundary of domain                        */
   double trunc[2];              /* boundary of truncated domain              */
 
@@ -65,19 +65,19 @@ struct unur_distr_cont {
 /* define object for multivariate continuous distribution                    */
 struct unur_distr_cvec {
 
-  UNUR_FUNCT_CVEC *pdf;         /* pointer to p.d.f.                         */
-  UNUR_VFUNCT_CVEC *dpdf;       /* pointer to gradiant of p.d.f.             */
+  UNUR_FUNCT_CVEC *pdf;         /* pointer to PDF                            */
+  UNUR_VFUNCT_CVEC *dpdf;       /* pointer to gradiant of PDF                */
 
   double *mean;                 /* mean vector of distribution               */
   double *covar;                /* covariance matrix of distribution         */
 
-  double *params[UNUR_DISTR_MAXPARAMS];  /* parameters of the p.d.f.         */
+  double *params[UNUR_DISTR_MAXPARAMS];  /* parameters of the PDF            */
   int    n_params[UNUR_DISTR_MAXPARAMS]; /* length of parameter array        */
 
-  double norm_constant;         /* (log of) normalization constant for p.d.f.*/
+  double norm_constant;         /* (log of) normalization constant for PDF   */
 
   double *mode;                 /* location of mode                          */
-  double volume;                /* volume below p.d.f.                       */
+  double volume;                /* volume below PDF                          */
 
   int  (*init)(struct unur_par *par,struct unur_gen *gen);
                                 /* pointer to special init routine           */
@@ -92,14 +92,14 @@ struct unur_distr_discr {
 
   /* probability mass function */
   UNUR_FUNCT_DISCR *pmf;        /* pointer to probability mass function      */
-  UNUR_FUNCT_DISCR *cdf;        /* pointer to c.d.f.                         */
-  double params[UNUR_DISTR_MAXPARAMS];  /* parameters of the p.m.f.          */
-  int    n_params;              /* number of parameters of the pdf           */
+  UNUR_FUNCT_DISCR *cdf;        /* pointer to CDF                            */
+  double params[UNUR_DISTR_MAXPARAMS];  /* parameters of the PMF             */
+  int    n_params;              /* number of parameters of the PMF           */
 
-  double norm_constant;         /* (log of) normalization constant for p.m.f.*/
+  double norm_constant;         /* (log of) normalization constant for PMF   */
 
   int    mode;                  /* location of mode                          */
-  double sum;                   /* sum over p.m.f.                           */
+  double sum;                   /* sum over PMF                              */
 
   int (*upd_mode)(struct unur_distr *distr); /* funct for computing mode     */
   int (*upd_sum)(struct unur_distr *distr);  /* funct for computing sum      */

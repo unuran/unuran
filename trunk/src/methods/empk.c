@@ -372,7 +372,7 @@ unur_empk_set_kernel( struct unur_par *par, unsigned kernel)
   case UNUR_DISTR_EPANECHNIKOV:
     /* Epanechnikov (or Bartlett) kernel. efficiency 1.000
        minimizes asymptotic MISE.
-       p.d.f.: f(x)=3/4 (1-x^2) for -1<x<1
+       PDF: f(x)=3/4 (1-x^2) for -1<x<1
        (Beta distribution with p=2, q=2, a=-1, b=1) */
     fpar[0]     = 2.;
     fpar[1]     = 2.;

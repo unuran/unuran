@@ -10,7 +10,7 @@
  *   METHOD:    transformed density rejection                                *
  *                                                                           *
  *   DESCRIPTION:                                                            *
- *      Given p.d.f and .... of a T-concave distribution                     *
+ *      Given PDF of a T-concave distribution                                *
  *      produce a value x consistent with its density                        *
  *                                                                           *
  *****************************************************************************
@@ -379,7 +379,7 @@ _unur_tdr_gw_debug_sample( struct unur_gen *gen,
      /*   iv  ... pointer to interval                                        */
      /*   pt  ... pointer to interval that stores construction point         */
      /*   x   ... generated point                                            */
-     /*   fx  ... value of p.d.f. at x                                       */
+     /*   fx  ... value of PDF at x                                          */
      /*   hx  ... value of hat at x                                          */
      /*   sqx ... value of squeeze at x                                      */
      /*----------------------------------------------------------------------*/
@@ -437,7 +437,7 @@ _unur_tdr_ps_debug_sample( struct unur_gen *gen,
      /*   gen ... pointer to generator object                                */
      /*   iv  ... pointer to interval                                        */
      /*   x   ... generated point                                            */
-     /*   fx  ... value of p.d.f. at x                                       */
+     /*   fx  ... value of PDF at x                                          */
      /*   hx  ... value of hat at x                                          */
      /*   sqx ... value of squeeze at x                                      */
      /*----------------------------------------------------------------------*/
@@ -483,7 +483,7 @@ _unur_tdr_gw_debug_split_start( struct unur_gen *gen, struct unur_tdr_interval *
      /*   gen ... pointer to generator object                                */
      /*   iv  ... pointer to interval                                        */
      /*   x   ... split at this point                                        */
-     /*   fx  ... value of p.d.f. at x                                       */
+     /*   fx  ... value of PDF at x                                          */
      /*----------------------------------------------------------------------*/
 {
   FILE *log;
@@ -599,7 +599,7 @@ _unur_tdr_ps_debug_split_start( struct unur_gen *gen,
      /*   iv_left  ... pointer to new left hand interval                     */
      /*   iv_right ... pointer to new right hand interval                    */
      /*   x        ... split at this point                                   */
-     /*   fx       ... value of p.d.f. at x                                  */
+     /*   fx       ... value of PDF at x                                     */
      /*----------------------------------------------------------------------*/
 {
   FILE *log;

@@ -129,7 +129,7 @@ int unur_ninv_set_table(UNUR_PAR *parameters, int no_of_points);
    @code{no_of_points} must be at least 10 (otherwise it will be set
    to 10 automatically).
 
-   The table points are chosen such that the c.d.f. at these points
+   The table points are chosen such that the CDF at these points
    form an equidistance sequence in the interval (0,1).
 
    If a table is used, then the starting points given by

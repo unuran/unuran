@@ -113,13 +113,13 @@ unur_distr_discr_new( void )
   DISTR.n_prob    = 0;             /* length of probability vector           */
 
   /* probability mass function */
-  DISTR.pmf       = NULL;          /* pointer to p.d.f.                      */
-  DISTR.cdf       = NULL;          /* pointer to c.d.f.                      */
+  DISTR.pmf       = NULL;          /* pointer to PMF                         */
+  DISTR.cdf       = NULL;          /* pointer to CDF                         */
 
   DISTR.init      = NULL;          /* pointer to special init routine        */
 
   DISTR.n_params  = 0;             /* number of parameters of the pmf        */
-  /* initialize parameters of the p.m.f.                                     */
+  /* initialize parameters of the PMF                                        */
   for (i=0; i<UNUR_DISTR_MAXPARAMS; i++)
     DISTR.params[i] = 0.;
 
@@ -239,11 +239,11 @@ unur_distr_discr_get_prob( struct unur_distr *distr, double **prob )
 int
 unur_distr_discr_set_pmf( struct unur_distr *distr, UNUR_FUNCT_DISCR *pmf )
      /*----------------------------------------------------------------------*/
-     /* set p.m.f. of distribution                                           */
+     /* set PMF of distribution                                              */
      /*                                                                      */
      /* parameters:                                                          */
      /*   distr ... pointer to distribution object                           */
-     /*   pmf   ... pointer to p.m.f.                                        */
+     /*   pmf   ... pointer to PMF                                           */
      /*                                                                      */
      /* return:                                                              */
      /*   1 ... on success                                                   */
@@ -275,11 +275,11 @@ unur_distr_discr_set_pmf( struct unur_distr *distr, UNUR_FUNCT_DISCR *pmf )
 int
 unur_distr_discr_set_cdf( struct unur_distr *distr, UNUR_FUNCT_DISCR *cdf )
      /*----------------------------------------------------------------------*/
-     /* set p.d.f. of distribution                                           */
+     /* set CDF of distribution                                              */
      /*                                                                      */
      /* parameters:                                                          */
      /*   distr ... pointer to distribution object                           */
-     /*   cdf   ... pointer to c.d.f.                                        */
+     /*   cdf   ... pointer to CDF                                           */
      /*                                                                      */
      /* return:                                                              */
      /*   1 ... on success                                                   */
@@ -291,9 +291,9 @@ unur_distr_discr_set_cdf( struct unur_distr *distr, UNUR_FUNCT_DISCR *cdf )
   _unur_check_NULL( distr->name,cdf,0 );
   _unur_check_distr_object( distr, DISCR, 0 );
   
-  /* we do not allow overwriting a cdf */
+  /* we do not allow overwriting a CDF */
   if (DISTR.cdf != NULL) {
-    _unur_warning(distr->name,UNUR_ERR_DISTR_SET,"Overwriting of cdf not allowed");
+    _unur_warning(distr->name,UNUR_ERR_DISTR_SET,"Overwriting of CDF not allowed");
     return 0;
   }
 
@@ -310,13 +310,13 @@ unur_distr_discr_set_cdf( struct unur_distr *distr, UNUR_FUNCT_DISCR *cdf )
 UNUR_FUNCT_DISCR *
 unur_distr_discr_get_pmf( struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
-     /* get pointer to p.d.f. of distribution                                */
+     /* get pointer to PMF of distribution                                   */
      /*                                                                      */
      /* parameters:                                                          */
      /*   distr ... pointer to distribution object                           */
      /*                                                                      */
      /* return:                                                              */
-     /*   pointer to p.m.f.                                                  */
+     /*   pointer to PMF                                                     */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
@@ -331,13 +331,13 @@ unur_distr_discr_get_pmf( struct unur_distr *distr )
 UNUR_FUNCT_DISCR *
 unur_distr_discr_get_cdf( struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
-     /* get pointer to c.d.f. of distribution                                */
+     /* get pointer to CDF of distribution                                   */
      /*                                                                      */
      /* parameters:                                                          */
      /*   distr ... pointer to distribution object                           */
      /*                                                                      */
      /* return:                                                              */
-     /*   pointer to c.d.f.                                                  */
+     /*   pointer to CDF                                                     */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
@@ -352,7 +352,7 @@ unur_distr_discr_get_cdf( struct unur_distr *distr )
 double
 unur_distr_discr_eval_pmf( int k, struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
-     /* evaluate p.m.f. of distribution at k                                 */
+     /* evaluate PMF of distribution at k                                    */
      /*                                                                      */
      /* parameters:                                                          */
      /*   k     ... argument for pmf                                         */
@@ -379,14 +379,14 @@ unur_distr_discr_eval_pmf( int k, struct unur_distr *distr )
 double
 unur_distr_discr_eval_cdf( int k, struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
-     /* evaluate c.d.f. of distribution at k                                 */
+     /* evaluate CDF of distribution at k                                    */
      /*                                                                      */
      /* parameters:                                                          */
-     /*   k     ... argument for cdf                                         */
+     /*   k     ... argument for CDF                                         */
      /*   distr ... pointer to distribution object                           */
      /*                                                                      */
      /* return:                                                              */
-     /*   cdf(k)                                                             */
+     /*   CDF(k)                                                             */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
@@ -661,11 +661,11 @@ unur_distr_discr_get_mode( struct unur_distr *distr )
 int
 unur_distr_discr_set_pmfsum( struct unur_distr *distr, double sum )
      /*----------------------------------------------------------------------*/
-     /* set sum over p.m.f.                                                  */
+     /* set sum over PMF                                                     */
      /*                                                                      */
      /* parameters:                                                          */
      /*   distr ... pointer to distribution object                           */
-     /*   sum   ... sum over p.d.f.                                          */
+     /*   sum   ... sum over PMF                                             */
      /*                                                                      */
      /* return:                                                              */
      /*   1 ... on success                                                   */
@@ -697,7 +697,7 @@ unur_distr_discr_set_pmfsum( struct unur_distr *distr, double sum )
 int 
 unur_distr_discr_upd_pmfsum( struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
-     /* (re-) compute sum over p.m.f. of distribution (if possible)          */
+     /* (re-) compute sum over PMF of distribution (if possible)             */
      /*                                                                      */
      /* parameters:                                                          */
      /*   distr ... pointer to distribution object                           */
@@ -731,13 +731,13 @@ unur_distr_discr_upd_pmfsum( struct unur_distr *distr )
 double
 unur_distr_discr_get_pmfsum( struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
-     /* get sum over p.m.f. of distribution                                  */
+     /* get sum over PMF of distribution                                     */
      /*                                                                      */
      /* parameters:                                                          */
      /*   distr ... pointer to distribution object                           */
      /*                                                                      */
      /* return:                                                              */
-     /*   sum over p.m.f. of distribution                                    */
+     /*   sum over PMF of distribution                                       */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
@@ -793,7 +793,7 @@ _unur_distr_discr_debug( struct unur_distr *distr, char *genid, int printvector 
 
   if ( DISTR.pmf ) {
     /* have probability mass function */
-    fprintf(log,"%s:\tp.m.f with %d argument(s)\n",genid,DISTR.n_params);
+    fprintf(log,"%s:\tPMF with %d argument(s)\n",genid,DISTR.n_params);
     for( i=0; i<DISTR.n_params; i++ )
       fprintf(log,"%s:\t\tparam[%d] = %g\n",genid,i,DISTR.params[i]);
   }
@@ -829,7 +829,7 @@ _unur_distr_discr_debug( struct unur_distr *distr, char *genid, int printvector 
   /*      else */
   /*        fprintf(log,"%s:\tmode unknown\n",genid); */
   
-  /*      fprintf(log,"\n%s:\tsum over p.m.f. = %g",genid,DISTR.sum); */
+  /*      fprintf(log,"\n%s:\tsum over PMF = %g",genid,DISTR.sum); */
   /*      _unur_print_if_default(distr,UNUR_DISTR_SET_PMFSUM); */
   
 } /* end of _unur_distr_discr_debug() */

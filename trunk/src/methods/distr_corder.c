@@ -59,7 +59,7 @@ static const char distr_name[] = "order statistics";
 #  undef  HAVE_CDF
 #endif
 
-/* can we compute the area below the pdf ? */
+/* can we compute the area below the PDF ? */
 #if defined( HAVE_UNUR_SF_LN_GAMMA ) && defined( HAVE_UNUR_SF_INCOMPLETE_BETA )
 #  define HAVE_AREA
 #else
@@ -167,23 +167,23 @@ unur_distr_corder_new( struct unur_distr *distr, int n, int k )
   /* there is no need (?) to set the other parameters to 0 */
 
   /* copy data */
-  OS.area = DISTR.area;            /* area below p.d.f. (same as for distr)  */
+  OS.area = DISTR.area;               /* area below PDF (same as for distr)  */
   OS.trunc[0] = OS.domain[0] = DISTR.domain[0];  /* left boundary of domain  */
   OS.trunc[0] = OS.domain[1] = DISTR.domain[1];  /* right boundary of domain */
   
-  /* pointer to p.d.f., its derivative and c.d.f. */
+  /* pointer to PDF, its derivative and CDF */
   OS.pdf  = NULL;
   OS.dpdf = NULL;
   OS.cdf  = NULL;
 
   if (DISTR.cdf) {
 #ifdef HAVE_CDF
-    OS.cdf = _unur_cdf_corder;        /* pointer to c.d.f.   */
+    OS.cdf = _unur_cdf_corder;        /* pointer to CDF    */
 #endif
     if (DISTR.pdf) {
-      OS.pdf = _unur_pdf_corder;      /* pointer to p.d.f.   */
+      OS.pdf = _unur_pdf_corder;      /* pointer to PDF    */
       if (DISTR.dpdf)
-	OS.dpdf = _unur_dpdf_corder;  /* derivative of p.d.f.*/
+	OS.dpdf = _unur_dpdf_corder;  /* derivative of PDF */
     }
   }
   
@@ -195,7 +195,7 @@ unur_distr_corder_new( struct unur_distr *distr, int n, int k )
   /* there is no function for computing the mode of the order statistics     */
   OS.upd_mode  = NULL;
 
-  /* there is no necessity for a function that computes the area below pdf   */
+  /* there is no necessity for a function that computes the area below PDF   */
 #ifdef HAVE_AREA
   OS.upd_area  = _unur_upd_area_corder;
 #else
@@ -206,7 +206,7 @@ unur_distr_corder_new( struct unur_distr *distr, int n, int k )
 #ifdef HAVE_CDF
   os->set = distr->set & ~UNUR_DISTR_SET_MODE; /* mode not derived from distr */
 #else
-  /* cannot compute area below pdf */
+  /* cannot compute area below PDF */
   os->set = distr->set & ~(UNUR_DISTR_SET_MODE | UNUR_DISTR_SET_PDFAREA);
 #endif
 
@@ -359,7 +359,7 @@ unur_distr_corder_get_rank( struct unur_distr *os, int *n, int *k )
 
 /*****************************************************************************/
 /**                                                                         **/
-/** p.d.f., its derivative and c.d.f. of order statistics                   **/
+/** PDF, its derivative and CDF of order statistics                         **/
 /**                                                                         **/
 /*****************************************************************************/
 
@@ -368,15 +368,15 @@ unur_distr_corder_get_rank( struct unur_distr *os, int *n, int *k )
 double
 _unur_pdf_corder( double x, struct unur_distr *os )
      /* 
-	pdf(x) = b(F(x)) * f(x)
+	PDF(x) = b(F(x)) * f(x)
 
-	b(.) ... pdf of beta(k,n-k+1) distribution
-	f(.) ... pdf of underlying distribution
-	F(.) ... cdf of underlying distribution
+	b(.) ... PDF of beta(k,n-k+1) distribution
+	f(.) ... PDF of underlying distribution
+	F(.) ... CDF of underlying distribution
      */
 { 
-  double Fx;    /* cdf of underlying distribution at x */
-  double fx;    /* pdf of underlying distribution at x */
+  double Fx;    /* CDF of underlying distribution at x */
+  double fx;    /* PDF of underlying distribution at x */
   double p,q;   /* shape parameters for beta distribution */
 
   /* check arguments */
@@ -391,7 +391,7 @@ _unur_pdf_corder( double x, struct unur_distr *os )
   p = OS.params[1];                       /* k     */
   q = OS.params[0] - OS.params[1] + 1.;   /* n-k+1 */
 
-  /* pdf(x) = b(F(x)) * f(x) */
+  /* PDF(x) = b(F(x)) * f(x) */
   if (fx <= 0. || Fx <= 0. || Fx >= 1.)
     return 0.;
   else
@@ -404,18 +404,18 @@ _unur_pdf_corder( double x, struct unur_distr *os )
 double
 _unur_dpdf_corder( double x, struct unur_distr *os )
      /* 
-	pdf'(x) = b'(F(x)) * f(x)^2 + b(F(x)) * f'(x)
+	PDF'(x) = b'(F(x)) * f(x)^2 + b(F(x)) * f'(x)
 
-	b(.) ... pdf of beta(k,n-k+1) distribution
-	f(.) ... pdf of underlying distribution
-	F(.) ... cdf of underlying distribution
+	b(.) ... PDF of beta(k,n-k+1) distribution
+	f(.) ... PDF of underlying distribution
+	F(.) ... CDF of underlying distribution
      */
 {
-  double Fx;    /* cdf of underlying distribution at x */
-  double fx;    /* pdf of underlying distribution at x */
-  double dfx;   /* derivative of pdf of underlying distribution at x */
+  double Fx;    /* CDF of underlying distribution at x */
+  double fx;    /* PDF of underlying distribution at x */
+  double dfx;   /* derivative of PDF of underlying distribution at x */
   double p,q;   /* shape parameters for beta distribution */
-  double dpdf;  /* derivative of pdf of order statistics */
+  double dpdf;  /* derivative of PDF of order statistics */
   double lFx, lFy;
 
   /* check arguments */
@@ -439,7 +439,7 @@ _unur_dpdf_corder( double x, struct unur_distr *os )
   lFx = log(Fx);
   lFy = log(1.-Fx);
 
-  /* pdf'(x) = b'(F(x)) * f(x)^2 + b(F(x)) * f'(x) */
+  /* PDF'(x) = b'(F(x)) * f(x)^2 + b(F(x)) * f'(x) */
   dpdf = ( exp(2.*log(fx) + (p-2.)*lFx + (q-2.)*lFy - LOGNORMCONSTANT)
 	   * ( (p-1.)*(1.-Fx) - (q-1.)*Fx ));
   dpdf += exp((p-1.)*lFx + (q-1.)*lFy - LOGNORMCONSTANT) * dfx;
@@ -454,13 +454,13 @@ _unur_dpdf_corder( double x, struct unur_distr *os )
 double
 _unur_cdf_corder( double x, struct unur_distr *os ) 
      /* 
-	cdf(x) = B(F(x))
+	CDF(x) = B(F(x))
 
-	B(.) ... cdf of beta(k,n-k+1) distribution
-	F(.) ... cdf of underlying distribution
+	B(.) ... CDF of beta(k,n-k+1) distribution
+	F(.) ... CDF of underlying distribution
      */
 {
-  double Fx;    /* cdf of underlying distribution at x */
+  double Fx;    /* CDF of underlying distribution at x */
   double p,q;   /* shape parameters for beta distribution */
 
   /* check arguments */
@@ -474,7 +474,7 @@ _unur_cdf_corder( double x, struct unur_distr *os )
   p = OS.params[1];                       /* k     */
   q = OS.params[0] - OS.params[1] + 1.;   /* n-k+1 */
 
-  /* cdf(x) = B(F(x)) */
+  /* CDF(x) = B(F(x)) */
   return _unur_sf_incomplete_beta(Fx,p,q);
 
 } /* end of _unur_cdf_corder() */
@@ -559,7 +559,7 @@ _unur_distr_corder_debug( struct unur_distr *os, char *genid )
   fprintf(log,"%s:\tdomain = (%g, %g)",genid,OS.domain[0],OS.domain[1]);
   _unur_print_if_default(os,UNUR_DISTR_SET_DOMAIN);
 
-  fprintf(log,"\n%s:\tarea below p.d.f. = %g",genid,OS.area);
+  fprintf(log,"\n%s:\tarea below PDF = %g",genid,OS.area);
   _unur_print_if_default(os,UNUR_DISTR_SET_PDFAREA);
   fprintf(log,"\n%s:\n",genid);
 

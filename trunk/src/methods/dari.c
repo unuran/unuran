@@ -155,8 +155,8 @@ unur_dari_new( struct unur_distr *distr )
      /*   return NULL                                                        */
      /*                                                                      */
      /* comment:                                                             */
-     /*   if the area below the p.d.f. is not close to 1 it is necessary to  */
-     /*   set pdf_area to an approximate value of its area (+/- 30 % is ok). */
+     /*   if the area below the PDF is not close to 1 it is necessary to     */
+     /*   set pmf_sum to an approximate value of its area (+/- 30 % is ok).  */
      /*----------------------------------------------------------------------*/
 { 
   struct unur_par *par;
@@ -186,9 +186,9 @@ unur_dari_new( struct unur_distr *distr )
   }
 
   /** TODO: brauchst du?? **/
-  if (!(distr->set & UNUR_DISTR_SET_PDFAREA))
-    if (!unur_distr_cont_upd_pdfarea(distr)) {
-      _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"area below p.d.f.");
+  if (!(distr->set & UNUR_DISTR_SET_PMFSUM))
+    if (!unur_distr_discr_upd_pmfsum(distr)) {
+      _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"sum over PMF");
       return NULL; 
     }
 

@@ -46,7 +46,7 @@
    =DESCRIPTION
       TDR is an acceptance/rejection method that uses the concavity of a
       transformed density to construct hat function and squeezes
-      automatically. Such p.d.f.s are called T-concave. Currently the
+      automatically. Such PDFs are called T-concave. Currently the
       following transformations are implemented and can be selected by
       setting their @code{c}-values by a unur_tdr_set_c() call:
 
@@ -55,11 +55,11 @@
    
       In future releases the transformations T(x) = -(x)^c will be
       available for any c with 0 > c > -1.
-      Notice that if a p.d.f. is T-concave for a c then it also T-concave
+      Notice that if a PDF is T-concave for a c then it also T-concave
       for every c'<c. However the performance decreases when c' is
       smaller than c. For computational reasons we suggest the usage of 
       c = -0.5 (this is the default). 
-      For c <= -1 is not bounded any more if the domain of the p.d.f. is
+      For c <= -1 is not bounded any more if the domain of the PDF is
       unbounded. But in the case of a bounded domain using method TABL is
       preferred to a TDR with c < -1 (except in a few special cases).
       
@@ -172,7 +172,7 @@ int unur_tdr_set_cpoints( UNUR_PAR *parameters, int n_stp, double *stp );
 
 int unur_tdr_set_center( UNUR_PAR *parameters, double center );
 /* 
-   Set the center (approximate mode) of the p.d.f.
+   Set the center (approximate mode) of the PDF.
    It is used to find construction points by means of a heuristical
    rule of thumb. If the mode is given the center is set equal to the
    mode.
@@ -218,7 +218,7 @@ int unur_tdr_set_pedantic( UNUR_PAR *parameters, int pedantic );
    Sometimes it might happen that unur_init() has been executed
    successfully. But when additional construction points are added by
    adaptive rejection sampling, the algorithm detects that the
-   p.d.f. is not T-concave. With @code{pedantic} being TRUE, the
+   PDF is not T-concave. With @code{pedantic} being TRUE, the
    sampling routine is exchanged by a routine that simply returns
    UNUR_INFINITY. Otherwise the new point is not added to the list of
    construction points. At least the hat function remains T-concave.

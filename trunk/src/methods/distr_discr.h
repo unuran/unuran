@@ -69,7 +69,7 @@ UNUR_DISTR *unur_distr_discr_new( void );
    case there exist also a couple of derived parameters that are not
    required when a probability vector is given.
 
-   If both a probability vector and a p.m.f. is given it depends on
+   If both a probability vector and a PMF is given it depends on
    the generation method which of these is used.
    Notice that there might exist some confusion if both are given but
    describe a different distribution! (There is no checking against
@@ -105,10 +105,10 @@ int unur_distr_discr_set_cdf( UNUR_DISTR *distribution, UNUR_FUNCT_DISCR *cdf );
 
    It is important to note that all these functions must return a
    result for all integers @var{k}. Eg., if the domain of a given
-   p.m.f. is the interval @{1,2,3,...,100@}, than the given function
+   PMF is the interval @{1,2,3,...,100@}, than the given function
    must return @code{0.0} for all points outside this interval.
 
-   It is not possible to change such a function. Once the p.m.f. or
+   It is not possible to change such a function. Once the PMF or
    CDF is set it cannot be overwritten. A new distribution object
    has to be used instead.
 
@@ -120,7 +120,7 @@ UNUR_FUNCT_DISCR *unur_distr_discr_get_pmf( UNUR_DISTR *distribution );
 
 UNUR_FUNCT_DISCR *unur_distr_discr_get_cdf( UNUR_DISTR *distribution );
 /* 
-   Get the respective pointer to the p.m.f. and the CDF of the 
+   Get the respective pointer to the PMF and the CDF of the 
    distribution. The pointer is of type
    double funct(int k, UNUR_DISTR *distr).
    If the corresponding function is not available for the distribution,
@@ -133,7 +133,7 @@ double unur_distr_discr_eval_pmf( int k, UNUR_DISTR *distribution );
 
 double unur_distr_discr_eval_cdf( int k, UNUR_DISTR *distribution );
 /* 
-   Evaluate the p.m.f., and the CDF, respectively, at k.
+   Evaluate the PMF, and the CDF, respectively, at k.
    Notice that @code{distribution} must not be the NULL pointer.
    If the corresponding function is not available for the distribution,
    @code{UNUR_INFINITY} is returned and @code{unur_errno} is set to
@@ -154,7 +154,7 @@ int unur_distr_discr_set_pmfparams( UNUR_DISTR *distribution, double *params, in
 
 int unur_distr_discr_get_pmfparams(UNUR_DISTR *distribution,double **params);
 /* 
-   Get number of parameters of the p.m.f and set pointer
+   Get number of parameters of the PMF and set pointer
    @code{params} to array of parameters. If no parameters are stored
    in the object, @code{0} is returned and @code{params} is set to
    NULL.
@@ -224,7 +224,7 @@ int unur_distr_discr_get_mode( UNUR_DISTR *distribution );
 
 int unur_distr_discr_set_pmfsum(UNUR_DISTR *distribution, double sum);
 /* 
-   Set the sum over the p.m.f. If @code{sum} is non-positive, no
+   Set the sum over the PMF. If @code{sum} is non-positive, no
    sum is set and @code{unur_errno} is set to
    @code{UNUR_ERR_DISTR_SET}. 
 
@@ -236,7 +236,7 @@ int unur_distr_discr_set_pmfsum(UNUR_DISTR *distribution, double sum);
 
 int unur_distr_discr_upd_pmfsum( UNUR_DISTR *distribution);
 /*
-   Recompute the sum over the p.m.f. of the distribution. 
+   Recompute the sum over the PMF of the distribution. 
    In most cases the normalization constant is recompute and thus the
    sum is 1. This call only works for distribution objects from the
    (=>) UNURAN library of standard distributions when the
@@ -246,7 +246,7 @@ int unur_distr_discr_upd_pmfsum( UNUR_DISTR *distribution);
 
 double unur_distr_discr_get_pmfsum(UNUR_DISTR *distribution);
 /* 
-   Get the sum over the p.m.f of the distribution. If this sum is
+   Get the sum over the PMF of the distribution. If this sum is
    not known, unur_distr_cont_upd_pdfarea() is called to compute
    it. If this is not successful @code{UNUR_INFINITY} is returned and
    @code{unur_errno} is set to @code{UNUR_ERR_DISTR_GET}.

@@ -10,7 +10,7 @@
  *   METHOD:    transformed density rejection                                *
  *                                                                           *
  *   DESCRIPTION:                                                            *
- *      Given p.d.f and .... of a T-concave distribution                     *
+ *      Given PDF of a T-concave distribution                                *
  *      produce a value x consistent with its density                        *
  *                                                                           *
  *****************************************************************************
@@ -351,7 +351,7 @@ _unur_tdr_starting_cpoints( struct unur_par *par, struct unur_gen *gen )
     
   fx = fx_last = _unur_FP_is_minus_infinity(x) ? 0. : PDF(x);
   iv = GEN.iv = _unur_tdr_interval_new( gen, x, fx, is_mode );
-  if (iv == NULL) return 0;  /* pdf(x) < 0 !! */
+  if (iv == NULL) return 0;  /* PDF(x) < 0 !! */
 
   /* terminate beginning of list */
   iv->prev = NULL;
@@ -401,12 +401,12 @@ _unur_tdr_starting_cpoints( struct unur_par *par, struct unur_gen *gen )
     /** TODO: check if two construction points are too close ??
 	check if a point is too close to mode ??  */
 
-    /* value of p.d.f. at starting point */
+    /* value of PDF at starting point */
     fx = _unur_FP_is_infinity(x) ? 0. : PDF(x);
 
-    /* check value of p.d.f. at starting point */
+    /* check value of PDF at starting point */
     if (!is_increasing && fx > fx_last * (1.+DBL_EPSILON)) {
-      _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"p.d.f. not unimodal!");
+      _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"PDF not unimodal!");
       return 0;
     }
     if (is_mode && fx < fx_last * (1.-DBL_EPSILON)) {
@@ -421,10 +421,10 @@ _unur_tdr_starting_cpoints( struct unur_par *par, struct unur_gen *gen )
     if (fx <= 0. && fx_last <= 0.) {
       /* we do not need two such point */
       if (is_increasing) {
-	/* p.d.f. is still increasing, i.e., constant 0 til now */
+	/* PDF is still increasing, i.e., constant 0 til now */
 	if (i<PAR.n_starting_cpoints) {
 	  /* and it is not the right boundary.
-	     otherwise the p.d.f. is constant 0 on all construction points.
+	     otherwise the PDF is constant 0 on all construction points.
 	     then we need both boundary points. */
 	  iv->x = x;  /* we only have to change x, everything else remains unchanged */
 	  x_last = x;
@@ -432,19 +432,19 @@ _unur_tdr_starting_cpoints( struct unur_par *par, struct unur_gen *gen )
 	}
       }
       else
-	/* there should be no more points with pdf(x) > 0 */
+	/* there should be no more points with PDF(x) > 0 */
 	break;
     }
     
     /* need a new interval */
     iv->next = _unur_tdr_interval_new( gen, x, fx, is_mode );
-    if (iv->next == NULL) return 0;  /* pdf(x) < 0 !! */
+    if (iv->next == NULL) return 0;  /* PDF(x) < 0 !! */
     
     /* link into list and skip pointer to current interval */
     iv->next->prev = iv;
     iv = iv->next;
 
-    /* p.d.f. still increasing ? */
+    /* PDF still increasing ? */
     if (is_increasing && fx < fx_last)
       is_increasing = 0;
 
@@ -454,7 +454,7 @@ _unur_tdr_starting_cpoints( struct unur_par *par, struct unur_gen *gen )
 
   }
 
-  /* we have left the loop with the right boundary of the support of p.d.f.
+  /* we have left the loop with the right boundary of the support of PDF
      make shure that we will never use iv for sampling. */
   iv->Asqueeze = iv->Ahat = iv->Ahatr = iv->sq = 0.;
   iv->Acum = INFINITY;
@@ -513,7 +513,7 @@ _unur_tdr_gw_starting_intervals( struct unur_par *par, struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
 {
   struct unur_tdr_interval *iv, *iv_new, *iv_tmp; 
-  double x,fx;              /* construction point, value of p.d.f. at x */
+  double x,fx;              /* construction point, value of PDF at x */
   
   /* check arguments */
   CHECK_NULL(par,0);     COOKIE_CHECK(par,CK_TDR_PAR,0);
@@ -525,7 +525,7 @@ _unur_tdr_gw_starting_intervals( struct unur_par *par, struct unur_gen *gen )
     
     /* compute parameters for interval */
     switch (_unur_tdr_gw_interval_parameter(gen, iv)) {
-    case -2:     /* p.d.f. not T-concave */
+    case -2:     /* PDF not T-concave */
       return 0;
     case 1:     /* computation of parameters for interval successful */
       /* skip to next interval */
@@ -561,7 +561,7 @@ _unur_tdr_gw_starting_intervals( struct unur_par *par, struct unur_gen *gen )
        insert new construction point. */
     x = _unur_arcmean(iv->x,iv->next->x);  /* use mean point in interval */
 
-    /* value of p.d.f. at x */
+    /* value of PDF at x */
     fx = PDF(x);
 
     /* add a new interval, but check if we had to used too many intervals */
@@ -571,7 +571,7 @@ _unur_tdr_gw_starting_intervals( struct unur_par *par, struct unur_gen *gen )
       return 0;
     }
     iv_new = _unur_tdr_interval_new( gen, x, fx, FALSE );
-    if (iv_new == NULL) return 0; /* pdf(x) < 0. */
+    if (iv_new == NULL) return 0; /* PDF(x) < 0. */
 
 
     /* if fx is 0, then we can cut off the tail of the distribution
@@ -597,7 +597,7 @@ _unur_tdr_gw_starting_intervals( struct unur_par *par, struct unur_gen *gen )
 	/* (nothing to do here) */
       }
       else {
-	_unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"p.d.f. not T-concave!");
+	_unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"PDF not T-concave!");
 	return 0;
       }
     }
@@ -633,8 +633,8 @@ _unur_tdr_ps_starting_intervals( struct unur_par *par, struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
 {
   struct unur_tdr_interval *iv, *iv_new, *iv_tmp; 
-  double x,fx;              /* construction point, value of p.d.f. at x */
-  double lb, flb;           /* left boundary point of domain of p.d.f.  */
+  double x,fx;              /* construction point, value of PDF at x */
+  double lb, flb;           /* left boundary point of domain of PDF  */
   
   /* check arguments */
   CHECK_NULL(par,0);     COOKIE_CHECK(par,CK_TDR_PAR,0);
@@ -646,14 +646,14 @@ _unur_tdr_ps_starting_intervals( struct unur_par *par, struct unur_gen *gen )
 
   /* the left boundary of the domain:
      iv->x in the first interval is always the left boundary of 
-     the domain of the p.d.f. */
+     the domain of the PDF */
   lb = iv->x;
   flb = iv->fx;
 
   /* there is no use for a point iv->x that is not used as a 
      construction point in variants PS and IA.
      (In variant GW it is used to store the left boundary of the domain
-     of the p.d.f.)
+     of the PDF)
      Thus we remove it from the list. At such points the slope of the
      tangents to the transformed density is set to INFINITY. */
   if (_unur_FP_is_infinity(iv->dTfx)) {
@@ -707,7 +707,7 @@ _unur_tdr_ps_starting_intervals( struct unur_par *par, struct unur_gen *gen )
       /* skip to next interval */
       iv = iv->next;
       continue;
-    case -2:     /* p.d.f. not T-concave */
+    case -2:     /* PDF not T-concave */
       return 0;
     case -1:    /* interval unbounded */
       /* split interval */
@@ -759,13 +759,13 @@ _unur_tdr_ps_starting_intervals( struct unur_par *par, struct unur_gen *gen )
       fx = PDF(x);
 
       iv_new = _unur_tdr_interval_new( gen, x, fx, FALSE );
-      if (iv_new == NULL) return 0; /* pdf(x) < 0. */
+      if (iv_new == NULL) return 0; /* PDF(x) < 0. */
 
       /* if fx is 0, then we can cut off the tail of the distribution
 	 (since it must be T-concave)  */
       if (fx <= 0.) {
 	if (iv->next->fx > 0.) {
-	  _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"p.d.f. not T-concave!");
+	  _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"PDF not T-concave!");
 	  return 0;
 	}
 
@@ -795,13 +795,13 @@ _unur_tdr_ps_starting_intervals( struct unur_par *par, struct unur_gen *gen )
       fx = PDF(x);
 
       iv_new = _unur_tdr_interval_new( gen, x, fx, FALSE );
-      if (iv_new == NULL) return 0; /* pdf(x) < 0. */
+      if (iv_new == NULL) return 0; /* PDF(x) < 0. */
 
       /* if fx is 0, then we can cut off the tail of the distribution
 	 (since it must be T-concave)  */
       if (fx <= 0.) {
 	if (iv->fx > 0.) {
-	  _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"p.d.f. not T-concave!");
+	  _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"PDF not T-concave!");
 	  return 0;
 	}
 
@@ -864,8 +864,8 @@ _unur_tdr_interval_new( struct unur_gen *gen, double x, double fx, int is_mode )
      /* parameters:                                                          */
      /*   gen     ... pointer to generator object                            */
      /*   x       ... left point of new interval                             */
-     /*   fx      ... value of p.d.f. at x                                   */
-     /*   is_mode ... if TRUE, x is a mode of the p.d.f.                     */
+     /*   fx      ... value of PDF at x                                      */
+     /*   is_mode ... if TRUE, x is a mode of the PDF                        */
      /*                                                                      */
      /* return:                                                              */
      /*   pointer to new interval                                            */
@@ -882,7 +882,7 @@ _unur_tdr_interval_new( struct unur_gen *gen, double x, double fx, int is_mode )
 
   /* first check fx */
   if (fx<0.) {
-    _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"pdf(x) < 0.!");
+    _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"PDF(x) < 0.!");
     return NULL;
   }
 
@@ -894,7 +894,7 @@ _unur_tdr_interval_new( struct unur_gen *gen, double x, double fx, int is_mode )
 
   /* make left construction point in interval */
   iv->x = x;              /* point x */
-  iv->fx = fx;            /* value of p.d.f. at x */
+  iv->fx = fx;            /* value of PDF at x */
 
   if (fx<=0.) {           /* --> -INFINITY */
     iv->Tfx = -INFINITY;  /* transformed density */
@@ -957,7 +957,7 @@ _unur_tdr_gw_interval_parameter( struct unur_gen *gen, struct unur_tdr_interval 
      /*   1 ... if successful                                                */
      /*   0 ... do not add this construction point                           */
      /*  -1 ... area = INFINITY                                              */
-     /*  -2 ... error (not p.d.f. T-concave)                                 */
+     /*  -2 ... error (PDF not T-concave)                                    */
      /*----------------------------------------------------------------------*/
 {
   double Ahatl;    /* area below hat at left side of intersection point */
@@ -995,7 +995,7 @@ _unur_tdr_gw_interval_parameter( struct unur_gen *gen, struct unur_tdr_interval 
 	 0 remains. Thus we simply ignore all violations when the 
 	 slope of the squeeze or tangent is 0.  */
       if ( iv->sq != 0. && iv->dTfx != 0. && iv->next->dTfx != 0. ) {
-	_unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"Squeeze too steep/flat. p.d.f. not T-concave!");
+	_unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"Squeeze too steep/flat. PDF not T-concave!");
 	return -2;
       }
 
@@ -1024,7 +1024,7 @@ _unur_tdr_gw_interval_parameter( struct unur_gen *gen, struct unur_tdr_interval 
 
   /* check area */
   if (_unur_FP_greater(iv->Asqueeze, iv->Ahat)) {
-    _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"A(squeeze) > A(hat). p.d.f. not T-concave!");
+    _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"A(squeeze) > A(hat). PDF not T-concave!");
     return -2; 
   }
 
@@ -1049,12 +1049,12 @@ _unur_tdr_ps_interval_parameter( struct unur_gen *gen, struct unur_tdr_interval 
      /*   1 ... if successful                                                */
      /*   0 ... do not add this construction point                           */
      /*  -1 ... area = INFINITY                                              */
-     /*  -2 ... error (not p.d.f. T-concave)                                 */
+     /*  -2 ... error (PDF not T-concave)                                    */
      /*----------------------------------------------------------------------*/
 {
   double Ahatl;    /* area below hat at left side of intersection point */
   double hx;       /* value of hat */
-  double sq;       /* ration pdf(x)/hat(x) */
+  double sq;       /* ration PDF(x) / hat(x) */
 
   /* check arguments */
   CHECK_NULL(gen,0);  COOKIE_CHECK(gen,CK_TDR_GEN,0);
@@ -1064,7 +1064,7 @@ _unur_tdr_ps_interval_parameter( struct unur_gen *gen, struct unur_tdr_interval 
      it is stored together with the right hand (i.e. next) construction point. */
   if ( !_unur_tdr_tangent_intersection_point(gen,iv,&(iv->next->ip)) )
     return -2;
-  /* value of pdf at intersection point */
+  /* value of PDF at intersection point */
   iv->next->fip = _unur_FP_is_infinity(iv->next->ip) ? 0. : PDF(iv->next->ip);
 
   /* volume below hat */
@@ -1079,12 +1079,12 @@ _unur_tdr_ps_interval_parameter( struct unur_gen *gen, struct unur_tdr_interval 
   iv->Ahat = iv->Ahatr + Ahatl;
 
   /* compute squeeze:
-     squeeze ration = min_{boundary points} pdf(x) / hat(x) */
+     squeeze ration = min_{boundary points} PDF(x) / hat(x) */
   
   /* left boundary point */
   hx = _unur_tdr_eval_hat(gen,iv,iv->ip);
   if (_unur_FP_greater(iv->fip, hx)) {
-    _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"hat(x) < pdf(x)");
+    _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"hat(x) < PDF(x)");
     return -2;
   }
   iv->sq = (_unur_FP_is_infinity(hx) || hx <= 0.) ? 0. : iv->fip / hx;
@@ -1092,7 +1092,7 @@ _unur_tdr_ps_interval_parameter( struct unur_gen *gen, struct unur_tdr_interval 
   /* right boundary point */
   hx = _unur_tdr_eval_hat(gen,iv,iv->next->ip);
   if (_unur_FP_greater(iv->next->fip, hx)) {
-    _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"hat(x) < pdf(x)");
+    _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"hat(x) < PDF(x)");
     return -2;
   }
   sq = (_unur_FP_is_infinity(hx) || hx <= 0.) ? 0. : iv->next->fip / hx;
@@ -1167,14 +1167,14 @@ _unur_tdr_tangent_intersection_point( struct unur_gen *gen, struct unur_tdr_inte
       return 1; 
     }
     else {
-      _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"dTfx0 < dTfx1 (x0<x1). p.d.f. not T-concave!");
+      _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"dTfx0 < dTfx1 (x0<x1). PDF not T-concave!");
       return 0;
     }
   }
 
   /** TODO: the following test is too sensitve to roundoff errors **/
   /*    if (iv->next->Tfx > iv->x + iv->dTfx*(iv->next->x - iv->x)) { */
-  /*      _unur_warning(gen->genid,UNUR_ERR_INIT,"tangent below p.d.f.  not T-concave!"); */
+  /*      _unur_warning(gen->genid,UNUR_ERR_INIT,"tangent below PDF  not T-concave!"); */
   /*      return 0; */
   /*    } */
   
@@ -1194,7 +1194,7 @@ _unur_tdr_tangent_intersection_point( struct unur_gen *gen, struct unur_tdr_inte
     /* intersection point of tangents not in interval.
        This is mostly the case for numerical reasons.
        Thus we is the center of the interval instead.
-       if the p.d.f. not T-concave, it will catched at a later
+       if the PDF not T-concave, it will catched at a later
        point when we compare slope of tangents and squeeze. */
     *ipt = 0.5 * (iv->x + iv->next->x);
 
@@ -1214,7 +1214,7 @@ _unur_tdr_interval_area( struct unur_gen *gen, struct unur_tdr_interval *iv, dou
      /* parameters:                                                               */
      /*   gen   ... pointer to generator object                                   */
      /*   iv    ... pointer to interval that stores construction point of tangent */
-     /*   slope ... slope of tangent of secant of transformed p.d.f.              */
+     /*   slope ... slope of tangent of secant of transformed PDF                 */
      /*   x     ... boundary of integration domain                                */
      /*                                                                           */
      /* return:                                                                   */
@@ -1393,7 +1393,7 @@ _unur_tdr_gw_interval_split( struct unur_gen *gen, struct unur_tdr_interval *iv_
      /*   gen     ... pointer to generator object                            */
      /*   iv_oldl ... pointer to interval                                    */
      /*   x       ... left point of new segment                              */
-     /*   fx      ... value of p.d.f. at x                                   */
+     /*   fx      ... value of PDF at x                                      */
      /*                                                                      */
      /* return:                                                              */
      /*   1  ... if successful                                               */
@@ -1421,14 +1421,14 @@ _unur_tdr_gw_interval_split( struct unur_gen *gen, struct unur_tdr_interval *iv_
 
   /* check for data error */
   if (fx < 0.) {
-    _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"pdf(x) < 0.!");
+    _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"PDF(x) < 0.!");
     return 0;
   }
 
   /* back up data */
   memcpy(&iv_bak, iv_oldl, sizeof(struct unur_tdr_interval));
 
-  /* check if the new interval is completely outside the support of p.d.f. */
+  /* check if the new interval is completely outside the support of PDF */
   if (fx <= 0.) {
     
     /* one of the two boundary points must be 0, too! */
@@ -1441,7 +1441,7 @@ _unur_tdr_gw_interval_split( struct unur_gen *gen, struct unur_tdr_interval *iv_
       iv_oldl->next->x = x;
     }
     else {
-      _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"p.d.f. not T-concave");
+      _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"PDF not T-concave");
       return 0;
     }
     
@@ -1481,7 +1481,7 @@ _unur_tdr_gw_interval_split( struct unur_gen *gen, struct unur_tdr_interval *iv_
     /* cannot split interval at given point */
     _unur_warning(gen->genid,UNUR_ERR_GEN_DATA,"Cannot split interval at given point.");
     if (success <= -2)
-      _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"p.d.f. not T-concave");
+      _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"PDF not T-concave");
 
     /* the case of unbounded hat is treated as round-off error for 
        very steep tangents. so we simply do not add this construction point. */
@@ -1528,7 +1528,7 @@ _unur_tdr_ps_interval_split( struct unur_gen *gen, struct unur_tdr_interval *iv,
      /*   gen     ... pointer to generator object                            */
      /*   iv_oldl ... pointer to interval                                    */
      /*   x       ... left point of new segment                              */
-     /*   fx      ... value of p.d.f. at x                                   */
+     /*   fx      ... value of PDF at x                                      */
      /*                                                                      */
      /* return:                                                              */
      /*   1  ... if successful                                               */
@@ -1551,7 +1551,7 @@ _unur_tdr_ps_interval_split( struct unur_gen *gen, struct unur_tdr_interval *iv,
 
   /* check for data error */
   if (fx < 0.) {
-    _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"pdf(x) < 0.!");
+    _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"PDF(x) < 0.!");
     return 0;
   }
 
@@ -1577,7 +1577,7 @@ _unur_tdr_ps_interval_split( struct unur_gen *gen, struct unur_tdr_interval *iv,
   if (oldl) memcpy(&oldl_bak, oldl, sizeof(struct unur_tdr_interval));
   memcpy(&oldr_bak, oldr, sizeof(struct unur_tdr_interval));
 
-  /* check if the new interval is completely outside the support of p.d.f. */
+  /* check if the new interval is completely outside the support of PDF */
   if (fx <= 0.) {
 
     /* one of the two boundary points must be 0, too! */
@@ -1593,7 +1593,7 @@ _unur_tdr_ps_interval_split( struct unur_gen *gen, struct unur_tdr_interval *iv,
       oldr->fip = 0.;
     }
     else {
-      _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"p.d.f. not T-concave");
+      _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"PDF not T-concave");
       return 0;
     }
 
@@ -1647,7 +1647,7 @@ _unur_tdr_ps_interval_split( struct unur_gen *gen, struct unur_tdr_interval *iv,
     /* cannot split interval at given point */
     _unur_warning(gen->genid,UNUR_ERR_GEN_DATA,"Cannot split interval at given point.");
     if (success <= -2)
-      _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"p.d.f. not T-concave");
+      _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"PDF not T-concave");
 
     /* the case of unbounded hat is treated as round-off error for 
        very steep tangents. so we simply do not add this construction point. */

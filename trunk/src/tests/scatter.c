@@ -71,7 +71,7 @@ unur_make_scatterplot( struct unur_gen *gen )
      /*                                                                      */
      /* parameters:                                                          */
      /*   gen    ... pointer to generator                                    */
-     /*   cdf    ... pointer to c.d.f. of distribution                       */
+     /*   cdf    ... pointer to CDF of distribution                          */
      /*                                                                      */
      /* return:                                                              */
      /*   1 ... if successful                                                */
@@ -89,7 +89,7 @@ unur_make_scatterplot( struct unur_gen *gen )
   static int can_run_plotting_program = 1;  /* store failure */
 
   double Fl, Fr, Fdelta;  /* value of cdf (at left and right boundary point) */
-  UNUR_FUNCT_CONT *cdf;                     /* pointer to c.d.f. */
+  UNUR_FUNCT_CONT *cdf;                     /* pointer to CDF */
   char *scatter_filename;                   /* name of scatter files */
   FILE *scatter;                            /* file handle for scatter files */
   char *call_graph;                         /* string for system call        */
@@ -106,10 +106,10 @@ unur_make_scatterplot( struct unur_gen *gen )
   _unur_check_NULL(test_name,gen,0);
   /* we do not check magic cookies here */
 
-  /* c.d.f. required */
+  /* CDF required */
   cdf = DISTR.cdf;
   if (cdf == NULL) {
-    _unur_error(test_name,UNUR_ERR_GENERIC,"c.d.f. required");
+    _unur_error(test_name,UNUR_ERR_GENERIC,"CDF required");
     return 0;
   }
 

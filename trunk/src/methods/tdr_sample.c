@@ -10,7 +10,7 @@
  *   METHOD:    transformed density rejection                                *
  *                                                                           *
  *   DESCRIPTION:                                                            *
- *      Given p.d.f and .... of a T-concave distribution                     *
+ *      Given PDF of a T-concave distribution                                *
  *      produce a value x consistent with its density                        *
  *                                                                           *
  *****************************************************************************
@@ -62,9 +62,9 @@ _unur_tdr_gw_sample( struct unur_gen *gen )
      /*   x   ... random point                                               */
      /*   x0  ... left construction point in interval                        */
      /*   x1  ... right construction point in interval                       */
-     /*   f   ... p.d.f.                                                     */
-     /*   Tf  ... transformed p.d.f.                                         */
-     /*   dTf ... derivative of transformed p.d.f.                           */
+     /*   f   ... PDF                                                        */
+     /*   Tf  ... transformed PDF                                            */
+     /*   dTf ... derivative of transformed PDF                              */
      /*   sq  ... slope of squeeze in interval                               */
      /*                                                                      */
      /*----------------------------------------------------------------------*/
@@ -214,13 +214,13 @@ _unur_tdr_gw_sample( struct unur_gen *gen )
 
     } /* end switch */
 
-    /* value of p.d.f. at x */
+    /* value of PDF at x */
     fx = PDF(X);
 
     /* being above squeeze is bad. improve the situation! */
     if (GEN.n_ivs < GEN.max_ivs && GEN.max_ratio * GEN.Atotal > GEN.Asqueeze)
       if ( !_unur_tdr_gw_interval_split(gen, iv, X, fx) ) {
-	/* condition for pdf is violated! */
+	/* condition for PDF is violated! */
 	_unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"");
 	if (gen->variant & TDR_VARFLAG_PEDANTIC) {
 	  /* replace sampling routine by dummy routine that just returns INFINITY */
@@ -230,7 +230,7 @@ _unur_tdr_gw_sample( struct unur_gen *gen )
       }
 
     if (V <= fx)
-      /* between p.d.f. and squeeze */
+      /* between PDF and squeeze */
       return X;
 
     /* else reject and try again */
@@ -326,7 +326,7 @@ _unur_tdr_gw_sample_check( struct unur_gen *gen )
 	X = 0.;
       }
 
-    fx = PDF(X);                                /* value of p.d.f. at X */
+    fx = PDF(X);                                /* value of PDF at X */
     Thx = pt->Tfx + pt->dTfx * (X - pt->x);     /* transformed hat at X */ 
     Tsqx = (iv->Asqueeze > 0.) ? (iv->Tfx + iv->sq * (X - iv->x)) : -INFINITY; /* transformed squeeze at X */ 
 
@@ -357,11 +357,11 @@ _unur_tdr_gw_sample_check( struct unur_gen *gen )
       error = 1;
     }
     if (Tfx > Thx * (1.+DBL_EPSILON)) {
-      _unur_warning(gen->genid,UNUR_ERR_GEN_CONDITION,"pdf > hat. Not T-concave!");
+      _unur_warning(gen->genid,UNUR_ERR_GEN_CONDITION,"PDF > hat. Not T-concave!");
       error = 1;
     }
     if (Tsqx > Tfx * (1.+DBL_EPSILON)) {
-      _unur_warning(gen->genid,UNUR_ERR_GEN_CONDITION,"pdf < squeeze. Not T-concave!");
+      _unur_warning(gen->genid,UNUR_ERR_GEN_CONDITION,"PDF < squeeze. Not T-concave!");
       error = 1;
     }
 
@@ -385,7 +385,7 @@ _unur_tdr_gw_sample_check( struct unur_gen *gen )
     /* being above squeeze is bad. improve the situation! */
     if (GEN.n_ivs < GEN.max_ivs && GEN.max_ratio * GEN.Atotal > GEN.Asqueeze)
       if ( !_unur_tdr_gw_interval_split(gen, iv, X, fx) ) {
-	/* condition for pdf is violated! */
+	/* condition for PDF is violated! */
 	_unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"");
 	/* replace sampling routine by dummy routine that just returns INFINITY */
 	SAMPLE = _unur_sample_cont_error;
@@ -393,13 +393,13 @@ _unur_tdr_gw_sample_check( struct unur_gen *gen )
       }
 
     if (V <= fx)
-      /* between p.d.f. and squeeze */
+      /* between PDF and squeeze */
       return X;
 
-    /* evaluation of pdf is expensive. improve the situation! */
+    /* evaluation of PDF is expensive. improve the situation! */
     if (GEN.n_ivs < GEN.max_ivs && GEN.max_ratio * GEN.Atotal > GEN.Asqueeze)
       if ( !_unur_tdr_gw_interval_split(gen, iv, X, fx) ) {
-	/* condition for pdf is violated! */
+	/* condition for PDF is violated! */
 	_unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"");
 	if (gen->variant & TDR_VARFLAG_PEDANTIC) {
 	  /* replace sampling routine by dummy routine that just returns INFINITY */
@@ -438,9 +438,9 @@ _unur_tdr_ps_sample( struct unur_gen *gen )
      /*   x   ... random point                                               */
      /*   x0  ... left construction point in interval                        */
      /*   x1  ... right construction point in interval                       */
-     /*   f   ... p.d.f.                                                     */
-     /*   Tf  ... transformed p.d.f.                                         */
-     /*   dTf ... derivative of transformed p.d.f.                           */
+     /*   f   ... PDF                                                        */
+     /*   Tf  ... transformed PDF                                            */
+     /*   dTf ... derivative of transformed PDF                              */
      /*   sq  ... slope of squeeze in interval                               */
      /*                                                                      */
      /*----------------------------------------------------------------------*/
@@ -554,17 +554,17 @@ _unur_tdr_ps_sample( struct unur_gen *gen )
       return 1.;
     } /* end switch */
 
-    /* evaluate p.d.f. at X */
+    /* evaluate PDF at X */
     fx = PDF(X);
 
     /* main rejection */
     if (V <= fx)
       return X;
 
-    /* evaluation of pdf is expensive. improve the situation! */
+    /* evaluation of PDF is expensive. improve the situation! */
     if (GEN.n_ivs < GEN.max_ivs && GEN.max_ratio * GEN.Atotal > GEN.Asqueeze)
       if ( !_unur_tdr_ps_interval_split(gen, iv, X, fx) ) {
-	/* condition for pdf is violated! */
+	/* condition for PDF is violated! */
 	_unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"");
 	if (gen->variant & TDR_VARFLAG_PEDANTIC) {
 	  /* replace sampling routine by dummy routine that just returns INFINITY */
@@ -698,7 +698,7 @@ _unur_tdr_ps_sample_check( struct unur_gen *gen )
       return 0.;
     } /* end switch */
 
-    /* evaluate p.d.f. at X */
+    /* evaluate PDF at X */
     fx = PDF(X);
 
     /* evaluate squeeze */
@@ -710,11 +710,11 @@ _unur_tdr_ps_sample_check( struct unur_gen *gen )
       error = 1;
     }
     if (_unur_FP_greater(fx, hx)) {
-      _unur_warning(gen->genid,UNUR_ERR_GEN_CONDITION,"pdf > hat. Not T-concave!");
+      _unur_warning(gen->genid,UNUR_ERR_GEN_CONDITION,"PDF > hat. Not T-concave!");
       error = 1;
     }
     if (_unur_FP_less(fx, sqx)) {
-      _unur_warning(gen->genid,UNUR_ERR_GEN_CONDITION,"pdf < squeeze. Not T-concave!");
+      _unur_warning(gen->genid,UNUR_ERR_GEN_CONDITION,"PDF < squeeze. Not T-concave!");
       error = 1;
     }
 
@@ -732,10 +732,10 @@ _unur_tdr_ps_sample_check( struct unur_gen *gen )
     if (V <= fx)
       return X;
 
-    /* evaluation of pdf is expensive. improve the situation! */
+    /* evaluation of PDF is expensive. improve the situation! */
     if (GEN.n_ivs < GEN.max_ivs && GEN.max_ratio * GEN.Atotal > GEN.Asqueeze)
       if ( !_unur_tdr_ps_interval_split(gen, iv, X, fx) ) {
-	/* condition for pdf is violated! */
+	/* condition for PDF is violated! */
 	_unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"");
 	if (gen->variant & TDR_VARFLAG_PEDANTIC) {
 	  /* replace sampling routine by dummy routine that just returns INFINITY */
@@ -775,9 +775,9 @@ _unur_tdr_ia_sample( struct unur_gen *gen )
      /*   x   ... random point                                               */
      /*   x0  ... left construction point in interval                        */
      /*   x1  ... right construction point in interval                       */
-     /*   f   ... p.d.f.                                                     */
-     /*   Tf  ... transformed p.d.f.                                         */
-     /*   dTf ... derivative of transformed p.d.f.                           */
+     /*   f   ... PDF                                                        */
+     /*   Tf  ... transformed PDF                                            */
+     /*   dTf ... derivative of transformed PDF                              */
      /*   sq  ... slope of squeeze in interval                               */
      /*                                                                      */
      /*----------------------------------------------------------------------*/
@@ -912,7 +912,7 @@ _unur_tdr_ia_sample( struct unur_gen *gen )
     /* get uniform random number between squeeze(X) and hat(X) */
     V = (iv->sq + (1 - iv->sq) * V) * hx;
 
-    /* evaluate p.d.f. at X */
+    /* evaluate PDF at X */
     fx = PDF(X);
 
     /* main rejection */
@@ -920,10 +920,10 @@ _unur_tdr_ia_sample( struct unur_gen *gen )
       return X;
 
 
-    /* evaluation of pdf is expensive. improve the situation! */
+    /* evaluation of PDF is expensive. improve the situation! */
     if (GEN.n_ivs < GEN.max_ivs && GEN.max_ratio * GEN.Atotal > GEN.Asqueeze)
       if ( !_unur_tdr_ps_interval_split(gen, iv, X, fx) ) {
-	/* condition for pdf is violated! */
+	/* condition for PDF is violated! */
 	_unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"");
 	if (gen->variant & TDR_VARFLAG_PEDANTIC) {
 	  /* replace sampling routine by dummy routine that just returns INFINITY */
@@ -1052,7 +1052,7 @@ _unur_tdr_ia_sample_check( struct unur_gen *gen )
       return 1.;
     } /* end switch */
 
-    /* evaluate p.d.f. at X */
+    /* evaluate PDF at X */
     fx = PDF(X);
 
     /* evaluate squeeze */
@@ -1064,11 +1064,11 @@ _unur_tdr_ia_sample_check( struct unur_gen *gen )
       error = 1;
     }
     if (_unur_FP_greater(fx, hx)) {
-      _unur_warning(gen->genid,UNUR_ERR_GEN_CONDITION,"pdf > hat. Not T-concave!");
+      _unur_warning(gen->genid,UNUR_ERR_GEN_CONDITION,"PDF > hat. Not T-concave!");
       error = 1;
     }
     if (_unur_FP_less(fx, sqx)) {
-      _unur_warning(gen->genid,UNUR_ERR_GEN_CONDITION,"pdf < squeeze. Not T-concave!");
+      _unur_warning(gen->genid,UNUR_ERR_GEN_CONDITION,"PDF < squeeze. Not T-concave!");
       error = 1;
     }
 
@@ -1096,11 +1096,10 @@ _unur_tdr_ia_sample_check( struct unur_gen *gen )
     if (V <= fx)
       return X;
 
-
-    /* evaluation of pdf is expensive. improve the situation! */
+    /* evaluation of PDF is expensive. improve the situation! */
     if (GEN.n_ivs < GEN.max_ivs && GEN.max_ratio * GEN.Atotal > GEN.Asqueeze)
       if ( !_unur_tdr_ps_interval_split(gen, iv, X, fx) ) {
-	/* condition for pdf is violated! */
+	/* condition for PDF is violated! */
 	_unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"");
 	if (gen->variant & TDR_VARFLAG_PEDANTIC) {
 	  /* replace sampling routine by dummy routine that just returns INFINITY */

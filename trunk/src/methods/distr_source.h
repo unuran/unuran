@@ -118,7 +118,7 @@ void _unur_distr_discr_debug( UNUR_DISTR *distribution, char *genid, int printve
 /* write info about distribution into logfile                                */
 
 /*---------------------------------------------------------------------------*/
-/* auxilliary routines                                                       */
+/* auxiliary routines                                                        */
 
 /*---------------------------------------------------------------------------*/
 /* check if parameter object is of correct type, return 0 otherwise       */

@@ -59,7 +59,7 @@
       variate per trial. 
 
       DARI has moderate set-up times (the PMF is evaluated nine
-      times), and good marginal speed, especially if an auxilliary
+      times), and good marginal speed, especially if an auxiliary
       array is used to store values during generation.
       
       DARI works for all T-(-1/2)-concave distributions. It requires the PMF

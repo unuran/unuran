@@ -94,10 +94,10 @@
       There are lots of parameters for these methods, see below.
       
       It is possible to use this method for correlation induction by
-      setting an auxilliary uniform random number generator via the
+      setting an auxiliary uniform random number generator via the
       unur_set_urng_aux() call. (Notice that this must be done after a
       possible unur_set_urng() call.)
-      When an auxilliary generator is used then the number of
+      When an auxiliary generator is used then the number of
       uniform random numbers from the first URNG that are used for one
       generated random variate is constant and given in the following table:
 

@@ -159,7 +159,7 @@ struct unur_par {
   unsigned set;               /* stores which parameters have been changed   */
 
   UNUR_URNG *urng;            /* pointer to uniform random number generator  */
-  UNUR_URNG *urng_aux;        /* pointer to second (auxilliary) uniform RNG  */
+  UNUR_URNG *urng_aux;        /* pointer to second (auxiliary) uniform RNG   */
 
   struct unur_distr *distr;   /* pointer to distribution object              */
 
@@ -207,12 +207,12 @@ struct unur_gen {
   unsigned set;               /* stores which parameters have been changed   */
   
   UNUR_URNG *urng;            /* pointer to uniform random number generator  */
-  UNUR_URNG *urng_aux;        /* pointer to second (auxilliary) uniform RNG  */
+  UNUR_URNG *urng_aux;        /* pointer to second (auxiliary) uniform RNG   */
 
   struct unur_distr distr;    /* distribution object                         */
   char *genid;                /* identifier for generator                    */
 
-  struct unur_gen *gen_aux;   /* pointer to auxilliary generator object      */
+  struct unur_gen *gen_aux;   /* pointer to auxiliary generator object       */
 
   unsigned debug;             /* debugging flags                             */
 

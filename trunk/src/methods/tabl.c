@@ -251,7 +251,8 @@ unur_tabl_new( struct unur_distr *distr )
     _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"p.d.f."); return NULL; }
 
   if (!(distr->set & UNUR_DISTR_SET_PDFAREA))
-    _unur_warning(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"area below p.d.f., use default instead");
+    if (!unur_distr_cont_upd_pdfarea(distr))
+      _unur_warning(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"area below p.d.f., use default instead");
 
   /* allocate structure */
   par = _unur_malloc( sizeof(struct unur_par) );

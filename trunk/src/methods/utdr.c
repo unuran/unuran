@@ -189,12 +189,21 @@ unur_utdr_new( struct unur_distr *distr )
   COOKIE_CHECK(distr,CK_DISTR_CONT,NULL);
 
   if (DISTR_IN.pdf == NULL) {
-    _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"p.d.f."); return NULL; }
-  if (!(distr->set & UNUR_DISTR_SET_MODE)) {
-    _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"mode"); return NULL; }
-  if (!(distr->set & UNUR_DISTR_SET_PDFAREA)) {
-    _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"area below p.d.f.");
-    return NULL; }
+    _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"p.d.f."); 
+    return NULL;
+  }
+
+  if (!(distr->set & UNUR_DISTR_SET_MODE))
+    if (!unur_distr_cont_upd_mode(distr)) {
+      _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"mode"); 
+      return NULL; 
+    }
+
+  if (!(distr->set & UNUR_DISTR_SET_PDFAREA))
+    if (!unur_distr_cont_upd_pdfarea(distr)) {
+      _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"area below p.d.f.");
+      return NULL; 
+    }
 
   /**TODOWH:
      Kann man eigentlich einen bound fuer die area auch

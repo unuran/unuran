@@ -20,7 +20,7 @@
  *                                                                           *
  *  pdf:       f(x) = (x+C)^(-(a+1))                                         *
  *  domain:    x >= 0                                                        *
- *  constant:  1 / (a * C^a)                                                 *
+ *  constant:  a * C^a                                                       *
  *                                                                           *
  *  parameters:                                                              *
  *     0:  a > 0   ... shape                                                 *

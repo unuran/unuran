@@ -24,7 +24,7 @@
  *                                                                           *
  *  pdf:       exp(-abs(x)^tau)                                              *
  *  domain:    -infinity < x < infinity                                      *
- *  constant:  2 * Gamma(1+1/tau)                                            *
+ *  constant:  1 / (2 * Gamma(1+1/tau))                                      *
  *                                                                           *
  *  parameters: 1                                                            *
  *     0:  tau > 0 ... shape                                                 *

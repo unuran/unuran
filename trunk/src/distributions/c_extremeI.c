@@ -25,7 +25,7 @@
  *  cdf:       F(x) = exp( -exp( -(x-zeta)/theta ) )                         *
  *  pdf:       f(x) = exp( -exp( -(x-zeta)/theta ) - (x-zeta)/theta )        *               
  *  domain:    -infinity < x <infinity                                       *
- *  constant:  theta                                                         *
+ *  constant:  1 / theta                                                     *
  *                                                                           *
  *  parameters: 2                                                            *
  *     0:  zeta      (0)  ... location                                       *

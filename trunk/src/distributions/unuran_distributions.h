@@ -90,7 +90,7 @@
    =UP       Stddist_CONT
    =REF      [JKBc95]   ch.25, p.210
    =PDF      (x-a)^{p-1} * (b-x)^{q-1}
-   =CONST    Beta(p,q) * (b-a)^{p+q-1}
+   =CONST    1 / (Beta(p,q) * (b-a)^{p+q-1})
    =DOMAIN   a < x < b
    =FPARAM    0  : p : > 0 :   : scale    :
               1  : q : > 0 :   : scale    :
@@ -113,7 +113,7 @@ UNUR_DISTR *unur_distr_burr(double *params, int n_params);
    =UP       Stddist_CONT
    =REF      [JKBb94]   ch.16, p.299
    =PDF      \frac{1}{1 + ((x-theta)/lambda)^2}
-   =CONST    pi * lambda
+   =CONST    \frac{1}{pi * lambda}
    =DOMAIN   -infinity < x < infinity 
    =FPARAM    [0]   : theta  :     : 0 : location :
              [[1]]  : lambda : > 0 : 1 : scale    :
@@ -129,7 +129,7 @@ UNUR_DISTR *unur_distr_cauchy(double *params, int n_params);
    =UP       Stddist_CONT
    =REF      [JKBb94]   ch.18, p.417
    =PDF      x^{nu-1} * exp( -x^2/2 )
-   =CONST    2^{(nu/2)-1} * Gamma(nu/2)
+   =CONST    1 / (2^{(nu/2)-1} * Gamma(nu/2))
    =DOMAIN   0 <= x < infinity 
    =FPARAM   0 : nu : > 0 : : shape :
    =EON
@@ -144,7 +144,7 @@ UNUR_DISTR *unur_distr_chi(double *params, int n_params);
    =UP       Stddist_CONT
    =REF      [JKBb94]   ch.18, p.416
    =PDF      x^{(nu/2)-1} * exp( -x/2 )
-   =CONST    2^{nu/2} * Gamma(nu/2)
+   =CONST    1 / (2^{nu/2} * Gamma(nu/2))
    =DOMAIN   0 <= x < infinity 
    =FPARAM   0 : nu : > 0 : : shape (degrees of freedom) :
    =EON
@@ -163,7 +163,7 @@ UNUR_DISTR *unur_distr_chisquare(double *params, int n_params);
    =UP       Stddist_CONT
    =REF      [JKBb94]   ch.19, p.494
    =PDF      exp( -\frac{x-theta}{sigma})
-   =CONST    sigma
+   =CONST    \frac{1}{sigma}
    =DOMAIN   theta <= x < infinity 
    =FPARAM    [0]  : sigma : > 0 : 1 : scale    :
 	     [[1]] : theta :     : 0 : location :
@@ -179,7 +179,7 @@ UNUR_DISTR *unur_distr_exponential(double *params, int n_params);
    =UP       Stddist_CONT
    =REF      [JKBc95]   ch.22, p.2
    =PDF      exp( -exp( -\frac{x-zeta}{theta} ) - \frac{x-zeta}{theta} )
-   =CONST    theta
+   =CONST    \frac{1}{theta}
    =DOMAIN   -infinity < x <infinity
    =FPARAM    [0]  : zeta  :     : 0 : location :
 	     [[1]] : theta : > 0 : 1 : scale    :
@@ -195,7 +195,7 @@ UNUR_DISTR *unur_distr_extremeI(double *params, int n_params);
    =UP       Stddist_CONT
    =REF      [JKBc95]   ch.22, p.2
    =PDF      exp( -(\frac{x-zeta}{theta})^{-k}) * (\frac{x-zeta}{theta})^{-k-1}
-   =CONST    theta/k
+   =CONST    \frac{k}{theta}
    =DOMAIN   zeta < x <infinity
    =FPARAM     0   : k     : > 0 :   : shape    :
               [1]  : zeta  :     : 0 : location :
@@ -212,7 +212,7 @@ UNUR_DISTR *unur_distr_extremeII(double *params, int n_params);
    =UP       Stddist_CONT
    =REF      [JKBb94]   ch.17, p.337
    =PDF      (\frac{x-gamma}{beta})^{alpha-1} * exp( -\frac{x-gamma}{beta} )
-   =CONST    beta * Gamma(alpha)
+   =CONST    1 / (beta * Gamma(alpha))
    =DOMAIN   gamma < x < infinity 
    =FPARAM     0    : alpha : > 0 :   : shape    :
               [1]   : beta  : > 0 : 1 : scale    :
@@ -234,7 +234,7 @@ UNUR_DISTR *unur_distr_gig(double *params, int n_params);
    =UP       Stddist_CONT
    =REF      [JKBc95]   ch.24, p.164
    =PDF      exp( -\frac{|x-theta|}{phi} )
-   =CONST    2 * phi
+   =CONST    \frac{1}{2 * phi}
    =DOMAIN   -infinity < x <infinity
    =FPARAM    [0]  : theta :     : 0 : location :
 	     [[1]] : phi   : > 0 : 1 : scale    :
@@ -250,7 +250,7 @@ UNUR_DISTR *unur_distr_laplace(double *params, int n_params);
    =UP       Stddist_CONT
    =REF      [JKBc95]   ch.23, p.115
    =PDF      exp(-\frac{x-alpha}{beta} * (1 + exp(-\frac{x-alpha}{beta}))^{-2}
-   =CONST    beta
+   =CONST    \frac{1}{beta}
    =DOMAIN   -infinity < x <infinity
    =FPARAM    [0]  : alpha :     : 0 : location :
 	     [[1]] : beta  : > 0 : 1 : scale    :
@@ -271,7 +271,7 @@ UNUR_DISTR *unur_distr_lognormal(double *params, int n_params);
    =UP       Stddist_CONT
    =REF      [JKBb94]   ch.20, p.575
    =PDF      (x+C)^{-(a+1)}
-   =CONST    1 / (a * C^a)
+   =CONST    a * C^a
    =DOMAIN   0 <= x < infinity 
    =FPARAM    0  : a : > 0 :   : shape :
              [1] : C : > 0 : 1 : scale :
@@ -287,7 +287,7 @@ UNUR_DISTR *unur_distr_lomax(double *params, int n_params);
    =UP       Stddist_CONT
    =REF      [JKBb94]   ch.13, p.80
    =PDF      exp( -\frac{1}{2} * (\frac{x-mu}{sigma})^2 )
-   =CONST    sigma * sqrt{2 pi}
+   =CONST    \frac{1}{sigma * sqrt{2 pi}}
    =DOMAIN   -infinity < x < infinity 
    =FPARAM    [0]   : mu    :     : 0 : location :
              [[1]]  : sigma : > 0 : 1 : scale    :
@@ -336,7 +336,7 @@ UNUR_DISTR *unur_distr_pareto( double *params, int n_params );
    =UP       Stddist_CONT
    =REF      [JKBc95]   ch.24, p.195
    =PDF      exp( -|x|^tau )
-   =CONST    2 * Gamma(1+1/tau)
+   =CONST    1 / (2 * Gamma(1+1/tau))
    =DOMAIN   -infinity < x < infinity
    =FPARAM   0 : tau : > 0 : : shape :
    =EON
@@ -351,7 +351,7 @@ UNUR_DISTR *unur_distr_powerexponential(double *params, int n_params);
    =UP       Stddist_CONT
    =REF      [JKBb94]   ch.18, p.456
    =PDF      x * exp( -1/2 * (\frac{x}{sigma})^2 )
-   =CONST    sigma^2
+   =CONST    \frac{1}{sigma^2}
    =DOMAIN   0 <= x < infinity
    =FPARAM   0 : sigma : > 0 : : scale :
    =EON
@@ -414,7 +414,7 @@ UNUR_DISTR *unur_distr_uniform(double *params, int n_params);
    =UP       Stddist_CONT
    =REF      [JKBb94]   ch.21, p.628
    =PDF      (\frac{x-zeta}{alpha})^{c-1} * exp( -(\frac{x-zeta}{alpha})^c )
-   =CONST    alpha /c
+   =CONST    \frac{c}{alpha}
    =DOMAIN   zeta < x < infinity 
    =FPARAM     0    : c     : > 0 :   : shape    :
               [1]   : alpha : > 0 : 1 : scale    :

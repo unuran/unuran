@@ -20,7 +20,7 @@
  *                                                                           *
  *  pdf:       f(x) = x^(theta-1) * exp( -1/2 * omega * (x/eta + eta/x))     *
  *  domain:    0 < x < infinity                                              *
- *  constant:  2 * eta^theta K_theta(omega)                                  *
+ *  constant:  1 / (2 * eta^theta K_theta(omega))                            *
  *             [K_theta(.) ... modified Bessel function of third kind]       *
  * K_theta(x) = 1/2 * int_-inf^inf  cosh(theta*u) * exp(-x*cosh(u)) du       *
  *                                                                           *

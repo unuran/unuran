@@ -20,7 +20,7 @@
  *                                                                           *
  *  pdf:       f(x) = 1/(x-theta) * exp( -(log(x-theta)-zeta)^2/(2 sigma^2) )*
  *  domain:    x > theta                                                     *
- *  constant:  sigma * sqrt(2*pi)                                            *
+ *  constant:  1 / (sigma * sqrt(2*pi))                                      *
  *                                                                           *
  *  parameters:                                                              *
  *     0:  zeta                                                              *

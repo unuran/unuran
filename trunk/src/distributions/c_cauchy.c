@@ -20,7 +20,7 @@
  *                                                                           *
  *  pdf:       f(x) = 1./( 1 + ((x-theta)/lambda)^2 )                        *
  *  domain:    -infinity < x < infinity                                      *
- *  constant:  pi * lambda                                                   *
+ *  constant:  1 / (pi * lambda)                                             *
  *                                                                           *
  *  parameters:                                                              *
  *     0:  theta       ... location                                          *

@@ -16,11 +16,11 @@
  *****************************************************************************
  *****************************************************************************
  *                                                                           *
- *  distr: Beta distribution [3; ch.25, p.210]                                *
+ *  distr: Beta distribution [3; ch.25, p.210]                               *
  *                                                                           *
  *  pdf:       f(x) = (x-a)^(p-1) * (b-x)^(q-1)                              *
  *  domain:    a < x < b                                                     *
- *  constant:  Beta(p,q) * (b-a)^(p+q-1)                                     *
+ *  constant:  1 / ( Beta(p,q) * (b-a)^(p+q-1) )                             *
  *                                                                           *
  *  parameters: 4                                                            *
  *     0:  p > 0        ... shape                                            *
@@ -34,7 +34,7 @@
  *                                                                           *
  *  pdf:       f(x) = x^(p-1) * (1-x)^(q-1)                                  *
  *  domain:    0 < x < 1                                                     *
- *  constant:  Beta(p,q)                                                     *
+ *  constant:  1 / Beta(p,q)                                                 *
  *                                                                           *
  *  parameters: 2                                                            *
  *     0:  p > 0    ... shape                                                *

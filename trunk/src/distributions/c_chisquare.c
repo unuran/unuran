@@ -20,7 +20,7 @@
  *                                                                           *
  *  pdf:       f(x) = x^((nu/2)-1) * exp( -x/2 )                             *
  *  domain:    0 <= x < infinity                                             *
- *  constant:  2^(nu/2) * Gamma(nu/2)                                        *
+ *  constant:  1 / (2^(nu/2) * Gamma(nu/2))                                  *
  *                                                                           *
  *  parameters:                                                              *
  *     0:  nu > 0   ... shape (degrees of freedom)                           *

@@ -20,7 +20,7 @@
  *                                                                           *
  *  pdf:       f(x) = exp( - (x-theta)/sigma )                               *
  *  domain:    x >= theta                                                    *
- *  constant:  sigma                                                         *
+ *  constant:  1 / sigma                                                     *
  *                                                                           *
  *  parameters:                                                              *
  *     0:  sigma > 0  (1)  ... scale                                         *

@@ -20,7 +20,7 @@
  *                                                                           *
  *  pdf:       f(x) = x * exp( -1/2 * (x/sigma)^2 )                          *
  *  domain:    0 <= x < infinity                                             *
- *  constant:  sigma^2                                                       *
+ *  constant:  1 / sigma^2                                                   *
  *                                                                           *
  *  parameters: 1                                                            *
  *     0:  sigma > 0   ... scale                                             *

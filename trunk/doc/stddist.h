@@ -73,7 +73,9 @@ probability mass function,
 with variable @i{k}.
 
 @item constant
-given PDF and PMF, resp., must be divided by @i{constant}.
+normalization constant for given PDF and PMF, resp.
+They must be multiplied by @i{constant} to get the 
+``real'' PDF and PMF.
 
 @item domain
 domain PDF and PMF, resp.

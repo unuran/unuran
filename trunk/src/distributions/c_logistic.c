@@ -21,7 +21,7 @@
  *  pdf:       f(x) = exp(-(x-alpha)/beta) * (1 + exp(-(x-alpha)/beta))^(-2) *
  *  cdf:       F(x) = (1 + exp(-(x-alpha)/beta))^(-1)                        *
  *  domain:    infinity < x < infinity                                       *
- *  constant:  beta                                                          *
+ *  constant:  1 / beta                                                      *
  *                                                                           *
  *  parameters: 2                                                            *
  *     0:  alpha       (0)  ... location                                     *

@@ -20,8 +20,8 @@
  *                                                                           *
  *  pdf:       f(x) = ( 1 + (x^2)/nu )^(-(nu+1)/2)                           *
  *  domain:    -infinity < x < infintiy                                      *
- *  constant:  sqrt(nu) * Beta(1/2,nu/2)                                     *
- *             = sqrt(pi*nu) * Gamma(nu/2) / Gamma((nu+1)/2)                 *
+ *  constant:  1 / (sqrt(nu) * Beta(1/2,nu/2))                               *
+ *             = 1 / (sqrt(pi*nu) * Gamma(nu/2) / Gamma((nu+1)/2))           *
  *                                                                           *
  *  parameters:  1                                                           *
  *     0: nu > 0  ... shape                                                  *

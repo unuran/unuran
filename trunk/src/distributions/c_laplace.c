@@ -20,7 +20,7 @@
  *                                                                           *
  *  pdf:       f(x) = exp(- abs(x-theta) / phi )                             *
  *  domain:    -infinity < x < infinity                                      *
- *  constant:  2 * phi                                                       *
+ *  constant:  1 / (2 * phi)                                                 *
  *                                                                           *
  *  parameters:                                                              *
  *     0:  theta     ... location                                            *

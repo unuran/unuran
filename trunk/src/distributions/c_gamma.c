@@ -20,7 +20,7 @@
  *                                                                           *
  *  pdf:       f(x) = ((x-gamma)/beta)^(alpha-1) * exp( -(x-gamma)/beta )    *
  *  domain:    x > gamma                                                     *
- *  constant:  beta * Gamma(alpha)                                           *
+ *  constant:  1 / (beta * Gamma(alpha))                                     *
  *                                                                           *
  *  parameters:                                                              *
  *     0:  alpha > 0       ... shape                                         *

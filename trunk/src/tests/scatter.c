@@ -77,8 +77,9 @@ unur_make_scatterplot( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*/
-#if ( (UNUR_URNG_INVOKE == UNUR_URNG_POINTER) || \
-      (UNUR_URNG_INVOKE == UNUR_URNG_PRNG) )
+#if ( ( (UNUR_URNG_INVOKE == UNUR_URNG_POINTER) || \
+        (UNUR_URNG_INVOKE == UNUR_URNG_PRNG) )  && \
+        (UNUR_DEBUG & UNUR_DB_INFO) )
 /*---------------------------------------------------------------------------*/
 {
 #define DISTR   gen->distr->data.cont
@@ -223,7 +224,7 @@ unur_make_scatterplot( struct unur_gen *gen )
 #else
 /*---------------------------------------------------------------------------*/
 {
-  _unur_warning("Scatter",UNUR_ERR_GENERIC,"Cannot make scatter plot. Recompile with different UNUR_URNG_INVOKE!");
+  _unur_warning("Scatter",UNUR_ERR_GENERIC,"Cannot make scatter plot.\n Recompile with different UNUR_URNG_INVOKE!\n Set debug flag UNUR_DB_INFO");
   return -1;
 } /* end of unur_make_scatterplot() */
 /*---------------------------------------------------------------------------*/
@@ -375,6 +376,21 @@ _unur_get_babygen( void )
 } /* end of _unur_get_babygen */
 
 /*---------------------------------------------------------------------------*/
+#else
+/*---------------------------------------------------------------------------*/
+
+static UNUR_URNG_TYPE
+_unur_get_babygen( void )
+     /*----------------------------------------------------------------------*/
+     /* not implemented for this choice of UNUR_URNG_INVOKE !!               */
+     /*----------------------------------------------------------------------*/
+{
+  return NULL;
+} /* end of _unur_get_babygen */
+
+/*---------------------------------------------------------------------------*/
 #endif  /* UNUR_URNG_INVOKE */
 /*---------------------------------------------------------------------------*/
+
+
 

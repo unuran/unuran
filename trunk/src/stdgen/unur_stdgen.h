@@ -67,6 +67,24 @@ double unur_cstd_sample_gamma_gammarand( struct unur_gen *gen );
 double unur_cstd_sample_normal_bm( struct unur_gen *gen );
 /* Box-Muller method                                                         */
 
+double unur_cstd_sample_normal_pol( struct unur_gen *gen );
+/* Polarmethod with rejection                                                */
+
+double unur_cstd_sample_normal_quo( struct unur_gen *gen );
+/* Ratio-of-uniforms method with squeeze                                     */
+
+double unur_cstd_sample_normal_nquo( struct unur_gen *gen );
+/* "Naive" ratio-of-uniforms method                                          */
+
+double unur_cstd_sample_normal_leva( struct unur_gen *gen );
+/* Ratio-of-uniforms method  with quadratic bounding curves                  */
+
+double unur_cstd_sample_normal_kr( struct unur_gen *gen );
+/* Kindermann-Ramage method                                                  */
+
+double unur_cstd_sample_normal_acr( struct unur_gen *gen );
+/* Acceptance-complement ratio                                               */
+
 /*---------------------------------------------------------------------------*/
 #endif  /* __UNUR_STDGEN_H_SEEN */
 /*---------------------------------------------------------------------------*/

@@ -72,7 +72,7 @@ static struct unur_gen *_unur_cstd_create( struct unur_par *par );
 /*---------------------------------------------------------------------------*/
 
 static _unur_sampling_routine_cont *
-_unur_cstd_get_routine_sample( struct unur_par *par, struct unur_gen *gen );
+_unur_cstd_get_routine_sample( unsigned distr_id, unsigned variant );
 /*---------------------------------------------------------------------------*/
 /* return pointer to sampling routine.                                       */
 /*---------------------------------------------------------------------------*/
@@ -88,7 +88,7 @@ static void _unur_cstd_debug_init( struct unur_par *par, struct unur_gen *gen );
 /* print after generator has been initialized has completed.                 */
 /*---------------------------------------------------------------------------*/
 
-static char *_unur_cstd_debug_name_sample( struct unur_par *par, struct unur_gen *gen );
+static char *_unur_cstd_debug_name_sample( unsigned distr_id, unsigned variant );
 /*---------------------------------------------------------------------------*/
 /* return name of sampling routine.                                          */
 /*---------------------------------------------------------------------------*/
@@ -175,14 +175,17 @@ unur_cstd_set_variant( struct unur_par *par, unsigned variant )
 {
   /* check arguments */
   CHECK_NULL(par,0);
+  CHECK_NULL(par->distr,0);
 
   /* check input */
   _unur_check_par_object( CSTD );
 
+  /* check new parameter for generator */
+  if (_unur_cstd_get_routine_sample(par->distr->id,variant) == NULL)
+    return 0;
+
   /* store date */
   par->variant = variant;
-
-  /** check parameter ?? **/
 
   /* changelog */
   par->set |= CSTD_SET_VARIANT;
@@ -225,7 +228,7 @@ unur_cstd_init( struct unur_par *par )
   if (!gen) { free(par); return NULL; }
 
   /* routines for sampling from generator */
-  SAMPLE = _unur_cstd_get_routine_sample(par,gen);
+  SAMPLE = _unur_cstd_get_routine_sample( par->distr->id,par->variant );
   if (SAMPLE == NULL) return NULL;
 
 #if UNUR_DEBUG & UNUR_DB_INFO
@@ -343,13 +346,13 @@ _unur_cstd_create( struct unur_par *par )
 /*****************************************************************************/
 
 static _unur_sampling_routine_cont *
-_unur_cstd_get_routine_sample( struct unur_par *par, struct unur_gen *gen )
+_unur_cstd_get_routine_sample( unsigned distr_id, unsigned variant )
      /*----------------------------------------------------------------------*/
      /* return pointer to sampling routine.                                  */
      /*                                                                      */
      /* parameters:                                                          */
-     /*   par ... pointer to parameter for building generator object         */
-     /*   gen ... pointer to generator object                                */
+     /*   distr_id  ... identifier for distribution                          */
+     /*   variant   ... variant for method                                   */
      /*                                                                      */
      /* return:                                                              */
      /*   pointer to sampling routine                                        */
@@ -358,30 +361,24 @@ _unur_cstd_get_routine_sample( struct unur_par *par, struct unur_gen *gen )
      /*   return NULL                                                        */
      /*----------------------------------------------------------------------*/
 {
-  /* check arguments */
-  CHECK_NULL(par,NULL);
-  CHECK_NULL(gen,NULL);
-  COOKIE_CHECK(par,CK_CSTD_PAR,NULL);
-  COOKIE_CHECK(gen,CK_CSTD_GEN,NULL);
-
-  switch (par->distr->id) {
+  switch (distr_id) {
   case UNUR_DISTR_EXPONENTIAL:
-    if (par->variant >= CSTD_EXPONENTIAL_N_VAR) goto unknown_variant;
-    return _cstd_exponential_var[par->variant];
+    if (variant >= CSTD_EXPONENTIAL_N_VAR) goto unknown_variant;
+    return _cstd_exponential_var[variant];
   case UNUR_DISTR_GAMMA:
-    if (par->variant >= CSTD_GAMMA_N_VAR) goto unknown_variant;
-    return _cstd_gamma_var[par->variant];
+    if (variant >= CSTD_GAMMA_N_VAR) goto unknown_variant;
+    return _cstd_gamma_var[variant];
   case UNUR_DISTR_NORMAL:
-    if (par->variant >= CSTD_NORMAL_N_VAR) goto unknown_variant;
-    return _cstd_normal_var[par->variant];
+    if (variant >= CSTD_NORMAL_N_VAR) goto unknown_variant;
+    return _cstd_normal_var[variant];
   default:
-    _unur_warning(gen->genid,UNUR_ERR_INIT,"unknown distribution.");
+    _unur_warning(GENTYPE,UNUR_ERR_INIT,"unknown distribution.");
     return NULL;
   }
 
   /* error */
  unknown_variant:
-  _unur_warning(gen->genid,UNUR_ERR_INIT,"unknown variant for special generator");
+  _unur_warning(GENTYPE,UNUR_ERR_SET,"unknown variant for special generator");
   return NULL;
 
 } /* end of _unur_cstd_get_routine_sample() */
@@ -418,7 +415,7 @@ _unur_cstd_debug_init( struct unur_par *par, struct unur_gen *gen )
   /* distribution */
   _unur_distr_cont_debug( gen->distr, gen->genid );
 
-  fprintf(log,"%s: sampling routine = %s()\n",gen->genid,_unur_cstd_debug_name_sample(par,gen));
+  fprintf(log,"%s: sampling routine = %s()\n",gen->genid,_unur_cstd_debug_name_sample(par->distr->id,par->variant));
   fprintf(log,"%s:\n",gen->genid);
 
 } /* end of _unur_cstd_info_init() */
@@ -426,42 +423,35 @@ _unur_cstd_debug_init( struct unur_par *par, struct unur_gen *gen )
 /*****************************************************************************/
 
 static char *
-_unur_cstd_debug_name_sample( struct unur_par *par, struct unur_gen *gen )
+_unur_cstd_debug_name_sample( unsigned distr_id, unsigned variant )
      /*----------------------------------------------------------------------*/
      /* return name of sampling routine.                                     */
      /*                                                                      */
      /* parameters:                                                          */
-     /*   par ... pointer to parameter for building generator object         */
-     /*   gen ... pointer to generator object                                */
+     /*   distr_id  ... identifier for distribution                          */
+     /*   variant   ... variant for method                                   */
      /*                                                                      */
      /* return:                                                              */
      /*   pointer to name of sampling routine                                */
      /*----------------------------------------------------------------------*/
 {
-  /* check arguments */
-  CHECK_NULL(par,NULL);
-  CHECK_NULL(gen,NULL);
-  COOKIE_CHECK(par,CK_CSTD_PAR,NULL);
-  COOKIE_CHECK(gen,CK_CSTD_GEN,NULL);
-
-  switch (par->distr->id) {
+  switch (distr_id) {
   case UNUR_DISTR_EXPONENTIAL:
-    if (par->variant >= CSTD_EXPONENTIAL_N_VAR) goto unknown_variant;
-    return _cstd_exponential_varname[par->variant];
+    if (variant >= CSTD_EXPONENTIAL_N_VAR) goto unknown_variant;
+    return _cstd_exponential_varname[variant];
   case UNUR_DISTR_GAMMA:
-    if (par->variant >= CSTD_GAMMA_N_VAR) goto unknown_variant;
-    return _cstd_gamma_varname[par->variant];
+    if (variant >= CSTD_GAMMA_N_VAR) goto unknown_variant;
+    return _cstd_gamma_varname[variant];
   case UNUR_DISTR_NORMAL:
-    if (par->variant >= CSTD_NORMAL_N_VAR) goto unknown_variant;
-    return _cstd_normal_varname[par->variant];
+    if (variant >= CSTD_NORMAL_N_VAR) goto unknown_variant;
+    return _cstd_normal_varname[variant];
   default:
-    _unur_warning(gen->genid,UNUR_ERR_INIT,"unknown distribution.");
+    _unur_warning(GENTYPE,UNUR_ERR_INIT,"unknown distribution.");
     return NULL;
   }
 
   /* error */
  unknown_variant:
-  _unur_warning(gen->genid,UNUR_ERR_INIT,"unknown variant for special generator");
   return "(UNKOWN)";
 
 } /* end of _unur_cstd_debug_name_sample() */

@@ -60,9 +60,12 @@
           UNUR_DB_CHECKARGS | \
           UNUR_DB_INFO      | \
 0 )
-#endif
 
-//#define UNUR_DEBUG 0
+#else
+
+#define UNUR_DEBUG 0
+
+#endif
 
 /*            UNUR_DB_INFO      | \ */
 

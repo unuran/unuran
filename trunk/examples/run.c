@@ -109,6 +109,7 @@ int main()
 
   distr_xxx = unur_distr_normal(NULL,0);
   par = unur_cstd_new(distr_xxx);
+  unur_cstd_set_variant(par,0);
   unur_run_tests(par,RUN_TESTS,unur_cdf_normal);
   unur_distr_free(distr_xxx);
 

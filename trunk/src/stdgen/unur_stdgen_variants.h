@@ -92,16 +92,29 @@ static char *_cstd_gamma_varname[CSTD_GAMMA_N_VAR] = {
 /*---------------------------------------------------------------------------*/
 /* normal distribution                                                       */
 
-#define CSTD_NORMAL_N_VAR  1
+#define CSTD_NORMAL_N_VAR  7
 
 static _unur_sampling_routine_cont *
 _cstd_normal_var[CSTD_NORMAL_N_VAR] = {
-  /* 0 */  unur_cstd_sample_normal_bm                   /* Box-Muller method */
+  /* 0 */  unur_cstd_sample_normal_bm,                  /* Box-Muller method */
+  /* 1 */  unur_cstd_sample_normal_pol,        /* Polarmethod with rejection */
+  /* 2 */  unur_cstd_sample_normal_nquo,        /* "Naive" ratio-of-uniforms */
+  /* 3 */  unur_cstd_sample_normal_quo,    /* Ratio-of-uniforms with squeeze */
+  /* 4 */  unur_cstd_sample_normal_leva,   /* Ratio-of-uniforms with quadratic bounding curves */
+  /* 5 */  unur_cstd_sample_normal_kr,           /* Kindermann-Ramage method */
+  /* 6 */  unur_cstd_sample_normal_acr        /* Acceptance-complement ratio */
+
 };
 
 #if UNUR_DEBUG & UNUR_DB_INFO
 static char *_cstd_normal_varname[CSTD_NORMAL_N_VAR] = {
-  /* 0 */  "unur_cstd_sample_normal_bm"                 /* Box-Muller method */
+  /* 0 */  "unur_cstd_sample_normal_bm",                /* Box-Muller method */
+  /* 1 */  "unur_cstd_sample_normal_pol",      /* Polarmethod with rejection */
+  /* 2 */  "unur_cstd_sample_normal_nnquo",     /* "Naive" ratio-of-uniforms */
+  /* 3 */  "unur_cstd_sample_normal_nquo",  /* Ratio-of-uniforms with squeeze*/
+  /* 4 */  "unur_cstd_sample_normal_leva",  /* Ratio-of-uniforms with quadratic bounding curves */
+  /* 5 */  "unur_cstd_sample_normal_kr",         /* Kindermann-Ramage method */
+  /* 6 */  "unur_cstd_sample_normal_acr"      /* Acceptance-complement ratio */
 };
 #endif
 

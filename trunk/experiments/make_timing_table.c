@@ -80,7 +80,7 @@ void
 print_usage(void)
 {
 
-#ifdef HAVE_GETOPT
+#if HAVE_DECL_GETOPT
 
   fprintf(stderr,"\n%s [-n size] [-d time] conffile\n",progname);
   fprintf(stderr,"\n");
@@ -125,7 +125,7 @@ int main (int argc, char *argv[])
   /* ------------------------------------------------------------------------*/
   /* read parameters                                                         */
 
-#ifdef HAVE_GETOPT
+#if HAVE_DECL_GETOPT
 
   int c;
 

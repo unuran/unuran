@@ -92,7 +92,7 @@
 /* convergence parameters for the hooke optimization algorithm */
 
 #define VNROU_HOOKE_RHO 0.5 
-#define VNROU_HOOKE_EPSILON 0.001 
+#define VNROU_HOOKE_EPSILON 0.000001 
 #define VNROU_HOOKE_MAXITER 10000
 
 /*---------------------------------------------------------------------------*/

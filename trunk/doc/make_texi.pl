@@ -763,16 +763,43 @@ sub scan_STDGEN {
 	(my $id, my $body) = split /\s+/, $l, 2;
 	
 	if ($body =~ /\[(\w+)\]/) {
-	    # there a reference
-	    my $reference = $1;
-	    $body =~ s/\[.+$//;
+	    # there are references
+	    my @references;
+	    while ($body =~ /\[(\w+)\]/) {
+		$body =~ s /\[(\w+)\]\s*//;
+		push @references, $1;
+	    }
 	    $out .= "\@item $id\n";
+
+	    # tex output
+	    my $texbody = texify_string($body);
+	    $texbody =~ s/(\@tex)/\n$1/g;
+	    $texbody =~ s/(\@end\s+tex)/\n$1\n/g;
+	    $out .= "\@iftex\n";
+	    $out .= $texbody;
+	    foreach my $r (@references) {
+		$out .= " [$r]";
+	    }
+	    $out .= "\n\@end iftex\n";
+
+	    # remove tex marks
+	    $body =~ s/\$//g;
+	    $body =~ s/\@tex//g;
+	    $body =~ s/\@end\s+tex//g;
+
 	    $out .= "\@ifhtml\n";
-	    $out .= "$body \@ref{bib:$reference, [$reference]}\n";
-	    $out .= "\@end ifhtml\n";
-	    $out .= "\@ifnothtml\n";
-	    $out .= "$body [$reference]\n";
-	    $out .= "\@end ifnothtml\n";
+	    $out .= "$body ";
+	    foreach my $r (@references) {
+		$out .= "\@ref{bib:$r, [$r]} ";
+	    }
+	    $out .= "\n\@end ifhtml\n";
+
+	    $out .= "\@ifinfo\n";
+	    $out .= "$body ";
+	    foreach my $r (@references) {
+		$out .= "[$r] ";
+	    }
+	    $out .= "\n\@end ifinfo\n";
 	}
 	
 	else {

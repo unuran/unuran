@@ -87,11 +87,7 @@ _unur_stdgen_gamma_init( struct unur_par *par, struct unur_gen *gen )
   switch ((par) ? par->variant : gen->variant) {
 
   case 0:  /* DEFAULT */
-  case 1:  /* Rejection with log-logistic envelopes */
-    _unur_cstd_set_sampling_routine( par,gen,_unur_stdgen_sample_gamma_gll );
-    return gamma_gll_init( gen );
-
-  case 2:  /* Acceptance Rejection combined with Acceptance Complement */
+  case 1:  /* Acceptance Rejection combined with Acceptance Complement */
     if (gen==NULL) return 1; /* test existence only  */
     if (alpha < 1.) {
       _unur_cstd_set_sampling_routine( par,gen,_unur_stdgen_sample_gamma_gs );
@@ -102,6 +98,10 @@ _unur_stdgen_gamma_init( struct unur_par *par, struct unur_gen *gen )
       return gamma_gd_init( gen );
 
     }
+
+  case 2:  /* Rejection with log-logistic envelopes */
+    _unur_cstd_set_sampling_routine( par,gen,_unur_stdgen_sample_gamma_gll );
+    return gamma_gll_init( gen );
 
   case UNUR_STDGEN_INVERSION:   /* inversion method */
   default: /* no such generator */

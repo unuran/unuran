@@ -106,6 +106,10 @@ are used for @code{UNUR_STDGEN_DEFAULT} and
 @code{UNUR_STDGEN_INVERSION}.
 Also the references for these methods are given (@pxref{Bibliography}).
 
+Notice that these generators might be slower than universal methods.
+
+If @code{DEF} is ommited, the first entry is the default generator.
+
 @end table
 
 =EON

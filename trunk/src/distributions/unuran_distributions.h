@@ -117,10 +117,10 @@ UNUR_DISTR *unur_distr_burr(double *params, int n_params);
    =DOMAIN   -infinity < x < infinity 
    =FPARAM    [0]   : theta  :     : 0 : location :
              [[1]]  : lambda : > 0 : 1 : scale    :
+   =STDGEN   INV  Inversion method
    =EON
 */
 UNUR_DISTR *unur_distr_cauchy(double *params, int n_params);
-/** TODO: STDGEN **/
 
 /*---------------------------------------------------------------------------*/
 /* Chi distribution  [2; ch.18, p.417]                                       */
@@ -136,6 +136,7 @@ UNUR_DISTR *unur_distr_cauchy(double *params, int n_params);
 */
 UNUR_DISTR *unur_distr_chi(double *params, int n_params);
 /** TODO: STDGEN **/
+/** =STDGEN   DEF  Ratio of Uniforms with shift (only for @tex $nu >= 1$@end tex) [MJa87] **/
 
 /*---------------------------------------------------------------------------*/
 /* Chisquare distribution  [2; ch.18, p.416]                                 */
@@ -167,10 +168,10 @@ UNUR_DISTR *unur_distr_chisquare(double *params, int n_params);
    =DOMAIN   theta <= x < infinity 
    =FPARAM    [0]  : sigma : > 0 : 1 : scale    :
 	     [[1]] : theta :     : 0 : location :
+   =STDGEN   INV  Inversion method
    =EON
 */
 UNUR_DISTR *unur_distr_exponential(double *params, int n_params);
-/** TODO: STDGEN **/
 
 /*---------------------------------------------------------------------------*/
 /*  Extreme value type I distribution  [3; ch.22, p.2]                       */
@@ -183,10 +184,10 @@ UNUR_DISTR *unur_distr_exponential(double *params, int n_params);
    =DOMAIN   -infinity < x <infinity
    =FPARAM    [0]  : zeta  :     : 0 : location :
 	     [[1]] : theta : > 0 : 1 : scale    :
+   =STDGEN   INV  Inversion method
    =EON
 */
 UNUR_DISTR *unur_distr_extremeI(double *params, int n_params);
-/** TODO: STDGEN **/
 
 /*---------------------------------------------------------------------------*/
 /* Extreme value type II distribution  [3; ch.22, p.2]                      */
@@ -200,10 +201,10 @@ UNUR_DISTR *unur_distr_extremeI(double *params, int n_params);
    =FPARAM     0   : k     : > 0 :   : shape    :
               [1]  : zeta  :     : 0 : location :
 	     [[2]] : theta : > 0 : 1 : scale    :
+   =STDGEN   INV  Inversion method
    =EON
 */
 UNUR_DISTR *unur_distr_extremeII(double *params, int n_params);
-/** TODO: STDGEN **/
 
 /*---------------------------------------------------------------------------*/
 /* Gamma distribution  [2; ch.17, p.337]                                     */
@@ -217,10 +218,11 @@ UNUR_DISTR *unur_distr_extremeII(double *params, int n_params);
    =FPARAM     0    : alpha : > 0 :   : shape    :
               [1]   : beta  : > 0 : 1 : scale    :
 	     [[2]]  : gamma :     : 0 : location :
+   =STDGEN   DEF  Acceptance Rejection combined with Acceptance Complement [ADa74] [ADa82]
+             2    Rejection from log-logistic envelopes [CHa77]
    =EON
 */
 UNUR_DISTR *unur_distr_gamma(double *params, int n_params);
-/** TODO: STDGEN **/
 
 /*---------------------------------------------------------------------------*/
 /* Generalized inverse Gaussian distribution  [2; ch.15, p.284]              */
@@ -238,10 +240,10 @@ UNUR_DISTR *unur_distr_gig(double *params, int n_params);
    =DOMAIN   -infinity < x <infinity
    =FPARAM    [0]  : theta :     : 0 : location :
 	     [[1]] : phi   : > 0 : 1 : scale    :
+   =STDGEN   INV  Inversion method
    =EON
 */
 UNUR_DISTR *unur_distr_laplace(double *params, int n_params);
-/** TODO: STDGEN **/
 
 /*---------------------------------------------------------------------------*/
 /* Logistic distribution  [3; ch.23, p.115]                                  */
@@ -254,10 +256,10 @@ UNUR_DISTR *unur_distr_laplace(double *params, int n_params);
    =DOMAIN   -infinity < x <infinity
    =FPARAM    [0]  : alpha :     : 0 : location :
 	     [[1]] : beta  : > 0 : 1 : scale    :
+   =STDGEN   INV  Inversion method
    =EON
 */
 UNUR_DISTR *unur_distr_logistic(double *params, int n_params);
-/** TODO: STDGEN **/
 
 /*---------------------------------------------------------------------------*/
 /*  Lognormal distribution  [2; ch.14, p.208]                                */
@@ -295,11 +297,10 @@ UNUR_DISTR *unur_distr_lomax(double *params, int n_params);
              1    Box-Muller method [BMa58]
 	     2    Polar method with rejection [MGa62]
 	     3    Kindermann-Ramage method [KRa76]
-             INV  Inversion method
+             INV  Inversion method (slow)
    =EON
 */
 UNUR_DISTR *unur_distr_normal( double *params, int n_params );
-/** TODO: STDGEN **/
 
 /*---------------------------------------------------------------------------*/
 /* Pareto distribution (of first kind)  [2; ch.20, p.574]                    */
@@ -327,7 +328,7 @@ UNUR_DISTR *unur_distr_pareto( double *params, int n_params );
 
 /*---------------------------------------------------------------------------*/
 /* Planck distribution                                                       */
-/* not implemented */
+/* not implemented **/
 
 /*---------------------------------------------------------------------------*/
 /*  Power-exponential (Subbotin) distribution  [3; ch.24, p.195]             */
@@ -339,10 +340,10 @@ UNUR_DISTR *unur_distr_pareto( double *params, int n_params );
    =CONST    1 / (2 * Gamma(1+1/tau))
    =DOMAIN   -infinity < x < infinity
    =FPARAM   0 : tau : > 0 : : shape :
+   =STDGEN   DEF  Transformed density rejection (only for @tex $tau >= 1$@end tex) [DLa86]
    =EON
 */
 UNUR_DISTR *unur_distr_powerexponential(double *params, int n_params);
-/** TODO: STDGEN **/
 
 /*---------------------------------------------------------------------------*/
 /* Rayleigh distribution  [2; ch.18, p.456]                                  */
@@ -386,10 +387,10 @@ UNUR_DISTR *unur_distr_slash(double *params, int n_params);
    =CONST    1
    =DOMAIN   0 <= x <= 1
    =FPARAM   [0] : H : 0 <= H <= 1 : 1/2 : shape :
+   =STDGEN   INV  Inversion method
    =EON
 */
 UNUR_DISTR *unur_distr_triangular(double *params, int n_params);
-/** TODO: STDGEN **/
 
 /*---------------------------------------------------------------------------*/
 /* Uniform distribution  [3; ch.26, p.276]                                   */
@@ -402,10 +403,10 @@ UNUR_DISTR *unur_distr_triangular(double *params, int n_params);
    =DOMAIN   a < x < b
    =FPARAM   [0] : a :     : 0 : location :
              [1] : b : > a : 1 : location :
+   =STDGEN   INV  Inversion method
    =EON
 */
 UNUR_DISTR *unur_distr_uniform(double *params, int n_params);
-/** TODO: STDGEN **/
 
 /*---------------------------------------------------------------------------*/
 /* Weibull distribution  [2; ch.21, p.628]                                   */
@@ -419,10 +420,10 @@ UNUR_DISTR *unur_distr_uniform(double *params, int n_params);
    =FPARAM     0    : c     : > 0 :   : shape    :
               [1]   : alpha : > 0 : 1 : scale    :
 	     [[2]]  : zeta  :     : 0 : location :
+   =STDGEN   INV  Inversion method
    =EON
 */
 UNUR_DISTR *unur_distr_weibull(double *params, int n_params);
-/** TODO: STDGEN **/
 
 /*---------------------------------------------------------------------------*/
 

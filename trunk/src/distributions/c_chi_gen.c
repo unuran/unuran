@@ -85,10 +85,14 @@ _unur_stdgen_chi_init( struct unur_par *par, struct unur_gen *gen )
 
   case 0:  /* DEFAULT */
   case 1:  /* Ratio of Uniforms with shift */
-    if (par->distr->data.cont.params[0] < 1.) {    /* nu < 1 */
-      _unur_error(NULL,UNUR_ERR_GEN_CONDITION,"");
-      return 0;
+    { /* check parameters of distribution */
+      double d_nu = (par) ? par->distr->data.cont.params[0] : nu;
+      if (d_nu < 1.) {
+	_unur_error(NULL,UNUR_ERR_GEN_CONDITION,"");
+	return 0;
+      }
     }
+
     /* nu >= 1 !!!! */
     _unur_cstd_set_sampling_routine( par,gen,_unur_stdgen_sample_chi_chru );
     return chi_chru_init( gen );
@@ -173,6 +177,8 @@ _unur_stdgen_sample_chi_chru( struct unur_gen *gen )
 {
   /* -X- generator code -X- */
   double u,v,z,zz,r;
+
+  return 0;
 
   /* check arguments */
   CHECK_NULL(gen,0.); COOKIE_CHECK(gen,CK_CSTD_GEN,0.);

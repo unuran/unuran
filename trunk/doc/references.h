@@ -50,15 +50,48 @@ John Wiley & Sons, Inc., New York.
 
 @c -------------------------------------------------------
 
+@subheading Universal methods
+
+@table @t
+
+@anchor{bib:DLa86}
+@item [DLa86]
+@sc{L. Devroye} (1986).
+@i{Non-Uniform Random Variate Generation},
+Springer Verlag, New York.
+
+@end table
+
+@c -------------------------------------------------------
+
 @subheading Special generators
 
 @table @t
+
+@anchor{bib:ADa74}
+@item [ADa74]
+@sc{J.H. Ahrens, U. Dieter} (1974).
+@i{Computer methods for sampling from gamma, beta, Poisson
+and binomial distributions},
+Computing 12, 223-246.
+
+@anchor{bib:ADa82}
+@item [ADa82]
+@sc{J.H. Ahrens, U. Dieter} (1982).
+@i{Generating gamma variates by a modified rejection technique},
+Communications of the ACM 25, 47-54.
 
 @anchor{bib:BMa58}
 @item [BMa58]
 @sc{G.E.P. Box and M.E. Muller} (1958).
 @i{A note on the generation of random normal deviates},
 Annals Math. Statist. 29, 610-611. 
+
+@anchor{bib:CHa77}
+@item [CHa77]
+@sc{R.C.H. Cheng} (1977).
+@i{The Generation of Gamma Variables with Non-Integral Shape Parameter},
+Appl. Statist. 26(1), 71-75.
 
 @anchor{bib:HDa90}
 @item [HDa90]
@@ -71,6 +104,12 @@ OR Spektrum 12, 181-185.
 @sc{A.J. Kinderman and J.G. Ramage} (1976).
 @i{Computer Generation of Normal Random Variables},
 J. Am. Stat. Assoc. 71(356), 893 - 898.
+
+@anchor{bib:MFa87}
+@item [MFa87]
+@sc{J.F. Monahan} (1987).
+@i{An algorithm for generating chi random variables},
+ACM Trans. Math. Software 13, 168-172.
 
 @anchor{bib:MGa62}
 @item [MGa62]

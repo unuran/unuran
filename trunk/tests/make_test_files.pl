@@ -653,7 +653,7 @@ sub scan_validate {
 
     print "\n\t/* test finished */\n";
     print "\ttest_ok &= (n_tests_failed>2) ? 0 : 1;   /* we accept 2 failure */\n";
-    print "\t(n_tests_failed>2) ? printf(\" --> failed] \") : printf(\" --> ok] \");\n";
+    print "\t(n_tests_failed>2) ? printf(\" ==> failed] \") : printf(\" ==> ok] \");\n";
 
     print "\n\t/* prevent compiler from making useless annoying warnings */\n";
     print "\tdistr[0] = NULL;\n";
@@ -722,7 +722,7 @@ EOM
 
 	/* test finished */
 	test_ok &= (FAILED) ? 0 : 1;
-	(FAILED) ? printf("--> failed] ") : printf("--> ok] ");
+	(FAILED) ? printf(" ==> failed] ") : printf(" ==> ok] ");
 
 #if WITH_DMALLOC
 	dmalloc_vmessage("section = $section  ================================\\n",NULL);
@@ -854,7 +854,7 @@ EOM
 
 	/* test finished */
 	test_ok &= (n_tests_failed) ? 0 : 1;
-	(n_tests_failed) ? printf("--> failed] ") : printf("--> ok] ");
+	(n_tests_failed) ? printf(" ==> failed] ") : printf(" ==> ok] ");
 
 #if WITH_DMALLOC
 	dmalloc_vmessage("section = $section  ================================\\n",NULL);

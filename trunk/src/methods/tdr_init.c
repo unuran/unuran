@@ -859,7 +859,7 @@ _unur_tdr_interval_new( struct unur_gen *gen, double x, double fx, int is_mode )
     /*      iv->dTfx = 0.; */
     break;
   }
-  
+
   /* the program requires dTfx > -INFINITY */
   if (iv->dTfx <= -INFINITY)
     iv->dTfx = INFINITY;

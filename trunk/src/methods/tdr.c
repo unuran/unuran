@@ -315,28 +315,102 @@
 
 /*---------------------------------------------------------------------------*/
 
-static struct unur_gen *tdr_create( struct unur_par *par );
-static int get_starting_cpoints( struct unur_par *par, struct unur_gen *gen );
-static int get_starting_intervals( struct unur_par *par, struct unur_gen *gen );
-static struct unur_tdr_interval *new_interval( struct unur_gen *gen, double x, double fx, int is_mode );
-static int param_interval( struct unur_gen *gen, struct unur_tdr_interval *iv );
-static int get_division_point( struct unur_gen *gen, struct unur_tdr_interval *iv, double *ipt );
-static double area( struct unur_gen *gen, struct unur_tdr_interval *iv, double slope, double x );
-static int split_interval( struct unur_gen *gen, struct unur_tdr_interval *iv_old, double x, double fx );
-static int make_guide_table( struct unur_gen *gen );
+static struct unur_gen *_unur_tdr_create( struct unur_par *par );
+/*---------------------------------------------------------------------------*/
+/* create new (almost empty) generator object.                               */
+/*---------------------------------------------------------------------------*/
 
-static void iv_push_free( struct unur_gen *gen );
-static struct unur_tdr_interval *iv_pop_free( struct unur_gen *gen );
+static int _unur_tdr_get_starting_cpoints( struct unur_par *par, struct unur_gen *gen );
+/*---------------------------------------------------------------------------*/
+/* create list of construction points for starting segments.                 */
+/* if user has not provided such points compute these by means of the        */
+/* "equi-angle rule".                                                        */
+/*---------------------------------------------------------------------------*/
+
+static int _unur_tdr_get_starting_intervals( struct unur_par *par, struct unur_gen *gen );
+/*---------------------------------------------------------------------------*/
+/* compute intervals from given starting construction points.                */
+/*---------------------------------------------------------------------------*/
+
+static struct unur_tdr_interval *_unur_tdr_interval_new( struct unur_gen *gen, 
+							 double x, double fx, int is_mode );
+/*---------------------------------------------------------------------------*/
+/* make a new segment with left construction point x.                        */
+/*---------------------------------------------------------------------------*/
+
+static int _unur_tdr_interval_parameter( struct unur_gen *gen, struct unur_tdr_interval *iv );
+/*---------------------------------------------------------------------------*/
+/* compute all necessary data for interval.                                  */
+/* return 0 if p.d.f. is not T-concave.                                      */
+/*---------------------------------------------------------------------------*/
+
+static int _unur_tdr_interval_split( struct unur_gen *gen, 
+				      struct unur_tdr_interval *iv_old, double x, double fx );
+/*---------------------------------------------------------------------------*/
+/* split am interval point x. return 0 if not successful.                    */                                           
+/*---------------------------------------------------------------------------*/
+
+static int _unur_tdr_make_guide_table( struct unur_gen *gen );
+/*---------------------------------------------------------------------------*/
+/* make a guide table for indexed search.                                    */
+/*---------------------------------------------------------------------------*/
+
+static int _unur_tdr_interval_division_point( struct unur_gen *gen,
+					      struct unur_tdr_interval *iv, double *ipt );
+/*---------------------------------------------------------------------------*/
+/* compute cutting point of interval into left and right part.               */
+/*---------------------------------------------------------------------------*/
+
+static double area( struct unur_gen *gen, struct unur_tdr_interval *iv, double slope, double x );
+/*---------------------------------------------------------------------------*/
+/* compute area below piece of hat or slope in                               */
+/*---------------------------------------------------------------------------*/
+
+static struct unur_tdr_interval *_unur_tdr_iv_stack_pop( struct unur_gen *gen );
+/*---------------------------------------------------------------------------*/
+/* pop an interval from the stack of free intervals.                         */
+/*---------------------------------------------------------------------------*/
+
+static void _unur_tdr_iv_stack_push( struct unur_gen *gen );
+/*---------------------------------------------------------------------------*/
+/* push the last popped interval back onto the stack.                        */
+/*---------------------------------------------------------------------------*/
+
 
 #if UNUR_DEBUG & UNUR_DB_INFO
-static void tdr_info_init( struct unur_par *par, struct unur_gen *gen );
-static void tdr_info_free( struct unur_gen *gen );
-static void tdr_info_intervals( struct unur_gen *gen );
-static void tdr_info_sample( struct unur_gen *gen, struct unur_tdr_interval *iv, struct unur_tdr_interval *pt, 
-			     double x, double fx, double hx, double sqx );
-static void tdr_info_split_start( struct unur_gen *gen, struct unur_tdr_interval *iv, double x, double fx );
-static void tdr_info_split_stop( struct unur_gen *gen, 
-				 struct unur_tdr_interval *iv_left, struct unur_tdr_interval *iv_right );
+/*---------------------------------------------------------------------------*/
+/* the following functions print debugging information on output stream,     */
+/* i.e., into the log file if not specified otherwise.                       */
+/*---------------------------------------------------------------------------*/
+
+static void _unur_tdr_debug_init( struct unur_par *par, struct unur_gen *gen );
+/*---------------------------------------------------------------------------*/
+/* print after generator has been initialized has completed.                 */
+/*---------------------------------------------------------------------------*/
+
+static void _unur_tdr_debug_free( struct unur_gen *gen );
+/*---------------------------------------------------------------------------*/
+/* print before generater is destroyed.                                      */
+/*---------------------------------------------------------------------------*/
+
+static void _unur_tdr_debug_intervals( struct unur_gen *gen );
+/*---------------------------------------------------------------------------*/
+/* print data for intervals                                                  */
+/*---------------------------------------------------------------------------*/
+
+static void _unur_tdr_debug_sample( struct unur_gen *gen, struct unur_tdr_interval *iv, struct unur_tdr_interval *pt, 
+				    double x, double fx, double hx, double sqx );
+/*---------------------------------------------------------------------------*/
+/* print data while sampling from generators.                                */
+/*---------------------------------------------------------------------------*/
+
+static void _unur_tdr_debug_split_start( struct unur_gen *gen, 
+					 struct unur_tdr_interval *iv, double x, double fx );
+static void _unur_tdr_debug_split_stop( struct unur_gen *gen, 
+					struct unur_tdr_interval *iv_left, struct unur_tdr_interval *iv_right );
+/*---------------------------------------------------------------------------*/
+/* print before and after an interval has been split (not / successfully).   */
+/*---------------------------------------------------------------------------*/
 #endif
 
 /*---------------------------------------------------------------------------*/
@@ -370,25 +444,21 @@ static void tdr_info_split_stop( struct unur_gen *gen,
 /*****************************************************************************/
 
 struct unur_par *
- unur_tdr_new( double (*pdf)(double x,double *pdf_param, int n_pdf_params), 
-	       double (*dpdf)(double x,double *pdf_param, int n_pdf_params) )
-/*---------------------------------------------------------------------------*/
-/* get default parameters                                                    */
-/*                                                                           */
-/* parameters:                                                               */
-/*   pdf  ... probability density function of the desired distribution       */
-/*   dpdf ... derivative of p.d.f.                                           */
-/*                                                                           */
-/* return:                                                                   */
-/*   default parameters (pointer to structure)                               */
-/*                                                                           */
-/* error:                                                                    */
-/*   return NULL                                                             */
-/*                                                                           */
-/* comment:                                                                  */
-/*   if the area below the p.d.f. is not close to 1 it is necessary to set   */
-/*   pdf_area to an approximate value of its area (+/- 30 % is ok).          */
-/*---------------------------------------------------------------------------*/
+unur_tdr_new( double (*pdf)(double x,double *pdf_param, int n_pdf_params), 
+	      double (*dpdf)(double x,double *pdf_param, int n_pdf_params) )
+     /*----------------------------------------------------------------------*/
+     /* get default parameters                                               */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   pdf  ... probability density function of the desired distribution  */
+     /*   dpdf ... derivative of p.d.f.                                      */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   default parameters (pointer to structure)                          */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return NULL                                                        */
+     /*----------------------------------------------------------------------*/
 { 
   struct unur_par *par;
 
@@ -433,19 +503,19 @@ struct unur_par *
 /*****************************************************************************/
 
 struct unur_gen *
- unur_tdr_init( struct unur_par *par )
-/*---------------------------------------------------------------------------*/
-/* initialize new generator                                                  */
-/*                                                                           */
-/* parameters:                                                               */
-/*   par ... pointer to paramters for building generator object              */
-/*                                                                           */
-/* return:                                                                   */
-/*   pointer to generator object                                             */
-/*                                                                           */
-/* error:                                                                    */
-/*   return NULL                                                             */
-/*---------------------------------------------------------------------------*/
+unur_tdr_init( struct unur_par *par )
+     /*----------------------------------------------------------------------*/
+     /* initialize new generator                                             */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par ... pointer to paramters for building generator object         */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to generator object                                        */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return NULL                                                        */
+     /*----------------------------------------------------------------------*/
 { 
   struct unur_gen *gen;
 
@@ -454,17 +524,17 @@ struct unur_gen *
   COOKIE_CHECK(par,CK_TDR_PAR,NULL);
 
   /* create a new empty generator object */
-  gen = tdr_create(par);
+  gen = _unur_tdr_create(par);
   if (!gen) { free(par); return NULL; }
 
   /* get starting points */
-  if (!get_starting_cpoints(par,gen) ) {
+  if (!_unur_tdr_get_starting_cpoints(par,gen) ) {
     free(par); unur_tdr_free(gen);
     return NULL;
   }
 
   /* compute intervals for given starting points */
-  if ( !get_starting_intervals(par,gen) ) {
+  if ( !_unur_tdr_get_starting_intervals(par,gen) ) {
     free(par); unur_tdr_free(gen);
     return NULL;
   }
@@ -477,11 +547,11 @@ struct unur_gen *
   }
 
   /* make initial guide table */
-  make_guide_table(gen);
+  _unur_tdr_make_guide_table(gen);
 
 #if UNUR_DEBUG & UNUR_DB_INFO
   /* write info into log file */
-  if (gen->debug) tdr_info_init(par,gen);
+  if (gen->debug) _unur_tdr_debug_init(par,gen);
 #endif
 
   /* free parameters */
@@ -502,19 +572,19 @@ struct unur_gen *
 /*****************************************************************************/
 
 double
- unur_tdr_sample_log( struct unur_gen *gen )
-/*---------------------------------------------------------------------------*/
-/* sample from generator; T(x) = log(x)                                      */
-/*                                                                           */
-/* parameters:                                                               */
-/*   gen ... pointer to generator object                                     */
-/*                                                                           */
-/* return:                                                                   */
-/*   double (sample from random variate)                                     */
-/*                                                                           */
-/* error:                                                                    */
-/*   return 0.                                                               */
-/*---------------------------------------------------------------------------*/
+unur_tdr_sample_log( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* sample from generator; T(x) = log(x)                                 */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   double (sample from random variate)                                */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return 0.                                                          */
+     /*----------------------------------------------------------------------*/
 { 
   struct unur_tdr_interval *iv, *pt;
   double u,v,x;
@@ -578,7 +648,7 @@ double
 
     /* being above squeeze is bad. improve the situation! */
     if (GEN.n_ivs < GEN.max_ivs && GEN.max_ratio * GEN.Atotal > GEN.Asqueeze)
-      split_interval(gen,iv,x,fx);
+      _unur_tdr_interval_split(gen,iv,x,fx);
 
     /** TODO: test fx >= sqx ?? (use transformed denisty) **/
 
@@ -594,19 +664,19 @@ double
 /*****************************************************************************/
 
 double
- unur_tdr_sample_sqrt( struct unur_gen *gen )
-/*---------------------------------------------------------------------------*/
-/* sample from generator; T(x) = -1./sqrt(x)                                 */
-/*                                                                           */
-/* parameters:                                                               */
-/*   gen ... pointer to generator object                                     */
-/*                                                                           */
-/* return:                                                                   */
-/*   double (sample from random variate)                                     */
-/*                                                                           */
-/* error:                                                                    */
-/*   return 0.                                                               */
-/*---------------------------------------------------------------------------*/
+unur_tdr_sample_sqrt( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* sample from generator; T(x) = -1./sqrt(x)                            */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   double (sample from random variate)                                */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return 0.                                                          */
+     /*----------------------------------------------------------------------*/
 { 
   struct unur_tdr_interval *iv, *pt;
   double u,v,x;
@@ -679,7 +749,7 @@ double
 
     /* being above squeeze is bad. improve the situation! */
     if (GEN.n_ivs < GEN.max_ivs && GEN.max_ratio * GEN.Atotal > GEN.Asqueeze)
-      split_interval(gen,iv,x,fx);
+      _unur_tdr_interval_split(gen,iv,x,fx);
 
     /** TODO: test fx >= sqx ?? (use transformed denisty) **/
 
@@ -695,56 +765,57 @@ double
 /*****************************************************************************/
 
 double
- unur_tdr_sample_check( struct unur_gen *gen )
-/*---------------------------------------------------------------------------*/
-/* sample from generator and verify results                                  */
-/*                                                                           */
-/* parameters:                                                               */
-/*   gen ... pointer to generator object                                     */
-/*                                                                           */
-/* return:                                                                   */
-/*   double (sample from random variate)                                     */
-/*                                                                           */
-/* error:                                                                    */
-/*   return 0.                                                               */
-/*                                                                           */
-/* comment:                                                                  */
-/*   x   ... random point                                                    */
-/*   x0  ... left construction point in interval                             */
-/*   x1  ... right construction point in interval                            */
-/*   f   ... p.d.f.                                                          */
-/*   Tf  ... transformed p.d.f.                                              */
-/*   dTf ... derivative of transformed p.d.f.                                */
-/*   sq  ... slope of squeeze in interval                                    */
-/*                                                                           */
-/*---------------------------------------------------------------------------*/
-/*   if (Tf)'(x0) == 0:                                                      */
-/*   X = x0 + U / f(x0)                                                      */
-/*   U ~ U(0,area below hat)                                                 */
-/*                                                                           */
-/*---------------------------------------------------------------------------*/
-/*   log(x):                                                                 */
-/*   squeeze(x) = f(x0) * \exp(sq * (x-x0))                                  */
-/*                                                                           */
-/*   left hat:                                                               */
-/*   X = x0 + 1/(Tf)'(x0) * \log( (Tf)'(x0)/f(x0) * U + 1 )                  */
-/*   U ~ U(0,area below left hat)                                            */
-/*                                                                           */
-/*   right hat:                                                              */
-/*   X = x1 + 1/(Tf)'(x1) * \log( (Tf)'(x1)/f(x1) * U + 1 )                  */
-/*   U ~ U(- area below right hat,0)                                         */
-/*---------------------------------------------------------------------------*/
-/*   -1/sqrt(x):                                                             */
-/*                                                                           */
-/*   squeeze(x) = 1 / (Tf(x0) + sq * (x-x0))^2                               */
-/*   left hat:                                                               */
-/*   X = x0 + (Tf(x0)^2 * U) / (1 - Tf(x0) * (Tf)'(x0) * U)                  */
-/*   U ~ U(0,area below left hat)                                            */
-/*                                                                           */
-/*   right hat:                                                              */
-/*   X = x1 + (Tf(x1)^2 * U) / (1 - Tf(x1) * (Tf)'(x1) * U)                  */
-/*   U ~ U(- area below right hat,0)                                         */
-/*---------------------------------------------------------------------------*/
+unur_tdr_sample_check( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* sample from generator and verify results                             */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   double (sample from random variate)                                */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return 0.                                                          */
+     /*                                                                      */
+     /*======================================================================*/
+     /* comment:                                                             */
+     /*   x   ... random point                                               */
+     /*   x0  ... left construction point in interval                        */
+     /*   x1  ... right construction point in interval                       */
+     /*   f   ... p.d.f.                                                     */
+     /*   Tf  ... transformed p.d.f.                                         */
+     /*   dTf ... derivative of transformed p.d.f.                           */
+     /*   sq  ... slope of squeeze in interval                               */
+     /*                                                                      */
+     /*----------------------------------------------------------------------*/
+     /*   if (Tf)'(x0) == 0:                                                 */
+     /*   X = x0 + U / f(x0)                                                 */
+     /*   U ~ U(0,area below hat)                                            */
+     /*                                                                      */
+     /*----------------------------------------------------------------------*/
+     /*   log(x):                                                            */
+     /*   squeeze(x) = f(x0) * \exp(sq * (x-x0))                             */
+     /*                                                                      */
+     /*   left hat:                                                          */
+     /*   X = x0 + 1/(Tf)'(x0) * \log( (Tf)'(x0)/f(x0) * U + 1 )             */
+     /*   U ~ U(0,area below left hat)                                       */
+     /*                                                                      */
+     /*   right hat:                                                         */
+     /*   X = x1 + 1/(Tf)'(x1) * \log( (Tf)'(x1)/f(x1) * U + 1 )             */
+     /*   U ~ U(- area below right hat,0)                                    */
+     /*----------------------------------------------------------------------*/
+     /*   -1/sqrt(x):                                                        */
+     /*                                                                      */
+     /*   squeeze(x) = 1 / (Tf(x0) + sq * (x-x0))^2                          */
+     /*   left hat:                                                          */
+     /*   X = x0 + (Tf(x0)^2 * U) / (1 - Tf(x0) * (Tf)'(x0) * U)             */
+     /*   U ~ U(0,area below left hat)                                       */
+     /*                                                                      */
+     /*   right hat:                                                         */
+     /*   X = x1 + (Tf(x1)^2 * U) / (1 - Tf(x1) * (Tf)'(x1) * U)             */
+     /*   U ~ U(- area below right hat,0)                                    */
+     /*----------------------------------------------------------------------*/
 { 
   struct unur_tdr_interval *iv, *pt;
   double u,v,x;
@@ -855,7 +926,7 @@ double
 #if UNUR_DEBUG & UNUR_DB_INFO
     /* write info into log file (in case error) */
     if (error && (gen->debug & TDR_DB_SAMPLE)) 
-      tdr_info_sample( gen, iv, pt, x, fx, hx, sqx ); 
+      _unur_tdr_debug_sample( gen, iv, pt, x, fx, hx, sqx ); 
 #endif
 
     /* accept or reject */
@@ -871,7 +942,7 @@ double
 
     /* being above squeeze is bad. improve the situation! */
     if (GEN.n_ivs < GEN.max_ivs && GEN.max_ratio * GEN.Atotal > GEN.Asqueeze)
-      split_interval(gen,iv,x,fx);
+      _unur_tdr_interval_split(gen,iv,x,fx);
 
     if (v <= fx)
       /* between p.d.f. and squeeze */
@@ -885,13 +956,13 @@ double
 /*****************************************************************************/
 
 void
- unur_tdr_free( struct unur_gen *gen )
-/*---------------------------------------------------------------------------*/
-/* deallocate generator object                                               */
-/*                                                                           */
-/* parameters:                                                               */
-/*   gen ... pointer to generator object                                     */
-/*---------------------------------------------------------------------------*/
+unur_tdr_free( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* deallocate generator object                                          */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*----------------------------------------------------------------------*/
 { 
   /* check arguments */
   if( !gen ) /* nothing to do */
@@ -904,7 +975,7 @@ void
 
   /* write info into log file */
 #if UNUR_DEBUG & UNUR_DB_INFO
-  if (gen->debug) tdr_info_free(gen);
+  if (gen->debug) _unur_tdr_debug_free(gen);
 #endif
 
   /* free linked list of intervals and others */
@@ -922,19 +993,19 @@ void
 /*****************************************************************************/
 
 static struct unur_gen *
- tdr_create( struct unur_par *par )
-/*---------------------------------------------------------------------------*/
-/* allocate memory for generator                                             */
-/*                                                                           */
-/* parameters:                                                               */
-/*   par ... pointer to parameter for building generator object              */
-/*                                                                           */
-/* return:                                                                   */
-/*   pointer to (empty) generator object with default settings               */
-/*                                                                           */
-/* error:                                                                    */
-/*   return NULL                                                             */
-/*---------------------------------------------------------------------------*/
+_unur_tdr_create( struct unur_par *par )
+     /*----------------------------------------------------------------------*/
+     /* allocate memory for generator                                        */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par ... pointer to parameter for building generator object         */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to (empty) generator object with default settings          */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return NULL                                                        */
+     /*----------------------------------------------------------------------*/
 {
   struct unur_gen *gen;
   unsigned long variant;
@@ -1026,29 +1097,28 @@ static struct unur_gen *
   /* return pointer to (almost empty) generator object */
   return(gen);
 
-} /* end of tdr_create() */
+} /* end of _unur_tdr_create() */
 
 /*****************************************************************************/
 
 static int
- get_starting_cpoints( struct unur_par *par, struct unur_gen *gen )
-/*---------------------------------------------------------------------------*/
-/* list of construction points for starting intervals.                       */
-/* if not provided as arguments compute these                                */
-/* by means of the "equiangular rule" from AROU.                             */
-/* (for three startings points use Hoermann's rule of thumb, see UTDR).      */
-/** TODO (?) **/
-/*                                                                           */
-/* parameters:                                                               */
-/*   par ... pointer to parameter for building generator object              */
-/*   gen ... pointer to generator object                                     */
-/*   use_boundary ... indicates whether boundary  points are used as         */
-/*                    construction points.                                   */
-/*                                                                           */
-/* return:                                                                   */
-/*   1 ... if successful                                                     */
-/*   0 ... otherwise                                                         */
-/*---------------------------------------------------------------------------*/
+_unur_tdr_get_starting_cpoints( struct unur_par *par, struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* list of construction points for starting intervals.                  */
+     /* if not provided as arguments compute these                           */
+     /* by means of the "equiangular rule" from AROU.                        */
+     /** TODO (?) **/
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par ... pointer to parameter for building generator object         */
+     /*   gen ... pointer to generator object                                */
+     /*   use_boundary ... indicates whether boundary  points are used as    */
+     /*                    construction points.                              */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... if successful                                                */
+     /*   0 ... otherwise                                                    */
+     /*----------------------------------------------------------------------*/
 {
   struct unur_tdr_interval *iv;
   double left_angle, right_angle, diff_angle, angle;
@@ -1092,7 +1162,7 @@ static int
   /* the left boundary point */
   x = x_last = PAR.bleft;
   fx = fx_last = (x <= -INFINITY) ? 0. : PDF(x);
-  iv = GEN.iv = new_interval( gen, x, fx, FALSE );
+  iv = GEN.iv = _unur_tdr_interval_new( gen, x, fx, FALSE );
   CHECK_NULL(iv,0);        /* case of error */
   is_increasing = 1;       /* assume pdf(x) is increasing for the first construction points */
 
@@ -1181,7 +1251,7 @@ static int
     }
     
     /* need a new interval */
-    iv = iv->next = new_interval( gen, x, fx, is_mode );
+    iv = iv->next = _unur_tdr_interval_new( gen, x, fx, is_mode );
     CHECK_NULL(iv,0);     /* case of error */
 
     /* p.d.f. still increasing ? */
@@ -1204,23 +1274,23 @@ static int
   /* o.k. */
   return 1;
 
-} /* end of get_starting_cpoints() */
+} /* end of _unur_tdr_get_starting_cpoints() */
 
 /*****************************************************************************/
 
 static int
- get_starting_intervals( struct unur_par *par, struct unur_gen *gen )
-/*---------------------------------------------------------------------------*/
-/* compute intervals for starting points                                     */
-/*                                                                           */
-/* parameters:                                                               */
-/*   par          ... pointer to parameter list                              */
-/*   gen          ... pointer to generator object                            */
-/*                                                                           */
-/* return:                                                                   */
-/*   1 ... success                                                           */
-/*   0 ... error                                                             */
-/*---------------------------------------------------------------------------*/
+_unur_tdr_get_starting_intervals( struct unur_par *par, struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* compute intervals for starting points                                */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par          ... pointer to parameter list                         */
+     /*   gen          ... pointer to generator object                       */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... success                                                      */
+     /*   0 ... error                                                        */
+     /*----------------------------------------------------------------------*/
 {
   struct unur_tdr_interval *iv, *iv_new; 
   double x,fx;              /* construction point, value of p.d.f. at x */
@@ -1233,7 +1303,7 @@ static int
   for( iv=GEN.iv; iv->next != NULL; ) {
 
     /* compute parameters for interval */
-    switch (param_interval(gen, iv)) {
+    switch (_unur_tdr_interval_parameter(gen, iv)) {
     case 0:     /* p.d.f. not T-concave */
       return 0;
     case 1:     /* computation of parameters for interval successful */
@@ -1274,7 +1344,7 @@ static int
       _unur_error(gen->genid,UNUR_ERR_INIT,"cannot create bounded hat!");
       return 0;
     }
-    iv_new = new_interval( gen, x, fx, FALSE );
+    iv_new = _unur_tdr_interval_new( gen, x, fx, FALSE );
     CHECK_NULL(iv_new,0);     /* case of error */
     /* insert into linked list */
     iv_new->next = iv->next;
@@ -1284,27 +1354,27 @@ static int
   /* o.k. */
   return 1;
 
-} /* end of get_starting_intervals() */
+} /* end of _unur_tdr_get_starting_intervals() */
 
 /*****************************************************************************/
 
 static struct unur_tdr_interval *
- new_interval( struct unur_gen *gen, double x, double fx, int is_mode )
-/*---------------------------------------------------------------------------*/
-/* get new interval and compute left construction point at x.                */
-/*                                                                           */
-/* parameters:                                                               */
-/*   gen     ... pointer to generator object                                 */
-/*   x       ... left point of new interval                                  */
-/*   fx      ... value of p.d.f. at x                                        */
-/*   is_mode ... if TRUE, x is a mode of the p.d.f.                          */
-/*                                                                           */
-/* return:                                                                   */
-/*   pointer to new interval                                                 */
-/*                                                                           */
-/* error:                                                                    */
-/*   return NULL                                                             */
-/*---------------------------------------------------------------------------*/
+_unur_tdr_interval_new( struct unur_gen *gen, double x, double fx, int is_mode )
+     /*----------------------------------------------------------------------*/
+     /* get new interval and compute left construction point at x.           */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen     ... pointer to generator object                            */
+     /*   x       ... left point of new interval                             */
+     /*   fx      ... value of p.d.f. at x                                   */
+     /*   is_mode ... if TRUE, x is a mode of the p.d.f.                     */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to new interval                                            */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return NULL                                                        */
+     /*----------------------------------------------------------------------*/
 {
   struct unur_tdr_interval *iv;
 
@@ -1318,7 +1388,7 @@ static struct unur_tdr_interval *
   }
 
   /* we need a new segment */
-  iv = iv_pop_free(gen);
+  iv = _unur_tdr_iv_stack_pop(gen);
   COOKIE_CHECK(iv,CK_TDR_IV,NULL); 
 
   /* make left construction point in interval */
@@ -1355,24 +1425,24 @@ static struct unur_tdr_interval *
 
   return iv;
 
-} /* end of new_interval() */
+} /* end of _unur_tdr_interval_new() */
 
 /*****************************************************************************/
 
 static int
- param_interval( struct unur_gen *gen, struct unur_tdr_interval *iv )
-/*---------------------------------------------------------------------------*/
-/* get new interval and compute left construction point at x.                */
-/*                                                                           */
-/* parameters:                                                               */
-/*   gen  ... pointer to generator object                                    */
-/*   iv   ... pointer to interval                                            */
-/*                                                                           */
-/* return:                                                                   */
-/*   1  ... if successful (includes area = INFINITY)                         */
-/*  -1 ... construction points too close                                     */
-/*   0 ... error                                                             */
-/*---------------------------------------------------------------------------*/
+_unur_tdr_interval_parameter( struct unur_gen *gen, struct unur_tdr_interval *iv )
+     /*----------------------------------------------------------------------*/
+     /* get new interval and compute left construction point at x.           */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen  ... pointer to generator object                               */
+     /*   iv   ... pointer to interval                                       */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1  ... if successful (includes area = INFINITY)                    */
+     /*  -1 ... construction points too close                                */
+     /*   0 ... error                                                        */
+     /*----------------------------------------------------------------------*/
 {
   double ipt;   /* point at which the interval iv is divided into two parts */
 
@@ -1386,7 +1456,7 @@ static int
 
   /* get division point of interval 
      (= intersection point of tangents in almost all cases) */
-  if ( !get_division_point(gen,iv,&ipt) )
+  if ( !_unur_tdr_interval_division_point(gen,iv,&ipt) )
     return 0;
 
   /* squeeze and area below squeeze */
@@ -1428,29 +1498,29 @@ static int
   /* o.k. */
   return 1;
 
-} /* end of param_interval() */
+} /* end of _unur_tdr_interval_parameter() */
 
 /*---------------------------------------------------------------------------*/
 
 static int
- get_division_point( struct unur_gen *gen, struct unur_tdr_interval *iv, double *ipt )
-/*---------------------------------------------------------------------------*/
-/* compute cutting point of interval into left and right part.               */
-/* (1) use intersection point of tangents of transformed hat.                */
-/* (2) use mean point if (1) is unstable due to roundoff errors.             */
-/* (3) use left or right boundary if (left-right) is nearly the same as      */
-/*     left or right, respectively.                                          */
-/*     (This might cause a serious roundoff error while sampling.)           */
-/*                                                                           */
-/* parameters:                                                               */
-/*   gen ... pointer to generator object                                     */
-/*   iv  ... pointer to interval                                             */
-/*   ipt ... pointer to intersection point                                   */
-/*                                                                           */
-/* return:                                                                   */
-/*   1  ... if successful                                                    */
-/*   0  ... error                                                            */
-/*---------------------------------------------------------------------------*/
+_unur_tdr_interval_division_point( struct unur_gen *gen, struct unur_tdr_interval *iv, double *ipt )
+     /*----------------------------------------------------------------------*/
+     /* compute cutting point of interval into left and right part.          */
+     /* (1) use intersection point of tangents of transformed hat.           */
+     /* (2) use mean point if (1) is unstable due to roundoff errors.        */
+     /* (3) use left or right boundary if (left-right) is nearly the same as */
+     /*     left or right, respectively.                                     */
+     /*     (This might cause a serious roundoff error while sampling.)      */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*   iv  ... pointer to interval                                        */
+     /*   ipt ... pointer to intersection point                              */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1  ... if successful                                               */
+     /*   0  ... error                                                       */
+     /*----------------------------------------------------------------------*/
 {
   double delta;
 
@@ -1503,40 +1573,40 @@ static int
   /* o.k. */
   return 1;
 
-} /* end of intersection_point() */
+} /* end of _unur_tdr_interval_division_point() */
 
 /*---------------------------------------------------------------------------*/
 
 static double
- area( struct unur_gen *gen, struct unur_tdr_interval *iv, double slope, double x )
-/*---------------------------------------------------------------------------*/
-/* compute area below piece of hat or slope in                               */
-/* interval [iv->x,x] or [x,iv->x]                                           */
-/*                                                                           */
-/* parameters:                                                               */
-/*   gen   ... pointer to generator object                                   */
-/*   iv    ... pointer to interval that stores construction point of tangent */
-/*   slope ... slope of tangent of secant of transformed p.d.f.              */
-/*   x     ... boundary of integration domain                                */
-/*                                                                           */
-/* return:                                                                   */
-/*   area                                                                    */
-/*                                                                           */
-/* comment:                                                                  */
-/*   x0    ... construction point of tangent (= iv->x)                       */
-/*                                                                           */
-/* log(x)                                                                    */
-/*   area = | \int_{x0}^x \exp(Tf(x0) + slope*(x-x0)) dx |                   */
-/*        = f(x0) * |x - x0|                              if slope = 0       */
-/*        = | f(x0)/slope * (\exp(slope*(x-x0))-1) |      if slope != 0      */
-/*                                                                           */
-/* 1/sqrt(x)                                                                 */
-/*   area = | \int_{x0}^x 1/(Tf(x0) + slope*(x-x0))^2 dx |                   */
-/*        = f(x0) * |x - x0|                              if slope = 0       */
-/*        = infinity                                      if T(f(x)) >= 0    */
-/*        = | (x-x0) / (Tf(x0)*(Tf(x0)+slope*(x-x0))) |   otherwise          */
-/*                                                                           */
-/*---------------------------------------------------------------------------*/
+area( struct unur_gen *gen, struct unur_tdr_interval *iv, double slope, double x )
+     /*---------------------------------------------------------------------------*/
+     /* compute area below piece of hat or slope in                               */
+     /* interval [iv->x,x] or [x,iv->x]                                           */
+     /*                                                                           */
+     /* parameters:                                                               */
+     /*   gen   ... pointer to generator object                                   */
+     /*   iv    ... pointer to interval that stores construction point of tangent */
+     /*   slope ... slope of tangent of secant of transformed p.d.f.              */
+     /*   x     ... boundary of integration domain                                */
+     /*                                                                           */
+     /* return:                                                                   */
+     /*   area                                                                    */
+     /*                                                                           */
+     /* comment:                                                                  */
+     /*   x0    ... construction point of tangent (= iv->x)                       */
+     /*                                                                           */
+     /* log(x)                                                                    */
+     /*   area = | \int_{x0}^x \exp(Tf(x0) + slope*(x-x0)) dx |                   */
+     /*        = f(x0) * |x - x0|                              if slope = 0       */
+     /*        = | f(x0)/slope * (\exp(slope*(x-x0))-1) |      if slope != 0      */
+     /*                                                                           */
+     /* 1/sqrt(x)                                                                 */
+     /*   area = | \int_{x0}^x 1/(Tf(x0) + slope*(x-x0))^2 dx |                   */
+     /*        = f(x0) * |x - x0|                              if slope = 0       */
+     /*        = infinity                                      if T(f(x)) >= 0    */
+     /*        = | (x-x0) / (Tf(x0)*(Tf(x0)+slope*(x-x0))) |   otherwise          */
+     /*                                                                           */
+     /*---------------------------------------------------------------------------*/
 {
   double area = 0.;
 
@@ -1603,23 +1673,23 @@ static double
 /*****************************************************************************/
 
 static int
- split_interval( struct unur_gen *gen, struct unur_tdr_interval *iv_oldl, double x, double fx )
-/*---------------------------------------------------------------------------*/
-/* split interval iv_oldl into two intervals at point x                      */
-/*   old interval -> left hand side                                          */
-/*   new interval -> right hand side                                         */
-/*                                                                           */
-/* parameters:                                                               */
-/*   gen     ... pointer to generator object                                 */
-/*   iv_oldl ... pointer to interval                                         */
-/*   x       ... left point of new segment                                   */
-/*   fx      ... value of p.d.f. at x                                        */
-/*                                                                           */
-/* return:                                                                   */
-/*   1  ... if successful                                                    */
-/*   0  ... error                                                            */
-/*   1 (--> successful)                                                      */
-/*---------------------------------------------------------------------------*/
+_unur_tdr_interval_split( struct unur_gen *gen, struct unur_tdr_interval *iv_oldl, double x, double fx )
+     /*----------------------------------------------------------------------*/
+     /* split interval iv_oldl into two intervals at point x                 */
+     /*   old interval -> left hand side                                     */
+     /*   new interval -> right hand side                                    */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen     ... pointer to generator object                            */
+     /*   iv_oldl ... pointer to interval                                    */
+     /*   x       ... left point of new segment                              */
+     /*   fx      ... value of p.d.f. at x                                   */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1  ... if successful                                               */
+     /*   0  ... error                                                       */
+     /*   1 (--> successful)                                                 */
+     /*----------------------------------------------------------------------*/
 {
   struct unur_tdr_interval *iv_newr;
 
@@ -1630,11 +1700,11 @@ static int
 #if UNUR_DEBUG & UNUR_DB_INFO
     /* write info into log file */
     if (gen->debug & TDR_DB_SPLIT) 
-      tdr_info_split_start( gen,iv_oldl,x,fx );
+      _unur_tdr_debug_split_start( gen,iv_oldl,x,fx );
 #endif
 
   /* we need a new interval */
-  iv_newr = new_interval( gen, x, fx, FALSE );
+  iv_newr = _unur_tdr_interval_new( gen, x, fx, FALSE );
   CHECK_NULL(iv_newr,0);     /* case of error */
 
   /* link into list */
@@ -1642,11 +1712,11 @@ static int
   iv_oldl->next = iv_newr;
 
   /* compute parameters for interval */
-  if ( param_interval(gen, iv_oldl) <= 0 ||      /* p.d.f. not T-concave ...       */
-       param_interval(gen, iv_newr) <= 0 ||      /* ... or new interval to narrow  */
-       iv_oldl->Ahatl >= INFINITY        ||      /* area below hat not bounded     */
-       iv_oldl->Ahatr >= INFINITY        ||
-       iv_newr->Ahatl >= INFINITY        ||
+  if ( _unur_tdr_interval_parameter(gen, iv_oldl) <= 0 ||      /* p.d.f. not T-concave ...       */
+       _unur_tdr_interval_parameter(gen, iv_newr) <= 0 ||      /* ... or new interval to narrow  */
+       iv_oldl->Ahatl >= INFINITY                      ||      /* area below hat not bounded     */
+       iv_oldl->Ahatr >= INFINITY                      ||
+       iv_newr->Ahatl >= INFINITY                      ||
        iv_newr->Ahatr >= INFINITY          ) {
 
     /* new construction point not suitable --> do not add */
@@ -1654,16 +1724,16 @@ static int
 #if UNUR_DEBUG & UNUR_DB_INFO
     /* write info into log file */
     if (gen->debug & TDR_DB_SPLIT) 
-      tdr_info_split_stop( gen,iv_oldl,iv_newr );
+      _unur_tdr_debug_split_stop( gen,iv_oldl,iv_newr );
 #endif
 
     /* remove from linked list */
     iv_oldl->next = iv_newr->next;
-    iv_push_free(gen);
+    _unur_tdr_iv_stack_push(gen);
     /* we have to restore the old interval.
        (this case should not happen, so it is faster not to make a 
        backup of the old interval) */
-    if ( !param_interval(gen, iv_oldl) ) {
+    if ( !_unur_tdr_interval_parameter(gen, iv_oldl) ) {
       _unur_error(gen->genid,UNUR_ERR_SAMPLE,"Cannot restore interval. PANIK.");
       exit (-1);
     }
@@ -1671,35 +1741,35 @@ static int
   }
 
   /* update guide table */ 
-  make_guide_table(gen);
+  _unur_tdr_make_guide_table(gen);
 
 #if UNUR_DEBUG & UNUR_DB_INFO
   /* write info into log file */
   if (gen->debug & TDR_DB_SPLIT) 
-    tdr_info_split_stop( gen,iv_oldl,iv_newr );
+    _unur_tdr_debug_split_stop( gen,iv_oldl,iv_newr );
 #endif
 
   /* o.k. */
   return 1;
 
-} /* end of split_interval() */
+} /* end of _unur_tdr_interval_split() */
 
 /*****************************************************************************/
 
 static int
- make_guide_table( struct unur_gen *gen )
-/*---------------------------------------------------------------------------*/
-/* make a guide table for indexed search                                     */
-/*                                                                           */
-/* parameters:                                                               */
-/*   gen ... pointer to generator object                                     */
-/*                                                                           */
-/* return:                                                                   */
-/*   1 (--> successful)                                                      */
-/*                                                                           */
-/* error:                                                                    */
-/*   return 0.                                                               */
-/*---------------------------------------------------------------------------*/
+_unur_tdr_make_guide_table( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* make a guide table for indexed search                                */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 (--> successful)                                                 */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return 0.                                                          */
+     /*----------------------------------------------------------------------*/
 {
   struct unur_tdr_interval *iv;
   double Acum, Asqueezecum, Astep;
@@ -1754,24 +1824,24 @@ static int
     GEN.guide[j] = iv;
 
   return 1;
-} /* end of make_guide_table() */
+} /* end of _unur_tdr_make_guide_table() */
 
 /*****************************************************************************/
 
 static struct unur_tdr_interval *
- iv_pop_free( struct unur_gen *gen )
-/*---------------------------------------------------------------------------*/
-/* pop free interval from stack; allocate memory block if necessary.         */
-/*                                                                           */
-/* parameters:                                                               */
-/*   gen ... pointer to generator object                                     */
-/*                                                                           */
-/* return:                                                                   */
-/*   pointer to interval                                                     */
-/*                                                                           */
-/* error:                                                                    */
-/*   return NULL                                                             */
-/*---------------------------------------------------------------------------*/
+_unur_tdr_iv_stack_pop( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* pop free interval from stack; allocate memory block if necessary.    */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to interval                                                */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return NULL                                                        */
+     /*----------------------------------------------------------------------*/
 {
   /* check arguments */
   COOKIE_CHECK(gen,CK_TDR_GEN,NULL);
@@ -1799,18 +1869,18 @@ static struct unur_tdr_interval *
   /* return pointer to segment */
   return (GEN.iv_stack + GEN.iv_free);
 
-} /* end of iv_pop_free() */
+} /* end of _unur_tdr_iv_stack_pop() */
 
 /*---------------------------------------------------------------------------*/
 
 static void
- iv_push_free( struct unur_gen *gen )
-/*---------------------------------------------------------------------------*/
-/* push useless segment back stack                                           */
-/*                                                                           */
-/* parameters:                                                               */
-/*   gen ... pointer to generator object                                     */
-/*---------------------------------------------------------------------------*/
+_unur_tdr_iv_stack_push( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* push useless segment back stack                                      */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*----------------------------------------------------------------------*/
 {
   /* check arguments */
   COOKIE_CHECK(gen,CK_TDR_GEN,/*void*/);
@@ -1818,7 +1888,7 @@ static void
   /* update counters and pointers */
   --(GEN.n_ivs);
   ++(GEN.iv_free);
-} /* end of iv_push_free() */
+} /* end of _unur_tdr_iv_stack_push() */
 
 /*-----------------------------------------------------------------*/
 
@@ -1829,14 +1899,14 @@ static void
 #if UNUR_DEBUG & UNUR_DB_INFO
 
 static void
- tdr_info_init( struct unur_par *par, struct unur_gen *gen )
-/*---------------------------------------------------------------------------*/
-/* write info about generator after setup into logfile                       */
-/*                                                                           */
-/* parameters:                                                               */
-/*   par ... pointer to parameter for building generator object              */
-/*   gen ... pointer to generator object                                     */
-/*---------------------------------------------------------------------------*/
+_unur_tdr_debug_init( struct unur_par *par, struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* write info about generator after setup into logfile                  */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par ... pointer to parameter for building generator object         */
+     /*   gen ... pointer to generator object                                */
+     /*----------------------------------------------------------------------*/
 {
   FILE *log;
   int i;
@@ -1915,25 +1985,25 @@ static void
     fprintf(log," use \"equdistribution\" rule [default]");
   fprintf(log,"\n%s:\n",gen->genid);
   
-  tdr_info_intervals(gen);
+  _unur_tdr_debug_intervals(gen);
 
   fprintf(log,"%s: INIT completed **********************\n",gen->genid);
   fprintf(log,"%s:\n",gen->genid);
 
   fflush(log);
 
-} /* end of tdr_info_init() */
+} /* end of _unur_tdr_debug_init() */
 
 /*****************************************************************************/
 
 static void
- tdr_info_free( struct unur_gen *gen )
-/*---------------------------------------------------------------------------*/
-/* write info about generator before destroying into logfile                 */
-/*                                                                           */
-/* parameters:                                                               */
-/*   gen ... pointer to generator object                                     */
-/*---------------------------------------------------------------------------*/
+_unur_tdr_debug_free( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* write info about generator before destroying into logfile            */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*----------------------------------------------------------------------*/
 {
   FILE *log;
 
@@ -1946,23 +2016,23 @@ static void
   fprintf(log,"%s:\n",gen->genid);
   fprintf(log,"%s: GENERATOR destroyed **********************\n",gen->genid);
   fprintf(log,"%s:\n",gen->genid);
-  tdr_info_intervals(gen);
+  _unur_tdr_debug_intervals(gen);
   fprintf(log,"%s:\n",gen->genid);
 
   fflush(log);
 
-} /* end of tdr_info_free() */
+} /* end of _unur_tdr_debug_free() */
 
 /*****************************************************************************/
 
 static void
- tdr_info_intervals( struct unur_gen *gen )
-/*---------------------------------------------------------------------------*/
-/* write list of intervals into logfile                                      */
-/*                                                                           */
-/* parameters:                                                               */
-/*   gen ... pointer to generator object                                     */
-/*---------------------------------------------------------------------------*/
+_unur_tdr_debug_intervals( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* write list of intervals into logfile                                 */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*----------------------------------------------------------------------*/
 {
   FILE *log;
   struct unur_tdr_interval *iv;
@@ -2028,25 +2098,27 @@ static void
 
   fprintf(log,"%s:\n",gen->genid);
 
-} /* end of tdr_info_intervals() */
+} /* end of _unur_tdr_debug_intervals() */
 
 /*****************************************************************************/
 
 static void
- tdr_info_sample( struct unur_gen *gen, struct unur_tdr_interval *iv, struct unur_tdr_interval *pt, 
-		  double x, double fx, double hx, double sqx )
-/*---------------------------------------------------------------------------*/
-/* write info about generated point                                          */
-/*                                                                           */
-/* parameters:                                                               */
-/*   gen ... pointer to generator object                                     */
-/*   iv  ... pointer to interval                                             */
-/*   pt  ... pointer to interval that stores construction point              */
-/*   x   ... generated point                                                 */
-/*   fx  ... value of p.d.f. at x                                            */
-/*   hx  ... value of hat at x                                               */
-/*   sqx ... value of squeeze at x                                           */
-/*---------------------------------------------------------------------------*/
+_unur_tdr_debug_sample( struct unur_gen *gen, 
+			struct unur_tdr_interval *iv, 
+			struct unur_tdr_interval *pt, 
+			double x, double fx, double hx, double sqx )
+     /*----------------------------------------------------------------------*/
+     /* write info about generated point                                     */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*   iv  ... pointer to interval                                        */
+     /*   pt  ... pointer to interval that stores construction point         */
+     /*   x   ... generated point                                            */
+     /*   fx  ... value of p.d.f. at x                                       */
+     /*   hx  ... value of hat at x                                          */
+     /*   sqx ... value of squeeze at x                                      */
+     /*----------------------------------------------------------------------*/
 {
   FILE *log;
 
@@ -2087,21 +2159,21 @@ static void
 
   fflush(log);
 
-} /* end of tdr_info_sample() */
+} /* end of _unur_tdr_debug_sample() */
 
 /*****************************************************************************/
 
 static void
- tdr_info_split_start( struct unur_gen *gen, struct unur_tdr_interval *iv, double x, double fx )
-/*---------------------------------------------------------------------------*/
-/* write info about splitting interval                                       */
-/*                                                                           */
-/* parameters:                                                               */
-/*   gen ... pointer to generator object                                     */
-/*   iv  ... pointer to interval                                             */
-/*   x   ... split at this point                                             */
-/*   fx  ... value of p.d.f. at x                                            */
-/*---------------------------------------------------------------------------*/
+_unur_tdr_debug_split_start( struct unur_gen *gen, struct unur_tdr_interval *iv, double x, double fx )
+     /*----------------------------------------------------------------------*/
+     /* write info about splitting interval                                  */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*   iv  ... pointer to interval                                        */
+     /*   x   ... split at this point                                        */
+     /*   fx  ... value of p.d.f. at x                                       */
+     /*----------------------------------------------------------------------*/
 {
   FILE *log;
 
@@ -2120,20 +2192,22 @@ static void
 
   fflush(log);
 
-} /* end of tdr_info_split_start() */
+} /* end of _unur_tdr_debug_split_start() */
 
 /*****************************************************************************/
 
 static void
- tdr_info_split_stop( struct unur_gen *gen, struct unur_tdr_interval *iv_left, struct unur_tdr_interval *iv_right )
-/*---------------------------------------------------------------------------*/
-/* write info about new splitted intervals                                   */
-/*                                                                           */
-/* parameters:                                                               */
-/*   gen      ... pointer to generator object                                */
-/*   iv_left  ... pointer to new left hand interval                          */
-/*   iv_right ... pointer to new right hand interval                         */
-/*---------------------------------------------------------------------------*/
+_unur_tdr_debug_split_stop( struct unur_gen *gen, 
+			    struct unur_tdr_interval *iv_left, 
+			    struct unur_tdr_interval *iv_right )
+     /*----------------------------------------------------------------------*/
+     /* write info about new splitted intervals                              */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen      ... pointer to generator object                           */
+     /*   iv_left  ... pointer to new left hand interval                     */
+     /*   iv_right ... pointer to new right hand interval                    */
+     /*----------------------------------------------------------------------*/
 {
   FILE *log;
 
@@ -2182,7 +2256,7 @@ static void
 
   fflush(log);
 
-} /* end of tdr_info_split_stop() */
+} /* end of _unur_tdr_debug_split_stop() */
 
 /*****************************************************************************/
 #endif

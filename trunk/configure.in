@@ -67,6 +67,7 @@ AC_OUTPUT( \
 	src/uniform/Makefile \
 	doc/Makefile \
 	codegen/Makefile \
+	codegen/tests/Makefile \
         tests/Makefile \
 	examples/Makefile )
 

@@ -24,6 +24,7 @@ endif
 check_PROGRAMS = \
  t_distr \
  t_distr_cemp \
+ t_distr_cmat \
  t_distr_cont \
  t_distr_corder \
  t_distr_cvec \
@@ -82,6 +83,7 @@ EXTRA_DIST = \
  README.conf \
  t_distr.conf \
  t_distr_cemp.conf \
+ t_distr_cmat.conf \
  t_distr_cont.conf \
  t_distr_corder.conf \
  t_distr_cvec.conf \

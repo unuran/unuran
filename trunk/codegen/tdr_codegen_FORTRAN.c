@@ -216,7 +216,7 @@ _unur_acg_FORTRAN_tdr_ps( struct unur_gen *gen,
   fprintf(out,"         W = U * Atotal\n");
 
   /* look up in guide table and search for interval */
-  fprintf(out,"         DO 3 I = guide(INT(U*gsize))\n");
+  fprintf(out,"         DO 3 I = guide(INT(U*gsize)), %d\n",GEN.n_ivs-1);
   fprintf(out,"            IF (Acum(I).GE.W) GOTO 5\n");
   fprintf(out,"3        CONTINUE\n");
 

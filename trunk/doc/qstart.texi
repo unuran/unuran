@@ -313,6 +313,11 @@ int main()
 
 @node Methods
 @chapter Methods
+@menu
+* Description:: Description of the methods
+* Requirements:: The requirements of the methods
+* Defaults:: The default settings of parameters
+@end menu
 
 @multitable @columnfractions .222 .222 .222 .334
 @item name/references    @tab  parameter (default)   @tab required       @tab remarks
@@ -353,10 +358,32 @@ To change any parameter you habe to use the according function call.
 @* @code{  unur_ninv_use_newton(par); );
 }
 
-@* Requirements of the methods:
+@node Description
+@section Description of the methods
+@menu
+@c * AROU:: Adaptive Ratio Of Uniforms
+* CSTD:: Interface for extern generators
+@c * DAU::  (Discrete) Alias-Urn
+@c * DIS::  (Discrete) Alias-Urn
+* DSTD:: ???
+* NINV:: Numerical INVersion
+@c * RECT:: experimental multivariate Method
+@c * SROU:: Simple Ratio Of Uniforms
+@c * STDR:: Transformed Density Rejection (with universal bounds)
+@c * TABL:: Ahren
+@c * TDR::  Trandformed Density Rejection
+@c * UNIF:: ???
+@c * UTDR:: Universal Transformed Density Rejection (3-point method)
+@end menu
+
+@include qstart_method_description.texi
+
+@node Requirements
+@section Requirements of the methods
 @include qstart_required.texi
 
-@* Default settings of parameters:
+@node Defaults
+@section Default settings of the parameters
 @include qstart_paramdefaults.texi
 
 
@@ -392,19 +419,19 @@ Notation:
 @node MethodsRef
 @section methods
 @menu
-@c * AROU:: Adaptive Ratio Of Uniforms
-* CSTD:: Interface for extern generators
-@c * DAU::  (Discrete) Alias-Urn
-@c * DIS::  (Discrete) Alias-Urn
-* DSTD:: ???
-* NINV:: Numerical INVersion
-@c * RECT:: experimental multivariate Method
-@c * SROU:: Simple Ratio Of Uniforms
-@c * STDR:: Transformed Density Rejection (with universal bounds)
-@c * TABL:: Ahren
-@c * TDR::  Trandformed Density Rejection
-@c * UNIF:: ???
-@c * UTDR:: Universal Transformed Density Rejection (3-point method)
+@c * AROUref:: Adaptive Ratio Of Uniforms
+* CSTDref:: Interface for extern generators
+@c * DAUref::  (Discrete) Alias-Urn
+@c * DISref::  (Discrete) Alias-Urn
+* DSTDref:: ???
+* NINVref:: Numerical INVersion
+@c * RECTref:: experimental multivariate Method
+@c * SROUref:: Simple Ratio Of Uniforms
+@c * STDRref:: Transformed Density Rejection (with universal bounds)
+@c * TABLref:: Ahren
+@c * TDRref::  Trandformed Density Rejection
+@c * UNIFref:: ???
+@c * UTDRref:: Universal Transformed Density Rejection (3-point method)
 @end menu
 
 @include qstart_function_reference.texi

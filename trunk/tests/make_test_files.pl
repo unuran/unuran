@@ -598,7 +598,7 @@ sub scan_validate {
     print OUT "\tint n_tests_failed = 0;\n";
 
     print OUT "\tdouble *darray;\n";
-    print OUT "\tdouble fpar[10];\n";
+    print OUT "\tdouble fpm[10];\n";
 
     print OUT "\n\t/* start test */\n";
     print OUT "\tprintf(\"[validate \"); fflush(stdout);\n";

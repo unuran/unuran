@@ -129,7 +129,7 @@ static void _unur_ssr_free( struct unur_gen *gen);
 /* the following functions print debugging information on output stream,     */
 /* i.e., into the log file if not specified otherwise.                       */
 /*---------------------------------------------------------------------------*/
-static void _unur_ssr_debug_init( struct unur_par *par, struct unur_gen *gen );
+static void _unur_ssr_debug_init( struct unur_gen *gen, int is_reinit );
 
 /*---------------------------------------------------------------------------*/
 /* print after generator has been initialized has completed.                 */
@@ -682,7 +682,7 @@ _unur_ssr_init( struct unur_par *par )
 
 #ifdef UNUR_ENABLE_LOGGING
     /* write info into log file */
-    if (gen->debug) _unur_ssr_debug_init(par,gen);
+    if (gen->debug) _unur_ssr_debug_init(gen, FALSE);
 #endif
 
   /* free parameters */
@@ -886,8 +886,8 @@ unur_ssr_reinit( struct unur_gen *gen )
 
 #ifdef UNUR_ENABLE_LOGGING
   /* write info into log file */
-/*    if (gen->debug & SSR_DEBUG_REINIT) */
-/*      if (gen->debug) _unur_ssr_debug_init(gen,TRUE); */
+  if (gen->debug & SSR_DEBUG_REINIT)
+    if (gen->debug) _unur_ssr_debug_init(gen,TRUE);
 #endif
 
   return result;
@@ -1074,39 +1074,42 @@ _unur_ssr_free( struct unur_gen *gen )
 /*---------------------------------------------------------------------------*/
 
 static void
-_unur_ssr_debug_init( struct unur_par *par, struct unur_gen *gen )
+_unur_ssr_debug_init( struct unur_gen *gen, int is_reinit )
      /*----------------------------------------------------------------------*/
      /* write info about generator into logfile                              */
      /*                                                                      */
      /* parameters:                                                          */
-     /*   par ... pointer to parameter for building generator object         */
      /*   gen ... pointer to generator object                                */
+     /*   is_reinit ... if TRUE the generator has been reinitialized         */
      /*----------------------------------------------------------------------*/
 {
   FILE *log;
 
   /* check arguments */
-  CHECK_NULL(par,/*void*/);  COOKIE_CHECK(par,CK_SSR_PAR,/*void*/);
   CHECK_NULL(gen,/*void*/);  COOKIE_CHECK(gen,CK_SSR_GEN,/*void*/);
 
   log = unur_get_stream();
 
   fprintf(log,"%s:\n",gen->genid);
-  fprintf(log,"%s: type    = continuous univariate random variates\n",gen->genid);
-  fprintf(log,"%s: method  = ssr (simple universal transformed density rection)\n",gen->genid);
+  if (!is_reinit) {
+    fprintf(log,"%s: type    = continuous univariate random variates\n",gen->genid);
+    fprintf(log,"%s: method  = ssr (simple universal transformed density rection)\n",gen->genid);
+  }
+  else
+    fprintf(log,"%s: reinit!\n",gen->genid);
   fprintf(log,"%s:\n",gen->genid);
 
   _unur_distr_cont_debug( &(gen->distr), gen->genid );
 
   fprintf(log,"%s: sampling routine = _unur_ssr_sample",gen->genid);
-  if (par->variant & SSR_VARFLAG_VERIFY)
+  if (gen->variant & SSR_VARFLAG_VERIFY)
     fprintf(log,"_check");
-  /* else if (par->variant & SSR_VARFLAG_MIRROR)     not implemented */
+  /* else if (gen->variant & SSR_VARFLAG_MIRROR)     not implemented */
   /*   fprintf(log,"_mirror"); */
   fprintf(log,"()\n%s:\n",gen->genid);
 
-  if (par->set & SSR_SET_CDFMODE)
-    fprintf(log,"%s: c.d.f. at mode = %g\n",gen->genid,PAR.Fmode);
+  if (gen->set & SSR_SET_CDFMODE)
+    fprintf(log,"%s: c.d.f. at mode = %g\n",gen->genid,GEN.Fmode);
   else
     fprintf(log,"%s: c.d.f. at mode unknown\n",gen->genid);
 

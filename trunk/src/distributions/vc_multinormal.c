@@ -19,7 +19,7 @@
  *  distr: Multinormal distribution [5; ch.45, p.107]                        *
  *                                                                           *
  *  pdf:       f(x) = exp( -1/2 * (x-mu)^t . Sigma^(-1) . (x-mu) )           * 
- *  domain:    Reals^2                                                       *
+ *  domain:    Reals^(dim)                                                   *
  *  constant:  (2 pi)^(dim/2) * sqrt(det(Sigma))                             *
  *                                                                           *
  *  parameters:                                                              *
@@ -31,7 +31,7 @@
  *  standard form                                                            *
  *                                                                           *
  *  pdf:       f(x) = exp( -1/2 * x^t . x )                                  *
- *  domain:    Reals^2                                                       *
+ *  domain:    Reals^(dim)                                                   *
  *  constant:  (2 pi)^(dim/2)                                                *
  *                                                                           *
  *  parameters:                                                              *
@@ -228,7 +228,7 @@ unur_distr_multinormal( int dim, const double *mean, const double *covar )
 
   /* check new parameter for generator */
   if (distr == NULL) {
-    /* error: dim < 2 */
+    /* error: dim < 1 */
     return NULL;
   }
 

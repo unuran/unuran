@@ -17,10 +17,14 @@ getopttst: getopttst.c ../src/unuran.h ../src/libunuran.a
 acg: acg.c ../src/unuran.h ../src/libunuran.a
 	gcc -I. -I.. -I../src -I../src/tests -L../src -Wall -g -O2 -o acg acg.c -lunuracg -lunuran -lm -lprng 
 
+parsetest: parsetest.c stringpars.c
+	./gen_stringpars.pl
+	gcc -Wall -o parsetest parsetest.c stringpars.c -lunuran -lm -lprng
+
 clean:
 	rm -f *~ *.o run test run_acg getopttst unuran.log acg
 	rm -f uniftest_prng.c uniftest_prng
 	rm -f uniftest_c.c uniftest_c
 	rm -f uniftest_f.f uniftest_f
 	rm -f uniftest_java.java Uniftest.class Urand.class
-
+	rm -f stringpars.c

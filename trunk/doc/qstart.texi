@@ -403,16 +403,17 @@ The available parameters are documented in @ref{MethodsRef}.
 @node Distributions
 @chapter Distributions
 @menu
-* Preset:: Preset Distributions
 * Arbitrary:: Arbitrary Distributions 
+* Preset:: Preset Distributions
 @end menu
+
+@node Arbitrary
+@section Arbitrary distributions
 
 @node Preset
 @section Preset distributions 
 @include qstart_distributions.texi
 
-@node Arbitrary
-@section Arbitrary distributions
 
 
 @c --------------------------------------------------------------------

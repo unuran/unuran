@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-$VERBOSE = 1;
+$VERBOSE = 0;
 
 ############################################################
 # $Id$
@@ -70,7 +70,7 @@ foreach my $section (keys %section_TAGs) {
     &{$section_TAGs{$section}{"format"}}();
 }
 
-# print METHODs section
+# print sections
 print $texi_DISTRs;
 print $texi_METHODs;
 
@@ -206,6 +206,7 @@ sub scan_ROUTINES {
     my $defblock_open = 0;
     
     # process blocks
+    my $fkt_block = '';
     foreach $block (@blocks) {
 	# remove anyting that starts with an #
 	$block =~ s/^\#.*$//mg;
@@ -228,7 +229,7 @@ sub scan_ROUTINES {
 	(my $fn_type, my $rest) = split /[\s]+/, $fkt, 2;
 
 	# pointer ?
-	my $is_pointer = (($fn_type =~ /\*$/) ? 1 : 0);
+	my $pointer = (($fn_type =~ /(\*+)$/) ? $1 : '');
 
 	# check function type
 	my $type_ok = 0;
@@ -247,37 +248,51 @@ sub scan_ROUTINES {
 
 	# pointer ?
 	unless ($pointer) {
-	    if ($fn_name =~ /^\*/) {
-		$is_pointer = 1;
-		$fn_name =~ s/^\*//;
+	    if ($fn_name =~ /^(\*+)/) {
+		$pointer = $1;
+		$fn_name =~ s/^(\*+)//;
 	    }
 	}
 
 	# argument list of function
-	$rest =~ s/\s*\)\s*$//;
-	$rest =~ s/\s+\*/\* /g;
+	$rest =~ s/\s*\)\s*$//;     # remove trailing brace ')'
+	$rest =~ s/\s+(\*+)/$1 /g;  # move pointer '*' from argument name to type
+
 	my @argslist = split /\s*\,\s*/, $rest;
 	
-	# pointer
-	my $pointer_mark = (($is_pointer) ? "*" : "");
-
 	# write entry
 	my $first = 1;
-	$proc .= (($defblock_open) ? "\@deftypefnx" : "\@deftypefn");
-	$proc .= " Function $fn_type$pointer_mark $fn_name (";
+	$fkt_block .= (($defblock_open) ? "\@deftypefnx" : "\@deftypefn");
+	$fkt_block .= " %%%Function%%% $fn_type$pointer $fn_name (";
 	foreach $arg (@argslist) {
 	    (my $type, my $arg_name) = split /\s+/, $arg, 2;
 	    if ($first) { $first = 0; }
-	    else { $proc .= ", "; }
-  	    $proc .= "$type \@var\{$arg_name\}";
+	    else { $fkt_block .= ", "; }
+	    if ($arg_name) {
+		$fkt_block .= "$type \@var\{$arg_name\}";
+	    }
+	    else {
+		$fkt_block .= "$type";
+	    }
 	}
+	$fkt_block .= ")\n";
+	# description
 	if ($body) {
-	    $proc .= ")\n$body\n";
-	    $proc .= "\@end deftypefn\n\n";
+	    $fkt_block .= "$body\n";
+	    $fkt_block .= "\@end deftypefn\n";
 	    $defblock_open = 0;
+	    # for info file
+	    my $fkt_string = $fkt_block;
+	    $fkt_string =~ s/%%%Function%%%/Function/g;
+	    $proc .= "\@ifinfo\n$fkt_string\@end ifinfo\n";
+	    # for other output formats
+	    $fkt_string = $fkt_block;
+	    $fkt_string =~ s/%%%Function%%%/--/g;
+	    $proc .= "\@ifnotinfo\n$fkt_string\@end ifnotinfo\n\n";
+	    # clear block
+	    $fkt_block = '';
 	}
 	else { 
-	    $proc .= ")\n";
 	    $defblock_open = 1;
 	}
     }

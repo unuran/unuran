@@ -75,7 +75,7 @@ sub scan_DISTR {
     foreach $tag (keys %distr_TAGs) {
 	next unless ($distr_TAGs{$tag}{"required"} eq "yes");
 	unless ($in_DISTRs->{$distr}->{$tag}) {
-	    print STDERR "\t$tag is missing!!\n\n";
+	    print STDERR "\t$tag is missing!!\n\n" if $VERBOSE;
 	}
     }
 
@@ -94,8 +94,18 @@ sub format_DISTR {
     $texi_DISTRs .= "\@node Distributions\n";
     $texi_DISTRs .= "\@chapter Distributions\n\n";
     
-    # sort by distribution type
-    foreach my $distr (sort distr_by_order_key keys %$in_DISTRs) {
+    # get list of distributions
+    my @list_distr = sort distr_by_order_key keys %$in_DISTRs;
+
+    # make menu for all distributions
+    $texi_DISTRs .= "\@menu\n";
+    foreach my $distr (@list_distr) {
+	$texi_DISTRs .= "* $distr\:: ".$in_DISTRs->{$distr}->{"=NAME"}."\n";
+    }
+    $texi_DISTRs .= "\@end menu\n\n";
+
+    # print subsections for all distribution types
+    foreach my $distr (@list_distr) {
 
 	# write texi subsection header for distribution type
 
@@ -105,11 +115,11 @@ sub format_DISTR {
 	$texi_DISTRs .= "\@c\n\n";
 
 	# node and section
-	$texi_DISTRs .= "\@node $type\n";
-	$texi_DISTRs .= "\@section ".$in_DISTRs->{$distr}->{"=NAME"}." ($type)\n";
+	$texi_DISTRs .= "\@node $distr\n";
+	$texi_DISTRs .= "\@section ".$in_DISTRs->{$distr}->{"=NAME"}." ($distr)\n";
 
 	# function reference
-	$texi_DISTRs .= "\n\@subsubsection Function reference\n\n";
+	$texi_DISTRs .= "\n\@unnumberedsubsec Function reference\n\n";
 	$texi_DISTRs .= $in_DISTRs->{$distr}->{"=ROUTINES"}."\n\n";
 
 	# end of header file
@@ -122,6 +132,12 @@ sub format_DISTR {
     return;
 
 } # end of format_DISTR() 
+
+############################################################
+
+sub distr_by_order_key {
+    abs($in_DISTRs->{$a}->{"=ORDER"}) <=> abs($in_DISTRs->{$b}->{"=ORDER"});
+}
 
 ############################################################
 

@@ -88,7 +88,7 @@ sub scan_METHOD {
     foreach $tag (keys %method_TAGs) {
 	next unless ($method_TAGs{$tag}{"required"} eq "yes");
 	unless ($in_METHODs->{$method}->{$tag}) {
-	    print STDERR "\t$tag is missing!!\n\n";
+	    print STDERR "\t$tag is missing!!\n\n" if $VERBOSE;
 	}
     }
 
@@ -163,9 +163,21 @@ sub format_METHOD {
     # write texi output
     $texi_METHODs .= "\@node Methods\n";
     $texi_METHODs .= "\@chapter Methods\n\n";
+
+    # get list of distributions
+    my @list_distr = sort distr_by_order_key keys %$in_DISTRs;
     
-    # sort by distribution type
-    foreach my $type (sort distr_by_order_key keys %$in_DISTRs) {
+    # make menu for all distribution types
+    $texi_METHODs .= "\@menu\n";
+    foreach my $type (@list_distr) {
+	# distributions with non positive order keys are ignored
+	next if $in_DISTRs->{$type}->{"=ORDER"} <= 0;
+	$texi_METHODs .= "* Methods for $type\:: ".$in_DISTRs->{$type}->{"=NAME"}."\n";
+    }
+    $texi_METHODs .= "\@end menu\n\n";
+    
+    # print subsections for all distribution types
+    foreach my $type (@list_distr) {
 	# distributions with non positive order keys are ignored
 	next if $in_DISTRs->{$type}->{"=ORDER"} <= 0;
 
@@ -174,7 +186,18 @@ sub format_METHOD {
 	$texi_METHODs .= "\@section Methods for ".$in_DISTRs->{$type}->{"=NAME"}." ($type)\n\n";
 
 	# find all methods for distribution type
-	foreach my $method (sort keys %$in_METHODs) {
+	my @list_method = sort keys %$in_METHODs;
+
+	# make menu for all methods for distribution type
+	$texi_METHODs .= "\@menu\n";
+	foreach my $method (@list_method) {
+	    next unless $in_METHODs->{$method}->{"=TYPE"} eq $type;
+	    $texi_METHODs .= "* $method\:: ".$in_METHODs->{$method}->{"=NAME"}."\n";
+	}
+	$texi_METHODs .= "\@end menu\n\n";
+
+	# print subsubsections for all methods for distribution types
+	foreach my $method (@list_method) {
 	    next unless $in_METHODs->{$method}->{"=TYPE"} eq $type;
 	    
 	    # header file name
@@ -190,7 +213,7 @@ sub format_METHOD {
 	    $texi_METHODs .= $in_METHODs->{$method}->{"=DESCRIPTION"}."\n\n";
 
 	    # function reference 
-	    $texi_METHODs .= "\n\@subsubsection Function reference\n\n";
+	    $texi_METHODs .= "\n\@unnumberedsubsubsec Function reference\n\n";
 	    $texi_METHODs .= $in_METHODs->{$method}->{"=ROUTINES"}."\n\n";
 
 	    # end of header file
@@ -204,12 +227,6 @@ sub format_METHOD {
 
     return;
 } # end of format_METHOD() 
-
-############################################################
-
-sub distr_by_order_key {
-    $in_DISTRs->{$a}->{"=ORDER"} <=> $in_DISTRs->{$b}->{"=ORDER"};
-}
 
 ############################################################
 

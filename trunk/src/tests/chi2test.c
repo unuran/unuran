@@ -72,6 +72,9 @@
 #define CHI2_MAX_DIMENSIONS 40 
 /* max number of dimensions for chi^2 tests for multivariate distributions */
 
+#define CHI2_MAX_TOTALINTERVALS 100000   
+/* maximal product of intervals used in chi2vec test */
+
 /*---------------------------------------------------------------------------*/
 static char test_name[] = "Chi^2-Test";
 /*---------------------------------------------------------------------------*/
@@ -549,11 +552,12 @@ _unur_test_chi2_vec ( struct unur_gen *gen,
   const double *mean;    /* pointer to mean vector */
   
   int *idx;	   /* index array */
-  int *bm;         /* array for counting bins */
+  int *bm;         /* array for counting bins for marginals */
+  int *b;          /* array for counting bins */
 
-  int i,j,k, sumintervals;
-  int dimintervals[CHI2_MAX_DIMENSIONS]; /* for marginal chi2 tests */ 
-  int totalintervals; /* sum of the dimintervals[] */
+  int i, j, k, sumintervals, prodintervals, offset;
+  int dimintervals[CHI2_MAX_DIMENSIONS]; /* for each dimension in chi2 test */ 
+  int totalintervals;  /* product of all dimintervals[] */
   
   /* check arguments */
   CHECK_NULL(gen,-1.);
@@ -576,34 +580,41 @@ _unur_test_chi2_vec ( struct unur_gen *gen,
 
   /* setup of intervals for each dimension */
   if (dim<=3) {
-    for (i=0; i<dim; i++) dimintervals[i] = intervals;  
-    totalintervals = dim * intervals;
+    totalintervals=1;
+    for (i=0; i<dim; i++) {
+      dimintervals[i] = intervals;  
+      totalintervals *= intervals;
+    }
   }
   else {
     /* dim > 3, use harmonic decreasing sequence for dimintervals[] */
-    totalintervals=0;
+    totalintervals=1;
     for (i=0; i<dim; i++) {
       dimintervals[i] = (int) ( intervals * (1./(1+i)) ) ;  
       if (dimintervals[i]<2) dimintervals[i]=2;  /* we want to have at least two intervals */
-      totalintervals += dimintervals[i];
+      totalintervals *= dimintervals[i];
     }
   }
-  
+
   /* allocate memory */  
   idx = _unur_malloc( dim * sizeof(int));
   x   = _unur_malloc( dim * sizeof(double));
   z   = _unur_malloc( dim * sizeof(double));
-  bm  = _unur_malloc( totalintervals * sizeof(int));
   Linv  = _unur_malloc( dim*dim * sizeof(double));
+  bm  = _unur_malloc( dim*intervals * sizeof(int)); /* bins for marginal test */
+  if (totalintervals <= CHI2_MAX_TOTALINTERVALS) 
+  b  = _unur_malloc( totalintervals * sizeof(int)); /* bins for chi2 test */
 
   /* check if memory could be allocated */
-  if (  (idx == NULL) || (x==NULL) || (z == NULL) || (bm == NULL) || (Linv==NULL) ) {
+  if (  (idx == NULL) || (x==NULL) || (z == NULL) || (bm == NULL) || (Linv==NULL) || 
+        (b == NULL) || (totalintervals > CHI2_MAX_TOTALINTERVALS) ) {
       _unur_error(test_name,UNUR_ERR_MALLOC,"cannot run chi2 test");
       pval=-1; goto free_memory;
   }
 
   /* clear arrays */
-  (void) memset(bm , 0, totalintervals  * sizeof(int));
+  (void) memset(b ,  0, totalintervals  * sizeof(int));
+  (void) memset(bm , 0, dim * intervals  * sizeof(int));
   (void) memset(idx, 0, dim * sizeof(int));
 
   /* samplesize */
@@ -614,6 +625,8 @@ _unur_test_chi2_vec ( struct unur_gen *gen,
   }
   samplesize = min( samplesize, CHI2_MAX_SAMPLESIZE );
 
+  /* TODO : compute Linv using LU-decomposition inverse ... */
+  
   /* calculation of inverse Cholesky factor (1. method) */
   L = unur_distr_cvec_get_cholesky(gen->distr);
   for (j=0; j<dim; j++) {
@@ -660,40 +673,60 @@ _unur_test_chi2_vec ( struct unur_gen *gen,
       }
     }
     
+    /* increase bins for marginal test */
     sumintervals=0;
+    for (j=0; j<dim; j++) {
+      idx[j] = (int)( intervals * _unur_sf_cdfnormal(z[j]) );
+
+      if (idx[j]==intervals) idx[j]--; /* cdf can return 1 ? */
+      bm[sumintervals + idx[j]] += 1;
+      sumintervals += intervals;
+    }
+    
+    /* increase bins for total chi^2 test */
+    offset=0;
+    prodintervals=1; /* cumulative products of dimintervals[] */
     for (j=0; j<dim; j++) {
       idx[j] = (int)( dimintervals[j] * _unur_sf_cdfnormal(z[j]) );
 
       if (idx[j]==dimintervals[j]) idx[j]--; /* cdf can return 1 ? */
-      bm[sumintervals + idx[j]] += 1;
-      sumintervals += dimintervals[j];
+      
+      offset += prodintervals * idx[j];
+      prodintervals *= dimintervals[j];
     }
-  }
+    b[offset] += 1;
+  } 
 
-  /* and now make chi^2 test (marginal) */
+  /* ----------------------------------------------------------------------------*/
+
+  /* make chi^2 test (marginal) */
   sumintervals = 0;
   for (j=0; j<dim; j++) {
     if (verbose >= 1) {
-      fprintf(out,"\nChi^2-Test for multivariate continuous distribution\n");
-      fprintf(out,"  samplesize = %d\n",samplesize);
-      fprintf(out,"  intervals  = %d\n",dimintervals[j]);
+      fprintf(out,"\nMarginal Chi^2-Test for multivariate continuous distribution\n");
       fprintf(out,"  marginal   = %d\n",j);
-
-      for (i=0; i<dimintervals[j]; i++) {
-        fprintf(out,"  histogram[%d][%d]   = %d\n",j ,i ,bm[sumintervals+i] );
-      }
     }
 
-    pval = _unur_test_chi2test(NULL, &bm[sumintervals] , dimintervals[j], classmin, verbose, out );
-    sumintervals += dimintervals[j];
-    
+    pval = _unur_test_chi2test(NULL, &bm[sumintervals] , intervals, classmin, verbose, out );
+    sumintervals += intervals;
+  } 
+
+  /* ----------------------------------------------------------------------------*/
+
+  /* make chi^2 test */
+  if (verbose >= 1) {
+    fprintf(out,"\nChi^2-Test for multivariate continuous distribution\n");
   }
+
+  pval = _unur_test_chi2test(NULL, &b[0] , totalintervals, classmin, verbose, out );
+
 
 free_memory:
   /* free memory */
   if (idx)  free(idx);
   if (x)    free(x);
   if (z)    free(z);
+  if (b)    free(b);
   if (bm)   free(bm);
   if (Linv) free(Linv);
 

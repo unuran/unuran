@@ -331,20 +331,28 @@ void print_distr_name( FILE *LOG, UNUR_DISTR *distr, const char *genid )
   int i,n_fpar;
   double *fpar;
 
+  /* print name of distribution */
   if (genid)
     fprintf(LOG,"%s: ",genid);
   fprintf(LOG,"%s ",unur_distr_get_name(distr));
 
-  if ( unur_distr_is_cont(distr) ) {
+  /* get parameters */
+  n_fpar = 0;
+  if ( unur_distr_is_cont(distr) )
+    /* continuous distribution */
     n_fpar = unur_distr_cont_get_pdfparams( distr, &fpar );
-    fprintf(LOG,"(");
-    if (n_fpar) {
-      fprintf(LOG,"%g",fpar[0]);
-      for (i=1; i<n_fpar; i++)
-	fprintf(LOG,", %g",fpar[i]);
-    }
-    fprintf(LOG,")");
+  else if ( unur_distr_is_discr(distr) )
+    /* discrete distribution */
+    n_fpar = unur_distr_discr_get_pmfparams( distr, &fpar );
+
+  /* print parameter list */
+  fprintf(LOG,"(");
+  if (n_fpar) {
+    fprintf(LOG,"%g",fpar[0]);
+    for (i=1; i<n_fpar; i++)
+      fprintf(LOG,", %g",fpar[i]);
   }
+  fprintf(LOG,")");
 
 } /* end of print_distr_name() */
 

@@ -144,8 +144,8 @@ The key `method' is obligatory, it must be first and the value is the
 name of a method suitable for the choosen standard distribution.
 E.g.: method = arou
 If this block is omitted, a suitable default method is used. Notice
-however that the default method may change in following versions of
-UNURAN.
+however that the default method may change in future versions of
+UNURAN. Moreover, only standard distributions are supported yet.
 Of course the following keys dependend on the method choosen at first.
 All corresponding `_set_' commands of UNURAN are available and the key
 is the string after the `unur_<methodname>_set_' part of the command.

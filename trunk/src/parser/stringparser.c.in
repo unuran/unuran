@@ -198,6 +198,10 @@ static int _unur_str_distr_set_Di (UNUR_DISTR *distr, const char *key, char *typ
 /*---------------------------------------------------------------------------*/
 
 
+static struct unur_par *_unur_str2par_default( UNUR_DISTR *distr );
+/*---------------------------------------------------------------------------*/
+/* get parameter object for distribution and default method.                 */
+/*---------------------------------------------------------------------------*/
 
 static struct unur_par *_unur_str2par( char *str_method, UNUR_DISTR *distr );
 /*---------------------------------------------------------------------------*/
@@ -445,10 +449,9 @@ unur_str2gen (const char *string)
   }
   else {
     /* otherwise use default method */
-
-	/** TODO: discrete distr !!! eigenes unterprogamm fuer default!! **/
-    par = unur_cstd_new(distr);
+    par = _unur_str2par_default(distr);
   }
+
   /* check if parameter object was generated successfully */
   if ( par == NULL ) {
     /* error */
@@ -1006,6 +1009,53 @@ _unur_str_distr_set_Di (UNUR_DISTR *distr, const char *key, char *type_args, cha
   return result;
 
 } /* end of _unur_str_distr_set_Di() */
+
+/*---------------------------------------------------------------------------*/
+
+/*****************************************************************************/
+/**  Default Method                                                         **/
+/*****************************************************************************/
+
+/*---------------------------------------------------------------------------*/
+
+struct unur_par *
+_unur_str2par_default( UNUR_DISTR *distr )
+     /*----------------------------------------------------------------------*/
+     /* get parameter object for distribution and default method             */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   distr      ... pointer to distribution object                      */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   default parameters (pointer to structure)                          */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return NULL                                                        */
+     /*----------------------------------------------------------------------*/
+{
+  struct unur_par *par = NULL;     /* pointer to parameter object */
+
+  switch (distr->type) {
+  case UNUR_DISTR_CONT:
+    par = unur_cstd_new(distr);
+    break;
+  case UNUR_DISTR_DISCR:
+    par = unur_dstd_new(distr);
+    break;
+  case UNUR_DISTR_CEMP:
+  case UNUR_DISTR_CVEC:
+  case UNUR_DISTR_CVEMP:
+  default:
+    _unur_error(GENTYPE,UNUR_ERR_STR,"no default method for given distribution"); 
+    return NULL;
+  }
+
+  if (par == NULL) {
+    _unur_error(GENTYPE,UNUR_ERR_STR,"setting default method failed"); 
+  }
+
+  return par;
+} /* end of _unur_str2par_default() */
 
 /*---------------------------------------------------------------------------*/
 

@@ -70,12 +70,20 @@ typedef int _UNUR_SAMPLING_ROUTINE_DISCR(struct unur_gen *gen);
 typedef void _UNUR_SAMPLING_ROUTINE_VEC(struct unur_gen *gen, double *vec);
 
 /*---------------------------------------------------------------------------*/
-/* Generic function                                                          */
+/* Generic functions                                                          */
 
-typedef double UNUR_FUNCT_GENERIC (double x, void *params);
+typedef double UNUR_FUNCT_GENERIC  (double  x, void *params);
+typedef double UNUR_FUNCT_VGENERIC (double *x, void *params);
 
+/* for univariate functions with optional parameter array */
 struct unur_funct_generic {
   UNUR_FUNCT_GENERIC *f;
+  void *params;
+};
+
+/* for multivariate functions with optional parameter array */
+struct unur_funct_vgeneric {
+  UNUR_FUNCT_VGENERIC *f;
   void *params;
 };
 

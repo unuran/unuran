@@ -139,20 +139,20 @@ void unur_distr_free( UNUR_DISTR *distribution );
 int unur_distr_set_name( UNUR_DISTR *distribution, const char *name );
 /* */
 
-const char *unur_distr_get_name( UNUR_DISTR *distribution );
+const char *unur_distr_get_name( const UNUR_DISTR *distribution );
 /* 
    Set and get name of distribution.
 */
 
 
-int unur_distr_get_dim( UNUR_DISTR *distribution );
+int unur_distr_get_dim( const UNUR_DISTR *distribution );
 /* 
    Get number of components of random vector (its dimension).
    For univariate distributions it returns dimension @code{1}.
 */
 
 
-unsigned int unur_distr_get_type( UNUR_DISTR *distribution );
+unsigned int unur_distr_get_type( const UNUR_DISTR *distribution );
 /* 
    Get type of @var{distribution}. 
    Possible types are
@@ -173,29 +173,29 @@ unsigned int unur_distr_get_type( UNUR_DISTR *distribution );
    calls can be used.
 */
 
-int unur_distr_is_cont( UNUR_DISTR *distribution );
+int unur_distr_is_cont( const UNUR_DISTR *distribution );
 /* 
    TRUE if @var{distribution} is a continuous univariate distribution.
 */
 
-int unur_distr_is_cvec( UNUR_DISTR *distribution );
+int unur_distr_is_cvec( const UNUR_DISTR *distribution );
 /* 
    TRUE if @var{distribution} is a continuous multivariate distribution.
 */
 
-int unur_distr_is_cemp( UNUR_DISTR *distribution );
+int unur_distr_is_cemp( const UNUR_DISTR *distribution );
 /* 
    TRUE if @var{distribution} is an empirical continuous univariate distribution,
    i.e. a sample.
 */
 
-int unur_distr_is_cvemp( UNUR_DISTR *distribution );
+int unur_distr_is_cvemp( const UNUR_DISTR *distribution );
 /* 
    TRUE if @var{distribution} is an empirical continuous multivariate
    distribution.
 */
 
-int unur_distr_is_discr( UNUR_DISTR *distribution );
+int unur_distr_is_discr( const UNUR_DISTR *distribution );
 /* 
    TRUE if @var{distribution} is a discrete univariate distribution.
 */

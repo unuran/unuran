@@ -47,7 +47,7 @@ struct unur_arou_par {
   double  bound_for_adding;     /* lower bound for relative area             */
   double  max_ratio;            /* limit for ratio r_n = |P^s| / |P^e|       */
   int     n_starting_cpoints;   /* number of construction points at start    */
-  double *starting_cpoints;     /* pointer to array of starting points       */
+  const double *starting_cpoints;  /* pointer to array of starting points    */
   int     max_segs;             /* maximum number of segments                */
 };
 

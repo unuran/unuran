@@ -240,11 +240,11 @@ struct symbols {
   struct ftreenode *(*dcalc)(const struct ftreenode *node, int *error); 
                                  /* function for computing derivate          */
 
-  unsigned (*node2C)(struct concat *output,const struct ftreenode *node,const char *variable );
+  unsigned (*node2C)(struct concat *output, const struct ftreenode *node, const char *variable );
                                  /* function for printing C code             */
-  unsigned (*node2F)(struct concat *output,const struct ftreenode *node,const char *variable );
+  unsigned (*node2F)(struct concat *output, const struct ftreenode *node, const char *variable );
                                  /* function for printing FORTRAN code       */
-  unsigned (*node2J)(struct concat *output,const struct ftreenode *node,const char *variable );
+  unsigned (*node2J)(struct concat *output, const struct ftreenode *node, const char *variable );
                                  /* function for printing JAVA code          */
 };
 

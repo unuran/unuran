@@ -173,7 +173,7 @@ static void _unur_dgt_debug_table( struct unur_gen *gen );
 /*****************************************************************************/
 
 struct unur_par *
-unur_dgt_new( struct unur_distr *distr )
+unur_dgt_new( const struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
      /* get default parameters                                               */
      /*                                                                      */

@@ -46,7 +46,7 @@ struct unur_tdr_par {
 
   double  guide_factor;         /* relative size of guide table              */
 
-  double *starting_cpoints;     /* pointer to array of starting points       */
+  const double *starting_cpoints; /* pointer to array of starting points     */
   int     n_starting_cpoints;   /* number of construction points at start    */
   int     max_ivs;              /* maximum number of intervals               */
   double  max_ratio;            /* bound for ratio r_n = Atotal / Asqueeze   */

@@ -441,55 +441,58 @@ static int _unur_tdr_make_guide_table( struct unur_gen *gen );
 /* i.e., into the log file if not specified otherwise.                       */
 /*---------------------------------------------------------------------------*/
 
-static void _unur_tdr_debug_init( struct unur_par *par, struct unur_gen *gen );
+static void _unur_tdr_debug_init( const struct unur_par *par, const struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 /* print after generator has been initialized has completed.                 */
 /*---------------------------------------------------------------------------*/
 
-static void _unur_tdr_debug_dars_start( struct unur_par *par, struct unur_gen *gen );
+static void _unur_tdr_debug_dars_start( const struct unur_par *par, const struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 /* print header before runniung derandomized adaptive rejection sampling.    */
 /*---------------------------------------------------------------------------*/
 
-static void _unur_tdr_debug_dars( struct unur_par *par, struct unur_gen *gen );
+static void _unur_tdr_debug_dars( const struct unur_par *par, const struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 /* print after generator has run derandomized adaptive rejection sampling.   */
 /*---------------------------------------------------------------------------*/
 
-static void _unur_tdr_debug_free( struct unur_gen *gen );
+static void _unur_tdr_debug_free( const struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 /* print before generater is destroyed.                                      */
 /*---------------------------------------------------------------------------*/
 
-static void _unur_tdr_debug_intervals( struct unur_gen *gen );
-static void _unur_tdr_gw_debug_intervals( struct unur_gen *gen );
-static void _unur_tdr_ps_debug_intervals( struct unur_gen *gen );
+static void _unur_tdr_debug_intervals( const struct unur_gen *gen );
+static void _unur_tdr_gw_debug_intervals( const struct unur_gen *gen );
+static void _unur_tdr_ps_debug_intervals( const struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 /* print data for intervals                                                  */
 /*---------------------------------------------------------------------------*/
 
-static void _unur_tdr_gw_debug_sample( struct unur_gen *gen, struct unur_tdr_interval *iv, struct unur_tdr_interval *pt, 
+static void _unur_tdr_gw_debug_sample( const struct unur_gen *gen,
+				       const struct unur_tdr_interval *iv,
+				       const struct unur_tdr_interval *pt, 
 				       double x, double fx, double hx, double sqx );
-static void _unur_tdr_ps_debug_sample( struct unur_gen *gen, struct unur_tdr_interval *iv,
+static void _unur_tdr_ps_debug_sample( const struct unur_gen *gen, 
+				       const struct unur_tdr_interval *iv,
 				       double x, double fx, double hx, double sqx );
 /*---------------------------------------------------------------------------*/
 /* print data while sampling from generators.                                */
 /*---------------------------------------------------------------------------*/
 
-static void _unur_tdr_gw_debug_split_start( struct unur_gen *gen, 
-					    struct unur_tdr_interval *iv,
+static void _unur_tdr_gw_debug_split_start( const struct unur_gen *gen, 
+					    const struct unur_tdr_interval *iv,
 					    double x, double fx );
-static void _unur_tdr_gw_debug_split_stop( struct unur_gen *gen, 
-					   struct unur_tdr_interval *iv_left,
-					   struct unur_tdr_interval *iv_right );
-static void _unur_tdr_ps_debug_split_start( struct unur_gen *gen, 
-					    struct unur_tdr_interval *iv_left,
-					    struct unur_tdr_interval *iv_right,
+static void _unur_tdr_gw_debug_split_stop( const struct unur_gen *gen, 
+					   const struct unur_tdr_interval *iv_left,
+					   const struct unur_tdr_interval *iv_right );
+static void _unur_tdr_ps_debug_split_start( const struct unur_gen *gen, 
+					    const struct unur_tdr_interval *iv_left,
+					    const struct unur_tdr_interval *iv_right,
 					    double x, double fx );
-static void _unur_tdr_ps_debug_split_stop( struct unur_gen *gen, 
-					   struct unur_tdr_interval *iv_left,
-					   struct unur_tdr_interval *iv_middle,
-					   struct unur_tdr_interval *iv_right );
+static void _unur_tdr_ps_debug_split_stop( const struct unur_gen *gen, 
+					   const struct unur_tdr_interval *iv_left,
+					   const struct unur_tdr_interval *iv_middle,
+					   const struct unur_tdr_interval *iv_right );
 /*---------------------------------------------------------------------------*/
 /* print before and after an interval has been split (not / successfully).   */
 /*---------------------------------------------------------------------------*/

@@ -54,17 +54,17 @@ static const char unknown_distr_name[] = "unknown";
 
 /*---------------------------------------------------------------------------*/
 
-static double _unur_distr_cont_eval_pdf_tree( double x, struct unur_distr *distr );
+static double _unur_distr_cont_eval_pdf_tree( double x, const struct unur_distr *distr );
 /*---------------------------------------------------------------------------*/
 /* evaluate function tree for PDF.                                           */
 /*---------------------------------------------------------------------------*/
 
-static double _unur_distr_cont_eval_dpdf_tree( double x, struct unur_distr *distr );
+static double _unur_distr_cont_eval_dpdf_tree( double x, const struct unur_distr *distr );
 /*---------------------------------------------------------------------------*/
 /* evaluate function tree for dPDF.                                          */
 /*---------------------------------------------------------------------------*/
 
-static double _unur_distr_cont_eval_cdf_tree( double x, struct unur_distr *distr );
+static double _unur_distr_cont_eval_cdf_tree( double x, const struct unur_distr *distr );
 /*---------------------------------------------------------------------------*/
 /* evaluate function tree for CDF.                                           */
 /*---------------------------------------------------------------------------*/
@@ -74,12 +74,12 @@ static void _unur_distr_cont_free( struct unur_distr *distr );
 /* destroy distribution object.                                              */
 /*---------------------------------------------------------------------------*/
 
-static int _unur_distr_cont_find_mode(struct unur_distr *distr );
+static int _unur_distr_cont_find_mode( struct unur_distr *distr );
 /*---------------------------------------------------------------------------*/
 /* find mode of unimodal univariate PDF numerically                          */
 /*---------------------------------------------------------------------------*/
 
-static double fmaxbr( UNUR_FUNCT_CONT *f, UNUR_DISTR *distr, double a, double b, double c, double tol );
+static double fmaxbr( UNUR_FUNCT_CONT *f, const UNUR_DISTR *distr, double a, double b, double c, double tol );
 /*---------------------------------------------------------------------------*/
 /* find maximum of function with Brent's algorithm.                          */
 /*---------------------------------------------------------------------------*/
@@ -177,7 +177,7 @@ unur_distr_cont_new( void )
 /*---------------------------------------------------------------------------*/
 
 int
-_unur_distr_cont_copy( struct unur_distr *to, struct unur_distr *from )
+_unur_distr_cont_copy( struct unur_distr *to, const struct unur_distr *from )
      /*----------------------------------------------------------------------*/
      /* copy distribution object 'from' into distribution object 'to'.       */
      /*                                                                      */
@@ -498,7 +498,7 @@ unur_distr_cont_set_cdfstr( struct unur_distr *distr, const char *cdfstr )
 /*---------------------------------------------------------------------------*/
 
 double
-_unur_distr_cont_eval_pdf_tree( double x, struct unur_distr *distr )
+_unur_distr_cont_eval_pdf_tree( double x, const struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
      /* evaluate function tree for PDF.                                      */
      /*                                                                      */
@@ -516,7 +516,7 @@ _unur_distr_cont_eval_pdf_tree( double x, struct unur_distr *distr )
 /*---------------------------------------------------------------------------*/
 
 double
-_unur_distr_cont_eval_dpdf_tree( double x, struct unur_distr *distr )
+_unur_distr_cont_eval_dpdf_tree( double x, const struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
      /* evaluate function tree for derivative of PDF.                        */
      /*                                                                      */
@@ -534,7 +534,7 @@ _unur_distr_cont_eval_dpdf_tree( double x, struct unur_distr *distr )
 /*---------------------------------------------------------------------------*/
 
 double
-_unur_distr_cont_eval_cdf_tree( double x, struct unur_distr *distr )
+_unur_distr_cont_eval_cdf_tree( double x, const struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
      /* evaluate function tree for CDF.                                      */
      /*                                                                      */
@@ -552,7 +552,7 @@ _unur_distr_cont_eval_cdf_tree( double x, struct unur_distr *distr )
 /*---------------------------------------------------------------------------*/
 
 char *
-unur_distr_cont_get_pdfstr( struct unur_distr *distr )
+unur_distr_cont_get_pdfstr( const struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
      /* get PDF string that is given via the string interface                */
      /*                                                                      */
@@ -578,7 +578,7 @@ unur_distr_cont_get_pdfstr( struct unur_distr *distr )
 /*---------------------------------------------------------------------------*/
 
 char *
-unur_distr_cont_get_dpdfstr( struct unur_distr *distr )
+unur_distr_cont_get_dpdfstr( const struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
      /* get string for derivative of PDF that is given via string interface  */
      /*                                                                      */
@@ -604,7 +604,7 @@ unur_distr_cont_get_dpdfstr( struct unur_distr *distr )
 /*---------------------------------------------------------------------------*/
 
 char *
-unur_distr_cont_get_cdfstr( struct unur_distr *distr )
+unur_distr_cont_get_cdfstr( const struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
      /* get CDF string that is given via the string interface                */
      /*                                                                      */
@@ -630,7 +630,7 @@ unur_distr_cont_get_cdfstr( struct unur_distr *distr )
 /*---------------------------------------------------------------------------*/
 
 UNUR_FUNCT_CONT *
-unur_distr_cont_get_pdf( struct unur_distr *distr )
+unur_distr_cont_get_pdf( const struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
      /* get pointer to PDF of distribution                                   */
      /*                                                                      */
@@ -651,7 +651,7 @@ unur_distr_cont_get_pdf( struct unur_distr *distr )
 /*---------------------------------------------------------------------------*/
 
 UNUR_FUNCT_CONT *
-unur_distr_cont_get_dpdf( struct unur_distr *distr )
+unur_distr_cont_get_dpdf( const struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
      /* get pointer to derivative of PDF of distribution                     */
      /*                                                                      */
@@ -672,7 +672,7 @@ unur_distr_cont_get_dpdf( struct unur_distr *distr )
 /*---------------------------------------------------------------------------*/
 
 UNUR_FUNCT_CONT *
-unur_distr_cont_get_cdf( struct unur_distr *distr )
+unur_distr_cont_get_cdf( const struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
      /* get pointer to CDF of distribution                                   */
      /*                                                                      */
@@ -693,7 +693,7 @@ unur_distr_cont_get_cdf( struct unur_distr *distr )
 /*---------------------------------------------------------------------------*/
 
 double
-unur_distr_cont_eval_pdf( double x, struct unur_distr *distr )
+unur_distr_cont_eval_pdf( double x, const struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
      /* evaluate PDF of distribution at x                                    */
      /*                                                                      */
@@ -720,7 +720,7 @@ unur_distr_cont_eval_pdf( double x, struct unur_distr *distr )
 /*---------------------------------------------------------------------------*/
 
 double
-unur_distr_cont_eval_dpdf( double x, struct unur_distr *distr )
+unur_distr_cont_eval_dpdf( double x, const struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
      /* evaluate derivative of PDF of distribution at x                   */
      /*                                                                      */
@@ -747,7 +747,7 @@ unur_distr_cont_eval_dpdf( double x, struct unur_distr *distr )
 /*---------------------------------------------------------------------------*/
 
 double
-unur_distr_cont_eval_cdf( double x, struct unur_distr *distr )
+unur_distr_cont_eval_cdf( double x, const struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
      /* evaluate CDF of distribution at x                                    */
      /*                                                                      */
@@ -774,7 +774,7 @@ unur_distr_cont_eval_cdf( double x, struct unur_distr *distr )
 /*---------------------------------------------------------------------------*/
 
 int
-unur_distr_cont_set_pdfparams( struct unur_distr *distr, double *params, int n_params )
+unur_distr_cont_set_pdfparams( struct unur_distr *distr, const double *params, int n_params )
      /*----------------------------------------------------------------------*/
      /* set array of parameters for distribution                             */
      /*                                                                      */
@@ -835,7 +835,7 @@ unur_distr_cont_set_pdfparams( struct unur_distr *distr, double *params, int n_p
 /*---------------------------------------------------------------------------*/
 
 int
-unur_distr_cont_get_pdfparams( struct unur_distr *distr, double **params )
+unur_distr_cont_get_pdfparams( const struct unur_distr *distr, const double **params )
      /*----------------------------------------------------------------------*/
      /* get number of pdf parameters and sets pointer to array params[] of   */
      /* parameters                                                           */
@@ -947,7 +947,7 @@ unur_distr_cont_set_domain( struct unur_distr *distr, double left, double right 
 /*---------------------------------------------------------------------------*/
 
 int
-unur_distr_cont_get_domain( struct unur_distr *distr, double *left, double *right )
+unur_distr_cont_get_domain( const struct unur_distr *distr, double *left, double *right )
      /*----------------------------------------------------------------------*/
      /* set the left and right borders of the domain of the distribution     */
      /*                                                                      */
@@ -978,7 +978,7 @@ unur_distr_cont_get_domain( struct unur_distr *distr, double *left, double *righ
 /*---------------------------------------------------------------------------*/
 
 int
-unur_distr_cont_get_truncated( struct unur_distr *distr, double *left, double *right )
+unur_distr_cont_get_truncated( const struct unur_distr *distr, double *left, double *right )
      /*----------------------------------------------------------------------*/
      /* set the left and right borders of the truncated domain of the        */
      /* distribution                                                         */
@@ -1234,7 +1234,7 @@ unur_distr_cont_get_pdfarea( struct unur_distr *distr )
 /*---------------------------------------------------------------------------*/
 
 void
-_unur_distr_cont_debug( struct unur_distr *distr, char *genid )
+_unur_distr_cont_debug( const struct unur_distr *distr, const char *genid )
      /*----------------------------------------------------------------------*/
      /* write info about distribution into logfile                           */
      /*                                                                      */
@@ -1295,7 +1295,7 @@ _unur_distr_cont_debug( struct unur_distr *distr, char *genid )
 /*---------------------------------------------------------------------------*/
 
 int
-_unur_distr_cont_find_mode(struct unur_distr *distr )
+_unur_distr_cont_find_mode( struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
      /* find mode of univariate continuous distribution numerically          */
      /*                                                                      */
@@ -1603,7 +1603,7 @@ _unur_distr_cont_find_mode(struct unur_distr *distr )
 double
 fmaxbr(f_invest, distr, a, b, c, tol)   /* An estimate to the min location   */
      UNUR_FUNCT_CONT *f_invest;         /* Function under investigation      */
-     UNUR_DISTR *distr;                 /* distribution object with params   */
+     const UNUR_DISTR *distr;           /* distribution object with params   */
      double a;                          /* Left border | of the range	     */
      double b;                          /* Right border| the min is seeked   */
      double c;                          /* first guess for the min           */

@@ -63,18 +63,18 @@ static const char distr_name[] =  "rayleigh";
 #define LOGNORMCONSTANT (distr->data.cont.norm_constant)
 
 /* function prototypes                                                       */
-static double _unur_pdf_rayleigh( double x, UNUR_DISTR *distr );
-static double _unur_dpdf_rayleigh( double x, UNUR_DISTR *distr );
-static double _unur_pdf_rayleigh( double x, UNUR_DISTR *distr );
+static double _unur_pdf_rayleigh( double x, const UNUR_DISTR *distr );
+static double _unur_dpdf_rayleigh( double x, const UNUR_DISTR *distr );
+static double _unur_pdf_rayleigh( double x, const UNUR_DISTR *distr );
 
 static int _unur_upd_mode_rayleigh( UNUR_DISTR *distr );
 static int _unur_upd_area_rayleigh( UNUR_DISTR *distr );
-static int _unur_set_params_rayleigh( UNUR_DISTR *distr, double *params, int n_params );
+static int _unur_set_params_rayleigh( UNUR_DISTR *distr, const double *params, int n_params );
 
 /*---------------------------------------------------------------------------*/
 
 double
-_unur_pdf_rayleigh( double x, UNUR_DISTR *distr )
+_unur_pdf_rayleigh( double x, const UNUR_DISTR *distr )
 { 
   register double *params = DISTR.params;
   
@@ -89,7 +89,7 @@ _unur_pdf_rayleigh( double x, UNUR_DISTR *distr )
 /*---------------------------------------------------------------------------*/
 
 double
-_unur_dpdf_rayleigh( double x, UNUR_DISTR *distr )
+_unur_dpdf_rayleigh( double x, const UNUR_DISTR *distr )
 { 
   register double *params = DISTR.params;
   register double z;
@@ -101,7 +101,7 @@ _unur_dpdf_rayleigh( double x, UNUR_DISTR *distr )
 /*---------------------------------------------------------------------------*/
 
 double
-_unur_cdf_rayleigh( double x, UNUR_DISTR *distr )
+_unur_cdf_rayleigh( double x, const UNUR_DISTR *distr )
 { 
   register double *params = DISTR.params;
   return ( (x<=0.) ? 0. : 1. - exp(-x*x/(2.*sigma*sigma)) );
@@ -147,7 +147,7 @@ _unur_upd_area_rayleigh( UNUR_DISTR *distr )
 /*---------------------------------------------------------------------------*/
 
 int
-_unur_set_params_rayleigh( UNUR_DISTR *distr, double *params, int n_params )
+_unur_set_params_rayleigh( UNUR_DISTR *distr, const double *params, int n_params )
 {
   /* check number of parameters for distribution */
   if (n_params < 1) {
@@ -184,7 +184,7 @@ _unur_set_params_rayleigh( UNUR_DISTR *distr, double *params, int n_params )
 /*---------------------------------------------------------------------------*/
 
 struct unur_distr *
-unur_distr_rayleigh( double *params, int n_params )
+unur_distr_rayleigh( const double *params, int n_params )
 {
   register struct unur_distr *distr;
 

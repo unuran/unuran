@@ -82,7 +82,7 @@
 
 /* =ROUTINES */
 
-UNUR_PAR *unur_arou_new( UNUR_DISTR *distribution );
+UNUR_PAR *unur_arou_new( const UNUR_DISTR *distribution );
 /* 
    Get default parameters for generator.
 */
@@ -104,20 +104,20 @@ int unur_arou_set_max_sqhratio( UNUR_PAR *parameters, double max_ratio );
    Default is @code{0.99}.
 */
 
-double unur_arou_get_sqhratio( UNUR_GEN *generator );
+double unur_arou_get_sqhratio( const UNUR_GEN *generator );
 /* 
    Get the current ratio (area inside squeeze) / (area inside envelope)
    for the generator. 
    (In case of error @code{0} is returned.)
 */
 
-double unur_arou_get_hatarea( UNUR_GEN *generator );
+double unur_arou_get_hatarea( const UNUR_GEN *generator );
 /* 
    Get the area below the hat for the generator.
    (In case of an error @code{0} is returned.)
 */
 
-double unur_arou_get_squeezearea( UNUR_GEN *generator );
+double unur_arou_get_squeezearea( const UNUR_GEN *generator );
 /* 
    Get the area below the squeeze for the generator.
    (In case of an error @code{0} is returned.)
@@ -134,7 +134,7 @@ int unur_arou_set_max_segments( UNUR_PAR *parameters, int max_segs );
 */
 
 
-int unur_arou_set_cpoints( UNUR_PAR *parameters, int n_stp, double *stp );
+int unur_arou_set_cpoints( UNUR_PAR *parameters, int n_stp, const double *stp );
 /* 
    Set construction points for enveloping polygon.
    If @var{stp} is NULL, then a heuristical rule of thumb is used to

@@ -85,18 +85,18 @@ static const char distr_name[] = "extremeI";
 #define LOGNORMCONSTANT (distr->data.cont.norm_constant)
 
 /* function prototypes                                                       */
-static double _unur_pdf_extremeI( double x, UNUR_DISTR *distr );
-static double _unur_dpdf_extremeI( double x, UNUR_DISTR *distr );
-static double _unur_cdf_extremeI( double x, UNUR_DISTR *distr );
+static double _unur_pdf_extremeI( double x, const UNUR_DISTR *distr );
+static double _unur_dpdf_extremeI( double x, const UNUR_DISTR *distr );
+static double _unur_cdf_extremeI( double x, const UNUR_DISTR *distr );
 
 static int _unur_upd_mode_extremeI( UNUR_DISTR *distr );
 static int _unur_upd_area_extremeI( UNUR_DISTR *distr );
-static int _unur_set_params_extremeI( UNUR_DISTR *distr, double *params, int n_params );
+static int _unur_set_params_extremeI( UNUR_DISTR *distr, const double *params, int n_params );
 
 /*---------------------------------------------------------------------------*/
 
 double
-_unur_pdf_extremeI( double x, UNUR_DISTR *distr )
+_unur_pdf_extremeI( double x, const UNUR_DISTR *distr )
 { 
   register double *params = DISTR.params;
 
@@ -113,7 +113,7 @@ _unur_pdf_extremeI( double x, UNUR_DISTR *distr )
 /*---------------------------------------------------------------------------*/
 
 double
-_unur_dpdf_extremeI( double x, UNUR_DISTR *distr )
+_unur_dpdf_extremeI( double x, const UNUR_DISTR *distr )
 { 
   register double factor = 1.;
   register double expx;
@@ -135,7 +135,7 @@ _unur_dpdf_extremeI( double x, UNUR_DISTR *distr )
 /*---------------------------------------------------------------------------*/
 
 double
-_unur_cdf_extremeI( double x, UNUR_DISTR *distr )
+_unur_cdf_extremeI( double x, const UNUR_DISTR *distr )
 { 
   register double *params = DISTR.params;
 
@@ -189,7 +189,7 @@ _unur_upd_area_extremeI( UNUR_DISTR *distr )
 /*---------------------------------------------------------------------------*/
 
 int
-_unur_set_params_extremeI( UNUR_DISTR *distr, double *params, int n_params )
+_unur_set_params_extremeI( UNUR_DISTR *distr, const double *params, int n_params )
 {
 
   /* check number of parameters for distribution */
@@ -238,7 +238,7 @@ _unur_set_params_extremeI( UNUR_DISTR *distr, double *params, int n_params )
 /*---------------------------------------------------------------------------*/
 
 struct unur_distr *
-unur_distr_extremeI( double *params, int n_params )
+unur_distr_extremeI( const double *params, int n_params )
 {
   register struct unur_distr *distr;
 

@@ -57,7 +57,7 @@ extern unsigned _unur_default_debugflag;     /* default debugging flags      */
 /* warnings and error messages                                               */
 
 /* Function prototypes                                                       */
-void _unur_stream_printf( const char *genid, char *filename, int line, const char *format, ... );
+void _unur_stream_printf( const char *genid, const char *filename, int line, const char *format, ... );
 void _unur_stream_printf_simple( const char *format, ... );
 
 /* an abbreviation */

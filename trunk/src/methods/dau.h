@@ -74,7 +74,7 @@
 
 /* =ROUTINES */
 
-UNUR_PAR *unur_dau_new( UNUR_DISTR *distribution );
+UNUR_PAR *unur_dau_new( const UNUR_DISTR *distribution );
 /* 
    Get default parameters for generator.
 */

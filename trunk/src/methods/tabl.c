@@ -179,22 +179,22 @@ static int _unur_tabl_make_guide_table( struct unur_gen *gen );
 /* i.e., into the log file if not specified otherwise.                       */
 /*---------------------------------------------------------------------------*/
 
-static void _unur_tabl_debug_init( struct unur_par *par, struct unur_gen *gen );
+static void _unur_tabl_debug_init( const struct unur_par *par, const struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 /* print after generator has been initialized has completed I.               */
 /*---------------------------------------------------------------------------*/
 
-static void _unur_tabl_debug_init_finished( struct unur_par *par, struct unur_gen *gen );
+static void _unur_tabl_debug_init_finished( const struct unur_par *par, const struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 /* print after generator has been initialized has completed II.              */
 /*---------------------------------------------------------------------------*/
 
-static void _unur_tabl_debug_free( struct unur_gen *gen );
+static void _unur_tabl_debug_free( const struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 /* print before generater is destroyed.                                      */
 /*---------------------------------------------------------------------------*/
 
-static void _unur_tabl_debug_intervals( struct unur_gen *gen, int print_areas );
+static void _unur_tabl_debug_intervals( const struct unur_gen *gen, int print_areas );
 /*---------------------------------------------------------------------------*/
 /* print data for intervals.                                                 */
 /*---------------------------------------------------------------------------*/
@@ -223,7 +223,7 @@ static void _unur_tabl_debug_intervals( struct unur_gen *gen, int print_areas );
 /*****************************************************************************/
 
 struct unur_par *
-unur_tabl_new( struct unur_distr *distr )
+unur_tabl_new( const struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
      /* get default parameters                                               */
      /*                                                                      */
@@ -249,10 +249,6 @@ unur_tabl_new( struct unur_distr *distr )
 
   if (DISTR_IN.pdf == NULL) {
     _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"PDF"); return NULL; }
-
-  if (!(distr->set & UNUR_DISTR_SET_PDFAREA))
-    if (!unur_distr_cont_upd_pdfarea(distr))
-      _unur_warning(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"area below PDF, use default instead");
 
   /* allocate structure */
   par = _unur_malloc( sizeof(struct unur_par) );
@@ -413,7 +409,7 @@ unur_tabl_set_max_sqhratio( struct unur_par *par, double max_ratio )
 /*---------------------------------------------------------------------------*/
 
 double
-unur_tabl_get_sqhratio( struct unur_gen *gen )
+unur_tabl_get_sqhratio( const struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* get ratio A(squeeze) / A(hat)                                        */
      /*                                                                      */
@@ -435,7 +431,7 @@ unur_tabl_get_sqhratio( struct unur_gen *gen )
 /*---------------------------------------------------------------------------*/
 
 double
-unur_tabl_get_hatarea( struct unur_gen *gen )
+unur_tabl_get_hatarea( const struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* get area below hat                                                   */
      /*                                                                      */
@@ -457,7 +453,7 @@ unur_tabl_get_hatarea( struct unur_gen *gen )
 /*---------------------------------------------------------------------------*/
 
 double
-unur_tabl_get_squeezearea( struct unur_gen *gen )
+unur_tabl_get_squeezearea( const struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* get area below squeeze                                               */
      /*                                                                      */
@@ -596,7 +592,7 @@ unur_tabl_set_nstp( struct unur_par *par, int n_stp )
 /*---------------------------------------------------------------------------*/
 
 int
-unur_tabl_set_slopes( struct unur_par *par, double *slopes, int n_slopes )
+unur_tabl_set_slopes( struct unur_par *par, const double *slopes, int n_slopes )
      /*----------------------------------------------------------------------*/
      /* set slopes of PDF                                                    */
      /*                                                                      */
@@ -930,6 +926,11 @@ _unur_tabl_create( struct unur_par *par )
 
   /* copy distribution object into generator object */
   _unur_distr_cont_copy( &(gen->distr), par->distr );
+
+  /* check for required data: area */
+  if (!(gen->distr.set & UNUR_DISTR_SET_PDFAREA))
+    if (!unur_distr_cont_upd_pdfarea(&(gen->distr)))
+      _unur_warning(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"area below PDF, use default instead");
 
   /* set generator identifier */
   gen->genid = _unur_set_genid(GENTYPE);
@@ -1883,7 +1884,7 @@ _unur_tabl_make_guide_table( struct unur_gen *gen )
 /*---------------------------------------------------------------------------*/
 
 static void
-_unur_tabl_debug_init( struct unur_par *par, struct unur_gen *gen )
+_unur_tabl_debug_init( const struct unur_par *par, const struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* write info about generator after setup into logfile                  */
      /*                                                                      */
@@ -1981,7 +1982,7 @@ _unur_tabl_debug_init( struct unur_par *par, struct unur_gen *gen )
 /*****************************************************************************/
 
 static void
-_unur_tabl_debug_init_finished( struct unur_par *par, struct unur_gen *gen )
+_unur_tabl_debug_init_finished( const struct unur_par *par, const struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* write info about generator after setup into logfile                  */
      /*                                                                      */
@@ -2009,7 +2010,7 @@ _unur_tabl_debug_init_finished( struct unur_par *par, struct unur_gen *gen )
 /*****************************************************************************/
 
 static void
-_unur_tabl_debug_free( struct unur_gen *gen )
+_unur_tabl_debug_free( const struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* write info about generator before destroying into logfile            */
      /*                                                                      */
@@ -2037,7 +2038,7 @@ _unur_tabl_debug_free( struct unur_gen *gen )
 /*****************************************************************************/
 
 static void
-_unur_tabl_debug_intervals( struct unur_gen *gen, int print_areas )
+_unur_tabl_debug_intervals( const struct unur_gen *gen, int print_areas )
      /*----------------------------------------------------------------------*/
      /* write list of intervals into logfile                                 */
      /*                                                                      */
@@ -2047,7 +2048,7 @@ _unur_tabl_debug_intervals( struct unur_gen *gen, int print_areas )
 {
   FILE *log;
   struct unur_tabl_interval *iv;
-  double sAsqueeze;
+  double sAsqueeze, Atotal;
   int i;
 
   /* check arguments */
@@ -2089,7 +2090,10 @@ _unur_tabl_debug_intervals( struct unur_gen *gen, int print_areas )
     fprintf(log,"%s: Construction of hat function not successful\n",gen->genid);
     fprintf(log,"%s: Areas may be meaningless !!!!!!!!!!!!!!!!!!\n",gen->genid);
     empty_line();
-    GEN.Atotal = -1.;   /* to avoid floating point exceptions */
+    Atotal = -1.;   /* to avoid floating point exceptions */
+  }
+  else {
+    Atotal = GEN.Atotal;
   }
 
   /* print and sum areas below squeeze and hat */
@@ -2103,22 +2107,22 @@ _unur_tabl_debug_intervals( struct unur_gen *gen, int print_areas )
       sAsqueeze += iv->Asqueeze;
       fprintf(log,"%s:[%3d]: %-12.6g(%6.3f%%)  |  %-12.6g(%6.3f%%)  |  %-12.6g(%6.3f%%)\n",
 	      gen->genid,i,
-	      iv->Asqueeze, iv->Asqueeze * 100. / GEN.Atotal,
-	      iv->Ahat, iv->Ahat * 100. / GEN.Atotal, 
-	      iv->Acum, iv->Acum * 100. / GEN.Atotal);
+	      iv->Asqueeze, iv->Asqueeze * 100. / Atotal,
+	      iv->Ahat, iv->Ahat * 100. / Atotal, 
+	      iv->Acum, iv->Acum * 100. / Atotal);
     }
     fprintf(log,"%s:       ----------  ---------  +  ----------  ---------  +\n",gen->genid);
     fprintf(log,"%s: Sum : %-12.6g(%6.3f%%)     %-12.6g(100%%)\n",gen->genid,
-	    sAsqueeze, sAsqueeze * 100. / GEN.Atotal, GEN.Atotal);
+	    sAsqueeze, sAsqueeze * 100. / Atotal, Atotal);
     empty_line();
   }
     
   /* summary of areas */
   fprintf(log,"%s: A(squeeze)     = %-12.6g  (%6.3f%%)\n",gen->genid,
-	  GEN.Asqueeze, GEN.Asqueeze * 100./GEN.Atotal);
+	  GEN.Asqueeze, GEN.Asqueeze * 100./Atotal);
   fprintf(log,"%s: A(hat\\squeeze) = %-12.6g  (%6.3f%%)\n",gen->genid,
-	  GEN.Atotal - GEN.Asqueeze, (GEN.Atotal - GEN.Asqueeze) * 100./GEN.Atotal);
-  fprintf(log,"%s: A(total)       = %-12.6g\n",gen->genid, GEN.Atotal);
+	  Atotal - GEN.Asqueeze, (Atotal - GEN.Asqueeze) * 100./Atotal);
+  fprintf(log,"%s: A(total)       = %-12.6g\n",gen->genid, Atotal);
 
   empty_line();
 

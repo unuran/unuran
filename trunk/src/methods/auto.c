@@ -91,7 +91,7 @@ static struct unur_gen *_unur_init_cvemp( struct unur_par *par );
 /*****************************************************************************/
 
 struct unur_par *
-unur_auto_new( struct unur_distr *distr )
+unur_auto_new( const struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
      /* get default parameters                                               */
      /*                                                                      */

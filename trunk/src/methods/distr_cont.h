@@ -120,13 +120,13 @@ int unur_distr_cont_set_cdf( UNUR_DISTR *distribution, UNUR_FUNCT_CONT *cdf );
 */
 
 
-UNUR_FUNCT_CONT *unur_distr_cont_get_pdf( UNUR_DISTR *distribution );
+UNUR_FUNCT_CONT *unur_distr_cont_get_pdf( const UNUR_DISTR *distribution );
 /* */
 
-UNUR_FUNCT_CONT *unur_distr_cont_get_dpdf( UNUR_DISTR *distribution );
+UNUR_FUNCT_CONT *unur_distr_cont_get_dpdf( const UNUR_DISTR *distribution );
 /* */
 
-UNUR_FUNCT_CONT *unur_distr_cont_get_cdf( UNUR_DISTR *distribution );
+UNUR_FUNCT_CONT *unur_distr_cont_get_cdf( const UNUR_DISTR *distribution );
 /* 
    Get the respective pointer to the PDF, the derivative of the 
    PDF and the CDF of the @var{distribution}. The pointer is of type
@@ -135,13 +135,13 @@ UNUR_FUNCT_CONT *unur_distr_cont_get_cdf( UNUR_DISTR *distribution );
    the NULL pointer is returned.
 */
 
-double unur_distr_cont_eval_pdf( double x, UNUR_DISTR *distribution );
+double unur_distr_cont_eval_pdf( double x, const UNUR_DISTR *distribution );
 /* */
 
-double unur_distr_cont_eval_dpdf( double x, UNUR_DISTR *distribution );
+double unur_distr_cont_eval_dpdf( double x, const UNUR_DISTR *distribution );
 /* */
 
-double unur_distr_cont_eval_cdf( double x, UNUR_DISTR *distribution );
+double unur_distr_cont_eval_cdf( double x, const UNUR_DISTR *distribution );
 /* 
    Evaluate the PDF, derivative of the PDF and the CDF, respectively,
    at @var{x}. 
@@ -173,13 +173,13 @@ int unur_distr_cont_set_cdfstr( UNUR_DISTR *distribution, const char *cdfstr );
    to the unur_distr_cont_set_pdfstr() call.
 */
 
-char *unur_distr_cont_get_pdfstr( struct unur_distr *distribution );
+char *unur_distr_cont_get_pdfstr( const UNUR_DISTR *distribution );
 /* */
 
-char *unur_distr_cont_get_dpdfstr( struct unur_distr *distribution );
+char *unur_distr_cont_get_dpdfstr( const UNUR_DISTR *distribution );
 /* */
 
-char *unur_distr_cont_get_cdfstr( struct unur_distr *distribution );
+char *unur_distr_cont_get_cdfstr( const UNUR_DISTR *distribution );
 /* 
    Get pointer to respective string for PDF, derivate of PDF, and CDF
    of @var{distribution} that is given via the string interface.
@@ -187,7 +187,7 @@ char *unur_distr_cont_get_cdfstr( struct unur_distr *distribution );
    freed when it is not used any more.
 */
 
-int unur_distr_cont_set_pdfparams(UNUR_DISTR *distribution, double *params, int n_params);
+int unur_distr_cont_set_pdfparams( UNUR_DISTR *distribution, const double *params, int n_params );
 /* 
    Set array of parameters for @var{distribution}. There is an upper limit
    for the number of parameters @code{n_params}. It is given by the
@@ -206,7 +206,7 @@ int unur_distr_cont_set_pdfparams(UNUR_DISTR *distribution, double *params, int 
    not given for UNURAN standard distributions.
 */
 
-int unur_distr_cont_get_pdfparams( UNUR_DISTR *distribution, double **params );
+int unur_distr_cont_get_pdfparams( const UNUR_DISTR *distribution, const double **params );
 /* 
    Get number of parameters of the PDF and set pointer
    @var{params} to array of parameters. If no parameters are stored
@@ -231,7 +231,7 @@ int unur_distr_cont_set_domain( UNUR_DISTR *distribution, double left, double ri
    mode is set to the corresponding boundary of the new domain.
 */
 
-int unur_distr_cont_get_domain( UNUR_DISTR *distribution, double *left, double *right );
+int unur_distr_cont_get_domain( const UNUR_DISTR *distribution, double *left, double *right );
 /* 
    Get the left and right borders of the domain of the
    distribution. If the domain is not set explicitly 
@@ -239,7 +239,7 @@ int unur_distr_cont_get_domain( UNUR_DISTR *distribution, double *left, double *
    No error is reported in this case.
 */
 
-int unur_distr_cont_get_truncated( UNUR_DISTR *distribution, double *left, double *right );
+int unur_distr_cont_get_truncated( const UNUR_DISTR *distribution, double *left, double *right );
 /* 
    Get the left and right borders of the (truncated) domain of the
    distribution. For non-truncated distribution this call is

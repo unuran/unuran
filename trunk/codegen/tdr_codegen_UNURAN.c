@@ -43,7 +43,7 @@
 
 int
 _unur_acg_UNURAN_tdr_ps( FILE *out, 
-			 struct unur_gen *gen, 
+			 const UNUR_GEN *gen, 
 			 const char *rand_name,
 			 const char *pdf_name,
 			 int n_cpoints ) 

@@ -56,7 +56,7 @@
 
 /* =ROUTINES */
 
-UNUR_PAR *unur_unif_new( UNUR_DISTR *dummy );
+UNUR_PAR *unur_unif_new( const UNUR_DISTR *dummy );
 /* 
    Get default parameters for generator.                                     
    UNIF does not need a distribution object. @var{dummy} is not used and

@@ -88,7 +88,7 @@ int compare_int_sequence_gen_start( FILE *LOG, int line, UNUR_GEN *gen, int samp
 int compare_int_sequence_gen( FILE *LOG, int line, UNUR_GEN *gen, int sample_size );
 
 /* print name of distribution */
-void print_distr_name( FILE *LOG, UNUR_DISTR *distr, const char *genid );
+void print_distr_name( FILE *LOG, const UNUR_DISTR *distr, const char *genid );
 
 /* check p-value of statistical test and print result */
 int print_pval( FILE *LOG, UNUR_GEN *gen, double pval, int trial, char todo );

@@ -103,7 +103,7 @@
 
 /* =ROUTINES */
 
-UNUR_PAR *unur_tabl_new( UNUR_DISTR* distribution );
+UNUR_PAR *unur_tabl_new( const UNUR_DISTR* distribution );
 /* 
    Get default parameters for generator.
 */
@@ -157,19 +157,19 @@ int unur_tabl_set_max_sqhratio( UNUR_PAR *parameters, double max_ratio );
    Default is @code{0.9}.
 */
 
-double unur_tabl_get_sqhratio( UNUR_GEN *generator );
+double unur_tabl_get_sqhratio( const UNUR_GEN *generator );
 /* 
    Get the current ratio (area below squeeze) / (area below hat)
    for the generator. (In case of an error @code{0} is returned.)
 */
 
-double unur_tabl_get_hatarea( UNUR_GEN *generator );
+double unur_tabl_get_hatarea( const UNUR_GEN *generator );
 /* 
    Get the area below the hat for the generator.
    (In case of an error @code{0} is returned.)
 */
 
-double unur_tabl_get_squeezearea( UNUR_GEN *generator );
+double unur_tabl_get_squeezearea( const UNUR_GEN *generator );
 /* 
    Get the area below the squeeze for the generator.
    (In case of an error @code{0} is returned.)
@@ -209,7 +209,7 @@ int unur_tabl_set_nstp( UNUR_PAR *parameters, int n_stp );
    Default is @code{30}.
 */
 
-int unur_tabl_set_slopes( UNUR_PAR *parameters, double *slopes, int n_slopes );
+int unur_tabl_set_slopes( UNUR_PAR *parameters, const double *slopes, int n_slopes );
 /* 
    Set slopes for the PDF.
    A slope <a,b> is an interval [a,b] or [b,a] where the PDF is

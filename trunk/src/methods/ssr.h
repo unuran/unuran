@@ -109,7 +109,7 @@
 
 /* =ROUTINES */
 
-UNUR_PAR *unur_ssr_new( UNUR_DISTR *distribution );
+UNUR_PAR *unur_ssr_new( const UNUR_DISTR *distribution );
 /* 
    Get default parameters for generator.
 */

@@ -110,7 +110,7 @@
 */
 
 
-UNUR_PAR *unur_ninv_new( UNUR_DISTR *distribution );
+UNUR_PAR *unur_ninv_new( const UNUR_DISTR *distribution );
 /* 
    Get default parameters for generator.
 */

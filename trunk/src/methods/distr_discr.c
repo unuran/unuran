@@ -50,12 +50,12 @@ static const char unknown_distr_name[] = "unknown";
 
 /*---------------------------------------------------------------------------*/
 
-static double _unur_distr_discr_eval_pmf_tree( int k, struct unur_distr *distr );
+static double _unur_distr_discr_eval_pmf_tree( int k, const struct unur_distr *distr );
 /*---------------------------------------------------------------------------*/
 /* evaluate function tree for PMF.                                           */
 /*---------------------------------------------------------------------------*/
 
-static double _unur_distr_discr_eval_cdf_tree( int k, struct unur_distr *distr );
+static double _unur_distr_discr_eval_cdf_tree( int k, const struct unur_distr *distr );
 /*---------------------------------------------------------------------------*/
 /* evaluate function tree for CDF.                                           */
 /*---------------------------------------------------------------------------*/
@@ -69,7 +69,7 @@ static int _unur_distr_discr_find_mode( struct unur_distr *distr );
 /* find mode of unimodal probability vector numerically by bisection.        */
 /*---------------------------------------------------------------------------*/
 
-inline double unur_distr_discr_eval_pv(int k, UNUR_DISTR *distribution );
+inline double unur_distr_discr_eval_pv(int k, const UNUR_DISTR *distribution );
 /*---------------------------------------------------------------------------*/
 /* declare function inline.                                                  */
 /*---------------------------------------------------------------------------*/
@@ -176,7 +176,7 @@ unur_distr_discr_new( void )
 /*---------------------------------------------------------------------------*/
 
 int
-_unur_distr_discr_copy( struct unur_distr *to, struct unur_distr *from )
+_unur_distr_discr_copy( struct unur_distr *to, const struct unur_distr *from )
      /*----------------------------------------------------------------------*/
      /* copy distribution object 'from' into distribution object 'to'.       */
      /*                                                                      */
@@ -283,7 +283,7 @@ _unur_distr_discr_clear( struct unur_gen *gen )
 /*---------------------------------------------------------------------------*/
 
 int
-unur_distr_discr_set_pv( struct unur_distr *distr, double *pv, int n_pv )
+unur_distr_discr_set_pv( struct unur_distr *distr, const double *pv, int n_pv )
      /*----------------------------------------------------------------------*/
      /* set probability vector for distribution                              */
      /*                                                                      */
@@ -451,7 +451,7 @@ unur_distr_discr_make_pv( struct unur_distr *distr )
 /*---------------------------------------------------------------------------*/
 
 int 
-unur_distr_discr_get_pv( struct unur_distr *distr, double **pv )
+unur_distr_discr_get_pv( const struct unur_distr *distr, const double **pv )
      /*----------------------------------------------------------------------*/
      /* get length of probability vector and set pointer to probability      */
      /* vector                                                               */
@@ -479,7 +479,7 @@ unur_distr_discr_get_pv( struct unur_distr *distr, double **pv )
 /*---------------------------------------------------------------------------*/
 
 double
-unur_distr_discr_eval_pv( int k, struct unur_distr *distr )
+unur_distr_discr_eval_pv( int k, const struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
      /* returns the value of the probability vector at k or, if there is no  */
      /* probability vector defined, evaluates  the pmf                       */
@@ -590,7 +590,7 @@ unur_distr_discr_set_cdf( struct unur_distr *distr, UNUR_FUNCT_DISCR *cdf )
 /*---------------------------------------------------------------------------*/
 
 UNUR_FUNCT_DISCR *
-unur_distr_discr_get_pmf( struct unur_distr *distr )
+unur_distr_discr_get_pmf( const struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
      /* get pointer to PMF of distribution                                   */
      /*                                                                      */
@@ -611,7 +611,7 @@ unur_distr_discr_get_pmf( struct unur_distr *distr )
 /*---------------------------------------------------------------------------*/
 
 UNUR_FUNCT_DISCR *
-unur_distr_discr_get_cdf( struct unur_distr *distr )
+unur_distr_discr_get_cdf( const struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
      /* get pointer to CDF of distribution                                   */
      /*                                                                      */
@@ -632,7 +632,7 @@ unur_distr_discr_get_cdf( struct unur_distr *distr )
 /*---------------------------------------------------------------------------*/
 
 double
-unur_distr_discr_eval_pmf( int k, struct unur_distr *distr )
+unur_distr_discr_eval_pmf( int k, const struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
      /* evaluate PMF of distribution at k                                    */
      /*                                                                      */
@@ -659,7 +659,7 @@ unur_distr_discr_eval_pmf( int k, struct unur_distr *distr )
 /*---------------------------------------------------------------------------*/
 
 double
-unur_distr_discr_eval_cdf( int k, struct unur_distr *distr )
+unur_distr_discr_eval_cdf( int k, const struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
      /* evaluate CDF of distribution at k                                    */
      /*                                                                      */
@@ -779,7 +779,7 @@ unur_distr_discr_set_cdfstr( struct unur_distr *distr, const char *cdfstr )
 /*---------------------------------------------------------------------------*/
 
 double
-_unur_distr_discr_eval_pmf_tree( int k, struct unur_distr *distr )
+_unur_distr_discr_eval_pmf_tree( int k, const struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
      /* evaluate function tree for PMF.                                      */
      /*                                                                      */
@@ -797,7 +797,7 @@ _unur_distr_discr_eval_pmf_tree( int k, struct unur_distr *distr )
 /*---------------------------------------------------------------------------*/
 
 double
-_unur_distr_discr_eval_cdf_tree( int k, struct unur_distr *distr )
+_unur_distr_discr_eval_cdf_tree( int k, const struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
      /* evaluate function tree for CDF.                                      */
      /*                                                                      */
@@ -815,7 +815,7 @@ _unur_distr_discr_eval_cdf_tree( int k, struct unur_distr *distr )
 /*---------------------------------------------------------------------------*/
 
 char *
-unur_distr_discr_get_pmfstr( struct unur_distr *distr )
+unur_distr_discr_get_pmfstr( const struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
      /* get PMF string that is given via the string interface                */
      /*                                                                      */
@@ -841,7 +841,7 @@ unur_distr_discr_get_pmfstr( struct unur_distr *distr )
 /*---------------------------------------------------------------------------*/
 
 char *
-unur_distr_discr_get_cdfstr( struct unur_distr *distr )
+unur_distr_discr_get_cdfstr( const struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
      /* get CDF string that is given via the string interface                */
      /*                                                                      */
@@ -867,7 +867,7 @@ unur_distr_discr_get_cdfstr( struct unur_distr *distr )
 /*---------------------------------------------------------------------------*/
 
 int
-unur_distr_discr_set_pmfparams( struct unur_distr *distr, double *params, int n_params )
+unur_distr_discr_set_pmfparams( struct unur_distr *distr, const double *params, int n_params )
      /*----------------------------------------------------------------------*/
      /* set array of parameters for distribution                             */
      /*                                                                      */
@@ -918,7 +918,7 @@ unur_distr_discr_set_pmfparams( struct unur_distr *distr, double *params, int n_
 /*---------------------------------------------------------------------------*/
 
 int
-unur_distr_discr_get_pmfparams( struct unur_distr *distr, double **params )
+unur_distr_discr_get_pmfparams( const struct unur_distr *distr, const double **params )
      /*----------------------------------------------------------------------*/
      /* get number of pmf parameters and sets pointer to array params[] of   */
      /* parameters                                                           */
@@ -993,7 +993,7 @@ unur_distr_discr_set_domain( struct unur_distr *distr, int left, int right )
 /*---------------------------------------------------------------------------*/
 
 int
-unur_distr_discr_get_domain( struct unur_distr *distr, int *left, int *right )
+unur_distr_discr_get_domain( const struct unur_distr *distr, int *left, int *right )
      /*----------------------------------------------------------------------*/
      /* set the left and right borders of the domain of the distribution     */
      /*                                                                      */
@@ -1245,7 +1245,7 @@ unur_distr_discr_get_pmfsum( struct unur_distr *distr )
 /*---------------------------------------------------------------------------*/
 
 void
-_unur_distr_discr_debug( struct unur_distr *distr, char *genid, int printvector )
+_unur_distr_discr_debug( const struct unur_distr *distr, const char *genid, int printvector )
      /*----------------------------------------------------------------------*/
      /* write info about distribution into logfile                           */
      /*                                                                      */

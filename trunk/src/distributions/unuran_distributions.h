@@ -98,12 +98,12 @@
              [3] : b : > a : 1 : location, scale :
    =EON
 */
-UNUR_DISTR *unur_distr_beta(double *params, int n_params);
+UNUR_DISTR *unur_distr_beta(const double *params, int n_params);
 /** TODO: STDGEN **/
 
 /*---------------------------------------------------------------------------*/
 /* Burr family of distributions  [2; ch.12, p.54]                            */
-UNUR_DISTR *unur_distr_burr(double *params, int n_params);
+UNUR_DISTR *unur_distr_burr(const double *params, int n_params);
 /** under construction **/
 
 /*---------------------------------------------------------------------------*/
@@ -120,7 +120,7 @@ UNUR_DISTR *unur_distr_burr(double *params, int n_params);
    =STDGEN   INV  Inversion method
    =EON
 */
-UNUR_DISTR *unur_distr_cauchy(double *params, int n_params);
+UNUR_DISTR *unur_distr_cauchy(const double *params, int n_params);
 
 /*---------------------------------------------------------------------------*/
 /* Chi distribution  [2; ch.18, p.417]                                       */
@@ -135,7 +135,7 @@ UNUR_DISTR *unur_distr_cauchy(double *params, int n_params);
    =STDGEN   DEF  Ratio of Uniforms with shift (only for @tex $nu >= 1$@end tex) [MJa87]
    =EON
 */
-UNUR_DISTR *unur_distr_chi(double *params, int n_params);
+UNUR_DISTR *unur_distr_chi(const double *params, int n_params);
 
 /*---------------------------------------------------------------------------*/
 /* Chisquare distribution  [2; ch.18, p.416]                                 */
@@ -149,7 +149,7 @@ UNUR_DISTR *unur_distr_chi(double *params, int n_params);
    =FPARAM   0 : nu : > 0 : : shape (degrees of freedom) :
    =EON
 */
-UNUR_DISTR *unur_distr_chisquare(double *params, int n_params);
+UNUR_DISTR *unur_distr_chisquare(const double *params, int n_params);
 /** TODO: STDGEN **/
 
 /*---------------------------------------------------------------------------*/
@@ -170,7 +170,7 @@ UNUR_DISTR *unur_distr_chisquare(double *params, int n_params);
    =STDGEN   INV  Inversion method
    =EON
 */
-UNUR_DISTR *unur_distr_exponential(double *params, int n_params);
+UNUR_DISTR *unur_distr_exponential(const double *params, int n_params);
 
 /*---------------------------------------------------------------------------*/
 /*  Extreme value type I distribution  [3; ch.22, p.2]                       */
@@ -186,7 +186,7 @@ UNUR_DISTR *unur_distr_exponential(double *params, int n_params);
    =STDGEN   INV  Inversion method
    =EON
 */
-UNUR_DISTR *unur_distr_extremeI(double *params, int n_params);
+UNUR_DISTR *unur_distr_extremeI(const double *params, int n_params);
 
 /*---------------------------------------------------------------------------*/
 /* Extreme value type II distribution  [3; ch.22, p.2]                      */
@@ -203,7 +203,7 @@ UNUR_DISTR *unur_distr_extremeI(double *params, int n_params);
    =STDGEN   INV  Inversion method
    =EON
 */
-UNUR_DISTR *unur_distr_extremeII(double *params, int n_params);
+UNUR_DISTR *unur_distr_extremeII(const double *params, int n_params);
 
 /*---------------------------------------------------------------------------*/
 /* Gamma distribution  [2; ch.17, p.337]                                     */
@@ -221,11 +221,11 @@ UNUR_DISTR *unur_distr_extremeII(double *params, int n_params);
              2    Rejection from log-logistic envelopes [CHa77]
    =EON
 */
-UNUR_DISTR *unur_distr_gamma(double *params, int n_params);
+UNUR_DISTR *unur_distr_gamma(const double *params, int n_params);
 
 /*---------------------------------------------------------------------------*/
 /* Generalized inverse Gaussian distribution  [2; ch.15, p.284]              */
-UNUR_DISTR *unur_distr_gig(double *params, int n_params);
+UNUR_DISTR *unur_distr_gig(const double *params, int n_params);
 /** TODO: STDGEN **/
 
 /*---------------------------------------------------------------------------*/
@@ -242,7 +242,7 @@ UNUR_DISTR *unur_distr_gig(double *params, int n_params);
    =STDGEN   INV  Inversion method
    =EON
 */
-UNUR_DISTR *unur_distr_laplace(double *params, int n_params);
+UNUR_DISTR *unur_distr_laplace(const double *params, int n_params);
 
 /*---------------------------------------------------------------------------*/
 /* Logistic distribution  [3; ch.23, p.115]                                  */
@@ -258,11 +258,11 @@ UNUR_DISTR *unur_distr_laplace(double *params, int n_params);
    =STDGEN   INV  Inversion method
    =EON
 */
-UNUR_DISTR *unur_distr_logistic(double *params, int n_params);
+UNUR_DISTR *unur_distr_logistic(const double *params, int n_params);
 
 /*---------------------------------------------------------------------------*/
 /*  Lognormal distribution  [2; ch.14, p.208]                                */
-UNUR_DISTR *unur_distr_lognormal(double *params, int n_params);
+UNUR_DISTR *unur_distr_lognormal(const double *params, int n_params);
 /** TODO: STDGEN **/
 
 /*---------------------------------------------------------------------------*/
@@ -279,7 +279,7 @@ UNUR_DISTR *unur_distr_lognormal(double *params, int n_params);
    =STDGEN   INV  Inversion method
    =EON
 */
-UNUR_DISTR *unur_distr_lomax(double *params, int n_params);
+UNUR_DISTR *unur_distr_lomax(const double *params, int n_params);
 
 /*---------------------------------------------------------------------------*/
 /* Normal distribution  [2; ch.13, p.80]                                     */
@@ -299,7 +299,7 @@ UNUR_DISTR *unur_distr_lomax(double *params, int n_params);
              INV  Inversion method (slow)
    =EON
 */
-UNUR_DISTR *unur_distr_normal( double *params, int n_params );
+UNUR_DISTR *unur_distr_normal( const double *params, int n_params );
 
 /*---------------------------------------------------------------------------*/
 /* Pareto distribution (of first kind)  [2; ch.20, p.574]                    */
@@ -315,7 +315,7 @@ UNUR_DISTR *unur_distr_normal( double *params, int n_params );
    =STDGEN   INV  Inversion method
    =EON
 */
-UNUR_DISTR *unur_distr_pareto( double *params, int n_params );
+UNUR_DISTR *unur_distr_pareto( const double *params, int n_params );
 
 /*---------------------------------------------------------------------------*/
 /* Pearson VI distribution                                                   */
@@ -342,7 +342,7 @@ UNUR_DISTR *unur_distr_pareto( double *params, int n_params );
    =STDGEN   DEF  Transformed density rejection (only for @tex $tau >= 1$@end tex) [DLa86]
    =EON
 */
-UNUR_DISTR *unur_distr_powerexponential(double *params, int n_params);
+UNUR_DISTR *unur_distr_powerexponential(const double *params, int n_params);
 
 /*---------------------------------------------------------------------------*/
 /* Rayleigh distribution  [2; ch.18, p.456]                                  */
@@ -356,7 +356,7 @@ UNUR_DISTR *unur_distr_powerexponential(double *params, int n_params);
    =FPARAM   0 : sigma : > 0 : : scale :
    =EON
 */
-UNUR_DISTR *unur_distr_rayleigh(double *params, int n_params);
+UNUR_DISTR *unur_distr_rayleigh(const double *params, int n_params);
 /** TODO: STDGEN **/
 
 /*---------------------------------------------------------------------------*/
@@ -365,7 +365,7 @@ UNUR_DISTR *unur_distr_rayleigh(double *params, int n_params);
 
 /*---------------------------------------------------------------------------*/
 /* Slash distribution  [2; ch.12, p.63]                                      */
-UNUR_DISTR *unur_distr_slash(double *params, int n_params);
+UNUR_DISTR *unur_distr_slash(const double *params, int n_params);
 /** TODO: STDGEN **/
 
 /*---------------------------------------------------------------------------*/
@@ -381,7 +381,7 @@ UNUR_DISTR *unur_distr_slash(double *params, int n_params);
    =FPARAM   0 : nu : > 0 : : shape :
    =EON
 */
-UNUR_DISTR *unur_distr_student(double *params, int n_params);
+UNUR_DISTR *unur_distr_student(const double *params, int n_params);
 /** CDF not implemented !!!!!! */
 /** TODO: STDGEN **/
 
@@ -399,7 +399,7 @@ UNUR_DISTR *unur_distr_student(double *params, int n_params);
    =STDGEN   INV  Inversion method
    =EON
 */
-UNUR_DISTR *unur_distr_triangular(double *params, int n_params);
+UNUR_DISTR *unur_distr_triangular(const double *params, int n_params);
 
 /*---------------------------------------------------------------------------*/
 /* Uniform distribution  [3; ch.26, p.276]                                   */
@@ -415,7 +415,7 @@ UNUR_DISTR *unur_distr_triangular(double *params, int n_params);
    =STDGEN   INV  Inversion method
    =EON
 */
-UNUR_DISTR *unur_distr_uniform(double *params, int n_params);
+UNUR_DISTR *unur_distr_uniform(const double *params, int n_params);
 
 /*---------------------------------------------------------------------------*/
 /* Weibull distribution  [2; ch.21, p.628]                                   */
@@ -432,7 +432,7 @@ UNUR_DISTR *unur_distr_uniform(double *params, int n_params);
    =STDGEN   INV  Inversion method
    =EON
 */
-UNUR_DISTR *unur_distr_weibull(double *params, int n_params);
+UNUR_DISTR *unur_distr_weibull(const double *params, int n_params);
 
 /*---------------------------------------------------------------------------*/
 
@@ -444,7 +444,7 @@ UNUR_DISTR *unur_distr_weibull(double *params, int n_params);
 
 /*---------------------------------------------------------------------------*/
 /* Multinormal distribution  [5; ch.45, p.107]                               */
-UNUR_DISTR *unur_distr_multinormal(int dim, double *mean, double *covar);
+UNUR_DISTR *unur_distr_multinormal(int dim, const double *mean, const double *covar);
 /* 
    Creates a distribution object for the multinormal distribution with
    @var{dim} components. @var{mean} is an array of size @var{dim}
@@ -481,7 +481,7 @@ UNUR_DISTR *unur_distr_multinormal(int dim, double *mean, double *covar);
    =STDGEN   DEF  Ratio of Uniforms/Inversion [STa89]
    =EON
 */
-UNUR_DISTR *unur_distr_binomial(double *params, int n_params);
+UNUR_DISTR *unur_distr_binomial(const double *params, int n_params);
 /** No CDF !!! **/
 
 /*---------------------------------------------------------------------------*/
@@ -497,7 +497,7 @@ UNUR_DISTR *unur_distr_binomial(double *params, int n_params);
    =STDGEN   INV  Inversion method
    =EON
 */
-UNUR_DISTR *unur_distr_geometric(double *params, int n_params);
+UNUR_DISTR *unur_distr_geometric(const double *params, int n_params);
 
 /*---------------------------------------------------------------------------*/
 /* Hypergeometric distribution  [1; ch.6, p.237]                             */
@@ -514,7 +514,7 @@ UNUR_DISTR *unur_distr_geometric(double *params, int n_params);
    =STDGEN   DEF  Ratio of Uniforms/Inversion [STa89]
    =EON
 */
-UNUR_DISTR *unur_distr_hypergeometric(double *params, int n_params);
+UNUR_DISTR *unur_distr_hypergeometric(const double *params, int n_params);
 /** No CDF !!! **/
 
 /*---------------------------------------------------------------------------*/
@@ -530,7 +530,7 @@ UNUR_DISTR *unur_distr_hypergeometric(double *params, int n_params);
    =STDGEN   DEF   Inversion/Transformation [KAa81]
    =EON
 */
-UNUR_DISTR *unur_distr_logarithmic(double *params, int n_params);
+UNUR_DISTR *unur_distr_logarithmic(const double *params, int n_params);
 /** No CDF !!! **/
 
 /*---------------------------------------------------------------------------*/
@@ -546,7 +546,7 @@ UNUR_DISTR *unur_distr_logarithmic(double *params, int n_params);
              1 : r : > 0       :  : shape :
    =EON
 */
-UNUR_DISTR *unur_distr_negativebinomial(double *params, int n_params);
+UNUR_DISTR *unur_distr_negativebinomial(const double *params, int n_params);
 /** No CDF !!! **/
 /** TODO: STDGEN **/
 
@@ -564,12 +564,12 @@ UNUR_DISTR *unur_distr_negativebinomial(double *params, int n_params);
              2    Tabulated Inversion combined with Patchwork Rejection [ZHa94]
    =EON
 */
-UNUR_DISTR *unur_distr_poisson(double *params, int n_params);
+UNUR_DISTR *unur_distr_poisson(const double *params, int n_params);
 /** No CDF !!! **/
 
 /*---------------------------------------------------------------------------*/
 /* Zipf (or Zeta) distribution  [1; ch.11.20, p.465]                         */
-UNUR_DISTR *unur_distr_zipf(double *params, int n_params);
+UNUR_DISTR *unur_distr_zipf(const double *params, int n_params);
 /** No CDF !!! **/
 /** TODO: STDGEN **/
 

@@ -71,19 +71,19 @@ static const char distr_name[] = "logarithmic";
 /*---------------------------------------------------------------------------*/
 
 /* function prototypes                                                       */
-static double _unur_pmf_logarithmic( int k, UNUR_DISTR *distr );
+static double _unur_pmf_logarithmic( int k, const UNUR_DISTR *distr );
 #ifdef HAVE_CDF
-static double _unur_cdf_logarithmic( int k, UNUR_DISTR *distr );      
+static double _unur_cdf_logarithmic( int k, const UNUR_DISTR *distr );      
 #endif
 
 static int _unur_upd_mode_logarithmic( UNUR_DISTR *distr );
 static int _unur_upd_sum_logarithmic( UNUR_DISTR *distr );
-static int _unur_set_params_logarithmic( UNUR_DISTR *distr, double *params, int n_params );
+static int _unur_set_params_logarithmic( UNUR_DISTR *distr, const double *params, int n_params );
 
 /*---------------------------------------------------------------------------*/
 
 double
-_unur_pmf_logarithmic(int k, UNUR_DISTR *distr)
+_unur_pmf_logarithmic(int k, const UNUR_DISTR *distr)
 { 
   return ((k<1) ? 0. : pow( DISTR.theta, k ) / k * NORMCONSTANT);
 } /* end of _unur_pmf_logarithmic() */
@@ -93,7 +93,7 @@ _unur_pmf_logarithmic(int k, UNUR_DISTR *distr)
 #ifdef HAVE_CDF
 
 double
-_unur_cdf_logarithmic(int k, UNUR_DISTR *distr)
+_unur_cdf_logarithmic(int k, const UNUR_DISTR *distr)
 { 
   /** TODO: CDF **/
   return 0.;
@@ -145,7 +145,7 @@ _unur_upd_sum_logarithmic( UNUR_DISTR *distr )
 /*---------------------------------------------------------------------------*/
 
 int
-_unur_set_params_logarithmic( UNUR_DISTR *distr, double *params, int n_params )
+_unur_set_params_logarithmic( UNUR_DISTR *distr, const double *params, int n_params )
 {
   /* check number of parameters for distribution */
   if (n_params < 1) {
@@ -182,7 +182,7 @@ _unur_set_params_logarithmic( UNUR_DISTR *distr, double *params, int n_params )
 /*---------------------------------------------------------------------------*/
 
 struct unur_distr *
-unur_distr_logarithmic( double *params, int n_params )
+unur_distr_logarithmic( const double *params, int n_params )
 {
   register struct unur_distr *distr;
 

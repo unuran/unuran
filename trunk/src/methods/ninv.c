@@ -177,29 +177,29 @@ static int _unur_ninv_create_table( struct unur_gen *gen );
 /* i.e., into the log file if not specified otherwise.                       */
 /*---------------------------------------------------------------------------*/
 
-static void _unur_ninv_debug_init( struct unur_gen *gen );
+static void _unur_ninv_debug_init( const struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 /* print after generator has been initialized has completed.                 */
 /*---------------------------------------------------------------------------*/
 
-static void _unur_ninv_debug_start( struct unur_gen *gen );
+static void _unur_ninv_debug_start( const struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 /* print starting points or table for algorithms into logfile.               */
 /*---------------------------------------------------------------------------*/
 
-static void _unur_ninv_debug_sample_regula( struct unur_gen *gen, 
+static void _unur_ninv_debug_sample_regula( const struct unur_gen *gen, 
 					    double u, double x, double fx, int iter );
 /*---------------------------------------------------------------------------*/
 /* trace sampling (regula falsi).                                            */
 /*---------------------------------------------------------------------------*/
 
-static void _unur_ninv_debug_sample_newton( struct unur_gen *gen, 
+static void _unur_ninv_debug_sample_newton( const struct unur_gen *gen, 
 					    double u, double x, double fx, int iter );
 /*---------------------------------------------------------------------------*/
 /* trace sampling (newton's method).                                         */
 /*---------------------------------------------------------------------------*/
 
-static void _unur_ninv_debug_chg_truncated(UNUR_GEN *gen);
+static void _unur_ninv_debug_chg_truncated( const struct unur_gen *gen);
 /*---------------------------------------------------------------------------*/
 /* trace changes of the truncated domain.                                    */
 /*---------------------------------------------------------------------------*/
@@ -224,7 +224,7 @@ static void _unur_ninv_debug_chg_truncated(UNUR_GEN *gen);
 /*****************************************************************************/
 
 struct unur_par *
-unur_ninv_new( struct unur_distr *distr )
+unur_ninv_new( const struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
      /* get default parameters                                               */
      /*                                                                      */
@@ -1632,7 +1632,7 @@ _unur_ninv_free( struct unur_gen *gen )
 /*---------------------------------------------------------------------------*/
 
 void
-_unur_ninv_debug_init( struct unur_gen *gen )
+_unur_ninv_debug_init( const struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* write info about generator into logfile                              */
      /*                                                                      */
@@ -1674,7 +1674,7 @@ _unur_ninv_debug_init( struct unur_gen *gen )
 /*---------------------------------------------------------------------------*/
 
 void
-_unur_ninv_debug_start( struct unur_gen *gen )
+_unur_ninv_debug_start( const struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* print starting points or table for algorithms into logfile           */
      /*                                                                      */
@@ -1710,7 +1710,7 @@ _unur_ninv_debug_start( struct unur_gen *gen )
 /*---------------------------------------------------------------------------*/
 
 void
-_unur_ninv_debug_sample_regula( struct unur_gen *gen, double u, double x, double fx, int iter )
+_unur_ninv_debug_sample_regula( const struct unur_gen *gen, double u, double x, double fx, int iter )
      /*----------------------------------------------------------------------*/
      /* trace sampling (regula falsi)                                       */
      /*                                                                      */
@@ -1733,7 +1733,7 @@ _unur_ninv_debug_sample_regula( struct unur_gen *gen, double u, double x, double
 /*---------------------------------------------------------------------------*/
 
 void
-_unur_ninv_debug_sample_newton( struct unur_gen *gen, double u, double x, double fx, int iter )
+_unur_ninv_debug_sample_newton( const struct unur_gen *gen, double u, double x, double fx, int iter )
      /*----------------------------------------------------------------------*/
      /* trace sampling (newton's method)                                     */
      /*                                                                      */
@@ -1756,7 +1756,7 @@ _unur_ninv_debug_sample_newton( struct unur_gen *gen, double u, double x, double
 /*---------------------------------------------------------------------------*/
 
 void 
-_unur_ninv_debug_chg_truncated( struct unur_gen *gen )
+_unur_ninv_debug_chg_truncated( const struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* print new (changed) domain of (truncated) distribution               */
      /*                                                                      */

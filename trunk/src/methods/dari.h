@@ -93,7 +93,7 @@
 /*---------------------------------------------------------------------------*/
 /* Routines for user interface                                               */
 
-UNUR_PAR *unur_dari_new( UNUR_DISTR *distribution );
+UNUR_PAR *unur_dari_new( const UNUR_DISTR *distribution );
 /* 
    Get default parameters for generator.
 */

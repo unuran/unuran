@@ -68,7 +68,7 @@ UNUR_DISTR *unur_distr_cvemp_new( int dim );
    @subsubheading Essential parameters
 */
 
-int unur_distr_cvemp_set_data( UNUR_DISTR *distribution, double *sample, int n_sample );
+int unur_distr_cvemp_set_data( UNUR_DISTR *distribution, const double *sample, int n_sample );
 /* 
    Set observed sample for empirical @var{distribution}.
    @var{sample} is an array of doubles of size 
@@ -95,7 +95,7 @@ int unur_distr_cvemp_read_data( UNUR_DISTR *distribution, const char *filename )
    and @code{0} is returned.
 */
 
-int unur_distr_cvemp_get_data( UNUR_DISTR *distribution, double **sample );
+int unur_distr_cvemp_get_data( const UNUR_DISTR *distribution, const double **sample );
 /* 
    Get number of samples and set pointer @var{sample} to array of
    observations. If no sample has been given,

@@ -159,7 +159,7 @@ sub get_PDFgen_funct
     my $d = $_[0];       # distribution
     my $l = $_[1];       # chosen programming language
 
-    return "int _unur_acg_$l\_PDF_$d (FILE *out, UNUR_DISTR *distr, const char *pdf)";
+    return "int _unur_acg_$l\_PDF_$d (FILE *out, const UNUR_DISTR *distr, const char *pdf)";
 } # end of get_PDFgen_funct()
 
 

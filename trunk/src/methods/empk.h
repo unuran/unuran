@@ -88,7 +88,7 @@
 
 /* =ROUTINES */
 
-UNUR_PAR *unur_empk_new( UNUR_DISTR *distribution );
+UNUR_PAR *unur_empk_new( const UNUR_DISTR *distribution );
 /* 
    Get default parameters for generator.
 */
@@ -122,7 +122,7 @@ int unur_empk_set_kernel( UNUR_PAR *parameters, unsigned kernel);
    Default is a Gaussian kernel.
 */
 
-int unur_empk_set_kernelgen( UNUR_PAR *parameters, UNUR_GEN *kernelgen, double alpha, double kernelvar );
+int unur_empk_set_kernelgen( UNUR_PAR *parameters, const UNUR_GEN *kernelgen, double alpha, double kernelvar );
 /* 
    Set generator for the kernel used for density estimation.
 

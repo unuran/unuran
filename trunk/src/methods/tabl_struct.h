@@ -42,7 +42,7 @@
 
 struct unur_tabl_par { 
 
-  double *slopes;       /* slopes <a_i,b_i>, i.e.\ f(a_i) >= f(b_i)          */
+  const double *slopes; /* slopes <a_i,b_i>, i.e.\ f(a_i) >= f(b_i)          */
   int     n_slopes;     /* number of slopes                                  */
   double  bleft;        /* left border of the domain                         */
   double  bright;       /* right border of the domain                        */

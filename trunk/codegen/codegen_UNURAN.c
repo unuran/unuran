@@ -42,12 +42,12 @@
 
 /*---------------------------------------------------------------------------*/
 
-static int _unur_acg_UNURAN_stdPDF(FILE *out, UNUR_DISTR *distr);
+static int _unur_acg_UNURAN_stdPDF(FILE *out, const UNUR_DISTR *distr);
 /*---------------------------------------------------------------------------*/
 /* Code generator for PDFs of UNURAN build-in standard distributions.        */
 /*---------------------------------------------------------------------------*/
 
-static int _unur_acg_UNURAN_genericPDF(FILE *out, UNUR_DISTR *distr);
+static int _unur_acg_UNURAN_genericPDF(FILE *out, const UNUR_DISTR *distr);
 /*---------------------------------------------------------------------------*/
 /* Code generator for PDFs of UNURAN generic distributions.                  */
 /*---------------------------------------------------------------------------*/
@@ -59,7 +59,7 @@ static int _unur_acg_UNURAN_genericPDF(FILE *out, UNUR_DISTR *distr);
 /*---------------------------------------------------------------------------*/
 
 int
-unur_acg_UNURAN( struct unur_gen *gen, FILE *out, const char *distr_name, int with_main )
+unur_acg_UNURAN( const UNUR_GEN *gen, FILE *out, const char *distr_name, int with_main )
      /*----------------------------------------------------------------------*/
      /* Automatic code generator (C version)                                 */
      /*                                                                      */
@@ -128,7 +128,7 @@ unur_acg_UNURAN( struct unur_gen *gen, FILE *out, const char *distr_name, int wi
 /*---------------------------------------------------------------------------*/
 
 int 
-_unur_acg_UNURAN_PDF (FILE *out, UNUR_DISTR *distr, const char *pdf_name)
+_unur_acg_UNURAN_PDF (FILE *out, const UNUR_DISTR *distr, const char *pdf_name)
      /*----------------------------------------------------------------------*/
      /* Code generator for PDFs of continuous distributions.                 */
      /*                                                                      */
@@ -192,7 +192,7 @@ _unur_acg_UNURAN_PDF (FILE *out, UNUR_DISTR *distr, const char *pdf_name)
 /*---------------------------------------------------------------------------*/
 
 int 
-_unur_acg_UNURAN_PDFbody (FILE *out, UNUR_DISTR *distr)
+_unur_acg_UNURAN_PDFbody (FILE *out, const UNUR_DISTR *distr)
      /*----------------------------------------------------------------------*/
      /* Code generator for body of PDFs of continuous distributions.         */
      /*                                                                      */
@@ -218,7 +218,7 @@ _unur_acg_UNURAN_PDFbody (FILE *out, UNUR_DISTR *distr)
 /*---------------------------------------------------------------------------*/
 
 int 
-_unur_acg_UNURAN_stdPDF (FILE *out, UNUR_DISTR *distr)
+_unur_acg_UNURAN_stdPDF (FILE *out, const UNUR_DISTR *distr)
      /*----------------------------------------------------------------------*/
      /* Code generator for PDFs of UNURAN build-in standard distributions.   */
      /*                                                                      */
@@ -234,7 +234,7 @@ _unur_acg_UNURAN_stdPDF (FILE *out, UNUR_DISTR *distr)
      /*   return 0                                                           */
      /*----------------------------------------------------------------------*/
 {
-  double *fpar;
+  const double *fpar;
   int n_fpar;
   int i;
 
@@ -257,7 +257,7 @@ _unur_acg_UNURAN_stdPDF (FILE *out, UNUR_DISTR *distr)
 /*---------------------------------------------------------------------------*/
 
 int 
-_unur_acg_UNURAN_genericPDF (FILE *out, UNUR_DISTR *distr)
+_unur_acg_UNURAN_genericPDF (FILE *out, const UNUR_DISTR *distr)
      /*----------------------------------------------------------------------*/
      /* Code generator for PDFs of UNURAN generic distributions.             */
      /*                                                                      */

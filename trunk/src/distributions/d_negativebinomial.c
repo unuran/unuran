@@ -84,24 +84,24 @@ static const char distr_name[] = "negativebinomial";
 /*---------------------------------------------------------------------------*/
 /* function prototypes                                                       */
 #ifdef HAVE_PMF
-static double _unur_pmf_negativebinomial( int k, UNUR_DISTR *distr );
+static double _unur_pmf_negativebinomial( int k, const UNUR_DISTR *distr );
 #endif
 #ifdef HAVE_CDF
-static double _unur_cdf_negativebinomial( int k, UNUR_DISTR *distr ); 
+static double _unur_cdf_negativebinomial( int k, const UNUR_DISTR *distr ); 
 #endif
 
 static int _unur_upd_mode_negativebinomial( UNUR_DISTR *distr );
 #ifdef HAVE_SUM
 static int _unur_upd_sum_negativebinomial( UNUR_DISTR *distr );
 #endif
-static int _unur_set_params_negativebinomial( UNUR_DISTR *distr, double *params, int n_params );
+static int _unur_set_params_negativebinomial( UNUR_DISTR *distr, const double *params, int n_params );
 
 /*---------------------------------------------------------------------------*/
 
 #ifdef HAVE_PMF
 
 double
-_unur_pmf_negativebinomial(int k, UNUR_DISTR *distr)
+_unur_pmf_negativebinomial(int k, const UNUR_DISTR *distr)
 { 
   register double *params = DISTR.params;
 
@@ -121,7 +121,7 @@ _unur_pmf_negativebinomial(int k, UNUR_DISTR *distr)
 #ifdef HAVE_CDF
 
 double
-_unur_cdf_negativebinomial(int k, UNUR_DISTR *distr)
+_unur_cdf_negativebinomial(int k, const UNUR_DISTR *distr)
 { 
   register double *params = DISTR.params;
 
@@ -187,7 +187,7 @@ _unur_upd_sum_negativebinomial( UNUR_DISTR *distr )
 /*---------------------------------------------------------------------------*/
 
 int
-_unur_set_params_negativebinomial( UNUR_DISTR *distr, double *params, int n_params )
+_unur_set_params_negativebinomial( UNUR_DISTR *distr, const double *params, int n_params )
 {
   /* check number of parameters for distribution */
   if (n_params < 2) {
@@ -225,7 +225,7 @@ _unur_set_params_negativebinomial( UNUR_DISTR *distr, double *params, int n_para
 /*---------------------------------------------------------------------------*/
 
 struct unur_distr *
-unur_distr_negativebinomial( double *params, int n_params )
+unur_distr_negativebinomial( const double *params, int n_params )
 {
   register struct unur_distr *distr;
 

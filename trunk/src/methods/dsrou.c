@@ -165,7 +165,7 @@ static void _unur_dsrou_free( struct unur_gen *gen);
 /* the following functions print debugging information on output stream,     */
 /* i.e., into the log file if not specified otherwise.                       */
 /*---------------------------------------------------------------------------*/
-static void _unur_dsrou_debug_init( struct unur_gen *gen, int is_reinit );
+static void _unur_dsrou_debug_init( const struct unur_gen *gen, int is_reinit );
 
 /*---------------------------------------------------------------------------*/
 /* print after generator has been initialized has completed.                 */
@@ -200,7 +200,7 @@ static void _unur_dsrou_debug_init( struct unur_gen *gen, int is_reinit );
 /*****************************************************************************/
 
 struct unur_par *
-unur_dsrou_new( struct unur_distr *distr )
+unur_dsrou_new( const struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
      /* get default parameters                                               */
      /*                                                                      */
@@ -228,20 +228,6 @@ unur_dsrou_new( struct unur_distr *distr )
     _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"PMF"); 
     return NULL;
   }
-
-  if (!(distr->set & UNUR_DISTR_SET_MODE)) {
-    _unur_warning(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"mode: try finding it (numerically)"); 
-    if (!unur_distr_discr_upd_mode(distr)) {
-      _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"mode"); 
-      return NULL; 
-    }
-  }
-
-  if (!(distr->set & UNUR_DISTR_SET_PMFSUM))
-    if (!unur_distr_discr_upd_pmfsum(distr)) {
-      _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"sum over PMF");
-      return NULL; 
-    }
 
   /* allocate structure */
   par = _unur_malloc(sizeof(struct unur_par));
@@ -734,6 +720,24 @@ _unur_dsrou_create( struct unur_par *par )
   /* copy distribution object into generator object */
   _unur_distr_discr_copy( &(gen->distr), par->distr );
 
+  /* check for required data: mode */
+  if (!(gen->distr.set & UNUR_DISTR_SET_MODE)) {
+    _unur_warning(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"mode: try finding it (numerically)"); 
+    if (!unur_distr_discr_upd_mode(&(gen->distr))) {
+      _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"mode"); 
+      free(gen);
+      return NULL; 
+    }
+  }
+
+  /* check for required data: sum over PMF */
+  if (!(gen->distr.set & UNUR_DISTR_SET_PMFSUM))
+    if (!unur_distr_discr_upd_pmfsum(&(gen->distr))) {
+      _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"sum over PMF");
+      free(gen);
+      return NULL; 
+    }
+
   /* set generator identifier */
   gen->genid = _unur_set_genid(GENTYPE);
 
@@ -955,7 +959,7 @@ _unur_dsrou_free( struct unur_gen *gen )
 /*---------------------------------------------------------------------------*/
 
 static void
-_unur_dsrou_debug_init( struct unur_gen *gen, int is_reinit )
+_unur_dsrou_debug_init( const struct unur_gen *gen, int is_reinit )
      /*----------------------------------------------------------------------*/
      /* write info about generator into logfile                              */
      /*                                                                      */

@@ -37,22 +37,22 @@
 #define UNURAN_ACG_H_SEEN
 /*---------------------------------------------------------------------------*/
 
-int unur_acg_C( struct unur_gen *gen, FILE *out, const char *distr_name, int with_main );
+int unur_acg_C( const UNUR_GEN *gen, FILE *out, const char *distr_name, int with_main );
 /*---------------------------------------------------------------------------*/
 /* Automatic code generator (C version)                                      */
 /*---------------------------------------------------------------------------*/
 
-int unur_acg_FORTRAN( struct unur_gen *gen, FILE *out, const char *distr_name, int with_main );
+int unur_acg_FORTRAN( const UNUR_GEN *gen, FILE *out, const char *distr_name, int with_main );
 /*---------------------------------------------------------------------------*/
 /* Automatic code generator (FORTRAN version)                                */
 /*---------------------------------------------------------------------------*/
 
-int unur_acg_JAVA( struct unur_gen *gen, FILE *out, const char *distr_name, int with_main );
+int unur_acg_JAVA( const UNUR_GEN *gen, FILE *out, const char *distr_name, int with_main );
 /*---------------------------------------------------------------------------*/
 /* Automatic code generator (JAVA version)                                   */
 /*---------------------------------------------------------------------------*/
 
-int unur_acg_UNURAN( struct unur_gen *gen, 
+int unur_acg_UNURAN( const UNUR_GEN *gen, 
 		     FILE *out, 
 		     const char *distr_name,
 		     int n_cpoints );

@@ -78,11 +78,11 @@
 /*---------------------------------------------------------------------------*/
 /* copy distribution objects                                                 */
 
-int _unur_distr_cemp_copy( struct unur_distr *to, struct unur_distr *from );
-int _unur_distr_cont_copy( struct unur_distr *to, struct unur_distr *from );
-int _unur_distr_cvec_copy( struct unur_distr *to, struct unur_distr *from );
-int _unur_distr_cvemp_copy( struct unur_distr *to, struct unur_distr *from );
-int _unur_distr_discr_copy( struct unur_distr *to, struct unur_distr *from );
+int _unur_distr_cemp_copy( struct unur_distr *to, const struct unur_distr *from );
+int _unur_distr_cont_copy( struct unur_distr *to, const struct unur_distr *from );
+int _unur_distr_cvec_copy( struct unur_distr *to, const struct unur_distr *from );
+int _unur_distr_cvemp_copy( struct unur_distr *to, const struct unur_distr *from );
+int _unur_distr_discr_copy( struct unur_distr *to, const struct unur_distr *from );
 /* copy distribution object 'from' into distribution object 'to'.            */
 
 /*---------------------------------------------------------------------------*/
@@ -99,22 +99,22 @@ void _unur_distr_discr_clear( struct unur_gen *generator );
 /*---------------------------------------------------------------------------*/
 /* debuging routines for distributions                                       */
 
-void _unur_distr_cont_debug( UNUR_DISTR *distribution, char *genid );
+void _unur_distr_cont_debug( const UNUR_DISTR *distribution, const char *genid );
 /* write info about distribution into logfile                                */
 
-void _unur_distr_corder_debug( UNUR_DISTR *order_statistics, char *genid );
+void _unur_distr_corder_debug( const UNUR_DISTR *order_statistics, const char *genid );
 /* write info about distribution into logfile                                */
 
-void _unur_distr_cemp_debug( UNUR_DISTR *distribution, char *genid, int printvector );
+void _unur_distr_cemp_debug( const UNUR_DISTR *distribution, const char *genid, int printvector );
 /* write info about distribution into logfile                                */
 
-void _unur_distr_cvec_debug( UNUR_DISTR *distribution, char *genid );
+void _unur_distr_cvec_debug( const UNUR_DISTR *distribution, const char *genid );
 /* write info about distribution into logfile                                */
 
-void _unur_distr_cvemp_debug( UNUR_DISTR *distribution, char *genid, int printvector );
+void _unur_distr_cvemp_debug( const UNUR_DISTR *distribution, const char *genid, int printvector );
 /* write info about distribution into logfile                                */
 
-void _unur_distr_discr_debug( UNUR_DISTR *distribution, char *genid, int printvector );
+void _unur_distr_discr_debug( const UNUR_DISTR *distribution, const char *genid, int printvector );
 /* write info about distribution into logfile                                */
 
 /*---------------------------------------------------------------------------*/

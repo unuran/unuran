@@ -53,7 +53,7 @@ const static char GENID_UNKNOWN[] = "UNURAN";
 
 void
 _unur_stream_printf( const char *genid, 
-		     char *filename, int line,
+		     const char *filename, int line,
 		     const char *format, ... )
      /*----------------------------------------------------------------------*/
      /* write messages on output stream(s)                                   */

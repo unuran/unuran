@@ -401,7 +401,7 @@ double unur_test_timing_total_run( const struct unur_par *par, int samplesize, i
 /*---------------------------------------------------------------------------*/
 
 double
-unur_test_timing_uniform( struct unur_par *par, int log_samplesize )
+unur_test_timing_uniform( const struct unur_par *par, int log_samplesize )
      /*----------------------------------------------------------------------*/
      /*  estimate generation time for URNG using UNURAN wrapper.             */
      /*                                                                      */
@@ -464,7 +464,7 @@ unur_test_timing_uniform( struct unur_par *par, int log_samplesize )
 /*---------------------------------------------------------------------------*/
 
 double
-unur_test_timing_exponential( struct unur_par *par, int log_samplesize )
+unur_test_timing_exponential( const struct unur_par *par, int log_samplesize )
      /*----------------------------------------------------------------------*/
      /*  estimate generation time for URNG using UNURAN wrapper.             */
      /*                                                                      */

@@ -94,7 +94,7 @@ UNUR_DISTR *unur_str2distr( const char *string );
 =EON
 */
 
-UNUR_PAR *_unur_str2par( UNUR_DISTR *distribution, const char *string, struct unur_slist **mlist );
+UNUR_PAR *_unur_str2par( const UNUR_DISTR *distribution, const char *string, struct unur_slist **mlist );
 /*
    Get a parameter object for the givne distribution object and for the 
    method described in @var{string}. 

@@ -235,7 +235,7 @@ inline static double _unur_empk_comp_iqrtrange( double *data, int n_data );
 /* the following functions print debugging information on output stream,     */
 /* i.e., into the log file if not specified otherwise.                       */
 /*---------------------------------------------------------------------------*/
-static void _unur_empk_debug_init( struct unur_par *par, struct unur_gen *gen );
+static void _unur_empk_debug_init( const struct unur_par *par, const struct unur_gen *gen );
 
 /*---------------------------------------------------------------------------*/
 /* print after generator has been initialized has completed.                 */
@@ -278,7 +278,7 @@ compare_doubles (const void *a, const void *b)
 /*****************************************************************************/
 
 struct unur_par *
-unur_empk_new( struct unur_distr *distr )
+unur_empk_new( const struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
      /* get default parameters                                               */
      /*                                                                      */
@@ -445,7 +445,7 @@ unur_empk_set_kernel( struct unur_par *par, unsigned kernel)
 /*---------------------------------------------------------------------------*/
 
 int
-unur_empk_set_kernelgen( struct unur_par *par, struct unur_gen *kernelgen,
+unur_empk_set_kernelgen( struct unur_par *par, const struct unur_gen *kernelgen,
 			 double alpha, double kernelvar )
      /*----------------------------------------------------------------------*/
      /* set generator for kernel distribution                                */
@@ -767,7 +767,7 @@ _unur_empk_init( struct unur_par *par )
     return NULL; }
   COOKIE_CHECK(par,CK_EMPK_PAR,NULL);
 
-  /* Is there already a running kernel generator */
+  /* Is there already a running kernel generator ? */
   if (PAR.kerngen == NULL)
     if ( !unur_empk_set_kernel( par, UNUR_DISTR_GAUSSIAN ) ) {
       free(par); return NULL; }
@@ -887,8 +887,13 @@ _unur_empk_create( struct unur_par *par )
   memcpy( GEN.observ, par->distr->data.cemp.sample, GEN.n_observ * sizeof(double) );
   DISTR.sample = GEN.observ;  /* update pointer in local distribution object */
 
+  /* copy kernel generator into generator object */
+  GEN.kerngen = NULL;
+  if (PAR.kerngen) {
+    GEN.kerngen = PAR.kerngen;
+  }
+
   /* copy some parameters into generator object */
-  GEN.kerngen = PAR.kerngen;        /* generator for kernel distribution     */
   GEN.smoothing = PAR.smoothing;    /* smoothing factor                      */
   GEN.kernvar = PAR.kernvar;        /* variance of kernel                    */
 
@@ -1092,7 +1097,7 @@ _unur_empk_comp_iqrtrange( double *data, int n )
 /*---------------------------------------------------------------------------*/
 
 static void
-_unur_empk_debug_init( struct unur_par *par, struct unur_gen *gen )
+_unur_empk_debug_init( const struct unur_par *par, const struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* write info about generator into logfile                              */
      /*                                                                      */

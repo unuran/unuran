@@ -77,7 +77,7 @@ UNUR_DISTR *unur_distr_discr_new( void );
    depends on the generation method which of these is used.
 */
 
-int unur_distr_discr_set_pv( UNUR_DISTR *distribution, double *pv, int n_pv );
+int unur_distr_discr_set_pv( UNUR_DISTR *distribution, const double *pv, int n_pv );
 /* 
    Set finite probability vector (PV) for a @var{distribution}. It is not
    necessary that the entries in the given PV sum to 1.
@@ -120,7 +120,7 @@ int unur_distr_discr_make_pv( UNUR_DISTR *distribution );
    @code{unur_errno} is set to @code{UNUR_ERR_DISTR_SET}.
 */
 
-int unur_distr_discr_get_pv( UNUR_DISTR *distribution, double **pv );
+int unur_distr_discr_get_pv( const UNUR_DISTR *distribution, const double **pv );
 /* 
    Get length of PV of the @var{distribution} and set pointer
    @var{pv} to array of probabilities. If no PV is given,
@@ -139,7 +139,7 @@ int unur_distr_discr_set_cdf( UNUR_DISTR *distribution, UNUR_FUNCT_DISCR *cdf );
 
    It is important to note that all these functions must return a
    result for all integers @var{k}. Eg., if the domain of a given
-   PMF is the interval @{1,2,3,...,100@}, than the given function
+   PMF is the interval @{1,2,3,@dots{},100@}, than the given function
    must return @code{0.0} for all points outside this interval.
 
    It is not possible to change such a function. Once the PMF or
@@ -151,10 +151,10 @@ int unur_distr_discr_set_cdf( UNUR_DISTR *distribution, UNUR_FUNCT_DISCR *cdf );
 */
 
 
-UNUR_FUNCT_DISCR *unur_distr_discr_get_pmf( UNUR_DISTR *distribution );
+UNUR_FUNCT_DISCR *unur_distr_discr_get_pmf( const UNUR_DISTR *distribution );
 /* */
 
-UNUR_FUNCT_DISCR *unur_distr_discr_get_cdf( UNUR_DISTR *distribution );
+UNUR_FUNCT_DISCR *unur_distr_discr_get_cdf( const UNUR_DISTR *distribution );
 /* 
    Get the respective pointer to the PMF and the CDF of the 
    @var{distribution}. The pointer is of type
@@ -164,13 +164,13 @@ UNUR_FUNCT_DISCR *unur_distr_discr_get_cdf( UNUR_DISTR *distribution );
 */
 
 
-double unur_distr_discr_eval_pv(int k, UNUR_DISTR *distribution );
+double unur_distr_discr_eval_pv(int k, const UNUR_DISTR *distribution );
 /* */
 
-double unur_distr_discr_eval_pmf( int k, UNUR_DISTR *distribution );
+double unur_distr_discr_eval_pmf( int k, const UNUR_DISTR *distribution );
 /* */
 
-double unur_distr_discr_eval_cdf( int k, UNUR_DISTR *distribution );
+double unur_distr_discr_eval_cdf( int k, const UNUR_DISTR *distribution );
 /* 
    Evaluate the PV, PMF, and the CDF, respectively, at k.
    Notice that @var{distribution} must not be the NULL pointer.
@@ -204,10 +204,10 @@ int unur_distr_discr_set_cdfstr( UNUR_DISTR *distribution, const char *cdfstr );
    to the unur_distr_discr_set_pmfstr() call.
 */
 
-char *unur_distr_discr_get_pmfstr( struct unur_distr *distribution );
+char *unur_distr_discr_get_pmfstr( const UNUR_DISTR *distribution );
 /* */
 
-char *unur_distr_discr_get_cdfstr( struct unur_distr *distribution );
+char *unur_distr_discr_get_cdfstr( const UNUR_DISTR *distribution );
 /* 
    Get pointer to respective string for PMF and CDF
    of @var{distribution} that is given via the string interface.
@@ -215,7 +215,7 @@ char *unur_distr_discr_get_cdfstr( struct unur_distr *distribution );
    freed when it is not used any more.
 */
 
-int unur_distr_discr_set_pmfparams( UNUR_DISTR *distribution, double *params, int n_params );
+int unur_distr_discr_set_pmfparams( UNUR_DISTR *distribution, const double *params, int n_params );
 /* 
    Set array of parameters for @var{distribution}. There is an upper limit
    for the number of parameters @var{n_params}. It is given by the
@@ -236,7 +236,7 @@ int unur_distr_discr_set_pmfparams( UNUR_DISTR *distribution, double *params, in
    @emph{Important:} Integer parameter must be given as doubles.
 */
 
-int unur_distr_discr_get_pmfparams(UNUR_DISTR *distribution,double **params);
+int unur_distr_discr_get_pmfparams( const UNUR_DISTR *distribution, const double **params );
 /* 
    Get number of parameters of the PMF and set pointer
    @var{params} to array of parameters. If no parameters are stored
@@ -262,7 +262,7 @@ int unur_distr_discr_set_domain( UNUR_DISTR *distribution, int left, int right )
    and [0, size of PV - 1] when a PV is used.
 */
 
-int unur_distr_discr_get_domain( UNUR_DISTR *distribution, int *left, int *right );
+int unur_distr_discr_get_domain( const UNUR_DISTR *distribution, int *left, int *right );
 /* 
    Get the left and right borders of the domain of the
    @var{distribution}. If the domain is not set explicitly 
@@ -307,7 +307,7 @@ int unur_distr_discr_get_mode( UNUR_DISTR *distribution );
 */
 
 
-int unur_distr_discr_set_pmfsum(UNUR_DISTR *distribution, double sum);
+int unur_distr_discr_set_pmfsum( UNUR_DISTR *distribution, double sum );
 /* 
    Set the sum over the PMF. If @code{sum} is non-positive, no
    sum is set and @code{unur_errno} is set to
@@ -319,7 +319,7 @@ int unur_distr_discr_set_pmfsum(UNUR_DISTR *distribution, double sum);
    ambiguous side-effects.
 */
 
-int unur_distr_discr_upd_pmfsum( UNUR_DISTR *distribution);
+int unur_distr_discr_upd_pmfsum( UNUR_DISTR *distribution );
 /*
    Recompute the sum over the PMF of the @var{distribution}. 
    In most cases the normalization constant is recomputed and thus the
@@ -333,7 +333,7 @@ int unur_distr_discr_upd_pmfsum( UNUR_DISTR *distribution);
    domain when the CDF is not available.
 */
 
-double unur_distr_discr_get_pmfsum(UNUR_DISTR *distribution);
+double unur_distr_discr_get_pmfsum( UNUR_DISTR *distribution );
 /* 
    Get the sum over the PMF of the @var{distribution}. If this sum is
    not known, unur_distr_discr_upd_pmfsum() is called to compute

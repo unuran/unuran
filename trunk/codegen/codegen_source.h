@@ -43,30 +43,30 @@
 
 /*---------------------------------------------------------------------------*/
 
-int _unur_acg_C_header       ( FILE *out, UNUR_DISTR *distr, const char *rand );
-int _unur_acg_FORTRAN_header ( FILE *out, UNUR_DISTR *distr, const char *rand );
-int _unur_acg_JAVA_header    ( FILE *out, UNUR_DISTR *distr, const char *rand );
-int _unur_acg_UNURAN_header  ( FILE *out, UNUR_DISTR *distr, const char *rand );
+int _unur_acg_C_header       ( FILE *out, const UNUR_DISTR *distr, const char *rand );
+int _unur_acg_FORTRAN_header ( FILE *out, const UNUR_DISTR *distr, const char *rand );
+int _unur_acg_JAVA_header    ( FILE *out, const UNUR_DISTR *distr, const char *rand );
+int _unur_acg_UNURAN_header  ( FILE *out, const UNUR_DISTR *distr, const char *rand );
 /*---------------------------------------------------------------------------*/
 /* Code generator for file header.                                           */
 /*---------------------------------------------------------------------------*/
 
-int _unur_acg_C_PDF       ( FILE *out, UNUR_DISTR *distr, const char *pdf );
-int _unur_acg_FORTRAN_PDF ( FILE *out, UNUR_DISTR *distr, const char *pdf );
-int _unur_acg_JAVA_PDF    ( FILE *out, UNUR_DISTR *distr, const char *pdf );
-int _unur_acg_UNURAN_PDF  ( FILE *out, UNUR_DISTR *distr, const char *pdf );
-int _unur_acg_UNURAN_PDFbody ( FILE *out, UNUR_DISTR *distr );
+int _unur_acg_C_PDF       ( FILE *out, const UNUR_DISTR *distr, const char *pdf );
+int _unur_acg_FORTRAN_PDF ( FILE *out, const UNUR_DISTR *distr, const char *pdf );
+int _unur_acg_JAVA_PDF    ( FILE *out, const UNUR_DISTR *distr, const char *pdf );
+int _unur_acg_UNURAN_PDF  ( FILE *out, const UNUR_DISTR *distr, const char *pdf );
+int _unur_acg_UNURAN_PDFbody ( FILE *out, const UNUR_DISTR *distr );
 /*---------------------------------------------------------------------------*/
 /* Code generator for PDFs of UNURAN build-in standard distributions.        */
 /*---------------------------------------------------------------------------*/
 
-int _unur_acg_C_tdr_ps       ( FILE *out, struct unur_gen *gen,
+int _unur_acg_C_tdr_ps       ( FILE *out, const UNUR_GEN *gen,
 			       const char *rand_name, const char *pdf_name );
-int _unur_acg_FORTRAN_tdr_ps ( FILE *out, struct unur_gen *gen,
+int _unur_acg_FORTRAN_tdr_ps ( FILE *out, const UNUR_GEN *gen,
 			       const char *rand_name, const char *pdf_name );
-int _unur_acg_JAVA_tdr_ps    ( FILE *out, struct unur_gen *gen,
+int _unur_acg_JAVA_tdr_ps    ( FILE *out, const UNUR_GEN *gen,
 			       const char *rand_name, const char *pdf_name );
-int _unur_acg_UNURAN_tdr_ps  ( FILE *out, struct unur_gen *gen,
+int _unur_acg_UNURAN_tdr_ps  ( FILE *out, const UNUR_GEN *gen,
 			       const char *rand_name, const char *pdf_name,
 			       int n_cpoints );
 /*---------------------------------------------------------------------------*/
@@ -107,13 +107,13 @@ int _unur_acg_FORTRAN_print_double ( FILE *out, double x );
 /* Print a double number in FORTRAN format.                                  */
 /*---------------------------------------------------------------------------*/
 
-int _unur_acg_JAVA_begin_class ( FILE *out, struct unur_gen *gen, const char *class ); 
-int _unur_acg_JAVA_end_class   ( FILE *out, struct unur_gen *gen );
+int _unur_acg_JAVA_begin_class ( FILE *out, const UNUR_GEN *gen, const char *class ); 
+int _unur_acg_JAVA_end_class   ( FILE *out, const UNUR_GEN *gen );
 /*---------------------------------------------------------------------------*/
 /* JAVA: begin and end of class containing PDF and tdr                       */
 /*---------------------------------------------------------------------------*/
 
-int _unur_acg_JAVA_tdr_class_IV( FILE *out, struct unur_gen *gen );
+int _unur_acg_JAVA_tdr_class_IV( FILE *out, const UNUR_GEN *gen );
 /*---------------------------------------------------------------------------*/
 /* JAVA: definition of class IV                                              */
 /*---------------------------------------------------------------------------*/

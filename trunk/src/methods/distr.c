@@ -104,7 +104,7 @@ unur_distr_set_name( struct unur_distr *distr, const char *name )
 /*---------------------------------------------------------------------------*/
 
 const char *
-unur_distr_get_name( struct unur_distr *distr )
+unur_distr_get_name( const struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
      /* get name of distribution                                             */
      /*                                                                      */
@@ -124,7 +124,7 @@ unur_distr_get_name( struct unur_distr *distr )
 /*---------------------------------------------------------------------------*/
 
 int
-unur_distr_get_dim( struct unur_distr *distr )
+unur_distr_get_dim( const struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
      /* get number of components of random vector (i.e. its dimension)       */
      /*                                                                      */
@@ -143,7 +143,8 @@ unur_distr_get_dim( struct unur_distr *distr )
 
 /*---------------------------------------------------------------------------*/
 
-unsigned int unur_distr_get_type( struct unur_distr *distr )
+unsigned int 
+unur_distr_get_type( const struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
      /* get type of distribution                                             */
      /*                                                                      */
@@ -163,7 +164,7 @@ unsigned int unur_distr_get_type( struct unur_distr *distr )
 /*---------------------------------------------------------------------------*/
 
 int 
-unur_distr_is_cont( struct unur_distr *distr )
+unur_distr_is_cont( const struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
      /* TRUE if distribution is univariate continuous.                       */
      /*                                                                      */
@@ -184,7 +185,7 @@ unur_distr_is_cont( struct unur_distr *distr )
 /*---------------------------------------------------------------------------*/
 
 int 
-unur_distr_is_cvec( struct unur_distr *distr )
+unur_distr_is_cvec( const struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
      /* TRUE if distribution is mulitvariate continuous.                     */
      /*                                                                      */
@@ -205,7 +206,7 @@ unur_distr_is_cvec( struct unur_distr *distr )
 /*---------------------------------------------------------------------------*/
 
 int 
-unur_distr_is_cvemp( struct unur_distr *distr )
+unur_distr_is_cvemp( const struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
      /* TRUE if distribution is empirical mulitvariate continuous.           */
      /*                                                                      */
@@ -226,7 +227,7 @@ unur_distr_is_cvemp( struct unur_distr *distr )
 /*---------------------------------------------------------------------------*/
 
 int 
-unur_distr_is_discr( struct unur_distr *distr )
+unur_distr_is_discr( const struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
      /* TRUE if distribution is univariate discrete.                         */
      /*                                                                      */
@@ -247,7 +248,7 @@ unur_distr_is_discr( struct unur_distr *distr )
 /*---------------------------------------------------------------------------*/
 
 int 
-unur_distr_is_cemp( struct unur_distr *distr )
+unur_distr_is_cemp( const struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
      /* TRUE if distribution is empirical univariate continuous,             */
      /* i.e. a sample.                                                       */

@@ -87,22 +87,22 @@ static const char distr_name[] = "powerexponential";
 
 /*---------------------------------------------------------------------------*/
 /* function prototypes                                                       */
-static double _unur_pdf_powerexponential( double x, UNUR_DISTR *distr );
-static double _unur_dpdf_powerexponential( double x, UNUR_DISTR *distr );
+static double _unur_pdf_powerexponential( double x, const UNUR_DISTR *distr );
+static double _unur_dpdf_powerexponential( double x, const UNUR_DISTR *distr );
 #ifdef HAVE_CDF
-static double _unur_cdf_powerexponential( double x, UNUR_DISTR *distr );
+static double _unur_cdf_powerexponential( double x, const UNUR_DISTR *distr );
 #endif
 
 static int _unur_upd_mode_powerexponential( UNUR_DISTR *distr );
 #ifdef HAVE_AREA
 static int _unur_upd_area_powerexponential( UNUR_DISTR *distr );
 #endif
-static int _unur_set_params_powerexponential( UNUR_DISTR *distr, double *params, int n_params );
+static int _unur_set_params_powerexponential( UNUR_DISTR *distr, const double *params, int n_params );
 
 /*---------------------------------------------------------------------------*/
 
 double
-_unur_pdf_powerexponential( double x, UNUR_DISTR *distr )
+_unur_pdf_powerexponential( double x, const UNUR_DISTR *distr )
 { 
   register double *params = DISTR.params;
   return exp( - pow( fabs(x), tau ) - LOGNORMCONSTANT);
@@ -111,7 +111,7 @@ _unur_pdf_powerexponential( double x, UNUR_DISTR *distr )
 /*---------------------------------------------------------------------------*/
 
 double
-_unur_dpdf_powerexponential( double x, UNUR_DISTR *distr )
+_unur_dpdf_powerexponential( double x, const UNUR_DISTR *distr )
 {
   register double *params = DISTR.params;
   register double tmp;
@@ -130,7 +130,7 @@ _unur_dpdf_powerexponential( double x, UNUR_DISTR *distr )
 #ifdef HAVE_CDF
 
 double
-_unur_cdf_powerexponential( double x, UNUR_DISTR *distr )
+_unur_cdf_powerexponential( double x, const UNUR_DISTR *distr )
 { 
   register double *params = DISTR.params;
   register double cdf;
@@ -190,7 +190,7 @@ _unur_upd_area_powerexponential( UNUR_DISTR *distr )
 /*---------------------------------------------------------------------------*/
 
 int
-_unur_set_params_powerexponential( UNUR_DISTR *distr, double *params, int n_params )
+_unur_set_params_powerexponential( UNUR_DISTR *distr, const double *params, int n_params )
 {
   /* check number of parameters for distribution */
   if (n_params < 1) {
@@ -227,7 +227,7 @@ _unur_set_params_powerexponential( UNUR_DISTR *distr, double *params, int n_para
 /*---------------------------------------------------------------------------*/
 
 struct unur_distr *
-unur_distr_powerexponential( double *params, int n_params )
+unur_distr_powerexponential( const double *params, int n_params )
 {
   register struct unur_distr *distr;
 

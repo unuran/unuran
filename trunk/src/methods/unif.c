@@ -88,7 +88,7 @@ static void _unur_unif_free( struct unur_gen *gen);
 /*****************************************************************************/
 
 struct unur_par *
-unur_unif_new( struct unur_distr *dummy )
+unur_unif_new( const struct unur_distr *dummy )
      /*----------------------------------------------------------------------*/
      /* get default parameters                                               */
      /*                                                                      */

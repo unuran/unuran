@@ -84,8 +84,8 @@ static const char distr_name[] = "multinormal";
 /* function prototypes                                                       */
 
 /** TODO:
-    static double _unur_pdf_multinormal( double *x, UNUR_DISTR *distr );
-    static double _unur_dpdf_multinormal( double *result, double *x, UNUR_DISTR *distr );
+    static double _unur_pdf_multinormal( const double *x, const UNUR_DISTR *distr );
+    static double _unur_dpdf_multinormal( double *result, const double *x, const UNUR_DISTR *distr );
     static int _unur_upd_mode_multinormal( UNUR_DISTR *distr );
     static int _unur_upd_area_multinormal( UNUR_DISTR *distr );
 **/
@@ -95,7 +95,7 @@ static const char distr_name[] = "multinormal";
 /*---------------------------------------------------------------------------*/
 
 double
-_unur_pdf_multinormal( double *x, UNUR_DISTR *distr )
+_unur_pdf_multinormal( double *x, const UNUR_DISTR *distr )
 { 
   ;
 } /* end of _unur_pdf_multinormal() */
@@ -103,7 +103,7 @@ _unur_pdf_multinormal( double *x, UNUR_DISTR *distr )
 /*---------------------------------------------------------------------------*/
 
 double
-_unur_dpdf_multinormal( double *result, double *x, UNUR_DISTR *distr )
+_unur_dpdf_multinormal( double *result, const double *x, const UNUR_DISTR *distr )
 {
   ;
 } /* end of _unur_dpdf_multinormal() */
@@ -137,7 +137,7 @@ _unur_upd_area_multinormal( UNUR_DISTR *distr )
 /*---------------------------------------------------------------------------*/
 
 struct unur_distr *
-unur_distr_multinormal( int dim, double *mean, double *covar )
+unur_distr_multinormal( int dim, const double *mean, const double *covar )
 {
   register struct unur_distr *distr;
 

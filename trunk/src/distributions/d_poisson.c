@@ -82,22 +82,22 @@ static const char distr_name[] = "poisson";
 
 /* function prototypes                                                       */
 #ifdef HAVE_PMF
-static double _unur_pmf_poisson( int k, UNUR_DISTR *distr );
+static double _unur_pmf_poisson( int k, const UNUR_DISTR *distr );
 #endif
 #ifdef HAVE_CDF
-static double _unur_cdf_poisson( int k, UNUR_DISTR *distr );      
+static double _unur_cdf_poisson( int k, const UNUR_DISTR *distr );      
 #endif
 
 static int _unur_upd_mode_poisson( UNUR_DISTR *distr );
 static int _unur_upd_sum_poisson( UNUR_DISTR *distr );
-static int _unur_set_params_poisson( UNUR_DISTR *distr, double *params, int n_params );
+static int _unur_set_params_poisson( UNUR_DISTR *distr, const double *params, int n_params );
 
 /*---------------------------------------------------------------------------*/
 
 #ifdef HAVE_PMF
 
 double
-_unur_pmf_poisson(int k, UNUR_DISTR *distr)
+_unur_pmf_poisson(int k, const UNUR_DISTR *distr)
 { 
   if (k>=0)
     return exp( -DISTR.theta + k * log(DISTR.theta) - _unur_sf_ln_factorial(k) );
@@ -112,7 +112,7 @@ _unur_pmf_poisson(int k, UNUR_DISTR *distr)
 #ifdef HAVE_CDF
 
 double
-_unur_cdf_poisson(int k, UNUR_DISTR *distr)
+_unur_cdf_poisson(int k, const UNUR_DISTR *distr)
 { 
   if (k>=0)
     return (1.-_unur_sf_incomplete_gamma(DISTR.theta,k+1));
@@ -165,7 +165,7 @@ _unur_upd_sum_poisson( UNUR_DISTR *distr )
 /*---------------------------------------------------------------------------*/
 
 int
-_unur_set_params_poisson( UNUR_DISTR *distr, double *params, int n_params )
+_unur_set_params_poisson( UNUR_DISTR *distr, const double *params, int n_params )
 {
   /* check number of parameters for distribution */
   if (n_params < 1) {
@@ -202,7 +202,7 @@ _unur_set_params_poisson( UNUR_DISTR *distr, double *params, int n_params )
 /*---------------------------------------------------------------------------*/
 
 struct unur_distr *
-unur_distr_poisson( double *params, int n_params )
+unur_distr_poisson( const double *params, int n_params )
 {
   register struct unur_distr *distr;
 

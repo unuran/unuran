@@ -173,7 +173,7 @@ static void _unur_cstd_debug_chg_truncated( struct unur_gen *gen );
 /*****************************************************************************/
 
 struct unur_par *
-unur_cstd_new( struct unur_distr *distr )
+unur_cstd_new( const struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
      /* get default parameters                                               */
      /*                                                                      */

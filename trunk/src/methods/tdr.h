@@ -136,7 +136,7 @@
 
 /* =ROUTINES */
 
-UNUR_PAR *unur_tdr_new( UNUR_DISTR* distribution );
+UNUR_PAR *unur_tdr_new( const UNUR_DISTR* distribution );
 /* 
    Get default parameters for generator.
 */
@@ -282,26 +282,26 @@ int unur_tdr_set_max_sqhratio( UNUR_PAR *parameters, double max_ratio );
    Default is @code{0.99}.
 */
 
-double unur_tdr_get_sqhratio( UNUR_GEN *generator );
+double unur_tdr_get_sqhratio( const UNUR_GEN *generator );
 /* 
    Get the current ratio (area below squeeze) / (area below hat)
    for the generator.
    (In case of an error @code{0} is returned.)
 */
 
-double unur_tdr_get_hatarea( UNUR_GEN *generator );
+double unur_tdr_get_hatarea( const UNUR_GEN *generator );
 /* 
    Get the area below the hat for the generator.
    (In case of an error @code{0} is returned.)
 */
 
-double unur_tdr_get_squeezearea( UNUR_GEN *generator );
+double unur_tdr_get_squeezearea( const UNUR_GEN *generator );
 /* 
    Get the area below the squeeze for the generator.
    (In case of an error @code{0} is returned.)
 */
 
-int _unur_tdr_is_ARS_running( struct unur_gen *generator );
+int _unur_tdr_is_ARS_running( const UNUR_GEN *generator );
 /* 
    Check whether more points will be added by adaptive rejection sampling.
    (Internal call)
@@ -319,7 +319,7 @@ int unur_tdr_set_max_intervals( UNUR_PAR *parameters, int max_ivs );
    Default is @code{100}.
 */
 
-int unur_tdr_set_cpoints( UNUR_PAR *parameters, int n_stp, double *stp );
+int unur_tdr_set_cpoints( UNUR_PAR *parameters, int n_stp, const double *stp );
 /* 
    Set construction points for the hat function. If @var{stp} is NULL
    than a heuristic rule of thumb is used to get @var{n_stp}

@@ -55,7 +55,7 @@ struct ftreenode *_unur_fstr2tree_DefFunct ( const char *functstring );
 /* (Same as _unur_fstr2tree() but string must start with "f(x)=".            */
 /*---------------------------------------------------------------------------*/
 
-double _unur_fstr_eval_tree ( const struct ftreenode *functtree_root, const double x );
+double _unur_fstr_eval_tree ( const struct ftreenode *functtree_root, double x );
 /*---------------------------------------------------------------------------*/
 /* Evalutes function given by a function tree at x.                          */
 /*---------------------------------------------------------------------------*/

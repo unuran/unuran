@@ -91,7 +91,7 @@
   =ROUTINES
 */
 
-UNUR_PAR *unur_dstd_new( UNUR_DISTR *distribution );
+UNUR_PAR *unur_dstd_new( const UNUR_DISTR *distribution );
 /* 
    Get default parameters for new generator. It requires a distribution object 
    for a discrete univariant distribution from the 

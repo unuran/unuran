@@ -45,7 +45,7 @@
 /*****************************************************************************/
 
 struct unur_par *
-unur_tdr_new( struct unur_distr* distr )
+unur_tdr_new( const struct unur_distr* distr )
      /*----------------------------------------------------------------------*/
      /* get default parameters                                               */
      /*                                                                      */
@@ -125,7 +125,7 @@ unur_tdr_new( struct unur_distr* distr )
 /*****************************************************************************/
 
 int
-unur_tdr_set_cpoints( struct unur_par *par, int n_stp, double *stp )
+unur_tdr_set_cpoints( struct unur_par *par, int n_stp, const double *stp )
      /*----------------------------------------------------------------------*/
      /* set construction points for envelope                                 */
      /* and/or its number for initialization                                 */
@@ -255,7 +255,7 @@ unur_tdr_set_max_sqhratio( struct unur_par *par, double max_ratio )
 /*---------------------------------------------------------------------------*/
 
 double
-unur_tdr_get_sqhratio( struct unur_gen *gen )
+unur_tdr_get_sqhratio( const struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* get ratio A(squeeze) / A(hat)                                        */
      /*                                                                      */
@@ -277,7 +277,7 @@ unur_tdr_get_sqhratio( struct unur_gen *gen )
 /*---------------------------------------------------------------------------*/
 
 double
-unur_tdr_get_hatarea( struct unur_gen *gen )
+unur_tdr_get_hatarea( const struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* get area below hat                                                   */
      /*                                                                      */
@@ -299,7 +299,7 @@ unur_tdr_get_hatarea( struct unur_gen *gen )
 /*---------------------------------------------------------------------------*/
 
 double
-unur_tdr_get_squeezearea( struct unur_gen *gen )
+unur_tdr_get_squeezearea( const struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* get area below squeeze                                               */
      /*                                                                      */
@@ -359,7 +359,7 @@ unur_tdr_set_max_intervals( struct unur_par *par, int max_ivs )
 /*---------------------------------------------------------------------------*/
 
 int
-_unur_tdr_is_ARS_running( struct unur_gen *gen )
+_unur_tdr_is_ARS_running( const struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* check whether more points will be added by adaptive rejection        */
      /* sampling                                                             */

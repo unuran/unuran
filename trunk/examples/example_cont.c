@@ -24,7 +24,7 @@
 /*                                                               */
 
 /* The PDF of our distribution:                                  */
-double mypdf( double x, UNUR_DISTR *distr )
+double mypdf( double x, const UNUR_DISTR *distr )
      /* The second argument (`distr') can be used for parameters */
      /* for the PDF. (We do not use parameters in our example.)  */
 {
@@ -35,7 +35,7 @@ double mypdf( double x, UNUR_DISTR *distr )
 } /* end of mypdf() */
 
 /* The derivative of the PDF of our distribution:                */
-double mydpdf( double x, UNUR_DISTR *distr )
+double mydpdf( double x, const UNUR_DISTR *distr )
 {
   if (fabs(x) >= 1.)
     return 0.;

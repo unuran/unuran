@@ -38,6 +38,7 @@
 
 /*---------------------------------------------------------------------------*/
 /* define object for univariate continuous distribution                      */
+
 struct unur_distr_cont {
 
   UNUR_FUNCT_CONT *pdf;         /* pointer to PDF                            */
@@ -58,7 +59,7 @@ struct unur_distr_cont {
   struct ftreenode *dpdftree;   /* pointer to function tree for dPDF         */
   struct ftreenode *cdftree;    /* pointer to function tree for CDF          */
 
-  int (*set_params)(struct unur_distr *distr, double *params, int n_params );
+  int (*set_params)(struct unur_distr *distr, const double *params, int n_params );
                                 /* function for setting parameters and domain*/
   int (*upd_mode)(struct unur_distr *distr);
                                 /* function for computing mode               */
@@ -71,6 +72,7 @@ struct unur_distr_cont {
 
 /*---------------------------------------------------------------------------*/
 /* define object for multivariate continuous distribution                    */
+
 struct unur_distr_cvec {
 
   UNUR_FUNCT_CVEC *pdf;         /* pointer to PDF                            */
@@ -93,6 +95,7 @@ struct unur_distr_cvec {
 
 /*---------------------------------------------------------------------------*/
 /* define object for univariate discrete distribution                        */
+
 struct unur_distr_discr {
   /* (finite) probability vector */
   double *pv;                   /* pointer to probability vector             */
@@ -109,7 +112,7 @@ struct unur_distr_discr {
   int    mode;                  /* location of mode                          */
   double sum;                   /* sum over PMF                              */
 
-  int (*set_params)(struct unur_distr *distr, double *params, int n_params );
+  int (*set_params)(struct unur_distr *distr, const double *params, int n_params );
                                 /* function for setting parameters and domain*/
   int (*upd_mode)(struct unur_distr *distr);
                                 /* function for computing mode               */
@@ -131,6 +134,7 @@ struct unur_distr_discr {
 /*---------------------------------------------------------------------------*/
 /* define object for empirical univariate constinuous distribution           */
 /* (given by empirical sample)                                               */
+
 struct unur_distr_cemp {
   double *sample;               /* pointer to sample                         */
   int     n_sample;             /* length of sample probability vector       */
@@ -139,6 +143,7 @@ struct unur_distr_cemp {
 /*---------------------------------------------------------------------------*/
 /* define object for empirical mulitvariate constinuous distribution         */
 /* (given by empirical sample)                                               */
+
 struct unur_distr_cvemp {
   double *sample;              /* pointer to sample                          */
   int    n_sample;             /* length of sample probability vector        */
@@ -146,6 +151,7 @@ struct unur_distr_cvemp {
 
 /*---------------------------------------------------------------------------*/
 /* define distribution object                                                */
+
 struct unur_distr {
   union {             
     struct unur_distr_cont  cont;   /* univariate continuous distribution    */

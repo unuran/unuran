@@ -99,7 +99,7 @@ void  unur_free( UNUR_GEN *generator );
 /*---------------------------------------------------------------------------*/
 /* Get dimension of generator for (multivariate) distribution                */
 
-int unur_get_dimension( UNUR_GEN *generator );
+int unur_get_dimension( const UNUR_GEN *generator );
 /*
   Get the number of dimension of a (multivariate) distribution.
   For a univariate distribution @code{1} is return.
@@ -107,7 +107,7 @@ int unur_get_dimension( UNUR_GEN *generator );
 
 /*---------------------------------------------------------------------------*/
 
-const char *unur_get_genid( UNUR_GEN *generator );
+const char *unur_get_genid( const UNUR_GEN *generator );
 /*
   Get identifier string for generator.
   If @code{UNUR_ENABLE_GENID} is not defined in @file{unuran_config.h} then
@@ -116,7 +116,7 @@ const char *unur_get_genid( UNUR_GEN *generator );
 
 /*---------------------------------------------------------------------------*/
 
-UNUR_DISTR *unur_get_distr( UNUR_GEN *generator );
+const UNUR_DISTR *unur_get_distr( const UNUR_GEN *generator );
 /* 
    Get pointer to distribution object from generator object. This
    function should be used with extreme care. 

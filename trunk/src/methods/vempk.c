@@ -183,7 +183,7 @@ static int compute_mean_covar( double *data, int n_data, int dim, double *xbar, 
 /* i.e., into the log file if not specified otherwise.                       */
 /*---------------------------------------------------------------------------*/
 
-static void _unur_vempk_debug_init( struct unur_par *par, struct unur_gen *gen );
+static void _unur_vempk_debug_init( const struct unur_par *par, const struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 /* print after generator has been initialized has completed.                 */
 /*---------------------------------------------------------------------------*/
@@ -212,7 +212,7 @@ static void _unur_vempk_debug_init( struct unur_par *par, struct unur_gen *gen )
 /*****************************************************************************/
 
 struct unur_par *
-unur_vempk_new( struct unur_distr *distr )
+unur_vempk_new( const struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
      /* get default parameters                                               */
      /*                                                                      */
@@ -730,7 +730,7 @@ compute_mean_covar( double *data, int n_data, int dim,
 /*---------------------------------------------------------------------------*/
 
 static void
-_unur_vempk_debug_init( struct unur_par *par, struct unur_gen *gen )
+_unur_vempk_debug_init( const struct unur_par *par, const struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* write info about generator into logfile                              */
      /*                                                                      */

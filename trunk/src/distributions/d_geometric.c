@@ -66,17 +66,17 @@ static const char distr_name[] = "geometric";
 /*---------------------------------------------------------------------------*/
 
 /* function prototypes                                                       */
-static double _unur_pmf_geometric( int k, UNUR_DISTR *distr );
-static double _unur_cdf_geometric( int k, UNUR_DISTR *distr ); 
+static double _unur_pmf_geometric( int k, const UNUR_DISTR *distr );
+static double _unur_cdf_geometric( int k, const UNUR_DISTR *distr ); 
 
 static int _unur_upd_mode_geometric( UNUR_DISTR *distr );
 static int _unur_upd_sum_geometric( UNUR_DISTR *distr );
-static int _unur_set_params_geometric( UNUR_DISTR *distr, double *params, int n_params );
+static int _unur_set_params_geometric( UNUR_DISTR *distr, const double *params, int n_params );
 
 /*---------------------------------------------------------------------------*/
 
 double
-_unur_pmf_geometric(int k, UNUR_DISTR *distr)
+_unur_pmf_geometric(int k, const UNUR_DISTR *distr)
 { 
   return ((k<0) ? 0. : DISTR.p * pow( 1. - DISTR.p, k ));
 } /* end of _unur_pmf_geometric() */
@@ -84,7 +84,7 @@ _unur_pmf_geometric(int k, UNUR_DISTR *distr)
 /*---------------------------------------------------------------------------*/
 
 double
-_unur_cdf_geometric(int k, UNUR_DISTR *distr)
+_unur_cdf_geometric(int k, const UNUR_DISTR *distr)
 { 
   return ((k<0) ? 0. : (1. - pow(1. - DISTR.p, k+1)) );
 } /* end of _unur_cdf_geometric() */
@@ -126,7 +126,7 @@ _unur_upd_sum_geometric( UNUR_DISTR *distr )
 /*---------------------------------------------------------------------------*/
 
 int
-_unur_set_params_geometric( UNUR_DISTR *distr, double *params, int n_params )
+_unur_set_params_geometric( UNUR_DISTR *distr, const double *params, int n_params )
 {
   /* check number of parameters for distribution */
   if (n_params < 1) {
@@ -163,7 +163,7 @@ _unur_set_params_geometric( UNUR_DISTR *distr, double *params, int n_params )
 /*---------------------------------------------------------------------------*/
 
 struct unur_distr *
-unur_distr_geometric( double *params, int n_params )
+unur_distr_geometric( const double *params, int n_params )
 {
   register struct unur_distr *distr;
 

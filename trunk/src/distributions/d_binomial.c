@@ -87,24 +87,24 @@ static const char distr_name[] = "binomial";
 /*---------------------------------------------------------------------------*/
 /* function prototypes                                                       */
 #ifdef HAVE_PMF
-static double _unur_pmf_binomial( int k, UNUR_DISTR *distr );
+static double _unur_pmf_binomial( int k, const UNUR_DISTR *distr );
 #endif
 #ifdef HAVE_CDF
-static double _unur_cdf_binomial( int k, UNUR_DISTR *distr ); 
+static double _unur_cdf_binomial( int k, const UNUR_DISTR *distr ); 
 #endif
 
 static int _unur_upd_mode_binomial( UNUR_DISTR *distr );
 #ifdef HAVE_SUM
 static int _unur_upd_sum_binomial( UNUR_DISTR *distr );
 #endif
-static int _unur_set_params_binomial( UNUR_DISTR *distr, double *params, int n_params );
+static int _unur_set_params_binomial( UNUR_DISTR *distr, const double *params, int n_params );
 
 /*---------------------------------------------------------------------------*/
 
 #ifdef HAVE_PMF
 
 double
-_unur_pmf_binomial(int k, UNUR_DISTR *distr)
+_unur_pmf_binomial(int k, const UNUR_DISTR *distr)
 { 
   register double *params = DISTR.params;
 
@@ -124,7 +124,7 @@ _unur_pmf_binomial(int k, UNUR_DISTR *distr)
 #ifdef HAVE_CDF
 
 double
-_unur_cdf_binomial(int k, UNUR_DISTR *distr)
+_unur_cdf_binomial(int k, const UNUR_DISTR *distr)
 { 
   register double *params = DISTR.params;
 
@@ -191,7 +191,7 @@ _unur_upd_sum_binomial( UNUR_DISTR *distr )
 /*---------------------------------------------------------------------------*/
 
 int
-_unur_set_params_binomial( UNUR_DISTR *distr, double *params, int n_params )
+_unur_set_params_binomial( UNUR_DISTR *distr, const double *params, int n_params )
 {
   int nh;
 
@@ -236,7 +236,7 @@ _unur_set_params_binomial( UNUR_DISTR *distr, double *params, int n_params )
 /*---------------------------------------------------------------------------*/
 
 struct unur_distr *
-unur_distr_binomial( double *params, int n_params )
+unur_distr_binomial( const double *params, int n_params )
 {
   register struct unur_distr *distr;
 

@@ -86,24 +86,24 @@ static const char distr_name[] = "hypergeometric";
 /*---------------------------------------------------------------------------*/
 /* function prototypes                                                       */
 #ifdef HAVE_PMF
-static double _unur_pmf_hypergeometric( int k, UNUR_DISTR *distr );
+static double _unur_pmf_hypergeometric( int k, const UNUR_DISTR *distr );
 #endif
 #ifdef HAVE_CDF
-static double _unur_cdf_hypergeometric( int k, UNUR_DISTR *distr ); 
+static double _unur_cdf_hypergeometric( int k, const UNUR_DISTR *distr ); 
 #endif
 
 static int _unur_upd_mode_hypergeometric( UNUR_DISTR *distr );
 #ifdef HAVE_SUM
 static int _unur_upd_sum_hypergeometric( UNUR_DISTR *distr );
 #endif
-static int _unur_set_params_hypergeometric( UNUR_DISTR *distr, double *params, int n_params );
+static int _unur_set_params_hypergeometric( UNUR_DISTR *distr, const double *params, int n_params );
 
 /*---------------------------------------------------------------------------*/
 
 #ifdef HAVE_PMF
 
 double
-_unur_pmf_hypergeometric(int k, UNUR_DISTR *distr)
+_unur_pmf_hypergeometric(int k, const UNUR_DISTR *distr)
 { 
   register double *params = DISTR.params;
 
@@ -123,7 +123,7 @@ _unur_pmf_hypergeometric(int k, UNUR_DISTR *distr)
 #ifdef HAVE_CDF
 
 double
-_unur_cdf_hypergeometric(int k, UNUR_DISTR *distr)
+_unur_cdf_hypergeometric(int k, const UNUR_DISTR *distr)
 { 
 
   /* Not included in CEPHES-library !!*/
@@ -183,7 +183,7 @@ _unur_upd_sum_hypergeometric( UNUR_DISTR *distr )
 /*---------------------------------------------------------------------------*/
 
 int
-_unur_set_params_hypergeometric( UNUR_DISTR *distr, double *params, int n_params )
+_unur_set_params_hypergeometric( UNUR_DISTR *distr, const double *params, int n_params )
 {
   int nh;
 
@@ -206,17 +206,17 @@ _unur_set_params_hypergeometric( UNUR_DISTR *distr, double *params, int n_params
   nh = (int)(N+0.5);
   if(fabs(nh-N)>0.001)
     _unur_warning(distr_name,UNUR_ERR_DISTR_DOMAIN,"n was rounded to the closest integer value");
-  DISTR.N = N = nh; 
+  DISTR.N = nh; 
 
   nh = (int)(M+0.5);
   if(fabs(nh-M)>0.001)
     _unur_warning(distr_name,UNUR_ERR_DISTR_DOMAIN,"n was rounded to the closest integer value");
-  DISTR.M = M = nh; 
+  DISTR.M = nh; 
 
   nh = (int)(n+0.5);
   if(fabs(nh-n)>0.001)
     _unur_warning(distr_name,UNUR_ERR_DISTR_DOMAIN,"n was rounded to the closest integer value");
-  DISTR.n = n = nh; 
+  DISTR.n = nh; 
 
   /* default parameters: none */
   /* copy optional parameters: none */
@@ -226,8 +226,8 @@ _unur_set_params_hypergeometric( UNUR_DISTR *distr, double *params, int n_params
 
   /* set (standard) domain */
   if (distr->set & UNUR_DISTR_SET_STDDOMAIN) {
-    DISTR.domain[0] = (int) (max(0,(n-N+M+0.5)));    /* left boundary  */
-    DISTR.domain[1] = (int) (min(n,M)+0.5);          /* right boundary */
+    DISTR.domain[0] = (int) (max(0,(DISTR.n - DISTR.N + DISTR.M + 0.5)));  /* left boundary  */
+    DISTR.domain[1] = (int) (min(DISTR.n, DISTR.M) + 0.5);                 /* right boundary */
   }
 
   return 1;
@@ -236,7 +236,7 @@ _unur_set_params_hypergeometric( UNUR_DISTR *distr, double *params, int n_params
 /*---------------------------------------------------------------------------*/
 
 struct unur_distr *
-unur_distr_hypergeometric( double *params, int n_params )
+unur_distr_hypergeometric( const double *params, int n_params )
 {
   register struct unur_distr *distr;
 

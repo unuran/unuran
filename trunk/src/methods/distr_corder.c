@@ -69,14 +69,14 @@ static const char distr_name[] = "order statistics";
 /*---------------------------------------------------------------------------*/
 
 /* function prototypes                                                       */
-static double _unur_pdf_corder( double x, UNUR_DISTR *os );
-static double _unur_dpdf_corder( double x, UNUR_DISTR *os );
+static double _unur_pdf_corder( double x, const struct unur_distr *os );
+static double _unur_dpdf_corder( double x, const struct unur_distr *os );
 
 #ifdef HAVE_CDF
-static double _unur_cdf_corder( double x, UNUR_DISTR *os );
+static double _unur_cdf_corder( double x, const struct unur_distr *os );
 #endif
 #ifdef HAVE_AREA
-static int _unur_upd_area_corder( UNUR_DISTR *os );
+static int _unur_upd_area_corder( struct unur_distr *os );
 #endif
 
 static void _unur_distr_corder_free( struct unur_distr *os );
@@ -92,7 +92,7 @@ static void _unur_distr_corder_free( struct unur_distr *os );
 /*---------------------------------------------------------------------------*/
 
 struct unur_distr *
-unur_distr_corder_new( struct unur_distr *distr, int n, int k )
+unur_distr_corder_new( const struct unur_distr *distr, int n, int k )
      /*----------------------------------------------------------------------*/
      /* Create an object for order statistics of for a                       */
      /* sample size n and rank k.                                            */
@@ -255,8 +255,8 @@ _unur_distr_corder_free( struct unur_distr *os )
 
 /*---------------------------------------------------------------------------*/
 
-struct unur_distr *
-unur_distr_corder_get_distribution( struct unur_distr *os )
+const struct unur_distr *
+unur_distr_corder_get_distribution( const struct unur_distr *os )
      /*----------------------------------------------------------------------*/
      /* get pointer to distribution object for underlying distribution       */
      /*                                                                      */
@@ -331,7 +331,7 @@ unur_distr_corder_set_rank( struct unur_distr *os, int n, int k )
 /*---------------------------------------------------------------------------*/
 
 int 
-unur_distr_corder_get_rank( struct unur_distr *os, int *n, int *k )
+unur_distr_corder_get_rank( const struct unur_distr *os, int *n, int *k )
      /*----------------------------------------------------------------------*/
      /* get sample size n and rank k of order statistics.                    */
      /*                                                                      */
@@ -373,7 +373,7 @@ unur_distr_corder_get_rank( struct unur_distr *os, int *n, int *k )
 /*---------------------------------------------------------------------------*/
 
 double
-_unur_pdf_corder( double x, struct unur_distr *os )
+_unur_pdf_corder( double x, const struct unur_distr *os )
      /* 
 	PDF(x) = b(F(x)) * f(x)
 
@@ -410,7 +410,7 @@ _unur_pdf_corder( double x, struct unur_distr *os )
 /*---------------------------------------------------------------------------*/
 
 double
-_unur_dpdf_corder( double x, struct unur_distr *os )
+_unur_dpdf_corder( double x, const struct unur_distr *os )
      /* 
 	PDF'(x) = b'(F(x)) * f(x)^2 + b(F(x)) * f'(x)
 
@@ -461,7 +461,7 @@ _unur_dpdf_corder( double x, struct unur_distr *os )
 #ifdef HAVE_CDF
 
 double
-_unur_cdf_corder( double x, struct unur_distr *os ) 
+_unur_cdf_corder( double x, const struct unur_distr *os ) 
      /* 
 	CDF(x) = B(F(x))
 
@@ -538,7 +538,7 @@ _unur_upd_area_corder( UNUR_DISTR *os )
 /*---------------------------------------------------------------------------*/
 
 void
-_unur_distr_corder_debug( struct unur_distr *os, char *genid )
+_unur_distr_corder_debug( const struct unur_distr *os, const char *genid )
      /*----------------------------------------------------------------------*/
      /* write info about distribution into logfile                           */
      /*                                                                      */

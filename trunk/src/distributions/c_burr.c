@@ -222,18 +222,18 @@ static const char distr_name[] = "burr";
 /* #define NORMCONSTANT (distr->data.cont.norm_constant) */
 
 /* function prototypes                                                       */
-/*  static double _unur_pdf_burr(double x, UNUR_DISTR *distr);    */
-/*  static double _unur_dpdf_burr(double x, UNUR_DISTR *distr);   */
-static double _unur_cdf_burr(double x, UNUR_DISTR *distr);
+/*  static double _unur_pdf_burr(double x, const UNUR_DISTR *distr);    */
+/*  static double _unur_dpdf_burr(double x, const UNUR_DISTR *distr);   */
+static double _unur_cdf_burr(double x, const UNUR_DISTR *distr);
 
 /*  static int _unur_upd_mode_burr( UNUR_DISTR *distr ); */
 /*  static int _unur_upd_area_burr( UNUR_DISTR *distr ); */
-static int _unur_set_params_burr( UNUR_DISTR *distr, double *params, int n_params );
+static int _unur_set_params_burr( UNUR_DISTR *distr, const double *params, int n_params );
 
 /*---------------------------------------------------------------------------*/
 
 double
-_unur_cdf_burr( double x, UNUR_DISTR *distr )
+_unur_cdf_burr( double x, const UNUR_DISTR *distr )
 {
   register double *params = DISTR.params;
 
@@ -306,7 +306,7 @@ _unur_cdf_burr( double x, UNUR_DISTR *distr )
 /*---------------------------------------------------------------------------*/
 
 int
-_unur_set_params_burr( UNUR_DISTR *distr, double *params, int n_params )
+_unur_set_params_burr( UNUR_DISTR *distr, const double *params, int n_params )
 {
 
   /* check new parameter for generator */
@@ -396,7 +396,7 @@ _unur_set_params_burr( UNUR_DISTR *distr, double *params, int n_params )
 /*---------------------------------------------------------------------------*/
 
 struct unur_distr *
-unur_distr_burr( double *params, int n_params )
+unur_distr_burr( const double *params, int n_params )
 {
   register struct unur_distr *distr;
 

@@ -534,10 +534,10 @@ int compare_int_sequence_gen( FILE *LOG, int line, UNUR_GEN *gen, int sample_siz
 /*---------------------------------------------------------------------------*/
 /* print name of distribution */
 
-void print_distr_name( FILE *LOG, UNUR_DISTR *distr, const char *genid )
+void print_distr_name( FILE *LOG, const UNUR_DISTR *distr, const char *genid )
 {
   int i,n_fpar;
-  double *fpar;
+  const double *fpar;
 
   /* print name of distribution */
   if (genid)
@@ -577,7 +577,7 @@ int print_pval( FILE *LOG, UNUR_GEN *gen, double pval, int trial, char todo )
 
     fprintf(LOG,"   not performed (missing data)\t");
     /* print distribution name */
-    print_distr_name( LOG,unur_get_distr(gen), unur_get_genid(gen) );
+    print_distr_name( LOG, unur_get_distr(gen), unur_get_genid(gen) );
     fprintf(LOG,"\n");
 
     printf("X");

@@ -167,7 +167,7 @@ struct unur_par {
   UNUR_URNG *urng;            /* pointer to uniform random number generator  */
   UNUR_URNG *urng_aux;        /* pointer to second (auxiliary) uniform RNG   */
 
-  struct unur_distr *distr;   /* pointer to distribution object              */
+  const struct unur_distr *distr;   /* pointer to distribution object        */
 
   unsigned debug;             /* debugging flags                             */
 #ifdef UNUR_COOKIES

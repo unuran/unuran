@@ -130,7 +130,7 @@
 
 /* =ROUTINES */
 
-UNUR_PAR *unur_srou_new( UNUR_DISTR *distribution );
+UNUR_PAR *unur_srou_new( const UNUR_DISTR *distribution );
 /* 
    Get default parameters for generator.
 */

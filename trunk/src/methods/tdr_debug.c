@@ -48,7 +48,7 @@
 /*---------------------------------------------------------------------------*/
 
 static void
-_unur_tdr_debug_init( struct unur_par *par, struct unur_gen *gen )
+_unur_tdr_debug_init( const struct unur_par *par, const struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* write info about generator after setup into logfile                  */
      /*                                                                      */
@@ -164,7 +164,7 @@ _unur_tdr_debug_init( struct unur_par *par, struct unur_gen *gen )
 /*****************************************************************************/
 
 static void 
-_unur_tdr_debug_dars_start( struct unur_par *par, struct unur_gen *gen )
+_unur_tdr_debug_dars_start( const struct unur_par *par, const struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* print header before runniung DARS into logfile                       */
      /*                                                                      */
@@ -195,7 +195,7 @@ _unur_tdr_debug_dars_start( struct unur_par *par, struct unur_gen *gen )
 /*---------------------------------------------------------------------------*/
 
 static void
-_unur_tdr_debug_dars( struct unur_par *par, struct unur_gen *gen )
+_unur_tdr_debug_dars( const struct unur_par *par, const struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* print infor after generator has run DARS into logfile                */
      /*                                                                      */
@@ -226,7 +226,7 @@ _unur_tdr_debug_dars( struct unur_par *par, struct unur_gen *gen )
 /*****************************************************************************/
 
 static void
-_unur_tdr_debug_free( struct unur_gen *gen )
+_unur_tdr_debug_free( const struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* write info about generator before destroying into logfile            */
      /*                                                                      */
@@ -254,7 +254,7 @@ _unur_tdr_debug_free( struct unur_gen *gen )
 /*****************************************************************************/
 
 static void
-_unur_tdr_debug_intervals( struct unur_gen *gen )
+_unur_tdr_debug_intervals( const struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* write list of intervals into logfile (orig. variant by Gilks & Wild) */
      /*                                                                      */
@@ -279,7 +279,7 @@ _unur_tdr_debug_intervals( struct unur_gen *gen )
 /*---------------------------------------------------------------------------*/
 
 static void
-_unur_tdr_gw_debug_intervals( struct unur_gen *gen )
+_unur_tdr_gw_debug_intervals( const struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* write list of intervals into logfile (orig. variant by Gilks & Wild) */
      /*                                                                      */
@@ -289,7 +289,7 @@ _unur_tdr_gw_debug_intervals( struct unur_gen *gen )
 {
   FILE *log;
   struct unur_tdr_interval *iv;
-  double sAsqueeze, sAhatl, sAhatr;
+  double sAsqueeze, sAhatl, sAhatr, Atotal;
   int i;
 
   /* check arguments */
@@ -319,7 +319,10 @@ _unur_tdr_gw_debug_intervals( struct unur_gen *gen )
     fprintf(log,"%s: Construction of hat function not successful\n",gen->genid);
     fprintf(log,"%s: Areas may be meaningless !!!!!!!!!!!!!!!!!!\n",gen->genid);
     fprintf(log,"%s:\n",gen->genid);
-    GEN.Atotal = -1.;   /* to avoid floating point exceptions */
+    Atotal = -1.;   /* to avoid floating point exceptions */
+  }
+  else {
+    Atotal = GEN.Atotal;
   }
 
   /* print and sum areas below squeeze and hat */
@@ -335,24 +338,24 @@ _unur_tdr_gw_debug_intervals( struct unur_gen *gen )
 	sAhatr += iv->Ahatr;
 	fprintf(log,"%s:[%3d]: %-12.6g(%6.3f%%)  |  %-12.6g+ %-12.6g(%6.3f%%)  |  %-12.6g(%6.3f%%)\n",
 		gen->genid,i,
-		iv->Asqueeze, iv->Asqueeze * 100. / GEN.Atotal,
-		iv->Ahat-iv->Ahatr, iv->Ahatr, iv->Ahat * 100. / GEN.Atotal, 
-		iv->Acum, iv->Acum * 100. / GEN.Atotal);
+		iv->Asqueeze, iv->Asqueeze * 100. / Atotal,
+		iv->Ahat-iv->Ahatr, iv->Ahatr, iv->Ahat * 100. / Atotal, 
+		iv->Acum, iv->Acum * 100. / Atotal);
       }
       fprintf(log,"%s:       ----------  ---------  |  ------------------------  ---------  +\n",gen->genid);
       fprintf(log,"%s: Sum : %-12.6g(%6.3f%%)            %-12.6g      (%6.3f%%)\n",gen->genid,
-	      sAsqueeze, sAsqueeze * 100. / GEN.Atotal,
-	      sAhatl+sAhatr, (sAhatl+sAhatr) * 100. / GEN.Atotal);
+	      sAsqueeze, sAsqueeze * 100. / Atotal,
+	      sAhatl+sAhatr, (sAhatl+sAhatr) * 100. / Atotal);
       fprintf(log,"%s:\n",gen->genid);
     }
   }
 
   /* summary of areas */
   fprintf(log,"%s: A(squeeze)     = %-12.6g  (%6.3f%%)\n",gen->genid,
-	  GEN.Asqueeze, GEN.Asqueeze * 100./GEN.Atotal);
+	  GEN.Asqueeze, GEN.Asqueeze * 100./Atotal);
   fprintf(log,"%s: A(hat\\squeeze) = %-12.6g  (%6.3f%%)\n",gen->genid,
-	  GEN.Atotal - GEN.Asqueeze, (GEN.Atotal - GEN.Asqueeze) * 100./GEN.Atotal);
-  fprintf(log,"%s: A(total)       = %-12.6g\n",gen->genid, GEN.Atotal);
+	  Atotal - GEN.Asqueeze, (Atotal - GEN.Asqueeze) * 100./Atotal);
+  fprintf(log,"%s: A(total)       = %-12.6g\n",gen->genid, Atotal);
 
   fprintf(log,"%s:\n",gen->genid);
 
@@ -361,7 +364,7 @@ _unur_tdr_gw_debug_intervals( struct unur_gen *gen )
 /*****************************************************************************/
 
 static void
-_unur_tdr_ps_debug_intervals( struct unur_gen *gen )
+_unur_tdr_ps_debug_intervals( const struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* write list of intervals into logfile (proportional squeezes)         */
      /*                                                                      */
@@ -371,7 +374,7 @@ _unur_tdr_ps_debug_intervals( struct unur_gen *gen )
 {
   FILE *log;
   struct unur_tdr_interval *iv;
-  double sAsqueeze, sAhatl, sAhatr;
+  double sAsqueeze, sAhatl, sAhatr, Atotal;
   int i;
 
   /* check arguments */
@@ -401,7 +404,10 @@ _unur_tdr_ps_debug_intervals( struct unur_gen *gen )
     fprintf(log,"%s: Construction of hat function not successful\n",gen->genid);
     fprintf(log,"%s: Areas may be meaningless !!!!!!!!!!!!!!!!!!\n",gen->genid);
     fprintf(log,"%s:\n",gen->genid);
-    GEN.Atotal = -1.;   /* to avoid floating point exceptions */
+    Atotal = -1.;   /* to avoid floating point exceptions */
+  }
+  else {
+    Atotal = GEN.Atotal;
   }
 
   /* print and sum areas below squeeze and hat */
@@ -417,24 +423,24 @@ _unur_tdr_ps_debug_intervals( struct unur_gen *gen )
 	sAhatr += iv->Ahatr;
 	fprintf(log,"%s:[%3d]: %-12.6g(%6.3f%%)  |  %-12.6g+ %-12.6g(%6.3f%%)  |  %-12.6g(%6.3f%%)\n",
 		gen->genid,i,
-		iv->Asqueeze, iv->Asqueeze * 100. / GEN.Atotal,
-		iv->Ahat-iv->Ahatr, iv->Ahatr, iv->Ahat * 100. / GEN.Atotal, 
-		iv->Acum, iv->Acum * 100. / GEN.Atotal);
+		iv->Asqueeze, iv->Asqueeze * 100. / Atotal,
+		iv->Ahat-iv->Ahatr, iv->Ahatr, iv->Ahat * 100. / Atotal, 
+		iv->Acum, iv->Acum * 100. / Atotal);
       }
       fprintf(log,"%s:       ----------  ---------  |  ------------------------  ---------  +\n",gen->genid);
       fprintf(log,"%s: Sum : %-12.6g(%6.3f%%)            %-12.6g      (%6.3f%%)\n",gen->genid,
-	      sAsqueeze, sAsqueeze * 100. / GEN.Atotal,
-	      sAhatl+sAhatr, (sAhatl+sAhatr) * 100. / GEN.Atotal);
+	      sAsqueeze, sAsqueeze * 100. / Atotal,
+	      sAhatl+sAhatr, (sAhatl+sAhatr) * 100. / Atotal);
       fprintf(log,"%s:\n",gen->genid);
     }
   }
 
   /* summary of areas */
   fprintf(log,"%s: A(squeeze)     = %-12.6g  (%6.3f%%)\n",gen->genid,
-	  GEN.Asqueeze, GEN.Asqueeze * 100./GEN.Atotal);
+	  GEN.Asqueeze, GEN.Asqueeze * 100./Atotal);
   fprintf(log,"%s: A(hat\\squeeze) = %-12.6g  (%6.3f%%)\n",gen->genid,
-	  GEN.Atotal - GEN.Asqueeze, (GEN.Atotal - GEN.Asqueeze) * 100./GEN.Atotal);
-  fprintf(log,"%s: A(total)       = %-12.6g\n",gen->genid, GEN.Atotal);
+	  Atotal - GEN.Asqueeze, (Atotal - GEN.Asqueeze) * 100./Atotal);
+  fprintf(log,"%s: A(total)       = %-12.6g\n",gen->genid, Atotal);
 
   fprintf(log,"%s:\n",gen->genid);
 
@@ -443,9 +449,9 @@ _unur_tdr_ps_debug_intervals( struct unur_gen *gen )
 /*****************************************************************************/
 
 static void
-_unur_tdr_gw_debug_sample( struct unur_gen *gen, 
-			   struct unur_tdr_interval *iv, 
-			   struct unur_tdr_interval *pt, 
+_unur_tdr_gw_debug_sample( const struct unur_gen *gen, 
+			   const struct unur_tdr_interval *iv, 
+			   const struct unur_tdr_interval *pt, 
 			   double x, double fx, double hx, double sqx )
      /*----------------------------------------------------------------------*/
      /* write info about generated point                                     */
@@ -503,9 +509,9 @@ _unur_tdr_gw_debug_sample( struct unur_gen *gen,
 /*---------------------------------------------------------------------------*/
 
 static void
-_unur_tdr_ps_debug_sample( struct unur_gen *gen, 
-			struct unur_tdr_interval *iv, 
-			double x, double fx, double hx, double sqx )
+_unur_tdr_ps_debug_sample( const struct unur_gen *gen, 
+			   const struct unur_tdr_interval *iv, 
+			   double x, double fx, double hx, double sqx )
      /*----------------------------------------------------------------------*/
      /* write info about generated point                                     */
      /*                                                                      */
@@ -551,7 +557,9 @@ _unur_tdr_ps_debug_sample( struct unur_gen *gen,
 /*****************************************************************************/
 
 static void
-_unur_tdr_gw_debug_split_start( struct unur_gen *gen, struct unur_tdr_interval *iv, double x, double fx )
+_unur_tdr_gw_debug_split_start( const struct unur_gen *gen, 
+				const struct unur_tdr_interval *iv,
+				double x, double fx )
      /*----------------------------------------------------------------------*/
      /* write info about splitting interval                                  */
      /*                                                                      */
@@ -588,9 +596,9 @@ _unur_tdr_gw_debug_split_start( struct unur_gen *gen, struct unur_tdr_interval *
 /*---------------------------------------------------------------------------*/
 
 static void
-_unur_tdr_gw_debug_split_stop( struct unur_gen *gen, 
-			    struct unur_tdr_interval *iv_left, 
-			    struct unur_tdr_interval *iv_right )
+_unur_tdr_gw_debug_split_stop( const struct unur_gen *gen, 
+			       const struct unur_tdr_interval *iv_left, 
+			       const struct unur_tdr_interval *iv_right )
      /*----------------------------------------------------------------------*/
      /* write info about new splitted intervals                              */
      /*                                                                      */
@@ -663,9 +671,9 @@ _unur_tdr_gw_debug_split_stop( struct unur_gen *gen,
 /*****************************************************************************/
 
 static void
-_unur_tdr_ps_debug_split_start( struct unur_gen *gen, 
-				struct unur_tdr_interval *iv_left, 
-				struct unur_tdr_interval *iv_right,
+_unur_tdr_ps_debug_split_start( const struct unur_gen *gen, 
+				const struct unur_tdr_interval *iv_left, 
+				const struct unur_tdr_interval *iv_right,
 				double x, double fx )
      /*----------------------------------------------------------------------*/
      /* write info about new splitted intervals                              */
@@ -729,10 +737,10 @@ _unur_tdr_ps_debug_split_start( struct unur_gen *gen,
 /*---------------------------------------------------------------------------*/
 
 static void
-_unur_tdr_ps_debug_split_stop( struct unur_gen *gen, 
-			       struct unur_tdr_interval *iv_left, 
-			       struct unur_tdr_interval *iv_middle, 
-			       struct unur_tdr_interval *iv_right )
+_unur_tdr_ps_debug_split_stop( const struct unur_gen *gen, 
+			       const struct unur_tdr_interval *iv_left, 
+			       const struct unur_tdr_interval *iv_middle, 
+			       const struct unur_tdr_interval *iv_right )
      /*----------------------------------------------------------------------*/
      /* write info about new splitted intervals                              */
      /*                                                                      */

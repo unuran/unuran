@@ -56,7 +56,7 @@
 
 /* =ROUTINES */
 
-UNUR_DISTR *unur_distr_corder_new( UNUR_DISTR *distribution, int n, int k );
+UNUR_DISTR *unur_distr_corder_new( const UNUR_DISTR *distribution, int n, int k );
 /* 
    Create an object for order statistics of sample size
    @var{n} and rank @var{k}.
@@ -77,7 +77,7 @@ UNUR_DISTR *unur_distr_corder_new( UNUR_DISTR *distribution, int n, int k );
 */
 
 
-UNUR_DISTR *unur_distr_corder_get_distribution( UNUR_DISTR *distribution );
+const UNUR_DISTR *unur_distr_corder_get_distribution( const UNUR_DISTR *distribution );
 /* 
    Get pointer to distribution object for underlying distribution.
 */
@@ -97,7 +97,7 @@ int unur_distr_corder_set_rank( UNUR_DISTR *distribution, int n, int k );
    distribution by a unur_distr_corder_upd_pdfarea() call.
 */
 
-int unur_distr_corder_get_rank( UNUR_DISTR *distribution, int *n, int *k );
+int unur_distr_corder_get_rank( const UNUR_DISTR *distribution, int *n, int *k );
 /* 
    Get sample size @var{n} and rank @var{k} of order statistics.
    In case of error @code{0} is returned.

@@ -128,10 +128,10 @@ UNUR_GEN *unur_test_timing( UNUR_PAR *parameters, int log_samplesize,
    the source code can cause changes in such timings up to 25 percent.
 */
 
-double unur_test_timing_uniform( struct unur_par *par, int log_samplesize );
+double unur_test_timing_uniform( const UNUR_PAR *parameters, int log_samplesize );
 /* */
 
-double unur_test_timing_exponential( struct unur_par *par, int log_samplesize );
+double unur_test_timing_exponential( const UNUR_PAR *parameters, int log_samplesize );
 /* 
    Marginal generation times for the underlying uniform random number
    (using the UNIF interface) and an exponential distributed 

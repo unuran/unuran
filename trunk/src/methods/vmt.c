@@ -110,7 +110,7 @@ static double *cholesky_decomposition( double *S, int dim );
 /* i.e., into the log file if not specified otherwise.                       */
 /*---------------------------------------------------------------------------*/
 
-static void _unur_vmt_debug_init( struct unur_gen *gen );
+static void _unur_vmt_debug_init( const struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 /* print after generator has been initialized has completed.                 */
 /*---------------------------------------------------------------------------*/
@@ -134,7 +134,7 @@ static void _unur_vmt_debug_init( struct unur_gen *gen );
 /*****************************************************************************/
 
 struct unur_par *
-unur_vmt_new( struct unur_distr *distr )
+unur_vmt_new( const struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
      /* get default parameters                                               */
      /*                                                                      */
@@ -192,7 +192,7 @@ unur_vmt_new( struct unur_distr *distr )
 /*****************************************************************************/
 
 int
-unur_vmt_set_marginalgen( struct unur_par *par, struct unur_gen *uvgen )
+unur_vmt_set_marginalgen( struct unur_par *par, const struct unur_gen *uvgen )
      /*----------------------------------------------------------------------*/
      /* set generator for (univariate) marginal distribution.                */
      /*                                                                      */
@@ -564,7 +564,7 @@ cholesky_decomposition( double *S, int dim )
 /*---------------------------------------------------------------------------*/
 
 static void
-_unur_vmt_debug_init( struct unur_gen *gen )
+_unur_vmt_debug_init( const struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* write info about generator into logfile                              */
      /*                                                                      */

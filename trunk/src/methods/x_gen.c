@@ -98,7 +98,7 @@ void unur_free( UNUR_GEN *gen )
 /*****************************************************************************/
 
 int
-unur_get_dimension( struct unur_gen *gen )
+unur_get_dimension( const struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* get dimension of generator for multivariate distribution             */
      /*                                                                      */
@@ -121,7 +121,7 @@ unur_get_dimension( struct unur_gen *gen )
 /*---------------------------------------------------------------------------*/
 
 const char *
-unur_get_genid( struct unur_gen *gen )
+unur_get_genid( const struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* get generator id                                                     */
      /*                                                                      */
@@ -143,8 +143,8 @@ unur_get_genid( struct unur_gen *gen )
 
 /*---------------------------------------------------------------------------*/
 
-struct unur_distr *
-unur_get_distr( struct unur_gen *gen )
+const struct unur_distr *
+unur_get_distr( const struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* get pointer to distribution object from generator object             */
      /*                                                                      */

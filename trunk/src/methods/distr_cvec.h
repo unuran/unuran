@@ -98,7 +98,7 @@ int unur_distr_cvec_set_dpdf( UNUR_DISTR *distribution, UNUR_VFUNCT_CVEC *dpdf )
    given by a unur_distr_cvec_set_pdf() call.
 */
 
-UNUR_FUNCT_CVEC *unur_distr_cvec_get_pdf( UNUR_DISTR *distribution );
+UNUR_FUNCT_CVEC *unur_distr_cvec_get_pdf( const UNUR_DISTR *distribution );
 /* 
    Get the pointer to the PDF of the @var{distribution}. The
    pointer is of type 
@@ -107,7 +107,7 @@ UNUR_FUNCT_CVEC *unur_distr_cvec_get_pdf( UNUR_DISTR *distribution );
    @var{distribution}, the NULL pointer is returned.
 */
 
-UNUR_VFUNCT_CVEC *unur_distr_cvec_get_dpdf( UNUR_DISTR *distribution );
+UNUR_VFUNCT_CVEC *unur_distr_cvec_get_dpdf( const UNUR_DISTR *distribution );
 /* 
    Get the pointer to the gradient of the PDF of the
    @var{distribution}. The pointer is of type 
@@ -116,7 +116,7 @@ UNUR_VFUNCT_CVEC *unur_distr_cvec_get_dpdf( UNUR_DISTR *distribution );
    @var{distribution}, the NULL pointer is returned.
 */
 
-double unur_distr_cvec_eval_pdf( double *x, UNUR_DISTR *distribution );
+double unur_distr_cvec_eval_pdf( const double *x, const UNUR_DISTR *distribution );
 /* 
    Evaluate the PDF of the @var{distribution} at @var{x}.
    @var{x} must be a pointers to a double arrays of appropriate size
@@ -129,7 +129,7 @@ double unur_distr_cvec_eval_pdf( double *x, UNUR_DISTR *distribution );
    @code{unur_errno} is set to @code{UNUR_ERR_DISTR_DATA}.
 */
 
-int unur_distr_cvec_eval_dpdf( double *result, double *x, UNUR_DISTR *distribution );
+int unur_distr_cvec_eval_dpdf( double *result, const double *x, const UNUR_DISTR *distribution );
 /* 
    Evaluate the gradient of the PDF of the @var{distribution} at
    @var{x}. 
@@ -144,7 +144,7 @@ int unur_distr_cvec_eval_dpdf( double *result, double *x, UNUR_DISTR *distributi
    @code{UNUR_ERR_DISTR_DATA} (@var{result} is left unmodified).
 */
 
-int unur_distr_cvec_set_mean( UNUR_DISTR *distribution, double *mean );
+int unur_distr_cvec_set_mean( UNUR_DISTR *distribution, const double *mean );
 /* 
    Set mean vector for multivariate @var{distribution}.
    @var{mean} must be a pointer to an array of size @code{dim}, where
@@ -153,7 +153,7 @@ int unur_distr_cvec_set_mean( UNUR_DISTR *distribution, double *mean );
    vector (0,@dots{},0).
 */
 
-double *unur_distr_cvec_get_mean( UNUR_DISTR *distribution );
+const double *unur_distr_cvec_get_mean( const UNUR_DISTR *distribution );
 /* 
    Get the mean vector of the @var{distribution}. The function returns a
    pointer to an array of size @code{dim}.
@@ -168,7 +168,7 @@ double *unur_distr_cvec_get_mean( UNUR_DISTR *distribution );
    mean vector!
 */
 
-int unur_distr_cvec_set_covar( UNUR_DISTR *distribution, double *covar );
+int unur_distr_cvec_set_covar( UNUR_DISTR *distribution, const double *covar );
 /* 
    Set covariance matrix for multivariate @var{distribution}.
    @var{covar} must be a pointer to an array of size
@@ -186,7 +186,7 @@ int unur_distr_cvec_set_covar( UNUR_DISTR *distribution, double *covar );
    identity matrix.
 */
 
-double *unur_distr_cvec_get_covar( UNUR_DISTR *distribution );
+const double *unur_distr_cvec_get_covar( const UNUR_DISTR *distribution );
 /* 
    Get covariance matrix of @var{distribution}. The function returns a
    pointer to an array of size @code{dim} x @code{dim}.
@@ -203,7 +203,7 @@ double *unur_distr_cvec_get_covar( UNUR_DISTR *distribution );
    covariance matrix!
 */
 
-int unur_distr_cvec_set_pdfparams( UNUR_DISTR *distribution, int par, double *params, int n_params );
+int unur_distr_cvec_set_pdfparams( UNUR_DISTR *distribution, int par, const double *params, int n_params );
 /* 
    This function provides an interface for additional parameters for a
    multivariate @var{distribution} besides mean vector and covariance
@@ -229,7 +229,7 @@ int unur_distr_cvec_set_pdfparams( UNUR_DISTR *distribution, int par, double *pa
    object @code{unur_errno} is set to @code{UNUR_ERR_DISTR_DATA}.
 */
 
-int unur_distr_cvec_get_pdfparams( UNUR_DISTR *distribution, int par, double **params );
+int unur_distr_cvec_get_pdfparams( const UNUR_DISTR *distribution, int par, const double **params );
 /* 
    Get parameter of the PDF with number @var{par}.
    The pointer to the parameter array is stored in @var{params}, its
@@ -248,13 +248,13 @@ int unur_distr_cvec_get_pdfparams( UNUR_DISTR *distribution, int par, double **p
    required for the chosen method).
 */
 
-int unur_distr_cvec_set_mode( UNUR_DISTR *distribution, double *mode );
+int unur_distr_cvec_set_mode( UNUR_DISTR *distribution, const double *mode );
 /* 
    Set mode of @var{distribution}. @var{mode} must be a pointer to an
    array of the size returned by unur_distr_get_dim().
 */
 
-double *unur_distr_cvec_get_mode( UNUR_DISTR *distribution );
+const double *unur_distr_cvec_get_mode( const UNUR_DISTR *distribution );
 /* 
    Get mode of @var{distribution}. The function returns a pointer to
    an array of the size returned by unur_distr_get_dim().
@@ -274,7 +274,7 @@ int unur_distr_cvec_set_pdfvol( UNUR_DISTR *distribution, double volume );
    @code{UNUR_ERR_DISTR_SET}. 
 */
 
-double unur_distr_cvec_get_pdfvol( UNUR_DISTR *distribution );
+double unur_distr_cvec_get_pdfvol( const UNUR_DISTR *distribution );
 /* 
    Get the volume below the PDF of the @var{distribution}. If this volume is
    not known,@* unur_distr_cont_upd_pdfarea() is called to compute

@@ -65,18 +65,18 @@ static const char distr_name[] = "pareto";
 /* #define NORMCONSTANT (distr->data.cont.norm_constant) */
 
 /* function prototypes                                                       */
-static double _unur_pdf_pareto( double x, UNUR_DISTR *distr );
-static double _unur_dpdf_pareto( double x, UNUR_DISTR *distr );
-static double _unur_cdf_pareto( double x, UNUR_DISTR *distr );
+static double _unur_pdf_pareto( double x, const UNUR_DISTR *distr );
+static double _unur_dpdf_pareto( double x, const UNUR_DISTR *distr );
+static double _unur_cdf_pareto( double x, const UNUR_DISTR *distr );
 
 static int _unur_upd_mode_pareto( UNUR_DISTR *distr );
 static int _unur_upd_area_pareto( UNUR_DISTR *distr );
-static int _unur_set_params_pareto( UNUR_DISTR *distr, double *params, int n_params );
+static int _unur_set_params_pareto( UNUR_DISTR *distr, const double *params, int n_params );
 
 /*---------------------------------------------------------------------------*/
 
 double
-_unur_pdf_pareto( double x, UNUR_DISTR *distr )
+_unur_pdf_pareto( double x, const UNUR_DISTR *distr )
 { 
   register double *params = DISTR.params;
   if (x<k)
@@ -90,7 +90,7 @@ _unur_pdf_pareto( double x, UNUR_DISTR *distr )
 /*---------------------------------------------------------------------------*/
 
 double
-_unur_dpdf_pareto( double x, UNUR_DISTR *distr )
+_unur_dpdf_pareto( double x, const UNUR_DISTR *distr )
 { 
   register double *params = DISTR.params;
   return ( (x<k) ? 0. : a * (-a-1.) / (k * k) * pow(x/k,-a-2.) );
@@ -99,7 +99,7 @@ _unur_dpdf_pareto( double x, UNUR_DISTR *distr )
 /*---------------------------------------------------------------------------*/
 
 double
-_unur_cdf_pareto( double x, UNUR_DISTR *distr )
+_unur_cdf_pareto( double x, const UNUR_DISTR *distr )
 { 
   register double *params = DISTR.params;
   return ( (x<k) ? 0. : (1. - pow(k/x,a)) );
@@ -143,7 +143,7 @@ _unur_upd_area_pareto( UNUR_DISTR *distr )
 /*---------------------------------------------------------------------------*/
 
 int
-_unur_set_params_pareto( UNUR_DISTR *distr, double *params, int n_params )
+_unur_set_params_pareto( UNUR_DISTR *distr, const double *params, int n_params )
 {
   /* check number of parameters for distribution */
   /* check new parameter for generator */
@@ -188,7 +188,7 @@ _unur_set_params_pareto( UNUR_DISTR *distr, double *params, int n_params )
 /*---------------------------------------------------------------------------*/
 
 struct unur_distr *
-unur_distr_pareto( double *params, int n_params )
+unur_distr_pareto( const double *params, int n_params )
 {
   register struct unur_distr *distr;
 

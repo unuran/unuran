@@ -42,7 +42,7 @@
 /*---------------------------------------------------------------------------*/
 
 int
-unur_acg_FORTRAN( struct unur_gen *gen, FILE *out, const char *distr_name, int with_main )
+unur_acg_FORTRAN( const UNUR_GEN *gen, FILE *out, const char *distr_name, int with_main )
      /*----------------------------------------------------------------------*/
      /* Automatic code generator (FORTRAN version)                           */
      /*                                                                      */

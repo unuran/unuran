@@ -41,7 +41,7 @@
 /* Information for constructing the generator                                */
 
 struct unur_vmt_par { 
-  struct unur_gen *uvgen;   /* univariate generator                          */
+  const struct unur_gen *uvgen;   /* univariate generator                    */
 };
 
 /*---------------------------------------------------------------------------*/

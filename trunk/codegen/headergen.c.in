@@ -50,22 +50,22 @@
 /* ------------------------------------------------------------------------- */
 /* local prototypes                                                          */
 
-static int _unur_acg_header_distribution(FILE *out, UNUR_DISTR *distr, const char *rand,
-					 const char *hrule, const char *sformat, const char *synopsis);
-static int _unur_acg_header_distrname   (FILE *out, UNUR_DISTR *distr,
-					 const char *hrule, const char *sformat);
-static int _unur_acg_header_param       (FILE *out, char *par, double val,
-					 const char *hrule, const char *sformat);
-static int _unur_acg_header_domain      (FILE *out, UNUR_DISTR *distr,
-					 const char *hrule, const char *sformat);
-static int _unur_acg_header_synopsis    (FILE *out, UNUR_DISTR *distr, const char *rand,
-					 const char *hrule, const char *sformat, const char *synopsis);
-static int _unur_acg_header_date        (FILE *out,
-					 const char *hrule, const char *sformat);
-static int _unur_acg_header_copyright   (FILE *out,
-					 const char *hrule, const char *sformat);
-static int _unur_acg_header_GENERIC     (FILE *out, UNUR_DISTR *distr, const char *rand,
-					 const char *hrule, const char *sformat);
+static int _unur_acg_header_distribution( FILE *out, const UNUR_DISTR *distr, const char *rand,
+					  const char *hrule, const char *sformat, const char *synopsis);
+static int _unur_acg_header_distrname   ( FILE *out, const UNUR_DISTR *distr,
+					  const char *hrule, const char *sformat);
+static int _unur_acg_header_param       ( FILE *out, const char *par, double val,
+					  const char *hrule, const char *sformat);
+static int _unur_acg_header_domain      ( FILE *out, const UNUR_DISTR *distr,
+					  const char *hrule, const char *sformat);
+static int _unur_acg_header_synopsis    ( FILE *out, const UNUR_DISTR *distr, const char *rand,
+					  const char *hrule, const char *sformat, const char *synopsis);
+static int _unur_acg_header_date        ( FILE *out,
+					  const char *hrule, const char *sformat);
+static int _unur_acg_header_copyright   ( FILE *out,
+					  const char *hrule, const char *sformat);
+static int _unur_acg_header_GENERIC     ( FILE *out, const UNUR_DISTR *distr, const char *rand,
+					  const char *hrule, const char *sformat);
 
 /* ------------------------------------------------------------------------- */
 /* constants                                                                 */
@@ -93,7 +93,7 @@ const static char synopsis_JAVA[] = "//\n// double %s.sample ()\n//\n";
 /* ACG header main (C version)                                               */
 /* ------------------------------------------------------------------------- */
 
-int _unur_acg_C_header (FILE *out, UNUR_DISTR *distr, const char *rand)
+int _unur_acg_C_header (FILE *out, const UNUR_DISTR *distr, const char *rand)
 {
   _unur_check_NULL("ACG_C", distr, 0 );
   return _unur_acg_header_distribution (out, distr, rand,
@@ -104,7 +104,7 @@ int _unur_acg_C_header (FILE *out, UNUR_DISTR *distr, const char *rand)
 /* ACG header main (FORTRAN version)                                         */
 /* ------------------------------------------------------------------------- */
 
-int _unur_acg_FORTRAN_header (FILE *out, UNUR_DISTR *distr, const char *rand)
+int _unur_acg_FORTRAN_header (FILE *out, const UNUR_DISTR *distr, const char *rand)
 {
   _unur_check_NULL("ACG_FORTRAN", distr, 0 );
   return _unur_acg_header_distribution (out, distr, rand,
@@ -115,7 +115,7 @@ int _unur_acg_FORTRAN_header (FILE *out, UNUR_DISTR *distr, const char *rand)
 /* ACG header main (JAVA version)                                            */
 /* ------------------------------------------------------------------------- */
 
-int _unur_acg_JAVA_header (FILE *out, UNUR_DISTR *distr, const char *rand)
+int _unur_acg_JAVA_header (FILE *out, const UNUR_DISTR *distr, const char *rand)
 {
 	_unur_check_NULL("ACG_JAVA", distr, 0 );
 	return _unur_acg_header_distribution (out, distr, rand,
@@ -126,7 +126,7 @@ int _unur_acg_JAVA_header (FILE *out, UNUR_DISTR *distr, const char *rand)
 /* ACG header main (UNURAN version)                                          */
 /* ------------------------------------------------------------------------- */
 
-int _unur_acg_UNURAN_header (FILE *out, UNUR_DISTR *distr, const char *rand)
+int _unur_acg_UNURAN_header (FILE *out, const UNUR_DISTR *distr, const char *rand)
 {
 	_unur_check_NULL("ACG_UNURAN", distr, 0 );
 	return _unur_acg_header_distribution (out, distr, rand,
@@ -142,7 +142,7 @@ int _unur_acg_UNURAN_header (FILE *out, UNUR_DISTR *distr, const char *rand)
 /* ------------------------------------------------------------------------- */
 
 int 
-_unur_acg_header_distribution ( FILE *out, UNUR_DISTR *distr, const char *rand,
+_unur_acg_header_distribution ( FILE *out, const UNUR_DISTR *distr, const char *rand,
 				const char *hrule, const char *sformat, const char *synopsis )
 {
   _unur_acg_header_distrname (out, distr, hrule, sformat);
@@ -174,7 +174,7 @@ _unur_acg_header_distribution ( FILE *out, UNUR_DISTR *distr, const char *rand,
 /* ------------------------------------------------------------------------- */
 
 int
-_unur_acg_header_distrname ( FILE *out, UNUR_DISTR *distr,
+_unur_acg_header_distrname ( FILE *out, const UNUR_DISTR *distr,
 			     const char *hrule, const char *sformat )
 {
 	char buf[1024];
@@ -197,7 +197,7 @@ _unur_acg_header_distrname ( FILE *out, UNUR_DISTR *distr,
 /* ------------------------------------------------------------------------- */
 
 int
-_unur_acg_header_param ( FILE *out, char *par, double val,
+_unur_acg_header_param ( FILE *out, const char *par, double val,
 			 const char *hrule, const char *sformat )
 {
 	char buf[1024];
@@ -211,7 +211,7 @@ _unur_acg_header_param ( FILE *out, char *par, double val,
 /* ------------------------------------------------------------------------- */
 
 int
-_unur_acg_header_domain ( FILE *out, UNUR_DISTR *distr,
+_unur_acg_header_domain ( FILE *out, const UNUR_DISTR *distr,
 			  const char *hrule, const char *sformat )
 {
 	char buf[1024];
@@ -225,7 +225,7 @@ _unur_acg_header_domain ( FILE *out, UNUR_DISTR *distr,
 /* ------------------------------------------------------------------------- */
 
 int
-_unur_acg_header_synopsis ( FILE *out, UNUR_DISTR *distr, const char *rand,
+_unur_acg_header_synopsis ( FILE *out, const UNUR_DISTR *distr, const char *rand,
 			    const char *hrule, const char *sformat, const char *synopsis )
 {
   fprintf (out,hrule);
@@ -295,7 +295,7 @@ _unur_acg_header_copyright ( FILE *out,
 /* ------------------------------------------------------------------------- */
 
 int 
-_unur_acg_header_GENERIC ( FILE *out, UNUR_DISTR *distr, const char *rand,
+_unur_acg_header_GENERIC ( FILE *out, const UNUR_DISTR *distr, const char *rand,
 			   const char *hrule, const char *sformat )
 {
   char *pdf;

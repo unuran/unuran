@@ -145,7 +145,7 @@ unur_distr_cvec_new( int dim )
 /*---------------------------------------------------------------------------*/
 
 int
-_unur_distr_cvec_copy( struct unur_distr *to, struct unur_distr *from )
+_unur_distr_cvec_copy( struct unur_distr *to, const struct unur_distr *from )
      /*----------------------------------------------------------------------*/
      /* copy distribution object 'from' into distribution object 'to'.       */
      /*                                                                      */
@@ -317,7 +317,7 @@ unur_distr_cvec_set_dpdf( struct unur_distr *distr, UNUR_VFUNCT_CVEC *dpdf )
 /*---------------------------------------------------------------------------*/
 
 UNUR_FUNCT_CVEC *
-unur_distr_cvec_get_pdf( struct unur_distr *distr )
+unur_distr_cvec_get_pdf( const struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
      /* get pointer to PDF of distribution                                   */
      /*                                                                      */
@@ -338,7 +338,7 @@ unur_distr_cvec_get_pdf( struct unur_distr *distr )
 /*---------------------------------------------------------------------------*/
 
 UNUR_VFUNCT_CVEC *
-unur_distr_cvec_get_dpdf( struct unur_distr *distr )
+unur_distr_cvec_get_dpdf( const struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
      /* get pointer to gradient of PDF of distribution                       */
      /*                                                                      */
@@ -359,7 +359,7 @@ unur_distr_cvec_get_dpdf( struct unur_distr *distr )
 /*---------------------------------------------------------------------------*/
 
 double
-unur_distr_cvec_eval_pdf( double *x, struct unur_distr *distr )
+unur_distr_cvec_eval_pdf( const double *x, const struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
      /* evaluate PDF of distribution at x                                    */
      /*                                                                      */
@@ -386,7 +386,7 @@ unur_distr_cvec_eval_pdf( double *x, struct unur_distr *distr )
 /*---------------------------------------------------------------------------*/
 
 int
-unur_distr_cvec_eval_dpdf( double *result, double *x, struct unur_distr *distr )
+unur_distr_cvec_eval_dpdf( double *result, const double *x, const struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
      /* evaluate gradient of PDF of distribution at x                        */
      /*                                                                      */
@@ -415,7 +415,7 @@ unur_distr_cvec_eval_dpdf( double *result, double *x, struct unur_distr *distr )
 /*---------------------------------------------------------------------------*/
 
 int
-unur_distr_cvec_set_mean( struct unur_distr *distr, double *mean )
+unur_distr_cvec_set_mean( struct unur_distr *distr, const double *mean )
      /*----------------------------------------------------------------------*/
      /* set mean vector of distribution                                      */
      /*                                                                      */
@@ -461,8 +461,8 @@ unur_distr_cvec_set_mean( struct unur_distr *distr, double *mean )
 
 /*---------------------------------------------------------------------------*/
 
-double *
-unur_distr_cvec_get_mean( struct unur_distr *distr )
+const double *
+unur_distr_cvec_get_mean( const struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
      /* get mean vector of distribution                                      */
      /*                                                                      */
@@ -490,7 +490,7 @@ unur_distr_cvec_get_mean( struct unur_distr *distr )
 /*---------------------------------------------------------------------------*/
 
 int
-unur_distr_cvec_set_covar( struct unur_distr *distr, double *covar )
+unur_distr_cvec_set_covar( struct unur_distr *distr, const double *covar )
      /*----------------------------------------------------------------------*/
      /* set covariance matrix of distribution                                */
      /*                                                                      */
@@ -556,8 +556,8 @@ unur_distr_cvec_set_covar( struct unur_distr *distr, double *covar )
 
 /*---------------------------------------------------------------------------*/
 
-double *
-unur_distr_cvec_get_covar( struct unur_distr *distr )
+const double *
+unur_distr_cvec_get_covar( const struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
      /* get covariance matrix of distribution                                */
      /*                                                                      */
@@ -585,7 +585,7 @@ unur_distr_cvec_get_covar( struct unur_distr *distr )
 /*---------------------------------------------------------------------------*/
 
 int
-unur_distr_cvec_set_pdfparams( struct unur_distr *distr, int par, double *params, int n_params )
+unur_distr_cvec_set_pdfparams( struct unur_distr *distr, int par, const double *params, int n_params )
      /*----------------------------------------------------------------------*/
      /* set parameters for distribution                                      */
      /*                                                                      */
@@ -631,7 +631,7 @@ unur_distr_cvec_set_pdfparams( struct unur_distr *distr, int par, double *params
 /*---------------------------------------------------------------------------*/
 
 int
-unur_distr_cvec_get_pdfparams( struct unur_distr *distr, int par, double **params )
+unur_distr_cvec_get_pdfparams( const struct unur_distr *distr, int par, const double **params )
      /*----------------------------------------------------------------------*/
      /* get number of PDF parameters and sets pointer to array params[] of   */
      /* parameters                                                           */
@@ -667,7 +667,7 @@ unur_distr_cvec_get_pdfparams( struct unur_distr *distr, int par, double **param
 /*---------------------------------------------------------------------------*/
 
 int
-unur_distr_cvec_set_mode( struct unur_distr *distr, double *mode )
+unur_distr_cvec_set_mode( struct unur_distr *distr, const double *mode )
      /*----------------------------------------------------------------------*/
      /* set mode of distribution                                             */
      /*                                                                      */
@@ -702,8 +702,8 @@ unur_distr_cvec_set_mode( struct unur_distr *distr, double *mode )
 
 /*---------------------------------------------------------------------------*/
 
-double *
-unur_distr_cvec_get_mode( struct unur_distr *distr )
+const double *
+unur_distr_cvec_get_mode( const struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
      /* get mode of distribution                                             */
      /*                                                                      */
@@ -767,7 +767,7 @@ unur_distr_cvec_set_pdfvol( struct unur_distr *distr, double volume )
 /*---------------------------------------------------------------------------*/
 
 double
-unur_distr_cvec_get_pdfvol( struct unur_distr *distr )
+unur_distr_cvec_get_pdfvol( const struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
      /* get volume below PDF of distribution                                 */
      /*                                                                      */
@@ -800,7 +800,7 @@ unur_distr_cvec_get_pdfvol( struct unur_distr *distr )
 /*---------------------------------------------------------------------------*/
 
 void
-_unur_distr_cvec_debug( struct unur_distr *distr, char *genid )
+_unur_distr_cvec_debug( const struct unur_distr *distr, const char *genid )
      /*----------------------------------------------------------------------*/
      /* write info about distribution into logfile                           */
      /*                                                                      */

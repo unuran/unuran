@@ -43,7 +43,7 @@
 
 int
 _unur_acg_JAVA_tdr_ps( FILE *out, 
-		       struct unur_gen *gen, 
+		       const UNUR_GEN *gen, 
 		       const char *rand_name, 
 		       const char *pdf_name )
      /*----------------------------------------------------------------------*/
@@ -241,7 +241,7 @@ _unur_acg_JAVA_tdr_ps( FILE *out,
 /*---------------------------------------------------------------------------*/
 
 int
-_unur_acg_JAVA_tdr_class_IV( FILE *out, struct unur_gen *gen )
+_unur_acg_JAVA_tdr_class_IV( FILE *out, const UNUR_GEN *gen )
      /*----------------------------------------------------------------------*/
      /* code generator for method TDR variant PS -- class                    */
      /*                                                                      */
@@ -310,7 +310,7 @@ _unur_acg_JAVA_tdr_class_IV( FILE *out, struct unur_gen *gen )
 /*---------------------------------------------------------------------------*/
 
 int
-_unur_acg_JAVA_begin_class( FILE *out, struct unur_gen *gen, const char *class_name )
+_unur_acg_JAVA_begin_class( FILE *out, const UNUR_GEN *gen, const char *class_name )
      /*----------------------------------------------------------------------*/
      /* begin of class containing PDF (as member fuction) and the tdr method */
      /*                                                                      */
@@ -337,7 +337,7 @@ _unur_acg_JAVA_begin_class( FILE *out, struct unur_gen *gen, const char *class_n
 /*---------------------------------------------------------------------------*/
 
 int
-_unur_acg_JAVA_end_class( FILE *out, struct unur_gen *gen )
+_unur_acg_JAVA_end_class( FILE *out, const UNUR_GEN *gen )
      /*----------------------------------------------------------------------*/
      /* end of class containing PDF (as member fuction) and the tdr method   */
      /*                                                                      */

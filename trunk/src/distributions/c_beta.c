@@ -105,23 +105,23 @@ static const char distr_name[] = "beta";
 /*---------------------------------------------------------------------------*/
 
 /* function prototypes                                                       */
-static double _unur_pdf_beta( double x, UNUR_DISTR *distr );
-static double _unur_dpdf_beta( double x, UNUR_DISTR *distr );
+static double _unur_pdf_beta( double x, const UNUR_DISTR *distr );
+static double _unur_dpdf_beta( double x, const UNUR_DISTR *distr );
 #ifdef HAVE_CDF
-static double _unur_cdf_beta( double x, UNUR_DISTR *distr );
+static double _unur_cdf_beta( double x, const UNUR_DISTR *distr );
 #endif
 
 static int _unur_upd_mode_beta( UNUR_DISTR *distr );
 #ifdef HAVE_AREA
 static int _unur_upd_area_beta( UNUR_DISTR *distr );
-inline static double _unur_lognormconstant_beta( double *params, int n_params );
+inline static double _unur_lognormconstant_beta( const double *params, int n_params );
 #endif
-static int _unur_set_params_beta( UNUR_DISTR *distr, double *params, int n_params );
+static int _unur_set_params_beta( UNUR_DISTR *distr, const double *params, int n_params );
 
 /*---------------------------------------------------------------------------*/
 
 double
-_unur_pdf_beta(double x, UNUR_DISTR *distr)
+_unur_pdf_beta(double x, const UNUR_DISTR *distr)
 { 
   register double *params = DISTR.params;
 
@@ -149,7 +149,7 @@ _unur_pdf_beta(double x, UNUR_DISTR *distr)
 /*---------------------------------------------------------------------------*/
 
 double
-_unur_dpdf_beta(double x, UNUR_DISTR *distr)
+_unur_dpdf_beta(double x, const UNUR_DISTR *distr)
 { 
   register double factor = 1.;
   register double *params = DISTR.params;
@@ -184,7 +184,7 @@ _unur_dpdf_beta(double x, UNUR_DISTR *distr)
 #ifdef HAVE_CDF
 
 double
-_unur_cdf_beta(double x, UNUR_DISTR *distr)
+_unur_cdf_beta(double x, const UNUR_DISTR *distr)
 {
   register double *params = DISTR.params;
 
@@ -268,7 +268,7 @@ _unur_upd_area_beta( UNUR_DISTR *distr )
 /*---------------------------------------------------------------------------*/
 
 double
-_unur_lognormconstant_beta(double *params, int n_params)
+_unur_lognormconstant_beta(const double *params, int n_params)
 { 
   if (n_params > 2)
     /* non-standard form */
@@ -287,7 +287,7 @@ _unur_lognormconstant_beta(double *params, int n_params)
 /*---------------------------------------------------------------------------*/
 
 int
-_unur_set_params_beta( UNUR_DISTR *distr, double *params, int n_params )
+_unur_set_params_beta( UNUR_DISTR *distr, const double *params, int n_params )
 {
 
   /* check number of parameters for distribution */
@@ -343,7 +343,7 @@ _unur_set_params_beta( UNUR_DISTR *distr, double *params, int n_params )
 /*---------------------------------------------------------------------------*/
 
 struct unur_distr *
-unur_distr_beta( double *params, int n_params )
+unur_distr_beta( const double *params, int n_params )
 {
   register struct unur_distr *distr;
 

@@ -99,7 +99,7 @@
 
 /* =ROUTINES */
 
-UNUR_PAR *unur_cstd_new( UNUR_DISTR *distribution );
+UNUR_PAR *unur_cstd_new( const UNUR_DISTR *distribution );
 /* 
    Get default parameters for new generator. It requires a distribution object 
    for a continuous univariant distribution from the 

@@ -130,8 +130,9 @@ static void _unur_utdr_free( struct unur_gen *gen);
 /* i.e., into the log file if not specified otherwise.                       */
 /*---------------------------------------------------------------------------*/
 
-static void _unur_utdr_debug_init(struct unur_gen *gen, double tly, double tlys,
-				  double try, double trys, double cfac, int setupok, double c );
+static void _unur_utdr_debug_init( const struct unur_gen *gen, 
+				   double tly, double tlys, double try, double trys,
+				   double cfac, int setupok, double c );
 /*---------------------------------------------------------------------------*/
 /* print after generator has been initialized has completed.                 */
 /*---------------------------------------------------------------------------*/
@@ -160,7 +161,7 @@ static void _unur_utdr_debug_init(struct unur_gen *gen, double tly, double tlys,
 /*****************************************************************************/
 
 struct unur_par *
-unur_utdr_new( struct unur_distr *distr )
+unur_utdr_new( const struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
      /* get default parameters                                               */
      /*                                                                      */
@@ -192,20 +193,6 @@ unur_utdr_new( struct unur_distr *distr )
     _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"PDF"); 
     return NULL;
   }
-
-  if (!(distr->set & UNUR_DISTR_SET_MODE)) {
-    _unur_warning(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"mode: try finding it (numerically)"); 
-    if (!unur_distr_cont_upd_mode(distr)) {
-      _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"mode"); 
-      return NULL; 
-    }
-  }
-
-  if (!(distr->set & UNUR_DISTR_SET_PDFAREA))
-    if (!unur_distr_cont_upd_pdfarea(distr)) {
-      _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"area below PDF");
-      return NULL; 
-    }
 
   /**TODOWH:
      Kann man eigentlich einen bound fuer die area auch
@@ -1040,6 +1027,24 @@ _unur_utdr_create( struct unur_par *par )
   /* copy distribution object into generator object */
   _unur_distr_cont_copy( &(gen->distr), par->distr );
 
+  /* check for required data: mode */
+  if (!(gen->distr.set & UNUR_DISTR_SET_MODE)) {
+    _unur_warning(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"mode: try finding it (numerically)"); 
+    if (!unur_distr_cont_upd_mode(&(gen->distr))) {
+      _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"mode"); 
+      free(gen);
+      return NULL; 
+    }
+  }
+
+  /* check for required data: area */
+  if (!(gen->distr.set & UNUR_DISTR_SET_PDFAREA))
+    if (!unur_distr_cont_upd_pdfarea(&(gen->distr))) {
+      _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"area below PDF");
+      free(gen);
+      return NULL; 
+    }
+
   /* set generator identifier */
   gen->genid = _unur_set_genid(GENTYPE);
 
@@ -1310,8 +1315,9 @@ _unur_utdr_free( struct unur_gen *gen )
 /*---------------------------------------------------------------------------*/
 
 static void
-_unur_utdr_debug_init( struct unur_gen *gen, double tly, double tlys, 
-		       double try, double trys, double cfac, int setupok, double c )
+_unur_utdr_debug_init( const struct unur_gen *gen,
+		       double tly, double tlys, double try, double trys,
+		       double cfac, int setupok, double c )
      /*----------------------------------------------------------------------*/
      /* write info about generator into logfile                              */
      /*                                                                      */

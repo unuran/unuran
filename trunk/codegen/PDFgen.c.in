@@ -52,9 +52,9 @@
 
 =INPUT prototypes
 
-static int _unur_acg_C_PDF_GENERIC       (FILE *out, UNUR_DISTR *distr, const char *pdf);
-static int _unur_acg_FORTRAN_PDF_GENERIC (FILE *out, UNUR_DISTR *distr, const char *pdf);
-static int _unur_acg_JAVA_PDF_GENERIC    (FILE *out, UNUR_DISTR *distr, const char *pdf);
+static int _unur_acg_C_PDF_GENERIC       (FILE *out, const UNUR_DISTR *distr, const char *pdf);
+static int _unur_acg_FORTRAN_PDF_GENERIC (FILE *out, const UNUR_DISTR *distr, const char *pdf);
+static int _unur_acg_JAVA_PDF_GENERIC    (FILE *out, const UNUR_DISTR *distr, const char *pdf);
 
 /*****************************************************************************/
 /**  API                                                                    **/
@@ -64,7 +64,7 @@ static int _unur_acg_JAVA_PDF_GENERIC    (FILE *out, UNUR_DISTR *distr, const ch
 /* PDF main (C Version)                                                      */
 /* ------------------------------------------------------------------------- */
 
-int _unur_acg_C_PDF (FILE *out, UNUR_DISTR *distr, const char *pdf)
+int _unur_acg_C_PDF (FILE *out, const UNUR_DISTR *distr, const char *pdf)
 {
 	_unur_check_NULL("ACG", distr, 0 );
 
@@ -84,7 +84,7 @@ int _unur_acg_C_PDF (FILE *out, UNUR_DISTR *distr, const char *pdf)
 /* PDF main (FORTRAN Version)                                                */
 /* ------------------------------------------------------------------------- */
 
-int _unur_acg_FORTRAN_PDF (FILE *out, UNUR_DISTR *distr, const char *pdf)
+int _unur_acg_FORTRAN_PDF (FILE *out, const UNUR_DISTR *distr, const char *pdf)
 {
 	_unur_check_NULL("ACG", distr, 0 );
 
@@ -104,7 +104,7 @@ int _unur_acg_FORTRAN_PDF (FILE *out, UNUR_DISTR *distr, const char *pdf)
 /* PDF main (JAVA Version)                                                   */
 /* ------------------------------------------------------------------------- */
 
-int _unur_acg_JAVA_PDF (FILE *out, UNUR_DISTR *distr, const char *pdf)
+int _unur_acg_JAVA_PDF (FILE *out, const UNUR_DISTR *distr, const char *pdf)
 {
 	_unur_check_NULL("ACG", distr, 0 );
 
@@ -135,7 +135,7 @@ int _unur_acg_JAVA_PDF (FILE *out, UNUR_DISTR *distr, const char *pdf)
 /* ---------------------------------------------------------------- */
 
 int
-_unur_acg_C_PDF_GENERIC (FILE *out, UNUR_DISTR *distr, const char *pdf)
+_unur_acg_C_PDF_GENERIC (FILE *out, const UNUR_DISTR *distr, const char *pdf)
 { 
   const char *pdf_name;
 
@@ -164,7 +164,7 @@ _unur_acg_C_PDF_GENERIC (FILE *out, UNUR_DISTR *distr, const char *pdf)
 /* ---------------------------------------------------------------- */
 
 int
-_unur_acg_FORTRAN_PDF_GENERIC (FILE *out, UNUR_DISTR *distr, const char *pdf)
+_unur_acg_FORTRAN_PDF_GENERIC (FILE *out, const UNUR_DISTR *distr, const char *pdf)
 {
   char pdf_name[7];
 
@@ -190,7 +190,7 @@ _unur_acg_FORTRAN_PDF_GENERIC (FILE *out, UNUR_DISTR *distr, const char *pdf)
 /* PDF for generic (user defined) distribution with given PDF       */
 /* ---------------------------------------------------------------- */
 
-int _unur_acg_JAVA_PDF_GENERIC (FILE *out, UNUR_DISTR *distr, const char *pdf)
+int _unur_acg_JAVA_PDF_GENERIC (FILE *out, const UNUR_DISTR *distr, const char *pdf)
 {
   const char *pdf_name;
 

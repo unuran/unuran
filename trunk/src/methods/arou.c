@@ -227,24 +227,27 @@ static double _unur_arou_segment_arcmean( struct unur_arou_segment *seg );
 /* i.e., into the log file if not specified otherwise.                       */
 /*---------------------------------------------------------------------------*/
 
-static void _unur_arou_debug_init( struct unur_par *par, struct unur_gen *gen );
+static void _unur_arou_debug_init( const struct unur_par *par, const struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 /* print after generator has been initialized has completed.                 */
 /*---------------------------------------------------------------------------*/
 
-static void _unur_arou_debug_free( struct unur_gen *gen );
+static void _unur_arou_debug_free( const struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 /* print before generater is destroyed.                                      */
 /*---------------------------------------------------------------------------*/
 
-static void _unur_arou_debug_segments( struct unur_gen *gen );
+static void _unur_arou_debug_segments( const struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 /* print data for segments.                                                  */
 /*---------------------------------------------------------------------------*/
 
-static void _unur_arou_debug_split_start( struct unur_gen *gen, struct unur_arou_segment *seg, double x, double fx );
-static void _unur_arou_debug_split_stop( struct unur_gen *gen, 
-					 struct unur_arou_segment *seg_left, struct unur_arou_segment *seg_right );
+static void _unur_arou_debug_split_start( const struct unur_gen *gen, 
+					  const struct unur_arou_segment *seg,
+					  double x, double fx );
+static void _unur_arou_debug_split_stop( const struct unur_gen *gen, 
+					 const struct unur_arou_segment *seg_left,
+					 const struct unur_arou_segment *seg_right );
 /*---------------------------------------------------------------------------*/
 /* print before and after a segment has been split (not / successfully).     */
 /*---------------------------------------------------------------------------*/
@@ -279,7 +282,7 @@ static void _unur_arou_debug_printratio( double v, double u, char *string );
 /*****************************************************************************/
 
 struct unur_par *
-unur_arou_new( struct unur_distr *distr )
+unur_arou_new( const struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
      /* get default parameters                                               */
      /*                                                                      */
@@ -354,7 +357,7 @@ unur_arou_new( struct unur_distr *distr )
 /*****************************************************************************/
 
 int
-unur_arou_set_cpoints( struct unur_par *par, int n_stp, double *stp )
+unur_arou_set_cpoints( struct unur_par *par, int n_stp, const double *stp )
      /*----------------------------------------------------------------------*/
      /* set construction points for envelope                                 */
      /* and/or its number for initialization                                 */
@@ -485,7 +488,7 @@ unur_arou_set_max_sqhratio( struct unur_par *par, double max_ratio )
 /*---------------------------------------------------------------------------*/
 
 double
-unur_arou_get_sqhratio( struct unur_gen *gen )
+unur_arou_get_sqhratio( const struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* get ratio A(squeeze) / A(hat)                                        */
      /*                                                                      */
@@ -507,7 +510,7 @@ unur_arou_get_sqhratio( struct unur_gen *gen )
 /*---------------------------------------------------------------------------*/
 
 double
-unur_arou_get_hatarea( struct unur_gen *gen )
+unur_arou_get_hatarea( const struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* get area below hat                                                   */
      /*                                                                      */
@@ -529,7 +532,7 @@ unur_arou_get_hatarea( struct unur_gen *gen )
 /*---------------------------------------------------------------------------*/
 
 double
-unur_arou_get_squeezearea( struct unur_gen *gen )
+unur_arou_get_squeezearea( const struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* get area below squeeze                                               */
      /*                                                                      */
@@ -2015,7 +2018,7 @@ _unur_arou_segment_arcmean( struct unur_arou_segment *seg )
 /*---------------------------------------------------------------------------*/
 
 static void
-_unur_arou_debug_init( struct unur_par *par, struct unur_gen *gen )
+_unur_arou_debug_init( const struct unur_par *par, const struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* write info about generator after setup into logfile                  */
      /*                                                                      */
@@ -2088,7 +2091,7 @@ _unur_arou_debug_init( struct unur_par *par, struct unur_gen *gen )
 /*****************************************************************************/
 
 static void
-_unur_arou_debug_free( struct unur_gen *gen )
+_unur_arou_debug_free( const struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* write info about generator before destroying into logfile            */
      /*                                                                      */
@@ -2116,7 +2119,7 @@ _unur_arou_debug_free( struct unur_gen *gen )
 /*****************************************************************************/
 
 static void
-_unur_arou_debug_segments( struct unur_gen *gen )
+_unur_arou_debug_segments( const struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* write list of segments into logfile                                  */
      /*                                                                      */
@@ -2126,7 +2129,7 @@ _unur_arou_debug_segments( struct unur_gen *gen )
 {
   FILE *log;
   struct unur_arou_segment *seg;
-  double sAin, sAout;
+  double sAin, sAout, Atotal;
   int i;
 
   /* check arguments */
@@ -2153,9 +2156,12 @@ _unur_arou_debug_segments( struct unur_gen *gen )
     fprintf(log,"%s: Construction of enveloping polygon not successful\n",gen->genid);
     fprintf(log,"%s: Areas may be meaningless !!!!!!!!!!!!!!!!!!!!!!!!\n",gen->genid);
     fprintf(log,"%s:\n",gen->genid);
-    GEN.Atotal = -1.;   /* to avoid floating point exceptions */
+    Atotal = -1.;   /* to avoid floating point exceptions */
   }
-    
+  else {
+    Atotal = GEN.Atotal;
+  }
+
   /* print and sum areas inside and outside of squeeze */
   if ((gen->debug & AROU_DEBUG_SEGMENTS) && GEN.seg != NULL) {
     fprintf(log,"%s:Areas in segments:\n",gen->genid);
@@ -2167,26 +2173,26 @@ _unur_arou_debug_segments( struct unur_gen *gen )
       sAout += seg->Aout;
       fprintf(log,"%s:[%3d]: %-12.6g(%6.3f%%)  |  %-12.6g(%6.3f%%)  |  %-12.6g(%6.3f%%)  |  %-12.6g(%6.3f%%)\n",
 	      gen->genid,i,
-	      seg->Ain, seg->Ain * 100. / GEN.Atotal,
-	      seg->Aout, seg->Aout * 100. / GEN.Atotal,
-	      seg->Ain + seg->Aout, (seg->Ain + seg->Aout) * 100. / GEN.Atotal,
-	      seg->Acum, seg->Acum * 100. / GEN.Atotal);
+	      seg->Ain, seg->Ain * 100. / Atotal,
+	      seg->Aout, seg->Aout * 100. / Atotal,
+	      seg->Ain + seg->Aout, (seg->Ain + seg->Aout) * 100. / Atotal,
+	      seg->Acum, seg->Acum * 100. / Atotal);
     }
     fprintf(log,"%s:\t----------  ---------  |  ----------  ---------  |  ----------  ---------  +\n",gen->genid);
     fprintf(log,"%s: Sum : %-12.6g(%6.3f%%)  |  %-12.6g(%6.3f%%)  |  %-11.6g(%6.3f%%)\n",
 	    gen->genid,
-	    sAin, sAin * 100./GEN.Atotal,
-	    sAout, sAout * 100./GEN.Atotal,
-	    sAin + sAout, (sAin + sAout) * 100./GEN.Atotal);
+	    sAin, sAin * 100./Atotal,
+	    sAout, sAout * 100./Atotal,
+	    sAin + sAout, (sAin + sAout) * 100./Atotal);
     fprintf(log,"%s:\n",gen->genid);
   }
 
   /* summary of areas */
   fprintf(log,"%s: A(squeeze)     = %-12.6g  (%6.3f%%)\n",gen->genid,
-	  GEN.Asqueeze, GEN.Asqueeze * 100./GEN.Atotal);
+	  GEN.Asqueeze, GEN.Asqueeze * 100./Atotal);
   fprintf(log,"%s: A(hat\\squeeze) = %-12.6g  (%6.3f%%)\n",gen->genid,
-	  GEN.Atotal - GEN.Asqueeze, (GEN.Atotal - GEN.Asqueeze) * 100./GEN.Atotal);
-  fprintf(log,"%s: A(total)       = %-12.6g\n",gen->genid, GEN.Atotal);
+	  GEN.Atotal - GEN.Asqueeze, (Atotal - GEN.Asqueeze) * 100./Atotal);
+  fprintf(log,"%s: A(total)       = %-12.6g\n",gen->genid, Atotal);
 
   fprintf(log,"%s:\n",gen->genid);
 
@@ -2195,8 +2201,8 @@ _unur_arou_debug_segments( struct unur_gen *gen )
 /*****************************************************************************/
 
 static void
-_unur_arou_debug_split_start( struct unur_gen *gen,
-			      struct unur_arou_segment *seg, 
+_unur_arou_debug_split_start( const struct unur_gen *gen,
+			      const struct unur_arou_segment *seg, 
 			      double x, double fx )
      /*----------------------------------------------------------------------*/
      /* write info about splitting segment                                   */
@@ -2246,9 +2252,9 @@ _unur_arou_debug_split_start( struct unur_gen *gen,
 /*****************************************************************************/
 
 static void
-_unur_arou_debug_split_stop( struct unur_gen *gen, 
-		      struct unur_arou_segment *seg_left,
-		      struct unur_arou_segment *seg_right )
+_unur_arou_debug_split_stop( const struct unur_gen *gen, 
+			     const struct unur_arou_segment *seg_left,
+			     const struct unur_arou_segment *seg_right )
      /*----------------------------------------------------------------------*/
      /* write info about new splitted segments                               */
      /*                                                                      */

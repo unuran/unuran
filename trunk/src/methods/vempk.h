@@ -79,7 +79,7 @@
 
 /* =ROUTINES */
 
-UNUR_PAR *unur_vempk_new( UNUR_DISTR *distribution );
+UNUR_PAR *unur_vempk_new( const UNUR_DISTR *distribution );
 /* 
    Get default parameters for generator.
 */

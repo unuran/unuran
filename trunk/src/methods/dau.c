@@ -189,7 +189,7 @@ static void _unur_dau_debug_table( struct unur_gen *gen );
 /*****************************************************************************/
 
 struct unur_par *
-unur_dau_new( struct unur_distr *distr )
+unur_dau_new( const struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
      /* get default parameters                                               */
      /*                                                                      */

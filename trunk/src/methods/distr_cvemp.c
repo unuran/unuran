@@ -122,7 +122,7 @@ unur_distr_cvemp_new( int dim )
 /*---------------------------------------------------------------------------*/
 
 int
-_unur_distr_cvemp_copy( struct unur_distr *to, struct unur_distr *from )
+_unur_distr_cvemp_copy( struct unur_distr *to, const struct unur_distr *from )
      /*----------------------------------------------------------------------*/
      /* copy distribution object 'from' into distribution object 'to'.       */
      /*                                                                      */
@@ -213,7 +213,7 @@ _unur_distr_cvemp_clear( struct unur_gen *gen )
 /*---------------------------------------------------------------------------*/
 
 int
-unur_distr_cvemp_set_data( struct unur_distr *distr, double *sample, int n_sample )
+unur_distr_cvemp_set_data( struct unur_distr *distr, const double *sample, int n_sample )
      /*----------------------------------------------------------------------*/
      /* set observed sample for distribution                                 */
      /*                                                                      */
@@ -285,7 +285,7 @@ unur_distr_cvemp_read_data( struct unur_distr *distr, const char *filename )
 /*---------------------------------------------------------------------------*/
 
 int 
-unur_distr_cvemp_get_data( struct unur_distr *distr, double **sample )
+unur_distr_cvemp_get_data( const struct unur_distr *distr, const double **sample )
      /*----------------------------------------------------------------------*/
      /* get number of observations and set pointer to array observations     */
      /*                                                                      */
@@ -318,7 +318,7 @@ unur_distr_cvemp_get_data( struct unur_distr *distr, double **sample )
 /*---------------------------------------------------------------------------*/
 
 void
-_unur_distr_cvemp_debug( struct unur_distr *distr, char *genid, int printvector )
+_unur_distr_cvemp_debug( const struct unur_distr *distr, const char *genid, int printvector )
      /*----------------------------------------------------------------------*/
      /* write info about distribution into logfile                           */
      /*                                                                      */

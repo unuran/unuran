@@ -64,18 +64,18 @@ static const char distr_name[] = "triangular";
 /* #define NORMCONSTANT (distr->data.cont.norm_constant) */
 
 /* function prototypes                                                       */
-static double _unur_pdf_triangular( double x, UNUR_DISTR *distr );
-static double _unur_dpdf_triangular( double x, UNUR_DISTR *distr );
-static double _unur_cdf_triangular( double x, UNUR_DISTR *distr );
+static double _unur_pdf_triangular( double x, const UNUR_DISTR *distr );
+static double _unur_dpdf_triangular( double x, const UNUR_DISTR *distr );
+static double _unur_cdf_triangular( double x, const UNUR_DISTR *distr );
 
 static int _unur_upd_mode_triangular( UNUR_DISTR *distr );
 static int _unur_upd_area_triangular( UNUR_DISTR *distr );
-static int _unur_set_params_triangular( UNUR_DISTR *distr, double *params, int n_params );
+static int _unur_set_params_triangular( UNUR_DISTR *distr, const double *params, int n_params );
 
 /*---------------------------------------------------------------------------*/
 
 double
-_unur_pdf_triangular( double x, UNUR_DISTR *distr )
+_unur_pdf_triangular( double x, const UNUR_DISTR *distr )
 { 
   register double *params = DISTR.params;
 
@@ -92,7 +92,7 @@ _unur_pdf_triangular( double x, UNUR_DISTR *distr )
 /*---------------------------------------------------------------------------*/
 
 double
-_unur_dpdf_triangular( double x, UNUR_DISTR *distr )
+_unur_dpdf_triangular( double x, const UNUR_DISTR *distr )
 { 
   register double *params = DISTR.params;
 
@@ -109,7 +109,7 @@ _unur_dpdf_triangular( double x, UNUR_DISTR *distr )
 /*---------------------------------------------------------------------------*/
 
 double
-_unur_cdf_triangular( double x, UNUR_DISTR *distr )
+_unur_cdf_triangular( double x, const UNUR_DISTR *distr )
 { 
   register double *params = DISTR.params;
 
@@ -161,7 +161,7 @@ _unur_upd_area_triangular( UNUR_DISTR *distr )
 /*---------------------------------------------------------------------------*/
 
 int
-_unur_set_params_triangular( UNUR_DISTR *distr, double *params, int n_params )
+_unur_set_params_triangular( UNUR_DISTR *distr, const double *params, int n_params )
 {
   /* check number of parameters for distribution */
   if (n_params < 0) n_params = 0;
@@ -205,7 +205,7 @@ _unur_set_params_triangular( UNUR_DISTR *distr, double *params, int n_params )
 /*---------------------------------------------------------------------------*/
 
 struct unur_distr *
-unur_distr_triangular( double *params, int n_params )
+unur_distr_triangular( const double *params, int n_params )
 {
   register struct unur_distr *distr;
 

@@ -64,16 +64,16 @@ static const char distr_name[] = "slash";
 #define NORMCONSTANT (distr->data.cont.norm_constant)
 
 /* function prototypes                                                       */
-static double _unur_pdf_slash( double x, UNUR_DISTR *distr );
-static double _unur_dpdf_slash( double x, UNUR_DISTR *distr );
-/*  static double _unur_cdf_slash( double x, UNUR_DISTR *distr ); */
+static double _unur_pdf_slash( double x, const UNUR_DISTR *distr );
+static double _unur_dpdf_slash( double x, const UNUR_DISTR *distr );
+/*  static double _unur_cdf_slash( double x, const UNUR_DISTR *distr ); */
 
-static int _unur_set_params_slash( UNUR_DISTR *distr, double *params, int n_params );
+static int _unur_set_params_slash( UNUR_DISTR *distr, const double *params, int n_params );
 
 /*---------------------------------------------------------------------------*/
 
 double
-_unur_pdf_slash(double x, UNUR_DISTR *distr)
+_unur_pdf_slash(double x, const UNUR_DISTR *distr)
 {
   if (x == 0.)
     return (0.5 * NORMCONSTANT);
@@ -84,7 +84,7 @@ _unur_pdf_slash(double x, UNUR_DISTR *distr)
 /*---------------------------------------------------------------------------*/
 
 double
-_unur_dpdf_slash(double x, UNUR_DISTR *distr)
+_unur_dpdf_slash(double x, const UNUR_DISTR *distr)
 { 
   register double xsq = x * x;
 
@@ -100,7 +100,7 @@ _unur_dpdf_slash(double x, UNUR_DISTR *distr)
 /*---------------------------------------------------------------------------*/
 
 int
-_unur_set_params_slash( UNUR_DISTR *distr, double *params, int n_params )
+_unur_set_params_slash( UNUR_DISTR *distr, const double *params, int n_params )
 {
   /* check number of parameters for distribution */
   if (n_params > 0)
@@ -125,7 +125,7 @@ _unur_set_params_slash( UNUR_DISTR *distr, double *params, int n_params )
 /*---------------------------------------------------------------------------*/
 
 struct unur_distr *
-unur_distr_slash( double *params, int n_params )
+unur_distr_slash( const double *params, int n_params )
 {
   register struct unur_distr *distr;
 

@@ -145,7 +145,7 @@ static void _unur_dari_debug_init( struct unur_gen *gen );
 /*****************************************************************************/
 
 struct unur_par *
-unur_dari_new( struct unur_distr *distr )
+unur_dari_new( const struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
      /* get default parameters                                               */
      /*                                                                      */
@@ -177,18 +177,6 @@ unur_dari_new( struct unur_distr *distr )
     _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"PMF"); 
     return NULL;
   }
-
-  if (!(distr->set & UNUR_DISTR_SET_MODE)) {
-    _unur_warning(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"mode: try finding it (numerically)"); 
-    if (!unur_distr_discr_upd_mode(distr)) {
-      _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"mode"); 
-      return NULL; 
-    }
-  }
-
-  if (!(distr->set & UNUR_DISTR_SET_PMFSUM))
-    if (!unur_distr_discr_upd_pmfsum(distr))
-      _unur_warning(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"sum over PMF; use default");
 
   /* allocate structure */
   par = _unur_malloc(sizeof(struct unur_par));
@@ -684,6 +672,21 @@ _unur_dari_create( struct unur_par *par )
 
   /* copy distribution object into generator object */
   _unur_distr_discr_copy( &(gen->distr), par->distr );
+
+  /* check for required data: mode */
+  if (!(gen->distr.set & UNUR_DISTR_SET_MODE)) {
+    _unur_warning(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"mode: try finding it (numerically)"); 
+    if (!unur_distr_discr_upd_mode(&(gen->distr))) {
+      _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"mode"); 
+      free(gen);
+      return NULL; 
+    }
+  }
+
+  /* check for required data: sum over PMF */
+  if (!(gen->distr.set & UNUR_DISTR_SET_PMFSUM))
+    if (!unur_distr_discr_upd_pmfsum(&(gen->distr)))
+      _unur_warning(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"sum over PMF; use default");
 
   /* set generator identifier */
   gen->genid = _unur_set_genid(GENTYPE);

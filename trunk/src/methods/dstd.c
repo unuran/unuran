@@ -126,12 +126,12 @@ static void _unur_dstd_free( struct unur_gen *gen);
 /* i.e., into the log file if not specified otherwise.                       */
 /*---------------------------------------------------------------------------*/
 
-static void _unur_dstd_debug_init( struct unur_par *par, struct unur_gen *gen );
+static void _unur_dstd_debug_init( const struct unur_par *par, const struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 /* print after generator has been initialized has completed.                 */
 /*---------------------------------------------------------------------------*/
 
-static void _unur_dstd_debug_chg_pmfparams( struct unur_gen *gen );
+static void _unur_dstd_debug_chg_pmfparams( const struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 /* print new (changed) parameters of distribution                            */
 /*---------------------------------------------------------------------------*/
@@ -159,7 +159,7 @@ static void _unur_dstd_debug_chg_pmfparams( struct unur_gen *gen );
 /*****************************************************************************/
 
 struct unur_par *
-unur_dstd_new( struct unur_distr *distr )
+unur_dstd_new( const struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
      /* get default parameters                                               */
      /*                                                                      */
@@ -489,7 +489,7 @@ _unur_dstd_create( struct unur_par *par )
 /*---------------------------------------------------------------------------*/
 
 static void
-_unur_dstd_debug_init( struct unur_par *par, struct unur_gen *gen )
+_unur_dstd_debug_init( const struct unur_par *par, const struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* write info about generator into logfile                              */
      /*                                                                      */
@@ -533,7 +533,7 @@ _unur_dstd_debug_init( struct unur_par *par, struct unur_gen *gen )
 /*---------------------------------------------------------------------------*/
 
 static void 
-_unur_dstd_debug_chg_pmfparams( struct unur_gen *gen )
+_unur_dstd_debug_chg_pmfparams( const struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* print new (changed) parameters of distribution                       */
      /*                                                                      */
@@ -558,7 +558,3 @@ _unur_dstd_debug_chg_pmfparams( struct unur_gen *gen )
 /*---------------------------------------------------------------------------*/
 #endif   /* end UNUR_ENABLE_LOGGING */
 /*---------------------------------------------------------------------------*/
-
-
-
-

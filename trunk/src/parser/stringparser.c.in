@@ -193,7 +193,7 @@ typedef int distr_set_i( UNUR_DISTR *distr, int i );
 typedef int distr_set_ii( UNUR_DISTR *distr, int i1, int i2 );
 typedef int distr_set_d( UNUR_DISTR *distr, double d );
 typedef int distr_set_dd( UNUR_DISTR *distr, double d1, double d2 );
-typedef int distr_set_Di( UNUR_DISTR *distr, double *array, int size );
+typedef int distr_set_Di( UNUR_DISTR *distr, const double *array, int size );
 typedef int distr_set_C( UNUR_DISTR *distr, const char *string );
 /*---------------------------------------------------------------------------*/
 /* types of set calls                                                        */
@@ -236,13 +236,13 @@ static int _unur_str_distr_set_C( UNUR_DISTR *distr, const char *key, char *type
 /*---------------------------------------------------------------------------*/
 
 
-static struct unur_par *_unur_str_par( char *str_method, UNUR_DISTR *distr,
+static struct unur_par *_unur_str_par( char *str_method, const UNUR_DISTR *distr,
 				       struct unur_slist *mlist );
 /*---------------------------------------------------------------------------*/
 /* get parameter object for distribution and method.                         */
 /*---------------------------------------------------------------------------*/
 
-static struct unur_par *_unur_str_par_new( const char *method, UNUR_DISTR *distr );
+static struct unur_par *_unur_str_par_new( const char *method, const UNUR_DISTR *distr );
 /*---------------------------------------------------------------------------*/
 /* get new parameter object for method.                                      */
 /*---------------------------------------------------------------------------*/
@@ -261,8 +261,8 @@ typedef int par_set_i( UNUR_PAR *par, int i );
 typedef int par_set_u( UNUR_PAR *par, unsigned u );
 typedef int par_set_d( UNUR_PAR *par, double d );
 typedef int par_set_dd( UNUR_PAR *par, double d1, double d2 );
-typedef int par_set_iD( UNUR_PAR *par, int size, double *array );
-typedef int par_set_Di( UNUR_PAR *par, double *array, int size );
+typedef int par_set_iD( UNUR_PAR *par, int size, const double *array );
+typedef int par_set_Di( UNUR_PAR *par, const double *array, int size );
 /*---------------------------------------------------------------------------*/
 /* types of set calls                                                        */
 /*---------------------------------------------------------------------------*/
@@ -540,7 +540,7 @@ unur_str2gen (const char *string)
 /*---------------------------------------------------------------------------*/
 
 struct unur_par *
-_unur_str2par (struct unur_distr *distr, const char *string, struct unur_slist **mlist )
+_unur_str2par (const struct unur_distr *distr, const char *string, struct unur_slist **mlist )
      /*----------------------------------------------------------------------*/
      /* get parameter object for distribution and method                     */
      /*                                                                      */
@@ -1435,7 +1435,7 @@ _unur_str_distr_set_C (UNUR_DISTR *distr, const char *key, char *type_args, char
 /*---------------------------------------------------------------------------*/
 
 struct unur_par *
-_unur_str_par( char *str_method, UNUR_DISTR *distr, struct unur_slist *mlist )
+_unur_str_par( char *str_method, const UNUR_DISTR *distr, struct unur_slist *mlist )
      /*----------------------------------------------------------------------*/
      /* get parameter object for distribution and method                     */
      /*                                                                      */
@@ -1517,7 +1517,7 @@ _unur_str_par( char *str_method, UNUR_DISTR *distr, struct unur_slist *mlist )
 /*---------------------------------------------------------------------------*/
 
 struct unur_par *
-_unur_str_par_new( const char *method, UNUR_DISTR *distr )
+_unur_str_par_new( const char *method, const UNUR_DISTR *distr )
      /*----------------------------------------------------------------------*/
      /* get new parameter object for method                                  */
      /*                                                                      */

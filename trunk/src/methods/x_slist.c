@@ -67,7 +67,7 @@ _unur_slist_new( void )
 /*---------------------------------------------------------------------------*/
 
 int
-_unur_slist_length( struct unur_slist *slist )
+_unur_slist_length( const struct unur_slist *slist )
      /*----------------------------------------------------------------------*/
      /* Get length if list (number of list entries).                         */
      /*                                                                      */
@@ -92,7 +92,7 @@ _unur_slist_length( struct unur_slist *slist )
 /*---------------------------------------------------------------------------*/
 
 void *
-_unur_slist_get( struct unur_slist *slist, int n )
+_unur_slist_get( const struct unur_slist *slist, int n )
      /*----------------------------------------------------------------------*/
      /* Get pointer to n-th element.                                         */
      /*                                                                      */

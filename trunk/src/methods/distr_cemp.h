@@ -64,7 +64,7 @@ UNUR_DISTR *unur_distr_cemp_new( void );
    @subsubheading Essential parameters
 */
 
-int unur_distr_cemp_set_data( UNUR_DISTR *distribution, double *sample, int n_sample );
+int unur_distr_cemp_set_data( UNUR_DISTR *distribution, const double *sample, int n_sample );
 /* 
    Set observed sample for empirical distribution.
 */
@@ -81,7 +81,7 @@ int unur_distr_cemp_read_data( UNUR_DISTR *distribution, const char *filename );
    and @code{0} is returned.
 */
 
-int unur_distr_cemp_get_data( UNUR_DISTR *distribution, double **sample );
+int unur_distr_cemp_get_data( const UNUR_DISTR *distribution, const double **sample );
 /* 
    Get number of samples and set pointer @var{sample} to array of
    observations. If no sample has been given,

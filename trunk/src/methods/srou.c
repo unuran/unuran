@@ -192,7 +192,7 @@ static void _unur_srou_free( struct unur_gen *gen);
 /* the following functions print debugging information on output stream,     */
 /* i.e., into the log file if not specified otherwise.                       */
 /*---------------------------------------------------------------------------*/
-static void _unur_srou_debug_init( struct unur_gen *gen, int is_reinit );
+static void _unur_srou_debug_init( const struct unur_gen *gen, int is_reinit );
 
 /*---------------------------------------------------------------------------*/
 /* print after generator has been initialized has completed.                 */
@@ -227,7 +227,7 @@ static void _unur_srou_debug_init( struct unur_gen *gen, int is_reinit );
 /*****************************************************************************/
 
 struct unur_par *
-unur_srou_new( struct unur_distr *distr )
+unur_srou_new( const struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
      /* get default parameters                                               */
      /*                                                                      */
@@ -255,20 +255,6 @@ unur_srou_new( struct unur_distr *distr )
     _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"PDF"); 
     return NULL;
   }
-
-  if (!(distr->set & UNUR_DISTR_SET_MODE)) {
-    _unur_warning(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"mode: try finding it (numerically)"); 
-    if (!unur_distr_cont_upd_mode(distr)) {
-      _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"mode"); 
-      return NULL; 
-    }
-  }
-
-  if (!(distr->set & UNUR_DISTR_SET_PDFAREA))
-    if (!unur_distr_cont_upd_pdfarea(distr)) {
-      _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"area below PDF");
-      return NULL; 
-    }
 
   /* allocate structure */
   par = _unur_malloc(sizeof(struct unur_par));
@@ -1057,6 +1043,24 @@ _unur_srou_create( struct unur_par *par )
   /* copy distribution object into generator object */
   _unur_distr_cont_copy( &(gen->distr), par->distr );
 
+  /* check for required data: mode */
+  if (!(gen->distr.set & UNUR_DISTR_SET_MODE)) {
+    _unur_warning(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"mode: try finding it (numerically)"); 
+    if (!unur_distr_cont_upd_mode(&(gen->distr))) {
+      _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"mode"); 
+      free(gen);
+      return NULL; 
+    }
+  }
+
+  /* check for required data: area */
+  if (!(gen->distr.set & UNUR_DISTR_SET_PDFAREA))
+    if (!unur_distr_cont_upd_pdfarea(&(gen->distr))) {
+      _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"area below PDF");
+      free(gen);
+      return NULL; 
+    }
+
   /* set generator identifier */
   gen->genid = _unur_set_genid(GENTYPE);
 
@@ -1532,7 +1536,7 @@ _unur_srou_free( struct unur_gen *gen )
 /*---------------------------------------------------------------------------*/
 
 void
-_unur_srou_debug_init( struct unur_gen *gen, int is_reinit )
+_unur_srou_debug_init( const struct unur_gen *gen, int is_reinit )
      /*----------------------------------------------------------------------*/
      /* write info about generator into logfile                              */
      /*                                                                      */

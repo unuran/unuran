@@ -408,6 +408,18 @@ Notation:
 
 @node Distributions
 @chapter distributions
+@menu
+* Preset:: Preset Distributions
+* Arbitrary:: Arbitrary Distributions 
+@end menu
+
+@node Preset
+@section Preset distributions 
+@include qstart_distributions.texi
+
+@node Arbitrary
+@section Arbitrary distributions
+@include qstart_change_distr.texi
 
 @c --------------------------------------------------------------------
 
@@ -431,6 +443,8 @@ standard configuration: Log outout to file
 @contents
 
 @bye
+
+
 
 
 

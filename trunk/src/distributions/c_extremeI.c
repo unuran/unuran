@@ -4,7 +4,7 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   FILE:      c_extreme-I.c                                                *
+ *   FILE:      c_extremeI.c                                                 *
  *                                                                           *
  *   REFERENCES:                                                             *
  *                                                                           *
@@ -76,7 +76,8 @@
 #include <source_distributions.h>
 
 /*---------------------------------------------------------------------------*/
-static const char distr_name[] = "extreme-I";
+
+static const char distr_name[] = "extremeI";
 
 /* parameters */
 #define zeta   params[0]    /* location */

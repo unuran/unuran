@@ -4,7 +4,7 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   FILE:      c_extreme-II.c                                               *
+ *   FILE:      c_extremeII.c                                                *
  *                                                                           *
  *   REFERENCES:                                                             *
  *                                                                           *
@@ -78,7 +78,8 @@
 #include <source_distributions.h>
 
 /*---------------------------------------------------------------------------*/
-static const char distr_name[] = "extreme-II";
+
+static const char distr_name[] = "extremeII";
 
 /* parameters */
 #define k      params[0]    /* shape */

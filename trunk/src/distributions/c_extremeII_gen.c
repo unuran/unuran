@@ -4,7 +4,7 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   FILE:      c_extreme-II_gen.c                                            *
+ *   FILE:      c_extremeII_gen.c                                            *
  *                                                                           *
  *   Special generators for Extreme value Type II distribution               *
  *                                                                           *

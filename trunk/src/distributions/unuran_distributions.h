@@ -180,7 +180,7 @@ double unur_stdgen_sample_extremeI_inv( struct unur_gen *gen );
 
 /*---------------------------------------------------------------------------*/
 /*  Extreme value type II distribution  [3; ch.22, p.2]                      */
-struct unur_distr *unur_distr_extremeI(double *params, int n_params);
+struct unur_distr *unur_distr_extremeII(double *params, int n_params);
 
 /* special generators */
 int _unur_stdgen_extremeII_init( struct unur_par *par, struct unur_gen *gen );

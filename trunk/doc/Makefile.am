@@ -1,14 +1,10 @@
 ## Process this file with automake to produce Makefile.in
+## $Id$
 
-
-method_dir   = $(top_srcdir)/src/methods
-distr_dir    = $(top_srcdir)/src/distributions
-example_dir  = $(top_srcdir)/examples
 
 info_TEXINFOS = unuran-ref.texi
 
-unuran_ref_TEXINFOS = \
- unuran-ref.texi \
+texi_generated = \
  ref_geninfo.texi \
  ref_distr.texi \
  ref_distr_discr.texi \
@@ -17,6 +13,11 @@ unuran_ref_TEXINFOS = \
  ref_methods.texi \
  ref_method_functions.texi \
  ref_internals.texi
+
+unuran_ref_TEXINFOS = \
+ unuran-ref.texi \
+ unuran_method_requirements.texi \
+ $(texi_generated)
 
 noinst_DATA = 
 
@@ -27,6 +28,11 @@ EXTRA_DIST = \
  unuran-ref.ps \
  unuran-ref.pdf \
  texinfo.tex
+
+# paths ...
+method_dir   = $(top_srcdir)/src/methods
+distr_dir    = $(top_srcdir)/src/distributions
+example_dir  = $(top_srcdir)/examples
 
 # generated texi files ...
 ref_geninfo.texi: $(method_dir)/x_gen.h
@@ -85,4 +91,7 @@ CLEANFILES = *~
 MAINTAINERCLEANFILES = \
  unuran-ref.html \
  unuran-ref.txt \
- unuran-ref.pdf
+ unuran-ref.pdf \
+ $(texi_generated)
+
+

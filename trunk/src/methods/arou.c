@@ -1152,10 +1152,9 @@ _unur_arou_segment_parameter( struct unur_gen *gen, struct unur_arou_segment *se
        (1) the p.d.f. is not T-concave
        (2) small roundoff errors.
     */
-    if (0) {
-      _unur_error(gen->genid,UNUR_ERR_INIT_FAILED,"p.d.f. not T-concave");
-      return 0;
-    }
+    /** TODO: check for roundoff-errors !!! **/
+    _unur_error(gen->genid,UNUR_ERR_INIT_FAILED,"p.d.f. not T-concave");
+    return 0;
   }
 
   /* remaining case: triangle degenerates to a line segment, i.e.

@@ -129,8 +129,8 @@ static void _unur_ssr_free( struct unur_gen *gen);
 /* the following functions print debugging information on output stream,     */
 /* i.e., into the log file if not specified otherwise.                       */
 /*---------------------------------------------------------------------------*/
-static void _unur_ssr_debug_init( struct unur_gen *gen, int is_reinit );
 
+static void _unur_ssr_debug_init( struct unur_gen *gen, int is_reinit );
 /*---------------------------------------------------------------------------*/
 /* print after generator has been initialized has completed.                 */
 /*---------------------------------------------------------------------------*/

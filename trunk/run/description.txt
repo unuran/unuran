@@ -48,11 +48,13 @@ is the string after the `unur_<methodname>_set_' part of the command.
 e.g.: UNURAN provides the command `unur_arou_set_max_sqhratio' to
 set a parameter. To call this function via the string-interface, the
 key `max_sqhratio' can be used.
+If this block is omitted, UNURAN chooses a method.
 
 Uniform random number generator:
 The only key allowed is `prng' and the following value is a
 string which is passed as it is to the PRNG package
-For information see the PRNG manual
+For information see the PRNG manual.
+If this block is omitted, UNURAN chooses a uniform random number generator.
 
 
 

@@ -56,7 +56,6 @@ struct unur_vnrou_gen {
   double *umin, *umax;      /* boundary rectangle u-coordinates              */
   double vmax;              /* boundary rectangle v-coordinate               */
   const double *center;     /* center of distribution                        */  
-  int aux_dim;		    /* parameter used my auxiliary functions         */
 };
 
 /*---------------------------------------------------------------------------*/

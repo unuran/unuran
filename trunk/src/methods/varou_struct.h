@@ -65,7 +65,6 @@ struct unur_varou_gen {
   double *umin, *umax;   /* boundary rectangle u-coordinates */
   double vmax;           /* boundary rectangle v-coordinate  */
   const double *center;  /* center of distribution */
-  int   aux_dim;         /* parameter used my auxiliary functions */
   long   n_vertex;       /* number of verteces on upper half-unit-sphere */
   double **vertex_list;  /* list of verteces on upper half-unit-sphere */
   long   n_cone;         /* number of constructed cones */

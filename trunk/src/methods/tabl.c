@@ -1380,7 +1380,7 @@ _unur_tabl_debug_init( struct unur_par *par, struct unur_gen *gen )
   fprintf(log,"%s: method  = rejection from piecewise constant hat\n",gen->genid);
   empty_line();
 
-  _unur_distr_debug_cont( gen->distr, gen->genid );
+  _unur_distr_cont_debug( gen->distr, gen->genid );
 
   fprintf(log,"%s: sampling routine = unur_tabl_sample",gen->genid);
   if (par->method & UNUR_MASK_SCHECK)

@@ -1970,7 +1970,7 @@ _unur_tdr_debug_init( struct unur_par *par, struct unur_gen *gen )
   _unur_print_if_default(par,UNUR_SET_TDR_C);
   fprintf(log,"\n%s:\n",gen->genid);
 
-  _unur_distr_debug_cont( gen->distr, gen->genid );
+  _unur_distr_cont_debug( gen->distr, gen->genid );
 
   fprintf(log,"%s: sampling routine = unur_tdr_sample_",gen->genid);
   if (par->method & UNUR_MASK_SCHECK)

@@ -1547,7 +1547,7 @@ _unur_arou_debug_init( struct unur_par *par, struct unur_gen *gen )
   fprintf(log,"%s: method  = ratio-of-uniforms method with enveloping polygon\n",gen->genid);
   fprintf(log,"%s:\n",gen->genid);
 
-  _unur_distr_debug_cont( gen->distr, gen->genid );
+  _unur_distr_cont_debug( gen->distr, gen->genid );
 
   fprintf(log,"%s: sampling routine = unur_arou_sample",gen->genid);
   if (par->method & UNUR_MASK_SCHECK)

@@ -123,39 +123,47 @@ enum {
 /*---------------------------------------------------------------------------*/
 /* function prototypes for manipulating distribution object                  */
 
-/* create a new distribution object                                          */
-struct unur_distr *unur_distr_new_cont( void );
+/*---------------------------------------------------------------------------*/
+/* routines for all distribution objects                                     */
 
-int unur_distr_set_pdf( struct unur_distr *distr, void *pdf );
-/* set p.d.f. of distribution                                                */
-
-int unur_distr_set_dpdf( struct unur_distr *distr, void *dpdf );
-/* set derivative of p.d.f. of distribution                                  */
-
-int unur_distr_set_cdf( struct unur_distr *distr, void *cdf );
-/* set c.d.f. of distribution                                                */
-
-int unur_distr_set_params( struct unur_distr *distr, double *params, int n_params );
-/* set array of parameters for distribution                                  */
-
-int unur_distr_set_mode( struct unur_distr *distr, double mode );
-/* set mode of distribution                                                  */
-
-int unur_distr_set_pdfarea( struct unur_distr *distr, double area );
-/* set area below p.d.f.                                                     */
-
-int unur_distr_set_domain( struct unur_distr *distr, double left, double right );
-/* set the left and right borders of the domain of the distribution          */
+void unur_distr_free( struct unur_distr *distr );
+/* destroy distribution object                                               */
 
 void unur_distr_copy( struct unur_distr *distr1, struct unur_distr *distr2 );
 /* copy distribution object distr2 into distr1                               */
 
-void unur_distr_free( struct unur_distr *distr );
-/* free distribution object                                                  */
 
-void _unur_distr_debug_cont( struct unur_distr *distr, char *genid );
+/*---------------------------------------------------------------------------*/
+/* continuous, univariate distributions                                      */
+
+struct unur_distr *unur_distr_cont_new( void );
+/* create a new distribution object                                          */
+
+int unur_distr_cont_set_pdf( struct unur_distr *distr, void *pdf );
+/* set p.d.f. of distribution                                                */
+
+int unur_distr_cont_set_dpdf( struct unur_distr *distr, void *dpdf );
+/* set derivative of p.d.f. of distribution                                  */
+
+int unur_distr_cont_set_cdf( struct unur_distr *distr, void *cdf );
+/* set c.d.f. of distribution                                                */
+
+int unur_distr_cont_set_params( struct unur_distr *distr, double *params, int n_params );
+/* set array of parameters for distribution                                  */
+
+int unur_distr_cont_set_mode( struct unur_distr *distr, double mode );
+/* set mode of distribution                                                  */
+
+int unur_distr_cont_set_pdfarea( struct unur_distr *distr, double area );
+/* set area below p.d.f.                                                     */
+
+int unur_distr_cont_set_domain( struct unur_distr *distr, double left, double right );
+/* set the left and right borders of the domain of the distribution          */
+
+void _unur_distr_cont_debug( struct unur_distr *distr, char *genid );
 /* write info about distribution into logfile                                */
 
 /*---------------------------------------------------------------------------*/
 #endif  /* __UNUR_DISTRIBUTION_H_SEEN */
 /*---------------------------------------------------------------------------*/
+

@@ -323,7 +323,7 @@ _unur_cstd_debug_init( struct unur_par *par, struct unur_gen *gen )
   fprintf(log,"%s:\n",gen->genid);
 
   /* distribution */
-  _unur_distr_debug_cont( gen->distr, gen->genid );
+  _unur_distr_cont_debug( gen->distr, gen->genid );
 
   fprintf(log,"%s: sampling routine = unur_cstd_sample()\n",gen->genid);
   fprintf(log,"%s:\n",gen->genid);

@@ -103,6 +103,9 @@ unur_distr_cemp_new( void )
   /* destructor */
   distr->destroy = _unur_distr_cemp_free;
 
+  /* clone */
+  distr->clone = _unur_distr_cemp_clone;
+
   /* set defaults                                                            */
 
   /* observed sample */

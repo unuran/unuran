@@ -174,6 +174,7 @@ struct unur_distr {
 				       (e.g. order statistics)               */
 
   void (*destroy)(struct unur_distr *distr); /* pointer to destructor        */
+  struct unur_distr* (*clone)(const struct unur_distr *distr ); /* clone     */
 
 #ifdef UNUR_COOKIES
   unsigned cookie;                  /* magic cookie                          */

@@ -326,7 +326,7 @@ _unur_vmt_create( struct unur_par *par )
   COOKIE_SET(gen,CK_VMT_GEN);
 
   /* copy distribution object into generator object */
-  gen->distr = _unur_distr_cvec_clone( par->distr );
+  gen->distr = _unur_distr_clone( par->distr );
 
   /* dimension of distribution */
   GEN.dim = gen->distr->dim; 
@@ -349,8 +349,9 @@ _unur_vmt_create( struct unur_par *par )
   gen->urng_aux = NULL;             /* no auxilliary URNG required           */
   gen->gen_aux = NULL;              /* no auxilliary generator objects       */
 
+
   /* generator for univariate distribution */
-  GEN.uvgen = (PAR.uvgen) ? unur_gen_clone(PAR.uvgen) : NULL;
+  GEN.uvgen = (PAR.uvgen) ? _unur_gen_clone(PAR.uvgen) : NULL;
 
   /* initialize pointer */
   GEN.cholesky = NULL;
@@ -424,7 +425,7 @@ _unur_vmt_clone( const struct unur_gen *gen )
   clone->genid = _unur_set_genid(GENTYPE);
 
   /* copy distribution object into generator object */
-  clone->distr = _unur_distr_cvec_clone( gen->distr );
+  clone->distr = _unur_distr_clone( gen->distr );
 
   /* copy additional data for generator object */
   if (GEN.cholesky) {
@@ -432,7 +433,7 @@ _unur_vmt_clone( const struct unur_gen *gen )
     memcpy( CLONE.cholesky, GEN.cholesky, GEN.dim * GEN.dim * sizeof(double) );
   }
   if (GEN.uvgen) {
-    CLONE.uvgen = unur_gen_clone(GEN.uvgen);
+    CLONE.uvgen = _unur_gen_clone(GEN.uvgen);
     clone->gen_aux = CLONE.uvgen;
   }
 
@@ -508,7 +509,7 @@ _unur_vmt_free( struct unur_gen *gen )
   SAMPLE = NULL;   /* make sure to show up a programming error */
 
   /* free memory */
-  if (GEN.uvgen)    unur_free(GEN.uvgen);
+  if (GEN.uvgen)    _unur_free(GEN.uvgen);
   if (GEN.cholesky) free(GEN.cholesky);
 
   _unur_distr_free(gen->distr);

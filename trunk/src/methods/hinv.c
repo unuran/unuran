@@ -769,7 +769,7 @@ _unur_hinv_create( struct unur_par *par )
   COOKIE_SET(gen,CK_HINV_GEN);
 
   /* copy distribution object into generator object */
-  gen->distr = _unur_distr_cont_clone( par->distr );
+  gen->distr = _unur_distr_clone( par->distr );
 
   /* set generator identifier */
   gen->genid = _unur_set_genid(GENTYPE);
@@ -1310,10 +1310,10 @@ _unur_hinv_clone( const struct unur_gen *gen )
   clone->genid = _unur_set_genid(GENTYPE);
 
   /* copy distribution object into generator object */
-  clone->distr = _unur_distr_cont_clone( gen->distr );
+  clone->distr = _unur_distr_clone( gen->distr );
 
   /* auxiliary generator */
-  if (gen->gen_aux) clone->gen_aux = unur_gen_clone( gen->gen_aux );
+  if (gen->gen_aux) clone->gen_aux = _unur_gen_clone( gen->gen_aux );
 
   /* copy tables for generator object */
   CLONE.intervals = _unur_malloc( GEN.N*(GEN.order+2) * sizeof(double) );

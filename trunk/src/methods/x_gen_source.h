@@ -79,11 +79,12 @@ UNUR_GEN *_unur_tabl_clone( const UNUR_GEN *gen );
 UNUR_GEN *_unur_tdr_clone( const UNUR_GEN *gen );
 UNUR_GEN *_unur_unif_clone( const UNUR_GEN *gen );
 UNUR_GEN *_unur_utdr_clone( const UNUR_GEN *gen );
-UNUR_GEN *_unur_vempk_clone( const UNUR_GEN *gen );    /** TODO **/
-UNUR_GEN *_unur_vmt_clone( const UNUR_GEN *gen );    /** TODO **/
+UNUR_GEN *_unur_vempk_clone( const UNUR_GEN *gen );
+UNUR_GEN *_unur_vmt_clone( const UNUR_GEN *gen );
 
 /* no such routines:                                                         */
 /* UNUR_GEN *_unur_auto_clone( const UNUR_GEN *gen );                        */
 
+#define _unur_gen_clone(gen)    ((gen)->clone(gen))
 
 /*---------------------------------------------------------------------------*/

@@ -926,7 +926,7 @@ _unur_tabl_create( struct unur_par *par )
   COOKIE_SET(gen,CK_TABL_GEN);
 
   /* copy distribution object into generator object */
-  gen->distr = _unur_distr_cont_clone( par->distr );
+  gen->distr = _unur_distr_clone( par->distr );
 
   /* check for required data: area */
   if (!(gen->distr->set & UNUR_DISTR_SET_PDFAREA))
@@ -1050,10 +1050,10 @@ _unur_tabl_clone( const struct unur_gen *gen )
   clone->genid = _unur_set_genid(GENTYPE);
 
   /* copy distribution object into generator object */
-  clone->distr = _unur_distr_cont_clone( gen->distr );
+  clone->distr = _unur_distr_clone( gen->distr );
 
   /* auxiliary generator */
-  if (gen->gen_aux) clone->gen_aux = unur_gen_clone( gen->gen_aux );
+  if (gen->gen_aux) clone->gen_aux = _unur_gen_clone( gen->gen_aux );
 
   /* copy linked list of intervals */
   clone_iv = NULL;

@@ -106,6 +106,9 @@ unur_distr_cvemp_new( int dim )
   /* destructor */
   distr->destroy = _unur_distr_cvemp_free;
 
+  /* clone */
+  distr->clone = _unur_distr_cvemp_clone;
+
   /* set defaults                                                            */
 
   /* observed sample */

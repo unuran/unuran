@@ -531,7 +531,7 @@ _unur_vempk_create( struct unur_par *par )
   COOKIE_SET(gen,CK_VEMPK_GEN);
 
   /* copy distribution object into generator object */
-  gen->distr = _unur_distr_cvemp_clone( par->distr );
+  gen->distr = _unur_distr_clone( par->distr );
 
   /* dimension of distribution */
   GEN.dim = gen->distr->dim; 
@@ -603,7 +603,7 @@ _unur_vempk_clone( const struct unur_gen *gen )
   clone->genid = _unur_set_genid(GENTYPE);
 
   /* copy distribution object into generator object */
-  clone->distr = _unur_distr_cont_clone( gen->distr );
+  clone->distr = _unur_distr_clone( gen->distr );
 
   /* copy additional data for generator object */
   CLONE.observ = clone->distr->data.cvemp.sample;   /* observations in distribution object */
@@ -613,7 +613,7 @@ _unur_vempk_clone( const struct unur_gen *gen )
     memcpy( CLONE.xbar, GEN.xbar, GEN.dim * sizeof(double) );
   }
 
-  CLONE.kerngen = unur_gen_clone( GEN.kerngen );
+  CLONE.kerngen = _unur_gen_clone( GEN.kerngen );
   clone->gen_aux = CLONE.kerngen;
 
   return clone;

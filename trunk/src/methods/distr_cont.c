@@ -137,6 +137,9 @@ unur_distr_cont_new( void )
   /* destructor */
   distr->destroy = _unur_distr_cont_free;
 
+  /* clone */
+  distr->clone = _unur_distr_cont_clone;
+
   /* set defaults                                                            */
   DISTR.pdf       = NULL;          /* pointer to p.d.f.                      */
   DISTR.dpdf      = NULL;          /* pointer to derivative of p.d.f.        */

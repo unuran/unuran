@@ -113,6 +113,9 @@ unur_distr_cvec_new( int dim )
   /* destructor */
   distr->destroy = _unur_distr_cvec_free;
 
+  /* clone */
+  distr->clone = _unur_distr_cvec_clone;
+
   /* set defaults                                                            */
   DISTR.pdf       = NULL;          /* pointer to PDF                         */
   DISTR.dpdf      = NULL;          /* pointer to gradient of PDF             */

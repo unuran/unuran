@@ -716,7 +716,7 @@ _unur_dsrou_create( struct unur_par *par )
   COOKIE_SET(gen,CK_DSROU_GEN);
 
   /* copy distribution object into generator object */
-  gen->distr = _unur_distr_discr_clone( par->distr );
+  gen->distr = _unur_distr_clone( par->distr );
 
   /* check for required data: mode */
   if (!(gen->distr->set & UNUR_DISTR_SET_MODE)) {
@@ -840,10 +840,10 @@ _unur_dsrou_clone( const struct unur_gen *gen )
   clone->genid = _unur_set_genid(GENTYPE);
 
   /* copy distribution object into generator object */
-  clone->distr = _unur_distr_discr_clone( gen->distr );
+  clone->distr = _unur_distr_clone( gen->distr );
 
   /* auxiliary generator */
-  if (gen->gen_aux) clone->gen_aux = unur_gen_clone( gen->gen_aux );
+  if (gen->gen_aux) clone->gen_aux = _unur_gen_clone( gen->gen_aux );
 
   return clone;
 

@@ -157,6 +157,9 @@ unur_distr_corder_new( const struct unur_distr *distr, int n, int k )
   /* destructor */
   os->destroy = _unur_distr_cont_free;
 
+  /* clone */
+  os->clone = _unur_distr_cont_clone;
+
   /* this is a derived distribution */
   /* allocate memory ... */
   os->base = _unur_distr_cont_clone( distr );

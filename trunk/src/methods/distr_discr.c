@@ -131,6 +131,9 @@ unur_distr_discr_new( void )
   /* destructor */
   distr->destroy = _unur_distr_discr_free;
 
+  /* clone */
+  distr->clone = _unur_distr_discr_clone;
+
   /* set defaults                                                            */
 
   /* finite probability vector */

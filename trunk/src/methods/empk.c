@@ -865,7 +865,7 @@ _unur_empk_create( struct unur_par *par )
   COOKIE_SET(gen,CK_EMPK_GEN);
 
   /* copy distribution object into generator object */
-  gen->distr = _unur_distr_cemp_clone( par->distr );
+  gen->distr = _unur_distr_clone( par->distr );
 
   /* set generator identifier */
   gen->genid = _unur_set_genid(GENTYPE);
@@ -894,7 +894,7 @@ _unur_empk_create( struct unur_par *par )
   /* copy kernel generator into generator object */
   if (PAR.kerngen)
     /* kernel provided by user */
-    GEN.kerngen = unur_gen_clone(PAR.kerngen);
+    GEN.kerngen = _unur_gen_clone(PAR.kerngen);
   else
     /* kernel from UNURAN list of kernels */
     GEN.kerngen = PAR.kernel;
@@ -944,12 +944,12 @@ _unur_empk_clone( const struct unur_gen *gen )
   clone->genid = _unur_set_genid(GENTYPE);
 
   /* copy distribution object into generator object */
-  clone->distr = _unur_distr_cemp_clone( gen->distr );
+  clone->distr = _unur_distr_clone( gen->distr );
 
   /* copy observed data into generator object */
   CLONE.observ = clone->distr->data.cemp.sample;   /* observations in distribution object */
 
-  CLONE.kerngen = unur_gen_clone( GEN.kerngen );
+  CLONE.kerngen = _unur_gen_clone( GEN.kerngen );
   clone->gen_aux = CLONE.kerngen;
 
   return clone;

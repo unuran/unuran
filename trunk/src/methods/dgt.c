@@ -439,7 +439,7 @@ _unur_dgt_create( struct unur_par *par )
   COOKIE_SET(gen,CK_DGT_GEN);
 
   /* copy distribution object into generator object */
-  gen->distr = _unur_distr_discr_clone( par->distr );
+  gen->distr = _unur_distr_clone( par->distr );
 
   /* we need a PV */
   if (DISTR.pv == NULL) {
@@ -536,10 +536,10 @@ _unur_dgt_clone( const struct unur_gen *gen )
   clone->genid = _unur_set_genid(GENTYPE);
 
   /* copy distribution object into generator object */
-  clone->distr = _unur_distr_discr_clone( gen->distr );
+  clone->distr = _unur_distr_clone( gen->distr );
 
   /* auxiliary generator */
-  if (gen->gen_aux) clone->gen_aux = unur_gen_clone( gen->gen_aux );
+  if (gen->gen_aux) clone->gen_aux = _unur_gen_clone( gen->gen_aux );
 
   /* copy data for distribution */
   CLONE.cumpv = _unur_malloc( DISTR.n_pv * sizeof(double) );

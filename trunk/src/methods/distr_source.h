@@ -76,14 +76,15 @@
 #define _unur_cvec_dPDF(r,x,distr) ((*((distr)->data.cvec.dpdf)) ((r),(x),(distr)))
 
 /*---------------------------------------------------------------------------*/
-/* copy distribution objects                                                 */
+/* make clone of distribution objects                                        */
 
 struct unur_distr *_unur_distr_cemp_clone ( const struct unur_distr *distr );
 struct unur_distr *_unur_distr_cont_clone ( const struct unur_distr *distr );
 struct unur_distr *_unur_distr_cvec_clone ( const struct unur_distr *distr );
 struct unur_distr *_unur_distr_cvemp_clone( const struct unur_distr *distr );
 struct unur_distr *_unur_distr_discr_clone( const struct unur_distr *distr );
-/* copy distribution object 'from' into distribution object 'to'.            */
+
+#define _unur_distr_clone(distr)    ((distr)->clone(distr))
 
 /*---------------------------------------------------------------------------*/
 /* destroy distribution object                                               */

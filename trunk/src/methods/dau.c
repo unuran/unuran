@@ -462,6 +462,10 @@ _unur_dau_create( struct unur_par *par)
   /* copy distribution object into generator object */
   memcpy( &(gen->distr), par->distr, sizeof( struct unur_distr ) );
 
+  /* copy probability vector into generator object */
+  DISTR.prob = _unur_malloc( DISTR.n_prob * sizeof(double) );
+  memcpy( DISTR.prob, par->distr->data.discr.prob, DISTR.n_prob * sizeof(double) );
+
   /* routines for sampling and destroying generator */
   SAMPLE = _unur_dau_sample;
   gen->destroy = _unur_dau_free;
@@ -556,6 +560,7 @@ _unur_dau_free( struct unur_gen *gen )
 
   /* free memory */
   _unur_free_genid(gen);
+  free(DISTR.prob);
   free(GEN.jx);
   free(GEN.qx);
   free(gen);

@@ -23,7 +23,7 @@
 
 
 @setchapternewpage odd
-
+@paragraphindent 0
 
 
 @c ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
@@ -111,7 +111,7 @@ int main()
   x = unur_sample_cont(gen);
   printf("%f\n",x);
   }
- 
+} 
 @end example
  First you have to include the libraries @code{unuran.h} and @code{unuran_distributions.h} with the commands:
 
@@ -141,7 +141,7 @@ we have genarate the parameters of the method 'arou'
 Now its possible to change default parameters of the method with @code {
  unur_arou_set_max_sqhratio(par,0.99);}
 @*
-@With
+
 @example
 gen = unur_init(par)
 @end example
@@ -152,7 +152,156 @@ which is necessary to genarate an non uniform random number with
 
 @end example
 
+If you know the c.d.f you can genarate +random numbers in the following way
+The important lines are in bold face.
 
+@example
+/* my second UNURAN program test2.c */ 
+
+#include <unuran.h>
+#include <unuran_distributions.h>
+#include <unuran_tests.h>
+@b{
+double trig (double x)
+{  return ( (x<0.) ? 0. : (x>1.) ?1. : x ); }  
+}
+int main()
+{
+  double x;
+  int    i;
+
+  struct unur_distr *distr,*distr1;  /* distribution */ 
+  struct unur_par *par,*par1;      /* parameter */
+  struct unur_gen *gen,*gen1;      /* generator */
+ 
+  /* make distr. object: truncated Gaussian */
+@b{  distr1 = unur_distr_cont_new();
+  unur_distr_cont_set_cdf(distr1, trig );
+}
+
+  /* choose method and set parameters */
+  par1 = unur_ninv_new(distr1);
+ 
+  /* make generator object */
+  gen1 = unur_init(par1);
+
+
+  /* sample */
+  for (i=0;i<100;i++) {
+  x = unur_sample_cont(gen1);
+  printf("%f\n",x);
+  }
+ 
+
+
+  /* destroy generator object */
+  // unur_free(gen);
+  unur_free(gen1);
+
+  exit (0);
+}
+@end example
+
+If want to change the parameters of a method:
+The important lines are in bold face.
+
+@example
+
+/* my second UNURAN program test2.c */ 
+
+#include <unuran.h>
+#include <unuran_distributions.h>
+#include <unuran_tests.h>
+
+double trig (double x)
+{  return ( (x<0.) ? 0. : (x>1.) ? 1. : x ); }  
+@b{ double pdftrig (double x)
+{  return ( (0.<x || x<1.) ? 0. : 1.); }
+}
+
+int main()
+{
+  double x;
+  int    i;
+
+  struct unur_distr *distr,*distr1;  /* distribution */ 
+  struct unur_par *par,*par1;      /* parameter */
+  struct unur_gen *gen,*gen1;      /* generator */
+
+ 
+  /* make distr. object: truncated Gaussian */
+  distr1 = unur_distr_cont_new();
+  unur_distr_cont_set_cdf(distr1, trig );
+  unur_distr_cont_set_pdf(distr1,pdftrig );
+
+  /* choose method and set parameters */
+  par1 = unur_ninv_new(distr1);
+@b{  unur_ninv_use_newton(par1);
+ }
+
+  /* make generator object */
+ 
+  gen1 = unur_init(par1);
+
+  /* sample */
+  for (i=0;i<100;i++) {
+  x = unur_sample_cont(gen1);
+  printf("%f\n",x);
+  }
+
+  /* destroy generator object */
+  unur_free(gen1);
+
+  exit (0);
+}
+@end example
+
+@chapter methods
+
+@multitable @columnfractions .25 .25 .25 .25
+@item name/references    @tab  parameter (default)   @tab necessary      @tab remarks
+@item TDR [..]           @tab                        @tab                @tab 
+@item NINV               @tab                        @tab                @tab numerical inversion
+@item                    @tab  (regula falsi)        @tab cdf            @tab
+@item                    @tab  newton                @tab cdf, pdf       @tab only for continous cdf
+@end multitable
+
+@* choosing the method:
+@*  @code{ struct unur_par par = unur_NAME_new(struct unur_distr )
+}
+@*
+@* e.g.: 
+@* @code{ par  = unur_ninv_new(distr );
+}
+
+@* choosing the parameters of a method. (This can be a change of a
+numerical parameter (e.g: 2 ..) or decision of a special numerical
+implementation (e.g: Neton- regula falsi)
+To change any parameter you habe to use the according function call.
+ All parameters have default settings:
+
+@*e.g.:  
+@* Numerical inversion with Netwon
+@* @code{  unur_ninv_use_newton(par); );
+}
+ 
+
+@chapter Function reference
+
+@unnumberedsubsec unur_distr_normal
+@code{ struct unur_distr distr = unur_distr_normal( )}
+@* create a distribiution objekt with all necessary parameters for the normal distribution
+@unnumberedsubsec unur_distr_cont_new
+create a new distribution objekt witout special entries
+@unnumberedsubsec  unur_distr_cont_set_cdf
+initialize an distribution object with a continous cdf
+@unnumberedsubsec unur_init
+@code{ struct unur_gen gen = unur_init(struct unur_par);}
+
+@unnumberedsubsec unur_sample_cont
+
+
+@chapter distributions
 
 @chapter internals
 @section ....

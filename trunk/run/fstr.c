@@ -4,7 +4,7 @@
 #include <string.h> 
 
 
-#define SYMBLENGTH 20 
+#define SYMBLENGTH 40 
 #define MAXLENGTH  256 
 #define NOSYMB  0 
 #define ADD_OP  1 
@@ -2040,18 +2040,12 @@ double  _unur_fstr_eval_tree(struct treenode *E_root, double argument)
 
   xtok=find_index("X",uis,ufe,0);
   ftok=find_index("F",uis,ufe,0);
-    froot=(*symbol[ftok].tree).right;             /* Achtung Fehler in Beschreibung !!! */
+  froot=(*symbol[ftok].tree).right;             /* Achtung Fehler in Beschreibung !!! */
   //   froot=symbol[ftok].tree;  
-  show_tree(E_root);
   symbol[xtok].val= argument;
-  show_tree(E_root); 
- result=tree2float(froot);
-  // show_tree(E_root);
+  result=tree2float(froot);
   return result;
   }
-
-
-
 /***************************************************************************************/
 char *Ntree2string(struct treenode *tree_root, char *ret_str)
 
@@ -2061,14 +2055,11 @@ char *Ntree2string(struct treenode *tree_root, char *ret_str)
 
   ftok=find_index("F",uis,ufe,0);
   froot=(*symbol[ftok].tree).right;          
-
   tree2Cstring(froot,ret_str); 
   return ret_str;
 }
-
 /***************************************************************************************/
 struct treenode *_unur_fstr_make_derivative(struct treenode *root)
-
 { 
    struct treenode *parsetreeh;
   
@@ -2089,7 +2080,7 @@ double  _unur_fstr_dev_eval_tree(struct treenode *E_root, double argument)
 
   xtok=find_index("X",uis,ufe,0);
   ftok=find_index("F_X",uis,ufe,0);
-  froot=(*symbol[ftok].tree).right;             /* Achtung Fehler in Beschreibung !!! */
+  froot=(*symbol[ftok].tree).right;            
   symbol[xtok].val= argument;
   result=tree2float(froot);
   return result;

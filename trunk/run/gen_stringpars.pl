@@ -90,7 +90,7 @@ sub distr_info{
 		$_ = <INFILE>;
 	    }
 	    $_ =~ /\s*=UP\s+Stddist_(\w+)/;
-	    print Outfile "\t\t\ttype = $1;\n\t\t}\n\t\telse ";
+	    print Outfile "\t\t\ttype = UNUR_DISTR_$1;\n\t\t}\n\t\telse ";
 	}
     }
 
@@ -124,7 +124,10 @@ sub method_info{
     print Outfile "\t/* ************************ */\n";
     print Outfile "\t/* determine choosen method */\n";
     print Outfile "\t/* ************************ */\n";
-    print Outfile "\tif ( !strcmp( key, \"method\") ){\n\t\t";
+    print Outfile "\tif ( !strcmp( key, \"method\") ){\n";
+    print Outfile "\t\tif ( no_of_elem != 0 ){\n";
+    print Outfile "\t\t\tfprintf(stderr, \"Warning: List with method provided.\\n\");\n";
+    print Outfile "\t\t}\n\t\t";
     foreach $hfile (@all_h_files){
 
 	open INFILE, "< $Methinfopath/$hfile" or  die ("can't open file: $!");
@@ -170,7 +173,7 @@ sub method_info{
 		$method = "\L$1";
 		$METHOD = "\U$method";
 
-		# key = method
+		# key is "method"
 		print Outfile "if ( method == $METHOD && strcmp(key, \"method\") ){\n\t\t";
 	    }
 

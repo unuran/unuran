@@ -12,12 +12,6 @@
 #define UNKNOWN (-2)
 #define UNDEF (-1)
 
-/* types of distributions */
-#define CONT  (0)
-#define CVEC  (1)
-#define DISCR (2)
-#define CEMP  (3)
-#define CVEMP (4)
 
     /* ********************************************************** */ 
     /* ********************************************************** */ 
@@ -160,10 +154,14 @@ UNUR_DISTR *make_distr_obj(char *str){
     /*                                             */
     /* ------------------------------------------- */
     else if ( !strcmp( key , "domain") ){
-      if (type == CONT){
+      /* list must contain exactly two entries */
+      if ( no_of_elem != 2 ){
+	fprintf(stderr, "Error: Wrong number of arguments for setting domain.\n");
+      }
+      if (type == UNUR_DISTR_CONT){
 	unur_distr_cont_set_domain( distr, list[0], list[1]);
       }
-      else if (type == DISCR){
+      else if (type == UNUR_DISTR_DISCR){
 	unur_distr_discr_set_domain( distr, list[0], list[1]);
       }
       else{

@@ -34,27 +34,57 @@
 *****************************************************************************/
 				                                                                                    
 /*--------------------------------------------------------------------------*/
-							    
-
-#include <stdlib.h>
-#include <math.h>
-#include <stdio.h>
-#include <string.h>
 
 #include <unur_source.h>
-#include "unur_errno.h"
+#include "matrix_source.h"
+
+/*---------------------------------------------------------------------------*/
+
+static int _unur_matrix_swap_rows (int dim, double *A, int i, int j);
+/* Swap rows i and j in square matrix A of dimension dim.                    */
+
+static int _unur_matrix_permutation_swap (int dim, int *p, int i, int j);
+/* Swap entries i and j of the integer array p.                              */
+
+static int _unur_matrix_LU_decomp (int dim, double *A, int *P, int *signum);
+/* Factorise a general dim x dim matrix A into P A = L U.                    */
+
+static int _unur_matrix_backsubstitution_dtrsv(int dim, double *A, double *X);
+/* ????? */
+
+static int _unur_matrix_forwardsubstitution_dtrsv(int dim, double *A, double *X);
+/* ????? */
+
+static int _unur_matrix_LU_invert (int dim, double *LU, int *p, double *inverse);
+/* Compute inverse of matrix with given LU decomposition.                    */
+
+/** TODO: wer braucht diese funktion ? */
+static double _unur_matrix_quadratic_form(int dim, double *x, double *A);
+/* Compute quadratic form x'Ax.                                              */
+
+/*---------------------------------------------------------------------------*/
 
 int 
-_unur_matrix_swap_rows(int dim, double *A, int i, int j)
-     /*-----------------------------------------------------------------*/
-     /* input:								*/
-     /*   dim ... number of columns and rows of				*/
-     /*   A   ... dim x dim -matrix					*/
-     /*   i,j ... row numbers that should be swapped			*/
-     /* output:								*/
-     /*   matrix A with swapped rows					*/
-     /*-----------------------------------------------------------------*/
+_unur_matrix_swap_rows (int dim, double *A, int i, int j)
+     /*----------------------------------------------------------------------*/
+     /* Swap rows i and j in square matrix A of dimension dim.               */
+     /* The resulting matrix is again stored in A.                           */ 
+     /*                                                                      */
+     /* input:								     */
+     /*   dim ... number of columns and rows of				     */
+     /*   A   ... dim x dim -matrix					     */
+     /*   i,j ... row numbers that should be swapped			     */
+     /*                                                                      */
+     /* output:								     */
+     /*   the given matrix A contains the new matrix with swapped rows       */
+     /*                                                                      */
+     /* return:								     */
+     /*   UNUR_SUCCESS on success                                            */
+     /*   error code      otherwise                                          */
+     /*----------------------------------------------------------------------*/
 {
+  /* check arguments */
+  CHECK_NULL(A,UNUR_ERR_NULL);
 
   if (i != j)
   {
@@ -74,19 +104,22 @@ _unur_matrix_swap_rows(int dim, double *A, int i, int j)
   return UNUR_SUCCESS;
 } /* end of _unur_matrix_swap_rows() */
 
-/*--------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 int 
-_unur_matrix_permutation_swap (int dim, int * p, int i, int j)
-     /*---------------------------------------------------------*/
-     /* input:							*/
-     /*   dim ... number of elements				*/
-     /*   p   ... permutation vector of length dim		*/
-     /*           (contains all integers between 0 and dim-1) 	*/
-     /*   i,j ... indexes that should be swapped		*/
-     /* output:							*/
-     /*   permutation p with swapped elements  			*/
-     /*---------------------------------------------------------*/
+_unur_matrix_permutation_swap (int dim, int *p, int i, int j)
+     /*----------------------------------------------------------------------*/
+     /* Swap entries i and j of the integer array p.                         */
+     /*                                                                      */
+     /* input:							             */
+     /*   dim ... number of elements				             */
+     /*   p   ... permutation vector of length dim		             */
+     /*           (contains all integers between 0 and dim-1) 	             */
+     /*   i,j ... indexes that should be swapped		             */
+     /*                                                                      */
+     /* output:							             */
+     /*   permutation p with swapped elements  			             */
+     /*----------------------------------------------------------------------*/
 {
   if (i != j)
     {
@@ -98,48 +131,59 @@ _unur_matrix_permutation_swap (int dim, int * p, int i, int j)
   return UNUR_SUCCESS;
 } /* end of _unur_matrix_permutation_swap() */
 
-
-/*--------------------------------------------------------------------------*/
-
+/*---------------------------------------------------------------------------*/
 
 int 
 _unur_matrix_LU_decomp (int dim, double *A, int *p, int *signum)
-     /*-------------------------------------------------------------------------*/
-     /* Factorise a general dim x dim matrix A into,				*/
-     /*										*/
-     /*   P A = L U								*/
-     /*										*/
-     /* where P is a permutation matrix, L is unit lower triangular and U	*/
-     /* is upper triangular.							*/
-     /*										*/
-     /* L is stored in the strict lower triangular part of the input		*/
-     /* matrix. The diagonal elements of L are unity and are not stored.	*/
-     /*										*/
-     /* U is stored in the diagonal and upper triangular part of the		*/
-     /* input matrix.  								*/
-     /* 									*/
-     /* P is stored in the permutation p. Column j of P is column k of the	*/
-     /* identity matrix, where k = permutation->data[j]				*/
-     /*										*/
-     /* signum gives the sign of the permutation, (-1)^n, where n is the	*/
-     /* number of interchanges in the permutation. 				*/
-     /*										*/
-     /* See Golub & Van Loan, Matrix Computations, Algorithm 3.4.1 (Gauss	*/
-     /* Elimination with Partial Pivoting).					*/
-     /*										*/
-     /* input:									*/
-     /*   dim    ... number of columns and rows of				*/
-     /*   A      ... dim x dim matrix						*/
-     /* output:									*/
-     /*   A									*/
-     /*   p      ... permutation vector of length dim				*/
-     /*              (contains all integers between 0 and dim-1) 		*/
-     /*   signum ... sign of the permuttion (1 or -1)				*/
-     /*-------------------------------------------------------------------------*/
+     /*----------------------------------------------------------------------*/
+     /* Factorise a general dim x dim matrix A into,			     */
+     /*									     */
+     /*   P A = L U							     */
+     /*									     */
+     /* where P is a permutation matrix, L is unit lower triangular and U    */
+     /* is upper triangular.						     */
+     /*									     */
+     /* L is stored in the strict lower triangular part of the input	     */
+     /* matrix. The diagonal elements of L are unity and are not stored.     */
+     /*									     */
+     /* U is stored in the diagonal and upper triangular part of the	     */
+     /* input matrix.  							     */
+     /* 								     */
+     /* P is stored in the permutation p. Column j of P is column k of the   */
+     /* identity matrix, where k = permutation->data[j]			     */
+     /*									     */
+     /* signum gives the sign of the permutation, (-1)^n, where n is the     */
+     /* number of interchanges in the permutation. 			     */
+     /*									     */
+     /* See Golub & Van Loan, Matrix Computations, Algorithm 3.4.1 (Gauss    */
+     /* Elimination with Partial Pivoting).				     */
+     /*									     */
+     /* input:								     */
+     /*   dim    ... number of columns and rows of			     */
+     /*   A      ... dim x dim matrix					     */
+     /*   p      ... pointer to array where permutation should be stored     */
+     /*   signum ... pointer where sign of permutation should be stored      */
+     /*									     */
+     /* output:								     */
+     /*   A      ... L (strict lower triangular part) and U (upper part)     */
+     /*   p      ... permutation vector of length dim			     */
+     /*              (contains all integers between 0 and dim-1) 	     */
+     /*   signum ... sign of the permutation (1 or -1)			     */
+     /*                                                                      */
+     /* return:								     */
+     /*   UNUR_SUCCESS on success                                            */
+     /*   error code      otherwise                                          */
+     /*----------------------------------------------------------------------*/
 {
 #define idx(a,b) (a*dim+b)
   int i, j, k;
 
+  /* check arguments */
+  CHECK_NULL(A,UNUR_ERR_NULL);
+  CHECK_NULL(p,UNUR_ERR_NULL);
+  CHECK_NULL(signum,UNUR_ERR_NULL);
+
+  /* initialize permutation vector */
   *signum = 1;
   for(i=0;i<dim;i++) p[i]=i;
 
@@ -181,24 +225,32 @@ _unur_matrix_LU_decomp (int dim, double *A, int *p, int *signum)
 #undef idx
 } /* end of _unur_matrix_LU_decomp() */
 
-
-/*--------------------------------------------------------------------------*/
-
+/*---------------------------------------------------------------------------*/
 
 int 
 _unur_matrix_backsubstitution_dtrsv(int dim, double *A, double *X)
-     /*-----------------------------------------------------------------*/
-     /* input:								*/
-     /*   dim ... number of columns and rows of				*/
-     /*   A   ... dim x dim -matrix					*/
-     /*   X   ... vector 						*/
-     /* output:								*/
-     /*   X 								*/
-     /*-----------------------------------------------------------------*/
+     /*----------------------------------------------------------------------*/
+     /*                                                                      */
+     /* input:								     */
+     /*   dim ... number of columns and rows of				     */
+     /*   A   ... dim x dim -matrix					     */
+     /*   X   ... vector 						     */
+     /*                                                                      */
+     /* output:								     */
+     /*   X 								     */
+     /*                                                                      */
+     /* return:								     */
+     /*   UNUR_SUCCESS on success                                            */
+     /*   error code      otherwise                                          */
+     /*----------------------------------------------------------------------*/
 {
 #define idx(a,b) (a*dim+b)
 
   int ix,jx,i,j;
+
+  /* check arguments */
+  CHECK_NULL(A,UNUR_ERR_NULL);
+  CHECK_NULL(X,UNUR_ERR_NULL);
 
   /* backsubstitution */
   ix = (dim - 1);
@@ -224,24 +276,32 @@ _unur_matrix_backsubstitution_dtrsv(int dim, double *A, double *X)
 #undef idx
 } /* end of _unur_matrix_backsubstitution_dtrsv() */
 
-
-/*--------------------------------------------------------------------------*/
-
+/*---------------------------------------------------------------------------*/
 
 int 
 _unur_matrix_forwardsubstitution_dtrsv(int dim, double *A, double *X)
-     /*-----------------------------------------------------------------*/
-     /* input:								*/
-     /*   dim ... number of columns and rows of				*/
-     /*   A   ... dim x dim matrix					*/
-     /*   X   ... vector 						*/
-     /* output:								*/
-     /*   X 								*/
-     /*-----------------------------------------------------------------*/
+     /*----------------------------------------------------------------------*/
+     /*                                                                      */
+     /* input:								     */
+     /*   dim ... number of columns and rows of				     */
+     /*   A   ... dim x dim -matrix					     */
+     /*   X   ... vector 						     */
+     /*                                                                      */
+     /* output:								     */
+     /*   X 								     */
+     /*                                                                      */
+     /* return:								     */
+     /*   UNUR_SUCCESS on success                                            */
+     /*   error code      otherwise                                          */
+     /*----------------------------------------------------------------------*/
 { 
 #define idx(a,b) (a*dim+b)
 
   int ix,jx,i,j;
+
+  /* check arguments */
+  CHECK_NULL(A,UNUR_ERR_NULL);
+  CHECK_NULL(X,UNUR_ERR_NULL);
 
   /* forward substitution */
   ix = 0;
@@ -263,28 +323,40 @@ _unur_matrix_forwardsubstitution_dtrsv(int dim, double *A, double *X)
 #undef idx
 } /* end of _unur_matrix_forwardsubstitution_dtrsv() */
 
-
-/*--------------------------------------------------------------------------*/
-
+/*---------------------------------------------------------------------------*/
 
 int 
-_unur_matrix_LU_invert (int dim, double * LU, int * p, double * inverse)
-     /*-----------------------------------------------------------------*/
-     /* input:								*/
-     /*   dim ... number of columns and rows of				*/
-     /*   LU  ... dim x dim -matrix, LU decomposition			*/
-     /*   p   ... permutation vector of length dim			*/
-     /*           (contains all integers between 0 and dim-1)		*/
-     /* output								*/
-     /*   inverse ... the inverse matrix 				*/
-     /*-----------------------------------------------------------------*/
+_unur_matrix_LU_invert (int dim, double *LU, int *p, double *inverse)
+     /*----------------------------------------------------------------------*/
+     /* Compute inverse of matrix with given LU decomposition.               */
+     /*                                                                      */
+     /* input:								     */
+     /*   dim ... number of columns and rows of				     */
+     /*   LU  ... dim x dim -matrix, LU decomposition			     */
+     /*   p   ... permutation vector of length dim			     */
+     /*           (contains all integers between 0 and dim-1)     	     */
+     /*   inverse ... pointer to array where inverse should be stored        */
+     /*                                                                      */
+     /* output								     */
+     /*   inverse ... the inverse matrix 				     */
+     /*                                                                      */
+     /* return:								     */
+     /*   UNUR_SUCCESS on success                                            */
+     /*   error code      otherwise                                          */
+     /*----------------------------------------------------------------------*/
 { 
 #define idx(a,b) (a*dim+b)
 
   double *vector;
   int i,j;
 
-  vector = malloc(dim*sizeof(double));
+  /* check arguments */
+  CHECK_NULL(LU,UNUR_ERR_NULL);
+  CHECK_NULL(p,UNUR_ERR_NULL);
+  CHECK_NULL(inverse,UNUR_ERR_NULL);
+
+  /* allocate working array */
+  vector = _unur_malloc(dim*sizeof(double));
 
   for (i = 0; i < dim; i++){
     for(j=0;j<dim;j++) vector[j] = 0.;
@@ -295,9 +367,11 @@ _unur_matrix_LU_invert (int dim, double * LU, int * p, double * inverse)
     _unur_matrix_backsubstitution_dtrsv (dim, LU, vector);
 
     for(j=0;j<dim;j++){
-      inverse[idx(j,p[i])] = vector[j];/*set column vector of inverse matrix*/
+      inverse[idx(j,p[i])] = vector[j]; /* set column vector of inverse matrix */
     }
   }
+
+  /* free working arrays */
   free(vector);
 
   return UNUR_SUCCESS;
@@ -305,56 +379,69 @@ _unur_matrix_LU_invert (int dim, double * LU, int * p, double * inverse)
 #undef idx
 } /* end of _unur_matrix_LU_invert() */
 
-
-/*--------------------------------------------------------------------------*/
-
+/*---------------------------------------------------------------------------*/
 
 int 
-_unur_matrix_invert_matrix(int dim, double *A, double detmin, double *Ainv, double *det)
-     /*-------------------------------------------------------------------------*/
-     /* Calculates the inverse matrix. If succesfull UNUR_SUCCESS is returned	*/
-     /* If |det(A)| <= detmin a message is printed and UNUR_FAIL is returned.	*/
-     /* the array Ainv remains unchanged in this case				*/
-     /*										*/
-     /* input:                                                                  */
-     /*   dim    ... dimension of the quadratic matrix A                        */
-     /*   A      ... dim x dim -matrix                                          */
-     /*   detmin ... calculate inverse when |det(A)| > detmin                   */
-     /*                                                                         */
-     /* output:                                                                 */
-     /*   Ainv   ... inverse matrix of A	                                */
-     /*   det    ... determinant of A                                           */
-     /*-------------------------------------------------------------------------*/
+_unur_matrix_invert_matrix (int dim, double *A, double detmin, double *Ainv, double *det)
+     /*----------------------------------------------------------------------*/
+     /* Calculates the inverse matrix (by means of LU decomposition)         */
+     /*									     */
+     /* input:                                                               */
+     /*   dim    ... dimension of the square matrix A                        */
+     /*   A      ... dim x dim -matrix                                       */
+     /*   detmin ... threshold value for |det(A)| for illconditioned matrix  */
+     /*   Ainv   ... pointer to array where inverse matrix should be stored  */
+     /*   det    ... pointer where det(A) should be stored                   */
+     /*									     */
+     /* output:                                                              */
+     /*   Ainv   ... inverse matrix of A	                             */
+     /*   det    ... determinant of A                                        */
+     /*									     */
+     /* return:								     */
+     /*   UNUR_SUCCESS on success                                            */
+     /*   UNUR_FAILURE when matrix is ill-conditioned, i.e. |det(A)|<detmin  */
+     /*                (array Ainv remains unchanged in this case)           */
+     /*   other error code, otherwise                                        */
+     /*----------------------------------------------------------------------*/
 { 
 #define idx(a,b) (a*dim+b)
 
-  FILE *log;
-  
-  int *p, s,i;
-  double *lu;
+  int *p, s, i;
+  double *LU;
 
-  log = unur_get_stream();
+  /* check arguments */
+  CHECK_NULL(A,UNUR_ERR_NULL);
+  CHECK_NULL(Ainv,UNUR_ERR_NULL);
+  CHECK_NULL(det,UNUR_ERR_NULL);
+  if (dim<2) {
+    _unur_error("matrix",UNUR_ERR_GENERIC,"dimension <= 1");
+    return UNUR_ERR_GENERIC;
+  }
 
-  p = malloc(dim*sizeof(int));
-  lu = malloc(dim*dim*sizeof(double));
-  for(i=0;i<dim*dim;i++)
-    lu[i] = A[i];
+  /* allocate working space */
+  p = _unur_malloc(dim*sizeof(int));
+  LU = _unur_malloc(dim*dim*sizeof(double));
 
-  _unur_matrix_LU_decomp(dim, lu, p, &s);
+  /* compute LU decomposition */
+  memcpy(LU,A,dim*dim);
+  _unur_matrix_LU_decomp(dim, LU, p, &s);
+
+  /* compute determinat */
   *det = s;
   for(i=0;i<dim;i++)
-    *det *=lu[idx(i,i)];
-  if(fabs(*det)<=detmin) {
-#ifdef UNUR_ENABLE_LOGGING
-    fprintf(log,"MATRIX: det(A)<=detmin\n");  
-    /* _unur_error(); */
-#endif
+    *det *= LU[idx(i,i)];
+
+  /* check for ill-conditioned matrix */
+  if (fabs(*det) <= detmin) {
+    _unur_error("matrix",UNUR_FAILURE,"matrix ill-conditioned");
     return UNUR_FAILURE;
   }
 
-  _unur_matrix_LU_invert(dim, lu, p, Ainv);   
+  /* compute inverse by means of LU factors */
+  _unur_matrix_LU_invert(dim, LU, p, Ainv);   
   
-  free(lu);
+  /* free working space */
+  free(LU);
   free(p);
 
   return UNUR_SUCCESS;
@@ -362,26 +449,38 @@ _unur_matrix_invert_matrix(int dim, double *A, double detmin, double *Ainv, doub
 #undef idx
 } /* end of _unur_matrix_invert_matrix() */
 
-
-/*--------------------------------------------------------------------------*/
-
+/*---------------------------------------------------------------------------*/
 
 double 
 _unur_matrix_quadratic_form(int dim, double *x, double *A)
-     /*---------------------------------------------------*/
-     /* input:                                            */
-     /*   dim ... number of columns and rows of           */
-     /*   x   ... vector                                  */
-     /*   A   ... dim x dim matrix                        */
-     /* output:                                           */
-     /*   returns the result of x'Ax                      */
-     /*---------------------------------------------------*/
+     /*----------------------------------------------------------------------*/
+     /* Compute quadratic form x'Ax                                          */
+     /*									     */
+     /* input:                                                               */
+     /*   dim ... number of columns and rows of                              */
+     /*   x   ... vector                                                     */
+     /*   A   ... dim x dim matrix                                           */
+     /*									     */
+     /* return:								     */
+     /*   returns the result of x'Ax                                         */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return INFINITY                                                    */
+     /*----------------------------------------------------------------------*/
 {
 #define idx(a,b) (a*dim+b)
 
   int i,j;
   double sum,outersum;
   
+  /* check arguments */
+  CHECK_NULL(x,INFINITY);
+  CHECK_NULL(A,INFINITY);
+  if (dim<2) {
+    _unur_error("matrix",UNUR_ERR_GENERIC,"dimension <= 1");
+    return INFINITY;
+  }
+
   outersum=0.;
   for(i=0;i<dim;i++){
     sum=0.;
@@ -395,37 +494,37 @@ _unur_matrix_quadratic_form(int dim, double *x, double *A)
 #undef idx
 } /* end of _unur_matrix_quadratic_form() */
 
+/*---------------------------------------------------------------------------*/
 
-/*--------------------------------------------------------------------------*/
-
-
-double *
-_unur_matrix_cholesky_decomposition(int dim, const double *S )
+int
+_unur_matrix_cholesky_decomposition (int dim, const double *S, double *L )
      /*----------------------------------------------------------------------*/
-     /* the Colesky factor L of a variance-covariance matrix S is computed   */
-     /* (the necessary array is allocated)                                   */
+     /* The Colesky factor L of a variance-covariance matrix S is computed:  */
+     /*    S = LL'                                                           */
      /*                                                                      */
      /* parameters:                                                          */
+     /*   dim ... dimension of covariance matrix S                           */
      /*   S   ... variance-covariance matrix                                 */
-     /*   dim ... dimension (S is a dim x dim matrix)                        */
+     /*   L   ... pointer to array where cholesky factor should be stored    */
      /*                                                                      */
-     /* return:                                                              */
-     /*   pointer to cholesky factor                                         */
-     /*                                                                      */
-     /* error:                                                               */
-     /*   return NULL                                                        */
+     /* return:								     */
+     /*   UNUR_SUCCESS on success                                            */
+     /*   UNUR_FAILURE when matrix is not positive definite                  */
+     /*   other error code, otherwise                                        */
      /*----------------------------------------------------------------------*/
 { 
 #define idx(a,b) (a*dim+b)
 
-  double *L;
   int i,j,k;
   double sum1,sum2;
 
-  /* allocate memory for cholesky factor */
-  L = _unur_malloc( dim * dim * sizeof(double) );
+  /* check arguments */
+  CHECK_NULL(S,UNUR_ERR_NULL);
+  if (dim<2) {
+    _unur_error("matrix",UNUR_ERR_GENERIC,"dimension <= 1");
+    return UNUR_ERR_GENERIC;
+  }
 
-  /* run cholesky decomposition */
   L[idx(0,0)] = sqrt( S[idx(0,0)] );
 
   for(j=1; j<dim; j++) {
@@ -443,7 +542,7 @@ _unur_matrix_cholesky_decomposition(int dim, const double *S )
 
     if (S[idx(j,j)] <= sum1) {
       /* covariance matrix not positive definite */
-      free(L); return NULL;
+      return UNUR_FAILURE;
     }
 
     L[idx(j,j)] = sqrt( S[idx(j,j)] - sum1 );
@@ -454,15 +553,14 @@ _unur_matrix_cholesky_decomposition(int dim, const double *S )
     for(k=j+1; k<dim; k++)
       L[idx(j,k)]=0.;
 
-  /* return (pointer to) cholesky factor */
-  return L;
+  /* o.k. */
+  return UNUR_SUCCESS;
 
 #undef idx
 } /* end of _unur_matrix_cholesky_decomposition() */
 
 
 /*--------------------------------------------------------------------------*/
-
 
 void 
 _unur_matrix_debug( int dim, double *M, const char *info, const char *genid )
@@ -481,10 +579,6 @@ _unur_matrix_debug( int dim, double *M, const char *info, const char *genid )
 
   FILE *log;
   int i,j;
- 
-  char GENID[8]="MATRIX"; /* dafault value when genid = NULL */
-  
-  if (genid==NULL) genid=GENID ; 
  
   log = unur_get_stream();
 
@@ -511,6 +605,5 @@ _unur_matrix_debug( int dim, double *M, const char *info, const char *genid )
 #undef idx
 } /* end of _unur_matrix_debug() */  
 
-
-/*--------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 

@@ -584,90 +584,107 @@ unur_stdgen_sample_poisson_pprsc( struct unur_gen *gen )
      /* theta >= 10: Patchwork Rejection */
 {
   /* -X- generator code -X- */
-
   long int             Dk, X, Y;
   double               U, V, W;
 
-		for (;;)
-		{
- /* generate uniform number U -- U(0, p6)                                */
- /* case distinction corresponding to U                                  */
-			if ((U = uniform() * p6) < p2)
-			{     /* centre left      */
+  while (1) {
 
- /* immediate acceptance region R2 = [k2, m) *[0, f2),  X = k2, ... m -1 */
-				if ((V = U - p1) < 0.0)  return(k2 + (long int)(U/f2));
- /* immediate acceptance region R1 = [k1, k2)*[0, f1),  X = k1, ... k2-1 */
-				if ((W = V / dl) < f1 )  return(k1 + (long int)(V/f1));
+    /* generate uniform number U -- U(0, p6)                                 */
+    U = uniform() * p6;
 
- /* computation of candidate X < k2, and its counterpart Y > k2          */
- /* either squeeze-acceptance of X or acceptance-rejection of Y          */
-				Dk = (long int)(dl * uniform()) + 1L;
-				if (W <= f2 - Dk * (f2 - f2/r2))
-				{             /* quick accept of  */
-					return(k2 - Dk);                             /* X = k2 - Dk      */
-				}
-				if ((V = f2 + f2 - W) < 1.0)
-				{                 /* quick reject of Y*/
-					Y = k2 + Dk;
-					if (V <= f2 + Dk * (1.0 - f2)/(dl + 1.0))
-					{  /* quick accept of  */
-						return(Y);                                 /* Y = k2 + Dk      */
-					}
-					if (V <= f(Y, l_theta, c_pm))  return(Y);       /* final accept of Y*/
-				}
-				X = k2 - Dk;
-			}
-			else if (U < p4)
-			{                               /* centre right     */
-	/*  immediate acceptance region R3 = [m, k4+1)*[0, f4), X = m, ... k4    */
-				if ((V = U - p3) < 0.0)  return(k4 - (long int)((U - p2)/f4));
- /* immediate acceptance region R4 = [k4+1, k5+1)*[0, f5)                */
-				if ((W = V / dr) < f5 )  return(k5 - (long int)(V/f5));
+    /* case distinction corresponding to U                                   */
+    if (U < p2) {
+      /* centre left      */
 
- /* computation of candidate X > k4, and its counterpart Y < k4          */
- /* either squeeze-acceptance of X or acceptance-rejection of Y          */
-				Dk = (long int)(dr * uniform()) + 1L;
-				if (W <= f4 - Dk * (f4 - f4*r4))
-				{             /* quick accept of  */
-					return(k4 + Dk);                             /* X = k4 + Dk      */
-				}
-				if ((V = f4 + f4 - W) < 1.0)
-				{                 /* quick reject of Y*/
-					Y = k4 - Dk;
-					if (V <= f4 + Dk * (1.0 - f4)/ dr)
-					{         /* quick accept of  */
-						return(Y);                                 /* Y = k4 - Dk      */
-					}
-					if (V <= f(Y, l_theta, c_pm))  return(Y);       /* final accept of Y*/
-				}
-				X = k4 + Dk;
-			}
-			else
-			{
-				W = uniform();
-				if (U < p5)
-				{                                  /* expon. tail left */
-					Dk = (long int)(1.0 - log(W)/ll);
-					if ((X = k1 - Dk) < 0L)  continue;           /* 0 <= X <= k1 - 1 */
-					W *= (U - p4) * ll;                          /* W -- U(0, h(x))  */
-					if (W <= f1 - Dk * (f1 - f1/r1))  return(X); /* quick accept of X*/
-				}
-				else
-				{                                         /* expon. tail right*/
-					Dk = (long int)(1.0 - log(W)/lr);
-					X  = k5 + Dk;                                /* X >= k5 + 1      */
-					W *= (U - p5) * lr;                          /* W -- U(0, h(x))  */
-					if (W <= f5 - Dk * (f5 - f5*r5))  return(X); /* quick accept of X*/
-				}
-			}
+      /* immediate acceptance region R2 = [k2, m) *[0, f2),  X = k2, ... m-1 */
+      V = U - p1;
+      if (V < 0.)
+	return (k2 + (int)(U/f2));
 
- /* acceptance-rejection test of candidate X from the original area      */
- /* test, whether  W <= f(k),    with  W = U*h(x)  and  U -- U(0, 1)     */
- /* log f(X) = (X - m)*log(theta) - log X! + log m!                         */
-			if (log(W) <= X * l_theta - _unur_factorialln(X) - c_pm)  return(X);
-		}
+      /* immediate acceptance region R1 = [k1, k2)*[0, f1),  X = k1, ... k2-1 */
+      W = V / dl;
+      if (W < f1)
+	return (k1 + (int)(V/f1));
 
+      /* computation of candidate X < k2, and its counterpart Y > k2         */
+      /* either squeeze-acceptance of X or acceptance-rejection of Y         */
+      Dk = (int)(dl * uniform()) + 1;
+      if (W <= f2 - Dk * (f2 - f2/r2))
+	/* quick accept of  */
+	return (k2 - Dk);                            /* X = k2 - Dk      */
+      if ((V = f2 + f2 - W) < 1.) {
+	/* quick reject of Y*/
+	Y = k2 + Dk;
+	if (V <= f2 + Dk * (1. - f2)/(dl + 1.))
+	  /* quick accept of  */
+	  return Y;                                  /* Y = k2 + Dk      */
+	if (V <= f(Y, l_theta, c_pm))  
+	  /* final accept of Y*/
+	  return Y;
+      }
+      X = k2 - Dk;
+    }
+
+    else if (U < p4) {
+      /* centre right     */
+
+      /*  immediate acceptance region R3 = [m, k4+1)*[0, f4), X = m, ... k4  */
+      (V = U - p3);
+      if (V < 0.)
+	return (k4 - (int)((U - p2)/f4));
+
+      /* immediate acceptance region R4 = [k4+1, k5+1)*[0, f5)               */
+      W = V / dr;
+      if (W < f5 )
+	return (k5 - (int)(V/f5));
+
+      /* computation of candidate X > k4, and its counterpart Y < k4         */
+      /* either squeeze-acceptance of X or acceptance-rejection of Y         */
+      Dk = (int)(dr * uniform()) + 1;
+      if (W <= f4 - Dk * (f4 - f4*r4))
+	/* quick accept of  */
+	return(k4 + Dk);                             /* X = k4 + Dk      */
+      if ((V = f4 + f4 - W) < 1.0) {
+	/* quick reject of Y*/
+	Y = k4 - Dk;
+	if (V <= f4 + Dk * (1.0 - f4)/ dr)
+	  /* quick accept of  */
+	  return Y;                                 /* Y = k4 - Dk      */
+	if (V <= f(Y, l_theta, c_pm))
+	  return Y;       /* final accept of Y*/
+      }
+      X = k4 + Dk;
+    }
+
+    else {
+      W = uniform();
+      if (U < p5) {
+	/* expon. tail left */
+	Dk = (int)(1. - log(W)/ll);
+	X = k1 - Dk;
+	if (X < 0)
+	  continue;           /* 0 <= X <= k1 - 1 */
+	W *= (U - p4) * ll;                          /* W -- U(0, h(x))      */
+	if (W <= f1 - Dk * (f1 - f1/r1))
+	  return X; /* quick accept of X*/
+      }
+      else {
+	/* expon. tail right*/
+	Dk = (int)(1. - log(W)/lr);
+	X  = k5 + Dk;                                /* X >= k5 + 1          */
+	W *= (U - p5) * lr;                          /* W -- U(0, h(x))      */
+	if (W <= f5 - Dk * (f5 - f5*r5))
+	  return X; /* quick accept of X*/
+      }
+    }
+
+    /* acceptance-rejection test of candidate X from the original area       */
+    /* test, whether  W <= f(k),    with  W = U*h(x)  and  U -- U(0, 1)      */
+    /* log f(X) = (X - m)*log(theta) - log X! + log m!                       */
+    if (log(W) <= X * l_theta - _unur_factorialln(X) - c_pm)
+      return X;
+
+  }
 
   /* -X- end of generator code -X- */
   

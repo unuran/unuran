@@ -24,6 +24,11 @@ $KOMMENT = 0;
 #Name der aktuellen Methode (von unuran)
 $MName = "a";  # mit nicht vorkommendem Namen initialisiert
 
+$ERST = 1;  # garantiert,dass keine itemize-umgebung beendet
+            # wird bevor es ueberhaupt eine gibt
+$ENDE = 0;  # ueberprueft, ob itemize-umgebung gesetzt wird
+            # und garantiert, dass letztes itemize beendet wird
+
 # 
 @TYPES = ("struct", "void", "int", "double", "float", "long", "char", "short", "unsigned", "signed");
 
@@ -57,7 +62,15 @@ while($_ = <>)
           /\*unur_(\w*)_/; 
           if ($type eq struct && $MName ne $1){
              $MName = $1;
+             if ($ERST == 0){
+		print OUTFILE "\@end itemize\n\n";
+             }
+             else{
+		 $ERST = 0;
+                 $ENDE = 1;
+	     }
 	     print OUTFILE "\n\n\@subsection ", $MName, "\n\n";
+             print OUTFILE "\@itemize \@minus{} \n";
           }
        }
 
@@ -71,7 +84,7 @@ while($_ = <>)
            $DECL1 = $1;
 	   $DECL2 = $3;
 
-           print OUTFILE  "\n\@unnumberedsubsubsec ", $DECL2 , "\n\n";
+           print OUTFILE  "\n\@item \@strong{", $DECL2 , "}\@*\n";
  
            print OUTFILE "\@code{", $DECL1 , "\@b{", $DECL2,"}("; 
            while ($FUNC =~ /(.*?)(\w*?)\s*?(,|\))/g){
@@ -84,13 +97,22 @@ while($_ = <>)
 
 
 # Suche zugehoerige Kommentare
-      if($KOMMENT == 1 && $_ =~/^\/\*(.*)(\*\/)$/){
+  if($KOMMENT == 1 && $_ =~/^\/\*(.*)(\*\/)$/){
 	  print OUTFILE $1, "\@\*\n";
-      }
+  }
 
 
 
 }
+
+if ($ENDE == 1){
+  print OUTFILE "\@end itemize";
+}
+
+
+
+
+
 
 
 

@@ -207,6 +207,14 @@ unur_distr_discr_set_prob( struct unur_distr *distr, double *prob, int n_prob )
     _unur_error(distr->name,UNUR_ERR_DISTR_SET,"length of PV");
     return 0;
   }
+
+  /* n_prob must not be too large */
+  if (DISTR.domain[0] + n_prob < DISTR.domain[0]) {
+    /* n_prob too large causes overflow */
+        _unur_error(distr->name,UNUR_ERR_DISTR_SET,"length of PV to large");
+    return 0;
+  }
+
   /* we do not check non-negativity of p.v.
      (it is cheaper to do it when unur_init() is called */
 
@@ -217,6 +225,10 @@ unur_distr_discr_set_prob( struct unur_distr *distr, double *prob, int n_prob )
   /* copy probability vector */
   memcpy( DISTR.prob, prob, n_prob * sizeof(double) );
   DISTR.n_prob = n_prob;
+
+  /* no domain given --> set left boundary to 0 */
+  if (!(distr->set & UNUR_DISTR_SET_DOMAIN))
+    DISTR.domain[0] = 0;
 
   /* o.k. */
   return 1;

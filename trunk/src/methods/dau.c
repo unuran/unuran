@@ -489,10 +489,6 @@ _unur_dau_create( struct unur_par *par)
     /* try to compute PV */
     unur_distr_discr_make_prob(&(gen->distr));
 
-  /* no domain given --> left boundary is 0 */
-  if (!(gen->distr.set & UNUR_DISTR_SET_DOMAIN))
-      DISTR.domain[0] = 0;
-
   /* routines for sampling and destroying generator */
   SAMPLE = _unur_dau_sample;
   gen->destroy = _unur_dau_free;

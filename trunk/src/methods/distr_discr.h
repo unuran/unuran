@@ -84,6 +84,11 @@ int unur_distr_discr_set_prob( UNUR_DISTR *distribution, double *prob, int n_pro
    1. @code{n_prob} must be positive. However there is no testing
    whether all entries in @code{prob} are non-negative. 
 
+   If no domain has not been set, then the left boundary is set to
+   @code{0}, by default. If @var{n_prob} is too large, e.g. because
+   left boundary + @var{n_prob} exceeds the range of integers, 
+   then the call fails. 
+
    Notice it not possible to set both a PV and a PMF.
    (I.e., it is not possible to set a PV for a distribution from
    (=>) UNURAN library of standard distributions.)
@@ -98,6 +103,13 @@ int unur_distr_discr_make_prob( UNUR_DISTR *distribution );
    defined in @file{unuran_config.h}.
    If successful the length of the generated probablity vector is
    returned.
+
+   Notice that when a discrete distribution object is created from
+   scratch, then the left boundary is set to @code{INT_MIN}. Therefore
+   it is necessary to change the this domain by a
+   unur_distr_discr_set_domain() call, since otherwise it is not
+   possible to compute the PV.
+
    If computing a PV fails for some reasons, @code{0} is returned and
    @code{unur_errno} is set to @code{UNUR_ERR_DISTR_SET}.
    Notice that it is not possible to execute this call when the

@@ -2,18 +2,19 @@
 ####################################################
 
 # Compiler
-$GCC = "gcc -Wall";
+$GCC = "gcc -Wall -ansi -pedantic";
 $G77 = "g77 -Wall";
+$JAVAC = "javac";
 
 # Files
-$PRNG_src = "./urand_prng.c";
-$PRNG_exec = "./urand_prng";
+$PRNG_exec = "./run_test_urand_PRNG";
+$PRNG_src = "$PRNG_exec.c";
 
-$C_src = "./urand_c.c";
-$C_exec = "./urand_c";
+$C_exec = "./run_test_urand_C";
+$C_src = "$C_exec.c";
 
-$FORTRAN_src = "./urand_f.f";
-$FORTRAN_exec = "./urand_f";
+$FORTRAN_exec = "./run_test_urand_FORTRAN";
+$FORTRAN_src = "$FORTRAN_exec.c";
 
 $JAVA_src = "./urand_java.java";
 $JAVA_exec = "./Urandtest";
@@ -39,7 +40,7 @@ make_JAVA_src();
 system "$GCC -o $PRNG_exec $PRNG_src -lprng -lm";
 system "$GCC -o $C_exec $C_src";
 system "$G77 -o $FORTRAN_exec $FORTRAN_src";
-system "javac $JAVA_src";
+system "$JAVAC $JAVA_src";
 
 # Print Test data
 print "seed = $seed\n";
@@ -197,6 +198,11 @@ static double urand (void)
   xn = (test > 0 ) ? test : test + m;
 
   return (xn * 4.656612875245796924105750827e-10);
+
+#undef a
+#undef m
+#undef q
+#undef r
 }
 
 static void useed(unsigned int seed)

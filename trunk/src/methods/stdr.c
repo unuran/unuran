@@ -961,11 +961,17 @@ _unur_stdr_sample_check( struct unur_gen *gen )
     V = _unur_call_urng(gen);
     y *= V;
 
-    /* evaluate squeeze */
+    /* evaluate and check squeeze */
     if (gen->variant & STDR_VARFLAG_SQUEEZE) {
       xx = 2 * X;
-      if ( xx >= GEN.xl && xx <= GEN.xr && y <= GEN.fm/4. )
-	return (X + DISTR.mode);
+      if ( xx >= GEN.xl && xx <= GEN.xr ) {
+	/* check squeeze */
+	if ( fx < (1.-DBL_EPSILON) * GEN.fm/4. )
+	  _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"pdf(x) < squeeze(x)");
+	/* evaluate squeeze */
+	if ( y <= GEN.fm/4. )
+	  return (X + DISTR.mode);
+      }
     }
 
     /* Compute X */

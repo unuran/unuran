@@ -1091,24 +1091,36 @@ _unur_srou_sample_check( struct unur_gen *gen )
       /* evaluate p.d.f. */
       fx = PDF(x);
 
-      /* check hat */
+      /* the point on the boundary of the region of acceptance
+	 in direction X = V/U has the coordinates
+	 ( X * sqrt(fx), sqrt(fx) ). */
       sfx = sqrt(fx);
       xfx = X * sfx;
+
+      /* check hat */
       if ( ( sfx > (1.+DBL_EPSILON) * GEN.um )   /* avoid roundoff error with FP registers */
 	   || (xfx < (1.-DBL_EPSILON) * GEN.vl) 
 	   || (xfx > (1.+DBL_EPSILON) * GEN.vr) )
 	_unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"pdf(x) > hat(x)");
 
-      /* evaluate squeeze */
+      /* evaluate and check squeeze */
       if ( (gen->variant & SROU_VARFLAG_SQUEEZE) &&
 	   (X >= GEN.xl) && 
 	   (X <= GEN.xr ) && 
 	   (U < GEN.um) ) {
+
+	/* check squeeze */
+	xx = xfx / (GEN.um - sfx);
+	if ( (xx < (1.-DBL_EPSILON) * GEN.xl) ||
+	     (xx > (1.+DBL_EPSILON) * GEN.xr) )
+	  _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"pdf(x) < squeeze(x)");
+
+	/* squeeze acceptance */
 	xx = V / (GEN.um - U);
 	if ( (xx >= GEN.xl) && (xx <= GEN.xr ) )
 	  return x;
       }
-
+      
       /* accept or reject */
       if (U*U <= PDF(x))
 	return x;

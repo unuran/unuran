@@ -43,8 +43,9 @@
   distributions ((=>) UNURAN library of standard distributions).
   It is then possible to change this distribution object by various
   set calls. Moreover it is possible to build a distribution object
-  entirely by yourself. For this purpose unur_distr_new() returns an
-  empty object of a given type (eg. univariate contiuous) which can be
+  entirely from scratch. For this purpose there exists an
+  unur_distr_<type>_new() call for each object type that returns an
+  empty object of this type (eg. univariate contiuous) which can be
   filled with the appropriate set calls.
 
   Notice that there are essential data about a distribution, eg. the
@@ -57,6 +58,13 @@
   essential parameters is changed all derived parameters are marked as
   unknown and must be set again if these are required for a the
   chosen generator method.
+
+  The library can handle truncated distributions, that is,
+  distribution that are derived from (standard) distribution by simply
+  restrict its domain to a subset. However for some methods there are
+  some subtle differences between changing the domain of a
+  distribution and truncating the distribution.
+
   For the objects provided by the ((=>) UNURAN library of standard
   distributions calls for updating these parameters exist (one for
   each parameter to avoid computational overhead since not all
@@ -67,7 +75,7 @@
   calls for a chosen method that change this copy of distribution object.
   NEVER extract the distribution object out of the generator object and 
   run one of the below set calls on it.
-  (How should the poor generator object know what you have done?)
+  (How should the poor generator object know what has happend?)
 */
 
 /*---------------------------------------------------------------------------*/
@@ -106,10 +114,10 @@ int unur_distr_get_dim( UNUR_DISTR *distribution );
 */
 
 unsigned int unur_distr_get_type( UNUR_DISTR *distribution );
-/*
-  Get type of distribution. See description of unur_distr_new() for
-  possible types. Alternatively the unur_distr_is_<TYPE>() calls can
-  be used.
+/* 
+   Get type of distribution. See description of unur_distr_new() for
+   possible types. Alternatively the unur_distr_is_<TYPE>() calls can
+   be used.
 */
 
 int unur_distr_is_cont( UNUR_DISTR *distribution );
@@ -166,14 +174,27 @@ int unur_distr_cont_set_cdf( UNUR_DISTR *distribution, UNUR_FUNCT_CONT *cdf );
    The type of each of these functions must be of type
    double funct(double x, UNUR_DISTR *distr).
 
-   It is not necessary that the given p.d.f. is normalized, i.e. the
-   integral need not be 1 (but see below).
-   Nevertheless the area below the given p.d.f. can be provided by a 
-   unur_distr_cont_set_pdfarea() call.
-   The given derivative must be the derivative of the given pdf of
-   course.
-   On the other hand the given c.d.f. must not be a multiple of the
-   real c.d.f., i.e. lim_{x->infinity} cdf(x) = 1.
+   Due to the fact that some of the methods do not require a
+   normalized p.d.f. the following is important:
+
+   (*) the given CDF must be the cumulative distribution function of
+   the (non-truncated) distribution. If a distribution from the 
+   (=>) UNURAN library of standard distributions is truncated,
+   there is no need to change the CDF.
+
+   (*) If both the CDF and PDF are used (for a method or for order
+   statistics), the PDF must be the derivative of the CDF.
+   If a truncated distribution for one of the standard distributions
+   from the (=>) UNURAN library of standard distributions is used,
+   there is no need to change the PDF.
+
+   (*) If the area below the PDF is required for a given distribution
+   it must be given by the unur_distr_cont_set_pdfarea() call.
+   For a truncated distribution this must be of course the integral of
+   the PDF in the given truncated domain.
+   For distributions from the (=>) UNURAN library of standard
+   distributions this is done automatically by the
+   unur_distr_cont_upd_pdfarea() call.
 
    It is important to note that all these functions must return a
    result for all floats @var{x}. Eg., if the domain of a given
@@ -183,11 +204,6 @@ int unur_distr_cont_set_cdf( UNUR_DISTR *distribution, UNUR_FUNCT_CONT *cdf );
    It is not possible to change such a function. Once the p.d.f. or
    c.d.f. is set it cannot be overwritten. A new distribution object
    has to be used instead.
-*/
-
-/*
-   (If no parameters are used for the function use the NULL pointer
-   for the second argument.)
 */
 
 UNUR_FUNCT_CONT *unur_distr_cont_get_pdf( UNUR_DISTR *distribution );
@@ -340,13 +356,19 @@ UNUR_DISTR *unur_distr_corder_new( UNUR_DISTR *distr, int n, int k );
 /* 
    Create an object for order statistics of for a sample size
    @var{n} and rank @var{k}.
-   @var{distr} must be a pointer to a univariate continuous distribution.
-   The area below the p.d.f. is set to the (possibly unknown) area
-   given for the underlying distribution.
-
+   @var{distr} must be a pointer to a univariate continuous
+   distribution. 
    The result is of the same type as of unur_distr_cont_new() calls.
-   (Except it cannot be used to for making the order statistics of the
+   (However it cannot be used to make an order statistics out of an
    order statistics.)
+
+   To have a PDF for the order statistics, the given distribution
+   obejct must contain a CDF and a PDF. Moreover it is assumed that
+   the given PDF is the derivative of the given CDF. Otherwise the
+   area below the PDF of the order statistics is not computed correctly.
+
+   Important: There is no warning when the computed area below the PDF
+   of the order statistics is wrong.
 */
 
 /* Essential parameters. */
@@ -359,6 +381,11 @@ UNUR_DISTR *unur_distr_corder_new( UNUR_DISTR *distr, int n, int k );
 
    unur_distr_cont_set_pdfparams() changes the parameters of the
       underlying distribution.
+
+   unur_disr_cont_upd_pdfares() assumes that the PDF of the underlying
+      distribution is normalized, i.e. it is the derivative its CDF.
+      Otherwise the computed area is wrong and there is NO warning
+      about this failure.
 
    unur_distr_cont_upd_mode() does not work.
 

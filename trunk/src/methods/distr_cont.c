@@ -531,9 +531,6 @@ unur_distr_cont_set_domain( struct unur_distr *distr, double left, double right 
   /* changelog */
   distr->set |= UNUR_DISTR_SET_DOMAIN;
 
-  /* other parameters might be wrong now */
-  distr->set &= ~UNUR_DISTR_SET_PDFAREA;
-  
   /* if distr is an object for a standard distribution, */
   /* we might have truncated the distribution!          */
   distr->set &= ~UNUR_DISTR_SET_STDDOMAIN;
@@ -719,16 +716,6 @@ unur_distr_cont_set_pdfarea( struct unur_distr *distr, double area )
   /* changelog */
   distr->set |= UNUR_DISTR_SET_PDFAREA;
 
-  if (distr->base)
-    /* for derived distributions (e.g. order statistics)
-       we also set the area for the underlying distribution */
-    /* we assume that the area below the p.d.f. of the derived 
-       distribution is the same as for the underlying distribution.
-       However, this does not hold when the rank or the domain of
-       the order statistics has been changed without 
-       unur_distr_cont_upd_pdfarea() call. */
-    BASE.area = area;
-
   /* o.k. */
   return 1;
 
@@ -764,15 +751,6 @@ unur_distr_cont_upd_pdfarea( struct unur_distr *distr )
     /* computing of area failed */
     _unur_error(distr->name,UNUR_ERR_DISTR_SET,"");
     return 0;
-  }
-
-  if (distr->base) {
-    /* for derived distributions (e.g. order statistics)
-       we also use the update routine of the underlying distribution */
-    if (!unur_distr_cont_upd_pdfarea(distr->base))
-      return 0;
-    else
-      DISTR.area *= BASE.area;
   }
 
   /* changelog */

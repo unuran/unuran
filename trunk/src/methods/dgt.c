@@ -682,7 +682,7 @@ _unur_dgt_debug_init( struct unur_par *par, struct unur_gen *gen )
     fprintf(log,") \t (-->sequential search");
   fprintf(log,")\n%s:\n",gen->genid);
 
-  fprintf(log,"%s: sum over PMF (as computed) = %-20g\n",gen->genid,GEN.sum);
+  fprintf(log,"%s: sum over PMF (as computed) = %#-20.16g\n",gen->genid,GEN.sum);
 
   if (gen->debug & DGT_DEBUG_TABLE)
     _unur_dgt_debug_table(gen);

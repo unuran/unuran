@@ -229,9 +229,10 @@ _unur_tdr_gw_sample( struct unur_gen *gen )
 	    return INFINITY;
 	  }
 	}
-	if (!(GEN.max_ratio * GEN.Atotal > GEN.Asqueeze))
-	  /* no more construction points (avoid to many second if statement above */
-	  GEN.max_ivs = GEN.n_ivs;
+      }
+      else {
+	/* no more construction points (avoid to many second if statement above */
+	GEN.max_ivs = GEN.n_ivs;
       }
     }
 
@@ -400,9 +401,10 @@ _unur_tdr_gw_sample_check( struct unur_gen *gen )
 	    return INFINITY;
 	  }
 	}
-	if (!(GEN.max_ratio * GEN.Atotal > GEN.Asqueeze))
-	  /* no more construction points (avoid to many second if statement above */
-	  GEN.max_ivs = GEN.n_ivs;
+      }
+      else {
+	/* no more construction points (avoid to many second if statement above */
+	GEN.max_ivs = GEN.n_ivs;
       }
     }
 
@@ -576,9 +578,10 @@ _unur_tdr_ps_sample( struct unur_gen *gen )
 	    return INFINITY;
 	  }
 	}
-	if (!(GEN.max_ratio * GEN.Atotal > GEN.Asqueeze))
-	  /* no more construction points (avoid to many second if statement above */
-	  GEN.max_ivs = GEN.n_ivs;
+      }
+      else {
+	/* no more construction points (avoid to many second if statement above */
+	GEN.max_ivs = GEN.n_ivs;
       }
     }
 
@@ -753,9 +756,10 @@ _unur_tdr_ps_sample_check( struct unur_gen *gen )
 	    return INFINITY;
 	  }
 	}
-	if (!(GEN.max_ratio * GEN.Atotal > GEN.Asqueeze))
-	  /* no more construction points (avoid to many second if statement above */
-	  GEN.max_ivs = GEN.n_ivs;
+      }
+      else {
+	/* no more construction points (avoid to many second if statement above */
+	GEN.max_ivs = GEN.n_ivs;
       }
     }
 
@@ -947,9 +951,10 @@ _unur_tdr_ia_sample( struct unur_gen *gen )
 	    return INFINITY;
 	  }
 	}
-	if (!(GEN.max_ratio * GEN.Atotal > GEN.Asqueeze))
-	  /* no more construction points (avoid to many second if statement above */
-	  GEN.max_ivs = GEN.n_ivs;
+      }
+      else {
+	/* no more construction points (avoid to many second if statement above */
+	GEN.max_ivs = GEN.n_ivs;
       }
     }
 
@@ -1129,9 +1134,10 @@ _unur_tdr_ia_sample_check( struct unur_gen *gen )
 	    return INFINITY;
 	  }
 	}
-	if (!(GEN.max_ratio * GEN.Atotal > GEN.Asqueeze))
-	  /* no more construction points (avoid to many second if statement above */
-	  GEN.max_ivs = GEN.n_ivs;
+      }
+      else {
+	/* no more construction points (avoid to many second if statement above */
+	GEN.max_ivs = GEN.n_ivs;
       }
     }
 

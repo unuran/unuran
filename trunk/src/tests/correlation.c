@@ -65,7 +65,7 @@ unur_test_correlation( UNUR_GEN *genx, UNUR_GEN *geny, int samplesize )
      /*                                                                      */
      /*----------------------------------------------------------------------*/
 {
-  double x, y;           /* contains random numbers           */ 
+  double x  =0., y =0.;  /* contains random numbers           */ 
   double mx =0., my=0.;  /* mean values (analog to s1 in [1]  */
   double dx =0., dy=0.;  /* analog to delta in [1]            */
   double sx =0., sy=0.;  /* analog to s2 in [1]               */

@@ -12,6 +12,7 @@ lib_LIBRARIES = libunuran_tests.a
 
 libunuran_tests_a_SOURCES = \
  chi2test.c \
+ correlation.c\
  counturn.c \
  moments.c \
  printsample.c \

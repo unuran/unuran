@@ -214,10 +214,16 @@ _unur_print_method( struct unur_par *par )
     printf("METHOD:\t\tspecial (CSTD)\n");
     break;
 
-    /* continuous, univariate */
+    /* continuous, empirical */
   case UNUR_METH_EMPK:
     COOKIE_CHECK(par,CK_EMPK_PAR,UNUR_ERR_COOKIE);
     printf("METHOD:\t\tempirical distribution with kernel smoothing (EMPK)\n");
+    break;
+
+    /* continuous, multivariate (random vector) */
+  case UNUR_METH_VMT:
+    COOKIE_CHECK(par,CK_VMT_PAR,UNUR_ERR_COOKIE);
+    printf("METHOD:\t\tvector matrix transformation (VMT)\n");
     break;
 
     /* misc */

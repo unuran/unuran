@@ -170,10 +170,9 @@ unur_dss_new( const struct unur_distr *distr )
 
   if (DISTR_IN.pv && (distr->set & UNUR_DISTR_SET_PMFSUM))
     variant = DSS_VARIANT_PV;
-  else if (DISTR_IN.pmf && (distr->set & UNUR_DISTR_SET_PMFSUM) 
-	   && (distr->set & UNUR_DISTR_SET_DOMAIN))
+  else if (DISTR_IN.pmf && (distr->set & UNUR_DISTR_SET_PMFSUM)) 
     variant = DSS_VARIANT_PMF;
-  else if (DISTR_IN.cdf && (distr->set & UNUR_DISTR_SET_DOMAIN))
+  else if (DISTR_IN.cdf)
     variant = DSS_VARIANT_CDF;
 
   if (variant == DSS_VARIANT_NONE) {

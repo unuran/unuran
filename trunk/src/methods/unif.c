@@ -195,8 +195,8 @@ _unur_unif_create( struct unur_par *par )
   CHECK_NULL(par,NULL);
   COOKIE_CHECK(par,CK_UNIF_PAR,NULL);
 
-  /* allocate memory for new generator object */
-  gen = _unur_malloc_gen( par );
+  /* create new generic generator object */
+  gen = _unur_generic_create( par );
 
   /* magic cookies */
   COOKIE_SET(gen,CK_UNIF_GEN);

@@ -81,7 +81,14 @@ int main()
   fclose (DATA);
                                
   /* end */
-  exit ((n_failed > 0) ? -1 : 0);
+  if (n_failed > 0) {
+    printf("[function parser --> failed]\n");
+    exit (-1);
+  }
+  else {
+    printf("[function parser --> ok]\n");
+    exit (0);
+  }
 }                                                                              
 
 /*---------------------------------------------------------------------------*/

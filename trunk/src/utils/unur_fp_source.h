@@ -69,7 +69,7 @@
 
 /* Defining infinity (just to avoid writing UNUR_INIFINITY)                  */
 
-#define INFINITY  UNUR_INFINITY  /* This must be already defined in x_math.h */
+#define INFINITY  UNUR_INFINITY   /* This must be already defined in umath.h */
 
 /* check for infinity */
 

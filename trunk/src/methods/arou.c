@@ -286,11 +286,11 @@ unur_arou_new( struct unur_distr *distr )
 
   /* check arguments */
   _unur_check_NULL(GENTYPE,distr,NULL);
-  COOKIE_CHECK(distr,CK_DISTR_CONT,NULL);
 
   /* check distribution */
   if (distr->type != UNUR_DISTR_CONT) {
     _unur_error(GENTYPE,UNUR_ERR_DISTR_INVALID,""); return NULL; }
+  COOKIE_CHECK(distr,CK_DISTR_CONT,NULL);
 
   if (DISTR_IN.pdf == NULL) {
     _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"p.d.f."); return NULL;

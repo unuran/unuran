@@ -89,7 +89,6 @@ MAINTAINERCLEANFILES = \
  unuran.html \
  unuran.txt \
  unuran.pdf \
- mdate-sh \
  $(unuran_examples) \
  unuran_src.texi
 

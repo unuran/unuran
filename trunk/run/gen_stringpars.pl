@@ -138,7 +138,7 @@ sub distr_info{
 	# search for standard distribution
 	if ( $_ =~ /^\s*=DISTR\s+(\w+)/ ){
 	    print Outfile "if ( !strcmp(value, \"$1\") ){\n";
-	    print Outfile "\t\t\tdistr = unur_distr_$1(list, no_of_elem;\n\t\t}\n\t\telse ";
+	    print Outfile "\t\t\tdistr = unur_distr_$1(list, no_of_elem);\n\t\t}\n\t\telse ";
 	}
     }
 

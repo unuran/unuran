@@ -69,13 +69,13 @@ _unur_tdr_debug_init( struct unur_par *par, struct unur_gen *gen )
   fprintf(log,"%s:\n",gen->genid);
   fprintf(log,"%s: type    = continuous univariate random variates\n",gen->genid);
   fprintf(log,"%s: method  = transformed density rejection\n",gen->genid);
-  fprintf(log,"%s: version = ",gen->genid);
-  switch (par->variant & TDR_VARMASK_VERSION) {
-  case TDR_VAR_VERSION_GW:
+  fprintf(log,"%s: variant = ",gen->genid);
+  switch (par->variant & TDR_VARMASK_VARIANT) {
+  case TDR_VARIANT_GW:
     fprintf(log,"original (Gilks & Wild)  ... GW\n"); break;
-  case TDR_VAR_VERSION_PS:
+  case TDR_VARIANT_PS:
     fprintf(log,"proportional squeeze  ... PS\n"); break;
-  case TDR_VAR_VERSION_IA:
+  case TDR_VARIANT_IA:
     fprintf(log,"immediate acceptance  ... IA\n"); break;
   }
   fprintf(log,"%s: transformation T_c(x) = ",gen->genid);
@@ -93,12 +93,12 @@ _unur_tdr_debug_init( struct unur_par *par, struct unur_gen *gen )
   _unur_distr_cont_debug( &(gen->distr), gen->genid );
 
   fprintf(log,"%s: sampling routine = _unur_tdr_",gen->genid);
-  switch (par->variant & TDR_VARMASK_VERSION) {
-  case TDR_VAR_VERSION_GW:
+  switch (par->variant & TDR_VARMASK_VARIANT) {
+  case TDR_VARIANT_GW:
     fprintf(log,"gw"); break;
-  case TDR_VAR_VERSION_PS:
+  case TDR_VARIANT_PS:
     fprintf(log,"ps"); break;
-  case TDR_VAR_VERSION_IA:
+  case TDR_VARIANT_IA:
     fprintf(log,"ia"); break;
   }
   if (par->variant & TDR_VARFLAG_VERIFY)
@@ -180,18 +180,18 @@ _unur_tdr_debug_free( struct unur_gen *gen )
 static void
 _unur_tdr_debug_intervals( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
-     /* write list of intervals into logfile (orig. version by Gilks & Wild) */
+     /* write list of intervals into logfile (orig. variant by Gilks & Wild) */
      /*                                                                      */
      /* parameters:                                                          */
      /*   gen ... pointer to generator object                                */
      /*----------------------------------------------------------------------*/
 {
-  switch (gen->variant & TDR_VARMASK_VERSION) {
-  case TDR_VAR_VERSION_GW:    /* original version (Gilks&Wild) */
+  switch (gen->variant & TDR_VARMASK_VARIANT) {
+  case TDR_VARIANT_GW:    /* original variant (Gilks&Wild) */
     _unur_tdr_gw_debug_intervals(gen);
     return;
-  case TDR_VAR_VERSION_PS:    /* proportional squeeze */
-  case TDR_VAR_VERSION_IA:    /* immediate acceptance */
+  case TDR_VARIANT_PS:    /* proportional squeeze */
+  case TDR_VARIANT_IA:    /* immediate acceptance */
     _unur_tdr_ps_debug_intervals(gen);
     return;
   default:
@@ -205,7 +205,7 @@ _unur_tdr_debug_intervals( struct unur_gen *gen )
 static void
 _unur_tdr_gw_debug_intervals( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
-     /* write list of intervals into logfile (orig. version by Gilks & Wild) */
+     /* write list of intervals into logfile (orig. variant by Gilks & Wild) */
      /*                                                                      */
      /* parameters:                                                          */
      /*   gen ... pointer to generator object                                */

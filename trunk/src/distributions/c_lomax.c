@@ -204,7 +204,7 @@ unur_distr_lomax( double *params, int n_params )
   distr->name = distr_name;
                 
   /* how to get special generators */
-  DISTR.init = NULL;            /* _unur_stdgen_lomax_init; */
+  DISTR.init = _unur_stdgen_lomax_init;
 
   /* functions */
   DISTR.pdf  = _unur_pdf_lomax;  /* pointer to PDF               */

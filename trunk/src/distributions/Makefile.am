@@ -23,9 +23,9 @@ libdistributions_a_SOURCES = \
  c_laplace.c     c_laplace_gen.c \
  c_logistic.c    c_logistic_gen.c \
  c_lognormal.c \
- c_lomax.c \
+ c_lomax.c       c_lomax_gen.c \
  c_normal.c      c_normal_gen.c \
- c_pareto.c \
+ c_pareto.c      c_pareto_gen.c \
  c_powerexponential.c c_powerexponential_gen.c \
  c_rayleigh.c \
  c_slash.c       c_slash_gen.c \

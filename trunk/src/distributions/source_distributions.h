@@ -257,6 +257,12 @@ double _unur_stdgen_sample_logistic_inv( UNUR_GEN *generator );
 /*---------------------------------------------------------------------------*/
 /*  Lomax distribution (Pareto distr. of second kind)  [2; ch.20, p.575]     */
 
+/* initialize special generator                                              */
+int _unur_stdgen_lomax_init( UNUR_PAR *parameters, UNUR_GEN *generator );
+
+/* Inversion method                                                          */
+double _unur_stdgen_sample_lomax_inv( UNUR_GEN *generator );
+
 
 /*---------------------------------------------------------------------------*/
 /*  Normal distribution  [2; ch.13, p.80]                                    */
@@ -292,8 +298,13 @@ double _unur_stdgen_sample_normal_acr( UNUR_GEN *generator );
 double _unur_stdgen_sample_normal_sum( UNUR_GEN *generator );
 
 /*---------------------------------------------------------------------------*/
-/*  Pareto distribution (of first kind)  [2; ch.20, p.574]                   */
+/* Pareto distribution (of first kind)  [2; ch.20, p.574]                   */
 
+/* initialize special generator                                              */
+int _unur_stdgen_pareto_init( UNUR_PAR *parameters, UNUR_GEN *generator );
+
+/* Inversion method                                                          */
+double _unur_stdgen_sample_pareto_inv( UNUR_GEN *generator );
 
 /*---------------------------------------------------------------------------*/
 /* Pearson VI distribution                                                   */

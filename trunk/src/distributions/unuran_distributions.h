@@ -277,10 +277,10 @@ UNUR_DISTR *unur_distr_lognormal(double *params, int n_params);
    =DOMAIN   0 <= x < infinity 
    =FPARAM    0  : a : > 0 :   : shape :
              [1] : C : > 0 : 1 : scale :
+   =STDGEN   INV  Inversion method
    =EON
 */
 UNUR_DISTR *unur_distr_lomax(double *params, int n_params);
-/** TODO: STDGEN **/
 
 /*---------------------------------------------------------------------------*/
 /* Normal distribution  [2; ch.13, p.80]                                     */
@@ -313,10 +313,10 @@ UNUR_DISTR *unur_distr_normal( double *params, int n_params );
    =DOMAIN   k < x < infinity 
    =FPARAM   0 : k : > 0 :  : shape, location :
              1 : a : > 0 :  : shape           :
+   =STDGEN   INV  Inversion method
    =EON
 */
 UNUR_DISTR *unur_distr_pareto( double *params, int n_params );
-/** TODO: STDGEN **/
 
 /*---------------------------------------------------------------------------*/
 /* Pearson VI distribution                                                   */

@@ -62,7 +62,7 @@ static const char distr_name[] = "pareto";
 #define a  params[1]
 
 #define DISTR distr->data.cont
-#define NORMCONSTANT (distr->data.cont.norm_constant)
+/* #define NORMCONSTANT (distr->data.cont.norm_constant) */
 
 /* function prototypes                                                       */
 static double _unur_pdf_pareto( double x, UNUR_DISTR *distr );
@@ -79,7 +79,7 @@ double
 _unur_pdf_pareto( double x, UNUR_DISTR *distr )
 { 
   register double *params = DISTR.params;
-  return ( (x<k) ? 0. : pow(x,-(a+1.))*NORMCONSTANT );
+  return ( (x<k) ? 0. : (a/k) / pow(x/k, a + 1.) );
 } /* end of _unur_pdf_pareto() */
 
 /*---------------------------------------------------------------------------*/
@@ -88,7 +88,7 @@ double
 _unur_dpdf_pareto( double x, UNUR_DISTR *distr )
 { 
   register double *params = DISTR.params;
-  return ( (x<k) ? 0. : (-1.-a) * pow(x,-(a+2.))*NORMCONSTANT );
+  return ( (x<k) ? 0. : a * (-a-1.) / (k * k) * pow(x/k,-a-2.) );
 } /* end of _unur_dpdf_pareto() */
 
 /*---------------------------------------------------------------------------*/
@@ -121,8 +121,7 @@ _unur_upd_mode_pareto( UNUR_DISTR *distr )
 int
 _unur_upd_area_pareto( UNUR_DISTR *distr )
 {
-  /* normalization constant */
-  NORMCONSTANT = DISTR.a * pow(DISTR.k,DISTR.a);
+  /* normalization constant: none */
 
   if (distr->set & UNUR_DISTR_SET_STDDOMAIN) {
     DISTR.area = 1.;
@@ -198,7 +197,7 @@ unur_distr_pareto( double *params, int n_params )
   distr->name = distr_name;
                 
   /* how to get special generators */
-  DISTR.init = NULL;            /* _unur_stdgen_pareto_init; */
+  DISTR.init = _unur_stdgen_pareto_init;
 
   /* functions */
   DISTR.pdf  = _unur_pdf_pareto;  /* pointer to PDF               */
@@ -217,8 +216,7 @@ unur_distr_pareto( double *params, int n_params )
     return NULL;
   }
 
-  /* normalization constant */
-  NORMCONSTANT = DISTR.a * pow(DISTR.k,DISTR.a);
+  /* normalization constant: none */
 
   /* mode and area below p.d.f. */
   DISTR.mode = DISTR.k;

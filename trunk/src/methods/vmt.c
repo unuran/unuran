@@ -458,7 +458,8 @@ _unur_vmt_debug_init( const struct unur_gen *gen )
 
   _unur_distr_cvec_debug( gen->distr, gen->genid );
 
-  fprintf(log,"%s: marginal distributions = ",gen->genid);
+  fprintf(log,"%s: generators for standardized marginal distributions = \n",gen->genid);
+  fprintf(log,"%s:\t",gen->genid);
   for (i=0; i<GEN.dim; i++)
     fprintf(log,"[%s] ", GEN.marginalgen_list[i]->genid);
   fprintf(log,"\n%s:\n",gen->genid);

@@ -278,7 +278,11 @@ _unur_mcorr_init( struct unur_par *par )
 
   /* create a new empty generator object */
   gen = _unur_mcorr_create(par);
-  if (!gen) { free(par); return NULL; }
+  if (!gen) { 
+    if (PAR.eigenvalues) free(PAR.eigenvalues);
+    free(par); 
+    return NULL; 
+  }
 
   /* we need a generator for standard normal distributons */
   if (NORMAL==NULL) {
@@ -289,6 +293,7 @@ _unur_mcorr_init( struct unur_par *par )
     _unur_distr_free( normaldistr );
     if (NORMAL == NULL) {
       _unur_error(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"Cannot create aux Gaussian generator");
+      if (PAR.eigenvalues) free(PAR.eigenvalues);
       _unur_free(gen); free (par);
       return NULL;
     }

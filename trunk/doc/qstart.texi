@@ -509,7 +509,7 @@ Read this random numbers ...
 @end menu
 
 @node Functions
-@section Internal functions
+@section Functions for internal use
  
 @include qstart_internals.texi
 

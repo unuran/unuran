@@ -112,6 +112,8 @@
 #define CK_FSTR_PDATA    0xa0000001u
 #define CK_FSTR_TNODE    0xa0000002u
 
+/* auxiliary tools */
+#define CK_SLIST         0xa0000004u
 
 /*---------------------------------------------------------------------------*/
 /* macros for dealing with magic cookies                                     */

@@ -4,13 +4,13 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   FILE: functparser_source.h                                              *
+ *   FILE: unur_slist.h                                                      *
  *                                                                           *
  *   PURPOSE:                                                                *
- *         declares prototypes for function parser                           *
+ *         defines function prototypes for simple list                       *
  *                                                                           *
  *   USAGE:                                                                  *
- *         only included in source_unuran.h                                  *
+ *         only included in unuran.h                                         *
  *                                                                           *
  *****************************************************************************
      $Id$
@@ -37,71 +37,39 @@
  *****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
-#ifndef FUNCTPARSER_SOURCE_H_SEEN
-#define FUNCTPARSER_SOURCE_H_SEEN
-
+#ifndef X_SLIST_H_SEEN
+#define X_SLIST_H_SEEN
 /*---------------------------------------------------------------------------*/
-/* Function prototypes for function string parser                            */
+/* Not part of manual!                                                       */
 /*---------------------------------------------------------------------------*/
-
-struct ftreenode *_unur_fstr2tree ( const char *functstring );
-/*---------------------------------------------------------------------------*/
-/* Compute funtion tree from string.                                         */
-/*---------------------------------------------------------------------------*/
-
-struct ftreenode *_unur_fstr2tree_DefFunct ( const char *functstring );
-/*---------------------------------------------------------------------------*/
-/* Compute funtion tree from string.                                         */
-/* (Same as _unur_fstr2tree() but string must start with "f(x)=".            */
+/*                                                                           */
+/* A simple list can be used to store an arbitrary numbers of pointers       */
+/* to allocated memory in a list.                                            */
+/*                                                                           */
+/* IMPORTANT: These elements must be allocated via (c|m|re)alloc()!!         */
+/*                                                                           */
 /*---------------------------------------------------------------------------*/
 
-double _unur_fstr_eval_tree ( const struct ftreenode *functtree_root, const double x );
+struct unur_slist;
 /*---------------------------------------------------------------------------*/
-/* Evalutes function given by a function tree at x.                          */
-/*---------------------------------------------------------------------------*/
-
-struct ftreenode *_unur_fstr_dup_tree (const struct ftreenode *functtree_root);
-/*---------------------------------------------------------------------------*/
-/* Duplicate function tree rooted at root.                                   */
+/* Structure for simple list.                                                */
 /*---------------------------------------------------------------------------*/
 
-void _unur_fstr_free ( struct ftreenode *functtree_root );
+struct unur_slist *_unur_slist_new( void );
 /*---------------------------------------------------------------------------*/
-/* Destroys function tree and frees memory.                                  */
-/*---------------------------------------------------------------------------*/
-
-char *_unur_fstr_tree2string ( const struct ftreenode *functtree_root,
-			       const char *variable, const char *function, int spaces );
-/*---------------------------------------------------------------------------*/
-/* Produce string from function tree.                                        */
-/* It returns a pointer to the resulting string. This should be freed when   */
-/* it is not used any more.                                                  */
+/* Make new simple list.                                                     */
 /*---------------------------------------------------------------------------*/
 
-int _unur_fstr_tree2C ( FILE *out, const struct ftreenode *root,
-			const char *variable, const char *function );
+void _unur_slist_append( struct unur_slist *slist, void *element );
 /*---------------------------------------------------------------------------*/
-/* Produce C code from function tree.                                        */
-/*---------------------------------------------------------------------------*/
-
-int _unur_fstr_tree2FORTRAN ( FILE *out, const struct ftreenode *root,
-			      const char *variable, const char *function );
-/*---------------------------------------------------------------------------*/
-/* Produce FORTRAN code from function tree.                                  */
+/* Append pointer to element to simple list.                                 */
 /*---------------------------------------------------------------------------*/
 
-int _unur_fstr_tree2JAVA ( FILE *out, const struct ftreenode *root,
-			   const char *variable, const char *function );
+void _unur_slist_free( struct unur_slist *slist );
 /*---------------------------------------------------------------------------*/
-/* Produce JAVA code from function tree.                                     */
-/*---------------------------------------------------------------------------*/
-
-struct ftreenode *_unur_fstr_make_derivative ( const struct ftreenode *functtree_root );
-/*---------------------------------------------------------------------------*/
-/* Make function tree for derivate of given function (tree).                 */ 
+/* Free all elements and list in simple list.                                */
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*/
-#endif   /* FUNCTPARSER_SOURCE_H_SEEN */
+#endif  /* X_SLIST_H_SEEN */
 /*---------------------------------------------------------------------------*/
-

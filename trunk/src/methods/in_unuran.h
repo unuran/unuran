@@ -161,6 +161,7 @@ typedef int UNUR_VFUNCT_CVEC(double *result, double *x, struct unur_distr *distr
 /*****************************************************************************/
 
 #include <x_math.h>
+#include <x_slist.h>
 
 /*---------------------------------------------------------------------------*/
 #endif  /* IN_UNURAN_H_SEEN */

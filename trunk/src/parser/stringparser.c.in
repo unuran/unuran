@@ -164,17 +164,6 @@
 
 /*---------------------------------------------------------------------------*/
 
-/*---------------------------------------------------------------------------*/
-/* Store allocated memory blocks.                                            */
-/*---------------------------------------------------------------------------*/
-
-struct malloc_list {
-  void **ptr;      /* pointer to list of allocated memory blocks */
-  int n_ptr;       /* number of allocated memory blocks */
-};
-
-/*---------------------------------------------------------------------------*/
-
 static struct unur_distr *_unur_str_distr( char *str_distr );
 /*---------------------------------------------------------------------------*/
 /* get distribution object for given distribution.                           */
@@ -238,7 +227,7 @@ static int _unur_str_distr_set_C( UNUR_DISTR *distr, const char *key, char *type
 
 
 static struct unur_par *_unur_str_par( char *str_method, UNUR_DISTR *distr,
-				       struct malloc_list *mlist );
+				       struct unur_slist *mlist );
 /*---------------------------------------------------------------------------*/
 /* get parameter object for distribution and method.                         */
 /*---------------------------------------------------------------------------*/
@@ -248,7 +237,8 @@ static struct unur_par *_unur_str_par_new( const char *method, UNUR_DISTR *distr
 /* get new parameter object for method.                                      */
 /*---------------------------------------------------------------------------*/
 
-static int _unur_str_par_set( UNUR_PAR *par, const char *key, char *value, struct malloc_list *mlist );
+static int _unur_str_par_set( UNUR_PAR *par, const char *key, char *value,
+			      struct unur_slist *mlist );
 /*---------------------------------------------------------------------------*/
 /* set parameters for method.                                                */
 /*---------------------------------------------------------------------------*/
@@ -293,12 +283,12 @@ static int _unur_str_par_set_dd( UNUR_PAR *par, const char *key, char *type_args
 /* 2 doubles.                                                                */
 /*---------------------------------------------------------------------------*/
 static int _unur_str_par_set_iD( UNUR_PAR *par, const char *key, char *type_args, char **args,
-				 par_set_iD set, struct malloc_list *mlist );
+				 par_set_iD set, struct unur_slist *mlist );
 /*---------------------------------------------------------------------------*/
 /* integer & array of doubles.                                               */
 /*---------------------------------------------------------------------------*/
 static int _unur_str_par_set_Di( UNUR_PAR *par, const char *key, char *type_args, char **args,
-				 par_set_Di set, struct malloc_list *mlist );
+				 par_set_Di set, struct unur_slist *mlist );
 /*---------------------------------------------------------------------------*/
 /* array of doubles & integer.                                               */
 /*---------------------------------------------------------------------------*/
@@ -339,21 +329,6 @@ static double _unur_atod ( const char *str );
 /*---------------------------------------------------------------------------*/
 /* Convert string into its double value.                                     */
 /*---------------------------------------------------------------------------*/
-
-/*---------------------------------------------------------------------------*/
-/* Store and free allocated memory blocks.                                   */
-/*---------------------------------------------------------------------------*/
-
-static void _unur_add_to_malloc_list( struct malloc_list *mlist, void *mptr );
-/*---------------------------------------------------------------------------*/
-/* Store mptr to list of allocated memory blocks.                            */
-/*---------------------------------------------------------------------------*/
-
-static void _unur_free_malloc_list( struct malloc_list *mlist );
-/*---------------------------------------------------------------------------*/
-/* Free all pointers in list of allocated memory blocks.                     */
-/*---------------------------------------------------------------------------*/
-
 
 #ifdef UNUR_ENABLE_LOGGING
 /*---------------------------------------------------------------------------*/
@@ -448,11 +423,12 @@ unur_str2gen (const char *string)
   char *str_urng    = NULL;       /* string for uniform RNG  */
 
   char *str = NULL;               /* pointer to working string */
-
   char *token;
 
+  struct unur_slist *mlist;       /* list of allocated memory blocks */
+
   /* (empty) list of allocated memory blocks */ 
-  struct malloc_list mlist = { NULL, 0 };
+  mlist = _unur_slist_new();
 
   /* check arguments */
   _unur_check_NULL( GENTYPE,string,NULL );
@@ -504,7 +480,7 @@ unur_str2gen (const char *string)
   /* get parameter object */
   if ( str_method != NULL )
     /* method is provided in string */
-    par = _unur_str_par(str_method, distr, &mlist);
+    par = _unur_str_par(str_method, distr, mlist);
   else
     /* otherwise use default method */
     par = unur_auto_new(distr);
@@ -524,7 +500,7 @@ unur_str2gen (const char *string)
     }
 
   /* free allocated memory blocks */
-  _unur_free_malloc_list(&mlist);
+  _unur_slist_free(mlist);
   if (str) free(str);
 
   /* check result: nothing to do */
@@ -564,13 +540,14 @@ unur_str2par (struct unur_distr *distr, const char *string)
 {
   UNUR_PAR *par = NULL;           /* parameter object */
   char *str = NULL;               /* pointer to working string */
-
-  /* (empty) list of allocated memory blocks */ 
-  struct malloc_list mlist = { NULL, 0 };
+  struct unur_slist *mlist;       /* list of allocated memory blocks */
 
   /* check arguments */
   _unur_check_NULL( GENTYPE,distr,NULL );
   _unur_check_NULL( GENTYPE,string,NULL );
+
+  /* (empty) list of allocated memory blocks */ 
+  mlist = _unur_slist_new();
 
   /* Prepare string for processing:            */
   /*   Remove all white spaces,                */
@@ -585,10 +562,10 @@ unur_str2par (struct unur_distr *distr, const char *string)
 #endif
 
   /* get parameter object */
-  par = _unur_str_par(str, distr, &mlist);
+  par = _unur_str_par(str, distr, mlist);
 
   /* free allocated memory blocks */
-/*    _unur_free_malloc_list(&mlist); */
+/*    _unur_free_malloc_list(&slist); */
   /** TODO: fix this memory leak !!!!!! **/
   if (str) free(str);
 
@@ -1335,7 +1312,7 @@ _unur_str_distr_set_C (UNUR_DISTR *distr, const char *key, char *type_args, char
 /*---------------------------------------------------------------------------*/
 
 struct unur_par *
-_unur_str_par( char *str_method, UNUR_DISTR *distr, struct malloc_list *mlist )
+_unur_str_par( char *str_method, UNUR_DISTR *distr, struct unur_slist *mlist )
      /*----------------------------------------------------------------------*/
      /* get parameter object for distribution and method                     */
      /*                                                                      */
@@ -1462,7 +1439,7 @@ _unur_str_par_new( const char *method, UNUR_DISTR *distr )
 /*---------------------------------------------------------------------------*/
 
 int
-_unur_str_par_set( UNUR_PAR *par, const char *key, char *value, struct malloc_list *mlist )
+_unur_str_par_set( UNUR_PAR *par, const char *key, char *value, struct unur_slist *mlist )
      /*----------------------------------------------------------------------*/
      /* set parameters for method                                            */
      /*                                                                      */
@@ -1854,7 +1831,7 @@ _unur_str_par_set_dd (UNUR_PAR *par, const char *key, char *type_args, char **ar
 
 int
 _unur_str_par_set_iD (UNUR_PAR *par, const char *key, char *type_args, char **args,
-		      par_set_iD set, struct malloc_list *mlist )
+		      par_set_iD set, struct unur_slist *mlist )
      /*----------------------------------------------------------------------*/
      /* Set parameter in given parameter object.                             */
      /* The list of arguments and their types are given as string.           */
@@ -1949,7 +1926,7 @@ _unur_str_par_set_iD (UNUR_PAR *par, const char *key, char *type_args, char **ar
 
   /* store pointer to allocated array */
   if (darray) 
-    _unur_add_to_malloc_list( mlist, darray );
+    _unur_slist_append( mlist, darray );
 
   return result;
 
@@ -1959,7 +1936,7 @@ _unur_str_par_set_iD (UNUR_PAR *par, const char *key, char *type_args, char **ar
 
 int
 _unur_str_par_set_Di (UNUR_PAR *par, const char *key, char *type_args, char **args,
-		      par_set_Di set, struct malloc_list *mlist )
+		      par_set_Di set, struct unur_slist *mlist )
      /*----------------------------------------------------------------------*/
      /* Set parameter in given parameter object.                             */
      /* The list of arguments and their types are given as string.           */
@@ -2010,7 +1987,7 @@ _unur_str_par_set_Di (UNUR_PAR *par, const char *key, char *type_args, char **ar
 
       /* store pointer to allocated array */
       if (darray) 
-	_unur_add_to_malloc_list( mlist, darray );
+	_unur_slist_append( mlist, darray );
 
       return result;
     }
@@ -2504,78 +2481,6 @@ _unur_atod ( const char *str )
   else
     return atof(str);
 } /* end of _unur_atod() */
-
-/*---------------------------------------------------------------------------*/
-
-/*****************************************************************************/
-/**  Store and free allocated memory blocks.                                **/
-/*****************************************************************************/
-
-/*---------------------------------------------------------------------------*/
-
-void
-_unur_add_to_malloc_list( struct malloc_list *mlist, void *mptr )
-     /*----------------------------------------------------------------------*/
-     /* store mptr to list of allocated memory blocks.                       */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   mlist ... list of allocated memory blocks                          */
-     /*   mptr  ... pointer to memory block to be stored in list             */
-     /*                                                                      */
-     /* return:                                                              */
-     /*   void                                                               */
-     /*                                                                      */
-     /* comment:                                                             */
-     /*   If mlist is an empty list, then it must be initialized as follows: */
-     /*      mlist->ptr = NULL                                               */
-     /*      mlist->n_ptr = 0                                                */
-     /*----------------------------------------------------------------------*/
-{
-  /* check arguments */
-  CHECK_NULL(mptr,/*void*/);
-
-  /* allocate memory for the list of blocks */
-  mlist->ptr = _unur_realloc(mlist->ptr,(mlist->n_ptr+1)*sizeof(void *));
-
-  /* store allocated memory block */
-  mlist->ptr[mlist->n_ptr] = mptr;
-
-  /* update number of allocated memory blocks */
-  ++(mlist->n_ptr);
-
-} /* end of _unur_add_to_malloc_list() */
-
-/*---------------------------------------------------------------------------*/
-
-void
-_unur_free_malloc_list( struct malloc_list *mlist )
-     /*----------------------------------------------------------------------*/
-     /* free all pointers in list of allocated memory blocks.                */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   mlist ... list of allocated memory blocks                          */
-     /*                                                                      */
-     /* return:                                                              */
-     /*   void                                                               */
-     /*----------------------------------------------------------------------*/
-{
-  int i;
-
-  /* check arguments */
-  if (mlist == NULL || mlist->n_ptr == 0 || mlist->ptr == NULL)
-    return;
-
-  /* free memory blocks */
-  for (i=0; i < mlist->n_ptr; i++)
-    if (mlist->ptr[i]) free(mlist->ptr[i]); 
-
-  free( mlist->ptr);
-
-  /* clear list */
-  mlist->ptr = NULL;
-  mlist->n_ptr = 0;
-
-} /* end of _unur_free_malloc_list() */
 
 /*---------------------------------------------------------------------------*/
 

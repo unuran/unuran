@@ -24,6 +24,7 @@ libmethods_a_SOURCES = \
  x_gen.c \
  x_math.c \
  x_misc.c \
+ x_slist.c \
  x_stream.c \
  x_umalloc.c \
  x_urng.c \
@@ -58,6 +59,7 @@ noinst_HEADERS = \
  x_gen.h x_gen_source.h \
  x_math.h x_math_source.h \
  x_misc_source.h \
+ x_slist.h x_slist_struct.h \
  x_umalloc_source.h \
  x_urng.h \
  distr.h distr_cemp.h distr_cont.h distr_corder.h distr_cvec.h distr_cvemp.h \

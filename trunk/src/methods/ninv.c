@@ -243,6 +243,8 @@ unur_ninv_new( struct unur_distr *distr )
   PAR.table_on = 0;            /* =DEF NINV table_on If equal to 1 a table
                                    containing potential starting points
                                    is generated  */
+  PAR.TABLE_POINTS = 100;      /* =DEF NINV no_of_table_points is the
+                                   number of points used for the table.*/
   PAR.s[0]      = 0.0;              /* =DEF NINV s1  Left boundary of
                                       starting  interval for regula falsi
                                       and newton starting point.             */
@@ -568,7 +570,7 @@ int unur_ninv_chg_start(UNUR_GEN *gen, double s1, double s2)
 
 
 
-int unur_ninv_use_table(UNUR_PAR *par)
+int unur_ninv_use_table(UNUR_PAR *par, int tbl_pnts)
      /*----------------------------------------------------------------------*/
      /* if used, a table is generated to find better startig points          */
      /* the function unur_ninv_set_start() is overruled                      */
@@ -586,7 +588,7 @@ int unur_ninv_use_table(UNUR_PAR *par)
 
   /* check input */
   _unur_check_par_object( par,NINV );
- 
+  PAR.TABLE_POINTS = (tbl_pnts > 10) ? tbl_pnts : 10;
   PAR.table_on = 1;
 
   return 1;
@@ -597,7 +599,7 @@ int unur_ninv_use_table(UNUR_PAR *par)
 
 /*****************************************************************************/
 
-int unur_ninv_chg_table(UNUR_GEN *gen)
+int unur_ninv_chg_table(UNUR_GEN *gen, int tbl_pnts)
      /*----------------------------------------------------------------------*/
      /* if used, a table is generated to find better startig points          */
      /* set somewhere else will be ignored                                   */
@@ -614,25 +616,29 @@ int unur_ninv_chg_table(UNUR_GEN *gen)
 
   /* check arguments */
   CHECK_NULL(gen, 0);
- 
+
+  free(GEN.table);   
+  GEN.TABLE_POINTS = (tbl_pnts > 10) ? tbl_pnts : 10;
+  GEN.table = (double *) malloc(GEN.TABLE_POINTS*sizeof(double));
+
       GEN.s[0] = - 10.;  /* arbitrary starting values                        */
       GEN.s[1] =   10.;
       GEN.table_on = 0;   /* table can't be used to calculate itself         */
 
-      for (i=0; i<TABLE_POINTS/2; i++){
+      for (i=0; i<GEN.TABLE_POINTS/2; i++){
 	GEN.table[i] =
-           _unur_ninv_regula(gen, (i+1.)/(TABLE_POINTS+1.) );
-        GEN.table[TABLE_POINTS-1-i] = 
-           _unur_ninv_regula(gen, ((TABLE_POINTS-1.-i)+1.)/(TABLE_POINTS+1.) );
+           _unur_ninv_regula(gen, (i+1.)/(GEN.TABLE_POINTS+1.) );
+        GEN.table[GEN.TABLE_POINTS-1-i] = 
+           _unur_ninv_regula(gen, ((GEN.TABLE_POINTS-1.-i)+1.)/(GEN.TABLE_POINTS+1.) );
          
         GEN.s[0] = GEN.table[i];
-        GEN.s[1] = GEN.table[TABLE_POINTS-1-i];
+        GEN.s[1] = GEN.table[GEN.TABLE_POINTS-1-i];
  
       }  /* end of for()                                                     */
 
-      if (TABLE_POINTS/2 != TABLE_POINTS/2.){  /*  TABLE_POINTS is odd ?     */
-         GEN.table[TABLE_POINTS/2] =  
-           _unur_ninv_regula(gen, ((TABLE_POINTS/2)+1.)/(TABLE_POINTS+1.) );
+      if (GEN.TABLE_POINTS/2 != GEN.TABLE_POINTS/2.){  /*  GEN.TABLE_POINTS is odd ?     */
+         GEN.table[GEN.TABLE_POINTS/2] =  
+           _unur_ninv_regula(gen, ((GEN.TABLE_POINTS/2)+1.)/(GEN.TABLE_POINTS+1.) );
       }
 
   GEN.table_on = 1;
@@ -888,32 +894,38 @@ _unur_ninv_init( struct unur_par *par )
 
   }  /* end of switch  */
 
-
+  
+ 
   /* generating the table with potential starting values                     */
   if (GEN.table_on == 1){
+
+      GEN.table = (double *) malloc(GEN.TABLE_POINTS*sizeof(double));      
 
       GEN.s[0] = - 10.;  /* arbitrary starting values                        */
       GEN.s[1] =   10.;
       GEN.table_on = 0;   /* table can't be used to calculate itself         */
 
-      for (i=0; i<TABLE_POINTS/2; i++){
+      for (i=0; i<GEN.TABLE_POINTS/2; i++){
 	GEN.table[i] =
-           _unur_ninv_regula(gen, (i+1.)/(TABLE_POINTS+1.) );
-        GEN.table[TABLE_POINTS-1-i] = 
-           _unur_ninv_regula(gen, ((TABLE_POINTS-1.-i)+1.)/(TABLE_POINTS+1.) );
+           _unur_ninv_regula(gen, (i+1.)/(GEN.TABLE_POINTS+1.) );
+        GEN.table[GEN.TABLE_POINTS-1-i] = 
+           _unur_ninv_regula(gen, ((GEN.TABLE_POINTS-1.-i)+1.)/(GEN.TABLE_POINTS+1.) );
          
         GEN.s[0] = GEN.table[i];
-        GEN.s[1] = GEN.table[TABLE_POINTS-1-i];
+        GEN.s[1] = GEN.table[GEN.TABLE_POINTS-1-i];
  
       }  /* end of for()                                                     */
 
-      if (TABLE_POINTS/2 != TABLE_POINTS/2.){  /*  TABLE_POINTS is odd ?     */
-         GEN.table[TABLE_POINTS/2] =  
-           _unur_ninv_regula(gen, ((TABLE_POINTS/2)+1.)/(TABLE_POINTS+1.) );
+      if (GEN.TABLE_POINTS/2 != GEN.TABLE_POINTS/2.){  /*  GEN.TABLE_POINTS is odd ?     */
+         GEN.table[GEN.TABLE_POINTS/2] =  
+           _unur_ninv_regula(gen, ((GEN.TABLE_POINTS/2)+1.)/(GEN.TABLE_POINTS+1.) );
       }
-
+      
       GEN.table_on = 1;
 
+  }
+  else{
+       GEN.table = NULL;
   }   /* end of if(GEN.table...)                                             */
 
 
@@ -985,15 +997,15 @@ _unur_ninv_regula( struct unur_gen *gen, double u )
 
   /* initialize starting interval */
   if (GEN.table_on == 1){
-    i = (int) floor(u*(TABLE_POINTS+1));  /* i is between 0 and TABLE_POINTS */
+    i = (int) floor(u*(GEN.TABLE_POINTS+1));  /* i is between 0 and TABLE_POINTS */
 
     if ( i == 0){
       x1 = 2.*GEN.table[0] - GEN.table[1];
       x2 = GEN.table[0];
     }
     else if ( i == 50){
-      x1 = GEN.table[TABLE_POINTS-1];
-      x2 = 2.*GEN.table[TABLE_POINTS-1] - GEN.table[TABLE_POINTS-2];
+      x1 = GEN.table[GEN.TABLE_POINTS-1];
+      x2 = 2.*GEN.table[GEN.TABLE_POINTS-1] - GEN.table[GEN.TABLE_POINTS-2];
     }
     else{
     x1 = GEN.table[i-1];
@@ -1167,7 +1179,7 @@ _unur_ninv_newton( struct unur_gen *gen, double U )
 
   /* initialize starting point */
   if (GEN.table_on == 1){
-    i = (int) floor(U*TABLE_POINTS);  /* i is between 0 and TABLE_POINTS-1 */
+    i = (int) floor(U*GEN.TABLE_POINTS);  /* i is between 0 and TABLE_POINTS-1 */
     x = GEN.table[i];
   }
   else{
@@ -1340,6 +1352,7 @@ _unur_ninv_create( struct unur_par *par )
   GEN.max_iter = PAR.max_iter;  /* maximal number of iterations              */
   GEN.rel_x_resolution = PAR.rel_x_resolution; /* maximal relative error in x*/
   GEN.table_on = PAR.table_on;  /* useage of table for starting points       */
+  GEN.TABLE_POINTS = PAR.TABLE_POINTS; /* number of points for table         */
   GEN.s[0] = PAR.s[0];     /* staring points                                 */
   GEN.s[1] = PAR.s[1];
 

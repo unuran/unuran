@@ -134,8 +134,16 @@ _unur_upd_mode_uniform( UNUR_DISTR *distr )
 int
 _unur_upd_area_uniform( UNUR_DISTR *distr )
 {
-  /* nothing to do */
+  if (distr->set & UNUR_DISTR_SET_STDDOMAIN) {
+    DISTR.area = 1.;
+    return 1;
+  }
+
+  /* else */
+  DISTR.area = ( _unur_cdf_uniform( DISTR.domain[1],distr) 
+		 - _unur_cdf_uniform( DISTR.domain[0],distr) );
   return 1;
+  
 } /* end of _unur_upd_area_uniform() */
 
 /*---------------------------------------------------------------------------*/

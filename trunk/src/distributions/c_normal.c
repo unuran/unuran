@@ -97,6 +97,7 @@ static double _unur_dpdf_normal( double x, UNUR_DISTR *distr );
 #ifdef HAVE_CDF
 static double _unur_cdf_normal( double x, UNUR_DISTR *distr );
 #endif
+
 static int _unur_upd_mode_normal( UNUR_DISTR *distr );
 static int _unur_upd_area_normal( UNUR_DISTR *distr );
 

@@ -69,6 +69,9 @@ static double _unur_pdf_pareto(double x, UNUR_DISTR *distr);
 static double _unur_dpdf_pareto(double x, UNUR_DISTR *distr);
 static double _unur_cdf_pareto(double x, UNUR_DISTR *distr);
 
+static int _unur_upd_mode_pareto( UNUR_DISTR *distr );
+static int _unur_upd_area_pareto( UNUR_DISTR *distr );
+
 /*---------------------------------------------------------------------------*/
 
 double
@@ -95,6 +98,42 @@ _unur_cdf_pareto( double x, UNUR_DISTR *distr )
   register double *params = DISTR.params;
   return ( (x<k) ? 0. : (1. - pow(k/x,a)) );
 } /* end of _unur_cdf_pareto() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+_unur_upd_mode_pareto( UNUR_DISTR *distr )
+{
+  DISTR.mode = DISTR.k;
+
+  /* mode must be in domain */
+  if (DISTR.mode < DISTR.domain[0]) 
+    DISTR.mode = DISTR.domain[0];
+  else if (DISTR.mode > DISTR.domain[1]) 
+    DISTR.mode = DISTR.domain[1];
+
+  return 1;
+} /* end of _unur_upd_mode_pareto() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+_unur_upd_area_pareto( UNUR_DISTR *distr )
+{
+  /* normalization constant */
+  NORMCONSTANT = DISTR.a * pow(DISTR.k,DISTR.a);
+
+  if (distr->set & UNUR_DISTR_SET_STDDOMAIN) {
+    DISTR.area = 1.;
+    return 1;
+  }
+
+  /* else */
+  DISTR.area = ( _unur_cdf_pareto( DISTR.domain[1],distr) 
+		 - _unur_cdf_pareto( DISTR.domain[0],distr) );
+  return 1;
+  
+} /* end of _unur_upd_area_pareto() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -141,16 +180,20 @@ unur_distr_pareto( double *params, int n_params )
   /* number of arguments */
   DISTR.n_params = n_params;
 
-  /* log of normalization constant */
+  /* normalization constant */
   NORMCONSTANT = DISTR.a * pow(DISTR.k,DISTR.a);
+
+  /* domain */
+  DISTR.domain[0] = DISTR.k;         /* left boundary  */
+  DISTR.domain[1] = INFINITY;        /* right boundary */
 
   /* mode and area below p.d.f. */
   DISTR.mode = DISTR.k;
   DISTR.area = 1.;
 
-  /* domain */
-  DISTR.domain[0] = DISTR.k;         /* left boundary  */
-  DISTR.domain[1] = INFINITY;        /* right boundary */
+  /* function for updating derived parameters */
+  DISTR.upd_mode  = _unur_upd_mode_pareto; /* funct for computing mode */
+  DISTR.upd_area  = _unur_upd_area_pareto; /* funct for computing area */
 
   /* indicate which parameters are set */
   distr->set = ( UNUR_DISTR_SET_DOMAIN |

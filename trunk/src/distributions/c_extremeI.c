@@ -89,6 +89,9 @@ static double _unur_pdf_extremeI(double x, UNUR_DISTR *distr);
 static double _unur_dpdf_extremeI(double x, UNUR_DISTR *distr);
 static double _unur_cdf_extremeI(double x, UNUR_DISTR *distr);
 
+static int _unur_upd_mode_extremeI( UNUR_DISTR *distr );
+static int _unur_upd_area_extremeI( UNUR_DISTR *distr );
+
 /*---------------------------------------------------------------------------*/
 
 double
@@ -140,6 +143,41 @@ _unur_cdf_extremeI( double x, UNUR_DISTR *distr )
     return exp( -exp( -x) );
   }
 } /* end of _unur_cdf_extremeI() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+_unur_upd_mode_extremeI( UNUR_DISTR *distr )
+{
+  DISTR.mode = DISTR.zeta;
+
+  /* mode must be in domain */
+  if (DISTR.mode < DISTR.domain[0]) 
+    DISTR.mode = DISTR.domain[0];
+  else if (DISTR.mode > DISTR.domain[1]) 
+    DISTR.mode = DISTR.domain[1];
+
+  return 1;
+} /* end of _unur_upd_mode_extremeI() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+_unur_upd_area_extremeI( UNUR_DISTR *distr )
+{
+  /* normalization constant: none */
+
+  if (distr->set & UNUR_DISTR_SET_STDDOMAIN) {
+    DISTR.area = 1.;
+    return 1;
+  }
+
+  /* else */
+  DISTR.area = ( _unur_cdf_extremeI( DISTR.domain[1],distr) 
+		 - _unur_cdf_extremeI( DISTR.domain[0],distr) );
+  return 1;
+  
+} /* end of _unur_upd_area_extremeI() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -198,13 +236,17 @@ unur_distr_extremeI( double *params, int n_params )
 
   /* normalization constant: not required */
 
+  /* domain */
+  DISTR.domain[0] = -INFINITY;       /* left boundary  */
+  DISTR.domain[1] = INFINITY;        /* right boundary */
+
   /* mode and area below p.d.f. */
   DISTR.mode = DISTR.zeta;
   DISTR.area = 1.;
 
-  /* domain */
-  DISTR.domain[0] = -INFINITY;       /* left boundary  */
-  DISTR.domain[1] = INFINITY;        /* right boundary */
+  /* function for updating derived parameters */
+  DISTR.upd_mode  = _unur_upd_mode_extremeI; /* funct for computing mode */
+  DISTR.upd_area  = _unur_upd_area_extremeI; /* funct for computing area */
 
   /* indicate which parameters are set */
   distr->set = ( UNUR_DISTR_SET_DOMAIN |

@@ -69,6 +69,9 @@ static double _unur_pdf_lomax(double x, UNUR_DISTR *distr);
 static double _unur_dpdf_lomax(double x, UNUR_DISTR *distr);
 static double _unur_cdf_lomax(double x, UNUR_DISTR *distr);
 
+static int _unur_upd_mode_lomax( UNUR_DISTR *distr );
+static int _unur_upd_area_lomax( UNUR_DISTR *distr );
+
 /*---------------------------------------------------------------------------*/
 
 double
@@ -95,6 +98,42 @@ _unur_cdf_lomax( double x, UNUR_DISTR *distr )
   register double *params = DISTR.params;
   return ( (x<0.) ? 0. : 1. - pow((C/(x+C)),a) );
 } /* end of _unur_cdf_lomax() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+_unur_upd_mode_lomax( UNUR_DISTR *distr )
+{
+  DISTR.mode = 0.;
+
+  /* mode must be in domain */
+  if (DISTR.mode < DISTR.domain[0]) 
+    DISTR.mode = DISTR.domain[0];
+  else if (DISTR.mode > DISTR.domain[1]) 
+    DISTR.mode = DISTR.domain[1];
+
+  return 1;
+} /* end of _unur_upd_mode_lomax() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+_unur_upd_area_lomax( UNUR_DISTR *distr )
+{
+  /* normalization constant */
+  NORMCONSTANT = DISTR.a * pow(DISTR.C,DISTR.a);
+
+  if (distr->set & UNUR_DISTR_SET_STDDOMAIN) {
+    DISTR.area = 1.;
+    return 1;
+  }
+
+  /* else */
+  DISTR.area = ( _unur_cdf_lomax( DISTR.domain[1],distr) 
+		 - _unur_cdf_lomax( DISTR.domain[0],distr) );
+  return 1;
+  
+} /* end of _unur_upd_area_lomax() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -152,13 +191,17 @@ unur_distr_lomax( double *params, int n_params )
   /* normalization constant */
   NORMCONSTANT = DISTR.a * pow(DISTR.C,DISTR.a);
 
+  /* domain */
+  DISTR.domain[0] = 0;               /* left boundary  */
+  DISTR.domain[1] = INFINITY;        /* right boundary */
+
   /* mode and area below p.d.f. */
   DISTR.mode = 0.;
   DISTR.area = 1.;
 
-  /* domain */
-  DISTR.domain[0] = 0;               /* left boundary  */
-  DISTR.domain[1] = INFINITY;        /* right boundary */
+  /* function for updating derived parameters */
+  DISTR.upd_mode  = _unur_upd_mode_lomax; /* funct for computing mode */
+  DISTR.upd_area  = _unur_upd_area_lomax; /* funct for computing area */
 
   /* indicate which parameters are set */
   distr->set = ( UNUR_DISTR_SET_DOMAIN |

@@ -92,6 +92,9 @@ static double _unur_pdf_extremeII(double x, UNUR_DISTR *distr);
 static double _unur_dpdf_extremeII(double x, UNUR_DISTR *distr);
 static double _unur_cdf_extremeII(double x, UNUR_DISTR *distr);
 
+static int _unur_upd_mode_extremeII( UNUR_DISTR *distr );
+static int _unur_upd_area_extremeII( UNUR_DISTR *distr );
+
 /*---------------------------------------------------------------------------*/
 
 double
@@ -153,6 +156,41 @@ _unur_cdf_extremeII( double x, UNUR_DISTR *distr )
 
 /*---------------------------------------------------------------------------*/
 
+int
+_unur_upd_mode_extremeII( UNUR_DISTR *distr )
+{
+  DISTR.mode = DISTR.zeta + pow( DISTR.k/(DISTR.k+1.), 1/DISTR.k ) * DISTR.theta;
+
+  /* mode must be in domain */
+  if (DISTR.mode < DISTR.domain[0]) 
+    DISTR.mode = DISTR.domain[0];
+  else if (DISTR.mode > DISTR.domain[1]) 
+    DISTR.mode = DISTR.domain[1];
+
+  return 1;
+} /* end of _unur_upd_mode_extremeII() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+_unur_upd_area_extremeII( UNUR_DISTR *distr )
+{
+  /* normalization constant: none */
+
+  if (distr->set & UNUR_DISTR_SET_STDDOMAIN) {
+    DISTR.area = 1.;
+    return 1;
+  }
+
+  /* else */
+  DISTR.area = ( _unur_cdf_extremeII( DISTR.domain[1],distr) 
+		 - _unur_cdf_extremeII( DISTR.domain[0],distr) );
+  return 1;
+  
+} /* end of _unur_upd_area_extremeII() */
+
+/*---------------------------------------------------------------------------*/
+
 struct unur_distr *
 unur_distr_extremeII( double *params, int n_params )
 {
@@ -209,13 +247,17 @@ unur_distr_extremeII( double *params, int n_params )
 
   /* normalization constant: not required */
 
-  /* mode and area below p.d.f. */
-  DISTR.mode = DISTR.zeta + pow( k/(k+1.), 1/k ) * DISTR.theta;
-  DISTR.area = 1.;
-
   /* domain */
   DISTR.domain[0] = DISTR.zeta;      /* left boundary  */
   DISTR.domain[1] = INFINITY;        /* right boundary */
+
+  /* mode and area below p.d.f. */
+  DISTR.mode = DISTR.zeta + pow( DISTR.k/(DISTR.k+1.), 1/DISTR.k ) * DISTR.theta;
+  DISTR.area = 1.;
+
+  /* function for updating derived parameters */
+  DISTR.upd_mode  = _unur_upd_mode_extremeII; /* funct for computing mode */
+  DISTR.upd_area  = _unur_upd_area_extremeII; /* funct for computing area */
 
   /* indicate which parameters are set */
   distr->set = ( UNUR_DISTR_SET_DOMAIN |

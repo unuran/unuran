@@ -89,6 +89,11 @@ static double _unur_dpdf_chisquare(double x, UNUR_DISTR *distr);
 static double _unur_cdf_chisquare(double x, UNUR_DISTR *distr);
 #endif
 
+static int _unur_upd_mode_chisquare( UNUR_DISTR *distr );
+#ifdef HAVE_AREA
+static int _unur_upd_area_chisquare( UNUR_DISTR *distr );
+#endif
+
 /*---------------------------------------------------------------------------*/
 
 double
@@ -139,6 +144,50 @@ _unur_cdf_chisquare(double x, UNUR_DISTR *distr)
 
   return _unur_sf_incomplete_gamma(x/2.,nu/2.);
 } /* end of _unur_cdf_chisquare() */
+
+#endif
+
+/*---------------------------------------------------------------------------*/
+
+int
+_unur_upd_mode_chisquare( UNUR_DISTR *distr )
+{
+  DISTR.mode = (DISTR.nu >= 2.) ? (DISTR.nu - 2.) : 0.;
+
+  /* mode must be in domain */
+  if (DISTR.mode < DISTR.domain[0]) 
+    DISTR.mode = DISTR.domain[0];
+  else if (DISTR.mode > DISTR.domain[1]) 
+    DISTR.mode = DISTR.domain[1];
+
+  return 1;
+} /* end of _unur_upd_mode_chisquare() */
+
+/*---------------------------------------------------------------------------*/
+
+#ifdef HAVE_AREA
+
+int
+_unur_upd_area_chisquare( UNUR_DISTR *distr )
+{
+  /* normalization constant */
+  LOGNORMCONSTANT = _unur_sf_ln_gamma(DISTR.nu/2.) - M_LN2 * (DISTR.nu/2.);
+
+  if (distr->set & UNUR_DISTR_SET_STDDOMAIN) {
+    DISTR.area = 1.;
+    return 1;
+  }
+
+#ifdef HAVE_CDF
+  /* else */
+  DISTR.area = ( _unur_cdf_chisquare( DISTR.domain[1],distr) 
+		 - _unur_cdf_chisquare( DISTR.domain[0],distr) );
+  return 1;
+#else
+  return 0;
+#endif
+  
+} /* end of _unur_upd_area_chisquare() */
 
 #endif
 
@@ -195,13 +244,19 @@ unur_distr_chisquare( double *params, int n_params )
   LOGNORMCONSTANT = 0.;
 #endif
 
+  /* domain */
+  DISTR.domain[0] = 0.;          /* left boundary  */
+  DISTR.domain[1] = INFINITY;    /* right boundary */
+
   /* mode and area below p.d.f. */
   DISTR.mode = (nu >= 2.) ? (nu - 2.) : 0.;
   DISTR.area = 1.;
 
-  /* domain */
-  DISTR.domain[0] = 0.;          /* left boundary  */
-  DISTR.domain[1] = INFINITY;    /* right boundary */
+  /* function for updating derived parameters */
+  DISTR.upd_mode  = _unur_upd_mode_chisquare; /* funct for computing mode */
+#ifdef HAVE_AREA
+  DISTR.upd_area  = _unur_upd_area_chisquare; /* funct for computing area */
+#endif
 
   /* indicate which parameters are set */
   distr->set = ( UNUR_DISTR_SET_DOMAIN |

@@ -92,8 +92,10 @@ static double _unur_dpdf_powerexponential(double x, UNUR_DISTR *distr);
 #ifdef HAVE_CDF
 static double _unur_cdf_powerexponential(double x, UNUR_DISTR *distr);
 #endif
+
+static int _unur_upd_mode_powerexponential( UNUR_DISTR *distr );
 #ifdef HAVE_AREA
-inline static double _unur_lognormconstant_powerexponential(double *params, int n_params);
+static int _unur_upd_area_powerexponential( UNUR_DISTR *distr );
 #endif
 
 /*---------------------------------------------------------------------------*/
@@ -142,13 +144,45 @@ _unur_cdf_powerexponential( double x, UNUR_DISTR *distr )
 
 /*---------------------------------------------------------------------------*/
 
+int
+_unur_upd_mode_powerexponential( UNUR_DISTR *distr )
+{
+  DISTR.mode = 0;
+
+  /* mode must be in domain */
+  if (DISTR.mode < DISTR.domain[0]) 
+    DISTR.mode = DISTR.domain[0];
+  else if (DISTR.mode > DISTR.domain[1]) 
+    DISTR.mode = DISTR.domain[1];
+
+  return 1;
+} /* end of _unur_upd_mode_powerexponential() */
+
+/*---------------------------------------------------------------------------*/
+
 #ifdef HAVE_AREA
 
-double
-_unur_lognormconstant_powerexponential(double *params, int n_params)
-{ 
-  return  _unur_sf_ln_gamma(1+1/tau) + M_LN2;
-} /* end of _unur_lognormconstant_powerexponential() */
+int
+_unur_upd_area_powerexponential( UNUR_DISTR *distr )
+{
+  /* log of normalization constant */
+  LOGNORMCONSTANT = _unur_sf_ln_gamma(1. + 1./DISTR.tau) + M_LN2;
+  
+  if (distr->set & UNUR_DISTR_SET_STDDOMAIN) {
+    DISTR.area = 1.;
+    return 1;
+  }
+  
+#ifdef HAVE_CDF
+  /* else */
+  DISTR.area = ( _unur_cdf_powerexponential( DISTR.domain[1],distr) 
+		 - _unur_cdf_powerexponential( DISTR.domain[0],distr) );
+  return 1;
+#else
+  return 0;
+#endif
+
+} /* end of _unur_upd_area_powerexponential() */
 
 #endif
 
@@ -200,18 +234,24 @@ unur_distr_powerexponential( double *params, int n_params )
 
   /* log of normalization constant */
 #ifdef HAVE_AREA
-  LOGNORMCONSTANT = _unur_lognormconstant_powerexponential(DISTR.params,DISTR.n_params);
+  LOGNORMCONSTANT = _unur_sf_ln_gamma(1. + 1./DISTR.tau) + M_LN2;
 #else
   LOGNORMCONSTANT = 0.;
 #endif
+
+  /* domain */
+  DISTR.domain[0] = -INFINITY;       /* left boundary  */
+  DISTR.domain[1] = INFINITY;        /* right boundary */
 
   /* mode and area below p.d.f. */
   DISTR.mode = 0;
   DISTR.area = 1.;
 
-  /* domain */
-  DISTR.domain[0] = -INFINITY;       /* left boundary  */
-  DISTR.domain[1] = INFINITY;        /* right boundary */
+  /* function for updating derived parameters */
+  DISTR.upd_mode  = _unur_upd_mode_powerexponential; /* funct for computing mode */
+#ifdef HAVE_AREA
+  DISTR.upd_area  = _unur_upd_area_powerexponential; /* funct for computing area */
+#endif
 
   /* indicate which parameters are set */
   distr->set = ( UNUR_DISTR_SET_DOMAIN |

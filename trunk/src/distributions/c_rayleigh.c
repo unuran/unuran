@@ -67,6 +67,9 @@ static double _unur_pdf_rayleigh(double x, UNUR_DISTR *distr);
 static double _unur_dpdf_rayleigh(double x, UNUR_DISTR *distr);
 static double _unur_pdf_rayleigh(double x, UNUR_DISTR *distr);
 
+static int _unur_upd_mode_rayleigh( UNUR_DISTR *distr );
+static int _unur_upd_area_rayleigh( UNUR_DISTR *distr );
+
 /*---------------------------------------------------------------------------*/
 
 double
@@ -99,6 +102,42 @@ _unur_cdf_rayleigh( double x, UNUR_DISTR *distr )
 
 /*---------------------------------------------------------------------------*/
 
+
+int
+_unur_upd_mode_rayleigh( UNUR_DISTR *distr )
+{
+  DISTR.mode = DISTR.sigma;
+
+  /* mode must be in domain */
+  if (DISTR.mode < DISTR.domain[0]) 
+    DISTR.mode = DISTR.domain[0];
+  else if (DISTR.mode > DISTR.domain[1]) 
+    DISTR.mode = DISTR.domain[1];
+
+  return 1;
+} /* end of _unur_upd_mode_rayleigh() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+_unur_upd_area_rayleigh( UNUR_DISTR *distr )
+{
+  /* log of normalization constant */
+  LOGNORMCONSTANT =   2. * log(DISTR.sigma);
+
+  if (distr->set & UNUR_DISTR_SET_STDDOMAIN) {
+    DISTR.area = 1.;
+    return 1;
+  }
+
+  /* else */
+  DISTR.area = ( _unur_cdf_rayleigh( DISTR.domain[1],distr) 
+		 - _unur_cdf_rayleigh( DISTR.domain[0],distr) );
+  return 1;
+  
+} /* end of _unur_upd_area_rayleigh() */
+
+/*---------------------------------------------------------------------------*/
 struct unur_distr *
 unur_distr_rayleigh( double *params, int n_params )
 {
@@ -144,13 +183,17 @@ unur_distr_rayleigh( double *params, int n_params )
   /* log of normalization constant */
   LOGNORMCONSTANT =   2. * log(DISTR.sigma);
 
+  /* domain */
+  DISTR.domain[0] = 0.;              /* left boundary  */
+  DISTR.domain[1] = INFINITY;        /* right boundary */
+
   /* mode and area below p.d.f. */
   DISTR.mode = DISTR.sigma;
   DISTR.area = 1.;
 
-  /* domain */
-  DISTR.domain[0] = 0.;              /* left boundary  */
-  DISTR.domain[1] = INFINITY;        /* right boundary */
+  /* function for updating derived parameters */
+  DISTR.upd_mode  = _unur_upd_mode_rayleigh; /* funct for computing mode */
+  DISTR.upd_area  = _unur_upd_area_rayleigh; /* funct for computing area */
 
   /* indicate which parameters are set */
   distr->set = ( UNUR_DISTR_SET_DOMAIN |

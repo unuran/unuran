@@ -68,6 +68,9 @@ static double _unur_pdf_triangular(double x, UNUR_DISTR *distr);
 static double _unur_dpdf_triangular(double x, UNUR_DISTR *distr);
 static double _unur_cdf_triangular(double x, UNUR_DISTR *distr);
 
+static int _unur_upd_mode_triangular( UNUR_DISTR *distr );
+static int _unur_upd_area_triangular( UNUR_DISTR *distr );
+
 /*---------------------------------------------------------------------------*/
 
 double
@@ -106,6 +109,41 @@ _unur_cdf_triangular( double x, UNUR_DISTR *distr )
   if (x <= 1.)    return ((H + x * (x-2.))/(H-1.));
   /* otherwise */ return 1.;
 } /* end of _unur_cdf_triangular() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+_unur_upd_mode_triangular( UNUR_DISTR *distr )
+{
+  DISTR.mode = DISTR.H;
+
+  /* mode must be in domain */
+  if (DISTR.mode < DISTR.domain[0]) 
+    DISTR.mode = DISTR.domain[0];
+  else if (DISTR.mode > DISTR.domain[1]) 
+    DISTR.mode = DISTR.domain[1];
+
+  return 1;
+} /* end of _unur_upd_mode_triangular() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+_unur_upd_area_triangular( UNUR_DISTR *distr )
+{
+  /* normalization constant: none */
+
+  if (distr->set & UNUR_DISTR_SET_STDDOMAIN) {
+    DISTR.area = 1.;
+    return 1;
+  }
+
+  /* else */
+  DISTR.area = ( _unur_cdf_triangular( DISTR.domain[1],distr) 
+		 - _unur_cdf_triangular( DISTR.domain[0],distr) );
+  return 1;
+  
+} /* end of _unur_upd_area_triangular() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -159,13 +197,17 @@ unur_distr_triangular( double *params, int n_params )
   /* number of arguments */
   DISTR.n_params = n_params;
 
+  /* domain */
+  DISTR.domain[0] = 0.;        /* left boundary  */
+  DISTR.domain[1] = 1.;        /* right boundary */
+
   /* mode and area below p.d.f. */
   DISTR.mode = DISTR.H;
   DISTR.area = 1.;
 
-  /* domain */
-  DISTR.domain[0] = 0.;        /* left boundary  */
-  DISTR.domain[1] = 1.;        /* right boundary */
+  /* function for updating derived parameters */
+  DISTR.upd_mode  = _unur_upd_mode_triangular; /* funct for computing mode */
+  DISTR.upd_area  = _unur_upd_area_triangular; /* funct for computing area */
 
   /* indicate which parameters are set */
   distr->set = ( UNUR_DISTR_SET_DOMAIN |

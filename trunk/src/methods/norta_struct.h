@@ -41,7 +41,7 @@
 /* Information for constructing the generator                                */
 
 struct unur_norta_par { 
-  struct unur_gen *normalgen;   /* normal variate generator                  */
+  int dummy;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -54,11 +54,12 @@ struct unur_norta_gen {
   struct unur_gen **marginalgen_list;   /* list of generators for marginal distributions */
 
 
+
 /*   double *corr;             /\* correlation matrix                            *\/ */
 /*   double *cholesky;         /\* cholesky factor of covariance matrix          *\/ */
 
-  /* Remark: We use gen->gen_aux to store the pointer to the standard        */
-  /*         normal variate generator.                                       */
+  /* Remark: We use gen->gen_aux to store the pointer to the                 */
+  /*         multinormal generator.                                          */
   /*         It is accessed via the macro 'NORMAL'.                          */
 };
 

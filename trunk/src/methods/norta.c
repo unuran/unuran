@@ -51,14 +51,21 @@
 #include <distr/distr.h>
 #include <distr/distr_source.h>
 #include <distr/cvec.h>
+#include <distr/cont.h>
 #include <distributions/unur_distributions.h>
 #include <uniform/urng.h>
+#include <utils/matrix_source.h>
 #include "unur_methods_source.h"
 #include "x_gen.h"
 #include "x_gen_source.h"
 #include "norta.h"
-/* #include "cstd.h" */
-#include "auto.h"
+#include "vmt.h"
+
+/*---------------------------------------------------------------------------*/
+/* Constants                                                                 */
+
+/* smallest eigenvalue allowed for correlation matrix                        */
+#define UNUR_NORTA_MIN_EIGENVALUE  (1.e-10)
 
 /*---------------------------------------------------------------------------*/
 /* Variants                                                                  */
@@ -70,10 +77,10 @@
 /*    bits 13-24 ... adaptive steps                                          */
 /*    bits 25-32 ... trace sampling                                          */
 
+#define NORTA_DEBUG_SIGMA_Y     0x00000010u   /* print sigma_y for normal    */
+
 /*---------------------------------------------------------------------------*/
 /* Flags for logging set calls                                               */
-
-#define NORTA_SET_NORMALGEN   0x001u    /* marginal normal variate generator */
 
 /*---------------------------------------------------------------------------*/
 
@@ -93,7 +100,12 @@ static struct unur_gen *_unur_norta_create( struct unur_par *par );
 
 static int _unur_norta_nortu_setup( struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
-/* Compute parameter for NORTU.                                              */
+/* Compute parameter for NORTU (normal to uniform).                          */
+/*---------------------------------------------------------------------------*/
+
+static int _unur_norta_make_correlationmatrix( int dim, double *M);
+/*---------------------------------------------------------------------------*/
+/* make correlation matrix by transforming symmetric positive definit matrix */
 /*---------------------------------------------------------------------------*/
 
 static void _unur_norta_sample_cvec( struct unur_gen *gen, double *vec );
@@ -116,6 +128,26 @@ static void _unur_norta_debug_init( const struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 /* print after generator has been initialized has completed.                 */
 /*---------------------------------------------------------------------------*/
+
+static void _unur_norta_debug_sigma_y( const struct unur_gen *gen, 
+				       const double *sigma_y, 
+				       const char *comment );
+/*---------------------------------------------------------------------------*/
+/* print sigma_y of corresponding normal distribution.                       */
+/*---------------------------------------------------------------------------*/
+
+static void _unur_norta_debug_eigensystem( const struct unur_gen *gen,
+					   const double *eigenvalues,
+					   const double *eigenvectors );
+/*---------------------------------------------------------------------------*/
+/* print eigensystem of sigma_y.                                             */
+/*---------------------------------------------------------------------------*/
+
+static void _unur_norta_debug_nmgenerator( const struct unur_gen *gen );
+/*---------------------------------------------------------------------------*/
+/* print genid of multinormal generator.                                     */
+/*---------------------------------------------------------------------------*/
+
 #endif
 
 /*---------------------------------------------------------------------------*/
@@ -180,8 +212,6 @@ unur_norta_new( const struct unur_distr *distr )
   par->distr    = distr;      /* pointer to distribution object              */
 
   /* set default values */
-  PAR.normalgen = NULL;       /* use default marginal generator (=normal)    */
-
   par->method   = UNUR_METH_NORTA ;   /* method                              */
   par->variant  = 0u;                 /* default variant                     */
   par->set      = 0u;                 /* inidicate default parameters        */    
@@ -229,20 +259,20 @@ _unur_norta_init( struct unur_par *par )
   gen = _unur_norta_create(par);
   if (!gen) { free(par); return NULL; }
 
-  /* initialize normal generator if necessary */
-  GEN.normaldistr = unur_distr_normal(NULL,0);
-  if (NORMAL == NULL) {
-    NORMAL = unur_init( unur_auto_new( GEN.normaldistr ) );
-    if (NORMAL == NULL) {
-      _unur_norta_free(gen);
-      free(par);
-      return NULL;
-    }
+#ifdef UNUR_ENABLE_LOGGING
+  /* write info into log file */
+  if (gen->debug) _unur_norta_debug_init(gen);
+#endif
+
+  /* compute parameters for NORTU (normal to uniform) */
+  if (_unur_norta_nortu_setup(gen) != UNUR_SUCCESS) {
+    free(par); _unur_norta_free(gen); return NULL;
   }
-  /* need same uniform random number generator as NORTA generator */
-  NORMAL->urng = gen->urng;
-  /* copy debugging flags */
-  NORMAL->debug = gen->debug;
+
+  /* distribution object for standard normal distribution */
+  GEN.normaldistr = unur_distr_normal(NULL,0);
+
+
 
 
   /* TODO: initialize generator for "marginal" distributions */
@@ -286,14 +316,6 @@ _unur_norta_init( struct unur_par *par )
 /*     return NULL; */
 /*   } */
 
-  /* compute parameters for NORTU (normal to uniform) */
-  _unur_norta_nortu_setup( gen );
-
-
-#ifdef UNUR_ENABLE_LOGGING
-  /* write info into log file */
-  if (gen->debug) _unur_norta_debug_init(gen);
-#endif
 
   /* free parameters */
   free(par);
@@ -342,13 +364,11 @@ _unur_norta_create( struct unur_par *par )
   /* dimension of distribution */
   GEN.dim = gen->distr->dim;
 
-  /* copy data */
-  NORMAL = PAR.normalgen;
-
   /* allocate array for auxiliary copula */
   GEN.copula = _unur_xmalloc(sizeof(double)*GEN.dim);
 
   /* initialize pointer */
+  NORMAL = NULL;
   GEN.normaldistr = NULL;
   GEN.marginalgen_list = NULL;
 
@@ -390,11 +410,6 @@ _unur_norta_clone( const struct unur_gen *gen )
   /* clone marginal distribution */
   CLONE.normaldistr = _unur_distr_clone(GEN.normaldistr);
 
-
-
-  /* cholesky factor of covariance matrix */
-/*   CLONE.cholesky =  clone->distr->data.cvec.cholesky; */
-
   /* TODO: marginal gen and others !! */
   /* (normal generator) */
 
@@ -422,10 +437,143 @@ _unur_norta_nortu_setup( struct unur_gen *gen )
      /*   error code   otherwise                                             */
      /*----------------------------------------------------------------------*/
 {
+#define idx(a,b) ((a)*dim+(b))
+
   int dim = GEN.dim;    /* dimension of distribution */
+  double *sigma_y;      /* correlation matrix for corresponding normal distr. */
+  double *eigenvalues;  /* eigenvalues of sigma_y */
+  double *eigenvectors; /* eigenvectors of sigma_y */
+  double eigenvalues_positive; /* boolean indicating whether all eigenvalues are 
+				  strictly positive */
+  struct unur_distr *mn_distr; /* multinormal distribution */ 
+  struct unur_gen   *mn_gen;   /* generator for multinormal distribution */ 
+  int i,j;
+
+  /* setup correlation matrix for corresponding normal distribution */
+  sigma_y = _unur_xmalloc(dim * dim * sizeof(double));
+  for(i=0; i<dim; i++) {
+    /* left lower part: make matrix symmetric */
+    for(j=0; j<i; j++)
+      sigma_y[idx(i,j)] = sigma_y[idx(j,i)];
+    /*   diagonal */
+    sigma_y[idx(i,i)] = 1.;
+    /* right upper part */
+    for(j=i+1; j<dim; j++)
+      sigma_y[idx(i,j)] = 2.*sin(DISTR.rankcorr[idx(i,j)]*(M_PI/6.));  
+  }
+
+#ifdef UNUR_ENABLE_LOGGING
+  /* write info into log file */
+  if (gen->debug & NORTA_DEBUG_SIGMA_Y) 
+    _unur_norta_debug_sigma_y( gen, sigma_y, "NORTU setup:" );
+#endif
+
+  /* compute eigenvectors and eigenvalues of sigma_y */
+  eigenvalues = _unur_xmalloc(dim * sizeof(double));
+  eigenvectors = _unur_xmalloc(dim * dim * sizeof(double));
+  if (_unur_matrix_eigensystem(dim, sigma_y, eigenvalues, eigenvectors) != UNUR_SUCCESS) {
+    _unur_error(GENTYPE,UNUR_ERR_GEN_DATA,"cannot compute eigenvalues for given sigma_y");
+    free(sigma_y); free(eigenvalues); free(eigenvectors);
+    return UNUR_ERR_GEN_DATA;
+  }
+
+#ifdef UNUR_ENABLE_LOGGING
+  if (gen->debug & NORTA_DEBUG_SIGMA_Y) 
+    _unur_norta_debug_eigensystem( gen, eigenvalues, eigenvectors );
+#endif
+
+  /* check if all eigenvalues are positive */
+  /* otherwise set to small values close to 0 */
+  eigenvalues_positive = TRUE;
+  for(i=0; i<dim; i++)
+    if(eigenvalues[i] < UNUR_NORTA_MIN_EIGENVALUE) {
+      eigenvalues[i] = UNUR_NORTA_MIN_EIGENVALUE;
+      eigenvalues_positive = FALSE;
+    }
+
+  /* make corrected correlation matrix */
+  if (!eigenvalues_positive) {
+    _unur_matrix_transform_diagonal(dim,eigenvectors,eigenvalues,sigma_y);
+    _unur_norta_make_correlationmatrix(dim,sigma_y);
+    _unur_warning(GENTYPE,UNUR_ERR_GEN_DATA,
+		  "sigma_y not positive definite -> corrected matrix");
+#ifdef UNUR_ENABLE_LOGGING
+    if (gen->debug & NORTA_DEBUG_SIGMA_Y) 
+      _unur_norta_debug_sigma_y( gen, sigma_y, "\tEigenvalues < 0 --> correction required" );
+#endif
+  }
+
+  /* clear working arrays */
+  free(eigenvalues);
+  free(eigenvectors);
+
+  /* make generator for multinormal distribution */
+  mn_distr = unur_distr_multinormal(dim, NULL, sigma_y);
+  mn_gen = NULL;
+  if (mn_distr) {
+    mn_gen = unur_init(unur_vmt_new(mn_distr));
+    _unur_distr_free(mn_distr);
+  }
+  if (mn_gen == NULL) {
+    _unur_error(GENTYPE,UNUR_ERR_GEN_DATA,"(corrected) sigma_y not positive definit");
+    free(sigma_y);
+    return UNUR_ERR_GEN_DATA;
+  }
+  NORMAL = mn_gen;
+  /* need same uniform random number generator as NORTA generator */
+  NORMAL->urng = gen->urng;
+  /* copy debugging flags */
+  NORMAL->debug = gen->debug;
+
+#ifdef UNUR_ENABLE_LOGGING
+    if (gen->debug & NORTA_DEBUG_SIGMA_Y) 
+      _unur_norta_debug_nmgenerator( gen );
+#endif
+
+  /* clear working arrays */
+  free(sigma_y);
 
   return UNUR_SUCCESS;
+
+#undef idx
 } /* end of _unur_norta_nortu_setup() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+_unur_norta_make_correlationmatrix( int dim, double *M)
+     /*----------------------------------------------------------------------*/
+     /* make correlation matrix by transforming symmetric positive definit   */
+     /* matrix.                                                              */
+     /*                                                                      */
+     /* There is no checking whether M fulfills the conditions!              */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   dim ... dimension of matrix M                                      */
+     /*   M   ... symmetric square matrix                                    */
+     /*----------------------------------------------------------------------*/
+{
+#define idx(a,b) ((a)*dim+(b))
+
+  int i,j;
+
+  /* diagonal is used to store the roots of the diagonal elements */
+  for (i=0; i<dim; i++)
+    M[idx(i,i)] = sqrt(M[idx(i,i)]);
+
+  for (i=0; i<dim; i++)
+    for (j=0; j<dim; j++)
+      if(i!=j) M[idx(i,j)] /= M[idx(i,i)] * M[idx(j,j)];
+
+  /* the diagonal elements are set to 1. */
+  for (i=0; i<dim; i++) 
+    M[idx(i,i)] = 1.;
+
+  return UNUR_SUCCESS;
+#undef idx
+} /* end of _unur_norta_make_correlationmatrix() */
+
+/*---------------------------------------------------------------------------*/
 
 /*****************************************************************************/
 
@@ -439,7 +587,7 @@ _unur_norta_sample_cvec( struct unur_gen *gen, double *vec )
      /*   vec ... random vector (result)                                     */
      /*----------------------------------------------------------------------*/
 {
-#define idx(a,b) (a*GEN.dim+b)
+#define idx(a,b) ((a)*GEN.dim+(b))
   int j;
   double *u;
 
@@ -450,34 +598,24 @@ _unur_norta_sample_cvec( struct unur_gen *gen, double *vec )
   /* pointer to auxiliary array of uniforms */
   u = GEN.copula;
 
-  /* generate random vector with independent components */
+  /* sample from multinormal distribution */
+  _unur_sample_vec(NORMAL,u);
+
+  /* make copula */
   for (j=0; j<GEN.dim; j++)
-    u[j] = unur_sample_cont(NORMAL);
+    u[j] = unur_distr_cont_eval_cdf( u[j], GEN.normaldistr );
+
+  if (gen->distr->id == UNUR_DISTR_COPULA) {
+    /* we want to have a normal copula --> just copy data */
+    for (j=0; j<GEN.dim; j++) vec[j] = u[j];
+    return;
+  }
 
 
-/*   /\* generate random vector with independent components *\/ */
-/*   for (j=0; j<GEN.dim; j++) */
-/*     vec[j] = unur_sample_cont(GEN.marginalgen_list[j]); */
 
-/*   /\*  */
-/*      transform to desired covariance structure:  */
-/*      X = L.Y + mu  */
-/*      where */
-/*      L  ... cholesky factor of the covariance matrix */
-/*      Y  ... vector with indenpent components (generated above) */
-/*      mu ... mean vector */
-/*      (notice that L is a lower triangular matrix) */
-/*   *\/ */
-/*   for (k=GEN.dim-1; k>=0; k--) { */
-/*     vec[k] *= GEN.cholesky[idx(k,k)]; */
-/*     for (j=k-1; j>=0; j--) */
-/*       vec[k] += vec[j] * GEN.cholesky[idx(k,j)]; */
-/*     vec[k] += DISTR.mean[k]; */
-/*   } */
-
-  for (j=0; j<GEN.dim; j++)
-    vec[j] = u[j];
-
+  fprintf(stderr,"junk\n");
+  
+  
   return;
 
 #undef idx
@@ -549,6 +687,9 @@ _unur_norta_debug_init( const struct unur_gen *gen )
 
   _unur_distr_cvec_debug( gen->distr, gen->genid );
 
+/*   fprintf(log,"%s: data for corresponding normal distribution\n",gen->genid); */
+  
+
 /*   fprintf(log,"%s: generators for standardized marginal distributions = \n",gen->genid); */
 /*   fprintf(log,"%s:\t",gen->genid); */
 /*   for (i=0; i<GEN.dim; i++) */
@@ -562,6 +703,90 @@ _unur_norta_debug_init( const struct unur_gen *gen )
 /*   fprintf(log,"%s: INIT completed **********************\n",gen->genid); */
 
 } /* end of _unur_norta_debug_init() */
+
+/*---------------------------------------------------------------------------*/
+
+void
+_unur_norta_debug_sigma_y( const struct unur_gen *gen, 
+			   const double *sigma_y, 
+			   const char *comment )
+     /*----------------------------------------------------------------------*/
+     /* print sigma_y of corresponding normal distribution.                  */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen     ... pointer to generator object                            */
+     /*   sigma_y ... pointer to correlation matrix                          */
+     /*   comment ... additional string printed                              */
+     /*----------------------------------------------------------------------*/
+{
+  FILE *log;
+
+  /* check arguments */
+  CHECK_NULL(gen,RETURN_VOID);  COOKIE_CHECK(gen,CK_NORTA_GEN,RETURN_VOID);
+
+  log = unur_get_stream();
+
+  fprintf(log,"%s: %s\n",gen->genid,comment);
+  fprintf(log,"%s:\n",gen->genid);
+  _unur_matrix_print_matrix( GEN.dim, sigma_y, "\tsigma_y =", 
+			     log, gen->genid, "\t   ");
+
+} /* end of _unur_norta_debug_sigma_y() */
+
+/*---------------------------------------------------------------------------*/
+
+void
+_unur_norta_debug_eigensystem( const struct unur_gen *gen,
+			       const double *eigenvalues,
+			       const double *eigenvectors )
+     /*----------------------------------------------------------------------*/
+     /* print eigensystem of sigma_y.                                        */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen          ... pointer to generator object                       */
+     /*   eigenvalues  ... eigenvalues                                       */
+     /*   eigenvectors ... eigenvalues                                       */
+     /*----------------------------------------------------------------------*/
+{
+  FILE *log;
+
+  /* check arguments */
+  CHECK_NULL(gen,RETURN_VOID);  COOKIE_CHECK(gen,CK_NORTA_GEN,RETURN_VOID);
+
+  log = unur_get_stream();
+
+  _unur_matrix_print_vector( GEN.dim, eigenvalues, 
+			     "\teigenvalues of sigma_y =", 
+			     log, gen->genid, "\t   ");
+  _unur_matrix_print_matrix( GEN.dim, eigenvectors, 
+			     "\teigenvectors of sigma_y [rows] =", 
+			     log, gen->genid, "\t   ");
+
+} /* end of _unur_norta_debug_eigensystem() */
+
+/*---------------------------------------------------------------------------*/
+
+void
+_unur_norta_debug_nmgenerator( const struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* print genid of multinormal generator.                                */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen          ... pointer to generator object                       */
+     /*----------------------------------------------------------------------*/
+{
+  FILE *log;
+
+  /* check arguments */
+  CHECK_NULL(gen,RETURN_VOID);  COOKIE_CHECK(gen,CK_NORTA_GEN,RETURN_VOID);
+
+  log = unur_get_stream();
+
+  fprintf(log,"%s: generator for multinormal auxiliary distribution = %s\n", gen->genid,
+	  NORMAL->genid );
+  fprintf(log,"%s:\n",gen->genid);
+
+} /* end of _unur_norta_debug_nmgenerator() */
 
 /*---------------------------------------------------------------------------*/
 #endif   /* end UNUR_ENABLE_LOGGING */
@@ -603,9 +828,9 @@ _unur_norta_nortu_setup( strunct unur_gen *gen )
  *
  */
 { 
-#define idx(a,b) ((a)*dim+(b))
+/* #define idx(a,b) ((a)*dim+(b)) */
 
-  double *sigma_y;     /* covariance matrix for ... */
+/*   double *sigma_y;     /\* covariance matrix for ... *\/ */
 
   int i,j,notposdef,notpos;
   double *helpm,*eval,*evec;
@@ -614,7 +839,7 @@ _unur_norta_nortu_setup( strunct unur_gen *gen )
 /*   int dim = GEN.dim; */
 
   /* allocate working arrays */
-  sigma_y = _unur_xmalloc(dim*dim*sizeof(double));
+/*   sigma_y = _unur_xmalloc(dim*dim*sizeof(double)); */
 
 
 /*   gen = malloc(sizeof(struct nortu_gen)); */
@@ -628,31 +853,31 @@ _unur_norta_nortu_setup( strunct unur_gen *gen )
   //  printsqmatrix(cor,dim);
 
   /* setup correlation matrix for ... */
-  for(i=0; i<dim; i++) {
-    for(j=0; j<i; j++)
-      /* left lower part: make matrix symmetric */
-	 sigma_y[idx(i,j)] = sigma_y[idx(j,i)];
-    /*   diagonal */
-    sigma_y[idx(i,i)] = 1.;
-    for(j=i+1;j<dim;j++)
-      /* right upper part */
-      sigma_y[idx(i,j)] = 2.*sin(GEN.corr[idx(i,j)]*(M_PI/6.));  
-  }
+/*   for(i=0; i<dim; i++) { */
+/*     for(j=0; j<i; j++) */
+/*       /\* left lower part: make matrix symmetric *\/ */
+/* 	 sigma_y[idx(i,j)] = sigma_y[idx(j,i)]; */
+/*     /\*   diagonal *\/ */
+/*     sigma_y[idx(i,i)] = 1.; */
+/*     for(j=i+1;j<dim;j++) */
+/*       /\* right upper part *\/ */
+/*       sigma_y[idx(i,j)] = 2.*sin(GEN.corr[idx(i,j)]*(M_PI/6.));   */
+/*   } */
 
 
   //  printf("nortusetup sigma_y:\n");
   //  printsqmatrix(sigma_y,dim);
 
-  gsl_matrix_view m
-    = gsl_matrix_view_array (sigma_y, dim, dim);
-  gsl_vector *evalgsl = gsl_vector_alloc (dim);
-  gsl_matrix *evecgsl = gsl_matrix_alloc (dim, dim);
-  gsl_eigen_symmv_workspace * w =
-    gsl_eigen_symmv_alloc (dim);
-  gsl_eigen_symmv (&m.matrix, evalgsl, evecgsl, w);
-  gsl_eigen_symmv_free (w);
-  eval = evalgsl->data;
-  evec = evecgsl->data;
+/*   gsl_matrix_view m */
+/*     = gsl_matrix_view_array (sigma_y, dim, dim); */
+/*   gsl_vector *evalgsl = gsl_vector_alloc (dim); */
+/*   gsl_matrix *evecgsl = gsl_matrix_alloc (dim, dim); */
+/*   gsl_eigen_symmv_workspace * w = */
+/*     gsl_eigen_symmv_alloc (dim); */
+/*   gsl_eigen_symmv (&m.matrix, evalgsl, evecgsl, w); */
+/*   gsl_eigen_symmv_free (w); */
+/*   eval = evalgsl->data; */
+/*   evec = evecgsl->data; */
 
   //  printf("the eigenvalues\n");
   //  printvector(eval,dim);
@@ -665,28 +890,28 @@ _unur_norta_nortu_setup( strunct unur_gen *gen )
 
   /*as gsl_eigen_symmv is destroying the diagonal and the lower triangular
     we have to restore the full matrix sigma_y  */
-  for(i=0;i<dim;i++){
-    for(j=0;j<i;j++)
-      sigma_y[idx(i,j)] = sigma_y[idx(j,i)];
-    sigma_y[idx(i,i)] = 1.;
-  }
+/*   for(i=0;i<dim;i++){ */
+/*     for(j=0;j<i;j++) */
+/*       sigma_y[idx(i,j)] = sigma_y[idx(j,i)]; */
+/*     sigma_y[idx(i,i)] = 1.; */
+/*   } */
 
 
   /* check if all eval are positive */
-  notpos = 0;
-  for(i=0; i<dim; i++)
-    if(eval[i]<=0.){ /*oder <= eps ?????*/
-      eval[i]=eps;
-      notpos++;
-    }
+/*   notpos = 0; */
+/*   for(i=0; i<dim; i++) */
+/*     if(eval[i]<=0.){ /\*oder <= eps ?????*\/ */
+/*       eval[i]=eps; */
+/*       notpos++; */
+/*     } */
 
-  if(notpos>0){
-    mmult_matr_diagonal(evec,eval,dim,helpm);
-    mmult_matr_matrt(helpm,evec,dim,sigma_y);
-    makecorrelationmatrix(sigma_y,dim);
-    //    printf("as sigma_y not positive definite EC corrected correlation matrix\n");
-    //printsqmatrix(sigma_y,dim);
-  }
+/*   if(notpos>0){ */
+/*     mmult_matr_diagonal(evec,eval,dim,helpm); */
+/*     mmult_matr_matrt(helpm,evec,dim,sigma_y); */
+/*     makecorrelationmatrix(sigma_y,dim); */
+/*     //    printf("as sigma_y not positive definite EC corrected correlation matrix\n"); */
+/*     //printsqmatrix(sigma_y,dim); */
+/*   } */
 
 
   //  printf("nortusetup sigma_y:\n");
@@ -708,7 +933,7 @@ _unur_norta_nortu_setup( strunct unur_gen *gen )
     return NULL;
   }
   return gen;
-#undef idx
+/* #undef idx */
 } /* end of _unur_norta_nortu_setup() */
 
 /*****************************************************************************/
@@ -752,6 +977,7 @@ _unur_norta_sample_cvec( struct unur_gen *gen, double *vec )
 
 #undef idx
 } /* end of _unur_norta_sample_cvec() */
+
 
 /*****************************************************************************/
 

@@ -479,21 +479,47 @@ unur_stdgen_sample_poisson_pdac( struct unur_gen *gen )
  *****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
-#if 0
-#define m    (GEN.gen_iparam[0])
-#define ll   (GEN.gen_iparam[1])
 
-#define p0   (GEN.gen_param[0])
-#define q    (GEN.gen_param[1])
-#define p    (GEN.gen_param[2])
-#define pp   ((GEN.gen_param)+3)  /* array of length 36 */
-#endif
+static double f(long int k, double l_nu, double c_pm)
+{
+        return  exp(k * l_nu - _unur_factorialln(k) - c_pm);
+}
+
+/*---------------------------------------------------------------------------*/
+#define m       (GEN.gen_iparam[0])
+#define k2      (GEN.gen_iparam[1])
+#define k4      (GEN.gen_iparam[2])
+#define k1      (GEN.gen_iparam[3])
+#define k5      (GEN.gen_iparam[4])
+
+#define dl      (GEN.gen_param[0])
+#define dr      (GEN.gen_param[1])
+#define r1      (GEN.gen_param[2])
+#define r2      (GEN.gen_param[3])
+#define r4      (GEN.gen_param[4])
+#define r5      (GEN.gen_param[5])
+#define ll      (GEN.gen_param[6])
+#define lr      (GEN.gen_param[7])
+#define l_theta (GEN.gen_param[8])
+#define c_pm    (GEN.gen_param[9])
+#define f2      (GEN.gen_param[10])
+#define f4      (GEN.gen_param[11])
+#define f1      (GEN.gen_param[12])
+#define f5      (GEN.gen_param[13])
+#define p1      (GEN.gen_param[14])
+#define p2      (GEN.gen_param[15])
+#define p3      (GEN.gen_param[16])
+#define p4      (GEN.gen_param[17])
+#define p5      (GEN.gen_param[18])
+#define p6      (GEN.gen_param[19])
 /*---------------------------------------------------------------------------*/
 
 inline static void
 poisson_pprsc_init( struct unur_gen *gen )
      /* theta < 10: Tabulated inversion */
 {
+  double Ds;
+
   /* check arguments */
   CHECK_NULL(gen,/*void*/); COOKIE_CHECK(gen,CK_DSTD_GEN,/*void*/);
 
@@ -504,23 +530,54 @@ poisson_pprsc_init( struct unur_gen *gen )
     GEN.gen_iparam = _unur_malloc(GEN.n_gen_param * sizeof(int));
   }
 
-#if 0
   /* -X- setup code -X- */
-  m = (theta > 1.) ? ((int) theta) : 1;
-  ll = 0;
-  p0 = q = p = exp(-theta);
+
+  /* approximate deviation of reflection points k2, k4 from theta - 1/2      */
+  Ds = sqrt(theta + 0.25);
+
+  /* mode m, reflection points k2 and k4, and points k1 and k5, which        */
+  /* delimit the centre region of h(x)                                       */
+  m  = (int) theta;
+  k2 = (int) ceil(theta - 0.5 - Ds);
+  k4 = (int)     (theta - 0.5 + Ds);
+  k1 = k2 + k2 - m + 1;
+  k5 = k4 + k4 - m;
+
+  /* range width of the critical left and right centre region                */
+  dl = (double) (k2 - k1);
+  dr = (double) (k5 - k4);
+
+  /* recurrence constants r(k) = p(k)/p(k-1) at k = k1, k2, k4+1, k5+1       */
+  r1 = theta / (double) k1;
+  r2 = theta / (double) k2;
+  r4 = theta / (double)(k4 + 1);
+  r5 = theta / (double)(k5 + 1);
+
+  /* reciprocal values of the scale parameters of expon. tail envelopes      */
+  ll =  log(r1);                                   /* expon. tail left */
+  lr = -log(r5);                                   /* expon. tail right*/
+
+  /* Poisson constants, necessary for computing function values f(k)         */
+  l_theta = log(theta);
+  c_pm = m * l_theta - _unur_factorialln(m);
+
+  /* function values f(k) = p(k)/p(m) at k = k2, k4, k1, k5                  */
+  f2 = f(k2, l_theta, c_pm);
+  f4 = f(k4, l_theta, c_pm);
+  f1 = f(k1, l_theta, c_pm);
+  f5 = f(k5, l_theta, c_pm);
+  
+  /* area of the two centre and the two exponential tail regions             */
+  /* area of the two immediate acceptance regions between k2, k4             */
+  p1 = f2 * (dl + 1.);                            /* immed. left      */
+  p2 = f2 * dl        + p1;                       /* centre left      */
+  p3 = f4 * (dr + 1.) + p2;                       /* immed. right     */
+  p4 = f4 * dr        + p3;                       /* centre right     */
+  p5 = f1 / ll        + p4;                       /* expon. tail left */
+  p6 = f5 / lr        + p5;                       /* expon. tail right*/
   /* -X- end of setup code -X- */
-#endif
 
 } /* end of poisson_pprsc_init() */
-
-// #define my  (DISTR.params[0])    /* shape */
-
-
-static double f(long int k, double l_nu, double c_pm)
-{
-        return  exp(k * l_nu - _unur_factorialln(k) - c_pm);
-}
 
 int
 unur_stdgen_sample_poisson_pprsc( struct unur_gen *gen )
@@ -528,61 +585,8 @@ unur_stdgen_sample_poisson_pprsc( struct unur_gen *gen )
 {
   /* -X- generator code -X- */
 
-  static double        theta_last = -1.0;
-  static long int      m,  k2, k4, k1, k5;
-  static double        dl, dr, r1, r2, r4, r5, ll, lr, l_theta, c_pm,
-    f1, f2, f4, f5, p1, p2, p3, p4, p5, p6;
   long int             Dk, X, Y;
-  double               Ds, U, V, W;
-  
-  if (theta != theta_last)
-			{                               /* set-up           */
-				theta_last = theta;
-
- /* approximate deviation of reflection points k2, k4 from theta - 1/2      */
-				Ds = sqrt(theta + 0.25);
-
- /* mode m, reflection points k2 and k4, and points k1 and k5, which     */
- /* delimit the centre region of h(x)                                    */
-				m  = (long int) theta;
-				k2 = (long int) ceil(theta - 0.5 - Ds);
-				k4 = (long int)     (theta - 0.5 + Ds);
-				k1 = k2 + k2 - m + 1L;
-				k5 = k4 + k4 - m;
-
- /* range width of the critical left and right centre region             */
-				dl = (double) (k2 - k1);
-				dr = (double) (k5 - k4);
-
- /* recurrence constants r(k) = p(k)/p(k-1) at k = k1, k2, k4+1, k5+1    */
-				r1 = theta / (double) k1;
-				r2 = theta / (double) k2;
-				r4 = theta / (double)(k4 + 1L);
-				r5 = theta / (double)(k5 + 1L);
-
- /* reciprocal values of the scale parameters of expon. tail envelopes   */
-				ll =  log(r1);                                   /* expon. tail left */
-				lr = -log(r5);                                   /* expon. tail right*/
-
- /* Poisson constants, necessary for computing function values f(k)      */
-				l_theta = log(theta);
-				c_pm = m * l_theta - _unur_factorialln(m);
-
- /* function values f(k) = p(k)/p(m) at k = k2, k4, k1, k5               */
-				f2 = f(k2, l_theta, c_pm);
-				f4 = f(k4, l_theta, c_pm);
-				f1 = f(k1, l_theta, c_pm);
-				f5 = f(k5, l_theta, c_pm);
-
- /* area of the two centre and the two exponential tail regions          */
- /* area of the two immediate acceptance regions between k2, k4          */
-				p1 = f2 * (dl + 1.0);                            /* immed. left      */
-				p2 = f2 * dl         + p1;                       /* centre left      */
-				p3 = f4 * (dr + 1.0) + p2;                       /* immed. right     */
-				p4 = f4 * dr         + p3;                       /* centre right     */
-				p5 = f1 / ll         + p4;                       /* expon. tail left */
-				p6 = f5 / lr         + p5;                       /* expon. tail right*/
-			}
+  double               U, V, W;
 
 		for (;;)
 		{
@@ -669,3 +673,31 @@ unur_stdgen_sample_poisson_pprsc( struct unur_gen *gen )
   
 } /* end of unur_stdgen_sample_poisson_pprsc() */
 
+/*---------------------------------------------------------------------------*/
+#undef m 
+#undef k2
+#undef k4
+#undef k1
+#undef k5
+
+#undef dl
+#undef dr
+#undef r1
+#undef r2
+#undef r4
+#undef r5
+#undef ll
+#undef lr
+#undef l_theta
+#undef c_pm
+#undef f2
+#undef f4
+#undef f1
+#undef f5
+#undef p1
+#undef p2
+#undef p3
+#undef p4
+#undef p5
+#undef p6
+/*---------------------------------------------------------------------------*/

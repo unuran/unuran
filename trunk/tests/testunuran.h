@@ -118,7 +118,7 @@ void print_distr_name( FILE *LOG, const UNUR_DISTR *distr, const char *genid );
 int print_pval( FILE *LOG, UNUR_GEN *gen, const UNUR_DISTR *distr, double pval, int trial, char todo );
 
 /* run chi2 test */
-int run_validate_chi2( FILE *LOG, int line, UNUR_GEN *gen, const UNUR_DISTR *distr, char todo );
+int run_validate_chi2( FILE *LOG, int line, UNUR_GEN *gen, const UNUR_DISTR *distr, int testtype, char todo );
 
 /* run verify hat test */
 int run_validate_verifyhat( FILE *LOG, int line, UNUR_GEN *gen, const UNUR_DISTR *distr, char todo );

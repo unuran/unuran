@@ -70,6 +70,8 @@ my \$q = new CGI;
 # ----------------------------------------------------------------
 # Files
 
+my \$cid = get_code_cid();
+
 my \$tmp_acg = "$tmp_anuran\\_acg.c";
 my \$tmp_acg_exec = "$tmp_anuran\\_acg";
 
@@ -115,6 +117,25 @@ anuran_end();
 exit 0;
 # ----------------------------------------------------------------
 
+# ----------------------------------------------------------------
+# Compute id for generated code
+# ----------------------------------------------------------------
+
+sub get_code_cid
+{
+    my \$cid;
+
+    # use date
+    (my \$sec, my \$min, my \$hour, my \$day, my \$month, my \$year) 
+	= localtime;
+    \$cid .= sprintf("%d-%02d-%02d.%02d:%02d:%02d",
+		     \$year+1900,\$month+1,\$day,\$hour,\$min,\$sec);
+
+    # use pid
+    \$cid .= '_'.\$\$;
+
+    return \$cid;
+} # get_code_cid()
 
 # ----------------------------------------------------------------
 # Start of HTML page
@@ -852,8 +873,19 @@ sub anuran_code
 # Make Entry into log file
 # ................................................................
 
+	my \$log;
+
+	# date
+	\$log .= "date = ".(scalar localtime)."\\n";
+
+	# client
+	\$log .= "client = \$ENV{'REMOTE_ADDR'}\\n";
+
+	# id of generated code
+	\$log .= "code_id = \$cid\\n";
+
 	# name of distribution
-	my \$log = "distribution = \$distr\\n";
+	\$log .= "distribution = \$distr\\n";
 
 	# list of parameters (defaults settings start with '('
 	for (my \$i=0; \$i < \$n_tot; \$i++) {

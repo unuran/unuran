@@ -22,7 +22,7 @@
 @include version.texi
 
 @c Titlepage ...
-@include title.texi
+@include unuran_title.texi
 
 @c -----------------------------------------------------
 

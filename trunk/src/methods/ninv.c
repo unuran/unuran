@@ -215,20 +215,25 @@ unur_ninv_new( struct unur_distr *distr )
   par->distr       = distr;        /* pointer to distribution object         */
 
   /* set default values */
-  PAR.max_iter  = 40;              /* maximal number of iterations           */
-  PAR.rel_x_resolution = 1.0e-8 ;  /* maximal relative error in x            */
-  PAR.table_on = 0;            /* usage of table with better starting points */
-  /*  all starting points set to same value                                  */
-  PAR.s[0]      = 0.;              /* left boundary of interval              *
-                                      and newton starting point              */
-  PAR.s[1]      = 0.;              /* right boundary of interval             */
-  /* regula falsi:                                                           */
-  /* if the PAR.s[i] are identical, the PAR.s[i] are set in _unur_ninv_init  */
-  /* such that INTERVAL_COVERS *100 Percent of the used univariate random    */
-  /* numbers will be in that interval                                        */
-
+  PAR.max_iter  = 40;  /* =DEF NINV maxiter maximal number of iterations */
+  PAR.rel_x_resolution = 1.0e-8;  /* =DEF NINV rel_error
+                                       maximal relative error in x        */
+  PAR.table_on = 0;            /* =DEF NINV table_on If equal to 1 a table
+                                   containing potential starting points
+                                   is generated  */
+  PAR.s[0]      = 0.0;              /* =DEF NINV s1  left boundary of
+                                      starting  interval for regula falsi
+                                      and newton starting point.             */
+  PAR.s[1]      = 0.0;              /* =DEF NINV s2 right boundary of
+                                      of starting interval for regula falsi. */
+  /* If s1 and s2 are equal,  are chosen
+  such that in case of the regula falsi the integral of the pdf over
+  the interval is a given value (e.g. 0.9) and in case of Newton's method
+  cdf at s1 equals a given value (e.g. 0.5)                                 */
+ 
   par->method   = UNUR_METH_NINV;          /* method and default variant     */
-  par->variant  = NINV_VARFLAG_REGULA;     /* default variant                */
+  par->variant  = NINV_VARFLAG_REGULA;     /* =DEF NINV variant The default
+             method used by NINV (either newton's method or the regula falsi)*/
   par->set      = 0u;                      /* inidicate default parameters   */
   par->urng     = unur_get_default_urng(); /* use default urng               */
   par->urng_aux = NULL;                    /* no auxilliary URNG required    */

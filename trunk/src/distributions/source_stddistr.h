@@ -87,6 +87,7 @@ enum {
   /**                                  pmf   cdf   mode  area  gen   doc     */
   UNUR_DISTR_GEOMETRIC,           /*    X     .     .     X     X     .      */
   UNUR_DISTR_LOGARITHMIC,         /*    X     .     .     X     X     .      */
+  UNUR_DISTR_POISSON,             /*    X     .     .     X     X     .      */
   UNUR_DISTR_ZIPF,                /*    X     .     .     .     X     .      */
 
 };

@@ -64,6 +64,9 @@ extern long double incbetl(long double a, long double b, long double x);
 extern long double lgaml(long double x);
 #define _unur_gammaln(x)  ((double)(lgaml((long double)(x))))
 
+/* logarithm of factorial */
+#define _unur_factln(x)   _unur_gammaln((x)+1.)
+
 /* incomplete gamma function */
 extern long double igaml(long double a, long double x);
 #define _unur_incgamma(x,a)  ((double)(igaml((long double)(a),(long double)(x))))

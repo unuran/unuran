@@ -373,16 +373,6 @@ int unur_stdgen_sample_geometric_inv( struct unur_gen *gen );
 /* Inversion                                                                 */
 
 /*---------------------------------------------------------------------------*/
-/* Zipf (or Zeta) distribution  [1; ch.11.20, p.465]                         */
-struct unur_distr *unur_distr_zipf(double *params, int n_params);
-
-/* special generators */
-int _unur_stdgen_zipf_init( struct unur_par *par, struct unur_gen *gen );
-/* initialize new generator                                                  */
-int unur_stdgen_sample_zipf_zet( struct unur_gen *gen );
-/* Acceptance Rejection                                                      */
-
-/*---------------------------------------------------------------------------*/
 /* Logarithmic distribution  [1; ch.7, p.285]                                */
 struct unur_distr *unur_distr_logarithmic(double *params, int n_params);
 
@@ -390,6 +380,27 @@ struct unur_distr *unur_distr_logarithmic(double *params, int n_params);
 int _unur_stdgen_logarithmic_init( struct unur_par *par, struct unur_gen *gen );
 /* initialize new generator                                                  */
 int unur_stdgen_sample_logarithmic_lsk( struct unur_gen *gen );
+/* Acceptance Rejection                                                      */
+
+/*---------------------------------------------------------------------------*/
+/* Poisson distribution  [1; ch.4, p.151]                                    */
+struct unur_distr *unur_distr_poisson(double *params, int n_params);
+
+/* special generators */
+int _unur_stdgen_poisson_init( struct unur_par *par, struct unur_gen *gen );
+/* initialize new generator                                                  */
+int unur_stdgen_sample_poisson_pdtabl( struct unur_gen *gen );
+int unur_stdgen_sample_poisson_pdac( struct unur_gen *gen );
+/* Tabulated Inversion combined with Acceptance Complement                   */
+
+/*---------------------------------------------------------------------------*/
+/* Zipf (or Zeta) distribution  [1; ch.11.20, p.465]                         */
+struct unur_distr *unur_distr_zipf(double *params, int n_params);
+
+/* special generators */
+int _unur_stdgen_zipf_init( struct unur_par *par, struct unur_gen *gen );
+/* initialize new generator                                                  */
+int unur_stdgen_sample_zipf_zet( struct unur_gen *gen );
 /* Acceptance Rejection                                                      */
 
 /*---------------------------------------------------------------------------*/

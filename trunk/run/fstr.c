@@ -1,3 +1,51 @@
+/*****************************************************************************
+ *                                                                           *
+ *          UNURAN -- Universal Non-Uniform Random number generator          *
+ *                                                                           *
+ *****************************************************************************
+ *                                                                           *
+ *   FILE:      functparser.c                                                *
+ *                                                                           *
+ *   Parser function string, evaluate function, print programm code.         *
+ *                                                                           *
+ *   DESCRIPTION:                                                            *
+ *      Given a string for a function.                                       *
+ *         The string is parser.                                             *
+ *         A tree representing the function term is generated.               *
+ *         A tree for the derivative of the function is generated.           *
+ *         The tree is used to evalute the corresponding function for an x.  *
+ *         The source code for a program is produced.                        *
+ *                                                                           *
+ *****************************************************************************
+     $Id$
+ *****************************************************************************
+ *                                                                           *
+ *   Copyright (c) 2000 Wolfgang Hoermann and Josef Leydold                  *
+ *   Dept. for Statistics, University of Economics, Vienna, Austria          *
+ *                                                                           *
+ *   This program is free software; you can redistribute it and/or modify    *
+ *   it under the terms of the GNU General Public License as published by    *
+ *   the Free Software Foundation; either version 2 of the License, or       *
+ *   (at your option) any later version.                                     *
+ *                                                                           *
+ *   This program is distributed in the hope that it will be useful,         *
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of          *
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the           *
+ *   GNU General Public License for more details.                            *
+ *                                                                           *
+ *   You should have received a copy of the GNU General Public License       *
+ *   along with this program; if not, write to the                           *
+ *   Free Software Foundation, Inc.,                                         *
+ *   59 Temple Place, Suite 330, Boston, MA 02111-1307, USA                  *
+ *                                                                           *
+ *****************************************************************************
+ *                                                                           *
+ *   REFERENCES:                                                             *
+ *   [1] XXXXXXX (1995): YYYYYYYYYYYYYYYYYYYYY                               *
+ *                                                                           *
+ *****************************************************************************/
+
+/*---------------------------------------------------------------------------*/
 /*  FunctDefinition ::= DefFunctDesignator '=' Expression               */
      /*                    '='                                               */
      /*                   /   \                                              */
@@ -57,15 +105,15 @@
 
 /*  Base ::= Exponent                                                   */
      /*  Exponent ::= UnsignedConstant | Identifier | FunctDesignator |      */ 
-     /*               "not" Base | '(' Expression ')'                        */ 
+     /*               '(' Expression ')'                                     */ 
      /*                                                                      */
      /*       UnsignedConstant                Identifier                     */
      /*      /                \      or     /          \       or            */
      /*  NULL                  NULL      NULL            NULL                */
      /*                                                                      */
-     /*                              "not"                                   */
-     /*  FunctDesignator    or      /     \         or   Expression          */
-     /*                         NULL       Bas_Exp                           */
+     /*                                                            */
+     /*  FunctDesignator    or Expression          */
+     /*                                                  */
      /*                                                                      */
 
 /*  FunctDesignator ::= FuncIdentifier '(' ActualParameterlist ')'      */
@@ -121,9 +169,9 @@
    *         /   \      or     /   \      or
    *        X     1           X     1       
    *
-   *          '^'               "mod"
-   *         /   \      or     /     \    ==>     X
-   *        X     1           X       1
+   *          '^'
+   *         /   \                        ==>     X
+   *        X     1
    */ 
 
   /*          '*'               '*'         
@@ -135,12 +183,8 @@
    *        0     X           0     X       
    *
    *         "and"             "and"         
-   *         /   \      or     /   \      or
+   *         /   \      or     /   \      ==>     0
    *        0     X           X     0       
-   *
-   *         "mod"      
-   *         /   \                        ==>     0
-   *        0     X     
    */
 
   /*          '^'               '^'
@@ -303,6 +347,9 @@ struct symbols {
 /*  In the current implementation system function must not have more than    */
 /*  two arguments.                                                           */
 /*                                                                           */
+/*  Constant should have highest priority to avoid enclosing parenthesis     */
+/*  in string output.                                                        */
+/*                                                                           */
 /*  The first entry in the list must be empty!                               */
 /*                                                                           */
 /*  There must be FOUR markers in the list (in this ordering!):              */
@@ -312,12 +359,13 @@ struct symbols {
 /*     _END   ... end of list                                                */
 
 static struct symbols symbol[] = {   
+/* symbol|type |priority | val| eval|      deriv                             */
   {""    , S_NOSYMBOL, 0, 0.0 , v_dummy  , d_dummy }, /* void                */
 
   /* user defined symbols */                                             
-  {"UCONST",S_UCONST , 0, 0.0 , v_const  , d_const }, /* constant            */
+  {"UCONST",S_UCONST , 9, 0.0 , v_const  , d_const }, /* constant            */
   {"UFUNCT",S_UFUNCT , 0, 0.0 , v_dummy  , d_dummy }, /* function            */
-  {"VAR" , S_UIDENT  , 0, 0.0 , v_dummy  , d_const }, /* variable            */
+  {"VAR" , S_UIDENT  , 9, 0.0 , v_dummy  , d_const }, /* variable            */
 
   /* relation operators  */
   {"_ROS", S_NOSYMBOL, 0, 0.0 , v_dummy  , d_dummy }, /* marker for relation operators */
@@ -329,8 +377,9 @@ static struct symbols symbol[] = {
   {"<>"  , S_REL_OP  , 1, 0.0 , v_unequal, d_const },
   {">="  , S_REL_OP  , 1, 0.0 , v_grtr_or, d_const },
 
-  /* special symbols */
   {"_NAS", S_NOSYMBOL, 0, 0.0 , v_dummy  , d_dummy }, /* marker for non-alphanumeric symbols */
+
+  /* special symbols */
   {"("   , S_OTHERS  , 0, 0.0 , v_dummy  , d_dummy },
   {")"   , S_OTHERS  , 0, 0.0 , v_dummy  , d_dummy },
   {","   , S_OTHERS  , 0, 0.0 , v_dummy  , d_dummy },
@@ -341,20 +390,21 @@ static struct symbols symbol[] = {
   {"*"   , S_MUL_OP  , 4, 0.0 , v_mul    , d_mul   },
   {"/"   , S_MUL_OP  , 4, 0.0 , v_div    , d_div   },
   {"^"   , S_HPR_OP  , 5, 0.0 , v_power  , d_power },
+
   {"_ANS", S_NOSYMBOL, 0, 0.0 , v_dummy  , d_dummy }, /* marker for alphanumeric symbols */
-  {"mod" , S_MUL_OP  , 4, 0.0 , v_mod    , d_const },
 
   /* logical operators */
   {"and" , S_MUL_OP  , 2, 0.0 , v_and    , d_const },
   {"or"  , S_ADD_OP  , 4, 0.0 , v_or     , d_const },
   {"xor" , S_ADD_OP  , 4, 0.0 , v_xor    , d_const },
-  {"not" , S_HPR_OP  , 6, 0.0 , v_not    , d_const },
+  {"not" , S_SFUNCT  , 1, 0.0 , v_not    , d_const },
 
   /* system constants */
-  {"pi"  , S_SCONST  , 0, M_PI, v_const  , d_const },
-  {"e"   , S_SCONST  , 0, M_E , v_const  , d_const },
+  {"pi"  , S_SCONST  , 9, M_PI, v_const  , d_const },
+  {"e"   , S_SCONST  , 9, M_E , v_const  , d_const },
 
   /* system functions */
+  {"mod" , S_SFUNCT  , 2, 0.0 , v_mod    , d_const },
   {"exp" , S_SFUNCT  , 1, 0.0 , v_exp    , d_exp   },
   {"ln"  , S_SFUNCT  , 1, 0.0 , v_ln     , d_ln    },
   {"log" , S_SFUNCT  , 2, 0.0 , v_log    , d_log   },
@@ -390,7 +440,7 @@ static int _end;                    /* end of list                           */
 /*****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
-/* structure for storing data while tokizing and parsing the function string */
+/* Structure for storing data while tokizing and parsing the function string */
 
 struct parser_data {
   char  *fstr;          /* pointer to function string                        */
@@ -423,6 +473,15 @@ enum {
   ERR_MISSING           /* more tokens expected                              */ 
 };
 
+/*---------------------------------------------------------------------------*/
+/* Structure for printing symbols into string                                */
+
+struct concat {
+  char *string;         /* pointer to string                                 */
+  int   length;         /* length of printed string                          */
+  int   allocated;      /* length allocated string                           */
+};
+
 /*****************************************************************************/
 /** Prototypes                                                              **/
 /*****************************************************************************/
@@ -431,7 +490,7 @@ enum {
 /* Evaluate function tree                                                    */
 /*---------------------------------------------------------------------------*/
 
-static double _unur_fstr_eval_node (struct ftreenode *node, double x);
+static double _unur_fstr_eval_node (const struct ftreenode *node, const double x);
 /*---------------------------------------------------------------------------*/
 /* Evaluate function tree starting from `node' at x                          */
 /*---------------------------------------------------------------------------*/
@@ -567,7 +626,7 @@ static struct ftreenode *_unur_Bas_Exp (struct parser_data *pdata);
 /*---------------------------------------------------------------------------*/
 /*  Base ::= Exponent                                                        */
 /*  Exponent ::= UnsignedConstant | Identifier | FunctDesignator |           */ 
-/*               "not" Base | '(' Expression ')'                             */ 
+/*               '(' Expression ')'                                          */ 
 /*---------------------------------------------------------------------------*/
 
 static struct ftreenode *_unur_FunctDesignator (struct parser_data *pdata);
@@ -592,8 +651,9 @@ static struct ftreenode *_unur_fstr_create_node (char *symb, int token,
 /* Create new node.                                                          */
 /*---------------------------------------------------------------------------*/
 
-static struct ftreenode *
-_unur_fstr_simplification (char *symb, int token, struct ftreenode *left, struct ftreenode *right);
+static struct ftreenode *_unur_fstr_simplification (char *symb, int token,
+						    struct ftreenode *left,
+						    struct ftreenode *right);
 /*---------------------------------------------------------------------------*/
 /* Try to simpify nodes.                                                     */
 /*---------------------------------------------------------------------------*/
@@ -601,6 +661,22 @@ _unur_fstr_simplification (char *symb, int token, struct ftreenode *left, struct
 static int _unur_fstr_reorganize (struct ftreenode *node);
 /*---------------------------------------------------------------------------*/
 /* Try to reorganize tree at node.                                           */
+/*---------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------*/
+/* Create function string and source code.                                   */
+/*---------------------------------------------------------------------------*/
+
+static int _unur_fstr_node2string ( struct concat *output, const struct ftreenode *node,
+				    const char *variable, const char *function);
+/*---------------------------------------------------------------------------*/
+/* Produce string from function tree.                                        */
+/*---------------------------------------------------------------------------*/
+
+static int _unur_fstr_print ( struct concat *output, const char *symb, const double number );
+/*---------------------------------------------------------------------------*/
+/* Print string or number into output string.                                */
+/* The number is only printed if symb is the NULL pointer.                   */
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*/
@@ -661,7 +737,7 @@ static void _unur_fstr_debug_show_tree(const struct parser_data *pdata,
 /*****************************************************************************/
 
 struct ftreenode *
-_unur_fstr2tree(char *functstr)
+_unur_fstr2tree (const char *functstr)
      /*----------------------------------------------------------------------*/
      /* Compute funtion tree from string.                                    */
      /*                                                                      */
@@ -674,6 +750,9 @@ _unur_fstr2tree(char *functstr)
 { 
   struct parser_data *pdata;
   struct ftreenode *root;
+
+  /* check arguments */
+  _unur_check_NULL( GENTYPE,functstr,NULL );
 
 #ifdef UNUR_ENABLE_LOGGING
   /* write info into log file */
@@ -708,6 +787,11 @@ _unur_fstr2tree(char *functstr)
     _unur_fstr_debug_tree(pdata,root);
 #endif
 
+
+  _unur_fstr_debug_token(pdata);
+  printf("%s\n",_unur_fstr_tree2string(root,"y","F"));
+  
+
   /* check for possible errors */
   if (pdata->tno < pdata->n_tokens && !pdata->errno)
     _unur_fstr_error_parse(pdata,ERR_UNFINISHED); 
@@ -727,7 +811,7 @@ _unur_fstr2tree(char *functstr)
 /*---------------------------------------------------------------------------*/
 
 double
-_unur_fstr_eval_tree(struct ftreenode *root, double x)
+_unur_fstr_eval_tree (const struct ftreenode *root, const double x)
      /*----------------------------------------------------------------------*/
      /* Evaluate function tree at x                                          */
      /*                                                                      */
@@ -744,6 +828,34 @@ _unur_fstr_eval_tree(struct ftreenode *root, double x)
   else
     return _unur_fstr_eval_node( root, x );
 } /* end of _unur_fstr_eval_tree() */
+
+/*---------------------------------------------------------------------------*/
+
+char *
+_unur_fstr_tree2string ( const struct ftreenode *root,
+			 const char *variable, const char *function)
+     /*----------------------------------------------------------------------*/
+     /* Produce string from function tree.                                   */
+     /* As a side effect a string is allocated.                              */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   root     ... pointer to root of function tree                      */
+     /*   variable ... pointer to name of variable                           */
+     /*   function ... pointer to name of function                           */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to output string (should be freed when not used any more)  */
+     /*----------------------------------------------------------------------*/
+{
+  struct concat output = {NULL, 0, 0};
+
+  _unur_fstr_node2string(&output,root,variable,function);
+  
+  *(output.string + output.length + 1) = '\0';
+
+  return output.string;
+
+} /* end of _unur_fstr_tree2string() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -770,7 +882,7 @@ _unur_fstr_free (struct ftreenode *root)
 /*****************************************************************************/
 
 double
-_unur_fstr_eval_node (struct ftreenode *node, double x)
+_unur_fstr_eval_node (const struct ftreenode *node, const double x)
      /*----------------------------------------------------------------------*/
      /* Evaluate function tree starting from `node' at x                     */
      /*                                                                      */
@@ -1695,15 +1807,13 @@ _unur_Bas_Exp (struct parser_data *pdata)
      /*----------------------------------------------------------------------*/
      /*  Base ::= Exponent                                                   */
      /*  Exponent ::= UnsignedConstant | Identifier | FunctDesignator |      */ 
-     /*               "not" Base | '(' Expression ')'                        */ 
+     /*               '(' Expression ')'                                     */ 
      /*                                                                      */
      /*       UnsignedConstant                Identifier                     */
      /*      /                \      or     /          \       or            */
      /*  NULL                  NULL      NULL            NULL                */
      /*                                                                      */
-     /*                              "not"                                   */
-     /*  FunctDesignator    or      /     \         or   Expression          */
-     /*                         NULL       Bas_Exp                           */
+     /*  FunctDesignator    or    Expression                                 */
      /*                                                                      */
      /* parameters:                                                          */
      /*   pdata     ... pointer to parser object                             */
@@ -1712,7 +1822,7 @@ _unur_Bas_Exp (struct parser_data *pdata)
      /*   pointer to function tree                                           */
      /*----------------------------------------------------------------------*/
 { 
-  struct ftreenode *node, *right; 
+  struct ftreenode *node; 
   char             *symb;
   int              token;
 
@@ -1726,13 +1836,6 @@ _unur_Bas_Exp (struct parser_data *pdata)
       symbol[token].type==S_SCONST ) {
     /* make a new end node */
     node = _unur_fstr_create_node(symb,token,NULL,NULL); 
-  }
-
-  /* "not" operator */
-  else if( strcmp(symb,"not")==0 ) {
-    right = _unur_Bas_Exp(pdata);
-    if (pdata->errno) return NULL;
-    node = _unur_fstr_create_node(symb,token,NULL,right); 
   }
 
   /* system function */
@@ -1988,7 +2091,7 @@ _unur_fstr_simplification (char *symb, int token,
   int l_1     = (l_const && left->val == 1.);
   int r_0     = (r_const && right->val == 0.);
   int r_1     = (r_const && right->val == 1.);
-  int and, mod;
+  int and;
 
   char s = symb[0];
 
@@ -2039,13 +2142,12 @@ _unur_fstr_simplification (char *symb, int token,
    *         /   \      or     /   \      or
    *        X     1           X     1       
    *
-   *          '^'               "mod"
-   *         /   \      or     /     \    ==>     X
-   *        X     1           X       1
+   *          '^'
+   *         /   \                        ==>     X
+   *        X     1
    */ 
-  mod = (strcmp(symb,"mod")==0);
   if ( (r_0 && (s=='+' || s=='-')) ||
-       (r_1 && (s=='*' || s=='/' || s=='^' || mod)) ) {
+       (r_1 && (s=='*' || s=='/' || s=='^')) ) {
     free (right);
     return left;
   }
@@ -2059,15 +2161,11 @@ _unur_fstr_simplification (char *symb, int token,
    *        0     X           0     X       
    *
    *         "and"             "and"         
-   *         /   \      or     /   \      or
+   *         /   \      or     /   \      ==>     0
    *        0     X           X     0       
-   *
-   *         "mod"      
-   *         /   \                        ==>     0
-   *        0     X     
    */
   and = (strcmp(symb,"and")==0);
-  if ( l_0 && (s=='*' || s=='/' || s=='^' || and || mod) ) {
+  if ( l_0 && (s=='*' || s=='/' || s=='^' || and) ) {
     free (right);
     return left;
   }
@@ -2241,8 +2339,8 @@ double v_minus  (double l, double r) { return (l - r); }
 double v_mul    (double l, double r) { return (l * r); }
 double v_div    (double l, double r) { return (l / r); }
 double v_power  (double l, double r) { return pow(l,r); }
-double v_mod    (double l, double r) { return (double)((int)l % (int)r); }
 
+double v_mod    (double l, double r) { return (double)((int)l % (int)r); }
 double v_exp    (double l, double r) { return exp(r); }
 double v_ln     (double l, double r) { return log(r); }
 double v_log    (double l, double r) { return log(r)/log(l); }
@@ -2253,6 +2351,154 @@ double v_sec    (double l, double r) { return 1./cos(r); }
 double v_sqr    (double l, double r) { return sqrt(r); }
 double v_abs    (double l, double r) { return abs(r); }
 double v_sgn    (double l, double r) { return ((r<0.) ? -1. : ((r>0.) ? 1. : 0.)); }
+
+/*---------------------------------------------------------------------------*/
+
+/*****************************************************************************/
+/** Create function string and source code.                                 **/
+/*****************************************************************************/
+
+int
+_unur_fstr_node2string ( struct concat *output, const struct ftreenode *node,
+			 const char *variable, const char *function)
+     /*----------------------------------------------------------------------*/
+     /* Produce string from function subtree rooted at node.                 */
+     /* As a side effect a string is allocated.                              */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   output   ... pointer to string for output                          */
+     /*   root     ... pointer to root of function tree                      */
+     /*   variable ... pointer to name of variable                           */
+     /*   function ... pointer to name of function                           */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 on success                                                       */
+     /*----------------------------------------------------------------------*/
+{
+  struct ftreenode *left  = node->left;    /* left branch of node            */
+  struct ftreenode *right = node->right;   /* right branch of node           */
+  const char *symb;                /* symbol for node (or NULL for constant) */           
+  int type = node->type;                   /* type of symbol                 */
+  int priority = symbol[node->token].info; /* priority of symbol             */
+  int blanks, parenthesis;                 /* booleans                       */
+
+  /* get symbol for node */
+  switch (type) {
+  case S_UIDENT:    /* variable */
+    symb = variable;  break;
+  case S_UFUNCT:    /* function */
+    symb = function;  break;
+  case S_UCONST:    /* node contains constant */
+    /* use value in node instead of symbol */
+    symb = NULL;      break;  
+  case S_SCONST:
+  default:
+    symb = node->symbol;
+  }
+
+  if (type == S_SFUNCT || type == S_UFUNCT) {
+    /* node '(' left ',' right ')' */
+    _unur_fstr_print( output, symb, 0 );
+    _unur_fstr_print( output, "(", 0. );
+    if (left) {
+      _unur_fstr_node2string(output,left,variable,function);
+      _unur_fstr_print( output, ",", 0. );
+    }
+    if (right) {
+      _unur_fstr_node2string(output,right,variable,function);
+    }
+    _unur_fstr_print( output, ")", 0. );
+  }
+
+  else if (symb && symb[0] == ',') {
+    /* left ',' right */
+    _unur_fstr_print( output, ",", 0. );
+    if (left) {
+      _unur_fstr_node2string(output,left,variable,function);
+      _unur_fstr_print( output, ",", 0. );
+    }
+    if (right) {
+      _unur_fstr_node2string(output,right,variable,function);
+    }
+  }    
+
+  else {
+    /* check whether enclosing blanks are required for typography  */
+    blanks = (type==S_REL_OP || type==S_ADD_OP || type==S_MUL_OP);
+
+    /* left branch */
+    if (left) {
+      parenthesis = ( (symb && symb[0]=='^' && !(node->val>0.)) ||
+		      priority < symbol[left->token].info );
+      if (parenthesis) _unur_fstr_print( output, "(", 0. );
+      _unur_fstr_node2string(output,left,variable,function);
+      if (parenthesis) _unur_fstr_print( output, ")", 0. );
+    }
+
+    /* symbol for node */
+    if (blanks) _unur_fstr_print( output, " ", 0. );
+    _unur_fstr_print( output, symb, node->val );
+    if (blanks) _unur_fstr_print( output, " ", 0. );
+
+    /* right branch */
+    if (right) {
+      parenthesis = ( (symb && symb[0]=='^' && !(node->val>0.)) ||
+		      priority < symbol[right->token].info );
+      if (parenthesis) _unur_fstr_print( output, "(", 0. );
+      _unur_fstr_node2string(output,right,variable,function);
+      if (parenthesis) _unur_fstr_print( output, ")", 0. );
+    }
+  }
+
+  return 1;
+} /* end of _unur_fstr_node2string() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+_unur_fstr_print ( struct concat *output, const char *symb, const double number )
+     /*----------------------------------------------------------------------*/
+     /* Print string or number into output string.                           */
+     /* The number is only printed if symb is the NULL pointer.              */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   output ... pointer to string for output                            */
+     /*   symb   ... string to be printed                                    */
+     /*   number ... constant to be printed                                  */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 on success                                                       */
+     /*----------------------------------------------------------------------*/
+{
+  size_t len;
+
+  /* (possible) length of output string */
+  len = (symb) ? strlen(symb) : 64;
+  
+  /* Resize the allocated memory if necessary */
+  if (output->length + len + 1 > output->allocated) {
+    if (output->string == NULL) {
+      output->allocated = 100;
+      output->string = _unur_malloc( 100*sizeof(char) );
+    }
+    else {
+      output->allocated = (output->allocated + len) * 2;
+      output->string = _unur_realloc( output->string, output->allocated );
+    }
+  }
+
+  if (symb)
+    /* copy symbol into output */
+    memcpy( output->string+output->length, symb, len );
+  else
+    /* copy number symbol into output */
+    len = sprintf(output->string+output->length,"%g",number);
+
+  /* update length of output string */
+  output->length += len;
+
+  return 1;
+} /* end of _unur_fstr_print() */
 
 /*---------------------------------------------------------------------------*/
 

@@ -44,20 +44,33 @@
 /* Function prototypes for function string parser                            */
 /*---------------------------------------------------------------------------*/
 
-struct ftreenode *_unur_fstr2tree( char *functstring );
+struct ftreenode *_unur_fstr2tree ( const char *functstring );
 /*---------------------------------------------------------------------------*/
 /* Compute funtion tree from string.                                         */
 /*---------------------------------------------------------------------------*/
 
-double _unur_fstr_eval_tree( struct ftreenode *functtree_root, double x );
+double _unur_fstr_eval_tree ( const struct ftreenode *functtree_root, const double x );
 /*---------------------------------------------------------------------------*/
 /* Evalutes function given by a function tree at x.                          */
 /*---------------------------------------------------------------------------*/
 
-void _unur_fstr_free( struct ftreenode *functtree_root);
+void _unur_fstr_free ( struct ftreenode *functtree_root );
 /*---------------------------------------------------------------------------*/
 /* Destroys function tree and frees memory.                                  */
 /*---------------------------------------------------------------------------*/
+
+char *_unur_fstr_tree2string ( const struct ftreenode *functtree_root,
+			       const char *variable, const char *function);
+/*---------------------------------------------------------------------------*/
+/* Produce string from function tree.                                        */
+/* It returns a pointer to the resulting string. This should be freed when   */
+/* it is not used any more.                                                  */
+/*---------------------------------------------------------------------------*/
+
+
+
+
+
 
 char *Ntree2string( struct ftreenode *functtree_root, char *ret_str );
 /*---------------------------------------------------------------------------*/

@@ -1,5 +1,7 @@
 Version 0.6.0: ???? 200?
 
+	- addind new distribution type for full conditional distributions
+
 	- adding multivariate Cauchy and Student distributions.
 
 	- new method NORTA (NORmal To Anything)

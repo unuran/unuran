@@ -97,106 +97,106 @@ static struct ftreenode *d_abs   ( const struct ftreenode *node, int *error );
 /*****************************************************************************/
 
 /* error */
-static unsigned C_error  ( struct concat *output, const struct ftreenode *node, const char *variable );
+static unsigned C_error  ( struct unur_string *output, const struct ftreenode *node, const char *variable );
 
 /* constants and variables */
-static unsigned C_const  ( struct concat *output, const struct ftreenode *node, const char *variable );
-static unsigned C_var    ( struct concat *output, const struct ftreenode *node, const char *variable );
+static unsigned C_const  ( struct unur_string *output, const struct ftreenode *node, const char *variable );
+static unsigned C_var    ( struct unur_string *output, const struct ftreenode *node, const char *variable );
 
 /* prefix operators (functions) (eg. exp(x)) */
-static unsigned C_prefix_generic ( struct concat *output, const struct ftreenode *node, 
+static unsigned C_prefix_generic ( struct unur_string *output, const struct ftreenode *node, 
 				   const char *variable, const char *symbol );
 /* operators where C routine is the same as parser name */
-static unsigned C_prefix ( struct concat *output, const struct ftreenode *node, const char *variable );
+static unsigned C_prefix ( struct unur_string *output, const struct ftreenode *node, const char *variable );
 /* special operators */
-static unsigned C_power  ( struct concat *output, const struct ftreenode *node, const char *variable );
-static unsigned C_sec    ( struct concat *output, const struct ftreenode *node, const char *variable );
-static unsigned C_abs    ( struct concat *output, const struct ftreenode *node, const char *variable );
-static unsigned C_sgn    ( struct concat *output, const struct ftreenode *node, const char *variable );
+static unsigned C_power  ( struct unur_string *output, const struct ftreenode *node, const char *variable );
+static unsigned C_sec    ( struct unur_string *output, const struct ftreenode *node, const char *variable );
+static unsigned C_abs    ( struct unur_string *output, const struct ftreenode *node, const char *variable );
+static unsigned C_sgn    ( struct unur_string *output, const struct ftreenode *node, const char *variable );
 
 /* infix (binary) operators (eg. x + y) */
-static unsigned C_infix_generic  ( struct concat *output, const struct ftreenode *node,
+static unsigned C_infix_generic  ( struct unur_string *output, const struct ftreenode *node,
 				   const char *variable, const char *symbol );
 /* operators where C routine is the same as parser name */
-static unsigned C_infix  ( struct concat *output, const struct ftreenode *node, const char *variable );
+static unsigned C_infix  ( struct unur_string *output, const struct ftreenode *node, const char *variable );
 /* special operators */
-static unsigned C_equal  ( struct concat *output, const struct ftreenode *node, const char *variable );
-static unsigned C_unequal( struct concat *output, const struct ftreenode *node, const char *variable );
-static unsigned C_minus  ( struct concat *output, const struct ftreenode *node, const char *variable );
-static unsigned C_mod    ( struct concat *output, const struct ftreenode *node, const char *variable );
+static unsigned C_equal  ( struct unur_string *output, const struct ftreenode *node, const char *variable );
+static unsigned C_unequal( struct unur_string *output, const struct ftreenode *node, const char *variable );
+static unsigned C_minus  ( struct unur_string *output, const struct ftreenode *node, const char *variable );
+static unsigned C_mod    ( struct unur_string *output, const struct ftreenode *node, const char *variable );
 
 /*****************************************************************************/
 /** Routines for printing FORTRAN code                                      **/
 /*****************************************************************************/
 
 /* error */
-static unsigned F_error  ( struct concat *output, const struct ftreenode *node, const char *variable );
+static unsigned F_error  ( struct unur_string *output, const struct ftreenode *node, const char *variable );
 
 /* constants and variables */
-static unsigned F_const  ( struct concat *output, const struct ftreenode *node, const char *variable );
-static unsigned F_var    ( struct concat *output, const struct ftreenode *node, const char *variable );
+static unsigned F_const  ( struct unur_string *output, const struct ftreenode *node, const char *variable );
+static unsigned F_var    ( struct unur_string *output, const struct ftreenode *node, const char *variable );
 
 /* prefix operators (functions) (eg. exp(x)) */
-static unsigned F_prefix_generic ( struct concat *output, const struct ftreenode *node, 
+static unsigned F_prefix_generic ( struct unur_string *output, const struct ftreenode *node, 
 				   const char *variable, const char *symbol );
 /* operators where C routine is the same as parser name */
-static unsigned F_prefix ( struct concat *output, const struct ftreenode *node, const char *variable );
+static unsigned F_prefix ( struct unur_string *output, const struct ftreenode *node, const char *variable );
 /* relation operators */
-static unsigned F_lt     ( struct concat *output, const struct ftreenode *node, const char *variable );
-static unsigned F_le     ( struct concat *output, const struct ftreenode *node, const char *variable );
-static unsigned F_gt     ( struct concat *output, const struct ftreenode *node, const char *variable );
-static unsigned F_ge     ( struct concat *output, const struct ftreenode *node, const char *variable );
-static unsigned F_eq     ( struct concat *output, const struct ftreenode *node, const char *variable );
-static unsigned F_ne     ( struct concat *output, const struct ftreenode *node, const char *variable );
+static unsigned F_lt     ( struct unur_string *output, const struct ftreenode *node, const char *variable );
+static unsigned F_le     ( struct unur_string *output, const struct ftreenode *node, const char *variable );
+static unsigned F_gt     ( struct unur_string *output, const struct ftreenode *node, const char *variable );
+static unsigned F_ge     ( struct unur_string *output, const struct ftreenode *node, const char *variable );
+static unsigned F_eq     ( struct unur_string *output, const struct ftreenode *node, const char *variable );
+static unsigned F_ne     ( struct unur_string *output, const struct ftreenode *node, const char *variable );
 /* special operators */
-static unsigned F_sec    ( struct concat *output, const struct ftreenode *node, const char *variable );
-static unsigned F_sgn    ( struct concat *output, const struct ftreenode *node, const char *variable );
+static unsigned F_sec    ( struct unur_string *output, const struct ftreenode *node, const char *variable );
+static unsigned F_sgn    ( struct unur_string *output, const struct ftreenode *node, const char *variable );
 
 /* infix (binary) operators (eg. x + y) */
-static unsigned F_infix_generic  ( struct concat *output, const struct ftreenode *node,
+static unsigned F_infix_generic  ( struct unur_string *output, const struct ftreenode *node,
 				   const char *variable, const char *symbol );
 /* operators where FORTRAN routine is the same as parser name */
-static unsigned F_infix  ( struct concat *output, const struct ftreenode *node, const char *variable );
+static unsigned F_infix  ( struct unur_string *output, const struct ftreenode *node, const char *variable );
 /* special operators */
-static unsigned F_minus  ( struct concat *output, const struct ftreenode *node, const char *variable );
-static unsigned F_power  ( struct concat *output, const struct ftreenode *node, const char *variable );
+static unsigned F_minus  ( struct unur_string *output, const struct ftreenode *node, const char *variable );
+static unsigned F_power  ( struct unur_string *output, const struct ftreenode *node, const char *variable );
 
 /*****************************************************************************/
 /** Routines for printing JAVA code                                         **/
 /*****************************************************************************/
 
 /* error */
-static unsigned J_error  ( struct concat *output, const struct ftreenode *node, const char *variable );
+static unsigned J_error  ( struct unur_string *output, const struct ftreenode *node, const char *variable );
 
 /* constants and variables */
-static unsigned J_const  ( struct concat *output, const struct ftreenode *node, const char *variable );
-static unsigned J_var    ( struct concat *output, const struct ftreenode *node, const char *variable );
+static unsigned J_const  ( struct unur_string *output, const struct ftreenode *node, const char *variable );
+static unsigned J_var    ( struct unur_string *output, const struct ftreenode *node, const char *variable );
 
 /* prefix operators (functions) (eg. exp(x)) */
-static unsigned J_prefix_generic ( struct concat *output, const struct ftreenode *node, 
+static unsigned J_prefix_generic ( struct unur_string *output, const struct ftreenode *node, 
 				   const char *variable, const char *symbol );
 /* operators where C routine is the same as parser name */
-static unsigned J_prefix ( struct concat *output, const struct ftreenode *node, const char *variable );
+static unsigned J_prefix ( struct unur_string *output, const struct ftreenode *node, const char *variable );
 /* relation operators */
-static unsigned J_lt     ( struct concat *output, const struct ftreenode *node, const char *variable );
-static unsigned J_le     ( struct concat *output, const struct ftreenode *node, const char *variable );
-static unsigned J_gt     ( struct concat *output, const struct ftreenode *node, const char *variable );
-static unsigned J_ge     ( struct concat *output, const struct ftreenode *node, const char *variable );
-static unsigned J_eq     ( struct concat *output, const struct ftreenode *node, const char *variable );
-static unsigned J_ne     ( struct concat *output, const struct ftreenode *node, const char *variable );
+static unsigned J_lt     ( struct unur_string *output, const struct ftreenode *node, const char *variable );
+static unsigned J_le     ( struct unur_string *output, const struct ftreenode *node, const char *variable );
+static unsigned J_gt     ( struct unur_string *output, const struct ftreenode *node, const char *variable );
+static unsigned J_ge     ( struct unur_string *output, const struct ftreenode *node, const char *variable );
+static unsigned J_eq     ( struct unur_string *output, const struct ftreenode *node, const char *variable );
+static unsigned J_ne     ( struct unur_string *output, const struct ftreenode *node, const char *variable );
 /* special operators */
-static unsigned J_power  ( struct concat *output, const struct ftreenode *node, const char *variable );
-static unsigned J_sec    ( struct concat *output, const struct ftreenode *node, const char *variable );
-static unsigned J_sgn    ( struct concat *output, const struct ftreenode *node, const char *variable );
+static unsigned J_power  ( struct unur_string *output, const struct ftreenode *node, const char *variable );
+static unsigned J_sec    ( struct unur_string *output, const struct ftreenode *node, const char *variable );
+static unsigned J_sgn    ( struct unur_string *output, const struct ftreenode *node, const char *variable );
 
 /* infix (binary) operators (eg. x + y) */
-static unsigned J_infix_generic  ( struct concat *output, const struct ftreenode *node,
+static unsigned J_infix_generic  ( struct unur_string *output, const struct ftreenode *node,
 				   const char *variable, const char *symbol );
 /* operators where C routine is the same as parser name */
-static unsigned J_infix  ( struct concat *output, const struct ftreenode *node, const char *variable );
+static unsigned J_infix  ( struct unur_string *output, const struct ftreenode *node, const char *variable );
 /* special operators */
-static unsigned J_minus  ( struct concat *output, const struct ftreenode *node, const char *variable );
-static unsigned J_mod    ( struct concat *output, const struct ftreenode *node, const char *variable );
+static unsigned J_minus  ( struct unur_string *output, const struct ftreenode *node, const char *variable );
+static unsigned J_mod    ( struct unur_string *output, const struct ftreenode *node, const char *variable );
 
 /*****************************************************************************/
 /** List of known symbols                                                   **/
@@ -240,11 +240,11 @@ struct symbols {
   struct ftreenode *(*dcalc)(const struct ftreenode *node, int *error); 
                                  /* function for computing derivate          */
 
-  unsigned (*node2C)(struct concat *output, const struct ftreenode *node, const char *variable );
+  unsigned (*node2C)(struct unur_string *output, const struct ftreenode *node, const char *variable );
                                  /* function for printing C code             */
-  unsigned (*node2F)(struct concat *output, const struct ftreenode *node, const char *variable );
+  unsigned (*node2F)(struct unur_string *output, const struct ftreenode *node, const char *variable );
                                  /* function for printing FORTRAN code       */
-  unsigned (*node2J)(struct concat *output, const struct ftreenode *node, const char *variable );
+  unsigned (*node2J)(struct unur_string *output, const struct ftreenode *node, const char *variable );
                                  /* function for printing JAVA code          */
 };
 

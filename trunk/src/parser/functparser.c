@@ -262,6 +262,7 @@
 #include <unur_source.h>
 #include "parser.h"
 #include "parser_source.h"
+#include "functparser_source.h"
 
 /*---------------------------------------------------------------------------*/
 
@@ -311,14 +312,6 @@ enum {
   ERR_MISSING           /* more tokens expected                              */ 
 };
 
-/*---------------------------------------------------------------------------*/
-/* Structure for printing symbols into string                                */
-
-struct concat {
-  char *string;         /* pointer to string                                 */
-  int   length;         /* length of printed string                          */
-  int   allocated;      /* length allocated string                           */
-};
 
 /*****************************************************************************/
 /** List of known symbols                                                   **/
@@ -579,13 +572,13 @@ static void _unur_fstr_error_deriv (const struct ftreenode *node);
 /**   Make string for function given by its tree.                           **/
 /**-------------------------------------------------------------------------**/
 
-static int _unur_fstr_node2string ( struct concat *output, const struct ftreenode *node,
+static int _unur_fstr_node2string ( struct unur_string *output, const struct ftreenode *node,
 				    const char *variable, const char *function, int spaces );
 /*---------------------------------------------------------------------------*/
 /* Produce string from function tree.                                        */
 /*---------------------------------------------------------------------------*/
 
-static int _unur_fstr_print ( struct concat *output, const char *symb, const double number );
+static int _unur_fstr_print ( struct unur_string *output, const char *symb, const double number );
 /*---------------------------------------------------------------------------*/
 /* Print string or number into output string.                                */
 /* The number is only printed if symb is the NULL pointer.                   */
@@ -597,7 +590,7 @@ static int _unur_fstr_print ( struct concat *output, const char *symb, const dou
 /**   Make C code for function given by its tree.                           **/
 /**-------------------------------------------------------------------------**/
 
-static int _unur_fstr_print_C ( struct concat *output, const char *symb, const double number );
+static int _unur_fstr_print_C ( struct unur_string *output, const char *symb, const double number );
 /*---------------------------------------------------------------------------*/
 /* Print string or number as C code into output string.                      */
 /* The number is only printed if symb is the NULL pointer.                   */
@@ -624,7 +617,7 @@ static int _unur_fstr_C_sec ( FILE *out );
 /**   Make FORTRAN code for function given by its tree.                     **/
 /**-------------------------------------------------------------------------**/
 
-static int _unur_fstr_print_F ( struct concat *output, const char *symb, const double number );
+static int _unur_fstr_print_F ( struct unur_string *output, const char *symb, const double number );
 /*---------------------------------------------------------------------------*/
 /* Print string or number as FORTRAN code into output string.                */
 /* The number is only printed if symb is the NULL pointer.                   */

@@ -80,7 +80,7 @@ _unur_fstr_tree2JAVA ( FILE *out, const struct ftreenode *root,
      /*   0 ... failure                                                      */
      /*----------------------------------------------------------------------*/
 {
-  struct concat output = {NULL, 0, 0};
+  struct unur_string output = {NULL, 0, 0};
   unsigned rcode;
 
   /* check arguments */
@@ -90,7 +90,7 @@ _unur_fstr_tree2JAVA ( FILE *out, const struct ftreenode *root,
   /* make body of JAVA routine */
   rcode = symbol[root->token].node2J (&output,root,variable);
   if (rcode & J_FUNCT_ERROR) { 
-    if (output.string) free(output.string);
+    if (output.text) free(output.text);
     return 0;
   }
 
@@ -98,12 +98,11 @@ _unur_fstr_tree2JAVA ( FILE *out, const struct ftreenode *root,
   _unur_fstr_J_specfunct (out,rcode);
 
   /* print JAVA routine */
-  *(output.string + output.length) = '\0';
   fprintf (out,"\tstatic double %s (double %s)\n",funct_name,variable );
-  fprintf (out,"\t{\n\t\treturn (%s);\n\t}\n",output.string);
+  fprintf (out,"\t{\n\t\treturn (%s);\n\t}\n",output.text);
 
   /* free memory */
-  free(output.string);
+  free(output.text);
 
   return 1;
 
@@ -117,7 +116,7 @@ _unur_fstr_tree2JAVA ( FILE *out, const struct ftreenode *root,
 
 
 
-/* J_xxxx ( struct concat *output, const struct ftreenode *node, const char *variable ) */
+/* J_xxxx ( struct unur_string *output, const struct ftreenode *node, const char *variable ) */
 /*---------------------------------------------------------------------------*/
 /* Produce string from function subtree rooted at node.                      */
 /*                                                                           */
@@ -131,7 +130,7 @@ _unur_fstr_tree2JAVA ( FILE *out, const struct ftreenode *root,
 /*---------------------------------------------------------------------------*/
 
 unsigned
-J_error ( struct concat *output, const struct ftreenode *node, const char *variable )
+J_error ( struct unur_string *output, const struct ftreenode *node, const char *variable )
      /*----------------------------------------------------------------------*/
      /* Error (This should not happen).                                      */
      /*----------------------------------------------------------------------*/
@@ -143,7 +142,7 @@ J_error ( struct concat *output, const struct ftreenode *node, const char *varia
 /*---------------------------------------------------------------------------*/
 
 unsigned
-J_const ( struct concat *output, const struct ftreenode *node, const char *variable )
+J_const ( struct unur_string *output, const struct ftreenode *node, const char *variable )
      /*----------------------------------------------------------------------*/
      /* string for constant                                                  */
      /*----------------------------------------------------------------------*/
@@ -155,7 +154,7 @@ J_const ( struct concat *output, const struct ftreenode *node, const char *varia
 /*---------------------------------------------------------------------------*/
 
 unsigned
-J_var ( struct concat *output, const struct ftreenode *node, const char *variable )
+J_var ( struct unur_string *output, const struct ftreenode *node, const char *variable )
      /*----------------------------------------------------------------------*/
      /* string for variable                                                  */
      /*----------------------------------------------------------------------*/
@@ -167,7 +166,7 @@ J_var ( struct concat *output, const struct ftreenode *node, const char *variabl
 /*---------------------------------------------------------------------------*/
 
 unsigned
-J_prefix_generic ( struct concat *output, const struct ftreenode *node,
+J_prefix_generic ( struct unur_string *output, const struct ftreenode *node,
 		   const char *variable, const char *symb )
      /*----------------------------------------------------------------------*/
      /* print prefix operator (function). generic version                    */
@@ -198,7 +197,7 @@ J_prefix_generic ( struct concat *output, const struct ftreenode *node,
 /*---------------------------------------------------------------------------*/
 
 unsigned
-J_prefix ( struct concat *output, const struct ftreenode *node, const char *variable )
+J_prefix ( struct unur_string *output, const struct ftreenode *node, const char *variable )
      /*----------------------------------------------------------------------*/
      /* string for prefix operator (function)                                */
      /*----------------------------------------------------------------------*/
@@ -210,7 +209,7 @@ J_prefix ( struct concat *output, const struct ftreenode *node, const char *vari
 /*---------------------------------------------------------------------------*/
 
 unsigned
-J_lt ( struct concat *output, const struct ftreenode *node, const char *variable )
+J_lt ( struct unur_string *output, const struct ftreenode *node, const char *variable )
      /*----------------------------------------------------------------------*/
      /* string for '<' function                                              */
      /*----------------------------------------------------------------------*/
@@ -221,7 +220,7 @@ J_lt ( struct concat *output, const struct ftreenode *node, const char *variable
 /*---------------------------------------------------------------------------*/
 
 unsigned
-J_le ( struct concat *output, const struct ftreenode *node, const char *variable )
+J_le ( struct unur_string *output, const struct ftreenode *node, const char *variable )
      /*----------------------------------------------------------------------*/
      /* string for '<=' function                                             */
      /*----------------------------------------------------------------------*/
@@ -232,7 +231,7 @@ J_le ( struct concat *output, const struct ftreenode *node, const char *variable
 /*---------------------------------------------------------------------------*/
 
 unsigned
-J_gt ( struct concat *output, const struct ftreenode *node, const char *variable )
+J_gt ( struct unur_string *output, const struct ftreenode *node, const char *variable )
      /*----------------------------------------------------------------------*/
      /* string for '>' function                                              */
      /*----------------------------------------------------------------------*/
@@ -243,7 +242,7 @@ J_gt ( struct concat *output, const struct ftreenode *node, const char *variable
 /*---------------------------------------------------------------------------*/
 
 unsigned
-J_ge ( struct concat *output, const struct ftreenode *node, const char *variable )
+J_ge ( struct unur_string *output, const struct ftreenode *node, const char *variable )
      /*----------------------------------------------------------------------*/
      /* string for '>=' function                                             */
      /*----------------------------------------------------------------------*/
@@ -254,7 +253,7 @@ J_ge ( struct concat *output, const struct ftreenode *node, const char *variable
 /*---------------------------------------------------------------------------*/
 
 unsigned
-J_eq ( struct concat *output, const struct ftreenode *node, const char *variable )
+J_eq ( struct unur_string *output, const struct ftreenode *node, const char *variable )
      /*----------------------------------------------------------------------*/
      /* string for '==' function                                             */
      /*----------------------------------------------------------------------*/
@@ -265,7 +264,7 @@ J_eq ( struct concat *output, const struct ftreenode *node, const char *variable
 /*---------------------------------------------------------------------------*/
 
 unsigned
-J_ne ( struct concat *output, const struct ftreenode *node, const char *variable )
+J_ne ( struct unur_string *output, const struct ftreenode *node, const char *variable )
      /*----------------------------------------------------------------------*/
      /* string for '!=' function                                             */
      /*----------------------------------------------------------------------*/
@@ -276,7 +275,7 @@ J_ne ( struct concat *output, const struct ftreenode *node, const char *variable
 /*---------------------------------------------------------------------------*/
 
 unsigned
-J_power ( struct concat *output, const struct ftreenode *node, const char *variable )
+J_power ( struct unur_string *output, const struct ftreenode *node, const char *variable )
      /*----------------------------------------------------------------------*/
      /* string for power function                                            */
      /*----------------------------------------------------------------------*/
@@ -287,7 +286,7 @@ J_power ( struct concat *output, const struct ftreenode *node, const char *varia
 /*---------------------------------------------------------------------------*/
 
 unsigned
-J_sec ( struct concat *output, const struct ftreenode *node, const char *variable )
+J_sec ( struct unur_string *output, const struct ftreenode *node, const char *variable )
      /*----------------------------------------------------------------------*/
      /* string for secant function                                           */
      /*----------------------------------------------------------------------*/
@@ -298,7 +297,7 @@ J_sec ( struct concat *output, const struct ftreenode *node, const char *variabl
 /*---------------------------------------------------------------------------*/
 
 unsigned
-J_sgn ( struct concat *output, const struct ftreenode *node, const char *variable )
+J_sgn ( struct unur_string *output, const struct ftreenode *node, const char *variable )
      /*----------------------------------------------------------------------*/
      /* string for sign function                                            */
      /*----------------------------------------------------------------------*/
@@ -309,7 +308,7 @@ J_sgn ( struct concat *output, const struct ftreenode *node, const char *variabl
 /*---------------------------------------------------------------------------*/
 
 unsigned
-J_infix_generic ( struct concat *output, const struct ftreenode *node,
+J_infix_generic ( struct unur_string *output, const struct ftreenode *node,
 		  const char *variable, const char *symb )
      /*----------------------------------------------------------------------*/
      /* print infix operator (binary operator). generic version              */
@@ -338,7 +337,7 @@ J_infix_generic ( struct concat *output, const struct ftreenode *node,
 /*---------------------------------------------------------------------------*/
 
 unsigned
-J_infix ( struct concat *output, const struct ftreenode *node, const char *variable )
+J_infix ( struct unur_string *output, const struct ftreenode *node, const char *variable )
      /*----------------------------------------------------------------------*/
      /* string for infix operator (binary operator).                         */
      /*----------------------------------------------------------------------*/
@@ -349,7 +348,7 @@ J_infix ( struct concat *output, const struct ftreenode *node, const char *varia
 /*---------------------------------------------------------------------------*/
 
 unsigned
-J_minus ( struct concat *output, const struct ftreenode *node, const char *variable )
+J_minus ( struct unur_string *output, const struct ftreenode *node, const char *variable )
      /*----------------------------------------------------------------------*/
      /* string for minus operator                                            */
      /*----------------------------------------------------------------------*/
@@ -378,7 +377,7 @@ J_minus ( struct concat *output, const struct ftreenode *node, const char *varia
 /*---------------------------------------------------------------------------*/
 
 unsigned
-J_mod ( struct concat *output, const struct ftreenode *node, const char *variable )
+J_mod ( struct unur_string *output, const struct ftreenode *node, const char *variable )
      /*----------------------------------------------------------------------*/
      /* string for mudolus function                                          */
      /*----------------------------------------------------------------------*/

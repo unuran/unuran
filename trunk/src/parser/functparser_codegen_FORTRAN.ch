@@ -75,7 +75,7 @@ _unur_fstr_tree2FORTRAN ( FILE *out, const struct ftreenode *root,
      /*   0 ... failure                                                      */
      /*----------------------------------------------------------------------*/
 {
-  struct concat output = {NULL, 0, 0};
+  struct unur_string output = {NULL, 0, 0};
   unsigned rcode;
   int line;
 
@@ -86,11 +86,9 @@ _unur_fstr_tree2FORTRAN ( FILE *out, const struct ftreenode *root,
   /* make body of FORTRAN routine */
   rcode = symbol[root->token].node2F (&output,root,variable);
   if (rcode & F_FUNCT_ERROR) { 
-    if (output.string) free(output.string);
+    if (output.text) free(output.text);
     return 0;
   }
-
-  *(output.string + output.length) = '\0';
 
   /* print FORTRAN routine */
   fprintf (out,"      DOUBLE PRECISION FUNCTION %.6s(x)\n\n", funct_name);
@@ -106,10 +104,8 @@ _unur_fstr_tree2FORTRAN ( FILE *out, const struct ftreenode *root,
   /* print body */
   fprintf (out,"      %.6s = \n", funct_name);
   for (line = 0; line < (output.length-1)/60 + 1; line++) {
-    fprintf (out,"     $   %.60s\n", output.string+60*line);
+    fprintf (out,"     $   %.60s\n", output.text+60*line);
   }
-/*    fprintf (out,"%s\n\n",output.string); */
-
 
   fprintf (out,"      RETURN\n");
   fprintf (out,"\n");
@@ -117,7 +113,7 @@ _unur_fstr_tree2FORTRAN ( FILE *out, const struct ftreenode *root,
   fprintf (out,"\n");
 
   /* free memory */
-  free(output.string);
+  free(output.text);
 
   return 1;
 
@@ -129,7 +125,7 @@ _unur_fstr_tree2FORTRAN ( FILE *out, const struct ftreenode *root,
 /** Create function string and source code.                                 **/
 /*****************************************************************************/
 
-/* F_xxxx ( struct concat *output, const struct ftreenode *node, const char *variable ) */
+/* F_xxxx ( struct unur_string *output, const struct ftreenode *node, const char *variable ) */
 /*---------------------------------------------------------------------------*/
 /* Produce string from function subtree rooted at node.                      */
 /*                                                                           */
@@ -143,7 +139,7 @@ _unur_fstr_tree2FORTRAN ( FILE *out, const struct ftreenode *root,
 /*---------------------------------------------------------------------------*/
 
 unsigned
-F_error ( struct concat *output, const struct ftreenode *node, const char *variable )
+F_error ( struct unur_string *output, const struct ftreenode *node, const char *variable )
      /*----------------------------------------------------------------------*/
      /* Error (This should not happen).                                      */
      /*----------------------------------------------------------------------*/
@@ -155,7 +151,7 @@ F_error ( struct concat *output, const struct ftreenode *node, const char *varia
 /*---------------------------------------------------------------------------*/
 
 unsigned
-F_const ( struct concat *output, const struct ftreenode *node, const char *variable )
+F_const ( struct unur_string *output, const struct ftreenode *node, const char *variable )
      /*----------------------------------------------------------------------*/
      /* string for constant                                                  */
      /*----------------------------------------------------------------------*/
@@ -167,7 +163,7 @@ F_const ( struct concat *output, const struct ftreenode *node, const char *varia
 /*---------------------------------------------------------------------------*/
 
 unsigned
-F_var ( struct concat *output, const struct ftreenode *node, const char *variable )
+F_var ( struct unur_string *output, const struct ftreenode *node, const char *variable )
      /*----------------------------------------------------------------------*/
      /* string for variable                                                  */
      /*----------------------------------------------------------------------*/
@@ -179,7 +175,7 @@ F_var ( struct concat *output, const struct ftreenode *node, const char *variabl
 /*---------------------------------------------------------------------------*/
 
 unsigned
-F_prefix_generic ( struct concat *output, const struct ftreenode *node,
+F_prefix_generic ( struct unur_string *output, const struct ftreenode *node,
 		   const char *variable, const char *symb )
      /*----------------------------------------------------------------------*/
      /* print prefix operator (function). generic version                    */
@@ -210,7 +206,7 @@ F_prefix_generic ( struct concat *output, const struct ftreenode *node,
 /*---------------------------------------------------------------------------*/
 
 unsigned
-F_prefix ( struct concat *output, const struct ftreenode *node, const char *variable )
+F_prefix ( struct unur_string *output, const struct ftreenode *node, const char *variable )
      /*----------------------------------------------------------------------*/
      /* string for prefix operator (function)                                */
      /*----------------------------------------------------------------------*/
@@ -221,7 +217,7 @@ F_prefix ( struct concat *output, const struct ftreenode *node, const char *vari
 /*---------------------------------------------------------------------------*/
 
 unsigned
-F_lt ( struct concat *output, const struct ftreenode *node, const char *variable )
+F_lt ( struct unur_string *output, const struct ftreenode *node, const char *variable )
      /*----------------------------------------------------------------------*/
      /* string for '<' function                                              */
      /*----------------------------------------------------------------------*/
@@ -232,7 +228,7 @@ F_lt ( struct concat *output, const struct ftreenode *node, const char *variable
 /*---------------------------------------------------------------------------*/
 
 unsigned
-F_le ( struct concat *output, const struct ftreenode *node, const char *variable )
+F_le ( struct unur_string *output, const struct ftreenode *node, const char *variable )
      /*----------------------------------------------------------------------*/
      /* string for '<=' function                                             */
      /*----------------------------------------------------------------------*/
@@ -243,7 +239,7 @@ F_le ( struct concat *output, const struct ftreenode *node, const char *variable
 /*---------------------------------------------------------------------------*/
 
 unsigned
-F_gt ( struct concat *output, const struct ftreenode *node, const char *variable )
+F_gt ( struct unur_string *output, const struct ftreenode *node, const char *variable )
      /*----------------------------------------------------------------------*/
      /* string for '>' function                                              */
      /*----------------------------------------------------------------------*/
@@ -254,7 +250,7 @@ F_gt ( struct concat *output, const struct ftreenode *node, const char *variable
 /*---------------------------------------------------------------------------*/
 
 unsigned
-F_ge ( struct concat *output, const struct ftreenode *node, const char *variable )
+F_ge ( struct unur_string *output, const struct ftreenode *node, const char *variable )
      /*----------------------------------------------------------------------*/
      /* string for '>=' function                                             */
      /*----------------------------------------------------------------------*/
@@ -265,7 +261,7 @@ F_ge ( struct concat *output, const struct ftreenode *node, const char *variable
 /*---------------------------------------------------------------------------*/
 
 unsigned
-F_eq ( struct concat *output, const struct ftreenode *node, const char *variable )
+F_eq ( struct unur_string *output, const struct ftreenode *node, const char *variable )
      /*----------------------------------------------------------------------*/
      /* string for '==' function                                             */
      /*----------------------------------------------------------------------*/
@@ -276,7 +272,7 @@ F_eq ( struct concat *output, const struct ftreenode *node, const char *variable
 /*---------------------------------------------------------------------------*/
 
 unsigned
-F_ne ( struct concat *output, const struct ftreenode *node, const char *variable )
+F_ne ( struct unur_string *output, const struct ftreenode *node, const char *variable )
      /*----------------------------------------------------------------------*/
      /* string for '!=' function                                             */
      /*----------------------------------------------------------------------*/
@@ -287,7 +283,7 @@ F_ne ( struct concat *output, const struct ftreenode *node, const char *variable
 /*---------------------------------------------------------------------------*/
 
 unsigned
-F_sec ( struct concat *output, const struct ftreenode *node, const char *variable )
+F_sec ( struct unur_string *output, const struct ftreenode *node, const char *variable )
      /*----------------------------------------------------------------------*/
      /* string for secant function                                           */
      /*----------------------------------------------------------------------*/
@@ -298,7 +294,7 @@ F_sec ( struct concat *output, const struct ftreenode *node, const char *variabl
 /*---------------------------------------------------------------------------*/
 
 unsigned
-F_sgn ( struct concat *output, const struct ftreenode *node, const char *variable )
+F_sgn ( struct unur_string *output, const struct ftreenode *node, const char *variable )
      /*----------------------------------------------------------------------*/
      /* string for sign function                                            */
      /*----------------------------------------------------------------------*/
@@ -309,7 +305,7 @@ F_sgn ( struct concat *output, const struct ftreenode *node, const char *variabl
 /*---------------------------------------------------------------------------*/
 
 unsigned
-F_infix_generic ( struct concat *output, const struct ftreenode *node,
+F_infix_generic ( struct unur_string *output, const struct ftreenode *node,
 		  const char *variable, const char *symb )
      /*----------------------------------------------------------------------*/
      /* print infix operator (binary operator). generic version              */
@@ -338,7 +334,7 @@ F_infix_generic ( struct concat *output, const struct ftreenode *node,
 /*---------------------------------------------------------------------------*/
 
 unsigned
-F_infix ( struct concat *output, const struct ftreenode *node, const char *variable )
+F_infix ( struct unur_string *output, const struct ftreenode *node, const char *variable )
      /*----------------------------------------------------------------------*/
      /* string for infix operator (binary operator).                         */
      /*----------------------------------------------------------------------*/
@@ -349,7 +345,7 @@ F_infix ( struct concat *output, const struct ftreenode *node, const char *varia
 /*---------------------------------------------------------------------------*/
 
 unsigned
-F_equal ( struct concat *output, const struct ftreenode *node, const char *variable )
+F_equal ( struct unur_string *output, const struct ftreenode *node, const char *variable )
      /*----------------------------------------------------------------------*/
      /* string for equality operator                                         */
      /*----------------------------------------------------------------------*/
@@ -360,7 +356,7 @@ F_equal ( struct concat *output, const struct ftreenode *node, const char *varia
 /*---------------------------------------------------------------------------*/
 
 unsigned
-F_unequal ( struct concat *output, const struct ftreenode *node, const char *variable )
+F_unequal ( struct unur_string *output, const struct ftreenode *node, const char *variable )
      /*----------------------------------------------------------------------*/
      /* string for inequality operator                                       */
      /*----------------------------------------------------------------------*/
@@ -371,7 +367,7 @@ F_unequal ( struct concat *output, const struct ftreenode *node, const char *var
 /*---------------------------------------------------------------------------*/
 
 unsigned
-F_minus ( struct concat *output, const struct ftreenode *node, const char *variable )
+F_minus ( struct unur_string *output, const struct ftreenode *node, const char *variable )
      /*----------------------------------------------------------------------*/
      /* string for minus operator                                            */
      /*----------------------------------------------------------------------*/
@@ -400,7 +396,7 @@ F_minus ( struct concat *output, const struct ftreenode *node, const char *varia
 /*---------------------------------------------------------------------------*/
 
 unsigned
-F_power ( struct concat *output, const struct ftreenode *node, const char *variable )
+F_power ( struct unur_string *output, const struct ftreenode *node, const char *variable )
      /*----------------------------------------------------------------------*/
      /* string for power function                                            */
      /*----------------------------------------------------------------------*/
@@ -468,7 +464,7 @@ _unur_fstr_F_specfunct ( FILE *out, unsigned flags )
 /*---------------------------------------------------------------------------*/
 
 int
-_unur_fstr_print_F ( struct concat *output, const char *symb, const double number )
+_unur_fstr_print_F ( struct unur_string *output, const char *symb, const double number )
      /*----------------------------------------------------------------------*/
      /* Print string or number as FORTRAN code into output string.           */
      /* The number is only printed if symb is the NULL pointer.              */
@@ -482,37 +478,22 @@ _unur_fstr_print_F ( struct concat *output, const char *symb, const double numbe
      /*   1 on success                                                       */
      /*----------------------------------------------------------------------*/
 {
-  size_t len;
+  char buf[128];
+  char *here_is_e;
 
-  /* (possible) length of output string */
-  len = (symb) ? strlen(symb) : 64;
-  
-  /* Resize the allocated memory if necessary */
-  if (output->length + len + 1 > output->allocated) {
-    if (output->string == NULL) {
-      output->allocated = 100;
-      output->string = _unur_malloc( 100*sizeof(char) );
-    }
-    else {
-      output->allocated = (output->allocated + len) * 2;
-      output->string = _unur_realloc( output->string, output->allocated );
-    }
+  if (symb) {
+    /* copy symbol into string */
+    _unur_string_appendtext( output, symb );
   }
-
-  if (symb)
-    /* copy symbol into output */
-    memcpy( output->string+output->length, symb, len );
   else {
-    /* copy number symbol into output */
-    char *here_is_e;
-    len = sprintf(output->string+output->length,"%.20e",number);
+    /* make string */
+    sprintf(buf,"%.20e",number);
     /* replace `e' by `D' */
-    here_is_e = strchr(output->string+output->length, 'e');
+    here_is_e = strchr(buf, 'e');
     if (here_is_e) *here_is_e = 'D';
+    /* copy number symbol into output */
+    _unur_string_appendtext( output, buf );
   }
-
-  /* update length of output string */
-  output->length += len;
 
   return 1;
 } /* end of _unur_fstr_print_F() */

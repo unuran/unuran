@@ -57,17 +57,15 @@ _unur_fstr_tree2string ( const struct ftreenode *root,
      /*   pointer to output string (should be freed when not used any more)  */
      /*----------------------------------------------------------------------*/
 {
-  struct concat output = {NULL, 0, 0};
+  struct unur_string output = {NULL, 0, 0};
 
   /* check arguments */
   _unur_check_NULL( GENTYPE,root,NULL );
 
   /* make string */
   _unur_fstr_node2string(&output,root,variable,function,spaces);
-  *(output.string + output.length) = '\0';
-  output.string = _unur_realloc(output.string, (output.length+1)*sizeof(char));
 
-  return output.string;
+  return output.text;
 
 } /* end of _unur_fstr_tree2string() */
 
@@ -78,7 +76,7 @@ _unur_fstr_tree2string ( const struct ftreenode *root,
 /*****************************************************************************/
 
 int
-_unur_fstr_node2string ( struct concat *output, const struct ftreenode *node,
+_unur_fstr_node2string ( struct unur_string *output, const struct ftreenode *node,
 			 const char *variable, const char *function, int spaces )
      /*----------------------------------------------------------------------*/
      /* Produce string from function subtree rooted at node.                 */
@@ -200,7 +198,7 @@ _unur_fstr_node2string ( struct concat *output, const struct ftreenode *node,
 /*---------------------------------------------------------------------------*/
 
 int
-_unur_fstr_print ( struct concat *output, const char *symb, const double number )
+_unur_fstr_print ( struct unur_string *output, const char *symb, const double number )
      /*----------------------------------------------------------------------*/
      /* Print string or number into output string.                           */
      /* The number is only printed if symb is the NULL pointer.              */
@@ -214,32 +212,12 @@ _unur_fstr_print ( struct concat *output, const char *symb, const double number 
      /*   1 on success                                                       */
      /*----------------------------------------------------------------------*/
 {
-  size_t len;
-
-  /* (possible) length of output string */
-  len = (symb) ? strlen(symb) : 64;
-  
-  /* Resize the allocated memory if necessary */
-  if (output->length + len + 1 > output->allocated) {
-    if (output->string == NULL) {
-      output->allocated = 100;
-      output->string = _unur_malloc( 100*sizeof(char) );
-    }
-    else {
-      output->allocated = (output->allocated + len) * 2;
-      output->string = _unur_realloc( output->string, output->allocated );
-    }
-  }
-
   if (symb)
-    /* copy symbol into output */
-    memcpy( output->string+output->length, symb, len );
+    /* copy symbol into string */
+    _unur_string_appendtext( output, symb );
   else
     /* copy number symbol into output */
-    len = sprintf(output->string+output->length,"%.16g",number);
-
-  /* update length of output string */
-  output->length += len;
+    _unur_string_append( output, "%.16g", number);
 
   return 1;
 } /* end of _unur_fstr_print() */

@@ -74,6 +74,7 @@ typedef void _UNUR_SAMPLING_ROUTINE_VEC(struct unur_gen *gen, double *vec);
 /*****************************************************************************/
 
 #include <utils/slist_struct.h>
+#include <utils/string_struct.h>
 
 /*****************************************************************************/
 /**  Declaration for parser                                                 **/

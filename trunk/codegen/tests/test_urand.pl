@@ -4,7 +4,7 @@
 # Compiler
 $GCC = "gcc -Wall -ansi -pedantic";
 $G77 = "g77 -Wall";
-$JAVAC = "javac";
+$JAVAC = "javac -w1";
 
 # Files
 $PRNG_exec = "./run_test_urand_PRNG";
@@ -14,10 +14,16 @@ $C_exec = "./run_test_urand_C";
 $C_src = "$C_exec.c";
 
 $FORTRAN_exec = "./run_test_urand_FORTRAN";
-$FORTRAN_src = "$FORTRAN_exec.c";
+$FORTRAN_src = "$FORTRAN_exec.f";
 
-$JAVA_src = "./urand_java.java";
-$JAVA_exec = "./Urandtest";
+$JAVA_urand_src = "./Urand.java";
+$JAVA_src = "./run_test_urand_JAVA.java";
+
+$JAVA_exec = "./run_test_urand_JAVA";
+
+##$JAVA_src = "./urand_java.java";
+##$JAVA_exec = "./Urandtest";
+
 
 ####################################################
 
@@ -40,7 +46,7 @@ make_JAVA_src();
 system "$GCC -o $PRNG_exec $PRNG_src -lprng -lm";
 system "$GCC -o $C_exec $C_src";
 system "$G77 -o $FORTRAN_exec $FORTRAN_src";
-system "$JAVAC $JAVA_src";
+system "$JAVAC $JAVA_src $JAVA_urand_src";
 
 # Print Test data
 print "seed = $seed\n";
@@ -324,9 +330,9 @@ EOX
 
 sub make_JAVA_src
 {
-    open JAVA_src, ">$JAVA_src" or die "cannot open $JAVA_src for writing";
+    open JAVA_urand_src, ">$JAVA_urand_src" or die "cannot open $JAVA_urand_src for writing";
 
-    print JAVA_src <<EOX;
+    print JAVA_urand_src <<EOS;
 
 /* ---------------------------------------------------------------- */
 /* JAVA version                                                     */
@@ -373,9 +379,17 @@ public class Urand {
 } /* end of class Urand */
 
 /* ---------------------------------------------------------------- */
+
+EOS
+    close JAVA_urand_src;
+
+    open JAVA_src, ">$JAVA_src" or die "cannot open $JAVA_src for writing";
+
+    print JAVA_src <<EOS;
+
 /* ---------------------------------------------------------------- */
 
-public class Urandtest {
+public class run_test_urand_JAVA {
    public static void main(String[] args) throws Exception {
 
       /* set new seed */
@@ -390,7 +404,7 @@ public class Urandtest {
 
 /* ---------------------------------------------------------------- */
 
-EOX
+EOS
 
     close JAVA_src;
 

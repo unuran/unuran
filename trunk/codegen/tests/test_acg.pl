@@ -1,251 +1,398 @@
 #!/usr/bin/perl
 # ----------------------------------------------------------------
-# Generates the code generators
+# Make files for code generator
+# ----------------------------------------------------------------
+# $Id$
 # ----------------------------------------------------------------
 
-# make dir for results
-system ("mkdir results");
+$DEBUG = 0;
 
+# ----------------------------------------------------------------
 
-# program lanugates to test
-@LANGUAGES = ("C", "FORTRAN", "JAVA");
+require "../read_PDF.pl";
+require "read_test_conf.pl";
 
-$no_of_numbers = 15;
+# ----------------------------------------------------------------
 
-# Array of Hashes (Hash-entries: prog_language, distr, parameters)
-@Test = (
-   {
-     name => "normal",  
-     params => [0, 1]
-   },
-   {
-     name => "beta",
-     params => [3.14, 2.71]
-   },
-   {
-     name => "normal",
-     params => [0, 0.2]
-   }
-);
+my $ACG = "../acg";
 
-#
-# Perform all Tests
-#
-for ($i=0; $i<scalar(@Test); $i++){
+# ----------------------------------------------------------------
+# Constants
 
-    foreach $PROG_LANG (@LANGUAGES){
-	$DISTR     = $Test[$i]{name};
-	@PARAMS    = @{$Test[$i]{params}};
- 	$no_of_params = scalar(@PARAMS);
+$sample_size = 10;
+$accuracy = 1.0e-15;
 
-        # write acg generator
-	open(OUT, ">./acg.c") or die "Can't open outfile: $!";
-	write_acg();
-	close(OUT);
+# ----------------------------------------------------------------
+# Compiler
+$GCC = "gcc -Wall";
+$G77 = "g77 -Wall";
 
-        # generate acg
-	system( "gcc -I. -I.. -I../.. -I../../src -I../../src/tests  -L../../src -Wall -g -O3 -o ./acg acg.c -lunuracg -lunuran -lm -lprng" );
-        
+# ----------------------------------------------------------------
 
-        # create random number generator
-	if ( $PROG_LANG eq "C" ){
-	    $suffix = ".c";
+# Read configuration file name for tests from argument list ...
+my $test_conf_file = shift
+    or die "no argument given";
 
-	    write_c_main();
+# C file for making code generator tests
+my $make_test_codegen = "make_test_codegen.c";
 
-            # random number generator uses math.h 
-            # o.k. maybe using Perl filehandles would be nicer
-            system ("echo '#include <math.h>' > ./gen.c");
+# C file for tests
+my $test_codegen = "test_codegen.c";
 
-        }
-        elsif ( $PROG_LANG eq "FORTRAN" ){
-	    $suffix = ".f";
-            system ("echo '' > ./gen.f");
-	    write_fortran_main();
-        }
-        elsif ( $PROG_LANG eq "JAVA" ){
- 	   $suffix = ".java";
-	   write_java_main();
-        }
-        else{
-	    die "Can't determine desired programming language!";
-        }
-       system( "./acg >> ./gen$suffix");
-       # remove acg
-       system ("rm ./acg");
-       # remove acg.c
-       system("rm ./acg.c");
+# Sample size for test
+my $SAMPLE_SIZE = 100000;
 
+# ----------------------------------------------------------------
+# List of distributions
+my $DISTR = read_PDFdata('../..');
 
-       $file = join "_", $DISTR, @PARAMS , $PROG_LANG;
-       # compile and execute random number - test
-       if ( $PROG_LANG eq "C" ){
-	   system ("gcc -Wall -lm *.c");
-	   system ("./a.out > ./results/$file");
+# For description of data fields in this list see file `read_PDF.pl'.
 
-	   #clean up
-	   system ("rm *.c a.out");
+# ................................................................
 
-       }
-       elsif ( $PROG_LANG eq "FORTRAN" ){
-	   system ("g77  *.f");
-	   system ("./a.out > ./results/$file");
-
-	   #clean up
-	   system ("rm *.f a.out");
-       }
-       elsif ( $PROG_LANG eq "JAVA" ){
-	   system ("javac *.java");
-	   system ("java test > ./results/$file");
-
-	   #clean up
-	   system ("rm *.java *.class");
-       }
-       else{
-	   die "Can't determine desired programming language!";
-       }
-
-       print "Test $i: $DISTR with ", (join ", ", @PARAMS), " with $PROG_LANG done\n";
+# Print result on screen
+    if ($DEBUG) {
+	print_data($DISTR);
     }
+
+# ----------------------------------------------------------------
+# Get list of distributions 
+
+    my $list_distr = get_test_distributions( $test_conf_file, $DISTR );
+
+#.................................................................
+# Check for missing CONTinuous distributions
+
+    # list of names of distributions without distribution number
+    my $list_distr_short;
+    foreach my $d (sort keys %{$list_distr}) {
+	my $distr_short = $d;
+	$distr_short =~ s/\_[^\_]+$//;
+	$list_distr_short->{$distr_short} = $d;
+    }
+
+    foreach my $d (sort keys %{$DISTR}) {
+	next unless $DISTR->{$d}->{"=TYPE"} eq "CONT";
+	unless ($list_distr_short->{$d}) {
+	    print STDERR "test missing for distribution \"$d\"\n";
+	}
+    }
+
+# ----------------------------------------------------------------
+# Process test for each distribution
+
+foreach my $d (sort keys %{$list_distr}) {
+
+    # get name of distribution
+    my $distr_key = $d;
+    my $distr = $d;
+    $distr =~ s/\_(.*)$//;
+    my $distr_nr = $1;
+
+    # get parameter list
+    my $fparam = $list_distr->{$distr_key};
+
+    # print on screen
+    print "[$distr_nr] $distr($fparam)";
+
+    # seed for uniform rng
+    $seed = int(rand 12345678) + 1;
+
+    # Files
+    $file_name = "./run_test\_acg\_$distr_nr";
+
+    $UNURAN_exec = "$file_name\_UNURAN";
+    $UNURAN_src = "$UNURAN_exec.c";
+
+    $C_exec = "$file_name\_C";
+    $C_src = "$C_exec.c";
+
+    # get random variate generators
+
+    # UNURAN version
+    my $UNURAN_code = make_UNURAN_code($distr,$fparam,$seed);
+    unless ($UNURAN_code) {
+	print " cannot create generator.\n";
+	next;
+    }
+    print "\n";
+    make_UNURAN_exec($UNURAN_code,$UNURAN_src,$UNURAN_exec);
+
+    # C version
+    my $C_code = make_C_code($distr,$fparam,$seed);
+    make_C_exec($C_code,$C_src,$C_exec);
+
+
 }
 
+# ----------------------------------------------------------------
+# End
 
+exit 0;
 
-
-# *****************************************************************
+# ****************************************************************
 #
-#   subroutine write_acg
+# UNURAN version
 #
-#   writes the acg to a c-file
-#   
-# *****************************************************************
-sub write_acg{
+# ****************************************************************
 
+# ----------------------------------------------------------------
+# Make generator code for test file (UNURAN version)
 
-print OUT "/********************************************************/\n";
-print OUT "/* automatically generated by test_acg.pl               */\n";
-print OUT "/********************************************************/\n";
+sub make_UNURAN_code
+{
+    my $distr = $_[0];
+    my $fparam = $_[1];
+    my $seed = $_[2];
 
-# includes
-print OUT "\n#include <unuran.h>\n";
-print OUT "#include <unuran_acg.h>\n";
-print OUT "#include <unuran_tests.h>\n";
+    my $acg_query = "$ACG -l UNURAN -d $distr";
+    $acg_query .= " -p \"$fparam\"" if $fparam; 
 
-#defines
-print OUT "\n#define RUN_TESTS (~0x0u & ~UNUR_TEST_SCATTER)\n";
+    my $generator = `$acg_query`;
 
-# main
-print OUT "\nint main()\n";
-print OUT "{\n";
+    return "" if $?;
 
-# definition of variables
-print OUT "\tUNUR_DISTR *distr;\n";
-print OUT "\tUNUR_PAR   *par;\n";
-print OUT "\tUNUR_GEN   *gen;\n";
-print OUT "\tdouble  fpar[", $no_of_params ,"] = ", 
-          "{", (join ", ", @PARAMS), "};\n";
+    # read code for generating distribution object from code
+    die unless $generator =~ /(double\s+\*?fpar[^;]*;[^;]+;)/;
+    my $distr_code = $1;
+    
+    my $urng = make_UNURAN_urng($seed);
+    my $main = make_UNURAN_main($distr, $distr_code);
 
-# debugging
-print OUT "\n\tunur_set_default_debug(~0u);\n";
+    return $urng.$generator.$main;
 
-# initialize objects
-print OUT "\n\tdistr = unur_distr_", $DISTR,"(fpar, ",$no_of_params,");\n";
-print OUT "\tpar = unur_tdr_new( distr );\n";
+} # end of make_UNURAN_code()
 
-print OUT "\tunur_tdr_set_cpoints( par, 4, NULL );\n";
-print OUT "\tgen = unur_init( par );\n";
-print OUT "\tunur_acg_", $PROG_LANG,"( gen, stdout, NULL );\n";
-print OUT "\tunur_distr_free(distr);\n";
-print OUT "\tunur_free(gen);\n";
+# ----------------------------------------------------------------
+# uniform rng (UNURAN/PRNG version)
 
-print OUT "\n\texit (0);\n";
-print OUT "}\n";
+sub make_UNURAN_urng
+{
+    my $seed = $_[0];
 
-close(OUT);
+    my $code = <<EOS;
+    
+/* ---------------------------------------------------------------- */
+/* UNURAN / PRNG version                                            */
+/* ---------------------------------------------------------------- */
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <unuran.h>
+
+/* ---------------------------------------------------------------- */
+/* LCG (Linear Congruential Generator) by Park & Miller (1988).     */
+/*   x_(n+1) = 16807 * x_n mod 2^31 - 1    (Minimal Standard)       */
+/* ---------------------------------------------------------------- */
+
+void init_urand(void)
+{
+    static struct prng *urng = NULL;
+
+    if (urng == NULL)
+	urng = prng_new("LCG(2147483647,16807,0,$seed)");
+    else
+	prng_seed(urng,$seed);
+
+    /* synchronize with other generators */
+    prng_get_next(urng);
+	    
+    unur_set_default_urng(urng);
 }
 
-# *****************************************************************
-#
-#   subroutine write_c_main
-#
-#   writes a routint to test the random number generator
-#
-# *****************************************************************
-sub write_c_main{
+/* ---------------------------------------------------------------- */
 
-    open ( MAIN_C_OUT, ">testc.c") or die "Can't open outfile $!";
+EOS
 
-    print MAIN_C_OUT "#include <stdio.h>\n";
-    print MAIN_C_OUT "#include <stddef.h>\n";
-    print MAIN_C_OUT "#include <stdlib.h>\n";
-    print MAIN_C_OUT "#include <math.h>\n";
+    return $code;
 
-    print MAIN_C_OUT "\nextern double rand_$DISTR();\n";
+} # end of make_UNURAN_urng() 
 
-    print MAIN_C_OUT "\nint main()\n";
-    print MAIN_C_OUT "{\n";
-    print MAIN_C_OUT "\n\tint i;\n";
-    print MAIN_C_OUT "\n\tfor (i=0; i<$no_of_numbers; i++)\n";
-    print MAIN_C_OUT "\t\tprintf(\"%1.10e\\n\", rand_$DISTR());\n";
+# ----------------------------------------------------------------
+# Make main for test file (UNURAN version)
 
+sub make_UNURAN_main
+{
+    my $distr = $_[0];
+    my $distr_code = $_[1];
 
-    print MAIN_C_OUT "\n\treturn (0);\n";
-    print MAIN_C_OUT "}\n";
+    my $code = <<EOS
 
-    close (MAIN_C_OUT);
+int main()
+{
+    int i;
+    double x, fx;
+    UNUR_DISTR *distr;
+
+    {
+	$distr_code
+    }
+
+    init_urand();
+
+    for (i=0; i<$sample_size; i++) {
+	x = rand\_$distr();
+	fx = unur_distr_cont_eval_pdf (x,distr);
+	printf("%.17e\\t%.17e\\n",x,fx);
+    }
+
+    exit (0);
 }
 
+EOS
+
+} # end of make_UNURAN_main()
+
+# ----------------------------------------------------------------
+# Make executable from test file (UNURAN version)
+
+sub make_UNURAN_exec
+{
+    my $code = $_[0];
+    my $src = $_[1];
+    my $exec = $_[2];
+
+    # make source file
+    open SRC, ">$src" or die "cannot open $src for writing";
+    print SRC $code;
+    close SRC;
+
+    # compile
+    system "$GCC -Wall -ansi -pedantic -o $exec $src -lunuran -lprng -lm";
 
 
+    
 
-# *****************************************************************
+} # end of make_UNURAN_exec()
+
+# ----------------------------------------------------------------
+
+# ****************************************************************
 #
-#   subroutine write_java_main
+# UNURAN version
 #
-#   writes a routint to test the random number generator
-#
-# *****************************************************************
-sub write_java_main{
+# ****************************************************************
 
-   open ( MAIN_JAVA_OUT, ">testjava.java") or die "Can't open outfile $!";
+# ----------------------------------------------------------------
+# Make generator code for test file (C version)
 
+sub make_C_code
+{
+    my $distr = $_[0];
+    my $fparam = $_[1];
+    my $seed = $_[2];
 
-   print MAIN_JAVA_OUT "public class test implements Generator{\n";
+    my $acg_query = "$ACG -l C -d $distr";
+    $acg_query .= " -p \"$fparam\"" if $fparam; 
 
-   print MAIN_JAVA_OUT "\n\tpublic static void main(String[] args){\n";
-   print MAIN_JAVA_OUT	"\n\t\tfor (int i=0; i<$no_of_numbers; i++){\n";
-   print MAIN_JAVA_OUT "\t\t\tSystem.out.println( rand_$DISTR() );\n";
-   print MAIN_JAVA_OUT "\t\t}\n";
+    my $generator = `$acg_query`;
 
-   print MAIN_JAVA_OUT     "\n\t}\n";
-   print MAIN_JAVA_OUT "}";
+    return "" if $?;
 
-   close (MAIN_JAVA_OUT);
+    my $urng = make_C_urng($seed);
+    my $main = make_C_main($distr);
+
+    return $urng.$generator.$main;
+
+} # end of make_C_code()
+
+# ----------------------------------------------------------------
+# uniform rng (C version)
+
+sub make_C_urng
+{
+    my $seed = $_[0];
+
+    my $code = <<EOS;
+    
+/* ---------------------------------------------------------------- */
+/* C version                                                        */
+/* ---------------------------------------------------------------- */
+
+/* ---------------------------------------------------------------- */
+/* LCG (Linear Congruential Generator) by Park & Miller (1988).     */
+/*   x_(n+1) = 16807 * x_n mod 2^31 - 1    (Minimal Standard)       */
+/* ---------------------------------------------------------------- */
+
+static unsigned int xn = $seed;   /* seed  */
+
+static double urand (void)
+{
+#define a 16807
+#define m 2147483647
+#define q 127773      /* m / a */
+#define r 2836        /* m % a */
+
+  int hi, lo, test;
+
+  hi = xn / q;
+  lo = xn % q;
+  test = a * lo - r * hi;
+  
+  xn = (test > 0 ) ? test : test + m;
+
+  return (xn * 4.656612875245796924105750827e-10);
+
+#undef a
+#undef m
+#undef q
+#undef r
 }
 
+EOS
 
+    return $code;
 
-# *****************************************************************
-#
-#   subroutine write_fortran_main
-#
-#   writes a routine to test the random number generator
-#
-# *****************************************************************
-sub write_fortran_main{
+} # end of make_C_urng() 
 
-    $shortDISTR = substr($DISTR,0,5);
+# ----------------------------------------------------------------
+# Make main for test file (C version)
 
-   open ( MAIN_FORTRAN_OUT, ">gen.f") or die "Can't open outfile $!";
+sub make_C_main
+{
+    my $distr = $_[0];
 
-   print MAIN_FORTRAN_OUT  "C Begin of testprogram\n";
-   print MAIN_FORTRAN_OUT  "      PROGRAM TESTF\n";
-   print MAIN_FORTRAN_OUT  "        IMPLICIT DOUBLE PRECISION (A-Z)\n";      
-   print MAIN_FORTRAN_OUT  "        DO 10 I=1,$no_of_numbers\n"; 
-   print MAIN_FORTRAN_OUT  "10        PRINT *,r$shortDISTR()\n";
-   print MAIN_FORTRAN_OUT  "      END\n\n\n";
+    my $code = <<EOS
 
-   close (MAIN_FORTRAN_OUT);
+#include <stdio.h>
+#include <stdlib.h>
 
+int main()
+{
+    int i;
+    double x, fx;
+
+    for (i=0; i<$sample_size; i++) {
+	x = rand\_$distr();
+	fx = pdf\_$distr(x);
+	printf("%.17e\\t%.17e\\n",x,fx);
+    }
+
+    exit (0);
 }
+
+EOS
+
+} # end of make_C_main()
+
+# ----------------------------------------------------------------
+# Make executable from test file (UNURAN version)
+
+sub make_C_exec
+{
+    my $code = $_[0];
+    my $src = $_[1];
+    my $exec = $_[2];
+
+    # make source file
+    open SRC, ">$src" or die "cannot open $src for writing";
+    print SRC $code;
+    close SRC;
+
+    # compile
+    system "$GCC -Wall -ansi -pedantic -o $exec $src -lm";
+
+} # end of make_C_exec()
+
+# ----------------------------------------------------------------
 

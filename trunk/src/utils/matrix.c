@@ -407,7 +407,7 @@ _unur_matrix_invert_matrix(int dim, double *A, double detmin, double *Ainv, doub
      /*   UNUR_SUCCESS on success                                            	*/
      /*   UNUR_FAILURE when matrix is ill-conditioned, i.e. when		*/
      /*                |det(A)|/dim >= UNUR_EPSILON  or                         */
-     /*		       norm(A)*dim/|det(A)| <= DBL_MAX/2			*/
+     /*                |det(A)| / (dim * ||A||) < detmin                        */
      /*                (array Ainv remains unchanged in this case)              */
      /*   other error code, otherwise                                           */
      /*-------------------------------------------------------------------------*/

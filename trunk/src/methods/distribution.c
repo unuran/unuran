@@ -416,6 +416,10 @@ unur_distr_cont_set_domain( struct unur_distr *distr, double left, double right 
   /* changelog */
   distr->set |= UNUR_DISTR_SET_DOMAIN;
 
+  /* if distr is an object for a standard distribution, */
+  /* we might have truncated the distribution!          */
+  distr->set &= ~UNUR_DISTR_SET_STDDOMAIN;
+
   /* o.k. */
   return 1;
 

@@ -102,10 +102,11 @@ enum {
 /* indicate changed parameters                                               */
 
 enum {
-  UNUR_DISTR_SET_PARAMS  = 0x001u,
-  UNUR_DISTR_SET_DOMAIN  = 0x002u,
-  UNUR_DISTR_SET_MODE    = 0x004u,
-  UNUR_DISTR_SET_PDFAREA = 0x008u,
+  UNUR_DISTR_SET_PARAMS     = 0x001u,
+  UNUR_DISTR_SET_DOMAIN     = 0x002u,
+  UNUR_DISTR_SET_STDDOMAIN  = 0x004u,   /* domain not truncated (for standard distributions) */
+  UNUR_DISTR_SET_MODE       = 0x008u,
+  UNUR_DISTR_SET_PDFAREA    = 0x010u,
 }; 
 
 /*---------------------------------------------------------------------------*/

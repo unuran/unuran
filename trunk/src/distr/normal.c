@@ -246,6 +246,7 @@ unur_distr_normal( double *params, int n_params )
   distr->set = ( UNUR_DISTR_SET_PARAMS | 
 		 UNUR_DISTR_SET_DOMAIN |
 		 UNUR_DISTR_SET_MODE   |
+		 UNUR_DISTR_SET_STDDOMAIN |
 		 UNUR_DISTR_SET_PDFAREA );
                 
   /* return pointer to object */

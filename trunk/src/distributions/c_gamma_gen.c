@@ -314,7 +314,7 @@ unur_stdgen_sample_gamma_gs( struct unur_gen *gen )
 #define e6   0.001353826
 #define e7   0.000247453
 /*---------------------------------------------------------------------------*/
-#define NORMAL  GEN.gen_aux    /* pointer to normal variate generator        */
+#define NORMAL  gen->gen_aux   /* pointer to normal variate generator        */
 /*---------------------------------------------------------------------------*/
 
 inline static int

@@ -117,7 +117,7 @@ _unur_stdgen_slash_init( struct unur_par *par, struct unur_gen *gen )
  *****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
-#define NORMAL  GEN.gen_aux    /* pointer to normal variate generator        */
+#define NORMAL  gen->gen_aux   /* pointer to normal variate generator        */
 /*---------------------------------------------------------------------------*/
 
 inline static int

@@ -321,8 +321,8 @@ unur_dstd_free( struct unur_gen *gen )
   _unur_free_genid(gen);
   free(GEN.gen_param);
   free(GEN.gen_iparam);
-  if (GEN.gen_aux) unur_free(GEN.gen_aux);
-  if (GEN.gen_aux_2) unur_free(GEN.gen_aux_2);
+  if (gen->gen_aux)   unur_free(gen->gen_aux);
+  if (gen->gen_aux_2) unur_free(gen->gen_aux_2);
   free(gen);
 
 } /* end of unur_dstd_free() */
@@ -372,9 +372,6 @@ _unur_dstd_create( struct unur_par *par )
   GEN.n_gen_param = 0;   /* (computed in special GEN.init()   */
   GEN.gen_iparam = NULL; /* smake for integer parameters      */
   GEN.n_gen_iparam = 0;
-
-  GEN.gen_aux   = NULL;  /* no axilliary generator is default */
-  GEN.gen_aux_2 = NULL;  /* no axilliary generator is default */
 
   /* copy some parameters into generator object */
   GEN.umin        = 0;    /* cdf at left boundary of domain   */

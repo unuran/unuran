@@ -257,7 +257,7 @@ unur_stdgen_sample_poisson_pdtabl( struct unur_gen *gen )
 #define c2    (GEN.gen_param[8])
 #define c3    (GEN.gen_param[9])
 
-#define NORMAL  GEN.gen_aux    /* pointer to normal variate generator        */
+#define NORMAL  gen->gen_aux    /* pointer to normal variate generator        */
 /*---------------------------------------------------------------------------*/
 
 inline static int

@@ -48,7 +48,7 @@
 
    =SPEED Set-up: fast, Sampling: slow
 
-   =REF  [HDL04: Sect.2.4]
+   =REF  [HLD04: Sect.2.4]
 
    =DESCRIPTION
       NROU is an implementation of the ratio-of-uniforms method

@@ -125,7 +125,8 @@ unur_test_moments( UNUR_GEN *gen, double *moments, int n_moments, int samplesize
   }
 
   /* compute moments */
-  for (mom = 1; mom <= n_moments; mom++ )
+  /* moments[1] is already the first moment. no division necessary. */
+  for (mom = 2; mom <= n_moments; mom++ )
     moments[mom] /= samplesize;
 
   /* now print results */

@@ -10,12 +10,11 @@
  *   METHOD:    adaptive ratio-of-uniforms method                            *
  *                                                                           *
  *   DESCRIPTION:                                                            *
- *      Given PDF and ...                                                    *
- *      region.                                                              *
+ *      ...                                                                  *
  *      Produce a value x consistent with its density                        *
  *                                                                           *
  *   REQUIRED:                                                               *
- *      pointer to the density function                                      *
+ *      PDF, dPDF                                                            *
  *   OPTIONAL:                                                               *
  *      ...                                                                  *
  *                                                                           *
@@ -135,6 +134,11 @@ static double _unur_varou_f( struct unur_gen *gen, double *u, double v);
 static double _unur_varou_F( struct unur_gen *gen, double *u, double v);
 /*---------------------------------------------------------------------------*/
 /* return calculated value of v^(1+dim) - PDF(u_1/v, u_2/v, ..., u_dim/v)    */
+/*---------------------------------------------------------------------------*/
+
+static double *_unur_varou_dF( struct unur_gen *gen, double *u, double v);
+/*---------------------------------------------------------------------------*/
+/* return calculated value the gradient of F() at the point (u,v)            */
 /*---------------------------------------------------------------------------*/
 
 
@@ -517,25 +521,30 @@ double _unur_varou_f( struct unur_gen *gen, double *u, double v)
 /* UNUR_INFINITY is returned when |v|<UNUR_EPSILON            */
 /*                                                            */
 {
-  int i;
+  int d, dim; /* index used in dimension loops (0 <= d < dim) */
   double *uv; /* u/v vector     */
   double f;   /* function value */
 
   if (fabs(v) <= UNUR_EPSILON) return UNUR_INFINITY;
   
-  uv = _unur_xmalloc(GEN.dim*sizeof(double));
-  for (i=0; i<GEN.dim; i++) {
-    uv[i] = u[i] / v;
+  dim = GEN.dim;
+
+  uv = _unur_vector_new(dim);
+  for (d=0; d<dim; d++) {
+    uv[d] = u[d] / v;
   }
 
   f = PDF(uv);
 
+  free(uv);
+  
   return f;
 }
 
 /*****************************************************************************/
 
-double _unur_varou_F( struct unur_gen *gen, double *u, double v) 
+double 
+_unur_varou_F( struct unur_gen *gen, double *u, double v) 
 /*                                                                        */
 /* return calculated value of v^(1+dim) - PDF(u_1/v, u_2/v, ..., u_dim/v) */
 /*                                                                        */
@@ -551,6 +560,51 @@ double _unur_varou_F( struct unur_gen *gen, double *u, double v)
   return F;
 }
 
+/*****************************************************************************/
+
+double * 
+_unur_varou_dF( struct unur_gen *gen, double *u, double v )
+/*                                                                        */
+/* return the calculated value of the gradient of F() at the point (u,v)  */
+/*                                                                        */
+/* NULL is returned when |v|<UNUR_EPSILON                                 */
+/*                                                                        */
+{
+  int d, dim; /* index used in dimension loops (0 <= d < dim) */
+  double *uv; /* u/v vector     */
+  double *dF;
+  double *dPDF;
+
+  if (fabs(v) <= UNUR_EPSILON) return NULL;
+
+  dim = GEN.dim;
+   
+  /* reserving memory for arrays */ 
+  uv = _unur_vector_new(dim);
+  dPDF = _unur_vector_new(dim);
+  dF = _unur_vector_new(dim+1);
+  
+  /* calculating the rations uv[d] = u[d]/v */
+  for (d=0; d<dim; d++) {
+    uv[d] = u[d] / v;
+  }
+
+  /* dPDF at the point uv[] */
+  _unur_cvec_dPDF(dPDF, uv, gen->distr);
+
+  /* gradient coordinates of F() */
+  for (d=0; d<dim; d++) {
+    dF[d] = - dPDF[d] / v;
+  }
+  /* and the last coordinate */
+  dF[dim] = (1.+dim) * pow(v, dim);
+
+  /* freeing allocated memory */
+  _unur_vector_free(uv);
+  _unur_vector_free(dPDF);
+  
+  return dF;
+}
 
 /*****************************************************************************/
 /**  Debugging utilities                                                    **/

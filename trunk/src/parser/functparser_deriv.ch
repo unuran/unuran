@@ -672,9 +672,11 @@ _unur_fstr_error_deriv (const struct ftreenode *node)
   /* set unuran error code */
   unur_errno = UNUR_ERR_FSTR_DERIV;
 
+#ifdef UNUR_ENABLE_LOGGING
   _unur_stream_printf_simple ( "%s: error: cannot derivate subtree at `%s':\n",GENTYPE,node->symbol);
   _unur_fstr_debug_tree(NULL,node);
   _unur_stream_printf_simple ( "%s:\n",GENTYPE );
+#endif  
 
 } /* end of _unur_fstr_error_deriv() */
 

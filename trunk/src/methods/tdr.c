@@ -54,10 +54,14 @@
  *   [5] Derflinger, G. and Hoermann, W. (1999): The optimal selection of    *
  *       hat functions for rejection algorithms, preprint                    *
  *                                                                           *
- *   [6] Leydold J. (1999): Automatic Sampling with the ratio-of-uniforms    *
+ *   [6] Leydold, J. (1999): Automatic Sampling with the ratio-of-uniforms   *
  *       method, preprint, 15pp.                                             *
  *                                                                           *
+ *   [7] Leydold, J and Hoermann, W. (2001): ?????, preprint                 *
+ *                                                                           *
  *****************************************************************************
+ *****************************************************************************
+ * Variant GW (Gilks & Wild)                                                 *
  *****************************************************************************
  *                                                                           *
  * Transformed density rejection (see [1,3,4]) is an acceptance/rejection    *
@@ -285,6 +289,42 @@
  * (6) The use of the additional "fast" squeeze in step 7 is due to a        *
  *     suggestion of G. Derflinger. It speeds up the generation about 20 %   *
  *     when many construction points are used.                               *
+ *                                                                           *
+ *****************************************************************************
+
+ *****************************************************************************
+ * Variant PS (Proportional Squeezes)                                        *
+ *****************************************************************************
+ *                                                                           *
+ * The original algorithm can be modified in the following way:              *
+ * Use squeezes that are proportional to the hat function in each of the     *
+ * intervals. This decreases the marginal generation times;                  *
+ * see [7] for details.                                                      *
+ *                                                                           *
+ * Technical remarks:                                                        *
+ * The boundary points of the intervals are now the intersection points      *
+ * of the tangents to the transformed density. However we have used the      *
+ * same structure for an interval as in variant GW. To have a similar        *
+ * code we have stored the left boundary of an interval together with the    *
+ * construction point. Thus the right boundary point is stored in the        *
+ * interval structure in the list of intervals.                              *
+ * We also have added an empty interval structure in this list that just     *
+ * marks the right boundary of the domain of the p.d.f.                      *
+ *                                                                           *
+ *****************************************************************************
+
+ *****************************************************************************
+ * Variant IA (Immedate Acceptance)                                          *
+ *****************************************************************************
+ *                                                                           *
+ * IA is a composition method that uses squeezes that are proportional to    *
+ * the hat function in each of the intervals (as in PS). We immediately      *
+ * accept all points below the squeeze and use an acceptance/rejection       *
+ * technique only we fall in the region between hat and squeeze. It works    *
+ * very well since it is easy to generate points in this region (in          *
+ * opposition to variant GW).                                                *
+ *                                                                           *
+ * For technical details see variant PS.                                     *
  *                                                                           *
  *****************************************************************************/
 

@@ -37,42 +37,67 @@
  *                                                                           *
  *****************************************************************************/
 
+/* 
+   =METHOD  TDR   Transformed Density Rection
+
+   TDR is an acceptance/rejection method that uses the concavity of a
+   transformed density to construct hat function and squeezes
+   automatically. Such p.d.f.s are called T-concave. Currently the
+   following transformations are implemented and can be selected by
+   setting their @code{c}-values by a unur_tdr_set_c() call:
+
+      c = 0     ... T(x) = log(x)
+      c = -0.5  ... T(x) = -1/sqrt(x)
+   
+   In future releases the transformations T(x) = -(x)^c will be
+   available for any c with 0 > c > -1.
+   Notice that if a p.d.f. is T-concave for a c then it also T-concave
+   for every c'<c. However the performance decreases when c' is
+   smaller than c. For computational reasons we suggest the usage of 
+   c = -0.5 (this is the default). 
+   For c <= -1 is not bounded any more if the domain of the p.d.f. is
+   unbounded. But in the case of a bounded domain using method TABL is
+   preferred to a TDR with c < -1 (except in a few special cases).
+
+   We offer three variant of the algorithm. 
+
+      GW  ... squeezes between construction points
+      PS  ... squeezes proportional to hat function
+      IA  ... same as variant PS but uses a compositon method with
+              "immediate acceptance" in the region below the squeeze.
+
+   GW has a slightly faster setup but higher marginal generation
+   times.
+   PS is faster than GW. IA uses less uniform random numbers is faster
+   than PS.
+
+   There are lots of parameters for this methods, see below.
+
+*/
+
 /*---------------------------------------------------------------------------*/
 /* Routines for user interface                                               */
 
+/* =ROUTINES */
+
 UNUR_PAR *unur_tdr_new( UNUR_DISTR* distribution );
-/* get default parameters for generator                                      */
-
-
-/* sample from generator                                                     */
+/* Get default parameters for generator                                      */
 
 /*...........................................................................*/
 
-int unur_tdr_set_cpoints( UNUR_PAR *parameters, int n_stp, double *stp );
-/* set construction points for envelope and/or its number for initialization */
+int unur_tdr_set_c( UNUR_PAR *parameters, double c );
+/* 
+   Set parameter c for transformation T. 
+   Currently only values between 0 and -0.5 are allowed.
+   If @code{c} is between 0 and -0.5 it is set to -0.5.
+   Default is -0.5.
+*/
 
-int unur_tdr_set_guidefactor( UNUR_PAR *parameters, double factor );
-/* set factor for relative size of guide table                               */
-
-int unur_tdr_set_max_sqhratio( UNUR_PAR *parameters, double max_ratio );
-/* set bound for ratio A(squeeze) / A(hat)                                   */
-
-int unur_tdr_set_max_intervals( UNUR_PAR *parameters, int max_ivs );
-/* set maximum number of intervals                                           */
-
-int unur_tdr_set_center( UNUR_PAR *parameters, double center );
-/* set center (approximate mode) of p.d.f.                                   */
-
-int unur_tdr_set_usecenter( UNUR_PAR *parameters, int usecenter );
-/* set flag for using center as construction point                           */
-
-int unur_tdr_set_usemode( UNUR_PAR *parameters, int usemode );
-/* set flag for using (exact) mode as construction point                     */
 
 int unur_tdr_set_variant_gw( UNUR_PAR *parameters );
 /* 
-   Use original version with squeezes as proposed by Gilks & Wild 
-   (but with generalized transformations T).
+   Use original version with squeezes between construction points as
+   proposed by Gilks & Wild  (1992).
    This is the default.
 */
 
@@ -88,11 +113,71 @@ int unur_tdr_set_variant_ia( UNUR_PAR *parameters );
    composition method that required less uniform random numbers.
 */
 
-int unur_tdr_set_c( UNUR_PAR *parameters, double c );
-/* set parameter c for transformation T_c                                    */
+int unur_tdr_set_max_sqhratio( UNUR_PAR *parameters, double max_ratio );
+/* 
+   Set upper bound for the
+   ratio (area below squeeze) / (area below hat).
+   It must be a number between 0 and 1.
+   When the ratio exceed the given number no further construction
+   points are inserted via adaptive rejection sampling.
+   Use 0 if no construction points should be added after the setup.
+   Use 1 if added new construction points should not be stopped until
+   the maximum number of construction points is reached.
+   Default is ??.
+*/
+
+int unur_tdr_set_max_intervals( UNUR_PAR *parameters, int max_ivs );
+/* 
+   Set maximum number of intervals (default is ??).
+   No construction points are added after the setup when the number of
+   intervals suceeds @code{max_ivs}.
+*/
+
+int unur_tdr_set_cpoints( UNUR_PAR *parameters, int n_stp, double *stp );
+/* 
+   Set construction points for the hat function. If @code{stp} is NULL
+   than a heuristical rule of thumb is used to get @code{n_stp}
+   construction points. This is the default behavior. The default
+   number of construction points is ??.
+*/
+
+int unur_tdr_set_center( UNUR_PAR *parameters, double center );
+/* 
+   Set the center (approximate mode) of the p.d.f.
+   It is used to find construction points by means of a heuristical
+   rule of thumb. If the mode is given the center is set equal to the
+   mode.
+*/
+
+int unur_tdr_set_usecenter( UNUR_PAR *parameters, int usecenter );
+/* 
+   Use the center as construction point. Default is TRUE.
+*/
+
+int unur_tdr_set_usemode( UNUR_PAR *parameters, int usemode );
+/* 
+   Use the (exact!) mode as construction point. Default is TRUE.
+   Notice that the behavior of the algorithm is different to simply
+   adding the mode in the list of construction points via a
+   unur_tdr_set_cpoints() call. In the latter case the mode is treated
+   just like any other point. However when @code{usemode} is TRUE, the
+   tangent in the mode is always set to 0. Then the hat of the
+   transformed density can never cut the x-axis which must never
+   happen if c < 0, since otherwise the hat would not be bounded.
+*/
+
+int unur_tdr_set_guidefactor( UNUR_PAR *parameters, double factor );
+/* 
+   Set factor for relative size of the guide table for indexed search
+   (see also method DGT). It must be greater than or equal to 0.
+   If it is set to 0, then sequential search is used.
+   Default is ??.
+*/
 
 int unur_tdr_set_verify( UNUR_PAR *parameters, int verify );
-/* turn verifying of algorithm while sampling on/off                         */
+/* 
+   Turn verifying of algorithm while sampling on/off.
+*/
 
 /*---------------------------------------------------------------------------*/
 

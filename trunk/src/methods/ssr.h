@@ -119,7 +119,9 @@ int unur_ssr_set_pdfatmode( UNUR_PAR *parameters, double fmode );
 */
 
 int unur_ssr_set_verify( UNUR_PAR *parameters, int verify );
-/* Turn verifying of algorithm while sampling on/off                         */
+/* 
+   Turn verifying of algorithm while sampling on/off.
+*/
 
 int unur_ssr_set_usesqueeze( UNUR_PAR *parameters, int usesqueeze );
 /* Set flag for using universal squeeze (default: off).

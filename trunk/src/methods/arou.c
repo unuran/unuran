@@ -711,7 +711,8 @@ _unur_arou_init( struct unur_par *par )
 
   /* get starting points */
   if (!_unur_arou_get_starting_cpoints(par,gen) ) {
-    free(par); _unur_arou_free(gen);
+    free(par); 
+    _unur_arou_free(gen);
     return NULL;
   }
 
@@ -1967,7 +1968,7 @@ _unur_arou_debug_segments( struct unur_gen *gen )
   log = unur_get_stream();
 
   fprintf(log,"%s:Segments: %d\n",gen->genid,GEN.n_segs);
-  if (gen->debug & AROU_DEBUG_SEGMENTS) {
+  if ((gen->debug & AROU_DEBUG_SEGMENTS) && GEN.seg != NULL) {
     fprintf(log,"%s: Nr.\t    left touching point\t\t   intersection point\t\t tangent at left touching point\n",gen->genid);
     for (seg = GEN.seg, i=0; seg->next!=NULL; seg=seg->next, i++) {
       COOKIE_CHECK(seg,CK_AROU_SEG,/*void*/); 
@@ -1989,7 +1990,7 @@ _unur_arou_debug_segments( struct unur_gen *gen )
   }
     
   /* print and sum areas inside and outside of squeeze */
-  if (gen->debug & AROU_DEBUG_SEGMENTS) {
+  if ((gen->debug & AROU_DEBUG_SEGMENTS) && GEN.seg != NULL) {
     fprintf(log,"%s:Areas in segments:\n",gen->genid);
     fprintf(log,"%s: Nr.\t inside squeeze\t\t   outside squeeze\t     total segment\t\tcumulated\n",gen->genid);
     sAin = sAout = 0.;

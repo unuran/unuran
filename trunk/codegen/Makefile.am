@@ -8,6 +8,13 @@ INCLUDES = \
  -I$(top_srcdir)/src/methods \
  -I$(top_srcdir)/src/distributions
 
+
+bin_PROGRAMS = acg
+acg_SOURCES = acg.c
+acg_LDADD = libunuracg.a $(top_builddir)/src/libunuran.a
+
+
+
 lib_LIBRARIES = libunuracg.a
 
 include_HEADERS = \
@@ -44,6 +51,7 @@ EXTRA_DIST = \
  read_PDF.pl \
  make_PDFgen.pl \
  make_headergen.pl \
+ make_acg.pl \
  make_test_PDFgen.pl \
  make_test_PDFgen.c \
  make_test_codegen.pl \
@@ -55,6 +63,9 @@ PDFgen.c: make_PDFgen.pl read_PDF.pl
 
 headergen.c: make_headergen.pl read_PDF.pl
 	./make_headergen.pl
+
+acg.c: make_acg.pl read_PDF.pl
+	./make_acg.pl > acg.c
 
 make_test_PDFgen.c: $(top_srcdir)/codegen/test.conf make_test_PDFgen.pl read_PDF.pl
 	./make_test_PDFgen.pl $(top_srcdir)/codegen/test.conf
@@ -85,6 +96,8 @@ test_codegen_LDADD = $(top_builddir)/src/libunuran.a
 # clean backup files
 CLEANFILES = \
  PDFgen.c \
+ headergen.c \
+ acg.c \
  make_test_PDFgen.c \
  test_PDFgen.c \
  make_test_codegen.c \

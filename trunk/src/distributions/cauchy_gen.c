@@ -49,8 +49,8 @@
 
 #define uniform()  _unur_call_urng(gen) /* call for uniform prng             */
 
-#define theta  (DISTR.params[0])
-#define lambda (DISTR.params[1])
+#define theta  (DISTR.params[0])    /* location */
+#define lambda (DISTR.params[1])    /* scale */
 
 /*---------------------------------------------------------------------------*/
 
@@ -65,7 +65,7 @@
 int 
 _unur_stdgen_cauchy_init( struct unur_par *par, struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
-     /* initialize special generator for cauchy distribution                 */
+     /* initialize special generator for Cauchy distribution                 */
      /* if gen == NULL then only check existance of variant.                 */
      /*                                                                      */
      /* parameters:                                                          */
@@ -95,7 +95,7 @@ _unur_stdgen_cauchy_init( struct unur_par *par, struct unur_gen *gen )
     return 0;
   }
   
-} /* end of _unur_stdgen_exponential_init() */
+} /* end of _unur_stdgen_cauchy_init() */
 
 /*---------------------------------------------------------------------------*/
 

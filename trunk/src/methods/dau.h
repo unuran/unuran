@@ -46,6 +46,8 @@
 
    =SPEED Set-up: slow (linear with the vector-length), Sampling: very fast
 
+   =REF  [WAa77]
+
    =DESCRIPTION
       DAU samples from distributions with arbitrary but finite
       probability vectors (PV) of length @i{N}.

@@ -47,6 +47,8 @@
    =SPEED Set-up: slow (as sample is sorted),
           Sampling: fast (depends on kernel)
 
+   =REF  [HLa00]
+
    =DESCRIPTION
       EMPK generates random variates from an empirical distribution that is
       given by an observed sample. The idea is that simply choosing a random

@@ -48,6 +48,8 @@
 
    =SPEED Set-up: slow, Sampling: fast
 
+   =REF  [GWa92]  [HWa95]
+
    =DESCRIPTION
       TDR is an acceptance/rejection method that uses the concavity of a
       transformed density to construct hat function and squeezes

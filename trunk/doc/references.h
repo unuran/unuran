@@ -54,11 +54,73 @@ John Wiley & Sons, Inc., New York.
 
 @table @t
 
+@anchor{bib:AJa93}
+@item [AJa93]
+@sc{J.H. Ahrens} (1993).
+@i{Sampling from general distributions by suboptimal division of domains},
+Grazer Math. Berichte 319, 30pp.
+
+@anchor{bib:AJa95}
+@item [AJa95]
+@sc{J.H. Ahrens} (1995).
+@i{An one-table method for sampling from continuous and discrete distributions},
+Computing 54(2), pp. 127-146.
+
+@anchor{bib:CAa74}
+@item [CAa74]
+@sc{H.C. Chen and Y. Asau} (1974).
+@i{On generating random variates from an empirical distribution},
+AIIE Trans. 6, pp. 163-166.
+
 @anchor{bib:DLa86}
 @item [DLa86]
 @sc{L. Devroye} (1986).
 @i{Non-Uniform Random Variate Generation},
 Springer Verlag, New York.
+
+@anchor{bib:GWa92}
+@item [GWa92]
+@sc{W.R. Gilks and P. Wild} (1992).
+@i{Adaptive rejection sampling for Gibbs sampling},
+Applied Statistics 41, pp. 337-348.
+
+@anchor{bib:HWa95}
+@item [HWa95]
+@sc{W. Hoermann} (1995).
+@i{A rejection technique for sampling from T-concave distributions},
+ACM Trans. Math. Software 21(2), pp. 182-193.
+
+@anchor{bib:HDa96}
+@item [HDa96]
+@sc{W. Hoermann and G. Derflinger} (1996).
+@i{Rejection-inversion to generate variates from monotone discrete distributions},
+ACM TOMACS 6(3), 169-184.
+
+@anchor{bib:HLa00}
+@item [HLa00]
+@sc{W. Hoermann and J. Leydold} (2000).
+@i{Automatic random variate generation for simulation input.}
+In: J.A. Joines, R. Barton, P. Fishwick, K. Kang (eds.),
+Proceedings of the 2000 Winter Simulation Conference, pp. 675-682.
+
+@anchor{bib:LJa00}
+@item [LJa00]
+@sc{J. Leydold} (2000).
+@i{Automatic Sampling with the Ratio-of-Uniforms Method},
+ACM Trans. Math. Software 26(1), pp. 78-98.
+
+@anchor{bib:LJa01}
+@item [LJa01]
+@sc{J. Leydold} (2000).
+@i{A simple universal generator for continuous and discrete 
+univariate T-concave distributions},
+ACM Trans. Math. Software, to appear.
+
+@anchor{bib:WAa77}
+@item [WAa77]
+@sc{A.J. Walker} (1977).
+@i{An efficient method for generating discrete random variables with general distributions},
+ACM Trans. Math. Software 3, pp. 253-256.
 
 @end table
 

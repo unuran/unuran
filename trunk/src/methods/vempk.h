@@ -47,6 +47,8 @@
    =SPEED Set-up: slow,
           Sampling: slow (depends on dimension)
 
+   =REF  [HLa00]
+
    =DESCRIPTION
       VEMPK generates random variates from a multivariate empirical
       distribution that is given by an observed sample. The idea is

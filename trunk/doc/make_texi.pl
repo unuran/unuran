@@ -423,6 +423,9 @@ sub texi_node {
 	    if ($IN->{$node}->{"=SPEED"}) {
 		$TEXI .= "\@item Speed:\n".$IN->{$node}->{"=SPEED"}."\n";
 	    }
+	    if ($IN->{$node}->{"=REF"}) {
+		$TEXI .= "\@item reference:\n".$IN->{$node}->{"=REF"}."\n";
+	    }
 	    $TEXI .= "\@end table\n\@sp 1\n\n";
 	}
     }

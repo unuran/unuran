@@ -1,3 +1,103 @@
+
+ *****************************************************************************
+ *                                                                           *
+ *          UNURAN -- Universal Non-Uniform Random number generator          *
+ *                                                                           *
+ *****************************************************************************
+
+
+               Installation instructions for the UNURAN library.
+
+                              Version 0.1.0
+
+
+While the code is plain ANSI C and thus quite portable, the following
+adaptions might be neccessary for compile this library.
+
+
+Uniform random number generator
+...............................
+
+   UNURAN can be used with any uniform random number generator but (at the 
+moment) some features work best with Otmar Lendl's prng library (see
+<http://statistik.wu-wien.ac.at/prng/> for description and downloading).
+
+
+Installing UNURAN
+.................
+
+  1. First unzip and untar the package and change to the directory:
+          tar zxvf unuran-0.1.0.tar.gz
+          cd unuran-0.1.0
+
+  2. Edit the file `src/unuran_config.h'.  Set the appropriate source of
+     uniform random numbers: 
+
+     #define UNUR_URNG_TYPE.
+
+     Important: If the prng library is not installed you must not use
+     `UNUR_URNG_PRNG'.
+
+     Warning: If `UNUR_URNG_POINTER' is used then the buildin default uniform
+     random number generators should be used only for small sample sizes or for
+     demonstration. They are not state of the art any more.
+
+  3. Run a configuration script:
+
+          sh ./configure --prefix=<prefix>
+
+     where `<prefix>' is the root of the installation tree.  When omitted
+     `/usr/local' is used.
+
+     Use `configure --help' to get a list of other options.
+
+     Important: You must install PRNG _before_ `configure' is executed.
+
+  4. Compile and install the libray:
+
+          make
+          make install
+
+     This installs the following files:
+
+          $(prefix)/include/unuran.h
+          $(prefix)/include/unuran_config.h
+          $(prefix)/include/unuran_tests.h
+          $(prefix)/lib/libunuran.a
+          $(prefix)/info/unuran.info
+
+     Obviously `$(prefix)/include' and `$(prefix)/lib' must be in the search
+     path of your compiler. You can use environment variables to add these
+     directories to the search path. If you are using the bash type (or add to
+     your profile):
+
+          export LIBRARY_PATH="HOMEDIRECTORY/lib"
+          export C_INCLURE_PATH="HOMEDIRECTORY/include"
+
+  5. Documentation in various formats (PS, PDF, info, dvi, HTML, plain text)
+     can be found in the directory `doc'.
+
+  6. You can run some tests my
+
+          make check
+
+     However this test suite requires the usage of prng.  It might happen that
+     some of the tests might fail due to roundoff errors or the mysteries of
+     floating point arithmetic, since we have used some extreme settings to
+     test the library.
+
+(For further targets for make and more details see the GNU generic installation
+instructions below.)
+
+
+
+
+*********************************************************************
+*                                                                   *
+*               GNU generic installation instructions.              *
+*                                                                   *
+*********************************************************************
+
 Basic Installation
 ==================
 

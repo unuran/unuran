@@ -46,6 +46,8 @@
 
    =SPEED Set-up: moderate, Sampling: fast
 
+   =REF  [HDa96]
+
    =DESCRIPTION
       DARI is based on rejection inversion, which can be seen as an
       adaptation of transformed density rejection to discrete

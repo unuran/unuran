@@ -46,6 +46,8 @@
 
    =SPEED Set-up: moderate, Sampling: Moderate
 
+   =REF  [HWa95]
+
    =DESCRIPTION
       UTDR is based on the transformed density rejection and uses three almost
       optimal points for constructing hat and squeezes.

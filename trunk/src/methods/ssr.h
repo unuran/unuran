@@ -46,6 +46,8 @@
 
    =SPEED Set-up: fast, Sampling: slow
 
+   =REF  [LJa01]
+
    =DESCRIPTION
       SSR is an acceptance/rejection method that uses universal
       inequalities for constructing (universal) hats and squeezes.

@@ -48,6 +48,8 @@
 
    =SPEED Set-up: slow, Sampling: fast
 
+   =REF  [AJa93]  [AJa95]
+
    =ABSTRACT Not suited for heavy tailed distributions
 
    =DESCRIPTION

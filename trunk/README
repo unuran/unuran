@@ -1,6 +1,12 @@
-UNURAN (Universal Non-Uniform RANdom variate generation)
 
-is an ANSI-C library licensed under GPL. 
+ *****************************************************************************
+ *                                                                           *
+ *          UNURAN -- Universal Non-Uniform Random number generator          *
+ *                                                                           *
+ *****************************************************************************
+
+
+UNU.RAN  is an ANSI-C library licensed under GPL. 
 It contains universal (also called automatic or 
 black-box) algorithms that can generate from large classes of continuous
 or discrete distributions. Of course the user must supply some information

@@ -80,7 +80,7 @@
 =UP Intro [30]
 
 =DESCRIPTION
-   UNURAN was develloped on an Intel architecture under Linux with
+   UNURAN was developed on an Intel architecture under Linux with
    the gnu C compiler.
 
 

@@ -46,6 +46,8 @@
 
    =SPEED Set-up: fast, Sampling: slow
 
+   =REF  [LJa01]
+
    =DESCRIPTION
       SROU is based on the ratio-of-uniforms method but uses universal 
       inequalities for constructing a (universal) bounding rectangle.

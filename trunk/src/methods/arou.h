@@ -48,6 +48,8 @@
 
    =SPEED Set-up: slow, Sampling: fast
 
+   =REF  [LJa00]
+
    =DESCRIPTION
       AROU is a variant of the ratio-of-uniforms method that uses the
       fact that the transformed region is convex for many distributions.

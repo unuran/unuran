@@ -4,7 +4,7 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   FILE: vector_source.h                                                   *
+ *   FILE: vector_struct.h                                                   *
  *                                                                           *
  *   Routines for computations with vectors (arrays).                        *
  *                                                                           *
@@ -33,17 +33,14 @@
 				                                                                                    
 /*--------------------------------------------------------------------------*/
 
-UNUR_VECTOR *_unur_vector_new(int dim);
-/* allocate memory for new vector structure */
-
-void _unur_vector_free(UNUR_VECTOR *v);
-/* free allocated memory used by vector structure */
-
-double _unur_vector_norm(UNUR_VECTOR *v);
-/* calculation of vector norm */
-
-double _unur_vector_scalar_product(UNUR_VECTOR *v1, UNUR_VECTOR *v2);
-/* calculation of scalar product */
+/* vector structure */
+typedef struct unur_vector
+{
+  int dim;                   /* dimension of vector */
+  double *x;                 /* coordinates of vector */
+} UNUR_VECTOR;
+    
+/*---------------------------------------------------------------------------*/
 
 
 /*---------------------------------------------------------------------------*/

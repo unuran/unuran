@@ -55,6 +55,7 @@ struct unur_ninv_gen {
   int     max_iter;          /* maximal number of iterations                 */
   double  rel_x_resolution;  /* maximal relative error in x                  */
   double *table;             /* table with possible starting values for NINV */
+  double *f_table;	     /* function values of points stored in table    */
   int     table_on;          /* if TRUE a table for starting points is used  */
   int     table_size;        /* size of table                                */
   double  Umin, Umax;        /* bounds for iid random variable in respect to

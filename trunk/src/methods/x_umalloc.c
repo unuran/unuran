@@ -85,7 +85,7 @@ _unur_add_mblocks( struct unur_mblock **mblocks, void *ptr )
   /* get new entry */
   /* (only once. maybe it we could allocate a larger block.
      but this would require some additional book keeping.) */
-  new = malloc( sizeof(struct unur_mblock) );
+  new = _unur_malloc( sizeof(struct unur_mblock) );
   COOKIE_SET(new,CK_MBLOCK);
 
   /* store allocated block */

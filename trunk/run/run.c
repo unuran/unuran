@@ -39,13 +39,20 @@ int main()
   unur_distr_free(distr);
 
   distr = unur_distr_normal(NULL,0);
-  par = unur_tdr_new( distr );
+  par = unur_cstd_new( distr );
+  unur_cstd_set_variant(par,1u);
   unur_run_tests(par,UNUR_TEST_TIME);
   unur_distr_free(distr);
 
   distr = unur_distr_normal(NULL,0);
   par = unur_cstd_new( distr );
-  unur_cstd_set_variant(par,1u);
+  unur_cstd_set_variant(par,3u);
+  unur_run_tests(par,UNUR_TEST_TIME);
+  unur_distr_free(distr);
+
+  distr = unur_distr_normal(NULL,0);
+  par = unur_cstd_new( distr );
+  unur_cstd_set_variant(par,UNUR_STDGEN_DEFAULT);
   unur_run_tests(par,UNUR_TEST_TIME);
   unur_distr_free(distr);
 

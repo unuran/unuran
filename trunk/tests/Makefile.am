@@ -12,6 +12,7 @@ check_PROGRAMS = \
  t_timing \
  t_arou \
  t_cstd \
+ t_dari \
  t_dau \
  t_dgt \
  t_dstd \
@@ -27,6 +28,7 @@ TESTS = \
  t_corder \
  t_arou \
  t_cstd \
+ t_dari \
  t_dau \
  t_dgt \
  t_dstd \
@@ -50,6 +52,7 @@ EXTRA_DIST = \
  timing.conf \
  arou.conf \
  cstd.conf \
+ dari.conf \
  dau.conf \
  dgt.conf \
  dstd.conf \
@@ -75,6 +78,9 @@ t_arou_LDADD = $(top_builddir)/src/libunuran.a
 
 t_cstd_SOURCES = t_cstd.c testroutines.c
 t_cstd_LDADD = $(top_builddir)/src/libunuran.a
+
+t_dari_SOURCES = t_dari.c testroutines.c
+t_dari_LDADD = $(top_builddir)/src/libunuran.a
 
 t_dau_SOURCES = t_dau.c testroutines.c
 t_dau_LDADD = $(top_builddir)/src/libunuran.a
@@ -118,6 +124,9 @@ t_arou.c: arou.conf make_test_files.pl
 
 t_cstd.c: cstd.conf make_test_files.pl
 	./make_test_files.pl cstd.conf
+
+t_dari.c: dari.conf make_test_files.pl
+	./make_test_files.pl dari.conf
 
 t_dau.c: dau.conf make_test_files.pl
 	./make_test_files.pl dau.conf

@@ -40,6 +40,7 @@
 
 #define T_AROU
 #define T_CSTD
+#define T_DARI
 #define T_DAU
 #define T_DGT
 #define T_DSTD

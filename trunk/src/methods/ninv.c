@@ -566,7 +566,7 @@ unur_ninv_chg_start( struct unur_gen *gen, double s1, double s2 )
   }
 
   /* disable table (we now want to use only two starting points) */
-  GEN.table_on = 0;
+  GEN.table_on = FALSE;
 
   /* compute these points */
   _unur_ninv_compute_start(gen);
@@ -1042,11 +1042,11 @@ _unur_ninv_create_table( struct unur_gen *gen )
   for (i=1; i<table_size/2; i++){
 
     /* compute table point and CDF at table point */
-    x = GEN.f_table[0] + i * (GEN.f_table[table_size-1] - GEN.f_table[0]) / (table_size-1.);  
+    x = GEN.CDFmin + i * (GEN.CDFmax - GEN.CDFmin) / (table_size-1.);  
     GEN.table[i]   = _unur_ninv_regula(gen,x);
     GEN.f_table[i] = CDF(GEN.table[i]);
 
-    x = GEN.f_table[0] + (table_size-i-1) * (GEN.f_table[table_size-1] - GEN.f_table[0]) / (table_size-1.);  
+    x = GEN.CDFmin + (table_size-i-1) * (GEN.CDFmax - GEN.CDFmin) / (table_size-1.);  
     GEN.table[table_size-1-i] = _unur_ninv_regula(gen,x);
     GEN.f_table[table_size-1-i] = CDF(GEN.table[table_size-1-i]);
 
@@ -1064,7 +1064,7 @@ _unur_ninv_create_table( struct unur_gen *gen )
 
   /* the median point (only if table_size is odd) */
   if (table_size & 1) { 
-    x = GEN.f_table[0] + (table_size/2) * (GEN.f_table[table_size-1] - GEN.f_table[0]) / (table_size-1.);  
+    x = GEN.CDFmin + (table_size/2) * (GEN.CDFmax - GEN.CDFmin) / (table_size-1.);  
     GEN.table[table_size/2] = _unur_ninv_regula(gen,x);
     GEN.f_table[table_size/2] = CDF(GEN.table[table_size/2]);
   }  
@@ -1132,7 +1132,6 @@ _unur_ninv_regula( struct unur_gen *gen, double u )
   /* initialize starting interval */
   if (GEN.table_on) {
 
-#if 1
     /* 0 <= i <= table_size-2  */
     if ( _unur_FP_same(GEN.CDFmin,GEN.CDFmax) ) {
       /* CDF values in table too close, so we use median point since 
@@ -1145,14 +1144,13 @@ _unur_ninv_regula( struct unur_gen *gen, double u )
       else if (i > GEN.table_size - 2) i = GEN.table_size - 2;
     }
 
-
-    /** TODO ?? **/
+    /* set starting point for regular falsi */
     if ( ! _unur_FP_is_minus_infinity(GEN.table[i]) ){
       x1 = GEN.table[i];
       f1 = GEN.f_table[i]; 
     }
     else{
-      x1 = 2. * GEN.table[i+1] - GEN.table[i+2];
+      x1 = GEN.table[i+1] + (GEN.table[i+1] - GEN.table[i+2]);
       f1 = CDF(x1);
     }
 
@@ -1161,49 +1159,9 @@ _unur_ninv_regula( struct unur_gen *gen, double u )
       f2 = GEN.f_table[i+1];
     }
     else{
-      x2 = 2. * GEN.table[i] - GEN.table[i-1];
+      x2 = GEN.table[i] + (GEN.table[i] - GEN.table[i-1]);
       f2 = CDF(x2);
     }
-
-
-#else
-  if ( _unur_FP_same( GEN.Umin, GEN.Umax) ){
-    _unur_warning(gen->genid,UNUR_ERR_GEN_CONDITION,"CDF constant");
-    return INFINITY;   
-  }
-
-    /* 0 <= i <= table_size-2  */
-    i = (int) ( u * 
-      ( (GEN.Umax-GEN.Umin)/(GEN.CDFmax-GEN.CDFmin) +
-	GEN.Umin - GEN.CDFmin ) *
-      (GEN.table_size-1) );
-    /* neccessary if domain is changes -> extrem tbl pts as start pts */
-    i = (i<0) ? 0 : i;
-    i = (i > GEN.table_size-1) ? GEN.table_size-1 : i;
-
-    if ( ! _unur_FP_is_minus_infinity(GEN.table[i]) ){
-      x1 = GEN.table[i];
-      f1 = GEN.f_table[i]; 
-      /* f1 = GEN.CDFmin + 
-              i*((GEN.CDFmax-GEN.CDFmin)/(GEN.table_size-1.0));  */
-    }
-    else{
-      x1 = 2. * GEN.table[i+1] - GEN.table[i+2];
-      f1 = CDF(x1);
-    }
-    if( ! _unur_FP_is_infinity(GEN.table[i+1]) ){
-      x2 = GEN.table[i+1];
-      f2 = GEN.f_table[i+1];
-      /*  f2 = GEN.CDFmin + 
-               (i+1)*((GEN.CDFmax-GEN.CDFmin)/(GEN.table_size-1.0));  */
-    }
-    else{
-      x2 = 2. * GEN.table[i] - GEN.table[i-1];
-      f2 = CDF(x2);
-    }
-
-#endif
-
   }
 
   else { /* no table    */
@@ -1283,7 +1241,7 @@ _unur_ninv_regula( struct unur_gen *gen, double u )
       break; /* -> finished */
   
     /* secant or bisection step   */
-    dx = ( f1-f2==0. ) ? length/2. : f2*(x2-x1)/(f2-f1) ;  
+    dx = ( _unur_FP_same(f1,f2) ) ? length/2. : f2*(x2-x1)/(f2-f1) ;  
     
     /* minimaler schritt */
     if ( fabs(dx) < GEN.rel_x_resolution * x2abs ){

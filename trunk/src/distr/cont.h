@@ -368,7 +368,7 @@ int unur_distr_cont_set_center( UNUR_DISTR *distribution, double center );
    unur_distr_cont_upd_mode() call; otherwise @code{0}.
 */
 
-double unur_distr_cont_get_center( UNUR_DISTR *distribution );
+double unur_distr_cont_get_center( const UNUR_DISTR *distribution );
 /* 
    Get center of the @var{distribution}. It always returns some point
    as there always exists a default for the center, see

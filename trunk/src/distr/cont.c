@@ -1329,7 +1329,7 @@ unur_distr_cont_set_center( struct unur_distr *distr, double center )
 /*---------------------------------------------------------------------------*/
 
 double
-unur_distr_cont_get_center( struct unur_distr *distr )
+unur_distr_cont_get_center( const struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
      /* get center of distribution                                           */
      /*                                                                      */
@@ -1518,6 +1518,12 @@ _unur_distr_cont_debug( const struct unur_distr *distr, const char *genid )
     fprintf(log,"%s:\tmode = %g\n",genid,DISTR.mode);
   else
     fprintf(log,"%s:\tmode unknown\n",genid);
+
+  if (distr->set & UNUR_DISTR_SET_CENTER)
+    fprintf(log,"%s:\tcenter = %g\n",genid,DISTR.center);
+  else
+    fprintf(log,"%s:\tcenter = %g [default]\n",genid,
+	    unur_distr_cont_get_center(distr));
 
   fprintf(log,"%s:\tdomain = (%g, %g)",genid,DISTR.domain[0],DISTR.domain[1]);
   _unur_print_if_default(distr,UNUR_DISTR_SET_DOMAIN);

@@ -1700,6 +1700,10 @@ _unur_distr_cvec_debug( const struct unur_distr *distr, const char *genid )
   mat = ((distr->set & UNUR_DISTR_SET_MEAN) && DISTR.mean) ? DISTR.mean : NULL;
   _unur_matrix_print_vector( distr->dim, mat, "\tmean vector =", log, genid, "\t   ");
 
+  /* center vector */
+  if ((distr->set & UNUR_DISTR_SET_CENTER) && DISTR.center)
+    _unur_matrix_print_vector( distr->dim, DISTR.center, "\tcenter vector =", log, genid, "\t   ");
+
   /* covariance matrix */
   mat = ((distr->set & UNUR_DISTR_SET_COVAR) && DISTR.covar) ? DISTR.covar : NULL;
   _unur_matrix_print_matrix( distr->dim, mat, "\tcovariance matrix =", log, genid, "\t   ");

@@ -64,7 +64,7 @@
 /*****************************************************************************/
 
 #include <uniform/unur_uniform.h>
-#include <methods/x_urng.h>
+#include <uniform/urng.h>
 
 /*****************************************************************************/
 /**  Function prototypes for manipulating distribution objects              **/

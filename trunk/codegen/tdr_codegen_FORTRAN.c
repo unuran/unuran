@@ -226,15 +226,15 @@ _unur_acg_FORTRAN_tdr_ps( struct unur_gen *gen,
   /* generate from hat distribution */
   switch (gen->variant & TDR_VARMASK_T) {
   case TDR_VAR_T_LOG:
-    fprintf(out,"         t = dTfx(I) * U / fx(I)\n");
+    fprintf(out,"         t = dTfx(I) * W / fx(I)\n");
     fprintf(out,"         IF (DABS(t) > 1.d-8) THEN\n");
-    fprintf(out,"            %s = x(I) + DLOG(t+1.d0) * U / (fx(I) * t) \n",rand_name);
+    fprintf(out,"            %s = x(I) + DLOG(t+1.d0) * W / (fx(I) * t) \n",rand_name);
     fprintf(out,"         ELSE\n");
-    fprintf(out,"            %s = x(I) + U / (fx(I) * (1.d0 - t/2.d0) \n",rand_name);
+    fprintf(out,"            %s = x(I) + W / (fx(I) * (1.d0 - t/2.d0) \n",rand_name);
     fprintf(out,"         ENDIF\n");
     break;
   case TDR_VAR_T_SQRT:
-    fprintf(out,"         %s = x(I)+(U*Tfx(I)*Tfx(I))/(1.d0-Tfx(I)*dTfx(I)*U)\n",rand_name);
+    fprintf(out,"         %s = x(I)+(W*Tfx(I)*Tfx(I))/(1.d0-Tfx(I)*dTfx(I)*W)\n",rand_name);
     break;
   } /* end switch */
 

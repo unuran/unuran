@@ -692,7 +692,7 @@ _unur_varou_sample_cvec( struct unur_gen *gen, double *vec )
     /* sampling in cone #ic_sample */
     _unur_varou_sample_cone(gen, GEN.cone_list[ic_sample], UV);
 
-    /* obtainint the (u/v)-coordinates */ 
+    /* obtaining the (u/v)-coordinates */ 
     for (d=0; d<dim; d++) {  
       vec[d] = UV[d]/UV[dim]+GEN.center[d] ;
     }

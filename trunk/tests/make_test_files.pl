@@ -612,7 +612,7 @@ sub scan_validate {
     print OUT "/*---------------------------------------------------------------------------*/\n\n";
     print OUT "void test_validate (void)\n{\n";
 
-    print OUT "\tUNUR_DISTR *distr[$n_distributions];\n";
+    print OUT "\tUNUR_DISTR *distr[".($n_distributions?$n_distributions:1)."];\n";
     print OUT "\tUNUR_PAR *par;\n";
     print OUT "\tUNUR_GEN *gen;\n";
     print OUT "\tint n_tests_failed = 0;\n";

@@ -1189,6 +1189,7 @@ sub transform_special_strings {
     # FALSE --> @code{FALSE}
     $$line =~ s/ (NULL|TRUE|FALSE)/ \@code\{$1\}/g;
     $$line =~ s/^(NULL|TRUE|FALSE)/\@code\{$1\}/g;
+    $$line =~ s/\n(NULL|TRUE|FALSE)/\n\@code\{$1\}/g;
 
     # transform (\w+)\(\)   --> @command($1)
     my $first = "\n\@ifhtml\n\@ref\{funct:";

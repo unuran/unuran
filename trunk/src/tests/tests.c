@@ -176,6 +176,10 @@ _unur_print_method( struct unur_par *par )
     COOKIE_CHECK(par,CK_SROU_PAR,0);
     printf("METHOD:\t\tsimple universal ratio-of-uniforms method\n");
     break;
+  case UNUR_METH_STDR:
+    COOKIE_CHECK(par,CK_STDR_PAR,0);
+    printf("METHOD:\t\tsimple transformed density rejection with universal bounds\n");
+    break;
   case UNUR_METH_TABL:
     COOKIE_CHECK(par,CK_TABL_PAR,0);
     printf("METHOD:\t\trejection from piecewise constant hat\n");

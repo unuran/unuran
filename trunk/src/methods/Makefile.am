@@ -14,11 +14,12 @@ libmethods_a_SOURCES = \
  distr.c \
  misc.c \
  arou.c \
- srou.c \
  cstd.c \
  dau.c  \
  dis.c  \
  rect.c \
+ srou.c \
+ stdr.c \
  tabl.c \
  tdr.c  \
  unif.c \
@@ -29,11 +30,12 @@ pkginclude_HEADERS = \
  unur_distr.h \
  unur_misc.h  \
  unur_arou.h \
- unur_srou.h \
  unur_cstd.h \
  unur_dau.h  \
  unur_dis.h  \
  unur_rect.h \
+ unur_srou.h \
+ unur_stdr.h \
  unur_tabl.h \
  unur_tdr.h  \
  unur_unif.h \

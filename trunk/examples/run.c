@@ -36,7 +36,8 @@
 
 #define RUN_UTDR          0
 #define RUN_AROU          0
-#define RUN_SROU          1
+#define RUN_SROU          0
+#define RUN_STDR          1
 #define RUN_TDRSQRT       0
 #define RUN_TDRLOG        0
 #define RUN_TABL          0
@@ -222,8 +223,25 @@ int main()
 /*    unur_srou_set_Fmode(par,unur_cdf_normal(distr_normal->data.cont.mode, */
 /*  					  distr_normal->data.cont.params, */
 /*  					  distr_normal->data.cont.n_params)); */
-  unur_srou_set_usesqueeze(par,1);
-  unur_srou_set_usemirror(par,1);
+/*    unur_srou_set_usesqueeze(par,1); */
+/*    unur_srou_set_usemirror(par,1); */
+
+  /* run tests */
+  unur_run_tests(par,RUN_TESTS);
+
+  printf("\n------------------------------------------------------------\n\n");
+
+#endif
+
+#if RUN_STDR == 1
+
+  par = unur_stdr_new(distr_normal);
+  unur_stdr_set_Fmode(par,unur_cdf_normal(distr_normal->data.cont.mode,
+					  distr_normal->data.cont.params,
+					  distr_normal->data.cont.n_params));
+  unur_stdr_set_usesqueeze(par,1);
+/*    unur_stdr_set_verify(par,1); */
+  
 
   /* run tests */
   unur_run_tests(par,RUN_TESTS);
@@ -323,8 +341,24 @@ int main()
 /*    unur_srou_set_Fmode(par,unur_cdf_gamma(distr_gamma->data.cont.mode, */
 /*  					  distr_gamma->data.cont.params, */
 /*  					  distr_gamma->data.cont.n_params)); */
-  unur_srou_set_usesqueeze(par,1);
-  unur_srou_set_usemirror(par,1);
+/*    unur_srou_set_usesqueeze(par,1); */
+/*    unur_srou_set_usemirror(par,1); */
+
+  /* run tests */
+  unur_run_tests(par,RUN_TESTS);
+
+  printf("\n------------------------------------------------------------\n\n");
+
+#endif
+
+#if RUN_STDR == 1
+
+  par = unur_stdr_new(distr_gamma);
+  unur_stdr_set_Fmode(par,unur_cdf_gamma(distr_gamma->data.cont.mode,
+					  distr_gamma->data.cont.params,
+					  distr_gamma->data.cont.n_params));
+  unur_stdr_set_usesqueeze(par,1);
+/*    unur_stdr_set_verify(par,1); */
 
   /* run tests */
   unur_run_tests(par,RUN_TESTS);
@@ -366,8 +400,8 @@ int main()
 #if RUN_TABL == 1
     
   par = unur_tabl_new(distr_gamma);
-/*    unur_set_domain(par,0.,50.); */
-/*    unur_set_variant(par,1UL); */
+  unur_set_domain(par,0.,50.);
+  unur_set_variant(par,1UL);
   slopes[0] = slopes[2] = unur_mode_gamma(fpar,1);
   slopes[1] = 0.;
   slopes[3] = 50.;
@@ -423,11 +457,27 @@ int main()
 #if RUN_SROU == 1
 
   par = unur_srou_new(distr_beta);
-/*    unur_srou_set_Fmode(par,unur_cdf_beta(distr_beta->data.cont.mode, */
-/*  					  distr_beta->data.cont.params, */
-/*  					  distr_beta->data.cont.n_params)); */
-  unur_srou_set_usesqueeze(par,1);
-  unur_srou_set_usemirror(par,1);
+  unur_srou_set_Fmode(par,unur_cdf_beta(distr_beta->data.cont.mode,
+					  distr_beta->data.cont.params,
+					  distr_beta->data.cont.n_params));
+/*    unur_srou_set_usesqueeze(par,1); */
+/*    unur_srou_set_usemirror(par,1); */
+
+  /* run tests */
+  unur_run_tests(par,RUN_TESTS);
+
+  printf("\n------------------------------------------------------------\n\n");
+
+#endif
+
+#if RUN_STDR == 1
+
+  par = unur_stdr_new(distr_beta);
+  unur_stdr_set_Fmode(par,unur_cdf_beta(distr_beta->data.cont.mode,
+					  distr_beta->data.cont.params,
+					  distr_beta->data.cont.n_params));
+  unur_stdr_set_usesqueeze(par,1);
+/*    unur_stdr_set_verify(par,1); */
 
   /* run tests */
   unur_run_tests(par,RUN_TESTS);
@@ -526,8 +576,24 @@ int main()
 /*    unur_srou_set_Fmode(par,unur_cdf_cauchy(distr_cauchy->data.cont.mode, */
 /*  					  distr_cauchy->data.cont.params, */
 /*  					  distr_cauchy->data.cont.n_params)); */
-  unur_srou_set_usesqueeze(par,1);
-  unur_srou_set_usemirror(par,1);
+/*    unur_srou_set_usesqueeze(par,1); */
+/*    unur_srou_set_usemirror(par,1); */
+
+  /* run tests */
+  unur_run_tests(par,RUN_TESTS);
+
+  printf("\n------------------------------------------------------------\n\n");
+
+#endif
+
+#if RUN_STDR == 1
+
+  par = unur_stdr_new(distr_cauchy);
+  unur_stdr_set_Fmode(par,unur_cdf_cauchy(distr_cauchy->data.cont.mode,
+  					  distr_cauchy->data.cont.params,
+  					  distr_cauchy->data.cont.n_params));
+  unur_stdr_set_usesqueeze(par,1);
+/*    unur_stdr_set_verify(par,1); */
 
   /* run tests */
   unur_run_tests(par,RUN_TESTS);
@@ -622,8 +688,24 @@ int main()
 /*    unur_srou_set_Fmode(par,unur_cdf_uniform(distr_uniform->data.cont.mode, */
 /*  					  distr_uniform->data.cont.params, */
 /*  					  distr_uniform->data.cont.n_params)); */
-  unur_srou_set_usesqueeze(par,1);
-  unur_srou_set_usemirror(par,1);
+/*    unur_srou_set_usesqueeze(par,1); */
+/*    unur_srou_set_usemirror(par,1); */
+
+  /* run tests */
+  unur_run_tests(par,RUN_TESTS);
+
+  printf("\n------------------------------------------------------------\n\n");
+
+#endif
+
+#if RUN_STDR == 1
+
+  par = unur_stdr_new(distr_uniform);
+  unur_stdr_set_Fmode(par,unur_cdf_uniform(distr_uniform->data.cont.mode,
+					  distr_uniform->data.cont.params,
+					  distr_uniform->data.cont.n_params));
+  unur_stdr_set_usesqueeze(par,1);
+/*    unur_stdr_set_verify(par,1); */
 
   /* run tests */
   unur_run_tests(par,RUN_TESTS);

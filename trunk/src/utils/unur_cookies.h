@@ -59,6 +59,8 @@
 #define CK_AROU_SEG      0x00100012u
 #define CK_SROU_PAR      0x00100060u
 #define CK_SROU_GEN      0x00100061u
+#define CK_STDR_PAR      0x00100070u
+#define CK_STDR_GEN      0x00100071u
 #define CK_TABL_PAR      0x00100020u
 #define CK_TABL_GEN      0x00100021u
 #define CK_TABL_IV       0x00100022u

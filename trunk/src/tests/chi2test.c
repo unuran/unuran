@@ -49,17 +49,26 @@
 #include "unuran_tests.h"
 
 /*---------------------------------------------------------------------------*/
+/* constants */
 
-/* defaults */
-#define CHI2_CLASSMIN_DEFAULT  20 /* minimum number of observations in class */
 #define CHI2_SAMPLEFAC  40  
          /* if samplesize<=0 use samplesize = CHI2_SAMPLEFAC * intervals^dim */
-#define CHI2_INTERVALS_DEFAULT 50  /* number of intervals for chi^2 test     */
-#define CHI2_MAX_DIMENSIONS 40 /* max number of dimensions for CHI2 tests  */
 
-/* constants */
-#define CHI2_MAX_SAMPLESIZE 1000000
+
+#define CHI2_CLASSMIN_DEFAULT  20 
+/* default number of observations in class */
+
+#define CHI2_INTERVALS_DEFAULT 50
+/* default number of intervals for chi^2 test if given number is <= 0 */
+
 #define CHI2_DEFAULT_SAMPLESIZE 1000
+/* default sample size used when the given size is <= 0 */
+
+#define CHI2_MAX_SAMPLESIZE 1000000   
+/* maximal sample size to prevent extremely long run times */
+
+#define CHI2_MAX_DIMENSIONS 40 
+/* max number of dimensions for chi^2 tests for multivariate distributions */
 
 /*---------------------------------------------------------------------------*/
 static char test_name[] = "Chi^2-Test";
@@ -501,6 +510,8 @@ _unur_test_chi2_vec ( struct unur_gen *gen,
 		      FILE *out )
      /*----------------------------------------------------------------------*/
      /* Chi^2 test for multivariate (NORMAL) continuous distributions.       */
+     /* Currently only tests for the multinormal distribution are            */
+     /* implemented.                                                         */
      /*                                                                      */
      /* parameters:                                                          */
      /*   gen        ... pointer to generator object                         */
@@ -526,9 +537,12 @@ _unur_test_chi2_vec ( struct unur_gen *gen,
 {
 
   int dim;         /* dimension of multivariate distribution */
-  double *z;       /* sampling vector */
-  int *bg[CHI2_MAX_DIMENSIONS]; /* vectors for observed occurrences */
+  double *x, *z;   /* sampling vectors */
   double pval;     /* p-value */
+
+  double *Linv;    /* pointer to inverse Cholesky factor */
+
+  int *bg[CHI2_MAX_DIMENSIONS]; /* vectors for observed occurrences */
   int i,j, sumintervals;
   int *idx;	   /* index array */
   int dimintervals[CHI2_MAX_DIMENSIONS]; /* for marginal chi2 tests */ 
@@ -544,50 +558,63 @@ _unur_test_chi2_vec ( struct unur_gen *gen,
 
   dim = gen->distr->dim;
   if (dim < 2) {
-    _unur_error(test_name,UNUR_ERR_GENERIC,"Distribution dimension < 2 ?");
-    return -1; 
+    _unur_error(test_name,UNUR_ERR_GENERIC,"distribution dimension < 2 ?");
+    return -1.; 
   }
 
   if (dim > CHI2_MAX_DIMENSIONS) {
-    _unur_error(test_name,UNUR_ERR_GENERIC,"Distribution dimension too large");
-    return -1; 
+    _unur_error(test_name,UNUR_ERR_GENERIC,"distribution dimension too large");
+    return -1.; 
   }
 
   /* setup of intervals for each dimension */
   totalintervals=0;
   for (i=0; i<dim; i++) {
-    dimintervals[i] = (int) ( intervals * (1.+UNUR_EPSILON)/(1+i) ) ;  
-    if (dimintervals[i]>intervals) dimintervals[i] = intervals; /* in case we wish to make changes in previous line */
-    if (dimintervals[i]<2) dimintervals[i]=2; /* 1 would be safer, but makes no sense in this context */
+    dimintervals[i] = (int) ( intervals * (1./(1+i)) ) ;  
+    if (dimintervals[i]<2) dimintervals[i]=2;  /* we want to have at least to intervals */
     totalintervals += dimintervals[i];
   }
 
-  totalintervals += 0 ; /* maybe we'll need this parameter someday */
+  /*
+  if(  
+      (idx=_unur_malloc( dim * sizeof(int))==NULL) ||
+      (z=_unur_malloc( dim * sizeof(double))==NULL) ) {
+    free(...); free(...);
+    _unur_error(test_name,UNUR_ERR_MALLOC,"cannot run chi2 test");
+    return -1.;
+  }
+  */
 
   /* allocate memory */
   idx = _unur_malloc( dim * sizeof(int));
   if (idx==NULL) {
-      _unur_error(test_name,UNUR_ERR_GENERIC,"malloc error : idx");
+      _unur_error(test_name,UNUR_ERR_MALLOC,"idx");
       pval=-1; goto free_memory;
   }
 
+  /* inverse Cholesky factor */
+
+  /* random vectors: x, z */
   z = _unur_malloc( dim * sizeof(double));
   if (z==NULL) {
-     _unur_error(test_name,UNUR_ERR_GENERIC,"malloc error : z");
+     _unur_error(test_name,UNUR_ERR_MALLOC,"z");
      pval=-1; goto free_memory;
   }
-  
+
+  /* arrays for counting bins */
   for (i=0; i<dim; i++) bg[i]=NULL;
-  
+
   for (i=0; i<dim; i++) {
-  bg[i] = _unur_malloc( dimintervals[i] * sizeof(int));
-  if (bg[i]==NULL) {
-     _unur_error(test_name,UNUR_ERR_GENERIC,"malloc error : bg");
-     pval=-1; goto free_memory;
-  }}   
+    bg[i] = _unur_malloc( dimintervals[i] * sizeof(int));
+    if (bg[i]==NULL) {
+      _unur_error(test_name,UNUR_ERR_MALLOC,"bg");
+      pval=-1; goto free_memory;
+    }
+  }   
+
+  /* 
 
   /* clear arrays */
-
   for (i=0; i<dim; i++) (void) memset(bg[i] , 0, dimintervals[i] * sizeof(int));
   (void) memset(idx, 0, dim * sizeof(int));
 
@@ -601,7 +628,10 @@ _unur_test_chi2_vec ( struct unur_gen *gen,
 
   /* now run generator */
   for( i=0; i<samplesize; i++ ) {
+    /* get random vector */
     _unur_sample_vec(gen, z);
+    /* standardize vector: z = L^{-1} (x - mean) */
+    /* ... */
     sumintervals=0;
     for (j=0; j<dim; j++) {
       idx[j] = (int)( dimintervals[j] * _unur_sf_cdfnormal(z[j]) );
@@ -635,12 +665,11 @@ _unur_test_chi2_vec ( struct unur_gen *gen,
 
 free_memory:
   /* free memory */
-  (idx==NULL) ? : free(idx);
-  (z==NULL) ? : free(z);
-  for (i=0; i<dim; i++) (bg[i]==NULL) ? : free(bg[i]);
+  if (idx) free(idx);
+  if (z) free(z);
+  for (i=0; i<dim; i++) if (bg[i]) free(bg[i]);
 
   /* return result of test */
-
   return pval;
 
 } /* end of _unur_test_chi2_vec() */

@@ -38,8 +38,8 @@
  *****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
-#ifndef X_URNG_H_SEEN
-#define X_URNG_H_SEEN
+#ifndef URNG_H_SEEN
+#define URNG_H_SEEN
 /*---------------------------------------------------------------------------*/
 
 #include <unuran_config.h>
@@ -529,7 +529,6 @@ UNUR_URNG *unur_urng_fvoid_new( double (*random)(void), int (*reset)(void) );
 */
 
 #ifdef UNURAN_HAS_PRNG
-#include <prng.h>
 
 UNUR_URNG *unur_urng_prng_new( const char *prngstr );
 /*
@@ -563,7 +562,7 @@ UNUR_URNG *unur_urng_prngptr_new( struct prng *urng );
 
 
 #ifdef UNURAN_HAS_RNGSTREAMS
-#include <RngStreams.h>
+
 UNUR_URNG *unur_urng_rngstream_new( const char *urngstr );
 /*
    Make object for URNGs from Pierre L'Ecuyer's @file{RngStream}
@@ -585,7 +584,6 @@ UNUR_URNG *unur_urng_rngstreamptr_new( RngStream rngstream );
 
 
 #ifdef UNURAN_HAS_GSL
-#include <gsl/gsl_rng.h>
 
 UNUR_URNG *unur_urng_gsl_new( const gsl_rng_type *urngtype );
 /*
@@ -619,7 +617,7 @@ UNUR_URNG *unur_urng_gslptr_new( gsl_rng *urng );
 
 
 /*---------------------------------------------------------------------------*/
-#endif  /* X_URNG_H_SEEN */
+#endif  /* URNG_H_SEEN */
 /*---------------------------------------------------------------------------*/
 
 

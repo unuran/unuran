@@ -4,10 +4,9 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   FILE: urng_gsl.c                                                        *
+ *   FILE: unur_typedefs.h                                                   *
  *                                                                           *
- *   routines to get new URNG object with sampling routine of type GSL.      *
- *   GSL (GNU Scientific Library), see http://www.gnu.org/software/gsl/.     *
+ *   type UNUR_URNG for uniform random number generators                     *
  *                                                                           *
  *****************************************************************************
      $Id$
@@ -34,49 +33,60 @@
  *****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
-
-#include <unur_source.h>
-#include "urng.h"
-
+#ifndef URNG_TYPEDEFS_H_SEEN
+#define URNG_TYPEDEFS_H_SEEN
 /*---------------------------------------------------------------------------*/
 #if UNUR_URNG_TYPE == UNUR_URNG_GENERIC
 /*---------------------------------------------------------------------------*/
+
+typedef struct unur_urng_generic UNUR_URNG;
+
+#ifdef UNURAN_HAS_PRNG
+#  include <prng.h>
+#endif
+
+#ifdef UNURAN_HAS_RNGSTREAMS
+#  include <RngStreams.h>
+#endif
+
 #ifdef UNURAN_HAS_GSL
-/*---------------------------------------------------------------------------*/
-
-UNUR_URNG *
-unur_urng_gslptr_new( gsl_rng *gsl )
-     /*----------------------------------------------------------------------*/
-     /* get new URNG object of type GSL.                                     */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   urng ... pointer to generator structure                            */
-     /*----------------------------------------------------------------------*/
-{
-  UNUR_URNG *urng = unur_urng_new( (double(*)(void*)) gsl_rng_uniform_pos, gsl );
-  unur_urng_set_delete(urng, (void(*)(void*)) gsl_rng_free);
-  unur_urng_set_seed(urng, (void(*)(void*,unsigned long)) gsl_rng_set);
-  return urng;
-} /* end of unur_urng_gslptr_new() */
+#  include <gsl/gsl_rng.h>
+#endif
 
 /*---------------------------------------------------------------------------*/
+#elif UNUR_URNG_TYPE == UNUR_URNG_FVOID
+/*---------------------------------------------------------------------------*/
 
-UNUR_URNG *
-unur_urng_gsl_new( const gsl_rng_type *urngtype )
-     /*----------------------------------------------------------------------*/
-     /* get new URNG object of type PRNG.                                    */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   prngstr ... string that describes generator                        */
-     /*----------------------------------------------------------------------*/
-{
-  UNUR_URNG *urng = unur_urng_gslptr_new(gsl_rng_alloc(urngtype));
-  unur_urng_seed(urng,gsl_rng_default_seed);
-  return urng;
-} /* end of unur_urng_gsl_new() */
+typedef double (UNUR_URNG)(void);
 
 /*---------------------------------------------------------------------------*/
-#endif   /* #ifdef UNURAN_HAS_GSL */
+#elif UNUR_URNG_TYPE == UNUR_URNG_PRNG
 /*---------------------------------------------------------------------------*/
-#endif   /* #if UNUR_URNG_TYPE == UNUR_URNG_GENERIC */
+
+#include <prng.h>
+typedef struct prng UNUR_URNG;
+
 /*---------------------------------------------------------------------------*/
+#elif UNUR_URNG_TYPE == UNUR_URNG_RNGSTREAMS
+/*---------------------------------------------------------------------------*/
+
+#include <RngStreams.h>
+typedef struct RngStream_InfoState UNUR_URNG;
+
+/*---------------------------------------------------------------------------*/
+#elif UNUR_URNG_TYPE == UNUR_URNG_GSL
+/*---------------------------------------------------------------------------*/
+
+#include <gsl/gsl_rng.h>
+typedef gsl_rng UNUR_URNG;
+
+/*---------------------------------------------------------------------------*/
+#else
+/*---------------------------------------------------------------------------*/
+#error UNUR_URNG_TYPE not valid !!
+/*---------------------------------------------------------------------------*/
+#endif  /* UNUR_URNG_TYPE */
+/*---------------------------------------------------------------------------*/
+#endif  /* #ifndef URNG_TYPEDEFS_H_SEEN */
+/*---------------------------------------------------------------------------*/
+

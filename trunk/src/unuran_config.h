@@ -241,9 +241,6 @@
 #define UNURAN_HAS_GSL 1
 #define UNURAN_HAS_RNGSTREAMS 1
 
-/*---------------------------------------------------------------------------*/
-#if UNUR_URNG_TYPE == UNUR_URNG_GENERIC
-/*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*/
 /* IMPORTANT!                                                                */
@@ -253,61 +250,6 @@
 /*   that contain all necessary data about a URNG (see ... ).                */
 /*                                                                           */
 /*   The structure cannot be used directly any more.                         */
-/*---------------------------------------------------------------------------*/
-
-/* Structure for storing function pointer and parameterlist.                 */
-/*                                                  (Don't touch this line!) */
-/* struct unur_urng_generic; */
-
-/* Type of uniform random number generator.         (Don't touch this line!) */
-typedef struct unur_urng_generic UNUR_URNG;
-
-/*---------------------------------------------------------------------------*/
-#elif UNUR_URNG_TYPE == UNUR_URNG_FVOID
-/*---------------------------------------------------------------------------*/
-
-/* Type of uniform random number generator.         (Don't touch this line!) */
-typedef double (UNUR_URNG)(void);
-
-/*---------------------------------------------------------------------------*/
-#elif UNUR_URNG_TYPE == UNUR_URNG_PRNG
-/*---------------------------------------------------------------------------*/
-
-/* Header file from prng library.                  (Don't remove this line!) */
-/* Make sure that this header file and the prng library is installed.        */
-#include <prng.h>
-
-/* Type of uniform random number generator.         (Don't touch this line!) */
-typedef struct prng UNUR_URNG;
-
-/*---------------------------------------------------------------------------*/
-#elif UNUR_URNG_TYPE == UNUR_URNG_RNGSTREAMS
-/*---------------------------------------------------------------------------*/
-
-/* Header file from RngStream library.             (Don't remove this line!) */
-/* Make sure that this header file and the RngStream library is installed.   */
-#include <RngStreams.h>
-
-/* Type of uniform random number generator.         (Don't touch this line!) */
-typedef struct RngStream_InfoState UNUR_URNG;
-
-/*---------------------------------------------------------------------------*/
-#elif UNUR_URNG_TYPE == UNUR_URNG_GSL
-/*---------------------------------------------------------------------------*/
-
-/* Header file from GNU Scientific Library.        (Don't remove this line!) */
-/* Make sure that this header file and the GSL is installed.                 */
-#include <gsl/gsl_rng.h>
-
-/* Type of uniform random number generator.         (Don't touch this line!) */
-typedef gsl_rng UNUR_URNG;
-
-/*---------------------------------------------------------------------------*/
-#else
-/*---------------------------------------------------------------------------*/
-#error UNUR_URNG_TYPE not valid !!
-/*---------------------------------------------------------------------------*/
-#endif  /* UNUR_URNG_TYPE */
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*/

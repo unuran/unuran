@@ -96,6 +96,7 @@ enum {
   UNUR_DISTR_CONT  = 0x010u,     /* univariate continuous distribution       */ 
   UNUR_DISTR_CEMP  = 0x011u,     /* empirical univ. cont. distr. (a sample)  */ 
   UNUR_DISTR_CVEC  = 0x110u,     /* mulitvariate continuous distribution     */ 
+  UNUR_DISTR_CVEMP = 0x111u,     /* empirical multiv. cont. distr. (sample)  */ 
   UNUR_DISTR_DISCR = 0x020u,     /* univariate discrete distribution         */ 
   UNUR_DISTR_DEMP  = 0x021u,     /* empirical univariate discr. distribution */ 
 };
@@ -693,9 +694,49 @@ int unur_distr_cemp_set_data( UNUR_DISTR *distribution, double *sample, int n_sa
 
 int unur_distr_cemp_get_data( UNUR_DISTR *distribution, double **sample );
 /* 
-   Get number of samples and set pointer @code{sample} to array of
-   observations. If no sample has beeb given,
+   Get number of samples and set pointer @var{sample} to array of
+   observations. If no sample has been given,
    @code{0} is returned and @code{sample} is set to NULL.
+*/
+
+/*---------------------------------------------------------------------------*/
+
+/* 
+   Routines for handling empirical multivariate continuous distributions (VCEMP).
+*/
+
+UNUR_DISTR *unur_distr_cvemp_new( int dim ); 
+/* 
+   Create a new (empty) object for empirical multivariate continuous
+   distribution. @var{dim} is the number of components of the random
+   vector (i.e. its dimension). It must be at least 2; otherwise
+   unur_distr_cemp_new() should be used to create an object for an
+   empirical univariate distribution.
+*/
+
+/* Essential parameters */
+
+int unur_distr_cvemp_set_data( UNUR_DISTR *distribution, double *sample, int n_sample );
+/* 
+   Set observed sample for empirical distribution.
+   @var{sample} is an array of double arrays of size 
+   @code{dim}x@var{n_sample}, where
+   @code{dim} is the dimension of the distribution returned by
+   unur_distr_get_dim(). 
+   The data points must be stored consecutively in @var{sample}.
+*/
+
+
+int unur_distr_cvemp_get_data( UNUR_DISTR *distribution, double **sample );
+/* 
+   Get number of samples and set pointer @var{sample} to array of
+   observations. If no sample has been given,
+   @code{0} is returned and @var{sample} is set to NULL.
+   If successful @var{sample} points to an array of length
+   @code{dim}x@code{n_sample}, where
+   @code{dim} is the dimension of the distribution returned by
+   unur_distr_get_dim() and @code{n_sample} the return value of the
+   function.
 */
 
 /*---------------------------------------------------------------------------*/

@@ -66,7 +66,7 @@ struct unur_distr *
 unur_distr_demp_new( void )
      /*----------------------------------------------------------------------*/
      /* create a new (empty) distribution object                             */
-     /* type: univariate discete                                             */
+     /* type: empirical univariate discrete                                  */
      /*                                                                      */
      /* parameters:                                                          */
      /*   none                                                               */

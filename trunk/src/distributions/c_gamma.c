@@ -101,10 +101,10 @@ static const char distr_name[] = "gamma";
 
 /*---------------------------------------------------------------------------*/
 /* function prototypes                                                       */
-static double _unur_pdf_gamma(double x, UNUR_DISTR *distr);
-static double _unur_dpdf_gamma(double x, UNUR_DISTR *distr);
+static double _unur_pdf_gamma( double x, UNUR_DISTR *distr );
+static double _unur_dpdf_gamma( double x, UNUR_DISTR *distr );
 #ifdef HAVE_CDF
-static double _unur_cdf_gamma(double x, UNUR_DISTR *distr);
+static double _unur_cdf_gamma( double x, UNUR_DISTR *distr );
 #endif
 
 static int _unur_upd_mode_gamma( UNUR_DISTR *distr );
@@ -112,6 +112,7 @@ static int _unur_upd_mode_gamma( UNUR_DISTR *distr );
 static int _unur_upd_area_gamma( UNUR_DISTR *distr );
 static double _unur_lognormconstant_gamma(double *params, int n_params);
 #endif
+static int _unur_set_params_gamma( UNUR_DISTR *distr, double *params, int n_params );
 
 /*---------------------------------------------------------------------------*/
 
@@ -254,6 +255,60 @@ _unur_lognormconstant_gamma( double *params, int n_params )
 
 /*---------------------------------------------------------------------------*/
 
+int
+_unur_set_params_gamma( UNUR_DISTR *distr, double *params, int n_params )
+{
+  /* check number of parameters for distribution */
+  if (n_params < 1) {
+    _unur_error(distr_name,UNUR_ERR_DISTR_NPARAMS,"too few"); return 0; }
+  if (n_params > 3) {
+    _unur_warning(distr_name,UNUR_ERR_DISTR_NPARAMS,"too many");
+    n_params = 3; }
+  CHECK_NULL(params,0);
+
+  /* check parameter alpha */
+  if (alpha <= 0.) {
+    _unur_error(distr_name,UNUR_ERR_DISTR_DOMAIN,"alpha <= 0.");
+    return 0;
+  }
+
+  /* check parameter beta */
+  if (n_params > 1 && beta <= 0.) {
+    _unur_error(distr_name,UNUR_ERR_DISTR_DOMAIN,"beta <= 0.");
+    return 0;
+  }
+
+  /* copy parameters for standard form */
+  DISTR.alpha = alpha;
+
+  /* default parameters */
+  DISTR.beta  = 1.;
+  DISTR.gamma = 0.;
+
+  /* copy optional parameters */
+  switch (n_params) {
+  case 3:
+    DISTR.gamma = gamma;
+  case 2:
+    DISTR.beta = beta;
+    n_params = 3;           /* number of parameters for non-standard form */
+  default:
+  }
+
+  /* store number of parameters */
+  DISTR.n_params = n_params;
+
+  /* set (standard) domain */
+  if (distr->set & UNUR_DISTR_SET_STDDOMAIN) {
+    DISTR.domain[0] = DISTR.gamma;  /* left boundary  */
+    DISTR.domain[1] = INFINITY;     /* right boundary */
+  }
+
+  return 1;
+} /* end of _unur_set_params_gamma() */
+
+/*---------------------------------------------------------------------------*/
+
 /*****************************************************************************/
 /**                                                                         **/
 /**  Make distribution object                                               **/
@@ -266,14 +321,6 @@ struct unur_distr *
 unur_distr_gamma( double *params, int n_params )
 {
   register struct unur_distr *distr;
-
-  /* check new parameter for generator */
-  if (n_params < 1) {
-    _unur_error(distr_name,UNUR_ERR_DISTR_NPARAMS,"too few"); return NULL; }
-  if (n_params > 3) {
-    _unur_warning(distr_name,UNUR_ERR_DISTR_NPARAMS,"too many");
-    n_params = 3; }
-  CHECK_NULL(params,NULL);
 
   /* get new (empty) distribution object */
   distr = unur_distr_cont_new();
@@ -294,37 +341,19 @@ unur_distr_gamma( double *params, int n_params )
   DISTR.cdf  = _unur_cdf_gamma;    /* pointer to CDF               */
 #endif
 
-  /* default parameters */
-  DISTR.beta  = 1.;
-  DISTR.gamma = 0.;
-
-  /* copy parameters */
-  DISTR.alpha = alpha;
-  switch (n_params) {
-  case 3:
-    DISTR.gamma = gamma;
-  case 2:
-    DISTR.beta = beta;
-    n_params = 3;           /* number of parameters for non-standard form */
-  default:
+  /* indicate which parameters are set */
+  distr->set = ( UNUR_DISTR_SET_DOMAIN |
+		 UNUR_DISTR_SET_STDDOMAIN |
+#ifdef HAVE_AREA
+		 UNUR_DISTR_SET_PDFAREA |
+#endif
+		 UNUR_DISTR_SET_MODE );
+                
+  /* set parameters for distribution */
+  if (!_unur_set_params_gamma(distr,params,n_params)) {
+    free(distr);
+    return NULL;
   }
-
-  /* check parameters alpha and beta */
-  if (DISTR.alpha <= 0.) {
-    _unur_error(distr_name,UNUR_ERR_DISTR_DOMAIN,"alpha <= 0.");
-    free( distr ); return NULL;
-  }
-  if (DISTR.beta <= 0.) {
-    _unur_error(distr_name,UNUR_ERR_DISTR_DOMAIN,"beta <= 0.");
-    free( distr ); return NULL;
-  }
-
-  /* number of arguments */
-  DISTR.n_params = n_params;
-
-  /* domain */
-  DISTR.domain[0] = DISTR.gamma;  /* left boundary  */
-  DISTR.domain[1] = INFINITY;     /* right boundary */
 
   /* log of normalization constant */
 #ifdef HAVE_AREA
@@ -337,20 +366,15 @@ unur_distr_gamma( double *params, int n_params )
   _unur_upd_mode_gamma( distr );
   DISTR.area = 1.;
 
+  /* function for setting parameters and updating domain */
+  DISTR.set_params = _unur_set_params_gamma;
+
   /* function for updating derived parameters */
   DISTR.upd_mode  = _unur_upd_mode_gamma; /* funct for computing mode */
 #ifdef HAVE_AREA
   DISTR.upd_area  = _unur_upd_area_gamma; /* funct for computing area */
 #endif
 
-  /* indicate which parameters are set */
-  distr->set = ( UNUR_DISTR_SET_DOMAIN |
-		 UNUR_DISTR_SET_STDDOMAIN |
-#ifdef HAVE_AREA
-		 UNUR_DISTR_SET_PDFAREA |
-#endif
-		 UNUR_DISTR_SET_MODE );
-                
   /* return pointer to object */
   return distr;
 

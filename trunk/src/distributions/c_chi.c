@@ -84,16 +84,17 @@ static const char distr_name[] = "chi";
 
 /*---------------------------------------------------------------------------*/
 /* function prototypes                                                       */
-static double _unur_pdf_chi(double x, UNUR_DISTR *distr);
-static double _unur_dpdf_chi(double x, UNUR_DISTR *distr);
+static double _unur_pdf_chi( double x, UNUR_DISTR *distr );
+static double _unur_dpdf_chi( double x, UNUR_DISTR *distr );
 #ifdef HAVE_CDF
-static double _unur_cdf_chi(double x, UNUR_DISTR *distr);
+static double _unur_cdf_chi( double x, UNUR_DISTR *distr );
 #endif
 
 static int _unur_upd_mode_chi( UNUR_DISTR *distr );
 #ifdef HAVE_AREA
 static int _unur_upd_area_chi( UNUR_DISTR *distr );
 #endif
+static int _unur_set_params_chi( UNUR_DISTR *distr, double *params, int n_params );
 
 /*---------------------------------------------------------------------------*/
 
@@ -188,18 +189,47 @@ _unur_upd_area_chi( UNUR_DISTR *distr )
 
 /*---------------------------------------------------------------------------*/
 
+int
+_unur_set_params_chi( UNUR_DISTR *distr, double *params, int n_params )
+{
+
+  /* check number of parameters for distribution */
+  if (n_params < 1) {
+    _unur_error(distr_name,UNUR_ERR_DISTR_NPARAMS,"too few"); return 0; }
+  if (n_params > 1) {
+    _unur_warning(distr_name,UNUR_ERR_DISTR_NPARAMS,"too many");
+    n_params = 1; }
+  CHECK_NULL(params,0);
+
+  /* check parameter nu */
+  if (nu <= 0.) {
+    _unur_error(distr_name,UNUR_ERR_DISTR_DOMAIN,"nu <= 0");
+    return 0;
+  }
+
+  /* copy parameters for standard form */
+  DISTR.nu = nu;
+
+  /* copy optional parameters: none */
+
+  /* store number of parameters */
+  DISTR.n_params = n_params;
+
+  /* set (standard) domain */
+  if (distr->set & UNUR_DISTR_SET_STDDOMAIN) {
+    DISTR.domain[0] = 0.;          /* left boundary  */
+    DISTR.domain[1] = INFINITY;    /* right boundary */
+  }
+
+  return 1;
+} /* end of _unur_set_params_chi() */
+
+/*---------------------------------------------------------------------------*/
+
 struct unur_distr *
 unur_distr_chi( double *params, int n_params )
 {
   register struct unur_distr *distr;
-
-  /* check new parameter for generator */
-  if (n_params < 1) {
-    _unur_error(distr_name,UNUR_ERR_DISTR_NPARAMS,"too few"); return NULL; }
-  if (n_params > 1) {
-    _unur_warning(distr_name,UNUR_ERR_DISTR_NPARAMS,"too many");
-    n_params = 1; }
-  CHECK_NULL(params,NULL);
 
   /* get new (empty) distribution object */
   distr = unur_distr_cont_new();
@@ -220,39 +250,6 @@ unur_distr_chi( double *params, int n_params )
   DISTR.cdf  = _unur_cdf_chi;   /* pointer to CDF               */
 #endif
 
-  /* copy parameters */
-  DISTR.nu = nu;
-
-  /* check parameter nu */
-  if (DISTR.nu <= 0.) {
-    _unur_error(distr_name,UNUR_ERR_DISTR_DOMAIN,"nu <= 0");
-    free( distr ); return NULL;
-  }
-
-  /* number of arguments */
-  DISTR.n_params = n_params;
-
-  /* log of normalization constant */
-#ifdef HAVE_AREA
-  LOGNORMCONSTANT = _unur_sf_ln_gamma(nu/2.) - M_LN2 * (nu/2. - 1.);
-#else
-  LOGNORMCONSTANT = 0.;
-#endif
-
-  /* domain */
-  DISTR.domain[0] = 0.;          /* left boundary  */
-  DISTR.domain[1] = INFINITY;    /* right boundary */
-
-  /* mode and area below p.d.f. */
-  DISTR.mode = (nu >= 1.) ? sqrt(nu - 1.) : 0.;
-  DISTR.area = 1.;
-
-  /* function for updating derived parameters */
-  DISTR.upd_mode  = _unur_upd_mode_chi; /* funct for computing mode */
-#ifdef HAVE_AREA
-  DISTR.upd_area  = _unur_upd_area_chi; /* funct for computing area */
-#endif
-
   /* indicate which parameters are set */
   distr->set = ( UNUR_DISTR_SET_DOMAIN |
 		 UNUR_DISTR_SET_STDDOMAIN |
@@ -261,6 +258,32 @@ unur_distr_chi( double *params, int n_params )
 #endif
 		 UNUR_DISTR_SET_MODE );
                 
+  /* set parameters for distribution */
+  if (!_unur_set_params_chi(distr,params,n_params)) {
+    free(distr);
+    return NULL;
+  }
+
+  /* log of normalization constant */
+#ifdef HAVE_AREA
+  LOGNORMCONSTANT = _unur_sf_ln_gamma(DISTR.nu/2.) - M_LN2 * (DISTR.nu/2. - 1.);
+#else
+  LOGNORMCONSTANT = 0.;
+#endif
+
+  /* mode and area below p.d.f. */
+  DISTR.mode = (DISTR.nu >= 1.) ? sqrt(DISTR.nu - 1.) : 0.;
+  DISTR.area = 1.;
+
+  /* function for setting parameters and updating domain */
+  DISTR.set_params = _unur_set_params_chi;
+
+  /* function for updating derived parameters */
+  DISTR.upd_mode  = _unur_upd_mode_chi; /* funct for computing mode */
+#ifdef HAVE_AREA
+  DISTR.upd_area  = _unur_upd_area_chi; /* funct for computing area */
+#endif
+
   /* return pointer to object */
   return distr;
 

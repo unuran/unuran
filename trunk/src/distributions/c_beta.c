@@ -105,17 +105,18 @@ static const char distr_name[] = "beta";
 /*---------------------------------------------------------------------------*/
 
 /* function prototypes                                                       */
-static double _unur_pdf_beta(double x, UNUR_DISTR *distr);
-static double _unur_dpdf_beta(double x, UNUR_DISTR *distr);
+static double _unur_pdf_beta( double x, UNUR_DISTR *distr );
+static double _unur_dpdf_beta( double x, UNUR_DISTR *distr );
 #ifdef HAVE_CDF
-static double _unur_cdf_beta(double x, UNUR_DISTR *distr);
+static double _unur_cdf_beta( double x, UNUR_DISTR *distr );
 #endif
 
 static int _unur_upd_mode_beta( UNUR_DISTR *distr );
 #ifdef HAVE_AREA
 static int _unur_upd_area_beta( UNUR_DISTR *distr );
-inline static double _unur_lognormconstant_beta(double *params, int n_params);
+inline static double _unur_lognormconstant_beta( double *params, int n_params );
 #endif
+static int _unur_set_params_beta( UNUR_DISTR *distr, double *params, int n_params );
 
 /*---------------------------------------------------------------------------*/
 
@@ -285,21 +286,66 @@ _unur_lognormconstant_beta(double *params, int n_params)
 
 /*---------------------------------------------------------------------------*/
 
-struct unur_distr *
-unur_distr_beta( double *params, int n_params )
+int
+_unur_set_params_beta( UNUR_DISTR *distr, double *params, int n_params )
 {
-  register struct unur_distr *distr;
 
-  /* check new parameter for generator */
+  /* check number of parameters for distribution */
   if (n_params < 2) {
-    _unur_error(distr_name,UNUR_ERR_DISTR_NPARAMS,"too few"); return NULL; }
+    _unur_error(distr_name,UNUR_ERR_DISTR_NPARAMS,"too few"); return 0; }
   if (n_params == 3) {
     _unur_warning(distr_name,UNUR_ERR_DISTR_NPARAMS,"");
     n_params = 2; }
   if (n_params > 4) {
     _unur_warning(distr_name,UNUR_ERR_DISTR_NPARAMS,"too many");
     n_params = 4; }
-  CHECK_NULL(params,NULL);
+  CHECK_NULL(params,0);
+
+
+  /* check parameters p and q */
+  if (p <= 0. || q <= 0.) {
+    _unur_error(distr_name,UNUR_ERR_DISTR_DOMAIN,"p <= 0 or q <= 0");
+    return 0;
+  }
+
+  /* check parameters a and b */
+  if (n_params > 2 && a >= b) {
+    _unur_error(distr_name,UNUR_ERR_DISTR_DOMAIN,"a >= b");
+    return 0;
+  }
+
+  /* copy parameters for standard form */
+  DISTR.p = p;
+  DISTR.q = q;
+
+  /* copy optional parameters */
+  if (n_params > 2) {
+    DISTR.a = a;
+    DISTR.b = b;
+  }
+  else { /* or use defaults */
+    DISTR.a = 0.;      /* default for a */
+    DISTR.b = 1.;      /* default for b */
+  }
+
+  /* store number of parameters */
+  DISTR.n_params = n_params;
+
+  /* set (standard) domain */
+  if (distr->set & UNUR_DISTR_SET_STDDOMAIN) {
+    DISTR.domain[0] = DISTR.a; /* left boundary  */
+    DISTR.domain[1] = DISTR.b; /* right boundary */
+  }
+
+  return 1;
+} /* end of _unur_set_params_beta() */
+
+/*---------------------------------------------------------------------------*/
+
+struct unur_distr *
+unur_distr_beta( double *params, int n_params )
+{
+  register struct unur_distr *distr;
 
   /* get new (empty) distribution object */
   distr = unur_distr_cont_new();
@@ -320,35 +366,19 @@ unur_distr_beta( double *params, int n_params )
   DISTR.cdf  = _unur_cdf_beta;    /* pointer to CDF                  */
 #endif
 
-  /* default parameters */
-  DISTR.a = 0.;           /* default for a */
-  DISTR.b = 1.;           /* default for b */
+  /* indicate which parameters are set */
+  distr->set = ( UNUR_DISTR_SET_DOMAIN |
+		 UNUR_DISTR_SET_STDDOMAIN |
+#ifdef HAVE_AREA
+		 UNUR_DISTR_SET_PDFAREA |
+#endif
+		 UNUR_DISTR_SET_MODE );
 
-  /* copy parameters */
-  DISTR.p = p;
-  DISTR.q = q;
-  if (n_params == 4) {
-    DISTR.a = a;
-    DISTR.b = b;
+  /* set parameters for distribution */
+  if (!_unur_set_params_beta(distr,params,n_params)) {
+    free(distr);
+    return NULL;
   }
-
-  /* check parameters p and q */
-  if (DISTR.p <= 0. || DISTR.q <= 0.) {
-    _unur_error(distr_name,UNUR_ERR_DISTR_DOMAIN,"p <= 0 or q <= 0");
-    free( distr ); return NULL;
-  }
-  /* check parameters a and b */
-  if (DISTR.a >= DISTR.b) {
-    _unur_error(distr_name,UNUR_ERR_DISTR_DOMAIN,"a >= b");
-    free( distr ); return NULL;
-  }
-
-  /* number of arguments */
-  DISTR.n_params = n_params;
-
-  /* domain */
-  DISTR.domain[0] = DISTR.a; /* left boundary  */
-  DISTR.domain[1] = DISTR.b; /* right boundary */
 
   /* log of normalization constant */
 #ifdef HAVE_AREA
@@ -361,19 +391,14 @@ unur_distr_beta( double *params, int n_params )
   _unur_upd_mode_beta( distr );
   DISTR.area = 1.;
 
+  /* function for setting parameters and updating domain */
+  DISTR.set_params = _unur_set_params_beta;
+
   /* function for updating derived parameters */
   DISTR.upd_mode  = _unur_upd_mode_beta; /* funct for computing mode */
 #ifdef HAVE_AREA
   DISTR.upd_area  = _unur_upd_area_beta; /* funct for computing area */
 #endif
-
-  /* indicate which parameters are set */
-  distr->set = ( UNUR_DISTR_SET_DOMAIN |
-		 UNUR_DISTR_SET_STDDOMAIN |
-#ifdef HAVE_AREA
-		 UNUR_DISTR_SET_PDFAREA |
-#endif
-		 UNUR_DISTR_SET_MODE );
 
   /* return pointer to object */
   return distr;

@@ -430,6 +430,9 @@ _unur_cstd_init( struct unur_par *par )
   /* check for initializing routine for special generator */
   _unur_check_NULL( gen->genid, DISTR.init, (free(par),NULL) );
   
+  /* reset flag for inversion method */
+  PAR.is_inversion = FALSE;
+
   /* run special init routine for generator */
   if ( !DISTR.init(par,gen) ) {
     /* init failed --> could not find a sampling routine */

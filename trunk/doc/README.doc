@@ -17,8 +17,11 @@ first character on a line followed by some capital letters.
 The very first TAG in a header file must be a section TAG. Valid
 section TAGs are
 
-   =METHOD           for generation methods
    =DISTRIBUTION     for handling distribution objects
+   =ERROR            for error handling and debuging
+   =METHOD           for generation methods
+   =URNG             for uniform random number generators
+
 
 A header file that has no such TAG or with a different first TAG is
 ignored and not included into the documentation.
@@ -39,6 +42,22 @@ Some TAGs are required, others are optional.
 However the =END TAG is common to all sections. The corresponding
 subsection is simply ignored. Thus it can be used as end markup of a
 subsection (thus its name).
+
+(*) common transformation rules
+    ---------------------------
+
+To avoid spoiling the header file with to many texinfo tags, the following
+transformations are made during file procession:
+
+NULL        --> @code{NULL}
+TRUE        --> @code{TRUE}
+FALSE       --> @code{FALSE}
+
+(\w+)\(\)   --> @command($1)
+		eg.: unur_set_urng()  --> @command{unur_set_urng}.
+		additionally hyperlinks are made automatically to
+		its definition in HTML output
+		(and in TeX and info with some restrictions).
 
 
 (*) =METHOD
@@ -99,10 +118,17 @@ The following TAGs are valid:
 	function prototype. Anything below the `;' till the end of the
 	block is interpreted as the function description.
 
+	An anchor will be made for each function using the key:
+	funct.<fn_name>, 
+	e.g. `funct.unur_set_urng' for function unur_set_urng.
+
 	If there is a function prototype with additional lines, it is
 	assumed that it has the same description as the following
 	function. (This is done recursively until a function prototype
 	with description is found.)
+
+	A "function prototype" without any arguments (with or without 
+	braces `( )' )is treated as a variable.
 
 	A block that starts with a `==DOC' is copied verbatim into the
 	texi file. (Notice that `==DOC' is not a TAG as described
@@ -118,9 +144,44 @@ The section TAG has two arguments:
    [1]  The first word is the abbreviation of the distribution type.
 	Only these types are allowed as in the =TYPE subsection of
 	methods.
+ 
+   [2]  The second entry must be \[\d+\], e.g. [14].
+	It is used to sort the subsections in output.
 
-   [2]  Anything followed by the first word is the (long) name of the
+   [3]  Anything following the first word is the (long) name of the
 	distribution type.
+
+The following TAGs are valid:
+
+   =ROUTINES    (required)	Function reference.
+	See section =METHOD.
+   
+
+(*) =ERROR
+    ------
+
+Describes how to handle errors and debuging.
+
+The section TAG has two arguments:
+   [1]  The first word is an abbreviation for the section.
+ 
+   [2]  Anything following the first word is the section title
+
+The following TAGs are valid:
+
+   =ROUTINES    (required)	Function reference.
+	See section =METHOD.
+   
+
+(*) =URNG
+    -----
+
+Describes how to use uniform random number generators.
+
+The section TAG has two arguments:
+   [1]  The first word _must_ be `URNG'
+ 
+   [2]  Anything following `URNG' is the section title
 
 The following TAGs are valid:
 

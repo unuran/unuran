@@ -29,18 +29,27 @@ use FileHandle;
 
 ############################################################
 
-require "METHOD_to_texi.pl";
 require "DISTRIBUTION_to_texi.pl";
+require "ERROR_to_texi.pl";
+require "METHOD_to_texi.pl";
+require "URNG_to_texi.pl";
 
 ############################################################
 
 %section_TAGs = 
     (
+     "=DISTRIBUTION" => { "scan"   => \&scan_DISTR,
+			  "format" => \&format_DISTR },
+
+     "=ERROR"        => { "scan"   => \&scan_ERROR,
+			  "format" => \&format_ERROR },
+
      "=METHOD"       => { "scan"   => \&scan_METHOD,
 			  "format" => \&format_METHOD },
 
-     "=DISTRIBUTION" => { "scan"   => \&scan_DISTR,
-			  "format" => \&format_DISTR }
+     "=URNG"         => { "scan"   => \&scan_URNG,
+			  "format" => \&format_URNG },
+
      );
 
 ############################################################
@@ -76,9 +85,17 @@ foreach my $section (keys %section_TAGs) {
     &{$section_TAGs{$section}{"format"}}();
 }
 
+# make some modifications
+transform_special_strings(\$texi_DISTRs);
+transform_special_strings(\$texi_METHODs);
+transform_special_strings(\$texi_URNGs);
+transform_special_strings(\$texi_ERRORs);
+
 # print sections
 print $texi_DISTRs;
 print $texi_METHODs;
+print $texi_URNGs;
+print $texi_ERRORs;
 
 # end of job
 exit 0;
@@ -171,7 +188,10 @@ sub scan_ROUTINES {
     my @C_TYPES = ( "UNUR_PAR",
 		    "UNUR_GEN",
 		    "UNUR_DISTR",
+		    "UNUR_URNG",
 		    "UNUR_FUNCT_CONT",
+		    "FILE",
+		    "extern",
 		    "struct",
 		    "const",
 		    "void",
@@ -252,11 +272,13 @@ sub scan_ROUTINES {
 	$fkt =~ s/\(/ \( /g;
 	$fkt =~ s/\)/ \) /g;
 
+	# move pointer '*' from name to type
+	$fkt =~ s/\s+(\*+)/$1 /g;
+
 	# get argument list of function
 	(my $fkt_decl, my $fn_args) = split /\s+[\(\)]\s+/, $fkt, 3; 
-	$fn_args =~ s/\s+(\*+)/$1 /g;	# move pointer '*' from argument name to type
 	my @argslist = split /\s*\,\s*/, $fn_args;
-
+	
 	# $fkt_decl should contain of at least two words
 	unless ($fkt_decl =~ /^\s*(.*)\s+([\*\w+]+)\s*$/ ) {
 	    die "type or name missing for function: '$fkt_decl'";
@@ -267,36 +289,40 @@ sub scan_ROUTINES {
 	# the last word is the function name
 	my $fn_type = $1;
 	my $fn_name = $2;
-
-	# pointer ?
-	my $pointer = (($fn_type =~ /(\*+)$/) ? $1 : '');
-	unless ($pointer) {
-	    if ($fn_name =~ /^(\*+)/) {
-		$pointer = $1;
-		$fn_name =~ s/^(\*+)//;
-	    }
-	}
 	
 	# write entry
 	my $first = 1;
-	$fkt_block .= (($defblock_open) ? "\@deftypefnx" : "\@deftypefn");
-	$fkt_block .= " %%%Function%%% \{$fn_type$pointer\} $fn_name (";
-	foreach $arg (@argslist) {
-	    (my $type, my $arg_name) = split /\s+/, $arg, 2;
-	    if ($first) { $first = 0; }
-	    else { $fkt_block .= ", "; }
-	    if ($arg_name) {
-		$fkt_block .= "$type \@var\{$arg_name\}";
+	if (@argslist) {
+	    # this is a function with arguments
+	    $fkt_block .= (($defblock_open) ? "\@deftypefnx" : "\@deftypefn");
+	    $fkt_block .= " %%%Function%%% \{$fn_type\} $fn_name (";
+	    foreach $arg (@argslist) {
+		(my $type, my $arg_name) = split /\s+/, $arg, 2;
+		if ($first) { $first = 0; }
+		else { $fkt_block .= ", "; }
+		if ($arg_name) {
+		    $fkt_block .= "$type \@var\{$arg_name\}";
+		}
+		else {
+		    $fkt_block .= "$type";
+		}
 	    }
-	    else {
-		$fkt_block .= "$type";
-	    }
+	    $fkt_block .= ")\n";
 	}
-	$fkt_block .= ")\n";
+	else {
+	    # this is a function does not have arguments
+	    # maybe it is an variable
+	    $fkt_block .= (($defblock_open) ? "\@deftypevarx" : "\@deftypevar");
+	    $fkt_block .= " \{$fn_type\} $fn_name\n";
+	    $fkt_block .= "\@findex $fn_name\n";
+	}
 	# description
 	if ($body) {
 	    $fkt_block .= "$body\n";
-	    $fkt_block .= "\@end deftypefn\n";
+	    if (@argslist) {
+		$fkt_block .= "\@end deftypefn\n"; }
+	    else {
+		$fkt_block .= "\@end deftypevar\n"; }
 	    $defblock_open = 0;
 	    # for info file
 	    my $fkt_string = $fkt_block;
@@ -313,7 +339,7 @@ sub scan_ROUTINES {
 	    $defblock_open = 1;
 	}
     }
-
+	
     die "last function without description: $fkt_block" if $defblock_open;
 
     # store new lines
@@ -328,5 +354,22 @@ sub scan_ROUTINES {
 sub scan_DESCRIPTION {
     return;
 } # end of scan_DESCRIPTION() 
+
+############################################################
+
+sub transform_special_strings {
+    my $line = $_[0];
+
+    # NULL --> @code{NULL}
+    $$line =~ s/ NULL/ \@code\{NULL\}/g;
+
+    # TRUE --> @code{TRUE}
+    $$line =~ s/ TRUE/ \@code\{TRUE\}/g;
+
+    # FALSE --> @code{FALSE}
+    $$line =~ s/ FALSE/ \@code\{FALSE\}/g;
+
+    return;
+} # end of transform_special_strings()
 
 ############################################################

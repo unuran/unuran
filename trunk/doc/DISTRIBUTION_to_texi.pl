@@ -120,7 +120,7 @@ sub format_DISTR {
 
 	# node and section
 	$texi_DISTRs .= "\@node $distr\n";
-	$texi_DISTRs .= "\@section ".$in_DISTRs->{$distr}->{"=NAME"}." ($distr)\n";
+	$texi_DISTRs .= "\@section ".$in_DISTRs->{$distr}->{"=NAME"}." ($distr)\n\n";
 
 	# description for distribution
 	$texi_DISTRs .= $in_DISTRs->{$distr}->{"=DESCRIPTION"}."\n\n";

@@ -44,67 +44,70 @@
 
 #include <unuran_config.h>
 
-/*
-  Using uniform random number generators.
+/* 
+   =URNG  URNG  Using uniform random number generators
 
-  Each generator has a pointer to a uniform (pseudo-) random number
-  generator (URNG). It can be set via the unur_set_urng() call. It is
-  also possible change this pointer via unur_get_urng() or change the
-  URNG for an existing generator object by means of unur_get_urng();
+   =DESCRIPTION
+      Each generator has a pointer to a uniform (pseudo-) random number
+      generator (URNG). It can be set via the unur_set_urng() call. It is
+      also possible change this pointer via unur_get_urng() or change the
+      URNG for an existing generator object by means of unur_get_urng();
+      
+      By this very flexible concept it is possible that each generator has
+      its own (independent) URNG or several generators can share the same
+      URNG. 
+      
+      If no URNG is provided for a parameter or generator object a default
+      generator is used which is the same for all generators. This URNG is
+      defined in unuran_config.h at compile time. A pointer to
+      this default URNG can be obtained via
+      unur_get_default_urng(). Nevertheless it is also possible to
+      overwrite this default URNG by another one by means of the
+      unur_set_default_urng() call. However this only takes effect for new
+      parameter objects.
+      
+      The pointer to a URNG is of type @code{UNUR_URNG*}. Its definition 
+      depends on the compilation switch @code{UNUR_URNG_TYPE} in unuran_config.h. 
+      Currently we have two possible switches (other values would result
+      in a compilation error):
+      
+      1. UNUR_URNG_TYPE == UNUR_URNG_POINTER
+      
+      This uses URNGs of type @code{double uniform(void)}.
+      If independent versions of the same URNG should be used, a copy of
+      the subroutine has to be implement in the program code (with
+      different names, of course).
+      
+      2. UNUR_URNG_TYPE == UNUR_URNG_PRNG
+      
+      This uses the URNGs from the prng library. It provides a very
+      flexible way to sample form arbitrary URNGs by means of an object
+      oriented programing paradigma. Similarly to the UNURAN library
+      independent generator objects can be build and used.
+      Here @code{UNUR_URNG*} is simply a pointer to such a uniform
+      generator object.
+      
+      This library has been developed by the pLab group at the university
+      of Salzburg (Austria, EU) and implemented by Otmar Lendl.
+      It is available via anonymous ftp from
+      http://random.mat.sbg.ac.at/ftp/pub/software/gen/.
+      
+      It is possible to use other interfaces to URNGs without much
+      troubles. If you need such a new interface please email the authors
+      of the UNURAN library.
+      
+      Some generating methods provide the possibility of correlation
+      induction. To use this feature a second auxilliary URNG is required.
+      It can be set and changed by the unur_set_urng_aux() and
+      unur_chg_urng_aux() call, respectively. Since the auxilliary
+      generator is by default the same as the main generator, the
+      auxilliary URNG must be set after any unur_set_urng() ot
+      unur_chg_urng() call! Since in special cases mixing of two URNG
+      might cause problems, we supply a default auxilliary generator that
+      can be used by the unur_use_urng_aux_default() call (after the main
+      URNG has been set).
 
-  By this very flexible concept it is possible that each generator has
-  its own (independent) URNG or several generators can share the same
-  URNG. 
-
-  If no URNG is provided for a parameter or generator object a default
-  generator is used which is the same for all generators. This URNG is
-  defined in unuran_config.h at compile time. A pointer to
-  this default URNG can be obtained via
-  unur_get_default_urng(). Nevertheless it is also possible to
-  overwrite this default URNG by another one by means of the
-  unur_set_default_urng() call. However this only takes effect for new
-  parameter objects.
-
-  The pointer to a URNG is of type @code{UNUR_URNG*}. Its definition 
-  depends on the compilation switch @code{UNUR_URNG_TYPE} in unuran_config.h. 
-  Currently we have two possible switches (other values would result
-  in a compilation error):
-
-  1. UNUR_URNG_TYPE == UNUR_URNG_POINTER
-
-  This uses URNGs of type @code{double uniform(void)}.
-  If independent versions of the same URNG should be used, a copy of
-  the subroutine has to be implement in the program code (with
-  different names, of course).
-
-  2. UNUR_URNG_TYPE == UNUR_URNG_PRNG
-
-  This uses the URNGs from the prng library. It provides a very
-  flexible way to sample form arbitrary URNGs by means of an object
-  oriented programing paradigma. Similarly to the UNURAN library
-  independent generator objects can be build and used.
-  Here @code{UNUR_URNG*} is simply a pointer to such a uniform
-  generator object.
-
-  This library has been developed by the pLab group at the university
-  of Salzburg (Austria, EU) and implemented by Otmar Lendl.
-  It is available via anonymous ftp from
-  http://random.mat.sbg.ac.at/ftp/pub/software/gen/.
-
-  It is possible to use other interfaces to URNGs without much
-  troubles. If you need such a new interface please email the authors
-  of the UNURAN library.
-
-  Some generating methods provide the possibility of correlation
-  induction. To use this feature a second auxilliary URNG is required.
-  It can be set and changed by the unur_set_urng_aux() and
-  unur_chg_urng_aux() call, respectively. Since the auxilliary
-  generator is by default the same as the main generator, the
-  auxilliary URNG must be set after any unur_set_urng() ot
-  unur_chg_urng() call! Since in special cases mixing of two URNG
-  might cause problems, we supply a default auxilliary generator that
-  can be used by the unur_use_urng_aux_default() call (after the main
-  URNG has been set).
+   =END
 
 */
 
@@ -161,8 +164,31 @@ typedef struct prng UNUR_URNG;
 /*---------------------------------------------------------------------------*/
 /* set, get or change uniform RNG for generator                              */
 
+/* =ROUTINES */
+
+/*---------------------------------------------------------------------------*/
+/* get and set default uniform RNG                                           */
+
+/* ==DOC
+   @subheading Default uniform RNGs
+*/
+
+UNUR_URNG *unur_get_default_urng( void );
 /*
-  URNG for generator objects.
+  Get the pointer to the default URNG. The default URNG is used by all
+  generators where no URNG was set explicitly by a unur_set_urng()
+  call.
+*/
+
+UNUR_URNG *unur_set_default_urng( UNUR_URNG *urng_new );
+/*
+  Change the default URNG for new generator objects. 
+*/
+
+/*---------------------------------------------------------------------------*/
+
+/* ==DOC
+   @subheading Uniform RNGs for generator objects
 */
 
 int unur_set_urng( UNUR_PAR *parameters, UNUR_URNG *urng );
@@ -223,25 +249,7 @@ UNUR_URNG *unur_get_urng_aux( UNUR_GEN *generator );
   URNG.
 */
 
-/*---------------------------------------------------------------------------*/
-/* get and set default uniform RNG                                           */
-/* (defined in src/utils/urng.c)                                             */
-
-/*
-  Default URNG.
-*/
-
-UNUR_URNG *unur_get_default_urng( void );
-/*
-  Get the pointer to the default URNG. The default URNG is used by all
-  generators where no URNG was set explicitly by a unur_set_urng()
-  call.
-*/
-
-UNUR_URNG *unur_set_default_urng( UNUR_URNG *urng_new );
-/*
-  Change the default URNG for new generator objects. 
-*/
+/* =END */
 
 /*---------------------------------------------------------------------------*/
 

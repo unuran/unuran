@@ -22,7 +22,9 @@ noinst_DATA =
 scripts = \
  make_texi.pl \
  DISTRIBUTION_to_texi.pl \
- METHOD_to_texi.pl
+ ERROR_to_texi.pl \
+ METHOD_to_texi.pl \
+ URNG_to_texi.pl
 
 EXTRA_DIST = \
  unuran.html \

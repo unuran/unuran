@@ -45,6 +45,8 @@ Date: @value{UPDATED}
 * Examples::               Examples
 * Methods::                How should the random numbers be created
 * Distributions::          Distributions
+* URNG::                   Using uniform random number generators
+* Error and Debuging::     Error messages and debuging
 * FIndex::                 Function index
 @end menu
 

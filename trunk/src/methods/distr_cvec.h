@@ -148,7 +148,7 @@ int unur_distr_cvec_set_mean( UNUR_DISTR *distribution, double *mean );
    Set mean vector for multivariate distribution.
    @var{mean} must be a pointer to an array of size @code{dim}, where
    @code{dim} is the dimension returned by unur_distr_get_dim().
-   A @code{NULL} pointer for @var{mean} is interpreted as the zero
+   A NULL pointer for @var{mean} is interpreted as the zero
    vector (0,@dots{},0).
 */
 
@@ -156,10 +156,10 @@ double *unur_distr_cvec_get_mean( UNUR_DISTR *distribution );
 /* 
    Get the mean vector of the distribution. The function returns a
    pointer to an array of size @code{dim}.
-   If the mean vector is not marked as known the @code{NULL} pointer is
+   If the mean vector is not marked as known the NULL pointer is
    returned and @code{unur_errno} is set to
    @code{UNUR_ERR_DISTR_GET}. 
-   (However note that the @code{NULL} pointer also indicates the zero
+   (However note that the NULL pointer also indicates the zero
    vector to avoid unnecessary computations. But then
    @code{unur_errno} is not set.)
    
@@ -180,7 +180,7 @@ int unur_distr_cvec_set_covar( UNUR_DISTR *distribution, double *covar );
    random vector) must be positive.
    There is no check for the positive definitness yet.
 
-   A @code{NULL} pointer for @var{covar} is interpreted as the
+   A NULL pointer for @var{covar} is interpreted as the
    identity matrix.
 */
 
@@ -190,10 +190,10 @@ double *unur_distr_cvec_get_covar( UNUR_DISTR *distribution );
    pointer to an array of size @code{dim}x@code{dim}.
    The rows of the matrix have to be stored consecutively in this
    array.
-   If the covariance matrix is not marked as known the @code{NULL}
+   If the covariance matrix is not marked as known the NULL
    pointer is returned and @code{unur_errno} is set to
    @code{UNUR_ERR_DISTR_GET}. 
-   (However note that the @code{NULL} pointer also indicates the
+   (However note that the NULL pointer also indicates the
    identity matrix to avoid unnecessary computations. But then
    @code{unur_errno} is not set.)
 

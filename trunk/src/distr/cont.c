@@ -264,7 +264,7 @@ _unur_distr_cont_clone( const struct unur_distr *distr )
   /* for a derived distribution we also have to copy the underlying */
   /* distribution object                                            */
   if (distr->base != NULL) {
-    clone->base = _unur_distr_cont_clone( distr->base);
+    clone->base = _unur_distr_clone(distr->base);
   }
 
   return clone;

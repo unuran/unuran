@@ -130,7 +130,7 @@
 /* changes are made in the library.)                                         */
 
 /* use magic cookies to validate type of pointer */
-/* #define UNUR_COOKIES  1 */
+#define UNUR_COOKIES  1
 
 /*****************************************************************************
  *  Compile time parameters for generators.                                  *

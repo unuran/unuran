@@ -287,7 +287,7 @@ _unur_tdr_gw_sample_check( struct unur_gen *gen )
     U = GEN.Umin + _unur_call_urng(urng) * (GEN.Umax - GEN.Umin);
 
     /* evaluate inverse of hat CDF */
-    X = _unur_tdr_gw_eval_invcdfhat( gen, U, &iv, &pt );
+    X = _unur_tdr_gw_eval_invcdfhat( gen, U, &hx, &iv, &pt );
 
     fx = PDF(X);                                /* value of PDF at X */
     Thx = pt->Tfx + pt->dTfx * (X - pt->x);     /* transformed hat at X */ 
@@ -296,18 +296,18 @@ _unur_tdr_gw_sample_check( struct unur_gen *gen )
     switch( gen->variant & TDR_VARMASK_T ) {
     case TDR_VAR_T_LOG:
       Tfx = (fx>0.) ? log(fx) : -INFINITY;
-      hx = pt->fx * exp(pt->dTfx*(X - pt->x));    /* value of hat at X */   
+      // hx = pt->fx * exp(pt->dTfx*(X - pt->x));    /* value of hat at X */   
       sqx = (iv->Asqueeze > 0.) ? iv->fx * exp(iv->sq*(X - iv->x)) : 0.;     /* value of squeeze at X */
       break;
     case TDR_VAR_T_SQRT:
       Tfx = (fx>0.) ? -1./sqrt(fx) : -INFINITY;
-      hx = 1./(Thx*Thx);
+      // hx = 1./(Thx*Thx);
       sqx = (iv->Asqueeze > 0.) ? 1./(Tsqx*Tsqx) : 0.;
       break;
     case TDR_VAR_T_POW:
       /** TODO **/
       Tfx = 0.;
-      hx = 0.;
+      // hx = 0.;
       sqx = 0.;
       break;
     default:  /* this should not happen */
@@ -385,7 +385,7 @@ _unur_tdr_gw_sample_check( struct unur_gen *gen )
 /*---------------------------------------------------------------------------*/
 
 double
-_unur_tdr_gw_eval_invcdfhat( struct unur_gen *gen, double U,
+_unur_tdr_gw_eval_invcdfhat( const struct unur_gen *gen, double U, double *hx,
 			     struct unur_tdr_interval **ivl,
 			     struct unur_tdr_interval **cpt )
      /*----------------------------------------------------------------------*/
@@ -395,6 +395,7 @@ _unur_tdr_gw_eval_invcdfhat( struct unur_gen *gen, double U,
      /* parameters:                                                          */
      /*   gen ... pointer to generator object                                */
      /*   U   ... argument for inverse CDF (0<=U<=1, no validation!)         */
+     /*   hx  ... pointer for storing hat at sampled X                       */
      /*   ivl ... pointer to interval for hat                                */
      /*   cpt ... pointer to interval where hat construction point is stored */
      /*                                                                      */
@@ -402,7 +403,7 @@ _unur_tdr_gw_eval_invcdfhat( struct unur_gen *gen, double U,
      /*   inverse hat CDF                                                    */
      /*----------------------------------------------------------------------*/
 { 
-  double t, X;
+  double t, X, Thx;
   struct unur_tdr_interval *iv, *pt;
 
   /* look up in guide table and search for interval */
@@ -444,6 +445,11 @@ _unur_tdr_gw_eval_invcdfhat( struct unur_gen *gen, double U,
       else
 	X = pt->x + U / pt->fx * (1 - t/2.);
     }
+
+    /* evaluate hat at X */
+    if (hx != NULL)
+      *hx = pt->fx * exp(pt->dTfx*(X - pt->x));
+
     break;
 
   case TDR_VAR_T_SQRT:
@@ -457,6 +463,13 @@ _unur_tdr_gw_eval_invcdfhat( struct unur_gen *gen, double U,
       X = pt->x + (pt->Tfx*(pt->Tfx)*U) / (1.-(pt->Tfx)*(pt->dTfx)*U);  
       /* It cannot happen, that the denominator becomes 0 ! */
     }
+
+    /* evaluate hat at X */
+    if (hx != NULL) {
+      Thx = pt->Tfx + pt->dTfx * (X - pt->x);     /* transformed hat at x */ 
+      *hx = 1./(Thx*Thx);
+    }
+
     break;
 
   case TDR_VAR_T_POW:
@@ -690,7 +703,7 @@ _unur_tdr_ps_sample_check( struct unur_gen *gen )
     U = GEN.Umin + _unur_call_urng(urng) * (GEN.Umax - GEN.Umin);
 
     /* evaluate inverse of hat CDF */
-    X = _unur_tdr_ps_eval_invcdfhat( gen, U, &iv );
+    X = _unur_tdr_ps_eval_invcdfhat( gen, U, &hx, &iv );
 
     /* accept or reject */
     V = _unur_call_urng(urng);
@@ -703,12 +716,10 @@ _unur_tdr_ps_sample_check( struct unur_gen *gen )
        get uniform random number between 0 and hat(X) */
     switch (gen->variant & TDR_VARMASK_T) {
     case TDR_VAR_T_LOG:
-      hx = iv->fx * exp(iv->dTfx*(X - iv->x));
       V *= iv->fx * exp(iv->dTfx*(X - iv->x));
       break;
     case TDR_VAR_T_SQRT:
       Thx = iv->Tfx + iv->dTfx * (X - iv->x);     /* transformed hat at X */ 
-      hx = 1./(Thx*Thx);
       V *= 1./(Thx*Thx);
       break;
     case TDR_VAR_T_POW:
@@ -786,7 +797,7 @@ _unur_tdr_ps_sample_check( struct unur_gen *gen )
 /*---------------------------------------------------------------------------*/
 
 double
-_unur_tdr_ps_eval_invcdfhat( struct unur_gen *gen, double U,
+_unur_tdr_ps_eval_invcdfhat( const struct unur_gen *gen, double U, double *hx,
 			     struct unur_tdr_interval **ivl )
      /*----------------------------------------------------------------------*/
      /* evaluate the inverse of the hat CDF at u                             */
@@ -795,13 +806,14 @@ _unur_tdr_ps_eval_invcdfhat( struct unur_gen *gen, double U,
      /* parameters:                                                          */
      /*   gen ... pointer to generator object                                */
      /*   U   ... argument for inverse CDF (0<=U<=1, no validation!)         */
+     /*   hx  ... pointer for storing hat at sampled X                       */
      /*   ivl ... pointer to interval for hat                                */
      /*                                                                      */
      /* return:                                                              */
      /*   inverse hat CDF                                                    */
      /*----------------------------------------------------------------------*/
 {
-  double t,X;
+  double t,X,Thx;
   struct unur_tdr_interval *iv;
 
   /* look up in guide table and search for segment */
@@ -857,6 +869,22 @@ _unur_tdr_ps_eval_invcdfhat( struct unur_gen *gen, double U,
 
   /* store interval pointer */
   *ivl = iv;
+
+  /* evaluate hat at X */
+  if (hx != NULL) 
+    switch (gen->variant & TDR_VARMASK_T) {
+    case TDR_VAR_T_LOG:
+      *hx = iv->fx * exp(iv->dTfx*(X - iv->x));
+      break;
+    case TDR_VAR_T_SQRT:
+      Thx = iv->Tfx + iv->dTfx * (X - iv->x);     /* transformed hat at X */ 
+      *hx = 1./(Thx*Thx);
+      break;
+    case TDR_VAR_T_POW:
+      /** TODO **/
+    default:
+      *hx = INFINITY;
+    } /* end switch */
 
   return X;
 } /* end of _unur_tdr_ps_eval_invcdfhat() */
@@ -1056,7 +1084,7 @@ _unur_tdr_ia_sample( struct unur_gen *gen )
 
 } /* end of _unur_tdr_ia_sample() */
 
-/*****************************************************************************/
+/*---------------------------------------------------------------------------*/
 
 double
 _unur_tdr_ia_sample_check( struct unur_gen *gen )
@@ -1245,3 +1273,55 @@ _unur_tdr_ia_sample_check( struct unur_gen *gen )
 
 /*****************************************************************************/
 /*****************************************************************************/
+
+double
+unur_tdr_eval_invcdfhat( const struct unur_gen *gen, double u, double *hx )
+     /*----------------------------------------------------------------------*/
+     /* evaluate inverse CDF of hat at u                                     */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*   u   ... argument for inverse CDF (0<=u<=1)                         */
+     /*   hx  ... pointer for storing hat at sampled X                       */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   inverse CDF of hat                                                 */
+     /*----------------------------------------------------------------------*/
+{ 
+  struct unur_tdr_interval *iva, *ivb;  /* dummy pointers */
+
+  /* check arguments */
+  _unur_check_NULL( GENTYPE, gen, INFINITY );
+  if ( gen->method != UNUR_METH_TDR ) {
+    _unur_error(gen->genid,UNUR_ERR_GEN_INVALID,"");
+    return INFINITY; 
+  }
+  COOKIE_CHECK(gen,CK_TDR_GEN,0.);
+
+  if ( u<0. || u>1.) {
+    _unur_warning(gen->genid,UNUR_ERR_DOMAIN,"argument u not in [0,1]");
+  }
+
+  /* validate argument */
+  if (u<=0.) return DISTR.domain[0];
+  if (u>=1.) return DISTR.domain[1];
+
+  /* compute inverse CDF */
+  /* sampling routines */
+  switch (gen->variant & TDR_VARMASK_VARIANT) {
+  case TDR_VARIANT_GW:    /* original variant (Gilks&Wild) */
+    return _unur_tdr_gw_eval_invcdfhat(gen,u,hx,&iva,&ivb);
+  case TDR_VARIANT_IA:    /* immediate acceptance */
+    /* this does not make to much sense, since IA is not
+       a pure rejection method. Nevertheless, we treat
+       it in the same way as variant PS.                 */
+  case TDR_VARIANT_PS:    /* proportional squeeze */
+    return _unur_tdr_ps_eval_invcdfhat(gen,u,hx,&iva);
+  default:
+    _unur_error(GENTYPE,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
+    return INFINITY;
+  }
+
+} /* end of unur_tdr_eval_invcdfhat() */
+
+/*---------------------------------------------------------------------------*/

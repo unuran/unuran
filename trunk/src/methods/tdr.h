@@ -90,6 +90,9 @@
       times.
       @code{PS} is faster than @code{GW}. @code{IA} uses less uniform
       random numbers and is therefore faster than @code{PS}.
+
+      It is also possible to evaluate the CDF of the hat distribution
+      directly using the unur_tdr_eval_invcdfhat() call.
       
       There are lots of parameters for these methods, see below.
       
@@ -252,7 +255,7 @@ int unur_tdr_chg_truncated(UNUR_GEN *gen, double left, double right);
 
    @emph{Important:}
    This call does not work for variant @code{IA} (immediate
-   acceptance). In this case it switches @emph{automatically} to 
+   acceptance). In this case UNURAN switches @emph{automatically} to 
    variant @code{PS}.
 
    @emph{Important:}
@@ -411,10 +414,28 @@ int unur_tdr_set_pedantic( UNUR_PAR *parameters, int pedantic );
    Default is FALSE.
 */
 
+double unur_tdr_eval_invcdfhat( const UNUR_GEN *generator, double u, double *hx );
+/*
+   Evaluate the CDF of the hat distribution at @var{u}. As a
+   side effect the value of the hat is stored in @var{hx}. However,
+   this is suppressed if @var{hx} is set to NULL.
+
+   If @var{u} is out of the domain [0,1] then @code{unur_errno} is set
+   to @code{UNUR_ERR_DOMAIN} and the respective bound of
+   the domain of the distribution are returned (which is
+   @code{-UNUR_INFINITY} or @code{UNUR_INFINITY} in the case of
+   unbounded domains).
+
+   @emph{Important:}
+   This call does not work for variant @code{IA} (immediate
+   acceptance). In this case the hat CDF is evaluated as if
+   variant @code{PS} is used.
+
+   @emph{Notice}: This function always evaluates the inverse CDF of
+   the hat distribution. A call to unur_tdr_chg_truncated() call
+   has no effect.
+*/
+
+
 /* =END */
 /*---------------------------------------------------------------------------*/
-
-
-
-
-

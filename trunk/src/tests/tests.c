@@ -77,7 +77,7 @@ unur_run_tests( struct unur_par *par, unsigned tests)
   struct unur_gen *gen = NULL;
 
   /* check arguments */
-  CHECK_NULL(par,/*void*/);
+  _unur_check_NULL(par->genid,par,/*void*/);
 
   /* print info about method */
   if (! _unur_print_method(par))
@@ -208,7 +208,7 @@ _unur_print_method( struct unur_par *par )
     printf("METHOD:\t\tspecial (CSTD)\n");
     break;
   default: /* unknown ! */
-    _unur_warning("Tests",UNUR_ERR_GENERIC,"method unknown!");
+    _unur_error("Tests",UNUR_ERR_GENERIC,"method unknown!");
     return 0;
   }
   

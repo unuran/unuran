@@ -38,6 +38,10 @@
 #include <unuran_tests.h>
 
 /*---------------------------------------------------------------------------*/
+static char test_name[] = "Moments";
+/*---------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------*/
 
 int
 unur_test_moments( struct unur_gen *gen, int n_moments, double *moments, int samplesize )
@@ -59,10 +63,10 @@ unur_test_moments( struct unur_gen *gen, int n_moments, double *moments, int sam
   int i, mom;
 
   /* check parameter */
-  CHECK_NULL(gen,0);
+  _unur_check_NULL(test_name,gen,0);
   CHECK_NULL(moments,0);
   if (n_moments <= 0) {
-    _unur_error("Moments",UNUR_ERR_GENERIC,"number of moments < 1");
+    _unur_error(test_name,UNUR_ERR_GENERIC,"number of moments < 1");
     return 0;
   }
   if (samplesize <= 0) 
@@ -99,7 +103,7 @@ unur_test_moments( struct unur_gen *gen, int n_moments, double *moments, int sam
     break;
 
   default: /* unknown ! */
-    _unur_warning("Moments",UNUR_ERR_GENERIC,"dont know how to compute moments for distribution");
+    _unur_error(test_name,UNUR_ERR_GENERIC,"dont know how to compute moments for distribution");
     return 0;
   }
 

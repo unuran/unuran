@@ -56,6 +56,8 @@
 /** TODO: make more flexible **/
 
 /*---------------------------------------------------------------------------*/
+static char test_name[] = "Chi^2-Test";
+/*---------------------------------------------------------------------------*/
 
 static double _unur_test_chi2_discr( struct unur_gen *gen, int samplesize, int classmin, int verbose );
 static double _unur_test_chi2_cont( struct unur_gen *gen, int intervals, int samplesize, int classmin, int verbose );
@@ -95,7 +97,7 @@ unur_test_chi2( struct unur_gen *gen,
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  CHECK_NULL(gen,-1.);
+  _unur_check_NULL(test_name,gen,-1.);
 
   printf("\nGOODNESS-OF-FIT TESTS:\n");
 
@@ -108,7 +110,7 @@ unur_test_chi2( struct unur_gen *gen,
     return _unur_test_chi2_cont(gen, intervals, 0, classmin, verbose);
 
   case UNUR_METH_VEC:
-    _unur_warning("Chi^2-test",UNUR_ERR_GENERIC,"Not implemented for multivariate distributions!");
+    _unur_error(test_name,UNUR_ERR_GENERIC,"Not implemented for multivariate distributions!");
     return -1.;
   }
 
@@ -158,7 +160,7 @@ _unur_test_chi2_discr( struct unur_gen *gen,
 
   /* check distribution: discrete univariate */
   if ( (gen->method & UNUR_MASK_TYPE) != UNUR_METH_DISCR ) {
-    _unur_warning("Chi^2-test",UNUR_ERR_GENERIC,"wrong distribution type");
+    _unur_error(test_name,UNUR_ERR_GENERIC,"wrong distribution type");
     return -1.;
   }
 
@@ -170,7 +172,7 @@ _unur_test_chi2_discr( struct unur_gen *gen,
   if (prob == NULL) {
     /* no probability vector  -->  p.m.f. required */
     if (DISTR.pmf == NULL) {
-      _unur_warning("Chi^2-test",UNUR_ERR_GENERIC,"probability vector or p.m.f. required");
+      _unur_error(test_name,UNUR_ERR_GENERIC,"probability vector or p.m.f. required");
       return -1.;
     }
     /* have to make own probability vector */
@@ -267,7 +269,7 @@ _unur_test_chi2_cont(struct unur_gen *gen,
   /* c.d.f. required */
   cdf = DISTR.cdf;
   if (cdf == NULL) {
-    _unur_warning("Chi^2-test",UNUR_ERR_GENERIC,"c.d.f. required for continuous random variates!");
+    _unur_error(test_name,UNUR_ERR_GENERIC,"c.d.f. required for continuous random variates!");
     return -1.;
   }
 
@@ -293,7 +295,7 @@ _unur_test_chi2_cont(struct unur_gen *gen,
 
   /* Fr - Fl <= 0. is a fatal error */
   if (Fdelta <= 0.) {
-    _unur_warning(gen->genid,UNUR_ERR_GENERIC,"Fdelta <= 0.");
+    _unur_error(gen->genid,UNUR_ERR_GENERIC,"Fdelta <= 0.");
     return -1.;
   }
 
@@ -303,13 +305,13 @@ _unur_test_chi2_cont(struct unur_gen *gen,
     F = (F-Fl)/Fdelta;
     j = (int)(intervals * F);
     if (j > intervals) {   
-      _unur_warning("Chi^2-Test",UNUR_ERR_GENERIC,"F(x) > Fmax (out of domain).");
+      _unur_warning(test_name,UNUR_ERR_GENERIC,"F(x) > Fmax (out of domain).");
       j = intervals-1;
     }
     if (j >= intervals)    /* cdf() might return 1. */
       j = intervals-1;
     if (j < 0 ) {           /* there is something wrong with the boundaries */
-      _unur_warning("Chi^2-Test",UNUR_ERR_GENERIC,"F(x) < 0 (out of domain).");
+      _unur_warning(test_name,UNUR_ERR_GENERIC,"F(x) < 0 (out of domain).");
       j = 0;
     }
     ++observed[j];
@@ -375,6 +377,10 @@ _unur_test_chi2test( double *prob,
   double factor;        /* factor for calculating expected number of occurrences */
   int i;
 
+  /* check arguments */
+  CHECK_NULL(prob,-1.);
+  CHECK_NULL(observed,-1.);
+
   /* minimum number of occurrences in a class */
   classmin = (classmin > 0) ? classmin : CHI2_CLASSMIN_DEFAULT;
 
@@ -409,7 +415,7 @@ _unur_test_chi2test( double *prob,
 
   /* there must be at least two classes */
   if (classes < 2) {
-    _unur_error("Chi^2-test",UNUR_ERR_GENERIC,"too few classes!");
+    _unur_error(test_name,UNUR_ERR_GENERIC,"too few classes!");
     if (verbose >= 1)
       printf("\nCannot run chi^2-Test: too few classes\n");
     return -1.;

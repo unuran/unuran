@@ -39,6 +39,10 @@
 #include <source_unuran.h>
 
 /*---------------------------------------------------------------------------*/
+static char test_name[] = "Sample";
+/*---------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------*/
 
 void
 unur_test_printsample( struct unur_gen *gen, int n_rows, int n_cols )
@@ -54,7 +58,7 @@ unur_test_printsample( struct unur_gen *gen, int n_rows, int n_cols )
   int i,j,k;
 
   /* check arguments */
-  CHECK_NULL(gen,/*void*/);
+  _unur_check_NULL(test_name,gen,/*void*/);
 
   printf("\nSAMPLE: ");              
 
@@ -94,7 +98,7 @@ unur_test_printsample( struct unur_gen *gen, int n_rows, int n_cols )
     }
     break;
   default: /* unknown ! */
-    _unur_warning("Tests",UNUR_ERR_GENERIC,"method unknown!");
+    _unur_error(test_name,UNUR_ERR_GENERIC,"method unknown!");
     return;
   }
 

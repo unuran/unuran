@@ -43,6 +43,8 @@
 #define SCATTER_UNIFORM "uniform.scatterplot"
 
 /*---------------------------------------------------------------------------*/
+static char test_name[] = "Satter";
+/*---------------------------------------------------------------------------*/
 
 static int _unur_make_uniform_scatter( int start, int skip );
 
@@ -96,19 +98,19 @@ unur_make_scatterplot( struct unur_gen *gen )
   UNUR_URNG_TYPE urng_bak, urng_babygen; /* pointer to uniform RNG           */
 
   /* check arguments */
-  CHECK_NULL(gen,0);
+  _unur_check_NULL(test_name,gen,0);
   /* we do not check magic cookies here */
 
   /* c.d.f. required */
   cdf = DISTR.cdf;
   if (cdf == NULL) {
-    _unur_warning("Scatter",UNUR_ERR_GENERIC,"c.d.f. required");
+    _unur_error(test_name,UNUR_ERR_GENERIC,"c.d.f. required");
     return 0;
   }
 
   if (!unur_is_cont(gen)) {
     /* cannot make scatter plot */
-    _unur_warning("Scatter",UNUR_ERR_GENERIC,"Not implemented for this type of generator");
+    _unur_error(test_name,UNUR_ERR_GENERIC,"Not implemented for this type of generator");
     return 0;
   }
 
@@ -123,8 +125,8 @@ unur_make_scatterplot( struct unur_gen *gen )
 
   /* Fr - Fl <= 0. is a fatal error */
   if (Fdelta <= 0.) {
-    _unur_warning(gen->genid,UNUR_ERR_GENERIC,"Fdelta <= 0.");
-    return -1.;
+    _unur_error(gen->genid,UNUR_ERR_GENERIC,"Fdelta <= 0.");
+    return -1;
   }
 
   /* which subsequence of the underlying urng should be used 
@@ -143,7 +145,7 @@ unur_make_scatterplot( struct unur_gen *gen )
     skip = 2;
     break; 
   default: /* unknown ! */
-    _unur_warning("Scatter",UNUR_ERR_GENERIC,"method unknown!");
+    _unur_error(test_name,UNUR_ERR_GENERIC,"method unknown!");
     return 0;
   }
 
@@ -205,7 +207,7 @@ unur_make_scatterplot( struct unur_gen *gen )
   /* run system call */
   error = system(call_graph);
   if (error) {
-    _unur_warning("Scatter",UNUR_ERR_GENERIC,"Cannot run \"graph\"");
+    _unur_warning(test_name,UNUR_ERR_GENERIC,"Cannot run \"graph\"");
     can_run_plotting_program = 0;
   }
 
@@ -222,7 +224,7 @@ unur_make_scatterplot( struct unur_gen *gen )
 #else
 /*---------------------------------------------------------------------------*/
 {
-  _unur_warning("Scatter",UNUR_ERR_GENERIC,"Cannot make scatter plot.\n Recompile with different UNUR_URNG_INVOKE!\n Set flag UNUR_ENABLE_LOGGING");
+  _unur_error(test_name,UNUR_ERR_GENERIC,"Cannot make scatter plot.\n Recompile with different UNUR_URNG_INVOKE!\n Set flag UNUR_ENABLE_LOGGING");
   return -1;
 } /* end of unur_make_scatterplot() */
 /*---------------------------------------------------------------------------*/

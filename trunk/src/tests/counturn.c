@@ -41,6 +41,10 @@
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*/
+static char test_name[] = "Counting";
+/*---------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------*/
 /* wrapper for uniform random number generator that performs counting        */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -105,7 +109,7 @@ unur_test_count_urn( struct unur_gen *gen, int samplesize )
   long j;
 
   /* check arguments */
-  CHECK_NULL(gen,-1);
+  _unur_check_NULL(test_name,gen,-1);
 
   /* reset counter */
   urng_counter = 0;
@@ -141,7 +145,7 @@ unur_test_count_urn( struct unur_gen *gen, int samplesize )
     }
     break;
   default: /* unknown ! */
-    _unur_warning("Tests",UNUR_ERR_GENERIC,"method unknown!");
+    _unur_error("Tests",UNUR_ERR_GENERIC,"method unknown!");
     return 0;
   }
 

@@ -53,6 +53,8 @@ static struct timeval tv;
 #endif
 
 /*---------------------------------------------------------------------------*/
+static char test_name[] = "Timing";
+/*---------------------------------------------------------------------------*/
 
 static double _unur_test_timing_uniform( struct unur_par *par, int log_samplesize );
 static double _unur_call_uniform( struct unur_par *par );
@@ -80,7 +82,7 @@ unur_test_timing( struct unur_par *par, int log_samplesize )
   long samples, samplesize, log_samples;
 
   /* check parameter */
-  CHECK_NULL(par,NULL);
+  _unur_check_NULL(test_name,par,NULL);
   if (log_samplesize < 2) log_samplesize = 2;
 
   /* fastest possible generation time */
@@ -122,6 +124,7 @@ unur_test_timing( struct unur_par *par, int log_samplesize )
 	unur_sample_vec(gen,vec);
       break;
     default: /* unknown ! */
+      _unur_error(test_name,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
     }
 
     time_gen[log_samples] = _unur_get_time();

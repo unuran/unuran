@@ -181,8 +181,11 @@ unur_distr_multinormal( int dim, const double *mean, const double *covar )
   /* log of normalization constant */
   /* LOGNORMCONSTANT = 1; */
 
-  /* mode and area below p.d.f. */
-  DISTR.mode = DISTR.mean;
+  /* mode */
+  DISTR.mode = _unur_malloc( distr->dim * sizeof(double) );
+  memcpy( DISTR.mode, DISTR.mean, distr->dim * sizeof(double) );
+
+  /* volume below p.d.f. */
   /** TODO **/
   /*    DISTR.volume = 1.; */
 

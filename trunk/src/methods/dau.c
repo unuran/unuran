@@ -187,7 +187,7 @@ unur_dau_new( struct unur_distr *distr )
   struct unur_par *par;
 
   /* check arguments */
-  CHECK_NULL(distr,NULL);
+  _unur_check_NULL(GENTYPE,distr,NULL);
 
   /* check distribution */
   if (distr->type != UNUR_DISTR_DISCR) {
@@ -240,7 +240,7 @@ unur_dau_set_urnfactor( struct unur_par *par, double factor )
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  CHECK_NULL(par,0);
+  _unur_check_NULL( par->genid,par,0 );
 
   /* check input */
   _unur_check_par_object( DAU );
@@ -287,7 +287,7 @@ unur_dau_init( struct unur_par *par )
   int i;                        /* aux variable */
 
   /* check arguments */
-  CHECK_NULL(par,NULL);
+  _unur_check_NULL( par->genid,par,NULL );
 
   /* check input */
   if ( par->method != UNUR_METH_DAU ) {
@@ -430,8 +430,7 @@ unur_dau_sample( struct unur_gen *gen )
   double u;
 
   /* check arguments */
-  CHECK_NULL(gen,0);
-  COOKIE_CHECK(gen,CK_DAU_GEN,0);
+  CHECK_NULL(gen,0);  COOKIE_CHECK(gen,CK_DAU_GEN,0);
 
   /* sample from U(0,urn_size) */
   u = _unur_call_urng(gen);
@@ -458,7 +457,6 @@ unur_dau_free( struct unur_gen *gen )
      /*   gen ... pointer to generator object                                */
      /*----------------------------------------------------------------------*/
 { 
-
   /* check arguments */
   if( !gen ) /* nothing to do */
     return;
@@ -502,8 +500,7 @@ _unur_dau_create( struct unur_par *par)
   struct unur_gen *gen;
 
   /* check arguments */
-  CHECK_NULL(par,NULL);
-  COOKIE_CHECK(par,CK_DAU_PAR,NULL);
+  CHECK_NULL(par,NULL);  COOKIE_CHECK(par,CK_DAU_PAR,NULL);
 
   /* allocate memory for generator object */
   gen = _unur_malloc(sizeof(struct unur_gen));
@@ -563,6 +560,10 @@ _unur_dau_debug_init( struct unur_par *par, struct unur_gen *gen )
 {
   FILE *log;
 
+  /* check arguments */
+  CHECK_NULL(par,/*void*/);  COOKIE_CHECK(par,CK_DAU_PAR,/*void*/);
+  CHECK_NULL(gen,/*void*/);  COOKIE_CHECK(par,CK_DAU_GEN,/*void*/);
+
   log = unur_get_stream();
 
   fprintf(log,"%s:\n",gen->genid);
@@ -606,9 +607,11 @@ _unur_dau_debug_table( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
 {
   FILE *log;
-   
   int i, j, m;
   
+  /* check arguments */
+  CHECK_NULL(gen,/*void*/);  COOKIE_CHECK(par,CK_DAU_GEN,/*void*/);
+   
   log = unur_get_stream();
   
   /* print head of table */
@@ -640,4 +643,3 @@ _unur_dau_debug_table( struct unur_gen *gen )
 /*---------------------------------------------------------------------------*/
 #endif   /* end UNUR_ENABLE_LOGGING */
 /*---------------------------------------------------------------------------*/
-

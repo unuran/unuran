@@ -171,7 +171,7 @@ unur_dis_new( struct unur_distr *distr )
   struct unur_par *par;
 
   /* check arguments */
-  CHECK_NULL(distr,NULL);
+  _unur_check_NULL( GENTYPE,distr,NULL );
 
   /* check distribution */
   if (distr->type != UNUR_DISTR_DISCR) {
@@ -224,7 +224,7 @@ unur_dis_set_variant( struct unur_par *par, unsigned variant )
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  CHECK_NULL(par,0);
+  _unur_check_NULL( par->genid,par,0 );
 
   /* check input */
   _unur_check_par_object( DIS );
@@ -260,7 +260,7 @@ unur_dis_set_guidefactor( struct unur_par *par, double factor )
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  CHECK_NULL(par,0);
+  _unur_check_NULL( par->genid,par,0 );
 
   /* check input */
   _unur_check_par_object( DIS );
@@ -306,7 +306,7 @@ unur_dis_init( struct unur_par *par )
   int i,j;
 
   /* check arguments */
-  CHECK_NULL(par,NULL);
+  _unur_check_NULL( par->genid,par,NULL );
 
   /* check input */
   if ( par->method != UNUR_METH_DIS ) {
@@ -401,8 +401,7 @@ unur_dis_sample( struct unur_gen *gen )
   double u;
 
   /* check arguments */
-  CHECK_NULL(gen,0);
-  COOKIE_CHECK(gen,CK_DIS_GEN,0);
+  CHECK_NULL(gen,0);  COOKIE_CHECK(gen,CK_DIS_GEN,0);
 
   /* sample from U(0,1) */
   u = _unur_call_urng(gen);
@@ -473,8 +472,7 @@ _unur_dis_create( struct unur_par *par )
   int n_prob;                 /* length of probability vector */
 
   /* check arguments */
-  CHECK_NULL(par,NULL);
-  COOKIE_CHECK(par,CK_DIS_PAR,NULL);
+  CHECK_NULL(par,NULL);  COOKIE_CHECK(par,CK_DIS_PAR,NULL);
 
   /* allocate memory for generator object */
   gen = _unur_malloc( sizeof(struct unur_gen) );
@@ -549,6 +547,10 @@ _unur_dis_debug_init( struct unur_par *par, struct unur_gen *gen )
 {
   FILE *log;
 
+  /* check arguments */
+  CHECK_NULL(par,/*void*/);  COOKIE_CHECK(par,CK_DIS_PAR,/*void*/);
+  CHECK_NULL(gen,/*void*/);  COOKIE_CHECK(gen,CK_DIS_GEN,/*void*/);
+
   log = unur_get_stream();
 
   fprintf(log,"%s:\n",gen->genid);
@@ -589,9 +591,11 @@ _unur_dis_debug_table( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
 {   
   FILE *log;
- 
-  int i,j,m;
+   int i,j,m;
   int n_asts;
+
+  /* check arguments */
+  CHECK_NULL(gen,/*void*/);  COOKIE_CHECK(gen,CK_DIS_GEN,/*void*/);
 
   log = unur_get_stream();
   

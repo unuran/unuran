@@ -4,6 +4,12 @@
 
 info_TEXINFOS = unuran-ref.texi
 
+unuran_examples = \
+ ref_example1.texi \
+ ref_example2.texi \
+ ref_example3.texi \
+ ref_example4.texi
+
 texi_generated = \
  ref_geninfo.texi \
  ref_distr.texi \
@@ -12,7 +18,8 @@ texi_generated = \
  ref_distr_lib.texi \
  ref_methods.texi \
  ref_method_functions.texi \
- ref_internals.texi
+ ref_internals.texi \
+ $(unuran_examples)
 
 unuran_ref_TEXINFOS = \
  unuran-ref.texi \
@@ -59,9 +66,9 @@ ref_method_functions.texi: $(method_dir)/*.h
 ref_internals.texi: $(method_dir)/*.h
 	./internals.perl $(method_dir)/*.h        > ref_internals.texi
 
-# run perl scripts
-scripts:
-	./examples_to_texi.perl $(example_dir)/example[0-9]*.c
+$(unuran_examples): $(example_dir)/example*.c
+	sed 's/{/@{/g;s/}/@}/g' < $(example_dir)/`echo $* | sed 's/ref_//'`.c > $@
+
 
 SUFFIXES = .html .txt .pdf
 

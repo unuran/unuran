@@ -133,5 +133,6 @@ CLEANFILES = *~ *.log
 
 # clean generated files
 MAINTAINERCLEANFILES = \
- rm -rf t_*.c \
+ rm -f t_*.c \
+ rm -f t_*.data \
  Makefile.in

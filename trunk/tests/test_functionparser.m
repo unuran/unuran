@@ -38,7 +38,7 @@ Testsample = {
         {"3*(2==x)",{-2,2,5}},
         {"3*(x<>1)",{-2,2,5}},
         {"3*(2<>x)",{-2,2,5}},
-        {"3*(2!=x)",{-2,2,5}},
+            {"3*(2!=x)",{-2,2,5}},   
         {"3*(2=x)",{-2,2,5}},
 
         {"3*not[2<>x]",{-2,2,5}},
@@ -58,10 +58,10 @@ Testsample = {
         {"Sin[x]*3*Ln[x]",   {2, 4, 2}  },
       	{"exp[x^2]*(cos[x]<1)", {-3, 8, 5}},
 	{"abs[x]-3*x", {-2, 2, 5}},
-
-(*
+	
+	
 	{"(sin[ ln[3*x*(cos[ 3*x^3-4.6789/(x+4)])]])-1", {-3,7,5}},
-*)
+	 
 
         {"exp[x^2]*(sin[x*cos[x^2-1]]+1)*((x-3*pi*x)<1)", {-3,7,5}}
 };
@@ -249,11 +249,17 @@ UnurWriteLine[xarg_,funct_] := Module [
 				    
 	(* function *)
 	fx = N[ToExpression[fstr]] /. x -> xval /. {True -> 1, False -> 0};
-	WriteString[DataFile, CForm[fx],"\t"];
+	(* if fx is Complex the output is 'inf' *)
+        If[Head[fx]===Complex, 
+                              WriteString[DataFile, "inf"    ,"\t"],
+                              WriteString[DataFile, CForm[fx],"\t"] ];
 
 	(* derivative *)
 	dfx = N[ D[ ToExpression[fstr], x ]] /. x -> xval /. {True -> 1, False -> 0};
-	WriteString[DataFile, CForm[dfx],"\n"];
+        (* if dfx is Complex the output is 'inf' *)	
+        If[Head[dfx]===Complex,
+                               WriteString[DataFile, "inf"    ,"\n"],
+                               WriteString[DataFile, CForm[dfx],"\n"] ];
 
 ]; (* end of UnurWriteLine[] *)
 

@@ -324,9 +324,13 @@ _unur_generic_free( struct unur_gen *gen )
 /*****************************************************************************/
 
 struct unur_gen ** 
-_unur_gen_list_set( const struct unur_gen *gen, int n_gen_list )
+_unur_gen_list_set( struct unur_gen *gen, int n_gen_list )
      /*----------------------------------------------------------------------*/
-     /* set all entries in list to same generator object                     */
+     /* set all entries in list to same generator object 'gen'               */
+     /*                                                                      */
+     /* IMPORTANT: Be careful when using this call. When the resulting array */
+     /*   is stored in some multivariate generator object then 'gen'         */
+     /*   _must not_  be used any more after this call!                      */
      /*                                                                      */
      /* parameters:                                                          */
      /*   gen        ... pointer to generator object                         */
@@ -340,7 +344,6 @@ _unur_gen_list_set( const struct unur_gen *gen, int n_gen_list )
      /*----------------------------------------------------------------------*/
 {
   struct unur_gen **gen_list;
-  struct unur_gen *clone;
   int i;
 
   /* check arguments */
@@ -354,12 +357,9 @@ _unur_gen_list_set( const struct unur_gen *gen, int n_gen_list )
   /* allocate memory for array */
   gen_list = _unur_malloc (n_gen_list * sizeof(struct unur_gen *));
   
-  /* make copy of generator object */
-  clone = _unur_gen_clone( gen );
-  
   /* copy pointer */
   for (i=0; i<n_gen_list; i++)
-    gen_list[i] = clone;
+    gen_list[i] = gen;
 
   return gen_list;
 

@@ -108,8 +108,11 @@ void _unur_generic_free( struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 /* set and clone arrays of generator objects                                 */
 
-struct unur_gen **_unur_gen_list_set( const struct unur_gen *gen, int n_gen_list );
+struct unur_gen **_unur_gen_list_set( struct unur_gen *gen, int n_gen_list );
 /* set all entries in list to same generator object                          */
+/* IMPORTANT: Be careful when using this call. When the resulting array      */
+/*   is stored in some multivariate generator object then 'gen' _must not_   */
+/*   be used any more after this call!                                       */
 
 struct unur_gen **_unur_gen_list_clone( struct unur_gen **gen_list, int n_gen_list );
 /* clone list of generator objects                                           */

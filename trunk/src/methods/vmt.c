@@ -224,10 +224,8 @@ _unur_vmt_init( struct unur_par *par )
   if (_unur_distr_cvec_marginals_are_equal(DISTR.stdmarginals)) {
     /* we can use the same generator object for all marginal distribuitons */
     struct unur_gen *marginalgen = unur_init( unur_auto_new( DISTR.stdmarginals[0] ) );
-    if (marginalgen) {
+    if (marginalgen)
       gen->gen_aux_list = _unur_gen_list_set(marginalgen,GEN.dim);
-      _unur_free(marginalgen);
-    }
   }
 
   else {

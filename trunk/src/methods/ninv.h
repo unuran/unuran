@@ -37,34 +37,31 @@
  *                                                                           *
  *****************************************************************************/
 
-/*
-  =METHOD NINV Numerical INVersion
+/* 
+   =METHOD NINV Numerical INVersion
 
-NINV is the implementation of numerical inversion.
-For finding the root it is possible to choose between
-Newton's method and the regula falsi.
+   NINV is the implementation of numerical inversion.
+   For finding the root it is possible to choose between
+   Newton's method and the regula falsi.
 
-To speed up the marginal generation time a table with suitable
-starting points can be computed in the setup. Using such a can be
-switched on by a means of a unur_ninv_set_table() call where the table
-size is given as a parameter. The table is still useful when the domain is
-changed often. In this case it is neccessary to generate the table in
-respect to the most extreme boundaries; otherwise when using
-a domain exceeding the values of the table only the intersection
-of the given domain with the range of the table will be used!
+   It is possible to use this method for generating from truncated
+   distributions. It even can be changed for an existing generator
+   object by an unur_ninv_chg_truncated() call.
 
-As a rule of thumb using such a table is approriate when the number of
-generated points exceeds the table size by a factor of 100.
+   To speed up the marginal generation time a table with suitable
+   starting points can be computed in the setup. Using such a table can be 
+   switched on by means of a unur_ninv_set_table() call where the table
+   size is given as a parameter. The table is still useful when the
+   (truncated) domain is changed often, since it is computed for the
+   domain of the given distribution. (It is not possible to enlarge
+   this domain.)
 
-It is also possible to use this method for generating from truncated
-distributions.
+   As a rule of thumb using such a table is approriate when the number of
+   generated points exceeds the table size by a factor of 100.
 
-It is also possible to change the parameter of the given distribution
-by a unur_ninv_chg_pdfparams() call. If a table exists, it will be
-computed immediately.
-
-There is no need for a unur_reinit() call.
-
+   It is also possible to change the parameters of the given distribution
+   by a unur_ninv_chg_pdfparams() call. If a table exists, it will be
+   computed immediately.
 */
 
 /*
@@ -83,7 +80,7 @@ There is no need for a unur_reinit() call.
 
 
 UNUR_PAR *unur_ninv_new( UNUR_DISTR *distribution );
-/* get default parameters for generator                                      */
+/* Get default parameters for generator.                                     */
 
 /*...........................................................................*/
 
@@ -156,13 +153,15 @@ int unur_ninv_chg_table(UNUR_GEN *gen, int no_of_points);
    Recomputes a table as described in unur_ninv_set_table().
 */
 
-int unur_ninv_chg_domain(UNUR_GEN *gen, double left, double right);
+int unur_ninv_chg_truncated(UNUR_GEN *gen, double left, double right);
 /*
-   Change the borders of the (truncated) distribution. Notice that
-   the starting point(s) will not be changed!
-   When a table is used, the new borders must be within the range
-   of the table, otherwise truncation to the original domain will
-   happen.
+   Change the borders of the domain of the (truncated) distribution. 
+
+   Notice that the given truncated domain must be a subset of the
+   domain of the given distribution. The generator always uses the
+   intersection of the domain of the distribution and the truncated
+   domain given by this call.
+   Moreover the starting point(s) will not be changed.
 */
 
 int unur_ninv_chg_pdfparams(UNUR_GEN *generator, double *params, int n_params);

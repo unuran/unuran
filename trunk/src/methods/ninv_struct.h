@@ -41,27 +41,27 @@
 /* Information for constructing the generator                                */
 
 struct unur_ninv_par { 
-  int max_iter;              /* maximal number of iterations                 */
-  double rel_x_resolution;   /* maximal relative error in x                  */
-  double s[2];               /* interval boundaries at start (left/right)    */
-  int  table_on;             /* if TRUE a table for starting points is used  */
-  int  table_size;           /* size of table                                */
+  int     max_iter;          /* maximal number of iterations                 */
+  double  rel_x_resolution;  /* maximal relative error in x                  */
+  double  s[2];              /* interval boundaries at start (left/right)    */
+  int     table_on;          /* if TRUE a table for starting points is used  */
+  int     table_size;        /* size of table                                */
 };
 
 /*---------------------------------------------------------------------------*/
 /* The generator object                                                      */
 
 struct unur_ninv_gen { 
-  int max_iter;              /* maximal number of iterations                 */
-  double rel_x_resolution;   /* maximal relative error in x                  */
-  double s[2];               /* interval boundaries at start (left/right) ...*/
-  double CDFs[2];            /* ... and their CDF-values                     */
+  int     max_iter;          /* maximal number of iterations                 */
+  double  rel_x_resolution;  /* maximal relative error in x                  */
   double *table;             /* table with possible starting values for NINV */
-  double Umin, Umax;         /* bounds for iid random variable in respect to
-                                the given bounds of the distribution         */
-  double CDFmin, CDFmax;     /* CDF-bounds of the table                      */
-  int  table_on;             /* if TRUE a table for starting points is used  */
-  int  table_size;           /* size of table                                */
+  int     table_on;          /* if TRUE a table for starting points is used  */
+  int     table_size;        /* size of table                                */
+  double  Umin, Umax;        /* bounds for iid random variable in respect to
+                                the given (truncated) domain of the distr.   */
+  double  CDFmin, CDFmax;    /* CDF-bounds of the table                      */
+  double  s[2];              /* interval boundaries at start (left/right) ...*/
+  double  CDFs[2];           /* ... and their CDF-values                     */
 };
 
 /*---------------------------------------------------------------------------*/

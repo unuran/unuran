@@ -128,8 +128,9 @@ unur_distr_cont_new( void )
 
   DISTR.mode      = INFINITY;      /* location of mode (default: not known)  */
   DISTR.area      = INFINITY;      /* area below p.d.f. (default: not known) */
-  DISTR.domain[0] = -INFINITY;     /* left boundary of domain                */
-  DISTR.domain[1] = INFINITY;      /* right boundary of domain               */
+
+  DISTR.trunc[0] = DISTR.domain[0] = -INFINITY; /* left boundary of domain   */
+  DISTR.trunc[1] = DISTR.domain[1] = INFINITY;  /* right boundary of domain  */
 
   DISTR.upd_mode  = NULL;          /* funct for computing mode               */
   DISTR.upd_area  = NULL;          /* funct for computing area               */
@@ -531,12 +532,14 @@ unur_distr_cont_set_domain( struct unur_distr *distr, double left, double right 
   /* changelog */
   distr->set |= UNUR_DISTR_SET_DOMAIN;
 
-  /* if distr is an object for a standard distribution, */
-  /* we might have truncated the distribution!          */
-  distr->set &= ~UNUR_DISTR_SET_STDDOMAIN;
-
-  /* derived parameters like mode, area, etc. might be wrong now! */
-  distr->set &= ~UNUR_DISTR_SET_MASK_DERIVED;
+  /* if distr is an object for a standard distribution, this   */
+  /* not the original domain of it. (not a "standard domain")  */
+  /* However, since we have changed the domain, we assume      */
+  /* that this is not a truncated distribution.                */
+  /* At last we have to mark all derived parameters as unknown */
+  distr->set &= ~(UNUR_DISTR_SET_STDDOMAIN & 
+		  UNUR_DISTR_SET_TRUNCATED & 
+		  UNUR_DISTR_SET_MASK_DERIVED );
 
   if (distr->base) {
     /* for derived distributions (e.g. order statistics)

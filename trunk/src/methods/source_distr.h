@@ -45,6 +45,10 @@
 
 #define UNUR_DISTR_SET_DOMAIN         0x00010000
 #define UNUR_DISTR_SET_STDDOMAIN      0x00020000 /* domain not truncated (for standard distributions) */
+#define UNUR_DISTR_SET_TRUNCATED      0x00040000 /* truncated distribution, i.e.
+						    the domain of the distribution has been
+						    restricted AFTER initializing
+						    the generator object */
 
 /* derived parameters */
 #define UNUR_DISTR_SET_MASK_DERIVED   0x0000ffff

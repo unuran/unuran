@@ -179,9 +179,9 @@ static void _unur_ninv_debug_sample_newton( struct unur_gen *gen,
 /* trace sampling (newton's method).                                         */
 /*---------------------------------------------------------------------------*/
 
-static void _unur_ninv_debug_chg_domain(UNUR_GEN *gen);
+static void _unur_ninv_debug_chg_truncated(UNUR_GEN *gen);
 /*---------------------------------------------------------------------------*/
-/* trace changes of the domain.                                              */
+/* trace changes of the truncated domain.                                    */
 /*---------------------------------------------------------------------------*/
 #endif
 
@@ -193,9 +193,6 @@ static void _unur_ninv_debug_chg_domain(UNUR_GEN *gen);
 #define PAR       par->data.ninv        /* data for parameter object         */
 #define GEN       gen->data.ninv        /* data for generator object         */
 #define DISTR     gen->distr.data.cont  /* data for distribution in generator object */
-
-#define BD_LEFT   domain[0]      /* left boundary of domain of distribution  */
-#define BD_RIGHT  domain[1]      /* right boundary of domain of distribution */
 
 #define SAMPLE    gen->sample.cont      /* pointer to sampling routine       */
 
@@ -662,11 +659,11 @@ unur_ninv_chg_table( struct unur_gen *gen, int tbl_pnts )
 /*---------------------------------------------------------------------------*/
 
 int 
-unur_ninv_chg_domain( struct unur_gen *gen, double left, double right )
+unur_ninv_chg_truncated( struct unur_gen *gen, double left, double right )
      /*----------------------------------------------------------------------*/
      /* change the left and right borders of the domain of the distribution  */
      /* the new domain should not exceed the original domain given by        */
-     /* unur_ninv_set_domain. otherwise it is truncated.                     */
+     /* unur_distr_cont_set_domain(). Otherwise it is truncated.             */
      /*                                                                      */
      /* parameters:                                                          */
      /*   gen      ... pointer to generator object                           */
@@ -689,34 +686,38 @@ unur_ninv_chg_domain( struct unur_gen *gen, double left, double right )
   }
 
   /* copy new boundaries into generator object */
-  DISTR.BD_LEFT  = left;
-  DISTR.BD_RIGHT = right;
-  if (GEN.table_on ){
-    if ( left < GEN.table[0] )
-       _unur_warning(NULL, UNUR_ERR_DISTR_SET,
-           "left border of domain exceeds range of table");
-    if ( right > GEN.table[GEN.table_size-1] )
-       _unur_warning(NULL, UNUR_ERR_DISTR_SET,
-           "right border of domain exceeds range of table");
+  /* (the truncated domain must be a subset of the domain) */
+  if (left < DISTR.domain[0]) {
+    _unur_warning(NULL,UNUR_ERR_DISTR_SET,"truncated domain too large");
+    DISTR.trunc[0] = DISTR.domain[0];
   }
+  else
+    DISTR.trunc[0] = left;
 
-  /* changelog */
-  gen->distr.set |= UNUR_DISTR_SET_DOMAIN;
+  if (right > DISTR.domain[1]) {
+    _unur_warning(NULL,UNUR_ERR_DISTR_SET,"truncated domain too large");
+    DISTR.trunc[1] = DISTR.domain[1];
+  }
+  else
+    DISTR.trunc[1] = right;
 
   /* set bounds of U -- in respect to given bounds */
-  GEN.Umin = (DISTR.BD_LEFT  <= -INFINITY) ? 0.0 : CDF(DISTR.BD_LEFT); 
-  GEN.Umax = (DISTR.BD_RIGHT >=  INFINITY) ? 1.0 : CDF(DISTR.BD_RIGHT); 
+  GEN.Umin = (DISTR.trunc[0] > -INFINITY) ? CDF(DISTR.trunc[0]) : 0.;
+  GEN.Umax = (DISTR.trunc[1] < INFINITY)  ? CDF(DISTR.trunc[1]) : 1.;
+
+  /* changelog not necessary */
+  /*    gen->distr.set |= UNUR_DISTR_SET_TRUNCATED; */
 
 #ifdef UNUR_ENABLE_LOGGING
   /* write info into log file */
   if (gen->debug & NINV_DEBUG_CHG) 
-    _unur_ninv_debug_chg_domain( gen );
+    _unur_ninv_debug_chg_truncated( gen );
 #endif
   
   /* o.k. */
   return 1;
   
-} /* end of unur_ninv_chg_domain() */
+} /* end of unur_ninv_chg_truncated() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -755,16 +756,14 @@ unur_ninv_chg_pdfparams( struct unur_gen *gen, double *params, int n_params )
   memcpy(DISTR.params, params, n_params * sizeof(double));
 
   /* changelog */
-  /* mode and area might be wrong now! 
-     but the user is responsible to change it.
-     so we dont say:
-     gen->distr.set &= ~(UNUR_DISTR_SET_MODE | UNUR_DISTR_SET_PDFAREA );
-     gen->set &= ~NINV_SET_CDFMODE;
-  */
+  /* derived parameters like mode, area, etc. might be wrong now! */
+  /* however there is no need for these parameters;               */
+  /* thus we do not need:                                         */
+  /*    distr->distr.set &= ~UNUR_DISTR_SET_MASK_DERIVED;         */
 
-  /* set bounds of U -- in respect to given bounds                          */
-  GEN.Umin = (DISTR.BD_LEFT  <= -INFINITY) ? 0.0 : CDF(DISTR.BD_LEFT); 
-  GEN.Umax = (DISTR.BD_RIGHT >=  INFINITY) ? 1.0 : CDF(DISTR.BD_RIGHT); 
+  /* set bounds of U -- in respect to given bounds                */
+  GEN.Umin = (DISTR.trunc[0] > -INFINITY) ? CDF(DISTR.trunc[0]) : 0.;
+  GEN.Umax = (DISTR.trunc[1] < INFINITY)  ? CDF(DISTR.trunc[1]) : 1.;
 
   /* regenerate table */
   if (GEN.table != NULL)
@@ -806,9 +805,14 @@ _unur_ninv_init( struct unur_par *par )
   gen = _unur_ninv_create(par);
   if (!gen) { free(par); return NULL; }
 
+  /* we treat all distributions as truncated distributions */
+  gen->distr.set &= UNUR_DISTR_SET_TRUNCATED;
+  DISTR.trunc[0] = DISTR.domain[0];
+  DISTR.trunc[1] = DISTR.domain[1];
+
   /* set bounds of U -- in respect to given bounds                          */
-  GEN.Umin = (DISTR.BD_LEFT  <= -INFINITY) ? 0.0 : CDF(DISTR.BD_LEFT); 
-  GEN.Umax = (DISTR.BD_RIGHT >=  INFINITY) ? 1.0 : CDF(DISTR.BD_RIGHT); 
+  GEN.Umin = (DISTR.trunc[0] > -INFINITY) ? CDF(DISTR.trunc[0]) : 0.;
+  GEN.Umax = (DISTR.trunc[1] < INFINITY)  ? CDF(DISTR.trunc[1]) : 1.;
 
   /* check arguments */
   switch (par->variant) {
@@ -947,15 +951,26 @@ _unur_ninv_create( struct unur_par *par )
 /*---------------------------------------------------------------------------*/
 
 int
-_unur_ninv_create_table(UNUR_GEN *gen)
+_unur_ninv_create_table( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* create a table for starting points                                   */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer generator object                                   */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... on success                                                   */
+     /*   0 ... on error                                                     */
+     /*----------------------------------------------------------------------*/
 {
   int i;
+  int table_size = GEN.table_size;
 
   /* check arguments */
   CHECK_NULL(gen, 0);
   _unur_check_gen_object(gen, NINV);
 
-  GEN.table = _unur_realloc( GEN.table, GEN.table_size * sizeof(double));
+  GEN.table = _unur_realloc( GEN.table, table_size * sizeof(double));
 
   GEN.s[0] = - 10.;  /* arbitrary starting values                        */
   GEN.s[1] =   10.;
@@ -966,27 +981,28 @@ _unur_ninv_create_table(UNUR_GEN *gen)
   GEN.CDFmin = GEN.Umin;
   GEN.CDFmax = GEN.Umax;
 
-  GEN.table[0] = DISTR.BD_LEFT;
-  GEN.table[GEN.table_size-1] = DISTR.BD_RIGHT;
+  GEN.table[0] = DISTR.domain[0];
+  GEN.table[table_size-1] = DISTR.domain[1];
        
-  for (i=1; i<GEN.table_size/2; i++){
+  for (i=1; i<table_size/2; i++){
     GEN.table[i] =
-      _unur_ninv_regula(gen, i/(GEN.table_size-1.) );
-    GEN.table[GEN.table_size-1-i] = 
-      _unur_ninv_regula(gen, ((GEN.table_size-i-1))/(GEN.table_size-1.) );
+      _unur_ninv_regula(gen, i/(table_size-1.) );
+    GEN.table[table_size-1-i] = 
+      _unur_ninv_regula(gen, (table_size-i-1)/(table_size-1.) );
 
-    GEN.s[0] = (GEN.table[i] <= -INFINITY)? GEN.table[i+1]: GEN.table[i]; 
-    GEN.s[1] = (GEN.table[i] >= INFINITY)?
-      GEN.table[GEN.table_size-i-2]: GEN.table[GEN.table_size-i-1];
+    GEN.s[0] = (GEN.table[i] > -INFINITY) ? GEN.table[i] : GEN.table[i+1]; 
+    GEN.s[1] = (GEN.table[i] < INFINITY) ?
+      GEN.table[table_size-i-1] : GEN.table[table_size-i-2];
+
     GEN.CDFs[0] = CDF(GEN.s[0]);
     GEN.CDFs[1] = CDF(GEN.s[1]);
  
   }  /* end of for()                                                     */
 
-  if (GEN.table_size & 1) { 
-    /* GEN.table_size is odd */
-    GEN.table[GEN.table_size/2] =
-      _unur_ninv_regula(gen, ((GEN.table_size/2))/(GEN.table_size-1.) );
+  if (table_size & 1) { 
+    /* table_size is odd */
+    GEN.table[table_size/2] =
+      _unur_ninv_regula(gen, (table_size/2)/(table_size-1.) );
   }
 
   GEN.table_on = TRUE;
@@ -1125,7 +1141,7 @@ _unur_ninv_regula( struct unur_gen *gen, double u )
   }  /* while end -- interval found */ 
 
 
-  a     = x1;       /* always sign change between a and x2 */
+  a = x1;       /* always sign change between a and x2 */
 
   /* secant step, preserve sign change */
   for (i=0; i < GEN.max_iter; i++) {
@@ -1146,7 +1162,7 @@ _unur_ninv_regula( struct unur_gen *gen, double u )
 
     if ( f1*f2 <= 0) {  /* sign change found             */
       count = 0;   /* reset bisection counter  */
-      a    = x1;   /* sign change within [a, x2]               */
+      a = x1;      /* sign change within [a, x2]               */
     }
     
     length = x2 - a;  /* oriented length  */
@@ -1197,7 +1213,8 @@ _unur_ninv_regula( struct unur_gen *gen, double u )
 
 /*****************************************************************************/
 
-double _unur_ninv_sample_newton(struct unur_gen *gen)
+double 
+_unur_ninv_sample_newton( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* sample from generator (use newtons method)                           */
      /*                                                                      */
@@ -1245,13 +1262,13 @@ _unur_ninv_newton( struct unur_gen *gen, double U )
 
   if ( _unur_FP_same( GEN.Umin, GEN.Umax) ){
     _unur_warning(gen->genid, UNUR_ERR_GEN_CONDITION,"CDF constant");
-    return INFINITY;   
+    return INFINITY;     /** TODO: warum INFINITY ? **/
   }
 
   /* initialize starting point */
   if (GEN.table_on){
     /* i is between 0 and table_size-1 */
-    i  = (int) U *
+    i  = (int) U *        /** TODO **/
       ( (GEN.Umax-GEN.Umin)/(GEN.CDFmax-GEN.CDFmin) +
          GEN.Umin - GEN.CDFmin ) *
       ( GEN.table_size - 2 );
@@ -1348,11 +1365,9 @@ _unur_ninv_newton( struct unur_gen *gen, double U )
       _unur_ninv_debug_sample_newton( gen,U,x,fx,i );
 #endif
 
-
   return x;
 
 } /* end of _unur_ninv_sample_newton() */
-
 /*---------------------------------------------------------------------------*/
 
 /*****************************************************************************/
@@ -1488,7 +1503,7 @@ _unur_ninv_debug_sample_newton( struct unur_gen *gen, double u, double x, double
 /*---------------------------------------------------------------------------*/
 
 void 
-_unur_ninv_debug_chg_domain( struct unur_gen *gen )
+_unur_ninv_debug_chg_truncated( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* print new (changed) domain of (truncated) distribution               */
      /*                                                                      */
@@ -1504,10 +1519,10 @@ _unur_ninv_debug_chg_domain( struct unur_gen *gen )
   log = unur_get_stream();
 
   fprintf(log,"%s: domain of (truncated) distribution changed:\n",gen->genid);
-  fprintf(log,"%s:\tdomain = (%g, %g)\n",gen->genid, DISTR.BD_LEFT, DISTR.BD_RIGHT);
+  fprintf(log,"%s:\tdomain = (%g, %g)\n",gen->genid, DISTR.trunc[0], DISTR.trunc[1]);
   fprintf(log,"%s:\tU in (%g,%g)\n",gen->genid,GEN.Umin,GEN.Umax);
 
-} /* end of _unur_ninv_debug_chg_domain() */
+} /* end of _unur_ninv_debug_chg_truncated() */
 
 /*---------------------------------------------------------------------------*/
 #endif   /* end UNUR_ENABLE_LOGGING */

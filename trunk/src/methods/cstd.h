@@ -52,9 +52,17 @@
    These are selected by a number. For possible variants see
    (=>) UNURAN library of standard distributions.
    However the following are common to all distributions:
-   UNUR_STDGEN_DEFAULT   ... the default generator                      
-   UNUR_STDGEN_INVERSION ... the inversion method (if available)         
+
+   @code{UNUR_STDGEN_DEFAULT}   ... the default generator                      
+   @code{UNUR_STDGEN_FAST}      ... the fasted available special generator
+   @code{UNUR_STDGEN_INVERSION} ... the inversion method (if available)         
    
+   (Notice that the variant @code{UNUR_STDGEN_FAST} for a special
+   generator might be slower than one of the universal algorithms!)
+
+   Additionally variants may exist for particular distributions
+   (see (=>) UNURAN library of standard distributions).
+
    Sampling from truncated distributions (which can be constructed by 
    changing the default domain of a distribution by means of an
    (=>) unur_distr_cont_set_domain() call) is possible but requires the 
@@ -62,8 +70,6 @@
    
    It is possible to change the parameters and the domain of the chosen 
    distribution without building a new generator object.
-   (It is then not required to call (=>) unur_reinit().)
-   
 */
 
 /*---------------------------------------------------------------------------*/
@@ -71,7 +77,7 @@
 
 #define UNUR_STDGEN_DEFAULT   0        /* default algorithm (don't change 0!)*/
 #define UNUR_STDGEN_INVERSION (~0u)    /* inversion method                   */
-#define UNUR_STDGEN_FASTEST   (~1u)    /* fastest algorithm                  */
+#define UNUR_STDGEN_FAST      (0)      /* fastest algorithm                  */
 
 /*---------------------------------------------------------------------------*/
 /* Routines for user interface                                               */
@@ -83,9 +89,13 @@ UNUR_PAR *unur_cstd_new( UNUR_DISTR *distribution );
    Get default parameters for new generator. It requires a distribution object 
    for a continuous univariant distribution from the 
    (=>) UNURAN library of standard distributions. 
+
    Using a truncated distribution is allowed only if the inversion method
    is available and selected by the unur_cstd_set_variant() call immediately 
    after creating the parameter object.
+   Use a unur_distr_cont_set_domain() call to get a truncated distribution.
+   To change the domain of a (truncated) distribution use the
+   unur_cstd_chg_truncated() call.
 */
 
 /*...........................................................................*/
@@ -94,8 +104,10 @@ int unur_cstd_set_variant( UNUR_PAR *parameters, unsigned variant );
 /*
    Set variant (special algorithm) for sampling from given distribution.
    For possible variants see (=>) UNURAN library of standard distributions.
-   Common variants are `UNUR_STDGEN_DEFAULT' for the default generator and
-   `UNUR_STDGEN_INVERSION' forthe inversion method (if available).
+   Common variants are @code{UNUR_STDGEN_DEFAULT} for the default generator,
+   @code{UNUR_STDGEN_FAST} for (one of the) fastest implemented
+   special generators, and @code{UNUR_STDGEN_INVERSION} for the
+   inversion method (if available). 
    If the selected variant number is not implemented, this call has no effect.
 */
 
@@ -107,17 +119,21 @@ int unur_cstd_chg_pdfparams( UNUR_GEN *generator, double *params, int n_params )
    Notice that it is not possible to change the number of parameters.
    This function only copies the given arguments into the array of 
    distribution parameters.
+
    IMPORTANT: The given parameters are not checked against domain errors;
    in opposition to the (=>) unur_<distr>_new() call.
-   (It is not required to call (=>) unur_reinit() afterwards.)
 */
 
-int unur_cstd_chg_domain( UNUR_GEN *generator, double left, double right );
+int unur_cstd_chg_truncated( UNUR_GEN *generator, double left, double right );
 /* 
    Change left and right border of the domain of the (truncated) distribution.
    This is only possible of the inversion method is used.
    Otherwise this call has no effect.
-   (It is not required to call (=>) unur_reinit() afterwards.)
+
+   Notice that the given truncated domain must be a subset of the
+   domain of the given distribution. The generator always uses the
+   intersection of the domain of the distribution and the truncated
+   domain given by this call.
 */
 
 /* =END */

@@ -292,7 +292,7 @@ unur_distr_gamma( double *params, int n_params )
 
   /* domain */
   DISTR.domain[0] = DISTR.gamma;  /* left boundary  */
-  DISTR.domain[1] = INFINITY;         /* right boundary */
+  DISTR.domain[1] = INFINITY;     /* right boundary */
 
   /* indicate which parameters are set */
   distr->set = ( UNUR_DISTR_SET_DOMAIN |

@@ -52,6 +52,7 @@ struct unur_distr_cont {
   double mode;                  /* location of mode                          */
   double area;                  /* area below p.d.f.                         */
   double domain[2];             /* boundary of domain                        */
+  double trunc[2];              /* boundary of truncated domain              */
 
   int (*upd_mode)(struct unur_distr *distr);   /* funct for computing mode   */
   int (*upd_area)(struct unur_distr *distr);   /* funct for computing area   */

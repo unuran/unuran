@@ -1229,7 +1229,7 @@ sub anuran_help_2_cpdf
 			      'For the latter non-alphanumeric characters are mapped '.
 			      'to underscore \'<code>_</code>\', and '.
 			      'the word \'<code>distribution</code>\' will be discarded. <p>'.
-			      'It is not the name of some standard distribution.').
+			      'It is used literally is not interpreted as the name of some standard distribution.').
 		   '<li><code>Density</code>'.
 		   blockquote('Insert the density for the desired distribution. ' .
 			      'It is not necessary that the given function integrates to one, ' .

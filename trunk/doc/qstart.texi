@@ -355,11 +355,11 @@ int main()
 
 @node Preset
 @section Preset distributions 
-@include qstart_distributions.texi
+
 
 @node Arbitrary
 @section Arbitrary distributions
-@include qstart_change_distr.texi
+
 
 @c --------------------------------------------------------------------
 
@@ -446,18 +446,20 @@ To change any parameter you habe to use the according function call.
 @node Function Reference
 @chapter Function reference
 @menu
-* DistrRef:: Functions for distributions
-* General::       General functions
-* MethodsRef::       Functions for Methods
+* Readymade:: Ready-made distributions
+* Selfmade::  Include your own distributions
+* MethodsRef::  Functions for Methods
 @end menu
 Notation:
 
 
-@node DistrRef
-@section Distributions
+@node Readymade
+@section Ready-made distributions
+@include qstart_distributions.texi
 
-@node General
-@section General
+@node Selfmade
+@section Self-made distributions
+@include qstart_change_distr.texi
 
 @node MethodsRef
 @section Methods

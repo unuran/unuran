@@ -9,21 +9,23 @@ INCLUDES = \
 check_PROGRAMS = \
  t_dau \
  t_dgt \
- t_stdr \
+ t_ssr \
  t_srou \
  t_unif 
 
 TESTS = \
  t_dau \
  t_dgt \
- t_stdr \
+ t_ssr \
  t_srou \
  t_unif 
 
 EXTRA_DIST = \
+ make_test_files.pl \
+ README.conf \
  dau.conf \
  dgt.conf \
- stdr.conf \
+ ssr.conf \
  srou.conf \
  unif.conf
 
@@ -36,8 +38,8 @@ t_dgt_LDADD = $(top_builddir)/src/libunuran.a -lprng -lml -lm
 t_srou_SOURCES = t_srou.c testroutines.c list_of_distributions.c
 t_srou_LDADD = $(top_builddir)/src/libunuran.a -lprng -lml -lm
 
-t_stdr_SOURCES = t_stdr.c testroutines.c list_of_distributions.c
-t_stdr_LDADD = $(top_builddir)/src/libunuran.a -lprng -lml -lm
+t_ssr_SOURCES = t_ssr.c testroutines.c list_of_distributions.c
+t_ssr_LDADD = $(top_builddir)/src/libunuran.a -lprng -lml -lm
 
 t_unif_SOURCES = t_unif.c  testroutines.c list_of_distributions.c
 t_unif_LDADD = $(top_builddir)/src/libunuran.a -lprng -lml -lm
@@ -52,8 +54,8 @@ t_dgt.c: dgt.conf make_test_files.pl
 t_srou.c: srou.conf make_test_files.pl
 	./make_test_files.pl srou.conf
 
-t_stdr.c: stdr.conf make_test_files.pl
-	./make_test_files.pl stdr.conf
+t_ssr.c: ssr.conf make_test_files.pl
+	./make_test_files.pl ssr.conf
 
 t_unif.c: unif.conf make_test_files.pl
 	./make_test_files.pl unif.conf
@@ -68,6 +70,3 @@ clean-local:
 
 maintainer-clean-local:
 	rm -f t_*
-
-
-

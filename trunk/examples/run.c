@@ -37,7 +37,7 @@
 #define RUN_UTDR          0
 #define RUN_AROU          0
 #define RUN_SROU          0
-#define RUN_STDR          0
+#define RUN_SSR          0
 #define RUN_TDRSQRT       0
 #define RUN_TDRLOG        0
 #define RUN_TABL          0
@@ -579,13 +579,13 @@ int main()
 
 #endif
 
-#if RUN_STDR == 1
+#if RUN_SSR == 1
 
-  par = unur_stdr_new(distr_normal);
+  par = unur_ssr_new(distr_normal);
 
-  unur_stdr_set_cdfatmode(par,unur_distr_cont_cdf(unur_distr_cont_get_mode(distr_normal),distr_normal));
-  unur_stdr_set_usesqueeze(par,1);
-/*    unur_stdr_set_verify(par,1); */
+  unur_ssr_set_cdfatmode(par,unur_distr_cont_cdf(unur_distr_cont_get_mode(distr_normal),distr_normal));
+  unur_ssr_set_usesqueeze(par,1);
+/*    unur_ssr_set_verify(par,1); */
   
 
   /* run tests */
@@ -696,13 +696,13 @@ int main()
 
 #endif
 
-#if RUN_STDR == 1
+#if RUN_SSR == 1
 
-  par = unur_stdr_new(distr_gamma);
+  par = unur_ssr_new(distr_gamma);
 
-  unur_stdr_set_cdfatmode(par,unur_distr_cont_cdf(unur_distr_cont_get_mode(distr_gamma),distr_gamma));
-  unur_stdr_set_usesqueeze(par,1);
-/*    unur_stdr_set_verify(par,1); */
+  unur_ssr_set_cdfatmode(par,unur_distr_cont_cdf(unur_distr_cont_get_mode(distr_gamma),distr_gamma));
+  unur_ssr_set_usesqueeze(par,1);
+/*    unur_ssr_set_verify(par,1); */
 
   /* run tests */
   unur_run_tests(par,RUN_TESTS);
@@ -815,12 +815,12 @@ int main()
 
 #endif
 
-#if RUN_STDR == 1
+#if RUN_SSR == 1
 
-  par = unur_stdr_new(distr_beta);
-  unur_stdr_set_cdfatmode(par,unur_distr_cont_cdf(unur_distr_cont_get_mode(distr_beta),distr_beta));
-  unur_stdr_set_usesqueeze(par,1);
-/*    unur_stdr_set_verify(par,1); */
+  par = unur_ssr_new(distr_beta);
+  unur_ssr_set_cdfatmode(par,unur_distr_cont_cdf(unur_distr_cont_get_mode(distr_beta),distr_beta));
+  unur_ssr_set_usesqueeze(par,1);
+/*    unur_ssr_set_verify(par,1); */
 
   /* run tests */
   unur_run_tests(par,RUN_TESTS);
@@ -944,13 +944,13 @@ int main()
 
 #endif
 
-#if RUN_STDR == 1
+#if RUN_SSR == 1
 
-  par = unur_stdr_new(distr_cauchy);
+  par = unur_ssr_new(distr_cauchy);
 
-  unur_stdr_set_cdfatmode(par,unur_distr_cont_cdf(unur_distr_cont_get_mode(distr_cauchy),distr_cauchy));
-  unur_stdr_set_usesqueeze(par,1);
-/*    unur_stdr_set_verify(par,1); */
+  unur_ssr_set_cdfatmode(par,unur_distr_cont_cdf(unur_distr_cont_get_mode(distr_cauchy),distr_cauchy));
+  unur_ssr_set_usesqueeze(par,1);
+/*    unur_ssr_set_verify(par,1); */
 
   /* run tests */
   unur_run_tests(par,RUN_TESTS);
@@ -1055,13 +1055,13 @@ int main()
 
 #endif
 
-#if RUN_STDR == 1
+#if RUN_SSR == 1
 
-  par = unur_stdr_new(distr_uniform);
+  par = unur_ssr_new(distr_uniform);
 
-  unur_stdr_set_cdfatmode(par,unur_distr_cont_cdf(unur_distr_cont_get_mode(distr_uniform),distr_uniform));
-  unur_stdr_set_usesqueeze(par,1);
-/*    unur_stdr_set_verify(par,1); */
+  unur_ssr_set_cdfatmode(par,unur_distr_cont_cdf(unur_distr_cont_get_mode(distr_uniform),distr_uniform));
+  unur_ssr_set_usesqueeze(par,1);
+/*    unur_ssr_set_verify(par,1); */
 
   /* run tests */
   unur_run_tests(par,RUN_TESTS);

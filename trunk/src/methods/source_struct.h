@@ -108,7 +108,7 @@ typedef void _UNUR_SAMPLING_ROUTINE_VEC(struct unur_gen *gen, double *vec);
 #include <arou_struct.h>
 #include <ninv_struct.h>
 #include <srou_struct.h>
-#include <stdr_struct.h>
+#include <ssr_struct.h>
 #include <tabl_struct.h>
 #include <tdr_struct.h>
 #include <unif_struct.h>
@@ -135,7 +135,7 @@ struct unur_par {
     struct unur_arou_par  arou;
     struct unur_ninv_par  ninv;
     struct unur_srou_par  srou;
-    struct unur_stdr_par  stdr;
+    struct unur_ssr_par   ssr;
     struct unur_tabl_par  tabl;
     struct unur_tdr_par   tdr;
     struct unur_unif_par  unif;
@@ -172,7 +172,7 @@ struct unur_gen {
     struct unur_arou_gen  arou;
     struct unur_ninv_gen  ninv;
     struct unur_srou_gen  srou;
-    struct unur_stdr_gen  stdr;
+    struct unur_ssr_gen   ssr;
     struct unur_tabl_gen  tabl;
     struct unur_tdr_gen   tdr;
     struct unur_unif_gen  unif;

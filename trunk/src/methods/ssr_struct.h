@@ -4,11 +4,11 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   FILE: stdr_struct.h                                                     *
+ *   FILE: ssr_struct.h                                                      *
  *                                                                           *
  *   PURPOSE:                                                                *
- *         declares structures for method STDR                               *
- *         (Simple Transformed Density Rejection with universal bounds)      *
+ *         declares structures for method SSR                                *
+ *         (Simple Setup, Rejection with universal bounds)                   *
  *                                                                           *
  *   USAGE:                                                                  *
  *         only included in source_struct.h                                  *
@@ -40,7 +40,7 @@
 /*---------------------------------------------------------------------------*/
 /* Information for constructing the generator                                */
 
-struct unur_stdr_par { 
+struct unur_ssr_par { 
   double  Fmode;             /* cdf at mode                                  */
   double  fm;                /* pdf at mode                                  */
   double  um;                /* sqrt of pdf at mode                          */
@@ -49,7 +49,7 @@ struct unur_stdr_par {
 /*---------------------------------------------------------------------------*/
 /* The generator object                                                      */
 
-struct unur_stdr_gen { 
+struct unur_ssr_gen { 
   double  fm;                /* pdf at mode                                  */
   double  um;                /* sqrt of pdf at mode                          */
   double  vl, vr;            /* parameters for hat function                  */

@@ -26,7 +26,7 @@ libmethods_a_SOURCES = \
  ninv.c \
  rect.c \
  srou.c \
- stdr.c \
+ ssr.c \
  tabl.c \
  tdr.c  \
  unif.c \
@@ -65,8 +65,8 @@ noinst_HEADERS = \
  rect_struct.h \
  srou.h \
  srou_struct.h \
- stdr.h \
- stdr_struct.h \
+ ssr.h \
+ ssr_struct.h \
  tabl.h \
  tabl_struct.h \
  tdr.h \

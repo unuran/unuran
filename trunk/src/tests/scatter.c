@@ -142,7 +142,7 @@ unur_make_scatterplot( struct unur_gen *gen )
     start = 1;
     skip = 1;
     break;
-  case UNUR_METH_STDR:
+  case UNUR_METH_SSR:
   case UNUR_METH_TDR:
   case UNUR_METH_UTDR:
     start = 1;

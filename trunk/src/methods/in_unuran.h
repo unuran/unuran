@@ -85,7 +85,7 @@ typedef struct unur_gen   UNUR_GEN;      /* generator object                 */
 #include <arou.h>
 #include <ninv.h>
 #include <srou.h>
-#include <stdr.h>
+#include <ssr.h>
 #include <tabl.h>
 #include <tdr.h>
 #include <utdr.h>

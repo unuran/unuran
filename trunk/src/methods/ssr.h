@@ -4,11 +4,11 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   FILE: stdr.h                                                            *
+ *   FILE: ssr.h                                                             *
  *                                                                           *
  *   PURPOSE:                                                                *
- *         function prototypes for method STDR                               *
- *         (Simple Transformed Density Rejection with universal bounds)      *
+ *         function prototypes for method SSR                                *
+ *         (Simple Setup, Rejection with universal bounds)                   *
  *                                                                           *
  *   USAGE:                                                                  *
  *         only included in unuran.h                                         *
@@ -38,9 +38,9 @@
  *****************************************************************************/
 
 /* 
-   =METHOD  STDR   Simple Transformed Density Rejection
+   =METHOD  SSR   Simple Setup Rection
 
-   STDR is based on the transformed density rejection but uses universal 
+   SSR is an acceptance/rejection method that uses universal 
    inequalities for constructing (universal) hats and squeezes.
    It works for all T-concave distributions with T(x) = -1/sqrt(x).
 
@@ -58,7 +58,7 @@
 
    If the exact location of the mode is not known, then use the approximate
    location and provide the (exact) value of the p.d.f. at the mode by means
-   of the unur_stdr_set_pdfatmode() call.
+   of the unur_ssr_set_pdfatmode() call.
    But then unur_srou_set_cdfatmode() must not be used.
 
    If the (exact) area below the p.d.f. is not known, then an upper bound can be
@@ -75,12 +75,12 @@
 
    It is possible to change the parameters and the domain of the chosen 
    distribution without building a new generator object using the
-   unur_stdr_chg_pdfparams() and unur_stdr_chg_domain() call, respectively.
-   But then unur_stdr_chg_pdfarea(), unur_stdr_chg_mode and 
-   unur_stdr_chg_cdfatmode() have to used to reset the corresponding figures 
+   unur_ssr_chg_pdfparams() and unur_ssr_chg_domain() call, respectively.
+   But then unur_ssr_chg_pdfarea(), unur_ssr_chg_mode and 
+   unur_ssr_chg_cdfatmode() have to used to reset the corresponding figures 
    whenever they have changed.
    If the p.d.f. at the mode has been provided by a 
-   unur_stdr_set_pdfatmode() call, additionally unur_stdr_chg_pdfatmode() must 
+   unur_ssr_set_pdfatmode() call, additionally unur_ssr_chg_pdfatmode() must 
    be used (otherwise this call is not necessary since then this figure is
    computed directly from the p.d.f.).
    If any of mode, p.d.f. or c.d.f. at the mode, or the area below the mode
@@ -89,7 +89,7 @@
 
    There exists a test mode that verifies whether the conditions for
    the method are satisfied or not. It can be switched on by calling 
-   unur_stdr_set_verify(). Notice however that sampling is a little
+   unur_ssr_set_verify(). Notice however that sampling is a little
    bit slower than.
 */
 
@@ -98,19 +98,19 @@
 
 /* =ROUTINES */
 
-UNUR_PAR *unur_stdr_new( UNUR_DISTR *distribution );
+UNUR_PAR *unur_ssr_new( UNUR_DISTR *distribution );
 /* Get default parameters for generator                                      */
 
 /*...........................................................................*/
 
-int unur_stdr_set_cdfatmode( UNUR_PAR *parameters, double Fmode );
+int unur_ssr_set_cdfatmode( UNUR_PAR *parameters, double Fmode );
 /* Set c.d.f. at mode. 
    When set the performance of the algorithm is increased by factor 2.
    However, when the parameters of the distribution are changed
-   (=>) unur_stdr_chg_cdfatmode() has to be used to update this value.
+   (=>) unur_ssr_chg_cdfatmode() has to be used to update this value.
 */
 
-int unur_stdr_set_pdfatmode( UNUR_PAR *parameters, double fmode );
+int unur_ssr_set_pdfatmode( UNUR_PAR *parameters, double fmode );
 /* Set pdf at mode. if set the p.d.f. at the mode is never changed.          
    This is to avoid additional computations, when the p.d.f. does not
    change when parameters of the distributions vary. 
@@ -118,10 +118,10 @@ int unur_stdr_set_pdfatmode( UNUR_PAR *parameters, double fmode );
    changing parameters for the distribution.
 */
 
-int unur_stdr_set_verify( UNUR_PAR *parameters, int verify );
+int unur_ssr_set_verify( UNUR_PAR *parameters, int verify );
 /* Turn verifying of algorithm while sampling on/off                         */
 
-int unur_stdr_set_usesqueeze( UNUR_PAR *parameters, int usesqueeze );
+int unur_ssr_set_usesqueeze( UNUR_PAR *parameters, int usesqueeze );
 /* Set flag for using universal squeeze (default: off).
    using squeezes is only useful when the evaluation of the p.d.f. is 
    (extremely) expensive.
@@ -131,7 +131,7 @@ int unur_stdr_set_usesqueeze( UNUR_PAR *parameters, int usesqueeze );
 
 /*...........................................................................*/
 
-int unur_stdr_chg_pdfparams( UNUR_GEN *generator, double *params, int n_params );
+int unur_ssr_chg_pdfparams( UNUR_GEN *generator, double *params, int n_params );
 /* 
    Change array of parameters of distribution in given generator object.
    Notice that it is not possible to change the number of parameters.
@@ -141,30 +141,30 @@ int unur_stdr_chg_pdfparams( UNUR_GEN *generator, double *params, int n_params )
    in opposition to the (=>) unur_<distr>_new() call.
 */
 
-int unur_stdr_chg_domain( UNUR_GEN *generator, double left, double right );
+int unur_ssr_chg_domain( UNUR_GEN *generator, double left, double right );
 /* Change left and right border of the domain of the 
    (truncated) distribution.  
    If the mode changes when the domain of the (truncated) distribution is 
-   changed, then a correspondig unur_stdr_chg_mode() is required.
+   changed, then a correspondig unur_ssr_chg_mode() is required.
    (There is no domain checking as in the unur_init() call.)
 */
 
-int unur_stdr_chg_mode( UNUR_GEN *generator, double mode );
+int unur_ssr_chg_mode( UNUR_GEN *generator, double mode );
 /* Change mode of distribution.
    unur_reinit() must be executed before sampling from the generator again.
 */
 
-int unur_stdr_chg_cdfatmode( UNUR_GEN *generator, double Fmode );
+int unur_ssr_chg_cdfatmode( UNUR_GEN *generator, double Fmode );
 /* Change c.d.f. at mode of distribution.
    unur_reinit() must be executed before sampling from the generator again.
 */
 
-int unur_stdr_chg_pdfatmode( UNUR_GEN *generator, double fmode );
+int unur_ssr_chg_pdfatmode( UNUR_GEN *generator, double fmode );
 /* Change p.d.f. at mode of distribution.
    unur_reinit() must be executed before sampling from the generator again.
 */
 
-int unur_stdr_chg_pdfarea( UNUR_GEN *generator, double area );
+int unur_ssr_chg_pdfarea( UNUR_GEN *generator, double area );
 /* Change area below p.d.f. of distribution.
    unur_reinit() must be executed before sampling from the generator again.
 */

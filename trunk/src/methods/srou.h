@@ -57,7 +57,7 @@
 
    If the exact location of the mode is not known, then use the approximate
    location and provide the (exact) value of the p.d.f. at the mode by means
-   of the unur_stdr_set_pdfatmode() call.
+   of the unur_srou_set_pdfatmode() call.
    But then unur_srou_set_cdfatmode() must not be used.
 
    If the (exact) area below the p.d.f. is not known, then an upper bound can be

@@ -31,7 +31,7 @@ Here is an example for the latter case:
 
 The syntax for the function string is case insensitive, white spaces
 are ingnored. The expressions are similar to most programming languages
-and mathamatical programs (see also the examples below). It is especially
+and mathematical programs (see also the examples below). It is especially
 influenced by C. The usual preceedence rules are used (from highest
 to lowest preceedence: functions, power, multiplication,
 addition, relation operators). Use parentheses in case of doubt or 

@@ -116,11 +116,8 @@ designed for applications using non-standard distributions
 where no seperate generator is yet available.
 UNURAN is also useful if the parameters of a standard distribution
 should be changed frequently.
-
 Additionaly there are lots of predefined distributions available
-(see @ref{Distributions}) but we recommend the usage of specific
-generators for applications depending on a standard distribution
-without changing the paramters a lot.
+(see @ref{Distributions}).
 
 UNURAN implements several methods for generating random numbers.
 The choice depents primary on what information about the

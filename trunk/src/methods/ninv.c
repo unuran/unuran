@@ -500,7 +500,7 @@ unur_ninv_set_start( struct unur_par *par, double s1, double s2 )
      /* set starting points.                                                 */
      /*   Newton:        s1           starting point                         */
      /*   regular falsi: s1, s2       boundary of starting interval          */
-     /* arguments that are used by method are ignored.                       */
+     /* arguments that are not used by method are ignored.                   */
      /*                                                                      */
      /*                                                                      */
      /* parameters:                                                          */
@@ -972,9 +972,14 @@ _unur_ninv_compute_start( struct unur_gen *gen )
   CHECK_NULL(gen, 0);
   _unur_check_gen_object(gen, NINV);
 
-  if ( GEN.table_on || _unur_FP_same(GEN.s[0], GEN.s[1])) {
-    /* use table || use given starting points (indicated by s[0] == s[1]) */
-    /* nothing to do */
+  if( GEN.table_on )
+    /* we have a table --> nothing to do */
+    return 1;
+
+  if( !_unur_FP_same(GEN.s[0],GEN.s[1])) {
+    /* use given starting points (indicated by s[0] != s[1]) --> nothing to do */
+    GEN.CDFs[0] = CDF(GEN.s[0]);
+    GEN.CDFs[1] = CDF(GEN.s[1]);
     return 1;
   }
 

@@ -237,13 +237,13 @@ static int _unur_str_distr_set_C( UNUR_DISTR *distr, const char *key, char *type
 /*---------------------------------------------------------------------------*/
 
 
-static struct unur_par *_unur_str_par( char *str_method, const UNUR_DISTR *distr,
+static struct unur_par *_unur_str_par( char *str_method, UNUR_DISTR *distr,
 				       struct malloc_list *mlist );
 /*---------------------------------------------------------------------------*/
 /* get parameter object for distribution and method.                         */
 /*---------------------------------------------------------------------------*/
 
-static struct unur_par *_unur_str_par_new( const char *method, const UNUR_DISTR *distr );
+static struct unur_par *_unur_str_par_new( const char *method, UNUR_DISTR *distr );
 /*---------------------------------------------------------------------------*/
 /* get new parameter object for method.                                      */
 /*---------------------------------------------------------------------------*/
@@ -547,7 +547,7 @@ unur_str2gen (const char *string)
 /*---------------------------------------------------------------------------*/
 
 struct unur_par *
-unur_str2par (const struct unur_distr *distr, const char *string)
+unur_str2par (struct unur_distr *distr, const char *string)
      /*----------------------------------------------------------------------*/
      /* get parameter object for distribution and method                     */
      /*                                                                      */
@@ -1335,7 +1335,7 @@ _unur_str_distr_set_C (UNUR_DISTR *distr, const char *key, char *type_args, char
 /*---------------------------------------------------------------------------*/
 
 struct unur_par *
-_unur_str_par( char *str_method, const UNUR_DISTR *distr, struct malloc_list *mlist )
+_unur_str_par( char *str_method, UNUR_DISTR *distr, struct malloc_list *mlist )
      /*----------------------------------------------------------------------*/
      /* get parameter object for distribution and method                     */
      /*                                                                      */
@@ -1417,7 +1417,7 @@ _unur_str_par( char *str_method, const UNUR_DISTR *distr, struct malloc_list *ml
 /*---------------------------------------------------------------------------*/
 
 struct unur_par *
-_unur_str_par_new( const char *method, const UNUR_DISTR *distr )
+_unur_str_par_new( const char *method, UNUR_DISTR *distr )
      /*----------------------------------------------------------------------*/
      /* get new parameter object for method                                  */
      /*                                                                      */

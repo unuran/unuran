@@ -237,7 +237,7 @@ unur_distr_negativebinomial( double *params, int n_params )
   distr->name = distr_name;
              
   /* how to get special generators */
-  DISTR.init = _unur_stdgen_negativebinomial_init;
+  /*    DISTR.init = _unur_stdgen_negativebinomial_init; */
    
   /* functions */
 #ifdef HAVE_PMF

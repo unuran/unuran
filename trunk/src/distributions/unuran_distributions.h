@@ -473,7 +473,7 @@ UNUR_DISTR *unur_distr_multinormal(int dim, double *mean, double *covar);
    =EON
 */
 UNUR_DISTR *unur_distr_binomial(double *params, int n_params);
-/** TODO: STDGEN **/
+/** No CDF !!! **/
 
 /*---------------------------------------------------------------------------*/
 /* Geometric distribution  [1; ch.5.2, p.201]                                */
@@ -491,9 +491,9 @@ UNUR_DISTR *unur_distr_binomial(double *params, int n_params);
 UNUR_DISTR *unur_distr_geometric(double *params, int n_params);
 
 /*---------------------------------------------------------------------------*/
-/* Hypergometric distribution  [1; ch.6, p.237]                              */
+/* Hypergeometric distribution  [1; ch.6, p.237]                             */
 /*
-   =DISTR    hypergometric  Hypergometric distribution
+   =DISTR    hypergeometric  Hypergeometric distribution
    =UP       Stddist_DISCR
    =REF      [JKKa92]   ch.6, p.237
    =PMF      {M \choose k} * {N-M \choose n-k} / {N \choose n}
@@ -502,11 +502,11 @@ UNUR_DISTR *unur_distr_geometric(double *params, int n_params);
    =FPARAM   0 : N : >= 1        :  : no. of elements  :
              1 : M : 1 <= M <= N :  : shape            :
              2 : n : 1 <= n <= N :  : shape            :
+   =STDGEN   DEF  Ratio of Uniforms/Inversion [STa89]
    =EON
 */
 UNUR_DISTR *unur_distr_hypergeometric(double *params, int n_params);
 /** No CDF !!! **/
-/** TODO: STDGEN **/
 
 /*---------------------------------------------------------------------------*/
 /* Logarithmic distribution  [1; ch.7, p.285]                                */

@@ -48,8 +48,8 @@
 
 #define uniform()  _unur_call_urng(gen->urng) /* call for uniform prng       */
 
-#define MAX_gen_params   8     /** TODO:  maximal number of parameters for generator */
-#define MAX_gen_iparams  3     /** TODO:  maximal number of parameters for generator */
+#define MAX_gen_params   8     /* maximal number of parameters for generator */
+#define MAX_gen_iparams  6     /* maximal number of parameters for generator */
 
 /* parameters */
 #define N  (DISTR.params[0])
@@ -61,7 +61,8 @@
 
 #ifdef HAVE_UNUR_SF_LN_FACTORIAL
 inline static int hypergeometric_hruec_init( struct unur_gen *gen );
-int _unur_stdgen_sample_hypergeometric_hruec( struct unur_gen *gen );
+static int _unur_stdgen_sample_hypergeometric_hruec( struct unur_gen *gen );
+inline static int h_util(int N_, int M_, int n_, int k_);
 #endif
 
 /*---------------------------------------------------------------------------*/
@@ -119,54 +120,55 @@ _unur_stdgen_hypergeometric_init( struct unur_par *par, struct unur_gen *gen )
 
 #ifdef HAVE_UNUR_SF_LN_FACTORIAL
 
-#define flogfak(k) _unur_sf_ln_factorial(k)
 /*---------------------------------------------------------------------------*/
 
-/******************************************************************
- *                                                                *
- *   Hypergeometric Distribution - Ratio of Uniforms/Inversion    *
- *                                                                *
- ******************************************************************
- *                                                                *
- * Ratio of Uniforms combined with Inversion for                  *
- * sampling from Hypergeometric distributions with parameters     *
- * N, M and n. The algorithm is valid for M <= N/2, n <= N/2.     *
- * Otherwise parameters (at the beginning of the algorithm) and   *
- * random numbers k are adapted in function h_util().             *
- * For mode m < 5 Inversion is applied:                           *
- * The random numbers are generated via sequential search,        *
- * starting at the lowest index k=0. The cumulative probabilities *
- * are avoided by using the technique of chop-down.               *
- * For mode  m >=5  Ratio of Uniforms is employed:                *
- * A table mountain hat function h(x) with optimal scale          *
- * parameter s for fixed location parameter  a = mu+1/2  is used. *
- * If the mode m <= 20 and the candidate k is near the mode       *
- * f(k) is computed recursively starting at the mode  m.          *
- *                                                                *
- ******************************************************************
- *                                                                *
- * FUNCTION:    - hruec samples a random number from the          *
- *                Hypergeometric distribution with parameters     *
- *                N (number of red and black balls), M (number    *
- *                of red balls) and n (number of trials)          *
- *                valid for N >= 2, M,n <= N.                     *
- * REFERENCE:   - E. Stadlober (1989): Sampling from Poisson,     *
- *                binomial and hypergeometric distributions:      *
- *                ratio of uniforms as a simple and fast          *
- *                alternative, Bericht 303, Math. Stat. Sektion,  *
- *                Forschungsgesellschaft Joanneum, Graz.          *
- * SUBPROGRAMS: - flogfak(k)  ... log(k!) with integer k     *
- *                                                                *
- * Implemented by R.Kremer 1990, revised by P.Busswald, July 1992 *
- ******************************************************************/
+/*****************************************************************************
+ *                                                                           *
+ *   Hypergeometric Distribution - Ratio of Uniforms/Inversion               *
+ *                                                                           *
+ *****************************************************************************
+ *                                                                           *
+ *  Ratio of Uniforms combined with Inversion for sampling from              *
+ *  Hypergeometric distributions with parameters N, M and n. The algorithm   *
+ *  is valid for M <= N/2, n <= N/2. Otherwise parameters (at the beginning  *
+ *  of the algorithm) and random numbers k are adapted in function h_util(). *
+ *  For mode m < 5 Inversion is applied:                                     *
+ *  The random numbers are generated via sequential search, starting at the  *
+ *  lowest index k=0. The cumulative probabilities are avoided by using the  *
+ *  technique of chop-down.                                                  *
+ *  For mode  m >=5  Ratio of Uniforms is employed: A table mountain hat     *
+ *  function h(x) with optimal scale parameter s for fixed location          *
+ *  parameter  a = mu+1/2  is used.                                          *
+ *  If the mode m <= 20 and the candidate k is near the mode f(k) is         *
+ *  computed recursively starting at the mode  m.                            *
+ *                                                                           *
+ *****************************************************************************
+ *                                                                           *
+ * FUNCTION:    - hruec samples a random number from the Hypergeometric      *
+ *                distribution with parameters N (number of red and          *
+ *                black balls), M (number of red balls) and n (number of     *
+ *                trials) valid for N >= 2, M,n <= N.                        *
+ * REFERENCE:   - E. Stadlober (1989): Sampling from Poisson, binomial and   *
+ *                hypergeometric distributions: ratio of uniforms as a       *
+ *                simple and fast alternative,                               *
+ *                Bericht 303, Math. Stat. Sektion,                          *
+ *                Forschungsgesellschaft Joanneum, Graz.                     *
+ *                                                                           *
+ * Implemented by R.Kremer 1990, revised by P.Busswald, July 1992            *
+ *****************************************************************************
+ *    WinRand (c) 1995 Ernst Stadlober, Institut fuer Statistitk, TU Graz    *
+ *****************************************************************************/
 
+#define flogfak(k) (_unur_sf_ln_factorial(k))
 #define delta(k) (flogfak(k)+flogfak(Mc-k)+flogfak(nc-k)+flogfak(NMn+k))
-
-
 
 #define b       (GEN.gen_iparam[0])
 #define m       (GEN.gen_iparam[1])
 #define NMn     (GEN.gen_iparam[2])
+#define Mc      (GEN.gen_iparam[3])
+#define nc      (GEN.gen_iparam[4])
+#define N_half  (GEN.gen_iparam[5])
+
 
 #define NMnp    (GEN.gen_param[0])
 #define Np      (GEN.gen_param[1])
@@ -177,17 +179,13 @@ _unur_stdgen_hypergeometric_init( struct unur_par *par, struct unur_gen *gen )
 #define h       (GEN.gen_param[6])
 #define p0      (GEN.gen_param[7])
 
-
-#define ln2 0.69314718055994531
-
-
 /*---------------------------------------------------------------------------*/
 
 inline static int
 hypergeometric_hruec_init( struct unur_gen *gen )
 {
- int N_half,Mc,nc,k,k1,i,bh;
- double x,u,f,lf,p,q,c,my;
+  int k1,bh;
+  double x,p,q,c,my;
 
   /* check arguments */
   CHECK_NULL(gen,0);  COOKIE_CHECK(gen,CK_DSTD_GEN,0);
@@ -201,39 +199,42 @@ hypergeometric_hruec_init( struct unur_gen *gen )
 
   /* -X- setup code -X- */
 
-  N_half=N/2.0;                      /* Preparations of the parameters */
- if (M<=N_half) Mc=M;else Mc=N-M;   /* if M<=N/2 M is replaced by N-M */
- if (n<=N_half) nc=n;else nc=N-n;   /* if n<=n/2 n is replaced by N-n */
- 	                                     /* Set-up */
-	 Np=(double)N;
-	 Mp=(double)Mc;
-	 np=(double)nc;
-	 NMn=N-Mc-nc;
-	 NMnp=Np-Mp-np;
-	 p=Mp/Np;
-	 q=1.0-p;
-	 my=np*p;
-	 bh=min(nc,Mc);
-	 m=(int) ((np+1.0)*(Mp+1.0)/(Np+2.0));       /* mode */
-	 if (m<5)
-	{
-	 c=my+10.0*sqrt(my*q*(1.0-np/Np));     /* Set-up for Inversion */
-	 b=min(bh,(int)c);                /* safety-bound */
-	 p0=exp(flogfak(N-Mc)+flogfak(N-nc)-flogfak(NMn)-flogfak(N));
-	}
-	 else
-	{
-	 a=my+0.5;                      /* Set-up for Ratio of Uniforms */
-	 c = sqrt(2.0*a*q*(1.0-np/Np));
-	 b=min(bh,(int)(a+7.0*c));       /* safety-bound */
-	 g=delta(m);
-	 k1=(int)(a-c);
-	 x=(a-k1-1.0)/(a-k1);
-	 if((np-k1)*(p-(double)k1/Np)*x*x > (k1+1)*(q-(np-k1-1.0)/Np)) k1++;
-	 h=(a-k1)*exp(0.5*(g-delta(k1))+ln2);    /* h=2*s */
-	}
-	 
+  N_half = N/2;                      /* Preparations of the parameters  */
+  Mc = (M<=N_half) ? M : N-M;        /* if M<=N/2, M is replaced by N-M */
+  nc = (n<=N_half) ? n : N-n;        /* if n<=N/2, n is replaced by n-M */
+  
+  /* Set-up */
+  Np = (double)N;
+  Mp = (double)Mc;
+  np = (double)nc;
 
+  NMn = N - Mc - nc;
+  NMnp = Np - Mp - np;
+  p = Mp / Np;
+  q = 1.0 - p;
+  my = np * p;
+  bh = min(nc,Mc);
+  m = (int) ((np+1.0)*(Mp+1.0)/(Np+2.0));       /* mode */
+
+  if (m < 5) {
+    /* Set-up for Inversion */
+    c = my + 10.0*sqrt(my*q*(1.0-np/Np));
+    b = min(bh,(int)c);                         /* safety-bound */
+    p0 = exp(flogfak(N-Mc)+flogfak(N-nc)-flogfak(NMn)-flogfak(N));
+  }
+
+  else {
+    /* Set-up for Ratio of Uniforms */
+    a = my+0.5;
+    c = sqrt(2.0*a*q*(1.0-np/Np));
+    b = min(bh,(int)(a+7.0*c));                 /* safety-bound */
+    g = delta(m);
+    k1 = (int)(a-c);
+    x = (a-k1-1.0)/(a-k1);
+    if((np-k1)*(p-(double)k1/Np)*x*x > (k1+1)*(q-(np-k1-1.0)/Np))
+      k1++;
+    h = (a-k1)*exp(0.5*(g-delta(k1))+M_LN2);    /* h=2*s */
+  }
 
   /* -X- end of setup code -X- */
 
@@ -246,76 +247,78 @@ hypergeometric_hruec_init( struct unur_gen *gen )
 int
 _unur_stdgen_sample_hypergeometric_hruec( struct unur_gen *gen )
 {
-  /* -X- generator code -X- */
- int N_half,Mc,nc,k,k1,i,bh, h_util(int iN,int iM,int in,int ik);
- double x,u,f,lf,p,q,c,my;
-  
+  int k,i;
+  double x,u,f,lf;
 
   /* check arguments */
   CHECK_NULL(gen,0);  COOKIE_CHECK(gen,CK_DSTD_GEN,0);
 
+  /* -X- generator code -X- */
+  
+  if (m<5) {                                     /* Inversion/Chop-down */
+    double pk;
 
- if (m<5)                                     /* Inversion/Chop-down */
-	 {
-	  double pk;
+    k = 0;
+    pk = p0;
+    u = uniform();
+    while (u>pk) {
+      ++k;
+      if (k>b) {
+	u = uniform();
+	k = 0;
+	pk = p0;
+      }
+      else {
+	u -= pk;
+	pk *= ((Mp-k+1.0)*(np-k+1.0)) / ((double)k*(NMnp+k));
+      }
+    }
 
-	  k=0;
-	  pk=p0;
-	  u=uniform();
-	  while (u>pk)
-		{
-		 ++k;
-		 if (k>b)
-			 {
-		u=uniform();
-		k=0;
-		pk=p0;
-			 }
-		 else
-			 {
-		u-=pk;
-		pk*=((Mp-k+1.0)*(np-k+1.0))/((double)k*(NMnp+k));
-			 }
-		}
-	  return (h_util(N,M,n,k));
-	 }
- for (;;)                                     /* Ratio of Uniforms */
-	 {
-	  do
-		 {
-	u=uniform();
-	x=a+h*(uniform()-0.5)/u;
-		 }
-	  while (x < 0 || ((k=(int)x) > b)); /* check, if k is valid candidate */
-	  if (m<=20 || labs(m-k)<=15)
-		 {                                     /* compute f(k) recursively */
-	f=1.0;
-	if (m<k)
-	  {
-		for (i=m+1;i<=k;i++) f*=((Mp-i+1.0)*(np-i+1.0))/((double)i*(NMnp+i));
-		if (u*u <= f) break;              /* f - f(k), u^2<=f */
-	  }
-	else
-	  {
-		for (i=k+1;i<=m;i++) f*=((Mp-i+1.0)*(np-i+1.0))/((double)i*(NMnp+i));
-		if (u*u*f <= 1.0) break;          /* f - 1/f(k), u^2<=f */
-	  }
-	}
-	  else
-		 {
-	lf=g-delta(k);                       /* lf - ln(f(k)) */
-	if ( u * (4.0 - u) - 3.0 <= lf) break;     /* lower squeeze */
-	if (u*(u-lf) <= 1.0)                       /* upper squeeze */
-		if (2.0*log(u) <= lf) break;         /* final acceptance */
-		 }
-	}
- return (h_util(N,M,n,k));
+    return (h_util(N,M,n,k));
+  }
+
+  for (;;) {                                    /* Ratio of Uniforms */
+    do {
+      u = uniform();
+      x = a + h*(uniform()-0.5) / u;
+    } while (x < 0 || ((k=(int)x) > b));        /* check, if k is valid candidate */
+
+    if (m <= 20 || labs(m-k) <= 15) {           /* compute f(k) recursively */
+      f = 1.0;
+      if (m<k) {
+	for (i=m+1;i<=k;i++)
+	  f *= ((Mp-i+1.0)*(np-i+1.0)) / ((double)i*(NMnp+i));
+	if (u*u <= f) break;                    /* f - f(k), u^2<=f */
+      }
+      else {
+	for (i=k+1;i<=m;i++)
+	  f *= ((Mp-i+1.0)*(np-i+1.0)) / ((double)i*(NMnp+i));
+	if (u*u*f <= 1.0) break;                /* f - 1/f(k), u^2<=f */
+      }
+    }
+
+    else {
+      lf = g - delta(k);                        /* lf - ln(f(k)) */
+      if ( u * (4.0 - u) - 3.0 <= lf) break;    /* lower squeeze */
+      if (u*(u-lf) <= 1.0)                      /* upper squeeze */
+	if (2.0*log(u) <= lf) break;            /* final acceptance */
+    }
+  }
+
+  return (h_util(N,M,n,k));
+
+  /* -X- end of generator code -X- */
+
 } /* end of _unur_stdgen_sample_hypergeometric_hruec() */
 
+/*---------------------------------------------------------------------------*/
 
 #undef b    
 #undef m   
 #undef NMn 
+#undef Mc
+#undef nc
+#undef N_half
 
 #undef NMnp
 #undef Np  
@@ -326,58 +329,35 @@ _unur_stdgen_sample_hypergeometric_hruec( struct unur_gen *gen )
 #undef h   
 #undef p0  
 
-
-#undef ln2 0.69314718055994531
-
+#undef delta(k)
+#undef flogfak(k)
 
 #undef N
 #undef M
 #undef n
-#undef delta
 
+/*---------------------------------------------------------------------------*/
 
-int h_util(int N,int M,int n,int k)
-         /* Transformation to variate k from H(N,M,n) */
-
+int
+h_util(int N_, int M_, int n_, int k)
+     /* Transformation to variate k from H(N,M,n) */
 {
  int N_half;
 
- N_half=N/2.0;
- if (n<=N_half)
+ N_half = N_/2;
+
+ if (n_ <= N_half)
 	 {
-	  if (M<=N_half) return(k);   /* no replacements */
-	  else return(n-k);           /* M has been replaced by N-M, therefore */
+	  if (M_ <= N_half) return(k);   /* no replacements */
+	  else return(n_ - k);           /* M has been replaced by N-M, therefore */
 	 }                            /* k has to be replaced by n-k           */
  else
 	 {
-	  if (M<=N_half) return(M-k); /* n h.b.r. by N-n, therefore k by M-k */
-	  else return(M-N+n+k);       /* M h.b.r. by N-M and n by N-n,       */
+	  if (M_ <= N_half) return(M_ - k); /* n h.b.r. by N-n, therefore k by M-k */
+	  else return(M_ - N_ + n_ + k);       /* M h.b.r. by N-M and n by N-n,       */
 	 }                            /* therefore k by M-N+n+k              */
-}
-
-  
-
-  /* -X- end of generator code -X- */
-
-
+} /* end of h_util() */
 
 /*---------------------------------------------------------------------------*/
 #endif   /*  HAVE_UNUR_SF_LN_FACTORIAL  */
 /*---------------------------------------------------------------------------*/
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -276,7 +276,9 @@ int unur_distr_cont_set_hr( UNUR_DISTR *distribution, UNUR_FUNCT_CONT *hazard );
 
    @strong{Important}: Do not simply use @i{f(x) / (1-F(x))}, since
    this is numerically very unstable and results in numerical noise
-   if @i{F(x)} is (very) close to 1.
+   if @i{F(x)} is (very) close to 1. Moreover, if the density @i{f(x)}
+   is known a generation method that uses the density is more 
+   appropriate.
 
    It is not possible to change such a function. Once the HR is set it
    cannot be overwritten. This also holds when the HR is given by the

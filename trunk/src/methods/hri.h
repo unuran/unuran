@@ -85,6 +85,8 @@ int unur_hri_set_p0( UNUR_PAR *parameters, double p0 );
    Set design point for algorithm. It is used to split the domain of the 
    distribution. Values for @var{p0} close to the expectation of the
    distribution results in a relatively good performance of the algorithm.
+   It is important that the hazard rate at this point must be greater
+   than @code{0} and less than @code{UNUR_INFINITY}.
    
    Default: left boundary of domain + @code{1.}
 */

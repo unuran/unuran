@@ -71,6 +71,7 @@
 #include <distr/distr.h>
 #include <distr/cvec.h>
 #include <specfunct/unur_specfunct_source.h>
+#include <utils/matrix_source.h>
 #include "unur_distributions.h"
 #include "unur_distributions_source.h"
 #include "unur_stddistr.h"
@@ -90,36 +91,102 @@ static const char distr_name[] = "multinormal";
 /*---------------------------------------------------------------------------*/
 /* function prototypes                                                       */
 
-/** TODO:
     static double _unur_pdf_multinormal( const double *x, const UNUR_DISTR *distr );
-    static double _unur_dpdf_multinormal( double *result, const double *x, const UNUR_DISTR *distr );
+    static int _unur_dpdf_multinormal( double *result, const double *x, const UNUR_DISTR *distr );
+/** TODO:
     static int _unur_upd_mode_multinormal( UNUR_DISTR *distr );
     static int _unur_upd_area_multinormal( UNUR_DISTR *distr );
 **/
 
 /*---------------------------------------------------------------------------*/
-#if 0
-/*---------------------------------------------------------------------------*/
 
 double
-_unur_pdf_multinormal( double *x, const UNUR_DISTR *distr )
+_unur_pdf_multinormal( const double *x, const UNUR_DISTR *distr )
 { 
-  ;
+#define idx(a,b) ((a)*dim+(b))
+
+  int i,j, dim;
+  double *mean;
+  const double *covar_inv; 
+  
+  double xx; /* argument used in the evaluation of exp(-xx/2) */
+  double *cx; /* multiplication of covariance matrix and x*/
+  
+  dim = distr->dim;
+  
+  if (DISTR.mean == NULL) {
+    /* standard form */
+    xx=0.;
+    for (i=0; i<dim; i++) { xx += x[i]*x[i]; }
+    return exp(-xx/2. - LOGNORMCONSTANT);  
+  }
+
+  /* general form */
+  covar_inv = (DISTR.covar_inv == NULL) ? 
+              unur_distr_cvec_get_covar_inv ( ( UNUR_DISTR *) distr ) : DISTR.covar_inv;
+  /* TODO ? ... check if covar_inv could be computed */
+
+  mean = DISTR.mean;
+  
+  xx=0.;
+  cx = _unur_malloc(dim * sizeof(double));
+  for (i=0; i<dim; i++) {
+    cx[i]=0.;
+    /* multiplication of inverse covariance matrix and (x-mean) */
+    for (j=0; j<dim; j++) {
+      cx[i] += covar_inv[idx(i,j)] * (x[j]-mean[j]);
+    }
+    xx += (x[i]-mean[i])*cx[i];
+  }
+
+  free(cx);
+  
+  return exp(-xx/2. - LOGNORMCONSTANT);
+
+#undef idx
 } /* end of _unur_pdf_multinormal() */
 
 /*---------------------------------------------------------------------------*/
 
-double
+int
 _unur_dpdf_multinormal( double *result, const double *x, const UNUR_DISTR *distr )
 {
-  ;
+#define idx(a,b) ((a)*dim+(b))
+
+  int i,j, dim;
+  double fx;
+  double *mean;
+  const double *covar_inv;
+    
+  dim = distr->dim;
+  mean = DISTR.mean;
+  covar_inv = (DISTR.covar_inv == NULL) ?
+              unur_distr_cvec_get_covar_inv ( ( UNUR_DISTR *) distr ) : DISTR.covar_inv;
+  /* TODO ? ... check if covar_inv could be computed */
+
+  fx = _unur_pdf_multinormal(x, distr);
+  for (i=0; i<dim; i++) {
+    result[i]=0;
+    for (j=0; j<dim; j++) {
+      result[i] += (x[j]-mean[j]) * (covar_inv[idx(i,j)]+covar_inv[idx(j,i)]);
+    }    
+    result[i] *= - fx / 2.;
+  }
+  
+  return UNUR_SUCCESS; 
+
+#undef idx
 } /* end of _unur_dpdf_multinormal() */
 
+/*---------------------------------------------------------------------------*/
+#if 0
 /*---------------------------------------------------------------------------*/
 
 int
 _unur_upd_mode_multinormal( UNUR_DISTR *distr )
 {
+  /* nothing TODO ... besides checking if mode is inside domain ? */
+
   return UNUR_SUCCESS;
 } /* end of _unur_upd_mode_multinormal() */
 
@@ -148,6 +215,7 @@ unur_distr_multinormal( int dim, const double *mean, const double *covar )
 {
   struct unur_distr *distr;
   struct unur_distr *stdmarginal;
+  double det_covar; /* determinant of covariance matrix */
 
   /* get new (empty) distribution object */
   distr = unur_distr_cvec_new(dim);
@@ -167,16 +235,16 @@ unur_distr_multinormal( int dim, const double *mean, const double *covar )
   /* how to get special generators */
   DISTR.init = NULL;
 
-  /* functions */
-  /* DISTR.pdf  = _unur_pdf_multinormal;      pointer to p.d.f.            */
-  /* DISTR.dpdf = _unur_dpdf_multinormal;     pointer to derivative of p.d.f. */
-
   /* copy (and check) parameters */
   if ((unur_distr_cvec_set_mean(distr,mean)!=UNUR_SUCCESS) ||
       (unur_distr_cvec_set_covar(distr,covar)!=UNUR_SUCCESS) ) {
     unur_distr_free( distr );
     return NULL;
   }
+
+  /* functions */
+  DISTR.pdf  = _unur_pdf_multinormal;     /* pointer to p.d.f.               */
+  DISTR.dpdf = _unur_dpdf_multinormal;    /* pointer to derivative of p.d.f. */
 
   /* set standardized marginal distributions */
   stdmarginal = unur_distr_normal(NULL,0);
@@ -192,7 +260,8 @@ unur_distr_multinormal( int dim, const double *mean, const double *covar )
   /* domain */
 
   /* log of normalization constant */
-  /* LOGNORMCONSTANT = 1; */
+  det_covar = (DISTR.covar == NULL) ? 1. : _unur_matrix_determinant(dim, DISTR.covar);
+  LOGNORMCONSTANT = ( distr->dim * log(2 * M_PI) + log(det_covar) ) / 2.;
 
   /* mode */
   DISTR.mode = _unur_malloc( distr->dim * sizeof(double) );

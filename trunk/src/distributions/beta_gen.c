@@ -127,9 +127,8 @@ _unur_stdgen_beta_init( struct unur_par *par, struct unur_gen *gen )
     return 1;
 
   case UNUR_STDGEN_INVERSION:   /* inversion method */
-  default:
-    /* no such generator */
-    _unur_warning(par->genid,UNUR_ERR_DISTR_GEN,"");
+  default: /* no such generator */
+    if (gen) _unur_warning(par->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
     return 0;
   }
 

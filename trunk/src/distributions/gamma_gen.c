@@ -85,14 +85,15 @@ _unur_stdgen_gamma_init( struct unur_par *par, struct unur_gen *gen )
   COOKIE_CHECK(par,CK_CSTD_PAR,0.);
 
   switch (par->variant) {
+
   case 0:  /* Rejection with log-logistic envelopes */  /* DEFAULT */
     _unur_cstd_set_sampling_routine( par,gen,unur_stdgen_sample_gamma_gll );
     gamma_gll_init( gen );
     return 1;
+
   case UNUR_STDGEN_INVERSION:   /* inversion method */
-  default:
-    /* no such generator */
-    _unur_warning(par->genid,UNUR_ERR_DISTR_GEN,"");
+  default: /* no such generator */
+    if (gen) _unur_warning(par->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
     return 0;
   }
 

@@ -82,14 +82,15 @@ _unur_stdgen_exponential_init( struct unur_par *par, struct unur_gen *gen )
   COOKIE_CHECK(par,CK_CSTD_PAR,0.);
 
   switch (par->variant) {
+
   case 0: /* Default */
   case UNUR_STDGEN_INVERSION:   /* inversion method */
     PAR.is_inversion = TRUE;
     _unur_cstd_set_sampling_routine(par,gen,unur_stdgen_sample_exponential_inv); 
     return 1;
-  default:
-    /* no such generator */
-    _unur_warning(par->genid,UNUR_ERR_DISTR_GEN,"");
+
+  default: /* no such generator */
+    if (gen) _unur_warning(par->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
     return 0;
   }
   

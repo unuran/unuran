@@ -85,36 +85,44 @@ _unur_stdgen_normal_init( struct unur_par *par, struct unur_gen *gen )
   COOKIE_CHECK(par,CK_CSTD_PAR,0.);
 
   switch (par->variant) {
+
   case 0:    /* Box-Muller method */     /* DEFAULT */
     _unur_cstd_set_sampling_routine( par,gen,unur_stdgen_sample_normal_bm );
     normal_bm_init( gen );
     return 1;
+
   case 1:    /* Polarmethod with rejection */
     _unur_cstd_set_sampling_routine( par,gen,unur_stdgen_sample_normal_pol );
     normal_pol_init( gen );
     return 1;
+
   case 2:    /* "Naive" ratio-of-uniforms */
     _unur_cstd_set_sampling_routine( par,gen,unur_stdgen_sample_normal_nquo );
     return 1;
+
   case 3:    /* Ratio-of-uniforms with squeeze */
     _unur_cstd_set_sampling_routine( par,gen,unur_stdgen_sample_normal_quo );
     return 1;
+
   case 4:    /* Ratio-of-uniforms with quadratic bounding curves */
     _unur_cstd_set_sampling_routine( par,gen,unur_stdgen_sample_normal_leva );
     return 1;
+
   case 5:    /* Kindermann-Ramage method */
     _unur_cstd_set_sampling_routine( par,gen,unur_stdgen_sample_normal_kr );
     return 1;
+
   case 6:    /* Acceptance-complement ratio */
     _unur_cstd_set_sampling_routine( par,gen,unur_stdgen_sample_normal_acr );
     return 1;
+
   case 99:   /* infamous sum-of-12-uniforms method. DO NOT USE */
     _unur_cstd_set_sampling_routine( par,gen,unur_stdgen_sample_normal_sum );
     return 1;
+
   case UNUR_STDGEN_INVERSION:
-  default:
-    /* no such generator */
-    _unur_warning(par->genid,UNUR_ERR_DISTR_GEN,"");
+  default: /* no such generator */
+    if (gen) _unur_warning(par->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
     return 0;
   }
 

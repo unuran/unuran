@@ -40,7 +40,7 @@
 
 /*
   =METHOD  CSTD   Continuous STandarD distributions
-  
+
   CSTD is a wrapper for special generators for continuous univariate standard
   distributions. It only works for distributions in the 
   (=>) UNURAN library of standard distributions.
@@ -52,7 +52,7 @@
   These are selected by a number. For possible variants see
   (=>) UNURAN library of standard distributions.
   However the following are common to all distributions:
-     0                     ... the default generator                      
+     UNUR_STDGEN_DEFAULT   ... the default generator                      
      UNUR_STDGEN_INVERSION ... the inversion method (if available)         
   
   Sampling from truncated distributions (which can be constructed by 
@@ -121,7 +121,6 @@ int unur_cstd_chg_domain( struct unur_gen *gen, double left, double right );
    This is only possible of the inversion method is used.
    Otherwise this call has no effect.
 */
-
 
 /* =END */
 /*---------------------------------------------------------------------------*/

@@ -110,19 +110,22 @@ UNUR_PAR *unur_tabl_new( const UNUR_DISTR* distribution );
 
 /*...........................................................................*/
 
-int unur_tabl_set_variant_setup( UNUR_PAR *parameters, unsigned variant );
-/* 
-   Set variant for setup. Two modes are possible for @var{variant}:
-   @table @code
-   @item 1
-   only use the equal area rule to construct hat.
-   @item 2
-   additionally split the intervals created by the equal
-   area rule until the maximum number of intervals is reached or the
-   ratio between the area below the squeeze and the area below the hat is
-   exceeded.
-   @end table
-   Default is variant @code{2}.
+int unur_tabl_set_usedars( UNUR_PAR *parameters, int usedars );
+/*
+   If @var{usedars} is set to TRUE, ``derandomized adaptive rejection
+   sampling'' (DARS) is used in setup.
+   Intervals, where the area between hat and squeeze is too
+   large compared to the average area between hat and squeeze
+   over all intervals, are splitted.
+   This procedure is repeated until the ratio between squeeze and hat
+   exceeds the bound given by unur_tabl_set_max_sqhratio() call or the
+   maximum number of intervals is reached. Moreover, it also aborts
+   when no more intervals can be found for splitting.
+
+   For finding splitting points the arc-mean rule (a mixture of
+   arithmetic mean and harmonic mean) is used.
+
+   Default is TRUE.
 */
 
 int unur_tabl_set_variant_splitmode( UNUR_PAR *parameters, unsigned splitmode );

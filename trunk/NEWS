@@ -1,3 +1,8 @@
+Version 0.4.4: July 2003
+
+	- replaced unur_tabl_set_variant_setup() by unur_tabl_set_usedars()
+          with a slightly different interface.
+
 Version 0.4.3: June 2003
 
 	- fixed problem with prepocessor for MacOS X

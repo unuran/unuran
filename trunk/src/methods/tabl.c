@@ -300,14 +300,22 @@ unur_tabl_new( const struct unur_distr *distr )
 
 /*****************************************************************************/
 
-int 
-unur_tabl_set_variant_setup( struct unur_par *par, unsigned variant )
+int
+unur_tabl_set_usedars( struct unur_par *par, int usedars )
      /*----------------------------------------------------------------------*/
-     /* set setup variant of method                                          */
+     /* set flag for using DARS (derandomized adaptive rejection sampling).  */
+     /* additionally the rule for splitting intervals can be set.            */
      /*                                                                      */
      /* parameters:                                                          */
-     /*   par     ... pointer to parameter for building generator object     */
-     /*   variant ... indicator for variant                                  */
+     /*   par       ... pointer to parameter for building generator object   */
+     /*   usedars   ... 0 = do not use,  1 = use DARS                        */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... on success                                                   */
+     /*   0 ... on error                                                     */
+     /*                                                                      */
+     /* comment:                                                             */
+     /*   using using DARS is the default                                    */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
@@ -318,18 +326,15 @@ unur_tabl_set_variant_setup( struct unur_par *par, unsigned variant )
 
   /* store date */
   par->variant &= ~TABL_VARMASK_STP;
-  switch (variant) {
-  case 1:
-    par->variant |= TABL_VARFLAG_STP_A;
-    return 1;
-  case 2:
+  if (usedars)
     par->variant |= TABL_VARFLAG_STP_A | TABL_VARFLAG_STP_B;
-    return 1;
-  default:
-    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"invalid variant");
-    return 0;
-  }
-} /* end if unur_tabl_set_variant_setup() */
+  else /* do not use DARS */
+    par->variant |= TABL_VARFLAG_STP_A;
+
+  /* o.k. */
+  return 1;
+
+} /* end of unur_tabl_set_usedars() */
 
 /*---------------------------------------------------------------------------*/
 

@@ -56,7 +56,8 @@ struct unur_dstd_gen {
   double *gen_param;      /* parameters for the generator                    */
   int     n_gen_param;    /* number of parameters for the generator          */
 
-  int    flag;            /* sometimes it is convenient to have a flag       */
+  int    *gen_iparam;     /* integer parameters for generator                */
+  int     n_gen_iparam;   /* number of integer parameters for the generator  */
 
   double  umin;           /* cdf at left boundary of domain                  */
   double  umax;           /* cdf at right boundary of domain                 */

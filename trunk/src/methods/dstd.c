@@ -316,7 +316,8 @@ unur_dstd_free( struct unur_gen *gen )
   /* free memory */
   _unur_free_genid(gen);
   free(GEN.gen_param);
-  free(GEN.gen_aux);
+  free(GEN.gen_iparam);
+  unur_free(GEN.gen_aux);
   free(gen);
 
 } /* end of unur_dstd_free() */
@@ -364,6 +365,8 @@ _unur_dstd_create( struct unur_par *par )
   /* defaults */
   GEN.gen_param = NULL;  /* parameters for the generator      */
   GEN.n_gen_param = 0;   /* (computed in special GEN.init()   */
+  GEN.gen_iparam = NULL; /* smake for integer parameters      */
+  GEN.n_gen_iparam = 0;
   GEN.gen_aux = NULL;    /* no axilliary generator is default */
 
   /* copy some parameters into generator object */

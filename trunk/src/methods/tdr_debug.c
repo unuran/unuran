@@ -368,9 +368,9 @@ _unur_tdr_ps_debug_intervals( struct unur_gen *gen )
 
 static void
 _unur_tdr_gw_debug_sample( struct unur_gen *gen, 
-			struct unur_tdr_interval *iv, 
-			struct unur_tdr_interval *pt, 
-			double x, double fx, double hx, double sqx )
+			   struct unur_tdr_interval *iv, 
+			   struct unur_tdr_interval *pt, 
+			   double x, double fx, double hx, double sqx )
      /*----------------------------------------------------------------------*/
      /* write info about generated point                                     */
      /*                                                                      */
@@ -422,7 +422,58 @@ _unur_tdr_gw_debug_sample( struct unur_gen *gen,
 
   fflush(log);
 
-} /* end of _unur_tdr_debug_sample() */
+} /* end of _unur_tdr_gw_debug_sample() */
+
+/*---------------------------------------------------------------------------*/
+
+static void
+_unur_tdr_ps_debug_sample( struct unur_gen *gen, 
+			struct unur_tdr_interval *iv, 
+			struct unur_tdr_interval *pt, 
+			double x, double fx, double hx, double sqx )
+     /*----------------------------------------------------------------------*/
+     /* write info about generated point                                     */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*   iv  ... pointer to interval                                        */
+     /*   pt  ... pointer to interval that stores construction point         */
+     /*   x   ... generated point                                            */
+     /*   fx  ... value of p.d.f. at x                                       */
+     /*   hx  ... value of hat at x                                          */
+     /*   sqx ... value of squeeze at x                                      */
+     /*----------------------------------------------------------------------*/
+{
+  FILE *log;
+
+  /* check arguments */
+  CHECK_NULL(gen,/*void*/);  COOKIE_CHECK(gen,CK_TDR_GEN,/*void*/);
+  CHECK_NULL(iv,/*void*/);   COOKIE_CHECK(iv,CK_TDR_IV,/*void*/);
+  CHECK_NULL(pt,/*void*/);   COOKIE_CHECK(pt,CK_TDR_IV,/*void*/);
+
+  log = unur_get_stream();
+
+  fprintf(log,"%s:\n",gen->genid);
+  fprintf(log,"%s: construction point: x0 = %g\n",gen->genid,iv->x);
+  fprintf(log,"%s: transformed hat Th(x) = %g + %g * (x - %g)\n",gen->genid,iv->Tfx,pt->dTfx,iv->x);
+  fprintf(log,"%s: squeeze ratio = %g\n",gen->genid,iv->sq);
+  fprintf(log,"%s: generated point: x = %g\n",gen->genid,x);
+  fprintf(log,"%s:  h(x) = %.20g\n",gen->genid,hx);
+  fprintf(log,"%s:  f(x) = %.20g\n",gen->genid,fx);
+  fprintf(log,"%s:  s(x) = %.20g\n",gen->genid,sqx);
+
+  fprintf(log,"%s:    h(x) - f(x) = %g",gen->genid,hx-fx);
+  if (hx<fx) fprintf(log,"  <-- error\n");
+  else       fprintf(log,"\n");
+
+  fprintf(log,"%s:    f(x) - s(x) = %g",gen->genid,fx-sqx);
+  if (fx<sqx) fprintf(log,"  <-- error\n");
+  else       fprintf(log,"\n");
+  fprintf(log,"%s:\n",gen->genid);
+
+  fflush(log);
+
+} /* end of _unur_tdr_ps_debug_sample() */
 
 /*****************************************************************************/
 

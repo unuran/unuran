@@ -2,22 +2,39 @@
 
 -----------------------------------------------------------------------------
 
+Ich hab folgendes Problem gefunden: Wenn ich bei arou oder tdr mit 
+
+"unur_???_set_guidefactor(par,0.)"   ??? steht dabei fuer arou oder tdr
+
+den guidetable abdrehen will, haut es das program mit einem seg-fault
+beim ersten sampling Versuch auf. Das passiert auch, wenn man obige
+Zeile an der entsprechenden Stelle in example1.c oder example2.c
+einfuegt. Leider gibt es keine Informationen im log file, auch wenn man
+alle Debugging flags andreht.
+ 
+Das passiert auch, wenn man einen kleinen guidefactor (zB 0.5)
+verwendet, und es nur sehr wenig intervalle gibt.
+
+
+Das Problem ist wohl, dass in solchen Faellen, der guidetable nicht
+alloziert wird.
+Ich habe mir die tdr-source kurz angeschaut. An ein paar Stellen habe
+ich gesehen, dass der guide-table auf jedenfall erzeugt wird, falls die
+Laenge 0 sein soll, wird sie auf 1 gesetzt. Irgendwo scheint dieser
+Schritt jedoch vergessen worden zu sein.
+Allerdings ist die source von tdr so umfanreich, dass sie fuer mich doch
+sehr unuebersichtlich ist.
+
+
+-----------------------------------------------------------------------------
+
 (*) using unur_sample_cont() with a generator object of the wrong type
     causes a segmentation fault.
 
 -----------------------------------------------------------------------------
 
-(*) The String API has a bug when "decimal point" is set to comme `,'
-    instead to a point `.'.
-
------------------------------------------------------------------------------
-
 (*) The String API does not provide the full functionality as the API
     using function calls. 
-
------------------------------------------------------------------------------
-
-(*) add unur_copy(gen) und unur_distr_copy(distr)
 
 -----------------------------------------------------------------------------
 

@@ -1,4 +1,4 @@
-/* my second UNURAN program test2.c */ 
+/*   my second UNURAN program test2.c */ 
 
 #include <unuran.h>
 #include <unuran_distributions.h>
@@ -24,19 +24,20 @@ int main()
 /*     setze pointer auf pdf und cdf  */
  
   /* make distr. object: truncated Gaussian */
-  //  distr = unur_distr_normal(NULL,0);
-  distr1 = unur_distr_cont_new();
-  unur_distr_cont_set_cdf(distr1, trig );
-  unur_distr_cont_set_pdf(distr1, pdftrig );  
-  unur_distr_cont_set_dpdf(distr1,dpdftrig );  
+    distr1 = unur_distr_normal(NULL,0);
+  //distr1 = unur_distr_cont_new();
+  //unur_distr_cont_set_cdf(distr1, trig );
+  //unur_distr_cont_set_pdf(distr1, pdftrig );  
+  //unur_distr_cont_set_dpdf(distr1,dpdftrig );  
   // unur_distr_cont_set_mode(distr1,0.5 );
 
   // unur_distr_cont_set_domain(distr, -2.,2.);
 
   /* choose method and set parameters */
   //  par = unur_arou_new(distr);
-  par1 = unur_tabl_new(distr1);
-  //  unur_ninv_use_newton(par1);
+   par1 = unur_ninv_new(distr1);
+   unur_ninv_use_newton(par1);
+   unur_ninv_use_table(par1);
   // unur_arou_set_max_sqhratio(par,0.99);
 
   /* make generator object */
@@ -50,7 +51,7 @@ int main()
   /* sample */
   for (i=0;i<100;i++) {
   x = unur_sample_cont(gen1);
-  printf("%f\n",x);
+  //printf("%f\n",x);
   }
  
 

@@ -786,13 +786,12 @@ _unur_mcorr_debug_init( const struct unur_gen *gen )
 
   _unur_distr_matr_debug( gen->distr, gen->genid );
 
-  fprintf(log,"%s:\n",gen->genid);
+  /* eigenvalues */
+  if (gen->set && MCORR_SET_EIGENVALUES)
+    _unur_matrix_print_vector( GEN.dim, GEN.eigenvalues, "eigenvalues =", log, gen->genid, "\t   ");
 
-  if (gen->set && MCORR_SET_EIGENVALUES) {
+  if (gen->set && MCORR_SET_EIGENVALUES)
     fprintf(log,"%s: sampling routine = _unur_mcorr_sample_matr_eigen()\n",gen->genid);
-    _unur_matrix_print_vector(GEN.dim, GEN.eigenvalues, "Eigenvalues :",
-                              log, gen->genid,"     ");
-  }
   else
     fprintf(log,"%s: sampling routine = _unur_mcorr_sample_matr_HH()\n",gen->genid);
   fprintf(log,"%s:\n",gen->genid);

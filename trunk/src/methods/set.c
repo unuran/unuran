@@ -537,7 +537,7 @@ unur_set_cpoints( struct unur_par *par, int n_stp, double *stp )
 /*---------------------------------------------------------------------------*/
 
 int
-unur_set_max_ratio( struct unur_par *par, double max_ratio )
+unur_set_max_shratio( struct unur_par *par, double max_ratio )
 /*---------------------------------------------------------------------------*/
 /* set bound for ratio A(squeeze) / A(hat)                                   */
 /*                                                                           */

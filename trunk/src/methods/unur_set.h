@@ -96,7 +96,7 @@ int unur_set_factor( struct unur_par *parameter, double factor );
 int unur_set_cpoints( struct unur_par *parameter, int n_stp, double *starting_cpoints );
 /* set construction points for hat and/or its number for initialization      */
 
-int unur_set_max_ratio( struct unur_par *parameter, double max_ratio );
+int unur_set_max_shratio( struct unur_par *parameter, double max_ratio );
 /* set bound for ratio A(squeeze) / A(hat)                                   */
 
 int unur_set_max_intervals( struct unur_par *parameter, int max_ivs );

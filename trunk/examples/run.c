@@ -180,7 +180,7 @@ int main()
 
   par = unur_arou_new(unur_pdf_normal,unur_dpdf_normal);
   unur_set_cpoints(par,30,NULL);
-  unur_set_max_ratio(par,1.);
+  unur_set_max_shratio(par,1.);
 /*    unur_set_debug(par,1); */
 
   /* run tests */
@@ -196,7 +196,7 @@ int main()
   unur_set_mode(par,0.);
   unur_set_tdr_c(par,-0.5);
   unur_set_cpoints(par,30,NULL);
-  unur_set_max_ratio(par,0.);
+  unur_set_max_shratio(par,0.);
 /*    unur_set_debug(par,1); */
 
   /* run tests */
@@ -212,7 +212,7 @@ int main()
   unur_set_mode(par,0.);
   unur_set_tdr_c(par,0.);
   unur_set_cpoints(par,30,NULL);
-  unur_set_max_ratio(par,0.);
+  unur_set_max_shratio(par,0.);
   
   /* run tests */
   unur_run_tests(par,RUN_TESTS,unur_cdf_normal);
@@ -237,7 +237,7 @@ int main()
   unur_set_check(par,0);
 
 /*    unur_set_max_intervals(par,1000); */
-/*    unur_set_max_ratio(par,1.); */
+/*    unur_set_max_shratio(par,1.); */
 
   unur_set_pdf_area(par,unur_area_normal(NULL,0));
   unur_set_tabl_c(par,0.1);
@@ -283,7 +283,7 @@ int main()
   unur_set_domain(par,-1.,UNUR_INFINITY);
   unur_set_pdf_param(par,fpar,1);
   unur_set_cpoints(par,30,NULL);
-  unur_set_max_ratio(par,0.99);
+  unur_set_max_shratio(par,0.99);
 
   /* run tests */
   unur_run_tests(par,RUN_TESTS,unur_cdf_gamma);
@@ -301,7 +301,7 @@ int main()
   unur_set_mode(par,unur_mode_gamma(fpar,1));
   unur_set_tdr_c(par,-0.5);
   unur_set_cpoints(par,30,NULL);
-  unur_set_max_ratio(par,0.);
+  unur_set_max_shratio(par,0.);
 
   /* run tests */
   unur_run_tests(par,RUN_TESTS,unur_cdf_gamma);
@@ -319,7 +319,7 @@ int main()
   unur_set_mode(par,unur_mode_gamma(fpar,1));
   unur_set_tdr_c(par,0.);
   unur_set_cpoints(par,30,NULL);
-  unur_set_max_ratio(par,0.);
+  unur_set_max_shratio(par,0.);
 
   /* run tests */
   unur_run_tests(par,RUN_TESTS,unur_cdf_gamma);
@@ -386,7 +386,7 @@ int main()
   unur_set_domain(par,0.,1.);
   unur_set_pdf_param(par,fpar,2);
   unur_set_cpoints(par,30,NULL);
-  unur_set_max_ratio(par,0.);
+  unur_set_max_shratio(par,0.);
 
   /* run tests */
   unur_run_tests(par,RUN_TESTS,unur_cdf_beta);
@@ -404,7 +404,7 @@ int main()
   unur_set_mode(par,unur_mode_beta(fpar,2));
   unur_set_tdr_c(par,-0.5);
   unur_set_cpoints(par,30,NULL);
-  unur_set_max_ratio(par,0.);
+  unur_set_max_shratio(par,0.);
 
   /* run tests */
   unur_run_tests(par,RUN_TESTS,unur_cdf_beta);
@@ -422,7 +422,7 @@ int main()
   unur_set_mode(par,unur_mode_beta(fpar,2));
   unur_set_tdr_c(par,0.);
   unur_set_cpoints(par,30,NULL);
-  unur_set_max_ratio(par,0.);
+  unur_set_max_shratio(par,0.);
 
   /* run tests */
   unur_run_tests(par,RUN_TESTS,unur_cdf_beta);
@@ -482,7 +482,7 @@ int main()
   par = unur_arou_new(unur_pdf_cauchy,unur_dpdf_cauchy);
   unur_set_pdf_param(par,fpar,2);
   unur_set_cpoints(par,30,NULL);
-  unur_set_max_ratio(par,0.);
+  unur_set_max_shratio(par,0.);
 
   /* run tests */
   unur_run_tests(par,RUN_TESTS,unur_cdf_cauchy);
@@ -499,7 +499,7 @@ int main()
   unur_set_mode(par,unur_mode_cauchy(fpar,2));
   unur_set_tdr_c(par,-0.5);
   unur_set_cpoints(par,30,NULL);
-  unur_set_max_ratio(par,0.);
+  unur_set_max_shratio(par,0.);
 
   /* run tests */
   unur_run_tests(par,RUN_TESTS,unur_cdf_cauchy);
@@ -516,7 +516,7 @@ int main()
   unur_set_mode(par,unur_mode_cauchy(fpar,2));
   unur_set_tdr_c(par,0.);
   unur_set_cpoints(par,30,NULL);
-  unur_set_max_ratio(par,0.);
+  unur_set_max_shratio(par,0.);
 
   /* run tests */
   unur_run_tests(par,RUN_TESTS,unur_cdf_cauchy);
@@ -570,7 +570,7 @@ int main()
   par = unur_arou_new(unur_pdf_uniform,unur_dpdf_uniform);
   unur_set_domain(par,-0.5,1.5);
   unur_set_cpoints(par,30,NULL);
-  unur_set_max_ratio(par,1.);
+  unur_set_max_shratio(par,1.);
 
   /* run tests */
   unur_run_tests(par,RUN_TESTS,unur_cdf_uniform);
@@ -586,7 +586,7 @@ int main()
   unur_set_domain(par,0.,1.);
   unur_set_tdr_c(par,-0.5);
   unur_set_cpoints(par,30,NULL);
-  unur_set_max_ratio(par,0.);
+  unur_set_max_shratio(par,0.);
 /*    unur_set_debug(par,1); */
 
   /* run tests */
@@ -603,7 +603,7 @@ int main()
   unur_set_domain(par,0.,1.);
   unur_set_tdr_c(par,0.);
   unur_set_cpoints(par,30,NULL);
-  unur_set_max_ratio(par,0.);
+  unur_set_max_shratio(par,0.);
   
   /* run tests */
   unur_run_tests(par,RUN_TESTS,unur_cdf_uniform);
@@ -621,7 +621,7 @@ int main()
   unur_set_pdf_area(par,1.);
   unur_set_tabl_c(par,0.25);
 
-  unur_set_max_ratio(par,1.);
+  unur_set_max_shratio(par,1.);
 
   /* run tests */
   unur_run_tests(par,RUN_TESTS,unur_cdf_uniform);

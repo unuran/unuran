@@ -10,20 +10,34 @@
  *   METHOD:    rejection form piecewise constant hat                        *
  *              (Ahren's table method)                                       *
  *                                                                           *
- *****************************************************************************
- *                                                                           *
- *                                                                           *
  *   DESCRIPTION:                                                            *
  *      Given p.d.f and .... of a T-concave distribution                     *
  *      produce a value x consistent with its density                        *
  *                                                                           *
- *   REQUIRED:  pointer to the density, ....                                 *
+ *****************************************************************************
+     $Id$
+ *****************************************************************************
  *                                                                           *
- *   PARAMETERS:                                                             *
- *      double *pdf_param    ... parameters of p.d.f.                        *
- *                               (default: NULL)                             *
- *      int     n_pdf_param  ... number of parameters of p.d.f.              *
- *                               (default: 0)                                *
+ *   Copyright (c) 2000 Wolfgang Hoermann and Josef Leydold                  *
+ *   Dept. for Statistics, University of Economics, Vienna, Austria          *
+ *                                                                           *
+ *   This program is free software; you can redistribute it and/or modify    *
+ *   it under the terms of the GNU General Public License as published by    *
+ *   the Free Software Foundation; either version 2 of the License, or       *
+ *   (at your option) any later version.                                     *
+ *                                                                           *
+ *   This program is distributed in the hope that it will be useful,         *
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of          *
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the           *
+ *   GNU General Public License for more details.                            *
+ *                                                                           *
+ *   You should have received a copy of the GNU General Public License       *
+ *   along with this program; if not, write to the                           *
+ *   Free Software Foundation, Inc.,                                         *
+ *   59 Temple Place, Suite 330, Boston, MA 02111-1307, USA                  *
+ *                                                                           *
+ *****************************************************************************
+ *****************************************************************************
  *                                                                           *
  *   REFERENCES:                                                             *
  *   [1] Ahrens J. H. (1993): Sampling from general distributions by         *
@@ -46,33 +60,6 @@
  *****************************************************************************
  *                                                                           *
  * ..... beschreibung ....                                                   *
- *                                                                           *
- *                                                                           *
- *****************************************************************************
- *                                                                           *
- *   author: Josef.Leydold @ statistik.wu-wien.ac.at                         *
- *                                                                           *
- *   last modification: Tue Sep 21 10:03:03 CEST 1999                        *
- *                                                                           *
- *****************************************************************************
- *                                                                           *
- *   Copyright (c) 1999 Wolfgang Hoermann and Josef Leydold                  *
- *   Dept. for Statistics, University of Economics, Vienna, Austria          *
- *                                                                           *
- *                                                                           *
- *   This library is free software; you can redistribute it and/or           *
- *   modify it under the terms of the GNU Library General Public             *
- *   License as published by the Free Software Foundation; either            *
- *   version 2 of the License, or (at your option) any later version.        *
- *                                                                           *
- *   This library is distributed in the hope that it will be useful,         *
- *   but WITHOUT ANY WARRANTY; without even the implied warranty of          *
- *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU       *
- *   Library General Public License for more details.                        *
- *                                                                           *
- *   You should have received a copy of the GNU Library General Public       *
- *   License along with this library; if not, write to the Free              *
- *   Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.      *
  *                                                                           *
  *****************************************************************************/
 
@@ -1144,7 +1131,7 @@ _unur_tabl_split_interval( struct unur_gen *gen,
   if (fx <= 0.) {
     /* check montonicity */
     if (iv_old->fmin > 0.) {
-      _unur_error(gen->genid,UNUR_ERR_INIT,"p.d.f. not monoton in slope");
+      _unur_error(gen->genid,UNUR_ERR_INIT,"p.d.f. not monotone in slope");
       return 0;
     }
 

@@ -15,11 +15,30 @@
  *                                                                           *
  *   REQUIRED:  pointer to probability vector                                *
  *                                                                           *
- *   PARAMETERS:                                                             *
- *      int factor  ... relative size of guide table (relative to N)         *
- *                      (default: 1)                                         *
- *      int variant ... indicates variant for setup procedure                *
- *                      (default: 0)                                         *
+ *****************************************************************************
+     $Id$
+ *****************************************************************************
+ *                                                                           *
+ *   Copyright (c) 2000 Wolfgang Hoermann and Josef Leydold                  *
+ *   Dept. for Statistics, University of Economics, Vienna, Austria          *
+ *                                                                           *
+ *   This program is free software; you can redistribute it and/or modify    *
+ *   it under the terms of the GNU General Public License as published by    *
+ *   the Free Software Foundation; either version 2 of the License, or       *
+ *   (at your option) any later version.                                     *
+ *                                                                           *
+ *   This program is distributed in the hope that it will be useful,         *
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of          *
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the           *
+ *   GNU General Public License for more details.                            *
+ *                                                                           *
+ *   You should have received a copy of the GNU General Public License       *
+ *   along with this program; if not, write to the                           *
+ *   Free Software Foundation, Inc.,                                         *
+ *   59 Temple Place, Suite 330, Boston, MA 02111-1307, USA                  *
+ *                                                                           *
+ *****************************************************************************
+ *****************************************************************************
  *                                                                           *
  *   REFERENCES:                                                             *
  *   [1] Chen, H. C. and Asau, Y. (1974): On generating random variates      *
@@ -62,33 +81,6 @@
  *                                                                           *
  *   variant 2 is faster but is more sensitive to roundoff errors when       *
  *   N is large.                                                             *
- *                                                                           *
- *****************************************************************************
- *****************************************************************************
- *                                                                           *
- *   author: Josef.Leydold @ statistik.wu-wien.ac.at                         *
- *                                                                           *
- *   last modification: Wed Sep  8 16:15:41 CEST 1999                        *
- *                                                                           *
- *****************************************************************************
- *                                                                           *
- *   Copyright (c) 1999 Wolfgang Hoermann and Josef Leydold                  *
- *   Dept. for Statistics, University of Economics, Vienna, Austria          *
- *                                                                           *
- *                                                                           *
- *   This library is free software; you can redistribute it and/or           *
- *   modify it under the terms of the GNU Library General Public             *
- *   License as published by the Free Software Foundation; either            *
- *   version 2 of the License, or (at your option) any later version.        *
- *                                                                           *
- *   This library is distributed in the hope that it will be useful,         *
- *   but WITHOUT ANY WARRANTY; without even the implied warranty of          *
- *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU       *
- *   Library General Public License for more details.                        *
- *                                                                           *
- *   You should have received a copy of the GNU Library General Public       *
- *   License along with this library; if not, write to the Free              *
- *   Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.      *
  *                                                                           *
  *****************************************************************************/
 

@@ -8,8 +8,6 @@
 extern void         subst_whitespace(char *, char);
 extern char       * elim_whitespace(char *);
 extern int          parselist(char *, double *);
-extern UNUR_DISTR * _unur_str2distr(char *);
-extern UNUR_PAR   * _unur_str2par(UNUR_DISTR *, char *);
 extern UNUR_GEN   * unur_str2gen(char *);
 
 /* main -- test program */

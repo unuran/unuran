@@ -1,0 +1,601 @@
+/*****************************************************************************
+ *                                                                           *
+ *          UNURAN -- Universal Non-Uniform Random number generator          *
+ *                                                                           *
+ *****************************************************************************
+ *                                                                           *
+ *   FILE:      stringpars.c.base / stringpars.c                             *
+ *                                                                           *
+ *                                                                           *
+ *   DESCRIPTION:                                                            *
+ *                                                                           *
+ *   The file stringpars.c.base contains the base of the stringparser.       *
+ *   The perl script <name-it> replaces the                                  *
+ *        =INPUT keyword                                                     *
+ *   tags with information found within the source-code and writes it to     *
+ *   'stringpars.c'.                                                         *
+ *   The string to parse contains information about the standard             *
+ *   distribution, the choosen method and (optional) the uniform number      *
+ *   generator -- The distribution block must be first.                      *
+ *   These three blocks must be separeted with colons `:'                    *
+ *                                                                           *
+ *   The string holds information about the standard distribution            *
+ *   to sample from and (optional) about the sampling method and the         *
+ *   uniform random number generator invoked.                                *
+ *   Therefore the the string consists of up to three block which must be    *
+ *   seperated with a colon `:'.                                             *
+ *   The standard distribution block must be first!                          *
+ *                                                                           *
+ *   Within each block a piece of information must be provided using         *
+ *   a <key>=<value> scheme.                                                 *
+ *   If more then one piece of information is needed,                        *
+ *   the <key>=<value> pairs must be separeted with semicolons `;'.          *
+ *   The <key> is a keyword explained below.                                 *
+ *   The value can be a string, a number or a list of numbers or a string    *
+ *   followed by a list of numbers (examples will be given below),           *
+ *   depending on the <key>. A list must be  bounded with parentheses        *
+ *   `(' and `)' and the list separator is a komma `,'.                      *
+ *   If the value is a string and a list in beetween only white space        *
+ *   is allowed.                                                             *
+ *                                                                           *
+ *   Distribution:                                                           *
+ *   The key `distr' is obligatory, it must be first and the corresponding   *
+ *   value must be one  of the implemented standard distributions---with     *
+ *   a list of parameters.  e.g.: distr=normal(0,1)                          *
+ *   Furthermore it's possible to set the domain via the key `domain'.       *
+ *                                                                           *
+ *   Method:                                                                 *
+ *   The key `method' is obligatory, it must be first and the value must be  *
+ *   the name of a method suitable for the choosen standard distribution.    *
+ *   e.g.: method=arou                                                       *
+ *   Of course the following keys dependend on the method choosen at first.  *
+ *   All corresponding `_set_' commands of UNURAN are available and the key  *
+ *   is the string after the `unur_<methodname>_set_' part of the command.   *
+ *   e.g.: UNURAN provides the command `unur_arou_set_max_sqhratio' to       *
+ *   set a parameter. To call this function via the string-interface, the    *
+ *   key `max_sqhratio' can be used.                                         *
+ *   If this block is omitted, UNURAN chooses a suitable method.             *
+ *                                                                           *
+ *   Uniform random number generator:                                        *
+ *   The only key allowed is `prng' and the following value is a             *
+ *   string which is passed as it is to the PRNG package                     *
+ *   For information see the PRNG manual                                     *
+ *   If this block is omitted, UNURAN sets a uniform random number generator *
+ *                                                                           *
+ *****************************************************************************
+     $Id$
+ *****************************************************************************
+ *                                                                           *
+ *   Copyright (c) 2000 Wolfgang Hoermann and Josef Leydold                  *
+ *   Dept. for Statistics, University of Economics, Vienna, Austria          *
+ *                                                                           *
+ *   This program is free software; you can redistribute it and/or modify    *
+ *   it under the terms of the GNU General Public License as published by    *
+ *   the Free Software Foundation; either version 2 of the License, or       *
+ *   (at your option) any later version.                                     *
+ *                                                                           *
+ *   This program is distributed in the hope that it will be useful,         *
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of          *
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the           *
+ *   GNU General Public License for more details.                            *
+ *                                                                           *
+ *   You should have received a copy of the GNU General Public License       *
+ *   along with this program; if not, write to the                           *
+ *   Free Software Foundation, Inc.,                                         *
+ *   59 Temple Place, Suite 330, Boston, MA 02111-1307, USA                  *
+ *                                                                           *
+ *****************************************************************************/
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
+/* #include <unuran.h> */
+#include <source_unuran.h>
+
+/* Maximal length of provides string allowed */
+#define MAX_STRLENGTH (2048)
+/* Maximal entries of any list allowed */
+#define MAX_ELEM (2048)
+
+
+    /* ********************************************************** */ 
+    /* ********************************************************** */ 
+    /* the following code is automatic generated by a perl script */
+
+//=INPUT known_methods
+
+    /* end of automatically generated code */
+    /* ********************************************************** */ 
+    /* ********************************************************** */ 
+
+/* function prototypes */
+
+void         _unur_subst_whitespace (char *, char);
+char       * _unur_elim_whitespace  (char *);
+int          _unur_parselist        (char *, double *);
+UNUR_DISTR * _unur_str2distr        (char *);
+UNUR_PAR   * _unur_str2par          (UNUR_DISTR *, char *);
+UNUR_GEN   * unur_str2gen           (char *);
+int          _unur_str2urng         (UNUR_PAR *, char *);
+
+
+
+
+
+/**********************************************************************/
+/*                                                                    */
+/* function: _unur_parselist()                                        */
+/*                                                                    */
+/* called by: _unur_str2distr()                                       */
+/*            _unur_str2par()                                         */
+/*                                                                    */
+/* parameters: char   * liststr     (pointer to char / string)        */
+/*             double * parameters  (pointer to double array)         */
+/*                                                                    */
+/* return: number of elements extracted                               */
+/*                                                                    */
+/* comment:                                                           */
+/* gets a string containing a list of comma separated doubles         */
+/* which starts with the first double and is terminited with `)'      */
+/* and a pointer to a double array                                    */
+/* and extracts the doubles from the list to the array                */
+/*                                                                    */
+/**********************************************************************/
+int _unur_parselist( char *liststr, double *parameters ){
+
+  int no_of_elem = 0; /* number of elements in passed list */
+
+  /* extract doubles from string and write them to array of doubles   */
+  /* end of list is indicated by right bracket */  
+  while ( *liststr != ')' ){
+    /* there can only be ',' or '(' in front of the numbers           */
+    while ( *liststr == ',' || *liststr == '(' ){
+      liststr++; /* next char */
+    }
+    
+    /* extract double and write to array and increase counter */
+    parameters[no_of_elem] = strtod(liststr, &liststr);
+    no_of_elem++;
+
+  } /* end while -- all elements of list read*/
+
+  return (no_of_elem);
+
+} /* end of _unur_parselist() */
+
+
+
+/**********************************************************************/
+/*                                                                    */
+/* function: _unur_str2distr()                                        */
+/*                                                                    */
+/* called by: unur_str2gen()                                          */
+/*                                                                    */
+/* parameters: pointer to char (string)                               */
+/*                                                                    */
+/* return: pointer to distribution object                             */
+/*                                                                    */
+/* comments:                                                          */
+/* gets a string with information about the distribution,             */
+/* generates the corresponding distribution object and returns it     */
+/*                                                                    */
+/* The string consists of key=value entries separeted by `;'          */
+/*                                                                    */
+/* three possibilities:                                               */
+/* key=value                                                          */
+/* key=(komma separated list of numbers)                              */
+/* key=value(komma separated list of numbers)                         */
+/*                                                                    */
+/**********************************************************************/
+UNUR_DISTR *_unur_str2distr(char *str){
+
+  UNUR_DISTR *distr;
+
+  double list[MAX_ELEM]; /* value contains a list of numbers */
+  int no_of_elem;        /* size of that list */
+
+  char * tmpstr;     /* temporary pointer to string */
+
+  char * token;      /* char pointer to tokenize the string */
+  char *key, *value; /* the key and its value */
+
+  /* tokenize the string -- split at ';' */
+  for ( token  = strtok(str, ";"); 
+        token != NULL;     
+        token  = strtok(NULL, ";") ){
+
+    /* determine key and value */
+    key = token;
+    value = strchr(key, '=');
+
+    /* none ore more '=' seperates key from value */
+    if ( value != NULL ){
+       for ( *value='\0',value++  ;  *value=='='  ;  value++ ); 
+
+       /* split value into value and list (one of them must exist) */
+       no_of_elem = 0;
+       /* is a list beginning with '(' in the value included? */
+       if (NULL != strchr(value, '(') ){
+
+         tmpstr = strchr(value, '(');
+         *tmpstr = '\0'; /* terminate value */
+         tmpstr++;       /* points to begin of list (if available) */
+   
+         /* extract list of doubles from string  */
+         no_of_elem = _unur_parselist(tmpstr ,list);
+       }
+
+       /* value must terminate before the first Komma */
+       if ( NULL != strchr(value, ',' ) ){
+          tmpstr = strchr(value, ',');
+          *tmpstr = '\0';                 /* terminate value */
+       }
+
+    }
+
+    /* Now: key, value and list are determined               */
+
+
+    /* ********************************************************** */ 
+    /* ********************************************************** */ 
+    /* the following code is automatic generated by a perl script */
+
+=INPUT distrinfo
+
+    /* end of automatically generated code */
+    /* ********************************************************** */ 
+    /* ********************************************************** */ 
+
+  } /* end while -- all tokens handled */
+
+
+  return ( distr );
+
+}
+/* end of _unur_str2distr()                                            */
+
+
+
+/**********************************************************************/
+/*                                                                    */
+/* function: _unur_str2par()                                          */
+/*                                                                    */
+/* called by: unur_str2gen()                                          */
+/*                                                                    */
+/* parameters: pointer do distribution object                         */
+/*             pointer to char array / string                         */
+/*                                                                    */
+/* return: pointer to parameter object                                */
+/*                                                                    */
+/* comments:                                                          */
+/* gets a pointer to a distribution object and a string with          */
+/* information about the distribution,                                */
+/* generates the corresponding parameter object and returns it        */
+/*                                                                    */
+/* The string consists of key=value entries separeted by `;'          */
+/*                                                                    */
+/* four possibilities:                                                */
+/* key                                                                */
+/* key=value                                                          */
+/* key=(komma separated list of numbers)                              */
+/* key=value(komma separated list of numbers)                         */
+/*                                                                    */
+/* for each key the corresponding `unur_<name>_set' command           */
+/* is executed                                                        */
+/*                                                                    */
+/**********************************************************************/
+UNUR_PAR *_unur_str2par(UNUR_DISTR *distr, char *methstr){
+
+  UNUR_PAR *par;
+
+  int check;          /* variable used to check for errors */
+
+  char * token;  /* char pointer to tokenize the string */
+  char *key, *value; /* the key and its value */
+  char *tmpstr;  /* temporary pointer to char */
+
+  double dblvalue; /* double representation of value */
+
+  double list[MAX_ELEM]; /* value contains a list of double numbers */
+  int no_of_elem;        /* size of that list */
+
+
+
+  /* tokenize the string and handle the tokens */
+  for ( token = strtok( methstr, ";");
+       token != NULL;
+       token = strtok(NULL, ";") ){
+
+
+    /* determine key and value */
+    key = token;
+    /* none or several '=' seperates key from value */
+    value = strchr(key, '=');
+    if (value != NULL ){
+       for ( *value='\0', value++; *value=='='; value++ );
+
+
+       /* split value into leading value and list (if possible) */
+       no_of_elem = 0;
+       if (NULL != strchr(value, '(') ){
+         tmpstr = strchr(value, '(');
+         *tmpstr = '\0';                  /* terminate value */
+         tmpstr++;
+
+         /* extract list of doubles from string  */
+         no_of_elem = _unur_parselist(tmpstr ,list);
+       }
+
+       /* value must terminate before the first Komma */
+       if ( NULL != strchr(value, ',' ) ){
+          tmpstr = strchr(value, ',');
+          *tmpstr = '\0';                 /* terminate value */
+       }
+ 
+       /* extract double value from string value */
+       if ( !strcmp(value, "true") || !strcmp(value, "on") ){
+          dblvalue = 1.0;
+       }
+       else if ( !strcmp(value, "false") || !strcmp(value, "off") ){
+          dblvalue = 0.0;
+       }
+       else {
+          dblvalue = atof(value);
+       }
+
+    }
+
+    /* Now: key, value, dblvalue and list are set           */
+
+    /* ********************************************************** */ 
+    /* ********************************************************** */ 
+    /* the following code is automatic generated by a perl script */
+
+=INPUT methodinfo
+
+    /* end of automatically generated code */
+    /* ********************************************************** */ 
+    /* ********************************************************** */ 
+
+  } /* end for -- all tokens handled */
+
+
+  /* return the parameter object */
+  return ( par );
+
+}
+/* end of _unur_str2par()                                              */
+
+
+/**********************************************************************/
+/*                                                                    */
+/* function: _unur_str2urng()                                         */
+/*                                                                    */
+/* called by: unur_str2gen()                                          */
+/*                                                                    */
+/* parameters: pointer to parameter object                            */
+/*             pointer to char array / string                         */
+/*                                                                    */
+/* return: error-code                                                 */         
+/*                                                                    */
+/* comments:                                                          */
+/* gets a pointer to a parameter object and a string with             */
+/* information about the uniform random number generator (urng)       */
+/* and sets the urng withing the parameter object.                    */
+/*                                                                    */
+/* The string must be as specified within the PRNG package            */
+/*                                                                    */
+/**********************************************************************/
+int _unur_str2urng(UNUR_PAR *par, char *urngstr){
+
+   char *tmpchar;
+   UNUR_URNG *urng;
+   
+
+   /* split key and value */
+   tmpchar = urngstr;
+   urngstr = strchr(tmpchar, '=');
+   while (*urngstr == '='){
+      *urngstr = '\0';
+      urngstr++;
+   }
+   /* only possible key: `prng' */
+   if (  0 != strcmp(tmpchar, "prng") ){
+      fprintf(stderr, "SYNTAX ERROR: Unknown key for setting uniform random number generator : %s\n",tmpchar);
+   }
+   
+   /* set uniform random number generator */
+   urng = prng_new(urngstr);
+   unur_set_urng(par, urng); 
+
+   /* error while setting uniform random number generator */
+   if ( urng == NULL ){
+      fprintf(stderr, "PRNG ERROR: Can't set uniform number generator.\n");
+      return (0);
+   }
+   else{                /* success */
+      return (1);
+   }
+} /* end fo _unur_str2urng() */
+
+
+/**********************************************************************/
+/*                                                                    */
+/* function: _unur_subst_whitespace()                                 */
+/*                                                                    */
+/* parameters: pointer to char / string                               */
+/*             separation character                                   */
+/*                                                                    */
+/* return: void                                                       */
+/*                                                                    */
+/* comments:                                                          */
+/* finds all occurences of sep_char in str and replaces the           */
+/* surrounding whitespace with the separation character sep_char      */
+/*                                                                    */
+/**********************************************************************/
+void _unur_subst_whitespace(char *str, char sep_char){
+
+  char *tmpstr;
+
+  for (tmpstr = str; tmpstr != NULL; tmpstr =strchr(tmpstr, sep_char) ){
+
+    for ( tmpstr--; isspace(*tmpstr); tmpstr-- )
+      *tmpstr = sep_char;
+
+    for ( tmpstr++; isspace(*tmpstr) || (*tmpstr == sep_char); tmpstr++ )
+      *tmpstr = sep_char;
+  }
+
+}
+/* end of _unur_subst_whitespace()                                    */
+
+
+/**********************************************************************/
+/*                                                                    */
+/* function: elim_whitespce()                                         */
+/*                                                                    */
+/* parameters: pointer to char array /string                          */
+/*                                                                    */
+/* return: pointer to char array / string                             */
+/*                                                                    */
+/* comments:                                                          */
+/* gets a string, cuts off leading and terminating white space and    */
+/* replaces all other white space within the string with the nearby   */
+/* separation character                                               */
+/**********************************************************************/
+char *_unur_elim_whitespace(char *str){
+
+  char * tmpstr;
+
+  /* remove initial white space */
+  while (*str == ' ') str++;
+
+  /* remove terminating white space */
+  tmpstr = strchr(str, '\0');
+  tmpstr--;
+  while ( isspace(*tmpstr) ){
+    *tmpstr = '\0';
+    tmpstr--;
+  }
+
+
+  /* substitute whitespace whith nearby characters*/
+  _unur_subst_whitespace(str, ':');
+  _unur_subst_whitespace(str, ';');
+  _unur_subst_whitespace(str, ',');
+  _unur_subst_whitespace(str, '=');
+  _unur_subst_whitespace(str, ')');
+  _unur_subst_whitespace(str, '(');
+
+  return ( str );
+}
+/* end of _unur_elim_whitespace()         */
+
+
+
+/**********************************************************************/
+/*                                                                    */
+/* function: unur_str2gen()                                           */
+/*                                                                    */
+/* parameters:  pointer to char array / string                        */
+/*                                                                    */
+/* return: pointer to generator object                                */
+/*                                                                    */
+/* comments:                                                          */
+/* gets a string with information about the distribution and          */
+/* the desired method and                                             */
+/* generates the corresponding generator object invoking              */
+/* the functions                                                      */
+/*   make_dist_obj() and                                              */
+/*   _unur_str2par()                                                  */
+/*                                                                    */
+/* The string consists of two substrings (separated by `:')           */
+/* (distributio info, method info )                                   */
+/* and each of this strings consists of key=value                     */
+/*  entries separeted by `;'                                          */
+/*                                                                    */
+/* three possibilities:                                               */
+/* key=value                                                          */
+/* key=(komma separated list of numbers)                              */
+/* key=value(komma separated list of numbers)                         */
+/*                                                                    */
+/**********************************************************************/
+UNUR_GEN *unur_str2gen (char *str){
+
+  UNUR_DISTR *distr;       /* distribution object */
+  UNUR_PAR *par;           /* parameter object */
+  UNUR_GEN *gen;           /* generator object    */
+
+  char *diststr; /* string describing distribution */
+  char *methstr; /* string describing method       */
+  char *urngstr; /* string holding info for uniform generator */
+  char *tmpchar; /* temporary pointer to char      */
+
+
+  /* convert string to lowercase */
+  tmpchar = str;
+  while ( *tmpchar != '\0' ){
+    *tmpchar = tolower(*tmpchar);
+    tmpchar++;
+  }
+
+  /* remove initial and terminating white space and
+     substitute other whitespace within string with nearby
+     separation characters                                 */
+  tmpchar = _unur_elim_whitespace( str );
+
+  /* split info about distribution, method und uniform generator */
+  diststr = strtok(tmpchar, ":");
+  methstr = strtok(NULL, ":");
+  urngstr = strtok(NULL, ":");
+
+
+  /* no method info but prng info provided */
+  if ( urngstr == NULL && methstr != NULL && ( 0==strncmp(methstr, "prng", 4) ) ){
+     urngstr = methstr;
+     methstr = NULL;
+  }
+
+  /* swap methstr and urngstr if necessary */
+  if (  methstr != NULL && (0 != strncmp(methstr, "method", 6)) ){
+     tmpchar = methstr;
+     methstr = urngstr;
+     urngstr = tmpchar;
+  }
+
+
+  /* generate distribution object */
+  distr = _unur_str2distr(diststr);
+  if ( distr == NULL ){
+     fprintf(stderr, "ERROR: Can't create parameter object.\n");
+  }
+
+  /* generate parameter object */
+  if ( methstr != NULL ){ /* method info is provided */
+    par = _unur_str2par(distr, methstr);
+  }
+  else{ /* no info about method provided -> standard method */
+    par = unur_cstd_new(distr);
+  }
+
+  /* check if parameter object was generated successfully */
+  if ( par == NULL ){
+     fprintf(stderr, "ERROR: Can't create parameter object.\n");
+  }
+
+  /* set uniform random number generator -- if provided */
+  if ( urngstr != NULL ){
+     _unur_str2urng(par, urngstr);
+  }
+
+  /* generate generator object */
+  gen = unur_init(par);
+  if ( gen == NULL ){
+     fprintf(stderr, "ERROR: Can't create generator object.\n");
+  }
+
+  /* return generator object to calling routine */
+  return (gen);
+
+} /* end of unur_str2gen() */

@@ -13,6 +13,7 @@ libunuran_a_LIBADD = \
  methods/*.o \
  distributions/*.o \
  specfunct/*.o \
+ parser/*.o \
  tests/*.o \
  uniform/*.o
 

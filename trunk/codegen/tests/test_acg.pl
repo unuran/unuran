@@ -9,13 +9,20 @@ $DEBUG = 0;
 $| = 1;
 
 # ----------------------------------------------------------------
+# Directory with sources
 
-require "../read_PDF.pl";
+$srcdir = $ENV{'srcdir'} ? $ENV{'srcdir'} : '.';
+$srcdir .= "/..";
+
+# ----------------------------------------------------------------
+# Load routines for reading data about PDF from UNURAN files
+  
+require "$srcdir/read_PDF.pl";
 
 # ----------------------------------------------------------------
 
 my $ACG = "../acg";
-my $default_conf_file = "./test_acg_conf.pl";
+my $default_conf_file = "$srcdir/tests/test_acg_conf.pl";
 
 # ----------------------------------------------------------------
 # Prefix for file names
@@ -54,7 +61,7 @@ require $test_conf_file;
 
 # ----------------------------------------------------------------
 # List of distributions
-my $DISTR = read_PDFdata('../..');
+my $DISTR = read_PDFdata("$srcdir/..");
 
 # For description of data fields in this list see file `read_PDF.pl'.
 
@@ -181,25 +188,25 @@ print_log("\n\nFound $test_nr tests.  Build $test_runs tests ($test_runs_rel \%)
 # ----------------------------------------------------------------
 # Make source files
 
-open UNURAN, ">$UNURAN_src" or die "Cannot open file $UNURAN_src";
+open UNURAN, ">$UNURAN_src" or die "Cannot open UNURAN file $UNURAN_src";
 print UNURAN $UNURAN_urng;
 print UNURAN $UNURAN_gen;
 print UNURAN make_UNURAN_main($UNURAN_main);
 close UNURAN;
 
-open C, ">$C_src" or die "Cannot open file $C_src";
+open C, ">$C_src" or die "Cannot open C file $C_src";
 print C $C_urng;
 print C $C_gen;
 print C make_C_main($C_main);
 close C;
 
-open FORTRAN, ">$FORTRAN_src" or die "Cannot open file $FORTRAN_src";
+open FORTRAN, ">$FORTRAN_src" or die "Cannot open FORTRAN file $FORTRAN_src";
 print FORTRAN $FORTRAN_urng;
 print FORTRAN $FORTRAN_gen;
 print FORTRAN make_FORTRAN_main($FORTRAN_main);
 close FORTRAN;
 
-open JAVA, ">$JAVA_src" or die "Cannot open file $JAVA_src";
+open JAVA, ">$JAVA_src" or die "Cannot open JAVA file $JAVA_src";
 print JAVA make_JAVA_main($JAVA_main);
 close JAVA;
 
@@ -625,7 +632,7 @@ public class Urand {
 EOS
 
     # Make source file
-    open JAVA_urng, ">$JAVA_urand_src" or die "Cannot open file $JAVA_urand_src";
+    open JAVA_urng, ">$JAVA_urand_src" or die "Cannot open JAVA/URNG file $JAVA_urand_src";
     print JAVA_urng $code;
     close JAVA_urng;
 

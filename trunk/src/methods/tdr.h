@@ -109,6 +109,15 @@
       unur_tdr_set_center() call for provide some information about
       the main part of the PDF to avoid numerical problems.
 
+      It is possible to use this method for generating from truncated
+      distributions. It even can be changed for an existing generator
+      object by an unur_tdr_chg_truncated() call.
+      @emph{Important:} The ratio between the area below the hat and
+      the area below the squeeze changes when the sampling region is
+      restricted. Especially it becomes (very) small when sampling
+      from the (far) tail of the distribution. Then it is better to
+      create a generator object for the tail of distribution only. 
+
    =END
 */
 
@@ -143,8 +152,8 @@ int unur_tdr_set_variant_gw( UNUR_PAR *parameters );
 
 int unur_tdr_set_variant_ps( UNUR_PAR *parameters );
 /* 
-   Use squeezes proportional to the hat function. This is faster than the
-   original version.
+   Use squeezes proportional to the hat function. This is faster than
+   the original version.
 */
 
 int unur_tdr_set_variant_ia( UNUR_PAR *parameters );
@@ -161,6 +170,13 @@ int unur_tdr_chg_truncated(UNUR_GEN *gen, double left, double right);
    domain of the given distribution. The generator always uses the
    intersection of the domain of the distribution and the truncated
    domain given by this call. The hat function will not be changed.
+
+   @emph{Important:}
+   The ratio between the area below the hat and the area below the
+   squeeze changes when the sampling region is restricted. Especially
+   it becomes (very) small when sampling from the (far) tail of the
+   distribution. Then it is better to create a generator object for the
+   tail of distribution only.
 
    @emph{Important:}
    This call does not work for variant @code{IA} (immediate

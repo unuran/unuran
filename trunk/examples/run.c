@@ -43,13 +43,16 @@ int main()
   unur_distr_cont_set_domain(distr,1,20);
 
   par = unur_tdr_new(distr);
-  unur_tdr_set_variant_ps(par);
+  unur_tdr_set_variant_ia(par);
 
   gen = unur_init(par);
 
-  // unur_tdr_chg_truncated(gen,3,3.1);
+  for (i=0; i<1000; i++)
+    unur_sample_cont(gen);
 
-  unur_test_chi2( gen, 100, 0, 20, 1 );
+   unur_tdr_chg_truncated(gen,5.,20000.);
+
+   unur_test_chi2( gen, 100, 0, 20, 1 );
 
 
   // unur_run_tests( par, RUN_TESTS) ;

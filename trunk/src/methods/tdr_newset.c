@@ -686,38 +686,71 @@ unur_tdr_chg_truncated( struct unur_gen *gen, double left, double right )
      /*   the new boundary points may be +/- INFINITY                        */
      /*----------------------------------------------------------------------*/
 {
+  double Umin, Umax;
+
   /* check arguments */
   CHECK_NULL(gen, 0);
   _unur_check_gen_object(gen, TDR);
 
+  /* we have to disable adaptive rejection sampling */
+  if (GEN.max_ivs > GEN.n_ivs) {
+    _unur_warning(gen->genid,UNUR_ERR_GEN_DATA,"adaptive rejection sampling disabled for truncated distribution");
+    GEN.max_ivs = GEN.n_ivs;
+  }
+
+  /* we cannot use immadate acceptance (IA), switch to variant PS instead */
+  if ((gen->variant & TDR_VARMASK_VARIANT) == TDR_VARIANT_IA) {
+    _unur_warning(gen->genid,UNUR_ERR_GEN_DATA,"cannot use IA for truncated distribution, switch to PS");
+    /* change variante flag */
+    gen->variant = (gen->variant & ~TDR_VARMASK_VARIANT) | TDR_VARIANT_PS;
+    /* change sampling routine */
+    SAMPLE = (gen->variant & TDR_VARFLAG_VERIFY) ? _unur_tdr_ps_sample_check : _unur_tdr_ps_sample;
+  }
+
+
   /* check new parameter for generator */
   if (left >= right) {
-    _unur_warning(NULL,UNUR_ERR_DISTR_SET,"domain, left >= right");
+    _unur_warning(gen->genid,UNUR_ERR_DISTR_SET,"domain, left >= right");
     return 0;
   }
 
   /* copy new boundaries into generator object */
   /* (the truncated domain must be a subset of the domain) */
   if (left < DISTR.domain[0]) {
-    _unur_warning(NULL,UNUR_ERR_DISTR_SET,"truncated domain too large");
-    DISTR.trunc[0] = DISTR.domain[0];
+    _unur_warning(gen->genid,UNUR_ERR_DISTR_SET,"truncated domain exceeds domain");
+    left = DISTR.domain[0];
   }
-  else
-    DISTR.trunc[0] = left;
-
   if (right > DISTR.domain[1]) {
-    _unur_warning(NULL,UNUR_ERR_DISTR_SET,"truncated domain too large");
-    DISTR.trunc[1] = DISTR.domain[1];
+    _unur_warning(gen->genid,UNUR_ERR_DISTR_SET,"truncated domain exceeds domain");
+    right = DISTR.domain[1];
   }
-  else
-    DISTR.trunc[1] = right;
 
-  /* set bounds of U -- in respect to given bounds */
-  GEN.Umin = _unur_tdr_eval_cdfhat(gen,DISTR.trunc[0]);
-  GEN.Umax = _unur_tdr_eval_cdfhat(gen,DISTR.trunc[1]);
+  /* compute CDF at x (with respect to given domain of distribution) */
+  Umin = _unur_tdr_eval_cdfhat(gen,left);
+  Umax = _unur_tdr_eval_cdfhat(gen,right);
 
-  /* we have to disable adaptive rejection sampling */
-  GEN.max_ivs = GEN.n_ivs;
+  /* check result */
+  if (Umin > Umax) {
+    /* this is a serios error that should not happen */
+    _unur_error(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
+    return 0;
+  }
+
+  if (_unur_FP_equal(Umin,Umax)) {
+    /* CDF values very close */
+    _unur_warning(gen->genid,UNUR_ERR_DISTR_SET,"CDF values at boundary points very close");
+    if (Umin == 0. || Umax == 1.) {
+      /* this is very bad */
+      _unur_warning(gen->genid,UNUR_ERR_DISTR_SET,"CDF values at boundary points too close");
+      return 0;
+    }
+  }
+
+  /* set bounds for truncated domain and for U (CDF) */
+  DISTR.trunc[0] = left;
+  DISTR.trunc[1] = right;
+  GEN.Umin = Umin;
+  GEN.Umax = Umax;
 
   /* changelog */
   gen->distr.set |= UNUR_DISTR_SET_TRUNCATED;
@@ -736,7 +769,7 @@ unur_tdr_chg_truncated( struct unur_gen *gen, double left, double right )
 static double
 _unur_tdr_eval_cdfhat( struct unur_gen *gen, double x )
      /*----------------------------------------------------------------------*/
-     /* evaluate CDF of hat at x (i.e. \int_\infty^x hat(t) dt)              */
+     /* evaluate CDF of hat at x (i.e. \int_{-\infty}^x hat(t) dt)           */
      /*                                                                      */
      /* parameters:                                                          */
      /*   gen ... pointer to generator object                                */
@@ -754,9 +787,9 @@ _unur_tdr_eval_cdfhat( struct unur_gen *gen, double x )
   /* check arguments */
   CHECK_NULL(gen,0.);  COOKIE_CHECK(gen,CK_TDR_GEN,0.);
 
-  /* the easy case */
-  if (DISTR.trunc[0] <= -INFINITY) return 0.;
-  if (DISTR.trunc[1] >=  INFINITY) return 1.;
+  /* the easy case: left and right boundary of domain */
+  if (x <= DISTR.domain[0]) return 0.;
+  if (x >= DISTR.domain[1]) return 1.;
 
   /* there are differencies between variant GW and variant PS */
   switch (gen->variant & TDR_VARMASK_VARIANT) {
@@ -782,13 +815,14 @@ _unur_tdr_eval_cdfhat( struct unur_gen *gen, double x )
     if (x < iv->ip) {
       /* left h.s. of intersection point */
       Aint = _unur_tdr_interval_area( gen, iv, iv->dTfx, x);
-      cdf = iv->Acum - iv->Ahat + Aint;
-      if (cdf < 0.) cdf = 0.;
+      /* Notice: iv->prev->Acum == iv->Acum - iv->Ahat; */
+      cdf = (iv->prev) ? iv->prev->Acum + Aint : Aint;
     }
     else {
       /* right h.s. of intersection point */
       Aint = _unur_tdr_interval_area( gen, iv->next, iv->next->dTfx, x);
       cdf = iv->Acum - Aint;
+      if (cdf < 0.) return 0.;
     }
 
     /* normalize to one (and mind round-off errors) */
@@ -797,22 +831,36 @@ _unur_tdr_eval_cdfhat( struct unur_gen *gen, double x )
 
     
   case TDR_VARIANT_PS:    /* proportional squeeze */
-#if 0
+
     /* find interval (sequential search) */
     for (iv = GEN.iv; iv->next!=NULL; iv=iv->next) {
       COOKIE_CHECK(iv,CK_TDR_IV,INFINITY); 
-      if (x > iv->ip) break;
+      if (x <= iv->next->ip) break;
     }
-#endif
-    return 1.;
+    if (iv->next == NULL)
+      /* right boundary of domain */
+      return 1.;
 
+    /* now iv->ip < x <= iv->next->ip */
+
+    /* area below hat between construction point and x */
+    Aint = _unur_tdr_interval_area( gen, iv, iv->dTfx, x);
+
+    /* compute CDF of hat */
+    cdf = ((x>iv->x) ? Aint : -Aint) + iv->Acum - iv->Ahatr;
+
+    /* normalize to one (and mind round-off errors) */
+    if (cdf < 0.) return 0.;
+    cdf /= GEN.Atotal;
+    return ((cdf > 1.) ? 1. : cdf);
+    
   case TDR_VARIANT_IA:    /* immediate acceptance */
     /* this variant is not a pure rejection algorithm, but a
        composition method. Thus it does not make to much sense
        to compute the "CDF" of the hat.
     */
   default:
-    _unur_error(GENTYPE,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
+    _unur_error(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
     return 0.;
   }
 
@@ -822,4 +870,3 @@ _unur_tdr_eval_cdfhat( struct unur_gen *gen, double x )
 } /* end of _unur_tdr_eval_cdfhat() */
 
 /*****************************************************************************/
-

@@ -1283,7 +1283,7 @@ _unur_tdr_interval_area( struct unur_gen *gen, struct unur_tdr_interval *iv, dou
        (_unur_FP_is_minus_infinity(x) && slope<=0.) ||
        (_unur_FP_is_infinity(x)       && slope>=0.)  )   /* we have set (Tf)'(x) = INFINITY, if f(x)=0 */
     return INFINITY;
-  
+
   switch( gen->variant & TDR_VARMASK_T ) {
 
   case TDR_VAR_T_LOG:

@@ -47,11 +47,18 @@
 
 /*---------------------------------------------------------------------------*/
 /* Set default flag for debugging of generators:                             */
-/*    0  ... do not write any infos about generator.                         */
-/*    1  ... write only pameters and resulting structure of generator.       */
-/*    ~0 ... show all available information.                                 */
-/* (Detailed discription of possible flags (besides 1) in generator files.)  */
-#define UNUR_DEBUGFLAG_DEFAULT   (~0u)
+/*                                                                           */
+/*   UNUR_DEBUG_OFF    ... switch off debugging information                  */
+/*   UNUR_DEBUG_INIT   ... pameters and structure of generator only          */
+/*   UNUR_DEBUG_SETUP  ... information for setup step                        */
+/*   UNUR_DEBUG_ADAPT  ... trace adaptive steps                              */ 
+/*   UNUR_DEBUG_SAMPLE ... trace sampling                                    */
+/*   UNUR_DEBUG_ALL    ... write all available debugging information         */
+/*                                                                           */
+/* Detailed discription of possible flags in method files.                   */
+/*                                                                           */
+#define UNUR_DEBUGFLAG_DEFAULT   UNUR_DEBUG_ALL
+
 
 /*---------------------------------------------------------------------------*/
 /* (Default) name of log file.                                               */

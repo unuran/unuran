@@ -41,7 +41,11 @@
 /* Variants: none                                                            */
 
 /*---------------------------------------------------------------------------*/
-/* Debugging flags (do not use first 8 bits)                                 */
+/* Debugging flags                                                           */
+/*    bit  01    ... pameters and structure of generator (do not use here)   */
+/*    bits 02-12 ... setup                                                   */
+/*    bits 13-24 ... adaptive steps                                          */
+/*    bits 25-32 ... trace sampling                                          */
 
 /*---------------------------------------------------------------------------*/
 

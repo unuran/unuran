@@ -89,10 +89,14 @@
 #define TABL_VARFLAG_STP_B        0x200u  /* use main subdivisions (SPLIT B in [1]) */
 
 /*---------------------------------------------------------------------------*/
-/* Debugging flags (do not use first 8 bits)                                 */
+/* Debugging flags                                                           */
+/*    bit  01    ... pameters and structure of generator (do not use here)   */
+/*    bits 02-12 ... setup                                                   */
+/*    bits 13-24 ... adaptive steps                                          */
+/*    bits 25-32 ... trace sampling                                          */
 
-#define TABL_DEBUG_IV             0x100u /* show intervals                        */
-#define TABL_DEBUG_A_IV           0x200u /* show intervals after split A, before split B */
+#define TABL_DEBUG_IV    0x00000100u /* show intervals                       */
+#define TABL_DEBUG_A_IV  0x00000200u /* show intervals after split A, before split B */
 
 /*---------------------------------------------------------------------------*/
 /* Flags for logging set calls                                               */

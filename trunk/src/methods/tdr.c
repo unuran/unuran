@@ -305,11 +305,15 @@
 #define TDR_VAR_T_POW          0x003u   /* T(x) = -x^c                      */
 
 /*---------------------------------------------------------------------------*/
-/* Debugging flags (do not use first 8 bits)                                 */
+/* Debugging flags                                                           */
+/*    bit  01    ... pameters and structure of generator (do not use here)   */
+/*    bits 02-12 ... setup                                                   */
+/*    bits 13-24 ... adaptive steps                                          */
+/*    bits 25-32 ... trace sampling                                          */
 
-#define TDR_DEBUG_SPLIT        0x100u
-#define TDR_DEBUG_SAMPLE       0x200u
-#define TDR_DEBUG_IV           0x400u
+#define TDR_DEBUG_IV           0x00000010u
+#define TDR_DEBUG_SPLIT        0x00010000u
+#define TDR_DEBUG_SAMPLE       0x01000000u
 
 /*---------------------------------------------------------------------------*/
 /* Flags for logging set calls                                               */

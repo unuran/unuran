@@ -54,21 +54,26 @@
 #include <source_unuran.h>
 
 /*---------------------------------------------------------------------------*/
+/* Constants                                                                 */
+
+/* Starting interval includes this percentage of all univariate rand numbers */
+/* must be > 0. and < 1.                                                     */
+#define INTERVAL_COVERS  (.9)
+
+/*---------------------------------------------------------------------------*/
 /* Variants: none                                                            */
 
 #define NINV_VARFLAG_NEWTON   0x1u   /* use Newton's method                  */
 #define NINV_VARFLAG_REGULA   0x2u   /* use regula falsi (default)           */
 
-
 /*---------------------------------------------------------------------------*/
-/* Debugging flags (do not use first 8 bits)                                 */
+/* Debugging flags                                                           */
+/*    bit  01    ... pameters and structure of generator (do not use here)   */
+/*    bits 02-12 ... setup                                                   */
+/*    bits 13-24 ... adaptive steps                                          */
+/*    bits 25-32 ... trace sampling                                          */
 
-#define NINV_DEBUG_SAMPLE        0x100u
-
-/*---------------------------------------------------------------------------*/
-/* Starting interval includes this percentage of all univariate rand numbers */
-/* must be > 0. and < 1.                                                     */
-#define INTERVAL_COVERS  (.9)
+#define NINV_DEBUG_SAMPLE        0x01000000u
 
 /*---------------------------------------------------------------------------*/
 /* Flags for logging set calls                                               */

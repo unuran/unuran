@@ -97,10 +97,14 @@
 #define DIS_VAR_THRESHOLD   1000      /* above this value: use variant 1, else 2 */
 
 /*---------------------------------------------------------------------------*/
-/* Debugging flags (do not use first 8 bits)                                 */
+/* Debugging flags                                                           */
+/*    bit  01    ... pameters and structure of generator (do not use here)   */
+/*    bits 02-12 ... setup                                                   */
+/*    bits 13-24 ... adaptive steps                                          */
+/*    bits 25-32 ... trace sampling                                          */
 
-#define DIS_DEBUG_PRINTVECTOR   0x100u
-#define DIS_DEBUG_TABLE         0x200u
+#define DIS_DEBUG_PRINTVECTOR   0x00000100u
+#define DIS_DEBUG_TABLE         0x00000200u
 
 /*---------------------------------------------------------------------------*/
 /* Flags for logging set calls                                               */

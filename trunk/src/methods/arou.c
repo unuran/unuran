@@ -131,10 +131,15 @@
 #define AROU_VARFLAG_USECENTER  0x02u   /* flag whether center is used as cpoint or not */
 
 /*---------------------------------------------------------------------------*/
-/* Debugging flags (do not use first 8 bits)                                 */
+/* Debugging flags                                                           */
+/*    bit  01    ... pameters and structure of generator (do not use here)   */
+/*    bits 02-12 ... setup                                                   */
+/*    bits 13-24 ... adaptive steps                                          */
+/*    bits 25-32 ... trace sampling                                          */
 
-#define AROU_DEBUG_SPLIT        0x100u   /* trace splitting of segments      */
-#define AROU_DEBUG_SEGMENTS     0x200u   /* print list of segments           */
+#define AROU_DEBUG_SEGMENTS     0x00000010u   /* print list of segments      */
+#define AROU_DEBUG_SPLIT        0x00010000u   /* trace splitting of segments */
+
 
 /*---------------------------------------------------------------------------*/
 /* Flags for logging set calls                                               */

@@ -56,6 +56,15 @@ int unur_set_debug( struct unur_par *parameter, unsigned debug );
 int unur_set_default_debug( unsigned debug );
 extern unsigned _unur_default_debugflag;     /* default debugging flags      */
 
+/* common debug flags                                                        */
+#define UNUR_DEBUG_INIT    0x00000001u    /* bit  01 ... pameters of generator */
+#define UNUR_DEBUG_SETUP   0x00000fffu    /* bits 02-12 ... setup            */
+#define UNUR_DEBUG_ADAPT   0x00fff000u    /* bits 13-24 ... adaptive steps   */
+#define UNUR_DEBUG_SAMPLE  0xff000000u    /* bits 25-32 ... trace sampling   */
+
+#define UNUR_DEBUG_OFF     (0u)       /* switch off debugging information    */    
+#define UNUR_DEBUG_ALL     (~0u)      /* write all avaivable information     */
+
 /*---------------------------------------------------------------------------*/
 /* manipulate output stream                                                  */
 FILE *unur_set_stream( FILE *new_stream );

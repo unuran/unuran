@@ -116,7 +116,11 @@
 #define SROU_VARFLAG_MIRROR   0x008u   /* use mirror principle               */
 
 /*---------------------------------------------------------------------------*/
-/* Debugging flags (do not use first 8 bits)                                 */
+/* Debugging flags                                                           */
+/*    bit  01    ... pameters and structure of generator (do not use here)   */
+/*    bits 02-12 ... setup                                                   */
+/*    bits 13-24 ... adaptive steps                                          */
+/*    bits 25-32 ... trace sampling                                          */
 
 /*---------------------------------------------------------------------------*/
 /* Flags for logging set calls                                               */

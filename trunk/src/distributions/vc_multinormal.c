@@ -282,7 +282,7 @@ unur_distr_multinormal( int dim, const double *mean, const double *covar )
 
   /* indicate which parameters are set (additional to mean and covariance) */
   distr->set |= ( UNUR_DISTR_SET_STDDOMAIN |
-		  /* UNUR_DISTR_SET_PDFVOLUME | */
+		  UNUR_DISTR_SET_PDFVOLUME |
 		  UNUR_DISTR_SET_MODE );
 
   /* return pointer to object */

@@ -24,9 +24,25 @@ check_PROGRAMS = $(EXAMPLES)
 
 TESTS = $(EXAMPLES)
 
-# clean backup files
+# run tests with valgrind
+if HAVE_VALGRIND
+
+VALGRINDOPTIONS = -v \
+ --leak-check=yes \
+ --leak-resolution=high \
+ --num-callers=40 \
+ --show-reachable=yes 
+valgrind: $(check_PROGRAMS)
+	@list='$(check_PROGRAMS)'; for p in $$list; do \
+		valgrind --logfile=valgrind-$$p $(VALGRINDOPTIONS) ./$$p; \
+	done
+
+endif
+
+# clean log files and backup files
 CLEANFILES = \
  unuran.log \
+ valgrind-*pid* \
  *~
 
 # clean generated files

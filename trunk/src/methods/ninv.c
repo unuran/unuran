@@ -169,7 +169,10 @@ static void _unur_ninv_debug_sample_newton( struct unur_gen *gen,
 #define GEN       gen->data.ninv        /* data for generator object         */
 #define DISTR     gen->distr.data.cont  /* data for distribution in generator object */
 
-#define SAMPLE    gen->sample.cont      /* pointer to sampling routine       */     
+#define BD_LEFT   domain[0]      /* left boundary of domain of distribution  */
+#define BD_RIGHT  domain[1]      /* right boundary of domain of distribution */
+
+#define SAMPLE    gen->sample.cont      /* pointer to sampling routine       */
 
 #define CDF(x) ((*(DISTR.cdf))((x),DISTR.params,DISTR.n_params))    /* call to p.d.f. */
 #define PDF(x) ((*(DISTR.pdf))((x),DISTR.params,DISTR.n_params))    /* call to p.d.f. */
@@ -488,6 +491,10 @@ _unur_ninv_init( struct unur_par *par )
   if (!gen) { free(par); return NULL; }
 
 
+  /* set bounds of U -- in respect to givven bounds                         */
+  GEN.Umin = (DISTR.BD_LEFT  <= -INFINITY) ? 0.0 : CDF(DISTR.BD_LEFT); 
+  GEN.Umax = (DISTR.BD_RIGHT >=  INFINITY) ? 1.0 : CDF(DISTR.BD_RIGHT); 
+
   /* check arguments */
   switch (par->variant) {
 
@@ -618,6 +625,9 @@ _unur_ninv_regula( struct unur_gen *gen, double u )
   /* check arguments */
   CHECK_NULL(gen,0.);  COOKIE_CHECK(gen,CK_NINV_GEN,0.);
 
+  /* rescale u in respect to given bounds */
+  u = u*GEN.Umax + (1.0-u)*GEN.Umin;
+
 
   /* initialize starting interval */
   if (GEN.table_on == 1){
@@ -641,7 +651,6 @@ _unur_ninv_regula( struct unur_gen *gen, double u )
    x1 =  GEN.s[0];      /* left boudary of interval */
    x2 =  GEN.s[1];      /* right boudary of interval*/
   }   /* end of if(GEN.table_on = ...)  */
-
 
   if (x1>=x2) {
     _unur_error(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,""); return 0.; }
@@ -790,6 +799,9 @@ _unur_ninv_newton( struct unur_gen *gen, double U )
     
   /* check arguments */
   CHECK_NULL(gen,0.);  COOKIE_CHECK(gen,CK_NINV_GEN,0.);
+
+  /* rescale u in respect to given bounds */
+  U = U*GEN.Umax + (1.0-U)*GEN.Umin;
 
   damp = 2.;        /* to be halved at least once */  
   step = 1.;

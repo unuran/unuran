@@ -428,7 +428,7 @@ sub scan_PDF {
     $PDF =~ s/\\over\s+/\//g;
 
     $PDF =~ s/\\hbox{\s*(\w+)\s*}/ $1 /g;
-    $PDF =~ s/\\hfil+\\break/\\n/g;
+    $PDF =~ s/\\hfil+\\break/;/g;
 
     $PDF =~ s/\\frac\{([^\}]+[\s\+\-]+[^\}]+)\}\{([^\}]+[\s\+\-]+[^\}]+)\}/\($1\)\/\($2\)/g;
     $PDF =~ s/\\frac\{([^\}]+)\}\{([^\}]+[\s\+\-]+[^\}]+)\}/$1\/\($2\)/g;
@@ -437,6 +437,10 @@ sub scan_PDF {
 
     $PDF =~ s/\{/\(/g;
     $PDF =~ s/\}/\)/g;
+
+    # replace tabs and multiple blanks by single blanks
+    $PDF =~ s/\t+/ /g;
+    $PDF =~ s/ +/ /g;
 
     # return result
     return $PDF;

@@ -61,7 +61,7 @@ my $DISTR = read_PDFdata('../..');
 # Print Test data
 print "sample size = $sample_size\n";
 print "accuracy = $accuracy\n";
-print "languages = C\n\n";
+print "languages = C, FORTRAN\n\n";
 
 # ----------------------------------------------------------------
 # Get list of distributions 
@@ -111,11 +111,15 @@ foreach my $d (sort keys %{$list_distr}) {
 
     $UNURAN_exec = "$file_name\_UNURAN";
     $UNURAN_src = "$UNURAN_exec.c";
-    $UNURAN_log = "$file_name\_UNURAN.log";
+    $UNURAN_log = "$UNURAN_exec.log";
 
     $C_exec = "$file_name\_C";
     $C_src = "$C_exec.c";
-    $C_log = "$file_name\_C.log";
+    $C_log = "$C_exec.log";
+
+    $FORTRAN_exec = "$file_name\_FORTRAN";
+    $FORTRAN_src = "$FORTRAN_exec.f";
+    $FORTRAN_log = "$FORTRAN_exec.log";
 
     # Get random variate generators
 
@@ -126,6 +130,10 @@ foreach my $d (sort keys %{$list_distr}) {
 	next;
     }
     make_C_exec($C_code,$C_src,$C_exec);
+
+    # FORTRAN version
+    my $FORTRAN_code = make_FORTRAN_code($FORTRAN_log,$distr,$fparam,$seed);
+    make_FORTRAN_exec($FORTRAN_code,$FORTRAN_src,$FORTRAN_exec);
 
     # UNURAN version
     my $UNURAN_code = make_UNURAN_code($UNURAN_log,$distr,$fparam,$seed);
@@ -465,7 +473,7 @@ EOS
 } # end of make_C_main()
 
 # ----------------------------------------------------------------
-# Make executable from test file (UNURAN version)
+# Make executable from test file (C version)
 
 sub make_C_exec
 {
@@ -485,3 +493,157 @@ sub make_C_exec
 
 # ----------------------------------------------------------------
 
+# ****************************************************************
+#
+# FORTRAN version
+#
+# ****************************************************************
+
+# ----------------------------------------------------------------
+# Make generator code for test file (FORTRAN version)
+
+sub make_FORTRAN_code
+{
+    my $logfile = $_[0];
+    my $distr = $_[1];
+    my $fparam = $_[2];
+    my $seed = $_[3];
+
+    my $acg_query = "$ACG -l FORTRAN -d $distr -L $logfile";
+    $acg_query .= " -p \"$fparam\"" if $fparam; 
+
+    my $generator = `$acg_query`;
+
+    return "" if $?;
+
+    # remove built-in uniform rng
+    $urng_pattern = "\\s+DOUBLE PRECISION FUNCTION unif\\s*\\(\\s*\\).*?END\\s*";
+    $generator =~ s/($urng_pattern)/\n/s;
+
+    my $urng = make_FORTRAN_urng($seed);
+    my $main = make_FORTRAN_main($distr,$seed);
+
+    return $urng.$generator.$main;
+
+} # end of make_FORTRAN_code()
+
+# ----------------------------------------------------------------
+# uniform rng (FORTRAN version)
+
+sub make_FORTRAN_urng
+{
+    my $seed = $_[0];
+
+    my $code = <<EOS;
+    
+* ------------------------------------------------------------------ *
+* FORTRAN version                                                    *
+* ------------------------------------------------------------------ *
+
+* ------------------------------------------------------------------ *
+* LCG (Linear Congruential Generator) by Park & Miller (1988).       *
+*   x_(n+1) = 16807 * x_n mod 2^31 - 1    (Minimal Standard)         *
+* ------------------------------------------------------------------ *
+
+      DOUBLE PRECISION FUNCTION unif()
+
+      INTEGER a, m, q, r, xn, hi, lo, test
+      PARAMETER (a = 16807)
+      PARAMETER (m = 2147483647)
+      PARAMETER (q = 127773)
+      PARAMETER (r = 2836)
+
+C     state variable
+      COMMON /state/xn
+      DATA xn/$seed/
+      SAVE /state/
+
+      hi = xn / q
+      lo = MOD(xn,q)
+
+      test = a * lo - r * hi
+      IF (test .gt. 0) THEN
+	  xn = test
+      ELSE
+          xn = test + m
+      END IF
+
+      unif = xn * 4.656612875245796924105750827D-10
+
+      END
+
+
+      SUBROUTINE useed(seed)
+
+      INTEGER seed, xn
+
+C     state variable
+      COMMON /state/xn
+      SAVE /state/
+
+C     seed generator
+      xn = seed
+
+      RETURN
+      END
+
+EOS
+
+    return $code;
+
+} # end of make_FORTRAN_urng() 
+
+# ----------------------------------------------------------------
+# Make main for test file (FORTRAN version)
+
+sub make_FORTRAN_main
+{
+    my $distr = $_[0];
+    my $seed = $_[1];
+
+    my $rand_name = substr "r$distr", 0, 6;
+    my $pdf_name = substr "f$distr", 0, 6;
+
+    my $code = <<EOS
+
+* ------------------------------------------------------------------ *
+
+      PROGRAM MAIN
+
+      IMPLICIT DOUBLE PRECISION (a-h,o-z)
+
+      CALL useed($seed)
+
+      DO 1 i=1,$sample_size
+         x = $rand_name()
+	 fx = $pdf_name(x)
+         WRITE (*,'(d24.18, 1x, d24.18)') x, fx
+ 1    CONTINUE
+      END
+
+* ------------------------------------------------------------------ *
+
+EOS
+
+} # end of make_FORTRAN_main()
+
+# ----------------------------------------------------------------
+# Make executable from test file (FORTRAN version)
+
+sub make_FORTRAN_exec
+{
+    my $code = $_[0];
+    my $src = $_[1];
+    my $exec = $_[2];
+
+    # make source file
+    open SRC, ">$src" or die "cannot open $src for writing";
+    print SRC $code;
+    close SRC;
+
+    # compile
+    system "$G77 -o $exec $src";
+
+} # end of make_FORTRAN_exec()
+
+# ----------------------------------------------------------------

@@ -67,7 +67,7 @@ _unur_FunctDefinition (struct parser_data *pdata)
 
   /* left hand side: DefFunctDesignator */
   left = _unur_DefFunctDesignator(pdata);
-  if (pdata->errno) return NULL;
+  if (pdata->perrno) return NULL;
 
   /* next token must be "=" sign */
   if ( _unur_fstr_next_token(pdata,&token,&symb) == FALSE ||
@@ -76,7 +76,7 @@ _unur_FunctDefinition (struct parser_data *pdata)
 
   /* right hand side: function term */
   right = _unur_Expression(pdata);
-  if (pdata->errno) return NULL;
+  if (pdata->perrno) return NULL;
 
   /* store function in node */
   node = _unur_fstr_create_node(symb,0.,token,left,right); 
@@ -125,7 +125,7 @@ _unur_DefFunctDesignator (struct parser_data *pdata)
 
   /* read the parameter list */
   params = _unur_DefParameterlist(pdata,&n_params);
-  if (pdata->errno) return NULL;
+  if (pdata->perrno) return NULL;
 
   /* read closing parenthesis ')' */
   if ( _unur_fstr_next_token(pdata,&token,&symb) == FALSE ||
@@ -233,14 +233,14 @@ _unur_Expression (struct parser_data *pdata)
 
   /* read simple expression from function string */
   left = _unur_SimpleExpression(pdata);
-  if (pdata->errno) return NULL; 
+  if (pdata->perrno) return NULL; 
 
   /* get next token */
   if ( _unur_fstr_next_token(pdata,&token,&symb) &&
        symbol[token].type == S_REL_OP ) {
     /* relation operator  --> read r.h.s.*/
     right = _unur_SimpleExpression(pdata);
-    if (pdata->errno) return NULL; 
+    if (pdata->perrno) return NULL; 
     /* create a new node */
     node = _unur_fstr_create_node(symb,0.,token,left,right); 
   }
@@ -283,7 +283,7 @@ _unur_SimpleExpression (struct parser_data *pdata)
 
   /* get next Term in string */
   node = _unur_STerm(pdata);
-  if (pdata->errno) return NULL;
+  if (pdata->perrno) return NULL;
 
   /* get next token */
   while ( _unur_fstr_next_token(pdata,&token,&symb) &&
@@ -293,7 +293,7 @@ _unur_SimpleExpression (struct parser_data *pdata)
     left = node; 
 
     right = _unur_Term(pdata);
-    if (pdata->errno) return NULL; 
+    if (pdata->perrno) return NULL; 
 
     node = _unur_fstr_create_node(symb,0.,token,left,right); 
   }
@@ -340,7 +340,7 @@ _unur_STerm (struct parser_data *pdata)
     /* thus "0" is added in front of it         */
     left = _unur_fstr_create_node(NULL,0.,s_uconst,NULL,NULL); 
     right = _unur_Term(pdata);
-    if (pdata->errno) return NULL; 
+    if (pdata->perrno) return NULL; 
 
     node = _unur_fstr_create_node(symb,0.,token,left,right); 
   }
@@ -352,7 +352,7 @@ _unur_STerm (struct parser_data *pdata)
       --(pdata->tno);
     }
     node = _unur_Term(pdata);
-    if (pdata->errno) return NULL; 
+    if (pdata->perrno) return NULL; 
   } 
 
   /* return pointer to term */
@@ -386,7 +386,7 @@ _unur_Term (struct parser_data *pdata)
 
   /* get next factor of multiplication */
   node = _unur_Factor(pdata);
-  if (pdata->errno) return NULL;
+  if (pdata->perrno) return NULL;
 
   /* get next token */
   while ( _unur_fstr_next_token(pdata,&token,&symb) &&
@@ -396,7 +396,7 @@ _unur_Term (struct parser_data *pdata)
      left = node; 
 
      right = _unur_Factor(pdata);
-     if (pdata->errno) return NULL;
+     if (pdata->perrno) return NULL;
 
      node = _unur_fstr_create_node(symb,0.,token,left,right); 
   }
@@ -435,14 +435,14 @@ _unur_Factor (struct parser_data *pdata)
 
   /* get base of factor */
   left = _unur_Bas_Exp(pdata);
-  if (pdata->errno) return NULL;
+  if (pdata->perrno) return NULL;
 
   /* get next token */
   if ( _unur_fstr_next_token(pdata,&token,&symb) &&
        symb[0] == '^' ) {
     /* get exponent of factor */
     right = _unur_Bas_Exp(pdata);
-    if (pdata->errno) return NULL;
+    if (pdata->perrno) return NULL;
 
     /* and create node for '^' operator */
     node = _unur_fstr_create_node(symb,0.,token,left,right); 
@@ -507,13 +507,13 @@ _unur_Bas_Exp (struct parser_data *pdata)
     --(pdata->tno);
     /* and get function */
     node = _unur_FunctDesignator(pdata);
-    if (pdata->errno) return NULL;
+    if (pdata->perrno) return NULL;
   }
   
   else if( symb[0] == '(' ) {
     /* opening parenthesis  --> read expression in side parenthesis */
     node = _unur_Expression(pdata); 
-    if (pdata->errno) return NULL;
+    if (pdata->perrno) return NULL;
 
     /* next symbol must be closing parenthesis */
     if ( _unur_fstr_next_token(pdata,&token,&symb) == FALSE ||
@@ -572,7 +572,7 @@ _unur_FunctDesignator (struct parser_data *pdata)
 
   /* read the parameter list */
   params = _unur_ActualParameterlist(pdata,n_params);
-  if (pdata->errno) return NULL;
+  if (pdata->perrno) return NULL;
 
   /* read closing parenthesis ')' */
   if ( _unur_fstr_next_token(pdata,&token,&symb) == FALSE ||
@@ -615,7 +615,7 @@ _unur_ActualParameterlist (struct parser_data *pdata, int n_params)
 
   /* read first parameter from string ...  */
   node = _unur_Expression(pdata);
-  if (pdata->errno) return NULL;
+  if (pdata->perrno) return NULL;
 
   /* .. and set counter for parameters to 1 */
   c_params = 1; 
@@ -634,7 +634,7 @@ _unur_ActualParameterlist (struct parser_data *pdata, int n_params)
 
     /* make node for next variable (becomes right node) */
     right = _unur_Expression(pdata);
-    if (pdata->errno) return NULL;
+    if (pdata->perrno) return NULL;
     
     /* make node for `,' separator */
     node = _unur_fstr_create_node(",",0.,s_comma,left,right); 
@@ -1050,13 +1050,13 @@ _unur_fstr_create_node (char *symb, double val, int token,
 /*---------------------------------------------------------------------------*/
 
 struct ftreenode *
-_unur_fstr_error_parse ( struct parser_data *pdata, int errno )
+_unur_fstr_error_parse ( struct parser_data *pdata, int perrno )
      /*----------------------------------------------------------------------*/
      /* Print error message when parsing function string                     */
      /*                                                                      */
      /* parameters:                                                          */
-     /*   pdata ... pointer to parser object                                 */
-     /*   errno ... error number                                             */
+     /*   pdata  ... pointer to parser object                                */
+     /*   perrno ... error number                                            */
      /*                                                                      */
      /* return:                                                              */
      /*   NULL                                                               */
@@ -1070,7 +1070,7 @@ _unur_fstr_error_parse ( struct parser_data *pdata, int errno )
   /* set unuran error code */
   unur_errno = UNUR_ERR_FSTR_SYNTAX;
 
-  _unur_stream_printf_simple ( "%s: error: %s\n",GENTYPE,_unur_fstr_error_code(errno));
+  _unur_stream_printf_simple ( "%s: error: %s\n",GENTYPE,_unur_fstr_error_code(perrno));
 
   _unur_stream_printf_simple ( "%s: ",GENTYPE );
   for (i=0; i<pdata->tno-1; i++)
@@ -1083,7 +1083,7 @@ _unur_fstr_error_parse ( struct parser_data *pdata, int errno )
   _unur_stream_printf_simple ( "\n%s:\n",GENTYPE );
 
   /* set parser error */
-  if (!pdata->errno) pdata->errno = errno;
+  if (!pdata->perrno) pdata->perrno = perrno;
 
   return NULL; 
 
@@ -1092,18 +1092,18 @@ _unur_fstr_error_parse ( struct parser_data *pdata, int errno )
 /*---------------------------------------------------------------------------*/
 
 const char *
-_unur_fstr_error_code ( int errno )
+_unur_fstr_error_code ( int perrno )
      /*----------------------------------------------------------------------*/
      /* Print message for error number                                       */
      /*                                                                      */
      /* parameters:                                                          */
-     /*   errno ... error number                                             */
+     /*   perrno ... error number                                            */
      /*                                                                      */
      /* return:                                                              */
      /*   pointer to message string                                          */
      /*----------------------------------------------------------------------*/
 {
-  switch (errno) {
+  switch (perrno) {
   case ERR_UNFINISHED:
     return "incomplete. not all tokens parsed";
   case ERR_UNKNOWN_SYMBOL:

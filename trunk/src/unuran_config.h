@@ -42,7 +42,7 @@
 /*                                                                           */
 /* There are several ways to use a uniform pseudo random number generator:   */
 /*                                                                           */
-/* UNUR_URNG_SIMPLE:                                                         */
+/* UNUR_URNG_FVOID:                                                          */
 /*     Use a pointer to the routine without an argment, i.e.                 */
 /*        double urng(void);                                                 */
 /*     E.g., the uniform generator included in UNURAN.                       */ 
@@ -60,54 +60,43 @@
 /*                                                                           */
 /*---------------------------------------------------------------------------*/
 /* define the possible compiler switches                                     */
-#define UNUR_URNG_SIMPLE     1   /* use type `double urng(void)'             */
+#define UNUR_URNG_FVOID      1   /* use type `double urng(void)'             */
 #define UNUR_URNG_PRNG       2   /* use prng-3.x                             */
 #define UNUR_URNG_RNGSTREAM  3   /* use RngStream                            */
+#define UNUR_URNG_GSL        4   /* use GNU Scientific Library               */
 #define UNUR_URNG_GENERIC    99  /* use a generic interface (see below)      */
 /*---------------------------------------------------------------------------*/
 
-/* set type of uniform generator                                             */
-/*  #define UNUR_URNG_TYPE UNUR_URNG_SIMPLE */
-#define UNUR_URNG_TYPE UNUR_URNG_PRNG
+/* Set type of uniform random number generator.                              */
+/*  #define UNUR_URNG_TYPE UNUR_URNG_FVOID */
+/*  #define UNUR_URNG_TYPE UNUR_URNG_PRNG */
 /*  #define UNUR_URNG_TYPE UNUR_URNG_RNGSTREAM */
-/*  #define UNUR_URNG_TYPE UNUR_URNG_GENERIC */
-
-/* IMPORTANT:                                                                */
-/* You must *not* use UNUR_URNG_PRNG if the prng library is not installed!   */
+/*  #define UNUR_URNG_TYPE UNUR_URNG_GSL */
+#define UNUR_URNG_TYPE UNUR_URNG_GENERIC
 
 /*---------------------------------------------------------------------------*/
-#if UNUR_URNG_TYPE == UNUR_URNG_SIMPLE
+#if UNUR_URNG_TYPE == UNUR_URNG_FVOID
 /*---------------------------------------------------------------------------*/
+
+/* Type of uniform random number generator.         (Don't touch this line!) */
+typedef double (UNUR_URNG)(void);
 
 /* Default name of uniform random number generator.                          */
 /* Valid name of a C routine of type `double urng(void)'.                    */
 #define UNUR_URNG_DEFAULT     unur_urng_MRG31k3p
 #define UNUR_URNG_AUX_DEFAULT unur_urng_fish
 
-/* ......................................................................... */
-
-/* Type of uniform random number generator.         (Don't touch this line!) */
-typedef double (UNUR_URNG)(void);
-
 /* Function call to uniform RNG.                    (Don't touch this line!) */
 #define _unur_call_urng(urng)        ((*(urng))())
 
-/* Function call to reset uniform RNG.                 (For test suite only) */
+/* Function call to reset uniform RNG.                (For test suite only.) */
 /* The routine must reset the the default uniform RNG (UNUR_URNG_DEFAULT).   */
 /* Comment out the macro definition if a reset routine is not available.     */
 #define unur_urng_reset(urng)        (unur_urng_MRG31k3p_reset());
 
-
 /*---------------------------------------------------------------------------*/
 #elif UNUR_URNG_TYPE == UNUR_URNG_PRNG
 /*---------------------------------------------------------------------------*/
-
-/* Default uniform random number generators.                                 */
-/* (see prng-3.x manual)                                                     */
-#define UNUR_URNG_DEFAULT     (prng_new("mt19937(19863)"))
-#define UNUR_URNG_AUX_DEFAULT (prng_new("LCG(2147483647,16807,0,1)"))
-
-/* ......................................................................... */
 
 /* Header file from prng library.                  (Don't remove this line!) */
 /* Make sure that this header file and the prng library is installed.        */
@@ -116,6 +105,12 @@ typedef double (UNUR_URNG)(void);
 /* Type of uniform random number generator.         (Don't touch this line!) */
 typedef struct prng UNUR_URNG;
 
+/* Default uniform random number generators.                                 */
+/* These functions must return a pointer to a valid generator object of      */
+/* type `struct prng *'  (see prng-3.x manual).                              */
+#define UNUR_URNG_DEFAULT     (prng_new("mt19937(19863)"))
+#define UNUR_URNG_AUX_DEFAULT (prng_new("LCG(2147483647,16807,0,1)"))
+
 /* Function call to uniform RNG.                    (Don't touch this line!) */
 #define _unur_call_urng(urng)        (prng_get_next(urng))
 
@@ -123,17 +118,9 @@ typedef struct prng UNUR_URNG;
 /*                                                  (Don't touch this line!) */
 #define unur_urng_reset(urng)        (prng_reset(urng))
 
-
 /*---------------------------------------------------------------------------*/
 #elif UNUR_URNG_TYPE == UNUR_URNG_RNGSTREAM
 /*---------------------------------------------------------------------------*/
-
-/* Default uniform random number generators.                                 */
-/* (see RngStream manual)                                                    */
-#define UNUR_URNG_DEFAULT     (RngStream_CreateStream("URNG_main"))
-#define UNUR_URNG_AUX_DEFAULT (RngStream_CreateStream("URNG_aux"))
-
-/* ......................................................................... */
 
 /* Header file from RngStream library.             (Don't remove this line!) */
 /* Make sure that this header file and the RngStream library is installed.   */
@@ -141,6 +128,12 @@ typedef struct prng UNUR_URNG;
 
 /* Type of uniform random number generator.         (Don't touch this line!) */
 typedef struct RngStream_InfoState UNUR_URNG;
+
+/* Default uniform random number generators.                                 */
+/* These functions must return a pointer to a valid generator object of type */
+/* `struct RngStream_InfoState *'  (see RngStream manual and RngStream.h).   */
+#define UNUR_URNG_DEFAULT     (RngStream_CreateStream("URNG_main"))
+#define UNUR_URNG_AUX_DEFAULT (RngStream_CreateStream("URNG_aux"))
 
 /* Function call to uniform RNG.                    (Don't touch this line!) */
 #define _unur_call_urng(urng)        (RngStream_RandU01(urng))
@@ -150,67 +143,96 @@ typedef struct RngStream_InfoState UNUR_URNG;
 #define unur_urng_reset(urng)        (RngStream_ResetStartStream(urng))
 
 /*---------------------------------------------------------------------------*/
+#elif UNUR_URNG_TYPE == UNUR_URNG_GSL
+/*---------------------------------------------------------------------------*/
+
+/* Header file from GNU Scientific Library.        (Don't remove this line!) */
+/* Make sure that this header file and the GSL is installed.                 */
+#include <gsl/gsl_rng.h>
+
+/* Type of uniform random number generator.         (Don't touch this line!) */
+typedef gsl_rng UNUR_URNG;
+
+/* Default uniform random number generators.                                 */
+/* These functions must return a pointer to a valid generator object of type */
+/* `struct RngStream_InfoState *'  (see RngStream manual and RngStream.h).   */
+#define UNUR_URNG_DEFAULT     (gsl_rng_alloc(gsl_rng_mt19937))
+#define UNUR_URNG_AUX_DEFAULT (gsl_rng_alloc(gsl_rng_cmrg))
+
+/* Function call to uniform RNG.                    (Don't touch this line!) */
+#define _unur_call_urng(urng)        (gsl_rng_uniform_pos(urng))
+
+/* Function call to reset uniform RNG.                 (For test suite only) */
+/* No such routine for gsl uniform RNGs.                                     */
+/*  #define unur_urng_reset(urng)        (exit(EXIT_FAILSURE)) */
+
+/*---------------------------------------------------------------------------*/
 #elif UNUR_URNG_TYPE == UNUR_URNG_GENERIC
 /*---------------------------------------------------------------------------*/
 
 /* This a generic interface with limited support.                            */
 /*                                                                           */
 /* IMPORTANT!                                                                */
-/*   All functions and parameters should be set at run time using the        */
-/*   unur_urng_set_default() call!                                           */
-/*   This function MUST be called before the first parameter object for      */
-/*   a generator is created!                                                 */
-/*   The call for starting the default auxilliary uniform generator MUST be  */
-/*   avoided.                                                                */
+/*   All functions and parameters should be set at run time:                 */
+/*                                                                           */
+/*     1. Allocate variable of type `struct unur_urng_generic'               */
+/*        (or of type `UNUR_URNG', which is the same):                       */
+/*          UNUR_URNG *urng;                                                 */
+/*          urng = malloc(sizeof(UNUR_URNG));                                */
+/*     2. Set function of type `double (*rand)(void *)' for sampling from    */
+/*        uniform RNG:                                                       */
+/*          urng->getrand = my_uniform_rng;                                  */
+/*     3. Set pointer to parameters of for this function                     */
+/*        (or NULL if no parameters are required):                           */
+/*          urng->params = my_parameters;                                    */
+/*     4. Use this uniform RNG:                                              */
+/*          unur_urng_set_default(urng);             (set default generator) */
+/*          unur_urng_set_default_aux(urng);    (set default aux. generator) */
+/*        Notice that this must be done before UNURAN generator object       */
+/*        are created. Of course urng can also used just for a particular    */
+/*        generator object. Use the following and similar calls:             */ 
+/*          unur_set_urng(par,urng);                                         */
+/*          unur_chg_urng(gen,urng);                                         */
 /*                                                                           */
 /* To avoid a possible segmentation fault when this URNG type is set,        */
-/* we use the build-in uniform RNGs as default.                              */
+/* we use the build-in uniform RNGs as defaults.                             */
 /* Be carefull when you change any macro definition!!                        */
 /* Indead, there is no need to change these definitions (except              */
 /* (un)commenting the below macro for reseting the uniform RNG), since all   */
 /* pointers are set at run time!                                             */
 
+/* Structure for storing function pointer and parameterlist.                 */
+/*                                                  (Don't touch this line!) */
+struct unur_urng_generic {
+  double (*getrand)(void *params);  /* function for generating uniform RNG */
+  void *params;                     /* list of parameters                  */
+};
+
+/* Type of uniform random number generator.         (Don't touch this line!) */
+typedef struct unur_urng_generic UNUR_URNG;
+
 /* Default uniform random number generators.                                 */
 /* (Very ugly hack! Don't do this yourself unless you understand the code!)  */
 typedef double (_unur_urng_voidptr)(void*);      /* cast function pointer */
-typedef int (_unur_urng_reset_voidptr)(void*);   /* cast function pointer */
-
-/*    urng_default->next = (_unur_urng_voidptr*)(unur_urng_MRG31k3p); \ */
-/*    urng_default->next = unur_urng_MRG31k3p; \ */
 
 #define UNUR_URNG_DEFAULT \
   malloc(sizeof(UNUR_URNG)); \
-  urng_default->next = (_unur_urng_voidptr*)(unur_urng_MRG31k3p); \
-  urng_default->reset = (_unur_urng_reset_voidptr*)(unur_urng_MRG31k3p_reset); \
+  urng_default->getrand = (_unur_urng_voidptr*)(unur_urng_MRG31k3p); \
   urng_default->params = NULL
 
 #define UNUR_URNG_AUX_DEFAULT \
   malloc(sizeof(UNUR_URNG)); \
-  urng_aux_default->next = (_unur_urng_voidptr*)(unur_urng_fish); \
-  urng_aux_default->reset = (_unur_urng_reset_voidptr*)(unur_urng_fish_reset); \
+  urng_aux_default->getrand = (_unur_urng_voidptr*)(unur_urng_fish); \
   urng_aux_default->params = NULL
 
-/* ......................................................................... */
-
-/* Structure for storing function pointer and parameterlist.                 */
-/*                                                  (Don't touch this line!) */
-struct unur_urng_generic_params {
-  double (*next) (void *params);  /* function for generating uniform RNG */
-  int    (*reset)(void *params);  /* function for reseting uniform RNG   */
-  void *params;                   /* list of parameters                  */
-};
-
-/* Type of uniform random number generator.         (Don't touch this line!) */
-typedef struct unur_urng_generic_params UNUR_URNG;
-
 /* Function call to uniform RNG.                    (Don't touch this line!) */
-#define _unur_call_urng(urng)      ((urng)->next((urng)->params))
+#define _unur_call_urng(urng)      ((urng)->getrand((urng)->params))
 
 /* Function call to reset uniform RNG.                 (For test suite only) */
 /* The routine must reset the the default uniform RNG (UNUR_URNG_DEFAULT).   */
 /* Comment out the macro definition if a reset routine is not available.     */
 /*                                      (But don't change macro definition!) */
-#define unur_call_reset(urng)      ((urng)->reset((urng)->params))      
+#define unur_urng_reset(urng)      (unur_urng_MRG31k3p_reset());
 
 /*---------------------------------------------------------------------------*/
 #else

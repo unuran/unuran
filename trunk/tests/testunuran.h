@@ -57,7 +57,7 @@
 void abort_if_NULL( FILE *LOG, int line, void *ptr );
 
 /* compare error code */
-int check_errorcode( FILE *LOG, int line, unsigned errno );
+int check_errorcode( FILE *LOG, int line, unsigned cherrno );
 
 /* check for expected NULL pointer */
 int check_expected_NULL( FILE *LOG, int line, void *ptr );

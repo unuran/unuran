@@ -52,7 +52,7 @@ static long urng_counter = 0;                /* count uniform random numbers */
 /* wrapper for uniform random number generator that performs counting        */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-#if UNUR_URNG_TYPE == UNUR_URNG_SIMPLE 
+#if UNUR_URNG_TYPE == UNUR_URNG_FVOID 
 /*---------------------------------------------------------------------------*/
 static double (*urng_to_use)(void);          /* pointer to real uniform RNG  */
 /*---------------------------------------------------------------------------*/
@@ -136,7 +136,7 @@ unur_test_count_urn( struct unur_gen *gen, int samplesize, int verbosity, FILE *
   urng_aux = gen->urng_aux;
 
   /* exchange pointer to uniform rng with counting wrapper */
-#if UNUR_URNG_TYPE == UNUR_URNG_SIMPLE
+#if UNUR_URNG_TYPE == UNUR_URNG_FVOID
   urng_to_use = gen->urng;
   unur_chg_urng(gen,_urng_with_counter);
 #elif UNUR_URNG_TYPE == UNUR_URNG_PRNG
@@ -144,8 +144,8 @@ unur_test_count_urn( struct unur_gen *gen, int samplesize, int verbosity, FILE *
   gen->urng->get_next = _urng_with_counter;
   if (gen->urng_aux) gen->urng_aux = gen->urng;
 #elif UNUR_URNG_TYPE == UNUR_URNG_GENERIC
-  urng_to_use = gen->urng->next;
-  gen->urng->next = _urng_with_counter;
+  urng_to_use = gen->urng->getrand;
+  gen->urng->getrand = _urng_with_counter;
   if (gen->urng_aux) gen->urng_aux = gen->urng;
 #else
   /* no counter available */
@@ -181,12 +181,12 @@ unur_test_count_urn( struct unur_gen *gen, int samplesize, int verbosity, FILE *
   }
 
   /* reset pointer to uniform rng */
-#if UNUR_URNG_TYPE == UNUR_URNG_SIMPLE
+#if UNUR_URNG_TYPE == UNUR_URNG_FVOID
   unur_chg_urng(gen,urng_to_use);
 #elif UNUR_URNG_TYPE == UNUR_URNG_PRNG
   gen->urng->get_next = urng_to_use;
 #elif UNUR_URNG_TYPE == UNUR_URNG_GENERIC
-  gen->urng->next = urng_to_use;
+  gen->urng->getrand = urng_to_use;
 #endif  /* UNUR_URNG_TYPE */
 
   /* restore auxilliary generator */

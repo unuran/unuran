@@ -47,15 +47,15 @@ void abort_if_NULL( FILE *LOG, int line, void *ptr )
 /*---------------------------------------------------------------------------*/
 /* compare error code */
 
-int check_errorcode( FILE *LOG, int line, unsigned errno )
+int check_errorcode( FILE *LOG, int line, unsigned cherrno )
 {
   int failed = 0;
 
   fprintf(LOG,"line %4d: Error code ...\t\t",line);
-  if (unur_errno != errno) {
+  if (unur_errno != cherrno) {
     failed = 1;
     fprintf(LOG," Failed");
-    fprintf(LOG," (observed = %#x, expected = %#x)\n",unur_errno,errno);
+    fprintf(LOG," (observed = %#x, expected = %#x)\n",unur_errno,cherrno);
   }
   else
     fprintf(LOG," ok\n");

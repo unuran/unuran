@@ -27,13 +27,17 @@ AC_PROG_AWK
 
 dnl Checks for libraries.
 dnl libm: the standard math library
-AC_CHECK_LIB(m, sqrt)
+AC_CHECK_LIB(m, main)
 dnl prng: Otmar Lendl's library for pseudo random number generators
 AC_CHECK_LIB(prng, prng_new)
 AC_CHECK_HEADERS(prng.h)
 dnl RngStream: Pierre L'Ecuyers multiple random stream generator
 AC_CHECK_LIB(rngstream, RngStream_CreateStream)
 AC_CHECK_HEADERS(RngStream.h)
+dnl GSL: GNU Scientific Library
+AC_CHECK_LIB(gslcblas,main)
+AC_CHECK_LIB(gsl, main)
+AC_CHECK_HEADERS(gsl/gsl_rng.h)
 
 dnl cephes: Stephen L. Moshier's library of mathematical functions 
 dnl However, at the moment we do not use it any more.

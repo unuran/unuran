@@ -286,7 +286,7 @@ struct parser_data {
   int    scanpos;       /* pointer to location in string                     */
   int    lastpos;       /* position in string before scanning next token     */
   int    len_fstr;      /* length of function string                         */
-  int    errno;         /* error code                                        */
+  int    perrno;        /* error code                                        */
 
 #ifdef UNUR_COOKIES
   unsigned cookie;      /* magic cookie                                      */
@@ -535,12 +535,12 @@ static struct ftreenode *_unur_fstr_create_node (char *symb, double val, int tok
 /* Error messages                                                            */
 /*---------------------------------------------------------------------------*/
 
-static struct ftreenode *_unur_fstr_error_parse ( struct parser_data *pdata, int errno );
+static struct ftreenode *_unur_fstr_error_parse ( struct parser_data *pdata, int perrno );
 /*---------------------------------------------------------------------------*/
 /* Print error message when parsing function string.                         */
 /*---------------------------------------------------------------------------*/
 
-static const char *_unur_fstr_error_code ( int errno );
+static const char *_unur_fstr_error_code ( int perrno );
 /*---------------------------------------------------------------------------*/
 /* Print message for error number.                                           */
 /*---------------------------------------------------------------------------*/

@@ -84,7 +84,7 @@ _unur_fstr_parser_init ( const char *fstr )
   /* initialize for scanning */
   pdata->scanpos = 0;     /* scan position at beginning */
   pdata->lastpos = -1;
-  pdata->errno = 0;
+  pdata->perrno = 0;
 
   /* names of user defined symbols */
   pdata->variable_name = NULL;
@@ -214,7 +214,7 @@ _unur_fstr_tokenize (struct parser_data *pdata)
   pdata->tno = 0;
 
   /* return error code */
-  return pdata->errno;
+  return pdata->perrno;
 
 } /* end of _unur_fstr_tokenize() */
 
@@ -282,7 +282,7 @@ _unur_fstr_next_symbol (struct parser_data *pdata, char *symb)
   }
 
   /* set errorcode */
-  pdata->errno = errcode;
+  pdata->perrno = errcode;
 
   if (errcode) {
     _unur_fstr_error_scan (pdata,symb);

@@ -74,7 +74,7 @@
       Currently we have two possible switches (other values would result
       in a compilation error):
       
-      1. UNUR_URNG_TYPE == UNUR_URNG_SIMPLE
+      1. UNUR_URNG_TYPE == UNUR_URNG_FVOID
       
       This uses URNGs of type @code{double uniform(void)}.
       If independent versions of the same URNG should be used, a copy of

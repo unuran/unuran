@@ -179,7 +179,7 @@ _unur_fstr_2_tree (const char *functstr, int withDefFunct)
 #endif
 
   /* exit in case of error */
-  if (pdata->errno) {
+  if (pdata->perrno) {
     _unur_fstr_parser_free(pdata);
     return NULL;
   }
@@ -203,9 +203,9 @@ _unur_fstr_2_tree (const char *functstr, int withDefFunct)
 #endif
 
   /* check for possible errors */
-  if (pdata->tno < pdata->n_tokens && !pdata->errno)
+  if (pdata->tno < pdata->n_tokens && !pdata->perrno)
     _unur_fstr_error_parse(pdata,ERR_UNFINISHED); 
-  if (pdata->errno) {
+  if (pdata->perrno) {
     _unur_fstr_parser_free(pdata);
     _unur_fstr_free(root);
     return NULL;

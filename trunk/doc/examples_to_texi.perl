@@ -21,7 +21,7 @@ while($_ = <>)
 	$longname =~ /(\w*).c$/;
 	$name = $1;
 	close OUTFILE;
-	open(OUTFILE, ">qstart_$name.texi");
+	open(OUTFILE, ">ref_$name.texi");
     }
 
     $_ = join '@{', split /\{/, $_;

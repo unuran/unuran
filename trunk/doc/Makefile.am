@@ -1,82 +1,88 @@
 ## Process this file with automake to produce Makefile.in
 
 
+method_dir   = $(top_srcdir)/src/methods
+distr_dir    = $(top_srcdir)/src/distributions
+example_dir  = $(top_srcdir)/examples
+
 info_TEXINFOS = unuran-ref.texi
 
 unuran_ref_TEXINFOS = \
  unuran-ref.texi \
- distr.texi \
- intro.texi \
- routines.texi \
- title.texi
+ ref_geninfo.texi \
+ ref_distr.texi \
+ ref_distr_discr.texi \
+ ref_distr_cont.texi \
+ ref_distr_lib.texi \
+ ref_methods.texi \
+ ref_method_functions.texi \
+ ref_internals.texi
 
 noinst_DATA = 
 
 EXTRA_DIST = \
- tex_macros.tex \
- fig-pdf-beta.png \
- fig-pdf-beta.tex \
- fig-pdf-cauchy.png \
- fig-pdf-cauchy.tex \
- fig-pdf-chisquare.png \
- fig-pdf-chisquare.tex \
- fig-pdf-exponential.png \
- fig-pdf-exponential.tex \
- fig-pdf-gamma.png \
- fig-pdf-gamma.tex \
- fig-pdf-laplace.png \
- fig-pdf-laplace.tex \
- fig-pdf-lognormal.png \
- fig-pdf-lognormal.tex \
- fig-pdf-normal.png \
- fig-pdf-normal.tex \
- fig-pdf-pareto.png \
- fig-pdf-pareto.tex \
- fig-pdf-powerexponential.png \
- fig-pdf-powerexponential.tex \
- fig-pdf-rayleigh.png \
- fig-pdf-rayleigh.tex \
- fig-pdf-student.png \
- fig-pdf-student.tex \
- fig-pdf-uniform.tex
+ unuran-ref.html \
+ unuran-ref.txt \
+ unuran-ref.dvi \
+ unuran-ref.ps \
+ unuran-ref.pdf \
+ texinfo.tex
 
-method_PATH  = ../src/methods/
-distr_PATH   = ../src/distributions/
-example_PATH = ../examples/
+# generated texi files ...
+ref_geninfo.texi: $(method_dir)/x_gen.h
+	./geninfo.perl $(method_dir)/x_gen.h      > ref_geninfo.texi
 
-# make qstart
-qstart: qstart.texi
+ref_distr.texi: $(method_dir)/distr.h
+	./distr.perl $(method_dir)/distr.h        > ref_distr.texi
 
-# qstart.texi
-qstart.texi: scripts
-	tex qstart.texi
-	makeinfo --html qstart.texi
-	makeinfo --no-headers -o qstart.txt qstart.texi
-	makeinfo qstart.texi
+ref_distr_discr.texi: $(distr_dir)/d_*.c
+	./distr_discr.perl $(distr_dir)/d_*.c     > ref_distr_discr.texi
+
+ref_distr_cont.texi: $(distr_dir)/c_*.c
+	./distr_cont.perl $(distr_dir)/c_*.c      > ref_distr_cont.texi
+
+ref_distr_lib.texi: $(distr_dir)/unuran_distributions.h
+	./distr_lib.perl $(distr_dir)/unuran_distributions.h > ref_distr_lib.texi
+
+ref_methods.texi: $(method_dir)/*.h
+	./methods.perl $(method_dir)/*.h          > ref_methods.texi
+
+ref_method_functions.texi: $(method_dir)/*.h
+	./method_functions.perl $(method_dir)/*.h > ref_method_functions.texi
+
+ref_internals.texi: $(method_dir)/*.h
+	./internals.perl $(method_dir)/*.h        > ref_internals.texi
 
 # run perl scripts
 scripts:
-	./examples_to_texi.perl $(example_PATH)example[0-9]*.c
-	./geninfo.perl $(method_PATH)x_gen.h
-	./change_distr.perl $(method_PATH)distr.h
-	./description.perl $(method_PATH)*.h
-	./distr.perl $(distr_PATH)c_*.c
-	./distr_discrete.perl $(distr_PATH)d_*.c
-	./distrref.perl $(distr_PATH)*.h
-	./funcref.perl $(method_PATH)*.h
-	./internals.perl $(method_PATH)*.h
+	./examples_to_texi.perl $(example_dir)/example[0-9]*.c
 
-# make html files
-html:
-	texi2html -verbose -split_chapter $(info_TEXINFOS)
+SUFFIXES = .html .txt .pdf
+
+# make html file ...
+.texi.html:
+	$(MAKEINFO) --html $< -o $@
+
+# make plain text file ...
+.texi.txt:
+	$(MAKEINFO) --no-headers --number-sections $< -o $@
+
+# make pdf file ...
+.texi.pdf:
+	texi2pdf $<
+
+# abbreviations
+.PHONY: html txt pdf ps
+html: version.texi unuran-ref.html
+txt: version.texi unuran-ref.txt
+pdf: version.texi unuran-ref.pdf
+ps: version.texi unuran-ref.ps
 
 # clean backup files
-clean-local:
-	rm -f *~
+CLEANFILES = *~
 
-# clean html files
-maintainer-clean:
-	rm -f *.html
-
-
-
+# clean generated files
+MAINTAINERCLEANFILES = \
+ unuran-ref.html \
+ unuran-ref.txt \
+ unuran-ref.pdf

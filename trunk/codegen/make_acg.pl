@@ -49,7 +49,7 @@ sub acg_header
 \#include <unistd.h>
 \#include <string.h>
 
-\#include <unuran.h>
+\#include <source_unuran.h>
 \#include <unuran_acg.h>
 
 /* ------------------------------------------------------------------------- */

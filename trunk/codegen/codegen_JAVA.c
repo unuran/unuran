@@ -73,7 +73,7 @@ unur_acg_JAVA( struct unur_gen *gen, FILE *out, const char *distr_name )
   if (distr_name == NULL) 
     distr_name = unur_distr_get_name( &(gen->distr) );
 
-  class_name = _unur_malloc((10+strlen(distr_name)) * sizeof(char));
+  class_name = _unur_malloc((15+strlen(distr_name)) * sizeof(char));
   sprintf(class_name,"Generator_%s",distr_name);
 
   /* make code */

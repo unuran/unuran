@@ -38,10 +38,15 @@
  *                                                                           *
  *****************************************************************************/
 				                                                                                    
-/*--------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+int _unur_matrix_transform_diagonal (int dim, const double *M, const double *D, double *res);
+/* Computes the transformation M^t . D . M of diagonal matrix D              */
+/* and stores it in matrix 'res'.                                            */
 
 int _unur_matrix_cholesky_decomposition (int dim, const double *S, double *L );
-/* The Colesky factor L of a variance-covariance matrix S is computed: S = LL' */
+/* The Cholesky factor L of a variance-covariance matrix S is computed:      */
+/*   S = LL'                                                                 */
 
 int _unur_matrix_invert_matrix (int dim, const double *A, double detmin, double *Ainv, double *det );
 /* Calculates the inverse matrix (by means of LU decomposition).             */

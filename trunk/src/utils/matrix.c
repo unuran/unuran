@@ -65,6 +65,49 @@ static int _unur_matrix_LU_invert (int dim, double *LU, int *p, double *inverse)
 
 /*---------------------------------------------------------------------------*/
 
+int
+_unur_matrix_transform_diagonal (int dim, const double *M, const double *D, double *res)
+     /*----------------------------------------------------------------------*/
+     /* Computes the transformation M^t . D . M of diagonal matrix D         */
+     /* and stores it in matrix 'res'.                                       */
+     /*                                                                      */
+     /* input:								     */
+     /*    dim  ... number of columns and rows of m and diag                 */
+     /*    M    ... square matrix                                            */
+     /*    D    ... diagonal entries of a diagonal matrix                    */
+     /*                                                                      */
+     /* output:								     */
+     /*   res   ... square matrix to store result                            */
+     /*                                                                      */
+     /* return:								     */
+     /*   UNUR_SUCCESS on success                                            */
+     /*   error code      otherwise                                          */
+     /*----------------------------------------------------------------------*/
+{
+#define idx(a,b) ((a)*dim+(b))
+
+  int i,j,k;
+  double sum;
+
+  /* check arguments */
+  CHECK_NULL(M,UNUR_ERR_NULL);
+  CHECK_NULL(D,UNUR_ERR_NULL);
+  CHECK_NULL(res,UNUR_ERR_NULL);
+
+  for (i=0; i<dim; i++)
+    for (j=0; j<dim; j++) {
+      for (sum=0., k=0; k<dim; k++)
+	sum += D[k] * M[idx(k,i)] * M[idx(k,j)];
+      res[idx(i,j)] = sum;
+    }
+  
+  return UNUR_SUCCESS;
+
+#undef idx
+} /* end of _unur_matrix_transform_diagonal() */
+
+/*---------------------------------------------------------------------------*/
+
 int 
 _unur_matrix_swap_rows (int dim, double *A, int i, int j)
      /*----------------------------------------------------------------------*/

@@ -1458,6 +1458,8 @@ _unur_tdr_ps_interval_split( struct unur_gen *gen, struct unur_tdr_interval *iv,
     _unur_tdr_ps_debug_split_start( gen,oldl,oldr,x,fx );
 #endif
 
+  return 0.;
+
   /* back up data */
   memcpy(&oldl_bak, oldl, sizeof(struct unur_tdr_interval));
   memcpy(&oldr_bak, oldr, sizeof(struct unur_tdr_interval));
@@ -1516,8 +1518,8 @@ _unur_tdr_ps_interval_split( struct unur_gen *gen, struct unur_tdr_interval *iv,
 
 #ifdef UNUR_ENABLE_LOGGING
   /* write info into log file */
-  if (gen->debug & TDR_DEBUG_SPLIT) 
-    _unur_tdr_ps_debug_split_stop( gen,oldl,iv_new,oldr );
+/*    if (gen->debug & TDR_DEBUG_SPLIT)  */
+/*      _unur_tdr_ps_debug_split_stop( gen,oldl,iv_new,oldr ); */
 #endif
 
   /* successfull ? */

@@ -155,8 +155,8 @@ unur_dari_new( struct unur_distr *distr )
      /*   return NULL                                                        */
      /*                                                                      */
      /* comment:                                                             */
-     /*   if the area below the PDF is not close to 1 it is necessary to     */
-     /*   set pmf_sum to an approximate value of its area (+/- 30 % is ok).  */
+     /*   if the sum over the PMF is not close to 1 it is necessary to       */
+     /*   set pmf_sum to an approximate value of its sum (+/- 30 % is ok).  */
      /*----------------------------------------------------------------------*/
 { 
   struct unur_par *par;
@@ -178,11 +178,13 @@ unur_dari_new( struct unur_distr *distr )
   if (!(distr->set & UNUR_DISTR_SET_MODE)) {
     _unur_warning(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"mode: try finding it (numerically)"); 
     /** TODO: das mit dem mode funktioniert noch nicht so wie geplant.
-	(i.e. ich habs noch nicht gemacht). **/
-/*      if (!unur_distr_discr_upd_mode(distr)) { */
-/*        _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"mode");  */
+	die schnittstelle fuer DISCR ist fertig,
+	fuer die standard verteilungen in UNURAN habe ich es noch nicht
+	gemacht **/
+    if (!unur_distr_discr_upd_mode(distr)) {
+      _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"mode"); 
       return NULL; 
-/*      } */
+    }
   }
 
   /** TODO: brauchst du?? **/
@@ -255,7 +257,7 @@ unur_dari_set_cfactor( struct unur_par *par, double cfactor )
   /* check new parameter for generator */
   /** TODO: welche werte fuer c sind zulaessig / sinnvoll ? 
   zulaessig ist jedes c>0, man koennte damit falsche Flaechenangaben kompensieren.
-  Wenn area genau bekannt ist, ist ein c > 2 (2 ist der minimax approach) so weit
+  Wenn sum genau bekannt ist, ist ein c > 2 (2 ist der minimax approach) so weit
   ich weiss nie sinnvoll. Ich denke aber, das sollte man besser nicht prinzipiell
   verbieten, hoechstens eine warnung.**/
   if (cfactor <= 0.) {
@@ -425,7 +427,7 @@ unur_dari_chg_verify( struct unur_gen *gen, int verify )
 /*****************************************************************************/
 
 int
-unur_dari_chg_pdfparams( struct unur_gen *gen, double *params, int n_params )
+unur_dari_chg_pmfparams( struct unur_gen *gen, double *params, int n_params )
      /*----------------------------------------------------------------------*/
      /* change array of parameters for distribution                          */
      /*                                                                      */
@@ -462,16 +464,16 @@ unur_dari_chg_pdfparams( struct unur_gen *gen, double *params, int n_params )
     DISTR.params[i] = params[i];
 
   /* changelog */
-  /* mode and area might be wrong now! 
+  /* mode and sum might be wrong now! 
      but the user is responsible to change it.
      so we dont say:
-     gen->distr.set &= ~(UNUR_DISTR_SET_MODE | UNUR_DISTR_SET_PMFAREA );
+     gen->distr.set &= ~(UNUR_DISTR_SET_MODE | UNUR_DISTR_SET_PMFSUM );
      gen->set &= ~DARI_SET_CDFMODE;
   */
 
   /* o.k. */
   return 1;
-} /* end of unur_dari_chg_pdfparams() */
+} /* end of unur_dari_chg_pmfparams() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -536,14 +538,35 @@ unur_dari_chg_mode( struct unur_gen *gen, int mode )
   _unur_check_gen_object( gen,DARI );
   
   /* copy parameters */
-  /** TODO **/
-/*    DISTR.mode = mode; */
+  DISTR.mode = mode;
 
-  /* no changelog required */
+  /** no changelog required ? **/
 
   /* o.k. */
   return 1;
 } /* end of unur_dari_chg_mode() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+unur_dari_upd_mode( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* recompute mode of distribution                                       */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen   ... pointer to generator object                              */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... on success                                                   */
+     /*   0 ... on error                                                     */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  CHECK_NULL(gen,0);
+  _unur_check_gen_object( gen,DARI );
+
+  return unur_distr_discr_upd_mode( &(gen->distr) );
+} /* end of unur_dari_upd_mode() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -582,10 +605,6 @@ unur_dari_chg_pmfsum( struct unur_gen *gen, double sum )
 
 /*---------------------------------------------------------------------------*/
 
-#if 0
-
-/** funktioniert noch nicht **/
- 
 int
 unur_dari_upd_pmfsum( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
@@ -603,10 +622,8 @@ unur_dari_upd_pmfsum( struct unur_gen *gen )
   CHECK_NULL(gen,0);
   _unur_check_gen_object( gen,DARI );
 
-  return unur_distr_cont_upd_pmfsum( &(gen->distr) );
+  return unur_distr_discr_upd_pmfsum( &(gen->distr) );
 } /* end of unur_dari_upd_pmfsum() */
-
-#endif
 
 /*****************************************************************************/
 

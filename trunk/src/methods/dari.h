@@ -55,9 +55,9 @@
       is used to store values during generation.
       
       DARI works for all T-(-1/2)-concave distributions. It requires the PMF
-      and the location of the mode. Moreover the approximate area below the
-      given PDF is used.
-      (If no area is given for the distribution the algorithm assumes that it
+      and the location of the mode. Moreover the approximate sum over the PMF
+      is used. 
+      (If no sum is given for the distribution the algorithm assumes that it
       is approximately 1.)
       The rejection constant is bounded from above by 4 for all T-concave
       distributions.
@@ -66,7 +66,7 @@
       It is possible to change the parameters and the domain of the chosen 
       distribution without building a new generator object by using the
       unur_dari_chg_pmfparams() and unur_dari_chg_domain() call, respectively.
-      But then unur_dari_chg_mode() and unur_dari_chg_pmfarea() have to be used
+      But then unur_dari_chg_mode() and unur_dari_chg_pmfsum() have to be used
       to reset the corresponding figures whenever these have changed.
       Before sampling from the distribution again, unur_dari_reinit() must be 
       executed. (Otherwise the generator might produce garbage).
@@ -140,7 +140,7 @@ int unur_dari_set_cfactor( UNUR_PAR *parameters, double cfactor );
 
 /*...........................................................................*/
 
-int unur_dari_chg_pdfparams( UNUR_GEN *generator, double *params, int n_params );
+int unur_dari_chg_pmfparams( UNUR_GEN *generator, double *params, int n_params );
 /* 
    Change array of parameters of distribution in given generator object.
    Notice that it is not possible to change the number of parameters.
@@ -168,6 +168,17 @@ int unur_dari_chg_mode( UNUR_GEN *generator, int mode );
 */
 
 
+int unur_dari_upd_mode( UNUR_GEN *generator );
+/* 
+   Recompute the mode of the distribution. This call only works when
+   a distribution object from the (=>) UNURAN library of standard
+   distributions is used.
+   Otherwise @code{unur_errno} is set to @code{UNUR_ERR_DISTR_DATA}.
+
+   unur_dari_reinit() must be executed before sampling from the 
+   generator again.
+*/
+
 int unur_dari_chg_pmfsum( UNUR_GEN *generator, double sum );
 /* 
    Change sum over the PMF of distribution.
@@ -175,10 +186,8 @@ int unur_dari_chg_pmfsum( UNUR_GEN *generator, double sum );
    generator again.
 */
 
-/*  int unur_dari_upd_pmfsum( UNUR_GEN *generator ); */
+int unur_dari_upd_pmfsum( UNUR_GEN *generator );
 /* 
-   NOT YET IMPLEMENTED!
-
    Recompute sum over the PMF of the distribution. 
    It only works when a distribution objects from the
    (=>) UNURAN library of standard distributions is used. 

@@ -824,14 +824,13 @@ _unur_distr_discr_debug( struct unur_distr *distr, char *genid, int printvector 
   _unur_print_if_default(distr,UNUR_DISTR_SET_DOMAIN);
   fprintf(log,"\n%s:\n",genid);
 
+  if (distr->set & UNUR_DISTR_SET_MODE)
+    fprintf(log,"%s:\tmode = %d\n",genid,DISTR.mode);
+  else
+    fprintf(log,"%s:\tmode unknown\n",genid);
   
-  /*      if (distr->set & UNUR_DISTR_SET_MODE) */
-  /*        fprintf(log,"%s:\tmode = %g\n",genid,DISTR.mode); */
-  /*      else */
-  /*        fprintf(log,"%s:\tmode unknown\n",genid); */
-  
-  /*      fprintf(log,"\n%s:\tsum over PMF = %g",genid,DISTR.sum); */
-  /*      _unur_print_if_default(distr,UNUR_DISTR_SET_PMFSUM); */
+  fprintf(log,"\n%s:\tsum over PMF = %g",genid,DISTR.sum);
+  _unur_print_if_default(distr,UNUR_DISTR_SET_PMFSUM);
   
 } /* end of _unur_distr_discr_debug() */
 

@@ -203,8 +203,8 @@ unur_tabl_new( double (*pdf)(double x,double *pdf_param, int n_pdf_param) )
   par->set          = 0UL;       /* inidicate default parameters             */    
   par->urng         = unur_get_default_urng(); /* use default urng           */
 
-  _unur_set_debug_default(par);  /* set default debugging flags              */
-  _unur_set_genid(par,GENTYPE);    /* set generator identifier               */
+  _unur_set_debugflag_default(par); /* set default debugging flags           */
+  _unur_set_genid(par,GENTYPE);     /* set generator identifier              */
 
   /* routine for starting generator */
   par->init = unur_tabl_init;
@@ -651,7 +651,7 @@ tabl_create( struct unur_par *par )
   GEN.variant = PAR.variant;           /* indicates variant                     */
 
   _unur_copy_urng_pointer(par,gen);    /* pointer to urng into generator object */
-  _unur_copy_debug(par,gen);           /* copy debugging flags into generator object */
+  _unur_copy_debugflag(par,gen);       /* copy debugging flags into generator object */
   _unur_copy_genid(par,gen);           /* copy generator identifier             */
 
   /* allocate memory for parameters of p.d.f. */

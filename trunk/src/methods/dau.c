@@ -179,14 +179,14 @@ struct unur_par *
   PAR.len        = len;
 
   /* set default values */
-  PAR.urn_factor = 1.;             /* use same size for table                */
+  PAR.urn_factor = 1.;              /* use same size for table               */
 
-  par->method    = UNUR_METH_DAU;  /* method and default variant             */
-  par->set       = 0UL;            /* inidicate default parameters           */    
+  par->method    = UNUR_METH_DAU;   /* method and default variant            */
+  par->set       = 0UL;             /* inidicate default parameters          */    
   par->urng      = unur_get_default_urng(); /* use default urng              */
 
-  _unur_set_debug_default(par);    /* set default debugging flags            */
-  _unur_set_genid(par,GENTYPE);    /* set generator identifier               */
+  _unur_set_debugflag_default(par); /* set default debugging flags           */
+  _unur_set_genid(par,GENTYPE);     /* set generator identifier              */
 
   /* routine for starting generator */
   par->init = unur_dau_init;
@@ -438,7 +438,7 @@ static struct unur_gen *
   GEN.prob = NULL;                  /* copy probability vector on demand          */
   gen->method = par->method;        /* indicates used method                      */
   _unur_copy_urng_pointer(par,gen); /* copy pointer to urng into generator object */
-  _unur_copy_debug(par,gen);        /* copy debugging flags into generator object */
+  _unur_copy_debugflag(par,gen);    /* copy debugging flags into generator object */
   _unur_copy_genid(par,gen);        /* copy generator identifier                  */
 
   /* routines for sampling and destroying generator */

@@ -101,7 +101,7 @@ unur_unif_new( int start, int skip )
   par->set         = 0UL;          /* inidicate default parameters           */    
   par->urng        = unur_get_default_urng(); /* use default urng            */
 
-  _unur_set_debug_default(par);    /* set default debugging flags            */
+  _unur_set_debugflag_default(par);   /* set default debugging flags         */
   _unur_set_genid(par,GENTYPE);    /* set generator identifier               */
 
   /* routine for starting generator */
@@ -250,7 +250,7 @@ unif_create( struct unur_par *par )
   /* copy some parameters into generator object */
   gen->method = par->method;         /* indicates method and variant */
   _unur_copy_urng_pointer(par,gen);  /* pointer to urng into generator object*/
-  _unur_copy_debug(par,gen);         /* copy debugging flags into generator object */
+  _unur_copy_debugflag(par,gen);     /* copy debugging flags into generator object */
   _unur_copy_genid(par,gen);         /* copy generator identifier            */
 
   GEN.start = PAR.start;    /* starting point for subsequence */

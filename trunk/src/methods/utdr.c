@@ -153,8 +153,8 @@ struct unur_par *
   par->set         = 0UL;          /* inidicate default parameters           */    
   par->urng        = unur_get_default_urng(); /* use default urng            */
 
-  _unur_set_debug_default(par);    /* set default debugging flags            */
-  _unur_set_genid(par,GENTYPE);    /* set generator identifier               */
+  _unur_set_debugflag_default(par);  /* set default debugging flags          */
+  _unur_set_genid(par,GENTYPE);      /* set generator identifier             */
 
   /* routine for starting generator */
   par->init = unur_utdr_init;
@@ -480,7 +480,7 @@ static struct unur_gen *
 
   /* copy some parameters into generator object */
   _unur_copy_urng_pointer(par,gen);  /* pointer to urng into generator object*/
-  _unur_copy_debug(par,gen);         /* copy debugging flags into generator object */
+  _unur_copy_debugflag(par,gen);     /* copy debugging flags into generator object */
   _unur_copy_genid(par,gen);         /* copy generator identifier            */
 
   GEN.mode = PAR.mode;         /* mode of distribution     */

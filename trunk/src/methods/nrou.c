@@ -139,6 +139,13 @@ static void _unur_nrou_free( struct unur_gen *gen);
 /* destroy generator object.                                                 */
 /*---------------------------------------------------------------------------*/
 
+static double _unur_aux_bound_umax(double x, void *p);
+static double _unur_aux_bound_umin(double x, void *p);
+/*---------------------------------------------------------------------------*/
+/* auxiliary functions to be used in the calculation of umin/umax            */
+/*---------------------------------------------------------------------------*/
+
+
 #ifdef UNUR_ENABLE_LOGGING
 /*---------------------------------------------------------------------------*/
 /* the following functions print debugging information on output stream,     */
@@ -493,21 +500,6 @@ _unur_nrou_init( struct unur_par *par )
 
 /*---------------------------------------------------------------------------*/
 
-double 
-_unur_aux_bound_vmax(double x, void *p) {
-     /*----------------------------------------------------------------------*/
-     /* Auxiliary function used in the computation of the bounding rectangle */
-     /*----------------------------------------------------------------------*/
-  struct unur_gen *gen;
-  gen=p; /* typecast from void* to unur_gen* */
- 
-  if (GEN.r == 1.) return sqrt( _unur_cont_PDF((x),(gen->distr)) );
-
-  return pow( _unur_cont_PDF((x),(gen->distr)), 1./(1.+GEN.r) ); 
-}
-
-/*---------------------------------------------------------------------------*/
-
 double
 _unur_aux_bound_umax(double x, void *p) {
      /*----------------------------------------------------------------------*/
@@ -549,6 +541,7 @@ _unur_nrou_rectangle( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
 { 
   struct unur_funct_generic faux; /* function to be minimized/maximized    */
+  double mode; /* position of the distribution mode */
   double x, cx, sx, bx; /* parameters to be used in min/max search */ 
 
   /* check arguments */
@@ -569,24 +562,17 @@ _unur_nrou_rectangle( struct unur_gen *gen )
   if (!(gen->set & NROU_SET_V)) {
     /* user has not provided any upper bound for v */
 
-    /* we start to check if optional mode is present */
-    if ( (gen->distr->set & UNUR_DISTR_SET_MODE) &&
-         (DISTR.mode >= DISTR.BD_LEFT) &&
-	 (DISTR.mode <= DISTR.BD_RIGHT) ) {
-	 
-      /* setting vmax to be (f(mode))^(1/(1+r)) */
-      GEN.vmax = pow(PDF(DISTR.mode), 1./(1.+GEN.r));
-    }
-    else {
-      x = unur_distr_cont_get_mode(gen->distr);
+    /* get (optional) mode if present or find it numerically */
+    mode = unur_distr_cont_get_mode(gen->distr);
 
-      if (_unur_isinf(x)!=0) {
-        /* unur_distr_cont_get_mode was unable to get mode, returning UNUR_INFINITY */
-        _unur_error(gen->genid , UNUR_ERR_GENERIC, "Bounding rect (vmax)");  
-        return UNUR_ERR_GENERIC;
-      }
-      GEN.vmax = pow(PDF(x), 1./(1.+GEN.r));
+    if (_unur_isinf(mode)!=0) {
+      /* unur_distr_cont_get_mode was unable to get mode, returning UNUR_INFINITY */
+      _unur_error(gen->genid , UNUR_ERR_GENERIC, "Bounding rect (vmax)");  
+      return UNUR_ERR_GENERIC;
     }
+    
+    /* setting vmax to be (f(mode))^(1/(1+r)) */
+    GEN.vmax = pow(PDF(mode), 1./(1.+GEN.r));
 
     /* additional scaling of boundary rectangle */
     GEN.vmax = GEN.vmax * ( 1+ NROU_RECT_SCALING);

@@ -98,6 +98,7 @@ static struct unur_gen *_unur_mcorr_create( struct unur_par *par );
 /*---------------------------------------------------------------------------*/
 
 static void _unur_mcorr_sample_matr( struct unur_gen *gen, double *mat );
+static void _unur_mcorr_sample_matr_eigen( struct unur_gen *gen, double *mat );
 /*---------------------------------------------------------------------------*/
 /* sample from generator                                                     */
 /*---------------------------------------------------------------------------*/
@@ -105,12 +106,6 @@ static void _unur_mcorr_sample_matr( struct unur_gen *gen, double *mat );
 static void _unur_mcorr_free( struct unur_gen *gen);
 /*---------------------------------------------------------------------------*/
 /* destroy generator object.                                                 */
-/*---------------------------------------------------------------------------*/
-
-static int _unur_mcorr_eigen (int dim, double *values, double *M );
-/*---------------------------------------------------------------------------*/
-/* Calculates a random correlation matrix M with given eigenvalues           */
-/* using the Marsaglia-Olkin method                                          */
 /*---------------------------------------------------------------------------*/
 
 
@@ -353,7 +348,11 @@ _unur_mcorr_create( struct unur_par *par )
   gen->genid = _unur_set_genid(GENTYPE);
 
   /* routines for sampling and destroying generator */
-  SAMPLE = _unur_mcorr_sample_matr;
+  if (gen->set && MCORR_SET_EIGENVALUES)
+    SAMPLE = _unur_mcorr_sample_matr_eigen;
+  else
+    SAMPLE = _unur_mcorr_sample_matr;
+
   gen->destroy = _unur_mcorr_free;
   gen->clone = _unur_mcorr_clone;
 
@@ -435,13 +434,6 @@ _unur_mcorr_sample_matr( struct unur_gen *gen, double *mat )
   COOKIE_CHECK(gen,CK_MCORR_GEN,RETURN_VOID);
   CHECK_NULL(mat,RETURN_VOID);
 
-  /* Marsaglia Olkin method with given eigenvalues */
-  if (gen->set && MCORR_SET_EIGENVALUES) {
-    _unur_mcorr_eigen(GEN.dim, GEN.eigenvalues, mat);
-    return; 
-  }
-
-  /* eigenvalues have not been provided */
   /* generate rows vectors of matrix H uniformly distributed in the unit sphere */
   for (i=0; i<GEN.dim; i++) {
     sum=0.;
@@ -471,6 +463,164 @@ _unur_mcorr_sample_matr( struct unur_gen *gen, double *mat )
 
 #undef idx
 } /* end of _unur_mcorr_sample_matr() */
+
+/*--------------------------------------------------------------------------*/
+
+void
+_unur_mcorr_sample_matr_eigen( struct unur_gen *gen, double *mat )
+     /*----------------------------------------------------------------------*/
+     /* sample from generator (eigenvalues given, Marsaglia-Olkin method     */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*   mat ... random matrix (result)                                     */
+     /*----------------------------------------------------------------------*/
+{
+#define idx(a,b) ((a)*dim+(b))
+  int i,j,k, dim;
+  double *E, *P;
+  double *x, *y, *z, *w, *r; /* misc vectors used in the marsaglia-olkin method */
+  double a, b, c, e, e2;
+  int s; /* random sign +-1 */
+
+  /* check parameters */
+  CHECK_NULL(gen, RETURN_VOID);
+  CHECK_NULL(mat, RETURN_VOID);
+
+  dim = GEN.dim; 
+  
+  if (dim<1) {
+    _unur_error(gen->genid,UNUR_ERR_GENERIC,"dimension < 1");
+    return;
+  }
+
+  /* initialization steps */
+  x=_unur_xmalloc(dim*sizeof(double));
+  y=_unur_xmalloc(dim*sizeof(double));
+  z=_unur_xmalloc(dim*sizeof(double));
+  w=_unur_xmalloc(dim*sizeof(double));
+  r=_unur_xmalloc(dim*sizeof(double));
+  E=_unur_xmalloc(dim*dim*sizeof(double));
+  P=_unur_xmalloc(dim*dim*sizeof(double));
+
+  /* initially E is an identity matrix */
+  for (i=0; i<dim; i++)
+    for (j=0; j<dim; j++)
+      E[idx(i,j)] = (i==j) ? 1: 0;
+
+  for (k=0; k<dim-1; k++) {
+    /* w is a random vector */
+    for (i=0; i<dim; i++) w[i] = _unur_call_urng(gen->urng);
+    /* x = E*w */
+    for (i=0; i<dim; i++) {
+      x[i]=0;
+      for (j=0; j<dim; j++) {
+        x[i] += E[idx(i,j)]*w[j];
+      }
+    }
+
+    /* a=sum{(1-lambda_i)*x_i*x_i} */
+    a=0;
+    for (i=0; i<dim; i++)
+      a += (1-GEN.eigenvalues[i])*x[i]*x[i];
+
+    /* check if all eigenvalues are ~1 */
+    if (fabs(a)<DBL_EPSILON) {
+      /* return identity matrix */
+      for (i=0; i<dim; i++) {
+      for (j=0; j<dim; j++) {
+        mat[idx(i,j)] = (i==j) ? 1: 0;
+      }}
+      _unur_warning(gen->genid, UNUR_ERR_GENERIC,"all eigenvalues are ~1 -> identity matrix");
+      
+      free(E); free(P); free(x); free(y); free(z); free(w); free(r);
+      return;
+    }
+
+    do {
+
+      /* z is a random vector */
+      for (i=0; i<dim; i++) z[i] = _unur_call_urng(gen->urng);
+
+      /* y = E*z */
+      for (i=0; i<dim; i++) {
+        y[i]=0;
+        for (j=0; j<dim; j++) {
+          y[i] += E[idx(i,j)]*z[j];
+        }
+      }
+
+      /* b=sum{(1-lambda_i)*x_i*y_i} */
+      /* c=sum{(1-lambda_i)*y_i*y_i} */
+      b=0; c=0;
+      for (i=0; i<dim; i++) {
+        b += (1-GEN.eigenvalues[i])*x[i]*y[i];
+        c += (1-GEN.eigenvalues[i])*y[i]*y[i];
+      }
+
+      /* e^2 = b^2 - a*c */
+      e2 = b*b - a*c;
+
+    } while (e2<0);
+
+    e=sqrt(e2);
+
+
+    /* random sign */
+    s = ( _unur_call_urng(gen->urng) >.5) ? 1: -1 ;
+
+    /* r=x*(b+s*e)/a - y */
+    for (i=0; i<dim; i++) r[i] = x[i]*(b+s*e)/a - y[i];
+
+    /* another random sign */
+    s = ( _unur_call_urng(gen->urng) >.5) ? 1: -1 ;
+
+    /* pk=s*r/norm(r) */
+    _unur_vector_normalize(dim, r);
+    for (i=0; i<dim; i++) P[idx(k,i)] = s * r[i];
+
+    /* E = E - r r^T */
+    for (i=0; i<dim; i++) {
+      for (j=0; j<dim; j++) {
+        E[idx(i,j)] -= r[i]*r[j];
+      }
+    }
+
+  } /* next k */
+
+  /* w is a random vector */
+  for (i=0; i<dim; i++) w[i] = _unur_call_urng(gen->urng);
+
+  /* x = E*w */
+  for (i=0; i<dim; i++) {
+    x[i]=0;
+    for (j=0; j<dim; j++) {
+      x[i] += E[idx(i,j)]*w[j];
+    }
+  }
+
+  _unur_vector_normalize(dim, x);
+
+  /* last row of the orthogonal matrix P */
+  for (i=0; i<dim; i++) {
+    P[idx(dim-1,i)] = x[i];
+  }
+
+  /* mat = P L P^T, where L diagonal containing the eigenvalues */
+  for (i=0; i<dim; i++) {
+    for (j=0; j<dim; j++) {
+      mat[idx(i,j)] = 0;
+      for (k=0; k<dim; k++) {
+        mat[idx(i,j)] += P[idx(i,k)] * GEN.eigenvalues[k] * P[idx(j,k)];
+      }
+    }
+  }
+
+  free(E); free(P);
+  free(x); free(y); free(z); free(w); free(r);
+
+#undef idx
+} /* end of _unur_mcorr_eigen() */
 
 /*****************************************************************************/
 
@@ -503,156 +653,6 @@ _unur_mcorr_free( struct unur_gen *gen )
   _unur_generic_free(gen);
 
 } /* end of _unur_mcorr_free() */
-
-/*--------------------------------------------------------------------------*/
-
-int _unur_mcorr_eigen (int dim, double *values, double *M )
-     /* Calculates a random correlation matrix M with given eigenvalues     */
-     /* using the Marsaglia-Olkin method                                    */
-{
-#define idx(a,b) ((a)*dim+(b))
-  int i,j,k;
-  double *E, *P;
-  double *x, *y, *z, *w, *r; /* misc vectors used in the marsaglia-olkin method */
-  double a, b, c, e, e2;
-  int s; /* random sign +-1 */
-
-  /* check parameters */
-  CHECK_NULL(values, UNUR_ERR_NULL);
-  CHECK_NULL(M, UNUR_ERR_NULL);
-  if (dim<1) {
-    _unur_error("MCORR",UNUR_ERR_GENERIC,"dimension < 1");
-    return UNUR_ERR_GENERIC;
-  }
-
-  /* initialization steps */
-  x=_unur_xmalloc(dim*sizeof(double));
-  y=_unur_xmalloc(dim*sizeof(double));
-  z=_unur_xmalloc(dim*sizeof(double));
-  w=_unur_xmalloc(dim*sizeof(double));
-  r=_unur_xmalloc(dim*sizeof(double));
-  E=_unur_xmalloc(dim*dim*sizeof(double));
-  P=_unur_xmalloc(dim*dim*sizeof(double));
-
-  /* initially E is an identity matrix */
-  for (i=0; i<dim; i++)
-    for (j=0; j<dim; j++)
-      E[idx(i,j)] = (i==j) ? 1: 0;
-
-  for (k=0; k<dim-1; k++) {
-    /* w is a random vector */
-    for (i=0; i<dim; i++) w[i] = unur_urng_sample(NULL);
-    /* x = E*w */
-    for (i=0; i<dim; i++) {
-      x[i]=0;
-      for (j=0; j<dim; j++) {
-        x[i] += E[idx(i,j)]*w[j];
-      }
-    }
-
-    /* a=sum{(1-lambda_i)*x_i*x_i} */
-    a=0;
-    for (i=0; i<dim; i++)
-      a += (1-values[i])*x[i]*x[i];
-
-    /* check if all eigenvalues are ~1 */
-    if (fabs(a)<DBL_EPSILON) {
-      /* return identity matrix */
-      for (i=0; i<dim; i++) {
-      for (j=0; j<dim; j++) {
-        M[idx(i,j)] = (i==j) ? 1: 0;
-      }}
-      _unur_warning("MCORR", UNUR_ERR_GENERIC,"all eigenvalues are ~1 -> identity matrix");
-      
-      return UNUR_SUCCESS;
-    }
-
-    do {
-
-      /* z is a random vector */
-      for (i=0; i<dim; i++) z[i] = unur_urng_sample(NULL);
-
-      /* y = E*z */
-      for (i=0; i<dim; i++) {
-        y[i]=0;
-        for (j=0; j<dim; j++) {
-          y[i] += E[idx(i,j)]*z[j];
-        }
-      }
-
-      /* b=sum{(1-lambda_i)*x_i*y_i} */
-      /* c=sum{(1-lambda_i)*y_i*y_i} */
-      b=0; c=0;
-      for (i=0; i<dim; i++) {
-        b += (1-values[i])*x[i]*y[i];
-        c += (1-values[i])*y[i]*y[i];
-      }
-
-      /* e^2 = b^2 - a*c */
-      e2 = b*b - a*c;
-
-    } while (e2<0);
-
-    e=sqrt(e2);
-
-
-    /* random sign */
-    s = (unur_urng_sample(NULL)>.5) ? 1: -1 ;
-
-    /* r=x*(b+s*e)/a - y */
-    for (i=0; i<dim; i++) r[i] = x[i]*(b+s*e)/a - y[i];
-
-    /* another random sign */
-    s = (unur_urng_sample(NULL)>.5) ? 1: -1 ;
-
-    /* pk=s*r/norm(r) */
-    _unur_vector_normalize(dim, r);
-    for (i=0; i<dim; i++) P[idx(k,i)] = s * r[i];
-
-    /* E = E - r r^T */
-    for (i=0; i<dim; i++) {
-      for (j=0; j<dim; j++) {
-        E[idx(i,j)] -= r[i]*r[j];
-      }
-    }
-
-  } /* next k */
-
-  /* w is a random vector */
-  for (i=0; i<dim; i++) w[i] = unur_urng_sample(NULL);
-
-  /* x = E*w */
-  for (i=0; i<dim; i++) {
-    x[i]=0;
-    for (j=0; j<dim; j++) {
-      x[i] += E[idx(i,j)]*w[j];
-    }
-  }
-
-  _unur_vector_normalize(dim, x);
-
-  /* last row of the orthogonal matrix P */
-  for (i=0; i<dim; i++) {
-    P[idx(dim-1,i)] = x[i];
-  }
-
-  /* M = P L P^T, where L diagonal containing the eigenvalues */
-  for (i=0; i<dim; i++) {
-    for (j=0; j<dim; j++) {
-      M[idx(i,j)] = 0;
-      for (k=0; k<dim; k++) {
-        M[idx(i,j)] += P[idx(i,k)] * values[k] * P[idx(j,k)];
-      }
-    }
-  }
-
-  free(E); free(P);
-  free(x); free(y); free(z); free(w); free(r);
-
-  return UNUR_SUCCESS;
-
-#undef idx
-} /* end of _unur_mcorr_eigen() */
 
 /*--------------------------------------------------------------------------*/
 
@@ -693,7 +693,10 @@ _unur_mcorr_debug_init( const struct unur_gen *gen )
 
   fprintf(log,"%s:\n",gen->genid);
 
-  fprintf(log,"%s: sampling routine = _unur_mcorr_sample_matr()\n",gen->genid);
+  if (gen->set && MCORR_SET_EIGENVALUES)
+    fprintf(log,"%s: sampling routine = _unur_mcorr_sample_matr_eigen()\n",gen->genid);
+  else
+    fprintf(log,"%s: sampling routine = _unur_mcorr_sample_matr()\n",gen->genid);
   fprintf(log,"%s:\n",gen->genid);
 
 } /* end of _unur_mcorr_debug_init() */

@@ -80,10 +80,6 @@ double v_less_or(double l, double r) { CHECK_INFS(l,r); return (double)(l <= r);
 double v_unequal(double l, double r) { CHECK_INFS(l,r); return (double)(l != r); }
 double v_grtr_or(double l, double r) { CHECK_INFS(l,r); return (double)(l >= r); }
 
-double v_or     (double l, double r) { CHECK_INFS(l,r); return (double)((int)l || (int)r);  }
-double v_and    (double l, double r) { CHECK_INFS(l,r); return (double)((int)l && (int)r); }
-double v_not    (double l, double r) { CHECK_INF(r);    return (double)(!((int)r)); }
-
 double v_plus   (double l, double r) { CHECK_INFS(l,r); return (l + r); }
 double v_minus  (double l, double r) { CHECK_INFS(l,r); return (l - r); }
 double v_mul    (double l, double r) { CHECK_INFS(l,r); return (l * r); }

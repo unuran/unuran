@@ -55,15 +55,12 @@ static double v_greater(double l, double r);
 static double v_less_or(double l, double r);
 static double v_unequal(double l, double r);
 static double v_grtr_or(double l, double r);
-static double v_or     (double l, double r);
 static double v_plus   (double l, double r); 
 static double v_minus  (double l, double r); 
 static double v_mul    (double l, double r);
-static double v_and    (double l, double r);
 static double v_div    (double l, double r);
 static double v_mod    (double l, double r);
 static double v_power  (double l, double r);
-static double v_not    (double l, double r);
 static double v_const  (double l, double r);
 static double v_exp    (double l, double r);
 static double v_ln     (double l, double r);
@@ -220,10 +217,7 @@ static struct symbols symbol[] = {
   /* marker for alphanumeric symbols */
   {"_ANS", S_NOSYMBOL, 0, 0.0 , v_dummy  , d_error, "", "" },
 
-  /* logical operators */
-  {"and" , S_MUL_OP  , 2, 0.0 , v_and    , d_const, "&&", ".AND." },
-  {"or"  , S_ADD_OP  , 4, 0.0 , v_or     , d_const, "||", ".OR."  },
-  {"not" , S_SFUNCT  , 1, 0.0 , v_not    , d_const, "@!", ".NOT." },
+  /* logical operators: removed */
 
   /* system constants */
   {"pi"  , S_SCONST  , 9, M_PI, v_const  , d_const, "", "" },

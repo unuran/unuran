@@ -100,8 +100,6 @@ _unur_fstr_node2C ( FILE *out, const struct ftreenode *node,
 
   const char *symb;           /* symbol for node (or NULL for constant)      */
   int type, op_type;               /* type of symbol and operator            */
-  int priority = symbol[node->token].info; /* priority of symbol             */
-  int operator, parenthesis;               /* booleans                       */
 
   /* type and name of symbol */
   switch (node->type) {

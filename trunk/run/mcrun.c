@@ -4,7 +4,21 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *  Examples                                                                 *
+ *  Experimets with MC and QMC:                                              *
+ *    naive                                                                  *
+ *    importance sampling with                                               *
+ *       inversion                                                           *
+ *       TDR                                                                 *
+ *       smoothed TDR                                                        *
+ *       rejection from constant hat                                         *
+ *       smoothed rejection from constant hat                                *
+ *       weighted uniform sampling                                           *
+ *                                                                           *
+ *****************************************************************************
+ *                                                                           *
+ *  WARNING!                                                                 *
+ *  Quick & dirty hack!!                                                     *
+ *  Uses global variables!                                                   *
  *                                                                           *
  *****************************************************************************/
 
@@ -14,6 +28,7 @@
 #include <sys/time.h>
 #include <unistd.h>
 #include <string.h>
+#include <gsl/gsl_qrng.h>
 
 /*---------------------------------------------------------------------------*/
 /* uniform pseudo- and quasi-random number generators                        */
@@ -25,7 +40,13 @@ double uniform_prng(void);
 /* uniform PRNG (with counter) */
 
 void seed_uniform_prng(int seed); 
-/* seed uniform PRNG */
+/* seed and (re-) init uniform (Q)RNG */
+
+void uniform_next_point(void);
+/* go to first component of qrng vector */
+
+void make_qrng_shift(void);
+/* make random shift vector for qrng */
 
 /*---------------------------------------------------------------------------*/
 /* Run MC computations                                                       */
@@ -78,6 +99,8 @@ void print_result( char *title, double xsum, double xsumsqu, double time );
 
 /*---------------------------------------------------------------------------*/
 
+static int use_qrng = 0;           /* whether to use qrng or prng            */
+static int seed = 123;             /* seed for urng                          */
 static int sample_size = 10000;    /* sample size for MC integration         */
 static int n_samples = 10;         /* total number of samples                */
 
@@ -133,10 +156,9 @@ double funct_domain_area( void )
 int main (int argc, char *argv[])
 {
   char c;
-  int seed = 123;
 
   /* read options                                                            */
-  while ((c = getopt(argc, argv, "n:m:d:b:s:")) != -1) {
+  while ((c = getopt(argc, argv, "n:m:d:b:s:q")) != -1) {
     switch (c) {
     case 'n':     /* sample size */
       sample_size = atoi(optarg);
@@ -156,6 +178,9 @@ int main (int argc, char *argv[])
       seed = atoi(optarg);
       if (seed<=0) seed *= -1;
       break;
+    case 'q':     /* use qrng */
+      use_qrng = 1;
+      break;
     default:
       exit (EXIT_FAILURE);
     }
@@ -167,7 +192,7 @@ int main (int argc, char *argv[])
 
   run_MC(MC_naive, NULL, "Naive MC");
 
-/*    run_MC(MC_importance, use_inversion, "Importance MC, inversion"); */
+  run_MC(MC_importance, use_inversion, "Importance MC, inversion");
 
 /*    run_MC(MC_importance, use_tdr_bad, "Importance MC, TDR, bad hat"); */
 /*    run_MC(MC_importance, use_tdr_better, "Importance MC, TDR, better hat"); */
@@ -184,7 +209,10 @@ int main (int argc, char *argv[])
 /*    run_MC(MC_xhat_importance, use_tdr_good, "single importance MC, TDR, good hat"); */
 /*    run_MC(MC_xhat_importance, use_tdr_excellent, "single importance MC, TDR, excellent hat"); */
 
+/*    run_MC(MC_xsmoothed_importance, use_tdr_bad, "single importance MC, smoothed TDR, bad hat"); */
 /*    run_MC(MC_xsmoothed_importance, use_tdr_better, "single importance MC, smoothed TDR, better hat"); */
+/*    run_MC(MC_xsmoothed_importance, use_tdr_good, "single importance MC, smoothed TDR, good hat"); */
+/*    run_MC(MC_xsmoothed_importance, use_tdr_excellent, "single importance MC, smoothed TDR, excellent hat"); */
 
 /*    run_MC(MC_const_importance, NULL, "Importance MC, rejection from constant hat"); */
 
@@ -198,19 +226,65 @@ int main (int argc, char *argv[])
 
 /*---------------------------------------------------------------------------*/
 
-double uniform_prng(void)
-     /* uniform PRNG (with counter) */
-{
-  ++n_urng;
-  return unur_urng_MRG31k3p();
-} /* uniform_prng() */
+static gsl_qrng *qrng = NULL;
+static int qrng_n = 0;
+static double *qrng_shift = NULL;
 
 void seed_uniform_prng( int seed )
      /* seed uniform PRNG */
 {
+  if (use_qrng) {
+    if (qrng == NULL) qrng = gsl_qrng_alloc (gsl_qrng_niederreiter_2, dim+1);
+    gsl_qrng_init(qrng);
+  }
   unur_urng_MRG31k3p_seed( seed );
+  make_qrng_shift();
 } /* seed_uniform_prng() */
+
+void make_qrng_shift(void)
+{
+  int i;
+
+  if (use_qrng) {
+    gsl_qrng_init(qrng);
+    if (qrng_shift == NULL) qrng_shift = malloc((dim+1) * sizeof(double));
+    for (i=0; i<=dim; i++)
+      qrng_shift[i] = unur_urng_MRG31k3p();
+  }
+}/* make_qrng_shift() */
+
+double uniform_prng(void)
+     /* uniform PRNG (with counter) */
+{
+  static double *X=NULL;
+  double result;
+
+  ++n_urng;
+
+  if (use_qrng) {
+    if (X==NULL) X = malloc((dim+1) * sizeof(double));
+    if (qrng_n==0) gsl_qrng_get (qrng, X);
+
+    result = X[qrng_n] + qrng_shift[qrng_n];
+    if (result >=1 ) result -= 1.;
+
+    ++qrng_n;
+    if (qrng_n> dim) qrng_n=0;
+
+    return result;
+  }
   
+  else {
+    return unur_urng_MRG31k3p();
+  }
+
+} /* uniform_prng() */
+
+void uniform_next_point(void)
+{
+  qrng_n = 0;
+}
+
 /*---------------------------------------------------------------------------*/
 
 int run_MC (MC_COMP *MC, MAKE_GEN *make_gen, char *title)
@@ -220,7 +294,8 @@ int run_MC (MC_COMP *MC, MAKE_GEN *make_gen, char *title)
   double start, stop;
   int m;
 
-  /* reset counter for urng */
+  /* reset (counter for) urng */
+  seed_uniform_prng(seed);
   n_urng = 0;
 
   /* init */
@@ -228,6 +303,7 @@ int run_MC (MC_COMP *MC, MAKE_GEN *make_gen, char *title)
   start = get_time();
 
   for (m = 0; m < n_samples; ++m) {
+    make_qrng_shift();
     integral = MC(make_gen);
     sum += integral;
     sumsqu += integral*integral;
@@ -258,6 +334,7 @@ double MC_naive( MAKE_GEN *dummy )
     for (i = 0; i<dim; i++) x[i] = domain * uniform_prng(); 
     /* compute function value */
     sum += funct(x);
+    uniform_next_point();
   }
 
   /* free working space and exit */
@@ -301,6 +378,7 @@ double MC_importance( MAKE_GEN *make_gen )
     }
     /* compute function value */
     sum += funct(x) / (norm * fx);
+    uniform_next_point();
   }
 
   /* free working space and exit */
@@ -398,6 +476,7 @@ double MC_hat_importance( MAKE_GEN *make_gen )
     }
     /* compute function value */
     sum += funct(x) / (norm * hx);
+    uniform_next_point();
   }
 
   /* free working space and exit */
@@ -453,6 +532,7 @@ double MC_xhat_importance( MAKE_GEN *make_gen )
     }
     /* compute function value */
     sum += funct(x) / (norm * fx);
+    uniform_next_point();
   }
 
   /* free working space and exit */
@@ -473,6 +553,7 @@ double MC_xsmoothed_importance( MAKE_GEN *make_gen )
   double fx;         /* store value of density for importance sampling */
   double hx;         /* store value of hat of density for importance sampling */
   double sqx;        /* store value of squeeze of density for importance sampling */
+  double ax, z;      /* lower bound for smoothing region at x */
   int i;             /* counting dimensions     */ 
   double sum = 0.;   /* store sum of function values */
   double w;          /* weight of generated point */
@@ -505,13 +586,20 @@ double MC_xsmoothed_importance( MAKE_GEN *make_gen )
     }
     V = uniform_prng() * hx;
     /* compute weights */
-    if (V <= sqx || V <= fx) 
+    ax = 2*sqx - hx;
+    if (ax<=0.) ax = 0.;
+    /* we assume sqx < hx */
+    if (V <= ax) {
       w = 1.;
-    else
-      w = 0.;
+    }
+    else {
+      z = 2.*(fx-ax)/(hx-ax) - 1.;
+      w = 1. - (1.-z)*(V-ax)/(hx-ax); 
+    }
     wsum += w;
     /* compute function value */
     sum += w * funct(x) / (norm * fx);
+    uniform_next_point();
   } while (wsum < sample_size-0.5);
 
   /* free working space and exit */
@@ -559,6 +647,7 @@ double MC_const_importance( MAKE_GEN *dummy )
     } while (uniform_prng() * M >= fx);
     /* compute function value */
     sum += funct(x) / (norm * fx);
+    uniform_next_point();
   }
 
   /* free working space and exit */
@@ -601,6 +690,7 @@ double MC_wus( MAKE_GEN *dummy )
     /* compute function value */
     sum += funct(x);
     fsum += fx;
+    uniform_next_point();
   }
 
   /* free working space and exit */

@@ -26,6 +26,7 @@ libmethods_la_SOURCES = \
  hri.c    hri.h    hri_struct.h \
  mcorr.c  mcorr.h  mcorr_struct.h \
  ninv.c   ninv.h   ninv_struct.h \
+ norta.c  norta.h  norta_struct.h \
  nrou.c   nrou.h   nrou_struct.h \
  srou.c   srou.h   srou_struct.h \
  ssr.c    ssr.h    ssr_struct.h \
@@ -33,9 +34,9 @@ libmethods_la_SOURCES = \
  tdr.c    tdr.h    tdr_struct.h tdr_source.h tdr_newset.ch tdr_init.ch tdr_sample.ch tdr_debug.ch \
  unif.c   unif.h   unif_struct.h \
  utdr.c   utdr.h   utdr_struct.h \
+ varou.c  varou.h  varou_struct.h \
  vempk.c  vempk.h  vempk_struct.h \
  vmt.c    vmt.h    vmt_struct.h \
- varou.c  varou.h  varou_struct.h \
  vnrou.c  vnrou.h  vnrou_struct.h
 
 noinst_HEADERS = \

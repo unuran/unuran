@@ -85,6 +85,7 @@ struct unur_gen *_unur_hrd_clone( const struct unur_gen *gen );
 struct unur_gen *_unur_hri_clone( const struct unur_gen *gen );
 struct unur_gen *_unur_mcorr_clone( const struct unur_gen *gen );
 struct unur_gen *_unur_ninv_clone( const struct unur_gen *gen );
+struct unur_gen *_unur_norta_clone( const struct unur_gen *gen );
 struct unur_gen *_unur_nrou_clone( const struct unur_gen *gen );
 struct unur_gen *_unur_srou_clone( const struct unur_gen *gen );
 struct unur_gen *_unur_ssr_clone( const struct unur_gen *gen );

@@ -73,6 +73,7 @@ my %IGNORED_COMMANDS =
 # until we find some time to fix this.)
 my %IGNORED_DISTRIBUTIONS =
     ( 'multinormal' => 1,   
+      'copula'      => 1,
       'correlation' => 1
     );
 

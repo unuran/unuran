@@ -112,6 +112,7 @@
 #include <methods/empl.h>
 
 /* methods for continuous multivariate distributions */
+#include <methods/norta.h>
 #include <methods/vmt.h>
 #include <methods/vempk.h>
 #include <methods/varou.h>

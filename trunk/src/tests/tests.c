@@ -221,6 +221,11 @@ _unur_print_method( struct unur_par *par )
     break;
 
     /* continuous, multivariate (random vector) */
+  case UNUR_METH_NORTA:
+    COOKIE_CHECK(par,CK_NORTA_PAR,UNUR_ERR_COOKIE);
+    printf("METHOD:\t\tnormal to anything (NORTA)\n");
+    break;
+
   case UNUR_METH_VMT:
     COOKIE_CHECK(par,CK_VMT_PAR,UNUR_ERR_COOKIE);
     printf("METHOD:\t\tvector matrix transformation (VMT)\n");

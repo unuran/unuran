@@ -67,7 +67,7 @@
 /*---------------------------------------------------------------------------*/
 /* Debugging flag for additional data dump                                   */
 
-#define VAROU_DEBUG 0
+#define VAROU_DEBUG 0 
 
 /*---------------------------------------------------------------------------*/
 /* Variants:                                                                 */
@@ -105,7 +105,13 @@
 
 /*---------------------------------------------------------------------------*/
 
-int N_ALPHA_INTERVALS=10; /* should we move this parameter into generator object ? */
+/* number of intervals to find an initial bracketing */
+int N_ALPHA_INTERVALS=20; /* should we move this parameter into generator object ? */
+
+/* accuracy parameter for the brent algorithm              */
+/* this is used in the calculation of minimal cone volumes */
+#define VAROU_BRENT_EPSILON 0.001
+
 /*---------------------------------------------------------------------------*/
 
 static struct unur_gen *_unur_varou_init( struct unur_par *par );
@@ -665,13 +671,13 @@ _unur_varou_sample_cvec( struct unur_gen *gen, double *vec )
 
   UV = _unur_xmalloc((dim+1)*sizeof(double));
   
-  /* vol is a uniformly distributed variable < sum of all cone volumes */
-  vol = GEN.cone_list[GEN.n_cone-1]->sum_volume * _unur_call_urng(gen->urng);
+  while(1) {
+    /* vol is a uniformly distributed variable < sum of all cone volumes */
+    vol = GEN.cone_list[GEN.n_cone-1]->sum_volume * _unur_call_urng(gen->urng);
   
-  for (ic=0; ic<GEN.n_cone; ic++) {  
-    if ( GEN.cone_list[ic]->sum_volume > vol ) {
+    for (ic=0; ic<GEN.n_cone; ic++) {  
+      if ( GEN.cone_list[ic]->sum_volume > vol ) {
 
-      while(1) {
         /* sampling in cone #ic */
         _unur_varou_sample_cone(gen, GEN.cone_list[ic], UV);
 
@@ -720,13 +726,13 @@ _unur_varou_sample_check( struct unur_gen *gen, double *vec )
   
   UV = _unur_xmalloc((dim+1)*sizeof(double));
   
-  /* vol is a uniformly distributed variable < sum of all cone volumes */
-  vol = GEN.cone_list[GEN.n_cone-1]->sum_volume * _unur_call_urng(gen->urng);
+  while(1) {
+    /* vol is a uniformly distributed variable < sum of all cone volumes */
+    vol = GEN.cone_list[GEN.n_cone-1]->sum_volume * _unur_call_urng(gen->urng);
   
-  for (ic=0; ic<GEN.n_cone; ic++) {  
-    if ( GEN.cone_list[ic]->sum_volume > vol ) {
+    for (ic=0; ic<GEN.n_cone; ic++) {  
+      if ( GEN.cone_list[ic]->sum_volume > vol ) {
 
-      while(1) {
         /* sampling in cone #ic */
         _unur_varou_sample_cone(gen, GEN.cone_list[ic], UV);
 
@@ -941,7 +947,8 @@ _unur_varou_minimize_volume(struct unur_gen *gen, struct unur_varou_cone *c)
 {
   long i;
   double alpha, alpha_min;
-  double alpha_start, alpha_end; /* interval in which a minimu is sought */
+  double alpha_start, alpha_end; /* interval in which a minimum is sought */
+  int finite_volume=0; /* set to 1 as soon as a finite volume is found */
   struct unur_funct_generic fs;
   
   /* filling function structure to be used by the brent algorithm */
@@ -952,10 +959,9 @@ _unur_varou_minimize_volume(struct unur_gen *gen, struct unur_varou_cone *c)
   GEN.current_cone = c;
 
   /* setting initial values */
-  alpha_start=0;
-  alpha_end=0;
-  alpha=0;
-  alpha_min=0;
+  alpha_start=0.;
+  alpha_end=0.;
+  alpha=0.;
 
   /* initial bracketing of alpha between alpha_start and alpha_end             */
   /* alpha_start is the first value of alpha, where the volume becomes  finite */
@@ -963,14 +969,21 @@ _unur_varou_minimize_volume(struct unur_gen *gen, struct unur_varou_cone *c)
   for (i=0; i<N_ALPHA_INTERVALS; i++) {
     alpha = i/((double)N_ALPHA_INTERVALS); /* alpha in [0,1) */
     _unur_varou_cone_parameters(gen, c, alpha); 
-    if ( !_unur_isinf(c->volume) && alpha_start==0) {alpha_start=alpha; alpha_end=alpha;}
-    if ( !_unur_isinf(c->volume) )                                     {alpha_end=alpha;}
+    if ( !_unur_isinf(c->volume) ) {
+      if ( finite_volume==0 ) { 
+        finite_volume=1; 
+        alpha_start=alpha;
+      }
+      alpha_end=alpha;
+    }
   }
   
   /* minimization step */
-  alpha=_unur_util_brent(fs, alpha_start, alpha_end, (alpha_start+alpha_end)/2., 0.01);
+  alpha=_unur_util_brent(fs, alpha_start, alpha_end, (alpha_start+alpha_end)/2., 
+                         VAROU_BRENT_EPSILON);
 
   /* just to be sure, that we have obtained a good value for alpha */
+  alpha_min=alpha_start;
   if (alpha_start <= alpha && alpha <= alpha_end)  alpha_min=alpha;
   
   _unur_varou_cone_parameters(gen, c, alpha_min); 
@@ -1096,7 +1109,7 @@ printf("%8ld; %8ld; %e; %e; %e\n",
         _unur_varou_minimize_volume(gen, c2);
 
 	/* comparing the old volume with the sum of the two new volumes  */
-	if (!_unur_isinf(GEN.cone_list[ic]->volume) &&
+        if (!_unur_isinf(GEN.cone_list[ic]->volume) &&
 	    GEN.cone_list[ic]->volume < ( c1->volume + c2->volume ) ) {
            /* we have split a bounded cone -> obtaining something bigger  */
 	  
@@ -1152,11 +1165,9 @@ _unur_varou_cone_parameters( struct unur_gen *gen, struct unur_varou_cone *c, do
   double v,vt;
   double *p; /* position vector to surface */
   double *t; /* top vertex vector */
-  double *r; /* random vertex vector ... NOT NEEDED */
-  double *b; /* barycenter vector ... NOT NEEDED */
   double *f; /* centre vector of face opposite to top vertex */
-  double normp, normb, normt, normn;
-  long i, it, itop, ir, iv;
+  double normp, normn;
+  long i, it, itop, iv;
 
   dim = GEN.dim;
   
@@ -1171,48 +1182,12 @@ _unur_varou_cone_parameters( struct unur_gen *gen, struct unur_varou_cone *c, do
     
   /*------------------------------------------------------------*/
       
-  /* calculating barycenter vector */
-  b=_unur_vector_new(dim+1); 
-  for (iv=0; iv<=dim; iv++) {
-    for (i=0; i<=dim; i++) {
-       b[i] += GEN.vertex_list[ c->index[iv] ][i];
-    }
-  }
-
-  /* scaling b[] to be unit vector */
-  normb=_unur_vector_norm(dim+1, b);
-  for (i=0; i<=dim; i++) {
-     b[i] /= normb;
-  }
-
-  v = pow(_unur_varou_f(gen, b), 1./(1.+dim)) ;
-
-  /* scaling b[] to touch surface */
-  normb = v/b[dim]; 
-    
-  for (i=0; i<=dim; i++) {
-    b[i] *= normb;
-  }
-
-  /*------------------------------------------------------------*/
-  
   /* top vertex vector */
   t=_unur_vector_new(dim+1); 
   itop =  c->index[it];
   for (i=0; i<=dim; i++) {
     t[i]=GEN.vertex_list[itop][i];
   }
-
-#if 0
-  v = pow(_unur_varou_f(gen, t), 1./(1.+dim)) ;
-    
-  normt = v/t[dim]; 
-    
-  for (i=0; i<=dim; i++) {
-    t[i] *= normt;
-  }
-#endif
-
 
   /*------------------------------------------------------------*/
   
@@ -1226,17 +1201,6 @@ _unur_varou_cone_parameters( struct unur_gen *gen, struct unur_varou_cone *c, do
     }
   }
    
-  /*------------------------------------------------------------*/
-  
-  /* random vertex vector */
-  r=_unur_vector_new(dim+1); 
-
-  i=(int) ( (dim+1)* _unur_call_urng(gen->urng) );
-  ir =  c->index[i];
-  for (i=0; i<=dim; i++) {
-    r[i]=GEN.vertex_list[ir][i];
-  }
-
   /*------------------------------------------------------------*/
   
   p=_unur_vector_new(dim+1); /* position vector to surface */
@@ -1273,7 +1237,7 @@ _unur_varou_cone_parameters( struct unur_gen *gen, struct unur_varou_cone *c, do
   
   _unur_varou_cone_set(gen, c, p, c->normal);
 
-   free(b); free(t); free(r); free(p); free(f);
+   free(t); free(p); free(f);
 
    return;
 } /* end of _unur_varou_cone_parameters */

@@ -40,7 +40,7 @@
 /*---------------------------------------------------------------------------*/
 /* init routines for special generators                                      */
 
-inline static void zipf_zet_init( struct unur_gen *gen );
+inline static int zipf_zet_init( struct unur_gen *gen );
 
 /*---------------------------------------------------------------------------*/
 /* abbreviations */
@@ -90,8 +90,7 @@ _unur_stdgen_zipf_init( struct unur_par *par, struct unur_gen *gen )
   case 0:  /* DEFAULT */
   case 1:  /* Acceptance Rejection */
     _unur_dstd_set_sampling_routine( par,gen,unur_stdgen_sample_zipf_zet );
-    zipf_zet_init( gen );
-    return 1;
+    return zipf_zet_init( gen );
 
   case UNUR_STDGEN_INVERSION:   /* inversion method */
   default: /* no such generator */
@@ -154,11 +153,11 @@ _unur_stdgen_zipf_init( struct unur_par *par, struct unur_gen *gen )
 #define d   (GEN.gen_param[1])
 /*---------------------------------------------------------------------------*/
 
-inline static void
+inline static int
 zipf_zet_init( struct unur_gen *gen )
 {
   /* check arguments */
-  CHECK_NULL(gen,/*void*/); COOKIE_CHECK(gen,CK_DSTD_GEN,/*void*/);
+  CHECK_NULL(gen,0);  COOKIE_CHECK(gen,CK_CSTD_GEN,0);
 
   if (GEN.gen_param == NULL) {
     GEN.n_gen_param = MAX_gen_params;
@@ -175,6 +174,8 @@ zipf_zet_init( struct unur_gen *gen )
     d = (1. + rho) * log((1. + tau)/(1. + rho));
   }
   /* -X- end of setup code -X- */
+
+  return 1;
 
 } /* end of zipf_zet_init() */
 

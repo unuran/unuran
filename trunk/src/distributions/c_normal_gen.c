@@ -39,8 +39,8 @@
 /*---------------------------------------------------------------------------*/
 /* init routines for special generators                                      */
 
-inline static void normal_bm_init( struct unur_gen *gen );
-inline static void normal_pol_init( struct unur_gen *gen );
+inline static int normal_bm_init( struct unur_gen *gen );
+inline static int normal_pol_init( struct unur_gen *gen );
 
 /*---------------------------------------------------------------------------*/
 /* abbreviations */
@@ -89,13 +89,11 @@ _unur_stdgen_normal_init( struct unur_par *par, struct unur_gen *gen )
   case 0:    /* DEFAULT */
   case 1:    /* Box-Muller method */
     _unur_cstd_set_sampling_routine( par,gen,unur_stdgen_sample_normal_bm );
-    normal_bm_init( gen );
-    return 1;
+    return normal_bm_init( gen );
 
   case 2:    /* Polarmethod with rejection */
     _unur_cstd_set_sampling_routine( par,gen,unur_stdgen_sample_normal_pol );
-    normal_pol_init( gen );
-    return 1;
+    return normal_pol_init( gen );
 
   case 3:    /* "Naive" ratio-of-uniforms */
     _unur_cstd_set_sampling_routine( par,gen,unur_stdgen_sample_normal_nquo );
@@ -165,11 +163,11 @@ _unur_stdgen_normal_init( struct unur_par *par, struct unur_gen *gen )
 #define Xstore  GEN.gen_param[0]
 #define flag    GEN.flag
 
-inline static void
+inline static int
 normal_bm_init( struct unur_gen *gen )
 {
   /* check arguments */
-  CHECK_NULL(gen,/*void*/); COOKIE_CHECK(gen,CK_CSTD_GEN,/*void*/);
+  CHECK_NULL(gen,0);  COOKIE_CHECK(gen,CK_CSTD_GEN,0);
 
   if (GEN.gen_param == NULL) {
     GEN.n_gen_param = MAX_gen_params;
@@ -180,6 +178,8 @@ normal_bm_init( struct unur_gen *gen )
   Xstore = 0.;
   flag = 1;
   /* -X- end of setup code -X- */
+
+  return 1;
 
 } /* end of normal_bm_init() */
 
@@ -235,11 +235,11 @@ unur_stdgen_sample_normal_bm( struct unur_gen *gen )
 #define Xstore  GEN.gen_param[0]
 #define flag    GEN.flag
 
-inline static void
+inline static int
 normal_pol_init( struct unur_gen *gen )
 {
   /* check arguments */
-  CHECK_NULL(gen,/*void*/); COOKIE_CHECK(gen,CK_CSTD_GEN,/*void*/);
+  CHECK_NULL(gen,0);  COOKIE_CHECK(gen,CK_CSTD_GEN,0);
 
   if (GEN.gen_param == NULL) {
     GEN.n_gen_param = MAX_gen_params;
@@ -250,6 +250,8 @@ normal_pol_init( struct unur_gen *gen )
   Xstore = 0.;
   flag = 1;
   /* -X- end of setup code -X- */
+
+  return 1;
 
 } /* end of normal_pol_init() */
 

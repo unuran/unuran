@@ -39,7 +39,7 @@
 /*---------------------------------------------------------------------------*/
 /* init routines for special generators                                      */
 
-inline static void gig_gigru_init( struct unur_gen *gen );
+inline static int gig_gigru_init( struct unur_gen *gen );
 
 /*---------------------------------------------------------------------------*/
 /* abbreviations */
@@ -94,8 +94,7 @@ _unur_stdgen_gig_init( struct unur_par *par, struct unur_gen *gen )
     }
     /* theta > 0 ! */
     _unur_cstd_set_sampling_routine( par,gen,unur_stdgen_sample_gig_gigru );
-    gig_gigru_init( gen );
-    return 1;
+    return gig_gigru_init( gen );
 
   case UNUR_STDGEN_INVERSION:   /* inversion method */
   default: /* no such generator */
@@ -153,13 +152,13 @@ static const double drittel = 0.3333333333333333;                    /* 1/3  */
 static const double pdrittel = 0.037037037037037;                    /* 1/27 */
 /*---------------------------------------------------------------------------*/
 
-inline static void
+inline static int
 gig_gigru_init( struct unur_gen *gen )
 {
   double r,s,t,p,q,xeta,fi,fak,y1,y2,max,invy1,invy2,vplus,hm1,xm,ym;
 
   /* check arguments */
-  CHECK_NULL(gen,/*void*/); COOKIE_CHECK(gen,CK_CSTD_GEN,/*void*/);
+  CHECK_NULL(gen,0);  COOKIE_CHECK(gen,CK_CSTD_GEN,0);
 
   if (GEN.gen_param == NULL) {
     GEN.n_gen_param = MAX_gen_params;
@@ -169,7 +168,7 @@ gig_gigru_init( struct unur_gen *gen )
   /* -X- setup code -X- */
   if (theta <= 0) {
     _unur_error(NULL,UNUR_ERR_GEN_CONDITION,"");
-    return;
+    return 0;
   }
 
   if (theta<=1. && omega<=1.) {
@@ -225,6 +224,9 @@ gig_gigru_init( struct unur_gen *gen )
   }
 
   /* -X- end of setup code -X- */
+
+  return 1;
+
 } /* end of gig_gigru_init() */
 
 double

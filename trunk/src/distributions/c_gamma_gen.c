@@ -39,9 +39,9 @@
 /*---------------------------------------------------------------------------*/
 /* init routines for special generators                                      */
 
-inline static void gamma_gll_init( struct unur_gen *gen );
-inline static void gamma_gs_init( struct unur_gen *gen );
-inline static void gamma_gd_init( struct unur_gen *gen );
+inline static int gamma_gll_init( struct unur_gen *gen );
+inline static int gamma_gs_init( struct unur_gen *gen );
+inline static int gamma_gd_init( struct unur_gen *gen );
 
 /*---------------------------------------------------------------------------*/
 /* abbreviations */
@@ -91,21 +91,19 @@ _unur_stdgen_gamma_init( struct unur_par *par, struct unur_gen *gen )
   case 0:  /* DEFAULT */
   case 1:  /* Rejection with log-logistic envelopes */
     _unur_cstd_set_sampling_routine( par,gen,unur_stdgen_sample_gamma_gll );
-    gamma_gll_init( gen );
-    return 1;
+    return gamma_gll_init( gen );
 
   case 2:  /* Acceptance Rejection combined with Acceptance Complement */
     if (gen==NULL) return 1; /* test existence only  */
     if (alpha < 1.) {
       _unur_cstd_set_sampling_routine( par,gen,unur_stdgen_sample_gamma_gs );
-      gamma_gs_init( gen );
+      return gamma_gs_init( gen );
     }
     else {
       _unur_cstd_set_sampling_routine( par,gen,unur_stdgen_sample_gamma_gd );
-      gamma_gd_init( gen );
+      return gamma_gd_init( gen );
 
     }
-    return 1;
 
   case UNUR_STDGEN_INVERSION:   /* inversion method */
   default: /* no such generator */
@@ -149,11 +147,11 @@ _unur_stdgen_gamma_init( struct unur_par *par, struct unur_gen *gen )
 #define cc  GEN.gen_param[2]
 /*---------------------------------------------------------------------------*/
 
-inline static void
+inline static int
 gamma_gll_init( struct unur_gen *gen )
 {
   /* check arguments */
-  CHECK_NULL(gen,/*void*/); COOKIE_CHECK(gen,CK_CSTD_GEN,/*void*/);
+  CHECK_NULL(gen,0);  COOKIE_CHECK(gen,CK_CSTD_GEN,0);
 
   if (GEN.gen_param == NULL) {
     GEN.n_gen_param = MAX_gen_params;
@@ -166,6 +164,8 @@ gamma_gll_init( struct unur_gen *gen )
   cc = alpha + aa;
   /* -X- end of setup code -X- */
 
+  return 1;
+
 } /* end of gamma_gll_init() */
 
 double 
@@ -176,7 +176,7 @@ unur_stdgen_sample_gamma_gll( struct unur_gen *gen )
   double u1,u2,v,r,z;
 
   /* check arguments */
-  CHECK_NULL(gen,0);  COOKIE_CHECK(gen,CK_CSTD_GEN,0);
+  CHECK_NULL(gen,0.);  COOKIE_CHECK(gen,CK_CSTD_GEN,0.);
 
   while (1) {
     u1 = uniform();
@@ -228,12 +228,12 @@ unur_stdgen_sample_gamma_gll( struct unur_gen *gen )
 #define b   GEN.gen_param[0]
 /*---------------------------------------------------------------------------*/
 
-inline static void
+inline static int
 gamma_gs_init( struct unur_gen *gen )
      /* CASE alpha < 1: Acceptance rejection algorithm gs */
 {
   /* check arguments */
-  CHECK_NULL(gen,/*void*/); COOKIE_CHECK(gen,CK_CSTD_GEN,/*void*/);
+  CHECK_NULL(gen,0);  COOKIE_CHECK(gen,CK_CSTD_GEN,0);
 
   if (GEN.gen_param == NULL) {
     GEN.n_gen_param = MAX_gen_params;
@@ -243,6 +243,8 @@ gamma_gs_init( struct unur_gen *gen )
   /* -X- setup code -X- */
   b = 1. + 0.36788794412 * alpha;       /* Step 1 */
   /* -X- end of setup code -X- */
+
+  return 1;
 
 } /* end of gamma_gs_init() */
 
@@ -315,12 +317,12 @@ unur_stdgen_sample_gamma_gs( struct unur_gen *gen )
 #define NORMAL  GEN.gen_aux    /* pointer to normal variate generator        */
 /*---------------------------------------------------------------------------*/
 
-inline static void
+inline static int
 gamma_gd_init( struct unur_gen *gen )
      /* CASE alpha >= 1: Acceptance complement algorithm gd */
 {
   /* check arguments */
-  CHECK_NULL(gen,/*void*/); COOKIE_CHECK(gen,CK_CSTD_GEN,/*void*/);
+  CHECK_NULL(gen,0);  COOKIE_CHECK(gen,CK_CSTD_GEN,0);
 
   if (GEN.gen_param == NULL) {
     GEN.n_gen_param = MAX_gen_params;
@@ -356,11 +358,14 @@ gamma_gd_init( struct unur_gen *gen )
   }
 
   /* make a normal variate generator (use default special generator) */
-  NORMAL = unur_init( unur_cstd_new( unur_distr_normal(NULL,0) ));
+  NORMAL = unur_cstd_init( unur_cstd_new( unur_distr_normal(NULL,0) ) );
+  _unur_check_NULL( NULL,NORMAL,0 );
   /* need same uniform random number generator as slash generator */
   NORMAL->urng = gen->urng;
 
   /* -X- end of setup code -X- */
+
+  return 1;
 
 } /* end of gamma_gd_init() */
 

@@ -39,7 +39,7 @@
 /*---------------------------------------------------------------------------*/
 /* init routines for special generators                                      */
 
-inline static void logarithmic_lsk_init( struct unur_gen *gen );
+inline static int logarithmic_lsk_init( struct unur_gen *gen );
 
 /*---------------------------------------------------------------------------*/
 /* abbreviations */
@@ -88,8 +88,7 @@ _unur_stdgen_logarithmic_init( struct unur_par *par, struct unur_gen *gen )
   case 0:  /* DEFAULT */
   case 1:  /* Inversion/Transformation */
     _unur_dstd_set_sampling_routine( par,gen,unur_stdgen_sample_logarithmic_lsk );
-    logarithmic_lsk_init( gen );
-    return 1;
+    return logarithmic_lsk_init( gen );
 
   case UNUR_STDGEN_INVERSION:   /* inversion method */
   default: /* no such generator */
@@ -154,11 +153,11 @@ _unur_stdgen_logarithmic_init( struct unur_par *par, struct unur_gen *gen )
    theta >= theta_limit --> Transformation  */
 /*---------------------------------------------------------------------------*/
 
-inline static void
+inline static int
 logarithmic_lsk_init( struct unur_gen *gen )
 {
   /* check arguments */
-  CHECK_NULL(gen,/*void*/); COOKIE_CHECK(gen,CK_DSTD_GEN,/*void*/);
+  CHECK_NULL(gen,0);  COOKIE_CHECK(gen,CK_CSTD_GEN,0);
 
   if (GEN.gen_param == NULL) {
     GEN.n_gen_param = MAX_gen_params;
@@ -171,6 +170,8 @@ logarithmic_lsk_init( struct unur_gen *gen )
   else 
     h=log(1.0 - theta);
   /* -X- end of setup code -X- */
+
+  return 1;
 
 } /* end of logarithmic_lsk_init() */
 

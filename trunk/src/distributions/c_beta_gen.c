@@ -39,12 +39,12 @@
 /*---------------------------------------------------------------------------*/
 /* init routines for special generators                                      */
 
-inline static void beta_bc_init( struct unur_gen *gen );
-inline static void beta_bb_init( struct unur_gen *gen );
+inline static int beta_bc_init( struct unur_gen *gen );
+inline static int beta_bb_init( struct unur_gen *gen );
 
-inline static void beta_b00_init( struct unur_gen *gen );
-inline static void beta_b01_init( struct unur_gen *gen );
-inline static void beta_b1prs_init( struct unur_gen *gen );
+inline static int beta_b00_init( struct unur_gen *gen );
+inline static int beta_b01_init( struct unur_gen *gen );
+inline static int beta_b1prs_init( struct unur_gen *gen );
 
 /*---------------------------------------------------------------------------*/
 /* abbreviations */
@@ -97,35 +97,33 @@ _unur_stdgen_beta_init( struct unur_par *par, struct unur_gen *gen )
     if (gen==NULL) return 1; /* test existence only  */
     if (p>1. && q>1.) {
       _unur_cstd_set_sampling_routine( par,gen,unur_stdgen_sample_beta_bb );
-      beta_bb_init( gen );
+      return beta_bb_init( gen );
     }
     else {
       _unur_cstd_set_sampling_routine( par,gen,unur_stdgen_sample_beta_bc );
-      beta_bc_init( gen );
+      return beta_bc_init( gen );
     }
-    return 1;
 
   case 2:  /* Stratified Rejection/Patchwork Rejection */
     if (gen==NULL) return 1; /* test existence only  */ 
     if (p>1.)
       if (q>1.) {    /* p > 1 && q > 1 */
 	_unur_cstd_set_sampling_routine( par,gen,unur_stdgen_sample_beta_b1prs );
-	beta_b1prs_init( gen );
+	return beta_b1prs_init( gen );
       }
       else {         /* p > 1 && q <= 1 */
 	_unur_cstd_set_sampling_routine( par,gen,unur_stdgen_sample_beta_b01 );
-	beta_b01_init( gen );
+	return beta_b01_init( gen );
       }
     else
       if (q>1.) {    /* p <= 1 && q > 1 */
 	_unur_cstd_set_sampling_routine( par,gen,unur_stdgen_sample_beta_b01 );
-	beta_b01_init( gen );
+	return beta_b01_init( gen );
       }
       else {         /* p <= 1 && q <= 1 */
 	_unur_cstd_set_sampling_routine( par,gen,unur_stdgen_sample_beta_b00 );
-	beta_b00_init( gen );
+	return beta_b00_init( gen );
       }
-    return 1;
 
   case UNUR_STDGEN_INVERSION:   /* inversion method */
   default: /* no such generator */
@@ -181,12 +179,12 @@ _unur_stdgen_beta_init( struct unur_par *par, struct unur_gen *gen )
 #define rk2     (GEN.gen_param[8])
 /*---------------------------------------------------------------------------*/
 
-inline static void
+inline static int
 beta_bc_init( struct unur_gen *gen )
      /* p <= 1. || q <= 1. */ 
 {
   /* check arguments */
-  CHECK_NULL(gen,/*void*/); COOKIE_CHECK(gen,CK_CSTD_GEN,/*void*/);
+  CHECK_NULL(gen,0);  COOKIE_CHECK(gen,CK_CSTD_GEN,0);
 
   if (GEN.gen_param == NULL) {
     GEN.n_gen_param = MAX_gen_params;
@@ -203,6 +201,9 @@ beta_bc_init( struct unur_gen *gen )
   rk1 = si * (0.013888889 + 0.041666667 * bm) / (am * be - 0.77777778);
   rk2 = 0.25 + (0.5 + 0.25 / si) * bm;
   /* -X- end of setup code -X- */
+
+  return 1;
+
 } /* end of beta_bc_init() */
 
 double 
@@ -290,12 +291,12 @@ unur_stdgen_sample_beta_bc(  struct unur_gen *gen )
 
 /*---------------------------------------------------------------------------*/
 
-inline static void
+inline static int
 beta_bb_init( struct unur_gen *gen )
      /* p > 1. && q > 1 */ 
 {
   /* check arguments */
-  CHECK_NULL(gen,/*void*/); COOKIE_CHECK(gen,CK_CSTD_GEN,/*void*/);
+  CHECK_NULL(gen,0);  COOKIE_CHECK(gen,CK_CSTD_GEN,0);
 
   if (GEN.gen_param == NULL) {
     GEN.n_gen_param = MAX_gen_params;
@@ -309,6 +310,9 @@ beta_bb_init( struct unur_gen *gen )
   be = sqrt((al - 2.0)/(2.0 * p * q - al));
   ga = am + 1.0 / be;
   /* -X- end of setup code -X- */
+
+  return 1;
+
 } /* end of beta_bb_init() */
 
 double 
@@ -417,12 +421,12 @@ unur_stdgen_sample_beta_bb(  struct unur_gen *gen )
 #define p2      (GEN.gen_param[7])
 /*---------------------------------------------------------------------------*/
 
-inline static void
+inline static int
 beta_b00_init( struct unur_gen *gen )
      /* p < 1. && q < 1 */ 
 {
   /* check arguments */
-  CHECK_NULL(gen,/*void*/); COOKIE_CHECK(gen,CK_CSTD_GEN,/*void*/);
+  CHECK_NULL(gen,0);  COOKIE_CHECK(gen,CK_CSTD_GEN,0);
 
   if (GEN.gen_param == NULL) {
     GEN.n_gen_param = MAX_gen_params;
@@ -440,6 +444,8 @@ beta_b00_init( struct unur_gen *gen )
   p1 = t/p;                                           /* 0 < X < t       */
   p2 = (1. - t)/q + p1;                              /* t < X < 1       */
   /* -X- end of setup code -X- */
+
+  return 1;
 
 } /* end of beta_b00_init() */
 
@@ -513,12 +519,12 @@ unur_stdgen_sample_beta_b00(  struct unur_gen *gen )
 #define p2      (GEN.gen_param[10])
 /*---------------------------------------------------------------------------*/
 
-inline static void
+inline static int
 beta_b01_init( struct unur_gen *gen )
      /* p < 1. < q || p > 1. > q */ 
 {
   /* check arguments */
-  CHECK_NULL(gen,/*void*/); COOKIE_CHECK(gen,CK_CSTD_GEN,/*void*/);
+  CHECK_NULL(gen,0);  COOKIE_CHECK(gen,CK_CSTD_GEN,0);
 
   if (GEN.gen_param == NULL) {
     GEN.n_gen_param = MAX_gen_params;
@@ -557,6 +563,8 @@ beta_b01_init( struct unur_gen *gen )
   p2 = fq * (1. - t)/qint + p1;                          /*  t < X < 1      */
   /* -X- end of setup code -X- */
 
+  return 1;
+  
 } /* end of beta_b01_init() */
 
 double 
@@ -644,12 +652,12 @@ unur_stdgen_sample_beta_b01(  struct unur_gen *gen )
 #define p4      (GEN.gen_param[21])
 /*---------------------------------------------------------------------------*/
 
-inline static void
+inline static int
 beta_b1prs_init( struct unur_gen *gen )
      /* p > 1. && q > 1. */ 
 {
   /* check arguments */
-  CHECK_NULL(gen,/*void*/); COOKIE_CHECK(gen,CK_CSTD_GEN,/*void*/);
+  CHECK_NULL(gen,0);  COOKIE_CHECK(gen,CK_CSTD_GEN,0);
 
   if (GEN.gen_param == NULL) {
     GEN.n_gen_param = MAX_gen_params;
@@ -710,6 +718,8 @@ beta_b1prs_init( struct unur_gen *gen )
   p3 = f1 * ll       + p2;                            /*       X < x1   */
   p4 = f5 * lr       + p3;                            /*  x5 < X        */
   /* -X- end of setup code -X- */
+  
+  return 1;
 
 } /* end of beta_b1prs_init() */
 

@@ -39,7 +39,7 @@
 /*---------------------------------------------------------------------------*/
 /* init routines for special generators                                      */
 
-inline static void powerexponential_epd_init( struct unur_gen *gen );
+inline static int powerexponential_epd_init( struct unur_gen *gen );
 
 /*---------------------------------------------------------------------------*/
 /* abbreviations */
@@ -89,8 +89,7 @@ _unur_stdgen_powerexponential_init( struct unur_par *par, struct unur_gen *gen )
   case 0:  /* DEFAULT */
   case 1:  /* Transformed density rejection */
     _unur_cstd_set_sampling_routine( par,gen,unur_stdgen_sample_powerexponential_epd );
-    powerexponential_epd_init( gen );
-    return 1;
+    return powerexponential_epd_init( gen );
 
   case UNUR_STDGEN_INVERSION:   /* inversion method */
   default: /* no such generator */
@@ -134,11 +133,11 @@ _unur_stdgen_powerexponential_init( struct unur_par *par, struct unur_gen *gen )
 #define sm1  GEN.gen_param[1]
 /*---------------------------------------------------------------------------*/
 
-inline static void
+inline static int
 powerexponential_epd_init( struct unur_gen *gen )
 {
   /* check arguments */
-  CHECK_NULL(gen,/*void*/); COOKIE_CHECK(gen,CK_CSTD_GEN,/*void*/);
+  CHECK_NULL(gen,0);  COOKIE_CHECK(gen,CK_CSTD_GEN,0);
 
   if (GEN.gen_param == NULL) {
     GEN.n_gen_param = MAX_gen_params;
@@ -149,6 +148,8 @@ powerexponential_epd_init( struct unur_gen *gen )
   s = delta / 2.;
   sm1 = 1. - s;
   /* -X- end of setup code -X- */
+
+  return 1;
 
 } /* end of powerexponential_epd_init() */
 

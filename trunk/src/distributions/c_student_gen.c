@@ -39,7 +39,7 @@
 /*---------------------------------------------------------------------------*/
 /* init routines for special generators                                      */
 
-inline static void student_trouo_init( struct unur_gen *gen );
+inline static int student_trouo_init( struct unur_gen *gen );
 
 /*---------------------------------------------------------------------------*/
 /* abbreviations */
@@ -87,7 +87,6 @@ _unur_stdgen_student_init( struct unur_par *par, struct unur_gen *gen )
   case 0:  /* DEFAULT */
   case 1:  /* Polar Method */
     _unur_cstd_set_sampling_routine( par,gen,unur_stdgen_sample_student_tpol );
-    /* no student_tpol_init( gen ) required */
     return 1;
 
   case 2:  /* Ratio of Uniforms */
@@ -97,8 +96,7 @@ _unur_stdgen_student_init( struct unur_par *par, struct unur_gen *gen )
     }
     /* nu >= 1 !!!! */
     _unur_cstd_set_sampling_routine( par,gen,unur_stdgen_sample_student_trouo );
-    student_trouo_init( gen );
-    return 1;
+    return student_trouo_init( gen );
 
   case UNUR_STDGEN_INVERSION:   /* inversion method */
   default: /* no such generator */
@@ -141,13 +139,6 @@ _unur_stdgen_student_init( struct unur_par *par, struct unur_gen *gen )
  *****************************************************************************
  *    WinRand (c) 1995 Ernst Stadlober, Institut fuer Statistitk, TU Graz    *
  *****************************************************************************/
-
-/*
-inline static void student_tpol_init( struct unur_gen *gen )
-
-not required
-
-*/
 
 double
 unur_stdgen_sample_student_tpol( struct unur_gen *gen )
@@ -197,11 +188,11 @@ unur_stdgen_sample_student_tpol( struct unur_gen *gen )
 #define vm      (GEN.gen_param[5])
 /*---------------------------------------------------------------------------*/
 
-inline static void
+inline static int
 student_trouo_init( struct unur_gen *gen )
 {
   /* check arguments */
-  CHECK_NULL(gen,/*void*/); COOKIE_CHECK(gen,CK_CSTD_GEN,/*void*/);
+  CHECK_NULL(gen,0);  COOKIE_CHECK(gen,CK_CSTD_GEN,0);
 
   if (GEN.gen_param == NULL) {
     GEN.n_gen_param = MAX_gen_params;
@@ -211,7 +202,7 @@ student_trouo_init( struct unur_gen *gen )
   /* -X- setup code -X- */
   if (nu < 1.) {
     _unur_error(NULL,UNUR_ERR_GEN_CONDITION,"");
-    return;
+    return 0;
   }
 
   r = 1. / nu;
@@ -221,6 +212,9 @@ student_trouo_init( struct unur_gen *gen )
   e = 16. / c;
   vm = (nu>1.0) ? sqrt(p+p) * pow( (1.-r)*p, 0.25*(nu-1.) ) : 1.;
   /* -X- end of setup code -X- */
+
+  return 1;
+
 } /* end of student_trouo_init() */
 
 double

@@ -40,7 +40,7 @@
 /*---------------------------------------------------------------------------*/
 /* init routines for special generators                                      */
 
-inline static void chi_chru_init( struct unur_gen *gen );
+inline static int chi_chru_init( struct unur_gen *gen );
 
 /*---------------------------------------------------------------------------*/
 /* abbreviations */
@@ -93,8 +93,7 @@ _unur_stdgen_chi_init( struct unur_par *par, struct unur_gen *gen )
     }
     /* nu >= 1 !!!! */
     _unur_cstd_set_sampling_routine( par,gen,unur_stdgen_sample_chi_chru );
-    chi_chru_init( gen );
-    return 1;
+    return chi_chru_init( gen );
 
   case UNUR_STDGEN_INVERSION:   /* inversion method */
   default: /* no such generator */
@@ -138,11 +137,11 @@ _unur_stdgen_chi_init( struct unur_par *par, struct unur_gen *gen )
 #define vd      (GEN.gen_param[3])
 /*---------------------------------------------------------------------------*/
 
-inline static void
+inline static int
 chi_chru_init( struct unur_gen *gen )
 {
   /* check arguments */
-  CHECK_NULL(gen,/*void*/); COOKIE_CHECK(gen,CK_CSTD_GEN,/*void*/);
+  CHECK_NULL(gen,0);  COOKIE_CHECK(gen,CK_CSTD_GEN,0);
 
   if (GEN.gen_param == NULL) {
     GEN.n_gen_param = MAX_gen_params;
@@ -152,12 +151,12 @@ chi_chru_init( struct unur_gen *gen )
   /* -X- setup code -X- */
   if (nu < 1.) {
     _unur_error(NULL,UNUR_ERR_GEN_CONDITION,"");
-    return;
+    return 0;
   }
 
   if (nu == 1.)
     /* no setup step required */
-    return;
+    return 1;
 
   /* else nu > 1 */
   b = sqrt(nu - 1.);
@@ -166,6 +165,9 @@ chi_chru_init( struct unur_gen *gen )
   vp = 0.6065306597 * (0.7071067812 + b) / (0.5 + b);
   vd = vp - vm;
   /* -X- end of setup code -X- */
+
+  return 1;
+
 } /* end of chi_chru_init() */
 
 double

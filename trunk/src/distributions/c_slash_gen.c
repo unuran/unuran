@@ -39,7 +39,7 @@
 /*---------------------------------------------------------------------------*/
 /* init routines for special generators                                      */
 
-inline static void slash_slash_init( struct unur_gen *gen );
+inline static int slash_slash_init( struct unur_gen *gen );
 
 /*---------------------------------------------------------------------------*/
 /* abbreviations */
@@ -83,8 +83,7 @@ _unur_stdgen_slash_init( struct unur_par *par, struct unur_gen *gen )
   case 0:  /* DEFAULT */
   case 1:  /* Ratio of normal and uniform random variates */
     _unur_cstd_set_sampling_routine( par,gen,unur_stdgen_sample_slash_slash );
-    slash_slash_init( gen );
-    return 1;
+    return slash_slash_init( gen );
 
   case UNUR_STDGEN_INVERSION:   /* inversion method */
   default: /* no such generator */
@@ -121,20 +120,24 @@ _unur_stdgen_slash_init( struct unur_par *par, struct unur_gen *gen )
 #define NORMAL  GEN.gen_aux    /* pointer to normal variate generator        */
 /*---------------------------------------------------------------------------*/
 
-inline static void
+inline static int
 slash_slash_init( struct unur_gen *gen )
 {
   /* check arguments */
-  CHECK_NULL(gen,/*void*/); COOKIE_CHECK(gen,CK_CSTD_GEN,/*void*/);
+  CHECK_NULL(gen,0);  COOKIE_CHECK(gen,CK_CSTD_GEN,0);
 
   /* -X- setup code -X- */
 
   /* make a normal variate generator (use default special generator) */
-  NORMAL = unur_init( unur_cstd_new( unur_distr_normal(NULL,0) ));
+  NORMAL = unur_cstd_init( unur_cstd_new( unur_distr_normal(NULL,0) ) );
+  _unur_check_NULL( NULL,NORMAL,0 );
   /* need same uniform random number generator as slash generator */
   NORMAL->urng = gen->urng;
 
   /* -X- end of setup code -X- */
+
+  return 1;
+
 } /* end of slash_slash_init() */
 
 double

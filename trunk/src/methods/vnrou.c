@@ -548,7 +548,13 @@ _unur_vnrou_rectangle( struct unur_gen *gen )
       faux.f = (UNUR_FUNCT_VGENERIC*) _unur_vnrou_aux_vmax;
       faux.params = gen;
 
-      memcpy(xstart, GEN.center, dim * sizeof(double)); 
+      if (gen->distr->set & UNUR_DISTR_SET_MODE)
+          /* starting point at mode */
+          memcpy(xstart, DISTR.mode, dim * sizeof(double)); 
+      else
+          /* starting point at center */
+          memcpy(xstart, GEN.center, dim * sizeof(double)); 
+     
       hooke_iters_vmax = _unur_hooke( faux, dim, xstart, xend, 
 				      VNROU_HOOKE_RHO, VNROU_HOOKE_EPSILON, VNROU_HOOKE_MAXITER);
 
@@ -578,6 +584,13 @@ _unur_vnrou_rectangle( struct unur_gen *gen )
       /* setting coordinate dimension to be used by the auxiliary functions */
       GEN.aux_dim  = d;
   
+      if (gen->distr->set & UNUR_DISTR_SET_MODE)
+          /* starting point at mode */
+          memcpy(xstart, DISTR.mode, dim * sizeof(double)); 
+      else
+          /* starting point at center */
+          memcpy(xstart, GEN.center, dim * sizeof(double)); 
+      
       /*-----------------------------------------------------------------------------*/
       /* calculation for umin */
       

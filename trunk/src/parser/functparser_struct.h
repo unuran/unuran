@@ -61,6 +61,7 @@ struct treenode {
 
 struct symbols { 
   char            name[SYMBLENGTH];  /* Name des Symbols (z. B. "SIN")  */ 
+  int             type;         /* type of symbol */
   int             info;              /* Prioritaet bzw. Argumentanzahl  */ 
   double           val;               /* Konstanten: numerischer Wert    */ 
   double           (*vcalc)(int t, double l, double r);        

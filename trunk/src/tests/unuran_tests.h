@@ -93,14 +93,15 @@ void unur_run_tests( UNUR_PAR *parameters, unsigned tests);
 /*---------------------------------------------------------------------------*/
 /* particular tests                                                          */
 
-void unur_test_printsample( UNUR_GEN *generator, int n_rows, int n_cols );
+void unur_test_printsample( UNUR_GEN *generator, int n_rows, int n_cols, FILE *out );
 /* 
    Print a small sample with @var{n_rows} rows and @var{n_cols} columns.
+   @var{out} is the output stream to which all results are written.
 */
 
 UNUR_GEN *unur_test_timing( UNUR_PAR *parameters, int log_samplesize, 
 			    double *time_setup, double *time_sample,
-			    int verbosity);
+			    int verbosity, FILE *out );
 /* 
    Timing. @var{parameters} is an parameter object for which setup
    time and marginal generation times have to be measured. The results
@@ -119,17 +120,20 @@ UNUR_GEN *unur_test_timing( UNUR_PAR *parameters, int log_samplesize,
    The created generator object is returned.
    If a generator object could not be created successfully, then NULL
    is returned.
+
+   If @var{verbosity} is TRUE the result is written to the output
+   stream @var{out}.
 */
 
 
-int unur_test_count_urn( UNUR_GEN *generator, int samplesize, int verbosity);
+int unur_test_count_urn( UNUR_GEN *generator, int samplesize, int verbosity, FILE *out );
 /* 
    Count used uniform random numbers. It returns the total number of
    uniform random numbers required for a sample of non-uniform random
    variates of size @var{samplesize}.
 
-   If @var{verbosity} is TRUE the result is printed to the
-   @code{stdout}.
+   If @var{verbosity} is TRUE the result is written to the output
+   stream @var{out}.
 */
 
 double unur_test_chi2( UNUR_GEN *generator, int intervals, int samplesize, int classmin,
@@ -151,40 +155,39 @@ double unur_test_chi2( UNUR_GEN *generator, int intervals, int samplesize, int c
    class. If a class has to few entries then some classes are joined.
 
    @var{verbosity} controls the output of the routine. If it is set
-   to @code{1} then the result is printed to @var{out}. If it
-   is set to @code{2} additionally the list of expected and observed
-   data is printed. There is no output when it is set to @code{0}.
-
-   @var{out} is the output stream to which all results are written.
+   to @code{1} then the result is written to the output stream
+   @var{out}. If it is set to @code{2} additionally the list of
+   expected and observed data is printed. There is no output when it
+   is set to @code{0}.
 */
 
-int unur_test_moments( UNUR_GEN *generator, double *moments, int n_moments, 
-		       int samplesize, int verbosity);
+int unur_test_moments( UNUR_GEN *generator, double *moments, int n_moments, int samplesize,
+		       int verbosity, FILE *out );
 /* 
    Computes the first @var{n_moments} central moments for a sample of
    size @var{samplesize}. The result is stored into the array
    @var{moments}.
    @var{n_moments} must be an integer between @code{1} and @code{4}.
 
-   If @var{verbosity} is TRUE the result is printed to the
-   @code{stdout}.
+   If @var{verbosity} is TRUE the result is written to the output
+   stream @var{out}.
 */
 
 double unur_test_correlation( UNUR_GEN *generator1, UNUR_GEN *generator2,
-			      int samplesize, int verbosity);
+			      int samplesize, int verbosity, FILE *out );
 /* 
    Compute the correlation coefficient between streams from
    @var{generator1} and @var{generator2} for two samples of size
    @var{samplesize}.
    The resultung correlation is returned.
 
-   If @var{verbosity} is TRUE the result is printed to the
-   @code{stdout}.
+   If @var{verbosity} is TRUE the result is written to the output
+   stream @var{out}.
 */
 
 int unur_test_quartiles( UNUR_GEN *generator,
 			 double *q0, double *q1, double *q2, double *q3, double *q4, 
-			 int samplesize, int verbosity );
+			 int samplesize, int verbosity, FILE *out );
 /* 
    Estimate quartiles of sample of size @var{samplesize}. 
    The resulting quantiles are stored in the variables @var{q}:
@@ -201,12 +204,9 @@ int unur_test_quartiles( UNUR_GEN *generator,
    maximum
    @end table
 
-   If @var{verbosity} is TRUE the result is printed to the
-   @code{stdout}.
+   If @var{verbosity} is TRUE the result is written to the output
+   stream @var{out}.
 */
-
-/* make scatterplot of generated numbers                                     */
-int unur_make_scatterplot( UNUR_GEN *generator );
 
 /* =END */
 

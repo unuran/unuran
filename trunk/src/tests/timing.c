@@ -64,7 +64,8 @@ unur_test_timing( struct unur_par *par,
 		  int log_samplesize, 
 		  double *time_setup,
 		  double *time_sample,
-		  int verbosity)
+		  int verbosity,
+		  FILE *out )
      /*----------------------------------------------------------------------*/
      /*  init generator and estimate setup and generation time.              */
      /*                                                                      */
@@ -74,6 +75,7 @@ unur_test_timing( struct unur_par *par,
      /*   time_setup     ... time for setup                                  */
      /*   time_sample    ... marginal generation time (i.e. for one r.n.)    */
      /*   verbosity      ... verbosity level, 0 = no output, 1 = output      */
+     /*   out            ... output stream                                   */
      /*                                                                      */
      /* return:                                                              */
      /*   pointer to generator object.                                       */
@@ -159,17 +161,17 @@ unur_test_timing( struct unur_par *par,
   
   /* now print times */
   if (verbosity) {
-    printf("\nTIMING:\t\t    usec \t relative to \t relative to\n");
-    printf("\t\t\t\t uniform\t marginal\n\n");
+    fprintf(out,"\nTIMING:\t\t    usec \t relative to \t relative to\n");
+    fprintf(out,"\t\t\t\t uniform\t marginal\n\n");
     /* setup time */
-    printf("   setup time:\t    %#g \t %#g \t %#g\n",
+    fprintf(out,"   setup time:\t    %#g \t %#g \t %#g\n",
 	   (*time_setup), (*time_setup)/fast, (*time_setup)/(*time_sample));
     /* marginal generation time */
-    printf("   generation time: %#g \t %#g \t %#g\n",(*time_sample),(*time_sample)/fast,1.);
+    fprintf(out,"   generation time: %#g \t %#g \t %#g\n",(*time_sample),(*time_sample)/fast,1.);
     /* generation times */
-    printf("\n   average generation time for samplesize:\n");
+    fprintf(out,"\n   average generation time for samplesize:\n");
     for( log_samples=1; log_samples<=log_samplesize; log_samples++ )
-      printf("\t10^%ld:\t    %#g \t %#g \t %#g\n",log_samples,
+      fprintf(out,"\t10^%ld:\t    %#g \t %#g \t %#g\n",log_samples,
 	     time_gen[log_samples],time_gen[log_samples]/fast,time_gen[log_samples]/(*time_sample));
   }
 

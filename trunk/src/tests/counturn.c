@@ -92,7 +92,7 @@ _urng_with_counter_next( struct prng *gen )
 /*---------------------------------------------------------------------------*/
 
 int
-unur_test_count_urn( struct unur_gen *gen, int samplesize, int verbosity )
+unur_test_count_urn( struct unur_gen *gen, int samplesize, int verbosity, FILE *out )
      /*----------------------------------------------------------------------*/
      /* count used uniform random numbers                                    */
      /*                                                                      */
@@ -100,6 +100,7 @@ unur_test_count_urn( struct unur_gen *gen, int samplesize, int verbosity )
      /*   gen        ... pointer to generator object                         */
      /*   samplesize ... sample size                                         */
      /*   verbosity  ... verbosity level, 0 = no output, 1 = output          */
+     /*   out        ... output stream                                       */
      /*                                                                      */
      /* return:                                                              */
      /*   total number of used uniform random numbers                        */
@@ -168,7 +169,7 @@ unur_test_count_urn( struct unur_gen *gen, int samplesize, int verbosity )
 
   /* print result */
   if (verbosity) {
-    printf("\nCOUNT: %g urng per generated number (total = %ld)\n",
+    fprintf(out,"\nCOUNT: %g urng per generated number (total = %ld)\n",
 	   ((double)urng_counter)/((double) samplesize),urng_counter);
   }
 

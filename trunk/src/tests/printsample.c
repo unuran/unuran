@@ -45,7 +45,7 @@ static char test_name[] = "Sample";
 /*---------------------------------------------------------------------------*/
 
 void
-unur_test_printsample( struct unur_gen *gen, int n_rows, int n_cols )
+unur_test_printsample( struct unur_gen *gen, int n_rows, int n_cols, FILE *out )
      /*----------------------------------------------------------------------*/
      /* print a sample of generator output in small (n_rows x n_cols) table  */
      /*                                                                      */
@@ -53,6 +53,7 @@ unur_test_printsample( struct unur_gen *gen, int n_rows, int n_cols )
      /*   gen    ... pointer to generator object                             */
      /*   n_rows ... number of rows                                          */
      /*   n_cols ... number of columns (for univariate case only)            */
+     /*   out    ... output stream                                           */
      /*----------------------------------------------------------------------*/
 {
   int i,j,k;
@@ -60,23 +61,23 @@ unur_test_printsample( struct unur_gen *gen, int n_rows, int n_cols )
   /* check arguments */
   _unur_check_NULL(test_name,gen,/*void*/);
 
-  printf("\nSAMPLE: ");              
+  fprintf(out,"\nSAMPLE: ");              
 
   switch (gen->method & UNUR_MASK_TYPE) {
   
   case UNUR_METH_DISCR:
     for( j=0; j<n_rows; j++ ) {
       for(i=0; i<n_cols; i++)
-	printf("%04d ",_unur_sample_discr(gen));
-      printf("\n        "); 
+	fprintf(out,"%04d ",_unur_sample_discr(gen));
+      fprintf(out,"\n        "); 
     }
     break;
 
   case UNUR_METH_CONT:
     for( j=0; j<n_rows; j++ ) {
       for(i=0; i<n_cols; i++)
-	printf("%8.5f ",_unur_sample_cont(gen));
-      printf("\n        "); 
+	fprintf(out,"%8.5f ",_unur_sample_cont(gen));
+      fprintf(out,"\n        "); 
     }
     break;
 
@@ -89,10 +90,10 @@ unur_test_printsample( struct unur_gen *gen, int n_rows, int n_cols )
 	
       for( j=0; j<n_rows; j++ ) {
 	_unur_sample_vec(gen,vec);
-	printf("( %8.5f",vec[0]);
+	fprintf(out,"( %8.5f",vec[0]);
 	for (k=1; k<dim; k++)
-	  printf(", %8.5f",vec[k]);
-	printf(" )\n        ");
+	  fprintf(out,", %8.5f",vec[k]);
+	fprintf(out," )\n        ");
       }
       free(vec);
     }
@@ -102,7 +103,7 @@ unur_test_printsample( struct unur_gen *gen, int n_rows, int n_cols )
     return;
   }
 
-  printf("\n");
+  fprintf(out,"\n");
 
 } /* end of unur_test_printsample() */
 

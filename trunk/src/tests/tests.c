@@ -87,7 +87,7 @@ unur_run_tests( struct unur_par *par, unsigned tests)
   /* init generator object */
   if (tests & UNUR_TEST_TIME)
     /* evaluate setup time and generation time */
-    gen = unur_test_timing(par,TEST_TIMING_LOG_SAMPLESIZE, &time_setup, &time_sample, TRUE);
+    gen = unur_test_timing(par,TEST_TIMING_LOG_SAMPLESIZE, &time_setup, &time_sample, TRUE, stdout);
   else
     gen = _unur_init(par);
 
@@ -96,11 +96,11 @@ unur_run_tests( struct unur_par *par, unsigned tests)
 
   /* count number of uniform random numbers */
   if (tests & UNUR_TEST_N_URNG )
-    unur_test_count_urn(gen,TEST_COUNTER_SAMPLESIZE, TRUE);
+    unur_test_count_urn(gen,TEST_COUNTER_SAMPLESIZE, TRUE, stdout);
 
   /* print a sample */
   if (tests & UNUR_TEST_SAMPLE )
-    unur_test_printsample(gen,TEST_SAMPLE_ROWS,TEST_SAMPLE_COLS);
+    unur_test_printsample(gen,TEST_SAMPLE_ROWS,TEST_SAMPLE_COLS, stdout);
 
   /* run chi2-test*/
   if (tests & UNUR_TEST_CHI2)

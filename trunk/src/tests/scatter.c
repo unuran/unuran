@@ -42,6 +42,10 @@
 #include <unuran_tests.h>
 
 /*---------------------------------------------------------------------------*/
+/* make scatterplot of generated numbers                                     */
+int unur_make_scatterplot( UNUR_GEN *generator );
+
+/*---------------------------------------------------------------------------*/
 
 #define PLOT_DOT_SIZE   "0.01"
 #define SCATTER_UNIFORM "uniform.scatterplot"

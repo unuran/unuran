@@ -53,7 +53,7 @@ static char test_name[] = "Quantiles";
 
 int
 unur_test_quartiles( UNUR_GEN *gen, double *q0 ,double *q1, double *q2, double *q3, double *q4,
-		     int samplesize, int verbosity )
+		     int samplesize, int verbosity, FILE *out )
      /*----------------------------------------------------------------------*/
      /*  compute estimate for quartiles and mean of samples.                 */
      /*                                                                      */
@@ -66,6 +66,7 @@ unur_test_quartiles( UNUR_GEN *gen, double *q0 ,double *q1, double *q2, double *
      /*   q4         ... maximum                                             */
      /*   samplesize ... sample size                                         */
      /*   verbosity  ... verbosity level, 0 = no output, 1 = output          */
+     /*   out        ... output stream                                       */
      /*                                                                      */
      /* return:                                                              */
      /*   1 ... on success                                                   */
@@ -211,8 +212,8 @@ unur_test_quartiles( UNUR_GEN *gen, double *q0 ,double *q1, double *q2, double *
 
 /* 
       for (i=0;i<5;i++)
-	printf("%6.2f ", h[i]);
-      printf("\n");
+	fprintf(out,"%6.2f ", h[i]);
+      fprintf(out,"\n");
 */
 
     } /* end n>4 */
@@ -231,12 +232,12 @@ unur_test_quartiles( UNUR_GEN *gen, double *q0 ,double *q1, double *q2, double *
 
   /* now print results */
   if (verbosity) {
-    printf("\nQuartiles:\n");
-    printf("\tmin = \t%6.5g\n",*q0);
-    printf("\t25%% =\t%6.5g\n",*q1);
-    printf("\t50%% =\t%6.5g\n",*q2);
-    printf("\t75%% =\t%6.5g\n",*q3);
-    printf("\tmax = \t%6.5g\n",*q4);
+    fprintf(out,"\nQuartiles:\n");
+    fprintf(out,"\tmin = \t%6.5g\n",*q0);
+    fprintf(out,"\t25%% =\t%6.5g\n",*q1);
+    fprintf(out,"\t50%% =\t%6.5g\n",*q2);
+    fprintf(out,"\t75%% =\t%6.5g\n",*q3);
+    fprintf(out,"\tmax = \t%6.5g\n",*q4);
   }
 
   return 1;

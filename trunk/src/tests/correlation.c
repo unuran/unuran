@@ -51,7 +51,7 @@ static char test_name[] = "Correlation";
 /*---------------------------------------------------------------------------*/
 
 double
-unur_test_correlation( UNUR_GEN *genx, UNUR_GEN *geny, int samplesize, int verbosity )
+unur_test_correlation( UNUR_GEN *genx, UNUR_GEN *geny, int samplesize, int verbosity, FILE *out )
      /*----------------------------------------------------------------------*/
      /*  compute correlation coefficient of two samples.                     */
      /*                                                                      */
@@ -59,7 +59,8 @@ unur_test_correlation( UNUR_GEN *genx, UNUR_GEN *geny, int samplesize, int verbo
      /*   genx       ... pointer to generator object                         */
      /*   geny       ... pointer to another generator object                 */
      /*   samplesize ... sample size                                         */
-     /*   verbosity      ... verbosity level, 0 = no output, 1 = output      */
+     /*   verbosity  ... verbosity level, 0 = no output, 1 = output          */
+     /*   out        ... output stream                                       */
      /*                                                                      */
      /* return:                                                              */
      /*     correlation coefficient                                          */
@@ -123,13 +124,13 @@ unur_test_correlation( UNUR_GEN *genx, UNUR_GEN *geny, int samplesize, int verbo
     sx  += factor * dx*dx;
     sy  += factor * dy*dy;
     sxy += factor * dx*dy;
-    //printf( "sx:%f sy:%f sxy:%f, c:%f\n",sx,sy,sxy, sxy/(sqrt(sx*sy)) );
+    /* fprintf(out,"sx:%f sy:%f sxy:%f, c:%f\n",sx,sy,sxy, sxy/(sqrt(sx*sy)) ); */
 
   }
 
   /* now print results */
   if (verbosity) {
-    printf("\nCorrelation coefficient: %g\n\n", sxy/(sqrt(sx*sy)) );
+    fprintf(out,"\nCorrelation coefficient: %g\n\n", sxy/(sqrt(sx*sy)) );
   }
 
   return ( sxy/(sqrt(sx*sy)) );

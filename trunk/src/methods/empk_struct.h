@@ -76,6 +76,7 @@ struct unur_empk_gen {
   double  kernvar;     /* variance of used kernel, only used if varcor == 1  */
 
   double  bwidth;      /* bandwidth for kernel density estimation            */
+  double  bwidth_opt;  /* optimal bandwith for kernel density estimation     */
   double  mean_observ; /* mean of observed data                              */
   double  stddev_observ; /* standard deviation of oberved data               */
   double  sconst;      /* constant used for variance corrected version 

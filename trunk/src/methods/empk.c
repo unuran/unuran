@@ -494,7 +494,9 @@ unur_empk_set_kernelgen( struct unur_par *par, struct unur_gen *kernelgen,
   
   if (kernelvar > 0.)
     par->set |= EMPK_SET_KERNELVAR;
-  /* else variance correction disabled */
+  else
+    /* variance correction disabled */
+    par->set &= ~EMPK_SET_KERNELVAR;
 
   /* o.k. */
   return 1;
@@ -606,7 +608,7 @@ unur_empk_chg_smoothing( struct unur_gen *gen, double smoothing )
   }
 
   /* recompute band width */
-  GEN.bwidth *= smoothing / GEN.smoothing;
+  GEN.bwidth = smoothing * GEN.bwidth_opt;
 
   /* recompute constant for variance corrected version */
   GEN.sconst = 1./sqrt(1. + GEN.kernvar * SQU( GEN.bwidth/GEN.stddev_observ ) );
@@ -646,11 +648,7 @@ unur_empk_set_varcor( struct unur_par *par, int varcor )
   /* check input */
   _unur_check_par_object( par,EMPK );
 
-  /* kernel variance known ? */
-  if (! (par->set & EMPK_SET_KERNELVAR) ) {
-    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"variance correction disabled");
-    return 0;
-  }
+  /* we do not know yet if the kernel variance known */
 
   /* we use a bit in variant */
   par->variant = (varcor) 
@@ -821,7 +819,8 @@ _unur_empk_init( struct unur_par *par )
   if (GEN.stddev_observ < sigma) sigma = GEN.stddev_observ;
 
   /* compute band width (also called window width) */
-  GEN.bwidth =  PAR.smoothing * PAR.alpha * PAR.beta * sigma / exp(0.2 * log(GEN.n_observ));
+  GEN.bwidth_opt = PAR.alpha * PAR.beta * sigma / exp(0.2 * log(GEN.n_observ));
+  GEN.bwidth = PAR.smoothing * GEN.bwidth_opt;
 
   /* compute constant for variance corrected version */
   if( par->variant & EMPK_VARFLAG_VARCOR )
@@ -1031,7 +1030,6 @@ _unur_empk_comp_stddev( double *data, int n_data, double *mean, double *stddev)
   /* compute sums */
   for (n=1; n <= n_data; n++) {
     dx = (data[n-1] - *mean) / n;
-
     xsqu_sum += n * (n - 1.) * dx * dx;
     *mean += dx;
   }
@@ -1136,7 +1134,7 @@ _unur_empk_debug_init( struct unur_par *par, struct unur_gen *gen )
   else 
     fprintf(log,"[default kernel]\n");
 
-  fprintf(log,"%s:    window width = %g\n",gen->genid, GEN.bwidth);
+  fprintf(log,"%s:    window width = %g\t(opt = %g)\n",gen->genid, GEN.bwidth, GEN.bwidth_opt);
   fprintf(log,"%s:    alpha = %g",gen->genid, PAR.alpha);
   _unur_print_if_default(par,EMPK_SET_ALPHA); fprintf(log,"\n");
   if (gen->variant & EMPK_VARFLAG_VARCOR) {

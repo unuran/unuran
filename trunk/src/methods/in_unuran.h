@@ -111,6 +111,7 @@ typedef int UNUR_VFUNCT_CVEC(double *result, double *x, struct unur_distr *distr
 
 /* methods for continuous distributions */
 #include <arou.h>
+#include <gsrou.h>
 #include <ninv.h>
 #include <srou.h>
 #include <ssr.h>

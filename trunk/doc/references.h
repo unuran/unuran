@@ -116,6 +116,12 @@ ACM Trans. Math. Software 26(1), pp. 78-98.
 univariate T-concave distributions},
 ACM Trans. Math. Software 27(1), pp. 66--82.
 
+@anchor{bib:LJa02}
+@item [LJa02]
+@sc{J. Leydold} (2002).
+@i{Short universal generators via generalized ratio-of-uniforms method},
+Preprint
+
 @anchor{bib:WAa77}
 @item [WAa77]
 @sc{A.J. Walker} (1977).

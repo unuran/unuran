@@ -57,6 +57,7 @@
 #define T_DSROU
 #define T_DSTD 
 #define T_EMPK
+#define T_GSROU
 #define T_NINV
 #define T_SROU
 #define T_SSR

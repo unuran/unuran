@@ -60,21 +60,16 @@ int main()
 
   unur_set_default_debug(~0u);
 
-  distr = unur_distr_poisson(fpar,1);
-  par = unur_dsrou_new(distr);
-  unur_dsrou_set_verify(par,1);
-  gen = unur_init(par);
-  unur_dsrou_chg_domain(gen,2,7);
-  unur_dsrou_upd_pmfsum(gen);
-  unur_dsrou_upd_mode(gen);
-  unur_dsrou_reinit(gen); 
+  distr = unur_distr_normal(NULL,0);
+  par = unur_gsrou_new(distr);
+/*    gen = unur_init(par); */
   
-/*    unur_run_tests(par,RUN_TESTS); */
+  unur_run_tests(par,RUN_TESTS);
 
 /*    gen = unur_init(par); */
 
-  for (i=0; i<100; i++)
-    unur_sample_discr(gen);
+/*    for (i=0; i<100; i++) */
+/*      unur_sample_discr(gen); */
 /*      printf("%d\n",unur_sample_discr(gen)); */
 
 /*    unur_test_count_urn(gen,10000,1,stdout); */

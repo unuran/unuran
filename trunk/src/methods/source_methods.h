@@ -64,15 +64,16 @@
 #define UNUR_METH_CONT     0x20000000u
 
 #define UNUR_METH_AROU     0x20000100u
-#define UNUR_METH_NINV     0x20000200u
-#define UNUR_METH_SROU     0x20000300u
-#define UNUR_METH_SSR      0x20000400u
-#define UNUR_METH_TABL     0x20000500u
-#define UNUR_METH_TDR      0x20000600u
-#define UNUR_METH_UNIF     0x20000700u
-#define UNUR_METH_UTDR     0x20000800u
+#define UNUR_METH_GSROU    0x20000200u
+#define UNUR_METH_NINV     0x20000300u
+#define UNUR_METH_SROU     0x20000400u
+#define UNUR_METH_SSR      0x20000500u
+#define UNUR_METH_TABL     0x20000600u
+#define UNUR_METH_TDR      0x20000700u
+#define UNUR_METH_UNIF     0x20000800u
+#define UNUR_METH_UTDR     0x20000900u
 
-#define UNUR_METH_EMPK     0x20000900u
+#define UNUR_METH_EMPK     0x20001100u
 
 /* multivariate continuous distributions */
 #define UNUR_METH_VEC      0x40000000u

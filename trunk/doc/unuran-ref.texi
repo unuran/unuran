@@ -581,7 +581,7 @@ For information about the Methods themselfes, see @ref{Description}.
   \divide   \tempcounter 2
   \multiply \tempcounter 2
   \ifnum \tempcounter < \thispage
-     \page \phantom{Hut}
+     @c \page \phantom{Hut}
   \fi
 @end tex
 

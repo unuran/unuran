@@ -45,24 +45,61 @@
    =UP Distribution_objects [30]
 
    =DESCRIPTION
+      The following calls handle multivariate distributions.
+      However, the requirements of particular generation methods is not
+      as unique as for univariate distributions. Moreover, random vector
+      generation methods are still under development.
+      The below functions are a first attempt to handle this situation. 
+      
+      Notice that some of the parameters -- when given carelessly -- might
+      contradict to others. For example: Some methods require the
+      marginal distribution and some methods need a standardized form of
+      the marginal distributions, where the actual mean and variance is
+      stored in the mean vector and the covariance matrix, respectively. 
+      
+      We also have to mention that some methods might abuse some of the
+      parameters. For example, method VMT (@pxref{VMT}) uses standard
+      marginal distributions. However, the marginal distribution of the
+      generated vectors might be transformed and thus differ from the
+      given marginal distributions. Please read the discription
+      of the chosen sampling method carfully.
+      
+      The following kind of calls exists:
+      
+      @itemize @minus 
+      @item Create a @command{new} instance of a continuous multivariate
+      distribution; 
 
-   The following calls handle multivariate distributions.
-   However, the requirements of particular generation methods is not
-   as unique as for univariate distribution. Moreover, the area of
-   random vector generation is still under development. 
-   The below functions are a first attempt to handle this situation. 
+      @item Handle and evaluate 
+      probability density function (PDF, @command{pdf}) and the 
+      gradient of the density function (@command{dpdf}).
+      The following is important:
+      @itemize .
+      @item @command{pdf} need not be normalized, i.e.,
+      any integrable nonnegative function can be used. 
+      @item @command{dpdf} must the derivate of the function provided
+      as @command{pdf}.
+      @end itemize
 
-   Notice that some of the parameters when given carelessly might
-   contradict to others. For example: Some methods require the
-   marginal distribution and some methods need a standardized form of
-   the marginal distributions, where the actual mean and variance is
-   stored in the mean vector and the covariance matrix, respectively. 
+      @item Set (and change) parameters (@command{pdfparams}) and the
+      volume below the graph (@command{pdfvol}) of the given density.
 
-   We also have to mention that some methods might abuse some of the
-   parameters. For example, method VMT (@pxref{VMT}) uses standard
-   marginal distributions. However, the marginal distribution of the
-   generated vectors might be transformed. Please read the discription
-   of the choosen sampling method carfully.
+      @item Set @command{mode} and @command{mean} of the distribution. 
+
+      @item Set the @command{center} of the distribution. 
+      It is used by some generation methods to adjust the parameters
+      of the generation algorithms to gain better performance. It can
+      be seens as the location of the ``central part'' of the
+      distribution. 
+
+      @item Handle the @command{covar}iance matrix of the distribution and
+      its @command{cholesky} and @command{inv}verse matrices.
+
+      @item Set the @command{rankcorr}elation matrix of the distribution.
+
+      @item Deal with @command{marginal} distributions.
+
+   @end itemize
 
    =END
 */

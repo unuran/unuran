@@ -44,6 +44,46 @@
 
    =UP Distribution_objects [50]
 
+   =DESCRIPTION
+      The calls in this section can be applied to discrete
+      univariate distributions.
+
+      @itemize @minus 
+      @item Create a @command{new} instance of a discrete univariate
+      distribution.
+
+      @item Handle and evaluate 
+      distribution function (CDF, @command{cdf}) and 
+      probability mass function (PMF, @command{pmf}).
+      The following is important:
+      @itemize .
+      @item @command{pmf} need not be normalized, i.e.,
+      any summable nonnegative function on the set of intergers can be
+      used. 
+      @item @command{cdf} must be a distribution function, i.e. it
+      must be monotonically increasing with range [0,1].
+      @item If @command{cdf} and @command{pdf} are used together for a
+      pariticular generation method, then @command{pmf} must be
+      normalized, i.e. it must sum to 1.
+      @end itemize
+
+      @item Alternatively, @command{cdf} and @command{pdf} can be
+      provided as @command{str}ings instead of function pointers.
+
+      @item Some generation methods require a (finite) probability
+      vector (PV, @command{pv}), i.e. an array of @code{double}s.
+      It can be automatically computed if the @command{pmf} is
+      given but @command{pv} is not.
+
+      @item Set (and change) parameters (@command{pmfparams}) and the
+      total sum (@command{pmfsum}) of the given PMF or PV.
+
+      @item Set the @command{mode} of the distribution. 
+
+      @item Set the @command{domain} of the distribution. 
+
+      @end itemize
+
    =END
 */
 
@@ -79,7 +119,7 @@ UNUR_DISTR *unur_distr_discr_new( void );
 
 int unur_distr_discr_set_pv( UNUR_DISTR *distribution, const double *pv, int n_pv );
 /* 
-   Set finite probability vector (PV) for a @var{distribution}. It is not
+   Set finite probability vector (PV) for the @var{distribution}. It is not
    necessary that the entries in the given PV sum to 1.
    @var{n_pv} must be positive. However, there is no testing
    whether all entries in @var{pv} are non-negative. 
@@ -89,7 +129,7 @@ int unur_distr_discr_set_pv( UNUR_DISTR *distribution, const double *pv, int n_p
    left boundary + @var{n_pv} exceeds the range of integers, 
    then the call fails. 
 
-   Notice it is not possible to set both a PV and a PMF.
+   Notice that it is not possible to set both a PV and a PMF.
    (E.g., it is not possible to set a PV for a @var{distribution} from
    UNURAN library of standard distributions.)
 */
@@ -112,9 +152,9 @@ int unur_distr_discr_make_pv( UNUR_DISTR *distribution );
    negative of the length of the PV is returned and
    @code{unur_errno} is set to @code{UNUR_ERR_DISTR_SET}.
 
-   Notice that when a discrete distribution object is created from
-   scratch, then the left boundary of the PV is set to @code{0} by
-   default.
+   Notice that the left boundary of the PV is set to @code{0} by
+   default when a discrete distribution object is created from
+   scratch.
 
    If computing a PV fails for some reasons, an error code is returned and 
    @code{unur_errno} is set to @code{UNUR_ERR_DISTR_SET}.
@@ -228,15 +268,18 @@ int unur_distr_discr_set_pmfparams( UNUR_DISTR *distribution, const double *para
    are copied into the @var{distribution} object and @code{unur_errno}
    is set to @code{UNUR_ERR_DISTR_NPARAMS}. 
 
-   For standard distributions from the UNURAN library the parameters
-   are checked. Moreover the domain is updated automatically unless it
-   has been changed before by a unur_distr_cont_set_domain() call.
-   It these parameters are invalid, then no parameters are set and 
-   an error code is returned.
-   Notice that optional parameters are (re-)set to their default values if 
-   not given for UNURAN standard distributions.
 
-   @emph{Important:} Integer parameter must be given as doubles.
+   For standard distributions from the UNURAN library the parameters
+   are checked. Moreover, the domain is updated automatically unless it
+   has been changed before by a unur_distr_discr_set_domain() call.
+   If the given parameters are invalid for the standard distribution,
+   then no parameters are set and an error code is returned.
+   Notice that the given parameter list for such a distribution is
+   handled in the same way as in the corresponding @command{new}
+   calls, i.e. optional parameters for the PDF that are not present in
+   the given list are (re-)set to their default values.
+
+   @emph{Important:} Integer parameter must be given as @code{double}s.
 */
 
 int unur_distr_discr_get_pmfparams( const UNUR_DISTR *distribution, const double **params );
@@ -251,18 +294,18 @@ int unur_distr_discr_set_domain( UNUR_DISTR *distribution, int left, int right )
 /* 
    Set the left and right borders of the domain of the
    @var{distribution}. This can also be used to truncate an existing
-   distribution. For setting the boundary to +/- infinity use
-   @code{INT_MAX} and @code{INT_MIN}, respectively.
+   distribution. For setting the boundary to @unurmath{\pm\infty} use
+   @code{INT_MIN} and @code{INT_MAX}, respectively.
    If @var{right} is not strictly greater than @var{left} no domain
    is set and @code{unur_errno} is set to @code{UNUR_ERR_DISTR_SET}.
    It is allowed to use this call to increase the domain.
    If the PV of the discrete distribution is used,
    than the right boudary is ignored (and internally set to 
-   @var{left} + size of PV - 1).
-   Notice that @code{INT_MAX} and @code{INT_MIN} are interpreted as
-   (minus) infinity.
+   @var{left} + size of PV @math{- 1}).
+   Notice that @code{INT_MIN} and @code{INT_MAX} are interpreted as
+   (minus/plus) infinity.
 
-   Default is [@code{0}, @code{INT_MAX}].
+   Default: [@code{0}, @code{INT_MAX}].
 */
 
 int unur_distr_discr_get_domain( const UNUR_DISTR *distribution, int *left, int *right );
@@ -271,7 +314,7 @@ int unur_distr_discr_get_domain( const UNUR_DISTR *distribution, int *left, int 
    @var{distribution}. If the domain is not set explicitly 
    the interval [@code{INT_MIN}, @code{INT_MAX}] is assumed and returned.
    When a PV is given then the domain is set automatically to 
-   [@code{0},size of PV - 1].
+   [@code{0},size of PV @math{- 1}].
 */
 
 

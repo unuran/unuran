@@ -1006,8 +1006,12 @@ _unur_ninv_regula( struct unur_gen *gen, double u )
    x2 =  GEN.s[1];      /* right boudary of interval*/
   }   /* end of if(GEN.table_on = ...)  */
 
-  if (x1>=x2) {
-    _unur_error(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,""); return 0.; }
+  if (x1-x2 >  -DBL_EPSILON) { 
+    xtmp=x1;
+    x1 = x2;
+    x2 = xtmp + DBL_EPSILON; 
+    //_unur_error(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,""); return 0.;
+  }
 
  
   /* compute c.d.f. at interval boundaries */

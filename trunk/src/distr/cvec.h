@@ -266,23 +266,30 @@ const double *unur_distr_cvec_get_rankcorr( const UNUR_DISTR *distribution );
    rank-correlation matrix!
 */
 
-int unur_distr_cvec_set_stdmarginals( UNUR_DISTR *distribution, UNUR_DISTR *stdmarginal );
+int unur_distr_cvec_set_marginals( UNUR_DISTR *distribution, UNUR_DISTR *marginal );
+/* */
+
+int unur_distr_cvec_set_stdmarginals( UNUR_DISTR *distribution, UNUR_DISTR *marginal );
 /* 
-   Sets marginal distribution for all marginals of the given
-   @var{distribution}. The @var{marginal} distribution must be an
+   Sets marginal distribution and standardized marginal distributions
+   of the given @var{distribution} to the same @var{marginal}
+   distribution object. The @var{marginal} distribution must be an
    instance of a continuous univariate distribution object.
    In conjunction with unur_distr_cvec_set_covar()
-   and unur_distr_cvec_set_mean() the given @var{marginal}
-   distribution should be standardized, i.e., it should have mean 0
-   and standard deviation 1 (if both exist for the given marginal
-   distribution).
-   Notice that the marginal distribution is copied in the
+   and unur_distr_cvec_set_mean() the standardized marginals must be
+   used, i.e., they should have mean 0 and standard deviation 1 
+   (if both exist for the given marginal distribution).
+   Notice that the marginal distribution is copied into the
    @var{distribution} object.
 */
 
-int unur_distr_cvec_set_stdmarginal_array( UNUR_DISTR *distribution, UNUR_DISTR **stdmarginals );
+int unur_distr_cvec_set_marginal_array( UNUR_DISTR *distribution, UNUR_DISTR **marginals );
+/* */
+
+int unur_distr_cvec_set_stdmarginal_array( UNUR_DISTR *distribution, UNUR_DISTR **marginals );
 /* 
-   Analogously to the above unur_distr_cvec_set_marginals() call.
+   Analogously to the above unur_distr_cvec_set_marginals() and
+   unur_distr_cvec_set_stdmarginals() calls.
    However, now an array @var{marginals} of the pointers to each of
    the marginal distributions must be given. It @strong{must} be an
    array of size @code{dim}, where @code{dim} is the dimension
@@ -294,17 +301,17 @@ int unur_distr_cvec_set_stdmarginal_array( UNUR_DISTR *distribution, UNUR_DISTR 
    new copy is made.
 */
 
+const UNUR_DISTR *unur_distr_cvec_get_marginal( const UNUR_DISTR *distribution, int n );
+/* */
+
 const UNUR_DISTR *unur_distr_cvec_get_stdmarginal( const UNUR_DISTR *distribution, int n );
 /* 
-   Get pointer to the @var{n}-th marginal distribution object from the
-   multivariate @var{distribution}. If this does not exist, NULL is
-   returned. The marginal distributions are enumerated from @code{1}
+   Get pointer to the @var{n}-th (standardized) marginal distribution
+   object from the given multivariate @var{distribution}. 
+   If this does not exist, NULL is returned. 
+   The marginal distributions are enumerated from @code{1}
    to @code{dim}, where @code{dim} is the dimension
    returned by unur_distr_get_dim(). 
-
-   Notice of the marginal distribution is set via a
-   unur_distr_cvec_set_marginals() call then the same pointer is
-   returned for all all @var{n}.
 */
 
 int unur_distr_cvec_set_pdfparams( UNUR_DISTR *distribution, int par, const double *params, int n_params );

@@ -143,8 +143,7 @@ unur_distr_cont_new( void )
   DISTR.trunc[0] = DISTR.domain[0] = -INFINITY; /* left boundary of domain   */
   DISTR.trunc[1] = DISTR.domain[1] = INFINITY;  /* right boundary of domain  */
 
-  //  DISTR.upd_mode  = _unur_distr_cont_find_mode;  /* funct for computing mode */
-  DISTR.upd_mode  = NULL;  /* funct for computing mode */
+  DISTR.upd_mode  = _unur_distr_cont_find_mode;  /* funct for computing mode */
   DISTR.upd_area  = NULL;          /* funct for computing area               */
 
   distr->set = 0u;                 /* no parameters set                      */
@@ -695,7 +694,7 @@ unur_distr_cont_upd_mode( struct unur_distr *distr )
   }
   else {
     /* computing of mode failed */
-    _unur_error(distr->name,UNUR_ERR_DISTR_SET,"");
+    _unur_error(distr->name,UNUR_ERR_DISTR_GET,"");
     return 0;
   }
 
@@ -948,14 +947,16 @@ _unur_distr_cont_find_mode(struct unur_distr *distr )
   int unbound_left; 
   int unbound_right; 
 
-
   /* check arguments */
-  _unur_check_NULL( NULL, distr, 0 );
+  CHECK_NULL( distr, 0 );
   _unur_check_distr_object( distr, CONT, 0 );
+  if (DISTR.pdf == NULL) {
+    _unur_error(distr->name,UNUR_ERR_DISTR_GET,"PDF required for finding mode numerically"); 
+    return 0;
+  }
 
   /* first guess for mode */
   mode = DISTR.mode; /* yet best guess for mode */
-
 
   /* determine where to look for the mode */
   

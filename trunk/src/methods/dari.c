@@ -735,8 +735,8 @@ _unur_dari_create( struct unur_par *par )
   gen->gen_aux_2 = NULL;
 
   /* allocate */
-  GEN.hp = _unur_malloc( PAR.size * sizeof(double) );
-  GEN.hb = _unur_malloc( PAR.size * sizeof(char) );
+  GEN.hp = (GEN.size > 0) ? _unur_malloc( GEN.size * sizeof(double) ) : NULL;
+  GEN.hb = (GEN.size > 0) ? _unur_malloc( GEN.size * sizeof(char) )   : NULL;
 
   /* initialize parameters */
   /** TODO: diese initialisierung ist nur zur Sicherheit,

@@ -4,7 +4,7 @@
 use strict;
 
 # set to 0 to disable output of nodes to stderr
-my $VERBOSE = 0;
+my $VERBOSE = 1;
 
 # set to 0 if no additinal page breaks should be included
 my $PAGEBREAKS = 1;
@@ -58,6 +58,7 @@ my %TAGs =
      "=UP"          => { "scan" => \&scan_UP },
      "=DESCRIPTION" => { "scan" => \&scan_do_nothing },
      "=HOWTOUSE"    => { "scan" => \&scan_do_nothing },
+     "=LISTOFCALLS" => { "scan" => \&scan_do_nothing },
      "=ROUTINES"    => { "scan" => \&scan_ROUTINES },
      "=REQUIRED"    => { "scan" => \&scan_chop_blanks },
      "=OPTIONAL"    => { "scan" => \&scan_chop_blanks },
@@ -498,7 +499,10 @@ sub texi_node {
 
     # print function reference
     if ($IN->{$node}->{"=ROUTINES"}) {
-	$TEXI .= "\n\@subsubheading Function reference\n\n";
+	$TEXI .= "\n\@subheading Function reference\n\n";
+##	if ($IN->{$node}->{"=LISTOFCALLS"}) {
+	    $TEXI .= $IN->{$node}->{"=ROUTINESLIST"}."\n\n";
+##	}
 	$TEXI .= $IN->{$node}->{"=ROUTINES"}."\n\n";
     }
 
@@ -993,6 +997,10 @@ sub scan_ROUTINES {
     # store processed text
     my $proc = '';
 
+    # local list of functions
+    my $listhtml;
+    my $listinfo;
+
     # deftypefn block closed
     my $defblock_open = 0;
     
@@ -1064,6 +1072,11 @@ sub scan_ROUTINES {
 	my $first = 1;
 	if (@argslist) {
 	    # this is a function with arguments
+
+	    # store in table of routines 
+	    $listhtml .= "\@item \@ref{funct:$fn_name,$fn_name}\n";
+	    $listinfo .= "\@item $fn_name\n";
+
 	    # make anchor
 	    $fkt_block .= "\@anchor{funct:$fn_name}\n";
 	    # make texinfo tag
@@ -1085,6 +1098,11 @@ sub scan_ROUTINES {
 	else {
 	    # this is a function does not have arguments
 	    # maybe it is an variable
+
+	    # store in table of routines 
+	    $listhtml .= "\@item \@ref{var:$fn_name,$fn_name}\n";
+	    $listinfo .= "\@item $fn_name\n";
+
 	    # make anchor
 	    $fkt_block .= "\@anchor{var:$fn_name}\n";
 	    # make texinfo tag
@@ -1108,7 +1126,7 @@ sub scan_ROUTINES {
 	    # for other output formats
 	    $fkt_string = $fkt_block;
 	    process_unur_macros("tex|html",\$fkt_string);
-	    $fkt_string =~ s/%%%Function%%%/--/g;
+	    $fkt_string =~ s/%%%Function%%%/{}/g;
 	    $proc .= "\@ifnotinfo\n$fkt_string\@end ifnotinfo\n\n";
 	    # clear block
 	    $fkt_block = '';
@@ -1120,8 +1138,16 @@ sub scan_ROUTINES {
 	
     die "last function without description: $fkt_block" if $defblock_open;
 
+    # make list of routines
+    my $listproc;
+    if ($listhtml) {
+	$listproc = "\@ifhtml\n\@itemize\n".$listhtml."\@end itemize\n\@end ifhtml\n";
+	$listproc .= "\@ifnothtml\n\@itemize\n".$listinfo."\@end itemize\n\n\@sp 1\n\@end ifnothtml\n";
+    }
+    
     # store new lines
     $IN->{$node_name}->{"=ROUTINES"} = $proc;
+    $IN->{$node_name}->{"=ROUTINESLIST"} = $listproc;
 
     return;
 

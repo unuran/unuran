@@ -17,8 +17,14 @@ some capital letters.
 The body of the documentation uses texinfo with some additional macros
 (see below).
 
-There is a switch $PAGEBREAKS in ./doc/src/make_texi.pl. When set to 1
-(non-nil) it inserts a pagebreak before each =METHOD and =NODEX tag.
+There are some switches in ./doc/src/make_texi.pl:
+
+ (*) $PAGEBREAKS: When set to 1 (non-nil) pagebreaks are inserts before 
+     each =METHOD and =NODEX tag.
+
+ (*) $LISTOFCALLS: When set to 1 (non-nil) lists of functions calls 
+     (with hyperlinks) are added to top of Function Reference sections
+     in the HTML version of the manual.
 
 
 (*) Nodes

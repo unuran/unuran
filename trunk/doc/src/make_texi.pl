@@ -9,6 +9,10 @@ my $VERBOSE = 1;
 # set to 0 if no additinal page breaks should be included
 my $PAGEBREAKS = 1;
 
+# set to 0 if no list of calls should be added to top of 
+# Function Reference sections (only in HTML output)
+my $LISTOFCALLS = 1;
+
 ############################################################
 # constants
 
@@ -58,7 +62,6 @@ my %TAGs =
      "=UP"          => { "scan" => \&scan_UP },
      "=DESCRIPTION" => { "scan" => \&scan_do_nothing },
      "=HOWTOUSE"    => { "scan" => \&scan_do_nothing },
-     "=LISTOFCALLS" => { "scan" => \&scan_do_nothing },
      "=ROUTINES"    => { "scan" => \&scan_ROUTINES },
      "=REQUIRED"    => { "scan" => \&scan_chop_blanks },
      "=OPTIONAL"    => { "scan" => \&scan_chop_blanks },
@@ -500,9 +503,8 @@ sub texi_node {
     # print function reference
     if ($IN->{$node}->{"=ROUTINES"}) {
 	$TEXI .= "\n\@subheading Function reference\n\n";
-##	if ($IN->{$node}->{"=LISTOFCALLS"}) {
-	    $TEXI .= $IN->{$node}->{"=ROUTINESLIST"}."\n\n";
-##	}
+	if ($LISTOFCALLS) { 
+	    $TEXI .= $IN->{$node}->{"=ROUTINESLIST"}."\n\n"; }
 	$TEXI .= $IN->{$node}->{"=ROUTINES"}."\n\n";
     }
 
@@ -1142,7 +1144,8 @@ sub scan_ROUTINES {
     my $listproc;
     if ($listhtml) {
 	$listproc = "\@ifhtml\n\@itemize\n".$listhtml."\@end itemize\n\@end ifhtml\n";
-	$listproc .= "\@ifnothtml\n\@itemize\n".$listinfo."\@end itemize\n\n\@sp 1\n\@end ifnothtml\n";
+	## Currently we only display list of calls in HTML output
+	## $listproc .= "\@ifnothtml\n\@itemize\n".$listinfo."\@end itemize\n\n\@sp 1\n\@end ifnothtml\n";
     }
     
     # store new lines

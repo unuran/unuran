@@ -87,11 +87,11 @@ while ( <STDIN> ){
     else {
 	my $type = $1;    # INPUT type 
 
-	if ( $type eq "distrinfo" ){
-	    distr_info();
-	}
-	elsif ( $type eq "list_of_distributions" ){
+	if ( $type eq "list_of_distributions" ){
 	    print make_list_of_distributions();
+	}
+	elsif ( $type eq "list_of_distr_sets" ){
+	    print make_list_of_distr_sets();
 	}
 	elsif ( $type eq "list_of_methods" ){
 	    print make_list_of_methods();
@@ -100,7 +100,7 @@ while ( <STDIN> ){
 	    print make_list_of_par_sets();
 	}
 	else{
-	    print "Error: unknown qualifier after =INPUT: -$type-\n";
+	    die "Error: unknown qualifier after =INPUT: -$type-\n";
 	}
     }
 }
@@ -175,6 +175,209 @@ sub make_list_of_distributions {
     return $code;
 
 } # end of make_list_of_distributions()
+
+##############################################################################
+#
+# Make subroutine for setting parameters in distribution objects
+#
+sub make_list_of_distr_sets {
+
+    my $set_commands;
+    my $code_unsupported;
+    my $code;
+
+    # print info on screen
+    print STDERR "Set commands for Distributions:\n" if $VERBOSE;
+
+
+
+
+
+    # Read all header files 
+    foreach my $hfile (@methods_h_files) {
+
+	# Read content of header file
+	open H, "< $methods_dir/$hfile" or  die ("can't open file: $methods_dir/$hfile");
+	my $content = '';
+	while (<H>) { $content .= $_; } 
+	close H;
+
+	# We skip over all header files that do not correspond
+	# to a method.
+	next unless $content =~ /[^\n]\s*=METHOD\s+(\w+)/;
+
+	# ID for method
+	print STDERR "  $1: " if $VERBOSE;
+	my $method = "\L$1";
+
+	# Remove all comments and empty lines ...
+	$content =~ s {/\*.*?\*/} []gsx;
+	$content =~ s /\n\s*\n/\n/gsx;
+
+	# Split into lines ...
+	my @lines = split /\n/, $content;
+
+	# Get all set calls
+	foreach my $l (@lines) {
+	    next unless $l =~ /^\s*(\w*\s+)unur_$method\_set_(\w+)\s*\((.+)([^\s])\s*$/; 
+
+	    # name of set command
+	    my $command = $2;
+
+	    # list of arguments
+	    my $args = $3;
+
+	    # Check syntax of set command
+	    if ( $4 ne ';' ) {
+		# last character must be a ';'
+		die "Unknown syntax (terminating ';' missing) in $hfile:\n$l\n";
+	    }
+	    if ( $1 !~ /^int\s+$/ ) {
+		# type must be 'int'
+		die "Unknown syntax (function type) in $hfile:\n$l\n";
+	    }
+	    if ( unmatched_parenthesis($l) ) {
+		# parenthesis must match
+		die "Unknown syntax (umatched parenthesis) in $hfile:\n$l\n";
+	    }
+
+	    # print name of parameter
+	    print STDERR "$command " if $VERBOSE;
+
+	    # process list of args
+	    $args =~ s/\)\s*$//;             # remove closing parenthesis
+	    my @args_list = split /\,/, $args;
+
+	    # first argument must be of type UNUR_PAR
+	    my $a = shift @args_list;
+	    unless ($a =~ /UNUR_PAR/) {
+		die "Unknown syntax (first argument not of type UNUR_PAR) in $hfile:\n$l\n";
+	    }
+
+	    # number of arguments
+	    my $n_args = $#args_list+1;
+
+	    # get type of arguments
+	    my $type_args = "";
+	    foreach my $a (@args_list) {
+		my $t;
+		# type of argument
+		if    ($a =~ /double/)   { $t = 'd'; }
+		elsif ($a =~ /int/)      { $t = 'i'; }
+		elsif ($a =~ /unsigned/) { $t = 'u'; }
+		elsif ($a =~ /char/)     { $t = 'c'; }
+		else                     { $t = '?'; }
+
+		# arrays are indicated by capital letters
+		if ($a =~ /\*/ or $a =~ /\[/) {
+		    # this is interprated as list
+		    $t = "\U$t";
+		}
+		$type_args .= $t;
+	    }
+
+	    # make set calls
+	    my $set;
+	    my $args_comment;
+
+	    # beginning of case
+	    $args_comment = "\t /* n = $n_args; type = $type_args: $args*/\n";
+	    $set .= "\t\t\t $args_comment";
+
+	    # use keyword "void" when no argument is required
+	    $type_args = "void" if $type_args eq "";
+
+	    # we support the following cases:
+	    #   void   ... no argument required
+	    #   "i"    ... one argument of type int required
+	    #   "u"    ... one argument of type unsigned required
+	    #   "d"    ... one argument of type double required 
+	    #   "dd"   ... two arguments of type double required 
+	    #   "iD"   ... one argument of type int and a list of doubles required
+	    #              (the first argument is considered as size of the double array
+	    #   "Di"   ... a list of doubles and one argument of type int required
+	    if ($type_args =~ /^(void|i|u|d|dd|iD|Di)$/) {
+		my $type = $1;
+		$set .= "\t\t\t\t result = _unur_str_par_set_$type(par,key,type_args,args,unur_$method\_set_$command);\n";
+		$set_commands->{$method}->{$command} = $set;
+
+	    }
+
+	    else {
+		# cannot handle this set command
+		$code_unsupported .= $args_comment;
+		$unsupported .= "  unur_$method\_set_$command()\n"
+	    }
+	}
+
+	# end of method
+	print STDERR "\n" if $VERBOSE;
+    }
+
+    # print info on screen
+    print STDERR "\n" if $VERBOSE;
+
+
+    # get list of all methods 
+    my @method_list = sort (keys %{$set_commands});
+
+    # set result indicator
+    $code .= "\t result = FALSE;\n\n";
+
+    # make switch for methods
+    $code .= "\t switch (par->method) {\n";
+
+    foreach my $m (@method_list) {
+
+	# make list of set commands for method 
+	my @command_list = sort (keys %{$set_commands->{$m}});
+
+	# make label for method
+	$code .= "\t case UNUR_METH_\U$m:\n";
+	
+	# make switch for first letter of key name
+	$code .= "\t\t switch (*key) {\n";
+
+	my $last_char;
+
+	foreach my $c (@command_list) {
+
+	    my $char = substr $c,0,1;
+
+	    if ($char ne $last_char) {
+		$code .= "\t\t\t break;\n" if $last_char;
+		$code .= "\t\t case '$char':\n";
+		$last_char = $char;
+	    }
+
+	    $code .= "\t\t\t if ( !strcmp(key, \"$c\") ) {\n";
+	    $code .= $set_commands->{$m}->{$c};
+	    $code .= "\t\t\t\t break;\n";
+	    $code .= "\t\t\t }\n";
+	}
+
+	# end of switch for first letter
+	$code .= "\t\t }\n";
+
+    }
+
+    # end of switch for methods
+    $code .= "\t }\n";
+
+
+    # add comment on unsupported code into C file
+    $code .= "\n\t /* Unsupported set commands: */\n $code_unsupported\n";
+
+
+
+	
+    $code = "";
+
+
+    # Return result
+    return $code;
+
+} # end of make_list_of_distr_sets() 
 
 ##############################################################################
 #
@@ -433,6 +636,21 @@ sub make_list_of_par_sets {
 
 } # end of make_list_of_par_sets() 
 
+##############################################################################
+#
+# Simple test for unmatched parenthesis.
+# It returns the number of opening parenthesis `(' minus the number
+# of closing parenthesis `)' in argument $_.
+#
+sub unmatched_parenthesis {
+    my $open = 0;   # number of unmatched `('
+
+    ++$open while /\(/g;
+    --$open while /\)/g;
+
+    return $open;
+} # end of unmachted_parenthesis()
+
 
 
 
@@ -503,19 +721,4 @@ sub distr_info{
 ##############################################################################
 
 
-
-##############################################################################
-#
-# Simple test for unmatched parenthesis.
-# It returns the number of opening parenthesis `(' minus the number
-# of closing parenthesis `)' in argument $_.
-#
-sub unmatched_parenthesis {
-    my $open = 0;   # number of unmatched `('
-
-    ++$open while /\(/g;
-    --$open while /\)/g;
-
-    return $open;
-} # end of unmachted_parenthesis()
 

@@ -170,13 +170,6 @@ static int _unur_tabl_run_dars( struct unur_par *par, struct unur_gen *gen );
 /* but instead of the iteration in [1] use "arcmean".                        */
 /*---------------------------------------------------------------------------*/
 
-static int 
-_unur_tabl_split_b_starting_intervals( struct unur_par *par, struct unur_gen *gen );
-/*---------------------------------------------------------------------------*/
-/* split starting intervals according to [1]                                 */
-/* SPLIT B, but instead of the iteration in [1] use "arcmean".               */
-/*---------------------------------------------------------------------------*/
-
 static int
 _unur_tabl_split_interval( struct unur_gen *gen, struct unur_tabl_interval *iv, 
 			   double x, double fx, unsigned split_mode );
@@ -909,8 +902,7 @@ _unur_tabl_init( struct unur_par *par )
      /*----------------------------------------------------------------------*/
 { 
   struct unur_gen *gen;
-/*    struct unur_tabl_interval *iv; */
-  int i;
+  int i,k;
 
   /* check arguments */
   CHECK_NULL(par,NULL);
@@ -957,14 +949,14 @@ _unur_tabl_init( struct unur_par *par )
       /* make initial guide table */
       _unur_tabl_make_guide_table(gen);
   
-  //      /* check if DARS was completed */
-  //      if (GEN.n_segs < GEN.max_segs) {
-  //  	/* ran ARS instead */
-  //	for (k=0; k<5; k++)
-  //	  _unur_sample_cont(gen);
-  //      }
-  //      else
-  //	break;
+      /* check if DARS was completed */
+      if (GEN.n_ivs < GEN.max_ivs) {
+	/* ran ARS instead */
+	for (k=0; k<5; k++)
+	  _unur_sample_cont(gen);
+      }
+      else
+	break;
     }
 
 #ifdef UNUR_ENABLE_LOGGING
@@ -991,42 +983,6 @@ _unur_tabl_init( struct unur_par *par )
     }
 #endif
   }
-
-
-
-
-#if 0
-  /* we need the total area below the hat and below the squeeze */
-  GEN.Atotal = 0.;
-  GEN.Asqueeze = 0.;
-  for (iv = GEN.iv; iv != NULL; iv = iv->next ) {
-    COOKIE_CHECK(iv,CK_TABL_IV,0);
-    GEN.Atotal += iv->Ahat;
-    GEN.Asqueeze += iv->Asqueeze;
-  }
-
-  /* split according to [1], run SPLIT B */
-  if (par->variant & TABL_VARFLAG_USEDARS)
-    while ( (GEN.n_ivs < PAR.n_starting_cpoints)
-	    && (GEN.max_ratio * GEN.Atotal > GEN.Asqueeze) )
-      if (!_unur_tabl_split_b_starting_intervals(par,gen)) {
-	free(par); _unur_tabl_free(gen);
-	return NULL;
-      }
-
-  /* make initial guide table */
-  _unur_tabl_make_guide_table(gen);
-
-#ifdef UNUR_ENABLE_LOGGING
-  /* write info into log file */
-  if (gen->debug)
-    _unur_tabl_debug_init_finished(par,gen);
-#endif
-
-#endif
-
-
-
 
   /* free parameters */
   free(par);
@@ -1863,64 +1819,6 @@ _unur_tabl_run_dars( struct unur_par *par, struct unur_gen *gen )
   return 1;
 
 } /* end of _unur_tabl_run_dars() */
-
-/*---------------------------------------------------------------------------*/
-
-int
-_unur_tabl_split_b_starting_intervals( struct unur_par *par, 
-				       struct unur_gen *gen )
-     /*----------------------------------------------------------------------*/
-     /* split starting intervals according to [1]                            */
-     /* SPLIT B, but instead of the iteration in [1] use "arcmean".          */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   par ... pointer to parameter list                                  */
-     /*   gen ... pointer to generator object                                */
-     /*                                                                      */
-     /* return:                                                              */
-     /*   1 ... success                                                      */
-     /*   0 ... error                                                        */
-     /*----------------------------------------------------------------------*/
-{
-  struct unur_tabl_interval *iv;
-  double Amean;  /* mean area between hat and squeeze in slope */
-  
-  /* check arguments */
-  CHECK_NULL(par,0);  COOKIE_CHECK(par,CK_TABL_PAR,0);
-  CHECK_NULL(gen,0);  COOKIE_CHECK(gen,CK_TABL_GEN,0);
-
-  /* compute mean area between squeeze and hat for each interval */
-  Amean = 0.;
-  for (iv = GEN.iv; iv != NULL; iv = iv->next ) {
-    COOKIE_CHECK(iv,CK_TABL_IV,0);
-    Amean += iv->Ahat - iv->Asqueeze;
-  }
-  Amean /= GEN.n_ivs;
-
-  /* now split intervals */
-  for (iv = GEN.iv; iv != NULL; iv = iv->next ) {
-    COOKIE_CHECK(iv,CK_TABL_IV,0);
-    if ((iv->Ahat - iv->Asqueeze) >= Amean) {
-      /* new point instead of the interation of [1] we use "arcmean" */
-
-      switch (_unur_tabl_split_interval( gen, iv, 0., 0., TABL_VARFLAG_SPLIT_ARC )) {
-      case 1:  /* splitting succesful */
-      case -1: /* interval chopped */
-	break; /* nothing to do */
-      case 0:  /* error (slope not monotonically decreasing) */
-	return 0;
-      }
-      
-      if (GEN.n_ivs >= PAR.n_starting_cpoints)
-	/* no more intervals, yet */
-	break;
-    }
-  }
-
-  /* o.k. */
-  return 1;
-
-} /* end of _unur_tabl_split_b_starting_intervals() */
 
 /*****************************************************************************/
 

@@ -62,34 +62,34 @@ my $logo = <<EOX;
 EOX
 
 my $links = <<EOX;
-<TABLE WIDTH='100%' BORDER='0' CELLSPACING='2'>
+"<TABLE WIDTH='100%' BORDER='0' CELLSPACING='2'>
   <TR> 
+    <TD WIDTH='20%' BGCOLOR='#1E426E'> 
+      <A HREF='/anuran/index.html'>
+      <DIV ALIGN='CENTER'>
+      <FONT FACE='Arial, Helvetica, sans-serif' SIZE='2' COLOR='#FFFFFF'>
+      <B>ANURAN</B></FONT></A></DIV>
+    </TD>
     <TD WIDTH='20%' BGCOLOR='#BCD2EE'> 
       <DIV ALIGN='CENTER'>
       <FONT FACE='Arial, Helvetica, sans-serif' SIZE='2' COLOR='#1E426E'>
-      <B>ANURAN</B></FONT></DIV>
+      <B>Code Generator</B></FONT></DIV>
     </TD>
     <TD WIDTH='20%' BGCOLOR='#1E426E'> 
       <DIV ALIGN='CENTER'>
-      <A HREF='./cgi-bin/anuran.pl'>
-      <FONT FACE='Arial, Helvetica, sans-serif' SIZE='2' COLOR='#FFFFFF'>
-      <B>Code Generator</B></FONT></A></DIV>
-    </TD>
-    <TD WIDTH='20%' BGCOLOR='#1E426E'> 
-      <DIV ALIGN='CENTER'>
-      <A HREF='./project.html'>
+      <A HREF='/anuran/project.html'>
       <FONT FACE='Arial, Helvetica, sans-serif' SIZE='2' COLOR='#FFFFFF'>
       <B>Project</B></FONT></A></DIV>
     </TD>
     <TD WIDTH='20%' BGCOLOR='#1E426E'> 
       <DIV ALIGN='CENTER'>
-      <A HREF='../arvag/software.html'>
+      <A HREF='/arvag/software.html'>
       <FONT FACE='Arial, Helvetica, sans-serif' SIZE='2' COLOR='#FFFFFF'>
       <B>Other Software</B></FONT></A></DIV>
     </TD>
     <TD WIDTH='20%' BGCOLOR='#1E426E'> 
       <DIV ALIGN='CENTER'>
-      <A HREF='../arvag/index.html'>
+      <A HREF='/arvag/index.html'>
       <FONT FACE='Arial, Helvetica, sans-serif' SIZE='2' COLOR='#FFFFFF'>
       <B>ARVAG</B></FONT></A></DIV>
     </TD>
@@ -202,7 +202,7 @@ sub anuran_start
 
 	# HTML header and title
 	start_html(-title  =>'ANURAN Test Page',
-		   -author =>'unuran\@statistik.wu-wien.ac.at',
+		   -author =>'anuran\@statistik.wu-wien.ac.at',
 		   -meta   =>{'keywords'=>'nonuniform random number generator',
 			      'copyright'=>'copyright 2001 Institut fuer Statistik, WU Wien'},
 		   -BGCOLOR=>'#FFFFF5', 
@@ -221,7 +221,9 @@ sub anuran_start
 
 	# Heading
 	h1('Automatic Code Generator'),
-	b('Experimental version'),
+	h2('Experimental version'),
+	b('Resulting code is reliable but should used with care!'),br
+	b('There is no message when the code generator has failed. There is simply no output.'),br,
 
 	# ruler
 	p().hr().p();

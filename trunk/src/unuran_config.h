@@ -109,9 +109,6 @@
 /*     Use a pointer to a routine from the plab library                      */
 /*     (see http://random.mat.sbg.ac.at/ftp/pub/software/gen/)               */
 /*                                                                           */
-/* there is no need to change the following two lines!                       */
-#define UNUR_URNG_POINTER  2     /* use a pointer to a routine               */
-#define UNUR_URNG_PRNG     3     /* use a pointer to gen. from prng-2.2      */
 /*---------------------------------------------------------------------------*/
 
 /* set type of uniform generator                                             */

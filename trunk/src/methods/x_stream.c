@@ -109,6 +109,8 @@ unur_set_stream( FILE *new_stream )
      /*----------------------------------------------------------------------*/
 {
   FILE * previous_stream;
+
+  _unur_check_NULL( GENID_UNKNOWN,new_stream,NULL );
   
   previous_stream = unur_get_stream();
   unur_stream = new_stream;

@@ -38,41 +38,72 @@
 
 /*---------------------------------------------------------------------------*/
 
-#include <stdio.h>
+/*
+  Debugging
 
-/*---------------------------------------------------------------------------*/
-/* set debugging flag for generator                                          */
-/*
- =INT
- */
-int unur_set_debug( UNUR_PAR *parameters, unsigned debug );
-int unur_chg_debug( UNUR_GEN *generator, unsigned debug );
-int unur_set_default_debug( unsigned debug );
-/*
- =END
- */
+  The UNURAN library has several debugging levels which can be
+  switched on/off by debugging flags. This debugging feature can be
+  enabled by defining the macro @code{UNUR_ENABLE_LOGGING} in unuran_config.h.
+  The debugging levels range from print a short description of the build
+  generator object to a detailed description of hat functions til
+  tracing the sampling routines. The output is print onto the output
+  stream obtained by unur_get_stream() (see also ?).
+  These flags can be set or changed by the respective calls
+  unur_set_debug() and unur_chg_debug() independently for each generator. 
+  The default debugging flags are given by the macro
+  @code{UNUR_DEBUGFLAG_DEFAULT} in unuran_config.h.
+  This default can be overwritten at run time by a
+  unur_set_default_debug() call.
+  
+  Off course these debugging flags
+  depend on the chosen method. Since most of these are merely for
+  debugging the library itself, a description of the flags are given
+  in the corresponding source files of the method.
+  Nevertheless the following flags can be used with all methods:
+*/
 
 /* common debug flags                                                        */
-#define UNUR_DEBUG_INIT    0x00000001u    /* bit  01 ... pameters of generator */
+#define UNUR_DEBUG_OFF     (0u)       /* switch off debugging information    */    
+#define UNUR_DEBUG_ALL     (~0u)      /* write all avaivable information     */
+
+#define UNUR_DEBUG_INIT    0x00000001u    /* bit  01 ... parameters of gen.  */
 #define UNUR_DEBUG_SETUP   0x00000fffu    /* bits 02-12 ... setup            */
 #define UNUR_DEBUG_ADAPT   0x00fff000u    /* bits 13-24 ... adaptive steps   */
 #define UNUR_DEBUG_SAMPLE  0xff000000u    /* bits 25-32 ... trace sampling   */
 
-#define UNUR_DEBUG_OFF     (0u)       /* switch off debugging information    */    
-#define UNUR_DEBUG_ALL     (~0u)      /* write all avaivable information     */
+/*
+  Almost all routines check a given pointer they read from or write
+  to the given adress. This does not hold for time-critical routines
+  like all sampling routines. Then your are responsible for checking a
+  pointer that is returned from a unur_init() or unur_reinit() call.
+  However it is possible to turn on checking for invalid NULL pointers
+  even in such time-critical routines by defining
+  @code{UNUR_ENABLE_CHECKNULL} in unuran_config.h.
+
+  Another debugging tool used in the library are magic cookies that
+  validate a given pointer. It produces an error whenever a given
+  pointer points to an object that is invalid in the context.
+  The usage of magic cookies can be switched on by defining
+  @code{UNUR_COOKIES} in unuran_config.h.
+*/
 
 /*---------------------------------------------------------------------------*/
-/* global variable used to record errors                                     */
-extern unsigned unur_errno;
+/* set debugging flag for generator                                          */
 
-/*---------------------------------------------------------------------------*/
-/* manipulate output stream                                                  */
-FILE *unur_set_stream( FILE *new_stream );
-FILE *unur_get_stream( void );
+int unur_set_debug( UNUR_PAR *parameters, unsigned debug );
+/*
+  Set debugging flags for generator.
+*/
 
-/*---------------------------------------------------------------------------*/
-/* warnings and error messages for given error number                        */
-const char *unur_get_strerror ( const int unur_errno );
+int unur_chg_debug( UNUR_GEN *generator, unsigned debug );
+/*
+  Change debugging flags for generator.
+*/
+
+int unur_set_default_debug( unsigned debug );
+/*
+  Overwrite the default debugging flag.
+*/
 
 /*---------------------------------------------------------------------------*/
 

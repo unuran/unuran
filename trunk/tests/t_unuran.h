@@ -34,8 +34,9 @@
 #define T_SROU
 
 /* distributions                                                             */
-#define D_NORMAL
+#define D_BETA
 #define D_GAMMA
+#define D_NORMAL
 
 /*---------------------------------------------------------------------------*/
 /* global variables                                                          */
@@ -106,6 +107,9 @@ void do_compare_sequences( int line, double *a, double *b, int n );
 #define check_pval(gen,pval,trial) \
   do {do_check_pval(__LINE__,(gen),(pval),(trial)); } while(0)
 void do_check_pval( int line, UNUR_GEN *gen, double pval, int trial );
+
+/* print name of distribution */
+void print_distr_name( UNUR_DISTR *distr, const char *genid );
 
 /* print p-value of statistical test */
 void print_pval( double pval, int trial );

@@ -34,12 +34,44 @@ void make_list_of_distributions( void )
   n_distr = 0;
   list = list_of_distr;
 
-  fpar[0] = 2.;
-  list->distr = unur_distr_student(fpar,1);
+#ifdef D_BETA
+  /** Beta distribution **/
+  fpar[0] = 1.;
+  fpar[1] = 2.;
+  list->distr = unur_distr_beta(fpar,2);
   list->type  = T_TYPE_TDR;
-  list->c_max = -0.5;
+  list->c_max = 0.;
   ++n_distr; ++list;
 
+  fpar[0] = 1.;
+  fpar[1] = 5.;
+  list->distr = unur_distr_beta(fpar,2);
+  list->type  = T_TYPE_TDR;
+  list->c_max = 0.;
+  ++n_distr; ++list;
+
+  fpar[0] = 1.;
+  fpar[1] = 100.;
+  list->distr = unur_distr_beta(fpar,2);
+  list->type  = T_TYPE_TDR;
+  list->c_max = 0.;
+  ++n_distr; ++list;
+
+  fpar[0] = 5.;
+  fpar[1] = 100.;
+  list->distr = unur_distr_beta(fpar,2);
+  list->type  = T_TYPE_TDR;
+  list->c_max = 0.;
+  ++n_distr; ++list;
+
+  fpar[0] = 1000.;
+  fpar[1] = 1000.;
+  list->distr = unur_distr_beta(fpar,2);
+  list->type  = T_TYPE_TDR;
+  list->c_max = 0.;
+  ++n_distr; ++list;
+
+#endif
 
 #ifdef D_GAMMA
   /** Gamma distributions **/

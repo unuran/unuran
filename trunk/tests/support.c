@@ -90,26 +90,34 @@ void do_compare_sequences( int line, double *a, double *b, int n )
 /* check p-value of statistical test */
 void do_check_pval( int line, UNUR_GEN *gen, double pval, int trial )
 {
-  int i,n_fpar;
-  double *fpar;
-  UNUR_DISTR *distr;
-
   fprintf(TESTLOG,"line %4d: ",line);
   print_pval(pval,trial);
 
   /* print distribution name */
-  distr = unur_get_distr(gen);
+  fprintf(TESTLOG,"\t");
+  print_distr_name( unur_get_distr(gen), unur_get_genid(gen) );
+  fprintf(TESTLOG,"\n");
+
+} /* end of do_check_pval() */
+  
+/*---------------------------------------------------------------------------*/
+
+/* print name of distribution */
+void print_distr_name( UNUR_DISTR *distr, const char *genid )
+{
+  int i,n_fpar;
+  double *fpar;
+
   n_fpar = unur_distr_cont_get_pdfparams( distr, &fpar );
-  fprintf(TESTLOG,"\t%s: %s (",unur_get_genid(gen),unur_distr_get_name(distr));
+  fprintf(TESTLOG,"%s: %s (",genid,unur_distr_get_name(distr));
   if (n_fpar) {
     fprintf(TESTLOG,"%g",fpar[0]);
     for (i=1; i<n_fpar; i++)
       fprintf(TESTLOG,", %g",fpar[i]);
   }
-  fprintf(TESTLOG,")\n");
+  fprintf(TESTLOG,")");
+} /* end of print_distr_name() */
 
-} /* end of do_check_pval() */
-  
 /*---------------------------------------------------------------------------*/
 
 /* print p-value of statistical test */

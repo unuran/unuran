@@ -47,7 +47,7 @@ void test_srou_sample( void );
 
 void test_srou_validate( void );
 void test_srou_validate_chi2( UNUR_DISTR *distr );
-void run_chi2( UNUR_PAR *par, int line );
+void run_chi2( UNUR_PAR *par, UNUR_DISTR *distr, int line );
 
 double pdf( double x, UNUR_DISTR *distr );
 
@@ -267,12 +267,24 @@ void test_srou_chg( void )
 
 void test_srou_init( void )
 {
-  /* nothing to do */
+  UNUR_DISTR *distr;
+  UNUR_PAR *par;
 
+  /* start test */
   printf("[init ");  fflush(stdout);
   fprintf(TESTLOG,"\n[init]\n");
 
   test_failed = 0;
+
+  /* check error handling */
+  distr = unur_distr_cont_new();
+  unur_distr_cont_set_pdf(distr,pdf);
+  unur_distr_cont_set_mode(distr,0.);
+  unur_distr_cont_set_pdfarea(distr,1.);
+  par = unur_srou_new(distr);
+  check_expected_NULL( unur_init(par) );
+  check_errorcode( UNUR_ERR_GEN_DATA );
+  unur_distr_free(distr);
 
   (test_failed) ? printf("--> failed] ") : printf("--> ok] ");
 
@@ -498,7 +510,7 @@ void test_srou_validate(void)
 
   /* run level 2 test on collected p-values */
   run_level2(__LINE__, list_pvals, n_pvals);
-    
+
   /* test finished */
   test_ok &= (test_failed > FAILED_LIMIT) ? 0 : 1;
   (test_failed>FAILED_LIMIT) ? printf(" --> failed] ") : printf(" --> ok] ");
@@ -514,12 +526,12 @@ void test_srou_validate_chi2( UNUR_DISTR *distr )
 
   /* basic algorithm */
   par = unur_srou_new(distr);
-  run_chi2(par,__LINE__); 
+  run_chi2(par,distr,__LINE__); 
 
   /* use mirror principle */
   par = unur_srou_new(distr);
   unur_srou_set_usemirror(par,1);
-  run_chi2(par,__LINE__); 
+  run_chi2(par,distr,__LINE__); 
 
   /* get cdf at mode */
   cdfatmode = unur_distr_cont_cdf( unur_distr_cont_get_mode(distr), distr );
@@ -531,13 +543,13 @@ void test_srou_validate_chi2( UNUR_DISTR *distr )
   par = unur_srou_new(distr);
   unur_srou_set_cdfatmode(par,cdfatmode);
   unur_srou_set_usesqueeze(par,1);
-  run_chi2(par,__LINE__); 
+  run_chi2(par,distr,__LINE__); 
 
 } /* end of test_srou_validate_chi2() */  
 
 /*...........................................................................*/
 
-void run_chi2( UNUR_PAR *par, int line )
+void run_chi2( UNUR_PAR *par, UNUR_DISTR *distr, int line )
 {
   UNUR_GEN *gen;
   double pval;
@@ -547,6 +559,10 @@ void run_chi2( UNUR_PAR *par, int line )
   if (gen==NULL) {
     /* this must not happen */
     ++test_failed;
+    fprintf(TESTLOG,"line %4d: pval =     Initialization failed\t\t",line);
+    print_distr_name( distr,"");
+    fprintf(TESTLOG,"\n");
+    printf("0");
     return;
   }
 
@@ -576,9 +592,10 @@ void run_chi2( UNUR_PAR *par, int line )
 
 /*---------------------------------------------------------------------------*/
 
+/* pdf that does not work */
 double pdf( double x, UNUR_DISTR *distr )
 { 
-  return exp(-x*x/2.);
+  return ((x==0.) ? 0. : exp(-x*x/2.));
 } /* end of pdf */
 
 /*---------------------------------------------------------------------------*/

@@ -573,7 +573,8 @@ _unur_cstd_create( struct unur_par *par )
   gen->urng = par->urng;            /* pointer to urng                       */
 
   gen->urng_aux = NULL;             /* no auxilliary URNG required           */
-  gen->gen_aux = NULL;              /* no auxilliary generator objects       */
+  gen->gen_aux = NULL;              /* no auxilliary generator objects, yet
+				       (however, this might change!)         */
 
   /* return pointer to (almost empty) generator object */
   return(gen);

@@ -39,13 +39,19 @@
 /*---------------------------------------------------------------------------*/
 
 /* allocate memory for new vector structure */
-UNUR_VECTOR *unur_vector_new(int dim)
+UNUR_VECTOR *
+unur_vector_new(int dim)
 {
+  int i;
+ 
   UNUR_VECTOR *v;
   v = _unur_xmalloc(sizeof(UNUR_VECTOR));
 
   v->dim = dim;
   v->x = _unur_xmalloc(dim*sizeof(double));
+
+  /* setting all coordinates to 0 */
+  for (i=0; i<dim; i++) v->x[i]=0.;
 
   return v;
 }
@@ -53,7 +59,8 @@ UNUR_VECTOR *unur_vector_new(int dim)
 /*--------------------------------------------------------------------------*/
 
 /* free allocated memory used by vector structure */
-void unur_vector_free(UNUR_VECTOR *v)
+void 
+unur_vector_free(UNUR_VECTOR *v)
 {
   if (v) {
      if (v->x) free(v->x);
@@ -61,7 +68,43 @@ void unur_vector_free(UNUR_VECTOR *v)
      v=NULL;
   }
 }
-			  
+
+/*--------------------------------------------------------------------------*/
+
+/* calculation of vector norm */
+double 
+unur_vector_norm(UNUR_VECTOR *v)
+{
+  int i;
+  double norm=0.;
+
+  /* TODO: checking if v or v->x are NULL */
+
+  for (i=0; i<v->dim; i++) {
+    norm += v->x[i]*v->x[i];
+  }
+  norm = sqrt(norm);
+
+  return norm;
+}
+
+/*--------------------------------------------------------------------------*/
+
+/* calculation of scalar product */
+double 
+unur_vector_scalar_product(UNUR_VECTOR *v1, UNUR_VECTOR *v2)
+{
+  int i;
+  double scalar_product=0.;
+  
+  /* TODO: checking if vi or vi->x are NULL or have unequal dimensions */
+  
+  for (i=0; i<v1->dim; i++) {
+    scalar_product += v1->x[i]*v2->x[i];
+  }
+
+  return scalar_product;
+}
 
 /*--------------------------------------------------------------------------*/
 

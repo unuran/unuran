@@ -48,4 +48,11 @@ UNUR_VECTOR *unur_vector_new(int dim);
 void unur_vector_free(UNUR_VECTOR *v);
 /* free allocated memory used by vector structure */
 
+double unur_vector_norm(UNUR_VECTOR *v);
+/* calculation of vector norm */
+
+double unur_vector_scalar_product(UNUR_VECTOR *v1, UNUR_VECTOR *v2);
+/* calculation of scalar product */
+
+
 /*---------------------------------------------------------------------------*/

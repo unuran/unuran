@@ -66,7 +66,8 @@ _unur_vector_free(double *v)
 
 /* calculation of euclidean (L2) norm of vector */
 /* avoid overflow by using                      */
-/*   ||v|| = max(|v_i|) * sqrt(sum v_i*v_i)     */
+/*   ||v|| = v_m * sqrt(sum (v_i/v_m)^2)        */
+/* where v_m = max |v_i|                        */
 double 
 _unur_vector_norm(int dim, double *v)
 {

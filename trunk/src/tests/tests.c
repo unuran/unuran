@@ -77,7 +77,7 @@ unur_run_tests( struct unur_par *par, unsigned tests)
   struct unur_gen *gen = NULL;
 
   /* check arguments */
-  _unur_check_NULL(par->genid,par,/*void*/);
+  _unur_check_NULL("Tests",par,/*void*/);
 
   /* print info about method */
   if (! _unur_print_method(par))

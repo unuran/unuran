@@ -58,6 +58,7 @@ static const char unknown_distr_name[] = "unknown";
 /* covariance matrix will not be inverted if its determinant is smaller      */
 #define COVARIANCE_DETMIN  (1.e-10) 
 
+
 /*---------------------------------------------------------------------------*/
 
 static void _unur_distr_cvec_free( struct unur_distr *distr );
@@ -541,25 +542,23 @@ unur_distr_cvec_set_covar( struct unur_distr *distr, const double *covar )
   /* mark as unknown */
   distr->set &= ~(UNUR_DISTR_SET_COVAR | UNUR_DISTR_SET_CHOLESKY | UNUR_DISTR_SET_COVAR_INV);
 
-  /* we have to allocate memory first */
-  if (DISTR.covar == NULL)
-    DISTR.covar = _unur_malloc( dim * dim * sizeof(double) );
-  if (DISTR.cholesky == NULL)
-    DISTR.cholesky = _unur_malloc( dim * dim * sizeof(double) );   
-
-  /* if covar == NULL --> use identity matrix */
-  if (covar==NULL) { 
-    for (i=0; i<dim; i++) { 
-      for (j=0; j<dim; j++) {
-         DISTR.covar[idx(i,j)] = (i==j) ? 1. : 0.;
-         DISTR.cholesky[idx(i,j)] = (i==j) ? 1. : 0.;
-      } 
-    } 
-  } 
-
+  if (DISTR.covar==NULL) DISTR.covar = _unur_malloc(dim*dim*sizeof(double));
+  
+  /* no covar matrix given, use default identity matrix */
+  /* better to use conditional if's ? */
+  if (covar == NULL) {
+    for (i=0; i<dim; i++) {
+    for (j=0; j<dim; j++) {
+      DISTR.covar[idx(i,j)]=0.;
+      if (i==j) DISTR.covar[idx(i,j)] = 1.;
+    }}
+  }
   /* covariance matrix given --> copy data */
   else {
-    
+    /* copy data */
+    memcpy( DISTR.covar, covar, dim * dim * sizeof(double) );
+  }
+  
     /* check covariance matrix: diagonal entries > 0 */
     for (i=0; i<dim*dim; i+= dim+1)
       if (covar[i] <= 0.) {
@@ -570,23 +569,21 @@ unur_distr_cvec_set_covar( struct unur_distr *distr, const double *covar )
     /* check for symmetry */
     for (i=0; i<dim; i++)
       for (j=i+1; j<dim; j++)
-	if (!_unur_FP_same(covar[i*dim+j],covar[j*dim+i])) {
+	if (!_unur_FP_same(covar[idx(i,j)],covar[idx(j,i)])) {
 	  _unur_error(distr->name ,UNUR_ERR_DISTR_DOMAIN,
 	              "covariance matrix not symmetric");
 	  return UNUR_ERR_DISTR_DOMAIN;
 	}
 
-    /* copy data */
-    memcpy( DISTR.covar, covar, dim * dim * sizeof(double) );
-
     /* compute Cholesky decomposition and check for positive definitness */
-    if (_unur_matrix_cholesky_decomposition(dim, covar, DISTR.cholesky) != UNUR_SUCCESS) {
+    if (DISTR.cholesky==NULL) DISTR.cholesky = _unur_malloc(dim*dim*sizeof(double));
+    _unur_matrix_cholesky_decomposition(dim, covar, DISTR.cholesky); 
+    if (DISTR.cholesky == NULL) {
       _unur_error(distr->name, UNUR_ERR_DISTR_DOMAIN, 
 		  "covariance matrix not positive definite");
       return UNUR_ERR_DISTR_DOMAIN;      
     }
 
-  }
 
   /* changelog */
   distr->set |= UNUR_DISTR_SET_COVAR | UNUR_DISTR_SET_CHOLESKY;

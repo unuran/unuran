@@ -233,7 +233,7 @@ static void _unur_ninv_debug_chg_truncated( const struct unur_gen *gen);
 #define CDF(x)    _unur_cont_CDF((x),(gen->distr))    /* call to CDF         */
 
 /*****************************************************************************/
-/**  User Interface                                                         **/
+/**  Public: User Interface (API)                                           **/
 /*****************************************************************************/
 
 struct unur_par *
@@ -814,6 +814,9 @@ unur_ninv_chg_pdfparams( struct unur_gen *gen, double *params, int n_params )
 
 } /* end of unur_ninv_chg_pdfparams() */
 
+
+/*****************************************************************************/
+/**  Private                                                                **/
 /*****************************************************************************/
 
 struct unur_gen *

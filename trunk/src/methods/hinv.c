@@ -253,7 +253,7 @@ static void _unur_hinv_debug_chg_truncated( const struct unur_gen *gen);
 
 
 /*****************************************************************************/
-/**  User Interface                                                         **/
+/**  Public: User Interface (API)                                           **/
 /*****************************************************************************/
 
 struct unur_par *
@@ -684,6 +684,9 @@ unur_hinv_chg_truncated( struct unur_gen *gen, double left, double right )
   
 } /* end of unur_hinv_chg_truncated() */
 
+
+/*****************************************************************************/
+/**  Private                                                                **/
 /*****************************************************************************/
 
 struct unur_gen *

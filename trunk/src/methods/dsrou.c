@@ -209,7 +209,7 @@ static void _unur_dsrou_debug_init( const struct unur_gen *gen, int is_reinit );
 /*---------------------------------------------------------------------------*/
 
 /*****************************************************************************/
-/**  User Interface                                                         **/
+/**  Public: User Interface (API)                                           **/
 /*****************************************************************************/
 
 struct unur_par *
@@ -590,6 +590,9 @@ unur_dsrou_upd_pmfsum( struct unur_gen *gen )
   return unur_distr_discr_upd_pmfsum( gen->distr );
 } /* end of unur_dsrou_upd_pmfsum() */
 
+
+/*****************************************************************************/
+/**  Private                                                                **/
 /*****************************************************************************/
 
 struct unur_gen *

@@ -154,7 +154,7 @@ static void _unur_hri_debug_sample( const struct unur_gen *gen,
 
 
 /*****************************************************************************/
-/**  User Interface                                                         **/
+/**  Public: User Interface (API)                                           **/
 /*****************************************************************************/
 
 struct unur_par *
@@ -315,6 +315,9 @@ unur_hri_chg_verify( struct unur_gen *gen, int verify )
 
 } /* end of unur_hri_chg_verify() */
 
+
+/*****************************************************************************/
+/**  Private                                                                **/
 /*****************************************************************************/
 
 struct unur_gen *

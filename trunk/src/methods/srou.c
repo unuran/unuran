@@ -236,7 +236,7 @@ static void _unur_srou_debug_init( const struct unur_gen *gen, int is_reinit );
 /*---------------------------------------------------------------------------*/
 
 /*****************************************************************************/
-/**  User Interface                                                         **/
+/**  Public: User Interface (API)                                           **/
 /*****************************************************************************/
 
 struct unur_par *
@@ -809,6 +809,9 @@ unur_srou_upd_pdfarea( struct unur_gen *gen )
   return unur_distr_cont_upd_pdfarea( gen->distr );
 } /* end of unur_srou_upd_pdfarea() */
 
+
+/*****************************************************************************/
+/**  Private                                                                **/
 /*****************************************************************************/
 
 struct unur_gen *

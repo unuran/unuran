@@ -174,7 +174,7 @@ static void _unur_ssr_debug_init( const struct unur_gen *gen, int is_reinit );
 /*---------------------------------------------------------------------------*/
 
 /*****************************************************************************/
-/**  User Interface                                                         **/
+/**  Public: User Interface (API)                                           **/
 /*****************************************************************************/
 
 struct unur_par *
@@ -670,6 +670,9 @@ unur_ssr_upd_pdfarea( struct unur_gen *gen )
   return unur_distr_cont_upd_pdfarea( gen->distr );
 } /* end of unur_ssr_upd_pdfarea() */
 
+
+/*****************************************************************************/
+/**  Private                                                                **/
 /*****************************************************************************/
 
 struct unur_gen *

@@ -4,7 +4,7 @@
 all: run rungen test something
 
 run: run.c ../src/unuran.h ../src/libunuran.la
-	../libtool gcc -I. -I.. -I../src -I../src/tests -Wall -g -O3 -o run run.c ../src/libunuran.la -lm -lprng
+	../libtool gcc -I. -I.. -I../src -I../src/tests -Wall -g -O3 -o run run.c ../src/libunuran.la -lm 
 
 mcrun: mcrun.c ../src/unuran.h ../src/libunuran.la
 	../libtool gcc -I. -I.. -I../src -I../src/tests -Wall -g -O3 -o mcrun mcrun.c ../src/libunuran.la -lm -lprng

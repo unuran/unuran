@@ -399,6 +399,12 @@ unur_distr_cont_set_pdfarea( struct unur_distr *distr, double area )
   CHECK_NULL(distr,0);
   COOKIE_CHECK(distr,CK_DISTR_CONT,0);
 
+  /* check new parameter for generator */
+  if (area <= 0.) {
+    _unur_warning(NULL,UNUR_ERR_SET_INVALID,"pdf area <= 0");
+    return 0;
+  }
+
   DISTR.area = area;
 
   /* changelog */

@@ -17,12 +17,6 @@ require "../read_PDF.pl";
 my $ACG = "../acg";
 
 # ----------------------------------------------------------------
-# Constants
-
-$sample_size = 10;
-$accuracy = 1.0e-7;
-
-# ----------------------------------------------------------------
 # Prefix for file names
 
 $file_prefix = "./run_test_acg";
@@ -52,6 +46,12 @@ my $make_test_codegen = "make_test_codegen.c";
 my $test_codegen = "test_codegen.c";
 
 # ----------------------------------------------------------------
+# Read data from test config file
+
+print_log("Read data ...\n\n");
+require $test_conf_file; 
+
+# ----------------------------------------------------------------
 # List of distributions
 my $DISTR = read_PDFdata('../..');
 
@@ -70,12 +70,6 @@ if ($DEBUG) {
 print_log("sample size = $sample_size\n");
 print_log("accuracy = $accuracy\n");
 print_log("languages = C, FORTRAN, JAVA\n\n");
-
-# ----------------------------------------------------------------
-# Get list of distributions 
-
-print_log("Read data ...\n\n");
-require $test_conf_file; 
 
 # ----------------------------------------------------------------
 # Check for missing CONTinuous distributions
@@ -141,7 +135,7 @@ my $test_nr = 0;
 $test_runs = 0;
 
 foreach my $distr (@distr_list) {
-    foreach my $gen (@method_list) {
+    foreach my $method (@method_list) {
 	
 	# Increment counter
 	++$test_nr;
@@ -158,19 +152,19 @@ foreach my $distr (@distr_list) {
 	# Get random variate generators
 	
 	# UNURAN version
-	my $test_name = make_UNURAN_gen(\$UNURAN_gen,"$distr $gen",$test_key,$seed);
+	my $test_name = make_UNURAN_gen(\$UNURAN_gen,"$distr $method",$test_key,$seed);
 	$UNURAN_main .= "\t$test_name ();\n";
 	
 	# C version
-	$test_name = make_C_gen(\$C_gen,"$distr $gen",$test_key,$seed);
+	$test_name = make_C_gen(\$C_gen,"$distr $method",$test_key,$seed);
 	$C_main .= "\t$test_name ();\n";
 	
 	# FORTRAN version
-	$test_name = make_FORTRAN_gen(\$FORTRAN_gen,"$distr $gen",$test_key,$seed);
+	$test_name = make_FORTRAN_gen(\$FORTRAN_gen,"$distr $method",$test_key,$seed);
 	$FORTRAN_main .= "      CALL $test_name\n";
 	
 	# JAVA version
-	$JAVA_main .= make_JAVA_gen(\$JAVA_gen,"$distr $gen",$test_key,$seed);
+	$JAVA_main .= make_JAVA_gen(\$JAVA_gen,"$distr $method",$test_key,$seed);
     }
 }
 
@@ -224,16 +218,21 @@ print_log("Run tests ...\n\n");
 open UNURAN, "$UNURAN_exec |" or die "cannot run $UNURAN_exec"; 
 open C, "$C_exec |" or die "cannot run $C_exec"; 
 open FORTRAN, "$FORTRAN_exec |" or die "cannot run $FORTRAN_exec"; 
+
 open JAVA, "java $JAVA_exec |" or die "cannot run $JAVA_exec"; 
+$HAVE_JAVA = ($?) ? 0 : 1;
 
 # Run generatores and compare output
 my $data_mode = 0;
-my $exitcode = 0;
+
+my $C_errors = 0;
+my $FORTRAN_errors = 0;
+my $JAVA_errors = 0;
 
 my $n_sample = 0;
 my $C_n_diffs = 0;
 my $FORTRAN_n_diffs = 0;
- my $JAVA_n_diffs = 0;
+my $JAVA_n_diffs = 0;
 
 while (my $UNURAN_out = <UNURAN>) {
     my $C_out = <C>;
@@ -254,6 +253,7 @@ while (my $UNURAN_out = <UNURAN>) {
 	    $JAVA_n_diffs = 0;
 	    
 	    $data_mode = 1;
+	    $errors = 0;
 	}
 	else {
 	    print_log("$UNURAN_out\n");
@@ -264,25 +264,29 @@ while (my $UNURAN_out = <UNURAN>) {
     # no more data, compute results
     if ($UNURAN_out eq "stop") {
 	$data_mode = 0;
+	my $errors = 0;
 	
 	if ($C_n_diffs > 0) {
-	    print_log("\t...  C Test FAILED\n");
-	    ++$errorcode;
+	    my $quote = 100.0 * $C_n_diffs / $n_sample;
+	    print_log("\t...  C Test FAILED  ($quote \%)\n");
+	    ++$C_errors;
+	    ++$errors;
 	}
 	if ($FORTRAN_n_diffs > 0) {
-	    print_log("\t...  FORTRAN Test FAILED\n");
-	    ++$errorcode;
+	    my $quote = 100.0 * $FORTRAN_n_diffs / $n_sample;
+	    print_log("\t...  FORTRAN Test FAILED  ($quote \%)\n");
+	    ++$FORTRAN_errors;
+	    ++$errors;
 	}
-	if ($JAVA_n_diffs > 0) {
-	    print_log("\t...  JAVA Test FAILED\n");
-	    ++$errorcode;
+	if ($HAVE_JAVA and $JAVA_n_diffs > 0) {
+	    my $quote = 100.0 * $JAVA_n_diffs / $n_sample;
+	    print_log("\t...  JAVA Test FAILED  ($quote \%)\n");
+	    ++$JAVA_errors;
+	    ++$errors;
 	}
 	
-	if ($errorcode == 0) {
+	unless ($errors) {
 	    print_log("\t...  PASSED\n") if $n_sample;
-	}
-	else {
-	    $exitcode = 1;
 	}
 
 	next;
@@ -313,7 +317,7 @@ while (my $UNURAN_out = <UNURAN>) {
 	print LOG "  FORTRAN: x    = $FORTRAN_x\tdifference = $FORTRAN_x_diff\n";
 	print LOG "  FORTRAN: pdfx = $FORTRAN_pdfx\tdifference = $FORTRAN_pdfx_diff\n";
     }
-    if ( !FP_equal($JAVA_x,$UNURAN_x) or !FP_equal($JAVA_pdfx,$UNURAN_pdfx) ) {
+    if ( $HAVE_JAVA and !FP_equal($JAVA_x,$UNURAN_x) or !FP_equal($JAVA_pdfx,$UNURAN_pdfx) ) {
 	++$JAVA_n_diffs;
 	print LOG "  JAVA: x    = $JAVA_x\tdifference = $JAVA_x_diff\n";
 	print LOG "  JAVA: pdfx = $JAVA_pdfx\tdifference = $JAVA_pdfx_diff\n";
@@ -330,15 +334,29 @@ close JAVA;
 # ----------------------------------------------------------------
 # End
 
-if ($exitcode) {
-    print_log("\n\tTEST(S) FAILED\n");
+my $errors = 0;
+if ($C_errors) {
+    print_log("\n\tC TEST(S) FAILED ($C_errors)\n");
+    ++$errors;
 }
-else {
+if ($FORTRAN_errors) {
+    print_log("\n\tFORTRAN TEST(S) FAILED ($FORTRAN_errors)\n");
+    ++$errors;
+}
+if ($JAVA_errors) {
+    print_log("\n\tJAVA TEST(S) FAILED ($JAVA_errors)\n");
+    ++$errors;
+}
+
+unless ($HAVE_JAVA) {
+    print_log("Cannot run JAVA tests!\n\n");
+}
+
+unless ($errors) {
     print_log("\n\tALL TESTS PASSED\n");
 }
-close LOG;
 
-exit $exitcode;
+exit ($errors ? 1 : 0);
 
 # ----------------------------------------------------------------
 # End
@@ -673,7 +691,7 @@ sub make_UNURAN_gen
 \tprintf("[$test_key] $distr\\n");
 \tprintf("start\\n");
 
-\tfor (i=0; i<10; i++) {
+\tfor (i=0; i<$sample_size; i++) {
 \t\tx = $gen_name ();
 \t\tfx = $pdf_name (x);
 \t\tprintf("%.17e  %.17e\\n",x,fx);
@@ -750,7 +768,7 @@ sub make_C_gen
 \tprintf("[$test_key] $distr\\n");
 \tprintf("start\\n");
 
-\tfor (i=0; i<10; i++) {
+\tfor (i=0; i<$sample_size; i++) {
 \t\tx = $gen_name ();
 \t\tfx = $pdf_name (x);
 \t\tprintf("%.17e  %.17e\\n",x,fx);

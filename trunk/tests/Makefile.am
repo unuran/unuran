@@ -22,6 +22,7 @@ endif
 
 
 check_PROGRAMS = \
+ t_urng \
  t_distr \
  t_distr_cemp \
  t_distr_cont \
@@ -83,6 +84,7 @@ EXTRA_DIST = \
  test_functionparser.m \
  make_test_files.pl \
  README.conf \
+ t_urng \
  t_distr.conf \
  t_distr_cemp.conf \
  t_distr_cont.conf \

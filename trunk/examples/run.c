@@ -31,14 +31,15 @@
 
 
 /* define which tests should run (1) or not (0) */
-#define RUN_DAU           1
-#define RUN_DIS           1
+#define RUN_DAU           0
+#define RUN_DIS           0
 
-#define RUN_UTDR          1
-#define RUN_AROU          1
-#define RUN_TDRSQRT       1
-#define RUN_TDRLOG        1
-#define RUN_TABL          1
+#define RUN_UTDR          0
+#define RUN_AROU          0
+#define RUN_SROU          1
+#define RUN_TDRSQRT       0
+#define RUN_TDRLOG        0
+#define RUN_TABL          0
 
 #define RUN_NORMAL        1
 #define RUN_GAMMA         1
@@ -46,9 +47,9 @@
 #define RUN_CAUCHY        1
 #define RUN_UNIFORM       1
 
-#define RUN_RECT          1
+#define RUN_RECT          0
 
-#define RUN_CSTD          1
+#define RUN_CSTD          0
 
 /*---------------------------------------------------------------------------*/
 
@@ -78,8 +79,8 @@ int main()
   /* ------------------------- */
 
   distr_normal = unur_distr_normal(NULL,0);
-  unur_distr_cont_set_domain(distr_normal,3,UNUR_INFINITY);
-  unur_distr_cont_set_pdfarea(distr_normal,0.01);
+  //  unur_distr_cont_set_domain(distr_normal,3,UNUR_INFINITY);
+  // unur_distr_cont_set_pdfarea(distr_normal,0.01);
 
 
   fpar[0] = 3.;
@@ -94,6 +95,7 @@ int main()
   distr_cauchy = unur_distr_cauchy(fpar,2);
 
   distr_uniform = unur_distr_uniform(NULL,0);
+/*    unur_distr_cont_set_mode(distr_uniform,0.); */
 
   /* ------------------------- */
 
@@ -214,6 +216,22 @@ int main()
 
 #endif
 
+#if RUN_SROU == 1
+
+  par = unur_srou_new(distr_normal);
+/*    unur_srou_set_Fmode(par,unur_cdf_normal(distr_normal->data.cont.mode, */
+/*  					  distr_normal->data.cont.params, */
+/*  					  distr_normal->data.cont.n_params)); */
+  unur_srou_set_usesqueeze(par,1);
+  unur_srou_set_usemirror(par,1);
+
+  /* run tests */
+  unur_run_tests(par,RUN_TESTS);
+
+  printf("\n------------------------------------------------------------\n\n");
+
+#endif
+
 #if RUN_TDRSQRT == 1
 
   par = unur_tdr_new(distr_normal);
@@ -291,6 +309,22 @@ int main()
   unur_arou_set_cpoints(par,30,NULL);
   unur_arou_set_max_sqhratio(par,0.99);
   unur_arou_set_usecenter(par,0);
+
+  /* run tests */
+  unur_run_tests(par,RUN_TESTS);
+
+  printf("\n------------------------------------------------------------\n\n");
+
+#endif
+
+#if RUN_SROU == 1
+
+  par = unur_srou_new(distr_gamma);
+/*    unur_srou_set_Fmode(par,unur_cdf_gamma(distr_gamma->data.cont.mode, */
+/*  					  distr_gamma->data.cont.params, */
+/*  					  distr_gamma->data.cont.n_params)); */
+  unur_srou_set_usesqueeze(par,1);
+  unur_srou_set_usemirror(par,1);
 
   /* run tests */
   unur_run_tests(par,RUN_TESTS);
@@ -386,6 +420,22 @@ int main()
 
 #endif
 
+#if RUN_SROU == 1
+
+  par = unur_srou_new(distr_beta);
+/*    unur_srou_set_Fmode(par,unur_cdf_beta(distr_beta->data.cont.mode, */
+/*  					  distr_beta->data.cont.params, */
+/*  					  distr_beta->data.cont.n_params)); */
+  unur_srou_set_usesqueeze(par,1);
+  unur_srou_set_usemirror(par,1);
+
+  /* run tests */
+  unur_run_tests(par,RUN_TESTS);
+
+  printf("\n------------------------------------------------------------\n\n");
+
+#endif
+
 #if RUN_TDRSQRT == 1
 
   /* get default parameters for new generator */
@@ -470,6 +520,22 @@ int main()
 
 #endif
 
+#if RUN_SROU == 1
+
+  par = unur_srou_new(distr_cauchy);
+/*    unur_srou_set_Fmode(par,unur_cdf_cauchy(distr_cauchy->data.cont.mode, */
+/*  					  distr_cauchy->data.cont.params, */
+/*  					  distr_cauchy->data.cont.n_params)); */
+  unur_srou_set_usesqueeze(par,1);
+  unur_srou_set_usemirror(par,1);
+
+  /* run tests */
+  unur_run_tests(par,RUN_TESTS);
+
+  printf("\n------------------------------------------------------------\n\n");
+
+#endif
+
 #if RUN_TDRSQRT == 1
 
   /* get default parameters for new generator */
@@ -542,6 +608,22 @@ int main()
   unur_arou_set_cpoints(par,30,NULL);
   unur_arou_set_max_sqhratio(par,1.);
   unur_arou_set_usecenter(par,0);
+
+  /* run tests */
+  unur_run_tests(par,RUN_TESTS);
+
+  printf("\n------------------------------------------------------------\n\n");
+
+#endif
+
+#if RUN_SROU == 1
+
+  par = unur_srou_new(distr_uniform);
+/*    unur_srou_set_Fmode(par,unur_cdf_uniform(distr_uniform->data.cont.mode, */
+/*  					  distr_uniform->data.cont.params, */
+/*  					  distr_uniform->data.cont.n_params)); */
+  unur_srou_set_usesqueeze(par,1);
+  unur_srou_set_usemirror(par,1);
 
   /* run tests */
   unur_run_tests(par,RUN_TESTS);

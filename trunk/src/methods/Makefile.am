@@ -14,6 +14,7 @@ libmethods_a_SOURCES = \
  distr.c \
  misc.c \
  arou.c \
+ srou.c \
  cstd.c \
  dau.c  \
  dis.c  \
@@ -28,6 +29,7 @@ pkginclude_HEADERS = \
  unur_distr.h \
  unur_misc.h  \
  unur_arou.h \
+ unur_srou.h \
  unur_cstd.h \
  unur_dau.h  \
  unur_dis.h  \

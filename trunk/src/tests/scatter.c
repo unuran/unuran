@@ -139,6 +139,7 @@ unur_make_scatterplot( struct unur_gen *gen )
     start = 1;
     skip = 1;
     break;
+  case UNUR_METH_SROU:
   case UNUR_METH_TDR:
   case UNUR_METH_UTDR:
     start = 1;
@@ -364,7 +365,7 @@ _unur_get_babygen( void )
     urngen = prng_new("LCG(1024,869,1,0)");
     if( urngen == NULL ) {
       /* some parameters invalid! */
-      unur_error("prng",UNUR_ERR_NULL,"Cannot set baby generator");
+      _unur_error("prng",UNUR_ERR_NULL,"Cannot set baby generator");
       return NULL;
     }
   }

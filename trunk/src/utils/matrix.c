@@ -383,7 +383,7 @@ _unur_matrix_LU_invert (int dim, double *LU, int *p, double *inverse)
 /*---------------------------------------------------------------------------*/
 
 int 
-_unur_matrix_invert_matrix(int dim, double *A, double detmin, double *Ainv, double *det)
+_unur_matrix_invert_matrix(int dim, const double *A, double detmin, double *Ainv, double *det)
      /*-------------------------------------------------------------------------*/
      /* Calculates the inverse matrix (by means of LU decomposition).         	*/
      /* If |det(A)| <= detmin a message is printed. 				*/

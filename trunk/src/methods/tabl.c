@@ -234,7 +234,7 @@ unur_tabl_new( struct unur_distr *distr )
   struct unur_par *par;
 
   /* check arguments */
-  CHECK_NULL(distr,NULL);
+  _unur_check_NULL( GENTYPE,distr,NULL );
 
   /* check distribution */
   if (distr->type != UNUR_DISTR_CONT) {
@@ -303,7 +303,7 @@ unur_tabl_set_nstp( struct unur_par *par, int n_stp )
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  CHECK_NULL(par,0);
+  _unur_check_NULL( GENTYPE,par,0 );
 
   /* check input */
   _unur_check_par_object( TABL );
@@ -343,7 +343,7 @@ unur_tabl_set_max_sqhratio( struct unur_par *par, double max_ratio )
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  CHECK_NULL(par,0);
+  _unur_check_NULL( GENTYPE,par,0 );
 
   /* check input */
   _unur_check_par_object( TABL );
@@ -381,7 +381,7 @@ unur_tabl_set_max_intervals( struct unur_par *par, int max_ivs )
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  CHECK_NULL(par,0);
+  _unur_check_NULL( GENTYPE,par,0 );
 
   /* check input */
   _unur_check_par_object( TABL );
@@ -420,7 +420,7 @@ unur_tabl_set_areafraction( struct unur_par *par, double fraction )
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  CHECK_NULL(par,0);
+  _unur_check_NULL( GENTYPE,par,0 );
 
   /* check input */
   _unur_check_par_object( TABL );
@@ -467,7 +467,7 @@ unur_tabl_set_slopes( struct unur_par *par, double *slopes, int n_slopes )
   double al, bl;
 
   /* check arguments */
-  CHECK_NULL(par,0);
+  _unur_check_NULL( GENTYPE,par,0 );
 
   /* check input */
   _unur_check_par_object( TABL );
@@ -523,7 +523,7 @@ unur_tabl_set_boundary( struct unur_par *par, double left, double right )
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  CHECK_NULL(par,0);
+  _unur_check_NULL( GENTYPE,par,0 );
 
   /* check input */
   _unur_check_par_object( TABL );
@@ -563,7 +563,7 @@ unur_tabl_set_variant( struct unur_par *par, unsigned variant )
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  CHECK_NULL(par,0);
+  _unur_check_NULL( GENTYPE,par,0 );
 
   /* check input */
   _unur_check_par_object( TABL );
@@ -596,7 +596,7 @@ unur_tabl_set_guidefactor( struct unur_par *par, double factor )
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  CHECK_NULL(par,0);
+  _unur_check_NULL( GENTYPE,par,0 );
 
   /* check input */
   _unur_check_par_object( TABL );
@@ -637,7 +637,7 @@ unur_tabl_set_verify( struct unur_par *par, int verify )
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  CHECK_NULL(par,0);
+  _unur_check_NULL( GENTYPE,par,0 );
 
   /* check input */
   _unur_check_par_object( TABL );
@@ -670,7 +670,7 @@ unur_tabl_init( struct unur_par *par )
   struct unur_gen *gen;
 
   /* check arguments */
-  CHECK_NULL(par,NULL);
+  _unur_check_NULL( GENTYPE,par,NULL );
 
   /* check input */
   if ( par->method != UNUR_METH_TABL ) {
@@ -750,8 +750,7 @@ unur_tabl_sample_adaptive( struct unur_gen *gen )
   double u,x,fx;
 
   /* check arguments */
-  CHECK_NULL(gen,0.);
-  COOKIE_CHECK(gen,CK_TABL_GEN,0.);
+  CHECK_NULL(gen,0.);  COOKIE_CHECK(gen,CK_TABL_GEN,0.);
 
   while(1) {
 
@@ -840,8 +839,7 @@ unur_tabl_sample( struct unur_gen *gen )
   double u,x,fx;
 
   /* check arguments */
-  CHECK_NULL(gen,0.);
-  COOKIE_CHECK(gen,CK_TABL_GEN,0.);
+  CHECK_NULL(gen,0.);  COOKIE_CHECK(gen,CK_TABL_GEN,0.);
 
   while(1) {
 
@@ -909,8 +907,7 @@ unur_tabl_sample_check( struct unur_gen *gen )
   double u,x,fx;
 
   /* check arguments */
-  CHECK_NULL(gen,0.);
-  COOKIE_CHECK(gen,CK_TABL_GEN,0.);
+  CHECK_NULL(gen,0.);  COOKIE_CHECK(gen,CK_TABL_GEN,0.);
 
   while(1) {
 
@@ -1032,8 +1029,7 @@ _unur_tabl_create( struct unur_par *par )
   struct unur_gen *gen;
 
   /* check arguments */
-  CHECK_NULL(par,NULL);
-  COOKIE_CHECK(par,CK_TABL_PAR,NULL);
+  CHECK_NULL(par,NULL);  COOKIE_CHECK(par,CK_TABL_PAR,NULL);
 
   /* allocate memory for generator object */
   gen = _unur_malloc( sizeof(struct unur_gen) );
@@ -1109,8 +1105,8 @@ _unur_tabl_get_starting_intervals( struct unur_par *par, struct unur_gen *gen )
 {
 
   /* check arguments */
-  COOKIE_CHECK(par,CK_TABL_PAR,0);
-  COOKIE_CHECK(gen,CK_TABL_GEN,0);
+  CHECK_NULL(par,0);  COOKIE_CHECK(par,CK_TABL_PAR,0);
+  CHECK_NULL(gen,0);  COOKIE_CHECK(gen,CK_TABL_GEN,0);
 
   /* we have two cases: 
      (1) we are given slopes --> check these, compute domain if necessary
@@ -1158,8 +1154,8 @@ _unur_tabl_get_starting_intervals_from_slopes( struct unur_par *par, struct unur
   int i;
 
   /* check arguments */
-  COOKIE_CHECK(par,CK_TABL_PAR,0);
-  COOKIE_CHECK(gen,CK_TABL_GEN,0);
+  CHECK_NULL(par,0);  COOKIE_CHECK(par,CK_TABL_PAR,0);
+  CHECK_NULL(gen,0);  COOKIE_CHECK(gen,CK_TABL_GEN,0);
 
   /* init counter of intervals */
   GEN.n_ivs = 0;
@@ -1242,8 +1238,8 @@ _unur_tabl_get_starting_intervals_from_mode( struct unur_par *par, struct unur_g
   struct unur_tabl_interval *iv;
 
   /* check arguments */
-  COOKIE_CHECK(par,CK_TABL_PAR,0);
-  COOKIE_CHECK(gen,CK_TABL_GEN,0);
+  CHECK_NULL(par,0);  COOKIE_CHECK(par,CK_TABL_PAR,0);
+  CHECK_NULL(gen,0);  COOKIE_CHECK(gen,CK_TABL_GEN,0);
 
   /* init linked list of intervals */
   GEN.n_ivs = 0;
@@ -1252,7 +1248,7 @@ _unur_tabl_get_starting_intervals_from_mode( struct unur_par *par, struct unur_g
   while (1) {
     /* the first interval */
     iv = GEN.iv = _unur_tabl_iv_stack_pop(gen);
-    COOKIE_CHECK(iv,CK_TABL_IV,0);
+    CHECK_NULL(iv,0);  COOKIE_CHECK(iv,CK_TABL_IV,0);
 
     if (DISTR.mode <= GEN.bleft) {
       /* only one ascending interval <a,b> = [a,b] */
@@ -1274,7 +1270,7 @@ _unur_tabl_get_starting_intervals_from_mode( struct unur_par *par, struct unur_g
 
     /* the second interval */
     iv = iv->next = _unur_tabl_iv_stack_pop(gen);  /* all the other intervals */
-    COOKIE_CHECK(iv,CK_TABL_IV,0);
+    CHECK_NULL(iv,0);  COOKIE_CHECK(iv,CK_TABL_IV,0);
     iv->xmax = DISTR.mode;
     iv->xmin = GEN.bright;
     break;
@@ -1337,9 +1333,11 @@ _unur_tabl_split_a_starting_intervals( struct unur_par *par,
   double bar_area, x;
   
   /* check arguments */
-  COOKIE_CHECK(par,CK_TABL_PAR,NULL);
-  COOKIE_CHECK(gen,CK_TABL_GEN,NULL);
-  COOKIE_CHECK(iv_slope,CK_TABL_IV,NULL);
+  CHECK_NULL(par,NULL);       COOKIE_CHECK(par,CK_TABL_PAR,NULL);
+  CHECK_NULL(gen,NULL);       COOKIE_CHECK(gen,CK_TABL_GEN,NULL);
+  CHECK_NULL(iv_slope,NULL);  COOKIE_CHECK(iv_slope,CK_TABL_IV,NULL);
+
+
   if (iv_slope->slope != 1 && iv_slope->slope != -1 ) {
     /* this should not happen:
        invalid slope.          */
@@ -1413,8 +1411,8 @@ _unur_tabl_split_b_starting_intervals( struct unur_par *par,
   double Amean;  /* mean area between hat and squeeze in slope */
   
   /* check arguments */
-  COOKIE_CHECK(par,CK_TABL_PAR,0);
-  COOKIE_CHECK(gen,CK_TABL_GEN,0);
+  CHECK_NULL(par,0);  COOKIE_CHECK(par,CK_TABL_PAR,0);
+  CHECK_NULL(gen,0);  COOKIE_CHECK(gen,CK_TABL_GEN,0);
 
   /* compute mean area between squeeze and hat for each interval */
   Amean = 0.;
@@ -1474,8 +1472,8 @@ _unur_tabl_split_interval( struct unur_gen *gen,
   struct unur_tabl_interval *iv_new;
 
   /* check arguments */
-  COOKIE_CHECK(gen,CK_TABL_GEN,0);
-  COOKIE_CHECK(iv_old,CK_TABL_IV,0);
+  CHECK_NULL(gen,0);     COOKIE_CHECK(gen,CK_TABL_GEN,0);
+  CHECK_NULL(iv_old,0);  COOKIE_CHECK(iv_old,CK_TABL_IV,0);
 
   /* There are three possibilities for the splitting point:
      (1) use x and avoid computation of pdf(x). 
@@ -1523,7 +1521,7 @@ _unur_tabl_split_interval( struct unur_gen *gen,
 
   /* we need a new interval */
   iv_new = _unur_tabl_iv_stack_pop(gen);
-  COOKIE_CHECK(iv_new,CK_TABL_IV,0);
+  CHECK_NULL(iv_new,0);  COOKIE_CHECK(iv_new,CK_TABL_IV,0);
 
   /* iv_new has the same slope as iv_old */
   iv_new->slope = iv_old->slope;
@@ -1601,7 +1599,7 @@ _unur_tabl_make_guide_table( struct unur_gen *gen )
   int j;
 
   /* check arguments */
-  COOKIE_CHECK(gen,CK_TABL_GEN,0);
+  CHECK_NULL(gen,0);  COOKIE_CHECK(gen,CK_TABL_GEN,0);
 
   /* allocate blocks for guide table (if necessary).
      (we allocate blocks for maximal guide table.) */
@@ -1668,7 +1666,7 @@ _unur_tabl_iv_stack_pop( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  COOKIE_CHECK(gen,CK_TABL_GEN,NULL);
+  CHECK_NULL(gen,NULL);  COOKIE_CHECK(gen,CK_TABL_GEN,NULL);
 
   /* look for an unused segment */
   if( ! GEN.iv_free ) {
@@ -1707,7 +1705,7 @@ _unur_tabl_iv_stack_push( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  COOKIE_CHECK(gen,CK_TABL_GEN,/*void*/);
+  CHECK_NULL(par,NULL);  COOKIE_CHECK(gen,CK_TABL_GEN,/*void*/);
 
   /* update counters and pointers */
   --(GEN.n_ivs);
@@ -1741,6 +1739,10 @@ _unur_tabl_debug_init( struct unur_par *par, struct unur_gen *gen )
 {
   FILE *log;
   int i;
+
+  /* check arguments */
+  CHECK_NULL(par,/*void*/);  COOKIE_CHECK(par,CK_TABL_PAR,/*void*/);
+  CHECK_NULL(gen,/*void*/);  COOKIE_CHECK(gen,CK_TABL_GEN,/*void*/);
 
   log = unur_get_stream();
 
@@ -1835,6 +1837,10 @@ _unur_tabl_debug_init_finished( struct unur_par *par, struct unur_gen *gen )
 {
   FILE *log;
 
+  /* check arguments */
+  CHECK_NULL(par,/*void*/);  COOKIE_CHECK(par,CK_TABL_PAR,/*void*/);
+  CHECK_NULL(gen,/*void*/);  COOKIE_CHECK(gen,CK_TABL_GEN,/*void*/);
+
   log = unur_get_stream();
 
   _unur_tabl_debug_intervals(gen,TRUE);
@@ -1859,8 +1865,7 @@ _unur_tabl_debug_free( struct unur_gen *gen )
   FILE *log;
 
   /* check arguments */
-  CHECK_NULL(gen,/*void*/);
-  COOKIE_CHECK(gen,CK_TABL_GEN,/*void*/);
+  CHECK_NULL(gen,/*void*/);  COOKIE_CHECK(gen,CK_TABL_GEN,/*void*/);
 
   log = unur_get_stream();
 
@@ -1891,8 +1896,7 @@ _unur_tabl_debug_intervals( struct unur_gen *gen, int print_areas )
   int i;
 
   /* check arguments */
-  CHECK_NULL(gen,/*void*/);
-  COOKIE_CHECK(gen,CK_TABL_GEN,/*void*/);
+  CHECK_NULL(gen,/*void*/);  COOKIE_CHECK(gen,CK_TABL_GEN,/*void*/);
 
   log = unur_get_stream();
 

@@ -1,3 +1,22 @@
+Version 0.3.0: October 2002
+
+	- added method HINV (Hermite interpolation based INVersion of CDF)
+
+	- new interface for using uniform random number generators;
+	  all settings are now in ./src/unuran_config.h
+
+	- added support for more uniform random number generator packages
+
+	- inlcuded better build-in uniform random number generator
+
+	- added unur_gen_clone() call
+
+	- added const qualifier in function prototypes where appropriate
+
+	- fixed broken computation of window width in method EMPK
+
+	- many bug fixes
+
 Version 0.2.0: June 2002
 
 	- added new simple API (String interface)

@@ -60,7 +60,7 @@
       of the unur_srou_set_cdfatmode() call. Then the rejection
       constant is reduced to 2 and even a universal squeeze can (but
       need not be) used. 
-      A way to increase the performence of the algorithm when the
+      A way to increase the performance of the algorithm when the
       CDF at the mode is not provided is the usage of the mirror
       principle. However using squeezes and using the mirror principle
       is not recommended in general (see below).

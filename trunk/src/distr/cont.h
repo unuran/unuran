@@ -44,26 +44,6 @@
 
    =UP Distribution_objects [10]
 
-
-      The library can handle truncated distributions, that is,
-      distribution that are derived from (standard) distribution by
-      simply restricting its domain to a subset. However, there is a
-      subtle difference between changing the domain of a distribution
-      object by a unur_distr_cont_set_domain() call and changing the
-      (truncated) domain for an existing generator object. The domain
-      of the distribution object is used to create the generator
-      object with hats, squeezes, tables, etc.  Whereas truncating the
-      domain of an existing generator object need not necessarily
-      require a recomputation of these data.  Thus by a
-      @command{unur_<method>_chg_truncated} call (if available) the
-      sampling region is restricted to the subset of the domain of the
-      given distribution object. However, generation methods that
-      require a recreation of the generator object when the domain is
-      changed have a @command{unur_<method>_chg_domain} call instead.
-      For these calls there are of course no restrictions on the given
-      domain (i.e., it is possible to increase the domain of the
-      distribution) (@pxref{Methods}, for details).
-
    =DESCRIPTION
       The calls in this section can be applied to continuous
       univariate distributions.
@@ -107,6 +87,27 @@
       @item Alternative, @command{cdf}, @command{pdf}, @command{dpdf},
       and @command{hr} can be provided as @command{str}ings instead of
       function pointers.
+
+      @item Set the @command{domain} of the distribution.  Notice that
+      the library also can handle truncated distributions, i.e.,
+      distributions that are derived from (standard) distributions by
+      simply restricting its domain to a subset. However, there is a
+      subtle difference between changing the domain of a distribution
+      object by a unur_distr_cont_set_domain() call and changing the
+      (truncated) domain for an existing generator object. The domain
+      of the distribution object is used to create the generator
+      object with hats, squeezes, tables, etc.  Whereas truncating the
+      domain of an existing generator object need not necessarily
+      require a recomputation of these data.  Thus by a
+      @command{unur_<method>_chg_truncated} call (if available) the
+      sampling region is restricted to the subset of the domain of the
+      given distribution object. However, generation methods that
+      require a recreation of the generator object when the domain is
+      changed have a @command{unur_<method>_chg_domain} call instead.
+      For these calls there are of course no restrictions on the given
+      domain (i.e., it is possible to increase the domain of the
+      distribution) (@pxref{Methods}, for details).
+
       @end itemize
 
    =END
@@ -172,7 +173,7 @@ int unur_distr_cont_set_cdf( UNUR_DISTR *distribution, UNUR_FUNCT_CONT *cdf );
    @end itemize
 
    It is important to note that all these functions must return a
-   result for all floats @var{x}. Eg., if the domain of a given
+   result for all values of @var{x}. Eg., if the domain of a given
    PDF is the interval [-1,1], then the given function must return
    @code{0.0} for all points outside this interval.
    In case of an overflow the PDF should return 
@@ -247,14 +248,15 @@ char *unur_distr_cont_get_dpdfstr( const UNUR_DISTR *distribution );
 char *unur_distr_cont_get_cdfstr( const UNUR_DISTR *distribution );
 /* 
    Get pointer to respective string for PDF, derivate of PDF, and CDF
-   of @var{distribution} that is given via the string interface.
+   of @var{distribution} that is given as string (instead of a
+   function pointer).
    This call allocates memory to produce this string. It should be
    freed when it is not used any more.
 */
 
 int unur_distr_cont_set_pdfparams( UNUR_DISTR *distribution, const double *params, int n_params );
 /* 
-   Set array of parameters for @var{distribution}. There is an upper limit
+   Sets array of parameters for @var{distribution}. There is an upper limit
    for the number of parameters @code{n_params}. It is given by the
    macro @code{UNUR_DISTR_MAXPARAMS} in @file{unuran_config.h}. (It is set to
    5 by default but can be changed to any appropriate nonnegative number.)
@@ -265,10 +267,12 @@ int unur_distr_cont_set_pdfparams( UNUR_DISTR *distribution, const double *param
    For standard distributions from the UNURAN library the parameters
    are checked. Moreover the domain is updated automatically unless it
    has been changed before by a unur_distr_cont_set_domain() call.
-   It these parameters are invalid, then no parameters are set and 
-   an error code is returned.
-   Notice that optional parameters are (re-)set to their default values if 
-   not given for UNURAN standard distributions.
+   If the given parameters are invalid for the standard distribution,
+   then no parameters are set and an error code is returned.
+   Notice that the given parameter list for such distributions are
+   handled in the same way as in the corresponding @command{new}
+   calls, i.e. optional parameters for the PDF that are not present in
+   the given list are (re-)set to their default values.
 */
 
 int unur_distr_cont_get_pdfparams( const UNUR_DISTR *distribution, const double **params );
@@ -285,23 +289,22 @@ int unur_distr_cont_set_domain( UNUR_DISTR *distribution, double left, double ri
 /* 
    Set the left and right borders of the domain of the
    distribution. This can also be used to truncate an existing
-   distribution. For setting the boundary to +/- infinity use
-   @code{+/- UNUR_INFINITY}.
+   distribution. For setting the boundary to @unurmath{\pm\infty}
+   use @code{+/- UNUR_INFINITY}.
    If @var{right} is not strictly greater than @var{left} no domain
    is set and @code{unur_errno} is set to @code{UNUR_ERR_DISTR_SET}.
 
    @emph{Important:} For some technical reasons it is assumed that the density 
    is unimodal and thus monotone on either side of the mode! This is used in
-   the case when the given moden is outside of the original domain. Then the
+   the case when the given mode is outside of the original domain. Then the
    mode is set to the corresponding boundary of the new domain.
 */
 
 int unur_distr_cont_get_domain( const UNUR_DISTR *distribution, double *left, double *right );
 /* 
    Get the left and right borders of the domain of the
-   distribution. If the domain is not set explicitly 
-   @code{+/- UNUR_INFINITY} is assumed and returned.
-   No error is reported in this case.
+   distribution. If the domain is not set @code{+/- UNUR_INFINITY} is
+   assumed and returned. No error is reported in this case.
 */
 
 int unur_distr_cont_get_truncated( const UNUR_DISTR *distribution, double *left, double *right );
@@ -309,13 +312,9 @@ int unur_distr_cont_get_truncated( const UNUR_DISTR *distribution, double *left,
    Get the left and right borders of the (truncated) domain of the
    distribution. For non-truncated distribution this call is
    equivalent to the unur_distr_cont_get_domain() call.
-   If the (truncated) domain is not set explicitly 
-   @code{+/- UNUR_INFINITY} is assumed and returned.
-   No error is reported in this case.
 
-   This call is only useful in connection with a 
-   unur_get_distr() call to get the boundaries of the sampling region
-   of a generator object.
+   This call is only useful in connection with a unur_get_distr() call
+   to get the boundaries of the sampling region of a generator object.
 */
 
 int unur_distr_cont_set_hr( UNUR_DISTR *distribution, UNUR_FUNCT_CONT *hazard );
@@ -399,17 +398,21 @@ char *unur_distr_cont_get_hrstr( const UNUR_DISTR *distribution );
 
 int unur_distr_cont_set_mode( UNUR_DISTR *distribution, double mode );
 /* 
-   Set mode of @var{distribution}.
+   Set mode of @var{distribution}. The @var{mode} must be contained in
+   the domain of @var{distribution}. Otherwise the mode is not set and 
+   @code{unur_errno} is set to @code{UNUR_ERR_DISTR_SET}.
+   Notice that the mode is adjusted when the domain is set, see the
+   remark for the unur_distr_cont_set_domain() call.
 */
 
 int unur_distr_cont_upd_mode( UNUR_DISTR *distribution );
 /* 
-   Recompute the mode of the @var{distribution}. This call works properly
-   for distribution objects from the 
-   UNURAN library of standard distributions 
-   when the corresponding function is available.
-   Otherwise a (slow) numerical mode finder is used. If it failes
-   @code{unur_errno} is set to @code{UNUR_ERR_DISTR_DATA}.
+   Recompute the mode of the @var{distribution}. This call works
+   properly for distribution objects from the UNURAN library of
+   standard distributions when the corresponding function is
+   available.  Otherwise a (slow) numerical mode finder based on
+   Brent's algorithm is used. If it failes @code{unur_errno} is set to
+   @code{UNUR_ERR_DISTR_DATA}.
 */
 
 double unur_distr_cont_get_mode( UNUR_DISTR *distribution );
@@ -428,6 +431,10 @@ int unur_distr_cont_set_center( UNUR_DISTR *distribution, double center );
    Set center of the @var{distribution}. The center is used by some
    methods to shift the distribution in order to decrease numerical
    round-off error. If not given explicitly a default is used.
+
+   @emph{Important:} This call does not check whether the center is
+   contained in the given domain. Similarly
+   unur_distr_cont_set_domain() does not adjust the center properly.
 
    Default: The mode, if set by a unur_distr_cont_set_mode() or 
    unur_distr_cont_upd_mode() call; otherwise @code{0}.
@@ -462,7 +469,7 @@ int unur_distr_cont_upd_pdfarea( UNUR_DISTR *distribution );
 
    This call sets the normalization constant such that the given
    PDF is the derivative of a given CDF, i.e. the area is 1.
-   However for truncated distributions the area is smaller than 1.
+   However, for truncated distributions the area is smaller than 1.
 
    The call does not work for distributions from the 
    UNURAN library of standard distributions with truncated

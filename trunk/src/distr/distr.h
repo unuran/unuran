@@ -122,6 +122,9 @@
       change the values of the standard distribution in case 2 (if
       this makes sense for you). In the latter case @command{<type>}
       is the type to which the standard distribution belongs to.
+      These @command{set} calls return @code{UNUR_SUCCESS} when the
+      correspondig parameter has been set successfully. Otherwise an
+      error code is returned.
       
       The parameters of a distribution are divided into
       @emph{essential} and @emph{derived} parameters.

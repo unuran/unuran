@@ -44,6 +44,12 @@
 
    =UP Distribution_objects [20]
 
+   =DESCRIPTION
+      Empirical univariate distributions are just lists of numbers.
+      Thus there are only calls to insert these data.
+      How these data are used to sample the empirical distribution
+      depends from the chosen generation method.  
+
    =END
 */
 
@@ -72,7 +78,8 @@ int unur_distr_cemp_set_data( UNUR_DISTR *distribution, const double *sample, in
 int unur_distr_cemp_read_data( UNUR_DISTR *distribution, const char *filename );
 /* 
    Read data from file @file{filename}.
-   It reads the first double number from each line.
+   It reads the first number from each line. 
+   Numbers are parsed by means of the C standard routine @command{strtod}.
    Lines that do not start with @code{+}, @code{-}, @code{.}, or a
    digit are ignored. (Beware of lines starting with a blank!)
 
@@ -84,8 +91,8 @@ int unur_distr_cemp_read_data( UNUR_DISTR *distribution, const char *filename );
 int unur_distr_cemp_get_data( const UNUR_DISTR *distribution, const double **sample );
 /* 
    Get number of samples and set pointer @var{sample} to array of
-   observations. If no sample has been given,
-   @code{0} is returned and @code{sample} is set to NULL.
+   observations. If no sample has been given, an error code 
+   is returned and @code{sample} is set to NULL.
 
    @emph{Important:} Do @strong{not} change the entries in @var{sample}!
 */

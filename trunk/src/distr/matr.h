@@ -46,7 +46,7 @@
 
    =DESCRIPTION
       Distributions for random matrices. Notice that UNURAN uses
-      arrays of @code{double}s to handle matrices. There the rows of
+      arrays of @code{double}s to handle matrices. The rows of
       the matrix are stored consecutively.
 
    =END
@@ -67,7 +67,7 @@ UNUR_DISTR *unur_distr_matr_new( int n_rows, int n_cols );
    the random matrix (i.e. its dimensions). Each must be at least 2;
    otherwise unur_distr_cont_new() or unur_distr_cvec_new() should be
    used to create an object for a univariate distribution and a
-   multivariate (vector) distribution.
+   multivariate (vector) distribution, respectively.
 */
 
 /* ==DOC
@@ -77,8 +77,8 @@ UNUR_DISTR *unur_distr_matr_new( int n_rows, int n_cols );
 int unur_distr_matr_get_dim( const UNUR_DISTR *distribution, int *n_rows, int *n_cols );
 /* 
    Get number of rows and columns of random matrix (its dimension).
-   It returns the total number of components. In case of an error
-   @code{0} is returned.
+   It returns the total number of components. If successfull
+   @code{UNUR_SUCCESS} is returned.
 */
 
 /* =END */

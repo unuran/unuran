@@ -44,6 +44,13 @@
 
    =UP Distribution_objects [40]
 
+   =DESCRIPTION
+      Empirical multivariate distributions are just lists of vectors
+      (with the same dimension). 
+      Thus there are only calls to insert these data.
+      How these data are used to sample the empirical distribution
+      depends from the chosen generation method.  
+
    =END
 */
 
@@ -81,9 +88,10 @@ int unur_distr_cvemp_set_data( UNUR_DISTR *distribution, const double *sample, i
 int unur_distr_cvemp_read_data( UNUR_DISTR *distribution, const char *filename );
 /* 
    Read data from file @file{filename}.
-   It reads the first @code{dim} double numbers from each line, where
+   It reads the first @code{dim} numbers from each line, where
    @code{dim} is the dimension of the @var{distribution} returned by
    unur_distr_get_dim(). 
+   Numbers are parsed by means of the C standard routine @command{strtod}.
    Lines that do not start with @code{+}, @code{-}, @code{.}, or a
    digit are ignored. (Beware of lines starting with a blank!)
 
@@ -95,8 +103,8 @@ int unur_distr_cvemp_read_data( UNUR_DISTR *distribution, const char *filename )
 int unur_distr_cvemp_get_data( const UNUR_DISTR *distribution, const double **sample );
 /* 
    Get number of samples and set pointer @var{sample} to array of
-   observations. If no sample has been given,
-   @code{0} is returned and @var{sample} is set to NULL.
+   observations. If no sample has been given, an error code 
+   is returned and @var{sample} is set to NULL.
    If successful @var{sample} points to an array of length
    @code{dim} x @code{n_sample}, where
    @code{dim} is the dimension of the distribution returned by

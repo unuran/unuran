@@ -1209,6 +1209,13 @@ unur_distr_cont_set_mode( struct unur_distr *distr, double mode )
   _unur_check_NULL( NULL, distr, UNUR_ERR_NULL );
   _unur_check_distr_object( distr, CONT, UNUR_ERR_DISTR_INVALID );
 
+  /* check whether mode is inside the domain */
+  if (mode < DISTR.domain[0] || mode > DISTR.domain[1]) {
+    _unur_error(distr->name,UNUR_ERR_DISTR_SET,"mode not in domain");
+    return UNUR_ERR_DISTR_SET;
+  }
+
+  /* store data */
   DISTR.mode = mode;
 
   /* changelog */

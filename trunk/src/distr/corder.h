@@ -45,6 +45,19 @@
 
    =UP Distribution_objects [15]
 
+   =DESCRIPTION
+      These are special cases of a continuous univariate distributions
+      and thus they have most of these parameters (with the exception
+      that functions cannot be changed). Additionally,
+
+      @itemize @minus
+      @item there is a call to extract the underlying distribution,
+
+      @item and a call to handle the @command{rank} of the order
+      statistics.
+
+      @end itemize
+
    =END
 */
 
@@ -64,11 +77,11 @@ UNUR_DISTR *unur_distr_corder_new( const UNUR_DISTR *distribution, int n, int k 
    distribution. 
    The resulting generator object is of the same type as of a
    unur_distr_cont_new() call.
-   (However it cannot be used to make an order statistics out of an
+   (However, it cannot be used to make an order statistics out of an
    order statistics.)
 
    To have a PDF for the order statistics, the given distribution
-   object must contain a CDF and a PDF. Moreover it is assumed that
+   object must contain a CDF and a PDF. Moreover, it is assumed that
    the given PDF is the derivative of the given CDF. Otherwise the
    area below the PDF of the order statistics is not computed correctly.
 
@@ -91,8 +104,7 @@ const UNUR_DISTR *unur_distr_corder_get_distribution( const UNUR_DISTR *distribu
 int unur_distr_corder_set_rank( UNUR_DISTR *distribution, int n, int k );
 /* 
    Change sample size @var{n} and rank @var{k} of order statistics.
-   In case of invalid data, no parameters are changed and @code{0} is
-   returned.
+   In case of invalid data, no parameters are changed.
    The area below the PDF can be set to that of the underlying
    distribution by a unur_distr_corder_upd_pdfarea() call.
 */

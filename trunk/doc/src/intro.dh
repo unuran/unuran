@@ -91,6 +91,15 @@
 	 @emph{Important:} You must install PRNG
 	 @emph{before} @code{configure} is executed.
 
+	 @emph{Important:} UNU.RAN now relies on some aspects of IEEE
+	 754 compliant floating point arithmetic. In particular, 
+         @code{1./0.} and @code{0./0.} must result in @code{infinity}
+	 and @code{NaN} (not a number), respectively, and must not
+	 cause a floating point exception. 
+	 For allmost all modern compting architecture this is implemented
+	 in hardware. For others there should be a special compiler flag
+	 to get this feature (e.g. @code{-MIEEE} on DEC alpha).
+
    @item Compile and install the libray:
 	 @smallexample
 	    make

@@ -53,6 +53,14 @@ Installing UNURAN
 
      Important: You must install PRNG _before_ `configure' is executed.
 
+     Important: UNU.RAN now relies on some aspects of IEEE 754
+     compliant floating point arithmetic. In particular, 
+     1./0. and 0./0. must result in infinity and NaN (not a number),
+     respectively, and must not cause a floating point exception.
+     For allmost all modern compting architecture this is implemented
+     in hardware. For others there should be a special compiler flag
+     to get this feature (e.g. -MIEEE on DEC alpha).
+
   4. Compile and install the libray:
 
           make

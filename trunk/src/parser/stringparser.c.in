@@ -9,56 +9,85 @@
  *                                                                           *
  *   DESCRIPTION:                                                            *
  *                                                                           *
+ *   The function unur_str2gen() takes a character string as its argument.   *
+ *   This string is parsed in the following ways and the information         *
+ *   obtained is used to make a generator object. (It returns NULL when      *
+ *   it is not possible to make a generator object either due to a syntax    *
+ *   error in the given string, or due to invalid data.                      *
  *                                                                           *
-
-
- *   The string to parse contains information about the standard             *
- *   distribution, the choosen method and (optional) the uniform number      *
- *   generator -- The distribution block must be first.                      *
- *   These three blocks must be separeted with colons `:'                    *
+ *   First the given string is copied into a working string. Moreover a      *
+ *   letters transformed into their lower case counterparts and spaces are   *
+ *   eliminated (i.e. the working string does not contain any white space    *
+ *   characters any more.) Then the working string is splitted into several  *
+ *   blocks, separated by colons ':'. Each block consists of <key>=<value>   *
+ *   pairs, separated by semicolons ';'. The first key in each block is      *
+ *   used to indicate the corresponding block.                               *
  *                                                                           *
- *   The string holds information about the standard distribution            *
- *   to sample from and (optional) about the sampling method and the         *
- *   uniform random number generator invoked.                                *
- *   Therefore the the string consists of up to three block which must be    *
- *   seperated with a colon `:'.                                             *
- *   The standard distribution block must be first!                          *
+ *   We have three different blocks (yet):                                   *
+ *      distr  ... contains the definition of the distribution               *
+ *      method ... contains the description of the transformation methdod    *
+ *      urng   ... contains the definition of the uniform RNG                *
  *                                                                           *
- *   Within each block a piece of information must be provided using         *
- *   a <key>=<value> scheme.                                                 *
- *   If more then one piece of information is needed,                        *
- *   the <key>=<value> pairs must be separeted with semicolons `;'.          *
- *   The <key> is a keyword explained below.                                 *
- *   The value can be a string, a number or a list of numbers or a string    *
- *   followed by a list of numbers (examples will be given below),           *
- *   depending on the <key>. A list must be  bounded with parentheses        *
- *   `(' and `)' and the list separator is a komma `,'.                      *
- *   If the value is a string and a list in beetween only white space        *
- *   is allowed.                                                             *
+ *   The 'distr' block must be the very first block and is obligatory.       *
+ *   For that reason the keyword 'distr' is optional and can be omitted.     *
+ *   Moreover it is almost ignored while parsing the string. To avoid some   *
+ *   possible confussion it only has to start with the letter 'd' (if it is  *
+ *   given at all.)                                                          *
+ *   The value of the 'distr' key is used to get a distribution object       *
+ *   either via a unur_distr_<value>() call for a standard distribution.     *
+ *   The parameters for the standard distribution are given as a list of     *
+ *   number enclosed in parenthesis. There must not be any character (other  *
+ *   than white space) between the name of the standard distribution and     *
+ *   this list. Or the unur_distr_<value>_new() calls are used to get an     *
+ *   object for a generic distribution. However not all generic              *
+ *   distributions are supported yet (see the list %UNSUPPORTED_DISTR_TYPES  *
+ *   in make_stringparser.pl).                                               *
  *                                                                           *
- *   Distribution:                                                           *
- *   The key `distr' is obligatory, it must be first and the corresponding   *
- *   value must be one  of the implemented standard distributions---with     *
- *   a list of parameters.  e.g.: distr=normal(0,1)                          *
- *   Furthermore it's possible to set the domain via the key `domain'.       *
+ *   All the other blocks are optional and can be arranged in arbitrary      *
+ *   order.                                                                  *
+ *   The value of the 'method' key is the name of the transformation method  *
+ *   and is used to execute the unur_<value>_new() call.                     *
  *                                                                           *
- *   Method:                                                                 *
- *   The key `method' is obligatory, it must be first and the value must be  *
- *   the name of a method suitable for the choosen standard distribution.    *
- *   e.g.: method=arou                                                       *
- *   Of course the following keys dependend on the method choosen at first.  *
- *   All corresponding `_set_' commands of UNURAN are available and the key  *
- *   is the string after the `unur_<methodname>_set_' part of the command.   *
- *   e.g.: UNURAN provides the command `unur_arou_set_max_sqhratio' to       *
- *   set a parameter. To call this function via the string-interface, the    *
- *   key `max_sqhratio' can be used.                                         *
- *   If this block is omitted, UNURAN chooses a suitable method.             *
+ *   The value of the 'urng' key is passed to the PRNG interface.            *
+ *   However it only works when using the PRNG library is enabled in         *
+ *   unuran_config.h.                                                        *
  *                                                                           *
- *   Uniform random number generator:                                        *
- *   The only key allowed is `prng' and the following value is a             *
- *   string which is passed as it is to the PRNG package                     *
- *   For information see the PRNG manual                                     *
- *   If this block is omitted, UNURAN sets a uniform random number generator *
+ *   In each block consecuting <key>=<value> pairs, separated by semicolons  *
+ *   `;`, are used to set parameters. The name of the parameter is given as  *
+ *   key, the argument list is given as value. The arguments of the          *
+ *   corresponding set calls are given as tokens, separated by commata ','.  *
+ *   There are two types of tokens:                                          *
+ *      single tokens, that represent numbers, and                           *
+ *      list, i.e. a list of single tokens, separated by commata ',',        *
+ *            enclosed in parenthesis.                                       *
+ *   The value (including the character '=') can be omitted when no argument *
+ *   are required.                                                           *
+ *   The key is deduced from the UNURAN set calls, such that it uses only    *
+ *   the part of the set call beyond "..._set_".                             *
+ *   Not all set commands are supported yet (see the output to STDERR of     *
+ *   the make_stringparser.pl script).                                       *
+ *   As a rule of thumb only those set calls are supported that only have    *
+ *   numbers or arrays of numbers as arguments (besides the pointer to the   *
+ *   distribution or parameter object).                                      *
+ *   (See the code of make_stringparser.pl for details.)                     *
+ *                                                                           *
+ *   There are additional transformations before executing the necessary     *
+ *   set calls (listed by argument types)                                    *
+ *      int:      'true' and 'on' are transformed to 1,                      *
+ *                'false' and 'off' are transformed to 0.                    *
+ *                a missing argument is transformed to 1.                    *
+ *      unsigned: string is interpreted as hexadecimal number.               *
+ *      double:   none                                                       *
+ *      double, double: Instead of two doubles, a list with at least two     *
+ *                numbers can be given.                                      *
+ *      int, double*: If the first argument is missing, it is replaced       *
+ *                by the size of the array.                                  *
+ *                If the second argument is missing, the NULL pointer is     *
+ *                used instead an array as argument.                         *
+ *      double*, int: Only for distributions!                                *
+ *                If the second argument 'int' is missing, it is replaced    *
+ *                by the size of the array.                                  *
+ *   (See also the source below for more details.)                           *
  *                                                                           *
  *****************************************************************************
  *                                                                           *

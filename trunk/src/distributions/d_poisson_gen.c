@@ -41,6 +41,7 @@
 
 inline static void poisson_pdtabl_init( struct unur_gen *gen );
 inline static void poisson_pdac_init( struct unur_gen *gen );
+inline static void poisson_pprsc_init( struct unur_gen *gen );
 
 /*---------------------------------------------------------------------------*/
 /* abbreviations */
@@ -89,6 +90,7 @@ _unur_stdgen_poisson_init( struct unur_par *par, struct unur_gen *gen )
 
   case 0:  /* DEFAULT */
   case 1:  /* Tabulated Inversion combined with Acceptance Complement */
+    if (gen==NULL) return 1; /* test existence only  */
     if (theta < 10.) {
       /* CASE B: Tabulated Inversion */
       _unur_dstd_set_sampling_routine( par,gen,unur_stdgen_sample_poisson_pdtabl );
@@ -98,6 +100,20 @@ _unur_stdgen_poisson_init( struct unur_par *par, struct unur_gen *gen )
       /* CASE A: acceptance complement */
       _unur_dstd_set_sampling_routine( par,gen,unur_stdgen_sample_poisson_pdac );
       poisson_pdac_init( gen );
+    }
+    return 1;
+
+  case 2:  /* Tabulated Inversion combined with Patchwork Rejection */
+    if (gen==NULL) return 1; /* test existence only  */
+    if (theta < 10.) {
+      /* CASE: Tabulated Inversion --> same as case 1 !! */
+      _unur_dstd_set_sampling_routine( par,gen,unur_stdgen_sample_poisson_pdtabl );
+      poisson_pdtabl_init( gen );
+    }
+    else { /* theta >= 10. */
+      /* CASE: Patchwork Rejection */
+      _unur_dstd_set_sampling_routine( par,gen,unur_stdgen_sample_poisson_pprsc );
+      poisson_pprsc_init( gen );
     }
     return 1;
 
@@ -431,7 +447,243 @@ unur_stdgen_sample_poisson_pdac( struct unur_gen *gen )
 #undef NORMAL
 /*---------------------------------------------------------------------------*/
 
+/*****************************************************************************
+ *                                                                           *
+ * Poisson Distribution: Tabulated Inversion combined with                   *
+ *                       Patchwork Rejection                                 *
+ *                                                                           *
+ *****************************************************************************
+ *                                                                           *
+ * FUNCTION:  - samples a random number from the Poisson distribution with   *
+ *              parameter theta > 0.                                         *
+ *              Tabulated Inversion for  theta < 10                          *
+ *              Patchwork Rejection for theta >= 10.                         *
+ *                                                                           *
+ * REFERENCE: - H. Zechner (1994): Efficient sampling from continuous and    *
+ *              discrete unimodal distributions,                             *
+ *              Pd.D. Thesis, 156 pp., Technical University Graz, Austria.   *
+ *                                                                           *
+ * Implemented by H. Zechner, January 1994                                   *
+ * Revised by F. Niederl, July 1994                                          *
+ *****************************************************************************
+ *                                                                           *
+ * Patchwork Rejection:                                                      *
+ * The area below the histogram function f(x) is rearranged in its body by   *
+ * certain point reflections. Within a large center interval variates are    *
+ * sampled efficiently by rejection from uniform hats. Rectangular immediate *
+ * acceptance regions speed up the generation. The remaining tails are       *
+ * covered by exponential functions.                                         *
+ *                                                                           *
+ *****************************************************************************
+ *    WinRand (c) 1995 Ernst Stadlober, Institut fuer Statistitk, TU Graz    *
+ *****************************************************************************/
+
+/*---------------------------------------------------------------------------*/
+#if 0
+#define m    (GEN.gen_iparam[0])
+#define ll   (GEN.gen_iparam[1])
+
+#define p0   (GEN.gen_param[0])
+#define q    (GEN.gen_param[1])
+#define p    (GEN.gen_param[2])
+#define pp   ((GEN.gen_param)+3)  /* array of length 36 */
+#endif
+/*---------------------------------------------------------------------------*/
+
+inline static void
+poisson_pprsc_init( struct unur_gen *gen )
+     /* theta < 10: Tabulated inversion */
+{
+  /* check arguments */
+  CHECK_NULL(gen,/*void*/); COOKIE_CHECK(gen,CK_DSTD_GEN,/*void*/);
+
+  if (GEN.gen_param == NULL) {
+    GEN.n_gen_param = MAX_gen_params;
+    GEN.gen_param = _unur_malloc(GEN.n_gen_param * sizeof(double));
+    GEN.n_gen_iparam = MAX_gen_iparams;
+    GEN.gen_iparam = _unur_malloc(GEN.n_gen_param * sizeof(int));
+  }
+
+#if 0
+  /* -X- setup code -X- */
+  m = (theta > 1.) ? ((int) theta) : 1;
+  ll = 0;
+  p0 = q = p = exp(-theta);
+  /* -X- end of setup code -X- */
+#endif
+
+} /* end of poisson_pprsc_init() */
+
+#define my  (DISTR.params[0])    /* shape */
 
 
+static double f(long int k, double l_nu, double c_pm)
+{
+        return  exp(k * l_nu - _unur_factorialln(k) - c_pm);
+}
 
+int
+unur_stdgen_sample_poisson_pprsc( struct unur_gen *gen )
+     /* theta >= 10: Patchwork Rejection */
+{
+  /* -X- generator code -X- */
+
+ static double my_old = -1.0;
+ double t,g,my_k;
+
+ double gx,gy,px,py,e,x,xx,delta,v;
+ long sign;
+
+ static double p,q,p0,pp[36];
+ static long ll,m;
+ double u;
+ long k,i;
+
+ if (0);
+
+  else    /* CASE A: acceptance complement */
+
+
+   {
+			static double        my_last = -1.0;
+			static long int      m,  k2, k4, k1, k5;
+			static double        dl, dr, r1, r2, r4, r5, ll, lr, l_my, c_pm,
+													 f1, f2, f4, f5, p1, p2, p3, p4, p5, p6;
+			long int             Dk, X, Y;
+			double               Ds, U, V, W;
+
+			if (my != my_last)
+			{                               /* set-up           */
+				my_last = my;
+
+ /* approximate deviation of reflection points k2, k4 from my - 1/2      */
+				Ds = sqrt(my + 0.25);
+
+ /* mode m, reflection points k2 and k4, and points k1 and k5, which     */
+ /* delimit the centre region of h(x)                                    */
+				m  = (long int) my;
+				k2 = (long int) ceil(my - 0.5 - Ds);
+				k4 = (long int)     (my - 0.5 + Ds);
+				k1 = k2 + k2 - m + 1L;
+				k5 = k4 + k4 - m;
+
+ /* range width of the critical left and right centre region             */
+				dl = (double) (k2 - k1);
+				dr = (double) (k5 - k4);
+
+ /* recurrence constants r(k) = p(k)/p(k-1) at k = k1, k2, k4+1, k5+1    */
+				r1 = my / (double) k1;
+				r2 = my / (double) k2;
+				r4 = my / (double)(k4 + 1L);
+				r5 = my / (double)(k5 + 1L);
+
+ /* reciprocal values of the scale parameters of expon. tail envelopes   */
+				ll =  log(r1);                                   /* expon. tail left */
+				lr = -log(r5);                                   /* expon. tail right*/
+
+ /* Poisson constants, necessary for computing function values f(k)      */
+				l_my = log(my);
+				c_pm = m * l_my - _unur_factorialln(m);
+
+ /* function values f(k) = p(k)/p(m) at k = k2, k4, k1, k5               */
+				f2 = f(k2, l_my, c_pm);
+				f4 = f(k4, l_my, c_pm);
+				f1 = f(k1, l_my, c_pm);
+				f5 = f(k5, l_my, c_pm);
+
+ /* area of the two centre and the two exponential tail regions          */
+ /* area of the two immediate acceptance regions between k2, k4          */
+				p1 = f2 * (dl + 1.0);                            /* immed. left      */
+				p2 = f2 * dl         + p1;                       /* centre left      */
+				p3 = f4 * (dr + 1.0) + p2;                       /* immed. right     */
+				p4 = f4 * dr         + p3;                       /* centre right     */
+				p5 = f1 / ll         + p4;                       /* expon. tail left */
+				p6 = f5 / lr         + p5;                       /* expon. tail right*/
+			}
+
+		for (;;)
+		{
+ /* generate uniform number U -- U(0, p6)                                */
+ /* case distinction corresponding to U                                  */
+			if ((U = uniform() * p6) < p2)
+			{     /* centre left      */
+
+ /* immediate acceptance region R2 = [k2, m) *[0, f2),  X = k2, ... m -1 */
+				if ((V = U - p1) < 0.0)  return(k2 + (long int)(U/f2));
+ /* immediate acceptance region R1 = [k1, k2)*[0, f1),  X = k1, ... k2-1 */
+				if ((W = V / dl) < f1 )  return(k1 + (long int)(V/f1));
+
+ /* computation of candidate X < k2, and its counterpart Y > k2          */
+ /* either squeeze-acceptance of X or acceptance-rejection of Y          */
+				Dk = (long int)(dl * uniform()) + 1L;
+				if (W <= f2 - Dk * (f2 - f2/r2))
+				{             /* quick accept of  */
+					return(k2 - Dk);                             /* X = k2 - Dk      */
+				}
+				if ((V = f2 + f2 - W) < 1.0)
+				{                 /* quick reject of Y*/
+					Y = k2 + Dk;
+					if (V <= f2 + Dk * (1.0 - f2)/(dl + 1.0))
+					{  /* quick accept of  */
+						return(Y);                                 /* Y = k2 + Dk      */
+					}
+					if (V <= f(Y, l_my, c_pm))  return(Y);       /* final accept of Y*/
+				}
+				X = k2 - Dk;
+			}
+			else if (U < p4)
+			{                               /* centre right     */
+	/*  immediate acceptance region R3 = [m, k4+1)*[0, f4), X = m, ... k4    */
+				if ((V = U - p3) < 0.0)  return(k4 - (long int)((U - p2)/f4));
+ /* immediate acceptance region R4 = [k4+1, k5+1)*[0, f5)                */
+				if ((W = V / dr) < f5 )  return(k5 - (long int)(V/f5));
+
+ /* computation of candidate X > k4, and its counterpart Y < k4          */
+ /* either squeeze-acceptance of X or acceptance-rejection of Y          */
+				Dk = (long int)(dr * uniform()) + 1L;
+				if (W <= f4 - Dk * (f4 - f4*r4))
+				{             /* quick accept of  */
+					return(k4 + Dk);                             /* X = k4 + Dk      */
+				}
+				if ((V = f4 + f4 - W) < 1.0)
+				{                 /* quick reject of Y*/
+					Y = k4 - Dk;
+					if (V <= f4 + Dk * (1.0 - f4)/ dr)
+					{         /* quick accept of  */
+						return(Y);                                 /* Y = k4 - Dk      */
+					}
+					if (V <= f(Y, l_my, c_pm))  return(Y);       /* final accept of Y*/
+				}
+				X = k4 + Dk;
+			}
+			else
+			{
+				W = uniform();
+				if (U < p5)
+				{                                  /* expon. tail left */
+					Dk = (long int)(1.0 - log(W)/ll);
+					if ((X = k1 - Dk) < 0L)  continue;           /* 0 <= X <= k1 - 1 */
+					W *= (U - p4) * ll;                          /* W -- U(0, h(x))  */
+					if (W <= f1 - Dk * (f1 - f1/r1))  return(X); /* quick accept of X*/
+				}
+				else
+				{                                         /* expon. tail right*/
+					Dk = (long int)(1.0 - log(W)/lr);
+					X  = k5 + Dk;                                /* X >= k5 + 1      */
+					W *= (U - p5) * lr;                          /* W -- U(0, h(x))  */
+					if (W <= f5 - Dk * (f5 - f5*r5))  return(X); /* quick accept of X*/
+				}
+			}
+
+ /* acceptance-rejection test of candidate X from the original area      */
+ /* test, whether  W <= f(k),    with  W = U*h(x)  and  U -- U(0, 1)     */
+ /* log f(X) = (X - m)*log(my) - log X! + log m!                         */
+			if (log(W) <= X * l_my - _unur_factorialln(X) - c_pm)  return(X);
+		}
+	} /* end of my >= 10 */
+
+
+  /* -X- end of generator code -X- */
+  
+} /* end of unur_stdgen_sample_poisson_pprsc() */
 

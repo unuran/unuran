@@ -392,6 +392,9 @@ int _unur_stdgen_poisson_init( struct unur_par *par, struct unur_gen *gen );
 int unur_stdgen_sample_poisson_pdtabl( struct unur_gen *gen );
 int unur_stdgen_sample_poisson_pdac( struct unur_gen *gen );
 /* Tabulated Inversion combined with Acceptance Complement                   */
+int unur_stdgen_sample_poisson_pdtabl( struct unur_gen *gen );
+int unur_stdgen_sample_poisson_pprsc( struct unur_gen *gen );
+/* Tabulated Inversion combined with Patchwork Rejection                     */
 
 /*---------------------------------------------------------------------------*/
 /* Zipf (or Zeta) distribution  [1; ch.11.20, p.465]                         */

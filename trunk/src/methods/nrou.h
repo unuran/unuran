@@ -61,7 +61,7 @@
       constant. For computational reasons @i{r=1} should be used if
       possible (this is the default).
       Moreover, this implementation uses the center @unurmath{\mu} of
-      the distribution (see unur_distr_cont_set_center() for 
+      the distribution (see unur_distr_cont_get_center() for 
       details of its default values). 
 
       For the special case with @unurmath{r=1} the coordinates of the
@@ -83,7 +83,7 @@
       These bounds can be given directly. Otherwise they are computed
       automatically by means of a (slow) numerical routine.
       Of course this routine can fail, especially when this rectangle
-      is not bounded. 
+      is not bounded.
 
       It is important to note that the algorithm works with 
       @unurmath{PDF(x-\mu)} instead of @unurmath{PDF(x).}
@@ -93,7 +93,13 @@
 
    =HOWTOUSE
       For using the NROU method UNURAN needs the PDF of the
-      distribution. A bounding rectangle can be given by the
+      distribution. Additionally, the parameter @i{r} can be set via 
+      a unur_vnrou_set_r() call. Notice that the acceptance
+      probability decreases when @i{r} is increased. On the other
+      hand is is more unlikely that the bounding rectangle does not
+      exist if @i{r} is small.
+
+      A bounding rectangle can be given by the
       unur_vnrou_set_u() and unur_vnrou_set_v() calls. 
 
       @emph{Important:} The bounding rectangle has to be
@@ -137,10 +143,10 @@ int unur_nrou_set_u( UNUR_PAR *parameters, double umin, double umax );
    rectangle is computed numerically.
    
    @emph{Notice}: Computing the minimal bounding rectangle may fail
-   under some circumstances, e.g. this is likely for multimodal
-   distributions. 
-   For @unurmath{T_c}-concave distributions with @unurmath{c=-1/2} it
-   should work.
+   under some circumstances. Moreover, for multimodal distributions
+   the bounds might be too small as only local extrema are computed.
+   Nevertheless, for @unurmath{T_c}-concave distributions with
+   @unurmath{c=-1/2} it should work.
 
    @emph{Important:} The bounding rectangle that has to be
    provided is for the function @unurmath{PDF(x-center)!}
@@ -165,8 +171,6 @@ int unur_nrou_set_r( UNUR_PAR *parameters, double r );
    method.
    
    @emph{Notice}: This parameter must satisfy @var{r}>0.
-   Setting to a nonpositive value is ignored and in this case the
-   default value is used instead.
 
    Default: @code{1}.
 */
@@ -194,7 +198,7 @@ int unur_nrou_set_verify( UNUR_PAR *parameters, int verify );
 
 int unur_nrou_chg_verify( UNUR_GEN *generator, int verify );
 /* 
-   Change the verifying of algorithm while sampling (on/off).
+   Change the verifying of algorithm while sampling on/off.
 */
 
 /* =END */

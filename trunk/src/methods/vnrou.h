@@ -46,21 +46,22 @@
 
    =OPTIONAL mode, center, bounding rectangle for acceptance region
 
-   =SPEED Set-up: fast, Sampling: slow
+   =SPEED Set-up: fast or slow, Sampling: slow
 
    =REF  [WGS91]
 
-   =DESCRIPTION VNROU is an implementation of the multivariate
+   =DESCRIPTION 
+      VNROU is an implementation of the multivariate
       ratio-of-uniforms method which uses a (minimal) bounding
       hyper-rectangle, see also @ref{Ratio-of-Uniforms}.  It uses an
-      additional parameter @code{r} that can be used to adjust the
+      additional parameter @i{r} that can be used for adjusting the
       algorithm to the given distribution to improve performance
       and/or to make this method applicable.  Larger values of
-      @code{r} increase the class of distributions for which the
-      method works at the expense of a higher rejection
-      constant. Moreover, this implementation uses the center
+      @i{r} increase the class of distributions for which the
+      method works at the expense of higher rejection
+      constants. Moreover, this implementation uses the center 
       @unurmath{\mu} of the distribution (which is set to the mode or
-      mean by default, see unur_distr_cvec_set_center() for details of
+      mean by default, see unur_distr_cvec_get_center() for details of
       its default values).
 
       The minimal bounding has then the coordinates
@@ -74,12 +75,12 @@
       @unurmath{\mu_i} is the @i{i}-th coordinate of the center
       @unurmath{\mu.} 
       @unurmath{d} denotes the dimension of the distribution.
-      These bounds can either be given directly, or these are computed
+      These bounds can either be given directly, or are computed
       automatically by means of an numerical routine 
       by Hooke and Jeeves @unurbibref{HJa61} called direct search 
       (see @file{src/utils/hooke.c} for further references and
-      details). Of course this can fail, especially when this
-      rectangle is not bounded.
+      details). Of course this algorithm can fail, especially when
+      this rectangle is not bounded.
 
       It is important to note that the algorithm works with 
       @unurmath{PDF(x-center)} instead of 
@@ -89,8 +90,8 @@
       a very long and skinny ellipsoid along a diagonal of the (huge)
       bounding rectangle.
 
-      VNROU is based on the rejection method (@pxref{Rejection}).
-      And it is important to note that the acceptance probability
+      VNROU is based on the rejection method (@pxref{Rejection}),
+      and it is important to note that the acceptance probability
       decreases exponentially with dimension. Thus even for moderately
       many dimensions (e.g. 5) the number of repetitions to get one
       random vector can be prohibitively large and the algorithm seems
@@ -98,18 +99,29 @@
 
    =HOWTOUSE
       For using the VNROU method UNURAN needs the PDF of the
-      distribution. Additionally the parameter @code{r} can be set via
+      distribution. Additionally, the parameter @i{r} can be set via
       a unur_vnrou_set_r() call. Notice that the acceptance
-      probability increases when @code{r} is increased. On the other
+      probability decreases when @i{r} is increased. On the other
       hand is is more unlikely that the bounding rectangle does not
-      exist if @code{r} is small.
-      
-      The bounding rectangle can be given by the unur_vnrou_set_u()
-      and unur_vnrou_set_v() calls. If these are not called then the
-      minimal bounding rectangle is computed automatically. Using 
-      unur_vnrou_set_verify() and unur_vnrou_chg_verify() one can run
-      the sampling algorithm in a checking mode, i.e., in every cycle
-      of the rejection loop it is checked whether the used 
+      exist if @i{r} is small.
+
+      A bounding rectangle can be given by the
+      unur_vnrou_set_u() and unur_vnrou_set_v() calls. 
+
+      @emph{Important:} The bounding rectangle has to be
+      provided for the function @unurmath{PDF(x-center)!} 
+      Notice that @code{center} is the center of the given
+      distribution, see unur_distr_cvec_set_center().
+      If in doubt or if this value is not optimal, it can be changed
+      (overridden) by a unur_distr_cvec_set_center() call.
+
+      If the coordinates of the bounding rectangle are not provided by
+      the user then the minimal bounding rectangle is computed
+      automatically. 
+
+      By means of unur_vnrou_set_verify() and unur_vnrou_chg_verify()
+      one can run the sampling algorithm in a checking mode, i.e., in
+      every cycle of the rejection loop it is checked whether the used
       rectangle indeed enclosed the acceptance region of the
       distribution. When in doubt (e.g., when it is not clear whether
       the numerical routine has worked correctly) this can be used to
@@ -137,11 +149,13 @@ int unur_vnrou_set_u( UNUR_PAR *parameters, double *umin, double *umax );
    hyper-rectangle is computed numerically.
   
    @strong{Important}: The boundaries are those of the density shifted
-   by the center of the distribution.
+   by the center of the distribution, i.e., for the 
+   function @unurmath{PDF(x-center)!}
 
    @emph{Notice}: Computing the minimal bounding rectangle may fail
-   under some circumstances. In particular for multimodal
-   distributions this might fail.
+   under some circumstances. Moreover, for multimodal distributions
+   the bounds might be too small as only local extrema are computed.
+   Nevertheless, for log-concave distributions it should work.
 
    Default: not set (i.e. computed automatically)
 */
@@ -151,7 +165,7 @@ int unur_vnrou_set_v( UNUR_PAR *parameters, double vmax );
    Set upper boundary for bounding hyper-rectangle. 
    If no values are given, the density at the mode is evaluated.
    If no mode is given for the distribution it is computed
-   numercally (and might fail).
+   numerically (and might fail).
   
    Default: not set (i.e. computed automatically)
 */
@@ -162,8 +176,6 @@ int unur_vnrou_set_r( UNUR_PAR *parameters, double r );
    ratio-of-uniforms method.
 
    @emph{Notice}: This parameter must satisfy @var{r}>0. 
-   Setting to a nonpositive value is ignored and in this case the
-   default value value is used instead.
 
    Default: @code{1}.
 */

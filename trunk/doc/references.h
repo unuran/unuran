@@ -81,6 +81,12 @@ Computing 12, 223-246.
 @i{Generating gamma variates by a modified rejection technique},
 Communications of the ACM 25, 47-54.
 
+@anchor{bib:ADb82}
+@item [ADb82]
+@sc{J.H. Ahrens, U. Dieter} (1982).
+@i{Computer generation of Poisson deviates from modified normal distributions},
+ACM Trans. Math. Software 8, 163-179.
+
 @anchor{bib:BMa58}
 @item [BMa58]
 @sc{G.E.P. Box and M.E. Muller} (1958).
@@ -99,6 +105,13 @@ Appl. Statist. 26(1), 71-75.
 @i{The ACR Method for generating normal random variables},
 OR Spektrum 12, 181-185.
 
+@anchor{bib:KAa81}
+@item [KAa81]
+@sc{A.W. Kemp} (1981).
+@i{Efficient generation of logarithmically distributed 
+pseudo-random variables},
+Appl. Statist. 30, 249-253.
+
 @anchor{bib:KRa76}
 @item [KRa76]
 @sc{A.J. Kinderman and J.G. Ramage} (1976).
@@ -116,6 +129,12 @@ ACM Trans. Math. Software 13, 168-172.
 @sc{G. Marsaglia} (1962).
 @i{Improving the Polar Method for Generating a Pair of Random Variables},
 Boeing Sci. Res. Lab., Seattle, Washington.
+
+@anchor{bib:ZHa94}
+@item [ZHa94]
+@sc{H. Zechner} (1994).
+@i{Efficient sampling from continuous and discrete unimodal distributions},
+Pd.D. Thesis, 156 pp., Technical University Graz, Austria.
 
 @end table
 

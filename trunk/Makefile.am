@@ -7,7 +7,6 @@ SUBDIRS = . src scripts examples tests doc
 
 EXTRA_DIST = \
  KNOWN-PROBLEMS \
- MANIFEST \
  autogen.sh
 
 # clean backup files

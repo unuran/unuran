@@ -1,3 +1,203 @@
+*******Problems and smaller addings for existing library ***************
+
+-----------------------------------------------------------------------------
+
+(*) CSTD, DSTD: alle varianten sollten fuer alle parameter funkionieren
+
+-----------------------------------------------------------------------------
+
+(*) CSTD: Beta generatoren funktionieren nicht (ausser inv)
+
+-----------------------------------------------------------------------------
+
+(*) DOC: debug flags:
+	bits 2-12  ... setup
+	bits 13-24 ... adaptive steps
+	bits 25-32 ... trace sampling
+
+	bits 1-32 print parameters of generator object
+	(irgend eins der bits)
+
+-----------------------------------------------------------------------------
+
+(*) DOC: set return 0 on error and 1 on success
+
+-----------------------------------------------------------------------------
+
+(*) DOC: never extract a distribution object from generator object!!
+
+-----------------------------------------------------------------------------
+
+(*) Standard distributions, mode: was soll passieren, wenn dichte
+	nicht unimodal ist??
+
+-----------------------------------------------------------------------------
+
+(*) Floating point arithmetic: (its a pain!!)
+
+	unterscheide zwischen IEEE 754 ja/nein
+
+	macro layer fuer floating point arithmetic
+
+	probleme z.B.:
+	(.) x != 0. ersetzen durch fabs(x) < epsilon  (?????)
+	(.) was ergibt:
+		double a = 1.2345;
+		double b = 1.2345;
+
+		(a == 1.2345)   /* das kann wegen dec->bin imrechnung falsch sein! */
+		(a == b)        /* das auch ?? */
+		b = a; (a == b) /* das wohl eher nicht. oder doch ? */
+
+	(.) ergibt fuer zwei doubles a,b:
+		isnan(a / b) dann und nur dann wenn b==0??
+
+	(.) 1./a ergibt fuer alle "regulaeren" double a eine regulaere double ??
+
+-----------------------------------------------------------------------------
+
+(*) einschraenkung des domain ohne generatorobject neu zu generieren sollte
+    moeglich sein (z.B. bei TABL, AROU, TDR).
+
+-----------------------------------------------------------------------------
+
+(*) DSTD: domain !!
+
+-----------------------------------------------------------------------------
+
+(*) TABL: 
+	(.) ist eine baustelle!!
+	(.) ueberpruefe ob area unter hut zu gross (wie??)
+	(.) make_guide_table nicht jedesmal aufrufen
+	(.) ueberpruefe ob PDF(x) NaN liefert
+	(.) maximale anzahl an startpunkten ??
+	    (notwendig wenn bei equiarea rule die anzahl angegebene
+	    anzahl nicht ausreicht!)
+	
+-----------------------------------------------------------------------------
+
+(*) TDR:
+	(.) variante ohne ableitung der pdf
+	(.) make_guide_table nicht jedesmal aufrufen
+	(.) teste ob uniform = 0 or = 1 (?)
+        (.) implementation for arbitrary c
+
+-----------------------------------------------------------------------------
+
+(*) AROU:
+	(.) make_guide_table nicht jedesmal aufrufen
+	(.) teste ob uniform = 0 or = 1 (?)
+
+-----------------------------------------------------------------------------
+
+(*) RECT:
+	(.) ist eine baustelle!!
+
+-----------------------------------------------------------------------------
+
+(*) CDF aus CEPHES ist ein problem. besser GSL ??
+
+-----------------------------------------------------------------------------
+
+(*) jede methode enthaelt am beginn der datei eine aufzaehlung
+    aller moeglichen parameter. die ist momentan sehr unvollstaendig
+    oder ueberhaupt falsch.
+
+-----------------------------------------------------------------------------
+
+(*) discrete log-concave
+
+-----------------------------------------------------------------------------
+
+(*) DARI and UTDR: Clean implementation, especially considering the
+    initialisation of all variables, and the logic of retrying
+    setup, if it was unsuccessfull.
+
+    (.) Implementation for arbitrary c
+
+----------------------------------------------------------------------
+
+(*) missing distributions (Burr, GIG, Zipf, ExtremeII, LOMAX
+                                      Lognormal, Slash)
+    (.) finish implementation
+    (.) test correctness of distribution
+
+----------------------------------------------------------------------
+
+(*) testing UNRUAN on different platforms (including wimdows?)
+
+
+
+
+
+
+
+
+
+*****New ideas linked with UNURAN******************
+
+--------------------------------------------------------------
+
+(*) Statistical testing of mean, variance and quantiles of the generated
+    distributions. (perhaps following WIN-RAND)
+
+------------------------------------------------------------------------
+
+(*) computation of Min(c_loc) for built in distributions
+(*) numerical "estimation" of Min(c_loc) for arbitrary densities
+
+------------------------------------------------------------------------
+
+(*) Generator for unbounded densities
+    Could be realized with TABL following Ahrens's suggestions.
+
+------------------------------------------------------------------------
+
+(*) Generator for multimodal distributions 
+    (partly realized with TABL)
+
+------------------------------------------------------------------------
+
+(*) generator for (bi- and) multivariate T-concave distributions
+
+------------------------------------------------------------------------
+
+(*) "String" user-interface for generator initialization
+
+    eg: gen=init("normaldistribution, 2,5;tdr, N=100");
+
+(*) mathematical formula for density, with  computation of derivative.
+   
+    eg: gen=init("pdf= Exp[x^3-x],lb=0,rb=10;tdr");
+
+------------------------------------------------------------------------
+
+(*) code-generator
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 -----------------------------------------------------------------------------
 
 (*) CSTD, DSTD: alle varianten sollten fuer alle parameter funkionieren

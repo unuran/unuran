@@ -484,10 +484,10 @@ UNUR_DISTR *unur_distr_binomial(double *params, int n_params);
    =CONST    1
    =DOMAIN   0 <= k < infinity
    =FPARAM   0 : p : 0 < p < 1 :  : shape :
+   =STDGEN   INV  Inversion method
    =EON
 */
 UNUR_DISTR *unur_distr_geometric(double *params, int n_params);
-/** TODO: STDGEN **/
 
 /*---------------------------------------------------------------------------*/
 /* Hypergometric distribution  [1; ch.6, p.237]                              */
@@ -517,11 +517,11 @@ UNUR_DISTR *unur_distr_hypergeometric(double *params, int n_params);
    =CONST    - log( 1.-theta);
    =DOMAIN   1 <= k < infinity
    =FPARAM   0 : theta : 0 < theta < 1 :  : shape :
+   =STDGEN   DEF   Inversion/Transformation [KAa81]
    =EON
 */
 UNUR_DISTR *unur_distr_logarithmic(double *params, int n_params);
 /** No CDF !!! **/
-/** TODO: STDGEN **/
 
 /*---------------------------------------------------------------------------*/
 /* Negative Binomial distribution  [1; ch.5.1, p.200]                        */
@@ -550,11 +550,12 @@ UNUR_DISTR *unur_distr_negativebinomial(double *params, int n_params);
    =CONST    exp(theta)
    =DOMAIN   0 <= k < infinity
    =FPARAM   0 : theta : > 0 :  : shape :
+   =STDGEN   DEF  Tabulated Inversion combined with Acceptance Complement [ADb82]
+             2    Tabulated Inversion combined with Patchwork Rejection [ZHa94]
    =EON
 */
 UNUR_DISTR *unur_distr_poisson(double *params, int n_params);
 /** No CDF !!! **/
-/** TODO: STDGEN **/
 
 /*---------------------------------------------------------------------------*/
 /* Zipf (or Zeta) distribution  [1; ch.11.20, p.465]                         */

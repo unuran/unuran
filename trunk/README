@@ -1,3 +1,94 @@
+UNURAN (Universal Non-Uniform RANdom variate generation)
+
+is an ANSI-C library licensed under GPL. 
+It contains universal (also called automatic or 
+black-box) algorithms that can generate from large classes of continuous
+or discrete distributions. Of course the user must supply some information
+about the desired distribution, especialy a c-function that computes the
+density and - depending on the chosen methods - some additional information 
+(like the borders of the domain, the mode, the derivative of the density ...).
+After a user has given this information an init-program computes all tables
+and constants necessary for the random variate generation. The sample program 
+can then generate variates from the desired distribution. 
+
+The main part of UNURAN are the different universal algorithms 
+(called methods). There are:
+7 methods for continuous univariate distributions
+3 methods for discrete univariate distributions
+1 method for univariate empirical distributions (given by an observed sample)
+1 method for multivariate empirical distributions (given by a vector sample)
+
+The choice of the method depends on the information available for the 
+distribution and on the desired charateristics of the algorithm 
+(fast initialisation and slow sampling, slow initialisation and fast sampling)
+
+A second important part of UNURAN is the distribution module containing all 
+necessary programs for about 15 continuous and 6 discrete univariate standard
+distributions. Thus UNURAN can be used without any problem (and without extra 
+coding) to obtain very fast generators for the best known standard 
+distributions. Especailly for the cumulative distribution functions of this
+standard distributions we need 5 mathematical functions. We used the 
+programs of the Cephes Library (not licensed under GPL) to evaluate these
+functions.
+
+
+Allthough coded in ANSI-C UNURAN uses an object oriented user interface relying
+on: 
+  distribution objects (containing all information of the distribution)
+  parameter objects (containing all input parameters (and defaults) for the
+                     different methods)
+  generator object (produced by the initialization program, containing
+                    everything necessary for sampling)
+
+Together with the most important functions init() to initializa a new generator
+and sample() to generate random variates, the library provides new(), free(), 
+get() and set() functions to manipulate the above objects.
+                    
+
+Available at: http://statistik.wu-wien.ac.at/unuran
+
+
+Of course a uniform random number generator is necessary to use UNURAN. We 
+provide an interface to use the PRNG uniform package from the University
+of Salzburg (Austria), available at http://random.mat.sbg.ac.at/ or from
+the UNURAN-webpage. It is also no problem to include any other uniform
+random number generators as long as it can be called as a double function
+without parameters.
+
+
+
+ADVANTAGES OF UNUNRAN
+Why can it be worth the to download UNURAN and to 
+understand the concept of the interface? Is'nt it much faster to implement
+a simple standard method for the distribution I am interested in?
+
+The first and main advantage lies in the modelling flexibility you gain for 
+yor simulation. Once you have implemented UNURAN you can generate without 
+problems (and without coding more than the desired density function) from 
+practically all uni-modal distributions. For a really big number of standard
+distributions (and truncated versions of these standard distributions) you 
+need not even code the density, as it is included in UNURAN.
+
+You get fast generation algorithms. Their speed is only slightly influenced
+by the chosen distribution.
+
+Correlation induction facilities are included.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 User interface:

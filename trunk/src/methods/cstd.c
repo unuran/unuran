@@ -547,7 +547,6 @@ _unur_cstd_create( struct unur_par *par )
   /* routines for sampling and destroying generator */
   SAMPLE = NULL;      /* will be set in _unur_cstd_init() */
   gen->destroy = _unur_cstd_free;
-  gen->reinit = NULL; /* no re-initialization routine required */
 
   /* defaults */
   GEN.gen_param = NULL;  /* parameters for the generator                     */

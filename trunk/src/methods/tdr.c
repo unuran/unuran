@@ -389,12 +389,6 @@ static struct unur_gen *_unur_tdr_create( struct unur_par *par );
 /* create new (almost empty) generator object.                               */
 /*---------------------------------------------------------------------------*/
 
-/* No reinit() cal                                                           */
-/*  static int _unur_tdr_reinit( struct unur_gen *gen );                     */
-/*---------------------------------------------------------------------------*/
-/* Re-initialize (existing) generator.                                       */
-/*---------------------------------------------------------------------------*/
-
 static double _unur_tdr_gw_sample( struct unur_gen *generator );
 static double _unur_tdr_gw_sample_check( struct unur_gen *generator );
 static double _unur_tdr_ps_sample( struct unur_gen *generator );

@@ -161,7 +161,6 @@ _unur_tdr_create( struct unur_par *par )
 
   /* routines for sampling and destroying generator */
   gen->destroy = _unur_tdr_free;
-  gen->reinit = _unur_reinit_error;
 
   /* sampling routines */
   switch (par->variant & TDR_VARMASK_VARIANT) {

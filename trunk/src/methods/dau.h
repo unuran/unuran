@@ -44,8 +44,6 @@
    N. The algorithmus is based on an ingeneous method by A.J. Walker
    and requires a table of size (at least) N and needs only one
    comparison for each generated random variate.
-
-   There is no reinit() routine.
 */
 
 /*---------------------------------------------------------------------------*/

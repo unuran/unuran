@@ -309,7 +309,6 @@ _unur_rect_create( struct unur_par *par )
   /* routines for sampling and destroying generator */
   SAMPLE = _unur_rect_sample_vec;
   gen->destroy = _unur_rect_free;
-  gen->reinit = _unur_reinit_error;
 
   /* set all pointers to NULL */
   GEN.domain = NULL;

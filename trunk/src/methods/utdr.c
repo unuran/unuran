@@ -111,11 +111,6 @@ static struct unur_gen *_unur_utdr_create( struct unur_par *par );
 /* create new (almost empty) generator object.                               */
 /*---------------------------------------------------------------------------*/
 
-static int _unur_utdr_reinit( struct unur_gen *gen );
-/*---------------------------------------------------------------------------*/
-/* Re-initialize (existing) generator.                                       */
-/*---------------------------------------------------------------------------*/
-
 static double _unur_utdr_sample( struct unur_gen *generator );
 static double _unur_utdr_sample_check( struct unur_gen *generator );
 /*---------------------------------------------------------------------------*/
@@ -975,7 +970,6 @@ _unur_utdr_create( struct unur_par *par )
   /* routines for sampling and destroying generator */
   SAMPLE = (par->variant & UTDR_VARFLAG_VERIFY) ? _unur_utdr_sample_check : _unur_utdr_sample;
   gen->destroy = _unur_utdr_free;
-  gen->reinit = _unur_utdr_reinit;
 
   /* copy some parameters into generator object */
   GEN.il = DISTR.BD_LEFT;           /* left boundary of domain         */
@@ -1030,7 +1024,7 @@ _unur_utdr_create( struct unur_par *par )
 /*---------------------------------------------------------------------------*/
 
 int
-_unur_utdr_reinit( struct unur_gen *gen )
+unur_utdr_reinit( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* re-initialize (existing) generator.                                  */
      /*                                                                      */
@@ -1048,7 +1042,7 @@ _unur_utdr_reinit( struct unur_gen *gen )
 
   /* compute universal bounding rectangle */
   return _unur_utdr_hat( gen );
-} /* end of _unur_utdr_reinit() */
+} /* end of unur_utdr_reinit() */
 
 /*****************************************************************************/
 

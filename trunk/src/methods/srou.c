@@ -149,11 +149,6 @@ static struct unur_gen *_unur_srou_create( struct unur_par *par );
 /* create new (almost empty) generator object.                               */
 /*---------------------------------------------------------------------------*/
 
-static int _unur_srou_reinit( struct unur_gen *gen );
-/*---------------------------------------------------------------------------*/
-/* Re-initialize (existing) generator.                                       */
-/*---------------------------------------------------------------------------*/
-
 static double _unur_srou_sample_mirror( struct unur_gen *gen );
 static double _unur_srou_sample_check( struct unur_gen *gen );
 static double _unur_srou_sample( struct unur_gen *gen );
@@ -829,7 +824,6 @@ _unur_srou_create( struct unur_par *par )
     SAMPLE = (par->variant & SROU_VARFLAG_MIRROR) ? _unur_srou_sample_mirror : _unur_srou_sample;
 
   gen->destroy = _unur_srou_free;
-  gen->reinit = _unur_srou_reinit;
 
   /* mode must be in domain */
   if ( (DISTR.mode < DISTR.BD_LEFT) ||
@@ -866,7 +860,7 @@ _unur_srou_create( struct unur_par *par )
 /*---------------------------------------------------------------------------*/
 
 int
-_unur_srou_reinit( struct unur_gen *gen )
+unur_srou_reinit( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* re-initialize (existing) generator.                                  */
      /*                                                                      */
@@ -885,7 +879,7 @@ _unur_srou_reinit( struct unur_gen *gen )
   /* compute universal bounding rectangle */
   return _unur_srou_rectangle( gen );
 
-} /* end of _unur_srou_reinit() */
+} /* end of unur_srou_reinit() */
 
 /*****************************************************************************/
 

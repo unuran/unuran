@@ -450,7 +450,6 @@ _unur_dstd_create( struct unur_par *par )
   /* routines for sampling and destroying generator */
   SAMPLE = NULL;    /* will be set in _unur_dstd_init() */
   gen->destroy = _unur_dstd_free;
-  gen->reinit = _unur_reinit_error;
 
   /* defaults */
   GEN.gen_param = NULL;  /* parameters for the generator      */

@@ -41,7 +41,6 @@
 /* Invoke generators (macros to avoid function calls)                        */  
 
 #define _unur_init(par)               (par)->init(par)
-#define _unur_reinit(par)             (par)->reinit(par)
 
 #define _unur_sample_discr(gen)       (gen)->sample.discr(gen)
 #define _unur_sample_cont(gen)        (gen)->sample.cont(gen)
@@ -55,11 +54,6 @@
 #define _unur_gen_is_discr(gen) ( (((gen)->method & UNUR_MASK_TYPE) == UNUR_METH_DISCR) ? 1 : 0 )
 #define _unur_gen_is_cont(gen)  ( (((gen)->method & UNUR_MASK_TYPE) == UNUR_METH_CONT)  ? 1 : 0 )
 #define _unur_gen_is_vec(gen)   ( (((gen)->method & UNUR_MASK_TYPE) == UNUR_METH_VEC)   ? 1 : 0 )
-
-/*---------------------------------------------------------------------------*/
-/* aux routine when no re-initialization routine is available                */
-
-int _unur_reinit_error( UNUR_GEN *gen ); 
 
 /*---------------------------------------------------------------------------*/
 /* aux routine when no sampling routine is available                         */

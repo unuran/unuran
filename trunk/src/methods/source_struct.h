@@ -187,7 +187,6 @@ struct unur_gen {
     _UNUR_SAMPLING_ROUTINE_VEC   *vec;
   }               sample;     /* pointer to sampling routine                 */
   
-  int (*reinit)(struct unur_gen *gen);   /* pointer to re-initialization routine */
   void (*destroy)(struct unur_gen *gen); /* pointer to destructor            */ 
   
   unsigned method;            /* indicates method and generator to be used   */

@@ -625,17 +625,52 @@ sub scan_validate {
 	shift @gentest;
 	die "invalide number of test indicators" unless ($#gentest == $#generators);
 	foreach (@generators) {
-	    my $gen = $_;
-	    $gen =~ s/par\[(\d+)\]/par/g;
-	    $gen =~ s/\@distr\@/distr\[$n_distr\]/g;
+	    # get entry for generator
+	    my $genline = $_;
+
+	    # remove [..] from par[..]
+	    # (it is just to number generators for convience)
+	    $genline =~ s/par\[(\d+)\]/par/g;
+
+	    # insert distribution object
+	    $genline =~ s/\@distr\@/distr\[$n_distr\]/g;
+
+	    # read what we have to test
 	    $todo = shift @gentest;
+
+	    # split into lines again
+	    my @lines = split /\n/, $genline;
+
+	    # print lines 
 	    print OUT "\tunur_errno = 0;\n";
-	    print OUT $gen;
-	    if ( $todo eq '.' ) {
-		# nothing to do
-		print OUT "\tgen = NULL;\n"; }
+
+	    my $have_gen_lines = 0;
+	    foreach $l (@lines) {
+		if ($l =~ /gen/ and !$have_gen_lines) {
+		    $have_gen_lines = 1;
+		    if ( $todo eq '.' ) {
+			# nothing to do
+			print OUT "\tgen = NULL; if (0) {"; 
+			last;
+		    }
+		    else {
+			print OUT "\tgen = unur_init(par);\n\tif (gen) {\n";
+		    }
+		}
+
+		print OUT "$l\n";
+	    }
+
+	    if ($have_gen_lines) {
+		print OUT "\t;}\n";
+	    }
 	    else {
-		print OUT "\tgen = unur_init(par);\n"; }
+		if ( $todo eq '.' ) {
+		    # nothing to do
+		    print OUT "\tgen = NULL;\n"; }
+		else {
+		    print OUT "\tgen = unur_init(par);\n"; }
+	    }
 	    print OUT "\tn_tests_failed += run_validate_chi2( TESTLOG, 0, gen, '$todo' );\n";
 	    print OUT "\tunur_free(gen);\n\n";
 	}	    
@@ -669,8 +704,7 @@ sub print_test_command {
       if ($test_command =~ /^\s*expected_NULL\s*/ or 
 	  $test_command =~ /^\s*expected_setfailed\s*/ or 
 	  $test_command =~ /^\s*expected_INFINITY\s*/ or 
-	  $test_command =~ /^\s*expected_reinit\s*/ or
-	  $test_command =~ /^\s*expected_no_reinit\s*/) {
+	  $test_command =~ /^\s*expected_reinit\s*/) {
 	  $test_command =~ s/\s+//g;
 	  print OUT "n_tests_failed += check_$test_command\( TESTLOG, $INPUT_LINE_NUMBER, ($last_C_line) )\;\n";
 	  last SWITCH;

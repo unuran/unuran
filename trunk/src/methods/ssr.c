@@ -111,11 +111,6 @@ static struct unur_gen *_unur_ssr_create( struct unur_par *par );
 /* create new (almost empty) generator object.                               */
 /*---------------------------------------------------------------------------*/
 
-static int _unur_ssr_reinit( struct unur_gen *gen );
-/*---------------------------------------------------------------------------*/
-/* Re-initialize (existing) generator.                                       */
-/*---------------------------------------------------------------------------*/
-
 static double _unur_ssr_sample( struct unur_gen *gen );
 static double _unur_ssr_sample_check( struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
@@ -788,7 +783,6 @@ _unur_ssr_create( struct unur_par *par )
   /* routines for sampling and destroying generator */
   SAMPLE = (par->variant & SSR_VARFLAG_VERIFY) ? _unur_ssr_sample_check : _unur_ssr_sample;
   gen->destroy = _unur_ssr_free;
-  gen->reinit = _unur_ssr_reinit;
 
   /* mode must be in domain */
   if ( (DISTR.mode < DISTR.BD_LEFT) ||
@@ -826,7 +820,7 @@ _unur_ssr_create( struct unur_par *par )
 /*---------------------------------------------------------------------------*/
 
 int
-_unur_ssr_reinit( struct unur_gen *gen )
+unur_ssr_reinit( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* re-initialize (existing) generator.                                  */
      /*                                                                      */
@@ -845,7 +839,7 @@ _unur_ssr_reinit( struct unur_gen *gen )
   /* compute universal bounding rectangle */
   return _unur_ssr_hat( gen );
 
-} /* end of _unur_ssr_reinit() */
+} /* end of unur_ssr_reinit() */
 
 /*****************************************************************************/
 

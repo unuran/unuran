@@ -920,7 +920,6 @@ _unur_ninv_create( struct unur_par *par )
   }
 
   gen->destroy = _unur_ninv_free;
-  gen->reinit = NULL;               /* no re-initialization routine required */
 
   /* copy parameters into generator object */
   GEN.max_iter = PAR.max_iter;      /* maximal number of iterations          */

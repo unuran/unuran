@@ -55,21 +55,6 @@ UNUR_GEN *unur_init( UNUR_PAR *par )
 
 /*---------------------------------------------------------------------------*/
 
-int unur_reinit( UNUR_GEN *gen )
-{               
-  /* if gen->reinit == NULL   --> nothing to do */
-  return (gen ? gen->reinit(gen) : 1 );
-} /* end of unur_reinit() */
-
-int _unur_reinit_error( UNUR_GEN *gen )
-{
-  /* no re-initialization routine available */
-  _unur_warning(gen->genid,UNUR_ERR_GENERIC,"no re-initialization routine available");
-  return 0;
-} /* end of _unur_reinit_error() */
-
-/*---------------------------------------------------------------------------*/
-
 int unur_sample_discr(UNUR_GEN *gen)
 {
   CHECK_NULL(gen,0);

@@ -75,7 +75,7 @@
   Almost all routines check a given pointer they read from or write
   to the given adress. This does not hold for time-critical routines
   like all sampling routines. Then your are responsible for checking a
-  pointer that is returned from a unur_init() or unur_reinit() call.
+  pointer that is returned from a unur_init() call.
   However it is possible to turn on checking for invalid NULL pointers
   even in such time-critical routines by defining
   @code{UNUR_ENABLE_CHECKNULL} in unuran_config.h.

@@ -84,7 +84,7 @@
    be used (otherwise this call is not necessary since then this figure is
    computed directly from the p.d.f.).
    If any of mode, p.d.f. or c.d.f. at the mode, or the area below the mode
-   has been changed, then unur_reinit() must be executed.
+   has been changed, then unur_ssr_reinit() must be executed.
    (Otherwise the generator produces garbage).
 
    There exists a test mode that verifies whether the conditions for
@@ -103,15 +103,28 @@ UNUR_PAR *unur_ssr_new( UNUR_DISTR *distribution );
 
 /*...........................................................................*/
 
+int unur_ssr_reinit( UNUR_GEN *generator );
+/* 
+   Update an existing generator object after the distribution has been
+   modified. It must be executed whenever the parameters or the domain
+   of the distributions has been changed (see below).
+   It is faster than destroying the existing object and build
+   a new one from scratch.
+   If reinitialization has been successful @code{1} is returned,
+   in case of a failure @code{0} is returned.
+*/
+
 int unur_ssr_set_cdfatmode( UNUR_PAR *parameters, double Fmode );
-/* Set c.d.f. at mode. 
+/* 
+   Set c.d.f. at mode. 
    When set the performance of the algorithm is increased by factor 2.
    However, when the parameters of the distribution are changed
    (=>) unur_ssr_chg_cdfatmode() has to be used to update this value.
 */
 
 int unur_ssr_set_pdfatmode( UNUR_PAR *parameters, double fmode );
-/* Set pdf at mode. if set the p.d.f. at the mode is never changed.          
+/* 
+   Set pdf at mode. if set the p.d.f. at the mode is never changed.          
    This is to avoid additional computations, when the p.d.f. does not
    change when parameters of the distributions vary. 
    It is only useful when the p.d.f. at the mode does not change with
@@ -124,7 +137,8 @@ int unur_ssr_set_verify( UNUR_PAR *parameters, int verify );
 */
 
 int unur_ssr_set_usesqueeze( UNUR_PAR *parameters, int usesqueeze );
-/* Set flag for using universal squeeze (default: off).
+/* 
+   Set flag for using universal squeeze (default: off).
    using squeezes is only useful when the evaluation of the p.d.f. is 
    (extremely) expensive.
    Using squeezes is automatically disabled when the c.d.f. at the mode
@@ -152,23 +166,31 @@ int unur_ssr_chg_domain( UNUR_GEN *generator, double left, double right );
 */
 
 int unur_ssr_chg_mode( UNUR_GEN *generator, double mode );
-/* Change mode of distribution.
-   unur_reinit() must be executed before sampling from the generator again.
+/* 
+   Change mode of distribution.
+   unur_ssr_reinit() must be executed before sampling from the 
+   generator again.
 */
 
 int unur_ssr_chg_cdfatmode( UNUR_GEN *generator, double Fmode );
-/* Change c.d.f. at mode of distribution.
-   unur_reinit() must be executed before sampling from the generator again.
+/* 
+   Change c.d.f. at mode of distribution.
+   unur_ssr_reinit() must be executed before sampling from the 
+   generator again.
 */
 
 int unur_ssr_chg_pdfatmode( UNUR_GEN *generator, double fmode );
-/* Change p.d.f. at mode of distribution.
-   unur_reinit() must be executed before sampling from the generator again.
+/* 
+   Change p.d.f. at mode of distribution.
+   unur_ssr_reinit() must be executed before sampling from the 
+   generator again.
 */
 
 int unur_ssr_chg_pdfarea( UNUR_GEN *generator, double area );
-/* Change area below p.d.f. of distribution.
-   unur_reinit() must be executed before sampling from the generator again.
+/* 
+   Change area below p.d.f. of distribution.
+   unur_ssr_reinit() must be executed before sampling from the 
+   generator again.
 */
 
 /* =END */

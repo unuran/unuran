@@ -170,7 +170,7 @@ int unur_ninv_chg_pdfparams(UNUR_GEN *generator, double *params, int n_params);
    Notice that it is not possible to change the number of parameters.
    This function only copies the given arguments into the array of
    distribution parameters. If a table is used, it will be computed
-   immediately. (No unur_reinit() call is necessary.)
+   immediately.
 
    IMPORTANT: The given parameters are not checked against domain errors;
    in opposition to the (=>) unur_<distr>_new() call.

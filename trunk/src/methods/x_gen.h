@@ -50,15 +50,6 @@ UNUR_GEN *unur_init( UNUR_PAR *parameters );
   ALWAYS check whether the call was successful or not!
 */
 
-int unur_reinit( UNUR_GEN *generator );
-/*
-  Update an existing generator object after the distribution has been
-  changed. It is faster than destroying the existing object and build
-  a new one from scratch.
-  However it is not implemented all methods yet.
-  (was passiert wenn ein fehler auftritt??) return value = 0 ??
-*/
-
 /*---------------------------------------------------------------------------*/
 /* Sample from generator                                                     */
 

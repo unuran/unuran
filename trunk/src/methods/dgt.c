@@ -128,12 +128,6 @@ static struct unur_gen *_unur_dgt_create( struct unur_par *par );
 /* create new (almost empty) generator object.                               */
 /*---------------------------------------------------------------------------*/
 
-/* No reinit() cal                                                           */
-/*  static int _unur_dgt_reinit( struct unur_gen *gen );                     */
-/*---------------------------------------------------------------------------*/
-/* Re-initialize (existing) generator.                                       */
-/*---------------------------------------------------------------------------*/
-
 static int _unur_dgt_sample( struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 /* sample from generator                                                     */
@@ -443,7 +437,6 @@ _unur_dgt_create( struct unur_par *par )
   /* routines for sampling and destroying generator */
   SAMPLE = _unur_dgt_sample;
   gen->destroy = _unur_dgt_free;
-  gen->reinit = _unur_reinit_error;
 
   /* set all pointers to NULL */
   GEN.cumprob = NULL;

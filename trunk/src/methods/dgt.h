@@ -69,8 +69,6 @@
    Variant 2 is faster but more sensitive to roundoff errors when the
    guide table is large. By default variant 2 is used for short
    probability vectors (N<1000) and variant 1 otherwise.
-
-   There is no reinit() routine.
 */
 
 /*---------------------------------------------------------------------------*/

@@ -168,12 +168,6 @@ static struct unur_gen *_unur_arou_create( struct unur_par *par );
 /* create new (almost empty) generator object.                               */
 /*---------------------------------------------------------------------------*/
 
-/* No reinit() cal                                                           */
-/*  static int _unur_arou_reinit( struct unur_gen *gen );                    */
-/*---------------------------------------------------------------------------*/
-/* Re-initialize (existing) generator.                                       */
-/*---------------------------------------------------------------------------*/
-
 double _unur_arou_sample( struct unur_gen *gen );
 double _unur_arou_sample_check( struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
@@ -793,7 +787,6 @@ _unur_arou_create( struct unur_par *par )
   /* routines for sampling and destroying generator */
   SAMPLE = (par->variant & AROU_VARFLAG_VERIFY) ? _unur_arou_sample_check : _unur_arou_sample;
   gen->destroy = _unur_arou_free;
-  gen->reinit = _unur_reinit_error;
 
   /* set all pointers to NULL */
   GEN.seg         = NULL;

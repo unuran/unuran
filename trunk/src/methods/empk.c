@@ -1,3 +1,4 @@
+
 /*****************************************************************************
  *                                                                           *
  *          UNURAN -- Universal Non-Uniform Random number generator          *
@@ -207,12 +208,6 @@ static struct unur_gen *_unur_empk_init( struct unur_par *par );
 static struct unur_gen *_unur_empk_create( struct unur_par *par );
 /*---------------------------------------------------------------------------*/
 /* create new (almost empty) generator object.                               */
-/*---------------------------------------------------------------------------*/
-
-/* No reinit() call                                                          */
-/*  static int _unur_empk_reinit( struct unur_gen *gen );                    */
-/*---------------------------------------------------------------------------*/
-/* Re-initialize (existing) generator.                                       */
 /*---------------------------------------------------------------------------*/
 
 static double _unur_empk_sample( struct unur_gen *gen );
@@ -876,7 +871,6 @@ _unur_empk_create( struct unur_par *par )
   /* routines for sampling and destroying generator */
   SAMPLE = _unur_empk_sample;
   gen->destroy = _unur_empk_free;
-  gen->reinit = _unur_reinit_error;
 
   /* copy observed data into generator object */
   GEN.n_observ = par->distr->data.cemp.n_sample;     /* sample size */

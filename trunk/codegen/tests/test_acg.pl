@@ -72,6 +72,10 @@ my $test_codegen = "test_codegen.c";
 print_log("Read data ...\n\n");
 require $test_conf_file; 
 
+my $use_C       = $Conf::language{'C'};
+my $use_FORTRAN = $Conf::language{'FORTRAN'};
+my $use_JAVA    = $Conf::language{'JAVA'};
+
 # ----------------------------------------------------------------
 # List of distributions
 my $DISTR = read_PDFdata( $top_srcdir );
@@ -90,7 +94,12 @@ if ($DEBUG) {
 # Print Test data
 print_log("sample size = $Conf::sample_size\n");
 print_log("accuracy = $Conf::accuracy\n");
-print_log("languages = C, FORTRAN, JAVA\n\n");
+
+print_log("languages = ");
+print_log("C")       if $use_C; 
+print_log("FORTRAN") if $use_FORTRAN; 
+print_log("JAVA")    if $use_JAVA; 
+print_log("\n\n");
 
 # ----------------------------------------------------------------
 # Check for missing CONTinuous distributions
@@ -181,15 +190,21 @@ foreach my $distr (@Conf::distr_list) {
 	$UNURAN_main .= "\t$test_name ();\n";
 	
 	# C version
-	$test_name = make_C_gen(\$C_gen,$distr,$method,$test_key,$seed);
-	$C_main .= "\t$test_name ();\n";
-	
+	if ($use_C) {
+	    $test_name = make_C_gen(\$C_gen,$distr,$method,$test_key,$seed);
+	    $C_main .= "\t$test_name ();\n";
+	}
+
 	# FORTRAN version
-	$test_name = make_FORTRAN_gen(\$FORTRAN_gen,$distr,$method,$test_key,$seed);
-	$FORTRAN_main .= "      CALL $test_name\n";
-	
+	if ($use_FORTRAN) {
+	    $test_name = make_FORTRAN_gen(\$FORTRAN_gen,$distr,$method,$test_key,$seed);
+	    $FORTRAN_main .= "      CALL $test_name\n";
+	}
+
 	# JAVA version
-	$JAVA_main .= make_JAVA_gen(\$JAVA_gen,$distr,$method,$test_key,$seed);
+	if ($use_JAVA) {
+	    $JAVA_main .= make_JAVA_gen(\$JAVA_gen,$distr,$method,$test_key,$seed);
+	}
     }
 }
 
@@ -208,21 +223,27 @@ print UNURAN $UNURAN_gen;
 print UNURAN make_UNURAN_main($UNURAN_main);
 close UNURAN;
 
-open C, ">$C_src" or die "Cannot open C file $C_src";
-print C $C_urng;
-print C $C_gen;
-print C make_C_main($C_main);
-close C;
+if ($use_C) {
+    open C, ">$C_src" or die "Cannot open C file $C_src";
+    print C $C_urng;
+    print C $C_gen;
+    print C make_C_main($C_main);
+    close C;
+}
 
-open FORTRAN, ">$FORTRAN_src" or die "Cannot open FORTRAN file $FORTRAN_src";
-print FORTRAN $FORTRAN_urng;
-print FORTRAN $FORTRAN_gen;
-print FORTRAN make_FORTRAN_main($FORTRAN_main);
-close FORTRAN;
+if ($use_FORTRAN) {
+    open FORTRAN, ">$FORTRAN_src" or die "Cannot open FORTRAN file $FORTRAN_src";
+    print FORTRAN $FORTRAN_urng;
+    print FORTRAN $FORTRAN_gen;
+    print FORTRAN make_FORTRAN_main($FORTRAN_main);
+    close FORTRAN;
+}
 
-open JAVA, ">$JAVA_src" or die "Cannot open JAVA file $JAVA_src";
-print JAVA make_JAVA_main($JAVA_main);
-close JAVA;
+if ($use_JAVA) {
+    open JAVA, ">$JAVA_src" or die "Cannot open JAVA file $JAVA_src";
+    print JAVA make_JAVA_main($JAVA_main);
+    close JAVA;
+}
 
 # ----------------------------------------------------------------
 # Compile sources
@@ -230,9 +251,9 @@ close JAVA;
 print_log("Compiling sources ...\n\n");
 
 system "$GCC -o $UNURAN_exec $UNURAN_src -lunuran -lprng -lm";
-system "$GCC -o $C_exec $C_src -lm";
-system "$G77 -o $FORTRAN_exec $FORTRAN_src -lm";
-system "$JAVAC $JAVA_src";
+system "$GCC -o $C_exec $C_src -lm"                 if $use_C;
+system "$G77 -o $FORTRAN_exec $FORTRAN_src -lm"     if $use_FORTRAN;
+system "$JAVAC $JAVA_src"                           if $use_JAVA;
 
 # ----------------------------------------------------------------
 # Run tests
@@ -241,13 +262,16 @@ print_log("Run tests ...\n\n");
 
 # Start generators
 open UNURAN, "$UNURAN_exec |";
-open C, "$C_exec |";
-open FORTRAN, "$FORTRAN_exec |";
+open C, "$C_exec |"                                 if $use_C;
+open FORTRAN, "$FORTRAN_exec |"                     if $use_FORTRAN;
 
-open JAVA, "java $JAVA_class |";
-my $HAVE_JAVA = ($?) ? 0 : 1;
-unless ($HAVE_JAVA) {
-    print_log("Cannot run JAVA tests!\n\n");
+if ($use_JAVA) {
+    open JAVA, "java $JAVA_class |";
+    my $HAVE_JAVA = ($?) ? 0 : 1;
+    unless ($HAVE_JAVA) {
+	$use_JAVA = 0;
+	print_log("Cannot run JAVA tests!\n\n");
+    }
 }
 
 # Run generatores and compare output
@@ -263,12 +287,16 @@ my $FORTRAN_n_diffs = 0;
 my $JAVA_n_diffs = 0;
 
 while (my $UNURAN_out = <UNURAN>) {
-    my $C_out = <C>;
-    my $FORTRAN_out = <FORTRAN>;
-    my $JAVA_out = <JAVA>;
+    my $C_out;
+    my $FORTRAN_out;
+    my $JAVA_out;
+
+    $C_out = <C>               if $use_C;
+    $FORTRAN_out = <FORTRAN>   if $use_FORTRAN;
+    $JAVA_out = <JAVA>         if $use_JAVA;
     
     chomp $UNURAN_out;
-    chomp $C_out;
+    chomp $C_out;                                   
     chomp $FORTRAN_out;
     chomp $JAVA_out;
 
@@ -292,19 +320,19 @@ while (my $UNURAN_out = <UNURAN>) {
 	$data_mode = 0;
 	my $errors = 0;
 	
-	if ($C_n_diffs > 0) {
+	if ($use_C       and $C_n_diffs > 0) {
 	    my $quote = 100.0 * $C_n_diffs / $n_sample;
 	    print_log("\t...  C Test FAILED  ($quote \%)\n");
 	    ++$C_errors;
 	    ++$errors;
 	}
-	if ($FORTRAN_n_diffs > 0) {
+	if ($use_FORTRAN and $FORTRAN_n_diffs > 0) {
 	    my $quote = 100.0 * $FORTRAN_n_diffs / $n_sample;
 	    print_log("\t...  FORTRAN Test FAILED  ($quote \%)\n");
 	    ++$FORTRAN_errors;
 	    ++$errors;
 	}
-	if ($HAVE_JAVA and $JAVA_n_diffs > 0) {
+	if ($use_JAVA    and $JAVA_n_diffs > 0) {
 	    my $quote = 100.0 * $JAVA_n_diffs / $n_sample;
 	    print_log("\t...  JAVA Test FAILED  ($quote \%)\n");
 	    ++$JAVA_errors;
@@ -333,17 +361,17 @@ while (my $UNURAN_out = <UNURAN>) {
     my $JAVA_x_diff       = $UNURAN_x    - $JAVA_x;
     my $JAVA_pdfx_diff    = $UNURAN_pdfx - $JAVA_pdfx;
     
-    if ( !FP_equal($C_x,$UNURAN_x) or !FP_equal($C_pdfx,$UNURAN_pdfx) ) {
+    if ( $use_C and (!FP_equal($C_x,$UNURAN_x) or !FP_equal($C_pdfx,$UNURAN_pdfx)) ) {
 	++$C_n_diffs;
 	print LOG "  C: x    = $C_x\tdifference = $C_x_diff\n";
 	print LOG "  C: pdfx = $C_pdfx\tdifference = $C_pdfx_diff\n";
     }
-    if ( !FP_equal($FORTRAN_x,$UNURAN_x) or !FP_equal($FORTRAN_pdfx,$UNURAN_pdfx) ) {
+    if ( $use_FORTRAN and (!FP_equal($FORTRAN_x,$UNURAN_x) or !FP_equal($FORTRAN_pdfx,$UNURAN_pdfx)) ) {
 	++$FORTRAN_n_diffs;
 	print LOG "  FORTRAN: x    = $FORTRAN_x\tdifference = $FORTRAN_x_diff\n";
 	print LOG "  FORTRAN: pdfx = $FORTRAN_pdfx\tdifference = $FORTRAN_pdfx_diff\n";
     }
-    if ( $HAVE_JAVA and (!FP_equal($JAVA_x,$UNURAN_x) or !FP_equal($JAVA_pdfx,$UNURAN_pdfx)) ) {
+    if ( $use_JAVA and (!FP_equal($JAVA_x,$UNURAN_x) or !FP_equal($JAVA_pdfx,$UNURAN_pdfx)) ) {
 	++$JAVA_n_diffs;
 	print LOG "  JAVA: x    = $JAVA_x\tdifference = $JAVA_x_diff\n";
 	print LOG "  JAVA: pdfx = $JAVA_pdfx\tdifference = $JAVA_pdfx_diff\n";
@@ -372,10 +400,6 @@ if ($FORTRAN_errors) {
 if ($JAVA_errors) {
     print_log("\n\tJAVA TEST(S) FAILED ($JAVA_errors)\n");
     ++$errors;
-}
-
-unless ($HAVE_JAVA) {
-    print_log("\nCannot run JAVA tests!\n\n");
 }
 
 unless ($errors) {

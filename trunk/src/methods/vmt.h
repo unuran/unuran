@@ -40,24 +40,30 @@
 /* 
    =METHOD  VMT   Vector Matrix Transformation
 
-   VMT generates random vectors for distributions with given mean
-   vector mu and covariance matrix Sigma. It produces random vectors
-   of the form X = L Y + mu, where L is the Cholesky factor of Sigma,
-   i.e. L L^t = Sigma, and Y has independent components of the same
-   distribution with mean 0 and standard deviation 1.
+   =TYPE
+      CVEC  continuous multivariate
+   
+   =DESCRIPTION
+      VMT generates random vectors for distributions with given mean
+      vector mu and covariance matrix Sigma. It produces random vectors
+      of the form X = L Y + mu, where L is the Cholesky factor of Sigma,
+      i.e. L L^t = Sigma, and Y has independent components of the same
+      distribution with mean 0 and standard deviation 1.
+      
+      By default this a the standard normal distribution and thus VMT
+      produces multinormal random vectors.
+      
+      The method VMT has been implemented especially to sample from a
+      multinormal distribution. Nevertheless it can also be used (or
+      abused) for other distributions. However notice that the univariate
+      distribution provided by a unur_vmt_set_marginalgen() call should
+      have mean 0 and standard deviation 1. Otherwise mu and Sigma are
+      not the mean vector and covariance matrix, respectively, of the
+      resulting distribution. Moreover notice that except of the
+      multinormal distribution the given univariate distribution is the
+      marginal distribution of the resulting distribution.
 
-   By default this a the standard normal distribution and thus VMT
-   produces multinormal random vectors.
-
-   The method VMT has been implemented especially to sample from a
-   multinormal distribution. Nevertheless it can also be used (or
-   abused) for other distributions. However notice that the univariate
-   distribution provided by a unur_vmt_set_marginalgen() call should
-   have mean 0 and standard deviation 1. Otherwise mu and Sigma are
-   not the mean vector and covariance matrix, respectively, of the
-   resulting distribution. Moreover notice that except of the
-   multinormal distribution the given univariate distribution is the
-   marginal distribution of the resulting distribution.
+   =END
 */
 
 /*---------------------------------------------------------------------------*/

@@ -40,28 +40,34 @@
 /* 
    =METHOD NINV Numerical INVersion
 
-   NINV is the implementation of numerical inversion.
-   For finding the root it is possible to choose between
-   Newton's method and the regula falsi.
+   =TYPE
+      CONT  continuous univariate
 
-   It is possible to use this method for generating from truncated
-   distributions. It even can be changed for an existing generator
-   object by an unur_ninv_chg_truncated() call.
+   =DESCRIPTION
+      NINV is the implementation of numerical inversion.
+      For finding the root it is possible to choose between
+      Newton's method and the regula falsi.
+      
+      It is possible to use this method for generating from truncated
+      distributions. It even can be changed for an existing generator
+      object by an unur_ninv_chg_truncated() call.
+      
+      To speed up the marginal generation time a table with suitable
+      starting points can be computed in the setup. Using such a table can be 
+      switched on by means of a unur_ninv_set_table() call where the table
+      size is given as a parameter. The table is still useful when the
+      (truncated) domain is changed often, since it is computed for the
+      domain of the given distribution. (It is not possible to enlarge
+      this domain.)
+      
+      As a rule of thumb using such a table is approriate when the number of
+      generated points exceeds the table size by a factor of 100.
+      
+      It is also possible to change the parameters of the given distribution
+      by a unur_ninv_chg_pdfparams() call. If a table exists, it will be
+      computed immediately.
 
-   To speed up the marginal generation time a table with suitable
-   starting points can be computed in the setup. Using such a table can be 
-   switched on by means of a unur_ninv_set_table() call where the table
-   size is given as a parameter. The table is still useful when the
-   (truncated) domain is changed often, since it is computed for the
-   domain of the given distribution. (It is not possible to enlarge
-   this domain.)
-
-   As a rule of thumb using such a table is approriate when the number of
-   generated points exceeds the table size by a factor of 100.
-
-   It is also possible to change the parameters of the given distribution
-   by a unur_ninv_chg_pdfparams() call. If a table exists, it will be
-   computed immediately.
+   =END
 */
 
 /*

@@ -41,35 +41,41 @@
 /* 
    =METHOD  CSTD   Continuous STandarD distributions
 
-   CSTD is a wrapper for special generators for continuous univariate standard
-   distributions. It only works for distributions in the 
-   (=>) UNURAN library of standard distributions.
+   =TYPE
+      CONT  continuous univariate
    
-   If any other distribution is provided, or no special generator for the
-   given standard distribution is provided, the NULL pointer is returned.
+   =DESCRIPTION
+      CSTD is a wrapper for special generators for continuous univariate standard
+      distributions. It only works for distributions in the 
+      (=>) UNURAN library of standard distributions.
+      
+      If any other distribution is provided, or no special generator for the
+      given standard distribution is provided, the NULL pointer is returned.
+      
+      For a distribution more than one special generators (`variants') are possible.
+      These are selected by a number. For possible variants see
+      (=>) UNURAN library of standard distributions.
+      However the following are common to all distributions:
+      
+      @code{UNUR_STDGEN_DEFAULT}   ... the default generator                      
+      @code{UNUR_STDGEN_FAST}      ... the fasted available special generator
+      @code{UNUR_STDGEN_INVERSION} ... the inversion method (if available)         
+      
+      (Notice that the variant @code{UNUR_STDGEN_FAST} for a special
+      generator might be slower than one of the universal algorithms!)
+      
+      Additionally variants may exist for particular distributions
+      (see (=>) UNURAN library of standard distributions).
+      
+      Sampling from truncated distributions (which can be constructed by 
+      changing the default domain of a distribution by means of an
+      (=>) unur_distr_cont_set_domain() call) is possible but requires the 
+      inversion method.
    
-   For a distribution more than one special generators (`variants') are possible.
-   These are selected by a number. For possible variants see
-   (=>) UNURAN library of standard distributions.
-   However the following are common to all distributions:
+      It is possible to change the parameters and the domain of the chosen 
+      distribution without building a new generator object.
 
-   @code{UNUR_STDGEN_DEFAULT}   ... the default generator                      
-   @code{UNUR_STDGEN_FAST}      ... the fasted available special generator
-   @code{UNUR_STDGEN_INVERSION} ... the inversion method (if available)         
-   
-   (Notice that the variant @code{UNUR_STDGEN_FAST} for a special
-   generator might be slower than one of the universal algorithms!)
-
-   Additionally variants may exist for particular distributions
-   (see (=>) UNURAN library of standard distributions).
-
-   Sampling from truncated distributions (which can be constructed by 
-   changing the default domain of a distribution by means of an
-   (=>) unur_distr_cont_set_domain() call) is possible but requires the 
-   inversion method.
-   
-   It is possible to change the parameters and the domain of the chosen 
-   distribution without building a new generator object.
+   =END
 */
 
 /*---------------------------------------------------------------------------*/

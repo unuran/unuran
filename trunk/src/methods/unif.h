@@ -41,9 +41,15 @@
 /*
    =METHOD  UNIF  wrapper for UNIForm random number generator
 
-   UNIF is a simple wrapper that makes it possible to use a uniform
-   random number generators as a UNURAN generator. There are no
-   parameters for this method.
+   =TYPE
+      UNIF  uniform univariate
+
+   =DESCRIPTION
+      UNIF is a simple wrapper that makes it possible to use a uniform
+      random number generators as a UNURAN generator. There are no
+      parameters for this method.
+
+   =END
 */
 
 /*---------------------------------------------------------------------------*/

@@ -40,6 +40,14 @@
 /* 
    =METHOD  VEMPK   (Vector) EMPirical distribution with Kernel smoothing
 
+   =TYPE
+      CVEMP  continuous empirical multivariate
+   
+   =DESCRIPTION
+      blah
+
+   =END
+
 */
 
 #if 0

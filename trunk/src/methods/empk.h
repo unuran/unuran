@@ -40,30 +40,35 @@
 /* 
    =METHOD  EMPK   EMPirical distribution with Kernel smoothing
 
-   EMPK generates random variates from an empirical distribution that is
-   given by an observed sample. The idea is that simply choosing a random
-   point from the sample and to return it with some added noise results
-   in a method that has very nice properties, as it can be seen as sampling
-   from a kernel density estimate.
-   Clearly we have to decide about the density of the noise (called kernel)
-   and about the standard deviation of the noise.
-   The mathematical theory of kernel density estimation shows us that we
-   are comparatively free in choosing the kernel. It also supplies us with
-   a simple formula to compute the optimal standarddeviation of the noise,
-   called bandwidth (or window width) of the kernel.
-   For most applications it is perfectly ok to use the default values offered.
-   Unless you have some knowledge on density estimation we do not recommend
-   to change anything. Only exception is the case that you are especially
-   interested in a fast sampling algorithm. Then use the call
+   =TYPE
+      CEMP  continuous empirical univariate
+   
+   =DESCRIPTION
+      EMPK generates random variates from an empirical distribution that is
+      given by an observed sample. The idea is that simply choosing a random
+      point from the sample and to return it with some added noise results
+      in a method that has very nice properties, as it can be seen as sampling
+      from a kernel density estimate.
+      Clearly we have to decide about the density of the noise (called kernel)
+      and about the standard deviation of the noise.
+      The mathematical theory of kernel density estimation shows us that we
+      are comparatively free in choosing the kernel. It also supplies us with
+      a simple formula to compute the optimal standarddeviation of the noise,
+      called bandwidth (or window width) of the kernel.
+      For most applications it is perfectly ok to use the default values offered.
+      Unless you have some knowledge on density estimation we do not recommend
+      to change anything. Only exception is the case that you are especially
+      interested in a fast sampling algorithm. Then use the call
+      
+      unur_empk_set_kernel( par, UNUR_DISTR_BOXCAR);
+      
+      to change the used noise distribution from the default Gaussian
+      distribution to the uniform distribution.
+      
+      All other parameters are only necessary for people knowing the theory
+      of kernel density estimation.
 
-   unur_empk_set_kernel( par, UNUR_DISTR_BOXCAR);
-
-   to change the used noise distribution from the default Gaussian
-   distribution to the uniform distribution.
-
-   All other parameters are only necessary for people knowing the theory
-   of kernel density estimation.
-
+   =END
 */
 
 /*---------------------------------------------------------------------------*/

@@ -40,55 +40,61 @@
 /* 
    =METHOD  TDR   Transformed Density Rection
 
-   TDR is an acceptance/rejection method that uses the concavity of a
-   transformed density to construct hat function and squeezes
-   automatically. Such p.d.f.s are called T-concave. Currently the
-   following transformations are implemented and can be selected by
-   setting their @code{c}-values by a unur_tdr_set_c() call:
+   =TYPE
+      CONT  continuous univariate
+
+   =DESCRIPTION
+      TDR is an acceptance/rejection method that uses the concavity of a
+      transformed density to construct hat function and squeezes
+      automatically. Such p.d.f.s are called T-concave. Currently the
+      following transformations are implemented and can be selected by
+      setting their @code{c}-values by a unur_tdr_set_c() call:
 
       c = 0     ... T(x) = log(x)
       c = -0.5  ... T(x) = -1/sqrt(x)
    
-   In future releases the transformations T(x) = -(x)^c will be
-   available for any c with 0 > c > -1.
-   Notice that if a p.d.f. is T-concave for a c then it also T-concave
-   for every c'<c. However the performance decreases when c' is
-   smaller than c. For computational reasons we suggest the usage of 
-   c = -0.5 (this is the default). 
-   For c <= -1 is not bounded any more if the domain of the p.d.f. is
-   unbounded. But in the case of a bounded domain using method TABL is
-   preferred to a TDR with c < -1 (except in a few special cases).
-
-   We offer three variant of the algorithm. 
-
+      In future releases the transformations T(x) = -(x)^c will be
+      available for any c with 0 > c > -1.
+      Notice that if a p.d.f. is T-concave for a c then it also T-concave
+      for every c'<c. However the performance decreases when c' is
+      smaller than c. For computational reasons we suggest the usage of 
+      c = -0.5 (this is the default). 
+      For c <= -1 is not bounded any more if the domain of the p.d.f. is
+      unbounded. But in the case of a bounded domain using method TABL is
+      preferred to a TDR with c < -1 (except in a few special cases).
+      
+      We offer three variant of the algorithm. 
+      
       GW  ... squeezes between construction points
       PS  ... squeezes proportional to hat function
       IA  ... same as variant PS but uses a compositon method with
               "immediate acceptance" in the region below the squeeze.
 
-   GW has a slightly faster setup but higher marginal generation
-   times.
-   PS is faster than GW. IA uses less uniform random numbers is faster
-   than PS.
-
-   There are lots of parameters for this methods, see below.
-
-   It is possible to use this method for correlation induction by
-   setting an auxilliary uniform random number generator via the
-   unur_set_urng_aux() call. (Notice that this must be done after a
-   possible unur_set_urng() call.)
-   When an auxilliary generator is used then the number of used
-   uniform random numbers that is used up for one generated random
-   variate is constant and given in the following table:
-
+      GW has a slightly faster setup but higher marginal generation
+      times.
+      PS is faster than GW. IA uses less uniform random numbers is faster
+      than PS.
+      
+      There are lots of parameters for this methods, see below.
+      
+      It is possible to use this method for correlation induction by
+      setting an auxilliary uniform random number generator via the
+      unur_set_urng_aux() call. (Notice that this must be done after a
+      possible unur_set_urng() call.)
+      When an auxilliary generator is used then the number of used
+      uniform random numbers that is used up for one generated random
+      variate is constant and given in the following table:
+      
       GW ... 2
       PS ... 2
       IA ... 1
+      
+      There exists a test mode that verifies whether the conditions for
+      the method are satisfied or not. It can be switched on by calling 
+      unur_tdr_set_verify() and unur_tdr_chg_verify(), respectively.
+      Notice however that sampling is (much) slower then.
 
-   There exists a test mode that verifies whether the conditions for
-   the method are satisfied or not. It can be switched on by calling 
-   unur_tdr_set_verify() and unur_tdr_chg_verify(), respectively.
-   Notice however that sampling is (much) slower then.
+   =END
 */
 
 /*---------------------------------------------------------------------------*/

@@ -104,10 +104,7 @@ unur_set_default_urng( UNUR_URNG_TYPE urng_new )
   UNUR_URNG_TYPE urng_old = urng_default;
 
   /* NULL pointer not allowed */
-  if (urng_new == NULL) {
-    _unur_warning("URNG",UNUR_ERR_NULL,"");
-    return urng_default;
-  }
+  _unur_check_NULL("URNG", urng_new, urng_default);
 
   urng_default = urng_new;     /* reset urng */
 
@@ -141,7 +138,7 @@ unur_set_urng( struct unur_par *par, UNUR_URNG_TYPE urng )
 {
   /* check arguments */
   _unur_check_NULL( NULL,par,0 );
-  CHECK_NULL(urng,0);
+  _unur_check_NULL("URNG",urng,0);
 
   par->urng = urng;
 
@@ -197,7 +194,15 @@ unur_chg_urng( struct unur_gen *gen, UNUR_URNG_TYPE urng )
 
   urng_old = gen->urng;
 
+  /* set pointer to main URNG */
   gen->urng = urng;
+
+  /* set pointer to second (auxilliary) URNG */
+  if (gen->urng_aux) gen->urng_aux = urng;
+
+  /* also set pointer in auxilliary generator objects */
+  if (gen->gen_aux)   unur_chg_urng(gen->gen_aux,urng);
+  if (gen->gen_aux_2) unur_chg_urng(gen->gen_aux_2,urng);
 
   return urng_old;
 } /* end of unur_chg_urng() */

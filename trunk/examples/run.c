@@ -117,7 +117,7 @@ int main()
 
 #if RUN_CSTD == 1
 
-#if 0
+#if 1
   distr_xxx = unur_distr_normal(NULL,0);
   // unur_distr_cont_set_domain(distr_xxx,3,UNUR_INFINITY);
   par = unur_cstd_new(distr_xxx);
@@ -187,9 +187,6 @@ int main()
 /*    unur_run_tests(par,RUN_TESTS); */
 /*    unur_distr_free(distr_xxx); */
 
-#endif
-
-#if 0
   fpar[2] = -1.;
   fpar[3] = 2.;
 
@@ -242,9 +239,7 @@ int main()
   unur_cstd_set_variant(par,1);
   unur_run_tests(par,RUN_TESTS);
 
-#endif
 
-#if 0
   fpar[0] = 5.;
   distr_xxx = unur_distr_student(fpar,1);
   par = unur_cstd_new(distr_xxx);
@@ -257,15 +252,15 @@ int main()
   unur_test_moments(gen,2,moments,10000);
   printf("mean =\t%g\nstddev =\t%g\n\n",moments[1],sqrt(moments[2]-moments[1]*moments[1]));
   unur_free(gen);
-#endif
 
-#if 0
+
+
   par = unur_cstd_new(distr_cauchy);
   //  unur_distr_cont_set_domain(distr_cauchy,0.,10.);
   unur_run_tests(par,RUN_TESTS);
-#endif
 
-#if 0
+
+
   fpar[0] = 5.;
   fpar[1] = 2.;
   distr_xxx = unur_distr_laplace(fpar,1);
@@ -274,9 +269,9 @@ int main()
   unur_cstd_set_variant(par,0);
   unur_run_tests(par,RUN_TESTS);
 
-#endif
 
-#if 0
+
+
   fpar[0] = 5.;
   fpar[1] = 2.;
   fpar[2] = 3.;
@@ -285,9 +280,9 @@ int main()
   par = unur_cstd_new(distr_xxx);
   unur_cstd_set_variant(par,0);
   unur_run_tests(par,RUN_TESTS);
-#endif
 
-#if 0
+
+
   fpar[0] = 5.;
   fpar[1] = 2.;
   distr_xxx = unur_distr_logistic(fpar,2);
@@ -295,83 +290,83 @@ int main()
   par = unur_cstd_new(distr_xxx);
   unur_cstd_set_variant(par,0);
   unur_run_tests(par,RUN_TESTS);
-#endif
 
-#if 0
+
+
   fpar[0] = 5.;
   fpar[1] = 2.;
   distr_xxx = unur_distr_gig(fpar,2);
   par = unur_cstd_new(distr_xxx);
   unur_cstd_set_variant(par,0);
   unur_run_tests(par,RUN_TESTS);
-#endif
 
-#if 0
+
+
   fpar[0] = 0.6;
   distr_xxx = unur_distr_triangular(fpar,1);
   par = unur_cstd_new(distr_xxx);
   unur_cstd_set_variant(par,0);
   unur_run_tests(par,RUN_TESTS);
-#endif
 
-#if 0
-  distr_xxx = unur_distr_slash(fpar,1);
+
+
+  distr_xxx = unur_distr_slash(NULL,0);
   par = unur_cstd_new(distr_xxx);
   unur_cstd_set_variant(par,0);
   unur_run_tests(par,RUN_TESTS);
-#endif
 
-#if 0
+
+
   fpar[0] = 5.;
   fpar[1] = 1.;
   distr_xxx = unur_distr_gamma(fpar,2);
   par = unur_cstd_new(distr_xxx);
   unur_cstd_set_variant(par,2);
   unur_run_tests(par,RUN_TESTS);
-#endif
 
-#if 0
-  fpar[0] = 11.;
+
+
+  fpar[0] = 10.;
   fpar[1] = 5.;
   fpar[2] = 1.;
   distr_xxx = unur_distr_burr(fpar,3);
   par = unur_cstd_new(distr_xxx);
   unur_run_tests(par,RUN_TESTS);
-#endif
 
-#if 0
+
+
   fpar[0] = 2.;
   fpar[1] = 5.;
   distr_xxx = unur_distr_extremeI(fpar,2);
   par = unur_cstd_new(distr_xxx);
   unur_run_tests(par,RUN_TESTS);
-#endif
 
-#if 0
+
+
   fpar[0] = 2.;
   fpar[1] = 5.;
   fpar[2] = 10.;
   distr_xxx = unur_distr_extremeII(fpar,3);
   par = unur_cstd_new(distr_xxx);
   unur_run_tests(par,RUN_TESTS);
-#endif
 
-#if 0
+
+
   fpar[0] = 10.;
   fpar[1] = 10.;
   distr_xxx = unur_distr_zipf(fpar,2);
   par = unur_dstd_new(distr_xxx);
   unur_run_tests(par,RUN_TESTS);
-#endif
 
-#if 0
+
+
   fpar[0] = 0.2;
   distr_xxx = unur_distr_geometric(fpar,1);
   par = unur_dstd_new(distr_xxx);
   unur_run_tests(par,RUN_TESTS);
 #endif
 
-#if 0
+#if 1
   fpar[0] = 0.9;
   distr_xxx = unur_distr_logarithmic(fpar,1);
   par = unur_dstd_new(distr_xxx);
@@ -383,7 +378,7 @@ int main()
   unur_run_tests(par,RUN_TESTS);
 #endif
 
-#if 0
+#if 1
   fpar[0] = 5;
   distr_xxx = unur_distr_poisson(fpar,1);
   par = unur_dstd_new(distr_xxx);
@@ -395,7 +390,7 @@ int main()
   unur_run_tests(par,RUN_TESTS);
 #endif
 
-#if 0
+#if 1
   fpar[0] = 5;
   distr_xxx = unur_distr_poisson(fpar,1);
   par = unur_dstd_new(distr_xxx);

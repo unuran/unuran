@@ -142,6 +142,8 @@ unur_distr_discr_new( void )
 
   DISTR.init      = NULL;          /* pointer to special init routine        */
 
+  DISTR.set_params= NULL;          /* funct for setting parameters and domain*/
+
   DISTR.n_params  = 0;             /* number of parameters of the pmf        */
   /* initialize parameters of the PMF                                        */
   for (i=0; i<UNUR_DISTR_MAXPARAMS; i++)

@@ -54,7 +54,7 @@ int _unur_matrix_invert_matrix (int dim, double *A, double detmin, double *Ainv,
 double _unur_matrix_qf(int dim, double *x, double *A);
 /* Compute quadratic form x'Ax.                                              */
 
-void _unur_matrix_debug (int dim, const double *M, const char *info, const char *genid);
+int _unur_matrix_debug (int dim, const double *M, const char *info, const char *genid);
 /* Writes the matrix-elements to the log file */
 
 /*--------------------------------------------------------------------------*/

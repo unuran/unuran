@@ -13,15 +13,16 @@ while($_ = <>)
 {
  
     # bestimmen des dokumentationsbereiches
-    if ($_ =~/Routines.for.user.interface/){
+    if ($_ =~/\/\* Routines for user interface/){
 	$ON = 1;}
-    if ($ON == 1 && $_ =~/-------------------/){
+    if ($ON == 1 && $_ =~/\/\*-------------------/){
 	$ON = 0;}
 # Suche Function und DEfinitionszeilen
   foreach $type (@TYPES){
  
       if ( $ON == 1 && $_=~/^($type)/){    # suche Funktionszeile
-        print OUTFILE;
+        
+       print OUTFILE;
       }
 
   }
@@ -29,7 +30,3 @@ while($_ = <>)
 
 
 }
-
-  
-  print OUTFILE " Funktioniert doch \n";
-

@@ -87,16 +87,7 @@
 
 UNUR_PAR *unur_vmt_new( const UNUR_DISTR *distribution );
 /* 
-   Get default parameters for generator.
-*/
-
-/*...........................................................................*/
-
-int unur_vmt_set_marginalgen( UNUR_PAR *parameters, const UNUR_GEN *uvgen );
-/* 
-   Set generator for (univariate) marginal distribution.
-
-   Default: Generator for (univariate) standard normal distribution.
+   Get parameters for generator.
 */
 
 /* =END */

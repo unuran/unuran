@@ -41,14 +41,14 @@
 /* Information for constructing the generator                                */
 
 struct unur_vmt_par { 
-  const struct unur_gen *uvgen;   /* univariate generator                    */
+  int dummy;
 };
 
 /*---------------------------------------------------------------------------*/
 /* The generator object                                                      */
 
 struct unur_vmt_gen { 
-  struct unur_gen *uvgen;   /* univariate generator                          */
+  struct unur_gen **marginalgen_list;   /* list of generators for marginal distributions */
   double *cholesky;         /* cholesky factor of covariance matrix          */
   int    dim;               /* dimension of distribution                     */
 };

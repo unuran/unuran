@@ -60,7 +60,7 @@
 #include "x_gen.h"
 #include "x_gen_source.h"
 #include "vmt.h"
-#include "cstd.h"
+#include "auto.h"
 
 /*---------------------------------------------------------------------------*/
 /* Variants                                                                  */
@@ -74,8 +74,6 @@
 
 /*---------------------------------------------------------------------------*/
 /* Flags for logging set calls                                               */
-
-#define VMT_SET_UVGEN        0x001u    /* marginal generator set             */
 
 /*---------------------------------------------------------------------------*/
 
@@ -91,11 +89,6 @@ static struct unur_gen *_unur_vmt_init( struct unur_par *par );
 static struct unur_gen *_unur_vmt_create( struct unur_par *par );
 /*---------------------------------------------------------------------------*/
 /* create new (almost empty) generator object.                               */
-/*---------------------------------------------------------------------------*/
-
-static struct unur_gen *_unur_vmt_default_uvgen( void );
-/*---------------------------------------------------------------------------*/
-/* get default generator for "marginal" distribution.                        */
 /*---------------------------------------------------------------------------*/
 
 static void _unur_vmt_sample_cvec( struct unur_gen *gen, double *vec );
@@ -167,6 +160,9 @@ unur_vmt_new( const struct unur_distr *distr )
   if (!(distr->set & UNUR_DISTR_SET_COVAR)) {
     _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"covariance matrix");
     return NULL; }
+  if (!(distr->set & UNUR_DISTR_SET_STDMARGINAL)) {
+    _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"standardized marginals");
+    return NULL; }
 
   /* allocate structure */
   par = _unur_malloc(sizeof(struct unur_par));
@@ -176,8 +172,6 @@ unur_vmt_new( const struct unur_distr *distr )
   par->distr    = distr;      /* pointer to distribution object              */
 
   /* set default values */
-  PAR.uvgen     = NULL;       /* use default marginal generator (=normal)    */
-
   par->method   = UNUR_METH_VMT ;     /* method                              */
   par->variant  = 0u;                 /* default variant                     */
   par->set      = 0u;                 /* inidicate default parameters        */    
@@ -192,43 +186,6 @@ unur_vmt_new( const struct unur_distr *distr )
   return par;
 
 } /* end of unur_vmt_new() */
-
-/*****************************************************************************/
-
-int
-unur_vmt_set_marginalgen( struct unur_par *par, const struct unur_gen *uvgen )
-     /*----------------------------------------------------------------------*/
-     /* set generator for (univariate) marginal distribution.                */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   par   ... pointer to parameter for building generator object       */
-     /*   uvgen ... pointer to generator for (univariate) marginal distr.    */
-     /*                                                                      */
-     /* return:                                                              */
-     /*   UNUR_SUCCESS ... on success                                        */
-     /*   error code   ... on error                                          */
-     /*----------------------------------------------------------------------*/
-{
-  /* check arguments */
-  _unur_check_NULL( GENTYPE, par, UNUR_ERR_NULL );
-  _unur_check_par_object( par, VMT );
-
-  /* check new parameter for generator */
-
-  if ( (uvgen->method & UNUR_MASK_TYPE) != UNUR_METH_CONT ) {
-    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"marginal generator");
-    return UNUR_ERR_PAR_SET;
-  }
-    
-  /* store date */
-  PAR.uvgen = uvgen;
-
-  /* changelog */
-  par->set |= VMT_SET_UVGEN;
-
-  return UNUR_SUCCESS;
-
-} /* end of unur_vmt_set_marginalgen() */
 
 /*****************************************************************************/
 
@@ -262,26 +219,43 @@ _unur_vmt_init( struct unur_par *par )
   gen = _unur_vmt_create(par);
   if (!gen) { free(par); return NULL; }
 
-  /* initialize generator for "marginal" distribution */
-  if (GEN.uvgen == NULL) {
-    GEN.uvgen = _unur_vmt_default_uvgen();
-    if (GEN.uvgen == NULL) {
-      _unur_error(gen->genid,UNUR_ERR_GENERIC,"init of marginal generator failed");
-      _unur_vmt_free(gen);
-      return NULL;
+  /* initialize generators for marginal distribution */
+
+  if (_unur_distr_cvec_marginals_are_equal(DISTR.stdmarginals)) {
+    /* we can use the same generator object for all marginal distribuitons */
+    struct unur_gen *marginalgen = unur_init( unur_auto_new( DISTR.stdmarginals[0] ) );
+    if (marginalgen) {
+      gen->gen_aux_list = _unur_gen_list_set(marginalgen,GEN.dim);
+      _unur_free(marginalgen);
     }
   }
-  /* else: generator provided by user */
 
-  /* the marginal generator is an auxilliary generator for method VMT, of course */
-  gen->gen_aux = GEN.uvgen;
+  else {
+    int i,j;
+    int failed = FALSE;
+    struct unur_gen **marginalgens = _unur_malloc( GEN.dim * sizeof(struct unur_gen*) );
+    for (i=0; i<GEN.dim; i++) {
+      marginalgens[i] = unur_init( unur_auto_new( DISTR.stdmarginals[i] ) );
+      if (marginalgens[i]==NULL) {
+	failed=TRUE; break; 
+      }
+    }
+    if (failed)
+      for (j=0; j<i; j++) _unur_free(marginalgens[i]);
+    else
+      gen->gen_aux_list = marginalgens;
+  }
 
+  /* the marginal generator is an auxiliary generator for method VMT, of course */
+  GEN.marginalgen_list = gen->gen_aux_list;
+  
+  /* verify initialization of marginal generators */
+  if (GEN.marginalgen_list == NULL) {
+    _unur_error(gen->genid,UNUR_ERR_GENERIC,"init of marginal generators failed");
+    _unur_vmt_free(gen);
+    return NULL;
+  }
 
-  /** TODO !!!!!! **/
-  /* cholesky factor of covariance matrix */
-  if (DISTR.covar) /* always true since default is identity matrix */
-    GEN.cholesky =  DISTR.cholesky;  
-      
 #ifdef UNUR_ENABLE_LOGGING
   /* write info into log file */
   if (gen->debug) _unur_vmt_debug_init(gen);
@@ -289,12 +263,6 @@ _unur_vmt_init( struct unur_par *par )
 
   /* free parameters */
   free(par);
-
-  if (DISTR.covar && !GEN.cholesky) {
-    _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"covariance matrix not positive definite");
-    _unur_vmt_free(gen);
-    return NULL;
-  }
 
   /* o.k. */
   return gen;
@@ -340,46 +308,16 @@ _unur_vmt_create( struct unur_par *par )
   gen->destroy = _unur_vmt_free;
   gen->clone = _unur_vmt_clone;
 
-  /* generator for univariate distribution */
-  GEN.uvgen = (PAR.uvgen) ? _unur_gen_clone(PAR.uvgen) : NULL;
+  /* cholesky factor of covariance matrix */
+  GEN.cholesky =  DISTR.cholesky;  
 
   /* initialize pointer */
-  GEN.cholesky = NULL;
+  GEN.marginalgen_list = NULL;
 
   /* return pointer to (almost empty) generator object */
   return gen;
   
 } /* end of _unur_vmt_create() */
-
-/*---------------------------------------------------------------------------*/
-
-struct unur_gen *
-_unur_vmt_default_uvgen( void )
-     /*----------------------------------------------------------------------*/
-     /* initialize generator object for "marginal" distribution              */
-     /* default is standard normal distribution                              */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   none                                                               */
-     /*                                                                      */
-     /* return:                                                              */
-     /*   pointer to generator object (standard normal)                      */
-     /*                                                                      */
-     /* error:                                                               */
-     /*   return NULL                                                        */
-     /*----------------------------------------------------------------------*/
-{
-  UNUR_DISTR *distr;
-  UNUR_GEN *uvgen;
-
-  /* construct a generator object for univariate distribuiton */
-  distr = unur_distr_normal(NULL,0);
-  uvgen = unur_init( unur_cstd_new( distr ) );
-  unur_distr_free(distr);
-
-  /* o.k. */
-  return uvgen;
-} /* end of _unur_vmt_default_uvgen() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -408,16 +346,12 @@ _unur_vmt_clone( const struct unur_gen *gen )
   /* create generic clone */
   clone = _unur_generic_clone( gen, GENTYPE );
 
-  /* copy additional data for generator object */
-  if (GEN.cholesky) {
-    /** TODO: das erscheint komisch!! **/
-    CLONE.cholesky = _unur_malloc( GEN.dim * GEN.dim * sizeof(double) );
-    memcpy( CLONE.cholesky, GEN.cholesky, GEN.dim * GEN.dim * sizeof(double) );
-  }
+  /* cholesky factor of covariance matrix */
+  CLONE.cholesky =  clone->distr->data.cvec.cholesky;
 
-  /* marginal generator is (also) stored as auxiliary generator */
-  /* which has already been cloned by generic_clone.            */
-  CLONE.uvgen = clone->gen_aux;
+  /* marginal generators are (also) stored as auxiliary generator */
+  /* which has already been cloned by generic_clone.              */
+  CLONE.marginalgen_list = clone->gen_aux_list;
 
   return clone;
 
@@ -445,7 +379,7 @@ _unur_vmt_sample_cvec( struct unur_gen *gen, double *vec )
 
   /* generate random vector with independent components */
   for (j=0; j<GEN.dim; j++)
-    vec[j] = unur_sample_cont(GEN.uvgen);
+    vec[j] = unur_sample_cont(GEN.marginalgen_list[j]);
 
   /* 
      transform to desired covariance structure: 
@@ -490,9 +424,6 @@ _unur_vmt_free( struct unur_gen *gen )
   /* we cannot use this generator object any more */
   SAMPLE = NULL;   /* make sure to show up a programming error */
 
-  /* free memory */
-  /* if (GEN.cholesky) free(GEN.cholesky); (cholesky is now freed from distr-object) */
-
   _unur_generic_free(gen);
 
 } /* end of _unur_vmt_free() */
@@ -514,6 +445,7 @@ _unur_vmt_debug_init( const struct unur_gen *gen )
      /*   gen ... pointer to generator object                                */
      /*----------------------------------------------------------------------*/
 {
+  int i;
   FILE *log;
 
   /* check arguments */
@@ -528,12 +460,10 @@ _unur_vmt_debug_init( const struct unur_gen *gen )
 
   _unur_distr_cvec_debug( gen->distr, gen->genid );
 
-  if (GEN.uvgen)
-    fprintf(log,"%s: marginal distribution = %s    [genid = %s]\n",gen->genid,
-	    GEN.uvgen->distr->name,GEN.uvgen->genid);
-  else
-    fprintf(log,"%s: no marginal distribution given  [error!]\n",gen->genid);
-  fprintf(log,"%s:\n",gen->genid);
+  fprintf(log,"%s: marginal distributions = ",gen->genid);
+  for (i=0; i<GEN.dim; i++)
+    fprintf(log,"[%s] ", GEN.marginalgen_list[i]->genid);
+  fprintf(log,"\n%s:\n",gen->genid);
 
   fprintf(log,"%s: sampling routine = _unur_vmt_sample()\n",gen->genid);
   fprintf(log,"%s:\n",gen->genid);

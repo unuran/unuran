@@ -863,11 +863,11 @@ unur_tdr_chg_truncated( struct unur_gen *gen, double left, double right )
   /* check new parameter for generator */
   /* (the truncated domain must be a subset of the domain) */
   if (left < DISTR.domain[0]) {
-    _unur_warning(NULL,UNUR_ERR_DISTR_SET,"truncated domain too large");
+    _unur_warning(NULL,UNUR_ERR_DISTR_SET,"truncated domain not subset of domain");
     left = DISTR.domain[0];
   }
   if (right > DISTR.domain[1]) {
-    _unur_warning(NULL,UNUR_ERR_DISTR_SET,"truncated domain too large");
+    _unur_warning(NULL,UNUR_ERR_DISTR_SET,"truncated domain not subset of domain");
     right = DISTR.domain[1];
   }
 
@@ -930,6 +930,14 @@ _unur_tdr_eval_cdfhat( struct unur_gen *gen, double x )
      /* return:                                                              */
      /*   CDF of hat(x) or                                                   */
      /*   0. in case of error                                                */
+     /*                                                                      */
+     /* Important:                                                           */
+     /*   If gen is a generator object for variant IA (immediate acceptance) */
+     /*   then it is treated like variant PS (proportional squeeze)!         */
+     /*   This is necessary since variant IA is not a pure rejection         */
+     /*   algorithm, but a composition method.                               */
+     /*   Thus it does not possible to use this call to estimate the range   */
+     /*   of U-values for a truncated domain.                                */
      /*----------------------------------------------------------------------*/
 {
   struct unur_tdr_interval *iv;
@@ -982,6 +990,9 @@ _unur_tdr_eval_cdfhat( struct unur_gen *gen, double x )
     return ((cdf > 1.) ? 1. : cdf);
 
     
+  case TDR_VARIANT_IA:    /* immediate acceptance */
+    /* See comment above */
+
   case TDR_VARIANT_PS:    /* proportional squeeze */
 
     /* find interval (sequential search) */
@@ -1006,11 +1017,6 @@ _unur_tdr_eval_cdfhat( struct unur_gen *gen, double x )
     cdf /= GEN.Atotal;
     return ((cdf > 1.) ? 1. : cdf);
     
-  case TDR_VARIANT_IA:    /* immediate acceptance */
-    /* this variant is not a pure rejection algorithm, but a
-       composition method. Thus it does not make to much sense
-       to compute the "CDF" of the hat.
-    */
   default:
     _unur_error(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
     return 0.;

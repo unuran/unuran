@@ -56,23 +56,24 @@
 
 /* =ROUTINES */
 
-UNUR_DISTR *unur_distr_corder_new( UNUR_DISTR *distr, int n, int k );
+UNUR_DISTR *unur_distr_corder_new( UNUR_DISTR *distribution, int n, int k );
 /* 
-   Create an object for order statistics of for a sample size
+   Create an object for order statistics of sample size
    @var{n} and rank @var{k}.
-   @var{distr} must be a pointer to a univariate continuous
+   @var{distribution} must be a pointer to a univariate continuous
    distribution. 
-   The result is of the same type as of unur_distr_cont_new() calls.
+   The resulting generator object is of the same type as of a
+   unur_distr_cont_new() call.
    (However it cannot be used to make an order statistics out of an
    order statistics.)
 
    To have a PDF for the order statistics, the given distribution
-   obejct must contain a CDF and a PDF. Moreover it is assumed that
+   object must contain a CDF and a PDF. Moreover it is assumed that
    the given PDF is the derivative of the given CDF. Otherwise the
    area below the PDF of the order statistics is not computed correctly.
 
-   Important: There is no warning when the computed area below the PDF
-   of the order statistics is wrong.
+   @emph{Important:} There is no warning when the computed area below
+   the PDF of the order statistics is wrong.
 */
 
 
@@ -149,8 +150,7 @@ int unur_distr_corder_get_rank( UNUR_DISTR *distribution, int *n, int *k );
 */
 
 
-#define unur_distr_corder_set_pdfparams(distr,params,n)  \
-  unur_distr_cont_set_pdfparams((distr),(params),(n))
+#define unur_distr_corder_set_pdfparams(distr,params,n)  unur_distr_cont_set_pdfparams((distr),(params),(n))
 /*  int unur_distr_corder_set_pdfparams(UNUR_DISTR *distribution,double *params,int n_params); */
 /* 
    Set array of parameters for underlying distribution.
@@ -158,8 +158,7 @@ int unur_distr_corder_get_rank( UNUR_DISTR *distribution, int *n, int *k );
    (Macro)
 */
 
-#define unur_distr_corder_get_pdfparams(distr,params) \
-   unur_distr_cont_get_pdfparams((distr),(params))
+#define unur_distr_corder_get_pdfparams(distr,params)  unur_distr_cont_get_pdfparams((distr),(params))
 /*  int unur_distr_corder_get_pdfparams( UNUR_DISTR *distribution, double **params ); */
 /* 
    Get number of parameters of the PDF of the underlying distribution
@@ -169,8 +168,7 @@ int unur_distr_corder_get_rank( UNUR_DISTR *distribution, int *n, int *k );
 */
 
 
-#define unur_distr_corder_set_domain(distr,left,right) \
-   unur_distr_cont_set_domain((distr),(left),(right))
+#define unur_distr_corder_set_domain(distr,left,right)  unur_distr_cont_set_domain((distr),(left),(right))
 /*  int unur_distr_corder_set_domain( UNUR_DISTR *distribution, double left, double right ); */
 /* 
    Set the left and right borders of the domain of the
@@ -179,8 +177,7 @@ int unur_distr_corder_get_rank( UNUR_DISTR *distribution, int *n, int *k );
    (Macro)
 */
 
-#define unur_distr_corder_get_domain(distr,left,right) \
-   unur_distr_cont_get_domain((distr),(left),(right))
+#define unur_distr_corder_get_domain(distr,left,right)  unur_distr_cont_get_domain((distr),(left),(right))
 /*  int unur_distr_corder_get_domain( UNUR_DISTR *distribution, double *left, double *right ); */
 /* 
    Get the left and right borders of the domain of the
@@ -190,8 +187,7 @@ int unur_distr_corder_get_rank( UNUR_DISTR *distribution, int *n, int *k );
 */
 
 
-#define unur_distr_corder_get_truncated(distr,left,right) \
-   unur_distr_cont_get_truncated((distr),(left),(right))
+#define unur_distr_corder_get_truncated(distr,left,right)  unur_distr_cont_get_truncated((distr),(left),(right))
 /*  int unur_distr_corder_get_truncated( UNUR_DISTR *distribution, double *left, double *right ); */
 /* 
    Get the left and right borders of the (truncated) domain of the
@@ -203,8 +199,8 @@ int unur_distr_corder_get_rank( UNUR_DISTR *distribution, int *n, int *k );
 /* ==DOC
    @subsubheading Derived parameters
 
-   The following paramters MUST be set whenever one of the essential
-   parameters have been set or changed (and the parameter is required
+   The following paramters @strong{must} be set whenever one of the essential
+   parameters has been set or changed (and the parameter is required
    for the chosen method).
 */
 
@@ -220,7 +216,7 @@ int unur_distr_corder_get_rank( UNUR_DISTR *distribution, int *n, int *k );
 /*  double unur_distr_corder_upd_mode( UNUR_DISTR *distribution ); */
 /* 
    Recompute the mode of the distribution numerically. Notice that
-   this routine is slow might not work properly in every case.
+   this routine is slow and might not work properly in every case.
    See also unur_distr_cont_upd_mode() for further details.
    (Macro)
 */
@@ -251,8 +247,8 @@ int unur_distr_corder_get_rank( UNUR_DISTR *distribution, int *n, int *k );
    the UNURAN library of standard distributions when the
    corresponding function is available.
    unur_distr_cont_upd_pdfarea() assumes that the PDF of the underlying
-   distribution is normalized, i.e. it is the derivative its CDF.
-   Otherwise the computed area is wrong and there is NO warning
+   distribution is normalized, i.e. it is the derivative of its CDF.
+   Otherwise the computed area is wrong and there is @strong{no} warning
    about this failure.
    See unur_distr_cont_upd_pdfarea() for further details.
    (Macro)

@@ -148,7 +148,7 @@ const char *unur_distr_get_name( UNUR_DISTR *distribution );
 int unur_distr_get_dim( UNUR_DISTR *distribution );
 /* 
    Get number of components of random vector (its dimension).
-   For univariate distributions the it returns @code{1} (of course).
+   For univariate distributions it returns dimension @code{1}.
 */
 
 

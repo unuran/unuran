@@ -92,7 +92,7 @@ int unur_arou_set_max_sqhratio( UNUR_PAR *parameters, double max_ratio );
    Set upper bound for the
    ratio (area inside squeeze) / (area inside envelope).
    It must be a number between 0 and 1.
-   When the ratio exceed the given number no further construction
+   When the ratio exceeds the given number no further construction
    points are inserted via adaptive rejection sampling.
    Use @code{0} if no construction points should be added after the
    setup.
@@ -113,7 +113,7 @@ int unur_arou_set_max_segments( UNUR_PAR *parameters, int max_segs );
 /* 
    Set maximum number of segements.
    No construction points are added @emph{after} the setup when the
-   number of segments suceeds @var{max_segs}.
+   number of segments succeeds @var{max_segs}.
    Default is ??.
 */
 
@@ -176,15 +176,15 @@ int unur_arou_set_pedantic( UNUR_PAR *parameters, int pedantic );
    PDF is not T-concave. 
 
    With @var{pedantic} being TRUE, the
-   sampling routine is exchanged by a routine that simply returns
+   sampling routine is then exchanged by a routine that simply returns
    @code{UNUR_INFINITY}. Otherwise the new point is not added to the
    list of construction points. At least the hat function remains
    T-concave.
 
-   Setting @code{pedantic} to FALSE allows sampling from a
-   distribution which is "almost" T-concave and small errors are
+   Setting @var{pedantic} to FALSE allows sampling from a
+   distribution which is ``almost'' T-concave and small errors are
    tolerated. However it might happen that the hat function cannot be
-   improved significantly. When the hat functions that has been
+   improved significantly. When the hat function that has been
    constructed by the unur_init() call is extremely large then it
    might happen that the generation times are extremely high
    (even hours are possible in extremely rare cases).

@@ -75,21 +75,21 @@ int unur_distr_cont_set_cdf( UNUR_DISTR *distribution, UNUR_FUNCT_CONT *cdf );
    the derivative of the probability density function (dPDF) and the
    cumulative distribution function (CDF) of the @var{distribution}.
    The type of each of these functions must be of type
-   double funct(double x, UNUR_DISTR *distr).
+   @code{double funct(double x, UNUR_DISTR *distr)}.
 
    Due to the fact that some of the methods do not require a
    normalized PDF the following is important:
 
-   @itemize
+   @itemize @minus
    @item
-   the given CDF must be the cumulative distribution function of
+   The given CDF must be the cumulative distribution function of
    the (non-truncated) distribution. If a distribution from the 
    UNURAN library of standard distributions
-   (@pxref{Stddist,Standard distributions,Standard distributions}).
+   (@pxref{Stddist,Standard distributions,Standard distributions})
    is truncated, there is no need to change the CDF.
 
    @item
-   If both the CDF and PDF are used (for a method or for order
+   If both the CDF and the PDF are used (for a method or for order
    statistics), the PDF must be the derivative of the CDF.
    If a truncated distribution for one of the standard distributions
    from the UNURAN library of standard distributions is used,
@@ -108,7 +108,7 @@ int unur_distr_cont_set_cdf( UNUR_DISTR *distribution, UNUR_FUNCT_CONT *cdf );
 
    It is important to note that all these functions must return a
    result for all floats @var{x}. Eg., if the domain of a given
-   PDF is the interval [-1,1], than the given function must return
+   PDF is the interval [-1,1], then the given function must return
    @code{0.0} for all points outside this interval.
 
    It is not possible to change such a function. Once the PDF or
@@ -153,7 +153,7 @@ int unur_distr_cont_set_pdfparams(UNUR_DISTR *distribution, double *params, int 
    Set array of parameters for @var{distribution}. There is an upper limit
    for the number of parameters @code{n_params}. It is given by the
    macro @code{UNUR_DISTR_MAXPARAMS} in @file{unuran_config.h}. (It is set to
-   5 but can be changed to any appropriate nonnegative number.)
+   5 by default but can be changed to any appropriate nonnegative number.)
    If @var{n_params} is negative or exceeds this limit no parameters
    are copied into the distribution object and @code{unur_errno} is set to
    @code{UNUR_ERR_DISTR_NPARAMS}.
@@ -165,13 +165,14 @@ int unur_distr_cont_get_pdfparams( UNUR_DISTR *distribution, double **params );
    @var{params} to array of parameters. If no parameters are stored
    in the object, @code{0} is returned and @code{params} is set to
    NULL.
-   Warning: Do not change the entries in @var{params}!
+   
+   @emph{Important:} Do @strong{not} change the entries in @var{params}!
 */
 
 int unur_distr_cont_set_domain( UNUR_DISTR *distribution, double left, double right );
 /* 
    Set the left and right borders of the domain of the
-   distribution. This can also be used truncate an existing
+   distribution. This can also be used to truncate an existing
    distribution. For setting the boundary to +/- infinity use
    @code{+/- UNUR_INFINITY}.
    If @var{right} is not strictly greater than @var{left} no domain
@@ -184,7 +185,7 @@ int unur_distr_cont_get_domain( UNUR_DISTR *distribution, double *left, double *
    Get the left and right borders of the domain of the
    distribution. If the domain is not set explicitly 
    @code{+/- UNUR_INFINITY} is assumed and returned.
-   There is no error reported in this case.
+   No error is reported in this case.
 */
 
 int unur_distr_cont_get_truncated( UNUR_DISTR *distribution, double *left, double *right );
@@ -194,7 +195,11 @@ int unur_distr_cont_get_truncated( UNUR_DISTR *distribution, double *left, doubl
    equivalent to the unur_distr_cont_get_domain() call.
    If the (truncated) domain is not set explicitly 
    @code{+/- UNUR_INFINITY} is assumed and returned.
-   There is no error reported in this case.
+   No error is reported in this case.
+
+   This call is only useful in connection with a 
+   unur_get_distr() call to get the boundaries of the sampling region
+   of a generator object.
 */
 
 
@@ -202,7 +207,7 @@ int unur_distr_cont_get_truncated( UNUR_DISTR *distribution, double *left, doubl
    @subsubheading Derived parameters
 
    The following paramters @strong{must} be set whenever one of the essential
-   parameters have been set or changed (and the parameter is required
+   parameters has been set or changed (and the parameter is required
    for the chosen method).
 */
 
@@ -236,7 +241,7 @@ double unur_distr_cont_get_mode( UNUR_DISTR *distribution );
 int unur_distr_cont_set_pdfarea( UNUR_DISTR *distribution, double area );
 /* 
    Set the area below the PDF. If @code{area} is non-positive, no
-   area is set and @code{unur_errno} is set to @*
+   area is set and @code{unur_errno} is set to
    @code{UNUR_ERR_DISTR_SET}. 
    
    For a distribution object created by the 
@@ -255,10 +260,10 @@ int unur_distr_cont_upd_pdfarea( UNUR_DISTR *distribution );
 
    This call sets the normalization constant such that the given
    PDF is the derivative of a given CDF, i.e. the area is 1.
-   However for truncated distribution the area smaller than 1.
+   However for truncated distributions the area is smaller than 1.
 
    The call does not work for distributions from the 
-   UNURAN library of standard distributions whith truncated
+   UNURAN library of standard distributions with truncated
    domain when the CDF is not available.
 */
 

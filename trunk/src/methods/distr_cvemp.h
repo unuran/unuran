@@ -57,11 +57,11 @@
 
 UNUR_DISTR *unur_distr_cvemp_new( int dim ); 
 /* 
-   Create a new (empty) object for empirical multivariate continuous
-   distribution. @var{dim} is the number of components of the random
-   vector (i.e. its dimension). It must be at least 2; otherwise
-   unur_distr_cemp_new() should be used to create an object for an
-   empirical univariate distribution.
+   Create a new (empty) object for an empirical multivariate
+   continuous distribution. @var{dim} is the number of components of
+   the random vector (i.e. its dimension). It must be at least 2;
+   otherwise unur_distr_cemp_new() should be used to create an object
+   for an empirical univariate distribution.
 */
 
 /* ==DOC
@@ -70,10 +70,10 @@ UNUR_DISTR *unur_distr_cvemp_new( int dim );
 
 int unur_distr_cvemp_set_data( UNUR_DISTR *distribution, double *sample, int n_sample );
 /* 
-   Set observed sample for empirical distribution.
-   @var{sample} is an array of double arrays of size 
-   @code{dim}x@var{n_sample}, where
-   @code{dim} is the dimension of the distribution returned by
+   Set observed sample for empirical @var{distribution}.
+   @var{sample} is an array of doubles of size 
+   @code{dim} x @var{n_sample}, where
+   @code{dim} is the dimension of the @var{distribution} returned by
    unur_distr_get_dim(). 
    The data points must be stored consecutively in @var{sample}.
 */
@@ -85,10 +85,12 @@ int unur_distr_cvemp_get_data( UNUR_DISTR *distribution, double **sample );
    observations. If no sample has been given,
    @code{0} is returned and @var{sample} is set to NULL.
    If successful @var{sample} points to an array of length
-   @code{dim}x@code{n_sample}, where
+   @code{dim} x @code{n_sample}, where
    @code{dim} is the dimension of the distribution returned by
    unur_distr_get_dim() and @code{n_sample} the return value of the
    function.
+
+   @emph{Important:} Do @strong{not} modify the array @var{sample}.
 */
 
 /* =END */

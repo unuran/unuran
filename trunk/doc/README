@@ -64,6 +64,8 @@ The following TAGs are valid:
 	method.
 	(not implemented yet)
 
+=SPEED  Generation speed of generator method.
+
 =SEEALSO	Similar methods.
 	List of methods that work similar as this method.	
 	(not implemented yet)

@@ -60,7 +60,7 @@ UNUR_GEN *unur_init( UNUR_PAR *parameters );
   Warning: If an error has occurred a NULL pointer is return. This
   must not be used for the sampling routines (this causes a
   segmentation fault). 
-  ALWAYS check whether the call was successful or not!
+  @strong{Always} check whether the call was successful or not!
 */
 
 /*---------------------------------------------------------------------------*/
@@ -77,15 +77,16 @@ void   unur_sample_vec(UNUR_GEN *generator, double *vector);
   Sample from generator object. The three routines depend on the type
   of the generator object (discrete or continuous univariate
   distribution, or multivariate distribution).
-  Warning: These routines do not check if generator is an invalid NULL
-  pointer.
+
+  @strong{Important:} These routines do @strong{not} check if
+  generator is an invalid NULL pointer.
 */
 
 
 /*---------------------------------------------------------------------------*/
 /* Destroy (free) generator object                                           */
 
-void  unur_free( UNUR_GEN *gen );
+void  unur_free( UNUR_GEN *generator );
 /*
   Destroy (free) the given generator object.
 */
@@ -96,7 +97,7 @@ void  unur_free( UNUR_GEN *gen );
 int unur_get_dimension( UNUR_GEN *generator );
 /*
   Get the number of dimension of a (multivariate) distribution.
-  For a univariate distribution 1 is return.
+  For a univariate distribution @code{1} is return.
 */
 
 /*---------------------------------------------------------------------------*/
@@ -104,8 +105,8 @@ int unur_get_dimension( UNUR_GEN *generator );
 const char *unur_get_genid( UNUR_GEN *generator );
 /*
   Get identifier string for generator.
-  If UNUR_ENABLE_GENID is not defined in unuran_config.h then only the method
-  used for the generator is return.
+  If @code{UNUR_ENABLE_GENID} is not defined in @file{unuran_config.h} then
+  only the method used for the generator is returned.
 */
 
 /*---------------------------------------------------------------------------*/
@@ -113,8 +114,9 @@ const char *unur_get_genid( UNUR_GEN *generator );
 UNUR_DISTR *unur_get_distr( UNUR_GEN *generator );
 /* 
    Get pointer to distribution object from generator object. This
-   function should be used with extreme care. Never manipulate the
-   distribution object returned by this call.
+   function should be used with extreme care. 
+   @strong{Never} manipulate the distribution object returned by this
+   call. 
    (How should the poor generator object know what you have done?)
 */
 

@@ -272,11 +272,9 @@ unur_distr_discr_make_pv( struct unur_distr *distr )
     return 0;
   }
 
-  /* domain must not start at -infinity (= INT_MIN) */
-  if (DISTR.domain[0] <= INT_MIN) {
-    _unur_error(distr->name,UNUR_ERR_DISTR_GET,"domain not bounded from left");
-    return 0;
-  }
+  /* no domain given --> set left boundary to 0 */
+  if (!(distr->set & UNUR_DISTR_SET_DOMAIN))
+    DISTR.domain[0] = 0;
 
   /* it there exists a PV, it has to be removed */
   if (DISTR.pv != NULL)

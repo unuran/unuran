@@ -75,6 +75,8 @@ int unur_distr_cemp_get_data( UNUR_DISTR *distribution, double **sample );
    Get number of samples and set pointer @var{sample} to array of
    observations. If no sample has been given,
    @code{0} is returned and @code{sample} is set to NULL.
+
+   @emph{Important:} Do @strong{not} change the entries in @var{params}!
 */
 
 /* =END */

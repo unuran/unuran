@@ -57,6 +57,8 @@ use FileHandle;
      "=REQUIRED"    => { "scan" => \&scan_do_nothing },
 
      "=OPTIONAL"    => { "scan" => \&scan_do_nothing },
+
+     "=SPEED"       => { "scan" => \&scan_do_nothing },
      
      "=SEEALSO"     => { "scan" => \&scan_do_nothing },
      
@@ -475,6 +477,8 @@ sub scan_ROUTINES {
 		    "UNUR_DISTR",
 		    "UNUR_URNG",
 		    "UNUR_FUNCT_CONT",
+		    "UNUR_FUNCT_CVEC",
+		    "UNUR_VFUNCT_CVEC",
 		    "FILE",
 		    "extern",
 		    "struct",

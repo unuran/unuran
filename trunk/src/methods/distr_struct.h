@@ -66,7 +66,7 @@ struct unur_distr_cont {
 struct unur_distr_cvec {
 
   UNUR_FUNCT_CVEC *pdf;         /* pointer to PDF                            */
-  UNUR_VFUNCT_CVEC *dpdf;       /* pointer to gradiant of PDF                */
+  UNUR_VFUNCT_CVEC *dpdf;       /* pointer to gradient of PDF                */
 
   double *mean;                 /* mean vector of distribution               */
   double *covar;                /* covariance matrix of distribution         */

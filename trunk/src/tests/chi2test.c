@@ -546,11 +546,10 @@ _unur_test_chi2_vec ( struct unur_gen *gen,
   double *x, *z;   /* sampling vectors */
   double pval;     /* p-value */
 
-  const double *L;       /* pointer to Cholesky factor */
+  double *L;             /* pointer to Cholesky factor */
   double *Linv;          /* pointer to inverse Cholesky factor (is calculated here) */
-  const double *Cinv;    /* pointer to inverse covariance matrix */
   const double *mean;    /* pointer to mean vector */
-  
+
   int *idx;	   /* index array */
   int *bm;         /* array for counting bins for marginals */
   int *b;          /* array for counting bins */
@@ -558,6 +557,8 @@ _unur_test_chi2_vec ( struct unur_gen *gen,
   int i, j, k, sumintervals, prodintervals, offset;
   int dimintervals[CHI2_MAX_DIMENSIONS]; /* for each dimension in chi2 test */ 
   int totalintervals;  /* product of all dimintervals[] */
+
+  double det; /* determinant of Linv */
   
   /* check arguments */
   CHECK_NULL(gen,-1.);
@@ -604,7 +605,7 @@ _unur_test_chi2_vec ( struct unur_gen *gen,
   bm  = _unur_malloc( dim*intervals * sizeof(int)); /* bins for marginal test */
   if (totalintervals <= CHI2_MAX_TOTALINTERVALS) 
   b  = _unur_malloc( totalintervals * sizeof(int)); /* bins for chi2 test */
-
+  
   /* check if memory could be allocated */
   if (  (idx == NULL) || (x==NULL) || (z == NULL) || (bm == NULL) || (Linv==NULL) || 
         (b == NULL) || (totalintervals > CHI2_MAX_TOTALINTERVALS) ) {
@@ -625,40 +626,10 @@ _unur_test_chi2_vec ( struct unur_gen *gen,
   }
   samplesize = min( samplesize, CHI2_MAX_SAMPLESIZE );
 
-  /* TODO : compute Linv using LU-decomposition inverse ... */
-  
-  /* calculation of inverse Cholesky factor (1. method) */
-  L = unur_distr_cvec_get_cholesky(gen->distr);
-  for (j=0; j<dim; j++) {
-      Linv[idx(j,j)] = 1./L[idx(j,j)]; /* L[idx(j,j)] > 0 */
-                                                                                      
-      for (i = j + 1; i < dim; i++){
-        double a=0;
-        for (k = j; k < i; k++){
-           a += L[idx(i,k)] * Linv[idx(k,j)];
-        }
-        Linv[idx(i,j)] = ( abs(i==j)  - a ) / L[idx(i,i)]; 
-        Linv[idx(j,i)] = 0.; /* Linv is a lover triangular matrix */
-      }
-  }
-  _unur_matrix_debug (dim, Linv, "Inverse Cholesky factor (1. method)", "CHI2VEC" );
-
-  /* calculation of inverse Cholesky factor (2. method) */
-  L = unur_distr_cvec_get_cholesky(gen->distr);
-  Cinv = unur_distr_cvec_get_covar_inv(gen->distr);
-
-  for (i=0; i<dim; i++) {
-  for (j=0; j<dim; j++) {
-    Linv[idx(i,j)]=0;
-    if (i>=j) { 
-      /* Linv = LT * Cinv */
-      for (k=0; k<dim; k++) {
-        Linv[idx(i,j)] += L[idx(k,i)] * Cinv[idx(k,j)];   
-      }
-    }
-  }}
-  _unur_matrix_debug (dim, Linv, "Inverse Cholesky factor (2. method)", "CHI2VEC" );
-  
+  /* calculation of inverse Cholesky factor */
+  L = (double *) unur_distr_cvec_get_cholesky(gen->distr);
+  _unur_matrix_invert_matrix (dim, L, 0 , Linv, &det);
+ 
   mean = unur_distr_cvec_get_mean(gen->distr);
 
   /* now run generator */
@@ -719,7 +690,6 @@ _unur_test_chi2_vec ( struct unur_gen *gen,
   }
 
   pval = _unur_test_chi2test(NULL, &b[0] , totalintervals, classmin, verbose, out );
-
 
 free_memory:
   /* free memory */

@@ -38,43 +38,83 @@
  *****************************************************************************/
 
 /* 
-   =METHOD  VNROU   Naive Ratio-Of-Uniforms method
+   =METHOD  VNROU   Multivariate Naive Ratio-Of-Uniforms method
 
    =UP  Methods_for_CVEC
 
    =REQUIRED PDF
 
-   =OPTIONAL mode, bounding rectangle for acceptance region
+   =OPTIONAL mode, center, bounding rectangle for acceptance region
 
    =SPEED Set-up: fast, Sampling: slow
 
-   =REF  [HLD04: Sect.2.4]
+   =REF  [WGS91]
 
    =DESCRIPTION
-      VNROU is an implementation of the ratio-of-uniforms method
-      which uses a (minimal) bounding hyper-rectangle.
+      VNROU is an implementation of the multivariate ratio-of-uniforms
+      method which uses a (minimal) bounding hyper-rectangle,
+      see also @ref{Ratio-of-Uniforms}.
+      It uses an additional parameter @code{r} that can be used to
+      adjust the algorithm to the given distribution to improve
+      performance and/or to make this method applicable.
+      Moreover, this implementation uses the center @i{c} of the
+      distribution (which is set to the mode or mean by default, see
+      unur_distr_cvec_set_center() for more details of its default
+      values). 
 
-      See the Appendix for more details on the ratio-of-uniforms method.
+      The minimal bounding has then the coordinates
+
+      @display
+      @unurmath{v^+ = \sup\limits_{x} (f(x))^{1/rk+1},} @*
+      @unurmath{u^-_i = \inf\limits_{x_i} (x_i-c_i) (f(x))^{r/rk+1},} @*
+      @unurmath{u^+_i = \sup\limits_{x_i} (x_i-c_i)  (f(x))^{r/rk+1},}
+      @end display
+
+      where
+      @unurmath{x_i} is the @i{i}-th coordinate of point @i{x};
+      @unurmath{c_i} is the @i{i}-th coordinate of the center @i{c}.
+      These bounds can either be given directly, or these are computed
+      automatically by means of an numerical routine 
+      by Hooke and Jeeves @unurbibref{HJa61} called direct search 
+      (see @file{src/utils/hooke.c} for further references and
+      details). Of course this can fail, especially when this
+      rectangle is not bounded.
+
+      It is important to note that the algorithm works with 
+      @unurmath{PDF(x-center)} instead of 
+      @unurmath{PDF(x)}, i.e. the bounding rectangle that have to be
+      provided are for the @unurmath{PDF(x-center)}.
+      This is important as otherwise the acceptance region can become
+      a very long and skinny ellipsoid along a diagonal of the (huge)
+      bounding rectangle.
+
+      VNROU is based on the rejection method (@pxref{Rejection}).
+      And it is important to note that the acceptance probability
+      decreases exponentially with dimension. Thus even for moderately
+      many dimensions (e.g. 5) the number of repetitions to get one
+      random vector can be prohibitively large and the algorithm seems
+      to stay in an infinite loop.
+
+   =HOWTOUSE
+      For using the VNROU method UNURAN needs the PDF of the
+      distribution. Additionally the parameter @code{r} can be set via
+      a unur_vnrou_set_r() call. Notice that the acceptance
+      probability increases when @code{r} is increased. On the other
+      hand is is more unlikely that the bounding rectangle does not
+      exist if @code{r} is small.
+      
+      The bounding rectangle can be given by the unur_vnrou_set_u()
+      and unur_vnrou_set_v() calls. If these are not called then the
+      minimal bounding rectangle is computed automatically. Using 
+      unur_vnrou_set_verify() and unur_vnrou_chg_verify() one can run
+      the sampling algorithm in a checking mode, i.e., in every cycle
+      of the rejection loop it is checked whether the used 
+      rectangle indeed enclosed the acceptance region of the
+      distribution. When in doubt (e.g., when it is not clear whether
+      the numerical routine has worked correctly) this can be used to
+      run a small Monte Carlo study.
+
    =END
-*/
-
-
-/* 
-   TODO:
-
-   Set the center (@unurmath{\mu}) of the PDF.
-   For distributions like the gamma distribution with large shape
-   parameters the acceptance region becomes a long inclined skinny
-   oval with a large bounding rectangle and thus an extremely large
-   rejection constant. Using the @var{center} shifts the mode of the
-   distribution near the origin and thus makes the bounding box of the
-   acception region smaller.
-
-   Default: Mode of the distribution if neither unur_nrou_set_rect_u()
-   nor unur_nrou_set_rect_v() are called (and the mode is available
-   for the distribution).
-   Otherwise (if at least one of these two calls has been
-   used) a @code{0}-vector is used as center.
 */
 
 /*---------------------------------------------------------------------------*/

@@ -13,12 +13,12 @@ $FORTRAN_src = "./uniftest.f";
 $FORTRAN_exec = "./uniftest_f";
 
 $JAVA_src = "./uniftest.java";
-$JAVA_exec = "./uniftest_java";
+$JAVA_exec = "./Uniftest";
 
 ####################################################
 
 $seed = 12345;
-$sample_size = 1000;
+$sample_size = 10;
 
 ####################################################
 
@@ -33,20 +33,22 @@ make_JAVA_src();
 # Compile sources
 system "$GCC -o $C_exec $C_src";
 system "$G77 -o $FORTRAN_exec $FORTRAN_src";
-## system "$G77 -o $JAVA_exec $JAVA_src";
+system "javac $JAVA_src";
 
 # Print Test data
 print "seed = $seed\n";
 print "sample size = $sample_size\n";
 
 # Start generators
-open C, "./$C_exec |" or die "cannot run $C_exec"; 
-open FORTRAN, "./$FORTRAN_exec |" or die "cannot run $FORTRAN_exec"; 
+open C, "$C_exec |" or die "cannot run $C_exec"; 
+open FORTRAN, "$FORTRAN_exec |" or die "cannot run $FORTRAN_exec"; 
+open JAVA, "java $JAVA_exec |" or die "cannot run $JAVA_exec"; 
 
 # Run generatores and compare output
 $n_diffs = 0;
 while ($C_out = <C>) {
     $FORTRAN_out = <FORTRAN>;
+    $JAVA_out = <JAVA>;
     chomp $C_out;
     chomp $FORTRAN_out;
 
@@ -61,6 +63,7 @@ while ($C_out = <C>) {
 # End
 close C;
 close FORTRAN;
+close JAVA;
 
 ####################################################
 

@@ -425,7 +425,7 @@ sub make_PDF_params_FORTRAN
 		"\tfprintf (out,\"      PARAMETER (".
 	        $in_params->[$i]." = \");\n".
 		"\t_unur_acg_FORTRAN_print_double(out,".
-	        $DISTR->{$d}->{"=PDF"}->{"=DISTR"}.".params[$i]);\n";
+	        $DISTR->{$d}->{"=PDF"}->{"=DISTR"}.".params[$i]);\n".
 	        "\tfprintf (out,\")\\n\");\n";
 	}
     }
@@ -545,7 +545,8 @@ sub make_PDF_body_FORTRAN
     my $is_if_block = 0;
     my $next_is_if_block = 0;
 
-    foreach my $l (split /\n/, $in_body) {
+
+    foreach my $l (split /\n/, $body1) {
 	if ($l =~ /if\s*\(\s*n_params\s*[<>=!]+\s*\d+\s*\)/) {
 	    $l =~ s/n_params/$DISTR->{$d}->{"=PDF"}->{"=DISTR"}.n_params/;
 	    $l =~ s/  /\t/g;
@@ -554,13 +555,14 @@ sub make_PDF_body_FORTRAN
 	}
 
 	my $indent = ($is_if_block) ? "        " : "     ";
+	my $return = "";
 
 	# rename normalization constant
 	$l =~ s/LOGNORMCONSTANT/lncnst/g;
 	$l =~ s/NORMCONSTANT/const/g;
 
 	# double constants
-	$l =~ s/([\d\.]+)/$1d0 /g;
+	$l =~ s/([\d\.]+)/$1D0 /g;
 
 	# FORTRAN commands
 	$l =~ s/<=/.LE./g;
@@ -574,12 +576,14 @@ sub make_PDF_body_FORTRAN
 	$l =~ s/\&\&/.AND./g;
 	$l =~ s/\|\|/.OR./g;
 
+	
+
 	# return statement
 	if ($l =~ /return\s+(.*);/) {
 	    my $val = $1;
 	    $val =~ s/^\s*/$indent %.6s = /g;
 	    $body .= "\tfprintf (out,\"$val\\n\", pdf_name);\n";
-	    $body .= "\tfprintf (out,\"$indent RETURN\\n\");\n";
+	    $return = "\tfprintf (out,\"$indent RETURN\\n\");\n";
 	}
 
 	else {
@@ -599,6 +603,9 @@ sub make_PDF_body_FORTRAN
 	    # print
 	    $body .= "\tfprintf (out,\"$l\\n\");\n";
 	}
+
+	# return statement (if there is one)
+	$body .= $return;
 
 	# we assume that each if block consists of one line
 	if ($is_if_block) {

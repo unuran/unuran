@@ -22,7 +22,8 @@ my $test_conf_file = shift
 my $make_test_PDFgen = "make_test_PDFgen.c";
 
 # C file for tests
-my $test_PDFgen = "test_PDFgen.c";
+my $test_PDFgen_C = "test_PDFgen.c";
+my $test_PDFgen_FORTRAN = "test_PDFgen.f";
 
 # Sample size for test
 my $SAMPLE_SIZE = 10000;
@@ -207,7 +208,7 @@ EOX
 
 # The make test routine
 	# Begin of make test routines 
-	my $make_test_routine = "void $testroutine (FILE *out)\n\{\n";
+	my $make_test_routine = "void $testroutine (FILE *out_C, FILE *out_FORTRAN)\n\{\n";
 
 	# Declarations for make test routine
 	my $make_test_decl = 
@@ -216,7 +217,8 @@ EOX
 	# Body of make test routine
 	my $make_test_body = 
 	    "$distribution\n".                       # the distribution object
-	    "\t_unur_acg_C_PDF(distr,out,\"$PDFroutine\");\n".  # make code 
+	    "\t_unur_acg_C_PDF(distr,out_C,\"$PDFroutine\");\n".  # make code 
+	    "\t_unur_acg_FORTRAN_PDF(distr,out_FORTRAN,\"$PDFroutine\");\n".  # make code 
 	    "\tunur_distr_free(distr);\n\n";         # free distribution object
 
 	# write test file
@@ -224,7 +226,7 @@ EOX
 	    $l =~ s/\t/\\t/g;
 	    $l =~ s/\\n/\\\\n/g;
 	    $l =~ s/\"/\\\"/g;
-	    $make_test_body .= "\tfprintf(out,\"$l\\n\");\n";
+	    $make_test_body .= "\tfprintf(out_C,\"$l\\n\");\n";
 	}
 
 	# End of make test routine
@@ -275,7 +277,7 @@ EOX
 
     # Log files 
     $test_main_body .=
-	"\tLOG = fopen( \"test_PDFgen.log\",\"w\" );\n".
+	"\tLOG = fopen( \"test_PDFgen_C.log\",\"w\" );\n".
 	"\tunur_set_stream( LOG );\n".
         "\tunur_set_default_debug(UNUR_DEBUG_ALL);\n\n";
 
@@ -316,7 +318,8 @@ EOX
 
     # Declarations for main()
     my $make_main_decl = 
-	"\tFILE *out;\n".
+	"\tFILE *out_C;\n".
+	"\tFILE *out_FORTRAN;\n".
 	"\tFILE *LOG;\n";
 
     # Body of make main()
@@ -327,20 +330,21 @@ EOX
 
     # open output stream
     $make_main_body .=
-	"\tout = fopen(\"$test_PDFgen\",\"w\");\n\n";
+	"\tout_C = fopen(\"$test_PDFgen_C\",\"w\");\n".
+	"\tout_FORTRAN = fopen(\"$test_PDFgen_FORTRAN\",\"w\");\n\n";
 
     # Write the header for the test file
     foreach my $l (split /\n/, $test_header) {
 	$l =~ s/\t/\\t/g;
 	$l =~ s/\\n/\\\\n/g;
 	$l =~ s/\"/\\\"/g;
-	$make_main_body .= "\tfprintf(out,\"$l\\n\");\n";
+	$make_main_body .= "\tfprintf(out_C,\"$l\\n\");\n";
     }
     $make_main_body .= "\n";
 
     # Write the calls for the test routines
     foreach my $t (split /\n/, $test_list) {
-	$make_main_body .= "\t$t(out);\n";
+	$make_main_body .= "\t$t(out_C,out_FORTRAN);\n";
     }
     $make_main_body .= "\n";
 
@@ -349,12 +353,13 @@ EOX
 	$l =~ s/\t/\\t/g;
 	$l =~ s/\\n/\\\\n/g;
 	$l =~ s/\"/\\\"/g;
-	$make_main_body .= "\tfprintf(out,\"$l\\n\");\n";
+	$make_main_body .= "\tfprintf(out_C,\"$l\\n\");\n";
     }
     $make_main_body .= "\n";
 
     # End of make main()
-    $make_main_body .= "\tfclose(out);\n";
+    $make_main_body .= "\tfclose(out_C);\n";
+    $make_main_body .= "\tfclose(out_FORTRAN);\n";
     $make_main_body .= "\texit (EXIT_SUCCESS);\n";
     $make_main_body .= "}\n\n";
 

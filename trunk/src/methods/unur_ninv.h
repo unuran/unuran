@@ -85,9 +85,10 @@ int unur_ninv_set_start( UNUR_PAR *parameters, double s1, double s2, double s3 )
 /*  Set starting points.
     If not set, suitable values are chosen automatically.                   */
 /*   Newton:        s1:           starting point                            */
-/*   regula falsi: s1, s2:       boundary of starting interval              */
-/*   Muller:  s1, s2, s3:   starting points (yet not implemented)           */
-/* arguments that are not used by method are ignored.                       */
+/*   Regula falsi: s1, s2:       boundary of starting interval              */
+/*   If s1 == s2, UNURAN sets starting values as follows:                   */
+/*   Newton: CDF(s1) = 0.5                                                  */
+/*   Regula falsi: CDF(s1) = 0.1, CDF(s2) = .9                              */
 
 /* =END */
 /*---------------------------------------------------------------------------*/

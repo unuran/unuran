@@ -258,7 +258,7 @@ _unur_fstr_next_symbol (struct parser_data *pdata, char *symb)
       errcode = ERR_UNKNOWN_SYMBOL;
   }
 
-  else if ( c == '<' || c == '>' || c == '=' ) {
+  else if ( c == '<' || c == '>' || c == '=' || c == '!' ) {
     /* Relation Operator */
     _unur_fstr_RelationOperator(pdata,symb);
 
@@ -510,11 +510,11 @@ _unur_fstr_RelationOperator (struct parser_data *pdata, char *ro)
      /*                                                                      */
      /* Syntax:                                                              */
      /*   RelationOperator ::= RelationChar [ RelationChar ]                 */ 
-     /*   RelationChar     ::= '<' | '=' | '>'                               */
+     /*   RelationChar     ::= '<' | '>' | '=' | '!'                         */
      /*----------------------------------------------------------------------*/
 {
   /* copy relation operator */
-  while ((*ro = pdata->fstr[pdata->scanpos]) == '<' || *ro == '=' || *ro == '>') {
+  while ((*ro = pdata->fstr[pdata->scanpos]) == '<' || *ro == '>' || *ro == '=' || *ro == '!' ) {
     ro++;
     (pdata->scanpos)++;
   }

@@ -9,7 +9,7 @@ INCLUDES = \
 # Special files for tests with Mathematica
 if HAVE_MATHEMATICA
 MATHEMATICA_PROGS = t_StdDistr  test_functionparser
-MATHEMATICA_TESTS = t_StdDistr
+MATHEMATICA_TESTS = t_StdDistr  test_functionparser
 else
 MATHEMATICA_PROGS = 
 MATHEMATICA_TESTS = 
@@ -95,20 +95,20 @@ EXTRA_DIST = \
 if HAVE_MATHEMATICA
 
 data:
-	math -initfile test_StdDistr.m
+	math -initfile $(top_srcdir)/tests/test_StdDistr.m
 
 t_StdDistr.c: test_StdDistr.m
-	math -initfile test_StdDistr.m
+	math -initfile $(top_srcdir)/tests/test_StdDistr.m
 
 t_StdDistr_SOURCES = t_StdDistr.c test_StdDistr.c
 t_StdDistr_LDADD = $(top_builddir)/src/libunuran.a
 
-t_functionparser.data: test_functionparser.m
-	math -initfile test_functionparser.m
-
 test_functionparser_SOURCES = test_functionparser.c
 test_functionparser_LDADD = $(top_builddir)/src/libunuran.a
 test_functionparser_DEPENDENCIES = $(top_builddir)/src/libunuran.a t_functionparser.data
+
+t_functionparser.data: test_functionparser.m
+	math -initfile $(top_srcdir)/tests/test_functionparser.m
 
 endif
 

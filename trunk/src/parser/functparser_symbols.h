@@ -183,6 +183,7 @@ static struct symbols symbol[] = {
   {">"   , S_REL_OP  , 1, 0.0 , v_greater, d_const },
   {"<="  , S_REL_OP  , 1, 0.0 , v_less_or, d_const },
   {"<>"  , S_REL_OP  , 1, 0.0 , v_unequal, d_const },
+  {"!="  , S_REL_OP  , 1, 0.0 , v_unequal, d_const },
   {">="  , S_REL_OP  , 1, 0.0 , v_grtr_or, d_const },
 
   {"_NAS", S_NOSYMBOL, 0, 0.0 , v_dummy  , d_error }, /* marker for non-alphanumeric symbols */

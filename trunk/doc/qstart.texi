@@ -581,17 +581,13 @@ as the second argument indicates.
 The first paramters (as much as the value of the second argument)
 are set to the provided values and the remaining are set to the
 standard values in the order specified in this section.
-(See @ref{Ex1} (0 parameters provided)
- and @ref{Ex3} (2 parameters provided).)
+(See @ref{Ex1} (0 parameters provided) and @ref{Ex3} (2 parameters provided).)
 
-@noindent @strong{WARNING:} Naturally the computational accuracy
-limits the possible parameters. There shouldn't be problems
-when the parameters are in a "reasonable" range but e.g. the
-normal distribution N(10^50,1) won't yield the desired results.
-(In this case it would be better generating N(0,1) and THEN
-transform the results.)
-@* Of course computational inaccuracy is not specific to UNURAN
-and  should always kept in mind when working with computers.
+Some methods allow arbitrary domains with predefined densities
+(e.g. NINV -- numerical inversion):
+And if the domain is changed so might the mode. How to change the
+domain and due to that the mode or mayby another parameter can be
+looked up in @ref{Selfmade}.
 
 @include qstart_c_distributions.texi
 
@@ -731,7 +727,14 @@ For information about the following distributions see
 * UTDRref:: Universal Transformed Density Rejection (3-point method)
 @end menu
 
-For information about the Methods see @ref{Description}.
+As explained above, the parameter object is destroyed when the
+generator object is generated. Therefore its cruical WHEN using
+the functions below. Some functions will set the parameters before
+the generator object exists. Oters can change parameters during sampling.
+It is quite easy to identify the kind of a specific function
+when looking at the passed arguments.
+
+For information about the Methods themselfes, see @ref{Description}.
 @include qstart_function_reference.texi
 
 @c --------------------------------------------------------------------

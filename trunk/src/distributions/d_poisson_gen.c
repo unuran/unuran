@@ -51,7 +51,8 @@ inline static void poisson_pdac_init( struct unur_gen *gen );
 
 #define uniform()  _unur_call_urng(gen) /* call for uniform prng             */
 
-#define MAX_gen_params  100      /* maximal number of parameters for generator */
+#define MAX_gen_params  100    /* maximal number of parameters for generator */
+#define MAX_gen_iparams  100   /* maximal number of integer param. for gen.  */
 
 /* parameters */
 #define theta  (DISTR.params[0])    /* shape */
@@ -141,11 +142,13 @@ _unur_stdgen_poisson_init( struct unur_par *par, struct unur_gen *gen )
  *****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
-// #define m    (GEN.gen_param[0])
-// #define ll   (GEN.gen_param[1])
-#define p0   (GEN.gen_param[2])
-#define q    (GEN.gen_param[3])
-#define p    (GEN.gen_param[4])
+#define m    (GEN.gen_iparam[0])
+#define ll   (GEN.gen_iparam[1])
+
+#define p0   (GEN.gen_param[0])
+#define q    (GEN.gen_param[1])
+#define p    (GEN.gen_param[2])
+#define pp   ((GEN.gen_param)+3)  /* array of length 36 */
 /*---------------------------------------------------------------------------*/
 
 inline static void
@@ -158,15 +161,14 @@ poisson_pdtabl_init( struct unur_gen *gen )
   if (GEN.gen_param == NULL) {
     GEN.n_gen_param = MAX_gen_params;
     GEN.gen_param = _unur_malloc(GEN.n_gen_param * sizeof(double));
+    GEN.n_gen_iparam = MAX_gen_iparams;
+    GEN.gen_iparam = _unur_malloc(GEN.n_gen_param * sizeof(int));
   }
 
   /* -X- setup code -X- */
-
-  //  m = (theta > 1.) ? theta : 1.0;
-  //  ll = 0;
+  m = (theta > 1.) ? ((int) theta) : 1;
+  ll = 0;
   p0 = q = p = exp(-theta);
-
-
   /* -X- end of setup code -X- */
 
 } /* end of poisson_pdtabl_init() */
@@ -176,50 +178,40 @@ unur_stdgen_sample_poisson_pdtabl( struct unur_gen *gen )
      /* theta < 10: Tabulated inversion */
 {
   /* -X- generator code -X- */
-  static double theta_old = -1.0;
-  //  static double p0,q,p,pp[36];
-  static double pp[36];
-  static long ll,m;
-  double u;
-  long k,i;
+  double U;
+  int K,i;
 
 
   /* check arguments */
   CHECK_NULL(gen,0.); COOKIE_CHECK(gen,CK_DSTD_GEN,0.);
   
-  
-  /* CASE B: Inversion- start new table and calculate p0 */
-  if (theta != theta_old)
-    {
-      theta_old = theta;
-      m = (theta > 1.0)? theta : 1.0;
-      ll = 0;
+  while (1) {
+    U = uniform();              /* Step U. Uniform sample */
+    K = 0;
+    if (U <= p0) 
+      return K;
+
+    /* Step T. Table comparison */
+    if (ll != 0) {               
+      i = (U > 0.458) ? min(ll,m) : 1;
+      for (K = i; K <=ll; K++)
+	if (U <= pp[K])
+	  return K;
+      if (ll == 35) continue;
     }
 
-  for(;;)
-    {
-      u = uniform();           /* Step U. Uniform sample */
-      k = 0;
-      if (u <= p0) return(k);
-      if (ll != 0)               /* Step T. Table comparison */
-	{
-	  i = (u > 0.458)? min(ll,m) : 1;
-	  for (k = i; k <=ll; k++) if (u <= pp[k]) return(k);
-	  if (ll == 35) continue;
-	}
-      for (k = ll +1; k <= 35; k++)  /* Step C. Creation of new prob. */
-	{
-	  p *= theta/(double)k;
-	  q += p;
-	  pp[k] = q;
-	  if (u <= q)
-	    {
-	      ll = k;
-	      return(k);
-	    }
-	}
-      ll = 35;
+    /* Step C. Creation of new prob. */
+    for (K = ll +1; K <= 35; K++) {
+      p *= theta / (double)K;
+      q += p;
+      pp[K] = q;
+      if (U <= q) {
+	ll = K;
+	return K;
+      }
     }
+    ll = 35;
+  }
   
   /* -X- end of generator code -X- */
   
@@ -231,6 +223,7 @@ unur_stdgen_sample_poisson_pdtabl( struct unur_gen *gen )
 #undef p0
 #undef q 
 #undef p 
+#undef pp
 /*---------------------------------------------------------------------------*/
 #define NORMAL  GEN.gen_aux    /* pointer to normal variate generator        */
 /*---------------------------------------------------------------------------*/

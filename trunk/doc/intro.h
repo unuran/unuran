@@ -20,14 +20,15 @@
    where no seperate generator is yet available.
    UNURAN is also useful if the parameters of a standard distribution
    should be changed frequently.
-   Additionaly there are lots of predefined distributions available
-@c    (see @ref{Distributions}).
+   Additionally there are lots of predefined distributions available
+   (@pxref{Stddist,Standard distributions,Standard distributions}).
 
    UNURAN implements several methods for generating random numbers.
-   The choice depents primary on what information about the
-   distribution can be provided and---if the user is familar with
-   the different methods---on the preferences of the user.
-=EON
+   The choice depends primary on the information about the
+   distribution can be provided and -- if the user is familar with
+   the different methods -- on the preferences of the user.
+
+=EON 
 
 /*---------------------------------------------------------------------------*/
 
@@ -35,30 +36,29 @@
 =UP  Overview [20]
 
 =DESCRIPTION
-   We tried do design this document in a way one can
-   use UNURAN with reading as little as possible.
-   On basis of the available information about the density,
+   We designed this document in a way such that one can
+   use UNURAN with reading as little as necessary.
+   On basis of the available information about the distribution
    one should choose a suitable method.
-   @c ------------ (see @ref{Requirements}).
-   Then the Examples @ref{Ex1} and @ref{Ex2} in addition
-   with a short look at section 
-   @c ----------- @ref{Do_it_yourself}
-   should be enough.
-   
-   The function for changing the parameters while sampling can be
-   found in 
-   @c ------------ @ref{Function Reference}.
+   Thus we give examples that can be copied and modified
+   (@pxref{Examples}).
 
-   To use predefined distributions take a look on the list of
-   availabe Distributions 
-@c    @ref{Distributions}, 
-   Examples @ref{Ex1}
-   and @ref{Ex1} and if required also on 
-   @c ------------- @ref{Readymade}.   
+   Predefined distributions can be found in
+   @pxref{Stddist,Standard distributions,Standard distributions}.
+   If these should be changed or if it is necessary to build a
+   distribution object from scratch
+   @pxref{Distribution_objects,Handling distribution objects,Handling distribution objects}.
 
-   The greatest deal of this document is for users with knowledge about
+   The various methods are described in @ref{Methods}.
+   For each of possible distribution classes 
+   (continuous, discrete, empirical, multivariate)
+   there exists a short overview section that can be used to choose an
+   appropriate method followed by sections that describe each of the
+   particular methods in detail.
+   These are merely for users with some knowledge about
    the methods who want to change method-specific parameters and can
-   be ignored by all others.
+   be ignored by others.
+
 =EON
 
 /*---------------------------------------------------------------------------*/

@@ -4,9 +4,122 @@
 =UP (dir)
 
 =DESCRIPTION
+   @ifinfo
    This is the online-documentation of UNURAN.@*
    Version: @value{VERSION}@*
    Date: @value{UPDATED}
+   @end ifinfo
+
+
+   UNURAN is a collection of algorithms for generating non-uniform
+   pseudorandom numbers as a library of C functions
+   designed and implemented by the ARVAG (Automatic Random VAriate
+   Generation) project group in Vienna, and 
+   released under the GNU Public License (GPL).
+
+   The design goals of UNURAN are to provide @emph{reliable},
+     @emph{portable} and @emph{robust} (as far as this is possible)
+     functions with a consisent and easy to use interface. It is
+     suitable for all situation where experiments with different
+     distributions including non-standard distributions.
+     For example it is no problem to replace the normal distribution
+     by an empirical distribution in a model. 
+
+     Since originally designed as a library for so called black-box or
+     universal algorithms its interface is different from other
+     libraries. (Nevertheless it also contains special generators for
+     standard distributions.) It does not provide subroutines for
+     random variate generation for particular distributions. Instead
+     it uses an object-oriented interface. Distributions and
+     generators are treated as independent objects. This approach
+     allows one not only to have different methods for generating
+     non-uniform random variates. Thus it is possible to choose the
+     one which is optimal in for the situation (e.g. speed, quality of
+     random numbers, using for variance reduction techniques,
+     etc.). It also allows to sample from non-standard distribution or
+     even from distributions that arise in a model and can only be
+     computed in a complicated subroutine.
+
+     Sampling from a particular distribution requires the following steps: 
+
+     @enumerate
+     @item
+     Create a distribution object. 
+     (Objects for standard distributions are available in the library)
+
+     @item
+     Choose a method. 
+
+     @item
+     Initialize the generator, i.e., create the generator object.
+     If the choosen method is not suitable for the given distribution
+     (or if the distribution object contains too little information
+     about the distribution) the initialization routine fails and 
+     produces an error message. Thus the generator object does
+     (probably) not produce false results (random variates of a
+     different distribution).
+  
+     @item
+     Use this generator object to sample from the distribution.
+     
+     @end enumerate
+
+     There are four types of objects that can be manipulated
+     independently: 
+
+     @itemize @bullet
+
+     @item
+     @strong{Distribution objects:}
+     hold all information about the random variates that should be
+     generated. The following types of distributions are available: 
+
+     @itemize @minus
+     @item
+     Continuous and Discrete distributions
+     @item
+     Empirical distributions 
+     @item
+     Multivariate distributions 
+     @end itemize
+
+     Of course a library of standard distributions is included 
+     (and these can be further modified to get, e.g., truncated 
+     distributions). Moreover the library provides subroutines to
+     build almost arbitrary distributions.
+
+     @item
+     @strong{Generator objects:}
+     hold the generators for the given distributions. It is possible
+     to build independent generator objects for the same distribution
+     object which might use the same or different methods for
+     generation. (If the choosen method is not suitable for the given
+     method, a NULL pointer is returned in the initialization step).
+
+     @item
+     @strong{Parameter objects:}
+     Each transformation method requires several parameters to adjust
+     the generator to a given distribution. The parameter object holds
+     all this information. When created it contains all necessary
+     default settings. It is only used to create a generator object
+     and destroyed immediately. Altough there is no need to change
+     these parameters or even know about their existence for ``usual
+     distributions'', they allow a fine tuning of the generator to
+     work with distributions with some awkward properties. The library
+     provides all necessary functions to change these default
+     parameters. 
+
+     @item
+     @strong{Uniform Random Number Generators:}
+     All generator objects need one (or more) streams of uniform
+     random numbers that are transformed into random variates of the
+     given distribution. These are given as pointers to appropriate
+     functions or structures (objects). Two generator objects may have
+     their own uniform random number generators or share a common
+     one. Any functions that produce uniform (pseudo-) random numbers
+     can be used. We suggest Otmar Lendl's PRNG library. 
+
+     @end itemize
 
 =EON
 

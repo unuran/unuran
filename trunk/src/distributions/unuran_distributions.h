@@ -247,6 +247,10 @@ struct unur_distr *unur_distr_pareto( double *params, int n_params );
 /*---------------------------------------------------------------------------*/
 /*  Power-exponential (Subbotin) distribution  [3; ch.24, p.195]             */
 struct unur_distr *unur_distr_powerexponential(double *params, int n_params);
+/* special generators */
+int _unur_stdgen_powerexponential_init( struct unur_par *par, struct unur_gen *gen );
+/* initialize new generator                                                  */
+double unur_stdgen_sample_powerexponential_epd( struct unur_gen *gen );
 
 /*---------------------------------------------------------------------------*/
 /*  Rayleigh distribution  [2; ch.18, p.456]                                 */

@@ -4,9 +4,9 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   FILE:      gamma_gen.c                                                  *
+ *   FILE:      powerexponential_gen.c                                       *
  *                                                                           *
- *   Special generators for Gamma distribution                               *
+ *   Special generators for Power-exponential distribution                   *
  *                                                                           *
  *****************************************************************************
      $Id$
@@ -40,7 +40,7 @@
 /*---------------------------------------------------------------------------*/
 /* init routines for special generators                                      */
 
-inline static void gamma_gll_init( struct unur_gen *gen );
+inline static void powerexponential_epd_init( struct unur_gen *gen );
 
 /*---------------------------------------------------------------------------*/
 /* abbreviations */
@@ -51,10 +51,10 @@ inline static void gamma_gll_init( struct unur_gen *gen );
 
 #define uniform()  _unur_call_urng(gen) /* call for uniform prng             */
 
-#define alpha (DISTR.params[0])
-#define beta  (DISTR.params[1])
-#define gamma (DISTR.params[2])
-
+/*---------------------------------------------------------------------------*/
+#define delta  (DISTR.params[0])        /* shape */
+#define theta  (DISTR.params[1])        /* location */
+#define phi    (DISTR.params[2])        /* scale */
 /*---------------------------------------------------------------------------*/
 
 /*****************************************************************************/
@@ -66,9 +66,9 @@ inline static void gamma_gll_init( struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 
 int 
-_unur_stdgen_gamma_init( struct unur_par *par, struct unur_gen *gen )
+_unur_stdgen_powerexponential_init( struct unur_par *par, struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
-     /* initialize special generator for gamma distribution                  */
+     /* initialize special generator for power-exponential distribution      */
      /* if gen == NULL then only check existance of variant.                 */
      /*                                                                      */
      /* parameters:                                                          */
@@ -86,9 +86,9 @@ _unur_stdgen_gamma_init( struct unur_par *par, struct unur_gen *gen )
 
   switch (par->variant) {
 
-  case 0:  /* Rejection with log-logistic envelopes */  /* DEFAULT */
-    _unur_cstd_set_sampling_routine( par,gen,unur_stdgen_sample_gamma_gll );
-    gamma_gll_init( gen );
+  case 0:  /* Transformed density rejection */  /* DEFAULT */
+    _unur_cstd_set_sampling_routine( par,gen,unur_stdgen_sample_powerexponential_epd );
+    powerexponential_epd_init( gen );
     return 1;
 
   case UNUR_STDGEN_INVERSION:   /* inversion method */
@@ -97,7 +97,7 @@ _unur_stdgen_gamma_init( struct unur_par *par, struct unur_gen *gen )
     return 0;
   }
 
-} /* end of _unur_stdgen_gamma_init() */
+} /* end of _unur_stdgen_powerexponential_init() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -111,78 +111,80 @@ _unur_stdgen_gamma_init( struct unur_par *par, struct unur_gen *gen )
 
 /*****************************************************************************
  *                                                                           *
- * Gamma Distribution: Rejection from log-logistic envelopes                 *
+ * Powerexponential Distribution: Transformed density rejection              *
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- * FUNCTION:   - samples a random number from the                            *
- *               Gamma distribution with parameter a.                        *
+ * FUNCTION:   - samples a random number from the Power-exponential          *
+ *               distribution with parameter delta <= 2 by using the         *
+ *               non-universal rejection method for logconcave densities.    *
  *                                                                           *
- * REFERENCE:  - R.C.H. Cheng (1977): The Generation of Gamma Variables      *
- *               with Non-Integral Shape Parameter,                          *
- *               Appl. Statist. 26(1), 71-75                                 *
+ * REFERENCE:  - L. Devroye (1986): Non-Uniform Random Variate Generation,   *
+ *               Springer Verlag, New York.                                  *
  *                                                                           *
- * Implemented by Ralf Kremer                                                *
+ * Implemented by K. Lehner, 1990                                            *
+ * Revised by F. Niederl, August 1992                                        *
  *****************************************************************************
  *    WinRand (c) 1995 Ernst Stadlober, Institut fuer Statistitk, TU Graz    *
  *****************************************************************************/
 
-#define aa  GEN.gen_param[0]
-#define bb  GEN.gen_param[1]
-#define cc  GEN.gen_param[2]
+/*---------------------------------------------------------------------------*/
+#define s    GEN.gen_param[0]
+#define sm1  GEN.gen_param[1]
 
 inline static void
-gamma_gll_init( struct unur_gen *gen )
+powerexponential_epd_init( struct unur_gen *gen )
 {
   if (GEN.gen_param == NULL) {
-    GEN.n_gen_param = 3;
+    GEN.n_gen_param = 2;
     GEN.gen_param = _unur_malloc(GEN.n_gen_param * sizeof(double));
   }
 
   /* -X- setup code -X- */
-  aa = (alpha > 1.0) ? sqrt(alpha + alpha - 1.0) : alpha;
-  bb = alpha - 1.386294361;
-  cc = alpha + aa;
+  s = delta / 2.;
+  sm1 = 1. - s;
   /* -X- end of setup code -X- */
 
-} /* end of gamma_gll_init() */
+} /* end of powerexponential_epd_init() */
 
 double 
-unur_stdgen_sample_gamma_gll( struct unur_gen *gen )
+unur_stdgen_sample_powerexponential_epd( struct unur_gen *gen )
 {
   /* -X- generator code -X- */
-  double X;
-  double u1,u2,v,r,z;
+  double U,u1,V,X,y;
+  double tau = 2./delta;
 
   /* check arguments */
   CHECK_NULL(gen,0.);
   COOKIE_CHECK(gen,CK_CSTD_GEN,0.);
 
   while (1) {
-    u1 = uniform();
-    u2 = uniform();
-    v = log(u1 / (1.0 - u1)) / aa;
-    X = alpha * exp(v);
-    r = bb + cc * v - X;
-    z = u1 * u1 * u2;
-    if (r + 2.504077397 >= 4.5 * z) break;
-    if (r >= log(z)) break;
-  }
+    U = 2. * uniform() - 1.;                                  /* U(-1.0/1.0) */
+    u1 = fabs(U);                                             /* u1=|u|      */
+    V = uniform();                                            /* U(0/1)      */
+
+    if (u1 <= sm1)
+      /* Uniform hat-function for x <= (1-1/tau)   */
+      X = u1;
+    else {                       
+      /* Exponential hat-function for x > (1-1/tau) */
+      y = tau * (1. - u1);                                         /* U(0/1) */
+      x = sm1 - s * log(y);
+      V *= y;
+    }
+  } while (log(V) > -exp(log(X)*tau));               /* Acceptance/Rejection */
+  
+  /* Random sign */
+  if (U < 0.)
+    X = -X;
+
   /* -X- end of generator code -X- */
 
-  return ((DISTR.n_params==1) ? X : gamma + beta * X );
+  return ((DISTR.n_params==1) ? X : theta + phi * X );
 
-} /* end of unur_stdgen_sample_gamma_gll() */
-
-#undef aa
-#undef bb
-#undef cc
+} /* end of unur_stdgen_sample_powerexponential_epd() */
 
 /*---------------------------------------------------------------------------*/
-
-
-/*---------------------------------------------------------------------------*/
-#undef alpha
-#undef beta 
-#undef gamma
+#undef s
+#undef sm1
 /*---------------------------------------------------------------------------*/

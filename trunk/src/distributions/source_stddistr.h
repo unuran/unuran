@@ -51,7 +51,7 @@ enum {
   UNUR_DISTR_CAUCHY,              /*    X     X     X     X     X     .      */
   UNUR_DISTR_CHI,                 /*    X     X     X     X     X     .      */
   UNUR_DISTR_CHISQUARE,           /*    X     X     X     X     .     .      */
-  UNUR_DISTR_EXPONENTIAL,         /*    X     X     X     X     ?     .      */
+  UNUR_DISTR_EXPONENTIAL,         /*    X     X     X     X     X     .      */
   UNUR_DISTR_GAMMA,               /*    X     X     X     X     X     .      */
   UNUR_DISTR_LAPLACE,             /*    X     X     X     X     X     .      */
   UNUR_DISTR_LOGISTIC,            /*    X     X     .     X     X     .      */
@@ -59,9 +59,9 @@ enum {
   UNUR_DISTR_LOMAX,               /*    X     X     X     X     .     .      */
   UNUR_DISTR_NORMAL,              /*    X     X     X     X     X     .      */
   UNUR_DISTR_PARETO,              /*    X     X     X     X     .     .      */
-  UNUR_DISTR_POWEREXPONENTIAL,    /*    X     .     .     X     .     .      */
+  UNUR_DISTR_POWEREXPONENTIAL,    /*    X     .     .     X     X     .      */
   UNUR_DISTR_RAYLEIGH,            /*    X     X     X     X     .     .      */
-  UNUR_DISTR_STUDENT,             /*    X     .     X     X     ?     .      */
+  UNUR_DISTR_STUDENT,             /*    X     .     X     X     X     .      */
   UNUR_DISTR_UNIFORM,             /*    X     X     X     X     .     .      */
   UNUR_DISTR_WEIBULL,             /*    X     X     X     X     X     .      */
 };

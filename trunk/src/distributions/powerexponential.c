@@ -22,10 +22,26 @@
  *  domain:    -infinity < x < infinity                                      *
  *  constant:  2^(delta/2 + 1) * Gamma(delta/2 + 1) * phi                    *
  *                                                                           *
- *  parameters:                                                              *
+ *  parameters: 3                                                            *
  *     0:  delta > 0 ... shape                                               *
  *     1:  theta     ... location                                            *
  *     2:  phi > 0   ... scale                                               *
+ *                                                                           *
+ *****************************************************************************
+ *                                                                           *
+ *  Standard form:                                                           *
+ *                                                                           *
+ *  pdf:       exp(-1/2 * abs(x) ^ (2/delta) )                               *
+ *  domain:    -infinity < x < infinity                                      *
+ *  constant:  2^(delta/2 + 1) * Gamma(delta/2 + 1)                          *
+ *                                                                           *
+ *  parameters: 1                                                            *
+ *     0:  delta > 0 ... shape                                               *
+ *                                                                           *
+ *     1:  theta = 0                                                         *
+ *     2:  phi   = 1                                                         *
+ *                                                                           *
+ *                                                                           *
  *                                                                           *
  *****************************************************************************
      $Id$
@@ -130,7 +146,7 @@ unur_distr_powerexponential( double *params, int n_params )
   distr->name = distr_name;
              
   /* how to get special generators */
-  DISTR.init = NULL;             /* _unur_stdgen_powerexponential_init; ??? */
+  DISTR.init = _unur_stdgen_powerexponential_init;
    
   /* functions */
   DISTR.pdf  = _unur_pdf_powerexponential;  /* pointer to p.d.f.               */

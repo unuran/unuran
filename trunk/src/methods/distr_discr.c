@@ -1136,12 +1136,14 @@ unur_distr_discr_upd_pmfsum( struct unur_distr *distr )
   }
 
   /* compute sum */
-  DISTR.sum = (DISTR.upd_sum)(distr);
+  if ((DISTR.upd_sum)(distr)) {
+    /* changelog */
+    distr->set |= UNUR_DISTR_SET_PMFSUM;
+    return 1;
+  }
+  else
+    return 0;
 
-  /* changelog */
-  distr->set |= UNUR_DISTR_SET_PMFSUM;
-
-  return 1;
 } /* end of unur_distr_discr_upd_pmfsum() */
   
 /*---------------------------------------------------------------------------*/

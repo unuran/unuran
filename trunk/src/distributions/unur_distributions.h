@@ -460,6 +460,23 @@ UNUR_DISTR *unur_distr_multinormal(int dim, const double *mean, const double *co
 
 /*****************************************************************************
  *                                                                           *
+ *                   Continuous matrix distributions                         *
+ *                                                                           *
+ *****************************************************************************/
+
+/*---------------------------------------------------------------------------*/
+/* Random correlation matrix                                                 */
+UNUR_DISTR *unur_distr_correlation( int n );
+/* 
+   Creates a distribution object for a random correlation matrix of
+   @var{n} rows and columns. It can be used with method ... to
+   generate random correlation matrices of the given size.
+*/
+
+/*---------------------------------------------------------------------------*/
+
+/*****************************************************************************
+ *                                                                           *
  *                     Discrete univariate distributions                     *
  *                                                                           *
  *****************************************************************************/

@@ -36,7 +36,8 @@ libdistributions_la_SOURCES = \
  d_negativebinomial.c \
  d_poisson.c     d_poisson_gen.c \
  d_zipf.c        d_zipf_gen.c \
- vc_multinormal.c 
+ m_correlation.c \
+ vc_multinormal.c
 
 noinst_HEADERS = \
  unur_distributions.h \

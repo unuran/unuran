@@ -5,7 +5,7 @@
 
 /*---------------------------------------------------------------------------*/
 
-=NODE  Usage  Usage of this document
+=NODE  UsageDoc  Usage of this document
 =UP  Intro [20]
 
 =DESCRIPTION
@@ -16,7 +16,7 @@
    @ref{Concepts,,Concepts of UNURAN},
    discribes the basics of UNURAN.
    It also has a short guideline for choosing an appropriate method.
-   In @ref{Examples} gives examples that can be copied and modified.
+   In @ref{Examples} examples are given that can be copied and modified.
    They also can be found in the directory @file{examples} in the
    source tree.
 
@@ -46,7 +46,7 @@
 
 =DESCRIPTION
    UNURAN was developed on an Intel architecture under Linux with
-   the gnu C compiler.
+   the GNU C compiler.
 
 
    @subsubheading Uniform random number generator
@@ -82,6 +82,7 @@
 	 @smallexample
 	    sh ./configure --prefix=<prefix>
 	 @end smallexample
+
 	 where @code{<prefix>} is the root of the installation tree.
 	 When omitted @file{/usr/local} is used.
 
@@ -95,14 +96,18 @@
 	    make
 	    make install
 	 @end smallexample
+
 	 This installs the following files:
 	 @smallexample
 	    $(prefix)/include/unuran.h
 	    $(prefix)/include/unuran_config.h
 	    $(prefix)/include/unuran_tests.h
-	    $(prefix)/lib/libunuran.a
 	    $(prefix)/info/unuran.info
+	    $(prefix)/lib/libunuran.a
+	    $(prefix)/lib/libunuran.so
          @end smallexample
+	 (However, the names of the libraries may vary with your OS.)
+
 	 Obviously @code{$(prefix)/include} and @code{$(prefix)/lib}
 	 must be in the search path of your compiler. You can use environment
 	 variables to add these directories to the search path. If you
@@ -110,7 +115,21 @@
 	 @smallexample
 	    export LIBRARY_PATH="<prefix>/lib"
 	    export C_INCLURE_PATH="<prefix>/include"
-	@end smallexample
+	 @end smallexample
+
+	 If you want to link against the shared library make sure that 
+	 it can be found when executing the binary that links to the 
+	 library. If it is not installed in the usual path, then the
+	 easiest way is to set the @code{LD_LIBRARY_PATH} environment
+	 variable. See any operating system documentation about shared
+	 libraries for more information, such as the ld(1) and
+	 ld.so(8) manual pages.
+
+	 If you do not want to make a shared library, than making such
+	 a library can be disabled using
+	 @smallexample
+	    sh ./configure --disable-shared
+	 @end smallexample
 
    @item Documentation in various formats (PS, PDF, info, dvi, HTML,
 	 plain text) can be found in the directory @file{doc}.
@@ -119,7 +138,8 @@
 	 @smallexample
 	    make check
 	 @end smallexample
-	 However this test suite requires the usage of prng.
+
+	 However, this test suite requires the usage of prng.
          It might happen that some of the tests might fail due to 
          roundoff errors or the mysteries of floating point arithmetic,
          since we have used some extreme settings to test the library.
@@ -130,8 +150,103 @@
 
 /*---------------------------------------------------------------------------*/
 
-=NODE  Concepts Concepts of UNURAN
+=NODE  UsageLib  Using the library
 =UP Intro [40]
+
+=DESCRIPTION
+
+   @subsubheading ANSI C Compliance
+
+   The library is written in ANSI C and is intended to conform to the
+   ANSI C standard.  It should be portable to any system with a
+   working ANSI C compiler.
+
+   The library does not rely on any non-ANSI extensions in the
+   interface it exports to the user.  Programs you write using UNURAN
+   can be ANSI compliant.  Extensions which can be used in a way
+   compatible with pure ANSI C are supported, however, via conditional
+   compilation.  This allows the library to take advantage of compiler
+   extensions on those platforms which support them. 
+
+   To avoid namespace conflicts all exported function names and
+   variables have the prefix @code{unur_}, while exported macros have
+   the prefix @code{UNUR_}.
+
+
+   @subsubheading Compiling and Linking
+
+   If you want to use the library you must include the UNURAN header
+   file
+   @smallexample
+   #include <unuran.h>
+   @end smallexample
+   If you also need the test routines then also add
+   @smallexample
+   #include <unuran_tests.h>
+   @end smallexample
+
+   @noindent
+   If these header files are not installed on the standard search path
+   of your compiler you will also need to provide its location to the
+   preprocessor as a command line flag.  The default location of the
+   @file{unuran.h} is @file{/usr/local/include}.  A typical compilation
+   command for a source file @file{app.c} with the GNU C compiler
+   @code{gcc} is,
+
+   @smallexample
+   gcc -I/usr/local/include -c app.c
+   @end smallexample
+
+   @noindent
+   This results in an object file @file{app.o}.  The default include
+   path for @code{gcc} searches @file{/usr/local/include}
+   automatically so the @code{-I} option can be omitted when UNURAN is
+   installed in its default location.
+
+   The library is installed as a single file, @file{libunuran.a}.  A
+   shared version of the library is also installed on systems that
+   support shared libraries.  The default location of these files is
+   @file{/usr/local/lib}.  To link against the library you need to
+   specify the main library.  The following example shows how to link
+   an application with the library (and the the PRNG library if you
+   decide to use this source of uniform pseudo-random numbers), 
+
+   @smallexample
+   gcc app.o -lunuran -lprng -lm
+   @end smallexample
+
+
+   @subsubheading Shared Libraries
+
+   To run a program linked with the shared version of the library it
+   may be necessary to define the shell variable
+   @code{LD_LIBRARY_PATH} to include the directory where the library
+   is installed.  For example, 
+
+   @smallexample
+   LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH ./app
+   @end smallexample
+   @noindent
+   To compile a statically linked version of the program instead, use the
+   @code{-static} flag in @code{gcc},
+
+   @smallexample
+   gcc -static app.o -lunuran -lprng -lm
+   @end smallexample
+
+
+   @subsubheading Compatibility with C++
+
+   The library header files automatically define functions to have
+   @code{extern "C"} linkage when included in C++ programs.
+
+
+=EON
+
+/*---------------------------------------------------------------------------*/
+
+=NODE  Concepts Concepts of UNURAN
+=UP Intro [50]
 
 =DESCRIPTION
    UNURAN is a C library for generating non-uniformly distributed
@@ -381,7 +496,7 @@
 /*---------------------------------------------------------------------------*/
 
 =NODE  Contact Contact the authors
-=UP  Intro [50]
+=UP  Intro [60]
 
 =DESCRIPTION
    If you have any problems with UNURAN, suggestions how to improve

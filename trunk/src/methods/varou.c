@@ -681,10 +681,6 @@ _unur_varou_sample_cvec( struct unur_gen *gen, double *vec )
         /* sampling in cone #ic */
         _unur_varou_sample_cone(gen, GEN.cone_list[ic], UV);
 
-/*
-        printf("v^(dim+1)=%g \tf()=%g ", pow(UV[dim], 1.+dim), _unur_varou_f(gen, UV));
-        printf("ic=%ld",ic); __printf_vector(dim+1, UV); 
-*/
         /* check if UV is inside the potato volume */
 	if ( pow(UV[dim], 1.+dim) <= _unur_varou_f(gen, UV) ) {
            for (d=0; d<dim; d++) {  
@@ -717,6 +713,7 @@ _unur_varou_sample_check( struct unur_gen *gen, double *vec )
   long ic; /* running cone index */
   double *UV; /* (dim+1) uniformly distributed in cone */
   double vol;
+  double norm_factor;
   
   /* check arguments */
   CHECK_NULL(gen,RETURN_VOID);  
@@ -742,7 +739,16 @@ _unur_varou_sample_check( struct unur_gen *gen, double *vec )
              vec[d] = UV[d]/UV[dim]+GEN.center[d] ;
            }
 
-           /* TODO : check it !!! */
+           /* check hat */
+           norm_factor = _unur_vector_scalar_product( dim+1, 
+                            GEN.cone_list[ic]->normal, 
+                            GEN.cone_list[ic]->spoint )  
+                       / _unur_vector_scalar_product( dim+1, 
+                            GEN.cone_list[ic]->normal, 
+                            UV  ) ; 
+	   
+           if (norm_factor<1) 
+	      _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"PDF(x) > hat(x)");
 	   
            free(UV);
            return;

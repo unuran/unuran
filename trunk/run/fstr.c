@@ -57,24 +57,13 @@ static char *d_sec();
 static char *d_sqr();
 static char *d_abs();
 
+/*****************************************************************************/
+/** List of known symbols                                                   **/
+/*****************************************************************************/
+
 /*---------------------------------------------------------------------------*/
-
-#define SYMBLENGTH 20        /* Maximal length for symbols                   */
-
-/* structure for storing known symbols                                       */
-struct symbols { 
-  char   name[SYMBLENGTH];       /* Name des Symbols (z. B. "SIN")  */ 
-  int    type;                   /* type of symbol */
-  int    info;                   /* Prioritaet bzw. Argumentanzahl  */ 
-  double val;                    /* value of constant                        */ 
-  double (*vcalc)(double l, double r);    /* pointer to function for         
-					     computing node                  */
-  char            *(*dcalc)(char *par,struct treenode *w,
-                            char *l, char *r, char *dl, char *dr,char *s);
-                              /* Zeiger auf Ableitungsfunktion   */ 
-};
-
 /* Symbol types for tokens                                                   */
+
 enum {
   S_NOSYMBOL = 0,    /* token is not a symbol / is unknown                   */
   S_SFUNCT,          /* system function                                      */
@@ -89,13 +78,54 @@ enum {
   S_OTHERS,          /* other operator                                       */
 };
 
+/*  IMPORTANT: symbol types S_ADD_OP, S_MUL_OP and S_HPR_OP indicate         */
+/*  priorities of the corresponding operators.                               */
+
+/*---------------------------------------------------------------------------*/
+/* structure for storing known symbols                                       */
+
+#define SYMBLENGTH 20           /* Maximal length for symbols                */
+
+/* structure for storing known symbols                                       */
+struct symbols { 
+  char   name[SYMBLENGTH];       /* Name des Symbols (z. B. "SIN")  */ 
+  int    type;                   /* type of symbol */
+  int    info;                   /* priority or 
+				    number of argument for system function   */
+  double val;                    /* value of constant or (and)
+				    value of node during evalution of tree   */
+
+  double (*vcalc)(double l, double r);   /* pointer to function for         
+					    computing value of node          */
+
+  char            *(*dcalc)(char *par,struct treenode *w,
+                            char *l, char *r, char *dl, char *dr,char *s);
+                              /* Zeiger auf Ableitungsfunktion   */ 
+};
+
 /*---------------------------------------------------------------------------*/
 /* List of known symbols                                                     */
 
-/* The operator categories are due to their priorities */
+/*  IMPORTANT: Symbols that do NOT start with a digit, a letter or `.'       */
+/*  must not have more than ONE single character.                            */
+/*  The only exception are relation operators.                               */
+/*                                                                           */
+/*  IMPORTANT: symbol types S_ADD_OP, S_MUL_OP and S_HPR_OP indicate         */
+/*  priorities of the corresponding operators.                               */
+/*                                                                           */
+/*  In the current implementation system function must not have more than    */
+/*  two arguments.                                                           */
+/*                                                                           */
+/*  The first entry in the list must be empty!                               */
+/*                                                                           */
+/*  There must be FOUR markers in the list (in this ordering!):              */
+/*     _ROS   ... start of relation operators                                */
+/*     _NAS   ... start of non-alphanumeric symbols (single characters!)     */
+/*     _ANS   ... start of alphanumeric symbols (constants and functions)    */
+/*     _END   ... end of list                                                */
 
 static struct symbols symbol[] = {   
-  {""    , S_UIDENT  , 0, 0.0 , v_dummy  , d_const }, /* void                */
+  {""    , S_NOSYMBOL, 0, 0.0 , v_dummy  , d_dummy }, /* void                */
 
   /* user defined symbols */                                             
   {"UCONST",S_UCONST , 0, 0.0 , v_const  , d_const }, /* constant            */
@@ -103,7 +133,7 @@ static struct symbols symbol[] = {
   {"VAR" , S_UIDENT  , 0, 0.0 , v_dummy  , d_const }, /* variable            */
 
   /* relation operators  */
-  {"_ROS", S_NOSYMBOL, 0, 0.0 , v_dummy  , d_dummy },
+  {"_ROS", S_NOSYMBOL, 0, 0.0 , v_dummy  , d_dummy }, /* marker for relation operators */
   {"<"   , S_REL_OP  , 1, 0.0 , v_less   , d_const },
   {"="   , S_REL_OP  , 1, 0.0 , v_equal  , d_const },
   {"=="  , S_REL_OP  , 1, 0.0 , v_equal  , d_const },
@@ -111,45 +141,33 @@ static struct symbols symbol[] = {
   {"<="  , S_REL_OP  , 1, 0.0 , v_less_or, d_const },
   {"<>"  , S_REL_OP  , 1, 0.0 , v_unequal, d_const },
   {">="  , S_REL_OP  , 1, 0.0 , v_grtr_or, d_const },
-  {"_ROE", S_NOSYMBOL, 0, 0.0 , v_dummy  , d_dummy },
 
-  /* addition operators */
-  {"_AOS", S_NOSYMBOL, 0, 0.0 , v_dummy  , d_dummy },
-  {"+"   , S_ADD_OP  , 2, 0.0 , v_plus   , d_add   },
-  {"-"   , S_ADD_OP  , 3, 0.0 , v_minus  , d_add   },
-  {"or"  , S_ADD_OP  , 4, 0.0 , v_or     , d_const },
-  {"xor" , S_ADD_OP  , 4, 0.0 , v_xor    , d_const },
-  {"_AOE", S_NOSYMBOL, 0, 0.0 , v_dummy  , d_dummy },
-
-  /* multiplication operators */
-  {"_MOS", S_NOSYMBOL, 0, 0.0 , v_dummy  , d_dummy },
-  {"*"   , S_MUL_OP  , 4, 0.0 , v_mul    , d_mul   },
-  {"/"   , S_MUL_OP  , 4, 0.0 , v_div    , d_div   },
-  {"and" , S_MUL_OP  , 2, 0.0 , v_and    , d_const },
-  {"mod" , S_MUL_OP  , 4, 0.0 , v_mod    , d_const },
-  {"_MOE", S_NOSYMBOL, 0, 0.0 , v_dummy  , d_dummy },
-
-  /* high priority operators */
-  {"_HOS", S_NOSYMBOL, 0, 0.0 , v_dummy  , d_dummy },
-  {"^"   , S_HPR_OP  , 5, 0.0 , v_power  , d_power },
-  {"not" , S_HPR_OP  , 6, 0.0 , v_not    , d_const },
-  {"_HOE", S_NOSYMBOL, 0, 0.0 , v_dummy  , d_dummy },
-
-  /* other symbols */
-  {"_OSS", S_NOSYMBOL, 0, 0.0 , v_dummy  , d_dummy },
+  /* special symbols */
+  {"_NAS", S_NOSYMBOL, 0, 0.0 , v_dummy  , d_dummy }, /* marker for non-alphanumeric symbols */
   {"("   , S_OTHERS  , 0, 0.0 , v_dummy  , d_dummy },
   {")"   , S_OTHERS  , 0, 0.0 , v_dummy  , d_dummy },
   {","   , S_OTHERS  , 0, 0.0 , v_dummy  , d_dummy },
-  {"_OSE", S_NOSYMBOL, 0, 0.0 , v_dummy  , d_dummy },
+
+  /* arithmetic operators */
+  {"+"   , S_ADD_OP  , 2, 0.0 , v_plus   , d_add   },
+  {"-"   , S_ADD_OP  , 3, 0.0 , v_minus  , d_add   },
+  {"*"   , S_MUL_OP  , 4, 0.0 , v_mul    , d_mul   },
+  {"/"   , S_MUL_OP  , 4, 0.0 , v_div    , d_div   },
+  {"^"   , S_HPR_OP  , 5, 0.0 , v_power  , d_power },
+  {"_ANS" , S_NOSYMBOL, 0, 0.0 , v_dummy  , d_dummy }, /* marker for alphanumeric symbols */
+  {"mod" , S_MUL_OP  , 4, 0.0 , v_mod    , d_const },
+
+  /* logical operators */
+  {"and" , S_MUL_OP  , 2, 0.0 , v_and    , d_const },
+  {"or"  , S_ADD_OP  , 4, 0.0 , v_or     , d_const },
+  {"xor" , S_ADD_OP  , 4, 0.0 , v_xor    , d_const },
+  {"not" , S_HPR_OP  , 6, 0.0 , v_not    , d_const },
 
   /* system constants */
-  {"_SCS", S_NOSYMBOL, 0, 0.0 , v_dummy  , d_dummy },
   {"pi"  , S_SCONST  , 0, M_PI, v_const  , d_const },
   {"e"   , S_SCONST  , 0, M_E , v_const  , d_const },
-  {"_SCE", S_NOSYMBOL, 0, 0.0 , v_dummy  , d_dummy },
 
   /* system functions */
-  {"_SFS", S_NOSYMBOL, 0, 0.0 , v_dummy  , d_dummy },
   {"exp" , S_SFUNCT  , 1, 0.0 , v_exp    , d_exp   },
   {"ln"  , S_SFUNCT  , 1, 0.0 , v_ln     , d_ln    },
   {"log" , S_SFUNCT  , 2, 0.0 , v_log    , d_log   },
@@ -159,14 +177,10 @@ static struct symbols symbol[] = {
   {"sec" , S_SFUNCT  , 1, 0.0 , v_sec    , d_sec   },
   {"sqr" , S_SFUNCT  , 1, 0.0 , v_sqr    , d_sqr   },
   {"abs" , S_SFUNCT  , 1, 0.0 , v_abs    , d_abs   },
-  {"_SFE", S_NOSYMBOL, 0, 0.0 , v_dummy  , d_dummy },
 
   /* marker for end-of-table */
   {"_END", S_NOSYMBOL, 0, 0.0 , v_dummy  , d_dummy },
 };
-
-/* size of symbol table */
-static int n_symbols;
 
 /*  location of special symbols in table                                     */
 /** DO NOT CHANGE THEIR POSITION IN TABLE **/
@@ -174,15 +188,18 @@ static int s_uconst = 1;      /* user defined constant                       */
 static int s_ufunct = 2;      /* user defined function                       */
 static int s_uident = 3;      /* user defined variable                       */
 
+/* location of special symbols */
 static int s_comma;
 
 /* Marker for different regions in symbol table                              */
-static int aoe, mos, moe, oss, ose, scs, sce, sfs;  /* brauch ma ned */
-static int ros, roe, aos, sfe;
-static int hos, hoe;
+static int _ros_start, _ros_end;    /* relation symbols                      */
+static int _nas_start, _nas_end;    /* non-alphanumeric symbols              */
+static int _ans_start, _ans_end;    /* alphanumeric symbols                  */
+static int _end;                    /* end of list                           */
 
-/*  static int xxxminus, xxxplus, xxxmul, xxxdiv; */
-/*  static int xxxcomma; */
+/*****************************************************************************/
+/** Other structures an definitions                                         **/
+/*****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
 /* structure for storing data while tokizing and parsing the function string */
@@ -207,7 +224,20 @@ struct parser_data {
 
 enum {
   SUCCESS = 0,          /* executed succesfully, no errors detected          */
+  ERR_UNFINISHED,       /* incomplete. not all tokens parsed                 */
+  ERR_UNKNOWN_SYMBOL,   /* unknown symbol in function string                 */
+  ERR_EXPECT_EQUAL,     /* expected symbol: '='                              */
+  ERR_EXPECT_OPEN_P,    /* expected symbol: '('                              */
+  ERR_EXPECT_CLOSE_P,   /* expected symbol: ')'                              */
+  ERR_INVALID_N_PARAMS, /* invalid number of parameters for function         */
+  ERR_EXPECT_FUNCT,     /* function (name) expected                          */ 
+  ERR_EXPECT_VAR,       /* user identifier (variable name) expected          */
+  ERR_MISSING           /* more tokens expected                              */ 
 };
+
+/*****************************************************************************/
+/** Prototypes                                                              **/
+/*****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
 /* Evaluate function tree                                                    */
@@ -362,9 +392,6 @@ static struct treenode *_unur_ActualParameterlist (struct parser_data *pdata, in
 /*  ActualParameterlist ::= ActualParameter [ ',' ActualParameter ]          */
 /*---------------------------------------------------------------------------*/
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 static int _unur_fstr_next_token (struct parser_data *pdata, int *token, char **symbol);
 /*---------------------------------------------------------------------------*/
 /* Get next token from list.                                                 */
@@ -397,6 +424,11 @@ static struct treenode *_unur_fstr_error_parse ( struct parser_data *pdata, int 
 /* Print error message when parsing function string.                         */
 /*---------------------------------------------------------------------------*/
 
+static const char *_unur_fstr_error_code ( int errno );
+/*---------------------------------------------------------------------------*/
+/* Print message for error number.                                           */
+/*---------------------------------------------------------------------------*/
+
 /*---------------------------------------------------------------------------*/
 #ifdef UNUR_ENABLE_LOGGING
 /*---------------------------------------------------------------------------*/
@@ -427,12 +459,6 @@ static void _unur_fstr_debug_show_tree(const struct parser_data *pdata,
 /* Print function tree by recursion.                                         */
 /*---------------------------------------------------------------------------*/
 
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 #endif
 /*---------------------------------------------------------------------------*/
@@ -488,7 +514,7 @@ _unur_fstr2tree(char *functstr)
 
   /* check for possible errors */
   if (pdata->tno < pdata->n_tokens && !pdata->errno)
-    _unur_fstr_error_parse(pdata,6); 
+    _unur_fstr_error_parse(pdata,ERR_UNFINISHED); 
   if (pdata->errno) {
     _unur_fstr_parser_free(pdata);
     _unur_fstr_free(root);
@@ -657,31 +683,39 @@ _unur_fstr_symbols_init (void)
      /* parameters: none                                                     */
      /*----------------------------------------------------------------------*/
 {
-  int i = -1;
+  int i;
   char *s;
 
-  do {
-     s = symbol[++i].name;
-     if         (strcmp(s,"_ROS") == 0) ros = i;
-	else if (strcmp(s,"_ROE") == 0) roe = i;
-	else if (strcmp(s,"_AOS") == 0) aos = i;
-	else if (strcmp(s,"_AOE") == 0) aoe = i;
-	else if (strcmp(s,"_MOS") == 0) mos = i;
-	else if (strcmp(s,"_MOE") == 0) moe = i;
-	else if (strcmp(s,"_HOS") == 0) hos = i;
-	else if (strcmp(s,"_HOE") == 0) hoe = i;
-	else if (strcmp(s,"_OSS") == 0) oss = i;
-	else if (strcmp(s,"_OSE") == 0) ose = i;
-	else if (strcmp(s,"_SCS") == 0) scs = i;
-	else if (strcmp(s,"_SCE") == 0) sce = i;
-	else if (strcmp(s,"_SFS") == 0) sfs = i;
-	else if (strcmp(s,"_SFE") == 0) sfe = i;
-  } while (!(strcmp(s,"_END") == 0));
+  /* none of these positions found */
+  _ros_start = 0;
+  _nas_start = 0;
+  _ans_start = 0;
 
-  /* size of symbol table */
-  n_symbols = i;
+  /* find marker in list */
+  for (i=0; !_end; i++) {
+    s = symbol[i].name;
+    if (!_ros_start) {
+      if ( strcmp(s,"_ROS") == 0) _ros_start = i;
+      continue;
+    }
+    if (!_nas_start) {
+      if ( strcmp(s,"_NAS") == 0) _nas_start = i;
+      continue;
+    }
+    if (!_ans_start) {
+      if ( strcmp(s,"_ANS") == 0) _ans_start = i;
+      continue;
+    }
+    if (strcmp(s,"_END") == 0) _end = i;
+  }
 
-  s_comma = _unur_fstr_find_symbol(",",0,n_symbols);
+  /* end of region markers for list */
+  _ros_end = _nas_start;
+  _nas_end = _ans_start;
+  _ans_end = _end;
+
+  /* find location of special symbols */
+  s_comma = _unur_fstr_find_symbol(",",_nas_start,_nas_end);
 
 #if 0
   /* find location of marker for user defined constant */
@@ -779,9 +813,6 @@ _unur_fstr_next_symbol (struct parser_data *pdata, char *symb)
      /*                                                                      */
      /* return:                                                              */
      /*   error code of called subroutines                                   */
-     /*                                                                      */
-     /*                                                                      */
-     /*                                                                      */
      /*----------------------------------------------------------------------*/
 {
   int token;
@@ -809,24 +840,24 @@ _unur_fstr_next_symbol (struct parser_data *pdata, char *symb)
     /* Identifier */
     _unur_fstr_Identifier(pdata,symb);
 
-    if ( ( (token = _unur_fstr_find_symbol(symb,aos,sfe)) == 0 ) && 
+    if ( ( (token = _unur_fstr_find_symbol(symb,_ans_start,_ans_end)) == 0 ) && 
 	 ( (token = _unur_fstr_find_user_defined(pdata,symb,pdata->fstr[pdata->scanpos])) <= 0 ) )
-      errcode = 4;
+      errcode = ERR_UNKNOWN_SYMBOL;
   }
 
   else if ( c == '<' || c == '>' || c == '=' ) {
     /* Relation Operator */
     _unur_fstr_RelationOperator(pdata,symb);
 
-    if ((token = _unur_fstr_find_symbol(symb,ros,roe)) <= 0 )
-      errcode = 4;
+    if ((token = _unur_fstr_find_symbol(symb,_ros_start,_ros_end)) <= 0 )
+      errcode = ERR_UNKNOWN_SYMBOL;
   }
 
   else {
     symb[0] = c; symb[1] = '\0';           /* all other charactors */
     (pdata->scanpos)++;
-    if ((token = _unur_fstr_find_symbol(symb,ros,sfe)) <= 0 )
-      errcode = 4;
+    if ((token = _unur_fstr_find_symbol(symb,_nas_start,_nas_end)) <= 0 )
+      errcode = ERR_UNKNOWN_SYMBOL;
   }
 
   /* set errorcode */
@@ -1107,7 +1138,7 @@ _unur_FunctDefinition (struct parser_data *pdata)
   /* next token must be "=" sign */
   if ( _unur_fstr_next_token(pdata,&token,&symb) == FALSE ||
        strcmp(symb,"=") != 0 )
-    return _unur_fstr_error_parse(pdata,12); 
+    return _unur_fstr_error_parse(pdata,ERR_EXPECT_EQUAL); 
 
   /* right hand side: function term */
   right = _unur_Expression(pdata);
@@ -1148,12 +1179,12 @@ _unur_DefFunctDesignator (struct parser_data *pdata)
   /* get function identifier */
   if ( _unur_fstr_next_token(pdata,&funct,&fsymb) == FALSE ||
        symbol[funct].type != S_UFUNCT )
-    return _unur_fstr_error_parse(pdata,13); 
+    return _unur_fstr_error_parse(pdata,ERR_EXPECT_FUNCT); 
 
   /* read opening parenthesis '(' */
   if ( _unur_fstr_next_token(pdata,&token,&symb) == FALSE ||
        symb[0] != '(' )
-    return _unur_fstr_error_parse(pdata,14); 
+    return _unur_fstr_error_parse(pdata,ERR_EXPECT_OPEN_P); 
 
   /* read the parameter list */
   params = _unur_DefParameterlist(pdata,&n_params);
@@ -1162,7 +1193,7 @@ _unur_DefFunctDesignator (struct parser_data *pdata)
   /* read closing parenthesis ')' */
   if ( _unur_fstr_next_token(pdata,&token,&symb) == FALSE ||
        symb[0] != ')' )
-    return _unur_fstr_error_parse(pdata,15); 
+    return _unur_fstr_error_parse(pdata,ERR_EXPECT_CLOSE_P); 
 
   /* store function header in node */
   node = _unur_fstr_create_node(fsymb,funct,NULL,params); 
@@ -1200,7 +1231,7 @@ _unur_DefParameterlist(struct parser_data *pdata, int *n_params)
   /* read user defined identifier, i.e. a variable */ 
   if ( _unur_fstr_next_token(pdata,&token,&symb) == FALSE ||
        symbol[token].type != S_UIDENT )
-    return _unur_fstr_error_parse(pdata,16);
+    return _unur_fstr_error_parse(pdata,ERR_EXPECT_VAR);
 
   /* make node for first parameter of function and set */
   /* counter for parameters to 1                       */
@@ -1217,7 +1248,7 @@ _unur_DefParameterlist(struct parser_data *pdata, int *n_params)
     /* get next variable */
     if ( _unur_fstr_next_token(pdata,&token,&symb) == FALSE ||
 	 symbol[token].type != S_UIDENT )
-      return _unur_fstr_error_parse(pdata,17);
+      return _unur_fstr_error_parse(pdata,ERR_EXPECT_VAR);
 
     /* make node for next variable (becomes right node) */
     /* and update counter for parameters                */
@@ -1538,13 +1569,13 @@ _unur_Bas_Exp (struct parser_data *pdata)
     /* next symbol must be closing parenthesis */
     if ( _unur_fstr_next_token(pdata,&token,&symb) == FALSE ||
 	 symb[0] != ')' )
-      return _unur_fstr_error_parse(pdata,18);
+      return _unur_fstr_error_parse(pdata,ERR_EXPECT_CLOSE_P);
   }
   
   else {
     /* unkown symbol */
     --(pdata->tno);
-    return _unur_fstr_error_parse(pdata,19);
+    return _unur_fstr_error_parse(pdata,ERR_UNKNOWN_SYMBOL);
   } 
 
   /* return pointer to base or exponent of an expression */
@@ -1577,7 +1608,7 @@ _unur_FunctDesignator (struct parser_data *pdata)
   /* get function identifier for system function */
   if ( _unur_fstr_next_token(pdata,&funct,&fsymb) == FALSE ||
        symbol[funct].type != S_SFUNCT )
-    return _unur_fstr_error_parse(pdata,20);
+    return _unur_fstr_error_parse(pdata,ERR_EXPECT_FUNCT);
 
   /* get number of parameter for this function */
   n_params = symbol[funct].info;
@@ -1585,7 +1616,7 @@ _unur_FunctDesignator (struct parser_data *pdata)
   /* read opening parenthesis '(' */
   if ( _unur_fstr_next_token(pdata,&token,&symb) == FALSE ||
        symb[0] != '(' )
-    return _unur_fstr_error_parse(pdata,21);
+    return _unur_fstr_error_parse(pdata,ERR_EXPECT_OPEN_P);
 
   /* read the parameter list */
   params = _unur_ActualParameterlist(pdata,n_params);
@@ -1594,7 +1625,7 @@ _unur_FunctDesignator (struct parser_data *pdata)
   /* read closing parenthesis ')' */
   if ( _unur_fstr_next_token(pdata,&token,&symb) == FALSE ||
        symb[0] != ')' )
-    return _unur_fstr_error_parse(pdata,22);
+    return _unur_fstr_error_parse(pdata,ERR_EXPECT_CLOSE_P);
   
   /* store function in new node */
   node = _unur_fstr_create_node(fsymb,funct,NULL,params); 
@@ -1641,8 +1672,8 @@ _unur_ActualParameterlist (struct parser_data *pdata, int n_params)
     /* update counter for parameters */
     c_params++; 
     if (c_params > n_params)
-      return _unur_fstr_error_parse(pdata,23);
-    
+      return _unur_fstr_error_parse(pdata,ERR_INVALID_N_PARAMS);
+
     /* old node becomes left node of `,' node */
     left = node; 
 
@@ -1659,7 +1690,7 @@ _unur_ActualParameterlist (struct parser_data *pdata, int n_params)
 
   /* check number of parameters */
   if (c_params < n_params)
-    return _unur_fstr_error_parse(pdata,24);
+    return _unur_fstr_error_parse(pdata,ERR_INVALID_N_PARAMS);
 
   /* return pointer to parameter list */
   return node; 
@@ -1861,7 +1892,7 @@ _unur_fstr_error_parse ( struct parser_data *pdata, int errno )
 { 
   int i;
 
-  _unur_stream_printf_simple ( "%s: error: %d\n",GENTYPE,errno);
+  _unur_stream_printf_simple ( "%s: error: %s\n",GENTYPE,_unur_fstr_error_code(errno));
 
   _unur_stream_printf_simple ( "%s: ",GENTYPE );
   for (i=0; i<pdata->tno-1; i++)
@@ -1881,8 +1912,46 @@ _unur_fstr_error_parse ( struct parser_data *pdata, int errno )
 
   return NULL; 
 
-/*    printf("\n%d %s",err_nr,errorstrings[err_nr]);  */
 } /* _unur_fstr_error_parse() */ 
+
+/*---------------------------------------------------------------------------*/
+
+const char *
+_unur_fstr_error_code ( int errno )
+     /*----------------------------------------------------------------------*/
+     /* Print message for error number                                       */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   errno ... error number                                             */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to message string                                          */
+     /*----------------------------------------------------------------------*/
+{
+  switch (errno) {
+  case ERR_UNFINISHED:
+    return "incomplete. not all tokens parsed";
+  case ERR_UNKNOWN_SYMBOL:
+    return "unknown symbol in function string";
+  case ERR_EXPECT_EQUAL:
+    return "expected symbol: '='";
+  case ERR_EXPECT_OPEN_P:
+    return "expected symbol: '('";
+  case ERR_EXPECT_CLOSE_P:
+    return "expected symbol: ')'";
+  case ERR_INVALID_N_PARAMS:
+    return "invalid number of parameters for function";
+  case ERR_EXPECT_FUNCT:
+    return "function (name) expected";
+  case ERR_EXPECT_VAR:
+    return "user identifier (variable name) expected";
+  case ERR_MISSING:
+    return "more tokens expected";
+
+  default:
+    return "";
+  }
+} /* end of _unur_fstr_error_code() */
 
 /*****************************************************************************/
 /**  Debugging utilities                                                    **/

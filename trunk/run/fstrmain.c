@@ -33,7 +33,7 @@ int main()
     
   if  (parsetree == NULL)  {  
     printf("Fehler!\n");
-/*          exit (EXIT_FAILURE); */
+        exit (EXIT_FAILURE);
   };
 
 /*      _unur_fstr_debug_tree(parsetree); */

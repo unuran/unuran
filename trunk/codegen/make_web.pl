@@ -16,6 +16,9 @@ require "read_PDF.pl";
 # C file for code generator  
 my $PHP_file = "../../public_html/anuran.php";
 
+# Gray Color for disabled text
+my $Gray = "\#D0D0D0";
+
 # ----------------------------------------------------------------
 # List of distributions
 my $DISTR = read_PDFdata();
@@ -59,76 +62,251 @@ sub make_web
 EOX
 
 # ................................................................
-# Continuous distributions (required for step 1)
+# Header
+
+    $PHP .= <<EOX;
+<H1>Automatic Code Generator</H1>
+<B>(Experimental version)</B>
+
+<P><HR><P>
+
+EOX
+
+# ................................................................
+# Select List for continuous distributions (required for step 1)
     
     my $HTML_distr_select;
-    my $HTML_distr_print;
+
+    $HTML_distr_select .=
+	"\t echo \"    <SELECT name=\\\"distribution\\\" size=1>\\n\";\n".
+	"\t echo \"      <OPTION value=\\\"--none--\\\">-- Select a distribution --</OPTION>\\n\";\n";
 
     foreach my $d (sort keys %{$DISTR}) { 
 	next unless $DISTR->{$d}->{"=TYPE"} eq "CONT";
 
 	$HTML_distr_select .=
-	    "    echo \"      <OPTION value=".
+	    "\t echo \"      <OPTION value=".
 	    "\\\"$d\\\">".
 	    $DISTR->{$d}->{"=NAME"}.
 	    "</OPTION>\\n\";\n";
-
-	$HTML_distr_print .= 
-	    "        case (\"$d\"): echo \"".
-	    $DISTR->{$d}->{"=NAME"}.
-	    "\\n\"; break;\n";
     }
+
+    $HTML_distr_select .=
+	"\t echo \"    </SELECT>\\n\";";
+
+# ................................................................
+# Get name of continuous distribution (required for step 1)
+    
+    my $get_distr_name;
+
+    $get_distr_name .=
+	"\t # Get name and PDF of distribution\n".
+	"\t switch (\$distribution) {\n";
+
+    foreach my $d (sort keys %{$DISTR}) { 
+	next unless $DISTR->{$d}->{"=TYPE"} eq "CONT";
+
+	$get_distr_name .= 
+	    "\t   case \"$d\":\n". 
+	    "\t\t \$distr_name = \"".$DISTR->{$d}->{"=NAME"}."\";\n".
+	    "\t\t \$distr_PDF = \"".format_PDF($DISTR->{$d}->{"=DOC"}->{"=PDF"})."\";\n".
+	    "\t\t break;\n";
+    }
+
+    $get_distr_name .=
+	"\t }\n";
 
 # ................................................................
 # Step 1: Select a distribution
 
-
     $PHP .= <<EOX;
 <?php
+ # Step 1
 
-  echo "Step 1: <STRONG>Distribution</STRONG><BR>\\n";
-  echo "<BLOCKQUOTE>\\n";
+ if (\$step <= 0 || \$distribution == "--none--") {
+\t # no distribution selected till now
 
-  if (\$step <= 0 || \$distribution == "--none--") {
-    # no distribution selected till now
+\t echo "Step 1: <STRONG>Distribution</STRONG><BR>\\n";
+\t echo "<BLOCKQUOTE>\\n";
 
-    if (\$step >= 1) {
-      # no distribution selected at step 1
-      echo "<P><STRONG>You must select a distribution first!</P>\\n";
-    }
+\t if (\$step >= 1) {
+\t\t # no distribution selected at step 1
+\t\t \$step = 0;
+\t\t echo "  <P><STRONG>You must select a distribution first!</STRONG></P>\\n";
+\t }
 
-    echo "  <FORM method=\\"GET\\" action=\\"anuran.php\\">\\n";
-
-    echo "    <SELECT name=\\"distribution\\" size=1>\\n";
-    echo "      <OPTION value=\\"--none--\\">-- Select a distribution --</OPTION>\\n";
-
+\t echo "  <FORM method=\\"GET\\" action=\\"anuran.php\\">\\n";
 $HTML_distr_select
-    echo "    </SELECT>\\n";
-    echo "    &nbsp;&nbsp;&nbsp;\\n";
-    echo "    <INPUT type=\\"hidden\\" name=\\"step\\" value=\\"1\\">\\n";
-    echo "    <INPUT type=\\"submit\\" value=\\"Continue\\">\\n";
-    echo "  </FORM>\\n";
-  }
+\t echo "    &nbsp;&nbsp;&nbsp;\\n";
+\t echo "    <INPUT type=\\"hidden\\" name=\\"step\\" value=\\"1\\">\\n";
+\t echo "    <INPUT type=\\"submit\\" value=\\"Continue\\">\\n";
+\t echo "  </FORM>\\n";
 
-  else {
-      # distribution selected
-      switch (\$distribution) {
-$HTML_distr_print
-      }
-  }
+\t echo "</BLOCKQUOTE>\\n";
+ }
 
-  echo "</BLOCKQUOTE>\\n";
+ else {
+\t #distribution selected
 
+$get_distr_name
+\t echo "Step 1: <STRONG>";
+\t echo "\$distr_name";
+\t echo "</STRONG><BR>\\n";
+\t echo "<BLOCKQUOTE>\\n";
+\t echo "PDF(x) = [const] * \$distr_PDF\\n";
+\t echo "</BLOCKQUOTE>\\n";
+ }
 ?>
+
+<P><HR><P>
 
 EOX
 
+# ................................................................
+# Get data about parameters for distribution (required for step 2)
+
+    my $get_distr_PDFparams;
+
+    $get_distr_PDFparams .=
+	"\t switch (\$distribution) {\n";
+
+    foreach my $d (sort keys %{$DISTR}) { 
+	next unless $DISTR->{$d}->{"=TYPE"} eq "CONT";
+
+	$get_distr_PDFparams .= 
+	    "\t   case \"$d\":\n".
+	    scan_FPARAM($DISTR->{$d}->{"=DOC"}->{"=FPARAM"}).
+	    "\t\t break;\n";
+    }
+
+    $get_distr_PDFparams .= 
+	"\t }\n";
 
 # ................................................................
-# Continuous distributions
-    
-#    foreach my $d (sort keys %{$DISTR}) {
-#	next unless $DISTR->{$d}->{"=TYPE"} eq "CONT";
+# Step 2: Insert parameters for PDF
+
+    $PHP .= <<EOX;
+<?php
+ # Step 2
+
+ if (\$step < 1) {
+\t # no distribution selected till now    
+\t echo "<FONT COLOR=\\"$Gray\\">\\n";
+\t echo "Step 2: <STRONG>Parameters for distribution</STRONG><BR>\\n";
+\t echo "</FONT>\\n";
+ }
+
+ else {
+
+$get_distr_PDFparams
+
+\t if (\$step == 1) {
+\t\t # Insert parameters
+
+\t\t echo "Step 2: <STRONG>Parameters for \$distr_name</STRONG><BR>\\n";
+\t\t echo "<BLOCKQUOTE>\\n";
+\t\t echo "  <FORM method=\\"GET\\" action=\\"anuran.php\\">\\n";
+
+\t\t if (\$distr_n_requir < \$distr_n_total) {
+\t\t\t # Standardform exists
+
+\t\t\t echo "    <INPUT TYPE=\\"radio\\" NAME=\\"Stdform\\" VALUE=\\"yes\\" checked> Standardform\\n";
+\t\t\t echo "    <BLOCKQUOTE>\\n";
+\t\t\t for (\$i = 0; \$i < \$distr_n_requir; \$i++) {
+\t\t\t\t echo "    \$distr_param_name[\$i] = \\n";
+\t\t\t\t echo "    <INPUT TYPE=\\"text\\" NAME=\\"Std_param_\$i\\" SIZE=10 MAXLENGTH=10>\\n";
+\t\t\t\t echo (\$distr_param_cond[\$i] ? "    &nbsp;&nbsp;&nbsp;(\$distr_param_cond[\$i])" : "");
+\t\t\t\t echo "    <BR>\\n";
+\t\t\t }
+\t\t\t if (\$distr_n_total > \$distr_n_requir) {
+\t\t\t\t echo "    <P><FONT COLOR=\\"$Gray\\">(&nbsp;&nbsp;&nbsp;\\n";
+\t\t\t\t for (\$i = \$distr_n_requir; \$i < \$distr_n_total; \$i++) {
+\t\t\t\t\t echo "    \$distr_param_name[\$i] = \$distr_param_default[\$i]\\n"; 
+\t\t\t\t\t echo "&nbsp;&nbsp;&nbsp;";
+\t\t\t\t }
+\t\t\t\t echo ")</FONT></P>\\n";
+\t\t\t }
+\t\t\t echo "    </BLOCKQUOTE>\\n";
+
+\t\t\t echo "    <INPUT TYPE=\\"radio\\" NAME=\\"Stdform\\" VALUE=\\"no\\"> Non-Standardform\\n";
+\t\t\t echo "    <BLOCKQUOTE>\\n";
+\t\t\t for (\$i = 0; \$i < \$distr_n_total; \$i++) {
+\t\t\t\t echo "    \$distr_param_name[\$i] = \\n";
+\t\t\t\t echo "    <INPUT TYPE=\\"text\\" NAME=\\"param_\$i\\" ";
+\t\t\t\t echo ((\$i<\$distr_n_requir) ? "" : "VALUE=\\"\$distr_param_default[\$i]\\" ");
+\t\t\t\t echo "SIZE=10 MAXLENGTH=10>\\n";
+\t\t\t\t echo (\$distr_param_cond[\$i] ? "    &nbsp;&nbsp;&nbsp;(\$distr_param_cond[\$i])" : "");
+\t\t\t\t echo "    <BR>\\n";
+\t\t\t }
+\t\t\t echo "    </BLOCKQUOTE>\\n";
+\t\t }
+
+\t\t else {
+\t\t\t # No special standard form
+\t\t\t echo "    <INPUT TYPE=\\"hidden\\" NAME=\\"Stdform\\" VALUE=\\"no\\">\\n";
+\t\t\t for (\$i = 0; \$i < \$distr_n_total; \$i++) {
+\t\t\t\t echo "    \$distr_param_name[\$i] = \\n";
+\t\t\t\t echo "    <INPUT TYPE=\\"text\\" NAME=\\"param_\$i\\" SIZE=10 MAXLENGTH=10>\\n";
+\t\t\t\t echo (\$distr_param_cond[\$i] ? "    &nbsp;&nbsp;&nbsp;(\$distr_param_cond[\$i])" : "");
+\t\t\t\t echo "    <BR>\\n";
+\t\t\t }
+\t\t }
+
+\t\t echo "    <P>\\n";
+\t\t echo "    <INPUT type=\\"hidden\\" name=\\"step\\" value=\\"2\\">\\n";
+\t\t echo "    <INPUT type=\\"hidden\\" name=\\"distribution\\" value=\\"\$distribution\\">\\n";
+\t\t echo "    <INPUT type=\\"submit\\" value=\\"Continue\\">\\n";
+\t\t echo "  </FORM>\\n";
+\t\t echo "</BLOCKQUOTE>\\n";
+\t }
+
+\t else {
+\t\t # Parameters given
+
+\t\t \$distr_param = array();
+\t\t if (\$Stdform == "yes") {
+\t\t\t \$distr_n_params = \$distr_n_requir;
+\t\t\t while (list (\$key, \$val) = each(\$HTTP_GET_VARS)) {
+\t\t\t\t if ( preg_match ("/^Std_param_(\\d+)/", \$key, \$matches ) ) {
+\t\t\t\t\t \$distr_param[\$matches[1]] = \$val;
+\t\t\t\t }
+\t\t\t }
+\t\t\t for (\$i = \$distr_n_requir; \$i < \$distr_n_total; \$i++) {
+\t\t\t\t \$distr_param[\$i] = \$distr_param_default[\$i];
+\t\t\t }
+\t\t }
+\t\t else {
+\t\t\t \$distr_n_params = \$distr_n_total;
+\t\t\t while (list (\$key, \$val) = each(\$HTTP_GET_VARS)) {
+\t\t\t\t if ( preg_match ("/^param_(\\d+)/", \$key, \$matches ) ) {
+\t\t\t\t\t \$distr_param[\$matches[1]] = \$val;
+\t\t\t\t }
+\t\t\t }
+\t\t }
+
+\t\t echo "Step 2: <STRONG>Parameters for \$distr_name</STRONG><BR>\\n";
+\t\t echo "<BLOCKQUOTE>\\n";
+\t\t\t for (\$i = 0; \$i < \$distr_n_params; \$i++) {
+\t\t\t\t echo "    \$distr_param_name[\$i] = \$distr_param[\$i]&nbsp;&nbsp;&nbsp;\\n";
+\t\t\t }
+\t\t\t if (\$distr_n_total > \$distr_n_params) {
+\t\t\t\t echo "    <FONT COLOR=\\"$Gray\\">(&nbsp;&nbsp;&nbsp;\\n";
+\t\t\t\t for (\$i = \$distr_n_requir; \$i < \$distr_n_total; \$i++) {
+\t\t\t\t\t echo "    \$distr_param_name[\$i] = \$distr_param[\$i]&nbsp;&nbsp;&nbsp;\\n";
+\t\t\t\t }
+\t\t\t\t echo ")</FONT>\\n";
+\t\t\t }
+\t\t echo "</BLOCKQUOTE>\\n";
+
+\t }
+ }
+
+
+?>
+
+<P><HR><P>
+
+EOX
 
 # ................................................................
 # End of HTML file
@@ -148,3 +326,123 @@ EOX
 } # end of make_www()
 
 # ----------------------------------------------------------------
+# Format PDF for distribution
+#
+
+sub format_PDF {
+    my $PDF = $_[0];
+
+    # empty ? 
+    return "" unless $PDF;
+
+    # trim heading blanks
+    $PDF =~ s/^\s*//;
+
+    # chop off trailing blanks
+    $PDF =~ s/\s+$//;
+
+    # remove newlines
+    $PDF =~ s/\n+/ /g;
+
+    # format output
+    $PDF =~ s/\\over\s+/\//g;
+
+    $PDF =~ s/\\hbox{\s*(\w+)\s*}/ $1 /g;
+    $PDF =~ s/\\hfil+\\break/<BR>/g;
+
+    $PDF =~ s/\\frac\{([^\}]+[\s\+\-]+[^\}]+)\}\{([^\}]+[\s\+\-]+[^\}]+)\}/\($1\)\/\($2\)/g;
+    $PDF =~ s/\\frac\{([^\}]+)\}\{([^\}]+[\s\+\-]+[^\}]+)\}/$1\/\($2\)/g;
+    $PDF =~ s/\\frac\{([^\}]+[\s\+\-]+[^\}]+)\}\{([^\}]+)\}/\($1\)\/$2/g;
+    $PDF =~ s/\\frac\{([^\}]+)\}\{([^\}]+)\}/$1\/$2/g;
+
+    $PDF =~ s/\^\s*\{([^\}]+)\}/<SUP>($1)<\/SUP>/g;
+    $PDF =~ s/\^\s*(\w+)/<SUP>$1<\/SUP>/g;
+
+    $PDF =~ s/\{/\(/g;
+    $PDF =~ s/\}/\)/g;
+
+    # return result
+    return $PDF;
+
+} # end of format_PDF()
+
+# ----------------------------------------------------------------
+# scan list of parameters for distribution
+#
+
+sub scan_FPARAM {
+    my $DOC_params = $_[0];
+    my $params;
+
+    # empty ? 
+    return "" unless $DOC_params;
+
+    # trim heading blanks
+    $DOC_params =~ s/^\s*//;
+
+    # chop off trailing blanks
+    $DOC_params =~ s/\s+$//;
+
+    # remove blanks around `:'
+    $DOC_params =~ s/[ \t]*\:[ \t]*/\:/g;
+
+    # split into lines
+    my @lines = split /\n+/, $DOC_params;
+
+    # process lines
+    my $plist_name = "array(";
+    my $plist_def = "array(";
+    my $plist_cond = "array(";
+    my $n_total = 0;
+    my $n_optional = 0;
+
+    foreach $l (@lines) {
+	# each line must start with a [\d+]
+	next unless $l =~ /\[*\d+/;
+
+	# split into columns
+	my @cols = split /\:/, $l;
+	die "\nwrong number of columns for =FPARAM: $#cols" if $#cols != 4;
+
+	# get entries
+	my $number  = $cols[0];
+	$number     =~ s/(.*)(\d+).*/$2/;
+	my $name    = $cols[1];
+	my $cond    = $cols[2];
+	my $default = $cols[3];
+	my $type    = $cols[4];
+
+	# append to list of parameters
+	$plist_name .= "\"$name\", ";
+	$plist_def  .= ((length $default) ? $default : "\"*\"").", ";
+	$plist_cond .= "\"$cond\", ";
+
+	# increment counter for parameters
+	++$n_total;
+	++$n_optional if length $default;
+    }
+
+    # number of parameters for standard form
+    my $n_required = $n_total - $n_optional;
+
+
+    # store number of parameters
+    $params .= "\t\t \$distr_n_requir = $n_required;\n";
+    $params .= "\t\t \$distr_n_total = $n_total;\n";
+
+    # close array definition
+    $plist_name =~ s/,\s*$/\)/;
+    $plist_def  =~ s/,\s*$/\)/;
+    $plist_cond =~ s/,\s*$/\)/;
+
+    $params .= "\t\t \$distr_param_name = $plist_name;\n";
+    $params .= "\t\t \$distr_param_default = $plist_def;\n";
+    $params .= "\t\t \$distr_param_cond = $plist_cond;\n";
+
+    # Return result
+    return $params;
+
+} # end of scan_FPARAM()
+
+# ----------------------------------------------------------------
+

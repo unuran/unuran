@@ -31,6 +31,11 @@ static struct prng *urng;         /* uniform random number generator         */
 				     statistical tests (if there are more 
 				     the generator has failed the test.)     */
 
+double *list_pvals = NULL;        /* list of collected p-values              */
+int size_pvals = 0;               /* size of list                            */
+int n_pvals = 0;                  /* number of collected p-values            */
+
+
 /*---------------------------------------------------------------------------*/
 
 void test_srou_new( void );
@@ -43,6 +48,7 @@ void test_srou_sample( void );
 void test_srou_validate( void );
 void test_srou_validate_chi2( UNUR_DISTR *distr );
 void run_chi2( UNUR_PAR *par, int line );
+void run_level2( void );
 
 double pdf( double x, UNUR_DISTR *distr );
 
@@ -130,7 +136,7 @@ void test_srou_new( void )
 
   /* test finished */
   test_ok &= (test_failed) ? 0 : 1;
-  (test_failed) ? printf("... failed] ") : printf("... ok] ");
+  (test_failed) ? printf("--> failed] ") : printf("--> ok] ");
 
 } /* end of test_srou_new() */
 
@@ -191,7 +197,7 @@ void test_srou_set( void )
 
   /* test finished */
   test_ok &= (test_failed) ? 0 : 1;
-  (test_failed) ? printf("... failed] ") : printf("... ok] ");
+  (test_failed) ? printf("--> failed] ") : printf("--> ok] ");
 
 } /* end of test_srou_set() */
 
@@ -254,7 +260,7 @@ void test_srou_chg( void )
 
   /* test finished */
   test_ok &= (test_failed) ? 0 : 1;
-  (test_failed) ? printf("... failed] ") : printf("... ok] ");
+  (test_failed) ? printf("--> failed] ") : printf("--> ok] ");
 
 } /* end of test_srou_chg() */
 
@@ -269,7 +275,7 @@ void test_srou_init( void )
 
   test_failed = 0;
 
-  (test_failed) ? printf("... failed] ") : printf("... ok] ");
+  (test_failed) ? printf("--> failed] ") : printf("--> ok] ");
 
 } /* end of test_srou_init() */
 
@@ -284,7 +290,7 @@ void test_srou_reinit( void )
 
   test_failed = 0;
 
-  (test_failed) ? printf("... failed] ") : printf("... ok] ");
+  (test_failed) ? printf("--> failed] ") : printf("--> ok] ");
 
 } /* end of test_srou_reinit() */
 
@@ -445,7 +451,7 @@ void test_srou_sample( void )
 
   /* test finished */
   test_ok &= (test_failed) ? 0 : 1;
-  (test_failed) ? printf("... failed] ") : printf("... ok] ");
+  (test_failed) ? printf("--> failed] ") : printf("--> ok] ");
 
 #undef N_SAMPLE
 } /* end of test_srou_sample() */
@@ -490,10 +496,13 @@ void test_srou_validate(void)
     /* run tests */
     test_srou_validate_chi2(distr);
   }
+
+  /* run level 2 test on collected p-values */
+  run_level2();
     
   /* test finished */
   test_ok &= (test_failed > FAILED_LIMIT) ? 0 : 1;
-  (test_failed>FAILED_LIMIT) ? printf(" ... failed] ") : printf(" ... ok] ");
+  (test_failed>FAILED_LIMIT) ? printf(" --> failed] ") : printf(" --> ok] ");
 
 } /* end of test_srou_validate() */
 
@@ -540,14 +549,60 @@ void run_chi2( UNUR_PAR *par, int line )
     /* we run the test twice when it fails the first time */
     pval = unur_test_chi2( gen, CHI_TEST_INTERVALS, 0, 20, 0);
     do_check_pval(line,gen,pval,i);
-    if (pval >= PVAL_LIMIT) 
-      /* test succeeded */
+
+    /* store p-value */
+    if (n_pvals >= size_pvals) {
+      /* no space left in list: enlarge with 100 entries */
+      size_pvals += 100;
+      list_pvals = realloc( list_pvals, size_pvals * sizeof(double) );
+    }
+    /* append to list */
+    list_pvals[n_pvals++] = pval;
+
+    if (pval >= PVAL_LIMIT || pval < 0.) 
+      /* test succeeded or not performed */
       break; 
   }
 
   unur_free(gen);
 
 } /* end of run_chi2() */
+
+/*...........................................................................*/
+
+void run_level2( void )
+{
+  int i;
+  int *classes;
+  int n_classes;
+  double pval2;
+
+  /* number classes */
+  n_classes = (int) (sqrt(n_pvals)+0.5);
+  if (n_pvals/n_classes < 6)
+    /* classes would have too few entries */
+    n_classes = n_pvals / 6;
+
+  /* allocate memory for classes */
+  classes = calloc( n_classes+1, sizeof(int) );
+
+  /* count bins */
+  for (i=0; i<n_pvals; i++)
+    ++(classes[ (int)(list_pvals[i] * n_classes) ]);
+
+  /* run test */
+  pval2 = _unur_test_chi2test( NULL, classes, n_classes, 5, 0 );
+
+  /* print result */
+  printf(" Level-2-test");
+  fprintf(TESTLOG,"line %4d: ",__LINE__);
+  print_pval(pval2,100);
+  fprintf(TESTLOG,"\tLevel 2 Test\n");
+
+  /* clear */
+  free(classes);
+
+} /* end of run_level2() */
 
 /*---------------------------------------------------------------------------*/
 

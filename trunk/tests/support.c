@@ -90,13 +90,43 @@ void do_compare_sequences( int line, double *a, double *b, int n )
 /* check p-value of statistical test */
 void do_check_pval( int line, UNUR_GEN *gen, double pval, int trial )
 {
-  int i,l,n_fpar;
+  int i,n_fpar;
   double *fpar;
   UNUR_DISTR *distr;
 
-  l = -(int) ((pval > 1e-6) ? (log(pval) / M_LN10) : 6.);
+  fprintf(TESTLOG,"line %4d: ",line);
+  print_pval(pval,trial);
 
-  fprintf(TESTLOG,"line %4d: pval = %8.6f   ",line,pval);
+  /* print distribution name */
+  distr = unur_get_distr(gen);
+  n_fpar = unur_distr_cont_get_pdfparams( distr, &fpar );
+  fprintf(TESTLOG,"\t%s: %s (",unur_get_genid(gen),unur_distr_get_name(distr));
+  if (n_fpar) {
+    fprintf(TESTLOG,"%g",fpar[0]);
+    for (i=1; i<n_fpar; i++)
+      fprintf(TESTLOG,", %g",fpar[i]);
+  }
+  fprintf(TESTLOG,")\n");
+
+} /* end of do_check_pval() */
+  
+/*---------------------------------------------------------------------------*/
+
+/* print p-value of statistical test */
+void print_pval( double pval, int trial )
+{
+  int l;
+
+  if (pval < 0.) {
+    /* test has not been executed */
+    fprintf(TESTLOG,"pval = (0)\t      Not performed");
+    printf(".");
+    return;
+  }
+
+  fprintf(TESTLOG,"pval = %8.6f   ",pval);
+
+  l = -(int) ((pval > 1e-6) ? (log(pval) / M_LN10) : 6.);
 
   switch (l) {
   case 0:
@@ -132,17 +162,6 @@ void do_check_pval( int line, UNUR_GEN *gen, double pval, int trial )
   }
   fflush(stdout);
 
-  /* print distribution name */
-  distr = unur_get_distr(gen);
-  n_fpar = unur_distr_cont_get_pdfparams( distr, &fpar );
-  fprintf(TESTLOG,"\t%s: %s (",unur_get_genid(gen),unur_distr_get_name(distr));
-  if (n_fpar) {
-    fprintf(TESTLOG,"%g",fpar[0]);
-    for (i=1; i<n_fpar; i++)
-      fprintf(TESTLOG,", %g",fpar[i]);
-  }
-  fprintf(TESTLOG,")\n");
-
-} /* end of do_check_pval() */
+} /* end of print_pval() */
   
 /*---------------------------------------------------------------------------*/

@@ -118,9 +118,14 @@ static struct unur_gen *_unur_cstd_create( struct unur_par *par );
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*/
+/* No re-initialzation routine required.                                     */
+/* int _unur_cstd_reinit( UNUR_GEN *gen ); does not exist!                   */
+/*---------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------*/
 /* There are sampling routines, since every distribution has its own.        */
 /* Sampling routines are defined in ../distributions/ for each distributions.*/
-/* Thus double _unur_cstd_sample( UNUR_GEN *gen ); does not exist!           */
+/* double _unur_cstd_sample( UNUR_GEN *gen ); does not exist!                */
 /*---------------------------------------------------------------------------*/
 
 static void _unur_cstd_free( struct unur_gen *gen);
@@ -291,7 +296,12 @@ unur_cstd_chg_param( struct unur_gen *gen, double *params, int n_params )
      /* return:                                                              */
      /*   1 ... on success                                                   */
      /*   0 ... on error                                                     */
+     /*                                                                      */
+     /* IMPORTANT: The given parameters are not checked against domain       */
+     /*            errors (in opposition to the unur_<distr>_new() call).    */
+     /*                                                                      */
      /*----------------------------------------------------------------------*/
+
 {
   register int i;
 
@@ -524,9 +534,9 @@ _unur_cstd_create( struct unur_par *par )
   memcpy( &(gen->distr), par->distr, sizeof( struct unur_distr ) );
 
   /* routines for sampling and destroying generator */
-  SAMPLE = NULL;    /* will be set in _unur_cstd_init() */
+  SAMPLE = NULL;      /* will be set in _unur_cstd_init() */
   gen->destroy = _unur_cstd_free;
-  gen->reinit = _unur_reinit_error;
+  gen->reinit = NULL; /* no re-initialization routine required */
 
   /* defaults */
   GEN.gen_param = NULL;  /* parameters for the generator                     */

@@ -38,39 +38,38 @@
  *                                                                           *
  *****************************************************************************/
 
-/*
-  =METHOD  CSTD   Continuous STandarD distributions
+/* 
+   =METHOD  CSTD   Continuous STandarD distributions
 
-  CSTD is a wrapper for special generators for continuous univariate standard
-  distributions. It only works for distributions in the 
-  (=>) UNURAN library of standard distributions.
-  
-  If any other distribution is provided, or no special generator for the
-  given standard distribution is provided, the NULL pointer is returned.
- 
-  For a distribution more than one special generators (`variants') are possible.
-  These are selected by a number. For possible variants see
-  (=>) UNURAN library of standard distributions.
-  However the following are common to all distributions:
-     UNUR_STDGEN_DEFAULT   ... the default generator                      
-     UNUR_STDGEN_INVERSION ... the inversion method (if available)         
-  
-  Sampling from truncated distributions (which can be constructed by 
-  changing the default domain of a distribution by means of an
-  (=>) unur_distr_cont_set_domain() call) is possible but requires the 
-  inversion method.
-  
-  It is possible to change the parameters and the domain of the chosen 
-  distribution without building a new generator object.
-
+   CSTD is a wrapper for special generators for continuous univariate standard
+   distributions. It only works for distributions in the 
+   (=>) UNURAN library of standard distributions.
+   
+   If any other distribution is provided, or no special generator for the
+   given standard distribution is provided, the NULL pointer is returned.
+   
+   For a distribution more than one special generators (`variants') are possible.
+   These are selected by a number. For possible variants see
+   (=>) UNURAN library of standard distributions.
+   However the following are common to all distributions:
+   UNUR_STDGEN_DEFAULT   ... the default generator                      
+   UNUR_STDGEN_INVERSION ... the inversion method (if available)         
+   
+   Sampling from truncated distributions (which can be constructed by 
+   changing the default domain of a distribution by means of an
+   (=>) unur_distr_cont_set_domain() call) is possible but requires the 
+   inversion method.
+   
+   It is possible to change the parameters and the domain of the chosen 
+   distribution without building a new generator object.
+   (It is then not required to call (=>) unur_reinit().)
+   
 */
 
 /*---------------------------------------------------------------------------*/
 /* Routines for user interface                                               */
 
-/*
-  =ROUTINES
-*/
+/* =ROUTINES */
 
 UNUR_PAR *unur_cstd_new( UNUR_DISTR *distribution );
 /* 
@@ -85,22 +84,23 @@ UNUR_PAR *unur_cstd_new( UNUR_DISTR *distribution );
 /*...........................................................................*/
 
 int unur_cstd_set_variant( UNUR_PAR *parameters, unsigned variant );
-/* 
+/*
    Set variant (special algorithm) for sampling from given distribution.
    For possible variants see (=>) UNURAN library of standard distributions.
-   Common variants are `0' for the default generator and
+   Common variants are `UNUR_STDGEN_DEFAULT' for the default generator and
    `UNUR_STDGEN_INVERSION' forthe inversion method (if available).
    If the selected variant number is not implemented, this call has no effect.
 */
 
 int unur_cstd_chg_param( UNUR_GEN *gen, double *params, int n_params );
-/*
-  Change array of parameters of distribution in given generator object.
-  Notice that it is not possible to change the number of parameters.
-  This function only copies the given arguments into the array of 
-  distribution parameters.
-  IMPORTANT: The given parameters are not checked against domain errors;
-  in opposition to the (=>) unur_<distr>_new().
+/* 
+   Change array of parameters of distribution in given generator object.
+   Notice that it is not possible to change the number of parameters.
+   This function only copies the given arguments into the array of 
+   distribution parameters.
+   IMPORTANT: The given parameters are not checked against domain errors;
+   in opposition to the (=>) unur_<distr>_new() call.
+   (It is not required to call (=>) unur_reinit() afterwards.)
 */
 
 int unur_cstd_chg_domain( struct unur_gen *gen, double left, double right );
@@ -108,6 +108,7 @@ int unur_cstd_chg_domain( struct unur_gen *gen, double left, double right );
    Change left and right border of the domain of the (truncated) distribution.
    This is only possible of the inversion method is used.
    Otherwise this call has no effect.
+   (It is not required to call (=>) unur_reinit() afterwards.)
 */
 
 /* =END */

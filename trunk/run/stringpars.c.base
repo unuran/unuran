@@ -225,6 +225,13 @@ UNUR_DISTR *_unur_str2distr(char *str){
          /* extract list of doubles from string  */
          no_of_elem = _unur_parselist(tmpstr ,list);
        }
+
+       /* value must terminate before the first Komma */
+       if ( NULL != strchr(value, ',' ) ){
+          tmpstr = strchr(value, ',');
+          *tmpstr = '\0';                 /* terminate value */
+       }
+
     }
 
     /* Now: key, value and list are determined               */
@@ -312,17 +319,20 @@ UNUR_PAR *_unur_str2par(UNUR_DISTR *distr, char *methstr){
        /* split value into leading value and list (if possible) */
        no_of_elem = 0;
        if (NULL != strchr(value, '(') ){
-
          tmpstr = strchr(value, '(');
-         *tmpstr = '\0'; /* terminate value */
+         *tmpstr = '\0';                  /* terminate value */
          tmpstr++;
 
          /* extract list of doubles from string  */
          no_of_elem = _unur_parselist(tmpstr ,list);
-
        }
 
-
+       /* value must terminate before the first Komma */
+       if ( NULL != strchr(value, ',' ) ){
+          tmpstr = strchr(value, ',');
+          *tmpstr = '\0';                 /* terminate value */
+       }
+ 
        /* extract double value from string value */
        dblvalue = atof(value);
     }

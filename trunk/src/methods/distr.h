@@ -92,12 +92,12 @@ UNUR_DISTR *unur_distr_new( unsigned int type );
    Create a new (empty) distribution object.
    @code{type} indicates the type of the distribution. Currently the
    following types are available:
-
-   UNUR_DISTR_CONT  ... univariate continuous distribution
-   UNUR_DISTR_DISCR ... univariate discrete distribution
-   UNUR_DISTR_DEMP  ... empirical univariate discrete distribution
-
 */
+/*   UNUR_DISTR_CONT  ... univariate continuous distribution*/
+/*   UNUR_DISTR_DISCR ... univariate discrete distribution*/
+/*   UNUR_DISTR_DEMP  ... empirical univariate discrete distribution*/
+
+
 
 
 void unur_distr_free( UNUR_DISTR *distribution );
@@ -145,7 +145,11 @@ int unur_distr_is_demp( UNUR_DISTR *distribution );
 /* Essential parameters. */
 
 int unur_distr_cont_set_pdf( UNUR_DISTR *distribution, void *pdf );
+/* See @code{unur_distr_cont_set_cdf}           */
+
 int unur_distr_cont_set_dpdf( UNUR_DISTR *distribution, void *dpdf );
+/* See @code{unur_distr_cont_set_cdf}           */
+
 int unur_distr_cont_set_cdf( UNUR_DISTR *distribution, void *cdf );
 /* 
    Set respective pointer to the probability density function (pdf),
@@ -159,7 +163,11 @@ int unur_distr_cont_set_cdf( UNUR_DISTR *distribution, void *cdf );
 
 
 void *unur_distr_cont_get_pdf( UNUR_DISTR *distribution );
+/* See @code{unur_distr_cont_get_cdf}           */
+
 void *unur_distr_cont_get_dpdf( UNUR_DISTR *distribution );
+/* See @code{unur_distr_cont_get_cdf}           */
+
 void *unur_distr_cont_get_cdf( UNUR_DISTR *distribution );
 /* 
    Get the respective pointer to the p.d.f., the derivative of the 
@@ -170,7 +178,11 @@ void *unur_distr_cont_get_cdf( UNUR_DISTR *distribution );
 */
 
 double unur_distr_cont_eval_pdf( double x, UNUR_DISTR *distribution );
+/* See @code{unur_distr_cont_eval_cdf}           */
+
 double unur_distr_cont_eval_dpdf( double x, UNUR_DISTR *distribution );
+/* See @code{unur_distr_cont_eval_cdf}           */
+
 double unur_distr_cont_eval_cdf( double x, UNUR_DISTR *distribution );
 /* 
    Evaluate the p.d.f., derivative of the p.d.f. and the c.d.f.,
@@ -314,6 +326,8 @@ int unur_distr_demp_get_prob( UNUR_DISTR *distribution, double **prob );
 /* Essential parameters. */
 
 int unur_distr_discr_set_pmf( UNUR_DISTR *distribution, void *pmf );
+/* See @code{unur_distr_discr_set_cdf}           */
+
 int unur_distr_discr_set_cdf( UNUR_DISTR *distribution, void *cdf );
 /* 
    Set respective pointer to the probability mass function (pmf) and the
@@ -326,6 +340,8 @@ int unur_distr_discr_set_cdf( UNUR_DISTR *distribution, void *cdf );
 
 
 void *unur_distr_discr_get_pmf( UNUR_DISTR *distribution );
+/* See @code{unur_distr_discr_get_cdf}           */
+
 void *unur_distr_discr_get_cdf( UNUR_DISTR *distribution );
 /* 
    Get the respective pointer to the p.m.f. and the c.d.f. of the 
@@ -336,6 +352,8 @@ void *unur_distr_discr_get_cdf( UNUR_DISTR *distribution );
 */
 
 double unur_distr_discr_eval_pmf( int k, UNUR_DISTR *distribution );
+/* See @code{unur_distr_discr_eval_cdf}           */
+
 double unur_distr_discr_eval_cdf( int k, UNUR_DISTR *distribution );
 /* 
    Evaluate the p.m.f., and the c.d.f., respectively, at k.

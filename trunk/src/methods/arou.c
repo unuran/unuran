@@ -1028,7 +1028,7 @@ _unur_arou_sample_check( struct unur_gen *gen )
       sqx = a * seg->ltp[1] + (1.-a) * seg->rtp[1];
 
       /* test for T-concavity */
-      if (sqx*sqx > fx)
+      if (sqx*sqx > fx * (1.+UNUR_EPSILON))
 	_unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"PDF not T-concave.");
 
       return x;

@@ -1052,7 +1052,7 @@ _unur_ssr_sample_check( struct unur_gen *gen )
     fx = PDF(X + DISTR.mode);
 
     /* verify hat function */
-    if ( (1.+DBL_EPSILON) * y < fx )
+    if ( (1.+UNUR_EPSILON) * y < fx )
       _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"PDF(x) > hat(x)");
 
     /* accept or reject */
@@ -1064,7 +1064,7 @@ _unur_ssr_sample_check( struct unur_gen *gen )
       xx = 2 * X;
       if ( xx >= GEN.xl && xx <= GEN.xr ) {
 	/* check squeeze */
-	if ( fx < (1.-DBL_EPSILON) * GEN.fm/4. )
+	if ( fx < (1.-UNUR_EPSILON) * GEN.fm/4. )
 	  _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"PDF(x) < squeeze(x)");
 	/* evaluate squeeze */
 	if ( y <= GEN.fm/4. )

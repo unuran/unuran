@@ -1135,10 +1135,10 @@ _unur_srou_sample_check( struct unur_gen *gen )
       xfnx = (nx - DISTR.mode) * sqrt(fnx);
 
       if ( ((2.+4.*DBL_EPSILON) * GEN.um*GEN.um < fx + fnx)    /* avoid roundoff error with FP registers */
-	   || (xfx < (1.+DBL_EPSILON) * GEN.vl) 
-	   || (xfx > (1.+DBL_EPSILON) * GEN.vr)
-	   || (xfnx < (1.+DBL_EPSILON) * GEN.vl) 
-	   || (xfnx > (1.+DBL_EPSILON) * GEN.vr) )
+	   || (xfx < (1.+UNUR_EPSILON) * GEN.vl) 
+	   || (xfx > (1.+UNUR_EPSILON) * GEN.vr)
+	   || (xfnx < (1.+UNUR_EPSILON) * GEN.vl) 
+	   || (xfnx > (1.+UNUR_EPSILON) * GEN.vr) )
 	_unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"PDF(x) > hat(x)");
 
       /* accept or reject */
@@ -1180,8 +1180,8 @@ _unur_srou_sample_check( struct unur_gen *gen )
 
       /* check hat */
       if ( ( sfx > (1.+DBL_EPSILON) * GEN.um )   /* avoid roundoff error with FP registers */
-	   || (xfx < (1.+DBL_EPSILON) * GEN.vl) 
-	   || (xfx > (1.+DBL_EPSILON) * GEN.vr) )
+	   || (xfx < (1.+UNUR_EPSILON) * GEN.vl) 
+	   || (xfx > (1.+UNUR_EPSILON) * GEN.vr) )
 	_unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"PDF(x) > hat(x)");
 
       /* evaluate and check squeeze */
@@ -1192,8 +1192,8 @@ _unur_srou_sample_check( struct unur_gen *gen )
 
 	/* check squeeze */
 	xx = xfx / (GEN.um - sfx);
-	if ( (xx > (1.+DBL_EPSILON) * GEN.xl) &&
-	     (xx < (1.+DBL_EPSILON) * GEN.xr) )
+	if ( (xx > (1.-UNUR_EPSILON) * GEN.xl) &&
+	     (xx < (1.-UNUR_EPSILON) * GEN.xr) )
 	  _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"PDF(x) < squeeze(x)");
 
 	/* squeeze acceptance */

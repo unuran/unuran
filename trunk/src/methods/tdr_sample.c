@@ -362,11 +362,11 @@ _unur_tdr_gw_sample_check( struct unur_gen *gen )
       _unur_warning(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"generated point out of domain");
       error = 1;
     }
-    if (Tfx > Thx * (1.+DBL_EPSILON)) {
+    if (_unur_FP_greater(Tfx,Thx)) {
       _unur_warning(gen->genid,UNUR_ERR_GEN_CONDITION,"PDF > hat. Not T-concave!");
       error = 1;
     }
-    if (Tsqx > Tfx * (1.+DBL_EPSILON)) {
+    if (_unur_FP_less(Tfx,Tsqx)) {
       _unur_warning(gen->genid,UNUR_ERR_GEN_CONDITION,"PDF < squeeze. Not T-concave!");
       error = 1;
     }
@@ -389,20 +389,6 @@ _unur_tdr_gw_sample_check( struct unur_gen *gen )
       return X;
 
     /* being above squeeze is bad. improve the situation! */
-    if (GEN.n_ivs < GEN.max_ivs && GEN.max_ratio * GEN.Atotal > GEN.Asqueeze)
-      if ( !_unur_tdr_gw_interval_split(gen, iv, X, fx) ) {
-	/* condition for PDF is violated! */
-	_unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"");
-	/* replace sampling routine by dummy routine that just returns INFINITY */
-	SAMPLE = _unur_sample_cont_error;
-	return INFINITY;
-      }
-
-    if (V <= fx)
-      /* between PDF and squeeze */
-      return X;
-
-    /* being above squeeze is bad. improve the situation! */
     if (GEN.n_ivs < GEN.max_ivs) {
       if (GEN.max_ratio * GEN.Atotal > GEN.Asqueeze) {
 	if ( !_unur_tdr_gw_interval_split(gen, iv, X, fx) ) {
@@ -419,6 +405,10 @@ _unur_tdr_gw_sample_check( struct unur_gen *gen )
 	  GEN.max_ivs = GEN.n_ivs;
       }
     }
+
+    if (V <= fx)
+      /* between PDF and squeeze */
+      return X;
 
     /* reject and try again */
 

@@ -496,6 +496,7 @@ sub scan_validate {
     my @distributions;
     my $chi2;
     my $timing;
+    my $verifyhat;
 
     # search for begin of next (sub) section ...
     $_ = <IN> until /^\[/;
@@ -585,6 +586,11 @@ sub scan_validate {
 		next;
 	    }
 
+	    if ($subsection eq "verify hat") {
+		$verifyhat .= $line;
+		next;
+	    }
+
 	}
     }
 
@@ -644,6 +650,7 @@ sub scan_validate {
 	    my @gentest = split /\s+/, $test;
 	    shift @gentest;
 	    die "invalide number of test indicators" unless ($#gentest == $#generators);
+
 	    foreach (@generators) {
 		# get entry for generator
 		my $genline = $_;
@@ -657,6 +664,12 @@ sub scan_validate {
 		
 		# read what we have to test
 		$todo = shift @gentest;
+
+		# nothing to do
+		if ( $todo eq '.' ) {
+		    print OUT "\tprintf(\".\"); fflush(stdout);\n\n";
+		    next;
+		}
 		
 		# split into lines again
 		my @lines = split /\n/, $genline;
@@ -668,14 +681,7 @@ sub scan_validate {
 		foreach $l (@lines) {
 		    if ($l =~ /gen/ and !$have_gen_lines) {
 			$have_gen_lines = 1;
-			if ( $todo eq '.' ) {
-			    # nothing to do
-			    print OUT "\tgen = NULL; if (0) {"; 
-			    last;
-			}
-			else {
-			    print OUT "\tgen = unur_init(par);\n\tif (gen) {\n";
-			}
+			print OUT "\tgen = unur_init(par);\n\tif (gen) {\n";
 		    }
 		    
 		    print OUT "$l\n";
@@ -685,11 +691,7 @@ sub scan_validate {
 		    print OUT "\t;}\n";
 		}
 		else {
-		    if ( $todo eq '.' ) {
-			# nothing to do
-			print OUT "\tgen = NULL;\n"; }
-		    else {
-			print OUT "\tgen = unur_init(par);\n"; }
+		    print OUT "\tgen = unur_init(par);\n";
 		}
 		print OUT "\tn_tests_failed += run_validate_chi2( TESTLOG, 0, gen, '$todo' );\n";
 		print OUT "\tunur_free(gen);\n\n";
@@ -733,7 +735,7 @@ sub scan_validate {
 	    $test =~ s/\s+$//;
 	    my @gentest = split /\s+/, $test;
 	    shift @gentest;
-	    die "invalide number of test indicators" unless ($#gentest == $#generators);
+	    die "invalid number of test indicators" unless ($#gentest == $#generators);
 	    my $n_gen = 0;
 	    foreach (@generators) {
 		# get entry for generator
@@ -749,15 +751,17 @@ sub scan_validate {
 		# read what we have to test
 		$todo = shift @gentest;
 
+		# nothing to do
+		if ( $todo eq '.' ) {
+		    next;
+		}
+
 		# get sample size
 		if ($todo eq '+') {
 		    $log_samplesize = $timing_log_samplessize_default;
 		}
 		elsif ($todo =~ /^[1-9]$/) {
 		    $log_samplesize = $todo;
-		}
-		elsif ($todo eq '.') {
-		    $log_samplesize = 0;
 		}
 		else {
 		    die "wrong indicator for timing\n";
@@ -773,15 +777,8 @@ sub scan_validate {
 		foreach $l (@lines) {
 		    if ($l =~ /gen/ and !$have_gen_lines) {
 			$have_gen_lines = 1;
-			if ( $todo eq '.' ) {
-			    # nothing to do
-			    print OUT "\tgen = NULL; if (0) {"; 
-			    last;
-			}
-			else {
-			    print OUT "\tgen = unur_test_timing(par,$log_samplesize,&time_setup,&time_sample,0);\n"; 
-			    print OUT "\tif (gen) {\n";
-			}
+			print OUT "\tgen = unur_test_timing(par,$log_samplesize,&time_setup,&time_sample,0);\n"; 
+			print OUT "\tif (gen) {\n";
 		    }
 		    
 		    print OUT "$l\n";
@@ -791,13 +788,8 @@ sub scan_validate {
 		    print OUT "\t;}\n";
 		}
 		else {
-		    if ( $todo eq '.' ) {
-			# nothing to do
-			print OUT "\tgen = NULL;\n"; }
-		    else {
-			print OUT "\tgen = unur_test_timing(par,$log_samplesize,&time_setup,&time_sample,0);\n"; 
-			print OUT "\ttiming_result[$n_gen] = time_sample;\n";
-		    }
+		    print OUT "\tgen = unur_test_timing(par,$log_samplesize,&time_setup,&time_sample,0);\n"; 
+		    print OUT "\ttiming_result[$n_gen] = time_sample;\n";
 		}
 		print OUT "\tif (gen) timing_result[$n_gen] = time_sample;\n";
 		print OUT "\tunur_free(gen);\n\n";
@@ -811,6 +803,82 @@ sub scan_validate {
 	
 	print OUT "}\n";
 
+    }
+
+    ## run in verify mode  ##
+
+    if ($verifyhat) {
+
+	# analyse verify hat tests
+	my @verifyhattests = split /\n/, $verifyhat; 
+	die "wrong number of verify hat tests" unless ($#verifyhattests <= $#distributions);
+
+	print OUT "\tprintf(\"\\n(verify hat) \"); fflush(stdout);\n";
+	print OUT "\n/* verify hat tests: ".($#generators+1)*$n_distributions." */\n\n";
+	print OUT "\tunur_set_default_debug(~UNUR_DEBUG_SAMPLE);\n";
+	print OUT "\tfprintf( TESTLOG,\"\\nVerify Hat Test (squeeze <= PDF <= hat):\\n\");\n\n";
+	
+	foreach $test (@verifyhattests) {
+	    die "invalid test line" unless ($test =~ /<(\d+)>/);
+	    my $n_distr = $1;
+	    print OUT "/* distribution [$n_distr] */\n\n";
+	    $test =~ s/\#.+$//;    # remove comments
+	    $test =~ s/^\s+//;
+	    $test =~ s/\s+$//;
+	    my @gentest = split /\s+/, $test;
+	    shift @gentest;
+	    die "invalid number of test indicators" unless ($#gentest == $#generators);
+
+	    foreach (@generators) {
+		# get entry for generator
+		my $genline = $_;
+		
+		# remove [..] from par[..]
+		# (it is just to number generators for convience)
+		$genline =~ s/par\[(\d+)\]/par/g;
+		
+		# insert distribution object
+		$genline =~ s/\@distr\@/distr\[$n_distr\]/g;
+		
+		# read what we have to test
+		$todo = shift @gentest;
+
+		# nothing to do
+		if ( $todo eq '.' ) {
+		    print OUT "\tprintf(\".\"); fflush(stdout);\n\n";
+		    next;
+		}
+		
+		# split into lines again
+		my @lines = split /\n/, $genline;
+		
+		# print lines 
+		print OUT "\tunur_errno = 0;\n";
+		
+		my $have_gen_lines = 0;
+		foreach $l (@lines) {
+		    if ($l =~ /gen/ and !$have_gen_lines) {
+			$have_gen_lines = 1;
+			print OUT "\tgen = unur_init(par);\n\tif (gen) {\n";
+		    }
+		    
+		    print OUT "$l\n";
+		    if ($l =~ /^\s*par\s*=/) {
+			print OUT "\tunur_$method\_set_pedantic(par,0);\n";
+		    }
+		}
+		
+		if ($have_gen_lines) {
+		    print OUT "\t;}\n";
+		}
+		else {
+		    print OUT "\tgen = unur_init(par);\n";
+		}
+		print OUT "\tif (gen) unur_$method\_chg_verify(gen,1);\n";
+		print OUT "\tn_tests_failed += run_validate_verifyhat( TESTLOG, 0, gen, '$todo' );\n";
+		print OUT "\tunur_free(gen);\n\n";
+	    }	    
+	}
     }
 
     ## end ##

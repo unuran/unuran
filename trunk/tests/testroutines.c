@@ -391,7 +391,7 @@ int print_pval( FILE *LOG, UNUR_GEN *gen, double pval, int trial, char todo )
       failed = 1;
       if (trial > 1) {
 	fprintf(LOG,"\t Failed");
-	printf("!(+)");
+	printf("(!+)");
       }
       else {
 	fprintf(LOG,"\t Try again");
@@ -414,7 +414,7 @@ int print_pval( FILE *LOG, UNUR_GEN *gen, double pval, int trial, char todo )
       /* the test has failed which was not what we have expected */
       failed = 1;
       fprintf(LOG,"\t Not ok (expected to fail)");
-      printf("!(-)");
+      printf("(!-)");
     }
     break;
   default:
@@ -459,7 +459,7 @@ int run_validate_chi2( FILE *LOG, int line, UNUR_GEN *gen, char todo )
     }
     else {
       /* error */
-      printf("!(0)");  fflush(stdout);
+      printf("(!0)");  fflush(stdout);
       return 2;
     }
   }
@@ -471,7 +471,7 @@ int run_validate_chi2( FILE *LOG, int line, UNUR_GEN *gen, char todo )
     }
     else {
       /* initialization failed --> cannot run test */
-      printf("!(+)");  fflush(stdout);
+      printf("(!+)");  fflush(stdout);
       return 2;
     }
   }
@@ -515,6 +515,159 @@ int run_validate_chi2( FILE *LOG, int line, UNUR_GEN *gen, char todo )
   return failed;
 
 } /* end of run_validate_chi2() */
+
+/*---------------------------------------------------------------------------*/
+/* run verify hat test */
+
+#define VERIFYHAT_SAMPLESIZE 10000
+
+int run_validate_verifyhat( FILE *LOG, int line, UNUR_GEN *gen, char todo )
+{
+  const char *distr_name;
+  static const char *last_distr_name = "";
+  unsigned int type;
+  int i;
+  int failed = 0;
+
+  if (todo == '.') {
+    /* nothing to do */
+    printf(".");  fflush(stdout);
+    return 0;
+  }
+
+  if (todo == '0') {
+    /* initialization of generator is expected to fail */
+    if (gen == NULL) {
+      printf("0");  fflush(stdout);
+      return 0;
+    }
+    else {
+      /* error */
+      printf("(!0)");  fflush(stdout);
+      return 2;
+    }
+  }
+
+  if (gen == NULL) {
+    if (todo == '-') {
+      printf("0");  fflush(stdout);
+      return 0;
+    }
+    else {
+      /* initialization failed --> cannot run test */
+      printf("(!+)");  fflush(stdout);
+      return 2;
+    }
+  }
+
+  /* get name of distribution */
+  distr_name = unur_distr_get_name( unur_get_distr(gen) );
+
+  /* get type of distribution */
+  type = unur_distr_get_type( unur_get_distr(gen) );
+
+  if (strcmp(distr_name,last_distr_name) ) {
+    /* different distributions */
+    last_distr_name = distr_name;
+    printf(" %s",distr_name); fflush(stdout);
+  }
+
+  /* run verify hat test */
+  for (i=0; i<VERIFYHAT_SAMPLESIZE; i++) {
+
+    unur_errno = 0;
+    switch (type) {
+    case UNUR_DISTR_CONT:
+      unur_sample_cont(gen);
+      break;
+    case UNUR_DISTR_DISCR:
+      unur_sample_discr(gen);
+      break;
+    default:
+      fprintf(stderr,"this should not happen\n");
+      exit (-1);
+    }
+
+    if (unur_errno) {
+      /* error */
+      if (unur_errno == UNUR_ERR_GEN_CONDITION)
+	failed++;
+      unur_errno = 0;
+    }
+    
+  }
+  
+  return print_verifyhat_result(LOG,gen,failed,todo);
+  
+} /* end of run_validate_verifyhat() */
+
+/*---------------------------------------------------------------------------*/
+/* print result of verify hat test */
+
+int print_verifyhat_result( FILE *LOG, UNUR_GEN *gen, int failed, char todo )
+{
+  int failed_test = 0;
+  double failed_ratio = ((double)failed) / VERIFYHAT_SAMPLESIZE;
+
+  fprintf(LOG,"   failures = %d (%g%%)  ",failed, 100. * failed_ratio);
+
+  switch (todo) {
+  case '+':
+    if (failed > 0) {
+      fprintf(LOG,"\t Failed");
+      printf("(!+)");
+      failed_test = 1;
+    }
+    else {
+      fprintf(LOG,"\t ok");
+      printf("+");
+    }
+    break;
+  case '~':
+    if (failed == 0) {
+      fprintf(LOG,"\t ok");
+      printf("+");
+    }
+    else if (failed_ratio <= 0.01) {
+      fprintf(LOG,"\t tolerated");
+      printf("(~+)");
+    }
+    else {
+      fprintf(LOG,"\t Failed");
+      printf("(!~+)");
+      failed_test = 1;
+    }
+    break;
+  case '-':
+    if (failed_ratio > 0.01) {
+      /* in this case it is expected to fail */
+      fprintf(LOG,"\t ok (expected to fail)");
+      printf("-");
+    }
+    else {
+      /* the test has failed which was not what we have expected */
+      fprintf(LOG,"\t Not ok (expected to fail)");
+      printf("(!-)");
+      failed_test = 1;
+    }
+    break;
+  default:
+    fprintf(stderr,"invalid test symbol\n");
+    exit (-1);
+  }
+
+  /* print distribution name */
+  fprintf(LOG,"\t");
+  print_distr_name( LOG,unur_get_distr(gen), unur_get_genid(gen) );
+  fprintf(LOG,"\n");
+
+  fflush(stdout);
+  fflush(LOG);
+
+  return failed_test;
+
+} /* end of print_verifyhat_result() */
+#undef VERIFYHAT_SAMPLESIZE
 
 /*---------------------------------------------------------------------------*/
 /* print result of timings */

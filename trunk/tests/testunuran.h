@@ -113,6 +113,12 @@ int print_pval( FILE *LOG, UNUR_GEN *gen, double pval, int trial, char todo );
 /* run chi2 test */
 int run_validate_chi2( FILE *LOG, int line, UNUR_GEN *gen, char todo );
 
+/* run verify hat test */
+int run_validate_verifyhat( FILE *LOG, int line, UNUR_GEN *gen, char todo );
+
+/* print result of verify hat test */
+int print_verifyhat_result( FILE *LOG, UNUR_GEN *gen, int failed, char todo );
+
 /* print result of timings */
 void print_timing_results( FILE *LOG, int line, UNUR_DISTR *distr, double *timing_result, int n_results );
 

@@ -43,48 +43,29 @@
    =UP  Methods_for_CVEMP
 
    =DESCRIPTION
-      blah
+      VEMPK generates random variates from a multivariate empirical
+      distribution that is given by an observed sample. The idea is
+      that simply choosing a random point from the sample and to
+      return it with some added noise results in a method that has
+      very nice properties, as it can be seen as sampling from a
+      kernel density estimate. 
+      Clearly we have to decide about the density of the noise (called kernel)
+      and about the standard deviation of the noise.
+      The mathematical theory of kernel density estimation shows us that we
+      are comparatively free in choosing the kernel. 
+      It also supplies us with a simple formula to compute the optimal
+      standarddeviation of the noise, called bandwidth (or window
+      width) of the kernel.
+
+      Currently only a Gaussian kernel with the same covariance matrix
+      as the given sample is implemented.
+      However it is possible to choose between a variance corrected
+      version or those with optimal MISE.
+      Additionally a smoothing factor can be set.
 
    =END
 
 */
-
-#if 0
-   VEMPK generates random variates from an empirical distribution that is
-   given by an observed sample. The idea is that simply choosing a random
-   point from the sample and to return it with some added noise results
-   in a method that has very nice properties, as it can be seen as sampling
-   from a kernel density estimate.
-   Clearly we have to decide about the density of the noise (called kernel)
-   and about the standard deviation of the noise.
-   The mathematical theory of kernel density estimation shows us that we
-   are comparatively free in choosing the kernel. It also supplies us with
-   a simple formula to compute the optimal standarddeviation of the noise,
-   called bandwidth (or window width) of the kernel.
-   For most applications it is perfectly ok to use the default values offered.
-   Unless you have some knowledge on density estimation we do not recommend
-   to change anything. Only exception is the case that you are especially
-   interested in a fast sampling algorithm. Then use the call
-
-   unur_empk_set_kernel( par, UNUR_DISTR_BOXCAR);
-
-   to change the used noise distribution from the default Gaussian
-   distribution to the uniform distribution.
-
-   All other parameters are only necessary for people knowing the theory
-   of kernel density estimation.
-
- double smooth;/*should be mostly between 0 and 1, controls the smoothing*/ 
- /*1. smooth estimate optimal for normal distribution, 0. no noise added
-   for bimodal distributions a value smaller than 1 should be used to
-   avoid oversmoothing;
-   if smooth is chosen very big (eg. 1000) together with varcor=1.
-   this results approximately in fitting the kernel distribution (multi
-   normal distribution) to the data*/
-
-
-
-#endif
 
 /*---------------------------------------------------------------------------*/
 /* Routines for user interface                                               */

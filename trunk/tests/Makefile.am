@@ -7,22 +7,28 @@ INCLUDES = \
  -I$(top_srcdir)/src/tests
 
 check_PROGRAMS = \
+ t_dau \
  t_dgt \
  t_stdr \
  t_srou \
  t_unif 
 
 TESTS = \
+ t_dau \
  t_dgt \
  t_stdr \
  t_srou \
  t_unif 
 
 EXTRA_DIST = \
+ dau.conf \
  dgt.conf \
  stdr.conf \
  srou.conf \
  unif.conf
+
+t_dau_SOURCES = t_dau.c testroutines.c list_of_distributions.c
+t_dau_LDADD = $(top_builddir)/src/libunuran.a -lprng -lml -lm
 
 t_dgt_SOURCES = t_dgt.c testroutines.c list_of_distributions.c
 t_dgt_LDADD = $(top_builddir)/src/libunuran.a -lprng -lml -lm
@@ -36,6 +42,9 @@ t_stdr_LDADD = $(top_builddir)/src/libunuran.a -lprng -lml -lm
 t_unif_SOURCES = t_unif.c  testroutines.c list_of_distributions.c
 t_unif_LDADD = $(top_builddir)/src/libunuran.a -lprng -lml -lm
 
+
+t_dau.c: dau.conf make_test_files.pl
+	./make_test_files.pl dau.conf
 
 t_dgt.c: dgt.conf make_test_files.pl
 	./make_test_files.pl dgt.conf

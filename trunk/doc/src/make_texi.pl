@@ -1197,7 +1197,7 @@ sub process_unur_macros {
 	  }
 
 	  if ($macro =~ /\@unurimage\s*$/) {
-	      $replacement = "\@image{$body}";
+	      $replacement = "\n\@sp 1\n\@image{$body}\n\@sp 1\n";
 	      last MACRO;
 	  }
 

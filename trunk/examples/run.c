@@ -30,27 +30,27 @@
 #define RUN_TESTS       (~0x0u & ~UNUR_TEST_SCATTER)
 
 /* define which tests should run (1) or not (0) */
-#define RUN_DAU           1
-#define RUN_DGT           1
+#define RUN_DAU           0
+#define RUN_DGT           0
 
-#define RUN_NINV          1
-#define RUN_UTDR          1
-#define RUN_AROU          1
+#define RUN_NINV          0
+#define RUN_UTDR          0
+#define RUN_AROU          0
 #define RUN_SROU          1
-#define RUN_STDR          1
-#define RUN_TDRSQRT       1
-#define RUN_TDRLOG        1
-#define RUN_TABL          1
+#define RUN_STDR          0
+#define RUN_TDRSQRT       0
+#define RUN_TDRLOG        0
+#define RUN_TABL          0
 
-#define RUN_NORMAL        1
+#define RUN_NORMAL        0
 #define RUN_GAMMA         1
-#define RUN_BETA          1
-#define RUN_CAUCHY        1
-#define RUN_UNIFORM       1
+#define RUN_BETA          0
+#define RUN_CAUCHY        0
+#define RUN_UNIFORM       0
 
-#define RUN_RECT          1
+#define RUN_RECT          0
 
-#define RUN_CSTD          1
+#define RUN_CSTD          0
 
 /*---------------------------------------------------------------------------*/
 
@@ -64,7 +64,7 @@ int main()
   UNUR_PAR *par;
   UNUR_GEN *gen;
   double moments[10];
-  double fpar[2];
+  double fpar[5];
 /*    double stp[10]; */
   double slopes[10];
 /*    UNUR_URNG_TYPE urng; */
@@ -85,7 +85,9 @@ int main()
   //  unur_distr_cont_set_domain(distr_normal,3,UNUR_INFINITY);
   // unur_distr_cont_set_pdfarea(distr_normal,0.01);
 
-  fpar[0] = 3.;
+  fpar[0] = 5.;
+  fpar[1] = 100.;
+  fpar[2] = 1.5;
   distr_gamma = unur_distr_gamma(fpar,1);
 
   fpar[0] = 5.2;
@@ -675,8 +677,8 @@ int main()
 
   par = unur_srou_new(distr_gamma);
 
-  unur_srou_set_cdfatmode(par,unur_distr_cont_cdf(unur_distr_cont_get_mode(distr_gamma),distr_gamma));
-  unur_srou_set_usesqueeze(par,1);
+/*    unur_srou_set_cdfatmode(par,unur_distr_cont_cdf(unur_distr_cont_get_mode(distr_gamma),distr_gamma)); */
+/*    unur_srou_set_usesqueeze(par,1); */
 /*    unur_srou_set_usemirror(par,1); */
   unur_srou_set_verify(par,1);
 

@@ -98,7 +98,6 @@ enum {
   UNUR_DISTR_CVEC  = 0x110u,     /* mulitvariate continuous distribution     */ 
   UNUR_DISTR_CVEMP = 0x111u,     /* empirical multiv. cont. distr. (sample)  */ 
   UNUR_DISTR_DISCR = 0x020u,     /* univariate discrete distribution         */ 
-  UNUR_DISTR_DEMP  = 0x021u,     /* empirical univariate discr. distribution */ 
 };
 
 /*---------------------------------------------------------------------------*/
@@ -152,12 +151,6 @@ int unur_distr_is_discr( UNUR_DISTR *distribution );
 /* 
    Test if distribution is a univariate discrete distribution.
 */
-
-int unur_distr_is_demp( UNUR_DISTR *distribution );
-/* 
-   Test if distribution is an empirical univariate discrete distribution.
-*/
-
 
 /*---------------------------------------------------------------------------*/
 
@@ -753,6 +746,36 @@ UNUR_DISTR *unur_distr_discr_new( void );
 
 /* Essential parameters. */
 
+/* 
+   There are two interfaces for discrete univariate distributions:
+   Either provide a (finite) probability vector.
+   Or provide a probability mass function (p.m.f.). For the latter
+   case there exist also a couple of derived parameters that are not
+   required when a probability vector is given.
+
+   If both a probability vector and a p.m.f. is given it depends on
+   the generation method which of these is used.
+   Notice that there might exist some confusion if both are given but
+   describe a different distribution! (There is no checking against
+   this inconsistency!)
+*/
+
+int unur_distr_discr_set_prob( UNUR_DISTR *distribution, double *prob, int n_prob );
+/* 
+   Set finite probability vector for a distribution. It is not
+   necessary that the entries in the given probability vector sum to
+   1. @code{n_prob} must be positive. However there is no testing
+   whether all entries in @code{prob} are non-negative. 
+*/
+
+
+int unur_distr_discr_get_prob( UNUR_DISTR *distribution, double **prob );
+/* 
+   Get length of probability vector of the distribution and set pointer
+   @code{prob} to array of probabilities. If no probability vector is given,
+   @code{0} is returned and @code{prob} is set to NULL.
+*/
+
 int unur_distr_discr_set_pmf( UNUR_DISTR *distribution, UNUR_FUNCT_DISCR *pmf );
 /* See @code{unur_distr_discr_set_cdf}           */
 
@@ -855,35 +878,6 @@ double unur_distr_discr_get_pmfsum(UNUR_DISTR *distribution);
    not known, unur_distr_cont_upd_pdfarea() is called to compute
    it. If this is not successful @code{UNUR_INFINITY} is returned and
    @code{unur_errno} is set to @code{UNUR_ERR_DISTR_GET}.
-*/
-
-/*---------------------------------------------------------------------------*/
-
-/* 
-   Routines for handling empirical univariate discrete distributions (DEMP).
-*/
-
-UNUR_DISTR *unur_distr_demp_new( void );
-/* 
-   Create a new (empty) object for empirical univariate discrete distribution.
-*/
-
-/* Essential parameters */
-
-int unur_distr_demp_set_prob( UNUR_DISTR *distribution, double *prob, int n_prob );
-/* 
-   Set finite probability vector for a distribution. It is not
-   necessary that the entries in the given probability vector sum to
-   1. @code{n_prob} must be positive. However there is no testing
-   whether all entries in @code{prob} are non-negative. 
-*/
-
-
-int unur_distr_demp_get_prob( UNUR_DISTR *distribution, double **prob );
-/* 
-   Get length of probability vector of the distribution and set pointer
-   @code{prob} to array of probabilities. If no probability vector is given,
-   @code{0} is returned and @code{prob} is set to NULL.
 */
 
 /*---------------------------------------------------------------------------*/

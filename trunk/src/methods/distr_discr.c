@@ -108,6 +108,10 @@ unur_distr_discr_new( void )
 
   /* set defaults                                                            */
 
+  /* finite probability vector */
+  DISTR.prob      = NULL;          /* probability vector                     */
+  DISTR.n_prob    = 0;             /* length of probability vector           */
+
   /* probability mass function */
   DISTR.pmf       = NULL;          /* pointer to p.d.f.                      */
   DISTR.cdf       = NULL;          /* pointer to c.d.f.                      */
@@ -149,8 +153,86 @@ _unur_distr_discr_free( struct unur_distr *distr )
      /*   distr ... pointer to distribution object                           */
      /*----------------------------------------------------------------------*/
 {
-  if (distr) free( distr );
+  /* check arguments */
+  if( distr == NULL ) /* nothing to do */
+    return;
+
+  COOKIE_CHECK(distr,CK_DISTR_DISCR,/*void*/);
+
+  if (DISTR.prob) free( DISTR.prob );
+
+  free( distr );
+
 } /* end of unur_distr_discr_free() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+unur_distr_discr_set_prob( struct unur_distr *distr, double *prob, int n_prob )
+     /*----------------------------------------------------------------------*/
+     /* set probability vector for distribution                              */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   distr   ... pointer to distribution object                         */
+     /*   prob    ... pointer to probability vector                          */
+     /*   n_prob  ... length of probability vector                           */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... on success                                                   */
+     /*   0 ... on error                                                     */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( NULL, distr, 0 );
+  _unur_check_distr_object( distr, DISCR, 0 );
+
+  /* check new parameter for distribution */
+  if (n_prob < 0) {
+    _unur_error(NULL,UNUR_ERR_DISTR_SET,"length of p.v.");
+    return 0;
+  }
+  /* we do not check non-negativity of p.v.
+     (it is cheaper to do it when unur_init() is called */
+
+  /* allocate memory for probability vector */
+  DISTR.prob = _unur_malloc( n_prob * sizeof(double) );
+  if (!DISTR.prob) return 0;
+
+  /* copy probability vector */
+  memcpy( DISTR.prob, prob, n_prob * sizeof(double) );
+  DISTR.n_prob = n_prob;
+
+  /* o.k. */
+  return 1;
+} /* end of unur_distr_discr_set_prob() */
+
+/*---------------------------------------------------------------------------*/
+
+int 
+unur_distr_discr_get_prob( struct unur_distr *distr, double **prob )
+     /*----------------------------------------------------------------------*/
+     /* get length of probability vector and set pointer to probability      */
+     /* vector.                                                              */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   distr    ... pointer to distribution object                        */
+     /*   prob     ... pointer to probability vector                         */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   length of probability vector                                       */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return 0                                                           */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( NULL, distr, 0 );
+  _unur_check_distr_object( distr, DISCR, 0 );
+
+  *prob = (DISTR.prob) ? DISTR.prob : NULL;
+  return DISTR.n_prob;
+
+} /* end of unur_distr_discr_get_prob() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -500,7 +582,7 @@ unur_distr_discr_get_pmfsum( struct unur_distr *distr )
 /*****************************************************************************/
 
 void
-_unur_distr_discr_debug( struct unur_distr *distr, char *genid )
+_unur_distr_discr_debug( struct unur_distr *distr, char *genid, int printvector )
      /*----------------------------------------------------------------------*/
      /* write info about distribution into logfile                           */
      /*                                                                      */
@@ -522,9 +604,26 @@ _unur_distr_discr_debug( struct unur_distr *distr, char *genid )
   fprintf(log,"%s:\ttype = discrete univariate distribution\n",genid);
   fprintf(log,"%s:\tname = %s\n",genid,distr->name);
 
-  fprintf(log,"%s:\tp.m.f with %d argument(s)\n",genid,DISTR.n_params);
-  for( i=0; i<DISTR.n_params; i++ )
-    fprintf(log,"%s:\t\tparam[%d] = %g\n",genid,i,DISTR.params[i]);
+  if ( DISTR.n_params > 0 ) {
+    /* have probability mass function */
+    fprintf(log,"%s:\tp.m.f with %d argument(s)\n",genid,DISTR.n_params);
+    for( i=0; i<DISTR.n_params; i++ )
+      fprintf(log,"%s:\t\tparam[%d] = %g\n",genid,i,DISTR.params[i]);
+  }
+
+  if (DISTR.n_prob>0) {
+    /* have probability vector */
+    fprintf(log,"%s:\tprobability vector of length %d",genid,DISTR.n_prob);
+    if (printvector) {
+      for (i=0; i<DISTR.n_prob; i++) {
+	if (i%10 == 0)
+	  fprintf(log,"\n%s:\t",genid);
+	fprintf(log,"  %.5f",DISTR.prob[i]);
+      }
+    }
+    fprintf(log,"\n%s:\n",genid);
+  }
+
 
   /*      if (distr->set & UNUR_DISTR_SET_MODE) */
   /*        fprintf(log,"%s:\tmode = %g\n",genid,DISTR.mode); */

@@ -488,7 +488,7 @@ int run_validate_chi2( FILE *LOG, int line, UNUR_GEN *gen, char todo )
     case UNUR_DISTR_CONT:
       pval = unur_test_chi2( gen, CHI_TEST_INTERVALS, 0, 20, 0);
       break;
-    case UNUR_DISTR_DEMP:
+    case UNUR_DISTR_DISCR:
       pval = unur_test_chi2( gen, CHI_TEST_INTERVALS, 100000, 20, 0);
       break;
     default:

@@ -45,14 +45,6 @@
 
 /*---------------------------------------------------------------------------*/
 
-/* create empty distribution object for ...                                  */
-inline struct unur_distr *_unur_distr_cont_new( void );  /* univ. continuous */
-inline struct unur_distr *_unur_distr_discr_new( void ); /* univ. discrete   */
-inline struct unur_distr *_unur_distr_demp_new( void );  /* emp. univ. discr.*/
-inline struct unur_distr *_unur_distr_cemp_new( void );  /* emp. univ. cont. */
-
-/*---------------------------------------------------------------------------*/
-
 /*****************************************************************************/
 /**                                                                         **/
 /** routines for all distribution objects                                   **/
@@ -217,27 +209,6 @@ unur_distr_is_discr( struct unur_distr *distr )
 
   return ((distr->type == UNUR_DISTR_DISCR) ? 1 : 0);
 } /* end of unur_distr_is_discr() */
-
-/*---------------------------------------------------------------------------*/
-
-int 
-unur_distr_is_demp( struct unur_distr *distr )
-     /*----------------------------------------------------------------------*/
-     /* TRUE if distribution is empirical univariate discrete.               */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   distr ... pointer to distribution object                           */
-     /*                                                                      */
-     /* return:                                                              */
-     /*   1 ... if univariate discrete                                       */
-     /*   0 ... otherwise                                                    */
-     /*----------------------------------------------------------------------*/
-{
-  /* check arguments */
-  _unur_check_NULL( NULL,distr,0 );
-
-  return ((distr->type == UNUR_DISTR_DEMP) ? 1 : 0);
-} /* end of unur_distr_is_demp() */
 
 /*---------------------------------------------------------------------------*/
 

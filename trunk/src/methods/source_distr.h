@@ -97,10 +97,7 @@ void _unur_distr_cvec_debug( UNUR_DISTR *distribution, char *genid );
 void _unur_distr_cvemp_debug( UNUR_DISTR *distribution, char *genid, int printvector );
 /* write info about distribution into logfile                                */
 
-void _unur_distr_discr_debug( UNUR_DISTR *distribution, char *genid );
-/* write info about distribution into logfile                                */
-
-void _unur_distr_demp_debug( UNUR_DISTR *distribution, char *genid, int printvector );
+void _unur_distr_discr_debug( UNUR_DISTR *distribution, char *genid, int printvector );
 /* write info about distribution into logfile                                */
 
 /*---------------------------------------------------------------------------*/

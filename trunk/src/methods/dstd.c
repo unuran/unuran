@@ -507,7 +507,7 @@ _unur_dstd_debug_init( struct unur_par *par, struct unur_gen *gen )
   fprintf(log,"%s:\n",gen->genid);
 
   /* distribution */
-  _unur_distr_discr_debug( &(gen->distr), gen->genid );
+  _unur_distr_discr_debug( &(gen->distr), gen->genid, FALSE );
 
   /* sampling routine */
   fprintf(log,"%s: sampling routine = ",gen->genid);

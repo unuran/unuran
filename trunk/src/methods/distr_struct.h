@@ -86,29 +86,26 @@ struct unur_distr_cvec {
 /*---------------------------------------------------------------------------*/
 /* define object for univariate discrete distribution                        */
 struct unur_distr_discr {
+  /* (finite) probability vector */
+  double *prob;                 /* pointer to probability vector             */
+  int     n_prob;               /* length of probability vector              */
+
+  /* probability mass function */
   UNUR_FUNCT_DISCR *pmf;        /* pointer to probability mass function      */
   UNUR_FUNCT_DISCR *cdf;        /* pointer to c.d.f.                         */
-
   double params[UNUR_DISTR_MAXPARAMS];  /* parameters of the p.m.f.          */
-  /* params[UNUR_DISTR_MAXPARAMS] is used to store normalization constants!! */
   int    n_params;              /* number of parameters of the pdf           */
 
   double norm_constant;         /* (log of) normalization constant for p.m.f.*/
-
-  int domain[2];                /* boundary of domain                        */
   double sum;                   /* sum over p.m.f.                           */
   int (*upd_sum)(struct unur_distr *distr);  /* funct for computing sum      */
 
+  /* other parameters */
+  /** TODO **/
+  int domain[2];                /* boundary of domain                        */
+
   int  (*init)(struct unur_par *par,struct unur_gen *gen);
                                 /* pointer to special init routine           */
-};
-
-/*---------------------------------------------------------------------------*/
-/* define object for empirical univariate discrete distribution              */
-/* (given by probability vector)                                             */
-struct unur_distr_demp {
-  double *prob;                 /* pointer to probability vector             */
-  int     n_prob;               /* length of probability vector              */
 };
 
 /*---------------------------------------------------------------------------*/
@@ -134,7 +131,6 @@ struct unur_distr {
     struct unur_distr_cont  cont;   /* univariate continuous distribution    */
     struct unur_distr_cvec  cvec;   /* multivariate continuous distribution  */
     struct unur_distr_discr discr;  /* univariate discrete distribution      */
-    struct unur_distr_demp  demp;   /* empirical univariate discr. distr.    */
     struct unur_distr_cemp  cemp;   /* empirical univ. cont. distr. (sample) */
     struct unur_distr_cvemp cvemp;  /* empir. multiv. cont. distr. (sample)  */
   } data;                           /* data for distribution                 */

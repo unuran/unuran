@@ -324,6 +324,29 @@ unur_distr_cont_set_dpdf( struct unur_distr *distr, void *dpdf )
 
 /*---------------------------------------------------------------------------*/
 
+double
+unur_distr_cont_dpdf( struct unur_distr *distr, double x )
+     /*----------------------------------------------------------------------*/
+     /* evaluate derivative of p.d.f. of distribution at x                   */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   distr ... pointer to distribution object                           */
+     /*   x     ... argument for pdf                                         */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   (pdf(x))'                                                          */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  CHECK_NULL(distr,-1.);
+  COOKIE_CHECK(distr,CK_DISTR_CONT,INFINITY);
+  _unur_check_NULL( distr->name,DISTR.dpdf,INFINITY);
+
+  return ((*(DISTR.dpdf))(x,DISTR.params,DISTR.n_params));
+} /* end of unur_distr_cont_dpdf() */
+
+/*---------------------------------------------------------------------------*/
+
 int
 unur_distr_cont_set_cdf( struct unur_distr *distr, void *cdf )
      /*----------------------------------------------------------------------*/

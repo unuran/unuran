@@ -167,6 +167,9 @@ int unur_tabl_set_slopes( UNUR_PAR *parameters, double *slopes, int n_slopes );
    and must not overlapping. Otherwise no slopes are set and
    @var{unur_errno} is set to @code{UNUR_ERR_PAR_SET}.
 
+   Notice: @var{n_slopes} is the number of slopes (and not the length
+   of the array @var{slopes}).
+
    Notice that setting slopes resets the given domain for the
    distribution.
 */

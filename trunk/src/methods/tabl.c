@@ -600,6 +600,12 @@ unur_tabl_set_slopes( struct unur_par *par, double *slopes, int n_slopes )
     bl = slopes[2*i+1];
   }
 
+  /* INFINITY is not allowed */
+  if (_unur_FP_is_minus_infinity(slopes[0]) || _unur_FP_is_infinity(slopes[2*n_slopes-1])) {
+    _unur_error(GENTYPE,UNUR_ERR_PAR_SET,"slopes must be bounded");
+    return 0;
+  }
+
   /* store date */
   PAR.slopes = slopes;
   PAR.n_slopes = n_slopes;
@@ -1178,6 +1184,10 @@ _unur_tabl_get_starting_intervals_from_slopes( struct unur_par *par, struct unur
   GEN.n_ivs = 0;
   iv = NULL;
 
+  /* boundary of computational interval are reset by boundaries of slopes */
+  GEN.bleft = INFINITY;
+  GEN.bright = -INFINITY;
+
   /* compute initial intervals */
   for ( i=0; i < 2*PAR.n_slopes; i+=2 ) {
     /* get a new interval and link into list */
@@ -1229,6 +1239,10 @@ _unur_tabl_get_starting_intervals_from_slopes( struct unur_par *par, struct unur
 
   /* terminate list */
   iv->next = NULL;
+
+  /* reset domain of distribution */
+  DISTR.BD_LEFT = GEN.bleft;
+  DISTR.BD_RIGHT = GEN.bright;
 
   /* o.k. */
   return 1;

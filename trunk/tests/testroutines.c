@@ -752,7 +752,7 @@ void print_distr_name( FILE *LOG, const UNUR_DISTR *distr, const char *genid )
 /*---------------------------------------------------------------------------*/
 /* check p-value of statistical test and print result */
 
-int print_pval( FILE *LOG, UNUR_GEN *gen, double pval, int trial, char todo )
+int print_pval( FILE *LOG, UNUR_GEN *gen, const UNUR_DISTR *distr, double pval, int trial, char todo )
 {
   int failed = 0;
   int l;
@@ -762,7 +762,7 @@ int print_pval( FILE *LOG, UNUR_GEN *gen, double pval, int trial, char todo )
 
     fprintf(LOG,"   not performed (missing data)\t");
     /* print distribution name */
-    print_distr_name( LOG, unur_get_distr(gen), unur_get_genid(gen) );
+    print_distr_name( LOG, distr, gen ? unur_get_genid(gen):"???\t" );
     fprintf(LOG,"\n");
 
     printf("X");
@@ -775,25 +775,28 @@ int print_pval( FILE *LOG, UNUR_GEN *gen, double pval, int trial, char todo )
     
   }
 
-  fprintf(LOG,"   pval = %8.6f   ",pval);
-
-  l = -(int) ((pval > 1e-6) ? (log(pval) / M_LN10) : 6.);
-
-  switch (l) {
-  case 0:
-    fprintf(LOG,"      "); break;
-  case 1:
-    fprintf(LOG,".     "); break;
-  case 2:
-    fprintf(LOG,"**    "); break;
-  case 3:
-    fprintf(LOG,"XXX   "); break;
-  case 4:
-    fprintf(LOG,"XXXX  "); break;
-  case 5:
-    fprintf(LOG,"XXXXX "); break;
-  default:
-    fprintf(LOG,"######"); break;
+  if (pval >= 0.) {
+    fprintf(LOG,"   pval = %8.6f   ",pval);
+    l = -(int) ((pval > 1e-6) ? (log(pval) / M_LN10) : 6.);
+    switch (l) {
+    case 0:
+      fprintf(LOG,"      "); break;
+    case 1:
+      fprintf(LOG,".     "); break;
+    case 2:
+      fprintf(LOG,"**    "); break;
+    case 3:
+      fprintf(LOG,"XXX   "); break;
+    case 4:
+      fprintf(LOG,"XXXX  "); break;
+    case 5:
+      fprintf(LOG,"XXXXX "); break;
+    default:
+      fprintf(LOG,"######"); break;
+    }
+  }
+  else {
+    fprintf(LOG,"   setup failed\t\t");
   }
   
   switch (todo) {
@@ -813,6 +816,11 @@ int print_pval( FILE *LOG, UNUR_GEN *gen, double pval, int trial, char todo )
       fprintf(LOG,"\t ok");
       printf("+");
     }
+    break;
+  case '0':
+  case '/':
+    fprintf(LOG,"\t ok (expected to fail)");
+    printf("0");
     break;
   case '-':
     if (pval < PVAL_LIMIT) {
@@ -835,7 +843,7 @@ int print_pval( FILE *LOG, UNUR_GEN *gen, double pval, int trial, char todo )
 
   /* print distribution name */
   fprintf(LOG,"\t");
-  print_distr_name( LOG,unur_get_distr(gen), unur_get_genid(gen) );
+  print_distr_name( LOG, distr, gen ? unur_get_genid(gen):"???\t" );
   fprintf(LOG,"\n");
 
   fflush(stdout);
@@ -847,7 +855,7 @@ int print_pval( FILE *LOG, UNUR_GEN *gen, double pval, int trial, char todo )
 /*---------------------------------------------------------------------------*/
 /* run chi2 test */
 
-int run_validate_chi2( FILE *LOG, int line, UNUR_GEN *gen, char todo )
+int run_validate_chi2( FILE *LOG, int line, UNUR_GEN *gen, const UNUR_DISTR *distr, char todo )
      /*   UNUR_SUCCESS    ... on success                                        */
      /*   UNUR_ERR_SILENT ... test failed only once                             */
      /*   UNUR_FAILURE    ... serious failure                                   */
@@ -859,6 +867,19 @@ int run_validate_chi2( FILE *LOG, int line, UNUR_GEN *gen, char todo )
   int i;
   double pval;
   int failed = 0;
+
+  /* get name of distribution */
+  distr_name = unur_distr_get_name( distr );
+
+  /* get type of distribution */
+  type = unur_distr_get_type( distr );
+
+  if ( strcmp(distr_name,last_distr_name) ) {
+    /* different distributions */
+    strncpy(last_distr_name,distr_name,BUFSIZE);
+    last_distr_name[BUFSIZE-1] = '\0';
+    printf(" %s",distr_name); fflush(stdout);
+  }
 
   if (todo == '.') {
     /* nothing to do */
@@ -881,7 +902,8 @@ int run_validate_chi2( FILE *LOG, int line, UNUR_GEN *gen, char todo )
 
   if (gen == NULL) {
     if (todo == '-') {
-      printf("0");  fflush(stdout);
+/*       printf("0");  fflush(stdout); */
+      print_pval(LOG,gen,distr,-0.5,10,todo);
       return UNUR_SUCCESS;
     }
     else if (todo == '/') {
@@ -890,26 +912,13 @@ int run_validate_chi2( FILE *LOG, int line, UNUR_GEN *gen, char todo )
     }
     else {
       /* initialization failed --> cannot run test */
-      printf("(!+)");  fflush(stdout);
+      print_pval(LOG,gen,distr,-0.5,10,todo);
       return UNUR_FAILURE;
     }
   }
 
   /* init successful */
   if ( todo == '/' ) todo = '+';
-
-  /* get name of distribution */
-  distr_name = unur_distr_get_name( unur_get_distr(gen) );
-
-  /* get type of distribution */
-  type = unur_distr_get_type( unur_get_distr(gen) );
-
-  if ( strcmp(distr_name,last_distr_name) ) {
-    /* different distributions */
-    strncpy(last_distr_name,distr_name,BUFSIZE);
-    last_distr_name[BUFSIZE-1] = '\0';
-    printf(" %s",distr_name); fflush(stdout);
-  }
 
   /* run chi^2 test */
   for (i=1; i<=2; i++) {
@@ -928,7 +937,7 @@ int run_validate_chi2( FILE *LOG, int line, UNUR_GEN *gen, char todo )
       exit (EXIT_FAILURE);
     }
 
-    if ( print_pval(LOG,gen,pval,i,todo) )
+    if ( print_pval(LOG,gen,distr,pval,i,todo) )
       /* test failed */
       failed++;
     else
@@ -946,7 +955,7 @@ int run_validate_chi2( FILE *LOG, int line, UNUR_GEN *gen, char todo )
 
 #define VERIFYHAT_SAMPLESIZE 10000
 
-int run_validate_verifyhat( FILE *LOG, int line, UNUR_GEN *gen, char todo )
+int run_validate_verifyhat( FILE *LOG, int line, UNUR_GEN *gen, const UNUR_DISTR *distr, char todo )
 {
 #define BUFSIZE 32
   const char *distr_name;
@@ -954,6 +963,19 @@ int run_validate_verifyhat( FILE *LOG, int line, UNUR_GEN *gen, char todo )
   unsigned int type;
   int i;
   int failed = 0;
+
+  /* get name of distribution */
+  distr_name = unur_distr_get_name( distr );
+
+  /* get type of distribution */
+  type = unur_distr_get_type( distr );
+
+  if (strcmp(distr_name,last_distr_name) ) {
+    /* different distributions */
+    strncpy(last_distr_name,distr_name,BUFSIZE);
+    last_distr_name[BUFSIZE-1] = '\0';
+    printf(" %s",distr_name); fflush(stdout);
+  }
 
   if (todo == '.') {
     /* nothing to do */
@@ -965,6 +987,7 @@ int run_validate_verifyhat( FILE *LOG, int line, UNUR_GEN *gen, char todo )
     /* initialization of generator is expected to fail */
     if (gen == NULL) {
       printf("0");  fflush(stdout);
+      print_verifyhat_result(LOG,gen,distr,-1,todo);
       return UNUR_SUCCESS;
     }
     else {
@@ -976,27 +999,16 @@ int run_validate_verifyhat( FILE *LOG, int line, UNUR_GEN *gen, char todo )
 
   if (gen == NULL) {
     if (todo == '-') {
-      printf("0");  fflush(stdout);
+      printf("-");  fflush(stdout);
+      print_verifyhat_result(LOG,gen,distr,-1,todo);
       return UNUR_SUCCESS;
     }
     else {
       /* initialization failed --> cannot run test */
       printf("(!+)");  fflush(stdout);
+      print_verifyhat_result(LOG,gen,distr,-1,todo);
       return UNUR_FAILURE;
     }
-  }
-
-  /* get name of distribution */
-  distr_name = unur_distr_get_name( unur_get_distr(gen) );
-
-  /* get type of distribution */
-  type = unur_distr_get_type( unur_get_distr(gen) );
-
-  if (strcmp(distr_name,last_distr_name) ) {
-    /* different distributions */
-    strncpy(last_distr_name,distr_name,BUFSIZE);
-    last_distr_name[BUFSIZE-1] = '\0';
-    printf(" %s",distr_name); fflush(stdout);
   }
 
   /* run verify hat test */
@@ -1025,68 +1037,81 @@ int run_validate_verifyhat( FILE *LOG, int line, UNUR_GEN *gen, char todo )
     
   }
   
-  return print_verifyhat_result(LOG,gen,failed,todo);
+  return print_verifyhat_result(LOG,gen,distr,failed,todo);
   
 } /* end of run_validate_verifyhat() */
 
 /*---------------------------------------------------------------------------*/
 /* print result of verify hat test */
 
-int print_verifyhat_result( FILE *LOG, UNUR_GEN *gen, int failed, char todo )
+int print_verifyhat_result( FILE *LOG, UNUR_GEN *gen, const UNUR_DISTR *distr, int failed, char todo )
 {
   int failed_test = 0;
   double failed_ratio = ((double)failed) / VERIFYHAT_SAMPLESIZE;
 
-  fprintf(LOG,"   failures = %d (%g%%)  ",failed, 100. * failed_ratio);
+  if (failed >= 0) {
+    fprintf(LOG,"   failures = %d (%g%%)  ",failed, 100. * failed_ratio);
+    switch (todo) {
+    case '+':
+      if (failed > 0) {
+	fprintf(LOG,"\t Failed");
+	printf("(!+)");
+	failed_test = 1;
+      }
+      else {
+	fprintf(LOG,"\t ok");
+	printf("+");
+      }
+      break;
+    case '~':
+      if (failed == 0) {
+	fprintf(LOG,"\t ok");
+	printf("+");
+      }
+      else if (failed_ratio <= 0.01) {
+	fprintf(LOG,"\t tolerated");
+	printf("(~+)");
+      }
+      else {
+	fprintf(LOG,"\t Failed");
+	printf("(!~+)");
+	failed_test = 1;
+      }
+      break;
+    case '-':
+      if (failed_ratio > 0.01) {
+	/* in this case it is expected to fail */
+	fprintf(LOG,"\t ok (expected to fail)");
+	printf("-");
+      }
+      else {
+	/* the test has failed which was not what we have expected */
+	fprintf(LOG,"\t Not ok (expected to fail)");
+	printf("(!-)");
+	failed_test = 1;
+      }
+      break;
+    default:
+      fprintf(stderr,"invalid test symbol\n");
+      exit (EXIT_FAILURE);
+    }
+  }
 
-  switch (todo) {
-  case '+':
-    if (failed > 0) {
-      fprintf(LOG,"\t Failed");
-      printf("(!+)");
-      failed_test = 1;
-    }
-    else {
-      fprintf(LOG,"\t ok");
-      printf("+");
-    }
-    break;
-  case '~':
-    if (failed == 0) {
-      fprintf(LOG,"\t ok");
-      printf("+");
-    }
-    else if (failed_ratio <= 0.01) {
-      fprintf(LOG,"\t tolerated");
-      printf("(~+)");
-    }
-    else {
-      fprintf(LOG,"\t Failed");
-      printf("(!~+)");
-      failed_test = 1;
-    }
-    break;
-  case '-':
-    if (failed_ratio > 0.01) {
-      /* in this case it is expected to fail */
+  else {
+    fprintf(LOG,"   setup failed\t");
+    switch (todo) {
+    case '0':
+    case '-':
       fprintf(LOG,"\t ok (expected to fail)");
-      printf("-");
+      break;
+    default:
+      fprintf(LOG,"\t Failed");
     }
-    else {
-      /* the test has failed which was not what we have expected */
-      fprintf(LOG,"\t Not ok (expected to fail)");
-      printf("(!-)");
-      failed_test = 1;
-    }
-    break;
-  default:
-    fprintf(stderr,"invalid test symbol\n");
-    exit (EXIT_FAILURE);
   }
 
   /* print distribution name */
   fprintf(LOG,"\t");
-  print_distr_name( LOG,unur_get_distr(gen), unur_get_genid(gen) );
+  print_distr_name( LOG, distr, gen ? unur_get_genid(gen):"???\t" );
   fprintf(LOG,"\n");
 
   fflush(stdout);
@@ -1100,7 +1125,7 @@ int print_verifyhat_result( FILE *LOG, UNUR_GEN *gen, int failed, char todo )
 /*---------------------------------------------------------------------------*/
 /* print result of timings */
 
-void print_timing_results( FILE *LOG, int line, UNUR_DISTR *distr,
+void print_timing_results( FILE *LOG, int line, const UNUR_DISTR *distr,
 			   double *timing_setup, double *timing_marginal, int n_results )
 {
   const char *distr_name;

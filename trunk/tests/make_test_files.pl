@@ -708,7 +708,7 @@ sub scan_validate {
 		else {
 		    print "\tgen = unur_init(par);\n";
 		}
-		print "\trcode = run_validate_chi2(TESTLOG,0,gen,'$todo');\n";
+		print "\trcode = run_validate_chi2(TESTLOG,0,gen,distr[$n_distr],'$todo');\n";
 		print "\tn_tests_failed += (rcode==UNUR_SUCCESS)?0:1;\n";
 		print "\tn_tests_failed += (rcode==UNUR_FAILURE)?10:0;\n";
 		print "\tunur_free(gen);\n";
@@ -906,7 +906,7 @@ sub scan_validate {
 		print "\tif (gen) unur_$method\_chg_verify(gen,1);\n";
 		# such an error is fatal. so we must make sure that we get a FAIL
 		# and override the sloppy definition of FAIL (2 are allowed for chi^2)
-		print "\tn_tests_failed += (run_validate_verifyhat(TESTLOG,0,gen,'$todo')==UNUR_SUCCESS)?0:2;\n";
+		print "\tn_tests_failed += (run_validate_verifyhat(TESTLOG,0,gen,distr[$n_distr],'$todo')==UNUR_SUCCESS)?0:2;\n";
 		print "\tunur_free(gen);\n\n";
 		print "\t} while (0);\n\n";
 	    }	    

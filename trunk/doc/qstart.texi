@@ -259,11 +259,23 @@ int main()
 @chapter methods
 
 @multitable @columnfractions .25 .25 .25 .25
-@item name/references    @tab  parameter (default)   @tab necessary      @tab remarks
+@item name/references    @tab  parameter (default)   @tab required       @tab remarks
+@item AROU               @tab                        @tab pdf, dpdf       @tab Adaptive Ratio-Of-Uniforms
+@item CSTD               @tab                        @tab                @tab interface for extern generators
+@item DAU                @tab                        @tab prob. vec.     @tab (Discrete) Alias-Urn
+@item DIS                @tab                        @tab prob. vec.     @tab (Discrete) Alias-Urn
 @item TDR [..]           @tab                        @tab                @tab 
 @item NINV               @tab                        @tab                @tab numerical inversion
 @item                    @tab  (regula falsi)        @tab cdf            @tab
 @item                    @tab  newton                @tab cdf, pdf       @tab only for continous cdf
+@item RECT               @tab                        @tab                @tab multi variate experimental
+@item STDR               @tab                        @tab pdf, mode,area under pdf       @tab transformed density rejection with universal bounds
+
+@item SROU               @tab                        @tab pdf, mode,area under pdf      @tab (Simple universal generator, ratio-of-uniforms method
+@item TABL               @tab                        @tab pdf            @tab Ahren
+@item TDR                @tab                        @tab pdf, dpdf      @tab Transformed density rejection
+@item UTDR                @tab                        @tab pdf, mode      @tab Universal Transformed Density Rejection; 3-point method
+
 @end multitable
 
 @* choosing the method:
@@ -298,9 +310,9 @@ Notation:
 @include qstart_function_reference.texi
 
 
-@unnumberedsubsubsec  unur_arou_new
-@indent @code{struct unur_par *@b{unur_arou_new}( struct unur_distr *@i{distr} )}
-@* @indent get default parameters for generator                                      
+@c @unnumberedsubsubsec  unur_arou_new
+@c @indent @code{struct unur_par *@b{unur_arou_new}( struct unur_distr *@i{distr} )}
+@c @* @indent get default parameters for generator                                      
 
 
 

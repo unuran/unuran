@@ -116,6 +116,8 @@ UNUR_DISTR *unur_distr_beta(double *params, int n_params);
 /* special generators */
 int _unur_stdgen_beta_init( UNUR_PAR *parameters, UNUR_GEN *generator );
 /* initialize new generator                                                  */
+double _unur_stdgen_sample_beta_inv( UNUR_GEN *generator );
+/* Inversion method                                                          */
 double _unur_stdgen_sample_beta_bb( UNUR_GEN *generator );
 double _unur_stdgen_sample_beta_bc( UNUR_GEN *generator );
 /* Acceptance/Rejection from log-logistic hats                               */
@@ -199,6 +201,8 @@ UNUR_DISTR *unur_distr_gamma(double *params, int n_params);
 /* special generators */
 int _unur_stdgen_gamma_init( UNUR_PAR *parameters, UNUR_GEN *generator );
 /* initialize new generator                                                  */
+double _unur_stdgen_sample_gamma_inv( UNUR_GEN *generator );
+/* Inversion method                                                          */
 double _unur_stdgen_sample_gamma_gll( UNUR_GEN *generator );
 /* Rejection with log-logistic envelopes                                     */
 double _unur_stdgen_sample_gamma_gs( UNUR_GEN *generator );
@@ -248,8 +252,10 @@ UNUR_DISTR *unur_distr_lomax(double *params, int n_params);
 UNUR_DISTR *unur_distr_normal( double *params, int n_params );
 
 /* special generators */
- int _unur_stdgen_normal_init( UNUR_PAR *parameters, UNUR_GEN *generator );
+int _unur_stdgen_normal_init( UNUR_PAR *parameters, UNUR_GEN *generator );
 /* initialize new generator                                                  */
+double _unur_stdgen_sample_normal_inv( UNUR_GEN *generator );
+/* Inversion method                                                          */
 double _unur_stdgen_sample_normal_bm( UNUR_GEN *generator );
 /* Box-Muller method                                                         */
 double _unur_stdgen_sample_normal_pol( UNUR_GEN *generator );

@@ -425,8 +425,15 @@ _unur_vmt_sample_cvec( struct unur_gen *gen, double *vec )
   for (j=0; j<GEN.dim; j++)
     vec[j] = unur_sample_cont(GEN.uvgen);
 
-  /* transform to desired covariance structure */
-  /* notice that GEN.cholesky is a lower triangular matrix */
+  /* 
+     transform to desired covariance structure: 
+     X = L.Y + mu 
+     where
+     L  ... cholesky factor of the covariance matrix
+     Y  ... vector with indenpent components (generated above)
+     mu ... mean vector
+     (notice that L is a lower triangular matrix)
+  */
   for (k=GEN.dim-1; k>=0; k--) {
     vec[k] *= GEN.cholesky[idx(k,k)];
     for (j=k-1; j>=0; j--)

@@ -449,28 +449,38 @@ unur_distr_cont_set_pdfparams( struct unur_distr *distr, double *params, int n_p
   _unur_check_distr_object( distr, CONT, 0 );
   if (n_params>0) _unur_check_NULL(distr->name,params,0);
 
-  /* check new parameter for distribution */
+  /* changelog */
+  distr->set &= ~UNUR_DISTR_SET_MASK_DERIVED;
+  /* derived parameters like mode, area, etc. might be wrong now! */
+
+  /* even if the set routine fails, the derived parameters are
+     marked as unknown. but this is o.k. since in this case something
+     has been wrong. */
+
+  /* use special routine for setting parameters
+     (if there is one) */
+
+  if (distr->base && BASE.set_params) 
+    return (BASE.set_params(distr->base,params,n_params));
+
+  if (DISTR.set_params)
+    return (DISTR.set_params(distr,params,n_params));
+
+  /* otherwise simply copy parameters */
+
+  /* but first check number of new parameter for the distribution */
   if (n_params < 0 || n_params > UNUR_DISTR_MAXPARAMS ) {
     _unur_error(NULL,UNUR_ERR_DISTR_NPARAMS,"");
     return 0;
   }
 
-  /* changelog */
-  distr->set &= ~UNUR_DISTR_SET_MASK_DERIVED;
-  /* derived parameters like mode, area, etc. might be wrong now! */
-
-  /* copy parameters */
-
   if (distr->base) {
-    /* for derived distributions (e.g. order statistics)
-       the parameters for the underlying distributions are set */
     BASE.n_params = n_params;
     if (n_params) memcpy( BASE.params, params, n_params*sizeof(double) );
   }
+
   else {
-    /* we only enlarge the number of parameters */
-    if (n_params > DISTR.n_params)
-      DISTR.n_params = n_params;
+    DISTR.n_params = n_params;
     if (n_params) memcpy( DISTR.params, params, n_params*sizeof(double) );
   }
 
@@ -565,6 +575,9 @@ unur_distr_cont_set_domain( struct unur_distr *distr, double left, double right 
        we also set the domain for the underlying distribution */
     BASE.trunc[0] = BASE.domain[0] = left;
     BASE.trunc[1] = BASE.domain[1] = right;
+    distr->base->set &= ~(UNUR_DISTR_SET_STDDOMAIN |
+			  UNUR_DISTR_SET_TRUNCATED | 
+			  UNUR_DISTR_SET_MASK_DERIVED );
   }
 
   /* o.k. */

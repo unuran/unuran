@@ -301,21 +301,9 @@ unur_cstd_chg_pdfparams( struct unur_gen *gen, double *params, int n_params )
   _unur_check_gen_object( gen,CSTD );
   if (n_params>0) CHECK_NULL(params,0);
 
-  if (n_params <= 0 || n_params > UNUR_DISTR_MAXPARAMS ) {
-    _unur_error(NULL,UNUR_ERR_DISTR_NPARAMS,"");
+  /* set new parameters in distribution object */
+  if (!unur_distr_cont_set_pdfparams(&(gen->distr),params,n_params))
     return 0;
-  }
-
-  /* copy parameters */
-  memcpy( DISTR.params, params, n_params*sizeof(double) );
-
-  /* we only enlarge the number of parameters */
-  if (n_params > DISTR.n_params)
-    DISTR.n_params = n_params;
-
-  /* changelog */
-  gen->distr.set &= ~UNUR_DISTR_SET_MASK_DERIVED;
-  /* derived parameters like mode, area, etc. might be wrong now! */
 
   /* run special init routine for generator */
   if ( !(DISTR.init(NULL,gen)) ) {
@@ -325,7 +313,7 @@ unur_cstd_chg_pdfparams( struct unur_gen *gen, double *params, int n_params )
   }
 
   if ( GEN.is_inversion )
-    if( gen->distr.set & UNUR_DISTR_SET_TRUNCATED ) {
+    if (!(gen->distr.set & UNUR_DISTR_SET_STDDOMAIN)) {
       /* truncated domain */
       if (DISTR.cdf == NULL) {
 	_unur_error(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,""); return 0; }

@@ -160,6 +160,11 @@ int unur_distr_cont_set_pdfparams(UNUR_DISTR *distribution, double *params, int 
    If @var{n_params} is negative or exceeds this limit no parameters
    are copied into the distribution object and @code{unur_errno} is set to
    @code{UNUR_ERR_DISTR_NPARAMS}.
+
+   For standard distributions from the UNURAN library the parameters
+   are checked. It these are invalid, then @code{0} is
+   returned. Moreover the domain is updated automatically unless it
+   has been changed before by a unur_distr_cont_set_domain() call.
 */
 
 int unur_distr_cont_get_pdfparams( UNUR_DISTR *distribution, double **params );

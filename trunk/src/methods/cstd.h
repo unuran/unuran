@@ -135,12 +135,8 @@ int unur_cstd_set_variant( UNUR_PAR *parameters, unsigned variant );
 int unur_cstd_chg_pdfparams( UNUR_GEN *generator, double *params, int n_params );
 /* 
    Change array of parameters of the distribution in a given generator
-   object. Notice that this call simply copies the parameters into
-   the generator object. Thus if fewer parameters are provided then
-   the remaining parameters are left unchanged.
-
-   @emph{Important:} The given parameters are not checked against domain errors;
-   in opposition to the @command{unur_<distr>_new} calls.
+   object. If the given parameters are invalid for the distribution,
+   no parameters are set.
 */
 
 int unur_cstd_chg_truncated( UNUR_GEN *generator, double left, double right );

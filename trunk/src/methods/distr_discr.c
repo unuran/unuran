@@ -605,22 +605,30 @@ unur_distr_discr_set_pmfparams( struct unur_distr *distr, double *params, int n_
   _unur_check_distr_object( distr, DISCR, 0 );
   if (n_params>0) _unur_check_NULL(distr->name,params,0);
 
-  /* check new parameter for distribution */
+  /* changelog */
+  distr->set &= ~UNUR_DISTR_SET_MASK_DERIVED;
+  /* derived parameters like mode, area, etc. might be wrong now! */
+
+  /* even if the set routine fails, the derived parameters are
+     marked as unknown. but this is o.k. since in this case something
+     has been wrong. */
+
+  /* use special routine for setting parameters
+     (if there is one) */
+
+  if (DISTR.set_params)
+    return (DISTR.set_params(distr,params,n_params));
+
+  /* otherwise simply copy parameters */
+
+  /* but first check number of new parameter for the distribution */
   if (n_params < 0 || n_params > UNUR_DISTR_MAXPARAMS ) {
-    _unur_error(distr->name,UNUR_ERR_DISTR_NPARAMS,"");
+    _unur_error(NULL,UNUR_ERR_DISTR_NPARAMS,"");
     return 0;
   }
 
-  /* changelog */
-  distr->set &= ~UNUR_DISTR_SET_MASK_DERIVED;
-  /* derived parameters like mode, sum, etc. might be wrong now! */
-
-  /* copy parameters */
+  DISTR.n_params = n_params;
   if (n_params) memcpy( DISTR.params, params, n_params*sizeof(double) );
-
-  /* we only enlarge the number of parameters */
-  if (n_params > DISTR.n_params)
-    DISTR.n_params = n_params;
 
   /* o.k. */
   return 1;

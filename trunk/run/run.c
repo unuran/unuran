@@ -36,6 +36,23 @@ int main()
   UNUR_GEN   *gen;      /* generator */
   UNUR_URNG *urng;      
 
+  distr = unur_distr_cauchy(NULL,0);
+  unur_distr_cont_set_domain(distr,0.1,1.);
+  unur_distr_cont_upd_mode(distr);
+  unur_distr_cont_upd_pdfarea(distr);
+
+  par = unur_cstd_new(distr);
+  fpm[0] = 2.;
+  fpm[1] = 5.;
+  gen = unur_init(par);
+  unur_cstd_chg_pdfparams(gen,fpm,2);
+
+  unur_test_chi2( gen, 100, 0, 0, 1 );
+
+  unur_free(gen);
+
+
+#if 0
 
 
   distrh = unur_distr_hypergeometric(fpmh,3);
@@ -63,7 +80,7 @@ int main()
 
 
    unur_test_chi2( gen, 100, 0,  0, 3 );
-  
+#endif  
 
   /*
 

@@ -192,6 +192,7 @@
 /* Distribution objects.                                                     */
 
 /* Maximal number of parameters for the PDF of a distribution.               */
+/* (It must be at least 5!)                                                  */
 #define UNUR_DISTR_MAXPARAMS  5
 
 /* Maximal size of automatically created probability vectors.                */

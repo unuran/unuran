@@ -123,12 +123,10 @@ int unur_dstd_set_variant( UNUR_PAR *parameters, unsigned variant );
 int unur_dstd_chg_pmfparams( UNUR_GEN *gen, double *params, int n_params );
 /*
    Change array of parameters of the distribution in a given generator
-   object. Notice that this call simply copies the parameters into
-   the generator object. Thus if fewer parameters are provided then
-   the remaining parameters are left unchanged.
+   object. If the given parameters are invalid for the distribution,
+   no parameters are set.
 
-   @emph{Important:} The given parameters are not checked against domain errors;
-   in opposition to the @command{unur_<distr>_new} calls.
+   @emph{Important:} Integer parameter must be given as doubles.
 */
 
 /*

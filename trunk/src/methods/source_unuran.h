@@ -63,6 +63,7 @@
 
 #include <in_unuran.h>
 
+#include <parser_source.h>
 #include <functparser_source.h>
 
 #include <source_struct.h>

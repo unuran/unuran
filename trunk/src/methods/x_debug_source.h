@@ -58,6 +58,7 @@ extern unsigned _unur_default_debugflag;     /* default debugging flags      */
 
 /* Function prototypes                                                       */
 void _unur_stream_printf( const char *genid, char *filename, int line, const char *format, ... );
+void _unur_stream_printf_simple( const char *format, ... );
 
 /* an abbreviation */
 #define _unur_print_if_default(par,flag)   if(!((par)->set & (flag))) fprintf(log,"  [default]")

@@ -4,7 +4,7 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   FILE:      stringpars.c.base / stringpars.c                             *
+ *   FILE:      stringparser.c.in / stringparser.c                           *
  *                                                                           *
  *                                                                           *
  *   DESCRIPTION:                                                            *
@@ -300,11 +300,6 @@ static int _unur_str_set_args( char *value, char *type_args, char **args, int ma
 /* parse argument string for set call.                                       */
 /*---------------------------------------------------------------------------*/
 
-static char *_unur_prepare_string( const char *str );
-/*---------------------------------------------------------------------------*/
-/* Prepare string for processing.                                            */
-/*---------------------------------------------------------------------------*/
-
 static int _unur_parse_dlist( char *liststr, double **darray );
 /*---------------------------------------------------------------------------*/
 /* Process a comma separated list of numbers.                                */
@@ -446,7 +441,7 @@ unur_str2gen (const char *string)
   /*   Remove all white spaces,                */
   /*   convert to lower case letters,          */
   /*   copy into working string                */
-  str = _unur_prepare_string( string );
+  str = _unur_parser_prepare_string( string );
 
 #ifdef UNUR_ENABLE_LOGGING
   /* write info into log file */
@@ -2033,50 +2028,6 @@ _unur_str_set_args( char *value, char *type_args, char **args, int max_args )
   return n_args;
 
 } /* end of _unur_str_set_args() */
-
-/*---------------------------------------------------------------------------*/
-
-char *
-_unur_prepare_string( const char *str )
-     /*----------------------------------------------------------------------*/
-     /* Prepare string for processing:                                       */
-     /*   Copy into working strint.                                          */
-     /*   Remove all white spaces and convert to lower case letters.         */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   str      ... pointer to string                                     */
-     /*                                                                      */
-     /* return:                                                              */
-     /*   pointer to working string.                                         */
-     /*                                                                      */
-     /* as a side effect, a new string is allocated.                         */
-     /*----------------------------------------------------------------------*/
-{
-  char *tmp, *ptr;
-  char *new;       /* pointer to working copy of string */
-  size_t len;      /* length of string */
-
-  /* length of string */
-  len = strlen(str)+1;
-  /* allocate memory for copy */
-  new = _unur_malloc( len * sizeof(char) );
-  /* copy memory */
-  ptr = memcpy(new,str,len);
-
-  /* copy characters but skip all white spaces */
-  for (tmp = ptr; *tmp != '\0'; tmp++)
-    if ( !isspace(*tmp) ) {
-      *ptr = tolower(*tmp);
-      ptr++;
-    }
-
-  /* terminate string */
-  *ptr = '\0';
-
-  /* return pointer to working copy */
-  return new;
-
-} /* end of _unur_prepare_string() */
 
 /*---------------------------------------------------------------------------*/
 

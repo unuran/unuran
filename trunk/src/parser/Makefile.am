@@ -11,12 +11,14 @@ INCLUDES = \
 noinst_LIBRARIES = libparser.a
 
 libparser_a_SOURCES = \
+ parser.c \
  functparser.c \
  stringparser.c
 
 include_HEADERS =
 
 noinst_HEADERS = \
+ parser_source.h \
  functparser_source.h \
  functparser_struct.h \
  parser.h

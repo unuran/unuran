@@ -44,12 +44,7 @@
 /* Function prototypes for function string parser                            */
 /*---------------------------------------------------------------------------*/
 
-void _unur_fstr_init(void);
-/*---------------------------------------------------------------------------*/
-/* Initialize hash table for function parser                                 */
-/*---------------------------------------------------------------------------*/
-
-struct treenode *_unur_fstr2tree( char *functstring, int *errcodep, int *errposp );
+struct treenode *_unur_fstr2tree( char *functstring );
 /*---------------------------------------------------------------------------*/
 /* Compute funtion tree from string.                                         */
 /*---------------------------------------------------------------------------*/
@@ -73,8 +68,6 @@ struct treenode *_unur_fstr_make_derivative( struct treenode *functtree_root );
 /*---------------------------------------------------------------------------*/
 /* Make function tree for derivate of given function (tree).                 */ 
 /*---------------------------------------------------------------------------*/
-
-void _unur_fstr_debug_tree( struct treenode *root );
 
 /*---------------------------------------------------------------------------*/
 #endif   /* __FSTR_SOURCE_H_SEEN */

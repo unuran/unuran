@@ -96,6 +96,41 @@ _unur_stream_printf( const char *genid,
 
 /*---------------------------------------------------------------------------*/
 
+void
+_unur_stream_printf_simple( const char *format, ... )
+     /*----------------------------------------------------------------------*/
+     /* write messages on output stream(s)                                   */
+     /* (same as _unur_stream_printf() but without file and line number)     */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   genid     ... identifier of generator object (NULL if not known)   */
+     /*   format    ... format for fprintf()                                 */
+     /*   ...       ... (optional) arguments to be be printed                */
+     /*----------------------------------------------------------------------*/
+{
+  va_list ap;
+
+  va_start(ap, format);
+
+#ifdef UNUR_ENABLE_STDERR
+  /* write on stderr */
+  vfprintf(stderr,format,ap);
+  fflush(stderr);   /* in case of a segmentation fault */
+#endif
+
+#ifdef UNUR_ENABLE_LOGFILE
+  /* write onto output stream */
+  if (!unur_stream) unur_get_stream();
+  vfprintf(unur_stream,format,ap);
+  fflush(unur_stream);   /* in case of a segmentation fault */
+#endif
+
+  va_end(ap);
+
+} /* end of unur_stream_printf_simple() */
+
+/*---------------------------------------------------------------------------*/
+
 FILE * 
 unur_set_stream( FILE *new_stream )
      /*----------------------------------------------------------------------*/

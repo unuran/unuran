@@ -37,14 +37,10 @@
  *****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
-/* ?????? */
-#define SYMBLENGTH 20 
-
-/*---------------------------------------------------------------------------*/
 /* Structure for function tree                                               */
 
 struct treenode { 
-  char            *symb;  /* zeigt auf Symbol aus Symboltab. */ 
+  char            *symbol;  /* zeigt auf Symbol aus Symboltab. */ 
   int             token;             /* Token des Symbols               */ 
   int             symbkind;          /* Art des Symbols (REL_OP etc.)   */ 
   float           val;               /* aktueller arithmetischer Wert   */ 
@@ -56,22 +52,6 @@ struct treenode {
 #endif
 }; 
 
-/*---------------------------------------------------------------------------*/
-/* Symbols used in function string                                           */
-
-struct symbols { 
-  char            name[SYMBLENGTH];  /* Name des Symbols (z. B. "SIN")  */ 
-  int             type;         /* type of symbol */
-  int             info;              /* Prioritaet bzw. Argumentanzahl  */ 
-  double           val;               /* Konstanten: numerischer Wert    */ 
-  double           (*vcalc)(double l, double r);        
-                                     /* Zeiger auf Berechnungsfunktion  */ 
-  char            *(*dcalc)(char *par,struct treenode *w,
-                            char *l, char *r, char *dl, char *dr,char *s);
-                                     /* Zeiger auf Ableitungsfunktion   */ 
-  struct treenode *tree;             /* Bei UFUNCS: Zeiger auf Baum     */ 
-
-};
 
 /*---------------------------------------------------------------------------*/
 

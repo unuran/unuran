@@ -1,59 +1,17 @@
+/*---------------------------------------------------------------------------*/
 
 #include <ctype.h>
 #include <source_unuran.h>
 
 /*---------------------------------------------------------------------------*/
 
-#define MAXLENGTH  256 
-
-#define NOSYMB  0 
-#define ADD_OP  1 
-#define REL_OP  2 
-#define MUL_OP  3 
-#define HPR_OP  4 
-#define OTHERS  5 
-#define SCONST  6 
-#define UCONST  7 
-#define UIDENT  8 
-#define UFUNCS  9 
-#define SFUNCS 10 
-
+#define GENTYPE "FSTRING"      /* (pseudo) type of generator                 */
 
 /*---------------------------------------------------------------------------*/
 
-/* structure for storing data while parsing the function string */
-struct parser_data {
-  char *fstr;           /* pointer to function string                        */
-  int   scanpos;        /* pointer to location in string                     */
-  int   lastpos;        /* position in string before scanning next token     */
-  int   errno;          /* error code                                        */
-  int   token;          /* scanned token                                     */
-  int   length_token;   /* length of scanned token                           */
-};
 
-/* --- Prototypen: --- */
-void  show_symb_tab      (void);
-static void get_ds             (char *function, int  *scanpos, char *ds);
-static void get_sf             (char *function, int  *scanpos, char *sf);
-static int   get_uc_symbol      (char *function, int *scanpos, char *uc);
-static int   nxt_symbol         (struct parser_data *pdata, char *symb);
-static int   get_id_symbol      (char *function, int  *scanpos, char *id);
-static int   get_ro_symbol      (char *function, int  *scanpos, char *ro);
-// static int   find_index         (char *symb, int start, int end, int nxt_c);
-static int find_symbol_in_table(char *symb, int start, int end);
-
-int find_user_defined(char *symb, int nxt_c);
-
-/* --- Bereichs-Start- und -Endemarkierungen in der Symboltabelle: --- */
-static int ros, roe, aos, aoe, mos, moe, hos, hoe, oss, ose, scs, sce, sfs, sfe;
-
-static int n_symbols;
-
-static int uconst, ufunct, uident;
-
-static int xxxminus, xxxplus, xxxmul, xxxdiv;
-static int xxxcomma;
-
+/*---------------------------------------------------------------------------*/
+/* Symbols used in function string                                           */
 
 /*---------------------------------------------------------------------------*/
 /* functions for evaluating function tree                                    */
@@ -75,8 +33,6 @@ static double v_mod    (double l, double r);
 static double v_power  (double l, double r);
 static double v_not    (double l, double r);
 static double v_const  (double l, double r);
-// static double v_uident (double l, double r);
-// static double v_ufuncs (double l, double r);
 static double v_exp    (double l, double r);
 static double v_ln     (double l, double r);
 static double v_log    (double l, double r);
@@ -98,186 +54,608 @@ static char *d_sin(), *d_div   ();
 static char *d_cos(), *d_power ();
 static char *d_tan(), *d_const ();
 static char *d_sec();
-/** static char *d_par   (); **/
-// static char *d_ufuncs();
 static char *d_sqr();
 static char *d_abs();
 
-
-/* --- Import aus SCANNER.C: --- */ 
-/** static void init_scanner(void); **/
-
-/*long _STKSIZ = 500000; grosser Stack f. Rekursion in derive_expression*/
-
-/************************************************************************/
-
-/* --- Importe aus scanner.c und parser.c: --- */
-
-static struct treenode *string2tree(char *function, int *errcodep, 
-                                                    int *errposp);
-static void pt_error    (char *function, int errcode, int errpos);
-static void show_tree   (struct treenode *node, int level, int location);
-
-char *readln     (char *s);
-
-/************************************************************************/ 
-
-/* --- Prototypen: --- */
-
-static char *tree2string(struct treenode *tree_root, char *ret_str);
-static char *tree2Cstring(struct treenode *tree_root, char *ret_str);
-static char *strcpy3    (char *s1, char *s2, char *s3, char *s4); 
-static char *strcpy5    (char *s1, char *s2, char *s3, char *s4, char *s5, char *s6); 
-static double tree2float (struct treenode *E_root, double x); 
-/** static void gradient(struct treenode *root); **/
-static void nxt_part_derivation(struct treenode *DP_root,struct treenode *root);
-static struct treenode *part_deriv(struct treenode *root,char *par,char *ret_str); 
-static char *derive_expression(struct treenode *E_root,char *par,char *ret_str);
-static char *strcpy6(char *s1, char *s2, char *s3,
-	      char *s4, char *s5, char *s6, char *s7);
-
-
-static char *_unur_prepare_string( const char *str );
-/*---------------------------------------------------------------------------*/
-/* Prepare string for processing.                                            */
 /*---------------------------------------------------------------------------*/
 
+#define SYMBLENGTH 20        /* Maximal length for symbols                   */
 
+/* structure for storing known symbols                                       */
+struct symbols { 
+  char   name[SYMBLENGTH];       /* Name des Symbols (z. B. "SIN")  */ 
+  int    type;                   /* type of symbol */
+  int    info;                   /* Prioritaet bzw. Argumentanzahl  */ 
+  double val;                    /* value of constant                        */ 
+  double (*vcalc)(double l, double r);    /* pointer to function for         
+					     computing node                  */
+  char            *(*dcalc)(char *par,struct treenode *w,
+                            char *l, char *r, char *dl, char *dr,char *s);
+                              /* Zeiger auf Ableitungsfunktion   */ 
+};
 
-/************************************************************************/
-/* --- SYMBOLTABELLE, mit Funktionsadressen --- */
+/* Symbol types for tokens                                                   */
+enum {
+  S_NOSYMBOL = 0,    /* token is not a symbol / is unknown                   */
+  S_SFUNCT,          /* system function                                      */
+  S_SCONST,          /* system constant                                      */
+  S_UIDENT,          /* user defined identifier (variable)                   */
+  S_UFUNCT,          /* user defined function                                */
+  S_UCONST,          /* user defined constant                                */
+  S_REL_OP,          /* relation operator                                    */
+  S_ADD_OP,          /* addition operator                                    */
+  S_MUL_OP,          /* multiplication operator                              */
+  S_HPR_OP,          /* higher priority operator                             */
+  S_OTHERS,          /* other operator                                       */
+};
 
-static char variable[SYMBLENGTH];     /* name of variable */
+/*---------------------------------------------------------------------------*/
+/* List of known symbols                                                     */
 
-/** IMPORTANT: strings that do not start with a digit, letter or `.' 
-               must constist of a single character!!
-
-other symbols MUST consist of single characters!!! 
-
-there MUST not be more than two arguments for a system function !!!!
-
-**/
+/* The operator categories are due to their priorities */
 
 static struct symbols symbol[] = {   
-  {"_ROS",NOSYMB,0, .0,v_dummy,  d_dummy, NULL},            /* RelationalOperators */
-  {"<",   REL_OP,1, .0,v_less,   d_const, NULL},
-  {"=",   REL_OP,1, .0,v_equal,  d_const, NULL},     /** TODO: == statt = **/
-  {">",   REL_OP,1, .0,v_greater,d_const, NULL},
-  {"<=",  REL_OP,1, .0,v_less_or,d_const, NULL},
-  {"<>",  REL_OP,1, .0,v_unequal,d_const, NULL},
-  {">=",  REL_OP,1, .0,v_grtr_or,d_const, NULL},
-  {"_ROE",NOSYMB,0, .0,v_dummy,  d_dummy, NULL},
+  {""    , S_UIDENT  , 0, 0.0 , v_dummy  , d_const }, /* void                */
 
-  {"_AOS",NOSYMB,0, .0,v_dummy,  d_dummy, NULL},                /* AddingOperators */
-  {"or",  ADD_OP,2, .0,v_or,     d_const, NULL},
-  {"xor", ADD_OP,2, .0,v_xor,    d_const, NULL},
-  {"+",   ADD_OP,2, .0,v_plus,   d_add,   NULL},
-  {"-",   ADD_OP,3, .0,v_minus,  d_add,   NULL},
-  {"_AOE",NOSYMB,0, .0,v_dummy,  d_dummy, NULL},
+  /* user defined symbols */                                             
+  {"UCONST",S_UCONST , 0, 0.0 , v_const  , d_const }, /* constant            */
+  {"UFUNCT",S_UFUNCT , 0, 0.0 , v_dummy  , d_dummy }, /* function            */
+  {"VAR" , S_UIDENT  , 0, 0.0 , v_dummy  , d_const }, /* variable            */
 
-  {"_MOS",NOSYMB,0, .0,v_dummy,  d_dummy, NULL},           /* MultiplyingOperators */
-  {"*",   MUL_OP,4, .0,v_mul,    d_mul,   NULL},
-  {"and", MUL_OP,4, .0,v_and,    d_const, NULL},
-  {"/",   MUL_OP,4, .0,v_div,    d_div,   NULL},
-  {"mod", MUL_OP,4, .0,v_mod,    d_const, NULL},
-  {"_MOE",NOSYMB,4, .0,v_dummy,  d_dummy, NULL},
+  /* relation operators  */
+  {"_ROS", S_NOSYMBOL, 0, 0.0 , v_dummy  , d_dummy },
+  {"<"   , S_REL_OP  , 1, 0.0 , v_less   , d_const },
+  {"="   , S_REL_OP  , 1, 0.0 , v_equal  , d_const },
+  {"=="  , S_REL_OP  , 1, 0.0 , v_equal  , d_const },
+  {">"   , S_REL_OP  , 1, 0.0 , v_greater, d_const },
+  {"<="  , S_REL_OP  , 1, 0.0 , v_less_or, d_const },
+  {"<>"  , S_REL_OP  , 1, 0.0 , v_unequal, d_const },
+  {">="  , S_REL_OP  , 1, 0.0 , v_grtr_or, d_const },
+  {"_ROE", S_NOSYMBOL, 0, 0.0 , v_dummy  , d_dummy },
 
-  {"_HOS",NOSYMB,0, .0,v_dummy,  d_dummy, NULL},          /* HighPriorityOperators */
-  {"^",   HPR_OP,5, .0,v_power,  d_power, NULL},
-  {"not", HPR_OP,6, .0,v_not,    d_const, NULL},
-  {"_HOE",NOSYMB,0, .0,v_dummy,  d_dummy, NULL},
+  /* addition operators */
+  {"_AOS", S_NOSYMBOL, 0, 0.0 , v_dummy  , d_dummy },
+  {"+"   , S_ADD_OP  , 2, 0.0 , v_plus   , d_add   },
+  {"-"   , S_ADD_OP  , 3, 0.0 , v_minus  , d_add   },
+  {"or"  , S_ADD_OP  , 4, 0.0 , v_or     , d_const },
+  {"xor" , S_ADD_OP  , 4, 0.0 , v_xor    , d_const },
+  {"_AOE", S_NOSYMBOL, 0, 0.0 , v_dummy  , d_dummy },
 
-  {"_OSS",NOSYMB,0, .0,v_dummy,  d_dummy, NULL},                   /* OtherSymbols */
-  {"(",   OTHERS,0, .0,v_dummy,  d_dummy, NULL},
-  {")",   OTHERS,0, .0,v_dummy,  d_dummy, NULL},
-  {",",   OTHERS,0, .0,v_dummy,  d_dummy, NULL},
-  {"_OSE",NOSYMB,0, .0,v_dummy,  d_dummy, NULL},
+  /* multiplication operators */
+  {"_MOS", S_NOSYMBOL, 0, 0.0 , v_dummy  , d_dummy },
+  {"*"   , S_MUL_OP  , 4, 0.0 , v_mul    , d_mul   },
+  {"/"   , S_MUL_OP  , 4, 0.0 , v_div    , d_div   },
+  {"and" , S_MUL_OP  , 2, 0.0 , v_and    , d_const },
+  {"mod" , S_MUL_OP  , 4, 0.0 , v_mod    , d_const },
+  {"_MOE", S_NOSYMBOL, 0, 0.0 , v_dummy  , d_dummy },
 
-  {"_SCS",NOSYMB,0, .0,v_dummy,  d_dummy, NULL},                /* SystemConstants */
-  {"pi",  SCONST,0, M_PI,v_const, d_const, NULL},
-  {"e",   SCONST,0, M_E ,v_const, d_const, NULL},
-  {"_SCE",NOSYMB,0, .0,v_dummy,  d_dummy, NULL},
+  /* high priority operators */
+  {"_HOS", S_NOSYMBOL, 0, 0.0 , v_dummy  , d_dummy },
+  {"^"   , S_HPR_OP  , 5, 0.0 , v_power  , d_power },
+  {"not" , S_HPR_OP  , 6, 0.0 , v_not    , d_const },
+  {"_HOE", S_NOSYMBOL, 0, 0.0 , v_dummy  , d_dummy },
 
-  /* UserdefinedConstants */
-  {"UCONST",UCONST, 0, .0,v_const, d_const, NULL},
+  /* other symbols */
+  {"_OSS", S_NOSYMBOL, 0, 0.0 , v_dummy  , d_dummy },
+  {"("   , S_OTHERS  , 0, 0.0 , v_dummy  , d_dummy },
+  {")"   , S_OTHERS  , 0, 0.0 , v_dummy  , d_dummy },
+  {","   , S_OTHERS  , 0, 0.0 , v_dummy  , d_dummy },
+  {"_OSE", S_NOSYMBOL, 0, 0.0 , v_dummy  , d_dummy },
 
-  /* UserdefinedIdentifiers */
-/*    {"",    UIDENT,0, .0,v_uident, d_const, NULL}, */
-  {"",    UIDENT,0, .0,v_dummy, d_const, NULL},
-  {"VAR", UIDENT,0, .0,v_dummy, d_const, NULL},
+  /* system constants */
+  {"_SCS", S_NOSYMBOL, 0, 0.0 , v_dummy  , d_dummy },
+  {"pi"  , S_SCONST  , 0, M_PI, v_const  , d_const },
+  {"e"   , S_SCONST  , 0, M_E , v_const  , d_const },
+  {"_SCE", S_NOSYMBOL, 0, 0.0 , v_dummy  , d_dummy },
 
-  /* UserdefinedFunctions */
-  {"UFUNCT",UFUNCS,0, .0,v_dummy, d_dummy,NULL},
+  /* system functions */
+  {"_SFS", S_NOSYMBOL, 0, 0.0 , v_dummy  , d_dummy },
+  {"exp" , S_SFUNCT  , 1, 0.0 , v_exp    , d_exp   },
+  {"ln"  , S_SFUNCT  , 1, 0.0 , v_ln     , d_ln    },
+  {"log" , S_SFUNCT  , 2, 0.0 , v_log    , d_log   },
+  {"sin" , S_SFUNCT  , 1, 0.0 , v_sin    , d_sin   },
+  {"cos" , S_SFUNCT  , 1, 0.0 , v_cos    , d_cos   },
+  {"tan" , S_SFUNCT  , 1, 0.0 , v_tan    , d_tan   },
+  {"sec" , S_SFUNCT  , 1, 0.0 , v_sec    , d_sec   },
+  {"sqr" , S_SFUNCT  , 1, 0.0 , v_sqr    , d_sqr   },
+  {"abs" , S_SFUNCT  , 1, 0.0 , v_abs    , d_abs   },
+  {"_SFE", S_NOSYMBOL, 0, 0.0 , v_dummy  , d_dummy },
 
-  {"_SFS",NOSYMB,0, .0,v_dummy,  d_dummy, NULL},                /* SystemFunctions */
-  {"exp", SFUNCS,1, .0,v_exp,    d_exp,   NULL},
-  {"ln",  SFUNCS,1, .0,v_ln,     d_ln,    NULL},
-  {"log", SFUNCS,2, .0,v_log,    d_log,   NULL},
-  {"sin", SFUNCS,1, .0,v_sin,    d_sin,   NULL},
-  {"cos", SFUNCS,1, .0,v_cos,    d_cos,   NULL},
-  {"tan", SFUNCS,1, .0,v_tan,    d_tan,   NULL},
-  {"sec", SFUNCS,1, .0,v_sec,    d_sec,   NULL},
-  {"sqr", SFUNCS,1, .0,v_sqr,    d_sqr,   NULL},
-  {"abs", SFUNCS,1, .0,v_abs,    d_abs,   NULL},
-  {"_SFE",NOSYMB,0, .0,v_dummy,  d_dummy, NULL},
-
-  {"_END",NOSYMB,0, .0,v_dummy,  d_dummy, NULL},
+  /* marker for end-of-table */
+  {"_END", S_NOSYMBOL, 0, 0.0 , v_dummy  , d_dummy },
 };
 
-/* --- Prototypen: --- */ 
-static struct treenode *FuncDefinition   (struct parser_data *pdata);
-static struct treenode *_unur_DefFunctDesignator(struct parser_data *pdata, int *ftp);
-static struct treenode *_unur_DefParameterlist(struct parser_data *pdata, int *n_params);
-static struct treenode *_unur_Expression       (struct parser_data *pdata);
-static struct treenode *SimpleExpression (struct parser_data *pdata);
-static struct treenode *VTerm            (struct parser_data *pdata);
-static struct treenode *Term             (struct parser_data *pdata);
-static struct treenode *Factor           (struct parser_data *pdata);
-static struct treenode *bas_exp          (struct parser_data *pdata);
-static struct treenode *_unur_FunctDesignator   (struct parser_data *pdata);
-static struct treenode *_unur_ActualParameterlist(struct parser_data *pdata, int n_params);
+/* size of symbol table */
+static int n_symbols;
 
-static struct treenode *create_node(char *symb, int token,
-                struct treenode *left, struct treenode *right);
+/*  location of special symbols in table                                     */
+/** DO NOT CHANGE THEIR POSITION IN TABLE **/
+static int s_uconst = 1;      /* user defined constant                       */
+static int s_ufunct = 2;      /* user defined function                       */
+static int s_uident = 3;      /* user defined variable                       */
 
-static struct treenode *set_err (int err_nr,struct parser_data *pdata); 
-char            *readln  (char *s);
-static int             simplification(char *symb, int t, struct treenode *l, 
-                                                      struct treenode *r);
-static char *errorstrings[] = { 
-     "OK",                                                /* 0*/ 
-     "scan pointer too big",                              /* 1*/ 
-     "unsigned constant area full",                       /* 2*/ 
-     "identifier area full",                              /* 3*/ 
-     "unkown symbol",                                     /* 4*/
-     "5", "6", "7", 
-     "8", "9", "10", 
-     "operator expected        in string2tree",           /*11*/ 
-     "expected symbol: '='     in FunctionDefinition",    /*12*/ 
-     "user function expected   in DefFunctDesignator",    /*13*/ 
-     "expected symbol: '('     in DefFunctDesignator",    /*14*/ 
-     "expected symbol: ')'     in DefFunctDesignator",    /*15*/ 
-     "user identifier expected in DefParameterlist",      /*16*/ 
-     "user identifier expected in DefParameterlist",      /*17*/ 
-     "expected symbol: ')'     in bas_exp",               /*18*/ 
-     "unknown symbol           in bas_exp",               /*19*/ 
-     "function expected        in FunctDesignator",       /*20*/ 
-     "expected symbol: '('     in FunctDesignator",       /*21*/ 
-     "expected symbol: ')'     in FunctDesignator",       /*22*/ 
-     "expected symbol: ')'     in ActualParameterlist",   /*23*/ 
-     "expected symbol: ','     in ActualParameterlist",   /*24*/ 
+static int s_comma;
+
+/* Marker for different regions in symbol table                              */
+static int aoe, mos, moe, oss, ose, scs, sce, sfs;  /* brauch ma ned */
+static int ros, roe, aos, sfe;
+static int hos, hoe;
+
+/*  static int xxxminus, xxxplus, xxxmul, xxxdiv; */
+/*  static int xxxcomma; */
+
+/*---------------------------------------------------------------------------*/
+/* structure for storing data while tokizing and parsing the function string */
+
+struct parser_data {
+  char  *fstr;          /* pointer to function string                        */
+  int   *token;         /* array to store marker for each token in string    */
+  char  *tstr;          /* working array for tokenized string                */
+  char **tpos;          /* array to store pointers to each token in string   */
+  int    tno;           /* pointer to token in list                          */
+  int    n_tokens;      /* total number of tokens                            */
+  char  *variable_name; /* name of user defined identifier                   */
+  char  *function_name; /* name of user defined function                     */
+  int    scanpos;       /* pointer to location in string                     */
+  int    lastpos;       /* position in string before scanning next token     */
+  int    len_fstr;      /* length of function string                         */
+  int    errno;         /* error code                                        */
 };
 
-/************************************************************************/
+/*---------------------------------------------------------------------------*/
+/* Error codes                                                               */
 
-/************************************************************************/
+enum {
+  SUCCESS = 0,          /* executed succesfully, no errors detected          */
+};
 
-void  _unur_fstr_init(void)
+/*---------------------------------------------------------------------------*/
+/* Evaluate function tree                                                    */
+/*---------------------------------------------------------------------------*/
 
-/*  Ermittelt die Indices der Start- und Endsymbole in der Symboltabelle
- *  und loescht alle benutzerdefinierten Konstanten und Identifier.
- */
+static double _unur_fstr_eval_node (struct treenode *node, double x);
+/*---------------------------------------------------------------------------*/
+/* Evaluate function tree starting from `node' at x                          */
+/*---------------------------------------------------------------------------*/
 
+/*---------------------------------------------------------------------------*/
+/* Initialize and destroy parser                                             */
+/*---------------------------------------------------------------------------*/
+
+static struct parser_data *_unur_fstr_parser_init (const char *fstr);
+/*---------------------------------------------------------------------------*/
+/* Create and initialize parser object for given function string.            */
+/*---------------------------------------------------------------------------*/
+
+static void _unur_fstr_symbols_init (void);
+/*---------------------------------------------------------------------------*/
+/* Prepare table of known symbols for usage.                                 */
+/*---------------------------------------------------------------------------*/
+
+static void _unur_fstr_parser_free (struct parser_data *pdata);
+/*---------------------------------------------------------------------------*/
+/* Destroy parser object.                                                    */
+/*---------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------*/
+/* Scan function string                                                      */
+/*---------------------------------------------------------------------------*/
+
+static int _unur_fstr_tokenize (struct parser_data *pdata);
+/*---------------------------------------------------------------------------*/
+/* Tokenize function string.                                                 */
+/*---------------------------------------------------------------------------*/
+
+static int _unur_fstr_next_symbol (struct parser_data *pdata, char *symb);
+/*---------------------------------------------------------------------------*/
+/* Get next symbol in function string.                                       */
+/*---------------------------------------------------------------------------*/
+
+static int _unur_fstr_UnsignedConstant (struct parser_data *pdata, char *uc);
+/*---------------------------------------------------------------------------*/
+/* Get Unsigned Constant.                                                    */
+/*  UnsignedConstant ::= UnsignedInteger | UnsignedReal                      */
+/*  UnsignedInteger  ::= DigitSequence                                       */
+/*  UnsignedReal ::= UnsignedInteger ['.' DigitSequence] ['e' ScaleFactor]   */
+/*---------------------------------------------------------------------------*/
+
+static int _unur_fstr_DigitalSequence (struct parser_data *pdata, char *ds);
+/*---------------------------------------------------------------------------*/
+/* Get Digital Sequence.                                                     */
+/*  DigitSequence ::= Digit [ Digit [...] ]                                  */
+/*  Digit         ::= '0' | '1' | '2' | ... | '8' | '9'                      */
+/*---------------------------------------------------------------------------*/
+
+static int _unur_fstr_ScaleFactor (struct parser_data *pdata, char *sf);
+/*---------------------------------------------------------------------------*/
+/* Get Scale Factor.                                                         */
+/*  ScaleFactor ::= [Sign] DigitSequence                                     */
+/*  Sign        ::= '+' | '-'                                                */
+/*---------------------------------------------------------------------------*/
+
+static int _unur_fstr_Identifier (struct parser_data *pdata, char *id);
+/*---------------------------------------------------------------------------*/
+/* Get Identifier.                                                           */
+/*  Identifier ::= Letter [ Letter | Digit [...] ]                           */
+/*  Letter     ::= 'a' | 'b' | ... | 'z' | '_'                               */
+/*  Digit      ::= '0' | '1' | ... | '9'                                     */
+/*---------------------------------------------------------------------------*/
+
+static int _unur_fstr_RelationOperator (struct parser_data *pdata, char *ro);
+/*---------------------------------------------------------------------------*/
+/* Get Relation Operator.                                                    */
+/*  RelationOperator ::= RelationChar [ RelationChar [...] ]                 */ 
+/*  RelationChar     ::= '<' | '=' | '>'                                     */
+/*---------------------------------------------------------------------------*/
+
+static int _unur_fstr_find_symbol (char *symb, int start, int end);
+/*---------------------------------------------------------------------------*/
+/* Find symbol in table between position (start+1) and (end-1).              */
+/*---------------------------------------------------------------------------*/
+
+static int _unur_fstr_find_user_defined (struct parser_data *pdata, char *symb, char next_char);
+/*---------------------------------------------------------------------------*/
+/* Find user defined symbol.                                                 */
+/*---------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------*/
+/* Parser.                                                                   */
+/*---------------------------------------------------------------------------*/
+
+static struct treenode *_unur_FunctDefinition (struct parser_data *pdata);
+/*---------------------------------------------------------------------------*/
+/* Get user defined function.                                                */
+/*  FunctDefinition ::= DefFunctDesignator '=' Expression                    */
+/*---------------------------------------------------------------------------*/
+
+static struct treenode *_unur_DefFunctDesignator (struct parser_data *pdata);
+/*---------------------------------------------------------------------------*/
+/* Definition of user defined function.                                      */
+/*  DefFunctDesignator ::= Identifier '(' DefParameterlist ')'               */
+/*---------------------------------------------------------------------------*/
+
+static struct treenode *_unur_DefParameterlist (struct parser_data *pdata, int *n_params);
+/*---------------------------------------------------------------------------*/
+/* Parameter list for user defined function.                                 */
+/*  DefParameterlist ::= '(' Identifier [ ',' Identifier ] ')'                */
+/*---------------------------------------------------------------------------*/
+
+static struct treenode *_unur_Expression (struct parser_data *pdata);
+/*---------------------------------------------------------------------------*/
+/*  Expression ::= SimpleExpression [ RelationOperator SimpleExpression ]    */ 
+/*---------------------------------------------------------------------------*/
+
+static struct treenode *_unur_SimpleExpression (struct parser_data *pdata);
+/*---------------------------------------------------------------------------*/
+/*  SimpleExpression ::= STerm { AddingOperator Term }                       */
+/*---------------------------------------------------------------------------*/
+
+static struct treenode *_unur_STerm (struct parser_data *pdata);
+/*---------------------------------------------------------------------------*/
+/*  STerm ::= [ '+' | '-' ] Term                                             */
+/*---------------------------------------------------------------------------*/
+
+static struct treenode *_unur_Term (struct parser_data *pdata);
+/*---------------------------------------------------------------------------*/
+/*  Term ::= Factor [ MultiplyingOperator Factor ]                           */
+/*---------------------------------------------------------------------------*/
+
+static struct treenode *_unur_Factor (struct parser_data *pdata);
+/*---------------------------------------------------------------------------*/
+/*  Factor ::= Base [ '^' Exponent ]                                         */
+/*---------------------------------------------------------------------------*/
+
+static struct treenode *_unur_Bas_Exp (struct parser_data *pdata);
+/*---------------------------------------------------------------------------*/
+/*  Base ::= Exponent                                                        */
+/*  Exponent ::= UnsignedConstant | Identifier | FunctDesignator |           */ 
+/*               "not" Base | '(' Expression ')'                             */ 
+/*---------------------------------------------------------------------------*/
+
+static struct treenode *_unur_FunctDesignator (struct parser_data *pdata);
+/*---------------------------------------------------------------------------*/
+/*  FunctDesignator ::= FuncIdentifier '(' ActualParameterlist ')'           */
+/*---------------------------------------------------------------------------*/
+
+static struct treenode *_unur_ActualParameterlist (struct parser_data *pdata, int n_params);
+/*---------------------------------------------------------------------------*/
+/*  ActualParameterlist ::= ActualParameter [ ',' ActualParameter ]          */
+/*---------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+static int _unur_fstr_next_token (struct parser_data *pdata, int *token, char **symbol);
+/*---------------------------------------------------------------------------*/
+/* Get next token from list.                                                 */
+/*---------------------------------------------------------------------------*/
+
+static struct treenode *_unur_fstr_create_node (char *symb, int token,
+						struct treenode *left,
+						struct treenode *right);
+/*---------------------------------------------------------------------------*/
+/* Create new node.                                                          */
+/*---------------------------------------------------------------------------*/
+
+static struct treenode *
+_unur_fstr_simplification (char *symb, int token, struct treenode *left, struct treenode *right);
+/*---------------------------------------------------------------------------*/
+/* Try to simpify nodes.                                                     */
+/*---------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------*/
+/* Error.                                                                    */                      
+/*---------------------------------------------------------------------------*/
+
+static void _unur_fstr_error_scan (const struct parser_data *pdata, const char *symb);
+/*---------------------------------------------------------------------------*/
+/* Print error message when scanning function string.                        */
+/*---------------------------------------------------------------------------*/
+
+static struct treenode *_unur_fstr_error_parse ( struct parser_data *pdata, int errno );
+/*---------------------------------------------------------------------------*/
+/* Print error message when parsing function string.                         */
+/*---------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------*/
+#ifdef UNUR_ENABLE_LOGGING
+/*---------------------------------------------------------------------------*/
+/* the following functions print debugging information on output stream,     */
+/* i.e., into the log file if not specified otherwise.                       */
+/*---------------------------------------------------------------------------*/
+
+static void _unur_fstr_debug_input ( const char *fstr );
+/*---------------------------------------------------------------------------*/
+/* Print function string on output stream.                                   */
+/*---------------------------------------------------------------------------*/
+
+static void _unur_fstr_debug_token ( const struct parser_data *pdata );
+/*---------------------------------------------------------------------------*/
+/* Print tokenized string on output stream.                                  */
+/*---------------------------------------------------------------------------*/
+
+static void _unur_fstr_debug_tree( const struct parser_data *pdata,
+				   const struct treenode *root );
+/*---------------------------------------------------------------------------*/
+/* Print function tree.                                                      */
+/*---------------------------------------------------------------------------*/
+
+static void _unur_fstr_debug_show_tree(const struct parser_data *pdata,
+				       const struct treenode *node,
+				       int level, int location);
+/*---------------------------------------------------------------------------*/
+/* Print function tree by recursion.                                         */
+/*---------------------------------------------------------------------------*/
+
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+#endif
+/*---------------------------------------------------------------------------*/
+
+/*****************************************************************************/
+/** API                                                                     **/
+/*****************************************************************************/
+
+struct treenode *
+_unur_fstr2tree(char *functstr)
+
+/*  Wandelt den String 'functstr' in einen Parse-Baum um. 'functstr' muss 
+ *  in der Form f(a,b,...)=Expression vorliegen. In *errcodep und *errposp 
+ *  wird im Fehlerfall eine Fehlernummer und die -position im String 
+ *  'functstr' zurueckgegeben, sonst ist *errcodep Null. 
+ */ 
+{ 
+  struct parser_data *pdata;
+  struct treenode *root;
+
+#ifdef UNUR_ENABLE_LOGGING
+  /* write info into log file */
+  if (_unur_default_debugflag)
+    _unur_fstr_debug_input(functstr);
+#endif
+
+  /* initialize parser */
+  pdata = _unur_fstr_parser_init(functstr);
+
+  /* tokenize function string */
+  _unur_fstr_tokenize(pdata);
+
+#ifdef UNUR_ENABLE_LOGGING
+  /* write info into log file */
+  if (_unur_default_debugflag)
+    _unur_fstr_debug_token(pdata);
+#endif
+
+  /* exit in case of error */
+  if (pdata->errno) {
+    _unur_fstr_parser_free(pdata);
+    return NULL;
+  }
+
+  /* parse list of token */
+  root = _unur_FunctDefinition(pdata);
+
+#ifdef UNUR_ENABLE_LOGGING
+  /* write info into log file */
+  if (_unur_default_debugflag)
+    _unur_fstr_debug_tree(pdata,root);
+#endif
+
+  /* check for possible errors */
+  if (pdata->tno < pdata->n_tokens && !pdata->errno)
+    _unur_fstr_error_parse(pdata,6); 
+  if (pdata->errno) {
+    _unur_fstr_parser_free(pdata);
+    _unur_fstr_free(root);
+    return NULL;
+  }
+
+  /* free working space */
+  _unur_fstr_parser_free(pdata);
+
+  /* return pointer to function tree */
+  return root; 
+} /* end of _unur_fstr2tree() */
+
+/*---------------------------------------------------------------------------*/
+
+double
+_unur_fstr_eval_tree(struct treenode *root, double x)
+     /*----------------------------------------------------------------------*/
+     /* Evaluate function tree at x                                          */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   root ... pointer to root of function tree                          */
+     /*   x    ... argument for which function should be evaluated           */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   result of computation                                              */
+     /*----------------------------------------------------------------------*/
+{  
+  if (root->symbol[0] == '=')    /** TODO: gefaehrlich wegen "==" **/
+    return _unur_fstr_eval_node( root->right, x );
+  else
+    return _unur_fstr_eval_node( root, x );
+} /* end of _unur_fstr_eval_tree() */
+
+/*---------------------------------------------------------------------------*/
+
+void
+_unur_fstr_free (struct treenode *root)  
+     /*----------------------------------------------------------------------*/
+     /* Destroy function tree.                                               */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   root ... pointer to root of function tree                          */
+     /*----------------------------------------------------------------------*/
+{ 
+  if( root != NULL ) {
+    _unur_fstr_free(root->right); 
+    _unur_fstr_free(root->left); 
+    free(root); 
+  } 
+} /* end of _unur_fstr_free() */
+
+/*---------------------------------------------------------------------------*/
+
+/*****************************************************************************/
+/** Evaluate function                                                       **/
+/*****************************************************************************/
+
+double
+_unur_fstr_eval_node (struct treenode *node, double x)
+     /*----------------------------------------------------------------------*/
+     /* Evaluate function tree starting from `node' at x                     */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   root ... pointer to node in function tree                          */
+     /*   x    ... argument for which function should be evaluated           */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   result of computation                                              */
+     /*----------------------------------------------------------------------*/
+{
+  double val_l, val_r;
+
+  switch (node->symbkind) {
+  case S_UCONST:
+  case S_SCONST:
+    /* node contains constant */
+    return node->val;
+
+  case S_UIDENT:
+    /* variable */
+    return x;
+
+  default:
+    /* use evaluation function */
+    /* compute values at leaves */
+    val_l = (node->left)  ? _unur_fstr_eval_node(node->left, x) : 0. ;
+    val_r = (node->right) ? _unur_fstr_eval_node(node->right,x) : 0. ;
+
+    return (*symbol[node->token].vcalc)(val_l,val_r);
+  }
+} /* end of _unur_fstr_eval_node() */
+
+/*---------------------------------------------------------------------------*/
+
+/*****************************************************************************/
+/** Initialize and destroy parser                                           **/
+/*****************************************************************************/
+
+/*---------------------------------------------------------------------------*/
+
+struct parser_data *
+_unur_fstr_parser_init ( const char *fstr )
+     /*----------------------------------------------------------------------*/
+     /* Create and initialize parser object for given function string.       */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   fstr ... string containing function definition                     */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to created and initialized parser object                   */
+     /*----------------------------------------------------------------------*/
+{
+  static int symbols_initialized = FALSE;
+  struct parser_data *pdata;
+
+  /* first we have to prepare the table of known symbols */
+  if (symbols_initialized == FALSE) {
+    _unur_fstr_symbols_init();
+    symbols_initialized = TRUE;
+  }
+
+  /* allocate memory for parser object */
+  pdata = _unur_malloc(sizeof(struct parser_data));
+
+  /* make a working copy of the function string,                */
+  /* remove all white spaces and convert to lower case letters. */
+  pdata->fstr = _unur_parser_prepare_string(fstr);
+  pdata->len_fstr = strlen(pdata->fstr);
+
+  /* make arrays to store tokens in string */
+  pdata->token = _unur_malloc( (pdata->len_fstr+1) * sizeof(int) );
+  pdata->tpos  = _unur_malloc( pdata->len_fstr * sizeof(char *) );
+  pdata->tstr  = _unur_malloc( (2*pdata->len_fstr+1) * sizeof(char) );
+
+  /* initialize arrays */
+  pdata->n_tokens = 0;
+  memset(pdata->token,0,pdata->len_fstr);
+  memset(pdata->tpos,0,pdata->len_fstr);
+  memset(pdata->tstr,'\0',pdata->len_fstr);
+
+  /* initialize for scanning */
+  pdata->scanpos = 0;     /* scan position at beginning */
+  pdata->lastpos = -1;
+  pdata->errno = 0;
+
+  /* names of user defined symbols */
+  pdata->variable_name = NULL;
+  pdata->function_name = NULL;
+
+  /* initialize data for parsing */
+  pdata->tno = 0;
+
+  /* return pointer to parser object */
+  return pdata;
+
+} /* end of _unur_fstr_parser_init() */
+
+/*---------------------------------------------------------------------------*/
+
+void
+_unur_fstr_symbols_init (void)
+     /*----------------------------------------------------------------------*/
+     /* Prepare table of known symbols for usage.                            */
+     /*                                                                      */
+     /* parameters: none                                                     */
+     /*----------------------------------------------------------------------*/
 {
   int i = -1;
   char *s;
@@ -303,6 +681,9 @@ void  _unur_fstr_init(void)
   /* size of symbol table */
   n_symbols = i;
 
+  s_comma = _unur_fstr_find_symbol(",",0,n_symbols);
+
+#if 0
   /* find location of marker for user defined constant */
   uconst = find_symbol_in_table("UCONST",0,n_symbols);
 
@@ -316,241 +697,319 @@ void  _unur_fstr_init(void)
   xxxmul = find_symbol_in_table("*",0,n_symbols);
   xxxdiv = find_symbol_in_table("/",0,n_symbols);
 
-  xxxcomma = find_symbol_in_table(",",0,n_symbols);
 
-  /** error check **/
+#endif
+} /* end of _unur_fstr_symbols_init() */
 
+/*---------------------------------------------------------------------------*/
 
-  /* --- Benutzerdefinierte Eintraege loeschen: --- */
-
-  memset(variable,'\0',SYMBLENGTH);
-
-}
-
-/*********************************** ************************************/
-
-
-
-/************************************************************************/
-
-void show_symb_tab(void)         /* Gibt die aktuelle Symboltabelle aus */
+void
+_unur_fstr_parser_free ( struct parser_data *pdata )
+     /*----------------------------------------------------------------------*/
+     /* Destroy parser object.                                               */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   pdata ... pointer to parser object                                 */
+     /*----------------------------------------------------------------------*/
 {
-  int i = 0;
+  if (pdata) {
+    free(pdata->fstr);
+    free(pdata->token);
+    free(pdata->tpos);
+    free(pdata->tstr);
+    free(pdata);
+  }
 
-  printf("\nSymboltabelle:\n");
-  do {
-    printf("%4d: %7s inf:%3d val:%f \n",
-	   i, symbol[i].name,symbol[i].info,symbol[i].val);
-  } while (!(strcmp(symbol[++i].name,"_END") == 0));
+} /* end of _unur_fstr_parser_free() */
 
-}
-/************************************************************************/
+/*---------------------------------------------------------------------------*/
 
-int nxt_symbol (struct parser_data *pdata, char *symb)
+/*****************************************************************************/
+/** Scan function string                                                    **/
+/*****************************************************************************/
 
-/*  int nxt_symbol (char *fstr, int *scanpos, char *symb, int *errcodep, int *errposp) */
+/*---------------------------------------------------------------------------*/
 
-/*  Liefert aus dem String 'fstr' das naechste Symbol ab der
- *  Position 'scanpos' und speichert es in 'symb'. 
- *  Nach der Bearbeitung zeigt *scanpos auf das Zeichen, 
- *  das dem ermittelten Symbol unmittelbar folgt. Leerzeichen
- *  werden ignoriert. In *tokenp wird der Index des Symbols in der
- *  Symboltabelle. geliefert. 
- *  *errposp zeigt auf das Zeichen, auf das *scanpos beim Aufruf zeigte.
- *  Der zurueckgelieferte Funktionswert der index des symbols in der Tabelle.
- */
+int
+_unur_fstr_tokenize (struct parser_data *pdata)
+     /*----------------------------------------------------------------------*/
+     /* Tokenize function string                                             */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   pdata ... pointer to parser object                                 */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   error code of called subroutines                                   */
+     /*----------------------------------------------------------------------*/
+{
+  int token;
 
+  int n_token = 0;                    /* counter for token      */
+  char *symb = pdata->tstr;       /* array to store token   */
+
+  /* locate token in function string and copy into token string */
+  while ((token = _unur_fstr_next_symbol(pdata,symb)) != S_NOSYMBOL) {
+    pdata->token[n_token] = token;    /* marker for token */
+    pdata->tpos[n_token] = symb;  /* name of token    */
+    n_token++;                        /* increment counter for tokens */
+    symb += pdata->scanpos - pdata->lastpos + 1;  /* skip to unused space in string */ 
+  }
+
+  /* store total number of tokens */
+  pdata->n_tokens = n_token;
+
+  /* set token pointer to first token */
+  pdata->tno = 0;
+
+  /* return error code */
+  return pdata->errno;
+
+} /* end of _unur_fstr_tokenize() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+_unur_fstr_next_symbol (struct parser_data *pdata, char *symb)
+     /*----------------------------------------------------------------------*/
+     /* Get next symbol in function string.                                  */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   pdata ... pointer to parser object                                 */
+     /*   symb  ... pointer to array for storing symbol                      */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   error code of called subroutines                                   */
+     /*                                                                      */
+     /*                                                                      */
+     /*                                                                      */
+     /*----------------------------------------------------------------------*/
 {
   int token;
   int errcode = 0;
   char c;
 
-
-#if 0
-  if (pdata->lastpos == pdata->scanpos) {
-    /* we already have read the next token */
-    /* update scan position */
-    pdata->scanpos = pdata->lastpos + pdata->length_token;
-    /* return last scanned token */
-    return pdata->token;
-  }
-#endif
-
-#if 1
-  int lastpos = pdata->lastpos;
-  int newpos = pdata->lastpos + pdata->length_token;
-  int read = (pdata->lastpos == pdata->scanpos);
-#endif
-
   /* store position of pointer */
   pdata->lastpos = pdata->scanpos;
-  
-  printf("scan = %d, len = %d\n",pdata->scanpos,strlen(pdata->fstr));
-  printf("%s<<\n",pdata->fstr + pdata->scanpos);
 
-  if (pdata->scanpos > strlen(pdata->fstr))
+  if (pdata->scanpos >= pdata->len_fstr)
     /* end of string */
-    return 1;
+    return S_NOSYMBOL;
   
+  /* next character in string */
   c = pdata->fstr[pdata->scanpos];
-  
-  if ( (c >= '0' && c <= '9') || c == '.') {           /* UnsignedConstant */
-    errcode = get_uc_symbol(pdata->fstr,&(pdata->scanpos),symb);
-    token = uconst;
+
+  /* new get next symbol in list */
+  if ( (c >= '0' && c <= '9') || c == '.') {
+    /* Unsigned Constant */
+    _unur_fstr_UnsignedConstant(pdata,symb);
+    token = s_uconst;
   }
 
-  else if (c >=  'a' && c <= 'z') {                       /* Identifier */
-    errcode = get_id_symbol(pdata->fstr,&(pdata->scanpos),symb);
+  else if (c >=  'a' && c <= 'z') {
+    /* Identifier */
+    _unur_fstr_Identifier(pdata,symb);
 
-    if ( ( (token = find_symbol_in_table(symb,aos,sfe)) <= 0 ) && 
-	 ( (token = find_user_defined(symb,pdata->fstr[pdata->scanpos])) <= 0 ) )
+    if ( ( (token = _unur_fstr_find_symbol(symb,aos,sfe)) == 0 ) && 
+	 ( (token = _unur_fstr_find_user_defined(pdata,symb,pdata->fstr[pdata->scanpos])) <= 0 ) )
       errcode = 4;
   }
 
-  else if ( c == '<' || c == '>' ) {              /* relation symbol */
-    errcode = get_ro_symbol(pdata->fstr,&(pdata->scanpos),symb);
-    if ((token = find_symbol_in_table(symb,ros,roe)) <= 0 )
+  else if ( c == '<' || c == '>' || c == '=' ) {
+    /* Relation Operator */
+    _unur_fstr_RelationOperator(pdata,symb);
+
+    if ((token = _unur_fstr_find_symbol(symb,ros,roe)) <= 0 )
       errcode = 4;
   }
 
   else {
-    symb[0] = c; symb[1] = '\0';           /* alle anderen Zeichen */
+    symb[0] = c; symb[1] = '\0';           /* all other charactors */
     (pdata->scanpos)++;
-    if ((token = find_symbol_in_table(symb,ros,sfe)) <= 0 )
+    if ((token = _unur_fstr_find_symbol(symb,ros,sfe)) <= 0 )
       errcode = 4;
   }
 
   /* set errorcode */
   pdata->errno = errcode;
 
-  if (read) printf("READ!\n");
-  printf("last = %d, new = %d, token = %d\n", lastpos, newpos, pdata->token);
-  printf("          new = %d, token = %d\n\n", pdata->scanpos, token);
-
-  /* store token and length of token */
-  pdata->token = (errcode) ? 0 : token;
-  pdata->length_token = pdata->scanpos - pdata->lastpos;
-
-  return pdata->token;
-}
-
-/*********************************** ************************************/
-
-/*********************************** ************************************/
-
-static int get_uc_symbol(char *fstr, int *scanpos, char *uc)
-     /* get unsigned constant */
-/* UnsignedConstant ::= UnsignedInteger | UnsignedReal
- * UnsignedInteger  ::= DigitSequence
- * UnsignedReal ::= UnsignedInteger '.' DigitSequence ['E' ScaleFactor] |
- *                  UnsignedInteger 'E' ScaleFactor
- */
-
-{
-  /* store scan position */
-  int startpos = *scanpos;
-
-  /* copy digit sequence into uc */
-  get_ds(fstr,scanpos,uc);
-
-  if( fstr[*scanpos] == '.' ) {
-    /* decimal point  --> copy point and following digits */
-    *(uc + (*scanpos-startpos)) = '.';
-    (*scanpos)++;
-    get_ds(fstr,scanpos,uc+(*scanpos-startpos));
+  if (errcode) {
+    _unur_fstr_error_scan (pdata,symb);
   }
 
-  if( fstr[*scanpos] == 'e' ) {
+  return (errcode) ? S_NOSYMBOL : token;
+
+} /* end of _unur_fstr_next_symbol() */
+
+/*---------------------------------------------------------------------------*/
+
+int 
+_unur_fstr_UnsignedConstant (struct parser_data *pdata, char *uc)
+     /*----------------------------------------------------------------------*/
+     /* Get Unsigned Constant                                                */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   pdata ... pointer to parser object                                 */
+     /*   uc    ... pointer to array for storing symbol                      */
+     /*                                                                      */
+     /* Syntax:                                                              */
+     /*   UnsignedConstant ::= UnsignedInteger | UnsignedReal                */
+     /*   UnsignedInteger  ::= DigitSequence                                 */
+     /*   UnsignedReal ::= UnsignedInteger ['.' DigitSequence] ['e' ScaleFactor] */
+     /*                                                                      */
+     /*----------------------------------------------------------------------*/
+{
+  /* store scan position */
+  int startpos = pdata->scanpos;
+
+  /* copy digit sequence into uc */
+  _unur_fstr_DigitalSequence(pdata,uc);
+
+  if( pdata->fstr[pdata->scanpos] == '.' ) {
+    /* decimal point  --> copy point and following digits */
+    *(uc + pdata->scanpos - startpos) = '.';
+    (pdata->scanpos)++;
+    _unur_fstr_DigitalSequence(pdata, uc + pdata->scanpos - startpos);
+  }
+
+  if( pdata->fstr[pdata->scanpos] == 'e' ) {
     /* exponent --> copy indicator 'E' and following [sign and] digits */
-    *(uc + (*scanpos-startpos)) = 'e';
-    (*scanpos)++;
-    get_sf(fstr,scanpos,uc+(*scanpos-startpos));
+    *(uc + pdata->scanpos - startpos) = 'e';
+    (pdata->scanpos)++;
+    _unur_fstr_ScaleFactor(pdata, uc + pdata->scanpos - startpos);
   }
 
   return 0;
-}
+} /* end of _unur_fstr_UnsignedConstant() */
 
-/*********************** *********************** ************************/
+/*---------------------------------------------------------------------------*/
 
-static void get_ds(char *fstr, int *scanpos, char *ds)
-     /* get digital sequence */
-/*  DigitSequence   ::= Digit [ Digit ]
- *  Digit           ::= '0' | '1' | '2' | ... | '8' | '9'
- */
-
+int
+_unur_fstr_DigitalSequence (struct parser_data *pdata, char *ds)
+     /*----------------------------------------------------------------------*/
+     /* Get Digital Sequence                                                 */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   pdata ... pointer to parser object                                 */
+     /*   ds    ... pointer to array for storing symbol                      */
+     /*                                                                      */
+     /* Syntax:                                                              */
+     /*   DigitSequence ::= Digit [ Digit [...] ]                            */
+     /*   Digit         ::= '0' | '1' | '2' | ... | '8' | '9'                */
+     /*----------------------------------------------------------------------*/
 {
   /* copy digit */
-  while ( (*ds = fstr[*scanpos]) >= '0' && *ds <= '9' ) {
+  while ( (*ds = pdata->fstr[pdata->scanpos]) >= '0' && *ds <= '9' ) {
      ds++;
-     (*scanpos)++;
+     (pdata->scanpos)++;
   }
   /* terminate string */
   *ds = '\0';
-}
 
-/*********************** *********************** ************************/
+  return 0;
+} /* end of _unur_fstr_DigitalSequence() */
 
-static void get_sf(char *fstr, int *scanpos, char *sf)
-     /* get ??????  */
-/*  ScaleFactor ::= [Sign] DigitSequence
- *  Sign        ::= '+' | '-'
- */
+/*---------------------------------------------------------------------------*/
 
+int 
+_unur_fstr_ScaleFactor (struct parser_data *pdata, char *sf)
+     /*----------------------------------------------------------------------*/
+     /* Get Scale Factor                                                     */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   pdata ... pointer to parser object                                 */
+     /*   sf    ... pointer to array for storing symbol                      */
+     /*                                                                      */
+     /* Syntax:                                                              */
+     /*   ScaleFactor ::= [Sign] DigitSequence                               */
+     /*   Sign        ::= '+' | '-'                                          */
+     /*----------------------------------------------------------------------*/
 {
   /* copy sign */
-  if ( (sf[0]=fstr[*scanpos]) == '+' || sf[0] == '-' ) {
+  if ( (sf[0] = pdata->fstr[pdata->scanpos]) == '+' || sf[0] == '-' ) {
      sf++;
-     (*scanpos)++;
+     (pdata->scanpos)++;
   }
   /* copy digital sequence (after sign) */
-  get_ds(fstr,scanpos,sf);
-}
+  _unur_fstr_DigitalSequence(pdata,sf);
 
-/*********************************** ************************************/
+  return 0;
+} /* _unur_fstr_ScaleFactor() */
 
-static int get_id_symbol(char *fstr, int *scanpos, char *id)
+/*---------------------------------------------------------------------------*/
 
-/*  Identifier ::= Letter [ Letter | Digit ]
- *  Letter     ::= 'a' | 'b' | ... | 'z' | '_'
- *  Digit      ::= '0' | '1' | ... | '9'
- */
-
+int
+_unur_fstr_Identifier (struct parser_data *pdata, char *id)
+     /*----------------------------------------------------------------------*/
+     /* Get Identifier                                                       */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   pdata ... pointer to parser object                                 */
+     /*   id    ... pointer to array for storing symbol                      */
+     /*                                                                      */
+     /* Syntax:                                                              */
+     /*   Identifier ::= Letter [ Letter | Digit [...] ]                     */
+     /*   Letter     ::= 'a' | 'b' | ... | 'z' | '_'                         */
+     /*   Digit      ::= '0' | '1' | ... | '9'                               */
+     /*----------------------------------------------------------------------*/
 {
   /* copy word */
-  while ( ((*id = fstr[(*scanpos)]) >= 'a' && *id <= 'z')
+  while ( ((*id = pdata->fstr[pdata->scanpos]) >= 'a' && *id <= 'z')
 	  || *id == '_' 
 	  || ( *id >= '0' && *id <= '9')) {
     id++;
-    (*scanpos)++;
+    (pdata->scanpos)++;
   }
   /* terminate string */
   *id = '\0';
 
   return 0;
-}
+} /* end of _unur_fstr_Identifier() */
 
-/*********************************** ************************************/
+/*---------------------------------------------------------------------------*/
 
-static int get_ro_symbol(char *fstr, int *scanpos, char *ro)
-     /*  *le='<','<=','<>'. */   /*  *ge= '>' oder '>='.*/
+int
+_unur_fstr_RelationOperator (struct parser_data *pdata, char *ro)
+     /*----------------------------------------------------------------------*/
+     /* Get Relation Operator                                                */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   pdata ... pointer to parser object                                 */
+     /*   ro    ... pointer to array for storing symbol                      */
+     /*                                                                      */
+     /* Syntax:                                                              */
+     /*   RelationOperator ::= RelationChar [ RelationChar ]                 */ 
+     /*   RelationChar     ::= '<' | '=' | '>'                               */
+     /*----------------------------------------------------------------------*/
 {
   /* copy relation operator */
-  while ((*ro = fstr[*scanpos]) == '<' || *ro == '=' || *ro == '>') {
+  while ((*ro = pdata->fstr[pdata->scanpos]) == '<' || *ro == '=' || *ro == '>') {
     ro++;
-    (*scanpos)++;
+    (pdata->scanpos)++;
   }
   /* terminate string */
   *ro = '\0';
 
   return 0;
-}
-/*********************************** ************************************/
+} /* _unur_fstr_RelationOperator() */
 
-/*********************************** ************************************/
+/*---------------------------------------------------------------------------*/
 
-int find_symbol_in_table(char *symb, int start, int end)
-     /* find symbol in table between postion start+1 and end-1 */
-     /* return 0 of not found */
+int
+_unur_fstr_find_symbol (char *symb, int start, int end)
+     /*----------------------------------------------------------------------*/
+     /* find symbol in table between position (start+1) and (end-1)          */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   symb  ... symbol to look for                                       */
+     /*   start ... starting point for searching                             */
+     /*   end   ... endpoint for searching                                   */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   location in table                                                  */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return 0                                                           */
+     /*----------------------------------------------------------------------*/
 {
   int i;
 
@@ -561,268 +1020,261 @@ int find_symbol_in_table(char *symb, int start, int end)
   /* return location if symbol found and 0 otherwise */
   return ((i < end ) ? i : 0);
 
-}
+} /* end of _unur_fstr_find_symbol() */
 
-/*********************************** ************************************/
+/*---------------------------------------------------------------------------*/
 
-int find_user_defined(char *symb, int nxt_c)
+int
+_unur_fstr_find_user_defined (struct parser_data *pdata, char *symb, char next_char)
+     /*----------------------------------------------------------------------*/
+     /* Find user defined symbol.                                            */
+     /* If there are no user defined symbols yet, store it.                  */
+     /* If there are already user defined symbols, and this one is new,      */
+     /* make return an errorcode.                                            */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   pdata     ... pointer to parser object                             */
+     /*   symb      ... symbol to look for                                   */
+     /*   next_char ... character following given symbol                     */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   location in table                                                  */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return 0                                                           */
+     /*----------------------------------------------------------------------*/
 {
-  /* symbol not in table */
+  /* we use next_char to distinguish between variables and functions */
 
-  if (nxt_c == '(') {
-    /* --- Symbol ist Userdefined Function --- */
-    /* we do not store symbol but use "UFUNCT" instead */
-    return ufunct;
-  }
-    
-  else {
-    /* --- Symbol is variable  (Userdefined Identifier) --- */
-    
-    if (variable[0] == '\0')
-      /* new variable --> store name */
-      strcpy(variable,symb);   /** TODO: array-grenzen **/
+  if (next_char == '(') {
+    /* symbol is user defined function */
+    if (pdata->function_name == NULL) {
+      /* new function --> store name */
+      pdata->function_name = symb;
+      /* return marker for user defined identifier */
+      return s_ufunct;
+    }
     else
       /* the identifier name must match with variable name */
-      if (strcmp(variable,symb) != 0) return 0;
-    
-    /* we use the marker for user defined identifier for variables */
-    return uident;
+      return (strcmp(pdata->function_name,symb) == 0) ? s_ufunct : 0;
   }
-}
+ 
+  else {
+    /* symbol is user defined identifier (i.e. a variable) */
+    if (pdata->variable_name == NULL) {
+      /* new variable --> store name */
+      pdata->variable_name = symb;
+      /* return marker for user defined identifier */
+      return s_uident;
+    }
+    else
+      /* the identifier name must match with variable name */
+      return (strcmp(pdata->variable_name,symb) == 0) ? s_uident : 0;
+  }
 
-/*********************************** ************************************/
+} /* end of _unur_fstr_find_user_defined() */
 
-/************************************************************************/ 
+/*****************************************************************************/
+/** Parser                                                                  **/
+/*****************************************************************************/
 
 struct treenode *
-string2tree (char *functstr, int *errcodep, int *errposp) 
-
-/*  Wandelt den String 'functstr' in einen Parse-Baum um. 'functstr' muss 
- *  in der Form f(a,b,...)=Expression vorliegen. In *errcodep und *errposp 
- *  wird im Fehlerfall eine Fehlernummer und die -position im String 
- *  'functstr' zurueckgegeben, sonst ist *errcodep Null. 
- */ 
-
+_unur_FunctDefinition (struct parser_data *pdata)
+     /*----------------------------------------------------------------------*/
+     /* Get user defined function.                                           */
+     /*                                                                      */
+     /*  FunctDefinition ::= DefFunctDesignator '=' Expression               */
+     /*                                                                      */
+     /*                    '='                                               */
+     /*                   /   \                                              */
+     /*  DefFunctDesignator     Expression                                   */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   pdata     ... pointer to parser object                             */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to function tree                                           */
+     /*----------------------------------------------------------------------*/
 { 
-  struct parser_data pdata;
-  struct treenode *root;
-  char *fstr;
-
-  fstr = _unur_prepare_string(functstr);
-
-  pdata.fstr = fstr;
-  pdata.scanpos = 0;
-  pdata.lastpos = -1;
-  pdata.errno = 0;
-  pdata.token = 0;
-  pdata.length_token = -1;
-
-  root = FuncDefinition(&pdata);
-
-  if (pdata.scanpos != strlen(fstr)) {
-    free (fstr);
-    set_err(11,&pdata); 
-    *errcodep = pdata.errno;
-    *errposp  = pdata.lastpos;
-    return NULL;
-  }
-
-  *errcodep = pdata.errno;
-  *errposp  = pdata.lastpos;
-
-  free (fstr);
-  return root; 
-} 
-
-/*********************************** ************************************/ 
-
-static struct treenode *
-FuncDefinition (struct parser_data *pdata)
-
-/*  FuncDefinition ::= DefFunctDesignator '=' Expression 
- * 
- *                    '=' 
- *                   /   \ 
- *  DefFunctDesignator     Expression 
- */ 
-
-{ 
-  struct treenode *root, *l, *r; 
-  char            symb[SYMBLENGTH]; 
-  int             t, ft; 
+  struct treenode *node, *left, *right; 
+  char            *symb;
+  int             token; 
 
   /* left hand side: DefFunctDesignator */
-  l = _unur_DefFunctDesignator(pdata,&ft);
-
-  /* we do not use this information yet --> ignore any error message */
+  left = _unur_DefFunctDesignator(pdata);
   if (pdata->errno) return NULL;
 
-  t = nxt_symbol(pdata,symb);
+  /* next token must be "=" sign */
+  if ( _unur_fstr_next_token(pdata,&token,&symb) == FALSE ||
+       strcmp(symb,"=") != 0 )
+    return _unur_fstr_error_parse(pdata,12); 
 
-  if (strcmp(symb,"=") != 0) 
-    return set_err(12,pdata); 
-
-  r = _unur_Expression(pdata);
-
+  /* right hand side: function term */
+  right = _unur_Expression(pdata);
   if (pdata->errno) return NULL;
 
-  root = create_node(symb,t,l,r); 
+  /* store function in node */
+  node = _unur_fstr_create_node(symb,token,left,right); 
 
-  symbol[ft].tree = root; 
+  /* return pointer to function */
+  return node; 
+} /* end of _unur_FunctDefinition() */
 
-  return root; 
-} 
-
-/*********************** *********************** ************************/ 
+/*---------------------------------------------------------------------------*/
 
 struct treenode *
-_unur_DefFunctDesignator (struct parser_data *pdata, int *ftp) 
-
-/*  DefFunctDesignator ::= Identifier '(' DefParameterlist ')' 
- * 
- *       Identifier 
- *      /          \ 
- *  NULL            DefParameterlist 
- */ 
-
+_unur_DefFunctDesignator (struct parser_data *pdata) 
+     /*----------------------------------------------------------------------*/
+     /* Definition of user defined function.                                 */
+     /*                                                                      */
+     /*  DefFunctDesignator ::= Identifier '(' DefParameterlist ')'          */
+     /*                                                                      */
+     /*       Identifier                                                     */
+     /*      /          \                                                    */
+     /*  NULL            DefParameterlist                                    */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   pdata     ... pointer to parser object                             */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to function tree                                           */
+     /*----------------------------------------------------------------------*/
 { 
   struct treenode *node, *params; 
-  char            fsymb[SYMBLENGTH]; 
+  char            *fsymb, *symb;
   int             n_params; 
-  int  funct;
+  int             funct, token;
 
   /* get function identifier */
-  funct = nxt_symbol(pdata,fsymb);
-  if (pdata->errno) return NULL;
-
-  /* this must be a user defined function of course */
-  if (symbol[funct].type != UFUNCS) return set_err(13,pdata); 
+  if ( _unur_fstr_next_token(pdata,&funct,&fsymb) == FALSE ||
+       symbol[funct].type != S_UFUNCT )
+    return _unur_fstr_error_parse(pdata,13); 
 
   /* read opening parenthesis '(' */
-  if ( pdata->fstr[(pdata->scanpos)++] != '(' )  return set_err(14,pdata);
+  if ( _unur_fstr_next_token(pdata,&token,&symb) == FALSE ||
+       symb[0] != '(' )
+    return _unur_fstr_error_parse(pdata,14); 
 
   /* read the parameter list */
   params = _unur_DefParameterlist(pdata,&n_params);
   if (pdata->errno) return NULL;
 
   /* read closing parenthesis ')' */
-  if ( pdata->fstr[(pdata->scanpos)++] != ')' )  return set_err(15,pdata);
+  if ( _unur_fstr_next_token(pdata,&token,&symb) == FALSE ||
+       symb[0] != ')' )
+    return _unur_fstr_error_parse(pdata,15); 
 
   /* store function header in node */
-  node = create_node(fsymb,funct,NULL,params); 
+  node = _unur_fstr_create_node(fsymb,funct,NULL,params); 
 
-  /* store index */
-  *ftp = funct;
-  
   /* return pointer to function desigatior */
   return node;
 } /* end of _unur_DefFunctDesignator() */
 
-/**************** ****************** ****************** *****************/ 
+/*---------------------------------------------------------------------------*/
 
 struct treenode *
 _unur_DefParameterlist(struct parser_data *pdata, int *n_params) 
-
-/*  DefParameterlist ::= '(' Identifier [ ',' Identifier ] ')' 
- * 
- *       Identifier                                    ',' 
- *      /          \      oder:                       /   \ 
- *  NULL            NULL         more identifiers tree     Identifier 
- *                                                        /          \ 
- *                                                    NULL            NULL 
- */ 
-
+     /*----------------------------------------------------------------------*/
+     /* Parameter list for user defined function.                            */
+     /*                                                                      */
+     /*  DefParameterlist ::= '(' Identifier [ ',' Identifier ] ')'          */
+     /*                                                                      */
+     /*       Identifier                                 ','                 */
+     /*      /          \      or:                      /   \                */
+     /*  NULL            NULL      more identifiers tree     Identifier      */
+     /*                                                     /          \     */
+     /*                                                 NULL            NULL */
+     /* parameters:                                                          */
+     /*   pdata     ... pointer to parser object                             */
+     /*   n_params  ... detected number of parameters for defined function   */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to function tree                                           */
+     /*----------------------------------------------------------------------*/
 { 
   struct treenode *node, *left, *right; 
-  char            symb[SYMBLENGTH]; 
+  char            *symb;
   int token;
 
-  /* read next symbol from string */
-  token = nxt_symbol(pdata,symb);
- 
-  /* this must be a user defined identifier (i.e., a variable) of course */ 
-  if (symbol[token].type != UIDENT) return set_err(16,pdata); 
+  /* read user defined identifier, i.e. a variable */ 
+  if ( _unur_fstr_next_token(pdata,&token,&symb) == FALSE ||
+       symbol[token].type != S_UIDENT )
+    return _unur_fstr_error_parse(pdata,16);
 
   /* make node for first parameter of function and set */
   /* counter for parameters to 1                       */
-  node = create_node(symb,token,NULL,NULL); 
+  node = _unur_fstr_create_node(symb,token,NULL,NULL); 
   *n_params = 1;
 
-  /* scan string while the character following the     */
-  /* scanposition is list separator `,'                */
-  while ( pdata->fstr[pdata->scanpos] == ',' ) {
-    /* increment scan position */
-    ++(pdata->scanpos);
+  /* scan token list while we find a list separator `,' */
+  while ( _unur_fstr_next_token(pdata,&token,&symb) == FALSE ||
+	  symb[0] == ',' ) {
 
     /* old node becomes left node of `,' node */
     left = node; 
 
     /* get next variable */
-    token = nxt_symbol(pdata,symb);
-    if (symbol[token].type != UIDENT) return set_err(17,pdata); 
+    if ( _unur_fstr_next_token(pdata,&token,&symb) == FALSE ||
+	 symbol[token].type != S_UIDENT )
+      return _unur_fstr_error_parse(pdata,17);
 
     /* make node for next variable (becomes right node) */
     /* and update counter for parameters                */
-    right = create_node(symb,token,NULL,NULL); 
+    right = _unur_fstr_create_node(symb,token,NULL,NULL); 
     (*n_params)++; 
 
     /* make node for `,' separator */
-    node = create_node(",",xxxcomma,left,right); 
+    node = _unur_fstr_create_node(",",s_comma,left,right); 
   }
-  
+
+  /* set token pointer to first element after parameter list */
+  --(pdata->tno);
+
   /* return pointer to parameter list */
   return node; 
 } /* end of _unur_DefParameterlist() */ 
 
-/*********************** *********************** ************************/ 
+/*---------------------------------------------------------------------------*/
 
-static struct treenode *
-set_err (int err_nr, struct parser_data *pdata)
-
-/*  Setzt *errcodep gleich err_nr und gibt NULL zurueck. */ 
-
-{ 
-  printf("\n%d %s",err_nr,errorstrings[err_nr]); 
-  if (pdata->errno) pdata->errno = err_nr;   /* nur den 1. Fehler melden */ 
-  return NULL; 
-} 
-
-/*********************** *********************** ************************/ 
-
-static struct treenode *
-_unur_Expression(struct parser_data *pdata)
-
-/* Expression ::= SimpleExpression [ RelationalOperator SimpleExpression ] 
- * 
- *                                     RelationalOperator 
- * SimpleExpression  oder:            /                  \ 
- *                    SimpleExpression                    SimpleExpression 
- */ 
-
+struct treenode *
+_unur_Expression (struct parser_data *pdata)
+     /*----------------------------------------------------------------------*/
+     /* Expression ::= SimpleExpression [ RelationOperator SimpleExpression ] */ 
+     /*                                                                      */
+     /*                                    RelationOperator                  */
+     /* SimpleExpression  or:             /                \                 */
+     /*                   SimpleExpression                  SimpleExpression */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   pdata     ... pointer to parser object                             */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to function tree                                           */
+     /*----------------------------------------------------------------------*/
 { 
   struct treenode *node, *left, *right; 
-  char            symb[SYMBLENGTH]; 
-  int             token, last_scanpos; 
+  char            *symb;
+  int             token;
 
   /* read simple expression from function string */
-  left = SimpleExpression(pdata);
+  left = _unur_SimpleExpression(pdata);
   if (pdata->errno) return NULL; 
 
-  /* save position and read next symbol */ 
-  last_scanpos = pdata->scanpos;
-  token = nxt_symbol(pdata,symb);
-
-  if( symbol[token].type == REL_OP ) {
+  /* get next token */
+  if ( _unur_fstr_next_token(pdata,&token,&symb) &&
+       symbol[token].type == S_REL_OP ) {
     /* relation operator  --> read r.h.s.*/
-    right = SimpleExpression(pdata);
+    right = _unur_SimpleExpression(pdata);
     if (pdata->errno) return NULL; 
     /* create a new node */
-    node = create_node(symb,token,left,right); 
+    node = _unur_fstr_create_node(symb,token,left,right); 
   }
 
   else {
     /* we only have a simple expression */
-    pdata->scanpos = last_scanpos; 
+    /* hence we set token pointer to get same token again */
+    --(pdata->tno);
     node = left; 
   } 
 
@@ -830,951 +1282,760 @@ _unur_Expression(struct parser_data *pdata)
   return node; 
 } /* end of _unur_Expression() */
 
-/**************** ****************** ****************** *****************/ 
+/*---------------------------------------------------------------------------*/
 
-static struct treenode *
-SimpleExpression(struct parser_data *pdata)
-
-/*  SimpleExpression ::= VTerm { AddingOperator Term } 
- * 
- *                                AddingOperator 
- *  VTerm  oder:                 /              \ 
- *                more terms tree                Term 
- */ 
-
+struct treenode *
+_unur_SimpleExpression (struct parser_data *pdata)
+     /*----------------------------------------------------------------------*/
+     /*  SimpleExpression ::= STerm { AddingOperator Term }                  */
+     /*                                                                      */
+     /*                                AddingOperator                        */
+     /*  STerm  or:                   /              \                       */
+     /*                more terms tree                Term                   */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   pdata     ... pointer to parser object                             */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to function tree                                           */
+     /*----------------------------------------------------------------------*/
 { 
-  struct treenode *root, *l, *r; 
-  char            symb[SYMBLENGTH]; 
-  int             t, xscanpos; 
+  struct treenode *node, *left, *right; 
+  char            *symb;
+  int             token;
 
-  root = VTerm(pdata);
-  if (pdata->errno) return NULL; 
-  xscanpos = pdata->scanpos;
-  t = nxt_symbol(pdata,symb);
+  /* get next Term in string */
+  node = _unur_STerm(pdata);
+  if (pdata->errno) return NULL;
 
-  while (symbol[t].type == ADD_OP) {
-     l = root; 
-     r = Term(pdata);
-     if (pdata->errno) return NULL; 
-     root = create_node(symb,t,l,r); 
-     xscanpos = pdata->scanpos; 
-     t = nxt_symbol(pdata,symb);
-  }
-  pdata->scanpos = xscanpos; 
-  return root; 
-} 
+  /* get next token */
+  while ( _unur_fstr_next_token(pdata,&token,&symb) &&
+	  symbol[token].type == S_ADD_OP) {
+    /* get Term after adding operator and        */
+    /* use node a right node of new operator node */
+    left = node; 
 
-/************ ************** *************** ************** *************/ 
-
-static struct treenode *
-VTerm(struct parser_data *pdata)
-
-/*  Vterm ::= [ '+' | '-' ] Term 
- * 
- *                        '-' 
- *  Term  oder:          /   \ 
- *                    '0'     Term 
- *                   /   \ 
- *               NULL     NULL 
- */ 
-
-{ 
-  struct treenode *root, *l, *r; 
-  char            symb[SYMBLENGTH]; 
-  int             t, xscanpos = pdata->scanpos;
-
-  t = nxt_symbol(pdata,symb);
-
-  if( strcmp(symb,"-") == 0 ) {
-    /* --- Term hat neg. Vorzeichen =>     --- */ 
-    /* --- Vorzeichen in Operator wandeln: --- */ 
-    l = create_node("0.0",uconst,NULL,NULL); 
-    r = Term(pdata);
+    right = _unur_Term(pdata);
     if (pdata->errno) return NULL; 
-    root = create_node(symb,t,l,r); 
+
+    node = _unur_fstr_create_node(symb,token,left,right); 
   }
+  
+  /* set token pointer to get same token again */
+  --(pdata->tno);
+
+  /* return pointer */
+  return node; 
+} /* end of _unur_SimpleExpression() */
+
+/*---------------------------------------------------------------------------*/
+
+struct treenode *
+_unur_STerm (struct parser_data *pdata)
+     /*----------------------------------------------------------------------*/
+     /*  STerm ::= [ '+' | '-' ] Term                                        */
+     /*                                                                      */
+     /*                        '-'                                           */
+     /*  Term  or:            /   \                                          */
+     /*                    '0'     Term                                      */
+     /*                   /   \                                              */
+     /*               NULL     NULL                                          */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   pdata     ... pointer to parser object                             */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to function tree                                           */
+     /*----------------------------------------------------------------------*/
+{ 
+  struct treenode *node, *left, *right; 
+  char            *symb; 
+  int             token;
+
+  /* get next token */
+  if ( _unur_fstr_next_token(pdata,&token,&symb) &&
+       symb[0] == '-' ) {
+    /* term with negative sign                 */
+    /* "-" is interpreted as binary operator   */
+    /* thus "0" is added in front of it         */
+    left = _unur_fstr_create_node("0",s_uconst,NULL,NULL); 
+    right = _unur_Term(pdata);
+    if (pdata->errno) return NULL; 
+
+    node = _unur_fstr_create_node(symb,token,left,right); 
+  }
+
   else {
-    /* --- Term hat pos. oder kein Vorzeichen: --- */ 
-    if (strcmp(symb,"+") != 0) pdata->scanpos = xscanpos;  /* "+" ignorieren */ 
-    root = Term(pdata);
+    /* term with positive sign or without any sign */
+    if( symb[0] != '+' ) {
+      /* set pointer to previous token again */
+      --(pdata->tno);
+    }
+    node = _unur_Term(pdata);
     if (pdata->errno) return NULL; 
   } 
-  return root; 
-} 
 
-/********** *********** ************ ************ *********** ***********/ 
+  /* return pointer to term */
+  return node; 
+} /* end of _unur_STerm() */ 
 
-static struct treenode *
-Term(struct parser_data *pdata)
+/*---------------------------------------------------------------------------*/
 
-/*  Term ::= Factor [ MultiplyingOperator Factor ]
- * 
- *                                   MultiplyingOperator 
- *  Factor  oder:                   /                   \ 
- *                 more factors tree                     Factor 
- */ 
-
+struct treenode *
+_unur_Term (struct parser_data *pdata)
+     /*----------------------------------------------------------------------*/
+     /*  Term ::= Factor [ MultiplyingOperator Factor ]                      */
+     /*                                                                      */
+     /*                                   MultiplyingOperator                */
+     /*  Factor  or:                     /                   \               */
+     /*                 more factors tree                     Factor         */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   pdata     ... pointer to parser object                             */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to function tree                                           */
+     /*----------------------------------------------------------------------*/
 { 
-  struct treenode *root, *l, *r; 
-  char            symb[SYMBLENGTH]; 
-  int             t, xscanpos; 
+  struct treenode *node, *left, *right; 
+  char            *symb;
+  int             token;
 
-  root = Factor(pdata);
+  /* get next factor of multiplication */
+  node = _unur_Factor(pdata);
   if (pdata->errno) return NULL;
-  xscanpos = pdata->scanpos; 
 
-  t = nxt_symbol(pdata,symb);
+  /* get next token */
+  while ( _unur_fstr_next_token(pdata,&token,&symb) &&
+	  symbol[token].type == S_MUL_OP ) {
+    /* get Factor after multiplication operator and */
+    /* use node a right node of new operator node   */
+     left = node; 
 
-  while (symbol[t].type == MUL_OP) {
-     l = root; 
-     r = Factor(pdata);
+     right = _unur_Factor(pdata);
      if (pdata->errno) return NULL;
-     root = create_node(symb,t,l,r); 
-     xscanpos = pdata->scanpos; 
-     t = nxt_symbol(pdata,symb);
+
+     node = _unur_fstr_create_node(symb,token,left,right); 
   }
-  pdata->scanpos = xscanpos; 
-  return root; 
-} 
 
-/******** ********* ********** *********** ********** ********* *********/ 
+  /* set token pointer to get same token again */
+  --(pdata->tno);
 
-static struct treenode *
-Factor(struct parser_data *pdata)
+  /* return pointer to term */
+  return node; 
+} /* end of _unur_Term() */
 
-/*  Factor ::= Base [ '^' Exponent ] 
- * 
- *                          '^' 
- *  bas_exp  oder:         /   \ 
- *                  bas_exp     bas_exp 
- */ 
+/*---------------------------------------------------------------------------*/
 
+struct treenode *
+_unur_Factor (struct parser_data *pdata)
+     /*----------------------------------------------------------------------*/
+     /*  Factor ::= Base [ '^' Exponent ]                                    */
+     /*                                                                      */
+     /*                          '^'                                         */
+     /*  Bas_Exp  or:           /   \                                        */
+     /*                  Bas_Exp     Bas_Exp                                 */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   pdata     ... pointer to parser object                             */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to function tree                                           */
+     /*----------------------------------------------------------------------*/
 { 
-  struct treenode *root, *l, *r; 
-  char            symb[SYMBLENGTH]; 
-  int             t, xscanpos; 
+  struct treenode *node, *left, *right; 
+  char            *symb;
+  int             token;
 
-  l = bas_exp(pdata);
+  /* get base of factor */
+  left = _unur_Bas_Exp(pdata);
   if (pdata->errno) return NULL;
-  xscanpos = pdata->scanpos; 
 
-  t = nxt_symbol(pdata,symb);
-
-  if( strcmp(symb,"^") == 0 ) {
-    r = bas_exp(pdata);
+  /* get next token */
+  if ( _unur_fstr_next_token(pdata,&token,&symb) &&
+       symb[0] == '^' ) {
+    /* get exponent of factor */
+    right = _unur_Bas_Exp(pdata);
     if (pdata->errno) return NULL;
-    root = create_node(symb,t,l,r); 
+
+    /* and create node for '^' operator */
+    node = _unur_fstr_create_node(symb,token,left,right); 
   }
+
   else {
-    pdata->scanpos = xscanpos; 
-    root = l; 
+    /* no exponent                         */
+    /* set pointer to previous token again */
+    --(pdata->tno);
+    /* and return base */
+    node = left; 
   } 
-  return root; 
-} 
 
-/******* ******** ******** ********* ********* ******** ******** ********/ 
+  /* return pointer to factor */
+  return node; 
+} /* end of _unur_Factor() */
 
-static struct treenode *
-bas_exp(struct parser_data *pdata)
+/*---------------------------------------------------------------------------*/
 
-/*  Base ::= Exponent ::= UnsignedConstant | Identifier | FunctDesignator | 
- *                        "not" Base | '(' Expression ')' 
- * 
- *       UnsignedConstant                Identifier 
- *      /                \     oder     /          \     oder 
- *  NULL                  NULL      NULL            NULL 
- * 
- *                                         "not" 
- *        FunctDesignator      oder       /     \        oder Expression 
- *                                    NULL       bas_exp 
- */ 
-
+struct treenode *
+_unur_Bas_Exp (struct parser_data *pdata)
+     /*----------------------------------------------------------------------*/
+     /*  Base ::= Exponent                                                   */
+     /*  Exponent ::= UnsignedConstant | Identifier | FunctDesignator |      */ 
+     /*               "not" Base | '(' Expression ')'                        */ 
+     /*                                                                      */
+     /*       UnsignedConstant                Identifier                     */
+     /*      /                \      or     /          \       or            */
+     /*  NULL                  NULL      NULL            NULL                */
+     /*                                                                      */
+     /*                              "not"                                   */
+     /*  FunctDesignator    or      /     \         or   Expression          */
+     /*                         NULL       Bas_Exp                           */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   pdata     ... pointer to parser object                             */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to function tree                                           */
+     /*----------------------------------------------------------------------*/
 { 
-  struct treenode *node, *r; 
-  char            symb[SYMBLENGTH]; 
-  int             xscanpos = pdata->scanpos; 
-
+  struct treenode *node, *right; 
+  char            *symb;
   int token;
 
+  /* get next token */
+  if ( _unur_fstr_next_token(pdata,&token,&symb) == FALSE)
+    return _unur_fstr_error_parse(pdata,7); 
 
-  /* get next symbol from string */
-  token = nxt_symbol(pdata,symb);
-
-  /* constants and variables */
-  if( symbol[token].type==UCONST ||
-      symbol[token].type==UIDENT ||
-      symbol[token].type==SCONST ) {
+  /* constant or and variable */
+  if( symbol[token].type==S_UCONST ||
+      symbol[token].type==S_UIDENT ||
+      symbol[token].type==S_SCONST ) {
     /* make a new end node */
-    node = create_node(symb,token,NULL,NULL); 
+    node = _unur_fstr_create_node(symb,token,NULL,NULL); 
   }
 
   /* "not" operator */
   else if( strcmp(symb,"not")==0 ) {
-    r = bas_exp(pdata);
+    right = _unur_Bas_Exp(pdata);
     if (pdata->errno) return NULL;
-    node = create_node(symb,token,NULL,r); 
+    node = _unur_fstr_create_node(symb,token,NULL,right); 
   }
 
   /* system function */
-  else if( symbol[token].type == SFUNCS ) {
-    pdata->scanpos = xscanpos; 
+  else if( symbol[token].type == S_SFUNCT ) {
+    /* set pointer to previous token again */
+    --(pdata->tno);
+    /* and get function */
     node = _unur_FunctDesignator(pdata);
     if (pdata->errno) return NULL;
   }
   
-  else if( strcmp(symb,"(") == 0 ) {
+  else if( symb[0] == '(' ) {
+    /* opening parenthesis  --> read expression in side parenthesis */
     node = _unur_Expression(pdata); 
     if (pdata->errno) return NULL;
-    token = nxt_symbol(pdata,symb);
-    if (strcmp(symb,")")!=0) return set_err(18,pdata); 
+
+    /* next symbol must be closing parenthesis */
+    if ( _unur_fstr_next_token(pdata,&token,&symb) == FALSE ||
+	 symb[0] != ')' )
+      return _unur_fstr_error_parse(pdata,18);
   }
   
   else {
-/*      pdata->scanpos = scanpos;  */
-    return set_err(19,pdata); 
+    /* unkown symbol */
+    --(pdata->tno);
+    return _unur_fstr_error_parse(pdata,19);
   } 
 
   /* return pointer to base or exponent of an expression */
   return node; 
-} 
+} /* end of _unur_Bas_Exp() */ 
 
-/******* ******* ******* ******* ******* ******* ******* ******* ********/ 
+/*---------------------------------------------------------------------------*/
 
 struct treenode *
-_unur_FunctDesignator(struct parser_data *pdata)
-/*  FunctDesignator ::= FuncIdentifier '(' ActualParameterlist ')' 
- * 
- *       Identifier 
- *      /          \ 
- *  NULL            ActualParameterlist 
- */ 
-
+_unur_FunctDesignator (struct parser_data *pdata)
+     /*----------------------------------------------------------------------*/
+     /*  FunctDesignator ::= FuncIdentifier '(' ActualParameterlist ')'      */
+     /*                                                                      */
+     /*       Identifier                                                     */
+     /*      /          \                                                    */
+     /*  NULL            ActualParameterlist                                 */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   pdata     ... pointer to parser object                             */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to function tree                                           */
+     /*----------------------------------------------------------------------*/
 { 
   struct treenode *node, *params; 
-  char            fsymb[SYMBLENGTH]; 
+  char            *fsymb, *symb;
+  int             funct, token;
   int             n_params; 
-  int  funct;
 
-  /* get function identifier */
-  funct = nxt_symbol(pdata,fsymb);
-  if (pdata->errno) return NULL;
-
-  /* this must be a system function */
-  if (symbol[funct].type != SFUNCS) return set_err(20,pdata); 
+  /* get function identifier for system function */
+  if ( _unur_fstr_next_token(pdata,&funct,&fsymb) == FALSE ||
+       symbol[funct].type != S_SFUNCT )
+    return _unur_fstr_error_parse(pdata,20);
 
   /* get number of parameter for this function */
   n_params = symbol[funct].info;
 
   /* read opening parenthesis '(' */
-  if ( pdata->fstr[(pdata->scanpos)++] != '(' )
-    return set_err(21,pdata);
+  if ( _unur_fstr_next_token(pdata,&token,&symb) == FALSE ||
+       symb[0] != '(' )
+    return _unur_fstr_error_parse(pdata,21);
 
   /* read the parameter list */
   params = _unur_ActualParameterlist(pdata,n_params);
   if (pdata->errno) return NULL;
 
   /* read closing parenthesis ')' */
-  if ( pdata->fstr[(pdata->scanpos)++] != ')' )
-    return set_err(15,pdata);
+  if ( _unur_fstr_next_token(pdata,&token,&symb) == FALSE ||
+       symb[0] != ')' )
+    return _unur_fstr_error_parse(pdata,22);
   
-  switch (n_params) {
-  case 1:    /* one argument */
-    /* store function in new node */
-    node = create_node(fsymb,funct,NULL,params); 
-    break;
-  case 2:    /* two arguments */
-    /* change parameter node (which must be a `,' node) to function node */
-    if (params->token != xxxcomma) return NULL;  /** ERROR **/
-    node = params;
-    node->token    = funct;
-    node->symbkind = symbol[funct].type;
-    node->symb     = symbol[funct].name;
-    break;
-  default:
-    /** Error: should not happen **/
-    return NULL;
-  }
+  /* store function in new node */
+  node = _unur_fstr_create_node(fsymb,funct,NULL,params); 
 
   /* return pointer to function */
   return node; 
 } /* end of _unur_FunctDesignator() */
 
-/****** ****** ****** ****** ******* ******* ****** ****** ****** *******/ 
+/*---------------------------------------------------------------------------*/
 
 struct treenode *
-_unur_ActualParameterlist(struct parser_data *pdata, int n_params) 
-/*  ActualParameterlist ::= ActualParameter [ ',' ActualParameter ] 
- * 
- *                                           ',' 
- *  Expression  oder:                       /   \ 
- *                     more expressions tree     Expression 
- */ 
-
+_unur_ActualParameterlist (struct parser_data *pdata, int n_params) 
+     /*----------------------------------------------------------------------*/
+     /*  ActualParameterlist ::= ActualParameter [ ',' ActualParameter ]     */
+     /*                                                                      */
+     /*                                           ','                        */
+     /*  Expression  or:                         /   \                       */
+     /*                     more expressions tree     Expression             */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   pdata     ... pointer to parser object                             */
+     /*   n_params  ... number of expected parameters in list                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to function tree                                           */
+     /*----------------------------------------------------------------------*/
 { 
   struct treenode *node, *left, *right; 
-  int c_params;   /* counter for parameters */
+  char            *symb;
+  int             token;
+  int             c_params;   /* counter for parameters */
 
   /* read first parameter from string ...  */
   node = _unur_Expression(pdata);
   if (pdata->errno) return NULL;
+
   /* .. and set counter for parameters to 1 */
   c_params = 1; 
 
-  /* scan string while the character following the     */
-  /* scanposition is list separator `,'                */
-  while ( pdata->fstr[pdata->scanpos] == ',' ) {
-    /* increment scan position */
-    ++(pdata->scanpos);
+  /* scan token list while we find a list separator `,' */
+  while ( _unur_fstr_next_token(pdata,&token,&symb) == FALSE ||
+	  symb[0] == ',' ) {
 
     /* update counter for parameters */
     c_params++; 
-    if (c_params > n_params) return set_err(23,pdata); 
-
+    if (c_params > n_params)
+      return _unur_fstr_error_parse(pdata,23);
+    
     /* old node becomes left node of `,' node */
     left = node; 
 
     /* make node for next variable (becomes right node) */
     right = _unur_Expression(pdata);
     if (pdata->errno) return NULL;
-
+    
     /* make node for `,' separator */
-    node = create_node(",",xxxcomma,left,right); 
+    node = _unur_fstr_create_node(",",s_comma,left,right); 
   }
+
+  /* set token pointer to first element after parameter list */
+  --(pdata->tno);
+
   /* check number of parameters */
-  if (c_params < n_params) return set_err(24,pdata); 
+  if (c_params < n_params)
+    return _unur_fstr_error_parse(pdata,24);
 
   /* return pointer to parameter list */
   return node; 
 } /* end of _unur_ActualParameterlist() */
 
-/*********************** *********************** ************************/ 
+/*---------------------------------------------------------------------------*/
 
-static struct treenode *
-create_node (char *symb, int token,
-	     struct treenode *left, struct treenode *right) 
-
-/*  Setzt im Knoten mit der Wurzel root den String, das Token und die Art 
- *  des Symbols (REL_OP, ADD_OP etc.), 
- */ 
-
-{ 
-  struct treenode *root; 
-
-  if ( left != NULL && right != NULL 
-       && simplification(symb,token,left,right) ) { 
-    /* node has been simplified  -->  use left node, remove right node */
-    root = left;     
-    free(right);   /* free memory for leave */
+int
+_unur_fstr_next_token (struct parser_data *pdata, int *token, char **symbol)
+     /*----------------------------------------------------------------------*/
+     /* Get next token from list.                                            */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   pdata  ... pointer to parser object                                */
+     /*   token  ... to store token                                          */
+     /*   symbol ... to store symbol for token                               */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... if successful                                                */
+     /*   0 ... if there are no tokens any more in the list                  */
+     /*----------------------------------------------------------------------*/
+{
+  if (pdata->tno < pdata->n_tokens) {
+    /* return token and increment scan position */
+    *token = pdata->token[pdata->tno];
+    *symbol = pdata->tpos[pdata->tno];
+    ++(pdata->tno);
+    return TRUE;
+  }
+  else {
+    /* no more tokens */
+    ++(pdata->tno);
+    return FALSE;
   }
 
+} /* end of _unur_fstr_next_token() */
+
+/*---------------------------------------------------------------------------*/
+
+struct treenode *
+_unur_fstr_create_node (char *symb, int token, struct treenode *left, struct treenode *right) 
+     /*----------------------------------------------------------------------*/
+     /* Create new node.                                                     */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   symb   ... symbol string                                           */
+     /*   token  ... token for which node should be created                  */
+     /*   left   ... pointer to left node                                    */
+     /*   right  ... pointer to right node                                   */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to new node                                                */
+     /*----------------------------------------------------------------------*/
+{ 
+  struct treenode *node; 
+
+  if ( (node = _unur_fstr_simplification(symb,token,left,right)) ) { 
+    /* node has been simplified  -->  use left node, remove right node */
+    //    root = left;     
+    //    free(right);   /* free memory for leave */
+  }
   else {
+
     /* make new node */
-    root = _unur_malloc(sizeof(struct treenode)); 
-    root->symb = symbol[token].name; 
-    root->token    = token; 
-    root->symbkind = symbol[token].type; 
-    root->left     = left; 
-    root->right    = right; 
+    node = _unur_malloc(sizeof(struct treenode)); 
+    node->symbol   = symbol[token].name; 
+    node->token    = token; 
+    node->symbkind = symbol[token].type; 
+    node->left     = left; 
+    node->right    = right; 
 
     /* compute and/or store constants in val field */
-    if (root->symbkind == UCONST)
-      /* user defined constant, i.e. a number */
-      root->val    = atof(symb);
-    else if (root->symbkind == SCONST)
-      /* system constant */
-      root->val    = symbol[token].val;
-    else
-      root->val    = 0.;
+    switch (symbol[token].type) {
+    case S_UCONST:      /* user defined constant, i.e. a number */
+      node->val = atof(symb);  break;
+    case S_SCONST:      /* system constant */
+      node->val = symbol[token].val;  break;
+    default:
+      node->val = 0.;
+    }
   } 
-
+  
   /* return node */
-  return root; 
+  return node; 
+  
+} /* end of _unur_fstr_create_node() */
 
-} 
+/*---------------------------------------------------------------------------*/
 
-/**************** ****************** ****************** *****************/ 
-
-static int simplification(char *symb, int t, struct treenode *l, 
-                                             struct treenode *r) 
-
-/*  Untersucht, ob der Knoten vereinfacht werden kann; wenn ja, wird in 
- *  create_node kein neuer Knoten, sondern ein Blatt zurueckgegeben. 
- */ 
-
-{ 
-  int comma    = t == xxxcomma;
-  int product  = strcmp(   symb,"*"  ) == 0; 
-  int quotient = strcmp(   symb,"/"  ) == 0; 
-  int power    = strcmp(   symb,"^"  ) == 0; 
-  int plus     = strcmp(   symb,"+"  ) == 0; 
-  int minus    = strcmp(   symb,"-"  ) == 0; 
-  int and      = strcmp(   symb,"and") == 0; 
-  int mod      = strcmp(   symb,"mod") == 0; 
-  int l_0      = ((l->symbkind == UCONST || l->symbkind == SCONST) && l->val == 0.);
-  int r_0      = ((r->symbkind == UCONST || r->symbkind == SCONST) && r->val == 0.);
-  int l_1      = ((l->symbkind == UCONST || l->symbkind == SCONST) && l->val == 1.);
-  int r_1      = ((r->symbkind == UCONST || r->symbkind == SCONST) && r->val == 1.);
-  //  int leaves   = l->left==NULL && l->right==NULL && r->left==NULL && r->right==NULL; 
-  //  int eq_leaves= leaves && strcmp(l->symb,r->symb) == 0; 
-  int l_const  = l->symbkind == SCONST || l->symbkind == UCONST; 
-  int r_const  = r->symbkind == SCONST || r->symbkind == UCONST; 
-
-  /* Do not remove node with constant 0 */
-  if (l_const && l_0) l_const = FALSE;
-
-  /* --- Transform: x/x or x^0 or 1^x  ==>  1 --- */ 
-  if ( 0                 // (quotient && eq_leaves)    /** eq_leaves stimmt so nicht !!! **/
-       || (power && (r_0 || l_1)) ){ 
-    l->symb = NULL;
-    l->token    = uconst; 
-    l->symbkind = UCONST; 
-    l->val      = 1.0; 
-    l->left     = NULL; 
-    l->right    = NULL; 
-    return TRUE; 
-  } 
-
-  /*--- Transform: 0*x or x*0 or 0ANDx or xAND0 or 0/x or 0^x or 0MODx  ==>  0 ---*/ 
-  if ( ((product||and) && (l_0||r_0)) || (l_0 && (quotient||power||mod)) ){ 
-    l->symb = NULL;
-    l->token    = uconst; 
-    l->symbkind = UCONST; 
-    l->val      = 0.0; 
-    l->left     = NULL; 
-    l->right    = NULL; 
-    return TRUE; 
-  } 
-
-  /*--- Transform: x+0 or x-0 or x*1 or x/1 or xMOD1 or x^1   ==> x (nothing to do) ---*/ 
-  if ( (r_0 && (plus||minus)) || (r_1 && (product||quotient||mod||power)) ) { 
-    return TRUE; 
-  } 
-
-  /*--- Transform: 0+x or 1*x  ==>  x (return right node) ---*/ 
-  if ( (l_0 && plus ) || (l_1 && product) ) { 
-    l->symb = r->symb; 
-    l->token    = r->token; 
-    l->symbkind = r->symbkind; 
-    l->val      = r->val; 
-    l->left     = r->left; 
-    l->right    = r->right; 
-    return TRUE; 
-  } 
-
-  /*--- Transform: 0-x  ==>  -x (return right node) ---*/ 
-  if ( l_0 && minus ) { 
-    l->symb = r->symb; 
-    l->token    = r->token; 
-    l->symbkind = r->symbkind; 
-    l->val      = - r->val; 
-    l->left     = r->left; 
-    l->right    = r->right; 
-    return TRUE; 
-  } 
-
-  /*--- Transform: leaves are constants  -->  compute ---*/ 
-  if ( l_const && r_const && !comma) { 
-    l->val = (*symbol[t].vcalc)(l->val,r->val);      /* compute new value */
-    l->token    = uconst;
-    l->symbkind = UCONST;
-    l->left     = NULL; 
-    l->right    = NULL; 
-    return TRUE; 
-  } 
-
-  /* no transformations */
-  return FALSE; 
-}
-
-/**************** ****************** ****************** *****************/ 
-
-/************************************************************************/ 
-
-char *readln(char *s)       /* Eine Zeile Zeichen einlesen incl. Blancs */ 
-
-{ 
-  int c; 
-
-  while ((c = getchar()) != '\n') 
-       *(s++) = c; 
-  *(s++) = '\0'; 
-  return s; 
-} 
-/************************************************************************/ 
-
-void pt_error(char *function, int errcode, int errpos) 
-
-/*  Gibt Fehlermeldung und Fehlerposition nach Baumerzeugung aus. */ 
-
-{ 
-  int i = 0; 
-
-  if( errcode != 0 ){ 
-     printf("\n%s",function); 
-     function[0] = '\0'; 
-     while (i++ < errpos) strcat(function,"-"); 
-     strcat(function,"^"); 
-     printf("\n%s",function); 
-  } 
-  printf("\nErrcode %d: %-46.46s",errcode,errorstrings[errcode]); 
-  if (errcode !=0) printf("at pos. %d.",errpos); 
-} 
-
-/************************************************************************/ 
-
-void _unur_fstr_debug_tree( struct treenode *root )
+struct treenode *
+_unur_fstr_simplification (char *symb, int token,
+			   struct treenode *left, struct treenode *right) 
+     /*----------------------------------------------------------------------*/
+     /* Try to simpify nodes                                                 */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   symb   ... symbol string                                           */
+     /*   token  ... token for which new node should be created              */
+     /*   left   ... pointer to left node                                    */
+     /*   right  ... pointer to right node                                   */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   Pointer to simplified node                                         */
+     /*   NULL if no simplication is possible                                */
+     /*----------------------------------------------------------------------*/
 {
-  printf("parse tree:  (left nodes above right nodes)\n\n"); 
+  int l_const = left  && (left->symbkind  == S_SCONST || left->symbkind  == S_UCONST); 
+  int r_const = right && (right->symbkind == S_SCONST || right->symbkind == S_UCONST); 
+/*    int l_0     = (l_const && left->val == 0.); */
 
-  show_tree(root,0,0);
-  printf("\n");
+  /*         Expression             Expression
+   *            /   \                  /   \ 
+   *        NULL    ','       ==>     X     Y
+   *               /   \ 
+   *              X     Y
+   */ 
+  if ( left == NULL && right && right->symbol[0] == ',' ) {
+    right->token    = token;
+    right->symbol  = symbol[token].name; 
+    right->symbkind = symbol[token].type;
+    return right; 
+   }
+
+  /*          Operator            Operator
+   *            /   \      or      /   \        ==>     Const (result of computation)
+   *       Const     Const     NULL     Const
+   */ 
+  if ( (l_const || left==NULL) && r_const && symb[0]!=',') { 
+    /* compute new value */
+    right->val   = ( (left) 
+		     ? (*symbol[token].vcalc)(left->val,right->val)
+		     : (*symbol[token].vcalc)(0.,right->val) );
+    right->token = s_uconst;
+    right->symbkind = S_UCONST;
+    right->left  = NULL; 
+    right->right = NULL;
+    if (left) free (left);
+    return right; 
+  } 
+
+  /* no simpification */
+  return NULL; 
+} /* _unur_fstr_simplification() */
+
+/*---------------------------------------------------------------------------*/
+
+/*****************************************************************************/
+/** Error                                                                   **/
+/*****************************************************************************/
+
+void
+_unur_fstr_error_scan (const struct parser_data *pdata, const char *symb)
+     /*----------------------------------------------------------------------*/
+     /* Print error message when scanning function string                    */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   pdata ... pointer to parser object                                 */
+     /*   symb  ... pointer to unknown symbol                                */  
+     /*----------------------------------------------------------------------*/
+{
+  char format[124];
+  int wsp;
+  
+  /* set unuran error code */
+  unur_errno = UNUR_ERR_STR_UNKNOWN;
+
+  /* print unknown symbol */
+  _unur_stream_printf_simple ( "%s: error: unknown symbol `%s'\n",GENTYPE,symb);
+
+  /* print scanned part of function string to error stream */
+  sprintf( format, "%s: %%.%ds\n", GENTYPE,pdata->lastpos);
+  _unur_stream_printf_simple ( format,pdata->fstr);
+
+  /* print remaining part of function string including unknown symbol */
+  wsp = pdata->lastpos-3;
+  wsp = max(wsp,1);
+  sprintf( format, "%s: --> %%%d.%ds",GENTYPE,wsp,wsp);
+  _unur_stream_printf_simple ( format, "");
+  _unur_stream_printf_simple ( "%s\n",pdata->fstr + pdata->lastpos);
+
+  _unur_stream_printf_simple ( "%s:\n",GENTYPE );
+
+} /* end of _unur_fstr_error_scan() */
+
+/*---------------------------------------------------------------------------*/
+
+struct treenode *
+_unur_fstr_error_parse ( struct parser_data *pdata, int errno )
+     /*----------------------------------------------------------------------*/
+     /* Print error message when parsing function string                     */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   pdata ... pointer to parser object                                 */
+     /*   errno ... error number                                             */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   NULL                                                               */
+     /*----------------------------------------------------------------------*/
+{ 
+  int i;
+
+  _unur_stream_printf_simple ( "%s: error: %d\n",GENTYPE,errno);
+
+  _unur_stream_printf_simple ( "%s: ",GENTYPE );
+  for (i=0; i<pdata->tno-1; i++)
+    _unur_stream_printf_simple ( "%s ",pdata->tpos[i]);
+
+  _unur_stream_printf_simple ( "\n%s:  -->   ",GENTYPE );
+  for (i=pdata->tno-1; i<pdata->n_tokens; i++)
+    _unur_stream_printf_simple ( "%s ",pdata->tpos[i]);
+
+  _unur_stream_printf_simple ( "\n%s:\n",GENTYPE );
+
+  /* set unuran error code */
+  unur_errno = UNUR_ERR_STR_UNKNOWN;
+  
+  /* set parser error */
+  if (!pdata->errno) pdata->errno = errno;
+
+  return NULL; 
+
+/*    printf("\n%d %s",err_nr,errorstrings[err_nr]);  */
+} /* _unur_fstr_error_parse() */ 
+
+/*****************************************************************************/
+/**  Debugging utilities                                                    **/
+/*****************************************************************************/
+
+/*---------------------------------------------------------------------------*/
+#ifdef UNUR_ENABLE_LOGGING
+/*---------------------------------------------------------------------------*/
+
+void
+_unur_fstr_debug_input ( const char *fstr )
+     /*----------------------------------------------------------------------*/
+     /* Print function string on output stream                               */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   fstr ... string containing function definition                     */
+     /*----------------------------------------------------------------------*/
+{
+  FILE *log = unur_get_stream();
+
+  fprintf(log,"%s: Input string:\n",GENTYPE);
+  fprintf(log,"%s:   %s\n",GENTYPE,fstr);
+  fprintf(log,"%s:\n",GENTYPE);
+
+} /* end of _unur_fstr_debug_input() */
+
+/*---------------------------------------------------------------------------*/
+
+void
+_unur_fstr_debug_token ( const struct parser_data *pdata )
+     /*----------------------------------------------------------------------*/
+     /* Print tokenized string on output stream                              */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   pdata ... pointer to parser object                                 */
+     /*----------------------------------------------------------------------*/
+{
+  FILE *log = unur_get_stream();
+  int i;
+
+  fprintf(log,"%s: Tokenized string (token separated by blanks):\n",GENTYPE);
+  fprintf(log,"%s:   ",GENTYPE);
+
+  for (i=0; i<pdata->n_tokens; i++)
+    fprintf(log,"%s ",pdata->tpos[i]);
+  fprintf(log,"\n%s:\n",GENTYPE);
+
+} /* end of _unur_fstr_debug_input() */
+
+/*---------------------------------------------------------------------------*/
+
+void
+_unur_fstr_debug_tree( const struct parser_data *pdata,
+		       const struct treenode *root )
+     /*----------------------------------------------------------------------*/
+     /* Print function tree                                                  */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   pdata ... pointer to parser object                                 */
+     /*   root  ... pointer to root of tree                                  */
+     /*----------------------------------------------------------------------*/
+
+{
+  FILE *log = unur_get_stream();
+
+  fprintf(log,"%s: parse tree:  (left nodes above right nodes)\n",GENTYPE); 
+  fprintf(log,"%s:\n",GENTYPE);
+  _unur_fstr_debug_show_tree(pdata,root,0,0);
+  fprintf(log,"%s:\n",GENTYPE);
 
 } /* end of _unur_fstr_debug_tree() */
 
-/************************************************************************/ 
+/*---------------------------------------------------------------------------*/
 
-void show_tree(struct treenode *node, int level, int location)
-                                 /* Gibt rekursiv einen Parse-Baum aus. */ 
-
-     /* node ... pointer to node */
-     /* level ... level of node in tree*/
-     /* location ... indicates location of node in tree by bit array */
+void
+_unur_fstr_debug_show_tree(const struct parser_data *pdata,
+			   const struct treenode *node,
+			   int level, int location)
+     /*----------------------------------------------------------------------*/
+     /* Print function tree by recursion                                     */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   pdata    ... pointer to parser object                              */
+     /*   node     ... pointer to node in tree                               */
+     /*   level    ... depth in tree                                         */
+     /*   location ... indicates location of node in tree by bit array       */
+     /*----------------------------------------------------------------------*/
 { 
+  FILE *log = unur_get_stream();
   int i, mask; 
+
+  fprintf(log,"%s: ",GENTYPE); 
 
   /* draw vertical lines in tree */
   for (i = 0, mask = 1; i < level; i++, mask <<= 1) 
     if (mask & location) 
-      printf("|   "); 
+      fprintf(log,"|   "); 
     else 
-      printf("    "); 
+      fprintf(log,"    "); 
 
   /* print node */
   if( node != NULL ) {
     
     /* draw horizontal line in tree */
-    (mask & location) ? printf("+--") : printf("\\__");
+    (mask & location) ? fprintf(log,"+--") : fprintf(log,"\\__");
 
     /* print symbol */
     switch (node->symbkind) {
-    case SCONST:
-      printf("'%s'\t(const=%g)", node->symb,node->val);  break;
-    case UCONST:
-      printf("'%g'\t(const)", node->val);  break;
-    case UIDENT:
-      printf("'%s'\t(variable)", variable);  break;
-    case UFUNCS:
-      printf("'FUNCTION'");  break;
+    case S_SCONST:
+      fprintf(log,"'%s'\t(const=%g)", node->symbol,node->val);  break;
+    case S_UCONST:
+      fprintf(log,"'%g'\t(const)", node->val);  break;
+    case S_UIDENT:
+      fprintf(log,"'%s'\t(variable)", pdata->variable_name);  break;
+    case S_UFUNCT:
+      fprintf(log,"'%s'\t(user function)", pdata->function_name);  break;
     default:
-      printf("'%s'", node->symb);
+      fprintf(log,"'%s'", node->symbol);
     }
     /* end of line */
-    printf("\n");
+    fprintf(log,"\n");
 
     /* print left and right node */
     if ( node->left || node->right) {
       /* ... unless both leaves are empty */
-      show_tree(node->left,level+1,location|(mask<<1)); 
-      show_tree(node->right,level+1,location); 
+      _unur_fstr_debug_show_tree(pdata,node->left, level+1,location|(mask<<1)); 
+      _unur_fstr_debug_show_tree(pdata,node->right,level+1,location); 
     }
   }
 
   else {  /* empty leave */
-    (mask & location) ? printf("+--") : printf("\\__");
-    printf("(void)\n"); 
+    (mask & location) ? fprintf(log,"+--") : fprintf(log,"\\__");
+    fprintf(log,"(void)\n"); 
   } 
+} /* end of _unur_fstr_debug_show_tree() */
 
-} 
 
-/************************************************************************/ 
+/*---------------------------------------------------------------------------*/
+#endif   /* end UNUR_ENABLE_LOGGING */
+/*---------------------------------------------------------------------------*/
 
-void _unur_fstr_free(struct treenode *root)  
-                          /* Gibt Speicher fuer schon exist. Baum frei. */ 
-{ 
-  if( root != NULL ) {
-    _unur_fstr_free(root->right); 
-    _unur_fstr_free(root->left); 
-    free(root); 
-  } 
-} /* end of _unur_fstr_free() */
+/*****************************************************************************/
+/** End                                                                     **/
+/*****************************************************************************/
 
-/************************************************************************/ 
 
-/************************************************************************
- * MODUL pars.c                                                         *
- *                                                                      *
- *                                                                      * 
- ************************************************************************/
 
 
-/************************************************************************/ 
 
 
-/************************************************************************
- * Umwandlung eines Parsebaumes in einen String:                        *
- ************************************************************************/
-
-char *tree2string(struct treenode *tree_root, char *ret_str)
-
-/*  Wandelt einen vom Parser erzeugten Baum zurueck in einen String.
- *  Zunaechst werden der linke und der rechte Zweig des Knotens in einen
- *  String verwandelt; abhaengig vom Operator der Wurzel und den Opera-
- *  toren der Zweige muessen die Zweige ggf. eingeklammert werden, dann
- *  werden die beiden Zweige ueber den Operator der Wurzel miteinander
- *  verknuepft.
- */
-
-{
-  struct treenode *right, *left;
-  char            symb_m[SYMBLENGTH]; /* Symbol an der Wurzel ("Mitte") */
-  char            symb_l[SYMBLENGTH]; /* Symbol des linken Zweiges      */
-  char            symb_r[SYMBLENGTH]; /* Symbol des rechten Zweiges     */
-  char            str_l[MAXLENGTH];   /* kompl. linker Zweig als String */
-  char            str_r[MAXLENGTH];   /* kompl. rechter Zweig           */
-  char            temp_str[MAXLENGTH];/* temporaerer String             */
-  int             t_m, t_l, t_r;      /* Token Mitte, links, rechts     */
-  int             p_m, p_l, p_r;      /* Priorit. Mitte, links, rechts  */
-  int             sk_m, sk_l, sk_r;   /* symbkind Mitte,links,rechts    */
-
-  
-
-  /** TODO: initialize to avoid warning ???? **/
-  t_m = t_l = t_r = 0;
-  p_m = p_l = p_r = 0;
-  sk_m = sk_l = sk_r = 0;
-
-
-  str_l[0] = str_r[0] = symb_l[0] = symb_r[0] = '\0';
-  temp_str[0] = ret_str[0] = '\0';
-
-  /* --- Werte der Wurzel: --- */
-  strcpy(symb_m,tree_root->symb);
-  sk_m    = tree_root->symbkind;
-  t_m     = tree_root->token;
-  p_m     = symbol[t_m].info;
-  left    = tree_root->left;
-  right   = tree_root->right;
-
-  /* --- Zuerst die beiden Zweige in Strings verwandeln: --- */
-  if( left != NULL ){
-     /* --- Werte des linken Sohnes: --- */
-     strcpy(symb_l,left->symb);
-     sk_l    = left->symbkind;
-     t_l     = left->token;
-     p_l     = symbol[t_l].info;
-     tree2string(left,str_l);
-  }
-  if( right != NULL ){
-     /* --- Werte des rechten Sohnes: --- */
-     strcpy(symb_r,right->symb);
-     sk_r    = right->symbkind;
-     t_r     = right->token;
-     p_r     = symbol[t_r].info;
-     tree2string(right,str_r);
-  }
-
-  /* --- Beide Strings ueber die Wurzel verknuepfen, ggf. Klammern: --- */
-
-  if( t_m <= hos+1 ){
-     /* --- Alle Operatoren mit zwei Eingaengen (von '<' bis '^'): --- */
-
-     /* --- Funktionen links bzgl. Prioritaet  wie '*'-Operatoren: --- */
-     if (sk_l == SFUNCS || sk_l == UFUNCS) sk_l = MUL_OP;
-
-     /* --- Dummy-Null bei neg. Vorzeichen entfernen: --- */
-     if( strcmp(symb_m,"-") == 0 && strcmp(symb_l,"0") == 0 ){
-        if( p_r <= p_m && t_r < hoe 
-           ){ strcpy3(ret_str,"-(",str_r,")"); 
-           }else{ strcpy(ret_str,"-"); strcat(ret_str,str_r); 
-	   } 
-        return ret_str; 
-     } 
-
-     /* --- Linken String evtl. einklammern: --- */ 
-     if( t_l < hoe ){ /* alle Operatoren incl. 'NOT' */ 
-	if( strcmp(symb_m,"^") == 0
-	    ){ /* -- bei '^' auch bei gleicher Prioritaet klammern: --*/
-	  if( p_l <= p_m ){
-		    strcpy3(temp_str,"(",str_l,")");
-		    strcpy(str_l,temp_str);
-	  }
-	   } else{ /* --- sonst nur bei niedrigerer Prioritaet klammern,
-		    aber nicht bei '+' mit '-' [z.B. f(x)=(1+2)-3]: --- */
-		 if( (p_l < p_m) &&
-		     !(strcmp(symb_l,"+")==0 && strcmp(symb_m,"-")==0) ){
-		    strcpy3(temp_str,"(",str_l,")");
-		    strcpy(str_l,temp_str);
-		 }
-	   }
-     }
-
-     /* --- Rechten String evtl. einklammern: --- */
-     if ( t_r < hoe ){                /*alle Operatoren incl. 'NOT' */
-	if( strcmp(symb_m,"/") == 0 || strcmp(symb_m,"mod") == 0 ||
-	    strcmp(symb_m,"-") == 0 || strcmp(symb_m,"^") == 0
-	    ){ /* --- klammern auch bei gleicher Prioritaet: --- */
-		 if( symbol[t_r].info <= symbol[t_m].info ){
-		    strcpy3(temp_str,"(",str_r,")");
-		    strcpy(str_r,temp_str);
-		 }
-	    }else{ if( symbol[t_r].info < symbol[t_m].info ){
-		    strcpy3(temp_str,"(",str_r,")");
-		    strcpy(str_r,temp_str);
-		 }
-	}
-     }
-
-     /* --- Bei einigen Operatoren Spaces drumherum setzen: --- */
-     if( strcmp(symb_m,"xor") == 0 || strcmp(symb_m,"and") == 0 ||
-	strcmp(symb_m,"or" ) == 0 || strcmp(symb_m,"mod") == 0 ){
-	 strcpy3(temp_str," ",symb_m," ");
-	 strcpy(symb_m,temp_str);
-     }
-
-     /* --- Rueckgabestring zusammensetzen aus linkem String,
-			  Verknuepfungsoperator und rechtem String: --- */
-     return strcpy3(ret_str,str_l,symb_m,str_r);
-  }
-
-  /*-- bei "not" klammern, wenn Operator geringerer Prioritaet folgt: --*/
-  if( strcmp(symb_m,"not") == 0 ){
-     if( sk_r==REL_OP || sk_r==ADD_OP||sk_r==MUL_OP||strcmp(symb_r,"^")==0
-	){ strcpy3(ret_str,"not(",str_r,")");
-	     return ret_str;
-	}else{ /* --- sonst nicht klammern: --- */
-	     return strcpy3(ret_str,"not ",str_r,"");
-     }
-  }
-
-  /* --- Parameterlisten von Funktionen: --- */
-  if (strcmp(symb_m,",") == 0) return strcpy3(ret_str,str_l,",",str_r);
-
-  /* --- Funktionen: Parameterlisten in Klammern setzen: --- */
-  if( sk_m == SFUNCS || sk_m == UFUNCS ){
-     strcpy3(ret_str,symb_m,"(",str_r);
-     return strcat(ret_str,")");
-  }
-
-  /* --- Alle Endsymbole direkt zurueck: --- */
-  return strcpy(ret_str,symb_m);
-}
-
-
-
-
-/************************************************************************
- * Umwandlung eines Parsebaumes in einen C_code:                        *
- ************************************************************************/
-
-char *tree2Cstring(struct treenode *tree_root, char *ret_str)
-
-/*  Wandelt einen vom Parser erzeugten Baum zurueck in einen String.
- *  Zunaechst werden der linke und der rechte Zweig des Knotens in einen
- *  String verwandelt; abhaengig vom Operator der Wurzel und den Opera-
- *  toren der Zweige muessen die Zweige ggf. eingeklammert werden, dann
- *  werden die beiden Zweige ueber den Operator der Wurzel miteinander
- *  verknuepft.
- */
-
-{
-  struct treenode *right, *left;
-  char            symb_m[SYMBLENGTH]; /* Symbol an der Wurzel ("Mitte") */
-  char            symb_l[SYMBLENGTH]; /* Symbol des linken Zweiges      */
-  char            symb_r[SYMBLENGTH]; /* Symbol des rechten Zweiges     */
-  char            str_l[MAXLENGTH];   /* kompl. linker Zweig als String */
-  char            str_r[MAXLENGTH];   /* kompl. rechter Zweig           */
-  char            temp_str[MAXLENGTH];/* temporaerer String             */
-  int             t_m, t_l, t_r;      /* Token Mitte, links, rechts     */
-  int             p_m, p_l, p_r;      /* Priorit. Mitte, links, rechts  */
-  int             sk_m, sk_l, sk_r;   /* symbkind Mitte,links,rechts    */
-
-  /** TODO: initialize to avoid warning ???? **/
-  t_m = t_l = t_r = 0;
-  p_m = p_l = p_r = 0;
-  sk_m = sk_l = sk_r = 0;
-
-
-
-
-  str_l[0] = str_r[0] = symb_l[0] = symb_r[0] = '\0';
-  temp_str[0] = ret_str[0] = '\0';
-
-  /* --- Werte der Wurzel: --- */
-  strcpy(symb_m,tree_root->symb);
-  sk_m    = tree_root->symbkind;
-  t_m     = tree_root->token;
-  p_m     = symbol[t_m].info;
-  left    = tree_root->left;
-  right   = tree_root->right;
-
-  /* --- Zuerst die beiden Zweige in Strings verwandeln: --- */
-  if( left != NULL ){
-     /* --- Werte des linken Sohnes: --- */
-     strcpy(symb_l,left->symb);
-     sk_l    = left->symbkind;
-     t_l     = left->token;
-     p_l     = symbol[t_l].info;
-     tree2string(left,str_l);
-  }
-  if( right != NULL ){
-     /* --- Werte des rechten Sohnes: --- */
-     strcpy(symb_r,right->symb);
-     sk_r    = right->symbkind;
-     t_r     = right->token;
-     p_r     = symbol[t_r].info;
-     tree2string(right,str_r);
-  }
-
-  /* --- Beide Strings ueber die Wurzel verknuepfen, ggf. Klammern: --- */
-
-  if( t_m <= hos+1 ){
-     /* --- Alle Operatoren mit zwei Eingaengen (von '<' bis '^'): --- */
-
-     /* --- Funktionen links bzgl. Prioritaet  wie '*'-Operatoren: --- */
-     if( sk_l == SFUNCS || sk_l == UFUNCS) sk_l = MUL_OP;
-
-     /* --- Dummy-Null bei neg. Vorzeichen entfernen: --- */
-     if( strcmp(symb_m,"-") == 0 && strcmp(symb_l,"0") == 0 ){
-        if( p_r <= p_m && t_r < hoe 
-           ){ strcpy3(ret_str,"-(",str_r,")"); 
-           }else{ strcpy(ret_str,"-"); strcat(ret_str,str_r); 
-        } 
-        return ret_str; 
-     } 
-
-     /* --- Linken String evtl. einklammern: --- */ 
-     if( t_l < hoe ){ /* alle Operatoren incl. 'NOT' */ 
-	if( strcmp(symb_m,"^") == 0
-	    ){ /* -- bei '^' auch bei gleicher Prioritaet klammern: --*/
-		 if( p_l <= p_m ){
-		    strcpy3(temp_str,"(",str_l,")");
-		    strcpy(str_l,temp_str);
-		 }
-	    }else{ /* --- sonst nur bei niedrigerer Prioritaet klammern,
-		    aber nicht bei '+' mit '-' [z.B. f(x)=(1+2)-3]: --- */
-		 if( (p_l < p_m) &&
-		    !(strcmp(symb_l,"+")==0 && strcmp(symb_m,"-")==0) ){
-		    strcpy3(temp_str,"(",str_l,")");
-		    strcpy(str_l,temp_str);
-		 }
-	}
-     }
-
-     /* --- Rechten String evtl. einklammern: --- */
-     if( t_r < hoe ){                 /*alle Operatoren incl. 'NOT' */
-	if( strcmp(symb_m,"/") == 0 || strcmp(symb_m,"mod") == 0 ||
-	    strcmp(symb_m,"-") == 0 || strcmp(symb_m,"^") == 0
-	    ){ /* --- klammern auch bei gleicher Prioritaet: --- */
-		 if( symbol[t_r].info <= symbol[t_m].info ){
-		    strcpy3(temp_str,"(",str_r,")");
-		    strcpy(str_r,temp_str);
-		 }
-	    }else{ if( symbol[t_r].info < symbol[t_m].info ){
-		    strcpy3(temp_str,"(",str_r,")");
-		    strcpy(str_r,temp_str);
-		 }
-	}
-     }
-
-     /* --- Bei einigen Operatoren Spaces drumherum setzen: --- */
-     if( strcmp(symb_m,"xor") == 0 || strcmp(symb_m,"and") == 0 ||
-	strcmp(symb_m,"or" ) == 0 || strcmp(symb_m,"mod") == 0 ){
-	 strcpy3(temp_str," ",symb_m," ");
-	 strcpy(symb_m,temp_str);
-     }
-
-     /* --- Rueckgabestring zusammensetzen aus linkem String,
-			  Verknuepfungsoperator und rechtem String: --- */
-/*TIRLER C-Ausgabe */
-       if (strcmp(symb_m,"^") == 0)
-	 { return strcpy5(ret_str, "pow(" , str_l, "," , str_r, ")" ); }
- 
-
-
-     return strcpy3(ret_str,str_l,symb_m,str_r);
-  }
-
-  /*-- bei "not" klammern, wenn Operator geringerer Prioritaet folgt: --*/
-  if( strcmp(symb_m,"not") == 0 ){
-     if( sk_r==REL_OP || sk_r==ADD_OP||sk_r==MUL_OP||strcmp(symb_r,"^")==0
-	){ strcpy3(ret_str,"not(",str_r,")");
-	     return ret_str;
-	}else{ /* --- sonst nicht klammern: --- */
-	     return strcpy3(ret_str,"not ",str_r,"");
-     }
-  }
-
-  /* --- Parameterlisten von Funktionen: --- */
-  if (strcmp(symb_m,",") == 0) return strcpy3(ret_str,str_l,",",str_r);
-
-  /* --- Funktionen: Parameterlisten in Klammern setzen: --- */
-  if( sk_m == SFUNCS || sk_m == UFUNCS ){
-     strcpy3(ret_str,symb_m,"(",str_r);
-     return strcat(ret_str,")");
-  }
-
-  /* --- Alle Endsymbole direkt zurueck: --- */
-  return strcpy(ret_str,symb_m);
-}
-/*********************************** ************************************/
-
-char *strcpy3(char *s1, char *s2, char *s3, char *s4)
-
-/*  Verkettet die Strings s2, s3 und s4 und kopiert sie in s1. */
-
-{
-  *s1 = '\0';
-  strcat(s1,s2); strcat(s1,s3); strcat(s1,s4);
-  return s1;
-}
-
-
-/*********************************** ************************************/
-/* TIRLER */
-char *strcpy5(char *s1, char *s2, char *s3, char *s4, char *s5, char *s6)
-
-/*  Verkettet die Strings s2, bis s6  und kopiert sie in s1. */
-
-{
-  *s1 = '\0';
-  strcat(s1,s2); strcat(s1,s3); strcat(s1,s4); strcat(s1,s5); strcat(s1,s6);
-  return s1;
-}
-
-/************************************************************************
- * Prozeduren zur numerischen Bewertung eines Parse-Baumes:             *
- ************************************************************************/
-
-double tree2float(struct treenode *E_root, double x)
-
-/*  Erwartet in E_root den Zeiger auf den Parsebaum einer Expression und
- *  liefert als Ergebnis den numerischen Wert des Baumes.
- */
-
-{
-  double val_l, val_r;
-
-  switch (E_root->symbkind) {
-  case UCONST:
-  case SCONST:
-    /* node contains constant */
-    return E_root->val;
-
-  case UIDENT:
-    /* variable */
-    return x;
-
-  default:
-    /* use evaluation function */
-    /* compute values at leaves */
-    val_l = (E_root->left  != NULL) ? tree2float(E_root->left, x) : 0. ;
-    val_r = (E_root->right != NULL) ? tree2float(E_root->right,x) : 0. ;
-
-    return (*symbol[E_root->token].vcalc)(val_l,val_r);
-  }
-}
-
-/*********************************** ************************************/
+/*****************************************************************************/
+/** BAUSTELLE                                                               **/
+/*****************************************************************************/
 
 double v_dummy  (double l, double r) { return 0.0; }
 double v_less   (double l, double r) { return (l <  r); }
@@ -1804,335 +2065,23 @@ double v_sec (double l, double r) { return 1/cos( r); }
 double v_sqr (double l, double r) { return sqrt(  r); }
 double v_abs (double l, double r) { return abs (  r); }
 
-
-/************************************************************************
- * Prozeduren zur analytischen Ableitung eines Parse-Baumes:            *
- ************************************************************************/
-
-/************************************************************************/
-
-void nxt_part_derivation(struct treenode *DP_root,struct treenode *root)
-
-/*  Hangelt sich rekursiv durch die Parameterliste DP_root der Funktions-
- *  definition, auf die root zeigt.
- *  Alle partiellen Ableitungen werden auf dem Bildschirm ausgegeben.
- */
-
-{
-  struct treenode *d_tree;
-  char par[SYMBLENGTH], deriv[MAXLENGTH];
-
-  strcpy(par,DP_root->symb);
-  if( strcmp(par,",") == 0 ){
-     nxt_part_derivation(DP_root->left,root);
-     strcpy(par,DP_root->right->symb);
-  }
-  d_tree = part_deriv(root,par,deriv);
-  printf("\n%s",deriv);
-}
-/*********************************** ************************************/
-
-struct treenode *part_deriv(struct treenode *root,char *par,char *ret_str)
-
-/*  Erwartet als Input in root den Zeiger auf eine komplette Funktions-
- *  definition ("fname(x,y,...)=...") und in *par den String des
- *  Parameters, nach dem abgeleitet werden soll.
- *  Der Parsebaum der partiellen Ableitung wird zurueckgeliefert, in
- *  ret_str die partielle Ableitung als String. Der Funktionsname der
- *  Ableitung wird aus dem Namen der Stammfunktion durch Anhaengen
- *  des Parameters erzeugt ("fname_x(...)=...").
- */
-
-{
-  struct treenode *E_root  =root->right;    /*zeigt auf Expression      */
-  struct treenode *DFD_root=root->left;    /*zeigt auf DefFunctDesignator*/
-  struct treenode *DP_root =DFD_root->right;/*zeigt auf DefParameterlist*/
-  struct treenode *parsetree;
-  char            temp_str[MAXLENGTH];
-  int             errcode, errpos;
-
-  strcpy(temp_str,tree2string(DP_root,ret_str)); /*Par.liste als String */
-  strcpy6(ret_str,DFD_root->symb,"_",par,"(",temp_str,")=");/*neuer Name*/
-  derive_expression(E_root,par,temp_str);
-  strcat(ret_str,temp_str);
-  parsetree = string2tree(ret_str,&errcode,&errpos);
-  if( errcode
-     ){ pt_error(ret_str,errcode,errpos);
-     }else{ tree2string(parsetree,ret_str);
-  }
-  return parsetree;
-}
-/*********************** *********************** ************************/
-
-char *derive_expression(struct treenode *E_root,char *par,char *ret_str)
-
-/*  Erwartet in E_root den Zeiger auf den Parsebaum einer Expression,
- *  in par den String des Parameters, nach dem abgeleitet werden soll,
- *  und liefert in ret_str die Ableitung als String zurueck.
- *  ACHTUNG: Wegen Rekursion sehr viel Stack-Speicher-Verbrauch!!!
- *                           =====================================
- */
-
-{
-  struct treenode *right, *left;
-  char            l[MAXLENGTH], dl[MAXLENGTH];/* linker Zweig/Ableitung */
-  char            r[MAXLENGTH], dr[MAXLENGTH];/* rechtr Zweig/Ableitung */
-  char            temp_str[MAXLENGTH];
-  int             tm;
-
-  l[0] = r[0] = dl[0] = dr[0] = temp_str[0] = ret_str[0] = '\0';
-  /* --- Werte der Wurzel: --- */
-  tm    = E_root->token; /* Token der Wurzel ("Mitte") */
-  left  = E_root->left;
-  right = E_root->right;
-  if( left != NULL ){
-     tree2string(left,temp_str);
-     strcpy3(l,"(",temp_str,")");        /* linker Zweig, eingeklammert */
-     derive_expression(left,par,temp_str);
-     strcpy3(dl,"(",temp_str,")");/* Abl. d.linken Zweigs,eingeklammert */
-  }
-  if( right != NULL ){
-     tree2string(right,temp_str);
-     strcpy3(r,"(",temp_str,")");       /* rechter Zweig, eingeklammert */
-     derive_expression(right,par,temp_str);
-     strcpy3(dr,"(",temp_str,")");/* Abl. d.rechtn Zweigs,eingeklammert */
-  }
-  return (*symbol[tm].dcalc)(par,E_root,l,r,dl,dr,ret_str);
-}
 /**************** ****************** ****************** *****************/
 
-char *d_dummy(char *par,struct treenode *w,char *l,char *r,char *dl,
-	      char *dr,char *s)
-	     { return strcpy(s,"dummy"); }
-
-char *d_const(char *par,struct treenode *w,char *l,char *r,char *dl,
-	      char *dr,char *s)  /* Ableitung von Konstanten/Parametern */
-	     {
-	       if( strcmp(w->symb,par) == 0
-		  ){ strcpy(s,"1");        /* Abl. des Parameters = 1 */
-		  }else{ strcpy(s,"0");        /* Abl. von Konstanten = 0 */
-	       }
-	       return s;
-	     }
-
-char *d_add(char *par,struct treenode *w,char *l,char *r,char *dl,
-	    char *dr,char *s)        /* Additionsregel: (l+r)' = l'+r'  */
-	   { return strcpy3(s,dl,w->symb,dr); }
-
-char *d_mul(char *par,struct treenode *w,char *l,char *r,char *dl,
-	    char *dr,char *s) /* Multiplikationsregel: (lr)' = l'r+lr'  */
-	   { return strcat(strcpy6(s,dl,"*",r,"+",l,"*"),dr); }
-
-char *d_div(char *par,struct treenode *w,char *l,char *r,char *dl,
-	    char *dr,char *s) /*Quotientenregel: (l/r)' = (l'r-lr')/r^2 */
-	   {
-	     strcpy6(s,"(",dl,"*",r,"-",l);
-	     strcpy6(l,s,"*",dr,")/",r,"^2");
-	     return strcpy(s,l);
-	   }
-
-char *d_power(char *par,struct treenode *w,char *l,char *r,char *dl,
-	      char *dr,char *s) /*Potenzregel:(l^r)'=l^r*(r'LN l+r*l'/l)*/
-				/*   r=const.:(l^r)'=rl^(r-1)l'         */
-	     {
-	       if( strstr(r,par) == 0
-		  ){ /* --- im Exponenten kein unabh. Parameter: --- */
-		       strcpy6(s,r,"*",l,"^(",r,"-1)*");
-		       strcat (s,dl);
-		  }else{ /* --- auch im Exponenten unabh. Parameter: --- */
-		       strcpy6(s,l,"^",r,"*(",dr,"*ln(");
-		       strcpy6(dr,s,l,")+",r,"*",dl);
-		       strcpy6(s,dr,"/",l,")","","");
-	       }
-	       return s;
-	     }
-
-#if 0
-char *d_ufuncs(char *par,struct treenode *w,char *l,char *r,char *dl,
-	       char *dr,char *s)    /* Abl. der benutzerdef. Funktionen */
-	      {
-		struct treenode *parsetree;
-		parsetree = part_deriv(symbol[w->token].tree,par,s);
-		return strcpy(s,parsetree->left->symb);
-	      }
-#endif
-
-char *d_exp(char *par,struct treenode *w,char *l,char *r,char *dl,
-	    char *dr,char *s)           /* (EXP(r))' = r'*EXP(r)        */
-	   { return strcpy3(s,dr,"*exp",r); }
-
-char *d_ln(char *par,struct treenode *w,char *l,char *r,char *dl,
-	   char *dr,char *s)            /* (LN(r))' = r'/r              */
-	  { return strcpy3(s,dr,"/",r); }
-
-char *d_log(char *par,struct treenode *w,char *l,char *r,char *dl,
-	    char *dr,char *s)           /* (LOG(l,r))' = r'/(r*LN(l))   */
-	   {
-	     /*l,r,dl,dr neu berechnen,da in r die ganze Arg.liste steht*/
-	     tree2string      (w->right->left ,l);
-	     derive_expression(w->right->left ,par,dl);
-	     tree2string      (w->right->right,r);
-	     derive_expression(w->right->right,par,dr);
-	     return strcpy6(s,dr,"/(",r,"*ln(",l,"))");
-	   }
-
-char *d_sin(char *par,struct treenode *w,char *l,char *r,char *dl,
-	    char *dr,char *s)           /* (SIN(r))' = r'*COS(r)        */
-	   { return strcpy3(s,dr,"*cos",r); }
-
-char *d_cos(char *par,struct treenode *w,char *l,char *r,char *dl,
-	    char *dr,char *s)           /* (COS(r))' = -r'*SIN(r)       */
-	   { return strcpy6(s,"-",dr,"*sin",r,"",""); }
-
-char *d_tan(char *par,struct treenode *w,char *l,char *r,char *dl,
-	    char *dr,char *s)           /* (TAN(r))' = r'*(SEC(r))^2    */
-	   { return strcpy6(s,dr,"*(sec",r,")^2","",""); }
-
-char *d_sec(char *par,struct treenode *w,char *l,char *r,char *dl,
-	    char *dr,char *s)           /* (SEC(r))' = r'*TAN(r)*SEC(r) */
-	   { return strcpy6(s,dr,"*tan",r,"*sec",r,""); }
-
-char *d_sqr(char *par,struct treenode *w,char *l,char *r,char *dl,
-	    char *dr,char *s)           /* (SQR(r))' = r'/(2*SQR(r))    */
-	   { return strcpy6(s,dr,"/(2*sqr(",r,"))" ,"",""); }
-
-char *d_abs(char *par,struct treenode *w,char *l,char *r,char *dl,
-	    char *dr,char *s)           /* (ABS(r))' = "ABSerror"       */
-	   { return strcpy(s,"ABSerror"); }
-
+char *d_dummy() { return NULL; }
+char *d_const() { return NULL; }
+char *d_add() { return NULL; }
+char *d_mul() { return NULL; }
+char *d_div() { return NULL; }
+char *d_power() { return NULL; }
+char *d_exp() { return NULL; }
+char *d_ln() { return NULL; }
+char *d_log() { return NULL; }
+char *d_sin() { return NULL; }
+char *d_cos() { return NULL; }
+char *d_tan() { return NULL; }
+char *d_sec() { return NULL; }
+char *d_sqr() { return NULL; }
+char *d_abs() { return NULL; }
 
 /**************** ****************** ****************** *****************/
-
-char *strcpy6(char *s1, char *s2, char *s3,
-	      char *s4, char *s5, char *s6, char *s7)
-
-/*  Verkettet die Strings s2 bis s7 und kopiert sie in s1. */
-
-{
-  *s1 = '\0';
-  strcat(s1,s2); strcat(s1,s3); strcat(s1,s4);
-  strcat(s1,s5); strcat(s1,s6); strcat(s1,s7);
-  return s1;
-}
-
 /**************** ****************** ****************** *****************/
-
-
-
-/***************************************************************************************/
-struct treenode *_unur_fstr2tree(char *function, int *errcodep, int *errposp)
-
-{ 
-/*    char            *fvonx; */
-  struct treenode *root;
-
- 
-/*    fvonx= malloc((10+MAXLENGTH)*sizeof(char));      */
-/*    strcpy(fvonx,"f(x)=");   */
-/*    strcat(fvonx,function); */
-/*    function = fvonx;  */
-/*    free(fvonx);  */
-
-  root=string2tree(function,errcodep,errposp);
-
-  return root;
-  
-}
-
-/***************************************************************************************/
-double  _unur_fstr_eval_tree(struct treenode *E_root, double x)
-{  
-  double          result;
-  struct treenode *froot;
-  int             ftok;
-
-  ftok = ufunct;  /* index for "UFUNCT" in table */
-
-  froot=(*symbol[ftok].tree).right;             /* Achtung Fehler in Beschreibung !!! */
-  result=tree2float(froot,x);
-  return result;
-  }
-/***************************************************************************************/
-char *Ntree2string(struct treenode *tree_root, char *ret_str)
-
-{
-  struct treenode  *froot;
-  int              ftok;
-
-  ftok = ufunct;  /* index for "UFUNCT" in table */
-  froot=(*symbol[ftok].tree).right;          
-  tree2Cstring(froot,ret_str); 
-  return ret_str;
-}
-/***************************************************************************************/
-struct treenode *_unur_fstr_make_derivative(struct treenode *root)
-{ 
-   struct treenode *parsetreeh;
-  
-   char            x[MAXLENGTH];
-   char            ret_str[MAXLENGTH];
-  
-   strcpy(x,"x"); 
-   parsetreeh=part_deriv(root,x,ret_str);
-   return parsetreeh;
-}
-
-/***************************************************************************************/
-
-
-/*****************************************************************************/
-/**                                                                         **/
-/*****************************************************************************/
-
-/*---------------------------------------------------------------------------*/
-
-char *
-_unur_prepare_string( const char *str )
-     /*----------------------------------------------------------------------*/
-     /* Prepare string for processing:                                       */
-     /*   Copy into working strint.                                          */
-     /*   Remove all white spaces and convert to lower case letters.         */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   str      ... pointer to string                                     */
-     /*                                                                      */
-     /* return:                                                              */
-     /*   pointer to working string.                                         */
-     /*                                                                      */
-     /* as a side effect, a new string is allocated.                         */
-     /*----------------------------------------------------------------------*/
-{
-  char *tmp, *ptr;
-  char *new;       /* pointer to working copy of string */
-  size_t len;      /* length of string */
-
-  /* length of string */
-  len = strlen(str)+1;
-  /* allocate memory for copy */
-  new = _unur_malloc( len * sizeof(char) );
-  /* copy memory */
-  ptr = memcpy(new,str,len);
-
-  /* copy characters but skip all white spaces */
-  for (tmp = ptr; *tmp != '\0'; tmp++)
-    if ( !isspace(*tmp) ) {
-      *ptr = tolower(*tmp);
-      ptr++;
-    }
-
-  /* terminate string */
-  *ptr = '\0';
-
-  /* return pointer to working copy */
-  return new;
-
-} /* end of _unur_prepare_string() */
-
-/*---------------------------------------------------------------------------*/
-
-
-
-/*****************************************************************************/
-/**  End                                                                    **/
-/*****************************************************************************/
-

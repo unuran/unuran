@@ -243,6 +243,10 @@ unur_distr_cvemp_get_data( struct unur_distr *distr, double **sample )
 
 /*****************************************************************************/
 
+/*---------------------------------------------------------------------------*/
+#ifdef UNUR_ENABLE_LOGGING
+/*---------------------------------------------------------------------------*/
+
 void
 _unur_distr_cvemp_debug( struct unur_distr *distr, char *genid, int printvector )
      /*----------------------------------------------------------------------*/
@@ -287,4 +291,5 @@ _unur_distr_cvemp_debug( struct unur_distr *distr, char *genid, int printvector 
 } /* end of _unur_distr_cvemp_debug() */
 
 /*---------------------------------------------------------------------------*/
-
+#endif    /* end UNUR_ENABLE_LOGGING */
+/*---------------------------------------------------------------------------*/

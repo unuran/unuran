@@ -19,11 +19,6 @@ $top_srcdir .= "/..";
 require "$top_srcdir/scripts/read_PDF.pl";
 
 # ----------------------------------------------------------------
-
-# C file for code generator  
-#my $headergen_file = "headergen.c";
-
-# ----------------------------------------------------------------
 # List of distributions
 my $DISTR = read_PDFdata( $top_srcdir );
 

@@ -51,7 +51,10 @@
 
 /*---------------------------------------------------------------------------*/
 
-static struct unur_gen *unif_create( struct unur_par *par );
+static struct unur_gen *_unur_unif_create( struct unur_par *par );
+/*---------------------------------------------------------------------------*/
+/* create new (almost empty) generator object.                               */
+/*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*/
 /* abbreviations */
@@ -68,23 +71,24 @@ static struct unur_gen *unif_create( struct unur_par *par );
 
 struct unur_par *
 unur_unif_new( int start, int skip )
-/*---------------------------------------------------------------------------*/
-/* get default parameters                                                    */
-/*                                                                           */
-/* parameters:                                                               */
-/*   start ...  starting point for subsequences (0 = first number)           */
-/*   skip  ...  skip for subsequence (1 = full sequence)                     */
-/*                                                                           */
-/* return:                                                                   */
-/*   default parameters (pointer to structure)                               */
-/*                                                                           */
-/* error:                                                                    */
-/*   return NULL                                                             */
-/*                                                                           */
-/* comment:                                                                  */
-/*   for testing only.                                                       */
-/*   negative number for start and skip are treated as 0 and 1, respectively */
-/*---------------------------------------------------------------------------*/
+     /*----------------------------------------------------------------------*/
+     /* get default parameters                                               */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   start ...  starting point for subsequences (0 = first number)      */
+     /*   skip  ...  skip for subsequence (1 = full sequence)                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   default parameters (pointer to structure)                          */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return NULL                                                        */
+     /*                                                                      */
+     /* comment:                                                             */
+     /*   for testing only.                                                  */
+     /*   negative number for start and skip are treated as 0 and 1,         */
+     /*   respectively.                                                      */
+     /*----------------------------------------------------------------------*/
 { 
   struct unur_par *par;
 
@@ -115,18 +119,18 @@ unur_unif_new( int start, int skip )
 
 struct unur_gen *
 unur_unif_init( struct unur_par *par )
-/*---------------------------------------------------------------------------*/
-/* initialize new generator                                                  */
-/*                                                                           */
-/* parameters:                                                               */
-/*   params  pointer to paramters for building generator object              */
-/*                                                                           */
-/* return:                                                                   */
-/*   pointer to generator object                                             */
-/*                                                                           */
-/* error:                                                                    */
-/*   return NULL                                                             */
-/*---------------------------------------------------------------------------*/
+     /*----------------------------------------------------------------------*/
+     /* initialize new generator                                             */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   params  pointer to paramters for building generator object         */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to generator object                                        */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return NULL                                                        */
+     /*----------------------------------------------------------------------*/
 { 
   struct unur_gen *gen;
   int i;
@@ -136,7 +140,7 @@ unur_unif_init( struct unur_par *par )
   COOKIE_CHECK(par,CK_UNIF_PAR,NULL);
 
   /* create a new empty generator object */
-  gen = unif_create(par);
+  gen = _unur_unif_create(par);
   if (!gen) { free(par); return NULL; }
 
   /* skip to starting point */
@@ -154,18 +158,18 @@ unur_unif_init( struct unur_par *par )
 
 double
 unur_unif_sample( struct unur_gen *gen )
-/*---------------------------------------------------------------------------*/
-/* sample from generator                                                     */
-/*                                                                           */
-/* parameters:                                                               */
-/*   gen ... pointer to generator object                                     */
-/*                                                                           */
-/* return:                                                                   */
-/*   double (sample from random variate)                                     */
-/*                                                                           */
-/* error:                                                                    */
-/*   return 0.                                                               */
-/*---------------------------------------------------------------------------*/
+     /*----------------------------------------------------------------------*/
+     /* sample from generator                                                */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   double (sample from random variate)                                */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return 0.                                                          */
+     /*----------------------------------------------------------------------*/
 { 
   register int i;
   register double u;
@@ -189,12 +193,12 @@ unur_unif_sample( struct unur_gen *gen )
 
 void
 unur_unif_free( struct unur_gen *gen )
-/*---------------------------------------------------------------------------*/
-/* deallocate generator object                                               */
-/*                                                                           */
-/* parameters:                                                               */
-/*   gen ... pointer to generator object                                     */
-/*---------------------------------------------------------------------------*/
+     /*----------------------------------------------------------------------*/
+     /* deallocate generator object                                          */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*----------------------------------------------------------------------*/
 { 
 
   /* check arguments */
@@ -217,19 +221,19 @@ unur_unif_free( struct unur_gen *gen )
 /*****************************************************************************/
 
 static struct unur_gen *
-unif_create( struct unur_par *par )
-/*---------------------------------------------------------------------------*/
-/* allocate memory for generator                                             */
-/*                                                                           */
-/* parameters:                                                               */
-/*   par ... pointer to parameter for building generator object              */
-/*                                                                           */
-/* return:                                                                   */
-/*   pointer to (empty) generator object with default settings               */
-/*                                                                           */
-/* error:                                                                    */
-/*   return NULL                                                             */
-/*---------------------------------------------------------------------------*/
+_unur_unif_create( struct unur_par *par )
+     /*----------------------------------------------------------------------*/
+     /* allocate memory for generator                                        */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par ... pointer to parameter for building generator object         */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to (empty) generator object with default settings          */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return NULL                                                        */
+     /*----------------------------------------------------------------------*/
 {
   struct unur_gen *gen;
 
@@ -259,7 +263,7 @@ unif_create( struct unur_par *par )
   /* return pointer to (almost empty) generator object */
   return(gen);
   
-} /* end of utdr_create() */
+} /* end of _unur_unif_create() */
 
 /*****************************************************************************/
 /**  Debugging utilities                                                    **/

@@ -83,10 +83,21 @@
 
 /*---------------------------------------------------------------------------*/
 
-static struct unur_gen *utdr_create( struct unur_par *par );
+static struct unur_gen *_unur_utdr_create( struct unur_par *par );
+/*---------------------------------------------------------------------------*/
+/* create new (almost empty) generator object.                               */
+/*---------------------------------------------------------------------------*/
+
 #if UNUR_DEBUG & UNUR_DB_INFO
-static void utdr_info_init( struct unur_par *par, struct unur_gen *gen,
-			    double try, double trys, double cfac, int setupok);
+/*---------------------------------------------------------------------------*/
+/* the following functions print debugging information on output stream,     */
+/* i.e., into the log file if not specified otherwise.                       */
+/*---------------------------------------------------------------------------*/
+static void _unur_utdr_debug_init( struct unur_par *par, struct unur_gen *gen,
+				   double try, double trys, double cfac, int setupok);
+/*---------------------------------------------------------------------------*/
+/* print after generator has been initialized has completed.                 */
+/*---------------------------------------------------------------------------*/
 #endif
 
 /*---------------------------------------------------------------------------*/
@@ -105,24 +116,24 @@ static void utdr_info_init( struct unur_par *par, struct unur_gen *gen,
 /*****************************************************************************/
 
 struct unur_par *
- unur_utdr_new( double (*pdf)(double x,double *pdf_param, int n_pdf_param), double mode )
-/*---------------------------------------------------------------------------*/
-/* get default parameters                                                    */
-/*                                                                           */
-/* parameters:                                                               */
-/*   pdf  ... probability density function of the desired distribution       */
-/*   mode ... location of the mode of the distribution                       */
-/*                                                                           */
-/* return:                                                                   */
-/*   default parameters (pointer to structure)                               */
-/*                                                                           */
-/* error:                                                                    */
-/*   return NULL                                                             */
-/*                                                                           */
-/* comment:                                                                  */
-/*   if the area below the p.d.f. is not close to 1 it is necessary to set   */
-/*   pdf_area to an approximate value of its area (+/- 30 % is ok).          */
-/*---------------------------------------------------------------------------*/
+unur_utdr_new( double (*pdf)(double x,double *pdf_param, int n_pdf_param), double mode )
+     /*----------------------------------------------------------------------*/
+     /* get default parameters                                               */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   pdf  ... probability density function of the desired distribution  */
+     /*   mode ... location of the mode of the distribution                  */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   default parameters (pointer to structure)                          */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return NULL                                                        */
+     /*                                                                      */
+     /* comment:                                                             */
+     /*   if the area below the p.d.f. is not close to 1 it is necessary to  */
+     /*   set pdf_area to an approximate value of its area (+/- 30 % is ok). */
+     /*----------------------------------------------------------------------*/
 { 
   struct unur_par *par;
 
@@ -166,19 +177,19 @@ struct unur_par *
 /*****************************************************************************/
 
 struct unur_gen *
- unur_utdr_init( struct unur_par *par )
-/*---------------------------------------------------------------------------*/
-/* initialize new generator                                                  */
-/*                                                                           */
-/* parameters:                                                               */
-/*   params  pointer to paramters for building generator object              */
-/*                                                                           */
-/* return:                                                                   */
-/*   pointer to generator object                                             */
-/*                                                                           */
-/* error:                                                                    */
-/*   return NULL                                                             */
-/*---------------------------------------------------------------------------*/
+unur_utdr_init( struct unur_par *par )
+     /*----------------------------------------------------------------------*/
+     /* initialize new generator                                             */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   params  pointer to paramters for building generator object         */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to generator object                                        */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return NULL                                                        */
+     /*----------------------------------------------------------------------*/
 { 
   struct unur_gen *gen;
 
@@ -190,7 +201,7 @@ struct unur_gen *
   COOKIE_CHECK(par,CK_UTDR_PAR,NULL);
 
   /* create a new empty generator object */
-  gen = utdr_create(par);
+  gen = _unur_utdr_create(par);
   if (!gen) { free(par); return NULL; }
 
   /* start of the set-up procedure */
@@ -321,7 +332,7 @@ struct unur_gen *
 
 #if UNUR_DEBUG & UNUR_DB_INFO
     /* write info into log file */
-    if (gen->debug) utdr_info_init(par,gen,try,trys,cfac,setupok);
+    if (gen->debug) _unur_utdr_debug_init(par,gen,try,trys,cfac,setupok);
 #endif
 
     if (cfac!=2.) {
@@ -350,19 +361,19 @@ struct unur_gen *
 /*****************************************************************************/
 
 double
- unur_utdr_sample( struct unur_gen *gen )
-/*---------------------------------------------------------------------------*/
-/* sample from generator                                                     */
-/*                                                                           */
-/* parameters:                                                               */
-/*   gen ... pointer to generator object                                     */
-/*                                                                           */
-/* return:                                                                   */
-/*   double (sample from random variate)                                     */
-/*                                                                           */
-/* error:                                                                    */
-/*   return 0.                                                               */
-/*---------------------------------------------------------------------------*/
+unur_utdr_sample( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* sample from generator                                                */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   double (sample from random variate)                                */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return 0.                                                          */
+     /*----------------------------------------------------------------------*/
 { 
   double u,v,x,help,linx;
 
@@ -413,13 +424,13 @@ double
 /*****************************************************************************/
 
 void
- unur_utdr_free( struct unur_gen *gen )
-/*---------------------------------------------------------------------------*/
-/* deallocate generator object                                               */
-/*                                                                           */
-/* parameters:                                                               */
-/*   gen ... pointer to generator object                                     */
-/*---------------------------------------------------------------------------*/
+unur_utdr_free( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* deallocate generator object                                          */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*----------------------------------------------------------------------*/
 { 
 
   /* check arguments */
@@ -443,19 +454,19 @@ void
 /*****************************************************************************/
 
 static struct unur_gen *
- utdr_create( struct unur_par *par )
-/*---------------------------------------------------------------------------*/
-/* allocate memory for generator                                             */
-/*                                                                           */
-/* parameters:                                                               */
-/*   par ... pointer to parameter for building generator object              */
-/*                                                                           */
-/* return:                                                                   */
-/*   pointer to (empty) generator object with default settings               */
-/*                                                                           */
-/* error:                                                                    */
-/*   return NULL                                                             */
-/*---------------------------------------------------------------------------*/
+_unur_utdr_create( struct unur_par *par )
+     /*----------------------------------------------------------------------*/
+     /* allocate memory for generator                                        */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par ... pointer to parameter for building generator object         */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to (empty) generator object with default settings          */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return NULL                                                        */
+     /*----------------------------------------------------------------------*/
 {
   struct unur_gen *gen;
   int i;
@@ -502,7 +513,7 @@ static struct unur_gen *
   /* return pointer to (almost empty) generator object */
   return(gen);
   
-} /* end of utdr_create() */
+} /* end of _unur_utdr_create() */
 
 /*****************************************************************************/
 /**  Debugging utilities                                                    **/
@@ -511,15 +522,15 @@ static struct unur_gen *
 #if UNUR_DEBUG & UNUR_DB_INFO
 
 static void
- utdr_info_init( struct unur_par *par, struct unur_gen *gen,
-		 double try, double trys, double cfac, int setupok)
-/*---------------------------------------------------------------------------*/
-/* write info about generator into logfile                                   */
-/*                                                                           */
-/* parameters:                                                               */
-/*   par ... pointer to parameter for building generator object              */
-/*   gen ... pointer to generator object                                     */
-/*---------------------------------------------------------------------------*/
+_unur_utdr_debug_init( struct unur_par *par, struct unur_gen *gen,
+		       double try, double trys, double cfac, int setupok)
+     /*----------------------------------------------------------------------*/
+     /* write info about generator into logfile                              */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par ... pointer to parameter for building generator object         */
+     /*   gen ... pointer to generator object                                */
+     /*----------------------------------------------------------------------*/
 {
   FILE *log;
 
@@ -542,7 +553,7 @@ static void
   fprintf(log,"%s: cfac %e setupok %d volcompl %e pdf_area %e\n",gen->genid,cfac,setupok,GEN.volcompl,PAR.pdf_area);
   fprintf(log,"%s:\n",gen->genid);
 
-} /* end of utdr_info_init() */
+} /* end of _unur_utdr_debug_init() */
 
 #endif
 

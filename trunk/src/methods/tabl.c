@@ -91,25 +91,83 @@
 
 /*---------------------------------------------------------------------------*/
 
-static struct unur_gen *tabl_create( struct unur_par *par );
-static int get_starting_intervals( struct unur_par *par, struct unur_gen *gen );
-static int get_starting_intervals_from_slopes( struct unur_par *par, struct unur_gen *gen );
-static int get_starting_intervals_from_mode( struct unur_par *par, struct unur_gen *gen );
-static struct unur_tabl_interval *
- split_a_starting_intervals( struct unur_par *par, struct unur_gen *gen, struct unur_tabl_interval *iv_slope );
-static int 
- split_b_starting_intervals( struct unur_par *par, struct unur_gen *gen );
-static struct unur_tabl_interval *
- tabl_split_interval( struct unur_gen *gen, struct unur_tabl_interval *iv, double x, double fx, unsigned int split_mode );
-static int make_guide_table( struct unur_gen *gen );
+static struct unur_gen *_unur_tabl_create( struct unur_par *par );
+/*---------------------------------------------------------------------------*/
+/* create new (almost empty) generator object.                               */
+/*---------------------------------------------------------------------------*/
 
-static struct unur_tabl_interval *iv_pop_free( struct unur_gen *gen );
-/*  static void iv_push_free( struct unur_gen *gen ); */
+static int _unur_tabl_get_starting_intervals( struct unur_par *par, struct unur_gen *gen );
+/*---------------------------------------------------------------------------*/
+/* compute starting intervals.                                               */
+/*---------------------------------------------------------------------------*/
+
+static int _unur_tabl_get_starting_intervals_from_slopes( struct unur_par *par, struct unur_gen *gen );
+/*---------------------------------------------------------------------------*/
+/* compute starting intervals, use given slopes                              */
+/*---------------------------------------------------------------------------*/
+static int _unur_tabl_get_starting_intervals_from_mode( struct unur_par *par, struct unur_gen *gen );
+/*---------------------------------------------------------------------------*/
+/* compute starting intervals, use mode and domain                           */
+/*---------------------------------------------------------------------------*/
+
+static struct unur_tabl_interval *
+_unur_tabl_split_a_starting_intervals( struct unur_par *par, struct unur_gen *gen, struct unur_tabl_interval *iv_slope );
+/*---------------------------------------------------------------------------*/
+/* split starting intervals according to [1]                                 */
+/* SPLIT A (equal areas rule)                                                */
+/*---------------------------------------------------------------------------*/
+
+static int 
+_unur_tabl_split_b_starting_intervals( struct unur_par *par, struct unur_gen *gen );
+/*---------------------------------------------------------------------------*/
+/* split starting intervals according to [1]                                 */
+/* SPLIT B, but instead of the iteration in [1] use "arcmean".               */
+/*---------------------------------------------------------------------------*/
+
+static struct unur_tabl_interval *
+_unur_tabl_split_interval( struct unur_gen *gen, struct unur_tabl_interval *iv, 
+			   double x, double fx, unsigned int split_mode );
+/*---------------------------------------------------------------------------*/
+/* split interval (replace old one by two new ones in same place)            */
+/*---------------------------------------------------------------------------*/
+
+static int _unur_tabl_make_guide_table( struct unur_gen *gen );
+/*---------------------------------------------------------------------------*/
+/* make a guide table for indexed search.                                    */
+/*---------------------------------------------------------------------------*/
+
+static struct unur_tabl_interval *_unur_tabl_iv_stack_pop( struct unur_gen *gen );
+/*---------------------------------------------------------------------------*/
+/* pop an interval from the stack of free intervals.                         */
+/*---------------------------------------------------------------------------*/
+
+#if 0 /* we do not need this subroutine yet */
+static void _unur_tabl_iv_stack_push( struct unur_gen *gen );
+/*---------------------------------------------------------------------------*/
+/* push the last popped interval back onto the stack.                         */
+/*---------------------------------------------------------------------------*/
+#endif
 
 #if UNUR_DEBUG & UNUR_DB_INFO
-static void tabl_info_init( struct unur_par *par, struct unur_gen *gen );
-static void tabl_info_free( struct unur_gen *gen );
-static void tabl_info_intervals( struct unur_gen *gen, int print_areas );
+/*---------------------------------------------------------------------------*/
+/* the following functions print debugging information on output stream,     */
+/* i.e., into the log file if not specified otherwise.                       */
+/*---------------------------------------------------------------------------*/
+
+static void _unur_tabl_debug_init( struct unur_par *par, struct unur_gen *gen );
+/*---------------------------------------------------------------------------*/
+/* print after generator has been initialized has completed.                 */
+/*---------------------------------------------------------------------------*/
+
+static void _unur_tabl_debug_free( struct unur_gen *gen );
+/*---------------------------------------------------------------------------*/
+/* print before generater is destroyed.                                      */
+/*---------------------------------------------------------------------------*/
+
+static void _unur_tabl_debug_intervals( struct unur_gen *gen, int print_areas );
+/*---------------------------------------------------------------------------*/
+/* print data for intervals.                                                 */
+/*---------------------------------------------------------------------------*/
 #endif
 
 /*---------------------------------------------------------------------------*/
@@ -152,18 +210,18 @@ static void tabl_info_intervals( struct unur_gen *gen, int print_areas );
 
 struct unur_par *
 unur_tabl_new( double (*pdf)(double x,double *pdf_param, int n_pdf_param) )
-/*---------------------------------------------------------------------------*/
-/* get default parameters                                                    */
-/*                                                                           */
-/* parameters:                                                               */
-/*   pdf  ... probability density function of the desired distribution       */
-/*                                                                           */
-/* return:                                                                   */
-/*   default parameters (pointer to structure)                               */
-/*                                                                           */
-/* error:                                                                    */
-/*   return NULL                                                             */
-/*---------------------------------------------------------------------------*/
+     /*----------------------------------------------------------------------*/
+     /* get default parameters                                               */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   pdf  ... probability density function of the desired distribution  */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   default parameters (pointer to structure)                          */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return NULL                                                        */
+     /*----------------------------------------------------------------------*/
 { 
   struct unur_par *par;
 
@@ -217,13 +275,13 @@ unur_tabl_new( double (*pdf)(double x,double *pdf_param, int n_pdf_param) )
 
 int 
 unur_set_tabl_variant( struct unur_par *par, unsigned int variant )
-/*---------------------------------------------------------------------------*/
-/* set variant of method                                                     */
-/*                                                                           */
-/* parameters:                                                               */
-/*   par     ... pointer to parameter for building generator object          */
-/*   variant ... indicator for variant                                       */
-/*---------------------------------------------------------------------------*/
+     /*----------------------------------------------------------------------*/
+     /* set variant of method                                                */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par     ... pointer to parameter for building generator object     */
+     /*   variant ... indicator for variant                                  */
+     /*----------------------------------------------------------------------*/
 {
   /* check arguments */
   CHECK_NULL(par,0);
@@ -242,18 +300,18 @@ unur_set_tabl_variant( struct unur_par *par, unsigned int variant )
 
 struct unur_gen *
 unur_tabl_init( struct unur_par *par )
-/*---------------------------------------------------------------------------*/
-/* initialize new generator                                                  */
-/*                                                                           */
-/* parameters:                                                               */
-/*   params  pointer to paramters for building generator object              */
-/*                                                                           */
-/* return:                                                                   */
-/*   pointer to generator object                                             */
-/*                                                                           */
-/* error:                                                                    */
-/*   return NULL                                                             */
-/*---------------------------------------------------------------------------*/
+     /*----------------------------------------------------------------------*/
+     /* initialize new generator                                             */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   params  pointer to paramters for building generator object         */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to generator object                                        */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return NULL                                                        */
+     /*----------------------------------------------------------------------*/
 { 
   struct unur_gen *gen;
 
@@ -262,11 +320,11 @@ unur_tabl_init( struct unur_par *par )
   COOKIE_CHECK(par,CK_TABL_PAR,NULL);
 
   /* create a new empty generator object */
-  gen = tabl_create(par);
+  gen = _unur_tabl_create(par);
   if (!gen) { free(par); return NULL; }
 
   /* get slopes for starting generator */
-  if (!get_starting_intervals(par,gen)) {
+  if (!_unur_tabl_get_starting_intervals(par,gen)) {
     _unur_error(gen->genid,UNUR_ERR_INIT,"Cannot make hat function.");
     free(par); unur_tabl_free(gen);
     return NULL;
@@ -274,15 +332,15 @@ unur_tabl_init( struct unur_par *par )
 
 #if UNUR_DEBUG & UNUR_DB_INFO
   /* write info into log file */
-  if (gen->debug) tabl_info_init(par,gen);
+  if (gen->debug) _unur_tabl_debug_init(par,gen);
   if (gen->debug & TABL_DB_A_IV)
-    tabl_info_intervals(gen,FALSE);
+    _unur_tabl_debug_intervals(gen,FALSE);
 #endif
 
   /* split according to [1], run SPLIT B */
   if (PAR.variant & TABL_STP_SPLIT_B)
     while (GEN.n_ivs < PAR.n_starting_cpoints)
-      if (!split_b_starting_intervals(par,gen))
+      if (!_unur_tabl_split_b_starting_intervals(par,gen))
 	return NULL;
   
   /* we have to update the maximal number of intervals,
@@ -294,12 +352,12 @@ unur_tabl_init( struct unur_par *par )
   }
 
   /* make initial guide table */
-  make_guide_table(gen);
+  _unur_tabl_make_guide_table(gen);
 
 #if UNUR_DEBUG & UNUR_DB_INFO
   /* write info into log file */
   if (gen->debug)
-    tabl_info_intervals(gen,TRUE);
+    _unur_tabl_debug_intervals(gen,TRUE);
 #endif
 
   /* free parameters */
@@ -313,18 +371,18 @@ unur_tabl_init( struct unur_par *par )
 
 double
 unur_tabl_sample_adaptive( struct unur_gen *gen )
-/*---------------------------------------------------------------------------*/
-/* sample from generator                                                     */
-/*                                                                           */
-/* parameters:                                                               */
-/*   gen ... pointer to generator object                                     */
-/*                                                                           */
-/* return:                                                                   */
-/*   double (sample from random variate)                                     */
-/*                                                                           */
-/* error:                                                                    */
-/*   return 0.                                                               */
-/*---------------------------------------------------------------------------*/
+     /*----------------------------------------------------------------------*/
+     /* sample from generator                                                */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   double (sample from random variate)                                */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return 0.                                                          */
+     /*----------------------------------------------------------------------*/
 { 
   struct unur_tabl_interval *iv;
   double u,x,fx;
@@ -383,8 +441,8 @@ unur_tabl_sample_adaptive( struct unur_gen *gen )
       fx = PDF(x);
       /* split interval */
       if (GEN.n_ivs < GEN.max_ivs && GEN.max_ratio * GEN.Atotal > GEN.Asqueeze) {
-      	tabl_split_interval( gen, iv, x, fx, (GEN.variant & TABL_MASK_SPLIT) );
-  	make_guide_table(gen);
+      	_unur_tabl_split_interval( gen, iv, x, fx, (GEN.variant & TABL_MASK_SPLIT) );
+  	_unur_tabl_make_guide_table(gen);
 	/** TODO: it is not necessary to update the guide table every time. 
 	    But then (1) some additional bookkeeping is required and
 	    (2) the guide table method requires a acc./rej. step. **/
@@ -403,18 +461,18 @@ unur_tabl_sample_adaptive( struct unur_gen *gen )
 
 double
 unur_tabl_sample( struct unur_gen *gen )
-/*---------------------------------------------------------------------------*/
-/* sample from generator                                                     */
-/*                                                                           */
-/* parameters:                                                               */
-/*   gen ... pointer to generator object                                     */
-/*                                                                           */
-/* return:                                                                   */
-/*   double (sample from random variate)                                     */
-/*                                                                           */
-/* error:                                                                    */
-/*   return 0.                                                               */
-/*---------------------------------------------------------------------------*/
+     /*----------------------------------------------------------------------*/
+     /* sample from generator                                                */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   double (sample from random variate)                                */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return 0.                                                          */
+     /*----------------------------------------------------------------------*/
 { 
   struct unur_tabl_interval *iv;
   double u,x,fx;
@@ -452,8 +510,8 @@ unur_tabl_sample( struct unur_gen *gen )
       fx = PDF(x);
       /* split interval */
       if (GEN.n_ivs < GEN.max_ivs && GEN.max_ratio * GEN.Atotal > GEN.Asqueeze) {
-      	tabl_split_interval( gen, iv, x, fx, (GEN.variant & TABL_MASK_SPLIT) );
-	make_guide_table(gen);
+      	_unur_tabl_split_interval( gen, iv, x, fx, (GEN.variant & TABL_MASK_SPLIT) );
+	_unur_tabl_make_guide_table(gen);
 	/** TODO: it is not necessary to update the guide table every time. 
 	    But then (1) some additional bookkeeping is required and
 	    (2) the guide table method requires a acc./rej. step. **/
@@ -472,18 +530,18 @@ unur_tabl_sample( struct unur_gen *gen )
 
 double
 unur_tabl_sample_check( struct unur_gen *gen )
-/*---------------------------------------------------------------------------*/
-/* sample from generator and verify that method can be used                  */
-/*                                                                           */
-/* parameters:                                                               */
-/*   gen ... pointer to generator object                                     */
-/*                                                                           */
-/* return:                                                                   */
-/*   double (sample from random variate)                                     */
-/*                                                                           */
-/* error:                                                                    */
-/*   return 0.                                                               */
-/*---------------------------------------------------------------------------*/
+     /*----------------------------------------------------------------------*/
+     /* sample from generator and verify that method can be used             */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   double (sample from random variate)                                */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return 0.                                                          */
+     /*----------------------------------------------------------------------*/
 { 
   struct unur_tabl_interval *iv;
   double u,x,fx;
@@ -534,8 +592,8 @@ unur_tabl_sample_check( struct unur_gen *gen )
 	_unur_warning(gen->genid,UNUR_ERR_SAMPLE,"pdf < squeeze. pdf not monotone in interval");
       /* split interval */
       if (GEN.n_ivs < GEN.max_ivs && GEN.max_ratio * GEN.Atotal > GEN.Asqueeze) {
-      	tabl_split_interval( gen, iv, x, fx, (GEN.variant & TABL_MASK_SPLIT) );
-	make_guide_table(gen);
+      	_unur_tabl_split_interval( gen, iv, x, fx, (GEN.variant & TABL_MASK_SPLIT) );
+	_unur_tabl_make_guide_table(gen);
 	/** TODO: it is not necessary to update the guide table every time. 
 	    But then (1) some additional bookkeeping is required and
 	    (2) the guide table method requires a acc./rej. step. **/
@@ -555,12 +613,12 @@ unur_tabl_sample_check( struct unur_gen *gen )
 
 void
 unur_tabl_free( struct unur_gen *gen )
-/*---------------------------------------------------------------------------*/
-/* deallocate generator object                                               */
-/*                                                                           */
-/* parameters:                                                               */
-/*   gen ... pointer to generator object                                     */
-/*---------------------------------------------------------------------------*/
+     /*----------------------------------------------------------------------*/
+     /* deallocate generator object                                          */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*----------------------------------------------------------------------*/
 { 
   /* check arguments */
   if( !gen ) /* nothing to do */
@@ -573,7 +631,7 @@ unur_tabl_free( struct unur_gen *gen )
 
   /* write info into log file */
 #if UNUR_DEBUG & UNUR_DB_INFO
-  if (gen->debug) tabl_info_free(gen);
+  if (gen->debug) _unur_tabl_debug_free(gen);
 #endif
 
   /* free linked list of intervals and others */
@@ -592,19 +650,19 @@ unur_tabl_free( struct unur_gen *gen )
 /*****************************************************************************/
 
 static struct unur_gen *
-tabl_create( struct unur_par *par )
-/*---------------------------------------------------------------------------*/
-/* allocate memory for generator                                             */
-/*                                                                           */
-/* parameters:                                                               */
-/*   par ... pointer to parameter for building generator object              */
-/*                                                                           */
-/* return:                                                                   */
-/*   pointer to (empty) generator object with default settings               */
-/*                                                                           */
-/* error:                                                                    */
-/*   return NULL                                                             */
-/*---------------------------------------------------------------------------*/
+_unur_tabl_create( struct unur_par *par )
+     /*----------------------------------------------------------------------*/
+     /* allocate memory for generator                                        */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par ... pointer to parameter for building generator object         */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to (empty) generator object with default settings          */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return NULL                                                        */
+     /*----------------------------------------------------------------------*/
 {
   struct unur_gen *gen;
   int i;
@@ -667,26 +725,27 @@ tabl_create( struct unur_par *par )
   /* return pointer to (almost empty) generator object */
   return(gen);
 
-} /* end of tabl_create() */
+} /* end of _unur_tabl_create() */
 
 /*****************************************************************************/
 
 static int
-get_starting_intervals( struct unur_par *par, struct unur_gen *gen )
-/*---------------------------------------------------------------------------*/
-/* compute starting intervals                                                */
-/*                                                                           */
-/* parameters:                                                               */
-/*   par          ... pointer to parameter list                              */
-/*   gen          ... pointer to generator object                            */
-/*                                                                           */
-/* return:                                                                   */
-/*   1 ... success                                                           */
-/*   0 ... error                                                             */
-/*                                                                           */
-/* comment:                                                                  */
-/*   a slope <a,b> is an interval [a,b] or [b,a] such that pdf(a) >= pdf(b)  */
-/*---------------------------------------------------------------------------*/
+_unur_tabl_get_starting_intervals( struct unur_par *par, struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* compute starting intervals                                           */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par          ... pointer to parameter list                         */
+     /*   gen          ... pointer to generator object                       */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... success                                                      */
+     /*   0 ... error                                                        */
+     /*                                                                      */
+     /* comment:                                                             */
+     /*   a slope <a,b> is an interval [a,b] or [b,a] such that              */
+     /*   pdf(a) >= pdf(b)                                                   */
+     /*----------------------------------------------------------------------*/
 {
 
   /* check arguments */
@@ -699,38 +758,39 @@ get_starting_intervals( struct unur_par *par, struct unur_gen *gen )
 
   if (PAR.n_slopes > 0 )
     /* slopes are given */
-    return get_starting_intervals_from_slopes(par,gen);
+    return _unur_tabl_get_starting_intervals_from_slopes(par,gen);
 
   if ( (par->set & UNUR_SET_DOMAIN) && (par->set & UNUR_SET_MODE) )
     /* no slopes given. need domain and mode */
     /* compute slopes */
-    return get_starting_intervals_from_mode(par,gen);
+    return _unur_tabl_get_starting_intervals_from_mode(par,gen);
 
   /* else */
   _unur_error(gen->genid,UNUR_ERR_INIT,"number of slopes <= 0, domain or mode not given.");
   return 0;
 
-} /* end of get_starting_intervals() */
+} /* end of _unur_tabl_get_starting_intervals() */
 
 /*---------------------------------------------------------------------------*/
 
 static int
-get_starting_intervals_from_slopes( struct unur_par *par, struct unur_gen *gen )
-/*---------------------------------------------------------------------------*/
-/* compute starting intervals, slopes are given by user.                     */
-/* estimate domain when not given.                                           */
-/*                                                                           */
-/* parameters:                                                               */
-/*   par          ... pointer to parameter list                              */
-/*   gen          ... pointer to generator object                            */
-/*                                                                           */
-/* return:                                                                   */
-/*   1 ... success                                                           */
-/*   0 ... error                                                             */
-/*                                                                           */
-/* comment:                                                                  */
-/*   a slope <a,b> is an interval [a,b] or [b,a] such that pdf(a) >= pdf(b)  */
-/*---------------------------------------------------------------------------*/
+_unur_tabl_get_starting_intervals_from_slopes( struct unur_par *par, struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* compute starting intervals, slopes are given by user.                */
+     /* estimate domain when not given.                                      */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par          ... pointer to parameter list                         */
+     /*   gen          ... pointer to generator object                       */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... success                                                      */
+     /*   0 ... error                                                        */
+     /*                                                                      */
+     /* comment:                                                             */
+     /*   a slope <a,b> is an interval [a,b] or [b,a] such that              */
+     /*   pdf(a) >= pdf(b)                                                   */
+     /*----------------------------------------------------------------------*/
 {
   struct unur_tabl_interval *iv;
   int i;
@@ -747,9 +807,9 @@ get_starting_intervals_from_slopes( struct unur_par *par, struct unur_gen *gen )
   for ( i=0; i < 2*PAR.n_slopes; i+=2 ) {
     /* get a new interval and link into list */
     if (i==0)
-      iv = GEN.iv = iv_pop_free(gen);    /* the first interval */
+      iv = GEN.iv = _unur_tabl_iv_stack_pop(gen);    /* the first interval */
     else
-      iv = iv->next = iv_pop_free(gen);  /* all the other intervals */
+      iv = iv->next = _unur_tabl_iv_stack_pop(gen);  /* all the other intervals */
     COOKIE_CHECK(iv,CK_TABL_IV,0);
 
     /* max and min of p.d.f. in interval */
@@ -787,10 +847,9 @@ get_starting_intervals_from_slopes( struct unur_par *par, struct unur_gen *gen )
 
     /* split interval following [1], split A */
     if (PAR.variant & TABL_STP_SPLIT_A) {
-      iv = split_a_starting_intervals( par, gen, iv );
+      iv = _unur_tabl_split_a_starting_intervals( par, gen, iv );
       if (iv == NULL) return 0;
     }
-
   }
 
   /* terminate list */
@@ -799,23 +858,23 @@ get_starting_intervals_from_slopes( struct unur_par *par, struct unur_gen *gen )
   /* o.k. */
   return 1;
 
-} /* end of get_starting_intervals_from_slopes() */
+} /* end of _unur_tabl_get_starting_intervals_from_slopes() */
 
 /*---------------------------------------------------------------------------*/
 
 static int
- get_starting_intervals_from_mode( struct unur_par *par, struct unur_gen *gen )
-/*---------------------------------------------------------------------------*/
-/* compute starting intervals                                                */
-/*                                                                           */
-/* parameters:                                                               */
-/*   par          ... pointer to parameter list                              */
-/*   gen          ... pointer to generator object                            */
-/*                                                                           */
-/* return:                                                                   */
-/*   1 ... success                                                           */
-/*   0 ... error                                                             */
-/*---------------------------------------------------------------------------*/
+_unur_tabl_get_starting_intervals_from_mode( struct unur_par *par, struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* compute starting intervals                                           */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par          ... pointer to parameter list                         */
+     /*   gen          ... pointer to generator object                       */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... success                                                      */
+     /*   0 ... error                                                        */
+     /*----------------------------------------------------------------------*/
 {
   struct unur_tabl_interval *iv;
 
@@ -829,7 +888,7 @@ static int
   /* compute initial intervals */
   while (1) {
     /* the first interval */
-    iv = GEN.iv = iv_pop_free(gen);
+    iv = GEN.iv = _unur_tabl_iv_stack_pop(gen);
     COOKIE_CHECK(iv,CK_TABL_IV,0);
 
     if (PAR.mode <= PAR.bleft) {
@@ -851,7 +910,7 @@ static int
     iv->xmin = PAR.bleft;
 
     /* the second interval */
-    iv = iv->next = iv_pop_free(gen);  /* all the other intervals */
+    iv = iv->next = _unur_tabl_iv_stack_pop(gen);  /* all the other intervals */
     COOKIE_CHECK(iv,CK_TABL_IV,0);
     iv->xmax = PAR.mode;
     iv->xmin = PAR.bright;
@@ -880,7 +939,7 @@ static int
 
     /* split interval following [1], split A */
     if (PAR.variant & TABL_STP_SPLIT_A) {
-      iv = split_a_starting_intervals( par, gen, iv );
+      iv = _unur_tabl_split_a_starting_intervals( par, gen, iv );
       if (iv == NULL) return 0;
     }
 
@@ -889,25 +948,27 @@ static int
   /* o.k. */
   return 1;
 
-} /* end of get_starting_intervals_from_mode() */
+} /* end of _unur_tabl_get_starting_intervals_from_mode() */
 
 /*---------------------------------------------------------------------------*/
 
 static struct unur_tabl_interval *
-split_a_starting_intervals( struct unur_par *par, struct unur_gen *gen, struct unur_tabl_interval *iv_slope )
-/*---------------------------------------------------------------------------*/
-/* split starting intervals according to [1]                                 */
-/* SPLIT A (equal areas rule)                                                */
-/*                                                                           */
-/* parameters:                                                               */
-/*   par       ... pointer to parameter list                                 */
-/*   gen       ... pointer to generator object                               */
-/*   iv_slope  ... pointer to interval of slope                              */
-/*                                                                           */
-/* return:                                                                   */
-/*   pointer to last interval in list of splitted slope                      */
-/*   NULL on error                                                           */
-/*---------------------------------------------------------------------------*/
+_unur_tabl_split_a_starting_intervals( struct unur_par *par, 
+				       struct unur_gen *gen, 
+				       struct unur_tabl_interval *iv_slope )
+     /*----------------------------------------------------------------------*/
+     /* split starting intervals according to [1]                            */
+     /* SPLIT A (equal areas rule)                                           */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par       ... pointer to parameter list                            */
+     /*   gen       ... pointer to generator object                          */
+     /*   iv_slope  ... pointer to interval of slope                         */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to last interval in list of splitted slope                 */
+     /*   NULL on error                                                      */
+     /*----------------------------------------------------------------------*/
 {
   struct unur_tabl_interval *iv, *iv_last, *iv_new;
   double bar_area, x;
@@ -932,14 +993,14 @@ split_a_starting_intervals( struct unur_par *par, struct unur_gen *gen, struct u
     case +1:
       /* move from right to left */
       x = iv->xmax - bar_area / iv->fmax;
-      iv_new = tabl_split_interval( gen, iv, x, PDF(x), TABL_SPLIT_POINT );
+      iv_new = _unur_tabl_split_interval( gen, iv, x, PDF(x), TABL_SPLIT_POINT );
       if (iv_last == iv_slope)
 	iv_last = iv_new;
       break;
     case -1:
       /* move from left to right */
       x = iv->xmax + bar_area / iv->fmax;
-      iv = tabl_split_interval( gen, iv, x, PDF(x), TABL_SPLIT_POINT );
+      iv = _unur_tabl_split_interval( gen, iv, x, PDF(x), TABL_SPLIT_POINT );
       break;
     }
   }
@@ -947,24 +1008,25 @@ split_a_starting_intervals( struct unur_par *par, struct unur_gen *gen, struct u
   /* pointer to last interval */
   return ((iv->slope < 0) ? iv : iv_last);
 
-} /* end of split_a_starting_intervals() */
+} /* end of _unur_tabl_split_a_starting_intervals() */
 
 /*---------------------------------------------------------------------------*/
 
 static int
-split_b_starting_intervals( struct unur_par *par, struct unur_gen *gen )
-/*---------------------------------------------------------------------------*/
-/* split starting intervals according to [1]                                 */
-/* SPLIT B, but instead of the interation on [1] use "arcmean".              */
-/*                                                                           */
-/* parameters:                                                               */
-/*   par ... pointer to parameter list                                       */
-/*   gen ... pointer to generator object                                     */
-/*                                                                           */
-/* return:                                                                   */
-/*   1 ... success                                                           */
-/*   0 ... error                                                             */
-/*---------------------------------------------------------------------------*/
+_unur_tabl_split_b_starting_intervals( struct unur_par *par, 
+				       struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* split starting intervals according to [1]                            */
+     /* SPLIT B, but instead of the iteration in [1] use "arcmean".          */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par ... pointer to parameter list                                  */
+     /*   gen ... pointer to generator object                                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... success                                                      */
+     /*   0 ... error                                                        */
+     /*----------------------------------------------------------------------*/
 {
   struct unur_tabl_interval *iv;
   double Amean;  /* mean area between hat and squeeze in slope */
@@ -986,7 +1048,7 @@ split_b_starting_intervals( struct unur_par *par, struct unur_gen *gen )
     COOKIE_CHECK(iv,CK_TABL_IV,0);
     if ((iv->Ahat - iv->Asqueeze) >= Amean) {
       /* new point instead of the interation of [1] we use "arcmean" */
-      iv = tabl_split_interval( gen, iv, 0., 0., TABL_SPLIT_ARC );
+      iv = _unur_tabl_split_interval( gen, iv, 0., 0., TABL_SPLIT_ARC );
       if (GEN.n_ivs >= PAR.n_starting_cpoints)
 	/* no more intervals, yet */
 	break;
@@ -996,27 +1058,29 @@ split_b_starting_intervals( struct unur_par *par, struct unur_gen *gen )
   /* o.k. */
   return 1;
 
-} /* end of split_b_starting_intervals() */
+} /* end of _unur_tabl_split_b_starting_intervals() */
 
 /*****************************************************************************/
 
 static struct unur_tabl_interval *
-tabl_split_interval( struct unur_gen *gen, struct unur_tabl_interval *iv_old, double x, double fx, 
-		     unsigned int split_mode )
-/*---------------------------------------------------------------------------*/
-/* split interval (replace old one by two new ones in same place)            */
-/* new interval is inserted immedately after old one.                        */
-/*                                                                           */
-/* parameters:                                                               */
-/*   gen ... pointer to generator object                                     */
-/*   iv  ... pointer to interval that has to be split                        */
-/*   x   ... splitting point                                                 */
-/*   fx  ... value of p.d.f. at splitting point                              */
-/*                                                                           */
-/* return:                                                                   */
-/*   pointer to new (right) interval                                         */
-/*   NULL on error                                                           */
-/*---------------------------------------------------------------------------*/
+_unur_tabl_split_interval( struct unur_gen *gen,
+				struct unur_tabl_interval *iv_old, 
+				double x, double fx, 
+				unsigned int split_mode )
+     /*----------------------------------------------------------------------*/
+     /* split interval (replace old one by two new ones in same place)       */
+     /* new interval is inserted immedately after old one.                   */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*   iv  ... pointer to interval that has to be split                   */
+     /*   x   ... splitting point                                            */
+     /*   fx  ... value of p.d.f. at splitting point                         */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to new (right) interval                                    */
+     /*   NULL on error                                                      */
+     /*----------------------------------------------------------------------*/
 {
   struct unur_tabl_interval *iv_new;
 
@@ -1048,7 +1112,7 @@ tabl_split_interval( struct unur_gen *gen, struct unur_tabl_interval *iv_old, do
   }
 
   /* we need a new interval */
-  iv_new = iv_pop_free(gen);
+  iv_new = _unur_tabl_iv_stack_pop(gen);
   COOKIE_CHECK(iv_new,CK_TABL_IV,0);
 
   /* iv_new has the same slope as iv_old */
@@ -1108,24 +1172,24 @@ tabl_split_interval( struct unur_gen *gen, struct unur_tabl_interval *iv_old, do
 
   return iv_new;
 
-} /* end of tabl_split_interval() */
+} /* end of _unur_tabl_split_interval() */
 
 /*****************************************************************************/
 
 static int
-make_guide_table( struct unur_gen *gen )
-/*---------------------------------------------------------------------------*/
-/* make a guide table for indexed search                                     */
-/*                                                                           */
-/* parameters:                                                               */
-/*   gen ... pointer to generator object                                     */
-/*                                                                           */
-/* return:                                                                   */
-/*   1 (--> successful)                                                      */
-/*                                                                           */
-/* error:                                                                    */
-/*   return 0.                                                               */
-/*---------------------------------------------------------------------------*/
+_unur_tabl_make_guide_table( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* make a guide table for indexed search                                */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 (--> successful)                                                 */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return 0.                                                          */
+     /*----------------------------------------------------------------------*/
 {
   struct unur_tabl_interval *iv;
   double Acum, Asqueezecum, Astep;
@@ -1179,24 +1243,24 @@ make_guide_table( struct unur_gen *gen )
     GEN.guide[j] = iv;
 
   return 1;
-} /* end of make_guide_table() */
+} /* end of _unur_tabl_make_guide_table() */
 
 /*****************************************************************************/
 
 static struct unur_tabl_interval *
-iv_pop_free( struct unur_gen *gen )
-/*---------------------------------------------------------------------------*/
-/* pop free interval from stack; allocate memory block if necessary.         */
-/*                                                                           */
-/* parameters:                                                               */
-/*   gen ... pointer to generator object                                     */
-/*                                                                           */
-/* return:                                                                   */
-/*   pointer to interval                                                     */
-/*                                                                           */
-/* error:                                                                    */
-/*   return NULL                                                             */
-/*---------------------------------------------------------------------------*/
+_unur_tabl_iv_stack_pop( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* pop free interval from stack; allocate memory block if necessary.    */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to interval                                                */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return NULL                                                        */
+     /*----------------------------------------------------------------------*/
 {
   /* check arguments */
   COOKIE_CHECK(gen,CK_TABL_GEN,NULL);
@@ -1223,19 +1287,19 @@ iv_pop_free( struct unur_gen *gen )
   /* return pointer to segment */
   return (GEN.iv_stack + GEN.iv_free);
 
-} /* end of iv_pop_free() */
+} /* end of _unur_tabl_iv_stack_pop() */
 
 /*---------------------------------------------------------------------------*/
 
 #if 0 /* we do not need this subroutine yet */
 static void
-iv_push_free( struct unur_gen *gen )
-/*---------------------------------------------------------------------------*/
-/* push useless segment back stack                                           */
-/*                                                                           */
-/* parameters:                                                               */
-/*   gen ... pointer to generator object                                     */
-/*---------------------------------------------------------------------------*/
+_unur_tabl_iv_stack_push( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* push the last popped interval back onto the stack.                   */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*----------------------------------------------------------------------*/
 {
   /* check arguments */
   COOKIE_CHECK(gen,CK_TABL_GEN,/*void*/);
@@ -1243,7 +1307,7 @@ iv_push_free( struct unur_gen *gen )
   /* update counters and pointers */
   --(GEN.n_ivs);
   ++(GEN.iv_free);
-} /* end of iv_push_free() */
+} /* end of _unur_tabl_iv_stack_push() */
 #endif
 
 /*-----------------------------------------------------------------*/
@@ -1261,14 +1325,14 @@ iv_push_free( struct unur_gen *gen )
 /*---------------------------------------------------------------------------*/
 
 static void
-tabl_info_init( struct unur_par *par, struct unur_gen *gen )
-/*---------------------------------------------------------------------------*/
-/* write info about generator after setup into logfile                       */
-/*                                                                           */
-/* parameters:                                                               */
-/*   par ... pointer to parameter for building generator object              */
-/*   gen ... pointer to generator object                                     */
-/*---------------------------------------------------------------------------*/
+_unur_tabl_debug_init( struct unur_par *par, struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* write info about generator after setup into logfile                  */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par ... pointer to parameter for building generator object         */
+     /*   gen ... pointer to generator object                                */
+     /*----------------------------------------------------------------------*/
 {
   FILE *log;
   int i;
@@ -1366,18 +1430,18 @@ tabl_info_init( struct unur_par *par, struct unur_gen *gen )
   fprintf(log,"\n");
   empty_line();
 
-} /* end of tabl_info_init() */
+} /* end of _unur_tabl_debug_init() */
 
 /*****************************************************************************/
 
 static void
-tabl_info_free( struct unur_gen *gen )
-/*---------------------------------------------------------------------------*/
-/* write info about generator before destroying into logfile                 */
-/*                                                                           */
-/* parameters:                                                               */
-/*   gen ... pointer to generator object                                     */
-/*---------------------------------------------------------------------------*/
+_unur_tabl_debug_free( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* write info about generator before destroying into logfile            */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*----------------------------------------------------------------------*/
 {
   FILE *log;
 
@@ -1390,23 +1454,23 @@ tabl_info_free( struct unur_gen *gen )
   empty_line();
   fprintf(log,"%s: GENERATOR destroyed **********************\n",gen->genid);
   empty_line();
-  tabl_info_intervals(gen,TRUE);
+  _unur_tabl_debug_intervals(gen,TRUE);
   empty_line();
 
   fflush(log);
 
-} /* end of tabl_info_free() */
+} /* end of _unur_tabl_debug_free() */
 
 /*****************************************************************************/
 
 static void
-tabl_info_intervals( struct unur_gen *gen, int print_areas )
-/*---------------------------------------------------------------------------*/
-/* write list of intervals into logfile                                      */
-/*                                                                           */
-/* parameters:                                                               */
-/*   gen ... pointer to generator object                                     */
-/*---------------------------------------------------------------------------*/
+_unur_tabl_debug_intervals( struct unur_gen *gen, int print_areas )
+     /*----------------------------------------------------------------------*/
+     /* write list of intervals into logfile                                 */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*----------------------------------------------------------------------*/
 {
   FILE *log;
   struct unur_tabl_interval *iv;
@@ -1478,7 +1542,7 @@ tabl_info_intervals( struct unur_gen *gen, int print_areas )
 
   empty_line();
 
-} /* end of tabl_info_intervals */
+} /* end of _unur_tabl_debug_intervals */
 
 /*****************************************************************************/
 

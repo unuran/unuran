@@ -49,6 +49,7 @@
 inline struct unur_distr *_unur_distr_cont_new( void );  /* univ. continuous */
 inline struct unur_distr *_unur_distr_discr_new( void ); /* univ. discrete   */
 inline struct unur_distr *_unur_distr_demp_new( void );  /* emp. univ. discr.*/
+inline struct unur_distr *_unur_distr_cemp_new( void );  /* emp. univ. cont. */
 
 /*---------------------------------------------------------------------------*/
 
@@ -82,6 +83,8 @@ unur_distr_new( unsigned int type )
     return _unur_distr_discr_new();
   case UNUR_DISTR_DEMP:
     return _unur_distr_demp_new();
+  case UNUR_DISTR_CEMP:
+    return _unur_distr_cemp_new();
   default:
     _unur_error(NULL,UNUR_ERR_DISTR_UNKNOWN,"");
     return NULL;
@@ -114,6 +117,10 @@ unur_distr_free( struct unur_distr *distr )
   case UNUR_DISTR_DEMP:
     COOKIE_CHECK(distr,CK_DISTR_DEMP,/*void*/);
     if (distr->data.demp.prob) free( distr->data.demp.prob );
+    break;
+  case UNUR_DISTR_CEMP:
+    COOKIE_CHECK(distr,CK_DISTR_CEMP,/*void*/);
+    if (distr->data.cemp.sample) free( distr->data.cemp.sample );
     break;
   default:
     _unur_warning(NULL,UNUR_ERR_DISTR_UNKNOWN,"");
@@ -249,4 +256,28 @@ unur_distr_is_demp( struct unur_distr *distr )
 } /* end of unur_distr_is_demp() */
 
 /*---------------------------------------------------------------------------*/
+
+int 
+unur_distr_is_cemp( struct unur_distr *distr )
+     /*----------------------------------------------------------------------*/
+     /* TRUE if distribution is empirical univariate continuous,             */
+     /* i.e. a sample.                                                       */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   distr ... pointer to distribution object                           */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... if univariate discrete                                       */
+     /*   0 ... otherwise                                                    */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( NULL,distr,0 );
+
+  return ((distr->type == UNUR_DISTR_CEMP) ? 1 : 0);
+} /* end of unur_distr_is_cemp() */
+
+/*---------------------------------------------------------------------------*/
+
+
 

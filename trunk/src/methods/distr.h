@@ -77,6 +77,7 @@
 
 enum {
   UNUR_DISTR_CONT  = 0x010u,     /* univariate continuous distribution       */ 
+  UNUR_DISTR_CEMP  = 0x011u,     /* empirical univ. cont. distr. (a sample)  */ 
   UNUR_DISTR_DISCR = 0x020u,     /* univariate discrete distribution         */ 
   UNUR_DISTR_DEMP  = 0x021u,     /* empirical univariate discr. distribution */ 
 };
@@ -93,10 +94,10 @@ UNUR_DISTR *unur_distr_new( unsigned int type );
    @code{type} indicates the type of the distribution. Currently the
    following types are available:
 */
-/*   UNUR_DISTR_CONT  ... univariate continuous distribution*/
-/*   UNUR_DISTR_DISCR ... univariate discrete distribution*/
-/*   UNUR_DISTR_DEMP  ... empirical univariate discrete distribution*/
-
+/*   UNUR_DISTR_CONT  ... univariate continuous distribution */
+/*   UNUR_DISTR_DISCR ... univariate discrete distribution */
+/*   UNUR_DISTR_DEMP  ... empirical univariate discrete distribution */
+/*   UNUR_DISTR_CEMP  ... empirical univariate continuous distribution, i.e. a sample */
 
 
 
@@ -133,6 +134,12 @@ int unur_distr_is_discr( UNUR_DISTR *distribution );
 int unur_distr_is_demp( UNUR_DISTR *distribution );
 /* 
    Test if distribution is an empirical univariate discrete distribution.
+*/
+
+int unur_distr_is_cemp( UNUR_DISTR *distribution );
+/* 
+   Test if distribution is an empirical univariate continuous distribution,
+   i.e. a sample.
 */
 
 
@@ -315,6 +322,27 @@ int unur_distr_demp_get_prob( UNUR_DISTR *distribution, double **prob );
    Get length of probability vector of the distribution and set pointer
    @code{prob} to array of probabilities. If no probability vector is given,
    @code{0} is returned and @code{prob} is set to NULL.
+*/
+
+/*---------------------------------------------------------------------------*/
+
+/* 
+   Routines for handling empirical univariate discrete distributions (CEMP).
+*/
+
+/* Essential parameters */
+
+int unur_distr_cemp_set_sample( UNUR_DISTR *distribution, double *sample, int n_sample );
+/* 
+   Set observed sample for empirical distribution.
+*/
+
+
+int unur_distr_demp_get_sample( UNUR_DISTR *distribution, double **sample );
+/* 
+   Get number of samples and set pointer @code{sample} to array of
+   observations. If no sample has beeb given,
+   @code{0} is returned and @code{sample} is set to NULL.
 */
 
 /*---------------------------------------------------------------------------*/

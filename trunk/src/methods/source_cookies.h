@@ -90,8 +90,9 @@
 /* distribution objects */
 #define CK_DISTR         0xe0000000u
 #define CK_DISTR_CONT    0xe0000001u
-#define CK_DISTR_DISCR   0xe0000002u
-#define CK_DISTR_DEMP    0xe0000003u
+#define CK_DISTR_CEMP    0xe0000002u
+#define CK_DISTR_DISCR   0xe0000003u
+#define CK_DISTR_DEMP    0xe0000004u
 
 #define CK_SPECIALGEN_CONT 0xd00001u
 

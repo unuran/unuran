@@ -105,9 +105,9 @@ _unur_acg_UNURAN_tdr_ps( struct unur_gen *gen,
   fprintf(out,"double %s (void)\n{\n",rand_name);
 
   /* declare variables */
-  fprintf(out,"\tUNUR_DISTR *distr;\n");          /* distribution object */
-  fprintf(out,"\tUNUR_PAR *par;\n");              /* parameter object */
-  fprintf(out,"\tUNUR_GEN *gen = NULL;\n");       /* generator object */
+  fprintf(out,"\tUNUR_DISTR *distr;\n");           /* distribution object */
+  fprintf(out,"\tUNUR_PAR *par;\n");               /* parameter object */
+  fprintf(out,"\tstatic UNUR_GEN *gen = NULL;\n"); /* generator object */
   fprintf(out,"\n");
 
   /* set up */

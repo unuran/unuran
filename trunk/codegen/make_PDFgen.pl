@@ -309,6 +309,10 @@ sub make_PDF_distr_C
     $gencode .= 
 	"\t_unur_acg_C_print_section_title(out,\"PDF for $d distribution.\");\n\n";
 
+    # include header files
+    $gencode .=
+	"\tfprintf (out,\"#include <math.h>\\n\\n\");\n";	
+
     # compose PDF name
     $gencode .= 
 	"\tfprintf (out,\"static double %s (double x)\\n{\\n\",".

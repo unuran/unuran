@@ -58,7 +58,8 @@ sub get_test_distributions
 	}
 
 	# Make distribution object
-	$list_distr->{"$distr\_$n_distr"} = $fpm;
+	my $distr_key = "$distr\_".sprintf("%03d",$n_distr);
+	$list_distr->{$distr_key} = $fpm;
 
 	# increment counter for distributions
 	++$n_distr;

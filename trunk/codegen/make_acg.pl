@@ -502,14 +502,17 @@ int
      /*    abort program                                                     */
      /*----------------------------------------------------------------------*/
 {
-  if ( strcasecmp(language, "JAVA") == 0 ) {
-    return unur_acg_JAVA;
-  }
-  else if ( strcasecmp(language, "C") == 0) {
+  if ( strcasecmp(language, "C") == 0) {
     return unur_acg_C;
   }
   else if ( strcasecmp(language, "FORTRAN") == 0) {
     return unur_acg_FORTRAN;
+  }
+  else if ( strcasecmp(language, "JAVA") == 0 ) {
+    return unur_acg_JAVA;
+  }
+  else if ( strcasecmp(language, "UNURAN") == 0) {
+    return unur_acg_UNURAN;
   }
   else {
     fatal("Unknown programming language.\\n");

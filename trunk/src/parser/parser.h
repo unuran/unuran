@@ -37,6 +37,29 @@
  *****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
+
+/*
+
+=NODE  StringAPI   String Interface
+=UP TOP [25]
+
+=DESCRIPTION
+
+The string interface provided by the @command{unur_str2gen} call is
+the easiest way to use UNURAN. The function takes a character string as
+its argument. The string is parsed and the information obtained is
+used to create a generator object. It return NULL if this fails,
+either due to a syntax error, or due to invalid data.
+Notice that the string interface does not implement all features of
+the UNURAN library. For trickier tasks it might be necessary to use
+the UNURAN API. Especially using generic distributions is not fully 
+supported yet.
+
+=END
+
+*/
+
+/*---------------------------------------------------------------------------*/
 /* Routines for user interface                                               */
 
 /* =ROUTINES */
@@ -46,8 +69,112 @@ UNUR_GEN *unur_str2gen( const char *string );
    Get ....
 */
 
+/*
+=EON
+*/
 
+/*---------------------------------------------------------------------------*/
+/*
 
+=NODE  StringSyntax   Syntax of String Interface
+=UP StringAPI [10]
+
+=EON
+*/
+/*---------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------*/
+/*
+
+=NODE  StringDistr    Distribution String
+=UP StringAPI [20]
+
+=DESCRIPTION
+The @code{distr} block must be the very first block and is
+obligatory. For that reason the keyword @code{distr} is optional and
+can be omitted. Moreover it is ignored while parsing the string. To
+avoid some possible confusion, however, it has to start with the
+letter @code{d} (if it is given at all). 
+
+The value of the @code{distr} key is used to get the distribution
+object, either via a @command{unur_distr_<value>} call for a standard
+distribution. The parameters for the standard distribution are given
+as a list. There must not be any character (other than white space)
+between the name of the standard distribution and the opening
+parenthesis @code{(} of this list. E.g., to get a beta distribution,
+use
+@smallexample
+distr = beta(2,4);
+@end smallexample
+
+Or via a @code{unur_distr_<value>_new} call to get an object of a generic
+distribution. However not all generic distributions are supported yet.
+E.g., to get an object for a discrete distribution with probability
+vector (1,2,3), use 
+@smallexample
+distr = discr; pv = (1,2,3);
+@end smallexample
+
+=EON
+*/
+/*---------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------*/
+/*
+
+=NODE  StringMethod   Method String
+=UP StringAPI [30]
+
+=DESCRIPTION
+The key @code{method} is obligatory, it must be the first key and its
+value is the name of a method suitable for the choosen standard
+distribution. E.g., if method AROU is chosen, use
+@smallexample
+method = arou;
+@end smallexample
+
+If this block is omitted, a suitable default method is used. Notice
+however that the default method may change in future versions of
+UNURAN. Moreover, only standard distributions are supported yet.
+
+Of course the all following keys dependend on the method choosen at
+first. All corresponding @command{set} calls of UNURAN are available
+and the key is the string after the @command{unur_<methodname>_set_}
+part of the command. E.g., UNURAN provides the command 
+@command{unur_arou_set_max_sqhratio} to set a parameter of method AROU.
+To call this function via the string-interface, the
+key @code{max_sqhratio} can be used:
+@smallexample
+max_sqhratio = 0.9;
+@end smallexample
+
+=EON
+*/
+/*---------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------*/
+/*
+
+=NODE  StringURNG    Uniform RNG String
+=UP StringAPI [40]
+
+=DESCRIPTION
+The value of the @code{urng} key is passed to the PRNG interface (see
+@ifinfo
+@end ifinfo
+@xref{Top, , Overview, prng, PRNG Manual}.
+@ifnotinfo
+@uref{http://statistik.wu-wien.ac.at/prng/manual/,PRNG manual}
+@end ifnotinfo
+for details).
+However it only works when using the PRNG library is enabled, 
+see @ref{Installation} for details. There are no other keys.
+
+If this block is omitted the UNURAN default generator is used.
+
+=EON
+*/
+/*---------------------------------------------------------------------------*/
 
 
 /********************************************************************/
@@ -73,19 +200,6 @@ UNUR_GEN *unur_str2gen( const char *string );
  */
 /********************************************************************/
 /*
-
-String Interface for .....
-
-
-The string interface provided by the unur_str2gen() call is the
-easiest way to use UNURAN. The function takes a character string as
-its argument. The string is parsed and the information obtained is
-used to create a generator object. It return NULL if this fails,
-either due to a syntax error, or due to invalid data.
-Notice that the string interface does not implement all features of
-the UNURAN library. For trickier tasks it might be necessary to use
-the UNURAN API. Especially using generic distributions is not fully 
-supported yet.
 
 
 The string interface:
@@ -121,48 +235,11 @@ We have three different blocks with keys
 The 'distr' block must be the very first block and is obligatory.
 All the other blocks are optional and can be arranged in arbitrary order.
 
-Distribution:
-The 'distr' block must be the very first block and is obligatory.
-For that reason the keyword 'distr' is optional and can be omitted.
-Moreover it is ignored while parsing the string. To avoid some
-possible confussion it only has to start with the letter @code{d} 
-(if it is given at all.) 
-The value of the 'distr' key is used to get the distribution object,
-either via a unur_distr_<value>() call for a standard distribution.
-The parameters for the standard distribution are given as a list.
-There must not be any character (other than white space) between the
-name of the standard distribution and the opening parenthesis @code{(}
-of this list.
-Or via a unur_distr_<value>_new() call to get an object of a generic
-distribution. However not all generic distributions are supported yet.
-E.g.: distr = beta(2,4)
 
 
 
-Method:
-The key `method' is obligatory, it must be first and the value is the
-name of a method suitable for the choosen standard distribution.
-E.g.: method = arou
-If this block is omitted, a suitable default method is used. Notice
-however that the default method may change in future versions of
-UNURAN. Moreover, only standard distributions are supported yet.
-Of course the following keys dependend on the method choosen at first.
-All corresponding `_set_' commands of UNURAN are available and the key
-is the string after the `unur_<methodname>_set_' part of the command.
-e.g.: UNURAN provides the command `unur_arou_set_max_sqhratio' to
-set a parameter of the method AROU.
-To call this function via the string-interface, the
-key `max_sqhratio' can be used:
-max_sqhratio = 0.9.
 
 
-Uniform random number generator:
-The value of the 'urng' key is passed to the PRNG interface (see the
-PRNG manual for details).
-However it only works when using the PRNG library is enabled, i.e.
-the libray must be installed and the corresponding
-compiler switch must be set in @file{unuran_config.h}.
-If this block is omitted the UNURAN default generator is used.
 
 
 Example:

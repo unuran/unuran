@@ -440,11 +440,17 @@ UNUR_DISTR *unur_distr_weibull(const double *params, int n_params);
  *****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
-/* Multinormal distribution  [5; ch.45, p.107]                               */
+/* Multinormal distribution  [5; ch.45, p.105]                               */
 UNUR_DISTR *unur_distr_multinormal(int dim, const double *mean, const double *covar);
 /* 
-   Creates a distribution object for the multinormal distribution with
-   @var{dim} components. @var{mean} is an array of size @var{dim}
+   =DISTR    multinormal  Multinormal distribution
+   =UP       Stddist_CVEC
+   =REF      [KBJe00: Ch.45, p.105]
+
+   =DESCRIPTION
+   @code{UNUR_DISTR *unur_distr_multinormal(int dim, const double *mean, const double *covar)}
+   creates a distribution object for the multinormal distribution with
+   @var{dim} components. @var{mean} is an array of size @var{dim}.
    A NULL pointer for @var{mean} is interpreted as the zero
    vector (0,@dots{},0).
    @var{covar} is an array of size @var{dim}x@var{dim} and holds the
@@ -452,8 +458,9 @@ UNUR_DISTR *unur_distr_multinormal(int dim, const double *mean, const double *co
    consecutively in this array. The NULL pointer can be used
    instead the identity matrix.
 
-   For standard form of the distribution use NULL for @var{mean} and 
-   @var{covar}.
+   For standard form of the distribution use the null vector for @var{mean} and 
+   the identity matrix for @var{covar}.
+   =EON
 */
 
 /*---------------------------------------------------------------------------*/
@@ -468,10 +475,17 @@ UNUR_DISTR *unur_distr_multinormal(int dim, const double *mean, const double *co
 /* Random correlation matrix                                                 */
 UNUR_DISTR *unur_distr_correlation( int n );
 /* 
-   Creates a distribution object for a random correlation matrix of
+   =DISTR    correlation  Random correlation matrix
+   =UP       Stddist_MATR
+
+   =DESCRIPTION
+   @code{UNUR_DISTR *unur_distr_correlation( int n )}
+   creates a distribution object for a random correlation matrix of
    @var{n} rows and columns. It can be used with method MCORR 
    (@pxref{MCORR,,Random Correlation Matrix}) to 
    generate random correlation matrices of the given size.
+
+   =EON
 */
 
 /*---------------------------------------------------------------------------*/

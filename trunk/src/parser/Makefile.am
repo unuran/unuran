@@ -14,6 +14,9 @@ libparser_a_SOURCES = stringparser.c
 
 include_HEADERS =
 
+noinst_HEADERS = \
+ parser.h
+
 EXTRA_DIST = \
  make_stringparser.pl \
  stringparser.c.in

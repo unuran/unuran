@@ -390,6 +390,10 @@ unur_str2gen (const char *string)
 
   char *token;
 
+
+  /* check arguments */
+  _unur_check_NULL( GENTYPE,string,NULL );
+
   /* Prepare string for processing:            */
   /*   Remove all white spaces,                */
   /*   convert to lower case letters,          */
@@ -441,6 +445,8 @@ unur_str2gen (const char *string)
   }
   else {
     /* otherwise use default method */
+
+	/** TODO: discrete distr !!! eigenes unterprogamm fuer default!! **/
     par = unur_cstd_new(distr);
   }
   /* check if parameter object was generated successfully */

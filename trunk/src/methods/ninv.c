@@ -972,8 +972,7 @@ _unur_ninv_compute_start( struct unur_gen *gen )
   CHECK_NULL(gen, 0);
   _unur_check_gen_object(gen, NINV);
 
-
-  if ( GEN.table_on || _unur_FP_same(GEN.s[0], GEN.s[1])){
+  if ( GEN.table_on || _unur_FP_same(GEN.s[0], GEN.s[1])) {
     /* use table || use given starting points (indicated by s[0] == s[1]) */
     /* nothing to do */
     return 1;

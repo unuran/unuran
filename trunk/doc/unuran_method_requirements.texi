@@ -1,9 +1,9 @@
 Parentheses indicate optional information while a tilde indicates
 that only an approximation must be provided. See the glossary for
 unfamiliar terms.
+@sp1
 
-
-Methods for continuous distributions:
+@noindent Methods for continuous distributions:
 @multitable {method} {PDF} {dPDF} {mode} {area} {implemented distribution}
 @item method @tab PDF @tab dPDF @tab mode @tab area @tab other
 @item AROU   @tab  x  @tab  x   @tab  (x) @tab      @tab T-concave
@@ -15,21 +15,22 @@ Methods for continuous distributions:
 @item TDR    @tab  x  @tab  x   @tab      @tab      @tab T-concave
 @item UTDR   @tab  x  @tab      @tab   x  @tab   ~  @tab T-concave
 @end multitable
+@sp1
 
-Methods for continuous empirical univariate distributions:@*
+@noindent Methods for continuous empirical univariate distributions:@*
 EMPK:  Requires an observed sample
 @sp 1
 
-Methods for continuous multivariate distributions:@*
+@noindent Methods for continuous multivariate distributions:@*
 VMT: Requires the mean vector and the covariance matrix. Optional
 is a marginal distribution (for non-Gaussian distributions)
 @sp 1
 
-Methods for continuous empirical multivariate distributions:@*
+@noindent Methods for continuous empirical multivariate distributions:@*
 VEMPK: Requires an observed sample
 @sp 1
 
-Methods for discrete univariate distributions:
+@noindent Methods for discrete univariate distributions:
 @multitable {method} {PMF} {PV} {mode} {area} {implementded distribution}
 @item method @tab PMF @tab PV @tab mode @tab area @tab other
 @item DARI   @tab  x  @tab    @tab  x   @tab  ~   @tab T-concave

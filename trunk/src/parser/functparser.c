@@ -700,16 +700,16 @@ static void _unur_fstr_debug_deriv (const struct ftreenode *funct,
 /*****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
-#include "functparser_init.c"
-#include "functparser_scanner.c"
-#include "functparser_parser.c"
-#include "functparser_eval.c"
-#include "functparser_deriv.c"
-#include "functparser_stringgen.c"
-#include "functparser_codegen_C.c"
-#include "functparser_codegen_FORTRAN.c"
-#include "functparser_codegen_JAVA.c"
-#include "functparser_debug.c"
+#include "functparser_init.ch"
+#include "functparser_scanner.ch"
+#include "functparser_parser.ch"
+#include "functparser_eval.ch"
+#include "functparser_deriv.ch"
+#include "functparser_stringgen.ch"
+#include "functparser_codegen_C.ch"
+#include "functparser_codegen_FORTRAN.ch"
+#include "functparser_codegen_JAVA.ch"
+#include "functparser_debug.ch"
 /*---------------------------------------------------------------------------*/
 
 /*****************************************************************************/

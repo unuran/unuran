@@ -502,9 +502,9 @@ static void _unur_tdr_ps_debug_split_stop( const struct unur_gen *gen,
 /* since there is only file scope or program code, we abuse the              */
 /* #include directive.                                                       */
 
-#include "tdr_newset.c"
-#include "tdr_init.c"
-#include "tdr_sample.c"
-#include "tdr_debug.c"
+#include "tdr_newset.ch"
+#include "tdr_init.ch"
+#include "tdr_sample.ch"
+#include "tdr_debug.ch"
 
 /*---------------------------------------------------------------------------*/

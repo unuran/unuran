@@ -1,7 +1,7 @@
 #
 # The PDF and PMF codes in this directory are parsed by a perl script
 # to be used for a code generator. To make this parser as simple as 
-# possible the follwing coding rules must be satisfied:
+# possible the following coding rules must be satisfied:
 #
 #  (1) The PDF subroutine must end with the sequence that matches the 
 #      regular expression:
@@ -9,7 +9,7 @@
 #      where $PDF_name is the name of the PDF function.
 #      E.g.: if the PDF function is _unur_pdf_gamma we must have
 #
-#      double _unur_pdf_gamma( double x, UNUR_DISTR *distr )
+#      double _unur_pdf_gamma( double x, const UNUR_DISTR *distr )
 #      { 
 #         .... 
 #      } /* end of _unur_pdf_gamma() */

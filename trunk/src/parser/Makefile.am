@@ -12,29 +12,22 @@ INCLUDES = \
 noinst_LIBRARIES = libparser.a
 
 libparser_a_SOURCES = \
- parser.c \
+ parser.c  parser.h  parser_source.h \
+ stringparser.c \
  functparser.c \
- stringparser.c
-
-include_HEADERS =
-
-noinst_HEADERS = \
- parser.h \
- parser_source.h \
  functparser_source.h \
  functparser_struct.h \
  functparser_symbols.h \
- functparser_stringgen.c \
- functparser_codegen_C.c \
- functparser_codegen_FORTRAN.c \
- functparser_codegen_JAVA.c \
- functparser_debug.c \
- functparser_deriv.c \
- functparser_eval.c \
- functparser_init.c \
- functparser_parser.c \
- functparser_scanner.c
-
+ functparser_stringgen.ch \
+ functparser_codegen_C.ch \
+ functparser_codegen_FORTRAN.ch \
+ functparser_codegen_JAVA.ch \
+ functparser_debug.ch \
+ functparser_deriv.ch \
+ functparser_eval.ch \
+ functparser_init.ch \
+ functparser_parser.ch \
+ functparser_scanner.ch
 
 EXTRA_DIST = \
  make_stringparser.pl \

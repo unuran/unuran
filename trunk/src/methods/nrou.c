@@ -500,7 +500,7 @@ _unur_nrou_rectangle( struct unur_gen *gen )
      /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 { 
-  struct UNUR_FUNCT_GENERIC faux; /* function to be minimized/maximized    */
+  struct unur_funct_generic faux; /* function to be minimized/maximized    */
   double p[1]; /* parameter for auxiliary functions */
   double x;
 
@@ -520,7 +520,7 @@ _unur_nrou_rectangle( struct unur_gen *gen )
   faux.f = _unur_aux_bound_vmax;
   faux.params = NULL;
   
-  x = _unur_function_find_mode(faux, DISTR.BD_LEFT, DISTR.BD_RIGHT);
+  x = _unur_util_find_max(faux, DISTR.BD_LEFT, DISTR.BD_RIGHT);
   GEN.vmax = faux.f(x,p);
 
 
@@ -528,7 +528,7 @@ _unur_nrou_rectangle( struct unur_gen *gen )
   faux.f = _unur_aux_bound_umin;
   faux.params = p;
 
-  x = _unur_function_find_mode(faux, DISTR.BD_LEFT, p[0]);
+  x = _unur_util_find_max(faux, DISTR.BD_LEFT, p[0]);
   GEN.umin = -faux.f(x,p);
 
 
@@ -536,7 +536,7 @@ _unur_nrou_rectangle( struct unur_gen *gen )
   faux.f = _unur_aux_bound_umax;
   faux.params = p;
 
-  x = _unur_function_find_mode(faux, p[0], DISTR.BD_RIGHT);
+  x = _unur_util_find_max(faux, p[0], DISTR.BD_RIGHT);
   GEN.umax = faux.f(x,p);
   
 

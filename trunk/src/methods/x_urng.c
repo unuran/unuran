@@ -197,9 +197,6 @@ unur_chg_urng( struct unur_gen *gen, UNUR_URNG_TYPE urng )
   /* set pointer to main URNG */
   gen->urng = urng;
 
-  /* set pointer to second (auxilliary) URNG */
-  if (gen->urng_aux) gen->urng_aux = urng;
-
   /* also set pointer in auxilliary generator objects */
   if (gen->gen_aux)   unur_chg_urng(gen->gen_aux,urng);
   if (gen->gen_aux_2) unur_chg_urng(gen->gen_aux_2,urng);

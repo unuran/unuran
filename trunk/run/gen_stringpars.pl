@@ -149,6 +149,8 @@ sub distr_info{
 # #######################################################################################
 sub method_info{
 
+    # Methods not supporting by string input
+    @No_String_Methods = ("UNIF");
 
     # determine all h-files
     opendir (METHDIR, $Methinfopath) or die "can't open directory $!";
@@ -164,29 +166,33 @@ sub method_info{
     print Outfile "\t\t\tfprintf(stderr, \"SYNTAX ERROR: No list expected when setting method.\\n\");\n";
     print Outfile "\t\t}\n\t\t";
     foreach $hfile (@all_h_files){
-
+        # reset variable
+	$No_String_Method  = 0;
 	open INFILE, "< $Methinfopath/$hfile" or  die ("can't open file: $!");
 
+
+        # generate prameter object for specified method -- if possible
 	while ( <INFILE> ){
 	    if ( $_ =~ /^\s*=METHOD\s+(\w+)/ ){
 
+                # check if method supports string context
+		foreach $method (@No_String_Methods){
+		    if ( "\U$1" eq $method){
+			$No_String_Method  = 1;
+		    }
+		}
+
 		print Outfile "if ( !strcmp( value, \"\L$1\") ){\n";
-		if ( "\U$1" eq "UNIF"){
+		if ( $No_String_Method == 1 ){
 		    # print Outfile "\t\t\tpar = unur_\L$1_new();\n";
-		    print Outfile "\t\t\tfprintf(stderr, \"Method UNIF not intended for usage within this string content.\\n\");\n";
+		    print Outfile "\t\t\tfprintf(stderr, \"Method $1 not intended for usage within this string context.\\n\");\n";
 		}
 		else{
 		    print Outfile "\t\t\tpar = unur_\L$1_new(distr);\n";
-		    #print Outfile "\t\t\tpar->method = UNUR_METH_$1;\n";
 		    while ( $_ !~ /^\s*=UP\s+Methods_for_\w+/ ){
 			$_ = <INFILE>;
 		    }
 		    $_ =~ /^\s*=UP\s+Methods_for_(\w+)/;
-                    # Method and distribution must be related to common type
-		    print Outfile "\t\t\tif ( ! unur_distr_is_\L$1(distr) ){\n";
-		    print Outfile "\t\t\t\tfprintf(stderr, \"ERROR: Method and distribution don't match up.\\n\");\n";
-		    print Outfile "\t\t\t}\n";
-
 		}
 		print Outfile "\t\t}\n\t\telse ";
 	    }

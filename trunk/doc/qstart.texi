@@ -12,11 +12,11 @@
 
 
 @c Dies ist das neue UNURAN -Einfuehrung  
-@c August 2000 Janka & Tirler                
+@c September 2000 Janka & Tirler                
 @c $Id$
 
 @set VERSION 0.0
-@set DATE August 2000
+@set DATE September 2000
 
 @dircategory Scientific software
 @direntry
@@ -296,7 +296,7 @@ int main()
 @node Methods
 @chapter Methods
 
-@multitable @columnfractions .25 .25 .25 .25
+@multitable @columnfractions .222 .222 .222 .334
 @item name/references    @tab  parameter (default)   @tab required       @tab remarks
 @item AROU               @tab                        @tab pdf, dpdf       @tab Adaptive Ratio-Of-Uniforms
 @item CSTD               @tab                        @tab                @tab interface for extern generators

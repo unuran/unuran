@@ -4,7 +4,7 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   FILE:      empk.c                                                       *
+ *   FILE:      vempk.c                                                      *
  *                                                                           *
  *   TYPE:      continuous multivariate random variate                       *
  *   METHOD:    generate from kernel estimation                              *
@@ -251,8 +251,8 @@ unur_vempk_new( struct unur_distr *distr )
   /* set default values */
   PAR.smoothing = 1.;            /* determines how "smooth" the estimated density will be */
 
-  par->method   = UNUR_METH_VEMPK; /* method and default variant             */
-  par->variant  = VEMPK_VARFLAG_VARCOR;  /* default variant                  */
+  par->method   = UNUR_METH_VEMPK; /* method                                 */
+  par->variant  = 0u;              /* default variant                        */
 
   par->set      = 0u;                 /* inidicate default parameters        */    
   par->urng     = unur_get_default_urng(); /* use default urng               */
@@ -342,7 +342,8 @@ unur_vempk_chg_smoothing( struct unur_gen *gen, double smoothing )
   /* recompute constant for variance corrected version */
   GEN.corfac = 1./sqrt( 1. + GEN.hact * GEN.hact);
 
-  /* no changelog required */
+  /* changelog */
+  gen->set |= VEMPK_SET_SMOOTHING;
 
   return 1;
 
@@ -601,7 +602,7 @@ _unur_vempk_sample_cvec( struct unur_gen *gen, double *result )
   if (gen->variant & VEMPK_VARFLAG_VARCOR)
     /* use variance correction */
     for (k=0; k<GEN.dim; k++) 
-      result[k] = GEN.xbar[k] + (GEN.observ[idx(j,k)] - GEN.xbar[k] + result[k]) * GEN.corfac;
+      result[k] = GEN.xbar[k] + (GEN.observ[idx(j,k)] - GEN.xbar[k] + result[k]*GEN.hact) * GEN.corfac;
   
   else
     /* no variance correction */

@@ -92,7 +92,10 @@ int unur_vempk_chg_smoothing( UNUR_GEN *generator, double smoothing );
    equal to the kernel.
    Default is 1 which results in a smoothing parameter minimising
    the MISE (mean integrated squared error) if the data are not too
-   far away from normal.
+   far away from normal. If a large smoothing factor is used, then
+   variance correction must be switched on.
+
+   Default: @code{1}
 */
 
 int unur_vempk_set_varcor( UNUR_PAR *parameters, int varcor );
@@ -105,7 +108,7 @@ int unur_vempk_chg_varcor( UNUR_GEN *generator, int varcor );
    density estimation is the same as the sample variance. However this 
    increases the MISE of the estimation a little bit.
 
-   Default is TRUE.
+   Default is FALSE.
 */
 
 /* =END */

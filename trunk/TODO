@@ -1,13 +1,16 @@
 -----------------------------------------------------------------------------
 
-(*) debug flags:
+(*) DOC: debug flags:
 	bits 2-12  ... setup
 	bits 13-24 ... adaptive steps
 	bits 25-32 ... trace sampling
 
 	bits 1-32 print parameters of generator object
 	(irgend eins der bits)
-	
+
+-----------------------------------------------------------------------------
+
+(*) DOC: never extract a distribution object from generator object!!
 
 -----------------------------------------------------------------------------
 

@@ -83,10 +83,8 @@ _unur_stdgen_poisson_init( struct unur_par *par, struct unur_gen *gen )
      /*   0 ... on error                                                     */
      /*----------------------------------------------------------------------*/
 {
-  /* check arguments */
-  CHECK_NULL(par,0);  COOKIE_CHECK(par,CK_DSTD_PAR,0);
-
-  switch (par->variant) {
+  /* one of par and gen must not be the NULL pointer */
+  switch ((par) ? par->variant : gen->variant) {
 
   case 0:  /* DEFAULT */
   case 1:  /* Tabulated Inversion combined with Acceptance Complement */
@@ -119,7 +117,7 @@ _unur_stdgen_poisson_init( struct unur_par *par, struct unur_gen *gen )
 
   case UNUR_STDGEN_INVERSION:   /* inversion method */
   default: /* no such generator */
-    if (gen) _unur_warning(par->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
+    if (gen) _unur_warning(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
     return 0;
   }
   

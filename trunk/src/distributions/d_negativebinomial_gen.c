@@ -48,6 +48,8 @@
 
 #define uniform()  _unur_call_urng(gen) /* call for uniform prng             */
 
+#define MAX_gen_params   1     /* maximal number of parameters for generator */
+
 /* parameters */
 #define p  (DISTR.params[0])
 #define r  (DISTR.params[1])
@@ -82,10 +84,8 @@ _unur_stdgen_negativebinomial_init( struct unur_par *par, struct unur_gen *gen )
      /*   0 ... on error                                                     */
      /*----------------------------------------------------------------------*/
 {
-  /* check arguments */
-  CHECK_NULL(par,0);  COOKIE_CHECK(par,CK_DSTD_PAR,0);
-
-  switch (par->variant) {
+  /* one of par and gen must not be the NULL pointer */
+  switch ((par) ? par->variant : gen->variant) {
 
   case 0:  /* DEFAULT */
   case 1:  /* Compound method */
@@ -95,7 +95,7 @@ _unur_stdgen_negativebinomial_init( struct unur_par *par, struct unur_gen *gen )
 
   case UNUR_STDGEN_INVERSION:   /* inversion method */
   default: /* no such generator */
-    if (gen) _unur_warning(par->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
+    if (gen) _unur_warning(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
     return 0;
   }
   
@@ -132,13 +132,17 @@ _unur_stdgen_negativebinomial_init( struct unur_par *par, struct unur_gen *gen )
  *****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
-#define GAMMA  GEN.gen_aux    /* pointer to gamma variate generator          */
+#define x   (GEN.gen_param[0])
+
+#define GAMMA    gen->gen_aux    /* pointer to gamma variate generator       */
+#define POISSON  gen->gen_aux_2  /* pointer to poisson variate generator     */
 /*---------------------------------------------------------------------------*/
 
 inline static void
 negativebinomial_nbp_init( struct unur_gen *gen );
 {
-  struct unur_par *par;
+  double gamma_param;   
+  double poisson_param;   
 
   /* check arguments */
   CHECK_NULL(gen,/*void*/); COOKIE_CHECK(gen,CK_DSTD_GEN,/*void*/);
@@ -146,17 +150,24 @@ negativebinomial_nbp_init( struct unur_gen *gen );
   if (GEN.gen_param == NULL) {
     GEN.n_gen_param = MAX_gen_params;
     GEN.gen_param = _unur_malloc(GEN.n_gen_param * sizeof(double));
-    GEN.n_gen_iparam = MAX_gen_iparams;
-    GEN.gen_iparam = _unur_malloc(GEN.n_gen_param * sizeof(int));
   }
 
   /* -X- setup code -X- */
+  x = p /(1. - p);
 
-  /* make a normal variate generator (use default special generator) */
-  par = unur_cstd_new( unur_distr_gamma(NULL,0) );
-  GAMMA = unur_init( par );
-  /* need same uniform random number generator as slash generator */
+  /* make a gamma variate generator (use default special generator) */
+  gamma_param = r;   /* shape parameter for gamma distribution */
+  GAMMA = unur_cstd_init( unur_cstd_new( unur_distr_gamma(gamma_param,1) ) );
+  _unur_check_NULL( NULL,GAMMA,0 );
+  /* need same uniform random number generator as negative binomial generator */
   GAMMA->urng = gen->urng;
+
+  /* make a poisson variate generator (use default special generator) */
+  poisson_param = 1.;   /* shape parameter for poisson distribution (use a dummy value yet) */
+  POISSON = unur_cstd_init( unur_cstd_new( unur_distr_poisson(poisson_param,1) ) );
+  _unur_check_NULL( NULL,POISSON,0 );
+  /* need same uniform random number generator as negative binomial generator */
+  POISSON->urng = gen->urng;
 
   /* -X- end of setup code -X- */
 
@@ -168,22 +179,25 @@ int
 unur_stdgen_sample_negativebinomial_nbp( struct unur_gen *gen )
 {
   /* -X- generator code -X- */
- double y;
- static double x,p1 = -1.0;
+  double y;
 
   /* check arguments */
-  CHECK_NULL(gen,0.); COOKIE_CHECK(gen,CK_DSTD_GEN,0.);
+  CHECK_NULL(gen,0);  COOKIE_CHECK(gen,CK_DSTD_GEN,0);
 
- if (p1 != p)
-    {
-     x = p /(1.0 - p);
-     p1 = p;
-    }
- y = x * Gamma(r,seed);
- return(Poisson(y,seed));
+  /* sample from gamma distribution */
+  y = x * unur_sample_cont(GAMMA);
+
+  /* sample from poisson distribution */
+  unur_dstd_chg_params(gen,&y,1);
+  return unur_sample_discr(gen);
 
   /* -X- end of generator code -X- */
 
 } /* end of unur_stdgen_sample_negativebinomial_nbp() */
 
+/*---------------------------------------------------------------------------*/
+#undef x
+
+#undef GAMMA
+#undef POISSON
 /*---------------------------------------------------------------------------*/

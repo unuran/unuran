@@ -67,14 +67,14 @@
    do { \
      if ((gen)==NULL) return 1;                    /* test existence only  */ \
      (gen)->sample.cont = (routine);                 /* set pointer        */ \
-     (par)->data.cstd.sample_routine_name = #routine;  /* set routine name */ \
+     if (par) (par)->data.cstd.sample_routine_name = #routine;  /* set routine name */ \
    } while (0)
 
 #define _unur_dstd_set_sampling_routine(par,gen,routine) \
    do { \
      if ((gen)==NULL) return 1;                    /* test existence only  */ \
      (gen)->sample.discr = (routine);                /* set pointer        */ \
-     (par)->data.dstd.sample_routine_name = #routine;  /* set routine name */ \
+     if (par) (par)->data.dstd.sample_routine_name = #routine;  /* set routine name */ \
    } while (0)
 
 /*---------------------------------------------------------------------------*/

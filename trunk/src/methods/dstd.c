@@ -205,7 +205,58 @@ unur_dstd_set_variant( struct unur_par *par, unsigned variant )
   par->variant = old_variant;
   return 0;
 
-} /* end if unur_dstd_set_variant() */
+} /* end of unur_dstd_set_variant() */
+
+/*---------------------------------------------------------------------------*/
+
+int 
+unur_dstd_chg_param( struct unur_gen *gen, double *params, int n_params )
+     /*----------------------------------------------------------------------*/
+     /* change array of parameters for distribution                          */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen      ... pointer to generator object                           */
+     /*   params   ... list of arguments                                     */
+     /*   n_params ... number of arguments                                   */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... on success                                                   */
+     /*   0 ... on error                                                     */
+     /*----------------------------------------------------------------------*/
+{
+  register int i;
+
+  /* check arguments */
+  CHECK_NULL(gen,0);
+  COOKIE_CHECK(gen,CK_DISTR_CONT,0);
+  if (n_params>0) CHECK_NULL(params,0);
+  
+  /* check new parameter for generator */
+  if (n_params > UNUR_DISTR_MAXPARAMS ) {
+    _unur_error(NULL,UNUR_ERR_DISTR_NPARAMS,"");
+    return 0;
+  }
+
+  /* copy parameters */
+  DISTR.n_params = n_params;
+  for (i=0; i < n_params; i++)
+    DISTR.params[i] = params[i];
+
+  /* changelog */
+  gen->distr.set = UNUR_DISTR_SET_PARAMS;
+  /* mode, area, etc. might be wrong now! */
+
+  /* run special init routine for generator */
+  if ( !DISTR.init(NULL,gen) ) {
+    /* init failed --> could not find a sampling routine */
+    _unur_warning(gen->genid,UNUR_ERR_GEN_DATA,"parameters");
+    return 0;
+  }
+
+  /* o.k. */
+  return 1;
+
+} /* end of unur_dstd_chg_param() */
 
 /*****************************************************************************/
 
@@ -251,6 +302,8 @@ unur_dstd_init( struct unur_par *par )
     free(par); unur_dstd_free(gen); return NULL; 
   }
 
+#if 0 /* This is not implemented now !! */
+  /** TODO: support for truncated distributions **/
   /* domain valid for special generator ?? */
   if (!(par->distr->set & UNUR_DISTR_SET_STDDOMAIN)) {
     /* domain has been modified */
@@ -267,6 +320,7 @@ unur_dstd_init( struct unur_par *par )
     GEN.umin = (DISTR.BD_LEFT > -INFINITY) ? CDF(DISTR.BD_LEFT)  : 0.;
     GEN.umax = (DISTR.BD_RIGHT < INFINITY) ? CDF(DISTR.BD_RIGHT) : 1.;
   }
+#endif
 
 #ifdef UNUR_ENABLE_LOGGING
   /* write info into log file */

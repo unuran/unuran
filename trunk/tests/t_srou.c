@@ -13,6 +13,8 @@
 #include "t_unuran.h"
 
 /*---------------------------------------------------------------------------*/
+#ifdef T_SROU
+/*---------------------------------------------------------------------------*/
 
 static const char method_name[] = "srou";
 
@@ -48,3 +50,29 @@ int main()
 
 /*---------------------------------------------------------------------------*/
 
+/*---------------------------------------------------------------------------*/
+#else
+/*---------------------------------------------------------------------------*/
+int main() { exit(77); } /* ignore test */
+/*---------------------------------------------------------------------------*/
+#endif  /* T_SROU */
+/*---------------------------------------------------------------------------*/
+
+
+#if 0
+UNUR_PAR *unur_srou_new( UNUR_DISTR *distribution );
+int unur_srou_set_cdfatmode( UNUR_PAR *parameters, double Fmode );
+int unur_srou_set_pdfatmode( UNUR_PAR *parameters, double fmode );
+int unur_srou_set_verify( UNUR_PAR *parameters, int verify );
+int unur_srou_set_usesqueeze( UNUR_PAR *parameters, int usesqueeze );
+int unur_srou_set_usemirror( UNUR_PAR *parameters, int usemirror );
+int unur_srou_chg_pdfparams( UNUR_GEN *generator, double *params, int n_params );
+int unur_srou_chg_domain( UNUR_GEN *generator, double left, double right );
+int unur_srou_chg_mode( UNUR_GEN *generator, double mode );
+int unur_srou_chg_cdfatmode( UNUR_GEN *generator, double Fmode );
+int unur_srou_chg_pdfatmode( UNUR_GEN *generator, double fmode );
+int unur_srou_chg_pdfarea( UNUR_GEN *generator, double area );
+#endif
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/

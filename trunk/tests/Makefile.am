@@ -148,8 +148,23 @@ SUFFIXES = .c
 
 t_*.c: make_test_files.pl
 
-# clean backup files
-CLEANFILES = *~ *.log
+# run tests with valgrind
+if HAVE_VALGRIND
+
+VALGRINDOPTIONS = -v \
+ --leak-check=yes \
+ --leak-resolution=high \
+ --num-callers=40 \
+ --show-reachable=yes 
+valgrind: $(check_PROGRAMS)
+	@list='$(check_PROGRAMS)'; for p in $$list; do \
+		valgrind --logfile=valgrind-$$p $(VALGRINDOPTIONS) ./$$p; \
+	done
+
+endif
+
+# clean log files and backup files
+CLEANFILES = *~ *.log valgrind-*pid*
 
 # clean generated files
 DISTCLEANFILES = \

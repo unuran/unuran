@@ -1,3 +1,12 @@
+2001-04-08  Josef Leydold  <leydold@alekto.wu-wien.ac.at>
+
+	* Fixed bug with default URNG. Added examples to test suite to
+	  detect this bug.
+
+	* Minor change to _unur_tdr_ps_sample() in file
+	  `src/methods/tdr_sample.c'. Sampling should be a little bit
+	  faster now.
+	
 2001-04-05  Josef Leydold  <leydold@pepper.wu-wien.ac.at>
 
 	* Minor changes to avoid gcc compilation warnings with

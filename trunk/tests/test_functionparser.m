@@ -37,6 +37,8 @@ Testsample = {
 
 	(* --- relational operators --- *)
 
+	(*
+        (* Does not work for Mathematica 5.1 any more! *)
         {"3*(x>1)" ,{-2,2,5}},
         {"3*(x<1)" ,{-2,2,5}},
         {"3*(x>=1)",{-2,2,5}}, 
@@ -47,6 +49,7 @@ Testsample = {
         {"3*(2<>x)",{-2,2,5}},
         {"3*(2!=x)",{-2,2,5}},   
         {"3*(2=x)",{-2,2,5}},
+	*)
 
 	(* --- system functions --- *)
 
@@ -61,14 +64,17 @@ Testsample = {
       	{"exp[-x^2]+log[2]-Pi*sin[x+x*2]", {-5*10^1, 2.3454*10^2,7}},
         {"Sin[x]*3*log[x]",   {2, 4, 2}  },
       	{"exp[x^2]*(cos[x]<1)", {-3, 8, 5}},
-	{"abs[x]-3*x", {-2, 2, 5}},
+	{"abs[x]-3*x", {-2, 2, 5}}
 	
 	(*
 	(* does not work with Mathematica 3.0 *)	
 	{"(sin[ ln[3*x*(cos[ 3*x^3-4.6789/(x+4)])]])-1", {-38.828,454.4*10^3,7}},
 	*)
 
+	(*
+        (* Does not work for Mathematica 5.1 any more! *)
         {"exp[x^2]*(sin[x*cos[x^2-1]]+1)*((x-3*pi*x)<1)", {-3,7,5}}
+	*)
 };
  
 
@@ -210,7 +216,7 @@ UnurTransformMathExpression[expression_] := Module [
         fstr = StringReplace[fstr,{"====" -> "==","<==" -> "<=",">=="->">=",
                                    "!=="  -> "!="}];
 	
-        (*  replace e.g'2.45e-3' -> '1.45*10^2                               *)
+        (*  replace e.g'2.45e-3' -> '1.45*10^2'                              *)
         fstr = StringReplace[fstr,{"0e" -> "0*10^","1e" -> "1*10^",
                                    "2e" -> "2*10^","3e" -> "3*10^",
                                    "3e" -> "3*10^","4e" -> "4*10^",

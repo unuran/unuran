@@ -40,7 +40,7 @@
 
 /* allocate memory for new vector structure */
 UNUR_VECTOR *
-unur_vector_new(int dim)
+_unur_vector_new(int dim)
 {
   int i;
  
@@ -54,26 +54,26 @@ unur_vector_new(int dim)
   for (i=0; i<dim; i++) v->x[i]=0.;
 
   return v;
-}
+} /* end of _unur_vector_new() */
 
 /*--------------------------------------------------------------------------*/
 
 /* free allocated memory used by vector structure */
 void 
-unur_vector_free(UNUR_VECTOR *v)
+_unur_vector_free(UNUR_VECTOR *v)
 {
   if (v) {
      if (v->x) free(v->x);
      free(v);
      v=NULL;
   }
-}
+} /* end of _unur_vector_free() */
 
 /*--------------------------------------------------------------------------*/
 
 /* calculation of vector norm */
 double 
-unur_vector_norm(UNUR_VECTOR *v)
+_unur_vector_norm(UNUR_VECTOR *v)
 {
   int i;
   double norm=0.;
@@ -86,13 +86,13 @@ unur_vector_norm(UNUR_VECTOR *v)
   norm = sqrt(norm);
 
   return norm;
-}
+} /* end of _unur_vector_norm() */
 
 /*--------------------------------------------------------------------------*/
 
 /* calculation of scalar product */
 double 
-unur_vector_scalar_product(UNUR_VECTOR *v1, UNUR_VECTOR *v2)
+_unur_vector_scalar_product(UNUR_VECTOR *v1, UNUR_VECTOR *v2)
 {
   int i;
   double scalar_product=0.;
@@ -104,7 +104,7 @@ unur_vector_scalar_product(UNUR_VECTOR *v1, UNUR_VECTOR *v2)
   }
 
   return scalar_product;
-}
+} /* end of _unur_vector_scalar_product() */
 
 /*--------------------------------------------------------------------------*/
 

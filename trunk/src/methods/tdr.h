@@ -46,7 +46,7 @@
 
    =OPTIONAL mode
 
-   =SPEED Set-up: slow, Sample: fast
+   =SPEED Set-up: slow, Sampling: fast
 
    =DESCRIPTION
       TDR is an acceptance/rejection method that uses the concavity of a

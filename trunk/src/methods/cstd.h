@@ -43,6 +43,11 @@
 
    =UP  Methods_for_CONT
 
+   =REQUIRED standard distribution from UNURAN library
+      (@pxref{Stddist,Standard distributions,Standard distributions}).
+
+   =SPEED Set-up: fast, Sampling: depends on distribution and generator
+
    =DESCRIPTION
       CSTD is a wrapper for special generators for continuous
       univariate standard distributions. It only works for

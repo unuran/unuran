@@ -44,7 +44,8 @@
 
    =REQUIRED observed sample
 
-   =SPEED Set-up: slow (as sample is sorted), Sample: very fast
+   =SPEED Set-up: slow (as sample is sorted),
+          Sampling: fast (depends on kernel)
 
    =DESCRIPTION
       EMPK generates random variates from an empirical distribution that is

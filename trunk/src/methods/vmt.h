@@ -42,6 +42,13 @@
 
    =UP  Methods_for_CVEC
 
+   =REQUIRED mean vector, covariance matrix
+
+   =OPTIONAL marginal distribution (for non-Gaussian distributions)
+
+   =SPEED Set-up: slow,
+          Sampling: depends on dimension
+
    =DESCRIPTION
       VMT generates random vectors for distributions with given mean
       vector mu and covariance matrix Sigma. It produces random vectors

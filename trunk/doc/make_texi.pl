@@ -54,11 +54,11 @@ use FileHandle;
      
      "=ROUTINES"    => { "scan" => \&scan_ROUTINES },
      
-     "=REQUIRED"    => { "scan" => \&scan_do_nothing },
+     "=REQUIRED"    => { "scan" => \&scan_chop_blanks },
 
-     "=OPTIONAL"    => { "scan" => \&scan_do_nothing },
+     "=OPTIONAL"    => { "scan" => \&scan_chop_blanks },
 
-     "=SPEED"       => { "scan" => \&scan_do_nothing },
+     "=SPEED"       => { "scan" => \&scan_chop_blanks },
      
      "=SEEALSO"     => { "scan" => \&scan_do_nothing },
      
@@ -397,6 +397,21 @@ sub texi_node {
     # print menu
     $TEXI .= $menu;
 
+    # print REQUIRED, OPTIONAL, etc.
+    if ($IN->{$node}->{"=REQUIRED"}) {
+	$TEXI .= "\@table \@emph\n";
+	if ($IN->{$node}->{"=REQUIRED"}) {
+	    $TEXI .= "\@item Required:\n".$IN->{$node}->{"=REQUIRED"}."\n";
+	}
+	if ($IN->{$node}->{"=OPTIONAL"}) {
+	    $TEXI .= "\@item Optional:\n".$IN->{$node}->{"=OPTIONAL"}."\n";
+	}
+	if ($IN->{$node}->{"=SPEED"}) {
+	    $TEXI .= "\@item Speed:\n".$IN->{$node}->{"=SPEED"}."\n";
+	}
+	$TEXI .= "\@end table\n\@sp 1\n\n";
+    }
+
     # print description
     $TEXI .= $IN->{$node}->{"=DESCRIPTION"};
 
@@ -420,6 +435,31 @@ sub texi_node {
     }
 
 } # end of texi_node() 
+
+#############################################################
+# chop off trailing blanks
+#
+
+sub scan_chop_blanks {
+    my $node_name = $_[0];   # name of node
+    my $tag = $_[1];         # TAG (node section)
+
+    # content of node
+    my $entry = $IN->{$node_name}->{$tag};
+
+    # trim heading blanks
+    $entry =~ s/^\s*//;
+
+    # chop off trailing blanks
+    $entry =~ s/\s+$//;
+
+    # remove newlines
+    $entry =~ s/\n+/ /g;
+
+    # return result
+    $IN->{$node_name}->{$tag} = $entry;
+
+} # end of scan_chop_blanks()
 
 #############################################################
 # dummy routine

@@ -42,6 +42,11 @@
 
    =UP  Methods_for_CVEMP
 
+   =REQUIRED observed sample
+
+   =SPEED Set-up: slow,
+          Sampling: slow (depends on dimension)
+
    =DESCRIPTION
       VEMPK generates random variates from a multivariate empirical
       distribution that is given by an observed sample. The idea is

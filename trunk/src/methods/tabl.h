@@ -44,7 +44,9 @@
 
    =REQUIRED PDF, all local extrema
 
-   =SPEED Set-up: slow, Sample: fast
+   =OPTIONAL approximate area
+
+   =SPEED Set-up: slow, Sampling: fast
 
    =ABSTRACT Not suited for heavy tailed distributions
 

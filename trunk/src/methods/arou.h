@@ -46,7 +46,7 @@
 
    =OPTIONAL mode
 
-   =SPEED Set-up: slow, Sample: fast
+   =SPEED Set-up: slow, Sampling: fast
 
    =DESCRIPTION
       AROU is a variant of the ratio-of-uniforms method that uses the

@@ -44,7 +44,9 @@
 
    =REQUIRED CDF
 
-   =SPEED Set-up: optional, Sample: (very) slow
+   =OPTIONAL PDF
+
+   =SPEED Set-up: optional, Sampling: (very) slow
 
    =DESCRIPTION
       NINV is the implementation of numerical inversion.

@@ -44,7 +44,7 @@
 
    =REQUIRED probability vector (PV)
 
-   =SPEED Set-up: slow (linear with the vector-length), Sample: very fast
+   =SPEED Set-up: slow (linear with the vector-length), Sampling: very fast
 
    =DESCRIPTION
       DAU samples from distributions with arbitrary but finite

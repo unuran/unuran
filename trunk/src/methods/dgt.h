@@ -44,7 +44,7 @@
 
    =REQUIRED probability vector (PV)
 
-   =SPEED Set-up: slow (linear with the vector-length), Sample: very fast
+   =SPEED Set-up: slow (linear with the vector-length), Sampling: very fast
 
    =DESCRIPTION
       DGT samples from arbitrary but finite probability vectors. Random

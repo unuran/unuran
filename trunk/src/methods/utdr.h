@@ -44,7 +44,7 @@
 
    =REQUIRED T-concave PDF, mode, approximate area
 
-   =SPEED Set-up: moderate, Sample: Moderate
+   =SPEED Set-up: moderate, Sampling: Moderate
 
    =DESCRIPTION
       UTDR is based on the transformed density rejection and uses three almost

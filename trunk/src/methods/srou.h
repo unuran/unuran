@@ -44,7 +44,7 @@
 
    =REQUIRED T-concave PDF, mode, area
 
-   =SPEED Set-up: fast, Sample: slow
+   =SPEED Set-up: fast, Sampling: slow
 
    =DESCRIPTION
       SROU is based on the ratio-of-uniforms method but uses universal 

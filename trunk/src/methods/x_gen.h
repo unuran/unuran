@@ -57,10 +57,15 @@ UNUR_GEN *unur_init( UNUR_PAR *parameters );
 /*
   Initialize a generator object. All necessary information must be
   stored in the parameter object.
-  Warning: If an error has occurred a NULL pointer is return. This
-  must not be used for the sampling routines (this causes a
+
+  @strong{Important:} If an error has occurred a NULL pointer is
+  return. This must not be used for the sampling routines (this causes a
   segmentation fault). 
+
   @strong{Always} check whether the call was successful or not!
+
+  @emph{Important:} This call destroys the @var{parameter} object
+  automatically. Thus it is not necessary/allowed to free it.
 */
 
 /*---------------------------------------------------------------------------*/

@@ -80,15 +80,14 @@
  *                a missing argument is transformed to 1.                    *
  *      int, int: Instead of two integers, a list with at least two          *
  *                numbers can be given.                                      *
- *                'inf' is transformed to infinity.                          *
- *                implementation of strtod().                                *
+ *                'inf[...]' is transformed to INT_MAX,                      *
+ *                '-inf[...]' is transformed to INT_MIN.                     *
  *      unsigned: string is interpreted as hexadecimal number.               *
- *      double:   'inf[...]' is transformed to INFINITY.                     *
+ *      double:   'inf[...]' is transformed to INFINITY,                     *
+ *                '-inf[...]' is transformed to -INFINITY.                   *
  *      double, double: Instead of two doubles, a list with at least two     *
  *                numbers can be given.                                      *
- *                'inf' is transformed to infinity. However if a list is     *
- *                used 'inf' might not be supported dependent on the         *
- *                implementation of strtod().                                *
+ *                'inf[...]' is transformed to INFINITY.                     *
  *      int, double*: If the first argument is missing, it is replaced       *
  *                by the size of the array.                                  *
  *                If the second argument is missing, the NULL pointer is     *
@@ -2478,23 +2477,39 @@ _unur_parse_dlist( char *liststr, double **darray )
   double *darr = NULL;  /* pointer to double array */
   int n_darray = 0;     /* number of elements in processed list */
   int n_alloc = 0;      /* number allocated elements */
-  char *tailstr;        /* pointer to the remaining string in strtod() */
+  char *token;          /* pointer to token in string */
+  char *next;           /* pointer to next token in string */
 
   /* return 0 if no list is given */
   if (liststr == NULL) {
-    *darray = darr;
+    *darray = NULL;
     return 0;
   }
 
-  /* extract doubles from string and write them to array of doubles   */
-  /* end of list is indicated by right bracket ')' or '\0' */  
-  while ( *liststr != ')' && *liststr != '\0' ) {
-    /* there can only be ',' or '(' in front of the numbers           */
-    while ( *liststr == ',' || *liststr == '(' ){
-      liststr++; /* next char */
+  /* extract doubles from string and write them to array of doubles.  */
+  /* end of list is indicated by right bracket ')' or '\0'.           */  
+
+  /* pointer to first token in string */
+  token = liststr;
+
+  /* remove (optional) leading parenthesis '('                        */
+  while (*token != '\0' && *token == '(')
+    ++token;
+
+  /* tokenize the string using ',' as separator and handle the tokens */
+  for ( next = token;
+	next != NULL && *token != '\0';
+	token = next ) {
+
+    /* find end of token (i.e. the pointer to next token) */
+    next = strchr(token,',');
+    if (next != NULL) {
+      /* next separator found */
+      *next = '\0';     /* terminate token string    */
+      next++;           /* set pointer to next token */
     }
 
-    /* check if there is enough space in darr */
+   /* check if there is enough space in darr */
     if (n_darray >= n_alloc) {
       /* no --> allocate memory */
       n_alloc += 100;
@@ -2502,22 +2517,10 @@ _unur_parse_dlist( char *liststr, double **darray )
     }
 
     /* extract double and write to array and increase counter */
-    darr[n_darray] = strtod(liststr, &tailstr);
+    darr[n_darray] = _unur_atod(token);
+    n_darray++;
 
-    if (liststr == tailstr) {
-      /* conversion failed */
-      _unur_error(GENTYPE,UNUR_ERR_STR_SYNTAX,"cannot convert float"); 
-      free(darr);
-      darr = NULL;
-      n_darray = 0;
-      break;
-    }
-    else {
-      /* conversion successfully */
-      liststr = tailstr;
-      n_darray++;
-    }
-  } /* end while -- all elements of list read */
+  }
 
   /* store pointer to double array */
   *darray = darr;

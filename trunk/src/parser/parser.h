@@ -245,6 +245,10 @@ UNUR_PAR *_unur_str2par( const UNUR_DISTR *distribution, const char *string, str
 
    @end table
 
+   Notice that missing entries in a list of numbers are interpreted as 
+   @code{0}. E.g, a the list @code{(1,,3)} is read as @code{(1,0,3)}, the
+   list @code{(1,2,)} as @code{(1,2,0)}.
+
    The the list of @code{key} strings in
    @ref{KeysDistr,,Keys for Distribution String}, and 
    @ref{KeysMethod,,Keys for Method String}, for further details.

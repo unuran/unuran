@@ -186,29 +186,38 @@ _unur_mrou_rectangle_compute( struct MROU_RECTANGLE *rr )
   xumin  = _unur_xmalloc(dim * sizeof(double));
   xumax  = _unur_xmalloc(dim * sizeof(double));
 
-  /* calculation of vmax */
-  faux.f = (UNUR_FUNCT_VGENERIC*) _unur_mrou_rectangle_aux_vmax;
-  faux.params = rr;
+  if (rr->distr->data.cvec.mode != NULL) {
+    /* position of mode is known ... vmax = f(mode)^(1/r*dim+1)) */
+    faux.f = (UNUR_FUNCT_VGENERIC*) _unur_mrou_rectangle_aux_vmax;
+    faux.params = rr;
+
+    rr->vmax = -faux.f(rr->distr->data.cvec.mode, faux.params);
+  }
+  else {
+    /* calculation of vmax */
+    faux.f = (UNUR_FUNCT_VGENERIC*) _unur_mrou_rectangle_aux_vmax;
+    faux.params = rr;
   
-  /* starting point */
-  memcpy(xstart, rr->center, dim * sizeof(double));
+    /* starting point */
+    memcpy(xstart, rr->center, dim * sizeof(double));
   
-  hooke_iters_vmax = _unur_hooke( faux, dim, xstart, xend,
-				  MROU_HOOKE_RHO, MROU_HOOKE_EPSILON, MROU_HOOKE_MAXITER);
-  
-  rr->vmax = -faux.f(xend, faux.params);
-  
-  if (hooke_iters_vmax >= MROU_HOOKE_MAXITER) {
-    scaled_epsilon = MROU_HOOKE_EPSILON * rr->vmax;
-    if (scaled_epsilon>MROU_HOOKE_EPSILON) scaled_epsilon=MROU_HOOKE_EPSILON;
-    
-    /* recalculating extremum with scaled_epsilon and new starting point */
-    memcpy(xstart, xend, dim * sizeof(double));
     hooke_iters_vmax = _unur_hooke( faux, dim, xstart, xend,
-				    MROU_HOOKE_RHO, scaled_epsilon , MROU_HOOKE_MAXITER);
+				    MROU_HOOKE_RHO, MROU_HOOKE_EPSILON, MROU_HOOKE_MAXITER);
+  
     rr->vmax = -faux.f(xend, faux.params);
+  
     if (hooke_iters_vmax >= MROU_HOOKE_MAXITER) {
-      _unur_warning(rr->genid , UNUR_ERR_GENERIC, "Bounding rect uncertain (vmax)");
+      scaled_epsilon = MROU_HOOKE_EPSILON * rr->vmax;
+      if (scaled_epsilon>MROU_HOOKE_EPSILON) scaled_epsilon=MROU_HOOKE_EPSILON;
+    
+      /* recalculating extremum with scaled_epsilon and new starting point */
+      memcpy(xstart, xend, dim * sizeof(double));
+      hooke_iters_vmax = _unur_hooke( faux, dim, xstart, xend,
+                                      MROU_HOOKE_RHO, scaled_epsilon , MROU_HOOKE_MAXITER);
+      rr->vmax = -faux.f(xend, faux.params);
+      if (hooke_iters_vmax >= MROU_HOOKE_MAXITER) {
+        _unur_warning(rr->genid , UNUR_ERR_GENERIC, "Bounding rect uncertain (vmax)");
+      }
     }
   }
 

@@ -54,6 +54,15 @@ static void _unur_distr_discr_free( struct unur_distr *distr );
 
 /*---------------------------------------------------------------------------*/
 
+static int _unur_distr_discr_find_mode( struct unur_distr *distr );
+/*---------------------------------------------------------------------------*/
+/* find mode of unimodal probability vector numerically by bisection         */
+/*---------------------------------------------------------------------------*/
+
+
+/*---------------------------------------------------------------------------*/
+
+
 /*****************************************************************************/
 /**                                                                         **/
 /** univariate discrete distributions                                       **/
@@ -671,6 +680,232 @@ unur_distr_discr_get_mode( struct unur_distr *distr )
 
 /*---------------------------------------------------------------------------*/
 
+int 
+_unur_distr_discr_find_mode(struct unur_distr *distr )
+     /*----------------------------------------------------------------------*/
+     /*  find mode of a probability vector by bisection                      */
+     /*                                                                      */
+     /*  Any two of the three points x[i] must always differ at least by one */
+     /*  If no further point xnew can be fitted between, the mode is found   */
+     /*                                                                      */
+     /*----------------------------------------------------------------------*/
+{
+
+  #define sgn(a)  ( (a) >= (0) ? ( (a==0)?(0):(1) ) : (-1) )
+  #define max_pos3(a,b,c) ( (a) >= (b) ? ( ((a) >= (c)) ? (1) : (3) ) :\
+                                     ( ((b) >= (c)) ? (2) : (3) ) )
+
+  #define INT1         (1) 
+  #define INT2         (2) 
+  #define INT3         (3)
+  #define UNDEFINED    (0)               
+  #define X2_BORDER    (1)              
+  #define XNEW_BORDER  (2)             
+
+
+  int bisect;                     /* for choosing an interval               */
+  int interval;                   /* interval containing xnew               */
+  int mode;                       /* mode                                   */
+  int x[3], xnew;                 /* mode between x[0] and x[1]             */
+  double fx[3], fxnew;            /* ... and the respective function values */
+  int xtmp;
+  double fxtmp;
+
+  const double r = (3.-sqrt(5.))/2.;       /* sectio aurea                  */
+
+
+  /* check arguments */
+  CHECK_NULL( distr, 0 );
+  _unur_check_distr_object( distr, DISCR, 0 );
+  if (DISTR.prob == NULL) {
+    _unur_error(distr->name,UNUR_ERR_DISTR_GET,
+           "probability vektor required for finding mode numerically");
+    return 0;
+  }
+
+  mode = INT_MAX;
+
+  /* derive three distinct points */
+
+  x[0] = DISTR.domain[0];
+  x[1] = DISTR.domain[1];
+  fx[0] = DISTR.prob[x[0]];
+  fx[1] = DISTR.prob[x[1]];
+  
+  if ( x[0] == x[1] ){            /* domain contains only one point         */
+    mode = x[0];
+  }
+  else if ( x[1] - x[0] == 1 ){   /* domain contains only two points        */
+    mode = (fx[0] >= fx[1]) ? x[0] : x[1];
+  }
+  else{                           /* domain contains at least three points  */
+
+ 
+    x[2]  = (int) (r*x[0] + (1-r)*x[1]);
+    if ( x[2] == x[0] )
+      x[2]++;
+    if ( x[2] == x[1] )
+      x[2]--;
+    fx[2] = DISTR.prob[x[2]];
+
+    /* at least one of the x[i] should have a positive function value  */
+    if (x[0] == 0.0 && x[1] == 0.0 ){
+      int i=1;
+      while (fx[2] == 0 && i < 100){
+	x[2]  = (x[1]/100)*i + (x[0]/100)*(100-i); /* integers !!! */
+        fx[2] = DISTR.prob[x[2]];
+        i++;
+      } 
+    }
+    if (fx[2] == 0){  /* no success */
+      _unur_error(distr->name,UNUR_ERR_DISTR_DATA,
+         "In find_mode(): no positive entry in probability vector found
+          during 100 trials");
+      unur_distr_discr_set_mode(distr, INT_MAX);
+      return 0;  
+    }
+
+    /* x[i] are now initialized -- at least one entry is > 0  
+       and no two of the x[i] are identical                  */ 
+
+    while (1){
+
+      /* terminating the program legally */
+      if ( (x[2]-x[0]) == sgn(x[2]-x[0]) &&
+	   (x[1]-x[2]) == sgn(x[1]-x[2])    ){
+	mode = x[ max_pos3(fx[1], fx[2], fx[3]) ];
+	break;   /* mode found */
+      }
+
+
+      /* find xnew not identical with any of the x[i] */ 
+      xnew  = (int) (r*x[0] + (1-r)*x[2]);
+
+      if ( xnew == x[0] ){
+	  xnew += sgn(x[2]-x[0]);
+	  if (xnew == x[2]){
+	    xnew = x[2];
+	    x[2] += sgn(x[2]-x[0]);  /* cant be = x[1] */
+	    fx[2] = DISTR.prob[x[2]];
+	  }
+      }
+      if ( xnew == x[2] ){
+	  xnew -= sgn(x[2]-x[0]);
+	  if (xnew == x[0]){
+	    xnew = x[2];
+	    x[2] += sgn(x[2]-x[0]);  /* cant be = x[1] */
+	    fx[2] = DISTR.prob[x[2]];
+	  }
+      }
+
+      fxnew = DISTR.prob[xnew];
+
+
+      /* Information of point xnew isn't enough to
+         refine interval containig the mode -- determine new xnew    */
+      if ( _unur_FP_same(fx[2], fxnew ) &&
+           (! x[0] > x[2]) && (! x[1] > x[2]) ){
+
+	interval = -1;  /* should be impossible when entering switch */
+	if ( abs(x[1]-x[2]) > 1 ){
+	  xtmp = x[1]/2 + x[2]/2;
+	  fxtmp = DISTR.prob[xtmp];
+	  interval = UNDEFINED;
+          if ( ! _unur_FP_same(fxtmp, fx[2]) )
+	    interval = INT3;
+	}
+	if ( abs(xnew-x[0]) > 1 ){
+	  xtmp = xnew/2 + x[0]/2;
+	  fxtmp = DISTR.prob[xtmp];
+	  interval = UNDEFINED;
+          if ( ! _unur_FP_same(fxtmp, fx[2]) )
+	    interval = INT1;
+        }
+	if ( abs(x[2]-xnew) > 1 ){
+	  xtmp = x[2]/2 + xnew/2;
+	  fxtmp = DISTR.prob[xtmp];
+	  interval = UNDEFINED;
+          if ( ! _unur_FP_same(fxtmp, fx[2]) )
+	    interval = INT2;
+	}
+
+	switch ( interval ){
+	case INT1:
+	  xnew = xtmp; fxnew = fxtmp;
+	  break;
+	case INT2:
+	  xnew = xtmp; fxnew = fxtmp;
+	  break;
+	case INT3:
+	  xnew = x[2]; fxnew = fx[2];
+	  x[2] = xtmp; fx[2] = fxtmp;
+	  break;
+	case UNDEFINED:
+	  unur_distr_discr_set_mode(distr, INT_MAX);
+	  return 0;  /* mode not found -- exit */
+	  break;
+	default:
+	  _unur_error(distr->name, UNUR_ERR_SHOULD_NOT_HAPPEN,"");
+	  unur_distr_discr_set_mode(distr, INT_MAX);
+	  return 0;
+	  break;
+	} /* end of switch (interval) */ 
+
+      }   /* flat region left */
+
+      
+      /* regular bisection */
+      bisect = -1; /* should be impossibe lwhen entering switch */
+      if ( fxnew > fx[0] && fxnew > fx[2] )
+	bisect = X2_BORDER;
+      else if ( fxnew > fx[1] && fxnew > fx[2] )
+	bisect = XNEW_BORDER;
+      else if ( fx[0] > fxnew )
+	bisect = X2_BORDER;
+      else if ( fx[1] > fx[2] )
+	bisect = XNEW_BORDER;
+      else if ( _unur_FP_same(fx[0], fxnew) && fxnew < fx[2] )
+	bisect = XNEW_BORDER;
+      else if ( _unur_FP_same(fx[0], fxnew) && fxnew > fx[2] )
+	bisect = X2_BORDER;
+      else if ( _unur_FP_same(fx[2], fx[1]) && fxnew < fx[2] )
+	bisect = XNEW_BORDER;
+      else if ( _unur_FP_same(fx[2], fx[1]) && fxnew < fx[2] )
+	bisect = X2_BORDER;
+      else
+       _unur_error(distr->name, UNUR_ERR_SHOULD_NOT_HAPPEN,"");
+
+      
+      switch ( bisect ){
+      case XNEW_BORDER:
+	x[0] = x[1];  fx[0] = fx[1];
+	x[1] = xnew;  fx[1] = fxnew;
+	break;
+      case X2_BORDER:
+	x[1] = x[2];  fx[1] = fx[2];
+	x[2] = xnew;  fx[2] = fxnew;
+	break;
+      default:
+	_unur_error(distr->name, UNUR_ERR_SHOULD_NOT_HAPPEN,"");
+	unur_distr_discr_set_mode(distr, INT_MAX);
+	return 0;
+      } /* end of switch (bisect) */
+
+
+    } /* while (1) end */
+
+  }  /* else (at least 3 points) end */
+     
+    unur_distr_discr_set_mode(distr, mode);
+    /* o.k. */
+    return 1;
+
+} /* end of _unur_distr_discr_find_mode() */
+
+
+/*---------------------------------------------------------------------------*/
+
+
 int
 unur_distr_discr_set_pmfsum( struct unur_distr *distr, double sum )
      /*----------------------------------------------------------------------*/
@@ -779,6 +1014,11 @@ unur_distr_discr_get_pmfsum( struct unur_distr *distr )
 
 /*---------------------------------------------------------------------------*/
 
+
+
+
+/*---------------------------------------------------------------------------*/
+
 /*****************************************************************************/
 
 void
@@ -849,3 +1089,12 @@ _unur_distr_discr_debug( struct unur_distr *distr, char *genid, int printvector 
 /*---------------------------------------------------------------------------*/
 #undef DISTR
 /*---------------------------------------------------------------------------*/
+
+
+
+
+
+
+
+
+

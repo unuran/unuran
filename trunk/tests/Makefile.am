@@ -89,21 +89,23 @@ EXTRA_DIST = \
  utdr.conf
 
 # compare results of CDF, PDF, and dPDF of standard distributions
+# and results of function parser
 # to those produced with Mathematica ...
+
+if HAVE_MATHEMATICA
 
 data:
 	math -initfile test_StdDistr.m
+	math -initfile test_functionparser.m
 
 t_StdDistr.c: test_StdDistr.m
 	math -initfile test_StdDistr.m
 
-if HAVE_MATHEMATICA
 t_StdDistr_SOURCES = t_StdDistr.c test_StdDistr.c
 t_StdDistr_LDADD = $(top_builddir)/src/libunuran.a
-endif
-
-
 test_functionparser_LDADD = $(top_builddir)/src/libunuran.a
+
+endif
 
 
 # run tests for methods ...

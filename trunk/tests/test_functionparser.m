@@ -1,113 +1,174 @@
+(*****************************************************************************
+ *                                                                           *
+ *          UNURAN -- Universal Non-Uniform Random number generator          *
+ *                                                                           *
+ *****************************************************************************
+     $Id$ 
+ *****************************************************************************
+ *                                                                           *
+ *  Create file with results of CDF, PDF and derivatives of PDF              *
+ *  for various distributions and make C test file.                          *
+ *                                                                           *
+ *****************************************************************************)
 
+(* === List of tests ========================================================*)
 
-filename ="t_functionparser.data"; 
 (* Eingeben der zu testenden Funktion im Format : 
-      {Funktion_als_string",{kleinster_Funktionswert,maximaler_Funktionswert,\
+      {"Funktion_als_string",{kleinster_Funktionswert,maximaler_Funktionswert,\
 Anzahl_Funktionswerte}       *)
-Testsample = {{"3+5", {-2, 2, 5}},
-      		{"3*x", {-2, 2, 5}},
-      		{"exp[-4*X]", {-2, 2, 5}},
-      		{"exp[-x^2]+Log[2,4]-Pi*Sin[x+x*2]", {-5, 2, 4}},
-                      {"Sin[x]*3*Ln[x]",   {2, 4, 2}  },
-      	      {"exp[x^2]*(cos[x]<1)", {-3, 8, 5}},
-                      {"abs[x]-3*x", {-2, 2, 5}}};
+Testsample = {
+	{"3+5", {-2, 2, 5}},
+      	{"3*x", {-2, 2, 5}},
+      	{"exp[-4*X]", {-2, 2, 5}},
+      	{"exp[-x^2]+Log[2,4]-Pi*Sin[x+x*2]", {-5, 2, 4}},
+        {"Sin[x]*3*Ln[x]",   {2, 4, 2}  },
+      	{"exp[x^2]*(cos[x]<1)", {-3, 8, 5}},
+        {"abs[x]-3*x", {-2, 2, 5}}
+};
 
 
+(* === Set Constants ========================================================*)
+
+(* name of datafile file for running tests *)
+DataFile = "t_functionparser.data"; 
 
 
+(* === Define cosntants and functions for function parser ===================*)
 
- (* Definition der Konstanten *)
-pi := Pi;
-e := E;
+(* --- Constants ----------------------------------------------------------- *)
 
-(* Definition der parser - funktionen *)
-exp[x_] := Exp[x];
-ln[x_] := Log[x];
+pi = Pi;
+e  = E;
+
+(* --- Functions ----------------------------------------------------------- *)
+
+exp[x_]     := Exp[x];
+ln[x_]      := Log[x];
 log[x_, y_] := Log[x, y];
-sin[x_] := Sin[x];
-cos[x_] := Cos[x];
-tan[x_] := Tan[x];
-sqrt[x_] := Sqrt[x];
-abs[x_] := Abs[x];
-sgn[x_] := Sgn[x];
-
-exprlog[x_] := If[x > 1, 3, 4];
-
-(* Umdefinition der Ableitungsfunktion analog der Bedeutung im Parser *)
-(* 
-  der_abs[x_] := If[x < 0, D[x, x
-          (Unprotect[D];
-            D[abs[x_], x_] := der_abs[x];
-            Protect[D]);
-        D[abs[x], x] /. x -> 2 *)
-
-(* Ableitung > *)
-(Unprotect[Derivative];
-    Derivative[1, 0][Greater][x_, y_] := 0;
-    Derivative[0, 1][Greater][x_, y_] := 0;
-    Protect[Derivative]);
-
-(* Ableitung < *)
-(Unprotect[Derivative];
-    Derivative[1, 0][Less][x_, y_] := 0;
-    Derivative[0, 1][Less][x_, y_] := 0;
-    Protect[Derivative]);
-
-(* Ableitung 'abs' *)
-(Unprotect[Derivative];
-    Derivative[1][Abs][x_] := If[x < 0, -1, 1];
-    Protect[Derivative]);
-
-(*
-  D[Greater[x, 4], x]
-          D[x > 1, x]
-          D[Sin[x]*(2*x > x), x] /. x -> 2 /. {True -> 1, False -> 0} // N
-  *)
+sin[x_]     := Sin[x];
+cos[x_]     := Cos[x];
+tan[x_]     := Tan[x];
+sqrt[x_]    := Sqrt[x];
+abs[x_]     := Abs[x];
+sgn[x_]     := Sign[x];    
 
 
-(* Berechnung und Ausgeben der Argumente, 
-  Funktionswerte sowie der ersten Ableitung       *)
+(* === Define derivatives for these functions (according to function parser) *)
 
-Do[  
-  Testfunktion = Testsample[[i]];
-  fstr = ToLowerCase[Testfunktion[[1]]];
-  fstrmin = Testfunktion[[2]][[1]];
-  fstrmax = Testfunktion[[2]][[2]];
-  fstrstep = (fstrmax - fstrmin)/(Testfunktion[[2]][[3]] - 1);
-  
-  		
-  (* Parse - 
-            string in Datei schreiben; [, ] wird durch (, ) ersetzt sowie \
-alle Funktionen klein geschrieben *)
-  
-  WriteString[filename, 
-    OutputForm[
-      StringJoin[ {"function=", 
-          ToLowerCase[  StringReplace[ fstr, {"[" -> "(", "]" -> ")"}  ]  ] , 
-          "\n"}  ] ]  ] ;
-  
-  
-  (* Argument, Funktionswert und erste Ableitung in Datei schreiben *)
-  Do[
-     WriteString[filename,
-        StringJoin[ToString[N[j]],
-                                 "\t",
-          		    
-          ToString[ 
-            CForm[N[ToExpression[fstr] /. { x -> j} /. {True -> 1, 
-                    False -> 0}]]], "\t" ,
-                                 
-          ToString[
-            CForm[N[  
-                D[ToExpression [fstr] , x]    /. x -> j /. {True -> 1, 
-                    False -> 0}]]]       , 
-          "\n"                               ]];		
-    , {j, fstrmin, fstrmax, fstrstep}  ];
-  
-  WriteString[filename, "\n"] ;
-  
-  (* naechste Funktion einlesen *)
-  , {i, 1, Length[Testsample], 1}]
+Unprotect[Derivative];
+
+(* --- Relation Operators -------------------------------------------------- *)
+
+(** TODO: <=, >=, ==, <>, = **)
+
+Derivative[1, 0][Greater][x_, y_] := 0;
+Derivative[0, 1][Greater][x_, y_] := 0;
+
+Derivative[1, 0][Less][x_, y_] := 0;
+Derivative[0, 1][Less][x_, y_] := 0;
+
+(* --- Functions ----------------------------------------------------------- *)
+
+Derivative[1][Abs][x_] := sgn[x];
+
+(* ------------------------------------------------------------------------- *)
+
+Protect[Derivative];
+
+
+(* === Write results for an expression into data file ====================== *)
+
+UnurWriteData[expression_,points__] := Module [
+	(*	expression ... function term                                 *)
+	(*      points     ... list {x_min, x_max, number of points}         *)
+
+	(* local variables                                                   *)
+	{
+	  funct,   (* string use to compute expression with Mathematica      *)
+	  x,       (* argument for function                                  *)
+	  xmin,    (* minimal value for x                                    *)
+	  xmax,    (* maximal value for x                                    *)
+	  xstep    (* step width                                             *)
+	},
+
+	(* convert to lower case letters                                     *)
+	funct = ToLowerCase[expression];
+
+	(* print function string into data file                              *)
+	WriteString[DataFile,
+		    "function=",
+		    UnurTransformExpression[funct],
+		    "\n"]; 
+
+	(* get values for x                                                  *)
+	xmin = points[[1]];
+	xmax = points[[2]];
+	xstep = (xmax - xmin) / (points[[3]]-1);
+	xmax += xstep/2;
+
+	(* print function and its derivative at all given points *)
+	Do[ UnurWriteLine[x,funct],{x,xmin,xmax,xstep}];
+
+	(* add blank line *)
+	WriteString[DataFile,"\n"]; 
+
+]; (* end of UnurWriteData[] *)
+
+
+(* --- Transform expression into string for function parser ---------------- *)
+
+UnurTransformExpression[expression_] := Module [
+	(*	expression ... function term                                 *)
+
+	(* local variables                                                   *)
+	{fstr},
+
+	(* Replace square brackets by parenthesis                            *)
+	fstr = StringReplace[ expression, {"[" -> "(", "]" -> ")"}];
+
+	(* return result *)
+	Return[fstr];
+
+]; (* end of UnurTransformExpression[] *)
+
+
+(* --- Compute function and write line into date file       ---------------- *)
+
+UnurWriteLine[xarg_,funct_] := Module [
+	(*      xarg  ... argument                                           *)
+	(*	funct ... function term                                      *)
+
+	(* local variables                                                   *)
+	{
+	  xval, (* numerical value of argument x                             *)
+	  fx,   (* value of function at x                                    *)
+	  dfx   (* value of derivative of function at x                      *)
+	},
+
+	(* argument *)
+	xval = N[xarg];
+	WriteString[DataFile, CForm[xval],"\t"];
+
+	(* function *)
+	fx = N[ToExpression[funct]] /. x -> xval /. {True -> 1, False -> 0};
+	WriteString[DataFile, CForm[fx],"\t"];
+
+	(* derivative *)
+	dfx = N[ D[ ToExpression[funct], x ]] /. x -> xval /. {True -> 1, False -> 0};
+	WriteString[DataFile, CForm[dfx],"\n"];
+
+]; (* end of UnurWriteLine[] *)
+
+(* === Main ================================================================ *)
+
+Do [
+   fstr   = Testsample[[i]][[1]];
+   points = Testsample[[i]][[2]];
+   UnurWriteData[fstr, points],
+   {i, 1, Length[Testsample]}
+];
+
+(* === Exit ================================================================ *)
 
 Quit[]
 

@@ -383,7 +383,7 @@ _unur_gibbs_sample_cvec( struct unur_gen *gen, double *vec )
      /*   vec ... random vector (result)                                     */
      /*----------------------------------------------------------------------*/
 {
-  int i, d, dim; /* index used in dimension loops (0 <= d < dim) */
+  int d, dim; /* index used in dimension loops (0 <= d < dim) */
   long skip;
   
   /* possibly move this to the gibbs generator structure */
@@ -403,7 +403,7 @@ _unur_gibbs_sample_cvec( struct unur_gen *gen, double *vec )
     /* moving "candidate" point along each coordinate */
     for (d=0; d<dim; d++) {
 
-      distr_conditional = unur_distr_condi_new(gen->distr, GEN->point_current, d);
+      distr_conditional = unur_distr_condi_new(gen->distr, GEN->point_current, NULL, d);
       par_conditional = unur_tdr_new(distr_conditional);
       gen_conditional = unur_init(par_conditional);
       

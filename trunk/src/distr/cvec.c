@@ -1221,7 +1221,7 @@ _unur_distr_cvec_debug( const struct unur_distr *distr, const char *genid )
      /*----------------------------------------------------------------------*/
 {
   FILE *log;
-  int i,j;
+  double *mat;
 
   /* check arguments */
   CHECK_NULL(distr,RETURN_VOID);
@@ -1236,21 +1236,37 @@ _unur_distr_cvec_debug( const struct unur_distr *distr, const char *genid )
   fprintf(log,"%s:\tdimension = %d\n",genid,distr->dim);
   fprintf(log,"%s:\n",genid);
 
-  fprintf(log,"%s:\tmean vector =\n",genid);
-  fprintf(log,"%s:\t   ( %g",genid,(DISTR.mean ? DISTR.mean[0] : 0.));
-  for (i=1; i<distr->dim; i++) 
-    fprintf(log,", %g",(DISTR.mean ? DISTR.mean[i] : 0.));
-  fprintf(log,")\t%s\n",(DISTR.mean ? "" : "[NULL]"));
-  fprintf(log,"%s:\n",genid);
-  
-  fprintf(log,"%s:\tcovariance matrix = %s\n",genid,(DISTR.covar ? "" : "[NULL]"));
-  for (j=0; j<distr->dim; j++) {
-    fprintf(log,"%s:\t   (%7.4f",genid,(DISTR.covar ? DISTR.covar[distr->dim*j] : (j==0?1.:0.)));
-    for (i=1; i<distr->dim; i++) 
-      fprintf(log,",%7.4f",(DISTR.covar ? DISTR.covar[distr->dim*j+i] : (i==j?1.:0.)));
-    fprintf(log,")\n");
+  /* mean vector */
+  mat = ((distr->set & UNUR_DISTR_SET_MEAN) && DISTR.mean) ? DISTR.mean : NULL;
+  _unur_matrix_print_vector( distr->dim, mat, "\tmean vector =", log, genid, "\t   ");
+
+  /* covariance matrix */
+  mat = ((distr->set & UNUR_DISTR_SET_COVAR) && DISTR.covar) ? DISTR.covar : NULL;
+  _unur_matrix_print_matrix( distr->dim, mat, "\tcovariance matrix =", log, genid, "\t   ");
+
+  /* cholesky matrix */
+  mat = ((distr->set & UNUR_DISTR_SET_CHOLESKY) && DISTR.cholesky) ? DISTR.cholesky : NULL;
+  _unur_matrix_print_matrix( distr->dim, mat, "\tcholesky factor (of covariance matrix) =", log, genid, "\t   ");
+
+  /* marginal distributions */
+  fprintf(log,"%s:\tmarginal distributions: ",genid);
+  if (distr->set & UNUR_DISTR_SET_MARGINAL) {
+    fprintf(log,"\n");
+    if (DISTR.marginals[0] == DISTR.marginals[1]) {
+      fprintf(log,"%s: all mariginals [1-%d]:\n",genid,distr->dim);
+      _unur_distr_cont_debug( DISTR.marginals[0], genid );
+    }
+    else {
+      int i;
+      for (i=0; i<distr->dim; i++) {
+	fprintf(log,"%s: mariginal [%d]:\n",genid,i+1);
+	_unur_distr_cont_debug( DISTR.marginals[i], genid );
+      }
+    }
   }
-    
+  else {
+    fprintf(log," [unknown]\n");
+  }
   fprintf(log,"%s:\n",genid);
 
 } /* end of _unur_distr_cvec_debug() */

@@ -127,7 +127,7 @@ sub make_PDFgen_C
 
 	# Write PDF
 	$PDFgen .= 
-	    "\t_unur_acg_print_sectionheader(out, 1, \"PDF for $d distribution.\");\n\n".
+	    "\t_unur_acg_C_print_sectionheader(out, 1, \"PDF for $d distribution.\");\n\n".
 	    $PDFname.
 	    $PDFconst.
 	    $PDFbody;

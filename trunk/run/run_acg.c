@@ -28,9 +28,11 @@ int main()
 
   distr = unur_distr_normal(NULL,0);
   par = unur_tdr_new( distr );
+/*    unur_tdr_set_c(par,0.); */
   unur_tdr_set_cpoints(par,4,NULL),
   gen = unur_init( par );
-  unur_acg_C( gen, stdout, NULL );
+/*    unur_acg_C( gen, stdout, NULL ); */
+  unur_acg_FORTRAN( gen, stdout, NULL );
   unur_distr_free(distr);
   unur_free(gen);
 

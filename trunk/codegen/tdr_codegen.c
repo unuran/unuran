@@ -41,7 +41,7 @@
 /*---------------------------------------------------------------------------*/
 
 int
-_unur_tdr_ps_codegen( struct unur_gen *gen, FILE *out, const char *rand_name, const char *pdf_name )
+_unur_acg_C_tdr_ps( struct unur_gen *gen, FILE *out, const char *rand_name, const char *pdf_name )
      /*----------------------------------------------------------------------*/
      /* code generator for method TDR variant PS (proportional squeeze)      */
      /*                                                                      */
@@ -89,7 +89,7 @@ _unur_tdr_ps_codegen( struct unur_gen *gen, FILE *out, const char *rand_name, co
   case TDR_VAR_T_POW:
     sprintf(transf,"        Transformtaion = -x^c  ... c = %g",GEN.c_T); break;
   }
-  _unur_acg_print_sectionheader
+  _unur_acg_C_print_sectionheader
     ( out, 3, 
       buffer,
       "Method: TDR - PS (Transformed Density Rejection / prop. squeeze)",
@@ -124,7 +124,7 @@ _unur_tdr_ps_codegen( struct unur_gen *gen, FILE *out, const char *rand_name, co
   fprintf(out," };\n");
 
   /* hat function */
-  fprintf(out,"\tconst double Atotal = %.20g;\n", GEN.Atotal);
+  fprintf(out,"\tconst double Atotal = %.20e;\n", GEN.Atotal);
 
   fprintf(out,"\tconst struct {\n");
   fprintf(out,"\t\tdouble x;\n");
@@ -133,7 +133,6 @@ _unur_tdr_ps_codegen( struct unur_gen *gen, FILE *out, const char *rand_name, co
     fprintf(out,"\t\tdouble fx;\n");
     break;
   case TDR_VAR_T_SQRT:
-    fprintf(out,"\t\tdouble fx;\n");
     fprintf(out,"\t\tdouble Tfx;\n");
     break;
   default:
@@ -147,25 +146,26 @@ _unur_tdr_ps_codegen( struct unur_gen *gen, FILE *out, const char *rand_name, co
   fprintf(out,"\t} iv[%d] = {\n",GEN.n_ivs);
   
   for (iv=GEN.iv; iv->next!=NULL; iv=iv->next) {
-    fprintf(out,(iv==GEN.iv)?"\t\t{":",\n\t\t{");
-    fprintf(out," %.20e",iv->x);
+    fprintf(out,(iv==GEN.iv)?"\t\t{ ":",\n\t\t{ ");
+    fprintf(out,"%.20e, ",iv->x);
     switch (gen->variant & TDR_VARMASK_T) {
     case TDR_VAR_T_LOG:
-      fprintf(out,", %.20e",iv->fx);
+      fprintf(out,"%.20e, ",iv->fx);
       break;
     case TDR_VAR_T_SQRT:
-      fprintf(out,", %.20e",iv->fx);
-      fprintf(out,", %.20e",iv->Tfx);
+      fprintf(out,"%.20e, ",iv->Tfx);
       break;
     default:
       _unur_error(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
       return 0;
     }
-    fprintf(out,", %.20e",iv->dTfx);
-    fprintf(out,", %.20e",iv->sq);
-    fprintf(out,", %.20e",iv->Acum);
-    fprintf(out,", %.20e",iv->Ahatr);
-    fprintf(out," }");
+    fprintf(out,"\n\t\t  ");
+    fprintf(out,"%.20e, ",iv->dTfx);
+    fprintf(out,"%.20e, ",iv->sq);
+    fprintf(out,"\n\t\t  ");
+    fprintf(out,"%.20e, ",iv->Acum);
+    fprintf(out,"%.20e ",iv->Ahatr);
+    fprintf(out,"}");
   }
   fprintf(out," };\n");
 
@@ -251,181 +251,238 @@ _unur_tdr_ps_codegen( struct unur_gen *gen, FILE *out, const char *rand_name, co
   /* o.k. */
   return 1;
 
-} /* end of _unur_tdr_ps_codegen() */
+} /* end of _unur_acg_C_tdr_ps() */
 
 /*****************************************************************************/
 
-#if 0
-struct unur_tdr_interval {
+#define print_data(i,x)  fprintf(out,((i)==0)?"     *   %.20e":(((i)%2)?", %.20e":",\n     *   %.20e"),(x))
 
-  double  x;                    /* (left) construction point (cp)            */
-  double  fx;                   /* value of PDF at cp                        */ 
-  double  dTfx;                 /* derivative of transformed PDF at cp       */
-  double  sq;                   /* slope of transformed squeeze in interval  */
-  double  Acum;                 /* cumulated area of intervals               */
-  double  Ahatr;                /* area below hat on right side              */
-};
-
-/*****************************************************************************/
-
-double
-_unur_tdr_ia_sample( struct unur_gen *gen )
+int
+_unur_acg_FORTRAN_tdr_ps( struct unur_gen *gen, FILE *out, const char *rand_name, const char *pdf_name )
      /*----------------------------------------------------------------------*/
-     /* sample from generator (immediate acceptance)                         */
+     /* code generator for method TDR variant PS (proportional squeeze)      */
      /*                                                                      */
      /* parameters:                                                          */
-     /*   gen ... pointer to generator object                                */
+     /*   gen       ... pointer to generator object                          */
+     /*   out       ... output stream                                        */
+     /*   rand_name ... name of sampling routine                             */
+     /*   pdf_name  ... name of PDF                                          */
      /*                                                                      */
      /* return:                                                              */
-     /*   double (sample from random variate)                                */
+     /*   1 ... on success                                                   */
+     /*   0 ... on error                                                     */
      /*                                                                      */
      /* error:                                                               */
-     /*   return 0.                                                          */
-     /*                                                                      */
-     /*======================================================================*/
-     /* comment:                                                             */
-     /*   x   ... random point                                               */
-     /*   x0  ... left construction point in interval                        */
-     /*   x1  ... right construction point in interval                       */
-     /*   f   ... PDF                                                        */
-     /*   Tf  ... transformed PDF                                            */
-     /*   dTf ... derivative of transformed PDF                              */
-     /*   sq  ... slope of squeeze in interval                               */
-     /*                                                                      */
+     /*   return 0                                                           */
      /*----------------------------------------------------------------------*/
-     /*   if (Tf)'(x0) == 0:                                                 */
-     /*   X = x0 + U / f(x0)                                                 */
-     /*   U ~ U(0,area below hat)                                            */
-     /*                                                                      */
-     /*----------------------------------------------------------------------*/
-     /*   log(x):                                                            */
-     /*                                                                      */
-     /*   hat(x) = f(x0) * exp( (Tf)'(x0) *  (x-x0) )                        */
-     /*   generation:                                                        */
-     /*      X = x0 + 1/(Tf)'(x0) * \log( (Tf)'(x0)/f(x0) * U + 1 )          */
-     /*      U ~ U(-area below left hat, area below left hat)                */
-     /*                                                                      */
-     /*----------------------------------------------------------------------*/
-     /*   T(x) = -1/sqrt(x):                                                 */
-     /*                                                                      */
-     /*   hat(x) = 1 / (Tf(x0) + (Tf)'(x0) * (x-x0))^2                       */
-     /*   generation:                                                        */
-     /*      X = x0 + (Tf(x0)^2 * U) / (1 - Tf(x0) * (Tf)'(x0) * U)          */
-     /*      U ~ U(-area below left hat, area below left hat)                */
-     /*----------------------------------------------------------------------*/
-{ 
-  UNUR_URNG *urng;             /* pointer to uniform random number generator */
+{
+
   struct unur_tdr_interval *iv;
-  int use_ia;
-  double U, V, X;
-  double fx, hx, Thx;
+  int i,j;
+  char buffer[80], transf[80];
 
-  while (1) {
+  /* check arguments */
+  _unur_check_NULL("ACG",gen, 0);
+  COOKIE_CHECK(gen,CK_TDR_GEN,0);
 
-    /* sample from U(0,1) */
-    U = _unur_call_urng(urng);
-
-    /* look up in guide table and search for segment */
-    iv =  GEN.guide[(int) (U * GEN.guide_size)];
-    U *= GEN.Atotal;
-    while (iv->Acum < U) {
-      iv = iv->next;
-    }
-
-    /* reuse of uniform random number */
-    U -= iv->Acum;    /* result: U in (-A_hat,0) */
-
-    /* check for region of immediate acceptance */
-    if (U >= - iv->sq * iv->Ahat) {
-      /* region of immediate acceptance */
-      U /= iv->sq;
-      use_ia = 1;
-    }
-    else {
-      /* rejection from region between hat and squeeze */
-      U = (U + iv->sq * iv->Ahat) / (1. - iv->sq);
-      use_ia = 0;
-    }
-    /* result: U in (-A_hat,0) */
-
-    /* U in (-A_hatl, A_hatr) */
-    U += iv->Ahatr;
-
-    /* generate from hat distribution */
-    switch (gen->variant & TDR_VARMASK_T) {
-
-    case TDR_VAR_T_LOG:
-      if (iv->dTfx == 0.)
-	X = iv->x + U / iv->fx;
-      else {
-	double t = iv->dTfx * U / iv->fx;
-	if (fabs(t) > 1.e-6)
-	  /* x = iv->x + log(t + 1.) / iv->dTfx; is cheaper but numerical unstable */
-	  X = iv->x + log(t + 1.) * U / (iv->fx * t);
-	else if (fabs(t) > 1.e-8)
-	  /* use Taylor series */
-	  X = iv->x + U / iv->fx * (1 - t/2. + t*t/3.);
-	else
-	  X = iv->x + U / iv->fx * (1 - t/2.);
-      }
-      break;
-
-    case TDR_VAR_T_SQRT:
-      if (iv->dTfx == 0.)
-	X = iv->x + U /iv->fx;
-      else {
-	U *= iv->Tfx; /* avoid one multiplication */
-	X = iv->x + (iv->Tfx * U) / (1. - iv->dTfx * U);  
-	/* It cannot happen, that the denominator becomes 0 ! */
-      }
-      break;
-
-    case TDR_VAR_T_POW:
-      /** TODO **/
-      return 1.;
-      break;
-
-    default:
-      _unur_error(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
-      return 1.;
-
-    } /* end switch */
-
-    /* immedate acceptance */
-    if (use_ia)
-      return X;
-
-    /* evaluate hat at X */
-    switch (gen->variant & TDR_VARMASK_T) {
-    case TDR_VAR_T_LOG:
-      hx = iv->fx * exp(iv->dTfx*(X - iv->x)); break;
-    case TDR_VAR_T_SQRT:
-      Thx = iv->Tfx + iv->dTfx * (X - iv->x);     /* transformed hat at X */ 
-      hx = 1./(Thx*Thx); break;
-    case TDR_VAR_T_POW:
-    default:
-      /** TODO **/
-      return 1.;
-    } /* end switch */
-
-    /* rejection from region between hat and (proportional) squeeze */
-    V = _unur_call_urng(urng);
-
-    /* get uniform random number between squeeze(X) and hat(X) */
-    V = (iv->sq + (1 - iv->sq) * V) * hx;
-
-    /* evaluate PDF at X */
-    fx = PDF(X);
-
-    /* main rejection */
-    if (V <= fx)
-      return X;
-
-    /* else reject and try again */
+  /* check variant */
+  switch (gen->variant & TDR_VARMASK_VARIANT) {
+  case TDR_VARIANT_GW:
+  case TDR_VARIANT_IA:
+    _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"Cannot make generator code");
+    return 0;
+  case TDR_VARIANT_PS:
+    /* it should work! */
+    break;
   }
 
-} /* end of _unur_tdr_ia_sample() */
+  /* make section header for code file */
+  sprintf(buffer,"Sampling from %.35s distribution.",gen->distr.name);
+  switch( gen->variant & TDR_VARMASK_T ) {
+  case TDR_VAR_T_LOG:
+    sprintf(transf,"        Transformtaion = log(x) ... c = 0");         break;
+  case TDR_VAR_T_SQRT:
+    sprintf(transf,"        Transformtaion = -1/sqrt(x)  ... c = -1/2"); break;
+  case TDR_VAR_T_POW:
+    sprintf(transf,"        Transformtaion = -x^c  ... c = %g",GEN.c_T); break;
+  }
+  _unur_acg_FORTRAN_print_sectionheader
+    ( out, 3, 
+      buffer,
+      "Method: TDR - PS (Transformed Density Rejection / prop. squeeze)",
+      transf
+      );
 
-/*****************************************************************************/
+  /* sampling routine */
+  fprintf(out,"      DOUBLE PRECISION FUNCTION %s()\n",rand_name);
+  fprintf(out,"\n");
+
+  /* constants */
+  fprintf(out,"C\n");
+  fprintf(out,"C     data\n");
+  fprintf(out,"C\n");
+
+  fprintf(out,"      IMPLICIT DOUBLE PRECISION (A-H,O-Z)\n");
+  fprintf(out,"      INTEGER GSIZE, GUIDE\n");
+  fprintf(out,"      PARAMETER (gsize=%d, Atotal=%.20e)\n",GEN.guide_size,GEN.Atotal);
+  fprintf(out,"      DIMENSION GUIDE(0:gsize-1)\n");
+  fprintf(out,"      DIMENSION x(0:%d)\n",GEN.n_ivs-1);
+  switch (gen->variant & TDR_VARMASK_T) {
+  case TDR_VAR_T_LOG:
+    fprintf(out,"      DIMENSION fx(0:%d)\n",GEN.n_ivs-1);
+    break;
+  case TDR_VAR_T_SQRT:
+    fprintf(out,"      DIMENSION Tfx(0:%d)\n",GEN.n_ivs-1);
+    break;
+  default:
+    _unur_error(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
+    return 0;
+  }
+  fprintf(out,"      DIMENSION dTfx(0:%d)\n",GEN.n_ivs-1);
+  fprintf(out,"      DIMENSION sq(0:%d)\n",GEN.n_ivs-1);
+  fprintf(out,"      DIMENSION Acum(0:%d)\n",GEN.n_ivs-1);
+  fprintf(out,"      DIMENSION Ahatr(0:%d)\n",GEN.n_ivs-1);
+  fprintf(out,"      \n");
+
+  /* guide table */
+  fprintf(out,"      DATA guide/\n");
+  iv = GEN.iv;
+  j = 0;
+  for (i=0; i<GEN.guide_size; i++) {
+    while (GEN.guide[i] != iv) {
+      iv=iv->next;
+      j++;
+    }
+    if (iv == NULL) {
+      _unur_error(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
+      return 0;
+    }
+    if (i==0)
+      fprintf(out,"     *   %d",j);
+    else
+      fprintf(out,(i%12)?",%d":",\n     *   %d",j);
+  }      
+  fprintf(out,"/\n");
+
+  /* hat function */
+  fprintf(out,"      DATA x/\n");
+  for (i=0, iv=GEN.iv; iv->next!=NULL; i++, iv=iv->next)
+    print_data(i,iv->x);
+  fprintf(out,"/\n");
+
+  switch (gen->variant & TDR_VARMASK_T) {
+  case TDR_VAR_T_LOG:
+    fprintf(out,"      DATA fx/\n");
+    for (i=0, iv=GEN.iv; iv->next!=NULL; i++, iv=iv->next)
+      print_data(i,iv->fx);
+    fprintf(out,"/\n");
+    break;
+  case TDR_VAR_T_SQRT:
+    fprintf(out,"      DATA Tfx/\n");
+    for (i=0, iv=GEN.iv; iv->next!=NULL; i++, iv=iv->next)
+      print_data(i,iv->Tfx);
+    fprintf(out,"/\n");
+    break;
+  default:
+    _unur_error(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
+    return 0;
+  }
+
+  fprintf(out,"      DATA dTfx/\n");
+  for (i=0, iv=GEN.iv; iv->next!=NULL; i++, iv=iv->next)
+    print_data(i,iv->dTfx);
+  fprintf(out,"/\n");
+
+  fprintf(out,"      DATA sq/\n");
+  for (i=0, iv=GEN.iv; iv->next!=NULL; i++, iv=iv->next)
+    print_data(i,iv->sq);
+  fprintf(out,"/\n");
+
+  fprintf(out,"      DATA Acum/\n");
+  for (i=0, iv=GEN.iv; iv->next!=NULL; i++, iv=iv->next)
+    print_data(i,iv->Acum);
+  fprintf(out,"/\n");
+
+  fprintf(out,"      DATA Ahatr/\n");
+  for (i=0, iv=GEN.iv; iv->next!=NULL; i++, iv=iv->next)
+    print_data(i,iv->Ahatr);
+  fprintf(out,"/\n\n");
+
+  fprintf(out,"C\n");
+  fprintf(out,"C     code\n");
+  fprintf(out,"C\n\n");
+
+  /* main loop */
+  fprintf(out,"1     CONTINUE\n");
+
+  /* sample from U(0,1) */
+  fprintf(out,"         U = unif()\n");
+  fprintf(out,"         W = U * Atotal\n");
+
+  /* look up in guide table and search for interval */
+  fprintf(out,"         DO 3 I = guide(INT(U*gsize)\n");
+  fprintf(out,"            IF (Acum(I).GE.W) GOTO 5\n");
+  fprintf(out,"3        CONTINUE\n");
+
+  /* reuse of uniform random number */
+  fprintf(out,"5        W = W - Acum(I) + Ahatr(I)\n");
+  /* result: U in (-A_hatl, A_hatr) */
+
+  /* generate from hat distribution */
+  switch (gen->variant & TDR_VARMASK_T) {
+  case TDR_VAR_T_LOG:
+    fprintf(out,"         t = dTfx(I) * U / fx(I)\n");
+    fprintf(out,"         IF (DABS(t) > 1.d-8) THEN\n");
+    fprintf(out,"            %s = x(I) + DLOG(t+1.d0) * U / (fx(I) * t) \n",rand_name);
+    fprintf(out,"         ELSE\n");
+    fprintf(out,"            %s = x(I) + U / (fx(I) * (1.d0 - t/2.d0) \n",rand_name);
+    fprintf(out,"         ENDIF\n");
+    break;
+  case TDR_VAR_T_SQRT:
+    fprintf(out,"         %s = x(I)+(U*Tfx(I)*Tfx(I))/(1.d0-Tfx(I)*dTfx(I)*U)\n",rand_name);
+    break;
+  } /* end switch */
+
+  /* accept or reject */
+  fprintf(out,"         V = unif()\n");
+
+  /* squeeze acceptance */
+  fprintf(out,"         IF (V .LE. sq(I)) RETURN\n");
+
+  /* evaluate hat at X:
+     get uniform random number between 0 and hat(X) */
+  switch (gen->variant & TDR_VARMASK_T) {
+  case TDR_VAR_T_LOG:
+    fprintf(out,"         V = V * fx(I) * DEXP(dTfx(I) * (%s - x(I)))\n",rand_name);
+    break;
+  case TDR_VAR_T_SQRT:
+     /* transformed hat at X */ 
+    fprintf(out,"         Thx = Tfx(I) + dTfx(I) * (%s - x(I))\n",rand_name);
+    fprintf(out,"         V = V / (Thx*Thx)\n");
+    break;
+  } /* end switch */
+
+  /* main rejection */
+  fprintf(out,"      IF (V .GT. %s(%s)) GOTO 1\n",pdf_name,rand_name);
+
+  /* end of function */
+  fprintf(out,"\n");
+  fprintf(out,"      END\n");
+
+  /* o.k. */
+  return 1;
+
+
+#if 0
+      double precision function pdfnor(x)
+      implicit double precision (a-z)
+      parameter (lncnst=9.18938533204672780563e-01)
+      pdfnor= exp(-x**2/2.d0-lncnst)
+      end
 #endif
 
+} /* end of _unur_acg_FORTRAN_tdr_ps() */
+
+#undef print_data
+
+/*****************************************************************************/

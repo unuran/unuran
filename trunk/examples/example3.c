@@ -27,6 +27,10 @@ int main()
 
   /* create generator object -- destroy parameter object      */
   gen = unur_init(par);
+  if (gen == NULL){
+     fprintf(stderr, "Error creating generator object\n");
+     return 1;     
+  }
 
   /* sample: print mean of 100 random numbers                 */
   for (i=0, x=0; i<100; i++) 

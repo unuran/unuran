@@ -35,6 +35,11 @@ int main()
   /* make generator object                                 */
   gen = unur_init(par);
 
+  if (gen == NULL){
+     fprintf(stderr, "Error creating generator object\n");
+     return 1;     
+  }
+
   /* destroy distribution object                           */
   unur_distr_free(distr);
 

@@ -1193,6 +1193,7 @@ _unur_tabl_get_starting_intervals_from_slopes( struct unur_par *par, struct unur
     /* check slopes */
     if (iv->fmax < iv->fmin) {
       _unur_error(gen->genid,UNUR_ERR_INIT,"slopes non-decreasing");
+      GEN.iv = NULL; /* no intervals */
       return 0;
     }
 

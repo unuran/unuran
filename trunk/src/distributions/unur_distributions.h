@@ -85,7 +85,7 @@
 /* 
    =DISTR    beta  Beta distribution
    =UP       Stddist_CONT
-   =REF      [JKBc95]   ch.25, p.210
+   =REF      [JKBc95: Ch.25, p.210]
    =PDF      (x-a)^{p-1} * (b-x)^{q-1}
    =CONST    1 / (Beta(p,q) * (b-a)^{p+q-1})
    =DOMAIN   a < x < b
@@ -108,7 +108,7 @@ UNUR_DISTR *unur_distr_burr(const double *params, int n_params);
 /* 
    =DISTR    cauchy Cauchy distribution
    =UP       Stddist_CONT
-   =REF      [JKBb94]   ch.16, p.299
+   =REF      [JKBb94: Ch.16, p.299]
    =PDF      \frac{1}{1 + ((x-theta)/lambda)^2}
    =CONST    \frac{1}{pi * lambda}
    =DOMAIN   -infinity < x < infinity 
@@ -124,7 +124,7 @@ UNUR_DISTR *unur_distr_cauchy(const double *params, int n_params);
 /* 
    =DISTR    chi Chi distribution
    =UP       Stddist_CONT
-   =REF      [JKBb94]   ch.18, p.417
+   =REF      [JKBb94: Ch.18, p.417]
    =PDF      x^{nu-1} * exp( -x^2/2 )
    =CONST    1 / (2^{(nu/2)-1} * Gamma(nu/2))
    =DOMAIN   0 <= x < infinity 
@@ -139,7 +139,7 @@ UNUR_DISTR *unur_distr_chi(const double *params, int n_params);
 /* 
    =DISTR    chisquare Chisquare distribution
    =UP       Stddist_CONT
-   =REF      [JKBb94]   ch.18, p.416
+   =REF      [JKBb94: Ch.18, p.416]
    =PDF      x^{(nu/2)-1} * exp( -x/2 )
    =CONST    1 / (2^{nu/2} * Gamma(nu/2))
    =DOMAIN   0 <= x < infinity 
@@ -158,7 +158,7 @@ UNUR_DISTR *unur_distr_chisquare(const double *params, int n_params);
 /* 
    =DISTR    exponential Exponential distribution
    =UP       Stddist_CONT
-   =REF      [JKBb94]   ch.19, p.494
+   =REF      [JKBb94: Ch.19, p.494]
    =PDF      exp( -\frac{x-theta}{sigma})
    =CONST    \frac{1}{sigma}
    =DOMAIN   theta <= x < infinity 
@@ -174,7 +174,7 @@ UNUR_DISTR *unur_distr_exponential(const double *params, int n_params);
 /* 
    =DISTR    extremeI  Extreme value type I (Gumbel-type) distribution
    =UP       Stddist_CONT
-   =REF      [JKBc95]   ch.22, p.2
+   =REF      [JKBc95: Ch.22, p.2]
    =PDF      exp( -exp( -\frac{x-zeta}{theta} ) - \frac{x-zeta}{theta} )
    =CONST    \frac{1}{theta}
    =DOMAIN   -infinity < x <infinity
@@ -190,7 +190,7 @@ UNUR_DISTR *unur_distr_extremeI(const double *params, int n_params);
 /* 
    =DISTR    extremeII  Extreme value type II (Frechet-type) distribution
    =UP       Stddist_CONT
-   =REF      [JKBc95]   ch.22, p.2
+   =REF      [JKBc95: Ch.22, p.2]
    =PDF      exp( -(\frac{x-zeta}{theta})^{-k}) * (\frac{x-zeta}{theta})^{-k-1}
    =CONST    \frac{k}{theta}
    =DOMAIN   zeta < x <infinity
@@ -207,7 +207,7 @@ UNUR_DISTR *unur_distr_extremeII(const double *params, int n_params);
 /* 
    =DISTR    gamma  Gamma distribution
    =UP       Stddist_CONT
-   =REF      [JKBb94]   ch.17, p.337
+   =REF      [JKBb94: Ch.17, p.337]
    =PDF      (\frac{x-gamma}{beta})^{alpha-1} * exp( -\frac{x-gamma}{beta} )
    =CONST    1 / (beta * Gamma(alpha))
    =DOMAIN   gamma < x < infinity 
@@ -230,7 +230,7 @@ UNUR_DISTR *unur_distr_gig(const double *params, int n_params);
 /* 
    =DISTR    laplace  Laplace distribution
    =UP       Stddist_CONT
-   =REF      [JKBc95]   ch.24, p.164
+   =REF      [JKBc95: Ch.24, p.164]
    =PDF      exp( -\frac{|x-theta|}{phi} )
    =CONST    \frac{1}{2 * phi}
    =DOMAIN   -infinity < x <infinity
@@ -246,7 +246,7 @@ UNUR_DISTR *unur_distr_laplace(const double *params, int n_params);
 /* 
    =DISTR    logistic  Logistic distribution
    =UP       Stddist_CONT
-   =REF      [JKBc95]   ch.23, p.115
+   =REF      [JKBc95: Ch.23, p.115]
    =PDF      exp(-\frac{x-alpha}{beta} * (1 + exp(-\frac{x-alpha}{beta}))^{-2}
    =CONST    \frac{1}{beta}
    =DOMAIN   -infinity < x <infinity
@@ -267,7 +267,7 @@ UNUR_DISTR *unur_distr_lognormal(const double *params, int n_params);
 /* 
    =DISTR    lomax  Lomax distribution (Pareto distribution of second kind)
    =UP       Stddist_CONT
-   =REF      [JKBb94]   ch.20, p.575
+   =REF      [JKBb94: Ch.20, p.575]
    =PDF      (x+C)^{-(a+1)}
    =CONST    a * C^a
    =DOMAIN   0 <= x < infinity 
@@ -283,7 +283,7 @@ UNUR_DISTR *unur_distr_lomax(const double *params, int n_params);
 /* 
    =DISTR    normal  Normal distribution
    =UP       Stddist_CONT
-   =REF      [JKBb94]   ch.13, p.80
+   =REF      [JKBb94: Ch.13, p.80]
    =PDF      exp( -\frac{1}{2} * (\frac{x-mu}{sigma})^2 )
    =CONST    \frac{1}{sigma * sqrt{2 pi}}
    =DOMAIN   -infinity < x < infinity 
@@ -303,7 +303,7 @@ UNUR_DISTR *unur_distr_normal( const double *params, int n_params );
 /* 
    =DISTR    pareto  Pareto distribution (of first kind)
    =UP       Stddist_CONT
-   =REF      [JKBb94]   ch.20, p.574
+   =REF      [JKBb94: Ch.20, p.574]
    =PDF      x^{-(a+1)}
    =CONST    a * k^a
    =DOMAIN   k < x < infinity 
@@ -331,7 +331,7 @@ UNUR_DISTR *unur_distr_pareto( const double *params, int n_params );
 /* 
    =DISTR    powerexponential  Powerexponential (Subbotin) distribution
    =UP       Stddist_CONT
-   =REF      [JKBc95]   ch.24, p.195
+   =REF      [JKBc95: Ch.24, p.195]
    =PDF      exp( -|x|^tau )
    =CONST    1 / (2 * Gamma(1+1/tau))
    =DOMAIN   -infinity < x < infinity
@@ -346,7 +346,7 @@ UNUR_DISTR *unur_distr_powerexponential(const double *params, int n_params);
 /* 
    =DISTR    rayleigh  Rayleigh distribution
    =UP       Stddist_CONT
-   =REF      [JKBb94]   ch.18, p.456
+   =REF      [JKBb94: Ch.18, p.456]
    =PDF      x * exp( -1/2 * (\frac{x}{sigma})^2 )
    =CONST    \frac{1}{sigma^2}
    =DOMAIN   0 <= x < infinity
@@ -370,7 +370,7 @@ UNUR_DISTR *unur_distr_slash(const double *params, int n_params);
 /* 
    =DISTR    student  Student's t distribution
    =UP       Stddist_CONT
-   =REF      [JKBc95]   ch.28, p.362
+   =REF      [JKBc95: Ch.28, p.362]
    =PDF      (1+\frac{t^2}{nu})^{-(nu+1)/2}
    =CONST    \frac{1}{sqrt{nu}*B(1/2,nu/2)}
    =CDF      @text{not implemented!}
@@ -387,7 +387,7 @@ UNUR_DISTR *unur_distr_student(const double *params, int n_params);
 /* 
    =DISTR    triangular  Triangular distribution
    =UP       Stddist_CONT
-   =REF      [JKBc95]   ch.26, p.297
+   =REF      [JKBc95: Ch.26, p.297]
    =PDF      2*x / H,          \hbox{ for } 0 <= x <= H \hfill\break
              2*(1-x) / (1-H),  \hbox{ for } H <= x <= 1 
    =CONST    1
@@ -403,7 +403,7 @@ UNUR_DISTR *unur_distr_triangular(const double *params, int n_params);
 /* 
    =DISTR    uniform  Uniform distribution
    =UP       Stddist_CONT
-   =REF      [JKBc95]   ch.26, p.276
+   =REF      [JKBc95: Ch.26, p.276]
    =PDF      \frac{1}{b-a}
    =CONST    1
    =DOMAIN   a < x < b
@@ -419,7 +419,7 @@ UNUR_DISTR *unur_distr_uniform(const double *params, int n_params);
 /* 
    =DISTR    weibull  Weibull distribution
    =UP       Stddist_CONT
-   =REF      [JKBb94]   ch.21, p.628
+   =REF      [JKBb94: Ch.21, p.628]
    =PDF      (\frac{x-zeta}{alpha})^{c-1} * exp( -(\frac{x-zeta}{alpha})^c )
    =CONST    \frac{c}{alpha}
    =DOMAIN   zeta < x < infinity 
@@ -469,7 +469,7 @@ UNUR_DISTR *unur_distr_multinormal(int dim, const double *mean, const double *co
 /*
    =DISTR    binomial  Binomial distribution
    =UP       Stddist_DISCR
-   =REF      [JKKa92]   ch.3, p.105
+   =REF      [JKKa92: Ch.3, p.105]
    =PMF      {n \choose k} * p^k * (1-p)^{n-k}
    =CONST    1
    =DOMAIN   0 <= k <= n
@@ -486,7 +486,7 @@ UNUR_DISTR *unur_distr_binomial(const double *params, int n_params);
 /*
    =DISTR    geometric  Geometric distribution
    =UP       Stddist_DISCR
-   =REF      [JKKa92]   ch.5.2, p.201
+   =REF      [JKKa92: Ch.5.2, p.201]
    =PMF      p * (1-p)^k
    =CONST    1
    =DOMAIN   0 <= k < infinity
@@ -501,7 +501,7 @@ UNUR_DISTR *unur_distr_geometric(const double *params, int n_params);
 /*
    =DISTR    hypergeometric  Hypergeometric distribution
    =UP       Stddist_DISCR
-   =REF      [JKKa92]   ch.6, p.237
+   =REF      [JKKa92: Ch.6, p.237]
    =PMF      {M \choose k} * {N-M \choose n-k} / {N \choose n}
    =CONST    1
    =DOMAIN   max(0,n-N+M) <= k <= min(n,M)
@@ -519,7 +519,7 @@ UNUR_DISTR *unur_distr_hypergeometric(const double *params, int n_params);
 /*
    =DISTR    logarithmic  Logarithmic distribution
    =UP       Stddist_DISCR
-   =REF      [JKKa92]   ch.7, p.285
+   =REF      [JKKa92: Ch.7, p.285]
    =PMF      theta^k / k
    =CONST    - log( 1.-theta);
    =DOMAIN   1 <= k < infinity
@@ -535,7 +535,7 @@ UNUR_DISTR *unur_distr_logarithmic(const double *params, int n_params);
 /*
    =DISTR    negativebinomial  Negative Binomial distribution
    =UP       Stddist_DISCR
-   =REF      [JKKa92]   ch.5.1, p.200
+   =REF      [JKKa92: Ch.5.1, p.200]
    =PMF      {k+r-1 \choose r-1} * p^r * (1-p)^k
    =CONST    1
    =DOMAIN   0 <= k < infinity
@@ -552,7 +552,7 @@ UNUR_DISTR *unur_distr_negativebinomial(const double *params, int n_params);
 /*
    =DISTR    poisson  Poisson distribution
    =UP       Stddist_DISCR
-   =REF      [JKKa92]   ch.4, p.151
+   =REF      [JKKa92: Ch.4, p.151]
    =PMF      theta^k / k!
    =CONST    exp(theta)
    =DOMAIN   0 <= k < infinity

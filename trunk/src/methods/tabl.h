@@ -48,7 +48,7 @@
 
    =SPEED Set-up: (very) slow, Sampling: fast
 
-   =REF  [AJa93] [AJa95] [Book,Cha5.1]  
+   =REF  [AJa93] [AJa95] [HLD04: Cha5.1]  
 
    =ABSTRACT Large tables necessary for heavy tailed distributions 
 

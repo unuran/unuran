@@ -48,7 +48,7 @@
 
    =SPEED Set-up: fast, Sampling: very slow (linear in expectation)
 
-   =REF [HLD04, Sect.3.1.1, Alg.3.1]
+   =REF [HLD04: Sect.3.1.1, Alg.3.1]
 
    =DESCRIPTION
       DSS samples from arbitrary discrete distributions.

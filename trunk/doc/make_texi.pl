@@ -502,24 +502,15 @@ sub scan_REF {
     # empty ? 
     return unless $entry;
 
-    # trim heading blanks
-    $entry =~ s/^\s*//;
+    # split into entries
+    my @bibrefs = split /\]\s*\[/, $entry;
 
-    # chop off trailing blanks
-    $entry =~ s/\s+$//;
-
-    # remove newlines
-    $entry =~ s/\n+/ /g;
-
-    # make a copy for HTML output
-    (my $anchor, my $text) = split /\s+/, $entry, 2;
-    $anchor =~ s/\s*\[(\w+)\]\s*/$1/;
-    my $htmlentry = "\@ref{bib:$anchor, [$anchor]}  $text";
-
-    $IN->{$node_name}->{$tag} = "\@ifhtml\n$htmlentry\n\@end ifhtml\n";
-
-    # make other output
-    $IN->{$node_name}->{$tag} .= "\@ifnothtml\n$entry\n\@end ifnothtml\n";
+    # now print entries
+    $IN->{$node_name}->{$tag} = "";
+    foreach my $bre (@bibrefs) {
+	$bre =~ s/[\[\]]//g;    # remove all square brackets
+	$IN->{$node_name}->{$tag} .= transform_bibref($bre);
+    }
 
 } # end of scan_REF()
 
@@ -1135,4 +1126,41 @@ sub transform_special_strings {
 
 #############################################################
 
+sub transform_bibref {
+    my $entry = $_[0];   # entry to be transformed
+
+    # empty ? 
+    return unless $entry;
+
+    # remove newlines
+    $entry =~ s/\n+/ /g;
+
+    # trim heading blanks
+    $entry =~ s/^\s*//;
+
+    # chop off trailing blanks
+    $entry =~ s/\s+$//;
+
+    # split into ref and optional remark
+    # which is separated by a colon
+    (my $anchor, my $remark) = split /[\:\,]\s*/, $entry, 2;
+    if ($remark) { 
+	$remark =~ s/\,/\;/g;
+	$remark = ": $remark"; 
+    }
+    
+    # output 
+    my $entrywithlink = "\@ref{bib:$anchor, [$anchor$remark]}";
+    $entry = "[$anchor$remark]";
+
+    # output
+    my $output = 
+	"\@ifhtml\n$entrywithlink\n\@end ifhtml\n"
+	."\@ifnothtml\n$entry\n\@end ifnothtml\n";
+
+    return $output;
+
+} # end of transform_bibref()
+
+#############################################################
 

@@ -13,6 +13,8 @@
  *   G. Derflinger                                                           *
  *                                                                           *
  *****************************************************************************
+ *   FORTRAN version by Gerhard Derflinger.                                  *
+ *   Translated into C and adapted for UNU.RAN by Roman Karawatzki.          *
  *****************************************************************************
  *                                                                           *
  *   Dept. for Statistics, University of Economics, Vienna, Austria          *

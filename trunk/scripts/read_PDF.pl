@@ -253,18 +253,23 @@ sub read_distr_file
 	    ."([^;])"                            # $3: first character (to distinguish from prototype) 
 	    ."(.*)"                              # $4: function body
 	    ."\\/\\*\\s+end\\s+of\\s+$PDF_name"; # end of function marker
+
 	$file_content =~ /$PDF_pattern/s
 	    or die "cannot find PDF for $distr";
+	
+	# Store data
+	$DISTR->{$distr}->{"=PDF"}->{"=NAME"}  = $PDF_name;  # name of PDF function
+	$DISTR->{$distr}->{"=PDF"}->{"=RTYPE"} = $1;         # return type 
+	$DISTR->{$distr}->{"=PDF"}->{"=ARGS"}  = $2;         # arguments for function
+	$DISTR->{$distr}->{"=PDF"}->{"=BODY"}  = $3.$4;      # function body
     }
     else {
 	$PDF_name = "";
+	$DISTR->{$distr}->{"=PDF"}->{"=NAME"}  = "";
+	$DISTR->{$distr}->{"=PDF"}->{"=RTYPE"} = "";
+	$DISTR->{$distr}->{"=PDF"}->{"=ARGS"}  = "";
+	$DISTR->{$distr}->{"=PDF"}->{"=BODY"}  = "";
     }
-
-    # Store data
-    $DISTR->{$distr}->{"=PDF"}->{"=NAME"}  = $PDF_name;  # name of PDF function
-    $DISTR->{$distr}->{"=PDF"}->{"=RTYPE"} = $1;         # return type 
-    $DISTR->{$distr}->{"=PDF"}->{"=ARGS"}  = $2;         # arguments for function
-    $DISTR->{$distr}->{"=PDF"}->{"=BODY"}  = $3.$4;      # function body
 
     # Modify function arguments:
     #   remove DISTR from argument list

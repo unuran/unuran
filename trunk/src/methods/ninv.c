@@ -987,6 +987,11 @@ _unur_ninv_regula( struct unur_gen *gen, double u )
 
   /* check arguments */
   CHECK_NULL(gen,0.);  COOKIE_CHECK(gen,CK_NINV_GEN,0.);
+  
+  if ( _FP_same( GEN.Umin, GEN.Umax) ){
+    _unur_warning(gen->genid,UNUR_ERR_GEN_CONDITION,"CDF constant");
+    return INFINITY;   
+  }
 
   /* initialize starting interval */
   if (GEN.table_on){
@@ -1038,6 +1043,7 @@ _unur_ninv_regula( struct unur_gen *gen, double u )
   f1 -= u;
   f2 -= u;
 
+
   /* search for interval with changing signs */
   step = 1.;     /* interval too small -> make it bigger ( + 2^n * gap ) */ 
   while ( f1*f2 > 0. ) {
@@ -1062,11 +1068,11 @@ _unur_ninv_regula( struct unur_gen *gen, double u )
   a     = x1;       /* a und x2 soll immer ZW enthalten */
 
   /* Sekantensuche, ZW wird beibehalten */
-  for (i=0; i < GEN.max_iter; i++) { /* noch zu andernde schleife */
+  for (i=0; i < GEN.max_iter; i++) {
     count++;
      
-    /* f2 immer kleiner (besser), notfalls Tausch */
-    if ( fabs(f1) < fabs(f2) ) {   /* Dreieckstausch */
+    /* f2 always less (better), otherwise change */
+    if ( fabs(f1) < fabs(f2) ) {   /* change */
       xtmp = x1; ftmp = f1;
       x1 = x2;   f1 = f2;
       x2 = xtmp; f2 = ftmp;
@@ -1074,11 +1080,9 @@ _unur_ninv_regula( struct unur_gen *gen, double u )
 
     x2abs = fabs(x2);   /* absolute value of x2 */
 
-    
-    if ( f2 == 0. )
-      /* genauer Treffer  */
+    /* exact hit   || flat region  */    
+    if ( f2 == 0. || _FP_same(f1, f2) )
       break; /* -> finished */
-
 
     if ( f1*f2 <= 0) {  /* ZeichenWechsel vorhanden             */
       count = 0;   /* zaehler fuer bisektion wird rueckgestellt */
@@ -1178,6 +1182,11 @@ _unur_ninv_newton( struct unur_gen *gen, double U )
     
   /* check arguments */
   CHECK_NULL(gen,0.);  COOKIE_CHECK(gen,CK_NINV_GEN,0.);
+
+  if ( _FP_same( GEN.Umin, GEN.Umax) ){
+    _unur_warning(gen->genid, UNUR_ERR_GEN_CONDITION,"CDF constant");
+    return INFINITY;   
+  }
 
   /* initialize starting point */
   if (GEN.table_on){

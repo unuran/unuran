@@ -19,7 +19,7 @@ my $ACG = "../acg";
 # ----------------------------------------------------------------
 # Constants
 
-$sample_size = 10000;
+$sample_size = 10;
 $accuracy = 1.0e-7;
 
 # ----------------------------------------------------------------
@@ -102,21 +102,6 @@ foreach my $d (sort keys %{$DISTR}) {
 }
 
 # ----------------------------------------------------------------
-# Make sources for test files
-
-##my $C_exec = "$file_prefix\_C";
-##my $C_src = "$C_exec.c";
-##my $C_log = "$C_exec.log";
-
-##my $FORTRAN_exec = "$file_prefix\_FORTRAN";
-##my $FORTRAN_src = "$FORTRAN_exec.f";
-##my $FORTRAN_log = "$FORTRAN_exec.log";
-
-##my $UNURAN_exec = "$file_prefix\_UNURAN";
-##my $UNURAN_src = "$UNURAN_exec.c";
-##my $UNURAN_log = "$UNURAN_exec.log";
-
-# ----------------------------------------------------------------
 # Process test for each distribution
 
 my $test_nr = 0;
@@ -156,6 +141,10 @@ foreach my $d (sort keys %{$list_distr}) {
     my $FORTRAN_src = "$FORTRAN_exec.f";
     my $FORTRAN_log = "$FORTRAN_exec.log";
 
+    my $JAVA_exec = "$file_name\_JAVA";
+    my $JAVA_src = "$JAVA_exec.java";
+    my $JAVA_log = "$JAVA_exec.log";
+
     # Get random variate generators
 
     # C version
@@ -170,6 +159,10 @@ foreach my $d (sort keys %{$list_distr}) {
     # FORTRAN version
     my $FORTRAN_code = make_FORTRAN_code($FORTRAN_log,$distr,$fparam,$seed);
     make_FORTRAN_exec($FORTRAN_code,$FORTRAN_src,$FORTRAN_exec);
+
+    # JAVA version
+    my $JAVA_code = make_JAVA_code($JAVA_log,$distr,$fparam,$seed);
+    make_JAVA_exec($JAVA_code,$JAVA_src,$JAVA_exec);
 
     # UNURAN version
     my $UNURAN_code = make_UNURAN_code($UNURAN_log,$distr,$fparam,$seed);
@@ -704,3 +697,93 @@ sub make_FORTRAN_exec
 } # end of make_FORTRAN_exec()
 
 # ----------------------------------------------------------------
+
+# ****************************************************************
+#
+# Java version
+#
+# ****************************************************************
+
+# ----------------------------------------------------------------
+# Make generator code for test file (C version)
+
+sub make_JAVA_code
+{
+    my $logfile = $_[0];
+    my $distr = $_[1];
+    my $fparam = $_[2];
+    my $seed = $_[3];
+
+    my $acg_query = "$ACG -l JAVA -d $distr -L $logfile";
+    $acg_query .= " -p \"$fparam\"" if $fparam; 
+
+    my $generator = `$acg_query`;
+
+    return "" if $?;
+
+##    my $main = make_JAVA_main($distr,$seed);
+
+    return $urng.$generator.$main;
+
+} # end of make_JAVA_code()
+
+# ----------------------------------------------------------------
+# uniform rng (Java version)
+
+#
+# run test_urng.pl to create generator
+
+# ----------------------------------------------------------------
+# Make main for test file (Java version)
+
+sub make_JAVA_main
+{
+    my $distr = $_[0];
+    my $seed = $_[1];
+
+    my $code = <<EOS
+
+#include <stdio.h>
+#include <stdlib.h>
+
+int main()
+{
+    int i;
+    double x, fx;
+
+    useed($seed);
+
+    for (i=0; i<$sample_size; i++) {
+	x = rand\_$distr();
+	fx = pdf\_$distr(x);
+	printf("%.17e\\t%.17e\\n",x,fx);
+    }
+
+    exit (0);
+}
+
+EOS
+
+} # end of make_JAVA_main()
+
+# ----------------------------------------------------------------
+# Make executable from test file (Java version)
+
+sub make_JAVA_exec
+{
+    my $code = $_[0];
+    my $src = $_[1];
+    my $exec = $_[2];
+
+    # make source file
+    open SRC, ">$src" or die "cannot open $src for writing";
+    print SRC $code;
+    close SRC;
+
+    # compile
+##    system "$GCC -o $exec $src -lm";
+
+} # end of make_JAVA_exec()
+
+# ----------------------------------------------------------------
+

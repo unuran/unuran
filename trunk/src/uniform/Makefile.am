@@ -5,9 +5,13 @@ INCLUDES = -I$(top_srcdir)/src
 
 noinst_LTLIBRARIES = libuniform.la
 
-libuniform_la_SOURCES = mrg31k3p.c fish.c mstd.c
+libuniform_la_SOURCES = \
+  urng_default.c \
+  mrg31k3p.c fish.c mstd.c
 
-noinst_HEADERS = unur_uniform.h
+noinst_HEADERS = \
+ urng.h \
+ unur_uniform.h
 
 # clean backup files
 CLEANFILES = *~

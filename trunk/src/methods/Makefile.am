@@ -7,7 +7,6 @@ noinst_LTLIBRARIES = libmethods.la
 
 libmethods_la_SOURCES = \
  x_gen.c    x_gen.h   x_gen_source.h \
- x_urng.c   x_urng.h \
 \
  auto.c  auto.h  auto_struct.h \
  arou.c  arou.h  arou_struct.h \

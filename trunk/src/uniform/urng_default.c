@@ -36,7 +36,7 @@
 
 #include <unur_source.h>
 #include <uniform/unur_uniform.h>
-#include "x_urng.h"
+#include "urng.h"
 
 /*---------------------------------------------------------------------------*/
 

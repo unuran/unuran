@@ -10,6 +10,7 @@ noinst_PROGRAMS = compute_machine_constants
 compute_machine_constants_SOURCE = compute_machine_constants.c
 
 EXTRA_DIST = \
+ read_PDF.pl \
  merge_h.pl
 
 noinst_HEADERS = \

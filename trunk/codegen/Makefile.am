@@ -39,7 +39,6 @@ libunuracg_a_SOURCES = \
 noinst_HEADERS = 
 
 EXTRA_DIST = \
- read_PDF.pl \
  make_PDFgen.pl \
  make_headergen.pl \
  make_acg.pl \

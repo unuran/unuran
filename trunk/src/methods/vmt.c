@@ -56,6 +56,7 @@
 #include <distr/distr_source.h>
 #include <distr/cvec.h>
 #include <distributions/unur_distributions.h>
+#include <uniform/urng.h>
 #include "unur_methods_source.h"
 #include "x_gen.h"
 #include "x_gen_source.h"

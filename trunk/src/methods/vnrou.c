@@ -67,6 +67,7 @@
 #include <utils/hooke_source.h> 
 #include <utils/matrix_source.h>
 #include <utils/unur_fp_source.h>
+#include <uniform/urng.h>
 #include "unur_methods_source.h"
 #include "x_gen_source.h"
 #include "vnrou.h"

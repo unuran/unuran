@@ -315,26 +315,6 @@ unur_dstd_init( struct unur_par *par )
     free(par); unur_dstd_free(gen); return NULL; 
   }
 
-#if 0 /* This is not implemented now !! */
-  /** TODO: support for truncated distributions **/
-  /* domain valid for special generator ?? */
-  if (!(par->distr->set & UNUR_DISTR_SET_STDDOMAIN)) {
-    /* domain has been modified */
-    if ( ! PAR.is_inversion ) { 
-      /* this is not the inversion method */
-      _unur_error(par->genid,UNUR_ERR_GEN_DATA,"domain changed for non inversion method");
-      free(par); unur_dstd_free(gen); return NULL; 
-    }
-    else if (DISTR.cdf == NULL) {
-      _unur_error(par->genid,UNUR_ERR_GEN_DATA,"domain changed, c.d.f. required");
-      free(par); unur_dstd_free(gen); return NULL; 
-    }
-    /* compute umin and umax */
-    GEN.umin = (DISTR.BD_LEFT > -INFINITY) ? CDF(DISTR.BD_LEFT)  : 0.;
-    GEN.umax = (DISTR.BD_RIGHT < INFINITY) ? CDF(DISTR.BD_RIGHT) : 1.;
-  }
-#endif
-
 #ifdef UNUR_ENABLE_LOGGING
   /* write info into log file */
   if (gen->debug) _unur_dstd_debug_init(par,gen);

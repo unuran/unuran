@@ -94,6 +94,9 @@ unur_distr_cont_new( void )
   /* set id to generic distribution */
   distr->id = UNUR_DISTR_GENERIC;
 
+  /* dimension of random vector */
+  distr->dim = 1;   /* univariant */
+
   /* name of distribution */
   distr->name = unknown_distr_name;
 
@@ -111,6 +114,10 @@ unur_distr_cont_new( void )
   /* initialize parameters of the p.d.f.                                     */
   for (i=0; i<UNUR_DISTR_MAXPARAMS; i++)
     DISTR.params[i] = 0.;
+
+  DISTR.norm_constant = 1.;        /* (log of) normalization constant for p.d.f.
+				      (initialized to avoid accidently floating
+				      point exception                        */
 
   DISTR.mode      = INFINITY;      /* location of mode (default: not known)  */
   DISTR.area      = INFINITY;      /* area below p.d.f. (default: not known) */
@@ -408,7 +415,7 @@ unur_distr_cont_set_pdfparams( struct unur_distr *distr, double *params, int n_p
   _unur_check_distr_object( distr, CONT, 0 );
   if (n_params>0) _unur_check_NULL(distr->name,params,0);
 
-  /* check new parameter for generator */
+  /* check new parameter for distribution */
   if (n_params < 0 || n_params > UNUR_DISTR_MAXPARAMS ) {
     _unur_error(NULL,UNUR_ERR_DISTR_NPARAMS,"");
     return 0;
@@ -491,7 +498,7 @@ unur_distr_cont_set_domain( struct unur_distr *distr, double left, double right 
   _unur_check_NULL( NULL, distr, 0 );
   _unur_check_distr_object( distr, CONT, 0 );
 
-  /* check new parameter for generator */
+  /* check new parameter for distribution */
   if (left >= right) {
     _unur_error(NULL,UNUR_ERR_DISTR_SET,"domain, left >= right");
     return 0;
@@ -611,12 +618,17 @@ unur_distr_cont_upd_mode( struct unur_distr *distr )
   }
 
   /* compute mode */
-  DISTR.mode = (DISTR.upd_mode)(distr);
+  if ((DISTR.upd_mode)(distr)) {
+    /* changelog */
+    distr->set |= UNUR_DISTR_SET_MODE;
+    return 1;
+  }
+  else {
+    /* computing of mode failed */
+    _unur_error(distr->name,UNUR_ERR_DISTR_SET,"");
+    return 0;
+  }
 
-  /* changelog */
-  distr->set |= UNUR_DISTR_SET_MODE;
-
-  return 1;
 } /* end of unur_distr_cont_upd_mode() */
   
 /*---------------------------------------------------------------------------*/
@@ -647,9 +659,7 @@ unur_distr_cont_get_mode( struct unur_distr *distr )
     }
     else {
       /* compute mode */
-      DISTR.mode = (DISTR.upd_mode)(distr);
-      /* changelog */
-      distr->set |= UNUR_DISTR_SET_MODE;
+      unur_distr_cont_upd_mode( distr );
     }
   }
 
@@ -677,7 +687,7 @@ unur_distr_cont_set_pdfarea( struct unur_distr *distr, double area )
   _unur_check_NULL( NULL, distr, 0 );
   _unur_check_distr_object( distr, CONT, 0 );
 
-  /* check new parameter for generator */
+  /* check new parameter for distribution */
   if (area <= 0.) {
     _unur_error(NULL,UNUR_ERR_DISTR_SET,"pdf area <= 0");
     return 0;
@@ -728,8 +738,12 @@ unur_distr_cont_upd_pdfarea( struct unur_distr *distr )
     return 0;
   }
 
-  /* compute mode */
-  DISTR.area = (DISTR.upd_area)(distr);
+  /* compute area */
+  if (!(DISTR.upd_area)(distr)) {
+    /* computing of area failed */
+    _unur_error(distr->name,UNUR_ERR_DISTR_SET,"");
+    return 0;
+  }
 
   if (distr->base) {
     /* for derived distributions (e.g. order statistics)
@@ -764,7 +778,7 @@ unur_distr_cont_get_pdfarea( struct unur_distr *distr )
   _unur_check_NULL( NULL, distr, INFINITY );
   _unur_check_distr_object( distr, CONT, INFINITY );
 
-  /* mode known ? */
+  /* area known ? */
   if ( !(distr->set & UNUR_DISTR_SET_PDFAREA) ) {
     /* try to compute area */
     if (DISTR.upd_area == NULL) {
@@ -773,10 +787,8 @@ unur_distr_cont_get_pdfarea( struct unur_distr *distr )
       return INFINITY;
     }
     else {
-      /* compute mode */
-      DISTR.area = (DISTR.upd_area)(distr);
-      /* changelog */
-      distr->set |= UNUR_DISTR_SET_PDFAREA;
+      /* compute area */
+      unur_distr_cont_upd_pdfarea( distr );
     }
   }
 

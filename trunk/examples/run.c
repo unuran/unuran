@@ -31,17 +31,17 @@
 #define RUN_TESTS       (~0x0u & ~UNUR_TEST_SCATTER)
 
 /* define which tests should run (1) or not (0) */
-#define RUN_DAU           0
-#define RUN_DIS           0
+#define RUN_DAU           1
+#define RUN_DIS           1
 
-#define RUN_NINV          0
-#define RUN_UTDR          0
-#define RUN_AROU          0
-#define RUN_SROU          0
-#define RUN_STDR          0
-#define RUN_TDRSQRT       0
-#define RUN_TDRLOG        0
-#define RUN_TABL          0
+#define RUN_NINV          1
+#define RUN_UTDR          1
+#define RUN_AROU          1
+#define RUN_SROU          1
+#define RUN_STDR          1
+#define RUN_TDRSQRT       1
+#define RUN_TDRLOG        1
+#define RUN_TABL          1
 
 #define RUN_NORMAL        1
 #define RUN_GAMMA         1
@@ -49,7 +49,7 @@
 #define RUN_CAUCHY        1
 #define RUN_UNIFORM       1
 
-#define RUN_RECT          0
+#define RUN_RECT          1
 
 #define RUN_CSTD          1
 
@@ -117,7 +117,7 @@ int main()
 
 #if RUN_CSTD == 1
 
-#if 0
+#if 1
   distr_xxx = unur_distr_normal(NULL,0);
   // unur_distr_cont_set_domain(distr_xxx,3,UNUR_INFINITY);
   par = unur_cstd_new(distr_xxx);
@@ -410,14 +410,14 @@ int main()
   fpar[1] = 100.;
   distr_xxx = unur_distr_negativebinomial(fpar,2);
   par = unur_dstd_new(distr_xxx);
-  unur_dstd_set_debug(par,UNUR_DEBUG_INIT);
+  unur_set_debug(par,UNUR_DEBUG_INIT);
   unur_run_tests(par,RUN_TESTS);
 
 
   fpar[0] = 0.1;
   fpar[1] = 100.;
   par = unur_dstd_new(distr_xxx);
-  unur_dstd_set_debug(par,UNUR_DEBUG_INIT);
+  unur_set_debug(par,UNUR_DEBUG_INIT);
   gen = unur_init(par);
   unur_test_chi2( gen, 1000, 100000, 20, 1 );
   unur_dstd_chg_param(gen,fpar,2);

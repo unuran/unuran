@@ -192,7 +192,7 @@ unur_stdr_new( struct unur_distr *distr )
   par->debug    = _unur_default_debugflag; /* set default debugging flags    */
 
   /* routine for starting generator */
-  par->init = unur_stdr_init;
+  par->init = _unur_stdr_init;
 
   return par;
 
@@ -305,7 +305,7 @@ unur_stdr_set_usesqueeze( struct unur_par *par, int usesqueeze )
 /*****************************************************************************/
 
 struct unur_gen *
-unur_stdr_init( struct unur_par *par )
+_unur_stdr_init( struct unur_par *par )
      /*----------------------------------------------------------------------*/
      /* initialize new generator                                             */
      /*                                                                      */
@@ -342,7 +342,7 @@ unur_stdr_init( struct unur_par *par )
   /* fm must be positive */
   if (GEN.fm <= 0.) {
     _unur_error(par->genid,UNUR_ERR_GEN_DATA,"pdf(mode) <= 0.");
-    free(par); unur_stdr_free(gen);
+    free(par); _unur_stdr_free(gen);
     return NULL;
   }
 
@@ -420,12 +420,12 @@ unur_stdr_init( struct unur_par *par )
 
   return gen;
 
-} /* end of unur_stdr_init() */
+} /* end of _unur_stdr_init() */
 
 /*****************************************************************************/
 
 double
-unur_stdr_sample( struct unur_gen *gen )
+_unur_stdr_sample( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* sample from generator                                                */
      /*                                                                      */
@@ -483,12 +483,12 @@ unur_stdr_sample( struct unur_gen *gen )
       return x;
   }
     
-} /* end of unur_stdr_sample() */
+} /* end of _unur_stdr_sample() */
 
 /*---------------------------------------------------------------------------*/
 
 double
-unur_stdr_sample_check( struct unur_gen *gen )
+_unur_stdr_sample_check( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* sample from generator and verify that method can be used             */
      /*                                                                      */
@@ -553,12 +553,12 @@ unur_stdr_sample_check( struct unur_gen *gen )
       return x;
   }
     
-} /* end of unur_stdr_sample_check() */
+} /* end of _unur_stdr_sample_check() */
 
 /*****************************************************************************/
 
 void
-unur_stdr_free( struct unur_gen *gen )
+_unur_stdr_free( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* deallocate generator object                                          */
      /*                                                                      */
@@ -584,7 +584,7 @@ unur_stdr_free( struct unur_gen *gen )
   _unur_free_genid(gen);
   free(gen);
 
-} /* end of unur_stdr_free() */
+} /* end of _unur_stdr_free() */
 
 /*****************************************************************************/
 /**  Auxilliary Routines                                                    **/
@@ -623,8 +623,8 @@ _unur_stdr_create( struct unur_par *par )
   gen->genid = par->genid;
 
   /* routines for sampling and destroying generator */
-  SAMPLE = (par->variant & STDR_VARFLAG_VERIFY) ? unur_stdr_sample_check : unur_stdr_sample;
-  gen->destroy = unur_stdr_free;
+  SAMPLE = (par->variant & STDR_VARFLAG_VERIFY) ? _unur_stdr_sample_check : _unur_stdr_sample;
+  gen->destroy = _unur_stdr_free;
 
   /* mode must be in domain */
   if ( (DISTR.mode < DISTR.BD_LEFT) ||
@@ -686,7 +686,7 @@ _unur_stdr_debug_init( struct unur_par *par, struct unur_gen *gen )
 
   _unur_distr_cont_debug( &(gen->distr), gen->genid );
 
-  fprintf(log,"%s: sampling routine = unur_stdr_sample",gen->genid);
+  fprintf(log,"%s: sampling routine = _unur_stdr_sample",gen->genid);
   if (par->variant & STDR_VARFLAG_VERIFY)
     fprintf(log,"_check");
   /* else if (par->variant & STDR_VARFLAG_MIRROR)     not implemented */

@@ -90,7 +90,7 @@ _unur_stdgen_chi_init( struct unur_par *par, struct unur_gen *gen )
       return 0;
     }
     /* nu >= 1 !!!! */
-    _unur_cstd_set_sampling_routine( par,gen,unur_stdgen_sample_chi_chru );
+    _unur_cstd_set_sampling_routine( par,gen,_unur_stdgen_sample_chi_chru );
     return chi_chru_init( gen );
 
   case UNUR_STDGEN_INVERSION:   /* inversion method */
@@ -169,7 +169,7 @@ chi_chru_init( struct unur_gen *gen )
 } /* end of chi_chru_init() */
 
 double
-unur_stdgen_sample_chi_chru( struct unur_gen *gen )
+_unur_stdgen_sample_chi_chru( struct unur_gen *gen )
 {
   /* -X- generator code -X- */
   double u,v,z,zz,r;
@@ -223,7 +223,7 @@ unur_stdgen_sample_chi_chru( struct unur_gen *gen )
   
   return z;
 
-} /* end of unur_stdgen_sample_chi_chru() */
+} /* end of _unur_stdgen_sample_chi_chru() */
 
 /*---------------------------------------------------------------------------*/
 #undef b 

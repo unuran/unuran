@@ -86,7 +86,7 @@ _unur_stdgen_powerexponential_init( struct unur_par *par, struct unur_gen *gen )
 
   case 0:  /* DEFAULT */
   case 1:  /* Transformed density rejection */
-    _unur_cstd_set_sampling_routine( par,gen,unur_stdgen_sample_powerexponential_epd );
+    _unur_cstd_set_sampling_routine( par,gen,_unur_stdgen_sample_powerexponential_epd );
     return powerexponential_epd_init( gen );
 
   case UNUR_STDGEN_INVERSION:   /* inversion method */
@@ -152,7 +152,7 @@ powerexponential_epd_init( struct unur_gen *gen )
 } /* end of powerexponential_epd_init() */
 
 double 
-unur_stdgen_sample_powerexponential_epd( struct unur_gen *gen )
+_unur_stdgen_sample_powerexponential_epd( struct unur_gen *gen )
 {
   /* -X- generator code -X- */
   double U,u1,V,X,y;
@@ -185,7 +185,7 @@ unur_stdgen_sample_powerexponential_epd( struct unur_gen *gen )
 
   return ((DISTR.n_params==1) ? X : theta + phi * X );
 
-} /* end of unur_stdgen_sample_powerexponential_epd() */
+} /* end of _unur_stdgen_sample_powerexponential_epd() */
 
 /*---------------------------------------------------------------------------*/
 #undef s

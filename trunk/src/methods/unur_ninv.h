@@ -43,14 +43,14 @@
 UNUR_PAR *unur_ninv_new( UNUR_DISTR *distribution );
 /* get default parameters for generator                                      */
 
-UNUR_GEN *unur_ninv_init( UNUR_PAR *parameters );
+UNUR_GEN *_unur_ninv_init( UNUR_PAR *parameters );
 /* initialize new generator                                                  */
 
-double unur_ninv_sample_regula( UNUR_GEN *generator );
-double unur_ninv_sample_newton( UNUR_GEN *generator );
+double _unur_ninv_sample_regula( UNUR_GEN *generator );
+double _unur_ninv_sample_newton( UNUR_GEN *generator );
 /* sample from generator                                                     */
 
-void unur_ninv_free( UNUR_GEN *generator);
+void _unur_ninv_free( UNUR_GEN *generator);
 /* destroy generator object                                                  */
 
 /*...........................................................................*/
@@ -73,10 +73,6 @@ int unur_ninv_set_start( UNUR_PAR *parameters, double s1, double s2, double s3 )
 /*   regular falsi: s1, s2:       boundary of starting interval              */
 /*   Muller/Brent:  s1. s2, s3:   starting points                            */
 /* arguments that are not used by method are ignored.                        */
-
-
-#define unur_ninv_set_debug(par,debugflags)  unur_set_debug((par),(debugflags))
-/* set debuging flags                                                        */
 
 /*---------------------------------------------------------------------------*/
 

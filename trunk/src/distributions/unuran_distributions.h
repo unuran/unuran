@@ -115,12 +115,12 @@ UNUR_DISTR *unur_distr_beta(double *params, int n_params);
 /* special generators */
 int _unur_stdgen_beta_init( UNUR_PAR *parameters, UNUR_GEN *generator );
 /* initialize new generator                                                  */
-double unur_stdgen_sample_beta_bb( UNUR_GEN *generator );
-double unur_stdgen_sample_beta_bc( UNUR_GEN *generator );
+double _unur_stdgen_sample_beta_bb( UNUR_GEN *generator );
+double _unur_stdgen_sample_beta_bc( UNUR_GEN *generator );
 /* Acceptance/Rejection from log-logistic hats                               */
-double unur_stdgen_sample_beta_b00( UNUR_GEN *generator );
-double unur_stdgen_sample_beta_b01( UNUR_GEN *generator );
-double unur_stdgen_sample_beta_b1prs( UNUR_GEN *generator );
+double _unur_stdgen_sample_beta_b00( UNUR_GEN *generator );
+double _unur_stdgen_sample_beta_b01( UNUR_GEN *generator );
+double _unur_stdgen_sample_beta_b1prs( UNUR_GEN *generator );
 /* Stratified Rejection/Patchwork Rejection                                  */
 
 /*---------------------------------------------------------------------------*/
@@ -130,7 +130,7 @@ UNUR_DISTR *unur_distr_burr(double *params, int n_params);
 /* special generators */
 int _unur_stdgen_burr_init( UNUR_PAR *parameters, UNUR_GEN *generator );
 /* initialize new generator                                                  */
-double unur_stdgen_sample_burr_inv( UNUR_GEN *generator );
+double _unur_stdgen_sample_burr_inv( UNUR_GEN *generator );
 /* Inversion method                                                          */
 
 /*---------------------------------------------------------------------------*/
@@ -140,7 +140,7 @@ UNUR_DISTR *unur_distr_cauchy(double *params, int n_params);
 /* special generators */
 int _unur_stdgen_cauchy_init( UNUR_PAR *parameters, UNUR_GEN *generator );
 /* initialize new generator                                                  */
-double unur_stdgen_sample_cauchy_inv( UNUR_GEN *generator );
+double _unur_stdgen_sample_cauchy_inv( UNUR_GEN *generator );
 /* Inversion method                                                          */
 
 /*---------------------------------------------------------------------------*/
@@ -150,7 +150,7 @@ UNUR_DISTR *unur_distr_chi(double *params, int n_params);
 /* special generators */
 int _unur_stdgen_chi_init( UNUR_PAR *parameters, UNUR_GEN *generator );
 /* initialize new generator                                                  */
-double unur_stdgen_sample_chi_chru( UNUR_GEN *generator );
+double _unur_stdgen_sample_chi_chru( UNUR_GEN *generator );
 /* Ratio of Uniforms with shift                                              */
 
 /*---------------------------------------------------------------------------*/
@@ -171,7 +171,7 @@ UNUR_DISTR *unur_distr_exponential(double *params, int n_params);
 /* special generators */
 int _unur_stdgen_exponential_init( UNUR_PAR *parameters, UNUR_GEN *generator );
 /* initialize new generator                                                  */
-double unur_stdgen_sample_exponential_inv( UNUR_GEN *generator );
+double _unur_stdgen_sample_exponential_inv( UNUR_GEN *generator );
 /* Inversion method                                                          */
 
 /*---------------------------------------------------------------------------*/
@@ -181,7 +181,7 @@ UNUR_DISTR *unur_distr_extremeI(double *params, int n_params);
 /* special generators */
 int _unur_stdgen_extremeI_init( UNUR_PAR *parameters, UNUR_GEN *generator );
 /* initialize new generator                                                  */
-double unur_stdgen_sample_extremeI_inv( UNUR_GEN *generator );
+double _unur_stdgen_sample_extremeI_inv( UNUR_GEN *generator );
 /* Inversion method                                                          */
 
 /*---------------------------------------------------------------------------*/
@@ -191,7 +191,7 @@ UNUR_DISTR *unur_distr_extremeII(double *params, int n_params);
 /* special generators */
 int _unur_stdgen_extremeII_init( UNUR_PAR *parameters, UNUR_GEN *generator );
 /* initialize new generator                                                  */
-double unur_stdgen_sample_extremeII_inv( UNUR_GEN *generator );
+double _unur_stdgen_sample_extremeII_inv( UNUR_GEN *generator );
 /* Inversion method                                                          */
 
 /*---------------------------------------------------------------------------*/
@@ -201,10 +201,10 @@ UNUR_DISTR *unur_distr_gamma(double *params, int n_params);
 /* special generators */
 int _unur_stdgen_gamma_init( UNUR_PAR *parameters, UNUR_GEN *generator );
 /* initialize new generator                                                  */
-double unur_stdgen_sample_gamma_gll( UNUR_GEN *generator );
+double _unur_stdgen_sample_gamma_gll( UNUR_GEN *generator );
 /* Rejection with log-logistic envelopes                                     */
-double unur_stdgen_sample_gamma_gs( UNUR_GEN *generator );
-double unur_stdgen_sample_gamma_gd( UNUR_GEN *generator );
+double _unur_stdgen_sample_gamma_gs( UNUR_GEN *generator );
+double _unur_stdgen_sample_gamma_gd( UNUR_GEN *generator );
 /* Acceptance Rejection combined with Acceptance Complement */
 
 /*---------------------------------------------------------------------------*/
@@ -214,7 +214,7 @@ UNUR_DISTR *unur_distr_gig(double *params, int n_params);
 /* special generators */
 int _unur_stdgen_gig_init( UNUR_PAR *parameters, UNUR_GEN *generator );
 /* initialize new generator                                                  */
-double unur_stdgen_sample_gig_gigru( UNUR_GEN *generator );
+double _unur_stdgen_sample_gig_gigru( UNUR_GEN *generator );
 /* Ratio of Uniforms                                                         */
 
 /*---------------------------------------------------------------------------*/
@@ -224,7 +224,7 @@ UNUR_DISTR *unur_distr_laplace(double *params, int n_params);
 /* special generators */
 int _unur_stdgen_laplace_init( UNUR_PAR *parameters, UNUR_GEN *generator );
 /* initialize new generator                                                  */
-double unur_stdgen_sample_laplace_inv( UNUR_GEN *generator );
+double _unur_stdgen_sample_laplace_inv( UNUR_GEN *generator );
 /* Inversion method                                                          */
 
 /*---------------------------------------------------------------------------*/
@@ -234,7 +234,7 @@ UNUR_DISTR *unur_distr_logistic(double *params, int n_params);
 /* special generators */
 int _unur_stdgen_logistic_init( UNUR_PAR *parameters, UNUR_GEN *generator );
 /* initialize new generator                                                  */
-double unur_stdgen_sample_logistic_inv( UNUR_GEN *generator );
+double _unur_stdgen_sample_logistic_inv( UNUR_GEN *generator );
 /* Inversion method                                                          */
 
 /*---------------------------------------------------------------------------*/
@@ -252,21 +252,21 @@ UNUR_DISTR *unur_distr_normal( double *params, int n_params );
 /* special generators */
  int _unur_stdgen_normal_init( UNUR_PAR *parameters, UNUR_GEN *generator );
 /* initialize new generator                                                  */
-double unur_stdgen_sample_normal_bm( UNUR_GEN *generator );
+double _unur_stdgen_sample_normal_bm( UNUR_GEN *generator );
 /* Box-Muller method                                                         */
-double unur_stdgen_sample_normal_pol( UNUR_GEN *generator );
+double _unur_stdgen_sample_normal_pol( UNUR_GEN *generator );
 /* Polarmethod with rejection                                                */
-double unur_stdgen_sample_normal_quo( UNUR_GEN *generator );
+double _unur_stdgen_sample_normal_quo( UNUR_GEN *generator );
 /* Ratio-of-uniforms method with squeeze                                     */
-double unur_stdgen_sample_normal_nquo( UNUR_GEN *generator );
+double _unur_stdgen_sample_normal_nquo( UNUR_GEN *generator );
 /* "Naive" ratio-of-uniforms method                                          */
-double unur_stdgen_sample_normal_leva( UNUR_GEN *generator );
+double _unur_stdgen_sample_normal_leva( UNUR_GEN *generator );
 /* Ratio-of-uniforms method  with quadratic bounding curves                  */
-double unur_stdgen_sample_normal_kr( UNUR_GEN *generator );
+double _unur_stdgen_sample_normal_kr( UNUR_GEN *generator );
 /* Kindermann-Ramage method                                                  */
-double unur_stdgen_sample_normal_acr( UNUR_GEN *generator );
+double _unur_stdgen_sample_normal_acr( UNUR_GEN *generator );
 /* Acceptance-complement ratio                                               */
-double unur_stdgen_sample_normal_sum( UNUR_GEN *generator );
+double _unur_stdgen_sample_normal_sum( UNUR_GEN *generator );
 /* infamous sum-of-12-uniforms method. NEVER use it!!                        */
 
 /*---------------------------------------------------------------------------*/
@@ -291,7 +291,7 @@ UNUR_DISTR *unur_distr_powerexponential(double *params, int n_params);
 /* special generators */
 int _unur_stdgen_powerexponential_init( UNUR_PAR *parameters, UNUR_GEN *generator );
 /* initialize new generator                                                  */
-double unur_stdgen_sample_powerexponential_epd( UNUR_GEN *generator );
+double _unur_stdgen_sample_powerexponential_epd( UNUR_GEN *generator );
 
 /*---------------------------------------------------------------------------*/
 /*  Rayleigh distribution  [2; ch.18, p.456]                                 */
@@ -308,9 +308,9 @@ UNUR_DISTR *unur_distr_student(double *params, int n_params);
 /* special generators */
 int _unur_stdgen_student_init( UNUR_PAR *parameters, UNUR_GEN *generator );
 /* initialize new generator                                                  */
-double unur_stdgen_sample_student_tpol( UNUR_GEN *generator );
+double _unur_stdgen_sample_student_tpol( UNUR_GEN *generator );
 /* Polar Method                                                              */
-double unur_stdgen_sample_student_trouo( UNUR_GEN *generator );
+double _unur_stdgen_sample_student_trouo( UNUR_GEN *generator );
 /* Ratio of Uniforms                                                         */
 
 /*---------------------------------------------------------------------------*/
@@ -320,7 +320,7 @@ UNUR_DISTR *unur_distr_slash(double *params, int n_params);
 /* special generators */
 int _unur_stdgen_slash_init( UNUR_PAR *parameters, UNUR_GEN *generator );
 /* initialize new generator                                                  */
-double unur_stdgen_sample_slash_slash( UNUR_GEN *generator );
+double _unur_stdgen_sample_slash_slash( UNUR_GEN *generator );
 /* Ratio of normal and uniform random variates */
 
 /*---------------------------------------------------------------------------*/
@@ -330,7 +330,7 @@ UNUR_DISTR *unur_distr_triangular(double *params, int n_params);
 /* special generators */
 int _unur_stdgen_triangular_init( UNUR_PAR *parameters, UNUR_GEN *generator );
 /* initialize new generator                                                  */
-double unur_stdgen_sample_triangular_inv( UNUR_GEN *generator );
+double _unur_stdgen_sample_triangular_inv( UNUR_GEN *generator );
 /* Inversion method                                                          */
 
 /*---------------------------------------------------------------------------*/
@@ -340,7 +340,7 @@ UNUR_DISTR *unur_distr_uniform(double *params, int n_params);
 /* special generators */
 int _unur_stdgen_uniform_init( UNUR_PAR *parameters, UNUR_GEN *generator );
 /* initialize new generator                                                  */
-double unur_stdgen_sample_uniform_inv( UNUR_GEN *generator );
+double _unur_stdgen_sample_uniform_inv( UNUR_GEN *generator );
 /* Inversion method                                                          */
 
 
@@ -351,7 +351,7 @@ UNUR_DISTR *unur_distr_weibull(double *params, int n_params);
 /* special generators */
 int _unur_stdgen_weibull_init( UNUR_PAR *parameters, UNUR_GEN *generator );
 /* initialize new generator                                                  */
-double unur_stdgen_sample_weibull_inv( UNUR_GEN *generator );
+double _unur_stdgen_sample_weibull_inv( UNUR_GEN *generator );
 /* Inversion method                                                          */
 
 /*---------------------------------------------------------------------------*/
@@ -369,7 +369,7 @@ UNUR_DISTR *unur_distr_geometric(double *params, int n_params);
 /* special generators */
 int _unur_stdgen_geometric_init( UNUR_PAR *parameters, UNUR_GEN *generator );
 /* initialize new generator                                                  */
-int unur_stdgen_sample_geometric_inv( UNUR_GEN *generator );
+int _unur_stdgen_sample_geometric_inv( UNUR_GEN *generator );
 /* Inversion                                                                 */
 
 /*---------------------------------------------------------------------------*/
@@ -379,7 +379,7 @@ UNUR_DISTR *unur_distr_logarithmic(double *params, int n_params);
 /* special generators */
 int _unur_stdgen_logarithmic_init( UNUR_PAR *parameters, UNUR_GEN *generator );
 /* initialize new generator                                                  */
-int unur_stdgen_sample_logarithmic_lsk( UNUR_GEN *generator );
+int _unur_stdgen_sample_logarithmic_lsk( UNUR_GEN *generator );
 /* Acceptance Rejection                                                      */
 
 /*---------------------------------------------------------------------------*/
@@ -389,7 +389,7 @@ UNUR_DISTR *unur_distr_negativebinomial(double *params, int n_params);
 /* special generators */
 int _unur_stdgen_negativebinomial_init( UNUR_PAR *parameters, UNUR_GEN *generator );
 /* initialize new generator                                                  */
-int unur_stdgen_sample_negativebinomial_nbp( UNUR_GEN *generator );
+int _unur_stdgen_sample_negativebinomial_nbp( UNUR_GEN *generator );
 /* Compound method                                                           */
 
 /*---------------------------------------------------------------------------*/
@@ -399,11 +399,11 @@ UNUR_DISTR *unur_distr_poisson(double *params, int n_params);
 /* special generators */
 int _unur_stdgen_poisson_init( UNUR_PAR *parameters, UNUR_GEN *generator );
 /* initialize new generator                                                  */
-int unur_stdgen_sample_poisson_pdtabl( UNUR_GEN *generator );
-int unur_stdgen_sample_poisson_pdac( UNUR_GEN *generator );
+int _unur_stdgen_sample_poisson_pdtabl( UNUR_GEN *generator );
+int _unur_stdgen_sample_poisson_pdac( UNUR_GEN *generator );
 /* Tabulated Inversion combined with Acceptance Complement                   */
-int unur_stdgen_sample_poisson_pdtabl( UNUR_GEN *generator );
-int unur_stdgen_sample_poisson_pprsc( UNUR_GEN *generator );
+int _unur_stdgen_sample_poisson_pdtabl( UNUR_GEN *generator );
+int _unur_stdgen_sample_poisson_pprsc( UNUR_GEN *generator );
 /* Tabulated Inversion combined with Patchwork Rejection                     */
 
 /*---------------------------------------------------------------------------*/
@@ -413,7 +413,7 @@ UNUR_DISTR *unur_distr_zipf(double *params, int n_params);
 /* special generators */
 int _unur_stdgen_zipf_init( UNUR_PAR *parameters, UNUR_GEN *generator );
 /* initialize new generator                                                  */
-int unur_stdgen_sample_zipf_zet( UNUR_GEN *generator );
+int _unur_stdgen_sample_zipf_zet( UNUR_GEN *generator );
 /* Acceptance Rejection                                                      */
 
 /*---------------------------------------------------------------------------*/

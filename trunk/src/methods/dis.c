@@ -206,7 +206,7 @@ unur_dis_new( struct unur_distr *distr )
   par->debug    = _unur_default_debugflag; /* set default debugging flags    */
 
   /* routine for starting generator */
-  par->init = unur_dis_init;
+  par->init = _unur_dis_init;
 
   return par;
 
@@ -289,7 +289,7 @@ unur_dis_set_guidefactor( struct unur_par *par, double factor )
 /*****************************************************************************/
 
 struct unur_gen *
-unur_dis_init( struct unur_par *par )
+_unur_dis_init( struct unur_par *par )
      /*----------------------------------------------------------------------*/
      /* initialize new generator                                             */
      /*                                                                      */
@@ -333,7 +333,7 @@ unur_dis_init( struct unur_par *par )
     /* ... and check probability vector */
     if (prob[i] < 0.) {
       _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"probability < 0");
-      unur_dis_free(gen); free(par); 
+      _unur_dis_free(gen); free(par); 
       return NULL;
     }
   }
@@ -383,12 +383,12 @@ unur_dis_init( struct unur_par *par )
   free(par);
 
   return gen;
-} /* end of unur_dis_init() */
+} /* end of _unur_dis_init() */
 
 /*****************************************************************************/
 
 int
-unur_dis_sample( struct unur_gen *gen )
+_unur_dis_sample( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* sample from generator                                                */
      /*                                                                      */
@@ -419,12 +419,12 @@ unur_dis_sample( struct unur_gen *gen )
 
   return j;
 
-} /* end of unur_dis_sample() */
+} /* end of _unur_dis_sample() */
 
 /*****************************************************************************/
 
 void
-unur_dis_free( struct unur_gen *gen )
+_unur_dis_free( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* deallocate generator object                                          */
      /*                                                                      */
@@ -452,7 +452,7 @@ unur_dis_free( struct unur_gen *gen )
   free(GEN.cumprob);
   free(gen);
 
-} /* end of unur_dis_free() */
+} /* end of _unur_dis_free() */
 
 /*****************************************************************************/
 /**  Auxilliary Routines                                                    **/
@@ -492,8 +492,8 @@ _unur_dis_create( struct unur_par *par )
   memcpy( &(gen->distr), par->distr, sizeof( struct unur_distr ) );
 
   /* routines for sampling and destroying generator */
-  SAMPLE = unur_dis_sample;
-  gen->destroy = unur_dis_free;
+  SAMPLE = _unur_dis_sample;
+  gen->destroy = _unur_dis_free;
 
   /* set all pointers to NULL */
   GEN.cumprob = NULL;
@@ -572,7 +572,7 @@ _unur_dis_debug_init( struct unur_par *par, struct unur_gen *gen )
 
   _unur_distr_discr_debug( &(gen->distr),gen->genid,(gen->debug & DIS_DEBUG_PRINTVECTOR));
 
-  fprintf(log,"%s: sampling routine = unur_dis_sample()\n",gen->genid);
+  fprintf(log,"%s: sampling routine = _unur_dis_sample()\n",gen->genid);
   fprintf(log,"%s:\n",gen->genid);
 
   fprintf(log,"%s: length of probability vector = %d\n",gen->genid,DISTR.n_prob);

@@ -44,13 +44,13 @@
 UNUR_PAR *unur_unif_new( int start, int skip );
 /* get default parameters for generator                                      */
 
-UNUR_GEN *unur_unif_init( UNUR_PAR *parameters );
+UNUR_GEN *_unur_unif_init( UNUR_PAR *parameters );
 /* initialize new generator                                                  */
 
-double unur_unif_sample( UNUR_GEN *generator );
+double _unur_unif_sample( UNUR_GEN *generator );
 /* sample from generator                                                     */
 
-void unur_unif_free( UNUR_GEN *generator );
+void _unur_unif_free( UNUR_GEN *generator );
 /* destroy generator object                                                  */
 
 /*---------------------------------------------------------------------------*/

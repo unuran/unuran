@@ -523,7 +523,7 @@ unur_tdr_new( struct unur_distr* distr )
     PAR.center = 0.;        /* the default */
 
   /* routine for starting generator */
-  par->init = unur_tdr_init;
+  par->init = _unur_tdr_init;
 
   return par;
 
@@ -881,7 +881,7 @@ unur_tdr_set_verify( struct unur_par *par, int verify )
 /*****************************************************************************/
 
 struct unur_gen *
-unur_tdr_init( struct unur_par *par )
+_unur_tdr_init( struct unur_par *par )
      /*----------------------------------------------------------------------*/
      /* initialize new generator                                             */
      /*                                                                      */
@@ -912,13 +912,13 @@ unur_tdr_init( struct unur_par *par )
 
   /* get starting points */
   if (!_unur_tdr_get_starting_cpoints(par,gen) ) {
-    free(par); unur_tdr_free(gen);
+    free(par); _unur_tdr_free(gen);
     return NULL;
   }
 
   /* compute intervals for given starting points */
   if ( !_unur_tdr_get_starting_intervals(par,gen) ) {
-    free(par); unur_tdr_free(gen);
+    free(par); _unur_tdr_free(gen);
     return NULL;
   }
 
@@ -943,19 +943,19 @@ unur_tdr_init( struct unur_par *par )
   /* is there any hat at all ? */
   if (GEN.Atotal <= 0.) {
     _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"bad construction points.");
-    unur_tdr_free(gen);
+    _unur_tdr_free(gen);
     return NULL;
   }
 
   /* o.k. */
   return gen;
 
-} /* end of unur_tdr_init() */
+} /* end of _unur_tdr_init() */
 
 /*****************************************************************************/
 
 double
-unur_tdr_sample_log( struct unur_gen *gen )
+_unur_tdr_sample_log( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* sample from generator; T(x) = log(x)                                 */
      /*                                                                      */
@@ -1041,12 +1041,12 @@ unur_tdr_sample_log( struct unur_gen *gen )
     /* else reject */
 
   }
-} /* end of unur_tdr_sample_log() */
+} /* end of _unur_tdr_sample_log() */
 
 /*****************************************************************************/
 
 double
-unur_tdr_sample_sqrt( struct unur_gen *gen )
+_unur_tdr_sample_sqrt( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* sample from generator; T(x) = -1./sqrt(x)                            */
      /*                                                                      */
@@ -1141,12 +1141,12 @@ unur_tdr_sample_sqrt( struct unur_gen *gen )
     /* else reject */
 
   }
-} /* end of unur_tdr_sample_sqrt() */
+} /* end of _unur_tdr_sample_sqrt() */
 
 /*****************************************************************************/
 
 double
-unur_tdr_sample_check( struct unur_gen *gen )
+_unur_tdr_sample_check( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* sample from generator and verify results                             */
      /*                                                                      */
@@ -1330,12 +1330,12 @@ unur_tdr_sample_check( struct unur_gen *gen )
     /* else reject */
 
   }
-} /* end of unur_tdr_sample_check() */
+} /* end of _unur_tdr_sample_check() */
 
 /*****************************************************************************/
 
 void
-unur_tdr_free( struct unur_gen *gen )
+_unur_tdr_free( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* deallocate generator object                                          */
      /*                                                                      */
@@ -1370,7 +1370,7 @@ unur_tdr_free( struct unur_gen *gen )
   free(GEN.guide);
   free(gen);
 
-} /* end of unur_tdr_free() */
+} /* end of _unur_tdr_free() */
 
 /*****************************************************************************/
 /**  Auxilliary Routines                                                    **/
@@ -1422,16 +1422,16 @@ _unur_tdr_create( struct unur_par *par )
   }
 
   /* routines for sampling and destroying generator */
-  gen->destroy = unur_tdr_free;
+  gen->destroy = _unur_tdr_free;
   if (par->variant & TDR_VARFLAG_VERIFY)
-    SAMPLE = unur_tdr_sample_check;
+    SAMPLE = _unur_tdr_sample_check;
   else
     switch( par->variant & TDR_VARMASK_T ) {
     case TDR_VAR_T_LOG:
-      SAMPLE = unur_tdr_sample_log;
+      SAMPLE = _unur_tdr_sample_log;
       break;
     case TDR_VAR_T_SQRT:
-      SAMPLE = unur_tdr_sample_sqrt;
+      SAMPLE = _unur_tdr_sample_sqrt;
       break;
     case TDR_VAR_T_POW:
       /** TODO **/
@@ -2369,7 +2369,7 @@ _unur_tdr_debug_init( struct unur_par *par, struct unur_gen *gen )
 
   _unur_distr_cont_debug( &(gen->distr), gen->genid );
 
-  fprintf(log,"%s: sampling routine = unur_tdr_sample_",gen->genid);
+  fprintf(log,"%s: sampling routine = _unur_tdr_sample_",gen->genid);
   if (par->variant & TDR_VARFLAG_VERIFY)
     fprintf(log,"check()\n");
   else

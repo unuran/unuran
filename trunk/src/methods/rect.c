@@ -130,7 +130,7 @@ unur_rect_new( int dim )
   par->debug    = _unur_default_debugflag; /* set default debugging flags    */
 
   /* routine for starting generator */
-  par->init = unur_rect_init;
+  par->init = _unur_rect_init;
 
   return par;
 
@@ -175,7 +175,7 @@ unur_rect_set_domain_vec( struct unur_par *par, double **domain )
 /*****************************************************************************/
 
 struct unur_gen *
-unur_rect_init( struct unur_par *par )
+_unur_rect_init( struct unur_par *par )
      /*----------------------------------------------------------------------*/
      /* initialize new generator                                             */
      /*                                                                      */
@@ -214,12 +214,12 @@ unur_rect_init( struct unur_par *par )
 
   return gen;
 
-} /* end of unur_rect_init() */
+} /* end of _unur_rect_init() */
 
 /*****************************************************************************/
 
 void
-unur_rect_sample_vec( struct unur_gen *gen, double *vec )
+_unur_rect_sample_vec( struct unur_gen *gen, double *vec )
      /*---------------------------------------------------------------------------*/
      /* sample from generator                                                     */
      /*                                                                           */
@@ -240,12 +240,12 @@ unur_rect_sample_vec( struct unur_gen *gen, double *vec )
   else ;
   /* not implemented yet */
 
-} /* end of unur_rect_sample() */
+} /* end of _unur_rect_sample() */
 
 /*****************************************************************************/
 
 void
-unur_rect_free( struct unur_gen *gen )
+_unur_rect_free( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* deallocate generator object                                          */
      /*                                                                      */
@@ -272,7 +272,7 @@ unur_rect_free( struct unur_gen *gen )
   free(GEN.domain);
   free(gen);
 
-} /* end of unur_rect_free() */
+} /* end of _unur_rect_free() */
 
 /*****************************************************************************/
 /**  Auxilliary Routines                                                    **/
@@ -308,8 +308,8 @@ _unur_rect_create( struct unur_par *par )
   gen->genid = par->genid;
 
   /* routines for sampling and destroying generator */
-  SAMPLE = unur_rect_sample_vec;
-  gen->destroy = unur_rect_free;
+  SAMPLE = _unur_rect_sample_vec;
+  gen->destroy = _unur_rect_free;
 
   /* set all pointers to NULL */
   GEN.domain = NULL;
@@ -361,7 +361,7 @@ _unur_rect_debug_init( struct unur_par *par, struct unur_gen *gen )
   fprintf(log,"%s: method  = uniformly distributed in hypercube (RECT)\n",gen->genid);
   fprintf(log,"%s:\n",gen->genid);
 
-  fprintf(log,"%s: sampling routine = unur_rect_sample_vec()\n",gen->genid);
+  fprintf(log,"%s: sampling routine = _unur_rect_sample_vec()\n",gen->genid);
   fprintf(log,"%s:\n",gen->genid);
 
   fprintf(log,"%s: dimension = %d\n",gen->genid,GEN.dim);

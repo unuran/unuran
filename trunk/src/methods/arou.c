@@ -335,7 +335,7 @@ unur_arou_new( struct unur_distr *distr )
     PAR.center = 0.;        /* the default */
 
   /* routine for starting generator */
-  par->init = unur_arou_init;
+  par->init = _unur_arou_init;
 
   return par;
 
@@ -612,7 +612,7 @@ unur_arou_set_verify( struct unur_par *par, int verify )
 /*****************************************************************************/
 
 struct unur_gen *
-unur_arou_init( struct unur_par *par )
+_unur_arou_init( struct unur_par *par )
      /*----------------------------------------------------------------------*/
      /* initialize new generator                                             */
      /*                                                                      */
@@ -643,13 +643,13 @@ unur_arou_init( struct unur_par *par )
 
   /* get starting points */
   if (!_unur_arou_get_starting_cpoints(par,gen) ) {
-    free(par); unur_arou_free(gen);
+    free(par); _unur_arou_free(gen);
     return NULL;
   }
 
   /* compute segments for given starting points */
   if ( !_unur_arou_get_starting_segments(par,gen) ) {
-    free(par); unur_arou_free(gen);
+    free(par); _unur_arou_free(gen);
     return NULL;
   }
 
@@ -674,19 +674,19 @@ unur_arou_init( struct unur_par *par )
   /* is there any envelope at all ? */
   if (GEN.Atotal <= 0.) {
     _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"bad construction points");
-    unur_arou_free(gen);
+    _unur_arou_free(gen);
     return NULL;
   }
 
   /* o.k. */
   return gen;
 
-} /* end of unur_arou_init() */
+} /* end of _unur_arou_init() */
 
 /*****************************************************************************/
 
 double
-unur_arou_sample( struct unur_gen *gen )
+_unur_arou_sample( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* sample from generator                                                */
      /*                                                                      */
@@ -759,12 +759,12 @@ unur_arou_sample( struct unur_gen *gen )
 	return x;
     }
   }
-} /* end of unur_arou_sample() */
+} /* end of _unur_arou_sample() */
 
 /*****************************************************************************/
 
 double
-unur_arou_sample_check( struct unur_gen *gen )
+_unur_arou_sample_check( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* sample from generator and verify that method can be used             */
      /*                                                                      */
@@ -863,12 +863,12 @@ unur_arou_sample_check( struct unur_gen *gen )
     }
   }
 
-} /* end of unur_arou_sample_check() */
+} /* end of _unur_arou_sample_check() */
 
 /*****************************************************************************/
 
 void
-unur_arou_free( struct unur_gen *gen )
+_unur_arou_free( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* deallocate generator object                                          */
      /*                                                                      */
@@ -902,7 +902,7 @@ unur_arou_free( struct unur_gen *gen )
   free(GEN.guide);
   free(gen);
 
-} /* end of unur_arou_free() */
+} /* end of _unur_arou_free() */
 
 /*****************************************************************************/
 /**  Auxilliary Routines                                                    **/
@@ -941,8 +941,8 @@ _unur_arou_create( struct unur_par *par )
   memcpy( &(gen->distr), par->distr, sizeof( struct unur_distr ) );
 
   /* routines for sampling and destroying generator */
-  SAMPLE = (par->variant & AROU_VARFLAG_VERIFY) ? unur_arou_sample_check : unur_arou_sample;
-  gen->destroy = unur_arou_free;
+  SAMPLE = (par->variant & AROU_VARFLAG_VERIFY) ? _unur_arou_sample_check : _unur_arou_sample;
+  gen->destroy = _unur_arou_free;
 
   /* set all pointers to NULL */
   GEN.seg         = NULL;
@@ -1819,7 +1819,7 @@ _unur_arou_debug_init( struct unur_par *par, struct unur_gen *gen )
 
   _unur_distr_cont_debug( &(gen->distr), gen->genid );
 
-  fprintf(log,"%s: sampling routine = unur_arou_sample",gen->genid);
+  fprintf(log,"%s: sampling routine = _unur_arou_sample",gen->genid);
   if (par->variant & AROU_VARFLAG_VERIFY)
     fprintf(log,"_check()\n");
   else

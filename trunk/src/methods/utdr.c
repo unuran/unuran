@@ -195,7 +195,7 @@ unur_utdr_new( struct unur_distr *distr )
   par->debug    = _unur_default_debugflag; /* set default debugging flags    */
 
   /* routine for starting generator */
-  par->init = unur_utdr_init;
+  par->init = _unur_utdr_init;
 
   return par;
 
@@ -316,7 +316,7 @@ unur_utdr_set_verify( struct unur_par *par, int verify )
 /*****************************************************************************/
 
 struct unur_gen *
-unur_utdr_init( struct unur_par *par )
+_unur_utdr_init( struct unur_par *par )
      /*----------------------------------------------------------------------*/
      /* initialize new generator                                             */
      /*                                                                      */
@@ -509,15 +509,15 @@ unur_utdr_init( struct unur_par *par )
   if (gen->debug) _unur_utdr_debug_init(par,gen,try,trys,cfac,setupok);
 #endif
   free(par); 
-  unur_utdr_free(gen);
+  _unur_utdr_free(gen);
   return NULL;
 
-} /* end of unur_utdr_init() */
+} /* end of _unur_utdr_init() */
 
 /*****************************************************************************/
 
 double
-unur_utdr_sample( struct unur_gen *gen )
+_unur_utdr_sample( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* sample from generator                                                */
      /*                                                                      */
@@ -574,12 +574,12 @@ unur_utdr_sample( struct unur_gen *gen )
     if (v <= PDF(x)) return x; 
   }
 
-} /* end of unur_utdr_sample() */
+} /* end of _unur_utdr_sample() */
 
 /*****************************************************************************/
 
 void
-unur_utdr_free( struct unur_gen *gen )
+_unur_utdr_free( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* deallocate generator object                                          */
      /*                                                                      */
@@ -605,7 +605,7 @@ unur_utdr_free( struct unur_gen *gen )
   _unur_free_genid(gen);
   free(gen);
 
-} /* end of unur_utdr_free() */
+} /* end of _unur_utdr_free() */
 
 /*****************************************************************************/
 /**  Auxilliary Routines                                                    **/
@@ -644,8 +644,8 @@ _unur_utdr_create( struct unur_par *par )
   memcpy( &(gen->distr), par->distr, sizeof( struct unur_distr ) );
 
   /* routines for sampling and destroying generator */
-  SAMPLE = unur_utdr_sample;
-  gen->destroy = unur_utdr_free;
+  SAMPLE = _unur_utdr_sample;
+  gen->destroy = _unur_utdr_free;
 
   /* copy some parameters into generator object */
   GEN.il = DISTR.BD_LEFT;           /* left boundary of domain         */
@@ -728,7 +728,7 @@ _unur_utdr_debug_init( struct unur_par *par, struct unur_gen *gen,
 
   _unur_distr_cont_debug( &(gen->distr), gen->genid );
 
-  fprintf(log,"%s: sampling routine = unur_utdr_sample",gen->genid);
+  fprintf(log,"%s: sampling routine = _unur_utdr_sample",gen->genid);
 
   /** TODO: c_factor, delta_factor **/
 

@@ -166,7 +166,7 @@ unur_dstd_new( struct unur_distr *distr )
   par->debug    = _unur_default_debugflag; /* set default debugging flags    */
 
   /* routine for initializing generator */
-  par->init = unur_dstd_init;
+  par->init = _unur_dstd_init;
 
   return par;
 
@@ -274,7 +274,7 @@ unur_dstd_chg_param( struct unur_gen *gen, double *params, int n_params )
 /*****************************************************************************/
 
 struct unur_gen *
-unur_dstd_init( struct unur_par *par )
+_unur_dstd_init( struct unur_par *par )
      /*----------------------------------------------------------------------*/
      /* initialize new generator                                             */
      /*                                                                      */
@@ -312,7 +312,7 @@ unur_dstd_init( struct unur_par *par )
   if ( !DISTR.init(par,gen) ) {
     /* init failed --> could not find a sampling routine */
     _unur_error(par->genid,UNUR_ERR_GEN_DATA,"variant for special generator");
-    free(par); unur_dstd_free(gen); return NULL; 
+    free(par); _unur_dstd_free(gen); return NULL; 
   }
 
 #ifdef UNUR_ENABLE_LOGGING
@@ -326,12 +326,12 @@ unur_dstd_init( struct unur_par *par )
   /* o.k. */
   return gen;
 
-} /* end of unur_dstd_init() */
+} /* end of _unur_dstd_init() */
 
 /*****************************************************************************/
 
 /** 
-    double unur_dstd_sample( struct unur_gen *gen ) {}
+    double _unur_dstd_sample( struct unur_gen *gen ) {}
     Does not exists !!!
     Sampling routines are defined in ../distributions/ for each distributions.
 **/
@@ -339,7 +339,7 @@ unur_dstd_init( struct unur_par *par )
 /*****************************************************************************/
 
 void
-unur_dstd_free( struct unur_gen *gen )
+_unur_dstd_free( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* deallocate generator object                                          */
      /*                                                                      */
@@ -372,7 +372,7 @@ unur_dstd_free( struct unur_gen *gen )
   if (gen->gen_aux_2) _unur_free(gen->gen_aux_2);
   free(gen);
 
-} /* end of unur_dstd_free() */
+} /* end of _unur_dstd_free() */
 
 /*****************************************************************************/
 /**  Auxilliary Routines                                                    **/
@@ -411,8 +411,8 @@ _unur_dstd_create( struct unur_par *par )
   memcpy( &(gen->distr), par->distr, sizeof( struct unur_distr ) );
 
   /* routines for sampling and destroying generator */
-  SAMPLE = NULL;    /* will be set in unur_dstd_init() */
-  gen->destroy = unur_dstd_free;
+  SAMPLE = NULL;    /* will be set in _unur_dstd_init() */
+  gen->destroy = _unur_dstd_free;
 
   /* defaults */
   GEN.gen_param = NULL;  /* parameters for the generator      */

@@ -86,35 +86,35 @@ _unur_stdgen_normal_init( struct unur_par *par, struct unur_gen *gen )
 
   case 0:    /* DEFAULT */
   case 1:    /* Box-Muller method */
-    _unur_cstd_set_sampling_routine( par,gen,unur_stdgen_sample_normal_bm );
+    _unur_cstd_set_sampling_routine( par,gen,_unur_stdgen_sample_normal_bm );
     return normal_bm_init( gen );
 
   case 2:    /* Polarmethod with rejection */
-    _unur_cstd_set_sampling_routine( par,gen,unur_stdgen_sample_normal_pol );
+    _unur_cstd_set_sampling_routine( par,gen,_unur_stdgen_sample_normal_pol );
     return normal_pol_init( gen );
 
   case 3:    /* "Naive" ratio-of-uniforms */
-    _unur_cstd_set_sampling_routine( par,gen,unur_stdgen_sample_normal_nquo );
+    _unur_cstd_set_sampling_routine( par,gen,_unur_stdgen_sample_normal_nquo );
     return 1;
 
   case 4:    /* Ratio-of-uniforms with squeeze */
-    _unur_cstd_set_sampling_routine( par,gen,unur_stdgen_sample_normal_quo );
+    _unur_cstd_set_sampling_routine( par,gen,_unur_stdgen_sample_normal_quo );
     return 1;
 
   case 5:    /* Ratio-of-uniforms with quadratic bounding curves */
-    _unur_cstd_set_sampling_routine( par,gen,unur_stdgen_sample_normal_leva );
+    _unur_cstd_set_sampling_routine( par,gen,_unur_stdgen_sample_normal_leva );
     return 1;
 
   case 6:    /* Kindermann-Ramage method */
-    _unur_cstd_set_sampling_routine( par,gen,unur_stdgen_sample_normal_kr );
+    _unur_cstd_set_sampling_routine( par,gen,_unur_stdgen_sample_normal_kr );
     return 1;
 
   case 7:    /* Acceptance-complement ratio */
-    _unur_cstd_set_sampling_routine( par,gen,unur_stdgen_sample_normal_acr );
+    _unur_cstd_set_sampling_routine( par,gen,_unur_stdgen_sample_normal_acr );
     return 1;
 
   case 99:   /* infamous sum-of-12-uniforms method. DO NOT USE */
-    _unur_cstd_set_sampling_routine( par,gen,unur_stdgen_sample_normal_sum );
+    _unur_cstd_set_sampling_routine( par,gen,_unur_stdgen_sample_normal_sum );
     return 1;
 
   case UNUR_STDGEN_INVERSION:
@@ -182,7 +182,7 @@ normal_bm_init( struct unur_gen *gen )
 } /* end of normal_bm_init() */
 
 double
-unur_stdgen_sample_normal_bm( struct unur_gen *gen )
+_unur_stdgen_sample_normal_bm( struct unur_gen *gen )
 {
   /* -X- generator code -X- */
   double X;
@@ -205,7 +205,7 @@ unur_stdgen_sample_normal_bm( struct unur_gen *gen )
 
   return ((DISTR.n_params==0) ? X : mu + sigma * X );
 
-} /* end of unur_stdgen_sample_normal_bm() */
+} /* end of _unur_stdgen_sample_normal_bm() */
 
 #undef Xstore
 #undef flag
@@ -254,7 +254,7 @@ normal_pol_init( struct unur_gen *gen )
 } /* end of normal_pol_init() */
 
 double
-unur_stdgen_sample_normal_pol( struct unur_gen *gen )
+_unur_stdgen_sample_normal_pol( struct unur_gen *gen )
 {
   /* -X- generator code -X- */
   double X;
@@ -283,7 +283,7 @@ unur_stdgen_sample_normal_pol( struct unur_gen *gen )
 
   return ((DISTR.n_params==0) ? X : mu + sigma * X );
 
-} /* end of unur_stdgen_sample_normal_pol() */
+} /* end of _unur_stdgen_sample_normal_pol() */
 
 #undef Xstore
 #undef flag
@@ -308,7 +308,7 @@ unur_stdgen_sample_normal_pol( struct unur_gen *gen )
  *****************************************************************************/
 
 double
-unur_stdgen_sample_normal_nquo( struct unur_gen *gen )
+_unur_stdgen_sample_normal_nquo( struct unur_gen *gen )
 {
   /* -X- generator code -X- */
   double X;
@@ -329,7 +329,7 @@ unur_stdgen_sample_normal_nquo( struct unur_gen *gen )
 
   return ((DISTR.n_params==0) ? X : mu + sigma * X );
 
-} /* end of unur_stdgen_sample_normal_nquo() */
+} /* end of _unur_stdgen_sample_normal_nquo() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -350,7 +350,7 @@ unur_stdgen_sample_normal_nquo( struct unur_gen *gen )
  *****************************************************************************/
 
 double
-unur_stdgen_sample_normal_quo( struct unur_gen *gen )
+_unur_stdgen_sample_normal_quo( struct unur_gen *gen )
 {
   /* -X- generator code -X- */
   double X;
@@ -375,7 +375,7 @@ unur_stdgen_sample_normal_quo( struct unur_gen *gen )
 
   return ((DISTR.n_params==0) ? X : mu + sigma * X );
 
-} /* end of unur_stdgen_sample_normal_quo() */
+} /* end of _unur_stdgen_sample_normal_quo() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -397,7 +397,7 @@ unur_stdgen_sample_normal_quo( struct unur_gen *gen )
  *****************************************************************************/
 
 double
-unur_stdgen_sample_normal_leva( struct unur_gen *gen )
+_unur_stdgen_sample_normal_leva( struct unur_gen *gen )
 {
   /* -X- generator code -X- */
 #define S    0.449871
@@ -437,7 +437,7 @@ unur_stdgen_sample_normal_leva( struct unur_gen *gen )
 
   return ((DISTR.n_params==0) ? X : mu + sigma * X );
 
-} /* end of unur_stdgen_sample_normal_leva() */
+} /* end of _unur_stdgen_sample_normal_leva() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -460,7 +460,7 @@ unur_stdgen_sample_normal_leva( struct unur_gen *gen )
  *****************************************************************************/
 
 double
-unur_stdgen_sample_normal_kr( struct unur_gen *gen )
+_unur_stdgen_sample_normal_kr( struct unur_gen *gen )
 {
   /* -X- generator code -X- */
 #define XI 2.216035867166471
@@ -530,7 +530,7 @@ unur_stdgen_sample_normal_kr( struct unur_gen *gen )
 
   return ((DISTR.n_params==0) ? X : mu + sigma * X );
   
-} /* end of unur_stdgen_sample_normal_kr() */
+} /* end of _unur_stdgen_sample_normal_kr() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -553,7 +553,7 @@ unur_stdgen_sample_normal_kr( struct unur_gen *gen )
  *****************************************************************************/
 
 double
-unur_stdgen_sample_normal_acr( struct unur_gen *gen )
+_unur_stdgen_sample_normal_acr( struct unur_gen *gen )
 {
   /* -X- generator code -X- */
 #define c1 1.448242853
@@ -640,7 +640,7 @@ unur_stdgen_sample_normal_acr( struct unur_gen *gen )
 
   return ((DISTR.n_params==0) ? X : mu + sigma * X );
 
-} /* end of unur_stdgen_sample_normal_acr() */
+} /* end of _unur_stdgen_sample_normal_acr() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -664,7 +664,7 @@ unur_stdgen_sample_normal_acr( struct unur_gen *gen )
  * UNURAN (c) 2000  W. Hoermann & J. Leydold, Institut f. Statistik, WU Wien *
  *****************************************************************************/
 double 
-unur_stdgen_sample_normal_sum( struct unur_gen *gen )
+_unur_stdgen_sample_normal_sum( struct unur_gen *gen )
 {
   /* -X- generator code -X- */
   double X;
@@ -679,7 +679,7 @@ unur_stdgen_sample_normal_sum( struct unur_gen *gen )
 
   return ((DISTR.n_params==0) ? X : mu + sigma * X );
 
-} /* end of unur_stdgen_sample_normal_sum() */
+} /* end of _unur_stdgen_sample_normal_sum() */
 
 /*---------------------------------------------------------------------------*/
 #undef mu

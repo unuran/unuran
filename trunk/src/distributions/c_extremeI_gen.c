@@ -83,7 +83,7 @@ _unur_stdgen_extremeI_init( struct unur_par *par, struct unur_gen *gen )
   case 0:  /* DEFAULT */
   case UNUR_STDGEN_INVERSION:   /* inversion method */
     if (par) PAR.is_inversion = TRUE;
-    _unur_cstd_set_sampling_routine(par,gen,unur_stdgen_sample_extremeI_inv); 
+    _unur_cstd_set_sampling_routine(par,gen,_unur_stdgen_sample_extremeI_inv); 
     return 1;
 
   default: /* no such generator */
@@ -103,7 +103,7 @@ _unur_stdgen_extremeI_init( struct unur_par *par, struct unur_gen *gen )
 
 /*---------------------------------------------------------------------------*/
 
-double unur_stdgen_sample_extremeI_inv( struct unur_gen *gen )
+double _unur_stdgen_sample_extremeI_inv( struct unur_gen *gen )
      /* Inversion method */
 {
   /* -X- generator code -X- */
@@ -122,7 +122,7 @@ double unur_stdgen_sample_extremeI_inv( struct unur_gen *gen )
 
   return ((DISTR.n_params==0) ? X : zeta + theta * X );
 
-} /* end of unur_stdgen_sample_extremeI_inv() */
+} /* end of _unur_stdgen_sample_extremeI_inv() */
 
 /*---------------------------------------------------------------------------*/
 

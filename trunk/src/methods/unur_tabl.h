@@ -43,14 +43,14 @@
 UNUR_PAR *unur_tabl_new( UNUR_DISTR *distribution );
 /* get default parameters for generator                                      */
 
-UNUR_GEN *unur_tabl_init( UNUR_PAR *parameters );
+UNUR_GEN *_unur_tabl_init( UNUR_PAR *parameters );
 /* initialize new generator                                                  */
 
-double unur_tabl_sample( UNUR_GEN *generator );
-double unur_tabl_sample_check( UNUR_GEN *generator );
+double _unur_tabl_sample( UNUR_GEN *generator );
+double _unur_tabl_sample_check( UNUR_GEN *generator );
 /* sample from generator                                                     */
 
-void unur_tabl_free( UNUR_GEN *generator);
+void _unur_tabl_free( UNUR_GEN *generator);
 /* destroy generator object                                                  */
 
 /*...........................................................................*/
@@ -82,10 +82,4 @@ int unur_tabl_set_guidefactor( UNUR_PAR *parameters, double factor );
 int unur_tabl_set_verify( UNUR_PAR *parameters, int verify );
 /* turn verifying of algorithm while sampling on/off                         */
 
-#define unur_dis_set_debug(par,debugflags)  unur_set_debug((par),(debugflags))
-/* set debuging flags                                                        */
-
 /*---------------------------------------------------------------------------*/
-
-
-

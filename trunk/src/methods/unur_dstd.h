@@ -44,16 +44,16 @@
 UNUR_PAR *unur_dstd_new( UNUR_DISTR *distribution );
 /* get default parameters for generator                                      */
 
-UNUR_GEN *unur_dstd_init( UNUR_PAR *parameters );
+UNUR_GEN *_unur_dstd_init( UNUR_PAR *parameters );
 /* initialize new generator                                                  */
 
 /** 
-    double unur_dstd_sample( UNUR_GEN *gen );
+    double _unur_dstd_sample( UNUR_GEN *gen );
     Does not exists !!!
     Sampling routines are defined in ../distributions/ for each distributions.
 **/
 
-void unur_dstd_free( UNUR_GEN *generator);
+void _unur_dstd_free( UNUR_GEN *generator);
 /* destroy generator object                                                  */
 
 /*...........................................................................*/
@@ -63,9 +63,6 @@ int unur_dstd_set_variant( UNUR_PAR *parameters, unsigned variant );
 
 int unur_dstd_chg_param( UNUR_GEN *gen, double *params, int n_params );
 /* change array of parameters for distribution                               */
-
-#define unur_dstd_set_debug(par,debugflags)  unur_set_debug((par),(debugflags))
-/* set debuging flags                                                        */
 
 /*---------------------------------------------------------------------------*/
 

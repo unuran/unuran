@@ -84,7 +84,7 @@ _unur_stdgen_student_init( struct unur_par *par, struct unur_gen *gen )
 
   case 0:  /* DEFAULT */
   case 1:  /* Polar Method */
-    _unur_cstd_set_sampling_routine( par,gen,unur_stdgen_sample_student_tpol );
+    _unur_cstd_set_sampling_routine( par,gen,_unur_stdgen_sample_student_tpol );
     return 1;
 
   case 2:  /* Ratio of Uniforms */
@@ -93,7 +93,7 @@ _unur_stdgen_student_init( struct unur_par *par, struct unur_gen *gen )
       return 0;
     }
     /* nu >= 1 !!!! */
-    _unur_cstd_set_sampling_routine( par,gen,unur_stdgen_sample_student_trouo );
+    _unur_cstd_set_sampling_routine( par,gen,_unur_stdgen_sample_student_trouo );
     return student_trouo_init( gen );
 
   case UNUR_STDGEN_INVERSION:   /* inversion method */
@@ -139,7 +139,7 @@ _unur_stdgen_student_init( struct unur_par *par, struct unur_gen *gen )
  *****************************************************************************/
 
 double
-unur_stdgen_sample_student_tpol( struct unur_gen *gen )
+_unur_stdgen_sample_student_tpol( struct unur_gen *gen )
 {
   /* -X- generator code -X- */
   double u,v,w;
@@ -155,7 +155,7 @@ unur_stdgen_sample_student_tpol( struct unur_gen *gen )
 
   return(u * sqrt( nu * ( exp(- 2. / nu * log(w)) - 1.) / w));
   /* -X- end of generator code -X- */
-} /* end of unur_stdgen_sample_student_tpol() */
+} /* end of _unur_stdgen_sample_student_tpol() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -216,7 +216,7 @@ student_trouo_init( struct unur_gen *gen )
 } /* end of student_trouo_init() */
 
 double
-unur_stdgen_sample_student_trouo( struct unur_gen *gen )
+_unur_stdgen_sample_student_trouo( struct unur_gen *gen )
 {
   /* -X- generator code -X- */
   double tru,u,v;
@@ -246,7 +246,7 @@ unur_stdgen_sample_student_trouo( struct unur_gen *gen )
 
   return tru;
 
-} /* end of unur_stdgen_sample_student_trouo() */
+} /* end of _unur_stdgen_sample_student_trouo() */
 
 /*---------------------------------------------------------------------------*/
 #undef c

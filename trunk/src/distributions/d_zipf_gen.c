@@ -87,7 +87,7 @@ _unur_stdgen_zipf_init( struct unur_par *par, struct unur_gen *gen )
 
   case 0:  /* DEFAULT */
   case 1:  /* Acceptance Rejection */
-    _unur_dstd_set_sampling_routine( par,gen,unur_stdgen_sample_zipf_zet );
+    _unur_dstd_set_sampling_routine( par,gen,_unur_stdgen_sample_zipf_zet );
     return zipf_zet_init( gen );
 
   case UNUR_STDGEN_INVERSION:   /* inversion method */
@@ -178,7 +178,7 @@ zipf_zet_init( struct unur_gen *gen )
 } /* end of zipf_zet_init() */
 
 int
-unur_stdgen_sample_zipf_zet( struct unur_gen *gen )
+_unur_stdgen_sample_zipf_zet( struct unur_gen *gen )
 {
   /* -X- generator code -X- */
   double U, V, E, X;
@@ -200,7 +200,7 @@ unur_stdgen_sample_zipf_zet( struct unur_gen *gen )
 
   return K;
   
-} /* end of unur_stdgen_sample_zipf_zet() */
+} /* end of _unur_stdgen_sample_zipf_zet() */
 
 /*---------------------------------------------------------------------------*/
 #undef c

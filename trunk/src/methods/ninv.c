@@ -176,7 +176,7 @@ unur_ninv_new( struct unur_distr *distr )
   PAR.rel_x_resolution = 1.0e-8 ;  /* maximal relative error in x            */
   PAR.s[0]      = 0.;              /* left boundary of interval              */
   PAR.s[1]      = 0.;              /* right boundary of interval             */
-  /* if the PAR.s[i] are identical, the PAR.s[i] are set in unur_ninv_init   */
+  /* if the PAR.s[i] are identical, the PAR.s[i] are set in _unur_ninv_init  */
   /* such that INTERVAL_COVERS *100 Percent of the used univariate random    */
   /* numbers will be in that interval                                        */
 
@@ -190,7 +190,7 @@ unur_ninv_new( struct unur_distr *distr )
   par->debug    = _unur_default_debugflag; /* set default debugging flags    */
 
   /* routine for starting generator */
-  par->init = unur_ninv_init;
+  par->init = _unur_ninv_init;
 
   return par;
 
@@ -373,7 +373,7 @@ unur_ninv_set_start( struct unur_par *par, double s1, double s2, double s3 )
 /*****************************************************************************/
 
 struct unur_gen *
-unur_ninv_init( struct unur_par *par )
+_unur_ninv_init( struct unur_par *par )
      /*----------------------------------------------------------------------*/
      /* initialize new generator                                             */
      /*                                                                      */
@@ -440,13 +440,13 @@ unur_ninv_init( struct unur_par *par )
   
   return gen;
 
-} /* end of unur_ninv_init() */
+} /* end of _unur_ninv_init() */
 
 /*****************************************************************************/
 
 
 double
-unur_ninv_sample_regula( struct unur_gen *gen )
+_unur_ninv_sample_regula( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* sample from generator (use regula falsi)                             */
      /*                                                                      */
@@ -596,7 +596,7 @@ _unur_ninv_regula( struct unur_gen *gen, double u )
 #endif
    return x2;
 
-} /* end of unur_ninv_sample_regula() */
+} /* end of _unur_ninv_sample_regula() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -604,7 +604,7 @@ _unur_ninv_regula( struct unur_gen *gen, double u )
 
 
 double
-unur_ninv_sample_newton( struct unur_gen *gen )
+_unur_ninv_sample_newton( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* sample from generator (use Newton's method)                          */
      /*                                                                      */
@@ -712,14 +712,14 @@ unur_ninv_sample_newton( struct unur_gen *gen )
 
   return x;
 
-} /* end of unur_ninv_sample_newton() */
+} /* end of _unur_ninv_sample_newton() */
 
 /*---------------------------------------------------------------------------*/
 
 /*****************************************************************************/
 
 void
-unur_ninv_free( struct unur_gen *gen )
+_unur_ninv_free( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* deallocate generator object                                          */
      /*                                                                      */
@@ -745,7 +745,7 @@ unur_ninv_free( struct unur_gen *gen )
   _unur_free_genid(gen);
   free(gen);
 
-} /* end of unur_ninv_free() */
+} /* end of _unur_ninv_free() */
 
 /*****************************************************************************/
 /**  Auxilliary Routines                                                    **/
@@ -786,14 +786,14 @@ _unur_ninv_create( struct unur_par *par )
   /* routines for sampling and destroying generator */
   switch (par->variant) {
   case NINV_VARFLAG_NEWTON:
-    SAMPLE = unur_ninv_sample_newton;
+    SAMPLE = _unur_ninv_sample_newton;
     break;
   case NINV_VARFLAG_REGULA: default:
-    SAMPLE = unur_ninv_sample_regula;
+    SAMPLE = _unur_ninv_sample_regula;
     break;
   }
 
-  gen->destroy = unur_ninv_free;
+  gen->destroy = _unur_ninv_free;
 
   /* copy parameters into generator object */
   GEN.max_iter = PAR.max_iter;  /* maximal number of iterations              */
@@ -849,7 +849,7 @@ _unur_ninv_debug_init( struct unur_par *par, struct unur_gen *gen )
 
   _unur_distr_cont_debug( &(gen->distr), gen->genid );
 
-  fprintf(log,"%s: sampling routine = unur_ninv_sample",gen->genid);
+  fprintf(log,"%s: sampling routine = _unur_ninv_sample",gen->genid);
   switch (par->variant) {
   case NINV_VARFLAG_NEWTON:
     fprintf(log,"_newton\n");

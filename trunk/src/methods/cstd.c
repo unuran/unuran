@@ -171,7 +171,7 @@ unur_cstd_new( struct unur_distr *distr )
   par->debug    = _unur_default_debugflag; /* set default debugging flags    */
 
   /* routine for initializing generator */
-  par->init = unur_cstd_init;
+  par->init = _unur_cstd_init;
 
   return par;
 
@@ -355,7 +355,7 @@ unur_cstd_chg_domain( struct unur_gen *gen, double left, double right )
 /*****************************************************************************/
 
 struct unur_gen *
-unur_cstd_init( struct unur_par *par )
+_unur_cstd_init( struct unur_par *par )
      /*----------------------------------------------------------------------*/
      /* initialize new generator                                             */
      /*                                                                      */
@@ -393,7 +393,7 @@ unur_cstd_init( struct unur_par *par )
   if ( !DISTR.init(par,gen) ) {
     /* init failed --> could not find a sampling routine */
     _unur_error(par->genid,UNUR_ERR_GEN_DATA,"variant for special generator");
-    free(par); unur_dstd_free(gen); return NULL; 
+    free(par); _unur_cstd_free(gen); return NULL; 
   }
   
   /* copy information about type of special generator */
@@ -405,11 +405,11 @@ unur_cstd_init( struct unur_par *par )
     if ( ! GEN.is_inversion ) { 
       /* this is not the inversion method */
       _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"domain changed for non inversion method");
-      free(par); unur_cstd_free(gen); return NULL; 
+      free(par); _unur_cstd_free(gen); return NULL; 
     }
     else if (DISTR.cdf == NULL) {
       _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"domain changed, c.d.f. required");
-      free(par); unur_cstd_free(gen); return NULL; 
+      free(par); _unur_cstd_free(gen); return NULL; 
     }
     /* compute umin and umax */
     GEN.umin = (DISTR.BD_LEFT > -INFINITY) ? CDF(DISTR.BD_LEFT)  : 0.;
@@ -427,12 +427,12 @@ unur_cstd_init( struct unur_par *par )
   /* o.k. */
   return gen;
 
-} /* end of unur_cstd_init() */
+} /* end of _unur_cstd_init() */
 
 /*****************************************************************************/
 
 /** 
-    double unur_cstd_sample( struct unur_gen *gen ) {}
+    double _unur_cstd_sample( struct unur_gen *gen ) {}
     Does not exists !!!
     Sampling routines are defined in ../distributions/ for each distributions.
 **/
@@ -440,7 +440,7 @@ unur_cstd_init( struct unur_par *par )
 /*****************************************************************************/
 
 void
-unur_cstd_free( struct unur_gen *gen )
+_unur_cstd_free( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* deallocate generator object                                          */
      /*                                                                      */
@@ -472,7 +472,7 @@ unur_cstd_free( struct unur_gen *gen )
   if (gen->gen_aux_2) _unur_free(gen->gen_aux_2);
   free(gen);
 
-} /* end of unur_cstd_free() */
+} /* end of _unur_cstd_free() */
 
 /*****************************************************************************/
 /**  Auxilliary Routines                                                    **/
@@ -511,8 +511,8 @@ _unur_cstd_create( struct unur_par *par )
   memcpy( &(gen->distr), par->distr, sizeof( struct unur_distr ) );
 
   /* routines for sampling and destroying generator */
-  SAMPLE = NULL;    /* will be set in unur_cstd_init() */
-  gen->destroy = unur_cstd_free;
+  SAMPLE = NULL;    /* will be set in _unur_cstd_init() */
+  gen->destroy = _unur_cstd_free;
 
   /* defaults */
   GEN.gen_param = NULL;  /* parameters for the generator                     */
@@ -522,7 +522,7 @@ _unur_cstd_create( struct unur_par *par )
   GEN.umin        = 0;    /* cdf at left boundary of domain                  */
   GEN.umax        = 1;    /* cdf at right boundary of domain                 */
 
-  /* GEN.is_inversion is set in unur_cstd_init() */
+  /* GEN.is_inversion is set in _unur_cstd_init() */
 
   gen->method = par->method;        /* indicates used method                 */
   gen->variant = par->variant;      /* indicates variant                     */

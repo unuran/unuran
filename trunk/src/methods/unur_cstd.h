@@ -44,16 +44,16 @@
 UNUR_PAR *unur_cstd_new( UNUR_DISTR *distribution );
 /* get default parameters for generator                                      */
 
-UNUR_GEN *unur_cstd_init( UNUR_PAR *parameters );
+UNUR_GEN *_unur_cstd_init( UNUR_PAR *parameters );
 /* initialize new generator                                                  */
 
 /** 
-    double unur_cstd_sample( UNUR_GEN *gen );
+    double _unur_cstd_sample( UNUR_GEN *gen );
     Does not exists !!!
     Sampling routines are defined in ../distributions/ for each distributions.
 **/
 
-void unur_cstd_free( UNUR_GEN *generator);
+void _unur_cstd_free( UNUR_GEN *generator);
 /* destroy generator object                                                  */
 
 /*...........................................................................*/
@@ -66,8 +66,5 @@ int unur_cstd_chg_param( UNUR_GEN *gen, double *params, int n_params );
 
 int unur_cstd_chg_domain( struct unur_gen *gen, double left, double right );
 /* change the left and right borders of the domain of the distribution       */
-
-#define unur_cstd_set_debug(parameters,debugflags)  unur_set_debug((parameters),(debugflags))
-/* set debuging flags                                                        */
 
 /*---------------------------------------------------------------------------*/

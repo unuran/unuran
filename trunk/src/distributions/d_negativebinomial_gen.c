@@ -89,7 +89,7 @@ _unur_stdgen_negativebinomial_init( struct unur_par *par, struct unur_gen *gen )
 
   case 0:  /* DEFAULT */
   case 1:  /* Compound method */
-    _unur_dstd_set_sampling_routine( par,gen,unur_stdgen_sample_negativebinomial_nbp );
+    _unur_dstd_set_sampling_routine( par,gen,_unur_stdgen_sample_negativebinomial_nbp );
     return negativebinomial_nbp_init( gen );
 
   case UNUR_STDGEN_INVERSION:   /* inversion method */
@@ -157,7 +157,7 @@ negativebinomial_nbp_init( struct unur_gen *gen )
   /* make a gamma variate generator (use default special generator) */
   gamma_param = r;   /* shape parameter for gamma distribution */
   if (GAMMA==NULL) {
-    GAMMA = unur_cstd_init( unur_cstd_new( unur_distr_gamma(&gamma_param,1) ) );
+    GAMMA = _unur_cstd_init( unur_cstd_new( unur_distr_gamma(&gamma_param,1) ) );
     _unur_check_NULL( NULL,GAMMA,0 );
     /* need same uniform random number generator as negative binomial generator */
     GAMMA->urng = gen->urng;
@@ -170,7 +170,7 @@ negativebinomial_nbp_init( struct unur_gen *gen )
   /* make a poisson variate generator (use default special generator) */
   if (POISSON==NULL) {
     poisson_param = 1.;   /* shape parameter for poisson distribution (use a dummy value yet) */
-    POISSON = unur_dstd_init( unur_dstd_new( unur_distr_poisson(&poisson_param,1) ) );
+    POISSON = _unur_dstd_init( unur_dstd_new( unur_distr_poisson(&poisson_param,1) ) );
     _unur_check_NULL( NULL,POISSON,0 );
     /* need same uniform random number generator as negative binomial generator */
     POISSON->urng = gen->urng;
@@ -189,7 +189,7 @@ negativebinomial_nbp_init( struct unur_gen *gen )
 /*---------------------------------------------------------------------------*/
 
 int
-unur_stdgen_sample_negativebinomial_nbp( struct unur_gen *gen )
+_unur_stdgen_sample_negativebinomial_nbp( struct unur_gen *gen )
 {
   /* -X- generator code -X- */
   double y;
@@ -206,7 +206,7 @@ unur_stdgen_sample_negativebinomial_nbp( struct unur_gen *gen )
 
   /* -X- end of generator code -X- */
 
-} /* end of unur_stdgen_sample_negativebinomial_nbp() */
+} /* end of _unur_stdgen_sample_negativebinomial_nbp() */
 
 /*---------------------------------------------------------------------------*/
 #undef x

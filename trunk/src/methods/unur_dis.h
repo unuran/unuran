@@ -43,13 +43,13 @@
 UNUR_PAR *unur_dis_new( UNUR_DISTR *distribution );
 /* get default parameters for generator                                      */
 
-UNUR_GEN *unur_dis_init( UNUR_PAR *parameter );
+UNUR_GEN *_unur_dis_init( UNUR_PAR *parameter );
 /* initialize new generator                                                  */
 
-int unur_dis_sample( UNUR_GEN *generator );
+int _unur_dis_sample( UNUR_GEN *generator );
 /* sample from generator                                                     */
 
-void unur_dis_free( UNUR_GEN *generator );
+void _unur_dis_free( UNUR_GEN *generator );
 /* destroy generator object                                                  */
 
 /*...........................................................................*/
@@ -59,9 +59,6 @@ int unur_dis_set_variant( UNUR_PAR *parameters, unsigned variant );
 
 int unur_dis_set_guidefactor( UNUR_PAR *parameters, double factor );
 /* set factor for relative size of guide table                               */
-
-#define unur_dis_set_debug(par,debugflags)  unur_set_debug((par),(debugflags))
-/* set debuging flags                                                        */
 
 /*---------------------------------------------------------------------------*/
 

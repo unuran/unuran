@@ -113,7 +113,7 @@ unur_unif_new( int start, int skip )
   par->debug    = _unur_default_debugflag; /* set default debugging flags    */
 
   /* routine for starting generator */
-  par->init = unur_unif_init;
+  par->init = _unur_unif_init;
 
   return par;
 
@@ -122,7 +122,7 @@ unur_unif_new( int start, int skip )
 /*****************************************************************************/
 
 struct unur_gen *
-unur_unif_init( struct unur_par *par )
+_unur_unif_init( struct unur_par *par )
      /*----------------------------------------------------------------------*/
      /* initialize new generator                                             */
      /*                                                                      */
@@ -161,12 +161,12 @@ unur_unif_init( struct unur_par *par )
 
   return gen;
 
-} /* end of unur_unif_init() */
+} /* end of _unur_unif_init() */
 
 /*****************************************************************************/
 
 double
-unur_unif_sample( struct unur_gen *gen )
+_unur_unif_sample( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* sample from generator                                                */
      /*                                                                      */
@@ -196,12 +196,12 @@ unur_unif_sample( struct unur_gen *gen )
 
   return u;
 
-} /* end of unur_unif_sample() */
+} /* end of _unur_unif_sample() */
 
 /*****************************************************************************/
 
 void
-unur_unif_free( struct unur_gen *gen )
+_unur_unif_free( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* deallocate generator object                                          */
      /*                                                                      */
@@ -226,7 +226,7 @@ unur_unif_free( struct unur_gen *gen )
   /* free memory */
   free(gen);
 
-} /* end of unur_unif_free() */
+} /* end of _unur_unif_free() */
 
 /*****************************************************************************/
 /**  Auxilliary Routines                                                    **/
@@ -263,8 +263,8 @@ _unur_unif_create( struct unur_par *par )
   gen->genid = par->genid;
 
   /* routines for sampling and destroying generator */
-  SAMPLE = unur_unif_sample;
-  gen->destroy = unur_unif_free;
+  SAMPLE = _unur_unif_sample;
+  gen->destroy = _unur_unif_free;
 
   /* copy some parameters into generator object */
   gen->method = par->method;        /* indicates method                      */

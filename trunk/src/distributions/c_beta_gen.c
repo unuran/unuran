@@ -94,11 +94,11 @@ _unur_stdgen_beta_init( struct unur_par *par, struct unur_gen *gen )
   case 1:  /* Rejection with log-logistic envelopes */
     if (gen==NULL) return 1; /* test existence only  */
     if (p>1. && q>1.) {
-      _unur_cstd_set_sampling_routine( par,gen,unur_stdgen_sample_beta_bb );
+      _unur_cstd_set_sampling_routine( par,gen,_unur_stdgen_sample_beta_bb );
       return beta_bb_init( gen );
     }
     else {
-      _unur_cstd_set_sampling_routine( par,gen,unur_stdgen_sample_beta_bc );
+      _unur_cstd_set_sampling_routine( par,gen,_unur_stdgen_sample_beta_bc );
       return beta_bc_init( gen );
     }
 
@@ -106,20 +106,20 @@ _unur_stdgen_beta_init( struct unur_par *par, struct unur_gen *gen )
     if (gen==NULL) return 1; /* test existence only  */ 
     if (p>1.)
       if (q>1.) {    /* p > 1 && q > 1 */
-	_unur_cstd_set_sampling_routine( par,gen,unur_stdgen_sample_beta_b1prs );
+	_unur_cstd_set_sampling_routine( par,gen,_unur_stdgen_sample_beta_b1prs );
 	return beta_b1prs_init( gen );
       }
       else {         /* p > 1 && q <= 1 */
-	_unur_cstd_set_sampling_routine( par,gen,unur_stdgen_sample_beta_b01 );
+	_unur_cstd_set_sampling_routine( par,gen,_unur_stdgen_sample_beta_b01 );
 	return beta_b01_init( gen );
       }
     else
       if (q>1.) {    /* p <= 1 && q > 1 */
-	_unur_cstd_set_sampling_routine( par,gen,unur_stdgen_sample_beta_b01 );
+	_unur_cstd_set_sampling_routine( par,gen,_unur_stdgen_sample_beta_b01 );
 	return beta_b01_init( gen );
       }
       else {         /* p <= 1 && q <= 1 */
-	_unur_cstd_set_sampling_routine( par,gen,unur_stdgen_sample_beta_b00 );
+	_unur_cstd_set_sampling_routine( par,gen,_unur_stdgen_sample_beta_b00 );
 	return beta_b00_init( gen );
       }
 
@@ -205,7 +205,7 @@ beta_bc_init( struct unur_gen *gen )
 } /* end of beta_bc_init() */
 
 double 
-unur_stdgen_sample_beta_bc(  struct unur_gen *gen )
+_unur_stdgen_sample_beta_bc(  struct unur_gen *gen )
      /* p <= 1. || q <= 1. */ 
 {
   /* -X- generator code -X- */
@@ -285,7 +285,7 @@ unur_stdgen_sample_beta_bc(  struct unur_gen *gen )
 
   return ((DISTR.n_params==2) ? X : a + (b-a) * X);
 
-} /* end of unur_stdgen_sample_beta_bc() */
+} /* end of _unur_stdgen_sample_beta_bc() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -314,7 +314,7 @@ beta_bb_init( struct unur_gen *gen )
 } /* end of beta_bb_init() */
 
 double 
-unur_stdgen_sample_beta_bb(  struct unur_gen *gen )
+_unur_stdgen_sample_beta_bb(  struct unur_gen *gen )
      /* p > 1. && q > 1 */ 
 {
   /* -X- generator code -X- */
@@ -352,7 +352,7 @@ unur_stdgen_sample_beta_bb(  struct unur_gen *gen )
 
   return ((DISTR.n_params==2) ? X : a + (b-a) * X);
 
-} /* end of unur_stdgen_sample_beta_bb() */
+} /* end of _unur_stdgen_sample_beta_bb() */
 
 /*---------------------------------------------------------------------------*/
 #undef am
@@ -448,7 +448,7 @@ beta_b00_init( struct unur_gen *gen )
 } /* end of beta_b00_init() */
 
 double 
-unur_stdgen_sample_beta_b00(  struct unur_gen *gen )
+_unur_stdgen_sample_beta_b00(  struct unur_gen *gen )
      /* p < 1. && q < 1 */
 {
   /* -X- generator code -X- */
@@ -492,7 +492,7 @@ unur_stdgen_sample_beta_b00(  struct unur_gen *gen )
   
   return ((DISTR.n_params==2) ? X : a + (b-a) * X);
 
-} /* end of unur_stdgen_sample_beta_b00() */
+} /* end of _unur_stdgen_sample_beta_b00() */
 
 /*---------------------------------------------------------------------------*/
 #undef p_
@@ -566,7 +566,7 @@ beta_b01_init( struct unur_gen *gen )
 } /* end of beta_b01_init() */
 
 double 
-unur_stdgen_sample_beta_b01(  struct unur_gen *gen )
+_unur_stdgen_sample_beta_b01(  struct unur_gen *gen )
      /* p < 1. < q || p > 1. > q */ 
 {
   /* -X- generator code -X- */
@@ -611,7 +611,7 @@ unur_stdgen_sample_beta_b01(  struct unur_gen *gen )
   
   return ((DISTR.n_params==2) ? X : a + (b-a) * X);
 
-} /* end of unur_stdgen_sample_beta_b01() */
+} /* end of _unur_stdgen_sample_beta_b01() */
 
 /*---------------------------------------------------------------------------*/
 #undef pint
@@ -722,7 +722,7 @@ beta_b1prs_init( struct unur_gen *gen )
 } /* end of beta_b1prs_init() */
 
 double 
-unur_stdgen_sample_beta_b1prs(  struct unur_gen *gen )
+_unur_stdgen_sample_beta_b1prs(  struct unur_gen *gen )
      /* p > 1. && q > 1. */ 
 {
   /* -X- generator code -X- */
@@ -838,7 +838,7 @@ unur_stdgen_sample_beta_b1prs(  struct unur_gen *gen )
 
   return ((DISTR.n_params==2) ? X : a + (b-a) * X);
 
-} /* end of unur_stdgen_sample_beta_b1prs() */
+} /* end of _unur_stdgen_sample_beta_b1prs() */
 
 /*---------------------------------------------------------------------------*/
 #undef p_

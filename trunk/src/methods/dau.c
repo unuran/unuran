@@ -222,7 +222,7 @@ unur_dau_new( struct unur_distr *distr )
   par->debug     = _unur_default_debugflag; /* set default debugging flags   */
 
   /* routine for starting generator */
-  par->init = unur_dau_init;
+  par->init = _unur_dau_init;
 
   return par;
 
@@ -269,7 +269,7 @@ unur_dau_set_urnfactor( struct unur_par *par, double factor )
 /*****************************************************************************/
 
 struct unur_gen *
-unur_dau_init( struct unur_par *par )
+_unur_dau_init( struct unur_par *par )
      /*----------------------------------------------------------------------*/
      /* initialize new generator                                             */
      /*                                                                      */
@@ -314,7 +314,7 @@ unur_dau_init( struct unur_par *par )
     /* ... and check probability vector */
     if (prob[i] < 0.) {
       _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"probability < 0");
-      free(par); unur_dau_free(gen);
+      free(par); _unur_dau_free(gen);
       return NULL;
     }
   }
@@ -353,7 +353,7 @@ unur_dau_init( struct unur_par *par )
     /* this must not happen:
        no rich strips found for Robin Hood algorithm. */
     _unur_error(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
-    unur_dau_free(gen); free(par); free(begin);
+    _unur_dau_free(gen); free(par); free(begin);
     return NULL;
   }
   
@@ -393,7 +393,7 @@ unur_dau_init( struct unur_par *par )
     if (fabs(sum) > TOLERANCE) {
       /* sum of deviations too large --> serious error */
       _unur_error(gen->genid,UNUR_ERR_ROUNDOFF,"squared histogram");
-      unur_dau_free(gen); free(par); free(begin);
+      _unur_dau_free(gen); free(par); free(begin);
       return NULL; 
     }
   }
@@ -412,12 +412,12 @@ unur_dau_init( struct unur_par *par )
   
   return gen;
 
-} /* end of unur_dau_init() */
+} /* end of _unur_dau_init() */
 
 /*****************************************************************************/
 
 int
-unur_dau_sample( struct unur_gen *gen )
+_unur_dau_sample( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* sample from generator                                                */
      /*                                                                      */
@@ -449,12 +449,12 @@ unur_dau_sample( struct unur_gen *gen )
   u -= iu;   /* reuse of random number */
   return ((u <= GEN.qx[iu]) ? iu : GEN.jx[iu] );
 
-} /* end of unur_dau_sample() */
+} /* end of _unur_dau_sample() */
 
 /*****************************************************************************/
 
 void
-unur_dau_free( struct unur_gen *gen )
+_unur_dau_free( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* deallocate generator object                                          */
      /*                                                                      */
@@ -481,7 +481,7 @@ unur_dau_free( struct unur_gen *gen )
   free(GEN.qx);
   free(gen);
 
-} /* end of unur_dau_free() */
+} /* end of _unur_dau_free() */
 
 /*****************************************************************************/
 /**  Auxilliary Routines                                                    **/
@@ -520,8 +520,8 @@ _unur_dau_create( struct unur_par *par)
   memcpy( &(gen->distr), par->distr, sizeof( struct unur_distr ) );
 
   /* routines for sampling and destroying generator */
-  SAMPLE = unur_dau_sample;
-  gen->destroy = unur_dau_free;
+  SAMPLE = _unur_dau_sample;
+  gen->destroy = _unur_dau_free;
 
   /* copy some parameters into generator object */
   GEN.len = DISTR.n_prob;           /* length of probability vector          */
@@ -582,7 +582,7 @@ _unur_dau_debug_init( struct unur_par *par, struct unur_gen *gen )
 
   _unur_distr_discr_debug( &(gen->distr),gen->genid,(gen->debug & DAU_DEBUG_PRINTVECTOR));
 
-  fprintf(log,"%s: sampling routine = unur_dau_sample()\n",gen->genid);
+  fprintf(log,"%s: sampling routine = _unur_dau_sample()\n",gen->genid);
   fprintf(log,"%s:\n",gen->genid);
 
   fprintf(log,"%s: length of probability vector = %d\n",gen->genid,GEN.len);

@@ -43,15 +43,15 @@
 UNUR_PAR *unur_srou_new( UNUR_DISTR *distribution );
 /* get default parameters for generator                                      */
 
-UNUR_GEN *unur_srou_init( UNUR_PAR *parameters );
+UNUR_GEN *_unur_srou_init( UNUR_PAR *parameters );
 /* initialize new generator                                                  */
 
-double unur_srou_sample( UNUR_GEN *generator );
-double unur_srou_sample_mirror( UNUR_GEN *generator );
-double unur_srou_sample_check( UNUR_GEN *generator );
+double _unur_srou_sample( UNUR_GEN *generator );
+double _unur_srou_sample_mirror( UNUR_GEN *generator );
+double _unur_srou_sample_check( UNUR_GEN *generator );
 /* sample from generator                                                     */
 
-void unur_srou_free( UNUR_GEN *generator);
+void _unur_srou_free( UNUR_GEN *generator);
 /* destroy generator object                                                  */
 
 /*...........................................................................*/
@@ -67,9 +67,6 @@ int unur_srou_set_usesqueeze( UNUR_PAR *parameters, int usesqueeze );
 
 int unur_srou_set_usemirror( UNUR_PAR *parameters, int usemirror );
 /* set flag for using mirror principle (default: off)                        */
-
-#define unur_srou_set_debug(par,debugflags)  unur_set_debug((par),(debugflags))
-/* set debuging flags                                                        */
 
 /*---------------------------------------------------------------------------*/
 

@@ -43,14 +43,14 @@
 UNUR_PAR *unur_arou_new( UNUR_DISTR *distribution );
 /* get default parameters for generator                                      */
 
-UNUR_GEN *unur_arou_init( UNUR_PAR *parameters );
+UNUR_GEN *_unur_arou_init( UNUR_PAR *parameters );
 /* initialize new generator                                                  */
 
-double unur_arou_sample( UNUR_GEN *generator );
-double unur_arou_sample_check( UNUR_GEN *generator );
+double _unur_arou_sample( UNUR_GEN *generator );
+double _unur_arou_sample_check( UNUR_GEN *generator );
 /* sample from generator                                                     */
 
-void unur_arou_free( UNUR_GEN *generator);
+void _unur_arou_free( UNUR_GEN *generator);
 /* destroy generator object                                                  */
 
 /*...........................................................................*/
@@ -75,9 +75,6 @@ int unur_arou_set_usecenter( UNUR_PAR *parameters, int usecenter );
 
 int unur_arou_set_verify( UNUR_PAR *parameters, int verify );
 /* turn verifying of algorithm while sampling on/off                         */
-
-#define unur_arou_set_debug(parameters,debugflags)  unur_set_debug((parameters),(debugflags))
-/* set debuging flags                                                        */
 
 /*---------------------------------------------------------------------------*/
 

@@ -87,7 +87,7 @@ _unur_stdgen_burr_init( struct unur_par *par, struct unur_gen *gen )
       return 0;
     }
     if (par) PAR.is_inversion = TRUE;
-    _unur_cstd_set_sampling_routine(par,gen,unur_stdgen_sample_burr_inv); 
+    _unur_cstd_set_sampling_routine(par,gen,_unur_stdgen_sample_burr_inv); 
     return 1;
 
   default: /* no such generator */
@@ -107,7 +107,7 @@ _unur_stdgen_burr_init( struct unur_par *par, struct unur_gen *gen )
 
 /*---------------------------------------------------------------------------*/
 
-double unur_stdgen_sample_burr_inv( struct unur_gen *gen )
+double _unur_stdgen_sample_burr_inv( struct unur_gen *gen )
      /* Inversion method                                                     */
 {
   /* -X- generator code -X- */
@@ -175,7 +175,7 @@ double unur_stdgen_sample_burr_inv( struct unur_gen *gen )
 
   /* -X- end of generator code -X- */
 
-} /* end of unur_stdgen_sample_burr_inv() */
+} /* end of _unur_stdgen_sample_burr_inv() */
 
 /*---------------------------------------------------------------------------*/
 

@@ -91,12 +91,12 @@ _unur_stdgen_poisson_init( struct unur_par *par, struct unur_gen *gen )
     if (gen==NULL) return 1; /* test existence only  */
     if (theta < 10.) {
       /* CASE B: Tabulated Inversion */
-      _unur_dstd_set_sampling_routine( par,gen,unur_stdgen_sample_poisson_pdtabl );
+      _unur_dstd_set_sampling_routine( par,gen,_unur_stdgen_sample_poisson_pdtabl );
       return poisson_pdtabl_init( gen );
     }
     else { /* theta >= 10. */
       /* CASE A: acceptance complement */
-      _unur_dstd_set_sampling_routine( par,gen,unur_stdgen_sample_poisson_pdac );
+      _unur_dstd_set_sampling_routine( par,gen,_unur_stdgen_sample_poisson_pdac );
       return poisson_pdac_init( gen );
     }
 
@@ -104,12 +104,12 @@ _unur_stdgen_poisson_init( struct unur_par *par, struct unur_gen *gen )
     if (gen==NULL) return 1; /* test existence only  */
     if (theta < 10.) {
       /* CASE: Tabulated Inversion --> same as case 1 !! */
-      _unur_dstd_set_sampling_routine( par,gen,unur_stdgen_sample_poisson_pdtabl );
+      _unur_dstd_set_sampling_routine( par,gen,_unur_stdgen_sample_poisson_pdtabl );
       return poisson_pdtabl_init( gen );
     }
     else { /* theta >= 10. */
       /* CASE: Patchwork Rejection */
-      _unur_dstd_set_sampling_routine( par,gen,unur_stdgen_sample_poisson_pprsc );
+      _unur_dstd_set_sampling_routine( par,gen,_unur_stdgen_sample_poisson_pprsc );
       return poisson_pprsc_init( gen );
     }
 
@@ -190,7 +190,7 @@ poisson_pdtabl_init( struct unur_gen *gen )
 } /* end of poisson_pdtabl_init() */
 
 int
-unur_stdgen_sample_poisson_pdtabl( struct unur_gen *gen )
+_unur_stdgen_sample_poisson_pdtabl( struct unur_gen *gen )
      /* theta < 10: Tabulated inversion */
 {
   /* -X- generator code -X- */
@@ -230,7 +230,7 @@ unur_stdgen_sample_poisson_pdtabl( struct unur_gen *gen )
   
   /* -X- end of generator code -X- */
   
-} /* end of unur_stdgen_sample_poisson_pdtabl() */
+} /* end of _unur_stdgen_sample_poisson_pdtabl() */
 
 /*---------------------------------------------------------------------------*/
 #undef m 
@@ -275,7 +275,7 @@ poisson_pdac_init( struct unur_gen *gen )
 
   /* make a normal variate generator (use default special generator) */
   if (NORMAL==NULL) {
-    NORMAL = unur_cstd_init( unur_cstd_new( unur_distr_normal(NULL,0) ));
+    NORMAL = _unur_cstd_init( unur_cstd_new( unur_distr_normal(NULL,0) ));
     _unur_check_NULL( NULL,NORMAL,0 );
     /* need same uniform random number generator as slash generator */
     NORMAL->urng = gen->urng;
@@ -319,7 +319,7 @@ poisson_pdac_init( struct unur_gen *gen )
 /*---------------------------------------------------------------------------*/
 
 int
-unur_stdgen_sample_poisson_pdac( struct unur_gen *gen )
+_unur_stdgen_sample_poisson_pdac( struct unur_gen *gen )
      /* Theta >= 10: acceptance complement */
 {
   /* -X- generator code -X- */
@@ -426,7 +426,7 @@ unur_stdgen_sample_poisson_pdac( struct unur_gen *gen )
 
   /* -X- end of generator code -X- */
   
-} /* end of unur_stdgen_sample_poisson_pdac() */
+} /* end of _unur_stdgen_sample_poisson_pdac() */
 
 /*---------------------------------------------------------------------------*/
 #undef  a0
@@ -590,7 +590,7 @@ poisson_pprsc_init( struct unur_gen *gen )
 } /* end of poisson_pprsc_init() */
 
 int
-unur_stdgen_sample_poisson_pprsc( struct unur_gen *gen )
+_unur_stdgen_sample_poisson_pprsc( struct unur_gen *gen )
      /* theta >= 10: Patchwork Rejection */
 {
   /* -X- generator code -X- */
@@ -698,7 +698,7 @@ unur_stdgen_sample_poisson_pprsc( struct unur_gen *gen )
 
   /* -X- end of generator code -X- */
   
-} /* end of unur_stdgen_sample_poisson_pprsc() */
+} /* end of _unur_stdgen_sample_poisson_pprsc() */
 
 /*---------------------------------------------------------------------------*/
 #undef m 

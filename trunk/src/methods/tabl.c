@@ -285,7 +285,7 @@ unur_tabl_new( struct unur_distr *distr )
   par->debug    = _unur_default_debugflag; /* set default debugging flags    */
 
   /* routine for starting generator */
-  par->init = unur_tabl_init;
+  par->init = _unur_tabl_init;
 
   return par;
 
@@ -658,7 +658,7 @@ unur_tabl_set_verify( struct unur_par *par, int verify )
 /*****************************************************************************/
 
 struct unur_gen *
-unur_tabl_init( struct unur_par *par )
+_unur_tabl_init( struct unur_par *par )
      /*----------------------------------------------------------------------*/
      /* initialize new generator                                             */
      /*                                                                      */
@@ -690,7 +690,7 @@ unur_tabl_init( struct unur_par *par )
   /* get slopes for starting generator */
   if (!_unur_tabl_get_starting_intervals(par,gen)) {
     _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"Cannot make hat function.");
-    free(par); unur_tabl_free(gen);
+    free(par); _unur_tabl_free(gen);
     return NULL;
   }
 
@@ -706,7 +706,7 @@ unur_tabl_init( struct unur_par *par )
     while ( (GEN.n_ivs < PAR.n_starting_cpoints)
 	    && (GEN.max_ratio * GEN.Atotal > GEN.Asqueeze) )
       if (!_unur_tabl_split_b_starting_intervals(par,gen)) {
-	free(par); unur_tabl_free(gen);
+	free(par); _unur_tabl_free(gen);
 	return NULL;
       }
   
@@ -732,12 +732,12 @@ unur_tabl_init( struct unur_par *par )
 
   return gen;
 
-} /* end of unur_tabl_init() */
+} /* end of _unur_tabl_init() */
 
 /*****************************************************************************/
 
 double
-unur_tabl_sample_adaptive( struct unur_gen *gen )
+_unur_tabl_sample_adaptive( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* sample from generator                                                */
      /*                                                                      */
@@ -821,12 +821,12 @@ unur_tabl_sample_adaptive( struct unur_gen *gen )
     }
   }
 
-} /* end of unur_tabl_sample_adaptive() */
+} /* end of _unur_tabl_sample_adaptive() */
 
 /*****************************************************************************/
 
 double
-unur_tabl_sample( struct unur_gen *gen )
+_unur_tabl_sample( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* sample from generator                                                */
      /*                                                                      */
@@ -889,12 +889,12 @@ unur_tabl_sample( struct unur_gen *gen )
     }
   }
 
-} /* end of unur_tabl_sample() */
+} /* end of _unur_tabl_sample() */
 
 /*****************************************************************************/
 
 double
-unur_tabl_sample_check( struct unur_gen *gen )
+_unur_tabl_sample_check( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* sample from generator and verify that method can be used             */
      /*                                                                      */
@@ -971,12 +971,12 @@ unur_tabl_sample_check( struct unur_gen *gen )
     }
   }
 
-} /* end of unur_tabl_sample_check() */
+} /* end of _unur_tabl_sample_check() */
 
 /*****************************************************************************/
 
 void
-unur_tabl_free( struct unur_gen *gen )
+_unur_tabl_free( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* deallocate generator object                                          */
      /*                                                                      */
@@ -1010,7 +1010,7 @@ unur_tabl_free( struct unur_gen *gen )
   free(GEN.guide);
   free(gen);
 
-} /* end of unur_tabl_free() */
+} /* end of _unur_tabl_free() */
 
 /*****************************************************************************/
 /**  Auxilliary Routines                                                    **/
@@ -1049,8 +1049,8 @@ _unur_tabl_create( struct unur_par *par )
   memcpy( &(gen->distr), par->distr, sizeof( struct unur_distr ) );
 
   /* routines for sampling and destroying generator */
-  SAMPLE = (par->variant & TABL_VARFLAG_VERIFY) ? unur_tabl_sample_check : unur_tabl_sample;
-  gen->destroy = unur_tabl_free;
+  SAMPLE = (par->variant & TABL_VARFLAG_VERIFY) ? _unur_tabl_sample_check : _unur_tabl_sample;
+  gen->destroy = _unur_tabl_free;
 
   /* set all pointers to NULL */
   GEN.Atotal      = 0.;
@@ -1762,7 +1762,7 @@ _unur_tabl_debug_init( struct unur_par *par, struct unur_gen *gen )
 
   _unur_distr_cont_debug( &(gen->distr), gen->genid );
 
-  fprintf(log,"%s: sampling routine = unur_tabl_sample",gen->genid);
+  fprintf(log,"%s: sampling routine = _unur_tabl_sample",gen->genid);
   if (par->variant & TABL_VARFLAG_VERIFY)
     fprintf(log,"_check()\n");
   else

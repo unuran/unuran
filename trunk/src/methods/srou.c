@@ -230,7 +230,7 @@ unur_srou_new( struct unur_distr *distr )
   par->debug    = _unur_default_debugflag; /* set default debugging flags    */
 
   /* routine for starting generator */
-  par->init = unur_srou_init;
+  par->init = _unur_srou_init;
 
   return par;
 
@@ -376,7 +376,7 @@ unur_srou_set_usemirror( struct unur_par *par, int usemirror )
 /*****************************************************************************/
 
 struct unur_gen *
-unur_srou_init( struct unur_par *par )
+_unur_srou_init( struct unur_par *par )
      /*----------------------------------------------------------------------*/
      /* initialize new generator                                             */
      /*                                                                      */
@@ -412,7 +412,7 @@ unur_srou_init( struct unur_par *par )
   /* fm must be positive */
   if (fm <= 0.) {
     _unur_error(par->genid,UNUR_ERR_GEN_DATA,"pdf(mode) <= 0.");
-    free(par); unur_srou_free(gen);
+    free(par); _unur_srou_free(gen);
     return NULL;
   }
 
@@ -451,12 +451,12 @@ unur_srou_init( struct unur_par *par )
 
   return gen;
 
-} /* end of unur_srou_init() */
+} /* end of _unur_srou_init() */
 
 /*****************************************************************************/
 
 double
-unur_srou_sample( struct unur_gen *gen )
+_unur_srou_sample( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* sample from generator                                                */
      /*                                                                      */
@@ -502,12 +502,12 @@ unur_srou_sample( struct unur_gen *gen )
       return x;
   }
 
-} /* end of unur_srou_sample() */
+} /* end of _unur_srou_sample() */
 
 /*---------------------------------------------------------------------------*/
 
 double
-unur_srou_sample_mirror( struct unur_gen *gen )
+_unur_srou_sample_mirror( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* sample from generator, use mirror principle                          */
      /*                                                                      */
@@ -548,12 +548,12 @@ unur_srou_sample_mirror( struct unur_gen *gen )
       return (-x + DISTR.mode);
   }
 
-} /* end of unur_srou_sample_mirror() */
+} /* end of _unur_srou_sample_mirror() */
 
 /*---------------------------------------------------------------------------*/
 
 double
-unur_srou_sample_check( struct unur_gen *gen )
+_unur_srou_sample_check( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* sample from generator and verify that method can be used             */
      /*                                                                      */
@@ -645,12 +645,12 @@ unur_srou_sample_check( struct unur_gen *gen )
     }
   }
 
-} /* end of unur_srou_sample_check() */
+} /* end of _unur_srou_sample_check() */
 
 /*****************************************************************************/
 
 void
-unur_srou_free( struct unur_gen *gen )
+_unur_srou_free( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* deallocate generator object                                          */
      /*                                                                      */
@@ -675,7 +675,7 @@ unur_srou_free( struct unur_gen *gen )
   _unur_free_genid(gen);
   free(gen);
 
-} /* end of unur_srou_free() */
+} /* end of _unur_srou_free() */
 
 /*****************************************************************************/
 /**  Auxilliary Routines                                                    **/
@@ -715,11 +715,11 @@ _unur_srou_create( struct unur_par *par )
 
   /* routines for sampling and destroying generator */
   if (par->variant & SROU_VARFLAG_VERIFY)
-    SAMPLE = unur_srou_sample_check;
+    SAMPLE = _unur_srou_sample_check;
   else
-    SAMPLE = (par->variant & SROU_VARFLAG_MIRROR) ? unur_srou_sample_mirror : unur_srou_sample;
+    SAMPLE = (par->variant & SROU_VARFLAG_MIRROR) ? _unur_srou_sample_mirror : _unur_srou_sample;
 
-  gen->destroy = unur_srou_free;
+  gen->destroy = _unur_srou_free;
 
   /* mode must be in domain */
   if ( (DISTR.mode < DISTR.BD_LEFT) ||
@@ -781,7 +781,7 @@ _unur_srou_debug_init( struct unur_par *par, struct unur_gen *gen )
 
   _unur_distr_cont_debug( &(gen->distr), gen->genid );
 
-  fprintf(log,"%s: sampling routine = unur_srou_sample",gen->genid);
+  fprintf(log,"%s: sampling routine = _unur_srou_sample",gen->genid);
   if (par->variant & SROU_VARFLAG_VERIFY)
     fprintf(log,"_check");
   else if (par->variant & SROU_VARFLAG_MIRROR)

@@ -43,22 +43,19 @@
 UNUR_PAR *unur_dau_new( UNUR_DISTR *distribution );
 /* get default parameters for generator                                      */
 
-UNUR_GEN *unur_dau_init( UNUR_PAR *parameters );
+UNUR_GEN *_unur_dau_init( UNUR_PAR *parameters );
 /* initialize new generator                                                  */
 
-int unur_dau_sample( UNUR_GEN *generator );
+int _unur_dau_sample( UNUR_GEN *generator );
 /* sample from generator                                                     */
 
-void unur_dau_free( UNUR_GEN *generator );
+void _unur_dau_free( UNUR_GEN *generator );
 /* destroy generator object                                                  */
 
 /*...........................................................................*/
 
 int unur_dau_set_urnfactor( UNUR_PAR *parameters, double factor );
 /* set factor for relative size of urn                                       */
-
-#define unur_dau_set_debug(par,debugflags)  unur_set_debug((par),(debugflags))
-/* set debuging flags                                                        */
 
 /*---------------------------------------------------------------------------*/
 

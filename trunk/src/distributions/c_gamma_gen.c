@@ -88,17 +88,17 @@ _unur_stdgen_gamma_init( struct unur_par *par, struct unur_gen *gen )
 
   case 0:  /* DEFAULT */
   case 1:  /* Rejection with log-logistic envelopes */
-    _unur_cstd_set_sampling_routine( par,gen,unur_stdgen_sample_gamma_gll );
+    _unur_cstd_set_sampling_routine( par,gen,_unur_stdgen_sample_gamma_gll );
     return gamma_gll_init( gen );
 
   case 2:  /* Acceptance Rejection combined with Acceptance Complement */
     if (gen==NULL) return 1; /* test existence only  */
     if (alpha < 1.) {
-      _unur_cstd_set_sampling_routine( par,gen,unur_stdgen_sample_gamma_gs );
+      _unur_cstd_set_sampling_routine( par,gen,_unur_stdgen_sample_gamma_gs );
       return gamma_gs_init( gen );
     }
     else {
-      _unur_cstd_set_sampling_routine( par,gen,unur_stdgen_sample_gamma_gd );
+      _unur_cstd_set_sampling_routine( par,gen,_unur_stdgen_sample_gamma_gd );
       return gamma_gd_init( gen );
 
     }
@@ -167,7 +167,7 @@ gamma_gll_init( struct unur_gen *gen )
 } /* end of gamma_gll_init() */
 
 double 
-unur_stdgen_sample_gamma_gll( struct unur_gen *gen )
+_unur_stdgen_sample_gamma_gll( struct unur_gen *gen )
 {
   /* -X- generator code -X- */
   double X;
@@ -190,7 +190,7 @@ unur_stdgen_sample_gamma_gll( struct unur_gen *gen )
 
   return ((DISTR.n_params==1) ? X : gamma + beta * X );
 
-} /* end of unur_stdgen_sample_gamma_gll() */
+} /* end of _unur_stdgen_sample_gamma_gll() */
 
 /*---------------------------------------------------------------------------*/
 #undef aa
@@ -247,7 +247,7 @@ gamma_gs_init( struct unur_gen *gen )
 } /* end of gamma_gs_init() */
 
 double 
-unur_stdgen_sample_gamma_gs( struct unur_gen *gen )
+_unur_stdgen_sample_gamma_gs( struct unur_gen *gen )
 {
   /* -X- generator code -X- */
   double X, p;
@@ -272,7 +272,7 @@ unur_stdgen_sample_gamma_gs( struct unur_gen *gen )
 
   return ((DISTR.n_params==1) ? X : gamma + beta * X );
 
-} /* end of unur_stdgen_sample_gamma_gs() */
+} /* end of _unur_stdgen_sample_gamma_gs() */
 
 /*---------------------------------------------------------------------------*/
 #undef b
@@ -357,7 +357,7 @@ gamma_gd_init( struct unur_gen *gen )
 
   /* make a normal variate generator (use default special generator) */
   if (NORMAL==NULL) {
-    NORMAL = unur_cstd_init( unur_cstd_new( unur_distr_normal(NULL,0) ));
+    NORMAL = _unur_cstd_init( unur_cstd_new( unur_distr_normal(NULL,0) ));
     _unur_check_NULL( NULL,NORMAL,0 );
     /* need same uniform random number generator as slash generator */
     NORMAL->urng = gen->urng;
@@ -374,7 +374,7 @@ gamma_gd_init( struct unur_gen *gen )
 } /* end of gamma_gd_init() */
 
 double 
-unur_stdgen_sample_gamma_gd( struct unur_gen *gen )
+_unur_stdgen_sample_gamma_gd( struct unur_gen *gen )
 {
   /* -X- generator code -X- */
   double U,X,E;
@@ -453,7 +453,7 @@ unur_stdgen_sample_gamma_gd( struct unur_gen *gen )
 
   return ((DISTR.n_params==1) ? X : gamma + beta * X );
 
-} /* end of unur_stdgen_sample_gamma_gd() */
+} /* end of _unur_stdgen_sample_gamma_gd() */
 
 /*---------------------------------------------------------------------------*/
 #undef ss

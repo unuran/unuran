@@ -43,14 +43,14 @@
 UNUR_PAR *unur_utdr_new( UNUR_DISTR *distribution );
 /* get default parameters for generator                                      */
 
-UNUR_GEN *unur_utdr_init( UNUR_PAR *parameters );
+UNUR_GEN *_unur_utdr_init( UNUR_PAR *parameters );
 /* initialize new generator                                                  */
 
-double unur_utdr_sample( UNUR_GEN *generator );
-double unur_utdr_sample_check( UNUR_GEN *generator );  /** TODO **/
+double _unur_utdr_sample( UNUR_GEN *generator );
+double _unur_utdr_sample_check( UNUR_GEN *generator );  /** TODO **/
 /* sample from generator                                                     */
 
-void unur_utdr_free( UNUR_GEN *generator);
+void _unur_utdr_free( UNUR_GEN *generator);
 /* destroy generator object                                                  */
 
 /*...........................................................................*/
@@ -63,8 +63,5 @@ int unur_utdr_set_delta( UNUR_PAR *parameters, double delta );
 
 int unur_utdr_set_verify( UNUR_PAR *parameters, int verify );
 /* turn verifying of algorithm while sampling on/off                         */
-
-#define unur_utdr_set_debug(par,debugflags)  unur_set_debug((par),(debugflags))
-/* set debuging flags                                                        */
 
 /*---------------------------------------------------------------------------*/

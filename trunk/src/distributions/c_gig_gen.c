@@ -91,7 +91,7 @@ _unur_stdgen_gig_init( struct unur_par *par, struct unur_gen *gen )
       return 0;
     }
     /* theta > 0 ! */
-    _unur_cstd_set_sampling_routine( par,gen,unur_stdgen_sample_gig_gigru );
+    _unur_cstd_set_sampling_routine( par,gen,_unur_stdgen_sample_gig_gigru );
     return gig_gigru_init( gen );
 
   case UNUR_STDGEN_INVERSION:   /* inversion method */
@@ -228,7 +228,7 @@ gig_gigru_init( struct unur_gen *gen )
 } /* end of gig_gigru_init() */
 
 double
-unur_stdgen_sample_gig_gigru( struct unur_gen *gen )
+_unur_stdgen_sample_gig_gigru( struct unur_gen *gen )
 {
   double U,V,X,Z;
 
@@ -262,7 +262,7 @@ unur_stdgen_sample_gig_gigru( struct unur_gen *gen )
   
   return ((DISTR.n_params==2) ? X : eta * X );
 
-} /* end of unur_stdgen_sample_gig_gigru() */
+} /* end of _unur_stdgen_sample_gig_gigru() */
 
 /*---------------------------------------------------------------------------*/
 #undef m

@@ -43,22 +43,19 @@
 UNUR_PAR *unur_rect_new( int dim );
 /* get default parameters for generator                                      */
 
-UNUR_GEN *unur_rect_init( UNUR_PAR *parameters );
+UNUR_GEN *_unur_rect_init( UNUR_PAR *parameters );
 /* initialize new generator                                                  */
 
-void unur_rect_sample_vec( UNUR_GEN *gen, double *vec );
+void _unur_rect_sample_vec( UNUR_GEN *gen, double *vec );
 /* sample from generator                                                     */
 
-void unur_rect_free( UNUR_GEN *generator);
+void _unur_rect_free( UNUR_GEN *generator);
 /* destroy generator object                                                  */
 
 /*...........................................................................*/
 
 int unur_rect_set_domain_vec( UNUR_PAR *parameters, double **domain );
 /* set coordinates for domain boundary                                       */
-
-#define unur_rect_set_debug(par,debugflags)  unur_set_debug((par),(debugflags))
-/* set debuging flags                                                        */
 
 /*---------------------------------------------------------------------------*/
 

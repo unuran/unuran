@@ -43,15 +43,15 @@
 UNUR_PAR *unur_tdr_new( UNUR_DISTR* distribution );
 /* get default parameters for generator                                      */
 
-UNUR_GEN *unur_tdr_init( UNUR_PAR *parameters );
+UNUR_GEN *_unur_tdr_init( UNUR_PAR *parameters );
 /* initialize new generator                                                  */
 
-double unur_tdr_sample_log( UNUR_GEN *gen );
-double unur_tdr_sample_sqrt( UNUR_GEN *gen );
-double unur_tdr_sample_check( UNUR_GEN *generator );
+double _unur_tdr_sample_log( UNUR_GEN *gen );
+double _unur_tdr_sample_sqrt( UNUR_GEN *gen );
+double _unur_tdr_sample_check( UNUR_GEN *generator );
 /* sample from generator                                                     */
 
-void unur_tdr_free( UNUR_GEN *generator);
+void _unur_tdr_free( UNUR_GEN *generator);
 /* destroy generator object                                                  */
 
 /*...........................................................................*/
@@ -82,9 +82,6 @@ int unur_tdr_set_c( UNUR_PAR *parameters, double c );
 
 int unur_tdr_set_verify( UNUR_PAR *parameters, int verify );
 /* turn verifying of algorithm while sampling on/off                         */
-
-#define unur_tabl_set_debug(par,debugflags)  unur_set_debug((par),(debugflags))
-/* set debuging flags                                                        */
 
 /*---------------------------------------------------------------------------*/
 

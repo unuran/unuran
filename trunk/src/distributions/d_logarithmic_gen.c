@@ -85,7 +85,7 @@ _unur_stdgen_logarithmic_init( struct unur_par *par, struct unur_gen *gen )
 
   case 0:  /* DEFAULT */
   case 1:  /* Inversion/Transformation */
-    _unur_dstd_set_sampling_routine( par,gen,unur_stdgen_sample_logarithmic_lsk );
+    _unur_dstd_set_sampling_routine( par,gen,_unur_stdgen_sample_logarithmic_lsk );
     return logarithmic_lsk_init( gen );
 
   case UNUR_STDGEN_INVERSION:   /* inversion method */
@@ -175,7 +175,7 @@ logarithmic_lsk_init( struct unur_gen *gen )
 
 
 int
-unur_stdgen_sample_logarithmic_lsk( struct unur_gen *gen )
+_unur_stdgen_sample_logarithmic_lsk( struct unur_gen *gen )
 {
   /* -X- generator code -X- */
   double U, V, p, q;
@@ -215,7 +215,7 @@ unur_stdgen_sample_logarithmic_lsk( struct unur_gen *gen )
 
   /* -X- end of generator code -X- */
   
-} /* end of unur_stdgen_sample_logarithmic_lsk() */
+} /* end of _unur_stdgen_sample_logarithmic_lsk() */
 
 /*---------------------------------------------------------------------------*/
 #undef t

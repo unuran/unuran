@@ -71,7 +71,7 @@
 -----------------------------------------------------------------------------
 
 (*) TDR:
-	(.) ueberpruefe ob PDF(x) NaN liefert
+	(.) variante ohne ableitung der pdf
 	(.) make_guide_table nicht jedesmal aufrufen
 	(.) teste ob uniform = 0 or = 1 (?)
 

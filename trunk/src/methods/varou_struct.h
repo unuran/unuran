@@ -42,6 +42,7 @@
 struct unur_varou_cone {
   long   *index;   /* indices of the spanning cone vectors (unit verteces)   */
   double *norm;    /* lengths of the spanning vectors                        */
+  double unit_volume; /* volume of cone spanned by unit vectors              */
   double volume;   /* volume of cone : spanning vectors + tangential surface */
 };
 

@@ -434,6 +434,50 @@ unur_tabl_get_sqhratio( struct unur_gen *gen )
 
 /*---------------------------------------------------------------------------*/
 
+double
+unur_tabl_get_hatarea( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* get area below hat                                                   */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen  ... pointer to generator object                               */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   area  ... on success                                               */
+     /*   0     ... on error                                                 */
+     /*----------------------------------------------------------------------*/
+{
+  /* check input */
+  _unur_check_gen_object( gen,TABL );
+
+  return GEN.Atotal;
+
+} /* end of unur_tabl_get_hatarea() */
+
+/*---------------------------------------------------------------------------*/
+
+double
+unur_tabl_get_squeezearea( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* get area below squeeze                                               */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen  ... pointer to generator object                               */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   area  ... on success                                               */
+     /*   0     ... on error                                                 */
+     /*----------------------------------------------------------------------*/
+{
+  /* check input */
+  _unur_check_gen_object( gen,TABL );
+
+  return GEN.Asqueeze;
+
+} /* end of unur_tabl_get_squeezearea() */
+
+/*---------------------------------------------------------------------------*/
+
 int
 unur_tabl_set_max_intervals( struct unur_par *par, int max_ivs )
      /*----------------------------------------------------------------------*/

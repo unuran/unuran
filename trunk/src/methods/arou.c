@@ -506,6 +506,50 @@ unur_arou_get_sqhratio( struct unur_gen *gen )
 
 /*---------------------------------------------------------------------------*/
 
+double
+unur_arou_get_hatarea( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* get area below hat                                                   */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen  ... pointer to generator object                               */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   area  ... on success                                               */
+     /*   0     ... on error                                                 */
+     /*----------------------------------------------------------------------*/
+{
+  /* check input */
+  _unur_check_gen_object( gen,AROU );
+
+  return GEN.Atotal;
+
+} /* end of unur_arou_get_hatarea() */
+
+/*---------------------------------------------------------------------------*/
+
+double
+unur_arou_get_squeezearea( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* get area below squeeze                                               */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen  ... pointer to generator object                               */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   area  ... on success                                               */
+     /*   0     ... on error                                                 */
+     /*----------------------------------------------------------------------*/
+{
+  /* check input */
+  _unur_check_gen_object( gen,AROU );
+
+  return GEN.Asqueeze;
+
+} /* end of unur_arou_get_squeezearea() */
+
+/*---------------------------------------------------------------------------*/
+
 int
 unur_arou_set_max_segments( struct unur_par *par, int max_segs )
      /*----------------------------------------------------------------------*/

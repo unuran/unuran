@@ -163,6 +163,18 @@ double unur_tabl_get_sqhratio( UNUR_GEN *generator );
    for the generator. (In case of an error @code{0} is returned.)
 */
 
+double unur_tabl_get_hatarea( UNUR_GEN *generator );
+/* 
+   Get the area below the hat for the generator.
+   (In case of an error @code{0} is returned.)
+*/
+
+double unur_tabl_get_squeezearea( UNUR_GEN *generator );
+/* 
+   Get the area below the squeeze for the generator.
+   (In case of an error @code{0} is returned.)
+*/
+
 int unur_tabl_set_max_intervals( UNUR_PAR *parameters, int max_ivs );
 /* 
    Set maximum number of intervals.

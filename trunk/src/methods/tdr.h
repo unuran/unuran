@@ -283,7 +283,20 @@ int unur_tdr_set_max_sqhratio( UNUR_PAR *parameters, double max_ratio );
 double unur_tdr_get_sqhratio( UNUR_GEN *generator );
 /* 
    Get the current ratio (area below squeeze) / (area below hat)
-   for the generator. (In case of an error 0 is returned.)
+   for the generator.
+   (In case of an error @code{0} is returned.)
+*/
+
+double unur_tdr_get_hatarea( UNUR_GEN *generator );
+/* 
+   Get the area below the hat for the generator.
+   (In case of an error @code{0} is returned.)
+*/
+
+double unur_tdr_get_squeezearea( UNUR_GEN *generator );
+/* 
+   Get the area below the squeeze for the generator.
+   (In case of an error @code{0} is returned.)
 */
 
 int unur_tdr_set_max_intervals( UNUR_PAR *parameters, int max_ivs );

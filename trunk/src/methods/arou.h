@@ -111,6 +111,18 @@ double unur_arou_get_sqhratio( UNUR_GEN *generator );
    (In case of error @code{0} is returned.)
 */
 
+double unur_arou_get_hatarea( UNUR_GEN *generator );
+/* 
+   Get the area below the hat for the generator.
+   (In case of an error @code{0} is returned.)
+*/
+
+double unur_arou_get_squeezearea( UNUR_GEN *generator );
+/* 
+   Get the area below the squeeze for the generator.
+   (In case of an error @code{0} is returned.)
+*/
+
 
 int unur_arou_set_max_segments( UNUR_PAR *parameters, int max_segs );
 /* 

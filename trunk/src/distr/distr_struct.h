@@ -84,10 +84,10 @@ struct unur_distr_cvec {
   double *covar;                /* covariance matrix of distribution         */
 
   double *cholesky;             /* cholesky factor of covariance matrix      */
-  double *covar_inv;            /* inverse of cholesky factor                */
+  double *covar_inv;            /* inverse of covariance matrix              */
 
   double *params[UNUR_DISTR_MAXPARAMS];  /* parameters of the PDF            */
-  int    n_params[UNUR_DISTR_MAXPARAMS]; /* length of parameter array        */
+  int    n_params[UNUR_DISTR_MAXPARAMS]; /* length of parameter arrays       */
 
   double norm_constant;         /* (log of) normalization constant for PDF   */
 

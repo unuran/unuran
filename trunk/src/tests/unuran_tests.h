@@ -9,10 +9,6 @@
  *   PURPOSE:                                                                *
  *         defines macros and function prototypes for testing routines.      *
  *                                                                           *
- *   USAGE:                                                                  *
- *         included in all test source files.                                *
- *         required for every application of UNURAN test routines.           *
- *                                                                           *
  *****************************************************************************
      $Id$
  *****************************************************************************

@@ -94,8 +94,21 @@ my $method_doc_string;
 #
 my $methods_dir = "$top_srcdir/src/methods";
 opendir (METHDIR, "$methods_dir") or die "can't open directory $methods_dir";
-my @methods_h_files = grep {/[.]h/ } readdir METHDIR;
+my @methods_h_files = grep {/[.]h$/ } readdir METHDIR;
 closedir METHDIR;
+
+##############################################################################
+# Get all header files in distr directory
+#
+my $distr_dir = "$top_srcdir/src/distr";
+opendir (DISTRDIR, "$distr_dir") or die "can't open directory $distr_dir";
+my @distr_h_files = grep {/[.]h$/ } readdir DISTRDIR;
+closedir DISTRDIR;
+
+foreach my $h (@distr_h_files) {
+    print STDERR "'$h' ";
+}
+print STDERR "\n";
 
 ##############################################################################
 # Global variables
@@ -195,7 +208,7 @@ sub make_list_of_distributions {
     my $DISTR = read_PDFdata( $top_srcdir );
 
     # print info on screen
-    print STDERR "Distributions:\n" if $VERBOSE;
+    print STDERR "\nDistributions:\n" if $VERBOSE;
 
     # print docu
     $distr_doc_string .= "List of standard distributions "
@@ -250,11 +263,9 @@ sub make_list_of_distributions {
     $code .= "\t if (distr == (struct unur_distr *) &distr_unknown) { \n";
     $code .= "\t\t do {\n";
 
-    foreach my $hfile (sort @methods_h_files) {
-	# We skip over all header files with names other than distr_*.h
-	next unless $hfile =~ /^distr\_/;
+    foreach my $hfile (sort @distr_h_files) {
 	# Read content of header file
-	open H, "< $methods_dir/$hfile" or  die ("can't open file: $methods_dir/$hfile");
+	open H, "< $distr_dir/$hfile" or  die ("can't open file: $distr_dir/$hfile");
 	my $content = '';
 	while (<H>) { $content .= $_; } 
 	close H;
@@ -311,13 +322,10 @@ sub make_list_of_distr_sets {
     print STDERR "Set commands for Distributions:\n" if $VERBOSE;
 
     # Read all header files 
-    foreach my $hfile (sort @methods_h_files) {
-
-	# We skip over all header files with names other than distr_*.h
-	next unless $hfile =~ /^distr(\_.*|\.h)$/;
+    foreach my $hfile (sort @distr_h_files) {
 
 	# Read content of header file
-	open H, "< $methods_dir/$hfile" or  die ("can't open file: $methods_dir/$hfile");
+	open H, "< $distr_dir/$hfile" or  die ("can't open file: $distr_dir/$hfile");
 	my $content = '';
 	while (<H>) { $content .= $_; } 
 	close H;

@@ -4,10 +4,11 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   FILE: uniform.h                                                         *
+ *   FILE: cemp.h                                                            *
  *                                                                           *
  *   PURPOSE:                                                                *
- *         function prototypes for included uniform random number generators *
+ *         function prototypes for manipulating distribution objects of      *
+ *         type  CEMP  (continuous empirical univariate distribution)        *
  *                                                                           *
  *   USAGE:                                                                  *
  *         only included in unuran.h                                         *
@@ -37,35 +38,58 @@
  *****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
-#ifndef UNIFORM_H_SEEN
-#define UNIFORM_H_SEEN
-/*---------------------------------------------------------------------------*/
 
-#include <unuran_config.h>
+/* 
+   =NODE   CEMP   Continuous empirical univariate distributions
 
-/*---------------------------------------------------------------------------*/
+   =UP Distribution_objects [20]
 
-/* Combined multiple recursive generator by Pierre L'Ecuyer and Renee Touzin */
-/* Copyright (c) 2002 Renee Touzin.                                          */
-
-double unur_urng_MRG31k3p (void);
-int unur_urng_MRG31k3p_seed (long seed);
-int unur_urng_MRG31k3p_reset (void);
-
-/* Linear congruential generator by Fishman and Moore                        */
-/* m = 2^31-1, a = 742938285, c = 0.                                         */
-
-double unur_urng_fish (void);
-int unur_urng_fish_seed (long seed);
-int unur_urng_fish_reset (void);
-
-/* Linear congruential generator "Minimal Standard"                          */
-/* m = 2^31-1, a = 16807, c = 0.                                             */
-
-double unur_urng_mstd (void);
-int unur_urng_mstd_seed (long seed);
-int unur_urng_mstd_reset (void);
+   =END
+*/
 
 /*---------------------------------------------------------------------------*/
-#endif  /* UNIFORM_H_SEEN */
+
+/* 
+   Routines for handling empirical univariate continuous distributions (CEMP).
+*/
+
+/* =ROUTINES */
+
+UNUR_DISTR *unur_distr_cemp_new( void );
+/* 
+   Create a new (empty) object for empirical univariate continuous distribution.
+*/
+
+/* ==DOC
+   @subsubheading Essential parameters
+*/
+
+int unur_distr_cemp_set_data( UNUR_DISTR *distribution, const double *sample, int n_sample );
+/* 
+   Set observed sample for empirical distribution.
+*/
+
+int unur_distr_cemp_read_data( UNUR_DISTR *distribution, const char *filename );
+/* 
+   Read data from file @file{filename}.
+   It reads the first double number from each line.
+   Lines that do not start with @code{+}, @code{-}, @code{.}, or a
+   digit are ignored. (Beware of lines starting with a blank!)
+
+   In case of an error (file cannot be opened, invalid string for
+   double in line) no data are copied into the distribution object
+   and @code{0} is returned.
+*/
+
+int unur_distr_cemp_get_data( const UNUR_DISTR *distribution, const double **sample );
+/* 
+   Get number of samples and set pointer @var{sample} to array of
+   observations. If no sample has been given,
+   @code{0} is returned and @code{sample} is set to NULL.
+
+   @emph{Important:} Do @strong{not} change the entries in @var{params}!
+*/
+
+/* =END */
+
 /*---------------------------------------------------------------------------*/

@@ -4,13 +4,10 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   FILE: parser.h                                                          *
+ *   FILE: parser_source.h                                                   *
  *                                                                           *
  *   PURPOSE:                                                                *
  *         function prototypes for parser                                    *
- *                                                                           *
- *   USAGE:                                                                  *
- *         only included in unuran.h                                         *
  *                                                                           *
  *****************************************************************************
      $Id$

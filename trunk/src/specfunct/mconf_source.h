@@ -109,9 +109,8 @@ Copyright 1984, 1987, 1989, 1995 by Stephen L. Moshier
 /* Include constants used in UNURAN.                                         */
 
 #include <float.h>
-#include <x_math.h>
-#include <x_math_source.h>
-#include <source_fp_const.h>
+#include <utils/unur_math_source.h>
+#include <utils/unur_fp_const_source.h>
 
 /*---------------------------------------------------------------------------*/
 /* We do not make use of floating point formats of various hardware.         */

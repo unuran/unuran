@@ -9,9 +9,6 @@
  *   PURPOSE:                                                                *
  *         defines identifiers for standard distributions                    *
  *                                                                           *
- *   USAGE:                                                                  *
- *         only included in unuran_distributions.h                           *
- *                                                                           *
  *****************************************************************************
      $Id$
  *****************************************************************************

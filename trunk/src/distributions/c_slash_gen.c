@@ -34,7 +34,13 @@
 
 /*---------------------------------------------------------------------------*/
 
-#include <source_distributions.h>
+#include <unur_source.h>
+#include <methods/cstd.h>
+#include <methods/x_gen_source.h>
+#include <distr/distr_source.h>
+#include <specfunct/unur_specfunct_source.h>
+#include "unur_distributions_source.h"
+#include "unur_distributions.h"
 
 /*---------------------------------------------------------------------------*/
 /* init routines for special generators                                      */
@@ -137,7 +143,7 @@ slash_slash_init( struct unur_gen *gen )
     /* copy debugging flags */
     NORMAL->debug = gen->debug;
     /* we do not need the distribution object any more */
-    unur_distr_free( distr );
+    _unur_distr_free( distr );
   }
   /* else we are in the re-init mode 
      --> there is no necessity to make the generator object again */

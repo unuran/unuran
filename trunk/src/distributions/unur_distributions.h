@@ -10,9 +10,6 @@
  *         defines macros and function prototypes for PDF, CDF, etc.         *
  *         of distribtions.                                                  *
  *                                                                           *
- *   USAGE:                                                                  *
- *         only included in unuran.h                                         *
- *                                                                           *
  *   REFERENCES:                                                             *
  *                                                                           *
  *   [1] N.L. Johnson, S. Kotz, and A.W. Kemp                                *
@@ -73,7 +70,7 @@
 #define UNURAN_DISTRIBUTIONS_H_SEEN
 /*---------------------------------------------------------------------------*/
 
-#include <unur_stddistr.h>
+#include <distributions/unur_stddistr.h>
 
 /*---------------------------------------------------------------------------*/
 

@@ -104,7 +104,7 @@ Copyright 1984, 1987, 1989, 1992, 2000 by Stephen L. Moshier
 */
 
 
-#include "source_mconf.h"
+#include "mconf_source.h"
 
 #ifdef UNK
 static double P[] = {

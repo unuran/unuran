@@ -4,14 +4,10 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   FILE: source_specfunct.h                                                *
+ *   FILE: slist.h                                                           *
  *                                                                           *
  *   PURPOSE:                                                                *
- *         prototypes and macros for using special functions like erf(),     *
- *         gamma(), beta(), etc., which are imported from other packages.    *
- *                                                                           *
- *   USAGE:                                                                  *
- *         only included in source_distributions.h                           *
+ *         defines function prototypes for simple list                       *
  *                                                                           *
  *****************************************************************************
      $Id$
@@ -38,72 +34,44 @@
  *****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
-#ifndef SOURCE_SPECFUNCT_H_SEEN
-#define SOURCE_SPECFUNCT_H_SEEN
+#ifndef SLIST_H_SEEN
+#define SLIST_H_SEEN
+/*---------------------------------------------------------------------------*/
+/* Not part of manual!                                                       */
+/*---------------------------------------------------------------------------*/
+/*                                                                           */
+/* A simple list can be used to store an arbitrary numbers of pointers       */
+/* to allocated memory in a list.                                            */
+/*                                                                           */
+/* IMPORTANT: These elements must be allocated via (c|m|re)alloc()!!         */
+/*                                                                           */
 /*---------------------------------------------------------------------------*/
 
-/*****************************************************************************
- *                                                                           *
- *   Prototypes for special functions like erf(), gamma(), beta(), etc.      *
- *   which are imported from other packages.                                 *
- *                                                                           *
- *   We use the package CEPHES/DOUBLE for computing these functions          *
- *   (available from NETLIB, http://www.netlib.org/cephes/                   *
- *   Copyright 1984 - 1994 by Stephen L. Moshier                             *
- *                                                                           *
- *****************************************************************************/
-
-/*  #ifdef HAVE_LIBMD */
-
+struct unur_slist *_unur_slist_new( void );
 /*---------------------------------------------------------------------------*/
-/* Routines from the CEPHES library.                                         */
+/* Make new simple list.                                                     */
 /*---------------------------------------------------------------------------*/
 
-/** functions related to beta distribution **/
-
-/* incomplete beta integral */
-double incbet(double a, double b, double x);
-#define _unur_sf_incomplete_beta(x,a,b)   incbet((a),(b),(x))
-#define HAVE_UNUR_SF_INCOMPLETE_BETA
-
-/** functions related to gamma distribution **/
-
-/* logarithm of gamma function */
-double lgam(double x);
-#define _unur_sf_ln_gamma(x)   lgam(x)
-#define HAVE_UNUR_SF_LN_GAMMA
-
-/* logarithm of factorial */
-#define _unur_sf_ln_factorial(x)   _unur_sf_ln_gamma((x)+1.)
-#define HAVE_UNUR_SF_LN_FACTORIAL
-
-/* incomplete gamma function */
-double igam(double a, double x);
-#define _unur_sf_incomplete_gamma(x,a)  igam((a),(x))
-#define HAVE_UNUR_SF_INCOMPLETE_GAMMA
-
-/** functions related to normal distribution **/
-
-/* normal distribution function */
-double ndtr(double x);
-#define _unur_sf_cdfnormal(x)   ndtr(x)
-#define HAVE_UNUR_SF_CDFNORMAL
-
-/* inverse of normal distribution function */
-double ndtri(double x);
-#define _unur_sf_inv_cdfnormal(x)   ndtri(x)
-#define HAVE_UNUR_SF_INV_CDFNORMAL
-
-/** functions related to Student's t distribution **/
-/* there is no CDF for non-integer degrees of freedom */
-#undef HAVE_UNUR_SF_CDFSTUDENT
-
+void _unur_slist_append( struct unur_slist *slist, void *element );
 /*---------------------------------------------------------------------------*/
-/* end: CEPHES library                                                       */
+/* Append pointer to element to simple list.                                 */
 /*---------------------------------------------------------------------------*/
 
-/* #endif */
+int _unur_slist_length( const struct unur_slist *slist );
+/*---------------------------------------------------------------------------*/
+/* Get length if list (number of list entries).                              */
+/*---------------------------------------------------------------------------*/
+
+void *_unur_slist_get( const struct unur_slist *slist, int n );
+/*---------------------------------------------------------------------------*/
+/* Get pointer to n-th element.                                              */
+/*---------------------------------------------------------------------------*/
+
+void _unur_slist_free( struct unur_slist *slist );
+/*---------------------------------------------------------------------------*/
+/* Free all elements and list in simple list.                                */
+/*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*/
-#endif  /* SOURCE_SPECFUNCT_H_SEEN */
+#endif  /* SLIST_H_SEEN */
 /*---------------------------------------------------------------------------*/

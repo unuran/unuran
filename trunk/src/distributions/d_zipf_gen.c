@@ -35,7 +35,10 @@
 /*---------------------------------------------------------------------------*/
 
 #include <limits.h>
-#include <source_distributions.h>
+#include <unur_source.h>
+#include <methods/cstd.h>   /* for the definition of `UNUR_STDGEN_INVERSION' */
+#include <specfunct/unur_specfunct_source.h>
+#include "unur_distributions_source.h"
 
 /*---------------------------------------------------------------------------*/
 /* init routines for special generators                                      */

@@ -3,17 +3,13 @@
 
 AM_CFLAGS = -Wall
 
-INCLUDES = \
- -I$(top_srcdir)/src \
- -I$(top_srcdir)/src/distributions \
- -I$(top_srcdir)/src/methods \
- -I$(top_srcdir)/src/parser
+INCLUDES = -I$(top_srcdir)/src
 
 noinst_LIBRARIES = libuniform.a
 
 libuniform_a_SOURCES = mrg31k3p.c fish.c mstd.c
 
-noinst_HEADERS = uniform.h
+noinst_HEADERS = unur_uniform.h
 
 # clean backup files
 CLEANFILES = *~

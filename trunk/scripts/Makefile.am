@@ -28,7 +28,7 @@ dist-hook:
 # clean backup files
 CLEANFILES = \
  *~ \
- source_fp_const.h
+ unur_fp_const_source.h
 
 
 # clean generated files

@@ -3,14 +3,12 @@
 
 AM_CFLAGS = -Wall
 
-INCLUDES = \
- -I$(top_srcdir)/src \
- -I$(top_srcdir)/src/methods \
- -I$(top_srcdir)/src/distributions
+INCLUDES = -I$(top_srcdir)/src
 
 noinst_LIBRARIES = libspecfunct.a
 
 libspecfunct_a_SOURCES = \
+ mconf_source.h \
  mtherr.c \
  gamma.c \
  igam.c \
@@ -20,7 +18,7 @@ libspecfunct_a_SOURCES = \
  polevl.c
 
 noinst_HEADERS = \
- source_mconf.h 
+ unur_specfunct_source.h
 
 # clean backup files
 CLEANFILES = *~

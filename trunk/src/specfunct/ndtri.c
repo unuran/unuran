@@ -51,7 +51,8 @@ Cephes Math Library Release 2.8:  June, 2000
 Copyright 1984, 1987, 1989, 2000 by Stephen L. Moshier
 */
 
-#include "source_mconf.h"
+#include "mconf_source.h"
+
 /*
 extern double MAXNUM;
   this was changed to defines*/

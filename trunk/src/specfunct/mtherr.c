@@ -51,7 +51,7 @@ Direct inquiries to 30 Frost Street, Cambridge, MA 02140
 */
 
 #include <stdio.h>
-#include "source_mconf.h"
+#include "mconf_source.h"
 
 int merror = 0;
 

@@ -4,14 +4,11 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   FILE: source_distribution.h                                             *
+ *   FILE: unur_distribution_source.h                                        *
  *                                                                           *
  *   PURPOSE:                                                                *
  *         defines macros and prototypes for special generators              *
  *         of distribtions.                                                  *
- *                                                                           *
- *   USAGE:                                                                  *
- *         only included in distribution source files.                       *
  *                                                                           *
  *                                                                           *
  *   NAMING SCHEME:                                                          *
@@ -101,13 +98,8 @@
  *****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
-#ifndef SOURCE_DISTRIBUTIONS_H_SEEN
-#define SOURCE_DISTRIBUTIONS_H_SEEN
-/*---------------------------------------------------------------------------*/
-
-#include <source_unuran.h>
-#include <source_specfunct.h>
-
+#ifndef UNUR_DISTRIBUTIONS_SOURCE_H_SEEN
+#define UNUR_DISTRIBUTIONS_SOURCE_H_SEEN
 /*---------------------------------------------------------------------------*/
 
 /*****************************************************************************
@@ -504,5 +496,5 @@ int _unur_stdgen_sample_zipf_zet( UNUR_GEN *generator );
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*/
-#endif  /* SOURCE_DISTRIBUTIONS_H_SEEN */
+#endif  /* UNUR_DISTRIBUTIONS_SOURCE_H_SEEN */
 /*---------------------------------------------------------------------------*/

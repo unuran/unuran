@@ -82,7 +82,7 @@ Cephes Math Library Release 2.8:  June, 2000
 Copyright 1985, 1987, 2000 by Stephen L. Moshier
 */
 
-#include "source_mconf.h"
+#include "mconf_source.h"
 
 #ifdef ANSIPROT
 extern double lgam ( double );

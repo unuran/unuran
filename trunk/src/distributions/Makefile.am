@@ -3,11 +3,7 @@
 
 AM_CFLAGS = -Wall
 
-INCLUDES = \
- -I$(top_srcdir)/src \
- -I$(top_srcdir)/src/methods \
- -I$(top_srcdir)/src/parser \
- -I$(top_srcdir)/src/uniform
+INCLUDES = -I$(top_srcdir)/src
 
 noinst_LIBRARIES = libdistributions.a
 
@@ -45,10 +41,9 @@ libdistributions_a_SOURCES = \
  vc_multinormal.c 
 
 noinst_HEADERS = \
- unuran_distributions.h \
- unur_stddistr.h \
- source_distributions.h \
- source_specfunct.h
+ unur_distributions.h \
+ unur_distributions_source.h \
+ unur_stddistr.h
 
 EXTRA_DIST = \
  README

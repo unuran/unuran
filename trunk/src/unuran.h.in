@@ -113,6 +113,7 @@
 /* methods for continuous multivariate distributions */
 #include <methods/vmt.h>
 #include <methods/vempk.h>
+#include <methods/vnrou.h>
 
 /* wrapper for special generators for standard distributions */
 #include <methods/cstd.h>     /* continuous */

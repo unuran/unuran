@@ -101,7 +101,7 @@
 /*---------------------------------------------------------------------------*/
 
 /* this parameter define the maximal number of cones that will be created.   */
-#define VAROU_MAX_CONES 10000
+#define VAROU_MAX_CONES 1000
 
 /* during the triangulation of the upper half-unit-sphere, this parameter    */
 /* define the maximal number of verteces that will be created during the     */
@@ -120,7 +120,7 @@ long VAROU_MAX_VERTECES;
 
 /*---------------------------------------------------------------------------*/
 
-long N_INTERVALS=100; /* TODO: move this parameter into generator object */
+long N_INTERVALS=40; /* TODO: move this parameter into generator object */
 /*---------------------------------------------------------------------------*/
 
 static struct unur_gen *_unur_varou_init( struct unur_par *par );
@@ -133,8 +133,8 @@ static struct unur_gen *_unur_varou_create( struct unur_par *par );
 /* create new (almost empty) generator object.                               */
 /*---------------------------------------------------------------------------*/
 
-static void  _unur_varou_sample_cvec( struct unur_gen *gen, double *vec );
-static void  _unur_varou_sample_check( struct unur_gen *gen, double *vec );
+static void  _unur_varou_sample_cvec( struct unur_gen *gen, double *X );
+static void  _unur_varou_sample_check( struct unur_gen *gen, double *X );
 /*---------------------------------------------------------------------------*/
 /* sample from generator.                                                    */
 /*---------------------------------------------------------------------------*/
@@ -183,6 +183,11 @@ static void _unur_varou_cones_split( struct unur_gen *gen );
 /* split cones with volume=inf or volume >= mean_volume                      */
 /*---------------------------------------------------------------------------*/
 
+static void _unur_varou_cones_prepare( struct unur_gen *gen );
+/*---------------------------------------------------------------------------*/
+/* calculation of cummulated volumes, eventually sorting, guiding table ...   */
+/*---------------------------------------------------------------------------*/
+
 static void _unur_varou_cone_parameters( struct unur_gen *gen, 
             struct unur_varou_cone *c, double alpha);
 /*---------------------------------------------------------------------------*/
@@ -200,9 +205,10 @@ static void _unur_varou_volume(struct unur_gen *gen, struct unur_varou_cone *c);
 /* find appropriate tangent plane by choosing smallest cone volume           */
 /*---------------------------------------------------------------------------*/
 
-static double *_unur_varou_sample_simplex(struct unur_gen *gen, double *verteces);
+static void _unur_varou_sample_cone( struct unur_gen *gen, 
+                                     struct unur_varou_cone *c, double *UV );
 /*---------------------------------------------------------------------------*/
-/* generate random vector uniformly distributed in simplex                   */
+/* generate random vector UV uniformly distributed in the cone c             */
 /*---------------------------------------------------------------------------*/
 
 static int _unur_varou_rectangle( struct unur_gen *gen );
@@ -223,14 +229,9 @@ static double _unur_varou_f( struct unur_gen *gen, double *uv);
 /* where (c_0, c_1, ...) is the center, u_i=uv[i] for i<dim and v=uv[dim]    */
 /*---------------------------------------------------------------------------*/
 
-static double _unur_varou_F( struct unur_gen *gen, double *uv);
-/*---------------------------------------------------------------------------*/
-/* return value of v^(1+dim) - PDF(u_0/v+c_0, u_1/v+c_1, ...)                */
-/*---------------------------------------------------------------------------*/
-
 static void _unur_varou_dF( struct unur_gen *gen, double *uv, double *dF);
 /*---------------------------------------------------------------------------*/
-/* calculate the value the gradient of F() at the point (u,v)                */
+/* calculate the value the gradient of v^(dim+1)-PDF(...) at the point (u,v) */
 /*---------------------------------------------------------------------------*/
 
 
@@ -432,6 +433,8 @@ _unur_varou_init( struct unur_par *par )
   /* cone splitting ... */
   _unur_varou_cones_split(gen);
 
+  /* calculation of cummulated volumes, eventually sorting ... */
+  _unur_varou_cones_prepare(gen);
 
 #ifdef UNUR_ENABLE_LOGGING
   /* write info into log file */
@@ -575,28 +578,49 @@ _unur_varou_clone( const struct unur_gen *gen )
 /*---------------------------------------------------------------------------*/
 
 void
-_unur_varou_sample_cvec( struct unur_gen *gen, double *vec )
+_unur_varou_sample_cvec( struct unur_gen *gen, double *X )
      /*----------------------------------------------------------------------*/
      /* sample from generator                                                */
      /*                                                                      */
      /* parameters:                                                          */
      /*   gen ... pointer to generator object                                */
-     /*   vec ... random vector (result)                                     */
+     /*   X   ... random vector (result)                                     */
      /*----------------------------------------------------------------------*/
 { 
   int d, dim; /* index used in dimension loops (0 <= d < dim) */
+  long ic; /* running cone index */
+  double *UV; /* (dim+1) uniformly distributed in cone */
+  double vol;
 
   /* check arguments */
   CHECK_NULL(gen,RETURN_VOID);  
   COOKIE_CHECK(gen,CK_VAROU_GEN,RETURN_VOID); 
 
   dim = GEN.dim;
- 
-  /* TODO : CHANGE THIS !!!!!!! These are only dummy random values */  
-  for (d=0; d<dim; d++) {
-    vec[d] = _unur_call_urng(gen->urng) ;
+
+  UV = _unur_xmalloc((dim+1)*sizeof(double));
+  
+  /* vol is a uniformly distributed variable < sum of all cone volumes */
+  vol = GEN.cone_list[GEN.n_cone-1]->sum_volume * _unur_call_urng(gen->urng);
+  
+  for (ic=0; ic<GEN.n_cone; ic++) {  
+    if ( GEN.cone_list[ic]->sum_volume > vol ) {
+
+sample:    
+      _unur_varou_sample_cone(gen, GEN.cone_list[ic], UV);
+      /* check if UV is outside the potato volume */
+      if ( pow(UV[dim], 1.+dim) > _unur_varou_f(gen, UV) ) goto sample;
+
+      break;
+    }
   }
-    
+  
+  for (d=0; d<dim; d++) {
+    X[d] = UV[d]/UV[dim] ;
+  }
+  
+  free(UV);
+  
   return; 
    
 } /* end of _unur_varou_sample() */
@@ -604,7 +628,7 @@ _unur_varou_sample_cvec( struct unur_gen *gen, double *vec )
 /*---------------------------------------------------------------------------*/
 
 void
-_unur_varou_sample_check( struct unur_gen *gen, double *vec )
+_unur_varou_sample_check( struct unur_gen *gen, double *X )
      /*----------------------------------------------------------------------*/
      /* sample from generator and verify that method can be used             */
      /*                                                                      */
@@ -623,7 +647,7 @@ _unur_varou_sample_check( struct unur_gen *gen, double *vec )
   
   /* TODO : CHANGE THIS !!!!!!! These are only dummy random values */  
   for (d=0; d<dim; d++) {
-    vec[d] = _unur_call_urng(gen->urng) ;
+    X[d] = _unur_call_urng(gen->urng) ;
   }
  
   return;
@@ -1023,8 +1047,8 @@ _unur_varou_cone_parameters( struct unur_gen *gen, struct unur_varou_cone *c, do
   double v,vt;
   double *p; /* position vector to surface */
   double *t; /* top vertex vector */
-  double *r; /* random vertex vector */
-  double *b; /* barycenter vector */
+  double *r; /* random vertex vector ... NOT NEEDED */
+  double *b; /* barycenter vector ... NOT NEEDED */
   double *f; /* centre vector of face opposite to top vertex */
   double normp, normb, normt, normn;
   long i, it, itop, ir, iv;
@@ -1110,12 +1134,8 @@ _unur_varou_cone_parameters( struct unur_gen *gen, struct unur_varou_cone *c, do
   
   p=_unur_vector_new(dim+1); /* position vector to surface */
 
-//  alpha = 0.01 + 0.99 * alpha; 
-//  alpha = 0.99 * alpha;
+  /* setting p[] to be on the line connecting t[] and f[] */
   for (i=0; i<=dim; i++) {
- 
-//    p[i] = r[i] + alpha * (b[i]-r[i]);
-//    p[i] = t[i] + alpha * (b[i]-t[i]);
     p[i] = t[i] + alpha * (f[i]-t[i]);
   }
 
@@ -1194,34 +1214,50 @@ _unur_varou_cone_set(struct unur_gen *gen, struct unur_varou_cone *c,
 
 /*---------------------------------------------------------------------------*/
 
-double *
-_unur_varou_sample_simplex( struct unur_gen *gen, double *verteces)
+void 
+_unur_varou_cones_prepare( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
-     /* generate random vector uniformply distributed in simplex             */
-     /* having (dim+1) vertices (v_0, ... , v_dim)                           */
-     /* the coordinates of the (dim+1) vertices are stored sequentially in   */
-     /* the verteces[] array of size (dim+1)*dim                             */
+     /* calculation of cummulated volumes, eventually sorting, guiding table */
      /*----------------------------------------------------------------------*/
 {
-#define idx(a,b) ((a)*dim+(b))
+  long ic; /* running cone index */
+  double sum_volume;
 
-  double *X; /* random sample vector */
+  /* calculate the cummulated volume sum */
+  sum_volume = 0.;
+  for (ic=0; ic<GEN.n_cone; ic++) {
+    sum_volume += GEN.cone_list[ic]->volume;
+    GEN.cone_list[ic]->sum_volume = sum_volume;    
+  }
+
+  return;
+}
+
+
+/*---------------------------------------------------------------------------*/
+
+void
+_unur_varou_sample_cone( struct unur_gen *gen, struct unur_varou_cone *c, double *UV )
+     /*----------------------------------------------------------------------*/
+     /* generate random vector UV uniformly distributed in the cone c        */
+     /* having (dim+2) verteces (vert_0, ... , vert_dim, (0) )               */
+     /*----------------------------------------------------------------------*/
+{
   double  U; /* uniform variate */
   double *E; /* exponential variates */
   double *S; /* uniform spacings */
   double  E_sum; /* sum of all e[] */
-  long i,j; /* index variables used in for loops */
-  long dim;
+  int i,j; /* index variables used in for loops */
+  int dim;
   
   dim = GEN.dim; 
   
-  X=_unur_xmalloc(dim*sizeof(double));
-  S=_unur_xmalloc((dim+1)*sizeof(double));
-  E=_unur_xmalloc((dim+1)*sizeof(double));
+  S=_unur_xmalloc((dim+2)*sizeof(double));
+  E=_unur_xmalloc((dim+2)*sizeof(double));
   
   /* calculating exponential variates */
   E_sum = 0; 
-  for (i=0; i<=dim; i++) {
+  for (i=0; i<=dim+1; i++) {
     /* sample from U(0,1) */
     while ( (U = _unur_call_urng(gen->urng)) == 0.);
     /* sample from exponential distribution */
@@ -1230,24 +1266,26 @@ _unur_varou_sample_simplex( struct unur_gen *gen, double *verteces)
   }
   
   /* calculating uniform spacing */
-  for (i=0; i<=dim; i++) {
+  for (i=0; i<=dim+1; i++) {
     S[i]=E[i]/E_sum;
   }
 
   /* calculating uniform vector in simplex */
-  for (j=0; j<dim; j++) {
-    X[j] = 0;
-    for (i=0; i<=dim; i++) {
-      X[j] += S[i] * verteces[idx(i,j)];
+  for (j=0; j<dim+1; j++) {
+    UV[j] = 0;
+    for (i=0; i<dim+1; i++) {
+      /* the sum actually run over all (dim+2) verteces              */
+      /* but, since all cones have the origin (0,0,...0) in common,  */
+      /* a multiplication with its coordinates is not necessary      */
+      /* and our sum run over the remaining (dim+1) verteces         */
+      UV[j] += S[i] * GEN.vertex_list[c->index[i]][j] ;
     }
   }
 
   free(S); free(E);
 
-  return X;
-
-#undef idx
-} /* end of _unur_varou_sample_simplex() */
+  return;
+} /* end of _unur_varou_sample_cone() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -1333,34 +1371,10 @@ _unur_varou_f( struct unur_gen *gen, double *uv)
 
 /*---------------------------------------------------------------------------*/
 
-double 
-_unur_varou_F( struct unur_gen *gen, double *uv) 
-     /*----------------------------------------------------------------------*/
-     /* return value of v^(1+dim) - PDF(u_0/v+c_0, u_1/v+c_1, ...)           */
-     /* where (c_0, c_1, ...) is the center,                                 */
-     /* u_i=uv[i] for i<dim and v=uv[dim].                                   */
-     /*                                                                      */
-     /* UNUR_INFINITY is returned when |v|<UNUR_EPSILON                      */
-     /*----------------------------------------------------------------------*/
-{
-  double v;
-  double F;   /* function value */
-
-  v=uv[GEN.dim];
- 
-  if (fabs(v) <= UNUR_EPSILON) return UNUR_INFINITY;
-  
-  F = pow(v, 1.+ GEN.dim ) - _unur_varou_f( gen, uv);
-
-  return F;
-}
-
-/*---------------------------------------------------------------------------*/
-
 void 
 _unur_varou_dF( struct unur_gen *gen, double *uv, double *dF )
      /*----------------------------------------------------------------------*/
-     /* calculate the value of the gradient of F() at the point (u,v)        */
+     /* calculate the gradient of v^(dim+1)-PDF(...) at the point (u,v)      */
      /* the gradient is written into the (dim+1) double array dF[]           */
      /*                                                                      */
      /* NULL is returned when |v|<UNUR_EPSILON                               */
@@ -1683,7 +1697,8 @@ _unur_varou_debug_init( const struct unur_gen *gen )
 
   /* cone volumes */
   for (ic=0; ic<GEN.n_cone; ic++) {
-    fprintf(log,"%s:\t%6ld : volume = %g\n", gen->genid, ic, GEN.cone_list[ic]->volume);
+    fprintf(log,"%s:\t%6ld : \tvolume = %g  \tsum = %g\n", gen->genid, ic, 
+            GEN.cone_list[ic]->volume, GEN.cone_list[ic]->sum_volume);
   }
   fprintf(log,"%s:\n",gen->genid);
 

@@ -49,7 +49,15 @@ struct unur_varou_par {
 
 struct unur_varou_gen { 
   int    dim;               /* dimension of distribution                     */
+  double *umin, *umax;      /* boundary rectangle u-coordinates */
+  double vmax;              /* boundary rectangle v-coordinate  */
+  const double *center;     /* center of distribution */
+  int aux_dim;              /* parameter used my auxiliary functions */
 };
 
 /*---------------------------------------------------------------------------*/
-
+/* Cone structure */
+struct unur_varou_cone {
+  double *vertex;  /* spanning unit vector matrix of the cone verteces */
+  double *norm;    /* lengths of the spanning vectors                  */
+};

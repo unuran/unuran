@@ -245,6 +245,7 @@ struct unur_gen {
   char *genid;                /* identifier for generator                    */
 
   struct unur_gen *gen_aux;   /* pointer to auxiliary generator object       */
+  struct unur_gen **gen_aux_list; /* list of pointers to auxiliary generator objects */
 
   unsigned debug;             /* debugging flags                             */
 

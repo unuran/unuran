@@ -56,7 +56,7 @@ John Wiley & Sons, Inc., New York.
 
 @anchor{bib:HLD04}
 @item [HLD04]
-@sc{W. Hoermann, J. Leydold, and G. Derflinger}(2004).
+@sc{W. H@"ormann, J. Leydold, and G. Derflinger} (2004).
 @i{Automatic Nonuniform Random Variate Generation},
 Springer, Berlin.
 
@@ -100,19 +100,19 @@ Applied Statistics 41, pp. 337-348.
 
 @anchor{bib:HWa95}
 @item [HWa95]
-@sc{W. Hoermann} (1995).
+@sc{W. H@"ormann} (1995).
 @i{A rejection technique for sampling from T-concave distributions},
 ACM Trans. Math. Software 21(2), pp. 182-193.
 
 @anchor{bib:HDa96}
 @item [HDa96]
-@sc{W. Hoermann and G. Derflinger} (1996).
+@sc{W. H@"ormann and G. Derflinger} (1996).
 @i{Rejection-inversion to generate variates from monotone discrete distributions},
 ACM TOMACS 6(3), 169-184.
 
 @anchor{bib:HLa00}
 @item [HLa00]
-@sc{W. Hoermann and J. Leydold} (2000).
+@sc{W. H@"ormann and J. Leydold} (2000).
 @i{Automatic random variate generation for simulation input.}
 In: J.A. Joines, R. Barton, P. Fishwick, K. Kang (eds.),
 Proceedings of the 2000 Winter Simulation Conference, pp. 675-682.
@@ -183,7 +183,7 @@ Appl. Statist. 26(1), 71-75.
 
 @anchor{bib:HDa90}
 @item [HDa90]
-@sc{W. Hoermann and G. Derflinger} (1990).
+@sc{W. H@"ormann and G. Derflinger} (1990).
 @i{The ACR Method for generating normal random variables},
 OR Spektrum 12, 181-185.
 

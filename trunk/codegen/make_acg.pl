@@ -168,7 +168,7 @@ int main (int argc, char *argv[]){
 
   double tdr_c = -0.5; /* parameter c for TDR */
   int n_params = 0;    /* number of parameters */
-  int n_cpoints = 30;  /* number of construction points (default value) */
+  int n_cpoints = 10;  /* number of construction points (default value) */
 
 
   char c;
@@ -710,12 +710,3 @@ EOS
 # ----------------------------------------------------------------
 # end
 # ----------------------------------------------------------------
-
-
-
-
-
-
-
-
-

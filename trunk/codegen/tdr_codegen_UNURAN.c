@@ -149,7 +149,6 @@ _unur_acg_UNURAN_tdr_ps( struct unur_gen *gen,
   /* set necessary parameters for transformation method */
   fprintf(out,"\t\tunur_tdr_set_variant_ps(par);\n");
   fprintf(out,"\t\tunur_tdr_set_cpoints(par, %d, NULL);\n",n_cpoints);
-  fprintf(out,"\t\tunur_tdr_set_max_sqhratio(par, 0.);\n");
   fprintf(out,"\t\tunur_tdr_set_c(par, %g);\n",gen->data.tdr.c_T);
 
   fprintf(out,"\n");

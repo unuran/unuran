@@ -110,11 +110,50 @@ sub extract_code{
 
 # ---------------------------------------------------------
 
-
 find (\&find_files, @Startdirs);
 
-# write out to file
-open (OUTFILE , ">distr_settings.data");
+
+foreach $key (keys %Distr){
+    $type = $Distr{$key}{"PROBFUNC_TYPE"};
+    # replace linebreaks
+    $Distr{$key}{$type}{"BODY"} =~ s/\n/\\n/g;
+    # replace DISTR.n_params with n_params
+    $Distr{$key}{$type}{"BODY"} =~ s/DISTR\.n_params/n_params/g;
+
+    print "/* $key */\n";
+    # function head
+    print "int\n_unur_distr_write_code_poisson( struct unur_distr *distr, FILE *fp )\n";
+    print "   /*----------------------------------------------------------------------*/\n";
+    print "   /*                                                                      */\n";
+    print "   /*----------------------------------------------------------------------*/\n";
+
+    # Function body
+    print "{\n";
+
+    print "fprintf(fp,\"\\n\");\n";
+
+    print "double params[", $Distr{$key}{"NO_OF_PARAMS"}, "];\n";
+    print "unur_distr_cont_get_pdfparams(distr, &params);\n\n";
+
+    
+    print "#define n_params (",
+          $Distr{$key}{"NO_OF_PARAMS"},")\n";
+
+    for ($i=0; $i < $Distr{$key}{"NO_OF_PARAMS"}; $i++) {
+	print "fprintf(fp, \"#define ", $Distr{$key}{"PARAMS"}[$i],
+              " (%g)\\n\", params[$i]);\n";
+    }
+
+
+    print "fprintf(fp, \"",
+          $Distr{$key}{$type}{"TYPE"}, "\\n",
+          $Distr{$key}{$type}{"NAME"}, "(",
+          $Distr{$key}{$type}{"ARGS"}, ")\\n{",
+          $Distr{$key}{$type}{"BODY"}, "}\\n\");\n";
+
+    print "} /* end of unur_distr_write_code_$key() */\n\n";
+}
+
 
 foreach $key (keys %Distr){
     foreach $key2 (keys %{ $Distr{$key}}){
@@ -123,13 +162,9 @@ foreach $key (keys %Distr){
 	    }
     }
     for (my $i=0; $i < $Distr{$key}{"NO_OF_PARAMS"}; $i++){
-	print OUTFILE "$key, PARAM[$i]: $Distr{$key}{PARAMS}[$i]\n";
+	print "$key, PARAM[$i]: $Distr{$key}{PARAMS}[$i]\n";
     }
-    foreach $key3 (keys %{ $Distr{$key}{$Distr{$key}{"PROBFUNC_TYPE"}} } ){
-	print OUTFILE "$key, ",
-                  $Distr{$key}{"PROBFUNC_TYPE"}, ", $key3: ",
-                  $Distr{$key}{$Distr{$key}{"PROBFUNC_TYPE"}}{$key3},"\n";
-    }
+
 
 }
 

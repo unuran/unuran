@@ -21,7 +21,7 @@ EXTRA_DIST = \
 parser_srcdir = $(top_srcdir)/src/parser
 
 stringparser.c: make_stringparser.pl stringparser.c.in
-	$(parser_srcdir)/make_stringparser.pl $(top_srcdir) < $(parser_srcdir)/stringparser.c.in > $(parser_srcdir)/stringparser.c
+	$(parser_srcdir)/make_stringparser.pl < $(parser_srcdir)/stringparser.c.in > $(parser_srcdir)/stringparser.c
 
 
 # clean backup files

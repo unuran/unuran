@@ -213,7 +213,7 @@ _unur_test_timing_uniform( struct unur_par *par, int log_samplesize )
       samplesize *= 10;
 
     /* make generator object for uniform generator */
-    gen_urng = unur_init( unur_unif_new() );
+    gen_urng = unur_init( unur_unif_new(NULL) );
     _unur_check_NULL( test_name,gen_urng,-1. );
     unur_chg_urng(gen_urng,par->urng);
 

@@ -233,7 +233,7 @@ int unur_distr_cvec_set_marginals( UNUR_DISTR *distribution, UNUR_DISTR *margina
 
 int unur_distr_cvec_set_marginal_array( UNUR_DISTR *distribution, UNUR_DISTR **marginals);
 /* 
-   Analogously to the above unnur_distr_cvec_set_marginals() call.
+   Analogously to the above unur_distr_cvec_set_marginals() call.
    However, now an array @var{marginals} of the pointers to each of
    the marginal distributions must be given. It @strong{must} be an
    array of size @code{dim}, where @code{dim} is the dimension

@@ -240,7 +240,7 @@ unur_dau_set_urnfactor( struct unur_par *par, double factor )
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( par->genid,par,0 );
+  _unur_check_NULL( GENTYPE,par,0 );
 
   /* check input */
   _unur_check_par_object( DAU );
@@ -287,7 +287,7 @@ unur_dau_init( struct unur_par *par )
   int i;                        /* aux variable */
 
   /* check arguments */
-  _unur_check_NULL( par->genid,par,NULL );
+  _unur_check_NULL( GENTYPE,par,NULL );
 
   /* check input */
   if ( par->method != UNUR_METH_DAU ) {

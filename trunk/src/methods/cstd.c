@@ -179,7 +179,7 @@ unur_cstd_set_variant( struct unur_par *par, unsigned variant )
   unsigned old_variant;
 
   /* check arguments */
-  _unur_check_NULL( par->genid, par, 0 );
+  _unur_check_NULL( GENTYPE, par, 0 );
   _unur_check_NULL( par->genid, par->distr, 0 );
 
   /* check input */
@@ -222,7 +222,7 @@ unur_cstd_init( struct unur_par *par )
   struct unur_gen *gen;
 
   /* check arguments */
-  _unur_check_NULL( par->genid, par, NULL );
+  _unur_check_NULL( GENTYPE, par, NULL );
   _unur_check_NULL( par->genid, par->DISTR_IN.init, NULL );
 
   /* check input */

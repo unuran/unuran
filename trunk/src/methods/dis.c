@@ -224,7 +224,7 @@ unur_dis_set_variant( struct unur_par *par, unsigned variant )
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( par->genid,par,0 );
+  _unur_check_NULL( GENTYPE,par,0 );
 
   /* check input */
   _unur_check_par_object( DIS );
@@ -260,7 +260,7 @@ unur_dis_set_guidefactor( struct unur_par *par, double factor )
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( par->genid,par,0 );
+  _unur_check_NULL( GENTYPE,par,0 );
 
   /* check input */
   _unur_check_par_object( DIS );
@@ -306,7 +306,7 @@ unur_dis_init( struct unur_par *par )
   int i,j;
 
   /* check arguments */
-  _unur_check_NULL( par->genid,par,NULL );
+  _unur_check_NULL( GENTYPE,par,NULL );
 
   /* check input */
   if ( par->method != UNUR_METH_DIS ) {

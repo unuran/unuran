@@ -357,7 +357,7 @@ unur_arou_set_cpoints( struct unur_par *par, int n_stp, double *stp )
   int i;
 
   /* check arguments */
-  _unur_check_NULL( par->genid,par,0 );
+  _unur_check_NULL( GENTYPE,par,0 );
 
   /* check input */
   _unur_check_par_object( AROU );
@@ -407,7 +407,7 @@ unur_arou_set_guidefactor( struct unur_par *par, double factor )
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( par->genid,par,0 );
+  _unur_check_NULL( GENTYPE,par,0 );
 
   /* check input */
   _unur_check_par_object( AROU );
@@ -445,7 +445,7 @@ unur_arou_set_max_sqhratio( struct unur_par *par, double max_ratio )
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( par->genid,par,0 );
+  _unur_check_NULL( GENTYPE,par,0 );
 
   /* check input */
   _unur_check_par_object( AROU );
@@ -483,7 +483,7 @@ unur_arou_set_max_segments( struct unur_par *par, int max_segs )
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( par->genid,par,0 );
+  _unur_check_NULL( GENTYPE,par,0 );
 
   /* check input */
   _unur_check_par_object( AROU );
@@ -521,7 +521,7 @@ unur_arou_set_center( struct unur_par *par, double center )
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( par->genid,par,0 );
+  _unur_check_NULL( GENTYPE,par,0 );
 
   /* check input */
   _unur_check_par_object( AROU );
@@ -557,7 +557,7 @@ unur_arou_set_usecenter( struct unur_par *par, int usecenter )
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( par->genid,par,0 );
+  _unur_check_NULL( GENTYPE,par,0 );
 
   /* check input */
   _unur_check_par_object( AROU );
@@ -590,7 +590,7 @@ unur_arou_set_verify( struct unur_par *par, int verify )
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( par->genid,par,0 );
+  _unur_check_NULL( GENTYPE,par,0 );
 
   /* check input */
   _unur_check_par_object( AROU );
@@ -623,7 +623,7 @@ unur_arou_init( struct unur_par *par )
   struct unur_gen *gen;
 
   /* check arguments */
-  _unur_check_NULL( par->genid,par,NULL );
+  _unur_check_NULL( GENTYPE,par,NULL );
 
   /* check input */
   if ( par->method != UNUR_METH_AROU ) {

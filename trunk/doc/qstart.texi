@@ -123,6 +123,7 @@ it will be better to look for a specific tool for that distribution.
 @node Install
 @section Install
 
+@noindent
 First unzip and untar the package. Then change to the directory
 @file{/unuran} and execute the following commands:
 @smallexample
@@ -131,7 +132,7 @@ make
 make install
 @end smallexample
 @c
-@* This installs the following files:
+@noindent This installs the following files:
 @c
 @smallexample
 $(prefix)/include/unuran_tests.h
@@ -140,7 +141,13 @@ $(prefix)/include/unuran_config.h
 $(prefix)/lib/libunuran.a
 @end smallexample
 
-@* Now the relevant files are where the C-compiler can find them.
+@noindent If you set the follwing systemvariables:
+@smallexample
+LIBRARY_PATH="HOMEDIRECTORY/lib"
+C_INCLURE_PATH="HOMEDIRECTORY/include"
+@end smallexample
+@noindent
+the relevant files are where the C-compiler can find them.
 If every user on your machine should be able to use UNURAN,
 you omit @file{--prefix=HOMEDIRECTORY} when calling @file{configure}
 (as usual the standard value of @file{$(prefix)} is @file{/usr/local}.

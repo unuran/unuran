@@ -112,7 +112,7 @@ _unur_distr_cemp_new( void )
 /*---------------------------------------------------------------------------*/
 
 int
-unur_distr_cemp_set_sample( struct unur_distr *distr, double *sample, int n_sample )
+unur_distr_cemp_set_data( struct unur_distr *distr, double *sample, int n_sample )
      /*----------------------------------------------------------------------*/
      /* set observed sample for distribution                                 */
      /*                                                                      */
@@ -154,7 +154,7 @@ unur_distr_cemp_set_sample( struct unur_distr *distr, double *sample, int n_samp
 /*---------------------------------------------------------------------------*/
 
 int 
-unur_distr_cemp_get_sample( struct unur_distr *distr, double **sample )
+unur_distr_cemp_get_data( struct unur_distr *distr, double **sample )
      /*----------------------------------------------------------------------*/
      /* get number of observations and set pointer to array observations     */
      /*                                                                      */

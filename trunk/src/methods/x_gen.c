@@ -49,6 +49,7 @@
 UNUR_GEN *unur_init( UNUR_PAR *par )
 {                
   _unur_check_NULL(NULL,par,NULL);
+
   return (par->init(par));
 } /* end of unur_init() */
 

@@ -303,42 +303,18 @@ double unur_distr_cont_get_pdfarea( UNUR_DISTR *distribution );
 /*---------------------------------------------------------------------------*/
 
 /* 
-   Routines for handling empirical univariate discrete distributions (DEMP).
-*/
-
-/* Essential parameters */
-
-int unur_distr_demp_set_prob( UNUR_DISTR *distribution, double *prob, int n_prob );
-/* 
-   Set finite probability vector for a distribution. It is not
-   necessary that the entries in the given probability vector sum to
-   1. @code{n_prob} must be positive. However there is no testing
-   whether all entries in @code{prob} are non-negative. 
-*/
-
-
-int unur_distr_demp_get_prob( UNUR_DISTR *distribution, double **prob );
-/* 
-   Get length of probability vector of the distribution and set pointer
-   @code{prob} to array of probabilities. If no probability vector is given,
-   @code{0} is returned and @code{prob} is set to NULL.
-*/
-
-/*---------------------------------------------------------------------------*/
-
-/* 
    Routines for handling empirical univariate continuous distributions (CEMP).
 */
 
 /* Essential parameters */
 
-int unur_distr_cemp_set_sample( UNUR_DISTR *distribution, double *sample, int n_sample );
+int unur_distr_cemp_set_data( UNUR_DISTR *distribution, double *sample, int n_sample );
 /* 
    Set observed sample for empirical distribution.
 */
 
 
-int unur_distr_cemp_get_sample( UNUR_DISTR *distribution, double **sample );
+int unur_distr_cemp_get_data( UNUR_DISTR *distribution, double **sample );
 /* 
    Get number of samples and set pointer @code{sample} to array of
    observations. If no sample has beeb given,
@@ -442,6 +418,30 @@ double unur_distr_discr_get_pmfarea(UNUR_DISTR *distribution);
    not known, @* unur_distr_cont_upd_pdfarea() is called to compute
    it. If this is not successful @code{UNUR_INFINITY} is returned and
    @code{unur_errno} is set to @code{UNUR_ERR_DISTR_GET}.
+*/
+
+/*---------------------------------------------------------------------------*/
+
+/* 
+   Routines for handling empirical univariate discrete distributions (DEMP).
+*/
+
+/* Essential parameters */
+
+int unur_distr_demp_set_prob( UNUR_DISTR *distribution, double *prob, int n_prob );
+/* 
+   Set finite probability vector for a distribution. It is not
+   necessary that the entries in the given probability vector sum to
+   1. @code{n_prob} must be positive. However there is no testing
+   whether all entries in @code{prob} are non-negative. 
+*/
+
+
+int unur_distr_demp_get_prob( UNUR_DISTR *distribution, double **prob );
+/* 
+   Get length of probability vector of the distribution and set pointer
+   @code{prob} to array of probabilities. If no probability vector is given,
+   @code{0} is returned and @code{prob} is set to NULL.
 */
 
 /*---------------------------------------------------------------------------*/

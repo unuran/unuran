@@ -85,7 +85,7 @@
 /* check for invalide NULL pointer                                           */
 /* (needs not be enabled unless the user is too lazy to verified pointers    */
 /* to generator objects after initialization.)                               */
-/*  #define UNUR_ENABLE_CHECKNULL */
+#define UNUR_ENABLE_CHECKNULL
 
 /*---------------------------------------------------------------------------*/
 /* Debugging tools                                                           */

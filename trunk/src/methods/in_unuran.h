@@ -89,6 +89,7 @@ typedef struct unur_gen   UNUR_GEN;      /* generator object                 */
 #include <tabl.h>
 #include <tdr.h>
 #include <utdr.h>
+#include <empk.h>
 
 /* methods for continuous multivariate distributions */
 #include <rect.h>

@@ -55,9 +55,10 @@
 /*---------------------------------------------------------------------------*/
 /* create empty distribution object for ...                                  */
 
-struct unur_distr *_unur_distr_cont_new( void );  /* univ. continuous */
-struct unur_distr *_unur_distr_discr_new( void ); /* univ. discrete   */
-struct unur_distr *_unur_distr_demp_new( void );  /* emp. univ. discrete */
+struct unur_distr *_unur_distr_cont_new( void );  /* univ. continuous        */
+struct unur_distr *_unur_distr_cemp_new( void );  /* emp. univ. continuous   */
+struct unur_distr *_unur_distr_discr_new( void ); /* univ. discrete          */
+struct unur_distr *_unur_distr_demp_new( void );  /* emp. univ. discrete     */
 
 /*---------------------------------------------------------------------------*/
 /* call pdf's and cdf's                                                      */
@@ -69,6 +70,21 @@ struct unur_distr *_unur_distr_demp_new( void );  /* emp. univ. discrete */
 
 #define _unur_discr_PMF(x,distr)  ((*((distr)->data.discr.pmf))((x),(distr)))
 #define _unur_discr_CDF(x,distr)  ((*((distr)->data.discr.cdf))((x),(distr)))
+
+/*---------------------------------------------------------------------------*/
+/* debuging routines for distributions                                       */
+
+void _unur_distr_cont_debug( UNUR_DISTR *distribution, char *genid );
+/* write info about distribution into logfile                                */
+
+void _unur_distr_cemp_debug( UNUR_DISTR *distribution, char *genid, int printvector );
+/* write info about distribution into logfile                                */
+
+void _unur_distr_discr_debug( UNUR_DISTR *distribution, char *genid );
+/* write info about distribution into logfile                                */
+
+void _unur_distr_demp_debug( UNUR_DISTR *distribution, char *genid, int printvector );
+/* write info about distribution into logfile                                */
 
 /*---------------------------------------------------------------------------*/
 /* check if parameter object is of correct type, return 0 otherwise       */

@@ -87,6 +87,8 @@
 /*    bits 13-24 ... adaptive steps                                          */
 /*    bits 25-32 ... trace sampling                                          */
 
+#define EMPK_DEBUG_PRINTDATA   0x00000100u
+
 /*---------------------------------------------------------------------------*/
 /* Flags for logging set calls                                               */
 
@@ -116,6 +118,11 @@ static struct unur_gen *_unur_empk_create( struct unur_par *par );
 static int _unur_empk_start_kernel( struct unur_par *par, struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 /* start generator for kernel distribution                                   */
+/*---------------------------------------------------------------------------*/
+
+static int _unur_empk_read_kernel_data( struct unur_par *par, struct unur_gen *gen );
+/*---------------------------------------------------------------------------*/
+/* read necessary data about kernel form internal table.                     */
 /*---------------------------------------------------------------------------*/
 
 /* No reinit() call                                                          */
@@ -159,6 +166,18 @@ static void _unur_empk_debug_init( struct unur_par *par, struct unur_gen *gen );
 
 /*---------------------------------------------------------------------------*/
 /* constants                                                                 */
+
+/*---------------------------------------------------------------------------*/
+
+#define SQU(a) ((a)*(a))
+
+/*---------------------------------------------------------------------------*/
+
+inline static int
+compare_doubles (const void *a, const void *b)
+{
+  return (int) (*((double*)a) - *((double*)b));
+}
 
 /*---------------------------------------------------------------------------*/
 
@@ -221,7 +240,7 @@ unur_empk_new( struct unur_distr *distr )
   par->debug    = _unur_default_debugflag; /* set default debugging flags    */
 
   /* routine for starting generator */
-  par->init = _unur_empk_init;
+  par->init     = _unur_empk_init;
 
   return par;
 
@@ -560,9 +579,22 @@ _unur_empk_init( struct unur_par *par )
   if (!_unur_empk_start_kernel( par, gen )) 
     { free(par); _unur_empk_free(gen); return NULL; }
 
+  /* sort entries */
+  qsort( GEN.observ, GEN.n_observ, sizeof(double), compare_doubles);
+
+#if 0
+
+  /* compute band width (also called window width) */
+  GEN.bwidth =  PAR.smoothing * PAR.alpha * PAR.beta *
+    iqrtilestdev(GEN.observ,GEN.n,&(GEN.xbar),&(GEN.stdev))/exp(0.2*log(GEN.n_observ));
+
+  /* compute constant for variance corrected version */
+  GEN.sconst = 1./sqrt(1. + PAR.kernvar * SQU( GEN.bwidth/GEN.stdev ) );
+#endif
+
 #ifdef UNUR_ENABLE_LOGGING
     /* write info into log file */
-/*      if (gen->debug) _unur_ssr_debug_init(par,gen); */
+    if (gen->debug) _unur_empk_debug_init(par,gen);
 #endif
 
   /* free parameters */
@@ -571,18 +603,6 @@ _unur_empk_init( struct unur_par *par )
   return gen;
 
 } /* end of _unur_empk_init() */
-
-#if 0
-  GEN.kernrvg=PAR.kernrvg;/*random variate generator function for the kernel*/
-
-  qksort(GEN.observ,0,(GEN.n-1));   /*the observations must be ordered first*/
-
-#define BETA 1.3637439 /*optimal BETA if data follow normal distribution*/
-  GEN.bwidth = PAR.alfa*BETA*
-   iqrtilestdev(GEN.observ,GEN.n,&(GEN.xbar),&(GEN.stdev))/exp(0.2*log(GEN.n));
-#undef BETA
-  GEN.sconst=1./sqrt(1. + PAR.kernvar*SQ(GEN.bwidth/GEN.stdev));
-#endif
 
 /*---------------------------------------------------------------------------*/
 
@@ -649,6 +669,47 @@ _unur_empk_create( struct unur_par *par )
 
 /*---------------------------------------------------------------------------*/
 
+inline static double
+comp_stddev( double data[], int n, double *xbarres)
+     /* compute mean and standard deviation of data */
+{
+  int i;
+  double sigm=0., xbar=0.;
+
+  if (n<2) {
+    *xbarres=-999.;
+    return(-1.);
+  }
+
+  for (i=0; i<n; i++)
+    xbar += data[i];
+  xbar/=n;
+  for (i=0; i<n; i++)
+    sigm += (data[i]-xbar)*(data[i]-xbar);
+  *xbarres=xbar;
+  return sqrt(sigm/(n-1));
+} /* end of comp_stddev() */
+
+void _unur_empk_compute_data_parameters ( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* start generator for kernel                                           */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par ... pointer to parameter for building generator object         */
+     /*   gen ... pointer to generator object                                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... on success                                                   */
+     /*   0 ... on error                                                     */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  CHECK_NULL(gen,/*void*/);  COOKIE_CHECK(gen,CK_EMPK_GEN,/*void*/);
+
+} /* end of _unur_empk_compute_data_parameters() */
+
+/*---------------------------------------------------------------------------*/
+
 int 
 _unur_empk_start_kernel( struct unur_par *par, struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
@@ -663,6 +724,10 @@ _unur_empk_start_kernel( struct unur_par *par, struct unur_gen *gen )
      /*   0 ... on error                                                     */
      /*----------------------------------------------------------------------*/
 {
+  /* check arguments */
+  CHECK_NULL(par,0);  COOKIE_CHECK(par,CK_EMPK_PAR,0);
+  CHECK_NULL(gen,0);  COOKIE_CHECK(gen,CK_EMPK_GEN,0);
+
   /* get generator for kernel */
 
   if (GEN.kerngen == NULL) {
@@ -693,6 +758,12 @@ _unur_empk_start_kernel( struct unur_par *par, struct unur_gen *gen )
     return 0;
   }
 
+  /* set uniform random number generator */
+  GEN.kerngen->urng = par->urng;
+
+  /* copy debugging flags */
+  GEN.kerngen->debug = par->debug;
+
   /* clear up */
   if ( !(par->set & EMPK_SET_KERN) )
     /* no kernel distribution given by user.
@@ -704,6 +775,29 @@ _unur_empk_start_kernel( struct unur_par *par, struct unur_gen *gen )
 
 } /* _unur_empk_start_kernel() */
 
+/*---------------------------------------------------------------------------*/
+
+int 
+_unur_empk_read_kernel_data( struct unur_par *par, struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* read necessary data about kernel form internal table.                */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par ... pointer to parameter for building generator object         */
+     /*   gen ... pointer to generator object                                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... on success                                                   */
+     /*   0 ... on error                                                     */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  CHECK_NULL(par,0);  COOKIE_CHECK(par,CK_EMPK_PAR,0);
+  CHECK_NULL(gen,0);  COOKIE_CHECK(gen,CK_EMPK_GEN,0);
+  
+  /* o.k. */
+  return 1;
+} /* end of _unur_empk_read_kernel_data() */
 
 /*****************************************************************************/
 
@@ -722,7 +816,36 @@ _unur_empk_sample( struct unur_gen *gen )
      /*   return 0.                                                          */
      /*----------------------------------------------------------------------*/
 { 
-  return 0.;
+  double U,K,X;
+  int j;
+
+  /* check arguments */
+  CHECK_NULL(gen,0.);  COOKIE_CHECK(gen,CK_EMPK_GEN,0.);
+
+  /* select uniformly one of the observations */
+  U = _unur_call_urng(gen->urng) * GEN.n_observ;
+  j = (int) (U);
+
+  /** TODO: recycle uniform random variate??
+      maybe for Boxcar (Uniform) Kernel. **/
+  /* U -= j;   u is now a "recycled" U(0,1) random variate, aber wie weiter verwenden*/
+
+  /* sample from kernel distribution */
+  K = unur_sample_cont( GEN.kerngen );
+  
+  if (gen->variant & EMPK_VARFLAG_VARCOR)
+    /* use variance correction */
+    X = GEN.xbar + (GEN.observ[j] - GEN.xbar + GEN.bwidth * K) * GEN.sconst;
+  else
+    /* no variance correction */
+    X = GEN.observ[j] + GEN.bwidth * K;
+
+  if (gen->variant & EMPK_VARFLAG_POSITIVE)
+    /* use mirroring to avoid non-positive numbers */
+    X = (X<0.) ? -X : X;
+
+  return X;
+
 } /* end of _unur_empk_sample() */
 
 /*****************************************************************************/
@@ -764,5 +887,82 @@ _unur_empk_free( struct unur_gen *gen )
 } /* end of _unur_empk_free() */
 
 /*****************************************************************************/
+/**  Debugging utilities                                                    **/
+/*****************************************************************************/
 
+/*---------------------------------------------------------------------------*/
+#ifdef UNUR_ENABLE_LOGGING
+/*---------------------------------------------------------------------------*/
+
+static void
+_unur_empk_debug_init( struct unur_par *par, struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* write info about generator into logfile                              */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par ... pointer to parameter for building generator object         */
+     /*   gen ... pointer to generator object                                */
+     /*----------------------------------------------------------------------*/
+{
+  FILE *log;
+
+  /* check arguments */
+  CHECK_NULL(par,/*void*/);  COOKIE_CHECK(par,CK_EMPK_PAR,/*void*/);
+  CHECK_NULL(gen,/*void*/);  COOKIE_CHECK(gen,CK_EMPK_GEN,/*void*/);
+
+  log = unur_get_stream();
+
+  fprintf(log,"%s:\n",gen->genid);
+  fprintf(log,"%s: type    = continuous univariate random variates\n",gen->genid);
+  fprintf(log,"%s: method  = EMPK (EMPirical distribution with Kernel smoothing)\n",gen->genid);
+  fprintf(log,"%s:\n",gen->genid);
+
+  _unur_distr_cemp_debug( &(gen->distr), gen->genid, (gen->debug & EMPK_DEBUG_PRINTDATA));
+
+  fprintf(log,"%s: sampling routine = _unur_empk_sample()\n",gen->genid);
+  fprintf(log,"%s:\n",gen->genid);
+
+  fprintf(log,"%s: smoothing factor = %g",gen->genid, PAR.smoothing);
+  _unur_print_if_default(par,EMPK_SET_SMOOTHING); fprintf(log,"\n");
+  if (gen->variant & EMPK_VARFLAG_POSITIVE)
+    fprintf(log,"%s: positive random variable only; use mirroring \n",gen->genid);
+
+  if (gen->variant & EMPK_VARFLAG_VARCOR)
+    fprintf(log,"%s: use variance correction\n",gen->genid);
+  else
+    fprintf(log,"%s: no variance correction\n",gen->genid);
+
+  fprintf(log,"%s:\n",gen->genid);
+  fprintf(log,"%s: Kernel:\n",gen->genid);
+
+  fprintf(log,"%s:    type = %s  ",gen->genid,GEN.kerngen->distr.name);
+  if (gen->set & EMPK_SET_KERNGEN)
+    fprintf(log,"[kernel generator set]\n");
+  else if (gen->set & EMPK_SET_KERN)
+    fprintf(log,"[kernel set, generator by default]\n");
+  else
+    fprintf(log,"[default]\n");
+
+  fprintf(log,"%s:    window width = %g\n",gen->genid, GEN.bwidth);
+  fprintf(log,"%s:    alpha = %g",gen->genid, PAR.alpha);
+  _unur_print_if_default(par,EMPK_SET_ALPHA); fprintf(log,"\n");
+  if (gen->variant & EMPK_VARFLAG_VARCOR) {
+    fprintf(log,"%s:    kernel variance = %g",gen->genid, PAR.kernvar);
+    _unur_print_if_default(par,EMPK_SET_KERNELVAR); fprintf(log,"\n");
+    fprintf(log,"%s:    variance correction factor = %g\n",gen->genid, GEN.sconst);
+  }
+
+  fprintf(log,"%s:\n",gen->genid);
+  fprintf(log,"%s: Data:\n",gen->genid);
+  fprintf(log,"%s:    beta  = %g",gen->genid, PAR.beta);
+  _unur_print_if_default(par,EMPK_SET_BETA); fprintf(log,"\n");
+  fprintf(log,"%s:    mean (data) = %g\n",gen->genid, GEN.xbar);
+  fprintf(log,"%s:    stddev (data) = %g\n",gen->genid, GEN.stdev);
+
+  fprintf(log,"%s:\n",gen->genid);
+
+} /* end of _unur_empk_debug_init() */
+
+/*---------------------------------------------------------------------------*/
+#endif   /* end UNUR_ENABLE_LOGGING */
 /*---------------------------------------------------------------------------*/

@@ -1,0 +1,1022 @@
+#!/usr/bin/perl
+# ----------------------------------------------------------------
+# CGI script for code generator
+# ----------------------------------------------------------------
+# $Id$
+# ----------------------------------------------------------------
+
+use strict;
+
+# ----------------------------------------------------------------
+# Load packages
+
+use CGI qw/:standard -nosticky *blockquote *font/;
+use CGI::Pretty;
+
+# ----------------------------------------------------------------
+# URLs ...
+
+my $URL_root   = "";
+my $URL_arvag  = "$URL_root/arvag";
+my $URL_anuran = "$URL_root/anuran";
+
+my $ANURAN_log = "/home/staff/leydold/public_html/anuran.log";
+
+# ACG Command
+my $ACG = "./acg";
+
+# ----------------------------------------------------------------
+# Gray Color for disabled text
+
+my $Gray = "#C0C0C0";
+
+# ----------------------------------------------------------------
+my %labels_menue_distrtypes = 
+    ( "cstd" => "Continuous standard distribution",
+      "cpdf" => "Continuous distribution with given PDF",
+      );
+
+my @menue_distrtypes = sort keys %labels_menue_distrtypes;
+
+# ----------------------------------------------------------------
+# Data for distributions
+
+my %labels_menue_distributions = (
+	'beta' => 'Beta distribution',
+	'gamma' => 'Gamma distribution',
+	'normal' => 'Normal distribution',
+	);
+
+my @menue_distributions = sort keys %labels_menue_distributions;
+
+my %data_distr = (
+	'beta' => {
+		'=NAME' => 'Beta distribution',
+		'=PDF' => '(x-a)<SUP>(p-1)</SUP> * (b-x)<SUP>(q-1)</SUP>',
+		'=N_REQ' => '2',
+		'=N_TOT' => '4',
+		'=FPARAMS' => [
+			{'=NAME' => 'p', '=DEF'  => '*', '=COND' => '> 0', '=LOWER' => '0', },
+			{'=NAME' => 'q', '=DEF'  => '*', '=COND' => '> 0', '=LOWER' => '0', },
+			{'=NAME' => 'a', '=DEF'  => '0', '=COND' => '', },
+			{'=NAME' => 'b', '=DEF'  => '1', '=COND' => '> a', '=LOWER' => 'a', },
+			],
+		,
+		'=LEFT' => 'a',
+		'=RIGHT' => 'b',
+		},
+	'gamma' => {
+		'=NAME' => 'Gamma distribution',
+		'=PDF' => '((x-gamma)/beta)<SUP>(alpha-1)</SUP> * exp( -(x-gamma)/beta )',
+		'=N_REQ' => '1',
+		'=N_TOT' => '3',
+		'=FPARAMS' => [
+			{'=NAME' => 'alpha', '=DEF'  => '*', '=COND' => '> 0', '=LOWER' => '0', },
+			{'=NAME' => 'beta', '=DEF'  => '1', '=COND' => '> 0', '=LOWER' => '0', },
+			{'=NAME' => 'gamma', '=DEF'  => '0', '=COND' => '', },
+			],
+		,
+		'=LEFT' => 'gamma',
+		'=RIGHT' => 'infinity',
+		},
+	'normal' => {
+		'=NAME' => 'Normal distribution',
+		'=PDF' => 'exp( -1/2 * ((x-mu)/sigma)<SUP>2</SUP> )',
+		'=N_REQ' => '0',
+		'=N_TOT' => '2',
+		'=FPARAMS' => [
+			{'=NAME' => 'mu', '=DEF'  => '0', '=COND' => '', },
+			{'=NAME' => 'sigma', '=DEF'  => '1', '=COND' => '> 0', '=LOWER' => '0', },
+			],
+		,
+		'=LEFT' => '-infinity',
+		'=RIGHT' => 'infinity',
+		},
+	);
+
+# ----------------------------------------------------------------
+# abbreviations
+
+my $sp = '&nbsp;&nbsp;&nbsp;';
+
+# ----------------------------------------------------------------
+# Create CGI object
+
+my $q = new CGI;
+
+# ----------------------------------------------------------------
+# Step number
+
+my $step = $q->param('Step');
+$q->delete('Step');
+
+# ----------------------------------------------------------------
+# Reset interface if requested
+
+if ($q->param('Restart')) {
+    # clear all data
+    $step = 1;
+    $q->delete_all();
+}
+
+# ----------------------------------------------------------------
+# Get some data from query
+
+# selected distribution
+my $distrtype = $q->param('DistrType');
+my $distr     = $q->param('Distribution');
+my $Stdform   = $q->param('Stdform');
+my $Truncated = $q->param('Truncated');
+
+# read some data for selected distribution
+my $distrname = $data_distr{$distr}{'=NAME'};
+my $n_req     = $data_distr{$distr}{'=N_REQ'};
+my $n_tot     = $data_distr{$distr}{'=N_TOT'};
+my $n_params  = ($Stdform eq 'yes') ? $n_req : $n_tot;
+
+# ----------------------------------------------------------------
+# We need a frog
+
+my $frog = ($q->param('Frog') && $step > 1) ? $q->param('Frog') : sprintf("%02d",int(rand 12) + 1);
+
+my $img_frog = 
+    "$sp <img SRC='$URL_anuran/frogs/frog$frog.jpg' ALIGN = top> $sp";
+
+# ----------------------------------------------------------------
+
+anuran_start();
+anuran_type_distribution();
+anuran_select_distribution();
+anuran_params_distribution();
+anuran_properties_generator();
+anuran_code();
+anuran_end();
+
+# ----------------------------------------------------------------
+exit 0;
+# ----------------------------------------------------------------
+
+##################################################################
+#                                                                #
+# Subroutines                                                    #
+#                                                                #
+##################################################################
+
+# ----------------------------------------------------------------
+# Start of HTML page
+# ----------------------------------------------------------------
+
+sub anuran_start
+{
+    print
+	
+	# HTTP header
+	header(),
+
+	# HTML header and title
+	start_html(-title  =>'ANURAN Automatic Code Generator',
+		   -author =>'anuran@statistik.wu-wien.ac.at',
+		   -meta   =>{'keywords'=>'nonuniform random number generator,
+                                           automatic code generator',
+			      'copyright'=>'copyright (C) 2001 Josef.Leydold@statistik.wu-wien.ac.at'},
+		   -BGCOLOR=>'#FFFFF5',
+		   -TEXT   =>'#000000',
+		   -LINK   =>'#000000',
+		   -VLINK  =>'#000000',
+		   -ALINK  =>'#000000',
+		   -MARGINWIDTH =>'5',
+		   -MARGINHEIGHT=>'5',
+		   -LEFTMARGIN  =>'5',
+		   -TOPMARGIN   =>'5'),
+
+        # Make anuran heading and bar with links
+	anuran_heading(),
+
+        # Heading
+	h1('Automatic Code Generator'),
+	h2('Experimental version'),
+	b('Resulting code is reliable but should used with care!<BR>
+	   This code generator cannot produce generators for all distributions / parameters.'),
+
+	# ruler
+	p().hr().p(),"\n";
+
+} # end of anuran_start()
+
+
+# ----------------------------------------------------------------
+# Anuran heading and bar with links
+# ----------------------------------------------------------------
+
+sub anuran_heading {
+
+    my $heading =
+	"<TABLE BORDER='0' CELLSPACING='1'>
+           <TR>
+	   <TD ALIGN=LEFT><IMG SRC='$URL_arvag/images/logo_arvag_40.png' ALT='' ALIGN=LEFT>
+	     <TD ALIGN=LEFT> $sp
+             <FONT FACE='Arial, Helvetica, sans-serif' SIZE='4' COLOR='#1E426E'>
+	     ANURAN - Automatic Non-Uniform RANdom number generators
+	     </FONT></TD></TR></TABLE>\n";
+
+    my $link_list =
+	"<TABLE WIDTH='100%' BORDER='0' CELLSPACING='2'>
+	   <TR> 
+           <TD WIDTH='17%' BGCOLOR='#1E426E'> 
+             <A HREF='$URL_anuran/index.html'>
+             <DIV ALIGN='CENTER'>
+             <FONT FACE='Arial, Helvetica, sans-serif' SIZE='2' COLOR='#FFFFFF'>
+             <B>ANURAN</B></FONT></A></DIV></TD>
+           <TD WIDTH='17%' BGCOLOR='#BCD2EE'> 
+             <DIV ALIGN='CENTER'>
+             <FONT FACE='Arial, Helvetica, sans-serif' SIZE='2' COLOR='#1E426E'>
+             <B>Code Generator</B></FONT></DIV></TD>
+           <TD WIDTH='17%' BGCOLOR='#1E426E'> 
+             <DIV ALIGN='CENTER'>
+             <A HREF='$URL_anuran/project.html'>
+             <FONT FACE='Arial, Helvetica, sans-serif' SIZE='2' COLOR='#FFFFFF'>
+             <B>Project</B></FONT></A></DIV></TD>
+           <TD WIDTH='17%' BGCOLOR='#1E426E'> 
+             <DIV ALIGN='CENTER'>
+             <A HREF='$URL_arvag/software.html'>
+             <FONT FACE='Arial, Helvetica, sans-serif' SIZE='2' COLOR='#FFFFFF'>
+             <B>Other Software</B></FONT></A></DIV></TD>
+           <TD WIDTH='17%' BGCOLOR='#1E426E'> 
+             <DIV ALIGN='CENTER'>
+             <A HREF='$URL_arvag/index.html'>
+             <FONT FACE='Arial, Helvetica, sans-serif' SIZE='2' COLOR='#FFFFFF'>
+             <B>ARVAG</B></FONT></A></DIV></TD>
+           <TD WIDTH='17%' BGCOLOR='#1E426E'> 
+             <DIV ALIGN='CENTER'>
+             <A HREF='mailto:anuran\@statistik.wu-wien.ac.at'>
+             <FONT FACE='Arial, Helvetica, sans-serif' SIZE='2' COLOR='#FFFFFF'>
+             <B>Feedback</B></FONT></A></DIV></TD>
+           <TD WIDTH='1%'>&nbsp;</TD></TR></TABLE>\n";
+
+    # return HTML code
+    return $heading.$link_list;
+
+} # end of anuran_heading()
+
+
+# ----------------------------------------------------------------
+# End of HTML page
+# ----------------------------------------------------------------
+
+sub anuran_end
+{
+    print 
+	
+	# HTML page closing
+	end_html();
+
+} # end of anuran_end()
+
+
+# ----------------------------------------------------------------
+# Submit and Reset Button
+# ----------------------------------------------------------------
+
+sub anuran_submit
+{
+    my $next_step = $_[0];
+    my $hidden_param;
+
+    if ($step > 1) {
+	$hidden_param .= $q->hidden('DistrType');
+    }
+    if ($step > 2) {
+	$hidden_param .= $q->hidden('Distribution');
+	$hidden_param .= $q->hidden('Stdform');
+	$hidden_param .= $q->hidden('Truncated');
+    }
+    if ($step > 3) {
+	for (my $i=0; $i < $n_tot; $i++) {
+	    $hidden_param .= $q->hidden("Param_$i");
+	}
+	$hidden_param .= $q->hidden('Left');
+	$hidden_param .= $q->hidden('Right');
+    }
+    if ($step > 4) {
+	$hidden_param .= $q->hidden('Language');
+	$hidden_param .= $q->hidden('Speed');
+	$hidden_param .= $q->hidden('Codelength');
+	$hidden_param .= $q->hidden('Codetype');
+    }
+    
+    return 
+	$hidden_param,
+
+	$q->hidden('Frog',$frog),
+	$q->hidden('Step',$next_step),
+
+	$q->submit('Continue'),
+	$img_frog,
+	$q->submit('Restart');
+	
+} # end of anuran_submit()
+
+
+# ----------------------------------------------------------------
+# Step 1: Type of distribution
+# ----------------------------------------------------------------
+
+sub anuran_type_distribution
+{
+
+# ................................................................
+# CASE: select a distribution type
+# ................................................................
+    if ($step <=1) { 
+	print
+	    'Step 1: '.b('Type of Distribution'),
+	    blockquote( $q->startform (-method => 'GET',
+				       -action => $q->url()),
+			$q->popup_menu(-name   => 'DistrType',
+				       -values => \@menue_distrtypes,
+				       -default=> 'cstd',
+				       -labels => \%labels_menue_distrtypes),
+			$sp,
+			anuran_submit('2'),
+			endform() ),
+	    p().hr().p();
+	return;
+    }
+
+# ................................................................
+# CASE: distribution type selected
+# ................................................................
+    if ($step > 1) {
+	print
+	    'Step 1: '.b('Type of Distribution'),
+	    blockquote($labels_menue_distrtypes{$distrtype}),
+	    p().hr().p();
+	return;
+    }
+
+} # end of anuran_type_distribution()
+
+
+# ----------------------------------------------------------------
+# Step 2: Select a distribution
+# ----------------------------------------------------------------
+
+sub anuran_select_distribution
+{
+
+# ................................................................
+# CASE: wait till distribution can be selected
+# ................................................................
+    if ($step < 2) {
+	print
+	    font({-color=>$Gray},'Step 2: '.b('Distribution')),
+	    p().hr().p();
+	return;
+    }
+
+# ................................................................
+# CASE: select a distribution
+# ................................................................
+    if ($distrtype eq 'cstd') { anuran_select_cstd(); return; } 
+    if ($distrtype eq 'cpdf') { anuran_select_cpdf(); return; } 
+
+    # error use default
+    anuran_select_cstd(); return;
+
+} # end of anuran_select_distribution()
+
+
+# ----------------------------------------------------------------
+# Step 2a: Select a continuous standard distribution
+# ----------------------------------------------------------------
+
+sub anuran_select_cstd
+{
+# ................................................................
+# CASE: select a distribution
+# ................................................................
+    if ($step <= 2) {
+	print
+	    'Step 2: '.b('Distribution'),
+	    '<a name="junk">',
+	    blockquote(	$q->startform (-method => 'GET',
+				       -action => $q->url()),
+			$q->popup_menu(-name   => 'Distribution',
+				       -values => \@menue_distributions,
+				       -default=> 'normal',
+				       -labels => \%labels_menue_distributions),
+			p(),
+			$q->checkbox  (-name   => 'Stdform',
+				       -checked=> 'true',
+				       -value  => 'yes',
+				       -label  => ' Use standard form'),
+			p(),
+			$q->checkbox  (-name   => 'Truncated',
+				       -value  => 'yes',
+				       -label  => ' Truncated domain'),
+			p(),
+			anuran_submit('3'),
+			endform() ),
+	    p().hr().p();
+	return;
+    }
+ 
+# ................................................................
+# CASE: distribution selected
+# ................................................................
+    if ($step > 2) {
+	print
+	    'Step 2: '.b($distrname),
+	    blockquote( 'PDF(x) = [const] * ',
+			$data_distr{$distr}{'=PDF'} ),
+	    p().hr().p();
+	return;
+    }
+
+} # end of anuran_select_cstd()
+
+
+# ----------------------------------------------------------------
+# Step 2b: Select a continuous distribution with given PDF
+# ----------------------------------------------------------------
+
+sub anuran_select_cpdf
+{
+# ................................................................
+# CASE: select a distribution
+# ................................................................
+    if ($step <= 2) {
+    }
+ 
+# ................................................................
+# CASE: distribution selected
+# ................................................................
+    if ($step > 2) {
+    }
+ 
+} # end of anuran_select_cpdf()
+
+
+# ----------------------------------------------------------------
+# Step 3: Parameters of distribution
+# ----------------------------------------------------------------
+
+sub anuran_params_distribution
+{
+
+# ................................................................
+# CASE: wait till parameters of the distribution can be entered
+# ................................................................
+    if ($step < 3) {
+	print
+	    font({-color=>$Gray},'Step 3: '.b('Parameters for distribution')),
+	    p().hr().p();
+	return;
+    }
+
+# ................................................................
+
+    # Store ids of parameters
+    my %param_by_name;
+    for (my $i=0; $i < $n_tot; $i++) {
+	$param_by_name{$data_distr{$distr}{'=FPARAMS'}[$i]{'=NAME'}} = $i;
+    }
+
+    # mark errors
+    my $invalid_params = 0;
+    my @error_param;
+
+# ................................................................
+# Compute domain
+# ................................................................
+
+    # Compute standard domain
+    my $std_left = $data_distr{$distr}{'=LEFT'};
+    if ( $std_left !~ /\d+/ and $std_left ne '-infinity') {
+	$std_left = $q->param('Param_'.$param_by_name{$data_distr{$distr}{'=LEFT'}});
+    }
+    my $std_right = $data_distr{$distr}{'=RIGHT'};
+    if ( $std_right !~ /\d+/ and $std_right ne 'infinity') {
+	my $i = $param_by_name{$data_distr{$distr}{'=RIGHT'}};
+	$std_right = $q->param("Param_$i");
+	unless (defined $std_right) {
+	    $std_right = $data_distr{$distr}{'=FPARAMS'}[$i]{'=DEF'};
+	}
+    }
+
+    # Read domain
+    if (!defined($q->param('Left')) or $q->param('Left') < $std_left) {
+	$q->param('Left',$std_left);
+    }
+    if (!defined($q->param('Right')) or $q->param('Right') > $std_right) {
+	$q->param('Right',$std_right);
+    }
+    # Transform string into number
+    $q->param('Left', $q->param('Left')+0);
+    $q->param('Right',$q->param('Right')+0);
+
+# ................................................................
+# CASE: distribution selected and Parameters given
+# ................................................................
+    if ($step > 3) {
+	# ........................................................
+	# Parameters
+
+	my $params_show;
+
+	# Read parameters for distribution
+	for (my $i=0; $i < $n_tot; $i++) {
+
+	    my $param = $q->param("Param_$i");
+
+	    # check input for empty entries
+	    unless ($param =~ /\d+/) {
+		$invalid_params = 1;
+		$error_param[$i] = $sp.anuran_error('missing');
+		next;
+	    }
+
+	    # check validity of parameters
+	    my $lower = $data_distr{$distr}{'=FPARAMS'}[$i]{'=LOWER'};
+	    if ( defined $lower and 
+		 ( ($lower =~ /\d+/ and $lower > $param) or 
+		   ($lower !~ /\d+/ and $q->param("Param_".$param_by_name{$lower}) > $param) ) ) {
+		$invalid_params = 1;
+		$error_param[$i] = $sp.anuran_error('invalid');
+	    }
+	    my $upper = $data_distr{$distr}{'=FPARAMS'}[$i]{'=UPPER'};
+	    if ( defined $upper and 
+		 ( ($upper =~ /\d+/ and $upper < $param) or 
+		   ($upper !~ /\d+/ and $q->param("Param_".$param_by_name{$upper}) < $param) ) ) {
+		$invalid_params = 1;
+		$error_param[$i] = $sp.anuran_error('invalid');
+	    }
+
+	    # transform string to number
+	    $q->param("Param_$i",$param+0);
+	}
+
+	# print parameters into web page
+	for (my $i=0; $i < $n_params; $i++) {
+	    $params_show .=
+		( $data_distr{$distr}{'=FPARAMS'}[$i]{'=NAME'}.
+		  ' = '.
+		  $q->param("Param_$i").$sp );
+	}
+	if ($n_tot > $n_params) {
+	    $params_show .=
+		    start_font({-color=>$Gray}).'('.$sp;
+	    for (my $i=$n_params; $i < $n_tot; $i++) {
+		$params_show .=
+		    ( $data_distr{$distr}{'=FPARAMS'}[$i]{'=NAME'}.
+		      ' = '.
+		      $q->param("Param_$i").$sp );
+	    }
+	    $params_show .= ')'.end_font();
+	}
+
+	# ........................................................
+	# Domain
+
+	# show domain
+	my $domain_show = 'Domain = [ '.$q->param('Left').', '.$q->param('Right').' ]';
+	if ($Truncated) {
+	    $domain_show .= $sp.'(truncated)';
+	}
+
+	# check domain
+	if ($q->param('Left') > $q->param('Right')) {
+	    $invalid_params = 1;
+	}
+
+	# ........................................................
+	# Print data
+	unless ($invalid_params) {
+	    print 
+		'Step 3: ',
+		b("Parameters for $distrname"),
+		blockquote( $params_show,p(),
+			    $domain_show,p() ),
+		p().hr().p();
+	    return;
+	}
+	else {
+	    # there has been an error --> do step 3 again
+	    $step = 3;
+	}
+    }
+
+# ................................................................
+# CASE: enter parameters for selected distribution
+# ................................................................
+
+    if ($step == 3) {
+	# ........................................................
+	# Parameters
+
+	# List of required parameters
+	my $params_req;
+	for (my $i = 0; $i < $n_req; $i++) {
+	    $params_req .=
+		( $data_distr{$distr}{'=FPARAMS'}[$i]{'=NAME'}.
+		  ' = '.
+		  $q->textfield(-name     => "Param_$i",
+				-size     => 10,
+				-maxlength=> 10) );
+	    if ($data_distr{$distr}{'=FPARAMS'}[$i]{'=COND'}) {
+		$params_req .= "$sp ($data_distr{$distr}{'=FPARAMS'}[$i]{'=COND'})";
+	    }
+	    $params_req .= $error_param[$i].br();
+	}
+	
+	# List of optional parameters (for non-standard form)
+	my $params_opt;
+	for (my $i = $n_req; $i < $n_tot; $i++) {
+	    $params_opt .=
+		( $data_distr{$distr}{'=FPARAMS'}[$i]{'=NAME'}.
+		  ' = '.
+		  $q->textfield(-name     => "Param_$i",
+				-value    => $data_distr{$distr}{'=FPARAMS'}[$i]{'=DEF'},
+				-size     => 10,
+				-maxlength=> 10) );
+	    if ($data_distr{$distr}{'=FPARAMS'}[$i]{'=COND'}) {
+		$params_opt .= "$sp ($data_distr{$distr}{'=FPARAMS'}[$i]{'=COND'})";
+	    }
+	    $params_opt .= $error_param[$i].br();
+	}
+	
+	# List of defaults for optional parameters (for standard form)
+	my $params_def;
+	if ($n_tot > $n_req) {
+	    $params_def .= start_font({-color=>$Gray}).'('.$sp;
+	    for (my $i = $n_req; $i < $n_tot; $i++) {
+		$params_def .=
+		    ( $q->hidden(-name  => "Param_$i",
+				 -value => $data_distr{$distr}{'=FPARAMS'}[$i]{'=DEF'}).
+		      $data_distr{$distr}{'=FPARAMS'}[$i]{'=NAME'}.
+		      ' = '.
+		      $data_distr{$distr}{'=FPARAMS'}[$i]{'=DEF'}.$sp );
+	    }
+	    $params_def .= ')'.end_font();
+	}
+
+	# show list of parameters
+	my $params_show = $params_req . (($Stdform eq 'yes') ? p().$params_def : $params_opt);
+
+	# ........................................................
+	# Domain
+
+	my $domain_show;
+	if ($Truncated eq 'yes') {
+	    # enter domain
+	    $domain_show = 
+		b( 'Domain = ['.$sp.
+		   $q->textfield(-name     => 'Left',
+				 -size     => 10,
+				 -maxlength=> 10).
+		   $sp.','.$sp.
+		   $q->textfield(-name     => 'Right',
+				 -size     => 10,
+				 -maxlength=> 10).
+		   $sp.']');
+
+	    # check domain
+	    if ($q->param('Left') > $q->param('Right')) {
+		$domain_show .= 
+		    $sp.anuran_error('domain invalid (left > right)');
+	    }
+	}
+	else {
+	    # show domain
+	    $domain_show = 
+		( 'Domain = [ '.$q->param('Left').', '.$q->param('Right').' ]'.
+		  $q->hidden('Left').
+		  $q->hidden('Right') );
+	}
+
+	# Make form
+	print 
+	    'Step 3: ',
+	    b("Parameters for $distrname"),
+	    blockquote( startform (-method => 'GET',
+				   -action => $q->url()),
+			$params_show,p(),
+			$domain_show,p(),
+			anuran_submit('4'),
+			endform(), ),
+	    p().hr().p();
+	return;
+    }
+
+} # end of anuran_select_distribution()
+
+
+# ----------------------------------------------------------------
+# Step 4: Properties of generator
+# ----------------------------------------------------------------
+
+sub anuran_properties_generator
+{
+# ................................................................
+# CASE: wait till you are asked
+# ................................................................
+    if ($step < 4) {
+	print
+	    font({-color=>$Gray},'Step 4: '.b('Properties of generator')),
+	    p().hr().p();
+	return;
+    }
+
+# ................................................................
+# CASE: enter properties
+# ................................................................
+    if ($step == 4) {
+	print 
+	    'Step 4: ',
+	    b("Properties of generator for $distrname"),
+	    blockquote( startform(-method => 'GET',
+				  -action => $q->url() ),
+			b('Programming language: '),
+			$q->popup_menu(-name  => 'Language',
+				       -values=> ['C','FORTRAN','JAVA']),
+			p(),
+			b('Speed: '),
+			$q->radio_group(-name   => 'Speed',
+					-values => ['fast','moderate','slow','don\'t care'],
+					-default=> 'moderate',
+					-rows   => 1,
+					-columns=> 4,
+					-labels => {'fast'      => ' fast ',
+						    'moderate'  => ' moderate ',
+						    'slow'      => ' slow ',
+						    'don\'t care' => ' don\'t care '}),
+			p(),
+			b('Code length: '),
+			$q->radio_group(-name   => 'Codelength',
+					-values => ['short','moderate','long','don\'t care'],
+					-default=> 'moderate',
+					-rows   => 1,
+					-columns=> 4,
+					-labels => {'short' => ' short ',
+						    'moderate' => ' moderate ',
+						    'long' => ' long ',
+						    'don\'t care' => ' don\'t care '}),
+			p(),
+			$q->radio_group(-name   => 'Codetype',
+					-values => ['generator','demo'],
+					-default=> 'generator',
+					-rows   => 2,
+					-columns=> 1,
+					-labels => {'generator'=>' Generator only',
+						    'demo'=>' Make complete demo version'}),
+			p(),
+			anuran_submit('5'),
+			endform(), ),
+	    p().hr().p();
+	return;
+    }
+
+# ................................................................
+# CASE: properties set
+# ................................................................
+    if ($step > 4) {
+	print 
+	    'Step 4: ',
+	    b("Properties of generator for $distrname"),
+	    blockquote( 'Programming language: '.$q->param('Language').
+			p().
+			'Speed: '.$q->param('Speed').
+			p().
+			'Code length: '.$q->param('Codelength').
+			p().
+			( ($q->param('Codetype') eq 'demo')
+			  ? 'Make demo version'
+			  : 'Make generator only' ) ),
+	    p().hr().p();
+	return;
+    }
+
+} # end of anuran_properties_generator()
+
+
+# ----------------------------------------------------------------
+# Step 5: Finally the code
+# ----------------------------------------------------------------
+
+sub anuran_code
+{
+# ................................................................
+# CASE: wait till code can be printed
+# ................................................................
+    if ($step < 5) {
+	print
+	    font({-color=>$Gray},'Step 5: '.b('Generator code for distribution')),
+	    p().hr().p();
+	return;
+    }
+
+# ................................................................
+# CASE: print generator code
+# ................................................................
+    if ($step == 5) {
+
+# ................................................................
+# Make ACG command
+# ................................................................
+
+	# check also for valid entries before executing shell
+	my $command_ok = 1;
+
+	# distribution string
+	my $distr_str;
+	
+	# Distribution
+	$command_ok = 0 if $distr =~ /[^a-zA-Z]/;
+	$distr_str .= $distr;
+
+	# List of parameters
+	$distr_str .= '(';
+	if ($n_params) {
+	    for (my $i=0; $i < $n_params; $i++) {
+		my $param = $q->param("Param_$i");
+		$command_ok = 0 if $param =~ /[^\d\.\-\+eE]/;
+		$distr_str .= (($i)?', ':'').$param;
+	    }
+	}
+	$distr_str .= ')';
+
+	# Domain
+	if ($Truncated) {
+	    $command_ok = 0 if $q->param('Left')  =~ /[^\d\.\-\+eEiInNfF]/;
+	    $command_ok = 0 if $q->param('Right') =~ /[^\d\.\-\+eEiInNfF]/;
+	    $distr_str .= '; domain=('.$q->param('Left').','.$q->param('Right').')';
+	}
+
+	# Programming language
+	$command_ok = 0 if $q->param('Language') =~ /[^a-zA-Z]/;
+	my $gen_opts = ' -l '.$q->param('Language');
+
+	# Make complete demo version ?
+	$gen_opts .= ' -M' if $q->param('Codetype') eq 'demo';
+
+	# Method
+	my $method = anuran_get_method();
+
+	# generator string
+	my $gen = "\"$distr_str & $method\"";
+
+# ................................................................
+# Execute ACG command and print result
+# ................................................................
+
+	print 
+	    'Step 5: ',
+	    b("Generator for $distrname"),
+	    ( ($q->param('Codetype') eq 'demo')
+	      ? ' (Complete demo version)'
+	      : '' ),
+	    $img_frog,
+	    p();
+
+	# first check command line
+	my $status;
+
+	unless ($command_ok) {
+	    # the composed command line might execute unsecure code
+	    $status = "dangerous command, not executed";
+	    print
+		font({-color=>'red'},
+		     b("Sorry. Cannot make generator. Internal error.")),
+	    p().hr().p();
+	    return;
+	}
+
+	# print result
+	my $ACG_query = "$ACG $gen_opts $gen";
+	print
+	    font({-size=>'small'},"UNURAN generator = $gen"),p(),
+	    "<PRE>\n",
+	    `$ACG_query`,
+	    "\n</PRE>\n";
+
+	# get exit code of ACG call 
+	if ($?) {
+	    # error
+	    $status = "failed"; 
+	    print 
+		font({-color=>'red'},
+		     b("Sorry. Cannot make generator for given distribution / parameters.")),
+		p();
+	}
+	else {
+	    # successfull
+	    $status = "ok"; 
+	}
+
+# ................................................................
+# Make Entry into log file
+# ................................................................
+
+	my $log;
+
+	# date
+	$log .= "date = ".(scalar localtime)."\n";
+
+	# client
+        $log .= "client = ".remote_host()."  (".remote_addr().")\n";
+
+	# name of distribution
+	$log .= "distribution = $distr\n";
+
+	# list of parameters (defaults settings start with '[ '
+	for (my $i=0; $i < $n_tot; $i++) {
+	    $log .= 
+		( (($i >= $n_params) ? '[ ' : '').
+		  "param[$i] = ".
+		  $data_distr{$distr}{'=FPARAMS'}[$i]{'=NAME'}.
+		  " = " .
+		  $q->param("Param_$i").
+		  "\n" );
+	}
+	# Domain
+	$log .= 'domain = [ '.$q->param('Left').', '.$q->param('Right')." ]\n";
+	# Programming language
+	$log .= 'language = '.$q->param('Language')."\n";
+	# Code Properties
+	$log .= 'speed = '.$q->param('Speed')."\t code length = ".$q->param('Codelength')."\n";
+	# ACG code
+	$log .= "command = $ACG_query\n";
+	# Exit code
+	$log .= "status = $status\n";
+	# Use blank line as separator
+	$log .= "\n";
+
+	# Write into log file
+	# (This is not save !!)
+	open LOG, ">>/home/staff/leydold/public_html/anuran.log";
+	print LOG $log;
+	close LOG;
+
+	return;
+    }
+
+} # end of anuran_code()
+
+
+# ----------------------------------------------------------------
+# Get method for generator
+# ----------------------------------------------------------------
+
+sub anuran_get_method
+{
+    # desired properties of generator
+    my $speed = $q->param('Speed');
+    my $length = $q->param('Codelength');
+
+    # methods
+    my %method;
+
+    $method{'fast'}       {'short'}      = 'tdr; cpoints=10; max_sqhratio=0.90; usedars=on';
+    $method{'fast'}       {'moderate'}   = 'tdr; cpoints=10; max_sqhratio=0.95; usedars=on';
+    $method{'fast'}       {'long'}       = 'tdr; cpoints=10; max_sqhratio=0.99; usedars=on';
+    $method{'fast'}       {'don\'t care'}= 'tdr; cpoints=10; max_sqhratio=0.99; usedars=on';
+
+    $method{'moderate'}   {'short'}      = 'tdr; cpoints=10; max_sqhratio=0.80; usedars=on';
+    $method{'moderate'}   {'moderate'}   = 'tdr; cpoints=10; max_sqhratio=0.90; usedars=on';
+    $method{'moderate'}   {'long'}       = 'tdr; cpoints=10; max_sqhratio=0.95; usedars=on';
+    $method{'moderate'}   {'don\'t care'}= 'tdr; cpoints=10; max_sqhratio=0.99; usedars=on';
+
+    $method{'slow'}       {'short'}      = 'tdr; cpoints=10; max_sqhratio=0.10; usedars=on';
+    $method{'slow'}       {'moderate'}   = 'tdr; cpoints=10; max_sqhratio=0.80; usedars=on';
+    $method{'slow'}       {'long'}       = 'tdr; cpoints=10; max_sqhratio=0.90; usedars=on';
+    $method{'slow'}       {'don\'t care'}= 'tdr; cpoints=10; max_sqhratio=0.90; usedars=on';
+
+    $method{'don\'t care'}{'short'}      = 'tdr; cpoints=10; max_sqhratio=0.10; usedars=on';
+    $method{'don\'t care'}{'moderate'}   = 'tdr; cpoints=10; max_sqhratio=0.50; usedars=on';
+    $method{'don\'t care'}{'long'}       = 'tdr; cpoints=10; max_sqhratio=0.90; usedars=on';
+    $method{'don\'t care'}{'don\'t care'}= 'tdr; cpoints=10; max_sqhratio=0.99; usedars=on';
+
+    # select generator
+    if ($method{$speed}{$length}) {
+	return 'method='.$method{$speed}{$length};
+    }
+    else {
+	# there is an error with the web interface
+	return '';
+    }
+
+} # end of anuran_get_method()
+
+
+# ----------------------------------------------------------------
+# Make an error message in form
+# ----------------------------------------------------------------
+
+sub anuran_error
+{
+    my $msg = $_[0];
+    
+    return font({-color=>'red'},"<BLINK>$msg</BLINK>");
+} # end of anuran_error() 
+
+###################################################################

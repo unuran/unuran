@@ -53,10 +53,10 @@ qstart.texi: scripts
 
 # run perl scripts
 scripts:
-	./change_distr.perl $(method_PATH)*.c
+	./change_distr.perl $(method_PATH)*.h
 	./defaults.perl  $(method_PATH)*.c
 	./description.perl $(method_PATH)*.h
-	./distr.perl $(distr_PATH)*.c
+	./distr.perl $(distr_PATH)*.h
 	./funcref.perl $(method_PATH)*.h
 	./required.perl $(method_PATH)*.h
 	./internals.perl $(method_PATH)*.h

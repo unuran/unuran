@@ -21,7 +21,7 @@ while($_ = <>)
 { 
     chomp;
 
-       if ( ($distr) = ($_ =~/^unur_distr_cont_set_(\w*)/) ){
+       if ( ($distr) = ($_ =~/\w+\s+unur_distr_cont_set_(\w+)/) ){
 	   print OUTFILE "\@item ", $distr, "\n";
           }
 

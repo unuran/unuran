@@ -196,6 +196,7 @@
 	 @smallexample
 	    make check
 	 @end smallexample
+	 However this test suite requires the usage of prng.
 	 Notice a number of these tests fail if you have not installed
 	 the Cephes library. Moreover it might happen that some of the
 	 tests might fail due to roundoff errors or the mysteries of
@@ -214,198 +215,242 @@
 =UP Intro [40]
 
 =DESCRIPTION
-   UNURAN is a C library for generating nonuniformly distributed
-   random numbers.
-   It is designed to provide a simple tool to produce random numbers with
-   various properties. Because of the divergent requirements of the
-   random numbers various methods for sampling are needed.
-   Nevertheless UNURAN solves this complex task in an easy and
-   universal way.
-   
-   To achive this, an object oriented approach with three basic
-   structures is introduced:
+   UNURAN is a C library for generating non-uniformly distributed
+   random variates. Its emphasis is on the generation of non-standard
+   distribution and on streams of random variates of special purposes.
+   It is designed to provide a consistent tool to 
+   sample from distributions with various properties. 
+   Since there is no universal method that fits for all situations,
+   various methods for sampling are implemented.
+
+   UNURAN solves this complex task by means of an object oriented
+   programming interface. Three basic objects are used:
+
    @itemize @bullet
-   @item distribution object
-     (name of the corresponding structure: @code{UNUR_DISTR})
-   @item generator object
-     (name of the corresponding structure: @code{UNUR_GEN})
-   @item parameter object
-     (name of the corresponding structure: @code{UNUR_PAR})
+   @item distribution object @code{UNUR_DISTR}@*
+      Hold all information about the random variates that should be
+      generated.
+
+   @item generator object @code{UNUR_GEN}@*
+      Hold the generators for the given distributions.
+      Two generator objects are completely independent of each other.
+      They may share a common uniform random number generator or have
+      their owns.
+
+   @item parameter object @code{UNUR_PAR}@*
+      Hold all information for creating a generator object. It is
+      necessary due to various parameters and switches for each of
+      these generation methods. 
+   
    @end itemize
 
-   The intention behind these structures is that the user
-   should not change the values within these structures staightly
-   but only via the provides functions. This enables anyone to use
-   UNURAN without knowing anything about internal structures.
+   The idea behind these structures is to make distributions, choosing
+   a generation method and sampling to orthogonal (ie. independent)
+   functions of the library. 
+   The parameter object is only introduced due to the necessity to
+   deal with various parameters and switches for
+   each of these generation methods which are required to adjust the
+   algorithms to unusual distributions with extreme properties but
+   have defaut values that are suitable for most applications.
+   These parameters and the data for distributions are set by various
+   functions.
 
-   When these structures are created it is possible to sample the
-   desired random numbers with the following or a similar command:
+   Once a generator object has been created sampling (from the
+   univariate continuous distribution) can be done by
+   the following command:
    @example
-    x = unur_sample_cont(generator);
+      double x = unur_sample_cont(generator);
    @end example
-   The variable @code{x} is a double, @code{generator}
-   is a structure of the type @code{UNUR_GEN} and 
-   @code{unur_sample_cont()} is a double valued function.
+   @noindent
+   Analogous commands exist for discrete and multivariate
+   distributions.
+   For detailed examples that can be copied and modified
+   @pxref{Examples}.
+
+
+   @subheading Distribution objects
    
-   @sp 2
+   All information about a distribution are stored in objects
+   (structures) of type @code{UNUR_DISTR}.
+   UNURAN has five different types of distribution objects:
 
-   Of course the user has to provide information about the
-   internal properties the random numbers should meet. It is a C
-   structure named @code{UNUR_DISTR} which holds this kind of
-   information.
+   @table @code
+   @item cont
+      Continuous univariate distributions.
+   @item cvec
+      Continuous multivariate distributions.
+   @item discr
+      Discrete univariate distributions.
+   @item cemp
+      Continuous empirical univariate distribution, ie. given by sample.
+   @item cvemp
+      Continuous empirical multivariate distribution, ie. given by sample.
 
-   Depending on the properties of the distribution UNURAN uses
-   five different functions to create a structure of the kind
-   @code{UNUR_DISTR}:
+   @end table
+
+   @noindent
+   Distribution objects can be
+   created from scratch by the following call
    @example
       distr = unur_sample_<type>_new();
    @end example
-   The variable @code{distr} is a structure of type @code{UNUR_DISTR}
-   and instead of <type> one of the type @code{cont},   
-   @code{cvec},   @code{discr},   @code{cemp} or @code{cvemp}
-   as shown below must be used. Depending on <type> you have to use
-   a function @code{unur_sample_<cont|discr|vec>()}
-   to sample random numbers.
-   @itemize @bullet
-   @item @code{unur_distr_cont_new()}:
-     univariate continous distributions
-   @item  @code{unur_distr_cvec_new()}:
-     continuous multivariate distributions
-   @item @code{unur_distr_discr_new()}:
-     discrete univariate distributions
-   @item @code{unur_distr_cemp_new()}:
-     empirical continuous univariate distribuions
-   @item  @code{unur_distr_cvemp_new()}:
-     empirical continuous multivariate distributions
-   @end itemize
-
-   Notice that these commands only create an @emph{empty} structure which
-   still must be filled with the help of a special set of
-   fuctions---depending on the type
-   @code{<type>} of the distribution object. 
-   The function reference of these types of distribution objects
-   are found in the corresponding sections
-   (@pxref{Distribution_objects,Handling
-   distribution objects,Handling distribution objects}). The naming scheme
-   of these functions is designed to indicate the corresponding type of
-   the distribution object and the task to be performed. To demonstrate
-   this an example will be given:
+   @noindent
+   where @code{<type>} is one of the five possible types from the
+   above table.
+   Notice that these commands only create an @emph{empty} object which
+   still must be filled by means of calls for each type of
+   distribution object
+   (@pxref{Distribution_objects,Handling distribution objects,Handling distribution objects}).
+   The naming scheme of these functions is designed to indicate the
+   corresponding type of the distribution object and the task to be
+   performed. It is demonstated on the following example.
    @example
      unur_distr_cont_set_pdf(distr, mypdf);
    @end example
-   This command stores a pdf named @code{mypdf} in the distribution
-   object @code{distr} which has the type @code{cont}.
-   The function @code{mypdf} which returns a
-   @code{double} must be provided by the user.
+   @noindent
+   This command stores a PDF named @code{mypdf} in the distribution
+   object @code{distr} which must have the type @code{cont}.
 
-   The information the user must fill into the distribution object depends
-   heavily on the method choosen for sampling random numbers. 
-  
-   The requirements of the methods are indicated in the following tables: 
-    
-
-     @include unuran_method_requirements.texi
-
-
-   If we want to sample from a continuous distribution and
-   the choosen method needs the mode, it can be set with
-   the following line:
+   Of course UNURAN provides an easier way to use standard distribution.
+   Instead of using @command{unur_distr_<type>_new} calls and fuctions
+   @command{unur_distr_<type>_set_<@dots{}>} for setting data
+   objects for standard distribution can be created by a single call.
+   Eg. to get an object for the normal distribution with mean 2 and
+   standard deviation 5 use
    @example
-    unur_distr_cont_set_mode(distr, mode);  
-   @end example
-   The argument @code{distr} is of the type @code{UNUR_DISTR} and
-   @code{mode} is a double variable holding the position of the
-   mode.
-
-  Of course UNURAN provides an easier way to use standard distribution.
-  Instead of the usage of @code{unur_distr_<type>_new()} and fuctions of
-  the kind @code{unur_distr_<type>_set_<...>()} only one function call
-  is necessary, e.g.:
-  @example
-   UNUR_DISTR distr;
    double parameter[2] = @{2.0 ,5.0@};
-   distr = unur_distr_normal(parameter, 2);
-  @end example
-  This defines a structure @code{distr} of the kind @code{UNUR_DISTR},
-  a double array holding parameters of the desired distribution and
-  creates @emph{and} initializes a distribution object to the
-  normal distribution with mean 2 and variance 5.
-  When using ready made distributions the user must know the
-  corresponding type <type> of distribution to use the correct
-  function for sampling.
-  In combination with the previous example,
-  the sampling routine `@code{unur_distr_sample_cont()}' must be used.
-  All implemented standard distribution are described below.( @pxref{Stddist,standard distributions,standard distributions}).
- 
-  @sp 2
+   UNUR_DISTR *distr = unur_distr_normal(parameter, 2);
+   @end example
+   @noindent
+   For a list of standard distributions
+   @pxref{Stddist,Standard distributions,Standard distributions}.
 
-  Because of tremendous variety of possible problems, UNURAN provides many
-  state of the art methods. 
-  There exist parameter objects which contain all relevant informations
-  about the choosen method similar to the distribution object.
-  For example if the task is to sample from a continuous distribution
-  the method AROU would be a good choice:
-  @example
-    par = unur_arou_new(distr);
-  @end example
-  The variable @code{par} is a structure of the type @code{UNUR_PAR} and
-  the function @code{unur_arou_new()} creates @emph{and} initializes
-  a parameter object for the method AROU. Of course @code{distr}
-  is of the type @code{UNUR_DISTR} as described above.
-  Other methods can be used by replacing `@code{arou}' with the name
-  of the desired methods (in lower case letters):
-  @example
-    unur_<method>_new();
-  @end example
-  This sets all necessary parameters of the methods. Nevertheless
-  it is possible to control the behaviour of the method using
-  the corresponding functions---a set for each method---(@ref{Methods,Methods,Methods}).
-  The following example demonstrates how to change the maximum
-  number of iterations of the method NINV to the value 50:
-  @example
+
+   @subheading Generation methods
+
+   The information a distribution object must contain depends
+   heavily on the method choosen for sampling random variates.
+
+   @include unuran_method_requirements.texi
+
+   @sp 2
+
+   Because of tremendous variety of possible problems, UNURAN provides many
+   methods. All information for creating an generator object have to
+   collected in a parameter first.
+   For example if the task is to sample from a continuous distribution
+   the method AROU might be a good choice. Then the call
+   @example
+     UNUR_PAR *par = unur_arou_new(distribution);
+   @end example
+   @noindent
+   creates an parameter object @code{par} with a pointer to the
+   distribution object and default values for all necessary parameters
+   for method AROU.
+   Other methods can be used by replacing @code{arou} with the name
+   of the desired methods (in lower case letters):
+   @example
+     UNUR_PAR *par = unur_<method>_new(distribution);
+   @end example
+   @noindent
+   This sets the default values for all necessary parameters for the
+   chosen methods. These are suitable for almost all
+   applications. Nevertheless it is possible to control the behaviour
+   of the method using corresponding @command{set} calls for each method.
+   This might be necessary to adjust the algorithm for an unusual
+   distribution with extreme properties, or just for fine tuning the
+   perforence of the algorithm.
+   The following example demonstrates how to change the maximum
+   number of iterations for method NINV to the value 50:
+   @example
     unur_ninv_set_max_iteration(par, 50);
-  @end example
-  The available methods are described later (@pxref{Methods,Methods,Methods}).
+   @end example
+   All available methods are described in details in 
+   @ref{Methods,Methods,Methods}.
   
-  Now it is possible to create a generator object:
-  @example
-    generator = unur_init(par);
-  @end example
-  The variable @code{generator} is a structure of the type @code{UNUR_GEN}
-  and @code{par} is of the type @code{UNUR_PAR}.
 
-  ATTENTION: The call of @code{unur_init()} @emph{destroys} the
-  parameter object!  
+   @subheading Creating a generator object
 
-  Nevertheless it is still possible to adjust some of the
-  parameters of the distribution and the method within the
-  generator object, e.g:
-  @example
-    unur_ninv_chg_max_iteration(gen, 30);
-  @end example
+   Now it is possible to create a generator object:
+   @example
+     UNUR_GEN *generator = unur_init(par);
+     if (generator == NULL) exit(EXIT_FAILURE);
+   @end example
+
+   @noindent
+   @strong{Important:} You must always check whether unur_init() has
+   been executed successfully. Otherwise the NULL pointer is returned
+   which causes a segmentation fault when used for sampling.
+
+   @noindent
+   @strong{Important:}
+   The call of unur_init() @strong{destroys} the parameter object!@*
+   Moreover it is recommended to call unur_init() immediately after
+   the parameter object @code{par} has created and modified.
+
+   @sp 1
+   An existing generator object is a rather static construct.
+   Nevertheless some of the parameters can still be modified by
+   @command{chg} calls, e.g.
+   @example
+     unur_ninv_chg_max_iteration(gen, 30);
+   @end example
   
-  Please notice that it is important @emph{when} the pararameters are
-  changed because different functions must be used:
-  To change the parameters @emph{before} creating the generator object,
-  the function name includes the term `@code{set}' and the first argument
-  must be of type @code{UNUR_PAR}. To change the parameters
-  @emph{afterwards}, the function name includes the term `@code{chg}'
-  and the first argument must be of type @code{UNUR_GEN}.
-  The main advantage of this concept is the possibility to change
-  essential parameters during sampling.
-  All functions corresponding to a specific method are
-  explained later (@pxref{Methods,Methods,Methods}).
+   @sp 1
+   Notice that it is important @emph{when} pararameters are
+   changed because different functions must be used:
 
-  Finally you can sample random number with:
-  @example
-    x = unur_sample_<type>(gen);
-  @end example
-  The variable @code{x} holding the random number is of type double,
-  @code{gen} is of type @code{UNUR_GEN} and @code{unur_sample<_type>()}
-  is one of the sampling fuctions described above.
+   To change the parameters @emph{before} creating the generator object,
+   the function name includes the term @command{set} and the first
+   argument must be of type @code{UNUR_PAR}. 
 
-  After sampling you should release the allocated memory
-  using  the functions @code{unur_free(gen)} and @code{unur_distr_free(distr)}.
+   To change the parameters for an @emph{existing} generator object,
+   the function name includes the term @command{chg} and the first
+   argument must be of type @code{UNUR_GEN}.
+
+   For details @pxref{Methods,Methods,Methods}.
+
+
+   @subheading Sampling
+
+   You can now use your generator object in any place of your program
+   to sample from your distribution. You only have take about the type
+   of number it computes: @code{double}, @code{int} or a vector (array
+   of @code{double}s). 
+   Notice that at this point it does not matter whether you are
+   sampling from a gamma distribution, a truncated normal distribution
+   or even an empirical distribution.
+
+
+   @subheading Destroy
+
+   When you do not need your generator object any more, you should
+   destroy it:
+   @example
+     unur_free(generator);
+   @end example
+
+   
+   @subheading Uniform random numbers
+
+   Each generator object can have its own uniform random number
+   generator or share one with others.
+   When created a parameter object the pointer for the uniform random
+   number generator is set to the default generator. However it can be
+   changed at any time to any other generator:
+   @example
+     unur_set_urng(par, urng);
+   @end example
+   @noindent
+   or
+   @example
+     unur_chg_urng(generator, urng);
+   @end example
+   @noindent
+   respectively.
+   See @ref{URNG,Using uniform random number generators,Using uniform random number generators}
+   for details.
+
 =EON
 
 /*---------------------------------------------------------------------------*/
@@ -415,10 +460,12 @@
 
 =DESCRIPTION
    If you have any problems with UNURAN, suggestions how to improve
-   the program or find a bug, please contact us via the UNURAN-homepage:
-   @uref{http://statistik.wu-wien.ac.at}
-   or via email:
-   @email{leydold@@statistik.wu-wien.ac.at}
+   the library or find a bug, please contact us via email
+   @email{unuran@@statistik.wu-wien.ac.at}.
+
+   For news please visit out homepage at
+   @uref{http://statistik.wu-wien.ac.at/unuran/}.
+
 =EON
 
 /*---------------------------------------------------------------------------*/

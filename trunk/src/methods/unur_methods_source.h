@@ -84,6 +84,7 @@
 
 #define UNUR_METH_VMT      0x08010000u
 #define UNUR_METH_VEMPK    0x08020000u
+#define UNUR_METH_VNROU    0x08030000u
 
 /* random matrices */
 #define UNUR_METH_MAT      0x10000000u

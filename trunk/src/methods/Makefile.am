@@ -34,7 +34,8 @@ libmethods_la_SOURCES = \
  unif.c  unif.h  unif_struct.h \
  utdr.c  utdr.h  utdr_struct.h \
  vempk.c vempk.h vempk_struct.h \
- vmt.c   vmt.h   vmt_struct.h
+ vmt.c   vmt.h   vmt_struct.h \
+ vnrou.c   vnrou.h   vnrou_struct.h
 
 noinst_HEADERS = \
  unur_methods_source.h

@@ -94,6 +94,7 @@ struct unur_gen *_unur_unif_clone( const struct unur_gen *gen );
 struct unur_gen *_unur_utdr_clone( const struct unur_gen *gen );
 struct unur_gen *_unur_vempk_clone( const struct unur_gen *gen );
 struct unur_gen *_unur_vmt_clone( const struct unur_gen *gen );
+struct unur_gen *_unur_vnrou_clone( const struct unur_gen *gen );
 
 /* no such routines:                                                         */
 /* struct unur_gen *_unur_auto_clone( const struct unur_gen *gen );          */

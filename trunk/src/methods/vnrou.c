@@ -4,9 +4,9 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   FILE:      nrou.c                                                       *
+ *   FILE:      vnrou.c                                                      *
  *                                                                           *
- *   TYPE:      continuous univariate random variate                         *
+ *   TYPE:      continuous multivariate random variate                       *
  *   METHOD:    naive ratio-of-uniforms method                               *
  *                                                                           *
  *   DESCRIPTION:                                                            *
@@ -22,10 +22,7 @@
  *      bounding rectangle of acceptance region                              *
  *                                                                           *
  *****************************************************************************
-     $Id$
- *****************************************************************************
- *                                                                           *
- *   Copyright (c) 2000 Wolfgang Hoermann and Josef Leydold                  *
+ *   (c) 2000 Wolfgang Hoermann and Josef Leydold                            *
  *   Dept. for Statistics, University of Economics, Vienna, Austria          *
  *                                                                           *
  *   This program is free software; you can redistribute it and/or modify    *
@@ -47,29 +44,16 @@
  *****************************************************************************
  *                                                                           *
  *   REFERENCES:                                                             *
- *   [1] Kinderman, A.J. and Monahan, F.J. (1977): Computer generation of    *
- *       random variables using the ratio of uniform deviates,               *
- *       ACM Trans. Math. Software 3(3), pp. 257--260.                       *
+ *   [1] Wakefield J.C., Gelfand A.E., Smith A.F.M.                          *
+ *       Efficient generation of random variates via the ratio-of-uniforms   *
+ *       method.                                                             *
+ *       Statistics and Computing (1991) 1, pp (129-133)                     *
  *                                                                           *
  *   [2] Hoermann, W., Leydold J., and Derflinger, G. (2004):                *
  *       Automatic non-uniform random variate generation, Springer, Berlin.  *
  *       Section 2.4, Algorithm 2.9 (RoU), p.35                              *
  *                                                                           *
  *****************************************************************************
- *                                                                           *
- * The ratio-of-uniforms method introduced in [1] is a flexible method that  *
- * is based on the following theorem:                                        *
- *                                                                           *
- * THEOREM:                                                                  *
- *    Let X be a random variable with density function f(x) = g(x) / G,      *
- *    where g(x) is a positive integrable function with support (x_0,x_1)    *
- *    not necessarily finite and G = integral g(x) dx.                       *
- *    If (U,V) is uniformly distributed in                                   *
- *       A = {(u,v): 0 < v <= sqrt(g(u/v)), x_0 < u/v < x_1},                *
- *    then X = V/U has probability density function f(x).                    *
- *                                                                           *
- * Generating point (U,V) uniformly distributed in A is done by rejection    *
- * from an enveloping region, usually from the minimal bounding rectangle.   *
  *                                                                           *
  *****************************************************************************/
 
@@ -78,53 +62,62 @@
 #include <unur_source.h>
 #include <distr/distr.h>
 #include <distr/distr_source.h>
-#include <distr/cont.h>
+#include <distr/cvec.h>
 #include <utils/fmax_source.h>
 #include <utils/unur_fp_source.h>
 #include "unur_methods_source.h"
 #include "x_gen_source.h"
-#include "nrou.h"
+#include "vnrou.h"
+
+#include <utils/hooke.c> /* it's only used here ... */
 
 /*---------------------------------------------------------------------------*/
 /* Variants:                                                                 */
 
-#define NROU_VARFLAG_VERIFY   0x002u   /* run verify mode                    */
+#define VNROU_VARFLAG_VERIFY   0x002u   /* run verify mode                   */
 
 /*---------------------------------------------------------------------------*/
 /* Flags for logging set calls                                               */
 
-#define NROU_SET_U       0x001u     /* set u values of bounding rectangle    */
-#define NROU_SET_V       0x002u     /* set v values of bounding rectangle    */
-#define NROU_SET_CENTER  0x004u     /* set approximate mode of distribution  */
+#define VNROU_SET_U       0x001u     /* set u values of bounding rectangle   */
+#define VNROU_SET_V       0x002u     /* set v values of bounding rectangle   */
+#define VNROU_SET_CENTER  0x004u     /* set approximate mode of distribution */
 
 /*---------------------------------------------------------------------------*/
 
-#define GENTYPE "NROU"         /* type of generator                          */
+#define GENTYPE "VNROU"         /* type of generator                         */
+
+/*---------------------------------------------------------------------------*/
+/* convergence parameters for the hooke optimization algorithm */
+
+#define VNROU_HOOKE_RHO 0.5 
+#define VNROU_HOOKE_EPSILON 0.001 
+#define VNROU_HOOKE_MAXITER 10000
 
 /*---------------------------------------------------------------------------*/
 
-static struct unur_gen *_unur_nrou_init( struct unur_par *par );
+static struct unur_gen *_unur_vnrou_init( struct unur_par *par );
 /*---------------------------------------------------------------------------*/
 /* Initialize new generator.                                                 */
 /*---------------------------------------------------------------------------*/
 
-static int _unur_nrou_rectangle( struct unur_gen *gen );
+static int _unur_vnrou_rectangle( struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 /* compute (minimal) bounding rectangle.                                     */
 /*---------------------------------------------------------------------------*/
 
-static struct unur_gen *_unur_nrou_create( struct unur_par *par );
+static struct unur_gen *_unur_vnrou_create( struct unur_par *par );
 /*---------------------------------------------------------------------------*/
 /* create new (almost empty) generator object.                               */
 /*---------------------------------------------------------------------------*/
 
-static double _unur_nrou_sample( struct unur_gen *gen );
-static double _unur_nrou_sample_check( struct unur_gen *gen );
+static void  _unur_vnrou_sample_cvec( struct unur_gen *gen, double *vec );
+static void  _unur_vnrou_sample_check( struct unur_gen *gen, double *vec );
 /*---------------------------------------------------------------------------*/
 /* sample from generator.                                                    */
 /*---------------------------------------------------------------------------*/
 
-static void _unur_nrou_free( struct unur_gen *gen);
+static void _unur_vnrou_free( struct unur_gen *gen);
 /*---------------------------------------------------------------------------*/
 /* destroy generator object.                                                 */
 /*---------------------------------------------------------------------------*/
@@ -134,33 +127,37 @@ static void _unur_nrou_free( struct unur_gen *gen);
 /* the following functions print debugging information on output stream,     */
 /* i.e., into the log file if not specified otherwise.                       */
 /*---------------------------------------------------------------------------*/
-static void _unur_nrou_debug_init( const struct unur_gen *gen );
+static void _unur_vnrou_debug_init( const struct unur_gen *gen );
 
 /*---------------------------------------------------------------------------*/
 /* print after generator has been initialized has completed.                 */
 /*---------------------------------------------------------------------------*/
 #endif
 
-struct unur_gen *_gen; /* generator object for bounding rect calculations */
+/* Copy of the generator object used in the bounding rectangle calculations  */
+/* Our auxiliary functions need to access the pdf() function which is set in */
+/* the distribution object.                                                  */
+/* In this manner the auxiliary functions _unur_vnrou_aux_umin() etc. are    */
+/* able to calculate values of the pdf() using calls to                      */
+/* _unur_cvec_PDF((x),(_gen->distr))                                         */
+struct unur_gen *_gen;
+
+/* The following parameter is used to define the coordinate dimension        */
+/* along which the min/max of the bounding rectangle is calculated           */
+/* in the functions _unur_vnrou_aux_umin() and _unur_vnrou_aux_umax()        */
+int vnrou_aux_dimension; 
 
 
 /*---------------------------------------------------------------------------*/
 /* abbreviations */
 
-#define DISTR_IN  distr->data.cont      /* data for distribution object      */
+#define DISTR_IN  distr->data.cvec      /* data for distribution object      */
 
-#define PAR       par->data.nrou        /* data for parameter object         */
-#define GEN       gen->data.nrou        /* data for generator object         */
-#define DISTR     gen->distr->data.cont /* data for distribution in generator object */
-
-#define BD_LEFT   domain[0]             /* left boundary of domain of distribution */
-#define BD_RIGHT  domain[1]             /* right boundary of domain of distribution */
-
-#define BD_MAX    (DBL_MAX/1000.)       /* constant used for bounding rectangles */
-
-#define SAMPLE    gen->sample.cont      /* pointer to sampling routine       */     
-
-#define PDF(x)    _unur_cont_PDF((x),(gen->distr))    /* call to PDF         */
+#define PAR       par->data.vnrou        /* data for parameter object        */
+#define GEN       gen->data.vnrou        /* data for generator object        */
+#define DISTR     gen->distr->data.cvec  /* data for distribution in generator object */
+#define SAMPLE    gen->sample.cvec       /* pointer to sampling routine      */     
+#define PDF(x)    _unur_cvec_PDF((x),(gen->distr))    /* call to PDF         */
 
 /*---------------------------------------------------------------------------*/
 
@@ -169,7 +166,7 @@ struct unur_gen *_gen; /* generator object for bounding rect calculations */
 /*****************************************************************************/
 
 struct unur_par *
-unur_nrou_new( const struct unur_distr *distr )
+unur_vnrou_new( const struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
      /* get default parameters                                               */
      /*                                                                      */
@@ -184,14 +181,15 @@ unur_nrou_new( const struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
 { 
   struct unur_par *par;
+  int d; /* index used in dimension-loops (0 <= d < dim) */
 
   /* check arguments */
   _unur_check_NULL( GENTYPE,distr,NULL );
 
   /* check distribution */
-  if (distr->type != UNUR_DISTR_CONT) {
+  if (distr->type != UNUR_DISTR_CVEC) {
     _unur_error(GENTYPE,UNUR_ERR_DISTR_INVALID,""); return NULL; }
-  COOKIE_CHECK(distr,CK_DISTR_CONT,NULL);
+  COOKIE_CHECK(distr,CK_DISTR_CVEC,NULL);
 
   if (DISTR_IN.pdf == NULL) {
     _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"PDF"); 
@@ -200,36 +198,42 @@ unur_nrou_new( const struct unur_distr *distr )
 
   /* allocate structure */
   par = _unur_xmalloc(sizeof(struct unur_par));
-  COOKIE_SET(par,CK_NROU_PAR);
+  COOKIE_SET(par,CK_VNROU_PAR);
 
   /* copy input */
   par->distr    = distr;      /* pointer to distribution object              */
 
-  /* set default values */
-  PAR.umin      = 0.;          /* u-boundary of bounding rectangle (unknown) */
-  PAR.umax      = 0.;          /* u-boundary of bounding rectangle (unknown) */
-  PAR.vmax      = 0.;          /* v-boundary of bounding rectangle (unknown) */
-  PAR.center    = 0.;          /* center of distribution (default: 0)        */
+  /* copy number of dimensions from the distribution object */
+  PAR.dim = distr->dim;
 
-  par->method   = UNUR_METH_NROU;     /* method and default variant          */
+  /* allocate memory for u-arrays and center */
+  PAR.umin = _unur_xmalloc( PAR.dim * sizeof(double)); /* bounding rectangle */
+  PAR.umax = _unur_xmalloc( PAR.dim * sizeof(double)); /* bounding rectangle */
+  PAR.center = _unur_xmalloc( PAR.dim * sizeof(double)); /* center of distrib*/
+
+  /* set default values */
+  PAR.vmax      = 0.;         /* v-boundary of bounding rectangle (unknown)  */
+  for (d=0; d<PAR.dim; d++) PAR.center[d]=0.; /* default center = (0,...,0)  */
+
+  par->method   = UNUR_METH_VNROU;    /* method and default variant          */
   par->variant  = 0u;                 /* default variant                     */
   par->set      = 0u;                 /* inidicate default parameters        */    
   par->urng     = unur_get_default_urng(); /* use default urng               */
   par->urng_aux = NULL;                    /* no auxilliary URNG required    */
-
   par->debug    = _unur_default_debugflag; /* set default debugging flags    */
 
   /* routine for starting generator */
-  par->init = _unur_nrou_init;
+  par->init = _unur_vnrou_init;
 
   return par;
 
-} /* end of unur_nrou_new() */
+} /* end of unur_vnrou_new() */
 
 /*****************************************************************************/
 
+
 int
-unur_nrou_set_rect_u( struct unur_par *par, double umin, double umax )
+unur_vnrou_set_rect_u( struct unur_par *par, double *umin, double *umax )
      /*----------------------------------------------------------------------*/
      /* Sets left and right u-boundary of bounding rectangle.                */
      /*                                                                      */
@@ -242,31 +246,38 @@ unur_nrou_set_rect_u( struct unur_par *par, double umin, double umax )
      /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
+  int d, dim; /* index used in dimension loops (0 <= d < dim) */
+
   /* check arguments */
   _unur_check_NULL( GENTYPE, par, UNUR_ERR_NULL );
-  _unur_check_par_object( par, NROU );
+  _unur_check_par_object( par, VNROU );
 
   /* check new parameter for generator */
-  if (!_unur_FP_greater(umax,umin)) {
-    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"umax <= umin");
-    return UNUR_ERR_PAR_SET;
+  dim = PAR.dim; /* making source code more readable */ 
+  for (d=0; d<dim; d++) {
+    if (!_unur_FP_greater(umax[d],umin[d])) {
+      _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"umax <= umin");
+      return UNUR_ERR_PAR_SET;
+    }
   }
   
   /* store values */
-  PAR.umin = umin;
-  PAR.umax = umax;
+  memcpy(PAR.umin, umin, PAR.dim * sizeof(double));
+  memcpy(PAR.umax, umax, PAR.dim * sizeof(double));
 
   /* changelog */
-  par->set |= NROU_SET_U;
+  par->set |= VNROU_SET_U;
 
   return UNUR_SUCCESS;
 
-} /* end of unur_nrou_set_u() */
+} /* end of unur_vnrou_set_u() */
+
 
 /*---------------------------------------------------------------------------*/
 
+
 int
-unur_nrou_set_rect_v( struct unur_par *par, double vmax )
+unur_vnrou_set_rect_v( struct unur_par *par, double vmax )
      /*----------------------------------------------------------------------*/
      /* Sets upper v-boundary of bounding rectangle.                         */
      /*                                                                      */
@@ -280,7 +291,7 @@ unur_nrou_set_rect_v( struct unur_par *par, double vmax )
 {
   /* check arguments */
   _unur_check_NULL( GENTYPE, par, UNUR_ERR_NULL );
-  _unur_check_par_object( par, NROU );
+  _unur_check_par_object( par, VNROU );
 
   /* check new parameter for generator */
   if (vmax <= 0.) {
@@ -292,16 +303,18 @@ unur_nrou_set_rect_v( struct unur_par *par, double vmax )
   PAR.vmax = vmax;
 
   /* changelog */
-  par->set |= NROU_SET_V;
+  par->set |= VNROU_SET_V;
 
   return UNUR_SUCCESS;
 
-} /* end of unur_nrou_set_v() */
+} /* end of unur_vnrou_set_v() */
+
 
 /*---------------------------------------------------------------------------*/
 
+
 int
-unur_nrou_set_center( struct unur_par *par, double center )
+unur_vnrou_set_center( struct unur_par *par, double *center )
      /*----------------------------------------------------------------------*/
      /* Set the center (approximate mode) of the PDF.                        */
      /*                                                                      */
@@ -315,23 +328,24 @@ unur_nrou_set_center( struct unur_par *par, double center )
 {
   /* check arguments */
   _unur_check_NULL( GENTYPE, par, UNUR_ERR_NULL );
-  _unur_check_par_object( par, NROU );
+  _unur_check_par_object( par, VNROU );
 
   /* store data */
-  PAR.center = center;
+  memcpy(PAR.center, center, PAR.dim * sizeof(double));
 
   /* changelog */
-  par->set |= NROU_SET_CENTER;
+  par->set |= VNROU_SET_CENTER;
 
   /* o.k. */
   return UNUR_SUCCESS;
 
-} /* end of unur_nrou_set_center() */
+} /* end of unur_vnrou_set_center() */
+
 
 /*---------------------------------------------------------------------------*/
 
 int
-unur_nrou_set_verify( struct unur_par *par, int verify )
+unur_vnrou_set_verify( struct unur_par *par, int verify )
      /*----------------------------------------------------------------------*/
      /* turn verifying of algorithm while sampling on/off                    */
      /*                                                                      */
@@ -349,20 +363,20 @@ unur_nrou_set_verify( struct unur_par *par, int verify )
 {
   /* check arguments */
   _unur_check_NULL( GENTYPE, par, UNUR_ERR_NULL );
-  _unur_check_par_object( par, NROU );
+  _unur_check_par_object( par, VNROU );
 
   /* we use a bit in variant */
-  par->variant = (verify) ? (par->variant | NROU_VARFLAG_VERIFY) : (par->variant & (~NROU_VARFLAG_VERIFY));
+  par->variant = (verify) ? (par->variant | VNROU_VARFLAG_VERIFY) : (par->variant & (~VNROU_VARFLAG_VERIFY));
 
   /* o.k. */
   return UNUR_SUCCESS;
 
-} /* end of unur_nrou_set_verify() */
+} /* end of unur_vnrou_set_verify() */
 
 /*---------------------------------------------------------------------------*/
 
 int
-unur_nrou_chg_verify( struct unur_gen *gen, int verify )
+unur_vnrou_chg_verify( struct unur_gen *gen, int verify )
      /*----------------------------------------------------------------------*/
      /* turn verifying of algorithm while sampling on/off                    */
      /*                                                                      */
@@ -380,28 +394,28 @@ unur_nrou_chg_verify( struct unur_gen *gen, int verify )
 {
   /* check input */
   _unur_check_NULL( GENTYPE, gen, UNUR_ERR_NULL );
-  _unur_check_gen_object( gen, NROU, UNUR_ERR_GEN_INVALID );
+  _unur_check_gen_object( gen, VNROU, UNUR_ERR_GEN_INVALID );
 
   if (verify) {
     /* turn verify mode on */
-    gen->variant |= NROU_VARFLAG_VERIFY;
-    SAMPLE = _unur_nrou_sample_check;
+    gen->variant |= VNROU_VARFLAG_VERIFY;
+    SAMPLE = _unur_vnrou_sample_check;
   }
   else {
     /* turn verify mode off */
-    gen->variant &= ~NROU_VARFLAG_VERIFY;
-    SAMPLE = _unur_nrou_sample;
+    gen->variant &= ~VNROU_VARFLAG_VERIFY;
+    SAMPLE = _unur_vnrou_sample_cvec;
   }
 
   /* o.k. */
   return UNUR_SUCCESS;
 
-} /* end of unur_nrou_chg_verify() */
+} /* end of unur_vnrou_chg_verify() */
 
 /*****************************************************************************/
 
 struct unur_gen *
-_unur_nrou_init( struct unur_par *par )
+_unur_vnrou_init( struct unur_par *par )
      /*----------------------------------------------------------------------*/
      /* initialize new generator                                             */
      /*                                                                      */
@@ -421,70 +435,77 @@ _unur_nrou_init( struct unur_par *par )
   CHECK_NULL(par,NULL);
 
   /* check input */
-  if ( par->method != UNUR_METH_NROU ) {
+  if ( par->method != UNUR_METH_VNROU ) {
     _unur_error(GENTYPE,UNUR_ERR_PAR_INVALID,"");
     return NULL; }
-  COOKIE_CHECK(par,CK_NROU_PAR,NULL);
+  COOKIE_CHECK(par,CK_VNROU_PAR,NULL);
 
   /* create a new empty generator object */
-  gen = _unur_nrou_create(par);
-  if (!gen) { free(par); return NULL; }
+  gen = _unur_vnrou_create(par);
+  if (!gen) { 
+    free(PAR.umin); free(PAR.umax); free(PAR.center);
+    free(par); 
+    return NULL; 
+  }
 
   /* compute bounding rectangle */
-  if (_unur_nrou_rectangle(gen)!=UNUR_SUCCESS) {
-    free(par); _unur_nrou_free(gen);
+  if (_unur_vnrou_rectangle(gen)!=UNUR_SUCCESS) {
+    free(PAR.umin); free(PAR.umax); free(PAR.center);
+    free(par); _unur_vnrou_free(gen);
     return NULL;
   }
 
+
 #ifdef UNUR_ENABLE_LOGGING
     /* write info into log file */
-    if (gen->debug) _unur_nrou_debug_init(gen);
+    if (gen->debug) _unur_vnrou_debug_init(gen);
 #endif
 
   /* free parameters */
+  free(PAR.umin); free(PAR.umax); free(PAR.center);
   free(par);
 
   return gen;
 
-} /* end of _unur_nrou_init() */
+} /* end of _unur_vnrou_init() */
 
 /*---------------------------------------------------------------------------*/
 
 double 
-_unur_aux_bound_vmax(double x, double *p) {
+_unur_vnrou_aux_vmax(double *x, double *p ) {
      /*----------------------------------------------------------------------*/
      /* Auxiliary function used in the computation of the bounding rectangle */
      /*----------------------------------------------------------------------*/
    
-  return sqrt( _unur_cont_PDF((x),(_gen->distr)) ); 
+  return -sqrt( _unur_cvec_PDF((x),(_gen->distr)) ); 
 }
 
 /*---------------------------------------------------------------------------*/
 
 double
-_unur_aux_bound_umax(double x, double *p) {
+_unur_vnrou_aux_umin(double *x, double *p) {
      /*----------------------------------------------------------------------*/
      /* Auxiliary function used in the computation of the bounding rectangle */
      /*----------------------------------------------------------------------*/	
 
-  return (x-p[0]) * sqrt( _unur_cont_PDF((x),(_gen->distr)) );
+  return (x[vnrou_aux_dimension]) * sqrt( _unur_cvec_PDF((x),(_gen->distr)) );
 }
 
 /*---------------------------------------------------------------------------*/
 
 double
-_unur_aux_bound_umin(double x, double *p) {
+_unur_vnrou_aux_umax(double *x, double *p) {
      /*----------------------------------------------------------------------*/
      /* Auxiliary function used in the computation of the bounding rectangle */
      /*----------------------------------------------------------------------*/	
 
-  return (- _unur_aux_bound_umax(x,p)) ;
+  return (- _unur_vnrou_aux_umin(x,p)) ;
 }
 
 /*---------------------------------------------------------------------------*/
 
 int
-_unur_nrou_rectangle( struct unur_gen *gen )
+_unur_vnrou_rectangle( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* compute universal bounding rectangle                                 */
      /*                                                                      */
@@ -496,122 +517,123 @@ _unur_nrou_rectangle( struct unur_gen *gen )
      /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 { 
-  struct unur_funct_generic faux; /* function to be minimized/maximized    */
-  double p[1]; /* parameter for auxiliary functions */
-  double x, sx, bx; 
+
+  struct unur_funct_vgeneric faux; /* function to be minimized/maximized    */
+  double p[2]; /* parameters for auxiliary functions */
+  double *xstart, *xend; /* coordinate arrays used in maximum/minimum calculations */
+  int d, dim; /* index used in dimension loops (0 <= d < dim) */
+  long hooke_iters; /* actual number of min/max iterations = return value of hooke()*/
 
   /* check arguments */
   CHECK_NULL( gen, UNUR_ERR_NULL );
-  COOKIE_CHECK( gen,CK_NROU_GEN, UNUR_ERR_COOKIE );
+  COOKIE_CHECK( gen,CK_VNROU_GEN, UNUR_ERR_COOKIE );
 
   /* Boundary rectangle is already set */
-  if ((gen->set & NROU_SET_U) && (gen->set & NROU_SET_V)) {
+  if ((gen->set & VNROU_SET_U) && (gen->set & VNROU_SET_V)) {
     return UNUR_SUCCESS;
   }
+
+  /* dimension of the distribution */
+  dim = GEN.dim;
 
   /* If center has not been set, we'll set it to the (optional) mode          */
   /* (provided the user has not set any parameters of the bounding rectangle) */
   /* Otherwise the center defaults to the value set in unur_nrou_new() i.e. 0 */
-  if (!(gen->set & NROU_SET_CENTER) &&
+  if (!(gen->set & VNROU_SET_CENTER) &&
        (gen->distr->set & UNUR_DISTR_SET_MODE) && 
-      !(gen->set & NROU_SET_U) && 
-      !(gen->set & NROU_SET_V) ) {
-    GEN.center = DISTR.mode; 
+      !(gen->set & VNROU_SET_U) && 
+      !(gen->set & VNROU_SET_V) ) {
+    memcpy(GEN.center, DISTR.mode, dim * sizeof(double)); 
   }  
-	  
+
   /* copy of generator to be used in auxiliary functions */
   _gen = gen;
 
-  /* parameter to be used in auxiliary functions */
-  p[0]=GEN.center;  
+  /* allocate memory for the coordinate vectors */
+  xstart = _unur_xmalloc(dim * sizeof(double));
+  xend   = _unur_xmalloc(dim * sizeof(double));
   
   /* calculation of vmax */
-  if (!(gen->set & NROU_SET_V)) {
+  if (!(gen->set & VNROU_SET_V)) {
     /* user has not provided any upper bound for v */
-
-    /* we start to check if optional mode is present */
-    if ( (gen->distr->set & UNUR_DISTR_SET_MODE) &&
-         (DISTR.mode >= DISTR.BD_LEFT) &&
-	 (DISTR.mode <= DISTR.BD_RIGHT) ) {
-	 
-      /* setting vmax to be sqrt(f(mode)) */
-      GEN.vmax = sqrt(PDF(DISTR.mode));
-    }
-    else {
-      /* calculating vmax as maximum of sqrt(f(x)) in the domain */
-      faux.f = (UNUR_FUNCT_GENERIC*) _unur_aux_bound_vmax;
+    /* calculating vmax as maximum of sqrt(f(x)) in the domain */
+      faux.f = (UNUR_FUNCT_VGENERIC*) _unur_vnrou_aux_vmax;
       faux.params = NULL;
-  
-      x = _unur_util_find_max(faux, DISTR.BD_LEFT, DISTR.BD_RIGHT, p[0]);
-      if (_unur_FP_is_plusminus_infinity(x)) {
+
+      memcpy(xstart, GEN.center, dim * sizeof(double)); 
+      hooke_iters = hooke( _unur_vnrou_aux_vmax, dim, xstart, xend, 
+                           VNROU_HOOKE_RHO, VNROU_HOOKE_EPSILON, VNROU_HOOKE_MAXITER);
+
+#if 0 /* should we implement this ? */
+      if (hooke_iters >= VNROU_HOOKE_MAXITER) {
          _unur_error(gen->genid , UNUR_ERR_GENERIC, "Bounding rect (vmax)");  
-         return UNUR_ERR_GENERIC;
+         free(xstart); free(xend);
+	 return UNUR_ERR_GENERIC;
       }
-      GEN.vmax = faux.f(x,p);
-    }
+#endif
+
+      GEN.vmax = -faux.f(xend,p);
   }
 
   /* calculation of umin and umax */
-  if (!(gen->set & NROU_SET_U)) {
+  if (!(gen->set & VNROU_SET_U)) {
+    
+    for (d=0; d<dim; d++) {
 
-    faux.f = (UNUR_FUNCT_GENERIC*) _unur_aux_bound_umin;
-    faux.params = p;
-
-    /* calculating start point for extremum search routine */
-    sx = _unur_FP_is_plusminus_infinity(DISTR.BD_LEFT) ? p[0]-1.: (p[0]+DISTR.BD_LEFT)/2. ; 
-    bx = _unur_FP_is_plusminus_infinity(DISTR.BD_LEFT) ? -BD_MAX: DISTR.BD_LEFT;
-
-    x = (DISTR.BD_LEFT == p[0]) ? p[0]: _unur_util_find_max(faux, bx, p[0], sx);
-          
-    while (_unur_FP_is_plusminus_infinity(x) && (fabs(bx) >= UNUR_EPSILON) ) { 
-       /* _unur_util_find_max() could not yet find a suitable extremum */
-       /* trying with a sequence of intervals with decreasing length   */
-       bx = bx/10.; sx = bx/2.;  
-       x = _unur_util_find_max(faux, bx, p[0], sx);
-    }
-         
-    if (_unur_FP_is_plusminus_infinity(x)) {
-       /* not able to compute a boundary recangle ...  */ 
-       _unur_error(gen->genid , UNUR_ERR_GENERIC, "Bounding rect (umin)");  
-       return UNUR_ERR_GENERIC;
-    }
-    GEN.umin = -faux.f(x,p);
-
-    /* and now, an analogue calculation for umax */
-
-    faux.f = (UNUR_FUNCT_GENERIC*) _unur_aux_bound_umax;
-    faux.params = p;
-
-    /* calculating start point for extremum search routine */
-    sx = _unur_FP_is_plusminus_infinity(DISTR.BD_RIGHT) ? p[0]+1.: (p[0]+DISTR.BD_RIGHT)/2. ; 
-    bx = _unur_FP_is_plusminus_infinity(DISTR.BD_RIGHT) ? BD_MAX: DISTR.BD_RIGHT;
-
-    x = (DISTR.BD_RIGHT == p[0]) ? p[0]: _unur_util_find_max(faux, p[0], bx, sx);
+      /* setting coordinate dimension to be used by the auxiliary functions */
+      vnrou_aux_dimension = d;
+   
+      /* calculation for umin */
       
-    while (_unur_FP_is_plusminus_infinity(x) && (fabs(bx) >= UNUR_EPSILON) ) { 
-       /* _unur_util_find_max() could not yet find a suitable extremum */
-       /* trying with a sequence of intervals with decreasing length   */
-       bx = bx/10.; sx = bx/2.; 
-       x = _unur_util_find_max(faux, p[0], bx, sx);
+      faux.f = (UNUR_FUNCT_VGENERIC*) _unur_vnrou_aux_umin;
+      faux.params = p;
+
+      hooke_iters = hooke( _unur_vnrou_aux_umin, dim, xstart, xend, 
+                           VNROU_HOOKE_RHO, VNROU_HOOKE_EPSILON, VNROU_HOOKE_MAXITER);
+
+#if 0 /* should we implement this ? */
+      if (hooke_iters >= VNROU_HOOKE_MAXITER) {
+         _unur_error(gen->genid , UNUR_ERR_GENERIC, "Bounding rect (umin)");  
+         free(xstart); free(xend);
+	 return UNUR_ERR_GENERIC;
+      }
+#endif
+
+      GEN.umin[d] = faux.f(xend,p);
+
+      /* and now, an analogue calculation for umax */
+
+      faux.f = (UNUR_FUNCT_VGENERIC*) _unur_vnrou_aux_umax;
+      faux.params = p;
+
+      hooke_iters = hooke( _unur_vnrou_aux_umax, dim, xstart, xend, 
+                           VNROU_HOOKE_RHO, VNROU_HOOKE_EPSILON, VNROU_HOOKE_MAXITER);
+    
+#if 0 /* should we implement this ? */
+      if (hooke_iters >= VNROU_HOOKE_MAXITER) {
+         _unur_error(gen->genid , UNUR_ERR_GENERIC, "Bounding rect (umax)");  
+         free(xstart); free(xend);
+	 return UNUR_ERR_GENERIC;
+      }
+#endif
+
+      GEN.umax[d] = -faux.f(xend,p);
+    
     }
-           
-    if (_unur_FP_is_plusminus_infinity(x)) {
-       /* not able to compute a boundary recangle ...  */ 
-       _unur_error(gen->genid , UNUR_ERR_GENERIC, "Bounding rect (umax)");  
-       return UNUR_ERR_GENERIC;
-    }
-    GEN.umax = faux.f(x,p);
   }
+
+
+  free(xstart); free(xend);
 
   /* o.k. */
   return UNUR_SUCCESS;
 
-} /* end of _unur_nrou_rectangle() */
+} /* end of _unur_vnrou_rectangle() */
 
 /*---------------------------------------------------------------------------*/
 
 struct unur_gen *
-_unur_nrou_create( struct unur_par *par )
+_unur_vnrou_create( struct unur_par *par )
      /*----------------------------------------------------------------------*/
      /* allocate memory for generator                                        */
      /*                                                                      */
@@ -628,40 +650,47 @@ _unur_nrou_create( struct unur_par *par )
   struct unur_gen *gen;
 
   /* check arguments */
-  CHECK_NULL(par,NULL);  COOKIE_CHECK(par,CK_NROU_PAR,NULL);
+  CHECK_NULL(par,NULL);  COOKIE_CHECK(par,CK_VNROU_PAR,NULL);
 
   /* create new generic generator object */
   gen = _unur_generic_create( par );
 
   /* magic cookies */
-  COOKIE_SET(gen,CK_NROU_GEN);
+  COOKIE_SET(gen,CK_VNROU_GEN);
 
   /* set generator identifier */
   gen->genid = _unur_set_genid(GENTYPE);
 
   /* routines for sampling and destroying generator */
-  SAMPLE = (par->variant & NROU_VARFLAG_VERIFY) ? _unur_nrou_sample_check : _unur_nrou_sample;
+  SAMPLE = (par->variant & VNROU_VARFLAG_VERIFY) ? _unur_vnrou_sample_check : _unur_vnrou_sample_cvec;
 
-  gen->destroy = _unur_nrou_free;
-  gen->clone = _unur_nrou_clone;
+  gen->destroy = _unur_vnrou_free;
+  gen->clone = _unur_vnrou_clone;
 
-  /* copy some parameters into generator object */
-  GEN.umin  = PAR.umin;             /* left u-boundary of bounding rectangle */
-  GEN.umax  = PAR.umax;             /* right u-boundary of bounding rectangle */
+  /* allocate memory for u-arrays and center */
+  GEN.umin = _unur_xmalloc( PAR.dim * sizeof(double));
+  GEN.umax = _unur_xmalloc( PAR.dim * sizeof(double));
+  GEN.center = _unur_xmalloc( PAR.dim * sizeof(double));
+  
+  /* copy parameters into generator object */
+  GEN.dim   = PAR.dim;              /* dimension */
   GEN.vmax  = PAR.vmax;             /* upper v-boundary of bounding rectangle */
-  GEN.center = PAR.center;          /* center of distribution */
-
+ 
+  memcpy(GEN.umin, PAR.umin, PAR.dim * sizeof(double));
+  memcpy(GEN.umax, PAR.umax, PAR.dim * sizeof(double));
+  memcpy(GEN.center, PAR.center, PAR.dim * sizeof(double));
+  
   /* initialize parameters */
 
   /* return pointer to (almost empty) generator object */
   return gen;
 
-} /* end of _unur_nrou_create() */
+} /* end of _unur_vnrou_create() */
 
 /*---------------------------------------------------------------------------*/
 
 struct unur_gen *
-_unur_nrou_clone( const struct unur_gen *gen )
+_unur_vnrou_clone( const struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* copy (clone) generator object                                        */
      /*                                                                      */
@@ -675,12 +704,12 @@ _unur_nrou_clone( const struct unur_gen *gen )
      /*   return NULL                                                        */
      /*----------------------------------------------------------------------*/
 { 
-#define CLONE clone->data.nrou
+#define CLONE clone->data.vnrou
 
   struct unur_gen *clone;
 
   /* check arguments */
-  CHECK_NULL(gen,NULL);  COOKIE_CHECK(gen,CK_NROU_GEN,NULL);
+  CHECK_NULL(gen,NULL);  COOKIE_CHECK(gen,CK_VNROU_GEN,NULL);
 
   /* create generic clone */
   clone = _unur_generic_clone( gen, GENTYPE );
@@ -688,110 +717,130 @@ _unur_nrou_clone( const struct unur_gen *gen )
   return clone;
 
 #undef CLONE
-} /* end of _unur_nrou_clone() */
+} /* end of _unur_vnrou_clone() */
 
 /*****************************************************************************/
 
-double
-_unur_nrou_sample( struct unur_gen *gen )
+void
+_unur_vnrou_sample_cvec( struct unur_gen *gen, double *vec )
      /*----------------------------------------------------------------------*/
      /* sample from generator                                                */
      /*                                                                      */
      /* parameters:                                                          */
      /*   gen ... pointer to generator object                                */
-     /*                                                                      */
-     /* return:                                                              */
-     /*   double (sample from random variate)                                */
-     /*                                                                      */
-     /* error:                                                               */
-     /*   return INFINITY                                                    */
+     /*   vec ... random vector (result)                                     */
      /*----------------------------------------------------------------------*/
 { 
-  double U,V,X;
+  double V,*U,*X;
+  int d, dim; /* index used in dimension loops (0 <= d < dim) */
 
   /* check arguments */
-  CHECK_NULL(gen,INFINITY);  COOKIE_CHECK(gen,CK_NROU_GEN,INFINITY);
+  CHECK_NULL(gen,RETURN_VOID);  
+  COOKIE_CHECK(gen,CK_VNROU_GEN,RETURN_VOID); 
 
-  while (1) {
+  dim = GEN.dim;
+ 
+  /* allocating memory for the U and X arrays */
+  X = _unur_xmalloc(dim*sizeof(double));
+  U = _unur_xmalloc(dim*sizeof(double));
+
+sample_try:
     /* generate point uniformly on rectangle */
     while ( (V = _unur_call_urng(gen->urng)) == 0.);
     V *= GEN.vmax;
-    U = GEN.umin + _unur_call_urng(gen->urng) * (GEN.umax - GEN.umin);
-
-    /* compute X */
-    X = U/V + GEN.center;
-
-    /* inside domain ? */
-    if ( (X < DISTR.BD_LEFT) || (X > DISTR.BD_RIGHT) )
-      continue;
+    for (d=0; d<dim; d++) {
+      U[d] = GEN.umin[d] + _unur_call_urng(gen->urng) * (GEN.umax[d] - GEN.umin[d]);
+      X[d] = U[d]/V + GEN.center[d];
+    }
+    
+    /* X[] inside domain ? */
 
     /* accept or reject */
-    if (V*V <= PDF(X))
-      return X;
-  }
+    if (V*V <= PDF(X)) {
+            memcpy(vec, X, dim*sizeof(double));
+            free(X); free(U);
+    }
+    else {
+      goto sample_try;
+    }
 
-} /* end of _unur_nrou_sample() */
+} /* end of _unur_vnrou_sample() */
 
 /*---------------------------------------------------------------------------*/
 
-double
-_unur_nrou_sample_check( struct unur_gen *gen )
+void
+_unur_vnrou_sample_check( struct unur_gen *gen, double *vec )
      /*----------------------------------------------------------------------*/
      /* sample from generator and verify that method can be used             */
      /*                                                                      */
      /* parameters:                                                          */
      /*   gen ... pointer to generator object                                */
-     /*                                                                      */
-     /* return:                                                              */
-     /*   double (sample from random variate)                                */
-     /*                                                                      */
-     /* error:                                                               */
-     /*   return INFINITY                                                    */
+     /*   vec ... random sample vector (return)                              */
      /*----------------------------------------------------------------------*/
 { 
-  double U,V,X,fx,sfx,xfx;
+  double V,*U,*X;
+  int d, dim; /* index used in dimension loops (0 <= d < dim) */
+  int hat_error;
 
+  double fx,sfx,*xfx;
+  
   /* check arguments */
-  CHECK_NULL(gen,INFINITY);  COOKIE_CHECK(gen,CK_NROU_GEN,INFINITY);
+  CHECK_NULL(gen,RETURN_VOID);  
+  COOKIE_CHECK(gen,CK_VNROU_GEN,RETURN_VOID); 
 
-  while (1) {
+  dim = GEN.dim;
+ 
+  /* allocating memory for the U and X arrays */
+  X = _unur_xmalloc(dim*sizeof(double));
+  U = _unur_xmalloc(dim*sizeof(double));
+
+  xfx = _unur_xmalloc(dim*sizeof(double));
+
+sample_try:
     /* generate point uniformly on rectangle */
     while ( (V = _unur_call_urng(gen->urng)) == 0.);
     V *= GEN.vmax;
-    U = GEN.umin + _unur_call_urng(gen->urng) * (GEN.umax - GEN.umin);
+    for (d=0; d<dim; d++) {
+      U[d] = GEN.umin[d] + _unur_call_urng(gen->urng) * (GEN.umax[d] - GEN.umin[d]);
+      X[d] = U[d]/V + GEN.center[d];
+    }
     
-    /* compute x */
-    X = U/V + GEN.center;
-    
-    /* inside domain ? */
-    if ( (X < DISTR.BD_LEFT) || (X > DISTR.BD_RIGHT) )
-      continue;
-    
+    /* X[] inside domain ? */
+
     /* evaluate PDF */
     fx = PDF(X);
     
     /* a point on the boundary of the region of acceptance
-       has the coordinates ( (X-center) * sqrt(fx), sqrt(fx) ). */
+       has the coordinates ( (X[]-center[]) * sqrt(fx), sqrt(fx) ). */
     sfx = sqrt(fx);
-    xfx = (X-GEN.center) * sfx;
-    
-    /* check hat */
-    if ( ( sfx > (1.+DBL_EPSILON) * GEN.vmax )   /* avoid roundoff error with FP registers */
-	 || (xfx < (1.+UNUR_EPSILON) * GEN.umin) 
-	 || (xfx > (1.+UNUR_EPSILON) * GEN.umax) )
-      _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"PDF(x) > hat(x)");
-    
-    /* accept or reject */
-    if (V*V <= PDF(X))
-      return X;
-  }
+    for (d=0; d<dim; d++) xfx[d] = (X[d]-GEN.center[d]) * sfx;
 
-} /* end of _unur_nrou_sample_check() */
+    /* check hat */
+    hat_error=0;
+    if ( sfx > (1.+DBL_EPSILON) * GEN.vmax ) hat_error++;   /* avoid roundoff error with FP registers */
+    
+    for (d=0; d<dim; d++) {
+     if ( (xfx[d] < (1.+UNUR_EPSILON) * GEN.umin[d]) 
+       || (xfx[d] > (1.+UNUR_EPSILON) * GEN.umax[d]))
+       hat_error++;
+    }
+    if (hat_error>0) _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"PDF(x) > hat(x)");
+ 
+    /* accept or reject */
+    if (V*V <= PDF(X)) {
+            memcpy(vec, X, dim*sizeof(double));
+            free(X); free(U); free(xfx);
+    }
+    else {
+      goto sample_try;
+    }
+
+} /* end of _unur_vnrou_sample_check() */
 
 /*****************************************************************************/
 
 void
-_unur_nrou_free( struct unur_gen *gen )
+_unur_vnrou_free( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* deallocate generator object                                          */
      /*                                                                      */
@@ -804,18 +853,19 @@ _unur_nrou_free( struct unur_gen *gen )
     return;
 
   /* check input */
-  if ( gen->method != UNUR_METH_NROU ) {
+  if ( gen->method != UNUR_METH_VNROU ) {
     _unur_warning(gen->genid,UNUR_ERR_GEN_INVALID,"");
     return; }
-  COOKIE_CHECK(gen,CK_NROU_GEN,RETURN_VOID);
+  COOKIE_CHECK(gen,CK_VNROU_GEN,RETURN_VOID);
 
   /* we cannot use this generator object any more */
   SAMPLE = NULL;   /* make sure to show up a programming error */
 
   /* free memory */
+  free(GEN.umin); free(GEN.umax); free(GEN.center);   
   _unur_generic_free(gen);
 
-} /* end of _unur_nrou_free() */
+} /* end of _unur_vnrou_free() */
 
 /*****************************************************************************/
 /**  Auxilliary Routines                                                    **/
@@ -830,7 +880,7 @@ _unur_nrou_free( struct unur_gen *gen )
 /*---------------------------------------------------------------------------*/
 
 void
-_unur_nrou_debug_init( const struct unur_gen *gen )
+_unur_vnrou_debug_init( const struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* write info about generator into logfile                              */
      /*                                                                      */
@@ -839,33 +889,46 @@ _unur_nrou_debug_init( const struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
 {
   FILE *log;
-
+  int d, dim; /* index used in dimension loops (0 <= d < dim) */
+  
   /* check arguments */
-  CHECK_NULL(gen,RETURN_VOID);  COOKIE_CHECK(gen,CK_NROU_GEN,RETURN_VOID);
+  CHECK_NULL(gen,RETURN_VOID);  COOKIE_CHECK(gen,CK_VNROU_GEN,RETURN_VOID);
 
   log = unur_get_stream();
+  dim = GEN.dim;
 
   fprintf(log,"%s:\n",gen->genid);
-  fprintf(log,"%s: type    = continuous univariate random variates\n",gen->genid);
-  fprintf(log,"%s: method  = nrou (naive ratio-of-uniforms)\n",gen->genid);
+  fprintf(log,"%s: type    = continuous multivariate random variates\n",gen->genid);
+  fprintf(log,"%s: method  = vnrou (naive ratio-of-uniforms)\n",gen->genid);
   fprintf(log,"%s:\n",gen->genid);
+  
+  _unur_distr_cvec_debug( gen->distr, gen->genid );
 
-  _unur_distr_cont_debug( gen->distr, gen->genid );
-
-  fprintf(log,"%s: sampling routine = _unur_nrou_sample",gen->genid);
-  if (gen->variant & NROU_VARFLAG_VERIFY) fprintf(log,"_check");
+  fprintf(log,"%s: sampling routine = _unur_vnrou_sample",gen->genid);
+  if (gen->variant & VNROU_VARFLAG_VERIFY) fprintf(log,"_check");
   fprintf(log,"()\n%s:\n",gen->genid);
 
-  fprintf(log,"%s: center = %g\n",gen->genid,GEN.center);
+
+  /* write center[] */
+  fprintf(log,"%s: center = (", gen->genid);
+  for (d=0; d<dim; d++) {
+    fprintf(log,"%g", GEN.center[d]);
+    if (d<dim-1) fprintf(log, ", ");
+  }
+  fprintf(log,")\n");
+  
   fprintf(log,"%s:\n",gen->genid);
 
+  /* write bounding rectangle */
   fprintf(log,"%s: Rectangle:\n",gen->genid);
-  fprintf(log,"%s:    left  upper point = (%g,%g)\n",gen->genid,GEN.umin,GEN.vmax);
-  fprintf(log,"%s:    right upper point = (%g,%g)\n",gen->genid,GEN.umax,GEN.vmax);
-
+  fprintf(log,"%s:    vmax = %g\n",gen->genid, GEN.vmax);
+  for (d=0; d<dim; d++) {
+  fprintf(log,"%s:    umin[%d],umax[%d] = (%g,%g)\n",gen->genid, d, d, 
+                                                     GEN.umin[d],GEN.umax[d]);
+  }
   fprintf(log,"%s:\n",gen->genid);
 
-} /* end of _unur_nrou_debug_init() */
+} /* end of _unur_vnrou_debug_init() */
 
 /*---------------------------------------------------------------------------*/
 #endif   /* end UNUR_ENABLE_LOGGING */

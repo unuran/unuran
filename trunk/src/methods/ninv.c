@@ -547,7 +547,7 @@ int unur_ninv_chg_start(UNUR_GEN *gen, double s1, double s2)
      GEN.s[1] = s1;
   }
 
- if (GEN.s[0] == GEN.s[1] && GEN.table_on == 0) {
+ if ( _FP_same(GEN.s[0], GEN.s[1]) && GEN.table_on == 0) {
       /* length of interval == 0 -> choose bounderies with                   */
       /*  INTERVAL_COVERS *100% chance for sign change in interval           */
       GEN.s[0] = -10.;      /* arbitrary starting value                      */
@@ -858,7 +858,7 @@ _unur_ninv_init( struct unur_par *par )
        tmp = GEN.s[0]; GEN.s[0] = GEN.s[1]; GEN.s[1] = tmp;
     }
 
-    if (GEN.s[0] == GEN.s[1] && GEN.table_on == 0) {
+    if ( _FP_same(GEN.s[0], GEN.s[1]) && GEN.table_on == 0) {
       /* length of interval == 0 -> choose bounderies with                   */
       /*  INTERVAL_COVERS *100 % chance for sign change in interval          */
       GEN.s[0] = -10.;      /* arbitrary starting value                      */
@@ -876,7 +876,7 @@ _unur_ninv_init( struct unur_par *par )
        tmp = GEN.s[0]; GEN.s[0] = GEN.s[1]; GEN.s[1] = tmp;
     }
 
-    if (GEN.s[0] == GEN.s[1] && GEN.table_on == 0) {
+    if (_FP_same(GEN.s[0], GEN.s[1]) && GEN.table_on == 0) {
     /* s0 == s1  -> starting value set to value                              */
     /* such that CDF(value) = .5                                             */
       GEN.s[0] = -9.987655;                /* arbitrary starting values      */

@@ -233,7 +233,7 @@ _unur_stdgen_sample_beta_bc(  struct unur_gen *gen )
       v = be * log(u1 / (1.0 - u1));
       if (v > 80.) {
 	if (alnam < log(z)) continue;
-	X = (am == p) ? 1. : 0.;
+	X = _FP_same(am,p) ? 1. : 0.;
 	break;
       }
       else {
@@ -253,7 +253,7 @@ _unur_stdgen_sample_beta_bc(  struct unur_gen *gen )
 	/* Step 5 */
 	v = be * log(u1 / (1.0 - u1));
 	if (v > 80.) {
-	  X = (am == p) ? 1.0 : 0.0;
+	  X = _FP_same(am,p) ? 1.0 : 0.0;
 	  break;
 	}
 
@@ -267,7 +267,7 @@ _unur_stdgen_sample_beta_bc(  struct unur_gen *gen )
 	v = be * log(u1 / (1.0 - u1));
 	if ( v > 80.) {
 	  if (alnam < log(z)) continue;
-	  X = (am == p) ? 1. : 0.;
+	  X = _FP_same(am,p) ? 1. : 0.;
 	  break;
 	}
 
@@ -345,7 +345,7 @@ _unur_stdgen_sample_beta_bb(  struct unur_gen *gen )
     }
 
     /* Step 5 */
-    X = (am == p) ? w / (bm + w) : bm / (bm + w);
+    X = _FP_same(am,p) ? w / (bm + w) : bm / (bm + w);
     break;
   }
   /* -X- end of generator code -X- */

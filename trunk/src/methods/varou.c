@@ -692,12 +692,13 @@ _unur_varou_sample_cvec( struct unur_gen *gen, double *vec )
     /* sampling in cone #ic_sample */
     _unur_varou_sample_cone(gen, GEN.cone_list[ic_sample], UV);
 
-    /* check if UV is inside the potato volume */
-    if ( pow(UV[dim], 1.+dim) <= _unur_varou_f(gen, UV) ) {
-       for (d=0; d<dim; d++) {  
-         vec[d] = UV[d]/UV[dim]+GEN.center[d] ;
-       }
+    /* obtainint the (u/v)-coordinates */ 
+    for (d=0; d<dim; d++) {  
+      vec[d] = UV[d]/UV[dim]+GEN.center[d] ;
+    }
   
+    /* check if sample point is inside the potato volume */
+    if ( pow(UV[dim], 1.+dim) <= PDF(vec) ) {
        free(UV);
        return;
     }  

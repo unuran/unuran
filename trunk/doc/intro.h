@@ -145,7 +145,7 @@
    @end example
    The variable @code{distr} is a structure of type @code{UNUR_DISTR}
    and instead of <type> one of the type @code{cont}   
-   @code{cvec}   @code{discr}   @code{cemp}   @code{vemp}
+   @code{cvec}   @code{discr}   @code{cemp}   @code{cvemp}
    as shown below must be used. Depending on <type> you have to use
    a function @code{unur_saple_<cont|discr|vec>()}
    to sample random numbers.
@@ -168,7 +168,7 @@
 	set of numbers, use this function to get a 
 	distribution object.@*
 	Use for sampling: @code{unur_sample_cont()}
-   @item  @code{unur_distr_vemp_new()}@*
+   @item  @code{unur_distr_cvemp_new()}@*
         If you want to create a vector of random numbers similar
 	to a given set of vectors, this function will produce
 	the distribution object.@*
@@ -180,7 +180,7 @@
    fuctions---depending on the type
    @code{<type>} of the distribution object. 
    The function reference of these types of distribution objects
-   are found in the corresponding sections XXXXX-XXXXX. The naming scheme
+   are found in the corresponding sections (@pxref{Distribution_objects,Handling distribution objects,Handling distribution objects}). The naming scheme
    of these functions is designed to indicate the corresponding type of
    the distribution object and the task to be performed. To demonstrate
    this an example will be given:
@@ -194,12 +194,10 @@
 
    The information the user must fill into the distribution object depends
    heavily on the method choosen for sampling random numbers. 
-
-   XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX 
-
-   Tabelle!!!   
-
-   XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+  
+   The requirements of the methods are indicated in the following tables: 
+   
+   @include unuran_method_requirements.texi
 
    If we want to sample from a continuous distribution and
    the choosen method needs the mode, it can be set with
@@ -229,7 +227,7 @@
   function for sampling.
   In combination with the previous example,
   the sampling routine `@code{unur_distr_sample_cont()}' must be used.
-  All implemented standard distribution are described in section XXXXXX
+  All implemented standard distribution are described below.( @pxref{Stddist,standard distributions,standard distributions}).
  
   @sp 2
 
@@ -253,13 +251,13 @@
   @end example
   This sets all necessary parameters of the methods. Nevertheless
   it is possible to control the behaviour of the method using
-  the functions---a set for each method---describes in section XXXXX.
+  the corresponding functions---a set for each method---(@ref{Methods,Methods,Methods}).
   The following example demonstrates how to change the maximum
   number of iterations of the method NINV to the value 50:
   @example
     unur_ninv_set_max_iteration(par, 50);
   @end example
-  The available methods are described in section XXXXX.
+  The available methods are described in a section below (@pxref{Methods,Methods,Methods}).
   
   Now it is possible to create a generator object:
   @example

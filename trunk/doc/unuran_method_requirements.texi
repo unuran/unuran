@@ -1,6 +1,6 @@
 Parentheses indicate optional information while a tilde indicates
 that only an approximation must be provided. See the glossary for
-unfamiliar terms.
+unfamiliar terms (Appendix A).
 @sp1
 
 @noindent Methods for continuous distributions:

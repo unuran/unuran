@@ -50,7 +50,8 @@ set a parameter. To call this function via the string-interface, the
 key `max_sqhratio' can be used.
 
 Uniform random number generator:
-The string is passed as it is to the PRNG package
+The only key allowed is `prng' and the following value is a
+string which is passed as it is to the PRNG package
 For information see the PRNG manual
 
 

@@ -65,7 +65,7 @@ static const char distr_name[] = "poisson";
 
 /*---------------------------------------------------------------------------*/
 /* do we have the cdf of the distribution ? */
-#if defined(HAVE_UNUR_SF_GAMMA) && defined(HAVE_UNUR_SF_INCOMPLETE_GAMMA)
+#if defined(HAVE_UNUR_SF_LN_GAMMA) && defined(HAVE_UNUR_SF_INCOMPLETE_GAMMA)
 #  define HAVE_CDF
 #else
 #  undef  HAVE_CDF
@@ -115,7 +115,7 @@ double
 _unur_cdf_poisson(int k, UNUR_DISTR *distr)
 { 
   if (k>=0)
-    return ( (k+1.) * _unur_sf_incomplete_gamma(k,DISTR.theta) / _unur_sf_ln_gamma(k+2.) );
+    return (1.-_unur_sf_incomplete_gamma(DISTR.theta,k+1));
   else
     return 0.;
 } /* end of _unur_cdf_poisson() */

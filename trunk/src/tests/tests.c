@@ -164,7 +164,11 @@ _unur_print_method( struct unur_par *par )
     break;
   case UNUR_METH_DGT:
     COOKIE_CHECK(par,CK_DGT_PAR,0);
-    printf("METHOD:\t\tindexed search (DIS)\n");
+    printf("METHOD:\t\tindexed search -- guide table (DGT)\n");
+    break;
+  case UNUR_METH_DSROU:
+    COOKIE_CHECK(par,CK_DSROU_PAR,0);
+    printf("METHOD:\t\tdiscrete simple universal ratio-of-uniforms search (DSROU)\n");
     break;
   case UNUR_METH_DSTD:
     COOKIE_CHECK(par,CK_DSTD_PAR,0);

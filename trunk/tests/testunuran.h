@@ -53,6 +53,7 @@
 #define T_DARI
 #define T_DAU
 #define T_DGT
+#define T_DSROU
 #define T_DSTD 
 #define T_EMPK
 #define T_NINV

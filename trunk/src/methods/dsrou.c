@@ -291,7 +291,7 @@ unur_dsrou_set_cdfbeforemode( struct unur_par *par, double Fbmode )
 
   /* check new parameter for generator */
   if (Fbmode < 0. || Fbmode > 1.) {
-    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"CDF(mode)");
+    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"CDF(mode-1)");
     return 0;
    }
  
@@ -665,9 +665,10 @@ _unur_dsrou_rectangle( struct unur_gen *gen )
 
   /* compute PMF at mode and mode-1 */
   pm = PMF(DISTR.mode);
-  pbm = PMF(DISTR.mode-1);
+  pbm = (DISTR.mode-1 < DISTR.BD_LEFT) ? 0 : PMF(DISTR.mode-1);
+
   /* pm and pbm must be positive */
-  if (pm <= 0. || pbm <= 0.) {
+  if (pm <= 0. || pbm < 0.) {
     _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"PMF(mode) <= 0.");
     return 0;
   }
@@ -692,7 +693,7 @@ _unur_dsrou_rectangle( struct unur_gen *gen )
     GEN.ar = DISTR.sum;
   }
   else {
-    GEN.al = -(DISTR.sum - pm/DISTR.sum);
+    GEN.al = -(DISTR.sum - pm);
     GEN.ar = DISTR.sum;
   }    
 
@@ -827,7 +828,6 @@ _unur_dsrou_sample( struct unur_gen *gen )
   while (1) {
     /* generate point uniformly in union of rectangles */
     V = GEN.al + _unur_call_urng(gen->urng) * (GEN.ar - GEN.al);
-    V = GEN.al + V * (GEN.ar-GEN.al);
     V /= (V<0.) ? GEN.ul : GEN.ur;    /* if ul==0. then al==0. and thus V>=0. */
 
     while ( (U = _unur_call_urng(gen->urng)) == 0.);
@@ -872,7 +872,6 @@ _unur_dsrou_sample_check( struct unur_gen *gen )
   while (1) {
     /* generate point uniformly in union of rectangles */
     V = GEN.al + _unur_call_urng(gen->urng) * (GEN.ar - GEN.al);
-    V = GEN.al + V * (GEN.ar-GEN.al);
     V /= (V<0.) ? GEN.ul : GEN.ur;
 
     while ( (U = _unur_call_urng(gen->urng)) == 0.);
@@ -892,11 +891,10 @@ _unur_dsrou_sample_check( struct unur_gen *gen )
     /* check hat */
     if ( ((2.+4.*DBL_EPSILON) * GEN.ur*GEN.ur < pI)    /* avoid roundoff error with FP registers */
 	 || ( VI < (1.+UNUR_EPSILON) * GEN.al/GEN.ul) 
-	 || ( VI > (1.+UNUR_EPSILON) * GEN.ar/GEN.ur) 
-	 || (-VI < (1.+UNUR_EPSILON) * GEN.al/GEN.ul) 
-	 || (-VI > (1.+UNUR_EPSILON) * GEN.ar/GEN.ur) )
+	 || ( VI > (1.+UNUR_EPSILON) * GEN.ar/GEN.ur) ) { 
       _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"PMF(x) > hat(x)");
-    
+    }
+
     /* accept or reject */
     if (U*U <= pI)
       return I;
@@ -983,15 +981,21 @@ _unur_dsrou_debug_init( struct unur_gen *gen, int is_reinit )
   if (gen->set & DSROU_SET_CDFBMODE)
     fprintf(log,"%s: CDF(mode-1) = %g\n",gen->genid,GEN.Fbmode);
   else
-    fprintf(log,"%s: CDFF(mode-1) unknown\n",gen->genid);
+    fprintf(log,"%s: CDF(mode-1) unknown\n",gen->genid);
 
   fprintf(log,"%s: no (universal) squeeze\n",gen->genid);
-  fprintf(log,"%s: use mirror principle\n",gen->genid);
+  fprintf(log,"%s: no mirror principle\n",gen->genid);
   fprintf(log,"%s:\n",gen->genid);
 
   fprintf(log,"%s: Rectangles:\n",gen->genid);
-  fprintf(log,"%s:    left upper point  = (%g,%g)\n",gen->genid,GEN.al/GEN.ul,GEN.ul);
-  fprintf(log,"%s:    right upper point = (%g,%g)\n",gen->genid,GEN.ar/GEN.ur,GEN.ur);
+  if (GEN.ul > 0.)
+    fprintf(log,"%s:    left upper point  = (%g,%g) \tarea = %g   (%5.2f%%)\n",
+	    gen->genid,GEN.al/GEN.ul,GEN.ul,fabs(GEN.al),100.*fabs(GEN.al)/(-GEN.al+GEN.ar));
+  else
+    fprintf(log,"%s:    left upper point  = (0,0) \tarea = 0   (0.00%%)\n",gen->genid);
+
+  fprintf(log,"%s:    right upper point = (%g,%g) \tarea = %g   (%5.2f%%)\n",
+	  gen->genid,GEN.ar/GEN.ur,GEN.ur,GEN.ar,100.*GEN.ar/(-GEN.al+GEN.ar));
 
   fprintf(log,"%s:\n",gen->genid);
 

@@ -26,6 +26,7 @@ check_PROGRAMS = \
  t_dari \
  t_dau \
  t_dgt \
+ t_dsrou \
  t_dstd \
  t_empk \
  t_ninv \
@@ -46,6 +47,7 @@ TESTS = \
  t_dari \
  t_dau \
  t_dgt \
+ t_dsrou \
  t_dstd \
  t_empk \
  t_ninv \
@@ -77,6 +79,7 @@ EXTRA_DIST = \
  dari.conf \
  dau.conf \
  dgt.conf \
+ dsrou.conf \
  dstd.conf \
  empk.conf \
  ninv.conf \
@@ -140,6 +143,9 @@ t_dau_LDADD = $(top_builddir)/src/libunuran.a
 t_dgt_SOURCES = t_dgt.c testroutines.c
 t_dgt_LDADD = $(top_builddir)/src/libunuran.a
 
+t_dsrou_SOURCES = t_dsrou.c testroutines.c
+t_dsrou_LDADD = $(top_builddir)/src/libunuran.a
+
 t_dstd_SOURCES = t_dstd.c testroutines.c
 t_dstd_LDADD = $(top_builddir)/src/libunuran.a
 
@@ -194,6 +200,9 @@ t_dau.c: dau.conf make_test_files.pl
 
 t_dgt.c: dgt.conf make_test_files.pl
 	./make_test_files.pl dgt.conf
+
+t_dsrou.c: dsrou.conf make_test_files.pl
+	./make_test_files.pl dsrou.conf
 
 t_dstd.c: dstd.conf make_test_files.pl
 	./make_test_files.pl dstd.conf

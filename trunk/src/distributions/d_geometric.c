@@ -97,10 +97,8 @@ _unur_upd_mode_geometric( UNUR_DISTR *distr )
   DISTR.mode = 0;
 
   /* mode must be in domain */
-  if (DISTR.mode < DISTR.domain[0]) 
-    DISTR.mode = DISTR.domain[0];
-  else if (DISTR.mode > DISTR.domain[1]) 
-    DISTR.mode = DISTR.domain[1];
+  if (DISTR.mode < DISTR.domain[0] || DISTR.mode > DISTR.domain[1]) 
+    DISTR.mode = (DISTR.domain[0]<0) ? 0 : DISTR.domain[0];
 
   /* o.k. */
   return 1;

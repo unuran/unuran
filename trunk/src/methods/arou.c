@@ -1041,8 +1041,8 @@ _unur_arou_get_starting_cpoints( struct unur_par *par, struct unur_gen *gen )
   x = x_last = DISTR.BD_LEFT;
   fx = fx_last = (x <= -INFINITY) ? 0. : PDF(x);
   seg = GEN.seg = _unur_arou_segment_new( gen, x, fx );
-  CHECK_NULL(seg,0);       /* case of error */
-  is_increasing = 1;       /* assume pdf(x) is increasing for the first construction points */
+  if (seg == NULL) return 0;  /* case of error */
+  is_increasing = 1; /* assume pdf(x) is increasing for the first construction points */
 
   /* now all the other points */
   for( i=0; i<=PAR.n_starting_cpoints; i++ ) {
@@ -1125,7 +1125,11 @@ _unur_arou_get_starting_cpoints( struct unur_par *par, struct unur_gen *gen )
     
     /* need a new segment */
     seg_new = _unur_arou_segment_new( gen, x, fx );
-    CHECK_NULL(seg,0);     /* case of error */
+    if (seg_new == NULL) {
+      /* case of error */
+      seg->next = NULL;  /* derminate list (for listing in debugging mode) */
+      return 0;
+    }
 
     /* append to linked list */
     seg->next =seg_new;

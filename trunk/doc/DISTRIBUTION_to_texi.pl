@@ -2,7 +2,7 @@
 # $Id$
 ############################################################
 
-# valid TAGs for section TAG =DISTRIBUTION
+# valid TAGs for section TAG =DISTR
 %distr_TAGs =
     (
      "=ROUTINES"    => { "required" => "yes",
@@ -15,12 +15,6 @@
 			 "scan" => \&scan_END },
      );
 
-# store data
-$in_DISTRs;
-
-# formated text
-$texi_DISTRs;
-
 ############################################################
 
 sub scan_DISTR {
@@ -30,7 +24,7 @@ sub scan_DISTR {
 
     # get short and long distribution name
     chomp $line;
-    $line =~ s/^\s*=DISTRIBUTION\s*//;
+    $line =~ s/^\s*=DISTR\s*//;
     (my $distr, my $order, my $distr_long) = split /\s+/, $line, 3;
 
     # print distribution name 
@@ -41,18 +35,18 @@ sub scan_DISTR {
     $order = $1;
 
     # check for uniqueness of distribution name
-    if ($in_DISTRs->{$distr}->{"=NAME"}) {
+    if ($in->{"=DISTR"}->{$distr}->{"=NAME"}) {
 	die "distribution name $distr not unique";
     }
 
     # store method name
-    $in_DISTRs->{$distr}->{"=NAME"} = $distr_long;
+    $in->{"=DISTR"}->{$distr}->{"=NAME"} = $distr_long;
 
     # store order 
-    $in_DISTRs->{$distr}->{"=ORDER"} = $order;
+    $in->{"=DISTR"}->{$distr}->{"=ORDER"} = $order;
 
     # store file name
-    $in_DISTRs->{$distr}->{"=FILE"} = $file;
+    $in->{"=DISTR"}->{$distr}->{"=FILE"} = $file;
 
     # scan all subsections 
     my $this_TAG = "=END";  # add =END tag to section tag
@@ -63,7 +57,7 @@ sub scan_DISTR {
 	    print STDERR "  $this_TAG" if $VERBOSE;
 	    if ($distr_TAGs{$this_TAG}) {
 		# store subsection text
-		$in_DISTRs->{$distr}->{$this_TAG} .= $lines;
+		$in->{"=DISTR"}->{$distr}->{$this_TAG} .= $lines;
 	    }
 	    else {
 		print STDERR "  invalid!!\n\n\t" if $VERBOSE;
@@ -78,14 +72,14 @@ sub scan_DISTR {
     # analyse entries
     foreach $tag (keys %distr_TAGs) {
 	next unless ($distr_TAGs{$tag}{"required"} eq "yes");
-	unless ($in_DISTRs->{$distr}->{$tag}) {
+	unless ($in->{"=DISTR"}->{$distr}->{$tag}) {
 	    print STDERR "\t$tag is missing!!\n\n" if $VERBOSE;
 	}
     }
 
     # scan and format all sections
     foreach $tag (keys %distr_TAGs) {
-	&{$distr_TAGs{$tag}{"scan"}}( \($in_DISTRs->{$distr}->{$tag}) );
+	&{$distr_TAGs{$tag}{"scan"}}( \($in->{"=DISTR"}->{$distr}->{$tag}) );
     }
 
 } # end of scan_DISTR()
@@ -95,18 +89,18 @@ sub scan_DISTR {
 sub format_DISTR {
 
     # write texi output
-    $texi_DISTRs .= "\@node Distributions\n";
-    $texi_DISTRs .= "\@chapter Distributions\n\n";
+    $texi->{"=DISTR"} .= "\@node Distributions\n";
+    $texi->{"=DISTR"} .= "\@chapter Distributions\n\n";
     
     # get list of distributions
-    my @list_distr = sort distr_by_order_key keys %$in_DISTRs;
+    my @list_distr = sort distr_by_order_key keys %{$in->{"=DISTR"}};
 
     # make menu for all distributions
-    $texi_DISTRs .= "\@menu\n";
+    $texi->{"=DISTR"} .= "\@menu\n";
     foreach my $distr (@list_distr) {
-	$texi_DISTRs .= "* $distr\:: ".$in_DISTRs->{$distr}->{"=NAME"}."\n";
+	$texi->{"=DISTR"} .= "* $distr\:: ".$in->{"=DISTR"}->{$distr}->{"=NAME"}."\n";
     }
-    $texi_DISTRs .= "\@end menu\n\n";
+    $texi->{"=DISTR"} .= "\@end menu\n\n";
 
     # print subsections for all distribution types
     foreach my $distr (@list_distr) {
@@ -114,26 +108,25 @@ sub format_DISTR {
 	# write texi subsection header for distribution type
 
 	# header file name
-	$texi_DISTRs .= "\@c -------------------------------------\n";
-	$texi_DISTRs .= "\@c ".$in_DISTRs->{$distr}->{"=FILE"}."\n";
-	$texi_DISTRs .= "\@c\n\n";
+	$texi->{"=DISTR"} .= "\@c -------------------------------------\n";
+	$texi->{"=DISTR"} .= "\@c ".$in->{"=DISTR"}->{$distr}->{"=FILE"}."\n";
+	$texi->{"=DISTR"} .= "\@c\n\n";
 
 	# node and section
-	$texi_DISTRs .= "\@node $distr\n";
-	$texi_DISTRs .= "\@section ".$in_DISTRs->{$distr}->{"=NAME"}." ($distr)\n\n";
+	$texi->{"=DISTR"} .= "\@node $distr\n";
+	$texi->{"=DISTR"} .= "\@section ".$in->{"=DISTR"}->{$distr}->{"=NAME"}." ($distr)\n\n";
 
 	# description for distribution
-	$texi_DISTRs .= $in_DISTRs->{$distr}->{"=DESCRIPTION"}."\n\n";
+	$texi->{"=DISTR"} .= $in->{"=DISTR"}->{$distr}->{"=DESCRIPTION"}."\n\n";
 
 	# function reference
-	$texi_DISTRs .= "\n\@subheading Function reference\n\n";
-	$texi_DISTRs .= $in_DISTRs->{$distr}->{"=ROUTINES"}."\n\n";
+	$texi->{"=DISTR"} .= "\n\@subheading Function reference\n\n";
+	$texi->{"=DISTR"} .= $in->{"=DISTR"}->{$distr}->{"=ROUTINES"}."\n\n";
 
 	# end of header file
-	$texi_DISTRs .= "\@c\n";
-	$texi_DISTRs .= "\@c end of ".$in_DISTRs->{$distr}->{"=FILE"}."\n";
-	$texi_DISTRs .= "\@c -------------------------------------\n";
-
+	$texi->{"=DISTR"} .= "\@c\n";
+	$texi->{"=DISTR"} .= "\@c end of ".$in->{"=DISTR"}->{$distr}->{"=FILE"}."\n";
+	$texi->{"=DISTR"} .= "\@c -------------------------------------\n";
 
     }
     return;
@@ -143,7 +136,7 @@ sub format_DISTR {
 ############################################################
 
 sub distr_by_order_key {
-    $in_DISTRs->{$a}->{"=ORDER"} <=> $in_DISTRs->{$b}->{"=ORDER"};
+    $in->{"=DISTR"}->{$a}->{"=ORDER"} <=> $in->{"=DISTR"}->{$b}->{"=ORDER"};
 }
 
 ############################################################

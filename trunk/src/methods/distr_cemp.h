@@ -40,7 +40,7 @@
 /*---------------------------------------------------------------------------*/
 
 /* 
-   =DISTRIBUTION  CEMP  [20]  continuous empirical univariate distribution
+   =DISTR  CEMP  [20]  continuous empirical univariate distribution
 
 
    =END

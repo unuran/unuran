@@ -41,7 +41,7 @@
 /*---------------------------------------------------------------------------*/
 
 /* 
-   =DISTRIBUTION  CORDER  [15]  continuous univariate order statistics
+   =DISTR  CORDER  [15]  continuous univariate order statistics
 
 
    =END

@@ -40,7 +40,7 @@
 /*---------------------------------------------------------------------------*/
 
 /* 
-   =DISTRIBUTION  UNID  [60]  (uniform univariate distribution)
+   =DISTR  UNID  [60]  (uniform univariate distribution)
 
 
    =END

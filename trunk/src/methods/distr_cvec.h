@@ -40,7 +40,7 @@
 /*---------------------------------------------------------------------------*/
 
 /* 
-   =DISTRIBUTION  CVEC  [30]  continuous multivariate distribution
+   =DISTR  CVEC  [30]  continuous multivariate distribution
 
 
    =END

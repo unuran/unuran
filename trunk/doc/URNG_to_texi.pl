@@ -15,12 +15,6 @@
 			 "scan" => \&scan_END },
      );
 
-# store data
-$in_URNGs;
-
-# formated text
-$texi_URNGs;
-
 ############################################################
 
 sub scan_URNG {
@@ -37,10 +31,10 @@ sub scan_URNG {
     print STDERR "$urng_title\n\t" if $VERBOSE;
 
     # store method name
-    $in_URNGs->{$urng}->{"=NAME"} = $urng_title;
+    $in->{"=URNG"}->{$urng}->{"=NAME"} = $urng_title;
 
     # store file name
-    $in_URNGs->{$urng}->{"=FILE"} = $file;
+    $in->{"=URNG"}->{$urng}->{"=FILE"} = $file;
 
     # scan all subsections 
     my $this_TAG = "=END";  # add =END tag to section tag
@@ -51,7 +45,7 @@ sub scan_URNG {
 	    print STDERR "  $this_TAG" if $VERBOSE;
 	    if ($urng_TAGs{$this_TAG}) {
 		# store subsection text
-		$in_URNGs->{$urng}->{$this_TAG} .= $lines;
+		$in->{"=URNG"}->{$urng}->{$this_TAG} .= $lines;
 	    }
 	    else {
 		print STDERR "  invalid!!\n\n\t" if $VERBOSE;
@@ -66,14 +60,14 @@ sub scan_URNG {
     # analyse entries
     foreach $tag (keys %urng_TAGs) {
 	next unless ($urng_TAGs{$tag}{"required"} eq "yes");
-	unless ($in_URNGs->{$urng}->{$tag}) {
+	unless ($in->{"=URNG"}->{$urng}->{$tag}) {
 	    print STDERR "\t$tag is missing!!\n\n" if $VERBOSE;
 	}
     }
 
     # scan and format all sections
     foreach $tag (keys %urng_TAGs) {
-	&{$urng_TAGs{$tag}{"scan"}}( \($in_URNGs->{$urng}->{$tag}) );
+	&{$urng_TAGs{$tag}{"scan"}}( \($in->{"=URNG"}->{$urng}->{$tag}) );
     }
 
 } # end of scan_URNG()
@@ -84,27 +78,27 @@ sub format_URNG {
     my $urng = "URNG";
 
     # write texi output
-    $texi_URNGs .= "\@node URNG\n";
-    $texi_URNGs .= "\@chapter ".$in_URNGs->{$urng}->{"=NAME"}."\n\n";
+    $texi->{"=URNG"} .= "\@node URNG\n";
+    $texi->{"=URNG"} .= "\@chapter ".$in->{"=URNG"}->{$urng}->{"=NAME"}."\n\n";
     
     # write texi subsection header for urngibution type
 
     # header file name
-    $texi_URNGs .= "\@c -------------------------------------\n";
-    $texi_URNGs .= "\@c ".$in_URNGs->{$urng}->{"=FILE"}."\n";
-    $texi_URNGs .= "\@c\n\n";
+    $texi->{"=URNG"} .= "\@c -------------------------------------\n";
+    $texi->{"=URNG"} .= "\@c ".$in->{"=URNG"}->{$urng}->{"=FILE"}."\n";
+    $texi->{"=URNG"} .= "\@c\n\n";
 
     # description for urngibution
-    $texi_URNGs .= $in_URNGs->{$urng}->{"=DESCRIPTION"}."\n\n";
+    $texi->{"=URNG"} .= $in->{"=URNG"}->{$urng}->{"=DESCRIPTION"}."\n\n";
 
     # function reference
-    $texi_URNGs .= "\n\@heading Function reference\n\n";
-    $texi_URNGs .= $in_URNGs->{$urng}->{"=ROUTINES"}."\n\n";
+    $texi->{"=URNG"} .= "\n\@heading Function reference\n\n";
+    $texi->{"=URNG"} .= $in->{"=URNG"}->{$urng}->{"=ROUTINES"}."\n\n";
 
     # end of header file
-    $texi_URNGs .= "\@c\n";
-    $texi_URNGs .= "\@c end of ".$in_URNGs->{$urng}->{"=FILE"}."\n";
-    $texi_URNGs .= "\@c -------------------------------------\n";
+    $texi->{"=URNG"} .= "\@c\n";
+    $texi->{"=URNG"} .= "\@c end of ".$in->{"=URNG"}->{$urng}->{"=FILE"}."\n";
+    $texi->{"=URNG"} .= "\@c -------------------------------------\n";
 
     return;
 

@@ -40,7 +40,7 @@
 /*---------------------------------------------------------------------------*/
 
 /* 
-   =DISTRIBUTION  CVEMP  [40]  continuous empirical multivariate distribution
+   =DISTR  CVEMP  [40]  continuous empirical multivariate distribution
 
 
    =END

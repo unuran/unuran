@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 ############################################################
 
-$VERBOSE = 0;
+$VERBOSE = 1;
 
 ############################################################
 # $Id$
@@ -38,24 +38,32 @@ require "URNG_to_texi.pl";
 
 %section_TAGs = 
     (
-     "=DISTRIBUTION" => { "scan"   => \&scan_DISTR,
-			  "format" => \&format_DISTR },
+     "=DISTR"   => { "scan"   => \&scan_DISTR,
+		     "format" => \&format_DISTR },
 
-     "=ERROR"        => { "scan"   => \&scan_ERROR,
-			  "format" => \&format_ERROR },
+     "=ERROR"   => { "scan"   => \&scan_ERROR,
+		     "format" => \&format_ERROR },
 
-     "=METHOD"       => { "scan"   => \&scan_METHOD,
-			  "format" => \&format_METHOD },
+     "=METHOD"  => { "scan"   => \&scan_METHOD,
+		     "format" => \&format_METHOD },
 
-     "=URNG"         => { "scan"   => \&scan_URNG,
-			  "format" => \&format_URNG },
+     "=URNG"    => { "scan"   => \&scan_URNG,
+		     "format" => \&format_URNG },
 
      );
 
 ############################################################
 
 # list of all routines
-my $list_routines;
+$list_routines;
+
+# scanned input
+# it is stored in the form
+# $in->{section TAG}->{section name}->{TAG}->{entry}
+$in;
+
+# texinfo output
+$texi;
 
 ############################################################
 
@@ -91,16 +99,16 @@ foreach my $section (keys %section_TAGs) {
 }
 
 # make some modifications
-transform_special_strings(\$texi_DISTRs);
-transform_special_strings(\$texi_METHODs);
-transform_special_strings(\$texi_URNGs);
-transform_special_strings(\$texi_ERRORs);
+foreach my $section (keys %section_TAGs) {
+    print STDERR "transform $section\n" if $VERBOSE > 1;
+    transform_special_strings(\($texi->{$section}));
+}
 
 # print sections
-print $texi_DISTRs;
-print $texi_METHODs;
-print $texi_URNGs;
-print $texi_ERRORs;
+print $texi->{"=DISTR"};
+print $texi->{"=METHOD"};
+print $texi->{"=URNG"};
+print $texi->{"=ERROR"};
 
 # end of job
 exit 0;
@@ -374,17 +382,20 @@ sub scan_DESCRIPTION {
 
 ############################################################
 
+sub scan_do_nothing {
+    return;
+} # end of scan_do_nothing()
+
+############################################################
+
 sub transform_special_strings {
     my $line = $_[0];
 
     # NULL --> @code{NULL}
-    $$line =~ s/ NULL/ \@code\{NULL\}/g;
-
     # TRUE --> @code{TRUE}
-    $$line =~ s/ TRUE/ \@code\{TRUE\}/g;
-
     # FALSE --> @code{FALSE}
-    $$line =~ s/ FALSE/ \@code\{FALSE\}/g;
+    $$line =~ s/ (NULL|TRUE|FALSE)/ \@code\{$1\}/g;
+    $$line =~ s/^(NULL|TRUE|FALSE)/\@code\{$1\}/g;
 
     # transform (\w+)\(\)   --> @command($1)
     $$line =~ s/(\w+)\(\)/\@command\{$1\}/g;

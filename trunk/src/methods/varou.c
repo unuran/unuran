@@ -133,8 +133,8 @@ static struct unur_gen *_unur_varou_create( struct unur_par *par );
 /* create new (almost empty) generator object.                               */
 /*---------------------------------------------------------------------------*/
 
-static void  _unur_varou_sample_cvec( struct unur_gen *gen, double *X );
-static void  _unur_varou_sample_check( struct unur_gen *gen, double *X );
+static void  _unur_varou_sample_cvec( struct unur_gen *gen, double *vec );
+static void  _unur_varou_sample_check( struct unur_gen *gen, double *vec );
 /*---------------------------------------------------------------------------*/
 /* sample from generator.                                                    */
 /*---------------------------------------------------------------------------*/
@@ -578,7 +578,7 @@ _unur_varou_clone( const struct unur_gen *gen )
 /*---------------------------------------------------------------------------*/
 
 void
-_unur_varou_sample_cvec( struct unur_gen *gen, double *X )
+_unur_varou_sample_cvec( struct unur_gen *gen, double *vec )
      /*----------------------------------------------------------------------*/
      /* sample from generator                                                */
      /*                                                                      */
@@ -606,29 +606,30 @@ _unur_varou_sample_cvec( struct unur_gen *gen, double *X )
   for (ic=0; ic<GEN.n_cone; ic++) {  
     if ( GEN.cone_list[ic]->sum_volume > vol ) {
 
-sample:    
-      _unur_varou_sample_cone(gen, GEN.cone_list[ic], UV);
-      /* check if UV is outside the potato volume */
-      if ( pow(UV[dim], 1.+dim) > _unur_varou_f(gen, UV) ) goto sample;
+      while(1) {
+        /* sampling in cone #ic */
+        _unur_varou_sample_cone(gen, GEN.cone_list[ic], UV);
 
-      break;
-    }
+        /* check if UV is inside the potato volume */
+        if ( pow(UV[dim], 1.+dim) <= _unur_varou_f(gen, UV) ) {
+           for (d=0; d<dim; d++) {  
+             vec[d] = UV[d]/UV[dim]+GEN.center[d] ;
+           }
+  
+           free(UV);
+           return;
+        }
+      }
+    }  
   }
   
-  for (d=0; d<dim; d++) {
-    X[d] = UV[d]/UV[dim] ;
-  }
-  
-  free(UV);
-  
-  return; 
    
 } /* end of _unur_varou_sample() */
 
 /*---------------------------------------------------------------------------*/
 
 void
-_unur_varou_sample_check( struct unur_gen *gen, double *X )
+_unur_varou_sample_check( struct unur_gen *gen, double *vec )
      /*----------------------------------------------------------------------*/
      /* sample from generator and verify that method can be used             */
      /*                                                                      */
@@ -638,6 +639,9 @@ _unur_varou_sample_check( struct unur_gen *gen, double *X )
      /*----------------------------------------------------------------------*/
 { 
   int d, dim; /* index used in dimension loops (0 <= d < dim) */
+  long ic; /* running cone index */
+  double *UV; /* (dim+1) uniformly distributed in cone */
+  double vol;
   
   /* check arguments */
   CHECK_NULL(gen,RETURN_VOID);  
@@ -645,13 +649,33 @@ _unur_varou_sample_check( struct unur_gen *gen, double *X )
 
   dim = GEN.dim;
   
-  /* TODO : CHANGE THIS !!!!!!! These are only dummy random values */  
-  for (d=0; d<dim; d++) {
-    X[d] = _unur_call_urng(gen->urng) ;
-  }
- 
-  return;
+  UV = _unur_xmalloc((dim+1)*sizeof(double));
+  
+  /* vol is a uniformly distributed variable < sum of all cone volumes */
+  vol = GEN.cone_list[GEN.n_cone-1]->sum_volume * _unur_call_urng(gen->urng);
+  
+  for (ic=0; ic<GEN.n_cone; ic++) {  
+    if ( GEN.cone_list[ic]->sum_volume > vol ) {
 
+      while(1) {
+        /* sampling in cone #ic */
+        _unur_varou_sample_cone(gen, GEN.cone_list[ic], UV);
+
+        /* check if UV is inside the potato volume */
+        if ( pow(UV[dim], 1.+dim) <= _unur_varou_f(gen, UV) ) {
+           for (d=0; d<dim; d++) {  
+             vec[d] = UV[d]/UV[dim]+GEN.center[d] ;
+           }
+
+           /* TODO : check it !!! */
+	   
+           free(UV);
+           return;
+        }
+      }
+    }  
+  }
+  
 } /* end of _unur_varou_sample_check() */
 
 /*---------------------------------------------------------------------------*/

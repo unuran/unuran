@@ -162,7 +162,7 @@ unur_distr_cont_set_dpdf( struct unur_distr *distr, void *dpdf )
      /*                                                                      */
      /* parameters:                                                          */
      /*   distr ... pointer to distribution object                           */
-     /*   pdf   ... pointer to derivative of p.d.f.                          */
+     /*   dpdf   ... pointer to derivative of p.d.f.                         */
      /*                                                                      */
      /* return:                                                              */
      /*   1 ... on success                                                   */
@@ -191,7 +191,7 @@ unur_distr_cont_set_cdf( struct unur_distr *distr, void *cdf )
      /*                                                                      */
      /* parameters:                                                          */
      /*   distr ... pointer to distribution object                           */
-     /*   pdf   ... pointer to p.d.f.                                        */
+     /*   cdf   ... pointer to c.d.f.                                        */
      /*                                                                      */
      /* return:                                                              */
      /*   1 ... on success                                                   */
@@ -213,7 +213,8 @@ unur_distr_cont_set_cdf( struct unur_distr *distr, void *cdf )
 
 /*---------------------------------------------------------------------------*/
 
-void *unur_distr_cont_get_pdf( struct unur_distr *distr )
+void *
+unur_distr_cont_get_pdf( struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
      /* get pointer to p.d.f. of distribution                                */
      /*                                                                      */
@@ -233,7 +234,8 @@ void *unur_distr_cont_get_pdf( struct unur_distr *distr )
 
 /*---------------------------------------------------------------------------*/
 
-void *unur_distr_cont_get_dpdf( struct unur_distr *distr )
+void *
+unur_distr_cont_get_dpdf( struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
      /* get pointer to derivative of p.d.f. of distribution                  */
      /*                                                                      */
@@ -253,7 +255,8 @@ void *unur_distr_cont_get_dpdf( struct unur_distr *distr )
 
 /*---------------------------------------------------------------------------*/
 
-void *unur_distr_cont_get_cdf( struct unur_distr *distr )
+void *
+unur_distr_cont_get_cdf( struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
      /* get pointer to c.d.f. of distribution                                */
      /*                                                                      */
@@ -405,15 +408,15 @@ unur_distr_cont_get_pdfparams( struct unur_distr *distr, double **params )
      /*   params   ... pointer to list of arguments                          */
      /*                                                                      */
      /* return:                                                              */
-     /*   number if pdf parameters                                           */
+     /*   number of pdf parameters                                           */
      /*                                                                      */
      /* error:                                                               */
-     /*   return -1                                                          */
+     /*   return 0                                                           */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( NULL, distr, -1 );
-  _unur_check_distr_object( distr, CONT, -1 );
+  _unur_check_NULL( NULL, distr, 0 );
+  _unur_check_distr_object( distr, CONT, 0 );
 
   *params = (DISTR.n_params) ? DISTR.params : NULL;
   return DISTR.n_params;

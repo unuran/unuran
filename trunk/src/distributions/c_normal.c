@@ -79,9 +79,11 @@ static const char distr_name[] = "normal";
 #define DISTR distr->data.cont
 
 /* function prototypes                                                       */
-static double _unur_pdf_normal(double x, UNUR_DISTR *distr);
-static double _unur_dpdf_normal(double x, UNUR_DISTR *distr);
-static double _unur_cdf_normal(double x, UNUR_DISTR *distr);
+static double _unur_pdf_normal( double x, UNUR_DISTR *distr );
+static double _unur_dpdf_normal( double x, UNUR_DISTR *distr );
+static double _unur_cdf_normal( double x, UNUR_DISTR *distr );
+inline static int _unur_upd_mode( UNUR_DISTR *distr );
+inline static int _unur_upd_area( UNUR_DISTR *distr );
 
 /*---------------------------------------------------------------------------*/
 
@@ -132,6 +134,26 @@ _unur_cdf_normal( double x, UNUR_DISTR *distr )
     return _unur_cdf_normal_ext(x);
   }
 } /* end of _unur_cdf_normal() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+_unur_upd_mode( UNUR_DISTR *distr )
+{
+  DISTR.mode = DISTR.mu;
+  return 1;
+} /* end of _unur_upd_mode() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+_unur_upd_area( UNUR_DISTR *distr )
+{
+  /* log of normalization constant */
+  DISTR.LOGNORMCONSTANT = log(M_SQRTPI * M_SQRT2 * DISTR.sigma);
+  DISTR.area = 1.;
+  return 1;
+} /* end of _unur_upd_area() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -206,6 +228,10 @@ unur_distr_normal( double *params, int n_params )
   /* domain */
   DISTR.domain[0] = -INFINITY;   /* left boundary  */
   DISTR.domain[1] = INFINITY;    /* right boundary */
+
+  /* function for updating derived parameters */
+  DISTR.upd_mode  = _unur_upd_mode; /* funct for computing mode */
+  DISTR.upd_area  = _unur_upd_area; /* funct for computing area */
 
   /* indicate which parameters are set */
   distr->set = ( UNUR_DISTR_SET_DOMAIN |

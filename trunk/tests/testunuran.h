@@ -34,11 +34,13 @@
 /* (comment out the methods or distributions that are not tested)            */
 
 /* methods                                                                   */
+#define T_DISTR
+
 #define T_DAU
-#define T_DGT
-#define T_SROU
-#define T_SSR
-#define T_UNIF
+/*  #define T_DGT */
+/*  #define T_SROU */
+/*  #define T_SSR */
+/*  #define T_UNIF */
 
 /* continuous univariate distributions                                       */
 #define D_BETA
@@ -104,6 +106,9 @@ int check_expected_NULL( FILE *LOG, int line, void *ptr );
 
 /* check for "set failed" */
 int check_expected_setfailed( FILE *LOG, int line, int ok );
+
+/* check for INFINITY */
+int check_expected_INFINITY( FILE *LOG, int line, double x );
 
 /* check for reinit */
 int check_expected_reinit( FILE *LOG, int line, int ok );

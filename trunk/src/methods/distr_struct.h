@@ -52,8 +52,8 @@ struct unur_distr_cont {
   double area;                  /* area below p.d.f.                         */
   double domain[2];             /* boundary of domain                        */
 
-  double (*upd_mode)(struct unur_distr *distr); /* funct for computing mode  */
-  double (*upd_area)(struct unur_distr *distr); /* funct for computing area  */
+  int (*upd_mode)(struct unur_distr *distr);   /* funct for computing mode   */
+  int (*upd_area)(struct unur_distr *distr);   /* funct for computing area   */
 
   int  (*init)(struct unur_par *par,struct unur_gen *gen);
                                 /* pointer to special init routine           */
@@ -69,11 +69,9 @@ struct unur_distr_discr {
   /* params[UNUR_DISTR_MAXPARAMS] is used to store normalization constants!! */
   int    n_params;              /* number of parameters of the pdf           */
 
-  double *prob;                 /* pointer to probability vector             */
-  int     n_prob;               /* length of probability vector              */
-
-  double domain[2];             /* boundary of domain                        */
-  double area;                  /* area below p.d.f.                         */
+  int domain[2];                /* boundary of domain                        */
+  double area;                  /* area below p.m.f.                         */
+  int (*upd_area)(struct unur_distr *distr);   /* funct for computing area   */
 
   int  (*init)(struct unur_par *par,struct unur_gen *gen);
                                 /* pointer to special init routine           */

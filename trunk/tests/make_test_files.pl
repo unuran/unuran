@@ -205,6 +205,7 @@ int main()
 	/* run tests */
 	test_new();
 	test_set();
+	test_get();
 	test_chg();
 	test_init();
 	test_sample();
@@ -495,6 +496,7 @@ sub print_test_command {
   SWITCH: {
       if ($test_command =~ /^\s*expected_NULL\s*/ or 
 	  $test_command =~ /^\s*expected_setfailed\s*/ or 
+	  $test_command =~ /^\s*expected_INFINITY\s*/ or 
 	  $test_command =~ /^\s*expected_reinit\s*/ or
 	  $test_command =~ /^\s*expected_no_reinit\s*/) {
 	  $test_command =~ s/\s+//g;
@@ -587,6 +589,7 @@ static int n_pvals = 0;           /* number of collected p-values            */
 
 void test_new( void );
 void test_set( void );
+void test_get( void );
 void test_chg( void );
 void test_init( void );
 void test_reinit( void );

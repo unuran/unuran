@@ -153,6 +153,36 @@ unur_distr_demp_set_prob( struct unur_distr *distr, double *prob, int n_prob )
   return 1;
 } /* end of unur_distr_demp_set_prob() */
 
+/*---------------------------------------------------------------------------*/
+
+int 
+unur_distr_demp_get_prob( struct unur_distr *distr, double **prob )
+     /*----------------------------------------------------------------------*/
+     /* get number of pdf parameters and sets pointer to array params[] of   */
+     /* parameters                                                           */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   distr    ... pointer to distribution object                        */
+     /*   prob     ... pointer to probability vector                         */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   length of probability vector                                       */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return 0                                                           */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( NULL, distr, 0 );
+  _unur_check_distr_object( distr, DEMP, 0 );
+
+  *prob = (DISTR.prob) ? DISTR.prob : NULL;
+  return DISTR.n_prob;
+
+} /* end of unur_distr_demp_get_prob() */
+
+/*---------------------------------------------------------------------------*/
+
 /*****************************************************************************/
 
 void

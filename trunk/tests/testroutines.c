@@ -97,6 +97,25 @@ int check_expected_setfailed( FILE *LOG, int line, int ok )
 } /* end of check_expected_setfailed() */
 
 /*---------------------------------------------------------------------------*/
+/* check for INFINITY */
+
+int check_expected_INFINITY( FILE *LOG, int line, double x )
+{
+  int failed = 0;
+
+  fprintf(LOG,"line %4d: INFINITY expected ...\t",line);
+  if (x < UNUR_INFINITY) {
+    failed = 1;
+    fprintf(LOG," Failed\n");
+  }
+  else
+    fprintf(LOG," ok\n");
+
+  return failed;
+
+} /* end of check_expected_INFINITY() */
+
+/*---------------------------------------------------------------------------*/
 /* check for reinit */
 
 int check_expected_reinit( FILE *LOG, int line, int ok )
@@ -417,7 +436,9 @@ int run_level2( FILE *LOG, int line, double *pvals, int n_pvals )
     n_classes = n_pvals / 6;
   
   /* allocate memory for classes */
-  classes = calloc( n_classes+1, sizeof(int) );
+  classes = malloc( n_classes+1 * sizeof(int) );
+  for (i=0; i<n_classes+1; i++)
+    classes[i] = 0;
   
   /* count bins */
   for (i=0; i<n_pvals; i++)

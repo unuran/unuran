@@ -139,7 +139,7 @@ int unur_distr_is_demp( UNUR_DISTR *distribution );
 /*---------------------------------------------------------------------------*/
 
 /* 
-   Routines for handling univariate continuous distributions.
+   Routines for handling univariate continuous distributions (CONT).
 */
 
 /* Essential parameters. */
@@ -155,7 +155,7 @@ int unur_distr_cont_set_cdf( UNUR_DISTR *distribution, void *cdf );
    double funct(double x) or 
    double funct(double x, UNUR_DISTR *distr).
    The second form is necessary when parameters for the p.d.f. are
-   be used.  */
+   used.  */
 
 
 void *unur_distr_cont_get_pdf( UNUR_DISTR *distribution );
@@ -195,7 +195,7 @@ int unur_distr_cont_set_pdfparams( UNUR_DISTR *distribution, double *params, int
 
 int unur_distr_cont_get_pdfparams( UNUR_DISTR *distribution, double **params );
 /* 
-   Get number of parameters of the p.d.f. and sets pointer
+   Get number of parameters of the p.d.f. and set pointer
    @code{params} to array of parameters. If no parameters are stored
    in the object, @code{0} is returned and @code{params} is set to
    NULL.
@@ -284,7 +284,7 @@ double unur_distr_cont_get_pdfarea( UNUR_DISTR *distribution );
 /*---------------------------------------------------------------------------*/
 
 /* 
-   Routines for handling univariate discrete distributions.
+   Routines for handling empirical univariate discrete distributions (DEMP).
 */
 
 /* Essential parameters */
@@ -298,6 +298,73 @@ int unur_distr_demp_set_prob( UNUR_DISTR *distribution, double *prob, int n_prob
 */
 
 
+int unur_distr_demp_get_prob( UNUR_DISTR *distribution, double **prob );
+/* 
+   Get length of probability vector of the distribution and set pointer
+   @code{prob} to array of probabilities. If no probability vector is given,
+   @code{0} is returned and @code{prob} is set to NULL.
+*/
+
+/*---------------------------------------------------------------------------*/
+
+/* 
+   Routines for handling univariate discrete distributions (DISCR).
+*/
+
+/* Essential parameters. */
+
+int unur_distr_discr_set_pmf( UNUR_DISTR *distribution, void *pmf );
+int unur_distr_discr_set_cdf( UNUR_DISTR *distribution, void *cdf );
+/* 
+   Set respective pointer to the probability mass function (pmf) and the
+   cumulative distribution function (cdf) of the distribution.
+   The type of each of these functions must be either
+   double funct(int k) or 
+   double funct(int k, UNUR_DISTR *distr).
+   The second form is necessary when parameters for the p.m.f. are
+   used.  */
+
+
+void *unur_distr_discr_get_pmf( UNUR_DISTR *distribution );
+void *unur_distr_discr_get_cdf( UNUR_DISTR *distribution );
+/* 
+   Get the respective pointer to the p.m.f. and the c.d.f. of the 
+   distribution. The pointer is of type
+   double funct(int k, UNUR_DISTR *distr).
+   If the corresponding function is not available for the distribution,
+   the NULL pointer is returned.
+*/
+
+double unur_distr_discr_eval_pmf( int k, UNUR_DISTR *distribution );
+double unur_distr_discr_eval_cdf( int k, UNUR_DISTR *distribution );
+/* 
+   Evaluate the p.m.f., and the c.d.f., respectively, at k.
+   Notice that @code{distribution} must not be the NULL pointer.
+   If the corresponding function is not available for the distribution,
+   @code{UNUR_INFINITY} is returned and @code{unur_errno} is set to
+   @code{UNUR_ERR_DISTR_DATA}.
+*/
+
+
+int unur_distr_discr_set_pmfparams( UNUR_DISTR *distribution, double *params, int n_params );
+/* 
+   Set array of parameters for distribution. There is an upper limit
+   for the number of parameters @code{n_params}. It is given by the
+   macro @code{UNUR_DISTR_MAXPARAMS} in unuran_config.h. (It is set to
+   5 but can be changed to any appropriate nonnegative number.)
+   If @code{n_params} is negative or exceeds this limit no parameters
+   are copied into the distribution object and @code{unur_errno} is set to
+   @code{UNUR_ERR_DISTR_NPARAMS}. There is no way to use parameters of type int.
+*/
+
+int unur_distr_discr_get_pmfparams( UNUR_DISTR *distribution, double **params );
+/* 
+   Get number of parameters of the p.m.f. and set pointer
+   @code{params} to array of parameters. If no parameters are stored
+   in the object, @code{0} is returned and @code{params} is set to
+   NULL.
+*/
+
 /* 
    Derived parameters.
    
@@ -306,4 +373,30 @@ int unur_distr_demp_set_prob( UNUR_DISTR *distribution, double *prob, int n_prob
    for the chosen method).
 */
 
+int unur_distr_discr_set_pmfarea( UNUR_DISTR *distribution, double area );
+/* 
+   Set the area below the p.m.f. If @code{area} is non-positive, no
+   area is set and @code{unur_errno} is set to
+   @code{UNUR_ERR_DISTR_SET}. 
+*/
+
+int unur_distr_discr_upd_pmfarea( UNUR_DISTR *distribution );
+/*
+   Recompute the area below the p.m.f. of the distribution. 
+   In most cases the normalization constant is recompute and thus the
+   area is 1. This call only works for distribution objects from the
+   (=>) UNURAN library of standard distributions when the
+   corresponding function is available. Otherwise @code{unur_errno} is
+   set to @code{UNUR_ERR_DISTR_DATA}. 
+*/
+
+double unur_distr_discr_get_pmfarea( UNUR_DISTR *distribution );
+/* 
+   Get the area below the p.m.f of the distribution. If this area is
+   not known, unur_distr_cont_upd_pdfarea() is called to compute
+   it. If this is not successful @code{UNUR_INFINITY} is returned and
+   @code{unur_errno} is set to @code{UNUR_ERR_DISTR_GET}.
+*/
+
 /*---------------------------------------------------------------------------*/
+

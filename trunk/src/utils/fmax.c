@@ -36,11 +36,6 @@
 #include <unur_source.h>
 #include "fmax_source.h"
 
-static double _unur_util_brent(struct unur_funct_generic fs,
-                             double a, double b, double c, double tol);  
-/* brent algorithm for maximum-calculation of a continous function */
-
-
 /*---------------------------------------------------------------------------*/
 
 double

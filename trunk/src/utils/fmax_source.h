@@ -43,3 +43,8 @@ _unur_util_find_max( struct unur_funct_generic fs,
 			  
 /*---------------------------------------------------------------------------*/
 
+/* brent algorithm for maximum-calculation of a continous function */
+double _unur_util_brent(struct unur_funct_generic fs,
+                        double a, double b, double c, double tol);
+			     
+/*---------------------------------------------------------------------------*/

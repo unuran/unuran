@@ -127,7 +127,6 @@ unur_distr_laplace( double *params, int n_params )
   distr->name = distr_name;
                 
   /* how to get special generators */
-  //  DISTR.init = _unur_stdgen_beta_init;
   DISTR.init = _unur_stdgen_laplace_init;
 
   /* functions */

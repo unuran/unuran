@@ -383,33 +383,40 @@ _unur_matrix_LU_invert (int dim, double *LU, int *p, double *inverse)
 /*---------------------------------------------------------------------------*/
 
 int 
-_unur_matrix_invert_matrix (int dim, double *A, double detmin, double *Ainv, double *det)
-     /*----------------------------------------------------------------------*/
-     /* Calculates the inverse matrix (by means of LU decomposition)         */
-     /*									     */
-     /* input:                                                               */
-     /*   dim    ... dimension of the square matrix A                        */
-     /*   A      ... dim x dim -matrix                                       */
-     /*   detmin ... threshold value for |det(A)| for illconditioned matrix  */
-     /*   Ainv   ... pointer to array where inverse matrix should be stored  */
-     /*   det    ... pointer where det(A) should be stored                   */
-     /*									     */
-     /* output:                                                              */
-     /*   Ainv   ... inverse matrix of A	                             */
-     /*   det    ... determinant of A                                        */
-     /*									     */
-     /* return:								     */
-     /*   UNUR_SUCCESS on success                                            */
-     /*   UNUR_FAILURE when matrix is ill-conditioned, i.e. |det(A)|<detmin  */
-     /*                (array Ainv remains unchanged in this case)           */
-     /*   other error code, otherwise                                        */
-     /*----------------------------------------------------------------------*/
+<<<<<<< matrix.c
+_unur_matrix_invert_matrix(int dim, double *A, double detmin, double *Ainv, double *det)
+     /*-------------------------------------------------------------------------*/
+     /* Calculates the inverse matrix (by means of LU decomposition)         	*/
+     /* If |det(A)| <= detmin a message is printed 				*/
+     /* the array Ainv is computed whenever |det(A)|/dim >= UNUR_EPSILON        */
+     /*	or whenever norm(A)*dim/|det(A)| <= HUGE_VAL/2	 			*/
+     /*										*/
+     /* input:                                                                  */
+     /*   dim    ... dimension of the square matrix A                        	*/
+     /*   A      ... dim x dim -matrix                                       	*/
+     /*   detmin ... threshold value for |det(A)| for illconditioned matrix  	*/
+     /*   Ainv   ... pointer to array where inverse matrix should be stored  	*/
+     /*   det    ... pointer where det(A) should be stored                   	*/
+     /*                                                                         */
+     /* output:                                                                 */
+     /*   Ainv   ... inverse matrix of A	                                */
+     /*   det    ... determinant of A                                           */
+     /*									     	*/
+     /* return:								     	*/
+     /*   UNUR_SUCCESS on success                                            	*/
+     /*   UNUR_FAILURE when matrix is ill-conditioned, i.e. when		*/
+     /*                |det(A)|/dim >= UNUR_EPSILON  or                         */
+     /*		       norm(A)*dim/|det(A)| <= HUGE_VL/2			*/
+     /*                (array Ainv remains unchanged in this case)              */
+     /*   other error code, otherwise                                           */
+     /*-------------------------------------------------------------------------*/
 { 
 #define idx(a,b) (a*dim+b)
 
-  int *p, s, i;
+  int *p, s, i, j;
   double *LU;
-
+  double norm, halfnorm;
+  
   /* check arguments */
   CHECK_NULL(A,UNUR_ERR_NULL);
   CHECK_NULL(Ainv,UNUR_ERR_NULL);
@@ -432,12 +439,32 @@ _unur_matrix_invert_matrix (int dim, double *A, double detmin, double *Ainv, dou
   for(i=0;i<dim;i++)
     *det *= LU[idx(i,i)];
 
-  /* check for ill-conditioned matrix */
+  /* check for small determinant */
   if (fabs(*det) <= detmin) {
-    _unur_error("matrix",UNUR_FAILURE,"matrix ill-conditioned");
-    return UNUR_FAILURE;
+    _unur_warning("matrix",UNUR_WARNING,"matrix determinant is near zero");
   }
 
+  /* calculate matrix norm */
+  norm=0.;
+  halfnorm=0.;
+  for(i=0;i<dim;i++) {
+    for(j=0;j<dim;j++) {
+      halfnorm += fabs(A[idx(i,j)]);
+    }
+    if (halfnorm > norm) norm=halfnorm;
+  }
+
+  if ( fabs(*det)/dim < UNUR_EPSILON ) {
+    _unur_error("matrix",UNUR_FAILURE,"matrix not computationally stable");  
+    return UNUR_FAILURE; 
+  }
+ 
+  /* check for ill-conditioned matrix */
+  if ( norm * dim / fabs(*det) > HUGE_VAL / 2 ) { 
+    _unur_error("matrix",UNUR_FAILURE,"matrix not computationally stable");  
+    return UNUR_FAILURE; 
+  } 
+  
   /* compute inverse by means of LU factors */
   _unur_matrix_LU_invert(dim, LU, p, Ainv);   
   

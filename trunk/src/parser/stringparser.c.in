@@ -179,7 +179,7 @@ static void _unur_str_debug_distr( int level, const char *name, double *params, 
 /* function prototypes */
 
 static UNUR_DISTR * _unur_str2distr        (char *);
-UNUR_GEN   * unur_str2gen           (char *);
+UNUR_GEN   * unur_str2gen           (const char *);
 static int          _unur_str2urng         (UNUR_PAR *, char *);
 
 
@@ -200,7 +200,7 @@ static int _unur_str_set_args( char *value, char *type_args, char **args, int ma
 
 
 static int  _unur_parse_dlist (char *, double **);
-static void _unur_prepare_string (char *str);
+static char *_unur_prepare_string (const char *str);
 
 static int _unur_atoi ( const char *str );
 static unsigned _unur_atou ( const char *str );
@@ -234,6 +234,127 @@ static int _unur_str_distr_set_d (UNUR_DISTR *distr, const char *key, char *type
 static int _unur_str_distr_set_dd (UNUR_DISTR *distr, const char *key, char *type_args, char **args, distr_set_dd set);
 static int _unur_str_distr_set_Di (UNUR_DISTR *distr, const char *key, char *type_args, char **args, distr_set_Di set);
  
+
+/*---------------------------------------------------------------------------*/
+
+/*****************************************************************************/
+/**  User Interface                                                         **/
+/*****************************************************************************/
+
+/*---------------------------------------------------------------------------*/
+
+struct unur_gen *
+unur_str2gen (const char *string)
+     /*----------------------------------------------------------------------*/
+     /* get generator object for distribution and method                     */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   string ... string that contains description of generator           */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   generator object                                                   */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return NULL                                                        */
+     /*----------------------------------------------------------------------*/
+{
+  UNUR_DISTR *distr = NULL;       /* distribution object */
+  UNUR_PAR   *par   = NULL;       /* parameter object */
+  UNUR_GEN   *gen   = NULL;       /* generator object    */
+
+  char *str_distr    = NULL;      /* string for distribution */
+  char *str_method  = NULL;       /* string for method       */
+  char *str_urng    = NULL;       /* string for uniform RNG  */
+
+  char *str = NULL;               /* pointer to working string */
+
+  char *token;
+
+  /* Prepare string for processing:            */
+  /*   Remove all white spaces,                */
+  /*   convert to lower case letters,          */
+  /*   copy into working string                */
+  str = _unur_prepare_string( string );
+
+#ifdef UNUR_ENABLE_LOGGING
+  /* write info into log file */
+  _unur_str_debug_string(0,"[input]",str);
+#endif
+
+  /* split string into blocks separated by colons ':' */
+
+  /* the first block must contain the distribution */
+  str_distr = strtok(str, ":");
+
+  /* new get all the other tokens */
+  for ( token  = strtok(NULL, ":"); 
+        token != NULL;     
+        token  = strtok(NULL, ":") ) {
+
+    /* get type of block */
+    if (!strncmp(token,"method=",7)) {
+      str_method = token;
+    }
+    else if (!strncmp(token,"urng=",5)) {
+      str_urng = token;
+    }
+    else {
+      free (str);
+     _unur_error_unknown(token,"category");
+     return NULL;
+    }
+  }
+
+  /* make distribution object */
+  distr = _unur_str2distr(str_distr);
+  if ( distr == NULL ) {
+    /* error */
+    return NULL;
+  }
+
+  /* get parameter object */
+  if ( str_method != NULL ) {
+    /* method is provided in string */
+    par = _unur_str2par(str_method, distr);
+  }
+  else {
+    /* otherwise use default method */
+    par = unur_cstd_new(distr);
+  }
+  /* check if parameter object was generated successfully */
+  if ( par == NULL ) {
+    /* error */
+    unur_distr_free(distr);
+    return NULL;
+  }
+
+
+
+  /* set uniform random number generator -- if provided */
+  if ( str_urng != NULL ){
+     _unur_str2urng(par, str_urng);
+  }
+
+
+
+  /* make generator object */
+  gen = unur_init(par);
+  if ( gen == NULL ) {
+    /* error */
+    unur_distr_free(distr);
+    return NULL;
+  }
+
+  /* destroy distribution object */
+  unur_distr_free(distr);
+
+#ifdef UNUR_ENABLE_LOGGING
+  /* write info into log file */
+  _unur_str_debug_string(0,"",NULL);
+#endif
+
+  return gen;
+} /* end of unur_str2gen() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -792,7 +913,10 @@ _unur_str2par( char *str_method, UNUR_DISTR *distr )
     /* get (default) parameter object for method */
     if ( !strcmp( key, "method") ) {
       if (key == str_method) {
-	/* "method" must be the first key */
+	/* "method" must be the first key.                                */
+	/* (on the other hand, the first keyword always must be "method"  */
+	/* since otherwise we had not called this subroutine.             */
+	/* hence, we only check, whether the keyword "method" is unique.) */
 	par = _unur_str_par_new(value,distr);
 	if (par == NULL) {
 	  /* error */
@@ -801,6 +925,7 @@ _unur_str2par( char *str_method, UNUR_DISTR *distr )
 	}
       }
       else {
+	if (par) free (par);
 	_unur_error(GENTYPE,UNUR_ERR_STR_SYNTAX,"method must be first key"); 
 	return NULL;
       }
@@ -808,18 +933,10 @@ _unur_str2par( char *str_method, UNUR_DISTR *distr )
 
     /* set parameters for method */
     else {
-      if (par != NULL) {
-	if ( !_unur_str_par_set(par, key, value) ) {
-	  /** TODO: error **/
-	  ;
-	}
-      }
-      else {
-	_unur_error(GENTYPE,UNUR_ERR_GENERIC,"method not set"); 
-	return NULL;
+      if ( !_unur_str_par_set(par, key, value) ) {
+	; /* error: */
       }
     }
-
   }
 
   /* end */
@@ -1412,9 +1529,22 @@ _unur_str_par_set_Di (UNUR_PAR *par, const char *key, char *type_args, char **ar
 
 /*---------------------------------------------------------------------------*/
 
-/**********************************************************************/
+int 
+_unur_str2urng( UNUR_PAR *par, char *str_urng )
+     /*----------------------------------------------------------------------*/
+     /* get parameter object for distribution and method                     */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   str_distr ... string that contains description of distribution     */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   distribution object                                                */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return NULL                                                        */
+     /*----------------------------------------------------------------------*/
+{
 
-/*---------------------------------------------------------------------------*/
 
 
 
@@ -1437,26 +1567,25 @@ _unur_str_par_set_Di (UNUR_PAR *par, const char *key, char *type_args, char **ar
 /* The string must be as specified within the PRNG package            */
 /*                                                                    */
 /**********************************************************************/
-int _unur_str2urng(UNUR_PAR *par, char *urngstr){
 
    char *tmpchar;
    UNUR_URNG *urng;
    
 
    /* split key and value */
-   tmpchar = urngstr;
-   urngstr = strchr(tmpchar, '=');
-   while (*urngstr == '='){
-      *urngstr = '\0';
-      urngstr++;
+   tmpchar = str_urng;
+   str_urng = strchr(tmpchar, '=');
+   while (*str_urng == '='){
+      *str_urng = '\0';
+      str_urng++;
    }
    /* only possible key: `prng' */
-   if (  0 != strcmp(tmpchar, "prng") ){
+   if (  0 != strcmp(tmpchar, "urng") ){
       fprintf(stderr, "SYNTAX ERROR: Unknown key for setting uniform random number generator : %s\n",tmpchar);
    }
    
    /* set uniform random number generator */
-   urng = prng_new(urngstr);
+   urng = prng_new(str_urng);
    unur_set_urng(par, urng); 
 
    /* error while setting uniform random number generator */
@@ -1468,131 +1597,6 @@ int _unur_str2urng(UNUR_PAR *par, char *urngstr){
       return (1);
    }
 } /* end fo _unur_str2urng() */
-
-
-
-
-
-
-/**********************************************************************/
-/*                                                                    */
-/* function: unur_str2gen()                                           */
-/*                                                                    */
-/* parameters:  pointer to char array / string                        */
-/*                                                                    */
-/* return: pointer to generator object                                */
-/*                                                                    */
-/* comments:                                                          */
-/* gets a string with information about the distribution and          */
-/* the desired method and                                             */
-/* generates the corresponding generator object invoking              */
-/* the functions                                                      */
-/*   make_dist_obj() and                                              */
-/*   _unur_str2parxx()                                                  */
-/*                                                                    */
-/* The string consists of two substrings (separated by `:')           */
-/* (distributio info, method info )                                   */
-/* and each of this strings consists of key=value                     */
-/*  entries separeted by `;'                                          */
-/*                                                                    */
-/* three possibilities:                                               */
-/* key=value                                                          */
-/* key=(komma separated list of numbers)                              */
-/* key=value(komma separated list of numbers)                         */
-/*                                                                    */
-/**********************************************************************/
-UNUR_GEN *unur_str2gen (char *str){
-
-  UNUR_DISTR *distr;       /* distribution object */
-  UNUR_PAR *par;           /* parameter object */
-  UNUR_GEN *gen;           /* generator object    */
-
-  char *diststr; /* string describing distribution */
-  char *methstr; /* string describing method       */
-  char *urngstr; /* string holding info for uniform generator */
-  char *tmpchar; /* temporary pointer to char      */
-
-
-  char nix[2048];
-
-  /* Prepare string for processing:                               */
-  /*   Remove all white spaces and convert to lower case letters. */
-  _unur_prepare_string( str );
-
-#ifdef UNUR_ENABLE_LOGGING
-  /* write info into log file */
-  _unur_str_debug_string(0,"[input]",str);
-#endif
-
-
-  tmpchar = str;
-
-  /* split info about distribution, method und uniform generator */
-  diststr = strtok(tmpchar, ":");
-  methstr = strtok(NULL, ":");
-  urngstr = strtok(NULL, ":");
-
-
-  /* no method info but prng info provided */
-  if ( urngstr == NULL && methstr != NULL && ( 0==strncmp(methstr, "prng", 4) ) ){
-     urngstr = methstr;
-     methstr = NULL;
-  }
-
-  /* swap methstr and urngstr if necessary */
-  if (  methstr != NULL && (0 != strncmp(methstr, "method", 6)) ){
-     tmpchar = methstr;
-     methstr = urngstr;
-     urngstr = tmpchar;
-  }
-
-
-  /* generate distribution object */
-  distr = _unur_str2distr(diststr);
-  if ( distr == NULL ){
-     fprintf(stderr, "ERROR: Can't create parameter object.\n");
-  }
-
-  /* generate parameter object */
-  if ( methstr != NULL ){ /* method info is provided */
-    /* junk */
-    strcpy(nix,methstr);
-    par = _unur_str2par(nix, distr);
-    /* end junk */
-
-  }
-  else{ /* no info about method provided -> standard method */
-    par = unur_cstd_new(distr);
-  }
-
-  /* check if parameter object was generated successfully */
-  if ( par == NULL ){
-     fprintf(stderr, "ERROR: Can't create parameter object.\n");
-  }
-
-  /* set uniform random number generator -- if provided */
-  if ( urngstr != NULL ){
-     _unur_str2urng(par, urngstr);
-  }
-
-  /* generate generator object */
-  gen = unur_init(par);
-  if ( gen == NULL ){
-     fprintf(stderr, "ERROR: Can't create generator object.\n");
-  }
-
-
-
-#ifdef UNUR_ENABLE_LOGGING
-  /* write info into log file */
-    _unur_str_debug_string(0,"",NULL);
-#endif
-
-
-  /* return generator object to calling routine */
-  return (gen);
-
-} /* end of unur_str2gen() */
 
 
 /*---------------------------------------------------------------------------*/
@@ -1716,27 +1720,45 @@ _unur_str_set_args( char *value, char *type_args, char **args, int max_args )
 
 /*---------------------------------------------------------------------------*/
 
-void
-_unur_prepare_string( char *str )
+char *
+_unur_prepare_string( const char *str )
      /*----------------------------------------------------------------------*/
      /* Prepare string for processing:                                       */
+     /*   Copy into working strint.                                          */
      /*   Remove all white spaces and convert to lower case letters.         */
      /*                                                                      */
      /* parameters:                                                          */
      /*   str      ... pointer to string                                     */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to working string.                                         */
+     /*                                                                      */
+     /* as a side effect, a new string is allocated.                         */
      /*----------------------------------------------------------------------*/
 {
-  char *tmp;
+  char *tmp, *ptr;
+  char *new;       /* pointer to working copy of string */
+  size_t len;      /* length of string */
+
+  /* length of string */
+  len = strlen(str)+1;
+  /* allocate memory for copy */
+  new = _unur_malloc( len * sizeof(char) );
+  /* copy memory */
+  ptr = memcpy(new,str,len);
 
   /* copy characters but skip all white spaces */
-  for (tmp = str; *tmp != '\0'; tmp++)
+  for (tmp = ptr; *tmp != '\0'; tmp++)
     if ( !isspace(*tmp) ) {
-      *str = tolower(*tmp);
-      str++;
+      *ptr = tolower(*tmp);
+      ptr++;
     }
 
   /* terminate string */
-  *str = '\0';
+  *ptr = '\0';
+
+  /* return pointer to working copy */
+  return new;
 
 } /* end of _unur_prepare_string() */
 

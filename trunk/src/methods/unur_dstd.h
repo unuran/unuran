@@ -39,36 +39,41 @@
  *****************************************************************************/
 
 /*
- METHOD: 
- DSTD (Discrete STandarD distributions)
+  =METHOD  DSTD    Discrete STandarD distributions
+  
+  =DESCRIPTION
+  DSTD is a wrapper for special generator for discrete univariate standard
+  distributions. It only works for distributions in the 
+  (=>) UNURAN library of standard distributions.
 
- DESCRIPTION:
- DSTD is a wrapper for special generator for discrete univariate standard
- distributions. It only works for distributions in the 
- (=>) UNURAN library of standard distributions.
-
- If any other distribution is provided, or no special generator for the
- given standard distribution is provided, the NULL pointer is returned.
- 
- For a distribution more than one special generators (`variants') are possible.
- These are selected by a number. For possible variants see
- (=>) UNURAN library of standard distributions.
- However the following are common to all distributions:
+  If any other distribution is provided, or no special generator for the
+  given standard distribution is provided, the NULL pointer is returned.
+  
+  For a distribution more than one special generators (`variants') are possible.
+  These are selected by a number. For possible variants see
+  (=>) UNURAN library of standard distributions.
+  However the following are common to all distributions:
      0                     ... the default generator                      
      UNUR_STDGEN_INVERSION ... the inversion method (if available)         
 
- Sampling from truncated distributions (which can be constructed by 
- changing the default domain of a distribution by means of an
- (=>) unur_distr_cont_set_domain() call) is not implemented yet.
+  Sampling from truncated distributions (which can be constructed by 
+  changing the default domain of a distribution by means of an
+  (=>) unur_distr_cont_set_domain() call) is not implemented yet.
 
- Notice that changing the domain of the distribution is not allowed.
+  Notice that changing the domain of the distribution is not allowed.
 
- It is possible to change the parameters and the domain of the chosen 
- distribution without building a new generator object.
+  It is possible to change the parameters and the domain of the chosen 
+  distribution without building a new generator object.
+
+  =END
 */
 
 /*---------------------------------------------------------------------------*/
 /* Routines for user interface                                               */
+
+/*
+  =ROUTINES
+*/
 
 UNUR_PAR *unur_dstd_new( UNUR_DISTR *distribution );
 /* 
@@ -109,6 +114,10 @@ int unur_dstd_chg_param( UNUR_GEN *gen, double *params, int n_params );
   distribution parameters.
   IMPORTANT: The given parameters are not checked against domain errors;
   in opposition to the (=>) unur_<distr>_new().
+*/
+
+/*
+  =END
 */
 
 /*---------------------------------------------------------------------------*/

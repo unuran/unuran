@@ -147,7 +147,7 @@ struct unur_distr *
 unur_distr_multinormal( int dim, const double *mean, const double *covar )
 {
   struct unur_distr *distr;
-  struct unur_distr *marginal;
+  struct unur_distr *stdmarginal;
 
   /* get new (empty) distribution object */
   distr = unur_distr_cvec_new(dim);
@@ -178,10 +178,10 @@ unur_distr_multinormal( int dim, const double *mean, const double *covar )
     return NULL;
   }
 
-  /* set marginal distributions */
-  marginal = unur_distr_normal(NULL,0);
-  unur_distr_cvec_set_marginals(distr,marginal);
-  unur_distr_free(marginal);
+  /* set standardized marginal distributions */
+  stdmarginal = unur_distr_normal(NULL,0);
+  unur_distr_cvec_set_stdmarginals(distr,stdmarginal);
+  unur_distr_free(stdmarginal);
 
   /* copy other parameters of distribution */
   /* none */

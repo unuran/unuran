@@ -88,7 +88,7 @@ struct unur_distr_cvec {
 
   double *rankcorr;             /* rank correlation matrix                   */
 
-  struct unur_distr **marginals; /* array of pointers to marginal distributions */
+  struct unur_distr **stdmarginals; /* array of pointers to standardized marginal distributions */
 
   double *params[UNUR_DISTR_MAXPARAMS];  /* parameters of the PDF            */
   int    n_params[UNUR_DISTR_MAXPARAMS]; /* length of parameter arrays       */

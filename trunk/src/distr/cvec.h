@@ -266,7 +266,7 @@ const double *unur_distr_cvec_get_rankcorr( const UNUR_DISTR *distribution );
    rank-correlation matrix!
 */
 
-int unur_distr_cvec_set_marginals( UNUR_DISTR *distribution, UNUR_DISTR *marginal );
+int unur_distr_cvec_set_stdmarginals( UNUR_DISTR *distribution, UNUR_DISTR *stdmarginal );
 /* 
    Sets marginal distribution for all marginals of the given
    @var{distribution}. The @var{marginal} distribution must be an
@@ -280,7 +280,7 @@ int unur_distr_cvec_set_marginals( UNUR_DISTR *distribution, UNUR_DISTR *margina
    @var{distribution} object.
 */
 
-int unur_distr_cvec_set_marginal_array( UNUR_DISTR *distribution, UNUR_DISTR **marginals );
+int unur_distr_cvec_set_stdmarginal_array( UNUR_DISTR *distribution, UNUR_DISTR **stdmarginals );
 /* 
    Analogously to the above unur_distr_cvec_set_marginals() call.
    However, now an array @var{marginals} of the pointers to each of
@@ -294,7 +294,7 @@ int unur_distr_cvec_set_marginal_array( UNUR_DISTR *distribution, UNUR_DISTR **m
    new copy is made.
 */
 
-const UNUR_DISTR *unur_distr_cvec_get_marginal( const UNUR_DISTR *distribution, int n );
+const UNUR_DISTR *unur_distr_cvec_get_stdmarginal( const UNUR_DISTR *distribution, int n );
 /* 
    Get pointer to the @var{n}-th marginal distribution object from the
    multivariate @var{distribution}. If this does not exist, NULL is

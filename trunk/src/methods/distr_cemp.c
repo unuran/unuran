@@ -43,10 +43,6 @@
 
 /*---------------------------------------------------------------------------*/
 
-static const char unknown_distr_name[] = "unknown";
-
-/*---------------------------------------------------------------------------*/
-
 #define DISTR distr->data.cemp
 
 /*---------------------------------------------------------------------------*/
@@ -97,8 +93,8 @@ unur_distr_cemp_new( void )
   /* dimension of random vector */
   distr->dim = 1;   /* univariant */
 
-  /* name of distribution */
-  distr->name = unknown_distr_name;
+  /* name for distribution */
+  distr->name = "(empirical)";
 
   /* this is not a derived distribution */
   distr->base = NULL;
@@ -176,12 +172,41 @@ unur_distr_cemp_set_data( struct unur_distr *distr, double *sample, int n_sample
   memcpy( DISTR.sample, sample, n_sample * sizeof(double) );
   DISTR.n_sample = n_sample;
 
-  /* set name for distribution */
-  distr->name = "(empirical)";
-
   /* o.k. */
   return 1;
-} /* end of unur_distr_cemp_set_sample() */
+
+} /* end of unur_distr_cemp_set_data() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+unur_distr_cemp_read_data( struct unur_distr *distr, const char *filename )
+     /*----------------------------------------------------------------------*/
+     /* Read data from file `filename'.                                      */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   distr    ... pointer to distribution object                        */
+     /*   filename ... name of data file                                     */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... on success                                                   */
+     /*   0 ... on error                                                     */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return 0                                                           */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( NULL, distr, 0 );
+  _unur_check_distr_object( distr, CEMP, 0 );
+
+  /* read data from file */
+  DISTR.n_sample = _unur_read_data( filename, 1, &(DISTR.sample) );
+
+  /* o.k. ? */
+  return (DISTR.n_sample > 0) ? 1 : 0;
+
+} /* end of unur_distr_cemp_read_data() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -208,7 +233,7 @@ unur_distr_cemp_get_data( struct unur_distr *distr, double **sample )
   *sample = (DISTR.sample) ? DISTR.sample : NULL;
   return DISTR.n_sample;
 
-} /* end of unur_distr_cemp_get_sample() */
+} /* end of unur_distr_cemp_get_data() */
 
 /*---------------------------------------------------------------------------*/
 

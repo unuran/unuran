@@ -4,14 +4,13 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   FILE: distr_cemp.h                                                      *
+ *   FILE: x_misc_source.h                                                   *
  *                                                                           *
  *   PURPOSE:                                                                *
- *         function prototypes for manipulating distribution objects of      *
- *         type  CEMP  (continuous empirical univariate distribution)        *
+ *         prototypes for miscellaneous routines                             *
  *                                                                           *
  *   USAGE:                                                                  *
- *         only included in unuran.h                                         *
+ *         only included in source_unuran.h                                  *
  *                                                                           *
  *****************************************************************************
      $Id$
@@ -39,57 +38,12 @@
 
 /*---------------------------------------------------------------------------*/
 
-/* 
-   =NODE   CEMP   Continuous empirical univariate distributions
-
-   =UP Distribution_objects [20]
-
-   =END
-*/
+int _unur_read_data( const char *file, int no_of_entries, double **array );
+/* Read data from file into double array.                                    */
 
 /*---------------------------------------------------------------------------*/
 
-/* 
-   Routines for handling empirical univariate continuous distributions (CEMP).
-*/
 
-/* =ROUTINES */
 
-UNUR_DISTR *unur_distr_cemp_new( void );
-/* 
-   Create a new (empty) object for empirical univariate continuous distribution.
-*/
 
-/* ==DOC
-   @subsubheading Essential parameters
-*/
 
-int unur_distr_cemp_set_data( UNUR_DISTR *distribution, double *sample, int n_sample );
-/* 
-   Set observed sample for empirical distribution.
-*/
-
-int unur_distr_cemp_read_data( UNUR_DISTR *distribution, const char *filename );
-/* 
-   Read data from file @file{filename}.
-   It reads the first double number from each line.
-   Lines that do not start with @code{+}, @code{-}, @code{.}, or a
-   digit are ignored. (Beware of lines starting with a blank!)
-
-   In case of an error (file cannot be opened, invalid string for
-   double in line) no data are copied into the distribution object
-   and @code{0} is returned.
-*/
-
-int unur_distr_cemp_get_data( UNUR_DISTR *distribution, double **sample );
-/* 
-   Get number of samples and set pointer @var{sample} to array of
-   observations. If no sample has been given,
-   @code{0} is returned and @code{sample} is set to NULL.
-
-   @emph{Important:} Do @strong{not} change the entries in @var{params}!
-*/
-
-/* =END */
-
-/*---------------------------------------------------------------------------*/

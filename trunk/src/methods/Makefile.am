@@ -53,6 +53,7 @@ noinst_HEADERS = \
  x_errno.h \
  x_gen.h x_gen_source.h \
  x_math.h x_math_source.h \
+ x_misc_source.h \
  x_umalloc_source.h \
  x_urng.h \
  distr.h distr_cemp.h distr_cont.h distr_corder.h distr_cvec.h distr_cvemp.h \

@@ -78,6 +78,22 @@ int unur_distr_cvemp_set_data( UNUR_DISTR *distribution, double *sample, int n_s
    The data points must be stored consecutively in @var{sample}.
 */
 
+int unur_distr_cvemp_read_data( UNUR_DISTR *distribution, const char *filename );
+/* 
+   Read data from file @file{filename}.
+   It reads the first @code{dim} double numbers from each line, where
+   @code{dim} is the dimension of the @var{distribution} returned by
+   unur_distr_get_dim(). 
+   Lines that do not start with @code{+}, @code{-}, @code{.}, or a
+   digit are ignored. (Beware of lines starting with a blank!)
+
+   In case of an error (file cannot be opened, too few entries in a
+   line, invalid string for double in line) no data are copied into
+   the distribution object and @code{0} is returned.
+
+   In case of an error no data are copied into the distribuion object
+   and @code{0} is returned.
+*/
 
 int unur_distr_cvemp_get_data( UNUR_DISTR *distribution, double **sample );
 /* 

@@ -43,10 +43,6 @@
 
 /*---------------------------------------------------------------------------*/
 
-static const char unknown_distr_name[] = "unknown";
-
-/*---------------------------------------------------------------------------*/
-
 #define DISTR distr->data.cvemp
 
 /*---------------------------------------------------------------------------*/
@@ -103,8 +99,8 @@ unur_distr_cvemp_new( int dim )
   /* dimension of random vector */
   distr->dim = dim;   /* multivariant */
 
-  /* name of distribution */
-  distr->name = unknown_distr_name;
+  /* name for distribution */
+  distr->name = "(empirical)";
 
   /* destructor */
   distr->destroy = _unur_distr_cvemp_free;
@@ -181,12 +177,40 @@ unur_distr_cvemp_set_data( struct unur_distr *distr, double *sample, int n_sampl
   memcpy( DISTR.sample, sample, n_sample * distr->dim * sizeof(double) );
   DISTR.n_sample = n_sample;
 
-  /* set name for distribution */
-  distr->name = "(empirical)";
-
   /* o.k. */
   return 1;
 } /* end of unur_distr_cvemp_set_sample() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+unur_distr_cvemp_read_data( struct unur_distr *distr, const char *filename )
+     /*----------------------------------------------------------------------*/
+     /* Read data from file `filename'.                                      */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   distr    ... pointer to distribution object                        */
+     /*   filename ... name of data file                                     */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... on success                                                   */
+     /*   0 ... on error                                                     */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return 0                                                           */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( NULL, distr, 0 );
+  _unur_check_distr_object( distr, CVEMP, 0 );
+
+  /* read data from file */
+  DISTR.n_sample = _unur_read_data( filename, distr->dim, &(DISTR.sample) );
+
+  /* o.k. ? */
+  return (DISTR.n_sample > 0) ? 1 : 0;
+
+} /* end of unur_distr_cvemp_read_data() */
 
 /*---------------------------------------------------------------------------*/
 

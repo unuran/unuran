@@ -68,6 +68,7 @@
 #include <x_debug_source.h>
 #include <x_gen_source.h>
 #include <x_math_source.h>
+#include <x_misc_source.h>
 #include <x_umalloc_source.h>
 
 #ifdef WITH_DMALLOC

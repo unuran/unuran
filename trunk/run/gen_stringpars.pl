@@ -177,7 +177,7 @@ sub method_info{
 		}
 		else{
 		    print Outfile "\t\t\tpar = unur_\L$1_new(distr);\n";
-		    print Outfile "\t\t\tpar->method = UNUR_METH_$1;\n";
+		    #print Outfile "\t\t\tpar->method = UNUR_METH_$1;\n";
 		    while ( $_ !~ /^\s*=UP\s+Methods_for_\w+/ ){
 			$_ = <INFILE>;
 		    }

@@ -54,9 +54,14 @@ static void _unur_distr_discr_free( struct unur_distr *distr );
 
 /*---------------------------------------------------------------------------*/
 
-//static int _unur_distr_discr_find_mode( struct unur_distr *distr );
+static int _unur_distr_discr_find_mode( struct unur_distr *distr );
 /*---------------------------------------------------------------------------*/
-/* find mode of unimodal probability vector numerically by bisection         */
+/* find mode of unimodal probability vector numerically by bisection.        */
+/*---------------------------------------------------------------------------*/
+
+inline double unur_distr_discr_eval_pv(int k, UNUR_DISTR *distribution );
+/*---------------------------------------------------------------------------*/
+/* declare function inline.                                                  */
 /*---------------------------------------------------------------------------*/
 
 
@@ -140,7 +145,7 @@ unur_distr_discr_new( void )
   DISTR.trunc[1] = DISTR.domain[1] = INT_MAX;   /* right boundary of domain  */
 
   DISTR.mode     = 0;              /* location of mode                       */
-  DISTR.upd_mode = NULL;           /* funct for computing mode               */
+  DISTR.upd_mode = _unur_distr_discr_find_mode;  /* funct for computing mode */
 
   DISTR.sum     = 1.;              /* sum over PMF                           */
   DISTR.upd_sum = NULL;            /* funct for computing sum                */
@@ -379,15 +384,21 @@ unur_distr_discr_eval_pv( int k, struct unur_distr *distr )
      /*   pv[k] or pmf(k)                                                    */
      /*----------------------------------------------------------------------*/
 {
+  /* check arguments */
+  _unur_check_NULL( NULL, distr, INFINITY );
+  _unur_check_distr_object( distr, DISCR, INFINITY );
 
-  double retval = INFINITY;
+  if (DISTR.pv != NULL)
+    /* use probability vector */
+    return (DISTR.pv[k]);
 
-  if( DISTR.pv != NULL )      /* use probability vector                      */
-    retval = DISTR.pv[k];
-  else                        /* use pmf                                     */
-    retval = unur_distr_discr_eval_pmf(k, distr);
+  if (DISTR.pmf != NULL)
+    /* use PMF */
+    return _unur_discr_PMF(k,distr);
 
-  return retval;
+  /* else: data missing */
+  _unur_warning(distr->name,UNUR_ERR_DISTR_DATA,"");
+  return INFINITY;
 
 } /* end of unur_distr_discr_eval_pv() */
 
@@ -1041,27 +1052,23 @@ _unur_distr_discr_find_mode(struct unur_distr *distr )
   CHECK_NULL( distr, 0 );
   _unur_check_distr_object( distr, DISCR, 0 );
  
-  mode = INT_MAX;
-
   /* derive three distinct points */
-
   x[0] = DISTR.domain[0];
   if (DISTR.pv != NULL)
     x[1] = DISTR.domain[0] + DISTR.n_pv - 1;
   else
     x[1] =DISTR.domain[1];
 
-
-
-  if (x[1] < x[0])
+  if (x[1] < x[0]) {
     _unur_error(distr->name,UNUR_ERR_DISTR_DATA,
-		"Overflow: x[1] > INT_MAX");
+		"Overflow: domain too large");
+    return 0;
+  }
   fx[0] = unur_distr_discr_eval_pv(x[0], distr);
   fx[1] = unur_distr_discr_eval_pv(x[1], distr);
 
 
 
-  
   if ( x[0] == x[1] ){            /* domain contains only one point         */
     mode = x[0];
   }
@@ -1091,7 +1098,6 @@ _unur_distr_discr_find_mode(struct unur_distr *distr )
       _unur_error(distr->name,UNUR_ERR_DISTR_DATA,
          "In find_mode(): no positive entry in probability vector found
           during 100 trials");
-      unur_distr_discr_set_mode(distr, INT_MAX);
       return 0;  
     }
 
@@ -1171,14 +1177,10 @@ _unur_distr_discr_find_mode(struct unur_distr *distr )
 	  x[2] = xtmp; fx[2] = fxtmp;
 	  break;
 	case UNDEFINED:
-	  unur_distr_discr_set_mode(distr, INT_MAX);
 	  return 0;  /* mode not found -- exit */
-	  break;
 	default:
 	  _unur_error(distr->name, UNUR_ERR_SHOULD_NOT_HAPPEN,"");
-	  unur_distr_discr_set_mode(distr, INT_MAX);
 	  return 0;
-	  break;
 	} /* end of switch (interval) */ 
 
       }   /* flat region left */
@@ -1231,7 +1233,6 @@ _unur_distr_discr_find_mode(struct unur_distr *distr )
 	break;
       default:
 	_unur_error(distr->name, UNUR_ERR_SHOULD_NOT_HAPPEN,"");
-	unur_distr_discr_set_mode(distr, INT_MAX);
 	return 0;
       } /* end of switch (bisect) */
 
@@ -1240,11 +1241,22 @@ _unur_distr_discr_find_mode(struct unur_distr *distr )
 
   }  /* else (at least 3 points) end */
   
-  unur_distr_discr_set_mode(distr, mode);
+  /* mode successfully computed */
+  DISTR.mode = mode;
+  /* changelog */
+  distr->set |= UNUR_DISTR_SET_MODE; 
   
   /* o.k. */
   return 1;
   
+#undef sgn
+#undef max_pos3
+#undef INT1
+#undef INT2
+#undef INT3
+#undef UNDEFINED
+#undef X2_BORDER
+#undef XNEW_BORDER
 } /* end of _unur_distr_discr_find_mode() */
 
 /*---------------------------------------------------------------------------*/

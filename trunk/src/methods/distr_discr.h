@@ -302,7 +302,3 @@ double unur_distr_discr_get_pmfsum(UNUR_DISTR *distribution);
 /* =END */
 
 /*---------------------------------------------------------------------------*/
-
-
-/* REMOVE */
-int _unur_distr_discr_find_mode( struct unur_distr *distr );

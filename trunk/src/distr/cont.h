@@ -188,7 +188,8 @@ int unur_distr_cont_set_cdf( UNUR_DISTR *distribution, UNUR_FUNCT_CONT *cdf );
    It is not possible to change such a function. Once the PDF or
    CDF is set it cannot be overwritten. This also holds when the 
    logPDF is given or when the PDF
-   is given by the unur_distr_cont_set_pdfstr() call.
+   is given by the unur_distr_cont_set_pdfstr() or
+   unur_distr_cont_set_logpdfstr() call.
    A new distribution object has to be used instead.
 */
 
@@ -311,6 +312,19 @@ int unur_distr_cont_get_pdfparams( const UNUR_DISTR *distribution, const double 
    
    @emph{Important:} Do @strong{not} change the entries in @var{params}!
 */
+
+
+int unur_distr_cont_set_logpdfstr( UNUR_DISTR *distribution, const char *logpdfstr );
+/* */
+
+char *unur_distr_cont_get_logpdfstr( const UNUR_DISTR *distribution );
+/* */
+
+char *unur_distr_cont_get_dlogpdfstr( const UNUR_DISTR *distribution );
+/* 
+   Analogous calls for the logarithm of the density function.
+*/
+
 
 int unur_distr_cont_set_domain( UNUR_DISTR *distribution, double left, double right );
 /* 

@@ -61,6 +61,8 @@ struct unur_distr_cont {
 
   struct ftreenode *pdftree;    /* pointer to function tree for PDF          */
   struct ftreenode *dpdftree;   /* pointer to function tree for dPDF         */
+  struct ftreenode *logpdftree; /* pointer to function tree for logPDF       */
+  struct ftreenode *dlogpdftree;/* pointer to function tree for dlogPDF      */
   struct ftreenode *cdftree;    /* pointer to function tree for CDF          */
   struct ftreenode *hrtree;     /* pointer to function tree for hazard rate  */
 

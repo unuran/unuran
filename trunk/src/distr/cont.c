@@ -60,13 +60,17 @@ static const char unknown_distr_name[] = "unknown";
 /*---------------------------------------------------------------------------*/
 
 static double _unur_distr_cont_eval_pdf_tree( double x, const struct unur_distr *distr );
+static double _unur_distr_cont_eval_logpdf_tree( double x, const struct unur_distr *distr );
+static double _unur_distr_cont_eval_dpdf_tree( double x, const struct unur_distr *distr );
+static double _unur_distr_cont_eval_dlogpdf_tree( double x, const struct unur_distr *distr );
 /*---------------------------------------------------------------------------*/
-/* evaluate function tree for PDF.                                           */
+/* evaluate function tree for (derivative of) (log) PDF.                     */
 /*---------------------------------------------------------------------------*/
 
-static double _unur_distr_cont_eval_dpdf_tree( double x, const struct unur_distr *distr );
+static double _unur_distr_cont_eval_pdf_from_logpdf( double x, const struct unur_distr *distr );
+static double _unur_distr_cont_eval_dpdf_from_dlogpdf( double x, const struct unur_distr *distr );
 /*---------------------------------------------------------------------------*/
-/* evaluate function tree for dPDF.                                          */
+/* wrapper functions for PDF when only logPDF is given                       */
 /*---------------------------------------------------------------------------*/
 
 static double _unur_distr_cont_eval_cdf_tree( double x, const struct unur_distr *distr );
@@ -182,6 +186,8 @@ unur_distr_cont_new( void )
 
   DISTR.pdftree    = NULL;         /* pointer to function tree for PDF       */
   DISTR.dpdftree   = NULL;         /* pointer to function tree for dPDF      */
+  DISTR.logpdftree = NULL;         /* pointer to function tree for logPDF    */
+  DISTR.dlogpdftree = NULL;        /* pointer to function tree for dlogPDF   */
   DISTR.cdftree    = NULL;         /* pointer to function tree for CDF       */
   DISTR.hrtree     = NULL;         /* pointer to function tree for HR        */
 
@@ -227,6 +233,8 @@ _unur_distr_cont_clone( const struct unur_distr *distr )
   /* copy function trees into generator object (when there is one) */
   CLONE.pdftree  = (DISTR.pdftree)  ? _unur_fstr_dup_tree(DISTR.pdftree)  : NULL;
   CLONE.dpdftree = (DISTR.dpdftree) ? _unur_fstr_dup_tree(DISTR.dpdftree) : NULL;
+  CLONE.logpdftree  = (DISTR.logpdftree)  ? _unur_fstr_dup_tree(DISTR.logpdftree)  : NULL;
+  CLONE.dlogpdftree = (DISTR.dlogpdftree) ? _unur_fstr_dup_tree(DISTR.dlogpdftree) : NULL;
   CLONE.cdftree  = (DISTR.cdftree)  ? _unur_fstr_dup_tree(DISTR.cdftree)  : NULL;
   CLONE.hrtree   = (DISTR.hrtree)   ? _unur_fstr_dup_tree(DISTR.hrtree)   : NULL;
 
@@ -268,6 +276,8 @@ _unur_distr_cont_free( struct unur_distr *distr )
   /* function trees */
   if (DISTR.pdftree)  _unur_fstr_free(DISTR.pdftree);
   if (DISTR.dpdftree) _unur_fstr_free(DISTR.dpdftree);
+  if (DISTR.logpdftree)  _unur_fstr_free(DISTR.logpdftree);
+  if (DISTR.dlogpdftree) _unur_fstr_free(DISTR.dlogpdftree);
   if (DISTR.cdftree)  _unur_fstr_free(DISTR.cdftree);
   if (DISTR.hrtree)   _unur_fstr_free(DISTR.hrtree);
 
@@ -616,6 +626,57 @@ unur_distr_cont_set_pdfstr( struct unur_distr *distr, const char *pdfstr )
 /*---------------------------------------------------------------------------*/
 
 int
+unur_distr_cont_set_logpdfstr( struct unur_distr *distr, const char *logpdfstr )
+     /*----------------------------------------------------------------------*/
+     /* set logPDF and its derivative of distribution via a string interface */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   distr     ... pointer to distribution object                       */
+     /*   logpdfstr ... string that describes function term of logPDF        */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( NULL, distr, UNUR_ERR_NULL );
+  _unur_check_distr_object( distr, CONT, UNUR_ERR_DISTR_INVALID );
+  _unur_check_NULL( NULL, logpdfstr, UNUR_ERR_NULL );
+
+  /* we do not allow overwriting a PDF */
+  if (DISTR.pdf != NULL || DISTR.logpdf != NULL) {
+    _unur_warning(distr->name,UNUR_ERR_DISTR_SET,"Overwriting of logPDF not allowed");
+    return UNUR_ERR_DISTR_SET;
+  }
+
+  /* for derived distributions (e.g. order statistics) not possible */
+  if (distr->base) return UNUR_ERR_DISTR_INVALID;
+
+  /* changelog */
+  distr->set &= ~UNUR_DISTR_SET_MASK_DERIVED;
+  /* derived parameters like mode, area, etc. might be wrong now! */
+
+  /* parse logPDF string */
+  if ( (DISTR.logpdftree = _unur_fstr2tree(logpdfstr)) == NULL ) {
+    _unur_error(distr->name,UNUR_ERR_DISTR_SET,"Syntax error in function string");
+    return UNUR_ERR_DISTR_SET;
+  }
+  DISTR.logpdf  = _unur_distr_cont_eval_logpdf_tree;
+  DISTR.pdf = _unur_distr_cont_eval_pdf_from_logpdf;
+
+  /* make derivative */
+  if ( (DISTR.dlogpdftree = _unur_fstr_make_derivative(DISTR.logpdftree)) == NULL )
+    return UNUR_ERR_DISTR_DATA;
+  DISTR.dlogpdf = _unur_distr_cont_eval_dlogpdf_tree;
+  DISTR.dpdf = _unur_distr_cont_eval_dpdf_from_dlogpdf;
+
+  return UNUR_SUCCESS;
+} /* end of unur_distr_cont_set_logpdfstr() */
+
+/*---------------------------------------------------------------------------*/
+
+int
 unur_distr_cont_set_cdfstr( struct unur_distr *distr, const char *cdfstr )
      /*----------------------------------------------------------------------*/
      /* set CDF of distribution via a string interface                       */
@@ -726,6 +787,24 @@ _unur_distr_cont_eval_pdf_tree( double x, const struct unur_distr *distr )
 /*---------------------------------------------------------------------------*/
 
 double
+_unur_distr_cont_eval_logpdf_tree( double x, const struct unur_distr *distr )
+     /*----------------------------------------------------------------------*/
+     /* evaluate function tree for logPDF.                                   */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   x     ... argument for logPDF                                      */
+     /*   distr ... pointer to distribution object                           */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   logPDF at x                                                        */
+     /*----------------------------------------------------------------------*/
+{
+  return ((DISTR.logpdftree) ? _unur_fstr_eval_tree(DISTR.logpdftree,x) : INFINITY);
+} /* end of _unur_distr_cont_eval_logpdf_tree() */
+
+/*---------------------------------------------------------------------------*/
+
+double
 _unur_distr_cont_eval_dpdf_tree( double x, const struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
      /* evaluate function tree for derivative of PDF.                        */
@@ -739,6 +818,25 @@ _unur_distr_cont_eval_dpdf_tree( double x, const struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
 {
   return ((DISTR.dpdftree) ? _unur_fstr_eval_tree(DISTR.dpdftree,x) : INFINITY);
+} /* end of _unur_distr_cont_eval_dpdf_tree() */
+
+/*---------------------------------------------------------------------------*/
+
+
+double
+_unur_distr_cont_eval_dlogpdf_tree( double x, const struct unur_distr *distr )
+     /*----------------------------------------------------------------------*/
+     /* evaluate function tree for derivative of logPDF.                     */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   x     ... argument for derivative of logPDF                        */
+     /*   distr ... pointer to distribution object                           */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   derivative of logPDF at x                                          */
+     /*----------------------------------------------------------------------*/
+{
+  return ((DISTR.dlogpdftree) ? _unur_fstr_eval_tree(DISTR.dlogpdftree,x) : INFINITY);
 } /* end of _unur_distr_cont_eval_dpdf_tree() */
 
 /*---------------------------------------------------------------------------*/
@@ -828,6 +926,58 @@ unur_distr_cont_get_dpdfstr( const struct unur_distr *distr )
   /* make and return string */
   return _unur_fstr_tree2string(DISTR.dpdftree,"x","dPDF",TRUE);
 } /* end of unur_distr_cont_get_dpdfstr() */
+
+/*---------------------------------------------------------------------------*/
+
+char *
+unur_distr_cont_get_logpdfstr( const struct unur_distr *distr )
+     /*----------------------------------------------------------------------*/
+     /* get logPDF string that is given via the string interface             */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   distr  ... pointer to distribution object                          */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to resulting string.                                       */
+     /*                                                                      */
+     /* comment:                                                             */
+     /*   This string should be freed when it is not used any more.          */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( NULL, distr, NULL );
+  _unur_check_distr_object( distr, CONT, NULL );
+  _unur_check_NULL( NULL, DISTR.logpdftree, NULL );
+
+  /* make and return string */
+  return _unur_fstr_tree2string(DISTR.logpdftree,"x","logPDF",TRUE);
+} /* end of unur_distr_cont_get_logpdfstr() */
+
+/*---------------------------------------------------------------------------*/
+
+char *
+unur_distr_cont_get_dlogpdfstr( const struct unur_distr *distr )
+     /*----------------------------------------------------------------------*/
+     /* get string for derivative of logPDF that is given via string API     */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   distr  ... pointer to distribution object                          */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to resulting string.                                       */
+     /*                                                                      */
+     /* comment:                                                             */
+     /*   This string should be freed when it is not used any more.          */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( NULL, distr, NULL );
+  _unur_check_distr_object( distr, CONT, NULL );
+  _unur_check_NULL( NULL, DISTR.dlogpdftree, NULL );
+
+  /* make and return string */
+  return _unur_fstr_tree2string(DISTR.dlogpdftree,"x","dlogPDF",TRUE);
+} /* end of unur_distr_cont_get_dlogpdfstr() */
 
 /*---------------------------------------------------------------------------*/
 

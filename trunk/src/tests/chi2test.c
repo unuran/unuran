@@ -597,7 +597,7 @@ _unur_test_chi2_vec ( struct unur_gen *gen,
   Linv  = _unur_malloc( dim*dim * sizeof(double));
 
   /* check if memory could be allocated */
-  if (  (idx == NULL) || (z == NULL) || (bm == NULL) ) {
+  if (  (idx == NULL) || (x==NULL) || (z == NULL) || (bm == NULL) || (Linv==NULL) ) {
       _unur_error(test_name,UNUR_ERR_MALLOC,"cannot run chi2 test");
       pval=-1; goto free_memory;
   }
@@ -614,7 +614,22 @@ _unur_test_chi2_vec ( struct unur_gen *gen,
   }
   samplesize = min( samplesize, CHI2_MAX_SAMPLESIZE );
 
-  /* calculation of inverse Cholesky factor */
+  /* calculation of inverse Cholesky factor (1. method) */
+  L = unur_distr_cvec_get_cholesky(gen->distr);
+  for (j=0; j<dim; j++) {
+      Linv[idx(j,j)] = 1./L[idx(j,j)];
+                                                                                      
+      for (i = j + 1; i < dim; i++){
+        double a=0;
+        for (k = j; k < i; k++){
+           a += L[idx(i,k)] * Linv[idx(k,j)];
+        }
+        Linv[idx(i,j)] = ( abs(i==j)  - a ) / L[idx(i,i)]; 
+     }
+  }
+  _unur_matrix_debug (dim, Linv, "Inverse Cholesky factor", "CHI2VEC" );
+
+  /* calculation of inverse Cholesky factor (2. method) */
   L = unur_distr_cvec_get_cholesky(gen->distr);
   Cinv = unur_distr_cvec_get_covar_inv(gen->distr);
 

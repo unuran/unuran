@@ -49,8 +49,8 @@ struct unur_dgt_par {
 /* The generator object                                                      */
 
 struct unur_dgt_gen { 
-  double  sum;          /* sum of all probabilities = cumprob[len-1]         */
-  double *cumprob;      /* pointer to the vector of cumulated probabilities  */
+  double  sum;          /* sum of all probabilities = cumpv[len-1]           */
+  double *cumpv;        /* pointer to the vector of cumulated probabilities  */
   int    *guide_table;  /* pointer to guide table                            */
   int     guide_size;   /* length of guide table                             */
 };

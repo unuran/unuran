@@ -87,8 +87,8 @@ struct unur_distr_cvec {
 /* define object for univariate discrete distribution                        */
 struct unur_distr_discr {
   /* (finite) probability vector */
-  double *prob;                 /* pointer to probability vector             */
-  int     n_prob;               /* length of probability vector              */
+  double *pv;                   /* pointer to probability vector             */
+  int     n_pv;                 /* length of probability vector              */
 
   /* probability mass function */
   UNUR_FUNCT_DISCR *pmf;        /* pointer to probability mass function      */

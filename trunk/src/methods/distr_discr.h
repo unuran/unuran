@@ -65,28 +65,28 @@ UNUR_DISTR *unur_distr_discr_new( void );
    @subsubheading Essential parameters
 
    There are two interfaces for discrete univariate distributions:
-   Either provide a (finite) probability vector.
+   Either provide a (finite) probability vector (PV).
    Or provide a probability mass function (PMF). For the latter
    case there exist also a couple of derived parameters that are not
-   required when a probability vector is given.
+   required when a PV is given.
 
-   If both a probability vector and a PMF is given it depends on
+   If both a PV and a PMF is given it depends on
    the generation method which of these is used.
    Notice that there might exist some confusion if both are given but
    describe a different distribution! (There is no checking against
    this inconsistency!)
 */
 
-int unur_distr_discr_set_prob( UNUR_DISTR *distribution, double *prob, int n_prob );
+int unur_distr_discr_set_pv( UNUR_DISTR *distribution, double *pv, int n_pv );
 /* 
-   Set finite probability vector for a distribution. It is not
-   necessary that the entries in the given probability vector sum to
-   1. @code{n_prob} must be positive. However there is no testing
-   whether all entries in @code{prob} are non-negative. 
+   Set finite probability vector (PV) for a distribution. It is not
+   necessary that the entries in the given PV sum to
+   1. @code{n_pv} must be positive. However there is no testing
+   whether all entries in @code{pv} are non-negative. 
 
    If no domain has not been set, then the left boundary is set to
-   @code{0}, by default. If @var{n_prob} is too large, e.g. because
-   left boundary + @var{n_prob} exceeds the range of integers, 
+   @code{0}, by default. If @var{n_pv} is too large, e.g. because
+   left boundary + @var{n_pv} exceeds the range of integers, 
    then the call fails. 
 
    Notice it not possible to set both a PV and a PMF.
@@ -94,9 +94,9 @@ int unur_distr_discr_set_prob( UNUR_DISTR *distribution, double *prob, int n_pro
    (=>) UNURAN library of standard distributions.)
 */
 
-int unur_distr_discr_make_prob( UNUR_DISTR *distribution );
+int unur_distr_discr_make_pv( UNUR_DISTR *distribution );
 /* 
-   Compute a probability vector when a PMF is given. However when the
+   Compute a PV when a PMF is given. However when the
    domain is not given or too large and the sum over the PMF is given
    then the (right) tail of the distribution is chopped off such that
    the probability for the tail region is less than 10^-8.
@@ -106,8 +106,7 @@ int unur_distr_discr_make_prob( UNUR_DISTR *distribution );
    The maximal size of the created PV is bounded by the macro
    @code{UNUR_MAX_AUTO_PV} that is defined in @file{unuran_config.h}.
 
-   If successful the length of the generated probablity vector is
-   returned.
+   If successful the length of the generated PV is returned.
    If the sum over the PMF on the chopped tail is not neglible small
    (i.e. greater than 10^-8 or unknown) than the 
    negative of the length of the PV is returned and
@@ -123,22 +122,21 @@ int unur_distr_discr_make_prob( UNUR_DISTR *distribution );
    @code{unur_errno} is set to @code{UNUR_ERR_DISTR_SET}.
 */
 
-int unur_distr_discr_get_prob( UNUR_DISTR *distribution, double **prob );
+int unur_distr_discr_get_pv( UNUR_DISTR *distribution, double **pv );
 /* 
-   Get length of probability vector of the distribution and set pointer
-   @code{prob} to array of probabilities. If no probability vector is given,
-   @code{0} is returned and @code{prob} is set to NULL.
-   (It does not call unur_distr_discr_make_prob()!)
+   Get length of PV of the distribution and set pointer
+   @code{pv} to array of probabilities. If no PV is given,
+   @code{0} is returned and @code{pv} is set to NULL.
+   (It does not call unur_distr_discr_make_pv()!)
 */
-
 
 int unur_distr_discr_set_pmf( UNUR_DISTR *distribution, UNUR_FUNCT_DISCR *pmf );
 /* */
 
 int unur_distr_discr_set_cdf( UNUR_DISTR *distribution, UNUR_FUNCT_DISCR *cdf );
 /* 
-   Set respective pointer to the probability mass function (pmf) and the
-   cumulative distribution function (cdf) of the distribution.
+   Set respective pointer to the probability mass function (PMF) and the
+   cumulative distribution function (CDF) of the distribution.
    The type of each of these functions must be of type
    double funct(int k, UNUR_DISTR *distr).
 
@@ -168,7 +166,7 @@ UNUR_FUNCT_DISCR *unur_distr_discr_get_cdf( UNUR_DISTR *distribution );
 */
 
 
-double unur_distr_discr_eval_prob(int k, UNUR_DISTR *distribution );
+double unur_distr_discr_eval_pv(int k, UNUR_DISTR *distribution );
 /* */
 
 double unur_distr_discr_eval_pmf( int k, UNUR_DISTR *distribution );
@@ -176,9 +174,9 @@ double unur_distr_discr_eval_pmf( int k, UNUR_DISTR *distribution );
 
 double unur_distr_discr_eval_cdf( int k, UNUR_DISTR *distribution );
 /* 
-   Evaluate the probabilty vector, PMF, and the CDF, respectively, at k.
-   Notice that @code{distribution} must not be the NULL pointer.
-   If no probability vector is available @code{unur_distr_discr_eval_prob}
+   Evaluate the PV, PMF, and the CDF, respectively, at k.
+   Notice that @var{distribution} must not be the NULL pointer.
+   If no PV is available unur_distr_discr_eval_pv()
    will evaluate the PMF instead.
    If the corresponding function is not available for the distribution,
    @code{UNUR_INFINITY} is returned and @code{unur_errno} is set to
@@ -214,13 +212,13 @@ int unur_distr_discr_set_domain( UNUR_DISTR *distribution, int left, int right )
    If @code{right} is not strictly greater than @code{left} no domain
    is set and @code{unur_errno} is set to @code{UNUR_ERR_DISTR_SET}.
    It is allowed to use this call to increase the domain.
-   If the probability vector of the discrete distribution is used,
+   If the PV of the discrete distribution is used,
    than the right boudary is ignored (and internally set to 
    left + size of PV - 1).
    Notice that @code{INT_MAX} and @code{INT_MIN} are interpreted as
    (minus) infinity.
    Default is [INT_MIN, INT_MAX] when a PMF is used for generation,
-   and [0, size of PV - 1] when a probability vector is used.
+   and [0, size of PV - 1] when a PV is used.
 */
 
 int unur_distr_discr_get_domain( UNUR_DISTR *distribution, int *left, int *right );

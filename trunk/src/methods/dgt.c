@@ -197,7 +197,7 @@ unur_dgt_new( struct unur_distr *distr )
     _unur_error(GENTYPE,UNUR_ERR_DISTR_INVALID,""); return NULL; }
   COOKIE_CHECK(distr,CK_DISTR_DISCR,NULL);
 
-  if (DISTR_IN.prob == NULL) {
+  if (DISTR_IN.pv == NULL) {
     /* There is no PV try to compute it.                         */
     if ( DISTR_IN.pmf
 	 && ( ((DISTR_IN.domain[1] - DISTR_IN.domain[0]) < UNUR_MAX_AUTO_PV)
@@ -328,9 +328,9 @@ _unur_dgt_init( struct unur_par *par )
      /*----------------------------------------------------------------------*/
 { 
   struct unur_gen *gen;         /* pointer to generator object */
-  double *prob;                 /* pointer to probability vector */
-  int n_prob;                   /* length of probability vector */
-  double probh;                 /* aux variable for computing cummalate sums */
+  double *pv;                   /* pointer to probability vector */
+  int n_pv;                     /* length of probability vector */
+  double pvh;                   /* aux variable for computing cummalate sums */
   double gstep;                 /* step size when computing guide table */
   int i,j;
   
@@ -348,29 +348,29 @@ _unur_dgt_init( struct unur_par *par )
   if (!gen) { free(par); return NULL; }
   
   /* probability vector */
-  prob = DISTR.prob;
-  n_prob = DISTR.n_prob;
+  pv = DISTR.pv;
+  n_pv = DISTR.n_pv;
 
   /* computation of cumulated probabilities */
-  for( i=0, probh=0.; i<n_prob; i++ ) {
-    GEN.cumprob[i] = ( probh += prob[i] );
+  for( i=0, pvh=0.; i<n_pv; i++ ) {
+    GEN.cumpv[i] = ( pvh += pv[i] );
     /* ... and check probability vector */
-    if (prob[i] < 0.) {
+    if (pv[i] < 0.) {
       _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"probability < 0");
       _unur_dgt_free(gen); free(par); 
       return NULL;
     }
   }
-  GEN.sum = GEN.cumprob[n_prob-1];
+  GEN.sum = GEN.cumpv[n_pv-1];
 
   /* computation of guide-table */
   
   if (gen->variant == DGT_VARFLAG_DIV) {
     GEN.guide_table[0] = 0;
     for( j=1, i=0; j<GEN.guide_size ;j++ ) {
-      while( GEN.cumprob[i]/GEN.sum < ((double)j)/GEN.guide_size ) 
+      while( GEN.cumpv[i]/GEN.sum < ((double)j)/GEN.guide_size ) 
 	i++;
-      if (i >= n_prob) {
+      if (i >= n_pv) {
 	_unur_warning(gen->genid,UNUR_ERR_ROUNDOFF,"guide table");
 	break;
       }
@@ -380,22 +380,22 @@ _unur_dgt_init( struct unur_par *par )
 
   else { /* gen->variant == DGT_VARFLAG_ADD */
     gstep = GEN.sum / GEN.guide_size;
-    probh = 0.;
+    pvh = 0.;
     for( j=0, i=0; j<GEN.guide_size ;j++ ) {
-      while (GEN.cumprob[i] < probh) 
+      while (GEN.cumpv[i] < pvh) 
 	i++;
-      if (i >= n_prob) {
+      if (i >= n_pv) {
 	_unur_warning(gen->genid,UNUR_ERR_ROUNDOFF,"guide table");
 	break;
       }
       GEN.guide_table[j] = i;
-      probh += gstep;
+      pvh += gstep;
     }
   }
 
   /* if there has been an round off error, we have to complete the guide table */
   for( ; j<GEN.guide_size ;j++ )
-    GEN.guide_table[j] = n_prob - 1;
+    GEN.guide_table[j] = n_pv - 1;
 
   /* write info into log file */
 #ifdef UNUR_ENABLE_LOGGING
@@ -427,7 +427,7 @@ _unur_dgt_create( struct unur_par *par )
      /*----------------------------------------------------------------------*/
 {
   struct unur_gen *gen;       /* pointer to generator object */
-  int n_prob;                 /* length of probability vector */
+  int n_pv;                   /* length of probability vector */
 
   /* check arguments */
   CHECK_NULL(par,NULL);  COOKIE_CHECK(par,CK_DGT_PAR,NULL);
@@ -445,13 +445,13 @@ _unur_dgt_create( struct unur_par *par )
   memcpy( &(gen->distr), par->distr, sizeof( struct unur_distr ) );
 
   /* copy probability vector into generator object (when there is one) */
-  if (DISTR.prob) {
-    DISTR.prob = _unur_malloc( DISTR.n_prob * sizeof(double) );
-    memcpy( DISTR.prob, par->distr->data.discr.prob, DISTR.n_prob * sizeof(double) );
+  if (DISTR.pv) {
+    DISTR.pv = _unur_malloc( DISTR.n_pv * sizeof(double) );
+    memcpy( DISTR.pv, par->distr->data.discr.pv, DISTR.n_pv * sizeof(double) );
   }
   else {
     /* try to compute PV */
-    if (unur_distr_discr_make_prob(&(gen->distr)) <= 0) {
+    if (unur_distr_discr_make_pv(&(gen->distr)) <= 0) {
       /* not successful */
       _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"PV"); 
       free(gen); return NULL;
@@ -463,7 +463,7 @@ _unur_dgt_create( struct unur_par *par )
   gen->destroy = _unur_dgt_free;
 
   /* set all pointers to NULL */
-  GEN.cumprob = NULL;
+  GEN.cumpv = NULL;
   GEN.guide_table = NULL;
 
   /* copy some parameters into generator object */
@@ -475,7 +475,7 @@ _unur_dgt_create( struct unur_par *par )
   gen->gen_aux_2 = NULL;
 
   /* length of probability vector */
-  n_prob = DISTR.n_prob;
+  n_pv = DISTR.n_pv;
 
   /* store method in generator structure */
   gen->method = par->method;
@@ -483,15 +483,15 @@ _unur_dgt_create( struct unur_par *par )
 
   /* which variant? */
   if (par->variant == 0)   /* default variant */
-    par->variant = (n_prob > DGT_VAR_THRESHOLD) ? DGT_VARFLAG_DIV : DGT_VARFLAG_ADD;
+    par->variant = (n_pv > DGT_VAR_THRESHOLD) ? DGT_VARFLAG_DIV : DGT_VARFLAG_ADD;
   /* store variant in generator structure */
   gen->variant = par->variant;
 
   /* allocation for cummulated probabilities */
-  GEN.cumprob = _unur_malloc( n_prob * sizeof(double) );
+  GEN.cumpv = _unur_malloc( n_pv * sizeof(double) );
 
   /* size of guide table */
-  GEN.guide_size = (int)( n_prob * PAR.guide_factor);
+  GEN.guide_size = (int)( n_pv * PAR.guide_factor);
   if (GEN.guide_size <= 0)
     /* do not use a guide table whenever params->guide_factor is 0 or less */
     GEN.guide_size = 1;
@@ -534,7 +534,7 @@ _unur_dgt_sample( struct unur_gen *gen )
   j = GEN.guide_table[(int)(u * GEN.guide_size)];
   /* ... and search */
   u *= GEN.sum;
-  while (GEN.cumprob[j] < u) j++;
+  while (GEN.cumpv[j] < u) j++;
 
   return (j + DISTR.domain[0]);
 
@@ -567,9 +567,9 @@ _unur_dgt_free( struct unur_gen *gen )
 
   /* free memory */
   _unur_free_genid(gen);
-  free(DISTR.prob);
+  free(DISTR.pv);
   free(GEN.guide_table);
-  free(GEN.cumprob);
+  free(GEN.cumpv);
   free(gen);
 
 } /* end of _unur_dgt_free() */
@@ -617,7 +617,7 @@ _unur_dgt_debug_init( struct unur_par *par, struct unur_gen *gen )
   fprintf(log,"%s: sampling routine = _unur_dgt_sample()\n",gen->genid);
   fprintf(log,"%s:\n",gen->genid);
 
-  fprintf(log,"%s: length of probability vector = %d\n",gen->genid,DISTR.n_prob);
+  fprintf(log,"%s: length of probability vector = %d\n",gen->genid,DISTR.n_pv);
   fprintf(log,"%s: length of guide table = %d   (rel. = %g%%",
 	  gen->genid,GEN.guide_size,100.*PAR.guide_factor);
   _unur_print_if_default(par,DGT_SET_GUIDEFACTOR);

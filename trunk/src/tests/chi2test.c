@@ -144,8 +144,8 @@ _unur_test_chi2_discr( struct unur_gen *gen,
      /*----------------------------------------------------------------------*/
 {
 #define DISTR   gen->distr.data.discr
-  double *prob;         /* pointer to probability vectors */
-  int n_prob;           /* length of probability vector   */
+  double *pv;           /* pointer to probability vectors */
+  int n_pv;             /* length of probability vector   */
 
   int *observed;        /* vector for observed occurrences */
   double pval;          /* p-value */
@@ -161,26 +161,26 @@ _unur_test_chi2_discr( struct unur_gen *gen,
   }
 
   /* probability vector */
-  if (DISTR.prob == NULL)
+  if (DISTR.pv == NULL)
     /* no PV given --> try to compute PV */
-    if (!unur_distr_discr_make_prob(&(gen->distr)) ) {
+    if (!unur_distr_discr_make_pv(&(gen->distr)) ) {
       /* not successful */
       return -1.;
     }
   /* pointer to PV */
-  prob = DISTR.prob;
-  n_prob = DISTR.n_prob;
+  pv = DISTR.pv;
+  n_pv = DISTR.n_pv;
 
   /* allocate memory for observations */
-  observed = _unur_malloc( n_prob * sizeof(int));
+  observed = _unur_malloc( n_pv * sizeof(int));
 
   /* clear array */
-  for( i=0; i<n_prob; i++ )
+  for( i=0; i<n_pv; i++ )
     observed[i] = 0;
 
   /* samplesize */
   if( samplesize <= 0 ) {
-    samplesize = (INT_MAX/n_prob > n_prob) ? n_prob*n_prob : 1000000;
+    samplesize = (INT_MAX/n_pv > n_pv) ? n_pv * n_pv : 1000000;
     samplesize = max(samplesize,1000000);
   }
 
@@ -193,22 +193,22 @@ _unur_test_chi2_discr( struct unur_gen *gen,
     /* shift vector */
     j -= DISTR.domain[0];
     /* check range of random variates !! */
-    if (j < n_prob)
+    if (j < n_pv)
       ++observed[j];
     /* else: ignore number --> chop off tail */
   }
 
   if (verbose >= 1) {
     printf("\nChi^2-Test for discrete distribution with given probability vector:");
-    printf("\n  length     = %d\n",n_prob);
+    printf("\n  length     = %d\n",n_pv);
   }
 
   /* and now make chi^2 test */
-  pval = _unur_test_chi2test(prob, observed, n_prob, classmin, verbose);
+  pval = _unur_test_chi2test(pv, observed, n_pv, classmin, verbose);
 
   /* free memory */
   free(observed);
-  if (DISTR.prob == NULL) free(prob);
+  if (DISTR.pv == NULL) free(pv);
 
   /* return result of test */
   return pval;

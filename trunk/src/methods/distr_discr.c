@@ -118,8 +118,8 @@ unur_distr_discr_new( void )
   /* set defaults                                                            */
 
   /* finite probability vector */
-  DISTR.prob      = NULL;          /* probability vector                     */
-  DISTR.n_prob    = 0;             /* length of probability vector           */
+  DISTR.pv        = NULL;          /* probability vector (PV)                */
+  DISTR.n_pv      = 0;             /* length of PV                           */
 
   /* probability mass function */
   DISTR.pmf       = NULL;          /* pointer to PMF                         */
@@ -169,7 +169,7 @@ _unur_distr_discr_free( struct unur_distr *distr )
 
   COOKIE_CHECK(distr,CK_DISTR_DISCR,/*void*/);
 
-  if (DISTR.prob) free( DISTR.prob );
+  if (DISTR.pv) free( DISTR.pv );
 
   free( distr );
 
@@ -178,14 +178,14 @@ _unur_distr_discr_free( struct unur_distr *distr )
 /*---------------------------------------------------------------------------*/
 
 int
-unur_distr_discr_set_prob( struct unur_distr *distr, double *prob, int n_prob )
+unur_distr_discr_set_pv( struct unur_distr *distr, double *pv, int n_pv )
      /*----------------------------------------------------------------------*/
      /* set probability vector for distribution                              */
      /*                                                                      */
      /* parameters:                                                          */
      /*   distr   ... pointer to distribution object                         */
-     /*   prob    ... pointer to probability vector                          */
-     /*   n_prob  ... length of probability vector                           */
+     /*   pv      ... pointer to PV                                          */
+     /*   n_pv    ... length of PV                                           */
      /*                                                                      */
      /* return:                                                              */
      /*   1 ... on success                                                   */
@@ -203,14 +203,14 @@ unur_distr_discr_set_prob( struct unur_distr *distr, double *prob, int n_prob )
   }
 
   /* check new parameter for distribution */
-  if (n_prob < 0) {
+  if (n_pv < 0) {
     _unur_error(distr->name,UNUR_ERR_DISTR_SET,"length of PV");
     return 0;
   }
 
-  /* n_prob must not be too large */
-  if (DISTR.domain[0] + n_prob < DISTR.domain[0]) {
-    /* n_prob too large causes overflow */
+  /* n_pv must not be too large */
+  if (DISTR.domain[0] + n_pv < DISTR.domain[0]) {
+    /* n_pv too large causes overflow */
         _unur_error(distr->name,UNUR_ERR_DISTR_SET,"length of PV to large");
     return 0;
   }
@@ -219,12 +219,12 @@ unur_distr_discr_set_prob( struct unur_distr *distr, double *prob, int n_prob )
      (it is cheaper to do it when unur_init() is called */
 
   /* allocate memory for probability vector */
-  DISTR.prob = _unur_malloc( n_prob * sizeof(double) );
-  if (!DISTR.prob) return 0;
+  DISTR.pv = _unur_malloc( n_pv * sizeof(double) );
+  if (!DISTR.pv) return 0;
 
   /* copy probability vector */
-  memcpy( DISTR.prob, prob, n_prob * sizeof(double) );
-  DISTR.n_prob = n_prob;
+  memcpy( DISTR.pv, pv, n_pv * sizeof(double) );
+  DISTR.n_pv = n_pv;
 
   /* no domain given --> set left boundary to 0 */
   if (!(distr->set & UNUR_DISTR_SET_DOMAIN))
@@ -232,12 +232,12 @@ unur_distr_discr_set_prob( struct unur_distr *distr, double *prob, int n_prob )
 
   /* o.k. */
   return 1;
-} /* end of unur_distr_discr_set_prob() */
+} /* end of unur_distr_discr_set_pv() */
 
 /*---------------------------------------------------------------------------*/
 
 int
-unur_distr_discr_make_prob( struct unur_distr *distr )
+unur_distr_discr_make_pv( struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
      /* compute probability vector                                           */
      /*                                                                      */
@@ -251,8 +251,8 @@ unur_distr_discr_make_prob( struct unur_distr *distr )
      /*   return 0                                                           */
      /*----------------------------------------------------------------------*/
 {
-  double *prob;        /* pointer to probability vector */
-  int n_prob;          /* length of PV */
+  double *pv;          /* pointer to probability vector */
+  int n_pv;            /* length of PV */
   double sum = 0.;     /* accumulated sum of PV */
   int valid;           /* whether cumputed PV is valid */
   int i;
@@ -274,17 +274,17 @@ unur_distr_discr_make_prob( struct unur_distr *distr )
   }
 
   /* it there exists a PV, it has to be removed */
-  if (DISTR.prob != NULL)
-    free(DISTR.prob);
+  if (DISTR.pv != NULL)
+    free(DISTR.pv);
 
   /* compute PV */
 
-  if ( (n_prob = DISTR.domain[1] - DISTR.domain[0]) < UNUR_MAX_AUTO_PV ) {
+  if ( (n_pv = DISTR.domain[1] - DISTR.domain[0]) < UNUR_MAX_AUTO_PV ) {
 
     /* first case: bounded domain */
-    prob = _unur_malloc( n_prob * sizeof(double) );
-    for (i=0; i<n_prob; i++)
-      prob[i] = _unur_discr_PMF(DISTR.domain[0]+i,distr);
+    pv = _unur_malloc( n_pv * sizeof(double) );
+    for (i=0; i<n_pv; i++)
+      pv[i] = _unur_discr_PMF(DISTR.domain[0]+i,distr);
     
     valid = TRUE;
   }
@@ -299,15 +299,15 @@ unur_distr_discr_make_prob( struct unur_distr *distr )
     
     max_alloc = min( UNUR_MAX_AUTO_PV, (INT_MAX - DISTR.domain[0] - MALLOC_SIZE) );
     
-    n_prob = 0;
-    prob = NULL;
+    n_pv = 0;
+    pv = NULL;
     
     do {
       n_alloc += MALLOC_SIZE;
-      prob = _unur_realloc( prob, n_alloc * sizeof(double) );
+      pv = _unur_realloc( pv, n_alloc * sizeof(double) );
       for (i=0; i<MALLOC_SIZE; i++) {
-	sum += prob[n_prob] = _unur_discr_PMF(DISTR.domain[0]+n_prob,distr);
-	n_prob++;
+	sum += pv[n_pv] = _unur_discr_PMF(DISTR.domain[0]+n_pv,distr);
+	n_pv++;
       }
       if ((distr->set & UNUR_DISTR_SET_PMFSUM) && sum > (1.-1.e-8) * DISTR.sum)
 	break;
@@ -328,24 +328,24 @@ unur_distr_discr_make_prob( struct unur_distr *distr )
   }
     
   /* store vector */
-  DISTR.prob = prob;
-  DISTR.n_prob = n_prob;
+  DISTR.pv = pv;
+  DISTR.n_pv = n_pv;
 
   /* o.k. */
-  return (valid) ? n_prob : -n_prob;
-} /* end of unur_distr_discr_make_prob() */
+  return (valid) ? n_pv : -n_pv;
+} /* end of unur_distr_discr_make_pv() */
 
 /*---------------------------------------------------------------------------*/
 
 int 
-unur_distr_discr_get_prob( struct unur_distr *distr, double **prob )
+unur_distr_discr_get_pv( struct unur_distr *distr, double **pv )
      /*----------------------------------------------------------------------*/
      /* get length of probability vector and set pointer to probability      */
      /* vector                                                               */
      /*                                                                      */
      /* parameters:                                                          */
      /*   distr    ... pointer to distribution object                        */
-     /*   prob     ... pointer to probability vector                         */
+     /*   pv       ... pointer to probability vector                         */
      /*                                                                      */
      /* return:                                                              */
      /*   length of probability vector                                       */
@@ -358,15 +358,15 @@ unur_distr_discr_get_prob( struct unur_distr *distr, double **prob )
   _unur_check_NULL( NULL, distr, 0 );
   _unur_check_distr_object( distr, DISCR, 0 );
 
-  *prob = (DISTR.prob) ? DISTR.prob : NULL;
-  return DISTR.n_prob;
+  *pv = (DISTR.pv) ? DISTR.pv : NULL;
+  return DISTR.n_pv;
 
-} /* end of unur_distr_discr_get_prob() */
+} /* end of unur_distr_discr_get_pv() */
 
 /*---------------------------------------------------------------------------*/
 
 double
-unur_distr_discr_eval_prob( int k, struct unur_distr *distr )
+unur_distr_discr_eval_pv( int k, struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
      /* returns the value of the probability vector at k or, if there is no  */
      /* probability vector defined, evaluates  the pmf                       */
@@ -376,20 +376,20 @@ unur_distr_discr_eval_prob( int k, struct unur_distr *distr )
      /*  distr ... pointer to distribution object                            */
      /*                                                                      */
      /* return:                                                              */
-     /*   prob[k] or pmf(k)                                                  */
+     /*   pv[k] or pmf(k)                                                    */
      /*----------------------------------------------------------------------*/
 {
 
   double retval = INFINITY;
 
-  if( DISTR.prob != NULL )    /* use probability vector                      */
-    retval = DISTR.prob[k];
+  if( DISTR.pv != NULL )      /* use probability vector                      */
+    retval = DISTR.pv[k];
   else                        /* use pmf                                     */
     retval = unur_distr_discr_eval_pmf(k, distr);
 
   return retval;
 
-} /* end of unur_distr_discr_eval_prob() */
+} /* end of unur_distr_discr_eval_pv() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -413,7 +413,7 @@ unur_distr_discr_set_pmf( struct unur_distr *distr, UNUR_FUNCT_DISCR *pmf )
   _unur_check_distr_object( distr, DISCR, 0 );
 
   /* it is not possible to set a PMF when a PV is given. */
-  if (DISTR.prob != NULL) {
+  if (DISTR.pv != NULL) {
     _unur_error(distr->name,UNUR_ERR_DISTR_SET,"PV given, cannot set PMF");
     return 0;
   }
@@ -963,14 +963,14 @@ _unur_distr_discr_debug( struct unur_distr *distr, char *genid, int printvector 
       fprintf(log,"%s:\t\tparam[%d] = %g\n",genid,i,DISTR.params[i]);
   }
 
-  if (DISTR.n_prob>0) {
+  if (DISTR.n_pv>0) {
     /* have probability vector */
-    fprintf(log,"%s:\tprobability vector of length %d",genid,DISTR.n_prob);
+    fprintf(log,"%s:\tprobability vector of length %d",genid,DISTR.n_pv);
     if (printvector) {
-      for (i=0; i<DISTR.n_prob; i++) {
+      for (i=0; i<DISTR.n_pv; i++) {
 	if (i%10 == 0)
 	  fprintf(log,"\n%s:\t",genid);
-	fprintf(log,"  %.5f",DISTR.prob[i]);
+	fprintf(log,"  %.5f",DISTR.pv[i]);
       }
     }
     fprintf(log,"\n%s:\n",genid);
@@ -984,9 +984,9 @@ _unur_distr_discr_debug( struct unur_distr *distr, char *genid, int printvector 
     fprintf(log,"\n%s:\n",genid);
   }
 
-  if (DISTR.n_prob>0) {
+  if (DISTR.n_pv>0) {
     /* have probability vector */
-    fprintf(log,"%s:\tdomain for pv = (%d, %d)",genid,DISTR.domain[0],DISTR.domain[0]-1+DISTR.n_prob);
+    fprintf(log,"%s:\tdomain for pv = (%d, %d)",genid,DISTR.domain[0],DISTR.domain[0]-1+DISTR.n_pv);
     _unur_print_if_default(distr,UNUR_DISTR_SET_DOMAIN);
     fprintf(log,"\n%s:\n",genid);
   }
@@ -1046,8 +1046,8 @@ _unur_distr_discr_find_mode(struct unur_distr *distr )
   /* derive three distinct points */
 
   x[0] = DISTR.domain[0];
-  if (DISTR.prob != NULL)
-    x[1] = DISTR.domain[0] + DISTR.n_prob - 1;
+  if (DISTR.pv != NULL)
+    x[1] = DISTR.domain[0] + DISTR.n_pv - 1;
   else
     x[1] =DISTR.domain[1];
 
@@ -1056,8 +1056,8 @@ _unur_distr_discr_find_mode(struct unur_distr *distr )
   if (x[1] < x[0])
     _unur_error(distr->name,UNUR_ERR_DISTR_DATA,
 		"Overflow: x[1] > INT_MAX");
-  fx[0] = unur_distr_discr_eval_prob(x[0], distr);
-  fx[1] = unur_distr_discr_eval_prob(x[1], distr);
+  fx[0] = unur_distr_discr_eval_pv(x[0], distr);
+  fx[1] = unur_distr_discr_eval_pv(x[1], distr);
 
 
 
@@ -1075,7 +1075,7 @@ _unur_distr_discr_find_mode(struct unur_distr *distr )
       x[2]++;
     if ( x[2] == x[1] )
       x[2]--;
-    fx[2] = unur_distr_discr_eval_prob(x[2], distr);
+    fx[2] = unur_distr_discr_eval_pv(x[2], distr);
 
 
     /* at least one of the x[i] should have a positive function value  */
@@ -1083,7 +1083,7 @@ _unur_distr_discr_find_mode(struct unur_distr *distr )
       int i=1;
       while (fx[2] == 0 && i < 100){
 	x[2]  = (x[1]/100)*i + (x[0]/100)*(100-i); /* integers !!! */
-        fx[2] = unur_distr_discr_eval_prob(x[2], distr);
+        fx[2] = unur_distr_discr_eval_pv(x[2], distr);
         i++;
       } 
     }
@@ -1117,7 +1117,7 @@ _unur_distr_discr_find_mode(struct unur_distr *distr )
 	  if (xnew == x[2]){
 	    xnew = x[2];
 	    x[2] += sgn(x[2]-x[0]);  /* cant be = x[1] */
-	    fx[2] = unur_distr_discr_eval_prob(x[2], distr);
+	    fx[2] = unur_distr_discr_eval_pv(x[2], distr);
 	  }
       }
       if ( xnew == x[2] ){
@@ -1125,11 +1125,11 @@ _unur_distr_discr_find_mode(struct unur_distr *distr )
 	  if (xnew == x[0]){
 	    xnew = x[2];
 	    x[2] += sgn(x[2]-x[0]);  /* cant be = x[1] */
-	    fx[2] = unur_distr_discr_eval_prob(x[2], distr);
+	    fx[2] = unur_distr_discr_eval_pv(x[2], distr);
 	  }
       }
 
-      fxnew = unur_distr_discr_eval_prob(xnew, distr);
+      fxnew = unur_distr_discr_eval_pv(xnew, distr);
 
       /* Information of point xnew isn't enough to
          refine interval containig the mode -- determine new xnew    */
@@ -1139,21 +1139,21 @@ _unur_distr_discr_find_mode(struct unur_distr *distr )
 	interval = -1;  /* should be impossible when entering switch */
 	if ( abs(x[1]-x[2]) > 1 ){
 	  xtmp = x[1]/2 + x[2]/2;
-	  fxtmp = unur_distr_discr_eval_prob(xtmp, distr);
+	  fxtmp = unur_distr_discr_eval_pv(xtmp, distr);
 	  interval = UNDEFINED;
           if ( ! _unur_FP_same(fxtmp, fx[2]) )
 	    interval = INT3;
 	}
 	if ( abs(xnew-x[0]) > 1 ){
 	  xtmp = xnew/2 + x[0]/2;
-	  fxtmp = unur_distr_discr_eval_prob(xtmp, distr);
+	  fxtmp = unur_distr_discr_eval_pv(xtmp, distr);
 	  interval = UNDEFINED;
           if ( ! _unur_FP_same(fxtmp, fx[2]) )
 	    interval = INT1;
         }
 	if ( abs(x[2]-xnew) > 1 ){
 	  xtmp = x[2]/2 + xnew/2;
-	  fxtmp = unur_distr_discr_eval_prob(xtmp, distr);
+	  fxtmp = unur_distr_discr_eval_pv(xtmp, distr);
 	  interval = UNDEFINED;
           if ( ! _unur_FP_same(fxtmp, fx[2]) )
 	    interval = INT2;

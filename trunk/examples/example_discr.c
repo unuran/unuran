@@ -27,7 +27,7 @@ int main()
   gen1 = unur_init(par1);
 
   distr2 = unur_distr_discr_new();
-  unur_distr_discr_set_prob(distr2, probvec, 10);
+  unur_distr_discr_set_pv(distr2, probvec, 10);
   par2 = unur_dgt_new(distr2);
   gen2 = unur_init(par2);
 

@@ -213,7 +213,7 @@ unur_dau_new( struct unur_distr *distr )
     _unur_error(GENTYPE,UNUR_ERR_DISTR_INVALID,""); return NULL; }
   COOKIE_CHECK(distr,CK_DISTR_DISCR,NULL);
 
-  if (DISTR_IN.prob == NULL) {
+  if (DISTR_IN.pv == NULL) {
     /* There is no PV try to compute it.                         */
     if ( DISTR_IN.pmf
 	 && ( ((DISTR_IN.domain[1] - DISTR_IN.domain[0]) < UNUR_MAX_AUTO_PV)
@@ -310,8 +310,8 @@ _unur_dau_init( struct unur_par *par )
   struct unur_gen *gen;
   int *begin, *poor, *rich;     /* list of (rich and poor) strips */
   int *npoor;                   /* next poor on stack */
-  double *prob;                 /* pointer to probability vector */
-  int n_prob;                   /* length of probability vector */
+  double *pv;                   /* pointer to probability vector */
+  int n_pv;                     /* length of probability vector */
   double sum, ratio;
   int i;                        /* aux variable */
 
@@ -329,14 +329,14 @@ _unur_dau_init( struct unur_par *par )
   if (!gen) { free(par); return NULL; }
 
   /* probability vector */
-  prob = DISTR.prob;
-  n_prob = DISTR.n_prob;
+  pv = DISTR.pv;
+  n_pv = DISTR.n_pv;
 
   /* compute sum of all probabilities */
-  for( sum=0, i=0; i<n_prob; i++ ) {
-    sum += prob[i];
+  for( sum=0, i=0; i<n_pv; i++ ) {
+    sum += pv[i];
     /* ... and check probability vector */
-    if (prob[i] < 0.) {
+    if (pv[i] < 0.) {
       _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"probability < 0");
       free(par); _unur_dau_free(gen);
       return NULL;
@@ -351,8 +351,8 @@ _unur_dau_init( struct unur_par *par )
   /* copy probability vector; scale so that it sums to GEN.urn_size and */
   /* find rich and poor strips at start                                 */
   ratio = GEN.urn_size / sum;
-  for( i=0; i<n_prob; i++ ) {
-    GEN.qx[i] = prob[i] * ratio;
+  for( i=0; i<n_pv; i++ ) {
+    GEN.qx[i] = pv[i] * ratio;
     if (GEN.qx[i] >= 1.) {  /* rich strip                  */
       *rich = i;            /* add to list ...             */
       --rich;               /* and update pointer          */
@@ -473,13 +473,13 @@ _unur_dau_create( struct unur_par *par)
   memcpy( &(gen->distr), par->distr, sizeof( struct unur_distr ) );
 
   /* copy probability vector into generator object (when there is one) */
-  if (DISTR.prob) {
-    DISTR.prob = _unur_malloc( DISTR.n_prob * sizeof(double) );
-    memcpy( DISTR.prob, par->distr->data.discr.prob, DISTR.n_prob * sizeof(double) );
+  if (DISTR.pv) {
+    DISTR.pv = _unur_malloc( DISTR.n_pv * sizeof(double) );
+    memcpy( DISTR.pv, par->distr->data.discr.pv, DISTR.n_pv * sizeof(double) );
   }
   else {
     /* try to compute PV */
-    if (unur_distr_discr_make_prob(&(gen->distr)) <= 0) {
+    if (unur_distr_discr_make_pv(&(gen->distr)) <= 0) {
       /* not successful */
       _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"PV"); 
       free(gen); return NULL;
@@ -491,7 +491,7 @@ _unur_dau_create( struct unur_par *par)
   gen->destroy = _unur_dau_free;
 
   /* copy some parameters into generator object */
-  GEN.len = DISTR.n_prob;           /* length of probability vector          */
+  GEN.len = DISTR.n_pv;             /* length of probability vector          */
   gen->method = par->method;        /* indicates used method                 */
   gen->variant = 0u;                /* only the default variant is possible  */
   gen->set = par->set;              /* indicates parameter settings          */
@@ -581,7 +581,7 @@ _unur_dau_free( struct unur_gen *gen )
 
   /* free memory */
   _unur_free_genid(gen);
-  free(DISTR.prob);
+  free(DISTR.pv);
   free(GEN.jx);
   free(GEN.qx);
   free(gen);

@@ -564,7 +564,7 @@ unur_distr_cont_get_pdfstr( struct unur_distr *distr )
   _unur_check_NULL( NULL,DISTR.pdftree,NULL );
 
   /* make and return string */
-  return _unur_fstr_tree2string(DISTR.pdftree,"x","PDF");
+  return _unur_fstr_tree2string(DISTR.pdftree,"x","PDF",TRUE);
 } /* end of unur_distr_cont_get_pdfstr() */
 
 /*---------------------------------------------------------------------------*/
@@ -590,7 +590,7 @@ unur_distr_cont_get_dpdfstr( struct unur_distr *distr )
   _unur_check_NULL( NULL,DISTR.dpdftree,NULL );
 
   /* make and return string */
-  return _unur_fstr_tree2string(DISTR.dpdftree,"x","dPDF");
+  return _unur_fstr_tree2string(DISTR.dpdftree,"x","dPDF",TRUE);
 } /* end of unur_distr_cont_get_dpdfstr() */
 
 /*---------------------------------------------------------------------------*/
@@ -616,7 +616,7 @@ unur_distr_cont_get_cdfstr( struct unur_distr *distr )
   _unur_check_NULL( NULL,DISTR.cdftree,NULL );
 
   /* make and return string */
-  return _unur_fstr_tree2string(DISTR.cdftree,"x","CDF");
+  return _unur_fstr_tree2string(DISTR.cdftree,"x","CDF",TRUE);
 } /* end of unur_distr_cont_get_cdfstr() */
 
 /*---------------------------------------------------------------------------*/

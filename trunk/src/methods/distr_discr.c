@@ -834,7 +834,7 @@ unur_distr_discr_get_pmfstr( struct unur_distr *distr )
   _unur_check_NULL( NULL,DISTR.pmftree,NULL );
 
   /* make and return string */
-  return _unur_fstr_tree2string(DISTR.pmftree,"x","PMF");
+  return _unur_fstr_tree2string(DISTR.pmftree,"x","PMF",TRUE);
 } /* end of unur_distr_discr_get_pmfstr() */
 
 /*---------------------------------------------------------------------------*/
@@ -860,7 +860,7 @@ unur_distr_discr_get_cdfstr( struct unur_distr *distr )
   _unur_check_NULL( NULL,DISTR.cdftree,NULL );
 
   /* make and return string */
-  return _unur_fstr_tree2string(DISTR.cdftree,"x","CDF");
+  return _unur_fstr_tree2string(DISTR.cdftree,"x","CDF",TRUE);
 } /* end of unur_distr_discr_get_cdfstr() */
 
 /*---------------------------------------------------------------------------*/

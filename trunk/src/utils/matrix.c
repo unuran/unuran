@@ -63,10 +63,6 @@ static int _unur_matrix_forwardsubstitution_dtrsv(int dim, double *A, double *X)
 static int _unur_matrix_LU_invert (int dim, double *LU, int *p, double *inverse);
 /* Compute inverse of matrix with given LU decomposition.                    */
 
-/** TODO: wer braucht diese funktion ? */
-static double _unur_matrix_quadratic_form(int dim, double *x, double *A);
-/* Compute quadratic form x'Ax.                                              */
-
 /*---------------------------------------------------------------------------*/
 
 int 
@@ -457,7 +453,7 @@ _unur_matrix_invert_matrix (int dim, double *A, double detmin, double *Ainv, dou
 /*---------------------------------------------------------------------------*/
 
 double 
-_unur_matrix_quadratic_form(int dim, double *x, double *A)
+_unur_matrix_qf (int dim, double *x, double *A)
      /*----------------------------------------------------------------------*/
      /* Compute quadratic form x'Ax                                          */
      /*									     */

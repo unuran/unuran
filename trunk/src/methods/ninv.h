@@ -113,8 +113,14 @@ int unur_ninv_chg_max_iter(UNUR_GEN *gen, int max_iter);
 
 int unur_ninv_chg_x_resolution(UNUR_GEN *gen, double x_resolution);
 /*
-  Change the maximal relative errer in x
+  Change the maximal relative error in x
  */
+
+int unur_ninv_chg_start(UNUR_GEN *gen, double left, double right);
+/* Change the starting points for numerical inversion. */
+/* If left==right, UNURAN chooses the starting points (see
+   @code{unur_ninv_set_start()}).
+*/
 
 int unur_ninv_chg_domain(UNUR_GEN *gen, double left, double right );
 /*

@@ -78,6 +78,10 @@
  *      int:      'true' and 'on' are transformed to 1,                      *
  *                'false' and 'off' are transformed to 0.                    *
  *                a missing argument is transformed to 1.                    *
+ *      int, int: Instead of two doubles, a list with at least two           *
+ *                numbers can be given.                                      *
+ *                'inf' is transformed to infinity.                          *
+ *                implementation of strtod().                                *
  *      unsigned: string is interpreted as hexadecimal number.               *
  *      double:   'inf[...]' is transformed to INFINITY.                     *
  *      double, double: Instead of two doubles, a list with at least two     *
@@ -190,6 +194,7 @@ static int _unur_str_distr_set( UNUR_DISTR *distr, const char *key, char *value 
 /* Set parameter in given distribution object.                               */
 /*---------------------------------------------------------------------------*/
 typedef int distr_set_i( UNUR_DISTR *distr, int i );
+typedef int distr_set_ii( UNUR_DISTR *distr, int i1, int i2 );
 typedef int distr_set_d( UNUR_DISTR *distr, double d );
 typedef int distr_set_dd( UNUR_DISTR *distr, double d1, double d2 );
 typedef int distr_set_Di( UNUR_DISTR *distr, double *array, int size );
@@ -202,6 +207,11 @@ static int _unur_str_distr_set_i( UNUR_DISTR *distr, const char *key, char *type
 				  distr_set_i set );
 /*---------------------------------------------------------------------------*/
 /* integer.                                                                  */
+/*---------------------------------------------------------------------------*/
+static int _unur_str_distr_set_ii( UNUR_DISTR *distr, const char *key, char *type_args, char **args,
+				   distr_set_ii set );
+/*---------------------------------------------------------------------------*/
+/* 2 integers.                                                               */
 /*---------------------------------------------------------------------------*/
 static int _unur_str_distr_set_d( UNUR_DISTR *distr, const char *key, char *type_args, char **args,
 				  distr_set_d set );
@@ -307,6 +317,11 @@ static UNUR_URNG *_unur_str2urng( char *str_urng );
 static int _unur_str_set_args( char *value, char *type_args, char **args, int max_args );
 /*---------------------------------------------------------------------------*/
 /* parse argument string for set call.                                       */
+/*---------------------------------------------------------------------------*/
+
+static int _unur_parse_ilist( char *liststr, int **iarray );
+/*---------------------------------------------------------------------------*/
+/* Process a comma separated list of integers.                               */
 /*---------------------------------------------------------------------------*/
 
 static int _unur_parse_dlist( char *liststr, double **darray );
@@ -876,6 +891,99 @@ _unur_str_distr_set_i (UNUR_DISTR *distr, const char *key, char *type_args, char
   return set(distr,iarg);
 
 } /* end of _unur_str_distr_set_i() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+_unur_str_distr_set_ii (UNUR_DISTR *distr, const char *key, char *type_args, char **args, distr_set_ii set)
+     /*----------------------------------------------------------------------*/
+     /* Set parameter in given distribution object.                          */
+     /* The list of arguments and their types are given as string.           */
+     /*                                                                      */
+     /* type: "ii"   (int,int)                                               */
+     /*                                                                      */
+     /* input: "tt"  (exactly two single tokens)                             */
+     /*        "L"   (exactly one list)                                      */
+     /*                                                                      */
+     /* action:                                                              */
+     /*    if "tt": convert both to int.                                     */
+     /*             execute set call.                                        */
+     /*    if "L":  convert list entries to int.                             */
+     /*             execute set call with first two entries.                 */
+     /*                (error if list has less than two entries)             */
+     /*    otherwise: error                                                  */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   distr     ... pointer to distribution object                       */
+     /*   key       ... name of parameter to be set                          */
+     /*   type_args ... contains types of arguments. Possible values:        */
+     /*                   't'   for single token                             */
+     /*                   'L'   for a list                                   */
+     /*   args      ... array of pointers to argument strings                */
+     /*   set       ... pointer to UNURAN function for set call              */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   return code from set call, i.e.                                    */
+     /*      1 ... on success                                                */
+     /*      0 ... on error                                                  */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return 0                                                           */
+     /*----------------------------------------------------------------------*/
+{
+  int *iarray = NULL;
+  int iarg[2];
+  int result;
+
+  /* either exactly two arguments are given */
+  if ( !strcmp(type_args, "tt") ) {
+    iarg[0] = _unur_atoi( args[0] );
+    iarg[1] = _unur_atoi( args[1] );
+
+#ifdef UNUR_ENABLE_LOGGING
+    /* write info into log file */
+    if (_unur_default_debugflag & UNUR_DEBUG_SETUP)
+      _unur_str_debug_set(2,key,"ii",iarg[0],iarg[1]);
+#endif
+
+    return set( distr,iarg[0],iarg[1] );
+  }
+
+  /* or one list with 2 entries is given */
+  else if ( !strcmp(type_args, "L") ) {
+    if ( _unur_parse_ilist( args[0], &iarray ) < 2 ) {
+      _unur_error_args(key);
+      free (iarray);
+#ifdef UNUR_ENABLE_LOGGING
+      /* write info into log file */
+      if (_unur_default_debugflag & UNUR_DEBUG_SETUP)
+	_unur_str_debug_set(2,key,"!");
+#endif
+      return 0;
+    }
+    result = set( distr,iarray[0],iarray[1] );
+
+#ifdef UNUR_ENABLE_LOGGING
+    /* write info into log file */
+    if (_unur_default_debugflag & UNUR_DEBUG_SETUP)
+      _unur_str_debug_set(2,key,"ii",iarray[0],iarray[1] );
+#endif
+
+    free (iarray);
+    return result;
+  }
+  
+  else {
+    _unur_error_args(key);
+#ifdef UNUR_ENABLE_LOGGING
+    /* write info into log file */
+    if (_unur_default_debugflag & UNUR_DEBUG_SETUP)
+      _unur_str_debug_set(2,key,"!");
+#endif
+    return 0;
+  }
+
+} /* end of _unur_str_distr_set_ii() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -2184,11 +2292,72 @@ _unur_str_set_args( char *value, char *type_args, char **args, int max_args )
 /*---------------------------------------------------------------------------*/
 
 int 
+_unur_parse_ilist( char *liststr, int **iarray )
+     /*----------------------------------------------------------------------*/
+     /* Process a comma separated list of integers, convert it to ints and   */
+     /* store it an array. The list (string) is terminated by a closing      */
+     /* parenthesis ')' or '\0'.                                             */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   liststr ... string containing list of numbers                      */
+     /*   iarray  ... pointer to adress of double array for storing result   */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   number of elements extracted                                       */
+     /*                                                                      */
+     /* comment:                                                             */
+     /*   as a side effect an int array of appropriate size is allocated.    */
+     /*----------------------------------------------------------------------*/
+{
+  int *iarr = NULL;     /* pointer to int array */
+  int n_iarray = 0;     /* number of elements in processed list */
+  int n_alloc = 0;      /* number allocated elements */
+  char *token;
+
+  /* return 0 if no list is given */
+  if (liststr == NULL) {
+    *iarray = iarr;
+    return 0;
+  }
+
+  /* discard possible leading ',' or '(' characters in front of the numbers */
+  while ( *liststr == ',' || *liststr == '(' ){
+    liststr++; /* next char */
+  }
+
+  /* new get integers */
+  for ( token  = strtok(liststr, ",)"); 
+        token != NULL;     
+        token  = strtok(NULL, ",)") ) {
+
+    /* check if there is enough space in iarr */
+    if (n_iarray >= n_alloc) {
+      /* no --> allocate memory */
+      n_alloc += 100;
+      iarr = _unur_realloc( iarr, n_alloc * sizeof(double) );
+    }
+    
+    /* get int */
+    iarr[n_iarray++] = _unur_atoi(token);
+
+  } /* end while -- all elements of list read */
+
+  /* store pointer to double array */
+  *iarray = iarr;
+
+  /* return number of elements in array */
+  return n_iarray;
+
+} /* end of _unur_parse_ilist() */
+
+/*---------------------------------------------------------------------------*/
+
+int 
 _unur_parse_dlist( char *liststr, double **darray )
      /*----------------------------------------------------------------------*/
      /* Process a comma separated list of numbers (doubles), convert it to   */
      /* doubles and store it an array. The list (string) is terminated by    */
-     /* by a closing parenthesis ')' or '\0'.                                */
+     /* a closing parenthesis ')' or '\0'.                                   */
      /*                                                                      */
      /* parameters:                                                          */
      /*   liststr ... string containing list of numbers                      */
@@ -2273,6 +2442,12 @@ _unur_atoi ( const char *str )
 
   else if ( !strcmp(str,"false") || !strcmp(str,"off") )
     return 0;
+
+  else if ( !strncmp(str,"inf",3) )
+    return INT_MAX;
+
+  else if ( !strncmp(str,"-inf",4) )
+    return INT_MIN;
 
   else
     return atoi(str);

@@ -45,16 +45,20 @@
 
 =DESCRIPTION
 
-   The string interface provided by the @command{unur_str2gen} call is
-   the easiest way to use UNURAN. The function takes a character
-   string as its argument. The string is parsed and the information
-   obtained is used to create a generator object. It returns NULL if
-   this fails, either due to a syntax error, or due to invalid data.
+   The string interface (string API) provided by the
+   unur_str2gen() call is the easiest way to use UNURAN. This
+   function takes a character string as its argument. The string is
+   parsed and the information obtained is used to create a generator
+   object. It returns NULL if this fails, either due to a syntax
+   error, or due to invalid data. In both cases @code{unur_error} is
+   set to the corresponding error codes
+   (see @ref{Error_reporting,,Error reporting}).
+   Additionally there exists the call unur_str2distr() that only
+   produces a generator object.
+
    Notice that the string interface does not implement all features of
    the UNURAN library. For trickier tasks it might be necessary to use
-   the UNURAN API. Especially using generic distributions is not fully
-   supported yet.
-
+   the UNURAN calls.
 =END
 
 */
@@ -68,15 +72,15 @@ UNUR_GEN *unur_str2gen( const char *string );
 /* 
    Get a generator object for the distribution, method and unifrom
    random number generator as described in the given @var{string}.
-   See @ref{StringSyntax,Syntax of String Interface,Syntax of String
-   Interface} for details.
+   See @ref{StringSyntax,,Syntax of String Interface} for details.
 */
 
 UNUR_DISTR *unur_str2distr( const char *string );
 /*
    Get a distribution object for the distribution described in @var{string}.
-   See @ref{StringSyntax,Syntax of String Interface,Syntax of String
-   Interface} for details.
+   See @ref{StringSyntax,,Syntax of String Interface} for
+   details. However only the block for the distribution object is
+   allowed.
 */
 
 /*

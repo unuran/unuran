@@ -415,6 +415,7 @@ sub make_list_of_distr_sets {
 
 	    # we support the following cases:
 	    #   "i"    ... one argument of type int required
+	    #   "ii"   ... two arguments of type int required
 	    #   "d"    ... one argument of type double required 
 	    #   "dd"   ... two arguments of type double required 
 	    #   "Di"   ... a list of doubles and one argument of type int required
@@ -423,13 +424,14 @@ sub make_list_of_distr_sets {
 
 	    my %type_args_doc = 
 		( 'i'  => '[= @i{<int>}]',
+		  'ii' => '= @i{<int>}, @i{<int>} | (@i{<list>})',
 		  'd'  => '= @i{<double>}',
 		  'dd' => '= @i{<double>}, @i{<double>} | (@i{<list>})',
 		  'Di' => '= (@i{<list>}) [, @i{<int>}]',
 		  'C'  => '= "@i{<string>}"'
 		  );
 
-	    if ($type_args =~ /^(i|d|dd|Di|C)$/) {
+	    if ($type_args =~ /^(i|ii|d|dd|Di|C)$/) {
 		my $type = $1;
 		$set .= "\t\t\t\t result = _unur_str_distr_set_$type(distr,key,type_args,args,$command_name);\n";
 		unless ($set_commands->{$distr_type}->{$command}) {

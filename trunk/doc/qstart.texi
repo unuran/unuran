@@ -59,9 +59,111 @@
 @c
 @chapter Introduction
 @section Overview
+@section Install
+@subsection now
+cvs update @*
+@* 'make' in UNURAN to compile UNURAN
+@* Makefile.am in /examples modify in regard to testprogram 
+@* make in /examples
+
+
 @section Getting start
-Beginning example
+@*Beginning example
+@*call the compiler with:
+@*gcc -Wall  -L../src/methods  -L../src/distributions  -L../src/tests  -L../src/uniform -g -O2  -o test1  test1.o -lunuran_tests -lunuran_distributions -lunuran -luniform -lprng -lm
+
 Code:
+
+@example
+
+/* my first UNURAN program */ 
+
+#include <unuran.h>
+#include <unuran_distributions.h>
+#include <unuran_tests.h>
+
+
+
+int main()
+{
+  double x;
+  int    i;
+
+  struct unur_distr *distr;  /* distribution */ 
+  struct unur_par *par;      /* parameter */
+  struct unur_gen *gen;      /* generator */
+/* mache neues Verteilungsobjekt unur_distr_cont_new (methods.distr.c)   */
+/*     setze pointer auf pdf und cdf  */
+ 
+  /* make distr. object: truncated Gaussian */
+  distr = unur_distr_normal(NULL,0);
+  unur_distr_cont_set_domain(distr, -2.,2.);
+
+  /* choose method and set parameters */
+  par = unur_arou_new(distr);
+  unur_arou_set_max_sqhratio(par,0.99);
+
+  /* make generator object */
+  gen = unur_init(par);
+
+  /* sample */
+  for (i=0;i<100;i++) {
+  x = unur_sample_cont(gen);
+  printf("%f\n",x);
+  }
+ 
+@end example
+ First you have to include the libraries @code{unuran.h} and @code{unuran_distributions.h} with the commands:
+
+@example
+#include <unuran.h>
+#include <unuran_distributions.h> 
+@end example 
+This headers provide all functions/features for generating random numbers.
+Three structures 
+@example
+struct unur_distr *distr;  /* distribution */ 
+  struct unur_par *par;    /* parameter */
+  struct unur_gen *gen;    /* generator */
+@end example
+are necesssary to store the used parameters. It is not necessary to understand the structure in detail to get random numbers. 
+@*
+With
+@example
+ distr = unur_distr_normal(NULL,0);
+@end example
+we generate an distribution,
+and with
+@example
+ par = unur_arou_new(distr);
+@end example
+we have genarate the parameters of the method 'arou'
+Now its possible to change default parameters of the method with @code {
+ unur_arou_set_max_sqhratio(par,0.99);}
+@*
+@With
+@example
+gen = unur_init(par)
+@end example
+we generate an genarator objekt (and destroy the the objects distr.(?) and par)
+which is necessary to genarate an non uniform random number with
+@example
+ x = unur_sample_cont(gen);
+
+@end example
+
+
+
+@chapter internals
+@section ....
+@section Internal remarks 
+@enumerate
+@item
+remark at the very beginning: names of the struct too long (unur_distr, unur_par, unur_gen);
+better: one struct unur with unur.d, unur.p, unur.g 
+@ item
+standard configuration: Log outout to file
+@end enumerate
 
 @c ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 @c

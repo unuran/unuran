@@ -743,6 +743,164 @@ free_memory:
 /*---------------------------------------------------------------------------*/
 
 double
+unur_test_chi2_marginal( struct unur_gen *gen,
+			 int n_intervals,
+			 int samplesize,
+			 int classmin,
+			 int verbose,
+			 FILE *out )
+     /*----------------------------------------------------------------------*/
+     /* Chi^2 test for univariate marginals of multivariate distributions    */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen         ... pointer to generator                               */
+     /*   n_intervals ... number if intervals                                */
+     /*                   case probability vector: use its length            */
+     /*                   otherwise and if <= 0 use default                  */
+     /*   samplesize  ... samplesize for test                                */
+     /*                   (if <= 0, (#classes)^2 is used as default.)        */
+     /*   classmin    ... minimum number of expected occurrences for each class */
+     /*                   (if <= 0, a default value is used.)                */
+     /*   verbose     ... verbosity level                                    */
+     /*                   0 = no output on out                               */
+     /*                   1 = print summary                                  */
+     /*                   2 = print classes and summary                      */
+     /*   out         ... output stream                                      */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   p-value of test statistics under H_0                               */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   -2. ... missing data                                               */
+     /*   -1. ... other errors                                               */
+     /*----------------------------------------------------------------------*/
+{
+#define DISTR   gen->distr->data.cvec
+
+  int dim;         /* dimension of multivariate distribution */
+
+  UNUR_DISTR **marginals;  /* pointer to marginal distributions */
+  UNUR_FUNCT_CONT **marginal_cdf;  /* pointer to CDFs of marginal distributions */
+
+  double *X;             /* sampling vector */
+  double *U;             /* X transformed to uniform */
+
+  double pval, pval_min; /* p-value */
+
+  int *bm;         /* array for counting bins for marginals */
+
+  int i, j;     /* auxiliary variables */
+
+  /* check arguments */
+  CHECK_NULL(gen,-1.);
+  /* we do not check magic cookies here */
+
+  if (verbose >= 1)
+    fprintf(out,"\nGOODNESS-OF-FIT TESTS:\n");
+
+  /* check given number of intervals */
+  if (n_intervals <= 2)
+    n_intervals = CHI2_INTERVALS_DEFAULT;
+
+  /* samplesize */
+  if( samplesize <= 0 ) samplesize = CHI2_DEFAULT_SAMPLESIZE;
+  samplesize = min( samplesize, CHI2_MAX_SAMPLESIZE );
+
+  /* dimension of distribution */
+  dim = gen->distr->dim;
+  if (dim < 1) {
+    _unur_error(test_name,UNUR_ERR_GENERIC,"distribution dimension < 1 ?");
+    return -1.;
+  }
+
+  /* we need all marginal distributions */
+  if (DISTR.marginals==NULL) {
+    _unur_error(gen->distr->name,UNUR_ERR_DISTR_REQUIRED,"marginal distributions");
+    return -2.; }
+  marginals = _unur_xmalloc(dim * sizeof(UNUR_DISTR *));
+  marginal_cdf = _unur_xmalloc(dim * sizeof(UNUR_FUNCT_CONT *));
+  for (i=0; i<dim; i++) {
+    marginals[i] = DISTR.marginals[i];
+    marginal_cdf[i] = unur_distr_cont_get_cdf(DISTR.marginals[i]);
+    if (marginals[i]==NULL || marginal_cdf[i]==NULL) {
+      _unur_error(gen->distr->name,UNUR_ERR_DISTR_REQUIRED,"CDF of continuous marginal");
+      free (marginals);  free (marginal_cdf);
+      return -2.; }
+  }
+
+  /* allocate working space memory */
+  X   = _unur_xmalloc( dim * sizeof(double));
+  U   = _unur_xmalloc( dim * sizeof(double));
+  bm  = _unur_xmalloc( dim * n_intervals * sizeof(int)); /* bins for marginal tests */
+
+  /* check if memory could be allocated */
+  if ( !(X && U && bm) )  {
+    _unur_error(test_name,UNUR_ERR_MALLOC,"cannot run chi2 test");
+    pval_min = -1.; goto free_memory;
+  }
+
+  /* clear working arrays */
+  memset(bm, 0, dim * n_intervals * sizeof(int));
+
+  /* now run generator */
+  for( i=0; i<samplesize; i++ ) {
+
+    /* get random vector X */
+    _unur_sample_vec(gen, X);
+
+    /* transform to uniform U */
+    for (j=0; j<dim; j++)
+      U[j] = marginal_cdf[j](X[j],marginals[j]);
+
+    /* increase bins for tests for marginal distributions */
+    for (j=0; j<dim; j++) {
+      int iv;
+      iv = (int)( n_intervals * U[j] );
+      if (iv>=n_intervals) iv = n_intervals-1;
+      if (iv < 0) iv = 0;
+      bm[j*n_intervals + iv] += 1;
+    }
+  }
+
+  /* ----------------------------------------------------------------------------*/
+
+  /* make chi^2 test (marginal) */
+  pval_min = 1.;
+  for (j=0; j<dim; j++) {
+    if (verbose >= 1) {
+      fprintf(out,"\nChi^2-Test for marginal distribution [%d]\n",j);
+    }
+
+    pval = _unur_test_chi2test(NULL, bm+(j*n_intervals), n_intervals, classmin, verbose, out );
+    pval_min = min(pval_min,pval);
+  }
+
+  /* ----------------------------------------------------------------------------*/
+
+  if (verbose >= 1) {
+    fprintf(out,"\nSummary:\n");
+    fprintf(out,"  Minimal p-value * number_of_tests = %g:\n\n",pval_min*dim);
+  }
+
+free_memory:
+  /* free memory */
+  if (X)    free(X);
+  if (U)    free(U);
+  if (bm)   free(bm);
+  if (marginals)  free (marginals);
+  if (marginal_cdf)  free (marginal_cdf);
+
+  /* return result of test */
+  pval_min *= dim;
+  pval_min = min(pval_min,1.);
+  return pval_min;
+
+#undef DISTR
+} /* end of unur_test_chi2_marginal() */
+
+/*---------------------------------------------------------------------------*/
+
+double
 _unur_test_chi2test( double *prob,
          int *observed,
          int len,

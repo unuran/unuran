@@ -245,6 +245,11 @@ int unur_test_quartiles( UNUR_GEN *generator,
 /* =END */
 
 /*---------------------------------------------------------------------------*/
+
+double unur_test_chi2_marginal( UNUR_GEN *generator, int intervals, int samplesize, int classmin,
+				int verbosity, FILE *out );
+
+
+/*---------------------------------------------------------------------------*/
 #endif  /* UNURAN_TESTS_H_SEEN */
 /*---------------------------------------------------------------------------*/
-

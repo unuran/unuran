@@ -218,6 +218,12 @@ ACM Trans. Math. Software 13, 168-172.
 @i{Improving the Polar Method for Generating a Pair of Random Variables},
 Boeing Sci. Res. Lab., Seattle, Washington.
 
+@anchor{bib:MOa84}
+@item [MOa84]
+@sc{G. Marsaglia and I. Olkin} (1984).
+@i{Generating Correlation Matrices},
+SIAM J. Sci. Stat. Comput 5, 470-475.
+
 @anchor{bib:STa89}
 @item [STa89]
 @sc{E. Stadlober} (1989).

@@ -280,6 +280,8 @@ poisson_pdac_init( struct unur_gen *gen )
     /* need same uniform random number generator as slash generator */
     NORMAL->urng = gen->urng;
   }
+  /* else we are in the re-init mode 
+     --> there is no necessity to make the generator object again */
 
   s = sqrt(theta);
   d = 6. * theta * theta;

@@ -156,17 +156,25 @@ negativebinomial_nbp_init( struct unur_gen *gen )
 
   /* make a gamma variate generator (use default special generator) */
   gamma_param = r;   /* shape parameter for gamma distribution */
-  GAMMA = unur_cstd_init( unur_cstd_new( unur_distr_gamma(&gamma_param,1) ) );
-  _unur_check_NULL( NULL,GAMMA,0 );
-  /* need same uniform random number generator as negative binomial generator */
-  GAMMA->urng = gen->urng;
+  if (GAMMA==NULL) {
+    GAMMA = unur_cstd_init( unur_cstd_new( unur_distr_gamma(&gamma_param,1) ) );
+    _unur_check_NULL( NULL,GAMMA,0 );
+    /* need same uniform random number generator as negative binomial generator */
+    GAMMA->urng = gen->urng;
+  }
+  //  else  /* re-init mode --> change shape parameter */
+  // unur_dstd_chg_param(GAMMA,&gamma_param,1);
 
   /* make a poisson variate generator (use default special generator) */
-  poisson_param = 1.;   /* shape parameter for poisson distribution (use a dummy value yet) */
-  POISSON = unur_dstd_init( unur_dstd_new( unur_distr_poisson(&poisson_param,1) ) );
-  _unur_check_NULL( NULL,POISSON,0 );
-  /* need same uniform random number generator as negative binomial generator */
-  POISSON->urng = gen->urng;
+  if (POISSON==NULL) {
+    poisson_param = 1.;   /* shape parameter for poisson distribution (use a dummy value yet) */
+    POISSON = unur_dstd_init( unur_dstd_new( unur_distr_poisson(&poisson_param,1) ) );
+    _unur_check_NULL( NULL,POISSON,0 );
+    /* need same uniform random number generator as negative binomial generator */
+    POISSON->urng = gen->urng;
+  }
+  /* else we are in the re-init mode 
+     --> there is no necessity to make the generator object again */
 
   /* -X- end of setup code -X- */
 

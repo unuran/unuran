@@ -164,11 +164,11 @@ static void _unur_dgt_debug_table( struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 /* abbreviations */
 
-#define DISTR_IN  distr->data.discr     /* data for distribution object      */
+#define DISTR_IN  distr->data.demp      /* data for distribution object      */
 
 #define PAR       par->data.dgt         /* data for parameter object         */
 #define GEN       gen->data.dgt         /* data for generator object         */
-#define DISTR     gen->distr.data.discr /* data for distribution in generator object */
+#define DISTR     gen->distr.data.demp  /* data for distribution in generator object */
 
 #define SAMPLE    gen->sample.discr     /* pointer to sampling routine       */
 
@@ -199,9 +199,9 @@ unur_dgt_new( struct unur_distr *distr )
   _unur_check_NULL( GENTYPE,distr,NULL );
 
   /* check distribution */
-  if (distr->type != UNUR_DISTR_DISCR) {
+  if (distr->type != UNUR_DISTR_DEMP) {
     _unur_error(GENTYPE,UNUR_ERR_DISTR_INVALID,""); return NULL; }
-  COOKIE_CHECK(distr,CK_DISTR_DISCR,NULL);
+  COOKIE_CHECK(distr,CK_DISTR_DEMP,NULL);
 
   if (DISTR_IN.prob == NULL) {
     _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"p.v."); return NULL;
@@ -594,7 +594,7 @@ _unur_dgt_debug_init( struct unur_par *par, struct unur_gen *gen )
   _unur_print_if_default(par,DGT_SET_VARIANT);
   fprintf(log,"\n%s:\n",gen->genid);
 
-  _unur_distr_discr_debug( &(gen->distr),gen->genid,(gen->debug & DGT_DEBUG_PRINTVECTOR));
+  _unur_distr_demp_debug( &(gen->distr),gen->genid,(gen->debug & DGT_DEBUG_PRINTVECTOR));
 
   fprintf(log,"%s: sampling routine = _unur_dgt_sample()\n",gen->genid);
   fprintf(log,"%s:\n",gen->genid);

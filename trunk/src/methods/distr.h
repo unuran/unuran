@@ -76,8 +76,9 @@
 /* types of distribtuions                                                    */
 
 enum {
-  UNUR_DISTR_CONT  = 0x001u,        /* univariate continuous distribution    */ 
-  UNUR_DISTR_DISCR = 0x002u,        /* univariate discrete distribution      */ 
+  UNUR_DISTR_CONT  = 0x010u,     /* univariate continuous distribution       */ 
+  UNUR_DISTR_DISCR = 0x020u,     /* univariate discrete distribution         */ 
+  UNUR_DISTR_DEMP  = 0x021u,     /* empirical univariate discr. distribution */ 
 };
 
 /*---------------------------------------------------------------------------*/
@@ -92,8 +93,9 @@ UNUR_DISTR *unur_distr_new( unsigned int type );
    @code{type} indicates the type of the distribution. Currently the
    following types are available:
 
-   UNUR_DISTR_CONT    ... univariate continuous distribution
-   UNUR_DISTR_DISCR   ... univariate discrete distribution
+   UNUR_DISTR_CONT  ... univariate continuous distribution
+   UNUR_DISTR_DISCR ... univariate discrete distribution
+   UNUR_DISTR_DEMP  ... empirical univariate discrete distribution
 
 */
 
@@ -282,7 +284,7 @@ double unur_distr_cont_get_pdfarea( UNUR_DISTR *distribution );
 
 /* Essential parameters */
 
-int unur_distr_discr_set_prob( UNUR_DISTR *distribution, double *prob, int n_prob );
+int unur_distr_demp_set_prob( UNUR_DISTR *distribution, double *prob, int n_prob );
 /* 
    Set finite probability vector for a distribution. It is not
    necessary that the entries in the given probability vector sum to
@@ -300,13 +302,3 @@ int unur_distr_discr_set_prob( UNUR_DISTR *distribution, double *prob, int n_pro
 */
 
 /*---------------------------------------------------------------------------*/
-
-
-
-
-
-
-
-
-
-

@@ -228,36 +228,36 @@ int make_list_of_distributions( struct list_distr **return_list )
 #ifdef D_PV_RANDOM
   /** random vector with random entries **/
 
-  distr = unur_distr_new(UNUR_DISTR_DISCR);
+  distr = unur_distr_new(UNUR_DISTR_DEMP);
   prob = make_random_vector(10);
-  unur_distr_discr_set_prob(distr,prob,10);
+  unur_distr_demp_set_prob(distr,prob,10);
   free(prob);
   unur_distr_set_name(distr,"pv(random)");
   list->distr = distr;
   list->type  = T_fpv;
   ++n_distr; ++list;
 
-  distr = unur_distr_new(UNUR_DISTR_DISCR);
+  distr = unur_distr_new(UNUR_DISTR_DEMP);
   prob = make_random_vector(100);
-  unur_distr_discr_set_prob(distr,prob,100);
+  unur_distr_demp_set_prob(distr,prob,100);
   free(prob);
   unur_distr_set_name(distr,"pv(random)");
   list->distr = distr;
   list->type  = T_fpv;
   ++n_distr; ++list;
 
-  distr = unur_distr_new(UNUR_DISTR_DISCR);
+  distr = unur_distr_new(UNUR_DISTR_DEMP);
   prob = make_random_vector(1000);
-  unur_distr_discr_set_prob(distr,prob,1000);
+  unur_distr_demp_set_prob(distr,prob,1000);
   free(prob);
   unur_distr_set_name(distr,"pv(random)");
   list->distr = distr;
   list->type  = T_fpv;
   ++n_distr; ++list;
 
-  distr = unur_distr_new(UNUR_DISTR_DISCR);
+  distr = unur_distr_new(UNUR_DISTR_DEMP);
   prob = make_random_vector(10000);
-  unur_distr_discr_set_prob(distr,prob,10000);
+  unur_distr_demp_set_prob(distr,prob,10000);
   free(prob);
   unur_distr_set_name(distr,"pv(random)");
   list->distr = distr;
@@ -268,45 +268,45 @@ int make_list_of_distributions( struct list_distr **return_list )
 #ifdef D_PV_GEOMETRIC
   /** random vector with geometrically distributed entries **/
 
-  distr = unur_distr_new(UNUR_DISTR_DISCR);
+  distr = unur_distr_new(UNUR_DISTR_DEMP);
   prob = make_geometric_vector(1.,1000);
-  unur_distr_discr_set_prob(distr,prob,1000);
+  unur_distr_demp_set_prob(distr,prob,1000);
   free(prob);
   unur_distr_set_name(distr,"pv(geometric)");
   list->distr = distr;
   list->type  = T_fpv;
   ++n_distr; ++list;
 
-  distr = unur_distr_new(UNUR_DISTR_DISCR);
+  distr = unur_distr_new(UNUR_DISTR_DEMP);
   prob = make_geometric_vector(0.99,1000);
-  unur_distr_discr_set_prob(distr,prob,1000);
+  unur_distr_demp_set_prob(distr,prob,1000);
   free(prob);
   unur_distr_set_name(distr,"pv(geometric)");
   list->distr = distr;
   list->type  = T_fpv;
   ++n_distr; ++list;
 
-  distr = unur_distr_new(UNUR_DISTR_DISCR);
+  distr = unur_distr_new(UNUR_DISTR_DEMP);
   prob = make_geometric_vector(0.9,1000);
-  unur_distr_discr_set_prob(distr,prob,1000);
+  unur_distr_demp_set_prob(distr,prob,1000);
   free(prob);
   unur_distr_set_name(distr,"pv(geometric)");
   list->distr = distr;
   list->type  = T_fpv;
   ++n_distr; ++list;
 
-  distr = unur_distr_new(UNUR_DISTR_DISCR);
+  distr = unur_distr_new(UNUR_DISTR_DEMP);
   prob = make_geometric_vector(0.5,1000);
-  unur_distr_discr_set_prob(distr,prob,1000);
+  unur_distr_demp_set_prob(distr,prob,1000);
   free(prob);
   unur_distr_set_name(distr,"pv(geometric)");
   list->distr = distr;
   list->type  = T_fpv;
   ++n_distr; ++list;
 
-  distr = unur_distr_new(UNUR_DISTR_DISCR);
+  distr = unur_distr_new(UNUR_DISTR_DEMP);
   prob = make_geometric_vector(0.1,1000);
-  unur_distr_discr_set_prob(distr,prob,1000);
+  unur_distr_demp_set_prob(distr,prob,1000);
   free(prob);
   unur_distr_set_name(distr,"pv(geometric)");
   list->distr = distr;

@@ -57,6 +57,7 @@
 
 struct unur_distr *_unur_distr_cont_new( void );  /* univ. continuous */
 struct unur_distr *_unur_distr_discr_new( void ); /* univ. discrete   */
+struct unur_distr *_unur_distr_demp_new( void );  /* emp. univ. discrete */
 
 /*---------------------------------------------------------------------------*/
 /* call pdf's and cdf's                                                      */

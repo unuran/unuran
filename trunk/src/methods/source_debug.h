@@ -71,6 +71,9 @@ void _unur_distr_cont_debug( UNUR_DISTR *distribution, char *genid );
 void _unur_distr_discr_debug( UNUR_DISTR *distribution, char *genid, int printvector );
 /* write info about distribution into logfile                                */
 
+void _unur_distr_demp_debug( UNUR_DISTR *distribution, char *genid, int printvector );
+/* write info about distribution into logfile                                */
+
 /*---------------------------------------------------------------------------*/
 #ifdef UNUR_WARNINGS_ON    /* warnings enabled */
 /*---------------------------------------------------------------------------*/

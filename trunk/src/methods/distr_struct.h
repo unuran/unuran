@@ -80,12 +80,19 @@ struct unur_distr_discr {
 };
 
 /*---------------------------------------------------------------------------*/
-/* define distribution object                                                */
+/* define object for empirical univariate discrete distribution              */
+struct unur_distr_demp {
+  double *prob;                 /* pointer to probability vector             */
+  int     n_prob;               /* length of probability vector              */
+};
 
+/*---------------------------------------------------------------------------*/
+/* define distribution object                                                */
 struct unur_distr {
   union {             
     struct unur_distr_cont  cont;   /* univariate continuous distribution    */
     struct unur_distr_discr discr;  /* univariate discrete distribution      */
+    struct unur_distr_demp  demp;   /* empirical univariate discr. distr.    */
   } data;                           /* data for distribution                 */
 
   unsigned type;                    /* type of distribution                  */

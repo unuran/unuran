@@ -58,7 +58,7 @@
 static char test_name[] = "Chi^2-Test";
 /*---------------------------------------------------------------------------*/
 
-static double _unur_test_chi2_discr( struct unur_gen *gen, int samplesize, int classmin, int verbose );
+static double _unur_test_chi2_demp( struct unur_gen *gen, int samplesize, int classmin, int verbose );
 static double _unur_test_chi2_cont( struct unur_gen *gen, int intervals, int samplesize, int classmin, int verbose );
 
 /*---------------------------------------------------------------------------*/
@@ -70,8 +70,7 @@ unur_test_chi2( struct unur_gen *gen,
 		int classmin,
 		int verbose )
      /*----------------------------------------------------------------------*/
-     /* Chi^2 test for univariate discrete distributions                     */
-     /* with given probability vector.                                       */
+     /* Chi^2 test for univariate distributions                              */
      /*                                                                      */
      /* parameters:                                                          */
      /*   gen        ... pointer to generator                                */
@@ -103,7 +102,7 @@ unur_test_chi2( struct unur_gen *gen,
   switch (gen->method & UNUR_MASK_TYPE) {
 
   case UNUR_METH_DISCR:
-    return _unur_test_chi2_discr(gen, samplesize, classmin, verbose);
+    return _unur_test_chi2_demp(gen, samplesize, classmin, verbose);
 
   case UNUR_METH_CONT:
     return _unur_test_chi2_cont(gen, intervals, samplesize, classmin, verbose);
@@ -120,7 +119,7 @@ unur_test_chi2( struct unur_gen *gen,
 /*---------------------------------------------------------------------------*/
 
 static double
-_unur_test_chi2_discr( struct unur_gen *gen, 
+_unur_test_chi2_demp( struct unur_gen *gen, 
 		       int samplesize, 
 		       int classmin, 
 		       int verbose )
@@ -146,7 +145,7 @@ _unur_test_chi2_discr( struct unur_gen *gen,
      /*   return -1.                                                         */
      /*----------------------------------------------------------------------*/
 {
-#define DISTR   gen->distr.data.discr
+#define DISTR   gen->distr.data.demp
   double *prob;         /* pointer to probability vectors */
   int n_prob;           /* length of probability vector   */
 
@@ -167,6 +166,7 @@ _unur_test_chi2_discr( struct unur_gen *gen,
   prob = DISTR.prob;
   n_prob = DISTR.n_prob;
 
+#if 0
   /* check argument: need probability vector */
   if (prob == NULL) {
     /* no probability vector  -->  p.m.f. required */
@@ -184,6 +184,10 @@ _unur_test_chi2_discr( struct unur_gen *gen,
       prob[i] = _unur_discr_PMF( i, &(gen->distr) );
     }
   }
+#endif
+  /* check argument: need probability vector */
+  if (prob == NULL)
+    return -1.;
 
   /* allocate memory for observations */
   observed = _unur_malloc( n_prob * sizeof(int));

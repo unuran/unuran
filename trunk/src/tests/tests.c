@@ -154,7 +154,7 @@ _unur_print_method( struct unur_par *par )
   }
 
   /* print method description */
-  switch (par->method & UNUR_MASK_METHOD) {
+  switch (par->method) {
     /* discrete, univariate */
   case UNUR_METH_DAU:
     COOKIE_CHECK(par,CK_DAU_PAR,0);

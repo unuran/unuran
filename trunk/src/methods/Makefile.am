@@ -7,9 +7,9 @@ INCLUDES = \
  -I$(top_srcdir)/src \
  -I$(top_srcdir)/src/distributions
 
-noinst_LIBRARIES = libmethods.a
+noinst_LIBRARIES = libunuran.a
 
-libmethods_a_SOURCES = \
+libunuran_a_SOURCES = \
  distr.c \
  x_error.c \
  x_misc.c \
@@ -57,6 +57,3 @@ noinst_HEADERS = \
 # clean backup files too
 clean-local:
 	rm -f *~
-
-
-

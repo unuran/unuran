@@ -129,7 +129,7 @@ unur_make_scatterplot( struct unur_gen *gen )
 
   /* which subsequence of the underlying urng should be used 
      for comparation? */
-  switch (gen->method & UNUR_MASK_METHOD) {
+  switch (gen->method) {
   case UNUR_METH_AROU:
   case UNUR_METH_SROU:
   case UNUR_METH_TABL:

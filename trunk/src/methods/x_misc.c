@@ -95,7 +95,7 @@ unur_get_dimension( struct unur_gen *gen )
   /* check arguments */
   CHECK_NULL(gen,0);
 
-  switch (gen->method & UNUR_MASK_METHOD) {
+  switch (gen->method) {
   case UNUR_METH_RECT:
     COOKIE_CHECK(gen,CK_RECT_GEN,0);
     return gen->data.rect.dim;

@@ -50,37 +50,35 @@
 /*---------------------------------------------------------------------------*/
 /* bitmasks                                                                  */
 
-#define UNUR_MASK_TYPE     0xf0000000u   /* indicate type of method           */
-#define UNUR_MASK_METHOD   0xfff00000u   /* indicate method                   */
+#define UNUR_MASK_TYPE     0xff000000u   /* indicate type of method           */
 
 /* discrete distributions */
 #define UNUR_METH_DISCR    0x10000000u
 
-#define UNUR_METH_DAU      0x10100000u
-#define UNUR_METH_DIS      0x10200000u
+#define UNUR_METH_DAU      0x10000001u
+#define UNUR_METH_DIS      0x10000002u
 
 /* continuous distributions */
 #define UNUR_METH_CONT     0x20000000u
 
-#define UNUR_METH_AROU     0x20300000u
-#define UNUR_METH_SROU     0x20800000u
-#define UNUR_METH_STDR     0x20900000u
-#define UNUR_METH_TABL     0x20400000u
-#define UNUR_METH_TDR      0x20500000u
-#define UNUR_METH_UNIF     0x20600000u
-#define UNUR_METH_UTDR     0x20700000u
+#define UNUR_METH_AROU     0x20000100u
+#define UNUR_METH_SROU     0x20000200u
+#define UNUR_METH_STDR     0x20000300u
+#define UNUR_METH_TABL     0x20000400u
+#define UNUR_METH_TDR      0x20000500u
+#define UNUR_METH_UNIF     0x20000600u
+#define UNUR_METH_UTDR     0x20000700u
 
 /* multivariate continuous distributions */
 #define UNUR_METH_VEC      0x40000000u
 
-#define UNUR_METH_RECT     0x40700000u
+#define UNUR_METH_RECT     0x40010000u
 
-/* generators for standard distributions                                     */
-#define UNUR_METH_CSTD     0x2f000000u   /* is of type UNUR_METH_CONT !! */
+/* generators for standard distributions */
+#define UNUR_METH_CSTD     0x2000ff00u   /* is of type UNUR_METH_CONT !! */
 
 /* to indicate unkown type */
-#define UNUR_METH_UNKNOWN  0xf0000000u
-
+#define UNUR_METH_UNKNOWN  0xff000000u
 
 /*****************************************************************************/
 /**  Macros                                                                 **/

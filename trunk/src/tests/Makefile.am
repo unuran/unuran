@@ -8,9 +8,9 @@ INCLUDES = \
  -I$(top_srcdir)/src/distributions \
  -I$(top_srcdir)/src/methods
 
-noinst_LIBRARIES = libtests.a
+noinst_LIBRARIES = libunuran_tests.a
 
-libtests_a_SOURCES = \
+libunuran_tests_a_SOURCES = \
  chi2test.c \
  counturn.c \
  printsample.c \

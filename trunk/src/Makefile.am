@@ -5,16 +5,6 @@ SUBDIRS = distributions methods tests uniform
 
 AM_CFLAGS = -Wall
 
-pkglib_LIBRARIES = libunuran.a
-
-libunuran_a_SOURCES = 
-
-libunuran_a_LIBADD = \
- methods/*.o \
- distributions/*.o   \
- tests/*.o   \
- uniform/*.o
-
 pkginclude_HEADERS = \
  unuran_config.h
 

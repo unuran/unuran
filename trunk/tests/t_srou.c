@@ -20,7 +20,7 @@
 /* global variables                                                          */
 
 int test_ok = TRUE;               /* all tests ok (boolean)                  */
-int test_ok_local = TRUE;         /* running test ok (boolean)               */
+int test_failed = 0;              /* failed tests                          */
 FILE *TESTLOG = NULL;             /* test log file                           */
 
 static FILE *UNURANLOG = NULL;    /* unuran log file                         */
@@ -89,7 +89,7 @@ void test_srou_new( void )
   printf("[new ");
   fprintf(TESTLOG,"\n[new]\n");
 
-  test_ok_local = TRUE;
+  test_failed = 0;
 
   /* check error handling */
 
@@ -117,8 +117,8 @@ void test_srou_new( void )
   unur_distr_free(distr);
 
   /* test finished */
-  test_ok &= test_ok_local;
-  (test_ok_local) ? printf("... ok] ") : printf("... failed] ");
+  test_ok &= (test_failed) ? 0 : 1;
+  (test_failed) ? printf("... failed] ") : printf("... ok] ");
 } /* end of test_srou_new() */
 
 /*---------------------------------------------------------------------------*/
@@ -133,7 +133,7 @@ void test_srou_set( void )
   printf("[set ");
   fprintf(TESTLOG,"\n[set]\n");
 
-  test_ok_local = TRUE;
+  test_failed = 0;
 
   /* check error handling */
 
@@ -177,8 +177,8 @@ void test_srou_set( void )
   unur_distr_free(distr);
 
   /* test finished */
-  test_ok &= test_ok_local;
-  (test_ok_local) ? printf("... ok] ") : printf("... failed] ");
+  test_ok &= (test_failed) ? 0 : 1;
+  (test_failed) ? printf("... failed] ") : printf("... ok] ");
 
 } /* end of test_srou_set() */
 
@@ -195,7 +195,7 @@ void test_srou_chg( void )
   printf("[chg ");
   fprintf(TESTLOG,"\n[chg]\n");
 
-  test_ok_local = TRUE;
+  test_failed = 0;
 
   /* check error handling */
 
@@ -240,8 +240,8 @@ void test_srou_chg( void )
   unur_distr_free(distr);
 
   /* test finished */
-  test_ok &= test_ok_local;
-  (test_ok_local) ? printf("... ok] ") : printf("... failed] ");
+  test_ok &= (test_failed) ? 0 : 1;
+  (test_failed) ? printf("... failed] ") : printf("... ok] ");
 
 } /* end of test_srou_chg() */
 
@@ -254,9 +254,9 @@ void test_srou_init( void )
   printf("[init ");
   fprintf(TESTLOG,"\n[init]\n");
 
-  test_ok_local = TRUE;
+  test_failed = 0;
 
-  (test_ok_local) ? printf("... ok] ") : printf("... failed] ");
+  (test_failed) ? printf("... failed] ") : printf("... ok] ");
 
 } /* end of test_srou_init() */
 
@@ -269,9 +269,9 @@ void test_srou_reinit( void )
   printf("[reinit ");
   fprintf(TESTLOG,"\n[reinit]\n");
 
-  test_ok_local = TRUE;
+  test_failed = 0;
 
-  (test_ok_local) ? printf("... ok] ") : printf("... failed] ");
+  (test_failed) ? printf("... failed] ") : printf("... ok] ");
 
 } /* end of test_srou_reinit() */
 
@@ -294,7 +294,7 @@ void test_srou_sample( void )
   printf("[sample ");
   fprintf(TESTLOG,"\n[sample]\n");
 
-  test_ok_local = TRUE;
+  test_failed = 0;
 
   unur_set_default_debug(UNUR_DEBUG_ALL);
 
@@ -439,8 +439,8 @@ void test_srou_sample( void )
   /* test finished */
   prng_free(urng);
 
-  test_ok &= test_ok_local;
-  (test_ok_local) ? printf("... ok] ") : printf("... failed] ");
+  test_ok &= (test_failed) ? 0 : 1;
+  (test_failed) ? printf("... failed] ") : printf("... ok] ");
 
 #undef N_SAMPLE
 } /* end of test_srou_sample() */
@@ -456,7 +456,7 @@ void test_srou_validate(void)
   printf("[validate ");
   fprintf(TESTLOG,"\n[validate]\n");
 
-  test_ok_local = TRUE;
+  test_failed = 0;
 
   unur_set_default_debug(UNUR_DEBUG_ALL);
 
@@ -471,8 +471,8 @@ void test_srou_validate(void)
   /* test finished */
   prng_free(urng);
 
-  test_ok &= test_ok_local;
-  (test_ok_local) ? printf("... ok] ") : printf("... failed] ");
+  test_ok &= (test_failed > 1) ? 0 : 1;  /* one time the statistical test might fail */
+  (test_failed>1) ? printf("... failed] ") : printf("... ok] ");
 
 } /* end of test_srou_validate() */
 

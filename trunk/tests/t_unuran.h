@@ -33,11 +33,15 @@
 /* methods                                                                   */
 #define T_SROU
 
+/* distributions                                                             */
+#define D_NORMAL
+#define D_GAMMA
+
 /*---------------------------------------------------------------------------*/
 /* global variables                                                          */
 
 extern int test_ok;                 /* all tests ok (boolean)                */
-extern int test_ok_local;           /* running test ok (boolean)             */
+extern int test_failed;             /* failed tests                          */
 extern FILE *TESTLOG;               /* test log file                         */
 
 extern UNUR_DISTR **list_of_distr;  /* pointer to list of distributions      */

@@ -18,9 +18,9 @@
  *                                                                           *  
  *  distr: Gamma distribution [2; ch.17, p.337]                              *
  *                                                                           *
- *  pdf:       f(x) = (x-gamma)^(alpha-1) * exp( -(x-gamma)/beta )           *
+ *  pdf:       f(x) = ((x-gamma)/beta)^(alpha-1) * exp( -(x-gamma)/beta )    *
  *  domain:    x > gamma                                                     *
- *  constant:  beta^alpha * Gamma(alpha)                                     *
+ *  constant:  beta * Gamma(alpha)                                           *
  *                                                                           *
  *  parameters:                                                              *
  *     0:  alpha > 0       ... shape                                         *
@@ -170,7 +170,7 @@ _unur_lognormconstant_gamma( double *params, int n_params )
 {
   switch (n_params) {
   case 3:  /* non standard */
-    return ( _unur_gammaln(alpha) + log(beta)*alpha );
+    return ( _unur_gammaln(alpha) + log(beta) );
   case 1: default: /* standard */
     return (_unur_gammaln(alpha));
   }

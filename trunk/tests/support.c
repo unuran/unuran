@@ -24,7 +24,7 @@ void do_check_errorcode( int line, unsigned errno )
 {
   fprintf(TESTLOG,"line %4d: Error code ...\t\t",line);
   if (unur_errno != errno) {
-    test_ok_local = FALSE;
+    ++test_failed;
     fprintf(TESTLOG," Failed\n");
   }
   else
@@ -38,7 +38,7 @@ void do_check_expected_NULL( int line, void *ptr )
 {
   fprintf(TESTLOG,"line %4d: NULL pointer expected ...\t",line);
   if (ptr != NULL) { 
-    test_ok_local = FALSE;
+    ++test_failed;
     fprintf(TESTLOG," Failed\n");
   }
   else
@@ -52,7 +52,7 @@ void do_check_expected_setfailed( int line, int ok )
 {
   fprintf(TESTLOG,"line %4d: `failed' expected ...\t",line);
   if (ok) {
-    test_ok_local = FALSE;
+    ++test_failed;
     fprintf(TESTLOG," Failed\n");
   }
   else
@@ -78,7 +78,7 @@ void do_compare_sequences( int line, double *a, double *b, int n )
   }
   fprintf(TESTLOG,"line %4d: random seqences ...\t\t",line);
   if (!ok) {
-    test_ok_local = FALSE;
+    ++test_failed;
     fprintf(TESTLOG," Failed\n");
   }
   else
@@ -117,7 +117,7 @@ void check_pval( UNUR_GEN *gen, double pval )
   }
     
   if (pval < 1e-3) {
-    test_ok_local = FALSE;
+    ++test_failed;
     fprintf(TESTLOG,"\t Failed");
   }
   else
@@ -150,6 +150,38 @@ void make_list_of_distributions( void )
   /* allocate memory for list */
   list_of_distr = malloc( N_DISTRIBUTIONS * sizeof(UNUR_DISTR *));
 
+#ifdef D_GAMMA
+  /** Gamma distributions **/
+  fpar[0] = 1.;
+  list_of_distr[n_distr++] = unur_distr_gamma(fpar,1);
+
+  fpar[0] = 2.;
+  list_of_distr[n_distr++] = unur_distr_gamma(fpar,1);
+
+  fpar[0] = 3.;
+  list_of_distr[n_distr++] = unur_distr_gamma(fpar,1);
+
+  fpar[0] = 10.;
+  list_of_distr[n_distr++] = unur_distr_gamma(fpar,1);
+
+  fpar[0] = 1000.;
+  list_of_distr[n_distr++] = unur_distr_gamma(fpar,1);
+
+  fpar[0] = 5.;
+  fpar[1] = 1.e+10;
+  list_of_distr[n_distr++] = unur_distr_gamma(fpar,2);
+
+  fpar[0] = 5.;
+  fpar[1] = 1.e-10;
+  list_of_distr[n_distr++] = unur_distr_gamma(fpar,2);
+
+  fpar[0] = 5.;
+  fpar[1] = 10.;
+  fpar[2] = 1.e+10;
+  list_of_distr[n_distr++] = unur_distr_gamma(fpar,3);
+#endif
+
+#ifdef D_NORMAL
   /** Normal distributions **/
   list_of_distr[n_distr++] = unur_distr_normal(NULL,0);
 
@@ -160,37 +192,7 @@ void make_list_of_distributions( void )
   fpar[0] = 0.;
   fpar[1] = 1.e+10;
   list_of_distr[n_distr++] = unur_distr_normal(fpar,2);
-
-  /** Gamma distributions **/
-  fpar[0] = 1.;
-  list_of_distr[n_distr++] = unur_distr_normal(fpar,1);
-
-  fpar[0] = 2.;
-  list_of_distr[n_distr++] = unur_distr_normal(fpar,1);
-
-  fpar[0] = 3.;
-  list_of_distr[n_distr++] = unur_distr_normal(fpar,1);
-
-  fpar[0] = 10.;
-  list_of_distr[n_distr++] = unur_distr_normal(fpar,1);
-
-  fpar[0] = 1000.;
-  list_of_distr[n_distr++] = unur_distr_normal(fpar,1);
-
-  fpar[0] = 5.;
-  fpar[1] = 1.e+10;
-  list_of_distr[n_distr++] = unur_distr_normal(fpar,2);
-
-  fpar[0] = 5.;
-  fpar[1] = 1.e-10;
-  list_of_distr[n_distr++] = unur_distr_normal(fpar,2);
-
-  fpar[0] = 5.;
-  fpar[1] = 10.;
-  fpar[2] = 1.e+10;
-  list_of_distr[n_distr++] = unur_distr_normal(fpar,3);
-
-
+#endif
 
   /* check N_DISTRIBUTIONS (compile time constant !!) */
   if (n_distr > N_DISTRIBUTIONS) {

@@ -80,7 +80,8 @@
       ratio between the area below squeeze and the area below the hat is
       exceeded. 
       
-      It is possible to switch off this second setup step. Then adaptive
+      It is possible to switch off this second setup step (called 
+      derandomized adaptive rejection sampling -- DARS). Then adaptive
       rejection sampling is used to split these intervals. There are
       three variants for adaptive rejection sampling. These differ in the
       way how an interval is split: 
@@ -126,6 +127,20 @@ int unur_tabl_set_usedars( UNUR_PAR *parameters, int usedars );
    arithmetic mean and harmonic mean) is used.
 
    Default is TRUE.
+*/
+
+int unur_tabl_set_darsfactor( UNUR_PAR *parameters, double factor );
+/* 
+   Set factor for ``derandomized adaptive rejection sampling''.
+   This factor is used to determine the segments that are ``too
+   large'', that is, all segments where the area between squeeze and
+   hat is larger than @var{factor} times the average area over all
+   intervals between squeeze and hat.
+   Notice that all segments are split when @var{factor} is set to
+   @code{0.}, and that there is no splitting at all when @var{factor}
+   is set to UNUR_INFINITY.
+
+   Default is @code{0.99}. There is no need to change this parameter.
 */
 
 int unur_tabl_set_variant_splitmode( UNUR_PAR *parameters, unsigned splitmode );

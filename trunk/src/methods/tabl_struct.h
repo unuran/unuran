@@ -52,6 +52,7 @@ struct unur_tabl_par {
 
   int     n_starting_cpoints;   /* number of construction points at start    */
   double  area_fract;   /* parameter for equal area rule                     */
+  double  darsfactor;   /* factor for (derandomized) ARS                     */
 
   double  guide_factor; /* relative size of guide table                      */
 };
@@ -97,6 +98,8 @@ struct unur_tabl_gen {
   int     n_ivs;                /* number of intervals                       */
   int     max_ivs;              /* maximum number of intervals               */
   double  max_ratio;            /* limit for ratio r_n = A(squeeze) / A(hat) */
+
+  double  darsfactor;           /* factor for (derandomized) ARS             */
 };
 
 /*---------------------------------------------------------------------------*/

@@ -86,9 +86,10 @@
 #define TABL_VARFLAG_SPLIT_ARC    0x040u  /* "arcmean"        very slow       very good for almost unbounded domain */
 
 /* indicate if starting intervals have to be split */
-#define TABL_VARMASK_STP          0xf00u
 #define TABL_VARFLAG_STP_A        0x100u  /* use equal area rule (SPLIT A in [1])   */
-#define TABL_VARFLAG_STP_B        0x200u  /* use main subdivisions (SPLIT B in [1]) */
+
+#define TABL_VARFLAG_USEDARS      0x200u  /* use main subdivisions (SPLIT B in [1]) 
+                                             (= derandomized ARS)                   */
 
 /*---------------------------------------------------------------------------*/
 /* Debugging flags                                                           */
@@ -99,17 +100,20 @@
 
 #define TABL_DEBUG_IV    0x00000100u /* show intervals                       */
 #define TABL_DEBUG_A_IV  0x00000200u /* show intervals after split A, before split B */
+#define TABL_DEBUG_DARS  0x00020000u
 
 /*---------------------------------------------------------------------------*/
 /* Flags for logging set calls                                               */
 
-#define TABL_SET_GUIDEFACTOR      0x01u
-#define TABL_SET_SLOPES           0x04u
-#define TABL_SET_AREAFRACTION     0x08u
-#define TABL_SET_MAX_IVS          0x10u
-#define TABL_SET_MAX_SQHRATIO     0x20u
-#define TABL_SET_N_STP            0x40u
-#define TABL_SET_BOUNDARY         0x80u
+#define TABL_SET_GUIDEFACTOR      0x001u
+#define TABL_SET_SLOPES           0x004u
+#define TABL_SET_AREAFRACTION     0x008u
+#define TABL_SET_MAX_IVS          0x010u
+#define TABL_SET_MAX_SQHRATIO     0x020u
+#define TABL_SET_N_STP            0x040u
+#define TABL_SET_BOUNDARY         0x080u
+#define TABL_SET_USE_DARS         0x100u
+#define TABL_SET_DARS_FACTOR      0x200u
 
 /*---------------------------------------------------------------------------*/
 
@@ -129,7 +133,6 @@ static struct unur_gen *_unur_tabl_create( struct unur_par *par );
 
 static double _unur_tabl_sample( struct unur_gen *gen );
 static double _unur_tabl_sample_check( struct unur_gen *gen );
-/** TODO:  static double _unur_tabl_sample_adaptive( struct unur_gen *gen ); **/
 /*---------------------------------------------------------------------------*/
 /* sample from generator                                                     */
 /*---------------------------------------------------------------------------*/
@@ -158,6 +161,13 @@ _unur_tabl_split_a_starting_intervals( struct unur_par *par, struct unur_gen *ge
 /*---------------------------------------------------------------------------*/
 /* split starting intervals according to [1]                                 */
 /* SPLIT A (equal areas rule)                                                */
+/*---------------------------------------------------------------------------*/
+
+static int _unur_tabl_run_dars( struct unur_par *par, struct unur_gen *gen );
+/*---------------------------------------------------------------------------*/
+/* run derandomized adaptive rejection sampling.                             */
+/* (split starting intervals according to [1] SPLIT B,                       */
+/* but instead of the iteration in [1] use "arcmean".                        */
 /*---------------------------------------------------------------------------*/
 
 static int 
@@ -193,6 +203,16 @@ static void _unur_tabl_debug_init( const struct unur_par *par, const struct unur
 static void _unur_tabl_debug_init_finished( const struct unur_par *par, const struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 /* print after generator has been initialized has completed II.              */
+/*---------------------------------------------------------------------------*/
+
+static void _unur_tabl_debug_dars_start( const struct unur_par *par, const struct unur_gen *gen );
+/*---------------------------------------------------------------------------*/
+/* print header before runniung derandomized adaptive rejection sampling.    */
+/*---------------------------------------------------------------------------*/
+
+static void _unur_tabl_debug_dars( const struct unur_par *par, const struct unur_gen *gen );
+/*---------------------------------------------------------------------------*/
+/* print after generator has run derandomized adaptive rejection sampling.   */
 /*---------------------------------------------------------------------------*/
 
 static void _unur_tabl_debug_free( const struct unur_gen *gen );
@@ -275,6 +295,10 @@ unur_tabl_new( const struct unur_distr *distr )
 
   PAR.guide_factor  = 1.; /* guide table has same size as array of intervals */
 
+  PAR.darsfactor    = 0.99;   /* factor for (derandomized) ARS.
+				 do not add a new construction point in a interval
+				 where abiguous region is too small          */
+
   /* default boundary of compution area */
   PAR.bleft     = -TABL_DEFAULT_COMPUTATION_LIMIT;
   PAR.bright    = TABL_DEFAULT_COMPUTATION_LIMIT;
@@ -282,7 +306,7 @@ unur_tabl_new( const struct unur_distr *distr )
   par->method   = UNUR_METH_TABL;              /* indicate method            */
   par->variant  = (TABL_VARFLAG_SPLIT_MEAN |   /* variant: split at arc_mean */
 		   TABL_VARFLAG_STP_A      |   /* run SPLIT A on slopes      */
-		   TABL_VARFLAG_STP_B      );  /* run SPLIT B on slopes      */
+		   TABL_VARFLAG_USEDARS    );  /* run DARS (SPLIT B) on slopes */
 
 
   par->set      = 0u;                      /* inidicate default parameters   */    
@@ -324,17 +348,57 @@ unur_tabl_set_usedars( struct unur_par *par, int usedars )
   /* check input */
   _unur_check_par_object( par,TABL );
 
-  /* store date */
-  par->variant &= ~TABL_VARMASK_STP;
+  /* we use a bit in variant */
   if (usedars)
-    par->variant |= TABL_VARFLAG_STP_A | TABL_VARFLAG_STP_B;
-  else /* do not use DARS */
-    par->variant |= TABL_VARFLAG_STP_A;
+    par->variant |= TABL_VARFLAG_USEDARS;
+  else
+    par->variant &= ~TABL_VARFLAG_USEDARS;
+
+  /* changelog */
+  par->set |= TABL_SET_USE_DARS;
 
   /* o.k. */
   return 1;
 
 } /* end of unur_tabl_set_usedars() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+unur_tabl_set_darsfactor( struct unur_par *par, double factor )
+     /*----------------------------------------------------------------------*/
+     /* set factor for derandomized adaptive rejection sampling              */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par    ... pointer to parameter for building generator object      */
+     /*   factor ... parameter for DARS                                      */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... on success                                                   */
+     /*   0 ... on error                                                     */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( GENTYPE,par,0 );
+
+  /* check input */
+  _unur_check_par_object( par,TABL );
+
+  /* check new parameter for generator */
+  if (factor < 0.) {
+    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"DARS factor < 0");
+    return 0;
+  }
+    
+  /* store date */
+  PAR.darsfactor = factor;
+
+  /* changelog */
+  par->set |= TABL_SET_DARS_FACTOR;
+
+  return 1;
+
+} /* end of unur_tabl_set_darsfactor() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -845,7 +909,8 @@ _unur_tabl_init( struct unur_par *par )
      /*----------------------------------------------------------------------*/
 { 
   struct unur_gen *gen;
-  struct unur_tabl_interval *iv;
+/*    struct unur_tabl_interval *iv; */
+  int i;
 
   /* check arguments */
   CHECK_NULL(par,NULL);
@@ -867,13 +932,70 @@ _unur_tabl_init( struct unur_par *par )
     return NULL;
   }
 
+  if (par->variant & TABL_VARFLAG_USEDARS) {
+    /* run derandomized adaptive rejection sampling (DARS) */
+ 
 #ifdef UNUR_ENABLE_LOGGING
-  /* write info into log file */
-  if (gen->debug) _unur_tabl_debug_init(par,gen);
-  if (gen->debug & TABL_DEBUG_A_IV)
-    _unur_tabl_debug_intervals(gen,FALSE);
+    if (gen->debug & TABL_DEBUG_DARS) {
+      /* make initial guide table (only necessary for writing debug info) */
+      _unur_tabl_make_guide_table(gen);
+      /* write info into log file */
+      _unur_tabl_debug_init(par,gen);
+      _unur_tabl_debug_dars_start(par,gen);
+    }
 #endif
 
+    for (i=0; i<3; i++) {
+      /* we make several tries */
+      
+      /* run DARS */
+      if ( !_unur_tabl_run_dars(par,gen) ) {
+	free(par); _unur_tabl_free(gen);
+	return NULL;
+      }
+
+      /* make initial guide table */
+      _unur_tabl_make_guide_table(gen);
+  
+  //      /* check if DARS was completed */
+  //      if (GEN.n_segs < GEN.max_segs) {
+  //  	/* ran ARS instead */
+  //	for (k=0; k<5; k++)
+  //	  _unur_sample_cont(gen);
+  //      }
+  //      else
+  //	break;
+    }
+
+#ifdef UNUR_ENABLE_LOGGING
+    /* write info into log file */
+      if (gen->debug) {
+        if (gen->debug & TABL_DEBUG_DARS)
+	  _unur_tabl_debug_dars(par,gen);
+	else
+	  _unur_tabl_debug_init(par,gen);
+	_unur_tabl_debug_init_finished(par,gen);
+      }
+#endif
+  }
+
+  else { /* do not run DARS */
+    /* make initial guide table */
+    _unur_tabl_make_guide_table(gen);
+
+#ifdef UNUR_ENABLE_LOGGING
+    /* write info into log file */
+    if (gen->debug) {
+      _unur_tabl_debug_init(par,gen);
+      _unur_tabl_debug_init_finished(par,gen);
+    }
+#endif
+  }
+
+
+
+
+#if 0
   /* we need the total area below the hat and below the squeeze */
   GEN.Atotal = 0.;
   GEN.Asqueeze = 0.;
@@ -884,7 +1006,7 @@ _unur_tabl_init( struct unur_par *par )
   }
 
   /* split according to [1], run SPLIT B */
-  if (par->variant & TABL_VARFLAG_STP_B)
+  if (par->variant & TABL_VARFLAG_USEDARS)
     while ( (GEN.n_ivs < PAR.n_starting_cpoints)
 	    && (GEN.max_ratio * GEN.Atotal > GEN.Asqueeze) )
       if (!_unur_tabl_split_b_starting_intervals(par,gen)) {
@@ -900,6 +1022,11 @@ _unur_tabl_init( struct unur_par *par )
   if (gen->debug)
     _unur_tabl_debug_init_finished(par,gen);
 #endif
+
+#endif
+
+
+
 
   /* free parameters */
   free(par);
@@ -974,6 +1101,7 @@ _unur_tabl_create( struct unur_par *par )
   /* bounds for adding construction points  */
   GEN.max_ivs   = PAR.max_ivs;         /* maximum number of intervals        */
   GEN.max_ratio = PAR.max_ratio;       /* bound for ratio  Atotal / Asqueeze */
+  GEN.darsfactor = PAR.darsfactor;
 
   gen->method = par->method;           /* indicates method                   */
   gen->variant = par->variant;         /* indicates variant                  */
@@ -990,43 +1118,6 @@ _unur_tabl_create( struct unur_par *par )
 } /* end of _unur_tabl_create() */
 
 /*****************************************************************************/
-
-#if 0
-
-/** TODO **/
-
-double
-_unur_tabl_sample_adaptive( struct unur_gen *gen )
-     /*----------------------------------------------------------------------*/
-     /* sample from generator                                                */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   gen ... pointer to generator object                                */
-     /*                                                                      */
-     /* return:                                                              */
-     /*   double (sample from random variate)                                */
-     /*                                                                      */
-     /* error:                                                               */
-     /*   return 0.                                                          */
-     /*----------------------------------------------------------------------*/
-{ 
-  /* 
-     since we do not upgrade the guide table every time we 
-     split an interval, there exists "black intervals".
-     The total area below the hat decreases, but the values 
-     of iv->Acum cannot be upgraded every time.
-     So there arise holes, i.e., these "black intervals",
-     that represent area above the hat function (cut off by
-     the splitting process).
-     if we hit such a hole, we have to reject the generated 
-     interval, and try again. 
-  */
-  ;
-} /* end of _unur_tabl_sample_adaptive() */
-
-#endif
-
-/*---------------------------------------------------------------------------*/
 
 struct unur_gen *
 _unur_tabl_clone( const struct unur_gen *gen )
@@ -1671,7 +1762,111 @@ _unur_tabl_split_a_starting_intervals( struct unur_par *par,
 
 /*---------------------------------------------------------------------------*/
 
-static int
+int
+_unur_tabl_run_dars( struct unur_par *par, struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* run derandomized adaptive rejection sampling.                         */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par          ... pointer to parameter list                         */
+     /*   gen          ... pointer to generator object                       */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... success                                                      */
+     /*   0 ... error                                                        */
+     /*----------------------------------------------------------------------*/
+{
+  struct unur_tabl_interval *iv;
+  double Atot, Asqueezetot;    /* total area below hat and squeeze, resp. */
+  double Alimit;               /* threshhold value for splitting interval */
+  int n_splitted = 1;          /* count splitted intervals */
+
+  /* check arguments */
+  CHECK_NULL(par,0);     COOKIE_CHECK(par,CK_TABL_PAR,0);
+  CHECK_NULL(gen,0);     COOKIE_CHECK(gen,CK_TABL_GEN,0);
+
+  /* there is no need to run DARS when the DARS factor is INFINITY */
+  if (_unur_FP_is_infinity(GEN.darsfactor))
+    return 1;
+
+  /* first we need the total areas below hat and squeeze.
+     (This is only necessary, when _unur_arou_make_guide_table() has not been
+     called!)                                                                */
+  Atot = 0.;            /* area below hat */
+  Asqueezetot = 0.;     /* area below squeeze */
+  for (iv = GEN.iv; iv != NULL; iv = iv->next ) {
+    COOKIE_CHECK(iv,CK_TABL_IV,0);
+    Atot += iv->Ahat;
+    Asqueezetot += iv->Asqueeze;
+  }
+  GEN.Atotal = Atot;
+  GEN.Asqueeze = Asqueezetot;
+
+  /* now split intervals */
+  while ( (GEN.max_ratio * GEN.Atotal > GEN.Asqueeze) &&
+	  (GEN.n_ivs < GEN.max_ivs) ) {
+
+    /* compute threshhold value. every interval with area between
+       hat and squeeze greater than this value will be splitted.  */
+    if (GEN.n_ivs > 1)
+      Alimit = GEN.darsfactor * ( (GEN.Atotal - GEN.Asqueeze) / GEN.n_ivs );
+    else
+      /* we split every interval if there are only one interval */
+      Alimit = 0.; 
+
+    /* reset counter for splitted intervals */
+    n_splitted = 0;
+
+    /* for all intervals do ... */
+    for (iv = GEN.iv; iv != NULL; iv = iv->next ) {
+      COOKIE_CHECK(iv,CK_TABL_IV,0);
+
+      /* do not exceed the maximum number of intervals */
+      if (GEN.n_ivs >= GEN.max_ivs)
+	break;
+
+      /* we skip over all intervals where the area between hat and
+	 squeeze does not exceed the threshhold value.             */
+      if ((iv->Ahat - iv->Asqueeze) <= Alimit) 
+	continue;  /* goto next interval */
+
+      switch (_unur_tabl_split_interval( gen, iv, 0., 0., TABL_VARFLAG_SPLIT_ARC )) {
+      case 1:  /* splitting succesful */
+      case -1: /* interval chopped */
+	++n_splitted;
+	break; /* nothing to do */
+      case 0:  /* error (slope not monotonically decreasing) */
+	return 0;
+      }
+    }
+
+    if (n_splitted == 0) {
+      /* we are not successful in splitting any inteval.
+	 abort to avoid endless loop */
+      _unur_warning(gen->genid,UNUR_ERR_GENERIC,"DARS aborted: no intervals could be splitted.");
+      break;
+    }
+  }
+
+  /* ratio between squeeze and hat o.k. ? */
+  if ( GEN.max_ratio * GEN.Atotal > GEN.Asqueeze ) {
+    if ( GEN.n_ivs >= GEN.max_ivs )
+      _unur_warning(gen->genid,UNUR_ERR_GENERIC,"DARS aborted: maximum number of intervals exceeded.");
+    _unur_warning(gen->genid,UNUR_ERR_GENERIC,"hat/squeeze ratio too small.");
+  }
+  else {
+    /* no more construction points */
+    GEN.max_ivs = GEN.n_ivs;
+  }
+  
+  /* o.k. */
+  return 1;
+
+} /* end of _unur_tabl_run_dars() */
+
+/*---------------------------------------------------------------------------*/
+
+int
 _unur_tabl_split_b_starting_intervals( struct unur_par *par, 
 				       struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
@@ -1968,7 +2163,7 @@ _unur_tabl_make_guide_table( struct unur_gen *gen )
 
 /*---------------------------------------------------------------------------*/
 
-static void
+void
 _unur_tabl_debug_init( const struct unur_par *par, const struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* write info about generator after setup into logfile                  */
@@ -2053,20 +2248,32 @@ _unur_tabl_debug_init( const struct unur_par *par, const struct unur_gen *gen )
 
   if (par->variant & TABL_VARFLAG_STP_A)
     fprintf(log,"%s: split slopes by equal area rule (SPLIT A).\n",gen->genid);
-  if (par->variant & TABL_VARFLAG_STP_B)
-    fprintf(log,"%s: split slopes by main subdivision rule (SPLIT B).\n",gen->genid);
-  empty_line();
+
+  if (par->variant & TABL_VARFLAG_USEDARS) {
+    fprintf(log,"%s: Derandomized ARS enabled ",gen->genid);
+    _unur_print_if_default(par,TABL_SET_USE_DARS);
+    fprintf(log,"\n%s:\tDARS factor = %g",gen->genid,GEN.darsfactor);
+    _unur_print_if_default(par,TABL_SET_DARS_FACTOR);
+  }
+  else {
+    fprintf(log,"%s: Derandomized ARS disabled ",gen->genid);
+    _unur_print_if_default(par,TABL_SET_USE_DARS);
+  }
+  fprintf(log,"\n%s:\n",gen->genid);
 
   fprintf(log,"%s: number of starting intervals (approx.) = %d",gen->genid,PAR.n_starting_cpoints);
   _unur_print_if_default(par,TABL_SET_N_STP);
   fprintf(log,"\n");
   empty_line();
 
+  if (gen->debug & TABL_DEBUG_A_IV)
+    _unur_tabl_debug_intervals(gen,FALSE);
+
 } /* end of _unur_tabl_debug_init() */
 
 /*****************************************************************************/
 
-static void
+void
 _unur_tabl_debug_init_finished( const struct unur_par *par, const struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* write info about generator after setup into logfile                  */
@@ -2094,7 +2301,68 @@ _unur_tabl_debug_init_finished( const struct unur_par *par, const struct unur_ge
 
 /*****************************************************************************/
 
-static void
+void 
+_unur_tabl_debug_dars_start( const struct unur_par *par, const struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* print header before runniung DARS into logfile                       */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par ... pointer to parameter for building generator object         */
+     /*   gen ... pointer to generator object                                */
+     /*----------------------------------------------------------------------*/
+{
+  FILE *log;
+
+  /* check arguments */
+  CHECK_NULL(gen,RETURN_VOID);  COOKIE_CHECK(gen,CK_TABL_GEN,RETURN_VOID);
+  CHECK_NULL(par,RETURN_VOID);  COOKIE_CHECK(par,CK_TABL_PAR,RETURN_VOID);
+
+  log = unur_get_stream();
+
+  fprintf(log,"%s: DARS started **********************\n",gen->genid);
+  fprintf(log,"%s:\n",gen->genid);
+  fprintf(log,"%s: DARS factor = %g",gen->genid,GEN.darsfactor);
+  _unur_print_if_default(par,TABL_SET_DARS_FACTOR);
+  fprintf(log,"\n%s:\n",gen->genid);
+
+  fflush(log);
+} /* end of _unur_tabl_debug_dars_start() */
+
+/*---------------------------------------------------------------------------*/
+
+void
+_unur_tabl_debug_dars( const struct unur_par *par, const struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* print infor after generator has run DARS into logfile                */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par ... pointer to parameter for building generator object         */
+     /*   gen ... pointer to generator object                                */
+     /*----------------------------------------------------------------------*/
+{
+  FILE *log;
+
+  /* check arguments */
+  CHECK_NULL(gen,RETURN_VOID);  COOKIE_CHECK(gen,CK_TABL_GEN,RETURN_VOID);
+  CHECK_NULL(par,RETURN_VOID);  COOKIE_CHECK(par,CK_TABL_PAR,RETURN_VOID);
+
+  log = unur_get_stream();
+
+  fprintf(log,"%s:\n",gen->genid);
+  fprintf(log,"%s: DARS finished **********************\n",gen->genid);
+  fprintf(log,"%s:\n",gen->genid);
+  if (gen->debug & TABL_DEBUG_A_IV)
+    _unur_tabl_debug_intervals(gen,FALSE);
+  fprintf(log,"%s:\n",gen->genid);
+  fprintf(log,"%s: DARS completed **********************\n",gen->genid);
+  fprintf(log,"%s:\n",gen->genid);
+
+  fflush(log);
+} /* end of _unur_tabl_debug_dars() */
+
+/*****************************************************************************/
+
+void
 _unur_tabl_debug_free( const struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* write info about generator before destroying into logfile            */
@@ -2122,7 +2390,7 @@ _unur_tabl_debug_free( const struct unur_gen *gen )
 
 /*****************************************************************************/
 
-static void
+void
 _unur_tabl_debug_intervals( const struct unur_gen *gen, int print_areas )
      /*----------------------------------------------------------------------*/
      /* write list of intervals into logfile                                 */

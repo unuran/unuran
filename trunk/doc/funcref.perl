@@ -153,12 +153,12 @@ while($_ = <>)
    
     # name and description of a method (=METHOD)
     if ($_ =~/^(\s*\/\*\s*|\s*)=METHOD\s*(\w+)\s*(.*)/){
-        # comments possible 
-        $CENABLE = 1;
-        # already within a comment
-	$KOMMENT = 1;
+        # comments not possible (done by another script) 
+        $CENABLE = 0;
+        # not already within a comment (done by another script)
+	$KOMMENT = 0;
         # formatting the output -- Header, node for new method
-        print OUTFILE "\n\n\@node ", $2, "\n";
+        print OUTFILE "\n\n\@node ", $2, "ref", "\n";
         print OUTFILE "\@subsection ", $2, " ", $3, "\n\n";
 	$BLOCK=1;
     }

@@ -71,13 +71,13 @@ _unur_tdr_init( struct unur_par *par )
   if (!gen) { free(par); return NULL; }
 
   /* get starting points */
-  if (!_unur_tdr_starting_cpoints(par,gen) ) {
+  if (_unur_tdr_starting_cpoints(par,gen)!=UNUR_SUCCESS) {
     free(par); _unur_tdr_free(gen);
     return NULL;
   }
 
   /* compute intervals for given starting points */
-  if ( !_unur_tdr_starting_intervals(par,gen) ) {
+  if (_unur_tdr_starting_intervals(par,gen)!=UNUR_SUCCESS) {
     free(par); _unur_tdr_free(gen);
     return NULL;
   }
@@ -109,7 +109,7 @@ _unur_tdr_init( struct unur_par *par )
       /* we make several tries */
 
       /* run DARS */
-      if ( !_unur_tdr_run_dars(par,gen) ) {
+      if (_unur_tdr_run_dars(par,gen)!=UNUR_SUCCESS) {
 	free(par); _unur_tdr_free(gen);
 	return NULL;
       }
@@ -428,8 +428,8 @@ _unur_tdr_starting_cpoints( struct unur_par *par, struct unur_gen *gen )
      /*   gen ... pointer to generator object                                */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... if successful                                                */
-     /*   0 ... otherwise                                                    */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   struct unur_tdr_interval *iv;
@@ -440,8 +440,8 @@ _unur_tdr_starting_cpoints( struct unur_par *par, struct unur_gen *gen )
   double extra_cpoint;
   
   /* check arguments */
-  CHECK_NULL(par,0);  COOKIE_CHECK(par,CK_TDR_PAR,0);
-  CHECK_NULL(gen,0);  COOKIE_CHECK(gen,CK_TDR_GEN,0);
+  CHECK_NULL(par,UNUR_ERR_NULL);  COOKIE_CHECK(par,CK_TDR_PAR,UNUR_ERR_COOKIE);
+  CHECK_NULL(gen,UNUR_ERR_NULL);  COOKIE_CHECK(gen,CK_TDR_GEN,UNUR_ERR_COOKIE);
   
   /* use mode as construction point ? */
   use_mode = (par->variant & TDR_VARFLAG_USEMODE) ? TRUE : FALSE;
@@ -490,7 +490,7 @@ _unur_tdr_starting_cpoints( struct unur_par *par, struct unur_gen *gen )
     
   fx = fx_last = _unur_FP_is_minus_infinity(x) ? 0. : PDF(x);
   iv = GEN.iv = _unur_tdr_interval_new( gen, x, fx, is_mode );
-  if (iv == NULL) return 0;  /* PDF(x) < 0 or overflow !! */
+  if (iv == NULL) return UNUR_ERR_GEN_DATA;  /* PDF(x) < 0 or overflow !! */
 
   /* terminate beginning of list */
   iv->prev = NULL;
@@ -546,7 +546,7 @@ _unur_tdr_starting_cpoints( struct unur_par *par, struct unur_gen *gen )
     /* check value of PDF at starting point */
     if (!is_increasing && fx > fx_last * (1.+DBL_EPSILON)) {
       _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"PDF not unimodal!");
-      return 0;
+      return UNUR_ERR_GEN_CONDITION;
     }
     if (is_mode && fx < fx_last * (1.-DBL_EPSILON)) {
       _unur_warning(gen->genid,UNUR_ERR_GEN_DATA,"mode -> ignore");
@@ -554,7 +554,7 @@ _unur_tdr_starting_cpoints( struct unur_par *par, struct unur_gen *gen )
     }
     if (was_mode && fx > fx_last * (1+DBL_EPSILON)) {
       _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"mode");
-      return 0;
+      return UNUR_ERR_GEN_DATA;
     }
 
     if (fx <= 0. && fx_last <= 0.) {
@@ -577,7 +577,7 @@ _unur_tdr_starting_cpoints( struct unur_par *par, struct unur_gen *gen )
     
     /* need a new interval */
     iv->next = _unur_tdr_interval_new( gen, x, fx, is_mode );
-    if (iv->next == NULL) return 0;  /* PDF(x) < 0 or overflow !! */
+    if (iv->next == NULL) return UNUR_ERR_GEN_DATA;  /* PDF(x) < 0 or overflow !! */
     
     /* link into list and skip pointer to current interval */
     iv->next->prev = iv;
@@ -603,7 +603,7 @@ _unur_tdr_starting_cpoints( struct unur_par *par, struct unur_gen *gen )
   --(GEN.n_ivs);           /* we do not count this interval */
 
   /* o.k. */
-  return 1;
+  return UNUR_SUCCESS;
 
 } /* end of _unur_tdr_starting_cpoints() */
 
@@ -619,8 +619,8 @@ _unur_tdr_starting_intervals( struct unur_par *par, struct unur_gen *gen )
      /*   gen          ... pointer to generator object                       */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... success                                                      */
-     /*   0 ... error                                                        */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   switch (gen->variant & TDR_VARMASK_VARIANT) {
@@ -631,7 +631,7 @@ _unur_tdr_starting_intervals( struct unur_par *par, struct unur_gen *gen )
     return _unur_tdr_ps_starting_intervals(par,gen);
   default:
     _unur_error(GENTYPE,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
-    return -2;
+    return UNUR_ERR_SHOULD_NOT_HAPPEN;
   }
 } /* end of _unur_tdr_interval_parameter() */
 
@@ -647,33 +647,31 @@ _unur_tdr_gw_starting_intervals( struct unur_par *par, struct unur_gen *gen )
      /*   gen          ... pointer to generator object                       */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... success                                                      */
-     /*   0 ... error                                                        */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   struct unur_tdr_interval *iv, *iv_new, *iv_tmp; 
   double x,fx;              /* construction point, value of PDF at x */
   
   /* check arguments */
-  CHECK_NULL(par,0);     COOKIE_CHECK(par,CK_TDR_PAR,0);
-  CHECK_NULL(gen,0);     COOKIE_CHECK(gen,CK_TDR_GEN,0);
-  CHECK_NULL(GEN.iv,0);  COOKIE_CHECK(GEN.iv,CK_TDR_IV,0); 
+  CHECK_NULL(par,UNUR_ERR_NULL);  COOKIE_CHECK(par,CK_TDR_PAR,UNUR_ERR_COOKIE);
+  CHECK_NULL(gen,UNUR_ERR_NULL);  COOKIE_CHECK(gen,CK_TDR_GEN,UNUR_ERR_COOKIE);
+  CHECK_NULL(GEN.iv,UNUR_ERR_NULL);  COOKIE_CHECK(GEN.iv,CK_TDR_IV,UNUR_ERR_COOKIE); 
   
   /* compute paramters for all intervals */
   for( iv=GEN.iv; iv->next != NULL; ) {
 
     /* compute parameters for interval */
     switch (_unur_tdr_gw_interval_parameter(gen, iv)) {
-    case -2:     /* PDF not T-concave */
-      return 0;
-    case 1:     /* computation of parameters for interval successful */
+    case UNUR_SUCCESS:      /* computation of parameters for interval successful */
       /* skip to next interval */
       iv = iv->next;
       continue;
-    case -1:    /* interval unbounded */
+    case UNUR_ERR_INF:      /* interval unbounded */
       /* split interval */
       break;
-    case 0:    /* construction points too close */
+    case UNUR_ERR_SILENT:   /* construction points too close */
       /* we have to remove this last interval from list */
       /* (the last construction point in the list is a boundary point.
 	 thus we might change the domain of the distribution.
@@ -694,6 +692,8 @@ _unur_tdr_gw_starting_intervals( struct unur_par *par, struct unur_gen *gen )
 	/* we need a pointer to the previous entry in the list */
 	iv->next->prev = iv;
       continue;
+    default:     /* PDF not T-concave */
+      return UNUR_ERR_GEN_CONDITION;
     }
 
     /* area below hat infinite.
@@ -707,10 +707,10 @@ _unur_tdr_gw_starting_intervals( struct unur_par *par, struct unur_gen *gen )
     if (GEN.n_ivs >= GEN.max_ivs) {
       /* we do not want to create too many intervals */
       _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"cannot create bounded hat!");
-      return 0;
+      return UNUR_ERR_GEN_CONDITION;
     }
     iv_new = _unur_tdr_interval_new( gen, x, fx, FALSE );
-    if (iv_new == NULL) return 0;  /* PDF(x) < 0 or overflow !! */
+    if (iv_new == NULL) return UNUR_ERR_GEN_DATA;  /* PDF(x) < 0 or overflow !! */
 
 
     /* if fx is 0, then we can cut off the tail of the distribution
@@ -737,7 +737,7 @@ _unur_tdr_gw_starting_intervals( struct unur_par *par, struct unur_gen *gen )
       }
       else {
 	_unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"PDF not T-concave!");
-	return 0;
+	return UNUR_ERR_GEN_CONDITION;
       }
     }
 
@@ -751,7 +751,7 @@ _unur_tdr_gw_starting_intervals( struct unur_par *par, struct unur_gen *gen )
   }
 
   /* o.k. */
-  return 1;
+  return UNUR_SUCCESS;
 
 } /* end of _unur_tdr_gw_starting_intervals() */
 
@@ -767,8 +767,8 @@ _unur_tdr_ps_starting_intervals( struct unur_par *par, struct unur_gen *gen )
      /*   gen          ... pointer to generator object                       */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... success                                                      */
-     /*   0 ... error                                                        */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   struct unur_tdr_interval *iv, *iv_new, *iv_tmp; 
@@ -776,9 +776,9 @@ _unur_tdr_ps_starting_intervals( struct unur_par *par, struct unur_gen *gen )
   double lb, flb;           /* left boundary point of domain of PDF  */
   
   /* check arguments */
-  CHECK_NULL(par,0);     COOKIE_CHECK(par,CK_TDR_PAR,0);
-  CHECK_NULL(gen,0);     COOKIE_CHECK(gen,CK_TDR_GEN,0);
-  CHECK_NULL(GEN.iv,0);  COOKIE_CHECK(GEN.iv,CK_TDR_IV,0); 
+  CHECK_NULL(par,UNUR_ERR_NULL);  COOKIE_CHECK(par,CK_TDR_PAR,UNUR_ERR_COOKIE);
+  CHECK_NULL(gen,UNUR_ERR_NULL);  COOKIE_CHECK(gen,CK_TDR_GEN,UNUR_ERR_COOKIE);
+  CHECK_NULL(GEN.iv,UNUR_ERR_NULL);  COOKIE_CHECK(GEN.iv,CK_TDR_IV,UNUR_ERR_COOKIE); 
 
   /* first interval in list */
   iv = GEN.iv;
@@ -822,7 +822,7 @@ _unur_tdr_ps_starting_intervals( struct unur_par *par, struct unur_gen *gen )
       if (!_unur_FP_is_infinity(iv->dTfx)) {
 	/* get interval */
 	iv->next = iv_new = _unur_tdr_interval_new( gen, iv->x, 0., FALSE );
-	if (iv_new == NULL) return 0;  /* PDF(x) < 0 or overflow !! */
+	if (iv_new == NULL) return UNUR_ERR_GEN_DATA;  /* PDF(x) < 0 or overflow !! */
 	/* link into list */
 	iv_new->prev = iv;
 	/* copy right boundary of domain */
@@ -842,16 +842,14 @@ _unur_tdr_ps_starting_intervals( struct unur_par *par, struct unur_gen *gen )
 
     /* compute parameters for interval */
     switch (_unur_tdr_ps_interval_parameter(gen, iv)) {
-    case 1:     /* computation of parameters for interval successful */
+    case UNUR_SUCCESS:     /* computation of parameters for interval successful */
       /* skip to next interval */
       iv = iv->next;
       continue;
-    case -2:     /* PDF not T-concave */
-      return 0;
-    case -1:    /* interval unbounded */
+    case UNUR_ERR_INF:    /* interval unbounded */
       /* split interval */
       break;
-    case 0:    /* construction points too close */
+    case UNUR_ERR_SILENT:    /* construction points too close */
       /* we have to remove this last interval from list */
       /* (the last construction point in the list is a boundary point.
 	 thus we might change the domain of the distribution.
@@ -872,13 +870,15 @@ _unur_tdr_ps_starting_intervals( struct unur_par *par, struct unur_gen *gen )
 	/* we need a pointer to the previous entry in the list */
 	iv->next->prev = iv;
       continue;
+    default:     /* PDF not T-concave */
+      return UNUR_ERR_GEN_CONDITION;
     }
 
     /* check if we had to used too many intervals */
     if (GEN.n_ivs >= GEN.max_ivs) {
       /* we do not want to create too many intervals */
       _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"cannot create bounded hat!");
-      return 0;
+      return UNUR_ERR_GEN_CONDITION;
     }
     
     /* area below hat infinite --> insert new construction point.
@@ -898,14 +898,14 @@ _unur_tdr_ps_starting_intervals( struct unur_par *par, struct unur_gen *gen )
       fx = PDF(x);
 
       iv_new = _unur_tdr_interval_new( gen, x, fx, FALSE );
-      if (iv_new == NULL) return 0;  /* PDF(x) < 0 or overflow !! */
+      if (iv_new == NULL) return UNUR_ERR_GEN_DATA;  /* PDF(x) < 0 or overflow !! */
 
       /* if fx is 0, then we can cut off the tail of the distribution
 	 (since it must be T-concave)  */
       if (fx <= 0.) {
 	if (iv->next->fx > 0.) {
 	  _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"PDF not T-concave!");
-	  return 0;
+	  return UNUR_ERR_GEN_CONDITION;
 	}
 
 	/* cut off right tail */
@@ -934,7 +934,7 @@ _unur_tdr_ps_starting_intervals( struct unur_par *par, struct unur_gen *gen )
       fx = PDF(x);
 
       iv_new = _unur_tdr_interval_new( gen, x, fx, FALSE );
-      if (iv_new == NULL) return 0;  /* PDF(x) < 0 or overflow !! */
+      if (iv_new == NULL) return UNUR_ERR_GEN_DATA;  /* PDF(x) < 0 or overflow !! */
 
 
       /* if fx is 0, then we can cut off the tail of the distribution
@@ -942,7 +942,7 @@ _unur_tdr_ps_starting_intervals( struct unur_par *par, struct unur_gen *gen )
       if (fx <= 0.) {
 	if (iv->fx > 0.) {
 	  _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"PDF not T-concave!");
-	  return 0;
+	  return UNUR_ERR_GEN_CONDITION;
 	}
 
 	/* cut off left tail */
@@ -991,7 +991,7 @@ _unur_tdr_ps_starting_intervals( struct unur_par *par, struct unur_gen *gen )
   }
 
   /* o.k. */
-  return 1;
+  return UNUR_SUCCESS;
 
 } /* end of _unur_tdr_ps_starting_intervals() */
 
@@ -1007,20 +1007,20 @@ _unur_tdr_run_dars( struct unur_par *par, struct unur_gen *gen )
      /*   gen          ... pointer to generator object                       */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... success                                                      */
-     /*   0 ... error                                                        */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   struct unur_tdr_interval *iv;
   double Atot, Asqueezetot;    /* total area below hat and squeeze, resp. */
 
   /* check arguments */
-  CHECK_NULL(par,0);     COOKIE_CHECK(par,CK_TDR_PAR,0);
-  CHECK_NULL(gen,0);     COOKIE_CHECK(gen,CK_TDR_GEN,0);
+  CHECK_NULL(par,UNUR_ERR_NULL);  COOKIE_CHECK(par,CK_TDR_PAR,UNUR_ERR_COOKIE);
+  CHECK_NULL(gen,UNUR_ERR_NULL);  COOKIE_CHECK(gen,CK_TDR_GEN,UNUR_ERR_COOKIE);
   
   /* there is no need to run DARS when the DARS factor is INFINITY */
   if (_unur_FP_is_infinity(PAR.darsfactor))
-    return 1;
+    return UNUR_SUCCESS;
 
   /* first we need the total areas below hat and squeeze.
      (This is only necessary, when _unur_tdr_make_guide_table() has not been
@@ -1028,7 +1028,7 @@ _unur_tdr_run_dars( struct unur_par *par, struct unur_gen *gen )
   Atot = 0.;            /* area below hat */
   Asqueezetot = 0.;     /* area below squeeze */
   for (iv = GEN.iv; iv != NULL; iv = iv->next ) {
-    COOKIE_CHECK(iv,CK_TDR_IV,0);
+    COOKIE_CHECK(iv,CK_TDR_IV,UNUR_ERR_COOKIE);
     Atot += iv->Ahat;
     Asqueezetot += iv->Asqueeze;
   }
@@ -1045,7 +1045,7 @@ _unur_tdr_run_dars( struct unur_par *par, struct unur_gen *gen )
     return _unur_tdr_ps_dars(par,gen);
   default:
     _unur_error(GENTYPE,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
-    return 0;
+    return UNUR_ERR_SHOULD_NOT_HAPPEN;
   }
 
 } /* end of _unur_tdr_run_dars() */
@@ -1062,8 +1062,8 @@ _unur_tdr_gw_dars( struct unur_par *par, struct unur_gen *gen )
      /*   gen          ... pointer to generator object                       */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... success                                                      */
-     /*   0 ... error                                                        */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   struct unur_tdr_interval *iv, *iv_next;
@@ -1076,8 +1076,8 @@ _unur_tdr_gw_dars( struct unur_par *par, struct unur_gen *gen )
   int splitted;                /* result of splitting routine */
 
   /* check arguments */
-  CHECK_NULL(par,0);     COOKIE_CHECK(par,CK_TDR_PAR,0);
-  CHECK_NULL(gen,0);     COOKIE_CHECK(gen,CK_TDR_GEN,0);
+  CHECK_NULL(par,UNUR_ERR_NULL);  COOKIE_CHECK(par,CK_TDR_PAR,UNUR_ERR_COOKIE);
+  CHECK_NULL(gen,UNUR_ERR_NULL);  COOKIE_CHECK(gen,CK_TDR_GEN,UNUR_ERR_COOKIE);
   
   /* now split intervals */
   while ( (GEN.max_ratio * GEN.Atotal > GEN.Asqueeze) &&
@@ -1096,7 +1096,7 @@ _unur_tdr_gw_dars( struct unur_par *par, struct unur_gen *gen )
 
     /* for all intervals do ... */
     for (iv = GEN.iv; iv->next != NULL; iv = iv->next ) {
-      COOKIE_CHECK(iv,CK_TDR_IV,0);
+      COOKIE_CHECK(iv,CK_TDR_IV,UNUR_ERR_COOKIE);
       
       /* do not exceed the maximum number of intervals */
       if (GEN.n_ivs >= GEN.max_ivs)
@@ -1171,7 +1171,7 @@ _unur_tdr_gw_dars( struct unur_par *par, struct unur_gen *gen )
 	/* now split interval at given point */
 	splitted = _unur_tdr_gw_interval_split(gen, iv, xsp, fxsp);
 
-	if (splitted > 0) {
+	if (splitted==UNUR_SUCCESS) {
 	  /* splitting successful */
 	  ++n_splitted;
 
@@ -1189,11 +1189,11 @@ _unur_tdr_gw_dars( struct unur_par *par, struct unur_gen *gen )
 	  /* no more splitting points in this interval */
 	  break;
 	}
-	else if (splitted < 0) {
+	else if (splitted!=UNUR_ERR_SILENT) {
 	  /* some serious error occurred */
 	  /* condition for PDF is violated! */
 	  _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"");
-	  return 0;
+	  return UNUR_ERR_GEN_CONDITION;
 	}
 	/* else: could not split construction points: too close (?) */
       }
@@ -1219,7 +1219,7 @@ _unur_tdr_gw_dars( struct unur_par *par, struct unur_gen *gen )
   }
   
   /* o.k. */
-  return 1;
+  return UNUR_SUCCESS;
 
 } /* end of _unur_tdr_gw_dars() */
 
@@ -1235,8 +1235,8 @@ _unur_tdr_ps_dars( struct unur_par *par, struct unur_gen *gen )
      /*   gen          ... pointer to generator object                       */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... success                                                      */
-     /*   0 ... error                                                        */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   struct unur_tdr_interval *iv, *iv_next;
@@ -1253,8 +1253,8 @@ _unur_tdr_ps_dars( struct unur_par *par, struct unur_gen *gen )
   int splitted;                /* result of splitting routine */
   
   /* check arguments */
-  CHECK_NULL(par,0);     COOKIE_CHECK(par,CK_TDR_PAR,0);
-  CHECK_NULL(gen,0);     COOKIE_CHECK(gen,CK_TDR_GEN,0);
+  CHECK_NULL(par,UNUR_ERR_NULL);  COOKIE_CHECK(par,CK_TDR_PAR,UNUR_ERR_COOKIE);
+  CHECK_NULL(gen,UNUR_ERR_NULL);  COOKIE_CHECK(gen,CK_TDR_GEN,UNUR_ERR_COOKIE);
 
   /* split intervals */
   while ( (GEN.max_ratio * GEN.Atotal > GEN.Asqueeze) &&
@@ -1273,7 +1273,7 @@ _unur_tdr_ps_dars( struct unur_par *par, struct unur_gen *gen )
 
     /* for all intervals do ... */
     for (iv = GEN.iv; iv != NULL; iv = iv->next ) {
-      COOKIE_CHECK(iv,CK_TDR_IV,0);
+      COOKIE_CHECK(iv,CK_TDR_IV,UNUR_ERR_COOKIE);
 
       /* do not exceed the maximum number of intervals */
       if (GEN.n_ivs >= GEN.max_ivs)
@@ -1395,7 +1395,7 @@ _unur_tdr_ps_dars( struct unur_par *par, struct unur_gen *gen )
 
 	splitted = _unur_tdr_ps_interval_split(gen, ((xsp<iv->ip)?iv->prev:iv), xsp, fxsp);
 
-	if (splitted > 0) {
+	if (splitted==UNUR_SUCCESS) {
 	  /* splitting successful */
 	  ++n_splitted;
 
@@ -1413,11 +1413,11 @@ _unur_tdr_ps_dars( struct unur_par *par, struct unur_gen *gen )
 	  /* no more splitting points in this interval */
 	  break;
 	}
-	else if (splitted < 0) {
+	else if (splitted!=UNUR_ERR_SILENT) {
 	  /* some serious error occurred */
 	  /* condition for PDF is violated! */
 	  _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"");
-	  return 0;
+	  return UNUR_ERR_GEN_CONDITION;
 	}
 	/* else: could not split construction points: too close (?) */
       }
@@ -1443,7 +1443,7 @@ _unur_tdr_ps_dars( struct unur_par *par, struct unur_gen *gen )
   }
   
   /* o.k. */
-  return 1;
+  return UNUR_SUCCESS;
 
 } /* end of _unur_tdr_ps_dars() */
 
@@ -1551,27 +1551,27 @@ _unur_tdr_gw_interval_parameter( struct unur_gen *gen, struct unur_tdr_interval 
      /*   iv   ... pointer to interval                                       */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... if successful                                                */
-     /*   0 ... do not add this construction point                           */
-     /*  -1 ... area = INFINITY                                              */
-     /*  -2 ... error (PDF not T-concave)                                    */
+     /*   UNUR_SUCCESS    ... if successful                                  */
+     /*   UNUR_ERR_SILENT ... do not add this construction point             */
+     /*   UNUR_ERR_INF    ... area = INFINITY                                */
+     /*   others          ... error (PDF not T-concave)                      */
      /*----------------------------------------------------------------------*/
 {
   double Ahatl;    /* area below hat at left side of intersection point */
 
   /* check arguments */
-  CHECK_NULL(gen,0);  COOKIE_CHECK(gen,CK_TDR_GEN,0);
-  CHECK_NULL(iv,0);   COOKIE_CHECK(iv,CK_TDR_IV,0); 
+  CHECK_NULL(gen,UNUR_ERR_NULL);  COOKIE_CHECK(gen,CK_TDR_GEN,UNUR_ERR_COOKIE);
+  CHECK_NULL(iv,UNUR_ERR_NULL);   COOKIE_CHECK(iv,CK_TDR_IV,UNUR_ERR_COOKIE); 
 
   /* check interval on the right side of iv */
-  CHECK_NULL(iv->next,0);  COOKIE_CHECK(iv->next,CK_TDR_IV,0); 
+  CHECK_NULL(iv->next,UNUR_ERR_NULL);  COOKIE_CHECK(iv->next,CK_TDR_IV,UNUR_ERR_COOKIE); 
 
   /* get intersection point of tangents.
      used to partition interval into left hand part (construction point of tangent
      on the left hand boundary) and right hand part (construction point of tangent
      on the left hand boundary). */
-  if ( !_unur_tdr_tangent_intersection_point(gen,iv,&(iv->ip)) )
-    return -2;
+  if ( _unur_tdr_tangent_intersection_point(gen,iv,&(iv->ip))!=UNUR_SUCCESS )
+    return UNUR_ERR_GEN_CONDITION;
 
   /* squeeze and area below squeeze */
   if (iv->Tfx > -INFINITY && iv->next->Tfx > -INFINITY) {
@@ -1579,7 +1579,7 @@ _unur_tdr_gw_interval_parameter( struct unur_gen *gen, struct unur_tdr_interval 
     /* we do not compute the slope when the construction points
        are too close. at least 8 significant digits should remain. */
     if (_unur_FP_approx(iv->x, iv->next->x) )
-      return 0;   /* construction points too close */
+      return UNUR_ERR_SILENT;   /* construction points too close */
 
     /* slope of transformed squeeze */
     iv->sq = (iv->next->Tfx - iv->Tfx) / (iv->next->x - iv->x);
@@ -1596,7 +1596,7 @@ _unur_tdr_gw_interval_parameter( struct unur_gen *gen, struct unur_tdr_interval 
 	 slope of the squeeze or tangent is 0.  */
       if ( iv->sq != 0. && iv->dTfx != 0. && iv->next->dTfx != 0. ) {
       	_unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"Squeeze too steep/flat. PDF not T-concave!");
-      	return -2;
+      	return UNUR_ERR_GEN_CONDITION;
       }
     }
 
@@ -1618,7 +1618,7 @@ _unur_tdr_gw_interval_parameter( struct unur_gen *gen, struct unur_tdr_interval 
 
   /* areas below head unbounded ? */
   if (_unur_FP_is_infinity(Ahatl) || _unur_FP_is_infinity(iv->Ahatr))
-    return -1;
+    return UNUR_ERR_INF;
 
   /* total area */
   iv->Ahat = iv->Ahatr + Ahatl;
@@ -1627,11 +1627,11 @@ _unur_tdr_gw_interval_parameter( struct unur_gen *gen, struct unur_tdr_interval 
   /* we cannot be more accurate than in the `check squeeze' section */
   if ( iv->Asqueeze > iv->Ahat && !_unur_FP_approx(iv->Asqueeze, iv->Ahat) ) {
     _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"A(squeeze) > A(hat). PDF not T-concave!");
-    return -2; 
+    return UNUR_ERR_GEN_CONDITION; 
   }
 
   /* o.k. */
-  return 1;
+  return UNUR_SUCCESS;
 
 } /* end of _unur_tdr_gw_interval_parameter() */
 
@@ -1648,10 +1648,10 @@ _unur_tdr_ps_interval_parameter( struct unur_gen *gen, struct unur_tdr_interval 
      /*   iv   ... pointer to interval                                       */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... if successful                                                */
-     /*   0 ... do not add this construction point                           */
-     /*  -1 ... area = INFINITY                                              */
-     /*  -2 ... error (PDF not T-concave)                                    */
+     /*   UNUR_SUCCESS    ... if successful                                  */
+     /*   UNUR_ERR_SILENT ... do not add this construction point             */
+     /*   UNUR_ERR_INF    ... area = INFINITY                                */
+     /*   others          ... error (PDF not T-concave)                      */
      /*----------------------------------------------------------------------*/
 {
   double Ahatl;    /* area below hat at left side of intersection point */
@@ -1659,13 +1659,13 @@ _unur_tdr_ps_interval_parameter( struct unur_gen *gen, struct unur_tdr_interval 
   double sq;       /* ration PDF(x) / hat(x) */
 
   /* check arguments */
-  CHECK_NULL(gen,0);  COOKIE_CHECK(gen,CK_TDR_GEN,0);
-  CHECK_NULL(iv,0);   COOKIE_CHECK(iv,CK_TDR_IV,0); 
+  CHECK_NULL(gen,UNUR_ERR_NULL);  COOKIE_CHECK(gen,CK_TDR_GEN,UNUR_ERR_COOKIE);
+  CHECK_NULL(iv,UNUR_ERR_NULL);   COOKIE_CHECK(iv,CK_TDR_IV,UNUR_ERR_COOKIE); 
 
   /* get intersection point of tangents. it is used as boundaries of intervals.
      it is stored together with the right hand (i.e. next) construction point. */
-  if ( !_unur_tdr_tangent_intersection_point(gen,iv,&(iv->next->ip)) )
-    return -2;
+  if (_unur_tdr_tangent_intersection_point(gen,iv,&(iv->next->ip))!=UNUR_SUCCESS)
+    return UNUR_ERR_GEN_CONDITION;
   /* value of PDF at intersection point */
   iv->next->fip = _unur_FP_is_infinity(iv->next->ip) ? 0. : PDF(iv->next->ip);
 
@@ -1675,7 +1675,7 @@ _unur_tdr_ps_interval_parameter( struct unur_gen *gen, struct unur_tdr_interval 
 
   /* areas below head unbounded ? */
   if (Ahatl >= INFINITY || iv->Ahatr >= INFINITY)
-    return -1;
+    return UNUR_ERR_INF;
 
   /* total area */
   iv->Ahat = iv->Ahatr + Ahatl;
@@ -1695,7 +1695,7 @@ _unur_tdr_ps_interval_parameter( struct unur_gen *gen, struct unur_tdr_interval 
     else {
       /* we really have PDF(x) > hat(x); we do not assume a round-off error */
       _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"hat(x) < PDF(x)");
-      return -2;
+      return UNUR_ERR_GEN_CONDITION;
     }
   }
   iv->sq = (_unur_FP_is_infinity(hxl) || hxl <= 0.) ? 0. : iv->fip / hxl;
@@ -1712,7 +1712,7 @@ _unur_tdr_ps_interval_parameter( struct unur_gen *gen, struct unur_tdr_interval 
     else {
       /* we really have PDF(x) > hat(x); we do not assume a round-off error */
       _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"hat(x) < PDF(x)");
-      return -2;
+      return UNUR_ERR_GEN_CONDITION;
     }
   }
   sq = (_unur_FP_is_infinity(hxr) || hxr <= 0.) ? 0. : iv->next->fip / hxr;
@@ -1724,7 +1724,7 @@ _unur_tdr_ps_interval_parameter( struct unur_gen *gen, struct unur_tdr_interval 
   iv->Asqueeze = iv->Ahat * iv->sq;
 
   /* o.k. */
-  return 1;
+  return UNUR_SUCCESS;
 
 } /* end of _unur_tdr_ps_interval_parameter() */
 
@@ -1746,13 +1746,13 @@ _unur_tdr_tangent_intersection_point( struct unur_gen *gen, struct unur_tdr_inte
      /*   ipt ... pointer to intersection point                              */
      /*                                                                      */
      /* return:                                                              */
-     /*   1  ... if successful                                               */
-     /*   0  ... error                                                       */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  CHECK_NULL(gen,0);  COOKIE_CHECK(gen,CK_TDR_GEN,0);
-  CHECK_NULL(iv,0);   COOKIE_CHECK(iv,CK_TDR_IV,0); 
+  CHECK_NULL(gen,UNUR_ERR_NULL);  COOKIE_CHECK(gen,CK_TDR_GEN,UNUR_ERR_COOKIE);
+  CHECK_NULL(iv,UNUR_ERR_NULL);   COOKIE_CHECK(iv,CK_TDR_IV,UNUR_ERR_COOKIE); 
 
   /* 
      case: there is no tangent at one of the boundary points of the interval
@@ -1762,11 +1762,11 @@ _unur_tdr_tangent_intersection_point( struct unur_gen *gen, struct unur_tdr_inte
   */
   if ( iv->dTfx > 1.e+140 ) {
     *ipt = iv->x;        /* intersection point = left boundary of interval */
-    return 1; 
+    return UNUR_SUCCESS; 
   }
   if ( iv->next->dTfx < -1.e+140 || _unur_FP_is_infinity(iv->next->dTfx)) {
     *ipt = iv->next->x;   /* intersection point = right boundary of interval */
-    return 1; 
+    return UNUR_SUCCESS; 
   }
   /** TODO: 1.e+140 (= sqrt(DBL_MAX) / 1.e15) is arbitrary  **/
 
@@ -1779,32 +1779,32 @@ _unur_tdr_tangent_intersection_point( struct unur_gen *gen, struct unur_tdr_inte
     if ( fabs(iv->dTfx) < DBL_EPSILON * fabs(iv->next->dTfx) ) {
       *ipt = iv->x;        /* intersection point = left boundary of interval */
       iv->dTfx = INFINITY;
-      return 1; 
+      return UNUR_SUCCESS; 
     }
     else if ( fabs(iv->next->dTfx) < DBL_EPSILON * fabs(iv->dTfx) ) {
       *ipt = iv->next->x;   /* intersection point = right boundary of interval */
       iv->next->dTfx = INFINITY;
-      return 1; 
+      return UNUR_SUCCESS; 
     }
     else {
 /*        fprintf(stdout,"\ndTfx0 = %g < %g = dTfx1 (x0 = %g, x1 = %g)\n", */
 /*  	      iv->dTfx,iv->next->dTfx,iv->x,iv->next->x); */
       _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"dTfx0 < dTfx1 (x0<x1). PDF not T-concave!");
-      return 0;
+      return UNUR_ERR_GEN_CONDITION;
     }
   }
 
   /** TODO: the following test is too sensitve to roundoff errors **/
   /*    if (iv->next->Tfx > iv->x + iv->dTfx*(iv->next->x - iv->x)) { */
   /*      _unur_warning(gen->genid,UNUR_ERR_INIT,"tangent below PDF  not T-concave!"); */
-  /*      return 0; */
+  /*      return UNUR_ERR_INIT; */
   /*    } */
   
   /* case (2): computing intersection of tangents is unstable */
   if (_unur_FP_approx(iv->dTfx, iv->next->dTfx)) {
     /* use mean point */
     *ipt = 0.5 * (iv->x + iv->next->x);
-    return 1;
+    return UNUR_SUCCESS;
   }
 
   /* case (1): compute intersection point of tangents (regular case) */
@@ -1821,7 +1821,7 @@ _unur_tdr_tangent_intersection_point( struct unur_gen *gen, struct unur_tdr_inte
     *ipt = 0.5 * (iv->x + iv->next->x);
 
   /* o.k. */
-  return 1;
+  return UNUR_SUCCESS;
 
 } /* end of _unur_tdr_tangent_intersection_point() */
 
@@ -1842,6 +1842,9 @@ _unur_tdr_interval_area( struct unur_gen *gen, struct unur_tdr_interval *iv, dou
      /* return:                                                                   */
      /*   area                                                                    */
      /*                                                                           */
+     /* error:                                                                    */
+     /*   return INFINITY                                                         */
+     /*                                                                           */
      /* comment:                                                                  */
      /*   x0    ... construction point of tangent (= iv->x)                       */
      /*                                                                           */
@@ -1850,7 +1853,7 @@ _unur_tdr_interval_area( struct unur_gen *gen, struct unur_tdr_interval *iv, dou
      /*        = f(x0) * |x - x0|                              if slope = 0       */
      /*        = | f(x0)/slope * (\exp(slope*(x-x0))-1) |      if slope != 0      */
      /*                                                                           */
-     /* -1/sqrt(x)                                                                 */
+     /* -1/sqrt(x)                                                                */
      /*   area = | \int_{x0}^x 1/(Tf(x0) + slope*(t-x0))^2 dt |                   */
      /*        = f(x0) * |x - x0|                              if slope = 0       */
      /*        = infinity                                      if T(f(x)) >= 0    */
@@ -1861,8 +1864,8 @@ _unur_tdr_interval_area( struct unur_gen *gen, struct unur_tdr_interval *iv, dou
   double area = 0.;
 
   /* check arguments */
-  CHECK_NULL(gen,0);  COOKIE_CHECK(gen,CK_TDR_GEN,0);
-  CHECK_NULL(iv,0);   COOKIE_CHECK(iv,CK_TDR_IV,0); 
+  CHECK_NULL(gen,INFINITY);  COOKIE_CHECK(gen,CK_TDR_GEN,INFINITY);
+  CHECK_NULL(iv,INFINITY);   COOKIE_CHECK(iv,CK_TDR_IV,INFINITY); 
 
   /* if the construction point is at infinity, we cannot compute an area.
      (in this case we should have x == iv->x == INFINITY). */
@@ -1956,6 +1959,9 @@ _unur_tdr_interval_xxarea( struct unur_gen *gen, struct unur_tdr_interval *iv, d
      /*   (to get the real expected value, it must be divided by the area below   */
      /*   the function (hat or squeeze).)                                         */
      /*                                                                           */
+     /* error:                                                                    */
+     /*   return INFINITY                                                         */
+     /*                                                                           */
      /* comment:                                                                  */
      /*   x0    ... construction point of tangent (= iv->x)                       */
      /*                                                                           */
@@ -1980,8 +1986,8 @@ _unur_tdr_interval_xxarea( struct unur_gen *gen, struct unur_tdr_interval *iv, d
   double hx,u;
 
   /* check arguments */
-  CHECK_NULL(gen,0);  COOKIE_CHECK(gen,CK_TDR_GEN,0);
-  CHECK_NULL(iv,0);   COOKIE_CHECK(iv,CK_TDR_IV,0); 
+  CHECK_NULL(gen,INFINITY);  COOKIE_CHECK(gen,CK_TDR_GEN,INFINITY);
+  CHECK_NULL(iv,INFINITY);   COOKIE_CHECK(iv,CK_TDR_IV,INFINITY); 
 
   /* if the construction point is at infinity, we cannot compute the integral
      (in this case we should have x == iv->x == INFINITY). */
@@ -2085,6 +2091,9 @@ _unur_tdr_eval_intervalhat( struct unur_gen *gen, struct unur_tdr_interval *iv, 
      /*   0. if x is not finite or                                           */
      /*   INFINITY the hat cannot be computed                                */
      /*                                                                      */
+     /* error:                                                               */
+     /*   return INFINITY                                                    */
+     /*                                                                      */
      /* comment:                                                             */
      /*   x0    ... construction point of tangent (= iv->x)                  */
      /*                                                                      */
@@ -2097,8 +2106,8 @@ _unur_tdr_eval_intervalhat( struct unur_gen *gen, struct unur_tdr_interval *iv, 
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  CHECK_NULL(gen,0);  COOKIE_CHECK(gen,CK_TDR_GEN,INFINITY);
-  CHECK_NULL(iv,0);   COOKIE_CHECK(iv,CK_TDR_IV,INFINITY); 
+  CHECK_NULL(gen,INFINITY);  COOKIE_CHECK(gen,CK_TDR_GEN,INFINITY);
+  CHECK_NULL(iv,INFINITY);   COOKIE_CHECK(iv,CK_TDR_IV,INFINITY); 
 
   /* we cannot compute the hat at x if any of the parameters are not finite  */
   if ( _unur_FP_is_minus_infinity(iv->Tfx) || _unur_FP_is_infinity(iv->dTfx) )
@@ -2153,9 +2162,9 @@ _unur_tdr_gw_interval_split( struct unur_gen *gen, struct unur_tdr_interval *iv_
      /*   fx      ... value of PDF at x                                      */
      /*                                                                      */
      /* return:                                                              */
-     /*   1  ... if successful                                               */
-     /*   0  ... if no intervals are splitted                                */
-     /*  -1  ... error                                                       */
+     /*   UNUR_SUCCESS    ... if successful                                  */
+     /*   UNUR_ERR_SILENT ... if no intervals are splitted                   */
+     /*   others          ... error                                          */
      /*----------------------------------------------------------------------*/
 {
   struct unur_tdr_interval *iv_newr;  /* pointer to new interval */
@@ -2163,8 +2172,8 @@ _unur_tdr_gw_interval_split( struct unur_gen *gen, struct unur_tdr_interval *iv_
   int success, success_r;
 
   /* check arguments */
-  CHECK_NULL(gen,-1);      COOKIE_CHECK(gen,CK_TDR_GEN,-1);
-  CHECK_NULL(iv_oldl,-1);  COOKIE_CHECK(iv_oldl,CK_TDR_IV,-1);
+  CHECK_NULL(gen,UNUR_ERR_NULL);      COOKIE_CHECK(gen,CK_TDR_GEN,UNUR_ERR_COOKIE);
+  CHECK_NULL(iv_oldl,UNUR_ERR_NULL);  COOKIE_CHECK(iv_oldl,CK_TDR_IV,UNUR_ERR_COOKIE);
 
 #ifdef UNUR_ENABLE_LOGGING
   /* write info into log file */
@@ -2175,18 +2184,18 @@ _unur_tdr_gw_interval_split( struct unur_gen *gen, struct unur_tdr_interval *iv_
   /* the splitting point must be inside the interval */
   if (x < iv_oldl->x || x > iv_oldl->next->x) {
     _unur_warning(gen->genid,UNUR_ERR_GEN_DATA,"splitting point not in interval!");
-    return 0;
+    return UNUR_ERR_SILENT;
   }
 
   /* we only add a new construction point, if the relative area is large enough */
   if ( (GEN.n_ivs * (iv_oldl->Ahat - iv_oldl->Asqueeze) / (GEN.Atotal - GEN.Asqueeze))
        < GEN.bound_for_adding)
-    return 0;
+    return UNUR_ERR_SILENT;
 
   /* check for data error */
   if (fx < 0.) {
     _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"PDF(x) < 0.!");
-    return -1;
+    return UNUR_ERR_GEN_DATA;
   }
 
   /* back up data */
@@ -2206,7 +2215,7 @@ _unur_tdr_gw_interval_split( struct unur_gen *gen, struct unur_tdr_interval *iv_
     }
     else {
       _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"PDF not T-concave");
-      return -1;
+      return UNUR_ERR_GEN_CONDITION;
     }
     
     /* compute parameters for chopped interval */
@@ -2223,7 +2232,7 @@ _unur_tdr_gw_interval_split( struct unur_gen *gen, struct unur_tdr_interval *iv_
     if (iv_newr == NULL) {
       /* PDF(x) < 0 or overflow !! */
       _unur_error(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
-      return -1;
+      return UNUR_ERR_SHOULD_NOT_HAPPEN;
     }
     
     /* insert into linked list */
@@ -2236,16 +2245,18 @@ _unur_tdr_gw_interval_split( struct unur_gen *gen, struct unur_tdr_interval *iv_
     success   = _unur_tdr_gw_interval_parameter(gen, iv_oldl);
     success_r = _unur_tdr_gw_interval_parameter(gen, iv_newr);
     
-    /* minimum of both */
-    if (success_r < success) success = success_r;
-    
+    /* worst of success and success_r */
+    if (success_r!=UNUR_SUCCESS)
+      if ((success_r!=UNUR_ERR_SILENT&&success_r!=UNUR_ERR_INF) ||
+	  (success==UNUR_SUCCESS||success==UNUR_ERR_SILENT||success==UNUR_ERR_INF))
+	success = success_r;
   }
   
   /* successfull ? */
-  if (success <= 0) {
+  if (success!=UNUR_SUCCESS) {
     /* cannot split interval at given point */
     _unur_warning(gen->genid,UNUR_ERR_GEN_DATA,"Cannot split interval at given point.");
-    if (success <= -2)
+    if (success!=UNUR_ERR_SILENT && success!=UNUR_ERR_INF)
       _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"PDF not T-concave");
 
     /* the case of unbounded hat is treated as round-off error for 
@@ -2263,7 +2274,8 @@ _unur_tdr_gw_interval_split( struct unur_gen *gen, struct unur_tdr_interval *iv_
       free( iv_newr );
     }
 
-  return ( (success <= -2) ? -1 : 0 );
+  return ( (success!=UNUR_ERR_SILENT && success!=UNUR_ERR_INF) 
+	   ? UNUR_ERR_GEN_CONDITION : UNUR_SUCCESS );
   }
 
   /* successful */
@@ -2281,7 +2293,7 @@ _unur_tdr_gw_interval_split( struct unur_gen *gen, struct unur_tdr_interval *iv_
 #endif
 
   /* o.k. */
-  return 1;
+  return UNUR_SUCCESS;
 
 } /* end of _unur_tdr_gw_interval_split() */
 
@@ -2301,9 +2313,9 @@ _unur_tdr_ps_interval_split( struct unur_gen *gen, struct unur_tdr_interval *iv,
      /*   fx      ... value of PDF at x                                      */
      /*                                                                      */
      /* return:                                                              */
-     /*   1  ... if successful                                               */
-     /*   0  ... if no intervals are splitted                                */
-     /*  -1  ... error                                                       */
+     /*   UNUR_SUCCESS    ... if successful                                  */
+     /*   UNUR_ERR_SILENT ... if no intervals are splitted                   */
+     /*   others          ... error                                          */
      /*----------------------------------------------------------------------*/
 {
   struct unur_tdr_interval *oldl, *oldr;  /* pointer to old intervals (left, right) */
@@ -2312,24 +2324,24 @@ _unur_tdr_ps_interval_split( struct unur_gen *gen, struct unur_tdr_interval *iv,
   int success, success_r;
 
   /* check arguments */
-  CHECK_NULL(gen,-1); COOKIE_CHECK(gen,CK_TDR_GEN,-1);
-  CHECK_NULL(iv,-1);  COOKIE_CHECK(iv,CK_TDR_IV,-1);
+  CHECK_NULL(gen,UNUR_ERR_NULL); COOKIE_CHECK(gen,CK_TDR_GEN,UNUR_ERR_COOKIE);
+  CHECK_NULL(iv,UNUR_ERR_NULL);  COOKIE_CHECK(iv,CK_TDR_IV,UNUR_ERR_COOKIE);
 
   /* we only add a new construction point, if the relative area is large enough */
   if ( (GEN.n_ivs * (iv->Ahat - iv->Asqueeze) / (GEN.Atotal - GEN.Asqueeze))
        < GEN.bound_for_adding)
-    return 0;
+    return UNUR_ERR_SILENT;
 
   /* the splitting point must be inside the interval */
   if (x < iv->ip || x > iv->next->ip) {
     _unur_warning(gen->genid,UNUR_ERR_GEN_DATA,"splitting point not in interval!");
-    return 0;
+    return UNUR_ERR_SILENT;
   }
 
   /* check for data error */
   if (fx < 0.) {
     _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"PDF(x) < 0.!");
-    return -1;
+    return UNUR_ERR_GEN_DATA;
   }
 
   /* which side of construction point */
@@ -2371,7 +2383,7 @@ _unur_tdr_ps_interval_split( struct unur_gen *gen, struct unur_tdr_interval *iv,
     }
     else {
       _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"PDF not T-concave");
-      return -1;
+      return UNUR_ERR_GEN_CONDITION;
     }
 
     /* we do not add a new interval */
@@ -2397,11 +2409,10 @@ _unur_tdr_ps_interval_split( struct unur_gen *gen, struct unur_tdr_interval *iv,
   }
 
   /* compute parameters for intervals */
-  success = 1;
+  success = UNUR_SUCCESS;
   /* left hand interval */
   if (oldl) {
-    success_r = _unur_tdr_ps_interval_parameter(gen, oldl);
-    if (success_r < success) success = success_r;
+   success = _unur_tdr_ps_interval_parameter(gen, oldl);
   }
   if( iv_new ) {
     /* middle (newly created) interval) */
@@ -2412,19 +2423,26 @@ _unur_tdr_ps_interval_split( struct unur_gen *gen, struct unur_tdr_interval *iv,
       iv_new->fip = oldr->fip;
     }
     success_r = _unur_tdr_ps_interval_parameter(gen, iv_new);
-    if (success_r < success) success = success_r;
+    /* worst of success and success_r */
+    if (success_r!=UNUR_SUCCESS)
+      if ((success_r!=UNUR_ERR_SILENT&&success_r!=UNUR_ERR_INF) ||
+	  (success==UNUR_SUCCESS||success==UNUR_ERR_SILENT||success==UNUR_ERR_INF))
+	success = success_r;
   }
   if ( oldr->next ) {
     /* right hand interval */
     success_r = _unur_tdr_ps_interval_parameter(gen, oldr);
-    if (success_r < success) success = success_r;
+    if (success_r!=UNUR_SUCCESS)
+      if ((success_r!=UNUR_ERR_SILENT&&success_r!=UNUR_ERR_INF) ||
+	  (success==UNUR_SUCCESS||success==UNUR_ERR_SILENT||success==UNUR_ERR_INF))
+	success = success_r;
   }
 
   /* successfull ? */
-  if (success <= 0) {
+  if (success!=UNUR_SUCCESS) {
     /* cannot split interval at given point */
     _unur_warning(gen->genid,UNUR_ERR_GEN_DATA,"Cannot split interval at given point.");
-    if (success <= -2)
+    if (success!=UNUR_ERR_SILENT && success!=UNUR_ERR_INF)
       _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"PDF not T-concave");
 
     /* the case of unbounded hat is treated as round-off error for 
@@ -2443,7 +2461,8 @@ _unur_tdr_ps_interval_split( struct unur_gen *gen, struct unur_tdr_interval *iv,
       free( iv_new );
     }
 
-  return ( (success <= -2) ? -1 : 0 );
+  return ( (success!=UNUR_ERR_SILENT && success!=UNUR_ERR_INF) 
+	   ? UNUR_ERR_GEN_CONDITION : UNUR_SUCCESS );
   }
 
   /* successful */
@@ -2468,7 +2487,7 @@ _unur_tdr_ps_interval_split( struct unur_gen *gen, struct unur_tdr_interval *iv,
 #endif
 
   /* o.k. */
-  return 1;
+  return UNUR_SUCCESS;
 
 } /* end of _unur_tdr_ps_interval_split() */
 
@@ -2483,10 +2502,8 @@ _unur_tdr_make_guide_table( struct unur_gen *gen )
      /*   gen ... pointer to generator object                                */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 (--> successful)                                                 */
-     /*                                                                      */
-     /* error:                                                               */
-     /*   return 0.                                                          */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   struct unur_tdr_interval *iv;
@@ -2494,7 +2511,7 @@ _unur_tdr_make_guide_table( struct unur_gen *gen )
   int j;
 
   /* check arguments */
-  CHECK_NULL(gen,0);  COOKIE_CHECK(gen,CK_TDR_GEN,0);
+  CHECK_NULL(gen,UNUR_ERR_NULL);  COOKIE_CHECK(gen,CK_TDR_GEN,UNUR_ERR_COOKIE);
 
   /* allocate blocks for guide table (if necessary).
      (we allocate blocks for maximal guide table.) */
@@ -2507,7 +2524,7 @@ _unur_tdr_make_guide_table( struct unur_gen *gen )
   Acum = 0.;            /* area below hat */
   Asqueezecum = 0.;     /* area below squeeze */
   for (iv = GEN.iv; iv != NULL; iv = iv->next ) {
-    COOKIE_CHECK(iv,CK_TDR_IV,0);
+    COOKIE_CHECK(iv,CK_TDR_IV,UNUR_ERR_COOKIE);
     Acum += iv->Ahat;
     Asqueezecum += iv->Asqueeze;
     iv->Acum = Acum;
@@ -2526,7 +2543,7 @@ _unur_tdr_make_guide_table( struct unur_gen *gen )
   Astep = GEN.Atotal / GEN.guide_size;
   Acum=0.;
   for( j=0, iv=GEN.iv; j < GEN.guide_size; j++ ) {
-    COOKIE_CHECK(iv,CK_TDR_IV,0);
+    COOKIE_CHECK(iv,CK_TDR_IV,UNUR_ERR_COOKIE);
     while( iv->Acum < Acum )
       iv = iv->next;
     if( iv->next == NULL ) {   /* this is the last virtual intervall --> do not use */
@@ -2541,7 +2558,8 @@ _unur_tdr_make_guide_table( struct unur_gen *gen )
   for( ; j<GEN.guide_size ;j++ )
     GEN.guide[j] = iv;
 
-  return 1;
+  return UNUR_SUCCESS;
 } /* end of _unur_tdr_make_guide_table() */
 
 /*****************************************************************************/
+

@@ -209,21 +209,19 @@ unur_vmt_set_marginalgen( struct unur_par *par, const struct unur_gen *uvgen )
      /*   uvgen ... pointer to generator for (univariate) marginal distr.    */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( GENTYPE,par,0 );
-
-  /* check input */
-  _unur_check_par_object( par,VMT );
+  _unur_check_NULL( GENTYPE, par, UNUR_ERR_NULL );
+  _unur_check_par_object( par, VMT );
 
   /* check new parameter for generator */
 
   if ( (uvgen->method & UNUR_MASK_TYPE) != UNUR_METH_CONT ) {
     _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"marginal generator");
-    return 0;
+    return UNUR_ERR_PAR_SET;
   }
     
   /* store date */
@@ -232,7 +230,7 @@ unur_vmt_set_marginalgen( struct unur_par *par, const struct unur_gen *uvgen )
   /* changelog */
   par->set |= VMT_SET_UVGEN;
 
-  return 1;
+  return UNUR_SUCCESS;
 
 } /* end of unur_vmt_set_marginalgen() */
 
@@ -608,7 +606,6 @@ _unur_vmt_debug_init( const struct unur_gen *gen )
      /*                                                                      */
      /* parameters:                                                          */
      /*   gen ... pointer to generator object                                */
-     /*                                                                      */
      /*----------------------------------------------------------------------*/
 {
   FILE *log;

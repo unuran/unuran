@@ -52,7 +52,7 @@ struct unur_slist *_unur_slist_new( void );
 /* Make new simple list.                                                     */
 /*---------------------------------------------------------------------------*/
 
-void _unur_slist_append( struct unur_slist *slist, void *element );
+int _unur_slist_append( struct unur_slist *slist, void *element );
 /*---------------------------------------------------------------------------*/
 /* Append pointer to element to simple list.                                 */
 /*---------------------------------------------------------------------------*/

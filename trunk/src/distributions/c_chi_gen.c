@@ -79,8 +79,8 @@ _unur_stdgen_chi_init( struct unur_par *par, struct unur_gen *gen )
      /*   gen ... pointer to generator object                                */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   /* one of par and gen must not be the NULL pointer */
@@ -92,7 +92,7 @@ _unur_stdgen_chi_init( struct unur_par *par, struct unur_gen *gen )
       double d_nu = (par) ? par->distr->data.cont.params[0] : nu;
       if (d_nu < 1.) {
 	_unur_error(NULL,UNUR_ERR_GEN_CONDITION,"");
-	return 0;
+	return UNUR_ERR_GEN_CONDITION;
       }
     }
 
@@ -103,7 +103,7 @@ _unur_stdgen_chi_init( struct unur_par *par, struct unur_gen *gen )
   case UNUR_STDGEN_INVERSION:   /* inversion method */
   default: /* no such generator */
     if (gen) _unur_warning(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
-    return 0;
+    return UNUR_FAILURE;
   }
   
 } /* end of _unur_stdgen_chi_init() */
@@ -146,7 +146,8 @@ inline static int
 chi_chru_init( struct unur_gen *gen )
 {
   /* check arguments */
-  CHECK_NULL(gen,0);  COOKIE_CHECK(gen,CK_CSTD_GEN,0);
+  CHECK_NULL(gen,UNUR_ERR_NULL);
+  COOKIE_CHECK(gen,CK_CSTD_GEN,UNUR_ERR_COOKIE);
 
   if (GEN.gen_param == NULL) {
     GEN.n_gen_param = MAX_gen_params;
@@ -156,12 +157,12 @@ chi_chru_init( struct unur_gen *gen )
   /* -X- setup code -X- */
   if (nu < 1.) {
     _unur_error(NULL,UNUR_ERR_GEN_CONDITION,"");
-    return 0;
+    return UNUR_ERR_GEN_CONDITION;
   }
 
   if (nu == 1.)
     /* no setup step required */
-    return 1;
+    return UNUR_SUCCESS;
 
   /* else nu > 1 */
   b = sqrt(nu - 1.);
@@ -172,7 +173,7 @@ chi_chru_init( struct unur_gen *gen )
 
   /* -X- end of setup code -X- */
 
-  return 1;
+  return UNUR_SUCCESS;
 
 } /* end of chi_chru_init() */
 
@@ -185,7 +186,8 @@ _unur_stdgen_sample_chi_chru( struct unur_gen *gen )
   double u,v,z,zz,r;
 
   /* check arguments */
-  CHECK_NULL(gen,0.); COOKIE_CHECK(gen,CK_CSTD_GEN,0.);
+  CHECK_NULL(gen,INFINITY);
+  COOKIE_CHECK(gen,CK_CSTD_GEN,INFINITY);
 
   if (nu == 1.) {
     while (1) {

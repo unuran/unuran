@@ -287,20 +287,18 @@ unur_vempk_set_smoothing( struct unur_par *par, double smoothing )
      /*   smoothing ... smoothing factor                                     */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( GENTYPE,par,0 );
-
-  /* check input */
-  _unur_check_par_object( par,VEMPK );
+  _unur_check_NULL( GENTYPE, par, UNUR_ERR_NULL );
+  _unur_check_par_object( par, VEMPK );
 
   /* check new parameter for generator */
   if (smoothing < 0.) {
     _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"smoothing factor < 0");
-    return 0;
+    return UNUR_ERR_PAR_SET;
   }
 
   /* store date */
@@ -309,7 +307,7 @@ unur_vempk_set_smoothing( struct unur_par *par, double smoothing )
   /* changelog */
   par->set |= VEMPK_SET_SMOOTHING;
 
-  return 1;
+  return UNUR_SUCCESS;
 
 } /* end of unur_vempk_set_smoothing() */
 
@@ -325,20 +323,20 @@ unur_vempk_chg_smoothing( struct unur_gen *gen, double smoothing )
      /*   smoothing ... smoothing factor                                     */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( GENTYPE,gen,0 );
-  _unur_check_gen_object( gen,VEMPK );
+  _unur_check_NULL( GENTYPE, gen, UNUR_ERR_NULL );
+  _unur_check_gen_object( gen, VEMPK, UNUR_ERR_GEN_INVALID );
   
   /* no changelog required */
 
   /* check new parameter for generator */
   if (smoothing < 0.) {
     _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"smoothing factor < 0");
-    return 0;
+    return UNUR_ERR_PAR_SET;
   }
 
   /* store smoothing factor */
@@ -353,7 +351,7 @@ unur_vempk_chg_smoothing( struct unur_gen *gen, double smoothing )
   /* changelog */
   gen->set |= VEMPK_SET_SMOOTHING;
 
-  return 1;
+  return UNUR_SUCCESS;
 
 } /* end of unur_vempk_chg_smoothing() */
 
@@ -369,18 +367,16 @@ unur_vempk_set_varcor( struct unur_par *par, int varcor )
      /*   varcor   ... 0 = no variance correction,  !0 = variance correction */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*                                                                      */
      /* comment:                                                             */
      /*   variance correction is the default                                 */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( GENTYPE,par,0 );
-
-  /* check input */
-  _unur_check_par_object( par,VEMPK );
+  _unur_check_NULL( GENTYPE, par, UNUR_ERR_NULL );
+  _unur_check_par_object( par, VEMPK );
 
   /* we use a bit in variant */
   par->variant = (varcor) 
@@ -388,7 +384,7 @@ unur_vempk_set_varcor( struct unur_par *par, int varcor )
     : (par->variant & (~VEMPK_VARFLAG_VARCOR));
 
   /* o.k. */
-  return 1;
+  return UNUR_SUCCESS;
 
 } /* end of unur_vempk_set_varcor() */
 
@@ -404,13 +400,13 @@ unur_vempk_chg_varcor( struct unur_gen *gen, int varcor )
      /*   varcor   ... 0 = no variance correction,  !0 = variance correction */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( GENTYPE,gen,0 );
-  _unur_check_gen_object( gen,VEMPK );
+  _unur_check_NULL( GENTYPE, gen, UNUR_ERR_NULL );
+  _unur_check_gen_object( gen, VEMPK, UNUR_ERR_GEN_INVALID );
   
   /* no changelog required */
 
@@ -420,7 +416,7 @@ unur_vempk_chg_varcor( struct unur_gen *gen, int varcor )
     : (gen->variant & (~VEMPK_VARFLAG_VARCOR));
 
   /* o.k. */
-  return 1;
+  return UNUR_SUCCESS;
 
 } /* end of unur_vempk_chg_varcor() */
 
@@ -464,12 +460,17 @@ _unur_vempk_init( struct unur_par *par )
   GEN.xbar = _unur_malloc( GEN.dim * sizeof(double) );
   S  = _unur_malloc( GEN.dim * GEN.dim * sizeof(double) );
   compute_mean_covar( DISTR.sample, DISTR.n_sample, GEN.dim, GEN.xbar, S );
-
+  
   /* make a distribution object for multinormal distribution */
   kernel_distr = unur_distr_multinormal( GEN.dim, NULL, S );
-  
+
   /* create kernel generator */
   GEN.kerngen = unur_init( unur_vmt_new( kernel_distr ) );
+  if (GEN.kerngen==NULL) {
+    _unur_error(GENTYPE,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
+    free (par); free (S); _unur_vempk_free(gen);
+    return NULL;
+  }
 
   /* set uniform random number generator */
   GEN.kerngen->urng = par->urng;
@@ -724,8 +725,8 @@ compute_mean_covar( double *data, int n_data, int dim,
      /*   S      ... pointer to store covariance matrix                      */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
 #define idx(a,b) (a*dim+b)
@@ -771,7 +772,7 @@ compute_mean_covar( double *data, int n_data, int dim,
   free(x);
 
   /* o.k. */
-  return 1;
+  return UNUR_SUCCESS;
 
 } /* compute_mean_covar() */
 

@@ -239,20 +239,18 @@ unur_ssr_set_cdfatmode( struct unur_par *par, double Fmode )
      /*   Fmode ... CDF at mode                                              */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( GENTYPE,par,0 );
-
-  /* check input */
-  _unur_check_par_object( par,SSR );
+  _unur_check_NULL( GENTYPE, par, UNUR_ERR_NULL );
+  _unur_check_par_object( par, SSR );
 
   /* check new parameter for generator */
   if (Fmode < 0. || Fmode > 1.) {
     _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"CDF(mode)");
-    return 0;
+    return UNUR_ERR_PAR_SET;
   }
 
   /* store date */
@@ -261,7 +259,7 @@ unur_ssr_set_cdfatmode( struct unur_par *par, double Fmode )
   /* changelog */
   par->set |= SSR_SET_CDFMODE;
 
-  return 1;
+  return UNUR_SUCCESS;
 
 } /* end of unur_ssr_set_cdfatmode() */
 
@@ -277,24 +275,22 @@ unur_ssr_set_pdfatmode( UNUR_PAR *par, double fmode )
      /*   fmode ... PDF at mode                                              */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( GENTYPE,par,0 );
-
-  /* check input */
-  _unur_check_par_object( par,SSR );
+  _unur_check_NULL( GENTYPE, par, UNUR_ERR_NULL );
+  _unur_check_par_object( par, SSR );
 
   /* check new parameter for generator */
   if (fmode <= 0.) {
     _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"PDF(mode)");
-    return 0;
+    return UNUR_ERR_PAR_SET;
   }
   if (_unur_FP_is_infinity(fmode)) {
     _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"PDF(mode) overflow");
-    return 0;
+    return UNUR_ERR_PAR_SET;
   }
 
   /* store date */
@@ -304,7 +300,7 @@ unur_ssr_set_pdfatmode( UNUR_PAR *par, double fmode )
   /* changelog */
   par->set |= SSR_SET_PDFMODE;
 
-  return 1;
+  return UNUR_SUCCESS;
 
 } /* end of unur_ssr_set_pdfatmode() */
 
@@ -320,24 +316,22 @@ unur_ssr_set_verify( struct unur_par *par, int verify )
      /*   verify ... 0 = no verifying,  !0 = verifying                       */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*                                                                      */
      /* comment:                                                             */
      /*   no verifying is the default                                        */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( GENTYPE,par,0 );
-
-  /* check input */
-  _unur_check_par_object( par,SSR );
+  _unur_check_NULL( GENTYPE, par, UNUR_ERR_NULL );
+  _unur_check_par_object( par, SSR );
 
   /* we use a bit in variant */
   par->variant = (verify) ? (par->variant | SSR_VARFLAG_VERIFY) : (par->variant & (~SSR_VARFLAG_VERIFY));
 
   /* o.k. */
-  return 1;
+  return UNUR_SUCCESS;
 
 } /* end of unur_ssr_set_verify() */
 
@@ -353,16 +347,16 @@ unur_ssr_chg_verify( struct unur_gen *gen, int verify )
      /*   verify ... 0 = no verifying,  !0 = verifying                       */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*                                                                      */
      /* comment:                                                             */
      /*   no verifying is the default                                        */
      /*----------------------------------------------------------------------*/
 {
   /* check input */
-  _unur_check_NULL( GENTYPE,gen,0 );
-  _unur_check_gen_object( gen,SSR );
+  _unur_check_NULL( GENTYPE, gen, UNUR_ERR_NULL );
+  _unur_check_gen_object( gen, SSR, UNUR_ERR_GEN_INVALID );
 
   if (verify) {
     /* turn verify mode on */
@@ -376,7 +370,7 @@ unur_ssr_chg_verify( struct unur_gen *gen, int verify )
   }
 
   /* o.k. */
-  return 1;
+  return UNUR_SUCCESS;
 
 } /* end of unur_ssr_chg_verify() */
 
@@ -392,24 +386,22 @@ unur_ssr_set_usesqueeze( struct unur_par *par, int usesqueeze )
      /*   usesqueeze ... 0 = no squeeze,  !0 = use squeeze                   */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*                                                                      */
      /* comment:                                                             */
      /*   no squeeze is the default                                          */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( GENTYPE,par,0 );
-
-  /* check input */
-  _unur_check_par_object( par,SSR );
+  _unur_check_NULL( GENTYPE, par, UNUR_ERR_NULL );
+  _unur_check_par_object( par, SSR );
 
   /* we use a bit in variant */
   par->variant = (usesqueeze) ? (par->variant | SSR_VARFLAG_SQUEEZE) : (par->variant & (~SSR_VARFLAG_SQUEEZE));
 
   /* o.k. */
-  return 1;
+  return UNUR_SUCCESS;
 
 } /* end of unur_ssr_set_usesqueeze() */
 
@@ -426,8 +418,8 @@ unur_ssr_chg_pdfparams( struct unur_gen *gen, double *params, int n_params )
      /*   n_params ... number of arguments                                   */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*                                                                      */
      /* IMPORTANT: The given parameters are not checked against domain       */
      /*            errors (in opposition to the unur_<distr>_new() call).    */
@@ -435,8 +427,8 @@ unur_ssr_chg_pdfparams( struct unur_gen *gen, double *params, int n_params )
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( GENTYPE,gen,0 );
-  _unur_check_gen_object( gen,SSR );
+  _unur_check_NULL( GENTYPE, gen, UNUR_ERR_NULL );
+  _unur_check_gen_object( gen, SSR, UNUR_ERR_GEN_INVALID );
   
   /* set new parameters in distribution object */
   return unur_distr_cont_set_pdfparams( gen->distr, params,n_params );
@@ -455,13 +447,13 @@ unur_ssr_chg_mode( struct unur_gen *gen, double mode )
      /*   mode  ... mode                                                     */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( GENTYPE,gen,0 );
-  _unur_check_gen_object( gen,SSR );
+  _unur_check_NULL( GENTYPE, gen, UNUR_ERR_NULL );
+  _unur_check_gen_object( gen, SSR, UNUR_ERR_GEN_INVALID );
   
   /* copy parameters */
   DISTR.mode = mode;
@@ -469,7 +461,7 @@ unur_ssr_chg_mode( struct unur_gen *gen, double mode )
   /* no changelog required */
 
   /* o.k. */
-  return 1;
+  return UNUR_SUCCESS;
 } /* end of unur_ssr_chg_mode() */
 
 /*---------------------------------------------------------------------------*/
@@ -483,13 +475,13 @@ unur_ssr_upd_mode( struct unur_gen *gen )
      /*   gen   ... pointer to generator object                              */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( GENTYPE,gen,0 );
-  _unur_check_gen_object( gen,SSR );
+  _unur_check_NULL( GENTYPE, gen, UNUR_ERR_NULL );
+  _unur_check_gen_object( gen, SSR, UNUR_ERR_GEN_INVALID );
 
   return unur_distr_cont_upd_mode( gen->distr );
 } /* end of unur_ssr_upd_mode() */
@@ -506,18 +498,18 @@ unur_ssr_chg_cdfatmode( struct unur_gen *gen, double Fmode )
      /*   Fmode ... CDF at mode                                              */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( GENTYPE,gen,0 );
-  _unur_check_gen_object( gen,SSR );
+  _unur_check_NULL( GENTYPE, gen, UNUR_ERR_NULL );
+  _unur_check_gen_object( gen, SSR, UNUR_ERR_GEN_INVALID );
 
   /* check new parameter for generator */
   if (Fmode < 0. || Fmode > 1.) {
     _unur_warning(gen->genid,UNUR_ERR_PAR_SET,"CDF(mode)");
-    return 0;
+    return UNUR_ERR_PAR_SET;
   }
   
   /* copy parameters */
@@ -527,7 +519,7 @@ unur_ssr_chg_cdfatmode( struct unur_gen *gen, double Fmode )
   gen->set |= SSR_SET_CDFMODE;
 
   /* o.k. */
-  return 1;
+  return UNUR_SUCCESS;
 } /* end of unur_ssr_chg_cdfatmode() */
 
 /*---------------------------------------------------------------------------*/
@@ -542,22 +534,22 @@ unur_ssr_chg_pdfatmode( struct unur_gen *gen, double fmode )
      /*   fmode ... PDF at mode                                              */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( GENTYPE,gen,0 );
-  _unur_check_gen_object( gen,SSR );
+  _unur_check_NULL( GENTYPE, gen, UNUR_ERR_NULL );
+  _unur_check_gen_object( gen, SSR, UNUR_ERR_GEN_INVALID );
 
   /* check new parameter for generator */
   if (fmode <= 0.) {
     _unur_warning(gen->genid,UNUR_ERR_PAR_SET,"PDF(mode)");
-    return 0;
+    return UNUR_ERR_PAR_SET;
   }
   if (_unur_FP_is_infinity(fmode)) {
     _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"PDF(mode) overflow");
-    return 0;
+    return UNUR_ERR_PAR_SET;
   }
 
   /* store date */
@@ -568,7 +560,7 @@ unur_ssr_chg_pdfatmode( struct unur_gen *gen, double fmode )
   gen->set |= SSR_SET_PDFMODE;
 
   /* o.k. */
-  return 1;
+  return UNUR_SUCCESS;
 } /* end of unur_ssr_chg_pdfatmode() */
 
 /*---------------------------------------------------------------------------*/
@@ -588,13 +580,13 @@ unur_ssr_chg_domain( struct unur_gen *gen, double left, double right )
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( GENTYPE,gen,0 );
-  _unur_check_gen_object( gen,SSR );
+  _unur_check_NULL( GENTYPE, gen, UNUR_ERR_NULL );
+  _unur_check_gen_object( gen, SSR, UNUR_ERR_GEN_INVALID );
 
   /* check new parameter for generator */
   if (left >= right) {
     _unur_warning(NULL,UNUR_ERR_DISTR_SET,"domain, left >= right");
-    return 0;
+    return UNUR_ERR_DISTR_SET;
   }
 
   /* copy new boundaries into generator object */
@@ -610,7 +602,7 @@ unur_ssr_chg_domain( struct unur_gen *gen, double left, double right )
 #endif
   
   /* o.k. */
-  return 1;
+  return UNUR_SUCCESS;
   
 } /* end of unur_ssr_chg_domain() */
 
@@ -626,18 +618,18 @@ unur_ssr_chg_pdfarea( struct unur_gen *gen, double area )
      /*   area  ... area                                                     */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( GENTYPE,gen,0 );
-  _unur_check_gen_object( gen,SSR );
+  _unur_check_NULL( GENTYPE, gen, UNUR_ERR_NULL );
+  _unur_check_gen_object( gen, SSR, UNUR_ERR_GEN_INVALID );
   
   /* check new parameter for generator */
   if (area <= 0.) {
     _unur_warning(NULL,UNUR_ERR_DISTR_SET,"area <= 0");
-    return 0;
+    return UNUR_ERR_DISTR_SET;
   }
 
   /* copy parameters */
@@ -646,7 +638,7 @@ unur_ssr_chg_pdfarea( struct unur_gen *gen, double area )
   /* no changelog required */
 
   /* o.k. */
-  return 1;
+  return UNUR_SUCCESS;
 } /* end of unur_ssr_chg_pdfarea() */
 
 /*---------------------------------------------------------------------------*/
@@ -660,13 +652,13 @@ unur_ssr_upd_pdfarea( struct unur_gen *gen )
      /*   gen   ... pointer to generator object                              */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( GENTYPE,gen,0 );
-  _unur_check_gen_object( gen,SSR );
+  _unur_check_NULL( GENTYPE, gen, UNUR_ERR_NULL );
+  _unur_check_gen_object( gen, SSR, UNUR_ERR_GEN_INVALID );
 
   return unur_distr_cont_upd_pdfarea( gen->distr );
 } /* end of unur_ssr_upd_pdfarea() */
@@ -709,7 +701,7 @@ _unur_ssr_init( struct unur_par *par )
   if (!gen) { free(par); return NULL; }
 
   /* compute universal bounding rectangle */
-  if (! _unur_ssr_hat( gen ) ) {
+  if (_unur_ssr_hat(gen)!=UNUR_SUCCESS) {
     free(par); _unur_ssr_free(gen);
     return NULL;
   }
@@ -736,16 +728,16 @@ _unur_ssr_hat( struct unur_gen *gen )
      /*   gen ... pointer to generator object                                */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 { 
   double vm, fm;             /* width of rectangle, PDF at mode              */
   double left,right;
 
   /* check arguments */
-  CHECK_NULL( gen, 0 );
-  COOKIE_CHECK( gen,CK_SSR_GEN, 0 );
+  CHECK_NULL( gen, UNUR_ERR_NULL );
+  COOKIE_CHECK( gen,CK_SSR_GEN, UNUR_ERR_COOKIE );
 
   /* compute PDF at mode (if not given by user) */
   if (!(gen->set & SSR_SET_PDFMODE)) {
@@ -753,11 +745,11 @@ _unur_ssr_hat( struct unur_gen *gen )
     /* fm must be positive */
     if (fm <= 0.) {
       _unur_warning(gen->genid,UNUR_ERR_GEN_DATA,"PDF(mode) <= 0.");
-      return 0;
+      return UNUR_ERR_GEN_DATA;
     }
     if (_unur_FP_is_infinity(fm)) {
       _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"PDF(mode) overflow");
-      return 0;
+      return UNUR_ERR_PAR_SET;
     }
     GEN.fm = fm;        /* PDF at mode */
     GEN.um = sqrt(fm);  /* square root of PDF at mode */
@@ -824,7 +816,7 @@ _unur_ssr_hat( struct unur_gen *gen )
   /* write info into log file */
 #endif
 
-  return 1;
+  return UNUR_SUCCESS;
 } /* end of _unur_ssr_hat() */
 
 /*---------------------------------------------------------------------------*/
@@ -861,7 +853,7 @@ _unur_ssr_create( struct unur_par *par )
   /* check for required data: mode */
   if (!(gen->distr->set & UNUR_DISTR_SET_MODE)) {
     _unur_warning(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"mode: try finding it (numerically)"); 
-    if (!unur_distr_cont_upd_mode( gen->distr )) {
+    if (unur_distr_cont_upd_mode(gen->distr)!=UNUR_SUCCESS) {
       _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"mode"); 
       _unur_distr_free(gen->distr); free(gen);
       return NULL; 
@@ -870,7 +862,7 @@ _unur_ssr_create( struct unur_par *par )
 
   /* check for required data: area */
   if (!(gen->distr->set & UNUR_DISTR_SET_PDFAREA))
-    if (!unur_distr_cont_upd_pdfarea( gen->distr )) {
+    if (unur_distr_cont_upd_pdfarea(gen->distr)!=UNUR_SUCCESS) {
       _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"area below PDF");
       _unur_distr_free(gen->distr); free(gen);
       return NULL; 
@@ -927,15 +919,15 @@ unur_ssr_reinit( struct unur_gen *gen )
      /*   gen ... pointer to generator object                                */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   int result;
 
   /* check arguments */
-  _unur_check_NULL( GENTYPE,gen,0 );
-  _unur_check_gen_object( gen,SSR );
+  _unur_check_NULL( GENTYPE, gen, UNUR_ERR_NULL );
+  _unur_check_gen_object( gen, SSR, UNUR_ERR_GEN_INVALID );
 
   /* compute universal bounding rectangle */
   result = _unur_ssr_hat( gen );
@@ -1007,13 +999,13 @@ _unur_ssr_sample( struct unur_gen *gen )
      /*   double (sample from random variate)                                */
      /*                                                                      */
      /* error:                                                               */
-     /*   return 0.                                                          */
+     /*   return INFINITY                                                    */
      /*----------------------------------------------------------------------*/
 { 
   double U,V,X,xx,y;
 
   /* check arguments */
-  CHECK_NULL(gen,0.);  COOKIE_CHECK(gen,CK_SSR_GEN,0.);
+  CHECK_NULL(gen,INFINITY);  COOKIE_CHECK(gen,CK_SSR_GEN,INFINITY);
 
   while (1) {
     /* uniform ~U(0,1) */
@@ -1069,13 +1061,13 @@ _unur_ssr_sample_check( struct unur_gen *gen )
      /*   double (sample from random variate)                                */
      /*                                                                      */
      /* error:                                                               */
-     /*   return 0.                                                          */
+     /*   return INFINITY                                                    */
      /*----------------------------------------------------------------------*/
 { 
   double U,V,X,xx,fx,y;
 
   /* check arguments */
-  CHECK_NULL(gen,0.);  COOKIE_CHECK(gen,CK_SSR_GEN,0.);
+  CHECK_NULL(gen,INFINITY);  COOKIE_CHECK(gen,CK_SSR_GEN,INFINITY);
 
   while (1) {
     /* uniform ~U(0,1) */

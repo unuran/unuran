@@ -89,8 +89,8 @@ _unur_stdgen_binomial_init( struct unur_par *par, struct unur_gen *gen )
      /*   gen ... pointer to generator object                                */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   /* one of par and gen must not be the NULL pointer */
@@ -99,17 +99,17 @@ _unur_stdgen_binomial_init( struct unur_par *par, struct unur_gen *gen )
   case 0:  /* DEFAULT */
   case 1:  /* Ratio of Uniforms/Inversion */
 #ifdef HAVE_UNUR_SF_LN_FACTORIAL
-     if (gen==NULL) return 1; /* test existence only  */
+     if (gen==NULL) return UNUR_SUCCESS; /* test existence only  */
      _unur_dstd_set_sampling_routine( par,gen,_unur_stdgen_sample_binomial_bruec );
      return binomial_bruec_init( gen );
 #else
-     return 0;
+     return UNUR_ERR_DISTR_REQUIRED;
 #endif
 
   case UNUR_STDGEN_INVERSION:   /* inversion method */
   default: /* no such generator */
     if (gen) _unur_warning(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
-    return 0;
+    return UNUR_FAILURE;
   }
   
 } /* end of _unur_stdgen_binomial_init() */
@@ -188,7 +188,8 @@ binomial_bruec_init( struct unur_gen *gen )
   double c,x; 
 
   /* check arguments */
-  CHECK_NULL(gen,0);  COOKIE_CHECK(gen,CK_DSTD_GEN,0);
+  CHECK_NULL(gen,UNUR_ERR_NULL);
+  COOKIE_CHECK(gen,CK_DSTD_GEN,UNUR_ERR_COOKIE);
 
   if (GEN.gen_param == NULL) {
     GEN.n_gen_param = MAX_gen_params;
@@ -228,7 +229,7 @@ binomial_bruec_init( struct unur_gen *gen )
 	 
   /* -X- end of setup code -X- */
 
-  return 1;
+  return UNUR_SUCCESS;
 
 } /* end of binomial_bruec_init() */
 
@@ -243,7 +244,8 @@ _unur_stdgen_sample_binomial_bruec( struct unur_gen *gen )
   double u,f,x,lf;
 
   /* check arguments */
-  CHECK_NULL(gen,0);  COOKIE_CHECK(gen,CK_DSTD_GEN,0);
+  CHECK_NULL(gen,INT_MAX);
+  COOKIE_CHECK(gen,CK_DSTD_GEN,INT_MAX);
   
   if (np<5) {
     /* Inversion/Chop-down */

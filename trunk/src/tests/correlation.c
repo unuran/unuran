@@ -67,6 +67,9 @@ unur_test_correlation( UNUR_GEN *genx, UNUR_GEN *geny, int samplesize, int verbo
      /* return:                                                              */
      /*     correlation coefficient                                          */
      /*                                                                      */
+     /* error:                                                               */
+     /*   -2. ... missing data                                               */
+     /*   -3. ... other errors                                               */
      /*----------------------------------------------------------------------*/
 {
   double x  =0., y =0.;  /* contains random numbers           */ 
@@ -78,20 +81,20 @@ unur_test_correlation( UNUR_GEN *genx, UNUR_GEN *geny, int samplesize, int verbo
   int n;
 
   /* check parameter */
-  _unur_check_NULL(test_name,genx,0);
-  _unur_check_NULL(test_name,geny,0);
+  _unur_check_NULL(test_name,genx,-3.);
+  _unur_check_NULL(test_name,geny,-3.);
   /* type of distribution */
   if (! ( ((genx->method & UNUR_MASK_TYPE) == UNUR_METH_DISCR) ||
 	  ((genx->method & UNUR_MASK_TYPE) == UNUR_METH_CONT) )) {
     _unur_error(test_name,UNUR_ERR_GENERIC,
          "dont know how to compute correlation coefficient for distribution");
-    return 0;
+    return -2.;
   }
   if (! ( ((geny->method & UNUR_MASK_TYPE) == UNUR_METH_DISCR) ||
 	  ((geny->method & UNUR_MASK_TYPE) == UNUR_METH_CONT) )) {
     _unur_error(test_name,UNUR_ERR_GENERIC,
          "dont know how to compute correlation coefficient for distribution");
-    return 0;
+    return -2.;
   }
 
   /* sample size >= 10 */

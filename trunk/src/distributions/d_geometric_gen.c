@@ -75,8 +75,8 @@ _unur_stdgen_geometric_init( struct unur_par *par, struct unur_gen *gen )
      /*   gen ... pointer to generator object                                */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   /* one of par and gen must not be the NULL pointer */
@@ -86,11 +86,11 @@ _unur_stdgen_geometric_init( struct unur_par *par, struct unur_gen *gen )
   case UNUR_STDGEN_INVERSION:   /* inversion method */
     if (par) PAR.is_inversion = TRUE;
     _unur_dstd_set_sampling_routine( par,gen,_unur_stdgen_sample_geometric_inv );
-    return 1;
+    return UNUR_SUCCESS;
 
   default: /* no such generator */
     if (gen) _unur_warning(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
-    return 0;
+    return UNUR_FAILURE;
   }
   
 } /* end of _unur_stdgen_geometric_init() */
@@ -141,7 +141,8 @@ _unur_stdgen_sample_geometric_inv( struct unur_gen *gen )
   int K;
 
   /* check arguments */
-  CHECK_NULL(gen,0);  COOKIE_CHECK(gen,CK_DSTD_GEN,0);
+  CHECK_NULL(gen,INT_MAX);
+  COOKIE_CHECK(gen,CK_DSTD_GEN,INT_MAX);
 
   /* sample from uniform random number generator */
 /*    while ((U = GEN.umin + uniform() * (GEN.umax-GEN.umin)) == 0.); */

@@ -106,7 +106,7 @@ int unur_dsrou_reinit( UNUR_GEN *generator );
    It is faster than destroying the existing object and building
    a new one from scratch.
    If reinitialization has been successful @code{1} is returned,
-   in case of a failure @code{0} is returned.
+   in case of a failure an error code is returned.
 */
 
 int unur_dsrou_set_cdfatmode( UNUR_PAR *parameters, double Fmode );
@@ -145,7 +145,7 @@ int unur_dsrou_chg_pmfparams( UNUR_GEN *generator, double *params, int n_params 
    object. 
 
    For standard distributions from the UNURAN library the parameters
-   are checked. It these are invalid, then @code{0} is
+   are checked. It these are invalid, then an error code is
    returned. Moreover the domain is updated automatically unless it
    has been changed before by a unur_distr_discr_set_domain() call.
    Notice that optional parameters are (re-)set to their default
@@ -154,7 +154,7 @@ int unur_dsrou_chg_pmfparams( UNUR_GEN *generator, double *params, int n_params 
    For other distributions @var{params} is simply copied into to
    distribution object. It is only checked that @var{n_params} does
    not exceed the maximum number of parameters allowed.
-   Then @code{0} is returned and @code{unur_errno} is set to
+   Then an error code is returned and @code{unur_errno} is set to
    @code{UNUR_ERR_DISTR_NPARAMS}.
 */
 

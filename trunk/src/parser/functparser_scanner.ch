@@ -417,7 +417,7 @@ _unur_fstr_UnsignedConstant (struct parser_data *pdata, char *uc)
   int startpos = pdata->scanpos;
 
   /* check arguments */
-  CHECK_NULL(pdata,1);  COOKIE_CHECK(pdata,CK_FSTR_PDATA,1);
+  CHECK_NULL(pdata,UNUR_ERR_NULL);  COOKIE_CHECK(pdata,CK_FSTR_PDATA,UNUR_ERR_COOKIE);
 
   /* copy digit sequence into uc */
   _unur_fstr_DigitalSequence(pdata,uc);
@@ -436,7 +436,7 @@ _unur_fstr_UnsignedConstant (struct parser_data *pdata, char *uc)
     _unur_fstr_ScaleFactor(pdata, uc + pdata->scanpos - startpos);
   }
 
-  return 0;
+  return UNUR_SUCCESS;
 } /* end of _unur_fstr_UnsignedConstant() */
 
 /*---------------------------------------------------------------------------*/
@@ -456,7 +456,7 @@ _unur_fstr_DigitalSequence (struct parser_data *pdata, char *ds)
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  CHECK_NULL(pdata,1);  COOKIE_CHECK(pdata,CK_FSTR_PDATA,1);
+  CHECK_NULL(pdata,UNUR_ERR_NULL);  COOKIE_CHECK(pdata,CK_FSTR_PDATA,UNUR_ERR_COOKIE);
 
   /* copy digit */
   while ( (*ds = pdata->fstr[pdata->scanpos]) >= '0' && *ds <= '9' ) {
@@ -466,7 +466,7 @@ _unur_fstr_DigitalSequence (struct parser_data *pdata, char *ds)
   /* terminate string */
   *ds = '\0';
 
-  return 0;
+  return UNUR_SUCCESS;
 } /* end of _unur_fstr_DigitalSequence() */
 
 /*---------------------------------------------------------------------------*/
@@ -486,7 +486,7 @@ _unur_fstr_ScaleFactor (struct parser_data *pdata, char *sf)
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  CHECK_NULL(pdata,1);  COOKIE_CHECK(pdata,CK_FSTR_PDATA,1);
+  CHECK_NULL(pdata,UNUR_ERR_NULL);  COOKIE_CHECK(pdata,CK_FSTR_PDATA,UNUR_ERR_COOKIE);
 
   /* copy sign */
   if ( (sf[0] = pdata->fstr[pdata->scanpos]) == '+' || sf[0] == '-' ) {
@@ -496,7 +496,7 @@ _unur_fstr_ScaleFactor (struct parser_data *pdata, char *sf)
   /* copy digital sequence (after sign) */
   _unur_fstr_DigitalSequence(pdata,sf);
 
-  return 0;
+  return UNUR_SUCCESS;
 } /* _unur_fstr_ScaleFactor() */
 
 /*---------------------------------------------------------------------------*/
@@ -517,7 +517,7 @@ _unur_fstr_Identifier (struct parser_data *pdata, char *id)
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  CHECK_NULL(pdata,1);  COOKIE_CHECK(pdata,CK_FSTR_PDATA,1);
+  CHECK_NULL(pdata,UNUR_ERR_NULL);  COOKIE_CHECK(pdata,CK_FSTR_PDATA,UNUR_ERR_COOKIE);
 
   /* copy word */
   while ( ((*id = pdata->fstr[pdata->scanpos]) >= 'a' && *id <= 'z')
@@ -529,7 +529,7 @@ _unur_fstr_Identifier (struct parser_data *pdata, char *id)
   /* terminate string */
   *id = '\0';
 
-  return 0;
+  return UNUR_SUCCESS;
 } /* end of _unur_fstr_Identifier() */
 
 /*---------------------------------------------------------------------------*/
@@ -559,7 +559,7 @@ _unur_fstr_RelationOperator (struct parser_data *pdata, char *ro)
   /* terminate string */
   *ro = '\0';
 
-  return 0;
+  return UNUR_SUCCESS;
 } /* _unur_fstr_RelationOperator() */
 
 /*---------------------------------------------------------------------------*/

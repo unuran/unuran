@@ -126,7 +126,7 @@ int unur_cstd_set_variant( UNUR_PAR *parameters, unsigned variant );
    @code{UNUR_STDGEN_FAST} for (one of the) fastest implemented
    special generators, and @code{UNUR_STDGEN_INVERSION} for the
    inversion method (if available). 
-   If the selected variant number is not implemented, then @code{0} is
+   If the selected variant number is not implemented, then an error code is
    returned and the variant is not changed.
 */
 
@@ -145,7 +145,7 @@ int unur_cstd_chg_truncated( UNUR_GEN *generator, double left, double right );
 /* 
    Change left and right border of the domain of the (truncated) distribution.
    This is only possible if the inversion method is used.
-   Otherwise this call has no effect and @code{0} is returned.
+   Otherwise this call has no effect and an error code is returned.
 
    Notice that the given truncated domain must be a subset of the
    domain of the given distribution. The generator always uses the
@@ -154,7 +154,7 @@ int unur_cstd_chg_truncated( UNUR_GEN *generator, double left, double right );
 
    @emph{Important:} If the CDF is (almost) the same for @var{left} and 
    @var{right} and (almost) equal to @code{0} or @code{1}, then the truncated 
-   domain is not chanced and the call returns @code{0}.
+   domain is not chanced and the call returns an error code.
 
    @emph{Notice:} If the parameters of the distribution has been changed by a 
    unur_cstd_chg_pdfparams() call it is recommended to set the truncated domain

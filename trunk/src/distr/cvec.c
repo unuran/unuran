@@ -9,8 +9,8 @@
  *   manipulate multivariate continuous distribution objects                 *
  *                                                                           *
  *   return:                                                                 *
- *     1 ... on success                                                      *
- *     0 ... on error                                                        *
+ *     UNUR_SUCCESS ... on success                                           *
+ *     error code   ... on error                                             *
  *                                                                           *
  *****************************************************************************
      $Id$
@@ -260,19 +260,19 @@ unur_distr_cvec_set_pdf( struct unur_distr *distr, UNUR_FUNCT_CVEC *pdf )
      /*   pdf   ... pointer to PDF                                           */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( NULL,distr,0 );
-  _unur_check_NULL( distr->name,pdf,0 );
-  _unur_check_distr_object( distr, CVEC, 0 );
+  _unur_check_NULL( NULL, distr, UNUR_ERR_NULL );
+  _unur_check_NULL( distr->name, pdf, UNUR_ERR_NULL);
+  _unur_check_distr_object( distr, CVEC, UNUR_ERR_DISTR_INVALID );
 
   /* we do not allow overwriting a PDF */
   if (DISTR.pdf != NULL) {
     _unur_warning(distr->name,UNUR_ERR_DISTR_SET,"Overwriting of PDF not allowed");
-    return 0;
+    return UNUR_ERR_DISTR_SET;
   }
 
   /* changelog */
@@ -280,7 +280,7 @@ unur_distr_cvec_set_pdf( struct unur_distr *distr, UNUR_FUNCT_CVEC *pdf )
   /* derived parameters like mode, area, etc. might be wrong now! */
 
   DISTR.pdf = pdf;
-  return 1;
+  return UNUR_SUCCESS;
 
 } /* end of unur_distr_cvec_set_pdf() */
 
@@ -296,19 +296,19 @@ unur_distr_cvec_set_dpdf( struct unur_distr *distr, UNUR_VFUNCT_CVEC *dpdf )
      /*   dpdf  ... pointer to gradient of PDF                               */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( NULL,distr,0 );
-  _unur_check_NULL( distr->name,dpdf,0 );
-  _unur_check_distr_object( distr, CVEC, 0 );
+  _unur_check_NULL( NULL, distr, UNUR_ERR_NULL );
+  _unur_check_NULL( distr->name, dpdf, UNUR_ERR_NULL );
+  _unur_check_distr_object( distr, CVEC, UNUR_ERR_DISTR_INVALID );
   
   /* we do not allow overwriting a dPDF */
   if (DISTR.dpdf != NULL) {
     _unur_warning(distr->name,UNUR_ERR_DISTR_SET,"Overwriting of dPDF not allowed");
-    return 0;
+    return UNUR_ERR_DISTR_SET;
   }
 
   /* changelog */
@@ -316,7 +316,7 @@ unur_distr_cvec_set_dpdf( struct unur_distr *distr, UNUR_VFUNCT_CVEC *dpdf )
   /* derived parameters like mode, area, etc. might be wrong now! */
 
   DISTR.dpdf = dpdf;
-  return 1;
+  return UNUR_SUCCESS;
 } /* end of unur_distr_cvec_set_dpdf() */
 
 /*---------------------------------------------------------------------------*/
@@ -334,7 +334,7 @@ unur_distr_cvec_get_pdf( const struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( NULL,distr,NULL );
+  _unur_check_NULL( NULL, distr, NULL );
   _unur_check_distr_object( distr, CVEC, NULL );
 
   return DISTR.pdf;
@@ -355,7 +355,7 @@ unur_distr_cvec_get_dpdf( const struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( NULL,distr,NULL );
+  _unur_check_NULL( NULL, distr, NULL );
   _unur_check_distr_object( distr, CVEC, NULL );
 
   return DISTR.dpdf;
@@ -401,17 +401,17 @@ unur_distr_cvec_eval_dpdf( double *result, const double *x, const struct unur_di
      /*   distr  ... pointer to distribution object                          */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( NULL, distr, 0 );
-  _unur_check_distr_object( distr, CVEC, 0 );
+  _unur_check_NULL( NULL, distr, UNUR_ERR_NULL );
+  _unur_check_distr_object( distr, CVEC, UNUR_ERR_DISTR_INVALID );
 
   if (DISTR.dpdf == NULL) {
     _unur_warning(distr->name,UNUR_ERR_DISTR_DATA,"");
-    return 0;
+    return UNUR_ERR_DISTR_DATA;
   }
 
   return _unur_cvec_dPDF(result,x,distr);
@@ -429,15 +429,15 @@ unur_distr_cvec_set_mean( struct unur_distr *distr, const double *mean )
      /*   mean  ... mean vector of distribution                              */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   int i;
 
   /* check arguments */
-  _unur_check_NULL( NULL, distr, 0 );
-  _unur_check_distr_object( distr, CVEC, 0 );
+  _unur_check_NULL( NULL, distr, UNUR_ERR_NULL );
+  _unur_check_distr_object( distr, CVEC, UNUR_ERR_DISTR_INVALID );
 
   /* we have to allocate memory first */
   if (DISTR.mean == NULL)
@@ -455,7 +455,7 @@ unur_distr_cvec_set_mean( struct unur_distr *distr, const double *mean )
   distr->set |= UNUR_DISTR_SET_MEAN;
 
   /* o.k. */
-  return 1;
+  return UNUR_SUCCESS;
 } /* end of unur_distr_cvec_set_mean() */
 
 /*---------------------------------------------------------------------------*/
@@ -498,16 +498,16 @@ unur_distr_cvec_set_covar( struct unur_distr *distr, const double *covar )
      /*   covar ... covariance matrix of distribution                        */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   int i,j;
   int dim;
 
   /* check arguments */
-  _unur_check_NULL( NULL, distr, 0 );
-  _unur_check_distr_object( distr, CVEC, 0 );
+  _unur_check_NULL( NULL, distr, UNUR_ERR_NULL );
+  _unur_check_distr_object( distr, CVEC, UNUR_ERR_DISTR_INVALID );
 
   dim = distr->dim;
 
@@ -516,7 +516,7 @@ unur_distr_cvec_set_covar( struct unur_distr *distr, const double *covar )
     for (i=0; i<dim*dim; i+= dim+1)
       if (covar[i] <= 0.) {
 	_unur_error(distr->name ,UNUR_ERR_DISTR_DOMAIN,"variance <= 0");
-	return 0;
+	return UNUR_ERR_DISTR_DOMAIN;
       }
 
     /* check for symmetry */
@@ -524,7 +524,7 @@ unur_distr_cvec_set_covar( struct unur_distr *distr, const double *covar )
       for (j=i+1; j<dim; j++)
 	if (!_unur_FP_same(covar[i*dim+j],covar[j*dim+i])) {
 	  _unur_error(distr->name ,UNUR_ERR_DISTR_DOMAIN,"covariance matrix not symmetric");
-	  return 0;
+	  return UNUR_ERR_DISTR_DOMAIN;
 	}
   }
   /* else: covar == NULL --> use identity matrix */
@@ -549,7 +549,7 @@ unur_distr_cvec_set_covar( struct unur_distr *distr, const double *covar )
   distr->set |= UNUR_DISTR_SET_COVAR;
 
   /* o.k. */
-  return 1;
+  return UNUR_SUCCESS;
 } /* end of unur_distr_cvec_set_covar() */
 
 /*---------------------------------------------------------------------------*/
@@ -594,19 +594,19 @@ unur_distr_cvec_set_pdfparams( struct unur_distr *distr, int par, const double *
      /*   n_params ... length of parameter array                             */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( NULL, distr, 0 );
-  _unur_check_NULL( NULL, params, 0 );
-  _unur_check_distr_object( distr, CVEC, 0 );
+  _unur_check_NULL( NULL, distr, UNUR_ERR_NULL );
+  _unur_check_NULL( NULL, params, UNUR_ERR_NULL );
+  _unur_check_distr_object( distr, CVEC, UNUR_ERR_DISTR_INVALID );
 
   /* check new parameter for distribution */
   if (par < 0 || par >= UNUR_DISTR_MAXPARAMS ) {
     _unur_error(NULL,UNUR_ERR_DISTR_NPARAMS,"");
-    return 0;
+    return UNUR_ERR_DISTR_NPARAMS;
   }
 
   /* allocate memory */
@@ -623,7 +623,7 @@ unur_distr_cvec_set_pdfparams( struct unur_distr *distr, int par, const double *
   /* derived parameters like mode, area, etc. might be wrong now! */
 
   /* o.k. */
-  return 1;
+  return UNUR_SUCCESS;
 } /* end of unur_distr_cvec_set_pdfparams() */
 
 /*---------------------------------------------------------------------------*/
@@ -674,14 +674,14 @@ unur_distr_cvec_set_mode( struct unur_distr *distr, const double *mode )
      /*   mode  ... mode of PDF                                           */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( NULL, distr, 0 );
-  _unur_check_distr_object( distr, CVEC, 0 );
-  _unur_check_NULL( distr->name, mode, 0 );
+  _unur_check_NULL( NULL, distr, UNUR_ERR_NULL );
+  _unur_check_distr_object( distr, CVEC, UNUR_ERR_DISTR_INVALID );
+  _unur_check_NULL( distr->name, mode, UNUR_ERR_NULL );
 
   /* mode already set ? */
   if (DISTR.mode == NULL) {
@@ -696,7 +696,7 @@ unur_distr_cvec_set_mode( struct unur_distr *distr, const double *mode )
   distr->set |= UNUR_DISTR_SET_MODE;
 
   /* o.k. */
-  return 1;
+  return UNUR_SUCCESS;
 } /* end of unur_distr_cvec_set_mode() */
 
 /*---------------------------------------------------------------------------*/
@@ -739,18 +739,18 @@ unur_distr_cvec_set_pdfvol( struct unur_distr *distr, double volume )
      /*   volume ... volume below PDF                                        */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( NULL, distr, 0 );
-  _unur_check_distr_object( distr, CVEC, 0 );
+  _unur_check_NULL( NULL, distr, UNUR_ERR_NULL );
+  _unur_check_distr_object( distr, CVEC, UNUR_ERR_DISTR_INVALID );
 
   /* check new parameter for distribution */
   if (volume <= 0.) {
     _unur_error(NULL,UNUR_ERR_DISTR_SET,"PDF volume <= 0");
-    return 0;
+    return UNUR_ERR_DISTR_SET;
   }
 
   DISTR.volume = volume;
@@ -759,7 +759,7 @@ unur_distr_cvec_set_pdfvol( struct unur_distr *distr, double volume )
   distr->set |= UNUR_DISTR_SET_PDFVOLUME;
 
   /* o.k. */
-  return 1;
+  return UNUR_SUCCESS;
 
 } /* end of unur_distr_cvec_set_pdfvol() */
 

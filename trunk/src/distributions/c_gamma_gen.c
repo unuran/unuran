@@ -85,8 +85,8 @@ _unur_stdgen_gamma_init( struct unur_par *par, struct unur_gen *gen )
      /*   gen ... pointer to generator object                                */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   /* one of par and gen must not be the NULL pointer */
@@ -94,7 +94,7 @@ _unur_stdgen_gamma_init( struct unur_par *par, struct unur_gen *gen )
 
   case 0:  /* DEFAULT */
   case 1:  /* Acceptance Rejection combined with Acceptance Complement */
-    if (gen==NULL) return 1; /* test existence only  */
+    if (gen==NULL) return UNUR_SUCCESS; /* test existence only  */
     if (alpha < 1.) {
       _unur_cstd_set_sampling_routine( par,gen,_unur_stdgen_sample_gamma_gs );
       return gamma_gs_init( gen );
@@ -112,7 +112,7 @@ _unur_stdgen_gamma_init( struct unur_par *par, struct unur_gen *gen )
   case UNUR_STDGEN_INVERSION:   /* inversion method */
   default: /* no such generator */
     if (gen) _unur_warning(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
-    return 0;
+    return UNUR_FAILURE;
   }
 
 } /* end of _unur_stdgen_gamma_init() */
@@ -155,7 +155,8 @@ inline static int
 gamma_gll_init( struct unur_gen *gen )
 {
   /* check arguments */
-  CHECK_NULL(gen,0);  COOKIE_CHECK(gen,CK_CSTD_GEN,0);
+  CHECK_NULL(gen,UNUR_ERR_NULL);
+  COOKIE_CHECK(gen,CK_CSTD_GEN,UNUR_ERR_COOKIE);
 
   if (GEN.gen_param == NULL) {
     GEN.n_gen_param = MAX_gen_params;
@@ -168,7 +169,7 @@ gamma_gll_init( struct unur_gen *gen )
   cc = alpha + aa;
   /* -X- end of setup code -X- */
 
-  return 1;
+  return UNUR_SUCCESS;
 
 } /* end of gamma_gll_init() */
 
@@ -180,7 +181,8 @@ _unur_stdgen_sample_gamma_gll( struct unur_gen *gen )
   double u1,u2,v,r,z;
 
   /* check arguments */
-  CHECK_NULL(gen,0.);  COOKIE_CHECK(gen,CK_CSTD_GEN,0.);
+  CHECK_NULL(gen,INFINITY);
+  COOKIE_CHECK(gen,CK_CSTD_GEN,INFINITY);
 
   while (1) {
     u1 = uniform();
@@ -237,7 +239,8 @@ gamma_gs_init( struct unur_gen *gen )
      /* CASE alpha < 1: Acceptance rejection algorithm gs */
 {
   /* check arguments */
-  CHECK_NULL(gen,0);  COOKIE_CHECK(gen,CK_CSTD_GEN,0);
+  CHECK_NULL(gen,UNUR_ERR_NULL);
+  COOKIE_CHECK(gen,CK_CSTD_GEN,UNUR_ERR_COOKIE);
 
   if (GEN.gen_param == NULL) {
     GEN.n_gen_param = MAX_gen_params;
@@ -248,7 +251,7 @@ gamma_gs_init( struct unur_gen *gen )
   b = 1. + 0.36788794412 * alpha;       /* Step 1 */
   /* -X- end of setup code -X- */
 
-  return 1;
+  return UNUR_SUCCESS;
 
 } /* end of gamma_gs_init() */
 
@@ -259,7 +262,8 @@ _unur_stdgen_sample_gamma_gs( struct unur_gen *gen )
   double X, p;
 
   /* check arguments */
-  CHECK_NULL(gen,0.);  COOKIE_CHECK(gen,CK_CSTD_GEN,0.);
+  CHECK_NULL(gen,INFINITY);
+  COOKIE_CHECK(gen,CK_CSTD_GEN,INFINITY);
 
   while (1) {
     p = b * uniform();
@@ -326,7 +330,8 @@ gamma_gd_init( struct unur_gen *gen )
      /* CASE alpha >= 1: Acceptance complement algorithm gd */
 {
   /* check arguments */
-  CHECK_NULL(gen,0);  COOKIE_CHECK(gen,CK_CSTD_GEN,0);
+  CHECK_NULL(gen,UNUR_ERR_NULL);
+  COOKIE_CHECK(gen,CK_CSTD_GEN,UNUR_ERR_COOKIE);
 
   if (GEN.gen_param == NULL) {
     GEN.n_gen_param = MAX_gen_params;
@@ -366,7 +371,7 @@ gamma_gd_init( struct unur_gen *gen )
     struct unur_distr *distr = unur_distr_normal(NULL,0);
     struct unur_par *par = unur_cstd_new( distr );
     NORMAL = (par) ? _unur_init(par) : NULL;
-    _unur_check_NULL( NULL,NORMAL,0 );
+    _unur_check_NULL( NULL, NORMAL, UNUR_ERR_NULL );
     /* need same uniform random number generator as slash generator */
     NORMAL->urng = gen->urng;
     /* copy debugging flags */
@@ -379,7 +384,7 @@ gamma_gd_init( struct unur_gen *gen )
 
   /* -X- end of setup code -X- */
 
-  return 1;
+  return UNUR_SUCCESS;
 
 } /* end of gamma_gd_init() */
 
@@ -391,7 +396,8 @@ _unur_stdgen_sample_gamma_gd( struct unur_gen *gen )
   double q,sign_U,t,v,w,x;
 
   /* check arguments */
-  CHECK_NULL(gen,0.);  COOKIE_CHECK(gen,CK_CSTD_GEN,0.);
+  CHECK_NULL(gen,INFINITY);
+  COOKIE_CHECK(gen,CK_CSTD_GEN,INFINITY);
 
   do {
 

@@ -235,15 +235,15 @@ unur_dari_set_cpfactor( struct unur_par *par, double cpfactor )
      /*   cfactor ... factor                                                 */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( GENTYPE,par,0 );
+  _unur_check_NULL( GENTYPE, par, UNUR_ERR_NULL );
 
   /* check input */
-  _unur_check_par_object( par,DARI );
+  _unur_check_par_object( par, DARI );
 
   /* check new parameter for generator */
   /** TODO: welche werte fuer c sind zulaessig / sinnvoll ? 
@@ -253,7 +253,7 @@ unur_dari_set_cpfactor( struct unur_par *par, double cpfactor )
   verbieten, hoechstens eine warnung.**/
   if (cpfactor <= 0.) {
     _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"cp-factor <= 0");
-    return 0;
+    return UNUR_ERR_PAR_SET;
   }
 
   if (cpfactor > 2.1)
@@ -265,7 +265,7 @@ unur_dari_set_cpfactor( struct unur_par *par, double cpfactor )
   /* changelog */
   par->set |= DARI_SET_CFACTOR;
 
-  return 1;
+  return UNUR_SUCCESS;
 
 } /* end of unur_dari_set_cpfactor() */
 
@@ -281,21 +281,21 @@ unur_dari_set_squeeze( struct unur_par *par, int squeeze )
      /*   squeeze ... 0 = no squeeze,  !0 = use squeeze                      */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( GENTYPE,par,0 );
+  _unur_check_NULL( GENTYPE, par, UNUR_ERR_NULL );
   
   /* check input */
-  _unur_check_par_object( par,DARI );
+  _unur_check_par_object( par, DARI );
 
   /* store data */
   PAR.squeeze = squeeze;
 
   /* o.k. */
-  return 1;
+  return UNUR_SUCCESS;
 
 } /* end of unur_dari_set_squeeze() */
 
@@ -311,23 +311,23 @@ unur_dari_set_tablesize( struct unur_par *par, int size )
      /*   size   ... table size                                              */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*                                                                      */
      /* comment:                                                             */
      /*   no verifying is the default                                        */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( GENTYPE,par,0 );
+  _unur_check_NULL( GENTYPE, par, UNUR_ERR_NULL );
 
   /* check input */
-  _unur_check_par_object( par,DARI );
+  _unur_check_par_object( par, DARI );
 
   /* check parameter */
   if (size < 0) {  
     _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"invalid table size");
-    return 0;
+    return UNUR_ERR_PAR_SET;
   }
   
   /* store data */
@@ -337,7 +337,7 @@ unur_dari_set_tablesize( struct unur_par *par, int size )
   par->set |= DARI_SET_TABLESIZE;
 
   /* o.k. */
-  return 1;
+  return UNUR_SUCCESS;
 } /* end of unur_dari_set_tablesize() */
   
 /*---------------------------------------------------------------------------*/
@@ -352,24 +352,24 @@ unur_dari_set_verify( struct unur_par *par, int verify )
      /*   verify ... 0 = no verifying,  !0 = verifying                       */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*                                                                      */
      /* comment:                                                             */
      /*   no verifying is the default                                        */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( GENTYPE,par,0 );
+  _unur_check_NULL( GENTYPE, par, UNUR_ERR_NULL );
 
   /* check input */
-  _unur_check_par_object( par,DARI );
+  _unur_check_par_object( par, DARI );
 
   /* we use a bit in variant */
   par->variant = (verify) ? (par->variant | DARI_VARFLAG_VERIFY) : (par->variant & (~DARI_VARFLAG_VERIFY));
 
   /* o.k. */
-  return 1;
+  return UNUR_SUCCESS;
 
 } /* end of unur_dari_set_verify() */
 
@@ -385,16 +385,16 @@ unur_dari_chg_verify( struct unur_gen *gen, int verify )
      /*   verify ... 0 = no verifying,  !0 = verifying                       */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*                                                                      */
      /* comment:                                                             */
      /*   no verifying is the default                                        */
      /*----------------------------------------------------------------------*/
 {
   /* check input */
-  _unur_check_NULL( GENTYPE,gen,0 );
-  _unur_check_gen_object( gen,DARI );
+  _unur_check_NULL( GENTYPE, gen, UNUR_ERR_NULL );
+  _unur_check_gen_object( gen, DARI, UNUR_ERR_GEN_INVALID );
 
   if (verify) {
     /* turn verify mode on */
@@ -408,7 +408,7 @@ unur_dari_chg_verify( struct unur_gen *gen, int verify )
   }
 
   /* o.k. */
-  return 1;
+  return UNUR_SUCCESS;
 
 } /* end of unur_dari_chg_verify() */
 
@@ -425,8 +425,8 @@ unur_dari_chg_pmfparams( struct unur_gen *gen, double *params, int n_params )
      /*   n_params ... number of arguments                                   */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*                                                                      */
      /* IMPORTANT: The given parameters are not checked against domain       */
      /*            errors (in opposition to the unur_<distr>_new() call).    */
@@ -434,8 +434,8 @@ unur_dari_chg_pmfparams( struct unur_gen *gen, double *params, int n_params )
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( GENTYPE,gen,0 );
-  _unur_check_gen_object( gen,DARI );
+  _unur_check_NULL( GENTYPE, gen, UNUR_ERR_NULL );
+  _unur_check_gen_object( gen, DARI, UNUR_ERR_GEN_INVALID );
 
   /* set new parameters in distribution object */
   return unur_distr_discr_set_pmfparams(gen->distr,params,n_params);
@@ -454,18 +454,22 @@ unur_dari_chg_domain( struct unur_gen *gen, int left, int right )
      /*   left  ... left boundary point                                      */
      /*   right ... right boundary point                                     */
      /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*                                                                      */
      /* comment:                                                             */
      /*   INT_MIN and INT_MAX are interpreted as (minus) infinity.           */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( GENTYPE,gen,0 );
-  _unur_check_gen_object( gen,DARI );
+  _unur_check_NULL( GENTYPE, gen, UNUR_ERR_NULL );
+  _unur_check_gen_object( gen, DARI, UNUR_ERR_GEN_INVALID );
 
   /* check new parameter for generator */
   if (left >= right) {
     _unur_warning(NULL,UNUR_ERR_DISTR_SET,"domain, left >= right");
-    return 0;
+    return UNUR_ERR_DISTR_SET;
   }
 
   /* copy new boundaries into generator object */
@@ -480,7 +484,7 @@ unur_dari_chg_domain( struct unur_gen *gen, int left, int right )
 #endif
   
   /* o.k. */
-  return 1;
+  return UNUR_SUCCESS;
   
 } /* end of unur_dari_chg_domain() */
 
@@ -496,13 +500,13 @@ unur_dari_chg_mode( struct unur_gen *gen, int mode )
      /*   mode  ... mode                                                     */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( GENTYPE,gen,0 );
-  _unur_check_gen_object( gen,DARI );
+  _unur_check_NULL( GENTYPE, gen, UNUR_ERR_NULL );
+  _unur_check_gen_object( gen, DARI, UNUR_ERR_GEN_INVALID );
   
   /* copy parameters */
   DISTR.mode = mode;
@@ -511,7 +515,7 @@ unur_dari_chg_mode( struct unur_gen *gen, int mode )
   gen->distr->set |= UNUR_DISTR_SET_MODE;
 
   /* o.k. */
-  return 1;
+  return UNUR_SUCCESS;
 } /* end of unur_dari_chg_mode() */
 
 /*---------------------------------------------------------------------------*/
@@ -525,13 +529,13 @@ unur_dari_upd_mode( struct unur_gen *gen )
      /*   gen   ... pointer to generator object                              */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( GENTYPE,gen,0 );
-  _unur_check_gen_object( gen,DARI );
+  _unur_check_NULL( GENTYPE, gen, UNUR_ERR_NULL );
+  _unur_check_gen_object( gen, DARI, UNUR_ERR_GEN_INVALID );
 
   return unur_distr_discr_upd_mode( gen->distr );
 } /* end of unur_dari_upd_mode() */
@@ -548,18 +552,18 @@ unur_dari_chg_pmfsum( struct unur_gen *gen, double sum )
      /*   sum   ... sum                                                      */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( GENTYPE,gen,0 );
-  _unur_check_gen_object( gen,DARI );
+  _unur_check_NULL( GENTYPE, gen, UNUR_ERR_NULL );
+  _unur_check_gen_object( gen, DARI, UNUR_ERR_GEN_INVALID );
   
   /* check new parameter for generator */
   if (sum <= 0.) {
     _unur_warning(NULL,UNUR_ERR_DISTR_SET,"sum <= 0");
-    return 0;
+    return UNUR_ERR_DISTR_SET;
   }
 
   /* copy parameters */
@@ -568,7 +572,7 @@ unur_dari_chg_pmfsum( struct unur_gen *gen, double sum )
   /* no changelog required */
 
   /* o.k. */
-  return 1;
+  return UNUR_SUCCESS;
 } /* end of unur_dari_chg_pmfsum() */
 
 /*---------------------------------------------------------------------------*/
@@ -582,13 +586,13 @@ unur_dari_upd_pmfsum( struct unur_gen *gen )
      /*   gen   ... pointer to generator object                              */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( GENTYPE,gen,0 );
-  _unur_check_gen_object( gen,DARI );
+  _unur_check_NULL( GENTYPE, gen, UNUR_ERR_NULL );
+  _unur_check_gen_object( gen, DARI, UNUR_ERR_GEN_INVALID );
 
   return unur_distr_discr_upd_pmfsum( gen->distr );
 } /* end of unur_dari_upd_pmfsum() */
@@ -613,7 +617,7 @@ _unur_dari_init( struct unur_par *par )
   struct unur_gen *gen;
 
   /* check arguments */
-  _unur_check_NULL( GENTYPE,par,NULL );
+  _unur_check_NULL( GENTYPE, par, NULL );
 
   /* check input */
   if ( par->method != UNUR_METH_DARI ) {
@@ -626,7 +630,7 @@ _unur_dari_init( struct unur_par *par )
   if (!gen) return NULL;
 
   /* create hat and squeeze (setup procedure) */
-  if ( !_unur_dari_hat(gen) ) {
+  if ( _unur_dari_hat(gen)!=UNUR_SUCCESS ) {
     /* error */
     _unur_dari_free(gen);
     return NULL;
@@ -680,7 +684,7 @@ _unur_dari_create( struct unur_par *par )
   /* check for required data: mode */
   if (!(gen->distr->set & UNUR_DISTR_SET_MODE)) {
     _unur_warning(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"mode: try finding it (numerically)"); 
-    if (!unur_distr_discr_upd_mode( gen->distr )) {
+    if (unur_distr_discr_upd_mode( gen->distr )!=UNUR_SUCCESS) {
       _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"mode"); 
       _unur_distr_free(gen->distr); free(gen);
       return NULL; 
@@ -689,7 +693,7 @@ _unur_dari_create( struct unur_par *par )
 
   /* check for required data: sum over PMF */
   if (!(gen->distr->set & UNUR_DISTR_SET_PMFSUM))
-    if (!unur_distr_discr_upd_pmfsum( gen->distr ))
+    if (unur_distr_discr_upd_pmfsum(gen->distr)!=UNUR_SUCCESS)
       _unur_warning(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"sum over PMF; use default");
 
   /* set generator identifier */
@@ -782,8 +786,8 @@ _unur_dari_hat( struct unur_gen *gen )
      /*   pointer to generator object                                        */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   int sign[2] = {-1,1};
@@ -794,8 +798,8 @@ _unur_dari_hat( struct unur_gen *gen )
   char rep = 1;
   
   /* check arguments */
-  CHECK_NULL( gen, 0 );
-  COOKIE_CHECK( gen,CK_DARI_GEN, 0 );
+  CHECK_NULL( gen, UNUR_ERR_NULL );
+  COOKIE_CHECK( gen, CK_DARI_GEN, UNUR_ERR_COOKIE );
   
   /* check mode. we assume unimodality 
      since otherwise the PMF would not be T-concave! */
@@ -807,7 +811,7 @@ _unur_dari_hat( struct unur_gen *gen )
   /* sum must not be zero */
   if (DISTR.sum <= 0.) {
     _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"sum <= 0");
-    return 0;
+    return UNUR_ERR_GEN_DATA;
   }
  
   /* Step 0: setup */
@@ -892,11 +896,11 @@ _unur_dari_hat( struct unur_gen *gen )
 
   if (setup == -2 || GEN.vt > 100.*t0 || GEN.vt <0.) {
     _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"; Area below hat too large or zero!! possible reasons: PDF, mode or area below PMF wrong;  or PMF not T-concave");
-    return 0;
+    return UNUR_ERR_GEN_DATA;
   }
 
   /* o.k. */
-  return 1;
+  return UNUR_SUCCESS;
 
 } /* end of _unur_dari_hat() */
 
@@ -911,13 +915,13 @@ unur_dari_reinit( struct unur_gen *gen )
      /*   gen ... pointer to generator object                                */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( GENTYPE,gen,0 );
-  _unur_check_gen_object( gen,DARI );
+  _unur_check_NULL( GENTYPE, gen, UNUR_ERR_NULL );
+  _unur_check_gen_object( gen, DARI, UNUR_ERR_GEN_INVALID );
   
   /* compute hat  */
   return _unur_dari_hat( gen );
@@ -989,16 +993,16 @@ _unur_dari_sample( struct unur_gen *gen )
      /*   double (sample from random variate)                                */
      /*                                                                      */
      /* error:                                                               */
-     /*   return 0.                                                          */
+     /*   return INT_MAX                                                     */
      /*----------------------------------------------------------------------*/
 {
   double U, h;
   double X = 0.;
   int k,i;
-  int sign[2] = {-1,1};
+  const static int sign[2] = {-1,1};
 
   /* check arguments */
-  CHECK_NULL(gen,0.);  COOKIE_CHECK(gen,CK_DARI_GEN,0.);
+  CHECK_NULL(gen,INT_MAX);  COOKIE_CHECK(gen,CK_DARI_GEN,INT_MAX);
 
   /* step 1.0 */
   while (1) {
@@ -1076,17 +1080,17 @@ _unur_dari_sample_check( struct unur_gen *gen )
      /*   double (sample from random variate)                                */
      /*                                                                      */
      /* error:                                                               */
-     /*   return 0.                                                          */
+     /*   return INT_MAX                                                     */
      /*----------------------------------------------------------------------*/
 {
   double U, h;
   double X = 0.;
   double hkm05;
   int k,i;
-  int sign[2] = {-1,1};
+  const static int sign[2] = {-1,1};
   
   /* check arguments */
-  CHECK_NULL(gen,0.);  COOKIE_CHECK(gen,CK_DARI_GEN,0.);
+  CHECK_NULL(gen,INT_MAX);  COOKIE_CHECK(gen,CK_DARI_GEN,INT_MAX);
   
   /* step 1.0 */
   while (1) {
@@ -1297,7 +1301,6 @@ _unur_dari_debug_init( struct unur_gen *gen )
      /*                                                                      */
      /* parameters:                                                          */
      /*   gen ... pointer to generator object                                */
-     /*                                                                      */
      /*----------------------------------------------------------------------*/
 {
   FILE *log;

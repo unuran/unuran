@@ -11,8 +11,8 @@
  *   PARAMETER: struct unur_distr *                                          *
  *                                                                           *
  *   return:                                                                 *
- *     1 ... on success                                                      *
- *     0 ... on error                                                        *
+ *     UNUR_SUCCESS ... on success                                           *
+ *     error code   ... on error                                             *
  *                                                                           *
  *****************************************************************************
      $Id$
@@ -78,15 +78,15 @@ unur_distr_set_name( struct unur_distr *distr, const char *name )
      /*   name  ... name of distribution                                     */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   int len;
   char *name_str;
 
   /* check arguments */
-  _unur_check_NULL( NULL,distr,0 );
+  _unur_check_NULL( NULL, distr, UNUR_ERR_NULL );
 
   /* allocate memory for storing string */
   len = strlen(name) + 1;
@@ -99,7 +99,7 @@ unur_distr_set_name( struct unur_distr *distr, const char *name )
   distr->name_str = name_str;
   distr->name = name_str;
 
-  return 1;
+  return UNUR_SUCCESS;
 } /* end of unur_distr_set_name() */
 
 /*---------------------------------------------------------------------------*/
@@ -117,7 +117,7 @@ unur_distr_get_name( const struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( NULL,distr,0 );
+  _unur_check_NULL( NULL, distr, NULL );
 
   return distr->name;
 } /* end of unur_distr_get_name() */
@@ -137,7 +137,7 @@ unur_distr_get_dim( const struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( NULL,distr,0 );
+  _unur_check_NULL( NULL, distr, 0 );
 
   return distr->dim;
 } /* end of unur_distr_get_dim() */
@@ -157,7 +157,7 @@ unur_distr_get_type( const struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( NULL,distr,0 );
+  _unur_check_NULL( NULL, distr, 0u );
 
   return (distr->type);
 } /* end of unur_distr_get_type() */
@@ -173,14 +173,14 @@ unur_distr_is_cont( const struct unur_distr *distr )
      /*   distr ... pointer to distribution object                           */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... if univariate continuous                                     */
-     /*   0 ... otherwise                                                    */
+     /*   TRUE  ... if continuous distribution                               */
+     /*   FALSE ... otherwise (and in case of an error)                      */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( NULL,distr,0 );
+  _unur_check_NULL( NULL, distr, FALSE );
 
-  return ((distr->type == UNUR_DISTR_CONT) ? 1 : 0);
+  return ((distr->type == UNUR_DISTR_CONT) ? TRUE : FALSE);
 } /* end of unur_distr_is_cont() */
 
 /*---------------------------------------------------------------------------*/
@@ -194,14 +194,14 @@ unur_distr_is_cvec( const struct unur_distr *distr )
      /*   distr ... pointer to distribution object                           */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... if multivariate continuous                                   */
-     /*   0 ... otherwise                                                    */
+     /*   TRUE  ... if multivariate continuous                               */
+     /*   FALSE ... otherwise (and in case of an error)                      */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( NULL,distr,0 );
+  _unur_check_NULL( NULL, distr, FALSE );
 
-  return ((distr->type == UNUR_DISTR_CVEC) ? 1 : 0);
+  return ((distr->type == UNUR_DISTR_CVEC) ? TRUE : FALSE);
 } /* end of unur_distr_is_cvec() */
 
 /*---------------------------------------------------------------------------*/
@@ -215,14 +215,14 @@ unur_distr_is_cvemp( const struct unur_distr *distr )
      /*   distr ... pointer to distribution object                           */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... if empirical multivariate continuous                         */
-     /*   0 ... otherwise                                                    */
+     /*   TRUE  ... if empirical multivariate continuous                     */
+     /*   FALSE ... otherwise (and in case of an error)                      */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( NULL,distr,0 );
+  _unur_check_NULL( NULL, distr, FALSE );
 
-  return ((distr->type == UNUR_DISTR_CVEMP) ? 1 : 0);
+  return ((distr->type == UNUR_DISTR_CVEMP) ? TRUE : FALSE);
 } /* end of unur_distr_is_cvemp() */
 
 /*---------------------------------------------------------------------------*/
@@ -236,14 +236,14 @@ unur_distr_is_discr( const struct unur_distr *distr )
      /*   distr ... pointer to distribution object                           */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... if univariate discrete                                       */
-     /*   0 ... otherwise                                                    */
+     /*   TREU  ... if univariate discrete                                   */
+     /*   FALSE ... otherwise (and in case of an error)                      */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( NULL,distr,0 );
+  _unur_check_NULL( NULL, distr, FALSE );
 
-  return ((distr->type == UNUR_DISTR_DISCR) ? 1 : 0);
+  return ((distr->type == UNUR_DISTR_DISCR) ? TRUE : FALSE);
 } /* end of unur_distr_is_discr() */
 
 /*---------------------------------------------------------------------------*/
@@ -258,14 +258,14 @@ unur_distr_is_cemp( const struct unur_distr *distr )
      /*   distr ... pointer to distribution object                           */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... if univariate discrete                                       */
-     /*   0 ... otherwise                                                    */
+     /*   TRUE  ... if univariate discrete                                   */
+     /*   FALSE ... otherwise (and in case of an error)                      */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( NULL,distr,0 );
+  _unur_check_NULL( NULL, distr, FALSE );
 
-  return ((distr->type == UNUR_DISTR_CEMP) ? 1 : 0);
+  return ((distr->type == UNUR_DISTR_CEMP) ? TRUE : FALSE);
 } /* end of unur_distr_is_cemp() */
 
 /*---------------------------------------------------------------------------*/

@@ -138,7 +138,7 @@ unur_get_genid( const struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  CHECK_NULL(gen,0);
+  CHECK_NULL(gen,NULL);
 
   return gen->genid;
 } /* end of unur_get_genid() */
@@ -161,7 +161,7 @@ unur_get_distr( const struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  CHECK_NULL(gen,0);
+  CHECK_NULL(gen,NULL);
 
   return gen->distr;
 } /* end of unur_get_distr() */

@@ -51,10 +51,13 @@ _unur_fstr_eval_tree (const struct ftreenode *root, const double x)
      /*                                                                      */
      /* return:                                                              */
      /*   result of computation                                              */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return INFINITY                                                    */
      /*----------------------------------------------------------------------*/
 {  
   /* check arguments */
-  CHECK_NULL(root,0.);   COOKIE_CHECK(root,CK_FSTR_TNODE,0.);
+  CHECK_NULL(root,INFINITY);   COOKIE_CHECK(root,CK_FSTR_TNODE,INFINITY);
 
   return _unur_fstr_eval_node( root, x );
 } /* end of _unur_fstr_eval_tree() */
@@ -120,12 +123,15 @@ _unur_fstr_eval_node (const struct ftreenode *node, const double x)
      /*                                                                      */
      /* return:                                                              */
      /*   result of computation                                              */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return INFINITY                                                    */
      /*----------------------------------------------------------------------*/
 {
   double val_l, val_r;
 
   /* check arguments */
-  CHECK_NULL(node,0.);   COOKIE_CHECK(node,CK_FSTR_TNODE,0.);
+  CHECK_NULL(node,INFINITY);   COOKIE_CHECK(node,CK_FSTR_TNODE,INFINITY);
 
   switch (node->type) {
   case S_UCONST:

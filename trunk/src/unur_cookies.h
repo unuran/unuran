@@ -134,20 +134,20 @@
 /* set magic cookies */
 #define COOKIE_SET(ptr,ck)           (ptr)->cookie=(ck)
 
-#define COOKIE_SET_ARRAY(ptr,ck,n)   {                                          \
-  register int i;                                                               \
-  for (i=0;i<(n);i++)                                                           \
-    ((ptr)+(i))->cookie=(ck);                                                   \
+#define COOKIE_SET_ARRAY(ptr,ck,n) { \
+  register int i; \
+  for (i=0;i<(n);i++) \
+    ((ptr)+(i))->cookie=(ck); \
 }
 
 /* check magic cookies */
-#define COOKIE_CHECK(ptr,ck,rval)                                               \
-  if((ptr)->cookie!=(ck)) {                                                     \
-    _unur_stream_printf(NULL,__FILE__,__LINE__,                                 \
-			"warning: %s (observed = %#lx, expected = %#lx)",       \
-                        unur_get_strerror(UNUR_ERR_COOKIE),                     \
-                        (ptr)->cookie, (ck));                                   \
-    return rval;                                                                \
+#define COOKIE_CHECK(ptr,ck,rval) \
+  if((ptr)->cookie!=(ck)) { \
+    _unur_stream_printf(NULL,__FILE__,__LINE__, \
+	"warning: %s (observed = %#lx, expected = %#lx)", \
+        unur_get_strerror(UNUR_ERR_COOKIE), \
+        (ptr)->cookie, (ck)); \
+    return rval; \
   }
 
 /* clear magic cookies (set to 0u). To be used in connection with free() to  */
@@ -170,9 +170,3 @@
 /*---------------------------------------------------------------------------*/
 #endif  /* SOURCE_COOKIES_H_SEEN */
 /*---------------------------------------------------------------------------*/
-
-
-
-
-
-

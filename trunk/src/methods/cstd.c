@@ -251,33 +251,33 @@ unur_cstd_set_variant( struct unur_par *par, unsigned variant )
      /*   variant ... indicator for variant                                  */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   unsigned old_variant;
 
   /* check arguments */
-  _unur_check_NULL( GENTYPE, par, 0 );
-  _unur_check_NULL( GENTYPE, par->distr, 0 );
+  _unur_check_NULL( GENTYPE, par, UNUR_ERR_NULL );
+  _unur_check_NULL( GENTYPE, par->distr, UNUR_ERR_NULL );
 
   /* check input */
-  _unur_check_par_object( par,CSTD );
+  _unur_check_par_object( par, CSTD );
 
   /* store date */
   old_variant = par->variant;
   par->variant = variant;
 
   /* check variant. run special init routine only in test mode */
-  if (par->DISTR_IN.init != NULL && par->DISTR_IN.init(par,NULL) ) {
+  if (par->DISTR_IN.init != NULL && par->DISTR_IN.init(par,NULL)==UNUR_SUCCESS ) {
     par->set |= CSTD_SET_VARIANT;    /* changelog */
-    return 1;
+    return UNUR_SUCCESS;
   }
 
   /* variant not valid */
   _unur_warning(GENTYPE,UNUR_ERR_PAR_VARIANT,"");
   par->variant = old_variant;
-  return 0;
+  return UNUR_ERR_PAR_VARIANT;
 
 } /* end if unur_cstd_set_variant() */
 
@@ -294,8 +294,8 @@ unur_cstd_chg_pdfparams( struct unur_gen *gen, double *params, int n_params )
      /*   n_params ... number of arguments                                   */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*                                                                      */
      /* IMPORTANT: The given parameters are not checked against domain       */
      /*            errors (in opposition to the unur_<distr>_new() call).    */
@@ -303,26 +303,27 @@ unur_cstd_chg_pdfparams( struct unur_gen *gen, double *params, int n_params )
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( GENTYPE,gen,0 );
-  _unur_check_gen_object( gen,CSTD );
-  if (n_params>0) CHECK_NULL(params,0);
+  _unur_check_NULL( GENTYPE, gen, UNUR_ERR_NULL );
+  _unur_check_gen_object( gen, CSTD, UNUR_ERR_GEN_INVALID );
+  if (n_params>0) CHECK_NULL(params, UNUR_ERR_NULL);
 
   /* set new parameters in distribution object */
-  if (!unur_distr_cont_set_pdfparams(gen->distr, params,n_params))
-    return 0;
+  if (unur_distr_cont_set_pdfparams(gen->distr, params,n_params)!=UNUR_SUCCESS)
+    return UNUR_ERR_DISTR_SET;
 
   /* run special init routine for generator */
-  if ( !(DISTR.init(NULL,gen)) ) {
+  if ( DISTR.init(NULL,gen)!=UNUR_SUCCESS ) {
     /* init failed --> could not find a sampling routine */
     _unur_warning(gen->genid,UNUR_ERR_GEN_DATA,"parameters");
-    return 0;
+    return UNUR_ERR_GEN_DATA;
   }
 
   if ( GEN.is_inversion )
     if (!(gen->distr->set & UNUR_DISTR_SET_STDDOMAIN)) {
       /* truncated domain */
       if (DISTR.cdf == NULL) {
-	_unur_error(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,""); return 0; }
+	_unur_error(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
+	return UNUR_ERR_SHOULD_NOT_HAPPEN; }
       /* compute umin and umax */
       GEN.umin = (DISTR.trunc[0] > -INFINITY) ? CDF(DISTR.trunc[0]) : 0.;
       GEN.umax = (DISTR.trunc[1] < INFINITY)  ? CDF(DISTR.trunc[1]) : 1.;
@@ -335,7 +336,7 @@ unur_cstd_chg_pdfparams( struct unur_gen *gen, double *params, int n_params )
 #endif
 
   /* o.k. */
-  return 1;
+  return UNUR_SUCCESS;
 
 } /* end of unur_cstd_chg_pdfparams() */
 
@@ -352,6 +353,10 @@ unur_cstd_chg_truncated( struct unur_gen *gen, double left, double right )
      /*   left  ... left boundary point                                      */
      /*   right ... right boundary point                                     */
      /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*                                                                      */
      /* comment:                                                             */
      /*   the new boundary points may be +/- INFINITY                        */
      /*----------------------------------------------------------------------*/
@@ -359,20 +364,20 @@ unur_cstd_chg_truncated( struct unur_gen *gen, double left, double right )
   double Umin, Umax;
 
   /* check arguments */
-  _unur_check_NULL( GENTYPE,gen,0 );
-  _unur_check_gen_object( gen,CSTD );
+  _unur_check_NULL( GENTYPE, gen, UNUR_ERR_NULL );
+  _unur_check_gen_object( gen, CSTD, UNUR_ERR_GEN_INVALID );
 
   /* domain can only be changed for inversion method! */
   if ( ! GEN.is_inversion ) { 
     /* this is not the inversion method */
     _unur_warning(gen->genid,UNUR_ERR_GEN_DATA,"truncated domain for non inversion method");
-    return 0;
+    return UNUR_ERR_GEN_DATA;
   }
 
   /* CDF required ! */
   if (DISTR.cdf == NULL) {
     _unur_warning(gen->genid,UNUR_ERR_GEN_DATA,"truncated domain, CDF required");
-    return 0;
+    return UNUR_ERR_GEN_DATA;
   }
 
   /* check new parameter for generator */
@@ -388,7 +393,7 @@ unur_cstd_chg_truncated( struct unur_gen *gen, double left, double right )
 
   if (left >= right) {
     _unur_warning(NULL,UNUR_ERR_DISTR_SET,"domain, left >= right");
-    return 0;
+    return UNUR_ERR_DISTR_SET;
   }
 
   /* compute umin and umax */
@@ -399,7 +404,7 @@ unur_cstd_chg_truncated( struct unur_gen *gen, double left, double right )
   if (Umin > Umax) {
     /* this is a serios error that should not happen */
     _unur_error(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
-    return 0;
+    return UNUR_ERR_SHOULD_NOT_HAPPEN;
   }
 
   if (_unur_FP_equal(Umin,Umax)) {
@@ -408,7 +413,7 @@ unur_cstd_chg_truncated( struct unur_gen *gen, double left, double right )
     if (Umin == 0. || _unur_FP_same(Umax,1.)) {
       /* this is very bad */
       _unur_warning(gen->genid,UNUR_ERR_DISTR_SET,"CDF values at boundary points too close");
-      return 0;
+      return UNUR_ERR_DISTR_SET;
     }
   }
 
@@ -433,7 +438,7 @@ unur_cstd_chg_truncated( struct unur_gen *gen, double left, double right )
 #endif
   
   /* o.k. */
-  return 1;
+  return UNUR_SUCCESS;
   
 } /* end of unur_cstd_chg_truncated() */
 
@@ -482,7 +487,7 @@ _unur_cstd_init( struct unur_par *par )
   PAR.is_inversion = FALSE;
 
   /* run special init routine for generator */
-  if ( !DISTR.init(par,gen) ) {
+  if ( DISTR.init(par,gen)!=UNUR_SUCCESS ) {
     /* init failed --> could not find a sampling routine */
     _unur_error(GENTYPE,UNUR_ERR_GEN_DATA,"variant for special generator");
     free(par); _unur_cstd_free(gen); return NULL; 

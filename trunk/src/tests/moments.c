@@ -67,8 +67,8 @@ unur_test_moments( UNUR_GEN *gen, double *moments, int n_moments, int samplesize
      /*   out        ... output stream                                       */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   double x = 0.;
@@ -76,18 +76,19 @@ unur_test_moments( UNUR_GEN *gen, double *moments, int n_moments, int samplesize
   int n, mom;
 
   /* check parameter */
-  _unur_check_NULL(test_name,gen,0);
+  _unur_check_NULL(test_name, gen, UNUR_ERR_NULL);
+
   /* type of distribution */
   if (! ( ((gen->method & UNUR_MASK_TYPE) == UNUR_METH_DISCR) ||
 	  ((gen->method & UNUR_MASK_TYPE) == UNUR_METH_CONT) )) {
     _unur_error(test_name,UNUR_ERR_GENERIC,"dont know how to compute moments for distribution");
-    return 0;
+    return UNUR_ERR_GENERIC;
   }
   /* array for storing moments */
   CHECK_NULL(moments,0);
   if (n_moments <= 0 || n_moments > 4) {
     _unur_error(test_name,UNUR_ERR_GENERIC,"number of moments < 1 or > 4");
-    return 0;
+    return UNUR_ERR_GENERIC;
   }
 
   /* sample size >= 10 */
@@ -142,7 +143,7 @@ unur_test_moments( UNUR_GEN *gen, double *moments, int n_moments, int samplesize
     fprintf(out,"\n");
   }
 
-  return 1;
+  return UNUR_SUCCESS;
 
 } /* end of unur_test_moments() */
 

@@ -216,22 +216,20 @@ unur_hri_set_p0( struct unur_par *par, double p0 )
      /*   p0  ... design point                                               */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*                                                                      */
      /* comment:                                                             */
      /*   no verifying is the default                                        */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( GENTYPE,par,0 );
-
-  /* check input */
-  _unur_check_par_object( par,HRI );
+  _unur_check_NULL( GENTYPE, par, UNUR_ERR_NULL );
+  _unur_check_par_object( par, HRI );
 
   if (p0 <= par->distr->data.cont.domain[0]) {
     _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"p0 <= left boundary");
-    return 0;
+    return UNUR_ERR_PAR_SET;
   }
 
   /* store date */
@@ -241,7 +239,7 @@ unur_hri_set_p0( struct unur_par *par, double p0 )
   par->set |= HRI_SET_P0;
 
   /* o.k. */
-  return 1;
+  return UNUR_SUCCESS;
 
 } /* end of unur_hri_set_p0() */
 
@@ -257,24 +255,22 @@ unur_hri_set_verify( struct unur_par *par, int verify )
      /*   verify ... 0 = no verifying,  !0 = verifying                       */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*                                                                      */
      /* comment:                                                             */
      /*   no verifying is the default                                        */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( GENTYPE,par,0 );
-
-  /* check input */
-  _unur_check_par_object( par,HRI );
+  _unur_check_NULL( GENTYPE, par, UNUR_ERR_NULL );
+  _unur_check_par_object( par, HRI );
 
   /* we use a bit in variant */
   par->variant = (verify) ? (par->variant | HRI_VARFLAG_VERIFY) : (par->variant & (~HRI_VARFLAG_VERIFY));
 
   /* o.k. */
-  return 1;
+  return UNUR_SUCCESS;
 
 } /* end of unur_hri_set_verify() */
 
@@ -290,16 +286,16 @@ unur_hri_chg_verify( struct unur_gen *gen, int verify )
      /*   verify ... 0 = no verifying,  !0 = verifying                       */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*                                                                      */
      /* comment:                                                             */
      /*   no verifying is the default                                        */
      /*----------------------------------------------------------------------*/
 {
   /* check input */
-  _unur_check_NULL( GENTYPE,gen,0 );
-  _unur_check_gen_object( gen,HRI );
+  _unur_check_NULL( GENTYPE, gen, UNUR_ERR_NULL );
+  _unur_check_gen_object( gen, HRI, UNUR_ERR_GEN_INVALID );
 
   /* we use a bit in variant */
   gen->variant = (verify) ? (gen->variant | HRI_VARFLAG_VERIFY) : (gen->variant & (~HRI_VARFLAG_VERIFY));
@@ -308,7 +304,7 @@ unur_hri_chg_verify( struct unur_gen *gen, int verify )
   SAMPLE = (verify) ? _unur_hri_sample_check : _unur_hri_sample;
 
   /* o.k. */
-  return 1;
+  return UNUR_SUCCESS;
 
 } /* end of unur_hri_chg_verify() */
 
@@ -536,11 +532,14 @@ _unur_hri_sample( struct unur_gen *gen )
      /*   double (sample from random variate)                                */
      /*                                                                      */
      /* error:                                                               */
-     /*   return 0.                                                          */
+     /*   return INFINITY                                                    */
      /*----------------------------------------------------------------------*/
 { 
   double U, V, E, X, hrx1;
   double lambda0, p1, lambda1;
+
+  /* check arguments */
+  CHECK_NULL(gen,INFINITY);  COOKIE_CHECK(gen,CK_HRI_GEN,INFINITY);
 
   /*
     -------------------
@@ -641,13 +640,16 @@ _unur_hri_sample_check( struct unur_gen *gen )
      /*   double (sample from random variate)                                */
      /*                                                                      */
      /* error:                                                               */
-     /*   return 0.                                                          */
+     /*   return INFINITY                                                    */
      /*----------------------------------------------------------------------*/
 { 
   double U, V, E, X, hrx, hrx1;
   double lambda0, p1, lambda1;
   int i0 = 0;
   int i1 = 0;
+
+  /* check arguments */
+  CHECK_NULL(gen,INFINITY);  COOKIE_CHECK(gen,CK_HRI_GEN,INFINITY);
 
   /*
     -------------------
@@ -810,7 +812,7 @@ _unur_hri_sample_check( struct unur_gen *gen )
 
 #endif
 
-  return 0.;
+  return INFINITY;
 
 } /* end of _unur_hri_sample_check() */
 

@@ -86,8 +86,8 @@ _unur_stdgen_beta_init( struct unur_par *par, struct unur_gen *gen )
      /*   gen ... pointer to generator object                                */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   /* one of par and gen must not be the NULL pointer */
@@ -95,7 +95,7 @@ _unur_stdgen_beta_init( struct unur_par *par, struct unur_gen *gen )
 
   case 0:  /* DEFAULT */
   case 1:  /* Rejection with log-logistic envelopes */
-    if (gen==NULL) return 1; /* test existence only  */
+    if (gen==NULL) return UNUR_SUCCESS; /* test existence only  */
     if (p>1. && q>1.) {
       _unur_cstd_set_sampling_routine( par,gen,_unur_stdgen_sample_beta_bb );
       return beta_bb_init( gen );
@@ -106,7 +106,7 @@ _unur_stdgen_beta_init( struct unur_par *par, struct unur_gen *gen )
     }
 
   case 2:  /* Stratified Rejection/Patchwork Rejection */
-    if (gen==NULL) return 1; /* test existence only  */ 
+    if (gen==NULL) return UNUR_SUCCESS; /* test existence only  */ 
     if (p>1.)
       if (q>1.) {    /* p > 1 && q > 1 */
 	_unur_cstd_set_sampling_routine( par,gen,_unur_stdgen_sample_beta_b1prs );
@@ -129,7 +129,7 @@ _unur_stdgen_beta_init( struct unur_par *par, struct unur_gen *gen )
   case UNUR_STDGEN_INVERSION:   /* inversion method */
   default: /* no such generator */
     if (gen) _unur_warning(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
-    return 0;
+    return UNUR_FAILURE;
   }
 
 } /* end of _unur_stdgen_beta_init() */
@@ -185,7 +185,8 @@ beta_bc_init( struct unur_gen *gen )
      /* p <= 1. || q <= 1. */ 
 {
   /* check arguments */
-  CHECK_NULL(gen,0);  COOKIE_CHECK(gen,CK_CSTD_GEN,0);
+  CHECK_NULL(gen,UNUR_ERR_NULL);
+  COOKIE_CHECK(gen,CK_CSTD_GEN,UNUR_ERR_COOKIE);
 
   if (GEN.gen_param == NULL) {
     GEN.n_gen_param = MAX_gen_params;
@@ -203,7 +204,7 @@ beta_bc_init( struct unur_gen *gen )
   rk2 = 0.25 + (0.5 + 0.25 / si) * bm;
   /* -X- end of setup code -X- */
 
-  return 1;
+  return UNUR_SUCCESS;
 
 } /* end of beta_bc_init() */
 
@@ -216,7 +217,8 @@ _unur_stdgen_sample_beta_bc(  struct unur_gen *gen )
   double u1,u2,v,w,y,z;
 
   /* check arguments */
-  CHECK_NULL(gen,0.); COOKIE_CHECK(gen,CK_CSTD_GEN,0.);
+  CHECK_NULL(gen,INFINITY);
+  COOKIE_CHECK(gen,CK_CSTD_GEN,INFINITY);
 
   while (1) {
     /* Step 1 */
@@ -299,7 +301,8 @@ beta_bb_init( struct unur_gen *gen )
      /* p > 1. && q > 1 */ 
 {
   /* check arguments */
-  CHECK_NULL(gen,0);  COOKIE_CHECK(gen,CK_CSTD_GEN,0);
+  CHECK_NULL(gen,UNUR_ERR_NULL);
+  COOKIE_CHECK(gen,CK_CSTD_GEN,UNUR_ERR_COOKIE);
 
   if (GEN.gen_param == NULL) {
     GEN.n_gen_param = MAX_gen_params;
@@ -314,7 +317,7 @@ beta_bb_init( struct unur_gen *gen )
   ga = am + 1.0 / be;
   /* -X- end of setup code -X- */
 
-  return 1;
+  return UNUR_SUCCESS;
 
 } /* end of beta_bb_init() */
 
@@ -327,7 +330,8 @@ _unur_stdgen_sample_beta_bb(  struct unur_gen *gen )
   double u1,u2,v,w,z,r,s,t;
 
   /* check arguments */
-  CHECK_NULL(gen,0.); COOKIE_CHECK(gen,CK_CSTD_GEN,0.);
+  CHECK_NULL(gen,INFINITY);
+  COOKIE_CHECK(gen,CK_CSTD_GEN,INFINITY);
 
   while (1) {
     /* Step 1 */
@@ -429,7 +433,8 @@ beta_b00_init( struct unur_gen *gen )
      /* p < 1. && q < 1 */ 
 {
   /* check arguments */
-  CHECK_NULL(gen,0);  COOKIE_CHECK(gen,CK_CSTD_GEN,0);
+  CHECK_NULL(gen,UNUR_ERR_NULL);
+  COOKIE_CHECK(gen,CK_CSTD_GEN,UNUR_ERR_COOKIE);
 
   if (GEN.gen_param == NULL) {
     GEN.n_gen_param = MAX_gen_params;
@@ -448,7 +453,7 @@ beta_b00_init( struct unur_gen *gen )
   p2 = (1. - t)/q + p1;                              /* t < X < 1       */
   /* -X- end of setup code -X- */
 
-  return 1;
+  return UNUR_SUCCESS;
 
 } /* end of beta_b00_init() */
 
@@ -460,7 +465,8 @@ _unur_stdgen_sample_beta_b00(  struct unur_gen *gen )
   double U, V, X, Z;
 
   /* check arguments */
-  CHECK_NULL(gen,0.); COOKIE_CHECK(gen,CK_CSTD_GEN,0.);
+  CHECK_NULL(gen,INFINITY);
+  COOKIE_CHECK(gen,CK_CSTD_GEN,INFINITY);
 
   while (1) {
     U = uniform() * p2;
@@ -527,7 +533,8 @@ beta_b01_init( struct unur_gen *gen )
      /* p < 1. < q || p > 1. > q */ 
 {
   /* check arguments */
-  CHECK_NULL(gen,0);  COOKIE_CHECK(gen,CK_CSTD_GEN,0);
+  CHECK_NULL(gen,UNUR_ERR_NULL);
+  COOKIE_CHECK(gen,CK_CSTD_GEN,UNUR_ERR_COOKIE);
 
   if (GEN.gen_param == NULL) {
     GEN.n_gen_param = MAX_gen_params;
@@ -566,7 +573,7 @@ beta_b01_init( struct unur_gen *gen )
   p2 = fq * (1. - t)/qint + p1;                          /*  t < X < 1      */
   /* -X- end of setup code -X- */
 
-  return 1;
+  return UNUR_SUCCESS;
   
 } /* end of beta_b01_init() */
 
@@ -578,7 +585,8 @@ _unur_stdgen_sample_beta_b01(  struct unur_gen *gen )
   double U, V, X, Z;
 
   /* check arguments */
-  CHECK_NULL(gen,0.); COOKIE_CHECK(gen,CK_CSTD_GEN,0.);
+  CHECK_NULL(gen,INFINITY);
+  COOKIE_CHECK(gen,CK_CSTD_GEN,INFINITY);
 
   while (1) {
     U = uniform() * p2;
@@ -660,7 +668,8 @@ beta_b1prs_init( struct unur_gen *gen )
      /* p > 1. && q > 1. */ 
 {
   /* check arguments */
-  CHECK_NULL(gen,0);  COOKIE_CHECK(gen,CK_CSTD_GEN,0);
+  CHECK_NULL(gen,UNUR_ERR_NULL);
+  COOKIE_CHECK(gen,CK_CSTD_GEN,UNUR_ERR_COOKIE);
 
   if (GEN.gen_param == NULL) {
     GEN.n_gen_param = MAX_gen_params;
@@ -722,7 +731,7 @@ beta_b1prs_init( struct unur_gen *gen )
   p4 = f5 * lr       + p3;                            /*  x5 < X        */
   /* -X- end of setup code -X- */
   
-  return 1;
+  return UNUR_SUCCESS;
 
 } /* end of beta_b1prs_init() */
 
@@ -734,7 +743,8 @@ _unur_stdgen_sample_beta_b1prs(  struct unur_gen *gen )
   double U, V, W, X, Y;
 
   /* check arguments */
-  CHECK_NULL(gen,0.); COOKIE_CHECK(gen,CK_CSTD_GEN,0.);
+  CHECK_NULL(gen,INFINITY);
+  COOKIE_CHECK(gen,CK_CSTD_GEN,INFINITY);
 
   while (1) {
     U = uniform() * p4;

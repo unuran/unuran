@@ -458,7 +458,7 @@ EOM
 
 	    # error code ...
 	    $errno =~ s/[\s\n]+//g if defined $errno;
-	    print "n_tests_failed += check_errorcode( TESTLOG, $INPUT_LINE_NUMBER, $errno )\;\n" if $errno;
+	    print "n_tests_failed += (check_errorcode(TESTLOG,$INPUT_LINE_NUMBER,$errno)==UNUR_SUCCESS)?0:1\;\n" if $errno;
 
 	}
 
@@ -615,6 +615,7 @@ sub scan_validate {
     print "\tUNUR_PAR *par;\n";
     print "\tUNUR_GEN *gen;\n";
     print "\tint n_tests_failed = 0;\n";
+    print "\tint rcode;\n";
 
     print "\tdouble *darray;\n";
     print "\tdouble fpm[10];\n";
@@ -707,7 +708,9 @@ sub scan_validate {
 		else {
 		    print "\tgen = unur_init(par);\n";
 		}
-		print "\tn_tests_failed += run_validate_chi2( TESTLOG, 0, gen, '$todo' );\n";
+		print "\trcode = run_validate_chi2(TESTLOG,0,gen,'$todo');\n";
+		print "\tn_tests_failed += (rcode==UNUR_SUCCESS)?0:1;\n";
+		print "\tn_tests_failed += (rcode==UNUR_FAILURE)?1:0;\n";
 		print "\tunur_free(gen);\n";
 		print "\t} while (0);\n\n";
 	    }	    
@@ -903,7 +906,7 @@ sub scan_validate {
 		print "\tif (gen) unur_$method\_chg_verify(gen,1);\n";
 		# such an error is fatal. so we must make sure that we get a FAIL
 		# and override the sloppy definition of FAIL (2 are allowed for chi^2)
-		print "\tn_tests_failed += 10 * run_validate_verifyhat( TESTLOG, 0, gen, '$todo' );\n";
+		print "\tn_tests_failed += (run_validate_verifyhat(TESTLOG,0,gen,'$todo')==UNUR_SUCCESS)?0:2;\n";
 		print "\tunur_free(gen);\n\n";
 		print "\t} while (0);\n\n";
 	    }	    
@@ -959,12 +962,13 @@ sub print_test_command {
       }
       if ($test_command =~ /^\s*expected_NULL\s*/ or 
 	  $test_command =~ /^\s*expected_setfailed\s*/ or 
+	  $test_command =~ /^\s*expected_zero\s*/ or 
 	  $test_command =~ /^\s*expected_INFINITY\s*/ or 
 	  $test_command =~ /^\s*expected_negINFINITY\s*/ or 
 	  $test_command =~ /^\s*expected_INTMAX\s*/ or 
 	  $test_command =~ /^\s*expected_reinit\s*/) {
 	  $test_command =~ s/\s+//g;
-	  print "n_tests_failed += check_$test_command\( TESTLOG, $INPUT_LINE_NUMBER, ($last_C_line) )\;\n";
+	  print "n_tests_failed += (check_$test_command\(TESTLOG,$INPUT_LINE_NUMBER,($last_C_line))==UNUR_SUCCESS)?0:1\;\n";
 	  last SWITCH;
       }
       if ($test_command =~ /^\s*compare_double_sequence_par\s*$/ or
@@ -973,7 +977,7 @@ sub print_test_command {
 	  $test_command =~ /^\s*compare_int_sequence_par_start\s*$/ ) {
 	  $test_command =~ s/\s+//g;
 	  print "$last_C_line\;\n";
-	  print "n_tests_failed += $test_command\( TESTLOG, $INPUT_LINE_NUMBER, par, COMPARE_SAMPLE_SIZE );\n";
+	  print "n_tests_failed += ($test_command\(TESTLOG,$INPUT_LINE_NUMBER,par,COMPARE_SAMPLE_SIZE)==UNUR_SUCCESS)?0:1;\n";
 	  last SWITCH;
       }
       if ($test_command =~ /^\s*compare_double_sequence_gen\s*$/ or
@@ -984,18 +988,18 @@ sub print_test_command {
 	  $test_command =~ /^\s*compare_cvec_sequence_gen_start\s*$/ ) {
 	  $test_command =~ s/\s+//g;
 	  print "$last_C_line\;\n";
-	  print "n_tests_failed += $test_command\( TESTLOG, $INPUT_LINE_NUMBER, gen, COMPARE_SAMPLE_SIZE );\n";
+	  print "n_tests_failed += ($test_command\(TESTLOG,$INPUT_LINE_NUMBER,gen,COMPARE_SAMPLE_SIZE)==UNUR_SUCCESS)?0:1;\n";
 	  last SWITCH;
       }
       if ($test_command =~ /^\s*compare_double_sequence_urng_start\s*$/ ) {
 	  $test_command =~ s/\s+//g;
 	  print "$last_C_line\;\n";
-	  print "$test_command\( TESTLOG, $INPUT_LINE_NUMBER, COMPARE_SAMPLE_SIZE );\n";
+	  print "$test_command\(TESTLOG,$INPUT_LINE_NUMBER,COMPARE_SAMPLE_SIZE);\n";
 	  last SWITCH;
       }
       if ($test_command =~ /^\s*run_verify_generator\s*$/) {
 	  print "$last_C_line\;\n";
-	  print "$test_command( TESTLOG,$INPUT_LINE_NUMBER, par );\n";
+	  print "$test_command(TESTLOG,$INPUT_LINE_NUMBER,par);\n";
 	  last SWITCH;
       }
 

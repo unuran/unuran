@@ -89,10 +89,7 @@ int unur_distr_cvemp_read_data( UNUR_DISTR *distribution, const char *filename )
 
    In case of an error (file cannot be opened, too few entries in a
    line, invalid string for double in line) no data are copied into
-   the distribution object and @code{0} is returned.
-
-   In case of an error no data are copied into the distribuion object
-   and @code{0} is returned.
+   the distribution object and an error code is returned.
 */
 
 int unur_distr_cvemp_get_data( const UNUR_DISTR *distribution, const double **sample );

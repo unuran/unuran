@@ -10,8 +10,8 @@
  *   (i.e. samples)                                                          *
  *                                                                           *
  *   return:                                                                 *
- *     1 ... on success                                                      *
- *     0 ... on error                                                        *
+ *     UNUR_SUCCESS ... on success                                           *
+ *     error code   ... on error                                             *
  *                                                                           *
  *****************************************************************************
      $Id$
@@ -209,31 +209,31 @@ unur_distr_cemp_set_data( struct unur_distr *distr, const double *sample, int n_
      /*   n_sample ... number of observations (sample size)                  */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( NULL, distr, 0 );
-  _unur_check_distr_object( distr, CEMP, 0 );
-  _unur_check_NULL( distr->name, sample, 0 );
+  _unur_check_NULL( NULL, distr, UNUR_ERR_NULL );
+  _unur_check_distr_object( distr, CEMP, UNUR_ERR_DISTR_INVALID );
+  _unur_check_NULL( distr->name, sample, UNUR_ERR_NULL );
 
   /* check new parameter for generator */
   if (n_sample <= 0) {
     _unur_error(NULL,UNUR_ERR_DISTR_SET,"sample size");
-    return 0;
+    return UNUR_ERR_DISTR_SET;
   }
 
   /* allocate memory for sample */
   DISTR.sample = _unur_malloc( n_sample * sizeof(double) );
-  if (!DISTR.sample) return 0;
+  if (!DISTR.sample) return UNUR_ERR_MALLOC;
 
   /* copy observed sample */
   memcpy( DISTR.sample, sample, n_sample * sizeof(double) );
   DISTR.n_sample = n_sample;
 
   /* o.k. */
-  return 1;
+  return UNUR_SUCCESS;
 
 } /* end of unur_distr_cemp_set_data() */
 
@@ -249,22 +249,19 @@ unur_distr_cemp_read_data( struct unur_distr *distr, const char *filename )
      /*   filename ... name of data file                                     */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
-     /*                                                                      */
-     /* error:                                                               */
-     /*   return 0                                                           */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( NULL, distr, 0 );
-  _unur_check_distr_object( distr, CEMP, 0 );
+  _unur_check_NULL( NULL, distr, UNUR_ERR_NULL );
+  _unur_check_distr_object( distr, CEMP, UNUR_ERR_DISTR_INVALID );
 
   /* read data from file */
   DISTR.n_sample = _unur_read_data( filename, 1, &(DISTR.sample) );
 
   /* o.k. ? */
-  return (DISTR.n_sample > 0) ? 1 : 0;
+  return (DISTR.n_sample > 0) ? UNUR_SUCCESS : UNUR_ERR_DISTR_DATA;
 
 } /* end of unur_distr_cemp_read_data() */
 

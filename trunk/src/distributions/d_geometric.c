@@ -107,7 +107,7 @@ _unur_upd_mode_geometric( UNUR_DISTR *distr )
     DISTR.mode = (DISTR.domain[0]<0) ? 0 : DISTR.domain[0];
 
   /* o.k. */
-  return 1;
+  return UNUR_SUCCESS;
 } /* end of _unur_upd_mode_geometric() */
 
 /*---------------------------------------------------------------------------*/
@@ -119,13 +119,13 @@ _unur_upd_sum_geometric( UNUR_DISTR *distr )
   
   if (distr->set & UNUR_DISTR_SET_STDDOMAIN) {
     DISTR.sum = 1.;
-    return 1;
+    return UNUR_SUCCESS;
   }
   
   /* else */
   DISTR.sum = ( _unur_cdf_geometric( DISTR.domain[1],distr) 
 		 - _unur_cdf_geometric( DISTR.domain[0]-1,distr) );
-  return 1;
+  return UNUR_SUCCESS;
 
 } /* end of _unur_upd_sum_geometric() */
 
@@ -136,16 +136,16 @@ _unur_set_params_geometric( UNUR_DISTR *distr, const double *params, int n_param
 {
   /* check number of parameters for distribution */
   if (n_params < 1) {
-    _unur_error(distr_name,UNUR_ERR_DISTR_NPARAMS,"too few"); return 0; }
+    _unur_error(distr_name,UNUR_ERR_DISTR_NPARAMS,"too few"); return UNUR_ERR_DISTR_NPARAMS; }
   if (n_params > 1) {
     _unur_warning(distr_name,UNUR_ERR_DISTR_NPARAMS,"too many");
     n_params = 1; }
-  CHECK_NULL(params,0);
+  CHECK_NULL(params,UNUR_ERR_NULL);
 
   /* check parameter p */
   if (p <= 0. || p >= 1.) {
     _unur_error(distr_name,UNUR_ERR_DISTR_DOMAIN,"p <= 0 || p >= 1");
-    return 0;
+    return UNUR_ERR_DISTR_DOMAIN;
   }
 
   /* copy parameters for standard form */
@@ -163,7 +163,7 @@ _unur_set_params_geometric( UNUR_DISTR *distr, const double *params, int n_param
     DISTR.domain[1] = INT_MAX;     /* right boundary */
   }
 
-  return 1;
+  return UNUR_SUCCESS;
 } /* end of _unur_set_params_geometric() */
 
 /*---------------------------------------------------------------------------*/
@@ -196,7 +196,7 @@ unur_distr_geometric( const double *params, int n_params )
 		 UNUR_DISTR_SET_PMFSUM );
                 
   /* set parameters for distribution */
-  if (!_unur_set_params_geometric(distr,params,n_params)) {
+  if (_unur_set_params_geometric(distr,params,n_params)!=UNUR_SUCCESS) {
     free(distr);
     return NULL;
   }

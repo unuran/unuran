@@ -40,7 +40,7 @@ void abort_if_NULL( FILE *LOG, int line, const void *ptr )
   
   /* close log files and exit */
   fclose(LOG);
-  exit(-1);
+  exit(EXIT_FAILURE);
   
 } /* abort_if_NULL() */
 
@@ -49,20 +49,20 @@ void abort_if_NULL( FILE *LOG, int line, const void *ptr )
 
 int check_errorcode( FILE *LOG, int line, unsigned cherrno )
 {
-  int failed = 0;
-
   fprintf(LOG,"line %4d: Error code ...\t\t",line);
+
   if (unur_errno != cherrno) {
-    failed = 1;
     fprintf(LOG," Failed");
     fprintf(LOG," (observed = %#x, expected = %#x)\n",unur_errno,cherrno);
+    fflush(LOG);
+    return UNUR_FAILURE;
   }
-  else
+
+  else {
     fprintf(LOG," ok\n");
-
-  fflush(LOG);
-  return failed;
-
+    fflush(LOG);
+    return UNUR_SUCCESS;
+  }
 } /* end of check_errorcode() */
 
 /*---------------------------------------------------------------------------*/
@@ -70,133 +70,152 @@ int check_errorcode( FILE *LOG, int line, unsigned cherrno )
 
 int check_expected_NULL( FILE *LOG, int line, const void *ptr )
 {
-  int failed = 0;
-
   fprintf(LOG,"line %4d: NULL pointer expected ...\t",line);
+
   if (ptr != NULL) { 
-    failed = 1;
     fprintf(LOG," Failed\n");
+    fflush(LOG);
+    return UNUR_FAILURE;
   }
-  else
+
+  else {
     fprintf(LOG," ok\n");
-
-  fflush(LOG);
-  return failed;
-
+    fflush(LOG);
+    return UNUR_SUCCESS;
+  }
 } /* end of check_expected_NULL() */
 
 /*---------------------------------------------------------------------------*/
 /* check for "set failed" */
 
-int check_expected_setfailed( FILE *LOG, int line, int ok )
+int check_expected_setfailed( FILE *LOG, int line, int rcode )
 {
-  int failed = 0;
-
   fprintf(LOG,"line %4d: `failed' expected ...\t",line);
-  if (ok) {
-    failed = 1;
+  if (rcode==UNUR_SUCCESS) {
     fprintf(LOG," Failed\n");
+    fflush(LOG);
+    return UNUR_FAILURE;
   }
-  else
+
+  else {
     fprintf(LOG," ok\n");
-
-  fflush(LOG);
-  return failed;
-
+    fflush(LOG);
+    return UNUR_SUCCESS;
+  }
 } /* end of check_expected_setfailed() */
+
+/*---------------------------------------------------------------------------*/
+/* check for O (zero) */
+
+int check_expected_zero( FILE *LOG, int line, int k )
+{
+  fprintf(LOG,"line %4d: 0 (zero) expected ...\t",line);
+
+  if (k != 0) {
+    fprintf(LOG," Failed\n");
+    fflush(LOG);
+    return UNUR_FAILURE;
+  }
+
+  else {
+    fprintf(LOG," ok\n");
+    fflush(LOG);
+    return UNUR_SUCCESS;
+  }
+} /* end of check_expected_zero() */
 
 /*---------------------------------------------------------------------------*/
 /* check for INFINITY */
 
 int check_expected_INFINITY( FILE *LOG, int line, double x )
 {
-  int failed = 0;
-
   fprintf(LOG,"line %4d: INFINITY expected ...\t",line);
+
   if (x < UNUR_INFINITY) {
-    failed = 1;
     fprintf(LOG," Failed\n");
+    fflush(LOG);
+    return UNUR_FAILURE;
   }
-  else
+
+  else {
     fprintf(LOG," ok\n");
-
-  fflush(LOG);
-  return failed;
-
+    fflush(LOG);
+    return UNUR_SUCCESS;
+  }
 } /* end of check_expected_INFINITY() */
 
 int check_expected_negINFINITY( FILE *LOG, int line, double x )
 {
-  int failed = 0;
-
   fprintf(LOG,"line %4d: -INFINITY expected ...\t",line);
+
   if (x > -UNUR_INFINITY) {
-    failed = 1;
     fprintf(LOG," Failed\n");
+    fflush(LOG);
+    return UNUR_FAILURE;
   }
-  else
+
+  else {
     fprintf(LOG," ok\n");
-
-  fflush(LOG);
-  return failed;
-
+    fflush(LOG);
+    return UNUR_SUCCESS;
+  }
 } /* end of check_expected_negINFINITY() */
 
 int check_expected_INTMAX( FILE *LOG, int line, int k )
 {
-  int failed = 0;
-
   fprintf(LOG,"line %4d: INT_MAX expected ...\t",line);
+
   if (k < INT_MAX) {
-    failed = 1;
     fprintf(LOG," Failed\n");
+    fflush(LOG);
+    return UNUR_FAILURE;
   }
-  else
+
+  else {
     fprintf(LOG," ok\n");
-
-  fflush(LOG);
-  return failed;
-
+    fflush(LOG);
+    return UNUR_SUCCESS;
+  }
 } /* end of check_expected_INTMAX() */
 
 /*---------------------------------------------------------------------------*/
 /* check for reinit */
 
-int check_expected_reinit( FILE *LOG, int line, int ok )
+int check_expected_reinit( FILE *LOG, int line, int rcode )
 {
-  int failed = 0;
-
   fprintf(LOG,"line %4d: reinit ...\t\t\t",line);
-  if (!ok) {
-    failed = 1;
+
+  if (rcode!=UNUR_SUCCESS) {
     fprintf(LOG," Failed\n");
+    fflush(LOG);
+    return UNUR_FAILURE;
   }
-  else
+
+  else {
     fprintf(LOG," ok\n");
-
-  fflush(LOG);
-  return failed;
-
+    fflush(LOG);
+    return UNUR_SUCCESS;
+  }
 } /* end of check_expected_reinit() */
 
 /*---------------------------------------------------------------------------*/
 /* check for non existing reinit */
 
-int check_expected_no_reinit( FILE *LOG, int line, int ok )
+int check_expected_no_reinit( FILE *LOG, int line, int rcode )
 {
-  int failed = 0;
-
   fprintf(LOG,"line %4d: no reinit ...\t\t",line);
-  if (ok) {
-    failed = 1;
+
+  if (rcode==UNUR_SUCCESS) {
     fprintf(LOG," Failed\n");
+    fflush(LOG);
+    return UNUR_FAILURE;
   }
-  else
+
+  else {
     fprintf(LOG," ok\n");
-
-  fflush(LOG);
-  return failed;
-
+    fflush(LOG);
+    return UNUR_SUCCESS;
+  }
 } /* end of check_expected_no_reinit() */
 
 /*---------------------------------------------------------------------------*/
@@ -229,7 +248,7 @@ int compare_double_sequence_par_start( FILE *LOG, int line, UNUR_PAR *par, int s
   unur_free(gen); 
 
   /* there cannot be a failure */
-  return 0;
+  return UNUR_SUCCESS;
 
 } /* end of compare_double_sequence_par_start() */
 
@@ -252,7 +271,7 @@ int compare_double_sequence_urng_start( FILE *LOG, int line, int sample_size )
     double_sequence_A[i] = _unur_call_urng(urng);
 
   /* there cannot be a failure */
-  return 0;
+  return UNUR_SUCCESS;
 
 } /* end of compare_double_sequence_urng() */
 
@@ -294,7 +313,7 @@ int compare_double_sequence_par( FILE *LOG, int line, UNUR_PAR *par, int sample_
     fprintf(LOG," ok\n");
   
   fflush(LOG);
-  return failed;
+  return (failed ? UNUR_FAILURE : UNUR_SUCCESS);
 
 } /* end of compare_double_sequence_par() */
 
@@ -310,7 +329,7 @@ int compare_double_sequence_gen_start( FILE *LOG, int line, UNUR_GEN *gen, int s
     /* error */
     if (double_sequence_A) free (double_sequence_A);
     double_sequence_A = NULL;
-    return 1;
+    return UNUR_FAILURE;
   }
 
   /* allocate memory for storing sequence */
@@ -327,7 +346,7 @@ int compare_double_sequence_gen_start( FILE *LOG, int line, UNUR_GEN *gen, int s
     double_sequence_A[i] = unur_sample_cont(gen);
   
   /* there cannot be a failure */
-  return 0;
+  return UNUR_SUCCESS;
 
 } /* end of compare_double_sequence_gen_start() */
 
@@ -344,7 +363,7 @@ int compare_double_sequence_gen( FILE *LOG, int line, UNUR_GEN *gen, int sample_
   /* check generator object and stored sequence */
   if (gen==NULL || double_sequence_A==NULL) {
     /* error */
-    return 1;
+    return UNUR_FAILURE;
   }
 
   /* reset uniform RNG */
@@ -370,7 +389,7 @@ int compare_double_sequence_gen( FILE *LOG, int line, UNUR_GEN *gen, int sample_
     fprintf(LOG," ok\n");
   
   fflush(LOG);
-  return failed;
+  return (failed ? UNUR_FAILURE : UNUR_SUCCESS);
 
 } /* end of compare_double_sequence_gen() */
 
@@ -381,26 +400,25 @@ static int cannot_compare_sequence ( FILE *LOG )
   fprintf (LOG,"\nURNG cannot be reset. Cannot compare sequences. (Skip)\n");
   printf ("URNG cannot be reset. Cannot compare sequences. (Skip)\n");
 
-  return 0; /* indicate as "not failed" for practical reasons */
+  return UNUR_SUCCESS; /* indicate as "not failed" for practical reasons */
 }
 
 int compare_double_sequence_par_start( FILE *LOG, int line, UNUR_PAR *par, int ss ) {
-  return 0; }
+  return UNUR_SUCCESS; }
 
 int compare_double_sequence_urng_start( FILE *LOG, int line, int ss ) {
-  return 0; }
+  return UNUR_SUCCESS; }
 
 int compare_double_sequence_par( FILE *LOG, int line, UNUR_PAR *par, int ss ) {
-  return cannot_compare_sequence (LOG); }
+  return cannot_compare_sequence(LOG); }
 
 int compare_double_sequence_gen_start( FILE *LOG, int line, UNUR_GEN *gen, int ss ) {
-  return 0; }
+  return UNUR_SUCCESS; }
 
 int compare_double_sequence_gen( FILE *LOG, int line, UNUR_GEN *gen, int ss ) {
-  return cannot_compare_sequence (LOG); }
+  return cannot_compare_sequence(LOG); }
 
 /*...........................................................................*/
-
 
 #endif
 
@@ -434,7 +452,7 @@ int compare_int_sequence_par_start( FILE *LOG, int line, UNUR_PAR *par, int samp
   unur_free(gen); 
 
   /* there cannot be a failure */
-  return 0;
+  return UNUR_SUCCESS;
 
 } /* end of compare_int_sequence_par_start() */
 
@@ -472,7 +490,7 @@ int compare_int_sequence_par( FILE *LOG, int line, UNUR_PAR *par, int sample_siz
     fprintf(LOG," ok\n");
   
   fflush(LOG);
-  return failed;
+  return (failed ? UNUR_FAILURE : UNUR_SUCCESS);
 
 } /* end of compare_int_sequence_par() */
 
@@ -488,7 +506,7 @@ int compare_int_sequence_gen_start( FILE *LOG, int line, UNUR_GEN *gen, int samp
     /* error */
     if (int_sequence_A) free (int_sequence_A);
     int_sequence_A = NULL;
-    return 1;
+    return UNUR_FAILURE;
   }
 
   /* allocate memory for storing sequence */
@@ -504,7 +522,7 @@ int compare_int_sequence_gen_start( FILE *LOG, int line, UNUR_GEN *gen, int samp
     int_sequence_A[i] = unur_sample_discr(gen);
 
   /* there cannot be a failure */
-  return 0;
+  return UNUR_SUCCESS;
 
 } /* end of compare_int_sequence_gen_start() */
 
@@ -520,7 +538,7 @@ int compare_int_sequence_gen( FILE *LOG, int line, UNUR_GEN *gen, int sample_siz
   /* check generator object and stored sequence */
   if (gen==NULL || int_sequence_A==NULL) {
     /* error */
-    return 1;
+    return UNUR_FAILURE;
   }
 
   /* init generator */
@@ -543,7 +561,7 @@ int compare_int_sequence_gen( FILE *LOG, int line, UNUR_GEN *gen, int sample_siz
     fprintf(LOG," ok\n");
   
   fflush(LOG);
-  return failed;
+  return (failed ? UNUR_FAILURE : UNUR_SUCCESS);
 
 } /* end of compare_int_sequence_gen() */
 
@@ -552,16 +570,16 @@ int compare_int_sequence_gen( FILE *LOG, int line, UNUR_GEN *gen, int sample_siz
 #else  /* no reset routine for uniform RNG */
 
 int compare_int_sequence_par_start( FILE *LOG, int line, UNUR_PAR *par, int sample_size ) {
-  return 0; }
+  return UNUR_SUCCESS; }
 
 int compare_int_sequence_par( FILE *LOG, int line, UNUR_PAR *par, int sample_size ) {
-  return cannot_compare_sequence (LOG); }
+  return cannot_compare_sequence(LOG); }
 
 int compare_int_sequence_gen_start( FILE *LOG, int line, UNUR_GEN *gen, int sample_size ) {
-  return 0; }
+  return UNUR_SUCCESS; }
 
 int compare_int_sequence_gen( FILE *LOG, int line, UNUR_GEN *gen, int sample_size ) {
-  return cannot_compare_sequence (LOG); }
+  return cannot_compare_sequence(LOG); }
 
 #endif
 
@@ -588,7 +606,7 @@ int compare_cvec_sequence_gen_start( FILE *LOG, int line, UNUR_GEN *gen, int sam
   /* check generator object */
   if (gen==NULL) {
     /* error */
-    return 1;
+    return UNUR_FAILURE;
   }
 
   /* get dimension */
@@ -608,7 +626,7 @@ int compare_cvec_sequence_gen_start( FILE *LOG, int line, UNUR_GEN *gen, int sam
     unur_sample_vec( gen, cvec_sequence_A+(i*dim) );
 
   /* there cannot be a failure */
-  return 0;
+  return UNUR_SUCCESS;
 
 } /* end of compare_cvec_sequence_gen_start() */
 
@@ -626,7 +644,7 @@ int compare_cvec_sequence_gen( FILE *LOG, int line, UNUR_GEN *gen, int sample_si
   /* check generator object and stored sequence */
   if (gen==NULL || cvec_sequence_A==NULL) {
     /* error */
-    return 1;
+    return UNUR_FAILURE;
   }
 
   /* get dimension */
@@ -672,7 +690,7 @@ int compare_cvec_sequence_gen( FILE *LOG, int line, UNUR_GEN *gen, int sample_si
   
   fflush(LOG);
   free (x);
-  return failed;
+  return (failed ? UNUR_FAILURE : UNUR_SUCCESS);
 
 } /* end of compare_cvec_sequence_gen() */
 
@@ -681,10 +699,10 @@ int compare_cvec_sequence_gen( FILE *LOG, int line, UNUR_GEN *gen, int sample_si
 #else  /* no reset routine for uniform RNG */
 
 int compare_cvec_sequence_gen_start( FILE *LOG, int line, UNUR_GEN *gen, int sample_size ) {
-  return 0; }
+  return UNUR_SUCCESS; }
 
 int compare_cvec_sequence_gen( FILE *LOG, int line, UNUR_GEN *gen, int sample_size ) {
-  return cannot_compare_sequence (LOG); }
+  return cannot_compare_sequence(LOG); }
 
 #endif
 
@@ -753,7 +771,7 @@ int print_pval( FILE *LOG, UNUR_GEN *gen, double pval, int trial, char todo )
     fflush(LOG);
 
     /* test does not count as failed */
-    return 0; 
+    return UNUR_SUCCESS; 
     
   }
 
@@ -822,7 +840,7 @@ int print_pval( FILE *LOG, UNUR_GEN *gen, double pval, int trial, char todo )
 
   fflush(stdout);
   fflush(LOG);
-  return failed;
+  return (failed ? UNUR_FAILURE : UNUR_SUCCESS);
 
 } /* end of print_pval() */
 
@@ -830,6 +848,9 @@ int print_pval( FILE *LOG, UNUR_GEN *gen, double pval, int trial, char todo )
 /* run chi2 test */
 
 int run_validate_chi2( FILE *LOG, int line, UNUR_GEN *gen, char todo )
+     /*   UNUR_SUCCESS    ... on success                                        */
+     /*   UNUR_ERR_SILENT ... test failed only once                             */
+     /*   UNUR_FAILURE    ... serious failure                                   */
 {
 #define BUFSIZE 32
   const char *distr_name;
@@ -842,35 +863,35 @@ int run_validate_chi2( FILE *LOG, int line, UNUR_GEN *gen, char todo )
   if (todo == '.') {
     /* nothing to do */
     printf(".");  fflush(stdout);
-    return 0;
+    return UNUR_SUCCESS;
   }
 
   if (todo == '0') {
     /* initialization of generator is expected to fail */
     if (gen == NULL) {
       printf("0");  fflush(stdout);
-      return 0;
+      return UNUR_SUCCESS;
     }
     else {
       /* error */
       printf("(!0)");  fflush(stdout);
-      return 2;
+      return UNUR_FAILURE;
     }
   }
 
   if (gen == NULL) {
     if (todo == '-') {
       printf("0");  fflush(stdout);
-      return 0;
+      return UNUR_SUCCESS;
     }
     else if (todo == '/') {
       printf("/");  fflush(stdout);
-      return 0;
+      return UNUR_SUCCESS;
     }
     else {
       /* initialization failed --> cannot run test */
       printf("(!+)");  fflush(stdout);
-      return 2;
+      return UNUR_FAILURE;
     }
   }
 
@@ -904,7 +925,7 @@ int run_validate_chi2( FILE *LOG, int line, UNUR_GEN *gen, char todo )
       break;
     default:
       fprintf(stderr,"this should not happen\n");
-      exit (-1);
+      exit (EXIT_FAILURE);
     }
 
     if ( print_pval(LOG,gen,pval,i,todo) )
@@ -915,7 +936,7 @@ int run_validate_chi2( FILE *LOG, int line, UNUR_GEN *gen, char todo )
       break;
   }
 
-  return failed;
+  return (failed==0 ? UNUR_SUCCESS : (failed<=1 ? UNUR_ERR_SILENT : UNUR_FAILURE));
 
 #undef BUFSIZE
 } /* end of run_validate_chi2() */
@@ -937,31 +958,31 @@ int run_validate_verifyhat( FILE *LOG, int line, UNUR_GEN *gen, char todo )
   if (todo == '.') {
     /* nothing to do */
     printf(".");  fflush(stdout);
-    return 0;
+    return UNUR_SUCCESS;
   }
 
   if (todo == '0') {
     /* initialization of generator is expected to fail */
     if (gen == NULL) {
       printf("0");  fflush(stdout);
-      return 0;
+      return UNUR_SUCCESS;
     }
     else {
       /* error */
       printf("(!0)");  fflush(stdout);
-      return 2;
+      return UNUR_FAILURE;
     }
   }
 
   if (gen == NULL) {
     if (todo == '-') {
       printf("0");  fflush(stdout);
-      return 0;
+      return UNUR_SUCCESS;
     }
     else {
       /* initialization failed --> cannot run test */
       printf("(!+)");  fflush(stdout);
-      return 2;
+      return UNUR_FAILURE;
     }
   }
 
@@ -992,7 +1013,7 @@ int run_validate_verifyhat( FILE *LOG, int line, UNUR_GEN *gen, char todo )
       break;
     default:
       fprintf(stderr,"this should not happen\n");
-      exit (-1);
+      exit (EXIT_FAILURE);
     }
 
     if (unur_errno) {
@@ -1060,7 +1081,7 @@ int print_verifyhat_result( FILE *LOG, UNUR_GEN *gen, int failed, char todo )
     break;
   default:
     fprintf(stderr,"invalid test symbol\n");
-    exit (-1);
+    exit (EXIT_FAILURE);
   }
 
   /* print distribution name */
@@ -1071,7 +1092,7 @@ int print_verifyhat_result( FILE *LOG, UNUR_GEN *gen, int failed, char todo )
   fflush(stdout);
   fflush(LOG);
 
-  return failed_test;
+  return (failed_test ? UNUR_ERR_SILENT : UNUR_SUCCESS);
 
 } /* end of print_verifyhat_result() */
 #undef VERIFYHAT_SAMPLESIZE

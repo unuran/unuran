@@ -304,7 +304,7 @@ _unur_cdf_burr( double x, const UNUR_DISTR *distr )
 
   default:
     _unur_error(distr_name,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
-    return 0.;
+    return INFINITY;
   }
 
 } /* end of _unur_cdf_burr() */
@@ -317,11 +317,11 @@ _unur_set_params_burr( UNUR_DISTR *distr, const double *params, int n_params )
 
   /* check new parameter for generator */
   if (n_params < 2) {
-    _unur_error(distr_name,UNUR_ERR_DISTR_NPARAMS,"too few"); return 0; }
+    _unur_error(distr_name,UNUR_ERR_DISTR_NPARAMS,"too few"); return UNUR_ERR_DISTR_NPARAMS; }
   if (n_params > 3) {
     _unur_warning(distr_name,UNUR_ERR_DISTR_NPARAMS,"too many");
     n_params = 3; }
-  CHECK_NULL(params,0);
+  CHECK_NULL(params,UNUR_ERR_NULL);
 
   /* check number of parameters for == 3 */
   switch (distr->id) {
@@ -333,7 +333,7 @@ _unur_set_params_burr( UNUR_DISTR *distr, const double *params, int n_params )
   case UNUR_DISTR_BURR_XII:
     if (n_params < 3) {
       _unur_error(distr_name,UNUR_ERR_DISTR_NPARAMS,"too few");
-      free( distr ); return 0;
+      free( distr ); return UNUR_ERR_DISTR_NPARAMS;
     }
   default: /* all other cases */
     if (n_params == 3) {
@@ -345,7 +345,7 @@ _unur_set_params_burr( UNUR_DISTR *distr, const double *params, int n_params )
   /* check parameters */
   if (k <= 0. || (c <= 0. && n_params == 3) ) {
     _unur_error(distr_name,UNUR_ERR_DISTR_DOMAIN,"k <= 0 || c <= 0");
-    return 0;
+    return UNUR_ERR_DISTR_DOMAIN;
   }
 
   /* copy parameters */
@@ -396,7 +396,7 @@ _unur_set_params_burr( UNUR_DISTR *distr, const double *params, int n_params )
     }
   }
 
-  return 1;
+  return UNUR_SUCCESS;
 } /* end of _unur_set_params_burr() */
 
 /*---------------------------------------------------------------------------*/
@@ -447,7 +447,7 @@ unur_distr_burr( const double *params, int n_params )
 		 /* UNUR_DISTR_SET_PDFAREA ); */
 
   /* set parameters for distribution */
-  if (!_unur_set_params_burr(distr,params,n_params)) {
+  if (_unur_set_params_burr(distr,params,n_params)!=UNUR_SUCCESS) {
     free(distr);
     return NULL;
   }

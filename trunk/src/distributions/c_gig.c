@@ -143,22 +143,22 @@ _unur_set_params_gig( UNUR_DISTR *distr, const double *params, int n_params )
 {
   /* check number of parameters for distribution */
   if (n_params < 2) {
-    _unur_error(distr_name,UNUR_ERR_DISTR_NPARAMS,"too few"); return 0; }
+    _unur_error(distr_name,UNUR_ERR_DISTR_NPARAMS,"too few"); return UNUR_ERR_DISTR_NPARAMS; }
   if (n_params > 3) {
     _unur_warning(distr_name,UNUR_ERR_DISTR_NPARAMS,"too many");
     n_params = 3; }
-  CHECK_NULL(params,0);
+  CHECK_NULL(params,UNUR_ERR_NULL);
 
   /* check parameter omega */
   if (omega <= 0.) {
     _unur_error(distr_name,UNUR_ERR_DISTR_DOMAIN,"omega <= 0");
-    return 0;
+    return UNUR_ERR_DISTR_DOMAIN;
   }
 
   /* check parameter eta */
   if (n_params == 3 && eta <= 0.) {
     _unur_error(distr_name,UNUR_ERR_DISTR_DOMAIN,"eta <= 0");
-    return 0;
+    return UNUR_ERR_DISTR_DOMAIN;
   }
 
 
@@ -183,7 +183,7 @@ _unur_set_params_gig( UNUR_DISTR *distr, const double *params, int n_params )
     DISTR.domain[1] = INFINITY;    /* right boundary */
   }
 
-  return 1;
+  return UNUR_SUCCESS;
 } /* end of _unur_set_params_gig() */
 
 /*---------------------------------------------------------------------------*/
@@ -217,7 +217,7 @@ unur_distr_gig( const double *params, int n_params )
 		 /* UNUR_DISTR_SET_PDFAREA ); */
                 
   /* set parameters for distribution */
-  if (!_unur_set_params_gig(distr,params,n_params)) {
+  if (_unur_set_params_gig(distr,params,n_params)!=UNUR_SUCCESS) {
     free(distr);
     return NULL;
   }

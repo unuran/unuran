@@ -9,8 +9,8 @@
  *   manipulate univariate continuous distribution objects                   *
  *                                                                           *
  *   return:                                                                 *
- *     1 ... on success                                                      *
- *     0 ... on error                                                        *
+ *     UNUR_SUCCESS ... on success                                           *
+ *     error code   ... on error                                             *
  *                                                                           *
  *****************************************************************************
      $Id$
@@ -290,30 +290,30 @@ unur_distr_cont_set_pdf( struct unur_distr *distr, UNUR_FUNCT_CONT *pdf )
      /*   pdf   ... pointer to PDF                                           */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( NULL,distr,0 );
-  _unur_check_NULL( distr->name,pdf,0 );
-  _unur_check_distr_object( distr, CONT, 0 );
+  _unur_check_NULL( NULL, distr, UNUR_ERR_NULL );
+  _unur_check_NULL( distr->name, pdf, UNUR_ERR_NULL );
+  _unur_check_distr_object( distr, CONT, UNUR_ERR_DISTR_INVALID );
 
   /* we do not allow overwriting a pdf */
   if (DISTR.pdf != NULL) {
     _unur_warning(distr->name,UNUR_ERR_DISTR_SET,"Overwriting of PDF not allowed");
-    return 0;
+    return UNUR_ERR_DISTR_SET;
   }
 
   /* for derived distributions (e.g. order statistics) not possible */
-  if (distr->base) return 0;
+  if (distr->base) return UNUR_ERR_DISTR_INVALID;
 
   /* changelog */
   distr->set &= ~UNUR_DISTR_SET_MASK_DERIVED;
   /* derived parameters like mode, area, etc. might be wrong now! */
 
   DISTR.pdf = pdf;
-  return 1;
+  return UNUR_SUCCESS;
 
 } /* end of unur_distr_cont_set_pdf() */
 
@@ -329,30 +329,30 @@ unur_distr_cont_set_dpdf( struct unur_distr *distr, UNUR_FUNCT_CONT *dpdf )
      /*   dpdf   ... pointer to derivative of PDF                            */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( NULL,distr,0 );
-  _unur_check_NULL( distr->name,dpdf,0 );
-  _unur_check_distr_object( distr, CONT, 0 );
+  _unur_check_NULL( NULL, distr, UNUR_ERR_NULL );
+  _unur_check_NULL( distr->name, dpdf, UNUR_ERR_NULL );
+  _unur_check_distr_object( distr, CONT, UNUR_ERR_DISTR_INVALID );
   
   /* we do not allow overwriting a dpdf */
   if (DISTR.dpdf != NULL) {
     _unur_warning(distr->name,UNUR_ERR_DISTR_SET,"Overwriting of dPDF not allowed");
-    return 0;
+    return UNUR_ERR_DISTR_SET;
   }
 
   /* for derived distributions (e.g. order statistics) not possible */
-  if (distr->base) return 0;
+  if (distr->base) return UNUR_ERR_DISTR_INVALID;
 
   /* changelog */
   distr->set &= ~UNUR_DISTR_SET_MASK_DERIVED;
   /* derived parameters like mode, area, etc. might be wrong now! */
 
   DISTR.dpdf = dpdf;
-  return 1;
+  return UNUR_SUCCESS;
 } /* end of unur_distr_cont_set_dpdf() */
 
 /*---------------------------------------------------------------------------*/
@@ -367,30 +367,30 @@ unur_distr_cont_set_cdf( struct unur_distr *distr, UNUR_FUNCT_CONT *cdf )
      /*   cdf   ... pointer to CDF                                           */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( NULL,distr,0 );
-  _unur_check_NULL( distr->name,cdf,0 );
-  _unur_check_distr_object( distr, CONT, 0 );
+  _unur_check_NULL( NULL, distr, UNUR_ERR_NULL );
+  _unur_check_NULL( distr->name, cdf,UNUR_ERR_NULL );
+  _unur_check_distr_object( distr, CONT, UNUR_ERR_DISTR_INVALID );
   
   /* we do not allow overwriting a cdf */
   if (DISTR.cdf != NULL) {
     _unur_warning(distr->name,UNUR_ERR_DISTR_SET,"Overwriting of CDF not allowed");
-    return 0;
+    return UNUR_ERR_DISTR_SET;
   }
 
   /* for derived distributions (e.g. order statistics) not possible */
-  if (distr->base) return 0;
+  if (distr->base) return UNUR_ERR_DISTR_INVALID;
 
   /* changelog */
   distr->set &= ~UNUR_DISTR_SET_MASK_DERIVED;
   /* derived parameters like mode, area, etc. might be wrong now! */
 
   DISTR.cdf = cdf;
-  return 1;
+  return UNUR_SUCCESS;
 } /* end of unur_distr_cont_set_cdf() */
 
 /*---------------------------------------------------------------------------*/
@@ -405,30 +405,30 @@ unur_distr_cont_set_hr( struct unur_distr *distr, UNUR_FUNCT_CONT *hr )
      /*   hr    ... pointer to HR                                            */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( NULL,distr,0 );
-  _unur_check_NULL( distr->name,hr,0 );
-  _unur_check_distr_object( distr, CONT, 0 );
+  _unur_check_NULL( NULL, distr, UNUR_ERR_NULL );
+  _unur_check_NULL( distr->name, hr, UNUR_ERR_NULL );
+  _unur_check_distr_object( distr, CONT, UNUR_ERR_DISTR_INVALID );
   
   /* we do not allow overwriting a cdf */
   if (DISTR.hr != NULL) {
     _unur_warning(distr->name,UNUR_ERR_DISTR_SET,"Overwriting of HR not allowed");
-    return 0;
+    return UNUR_ERR_DISTR_SET;
   }
 
   /* for derived distributions (e.g. order statistics) not possible */
-  if (distr->base) return 0;
+  if (distr->base) return UNUR_ERR_DISTR_INVALID;
 
   /* changelog */
   distr->set &= ~UNUR_DISTR_SET_MASK_DERIVED;
   /* derived parameters like mode, area, etc. might be wrong now! */
 
   DISTR.hr = hr;
-  return 1;
+  return UNUR_SUCCESS;
 } /* end of unur_distr_cont_set_hr() */
 
 /*---------------------------------------------------------------------------*/
@@ -443,23 +443,23 @@ unur_distr_cont_set_pdfstr( struct unur_distr *distr, const char *pdfstr )
      /*   pdfstr ... string that describes function term of PDF              */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( NULL,distr,0 );
-  _unur_check_distr_object( distr, CONT, 0 );
-  _unur_check_NULL( NULL,pdfstr,0 );
+  _unur_check_NULL( NULL, distr, UNUR_ERR_NULL );
+  _unur_check_distr_object( distr, CONT, UNUR_ERR_DISTR_INVALID );
+  _unur_check_NULL( NULL, pdfstr, UNUR_ERR_NULL );
 
   /* we do not allow overwriting a PDF */
   if (DISTR.pdf != NULL) {
     _unur_warning(distr->name,UNUR_ERR_DISTR_SET,"Overwriting of PDF not allowed");
-    return 0;
+    return UNUR_ERR_DISTR_SET;
   }
 
   /* for derived distributions (e.g. order statistics) not possible */
-  if (distr->base) return 0;
+  if (distr->base) return UNUR_ERR_DISTR_INVALID;
 
   /* changelog */
   distr->set &= ~UNUR_DISTR_SET_MASK_DERIVED;
@@ -468,16 +468,16 @@ unur_distr_cont_set_pdfstr( struct unur_distr *distr, const char *pdfstr )
   /* parse PDF string */
   if ( (DISTR.pdftree = _unur_fstr2tree(pdfstr)) == NULL ) {
     _unur_error(distr->name,UNUR_ERR_DISTR_SET,"Syntax error in function string");
-    return 0;
+    return UNUR_ERR_DISTR_SET;
   }
   DISTR.pdf  = _unur_distr_cont_eval_pdf_tree;
 
   /* make derivative */
   if ( (DISTR.dpdftree = _unur_fstr_make_derivative(DISTR.pdftree)) == NULL )
-    return 0;
+    return UNUR_ERR_DISTR_DATA;
   DISTR.dpdf = _unur_distr_cont_eval_dpdf_tree;
 
-  return 1;
+  return UNUR_SUCCESS;
 } /* end of unur_distr_cont_set_pdfstr() */
 
 /*---------------------------------------------------------------------------*/
@@ -492,23 +492,23 @@ unur_distr_cont_set_cdfstr( struct unur_distr *distr, const char *cdfstr )
      /*   cdfstr ... string that describes function term of CDF              */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( NULL,distr,0 );
-  _unur_check_distr_object( distr, CONT, 0 );
-  _unur_check_NULL( NULL,cdfstr,0 );
+  _unur_check_NULL( NULL, distr, UNUR_ERR_NULL );
+  _unur_check_distr_object( distr, CONT, UNUR_ERR_DISTR_INVALID );
+  _unur_check_NULL( NULL, cdfstr, UNUR_ERR_NULL );
 
   /* we do not allow overwriting a CDF */
   if (DISTR.cdf != NULL) {
     _unur_warning(distr->name,UNUR_ERR_DISTR_SET,"Overwriting of CDF not allowed");
-    return 0;
+    return UNUR_ERR_DISTR_SET;
   }
 
   /* for derived distributions (e.g. order statistics) not possible */
-  if (distr->base) return 0;
+  if (distr->base) return UNUR_ERR_DISTR_INVALID;
 
   /* changelog */
   distr->set &= ~UNUR_DISTR_SET_MASK_DERIVED;
@@ -517,13 +517,13 @@ unur_distr_cont_set_cdfstr( struct unur_distr *distr, const char *cdfstr )
   /* parse string */
   if ( (DISTR.cdftree = _unur_fstr2tree(cdfstr)) == NULL ) {
     _unur_error(distr->name,UNUR_ERR_DISTR_SET,"Syntax error in function string");
-    return 0;
+    return UNUR_ERR_DISTR_SET;
   }
 
   /* set evaluation function */
   DISTR.cdf  = _unur_distr_cont_eval_cdf_tree;
 
-  return 1;
+  return UNUR_SUCCESS;
 } /* end of unur_distr_cont_set_cdfstr() */
 
 /*---------------------------------------------------------------------------*/
@@ -538,23 +538,23 @@ unur_distr_cont_set_hrstr( struct unur_distr *distr, const char *hrstr )
      /*   hrstr  ... string that describes function term of CDF              */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( NULL,distr,0 );
-  _unur_check_distr_object( distr, CONT, 0 );
-  _unur_check_NULL( NULL,hrstr,0 );
+  _unur_check_NULL( NULL, distr, UNUR_ERR_NULL );
+  _unur_check_distr_object( distr, CONT, UNUR_ERR_DISTR_INVALID );
+  _unur_check_NULL( NULL, hrstr, UNUR_ERR_NULL );
 
   /* we do not allow overwriting a CDF */
   if (DISTR.hr != NULL) {
     _unur_warning(distr->name,UNUR_ERR_DISTR_SET,"Overwriting of CDF not allowed");
-    return 0;
+    return UNUR_ERR_DISTR_SET;
   }
 
   /* for derived distributions (e.g. order statistics) not possible */
-  if (distr->base) return 0;
+  if (distr->base) return UNUR_ERR_DISTR_INVALID;
 
   /* changelog */
   distr->set &= ~UNUR_DISTR_SET_MASK_DERIVED;
@@ -563,13 +563,13 @@ unur_distr_cont_set_hrstr( struct unur_distr *distr, const char *hrstr )
   /* parse string */
   if ( (DISTR.hrtree = _unur_fstr2tree(hrstr)) == NULL ) {
     _unur_error(distr->name,UNUR_ERR_DISTR_SET,"Syntax error in function string");
-    return 0;
+    return UNUR_ERR_DISTR_SET;
   }
 
   /* set evaluation function */
   DISTR.hr  = _unur_distr_cont_eval_hr_tree;
 
-  return 1;
+  return UNUR_SUCCESS;
 } /* end of unur_distr_cont_set_hrstr() */
 
 /*---------------------------------------------------------------------------*/
@@ -587,7 +587,7 @@ _unur_distr_cont_eval_pdf_tree( double x, const struct unur_distr *distr )
      /*   PDF at x                                                           */
      /*----------------------------------------------------------------------*/
 {
-  return ((DISTR.pdftree) ? _unur_fstr_eval_tree(DISTR.pdftree,x) : 0.);
+  return ((DISTR.pdftree) ? _unur_fstr_eval_tree(DISTR.pdftree,x) : INFINITY);
 } /* end of _unur_distr_cont_eval_pdf_tree() */
 
 /*---------------------------------------------------------------------------*/
@@ -605,7 +605,7 @@ _unur_distr_cont_eval_dpdf_tree( double x, const struct unur_distr *distr )
      /*   derivative of PDF at x                                             */
      /*----------------------------------------------------------------------*/
 {
-  return ((DISTR.dpdftree) ? _unur_fstr_eval_tree(DISTR.dpdftree,x) : 0.);
+  return ((DISTR.dpdftree) ? _unur_fstr_eval_tree(DISTR.dpdftree,x) : INFINITY);
 } /* end of _unur_distr_cont_eval_dpdf_tree() */
 
 /*---------------------------------------------------------------------------*/
@@ -623,7 +623,7 @@ _unur_distr_cont_eval_cdf_tree( double x, const struct unur_distr *distr )
      /*   CDF at x                                                           */
      /*----------------------------------------------------------------------*/
 {
-  return ((DISTR.cdftree) ? _unur_fstr_eval_tree(DISTR.cdftree,x) : 0.);
+  return ((DISTR.cdftree) ? _unur_fstr_eval_tree(DISTR.cdftree,x) : INFINITY);
 } /* end of _unur_distr_cont_eval_cdf_tree() */
 
 /*---------------------------------------------------------------------------*/
@@ -641,7 +641,7 @@ _unur_distr_cont_eval_hr_tree( double x, const struct unur_distr *distr )
      /*   CDF at x                                                           */
      /*----------------------------------------------------------------------*/
 {
-  return ((DISTR.hrtree) ? _unur_fstr_eval_tree(DISTR.hrtree,x) : 0.);
+  return ((DISTR.hrtree) ? _unur_fstr_eval_tree(DISTR.hrtree,x) : INFINITY);
 } /* end of _unur_distr_cont_eval_hr_tree() */
 
 /*---------------------------------------------------------------------------*/
@@ -662,9 +662,9 @@ unur_distr_cont_get_pdfstr( const struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( NULL,distr,NULL );
+  _unur_check_NULL( NULL, distr, NULL );
   _unur_check_distr_object( distr, CONT, NULL );
-  _unur_check_NULL( NULL,DISTR.pdftree,NULL );
+  _unur_check_NULL( NULL, DISTR.pdftree, NULL );
 
   /* make and return string */
   return _unur_fstr_tree2string(DISTR.pdftree,"x","PDF",TRUE);
@@ -688,9 +688,9 @@ unur_distr_cont_get_dpdfstr( const struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( NULL,distr,NULL );
+  _unur_check_NULL( NULL, distr, NULL );
   _unur_check_distr_object( distr, CONT, NULL );
-  _unur_check_NULL( NULL,DISTR.dpdftree,NULL );
+  _unur_check_NULL( NULL, DISTR.dpdftree, NULL );
 
   /* make and return string */
   return _unur_fstr_tree2string(DISTR.dpdftree,"x","dPDF",TRUE);
@@ -714,9 +714,9 @@ unur_distr_cont_get_cdfstr( const struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( NULL,distr,NULL );
+  _unur_check_NULL( NULL, distr, NULL );
   _unur_check_distr_object( distr, CONT, NULL );
-  _unur_check_NULL( NULL,DISTR.cdftree,NULL );
+  _unur_check_NULL( NULL, DISTR.cdftree, NULL );
 
   /* make and return string */
   return _unur_fstr_tree2string(DISTR.cdftree,"x","CDF",TRUE);
@@ -740,9 +740,9 @@ unur_distr_cont_get_hrstr( const struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( NULL,distr,NULL );
+  _unur_check_NULL( NULL, distr, NULL );
   _unur_check_distr_object( distr, CONT, NULL );
-  _unur_check_NULL( NULL,DISTR.hrtree,NULL );
+  _unur_check_NULL( NULL, DISTR.hrtree, NULL );
 
   /* make and return string */
   return _unur_fstr_tree2string(DISTR.hrtree,"x","HR",TRUE);
@@ -763,7 +763,7 @@ unur_distr_cont_get_pdf( const struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( NULL,distr,NULL );
+  _unur_check_NULL( NULL, distr, NULL );
   _unur_check_distr_object( distr, CONT, NULL );
 
   return DISTR.pdf;
@@ -784,7 +784,7 @@ unur_distr_cont_get_dpdf( const struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( NULL,distr,NULL );
+  _unur_check_NULL( NULL, distr, NULL );
   _unur_check_distr_object( distr, CONT, NULL );
 
   return DISTR.dpdf;
@@ -805,7 +805,7 @@ unur_distr_cont_get_cdf( const struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( NULL,distr,NULL );
+  _unur_check_NULL( NULL, distr, NULL );
   _unur_check_distr_object( distr, CONT, NULL );
 
   return DISTR.cdf;
@@ -826,7 +826,7 @@ unur_distr_cont_get_hr( const struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( NULL,distr,NULL );
+  _unur_check_NULL( NULL, distr, NULL );
   _unur_check_distr_object( distr, CONT, NULL );
 
   return DISTR.hr;
@@ -953,14 +953,14 @@ unur_distr_cont_set_pdfparams( struct unur_distr *distr, const double *params, i
      /*   n_params ... number of arguments                                   */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( NULL, distr, 0 );
-  _unur_check_distr_object( distr, CONT, 0 );
-  if (n_params>0) _unur_check_NULL(distr->name,params,0);
+  _unur_check_NULL( NULL, distr, UNUR_ERR_NULL );
+  _unur_check_distr_object( distr, CONT, UNUR_ERR_DISTR_INVALID );
+  if (n_params>0) _unur_check_NULL(distr->name,params,UNUR_ERR_NULL);
 
   /* changelog */
   distr->set &= ~UNUR_DISTR_SET_MASK_DERIVED;
@@ -984,7 +984,7 @@ unur_distr_cont_set_pdfparams( struct unur_distr *distr, const double *params, i
   /* but first check number of new parameter for the distribution */
   if (n_params < 0 || n_params > UNUR_DISTR_MAXPARAMS ) {
     _unur_error(NULL,UNUR_ERR_DISTR_NPARAMS,"");
-    return 0;
+    return UNUR_ERR_DISTR_NPARAMS;
   }
 
   if (distr->base) {
@@ -998,7 +998,7 @@ unur_distr_cont_set_pdfparams( struct unur_distr *distr, const double *params, i
   }
 
   /* o.k. */
-  return 1;
+  return UNUR_SUCCESS;
 } /* end of unur_distr_cont_set_pdfparams() */
 
 /*---------------------------------------------------------------------------*/
@@ -1049,18 +1049,22 @@ unur_distr_cont_set_domain( struct unur_distr *distr, double left, double right 
      /*   left  ... left boundary point                                      */
      /*   right ... right boundary point                                     */
      /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*                                                                      */
      /* comment:                                                             */
      /*   the new boundary points may be +/- INFINITY                        */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( NULL, distr, 0 );
-  _unur_check_distr_object( distr, CONT, 0 );
+  _unur_check_NULL( NULL, distr, UNUR_ERR_NULL );
+  _unur_check_distr_object( distr, CONT, UNUR_ERR_DISTR_INVALID );
 
   /* check new parameter for distribution */
   if (left >= right) {
     _unur_error(NULL,UNUR_ERR_DISTR_SET,"domain, left >= right");
-    return 0;
+    return UNUR_ERR_DISTR_SET;
   }
 
   /* we have to deal with the mode */
@@ -1109,7 +1113,7 @@ unur_distr_cont_set_domain( struct unur_distr *distr, double left, double right 
   }
 
   /* o.k. */
-  return 1;
+  return UNUR_SUCCESS;
 
 } /* end of unur_distr_cont_set_domain() */
 
@@ -1125,6 +1129,10 @@ unur_distr_cont_get_domain( const struct unur_distr *distr, double *left, double
      /*   left  ... left boundary point                                      */
      /*   right ... right boundary point                                     */
      /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*                                                                      */
      /* comment:                                                             */
      /*   if no boundaries have been set +/- INFINITY is returned.           */
      /*----------------------------------------------------------------------*/
@@ -1134,14 +1142,14 @@ unur_distr_cont_get_domain( const struct unur_distr *distr, double *left, double
   *right = INFINITY;
 
   /* check arguments */
-  _unur_check_NULL( NULL, distr, 0 );
-  _unur_check_distr_object( distr, CONT, 0 );
+  _unur_check_NULL( NULL, distr, UNUR_ERR_NULL );
+  _unur_check_distr_object( distr, CONT, UNUR_ERR_DISTR_INVALID );
 
   /* o.k. */
   *left  = DISTR.domain[0];
   *right = DISTR.domain[1];
 
-  return 1;
+  return UNUR_SUCCESS;
 } /* end of unur_distr_cont_get_domain() */
 
 /*---------------------------------------------------------------------------*/
@@ -1157,6 +1165,10 @@ unur_distr_cont_get_truncated( const struct unur_distr *distr, double *left, dou
      /*   left  ... left boundary point                                      */
      /*   right ... right boundary point                                     */
      /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*                                                                      */
      /* comment:                                                             */
      /*   if no boundaries have been set +/- INFINITY is returned.           */
      /*----------------------------------------------------------------------*/
@@ -1166,14 +1178,14 @@ unur_distr_cont_get_truncated( const struct unur_distr *distr, double *left, dou
   *right = INFINITY;
 
   /* check arguments */
-  _unur_check_NULL( NULL, distr, 0 );
-  _unur_check_distr_object( distr, CONT, 0 );
+  _unur_check_NULL( NULL, distr, UNUR_ERR_NULL );
+  _unur_check_distr_object( distr, CONT, UNUR_ERR_DISTR_INVALID );
 
   /* o.k. */
   *left  = (distr->set & UNUR_DISTR_SET_TRUNCATED) ? DISTR.trunc[0] : DISTR.domain[0];
   *right = (distr->set & UNUR_DISTR_SET_TRUNCATED) ? DISTR.trunc[1] : DISTR.domain[1];
 
-  return 1;
+  return UNUR_SUCCESS;
 } /* end of unur_distr_cont_get_truncated() */
 
 /*---------------------------------------------------------------------------*/
@@ -1188,13 +1200,13 @@ unur_distr_cont_set_mode( struct unur_distr *distr, double mode )
      /*   mode  ... mode of p.d.f.                                           */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( NULL, distr, 0 );
-  _unur_check_distr_object( distr, CONT, 0 );
+  _unur_check_NULL( NULL, distr, UNUR_ERR_NULL );
+  _unur_check_distr_object( distr, CONT, UNUR_ERR_DISTR_INVALID );
 
   DISTR.mode = mode;
 
@@ -1202,7 +1214,7 @@ unur_distr_cont_set_mode( struct unur_distr *distr, double mode )
   distr->set |= UNUR_DISTR_SET_MODE;
 
   /* o.k. */
-  return 1;
+  return UNUR_SUCCESS;
 } /* end of unur_distr_cont_set_mode() */
 
 /*---------------------------------------------------------------------------*/
@@ -1216,30 +1228,30 @@ unur_distr_cont_upd_mode( struct unur_distr *distr )
      /*   distr ... pointer to distribution object                           */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( NULL, distr, 0 );
-  _unur_check_distr_object( distr, CONT, 0 );
+  _unur_check_NULL( NULL, distr, UNUR_ERR_NULL );
+  _unur_check_distr_object( distr, CONT, UNUR_ERR_DISTR_INVALID );
 
   if (DISTR.upd_mode == NULL) {
     /* no function to compute mode available */
     _unur_error(distr->name,UNUR_ERR_DISTR_DATA,"");
-    return 0;
+    return UNUR_ERR_DISTR_DATA;
   }
 
   /* compute mode */
-  if ((DISTR.upd_mode)(distr)) {
+  if ((DISTR.upd_mode)(distr)==UNUR_SUCCESS) {
     /* changelog */
     distr->set |= UNUR_DISTR_SET_MODE;
-    return 1;
+    return UNUR_SUCCESS;
   }
   else {
     /* computing of mode failed */
     _unur_error(distr->name,UNUR_ERR_DISTR_DATA,"");
-    return 0;
+    return UNUR_ERR_DISTR_DATA;
   }
 
 } /* end of unur_distr_cont_upd_mode() */
@@ -1272,7 +1284,7 @@ unur_distr_cont_get_mode( struct unur_distr *distr )
     }
     else {
       /* compute mode */
-      if (!unur_distr_cont_upd_mode( distr )) {
+      if (unur_distr_cont_upd_mode(distr)!=UNUR_SUCCESS) {
 	/* finding mode not successfully */
 	_unur_error(distr->name,UNUR_ERR_DISTR_GET,"mode");
 	return INFINITY;
@@ -1296,18 +1308,18 @@ unur_distr_cont_set_pdfarea( struct unur_distr *distr, double area )
      /*   area  ... area below p.d.f.                                        */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( NULL, distr, 0 );
-  _unur_check_distr_object( distr, CONT, 0 );
+  _unur_check_NULL( NULL, distr, UNUR_ERR_NULL );
+  _unur_check_distr_object( distr, CONT, UNUR_ERR_DISTR_INVALID );
 
   /* check new parameter for distribution */
   if (area <= 0.) {
     _unur_error(NULL,UNUR_ERR_DISTR_SET,"pdf area <= 0");
-    return 0;
+    return UNUR_ERR_DISTR_SET;
   }
 
   DISTR.area = area;
@@ -1316,7 +1328,7 @@ unur_distr_cont_set_pdfarea( struct unur_distr *distr, double area )
   distr->set |= UNUR_DISTR_SET_PDFAREA;
 
   /* o.k. */
-  return 1;
+  return UNUR_SUCCESS;
 
 } /* end of unur_distr_cont_set_pdfarea() */
 
@@ -1331,33 +1343,33 @@ unur_distr_cont_upd_pdfarea( struct unur_distr *distr )
      /*   distr ... pointer to distribution object                           */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( NULL, distr, 0 );
-  _unur_check_distr_object( distr, CONT, 0 );
+  _unur_check_NULL( NULL, distr, UNUR_ERR_NULL );
+  _unur_check_distr_object( distr, CONT, UNUR_ERR_DISTR_INVALID );
 
   if (DISTR.upd_area == NULL) {
     /* no function to compute mode available */
     _unur_error(distr->name,UNUR_ERR_DISTR_DATA,"");
-    return 0;
+    return UNUR_ERR_DISTR_DATA;
   }
 
   /* compute area */
-  if (!((DISTR.upd_area)(distr)) || DISTR.area <= 0.) {
+  if (((DISTR.upd_area)(distr)!=UNUR_SUCCESS) || DISTR.area <= 0.) {
     /* computing of area failed */
     _unur_error(distr->name,UNUR_ERR_DISTR_SET,"upd area <= 0");
     DISTR.area = 1.;   /* avoid possible floating point exceptions */
     distr->set &= ~UNUR_DISTR_SET_PDFAREA;
-    return 0;
+    return UNUR_ERR_DISTR_SET;
   }
 
   /* changelog */
   distr->set |= UNUR_DISTR_SET_PDFAREA;
 
-  return 1;
+  return UNUR_SUCCESS;
 } /* end of unur_distr_cont_upd_pdfarea() */
   
 /*---------------------------------------------------------------------------*/
@@ -1485,8 +1497,8 @@ _unur_distr_cont_find_mode( struct unur_distr *distr )
      /*   distr ... pointer to distribution object                           */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
 #define MAX_SRCH (100)
@@ -1504,11 +1516,11 @@ _unur_distr_cont_find_mode( struct unur_distr *distr )
   int unbound_right; 
 
   /* check arguments */
-  CHECK_NULL( distr, 0 );
-  _unur_check_distr_object( distr, CONT, 0 );
+  CHECK_NULL( distr, UNUR_ERR_NULL );
+  _unur_check_distr_object( distr, CONT, UNUR_ERR_DISTR_INVALID );
   if (DISTR.pdf == NULL) {
     _unur_error(distr->name,UNUR_ERR_DISTR_GET,"PDF required for finding mode numerically"); 
-    return 0;
+    return UNUR_ERR_DISTR_DATA;
   }
 
   /* first guess for mode */
@@ -1617,7 +1629,7 @@ _unur_distr_cont_find_mode( struct unur_distr *distr )
   
   /* no success -- exit routine  */   
   if( _unur_FP_same(fx[1], 0.0) )
-     return 0;  /* can't find mode in flat region  */
+     return UNUR_ERR_DISTR_DATA;  /* can't find mode in flat region  */
 
   /* x[1] has pdf > 0 or routines already terminated */ 
 
@@ -1698,11 +1710,11 @@ _unur_distr_cont_find_mode( struct unur_distr *distr )
   else {
     /* computing mode did not work */
     /* (we do not change mode entry in distribution object) */
-    return 0;
+    return UNUR_ERR_DISTR_DATA;
   }
 
   /* o.k. */
-  return 1;
+  return UNUR_SUCCESS;
 
 #undef MAX_SRCH
 } /* end of _unur_distr_cont_find_mode() */

@@ -362,23 +362,21 @@ unur_empk_set_kernel( struct unur_par *par, unsigned kernel)
      /*   kernel ... identifier for standard kernel                          */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   UNUR_DISTR *kerndist;
   double fpar[4];
 
   /* check arguments */
-  _unur_check_NULL( GENTYPE,par,0 );
-
-  /* check input */
-  _unur_check_par_object( par,EMPK );
+  _unur_check_NULL( GENTYPE, par, UNUR_ERR_NULL );
+  _unur_check_par_object( par, EMPK );
 
   /* It is not possible to call unur_empk_set_kernel() twice. */
   if (par->set & EMPK_SET_KERNEL) {
     _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"Cannot overwrite kernel");
-    return 0;
+    return UNUR_ERR_PAR_SET;
   }
 
   /* check for standard distribution and set data */
@@ -398,6 +396,7 @@ unur_empk_set_kernel( struct unur_par *par, unsigned kernel)
     PAR.kernvar = 0.2;
     unur_distr_free( kerndist );
     break;
+
   case UNUR_DISTR_GAUSSIAN:
     /* Gaussian (normal) kernel. efficiency = 0.951 */
     kerndist    = unur_distr_normal( NULL, 0 );
@@ -406,6 +405,7 @@ unur_empk_set_kernel( struct unur_par *par, unsigned kernel)
     PAR.kernvar = 1.;
     unur_distr_free( kerndist );
     break;
+
   case UNUR_DISTR_BOXCAR:
     /* Boxcar (uniform, rectangular) kernel. efficiency = 0.930 */
     fpar[0]     = -1.;
@@ -416,6 +416,7 @@ unur_empk_set_kernel( struct unur_par *par, unsigned kernel)
     PAR.kernvar = 1./3.;
     unur_distr_free( kerndist );
     break;
+
   case UNUR_DISTR_STUDENT:
     /* t3 kernel (Student's distribution with 3 degrees of freedom).
        efficiency = 0.679 */
@@ -426,6 +427,7 @@ unur_empk_set_kernel( struct unur_par *par, unsigned kernel)
     PAR.kernvar = 3.;
     unur_distr_free( kerndist );
     break;
+
   case UNUR_DISTR_LOGISTIC:
     /* logistic kernel. efficiency = efficiency = 0.887 */
     kerndist    = unur_distr_logistic( NULL, 0 );
@@ -434,15 +436,16 @@ unur_empk_set_kernel( struct unur_par *par, unsigned kernel)
     PAR.kernvar = 3.289868133696; /* Pi^2/3 */
     unur_distr_free( kerndist );
     break;
+
   default:
     _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"Unknown kernel. make it manually");
-    return 0;
+    return UNUR_ERR_PAR_SET;
   }
 
   /* generation of kernel successful ? */
   if (PAR.kernel == NULL) {
     _unur_error(GENTYPE,UNUR_ERR_SHOULD_NOT_HAPPEN,"Could not initialize kernel generator");
-    return 0;
+    return UNUR_ERR_SHOULD_NOT_HAPPEN;
   }
 
   /* changelog */
@@ -450,7 +453,7 @@ unur_empk_set_kernel( struct unur_par *par, unsigned kernel)
   par->set |= EMPK_SET_KERNEL | EMPK_SET_ALPHA | EMPK_SET_KERNELVAR;
 
   /* o.k. */
-  return 1;
+  return UNUR_SUCCESS;
 
 } /* end of unur_empk_set_kernel() */
 
@@ -469,31 +472,31 @@ unur_empk_set_kernelgen( struct unur_par *par, const struct unur_gen *kernelgen,
      /*   kernelvar ... variance of kernel                                   */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( GENTYPE,par,0 );
-  _unur_check_NULL( GENTYPE,kernelgen,0 );
-
-  /* check input */
-  _unur_check_par_object( par,EMPK );
+  _unur_check_NULL( GENTYPE, par, UNUR_ERR_NULL );
+  _unur_check_NULL( GENTYPE, kernelgen, UNUR_ERR_NULL );
+  _unur_check_par_object( par, EMPK );
 
   /* It is not possible to run this function after a 
      unur_empk_set_kernel() call. */
   if (par->set & EMPK_SET_KERNEL) {
     _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"Cannot overwrite kernel");
-    return 0;
+    return UNUR_ERR_PAR_SET;
   }
   /* check kernel distribution */
   if ( (kernelgen->method & UNUR_MASK_TYPE) != UNUR_METH_CONT ) {
-    _unur_error(GENTYPE,UNUR_ERR_DISTR_INVALID,""); return 0; }
+    _unur_error(GENTYPE,UNUR_ERR_DISTR_INVALID,"");
+    return UNUR_ERR_DISTR_INVALID;
+  }
 
   /* check new parameter for generator */
   if (alpha <= 0.) {
     _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"alpha <= 0");
-    return 0;
+    return UNUR_ERR_PAR_SET;
   }
 
   /* set kernel distribution */
@@ -515,7 +518,7 @@ unur_empk_set_kernelgen( struct unur_par *par, const struct unur_gen *kernelgen,
     par->set &= ~EMPK_SET_KERNELVAR;
 
   /* o.k. */
-  return 1;
+  return UNUR_SUCCESS;
 } /* end of unur_empk_set_kernelgen() */
 
 /*---------------------------------------------------------------------------*/
@@ -530,20 +533,18 @@ unur_empk_set_beta( struct unur_par *par, double beta )
      /*   beta     ... parameter depending on sample                         */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( GENTYPE,par,0 );
-
-  /* check input */
-  _unur_check_par_object( par,EMPK );
+  _unur_check_NULL( GENTYPE, par, UNUR_ERR_NULL );
+  _unur_check_par_object( par, EMPK );
 
   /* check new parameter for generator */
   if (beta <= 0.) {
     _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"beta <= 0");
-    return 0;
+    return UNUR_ERR_PAR_SET;
   }
 
   /* store date */
@@ -552,7 +553,7 @@ unur_empk_set_beta( struct unur_par *par, double beta )
   /* changelog */
   par->set |= EMPK_SET_BETA;
 
-  return 1;
+  return UNUR_SUCCESS;
 
 } /* end of unur_empk_set_beta() */
 
@@ -568,20 +569,18 @@ unur_empk_set_smoothing( struct unur_par *par, double smoothing )
      /*   smoothing ... smoothing factor                                     */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( GENTYPE,par,0 );
-
-  /* check input */
-  _unur_check_par_object( par,EMPK );
+  _unur_check_NULL( GENTYPE, par, UNUR_ERR_NULL );
+  _unur_check_par_object( par, EMPK );
 
   /* check new parameter for generator */
   if (smoothing < 0.) {
     _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"smoothing factor < 0");
-    return 0;
+    return UNUR_ERR_PAR_SET;
   }
 
   /* store date */
@@ -590,7 +589,7 @@ unur_empk_set_smoothing( struct unur_par *par, double smoothing )
   /* changelog */
   par->set |= EMPK_SET_SMOOTHING;
 
-  return 1;
+  return UNUR_SUCCESS;
 
 } /* end of unur_empk_set_smoothing() */
 
@@ -606,20 +605,20 @@ unur_empk_chg_smoothing( struct unur_gen *gen, double smoothing )
      /*   smoothing ... smoothing factor                                     */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( GENTYPE,gen,0 );
-  _unur_check_gen_object( gen,EMPK );
+  _unur_check_NULL( GENTYPE, gen, UNUR_ERR_NULL );
+  _unur_check_gen_object( gen, EMPK, UNUR_ERR_GEN_INVALID );
   
   /* no changelog required */
 
   /* check new parameter for generator */
   if (smoothing < 0.) {
     _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"smoothing factor < 0");
-    return 0;
+    return UNUR_ERR_PAR_SET;
   }
 
   /* recompute band width */
@@ -634,7 +633,7 @@ unur_empk_chg_smoothing( struct unur_gen *gen, double smoothing )
   /* changelog */
   gen->set |= EMPK_SET_SMOOTHING;
 
-  return 1;
+  return UNUR_SUCCESS;
 
 } /* end of unur_empk_chg_smoothing() */
 
@@ -650,18 +649,16 @@ unur_empk_set_varcor( struct unur_par *par, int varcor )
      /*   varcor   ... 0 = no variance correction,  !0 = variance correction */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*                                                                      */
      /* comment:                                                             */
      /*   variance correction is the default                                 */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( GENTYPE,par,0 );
-
-  /* check input */
-  _unur_check_par_object( par,EMPK );
+  _unur_check_NULL( GENTYPE, par, UNUR_ERR_NULL );
+  _unur_check_par_object( par, EMPK );
 
   /* we do not know yet if the kernel variance known */
 
@@ -671,7 +668,7 @@ unur_empk_set_varcor( struct unur_par *par, int varcor )
     : (par->variant & (~EMPK_VARFLAG_VARCOR));
 
   /* o.k. */
-  return 1;
+  return UNUR_SUCCESS;
 
 } /* end of unur_empk_set_varcor() */
 
@@ -687,18 +684,18 @@ unur_empk_chg_varcor( struct unur_gen *gen, int varcor )
      /*   varcor   ... 0 = no variance correction,  !0 = variance correction */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( GENTYPE,gen,0 );
-  _unur_check_gen_object( gen,EMPK );
+  _unur_check_NULL( GENTYPE, gen, UNUR_ERR_NULL );
+  _unur_check_gen_object( gen, EMPK, UNUR_ERR_GEN_INVALID );
   
   /* kernel variance known ? */
   if (! (gen->set & EMPK_SET_KERNELVAR) ) {
     _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"variance correction disabled");
-    return 0;
+    return UNUR_ERR_PAR_SET;
   }
 
   /* no changelog required */
@@ -709,7 +706,7 @@ unur_empk_chg_varcor( struct unur_gen *gen, int varcor )
     : (gen->variant & (~EMPK_VARFLAG_VARCOR));
 
   /* o.k. */
-  return 1;
+  return UNUR_SUCCESS;
 
 } /* end of unur_empk_chg_varcor() */
 
@@ -725,18 +722,16 @@ unur_empk_set_positive( struct unur_par *par, int positive )
      /*   positive ... 0 = no mirroring,  !0 = mirroring                     */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*                                                                      */
      /* comment:                                                             */
      /*   no mirroring is the default                                        */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( GENTYPE,par,0 );
-
-  /* check input */
-  _unur_check_par_object( par,EMPK );
+  _unur_check_NULL( GENTYPE, par, UNUR_ERR_NULL );
+  _unur_check_par_object( par, EMPK );
 
   /* we use a bit in variant */
   par->variant = (positive) 
@@ -744,7 +739,7 @@ unur_empk_set_positive( struct unur_par *par, int positive )
     : (par->variant & (~EMPK_VARFLAG_POSITIVE));
 
   /* o.k. */
-  return 1;
+  return UNUR_SUCCESS;
 
 } /* end of unur_empk_set_positive() */
 
@@ -782,7 +777,7 @@ _unur_empk_init( struct unur_par *par )
   /* check kernel generator */
   if ( PAR.kerngen==NULL && PAR.kernel == NULL) {
     /* no kernel given. use default kernel */
-    if ( !unur_empk_set_kernel( par, UNUR_DISTR_GAUSSIAN ) ) {
+    if ( unur_empk_set_kernel( par, UNUR_DISTR_GAUSSIAN )!=UNUR_SUCCESS ) {
       /* cannot make kernel generator (should not happen!) */
       free(par); return NULL; 
     }
@@ -981,14 +976,14 @@ _unur_empk_sample( struct unur_gen *gen )
      /*   double (sample from random variate)                                */
      /*                                                                      */
      /* error:                                                               */
-     /*   return 0.                                                          */
+     /*   return INFINITY                                                    */
      /*----------------------------------------------------------------------*/
 { 
   double U,K,X;
   int j;
 
   /* check arguments */
-  CHECK_NULL(gen,0.);  COOKIE_CHECK(gen,CK_EMPK_GEN,0.);
+  CHECK_NULL(gen,INFINITY);  COOKIE_CHECK(gen,CK_EMPK_GEN,INFINITY);
 
   /* select uniformly one of the observations */
   U = _unur_call_urng(gen->urng) * GEN.n_observ;
@@ -1067,8 +1062,8 @@ _unur_empk_comp_stddev( double *data, int n_data, double *mean, double *stddev)
      /*   stddev ... pointer to store stddev                                 */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*                                                                      */
      /* REFERENCES:                                                          */
      /*   [1] Spicer C.C. (1972): Algorithm AS 52: Calculation of Power Sums */
@@ -1098,7 +1093,7 @@ _unur_empk_comp_stddev( double *data, int n_data, double *mean, double *stddev)
   /* compute standard deviation */
   *stddev = sqrt( xsqu_sum / (n_data - 1.));
 
-  return 1;
+  return UNUR_SUCCESS;
 } /* end of _unur_empk_comp_stddev() */
 
 /*---------------------------------------------------------------------------*/

@@ -234,7 +234,7 @@ int unur_tdr_set_darsfactor( UNUR_PAR *parameters, double factor );
    intervals between squeeze and hat.
    Notice that all intervals are split when @var{factor} is set to
    @code{0.}, and that there is no splitting at all when @var{factor}
-   is set to UNUR_INFINITY.
+   is set to @code{UNUR_INFINITY}.
 
    Default is @code{0.99}. There is no need to change this parameter.
 */
@@ -270,7 +270,7 @@ int unur_tdr_chg_truncated(UNUR_GEN *gen, double left, double right);
    @emph{Important:} If the CDF of the hat is (almost) the same 
    for @var{left} and @var{right} and (almost) equal to @code{0} or
    @code{1}, then the truncated domain is not chanced and the call
-   returns @code{0}.
+   returns an error code.
 */
 
 
@@ -292,19 +292,19 @@ double unur_tdr_get_sqhratio( const UNUR_GEN *generator );
 /* 
    Get the current ratio (area below squeeze) / (area below hat)
    for the generator.
-   (In case of an error @code{0} is returned.)
+   (In case of an error @code{UNUR_INFINITY} is returned.)
 */
 
 double unur_tdr_get_hatarea( const UNUR_GEN *generator );
 /* 
    Get the area below the hat for the generator.
-   (In case of an error @code{0} is returned.)
+   (In case of an error @code{UNUR_INFINITY} is returned.)
 */
 
 double unur_tdr_get_squeezearea( const UNUR_GEN *generator );
 /* 
    Get the area below the squeeze for the generator.
-   (In case of an error @code{0} is returned.)
+   (In case of an error @code{UNUR_INFINITY} is returned.)
 */
 
 int _unur_tdr_is_ARS_running( const UNUR_GEN *generator );
@@ -359,7 +359,7 @@ int unur_tdr_set_usemode( UNUR_PAR *parameters, int usemode );
    Notice that the behavior of the algorithm is different to simply
    adding the mode in the list of construction points via a
    unur_tdr_set_cpoints() call. In the latter case the mode is treated
-   just like any other point. However when @code{usemode} is TRUE, the
+   just like any other point. However, when @code{usemode} is TRUE, the
    tangent in the mode is always set to 0. Then the hat of the
    transformed density can never cut the x-axis which must never
    happen if c < 0, since otherwise the hat would not be bounded.

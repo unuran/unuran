@@ -150,19 +150,19 @@ unur_auto_set_logss( UNUR_PAR *par, int logss )
      /*   logss ... common logarithm of sample size                          */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( GENTYPE,par,0 );
+  _unur_check_NULL( GENTYPE, par, UNUR_ERR_NULL );
 
   /* check input */
-  _unur_check_par_object( par,AUTO );
+  _unur_check_par_object( par, AUTO );
 
   if (logss < 0 ) {
     _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"log < 0");
-    return 0;
+    return UNUR_ERR_PAR_SET;
   }
 
   /* store date */
@@ -171,7 +171,7 @@ unur_auto_set_logss( UNUR_PAR *par, int logss )
   /* changelog */
   par->set |= AUTO_SET_LOGSS;
 
-  return 1;
+  return UNUR_SUCCESS;
 
 } /* end of unur_auto_set_logss() */
 
@@ -248,7 +248,7 @@ _unur_auto_init( struct unur_par *par )
 
 /*---------------------------------------------------------------------------*/
 
-static struct unur_gen *
+struct unur_gen *
 _unur_init_cont( struct unur_par *par_auto )
      /*----------------------------------------------------------------------*/
      /* initialize new generator for distribution type CONT                  */
@@ -284,7 +284,7 @@ _unur_init_cont( struct unur_par *par_auto )
   
 /*---------------------------------------------------------------------------*/
 
-static struct unur_gen *
+struct unur_gen *
 _unur_init_cvec( struct unur_par *par_auto )
      /*----------------------------------------------------------------------*/
      /* initialize new generator for distribution type CVEC                  */
@@ -313,7 +313,7 @@ _unur_init_cvec( struct unur_par *par_auto )
   
 /*---------------------------------------------------------------------------*/
 
-static struct unur_gen *
+struct unur_gen *
 _unur_init_discr( struct unur_par *par_auto )
      /*----------------------------------------------------------------------*/
      /* initialize new generator for distribution type DISCR                 */
@@ -354,7 +354,7 @@ _unur_init_discr( struct unur_par *par_auto )
   
 /*---------------------------------------------------------------------------*/
 
-static struct unur_gen *
+struct unur_gen *
 _unur_init_cemp( struct unur_par *par_auto )
      /*----------------------------------------------------------------------*/
      /* initialize new generator for distribution type CEMP                  */
@@ -383,7 +383,7 @@ _unur_init_cemp( struct unur_par *par_auto )
   
 /*---------------------------------------------------------------------------*/
 
-static struct unur_gen *
+struct unur_gen *
 _unur_init_cvemp( struct unur_par *par_auto )
      /*----------------------------------------------------------------------*/
      /* initialize new generator for distribution type CVEMP                  */

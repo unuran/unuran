@@ -100,7 +100,7 @@ int unur_distr_corder_set_rank( UNUR_DISTR *distribution, int n, int k );
 int unur_distr_corder_get_rank( const UNUR_DISTR *distribution, int *n, int *k );
 /* 
    Get sample size @var{n} and rank @var{k} of order statistics.
-   In case of error @code{0} is returned.
+   In case of error an error code is returned.
 */
 
 /* ==DOC

@@ -361,7 +361,7 @@ _unur_dss_sample( struct unur_gen *gen )
      /*   integer (sample from random variate)                               */
      /*                                                                      */
      /* error:                                                               */
-     /*   return 0                                                           */
+     /*   return INT_MAX                                                     */
      /*----------------------------------------------------------------------*/
 { 
   int J;

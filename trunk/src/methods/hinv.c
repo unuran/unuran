@@ -322,30 +322,28 @@ unur_hinv_set_order( struct unur_par *par, int order)
      /*   order  ... order of interpolation polynome                         */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( GENTYPE,par,0 );
-
-  /* check input */
-  _unur_check_par_object( par,HINV );
+  _unur_check_NULL( GENTYPE, par, UNUR_ERR_NULL );
+  _unur_check_par_object( par, HINV );
 
   /* check new parameter for generator */
   if (order!=1 && order!=3 && order!=5) {
     _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"order");
-    return 0;
+    return UNUR_ERR_PAR_SET;
   }
 
   if (order > 1 && par->distr->data.cont.pdf == NULL) {
     _unur_warning(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"PDF");
-    return 0;
+    return UNUR_ERR_DISTR_REQUIRED;
   }
 
   if (order > 3 && par->distr->data.cont.dpdf == NULL) {
     _unur_warning(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"dPDF");
-    return 0;
+    return UNUR_ERR_DISTR_REQUIRED;
   }
 
   /* store date */
@@ -354,7 +352,7 @@ unur_hinv_set_order( struct unur_par *par, int order)
   /* changelog */
   par->set |= HINV_SET_ORDER;
 
-  return 1;
+  return UNUR_SUCCESS;
 
 } /* end of unur_hinv_set_order() */
 
@@ -370,20 +368,18 @@ unur_hinv_set_u_resolution( struct unur_par *par, double u_resolution )
      /*   u_resolution ... maximal error in u                                */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( GENTYPE,par,0 );
-
-  /* check input */
-  _unur_check_par_object( par,HINV );
+  _unur_check_NULL( GENTYPE, par, UNUR_ERR_NULL );
+  _unur_check_par_object( par, HINV );
 
   /* check new parameter for generator */
   if (u_resolution < 5.*DBL_EPSILON) {
     _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"u-resolution");
-    return 0;
+    return UNUR_ERR_PAR_SET;
   }
   if (u_resolution < UNUR_EPSILON) {
     _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"u-resolution so small that problems may occur");
@@ -395,7 +391,7 @@ unur_hinv_set_u_resolution( struct unur_par *par, double u_resolution )
   /* changelog */
   par->set |= HINV_SET_U_RESOLUTION;
 
-  return 1;
+  return UNUR_SUCCESS;
 
 } /* end of unur_hinv_set_u_resolutuion() */
 
@@ -412,29 +408,27 @@ unur_hinv_set_cpoints( struct unur_par *par, const double *stp, int n_stp )
      /*   n_stp  ... number of starting points                               */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   int i;
 
   /* check arguments */
-  _unur_check_NULL( GENTYPE,par,0 );
-
-  /* check input */
-  _unur_check_par_object( par,HINV );
+  _unur_check_NULL( GENTYPE, par, UNUR_ERR_NULL );
+  _unur_check_par_object( par, HINV );
 
   /* check starting construction points */
   if (n_stp < 1 || stp==NULL) {
     _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"number of starting points < 1");
-    return 0;
+    return UNUR_ERR_PAR_SET;
   }
 
   /* starting points must be strictly monontonically increasing */
   for( i=1; i<n_stp; i++ )
     if (stp[i] <= stp[i-1]) {
       _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"starting points not strictly monotonically increasing");
-      return 0;
+      return UNUR_ERR_PAR_SET;
     }
 
   /* store date */
@@ -444,7 +438,7 @@ unur_hinv_set_cpoints( struct unur_par *par, const double *stp, int n_stp )
   /* changelog */
   par->set |= HINV_SET_STP;
 
-  return 1;
+  return UNUR_SUCCESS;
 
 } /* end of unur_hinv_set_cpoints() */
 
@@ -461,27 +455,25 @@ unur_hinv_set_boundary( struct unur_par *par, double left, double right )
      /*   right ... right boundary point                                     */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*                                                                      */
      /* comment:                                                             */
      /*   new boundary points must not be +/- INFINITY                       */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( GENTYPE,par,0 );
-
-  /* check input */
-  _unur_check_par_object( par,HINV );
+  _unur_check_NULL( GENTYPE, par, UNUR_ERR_NULL );
+  _unur_check_par_object( par, HINV );
 
   /* check new parameter for generator */
   if (left >= right) {
     _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"domain");
-    return 0;
+    return UNUR_ERR_PAR_SET;
   }
   if (left <= -INFINITY || right >= INFINITY) {
     _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"domain (+/- INFINITY not allowed)");
-    return 0;
+    return UNUR_ERR_PAR_SET;
   }
 
   /* store date */
@@ -491,7 +483,7 @@ unur_hinv_set_boundary( struct unur_par *par, double left, double right )
   /* changelog */
   par->set |= HINV_SET_BOUNDARY;
 
-  return 1;
+  return UNUR_SUCCESS;
 
 } /* end of unur_hinv_set_boundary() */
 
@@ -507,20 +499,18 @@ unur_hinv_set_guidefactor( struct unur_par *par, double factor )
      /*   factor ... relative size of table                                  */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( GENTYPE,par,0 );
-
-  /* check input */
-  _unur_check_par_object( par,HINV );
+  _unur_check_NULL( GENTYPE, par, UNUR_ERR_NULL );
+  _unur_check_par_object( par, HINV );
 
   /* check new parameter for generator */
   if (factor < 0) {
     _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"guide table size < 0");
-    return 0;
+    return UNUR_ERR_PAR_SET;
   }
 
   /* store date */
@@ -529,7 +519,7 @@ unur_hinv_set_guidefactor( struct unur_par *par, double factor )
   /* changelog */
   par->set |= HINV_SET_GUIDEFACTOR;
 
-  return 1;
+  return UNUR_SUCCESS;
 
 } /* end of unur_hinv_set_guidefactor() */
 
@@ -545,21 +535,21 @@ unur_hinv_set_max_intervals( struct unur_par *par, int max_ivs )
      /*   max_ivs   ... maximum number of intervals                          */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( GENTYPE,par,0 );
+  _unur_check_NULL( GENTYPE, par, UNUR_ERR_NULL );
 
   /* check input */
-  _unur_check_par_object( par,HINV );
+  _unur_check_par_object( par, HINV );
 
   /* check new parameter for generator */
   if (max_ivs < 1000 ) {
     /* it does not make sense to set this parameter too small */
     _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"maximum number of intervals < 1000");
-    return 0;
+    return UNUR_ERR_PAR_SET;
   }
 
   /* store date */
@@ -568,7 +558,7 @@ unur_hinv_set_max_intervals( struct unur_par *par, int max_ivs )
   /* changelog */
   par->set |= HINV_SET_MAX_IVS;
 
-  return 1;
+  return UNUR_SUCCESS;
 
 } /* end of unur_hinv_set_max_intervals() */
 
@@ -588,8 +578,8 @@ unur_hinv_get_n_intervals( const struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
 {
   /* check input */
-  _unur_check_NULL( GENTYPE,gen,0 );
-  _unur_check_gen_object( gen,HINV );
+  _unur_check_NULL( GENTYPE, gen, 0 );
+  _unur_check_gen_object( gen, HINV, 0 );
   return GEN.N;
 } /* end of unur_hinv_get_n_intervals() */
 
@@ -607,6 +597,10 @@ unur_hinv_chg_truncated( struct unur_gen *gen, double left, double right )
      /*   left  ... left boundary point                                      */
      /*   right ... right boundary point                                     */
      /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*                                                                      */
      /* comment:                                                             */
      /*   the new boundary points may be +/- INFINITY                        */
      /*----------------------------------------------------------------------*/
@@ -614,8 +608,8 @@ unur_hinv_chg_truncated( struct unur_gen *gen, double left, double right )
   double Umin, Umax, Uminbound, Umaxbound;
 
   /* check arguments */
-  _unur_check_NULL( GENTYPE,gen,0 );
-  _unur_check_gen_object(gen, HINV);
+  _unur_check_NULL( GENTYPE, gen, UNUR_ERR_NULL );
+  _unur_check_gen_object(gen, HINV, UNUR_ERR_GEN_INVALID);
 
   /* compute Uminbound and Umaxbound using the u-value of the first and 
      the last design point. */
@@ -639,7 +633,7 @@ unur_hinv_chg_truncated( struct unur_gen *gen, double left, double right )
 
   if (left >= right) {
     _unur_warning(NULL,UNUR_ERR_DISTR_SET,"domain, left >= right");
-    return 0;
+    return UNUR_ERR_DISTR_SET;
   }
 
   /* set bounds of U -- in respect to given bounds */
@@ -650,7 +644,7 @@ unur_hinv_chg_truncated( struct unur_gen *gen, double left, double right )
   if (Umin > Umax) {
     /* this is a serios error that should not happen */
     _unur_error(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
-    return 0;
+    return UNUR_ERR_SHOULD_NOT_HAPPEN;
   }
 
   if (_unur_FP_equal(Umin,Umax)) {
@@ -659,7 +653,7 @@ unur_hinv_chg_truncated( struct unur_gen *gen, double left, double right )
     if (Umin == 0. || _unur_FP_same(Umax,1.)) {
       /* this is very bad */
       _unur_warning(gen->genid,UNUR_ERR_DISTR_SET,"CDF values at boundary points too close");
-      return 0;
+      return UNUR_ERR_DISTR_SET;
     }
   }
 
@@ -679,7 +673,7 @@ unur_hinv_chg_truncated( struct unur_gen *gen, double left, double right )
 #endif
   
   /* o.k. */
-  return 1;
+  return UNUR_SUCCESS;
   
 } /* end of unur_hinv_chg_truncated() */
 
@@ -740,7 +734,7 @@ _unur_hinv_init( struct unur_par *par )
   }
 
   /* compute splines */
-  if (!_unur_hinv_create_table(par,gen)) {
+  if (_unur_hinv_create_table(par,gen)!=UNUR_SUCCESS) {
     /* make entry in log file */
 #ifdef UNUR_ENABLE_LOGGING
     _unur_hinv_list_to_array( gen );
@@ -862,8 +856,8 @@ _unur_hinv_create_table( struct unur_par *par, struct unur_gen *gen )
      /*   par ... pointer to parameter for building generator object         */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   struct unur_hinv_interval *iv, *iv_new;
@@ -871,13 +865,13 @@ _unur_hinv_create_table( struct unur_par *par, struct unur_gen *gen )
   double Fx;
 
   /* check arguments */
-  CHECK_NULL(gen,0);  COOKIE_CHECK(gen,CK_HINV_GEN,0);
+  CHECK_NULL(gen,UNUR_ERR_NULL);  COOKIE_CHECK(gen,CK_HINV_GEN,UNUR_ERR_COOKIE);
 
   /* make starting intervals */
   GEN.iv = _unur_hinv_interval_new(gen,GEN.bleft,CDF(GEN.bleft));
-  if (GEN.iv == NULL) return 0;
+  if (GEN.iv == NULL) return UNUR_ERR_GEN_DATA;
   GEN.iv->next = _unur_hinv_interval_new(gen,GEN.bright,CDF(GEN.bright));
-  if (GEN.iv->next == NULL) return 0;
+  if (GEN.iv->next == NULL) return UNUR_ERR_GEN_DATA;
 
   /* use starting design points of given */
   if (PAR.stp) {
@@ -888,7 +882,7 @@ _unur_hinv_create_table( struct unur_par *par, struct unur_gen *gen )
  
       Fx = CDF(PAR.stp[i]);
       iv_new = _unur_hinv_interval_new(gen,PAR.stp[i],Fx);
-      if (iv_new == NULL) return 0;
+      if (iv_new == NULL) return UNUR_ERR_GEN_DATA;
       iv_new->next = iv->next;
       iv->next = iv_new;
       iv = iv_new;
@@ -905,18 +899,18 @@ _unur_hinv_create_table( struct unur_par *par, struct unur_gen *gen )
         _unur_FP_less(DISTR.mode, GEN.bright) ) {
       iv = GEN.iv;
       iv_new = _unur_hinv_interval_new(gen,DISTR.mode,CDF(DISTR.mode));
-      if (iv_new == NULL) return 0;
+      if (iv_new == NULL) return UNUR_ERR_GEN_DATA;
       iv_new->next = iv->next;
       iv->next = iv_new;
     }
 
   /* now split intervals where approximation error is too large */
   for (iv=GEN.iv; iv->next!=NULL; ) {
-    COOKIE_CHECK(iv,CK_HINV_IV,0);
+    COOKIE_CHECK(iv,CK_HINV_IV,UNUR_ERR_COOKIE);
     if (GEN.N >= PAR.max_ivs) {
       /* emergency break */
       _unur_error(GENTYPE,UNUR_ERR_GEN_CONDITION,"too many intervals");
-      return 0; 
+      return UNUR_ERR_GEN_CONDITION; 
     }
     iv = _unur_hinv_interval_adapt(gen,iv, &error_count_shortinterval);
   }
@@ -925,7 +919,7 @@ _unur_hinv_create_table( struct unur_par *par, struct unur_gen *gen )
   iv->spline[0] = iv->p;
 
   /* o.k. */
-  return 1;
+  return UNUR_SUCCESS;
 }  /* end of _unur_hinv_create_table() */
 
 /*---------------------------------------------------------------------------*/
@@ -1110,8 +1104,8 @@ _unur_hinv_interval_is_monotone( struct unur_gen *gen, struct unur_hinv_interval
      /*   iv  ... pointer to interval                                        */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... if monotone                                                  */
-     /*   0 ... otherwise                                                    */
+     /*   TRUE  ... if monotone                                              */
+     /*   FALSE ... otherwise                                                */
      /*----------------------------------------------------------------------*/
 {
 
@@ -1124,14 +1118,14 @@ _unur_hinv_interval_is_monotone( struct unur_gen *gen, struct unur_hinv_interval
   case 3:
     /* we skip the test if computing the bound has too many round-off errors */
     if (iv->u==0. || _unur_FP_approx(iv->u,iv->next->u))
-      return 1;
+      return TRUE;
     /* difference quotient */
     bound = 3.*(iv->next->p - iv->p)/(iv->next->u - iv->u);
-    return (1./iv->next->f > bound || 1./iv->f > bound) ? 0 : 1;
+    return (1./iv->next->f > bound || 1./iv->f > bound) ? FALSE : TRUE;
   case 1:
     /* linear interpolation is always monotone */
   default:  /* we assume that we have checked GEN.order very often till now */
-    return 1;
+    return TRUE;
   }
 
 } /* end of _unur_hinv_interval_is_monotone() */
@@ -1148,8 +1142,8 @@ _unur_hinv_interval_parameter( struct unur_gen *gen, struct unur_hinv_interval *
      /*   iv  ... pointer to interval                                        */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   double delta_u, delta_p;
@@ -1176,7 +1170,7 @@ _unur_hinv_interval_parameter( struct unur_gen *gen, struct unur_hinv_interval *
       iv->spline[3] = 10.*f1 - 6.*fs0 - 4.*fs1 - 1.5*fss0 + 0.5*fss1;
       iv->spline[4] = -15.*f1 + 8.*fs0 + 7.*fs1 + 1.5*fss0 - fss1;
       iv->spline[5] = 6.*f1 - 3.*fs0 - 3.*fs1 - 0.5*fss0 + 0.5*fss1;
-      return 1;
+      return UNUR_SUCCESS;
     }
     else {
       /* cannot use quintic interpolation in interval; use cubic instead */
@@ -1190,7 +1184,7 @@ _unur_hinv_interval_parameter( struct unur_gen *gen, struct unur_hinv_interval *
       iv->spline[1] = delta_u / iv->f;
       iv->spline[2] = 3.* delta_p - delta_u * (2./iv->f + 1./iv->next->f);
       iv->spline[3] = -2.* delta_p + delta_u * (1./iv->f + 1./iv->next->f);
-      return 1;
+      return UNUR_SUCCESS;
     }
     else {
       /* cannot use cubic interpolation in interval; use linear instead */
@@ -1201,11 +1195,11 @@ _unur_hinv_interval_parameter( struct unur_gen *gen, struct unur_hinv_interval *
   case 1:    /* linear interpolation */
     iv->spline[0] = iv->p;
     iv->spline[1] = delta_p;
-    return 1;
+    return UNUR_SUCCESS;
 
   default:
     _unur_error(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
-    return 0;
+    return UNUR_ERR_SHOULD_NOT_HAPPEN;
   }
 
 } /* end of _unur_hinv_interval_parameter() */
@@ -1248,15 +1242,15 @@ _unur_hinv_list_to_array( struct unur_gen *gen )
      /*   gen ... pointer to generator object                                */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   int i; 
   struct unur_hinv_interval *iv, *next;
 
   /* check arguments */
-  CHECK_NULL(gen,0);  COOKIE_CHECK(gen,CK_HINV_GEN,0);
+  CHECK_NULL(gen,UNUR_ERR_NULL);  COOKIE_CHECK(gen,CK_HINV_GEN,UNUR_ERR_COOKIE);
 
   /* allocate memory */
   GEN.intervals = malloc( GEN.N*(GEN.order+2) * sizeof(double) );
@@ -1276,7 +1270,7 @@ _unur_hinv_list_to_array( struct unur_gen *gen )
   GEN.iv = NULL;
 
   /* o.k. */
-  return 1;
+  return UNUR_SUCCESS;
 } /* end of _unur_hinv_list_to_array() */
 
 /*---------------------------------------------------------------------------*/
@@ -1290,14 +1284,14 @@ _unur_hinv_make_guide_table( struct unur_gen *gen )
      /*   gen ... pointer to generator object                                */
      /*                                                                      */
      /* return:                                                              */
-     /*   1  ... if successful                                               */
-     /*   0  ... error                                                       */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   int i,j, imax;
 
   /* check arguments */
-  CHECK_NULL(gen,0);  COOKIE_CHECK(gen,CK_HINV_GEN,0);
+  CHECK_NULL(gen,UNUR_ERR_NULL);  COOKIE_CHECK(gen,CK_HINV_GEN,UNUR_ERR_COOKIE);
 
   /* allocate blocks for guide table (if necessary).
      (we allocate blocks for maximal guide table.) */
@@ -1334,7 +1328,7 @@ _unur_hinv_make_guide_table( struct unur_gen *gen )
     GEN.guide[j] = i;
 
   /* o.k. */
-  return 1;
+  return UNUR_SUCCESS;
 } /* end of _unur_hinv_make_guide_table() */
 
 /*---------------------------------------------------------------------------*/
@@ -1447,10 +1441,13 @@ _unur_hinv_sample( struct unur_gen *gen )
      /*   double (sample from random variate)                                */
      /*                                                                      */
      /* error:                                                               */
-     /*   return 0.                                                          */
+     /*   return INFINITY                                                    */
      /*----------------------------------------------------------------------*/
 { 
   double U,X;
+
+  /* check arguments */
+  CHECK_NULL(gen,INFINITY);  COOKIE_CHECK(gen,CK_HINV_GEN,INFINITY);
 
   /* sample from U( Umin, Umax ) */
   U = GEN.Umin + _unur_call_urng(gen->urng) * (GEN.Umax - GEN.Umin);
@@ -1479,12 +1476,15 @@ _unur_hinv_eval_approxinvcdf( const struct unur_gen *gen, double u )
      /*                                                                      */
      /* return:                                                              */
      /*   double (approximate inverse CDF)                                   */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return INFINITY                                                    */
      /*----------------------------------------------------------------------*/
 { 
   int i;
 
   /* check arguments */
-  CHECK_NULL(gen,0.);  COOKIE_CHECK(gen,CK_HINV_GEN,0.);
+  CHECK_NULL(gen,INFINITY);  COOKIE_CHECK(gen,CK_HINV_GEN,INFINITY);
 
   /* look up in guide table and search for interval */
   i =  GEN.guide[(int) (GEN.guide_size*u)];
@@ -1513,6 +1513,9 @@ unur_hinv_eval_approxinvcdf( const struct unur_gen *gen, double u )
      /*                                                                      */
      /* return:                                                              */
      /*   double (approximate inverse CDF)                                   */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return INFINITY                                                    */
      /*----------------------------------------------------------------------*/
 { 
   double x;
@@ -1523,7 +1526,7 @@ unur_hinv_eval_approxinvcdf( const struct unur_gen *gen, double u )
     _unur_error(gen->genid,UNUR_ERR_GEN_INVALID,"");
     return INFINITY; 
   }
-  COOKIE_CHECK(gen,CK_HINV_GEN,0.);
+  COOKIE_CHECK(gen,CK_HINV_GEN,INFINITY);
 
   if ( u<0. || u>1.) {
     _unur_warning(gen->genid,UNUR_ERR_DOMAIN,"argument u not in [0,1]");
@@ -1561,8 +1564,8 @@ unur_hinv_estimate_error( const UNUR_GEN *gen, int samplesize, double *max_error
      /*   MEA        ... pointer to double for storing MA u-error            */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 { 
   double U, ualt, X;
@@ -1570,7 +1573,7 @@ unur_hinv_estimate_error( const UNUR_GEN *gen, int samplesize, double *max_error
   int j, outside_interval=0;
 
   /* check arguments */
-  CHECK_NULL(gen,0.);  COOKIE_CHECK(gen,CK_HINV_GEN,0.);
+  CHECK_NULL(gen,UNUR_ERR_NULL);  COOKIE_CHECK(gen,CK_HINV_GEN,UNUR_ERR_COOKIE);
 
   for(j=0;j<samplesize;j++) {  
     /* sample from U( Umin, Umax ) */
@@ -1601,7 +1604,7 @@ unur_hinv_estimate_error( const UNUR_GEN *gen, int samplesize, double *max_error
   *MAE = average/samplesize;
 
   /* o.k. */
-  return 1;
+  return UNUR_SUCCESS;
 
 } /* end of unur_hinv_estimate_error() */
 

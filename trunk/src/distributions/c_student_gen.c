@@ -78,8 +78,8 @@ _unur_stdgen_student_init( struct unur_par *par, struct unur_gen *gen )
      /*   gen ... pointer to generator object                                */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   /* one of par and gen must not be the NULL pointer */
@@ -88,12 +88,12 @@ _unur_stdgen_student_init( struct unur_par *par, struct unur_gen *gen )
   case 0:  /* DEFAULT */
   case 1:  /* Polar Method */
     _unur_cstd_set_sampling_routine( par,gen,_unur_stdgen_sample_student_tpol );
-    return 1;
+    return UNUR_SUCCESS;
 
   case 2:  /* Ratio of Uniforms */
     if (par->distr->data.cont.params[0] < 1.) {   /* nu < 1 */
       _unur_error(NULL,UNUR_ERR_GEN_CONDITION,"");
-      return 0;
+      return UNUR_ERR_GEN_CONDITION;
     }
     /* nu >= 1 !!!! */
     _unur_cstd_set_sampling_routine( par,gen,_unur_stdgen_sample_student_trouo );
@@ -102,7 +102,7 @@ _unur_stdgen_student_init( struct unur_par *par, struct unur_gen *gen )
   case UNUR_STDGEN_INVERSION:   /* inversion method */
   default: /* no such generator */
     if (gen) _unur_warning(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
-    return 0;
+    return UNUR_FAILURE;
   }
   
 } /* end of _unur_stdgen_chi_init() */
@@ -148,7 +148,8 @@ _unur_stdgen_sample_student_tpol( struct unur_gen *gen )
   double u,v,w;
 
   /* check arguments */
-  CHECK_NULL(gen,0.); COOKIE_CHECK(gen,CK_CSTD_GEN,0.);
+  CHECK_NULL(gen,INFINITY);
+  COOKIE_CHECK(gen,CK_CSTD_GEN,INFINITY);
 
   do {
     u = 2. * uniform() - 1.;
@@ -193,7 +194,8 @@ inline static int
 student_trouo_init( struct unur_gen *gen )
 {
   /* check arguments */
-  CHECK_NULL(gen,0);  COOKIE_CHECK(gen,CK_CSTD_GEN,0);
+  CHECK_NULL(gen,UNUR_ERR_NULL);
+  COOKIE_CHECK(gen,CK_CSTD_GEN,UNUR_ERR_COOKIE);
 
   if (GEN.gen_param == NULL) {
     GEN.n_gen_param = MAX_gen_params;
@@ -203,7 +205,7 @@ student_trouo_init( struct unur_gen *gen )
   /* -X- setup code -X- */
   if (nu < 1.) {
     _unur_error(NULL,UNUR_ERR_GEN_CONDITION,"");
-    return 0;
+    return UNUR_ERR_GEN_CONDITION;
   }
 
   r = 1. / nu;
@@ -214,7 +216,7 @@ student_trouo_init( struct unur_gen *gen )
   vm = (nu>1.0) ? sqrt(p+p) * pow( (1.-r)*p, 0.25*(nu-1.) ) : 1.;
   /* -X- end of setup code -X- */
 
-  return 1;
+  return UNUR_SUCCESS;
 
 } /* end of student_trouo_init() */
 
@@ -225,7 +227,8 @@ _unur_stdgen_sample_student_trouo( struct unur_gen *gen )
   double tru,u,v;
 
   /* check arguments */
-  CHECK_NULL(gen,0.); COOKIE_CHECK(gen,CK_CSTD_GEN,0.);
+  CHECK_NULL(gen,INFINITY);
+  COOKIE_CHECK(gen,CK_CSTD_GEN,INFINITY);
 
   while (1) {
 

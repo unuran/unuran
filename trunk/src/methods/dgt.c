@@ -254,20 +254,18 @@ unur_dgt_set_variant( struct unur_par *par, unsigned variant )
      /*   variant ... indicator for variant                                  */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( GENTYPE,par,0 );
-
-  /* check input */
-  _unur_check_par_object( par,DGT );
+  _unur_check_NULL( GENTYPE, par, UNUR_ERR_NULL );
+  _unur_check_par_object( par, DGT );
 
   /* check new parameter for generator */
   if (variant != DGT_VARFLAG_ADD && variant != DGT_VARFLAG_DIV) {
     _unur_warning(GENTYPE,UNUR_ERR_PAR_VARIANT,"");
-    return 0;
+    return UNUR_ERR_PAR_VARIANT;
   }
 
   /* changelog */
@@ -275,7 +273,7 @@ unur_dgt_set_variant( struct unur_par *par, unsigned variant )
 
   par->variant = variant;
 
-  return 1;
+  return UNUR_SUCCESS;
 } /* end of unur_dgt_set_variant() */
 
 /*---------------------------------------------------------------------------*/
@@ -290,20 +288,18 @@ unur_dgt_set_guidefactor( struct unur_par *par, double factor )
      /*   factor ... relative size of table                                  */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( GENTYPE,par,0 );
-
-  /* check input */
-  _unur_check_par_object( par,DGT );
+  _unur_check_NULL( GENTYPE, par, UNUR_ERR_NULL );
+  _unur_check_par_object( par, DGT );
 
   /* check new parameter for generator */
   if (factor < 0) {
     _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"relative table size < 0");
-    return 0;
+    return UNUR_ERR_PAR_SET;
   }
 
   /* store date */
@@ -312,7 +308,7 @@ unur_dgt_set_guidefactor( struct unur_par *par, double factor )
   /* changelog */
   par->set |= DGT_SET_GUIDEFACTOR;
 
-  return 1;
+  return UNUR_SUCCESS;
 
 } /* end of unur_dgt_set_guidefactor() */
 
@@ -571,14 +567,14 @@ _unur_dgt_sample( struct unur_gen *gen )
      /*   integer (sample from random variate)                               */
      /*                                                                      */
      /* error:                                                               */
-     /*   return 0                                                           */
+     /*   return INT_MAX                                                     */
      /*----------------------------------------------------------------------*/
 { 
   int j;
   double u;
 
   /* check arguments */
-  CHECK_NULL(gen,0);  COOKIE_CHECK(gen,CK_DGT_GEN,0);
+  CHECK_NULL(gen,INT_MAX);  COOKIE_CHECK(gen,CK_DGT_GEN,INT_MAX);
 
   /* sample from U(0,1) */
   u = _unur_call_urng(gen->urng);

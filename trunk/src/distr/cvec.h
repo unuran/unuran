@@ -91,8 +91,8 @@ int unur_distr_cvec_set_dpdf( UNUR_DISTR *distribution, UNUR_VFUNCT_CVEC *dpdf )
    appropriate size (i.e. of the same size as given to the
    unur_distr_cvec_new() call).
    The gradient of the PDF is stored in the array @var{result}.
-   The function should return @code{0} in case of an error and must
-   return a non-zero value otherwise.
+   The function should return an error code in case of an error and must
+   return @code{UNUR_SUCCESS} otherwise.
 
    The given function must be proved the gradient of the function
    given by a unur_distr_cvec_set_pdf() call.
@@ -140,8 +140,8 @@ int unur_distr_cvec_eval_dpdf( double *result, const double *x, const UNUR_DISTR
 
    Notice that @var{distribution} must not be the NULL pointer.
    If the corresponding function is not available for the
-   @var{distribution}, @code{0} is returned and @code{unur_errno} is set to
-   @code{UNUR_ERR_DISTR_DATA} (@var{result} is left unmodified).
+   @var{distribution}, an error code is returned and @code{unur_errno}
+   is set to @code{UNUR_ERR_DISTR_DATA} (@var{result} is left unmodified).
 */
 
 int unur_distr_cvec_set_mean( UNUR_DISTR *distribution, const double *mean );
@@ -234,7 +234,7 @@ int unur_distr_cvec_get_pdfparams( const UNUR_DISTR *distribution, int par, cons
    Get parameter of the PDF with number @var{par}.
    The pointer to the parameter array is stored in @var{params}, its
    size is returned by the function.
-   If the requested parameter is not set, then @code{0} is returned
+   If the requested parameter is not set, then an error code is returned
    and @code{params} is set to NULL.
 
    @emph{Important:} Do @strong{not} change the entries in @var{params}!

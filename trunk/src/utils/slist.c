@@ -120,7 +120,7 @@ _unur_slist_get( const struct unur_slist *slist, int n )
 
 /*---------------------------------------------------------------------------*/
 
-void
+int
 _unur_slist_append( struct unur_slist *slist, void *element )
      /*----------------------------------------------------------------------*/
      /* Append pointer to element to simple list.                            */
@@ -130,12 +130,13 @@ _unur_slist_append( struct unur_slist *slist, void *element )
      /*   element ... pointer to allocated memory block to be appended       */
      /*                                                                      */
      /* return:                                                              */
-     /*   void                                                               */
+     /*   success ... UNUR_SUCCESS                                           */
+     /*   error   ... error code                                             */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  CHECK_NULL(slist,RETURN_VOID);
-  COOKIE_CHECK(slist,CK_SLIST,RETURN_VOID);
+  CHECK_NULL(slist,UNUR_ERR_NULL);
+  COOKIE_CHECK(slist,CK_SLIST,UNUR_ERR_COOKIE);
 
   /* allocate memory for the list of blocks */
   slist->ptr = _unur_realloc(slist->ptr,(slist->n_ptr+1)*sizeof(void *));
@@ -145,6 +146,8 @@ _unur_slist_append( struct unur_slist *slist, void *element )
 
   /* update number of allocated elements */
   ++(slist->n_ptr);
+
+  return UNUR_SUCCESS;
 
 } /* end of _unur_slist_append() */
 
@@ -180,3 +183,4 @@ _unur_slist_free( struct unur_slist *slist )
 } /* end of _unur_slist_free() */
 
 /*---------------------------------------------------------------------------*/
+

@@ -75,8 +75,8 @@ _unur_stdgen_lomax_init( struct unur_par *par, struct unur_gen *gen )
      /*   gen ... pointer to generator object                                */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   /* one of par and gen must not be the NULL pointer */
@@ -86,11 +86,11 @@ _unur_stdgen_lomax_init( struct unur_par *par, struct unur_gen *gen )
   case UNUR_STDGEN_INVERSION:   /* inversion method */
     if (par) PAR.is_inversion = TRUE;
     _unur_cstd_set_sampling_routine(par,gen,_unur_stdgen_sample_lomax_inv); 
-    return 1;
+    return UNUR_SUCCESS;
 
   default: /* no such generator */
     if (gen) _unur_warning(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
-    return 0;
+    return UNUR_FAILURE;
   }
   
 } /* end of _unur_stdgen_lomax_init() */
@@ -112,7 +112,8 @@ double _unur_stdgen_sample_lomax_inv( struct unur_gen *gen )
   double U,X;
 
   /* check arguments */
-  CHECK_NULL(gen,0.);  COOKIE_CHECK(gen,CK_CSTD_GEN,0.);
+  CHECK_NULL(gen,INFINITY);
+  COOKIE_CHECK(gen,CK_CSTD_GEN,INFINITY);
 
   /* sample from uniform random number generator */
   U = GEN.umin + uniform() * (GEN.umax-GEN.umin);

@@ -70,7 +70,7 @@ _unur_FunctDefinition (struct parser_data *pdata)
   if (pdata->perrno) return NULL;
 
   /* next token must be "=" sign */
-  if ( _unur_fstr_next_token(pdata,&token,&symb) == FALSE ||
+  if ( _unur_fstr_next_token(pdata,&token,&symb) != UNUR_SUCCESS ||
        strcmp(symb,"=") != 0 )
     return _unur_fstr_error_parse(pdata,ERR_EXPECT_EQUAL); 
 
@@ -114,12 +114,12 @@ _unur_DefFunctDesignator (struct parser_data *pdata)
   CHECK_NULL(pdata,NULL);  COOKIE_CHECK(pdata,CK_FSTR_PDATA,NULL);
 
   /* get function identifier */
-  if ( _unur_fstr_next_token(pdata,&funct,&fsymb) == FALSE ||
+  if ( _unur_fstr_next_token(pdata,&funct,&fsymb) != UNUR_SUCCESS ||
        symbol[funct].type != S_UFUNCT )
     return _unur_fstr_error_parse(pdata,ERR_EXPECT_FUNCT); 
 
   /* read opening parenthesis '(' */
-  if ( _unur_fstr_next_token(pdata,&token,&symb) == FALSE ||
+  if ( _unur_fstr_next_token(pdata,&token,&symb) != UNUR_SUCCESS ||
        symb[0] != '(' )
     return _unur_fstr_error_parse(pdata,ERR_EXPECT_OPEN_P); 
 
@@ -128,7 +128,7 @@ _unur_DefFunctDesignator (struct parser_data *pdata)
   if (pdata->perrno) return NULL;
 
   /* read closing parenthesis ')' */
-  if ( _unur_fstr_next_token(pdata,&token,&symb) == FALSE ||
+  if ( _unur_fstr_next_token(pdata,&token,&symb) != UNUR_SUCCESS ||
        symb[0] != ')' )
     return _unur_fstr_error_parse(pdata,ERR_EXPECT_CLOSE_P); 
 
@@ -169,7 +169,7 @@ _unur_DefParameterlist(struct parser_data *pdata, int *n_params)
   CHECK_NULL(pdata,NULL);  COOKIE_CHECK(pdata,CK_FSTR_PDATA,NULL);
 
   /* read user defined identifier, i.e. a variable */ 
-  if ( _unur_fstr_next_token(pdata,&token,&symb) == FALSE ||
+  if ( _unur_fstr_next_token(pdata,&token,&symb) != UNUR_SUCCESS ||
        symbol[token].type != S_UIDENT )
     return _unur_fstr_error_parse(pdata,ERR_EXPECT_VAR);
 
@@ -179,14 +179,14 @@ _unur_DefParameterlist(struct parser_data *pdata, int *n_params)
   *n_params = 1;
 
   /* scan token list while we find a list separator `,' */
-  while ( _unur_fstr_next_token(pdata,&token,&symb) == FALSE ||
+  while ( _unur_fstr_next_token(pdata,&token,&symb) != UNUR_SUCCESS ||
 	  symb[0] == ',' ) {
 
     /* old node becomes left node of `,' node */
     left = node; 
 
     /* get next variable */
-    if ( _unur_fstr_next_token(pdata,&token,&symb) == FALSE ||
+    if ( _unur_fstr_next_token(pdata,&token,&symb) != UNUR_SUCCESS ||
 	 symbol[token].type != S_UIDENT )
       return _unur_fstr_error_parse(pdata,ERR_EXPECT_VAR);
 
@@ -236,7 +236,7 @@ _unur_Expression (struct parser_data *pdata)
   if (pdata->perrno) return NULL; 
 
   /* get next token */
-  if ( _unur_fstr_next_token(pdata,&token,&symb) &&
+  if ( _unur_fstr_next_token(pdata,&token,&symb) == UNUR_SUCCESS &&
        symbol[token].type == S_REL_OP ) {
     /* relation operator  --> read r.h.s.*/
     right = _unur_SimpleExpression(pdata);
@@ -286,7 +286,7 @@ _unur_SimpleExpression (struct parser_data *pdata)
   if (pdata->perrno) return NULL;
 
   /* get next token */
-  while ( _unur_fstr_next_token(pdata,&token,&symb) &&
+  while ( _unur_fstr_next_token(pdata,&token,&symb) == UNUR_SUCCESS &&
 	  symbol[token].type == S_ADD_OP) {
     /* get Term after adding operator and        */
     /* use node a right node of new operator node */
@@ -333,7 +333,7 @@ _unur_STerm (struct parser_data *pdata)
   CHECK_NULL(pdata,NULL);  COOKIE_CHECK(pdata,CK_FSTR_PDATA,NULL);
 
   /* get next token */
-  if ( _unur_fstr_next_token(pdata,&token,&symb) &&
+  if ( _unur_fstr_next_token(pdata,&token,&symb) == UNUR_SUCCESS &&
        symb[0] == '-' ) {
     /* term with negative sign                 */
     /* "-" is interpreted as binary operator   */
@@ -389,7 +389,7 @@ _unur_Term (struct parser_data *pdata)
   if (pdata->perrno) return NULL;
 
   /* get next token */
-  while ( _unur_fstr_next_token(pdata,&token,&symb) &&
+  while ( _unur_fstr_next_token(pdata,&token,&symb) == UNUR_SUCCESS &&
 	  symbol[token].type == S_MUL_OP ) {
     /* get Factor after multiplication operator and */
     /* use node a right node of new operator node   */
@@ -438,7 +438,7 @@ _unur_Factor (struct parser_data *pdata)
   if (pdata->perrno) return NULL;
 
   /* get next token */
-  if ( _unur_fstr_next_token(pdata,&token,&symb) &&
+  if ( _unur_fstr_next_token(pdata,&token,&symb) == UNUR_SUCCESS &&
        symb[0] == '^' ) {
     /* get exponent of factor */
     right = _unur_Bas_Exp(pdata);
@@ -490,7 +490,7 @@ _unur_Bas_Exp (struct parser_data *pdata)
   CHECK_NULL(pdata,NULL);  COOKIE_CHECK(pdata,CK_FSTR_PDATA,NULL);
 
   /* get next token */
-  if ( _unur_fstr_next_token(pdata,&token,&symb) == FALSE)
+  if ( _unur_fstr_next_token(pdata,&token,&symb) != UNUR_SUCCESS)
     return _unur_fstr_error_parse(pdata,7); 
 
   /* constant or and variable */
@@ -516,7 +516,7 @@ _unur_Bas_Exp (struct parser_data *pdata)
     if (pdata->perrno) return NULL;
 
     /* next symbol must be closing parenthesis */
-    if ( _unur_fstr_next_token(pdata,&token,&symb) == FALSE ||
+    if ( _unur_fstr_next_token(pdata,&token,&symb) != UNUR_SUCCESS ||
 	 symb[0] != ')' )
       return _unur_fstr_error_parse(pdata,ERR_EXPECT_CLOSE_P);
   }
@@ -558,7 +558,7 @@ _unur_FunctDesignator (struct parser_data *pdata)
   CHECK_NULL(pdata,NULL);  COOKIE_CHECK(pdata,CK_FSTR_PDATA,NULL);
 
   /* get function identifier for system function */
-  if ( _unur_fstr_next_token(pdata,&funct,&fsymb) == FALSE ||
+  if ( _unur_fstr_next_token(pdata,&funct,&fsymb) != UNUR_SUCCESS ||
        symbol[funct].type != S_SFUNCT )
     return _unur_fstr_error_parse(pdata,ERR_EXPECT_FUNCT);
 
@@ -566,7 +566,7 @@ _unur_FunctDesignator (struct parser_data *pdata)
   n_params = symbol[funct].info;
 
   /* read opening parenthesis '(' */
-  if ( _unur_fstr_next_token(pdata,&token,&symb) == FALSE ||
+  if ( _unur_fstr_next_token(pdata,&token,&symb) != UNUR_SUCCESS ||
        symb[0] != '(' )
     return _unur_fstr_error_parse(pdata,ERR_EXPECT_OPEN_P);
 
@@ -575,7 +575,7 @@ _unur_FunctDesignator (struct parser_data *pdata)
   if (pdata->perrno) return NULL;
 
   /* read closing parenthesis ')' */
-  if ( _unur_fstr_next_token(pdata,&token,&symb) == FALSE ||
+  if ( _unur_fstr_next_token(pdata,&token,&symb) != UNUR_SUCCESS ||
        symb[0] != ')' )
     return _unur_fstr_error_parse(pdata,ERR_EXPECT_CLOSE_P);
   
@@ -621,7 +621,7 @@ _unur_ActualParameterlist (struct parser_data *pdata, int n_params)
   c_params = 1; 
 
   /* scan token list while we find a list separator `,' */
-  while ( _unur_fstr_next_token(pdata,&token,&symb) == FALSE ||
+  while ( _unur_fstr_next_token(pdata,&token,&symb) != UNUR_SUCCESS ||
 	  symb[0] == ',' ) {
 
     /* update counter for parameters */
@@ -965,24 +965,24 @@ _unur_fstr_next_token (struct parser_data *pdata, int *token, char **symbol)
      /*   symbol ... to store symbol for token                               */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... if successful                                                */
-     /*   0 ... if there are no tokens any more in the list                  */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  CHECK_NULL(pdata,0);  COOKIE_CHECK(pdata,CK_FSTR_PDATA,0);
+  CHECK_NULL(pdata,UNUR_ERR_NULL);  COOKIE_CHECK(pdata,CK_FSTR_PDATA,UNUR_ERR_COOKIE);
 
   if (pdata->tno < pdata->n_tokens) {
     /* return token and increment scan position */
     *token = pdata->token[pdata->tno];
     *symbol = pdata->tpos[pdata->tno];
     ++(pdata->tno);
-    return TRUE;
+    return UNUR_SUCCESS;
   }
   else {
     /* no more tokens */
     ++(pdata->tno);
-    return FALSE;
+    return UNUR_ERR_SILENT;
   }
 
 } /* end of _unur_fstr_next_token() */

@@ -9,8 +9,8 @@
  *   manipulate univariate continuous order statistics                       *
  *                                                                           *
  *   return:                                                                 *
- *     1 ... on success                                                      *
- *     0 ... on error                                                        *
+ *     UNUR_SUCCESS ... on success                                           *
+ *     error code   ... on error                                             *
  *                                                                           *
  *****************************************************************************
      $Id$
@@ -227,7 +227,7 @@ unur_distr_corder_new( const struct unur_distr *distr, int n, int k )
 
   /* log of normalization constant */
 #ifdef HAVE_AREA
-  if (_unur_upd_area_corder(os))
+  if (_unur_upd_area_corder(os)==UNUR_SUCCESS)
     os->set |= UNUR_DISTR_SET_PDFAREA;
 #else
   LOGNORMCONSTANT = 0.;
@@ -278,23 +278,23 @@ unur_distr_corder_set_rank( struct unur_distr *os, int n, int k )
      /*   k     ... rank                                                     */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( distr_name, os, 0 );
-  _unur_check_distr_object( os, CONT, 0 );
+  _unur_check_NULL( distr_name, os, UNUR_ERR_NULL );
+  _unur_check_distr_object( os, CONT, UNUR_ERR_DISTR_INVALID );
 
   /* check distribution */
   if (os->id != UNUR_DISTR_CORDER) {
-    _unur_error(distr_name,UNUR_ERR_DISTR_INVALID,""); return 0; }
-  COOKIE_CHECK(os,CK_DISTR_CONT,0);
+    _unur_error(distr_name,UNUR_ERR_DISTR_INVALID,""); return UNUR_ERR_DISTR_INVALID; }
+  COOKIE_CHECK(os,CK_DISTR_CONT,UNUR_ERR_COOKIE);
 
   /* check parameters n and k */
   if (n < 2 || k < 1 || k > n) {
     _unur_warning(distr_name,UNUR_ERR_DISTR_SET,"n < 2 or k < 1 or k > n");
-    return 0;
+    return UNUR_ERR_DISTR_SET;
   }
 
   /* changelog */
@@ -310,7 +310,7 @@ unur_distr_corder_set_rank( struct unur_distr *os, int n, int k )
 #endif
 
   /* o.k. */
-  return 1;
+  return UNUR_SUCCESS;
 } /* end of unur_distr_corder_set_rank() */
 
 /*---------------------------------------------------------------------------*/
@@ -326,25 +326,25 @@ unur_distr_corder_get_rank( const struct unur_distr *os, int *n, int *k )
      /*   k     ... rank                                                     */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( distr_name, os, 0 );
-  _unur_check_distr_object( os, CONT, 0 );
+  _unur_check_NULL( distr_name, os, UNUR_ERR_NULL );
+  _unur_check_distr_object( os, CONT, UNUR_ERR_DISTR_INVALID );
 
   /* check distribution */
   if (os->id != UNUR_DISTR_CORDER) {
-    _unur_error(distr_name,UNUR_ERR_DISTR_INVALID,""); return 0; }
-  COOKIE_CHECK(os,CK_DISTR_CONT,0);
+    _unur_error(distr_name,UNUR_ERR_DISTR_INVALID,""); return UNUR_ERR_DISTR_INVALID; }
+  COOKIE_CHECK(os,CK_DISTR_CONT,UNUR_ERR_COOKIE);
 
   /* copy parameters */
   *n = (int)(OS.params[0] + 0.5);
   *k = (int)(OS.params[1] + 0.5);
 
   /* o.k. */
-  return 1;
+  return UNUR_SUCCESS;
 } /* end of unur_distr_corder_get_rank() */
 
 /*---------------------------------------------------------------------------*/
@@ -501,13 +501,13 @@ _unur_upd_area_corder( UNUR_DISTR *os )
     /* truncated distributions */
     if (OS.cdf == NULL)
       /* no CDF */
-      return 0;
+      return UNUR_ERR_DISTR_REQUIRED;
 
     OS.area  = (OS.domain[1] < INFINITY)  ? _unur_cdf_corder(OS.domain[1],os) : 1.;
     OS.area -= (OS.domain[0] > -INFINITY) ? _unur_cdf_corder(OS.domain[0],os) : 0.;
   }
 
-  return (OS.area > 0.) ? 1 : 0;
+  return (OS.area > 0.) ? UNUR_SUCCESS : UNUR_ERR_DISTR_DATA;
 
 } /* end of _unur_upd_area_corder() */
 

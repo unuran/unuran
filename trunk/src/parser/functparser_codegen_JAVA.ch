@@ -76,22 +76,22 @@ _unur_fstr_tree2JAVA ( FILE *out, const struct ftreenode *root,
      /*   funct_name ... pointer to name of JAVA function                    */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... success                                                      */
-     /*   0 ... failure                                                      */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   struct unur_string output = {NULL, 0, 0};
   unsigned rcode;
 
   /* check arguments */
-  _unur_check_NULL( GENTYPE,root,0 );
-  _unur_check_NULL( GENTYPE,symbol[root->token].node2J,0 );
+  _unur_check_NULL( GENTYPE, root, UNUR_ERR_NULL );
+  _unur_check_NULL( GENTYPE, symbol[root->token].node2J, UNUR_ERR_NULL );
 
   /* make body of JAVA routine */
   rcode = symbol[root->token].node2J (&output,root,variable);
   if (rcode & J_FUNCT_ERROR) { 
     if (output.text) free(output.text);
-    return 0;
+    return UNUR_ERR_GEN_DATA;
   }
 
   /* print code for special functions (if necessary) */ 
@@ -104,7 +104,7 @@ _unur_fstr_tree2JAVA ( FILE *out, const struct ftreenode *root,
   /* free memory */
   free(output.text);
 
-  return 1;
+  return UNUR_SUCCESS;
 
 } /* end of _unur_fstr_tree2JAVA() */
 
@@ -396,14 +396,15 @@ J_mod ( struct unur_string *output, const struct ftreenode *node, const char *va
 int
 _unur_fstr_J_specfunct ( FILE *out, unsigned flags )
      /*----------------------------------------------------------------------*/
-     /* Print FORTRAN code for special functions                                   */
+     /* Print JAVA code for special functions                                */
      /*                                                                      */
      /* parameters:                                                          */
      /*   out   ... output stream                                            */
      /*   flags ... bit array with flags for special functions               */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 on success                                                       */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   if (flags & J_FUNCT_SGN) {
@@ -440,7 +441,7 @@ _unur_fstr_J_specfunct ( FILE *out, unsigned flags )
     fprintf(out,"return ((x!=y) ? 1. : 0.); }\n\n");
   }
 
-  return 1;
+  return UNUR_SUCCESS;
 } /* end of _unur_fstr_J_specfunct() */
 
 /*---------------------------------------------------------------------------*/
@@ -448,7 +449,7 @@ _unur_fstr_J_specfunct ( FILE *out, unsigned flags )
 int
 _unur_fstr_J_sgn ( FILE *out )
      /*----------------------------------------------------------------------*/
-     /* Print FORTRAN code for special functions                                   */
+     /* Print JAVA code for special functions                                */
      /*                                                                      */
      /* parameters: none                                                     */
      /*                                                                      */
@@ -462,7 +463,7 @@ _unur_fstr_J_sgn ( FILE *out )
   fprintf(out,"\t\t/* else */ return  0.;\n");
   fprintf(out,"\t}\n\n");
 
-  return 1;
+  return UNUR_SUCCESS;
 } /* end of _unur_fstr_J_sgn() */
 
 /*---------------------------------------------------------------------------*/

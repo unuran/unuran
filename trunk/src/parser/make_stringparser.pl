@@ -537,7 +537,7 @@ sub make_list_of_distr_sets {
 
     # append list for set calls for all distribution types
     $code .= "\n\t /* set calls for all distribution types */\n";
-    $code .= "\t if (result == UNKNOWN_PARAM) {\n";
+    $code .= "\t if (result == UNUR_ERR_STR_UNKNOWN) {\n";
     $code .= $code_x_all_x_;
     $code .= "\t }\n\n";
 

@@ -79,8 +79,8 @@ _unur_stdgen_logarithmic_init( struct unur_par *par, struct unur_gen *gen )
      /*   gen ... pointer to generator object                                */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   /* one of par and gen must not be the NULL pointer */
@@ -94,7 +94,7 @@ _unur_stdgen_logarithmic_init( struct unur_par *par, struct unur_gen *gen )
   case UNUR_STDGEN_INVERSION:   /* inversion method */
   default: /* no such generator */
     if (gen) _unur_warning(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
-    return 0;
+    return UNUR_FAILURE;
   }
   
 } /* end of _unur_stdgen_logarithmic_init() */
@@ -158,7 +158,8 @@ inline static int
 logarithmic_lsk_init( struct unur_gen *gen )
 {
   /* check arguments */
-  CHECK_NULL(gen,0);  COOKIE_CHECK(gen,CK_DSTD_GEN,0);
+  CHECK_NULL(gen,UNUR_ERR_NULL);
+  COOKIE_CHECK(gen,CK_DSTD_GEN,UNUR_ERR_COOKIE);
 
   if (GEN.gen_param == NULL) {
     GEN.n_gen_param = MAX_gen_params;
@@ -172,7 +173,7 @@ logarithmic_lsk_init( struct unur_gen *gen )
     h=log(1.0 - theta);
   /* -X- end of setup code -X- */
 
-  return 1;
+  return UNUR_SUCCESS;
 
 } /* end of logarithmic_lsk_init() */
 
@@ -185,7 +186,8 @@ _unur_stdgen_sample_logarithmic_lsk( struct unur_gen *gen )
   int K;
 
   /* check arguments */
-  CHECK_NULL(gen,0);  COOKIE_CHECK(gen,CK_DSTD_GEN,0);
+  CHECK_NULL(gen,INT_MAX);
+  COOKIE_CHECK(gen,CK_DSTD_GEN,INT_MAX);
 
   U = uniform();
 

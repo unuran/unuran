@@ -104,17 +104,17 @@
 #define _unur_check_par_object( par,type ) \
   if ( (par)->method != UNUR_METH_##type ) { \
     _unur_warning(#type,UNUR_ERR_PAR_INVALID,""); \
-    return 0; } \
-  COOKIE_CHECK((par),CK_##type##_PAR,0)
+    return (UNUR_ERR_PAR_INVALID); } \
+  COOKIE_CHECK((par),CK_##type##_PAR,UNUR_ERR_COOKIE)
 
 /*---------------------------------------------------------------------------*/
 /* check if generator object is of correct type, return 0 otherwise          */
 
-#define _unur_check_gen_object( gen,type ) \
+#define _unur_check_gen_object( gen,type,rval ) \
   if ( (gen)->method != UNUR_METH_##type ) { \
     _unur_warning((gen)->genid,UNUR_ERR_GEN_INVALID,""); \
-    return 0; } \
-  COOKIE_CHECK((gen),CK_##type##_GEN,0)
+    return rval; } \
+  COOKIE_CHECK((gen),CK_##type##_GEN,UNUR_ERR_COOKIE)
 
 /*---------------------------------------------------------------------------*/
 #endif  /* UNUR_METHODS_SOURCE_H_SEEN */

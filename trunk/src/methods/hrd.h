@@ -56,7 +56,7 @@
       It is important to note that the domain of the distribution can
       be set via a unur_distr_cont_set_domain() call. However, only
       the left hand boundary is used. For computational reasons the
-      right hand boundary is always reset to UNUR_INFINITY.
+      right hand boundary is always reset to @code{UNUR_INFINITY}.
       If no domain is given by the user then the left hand boundary is
       set to @code{0}.
       

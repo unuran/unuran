@@ -9,8 +9,8 @@
  *   manipulate univariate discrete distribution objects                     *
  *                                                                           *
  *   return:                                                                 *
- *     1 ... on success                                                      *
- *     0 ... on error                                                        *
+ *     UNUR_SUCCESS ... on success                                           *
+ *     error code   ... on error                                             *
  *                                                                           *
  *****************************************************************************
      $Id$
@@ -275,31 +275,31 @@ unur_distr_discr_set_pv( struct unur_distr *distr, const double *pv, int n_pv )
      /*   n_pv    ... length of PV                                           */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( NULL, distr, 0 );
-  _unur_check_distr_object( distr, DISCR, 0 );
+  _unur_check_NULL( NULL, distr, UNUR_ERR_NULL );
+  _unur_check_distr_object( distr, DISCR, UNUR_ERR_DISTR_INVALID );
 
   /* it is not possible to set a PV when a PMF is given. */
   if (DISTR.pmf != NULL) {
     _unur_error(distr->name,UNUR_ERR_DISTR_SET,"PMF given, cannot set PV");
-    return 0;
+    return UNUR_ERR_DISTR_SET;
   }
 
   /* check new parameter for distribution */
   if (n_pv < 0) {
     _unur_error(distr->name,UNUR_ERR_DISTR_SET,"length of PV");
-    return 0;
+    return UNUR_ERR_DISTR_SET;
   }
 
   /* n_pv must not be too large */
   if ( (DISTR.domain[0] > 0) && ((unsigned)DISTR.domain[0] + (unsigned)n_pv > INT_MAX) ) {
     /* n_pv too large, causes overflow */
     _unur_error(distr->name,UNUR_ERR_DISTR_SET,"length of PV too large, overflow");
-    return 0;
+    return UNUR_ERR_DISTR_SET;
   }
   DISTR.domain[1] = DISTR.domain[0] + n_pv - 1;
 
@@ -308,14 +308,14 @@ unur_distr_discr_set_pv( struct unur_distr *distr, const double *pv, int n_pv )
 
   /* allocate memory for probability vector */
   DISTR.pv = _unur_malloc( n_pv * sizeof(double) );
-  if (!DISTR.pv) return 0;
+  if (!DISTR.pv) return UNUR_ERR_MALLOC;
 
   /* copy probability vector */
   memcpy( DISTR.pv, pv, n_pv * sizeof(double) );
   DISTR.n_pv = n_pv;
 
   /* o.k. */
-  return 1;
+  return UNUR_SUCCESS;
 } /* end of unur_distr_discr_set_pv() */
 
 /*---------------------------------------------------------------------------*/
@@ -529,25 +529,25 @@ unur_distr_discr_set_pmf( struct unur_distr *distr, UNUR_FUNCT_DISCR *pmf )
      /*   pmf   ... pointer to PMF                                           */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( NULL,distr,0 );
-  _unur_check_NULL( distr->name,pmf,0 );
-  _unur_check_distr_object( distr, DISCR, 0 );
+  _unur_check_NULL( NULL, distr,  UNUR_ERR_NULL );
+  _unur_check_NULL( distr->name, pmf, UNUR_ERR_NULL );
+  _unur_check_distr_object( distr, DISCR, UNUR_ERR_DISTR_INVALID );
 
   /* it is not possible to set a PMF when a PV is given. */
   if (DISTR.pv != NULL) {
     _unur_error(distr->name,UNUR_ERR_DISTR_SET,"PV given, cannot set PMF");
-    return 0;
+    return UNUR_ERR_DISTR_SET;
   }
 
   /* we do not allow overwriting a PMF */
   if (DISTR.pmf != NULL) {
     _unur_warning(distr->name,UNUR_ERR_DISTR_SET,"Overwriting of PMF not allowed");
-    return 0;
+    return UNUR_ERR_DISTR_SET;
   }
 
   /* changelog */
@@ -555,7 +555,7 @@ unur_distr_discr_set_pmf( struct unur_distr *distr, UNUR_FUNCT_DISCR *pmf )
   /* derived parameters like mode, sum, etc. might be wrong now! */
 
   DISTR.pmf = pmf;
-  return 1;
+  return UNUR_SUCCESS;
 
 } /* end of unur_distr_discr_set_pmf() */
 
@@ -571,19 +571,19 @@ unur_distr_discr_set_cdf( struct unur_distr *distr, UNUR_FUNCT_DISCR *cdf )
      /*   cdf   ... pointer to CDF                                           */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( NULL,distr,0 );
-  _unur_check_NULL( distr->name,cdf,0 );
-  _unur_check_distr_object( distr, DISCR, 0 );
+  _unur_check_NULL( NULL, distr, UNUR_ERR_NULL );
+  _unur_check_NULL( distr->name, cdf, UNUR_ERR_NULL );
+  _unur_check_distr_object( distr, DISCR, UNUR_ERR_DISTR_INVALID );
   
   /* we do not allow overwriting a CDF */
   if (DISTR.cdf != NULL) {
     _unur_warning(distr->name,UNUR_ERR_DISTR_SET,"Overwriting of CDF not allowed");
-    return 0;
+    return UNUR_ERR_DISTR_SET;
   }
 
   /* changelog */
@@ -591,7 +591,7 @@ unur_distr_discr_set_cdf( struct unur_distr *distr, UNUR_FUNCT_DISCR *cdf )
   /* derived parameters like mode, sum, etc. might be wrong now! */
 
   DISTR.cdf = cdf;
-  return 1;
+  return UNUR_SUCCESS;
 } /* end of unur_distr_discr_set_cdf() */
 
 /*---------------------------------------------------------------------------*/
@@ -609,7 +609,7 @@ unur_distr_discr_get_pmf( const struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( NULL,distr,NULL );
+  _unur_check_NULL( NULL, distr, NULL );
   _unur_check_distr_object( distr, DISCR, NULL );
 
   return DISTR.pmf;
@@ -630,7 +630,7 @@ unur_distr_discr_get_cdf( const struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( NULL,distr,NULL );
+  _unur_check_NULL( NULL, distr, NULL );
   _unur_check_distr_object( distr, DISCR, NULL );
 
   return DISTR.cdf;
@@ -702,29 +702,29 @@ unur_distr_discr_set_pmfstr( struct unur_distr *distr, const char *pmfstr )
      /*   pmfstr ... string that describes function term of PMF              */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( NULL,distr,0 );
-  _unur_check_distr_object( distr, DISCR, 0 );
-  _unur_check_NULL( NULL,pmfstr,0 );
+  _unur_check_NULL( NULL, distr, UNUR_ERR_NULL );
+  _unur_check_distr_object( distr, DISCR, UNUR_ERR_DISTR_INVALID );
+  _unur_check_NULL( NULL, pmfstr, UNUR_ERR_NULL );
 
   /* it is not possible to set a PMF when a PV is given. */
   if (DISTR.pv != NULL) {
     _unur_error(distr->name,UNUR_ERR_DISTR_SET,"PV given, cannot set PMF");
-    return 0;
+    return UNUR_ERR_DISTR_SET;
   }
 
   /* we do not allow overwriting a PMF */
   if (DISTR.pmf != NULL) {
     _unur_warning(distr->name,UNUR_ERR_DISTR_SET,"Overwriting of PMF not allowed");
-    return 0;
+    return UNUR_ERR_DISTR_SET;
   }
 
   /* for derived distributions (e.g. order statistics) not possible */
-  if (distr->base) return 0;
+  if (distr->base) return UNUR_ERR_DISTR_DATA;
 
   /* changelog */
   distr->set &= ~UNUR_DISTR_SET_MASK_DERIVED;
@@ -733,11 +733,11 @@ unur_distr_discr_set_pmfstr( struct unur_distr *distr, const char *pmfstr )
   /* parse PMF string */
   if ( (DISTR.pmftree = _unur_fstr2tree(pmfstr)) == NULL ) {
     _unur_error(distr->name,UNUR_ERR_DISTR_SET,"Syntax error in function string");
-    return 0;
+    return UNUR_ERR_DISTR_SET;
   }
   DISTR.pmf  = _unur_distr_discr_eval_pmf_tree;
 
-  return 1;
+  return UNUR_SUCCESS;
 } /* end of unur_distr_discr_set_pmfstr() */
 
 /*---------------------------------------------------------------------------*/
@@ -752,23 +752,23 @@ unur_distr_discr_set_cdfstr( struct unur_distr *distr, const char *cdfstr )
      /*   cdfstr ... string that describes function term of CDF              */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( NULL,distr,0 );
-  _unur_check_distr_object( distr, DISCR, 0 );
-  _unur_check_NULL( NULL,cdfstr,0 );
+  _unur_check_NULL( NULL, distr, UNUR_ERR_NULL );
+  _unur_check_distr_object( distr, DISCR, UNUR_ERR_DISTR_INVALID );
+  _unur_check_NULL( NULL, cdfstr, UNUR_ERR_NULL );
 
   /* we do not allow overwriting a CDF */
   if (DISTR.cdf != NULL) {
     _unur_warning(distr->name,UNUR_ERR_DISTR_SET,"Overwriting of CDF not allowed");
-    return 0;
+    return UNUR_ERR_DISTR_SET;
   }
 
   /* for derived distributions (e.g. order statistics) not possible */
-  if (distr->base) return 0;
+  if (distr->base) return UNUR_ERR_DISTR_DATA;
 
   /* changelog */
   distr->set &= ~UNUR_DISTR_SET_MASK_DERIVED;
@@ -777,12 +777,12 @@ unur_distr_discr_set_cdfstr( struct unur_distr *distr, const char *cdfstr )
   /* parse string */
   if ( (DISTR.cdftree = _unur_fstr2tree(cdfstr)) == NULL )
     _unur_error(distr->name,UNUR_ERR_DISTR_SET,"Syntax error in function string");
-    return 0;
+    return UNUR_ERR_DISTR_SET;
 
   /* set evaluation function */
   DISTR.cdf  = _unur_distr_discr_eval_cdf_tree;
 
-  return 1;
+  return UNUR_SUCCESS;
 } /* end of unur_distr_discr_set_cdfstr() */
 
 /*---------------------------------------------------------------------------*/
@@ -847,9 +847,9 @@ unur_distr_discr_get_pmfstr( const struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( NULL,distr,NULL );
+  _unur_check_NULL( NULL, distr, NULL );
   _unur_check_distr_object( distr, DISCR, NULL );
-  _unur_check_NULL( NULL,DISTR.pmftree,NULL );
+  _unur_check_NULL( NULL, DISTR.pmftree, NULL );
 
   /* make and return string */
   return _unur_fstr_tree2string(DISTR.pmftree,"x","PMF",TRUE);
@@ -873,9 +873,9 @@ unur_distr_discr_get_cdfstr( const struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( NULL,distr,NULL );
+  _unur_check_NULL( NULL, distr, NULL );
   _unur_check_distr_object( distr, DISCR, NULL );
-  _unur_check_NULL( NULL,DISTR.cdftree,NULL );
+  _unur_check_NULL( NULL, DISTR.cdftree, NULL );
 
   /* make and return string */
   return _unur_fstr_tree2string(DISTR.cdftree,"x","CDF",TRUE);
@@ -894,14 +894,14 @@ unur_distr_discr_set_pmfparams( struct unur_distr *distr, const double *params, 
      /*   n_params ... number of arguments                                   */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( NULL, distr, 0 );
-  _unur_check_distr_object( distr, DISCR, 0 );
-  if (n_params>0) _unur_check_NULL(distr->name,params,0);
+  _unur_check_NULL( NULL, distr, UNUR_ERR_NULL );
+  _unur_check_distr_object( distr, DISCR, UNUR_ERR_DISTR_INVALID );
+  if (n_params>0) _unur_check_NULL(distr->name, params, UNUR_ERR_NULL);
 
   /* changelog */
   distr->set &= ~UNUR_DISTR_SET_MASK_DERIVED;
@@ -922,14 +922,14 @@ unur_distr_discr_set_pmfparams( struct unur_distr *distr, const double *params, 
   /* but first check number of new parameter for the distribution */
   if (n_params < 0 || n_params > UNUR_DISTR_MAXPARAMS ) {
     _unur_error(NULL,UNUR_ERR_DISTR_NPARAMS,"");
-    return 0;
+    return UNUR_ERR_DISTR_NPARAMS;
   }
 
   DISTR.n_params = n_params;
   if (n_params) memcpy( DISTR.params, params, n_params*sizeof(double) );
 
   /* o.k. */
-  return 1;
+  return UNUR_SUCCESS;
 } /* end of unur_distr_discr_set_pmfparams() */
 
 /*---------------------------------------------------------------------------*/
@@ -972,18 +972,22 @@ unur_distr_discr_set_domain( struct unur_distr *distr, int left, int right )
      /*   left  ... left boundary point                                      */
      /*   right ... right boundary point                                     */
      /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*                                                                      */
      /* comment:                                                             */
      /*   INT_MIN and INT_MAX are interpreted as (minus) infinity            */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( NULL, distr, 0 );
-  _unur_check_distr_object( distr, DISCR, 0 );
+  _unur_check_NULL( NULL, distr, UNUR_ERR_NULL );
+  _unur_check_distr_object( distr, DISCR, UNUR_ERR_DISTR_INVALID );
 
   /* check new parameter for distribution */
   if (left >= right) {
     _unur_error(distr->name,UNUR_ERR_DISTR_SET,"domain, left >= right");
-    return 0;
+    return UNUR_ERR_DISTR_SET;
   }
 
   /* store data */
@@ -1003,7 +1007,7 @@ unur_distr_discr_set_domain( struct unur_distr *distr, int left, int right )
 		  UNUR_DISTR_SET_MASK_DERIVED );
 
   /* o.k. */
-  return 1;
+  return UNUR_SUCCESS;
 
 } /* end of unur_distr_discr_set_domain() */
 
@@ -1019,6 +1023,10 @@ unur_distr_discr_get_domain( const struct unur_distr *distr, int *left, int *rig
      /*   left  ... left boundary point                                      */
      /*   right ... right boundary point                                     */
      /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*                                                                      */
      /* comment:                                                             */
      /*   INT_MIN and INT_MAX are interpreted as (minus) infinity            */
      /*   if no boundaries have been set [INT_MIN, INT_MAX] is returned.     */
@@ -1029,14 +1037,14 @@ unur_distr_discr_get_domain( const struct unur_distr *distr, int *left, int *rig
   *right = INT_MAX;
 
   /* check arguments */
-  _unur_check_NULL( NULL, distr, 0 );
-  _unur_check_distr_object( distr, DISCR, 0 );
+  _unur_check_NULL( NULL, distr, UNUR_ERR_NULL );
+  _unur_check_distr_object( distr, DISCR, UNUR_ERR_DISTR_INVALID );
 
   /* o.k. */
   *left  = DISTR.domain[0];
   *right = DISTR.domain[1];
 
-  return 1;
+  return UNUR_SUCCESS;
 } /* end of unur_distr_discr_get_domain() */
 
 /*---------------------------------------------------------------------------*/
@@ -1051,13 +1059,13 @@ unur_distr_discr_set_mode( struct unur_distr *distr, int mode )
      /*   mode  ... mode of PMF                                              */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( NULL, distr, 0 );
-  _unur_check_distr_object( distr, DISCR, 0 );
+  _unur_check_NULL( NULL, distr, UNUR_ERR_NULL );
+  _unur_check_distr_object( distr, DISCR, UNUR_ERR_DISTR_INVALID );
 
   DISTR.mode = mode;
 
@@ -1065,7 +1073,7 @@ unur_distr_discr_set_mode( struct unur_distr *distr, int mode )
   distr->set |= UNUR_DISTR_SET_MODE;
 
   /* o.k. */
-  return 1;
+  return UNUR_SUCCESS;
 } /* end of unur_distr_discr_set_mode() */
 
 /*---------------------------------------------------------------------------*/
@@ -1079,30 +1087,30 @@ unur_distr_discr_upd_mode( struct unur_distr *distr )
      /*   distr ... pointer to distribution object                           */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( NULL, distr, 0 );
-  _unur_check_distr_object( distr, DISCR, 0 );
+  _unur_check_NULL( NULL, distr, UNUR_ERR_NULL );
+  _unur_check_distr_object( distr, DISCR, UNUR_ERR_DISTR_INVALID );
 
   if (DISTR.upd_mode == NULL) {
     /* no function to compute mode available */
     _unur_error(distr->name,UNUR_ERR_DISTR_DATA,"");
-    return 0;
+    return UNUR_ERR_DISTR_DATA;
   }
 
   /* compute mode */
-  if ((DISTR.upd_mode)(distr)) {
+  if ((DISTR.upd_mode)(distr)==UNUR_SUCCESS) {
     /* changelog */
     distr->set |= UNUR_DISTR_SET_MODE;
-    return 1;
+    return UNUR_SUCCESS;
   }
   else {
     /* computing of mode failed */
     _unur_error(distr->name,UNUR_ERR_DISTR_DATA,"");
-    return 0;
+    return UNUR_ERR_DISTR_DATA;
   }
 
 } /* end of unur_distr_discr_upd_mode() */
@@ -1135,7 +1143,7 @@ unur_distr_discr_get_mode( struct unur_distr *distr )
     }
     else {
       /* compute mode */
-      if (!unur_distr_discr_upd_mode( distr )) {
+      if (unur_distr_discr_upd_mode(distr)!=UNUR_SUCCESS) {
 	/* finding mode not successfully */
 	_unur_error(distr->name,UNUR_ERR_DISTR_GET,"mode");
 	return INT_MAX;
@@ -1159,18 +1167,18 @@ unur_distr_discr_set_pmfsum( struct unur_distr *distr, double sum )
      /*   sum   ... sum over PMF                                             */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( NULL, distr, 0 );
-  _unur_check_distr_object( distr, DISCR, 0 );
+  _unur_check_NULL( NULL, distr, UNUR_ERR_NULL );
+  _unur_check_distr_object( distr, DISCR, UNUR_ERR_DISTR_INVALID );
 
   /* check new parameter for distribution */
   if (sum <= 0.) {
     _unur_error(distr->name,UNUR_ERR_DISTR_SET,"pmf sum <= 0");
-    return 0;
+    return UNUR_ERR_DISTR_SET;
   }
 
   DISTR.sum = sum;
@@ -1179,7 +1187,7 @@ unur_distr_discr_set_pmfsum( struct unur_distr *distr, double sum )
   distr->set |= UNUR_DISTR_SET_PMFSUM;
 
   /* o.k. */
-  return 1;
+  return UNUR_SUCCESS;
 
 } /* end of unur_distr_discr_set_pmfsum() */
 
@@ -1194,28 +1202,28 @@ unur_distr_discr_upd_pmfsum( struct unur_distr *distr )
      /*   distr ... pointer to distribution object                           */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( NULL, distr, 0 );
-  _unur_check_distr_object( distr, DISCR, 0 );
+  _unur_check_NULL( NULL, distr, UNUR_ERR_NULL );
+  _unur_check_distr_object( distr, DISCR, UNUR_ERR_DISTR_SET );
 
   if (DISTR.upd_sum == NULL) {
     /* no function to compute sum available */
     _unur_error(distr->name,UNUR_ERR_DISTR_DATA,"");
-    return 0;
+    return UNUR_ERR_DISTR_DATA;
   }
 
   /* compute sum */
-  if ((DISTR.upd_sum)(distr)) {
+  if ((DISTR.upd_sum)(distr)==UNUR_SUCCESS) {
     /* changelog */
     distr->set |= UNUR_DISTR_SET_PMFSUM;
-    return 1;
+    return UNUR_SUCCESS;
   }
   else
-    return 0;
+    return UNUR_ERR_DISTR_DATA;
 
 } /* end of unur_distr_discr_upd_pmfsum() */
   
@@ -1247,9 +1255,11 @@ unur_distr_discr_get_pmfsum( struct unur_distr *distr )
     }
     else {
       /* compute sum */
-      DISTR.sum = (DISTR.upd_sum)(distr);
-      /* changelog */
-      distr->set |= UNUR_DISTR_SET_PMFSUM;
+      if ((DISTR.upd_sum)(distr)==UNUR_SUCCESS)
+	/* changelog */
+	distr->set |= UNUR_DISTR_SET_PMFSUM;
+      else
+	return INFINITY;
     }
   }
 
@@ -1352,6 +1362,9 @@ _unur_distr_discr_find_mode(struct unur_distr *distr )
      /*  Any two of the three points x[i] must always differ at least by one */
      /*  If no further point xnew can be fitted between, the mode is found   */
      /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
 #define sgn(a)  ( (a) >= (0) ? ( (a==0)?(0):(1) ) : (-1) )
@@ -1377,8 +1390,8 @@ _unur_distr_discr_find_mode(struct unur_distr *distr )
 
 
   /* check arguments */
-  CHECK_NULL( distr, 0 );
-  _unur_check_distr_object( distr, DISCR, 0 );
+  CHECK_NULL( distr, UNUR_ERR_NULL );
+  _unur_check_distr_object( distr, DISCR, UNUR_ERR_DISTR_INVALID );
  
   /* derive three distinct points */
   x[0] = DISTR.domain[0];
@@ -1415,7 +1428,7 @@ _unur_distr_discr_find_mode(struct unur_distr *distr )
     if (fx[2] == 0.){  /* no success */
       _unur_error(distr->name,UNUR_ERR_DISTR_DATA,
          "In find_mode(): no positive entry in PV found during 100 trials");
-      return 0;  
+      return UNUR_ERR_DISTR_DATA;  
     }
 
     /* x[i] are now initialized -- at least one entry is > 0  
@@ -1494,10 +1507,10 @@ _unur_distr_discr_find_mode(struct unur_distr *distr )
 	  x[2] = xtmp; fx[2] = fxtmp;
 	  break;
 	case UNDEFINED:
-	  return 0;  /* mode not found -- exit */
+	  return UNUR_ERR_DISTR_DATA;  /* mode not found -- exit */
 	default:
 	  _unur_error(distr->name, UNUR_ERR_SHOULD_NOT_HAPPEN,"");
-	  return 0;
+	  return UNUR_ERR_SHOULD_NOT_HAPPEN;
 	} /* end of switch (interval) */ 
 
       }   /* flat region left */
@@ -1550,7 +1563,7 @@ _unur_distr_discr_find_mode(struct unur_distr *distr )
 	break;
       default:
 	_unur_error(distr->name, UNUR_ERR_SHOULD_NOT_HAPPEN,"");
-	return 0;
+	return UNUR_ERR_SHOULD_NOT_HAPPEN;
       } /* end of switch (bisect) */
 
 
@@ -1564,7 +1577,7 @@ _unur_distr_discr_find_mode(struct unur_distr *distr )
   distr->set |= UNUR_DISTR_SET_MODE; 
   
   /* o.k. */
-  return 1;
+  return UNUR_SUCCESS;
   
 #undef sgn
 #undef max_pos3

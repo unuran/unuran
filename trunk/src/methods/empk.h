@@ -203,7 +203,7 @@ int unur_empk_chg_smoothing( UNUR_GEN *generator, double smoothing );
 /* 
    Set and change the smoothing factor.
    The smoothing factor controlles how ``smooth'' the resulting density
-   estimation will be. A smoothing factor equal to 0 results in naive
+   estimation will be. A smoothing factor equal to @code{0} results in naive
    resampling. A very large smoothing factor (together with the
    variance correction) results in a density which is approximately
    equal to the kernel.

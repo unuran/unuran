@@ -71,49 +71,49 @@ static int modetest_discr( UNUR_DISTR *distr);
 
 int main()                                                                     
 {                                                                              
-   /* open log file for unuran and set output stream for unuran messages */    
-   if ( (UNURANLOG = fopen( "t_StdDistr_unuran.log","w" )) == NULL )
-     exit (-1);                                           
-   unur_set_stream( UNURANLOG );
-          
-   /* open log file for testing */                                             
-   if ( (TESTLOG = fopen( "t_StdDistr_test.log","w" )) == NULL )
-     exit (-1);                                             
-                                                                               
-   /* write header into log file */                                            
-   {                                                                           
-     time_t started;                                                          
-     fprintf(TESTLOG,"\nUNURAN - Universal Non-Uniform RANdom number generator\n\n");
-     if (time( &started ) != -1)                                              
-       fprintf(TESTLOG,"%s",ctime(&started));                              
-     fprintf(TESTLOG,"\n======================================================\n\n");
-     fprintf(TESTLOG,"(Search for string \"distr=\" to find new section.)\n\n");
-   }                                                                           
-
-   /* open data file */
-   if ( (DATA = fopen( datafile,"r" )) == NULL ) {
-     printf("ERROR: could not open file %s \n", datafile);
-     fprintf(TESTLOG,"ERROR: could not open file %s \n", datafile);
-     exit (77);  /* ignore this error */                                             
-   }
-
-   /* run tests on all distributions */
-   while (_unur_test_StdDistr());
-
-   /* close files */
-   fclose (UNURANLOG);
-   fclose (TESTLOG);
-   fclose (DATA);
-                                                                               
-   /* end */
-   if (n_failed > 0) {
-     printf("[StdDistr --> failed]\n");
-     exit (-1);
-   }
-   else {
-     printf("[StdDistr --> ok]\n");
-     exit (0);
-   }
+  /* open log file for unuran and set output stream for unuran messages */    
+  if ( (UNURANLOG = fopen( "t_StdDistr_unuran.log","w" )) == NULL )
+    exit (EXIT_FAILURE);
+  unur_set_stream( UNURANLOG );
+  
+  /* open log file for testing */                                             
+  if ( (TESTLOG = fopen( "t_StdDistr_test.log","w" )) == NULL )
+    exit (EXIT_FAILURE);
+  
+  /* write header into log file */                                            
+  {                                                                           
+    time_t started;                                                          
+    fprintf(TESTLOG,"\nUNURAN - Universal Non-Uniform RANdom number generator\n\n");
+    if (time( &started ) != -1)                                              
+      fprintf(TESTLOG,"%s",ctime(&started));                              
+    fprintf(TESTLOG,"\n======================================================\n\n");
+    fprintf(TESTLOG,"(Search for string \"distr=\" to find new section.)\n\n");
+  }                                                                           
+  
+  /* open data file */
+  if ( (DATA = fopen( datafile,"r" )) == NULL ) {
+    printf("ERROR: could not open file %s \n", datafile);
+    fprintf(TESTLOG,"ERROR: could not open file %s \n", datafile);
+    exit (77);  /* ignore this error */                                             
+  }
+  
+  /* run tests on all distributions */
+  while (_unur_test_StdDistr()==UNUR_SUCCESS);
+  
+  /* close files */
+  fclose (UNURANLOG);
+  fclose (TESTLOG);
+  fclose (DATA);
+  
+  /* end */
+  if (n_failed > 0) {
+    printf("[StdDistr --> failed]\n");
+    exit (EXIT_FAILURE);
+  }
+  else {
+    printf("[StdDistr --> ok]\n");
+    exit (EXIT_SUCCESS);
+  }
 } /* end of main() */                                                                              
 
 /*---------------------------------------------------------------------------*/
@@ -145,17 +145,17 @@ _unur_test_StdDistr (void)
   if ( (distr = unur_str2distr(dstr)) == NULL ) {
     printf("ERROR: syntax error in \"%s\"\n", dstr);
     fprintf(TESTLOG,"ERROR: syntax error in \"%s\"\n", dstr);
-    exit (-1);                                             
+    exit (EXIT_FAILURE);
   }
 
   /* now run test */
-  if (test_cdf_pdf( distr,dstr ) == 0)
+  if (test_cdf_pdf( distr,dstr ) == UNUR_ERR_GENERIC)
     n_failed++;
 
   /* free memory */
   unur_distr_free(distr);
 
-  return 1;
+  return UNUR_SUCCESS;
 
 #undef BUFSIZE
 } /* end of _unur_test_StdDistr() */
@@ -176,9 +176,9 @@ test_cdf_pdf( UNUR_DISTR *distr, char *distrAPI )
      /*   distrAPI ... string that contains name for distribution            */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... if test was successful                                       */
-     /*   0 ... failed (difference too large)                                */
-     /*  -1 ... could not run test                                           */
+     /*   UNUR_SUCCESS     ... if test was successful                        */
+     /*   UNUR_ERR_GENERIC ... failed (difference too large)                 */
+     /*   UNUR_ERR_NULL    ... could not run test                            */
      /*----------------------------------------------------------------------*/
 {
 #define BUFSIZE      1024       /* size of line buffer */
@@ -218,38 +218,38 @@ test_cdf_pdf( UNUR_DISTR *distr, char *distrAPI )
   CDF_me = PDF_me = dPDF_me = 0.;
 
   /* check existence of CDF, PDF and dPDF */
-  if (is_DISCR) {
-    have_CDF  = (unur_distr_discr_get_cdf(distr)) ? 1 : 0;
-    have_PDF  = (unur_distr_discr_get_pmf(distr)) ? 1 : 0;
-    have_dPDF = 0;
+  if (is_DISCR==TRUE) {
+    have_CDF  = (unur_distr_discr_get_cdf(distr)) ? TRUE : FALSE;
+    have_PDF  = (unur_distr_discr_get_pmf(distr)) ? TRUE : FALSE;
+    have_dPDF = FALSE;
   }
   else { /* is_CONT */
-    have_CDF  = (unur_distr_cont_get_cdf(distr))  ? 1 : 0;
-    have_PDF  = (unur_distr_cont_get_pdf(distr))  ? 1 : 0;
-    have_dPDF = (unur_distr_cont_get_dpdf(distr)) ? 1 : 0;
+    have_CDF  = (unur_distr_cont_get_cdf(distr))  ? TRUE : FALSE;
+    have_PDF  = (unur_distr_cont_get_pdf(distr))  ? TRUE : FALSE;
+    have_dPDF = (unur_distr_cont_get_dpdf(distr)) ? TRUE : FALSE;
   }
 
   /* check whether unur_distr_cont_upd_pdfarea() works */
-  if (is_DISCR)
-    have_upd_pdfarea = unur_distr_discr_upd_pmfsum(distr); 
+  if (is_DISCR==TRUE)
+    have_upd_pdfarea = (unur_distr_discr_upd_pmfsum(distr)==UNUR_SUCCESS) ? TRUE : FALSE;
   else  /* is_CONT */
-    have_upd_pdfarea = unur_distr_cont_upd_pdfarea(distr); 
+    have_upd_pdfarea = (unur_distr_cont_upd_pdfarea(distr)==UNUR_SUCCESS) ? TRUE : FALSE;
 
-  if (!have_upd_pdfarea) {
+  if (have_upd_pdfarea==FALSE) {
     /* if we cannot update the area below the PDF, then the
        given PDF is not a "real" PDF, i.e. not normalized */
-    have_PDF = 0;
-    have_dPDF = 0;
+    have_PDF = FALSE;
+    have_dPDF = FALSE;
   }
 
   /* print info into log file */
   fprintf(TESTLOG,"%s: distr= %s ...\n", dname, distrAPI);
 
-  if (!have_CDF)
+  if (have_CDF==FALSE)
     fprintf(TESTLOG,"%s: no CDF!\n", dname);
-  if (!have_PDF)
+  if (have_PDF==FALSE)
     fprintf(TESTLOG,"%s: no PDF!\n", dname);
-  if (!have_dPDF)
+  if (have_dPDF==FALSE)
     fprintf(TESTLOG,"%s: no dPDF!\n", dname);
 
   /* read data file */
@@ -266,7 +266,7 @@ test_cdf_pdf( UNUR_DISTR *distr, char *distrAPI )
     if (n_fparams < 0 || n_fparams >= MAX_FPARAMS) {
       printf("%s: ERROR: invalid number of parameters for distribution: %d \n", dname,n_fparams);
       fprintf(TESTLOG,"%s: ERROR: invalid number of parameters for distribution: %d \n", dname,n_fparams);
-      return -1;
+      return UNUR_ERR_NULL;
     }
 
     /* read parameters */
@@ -371,11 +371,11 @@ test_cdf_pdf( UNUR_DISTR *distr, char *distrAPI )
 
     /* test mode of distribution */
     if (is_DISCR) {
-      if (modetest_discr(distr) == 0)
+      if (modetest_discr(distr) == UNUR_ERR_GENERIC)
 	++n_failed;
     }
     else { /* is_CONT */
-      if (modetest_cont(distr) == 0)
+      if (modetest_cont(distr) == UNUR_ERR_GENERIC)
 	++n_failed;
     }
 
@@ -420,11 +420,11 @@ test_cdf_pdf( UNUR_DISTR *distr, char *distrAPI )
   printf("%-17s ... ", dname );
   if (n_failed > 0) {
     printf("failed!!\n");
-    return 0;
+    return UNUR_ERR_GENERIC;
   }
   else {
     printf("ok\n");
-    return 1;
+    return UNUR_SUCCESS;
   }
 
 #undef BUFSIZE
@@ -441,9 +441,9 @@ int modetest_cont( UNUR_DISTR *distr)
      /*   distr    ... pointer to distribution object                        */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... if test was successful                                       */
-     /*   0 ... failed (difference too large)                                */
-     /*  -1 ... could not run test                                           */
+     /*   UNUR_SUCCESS     ... if test was successful                        */
+     /*   UNUR_ERR_GENERIC ... failed (difference too large)                 */
+     /*   UNUR_ERR_NULL    ... could not run test                            */
      /*----------------------------------------------------------------------*/
 {
   double m, fm;           /* mode and value of PDF at mode                   */
@@ -461,7 +461,7 @@ int modetest_cont( UNUR_DISTR *distr)
     /* cannot read mode */
     printf("%s: ERROR: cannot get mode\n", dname);
     fprintf(TESTLOG,"%s: ERROR: cannot get mode\n", dname);
-    return -1;
+    return UNUR_ERR_NULL;
   }    
   m = unur_distr_cont_get_mode(distr); 
 
@@ -514,7 +514,7 @@ int modetest_cont( UNUR_DISTR *distr)
 #endif
 
   /* end */
-  return ((n_failed > 0) ? 0 : 1);
+  return ((n_failed > 0) ? UNUR_ERR_GENERIC : UNUR_SUCCESS);
 
 } /* end of modetest_cont() */
 
@@ -528,9 +528,9 @@ int modetest_discr( UNUR_DISTR *distr)
      /*   distr    ... pointer to distribution object                        */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... if test was successful                                       */
-     /*   0 ... failed (difference too large)                                */
-     /*  -1 ... could not run test                                           */
+     /*   UNUR_SUCCESS     ... if test was successful                        */
+     /*   UNUR_ERR_GENERIC ... failed (difference too large)                 */
+     /*   UNUR_ERR_NULL    ... could not run test                            */
      /*----------------------------------------------------------------------*/
 {
   int m, x;               /* mode and other argument for PDF                 */
@@ -547,7 +547,7 @@ int modetest_discr( UNUR_DISTR *distr)
     /* cannot read mode */
     printf("%s: ERROR: cannot get mode\n", dname);
     fprintf(TESTLOG,"%s: ERROR: cannot get mode\n", dname);
-    return -1;
+    return UNUR_ERR_NULL;
   }    
   m = unur_distr_discr_get_mode(distr); 
 
@@ -588,7 +588,7 @@ int modetest_discr( UNUR_DISTR *distr)
 #endif
 
   /* end */
-  return ((n_failed > 0) ? 0 : 1);
+  return ((n_failed > 0) ? UNUR_ERR_GENERIC : UNUR_SUCCESS);
 
 } /* end of modetest_cont() */
 

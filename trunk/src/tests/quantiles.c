@@ -71,8 +71,8 @@ unur_test_quartiles( UNUR_GEN *gen, double *q0 ,double *q1, double *q2, double *
      /*   out        ... output stream                                       */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   double x = 0.;
@@ -89,12 +89,13 @@ unur_test_quartiles( UNUR_GEN *gen, double *q0 ,double *q1, double *q2, double *
 
 
   /* check parameter */
-  _unur_check_NULL(test_name,gen,0);
+  _unur_check_NULL(test_name, gen, UNUR_ERR_NULL);
+
   /* type of distribution */
   if (! ( ((gen->method & UNUR_MASK_TYPE) == UNUR_METH_DISCR) ||
 	  ((gen->method & UNUR_MASK_TYPE) == UNUR_METH_CONT) )) {
     _unur_error(test_name,UNUR_ERR_GENERIC,"dont know how to compute quartiles for distribution");
-    return 0;
+    return UNUR_ERR_GENERIC;
   }
 
   /* sample size >= 10 */
@@ -242,7 +243,7 @@ unur_test_quartiles( UNUR_GEN *gen, double *q0 ,double *q1, double *q2, double *
     fprintf(out,"\tmax = \t%6.5g\n",*q4);
   }
 
-  return 1;
+  return UNUR_SUCCESS;
 
 } /* end of unur_test_quartiles() */
 

@@ -270,20 +270,18 @@ unur_dau_set_urnfactor( struct unur_par *par, double factor )
      /*   factor ... relative size of urn                                    */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( GENTYPE,par,0 );
-
-  /* check input */
-  _unur_check_par_object( par,DAU );
+  _unur_check_NULL( GENTYPE, par, UNUR_ERR_NULL );
+  _unur_check_par_object( par, DAU );
   
   /* check new parameter for generator */
   if (factor < 1.) {
     _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"relative urn size < 1.");
-    return 0;
+    return UNUR_ERR_PAR_SET;
   }
 
   /* store date */
@@ -292,7 +290,7 @@ unur_dau_set_urnfactor( struct unur_par *par, double factor )
   /* changelog */
   par->set |= DAU_SET_URNFACTOR;
 
-  return 1;
+  return UNUR_SUCCESS;
 
 } /* end of unur_dau_set_urnfactor() */
 
@@ -581,14 +579,14 @@ _unur_dau_sample( struct unur_gen *gen )
      /*   integer (sample from random variate)                               */
      /*                                                                      */
      /* error:                                                               */
-     /*   return 0                                                           */
+     /*   return INT_MAX                                                     */
      /*----------------------------------------------------------------------*/
 { 
   int iu;
   double u;
 
   /* check arguments */
-  CHECK_NULL(gen,0);  COOKIE_CHECK(gen,CK_DAU_GEN,0);
+  CHECK_NULL(gen,INT_MAX);  COOKIE_CHECK(gen,CK_DAU_GEN,INT_MAX);
 
   /* sample from U(0,urn_size) */
   u = _unur_call_urng(gen->urng);

@@ -90,7 +90,8 @@ _unur_fstr_node2string ( struct unur_string *output, const struct ftreenode *nod
      /*   spaces   ... whether spaces are inserted around binary operators   */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 on success                                                       */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   struct ftreenode *left  = node->left;    /* left branch of node            */
@@ -186,7 +187,7 @@ _unur_fstr_node2string ( struct unur_string *output, const struct ftreenode *nod
     }
   }
 
-  return 1;
+  return UNUR_SUCCESS;
 } /* end of _unur_fstr_node2string() */
 
 /*---------------------------------------------------------------------------*/
@@ -209,7 +210,8 @@ _unur_fstr_print ( struct unur_string *output, const char *symb, const double nu
      /*   number ... constant to be printed                                  */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 on success                                                       */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   if (symb)
@@ -219,7 +221,7 @@ _unur_fstr_print ( struct unur_string *output, const char *symb, const double nu
     /* copy number symbol into output */
     _unur_string_append( output, "%.16g", number);
 
-  return 1;
+  return UNUR_SUCCESS;
 } /* end of _unur_fstr_print() */
 
 /*---------------------------------------------------------------------------*/

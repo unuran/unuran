@@ -161,7 +161,7 @@ _unur_upd_mode_exponential( UNUR_DISTR *distr )
   else if (DISTR.mode > DISTR.domain[1]) 
     DISTR.mode = DISTR.domain[1];
 
-  return 1;
+  return UNUR_SUCCESS;
 } /* end of _unur_upd_mode_exponential() */
 
 /*---------------------------------------------------------------------------*/
@@ -175,13 +175,13 @@ _unur_upd_area_exponential( UNUR_DISTR *distr )
 
   if (distr->set & UNUR_DISTR_SET_STDDOMAIN) {
     DISTR.area = 1.;
-    return 1;
+    return UNUR_SUCCESS;
   }
 
   /* else */
   DISTR.area = ( _unur_cdf_exponential( DISTR.domain[1],distr) 
 		 - _unur_cdf_exponential( DISTR.domain[0],distr) );
-  return 1;
+  return UNUR_SUCCESS;
   
 } /* end of _unur_upd_area_exponential() */
 
@@ -197,12 +197,12 @@ _unur_set_params_exponential( UNUR_DISTR *distr, const double *params, int n_par
     _unur_warning(distr_name,UNUR_ERR_DISTR_NPARAMS,"too many");
     n_params = 2; }
   if (n_params > 0)
-    CHECK_NULL(params,0);
+    CHECK_NULL(params,UNUR_ERR_NULL);
 
   /* check parameter sigma */
   if (n_params > 0 && sigma <= 0.) {
     _unur_error(distr_name,UNUR_ERR_DISTR_DOMAIN,"sigma <= 0");
-    return 0;
+    return UNUR_ERR_DISTR_DOMAIN;
   }
 
   /* copy parameters for standard form: none */
@@ -232,7 +232,7 @@ _unur_set_params_exponential( UNUR_DISTR *distr, const double *params, int n_par
     DISTR.domain[1] = INFINITY;        /* right boundary */
   }
 
-  return 1;
+  return UNUR_SUCCESS;
 } /* end of _unur_set_params_exponential() */
 
 /*---------------------------------------------------------------------------*/
@@ -266,7 +266,7 @@ unur_distr_exponential( const double *params, int n_params )
 		 UNUR_DISTR_SET_PDFAREA );
                 
   /* set parameters for distribution */
-  if (!_unur_set_params_exponential(distr,params,n_params)) {
+  if (_unur_set_params_exponential(distr,params,n_params)!=UNUR_SUCCESS) {
     free(distr);
     return NULL;
   }

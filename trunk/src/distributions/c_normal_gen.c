@@ -80,8 +80,8 @@ _unur_stdgen_normal_init( struct unur_par *par, struct unur_gen *gen )
      /*   gen ... pointer to generator object                                */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   /* one of par and gen must not be the NULL pointer */
@@ -97,39 +97,39 @@ _unur_stdgen_normal_init( struct unur_par *par, struct unur_gen *gen )
 
   case 3:    /* Kindermann-Ramage method */
     _unur_cstd_set_sampling_routine( par,gen,_unur_stdgen_sample_normal_kr );
-    return 1;
+    return UNUR_SUCCESS;
 
   case 0:    /* DEFAULT */
   case 4:    /* Acceptance-complement ratio */
     _unur_cstd_set_sampling_routine( par,gen,_unur_stdgen_sample_normal_acr );
-    return 1;
+    return UNUR_SUCCESS;
 
   case 5:    /* "Naive" ratio-of-uniforms */
     _unur_cstd_set_sampling_routine( par,gen,_unur_stdgen_sample_normal_nquo );
-    return 1;
+    return UNUR_SUCCESS;
 
   case 6:    /* Ratio-of-uniforms with squeeze */
     _unur_cstd_set_sampling_routine( par,gen,_unur_stdgen_sample_normal_quo );
-    return 1;
+    return UNUR_SUCCESS;
 
   case 7:    /* Ratio-of-uniforms with quadratic bounding curves */
     _unur_cstd_set_sampling_routine( par,gen,_unur_stdgen_sample_normal_leva );
-    return 1;
+    return UNUR_SUCCESS;
 
   case 99:   /* infamous sum-of-12-uniforms method. DO NOT USE */
     _unur_cstd_set_sampling_routine( par,gen,_unur_stdgen_sample_normal_sum );
-    return 1;
+    return UNUR_SUCCESS;
 
   case UNUR_STDGEN_INVERSION:   /* inversion method */
 #ifdef HAVE_UNUR_SF_INV_CDFNORMAL
     if (par) PAR.is_inversion = TRUE;
     _unur_cstd_set_sampling_routine(par,gen,_unur_stdgen_sample_normal_inv); 
-    return 1;
+    return UNUR_SUCCESS;
 #endif
 
   default: /* no such generator */
     if (gen) _unur_warning(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
-    return 0;
+    return UNUR_FAILURE;
   }
 
 } /* end of _unur_stdgen_normal_init() */
@@ -166,7 +166,8 @@ double _unur_stdgen_sample_normal_inv( struct unur_gen *gen )
   double U,X;
 
   /* check arguments */
-  CHECK_NULL(gen,0.);  COOKIE_CHECK(gen,CK_CSTD_GEN,0.);
+  CHECK_NULL(gen,INFINITY);
+  COOKIE_CHECK(gen,CK_CSTD_GEN,INFINITY);
 
   /* sample from uniform random number generator */
   while ((U = GEN.umin + uniform() * (GEN.umax-GEN.umin)) == 0)
@@ -215,7 +216,8 @@ inline static int
 normal_bm_init( struct unur_gen *gen )
 {
   /* check arguments */
-  CHECK_NULL(gen,0);  COOKIE_CHECK(gen,CK_CSTD_GEN,0);
+  CHECK_NULL(gen,UNUR_ERR_NULL);
+  COOKIE_CHECK(gen,CK_CSTD_GEN,UNUR_ERR_COOKIE);
 
   if (GEN.gen_param == NULL) {
     GEN.n_gen_param = MAX_gen_params;
@@ -227,7 +229,7 @@ normal_bm_init( struct unur_gen *gen )
   flag = 1;
   /* -X- end of setup code -X- */
 
-  return 1;
+  return UNUR_SUCCESS;
 
 } /* end of normal_bm_init() */
 
@@ -239,7 +241,8 @@ _unur_stdgen_sample_normal_bm( struct unur_gen *gen )
   double u,v,s;
 
   /* check arguments */
-  CHECK_NULL(gen,0.);  COOKIE_CHECK(gen,CK_CSTD_GEN,0.);
+  CHECK_NULL(gen,INFINITY);
+  COOKIE_CHECK(gen,CK_CSTD_GEN,INFINITY);
 
   do {
     flag = -flag;
@@ -287,7 +290,8 @@ inline static int
 normal_pol_init( struct unur_gen *gen )
 {
   /* check arguments */
-  CHECK_NULL(gen,0);  COOKIE_CHECK(gen,CK_CSTD_GEN,0);
+  CHECK_NULL(gen,UNUR_ERR_NULL);
+  COOKIE_CHECK(gen,CK_CSTD_GEN,UNUR_ERR_COOKIE);
 
   if (GEN.gen_param == NULL) {
     GEN.n_gen_param = MAX_gen_params;
@@ -299,7 +303,7 @@ normal_pol_init( struct unur_gen *gen )
   flag = 1;
   /* -X- end of setup code -X- */
 
-  return 1;
+  return UNUR_SUCCESS;
 
 } /* end of normal_pol_init() */
 
@@ -311,7 +315,8 @@ _unur_stdgen_sample_normal_pol( struct unur_gen *gen )
   double s,x,y,tmp;
 
   /* check arguments */
-  CHECK_NULL(gen,0.);  COOKIE_CHECK(gen,CK_CSTD_GEN,0.);
+  CHECK_NULL(gen,INFINITY);
+  COOKIE_CHECK(gen,CK_CSTD_GEN,INFINITY);
 
   do {
     flag = -flag;
@@ -365,7 +370,8 @@ _unur_stdgen_sample_normal_nquo( struct unur_gen *gen )
   double u,v;
 
   /* check arguments */
-  CHECK_NULL(gen,0.);  COOKIE_CHECK(gen,CK_CSTD_GEN,0.);
+  CHECK_NULL(gen,INFINITY);
+  COOKIE_CHECK(gen,CK_CSTD_GEN,INFINITY);
 
   while (1) {
     u = uniform();
@@ -407,7 +413,8 @@ _unur_stdgen_sample_normal_quo( struct unur_gen *gen )
   double r,w;
 
   /* check arguments */
-  CHECK_NULL(gen,0.);  COOKIE_CHECK(gen,CK_CSTD_GEN,0.);
+  CHECK_NULL(gen,INFINITY);
+  COOKIE_CHECK(gen,CK_CSTD_GEN,INFINITY);
 
   while (1) {
     r = uniform();
@@ -461,7 +468,8 @@ _unur_stdgen_sample_normal_leva( struct unur_gen *gen )
   double u,v,x,y,q;
 
   /* check arguments */
-  CHECK_NULL(gen,0.);  COOKIE_CHECK(gen,CK_CSTD_GEN,0.);
+  CHECK_NULL(gen,INFINITY);
+  COOKIE_CHECK(gen,CK_CSTD_GEN,INFINITY);
 
   while (1) {
     u = uniform();
@@ -519,7 +527,8 @@ _unur_stdgen_sample_normal_kr( struct unur_gen *gen )
   double t, z;
   
   /* check arguments */
-  CHECK_NULL(gen,0.);  COOKIE_CHECK(gen,CK_CSTD_GEN,0.);
+  CHECK_NULL(gen,INFINITY);
+  COOKIE_CHECK(gen,CK_CSTD_GEN,INFINITY);
   
   U = uniform();
   
@@ -635,7 +644,8 @@ _unur_stdgen_sample_normal_acr( struct unur_gen *gen )
   double rn,x,y,z;
 
   /* check arguments */
-  CHECK_NULL(gen,0.);  COOKIE_CHECK(gen,CK_CSTD_GEN,0.);
+  CHECK_NULL(gen,INFINITY);
+  COOKIE_CHECK(gen,CK_CSTD_GEN,INFINITY);
 
   do {
     y = uniform();
@@ -719,7 +729,8 @@ _unur_stdgen_sample_normal_sum( struct unur_gen *gen )
   double X;
 
   /* check arguments */
-  CHECK_NULL(gen,0.);  COOKIE_CHECK(gen,CK_CSTD_GEN,0.);
+  CHECK_NULL(gen,INFINITY);
+  COOKIE_CHECK(gen,CK_CSTD_GEN,INFINITY);
 
   X = ( uniform() + uniform() + uniform() + uniform() + uniform() + uniform() +
 	uniform() + uniform() + uniform() + uniform() + uniform() + uniform()

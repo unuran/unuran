@@ -125,7 +125,7 @@ _unur_set_params_slash( UNUR_DISTR *distr, const double *params, int n_params )
     DISTR.domain[1] = INFINITY;        /* right boundary */
   }
 
-  return 1;
+  return UNUR_SUCCESS;
 } /* end of _unur_set_params_slash() */
 
 /*---------------------------------------------------------------------------*/
@@ -159,7 +159,7 @@ unur_distr_slash( const double *params, int n_params )
   		 UNUR_DISTR_SET_PDFAREA );
                 
   /* set parameters for distribution */
-  if (!_unur_set_params_slash(distr,params,n_params)) {
+  if (_unur_set_params_slash(distr,params,n_params)!=UNUR_SUCCESS) {
     free(distr);
     return NULL;
   }

@@ -138,7 +138,7 @@ int unur_tabl_set_darsfactor( UNUR_PAR *parameters, double factor );
    intervals between squeeze and hat.
    Notice that all segments are split when @var{factor} is set to
    @code{0.}, and that there is no splitting at all when @var{factor}
-   is set to UNUR_INFINITY.
+   is set to @code{UNUR_INFINITY}.
 
    Default is @code{0.99}. There is no need to change this parameter.
 */
@@ -178,19 +178,19 @@ int unur_tabl_set_max_sqhratio( UNUR_PAR *parameters, double max_ratio );
 double unur_tabl_get_sqhratio( const UNUR_GEN *generator );
 /* 
    Get the current ratio (area below squeeze) / (area below hat)
-   for the generator. (In case of an error @code{0} is returned.)
+   for the generator. (In case of an error @code{UNUR_INFINITY} is returned.)
 */
 
 double unur_tabl_get_hatarea( const UNUR_GEN *generator );
 /* 
    Get the area below the hat for the generator.
-   (In case of an error @code{0} is returned.)
+   (In case of an error @code{UNUR_INFINITY} is returned.)
 */
 
 double unur_tabl_get_squeezearea( const UNUR_GEN *generator );
 /* 
    Get the area below the squeeze for the generator.
-   (In case of an error @code{0} is returned.)
+   (In case of an error @code{UNUR_INFINITY} is returned.)
 */
 
 int unur_tabl_set_max_intervals( UNUR_PAR *parameters, int max_ivs );

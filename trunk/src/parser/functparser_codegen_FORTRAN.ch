@@ -71,8 +71,8 @@ _unur_fstr_tree2FORTRAN ( FILE *out, const struct ftreenode *root,
      /*   funct_name ... pointer to name of FORTRAN function                 */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... success                                                      */
-     /*   0 ... failure                                                      */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   struct unur_string output = {NULL, 0, 0};
@@ -80,14 +80,14 @@ _unur_fstr_tree2FORTRAN ( FILE *out, const struct ftreenode *root,
   int line;
 
   /* check arguments */
-  _unur_check_NULL( GENTYPE,root,0 );
-  _unur_check_NULL( GENTYPE,symbol[root->token].node2F,0 );
+  _unur_check_NULL( GENTYPE, root, UNUR_ERR_NULL );
+  _unur_check_NULL( GENTYPE, symbol[root->token].node2F, UNUR_ERR_NULL );
 
   /* make body of FORTRAN routine */
   rcode = symbol[root->token].node2F (&output,root,variable);
   if (rcode & F_FUNCT_ERROR) { 
     if (output.text) free(output.text);
-    return 0;
+    return UNUR_ERR_GEN_DATA;
   }
 
   /* print FORTRAN routine */
@@ -115,7 +115,7 @@ _unur_fstr_tree2FORTRAN ( FILE *out, const struct ftreenode *root,
   /* free memory */
   free(output.text);
 
-  return 1;
+  return UNUR_SUCCESS;
 
 } /* end of _unur_fstr_tree2FORTRAN() */
 
@@ -422,7 +422,8 @@ _unur_fstr_F_specfunct ( FILE *out, unsigned flags )
      /*   flags ... bit array with flags for special functions               */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 on success                                                       */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   if (flags & F_FUNCT_SEC) {
@@ -452,7 +453,7 @@ _unur_fstr_F_specfunct ( FILE *out, unsigned flags )
     fprintf (out,"      RelNE(a,b)=1.d0-RelGE(a,b)*RelLE(a,b)\n");
   }
 
-  return 1;
+  return UNUR_SUCCESS;
 } /* end of _unur_fstr_F_specfunct() */
 
 /*---------------------------------------------------------------------------*/
@@ -475,7 +476,8 @@ _unur_fstr_print_F ( struct unur_string *output, const char *symb, const double 
      /*   number ... constant to be printed                                  */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 on success                                                       */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   char buf[128];
@@ -495,7 +497,7 @@ _unur_fstr_print_F ( struct unur_string *output, const char *symb, const double 
     _unur_string_appendtext( output, buf );
   }
 
-  return 1;
+  return UNUR_SUCCESS;
 } /* end of _unur_fstr_print_F() */
 
 /*---------------------------------------------------------------------------*/

@@ -88,8 +88,8 @@ _unur_stdgen_poisson_init( struct unur_par *par, struct unur_gen *gen )
      /*   gen ... pointer to generator object                                */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   /* one of par and gen must not be the NULL pointer */
@@ -97,7 +97,7 @@ _unur_stdgen_poisson_init( struct unur_par *par, struct unur_gen *gen )
 
   case 0:  /* DEFAULT */
   case 1:  /* Tabulated Inversion combined with Acceptance Complement */
-    if (gen==NULL) return 1; /* test existence only  */
+    if (gen==NULL) return UNUR_SUCCESS; /* test existence only  */
     if (theta < 10.) {
       /* CASE B: Tabulated Inversion */
       _unur_dstd_set_sampling_routine( par,gen,_unur_stdgen_sample_poisson_pdtabl );
@@ -110,7 +110,7 @@ _unur_stdgen_poisson_init( struct unur_par *par, struct unur_gen *gen )
     }
 
   case 2:  /* Tabulated Inversion combined with Patchwork Rejection */
-    if (gen==NULL) return 1; /* test existence only  */
+    if (gen==NULL) return UNUR_SUCCESS; /* test existence only  */
     if (theta < 10.) {
       /* CASE: Tabulated Inversion --> same as case 1 !! */
       _unur_dstd_set_sampling_routine( par,gen,_unur_stdgen_sample_poisson_pdtabl );
@@ -124,7 +124,7 @@ _unur_stdgen_poisson_init( struct unur_par *par, struct unur_gen *gen )
     }
 #else
     else
-      return 0;
+      return UNUR_ERR_DISTR_REQUIRED;
 #endif
 
     /** WinRand routine `pruec' (Ratio of Uniforms/Inversion) not implemented **/
@@ -132,7 +132,7 @@ _unur_stdgen_poisson_init( struct unur_par *par, struct unur_gen *gen )
   case UNUR_STDGEN_INVERSION:   /* inversion method */
   default: /* no such generator */
     if (gen) _unur_warning(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
-    return 0;
+    return UNUR_FAILURE;
   }
   
 } /* end of _unur_stdgen_poisson_init() */
@@ -184,7 +184,8 @@ poisson_pdtabl_init( struct unur_gen *gen )
      /* theta < 10: Tabulated inversion */
 {
   /* check arguments */
-  CHECK_NULL(gen,0); COOKIE_CHECK(gen,CK_DSTD_GEN,0);
+  CHECK_NULL(gen,UNUR_ERR_NULL);
+  COOKIE_CHECK(gen,CK_DSTD_GEN,UNUR_ERR_COOKIE);
 
   if (GEN.gen_param == NULL) {
     GEN.n_gen_param = MAX_gen_params;
@@ -199,7 +200,7 @@ poisson_pdtabl_init( struct unur_gen *gen )
   p0 = q = p = exp(-theta);
   /* -X- end of setup code -X- */
 
-  return 1;
+  return UNUR_SUCCESS;
 
 } /* end of poisson_pdtabl_init() */
 
@@ -212,7 +213,8 @@ _unur_stdgen_sample_poisson_pdtabl( struct unur_gen *gen )
   int K,i;
 
   /* check arguments */
-  CHECK_NULL(gen,0);  COOKIE_CHECK(gen,CK_DSTD_GEN,0);
+  CHECK_NULL(gen,INT_MAX);
+  COOKIE_CHECK(gen,CK_DSTD_GEN,INT_MAX);
   
   while (1) {
     U = uniform();              /* Step U. Uniform sample */
@@ -276,7 +278,8 @@ poisson_pdac_init( struct unur_gen *gen )
      /* Theta >= 10: acceptance complement */
 {
   /* check arguments */
-  CHECK_NULL(gen,0); COOKIE_CHECK(gen,CK_DSTD_GEN,0);
+  CHECK_NULL(gen,UNUR_ERR_NULL);
+  COOKIE_CHECK(gen,CK_DSTD_GEN,UNUR_ERR_COOKIE);
 
   if (GEN.gen_param == NULL) {
     GEN.n_gen_param = MAX_gen_params;
@@ -292,7 +295,7 @@ poisson_pdac_init( struct unur_gen *gen )
     struct unur_distr *distr = unur_distr_normal(NULL,0);
     struct unur_par *par = unur_cstd_new( distr );
     NORMAL = (par) ? _unur_init(par) : NULL;
-    _unur_check_NULL( NULL,NORMAL,0 );
+    _unur_check_NULL( NULL, NORMAL, UNUR_ERR_NULL );
     /* need same uniform random number generator as slash generator */
     NORMAL->urng = gen->urng;
     /* copy debugging flags */
@@ -319,7 +322,7 @@ poisson_pdac_init( struct unur_gen *gen )
 
   /* -X- end of setup code -X- */
 
-  return 1;
+  return UNUR_SUCCESS;
 
 } /* end of poisson_pdac_init() */
 
@@ -352,8 +355,8 @@ _unur_stdgen_sample_poisson_pdac( struct unur_gen *gen )
   int K;
 
   /* check arguments */
-  CHECK_NULL(gen,0.); COOKIE_CHECK(gen,CK_DSTD_GEN,0.);
-
+  CHECK_NULL(gen,INT_MAX);
+  COOKIE_CHECK(gen,CK_DSTD_GEN,INT_MAX);
 
   /* Step N. Normal sample */
   t = _unur_sample_cont(NORMAL);
@@ -549,7 +552,8 @@ poisson_pprsc_init( struct unur_gen *gen )
   double Ds;
 
   /* check arguments */
-  CHECK_NULL(gen,0);  COOKIE_CHECK(gen,CK_DSTD_GEN,0);
+  CHECK_NULL(gen,UNUR_ERR_NULL);
+  COOKIE_CHECK(gen,CK_DSTD_GEN,UNUR_ERR_COOKIE);
 
   if (GEN.gen_param == NULL) {
     GEN.n_gen_param = MAX_gen_params;
@@ -605,7 +609,7 @@ poisson_pprsc_init( struct unur_gen *gen )
   p6 = f5 / lr        + p5;                       /* expon. tail right*/
   /* -X- end of setup code -X- */
 
-  return 1;
+  return UNUR_SUCCESS;
 
 } /* end of poisson_pprsc_init() */
 

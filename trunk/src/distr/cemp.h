@@ -78,7 +78,7 @@ int unur_distr_cemp_read_data( UNUR_DISTR *distribution, const char *filename );
 
    In case of an error (file cannot be opened, invalid string for
    double in line) no data are copied into the distribution object
-   and @code{0} is returned.
+   and an error code is returned.
 */
 
 int unur_distr_cemp_get_data( const UNUR_DISTR *distribution, const double **sample );
@@ -87,7 +87,7 @@ int unur_distr_cemp_get_data( const UNUR_DISTR *distribution, const double **sam
    observations. If no sample has been given,
    @code{0} is returned and @code{sample} is set to NULL.
 
-   @emph{Important:} Do @strong{not} change the entries in @var{params}!
+   @emph{Important:} Do @strong{not} change the entries in @var{sample}!
 */
 
 /* =END */

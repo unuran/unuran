@@ -46,7 +46,7 @@
       enabled by defining the macro @code{UNUR_ENABLE_LOGGING} in 
       @file{unuran_config.h}.
       The debugging levels range from print a short description of the build
-      generator object to a detailed description of hat functions til
+      generator object to a detailed description of hat functions and
       tracing the sampling routines. The output is print onto the output
       stream obtained by unur_get_stream() (see also ?).
       These flags can be set or changed by the respective calls
@@ -60,7 +60,7 @@
       depend on the chosen method. Since most of these are merely for
       debugging the library itself, a description of the flags are given
       in the corresponding source files of the method.
-      Nevertheless the following flags can be used with all methods.
+      Nevertheless, the following flags can be used with all methods.
 
 
       Common debug flags:
@@ -87,9 +87,9 @@
       @end ftable
 
 
-      Almost all routines check a given pointer they read from or write
-      to the given adress. This does not hold for time-critical routines
-      like all sampling routines. Then your are responsible for checking a
+      Almost all routines check a given pointer before they read from or write
+      to the given address. This does not hold for time-critical routines
+      like all sampling routines. Then you are responsible for checking a
       pointer that is returned from a unur_init() call.
       However it is possible to turn on checking for invalid NULL pointers
       even in such time-critical routines by defining

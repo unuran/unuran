@@ -215,20 +215,18 @@ unur_hrb_set_upperbound( struct unur_par *par, double upperbound )
      /*   upperbound ... upper bound for hazard rate                         */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( GENTYPE,par,0 );
-
-  /* check input */
-  _unur_check_par_object( par,HRB );
+  _unur_check_NULL( GENTYPE, par, UNUR_ERR_NULL );
+  _unur_check_par_object( par, HRB );
 
   /* check new parameter for generator */
   if (upperbound <= 0. || _unur_FP_is_infinity(upperbound)) {
     _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"bound for hazard rate");
-    return 0;
+    return UNUR_ERR_PAR_SET;
   }
 
   /* store date */
@@ -237,7 +235,7 @@ unur_hrb_set_upperbound( struct unur_par *par, double upperbound )
   /* changelog */
   par->set |= HRB_SET_UPPERBOUND;
 
-  return 1;
+  return UNUR_SUCCESS;
 
 } /* end of unur_hrb_set_upperbound() */
 
@@ -253,24 +251,22 @@ unur_hrb_set_verify( struct unur_par *par, int verify )
      /*   verify ... 0 = no verifying,  !0 = verifying                       */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*                                                                      */
      /* comment:                                                             */
      /*   no verifying is the default                                        */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( GENTYPE,par,0 );
-
-  /* check input */
-  _unur_check_par_object( par,HRB );
+  _unur_check_NULL( GENTYPE, par, UNUR_ERR_NULL );
+  _unur_check_par_object( par, HRB );
 
   /* we use a bit in variant */
   par->variant = (verify) ? (par->variant | HRB_VARFLAG_VERIFY) : (par->variant & (~HRB_VARFLAG_VERIFY));
 
   /* o.k. */
-  return 1;
+  return UNUR_SUCCESS;
 
 } /* end of unur_hrb_set_verify() */
 
@@ -286,16 +282,16 @@ unur_hrb_chg_verify( struct unur_gen *gen, int verify )
      /*   verify ... 0 = no verifying,  !0 = verifying                       */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*                                                                      */
      /* comment:                                                             */
      /*   no verifying is the default                                        */
      /*----------------------------------------------------------------------*/
 {
   /* check input */
-  _unur_check_NULL( GENTYPE,gen,0 );
-  _unur_check_gen_object( gen,HRB );
+  _unur_check_NULL( GENTYPE, gen, UNUR_ERR_NULL );
+  _unur_check_gen_object( gen, HRB, UNUR_ERR_GEN_INVALID );
 
   /* we use a bit in variant */
   gen->variant = (verify) ? (gen->variant | HRB_VARFLAG_VERIFY) : (gen->variant & (~HRB_VARFLAG_VERIFY));
@@ -304,7 +300,7 @@ unur_hrb_chg_verify( struct unur_gen *gen, int verify )
   SAMPLE = (verify) ? _unur_hrb_sample_check : _unur_hrb_sample;
 
   /* o.k. */
-  return 1;
+  return UNUR_SUCCESS;
 
 } /* end of unur_hrb_chg_verify() */
 
@@ -520,11 +516,14 @@ _unur_hrb_sample( struct unur_gen *gen )
      /*   double (sample from random variate)                                */
      /*                                                                      */
      /* error:                                                               */
-     /*   return 0.                                                          */
+     /*   return INFINITY                                                    */
      /*----------------------------------------------------------------------*/
 { 
   double U,V,E,X;
   double lambda;
+
+  /* check arguments */
+  CHECK_NULL(gen,INFINITY);  COOKIE_CHECK(gen,CK_HRB_GEN,INFINITY);
 
   /* parameter for majorizing hazard rate */
   lambda = GEN.upper_bound;
@@ -563,12 +562,15 @@ _unur_hrb_sample_check( struct unur_gen *gen )
      /*   double (sample from random variate)                                */
      /*                                                                      */
      /* error:                                                               */
-     /*   return 0.                                                          */
+     /*   return INFINITY                                                    */
      /*----------------------------------------------------------------------*/
 { 
   double U,V,E,X,hrx;
   double lambda;
   int i;
+
+  /* check arguments */
+  CHECK_NULL(gen,INFINITY);  COOKIE_CHECK(gen,CK_HRB_GEN,INFINITY);
 
   /* parameter for majorizing hazard rate */
   lambda = GEN.upper_bound;

@@ -83,7 +83,7 @@ unur_run_tests( struct unur_par *par, unsigned tests)
   _unur_check_NULL("Tests",par,RETURN_VOID);
 
   /* print info about method */
-  if (! _unur_print_method(par))
+  if (_unur_print_method(par)!=UNUR_SUCCESS)
     return;  /* unknown method */
 
   /* init generator object */
@@ -132,8 +132,8 @@ _unur_print_method( struct unur_par *par )
      /*   par ... pointer to paramters for building generator object         */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... if successful                                                */
-     /*   0 ... otherwise                                                    */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   /* first print type */
@@ -152,7 +152,7 @@ _unur_print_method( struct unur_par *par )
     break;
   default: /* unknown ! */
     _unur_warning("Tests",UNUR_ERR_GENERIC,"type of method unknown!");
-    return 0;
+    return UNUR_ERR_GENERIC;
   }
 
   /* print method description */
@@ -160,79 +160,79 @@ _unur_print_method( struct unur_par *par )
 
     /* discrete, univariate */
   case UNUR_METH_DAU:
-    COOKIE_CHECK(par,CK_DAU_PAR,0);
+    COOKIE_CHECK(par,CK_DAU_PAR,UNUR_ERR_COOKIE);
     printf("METHOD:\t\talias and alias-urn method (DAU)\n");
     break;
   case UNUR_METH_DGT:
-    COOKIE_CHECK(par,CK_DGT_PAR,0);
+    COOKIE_CHECK(par,CK_DGT_PAR,UNUR_ERR_COOKIE);
     printf("METHOD:\t\tindexed search -- guide table (DGT)\n");
     break;
   case UNUR_METH_DSROU:
-    COOKIE_CHECK(par,CK_DSROU_PAR,0);
+    COOKIE_CHECK(par,CK_DSROU_PAR,UNUR_ERR_COOKIE);
     printf("METHOD:\t\tdiscrete simple universal ratio-of-uniforms search (DSROU)\n");
     break;
   case UNUR_METH_DSS:
-    COOKIE_CHECK(par,CK_DSS_PAR,0);
+    COOKIE_CHECK(par,CK_DSS_PAR,UNUR_ERR_COOKIE);
     printf("METHOD:\t\tsequential search (DSS)\n");
     break;
   case UNUR_METH_DSTD:
-    COOKIE_CHECK(par,CK_DSTD_PAR,0);
+    COOKIE_CHECK(par,CK_DSTD_PAR,UNUR_ERR_COOKIE);
     printf("METHOD:\t\tspecial (DSTD)\n");
     break;
 
     /* continuous, univariate */
   case UNUR_METH_AROU:
-    COOKIE_CHECK(par,CK_AROU_PAR,0);
+    COOKIE_CHECK(par,CK_AROU_PAR,UNUR_ERR_COOKIE);
     printf("METHOD:\t\tautomatic ratio-of-uniforms method (NINV)\n");
     break;
   case UNUR_METH_NINV:
-    COOKIE_CHECK(par,CK_NINV_PAR,0);
+    COOKIE_CHECK(par,CK_NINV_PAR,UNUR_ERR_COOKIE);
     printf("METHOD:\t\tnumerical inversion of CDF (NINV)\n");
     break;
   case UNUR_METH_SROU:
-    COOKIE_CHECK(par,CK_SROU_PAR,0);
+    COOKIE_CHECK(par,CK_SROU_PAR,UNUR_ERR_COOKIE);
     printf("METHOD:\t\tsimple universal ratio-of-uniforms method (SROU)\n");
     break;
   case UNUR_METH_SSR:
-    COOKIE_CHECK(par,CK_SSR_PAR,0);
+    COOKIE_CHECK(par,CK_SSR_PAR,UNUR_ERR_COOKIE);
     printf("METHOD:\t\tsimple transformed density rejection with universal bounds (SSR)\n");
     break;
   case UNUR_METH_TABL:
-    COOKIE_CHECK(par,CK_TABL_PAR,0);
+    COOKIE_CHECK(par,CK_TABL_PAR,UNUR_ERR_COOKIE);
     printf("METHOD:\t\trejection from piecewise constant hat (TABL)\n");
     break;
   case UNUR_METH_TDR:
-    COOKIE_CHECK(par,CK_TDR_PAR,0);
+    COOKIE_CHECK(par,CK_TDR_PAR,UNUR_ERR_COOKIE);
     printf("METHOD:\t\ttransformed density rejection (TDR)\n");
     break;
   case UNUR_METH_UTDR:
-    COOKIE_CHECK(par,CK_UTDR_PAR,0);
+    COOKIE_CHECK(par,CK_UTDR_PAR,UNUR_ERR_COOKIE);
     printf("METHOD:\t\ttransformed density rejection, 3-point method (UTDR)\n");
     break;
   case UNUR_METH_CSTD:
-    COOKIE_CHECK(par,CK_CSTD_PAR,0);
+    COOKIE_CHECK(par,CK_CSTD_PAR,UNUR_ERR_COOKIE);
     printf("METHOD:\t\tspecial (CSTD)\n");
     break;
 
     /* continuous, univariate */
   case UNUR_METH_EMPK:
-    COOKIE_CHECK(par,CK_EMPK_PAR,0);
+    COOKIE_CHECK(par,CK_EMPK_PAR,UNUR_ERR_COOKIE);
     printf("METHOD:\t\tempirical distribution with kernel smoothing (EMPK)\n");
     break;
 
     /* misc */
   case UNUR_METH_UNIF:
-    COOKIE_CHECK(par,CK_UNIF_PAR,0);
+    COOKIE_CHECK(par,CK_UNIF_PAR,UNUR_ERR_COOKIE);
     printf("METHOD:\t\twrapper for uniform (UNIF)\n");
     break;
 
   default: /* unknown ! */
     _unur_error("Tests",UNUR_ERR_GENERIC,"method unknown!");
-    return 0;
+    return UNUR_ERR_GENERIC;
   }
   
   /* everything o.k. */
-  return 1;
+  return UNUR_SUCCESS;
 
 } /* end of _unur_print_method() */
 

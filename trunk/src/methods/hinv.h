@@ -209,8 +209,8 @@ int unur_hinv_get_n_intervals( const UNUR_GEN *generator );
 /* 
    Get number of nodes (design points) used for Hermite interpolation in 
    the generator object. The number of intervals is the number of
-   nodes - 1.
-   It returns @code{0} in case of an error.
+   nodes minus 1.
+   It returns an error code in case of an error.
 */
 
 double unur_hinv_eval_approxinvcdf( const UNUR_GEN *generator, double u );
@@ -242,7 +242,7 @@ int unur_hinv_chg_truncated( UNUR_GEN *generator, double left, double right );
    floating point numbers would be computed due to round-off errors
    with floating point arithmetic.
 
-   It returns @code{0} in case of an error.
+   When failed an error code is returned.
 
    @emph{Important}: Always check the return code since the domain is
    not changed in case of an error.
@@ -254,7 +254,7 @@ int unur_hinv_estimate_error( const UNUR_GEN *generator, int samplesize, double 
    by means of Monte-Carlo simulation with sample size @var{samplesize}.
    The results are stored in @var{max_error} and @var{MAE}, respectively.
 
-   It returns @code{1} if successful. 
+   It returns @code{UNUR_SUCCESS} if successful. 
 */
 
 /* =END */

@@ -78,8 +78,8 @@ _unur_stdgen_powerexponential_init( struct unur_par *par, struct unur_gen *gen )
      /*   gen ... pointer to generator object                                */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   /* one of par and gen must not be the NULL pointer */
@@ -91,7 +91,7 @@ _unur_stdgen_powerexponential_init( struct unur_par *par, struct unur_gen *gen )
       double d_tau = (par) ? par->distr->data.cont.params[0] : tau;
       if (d_tau < 1.) {
 	_unur_error(NULL,UNUR_ERR_GEN_CONDITION,"");
-	return 0;
+	return UNUR_ERR_GEN_CONDITION;
       }
     }
 
@@ -102,7 +102,7 @@ _unur_stdgen_powerexponential_init( struct unur_par *par, struct unur_gen *gen )
   case UNUR_STDGEN_INVERSION:   /* inversion method */
   default: /* no such generator */
     if (gen) _unur_warning(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
-    return 0;
+    return UNUR_FAILURE;
   }
 
 } /* end of _unur_stdgen_powerexponential_init() */
@@ -145,7 +145,8 @@ inline static int
 powerexponential_epd_init( struct unur_gen *gen )
 {
   /* check arguments */
-  CHECK_NULL(gen,0);  COOKIE_CHECK(gen,CK_CSTD_GEN,0);
+  CHECK_NULL(gen,UNUR_ERR_NULL);
+  COOKIE_CHECK(gen,CK_CSTD_GEN,UNUR_ERR_COOKIE);
 
   if (GEN.gen_param == NULL) {
     GEN.n_gen_param = MAX_gen_params;
@@ -157,7 +158,7 @@ powerexponential_epd_init( struct unur_gen *gen )
   sm1 = 1. - s;
   /* -X- end of setup code -X- */
 
-  return 1;
+  return UNUR_SUCCESS;
 
 } /* end of powerexponential_epd_init() */
 
@@ -168,7 +169,8 @@ _unur_stdgen_sample_powerexponential_epd( struct unur_gen *gen )
   double U,u1,V,X,y;
 
   /* check arguments */
-  CHECK_NULL(gen,0.);  COOKIE_CHECK(gen,CK_CSTD_GEN,0.);
+  CHECK_NULL(gen,INFINITY);
+  COOKIE_CHECK(gen,CK_CSTD_GEN,INFINITY);
 
   do {
     U = 2. * uniform() - 1.;                                  /* U(-1.0/1.0) */

@@ -89,8 +89,8 @@ _unur_stdgen_hypergeometric_init( struct unur_par *par, struct unur_gen *gen )
      /*   gen ... pointer to generator object                                */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   /* one of par and gen must not be the NULL pointer */
@@ -102,13 +102,13 @@ _unur_stdgen_hypergeometric_init( struct unur_par *par, struct unur_gen *gen )
      _unur_dstd_set_sampling_routine( par,gen,_unur_stdgen_sample_hypergeometric_hruec );
      return hypergeometric_hruec_init( gen );
 #else
-     return 0;
+     return UNUR_ERR_DISTR_REQUIRED;
 #endif
 
   case UNUR_STDGEN_INVERSION:   /* inversion method */
   default: /* no such generator */
     if (gen) _unur_warning(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
-    return 0;
+    return UNUR_FAILURE;
   }
   
 } /* end of _unur_stdgen_hypergeometric_init() */
@@ -191,7 +191,8 @@ hypergeometric_hruec_init( struct unur_gen *gen )
   double x,p,q,c,my;
 
   /* check arguments */
-  CHECK_NULL(gen,0);  COOKIE_CHECK(gen,CK_DSTD_GEN,0);
+  CHECK_NULL(gen,UNUR_ERR_NULL);
+  COOKIE_CHECK(gen,CK_DSTD_GEN,UNUR_ERR_COOKIE);
 
   if (GEN.gen_param == NULL) {
     GEN.n_gen_param = MAX_gen_params;
@@ -241,7 +242,7 @@ hypergeometric_hruec_init( struct unur_gen *gen )
 
   /* -X- end of setup code -X- */
 
-  return 1;
+  return UNUR_SUCCESS;
 
 } /* end of hypergeometric_hruec_init() */
 
@@ -254,7 +255,8 @@ _unur_stdgen_sample_hypergeometric_hruec( struct unur_gen *gen )
   double x,u,f,lf;
 
   /* check arguments */
-  CHECK_NULL(gen,0);  COOKIE_CHECK(gen,CK_DSTD_GEN,0);
+  CHECK_NULL(gen,INT_MAX);
+  COOKIE_CHECK(gen,CK_DSTD_GEN,INT_MAX);
 
   /* -X- generator code -X- */
   

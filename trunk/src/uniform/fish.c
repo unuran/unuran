@@ -93,13 +93,13 @@ unur_urng_fish_seed (long seed)
 {
   if (seed==0) {
     _unur_error("URNG.fish",UNUR_ERR_GENERIC,"seed = 0");
-    return 0;
+    return UNUR_ERR_GENERIC;
   }
   
   x_start = seed;
   x = seed;
 
-  return 1;
+  return UNUR_SUCCESS;
 } /* end of unur_urng_fish_seed() */
 
 /*---------------------------------------------------------------------------*/
@@ -108,7 +108,7 @@ int
 unur_urng_fish_reset (void)
 {
   x = x_start;
-  return 1;
+  return UNUR_SUCCESS;
 } /* end of unur_urng_fish_reset() */
 
 /*---------------------------------------------------------------------------*/

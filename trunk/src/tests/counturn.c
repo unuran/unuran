@@ -184,7 +184,7 @@ unur_test_count_urn( struct unur_gen *gen, int samplesize, int verbosity, FILE *
 
   default: /* unknown ! */
     _unur_error("Tests",UNUR_ERR_GENERIC,"method unknown!");
-    return 0;
+    return -1;
   }
 
   /* reset pointer to uniform rng */

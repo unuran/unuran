@@ -49,12 +49,12 @@ int main()
 {                                                                              
   /* open log file for unuran and set output stream for unuran messages */    
   if ( (UNURANLOG = fopen( "t_functionparser_unuran.log","w" )) == NULL )
-    exit (-1);                                           
+    exit (EXIT_FAILURE);                                           
   unur_set_stream( UNURANLOG );
                                                                                
   /* open log file for testing */                                             
   if ( (TESTLOG = fopen( "t_functionparser_test.log","w" )) == NULL )
-    exit (-1);                                             
+    exit (EXIT_FAILURE);                                             
                                                                                
   /* write header into log file */                                            
   {                                                                           
@@ -73,7 +73,7 @@ int main()
     exit (77);  /* ignore this error */                                             
   }
 
-  while (_unur_test_function());
+  while (_unur_test_function()==UNUR_SUCCESS);
 
   /* close files */
   fclose (UNURANLOG);
@@ -83,11 +83,11 @@ int main()
   /* end */
   if (n_failed > 0) {
     printf("[function parser --> failed]\n");
-    exit (-1);
+    exit (EXIT_FAILURE);
   }
   else {
     printf("[function parser --> ok]\n");
-    exit (0);
+    exit (EXIT_SUCCESS);
   }
 } /* end of main() */                                                                              
 
@@ -119,7 +119,7 @@ _unur_test_function (void)
   while (1) {
     /* read next line */
     fgets(buffer, BUFSIZE, DATA);
-    if (feof(DATA)) return 0;
+    if (feof(DATA)) return UNUR_ERR_GENERIC;
     if (strncmp(buffer,"function=",8)==0) break;
   }
   
@@ -136,7 +136,7 @@ _unur_test_function (void)
   if (unur_distr_cont_set_pdfstr(distr,fstr) == 0) {
     printf("ERROR: syntax error in \"%s\"\n", fstr);
     fprintf(TESTLOG,"ERROR: syntax error in \"%s\"\n", fstr);
-    exit (-1);                                             
+    exit (EXIT_FAILURE);                                             
   }
   
   /* reparse function string and make duplicate distribution object */
@@ -146,7 +146,7 @@ _unur_test_function (void)
   if (unur_distr_cont_set_pdfstr(rep,repstr) == 0) {
     printf("ERROR: syntax error in \"%s\"\n", repstr);
     fprintf(TESTLOG,"ERROR: syntax error in reparsed string \"%s\"\n", repstr);
-    exit (-1);                                             
+    exit (EXIT_FAILURE);                                             
   }
   
   /* read all the data */
@@ -214,7 +214,7 @@ _unur_test_function (void)
     fprintf(TESTLOG,"\t--> OK\n\n");
   }
 
-  return 1;
+  return UNUR_SUCCESS;
 #undef BUFSIZE
 } /* end of _unur_test_function() */
 

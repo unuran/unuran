@@ -62,14 +62,14 @@ unur_set_debug( struct unur_par *par, unsigned debug )
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( NULL,par,0 );
+  _unur_check_NULL( NULL,par,UNUR_ERR_NULL );
 
 #ifdef UNUR_ENABLE_LOGGING
   par->debug = debug;
-  return 1;
+  return UNUR_SUCCESS;
 #else
   _unur_warning("DEBUG",UNUR_ERR_COMPILE,"debugging, #define UNUR_ENABLE_LOGGING");
-  return 0;
+  return UNUR_ERR_COMPILE;
 #endif
 
 } /* end of unur_set_debug() */
@@ -87,14 +87,14 @@ unur_chg_debug( struct unur_gen *gen, unsigned debug )
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  CHECK_NULL( gen,0 );
+  CHECK_NULL( gen, UNUR_ERR_NULL );
 
 #ifdef UNUR_ENABLE_LOGGING
   gen->debug = debug;
-  return 1;
+  return UNUR_SUCCESS;
 #else
   _unur_warning("DEBUG",UNUR_ERR_COMPILE,"debugging, #define UNUR_ENABLE_LOGGING");
-  return 0;
+  return UNUR_ERR_COMPILE;
 #endif
 
 } /* end of unur_chg_debug() */
@@ -112,7 +112,7 @@ unur_set_default_debug( unsigned debug )
      /*----------------------------------------------------------------------*/
 {
   _unur_default_debugflag = debug;
-  return 1;
+  return UNUR_SUCCESS;
 } /* end of unur_set_default_debug() */
   
 /*---------------------------------------------------------------------------*/

@@ -136,24 +136,22 @@ unur_tdr_set_cpoints( struct unur_par *par, int n_stp, const double *stp )
      /*              (NULL for changing only the number of default points)   */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   int i;
 
   /* check arguments */
-  _unur_check_NULL( GENTYPE,par,0 );
-
-  /* check input */
-  _unur_check_par_object( par,TDR );
+  _unur_check_NULL( GENTYPE, par, UNUR_ERR_NULL );
+  _unur_check_par_object( par, TDR );
 
   /* check starting construction points */
   /* we always use the boundary points as additional starting points,
      so we do not count these here! */
   if (n_stp < 0 ) {
     _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"number of starting points < 0");
-    return 0;
+    return UNUR_ERR_PAR_SET;
   }
 
   if (stp) 
@@ -161,7 +159,7 @@ unur_tdr_set_cpoints( struct unur_par *par, int n_stp, const double *stp )
     for( i=1; i<n_stp; i++ )
       if (stp[i] <= stp[i-1]) {
 	_unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"starting points not strictly monotonically increasing");
-	return 0;
+	return UNUR_ERR_PAR_SET;
       }
 
   /* store date */
@@ -171,7 +169,7 @@ unur_tdr_set_cpoints( struct unur_par *par, int n_stp, const double *stp )
   /* changelog */
   par->set |= TDR_SET_N_STP | ((stp) ? TDR_SET_STP : 0);
 
-  return 1;
+  return UNUR_SUCCESS;
 
 } /* end of unur_tdr_set_cpoints() */
 
@@ -187,20 +185,18 @@ unur_tdr_set_guidefactor( struct unur_par *par, double factor )
      /*   factor ... relative size of table                                  */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( GENTYPE,par,0 );
-
-  /* check input */
-  _unur_check_par_object( par,TDR );
+  _unur_check_NULL( GENTYPE, par, UNUR_ERR_NULL );
+  _unur_check_par_object( par, TDR );
 
   /* check new parameter for generator */
   if (factor < 0.) {
     _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"guide table size < 0");
-    return 0;
+    return UNUR_ERR_PAR_SET;
   }
 
   /* store date */
@@ -209,7 +205,7 @@ unur_tdr_set_guidefactor( struct unur_par *par, double factor )
   /* changelog */
   par->set |= TDR_SET_GUIDEFACTOR;
 
-  return 1;
+  return UNUR_SUCCESS;
 
 } /* end of unur_tdr_set_guidefactor() */
 
@@ -225,20 +221,18 @@ unur_tdr_set_max_sqhratio( struct unur_par *par, double max_ratio )
      /*   max_ratio ... upper bound for ratio to add a new construction point*/
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( GENTYPE,par,0 );
-
-  /* check input */
-  _unur_check_par_object( par,TDR );
+  _unur_check_NULL( GENTYPE, par, UNUR_ERR_NULL );
+  _unur_check_par_object( par, TDR );
 
   /* check new parameter for generator */
   if (max_ratio < 0. || max_ratio > 1.+DBL_EPSILON ) {
     _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"ratio A(squeeze)/A(hat) not in [0,1]");
-    return 0;
+    return UNUR_ERR_PAR_SET;
   }
 
   /* store date */
@@ -247,7 +241,7 @@ unur_tdr_set_max_sqhratio( struct unur_par *par, double max_ratio )
   /* changelog */
   par->set |= TDR_SET_MAX_SQHRATIO;
 
-  return 1;
+  return UNUR_SUCCESS;
 
 } /* end of unur_tdr_set_max_sqhratio() */
 
@@ -262,13 +256,13 @@ unur_tdr_get_sqhratio( const struct unur_gen *gen )
      /*   gen  ... pointer to generator object                               */
      /*                                                                      */
      /* return:                                                              */
-     /*   ratio ... on success                                               */
-     /*   0     ... on error                                                 */
+     /*   ratio    ... on success                                            */
+     /*   INFINITY ... on error                                              */
      /*----------------------------------------------------------------------*/
 {
   /* check input */
-  _unur_check_NULL( GENTYPE,gen,0 );
-  _unur_check_gen_object( gen,TDR );
+  _unur_check_NULL( GENTYPE, gen, INFINITY );
+  _unur_check_gen_object( gen, TDR, INFINITY );
 
   return (GEN.Asqueeze / GEN.Atotal);
 
@@ -285,13 +279,13 @@ unur_tdr_get_hatarea( const struct unur_gen *gen )
      /*   gen  ... pointer to generator object                               */
      /*                                                                      */
      /* return:                                                              */
-     /*   area  ... on success                                               */
-     /*   0     ... on error                                                 */
+     /*   area     ... on success                                            */
+     /*   INFINITY ... on error                                              */
      /*----------------------------------------------------------------------*/
 {
   /* check input */
-  _unur_check_NULL( GENTYPE,gen,0 );
-  _unur_check_gen_object( gen,TDR );
+  _unur_check_NULL( GENTYPE, gen, INFINITY );
+  _unur_check_gen_object( gen, TDR, INFINITY );
 
   return GEN.Atotal;
 
@@ -308,13 +302,13 @@ unur_tdr_get_squeezearea( const struct unur_gen *gen )
      /*   gen  ... pointer to generator object                               */
      /*                                                                      */
      /* return:                                                              */
-     /*   area  ... on success                                               */
-     /*   0     ... on error                                                 */
+     /*   area     ... on success                                            */
+     /*   INFINITY ... on error                                              */
      /*----------------------------------------------------------------------*/
 {
   /* check input */
-  _unur_check_NULL( GENTYPE,gen,0 );
-  _unur_check_gen_object( gen,TDR );
+  _unur_check_NULL( GENTYPE, gen, INFINITY );
+  _unur_check_gen_object( gen, TDR, INFINITY );
 
   return GEN.Asqueeze;
 
@@ -332,20 +326,18 @@ unur_tdr_set_max_intervals( struct unur_par *par, int max_ivs )
      /*   max_ivs   ... maximum number of intervals                          */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( GENTYPE,par,0 );
-
-  /* check input */
-  _unur_check_par_object( par,TDR );
+  _unur_check_NULL( GENTYPE, par, UNUR_ERR_NULL );
+  _unur_check_par_object( par, TDR );
 
   /* check new parameter for generator */
   if (max_ivs < 1 ) {
     _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"maximum number of intervals < 1");
-    return 0;
+    return UNUR_ERR_PAR_SET;
   }
 
   /* store date */
@@ -354,7 +346,7 @@ unur_tdr_set_max_intervals( struct unur_par *par, int max_ivs )
   /* changelog */
   par->set |= TDR_SET_MAX_IVS;
 
-  return 1;
+  return UNUR_SUCCESS;
 
 } /* end of unur_tdr_set_max_intervals() */
 
@@ -370,15 +362,15 @@ _unur_tdr_is_ARS_running( const struct unur_gen *gen )
      /*   gen  ... pointer to generator object                               */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... if ARS is still running.                                     */
-     /*   0 ... otherwise.                                                   */
+     /*   TRUE  ... if ARS is still running.                                 */
+     /*   FALSE ... otherwise.                                               */
      /*----------------------------------------------------------------------*/
 {
   /* check input */
-  _unur_check_NULL( GENTYPE,gen,0 );
-  _unur_check_gen_object( gen,TDR );
+  _unur_check_NULL( GENTYPE, gen, FALSE );
+  _unur_check_gen_object( gen, TDR, FALSE );
 
-  return (GEN.n_ivs < GEN.max_ivs) ? 1 : 0;
+  return (GEN.n_ivs < GEN.max_ivs) ? TRUE : FALSE;
 } /* end of _unur_tdr_is_ARS_running() */
 
 /*---------------------------------------------------------------------------*/
@@ -393,15 +385,13 @@ unur_tdr_set_center( struct unur_par *par, double center )
      /*   center ... center of PDF                                           */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( GENTYPE,par,0 );
-
-  /* check input */
-  _unur_check_par_object( par,TDR );
+  _unur_check_NULL( GENTYPE, par, UNUR_ERR_NULL );
+  _unur_check_par_object( par, TDR );
 
   /* store data */
   PAR.center = center;
@@ -410,7 +400,7 @@ unur_tdr_set_center( struct unur_par *par, double center )
   par->set |= TDR_SET_CENTER;
 
   /* o.k. */
-  return 1;
+  return UNUR_SUCCESS;
 
 } /* end of unur_tdr_set_center() */
 
@@ -426,24 +416,22 @@ unur_tdr_set_usecenter( struct unur_par *par, int usecenter )
      /*   usecenter ... 0 = do not use,  !0 = use                            */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*                                                                      */
      /* comment:                                                             */
      /*   using center as construction point is the default                  */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( GENTYPE,par,0 );
-
-  /* check input */
-  _unur_check_par_object( par,TDR );
+  _unur_check_NULL( GENTYPE, par, UNUR_ERR_NULL );
+  _unur_check_par_object( par, TDR );
 
   /* we use a bit in variant */
   par->variant = (usecenter) ? (par->variant | TDR_VARFLAG_USECENTER) : (par->variant & (~TDR_VARFLAG_USECENTER));
 
   /* o.k. */
-  return 1;
+  return UNUR_SUCCESS;
 
 } /* end of unur_tdr_set_usecenter() */
 
@@ -460,24 +448,22 @@ unur_tdr_set_usemode( struct unur_par *par, int usemode )
      /*   usemode   ... 0 = do not use,  !0 = use                            */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*                                                                      */
      /* comment:                                                             */
      /*   using mode as construction point is the default                    */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( GENTYPE,par,0 );
-
-  /* check input */
-  _unur_check_par_object( par,TDR );
+  _unur_check_NULL( GENTYPE, par, UNUR_ERR_NULL );
+  _unur_check_par_object( par, TDR );
 
   /* we use a bit in variant */
   par->variant = (usemode) ? (par->variant | TDR_VARFLAG_USEMODE) : (par->variant & (~TDR_VARFLAG_USEMODE));
 
   /* o.k. */
-  return 1;
+  return UNUR_SUCCESS;
 
 } /* end of unur_tdr_set_usemode() */
 
@@ -492,21 +478,19 @@ unur_tdr_set_variant_gw( struct unur_par *par )
      /*   par       ... pointer to parameter for building generator object   */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( GENTYPE,par,0 );
-
-  /* check input */
-  _unur_check_par_object( par,TDR );
+  _unur_check_NULL( GENTYPE, par, UNUR_ERR_NULL );
+  _unur_check_par_object( par, TDR );
 
   /* we use a bit in variant */
   par->variant = (par->variant & ~TDR_VARMASK_VARIANT) | TDR_VARIANT_GW;
 
   /* o.k. */
-  return 1;
+  return UNUR_SUCCESS;
 
 } /* end of unur_tdr_set_variant_gw() */
 
@@ -521,21 +505,19 @@ unur_tdr_set_variant_ps( struct unur_par *par )
      /*   par       ... pointer to parameter for building generator object   */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( GENTYPE,par,0 );
-
-  /* check input */
-  _unur_check_par_object( par,TDR );
+  _unur_check_NULL( GENTYPE, par, UNUR_ERR_NULL );
+  _unur_check_par_object( par, TDR );
 
   /* we use a bit in variant */
   par->variant = (par->variant & ~TDR_VARMASK_VARIANT) | TDR_VARIANT_PS;
 
   /* o.k. */
-  return 1;
+  return UNUR_SUCCESS;
 
 } /* end of unur_tdr_set_variant_ps() */
 
@@ -551,21 +533,19 @@ unur_tdr_set_variant_ia( struct unur_par *par )
      /*   par       ... pointer to parameter for building generator object   */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( GENTYPE,par,0 );
-
-  /* check input */
-  _unur_check_par_object( par,TDR );
+  _unur_check_NULL( GENTYPE, par, UNUR_ERR_NULL );
+  _unur_check_par_object( par, TDR );
 
   /* we use a bit in variant */
   par->variant = (par->variant & ~TDR_VARMASK_VARIANT) | TDR_VARIANT_IA;
 
   /* o.k. */
-  return 1;
+  return UNUR_SUCCESS;
 
 } /* end of unur_tdr_set_variant_ia() */
 
@@ -582,23 +562,21 @@ unur_tdr_set_usedars( struct unur_par *par, int usedars )
      /*   usedars   ... 0 = do not use,  1-3 = use DARS with given rule      */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*                                                                      */
      /* comment:                                                             */
      /*   using not using DARS is the default                                */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( GENTYPE,par,0 );
-
-  /* check input */
-  _unur_check_par_object( par,TDR );
+  _unur_check_NULL( GENTYPE, par, UNUR_ERR_NULL );
+  _unur_check_par_object( par, TDR );
 
   /* check new parameter for generator */
   if (usedars < 0 || usedars > 3) {
     _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"invalid rule for DARS");
-    return 0;
+    return UNUR_ERR_PAR_SET;
   }
     
   /* set rule for DARS */
@@ -611,7 +589,7 @@ unur_tdr_set_usedars( struct unur_par *par, int usedars )
   par->set |= TDR_SET_USE_DARS;
 
   /* o.k. */
-  return 1;
+  return UNUR_SUCCESS;
 
 } /* end of unur_tdr_set_usedars() */
 
@@ -627,20 +605,18 @@ unur_tdr_set_darsfactor( struct unur_par *par, double factor )
      /*   factor ... parameter for DARS                                      */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( GENTYPE,par,0 );
-
-  /* check input */
-  _unur_check_par_object( par,TDR );
+  _unur_check_NULL( GENTYPE, par, UNUR_ERR_NULL );
+  _unur_check_par_object( par, TDR );
 
   /* check new parameter for generator */
   if (factor < 0.) {
     _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"DARS factor < 0");
-    return 0;
+    return UNUR_ERR_PAR_SET;
   }
     
   /* store date */
@@ -649,7 +625,7 @@ unur_tdr_set_darsfactor( struct unur_par *par, double factor )
   /* changelog */
   par->set |= TDR_SET_DARS_FACTOR;
 
-  return 1;
+  return UNUR_SUCCESS;
 
 } /* end of unur_tdr_set_darsfactor() */
 
@@ -665,20 +641,18 @@ unur_tdr_set_c( struct unur_par *par, double c )
      /*   c    ... parameter c                                               */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( GENTYPE,par,0 );
-
-  /* check input */
-  _unur_check_par_object( par,TDR );
+  _unur_check_NULL( GENTYPE, par, UNUR_ERR_NULL );
+  _unur_check_par_object( par, TDR );
 
   /* check new parameter for generator */
   if (c > 0.) {
     _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"c > 0");
-    return 0;
+    return UNUR_ERR_PAR_SET;
   }
   /** TODO: ... **/
 /*    if (c <= -1.) { */
@@ -688,7 +662,7 @@ unur_tdr_set_c( struct unur_par *par, double c )
   /** TODO: ... **/
   if (c < -0.5) {
     _unur_error(GENTYPE,UNUR_ERR_PAR_SET,"c < -0.5 not implemented yet");
-    return 0;
+    return UNUR_ERR_PAR_SET;
   }
   if (c != 0 && c > -0.5) {
     _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"-0.5 < c < 0 not recommended. using c = -0.5 instead.");
@@ -701,7 +675,7 @@ unur_tdr_set_c( struct unur_par *par, double c )
   /* changelog */
   par->set |= TDR_SET_C;
 
-  return 1;
+  return UNUR_SUCCESS;
 
 } /* end of unur_tdr_set_c() */
 
@@ -717,24 +691,22 @@ unur_tdr_set_verify( struct unur_par *par, int verify )
      /*   verify ... 0 = no verifying,  !0 = verifying                       */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*                                                                      */
      /* comment:                                                             */
      /*   no verifying is the default                                        */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( GENTYPE,par,0 );
-
-  /* check input */
-  _unur_check_par_object( par,TDR );
+  _unur_check_NULL( GENTYPE, par, UNUR_ERR_NULL );
+  _unur_check_par_object( par, TDR );
 
   /* we use a bit in variant */
   par->variant = (verify) ? (par->variant | TDR_VARFLAG_VERIFY) : (par->variant & (~TDR_VARFLAG_VERIFY));
 
   /* o.k. */
-  return 1;
+  return UNUR_SUCCESS;
 
 } /* end of unur_tdr_set_verify() */
 
@@ -750,16 +722,16 @@ unur_tdr_chg_verify( struct unur_gen *gen, int verify )
      /*   verify ... 0 = no verifying,  !0 = verifying                       */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*                                                                      */
      /* comment:                                                             */
      /*   no verifying is the default                                        */
      /*----------------------------------------------------------------------*/
 {
   /* check input */
-  _unur_check_NULL( GENTYPE,gen,0 );
-  _unur_check_gen_object( gen,TDR );
+  _unur_check_NULL( GENTYPE, gen, UNUR_ERR_NULL );
+  _unur_check_gen_object( gen, TDR, UNUR_ERR_GEN_INVALID );
 
   /* we use a bit in variant */
   gen->variant = (verify) ? (gen->variant | TDR_VARFLAG_VERIFY) : (gen->variant & (~TDR_VARFLAG_VERIFY));
@@ -777,11 +749,11 @@ unur_tdr_chg_verify( struct unur_gen *gen, int verify )
     break;
   default:
     _unur_warning(GENTYPE,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
-    return 0;
+    return UNUR_ERR_SHOULD_NOT_HAPPEN;
   }
 
   /* o.k. */
-  return 1;
+  return UNUR_SUCCESS;
 
 } /* end of unur_tdr_chg_verify() */
 
@@ -797,24 +769,22 @@ unur_tdr_set_pedantic( struct unur_par *par, int pedantic )
      /*   pedantic ... 0 = no pedantic mode, !0 = use pedantic mode          */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*                                                                      */
      /* comment:                                                             */
      /*   pedantic is the default                                            */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( GENTYPE,par,0 );
-
-  /* check input */
-  _unur_check_par_object( par,TDR );
+  _unur_check_NULL( GENTYPE, par, UNUR_ERR_NULL );
+  _unur_check_par_object( par, TDR );
 
   /* we use a bit in variant */
   par->variant = (pedantic) ? (par->variant | TDR_VARFLAG_PEDANTIC) : (par->variant & (~TDR_VARFLAG_PEDANTIC));
 
   /* o.k. */
-  return 1;
+  return UNUR_SUCCESS;
 
 } /* end of unur_tdr_set_pedantic() */
 
@@ -835,6 +805,10 @@ unur_tdr_chg_truncated( struct unur_gen *gen, double left, double right )
      /*   left  ... left boundary point                                      */
      /*   right ... right boundary point                                     */
      /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*                                                                      */
      /* comment:                                                             */
      /*   the new boundary points may be +/- INFINITY                        */
      /*----------------------------------------------------------------------*/
@@ -842,8 +816,8 @@ unur_tdr_chg_truncated( struct unur_gen *gen, double left, double right )
   double Umin, Umax;
 
   /* check arguments */
-  _unur_check_NULL( GENTYPE,gen,0 );
-  _unur_check_gen_object(gen, TDR);
+  _unur_check_NULL( GENTYPE, gen, UNUR_ERR_NULL );
+  _unur_check_gen_object( gen, TDR, UNUR_ERR_GEN_INVALID );
 
   /* we have to disable adaptive rejection sampling */
   if (GEN.max_ivs > GEN.n_ivs) {
@@ -873,7 +847,7 @@ unur_tdr_chg_truncated( struct unur_gen *gen, double left, double right )
 
   if (left >= right) {
     _unur_warning(NULL,UNUR_ERR_DISTR_SET,"domain, left >= right");
-    return 0;
+    return UNUR_ERR_DISTR_SET;
   }
 
   /* compute CDF at x (with respect to given domain of distribution) */
@@ -884,7 +858,7 @@ unur_tdr_chg_truncated( struct unur_gen *gen, double left, double right )
   if (Umin > Umax) {
     /* this is a serios error that should not happen */
     _unur_error(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
-    return 0;
+    return UNUR_ERR_SHOULD_NOT_HAPPEN;
   }
 
   if (_unur_FP_equal(Umin,Umax)) {
@@ -893,7 +867,7 @@ unur_tdr_chg_truncated( struct unur_gen *gen, double left, double right )
     if (Umin == 0. || _unur_FP_same(Umax,1.)) {
       /* this is very bad */
       _unur_warning(gen->genid,UNUR_ERR_DISTR_SET,"CDF values at boundary points too close");
-      return 0;
+      return UNUR_ERR_DISTR_SET;
     }
   }
 
@@ -912,7 +886,7 @@ unur_tdr_chg_truncated( struct unur_gen *gen, double left, double right )
 #endif
   
   /* o.k. */
-  return 1;
+  return UNUR_SUCCESS;
   
 } /* end of unur_tdr_chg_truncated() */
 
@@ -929,7 +903,7 @@ _unur_tdr_eval_cdfhat( struct unur_gen *gen, double x )
      /*                                                                      */
      /* return:                                                              */
      /*   CDF of hat(x) or                                                   */
-     /*   0. in case of error                                                */
+     /*   INFINITY in case of error                                          */
      /*                                                                      */
      /* Important:                                                           */
      /*   If gen is a generator object for variant IA (immediate acceptance) */
@@ -945,7 +919,7 @@ _unur_tdr_eval_cdfhat( struct unur_gen *gen, double x )
   double cdf;
 
   /* check arguments */
-  CHECK_NULL(gen,0.);  COOKIE_CHECK(gen,CK_TDR_GEN,0.);
+  CHECK_NULL(gen,INFINITY);  COOKIE_CHECK(gen,CK_TDR_GEN,INFINITY);
 
   /* the easy case: left and right boundary of domain */
   if (x <= DISTR.domain[0]) return 0.;
@@ -1019,12 +993,10 @@ _unur_tdr_eval_cdfhat( struct unur_gen *gen, double x )
     
   default:
     _unur_error(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
-    return 0.;
+    return INFINITY;
   }
-
-  return 1.;
-
 
 } /* end of _unur_tdr_eval_cdfhat() */
 
 /*****************************************************************************/
+

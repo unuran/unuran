@@ -150,7 +150,7 @@ _unur_upd_mode_cauchy( UNUR_DISTR *distr )
   else if (DISTR.mode > DISTR.domain[1]) 
     DISTR.mode = DISTR.domain[1];
 
-  return 1;
+  return UNUR_SUCCESS;
 } /* end of _unur_upd_mode_cauchy() */
 
 /*---------------------------------------------------------------------------*/
@@ -163,13 +163,13 @@ _unur_upd_area_cauchy( UNUR_DISTR *distr )
 
   if (distr->set & UNUR_DISTR_SET_STDDOMAIN) {
     DISTR.area = 1.;
-    return 1;
+    return UNUR_SUCCESS;
   }
 
   /* else */
   DISTR.area = ( _unur_cdf_cauchy( DISTR.domain[1],distr) 
 		 - _unur_cdf_cauchy( DISTR.domain[0],distr) );
-  return 1;
+  return UNUR_SUCCESS;
   
 } /* end of _unur_upd_area_cauchy() */
 
@@ -185,12 +185,12 @@ _unur_set_params_cauchy( UNUR_DISTR *distr, const double *params, int n_params )
     _unur_warning(distr_name,UNUR_ERR_DISTR_NPARAMS,"too many");
     n_params = 2; }
   if (n_params > 0)
-    CHECK_NULL(params,0);
+    CHECK_NULL(params,UNUR_ERR_NULL);
 
   /* check parameter lambda */
   if (n_params == 2 && lambda <= 0.) {
     _unur_error(distr_name,UNUR_ERR_DISTR_DOMAIN,"lambda <= 0");
-    return 0;
+    return UNUR_ERR_DISTR_DOMAIN;
   }
 
   /* copy parameters for standard form: none */
@@ -219,7 +219,7 @@ _unur_set_params_cauchy( UNUR_DISTR *distr, const double *params, int n_params )
     DISTR.domain[1] = INFINITY;    /* right boundary */
   }
 
-  return 1;
+  return UNUR_SUCCESS;
 } /* end of _unur_set_params_cauchy() */
 
 /*---------------------------------------------------------------------------*/
@@ -253,7 +253,7 @@ unur_distr_cauchy( const double *params, int n_params )
 		 UNUR_DISTR_SET_PDFAREA );
                 
   /* set parameters for distribution */
-  if (!_unur_set_params_cauchy(distr,params,n_params)) {
+  if (_unur_set_params_cauchy(distr,params,n_params)!=UNUR_SUCCESS) {
     free(distr);
     return NULL;
   }

@@ -180,18 +180,18 @@ unur_use_urng_aux_default( UNUR_PAR *par )
      /*   par     ... pointer to parameter for building generator object     */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   if (par->urng_aux == NULL)
     /* no auxilliary generator is required */
-    return 0;
+    return UNUR_ERR_GENERIC;
 
   /* set aux URNG */
   par->urng_aux = unur_get_default_urng_aux();
 
-  return 1;
+  return UNUR_SUCCESS;
 
 } /* end of unur_use_urng_aux_default() */
 
@@ -207,13 +207,13 @@ unur_chgto_urng_aux_default( UNUR_GEN *gen )
      /*   gen     ... pointer to generator object                            */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   if (gen->urng_aux == NULL)
     /* no auxilliary generator is required */
-    return 0;
+    return UNUR_ERR_GENERIC;
 
   /* default generator already running ? */
   if( urng_aux_default == NULL ) {
@@ -224,14 +224,14 @@ unur_chgto_urng_aux_default( UNUR_GEN *gen )
       /* some parameters invalid! */
       _unur_error("URNG",UNUR_ERR_NULL,"Cannot set default aux URNG. EXIT !!!");
       /* we cannot recover from this error */
-      return 0;
+      return UNUR_ERR_NULL;
     }
   }
 
   /* set aux URNG */
   gen->urng_aux = urng_aux_default;
 
-  return 1;
+  return UNUR_SUCCESS;
 
 } /* end of unur_chgto_urng_aux_default() */
 
@@ -255,13 +255,13 @@ unur_set_urng( struct unur_par *par, UNUR_URNG *urng )
      /*   urng    ... pointer to uniform random number generator             */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( NULL,par,0 );
-  _unur_check_NULL("URNG",urng,0);
+  _unur_check_NULL( NULL, par, UNUR_ERR_NULL );
+  _unur_check_NULL("URNG", urng, UNUR_ERR_NULL);
 
   /* main generator */
   par->urng = urng;
@@ -269,7 +269,7 @@ unur_set_urng( struct unur_par *par, UNUR_URNG *urng )
   /* overwrite auxilliary generator */
   if (par->urng_aux) par->urng_aux = urng;
 
-  return 1;
+  return UNUR_SUCCESS;
 } /* end of unur_set_urng() */
 
 /*---------------------------------------------------------------------------*/
@@ -345,21 +345,21 @@ unur_set_urng_aux( struct unur_par *par, UNUR_URNG *urng_aux )
      /*   urng    ... pointer to auxilliary uniform random number generator  */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( NULL,par,0 );
-  _unur_check_NULL("URNGaux",urng_aux,0);
+  _unur_check_NULL( NULL, par, UNUR_ERR_NULL );
+  _unur_check_NULL("URNGaux", urng_aux, UNUR_ERR_NULL);
 
   if (par->urng_aux == NULL)
     /* no auxilliary generator is required */
-    return 0;
+    return UNUR_ERR_GENERIC;
 
   par->urng_aux = urng_aux;
 
-  return 1;
+  return UNUR_SUCCESS;
 } /* end of unur_set_urng_aux() */
 
 /*---------------------------------------------------------------------------*/

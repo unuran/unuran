@@ -152,7 +152,7 @@ _unur_upd_mode_hypergeometric( UNUR_DISTR *distr )
     DISTR.mode = DISTR.domain[1];
 
   /* o.k. */
-  return 1;
+  return UNUR_SUCCESS;
 } /* end of _unur_upd_mode_hypergeometric() */
 
 /*---------------------------------------------------------------------------*/
@@ -170,16 +170,16 @@ _unur_upd_sum_hypergeometric( UNUR_DISTR *distr )
 
   if (distr->set & UNUR_DISTR_SET_STDDOMAIN) {
     DISTR.sum = 1.;
-    return 1;
+    return UNUR_SUCCESS;
   }
   
 #ifdef HAVE_CDF
   /* else */
   DISTR.sum = ( _unur_cdf_hypergeometric( DISTR.domain[1],distr) 
 		 - _unur_cdf_hypergeometric( DISTR.domain[0]-1,distr) );
-  return 1;
+  return UNUR_SUCCESS;
 #else
-  return 0;
+  return UNUR_ERR_DISTR_REQUIRED;
 #endif
 
 } /* end of _unur_upd_sum_hypergeometric() */
@@ -195,16 +195,16 @@ _unur_set_params_hypergeometric( UNUR_DISTR *distr, const double *params, int n_
 
   /* check number of parameters for distribution */
   if (n_params < 3) {
-    _unur_error(distr_name,UNUR_ERR_DISTR_NPARAMS,"too few"); return 0; }
+    _unur_error(distr_name,UNUR_ERR_DISTR_NPARAMS,"too few"); return UNUR_ERR_DISTR_NPARAMS; }
   if (n_params > 3) {
     _unur_warning(distr_name,UNUR_ERR_DISTR_NPARAMS,"too many");
     n_params = 3; }
-  CHECK_NULL(params,0);
+  CHECK_NULL(params,UNUR_ERR_NULL);
 
   /* check parameters */
   if (M <= 0. || N <=0. || n <= 0. || n >= N || M >= N ) {
     _unur_error(distr_name,UNUR_ERR_DISTR_DOMAIN,"M, N, n must be > 0 and n<N M<N");
-    return 0;
+    return UNUR_ERR_DISTR_DOMAIN;
   }
 
   /* copy parameters for standard form */
@@ -236,7 +236,7 @@ _unur_set_params_hypergeometric( UNUR_DISTR *distr, const double *params, int n_
     DISTR.domain[1] = (int) (min(DISTR.n, DISTR.M) + 0.5);                 /* right boundary */
   }
 
-  return 1;
+  return UNUR_SUCCESS;
 } /* end of _unur_set_params_hypergeometric() */
 
 /*---------------------------------------------------------------------------*/
@@ -275,7 +275,7 @@ unur_distr_hypergeometric( const double *params, int n_params )
 		 UNUR_DISTR_SET_MODE );
                 
   /* set parameters for distribution */
-  if (!_unur_set_params_hypergeometric(distr,params,n_params)) {
+  if (_unur_set_params_hypergeometric(distr,params,n_params)!=UNUR_SUCCESS) {
     free(distr);
     return NULL;
   }

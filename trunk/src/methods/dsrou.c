@@ -272,20 +272,18 @@ unur_dsrou_set_cdfatmode( struct unur_par *par, double Fmode )
      /*   Fmode  ... CDF at mode                                             */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( GENTYPE,par,0 );
- 
-  /* check input */
-  _unur_check_par_object( par,DSROU );
+  _unur_check_NULL( GENTYPE, par, UNUR_ERR_NULL );
+  _unur_check_par_object( par, DSROU );
 
   /* check new parameter for generator */
   if (Fmode < 0. || Fmode > 1.) {
     _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"CDF(mode)");
-    return 0;
+    return UNUR_ERR_PAR_SET;
    }
  
   /* store date */
@@ -294,7 +292,7 @@ unur_dsrou_set_cdfatmode( struct unur_par *par, double Fmode )
   /* changelog */
   par->set |= DSROU_SET_CDFMODE;
 
-  return 1;
+  return UNUR_SUCCESS;
  
 } /* end of unur_dsrou_set_cdfatmode() */
 
@@ -310,24 +308,22 @@ unur_dsrou_set_verify( struct unur_par *par, int verify )
      /*   verify ... 0 = no verifying,  !0 = verifying                       */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*                                                                      */
      /* comment:                                                             */
      /*   no verifying is the default                                        */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( GENTYPE,par,0 );
- 
-  /* check input */
-  _unur_check_par_object( par,DSROU );
+  _unur_check_NULL( GENTYPE, par, UNUR_ERR_NULL );
+  _unur_check_par_object( par, DSROU );
 
   /* we use a bit in variant */
   par->variant = (verify) ? (par->variant | DSROU_VARFLAG_VERIFY) : (par->variant & (~DSROU_VARFLAG_VERIFY));
 
   /* o.k. */
-  return 1;
+  return UNUR_ERR_NULL;
 } /* end of unur_dsrou_set_verify() */
 
 /*---------------------------------------------------------------------------*/
@@ -342,16 +338,16 @@ unur_dsrou_chg_verify( struct unur_gen *gen, int verify )
      /*   verify ... 0 = no verifying,  !0 = verifying                       */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*                                                                      */
      /* comment:                                                             */
      /*   no verifying is the default                                        */
      /*----------------------------------------------------------------------*/
 {
   /* check input */
-  _unur_check_NULL( GENTYPE,gen,0 );
-  _unur_check_gen_object( gen,DSROU );
+  _unur_check_NULL( GENTYPE, gen, UNUR_ERR_NULL );
+  _unur_check_gen_object( gen, DSROU, UNUR_ERR_GEN_INVALID );
  
   if (verify) {
     /* turn verify mode on */
@@ -365,7 +361,7 @@ unur_dsrou_chg_verify( struct unur_gen *gen, int verify )
   }
 
   /* o.k. */
-  return 1;
+  return UNUR_SUCCESS;
  
 } /* end of unur_dsrou_chg_verify() */
 
@@ -382,8 +378,8 @@ unur_dsrou_chg_pmfparams( struct unur_gen *gen, double *params, int n_params )
      /*   n_params ... number of arguments                                   */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*                                                                      */
      /* IMPORTANT: The given parameters are not checked against domain       */
      /*            errors (in opposition to the unur_<distr>_new() call).    */
@@ -391,8 +387,8 @@ unur_dsrou_chg_pmfparams( struct unur_gen *gen, double *params, int n_params )
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( GENTYPE,gen,0 );
-  _unur_check_gen_object( gen,DSROU );
+  _unur_check_NULL( GENTYPE, gen, UNUR_ERR_NULL );
+  _unur_check_gen_object( gen, DSROU, UNUR_ERR_GEN_INVALID );
   
   /* set new parameters in distribution object */
   return unur_distr_discr_set_pmfparams(gen->distr,params,n_params);
@@ -411,13 +407,13 @@ unur_dsrou_chg_mode( struct unur_gen *gen, int mode )
      /*   mode  ... mode                                                     */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( GENTYPE,gen,0 );
-  _unur_check_gen_object( gen,DSROU );
+  _unur_check_NULL( GENTYPE, gen, UNUR_ERR_NULL );
+  _unur_check_gen_object( gen, DSROU, UNUR_ERR_GEN_INVALID );
   
   /* copy parameters */
   DISTR.mode = mode;
@@ -425,7 +421,7 @@ unur_dsrou_chg_mode( struct unur_gen *gen, int mode )
   /* no changelog required */
 
   /* o.k. */
-  return 1;
+  return UNUR_SUCCESS;
 } /* end of unur_dsrou_chg_mode() */
 
 /*---------------------------------------------------------------------------*/
@@ -439,13 +435,13 @@ unur_dsrou_upd_mode( struct unur_gen *gen )
      /*   gen   ... pointer to generator object                              */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( GENTYPE,gen,0 );
-  _unur_check_gen_object( gen,DSROU );
+  _unur_check_NULL( GENTYPE, gen, UNUR_ERR_NULL );
+  _unur_check_gen_object( gen, DSROU, UNUR_ERR_GEN_INVALID );
 
   return unur_distr_discr_upd_mode( gen->distr );
 } /* end of unur_dsrou_upd_mode() */
@@ -462,18 +458,18 @@ unur_dsrou_chg_cdfatmode( struct unur_gen *gen, double Fmode )
      /*   Fmode  ... CDF at mode                                             */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( GENTYPE,gen,0 );
-  _unur_check_gen_object( gen,DSROU );
+  _unur_check_NULL( GENTYPE, gen, UNUR_ERR_NULL );
+  _unur_check_gen_object( gen, DSROU, UNUR_ERR_GEN_INVALID );
 
   /* check new parameter for generator */
   if (Fmode < 0. || Fmode > 1.) {
     _unur_warning(gen->genid,UNUR_ERR_PAR_SET,"CDF(mode)");
-    return 0;
+    return UNUR_ERR_PAR_SET;
   }
   
   /* copy parameters */
@@ -483,7 +479,7 @@ unur_dsrou_chg_cdfatmode( struct unur_gen *gen, double Fmode )
   gen->set |= DSROU_SET_CDFMODE;
 
   /* o.k. */
-  return 1;
+  return UNUR_SUCCESS;
 } /* end of unur_dsrou_chg_cdfatmode() */
 
 /*---------------------------------------------------------------------------*/
@@ -497,16 +493,20 @@ unur_dsrou_chg_domain( struct unur_gen *gen, int left, int right )
      /*   gen      ... pointer to generator object                           */
      /*   left  ... left boundary point                                      */
      /*   right ... right boundary point                                     */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( GENTYPE,gen,0 );
-  _unur_check_gen_object( gen,DSROU );
+  _unur_check_NULL( GENTYPE, gen, UNUR_ERR_NULL );
+  _unur_check_gen_object( gen, DSROU, UNUR_ERR_GEN_INVALID );
 
   /* check new parameter for generator */
   if (left >= right) {
     _unur_warning(gen->genid,UNUR_ERR_DISTR_SET,"domain, left >= right");
-    return 0;
+    return UNUR_ERR_DISTR_SET;
   }
   
   /* copy new boundaries into generator object */
@@ -522,7 +522,7 @@ unur_dsrou_chg_domain( struct unur_gen *gen, int left, int right )
 #endif
   
   /* o.k. */
-  return 1;
+  return UNUR_SUCCESS;
   
 } /* end of unur_dsrou_chg_domain() */
 
@@ -538,18 +538,18 @@ unur_dsrou_chg_pmfsum( struct unur_gen *gen, double sum )
      /*   sum   ... sum                                                      */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( GENTYPE,gen,0 );
-  _unur_check_gen_object( gen,DSROU );
+  _unur_check_NULL( GENTYPE, gen, UNUR_ERR_NULL );
+  _unur_check_gen_object( gen, DSROU, UNUR_ERR_GEN_INVALID );
   
   /* check new parameter for generator */
   if (sum <= 0.) {
     _unur_warning(gen->genid,UNUR_ERR_DISTR_SET,"sum <= 0");
-    return 0;
+    return UNUR_ERR_DISTR_SET;
   }
 
   /* copy parameters */
@@ -558,7 +558,7 @@ unur_dsrou_chg_pmfsum( struct unur_gen *gen, double sum )
   /* no changelog required */
 
   /* o.k. */
-  return 1;
+  return UNUR_SUCCESS;
 } /* end of unur_dsrou_chg_pmfsum() */
 
 /*---------------------------------------------------------------------------*/
@@ -572,13 +572,13 @@ unur_dsrou_upd_pmfsum( struct unur_gen *gen )
      /*   gen   ... pointer to generator object                              */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( GENTYPE,gen,0 );
-  _unur_check_gen_object( gen,DSROU );
+  _unur_check_NULL( GENTYPE, gen, UNUR_ERR_NULL );
+  _unur_check_gen_object( gen, DSROU, UNUR_ERR_GEN_INVALID );
 
   return unur_distr_discr_upd_pmfsum( gen->distr );
 } /* end of unur_dsrou_upd_pmfsum() */
@@ -616,7 +616,7 @@ _unur_dsrou_init( struct unur_par *par )
   if (!gen) { free(par); return NULL; }
 
   /* compute universal bounding rectangle */
-  if (! _unur_dsrou_rectangle( gen ) ) {
+  if ( _unur_dsrou_rectangle(gen)!=UNUR_SUCCESS ) {
     free(par); _unur_dsrou_free(gen);
     return NULL;
   }
@@ -644,15 +644,15 @@ _unur_dsrou_rectangle( struct unur_gen *gen )
      /*   gen ... pointer to generator object                                */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 { 
   double pm, pbm;               /* PMF at mode and mode-1                    */
 
   /* check arguments */
-  CHECK_NULL( gen, 0 );
-  COOKIE_CHECK( gen,CK_DSROU_GEN, 0 );
+  CHECK_NULL( gen, UNUR_ERR_NULL );
+  COOKIE_CHECK( gen,CK_DSROU_GEN, UNUR_ERR_COOKIE );
 
   /* compute PMF at mode and mode-1 */
   pm = PMF(DISTR.mode);
@@ -661,7 +661,7 @@ _unur_dsrou_rectangle( struct unur_gen *gen )
   /* pm and pbm must be positive */
   if (pm <= 0. || pbm < 0.) {
     _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"PMF(mode) <= 0.");
-    return 0;
+    return UNUR_ERR_GEN_DATA;
   }
 
   /* heights of rectangles */
@@ -685,7 +685,7 @@ _unur_dsrou_rectangle( struct unur_gen *gen )
   }    
 
   /* o.k. */
-  return 1;
+  return UNUR_SUCCESS;
   
 } /* end of _unur_dsrou_rectangle() */
 
@@ -723,7 +723,7 @@ _unur_dsrou_create( struct unur_par *par )
   /* check for required data: mode */
   if (!(gen->distr->set & UNUR_DISTR_SET_MODE)) {
     _unur_warning(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"mode: try finding it (numerically)"); 
-    if (!unur_distr_discr_upd_mode( gen->distr )) {
+    if (unur_distr_discr_upd_mode(gen->distr)!=UNUR_SUCCESS) {
       _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"mode"); 
       _unur_distr_free(gen->distr); free(gen);
       return NULL; 
@@ -732,7 +732,7 @@ _unur_dsrou_create( struct unur_par *par )
 
   /* check for required data: sum over PMF */
   if (!(gen->distr->set & UNUR_DISTR_SET_PMFSUM))
-    if (!unur_distr_discr_upd_pmfsum( gen->distr )) {
+    if (unur_distr_discr_upd_pmfsum(gen->distr)!=UNUR_SUCCESS) {
       _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"sum over PMF");
       _unur_distr_free(gen->distr); free(gen);
       return NULL; 
@@ -786,15 +786,15 @@ unur_dsrou_reinit( struct unur_gen *gen )
      /*   gen ... pointer to generator object                                */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   int result;
 
   /* check arguments */
-  _unur_check_NULL( GENTYPE,gen,0 );
-  _unur_check_gen_object( gen,DSROU );
+  _unur_check_NULL( GENTYPE, gen, UNUR_ERR_NULL );
+  _unur_check_gen_object( gen, DSROU, UNUR_ERR_GEN_DATA );
 
   /* compute universal bounding rectangle */
   result = _unur_dsrou_rectangle( gen );
@@ -866,14 +866,14 @@ _unur_dsrou_sample( struct unur_gen *gen )
      /*   int (sample from random variate)                                   */
      /*                                                                      */
      /* error:                                                               */
-     /*   return 0.                                                          */
+     /*   return INT_MAX                                                     */
      /*----------------------------------------------------------------------*/
 { 
   double U,V;
   int I;
 
   /* check arguments */
-  CHECK_NULL(gen,0.);  COOKIE_CHECK(gen,CK_DSROU_GEN,0.);
+  CHECK_NULL(gen,INT_MAX);  COOKIE_CHECK(gen,CK_DSROU_GEN,INT_MAX);
 
   while (1) {
     /* generate point uniformly in union of rectangles */
@@ -910,7 +910,7 @@ _unur_dsrou_sample_check( struct unur_gen *gen )
      /*   int (sample from random variate)                                   */
      /*                                                                      */
      /* error:                                                               */
-     /*   return 0.                                                          */
+     /*   return INT_MAX                                                     */
      /*----------------------------------------------------------------------*/
 { 
   double U,V,pI,VI;
@@ -918,7 +918,7 @@ _unur_dsrou_sample_check( struct unur_gen *gen )
   int I;
 
   /* check arguments */
-  CHECK_NULL(gen,0.);  COOKIE_CHECK(gen,CK_DSROU_GEN,0.);
+  CHECK_NULL(gen,INT_MAX);  COOKIE_CHECK(gen,CK_DSROU_GEN,INT_MAX);
 
   while (1) {
     /* generate point uniformly in union of rectangles */

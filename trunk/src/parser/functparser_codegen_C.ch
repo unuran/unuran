@@ -64,22 +64,22 @@ _unur_fstr_tree2C ( FILE *out, const struct ftreenode *root,
      /*   funct_name ... pointer to name of C function                       */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... success                                                      */
-     /*   0 ... failure                                                      */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   struct unur_string output = {NULL, 0, 0};
   unsigned rcode;
 
   /* check arguments */
-  _unur_check_NULL( GENTYPE,root,0 );
-  _unur_check_NULL( GENTYPE,symbol[root->token].node2C,0 );
+  _unur_check_NULL( GENTYPE, root, UNUR_ERR_NULL );
+  _unur_check_NULL( GENTYPE, symbol[root->token].node2C, UNUR_ERR_NULL );
 
   /* make body of C routine */
   rcode = symbol[root->token].node2C (&output,root,variable);
   if (rcode & C_FUNCT_ERROR) { 
     if (output.text) free(output.text);
-    return 0;
+    return UNUR_ERR_GEN_DATA;
   }
 
   /* print code for special functions (if necessary) */ 
@@ -92,7 +92,7 @@ _unur_fstr_tree2C ( FILE *out, const struct ftreenode *root,
   /* free memory */
   free(output.text);
 
-  return 1;
+  return UNUR_SUCCESS;
 
 } /* end of _unur_fstr_tree2C() */
 
@@ -355,7 +355,8 @@ _unur_fstr_C_specfunct ( FILE *out, unsigned flags )
      /*   flags ... bit array with flags for special functions               */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 on success                                                       */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   if (flags & C_FUNCT_SGN) {
@@ -365,7 +366,7 @@ _unur_fstr_C_specfunct ( FILE *out, unsigned flags )
     _unur_fstr_C_sec(out);
   }
 
-  return 1;
+  return UNUR_SUCCESS;
 } /* end of _unur_fstr_C_specfunct() */
 
 /*---------------------------------------------------------------------------*/
@@ -379,7 +380,8 @@ _unur_fstr_C_sgn ( FILE *out )
      /*   out   ... output stream                                            */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 on success                                                       */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   fprintf(out,"#ifndef _ACG_FUNCT_SGN\n");
@@ -391,7 +393,7 @@ _unur_fstr_C_sgn ( FILE *out )
 
   fprintf(out,"#endif /* _ACG_FUNCT_SGN */\n\n");
 
-  return 1;
+  return UNUR_SUCCESS;
 } /* end of _unur_fstr_C_sgn() */
 
 /*---------------------------------------------------------------------------*/
@@ -405,7 +407,8 @@ _unur_fstr_C_sec ( FILE *out )
      /*   out   ... output stream                                            */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 on success                                                       */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   fprintf(out,"#ifndef _ACG_FUNCT_SEC\n");
@@ -418,7 +421,7 @@ _unur_fstr_C_sec ( FILE *out )
 
   fprintf(out,"#endif /* _ACG_FUNCT_SEC */\n\n");
 
-  return 1;
+  return UNUR_SUCCESS;
 } /* end of _unur_fstr_C_sec() */
 
 /*---------------------------------------------------------------------------*/
@@ -441,7 +444,8 @@ _unur_fstr_print_C ( struct unur_string *output, const char *symb, const double 
      /*   number ... constant to be printed                                  */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 on success                                                       */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   if (symb)
@@ -451,7 +455,7 @@ _unur_fstr_print_C ( struct unur_string *output, const char *symb, const double 
     /* copy number symbol into output */
     _unur_string_append( output, "%.20e", number);
 
-  return 1;
+  return UNUR_SUCCESS;
 } /* end of _unur_fstr_print_C() */
 
 /*---------------------------------------------------------------------------*/

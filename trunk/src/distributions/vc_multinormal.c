@@ -120,7 +120,7 @@ _unur_dpdf_multinormal( double *result, const double *x, const UNUR_DISTR *distr
 int
 _unur_upd_mode_multinormal( UNUR_DISTR *distr )
 {
-  ;
+  return UNUR_SUCCESS;
 } /* end of _unur_upd_mode_multinormal() */
 
 /*---------------------------------------------------------------------------*/
@@ -128,7 +128,7 @@ _unur_upd_mode_multinormal( UNUR_DISTR *distr )
 int
 _unur_upd_area_multinormal( UNUR_DISTR *distr )
 {
-  ;
+  return UNUR_SUCCESS;
 } /* end of _unur_upd_area_multinormal() */
 
 /*---------------------------------------------------------------------------*/
@@ -171,8 +171,8 @@ unur_distr_multinormal( int dim, const double *mean, const double *covar )
   /* DISTR.dpdf = _unur_dpdf_multinormal;     pointer to derivative of p.d.f. */
 
   /* copy (and check) parameters */
-  if (! (unur_distr_cvec_set_mean( distr, mean ) &&
-	 unur_distr_cvec_set_covar( distr, covar ) ) ) {
+  if ((unur_distr_cvec_set_mean(distr,mean)!=UNUR_SUCCESS) ||
+      (unur_distr_cvec_set_covar(distr,covar)!=UNUR_SUCCESS) ) {
     unur_distr_free( distr );
     return NULL;
   }

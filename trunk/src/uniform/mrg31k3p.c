@@ -133,7 +133,7 @@ unur_urng_MRG31k3p_seed (long seed)
 {
   if (seed==0) {
     _unur_error("URNG.fish",UNUR_ERR_GENERIC,"seed = 0");
-    return 0;
+    return UNUR_ERR_GENERIC;
   }
   
   /* the following is not really optimal */
@@ -144,7 +144,7 @@ unur_urng_MRG31k3p_seed (long seed)
   x21 = x21_start = seed; 
   x22 = x22_start = seed; 
 
-  return 1;
+  return UNUR_SUCCESS;
 } /* end of unur_urng_MRG31k3p_seed() */
 
 /*---------------------------------------------------------------------------*/
@@ -159,7 +159,7 @@ unur_urng_MRG31k3p_reset (void)
   x21 = x21_start;
   x22 = x22_start;
 
-  return 1;
+  return UNUR_SUCCESS;
 } /* end of unur_urng_MRG31k3p_reset() */
 
 /*---------------------------------------------------------------------------*/

@@ -237,33 +237,31 @@ unur_dstd_set_variant( struct unur_par *par, unsigned variant )
      /*   variant ... indicator for variant                                  */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   unsigned old_variant;
 
   /* check arguments */
-  _unur_check_NULL( GENTYPE,par,0 );
-  _unur_check_NULL( GENTYPE,par->distr,0 );
-
-  /* check input */
-  _unur_check_par_object( par,DSTD );
+  _unur_check_NULL( GENTYPE, par, UNUR_ERR_NULL );
+  _unur_check_NULL( GENTYPE, par->distr, UNUR_ERR_NULL );
+  _unur_check_par_object( par, DSTD );
 
   /* store date */
   old_variant = par->variant;
   par->variant = variant;
 
   /* check variant. run special init routine only in test mode */
-  if (par->DISTR_IN.init != NULL && par->DISTR_IN.init(par,NULL) ) {
+  if (par->DISTR_IN.init != NULL && par->DISTR_IN.init(par,NULL)==UNUR_SUCCESS ) {
     par->set |= DSTD_SET_VARIANT;    /* changelog */
-    return 1;
+    return UNUR_SUCCESS;
   }
 
   /* variant not valid */
   _unur_warning(GENTYPE,UNUR_ERR_PAR_VARIANT,"");
   par->variant = old_variant;
-  return 0;
+  return UNUR_ERR_PAR_VARIANT;
 
 } /* end of unur_dstd_set_variant() */
 
@@ -280,24 +278,24 @@ unur_dstd_chg_pmfparams( struct unur_gen *gen, double *params, int n_params )
      /*   n_params ... number of arguments                                   */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( GENTYPE,gen,0 );
-  _unur_check_gen_object( gen,DSTD );
-  if (n_params>0) CHECK_NULL(params,0);
+  _unur_check_NULL( GENTYPE, gen, UNUR_ERR_NULL );
+  _unur_check_gen_object( gen, DSTD, UNUR_ERR_GEN_INVALID );
+  if (n_params>0) CHECK_NULL(params, UNUR_ERR_NULL);
   
   /* set new parameters in distribution object */
-  if (!unur_distr_discr_set_pmfparams(gen->distr,params,n_params))
-    return 0;
+  if (unur_distr_discr_set_pmfparams(gen->distr,params,n_params)!=UNUR_SUCCESS)
+    return UNUR_ERR_GEN_DATA;
 
   /* run special init routine for generator */
-  if ( !DISTR.init(NULL,gen) ) {
+  if ( DISTR.init(NULL,gen)!=UNUR_SUCCESS ) {
     /* init failed --> could not find a sampling routine */
     _unur_warning(gen->genid,UNUR_ERR_GEN_DATA,"parameters");
-    return 0;
+    return UNUR_ERR_GEN_DATA;
   }
 
 #ifdef UNUR_ENABLE_LOGGING
@@ -307,7 +305,7 @@ unur_dstd_chg_pmfparams( struct unur_gen *gen, double *params, int n_params )
 #endif
 
   /* o.k. */
-  return 1;
+  return UNUR_SUCCESS;
 
 } /* end of unur_dstd_chg_pmfparams() */
 
@@ -353,7 +351,7 @@ _unur_dstd_init( struct unur_par *par )
   }
   
   /* run special init routine for generator */
-  if ( !DISTR.init(par,gen) ) {
+  if ( DISTR.init(par,gen)!=UNUR_SUCCESS ) {
     /* init failed --> could not find a sampling routine */
     _unur_error(GENTYPE,UNUR_ERR_GEN_DATA,"variant for special generator");
     free(par); _unur_dstd_free(gen); return NULL; 

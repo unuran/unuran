@@ -107,8 +107,8 @@ int unur_dari_reinit( UNUR_GEN *generator );
    of the distributions has been changed (see below).
    It is faster than destroying the existing object and building
    a new one from scratch.
-   If reinitialization has been successful @code{1} is returned,
-   in case of a failure @code{0} is returned.
+   If reinitialization has been successful @code{UNUR_SUCCESS} is returned,
+   in case of a failure an error code is returned.
 */
 
 int unur_dari_set_squeeze( UNUR_PAR *parameters, int squeeze );
@@ -207,7 +207,7 @@ int unur_dari_upd_mode( UNUR_GEN *generator );
    distributions is used
    (@pxref{Stddist,,Standard distributions}).
    Otherwise a (slow) numerical mode finder is called.
-   If no mode can be found, then @code{0} is returnded and
+   If no mode can be found, then an error code is returnded and
    @code{unur_errno} is set to @code{UNUR_ERR_DISTR_DATA}.
 
    unur_dari_reinit() must be executed before sampling from the 
@@ -227,8 +227,8 @@ int unur_dari_upd_pmfsum( UNUR_GEN *generator );
    It only works when a distribution objects from the
    UNURAN library of standard distributions is used
    (@pxref{Stddist,,Standard distributions}).
-   Otherwise @code{0} is returned and @code{unur_errno} is set to
-   @code{UNUR_ERR_DISTR_DATA}.
+   Otherwise an error code is returned and @code{unur_errno} 
+   is set to @code{UNUR_ERR_DISTR_DATA}.
 
    unur_dari_reinit() must be executed before sampling from the 
    generator again.

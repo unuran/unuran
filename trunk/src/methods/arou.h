@@ -117,7 +117,7 @@ int unur_arou_set_darsfactor( UNUR_PAR *parameters, double factor );
    intervals between squeeze and hat.
    Notice that all segments are split when @var{factor} is set to
    @code{0.}, and that there is no splitting at all when @var{factor}
-   is set to UNUR_INFINITY.
+   is set to @code{UNUR_INFINITY}.
 
    Default is @code{0.99}. There is no need to change this parameter.
 */
@@ -141,19 +141,19 @@ double unur_arou_get_sqhratio( const UNUR_GEN *generator );
 /* 
    Get the current ratio (area inside squeeze) / (area inside envelope)
    for the generator. 
-   (In case of error @code{0} is returned.)
+   (In case of an error @code{UNUR_INFINITY} is returned.)
 */
 
 double unur_arou_get_hatarea( const UNUR_GEN *generator );
 /* 
    Get the area below the hat for the generator.
-   (In case of an error @code{0} is returned.)
+   (In case of an error @code{UNUR_INFINITY} is returned.)
 */
 
 double unur_arou_get_squeezearea( const UNUR_GEN *generator );
 /* 
    Get the area below the squeeze for the generator.
-   (In case of an error @code{0} is returned.)
+   (In case of an error @code{UNUR_INFINITY} is returned.)
 */
 
 
@@ -173,7 +173,7 @@ int unur_arou_set_cpoints( UNUR_PAR *parameters, int n_stp, const double *stp );
    If @var{stp} is NULL, then a heuristical rule of thumb is used to
    get @var{n_stp} construction points. 
    This is the default behavior when this routine is not called.
-   The (default) number of construction points is 30, then.
+   The (default) number of construction points is @code{30}, then.
 */
 
 

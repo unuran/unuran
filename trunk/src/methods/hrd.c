@@ -212,24 +212,22 @@ unur_hrd_set_verify( struct unur_par *par, int verify )
      /*   verify ... 0 = no verifying,  !0 = verifying                       */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*                                                                      */
      /* comment:                                                             */
      /*   no verifying is the default                                        */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( GENTYPE,par,0 );
-
-  /* check input */
-  _unur_check_par_object( par,HRD );
+  _unur_check_NULL( GENTYPE, par, UNUR_ERR_NULL );
+  _unur_check_par_object( par, HRD );
 
   /* we use a bit in variant */
   par->variant = (verify) ? (par->variant | HRD_VARFLAG_VERIFY) : (par->variant & (~HRD_VARFLAG_VERIFY));
 
   /* o.k. */
-  return 1;
+  return UNUR_SUCCESS;
 
 } /* end of unur_hrd_set_verify() */
 
@@ -245,16 +243,16 @@ unur_hrd_chg_verify( struct unur_gen *gen, int verify )
      /*   verify ... 0 = no verifying,  !0 = verifying                       */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*                                                                      */
      /* comment:                                                             */
      /*   no verifying is the default                                        */
      /*----------------------------------------------------------------------*/
 {
   /* check input */
-  _unur_check_NULL( GENTYPE,gen,0 );
-  _unur_check_gen_object( gen,HRD );
+  _unur_check_NULL( GENTYPE, gen, UNUR_ERR_NULL );
+  _unur_check_gen_object( gen, HRD, UNUR_ERR_GEN_INVALID );
 
   /* we use a bit in variant */
   gen->variant = (verify) ? (gen->variant | HRD_VARFLAG_VERIFY) : (gen->variant & (~HRD_VARFLAG_VERIFY));
@@ -263,7 +261,7 @@ unur_hrd_chg_verify( struct unur_gen *gen, int verify )
   SAMPLE = (verify) ? _unur_hrd_sample_check : _unur_hrd_sample;
 
   /* o.k. */
-  return 1;
+  return UNUR_SUCCESS;
 
 } /* end of unur_hrd_chg_verify() */
 
@@ -475,11 +473,14 @@ _unur_hrd_sample( struct unur_gen *gen )
      /*   double (sample from random variate)                                */
      /*                                                                      */
      /* error:                                                               */
-     /*   return 0.                                                          */
+     /*   return INFINITY                                                    */
      /*----------------------------------------------------------------------*/
 { 
   double U,V,E,X,hrx;
   double lambda;
+
+  /* check arguments */
+  CHECK_NULL(gen,INFINITY);  COOKIE_CHECK(gen,CK_HRD_GEN,INFINITY);
 
   /* parameter for majorizing hazard rate */
   lambda = GEN.upper_bound;
@@ -533,12 +534,15 @@ _unur_hrd_sample_check( struct unur_gen *gen )
      /*   double (sample from random variate)                                */
      /*                                                                      */
      /* error:                                                               */
-     /*   return 0.                                                          */
+     /*   return INFINITY                                                    */
      /*----------------------------------------------------------------------*/
 { 
   double U,V,E,X,hrx;
   double lambda;
   int i;
+
+  /* check arguments */
+  CHECK_NULL(gen,INFINITY);  COOKIE_CHECK(gen,CK_HRD_GEN,INFINITY);
 
   /* parameter for majorizing hazard rate */
   lambda = GEN.upper_bound;

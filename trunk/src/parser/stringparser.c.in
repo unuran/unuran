@@ -732,7 +732,7 @@ _unur_str_distr( char *str_distr )
 
     /* set parameters for distribution */
     else {
-      if (!_unur_str_distr_set(&distr, key, value) ) {
+      if (_unur_str_distr_set(&distr, key, value)!=UNUR_SUCCESS ) {
 	/* error */
 	_unur_distr_free(distr);
 	/* _unur_error(GENTYPE,UNUR_ERR_STR,"setting distribution failed");  */
@@ -916,15 +916,14 @@ _unur_str_distr_set( UNUR_DISTR **ptr_distr, const char *key, char *value )
      /*   value     ... string that contains list of arguments for parameter */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*                                                                      */
      /* error:                                                               */
-     /*   return 0                                                           */
+     /*   return error code                                                  */
      /*----------------------------------------------------------------------*/
 {
-#define UNKNOWN_PARAM (-1)
-  int result = UNKNOWN_PARAM;      /* result of UNURAN set call (0 or 1) */
+  int result;      /* result of UNURAN set call */
 
   /* derefence pointer to distribution object */
   struct unur_distr *distr = *ptr_distr;
@@ -936,39 +935,37 @@ _unur_str_distr_set( UNUR_DISTR **ptr_distr, const char *key, char *value )
   /* tokenize argument string */
   if (_unur_str_set_args( value, type_args, args, MAX_SET_ARGS ) < 0) {
     /* error */
-    return 0;
+    return UNUR_ERR_STR_SYNTAX;
   }
 
   /* set result indicator to unknown */
-  result = UNKNOWN_PARAM;
+  result = UNUR_ERR_STR_UNKNOWN;
 
   /* find and execute set call */
 =INPUT list_of_distr_sets
 
    /* special keyword */
-   if (result == UNKNOWN_PARAM)
+   if (result == UNUR_ERR_STR_UNKNOWN)
      if (distr->type == UNUR_DISTR_CONT) {
        if ( !strcmp(key, "orderstatistics") ) {
 	 /* make order statistics and replace distribution object */
 	 *ptr_distr = _unur_str_distr_make_os (distr, key, type_args, args);
-	 result = (*ptr_distr == NULL) ? 0 : 1;
+	 result = (*ptr_distr == NULL) ? UNUR_ERR_STR_SYNTAX : UNUR_SUCCESS;
        }
      }
   
-  if (result == UNKNOWN_PARAM) {
+  if (result == UNUR_ERR_STR_UNKNOWN) {
     /* unknown parameter */
     _unur_error_unknown(key,"parameter for given distribution");
-    return 0;
+    return UNUR_ERR_STR_UNKNOWN;
   }
-  else if (result == 0) {
+  else if (result != UNUR_SUCCESS) {
     /* invalid data for parameter */
     _unur_error_invalid(key,"set call");
-    return 0;
+    return UNUR_ERR_STR_SYNTAX;
   }
   
-  return result;
-  
-#undef UNKNOWN_PARAM
+  return UNUR_SUCCESS;
   
 } /* end of _unur_str_distr_set() */
 
@@ -1002,11 +999,8 @@ _unur_str_distr_set_i (UNUR_DISTR *distr, const char *key, char *type_args, char
      /*                                                                      */
      /* return:                                                              */
      /*   return code from set call, i.e.                                    */
-     /*      1 ... on success                                                */
-     /*      0 ... on error                                                  */
-     /*                                                                      */
-     /* error:                                                               */
-     /*   return 0                                                           */
+     /*      UNUR_SUCCESS ... on success                                     */
+     /*      error code   ... on error                                       */
      /*----------------------------------------------------------------------*/
 {
   int iarg;
@@ -1024,7 +1018,7 @@ _unur_str_distr_set_i (UNUR_DISTR *distr, const char *key, char *type_args, char
     if (_unur_default_debugflag & UNUR_DEBUG_SETUP)
       _unur_str_debug_set(2,key,"!");
 #endif
-    return 0;
+    return UNUR_ERR_STR_INVALID;
   }
   
 #ifdef UNUR_ENABLE_LOGGING
@@ -1069,11 +1063,8 @@ _unur_str_distr_set_ii (UNUR_DISTR *distr, const char *key, char *type_args, cha
      /*                                                                      */
      /* return:                                                              */
      /*   return code from set call, i.e.                                    */
-     /*      1 ... on success                                                */
-     /*      0 ... on error                                                  */
-     /*                                                                      */
-     /* error:                                                               */
-     /*   return 0                                                           */
+     /*      UNUR_SUCCESS ... on success                                     */
+     /*      error code   ... on error                                       */
      /*----------------------------------------------------------------------*/
 {
   int *iarray = NULL;
@@ -1104,7 +1095,7 @@ _unur_str_distr_set_ii (UNUR_DISTR *distr, const char *key, char *type_args, cha
       if (_unur_default_debugflag & UNUR_DEBUG_SETUP)
 	_unur_str_debug_set(2,key,"!");
 #endif
-      return 0;
+      return UNUR_ERR_STR_INVALID;
     }
     result = set( distr,iarray[0],iarray[1] );
 
@@ -1125,7 +1116,7 @@ _unur_str_distr_set_ii (UNUR_DISTR *distr, const char *key, char *type_args, cha
     if (_unur_default_debugflag & UNUR_DEBUG_SETUP)
       _unur_str_debug_set(2,key,"!");
 #endif
-    return 0;
+    return UNUR_ERR_STR_INVALID;
   }
 
 } /* end of _unur_str_distr_set_ii() */
@@ -1158,11 +1149,8 @@ _unur_str_distr_set_d (UNUR_DISTR *distr, const char *key, char *type_args, char
      /*                                                                      */
      /* return:                                                              */
      /*   return code from set call, i.e.                                    */
-     /*      1 ... on success                                                */
-     /*      0 ... on error                                                  */
-     /*                                                                      */
-     /* error:                                                               */
-     /*   return 0                                                           */
+     /*      UNUR_SUCCESS ... on success                                     */
+     /*      error code   ... on error                                       */
      /*----------------------------------------------------------------------*/
 {
   double darg;
@@ -1174,7 +1162,7 @@ _unur_str_distr_set_d (UNUR_DISTR *distr, const char *key, char *type_args, char
     if (_unur_default_debugflag & UNUR_DEBUG_SETUP)
       _unur_str_debug_set(2,key,"!");
 #endif
-    return 0;
+    return UNUR_ERR_STR_INVALID;
   }
   
   darg = _unur_atod( args[0] );
@@ -1221,11 +1209,8 @@ _unur_str_distr_set_dd (UNUR_DISTR *distr, const char *key, char *type_args, cha
      /*                                                                      */
      /* return:                                                              */
      /*   return code from set call, i.e.                                    */
-     /*      1 ... on success                                                */
-     /*      0 ... on error                                                  */
-     /*                                                                      */
-     /* error:                                                               */
-     /*   return 0                                                           */
+     /*      UNUR_SUCCESS ... on success                                     */
+     /*      error code   ... on error                                       */
      /*----------------------------------------------------------------------*/
 {
   double *darray = NULL;
@@ -1256,7 +1241,7 @@ _unur_str_distr_set_dd (UNUR_DISTR *distr, const char *key, char *type_args, cha
       if (_unur_default_debugflag & UNUR_DEBUG_SETUP)
 	_unur_str_debug_set(2,key,"!");
 #endif
-      return 0;
+      return UNUR_ERR_STR_INVALID;
     }
     result = set( distr,darray[0],darray[1] );
 
@@ -1277,7 +1262,7 @@ _unur_str_distr_set_dd (UNUR_DISTR *distr, const char *key, char *type_args, cha
     if (_unur_default_debugflag & UNUR_DEBUG_SETUP)
       _unur_str_debug_set(2,key,"!");
 #endif
-    return 0;
+    return UNUR_ERR_STR_INVALID;
   }
 
 } /* end of _unur_str_distr_set_dd() */
@@ -1315,11 +1300,8 @@ _unur_str_distr_set_Di (UNUR_DISTR *distr, const char *key, char *type_args, cha
      /*                                                                      */
      /* return:                                                              */
      /*   return code from set call, i.e.                                    */
-     /*      1 ... on success                                                */
-     /*      0 ... on error                                                  */
-     /*                                                                      */
-     /* error:                                                               */
-     /*   return 0                                                           */
+     /*      UNUR_SUCCESS ... on success                                     */
+     /*      error code   ... on error                                       */
      /*----------------------------------------------------------------------*/
 {
   int result;
@@ -1348,7 +1330,7 @@ _unur_str_distr_set_Di (UNUR_DISTR *distr, const char *key, char *type_args, cha
     if (_unur_default_debugflag & UNUR_DEBUG_SETUP)
       _unur_str_debug_set(2,key,"!");
 #endif
-    result = 0;
+    result = UNUR_ERR_STR_INVALID;
   }
 
   else {
@@ -1393,11 +1375,8 @@ _unur_str_distr_set_C (UNUR_DISTR *distr, const char *key, char *type_args, char
      /*                                                                      */
      /* return:                                                              */
      /*   return code from set call, i.e.                                    */
-     /*      1 ... on success                                                */
-     /*      0 ... on error                                                  */
-     /*                                                                      */
-     /* error:                                                               */
-     /*   return 0                                                           */
+     /*      UNUR_SUCCESS ... on success                                     */
+     /*      error code   ... on error                                       */
      /*----------------------------------------------------------------------*/
 {
   char *string;
@@ -1409,7 +1388,7 @@ _unur_str_distr_set_C (UNUR_DISTR *distr, const char *key, char *type_args, char
     if (_unur_default_debugflag & UNUR_DEBUG_SETUP)
       _unur_str_debug_set(2,key,"!");
 #endif
-    return 0;
+    return UNUR_ERR_STR_INVALID;
   }
 
   /* get string */
@@ -1572,11 +1551,8 @@ _unur_str_par_set( UNUR_PAR *par, const char *key, char *value, struct unur_slis
      /*   mlist ... list of allocated memory blocks                          */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
-     /*                                                                      */
-     /* error:                                                               */
-     /*   return 0                                                           */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   int result = 0;                  /* result of UNURAN set call (0 or 1) */
@@ -1588,17 +1564,16 @@ _unur_str_par_set( UNUR_PAR *par, const char *key, char *value, struct unur_slis
   /* tokenize argument string */
   if (_unur_str_set_args( value, type_args, args, MAX_SET_ARGS ) < 0) {
     /* error */
-    return 0;
+    return UNUR_ERR_STR_SYNTAX;
   }
 
   /* set result indicator to unknown */
-#define UNKNOWN_PARAM (-1)
-  result = UNKNOWN_PARAM;
+  result = UNUR_ERR_STR_UNKNOWN;
 
   /* find and execute set call */
 =INPUT list_of_par_sets
 
-   if (result == UNKNOWN_PARAM) {
+   if (result == UNUR_ERR_STR_UNKNOWN) {
      /* no valid parameter found */
      /* try extra keywords */
      if ( !strcmp(key, "debug") ) {
@@ -1608,20 +1583,18 @@ _unur_str_par_set( UNUR_PAR *par, const char *key, char *value, struct unur_slis
    }
   
   /* check result */
-  if (result == UNKNOWN_PARAM) {
+  if (result == UNUR_ERR_STR_UNKNOWN) {
     /* unknown parameter */
     _unur_error_unknown(key,"parameter for given method");
-    return 0;
+    return UNUR_ERR_STR_UNKNOWN;
   }
-  else if (result == 0) {
+  else if (result != UNUR_SUCCESS) {
     /* invalid data for parameter */
     _unur_error_invalid(key,"set call");
-    return 0;
+    return UNUR_ERR_STR_SYNTAX;
   }
   
-  return result;
-
-#undef UNKNOWN_PARAM
+  return UNUR_SUCCESS;
 
 } /* end of _unur_str_par_set() */
 
@@ -1652,11 +1625,8 @@ _unur_str_par_set_void (UNUR_PAR *par, const char *key, char *type_args, char **
      /*                                                                      */
      /* return:                                                              */
      /*   return code from set call, i.e.                                    */
-     /*      1 ... on success                                                */
-     /*      0 ... on error                                                  */
-     /*                                                                      */
-     /* error:                                                               */
-     /*   return 0                                                           */
+     /*      UNUR_SUCCESS ... on success                                     */
+     /*      error code   ... on error                                       */
      /*----------------------------------------------------------------------*/
 {
 
@@ -1703,11 +1673,8 @@ _unur_str_par_set_i (UNUR_PAR *par, const char *key, char *type_args, char **arg
      /*                                                                      */
      /* return:                                                              */
      /*   return code from set call, i.e.                                    */
-     /*      1 ... on success                                                */
-     /*      0 ... on error                                                  */
-     /*                                                                      */
-     /* error:                                                               */
-     /*   return 0                                                           */
+     /*      UNUR_SUCCESS ... on success                                     */
+     /*      error code   ... on error                                       */
      /*----------------------------------------------------------------------*/
 {
   int iarg;
@@ -1725,7 +1692,7 @@ _unur_str_par_set_i (UNUR_PAR *par, const char *key, char *type_args, char **arg
     if (_unur_default_debugflag & UNUR_DEBUG_SETUP)
       _unur_str_debug_set(2,key,"!");
 #endif
-    return 0;
+    return UNUR_ERR_STR_INVALID;
   }
   
 #ifdef UNUR_ENABLE_LOGGING
@@ -1766,11 +1733,8 @@ _unur_str_par_set_u (UNUR_PAR *par, const char *key, char *type_args, char **arg
      /*                                                                      */
      /* return:                                                              */
      /*   return code from set call, i.e.                                    */
-     /*      1 ... on success                                                */
-     /*      0 ... on error                                                  */
-     /*                                                                      */
-     /* error:                                                               */
-     /*   return 0                                                           */
+     /*      UNUR_SUCCESS ... on success                                     */
+     /*      error code   ... on error                                       */
      /*----------------------------------------------------------------------*/
 {
   unsigned uarg;
@@ -1782,7 +1746,7 @@ _unur_str_par_set_u (UNUR_PAR *par, const char *key, char *type_args, char **arg
     if (_unur_default_debugflag & UNUR_DEBUG_SETUP)
       _unur_str_debug_set(2,key,"!");
 #endif
-    return 0;
+    return UNUR_ERR_STR_INVALID;
   }
   
   uarg = _unur_atou( args[0] );
@@ -1825,11 +1789,8 @@ _unur_str_par_set_d (UNUR_PAR *par, const char *key, char *type_args, char **arg
      /*                                                                      */
      /* return:                                                              */
      /*   return code from set call, i.e.                                    */
-     /*      1 ... on success                                                */
-     /*      0 ... on error                                                  */
-     /*                                                                      */
-     /* error:                                                               */
-     /*   return 0                                                           */
+     /*      UNUR_SUCCESS ... on success                                     */
+     /*      error code   ... on error                                       */
      /*----------------------------------------------------------------------*/
 {
   double darg;
@@ -1841,7 +1802,7 @@ _unur_str_par_set_d (UNUR_PAR *par, const char *key, char *type_args, char **arg
     if (_unur_default_debugflag & UNUR_DEBUG_SETUP)
       _unur_str_debug_set(2,key,"!");
 #endif
-    return 0;
+    return UNUR_ERR_STR_INVALID;
   }
   
   darg = _unur_atod( args[0] );
@@ -1888,11 +1849,8 @@ _unur_str_par_set_dd (UNUR_PAR *par, const char *key, char *type_args, char **ar
      /*                                                                      */
      /* return:                                                              */
      /*   return code from set call, i.e.                                    */
-     /*      1 ... on success                                                */
-     /*      0 ... on error                                                  */
-     /*                                                                      */
-     /* error:                                                               */
-     /*   return 0                                                           */
+     /*      UNUR_SUCCESS ... on success                                     */
+     /*      error code   ... on error                                       */
      /*----------------------------------------------------------------------*/
 {
   double *darray = NULL;
@@ -1923,7 +1881,7 @@ _unur_str_par_set_dd (UNUR_PAR *par, const char *key, char *type_args, char **ar
       if (_unur_default_debugflag & UNUR_DEBUG_SETUP)
 	_unur_str_debug_set(2,key,"!");
 #endif
-      return 0;
+      return UNUR_ERR_STR_INVALID;
     }
     result = set( par,darray[0],darray[1] );
 
@@ -1944,7 +1902,7 @@ _unur_str_par_set_dd (UNUR_PAR *par, const char *key, char *type_args, char **ar
     if (_unur_default_debugflag & UNUR_DEBUG_SETUP)
       _unur_str_debug_set(2,key,"!");
 #endif
-    return 0;
+    return UNUR_ERR_STR_INVALID;
   }
 
 } /* end of _unur_str_par_set_dd() */
@@ -1987,11 +1945,8 @@ _unur_str_par_set_iD (UNUR_PAR *par, const char *key, char *type_args, char **ar
      /*                                                                      */
      /* return:                                                              */
      /*   return code from set call, i.e.                                    */
-     /*      1 ... on success                                                */
-     /*      0 ... on error                                                  */
-     /*                                                                      */
-     /* error:                                                               */
-     /*   return 0                                                           */
+     /*      UNUR_SUCCESS ... on success                                     */
+     /*      error code   ... on error                                       */
      /*----------------------------------------------------------------------*/
 {
   int result;
@@ -2033,7 +1988,7 @@ _unur_str_par_set_iD (UNUR_PAR *par, const char *key, char *type_args, char **ar
     if (_unur_default_debugflag & UNUR_DEBUG_SETUP)
       _unur_str_debug_set(2,key,"!");
 #endif
-    result = 0;
+    result = UNUR_ERR_STR_INVALID;
   }
   
   else {
@@ -2084,11 +2039,8 @@ _unur_str_par_set_Di (UNUR_PAR *par, const char *key, char *type_args, char **ar
      /*                                                                      */
      /* return:                                                              */
      /*   return code from set call, i.e.                                    */
-     /*      1 ... on success                                                */
-     /*      0 ... on error                                                  */
-     /*                                                                      */
-     /* error:                                                               */
-     /*   return 0                                                           */
+     /*      UNUR_SUCCESS ... on success                                     */
+     /*      error code   ... on error                                       */
      /*----------------------------------------------------------------------*/
 {
   int result;
@@ -2123,7 +2075,7 @@ _unur_str_par_set_Di (UNUR_PAR *par, const char *key, char *type_args, char **ar
     _unur_str_debug_set(2,key,"!");
 #endif
 
-  return 0;
+  return UNUR_ERR_STR_INVALID;
 } /* end of _unur_str_par_set_Di() */
 
 /*---------------------------------------------------------------------------*/
@@ -2262,8 +2214,7 @@ _unur_str_set_args( char *value, char *type_args, char **args, int max_args )
      /*    'L' ... a list, indicated by (...)                                */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   number of parsed arguments                                         */
      /*                                                                      */
      /* error:                                                               */
      /*   return -1                                                           */

@@ -111,7 +111,7 @@ _unur_string_append ( struct unur_string *string, const char *format, ... )
   /* close optional list of arguments */
   va_end(ap);
 
-  return 1;
+  return UNUR_SUCCESS;
 } /* end of _unur_string_append() */
 
 /*---------------------------------------------------------------------------*/
@@ -143,7 +143,7 @@ _unur_string_appendtext ( struct unur_string *string, const char *text )
   /* update length of string */
   string->length += len;
 
-  return 1;
+  return UNUR_SUCCESS;
 } /* end of _unur_string_appendtext() */
 
 /*---------------------------------------------------------------------------*/

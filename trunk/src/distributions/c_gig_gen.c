@@ -80,8 +80,8 @@ _unur_stdgen_gig_init( struct unur_par *par, struct unur_gen *gen )
      /*   gen ... pointer to generator object                                */
      /*                                                                      */
      /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   /* one of par and gen must not be the NULL pointer */
@@ -91,7 +91,7 @@ _unur_stdgen_gig_init( struct unur_par *par, struct unur_gen *gen )
   case 1:  /* Ratio of Uniforms */
     if (par->distr->data.cont.params[0] <= 0.) {    /* theta <= 0 */
       _unur_error(NULL,UNUR_ERR_GEN_CONDITION,"");
-      return 0;
+      return UNUR_ERR_GEN_CONDITION;
     }
     /* theta > 0 ! */
     _unur_cstd_set_sampling_routine( par,gen,_unur_stdgen_sample_gig_gigru );
@@ -100,7 +100,7 @@ _unur_stdgen_gig_init( struct unur_par *par, struct unur_gen *gen )
   case UNUR_STDGEN_INVERSION:   /* inversion method */
   default: /* no such generator */
     if (gen) _unur_warning(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
-    return 0;
+    return UNUR_FAILURE;
   }
   
 } /* end of _unur_stdgen_gig_init() */
@@ -159,7 +159,8 @@ gig_gigru_init( struct unur_gen *gen )
   double r,s,t,p,q,xeta,fi,fak,y1,y2,max,invy1,invy2,vplus,hm1,xm,ym;
 
   /* check arguments */
-  CHECK_NULL(gen,0);  COOKIE_CHECK(gen,CK_CSTD_GEN,0);
+  CHECK_NULL(gen,UNUR_ERR_NULL);
+  COOKIE_CHECK(gen,CK_CSTD_GEN,UNUR_ERR_COOKIE);
 
   if (GEN.gen_param == NULL) {
     GEN.n_gen_param = MAX_gen_params;
@@ -169,7 +170,7 @@ gig_gigru_init( struct unur_gen *gen )
   /* -X- setup code -X- */
   if (theta <= 0) {
     _unur_error(NULL,UNUR_ERR_GEN_CONDITION,"");
-    return 0;
+    return UNUR_ERR_GEN_CONDITION;
   }
 
   if (theta<=1. && omega<=1.) {
@@ -226,7 +227,7 @@ gig_gigru_init( struct unur_gen *gen )
 
   /* -X- end of setup code -X- */
 
-  return 1;
+  return UNUR_SUCCESS;
 
 } /* end of gig_gigru_init() */
 
@@ -236,7 +237,8 @@ _unur_stdgen_sample_gig_gigru( struct unur_gen *gen )
   double U,V,X,Z;
 
   /* check arguments */
-  CHECK_NULL(gen,0.); COOKIE_CHECK(gen,CK_CSTD_GEN,0.);
+  CHECK_NULL(gen,INFINITY);
+  COOKIE_CHECK(gen,CK_CSTD_GEN,INFINITY);
 
   /* -X- generator code -X- */
   if (theta<=1. && omega<=1.) {

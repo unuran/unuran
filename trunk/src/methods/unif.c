@@ -271,12 +271,12 @@ _unur_unif_sample( struct unur_gen *gen )
      /*   double (sample from random variate)                                */
      /*                                                                      */
      /* error:                                                               */
-     /*   return 0.                                                          */
+     /*   return INFINITY                                                    */
      /*----------------------------------------------------------------------*/
 { 
   /* check arguments */
-  CHECK_NULL(gen,0.);
-  COOKIE_CHECK(gen,CK_UNIF_GEN,0.);
+  CHECK_NULL(gen,INFINITY);
+  COOKIE_CHECK(gen,CK_UNIF_GEN,INFINITY);
 
   /* sample uniform random number */
   return _unur_call_urng(gen->urng);

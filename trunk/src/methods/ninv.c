@@ -1270,10 +1270,10 @@ _unur_ninv_newton( struct unur_gen *gen, double U )
   /* initialize starting point */
   if (GEN.table_on){
     /* i is between 0 and table_size-1 */
-    i  = (int) U *        /** TODO **/
+    i  = (int) ( U *        /** TODO **/
       ( (GEN.Umax-GEN.Umin)/(GEN.CDFmax-GEN.CDFmin) +
          GEN.Umin - GEN.CDFmin ) *
-      ( GEN.table_size - 2 );
+      ( GEN.table_size - 2 ) );
     /* neccessary if domain is expanded -> start with extreme tblpts */
     i = (i < 0) ? 0 : i;
     i = (i > GEN.table_size - 1) ? GEN.table_size -1 : i;
@@ -1284,7 +1284,6 @@ _unur_ninv_newton( struct unur_gen *gen, double U )
     x     = GEN.s[0];
     fx    = GEN.CDFs[0];
   }
-
 
   /* rescale u in respect to given bounds */
   U = U*GEN.Umax + (1.0-U)*GEN.Umin;
@@ -1298,6 +1297,7 @@ _unur_ninv_newton( struct unur_gen *gen, double U )
   damp = 2.;        /* to be halved at least once */  
   step = 1.;
   
+
   /* begin for-loop:  newton-iteration  */
   for (i=0; i < GEN.max_iter; i++) {
 
@@ -1332,6 +1332,7 @@ _unur_ninv_newton( struct unur_gen *gen, double U )
       fxabs = fabs(fx);     
     }   /* end of while-loop, (flat region left) */
 
+
    step = 1.;   /* set back stepsize */
 
    if (fx == 0.)  /* exact hit -> finished */
@@ -1343,6 +1344,7 @@ _unur_ninv_newton( struct unur_gen *gen, double U )
         xtmp = x - damp * fx/dfx;
         fxtmp = CDF(xtmp) - U;
     } while ( fabs(fxtmp)-fxabs >= fxabs * GEN.rel_x_resolution ); /* no improvement */
+
 
     
     /* updation variables according to newton-step      */
